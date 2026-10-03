@@ -48,6 +48,14 @@ def path(vertices: Sequence[float], bars_per_leg: int | Sequence[int] = 6, **kw:
     return context(path_frame(vertices, bars_per_leg, **kw))  # type: ignore[arg-type]
 
 
+def path_rows(
+    vertices: Sequence[float], bars_per_leg: int | Sequence[int] = 6, **kw: object
+) -> list[tuple[float, float, float, float]]:
+    """The (open, high, low, close) rows of :func:`path_frame`, to extend with hand-made bars for :func:`bars`."""
+    df = path_frame(vertices, bars_per_leg, **kw)  # type: ignore[arg-type]
+    return list(df[["open", "high", "low", "close"]].itertuples(index=False, name=None))
+
+
 def bars(rows: Sequence[tuple[float, float, float, float]], start: datetime = START) -> EvidenceContext:
     """A context from explicit (open, high, low, close) rows, hourly from *start*."""
     df = pd.DataFrame(rows, columns=["open", "high", "low", "close"], dtype=float)

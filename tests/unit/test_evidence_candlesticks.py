@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 
 from app.evidence.candlesticks import (
-    LOCATION_SOURCES,
     Bars,
     Doji,
     Engulfing,
@@ -30,7 +29,7 @@ from app.evidence.candlesticks import (
 from app.evidence.catalog import ALL_DETECTORS
 from app.evidence.framework import Detector, Direction, Evidence, EvidenceContext, Family, Tier
 from tests.evidence_harness import scan_one
-from tests.evidence_paths import bars
+from tests.evidence_paths import bars, path_rows
 from tests.indicator_data import random_ohlc
 
 Row = tuple[float, float, float, float]
@@ -147,31 +146,68 @@ class TestThreeBar:
         assert found(ThreeSoldiersCrows(), [*WARM, *soldiers]) == []
 
 
-def _silent(det_id: str) -> Detector:
-    """A stand-in level source that reports nothing."""
+def _source(det_id: str, *, report: bool = False, variant: str | None = None) -> Detector:
+    """A stand-in level source: silent, or reporting one BULL record (of *variant*) on the last bar."""
 
-    class Silent(Detector):
+    class Source(Detector):
         id = det_id
-        name = "silent"
+        name = "stub"
         family = Family.LEVELS
         tier = Tier.T1
 
         def scan(self, ctx: EvidenceContext, params: Any) -> list[Evidence]:
-            return []
+            if not report:
+                return []
+            return [self.make(ctx, ctx.last_pos, Direction.BULL, 1.0, variant=variant)]
 
-    return Silent()
+    return Source()
+
+
+HAMMER_ROWS: list[Row] = [*WARM, *DOWN, (1012.2, 1012.3, 1010.0, 1012.25)]  # probes the round number 1010
+
+
+def last_bar(detector: Detector, rows: Sequence[Row], sources: Sequence[Detector]) -> Evidence:
+    ctx = bars(rows)
+    (ev,) = [e for e in scan_one(detector, ctx, sources) if ctx.pos_of(e.detected_at) == ctx.last_pos]
+    return ev
 
 
 def test_location_weighting() -> None:
     """The same hammer scores higher when a level source reports a rejection on its bar (here the round number
     1010) than when every level source is silent."""
-    rows = [*WARM, *DOWN, (1012.2, 1012.3, 1010.0, 1012.25)]
-    at_level = one(Hammer(), rows)
-    ctx = bars(rows)
-    silent = [_silent(d) for d in LOCATION_SOURCES]
-    (mid_air,) = [e for e in scan_one(Hammer(), ctx, silent) if ctx.pos_of(e.detected_at) == ctx.last_pos]
+    at_level = one(Hammer(), HAMMER_ROWS)
+    mid_air = last_bar(Hammer(), HAMMER_ROWS, [_source(d) for d in Hammer.depends_on])
     assert at_level.detail("at_level") is True and mid_air.detail("at_level") is False
+    assert at_level.detail("at_levels") == "evidence.levels.round_number.minor"  # step 10 near 1012
+    assert mid_air.detail("at_levels") == ""
     assert at_level.quality == pytest.approx(mid_air.quality / 0.6)
+
+
+@pytest.mark.parametrize(
+    ("det_id", "variant", "counts"),
+    [
+        ("structure.trendline", "bounce_support", True),
+        ("structure.trendline", "break_resistance", False),  # a break goes through the line
+        ("levels.prev_high_low", "pdl.reject", True),
+        ("levels.prev_high_low", "pdh.break", False),
+        ("fib.cluster", None, True),
+    ],
+)
+def test_location_variant_filter(det_id: str, variant: str | None, counts: bool) -> None:
+    sources = [_source(d) for d in Hammer.depends_on if d != det_id]
+    ev = last_bar(Hammer(), HAMMER_ROWS, [*sources, _source(det_id, report=True, variant=variant)])
+    key = f"evidence.{det_id}.{variant}" if variant else f"evidence.{det_id}"
+    assert ev.detail("at_level") is counts
+    assert ev.detail("at_levels") == (key if counts else "")
+
+
+def test_shooting_star_at_fib_extension() -> None:
+    """A shooting star rejecting the 161.8 % extension of the up leg 999.9 -> 1010.1 (level 1016.4036)."""
+    star: Row = (1015.6, 1016.5, 1015.45, 1015.5)
+    ev = one(ShootingStar(), [*path_rows([1000, 1010, 1005, 1015.5]), star])
+    assert ev.detail("at_level") is True
+    assert ev.detail("at_levels") == "evidence.fib.extension_level.external.161.8"
+    assert ev.quality == pytest.approx(1.0)  # full geometry, undiscounted for location
 
 
 class TestTalibCrossCheck:

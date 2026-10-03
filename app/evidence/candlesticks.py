@@ -6,9 +6,10 @@ the mean real body of the **previous** 10 bars. The pure ``*_mask`` functions ho
 
 - **Prior trend** for reversal patterns: the close before the pattern moved at least ``trend_atr`` × ATR over
   ``trend_bars`` bars against the signal (a bullish reversal needs a decline into it).
-- **Location weighting**: quality × (0.6 + 0.4 × at_level). ``at_level`` is 1 when a level or Fibonacci
-  detector (``LOCATION_SOURCES``) reported a rejection in the same direction on one of the pattern's bars. A
-  hammer on support counts for more than a hammer in mid-air.
+- **Location weighting**: quality × (0.6 + 0.4 × at_level). ``at_level`` is 1 when a level, Fibonacci or
+  trendline detector (``LOCATION_SOURCES``) reported a rejection in the same direction on one of the
+  pattern's bars. A hammer on support counts for more than a hammer in mid-air. Detail ``at_levels`` names
+  those rejections (sorted i18n keys, comma-joined), so an explanation can say which level it was.
 - Invalidation: beyond the pattern's extreme (its lowest low for bullish patterns).
 
 A record is stamped at the pattern's last bar, which is closed when it is evaluated.
@@ -36,12 +37,17 @@ from app.indicators.common import FloatArray
 
 IntArray = npt.NDArray[np.int64]
 
-LOCATION_SOURCES = (
-    "fib.retracement",
-    "levels.sr_zone",
-    "levels.round_number",
-    "levels.pivot_points",
-    "levels.prev_high_low",
+# (detector id, variants that mark a level; None = all). Only rejections count: a break or breakout says price
+# went through the level, not that the candle sat on it.
+LOCATION_SOURCES: tuple[tuple[str, tuple[str, ...] | None], ...] = (
+    ("fib.retracement", None),
+    ("fib.extension_level", None),
+    ("fib.cluster", None),
+    ("levels.sr_zone", None),
+    ("levels.round_number", None),
+    ("levels.pivot_points", None),
+    ("levels.prev_high_low", ("pdh.reject", "pdl.reject", "pwh.reject", "pwl.reject")),
+    ("structure.trendline", ("bounce_support", "bounce_resistance")),
 )
 
 # --- reference sizes and bare geometry ----------------------------------------------------------------------
@@ -161,7 +167,7 @@ class _Candle(Detector):
     family = Family.CANDLESTICK
     tier = Tier.T1
     Params: ClassVar[type[DetectorParams]] = CandleParams
-    depends_on = LOCATION_SOURCES
+    depends_on = tuple(det_id for det_id, _ in LOCATION_SOURCES)
 
     def match(self, ctx: EvidenceContext, b: Bars, t: int, atr: float) -> list[Match]:
         raise NotImplementedError
@@ -180,11 +186,11 @@ class _Candle(Detector):
                     continue
                 if m.reversal and not _prior_trend(ctx, first, -m.direction.sign, params):
                     continue
-                span = range(first, t + 1)
-                at_level = m.direction is not Direction.NEUTRAL and any(
-                    (p, m.direction) in levels for p in span
-                )
-                weight = 1.0 if m.direction is Direction.NEUTRAL else 0.6 + 0.4 * at_level
+                at_levels: set[str] = set()
+                if m.direction is not Direction.NEUTRAL:
+                    for p in range(first, t + 1):
+                        at_levels |= levels.get((p, m.direction), set())
+                weight = 1.0 if m.direction is Direction.NEUTRAL else 0.6 + 0.4 * bool(at_levels)
                 lo, hi = float(ctx.l[first : t + 1].min()), float(ctx.h[first : t + 1].max())
                 out.append(
                     self.make(
@@ -193,7 +199,11 @@ class _Candle(Detector):
                         m.direction,
                         m.geometry * weight,
                         invalidation={Direction.BULL: lo, Direction.BEAR: hi}.get(m.direction),
-                        details={"at_level": bool(at_level), "bars": m.span},
+                        details={
+                            "at_level": bool(at_levels),
+                            "at_levels": ",".join(sorted(at_levels)),
+                            "bars": m.span,
+                        },
                         variant=m.variant,
                     )
                 )
@@ -209,14 +219,17 @@ def _prior_trend(ctx: EvidenceContext, first: int, sign: int, params: Any) -> bo
     return bool(np.isfinite(atr) and (ctx.c[end] - ctx.c[start]) * sign >= params.trend_atr * atr)
 
 
-def _level_hits(ctx: EvidenceContext) -> set[tuple[int, Direction]]:
-    """(bar, direction) of every rejection reported by the location sources."""
+def _level_hits(ctx: EvidenceContext) -> dict[tuple[int, Direction], set[str]]:
+    """i18n keys of the rejections reported by the location sources, by (bar, direction)."""
 
-    def compute() -> set[tuple[int, Direction]]:
-        hits: set[tuple[int, Direction]] = set()
-        for det_id in LOCATION_SOURCES:
+    def compute() -> dict[tuple[int, Direction], set[str]]:
+        hits: dict[tuple[int, Direction], set[str]] = {}
+        for det_id, variants in LOCATION_SOURCES:
+            prefix = f"evidence.{det_id}."
             for ev in ctx.results(det_id):
-                hits.add((ctx.pos_of(ev.detected_at), ev.direction))
+                if variants is not None and ev.i18n_key.removeprefix(prefix) not in variants:
+                    continue
+                hits.setdefault((ctx.pos_of(ev.detected_at), ev.direction), set()).add(ev.i18n_key)
         return hits
 
     return ctx.memo(("candle_level_hits",), compute)

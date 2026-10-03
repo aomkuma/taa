@@ -13,10 +13,10 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from app.evidence.common import Cooldown, tolerance, touch_rejection
 from app.evidence.framework import (
@@ -242,6 +242,109 @@ class FibExtension(Detector):
                         )
                     )
                     break
+        return out
+
+
+# --- extension levels as support / resistance -------------------------------------------------------------
+
+EXTENSION_LEVELS = (1.272, 1.618, 2.618, 4.236)
+# 161.8 % is the most watched extension; the deep 423.6 % and the shallow 127.2 % less so
+EXTENSION_WEIGHT = {1.272: 0.8, 1.618: 1.0, 2.618: 0.9, 4.236: 0.8}
+
+
+class ExtensionLevelParams(FibParams):
+    ratios: tuple[float, ...] = Field(default=EXTENSION_LEVELS, min_length=1)
+    methods: tuple[Literal["external", "projection"], ...] = Field(
+        default=("external", "projection"), min_length=1
+    )
+
+    @field_validator("ratios")
+    @classmethod
+    def _beyond_one(cls, value: tuple[float, ...]) -> tuple[float, ...]:
+        if any(not (1.0 < r <= 10.0) for r in value):
+            raise ValueError("extension ratios must be in (1, 10]")
+        return value
+
+
+class FibExtensionLevel(Detector):
+    """Fibonacci extension levels acting as resistance (beyond an up leg) or support (beyond a down leg).
+
+    ``external`` (two-point): ``A + r·(B − A)`` of the leg A → B. ``projection`` (trend-based, three-point):
+    ``C + r·(B − A)``, projected from the pullback pivot C (which must not retrace beyond A). A leg's levels
+    stay in force from the last anchor's confirmation until the trend's next same-direction extreme D is
+    confirmed, as traders keep them drawn; a close beyond A ends them. Reported when price probes a level
+    and is rejected against the leg (exhaustion), once per level; a level that is closed through is spent.
+    """
+
+    id = "fib.extension_level"
+    name = "Fibonacci extension level"
+    family = Family.FIBONACCI
+    tier = Tier.T1
+    Params: ClassVar[type[DetectorParams]] = ExtensionLevelParams
+
+    def scan(self, ctx: EvidenceContext, params: Any) -> list[Evidence]:
+        pivots = ctx.zigzag(params.degree)
+        out: list[Evidence] = []
+        for i in range(len(pivots) - 1):
+            a, b = pivots[i], pivots[i + 1]
+            leg = Impulse(a, b, 0, 0)
+            end = pivots[i + 3].confirm_pos if i + 3 < len(pivots) else ctx.last_pos
+            if "external" in params.methods:
+                levels = {r: leg.extension(r) for r in params.ratios}
+                out += self._levels(ctx, leg, b.confirm_pos + 1, end, levels, "external", [], params)
+            if "projection" in params.methods and i + 2 < len(pivots):
+                c = pivots[i + 2]
+                sign = leg.direction.sign
+                if (c.price - a.price) * sign > 0:  # the pullback held above A
+                    levels = {r: c.price + sign * r * leg.size for r in params.ratios}
+                    anchor = [swing_level("pullback", c)]
+                    out += self._levels(
+                        ctx, leg, c.confirm_pos + 1, end, levels, "projection", anchor, params
+                    )
+        return out
+
+    def _levels(
+        self,
+        ctx: EvidenceContext,
+        leg: Impulse,
+        start: int,
+        end: int,
+        levels: dict[float, float],
+        method: str,
+        extra: list[KeyLevel],
+        params: Any,
+    ) -> list[Evidence]:
+        sign = leg.direction.sign
+        against = Direction.BEAR if sign > 0 else Direction.BULL
+        pending = dict(levels)
+        out: list[Evidence] = []
+        for t in range(start, end + 1):
+            if _broken(ctx, leg, t) or not pending:
+                break
+            tol = tolerance(ctx, t, params.tol_atr)
+            if not np.isfinite(tol):
+                continue
+            for r, level in sorted(pending.items()):
+                if (ctx.c[t] - level) * sign > tol:
+                    del pending[r]  # closed through: no longer a barrier
+                    continue
+                touch = touch_rejection(ctx, t, level, tol)
+                if touch is None or touch.direction is not against:
+                    continue
+                del pending[r]
+                out.append(
+                    self.make(
+                        ctx,
+                        t,
+                        against,
+                        touch.quality * EXTENSION_WEIGHT.get(r, 0.8),
+                        key_levels=[*leg.key_levels(), *extra, KeyLevel(f"ext_{r * 100:.1f}", level)],
+                        invalidation=level + sign * tol,
+                        targets=[leg.b.price],
+                        details={"ratio": r, "method": method, "degree": params.degree},
+                        variant=f"{method}.{r * 100:.1f}",
+                    )
+                )
         return out
 
 

@@ -22,7 +22,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 0 — Foundation & safety scaffolding | 9 | 9 | DONE |
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
-| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 6 | IN PROGRESS |
+| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 7 | IN PROGRESS |
 | M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
@@ -443,14 +443,14 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-2A10 — (rev. 3) Fibonacci extension levels & candle location
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A2, 2A4
 
-- [ ] `fib.extension_level`: 127.2/161.8/261.8/423.6 % as support/resistance, two-point (A + r·AB) and trend-based (C + r·AB), in force until the next same-direction extreme is confirmed
-- [ ] candle location sources: + `fib.extension_level`, `fib.cluster`, `structure.trendline` (bounce variants only)
-- [ ] `at_levels` detail naming the levels a candle pattern sat on
-- [ ] golden + near-miss tests (incl. shooting star at the 161.8 % extension)
-- [ ] `docs/PATTERNS.md`
+- [x] `fib.extension_level`: 127.2/161.8/261.8/423.6 % as support/resistance, two-point (A + r·AB) and trend-based (C + r·AB), in force until the next same-direction extreme is confirmed
+- [x] candle location sources: + `fib.extension_level`, `fib.cluster`, `structure.trendline` (bounce variants only)
+- [x] `at_levels` detail naming the levels a candle pattern sat on
+- [x] golden + near-miss tests (incl. shooting star at the 161.8 % extension)
+- [x] `docs/PATTERNS.md`
 
 ### Phase 3 — Strategy engine
 

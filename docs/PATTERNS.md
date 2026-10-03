@@ -76,6 +76,7 @@ Retracement `r` is at `B − r·(B − A)`; extension `e` is at `A + e·(B − A
 | `fib.retracement` | a bar probes and rejects one of the 23.6/38.2/50/61.8/78.6 % levels (each level once per impulse) | impulse direction | touch quality × level weight (61.8: 1.0, 50: 0.95, 38.2: 0.85, 78.6: 0.8, 23.6: 0.6) | A / B, 127.2 %, 161.8 % |
 | `fib.golden_zone` | a pullback reaches the 50–61.8 % zone without closing beyond 78.6 %, and the bar closes in the impulse direction with a rejecting wick ≥ `min_wick`, back at or above 61.8 % (once per impulse) | impulse direction | 0.5 × wick score + 0.5 × closeness of the probe to 61.8 % | 78.6 % / B, 127.2 % |
 | `fib.extension` | A → B, a retracement pivot C between 23.6 % and 78.6 %, then the first close beyond B | impulse direction | 1.0 if C retraced 38.2–61.8 %, else 0.7 | C / 127.2 %, 161.8 % |
+| `fib.extension_level` | (rev. 3) the 127.2/161.8/261.8/423.6 % extensions of a leg A → B act as resistance (beyond an up leg) or support (beyond a down leg). `external` (two-point): `A + r·(B − A)`, from the bar after B is confirmed. `projection` (trend-based): `C + r·(B − A)` from the pullback pivot C, which must not retrace beyond A, from the bar after C is confirmed. A leg's levels stay in force until the next same-direction extreme D is confirmed; a close beyond A ends them. Fires when a bar probes a level and rejects it against the leg, once per level; a close through a level by more than the tolerance spends it. Variants `external.161.8`, `projection.261.8`, … | against the leg (BEAR at the extensions of an up leg) | touch quality × level weight (161.8: 1.0, 261.8: 0.9, 127.2 and 423.6: 0.8) | level ± tolerance / B |
 | `fib.cluster` | retracements (38.2–78.6 %) and extensions of the last impulses of the minor, intermediate and major degrees coincide within `cluster_atr × ATR`, with at least `min_levels` levels from **at least two distinct impulses**, and the cluster is probed and rejected | touch direction | touch quality × min(1, 0.4 + 0.2 × levels) | beyond the cluster |
 
 ### Levels (`levels.py`, T1)
@@ -131,9 +132,17 @@ confirmed zigzag pivots (`params.degree`, default `minor`; cup and handle: `inte
 - **Prior trend.** A reversal pattern needs the close before its first bar to have moved at least `trend_atr`
   (1.0) × ATR over `trend_bars` (5) bars against the signal.
 - **Location weighting.** quality = geometry × (0.6 + 0.4 × `at_level`). `at_level` is 1 when one of the
-  location sources reported a rejection in the same direction on one of the pattern's bars: `fib.retracement`,
-  `levels.sr_zone`, `levels.round_number`, `levels.pivot_points`, `levels.prev_high_low`. These are declared in
-  `depends_on`, so they run even when not enabled for output. Neutral patterns are not weighted.
+  location sources reported a rejection in the same direction on one of the pattern's bars. Neutral patterns are
+  not weighted. The sources are declared in `depends_on`, so they run even when not enabled for output:
+  - `fib.retracement`, `fib.extension_level`, `fib.cluster`
+  - `levels.sr_zone`, `levels.round_number`, `levels.pivot_points`
+  - `levels.prev_high_low`, `reject` variants only
+  - `structure.trendline`, `bounce_*` variants only
+
+  Breaks and breakouts don't count, because they say price went through the level rather than turned at it.
+  Detail `at_levels` lists the i18n keys of the matching rejections (sorted, comma-joined, empty when none), so an
+  explanation can say "shooting star at the Fibonacci 161.8 % extension"
+  (`evidence.fib.extension_level.external.161.8`).
 - **Stamping.** A record is stamped at the pattern's last bar. `max_age_bars` = 2. Invalidation is beyond the
   pattern's extreme (its lowest low for bullish patterns).
 

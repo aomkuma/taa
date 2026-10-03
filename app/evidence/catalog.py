@@ -28,7 +28,13 @@ from app.evidence.chart_patterns import (
     TripleTopBottom,
     Wedge,
 )
-from app.evidence.fibonacci import FibCluster, FibExtension, FibGoldenZone, FibRetracement
+from app.evidence.fibonacci import (
+    FibCluster,
+    FibExtension,
+    FibExtensionLevel,
+    FibGoldenZone,
+    FibRetracement,
+)
 from app.evidence.framework import Detector
 from app.evidence.ichimoku import Chikou, KumoBreakout, TkCross
 from app.evidence.levels import PivotPoints, PrevHighLow, RoundNumber, SRBreakout, SRZone
@@ -61,6 +67,7 @@ ALL_DETECTORS: tuple[Detector, ...] = (
     FibGoldenZone(),
     FibExtension(),
     FibCluster(),
+    FibExtensionLevel(),  # TAA-2A10
     # Levels (TAA-2A2)
     RoundNumber(),
     PivotPoints(),

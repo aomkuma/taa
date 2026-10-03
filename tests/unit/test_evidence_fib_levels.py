@@ -7,10 +7,13 @@ from datetime import UTC, datetime
 
 import pandas as pd
 import pytest
+from pydantic import ValidationError
 
 from app.evidence.fibonacci import (
+    ExtensionLevelParams,
     FibCluster,
     FibExtension,
+    FibExtensionLevel,
     FibGoldenZone,
     FibRetracement,
     _clusters,
@@ -27,6 +30,7 @@ from app.evidence.levels import (
     round_step,
 )
 from tests.evidence_harness import context, scan_one
+from tests.evidence_paths import path
 
 Row = tuple[float, float, float, float]
 
@@ -120,6 +124,56 @@ class TestExtension:
         deep = (102.0, 102.3, 100.6, 101.0)  # pullback low 100.6: depth 0.90 > 0.786
         ctx = frame(BASE + [deep] + [(c - 1, c + 0.25, c - 1.25, c) for c in range(102, 112)])
         assert run(FibExtension(), ctx) == []
+
+
+class TestExtensionLevel:
+    """Paths start with A = 1000 -> B = 1010 -> C = 1005 (6 bars per leg, wicks 0.1). Pivots: A = 999.9 (bar 0),
+    B = 1010.1 (bar 25, confirmed at 28), C = 1004.9 (bar 31, confirmed at 33); the next vertex is bar 37.
+    External 161.8 % = A + 1.618·AB = 1016.4036; projection 261.8 % = C + 2.618·AB = 1031.6036."""
+
+    def test_golden_external_161(self) -> None:
+        # the rally tops at 1016.2 (high), just under 161.8 %, and closes below it; it closed through 127.2 %
+        # on the way up without a rejection, which spends that level quietly
+        ctx = path([1000, 1010, 1005, 1016.1, 1014])
+        (ev,) = run(FibExtensionLevel(), ctx)
+        assert ctx.pos_of(ev.detected_at) == 37
+        assert ev.i18n_key == "evidence.fib.extension_level.external.161.8"
+        assert ev.direction is Direction.BEAR and ev.detail("method") == "external"
+        assert ev.key_levels[-1].name == "ext_161.8"
+        assert ev.key_levels[-1].price == pytest.approx(1016.4036)
+        assert ev.invalidation is not None and ev.invalidation > 1016.4036
+        assert ev.targets == pytest.approx((1010.1,))
+
+    def test_golden_projection_261(self) -> None:
+        # every external level (up to 261.8 % = 1026.6) and the projected 127.2/161.8 % are closed through
+        ctx = path([1000, 1010, 1005, 1031.1, 1028])
+        (ev,) = run(FibExtensionLevel(), ctx)
+        assert ctx.pos_of(ev.detected_at) == 37
+        assert ev.i18n_key == "evidence.fib.extension_level.projection.261.8"
+        assert [k.name for k in ev.key_levels] == ["impulse_start", "impulse_end", "pullback", "ext_261.8"]
+        assert ev.key_levels[-1].price == pytest.approx(1031.6036)
+
+    def test_near_miss_closed_through_level_is_spent(self) -> None:
+        # the rally closes at 1017, through 161.8 %; the later rejection from below (bar 49) no longer counts
+        assert run(FibExtensionLevel(), path([1000, 1010, 1005, 1017, 1015.5, 1016.1, 1015])) == []
+
+    def test_once_per_level(self) -> None:
+        # bar 37 rejects 161.8 % (high 1016.4); the second rejection at bar 49 is the same level again
+        ctx = path([1000, 1010, 1005, 1016.3, 1015.5, 1016.1, 1015])
+        out = run(FibExtensionLevel(), ctx)
+        assert [ctx.pos_of(e.detected_at) for e in out if e.detail("ratio") == 1.618] == [37]
+
+    @pytest.mark.parametrize(("dip", "expected"), [(1012, [49]), (1008, [])])
+    def test_in_force_until_the_next_extreme_is_confirmed(self, dip: float, expected: list[int]) -> None:
+        # rally to 1014, dip, then probe 161.8 % at bar 49. A dip to 1008 confirms 1014.1 as the next high D
+        # (at bar 41), which retires the A -> B levels; a dip to 1012 does not.
+        ctx = path([1000, 1010, 1005, 1014, dip, 1016.1, 1014])
+        out = run(FibExtensionLevel(), ctx)
+        assert [ctx.pos_of(e.detected_at) for e in out if e.detail("ratio") == 1.618] == expected
+
+    def test_ratios_must_be_extensions(self) -> None:
+        with pytest.raises(ValidationError):
+            ExtensionLevelParams(ratios=(0.618,))
 
 
 def test_cluster_rule() -> None:
