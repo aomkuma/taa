@@ -24,7 +24,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
-| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
+| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 1 | IN PROGRESS |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
@@ -540,14 +540,14 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-401 — Position sizer
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 104
 
-- [ ] A9 steps
-- [ ] Decimal math
-- [ ] property tests (never above budget, step-aligned, never below min, inconsistent specs rejected)
-- [ ] (rev. 3) entry-plan sizing (PLAN §A31): `SAME_PRICE` / `SCALE_IN`, weights, `lot_unit` (taps), budget with every part filled, drop-deepest-part rule
-- [ ] (rev. 3) property tests for entry plans (never above budget with all parts filled, unit-aligned, never rounded up)
+- [x] A9 steps
+- [x] Decimal math
+- [x] property tests (never above budget, step-aligned, never below min, inconsistent specs rejected)
+- [x] (rev. 3) entry-plan sizing (PLAN §A31): `SAME_PRICE` / `SCALE_IN`, weights, `lot_unit` (taps), budget with every part filled, drop-deepest-part rule
+- [x] (rev. 3) property tests for entry plans (never above budget with all parts filled, unit-aligned, never rounded up)
 
 #### TAA-402 — Exposure manager
 
