@@ -23,7 +23,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
-| M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
+| M1 | Phase 3 — Strategy engine | 7 | 1 | IN PROGRESS |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
@@ -456,15 +456,15 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-301 — Signal & context models
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 006
 
-- [ ] Signal (spec §9 + ids, expiry, score)
-- [ ] MarketContext
-- [ ] StrategyContext
-- [ ] serialization tests
-- [ ] (rev. 2) `conditions` checklist (name, passed, weight, detail) + `setup_strength` 0–100 on every signal
-- [ ] (rev. 2) `evidence` list (supports/conflicts) on every signal
+- [x] Signal (spec §9 + ids, expiry, score)
+- [x] MarketContext
+- [x] StrategyContext
+- [x] serialization tests
+- [x] (rev. 2) `conditions` checklist (name, passed, weight, detail) + `setup_strength` 0–100 on every signal
+- [x] (rev. 2) `evidence` list (supports/conflicts) on every signal
 
 #### TAA-302 — Context builder & regime detector
 
