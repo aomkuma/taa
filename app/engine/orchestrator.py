@@ -1,0 +1,453 @@
+"""The engine runtime: one loop that monitors, decides and manages (PLAN §A2, §A19; TAA-601).
+
+**Modes:** Milestone 1 runs **PAPER only**: market data from the read-only MT5 gateway, fills on the simulated
+broker. BACKTEST runs through ``app.cli backtest``; DEMO and LIVE (broker orders) are Milestone 2 and refused
+here.
+
+**Schedule** (each step is skipped until it is due; one cycle every ``engine.monitor_interval_seconds``):
+
+- every cycle: kill switch, connection (reconnect with backoff), and per symbol a quote → breakers
+  (invalid price, spread, staleness) → paper fills → position management;
+- every ``candle_poll_seconds``: a newly closed entry bar per symbol (persisted watermark) → context →
+  strategies → arbitration → decision → paper order;
+- every ``health_interval_seconds``: loss tracking and loss breakers, time-based breaker resets, storage and
+  disk checks, persisted marks;
+- every ``clock_verify_minutes``: server-time verification (an idle market gives no verdict; a mismatch trips
+  CLOCK).
+
+A failure inside a cycle is logged with its traceback, trips UNHANDLED_EXCEPTION (which blocks entries) and is
+announced; the loop keeps monitoring and managing positions. :meth:`Engine.stop` ends the loop after the
+current cycle and shuts down cleanly.
+"""
+
+from __future__ import annotations
+
+import logging
+import shutil
+import time
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
+
+from app.broker.factory import BrokerBundle
+from app.broker.models import BrokerPosition
+from app.config import Settings
+from app.core.clock import Clock, ClockStatus, ClockVerification
+from app.core.enums import TradingMode
+from app.core.errors import SafetyViolation, SymbolUnavailable, TaaError
+from app.core.ids import new_id, stable_hash
+from app.engine.decision_engine import (
+    AccountState,
+    Decision,
+    DecisionEngine,
+    DecisionRequest,
+    DecisionStore,
+    SystemHealth,
+)
+from app.engine.paper import LiveRates, PaperExecution
+from app.engine.position_manager import PositionManager
+from app.evidence.catalog import default_registry as evidence_registry
+from app.evidence.registry import EvidenceEngine
+from app.market_data.candle_service import CandleService, CandleWatermarks
+from app.market_data.data_models import SymbolSpec
+from app.market_data.quote_service import QuoteService
+from app.market_data.server_time import verify_server_time_any
+from app.market_data.trading_sessions import TradingSessions
+from app.monitoring.alerts import EventBus, EventType
+from app.news.calendar import ManualBlackouts, NewsFilter
+from app.risk.breaker_monitor import BreakerMonitor
+from app.risk.circuit_breaker import BreakerBoard, default_specs
+from app.risk.kill_switch import KillSwitch
+from app.risk.loss_tracker import LossStatus, LossTracker
+from app.storage.audit import AuditLog
+from app.storage.database import Database
+from app.storage.repositories import RunRepository
+from app.strategy.arbitration import SignalArbiter
+from app.strategy.catalog import default_registry
+from app.strategy.context_builder import ContextBuilder
+from app.strategy.setups import EvidenceSetup
+
+log = logging.getLogger(__name__)
+
+
+@dataclass
+class _Due:
+    """A periodic task's next due time (monotonic seconds)."""
+
+    every: float
+    next_at: float = 0.0
+
+    def due(self, now: float) -> bool:
+        if now >= self.next_at:
+            self.next_at = now + self.every
+            return True
+        return False
+
+
+class Engine:
+    def __init__(
+        self,
+        settings: Settings,
+        bundle: BrokerBundle,
+        db: Database,
+        clock: Clock,
+        *,
+        bus: EventBus,
+        sleep: Callable[[float], None] = time.sleep,
+        process: str = "engine",
+    ) -> None:
+        if settings.mode is not TradingMode.PAPER:
+            raise SafetyViolation(
+                f"the engine runs PAPER only in Milestone 1 (TRADING_MODE={settings.mode.value}); "
+                "backtests run with `python -m app.cli backtest`"
+            )
+        self.settings = settings
+        self.config = settings.config
+        self.bundle = bundle
+        self.gateway = bundle.gateway
+        self.db = db
+        self.clock = clock
+        self.bus = bus
+        self.sleep = sleep
+        self.process = process
+        self.run_id = new_id()
+        self.running = False
+        self.cycles = 0
+        self.symbols: dict[str, SymbolSpec] = {}
+        self.last_error: str = ""
+        self._clock_ok = False
+        self._kill_active = False
+        self._connected = True
+        self._atr: dict[str, float] = {}
+        self._last_entry: dict[str, datetime] = {}
+        self._booked_deals = 0
+        loop = self.config.engine
+        self._candles_due = _Due(loop.candle_poll_seconds)
+        self._health_due = _Due(loop.health_interval_seconds)
+        self._clock_due = _Due(loop.clock_verify_minutes * 60)
+        self.audit = AuditLog(db, f"engine:{settings.env.ENGINE_ID or 'local'}", clock)
+        self.runs = RunRepository(db, clock)
+
+    # --- startup ----------------------------------------------------------------------------------------
+
+    def start(self) -> None:
+        cfg, env = self.config, self.settings.env
+        report = self.bundle.client.connect()
+        account = report.account
+        self.account_key = stable_hash(account.login, account.server, length=16)
+        self._verify_clock(initial=True)
+        for symbol in cfg.symbols.allowed:
+            try:
+                self.symbols[symbol] = self.gateway.symbol_spec(symbol)
+            except SymbolUnavailable as exc:
+                log.error("symbol %s is unavailable and will not be traded: %s", symbol, exc)
+        if not self.symbols:
+            raise SymbolUnavailable("none of symbols.allowed is available on this server")
+        self.board = BreakerBoard(
+            self.db,
+            default_specs(cfg.breakers, consecutive_pause_hours=cfg.risk.consecutive_loss_pause_hours),
+            self.clock,
+            mode=self.settings.mode,
+            tz_name=env.BROKER_TIMEZONE,
+            audit=self.audit,
+            notify=self.bus.breaker_notifier(),
+        )
+        self.monitor = BreakerMonitor(self.board, cfg.breakers, cfg.risk, self.clock)
+        self.kill_switch = KillSwitch(
+            self.settings.path(env.KILL_SWITCH_FILE), self.db, self.audit, self.clock
+        )
+        self.losses = LossTracker(self.db, self.account_key, env.BROKER_TIMEZONE, self.clock)
+        self.watermarks = CandleWatermarks(self.db, self.clock)
+        self.candles = CandleService(self.gateway, cfg.timeframes, self.clock)
+        self.quotes = QuoteService(self.gateway, self.clock, cfg.timeframes.stale_tick_seconds)
+        self.strategies = default_registry().from_config(
+            cfg.strategies, cfg.timeframes, cfg.evidence.confluence
+        )
+        self.magic = {s.name: env.MAGIC_NUMBER_BASE + i for i, s in enumerate(self.strategies.strategies)}
+        self.arbiter = SignalArbiter(cfg.strategies.cooldown_bars)
+        needs_evidence = any(isinstance(s, EvidenceSetup) for s in self.strategies.strategies)
+        evidence = None
+        if needs_evidence or cfg.evidence.default_enabled:
+            registry = evidence_registry()
+            evidence = EvidenceEngine(registry, registry.plan_from_config(cfg.evidence))
+        self.builder = ContextBuilder(self.candles, cfg, self.clock, self.quotes, evidence)
+        self.sessions = TradingSessions(cfg.sessions, cfg.symbols)
+        self.decisions = DecisionEngine(
+            cfg,
+            self.settings.mode,
+            self.gateway,  # broker-computed P/L and margin for sizing
+            self.clock,
+            sessions=self.sessions,
+            news=NewsFilter(ManualBlackouts(cfg.sessions.news_blackouts)),
+            magic_base=env.MAGIC_NUMBER_BASE,
+            config_hash=self.settings.config_hash,
+            breakers=self.board,
+            store=DecisionStore(self.db),
+        )
+        self.paper = PaperExecution(
+            self.db,
+            self.account_key,
+            self.symbols,
+            LiveRates(self.gateway, account.currency),
+            self.clock,
+            paper=cfg.paper,
+            backtest=cfg.backtest,
+            account_currency=account.currency,
+            leverage=float(account.leverage or cfg.backtest.leverage),
+            starting_equity=account.equity,
+            bus=self.bus,
+        )
+        restored = self.paper.restore()
+        self.positions = PositionManager(
+            self.paper,
+            cfg.position_management,
+            self.symbols,
+            self.clock,
+            strategies_by_magic={self.magic[s.name]: s for s in self.strategies.strategies},
+            bus=self.bus,
+        )
+        self.on_started(restored)
+        self.runs.start(self.run_id, self.process, self.settings.mode.value, self.settings.config_hash)
+        self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
+        self.audit.append(
+            "ENGINE_START",
+            self.process,
+            {"run_id": self.run_id, "mode": self.settings.mode.value, "symbols": sorted(self.symbols)},
+        )
+        self.bus.emit(
+            EventType.ENGINE_STARTED,
+            mode=self.settings.mode.value,
+            symbols=sorted(self.symbols),
+            strategies=self.strategies.names,
+            restored_positions=restored,
+        )
+        self.running = True
+
+    def on_started(self, restored_positions: int) -> None:
+        """Hook for startup reconciliation (TAA-604)."""
+
+    # --- loop -------------------------------------------------------------------------------------------
+
+    def run(self, max_cycles: int | None = None) -> None:
+        interval = self.config.engine.monitor_interval_seconds
+        try:
+            while self.running and (max_cycles is None or self.cycles < max_cycles):
+                self.cycle()
+                self.sleep(interval)
+        finally:
+            self.shutdown()
+
+    def stop(self) -> None:
+        self.running = False
+
+    def cycle(self) -> None:
+        self.cycles += 1
+        now = self.clock.monotonic()
+        try:
+            self._check_kill_switch()
+            connected = self.bundle.client.ensure_connected()
+            self._connection_changed(connected)
+            self.monitor.observe_connection(connected)
+            if connected:
+                for symbol in self.symbols:
+                    self._monitor_symbol(symbol)
+                if self._candles_due.due(now):
+                    for symbol in self.symbols:
+                        self._check_new_bar(symbol)
+            if self._health_due.due(now):
+                self._health()
+            if connected and self._clock_due.due(now):
+                self._verify_clock()
+        except Exception as exc:  # process boundary: keep monitoring, block entries, tell the operator
+            log.exception("engine cycle %s failed", self.cycles)
+            self.last_error = f"{type(exc).__name__}: {exc}"
+            self.monitor.record_exception("cycle", exc)
+            self.bus.emit(
+                EventType.ENGINE_ERROR, error=self.last_error, dedupe_key=f"error:{type(exc).__name__}"
+            )
+
+    # --- steps ------------------------------------------------------------------------------------------
+
+    def _check_kill_switch(self) -> None:
+        active = self.kill_switch.is_active()
+        if active != self._kill_active:
+            self._kill_active = active
+            self.bus.emit(EventType.KILL_SWITCH_ACTIVATED if active else EventType.KILL_SWITCH_RELEASED)
+
+    def _connection_changed(self, connected: bool) -> None:
+        if connected != self._connected:
+            self._connected = connected
+            self.bus.emit(
+                EventType.CONNECTION_RESTORED if connected else EventType.CONNECTION_LOST,
+                dedupe_key="connection",
+            )
+
+    def _monitor_symbol(self, symbol: str) -> None:
+        spec = self.symbols[symbol]
+        quote = self.quotes.quote(spec)
+        now = self.clock.now_utc()
+        atr = self._atr.get(symbol)
+        if not quote.valid and quote.problem == "no tick available":
+            return
+        self.monitor.observe_quote(
+            symbol,
+            bid=quote.bid,
+            ask=quote.ask,
+            spread_points=quote.spread_points,
+            spread_limit=self.config.spread_limit(symbol),
+            tick_age_seconds=quote.age_seconds,
+            in_session=self.sessions.check(symbol, now).is_open,
+            previous_mid=None,
+            atr=atr,
+            median_spread=self.quotes.median_spread(symbol),
+        )
+        if quote.valid:
+            self.paper.on_quote(symbol, quote.bid, quote.ask, now)
+            self.positions.on_quote(symbol, quote.bid, quote.ask, atr)
+
+    def _check_new_bar(self, symbol: str) -> None:
+        tf = self.config.timeframes.entry
+        frame = self.candles.closed_candles(symbol, tf, 2)
+        opened = frame.last_open_time
+        if opened is None or not self.watermarks.is_new(symbol, tf, opened):
+            return
+        try:
+            self._evaluate(symbol)
+        finally:
+            # a bar is evaluated at most once, even when the evaluation failed (fail closed: no retry storm)
+            self.watermarks.mark(symbol, tf, opened)
+
+    def _evaluate(self, symbol: str) -> None:
+        spec = self.symbols[symbol]
+        try:
+            ctx = self.builder.build(symbol, spec)
+        except TaaError as exc:
+            log.warning("no context for %s: %s", symbol, exc)
+            return
+        if ctx.market.atr is not None:
+            self._atr[symbol] = ctx.market.atr
+        self.positions.on_bar(symbol, ctx)
+        signals = self.strategies.evaluate(ctx)
+        selected = self.arbiter.arbitrate(signals).selected
+        self.on_arbitrated()
+        if selected is None:
+            return
+        record = self.decisions.decide(
+            DecisionRequest(
+                signal=selected,
+                market=ctx.market,
+                spec=spec,
+                quote=self.quotes.quote(spec),
+                account=AccountState(self.paper.broker.funds(), self._book(), self._loss_status()),
+                health=self.health_snapshot(),
+                specs=self.symbols,
+                last_entry_at=self._last_entry.get(symbol),
+            )
+        )
+        if record.decision is Decision.ACCEPT:
+            placed = self.paper.place(
+                record, self.magic.get(selected.strategy, self.settings.env.MAGIC_NUMBER_BASE)
+            )
+            if any(not p.duplicate for p in placed):
+                self._last_entry[symbol] = ctx.decision_time_utc
+                self.on_entry(symbol, ctx.decision_time_utc)
+                self.bus.emit(
+                    EventType.SIGNAL_ACCEPTED,
+                    symbol=symbol,
+                    strategy=selected.strategy,
+                    side=selected.action.value,
+                    volume=str(record.volume),
+                    decision_id=record.decision_id,
+                    paper=True,
+                )
+
+    def on_arbitrated(self) -> None:
+        """Hook: persist the arbiter's cooldowns (TAA-604)."""
+
+    def on_entry(self, symbol: str, at: datetime) -> None:
+        """Hook: persist the last entry time per symbol (TAA-604)."""
+
+    def _book(self) -> list[BrokerPosition]:
+        """Paper positions plus every real position on the account (manual trades count toward exposure)."""
+        try:
+            real = self.gateway.positions()
+        except TaaError:
+            log.warning("could not read account positions; exposure uses the paper book only")
+            real = []
+        return [*self.paper.broker.broker_positions(), *real]
+
+    def _loss_status(self) -> LossStatus:
+        new = self.paper.broker.deals[self._booked_deals :]
+        self._booked_deals = len(self.paper.broker.deals)
+        magics = set(self.magic.values())
+        return self.losses.observe(self.paper.broker.equity, new, is_bot=lambda d: d.magic in magics)
+
+    def _health(self) -> None:
+        status = self._loss_status()
+        self.monitor.observe_losses(status)
+        self.board.tick()
+        write_ok = self.db.healthcheck()
+        data_dir = self.settings.path("data")
+        free_gb = shutil.disk_usage(data_dir).free / 1e9 if data_dir.exists() else None
+        self.monitor.observe_storage(write_ok, free_gb)
+        self.paper.save_marks()
+
+    def _verify_clock(self, *, initial: bool = False) -> None:
+        cfg = self.config
+        symbol, result = verify_server_time_any(
+            self.gateway, cfg.symbols.clock_symbols, wait_seconds=10.0 if initial else 5.0, sleep=self.sleep
+        )
+        self._apply_clock(result, symbol)
+
+    def _apply_clock(self, result: ClockVerification, symbol: str | None) -> None:
+        if result.status is ClockStatus.UNVERIFIED_MARKET_IDLE:
+            log.info("server time not verifiable now (idle markets); keeping the previous state")
+            return  # no verdict: the previous verification stands, and without one entries stay blocked
+        self._clock_ok = result.ok
+        if hasattr(self, "monitor"):
+            self.monitor.observe_clock(result.ok, result.detail)
+        if not result.ok:
+            self.bus.emit(EventType.CLOCK_UNVERIFIED, detail=result.detail, symbol=symbol, dedupe_key="clock")
+
+    def health_snapshot(self) -> SystemHealth:
+        return SystemHealth(
+            kill_switch_active=self._kill_active,
+            broker_healthy=self._connected,
+            storage_healthy=True,
+            clock_verified=self._clock_ok,
+        )
+
+    def status(self) -> dict[str, Any]:
+        """For the health endpoint and the heartbeat (TAA-605)."""
+        funds = self.paper.broker.funds() if hasattr(self, "paper") else None
+        return {
+            "run_id": self.run_id,
+            "mode": self.settings.mode.value,
+            "running": self.running,
+            "cycles": self.cycles,
+            "connected": self._connected,
+            "clock_verified": self._clock_ok,
+            "kill_switch": self._kill_active,
+            "symbols": sorted(self.symbols),
+            "open_positions": 0 if not hasattr(self, "paper") else len(self.paper.broker.positions),
+            "equity": None if funds is None else round(funds.equity, 2),
+            "breakers": [
+                {"name": s.name.value, "scope": s.scope_key, "state": s.state.value}
+                for s in (self.board.blocking() if hasattr(self, "board") else [])
+            ],
+            "last_error": self.last_error,
+        }
+
+    # --- shutdown ---------------------------------------------------------------------------------------
+
+    def shutdown(self) -> None:
+        self.running = False
+        try:
+            if hasattr(self, "paper"):
+                self.paper.save_marks()
+            self.runs.finish(self.run_id, "STOPPED", self.last_error)
+            self.audit.append("ENGINE_STOP", self.process, {"run_id": self.run_id, "cycles": self.cycles})
+            self.bus.emit(EventType.ENGINE_STOPPED, cycles=self.cycles)
+        finally:
+            self.bundle.client.shutdown()
