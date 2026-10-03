@@ -88,6 +88,40 @@ Retracement `r` is at `B − r·(B − A)`; extension `e` is at `A + e·(B − A
 | `levels.sr_zone` | a zone of ≥ `min_touches` (3) clustered swings (`sr_zones`, rebuilt after each new swing) is approached from one side, probed, and rejected with a wick ≥ `min_wick`, closing back outside | support BULL / resistance BEAR | min(1, 0.4 + 0.15 × touches) | beyond the zone |
 | `levels.sr_breakout` | a close through a zone that held at least one swing on that side, after `min_bars_before` closes on the near side (a base, not a whipsaw), judged after `confirm_bars` bars. `confirmed` holds outside; `false` closes back inside. **Stamped when decided**, never at the breakout bar | confirmed: breakout direction; false: opposite | min(1, 0.4 + 0.15 × touches) | confirmed: the broken edge; false: the breakout bar's extreme |
 
+### Chart patterns (`chart_patterns.py`, T2)
+
+These detectors use explicit extrema rules with tolerances (PLAN R29). They are built from runs of consecutive
+confirmed zigzag pivots (`params.degree`, default `minor`; cup and handle: `intermediate`).
+
+- **Completion and breakout.** A pattern is complete when its last pivot is confirmed. It becomes evidence on the
+  first close beyond its neckline or boundary, plus `breakout_atr × ATR`, within `max_wait_bars` (20) of
+  completion. A close beyond the invalidation level first kills it. The record is stamped at the breakout bar.
+- **Tolerances.**
+  - Equality (tops, shoulders, flatness): `equal_tol_atr × ATR + equal_tol_frac × height`, defaults 0.5 and 0.1,
+    with ATR taken at completion and height = the pattern's actual price range.
+  - Boundary lines (triangles, wedges, rectangles): every pivot within `fit_tol_atr × ATR` (0.5) of its least-squares
+    line.
+  - Minimum height: `min_height_atr` (2) × ATR.
+- **Context.** Reversal patterns need the move into the first extreme to start beyond the neckline: a top forms
+  after a rise from below it. A pattern starting at the frame's first pivot has no context and fails closed.
+- **Quality** = 0.4 · fit + 0.3 · symmetry + 0.3 · volume.
+  - fit: the share of the tolerance left unused.
+  - symmetry: even spacing of the pivots in time; for triangles, agreement of the breakout with the triangle's bias.
+  - volume: the breakout bar's tick volume against the 20 bars before it. Ratio 2 scores 1.0, ratio 1 scores 0.33,
+    and missing volume is neutral (0.5).
+- **One record per (variant, breakout bar, direction):** overlapping pivot windows find the same breakout.
+
+| Detector | Pattern rule | Breakout | Direction | Invalidation / target |
+|---|---|---|---|---|
+| `chart.double` | `top` (M): H, L, H with equal tops (within tolerance), ≥ 5 bars apart; `bottom` (W) mirrors it | close beyond the reaction pivot (neckline) | top BEAR, bottom BULL | the tops (bottoms) / neckline ∓ height |
+| `chart.triple` | three equal extremes H, L, H, L, H (mirror for bottoms); neckline = the deeper reaction | close beyond the neckline | top BEAR, bottom BULL | the extremes / neckline ∓ height |
+| `chart.head_shoulders` | `top`: shoulders H₀ ≈ H₄, head H₂ beyond both by more than the tolerance (otherwise a triple top), reactions L₁ ≈ L₃; neckline through L₁ and L₃. `inverse` mirrors it | close beyond the neckline at that bar | top BEAR, inverse BULL | right shoulder / neckline ∓ (head − neckline) |
+| `chart.triangle` | 5–6 alternating pivots; highs and lows on lines; converging (end width ≤ 80 % of start). `ascending`: flat top, rising lows; `descending`: flat bottom, falling highs; `symmetrical`: falling highs, rising lows | close beyond either line before the apex | breakout direction (a break against the ascending/descending bias scores lower) | opposite line / edge ± height |
+| `chart.wedge` | both lines slope the same way and converge. `rising_wedge` only counts on a break down, `falling_wedge` only on a break up | close beyond the line | rising BEAR, falling BULL | opposite line / edge ± height |
+| `chart.rectangle` | flat top and flat bottom | close beyond either side | breakout direction | opposite side / edge ± height |
+| `chart.flag` | pole: from the latest pivot (or the one before) to the running extreme since, ≥ `pole_atr` (4) × ATR within `max_pole_bars` (15). Consolidation: the following 3–20 bars, retracing ≤ 38.2 % of the pole. `pennant` when the consolidation's high and low regression lines converge, else `flag` | close beyond the consolidation's high (bull) / low (bear) regression line | pole direction | consolidation extreme / breakout edge ± pole |
+| `chart.cup_handle` | left rim: HIGH pivot before a recent LOW pivot (the bottom); right rim: running high since the bottom, within 15 % of the depth of the left rim; cup ≥ 15 bars and depth ≥ 3 ATR; **rounded**: ≥ 15 % of the cup's closes within 10 % of the depth from the low (a cosine U ≈ 20 %, a V ≈ 10 %); handle: 1–20 bars, ≤ 50 % of the depth, above the bottom | close above the higher rim | BULL | handle low / rim + depth |
+
 Formulas used by `levels.pivot_points`, from the previous period's high H, low L and close C:
 
 - **Classic**: `P = (H + L + C)/3`; `R1 = 2P − L`; `S1 = 2P − H`; `R2/S2 = P ± (H − L)`; `R3 = H + 2(P − L)`;

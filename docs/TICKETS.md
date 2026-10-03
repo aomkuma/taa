@@ -20,7 +20,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 0 — Foundation & safety scaffolding | 9 | 9 | DONE |
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
-| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 2 | IN PROGRESS |
+| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 3 | IN PROGRESS |
 | M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
@@ -335,21 +335,21 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-2A3 — Chart patterns
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A1
 
-- [ ] extrema-rule detectors (R29) with tolerances: M/W double top/bottom
-- [ ] triple top/bottom
-- [ ] H&S (+inverse)
-- [ ] triangles
-- [ ] wedges
-- [ ] rectangles
-- [ ] flags/pennants
-- [ ] cup & handle
-- [ ] breakout confirmation
-- [ ] measured moves
-- [ ] quality (symmetry, fit error, tick-volume confirmation)
-- [ ] golden + near-miss tests
+- [x] extrema-rule detectors (R29) with tolerances: M/W double top/bottom
+- [x] triple top/bottom
+- [x] H&S (+inverse)
+- [x] triangles
+- [x] wedges
+- [x] rectangles
+- [x] flags/pennants
+- [x] cup & handle
+- [x] breakout confirmation
+- [x] measured moves
+- [x] quality (symmetry, fit error, tick-volume confirmation)
+- [x] golden + near-miss tests
 
 #### TAA-2A4 — Candlestick patterns
 

@@ -6,6 +6,16 @@ runs the look-ahead harness against every entry.
 
 from __future__ import annotations
 
+from app.evidence.chart_patterns import (
+    CupHandle,
+    DoubleTopBottom,
+    FlagPennant,
+    HeadShoulders,
+    Rectangle,
+    Triangle,
+    TripleTopBottom,
+    Wedge,
+)
 from app.evidence.fibonacci import FibCluster, FibExtension, FibGoldenZone, FibRetracement
 from app.evidence.framework import Detector
 from app.evidence.levels import PivotPoints, PrevHighLow, RoundNumber, SRBreakout, SRZone
@@ -23,6 +33,15 @@ ALL_DETECTORS: tuple[Detector, ...] = (
     PrevHighLow(),
     SRZone(),
     SRBreakout(),
+    # Chart patterns (TAA-2A3)
+    DoubleTopBottom(),
+    TripleTopBottom(),
+    HeadShoulders(),
+    Triangle(),
+    Wedge(),
+    Rectangle(),
+    FlagPennant(),
+    CupHandle(),
 )
 
 
