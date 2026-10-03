@@ -15,6 +15,9 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 **Execution order (Milestone 1):** 0 → 1 → 2 → 2A → 3 → 4 → 5 → 6 → 6A → 6B → 6C → 7 → 8 → 8A → 9 → 10 → 11
 
+**Change (2026-10-03, user decision):** after Phase 6, Phase 12 (DEMO execution, demo account only) is done
+first, then the order continues with 6A → 6B → … → 11. LIVE stays disabled until Phase 14 and a user go-ahead.
+
 ## Progress
 
 | Milestone | Phase | Tickets | Done | Status |

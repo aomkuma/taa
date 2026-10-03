@@ -33,6 +33,9 @@
      §A29.
   7. (follow-up) Users can **switch theories and conditions on or off**, and the system computes **only the selected
      ones**. This needs settings pages, and the structure must be ready for a future **subscription package** → §A30.
+- **Scope change (2026-10-03, after Phase 6):** the user chose to build Phase 12 (DEMO execution) before Phases
+  6A–11. Broker orders are allowed on the **DEMO account only** (trade mode DEMO, `ENABLE_DEMO_TRADING=true`, the
+  DEMO gate of §A3 passed). LIVE stays disabled until Phase 14 and an explicit go-ahead.
 - **Workspace (rev. 1):** `C:\Users\korap\taa` was empty (greenfield).
 - **Machine:** Windows 11 Home, Python 3.11.9, Node 24.18 / npm 11.16, Git 2.43 (Docker installed but not used locally).
   FBS MetaTrader 5 terminal at `C:\Program Files\FBS MetaTrader 5\terminal64.exe` (file version 5.0.0.6230). Terminal data
