@@ -7,6 +7,7 @@ These turn conventions that used to be honor-system into build failures:
 3. Cloud processes (``app.web``, ``app.worker``) never import live-broker modules.
 4. Broker order functions (``order_send``/``order_check``) are referenced only inside ``app/broker/``.
 5. Domain code never reads the wall clock directly; time comes from an injected ``Clock``.
+6. Analysis and strategy code is pure: no broker services, storage, secrets, settings loaders or environment.
 
 Changing ``LAYERS`` or an allow-list is a design decision: update docs/CODING_STANDARDS.md in the same change.
 """
@@ -84,6 +85,12 @@ WALL_CLOCK_ALLOWED = {"app.core.clock", "app.storage.models.base"}
 WALL_CLOCK_CALLS = {("datetime", "now"), ("datetime", "utcnow"), ("date", "today"), ("time", "time")}
 
 ORDER_FUNCTIONS = ("order_send", "order_check")
+
+# Pure analysis/strategy packages: they see market data as values, never a broker session, a database or a
+# credential (layer-0 data models such as app.market_data.data_models stay allowed).
+PURE_PACKAGES = ("app.indicators", "app.evidence", "app.strategy")
+PURE_FORBIDDEN_MODULES = ("app.broker", "app.storage", "app.security", "app.market_data")
+PURE_FORBIDDEN_NAMES = {"EnvSettings", "Settings", "load_settings", "environ", "getenv", "keyring"}
 
 
 @dataclass(frozen=True)
@@ -228,6 +235,34 @@ def test_no_direct_wall_clock_in_domain_code() -> None:
     assert not violations, "inject a Clock instead of reading the wall clock:\n" + "\n".join(violations)
 
 
+def _pure_violations(module: Module) -> list[str]:
+    found = [
+        f"{_where(module, line)}: imports {target}"
+        for target, line in _imports(module)
+        if target.startswith(PURE_FORBIDDEN_MODULES) and _layer(target) != 0
+    ]
+    for node in ast.walk(module.tree):
+        if isinstance(node, ast.ImportFrom):
+            names = [a.name for a in node.names]
+        elif isinstance(node, ast.Attribute):
+            names = [node.attr]
+        elif isinstance(node, ast.Name):
+            names = [node.id]
+        else:
+            continue
+        found.extend(
+            f"{_where(module, getattr(node, 'lineno', 0))}: uses {n}"
+            for n in names
+            if n in PURE_FORBIDDEN_NAMES
+        )
+    return found
+
+
+def test_strategies_and_analysis_are_isolated() -> None:
+    violations = [v for m in MODULES if m.name.startswith(PURE_PACKAGES) for v in _pure_violations(m)]
+    assert not violations, "strategy/analysis code must stay pure:\n" + "\n".join(violations)
+
+
 # --------------------------------------------------------------------- self-tests of the checker
 @pytest.mark.parametrize(
     ("name", "layer"),
@@ -264,3 +299,21 @@ def test_checker_detects_violations() -> None:
     calls = [n for n in ast.walk(bad.tree) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)]
     assert any((getattr(c.func.value, "id", None), c.func.attr) in WALL_CLOCK_CALLS for c in calls)  # type: ignore[attr-defined]
     assert any(isinstance(n, ast.Constant) and n.value == "order_send" for n in ast.walk(bad.tree))
+
+
+def test_isolation_checker_detects_violations() -> None:
+    bad = Module(
+        "app.strategy.fake",
+        APP / "strategy" / "fake.py",
+        ast.parse(
+            "from app.broker.gateway import MarketDataGateway\n"
+            "from app.market_data.candle_service import CandleService\n"
+            "from app.market_data.data_models import SymbolSpec\n"
+            "from app.config import load_settings\n"
+            "import os\n"
+            "key = os.environ['MT5_PASSWORD']\n"
+        ),
+    )
+    found = _pure_violations(bad)
+    assert len(found) == 4, found
+    assert not any("data_models" in v for v in found)

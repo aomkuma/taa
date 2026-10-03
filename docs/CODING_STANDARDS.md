@@ -46,6 +46,7 @@ These rules fail the build when broken; they are not honor-system:
 | Cloud isolation | `app.web` / `app.worker` never import `mt5_client`, `factory`, `fake_mt5` or `gateway`. |
 | Order functions | `order_send` / `order_check` appear only inside `app/broker/`. |
 | Wall clock | `datetime.now/utcnow`, `date.today` and `time.time` are allowed only in `app/core/clock.py` and ORM column defaults. Monotonic timers such as `time.perf_counter` are fine. |
+| Pure analysis | `app.indicators`, `app.evidence` and `app.strategy` never import broker services, storage, security or market-data services (layer-0 data models are fine), and never touch `EnvSettings`/`load_settings`/the environment/keyring. Strategies receive a `StrategyContext` of values only. |
 
 A new package must be added to `LAYERS` (`test_every_app_module_has_a_layer` fails otherwise). Changing a layer or
 an allow-list is a design decision: change the test and this section together, and say why in the change.
