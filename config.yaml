@@ -170,6 +170,29 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
     max_refresh_seconds: 2.0        # ... and at most this long, so the engine loop is never held up
     now_seconds: 60                 # Now score cadence from cached metrics
     retention_days: 90              # suitability_snapshots history
+  preferences:                      # one user's advisory preferences when no cloud is configured (PLAN A26/A30/A31)
+    watchlists:
+      - {name: Favourites, kind: FAVOURITES, symbols: [EURUSD, XAUUSD]}
+      - {name: Top 30, kind: AUTO_TOP_N, top_n: 30}
+    alerts:
+      metric: WIN_PROBABILITY       # or SETUP_STRENGTH; default x: 55% / 75%
+      signal_lifetime_bars: 2
+      respect_market_sessions: true
+      timezone: Asia/Bangkok
+      windows: []                   # e.g. [{days: [0, 1, 2, 3, 4], start: "14:00", end: "23:30"}]; empty: any time
+      rate_limits: {max_alerts_per_hour: 6, symbol_cooldown_minutes: 30}
+      expiry_updates: true
+      language: th
+    theories:
+      preset: ALL                   # ALL CLASSIC_TA PRICE_ACTION FIB_HARMONICS TREND_FOLLOWING
+      min_supporting_families: 2
+      conflict_policy: PENALIZE     # IGNORE PENALIZE BLOCK
+    trading_profile:
+      style: 50                     # 0 very defensive .. 100 very offensive; overrides: {...} pins single fields
+      holding_style: DAY            # SCALP DAY SWING
+    entry_plan:
+      mode: SINGLE                  # SINGLE SAME_PRICE SCALE_IN
+      parts: 1
 
 engine:
   monitor_interval_seconds: 1.0

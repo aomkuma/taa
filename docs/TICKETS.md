@@ -31,7 +31,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
-| M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 0 | TODO |
+| M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 1 | IN PROGRESS |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 0 | TODO |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
@@ -805,24 +805,24 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6B1 — Advisory preferences (shared models)
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 003
 
-- [ ] watchlists (FAVOURITES, CUSTOM, AUTO_TOP_N)
-- [ ] alert metric WIN_PROBABILITY or SETUP_STRENGTH
-- [ ] global x + per-list override
-- [ ] signal lifetime bars
-- [ ] market-session rule
-- [ ] user time windows (user timezone)
-- [ ] rate limits and per-symbol cooldown
-- [ ] expiry-update push
-- [ ] language
-- [ ] (rev. 2) `TheoryPreferences`: family/detector toggles, bounded parameter overrides, pattern-strategy toggles, minimum supporting theories, conflict policy, presets
-- [ ] (rev. 3) `TradingProfile` (PLAN §A31): style slider 0–100 with five anchor presets and interpolation, per-field overrides, hard ceilings, break-even/EV floor on thresholds
-- [ ] (rev. 3) `EntryPlan` preferences: `lot_unit`, mode (`SINGLE`/`SAME_PRICE`/`SCALE_IN`), parts, weights, spacing, partial-TP R levels
-- [ ] validation shared by cloud and engine
-- [ ] `config.yaml` fallback for local runs
-- [ ] tests
+- [x] watchlists (FAVOURITES, CUSTOM, AUTO_TOP_N)
+- [x] alert metric WIN_PROBABILITY or SETUP_STRENGTH
+- [x] global x + per-list override
+- [x] signal lifetime bars
+- [x] market-session rule
+- [x] user time windows (user timezone)
+- [x] rate limits and per-symbol cooldown
+- [x] expiry-update push
+- [x] language
+- [x] (rev. 2) `TheoryPreferences`: family/detector toggles, bounded parameter overrides, pattern-strategy toggles, minimum supporting theories, conflict policy, presets
+- [x] (rev. 3) `TradingProfile` (PLAN §A31): style slider 0–100 with five anchor presets and interpolation, per-field overrides, hard ceilings, break-even/EV floor on thresholds
+- [x] (rev. 3) `EntryPlan` preferences: `lot_unit`, mode (`SINGLE`/`SAME_PRICE`/`SCALE_IN`), parts, weights, spacing, partial-TP R levels
+- [x] validation shared by cloud and engine
+- [x] `config.yaml` fallback for local runs
+- [x] tests
 
 #### TAA-6B2 — Setup strength & explainable win probability
 
