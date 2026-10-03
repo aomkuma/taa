@@ -26,7 +26,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 7 | DONE |
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
-| M1 | Phase 6 — PAPER runtime | 6 | 2 | IN PROGRESS |
+| M1 | Phase 6 — PAPER runtime | 6 | 3 | IN PROGRESS |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 0 | TODO |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 0 | TODO |
@@ -697,16 +697,16 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-603 — Position manager
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 602
 
-- [ ] break-even
-- [ ] ATR trailing
-- [ ] time stop
-- [ ] close signals
-- [ ] SL invariants
-- [ ] MAE/MFE tracking
-- [ ] tests
+- [x] break-even
+- [x] ATR trailing
+- [x] time stop
+- [x] close signals
+- [x] SL invariants
+- [x] MAE/MFE tracking
+- [x] tests
 
 #### TAA-604 — Restart safety
 
