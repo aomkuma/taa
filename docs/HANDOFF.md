@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-03, at the end of Phase 6 (all of TAA-601..606 done). This file holds **state
+Last updated: 2026-10-03, after Phase 12 (DEMO execution, pulled forward; TAA-1201..1206 done). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -14,8 +14,9 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
 relevant sections of docs/PLAN.md (§A29 evidence engine, §A31 trading profile). Follow CLAUDE.md and
 docs/CODING_STANDARDS.md.
-Phases 0, 1, 2, 2A, 3, 4, 5 and 6 are DONE. Next: Phase 6A (symbol universe & suitability ranking,
-TAA-6A1..), then continue in the execution order 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+Phases 0, 1, 2, 2A, 3, 4, 5, 6 and 12 (DEMO execution, pulled forward on the user's request) are DONE.
+Next: Phase 6A (symbol universe & suitability ranking, TAA-6A1..), then 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10
+-> 11. LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
 ```
@@ -26,8 +27,8 @@ any phase boundary if I ask.
 
 - **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206), Phase 2A
   (TAA-2A1..2A10), Phase 3 (TAA-301..307), Phase 4 (TAA-401..407), Phase 5 (TAA-501..506) and Phase 6
-  (TAA-601..606).
-- **Checks:** 1646 tests pass, 8 skipped (the suite takes ~2 min; backtest and engine tests are the slow part) (real-terminal, Postgres, one contract case defined from bar 0). ruff,
+  (TAA-601..606) and Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders).
+- **Checks:** 1707 tests pass, 8 skipped (the suite takes ~2.5 min; backtest and engine tests are the slow part) (real-terminal, Postgres, one contract case defined from bar 0). ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
@@ -143,6 +144,21 @@ any phase boundary if I ask.
       (`logs/events.jsonl`); `health_check.py`: loopback `/health` and the heartbeat file
       (`data/heartbeat.json`); `scripts/watchdog.ps1` (restarts a stale engine, not a deliberate stop) and
       `scripts/setup_windows_host.ps1` (Task Scheduler, run it yourself; `-WhatIf` first)
+  - DEMO execution (Phase 12, DEMO account only; `docs/RUNBOOK_DEMO.md`):
+    - `app/broker/execution.py`: `RequestBuilder` (deal / SLTP / close, filling resolver, deviation, GTC,
+      magic, ≤ 25-char ASCII comment, no request without SL) and `ExecutionGateway` (refuses non-DEMO modes
+      and non-DEMO accounts; `order_send` → `None` is reported as UNKNOWN); `build_trading()` in the factory
+      (DEMO + `ENABLE_DEMO_TRADING` only)
+    - FakeMT5 trade server (`app/broker/fake_trading.py`): validation like the real server, execution,
+      SL/TP, closes, stop processing, `desk.force(retcode | None, executes=...)`, `price_override`
+    - `app/engine/order_manager.py`: intent state machine (`order_intents`, migration 0008) with
+      write-ahead, `order_check`, pre-send re-check, the §A12 retcode matrix (UNKNOWN → DUPLICATE_EXECUTION;
+      halting codes → kill switch; SYMBOL_RESTRICTED breaker added) and the post-fill guard (slippage,
+      realized risk reduce/close, SL re-attach or emergency close)
+    - `app/engine/reconciler.py`: UNKNOWN / interrupted intents, protection sweep, strays
+    - `app/engine/broker_positions.py`: A11 rules via SLTP within stops/freeze levels, closes, flatten
+    - `app/engine/backends.py`: `PaperBackend` / `DemoBackend`; the engine checks the DEMO gate before every
+      decision and send; `python -m app.main --mode demo`; CLI `breaker list|reset`, `demo-report`
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -190,6 +206,11 @@ any phase boundary if I ask.
   - `BaseStrategy.should_close(ctx, side)` hook; the example strategy closes when the H1 bias flips.
   - The golden backtest (`tests/backtest/test_runner_cli.py::GOLDEN`) is a regression anchor on synthetic
     data; update it only for an intended behaviour change and say why in the commit.
+- Notes from Phase 12:
+  - DEMO has only run on the FakeMT5 trade server. The first real demo session is the user's call: follow
+    `docs/RUNBOOK_DEMO.md` (backtest on real history first, Algo Trading on, master password, `doctor`).
+  - Limit (scale-in) parts of an entry plan are not sent to the broker yet; only market parts are.
+  - `.env` currently has `TRADING_MODE=PAPER`; DEMO needs `TRADING_MODE=DEMO` and `ENABLE_DEMO_TRADING=true`.
 - Notes from Phase 6:
   - The evidence scan costs ~1.6 s per symbol per new entry bar (61 detectors, two timeframes). Fine for
     a few symbols every 15 min; the universe scanner (6B) needs a budget or a narrower plan.
