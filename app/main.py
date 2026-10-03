@@ -11,9 +11,10 @@ import signal
 import sys
 from types import FrameType
 
-from app.broker.factory import build_read_only
+from app.broker.factory import build_read_only, build_trading
 from app.config import load_settings
 from app.core.clock import SystemClock
+from app.core.enums import TradingMode
 from app.core.errors import TaaError
 from app.engine.orchestrator import Engine
 from app.logging_config import configure_logging
@@ -24,9 +25,9 @@ from app.storage.database import Database, resolve_db_url, upgrade_schema
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="python -m app.main", description="TAA engine (PAPER in Milestone 1)"
+        prog="python -m app.main", description="TAA engine (PAPER, or DEMO broker orders)"
     )
-    parser.add_argument("--mode", required=True, help="must equal TRADING_MODE (paper)")
+    parser.add_argument("--mode", required=True, help="must equal TRADING_MODE (paper | demo)")
     parser.add_argument("--env-file", default=".env")
     parser.add_argument("--config", default=None)
     parser.add_argument("--fake", action="store_true", help="use the in-memory FakeMT5 (development)")
@@ -49,7 +50,9 @@ def main(argv: list[str] | None = None) -> int:
         db = Database(url)
         clock = SystemClock()
         bus = EventBus(clock, [LocalLogSink(settings.path(env.LOG_DIR) / "events.jsonl")])
-        engine = Engine(settings, build_read_only(settings, fake=args.fake, clock=clock), db, clock, bus=bus)
+        # DEMO gets a trading client (refused unless ENABLE_DEMO_TRADING); PAPER stays read-only
+        build = build_trading if settings.mode is TradingMode.DEMO else build_read_only
+        engine = Engine(settings, build(settings, fake=args.fake, clock=clock), db, clock, bus=bus)
 
         def _stop(signum: int, frame: FrameType | None) -> None:
             engine.stop()

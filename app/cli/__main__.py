@@ -7,9 +7,13 @@ import getpass
 import json
 import sys
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from app.config import REPO_ROOT, Settings, load_settings
 from app.core.errors import ConfigError, TaaError
+
+if TYPE_CHECKING:
+    from app.risk.circuit_breaker import BreakerBoard
 
 
 def _settings(args: argparse.Namespace) -> Settings:
@@ -171,6 +175,60 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     return 0
 
 
+def _board(settings: Settings) -> BreakerBoard:
+    from app.core.clock import SystemClock
+    from app.risk.circuit_breaker import default_specs
+
+    db, audit = _db_and_audit(settings)
+    cfg = settings.config
+    specs = default_specs(
+        cfg.breakers,
+        consecutive_pause_hours=cfg.risk.consecutive_loss_pause_hours,
+        symbol_pause_minutes=cfg.execution.symbol_pause_minutes,
+    )
+    from app.risk.circuit_breaker import BreakerBoard
+
+    return BreakerBoard(
+        db, specs, SystemClock(), mode=settings.mode, tz_name=settings.env.BROKER_TIMEZONE, audit=audit
+    )
+
+
+def cmd_breaker(args: argparse.Namespace) -> int:
+    from app.risk.circuit_breaker import BreakerName
+
+    board = _board(_settings(args))
+    if args.action == "list":
+        for s in board.statuses():
+            latched = " (latched)" if s.latched else ""
+            print(f"{s.name.value:22} {s.scope_key or '-':10} {s.state.value}{latched}  {s.reason}")
+        return 0
+    if not args.reason:
+        print("--reason is required", file=sys.stderr)
+        return 1
+    actor = args.actor or getpass.getuser()
+    board.reset(
+        BreakerName(args.name.upper()),
+        actor=f"cli:{actor}",
+        reason=args.reason,
+        scope_key=args.symbol or "",
+        acknowledge=args.ack,
+    )
+    print(f"breaker {args.name.upper()} reset by {actor}")
+    return 0
+
+
+def cmd_demo_report(args: argparse.Namespace) -> int:
+    from app.core.clock import SystemClock
+    from app.engine.demo_report import build_report
+    from app.storage.database import Database, resolve_db_url
+
+    settings = _settings(args)
+    db = Database(resolve_db_url(settings.env.ENGINE_DB_URL))
+    report = build_report(db, SystemClock().now_utc(), args.days)
+    print(json.dumps(report.to_dict(), indent=2))
+    return 0 if all(report.checks.values()) else 3
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="TAA operator commands")
     parser.add_argument("--env-file", default=".env")
@@ -221,6 +279,21 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("--out", default=None, help="output folder (default: data/backtests/<hashes>)")
     bt.add_argument("--progress", action="store_true")
     bt.set_defaults(func=cmd_backtest)
+
+    br = sub.add_parser("breaker", help="list or reset circuit breakers (local only, audited)")
+    br_sub = br.add_subparsers(dest="action", required=True)
+    br_sub.add_parser("list", help="every breaker with its state").set_defaults(func=cmd_breaker)
+    reset = br_sub.add_parser("reset", help="manual reset with an actor and a reason")
+    reset.add_argument("name", help="e.g. DUPLICATE_EXECUTION")
+    reset.add_argument("--reason", default=None)
+    reset.add_argument("--actor", default=None)
+    reset.add_argument("--symbol", default=None, help="for symbol-scoped breakers")
+    reset.add_argument("--ack", action="store_true", help="required for MAX_DRAWDOWN")
+    reset.set_defaults(func=cmd_breaker)
+
+    rep = sub.add_parser("demo-report", help="DEMO soak report from the engine database")
+    rep.add_argument("--days", type=float, default=14.0)
+    rep.set_defaults(func=cmd_demo_report)
     return parser
 
 

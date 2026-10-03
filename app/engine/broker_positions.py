@@ -66,7 +66,7 @@ class BrokerPositionManager:
 
     # --- lookups ----------------------------------------------------------------------------------------
 
-    def _bot_positions(self, symbol: str | None = None) -> list[BrokerPosition]:
+    def bot_positions(self, symbol: str | None = None) -> list[BrokerPosition]:
         try:
             positions = self.orders.market.positions(symbol) if symbol else self.orders.market.positions()
         except TaaError:
@@ -94,7 +94,7 @@ class BrokerPositionManager:
         if spec is None:
             return
         initial = self._initial_stops()
-        for pos in self._bot_positions(symbol):
+        for pos in self.bot_positions(symbol):
             first_sl = initial.get(pos.ticket)
             if first_sl is None or pos.sl <= 0:
                 continue  # unknown positions and missing stops belong to the reconciler's sweep
@@ -148,7 +148,7 @@ class BrokerPositionManager:
         spec = self.specs.get(symbol)
         if spec is None:
             return
-        for pos in self._bot_positions(symbol):
+        for pos in self.bot_positions(symbol):
             strategy = self.strategies_by_magic.get(pos.magic)
             if strategy is not None and strategy.should_close(ctx, pos.side):
                 self.close(pos, spec, ExitReason.SIGNAL)
@@ -180,7 +180,7 @@ class BrokerPositionManager:
         if not self.flatten_allowed:
             raise SafetyViolation("FLATTEN needs KILL_SWITCH_FLATTEN_ALLOWED=true")
         results = []
-        for pos in self._bot_positions():
+        for pos in self.bot_positions():
             spec = self.specs.get(pos.symbol)
             if spec is None:
                 log.error("cannot flatten #%s: no spec for %s", pos.ticket, pos.symbol)

@@ -30,6 +30,8 @@ Read before larger work:
 .venv\Scripts\python -m app.cli config show | kill --reason "..." | audit verify | db upgrade
 .venv\Scripts\python -m app.cli backtest --server FBS-Demo --symbols EURUSD --start 2026-01-01 --end 2026-09-30   # needs data/history
 .venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
+.venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
+.venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14
 .venv\Scripts\python scripts\tickets.py tick TAA-201 1 2   # tick checklist items; then:
 .venv\Scripts\python scripts\tickets.py sync               # recompute statuses + progress table
 ```
@@ -52,7 +54,8 @@ A ticket is DONE only when tests, ruff (format + check), mypy and bandit are all
   - The `MarketDataGateway` protocol, implemented by `ReadOnlyMT5Gateway` over `MT5Client`.
   - Nothing outside `app/broker/` imports `MetaTrader5`.
   - `MT5Client.call` refuses `order_send` / `order_check` unless `allow_trading=True`, which is only possible in
-    DEMO/LIVE. **Milestone 1 never sends broker orders.**
+    DEMO/LIVE. Broker orders go only through `app/broker/execution.py` (`ExecutionGateway`), which accepts
+    **DEMO only** (Phase 12 was pulled forward; LIVE waits for Phase 14). PAPER never sends broker orders.
 - **Time:** MT5 returns bar/tick/deal epochs in **broker server wall-clock time** (FBS = EET, `Europe/Athens`),
   not UTC. Convert only via `ServerClock` (`app/core/clock.py`). Internally everything is timezone-aware UTC;
   history queries widen the window by ±1 day, then filter.
@@ -88,4 +91,5 @@ A ticket is DONE only when tests, ruff (format + check), mypy and bandit are all
 - After completing ticket items, tick them in `docs/TICKETS.md` via `scripts/tickets.py` in the same change.
 - No Docker locally. `deploy/railway/*.Dockerfile` and `.railway/railway.ts` exist only for Railway builds.
 - Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
-- LIVE trading stays disabled by default. Subscription and billing stay behind `SUBSCRIPTIONS_ENABLED=false`.
+- LIVE trading stays disabled (no code path until Phase 14). DEMO orders need `TRADING_MODE=DEMO` plus
+  `ENABLE_DEMO_TRADING=true` and a demo account. Subscription and billing stay behind `SUBSCRIPTIONS_ENABLED=false`.

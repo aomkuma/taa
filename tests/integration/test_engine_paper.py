@@ -117,12 +117,18 @@ class TestLifecycle:
         status = h.engine.status()
         assert status["clock_verified"] and status["cycles"] == 40
 
-    def test_only_paper_mode_runs(self, tmp_path: Path) -> None:
+    @pytest.mark.parametrize(
+        ("mode", "match"),
+        [(TradingMode.DEMO, "ENABLE_DEMO_TRADING"), (TradingMode.LIVE, "LIVE waits")],
+    )
+    def test_modes_other_than_paper_need_their_gates(
+        self, tmp_path: Path, mode: TradingMode, match: str
+    ) -> None:
         s = settings(tmp_path)
-        demo = dataclasses.replace(s, env=s.env.model_copy(update={"TRADING_MODE": TradingMode.DEMO}))
-        with pytest.raises(SafetyViolation, match="PAPER only"):
+        other = dataclasses.replace(s, env=s.env.model_copy(update={"TRADING_MODE": mode}))
+        with pytest.raises(SafetyViolation, match=match):
             Engine(
-                demo,
+                other,
                 build_read_only(s, fake=True),
                 Database("sqlite://"),
                 ManualClock(START),

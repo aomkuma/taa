@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 22 | 0 | TODO |
 | M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 6 | 5 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
 | M2 | Phase 14 — LIVE readiness | 4 | 0 | TODO |
 
@@ -1606,12 +1606,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1206 — DEMO mode
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1201–1205
 
-- [ ] account must be DEMO
-- [ ] `ENABLE_DEMO_TRADING`
-- [ ] 2-week demo soak runbook and report
+- [x] account must be DEMO
+- [x] `ENABLE_DEMO_TRADING`
+- [x] 2-week demo soak runbook and report
 
 ### Phase 13 — AI assessment (optional layer)
 

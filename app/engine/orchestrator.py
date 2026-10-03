@@ -30,13 +30,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
 from app.broker.models import BrokerPosition
 from app.config import Settings
 from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
-from app.core.enums import TradingMode
+from app.core.enums import Side, TradingMode
 from app.core.errors import SafetyViolation, SymbolUnavailable, TaaError
 from app.core.ids import new_id, stable_hash
+from app.engine.backends import Backend, DemoBackend, PaperBackend
+from app.engine.broker_positions import BrokerPositionManager
 from app.engine.decision_engine import (
     AccountState,
     Decision,
@@ -45,8 +48,10 @@ from app.engine.decision_engine import (
     DecisionStore,
     SystemHealth,
 )
+from app.engine.order_manager import OrderManager
 from app.engine.paper import LiveRates, PaperExecution
 from app.engine.position_manager import PositionManager
+from app.engine.reconciler import Reconciler
 from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.registry import EvidenceEngine
 from app.market_data.candle_service import CandleService, CandleWatermarks
@@ -62,6 +67,7 @@ from app.risk.circuit_breaker import BreakerBoard, default_specs
 from app.risk.exposure_manager import MAGIC_RANGE
 from app.risk.kill_switch import KillSwitch
 from app.risk.loss_tracker import LossStatus, LossTracker
+from app.risk.mode_gates import GateResult, evaluate_gate
 from app.storage.audit import AuditLog
 from app.storage.database import Database
 from app.storage.repositories import EngineStateRepository, RunRepository
@@ -99,10 +105,15 @@ class Engine:
         sleep: Callable[[float], None] = time.sleep,
         process: str = "engine",
     ) -> None:
-        if settings.mode is not TradingMode.PAPER:
+        if settings.mode is TradingMode.DEMO:
+            if not (settings.env.ENABLE_DEMO_TRADING and bundle.client.allow_trading):
+                raise SafetyViolation(
+                    "DEMO needs ENABLE_DEMO_TRADING=true and a trading client (build_trading)"
+                )
+        elif settings.mode is not TradingMode.PAPER:
             raise SafetyViolation(
-                f"the engine runs PAPER only in Milestone 1 (TRADING_MODE={settings.mode.value}); "
-                "backtests run with `python -m app.cli backtest`"
+                f"the engine runs PAPER or DEMO (TRADING_MODE={settings.mode.value}); LIVE waits for "
+                "Phase 14 and backtests run with `python -m app.cli backtest`"
             )
         self.settings = settings
         self.config = settings.config
@@ -149,7 +160,11 @@ class Engine:
             raise SymbolUnavailable("none of symbols.allowed is available on this server")
         self.board = BreakerBoard(
             self.db,
-            default_specs(cfg.breakers, consecutive_pause_hours=cfg.risk.consecutive_loss_pause_hours),
+            default_specs(
+                cfg.breakers,
+                consecutive_pause_hours=cfg.risk.consecutive_loss_pause_hours,
+                symbol_pause_minutes=cfg.execution.symbol_pause_minutes,
+            ),
             self.clock,
             mode=self.settings.mode,
             tz_name=env.BROKER_TIMEZONE,
@@ -158,7 +173,11 @@ class Engine:
         )
         self.monitor = BreakerMonitor(self.board, cfg.breakers, cfg.risk, self.clock)
         self.kill_switch = KillSwitch(
-            self.settings.path(env.KILL_SWITCH_FILE), self.db, self.audit, self.clock
+            self.settings.path(env.KILL_SWITCH_FILE),
+            self.db,
+            self.audit,
+            self.clock,
+            flatten_allowed=env.KILL_SWITCH_FLATTEN_ALLOWED,
         )
         self.losses = LossTracker(self.db, self.account_key, env.BROKER_TIMEZONE, self.clock)
         self.watermarks = CandleWatermarks(self.db, self.clock)
@@ -188,28 +207,8 @@ class Engine:
             breakers=self.board,
             store=DecisionStore(self.db),
         )
-        self.paper = PaperExecution(
-            self.db,
-            self.account_key,
-            self.symbols,
-            LiveRates(self.gateway, account.currency),
-            self.clock,
-            paper=cfg.paper,
-            backtest=cfg.backtest,
-            account_currency=account.currency,
-            leverage=float(account.leverage or cfg.backtest.leverage),
-            starting_equity=account.equity,
-            bus=self.bus,
-        )
-        restored = self.paper.restore()
-        self.positions = PositionManager(
-            self.paper,
-            cfg.position_management,
-            self.symbols,
-            self.clock,
-            strategies_by_magic={self.magic[s.name]: s for s in self.strategies.strategies},
-            bus=self.bus,
-        )
+        by_magic = {self.magic[s.name]: s for s in self.strategies.strategies}
+        restored = self._build_backend(account, by_magic)
         self.on_started(restored)
         self.runs.start(self.run_id, self.process, self.settings.mode.value, self.settings.config_hash)
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
@@ -226,6 +225,118 @@ class Engine:
             restored_positions=restored,
         )
         self.running = True
+
+    def _build_backend(self, account: Any, by_magic: dict[int, Any]) -> int:
+        """PAPER: the persisted paper book. DEMO: orders, reconciliation and management on the demo
+        account."""
+        cfg, env = self.config, self.settings.env
+        if self.settings.mode is TradingMode.PAPER:
+            self.paper = PaperExecution(
+                self.db,
+                self.account_key,
+                self.symbols,
+                LiveRates(self.gateway, account.currency),
+                self.clock,
+                paper=cfg.paper,
+                backtest=cfg.backtest,
+                account_currency=account.currency,
+                leverage=float(account.leverage or cfg.backtest.leverage),
+                starting_equity=account.equity,
+                bus=self.bus,
+            )
+            restored = self.paper.restore()
+            self.positions = PositionManager(
+                self.paper,
+                cfg.position_management,
+                self.symbols,
+                self.clock,
+                strategies_by_magic=by_magic,
+                bus=self.bus,
+            )
+            self.backend: Backend = PaperBackend(self.paper, self.positions, self.gateway)
+            return restored
+        deviation = cfg.execution.deviation_points
+        self.orders = OrderManager(
+            self.db,
+            ExecutionGateway(self.bundle.client),
+            self.gateway,
+            self.monitor,
+            self.kill_switch,
+            self.clock,
+            cfg.execution,
+            deviation_points=int(cfg.risk.max_slippage_points if deviation is None else deviation),
+            presend=self._presend,
+            bus=self.bus,
+        )
+        self.reconciler = Reconciler(
+            self.db,
+            self.orders,
+            self.gateway,
+            self.monitor,
+            self.clock,
+            cfg.execution,
+            self.symbols,
+            magic_base=env.MAGIC_NUMBER_BASE,
+            bus=self.bus,
+        )
+        self.broker_positions = BrokerPositionManager(
+            self.orders,
+            cfg.position_management,
+            self.symbols,
+            self.clock,
+            entry_timeframe=cfg.timeframes.entry,
+            magic_base=env.MAGIC_NUMBER_BASE,
+            strategies_by_magic=by_magic,
+            flatten_allowed=env.KILL_SWITCH_FLATTEN_ALLOWED,
+            bus=self.bus,
+        )
+        self.backend = DemoBackend(
+            self.orders, self.reconciler, self.broker_positions, self.gateway, self.kill_switch, self.clock
+        )
+        report = self.reconciler.run()
+        log.warning("DEMO mode: broker orders go to the demo account (%s)", report)
+        return len(self.broker_positions.bot_positions())
+
+    def gate(self) -> GateResult | None:
+        """The DEMO gate (PLAN §A3), evaluated on fresh account and terminal snapshots."""
+        if self.settings.mode is not TradingMode.DEMO:
+            return None
+        try:
+            account, terminal = self.gateway.account(), self.gateway.terminal()
+        except TaaError:
+            account, terminal = None, None
+        latched = [s.name.value for s in self.board.statuses() if s.latched]
+        return evaluate_gate(
+            self.settings.mode,
+            self.settings.env,
+            account=account,
+            terminal=terminal,
+            risk_config_ok=True,  # settings were validated at startup
+            kill_switch_active=self.kill_switch.is_active(),
+            latched_breakers=latched,
+        )
+
+    def _presend(self, symbol: str, side: Side, price: float, expires_at: datetime) -> list[str]:
+        """Time-of-use checks right before ``order_send`` (PLAN §A12 write-ahead)."""
+        problems = []
+        gate = self.gate()
+        if gate is not None and not gate.passed:
+            problems.append("gate: " + ", ".join(sorted(c.value for c in gate.failed_conditions)))
+        if self.kill_switch.is_active():
+            problems.append("kill switch active")
+        blocking = self.board.blocking(symbol)
+        if blocking:
+            problems.append("breakers: " + ", ".join(b.name.value for b in blocking))
+        if not self.bundle.client.is_healthy():
+            problems.append("terminal not connected")
+        quote = self.quotes.quote(self.symbols[symbol])
+        if not quote.valid:
+            problems.append(f"quote: {quote.problem}")
+        elif quote.spread_points > self.config.spread_limit(symbol):
+            problems.append(f"spread {quote.spread_points:g} > {self.config.spread_limit(symbol):g}")
+        if self.clock.now_utc() >= expires_at:
+            problems.append("signal expired")
+        return problems
 
     def on_started(self, restored_positions: int) -> None:
         """Startup reconciliation (TAA-604).
@@ -247,16 +358,18 @@ class Engine:
             log.warning("could not read account positions during reconciliation")
             real = []
         for pos in real:
-            if base <= pos.magic < base + MAGIC_RANGE:
+            # in PAPER no broker order is ever sent, so a bot-magic position is an anomaly; in DEMO the
+            # reconciler has already matched positions to intents
+            if self.settings.mode is TradingMode.PAPER and base <= pos.magic < base + MAGIC_RANGE:
                 detail = f"position #{pos.ticket} {pos.symbol} carries the bot's magic {pos.magic}"
                 self.monitor.account_changed(detail)
                 self.bus.emit(
                     EventType.UNKNOWN_POSITION, symbol=pos.symbol, ticket=pos.ticket, magic=pos.magic
                 )
         log.info(
-            "reconciled: %d paper position(s), %d pending order(s), %d real position(s), %d cooldown(s)",
+            "reconciled (%s): %d bot position(s), %d real position(s), %d cooldown(s)",
+            self.backend.name,
             restored_positions,
-            len(self.paper.broker.pending),
             len(real),
             len(cooldowns),
         )
@@ -337,8 +450,7 @@ class Engine:
             median_spread=self.quotes.median_spread(symbol),
         )
         if quote.valid:
-            self.paper.on_quote(symbol, quote.bid, quote.ask, now)
-            self.positions.on_quote(symbol, quote.bid, quote.ask, atr)
+            self.backend.on_quote(symbol, quote.bid, quote.ask, atr, now)
 
     def _check_new_bar(self, symbol: str) -> None:
         tf = self.config.timeframes.entry
@@ -361,7 +473,7 @@ class Engine:
             return
         if ctx.market.atr is not None:
             self._atr[symbol] = ctx.market.atr
-        self.positions.on_bar(symbol, ctx)
+        self.backend.on_bar(symbol, ctx)
         signals = self.strategies.evaluate(ctx)
         selected = self.arbiter.arbitrate(signals).selected
         self.on_arbitrated()
@@ -373,17 +485,16 @@ class Engine:
                 market=ctx.market,
                 spec=spec,
                 quote=self.quotes.quote(spec),
-                account=AccountState(self.paper.broker.funds(), self._book(), self._loss_status()),
+                account=AccountState(self.backend.funds(), self._book(), self._loss_status()),
                 health=self.health_snapshot(),
                 specs=self.symbols,
+                gate=self.gate(),
                 last_entry_at=self._last_entry.get(symbol),
             )
         )
         if record.decision is Decision.ACCEPT:
-            placed = self.paper.place(
-                record, self.magic.get(selected.strategy, self.settings.env.MAGIC_NUMBER_BASE)
-            )
-            if any(not p.duplicate for p in placed):
+            magic = self.magic.get(selected.strategy, self.settings.env.MAGIC_NUMBER_BASE)
+            if self.backend.place(record, spec, magic):
                 self._last_entry[symbol] = ctx.decision_time_utc
                 self.on_entry(symbol, ctx.decision_time_utc)
                 self.bus.emit(
@@ -393,7 +504,7 @@ class Engine:
                     side=selected.action.value,
                     volume=str(record.volume),
                     decision_id=record.decision_id,
-                    paper=True,
+                    paper=self.settings.mode is TradingMode.PAPER,
                 )
 
     def on_arbitrated(self) -> None:
@@ -403,19 +514,17 @@ class Engine:
         self.state.save("last_entry", {sym: t.isoformat() for sym, t in self._last_entry.items()})
 
     def _book(self) -> list[BrokerPosition]:
-        """Paper positions plus every real position on the account (manual trades count toward exposure)."""
         try:
-            real = self.gateway.positions()
+            return self.backend.book()
         except TaaError:
-            log.warning("could not read account positions; exposure uses the paper book only")
-            real = []
-        return [*self.paper.broker.broker_positions(), *real]
+            log.warning("could not read positions for exposure")
+            return []
 
     def _loss_status(self) -> LossStatus:
-        new = self.paper.broker.deals[self._booked_deals :]
-        self._booked_deals = len(self.paper.broker.deals)
         magics = set(self.magic.values())
-        return self.losses.observe(self.paper.broker.equity, new, is_bot=lambda d: d.magic in magics)
+        return self.losses.observe(
+            self.backend.equity(), self.backend.new_deals(), is_bot=lambda d: d.magic in magics
+        )
 
     def _health(self) -> None:
         status = self._loss_status()
@@ -425,7 +534,7 @@ class Engine:
         data_dir = self.settings.path("data")
         free_gb = shutil.disk_usage(data_dir).free / 1e9 if data_dir.exists() else None
         self.monitor.observe_storage(write_ok, free_gb)
-        self.paper.save_marks()
+        self.backend.maintain()
         self.heartbeat()
 
     def heartbeat(self, state: str = "running") -> None:
@@ -458,7 +567,11 @@ class Engine:
 
     def status(self) -> dict[str, Any]:
         """For the health endpoint and the heartbeat (TAA-605)."""
-        funds = self.paper.broker.funds() if hasattr(self, "paper") else None
+        backend = getattr(self, "backend", None)
+        try:
+            funds = None if backend is None else backend.funds()
+        except TaaError:
+            funds = None
         return {
             "run_id": self.run_id,
             "mode": self.settings.mode.value,
@@ -468,7 +581,8 @@ class Engine:
             "clock_verified": self._clock_ok,
             "kill_switch": self._kill_active,
             "symbols": sorted(self.symbols),
-            "open_positions": 0 if not hasattr(self, "paper") else len(self.paper.broker.positions),
+            "backend": None if backend is None else backend.name,
+            "open_positions": 0 if backend is None else backend.open_positions(),
             "equity": None if funds is None else round(funds.equity, 2),
             "breakers": [
                 {"name": s.name.value, "scope": s.scope_key, "state": s.state.value}
@@ -482,8 +596,8 @@ class Engine:
     def shutdown(self) -> None:
         self.running = False
         try:
-            if hasattr(self, "paper"):
-                self.paper.save_marks()
+            if hasattr(self, "backend") and isinstance(self.backend, PaperBackend):
+                self.backend.maintain()
             self.heartbeat("stopped")  # a deliberate stop: the watchdog does not restart it
             self.runs.finish(self.run_id, "STOPPED", self.last_error)
             self.audit.append("ENGINE_STOP", self.process, {"run_id": self.run_id, "cycles": self.cycles})
