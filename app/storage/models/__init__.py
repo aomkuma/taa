@@ -2,6 +2,7 @@
 
 from app.storage.models.base import Base, utcnow
 from app.storage.models.market import HistoryCandle, ProcessedCandle
+from app.storage.models.risk import RiskBaseline, RiskDeal, RiskState
 from app.storage.models.system import AuditChainHead, AuditEvent, ConfigSnapshot, KillSwitchEvent, Run
 
 __all__ = [
@@ -12,6 +13,9 @@ __all__ = [
     "HistoryCandle",
     "KillSwitchEvent",
     "ProcessedCandle",
+    "RiskBaseline",
+    "RiskDeal",
+    "RiskState",
     "Run",
     "utcnow",
 ]

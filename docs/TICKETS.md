@@ -24,7 +24,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
-| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 2 | IN PROGRESS |
+| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 3 | IN PROGRESS |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
@@ -565,15 +565,15 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-403 — Loss tracker
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 007
 
-- [ ] broker-day and week baselines
-- [ ] HWM
-- [ ] cash-flow adjustments
-- [ ] consecutive losses
-- [ ] persistence across restarts
-- [ ] tests
+- [x] broker-day and week baselines
+- [x] HWM
+- [x] cash-flow adjustments
+- [x] consecutive losses
+- [x] persistence across restarts
+- [x] tests
 
 #### TAA-404 — Circuit breakers
 
