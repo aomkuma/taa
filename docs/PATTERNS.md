@@ -284,6 +284,38 @@ ratios predict, so the record comes at completion, before D is confirmed.
 | `harmonic.shark` | 0.382–0.618 | 1.13–1.618 (C beyond A) | CD/XC 0.886–1.13; CD/BC 1.618–2.24 |
 | `harmonic.abcd` | (A, B, C only) | 0.382–0.886 | CD/AB 1.0; CD/BC 1.13–2.618 |
 
+### Elliott Wave (`elliott.py`, T3: heuristic)
+
+Automated wave counting is ambiguous by nature (PLAN R31): the same pivots support several readings, and counts
+change as new pivots confirm. The single detector `elliott.wave` therefore does not claim *the* count. It lists the candidate counts
+that the confirmed zigzag pivots allow, filters them with the hard rules and scores them with Fibonacci guidelines.
+It reports the best ones as a primary and alternates, each with a confidence. Every record is tier T3, carries
+detail `heuristic: true` and has "(heuristic)" in its name.
+
+- **Degrees.** Counts are read on every degree in `degrees` (default `minor`, `intermediate`). The same pivots
+  seen at two degrees are one count.
+- **Hard rules** (bullish shown; bearish mirrors):
+  1. Wave 2 never retraces more than 100 % of wave 1.
+  2. Wave 3 is never the shortest of 1, 3 and 5. Before wave 5 exists, a wave 3 shorter than wave 1 caps wave 5
+     below wave 3's length (detail `wave5_cap`; the targets are capped).
+  3. Wave 4 does not overlap wave 1's price territory. Wave 3 must also end beyond wave 1.
+- **Guidelines.** Each guideline scores 1 inside its band and falls linearly to 0 at `soft` outside it. The count's
+  score is their mean. Counts scoring below `min_score` (0.5) are not reported.
+- **Ranking.** Candidates found at the same bar are sorted by score, and at most `max_counts` (2) are kept: rank 1
+  is the `primary`, the rest are `alternate`. Quality = confidence = `score / max(1, Σ scores)`, so a contested
+  count weighs less than an uncontested one.
+- **Immutability.** A record uses only the pivots confirmed by its bar. A later recount adds new records and never
+  rewrites earlier ones; the look-ahead harness and a snapshot test enforce this.
+
+| State (variant) | Count | Reported at | Guidelines (soft) | Direction | Invalidation / targets |
+|---|---|---|---|---|---|
+| `wave3` | pivots 0, 1, 2 as waves 1–2 | confirmation of wave 2 | wave 2 retraces 50–61.8 % (0.25); wave 1 starts from a lower low; wave 1 breaks the previous lower high (each 1 or 0, unknown 0.5) | wave 1's | start of wave 1 / wave 2 + 1.0 and 1.618 × wave 1 |
+| `wave5` | pivots 0–4 as waves 1–4 | confirmation of wave 4 | wave 2 50–61.8 % (0.25); wave 3 1.618–2.618 × wave 1 (0.6); wave 4 retraces 23.6–38.2 % of wave 3 (0.2); alternation `min(1, abs(r2 − r4) / 0.2)` | the impulse's | end of wave 1 / wave 4 + wave 1, wave 4 + 0.618 × (wave 0 → 3), capped by rule 2 |
+| `c_completion` | prior leg O → S, then a zigzag S → A → B against it. A retraces < 100 % of the prior leg; B stays short of S | the first bar reaching the C zone, from B's confirmation until the next pivot confirms. A close back beyond B or through the zone first ends the count | B retraces 50–61.8 % of A (0.25); C = A ends 38.2–61.8 % into the prior leg (0.25) | the prior leg's (the trend resumes) | the far edge ∓ `stop_atr` × ATR / B, then S |
+
+The C zone is 100–161.8 % of A, measured from B (`c_zone`) and widened by `zone_tol` (5 %). A zone that would
+retrace the whole prior leg is not a correction.
+
 Formulas used by `levels.pivot_points`, from the previous period's high H, low L and close C:
 
 - **Classic**: `P = (H + L + C)/3`; `R1 = 2P − L`; `S1 = 2P − H`; `R2/S2 = P ± (H − L)`; `R3 = H + 2(P − L)`;

@@ -28,6 +28,7 @@ from app.evidence.chart_patterns import (
     TripleTopBottom,
     Wedge,
 )
+from app.evidence.elliott import ElliottWave
 from app.evidence.fibonacci import (
     FibCluster,
     FibExtension,
@@ -130,6 +131,8 @@ ALL_DETECTORS: tuple[Detector, ...] = (
     Cypher(),
     Shark(),
     AbCd(),
+    # Elliott Wave, heuristic tier (TAA-2A8)
+    ElliottWave(),
 )
 
 

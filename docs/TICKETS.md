@@ -22,7 +22,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 0 — Foundation & safety scaffolding | 9 | 9 | DONE |
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
-| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 8 | IN PROGRESS |
+| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 9 | IN PROGRESS |
 | M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
@@ -419,17 +419,17 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-2A8 — Elliott Wave (heuristic tier)
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A1, 2A2
 
-- [ ] impulse/correction candidates from multi-degree zigzag
-- [ ] 3 hard rules (R31)
-- [ ] Fibonacci guideline scoring
-- [ ] primary + alternate counts with confidence
-- [ ] states (possible wave 3 / wave 5 / C completion)
-- [ ] snapshot immutability across recounts
-- [ ] "heuristic" labelling
-- [ ] golden 5-wave tests
+- [x] impulse/correction candidates from multi-degree zigzag
+- [x] 3 hard rules (R31)
+- [x] Fibonacci guideline scoring
+- [x] primary + alternate counts with confidence
+- [x] states (possible wave 3 / wave 5 / C completion)
+- [x] snapshot immutability across recounts
+- [x] "heuristic" labelling
+- [x] golden 5-wave tests
 
 #### TAA-2A9 — (rev. 2) Selective computation
 
