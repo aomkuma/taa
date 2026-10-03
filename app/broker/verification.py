@@ -30,26 +30,31 @@ def _same_server(a: str | None, b: str | None) -> bool:
     return (a or "").strip().lower() == (b or "").strip().lower()
 
 
-def verify_connection(
-    mode: TradingMode, env: EnvSettings, account: AccountSnapshot, terminal: TerminalSnapshot
-) -> VerificationResult:
-    r = VerificationResult()
+def verify_identity(env: EnvSettings, account: AccountSnapshot, terminal: TerminalSnapshot) -> list[str]:
+    """Is this the configured account on a connected terminal? (Problems; empty when it is.)"""
+    problems: list[str] = []
     if not terminal.connected:
-        r.problems.append("terminal is not connected to the trade server")
+        problems.append("terminal is not connected to the trade server")
     if env.MT5_LOGIN is not None and account.login != env.MT5_LOGIN:
-        r.problems.append(
+        problems.append(
             f"connected account {mask_login(account.login)} does not match "
             f"MT5_LOGIN {mask_login(env.MT5_LOGIN)}"
         )
     if env.MT5_SERVER and not _same_server(account.server, env.MT5_SERVER):
-        r.problems.append(f"connected server {account.server!r} does not match MT5_SERVER {env.MT5_SERVER!r}")
+        problems.append(f"connected server {account.server!r} does not match MT5_SERVER {env.MT5_SERVER!r}")
     if not account.is_hedging:
-        r.problems.append(
+        problems.append(
             f"account margin mode is {account.margin_mode_name}; only HEDGING accounts are supported"
         )
     if not account.currency:
-        r.problems.append("account currency is empty")
+        problems.append("account currency is empty")
+    return problems
 
+
+def verify_connection(
+    mode: TradingMode, env: EnvSettings, account: AccountSnapshot, terminal: TerminalSnapshot
+) -> VerificationResult:
+    r = VerificationResult(problems=verify_identity(env, account, terminal))
     if mode is TradingMode.PAPER:
         if account.trade_allowed:
             msg = (

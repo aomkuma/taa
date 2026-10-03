@@ -24,7 +24,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
-| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 5 | IN PROGRESS |
+| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 6 | IN PROGRESS |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
@@ -598,11 +598,11 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-406 — Mode gates
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 003, 102
 
-- [ ] live and demo gate evaluation + full truth-table tests (not wired to orders in M1)
-- [ ] (rev. 3) M2 limits = min(trading profile, local `RiskConfig`); a cloud profile never raises a local limit (test)
+- [x] live and demo gate evaluation + full truth-table tests (not wired to orders in M1)
+- [x] (rev. 3) M2 limits = min(trading profile, local `RiskConfig`); a cloud profile never raises a local limit (test)
 
 #### TAA-407 — Sessions & news
 
