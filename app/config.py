@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from datetime import datetime, time
 from pathlib import Path
 from typing import Any, Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
 from dotenv import dotenv_values
@@ -348,6 +349,42 @@ class SyncConfig(StrictModel):
     max_backlog_events: int = Field(default=200_000, ge=1000)
 
 
+class DetectorSettings(StrictModel):
+    """Per-detector overrides. ``params`` are checked against the detector's own parameter model when the
+    evidence registry is configured (config cannot import the detectors: they live in a higher layer)."""
+
+    enabled: bool | None = None  # None: follow evidence.default_enabled
+    params: dict[str, Any] = Field(default_factory=dict)
+
+
+class EvidenceConfig(StrictModel):
+    default_enabled: bool = True
+    atr_period: int = Field(default=14, ge=2)
+    # zigzag reversal thresholds in ATR multiples, one per degree (minor < intermediate < major)
+    zigzag_degrees: dict[str, float] = Field(
+        default_factory=lambda: {"minor": 1.5, "intermediate": 3.0, "major": 6.0}, min_length=1
+    )
+    # whose midnight starts a trading day for daily/weekly levels; FBS server time is EET/EEST
+    session_timezone: str = "Europe/Athens"
+    detectors: dict[str, DetectorSettings] = Field(default_factory=dict)
+
+    @field_validator("session_timezone")
+    @classmethod
+    def _tz(cls, value: str) -> str:
+        try:
+            ZoneInfo(value)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"unknown timezone {value!r}") from exc
+        return value
+
+    @field_validator("zigzag_degrees")
+    @classmethod
+    def _degrees(cls, value: dict[str, float]) -> dict[str, float]:
+        if any(not (0 < m <= 50) for m in value.values()):
+            raise ValueError("zigzag multiples must be in (0, 50]")
+        return value
+
+
 class AppConfig(StrictModel):
     symbols: SymbolsConfig = Field(default_factory=SymbolsConfig)
     timeframes: TimeframesConfig = Field(default_factory=TimeframesConfig)
@@ -360,6 +397,7 @@ class AppConfig(StrictModel):
     backtest: BacktestConfig = Field(default_factory=BacktestConfig)
     engine: EngineLoopConfig = Field(default_factory=EngineLoopConfig)
     sync: SyncConfig = Field(default_factory=SyncConfig)
+    evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
 
     def spread_limit(self, symbol: str) -> float:
         override = self.symbols.overrides.get(symbol)

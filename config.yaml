@@ -94,3 +94,13 @@ engine:
 
 sync:
   enabled: false                    # true once the Railway web service is paired
+
+evidence:                           # technical evidence engine (PLAN §A29, docs/PATTERNS.md)
+  default_enabled: true             # detectors not listed below follow this
+  atr_period: 14
+  zigzag_degrees:                   # reversal threshold in ATR multiples per pivot degree
+    minor: 1.5
+    intermediate: 3.0
+    major: 6.0
+  session_timezone: Europe/Athens   # trading-day boundary for daily/weekly levels (FBS server time)
+  detectors: {}                     # e.g. fib.golden_zone: {enabled: true, params: {max_age_bars: 3}}

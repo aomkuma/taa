@@ -49,3 +49,7 @@ class StorageError(TaaError):
 
 class AuditChainError(StorageError):
     """The audit hash chain is broken (possible tampering or corruption)."""
+
+
+class EvidenceError(TaaError):
+    """A detector produced an invalid evidence record or the detector setup is inconsistent."""

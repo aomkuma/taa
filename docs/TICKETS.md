@@ -20,7 +20,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 0 — Foundation & safety scaffolding | 9 | 9 | DONE |
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
-| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 0 | TODO |
+| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 2 | IN PROGRESS |
 | M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
@@ -309,29 +309,29 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-2A1 — Evidence framework
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 205
 
-- [ ] `Evidence` model (family, direction, quality, key levels, invalidation, targets, tier, i18n key)
-- [ ] detector registry with config enable/params
-- [ ] shared multi-degree zigzag/pivot engine (ATR-scaled, confirmation lag)
-- [ ] immutable snapshots
-- [ ] look-ahead harness run against every detector
-- [ ] `docs/PATTERNS.md` skeleton
+- [x] `Evidence` model (family, direction, quality, key levels, invalidation, targets, tier, i18n key)
+- [x] detector registry with config enable/params
+- [x] shared multi-degree zigzag/pivot engine (ATR-scaled, confirmation lag)
+- [x] immutable snapshots
+- [x] look-ahead harness run against every detector
+- [x] `docs/PATTERNS.md` skeleton
 
 #### TAA-2A2 — Fibonacci & levels
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A1
 
-- [ ] retracements of the last impulse
-- [ ] golden-zone pullback + rejection
-- [ ] extensions (targets)
-- [ ] fib cluster confluence
-- [ ] round numbers
-- [ ] classic/Fibonacci/Camarilla pivots
-- [ ] previous day/week high/low
-- [ ] golden + near-miss tests
+- [x] retracements of the last impulse
+- [x] golden-zone pullback + rejection
+- [x] extensions (targets)
+- [x] fib cluster confluence
+- [x] round numbers
+- [x] classic/Fibonacci/Camarilla pivots
+- [x] previous day/week high/low
+- [x] golden + near-miss tests
 
 #### TAA-2A3 — Chart patterns
 
