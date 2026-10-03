@@ -28,6 +28,7 @@ Read before larger work:
 .venv\Scripts\bandit -q -r app -c pyproject.toml
 .venv\Scripts\python -m app.cli doctor --fake        # diagnostics against FakeMT5 (drop --fake for the real terminal)
 .venv\Scripts\python -m app.cli config show | kill --reason "..." | audit verify | db upgrade
+.venv\Scripts\python -m app.cli backtest --server FBS-Demo --symbols EURUSD --start 2026-01-01 --end 2026-09-30   # needs data/history
 .venv\Scripts\python scripts\tickets.py tick TAA-201 1 2   # tick checklist items; then:
 .venv\Scripts\python scripts\tickets.py sync               # recompute statuses + progress table
 ```

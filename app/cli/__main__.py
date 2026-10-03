@@ -6,6 +6,7 @@ import argparse
 import getpass
 import json
 import sys
+from datetime import UTC, datetime
 
 from app.config import REPO_ROOT, Settings, load_settings
 from app.core.errors import ConfigError, TaaError
@@ -99,6 +100,77 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     return 0 if report.failures == 0 else 2
 
 
+def _date(value: str | None) -> datetime | None:
+    if value is None:
+        return None
+    parsed = datetime.fromisoformat(value)
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+
+def cmd_backtest(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from app.backtest.engine import Progress
+    from app.backtest.metrics import compute_metrics
+    from app.backtest.runner import load_history, run_and_write
+    from app.market_data.history_store import ParquetHistoryStore
+
+    settings = _settings(args)
+    config = settings.config
+    if args.seed is not None:
+        config = config.model_copy(
+            update={"backtest": config.backtest.model_copy(update={"seed": args.seed})}
+        )
+    server = args.server or settings.env.MT5_SERVER
+    if not server:
+        print("error: pass --server (the history store is organized by trade server)", file=sys.stderr)
+        return 1
+    symbols = args.symbols.split(",") if args.symbols else config.symbols.allowed
+    start, end = _date(args.start), _date(args.end)
+    store = ParquetHistoryStore(settings.path(args.data))
+    loaded = load_history(
+        store,
+        server,
+        symbols,
+        config.timeframes.enabled,
+        account_currency=config.backtest.account_currency,
+        start=None,  # warm-up needs the bars before --start; the engine trades only inside the period
+        end=end,
+    )
+    names = args.strategies.split(",") if args.strategies else None
+    out = (
+        settings.path(args.out)
+        if args.out
+        else settings.path(
+            f"data/backtests/{loaded.digest[:8]}-{settings.config_hash[:8]}-seed{config.backtest.seed}"
+        )
+    )
+
+    def progress(p: Progress) -> None:
+        print(f"  {p.fraction:6.1%}  {p.at:%Y-%m-%d %H:%M}  equity {p.equity:,.2f}", flush=True)
+
+    result, paths = run_and_write(
+        config,
+        loaded,
+        Path(out),
+        config_hash=settings.config_hash,
+        strategy_names=names,
+        start=start,
+        end=end,
+        on_progress=progress if args.progress else None,
+    )
+    m = compute_metrics(result.trades, result.equity_curve, result.initial_balance)
+    print(f"backtest {', '.join(symbols)}  {result.start} -> {result.end}")
+    print(f"  data hash {loaded.digest}  config hash {settings.config_hash}  seed {config.backtest.seed}")
+    print(f"  trades {m.trades}  win rate {m.win_rate}  profit factor {m.profit_factor}")
+    print(f"  net {m.net_profit:,.2f}")
+    print(f"  max drawdown {m.max_drawdown_percent:.2f}%  expectancy {m.expectancy_r} R")
+    for name, path in paths.items():
+        print(f"  {name}: {path}")
+    print("  (a bar-based simulation; past results do not predict future results)")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="TAA operator commands")
     parser.add_argument("--env-file", default=".env")
@@ -135,6 +207,20 @@ def build_parser() -> argparse.ArgumentParser:
     kill.add_argument("--release", action="store_true", help="release (local CLI only)")
     kill.add_argument("--status", action="store_true")
     kill.set_defaults(func=cmd_kill)
+
+    bt = sub.add_parser("backtest", help="run a backtest on stored history (data/history)")
+    bt.add_argument("--symbols", default=None, help="comma-separated (default: symbols.allowed)")
+    bt.add_argument("--server", default=None, help="trade server folder in the store (default: MT5_SERVER)")
+    bt.add_argument("--data", default="data/history")
+    bt.add_argument("--start", default=None, help="ISO date/time (UTC if no offset)")
+    bt.add_argument("--end", default=None)
+    bt.add_argument(
+        "--strategies", default=None, help="comma-separated names from config.yaml (enabled for the run)"
+    )
+    bt.add_argument("--seed", type=int, default=None)
+    bt.add_argument("--out", default=None, help="output folder (default: data/backtests/<hashes>)")
+    bt.add_argument("--progress", action="store_true")
+    bt.set_defaults(func=cmd_backtest)
     return parser
 
 

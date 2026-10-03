@@ -25,7 +25,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 7 | DONE |
-| M1 | Phase 5 — Backtesting | 6 | 5 | IN PROGRESS |
+| M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 0 | TODO |
@@ -668,12 +668,12 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-506 — CLI & reproducibility
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 504
 
-- [ ] `app.cli backtest`
-- [ ] seed, config and data hashes
-- [ ] determinism and golden tests
+- [x] `app.cli backtest`
+- [x] seed, config and data hashes
+- [x] determinism and golden tests
 
 ### Phase 6 — PAPER runtime
 
