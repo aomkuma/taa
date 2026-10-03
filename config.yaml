@@ -114,6 +114,16 @@ paper:                              # PAPER mode: simulated fills on live quotes
   slippage_points: 1
   swap_enabled: true
 
+execution:                          # broker orders: DEMO account only (Phase 12); LIVE stays disabled
+  deviation_points: null            # null: risk.max_slippage_points
+  max_send_attempts: 2              # one retry after a requote, if the signal is still valid
+  reconcile_after_seconds: 30       # an UNKNOWN order not found by then is NOT_EXECUTED
+  reconcile_window_hours: 24        # history searches are widened by this much (broker time quirks)
+  realized_risk_tolerance: 0.2      # fill risk more than 20 % above plan: reduce or close
+  excess_risk_policy: reduce
+  unprotected_grace_seconds: 5      # a position without SL: re-attach within this, else close
+  symbol_pause_minutes: 60          # after a "symbol restricted" retcode
+
 engine:
   monitor_interval_seconds: 1.0
   health_port: 8765

@@ -60,6 +60,7 @@ class BreakerName(StrEnum):
     ORDER_FAILURES = "ORDER_FAILURES"
     DUPLICATE_EXECUTION = "DUPLICATE_EXECUTION"
     UNPROTECTED_POSITION = "UNPROTECTED_POSITION"
+    SYMBOL_RESTRICTED = "SYMBOL_RESTRICTED"  # server: trade disabled / market closed / long or short only
 
 
 class Scope(StrEnum):
@@ -95,7 +96,9 @@ class BreakerSpec:
     order_path: bool = False  # Milestone 2 only
 
 
-def default_specs(cfg: BreakerConfig, *, consecutive_pause_hours: float) -> dict[BreakerName, BreakerSpec]:
+def default_specs(
+    cfg: BreakerConfig, *, consecutive_pause_hours: float, symbol_pause_minutes: float = 60.0
+) -> dict[BreakerName, BreakerSpec]:
     """The A10 table with the thresholds from ``config.yaml`` → ``breakers:``."""
     n, g, s = BreakerName, Scope.GLOBAL, Scope.SYMBOL
     hi, crit, warn = Severity.HIGH, Severity.CRITICAL, Severity.WARNING
@@ -142,6 +145,14 @@ def default_specs(cfg: BreakerConfig, *, consecutive_pause_hours: float) -> dict
         ),
         BreakerSpec(n.DUPLICATE_EXECUTION, g, crit, ResetPolicy.MANUAL, order_path=True),
         BreakerSpec(n.UNPROTECTED_POSITION, g, crit, ResetPolicy.MANUAL, order_path=True),
+        BreakerSpec(
+            n.SYMBOL_RESTRICTED,
+            s,
+            warn,
+            ResetPolicy.COOLDOWN,
+            cooldown_seconds=symbol_pause_minutes * 60,
+            order_path=True,
+        ),
     ]
     return {spec.name: spec for spec in specs}
 

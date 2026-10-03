@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 22 | 0 | TODO |
 | M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 6 | 1 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 6 | 3 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
 | M2 | Phase 14 — LIVE readiness | 4 | 0 | TODO |
 
@@ -1568,22 +1568,22 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1202 — Order lifecycle
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1201, 405
 
-- [ ] intent state machine
-- [ ] write-ahead
-- [ ] pre-send re-check
-- [ ] idempotency
+- [x] intent state machine
+- [x] write-ahead
+- [x] pre-send re-check
+- [x] idempotency
 
 #### TAA-1203 — Retcode handling
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1202
 
-- [ ] A12 matrix
-- [ ] ORDER_FAILURES and DUPLICATE_EXECUTION breakers
-- [ ] a test per retcode
+- [x] A12 matrix
+- [x] ORDER_FAILURES and DUPLICATE_EXECUTION breakers
+- [x] a test per retcode
 
 #### TAA-1204 — Reconciler & post-fill guard
 

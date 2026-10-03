@@ -432,6 +432,7 @@ Milestone 1 code.
 | ORDER_FAILURES (M2) | ≥ 3 failed sends in 15 min | global | 30 min cooldown; manual after 3 trips/day |
 | DUPLICATE_EXECUTION (M2) | duplicate intent or an UNKNOWN order state | global | manual, after reconciliation |
 | UNPROTECTED_POSITION (M2) | position without SL after 5 s and re-attach failed | global | manual (the guard closes the position) |
+| SYMBOL_RESTRICTED (M2, added in Phase 12) | the server answered 10017/10018/10042–10044 (trade disabled, market closed, long/short/close only) | symbol | `execution.symbol_pause_minutes` cooldown |
 
 AI failures never trip trading breakers; they only produce HOLD.
 

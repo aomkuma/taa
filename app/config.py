@@ -364,6 +364,23 @@ class BacktestConfig(StrictModel):
     seed: int = 42
 
 
+class ExecutionConfig(StrictModel):
+    """Broker order execution (DEMO in Phase 12; PLAN §A12)."""
+
+    deviation_points: int | None = Field(
+        default=None, ge=0, le=1000, description="order_send deviation; None: risk.max_slippage_points"
+    )
+    max_send_attempts: int = Field(default=2, ge=1, le=2, description="1 + at most one requote retry (§A12)")
+    reconcile_after_seconds: float = Field(default=30.0, gt=0, le=600)
+    reconcile_window_hours: float = Field(default=24.0, gt=0, le=72, description="history search widening")
+    realized_risk_tolerance: float = Field(
+        default=0.2, ge=0, le=1, description="fill risk above plan x (1+t)"
+    )
+    excess_risk_policy: Literal["reduce", "close"] = "reduce"
+    unprotected_grace_seconds: float = Field(default=5.0, gt=0, le=60)
+    symbol_pause_minutes: float = Field(default=60.0, gt=0)
+
+
 class PaperConfig(StrictModel):
     """PAPER mode's simulated account (fills on live quotes; never a broker order)."""
 
@@ -495,6 +512,7 @@ class AppConfig(StrictModel):
     backtest: BacktestConfig = Field(default_factory=BacktestConfig)
     engine: EngineLoopConfig = Field(default_factory=EngineLoopConfig)
     paper: PaperConfig = Field(default_factory=PaperConfig)
+    execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
     sync: SyncConfig = Field(default_factory=SyncConfig)
     evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
 

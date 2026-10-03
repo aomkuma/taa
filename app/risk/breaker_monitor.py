@@ -9,7 +9,7 @@ still holds every breaker that had already tripped.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from app.config import BreakerConfig, RiskConfig
 from app.core.clock import Clock
@@ -33,6 +33,7 @@ class BreakerMonitor:
         self.clock = clock
         self._since: dict[tuple[BreakerName, str], datetime] = {}
         self._slippage_hits: dict[tuple[str, str], int] = {}
+        self._order_failures: list[datetime] = []
 
     def _persisting(self, name: BreakerName, key: str, bad: bool, grace_seconds: float) -> bool:
         """True once *bad* has held continuously for *grace_seconds*."""
@@ -147,3 +148,25 @@ class BreakerMonitor:
             self._slippage_hits[key] = self._slippage_hits.get(key, 0) + 1
             if self._slippage_hits[key] >= 3:
                 self.board.trip(BreakerName.SLIPPAGE, f"3 fills above {limit / 2:g} pts today", symbol)
+
+    # order path (Milestone 2) ---------------------------------------------------------------------------
+
+    def observe_order_failure(self, detail: str) -> None:
+        """A failed send: ``order_failures_max`` within the window trips ORDER_FAILURES."""
+        now = self.clock.now_utc()
+        window = timedelta(minutes=self.config.order_failures_window_minutes)
+        self._order_failures = [t for t in self._order_failures if now - t <= window] + [now]
+        if len(self._order_failures) >= self.config.order_failures_max:
+            self.board.trip(BreakerName.ORDER_FAILURES, f"{len(self._order_failures)} failed sends: {detail}")
+
+    def order_backoff(self, detail: str) -> None:
+        self.board.trip(BreakerName.ORDER_FAILURES, f"server asked to back off: {detail}")
+
+    def unknown_order(self, detail: str) -> None:
+        self.board.trip(BreakerName.DUPLICATE_EXECUTION, f"order outcome unknown: {detail}")
+
+    def unprotected_position(self, detail: str) -> None:
+        self.board.trip(BreakerName.UNPROTECTED_POSITION, detail)
+
+    def symbol_restricted(self, symbol: str, detail: str) -> None:
+        self.board.trip(BreakerName.SYMBOL_RESTRICTED, detail, symbol)
