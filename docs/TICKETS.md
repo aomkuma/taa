@@ -24,7 +24,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
-| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 1 | IN PROGRESS |
+| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 2 | IN PROGRESS |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
@@ -551,17 +551,17 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-402 — Exposure manager
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 401
 
-- [ ] open risk
-- [ ] per-symbol limits
-- [ ] correlation groups
-- [ ] currency direction
-- [ ] margin utilization
-- [ ] effective leverage
-- [ ] (rev. 3) portfolio heat incl. manual positions; unknown-risk flag for positions without a stop
-- [ ] tests
+- [x] open risk
+- [x] per-symbol limits
+- [x] correlation groups
+- [x] currency direction
+- [x] margin utilization
+- [x] effective leverage
+- [x] (rev. 3) portfolio heat incl. manual positions; unknown-risk flag for positions without a stop
+- [x] tests
 
 #### TAA-403 — Loss tracker
 
