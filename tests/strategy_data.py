@@ -8,12 +8,44 @@ from datetime import UTC, datetime
 import numpy as np
 import pandas as pd
 
+from app.broker import mt5_constants as c
 from app.config import AppConfig
 from app.core.enums import Timeframe
-from app.market_data.data_models import CandleFrame, QualityReport
+from app.market_data.data_models import CandleFrame, QualityReport, SymbolSpec
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame
 
 START = datetime(2026, 9, 1, 0, 0, tzinfo=UTC)  # a Tuesday
+
+EURUSD_SPEC = SymbolSpec(
+    name="EURUSD",
+    description="Euro vs US Dollar",
+    digits=5,
+    point=0.00001,
+    tick_size=0.00001,
+    tick_value=1.0,
+    tick_value_profit=1.0,
+    tick_value_loss=1.0,
+    contract_size=100_000,
+    volume_min=0.01,
+    volume_max=100.0,
+    volume_step=0.01,
+    volume_limit=0.0,
+    stops_level=0,
+    freeze_level=0,
+    filling_mode=1,
+    trade_mode=c.SYMBOL_TRADE_MODE_FULL,
+    execution_mode=2,
+    chart_mode=c.SYMBOL_CHART_MODE_BID,
+    currency_base="EUR",
+    currency_profit="USD",
+    currency_margin="EUR",
+    spread_points=8,
+    spread_float=True,
+    swap_long=-7.0,
+    swap_short=2.0,
+    swap_rollover3days=3,
+    calc_mode=c.SYMBOL_CALC_MODE_FOREX,
+)
 
 
 def candles_from_closes(
@@ -93,3 +125,23 @@ class StubCandles:
         self.calls.append((symbol, tf, count))
         df = upto(self.frames[tf], self.now).tail(count).reset_index(drop=True)
         return CandleFrame(symbol, tf, df, QualityReport(), self.now)
+
+
+def sawtooth_m15(
+    n: int = 1800,
+    *,
+    sign: int = 1,
+    up: int = 12,
+    down: int = 6,
+    flat: int = 3,
+    step_up: float = 0.0006,
+    step_down: float = 0.0008,
+    noise: float = 0.0002,
+    seed: int = 5,
+) -> pd.DataFrame:
+    """A trend of impulses, pullbacks and *flat* basing bars (``sign=-1`` mirrors it), with noise."""
+    rng = np.random.default_rng(seed)
+    pattern = np.r_[np.full(up, step_up), np.full(down, -step_down), np.zeros(flat)]
+    steps = np.resize(pattern, n) * sign + rng.normal(0.0, noise, n)
+    closes = 1.1 + np.cumsum(steps)
+    return candles_from_closes(closes, wick=np.abs(rng.normal(0.0, noise * 2, n)))
