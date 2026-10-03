@@ -36,6 +36,7 @@ from app.evidence.fibonacci import (
     FibRetracement,
 )
 from app.evidence.framework import Detector
+from app.evidence.harmonics import AbCd, Bat, Butterfly, Crab, Cypher, Gartley, Shark
 from app.evidence.ichimoku import Chikou, KumoBreakout, TkCross
 from app.evidence.levels import PivotPoints, PrevHighLow, RoundNumber, SRBreakout, SRZone
 from app.evidence.momentum import CciExtreme, Divergence, MomentumCross, OverboughtOversold
@@ -121,6 +122,14 @@ ALL_DETECTORS: tuple[Detector, ...] = (
     OrderBlock(),
     SupplyDemand(),
     WyckoffSpring(),
+    # Harmonic patterns (TAA-2A7)
+    Gartley(),
+    Bat(),
+    Butterfly(),
+    Crab(),
+    Cypher(),
+    Shark(),
+    AbCd(),
 )
 
 

@@ -244,6 +244,46 @@ the momentum and volatility detectors already see.
 | `smc.supply_demand` | a base of 1–4 tight bars (range ≤ 0.6 ATR) right before a displacement leg (demand under a rally, supply over a drop), reported on its retest | leg direction | 0.5 + 0.1 × base bars / the far edge |
 | `wyckoff.spring_upthrust` | a sideways range over the last 30 bars (height 2–6 ATR, net drift ≤ half the height). `spring`: a dip below the range low that closes back inside. `upthrust`: a poke above the high that closes back inside. Cooldown 10 bars | spring BULL, upthrust BEAR | by the distance of the close back inside / the probe extreme; target the opposite side of the range |
 
+### Harmonic patterns (`harmonics.py`, T2)
+
+Table-driven XABCD structures (Carney; PLAN R30). X, A, B and C are consecutive confirmed zigzag pivots of
+`params.degree` (default `minor`). D is not a pivot yet: it is the **potential reversal zone (PRZ)** that the
+ratios predict, so the record comes at completion, before D is confirmed.
+
+- **Checks.** The ratios of the known legs must lie in the pattern's bands, each widened by `ratio_tol` (5 %,
+  relative): `[lo × (1 − tol), hi × (1 + tol)]`.
+- **PRZ.** Each D ratio places D in a price band: XA retracement `AD/XA`, XC retracement `CD/XC`, BC projection
+  `CD/BC`, and `CD/AB`. The PRZ is the intersection of these bands. If they don't overlap, the pattern cannot
+  complete and is skipped.
+- **Completion.** Between C's confirmation and the next pivot's confirmation, the first bar whose extreme reaches
+  the PRZ completes the pattern. It is stamped at that bar. Two things kill the pattern first: a close beyond C
+  (the CD leg failed), or a close beyond the PRZ's far edge by `stop_atr` (0.25) × ATR. A bar that itself closes
+  beyond that edge blew through the zone and does not count.
+- **Quality** = 1 − mean ratio error.
+  - A ratio inside its band has error 0. Outside the band, the error is the distance as a share of the tolerance
+    (1 = at the tolerance edge).
+  - D's ratios are scored at the *ideal* D, where they agree best inside the PRZ. The first touch is always at
+    the zone's edge, so scoring the probe would penalize every pattern equally.
+  - Details report every leg ratio, D's ratios at the probe (clipped to the PRZ) and `ratio_error`.
+- **Key levels.** X, A, B, C, `prz_near`, `prz_far` and `D` (the probe, clipped to the PRZ).
+  - Invalidation: the far edge ∓ `stop_atr` × ATR.
+  - Targets: 38.2 % and 61.8 % of AD.
+- Variants `bullish` (D is a low: X low, A high, B low, C high) and `bearish` (mirror).
+- Patterns that share X, A, B and C can each complete on the way. A Bat's PRZ is reached before a Crab's, for
+  example. A pattern whose zone is blown through is invalidated by the close beyond its far edge.
+- Conventions differ between authors, especially for the Cypher's C and the Shark's B. The table below gives the
+  ones used here.
+
+| Detector | AB/XA | BC/AB | D (PRZ) |
+|---|---|---|---|
+| `harmonic.gartley` | 0.618 | 0.382–0.886 | AD/XA 0.786; CD/BC 1.272–1.618 |
+| `harmonic.bat` | 0.382–0.5 | 0.382–0.886 | AD/XA 0.886; CD/BC 1.618–2.618 |
+| `harmonic.butterfly` | 0.786 | 0.382–0.886 | AD/XA 1.272–1.618; CD/BC 1.618–2.618 |
+| `harmonic.crab` | 0.382–0.618 | 0.382–0.886 | AD/XA 1.618; CD/BC 2.24–3.618 |
+| `harmonic.cypher` | 0.382–0.618 | 1.13–1.414 (C beyond A) | CD/XC 0.786 |
+| `harmonic.shark` | 0.382–0.618 | 1.13–1.618 (C beyond A) | CD/XC 0.886–1.13; CD/BC 1.618–2.24 |
+| `harmonic.abcd` | (A, B, C only) | 0.382–0.886 | CD/AB 1.0; CD/BC 1.13–2.618 |
+
 Formulas used by `levels.pivot_points`, from the previous period's high H, low L and close C:
 
 - **Classic**: `P = (H + L + C)/3`; `R1 = 2P − L`; `S1 = 2P − H`; `R2/S2 = P ± (H − L)`; `R3 = H + 2(P − L)`;

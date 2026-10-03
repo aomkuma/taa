@@ -22,7 +22,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 0 — Foundation & safety scaffolding | 9 | 9 | DONE |
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
-| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 7 | IN PROGRESS |
+| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 8 | IN PROGRESS |
 | M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
@@ -407,15 +407,15 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-2A7 — Harmonic patterns
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A1, 2A2
 
-- [ ] table-driven XABCD (Gartley, Bat, Butterfly, Crab, Cypher, Shark, AB=CD) per R30
-- [ ] tolerance config
-- [ ] PRZ computation
-- [ ] completion detection
-- [ ] quality = ratio error
-- [ ] golden tests per pattern
+- [x] table-driven XABCD (Gartley, Bat, Butterfly, Crab, Cypher, Shark, AB=CD) per R30
+- [x] tolerance config
+- [x] PRZ computation
+- [x] completion detection
+- [x] quality = ratio error
+- [x] golden tests per pattern
 
 #### TAA-2A8 — Elliott Wave (heuristic tier)
 
