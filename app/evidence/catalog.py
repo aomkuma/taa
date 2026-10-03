@@ -31,7 +31,18 @@ from app.evidence.chart_patterns import (
 from app.evidence.fibonacci import FibCluster, FibExtension, FibGoldenZone, FibRetracement
 from app.evidence.framework import Detector
 from app.evidence.levels import PivotPoints, PrevHighLow, RoundNumber, SRBreakout, SRZone
+from app.evidence.momentum import CciExtreme, Divergence, MomentumCross, OverboughtOversold
 from app.evidence.registry import DetectorRegistry
+from app.evidence.sessions_ranges import AsianRangeBreakout, OpenRangeBreakout
+from app.evidence.trend import AdxStrength, MaAlignment
+from app.evidence.volatility import (
+    AtrExpansion,
+    BollingerSqueeze,
+    DonchianBreakout,
+    KeltnerBreakout,
+    SessionVwap,
+    TickVolumeSpike,
+)
 
 ALL_DETECTORS: tuple[Detector, ...] = (
     # Fibonacci (TAA-2A2)
@@ -65,6 +76,21 @@ ALL_DETECTORS: tuple[Detector, ...] = (
     Harami(),
     Tweezer(),
     Marubozu(),
+    # Momentum, trend, volatility/volume, sessions (TAA-2A5)
+    Divergence(),
+    OverboughtOversold(),
+    MomentumCross(),
+    CciExtreme(),
+    MaAlignment(),
+    AdxStrength(),
+    BollingerSqueeze(),
+    KeltnerBreakout(),
+    DonchianBreakout(),
+    AtrExpansion(),
+    TickVolumeSpike(),
+    SessionVwap(),
+    AsianRangeBreakout(),
+    OpenRangeBreakout(),
 )
 
 

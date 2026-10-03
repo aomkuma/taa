@@ -20,7 +20,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 0 — Foundation & safety scaffolding | 9 | 9 | DONE |
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
-| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 4 | IN PROGRESS |
+| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 5 | IN PROGRESS |
 | M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
@@ -371,22 +371,22 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-2A5 — Momentum, volatility, volume, sessions
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A1
 
-- [ ] RSI/MACD/Stochastic regular + hidden divergences
-- [ ] overbought/oversold
-- [ ] crosses
-- [ ] CCI extremes
-- [ ] MA alignment
-- [ ] Bollinger squeeze/breakout
-- [ ] Keltner
-- [ ] Donchian
-- [ ] ATR expansion
-- [ ] tick-volume spike/climax
-- [ ] session VWAP
-- [ ] Asian-range and London/NY breakouts
-- [ ] tests
+- [x] RSI/MACD/Stochastic regular + hidden divergences
+- [x] overbought/oversold
+- [x] crosses
+- [x] CCI extremes
+- [x] MA alignment
+- [x] Bollinger squeeze/breakout
+- [x] Keltner
+- [x] Donchian
+- [x] ATR expansion
+- [x] tick-volume spike/climax
+- [x] session VWAP
+- [x] Asian-range and London/NY breakouts
+- [x] tests
 
 #### TAA-2A6 — Ichimoku, structure & smart money
 

@@ -35,6 +35,7 @@ from app.core.ids import stable_hash
 from app.evidence.zigzag import zigzag
 from app.indicators.common import FloatArray
 from app.indicators.price_action import Swing, find_swings
+from app.indicators.trend import ema
 from app.indicators.volatility import atr
 
 T = TypeVar("T")
@@ -407,6 +408,9 @@ class EvidenceContext:
     def atr_array(self, n: int | None = None) -> FloatArray:
         period = n or self.config.atr_period
         return self.memo(("atr_array", period), lambda: self.atr(period).to_numpy(dtype=np.float64))
+
+    def ema_array(self, n: int) -> FloatArray:
+        return self.memo(("ema", n), lambda: ema(self.close, n).to_numpy(dtype=np.float64))
 
     def zigzag(self, degree: str) -> list[Swing]:
         if degree not in self.config.zigzag_degrees:

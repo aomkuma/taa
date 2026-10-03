@@ -150,6 +150,52 @@ confirmed zigzag pivots (`params.degree`, default `minor`; cup and handle: `inte
 | `candle.tweezer` | `top`: equal highs (within 5 % of `ref_range`), bullish then bearish, after a rise. `bottom` mirrors it | top BEAR, bottom BULL |
 | `candle.marubozu` | body above `ref_body`, both shadows below 10 % of `ref_range` (TA-Lib geometry); no trend needed | its colour |
 
+### Momentum (`momentum.py`, T1)
+
+Oscillators: RSI(14), MACD(12, 26, 9) line, slow Stochastic %K(14, 3, 3), CCI(20), all from `app/indicators`
+(docs/INDICATORS.md).
+
+| Detector | Rule | Direction | Quality / invalidation |
+|---|---|---|---|
+| `momentum.divergence` | Two consecutive same-kind zigzag pivots (`minor`), 5–60 bars apart, with the oscillator read at each pivot bar. **Regular**: price makes a higher high while the oscillator makes a lower high (bearish), or a lower low with a higher oscillator low (bullish). **Hidden**: a lower high with a higher oscillator high (bearish), or a higher low with a lower oscillator low (bullish). Variants `rsi/macd/stoch` × `regular/hidden`. Stamped at the second pivot's confirmation; `max_age_bars` 5 | highs BEAR, lows BULL | 0.5 + 0.5 × oscillator gap ÷ scale (RSI 10, %K 20, MACD 0.5 ATR) / beyond the second pivot |
+| `momentum.ob_os` | RSI back below 70 / above 30, or %K back below 80 / above 20 (`*_overbought_exit`, `*_oversold_exit`) | exit from overbought BEAR, from oversold BULL | 0.5 + 0.5 × depth of the excursion ÷ 15 / the price extreme reached during the excursion |
+| `momentum.cross` | `macd`: the line crosses its signal (1.0 when on the far side of zero, an early turn; otherwise 0.6). `stoch`: %K crosses %D while %D is beyond 20 / 80 | cross direction | as stated / the bar's extreme |
+| `momentum.cci_extreme` | `extreme_exit`: CCI back inside ±100 after reaching ±200 within 10 bars (exhaustion). `breakout`: CCI crossing ±100 from inside (momentum push) | exit: against the extreme; breakout: with it | 0.4 + 0.3 × peak ÷ 200 / the bar's extreme |
+
+### Trend (`trend.py`, T1)
+
+These describe states that persist, so they are stamped when the state begins and stay active up to a long
+`max_age_bars` (50 for alignment, 20 for ADX). Their invalidation level ends them earlier.
+
+| Detector | Rule | Direction | Quality / invalidation |
+|---|---|---|---|
+| `trend.ma_alignment` | `aligned_bull`: EMA20 > EMA50 > EMA200 with the close above EMA20, from the bar it begins (`aligned_bear` mirrors it). `golden_cross` / `death_cross`: EMA50 crossing EMA200. `slow_reclaim` / `slow_loss`: the close crossing EMA200 (half weight) | as named | 0.5 + 0.5 × min(1, ADX ÷ 40) / the mid EMA (alignment) or EMA200 (crosses) at detection |
+| `trend.adx_strength` | ADX(14) rising through 25 | +DI > −DI BULL, else BEAR | 0.5 + \|+DI − −DI\| ÷ 40 / the bar's extreme |
+
+### Volatility and volume (`volatility.py`, T1)
+
+| Detector | Rule | Direction | Quality / invalidation |
+|---|---|---|---|
+| `volatility.bollinger_squeeze` | Bollinger(20, 2) width in the lowest 10 % of its last 120 values (a squeeze episode; gaps ≤ 20 bars belong to the same episode), then the first close outside a band within 20 bars, once per episode. The breakout bar may itself still rank as a squeeze | breakout side | 0.6 + 0.4 × freshness / the middle band |
+| `volatility.keltner` | first close outside EMA(20) ± 2 × ATR(10) | breakout side | 0.5 + distance beyond ÷ ATR / EMA(20) |
+| `volatility.donchian` | first close above the previous 20 bars' highest high (below their lowest low) | breakout side | 0.7 / mid of the channel |
+| `volatility.atr_expansion` | a range-expansion bar: true range ≥ 2 × the previous ATR, closing in its top / bottom 30 % | close side | TR ÷ (2 ATR) × 0.6 / the bar's midpoint |
+| `volume.tick_spike` | tick volume ≥ 2.5 × the previous 20 bars' mean. `climax`: after a move of ≥ 3 ATR over 10 bars, the bar closes back in its far half (a selling climax after a decline is BULL). Otherwise `spike` in the direction of a close in the outer 30 % | as stated | 0.4 + 0.2 × ratio ÷ 2.5 / the bar's extreme |
+| `volume.session_vwap` | VWAP = Σ(typical price × tick volume) ÷ Σ tick volume, reset at each trading day (`evidence.session_timezone`). `reclaim` / `loss`: the close crossing it, ignoring the first 3 bars of a session | reclaim BULL, loss BEAR | 0.6 / the VWAP at detection |
+
+### Sessions (`sessions_ranges.py`, T1)
+
+- Sessions are defined in each exchange's **local** time (zoneinfo), so daylight-saving changes move them
+  correctly. A bar belongs to a session by its open time.
+- A range is used only if every bar of its session is present (fail closed) and it has closed before the
+  breakout bar. Range height must be 0.5–4 ATR.
+- Intraday timeframes only (≤ H1).
+
+| Detector | Rule | Direction | Quality / invalidation / target |
+|---|---|---|---|
+| `sessions.asian_breakout` | the Tokyo range (09:00–15:00 Asia/Tokyo), broken by the first close beyond it in the London morning (08:00–12:00 Europe/London) of the same London calendar day, once per day | breakout side | 0.5 + 0.5 × volume score / range midpoint / range height beyond the edge |
+| `sessions.open_breakout` | opening range = the first 60 minutes after 08:00 local in London and New York (variants `london`, `new_york`); the first close beyond it within the next 180 minutes, once per session per day | breakout side | same |
+
 Formulas used by `levels.pivot_points`, from the previous period's high H, low L and close C:
 
 - **Classic**: `P = (H + L + C)/3`; `R1 = 2P − L`; `S1 = 2P − H`; `R2/S2 = P ± (H − L)`; `R3 = H + 2(P − L)`;
