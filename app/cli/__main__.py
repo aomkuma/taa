@@ -229,6 +229,42 @@ def cmd_demo_report(args: argparse.Namespace) -> int:
     return 0 if all(report.checks.values()) else 3
 
 
+def cmd_advisory_rank(args: argparse.Namespace) -> int:
+    import tempfile
+    from pathlib import Path
+
+    from app.advisory.ranking_report import format_ranking
+    from app.advisory.ranking_service import RankingService
+    from app.advisory.universe import SymbolCatalog
+    from app.broker.factory import build_read_only
+    from app.core.clock import SystemClock
+    from app.storage.database import Database, upgrade_schema
+
+    if hasattr(sys.stdout, "reconfigure"):  # Thai text and symbols on a legacy Windows console
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    settings = _settings(args)
+    clock = SystemClock()
+    bundle = build_read_only(settings, fake=args.fake, clock=clock)
+    account = bundle.client.connect().account
+    with tempfile.TemporaryDirectory() as tmp:
+        if args.fake:  # never mix fake snapshots into the engine database
+            url = f"sqlite:///{(Path(tmp) / 'advisory-fake.db').as_posix()}"
+            upgrade_schema(url)
+            db = Database(url)
+        else:
+            db, _ = _db_and_audit(settings)
+        try:
+            cfg = settings.config
+            catalog = SymbolCatalog(db, bundle.gateway, cfg.advisory.universe, clock, server=account.server)
+            service = RankingService(db, bundle.gateway, catalog, cfg, clock, server=account.server)
+            run = service.rescan()
+            print(format_ranking(run, top=args.top, language=args.lang))
+        finally:
+            db.engine.dispose()
+            bundle.client.shutdown()
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="TAA operator commands")
     parser.add_argument("--env-file", default=".env")
@@ -294,6 +330,14 @@ def build_parser() -> argparse.ArgumentParser:
     rep = sub.add_parser("demo-report", help="DEMO soak report from the engine database")
     rep.add_argument("--days", type=float, default=14.0)
     rep.set_defaults(func=cmd_demo_report)
+
+    adv = sub.add_parser("advisory", help="advisory tools (read-only; never changes what the bot trades)")
+    adv_sub = adv.add_subparsers(dest="advisory_command", required=True)
+    rank = adv_sub.add_parser("rank", help="rank every symbol by suitability for this account now")
+    rank.add_argument("--fake", action="store_true", help="use the in-memory FakeMT5 instead of a terminal")
+    rank.add_argument("--top", type=int, default=None, help="show only the first N rows")
+    rank.add_argument("--lang", choices=["en", "th"], default="en")
+    rank.set_defaults(func=cmd_advisory_rank)
     return parser
 
 

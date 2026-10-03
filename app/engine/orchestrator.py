@@ -30,6 +30,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from app.advisory.ranking_service import RankingService
+from app.advisory.universe import SymbolCatalog
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
 from app.broker.models import BrokerPosition
@@ -135,6 +137,7 @@ class Engine:
         self._atr: dict[str, float] = {}
         self._last_entry: dict[str, datetime] = {}
         self._booked_deals = 0
+        self.ranking: RankingService | None = None
         loop = self.config.engine
         self._candles_due = _Due(loop.candle_poll_seconds)
         self._health_due = _Due(loop.health_interval_seconds)
@@ -207,6 +210,13 @@ class Engine:
             breakers=self.board,
             store=DecisionStore(self.db),
         )
+        if cfg.advisory.ranking.enabled:  # advice about the broker account; never changes what the bot trades
+            catalog = SymbolCatalog(
+                self.db, self.gateway, cfg.advisory.universe, self.clock, server=account.server
+            )
+            self.ranking = RankingService(
+                self.db, self.gateway, catalog, cfg, self.clock, server=account.server
+            )
         by_magic = {self.magic[s.name]: s for s in self.strategies.strategies}
         restored = self._build_backend(account, by_magic)
         self.on_started(restored)
@@ -406,6 +416,8 @@ class Engine:
                 self._health()
             if connected and self._clock_due.due(now):
                 self._verify_clock()
+            if connected and self.ranking is not None:
+                self._advisory(self.ranking)
         except Exception as exc:  # process boundary: keep monitoring, block entries, tell the operator
             log.exception("engine cycle %s failed", self.cycles)
             self.last_error = f"{type(exc).__name__}: {exc}"
@@ -415,6 +427,21 @@ class Engine:
             )
 
     # --- steps ------------------------------------------------------------------------------------------
+
+    def _advisory(self, ranking: RankingService) -> None:
+        try:
+            ranking.tick()
+        except Exception as exc:  # advisory boundary: a ranking failure never touches trading
+            log.exception("advisory ranking failed")
+            ranking.stats.failures += 1
+            ranking.stats.last_error = f"{type(exc).__name__}: {exc}"
+
+    def request_rescan(self) -> bool:
+        """The RESCAN_SUITABILITY command: the next cycle refreshes every symbol's ranking metrics."""
+        if self.ranking is None:
+            return False
+        self.ranking.request_rescan()
+        return True
 
     def _check_kill_switch(self) -> None:
         active = self.kill_switch.is_active()
@@ -589,6 +616,16 @@ class Engine:
                 for s in (self.board.blocking() if hasattr(self, "board") else [])
             ],
             "last_error": self.last_error,
+            "ranking": None
+            if self.ranking is None
+            else {
+                "runs": self.ranking.stats.runs,
+                "symbols": len(self.ranking.cache),
+                "refreshed": self.ranking.stats.refreshed,
+                "failures": self.ranking.stats.failures,
+                "last_duration_ms": round(self.ranking.stats.last_duration_ms),
+                "last_error": self.ranking.stats.last_error,
+            },
         }
 
     # --- shutdown ---------------------------------------------------------------------------------------

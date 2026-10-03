@@ -478,11 +478,24 @@ class ScoringConfig(StrictModel):
         return {k: value.get(k, w) for k, w in SCORE_WEIGHTS.items()}
 
 
+class RankingConfig(StrictModel):
+    """When the ranking service refreshes (PLAN §A25 scheduling); it runs inside the engine process."""
+
+    enabled: bool = True
+    structural_hours: float = Field(default=6.0, gt=0, le=48, description="full refresh of every symbol")
+    equity_change_percent: float = Field(default=5.0, gt=0, le=100, description="... or when equity moves")
+    dynamic_minutes: float = Field(default=60.0, gt=0, le=1440, description="per-symbol metric refresh")
+    batch_size: int = Field(default=20, ge=1, le=200, description="symbols refreshed per minute")
+    now_seconds: float = Field(default=60.0, ge=5, le=3600, description="Now score cadence")
+    retention_days: int = Field(default=90, ge=1, le=3650)
+
+
 class AdvisoryConfig(StrictModel):
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
     sessions: AdvisorySessionsConfig = Field(default_factory=AdvisorySessionsConfig)
     suitability: SuitabilityConfig = Field(default_factory=SuitabilityConfig)
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
+    ranking: RankingConfig = Field(default_factory=RankingConfig)
 
 
 class ExecutionConfig(StrictModel):

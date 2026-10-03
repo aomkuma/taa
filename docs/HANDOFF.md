@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-03, after Phase 12 (DEMO execution, pulled forward; TAA-1201..1206 done). This file holds **state
+Last updated: 2026-10-04, after Phase 6A (symbol universe & suitability ranking; TAA-6A1..6A5 done). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -14,8 +14,8 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
 relevant sections of docs/PLAN.md (§A29 evidence engine, §A31 trading profile). Follow CLAUDE.md and
 docs/CODING_STANDARDS.md.
-Phases 0, 1, 2, 2A, 3, 4, 5, 6 and 12 (DEMO execution, pulled forward on the user's request) are DONE.
-Next: Phase 6A (symbol universe & suitability ranking, TAA-6A1..), then 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10
+Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A and 12 (DEMO execution, pulled forward on the user's request) are DONE.
+Next: Phase 6B (watchlists, opportunities & alert windows, TAA-6B1..), then 6C -> 7 -> 8 -> 8A -> 9 -> 10
 -> 11. LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
@@ -27,8 +27,10 @@ any phase boundary if I ask.
 
 - **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206), Phase 2A
   (TAA-2A1..2A10), Phase 3 (TAA-301..307), Phase 4 (TAA-401..407), Phase 5 (TAA-501..506) and Phase 6
-  (TAA-601..606) and Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders).
-- **Checks:** 1707 tests pass, 8 skipped (the suite takes ~2.5 min; backtest and engine tests are the slow part) (real-terminal, Postgres, one contract case defined from bar 0). ruff,
+  (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
+  (TAA-6A1..6A5, symbol universe & suitability ranking).
+- **Checks:** 1814 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
+  suite takes ~2.5 min, with backtest and engine tests the slow part. ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
@@ -43,8 +45,9 @@ any phase boundary if I ask.
 - **Built:**
   - config (pydantic-settings + `config.yaml`, percent risk units, hard ceilings)
   - secrets (`keyring:` indirection, log redaction), JSON logging
-  - SQLite/Postgres storage with Alembic (migrations 0001, 0002), hash-chained audit log
-  - kill switch; CLI (`config`, `db`, `audit`, `kill`, `doctor`); CI config
+  - SQLite/Postgres storage with Alembic (migrations 0001–0010), hash-chained audit log
+  - kill switch; CLI (`config`, `db`, `audit`, `kill`, `doctor`, `backtest`, `breaker`, `demo-report`,
+    `advisory rank`); CI config
   - read-only MT5 client and gateway (explicit login, account verification, order functions blocked,
     `symbols(group)`, `ticks_range`)
   - multi-asset FakeMT5 (schedules, ticks, fixed and FBS-tiered leverage)
@@ -159,6 +162,22 @@ any phase boundary if I ask.
     - `app/engine/broker_positions.py`: A11 rules via SLTP within stops/freeze levels, closes, flatten
     - `app/engine/backends.py`: `PaperBackend` / `DemoBackend`; the engine checks the DEMO gate before every
       decision and send; `python -m app.main --mode demo`; CLI `breaker list|reset`, `demo-report`
+  - advisory ranking (Phase 6A, PLAN §A25; `app/advisory/`):
+    - `asset_classes.py` + `universe.py`: classes from currency codes, path and calc mode; `symbol_catalog`
+      (migration 0009) refreshed daily from `symbols_get(group)`; exotics/OTHER opt-in; `monitored_set`
+    - `market_sessions.py`: Sydney/Tokyo/London/New York/EU and US equities in exchange-local time (DST via
+      zoneinfo), asset class → sessions with per-symbol overrides, `session_state` (active, ends_at,
+      next_open), hour-of-week tick-volume `LiquidityProfile` from H1
+    - `suitability.py`: `collect_facts` (broker calls once per symbol) and `assess` (per account, no broker
+      calls; risk-sized lot from the real `PositionSizer` via `FactsCalculator`), gates G1–G6 with
+      explanation keys; `explanations.py` has the TH/EN texts
+    - `scoring.py` + `correlations.py`: S1–S9, Overall/Now, greedy diversified ranking (eligible first,
+      deterministic); hypothesis property: more equity never lowers S1 or fails G2
+    - `ranking_service.py`: structural refresh (6 h / equity ±5%), round-robin metrics (20 symbols/min,
+      hourly), Now score per minute, `suitability_snapshots` (one row per symbol and hour, 90-day
+      retention, migration 0010); runs inside the engine loop behind its own error boundary
+      (`advisory.ranking.enabled`); `Engine.request_rescan()` is the RESCAN hook for the Phase 7 command queue
+    - CLI: `python -m app.cli advisory rank [--fake] [--top N] [--lang th]` (`--fake` uses a throwaway DB)
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -176,8 +195,8 @@ any phase boundary if I ask.
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
   remote yet. The working tree is clean.
-- **Next step:** Phase 6A (symbol universe & suitability ranking), starting with TAA-6A1. Market sessions
-  (TAA-6A2) should reuse `SessionWindow`/`window_end` from `app/market_data/trading_sessions.py`.
+- **Next step:** Phase 6B (watchlists, opportunities & alert windows), starting with TAA-6B1. Mind the
+  evidence-scan cost (~1.6 s per symbol per bar) when scanning the monitored set.
 
 ## Notes for the next session
 
@@ -216,6 +235,15 @@ any phase boundary if I ask.
     a few symbols every 15 min; the universe scanner (6B) needs a budget or a narrower plan.
   - The PAPER engine has only been run on FakeMT5. Running it against the real terminal is the user's
     call (read-only, investor or master password per `.env`).
+- Notes from Phase 6A:
+  - The ranking assesses the **broker** account (equity, margin) even in PAPER mode, because it advises the
+    user about their real account; the paper book only drives the bot.
+  - G6 checks quote freshness only while the symbol's mapped sessions are open, so weekends don't mark
+    everything stale.
+  - `SymbolSpec.swap_mode` was added (default UNKNOWN for specs stored earlier); S9 understands points,
+    deposit currency and disabled swaps, other modes score a neutral 50 with an `unknown_swap` flag.
+  - S8 (historical edge) is neutral until Phase 6C supplies shadow outcomes (`edge_source` hook).
+  - Only run on FakeMT5 so far; `advisory rank` against the real terminal is read-only and the user's call.
 - Risk-layer test helpers: `tests/risk_data.py` (`TickCalculator`, `funds`, `XAUUSD_SPEC`).
 - Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
   `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.

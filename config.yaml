@@ -161,6 +161,14 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
     swap_max_fraction: 0.05         # S9 is 0 when a night's swap costs 5% of the typical stop
     correlation_bars: 500
     correlation_min_overlap: 100
+  ranking:                          # runs inside the engine; never affects trading
+    enabled: true
+    structural_hours: 6             # refresh every symbol's metrics, or when equity moves by
+    equity_change_percent: 5
+    dynamic_minutes: 60             # per-symbol refresh, round-robin
+    batch_size: 20                  # symbols refreshed per minute (bounded terminal load)
+    now_seconds: 60                 # Now score cadence from cached metrics
+    retention_days: 90              # suitability_snapshots history
 
 engine:
   monitor_interval_seconds: 1.0
