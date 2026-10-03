@@ -6,6 +6,18 @@ runs the look-ahead harness against every entry.
 
 from __future__ import annotations
 
+from app.evidence.candlesticks import (
+    Doji,
+    Engulfing,
+    Hammer,
+    Harami,
+    InsideOutside,
+    Marubozu,
+    ShootingStar,
+    Star,
+    ThreeSoldiersCrows,
+    Tweezer,
+)
 from app.evidence.chart_patterns import (
     CupHandle,
     DoubleTopBottom,
@@ -42,6 +54,17 @@ ALL_DETECTORS: tuple[Detector, ...] = (
     Rectangle(),
     FlagPennant(),
     CupHandle(),
+    # Candlesticks (TAA-2A4)
+    Engulfing(),
+    Hammer(),
+    ShootingStar(),
+    Doji(),
+    InsideOutside(),
+    Star(),
+    ThreeSoldiersCrows(),
+    Harami(),
+    Tweezer(),
+    Marubozu(),
 )
 
 

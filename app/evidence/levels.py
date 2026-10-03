@@ -34,14 +34,19 @@ from app.indicators.price_action import BreakoutStatus, Zone, detect_breakouts, 
 class RoundNumberParams(DetectorParams):
     tol_atr: float = Field(default=0.15, gt=0, le=2)
     half_levels: bool = True
-    # None: derived from the price magnitude (EURUSD 1.10 -> 0.01, USDJPY 150 -> 1, XAUUSD 4100 -> 10)
+    # None: derived from the price magnitude (EURUSD 1.10 -> 0.01, AUDJPY 95 -> 1, XAUUSD 4100 -> 100)
     step: float | None = Field(default=None, gt=0)
     cooldown_bars: int = Field(default=5, ge=0, le=500)
 
 
 def round_step(price: float) -> float:
-    """The "big figure" for a price: two orders of magnitude below its leading digit."""
-    return float(10.0 ** (math.floor(math.log10(price)) - 2))
+    """The "big figure" for a price: two orders of magnitude below its *rounded* magnitude.
+
+    Rounding (not flooring) the log keeps JPY crosses together: AUDJPY at 95 and USDJPY at 150 both get 1.00,
+    and AUDUSD at 0.65 gets 0.01 like EURUSD. The step changes at √10 multiples (e.g. XAUUSD 2,000 → 10,
+    4,100 → 100); set ``step`` to override it.
+    """
+    return float(10.0 ** (round(math.log10(price)) - 2))
 
 
 class RoundNumber(Detector):

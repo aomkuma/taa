@@ -82,7 +82,7 @@ Retracement `r` is at `B − r·(B − A)`; extension `e` is at `A + e·(B − A
 
 | Detector | Fires when | Direction | Quality | Invalidation |
 |---|---|---|---|---|
-| `levels.round_number` | a round price is probed and rejected. Step = `10^(floor(log10 price) − 2)` (EURUSD 0.01, USDJPY 1, XAUUSD 10) unless `step` is set. Variants: major (10 steps), minor (1 step), half (0.5 step) | touch | touch quality × 1.0 / 0.8 / 0.6 | level ∓ tolerance |
+| `levels.round_number` | a round price is probed and rejected. Step = `10^(round(log10 price) − 2)` (EURUSD and AUDUSD 0.01; USDJPY and AUDJPY 1; XAUUSD 10 below ≈ 3,162 and 100 above; BTC 1,000) unless `step` is set. Variants: major (10 steps), minor (1 step), half (0.5 step) | touch | touch quality × 1.0 / 0.8 / 0.6 | level ∓ tolerance |
 | `levels.pivot_points` | a classic / Fibonacci / Camarilla pivot of the previous day (previous week on D1) is probed and rejected, at most once per level per period. Default method: classic | touch | touch quality | level ∓ tolerance |
 | `levels.prev_high_low` | previous day/week high or low: `reject` (BEAR at the high, BULL at the low) or `break` (first close beyond it), each at most once per period | reject: against the level; break: with it | reject: touch quality; break: 0.7 | reject: level ± tolerance; break: the level |
 | `levels.sr_zone` | a zone of ≥ `min_touches` (3) clustered swings (`sr_zones`, rebuilt after each new swing) is approached from one side, probed, and rejected with a wick ≥ `min_wick`, closing back outside | support BULL / resistance BEAR | min(1, 0.4 + 0.15 × touches) | beyond the zone |
@@ -121,6 +121,34 @@ confirmed zigzag pivots (`params.degree`, default `minor`; cup and handle: `inte
 | `chart.rectangle` | flat top and flat bottom | close beyond either side | breakout direction | opposite side / edge ± height |
 | `chart.flag` | pole: from the latest pivot (or the one before) to the running extreme since, ≥ `pole_atr` (4) × ATR within `max_pole_bars` (15). Consolidation: the following 3–20 bars, retracing ≤ 38.2 % of the pole. `pennant` when the consolidation's high and low regression lines converge, else `flag` | close beyond the consolidation's high (bull) / low (bear) regression line | pole direction | consolidation extreme / breakout edge ± pole |
 | `chart.cup_handle` | left rim: HIGH pivot before a recent LOW pivot (the bottom); right rim: running high since the bottom, within 15 % of the depth of the left rim; cup ≥ 15 bars and depth ≥ 3 ATR; **rounded**: ≥ 15 % of the cup's closes within 10 % of the depth from the low (a cosine U ≈ 20 %, a V ≈ 10 %); handle: 1–20 bars, ≤ 50 % of the depth, above the bottom | close above the higher rim | BULL | handle low / rim + depth |
+
+### Candlesticks (`candlesticks.py`, T1)
+
+- **Reference sizes** follow TA-Lib: `ref_range` and `ref_body` are the mean high-low range and the mean real
+  body of the **previous 10 bars** (the bar itself is excluded).
+- **Cross-check.** The bare geometry functions (`engulfing_mask`, `doji_mask`, `harami_mask`, `marubozu_mask`)
+  match TA-Lib's `CDLENGULFING`, `CDLDOJI`, `CDLHARAMI` and `CDLMARUBOZU` bar for bar after TA-Lib's lookback.
+- **Prior trend.** A reversal pattern needs the close before its first bar to have moved at least `trend_atr`
+  (1.0) × ATR over `trend_bars` (5) bars against the signal.
+- **Location weighting.** quality = geometry × (0.6 + 0.4 × `at_level`). `at_level` is 1 when one of the
+  location sources reported a rejection in the same direction on one of the pattern's bars: `fib.retracement`,
+  `levels.sr_zone`, `levels.round_number`, `levels.pivot_points`, `levels.prev_high_low`. These are declared in
+  `depends_on`, so they run even when not enabled for output. Neutral patterns are not weighted.
+- **Stamping.** A record is stamped at the pattern's last bar. `max_age_bars` = 2. Invalidation is beyond the
+  pattern's extreme (its lowest low for bullish patterns).
+
+| Detector | Rule | Direction |
+|---|---|---|
+| `candle.engulfing` | opposite colours; the second body covers the first with at least one edge strictly beyond (TA-Lib geometry); after a counter-move | second bar's colour |
+| `candle.hammer` | lower tail ≥ 60 % of the range and ≥ 2 × the body; upper shadow ≤ 15 %; range ≥ 0.5 ATR; after a decline | BULL |
+| `candle.shooting_star` | mirror of the hammer, after a rise | BEAR |
+| `candle.doji` | body ≤ 0.1 × `ref_range` and range ≥ 0.3 ATR. `dragonfly` (upper ≤ 10 %, lower ≥ 60 %) BULL after a decline; `gravestone` mirrors it as BEAR; `long_legged` (both shadows ≥ 30 %, range ≥ ATR) and `standard` are NEUTRAL | see rule |
+| `candle.inside_outside` | `inside`: range within a previous bar whose range is at least `ref_range` (NEUTRAL). `outside_bull`/`outside_bear`: range beyond both ends of the previous bar, at least `ref_range`, closing in the top / bottom quarter in its colour | see rule |
+| `candle.star` | `morning`: long bearish bar (≥ 0.5 ATR), small body (≤ 30 %) at or below its close (within 10 % of its body; FX rarely gaps), then a bullish close above the first bar's midpoint, after a decline. `evening` mirrors it | morning BULL, evening BEAR |
+| `candle.three` | `soldiers`: three bullish bars ≥ 0.5 ATR, each opening inside the previous body and closing higher, upper shadows ≤ 30 % of the body. `crows` mirrors it | soldiers BULL, crows BEAR |
+| `candle.harami` | a body above `ref_body`, then a body below `ref_body` inside it (TA-Lib geometry); after a counter-move | opposite to the first bar |
+| `candle.tweezer` | `top`: equal highs (within 5 % of `ref_range`), bullish then bearish, after a rise. `bottom` mirrors it | top BEAR, bottom BULL |
+| `candle.marubozu` | body above `ref_body`, both shadows below 10 % of `ref_range` (TA-Lib geometry); no trend needed | its colour |
 
 Formulas used by `levels.pivot_points`, from the previous period's high H, low L and close C:
 

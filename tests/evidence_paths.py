@@ -46,3 +46,11 @@ def path_frame(
 
 def path(vertices: Sequence[float], bars_per_leg: int | Sequence[int] = 6, **kw: object) -> EvidenceContext:
     return context(path_frame(vertices, bars_per_leg, **kw))  # type: ignore[arg-type]
+
+
+def bars(rows: Sequence[tuple[float, float, float, float]], start: datetime = START) -> EvidenceContext:
+    """A context from explicit (open, high, low, close) rows, hourly from *start*."""
+    df = pd.DataFrame(rows, columns=["open", "high", "low", "close"], dtype=float)
+    df.index = pd.date_range(start, periods=len(rows), freq="h")
+    df["tick_volume"] = 100.0
+    return context(df)

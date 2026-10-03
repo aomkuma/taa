@@ -146,7 +146,9 @@ class TestRoundNumber:
     def test_step(self) -> None:
         assert round_step(1.1) == pytest.approx(0.01)
         assert round_step(150.2) == pytest.approx(1.0)
-        assert round_step(4139.3) == pytest.approx(10.0)
+        assert round_step(95.2) == pytest.approx(1.0)  # AUDJPY: same big figure as USDJPY
+        assert round_step(0.65) == pytest.approx(0.01)
+        assert round_step(4139.3) == pytest.approx(100.0)
 
     def test_golden_major_level(self) -> None:
         (ev,) = run(RoundNumber(), frame([*FX_WARMUP, (1.1012, 1.102, 1.1001, 1.1016)]))
