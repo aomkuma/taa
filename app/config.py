@@ -491,12 +491,20 @@ class RankingConfig(StrictModel):
     retention_days: int = Field(default=90, ge=1, le=3650)
 
 
+class ScannerConfig(StrictModel):
+    """The market opportunity scanner (PLAN §A26); runs inside the engine and never affects trading."""
+
+    enabled: bool = True
+    budget_seconds: float = Field(default=3.0, gt=0, le=60, description="scan time per engine cycle")
+
+
 class AdvisoryConfig(StrictModel):
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
     sessions: AdvisorySessionsConfig = Field(default_factory=AdvisorySessionsConfig)
     suitability: SuitabilityConfig = Field(default_factory=SuitabilityConfig)
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
     ranking: RankingConfig = Field(default_factory=RankingConfig)
+    scanner: ScannerConfig = Field(default_factory=ScannerConfig)
     # validated by app.advisory.preferences.local_preferences (config cannot import the catalogs it checks)
     preferences: dict[str, Any] = Field(default_factory=dict, description="fallback without a cloud")
 

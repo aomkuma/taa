@@ -41,9 +41,9 @@ import numpy as np
 
 from app.advisory.stats_math import beta_interval, brier, log_loss, wilson_interval
 from app.config import ConfluenceConfig
-from app.evidence.confluence import confluence_score
+from app.evidence.confluence import Relation, confluence_score
 from app.evidence.framework import Family
-from app.strategy.signal_models import Signal, condition_strength
+from app.strategy.signal_models import MarketContext, Signal, condition_strength
 
 # --- baselines ----------------------------------------------------------------------------------------------
 
@@ -113,7 +113,36 @@ def strength_bucket(strength: float) -> str:
 
 
 def rr_band(rr: float) -> str:
-    return _band(rr, RR_EDGES, RR_LABELS)
+    """Rounded to 0.01 first, so a planned 2.0 computed as 1.99999 stays in the 2-3 band."""
+    return _band(round(rr, 2), RR_EDGES, RR_LABELS)
+
+
+def signal_features(signal: Signal, market: MarketContext) -> dict[str, float]:
+    """Model features of an opportunity at signal time (stored with it, reused by training and replay).
+
+    Per detector: the strongest supporting quality minus the strongest conflicting quality; context one-hots
+    for the RR band, session and entry-TF regime; and whether the higher timeframe's trend agrees.
+    """
+    support: dict[str, float] = {}
+    conflict: dict[str, float] = {}
+    for e in signal.evidence:
+        ev = e.item.evidence
+        key = f"ev:{ev.family.value}:{ev.detector_id}"
+        if e.relation is Relation.SUPPORTS:
+            support[key] = max(support.get(key, 0.0), ev.quality)
+        elif e.relation is Relation.CONFLICTS:
+            conflict[key] = max(conflict.get(key, 0.0), ev.quality)
+    features = {k: support.get(k, 0.0) - conflict.get(k, 0.0) for k in sorted(set(support) | set(conflict))}
+    rr = signal.risk_reward
+    if rr is not None:
+        features[f"ctx:rr={rr_band(rr)}"] = 1.0
+    features[f"ctx:session={market.session.value}"] = 1.0
+    features[f"ctx:regime={market.entry.regime.value}"] = 1.0
+    side = signal.side
+    trend = market.higher.trend.value
+    aligned = side is not None and trend == ("BULLISH" if side.sign > 0 else "BEARISH")
+    features["ctx:htf_aligned"] = 1.0 if aligned else 0.0
+    return features
 
 
 @dataclass(frozen=True, slots=True)

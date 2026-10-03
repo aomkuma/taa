@@ -31,7 +31,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
-| M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 2 | IN PROGRESS |
+| M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 3 | IN PROGRESS |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 0 | TODO |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
@@ -841,17 +841,17 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6B3 — Market opportunity scanner
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 405, 601, 6A5, 6B2, 2A9
 
-- [ ] per new entry-TF bar for the monitored-symbol union
-- [ ] strategies (incl. TAA-306) + ADVISORY decision profile
-- [ ] only the required detector/strategy union is computed
-- [ ] owner-account lot, risk and reward money
-- [ ] idempotent market opportunity records for every candidate with evidence snapshot + model features
-- [ ] per-cycle time budget
-- [ ] **no user alerting here** (personalizer, TAA-8A4)
-- [ ] tests
+- [x] per new entry-TF bar for the monitored-symbol union
+- [x] strategies (incl. TAA-306) + ADVISORY decision profile
+- [x] only the required detector/strategy union is computed
+- [x] owner-account lot, risk and reward money
+- [x] idempotent market opportunity records for every candidate with evidence snapshot + model features
+- [x] per-cycle time budget
+- [x] **no user alerting here** (personalizer, TAA-8A4)
+- [x] tests
 
 #### TAA-6B4 — Market windows & lifecycle
 

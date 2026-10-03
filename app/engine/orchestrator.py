@@ -31,6 +31,8 @@ from datetime import datetime
 from typing import Any
 
 from app.advisory.ranking_service import RankingService
+from app.advisory.requirements import ComputeRequirements, local_requirements
+from app.advisory.scanner import OpportunityScanner
 from app.advisory.universe import SymbolCatalog
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
@@ -138,6 +140,8 @@ class Engine:
         self._last_entry: dict[str, datetime] = {}
         self._booked_deals = 0
         self.ranking: RankingService | None = None
+        self.scanner: OpportunityScanner | None = None
+        self._requirements_cache: tuple[datetime | None, ComputeRequirements] | None = None
         loop = self.config.engine
         self._candles_due = _Due(loop.candle_poll_seconds)
         self._health_due = _Due(loop.health_interval_seconds)
@@ -216,6 +220,20 @@ class Engine:
             )
             self.ranking = RankingService(
                 self.db, self.gateway, catalog, cfg, self.clock, server=account.server
+            )
+        if cfg.advisory.scanner.enabled:
+            self.requirements()  # invalid advisory preferences fail at startup (ConfigError)
+            self.scanner = OpportunityScanner(
+                self.db,
+                self.gateway,
+                cfg,
+                self.clock,
+                decisions=self.decisions,
+                requirements=self.requirements,
+                server=account.server,
+                health=self.health_snapshot,
+                loss=self._loss_status,
+                gate=self.gate,
             )
         by_magic = {self.magic[s.name]: s for s in self.strategies.strategies}
         restored = self._build_backend(account, by_magic)
@@ -418,6 +436,8 @@ class Engine:
                 self._verify_clock()
             if connected and self.ranking is not None:
                 self._advisory(self.ranking)
+            if connected and self.scanner is not None:
+                self._scan(self.scanner)
         except Exception as exc:  # process boundary: keep monitoring, block entries, tell the operator
             log.exception("engine cycle %s failed", self.cycles)
             self.last_error = f"{type(exc).__name__}: {exc}"
@@ -435,6 +455,33 @@ class Engine:
             log.exception("advisory ranking failed")
             ranking.stats.failures += 1
             ranking.stats.last_error = f"{type(exc).__name__}: {exc}"
+
+    def _scan(self, scanner: OpportunityScanner) -> None:
+        try:
+            scanner.tick()
+        except Exception as exc:  # advisory boundary: a scanner failure never touches trading
+            log.exception("opportunity scanner failed")
+            scanner.stats.failures += 1
+            scanner.stats.last_error = f"{type(exc).__name__}: {exc}"
+
+    def requirements(self) -> ComputeRequirements:
+        """What the scanner computes: from the local preferences until the cloud sends them (Phase 7).
+
+        Recomputed when a new ranking arrives (its top N is part of the monitored set)."""
+        run = None if self.ranking is None else self.ranking.last_run
+        key = None if run is None else run.computed_at
+        if self._requirements_cache is None or self._requirements_cache[0] != key:
+            ranked = [] if run is None else [r.symbol for r in run.ranked if r.eligible]
+            universe = [] if self.ranking is None else [e.symbol for e in self.ranking.universe]
+            req = local_requirements(
+                self.config,
+                ranked=ranked,
+                evidence=evidence_registry(),
+                strategies=default_registry(),
+                available=universe or None,
+            )
+            self._requirements_cache = (key, req)
+        return self._requirements_cache[1]
 
     def request_rescan(self) -> bool:
         """The RESCAN_SUITABILITY command: the next cycle refreshes every symbol's ranking metrics."""
@@ -616,6 +663,17 @@ class Engine:
                 for s in (self.board.blocking() if hasattr(self, "board") else [])
             ],
             "last_error": self.last_error,
+            "scanner": None
+            if self.scanner is None
+            else {
+                "bars": self.scanner.stats.bars,
+                "opportunities": self.scanner.stats.opportunities,
+                "hidden": self.scanner.stats.hidden,
+                "pending": len(self.scanner.pending),
+                "failures": self.scanner.stats.failures,
+                "last_duration_ms": round(self.scanner.stats.last_duration_ms),
+                "last_error": self.scanner.stats.last_error,
+            },
             "ranking": None
             if self.ranking is None
             else {

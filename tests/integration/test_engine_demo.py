@@ -41,6 +41,10 @@ def demo_settings(tmp_path: Path, **env: str) -> Settings:
             "symbols": s.config.symbols.model_copy(update={"allowed": ["EURUSD"]}),
             "evidence": s.config.evidence.model_copy(update={"default_enabled": False}),
             "engine": s.config.engine.model_copy(update={"heartbeat_file": str(tmp_path / "heartbeat.json")}),
+            # trading tests: the opportunity scanner has its own tests (tests/integration/test_scanner.py)
+            "advisory": s.config.advisory.model_copy(
+                update={"scanner": s.config.advisory.scanner.model_copy(update={"enabled": False})}
+            ),
         }
     )
     return dataclasses.replace(s, config=cfg)

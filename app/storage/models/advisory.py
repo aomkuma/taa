@@ -1,4 +1,4 @@
-"""Advisory tables (PLAN §A25-A27): the symbol catalog (TAA-6A1) and suitability snapshots (TAA-6A5)."""
+"""Advisory tables (PLAN §A25-A27): symbol catalog, suitability snapshots and market opportunities."""
 
 from __future__ import annotations
 
@@ -52,3 +52,50 @@ class SuitabilitySnapshotRow(Base):
     now_score: Mapped[float] = mapped_column(Float)
     failed_gates: Mapped[list[str]] = mapped_column(JSONType)
     payload: Mapped[dict[str, Any]] = mapped_column(JSONType)  # scores, gates, metrics, session
+
+
+class OpportunityRow(Base):
+    """A market opportunity: one strategy's entry signal on one symbol and bar that passed the ADVISORY hard
+    checks. Idempotent per strategy/symbol/bar/side (the signal's idempotency key). Never an alert by itself:
+    the personalizer decides who is alerted (§A30)."""
+
+    __tablename__ = "opportunities"
+
+    opportunity_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    server: Mapped[str] = mapped_column(String(64), index=True)
+    strategy: Mapped[str] = mapped_column(String(64))
+    symbol: Mapped[str] = mapped_column(String(32), index=True)
+    asset_class: Mapped[str] = mapped_column(String(16))
+    timeframe: Mapped[str] = mapped_column(String(8))
+    side: Mapped[str] = mapped_column(String(4))
+    bar_close_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    signal_expires_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    entry: Mapped[float] = mapped_column(Float)
+    stop_loss: Mapped[float] = mapped_column(Float)
+    take_profit: Mapped[float | None] = mapped_column(Float, nullable=True)
+    rr: Mapped[float | None] = mapped_column(Float, nullable=True)
+    setup_strength: Mapped[float] = mapped_column(Float)
+    score: Mapped[float] = mapped_column(Float)
+    # lifecycle (TAA-6B4)
+    status: Mapped[str] = mapped_column(String(16), index=True, default="CANDIDATE")
+    status_reason: Mapped[str] = mapped_column(Text, default="")
+    status_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    valid_until: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    valid_reason: Mapped[str] = mapped_column(String(64), default="")
+    # the owner account at signal time
+    decision_id: Mapped[str] = mapped_column(String(64))
+    warnings: Mapped[list[str]] = mapped_column(JSONType)
+    lot: Mapped[float | None] = mapped_column(Float, nullable=True)
+    risk_money: Mapped[float | None] = mapped_column(Float, nullable=True)
+    reward_money: Mapped[float | None] = mapped_column(Float, nullable=True)
+    equity: Mapped[float] = mapped_column(Float)
+    currency: Mapped[str] = mapped_column(String(8))
+    # market facts and model inputs
+    session: Mapped[str] = mapped_column(String(24))
+    regime: Mapped[str] = mapped_column(String(16))
+    atr: Mapped[float | None] = mapped_column(Float, nullable=True)
+    spread_points: Mapped[float | None] = mapped_column(Float, nullable=True)
+    requirements_version: Mapped[str] = mapped_column(String(16))
+    features: Mapped[dict[str, float]] = mapped_column(JSONType)
+    signal: Mapped[dict[str, Any]] = mapped_column(JSONType)  # conditions, evidence, confluence

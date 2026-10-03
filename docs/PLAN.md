@@ -828,8 +828,9 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
        limit, min-lot or margin infeasible.
      - Account-rule hits become **warnings** on the card (e.g. "daily loss limit reached").
   3. Size the lot and compute risk and reward money from the **current equity**.
-  4. Create a **market Opportunity** record (idempotent per strategy/symbol/bar/side) for *every* candidate, carrying
-     its full evidence and model features.
+  4. Create a **market Opportunity** record (idempotent per strategy/symbol/bar/side) for *every* candidate that
+     passes the hard checks, alerted or not, carrying its full evidence and model features. Hard failures keep
+     their reasons in `decision_records` (profile ADVISORY) and get no opportunity and no shadow trade.
   5. **Alert decisions are per user and happen in the personalizer (§A30), not in the engine.** A user is alerted
      when **metric ≥ x** with that user's enabled theories, minimum supporting theories are met, the user's windows
      are open, the symbol session is open, the list has alerts on, the rate limit allows, and it isn't a duplicate.
