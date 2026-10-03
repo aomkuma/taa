@@ -336,12 +336,19 @@ Any failure means REJECT, with the exact reason codes:
 | Costs | SPREAD_TOO_HIGH, SPREAD_TO_SL_TOO_HIGH, EXPECTED_SLIPPAGE_TOO_HIGH |
 | Signal | SL_MISSING, TP_MISSING, SL_WRONG_SIDE, SL_TOO_CLOSE (stops level + buffer), SL_TOO_FAR, RR_TOO_LOW |
 | AI (M2) | AI_DISAGREES, AI_LOW_CONFIDENCE, AI_UNAVAILABLE; all mean HOLD in veto mode |
-| Portfolio | MAX_OPEN_POSITIONS, MAX_POSITIONS_PER_SYMBOL, CONFLICTING_POSITION, DUPLICATE_SIGNAL, PENDING_INTENT_EXISTS, CORRELATION_LIMIT, MAX_TOTAL_OPEN_RISK, COOLDOWN_ACTIVE |
+| Portfolio | MAX_OPEN_POSITIONS, MAX_POSITIONS_PER_SYMBOL, CONFLICTING_POSITION, DUPLICATE_SIGNAL, PENDING_INTENT_EXISTS, CORRELATION_LIMIT, CURRENCY_EXPOSURE_LIMIT, MAX_TOTAL_OPEN_RISK, UNKNOWN_POSITION_RISK (an open position without a stop), FOREIGN_POSITIONS (policy `halt`), COOLDOWN_ACTIVE |
 | Account | DAILY_LOSS_LIMIT, WEEKLY_LOSS_LIMIT, MAX_DRAWDOWN, CONSECUTIVE_LOSSES, MARGIN_INSUFFICIENT, MARGIN_LEVEL_TOO_LOW, LEVERAGE_LIMIT |
 | Sizing | SYMBOL_SPEC_INCONSISTENT, RISK_BELOW_MIN_LOT, VOLUME_INVALID |
 | Broker precheck (M2) | ORDER_CHECK_FAILED:&lt;retcode&gt; |
 
 The output is a `DecisionRecord`: decision, checks, volume, risk money, the bar times used per TF, config hash and code version.
+
+(TAA-405) Each check is tagged HARD (the plan itself is invalid: data, geometry, RR, costs, closed market,
+min lot or margin infeasible, symbol outside the universe) or ACCOUNT (limits, exposure, breakers, kill switch,
+configured windows, news). The EXECUTION profile rejects on any failure; the ADVISORY profile rejects only on
+HARD failures and shows failed ACCOUNT checks as warnings. A missing loss status fails the daily-loss check
+(fail closed). The codes live in `app/risk/reasons.py`; `tests/unit/test_decision_engine.py` has one case per
+Milestone 1 code.
 
 ## A9. Risk management & position sizing
 
