@@ -106,6 +106,7 @@ backtest:
   spread_model: bar
   slippage_model: fixed
   slippage_points: 1
+  leverage: 100                     # simulated margin only; sizing is risk-based
   seed: 42
 
 engine:

@@ -88,6 +88,8 @@ class SimPosition:
     mae: float = 0.0  # worst adverse excursion, price units
     mfe: float = 0.0
     close_requested: ExitReason | None = None
+    stop_kind: ExitReason = ExitReason.STOP_LOSS  # BREAK_EVEN / TRAILING_STOP once management moved the stop
+    bars_held: int = 0
 
     @property
     def side(self) -> Side:
@@ -319,10 +321,19 @@ class SimulatedBroker:
     def cancel(self, order_id: int) -> None:
         self.pending.pop(order_id, None)
 
-    def modify(self, ticket: int, *, sl: float | None = None, tp: float | None = None) -> None:
+    def modify(
+        self,
+        ticket: int,
+        *,
+        sl: float | None = None,
+        tp: float | None = None,
+        stop_kind: ExitReason | None = None,
+    ) -> None:
         pos = self.positions[ticket]
         if sl is not None:
             pos.sl = sl
+            if stop_kind is not None:
+                pos.stop_kind = stop_kind
         if tp is not None:
             pos.tp = tp
 
@@ -365,7 +376,10 @@ class SimulatedBroker:
             fill = exit_on_bar(pos.side, pos.sl, pos.tp, bar, self.slippage(symbol))
             if fill is not None:
                 self._now = ensure_utc(bar.close_time)
-                events.append(self._close(pos, fill.price, bar.close_time, fill.reason))
+                reason = pos.stop_kind if fill.reason is ExitReason.STOP_LOSS else fill.reason
+                events.append(self._close(pos, fill.price, bar.close_time, reason))
+            else:
+                pos.bars_held += 1
         self._now = ensure_utc(bar.close_time)
         self._last_bid[symbol], self._last_spread[symbol] = bar.close, bar.spread
         for pos in self.positions.values():

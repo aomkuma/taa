@@ -34,7 +34,7 @@ import math
 import pandas as pd
 from pydantic import Field, model_validator
 
-from app.core.enums import Action, Regime, Timeframe, Trend
+from app.core.enums import Action, Regime, Side, Timeframe, Trend
 from app.evidence.framework import Family
 from app.indicators.price_action import SwingKind, find_swings
 from app.strategy.base_strategy import BaseStrategy
@@ -85,6 +85,11 @@ class TrendPullback(BaseStrategy):
         if not known(h.adx) or h.adx is None or h.adx < self.params.adx_min:
             return Trend.NEUTRAL
         return h.trend
+
+    def should_close(self, ctx: StrategyContext, side: Side) -> bool:
+        """Close when the higher-timeframe bias flips against the position (PLAN §A7 management)."""
+        opposite = Trend.BEARISH if side is Side.BUY else Trend.BULLISH
+        return self.bias(ctx) is opposite
 
     def evaluate(self, ctx: StrategyContext) -> Signal:
         p: TrendPullbackParams = self.params

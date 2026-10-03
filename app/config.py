@@ -360,6 +360,7 @@ class BacktestConfig(StrictModel):
     slippage_model: Literal["none", "fixed", "random"] = "fixed"
     slippage_points: float = Field(default=1.0, ge=0)
     swap_enabled: bool = False
+    leverage: float = Field(default=100.0, gt=0, le=3000, description="account leverage for simulated margin")
     seed: int = 42
 
 

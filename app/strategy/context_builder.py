@@ -212,8 +212,13 @@ def context_at(
     quote: Quote | None = None,
     spec: SymbolSpec | None = None,
     evidence: Mapping[Timeframe, EvidenceSnapshot] | None = None,
+    window: int | None = None,
 ) -> StrategyContext:
-    """The strategy context at *decision_time* (an entry-timeframe bar close) from pre-analyzed frames."""
+    """The strategy context at *decision_time* (an entry-timeframe bar close) from pre-analyzed frames.
+
+    *window* limits each frame handed to strategies to its last *window* bars (backtests pass the warm-up
+    size, so a long history is not copied at every bar); indicators were computed on the full frame.
+    """
     decision_time = ensure_utc(decision_time)
     entry = frames[entry_timeframe]
     n_entry = entry.count_upto(decision_time)
@@ -226,7 +231,7 @@ def context_at(
         n = frame.count_upto(decision_time)
         if n == 0:
             raise InsufficientDataError(f"no closed {tf} bar of {symbol} at {decision_time.isoformat()}")
-        cut[tf] = frame.df.iloc[:n].copy()
+        cut[tf] = frame.df.iloc[0 if window is None else max(0, n - window) : n].copy()
         states.append(_state(frame, n - 1))
         flags.extend(f"{tf.value}:{flag}" for flag in frame.quality_flags)
         lag = (decision_time - states[-1].bar_close_utc).total_seconds()

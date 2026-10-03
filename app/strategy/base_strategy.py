@@ -18,7 +18,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.core.enums import Action, EntryType, Timeframe
+from app.core.enums import Action, EntryType, Side, Timeframe
 from app.core.ids import new_id
 from app.evidence.framework import Family
 from app.strategy.signal_models import (
@@ -66,6 +66,10 @@ class BaseStrategy(ABC):
     @abstractmethod
     def evaluate(self, ctx: StrategyContext) -> Signal:
         """One signal for ``ctx.symbol`` at ``ctx.decision_time_utc``."""
+
+    def should_close(self, ctx: StrategyContext, side: Side) -> bool:
+        """Whether an open position of this strategy should be closed at this bar (default: never)."""
+        return False
 
     # signal builders -----------------------------------------------------------------------------------
 
