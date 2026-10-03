@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 22 | 0 | TODO |
 | M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 6 | 4 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 6 | 5 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
 | M2 | Phase 14 — LIVE readiness | 4 | 0 | TODO |
 
@@ -1596,13 +1596,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1205 — Broker position management
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 603, 1201
 
-- [ ] SL/TP modify (stops and freeze levels)
-- [ ] close
-- [ ] flatten
-- [ ] rate limits
+- [x] SL/TP modify (stops and freeze levels)
+- [x] close
+- [x] flatten
+- [x] rate limits
 
 #### TAA-1206 — DEMO mode
 

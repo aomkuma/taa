@@ -324,6 +324,7 @@ class FakeMT5:
         self._last_error: tuple[int, str] = (1, "Success")
         self._seed = seed
         self.desk = FakeTradeDesk(self)
+        self.price_override: dict[str, float] = {}  # tests: pin a symbol's bid
         start = clock.now_utc() - timedelta(days=history_days)
         end = clock.now_utc() + timedelta(days=future_days)
         self._series = {
@@ -441,7 +442,8 @@ class FakeMT5:
         k = self._visible_upto(series)
         if k == 0:
             return None
-        return float(series.cl[k - 1]), int(series.spread[k - 1]), int(series.utc[k - 1])
+        bid = self.price_override.get(symbol, float(series.cl[k - 1]))
+        return bid, int(series.spread[k - 1]), int(series.utc[k - 1])
 
     def _conversion_to_account(self, currency: str) -> float | None:
         """Price of 1 unit of ``currency`` in the account currency, from available symbols."""
