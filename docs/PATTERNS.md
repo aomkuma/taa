@@ -196,6 +196,45 @@ These describe states that persist, so they are stamped when the state begins an
 | `sessions.asian_breakout` | the Tokyo range (09:00–15:00 Asia/Tokyo), broken by the first close beyond it in the London morning (08:00–12:00 Europe/London) of the same London calendar day, once per day | breakout side | 0.5 + 0.5 × volume score / range midpoint / range height beyond the edge |
 | `sessions.open_breakout` | opening range = the first 60 minutes after 08:00 local in London and New York (variants `london`, `new_york`); the first close beyond it within the next 180 minutes, once per session per day | breakout side | same |
 
+### Ichimoku (`ichimoku.py`, T1)
+
+- Tenkan and Kijun are the midpoints of the last 9 and 26 bars' high/low.
+- Senkou A = (Tenkan + Kijun) / 2 and Senkou B = the 52-bar midpoint, both *plotted* 26 bars ahead. The cloud at
+  bar *t* is therefore the Senkou values computed at `t − 26`; a test checks this shift.
+- Chikou (the close plotted 26 bars back) is compared through `close[t]` against `close[t − 26]`.
+
+| Detector | Rule | Direction | Quality / invalidation |
+|---|---|---|---|
+| `ichimoku.kumo` | `breakout`: the first close above the cloud top (below its bottom). `twist`: Senkou A crossing Senkou B at the current bar, so the cloud 26 bars ahead changes colour (computed from past bars) | breakout / twist side | breakout 0.6 + 0.4 × min(1, cloud thickness ÷ 2 ATR), twist 0.5 / the far edge of the cloud |
+| `ichimoku.tk_cross` | Tenkan crossing Kijun | cross side | 1.0 on the strong side of the cloud, 0.7 inside it, 0.4 on the weak side (0.5 with no cloud yet) / Kijun |
+| `ichimoku.chikou` | the first bar at which the close clears both the close and the cloud of 26 bars ago (above both: BULL; below both: BEAR) | as stated | 0.7 / the close of 26 bars ago |
+
+### Market structure (`structure_smc.py`, family TREND, T1)
+
+A confirmed zigzag pivot (`minor`) is used only from the bar after its confirmation. The trend state follows
+Dow theory: UP when the last high is HH and the last low is HL, DOWN for LH and LL.
+
+| Detector | Rule | Direction | Quality / invalidation |
+|---|---|---|---|
+| `structure.dow` | the trend state becomes `up` or `down`; `max_age_bars` 50 | as named | 0.7 / the last opposite pivot |
+| `structure.bos_choch` | the first close beyond the last confirmed swing. `bos` when it is with the trend (continuation), `choch` when it is against an established trend (the first sign of a reversal), `break` with no trend | break side | 0.8 / 0.7 / 0.5; invalidation is the last opposite swing |
+| `structure.trendline` | lines through the last two swing lows (rising: support) and highs (falling: resistance). `bounce_*`: a later bar probes the line within 0.25 ATR and closes back on its side in the right colour, once per line. `break_*`: the first close beyond the line by the tolerance, which ends it. Detail `channel`: both lines exist and are near-parallel (slopes within 30 % and of the same sign) | bounce off support BULL, off resistance BEAR; break the other way | bounce 0.65 (0.8 in a channel), break 0.7 / the line |
+
+### Smart money and Wyckoff (`structure_smc.py`, family SMART_MONEY, T2)
+
+Zones (FVG, order block, supply/demand) are reported on the first **retest**: a bar that dips into the zone and
+closes back out of it in the zone's direction, within `max_bars` (50). A close through the zone first kills it.
+Reporting the retest rather than the formation avoids double-counting the impulse that created the zone, which
+the momentum and volatility detectors already see.
+
+| Detector | Rule | Direction | Quality / invalidation |
+|---|---|---|---|
+| `smc.liquidity_sweep` | a bar trades beyond a recent confirmed swing high or low (`swing_k` 3, within 50 bars), where stops rest, and closes back inside. A swing is spent once traded through, swept or not | above highs BEAR, below lows BULL | 0.5 + 0.25 × pools swept + 0.25 × wick ÷ ATR / the sweep extreme |
+| `smc.fvg` | a three-bar imbalance: bar *t*'s low above bar *t − 2*'s high (bullish) by ≥ 0.2 ATR; reported on its retest | gap side | 0.5 + 0.5 × gap ÷ ATR / the far edge of the gap |
+| `smc.order_block` | the last opposite-colour candle within 5 bars before a displacement leg (≤ 3 bars moving ≥ 2 ATR and closing beyond the previous 10 bars' extreme); its range, reported on its retest | leg direction | 0.7 / the far edge |
+| `smc.supply_demand` | a base of 1–4 tight bars (range ≤ 0.6 ATR) right before a displacement leg (demand under a rally, supply over a drop), reported on its retest | leg direction | 0.5 + 0.1 × base bars / the far edge |
+| `wyckoff.spring_upthrust` | a sideways range over the last 30 bars (height 2–6 ATR, net drift ≤ half the height). `spring`: a dip below the range low that closes back inside. `upthrust`: a poke above the high that closes back inside. Cooldown 10 bars | spring BULL, upthrust BEAR | by the distance of the close back inside / the probe extreme; target the opposite side of the range |
+
 Formulas used by `levels.pivot_points`, from the previous period's high H, low L and close C:
 
 - **Classic**: `P = (H + L + C)/3`; `R1 = 2P − L`; `S1 = 2P − H`; `R2/S2 = P ± (H − L)`; `R3 = H + 2(P − L)`;

@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-03, at the end of Phase 2. This file holds **state only**. Rules and conventions live in
+Last updated: 2026-10-03, during Phase 2A (TAA-2A1..2A6 done). This file holds **state only**. Rules and conventions live in
 `CLAUDE.md` (loaded automatically by Claude Code) and `docs/CODING_STANDARDS.md`.
 
 ---
@@ -12,8 +12,9 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 ```text
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
 relevant sections of docs/PLAN.md. Follow CLAUDE.md and docs/CODING_STANDARDS.md.
-Phases 0, 1 and 2 are DONE. Next: Phase 2A (TAA-2A1..2A9 evidence engine), then continue in the execution
-order 2A -> 3 -> 4 -> 5 -> 6 -> 6A -> 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+Phases 0, 1 and 2 are DONE; Phase 2A is DONE up to TAA-2A6. Next: TAA-2A7 (harmonics), 2A8 (Elliott), 2A9
+(selective computation), then continue in the execution order 3 -> 4 -> 5 -> 6 -> 6A -> 6B -> 6C -> 7 -> 8 ->
+8A -> 9 -> 10 -> 11.
 Tick the checklist after each item. Stop for review at the end of Milestone 1, or at any phase boundary if I ask.
 ```
 
@@ -21,8 +22,8 @@ Tick the checklist after each item. Stop for review at the end of Milestone 1, o
 
 ## Current state
 
-- **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110) and Phase 2 (TAA-201..206).
-- **Checks:** 315 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
+- **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206) and TAA-2A1..2A6.
+- **Checks:** 574 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
   mypy and bandit are clean.
   Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Built:**
@@ -40,6 +41,10 @@ Tick the checklist after each item. Stop for review at the end of Milestone 1, o
     (candle anatomy, confirmed swings, structure, S/R zones, breakouts). Formulas, warm-up positions and TA-Lib
     differences are in `docs/INDICATORS.md`. Every indicator is registered in
     `tests/unit/test_indicators_contract.py` (warm-up, look-ahead and short-input checks).
+  - evidence engine (`app/evidence/`, PLAN §A29): framework, multi-degree zigzag, registry with prerequisite
+    closure, look-ahead harness, and 52 detectors (Fibonacci, levels, chart patterns, candlesticks, momentum,
+    trend, volatility/volume, sessions, Ichimoku, structure, smart money). Catalog and rules: `docs/PATTERNS.md`.
+    Every detector must be documented there and pass the harness (`tests/unit/test_evidence_catalog.py`).
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -52,8 +57,9 @@ Tick the checklist after each item. Stop for review at the end of Milestone 1, o
     first run).
   - the demo account also carries a manual BTCUSD test position (magic 0). Per PLAN, manual positions count
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
-- **Git:** `main`, first commit `7d2ab1a` (Phases 0–2). No remote yet.
-- **Next step:** Phase 2A, starting with TAA-2A1 (evidence framework).
+- **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
+  remote yet.
+- **Next step:** TAA-2A7 (harmonic patterns).
 
 ## Open items needing the user
 

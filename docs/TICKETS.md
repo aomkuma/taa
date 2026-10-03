@@ -20,7 +20,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 0 — Foundation & safety scaffolding | 9 | 9 | DONE |
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
-| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 5 | IN PROGRESS |
+| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 6 | IN PROGRESS |
 | M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
@@ -390,18 +390,18 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-2A6 — Ichimoku, structure & smart money
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A1
 
-- [ ] Ichimoku (cloud, TK cross, Kumo breakout, Chikou)
-- [ ] Dow structure, BOS/CHoCH
-- [ ] trendlines/channels
-- [ ] liquidity sweep
-- [ ] fair value gap
-- [ ] order block
-- [ ] supply/demand zone
-- [ ] Wyckoff spring/upthrust
-- [ ] tests
+- [x] Ichimoku (cloud, TK cross, Kumo breakout, Chikou)
+- [x] Dow structure, BOS/CHoCH
+- [x] trendlines/channels
+- [x] liquidity sweep
+- [x] fair value gap
+- [x] order block
+- [x] supply/demand zone
+- [x] Wyckoff spring/upthrust
+- [x] tests
 
 #### TAA-2A7 — Harmonic patterns
 

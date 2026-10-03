@@ -30,10 +30,21 @@ from app.evidence.chart_patterns import (
 )
 from app.evidence.fibonacci import FibCluster, FibExtension, FibGoldenZone, FibRetracement
 from app.evidence.framework import Detector
+from app.evidence.ichimoku import Chikou, KumoBreakout, TkCross
 from app.evidence.levels import PivotPoints, PrevHighLow, RoundNumber, SRBreakout, SRZone
 from app.evidence.momentum import CciExtreme, Divergence, MomentumCross, OverboughtOversold
 from app.evidence.registry import DetectorRegistry
 from app.evidence.sessions_ranges import AsianRangeBreakout, OpenRangeBreakout
+from app.evidence.structure_smc import (
+    BosChoch,
+    DowStructure,
+    FairValueGap,
+    LiquiditySweep,
+    OrderBlock,
+    SupplyDemand,
+    Trendline,
+    WyckoffSpring,
+)
 from app.evidence.trend import AdxStrength, MaAlignment
 from app.evidence.volatility import (
     AtrExpansion,
@@ -91,6 +102,18 @@ ALL_DETECTORS: tuple[Detector, ...] = (
     SessionVwap(),
     AsianRangeBreakout(),
     OpenRangeBreakout(),
+    # Ichimoku, structure, smart money (TAA-2A6)
+    KumoBreakout(),
+    TkCross(),
+    Chikou(),
+    DowStructure(),
+    BosChoch(),
+    Trendline(),
+    LiquiditySweep(),
+    FairValueGap(),
+    OrderBlock(),
+    SupplyDemand(),
+    WyckoffSpring(),
 )
 
 
