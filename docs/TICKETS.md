@@ -30,7 +30,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 7 | DONE |
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
-| M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 2 | IN PROGRESS |
+| M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 3 | IN PROGRESS |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 0 | TODO |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 0 | TODO |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
@@ -764,18 +764,18 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6A3 — Suitability metrics & gates
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 401, 203, 6A1
 
-- [ ] typical SL from ATR
-- [ ] min-lot risk + required equity
-- [ ] risk-sized lot via PositionSizer
-- [ ] margin via `calc_margin` with a hike buffer
-- [ ] effective leverage (1%-move method)
-- [ ] cost ratio
-- [ ] stops-level feasibility
-- [ ] gates G1–G6 with explanation keys
-- [ ] tests incl. small-account XAUUSD exclusion
+- [x] typical SL from ATR
+- [x] min-lot risk + required equity
+- [x] risk-sized lot via PositionSizer
+- [x] margin via `calc_margin` with a hike buffer
+- [x] effective leverage (1%-move method)
+- [x] cost ratio
+- [x] stops-level feasibility
+- [x] gates G1–G6 with explanation keys
+- [x] tests incl. small-account XAUUSD exclusion
 
 #### TAA-6A4 — Scores & ranking
 

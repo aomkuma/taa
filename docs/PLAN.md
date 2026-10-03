@@ -767,7 +767,7 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
   | G3 Margin | margin of the risk-sized lot × buffer (default 2×, R24) ≤ free margin × utilization cap; projected margin level ≥ minimum | margin needed vs available |
   | G4 Cost | (median spread + commission) / typical_SL ≤ `max_spread_to_sl_ratio` | cost share of the stop |
   | G5 Stops level | `stops_level × point` < 0.5 × typical_SL | broker stop distance vs typical stop |
-  | G6 Data | fresh quotes and enough candles | which data is missing or stale |
+  | G6 Data | fresh quotes (checked only while the symbol's market is open) and enough candles | which data is missing or stale |
 
 - **Soft scores (0–100, configurable weights):**
 

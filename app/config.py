@@ -428,9 +428,22 @@ class AdvisorySessionsConfig(StrictModel):
         return value
 
 
+class SuitabilityConfig(StrictModel):
+    """Suitability metrics and hard gates G1–G6 (PLAN §A25)."""
+
+    sl_atr_multiple: float = Field(default=1.5, gt=0, le=10, description="typical SL = k x ATR + spread")
+    atr_timeframe: Timeframe = Timeframe.H1
+    atr_period: int = Field(default=14, ge=2, le=200)
+    margin_buffer: float = Field(default=2.0, ge=1, le=10, description="headroom for margin hikes (R24)")
+    stops_level_max_fraction: float = Field(default=0.5, gt=0, le=1, description="G5: of the typical SL")
+    min_candles: int = Field(default=200, ge=20)
+    max_quote_age_seconds: float = Field(default=300.0, gt=0)
+
+
 class AdvisoryConfig(StrictModel):
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
     sessions: AdvisorySessionsConfig = Field(default_factory=AdvisorySessionsConfig)
+    suitability: SuitabilityConfig = Field(default_factory=SuitabilityConfig)
 
 
 class ExecutionConfig(StrictModel):
