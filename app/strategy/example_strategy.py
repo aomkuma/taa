@@ -36,6 +36,7 @@ import pandas as pd
 from pydantic import Field, field_validator, model_validator
 
 from app.core.enums import Action, Regime, Timeframe, Trend
+from app.evidence.framework import Family
 from app.indicators.price_action import SwingKind, find_swings
 from app.strategy.base_strategy import BaseStrategy, StrategyParams
 from app.strategy.signal_models import Condition, ReasonCode, Signal, StrategyContext
@@ -88,6 +89,7 @@ class TrendPullback(BaseStrategy):
     description = "Higher-timeframe trend bias, entry-timeframe pullback to EMA(fast). Demonstration only."
     demo_only = True
     Params = TrendPullbackParams
+    core_families = frozenset({Family.TREND})  # the bias conditions are EMA alignment and ADX
 
     def required_timeframes(self) -> tuple[Timeframe, ...]:
         return ()  # the configured higher and entry timeframes, which every context has

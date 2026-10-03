@@ -112,3 +112,6 @@ evidence:                           # technical evidence engine (PLAN §A29, doc
     major: 6.0
   session_timezone: Europe/Athens   # trading-day boundary for daily/weekly levels (FBS server time)
   detectors: {}                     # e.g. fib.golden_zone: {enabled: true, params: {max_age_bars: 3}}
+  confluence:                       # setup-strength points (docs/PATTERNS.md "Confluence score"); not a probability
+    core_weight: 40                 # a fully passed strategy checklist
+    conflict_penalty: 0.75          # family_weights / tier_weights: built-in defaults unless overridden here

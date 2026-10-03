@@ -3,22 +3,24 @@
 - The catalog is the set of strategy classes the code ships. ``strategies.items`` selects and parameterizes
   them; an unknown name, a duplicate entry, invalid params, a timeframe that is not enabled or a warm-up
   longer than ``timeframes.warmup_bars`` is a :class:`ConfigError` at startup.
-- :meth:`StrategySet.evaluate` is the plugin boundary: an exception inside a strategy, or a signal that does
-  not belong to the context it was given, becomes HOLD (``STRATEGY_ERROR``) and is logged with its
-  traceback. One faulty strategy never stops the others or the engine loop.
+- :meth:`StrategySet.evaluate` attaches the context's evidence to every signal (TAA-307). It is also the
+  plugin boundary: an exception inside a strategy, or a signal that does not belong to the context it was
+  given, becomes HOLD (``STRATEGY_ERROR``) and is logged with its traceback. One faulty strategy never
+  stops the others or the engine loop.
 """
 
 from __future__ import annotations
 
 import logging
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pydantic import ValidationError
 
-from app.config import StrategiesConfig, TimeframesConfig
+from app.config import ConfluenceConfig, StrategiesConfig, TimeframesConfig
 from app.core.errors import ConfigError
 from app.strategy.base_strategy import BaseStrategy
+from app.strategy.enrichment import enrich
 from app.strategy.signal_models import ReasonCode, Signal, StrategyContext
 
 log = logging.getLogger(__name__)
@@ -50,7 +52,12 @@ class StrategyRegistry:
             raise ConfigError(f"invalid params for strategy {name}: {exc}") from exc
         return cls(params)
 
-    def from_config(self, strategies: StrategiesConfig, timeframes: TimeframesConfig) -> StrategySet:
+    def from_config(
+        self,
+        strategies: StrategiesConfig,
+        timeframes: TimeframesConfig,
+        confluence: ConfluenceConfig | None = None,
+    ) -> StrategySet:
         seen: set[str] = set()
         built: list[BaseStrategy] = []
         for item in strategies.items:
@@ -68,19 +75,23 @@ class StrategyRegistry:
                 )
             if item.enabled:
                 built.append(strategy)
-        return StrategySet(tuple(built))
+        return StrategySet(tuple(built), confluence or ConfluenceConfig())
 
 
 @dataclass(frozen=True)
 class StrategySet:
     strategies: Sequence[BaseStrategy]
+    confluence: ConfluenceConfig = field(default_factory=ConfluenceConfig)
 
     @property
     def names(self) -> list[str]:
         return [s.name for s in self.strategies]
 
     def evaluate(self, ctx: StrategyContext) -> list[Signal]:
-        return [self._evaluate_one(s, ctx) for s in self.strategies]
+        """One signal per strategy, enriched with the context's evidence (confluence setup strength)."""
+        return [
+            enrich(self._evaluate_one(s, ctx), ctx, self.confluence, s.core_families) for s in self.strategies
+        ]
 
     @staticmethod
     def _evaluate_one(strategy: BaseStrategy, ctx: StrategyContext) -> Signal:

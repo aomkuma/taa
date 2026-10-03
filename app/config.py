@@ -376,6 +376,48 @@ class DetectorSettings(StrictModel):
     params: dict[str, Any] = Field(default_factory=dict)
 
 
+class ConfluenceConfig(StrictModel):
+    """Setup-strength weights (PLAN §A29, docs/PATTERNS.md "Confluence score"). Points out of 100.
+
+    Family names are checked against the evidence families when the score is computed (config cannot import
+    the evidence package: it lives in a higher layer).
+    """
+
+    core_weight: float = Field(default=40.0, ge=0, le=100, description="points for a full strategy checklist")
+    conflict_penalty: float = Field(default=0.75, ge=0, le=3, description="conflict points per support point")
+    family_weights: dict[str, float] = Field(
+        default_factory=lambda: {
+            "TREND": 15.0,
+            "FIBONACCI": 12.0,
+            "LEVELS": 12.0,
+            "CHART_PATTERN": 12.0,
+            "CANDLESTICK": 8.0,
+            "MOMENTUM": 8.0,
+            "SMART_MONEY": 8.0,
+            "HARMONIC": 8.0,
+            "VOLATILITY_VOLUME": 6.0,
+            "ICHIMOKU": 6.0,
+            "SESSIONS": 5.0,
+            "ELLIOTT": 4.0,
+        }
+    )
+    tier_weights: dict[str, float] = Field(default_factory=lambda: {"T1": 1.0, "T2": 0.9, "T3": 0.6})
+
+    @field_validator("family_weights", "tier_weights")
+    @classmethod
+    def _bounded(cls, value: dict[str, float]) -> dict[str, float]:
+        if any(not (0 <= w <= 100) for w in value.values()):
+            raise ValueError("weights must be in [0, 100]")
+        return value
+
+    @field_validator("tier_weights")
+    @classmethod
+    def _tiers(cls, value: dict[str, float]) -> dict[str, float]:
+        if any(w > 1 for w in value.values()):
+            raise ValueError("tier weights scale quality and must be <= 1")
+        return value
+
+
 class EvidenceConfig(StrictModel):
     default_enabled: bool = True
     atr_period: int = Field(default=14, ge=2)
@@ -386,6 +428,7 @@ class EvidenceConfig(StrictModel):
     # whose midnight starts a trading day for daily/weekly levels; FBS server time is EET/EEST
     session_timezone: str = "Europe/Athens"
     detectors: dict[str, DetectorSettings] = Field(default_factory=dict)
+    confluence: ConfluenceConfig = Field(default_factory=ConfluenceConfig)
 
     @field_validator("session_timezone")
     @classmethod

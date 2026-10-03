@@ -13,6 +13,7 @@ FX/CFD trading is high risk.
 | Regime | `app/strategy/regime_detector.py` | trend (EMA alignment), regime (ADX bands, ATR percentile), volatility state |
 | Base class | `app/strategy/base_strategy.py` | `BaseStrategy` contract and the `hold()` / `entry()` signal builders |
 | Registry | `app/strategy/registry.py`, `catalog.py` | builds the enabled strategies from `config.yaml`; the plugin boundary turns a crash or a foreign signal into HOLD `STRATEGY_ERROR` |
+| Enrichment | `app/strategy/enrichment.py`, `app/evidence/confluence.py` | attaches the active evidence of every timeframe to each signal (supports / conflicts / neutral); an entry's `setup_strength` becomes the confluence score (docs/PATTERNS.md "Confluence score") |
 | Arbitration | `app/strategy/arbitration.py` | one signal per strategy/symbol/bar, cooldown, BUY-vs-SELL conflict, ranking |
 
 **Rules every strategy follows:**
@@ -21,8 +22,10 @@ FX/CFD trading is high risk.
   context, the symbol spec and evidence snapshots. It has no broker, database, secret or wall-clock access;
   `tests/unit/test_architecture.py` enforces this.
 - It returns exactly one `Signal` per call: BUY, SELL or HOLD, always with reason codes.
-- Every signal carries its **condition checklist**. `setup_strength` is the weighted share of passed
-  conditions (0–100). `score` is a ranking heuristic, **not a probability**.
+- Every signal carries its **condition checklist**. Before enrichment, `setup_strength` is the weighted
+  share of passed conditions (0–100). Enrichment turns it into the confluence score: the checklist is the
+  core term, and evidence families the checklist already measures (`core_families`) add no support.
+  `score` is a ranking heuristic. Neither number is a probability.
 - Parameters are a pydantic model (`extra="forbid"`, bounded fields). A typo in `config.yaml` is a
   startup error, even for a disabled strategy.
 - Missing data (indicator warm-up, no spec, no spread) means HOLD `INSUFFICIENT_DATA`, never a guess.

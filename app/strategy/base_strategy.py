@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.enums import Action, EntryType, Timeframe
 from app.core.ids import new_id
+from app.evidence.framework import Family
 from app.strategy.signal_models import (
     Condition,
     ReasonCode,
@@ -44,6 +45,8 @@ class BaseStrategy(ABC):
     description: ClassVar[str] = ""
     demo_only: ClassVar[bool] = True  # not production-proven; the PWA labels its signals accordingly
     Params: ClassVar[type[StrategyParams]] = StrategyParams
+    # evidence families the checklist already measures: they add no confluence support (TAA-307)
+    core_families: ClassVar[frozenset[Family]] = frozenset()
 
     def __init__(self, params: StrategyParams | None = None) -> None:
         self.params: Any = params if params is not None else self.Params()

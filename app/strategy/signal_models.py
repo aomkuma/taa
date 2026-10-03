@@ -30,6 +30,7 @@ from app.core.clock import ensure_utc
 from app.core.enums import Action, EntryType, Regime, Session, Side, Timeframe, Trend, VolatilityState
 from app.core.errors import TaaError
 from app.core.ids import stable_hash
+from app.evidence.confluence import Relation
 from app.evidence.framework import ActiveEvidence, EvidenceSnapshot
 from app.market_data.data_models import SymbolSpec
 
@@ -57,14 +58,6 @@ class ReasonCode(StrEnum):
     DUPLICATE_SIGNAL = "DUPLICATE_SIGNAL"
     LOWER_RANK = "LOWER_RANK"
     STRATEGY_ERROR = "STRATEGY_ERROR"
-
-
-class Relation(StrEnum):
-    """How a piece of evidence relates to a signal's direction."""
-
-    SUPPORTS = "SUPPORTS"
-    CONFLICTS = "CONFLICTS"
-    NEUTRAL = "NEUTRAL"
 
 
 def _finite(name: str, value: float | None) -> None:
@@ -170,6 +163,7 @@ class Signal:
     reason_codes: tuple[str, ...] = ()
     explanation: str = ""
     bar_times: tuple[tuple[Timeframe, datetime], ...] = ()  # last closed bar used per timeframe
+    confluence: tuple[tuple[str, float], ...] = ()  # signed setup-strength points per source (TAA-307)
 
     def __post_init__(self) -> None:
         for name in ("data_timestamp_utc", "created_at_utc", "expires_at_utc"):
@@ -255,6 +249,7 @@ class Signal:
             "reason_codes": list(self.reason_codes),
             "explanation": self.explanation,
             "bar_times": {tf.value: t.isoformat() for tf, t in self.bar_times},
+            "confluence": [[name, points] for name, points in self.confluence],
         }
 
     def to_json(self) -> str:
@@ -283,6 +278,7 @@ class Signal:
             reason_codes=tuple(str(r) for r in d["reason_codes"]),
             explanation=d["explanation"],
             bar_times=tuple((Timeframe(tf), datetime.fromisoformat(t)) for tf, t in d["bar_times"].items()),
+            confluence=tuple((str(n), float(p)) for n, p in d.get("confluence", [])),
         )
         if d.get("idempotency_key") not in (None, sig.idempotency_key):
             raise SignalError(

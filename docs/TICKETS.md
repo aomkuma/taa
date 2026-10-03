@@ -23,7 +23,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
-| M1 | Phase 3 — Strategy engine | 7 | 5 | IN PROGRESS |
+| M1 | Phase 3 — Strategy engine | 7 | 6 | IN PROGRESS |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
@@ -527,14 +527,14 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-307 — (rev. 2) Confluence enrichment
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A1, 301
 
-- [ ] attach all active evidence (all enabled TFs incl. HTF) to every signal
-- [ ] supports/conflicts classification
-- [ ] family-capped noisy-OR confluence score → setup strength
-- [ ] conflict penalty
-- [ ] double-counting control tests
+- [x] attach all active evidence (all enabled TFs incl. HTF) to every signal
+- [x] supports/conflicts classification
+- [x] family-capped noisy-OR confluence score → setup strength
+- [x] conflict penalty
+- [x] double-counting control tests
 
 ### Phase 4 — Risk, decision pipeline, breakers
 

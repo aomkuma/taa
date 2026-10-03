@@ -28,7 +28,8 @@ from app.config import AppConfig, IndicatorParams, RegimeConfig
 from app.core.clock import Clock, ensure_utc
 from app.core.enums import Regime, Session, Timeframe, Trend, VolatilityState
 from app.core.errors import DataQualityError, InsufficientDataError
-from app.evidence.framework import EvidenceSnapshot
+from app.evidence.framework import EvidenceContext, EvidenceSnapshot
+from app.evidence.registry import EvidenceEngine
 from app.indicators.momentum import rsi
 from app.indicators.price_action import Swing, find_swings, market_structure, sr_zones
 from app.indicators.trend import adx, ema
@@ -260,11 +261,13 @@ class ContextBuilder:
         config: AppConfig,
         clock: Clock,
         quotes: QuoteSource | None = None,
+        evidence: EvidenceEngine | None = None,
     ) -> None:
         self.candles = candles
         self.config = config
         self.clock = clock
         self.quotes = quotes
+        self.evidence = evidence
 
     def analyze(self, symbol: str) -> dict[Timeframe, AnalyzedFrame]:
         tfs = self.config.timeframes
@@ -283,6 +286,7 @@ class ContextBuilder:
         entry_tf = self.config.timeframes.entry
         decision_time = pd.Timestamp(frames[entry_tf].df.index[-1]).to_pydatetime()
         quote = self.quotes.quote(spec) if self.quotes is not None and spec is not None else None
+        snapshots = self.evaluate_evidence(symbol, frames, decision_time)
         ctx = context_at(
             frames,
             symbol=symbol,
@@ -293,9 +297,25 @@ class ContextBuilder:
             params=self.config.indicators,
             quote=quote,
             spec=spec,
+            evidence=snapshots,
         )
         log_analysis(ctx.market)
         return ctx
+
+    def evaluate_evidence(
+        self, symbol: str, frames: Mapping[Timeframe, AnalyzedFrame], decision_time: datetime
+    ) -> dict[Timeframe, EvidenceSnapshot]:
+        """Active evidence per timeframe at *decision_time*, each from that timeframe's closed bars only."""
+        if self.evidence is None:
+            return {}
+        out: dict[Timeframe, EvidenceSnapshot] = {}
+        for tf, frame in frames.items():
+            n = frame.count_upto(decision_time)
+            if n == 0:
+                continue
+            candles = frame.df.iloc[:n].reset_index(names="close_time")
+            out[tf] = self.evidence.evaluate(EvidenceContext(symbol, tf, candles, self.config.evidence))
+        return out
 
 
 def log_analysis(market: MarketContext) -> None:

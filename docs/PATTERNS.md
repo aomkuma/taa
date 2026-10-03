@@ -69,6 +69,40 @@ model, so unknown keys or out-of-range values are startup errors. Every detector
   `Europe/Athens`), using each bar's open time. The first period of a frame may be cut off by the history window,
   so it is never used as a source of levels (fail closed).
 
+## Confluence score (`confluence.py`, TAA-307)
+
+Setup strength of an entry signal, in points, clipped to 0–100 (`config.yaml` → `evidence.confluence`). It is a
+deterministic heuristic, **not a probability**.
+
+`strength = core_weight × checklist share + Σ family support − conflict_penalty × Σ family conflict`
+
+- **Core:** the strategy's weighted share of passed conditions × `core_weight` (40).
+- **Family support:** supporting items of one family combine by noisy-OR, `s = 1 − Π(1 − t·q)` (quality *q*,
+  tier weight *t*), worth `family_weight × s`. A family never adds more than its weight.
+- **Conflicts:** the same noisy-OR over contradicting items, × `conflict_penalty` (0.75).
+- **Relations:** BULL evidence supports a BUY and conflicts with a SELL (mirrored for BEAR); NEUTRAL evidence is
+  attached as context and scores nothing. HOLD signals keep their checklist strength.
+- **Double-counting controls:** the same `evidence_id` counts once (best quality); correlated items share one
+  capped family term; families the strategy's checklist already measures (`BaseStrategy.core_families`, e.g.
+  TREND for `example_trend_pullback`) add no support, though their conflicts still count.
+- Evidence from every enabled timeframe is attached (higher timeframes included), each timeframe scanned only up
+  to its last bar closed at the decision time. `Signal.confluence` stores the signed points per source for the
+  explanation.
+
+| Default weights | Points |
+|---|---|
+| core (strategy checklist) | 40 |
+| TREND | 15 |
+| FIBONACCI, LEVELS, CHART_PATTERN | 12 each |
+| CANDLESTICK, MOMENTUM, SMART_MONEY, HARMONIC | 8 each |
+| VOLATILITY_VOLUME, ICHIMOKU | 6 each |
+| SESSIONS | 5 |
+| ELLIOTT | 4 |
+| tier weights | T1 1.0, T2 0.9, T3 0.6 |
+
+The weights are priors. Phase 6C measures each theory on shadow and replay outcomes; the win-probability model
+(TAA-6B2) uses those measurements, not these weights.
+
 ## Detector catalog
 
 Record counts on a 600-bar synthetic random walk are shown only as a noise sanity check. They are not a measure of
