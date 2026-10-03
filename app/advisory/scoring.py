@@ -18,7 +18,8 @@ Every score is 0–100, higher is better:
 Unknown inputs give a neutral 50 with a flag, except S1–S4, where "unknown" means "not usable now" and scores
 0. **Overall** is the weighted mean of S1, S2, S3, S8, S9 (structural); **Now** of all nine.
 
-**Ranking:** eligible symbols first, then Now, Overall and the symbol name (a deterministic order). Eligible
+**Ranking:** eligible symbols first, then symbols whose market is open now, then Now, Overall and the symbol
+name (a deterministic order). Eligible
 symbols are picked greedily: each pick's S7 counts correlation with the open exposure *and* with the picks
 above it, so the top of the list is diversified.
 """
@@ -30,9 +31,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 
-import pandas as pd
-
-from app.advisory.correlations import max_correlation
+from app.advisory.correlations import CorrelationLookup, Correlations, max_correlation
 from app.advisory.suitability import Suitability, SymbolFacts
 from app.broker import mt5_constants as c
 from app.config import RiskConfig, ScoringConfig
@@ -176,6 +175,7 @@ class RankedSymbol:
     correlation: float | None  # S7's max |correlation|
     correlated_with: str | None
     suitability: Suitability
+    market_open: bool = True
     rank: int = 0
 
 
@@ -191,7 +191,7 @@ def score_candidate(
     config: ScoringConfig,
     risk: RiskConfig,
     *,
-    correlations: pd.DataFrame | None = None,
+    correlations: Correlations = None,
     against: Sequence[str] = (),
 ) -> RankedSymbol:
     """All nine scores; S7 against the symbols in *against* (open exposure, and picks above it)."""
@@ -216,6 +216,8 @@ def score_candidate(
         Score.S8_EDGE: neutral(edge_score(m.edge, config), "insufficient_history"),
         Score.S9_HOLDING_COST: neutral(holding_cost_score(candidate.facts, config), "unknown_swap"),
     }
+    if not candidate.facts.market_open:
+        flags.append("market_closed")
     return RankedSymbol(
         symbol=candidate.symbol,
         eligible=s.eligible,
@@ -226,11 +228,20 @@ def score_candidate(
         correlation=corr,
         correlated_with=partner,
         suitability=s,
+        market_open=candidate.facts.market_open,
     )
 
 
-def _order(r: RankedSymbol) -> tuple[float, float, str]:
-    return (-r.now, -r.overall, r.symbol)
+def _order(r: RankedSymbol) -> tuple[bool, float, float, str]:
+    return (not r.market_open, -r.now, -r.overall, r.symbol)
+
+
+def with_correlation(r: RankedSymbol, value: float, partner: str, config: ScoringConfig) -> RankedSymbol:
+    """*r* with S7 re-scored for a new maximum |correlation| (S7 is not part of Overall)."""
+    scores = dict(r.scores) | {Score.S7_DIVERSIFICATION: diversification_score(value)}
+    return replace(
+        r, scores=scores, now=weighted(scores, NOW, config), correlation=value, correlated_with=partner
+    )
 
 
 def rank(
@@ -238,26 +249,26 @@ def rank(
     config: ScoringConfig,
     risk: RiskConfig,
     *,
-    correlations: pd.DataFrame | None = None,
+    correlations: Correlations = None,
     exposure: Sequence[str] = (),
 ) -> list[RankedSymbol]:
-    """Eligible symbols first (greedy, diversified), then the rest; ranks start at 1."""
-    eligible = [c for c in candidates if c.suitability.eligible]
+    """Eligible symbols first (greedy, diversified), then the rest; within each, open markets first.
+
+    Every score is computed once (S7 against the open exposure); after each pick only the remaining symbols'
+    S7 is updated with their correlation to that pick, so the greedy order costs O(n²) lookups. Ranks start
+    at 1.
+    """
+    lookup = correlations if isinstance(correlations, CorrelationLookup) else CorrelationLookup(correlations)
+    scored = [score_candidate(c, config, risk, correlations=lookup, against=exposure) for c in candidates]
+    remaining = {r.symbol: r for r in scored if r.eligible}
     picked: list[RankedSymbol] = []
-    while eligible:
-        against = [*exposure, *(p.symbol for p in picked)]
-        scored = [
-            score_candidate(c, config, risk, correlations=correlations, against=against) for c in eligible
-        ]
-        best = min(scored, key=_order)
+    while remaining:
+        best = min(remaining.values(), key=_order)
         picked.append(best)
-        eligible = [c for c in eligible if c.symbol != best.symbol]
-    rest = sorted(
-        (
-            score_candidate(c, config, risk, correlations=correlations, against=exposure)
-            for c in candidates
-            if not c.suitability.eligible
-        ),
-        key=_order,
-    )
+        del remaining[best.symbol]
+        for symbol, r in remaining.items():
+            value = lookup.get(symbol, best.symbol)
+            if value is not None and (r.correlation is None or abs(value) > r.correlation):
+                remaining[symbol] = with_correlation(r, abs(value), best.symbol, config)
+    rest = sorted((r for r in scored if not r.eligible), key=_order)
     return [replace(r, rank=i) for i, r in enumerate([*picked, *rest], start=1)]

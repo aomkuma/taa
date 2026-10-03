@@ -126,6 +126,7 @@ class RankingService:
         self.stats = RankingStats()
         self.last_run: RankingRun | None = None
         self._rescan = False
+        self._failed_at: dict[str, datetime] = {}  # a failing symbol waits for the dynamic horizon
         self._structural_at: datetime | None = None
         self._structural_equity: float | None = None
         self._last_now: datetime | None = None
@@ -136,7 +137,8 @@ class RankingService:
     # --- scheduling -----------------------------------------------------------------------------------------
 
     def request_rescan(self) -> None:
-        """RESCAN: the next tick refreshes every symbol and ranks immediately."""
+        """RESCAN: the next tick marks every symbol stale and ranks immediately; the refresh itself keeps the
+        tick budget, so it spreads over the following minutes inside the engine."""
         self._rescan = True
 
     def structural_due(self, now: datetime, equity: float) -> bool:
@@ -146,14 +148,27 @@ class RankingService:
         base = self._structural_equity
         return bool(base and abs(equity - base) / base * 100 >= cfg.equity_change_percent)
 
-    def tick(self) -> RankingRun | None:
+    def tick(self, *, budget: bool = True) -> RankingRun | None:
+        """One scheduling step. With *budget*, at most ``batch_size`` symbols and ``max_refresh_seconds`` of
+        refreshing, so the engine loop is never held up (a cold terminal may need ~1 s per symbol to sync
+        history); the least recently attempted symbols go first."""
+        cfg = self.advisory.ranking
         now = self.clock.now_utc()
         account = self.gateway.account()
         rescan = self._rescan
         if rescan or self.structural_due(now, account.equity):
             self._structural(now, account.equity, force_catalog=rescan)
-        stale = [e for e in self.universe if self._stale(e.symbol, now)]
-        for entry in stale if rescan else stale[: self.advisory.ranking.batch_size]:
+        floor = datetime.min.replace(tzinfo=now.tzinfo)
+        stale = sorted(
+            (e for e in self.universe if self._stale(e.symbol, now)),
+            key=lambda e: self._last_attempt(e.symbol) or floor,
+        )
+        started = self.clock.monotonic()
+        for i, entry in enumerate(stale):
+            if budget and (
+                i >= cfg.batch_size or self.clock.monotonic() - started >= cfg.max_refresh_seconds
+            ):
+                break
             self.refresh(entry, now)
         self._rescan = False
         due = self._last_now is None or now - self._last_now >= timedelta(
@@ -162,16 +177,23 @@ class RankingService:
         return self.rank_now(now) if rescan or due else None
 
     def rescan(self) -> RankingRun:
+        """Refresh every symbol now, without the tick budget (the CLI; the engine uses request_rescan)."""
         self.request_rescan()
-        run = self.tick()
+        run = self.tick(budget=False)
         if run is None:  # a rescan always ranks
             raise RuntimeError("rescan produced no ranking")
         return run
 
-    def _stale(self, symbol: str, now: datetime) -> bool:
+    def _last_attempt(self, symbol: str) -> datetime | None:
         cached = self.cache.get(symbol)
-        horizon = timedelta(minutes=self.advisory.ranking.dynamic_minutes)
-        return cached is None or now - cached.refreshed_at >= horizon
+        times = [
+            t for t in (None if cached is None else cached.refreshed_at, self._failed_at.get(symbol)) if t
+        ]
+        return max(times) if times else None
+
+    def _stale(self, symbol: str, now: datetime) -> bool:
+        last = self._last_attempt(symbol)
+        return last is None or now - last >= timedelta(minutes=self.advisory.ranking.dynamic_minutes)
 
     def _structural(self, now: datetime, equity: float, *, force_catalog: bool) -> None:
         self.universe = self.catalog.refresh(force=force_catalog)
@@ -183,6 +205,7 @@ class RankingService:
             for s, m in self.cache.items()
             if s in names
         }
+        self._failed_at.clear()
         self._structural_at = now
         self._structural_equity = equity
         self._correlations_dirty = True
@@ -199,9 +222,7 @@ class RankingService:
             self.stats.failures += 1
             self.stats.last_error = f"{symbol}: {exc}"
             log.warning("ranking: metrics for %s failed: %s", symbol, exc)
-            stale = self.cache.get(symbol)
-            if stale is not None:  # retry after the dynamic horizon, not every minute
-                self.cache[symbol] = replace(stale, refreshed_at=now)
+            self._failed_at[symbol] = now  # retry after the dynamic horizon, not every minute
             return None
         self.cache[symbol] = metrics
         self.stats.refreshed += 1

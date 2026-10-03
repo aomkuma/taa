@@ -33,22 +33,46 @@ def return_correlations(closes: Mapping[str, pd.Series], min_overlap: int = 100)
     return returns.corr(min_periods=min_overlap)
 
 
-def correlation(matrix: pd.DataFrame | None, a: str, b: str) -> float | None:
-    if a == b:
-        return 1.0
-    if matrix is None or a not in matrix.index or b not in matrix.columns:
-        return None
-    value = float(np.asarray(matrix.at[a, b], dtype=float))
-    return None if math.isnan(value) else value
+class CorrelationLookup:
+    """Fast pairwise access to a correlation matrix (``DataFrame.at`` is too slow for the ranking's loops)."""
+
+    def __init__(self, matrix: pd.DataFrame | None) -> None:
+        if matrix is None or matrix.empty:
+            self._pos: dict[str, int] = {}
+            self._values = np.empty((0, 0))
+        else:
+            self._pos = {str(name): i for i, name in enumerate(matrix.index)}
+            self._values = matrix.reindex(columns=matrix.index).to_numpy(dtype=float)
+
+    def get(self, a: str, b: str) -> float | None:
+        if a == b:
+            return 1.0
+        i, j = self._pos.get(a), self._pos.get(b)
+        if i is None or j is None:
+            return None
+        value = float(self._values[i, j])
+        return None if math.isnan(value) else value
+
+
+Correlations = pd.DataFrame | CorrelationLookup | None
+
+
+def _lookup(matrix: Correlations) -> CorrelationLookup:
+    return matrix if isinstance(matrix, CorrelationLookup) else CorrelationLookup(matrix)
+
+
+def correlation(matrix: Correlations, a: str, b: str) -> float | None:
+    return _lookup(matrix).get(a, b)
 
 
 def max_correlation(
-    matrix: pd.DataFrame | None, symbol: str, others: Iterable[str]
+    matrix: Correlations, symbol: str, others: Iterable[str]
 ) -> tuple[float | None, str | None]:
     """The largest |correlation| of *symbol* with *others* and which symbol it is (first wins on ties)."""
+    lookup = _lookup(matrix)
     best: tuple[float | None, str | None] = (None, None)
     for other in others:
-        value = correlation(matrix, symbol, other)
+        value = lookup.get(symbol, other)
         if value is not None and (best[0] is None or abs(value) > best[0]):
             best = (abs(value), other)
     return best

@@ -219,3 +219,52 @@ def test_cli_rank_with_the_fake_broker(tmp_path: Path, capsys: pytest.CaptureFix
     assert "Suitability ranking" in out and "ไม่ใช่การคาดการณ์" in out
     assert len([line for line in out.splitlines() if line[:3].strip().isdigit()]) == 3
     assert not (tmp_path / "engine.db").exists()  # --fake never writes the engine database
+
+
+class TestBudget:
+    def test_slow_refreshes_stop_at_the_time_budget(self, db: Database) -> None:
+        svc, clock, _ = service(db, config(max_refresh_seconds=2.0))
+        original = svc._collect
+
+        def slow(entry: Any, now: datetime) -> Any:
+            clock.advance(0.9)  # a cold terminal syncing history
+            return original(entry, now)
+
+        svc._collect = slow  # type: ignore[method-assign]
+        run = svc.tick()
+        assert run is not None and svc.stats.refreshed == 3  # 0.0, 0.9, 1.8 s started; 2.7 s stops
+        clock.advance(60)
+        svc.tick()
+        assert svc.stats.refreshed == 6
+
+    def test_engine_rescan_is_budgeted_but_cli_rescan_is_complete(self, db: Database) -> None:
+        svc, _, _ = service(db, config(batch_size=4))
+        svc.request_rescan()
+        run = svc.tick()
+        assert run is not None and svc.stats.refreshed == 4  # ranks at once with what it has
+        assert len(svc.rescan().ranked) == len(ENABLED)
+
+    def test_a_failing_new_symbol_does_not_block_the_queue(self, db: Database) -> None:
+        svc, clock, _ = service(db, config(batch_size=4))
+        original = svc._collect
+
+        def failing(entry: Any, now: datetime) -> Any:
+            if entry.symbol == "AAPL":
+                raise SymbolUnavailable("AAPL has no history")
+            return original(entry, now)
+
+        svc._collect = failing  # type: ignore[method-assign]
+        for _ in range(3):
+            svc.tick()
+            clock.advance(60)
+        assert svc.stats.failures == 1 and svc.stats.refreshed == len(ENABLED) - 1
+
+    def test_closed_markets_rank_after_open_ones(self, db: Database) -> None:
+        svc, _, _ = service(db)
+        run = svc.tick()
+        assert run is not None
+        eligible = [r for r in run.ranked if r.eligible]
+        opened = [r.market_open for r in eligible]
+        assert opened == sorted(opened, reverse=True) and not all(opened)  # AAPL is closed at 10:00 UTC
+        aapl = next(r for r in run.ranked if r.symbol == "AAPL")
+        assert "market_closed" in aapl.flags

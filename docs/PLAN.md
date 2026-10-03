@@ -785,7 +785,7 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
 
 - **Outputs:**
   - **Overall** score (structural: S1, S2, S3, S8, S9) and **Now** score (adds S4–S7). The list is sorted by Now
-    score, eligible symbols first.
+    score, eligible symbols first and, within them, symbols whose market is open now first.
   - Each row also carries:
     - suggested lot and risk money at typical_SL; min-lot risk and required equity
     - margin, effective leverage, cost %, session state, best hours (UTC)

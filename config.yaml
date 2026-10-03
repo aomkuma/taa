@@ -166,7 +166,8 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
     structural_hours: 6             # refresh every symbol's metrics, or when equity moves by
     equity_change_percent: 5
     dynamic_minutes: 60             # per-symbol refresh, round-robin
-    batch_size: 20                  # symbols refreshed per minute (bounded terminal load)
+    batch_size: 20                  # symbols refreshed per tick (bounded terminal load) ...
+    max_refresh_seconds: 2.0        # ... and at most this long, so the engine loop is never held up
     now_seconds: 60                 # Now score cadence from cached metrics
     retention_days: 90              # suitability_snapshots history
 

@@ -485,7 +485,8 @@ class RankingConfig(StrictModel):
     structural_hours: float = Field(default=6.0, gt=0, le=48, description="full refresh of every symbol")
     equity_change_percent: float = Field(default=5.0, gt=0, le=100, description="... or when equity moves")
     dynamic_minutes: float = Field(default=60.0, gt=0, le=1440, description="per-symbol metric refresh")
-    batch_size: int = Field(default=20, ge=1, le=200, description="symbols refreshed per minute")
+    batch_size: int = Field(default=20, ge=1, le=200, description="symbols refreshed per tick")
+    max_refresh_seconds: float = Field(default=2.0, gt=0, le=60, description="refresh time per engine cycle")
     now_seconds: float = Field(default=60.0, ge=5, le=3600, description="Now score cadence")
     retention_days: int = Field(default=90, ge=1, le=3650)
 
@@ -496,6 +497,8 @@ class AdvisoryConfig(StrictModel):
     suitability: SuitabilityConfig = Field(default_factory=SuitabilityConfig)
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
     ranking: RankingConfig = Field(default_factory=RankingConfig)
+    # validated by app.advisory.preferences.local_preferences (config cannot import the catalogs it checks)
+    preferences: dict[str, Any] = Field(default_factory=dict, description="fallback without a cloud")
 
 
 class ExecutionConfig(StrictModel):
