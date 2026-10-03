@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-03, at the end of Phase 4 (all of TAA-401..407 done). This file holds **state
+Last updated: 2026-10-03, at the end of Phase 5 (all of TAA-501..506 done). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -14,8 +14,8 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
 relevant sections of docs/PLAN.md (§A29 evidence engine, §A31 trading profile). Follow CLAUDE.md and
 docs/CODING_STANDARDS.md.
-Phases 0, 1, 2, 2A, 3 and 4 are DONE. Next: Phase 5 (backtesting, TAA-501..), then continue in the
-execution order 6 -> 6A -> 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+Phases 0, 1, 2, 2A, 3, 4 and 5 are DONE. Next: Phase 6 (PAPER runtime, TAA-601..), then continue in the
+execution order 6A -> 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
 ```
@@ -25,8 +25,8 @@ any phase boundary if I ask.
 ## Current state
 
 - **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206), Phase 2A
-  (TAA-2A1..2A10), Phase 3 (TAA-301..307) and Phase 4 (TAA-401..407).
-- **Checks:** 1535 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
+  (TAA-2A1..2A10), Phase 3 (TAA-301..307), Phase 4 (TAA-401..407) and Phase 5 (TAA-501..506).
+- **Checks:** 1603 tests pass, 8 skipped (the suite takes ~100 s; the backtest tests are the slow part) (real-terminal, Postgres, one contract case defined from bar 0). ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
@@ -109,6 +109,20 @@ any phase boundary if I ask.
       midnight), daily breaks, Friday cutoff; `app/news/calendar.py`: manual blackouts
     - `app/engine/decision_engine.py`: all checks evaluated and persisted (`decision_records`,
       `decision_checks`, migration 0005); EXECUTION vs ADVISORY profile; one test per M1 reason code
+  - backtesting (Phase 5, PLAN §A17):
+    - `app/execution/fill_model.py` (next-open fills, bid/ask, SL first, gap fills) and
+      `simulated_broker.py` (account, market/limit orders, seeded slippage, commission, swap with triple
+      day, deals, MAE/MFE; implements `ProfitCalculator`; rates from its own traded pairs first);
+      `management.py` (A11 break-even / trailing / time stop, shared with TAA-603)
+    - `app/backtest/engine.py`: one loop over all symbols' entry-bar closes running the real context,
+      strategies, arbiter, decision engine, sizer, loss tracker and breakers; `conversion.py`
+      (`SeriesRates`, direct / inverse / one-hop cross, last close ≤ t); `metrics.py`, `report.py`
+      (summary.json, trades.csv, equity.csv, limitations); `robustness.py` (walk-forward, sensitivity grid
+      with stability, Monte Carlo, overfitting warnings); `runner.py` (load from `data/history`, data hash)
+    - CLI: `python -m app.cli backtest --server <srv> --symbols ... --start ... --end ...`
+    - non-positive prices (WTI 2020): `analyze_frame` marks bars `valid`; `context_at` flags
+      `INVALID_OHLC` while a bad print is in the strategy window, so entries are rejected (`DATA_INVALID`);
+      simulated margin uses |price|; documented in PLAN §A24
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -126,9 +140,9 @@ any phase boundary if I ask.
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
   remote yet. The working tree is clean.
-- **Next step:** Phase 5 (backtesting), starting with TAA-501 (SimulatedBroker). It should implement the
-  `ProfitCalculator` protocol (`app/risk/position_sizer.py`) so the sizer and the decision engine run
-  unchanged in backtests, and feed `context_at` with pre-analyzed frames.
+- **Next step:** Phase 6 (PAPER runtime), starting with TAA-601 (orchestrator). Reuse
+  `SimulatedBroker` for paper fills (TAA-602) and `app/execution/management.py` for the position manager
+  (TAA-603); wire `ContextBuilder` with the evidence engine and the breaker monitor.
 
 ## Notes for the next session
 
@@ -152,6 +166,11 @@ any phase boundary if I ask.
     `FOREIGN_POSITIONS` (recorded in PLAN §A8).
   - The live gate lives in `app/risk/mode_gates.py`, not `app/security/live_gate.py`, because it reuses
     the broker-layer `verify_identity` (split out of `verify_connection`).
+- Decisions made in Phase 5:
+  - `backtest.leverage` added to config (simulated margin only).
+  - `BaseStrategy.should_close(ctx, side)` hook; the example strategy closes when the H1 bias flips.
+  - The golden backtest (`tests/backtest/test_runner_cli.py::GOLDEN`) is a regression anchor on synthetic
+    data; update it only for an intended behaviour change and say why in the commit.
 - Risk-layer test helpers: `tests/risk_data.py` (`TickCalculator`, `funds`, `XAUUSD_SPEC`).
 - Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
   `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.
