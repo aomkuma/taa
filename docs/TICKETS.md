@@ -23,7 +23,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
-| M1 | Phase 3 — Strategy engine | 7 | 1 | IN PROGRESS |
+| M1 | Phase 3 — Strategy engine | 7 | 2 | IN PROGRESS |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
@@ -468,14 +468,14 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-302 — Context builder & regime detector
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 106, 201–205
 
-- [ ] per-TF retrieval
-- [ ] close-time alignment
-- [ ] per-TF analysis logs
-- [ ] regime and volatility states
-- [ ] look-ahead tests
+- [x] per-TF retrieval
+- [x] close-time alignment
+- [x] per-TF analysis logs
+- [x] regime and volatility states
+- [x] look-ahead tests
 
 #### TAA-303 — Strategy framework
 

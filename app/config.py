@@ -161,6 +161,25 @@ class IndicatorParams(StrictModel):
         return self
 
 
+class RegimeConfig(StrictModel):
+    """Regime and volatility thresholds (PLAN §A7). ADX bands leave a gap where the regime is UNCLEAR."""
+
+    trend_adx: float = Field(default=20.0, gt=0, le=100, description="ADX at or above: TRENDING")
+    range_adx: float = Field(default=18.0, gt=0, le=100, description="ADX below: RANGING")
+    volatile_atr_percentile: float = Field(default=90.0, gt=0, le=100, description="above: VOLATILE")
+    low_atr_percentile: float = Field(default=25.0, ge=0, lt=100, description="below: volatility LOW")
+    high_atr_percentile: float = Field(default=75.0, gt=0, le=100, description="above: volatility HIGH")
+    extreme_atr_percentile: float = Field(default=90.0, gt=0, le=100, description="above: EXTREME")
+
+    @model_validator(mode="after")
+    def _ordering(self) -> RegimeConfig:
+        if self.range_adx > self.trend_adx:
+            raise ValueError("range_adx must not exceed trend_adx")
+        if not self.low_atr_percentile < self.high_atr_percentile <= self.extreme_atr_percentile:
+            raise ValueError("ATR percentile bands must satisfy low < high <= extreme")
+        return self
+
+
 class StrategyEntry(StrictModel):
     name: str
     enabled: bool = True
@@ -389,6 +408,7 @@ class AppConfig(StrictModel):
     symbols: SymbolsConfig = Field(default_factory=SymbolsConfig)
     timeframes: TimeframesConfig = Field(default_factory=TimeframesConfig)
     indicators: IndicatorParams = Field(default_factory=IndicatorParams)
+    regime: RegimeConfig = Field(default_factory=RegimeConfig)
     strategies: StrategiesConfig = Field(default_factory=StrategiesConfig)
     risk: RiskConfig = Field(default_factory=RiskConfig)
     sessions: SessionsConfig = Field(default_factory=SessionsConfig)

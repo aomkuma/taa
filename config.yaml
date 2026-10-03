@@ -31,6 +31,14 @@ indicators:
   swing_k: 3
   sr_tolerance_atr: 0.5
 
+regime:                             # PLAN §A7: ADX >= 20 trending, < 18 ranging; ATR percentile > 90 volatile
+  trend_adx: 20
+  range_adx: 18
+  volatile_atr_percentile: 90
+  low_atr_percentile: 25            # volatility state bands (ATR percentile over indicators.atr_percentile_lookback)
+  high_atr_percentile: 75
+  extreme_atr_percentile: 90
+
 strategies:
   cooldown_bars: 4
   signal_expiry_bars: 1

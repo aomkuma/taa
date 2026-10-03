@@ -25,7 +25,7 @@ def rsi(close: pd.Series, n: int = 14) -> pd.Series:
     """
     check_period("n", n)
     c = as_float(close)
-    change = np.concatenate(([np.nan], np.diff(c)))
+    change = np.diff(c, prepend=np.nan)  # keeps the length, including for an empty series
     avg_gain = wilder_values(np.where(np.isnan(change), np.nan, np.maximum(change, 0.0)), n)
     avg_loss = wilder_values(np.where(np.isnan(change), np.nan, np.maximum(-change, 0.0)), n)
     total = avg_gain + avg_loss

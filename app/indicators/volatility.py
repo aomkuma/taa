@@ -77,7 +77,7 @@ def historical_volatility(close: pd.Series, n: int = 20, *, bars_per_year: float
     c = as_float(close)
     with np.errstate(divide="ignore", invalid="ignore"):
         log_c = np.where(c > 0, np.log(c), np.nan)
-    returns = np.concatenate(([np.nan], np.diff(log_c)))
+    returns = np.diff(log_c, prepend=np.nan)
     std = pd.Series(returns).rolling(n, min_periods=n).std(ddof=1).to_numpy(dtype=np.float64)
     return to_series(std * math.sqrt(bars_per_year), close, f"hv_{n}")
 

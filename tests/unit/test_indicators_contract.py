@@ -113,3 +113,10 @@ def test_no_look_ahead(name: str, t: int, df: pd.DataFrame) -> None:
     after = spec.frame(mutate_after(df, t))
     pd.testing.assert_frame_equal(before.iloc[: t + 1], after.iloc[: t + 1])
     assert not before.iloc[t + 1 :].equals(after.iloc[t + 1 :]), "mutation had no effect; test is vacuous"
+
+
+@pytest.mark.parametrize("name", NAMES)
+def test_empty_input_gives_empty_output(name: str, df: pd.DataFrame) -> None:
+    out = REGISTRY[name].frame(df.iloc[:0])
+    assert out.empty
+    assert list(out.columns) == list(REGISTRY[name].first)
