@@ -30,7 +30,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 7 | DONE |
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
-| M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
+| M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 1 | IN PROGRESS |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 0 | TODO |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 0 | TODO |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
@@ -742,14 +742,14 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6A1 — Asset classes & universe
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 110
 
-- [ ] classification by `trade_calc_mode` + `path` + currency codes (FOREX_MAJOR/MINOR/EXOTIC, METAL, INDEX, ENERGY, CRYPTO, STOCK, OTHER)
-- [ ] include/exclude patterns and per-class switches (all on, exotics opt-in)
-- [ ] `symbol_catalog` table with daily refresh
-- [ ] monitored set = favourites ∪ lists ∪ auto top-N ∪ allowlist, capped at 60
-- [ ] tests
+- [x] classification by `trade_calc_mode` + `path` + currency codes (FOREX_MAJOR/MINOR/EXOTIC, METAL, INDEX, ENERGY, CRYPTO, STOCK, OTHER)
+- [x] include/exclude patterns and per-class switches (all on, exotics opt-in)
+- [x] `symbol_catalog` table with daily refresh
+- [x] monitored set = favourites ∪ lists ∪ auto top-N ∪ allowlist, capped at 60
+- [x] tests
 
 #### TAA-6A2 — Market sessions & liquidity
 

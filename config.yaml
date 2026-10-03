@@ -124,6 +124,25 @@ execution:                          # broker orders: DEMO account only (Phase 12
   unprotected_grace_seconds: 5      # a position without SL: re-attach within this, else close
   symbol_pause_minutes: 60          # after a "symbol restricted" retcode
 
+advisory:                           # PLAN §A25-A27: ranking and alerts; never changes what the bot trades
+  universe:
+    include: ["*"]                  # MT5 group patterns (wildcards)
+    exclude: []                     # e.g. ["*.m", "*_raw"]
+    classes:                        # exotics and unclassified symbols are opt-in
+      FOREX_MAJOR: true
+      FOREX_MINOR: true
+      FOREX_EXOTIC: false
+      METAL: true
+      INDEX: true
+      ENERGY: true
+      CRYPTO: true
+      STOCK: true
+      OTHER: false
+    symbols: {}                     # per-symbol overrides, e.g. {USDZAR: true, AAPL: false}
+    auto_top_n: 30
+    monitored_cap: 60
+    refresh_hours: 24
+
 engine:
   monitor_interval_seconds: 1.0
   health_port: 8765

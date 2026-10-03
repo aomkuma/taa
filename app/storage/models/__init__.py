@@ -1,5 +1,6 @@
 """ORM models. Import everything here so Alembic autogenerate sees the full metadata."""
 
+from app.storage.models.advisory import SymbolCatalogRow
 from app.storage.models.base import Base, utcnow
 from app.storage.models.decisions import DecisionCheckRow, DecisionRecordRow
 from app.storage.models.execution import OrderIntentRow
@@ -36,5 +37,6 @@ __all__ = [
     "RiskDeal",
     "RiskState",
     "Run",
+    "SymbolCatalogRow",
     "utcnow",
 ]

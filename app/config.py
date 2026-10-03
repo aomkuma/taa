@@ -364,6 +364,58 @@ class BacktestConfig(StrictModel):
     seed: int = 42
 
 
+ASSET_CLASSES = (
+    "FOREX_MAJOR",
+    "FOREX_MINOR",
+    "FOREX_EXOTIC",
+    "METAL",
+    "INDEX",
+    "ENERGY",
+    "CRYPTO",
+    "STOCK",
+    "OTHER",
+)
+
+
+class UniverseConfig(StrictModel):
+    """Which broker symbols the advisory ranking considers (PLAN §A25). Never the bot's trading allowlist."""
+
+    include: list[str] = Field(default_factory=lambda: ["*"], min_length=1, description="MT5 group patterns")
+    exclude: list[str] = Field(default_factory=list)
+    classes: dict[str, bool] = Field(
+        default_factory=lambda: {c: c not in ("FOREX_EXOTIC", "OTHER") for c in ASSET_CLASSES},
+        description="per asset class; exotics and unclassified symbols are opt-in",
+    )
+    symbols: dict[str, bool] = Field(default_factory=dict, description="per-symbol overrides")
+    auto_top_n: int = Field(default=30, ge=0, le=60)
+    monitored_cap: int = Field(default=60, ge=1, le=200)
+    refresh_hours: float = Field(default=24.0, gt=0, le=168)
+
+    @field_validator("classes")
+    @classmethod
+    def _known_classes(cls, value: dict[str, bool]) -> dict[str, bool]:
+        unknown = sorted(set(value) - set(ASSET_CLASSES))
+        if unknown:
+            raise ValueError(f"unknown asset classes {unknown}")
+        return {c: value.get(c, c not in ("FOREX_EXOTIC", "OTHER")) for c in ASSET_CLASSES}
+
+    @field_validator("include", "exclude")
+    @classmethod
+    def _patterns(cls, value: list[str]) -> list[str]:
+        if any("," in p or p.startswith("!") for p in value):
+            raise ValueError("one pattern per entry, without commas or '!' (use exclude for exclusions)")
+        return [p.strip() for p in value if p.strip()]
+
+    @property
+    def group(self) -> str:
+        """The MT5 ``symbols_get(group=...)`` filter: inclusions first, then exclusions (R22)."""
+        return ",".join([*self.include, *(f"!{p}" for p in self.exclude)])
+
+
+class AdvisoryConfig(StrictModel):
+    universe: UniverseConfig = Field(default_factory=UniverseConfig)
+
+
 class ExecutionConfig(StrictModel):
     """Broker order execution (DEMO in Phase 12; PLAN §A12)."""
 
@@ -513,6 +565,7 @@ class AppConfig(StrictModel):
     engine: EngineLoopConfig = Field(default_factory=EngineLoopConfig)
     paper: PaperConfig = Field(default_factory=PaperConfig)
     execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
+    advisory: AdvisoryConfig = Field(default_factory=AdvisoryConfig)
     sync: SyncConfig = Field(default_factory=SyncConfig)
     evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
 
