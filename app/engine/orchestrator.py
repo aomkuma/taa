@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from app.advisory.lifecycle import OpportunityLifecycle
 from app.advisory.ranking_service import RankingService
 from app.advisory.requirements import ComputeRequirements, local_requirements
 from app.advisory.scanner import OpportunityScanner
@@ -141,6 +142,7 @@ class Engine:
         self._booked_deals = 0
         self.ranking: RankingService | None = None
         self.scanner: OpportunityScanner | None = None
+        self.lifecycle: OpportunityLifecycle | None = None
         self._requirements_cache: tuple[datetime | None, ComputeRequirements] | None = None
         loop = self.config.engine
         self._candles_due = _Due(loop.candle_poll_seconds)
@@ -202,13 +204,14 @@ class Engine:
             evidence = EvidenceEngine(registry, registry.plan_from_config(cfg.evidence))
         self.builder = ContextBuilder(self.candles, cfg, self.clock, self.quotes, evidence)
         self.sessions = TradingSessions(cfg.sessions, cfg.symbols)
+        self.news = NewsFilter(ManualBlackouts(cfg.sessions.news_blackouts))
         self.decisions = DecisionEngine(
             cfg,
             self.settings.mode,
             self.gateway,  # broker-computed P/L and margin for sizing
             self.clock,
             sessions=self.sessions,
-            news=NewsFilter(ManualBlackouts(cfg.sessions.news_blackouts)),
+            news=self.news,
             magic_base=env.MAGIC_NUMBER_BASE,
             config_hash=self.settings.config_hash,
             breakers=self.board,
@@ -235,6 +238,18 @@ class Engine:
                 loss=self._loss_status,
                 gate=self.gate,
             )
+            self.lifecycle = OpportunityLifecycle(
+                self.db,
+                self.gateway,
+                cfg,
+                self.clock,
+                server=account.server,
+                lifetime_bars=lambda: self.requirements().lifetime_bars,
+                news=self.news,
+            )
+            expired = self.lifecycle.catch_up()
+            if expired:
+                log.info("expired %d opportunity windows that passed while the engine was down", len(expired))
         by_magic = {self.magic[s.name]: s for s in self.strategies.strategies}
         restored = self._build_backend(account, by_magic)
         self.on_started(restored)
@@ -459,6 +474,8 @@ class Engine:
     def _scan(self, scanner: OpportunityScanner) -> None:
         try:
             scanner.tick()
+            if self.lifecycle is not None:
+                self.lifecycle.tick()
         except Exception as exc:  # advisory boundary: a scanner failure never touches trading
             log.exception("opportunity scanner failed")
             scanner.stats.failures += 1

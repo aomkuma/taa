@@ -8,7 +8,9 @@ need:
   (``advisory.universe.monitored_cap``);
 - **detectors:** the union of the users' enabled detectors (the evidence run plan adds prerequisites and can
   only narrow it further to what the local config enables);
-- **strategies:** the strategies enabled in ``config.yaml`` ∪ the pattern setups any user lets alert.
+- **strategies:** the strategies enabled in ``config.yaml`` ∪ the pattern setups any user lets alert;
+- **lifetime_bars:** the longest signal lifetime any user wants (market windows use it; a user's own shorter
+  lifetime is applied by the personalizer).
 
 The ``version`` digest changes whenever the content does, so the scanner rebuilds its plan only then. In
 Phase 7 the cloud sends these (with an ETag); until then :func:`local_requirements` derives them from the
@@ -35,10 +37,16 @@ class ComputeRequirements:
     symbols: tuple[str, ...]
     detectors: frozenset[str]
     strategies: frozenset[str]
+    lifetime_bars: int = 2
 
     @property
     def version(self) -> str:
-        payload = {"s": list(self.symbols), "d": sorted(self.detectors), "t": sorted(self.strategies)}
+        payload = {
+            "s": list(self.symbols),
+            "d": sorted(self.detectors),
+            "t": sorted(self.strategies),
+            "l": self.lifetime_bars,
+        }
         return stable_hash(json.dumps(payload, separators=(",", ":")), length=16)
 
 
@@ -81,7 +89,10 @@ def compute_requirements(
         available=available,
     )
     trading = {item.name for item in config.strategies.items if item.enabled}
-    return ComputeRequirements(tuple(symbols), frozenset(detectors), frozenset(trading | allowed_setups))
+    lifetime = max((p.alerts.signal_lifetime_bars for p in users), default=2)
+    return ComputeRequirements(
+        tuple(symbols), frozenset(detectors), frozenset(trading | allowed_setups), lifetime
+    )
 
 
 def local_requirements(

@@ -205,7 +205,7 @@ class TestEngine:
         advisory = CONFIG.advisory  # scanner enabled, as in config.yaml
         h = harness(tmp_path, advisory=advisory)
         h.engine.start()
-        assert h.engine.scanner is not None
+        assert h.engine.scanner is not None and h.engine.lifecycle is not None
         h.engine.run(max_cycles=3)
         status = h.engine.status()["scanner"]
         assert status["bars"] >= 1 and status["failures"] == 0
