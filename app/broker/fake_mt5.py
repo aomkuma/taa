@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 
 from app.broker import mt5_constants as c
+from app.broker.fake_trading import FakeTradeDesk
 from app.broker.symbol_groups import match_group
 from app.core.clock import Clock, ServerClock
 
@@ -322,6 +323,7 @@ class FakeMT5:
         self._failures: dict[str, _Failure] = {}
         self._last_error: tuple[int, str] = (1, "Success")
         self._seed = seed
+        self.desk = FakeTradeDesk(self)
         start = clock.now_utc() - timedelta(days=history_days)
         end = clock.now_utc() + timedelta(days=future_days)
         self._series = {
@@ -594,6 +596,7 @@ class FakeMT5:
     def account_info(self) -> SimpleNamespace | None:
         if not self._enter("account_info"):
             return None
+        self.desk.refresh()
         a = self.account
         floating = sum(float(getattr(p, "profit", 0.0)) for p in self.positions)
         equity = a.balance + floating
@@ -744,6 +747,7 @@ class FakeMT5:
     def positions_get(self, symbol: str | None = None, ticket: int | None = None) -> tuple[Any, ...] | None:
         if not self._enter("positions_get"):
             return None
+        self.desk.refresh()
         out = [
             p
             for p in self.positions
@@ -759,6 +763,7 @@ class FakeMT5:
     def history_deals_get(self, date_from: Any, date_to: Any) -> tuple[Any, ...] | None:
         if not self._enter("history_deals_get"):
             return None
+        self.desk.refresh()
         lo = _as_epoch(date_from) + self.server_clock.expected_offset_seconds()
         hi = _as_epoch(date_to) + self.server_clock.expected_offset_seconds()
         return tuple(d for d in self.deals if lo <= d.time <= hi)
@@ -798,13 +803,15 @@ class FakeMT5:
     def order_check(self, request: dict[str, Any]) -> SimpleNamespace | None:
         if not self._enter("order_check"):
             return None
-        return SimpleNamespace(retcode=0, comment="Done", request=request)
+        self.desk.refresh()
+        return self.desk.order_check(request)
 
     def order_send(self, request: dict[str, Any]) -> SimpleNamespace | None:
-        """Present only so tests can prove it is never called in Milestone 1."""
-        self.calls["order_send"] += 1
-        self._last_error = (-1, "order_send is not supported by FakeMT5 in Milestone 1")
-        return None
+        """Emulated trade server (``app/broker/fake_trading.py``); ``calls`` counts every attempt."""
+        if not self._enter("order_send"):
+            return None
+        self.desk.refresh()
+        return self.desk.order_send(request)
 
 
 def _as_epoch(value: Any) -> int:
