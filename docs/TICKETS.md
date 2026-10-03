@@ -30,7 +30,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 7 | DONE |
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
-| M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 1 | IN PROGRESS |
+| M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 2 | IN PROGRESS |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 0 | TODO |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 0 | TODO |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
@@ -753,14 +753,14 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6A2 — Market sessions & liquidity
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 407, 6A1
 
-- [ ] sessions in exchange-local timezones (Sydney, Tokyo, London, New York, US equities, crypto 24/7)
-- [ ] asset-class → session mapping + per-symbol overrides
-- [ ] hour-of-week tick-volume liquidity profile from H1 history
-- [ ] `session_state(symbol, now)` with current session, ends_at and next_open
-- [ ] tests across mismatched US/EU DST weeks
+- [x] sessions in exchange-local timezones (Sydney, Tokyo, London, New York, US equities, crypto 24/7)
+- [x] asset-class → session mapping + per-symbol overrides
+- [x] hour-of-week tick-volume liquidity profile from H1 history
+- [x] `session_state(symbol, now)` with current session, ends_at and next_open
+- [x] tests across mismatched US/EU DST weeks
 
 #### TAA-6A3 — Suitability metrics & gates
 

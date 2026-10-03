@@ -142,6 +142,8 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
     auto_top_n: 30
     monitored_cap: 60
     refresh_hours: 24
+  sessions:
+    overrides: {}                   # e.g. {XAUUSD: [LONDON, NEW_YORK]}; names: SYDNEY TOKYO LONDON NEW_YORK EUROPE_EQUITIES US_EQUITIES CRYPTO
 
 engine:
   monitor_interval_seconds: 1.0

@@ -412,8 +412,25 @@ class UniverseConfig(StrictModel):
         return ",".join([*self.include, *(f"!{p}" for p in self.exclude)])
 
 
+class AdvisorySessionsConfig(StrictModel):
+    """Per-symbol session overrides for the ranking (names from ``app.advisory.market_sessions``)."""
+
+    overrides: dict[str, list[str]] = Field(default_factory=dict)
+
+    @field_validator("overrides")
+    @classmethod
+    def _names(cls, value: dict[str, list[str]]) -> dict[str, list[str]]:
+        known = {"SYDNEY", "TOKYO", "LONDON", "NEW_YORK", "EUROPE_EQUITIES", "US_EQUITIES", "CRYPTO"}
+        for symbol, names in value.items():
+            unknown = sorted(set(names) - known)
+            if not names or unknown:
+                raise ValueError(f"{symbol}: unknown or empty sessions {unknown}")
+        return value
+
+
 class AdvisoryConfig(StrictModel):
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
+    sessions: AdvisorySessionsConfig = Field(default_factory=AdvisorySessionsConfig)
 
 
 class ExecutionConfig(StrictModel):
