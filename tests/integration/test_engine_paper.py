@@ -68,6 +68,7 @@ def settings(tmp_path: Path, **config: object) -> Settings:
         update={
             "symbols": s.config.symbols.model_copy(update={"allowed": ["EURUSD"]}),
             "evidence": s.config.evidence.model_copy(update={"default_enabled": False}),
+            "engine": s.config.engine.model_copy(update={"heartbeat_file": str(tmp_path / "heartbeat.json")}),
             **config,
         }
     )

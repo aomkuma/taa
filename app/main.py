@@ -18,6 +18,7 @@ from app.core.errors import TaaError
 from app.engine.orchestrator import Engine
 from app.logging_config import configure_logging
 from app.monitoring.alerts import EventBus, LocalLogSink
+from app.monitoring.health_check import HealthServer
 from app.storage.database import Database, resolve_db_url, upgrade_schema
 
 
@@ -55,8 +56,14 @@ def main(argv: list[str] | None = None) -> int:
 
         signal.signal(signal.SIGINT, _stop)
         signal.signal(signal.SIGTERM, _stop)
-        engine.start()
-        engine.run(args.max_cycles)
+        loop = settings.config.engine
+        health = HealthServer(engine.status, loop.health_host, loop.health_port)
+        health.start()
+        try:
+            engine.start()
+            engine.run(args.max_cycles)
+        finally:
+            health.stop()
         return 0
     except TaaError as exc:
         sys.stderr.write(f"error: {exc}\n")

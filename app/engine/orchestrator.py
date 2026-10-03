@@ -55,6 +55,7 @@ from app.market_data.quote_service import QuoteService
 from app.market_data.server_time import verify_server_time_any
 from app.market_data.trading_sessions import TradingSessions
 from app.monitoring.alerts import EventBus, EventType
+from app.monitoring.health_check import write_heartbeat
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
@@ -128,6 +129,7 @@ class Engine:
         self._health_due = _Due(loop.health_interval_seconds)
         self._clock_due = _Due(loop.clock_verify_minutes * 60)
         self.audit = AuditLog(db, f"engine:{settings.env.ENGINE_ID or 'local'}", clock)
+        self.heartbeat_path = settings.path(loop.heartbeat_file)
         self.runs = RunRepository(db, clock)
 
     # --- startup ----------------------------------------------------------------------------------------
@@ -424,6 +426,10 @@ class Engine:
         free_gb = shutil.disk_usage(data_dir).free / 1e9 if data_dir.exists() else None
         self.monitor.observe_storage(write_ok, free_gb)
         self.paper.save_marks()
+        self.heartbeat()
+
+    def heartbeat(self, state: str = "running") -> None:
+        write_heartbeat(self.heartbeat_path, self.clock.now_utc(), self.status(), state=state)
 
     def _verify_clock(self, *, initial: bool = False) -> None:
         cfg = self.config
@@ -478,6 +484,7 @@ class Engine:
         try:
             if hasattr(self, "paper"):
                 self.paper.save_marks()
+            self.heartbeat("stopped")  # a deliberate stop: the watchdog does not restart it
             self.runs.finish(self.run_id, "STOPPED", self.last_error)
             self.audit.append("ENGINE_STOP", self.process, {"run_id": self.run_id, "cycles": self.cycles})
             self.bus.emit(EventType.ENGINE_STOPPED, cycles=self.cycles)
