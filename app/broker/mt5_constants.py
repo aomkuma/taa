@@ -1,0 +1,111 @@
+"""MetaTrader 5 constant values mirrored locally.
+
+The ``MetaTrader5`` package only exists on Windows; mirroring the numeric values lets the rest of the
+code (and tests on Linux CI) work without importing it. Values match the official documentation.
+"""
+
+from __future__ import annotations
+
+from app.core.enums import Timeframe
+
+# Timeframes (TIMEFRAME_*)
+TIMEFRAME: dict[Timeframe, int] = {
+    Timeframe.M1: 1,
+    Timeframe.M5: 5,
+    Timeframe.M15: 15,
+    Timeframe.M30: 30,
+    Timeframe.H1: 16385,
+    Timeframe.H4: 16388,
+    Timeframe.D1: 16408,
+}
+
+# Order types
+ORDER_TYPE_BUY = 0
+ORDER_TYPE_SELL = 1
+
+# Trade request actions
+TRADE_ACTION_DEAL = 1
+TRADE_ACTION_SLTP = 6
+
+# Order filling (request field type_filling)
+ORDER_FILLING_FOK = 0
+ORDER_FILLING_IOC = 1
+ORDER_FILLING_RETURN = 2
+ORDER_FILLING_BOC = 3
+
+ORDER_TIME_GTC = 0
+
+# Symbol filling flags (symbol_info().filling_mode bitmask)
+SYMBOL_FILLING_FOK = 1
+SYMBOL_FILLING_IOC = 2
+SYMBOL_FILLING_BOC = 4
+
+# Symbol trade mode
+SYMBOL_TRADE_MODE_DISABLED = 0
+SYMBOL_TRADE_MODE_LONGONLY = 1
+SYMBOL_TRADE_MODE_SHORTONLY = 2
+SYMBOL_TRADE_MODE_CLOSEONLY = 3
+SYMBOL_TRADE_MODE_FULL = 4
+
+# Symbol execution mode
+SYMBOL_TRADE_EXECUTION_REQUEST = 0
+SYMBOL_TRADE_EXECUTION_INSTANT = 1
+SYMBOL_TRADE_EXECUTION_MARKET = 2
+SYMBOL_TRADE_EXECUTION_EXCHANGE = 3
+
+# Symbol margin/profit calculation mode (symbol_info().trade_calc_mode)
+SYMBOL_CALC_MODE_FOREX = 0
+SYMBOL_CALC_MODE_FUTURES = 1
+SYMBOL_CALC_MODE_CFD = 2
+SYMBOL_CALC_MODE_CFDINDEX = 3
+SYMBOL_CALC_MODE_CFDLEVERAGE = 4
+SYMBOL_CALC_MODE_FOREX_NO_LEVERAGE = 5
+SYMBOL_CALC_MODE_EXCH_STOCKS = 32
+SYMBOL_CALC_MODE_EXCH_FUTURES = 33
+
+# Tick history flags (copy_ticks_*)
+COPY_TICKS_ALL = -1
+COPY_TICKS_INFO = 1
+COPY_TICKS_TRADE = 2
+
+# Chart price basis
+SYMBOL_CHART_MODE_BID = 0
+SYMBOL_CHART_MODE_LAST = 1
+
+# Account
+ACCOUNT_TRADE_MODE_DEMO = 0
+ACCOUNT_TRADE_MODE_CONTEST = 1
+ACCOUNT_TRADE_MODE_REAL = 2
+
+ACCOUNT_MARGIN_MODE_RETAIL_NETTING = 0
+ACCOUNT_MARGIN_MODE_EXCHANGE = 1
+ACCOUNT_MARGIN_MODE_RETAIL_HEDGING = 2
+
+ACCOUNT_STOPOUT_MODE_PERCENT = 0
+ACCOUNT_STOPOUT_MODE_MONEY = 1
+
+# Positions and deals
+POSITION_TYPE_BUY = 0
+POSITION_TYPE_SELL = 1
+
+DEAL_TYPE_BUY = 0
+DEAL_TYPE_SELL = 1
+DEAL_TYPE_BALANCE = 2
+DEAL_TYPE_CREDIT = 3
+DEAL_TYPE_CHARGE = 4
+DEAL_TYPE_CORRECTION = 5
+DEAL_TYPE_BONUS = 6
+DEAL_TYPE_COMMISSION = 7
+CASH_FLOW_DEAL_TYPES = frozenset(
+    {DEAL_TYPE_BALANCE, DEAL_TYPE_CREDIT, DEAL_TYPE_CHARGE, DEAL_TYPE_CORRECTION, DEAL_TYPE_BONUS}
+)
+
+DEAL_ENTRY_IN = 0
+DEAL_ENTRY_OUT = 1
+DEAL_ENTRY_INOUT = 2
+DEAL_ENTRY_OUT_BY = 3
+
+ACCOUNT_TRADE_MODE_NAMES = {0: "DEMO", 1: "CONTEST", 2: "REAL"}
+MARGIN_MODE_NAMES = {0: "NETTING", 1: "EXCHANGE", 2: "HEDGING"}
+TRADE_MODE_NAMES = {0: "DISABLED", 1: "LONGONLY", 2: "SHORTONLY", 3: "CLOSEONLY", 4: "FULL"}
+EXECUTION_MODE_NAMES = {0: "REQUEST", 1: "INSTANT", 2: "MARKET", 3: "EXCHANGE"}

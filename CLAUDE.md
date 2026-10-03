@@ -1,0 +1,89 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project
+
+TAA is an automated trading platform for an FBS account via MetaTrader 5. A Python **engine** runs on Windows next to
+the MT5 terminal (the `MetaTrader5` package is Windows-only). A FastAPI **web** service (API + React PWA), a
+**worker** and PostgreSQL run on Railway. The design favors capital protection, fail-closed behavior and
+auditability over features. No profitability claims anywhere.
+
+Read before larger work:
+- `docs/PLAN.md`: design, revision 2. Section numbers run A1–A21, then A25–A30, then A22–A24.
+- `docs/TICKETS.md`: tickets, checklists, progress table and execution order.
+- `docs/HANDOFF.md`: current state and open items.
+- `docs/CODING_STANDARDS.md`: detailed coding conventions. **Follow them.**
+
+## Commands (Windows, run from the repo root; always use the venv)
+
+```powershell
+.venv\Scripts\python -m pip install -r requirements.txt -r requirements/dev.txt   # setup
+.venv\Scripts\python -m pytest -q                                   # all tests
+.venv\Scripts\python -m pytest tests/unit/test_broker.py::TestConnection::test_reconnect_with_backoff -q  # one test
+.venv\Scripts\python -m pytest -m mt5      # real-terminal contract tests (also needs TAA_MT5_TESTS=1 and a .env)
+.venv\Scripts\python -m pytest -m postgres # needs DATABASE_URL pointing to PostgreSQL
+.venv\Scripts\ruff format app tests scripts; .venv\Scripts\ruff check app tests scripts
+.venv\Scripts\mypy app
+.venv\Scripts\bandit -q -r app -c pyproject.toml
+.venv\Scripts\python -m app.cli doctor --fake        # diagnostics against FakeMT5 (drop --fake for the real terminal)
+.venv\Scripts\python -m app.cli config show | kill --reason "..." | audit verify | db upgrade
+.venv\Scripts\python scripts\tickets.py tick TAA-201 1 2   # tick checklist items; then:
+.venv\Scripts\python scripts\tickets.py sync               # recompute statuses + progress table
+```
+
+New tables: add the model under `app/storage/models/` and export it from `app/storage/models/__init__.py`. Then
+delete `data/dev-migrations.db`, run `.venv\Scripts\alembic upgrade head`, then
+`.venv\Scripts\alembic revision --autogenerate -m "..." --rev-id 000N`, and review the generated file.
+
+A ticket is DONE only when tests, ruff (format + check), mypy and bandit are all green.
+
+## Architecture (big picture)
+
+- **Dependency direction:** `core` → `config` / `security` → `storage` → `broker` (gateway protocol) →
+  `market_data` → `indicators` / `evidence` → `strategy` → `risk` / `engine` (decision) → `execution`. Cloud side:
+  `sync` → `web` / `worker`; `advisory` and `analytics` are shared libraries.
+  - This is **enforced** by `tests/unit/test_architecture.py`: the layer table, MetaTrader5 only in `app/broker`,
+    no live-broker imports in web/worker, order functions only in `app/broker`, no direct wall-clock reads.
+  - A new package must be added to its `LAYERS` table.
+- **Broker access only through `app/broker/gateway.py`:**
+  - The `MarketDataGateway` protocol, implemented by `ReadOnlyMT5Gateway` over `MT5Client`.
+  - Nothing outside `app/broker/` imports `MetaTrader5`.
+  - `MT5Client.call` refuses `order_send` / `order_check` unless `allow_trading=True`, which is only possible in
+    DEMO/LIVE. **Milestone 1 never sends broker orders.**
+- **Time:** MT5 returns bar/tick/deal epochs in **broker server wall-clock time** (FBS = EET, `Europe/Athens`),
+  not UTC. Convert only via `ServerClock` (`app/core/clock.py`). Internally everything is timezone-aware UTC;
+  history queries widen the window by ±1 day, then filter.
+- **Closed candles only:** `CandleService` drops the forming bar (with a grace period). `CandleWatermarks`
+  (persisted) guarantees each bar is evaluated once, even across restarts. Indicators and detectors must never look
+  ahead.
+- **State ownership:**
+  - The engine's local SQLite (`data/taa_engine.db`, WAL, synchronous=FULL) is authoritative for trading state.
+  - The cloud Postgres (database `taa`) is a replica plus a command queue, fed by an HMAC-signed outbox.
+  - One SQLAlchemy model set and one Alembic history serve both databases, so keep types portable
+    (`UTCDateTime`, `JSONType`).
+- **Safety primitives:**
+  - Hash-chained audit log (`app/storage/audit.py`, chains per process).
+  - Kill switch = the presence of a file (`app/risk/kill_switch.py`); release is local CLI only.
+  - Account verification after every (re)connect (`app/broker/verification.py`). Leverage is *not* identity,
+    because FBS changes Forex leverage by equity tier.
+- **Config:** secrets and safety flags come from env/`.env` (`EnvSettings`); parameters come from `config.yaml`
+  (`AppConfig`, `extra="forbid"`). Env overrides yaml. Risk values are **percent** of equity with hard ceilings.
+  `load_settings()` raises `ConfigError` on any problem.
+- **Advisory (rev. 2):** "compute once, personalize per user". The engine computes market facts (evidence,
+  opportunities, shadow trades); the cloud personalizer applies each user's theory selection, thresholds, windows
+  and entitlements.
+- **Tests:**
+  - `FakeMT5` (`app/broker/fake_mt5.py`) emulates the MT5 module, including server time, schedules per asset type,
+    ticks, failures and call counters. Inject it via `MT5Client(..., mt5_module=fake)`.
+  - Use `ManualClock` for time. Fixtures use Wednesday 2026-09-30 (market open, EEST +3) and Saturday 2026-10-03
+    (market closed).
+
+## Working rules
+
+- Chat with the user in **Thai**. Docs, code comments and docstrings are in **English**. The PWA UI will be Thai +
+  English.
+- After completing ticket items, tick them in `docs/TICKETS.md` via `scripts/tickets.py` in the same change.
+- No Docker locally. `deploy/railway/*.Dockerfile` and `.railway/railway.ts` exist only for Railway builds.
+- Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
+- LIVE trading stays disabled by default. Subscription and billing stay behind `SUBSCRIPTIONS_ENABLED=false`.

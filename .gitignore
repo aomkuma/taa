@@ -1,0 +1,51 @@
+# --- Secrets: never commit ---------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+vapid_private*.txt
+
+# --- Runtime data -------------------------------------------------------------
+data/
+logs/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# --- Python -------------------------------------------------------------------
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# --- Frontend -----------------------------------------------------------------
+node_modules/
+frontend/dist/
+app/web/static/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+# --- Railway IaC tooling ------------------------------------------------------
+.railway/node_modules/
+
+# --- Editors / OS -------------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

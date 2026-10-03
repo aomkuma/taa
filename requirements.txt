@@ -1,0 +1,4 @@
+# Full local install: engine + web + worker.
+# Railway images install requirements/cloud.txt only (MetaTrader5 is Windows-only).
+-r requirements/engine.txt
+-r requirements/cloud.txt

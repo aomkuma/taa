@@ -1,0 +1,95 @@
+# TAA non-secret configuration. Environment variables override the matching risk values.
+# Unknown keys are rejected at startup (typos are errors, not silently ignored).
+# Risk values are PERCENT of equity (0.5 = 0.5%). Hard ceilings: 2% per trade, 10% daily, 50% drawdown.
+
+symbols:
+  allowed: [EURUSD, GBPUSD, USDJPY, XAUUSD]
+  reference_symbol: EURUSD          # liquid symbol used to verify broker server time
+  overrides:
+    XAUUSD:
+      max_spread_points: 40         # measure on your account and adjust
+      max_lot: 0.5
+      daily_breaks_utc: ["21:00-22:05"]
+
+timeframes:
+  higher: H1                        # bias / regime
+  entry: M15                        # setups
+  refinement: null                  # optional, e.g. M5
+  warmup_bars: 400
+  candle_close_grace_seconds: 3
+  stale_tick_seconds: 120
+  max_gap_bars: 3
+
+indicators:
+  ema_fast: 20
+  ema_mid: 50
+  ema_slow: 200
+  rsi_period: 14
+  atr_period: 14
+  adx_period: 14
+  swing_k: 3
+  sr_tolerance_atr: 0.5
+
+strategies:
+  cooldown_bars: 4
+  signal_expiry_bars: 1
+  allow_single_indicator_signals: false
+  items:
+    - name: example_trend_pullback  # DEMONSTRATION ONLY - not production-proven
+      enabled: true
+      params: {}
+
+risk:
+  max_risk_per_trade_percent: 0.5
+  max_open_positions: 3
+  max_positions_per_symbol: 1
+  max_total_open_risk_percent: 1.5
+  max_daily_loss_percent: 2.0
+  max_weekly_loss_percent: 4.0
+  max_account_drawdown_percent: 10.0
+  max_consecutive_losses: 4
+  consecutive_loss_pause_hours: 24
+  max_spread_points: 30
+  max_spread_to_sl_ratio: 0.15
+  max_slippage_points: 10
+  min_risk_reward: 1.5
+  max_lot: 1.0
+  min_margin_level_percent: 500
+  max_margin_utilization_percent: 30
+  max_effective_leverage: 10
+  require_take_profit: true
+  correlation_groups:
+    EUR_GBP: [EURUSD, GBPUSD]
+  probation_trades: 20
+  probation_multiplier: 0.25
+  foreign_positions_policy: count   # count | halt
+
+sessions:
+  default:
+    - days: [0, 1, 2, 3, 4]         # Monday..Friday
+      start_utc: "07:00"
+      end_utc: "20:00"
+  friday_cutoff_utc: "20:00"
+  news_blackouts: []                # e.g. - {start_utc: 2026-10-02T12:15:00Z, end_utc: 2026-10-02T13:00:00Z, currencies: [USD], reason: NFP}
+
+position_management:
+  break_even_trigger_r: 1.0
+  trailing_start_r: 1.5
+  trailing_atr_multiple: 2.0
+  time_stop_bars: null
+
+backtest:
+  initial_balance: 10000
+  account_currency: USD
+  commission_per_lot: 0             # FBS Standard: spread-only
+  spread_model: bar
+  slippage_model: fixed
+  slippage_points: 1
+  seed: 42
+
+engine:
+  monitor_interval_seconds: 1.0
+  health_port: 8765
+
+sync:
+  enabled: false                    # true once the Railway web service is paired
