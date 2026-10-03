@@ -62,6 +62,7 @@ FRAME_COLUMNS = (
     "trend",
     "regime",
     "volatility",
+    "valid",  # finite prices, low > 0 and consistent OHLC (a negative print, e.g. WTI in April 2020, is not)
 )
 MAX_LEVELS = 3  # nearest S/R zone centres kept on each side of the close
 
@@ -129,6 +130,11 @@ def analyze_frame(
     df["trend"] = trend_series(c, mid, slow)
     df["regime"] = regime_series(df["adx"].to_numpy(), df["atr_pct"].to_numpy(), regime)
     df["volatility"] = volatility_series(df["atr_pct"].to_numpy(), regime)
+    o, h, lo = df["open"].to_numpy(), high.to_numpy(), low.to_numpy()
+    finite = np.isfinite(o) & np.isfinite(h) & np.isfinite(lo) & np.isfinite(c)
+    with np.errstate(invalid="ignore"):
+        consistent = (lo > 0) & (lo <= np.minimum(o, c)) & (h >= np.maximum(o, c))
+    df["valid"] = finite & consistent
     swings = tuple(find_swings(high, low, params.swing_k))
     return AnalyzedFrame(tf, df, swings, tuple(quality_flags))
 
@@ -232,6 +238,10 @@ def context_at(
         if n == 0:
             raise InsufficientDataError(f"no closed {tf} bar of {symbol} at {decision_time.isoformat()}")
         cut[tf] = frame.df.iloc[0 if window is None else max(0, n - window) : n].copy()
+        bad = int((~cut[tf]["valid"].astype(bool)).sum())
+        if bad:
+            # indicators computed through a bad print stay contaminated: hold while it is in the window
+            flags.append(f"{tf.value}:INVALID_OHLC:{bad}")
         states.append(_state(frame, n - 1))
         flags.extend(f"{tf.value}:{flag}" for flag in frame.quality_flags)
         lag = (decision_time - states[-1].bar_close_utc).total_seconds()

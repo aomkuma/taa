@@ -239,8 +239,8 @@ class SimulatedBroker:
         try:
             if spec.currency_margin != spec.currency_profit:  # FX: margin on the base-currency notional
                 notional = volume * spec.contract_size * self._rate(spec.currency_margin, None)
-            else:  # CFDs and metals priced in the margin currency
-                notional = volume * spec.contract_size * price * self._rate(spec.currency_profit, None)
+            else:  # CFDs and metals priced in the margin currency; |price|: a negative print is not a credit
+                notional = volume * spec.contract_size * abs(price) * self._rate(spec.currency_profit, None)
         except SimulationError:
             return None
         return notional / self.leverage

@@ -1275,6 +1275,13 @@ never sends orders.
 
 - No profitability claim; the example strategy is a demonstration. Backtests do not predict results; overfitting is a real risk.
 - Weekend and news gaps can jump stops. A broker-side SL limits losses but cannot eliminate them.
+- **Non-positive prices** (WTI front-month futures settled at −37.63 USD on 2020-04-20): a bar with a low ≤ 0 is
+  invalid data. Live candles flag the frame `INVALID_OHLC`, quotes with a bid or ask ≤ 0 are invalid and trip the
+  INVALID_PRICE breaker; backtests flag any bar window that contains such a print. Either way new entries are
+  rejected (`DATA_INVALID`) while it is in the window. Open positions keep being valued with linear P/L (correct
+  for negative prices; simulated margin uses |price|), and a stop gapped through fills at the open, so the
+  recorded loss can be many R. Sizing cannot protect against that tail; only the exposure caps (heat, margin,
+  effective leverage, per-symbol `max_lot`) and avoiding expiry-linked energy CFDs around contract rollover can.
 - MT5 time semantics are not officially documented, so they are verified at runtime. The Python API has no session
   schedule or calendar, so both are config-based.
 - A PC-hosted engine depends on the PC staying on. Web Push is best-effort (especially on iOS); the dashboard is the
