@@ -1,4 +1,4 @@
-"""Risk bookkeeping: loss baselines, high-water mark, consecutive losses, processed deals (TAA-403).
+"""Risk bookkeeping: loss baselines, HWM, streaks, processed deals (TAA-403); circuit breakers (TAA-404).
 
 Accounts are identified by ``account_key`` (a hash of login and server), so these rows can be replicated to
 the cloud without exposing the login.
@@ -7,12 +7,13 @@ the cloud without exposing the login.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import BigInteger, Float, Integer, String
+from sqlalchemy import BigInteger, Boolean, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.storage.models.base import Base, utcnow
-from app.storage.types import UTCDateTime
+from app.storage.types import JSONType, UTCDateTime
 
 
 class RiskBaseline(Base):
@@ -50,3 +51,40 @@ class RiskDeal(Base):
     kind: Mapped[str] = mapped_column(String(16))  # CASH_FLOW | CLOSE
     amount: Mapped[float] = mapped_column(Float)
     time_utc: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+
+
+class BreakerStateRow(Base):
+    """Current state of one circuit breaker in one scope (``scope_key`` is "" for global breakers)."""
+
+    __tablename__ = "breaker_states"
+
+    name: Mapped[str] = mapped_column(String(32), primary_key=True)
+    scope_key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    state: Mapped[str] = mapped_column(String(16))  # CLOSED | OPEN | HALF_OPEN
+    latched: Mapped[bool] = mapped_column(Boolean, default=False)  # manual reset required
+    reason: Mapped[str] = mapped_column(Text, default="")
+    opened_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    opened_day_key: Mapped[str] = mapped_column(String(16), default="")
+    opened_week_key: Mapped[str] = mapped_column(String(16), default="")
+    trips_day_key: Mapped[str] = mapped_column(String(16), default="")
+    trips_today: Mapped[int] = mapped_column(Integer, default=0)
+    healthy_count: Mapped[int] = mapped_column(Integer, default=0)
+    healthy_since: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
+
+
+class BreakerEventRow(Base):
+    """Every trip, half-open probe and reset, with who and why (also appended to the audit chain)."""
+
+    __tablename__ = "breaker_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    ts_utc: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    name: Mapped[str] = mapped_column(String(32), index=True)
+    scope_key: Mapped[str] = mapped_column(String(64), default="")
+    action: Mapped[str] = mapped_column(String(16))  # TRIP | HALF_OPEN | RESET
+    severity: Mapped[str] = mapped_column(String(16))
+    actor: Mapped[str] = mapped_column(String(64))
+    reason: Mapped[str] = mapped_column(Text)
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)

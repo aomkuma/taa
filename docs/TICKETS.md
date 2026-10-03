@@ -24,7 +24,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
-| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 3 | IN PROGRESS |
+| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 4 | IN PROGRESS |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
@@ -577,14 +577,14 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-404 — Circuit breakers
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 403
 
-- [ ] framework (scope, latching, half-open, cooldowns)
-- [ ] A10 breakers (M1 subset active)
-- [ ] persistence
-- [ ] events and notifications
-- [ ] tests
+- [x] framework (scope, latching, half-open, cooldowns)
+- [x] A10 breakers (M1 subset active)
+- [x] persistence
+- [x] events and notifications
+- [x] tests
 
 #### TAA-405 — Decision engine
 
