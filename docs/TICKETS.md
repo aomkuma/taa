@@ -23,7 +23,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
-| M1 | Phase 3 — Strategy engine | 7 | 3 | IN PROGRESS |
+| M1 | Phase 3 — Strategy engine | 7 | 4 | IN PROGRESS |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
@@ -488,14 +488,14 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-304 — Signal arbitration
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 303
 
-- [ ] conflict resolver
-- [ ] ranking
-- [ ] cooldown
-- [ ] one signal per strategy/symbol/bar
-- [ ] tests
+- [x] conflict resolver
+- [x] ranking
+- [x] cooldown
+- [x] one signal per strategy/symbol/bar
+- [x] tests
 
 #### TAA-305 — Example strategy
 
