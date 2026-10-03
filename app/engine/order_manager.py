@@ -155,7 +155,7 @@ class OrderManager:
             setattr(row, key, value)
         log.info("intent %s %s -> %s %s", short_id(row.intent_id), old.value, new.value, detail)
 
-    def _transition(self, intent_id: str, new: IntentState, detail: str = "", **fields: object) -> None:
+    def transition(self, intent_id: str, new: IntentState, detail: str = "", **fields: object) -> None:
         with self.db.session() as sess:
             row = sess.get(OrderIntentRow, intent_id)
             if row is None:
@@ -258,24 +258,24 @@ class OrderManager:
                     return self._finish(
                         row, S.REJECTED, f"order_check {check.retcode}: {check.comment}", check.retcode
                     )
-                self._transition(intent_id, S.PRECHECKED)
+                self.transition(intent_id, S.PRECHECKED)
             problems = self.presend(spec.name, side, price, ensure_utc(row.expires_at))
             if problems:
                 return self._finish(row, S.NOT_EXECUTED, "pre-send: " + "; ".join(problems))
-            self._transition(
+            self.transition(
                 intent_id, S.SENDING, attempts=attempt, sent_at=self.clock.now_utc(), price_requested=price
             )
             result = self.execution.send(request)
             outcome = self._handle(intent_id, spec, side, price, result, attempt)
             if outcome is not None:
                 return outcome
-            self._transition(intent_id, S.PRECHECKED, f"retry after {result.description}")
+            self.transition(intent_id, S.PRECHECKED, f"retry after {result.description}")
         return self._finish(self.row(intent_id), S.REJECTED, "requotes exhausted")
 
     def _finish(
         self, row: OrderIntentRow, state: IntentState, detail: str, retcode: int | None = None
     ) -> ExecutionOutcome:
-        self._transition(row.intent_id, state, detail, retcode=retcode)
+        self.transition(row.intent_id, state, detail, retcode=retcode)
         if state in (S.REJECTED, S.NOT_EXECUTED) and self.bus is not None:
             self.bus.emit(
                 EventType.ORDER_REJECTED, symbol=row.symbol, reason=detail, intent=short_id(row.intent_id)
@@ -295,7 +295,7 @@ class OrderManager:
             )
             slippage = (result.price - price) * side.sign / spec.point if result.price else 0.0
             position = self._position_of(row, result.deal)
-            self._transition(
+            self.transition(
                 intent_id,
                 state,
                 desc,
@@ -330,7 +330,7 @@ class OrderManager:
         if cls is RetcodeClass.RETRY_ONCE and attempt < self.config.max_send_attempts:
             return None
         if cls is RetcodeClass.UNKNOWN:
-            self._transition(intent_id, S.UNKNOWN, f"{desc} {result.last_error}", **fields)
+            self.transition(intent_id, S.UNKNOWN, f"{desc} {result.last_error}", **fields)
             self.monitor.unknown_order(f"{spec.name} intent {short_id(intent_id)}: {desc}")
             if self.bus is not None:
                 self.bus.emit(
@@ -343,7 +343,7 @@ class OrderManager:
             self.kill_switch.activate(f"broker answered {desc}", "engine", "engine", KillMode.HALT)
         elif cls is RetcodeClass.BACKOFF:
             self.monitor.order_backoff(desc)
-        self._transition(intent_id, S.REJECTED, desc, **fields)
+        self.transition(intent_id, S.REJECTED, desc, **fields)
         if self.bus is not None:
             self.bus.emit(EventType.ORDER_REJECTED, symbol=spec.name, reason=desc, intent=short_id(intent_id))
         return ExecutionOutcome(intent_id, row.idempotency_key, S.REJECTED, result.retcode, detail=desc)
@@ -382,13 +382,13 @@ class OrderManager:
             position = self._position_of(row, row.deal_ticket or 0)
             if position is None:
                 # filled and already gone (stopped out at once) or not visible yet: nothing to protect now
-                self._transition(intent_id, S.PROTECTED, "position not visible after the fill")
+                self.transition(intent_id, S.PROTECTED, "position not visible after the fill")
                 return S.PROTECTED
             self._transition_fields(intent_id, position_ticket=position.ticket)
-        if position.sl <= 0 and not self._reattach(position, row.sl, spec):
+        if position.sl <= 0 and not self.reattach_stop(position, row.sl, spec):
             return self._emergency_close(intent_id, position, spec, "stop could not be attached")
         self._check_realized_risk(row, position, spec)
-        self._transition(intent_id, S.PROTECTED)
+        self.transition(intent_id, S.PROTECTED)
         return S.PROTECTED
 
     def _transition_fields(self, intent_id: str, **fields: object) -> None:
@@ -398,7 +398,7 @@ class OrderManager:
                 for key, value in fields.items():
                     setattr(row, key, value)
 
-    def _reattach(self, position: BrokerPosition, sl: float, spec: SymbolSpec) -> bool:
+    def reattach_stop(self, position: BrokerPosition, sl: float, spec: SymbolSpec) -> bool:
         """Up to three attempts within ``unprotected_grace_seconds``."""
         deadline = self.clock.monotonic() + self.config.unprotected_grace_seconds
         for _ in range(3):
@@ -410,10 +410,8 @@ class OrderManager:
                 break
         return False
 
-    def _emergency_close(
-        self, intent_id: str, position: BrokerPosition, spec: SymbolSpec, why: str
-    ) -> IntentState:
-        self._transition(intent_id, S.UNPROTECTED, why)
+    def close_unprotected(self, position: BrokerPosition, spec: SymbolSpec, why: str) -> bool:
+        """Close a position that has no stop; trips UNPROTECTED_POSITION either way. True when closed."""
         tick = self.market.tick(spec.name)
         price = (
             position.price_current if tick is None else (tick.bid if position.side is Side.BUY else tick.ask)
@@ -429,8 +427,14 @@ class OrderManager:
                 ticket=position.ticket,
                 close=result.description,
             )
-        if result.ok:
-            self._transition(intent_id, S.EMERGENCY_CLOSED, f"closed: {result.description}")
+        return result.ok
+
+    def _emergency_close(
+        self, intent_id: str, position: BrokerPosition, spec: SymbolSpec, why: str
+    ) -> IntentState:
+        self.transition(intent_id, S.UNPROTECTED, why)
+        if self.close_unprotected(position, spec, why):
+            self.transition(intent_id, S.EMERGENCY_CLOSED, "closed without a stop")
             return S.EMERGENCY_CLOSED
         return S.UNPROTECTED  # stays visible; the breaker blocks everything until an operator acts
 

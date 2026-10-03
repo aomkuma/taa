@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 22 | 0 | TODO |
 | M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 6 | 3 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 6 | 4 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
 | M2 | Phase 14 — LIVE readiness | 4 | 0 | TODO |
 
@@ -1587,12 +1587,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1204 — Reconciler & post-fill guard
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1203
 
-- [ ] UNKNOWN resolution (widened history windows)
-- [ ] slippage and realized-risk checks
-- [ ] unprotected-position guard
+- [x] UNKNOWN resolution (widened history windows)
+- [x] slippage and realized-risk checks
+- [x] unprotected-position guard
 
 #### TAA-1205 — Broker position management
 

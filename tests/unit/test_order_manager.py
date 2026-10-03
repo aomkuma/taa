@@ -65,6 +65,11 @@ class Rig:
 
 @pytest.fixture
 def rig(tmp_path: Path, db: Database) -> Rig:
+    return make_rig(tmp_path, db)
+
+
+def make_rig(tmp_path: Path, db: Database) -> Rig:
+    """A DEMO trading client on FakeMT5 with an order manager, breakers, kill switch and an event sink."""
     clock = ManualClock(WED)
     bundle = build_trading(settings(), fake=True, clock=clock)
     bundle.client.connect()
@@ -240,7 +245,7 @@ class TestRetcodes:
     def test_illegal_transitions_raise(self, rig: Rig) -> None:
         execute(rig)
         with pytest.raises(IllegalTransition):
-            rig.om._transition(rig.intents()[0].intent_id, IntentState.SENDING)
+            rig.om.transition(rig.intents()[0].intent_id, IntentState.SENDING)
 
 
 class TestPostFillGuard:

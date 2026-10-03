@@ -47,6 +47,7 @@ class EventType(StrEnum):
     ORDER_REJECTED = "ORDER_REJECTED"
     ORDER_UNKNOWN = "ORDER_UNKNOWN"  # order_send gave no usable answer: reconcile before anything else
     POSITION_UNPROTECTED = "POSITION_UNPROTECTED"  # a broker position without a stop
+    ORDER_RECONCILED = "ORDER_RECONCILED"  # an UNKNOWN order was found (or proven absent) on the account
     UNKNOWN_POSITION = "UNKNOWN_POSITION"  # a position with the bot's magic that the engine did not open
     DAILY_SUMMARY = "DAILY_SUMMARY"
 
@@ -69,6 +70,7 @@ DEFAULT_SEVERITY: dict[EventType, Severity] = {
     EventType.ORDER_REJECTED: Severity.WARNING,
     EventType.ORDER_UNKNOWN: Severity.CRITICAL,
     EventType.POSITION_UNPROTECTED: Severity.CRITICAL,
+    EventType.ORDER_RECONCILED: Severity.WARNING,
     EventType.UNKNOWN_POSITION: Severity.CRITICAL,
     EventType.DAILY_SUMMARY: Severity.INFO,
 }
