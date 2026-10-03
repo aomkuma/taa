@@ -40,16 +40,20 @@ Tick the checklist after each item. Stop for review at the end of Milestone 1, o
     (candle anatomy, confirmed swings, structure, S/R zones, breakouts). Formulas, warm-up positions and TA-Lib
     differences are in `docs/INDICATORS.md`. Every indicator is registered in
     `tests/unit/test_indicators_contract.py` (warm-up, look-ahead and short-input checks).
-  - a local `.env` (git-ignored) generated from `.env.example`, with random `ENGINE_ID`, `ENGINE_HMAC_SECRET`
-    and `CONTROL_TOTP_SECRET`. The MT5 credentials are still placeholders. Blank env values now count as unset
-    (`env_ignore_empty`), so the template's empty lines load.
-- **Git:** initialized on `main`; **nothing committed yet**.
+  - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
+    `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
+    choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
+  - the bot terminal is a dedicated portable copy at `C:\MT5	aa-bot` (option A in `.env`); option B, the
+    installed terminal, is commented out.
+  - real terminal verified: `doctor` reports 0 failures (warnings: master password, Algo Trading button off,
+    market idle on the weekend), and `pytest -m mt5` passes 6/6. Demo account: USD, 1:200, hedging. A fresh
+    terminal may need a moment to sync a symbol before `order_calc_profit` works (XAUUSD failed once on the
+    first run).
+- **Git:** `main`, first commit `7d2ab1a` (Phases 0–2). No remote yet.
 - **Next step:** Phase 2A, starting with TAA-2A1 (evidence framework).
 
 ## Open items needing the user
 
-- Fill the MT5 placeholders in `.env` (`MT5_LOGIN`, `MT5_PASSWORD` = the FBS **investor** read-only password,
-  `MT5_SERVER`, `MT5_TERMINAL_PATH`) so `python -m app.cli doctor` can run against the real terminal. The real-terminal contract tests run with `TAA_MT5_TESTS=1`.
-- Whether and when to make the first git commit / push to GitHub.
+- Whether and when to push to GitHub (no remote configured).
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA). See PLAN §A30.
