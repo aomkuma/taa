@@ -78,3 +78,41 @@ production-proven.
   higher-timeframe bias flips (`TrendPullback.bias`).
 
 Every parameter is in `TrendPullbackParams` and can be set under `strategies.items[].params`.
+
+## Pattern-based setups (DEMONSTRATION ONLY, unproven)
+
+`app/strategy/setups.py` (PLAN §A29, use 2). Each setup turns one family of trigger detectors on the entry
+timeframe into an explicit plan. All are listed in `config.yaml` with `enabled: false`; they need the evidence
+engine in the context builder. Every entry carries the reason codes `<SETUP_CODE>` and `DEMO_UNPROVEN`.
+
+**Shared rules** (`SetupParams`, all overridable per setup under `params`):
+
+| Step | Rule |
+|---|---|
+| Trigger | an active, directional item of the setup's detectors, fired on the decision bar (`trigger_max_age_bars: 0`), quality ≥ `min_quality`; triggers in both directions → HOLD `CONFLICT`; best quality wins |
+| Entry | market: live ask / bid, else the bid-based close (+ spread for a BUY) |
+| Stop (`stop_mode`) | `invalidation`: the trigger's invalidation (or the setup's reference) ∓ `stop_buffer_atr` (0.1) ATR · `atr`: `sl_atr_multiple` (1.5) ATR · `nearer`: the closer of the two. Wrong-side invalidation → ATR stop. The spread is always added |
+| Target (`target_mode`) | `measured`: the nearest trigger target beyond the entry with RR ≥ `min_rr` (else the farthest) · `level`: the same over the context's opposing S/R zones · `rr`: `rr_target` (2) R; no usable price → `rr` |
+| Checks | `sl_within_limit` (≤ 3 ATR), `rr_ok` (≥ 1.5), `spread_ok` (≤ 15 % of SL), `session_window`, `before_friday_cutoff`, plus the setup's confirmations |
+| Score | `setup_strength × (0.5 + 0.5 × trigger quality)`, ranking only |
+
+| Setup (`name`) | Triggers | Stop / target defaults | Extra conditions |
+|---|---|---|---|
+| `setup_neckline_break` | `chart.double`, `chart.triple`, `chart.head_shoulders` | nearer / measured move | — |
+| `setup_pattern_breakout` | `chart.triangle`, `chart.wedge`, `chart.rectangle`, `chart.flag`, `chart.cup_handle` | nearer / measured (pattern height) | — |
+| `setup_fib_pullback` | `fib.golden_zone` | beyond 78.6 % / prior high B or 127.2 % | `htf_not_opposed` (higher-TF trend not against) |
+| `setup_harmonic_prz` | `harmonic.*` (7 patterns) | beyond the PRZ far edge / 38.2 or 61.8 % of AD | — |
+| `setup_elliott_wave` | `elliott.wave`, variants `wave3`/`wave5`, primary count only | beyond the wave-1/4 limit / the detector's projections | — |
+| `setup_smc_reversal` | `smc.fvg` retest | beyond the sweep extreme / next opposing level | `liquidity_sweep` and `change_of_character` (CHoCH) the same way within `confirm_window_bars` (30) |
+| `setup_breakout` | `volatility.donchian`, `sessions.asian_breakout`, `sessions.open_breakout` | nearer / measured, else 2R | — |
+| `setup_candle_reversal` | directional reversal candles (engulfing, hammer, shooting star, dragonfly/gravestone doji, outside bar, stars, harami, tweezer) | beyond the candle extreme / next opposing level | `at_level`: the candle sits on a level |
+
+Notes:
+
+- **Why "nearer" for chart patterns.** A stop beyond the pattern extreme with a measured-move target gives
+  RR below 1 by construction, so the setup could never pass min RR. Set `stop_mode: invalidation` to use the
+  textbook stop anyway.
+- **SMC confirmations** are read from the active evidence, so `smc.liquidity_sweep` and `structure.bos_choch`
+  need `max_age_bars` ≥ `confirm_window_bars` under `evidence.detectors` (their default is 3 bars).
+- Confluence enrichment ignores support from each setup's own family (`core_families`), so a setup is not
+  credited twice for its trigger.

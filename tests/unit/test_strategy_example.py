@@ -108,7 +108,7 @@ class TestRules:
         assert sig.risk_reward == pytest.approx(2.0)
         assert sig.setup_strength == 100.0
         assert 75.0 <= sig.score <= 100.0
-        assert sig.reason_codes == ("TREND_PULLBACK",)
+        assert sig.reason_codes == ("TREND_PULLBACK", "DEMO_UNPROVEN")
         assert "[x] htf_bias" in sig.explanation
         assert all(c.passed for c in sig.conditions)
 

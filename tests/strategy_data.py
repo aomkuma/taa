@@ -82,11 +82,11 @@ def random_m15(n: int = 1600, seed: int = 3, drift: float = 0.0, vol: float = 0.
     return candles_from_closes(closes, wick=wick)
 
 
-def resample(m15: pd.DataFrame, tf: Timeframe) -> pd.DataFrame:
-    """Aggregate M15 rows into *tf* bars; only complete groups are kept."""
-    per = tf.seconds // Timeframe.M15.seconds
-    key = m15["open_time"].dt.floor(pd.Timedelta(seconds=tf.seconds))
-    g = m15.groupby(key, sort=True)
+def resample(base_df: pd.DataFrame, tf: Timeframe, base: Timeframe = Timeframe.M15) -> pd.DataFrame:
+    """Aggregate *base* rows into *tf* bars; only complete groups are kept."""
+    per = tf.seconds // base.seconds
+    key = base_df["open_time"].dt.floor(pd.Timedelta(seconds=tf.seconds))
+    g = base_df.groupby(key, sort=True)
     out = pd.DataFrame(
         {
             "open": g["open"].first(),

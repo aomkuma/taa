@@ -47,6 +47,16 @@ strategies:
     - name: example_trend_pullback  # DEMONSTRATION ONLY - not production-proven
       enabled: true
       params: {}
+    # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): demonstration only, unproven. They need the
+    # evidence engine; enable one at a time and watch its shadow results before trusting it.
+    - {name: setup_neckline_break, enabled: false}
+    - {name: setup_pattern_breakout, enabled: false}
+    - {name: setup_fib_pullback, enabled: false}
+    - {name: setup_harmonic_prz, enabled: false}
+    - {name: setup_elliott_wave, enabled: false}
+    - {name: setup_smc_reversal, enabled: false}    # needs max_age_bars >= confirm_window for sweep/CHoCH
+    - {name: setup_breakout, enabled: false}
+    - {name: setup_candle_reversal, enabled: false}
 
 risk:
   max_risk_per_trade_percent: 0.5

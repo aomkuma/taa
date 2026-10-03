@@ -23,7 +23,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
-| M1 | Phase 3 — Strategy engine | 7 | 6 | IN PROGRESS |
+| M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
@@ -509,21 +509,21 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-306 — (rev. 2) Pattern-based strategies
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 2A2–2A8, 303
 
-- [ ] setup generators per §A29 (M/W & H&S neckline breaks
-- [ ] triangle/wedge/rectangle/flag breakouts
-- [ ] Fibonacci pullback continuation
-- [ ] harmonic PRZ reversal
-- [ ] Elliott wave-3/5 entries
-- [ ] SMC sweep+CHoCH+FVG
-- [ ] Donchian/session breakouts
-- [ ] candlestick reversal at confluence)
-- [ ] explicit entry/SL/TP rules + min RR
-- [ ] per-strategy enable
-- [ ] demo/unproven labels
-- [ ] synthetic-scenario tests
+- [x] setup generators per §A29 (M/W & H&S neckline breaks
+- [x] triangle/wedge/rectangle/flag breakouts
+- [x] Fibonacci pullback continuation
+- [x] harmonic PRZ reversal
+- [x] Elliott wave-3/5 entries
+- [x] SMC sweep+CHoCH+FVG
+- [x] Donchian/session breakouts
+- [x] candlestick reversal at confluence)
+- [x] explicit entry/SL/TP rules + min RR
+- [x] per-strategy enable
+- [x] demo/unproven labels
+- [x] synthetic-scenario tests
 
 #### TAA-307 — (rev. 2) Confluence enrichment
 

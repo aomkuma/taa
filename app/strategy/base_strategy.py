@@ -120,6 +120,7 @@ class BaseStrategy(ABC):
         if not action.is_entry:
             raise ValueError(f"entry() needs BUY or SELL, not {action}")
         conds = tuple(conditions)
+        labels = [*reasons, *([ReasonCode.DEMO_UNPROVEN] if self.demo_only else [])]
         return Signal(
             **self._base(ctx, action),
             entry_type=entry_type,
@@ -130,6 +131,6 @@ class BaseStrategy(ABC):
             setup_strength=condition_strength(conds),
             conditions=conds,
             evidence=tuple(evidence),
-            reason_codes=tuple(str(r) for r in reasons),
+            reason_codes=tuple(str(r) for r in labels),
             explanation=explanation,
         )

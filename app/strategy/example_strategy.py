@@ -30,57 +30,39 @@ Score (a ranking heuristic, **not a probability**): ``setup_strength x (0.75 + 0
 from __future__ import annotations
 
 import math
-from datetime import datetime, time
 
 import pandas as pd
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, model_validator
 
 from app.core.enums import Action, Regime, Timeframe, Trend
 from app.evidence.framework import Family
 from app.indicators.price_action import SwingKind, find_swings
-from app.strategy.base_strategy import BaseStrategy, StrategyParams
+from app.strategy.base_strategy import BaseStrategy
+from app.strategy.rules import (
+    EntryRuleParams,
+    entry_price,
+    explain,
+    failed_reasons,
+    known,
+    risk_conditions,
+    spread_price,
+    time_conditions,
+)
 from app.strategy.signal_models import Condition, ReasonCode, Signal, StrategyContext
 
 
-def _hhmm(value: str) -> time:
-    hours, _, minutes = value.partition(":")
-    return time(int(hours), int(minutes))
-
-
-class TrendPullbackParams(StrategyParams):
+class TrendPullbackParams(EntryRuleParams):
     adx_min: float = Field(default=20.0, ge=0, le=100)
     pullback_bars: int = Field(default=3, ge=1, le=20)
     level_clearance_atr: float = Field(default=1.0, ge=0, le=10)
     sl_atr_multiple: float = Field(default=1.5, gt=0, le=10)
-    max_sl_atr: float = Field(default=3.0, gt=0, le=20)
-    rr_target: float = Field(default=2.0, gt=0, le=10)
-    min_rr: float = Field(default=1.5, gt=0, le=10)
-    max_spread_to_sl: float = Field(default=0.15, gt=0, le=1)
-    session_start_utc: str = "07:00"
-    session_end_utc: str = "20:00"
-    friday_cutoff_utc: str | None = "20:00"
     swing_k: int = Field(default=3, ge=1, le=20)
-
-    @field_validator("session_start_utc", "session_end_utc", "friday_cutoff_utc")
-    @classmethod
-    def _check_hhmm(cls, value: str | None) -> str | None:
-        if value is not None:
-            _hhmm(value)
-        return value
 
     @model_validator(mode="after")
     def _coherent(self) -> TrendPullbackParams:
-        if self.rr_target < self.min_rr:
-            raise ValueError("rr_target must be >= min_rr")
         if self.sl_atr_multiple > self.max_sl_atr:
             raise ValueError("sl_atr_multiple must not exceed max_sl_atr")
-        if _hhmm(self.session_start_utc) >= _hhmm(self.session_end_utc):
-            raise ValueError("session_start_utc must be before session_end_utc")
         return self
-
-
-def _known(*values: float | None) -> bool:
-    return all(v is not None and math.isfinite(v) for v in values)
 
 
 class TrendPullback(BaseStrategy):
@@ -100,7 +82,7 @@ class TrendPullback(BaseStrategy):
     def bias(self, ctx: StrategyContext) -> Trend:
         """Higher-timeframe bias (also what the position manager watches for a flip)."""
         h = ctx.market.higher
-        if not _known(h.adx) or h.adx is None or h.adx < self.params.adx_min:
+        if not known(h.adx) or h.adx is None or h.adx < self.params.adx_min:
             return Trend.NEUTRAL
         return h.trend
 
@@ -119,10 +101,10 @@ class TrendPullback(BaseStrategy):
             Condition("htf_trending", h.regime is Regime.TRENDING, 2.0, f"regime {h.regime.value}"),
         ]
         if bias is Trend.NEUTRAL:
-            return self.hold(ctx, ReasonCode.NO_BIAS, conditions=conds, explanation=_explain(conds))
+            return self.hold(ctx, ReasonCode.NO_BIAS, conditions=conds, explanation=explain(conds))
         if h.regime is not Regime.TRENDING:
             return self.hold(
-                ctx, ReasonCode.REGIME_NOT_TRENDING, conditions=conds, explanation=_explain(conds)
+                ctx, ReasonCode.REGIME_NOT_TRENDING, conditions=conds, explanation=explain(conds)
             )
 
         frame = ctx.frame(market.entry_timeframe)
@@ -133,7 +115,7 @@ class TrendPullback(BaseStrategy):
         before = frame.iloc[-n - 1 : -1]
         last = frame.iloc[-1]
         close, ema_fast, atr_v, rsi_now = (float(last[c]) for c in ("close", "ema_fast", "atr", "rsi"))
-        if not _known(close, ema_fast, atr_v, rsi_now) or atr_v <= 0 or window["ema_fast"].isna().any():
+        if not known(close, ema_fast, atr_v, rsi_now) or atr_v <= 0 or window["ema_fast"].isna().any():
             return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA, conditions=conds)
 
         buy = bias is Trend.BULLISH
@@ -168,44 +150,32 @@ class TrendPullback(BaseStrategy):
         ]
 
         # stop, target and costs
-        spread_points = market.spread_points if market.spread_points is not None else _opt(last.get("spread"))
-        point = ctx.spec.point if ctx.spec is not None else None
-        if spread_points is None or point is None:
+        costs = spread_price(ctx, last)
+        if costs is None:
             return self.hold(
                 ctx, ReasonCode.INSUFFICIENT_DATA, conditions=conds, explanation="spread or point unknown"
             )
-        spread = spread_points * point
-        quoted = market.ask if buy else market.bid
-        # bars are bid-based: without a live quote a BUY pays the spread on top of the close
-        entry = quoted if quoted is not None else (close + spread if buy else close)
+        spread_points, spread = costs
+        entry = entry_price(market, close, spread, buy)
         swing = self._last_swing(frame, buy, entry)
         atr_stop = entry - sign * p.sl_atr_multiple * atr_v
         base_stop = atr_stop if swing is None else (min(swing, atr_stop) if buy else max(swing, atr_stop))
         stop = base_stop - sign * spread
-        risk = abs(entry - stop)
-        take_profit = entry + sign * p.rr_target * risk
-        rr = abs(take_profit - entry) / risk if risk > 0 else 0.0
-        conds += [
-            Condition(
-                "sl_within_limit",
-                risk <= p.max_sl_atr * atr_v,
-                1.0,
-                f"SL {risk / atr_v:.2f} ATR (max {p.max_sl_atr:g})",
-            ),
-            Condition("rr_ok", rr >= p.min_rr, 1.0, f"RR {rr:.2f} (min {p.min_rr:g})"),
-            Condition(
-                "spread_ok",
-                risk > 0 and spread <= p.max_spread_to_sl * risk,
-                1.0,
-                f"spread {spread_points:g} pts = {spread / risk:.0%} of SL" if risk > 0 else "zero risk",
-            ),
-        ]
-        conds += self._time_conditions(market.decision_time_utc)
+        take_profit = entry + sign * p.rr_target * abs(entry - stop)
+        conds += risk_conditions(
+            entry=entry,
+            stop=stop,
+            take_profit=take_profit,
+            atr=atr_v,
+            spread=spread,
+            spread_points=spread_points,
+            p=p,
+        )
+        conds += time_conditions(market.decision_time_utc, p)
 
-        failed = [c for c in conds if not c.passed]
-        if failed:
-            reasons = dict.fromkeys(_REASON[c.name] for c in failed)  # ordered, without repeats
-            return self.hold(ctx, *reasons, conditions=conds, explanation=_explain(conds))
+        if not all(c.passed for c in conds):
+            reasons = failed_reasons(conds, _REASON)
+            return self.hold(ctx, *reasons, conditions=conds, explanation=explain(conds))
         return self.entry(
             ctx,
             Action.BUY if buy else Action.SELL,
@@ -215,7 +185,7 @@ class TrendPullback(BaseStrategy):
             conditions=conds,
             score=self._score(conds, h.adx),
             reasons=("TREND_PULLBACK",),
-            explanation=_explain(conds),
+            explanation=explain(conds),
         )
 
     # helpers -------------------------------------------------------------------------------------------
@@ -228,19 +198,6 @@ class TrendPullback(BaseStrategy):
                 return s.price
         return None
 
-    def _time_conditions(self, at: datetime) -> list[Condition]:
-        p: TrendPullbackParams = self.params
-        now = at.time()
-        weekday = at.weekday()
-        in_session = weekday < 5 and _hhmm(p.session_start_utc) <= now <= _hhmm(p.session_end_utc)
-        cutoff = p.friday_cutoff_utc is not None and (
-            weekday > 4 or (weekday == 4 and now >= _hhmm(p.friday_cutoff_utc))
-        )
-        return [
-            Condition("session_window", in_session, 1.0, f"{at:%a %H:%M} UTC"),
-            Condition("before_friday_cutoff", not cutoff, 1.0, f"cutoff {p.friday_cutoff_utc} UTC Friday"),
-        ]
-
     def _score(self, conds: list[Condition], adx_value: float | None) -> float:
         total = sum(c.weight for c in conds)
         strength = 100.0 * sum(c.weight for c in conds if c.passed) / total
@@ -251,33 +208,12 @@ class TrendPullback(BaseStrategy):
 _REASON: dict[str, ReasonCode] = {
     "htf_bias": ReasonCode.NO_BIAS,
     "htf_trending": ReasonCode.REGIME_NOT_TRENDING,
-    "pullback_to_ema": ReasonCode.NO_SETUP,
-    "close_beyond_ema": ReasonCode.NO_SETUP,
-    "rsi_cross_50": ReasonCode.NO_SETUP,
     "clear_of_opposing_level": ReasonCode.NEAR_OPPOSING_LEVEL,
-    "sl_within_limit": ReasonCode.SL_TOO_FAR,
-    "rr_ok": ReasonCode.RR_TOO_LOW,
-    "spread_ok": ReasonCode.SPREAD_TOO_HIGH,
-    "session_window": ReasonCode.OUTSIDE_SESSION,
-    "before_friday_cutoff": ReasonCode.FRIDAY_CUTOFF,
-}
-
-
-def _explain(conds: list[Condition]) -> str:
-    """One line per checklist item: ``[x]`` passed, ``[ ]`` failed, with the measured value."""
-    return "; ".join(f"[{'x' if c.passed else ' '}] {c.name}: {c.detail}" for c in conds)
+}  # the setup conditions map to NO_SETUP; the shared rules carry their own codes
 
 
 def _f(value: float | None) -> str:
     return "n/a" if value is None else f"{value:.1f}"
-
-
-def _opt(value: object) -> float | None:
-    try:
-        f = float(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError):
-        return None
-    return f if math.isfinite(f) else None
 
 
 def _side(buy: bool) -> str:

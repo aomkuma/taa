@@ -988,6 +988,12 @@ Whether a theory actually helps is **measured** on shadow/replay outcomes (R29),
      | Candlestick reversal | reversal candle at confluence | candle extreme / next level |
 
      Every generated setup must still pass min RR and the full ADVISORY decision profile.
+
+     (TAA-306 decision) A stop beyond the pattern extreme with a measured-move target gives RR = H/(H + ε) < 1
+     for M/W, H&S and boundary breaks, so those setups could never pass min RR. Their default stop is therefore
+     the **nearer** of the pattern's invalidation and 1.5 ATR (`stop_mode: nearer`); `stop_mode: invalidation`
+     restores the table's rule. The Donchian/session breakouts default to the nearer stop too (the Donchian
+     invalidation is the channel middle). Details: `docs/STRATEGIES.md`.
 - **Setup strength = confluence score (deterministic, `confluence.py`):**
   - Within a family, supporting evidence combines with **diminishing returns** (noisy-OR: `1 − Π(1 − w·q)`), so five
     oscillators don't count five times.

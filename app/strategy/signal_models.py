@@ -58,6 +58,7 @@ class ReasonCode(StrEnum):
     DUPLICATE_SIGNAL = "DUPLICATE_SIGNAL"
     LOWER_RANK = "LOWER_RANK"
     STRATEGY_ERROR = "STRATEGY_ERROR"
+    DEMO_UNPROVEN = "DEMO_UNPROVEN"  # label on every entry of a demonstration strategy
 
 
 def _finite(name: str, value: float | None) -> None:
