@@ -10,6 +10,8 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - Definition of Done: checklist complete, tests green, docs updated.
 - Milestone 1 never sends broker orders. Work stops for review after Milestone 1.
 - Revision 2 (2026-10-03) added Phases 2A, 6A–6C and 8A, TAA-110, and amended items marked "(rev. 2)".
+- Revision 3 (2026-10-03) added TAA-2A10 (do it before TAA-2A7) and TAA-922, and amended items marked "(rev. 3)":
+  Fibonacci extension levels with candle location (PLAN §A29), trading profile and entry plans (PLAN §A31).
 
 **Execution order (Milestone 1):** 0 → 1 → 2 → 2A → 3 → 4 → 5 → 6 → 6A → 6B → 6C → 7 → 8 → 8A → 9 → 10 → 11
 
@@ -20,7 +22,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 0 — Foundation & safety scaffolding | 9 | 9 | DONE |
 | M1 | Phase 1 — MT5 read-only gateway & market data | 10 | 10 | DONE |
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
-| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 9 | 6 | IN PROGRESS |
+| M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 6 | IN PROGRESS |
 | M1 | Phase 3 — Strategy engine | 7 | 0 | TODO |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 0 | TODO |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
@@ -31,7 +33,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
-| M1 | Phase 9 — PWA frontend | 21 | 0 | TODO |
+| M1 | Phase 9 — PWA frontend | 22 | 0 | TODO |
 | M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 0 | TODO |
@@ -439,6 +441,17 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - [ ] per-detector timing and call counters
 - [ ] test: disabled detectors are never executed
 
+#### TAA-2A10 — (rev. 3) Fibonacci extension levels & candle location
+
+- **Status:** TODO
+- **Depends on:** 2A2, 2A4
+
+- [ ] `fib.extension_level`: 127.2/161.8/261.8/423.6 % as support/resistance, two-point (A + r·AB) and trend-based (C + r·AB), in force until the next same-direction extreme is confirmed
+- [ ] candle location sources: + `fib.extension_level`, `fib.cluster`, `structure.trendline` (bounce variants only)
+- [ ] `at_levels` detail naming the levels a candle pattern sat on
+- [ ] golden + near-miss tests (incl. shooting star at the 161.8 % extension)
+- [ ] `docs/PATTERNS.md`
+
 ### Phase 3 — Strategy engine
 
 #### TAA-301 — Signal & context models
@@ -533,6 +546,8 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - [ ] A9 steps
 - [ ] Decimal math
 - [ ] property tests (never above budget, step-aligned, never below min, inconsistent specs rejected)
+- [ ] (rev. 3) entry-plan sizing (PLAN §A31): `SAME_PRICE` / `SCALE_IN`, weights, `lot_unit` (taps), budget with every part filled, drop-deepest-part rule
+- [ ] (rev. 3) property tests for entry plans (never above budget with all parts filled, unit-aligned, never rounded up)
 
 #### TAA-402 — Exposure manager
 
@@ -545,6 +560,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - [ ] currency direction
 - [ ] margin utilization
 - [ ] effective leverage
+- [ ] (rev. 3) portfolio heat incl. manual positions; unknown-risk flag for positions without a stop
 - [ ] tests
 
 #### TAA-403 — Loss tracker
@@ -586,6 +602,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - **Depends on:** 003, 102
 
 - [ ] live and demo gate evaluation + full truth-table tests (not wired to orders in M1)
+- [ ] (rev. 3) M2 limits = min(trading profile, local `RiskConfig`); a cloud profile never raises a local limit (test)
 
 #### TAA-407 — Sessions & news
 
@@ -798,6 +815,8 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - [ ] expiry-update push
 - [ ] language
 - [ ] (rev. 2) `TheoryPreferences`: family/detector toggles, bounded parameter overrides, pattern-strategy toggles, minimum supporting theories, conflict policy, presets
+- [ ] (rev. 3) `TradingProfile` (PLAN §A31): style slider 0–100 with five anchor presets and interpolation, per-field overrides, hard ceilings, break-even/EV floor on thresholds
+- [ ] (rev. 3) `EntryPlan` preferences: `lot_unit`, mode (`SINGLE`/`SAME_PRICE`/`SCALE_IN`), parts, weights, spacing, partial-TP R levels
 - [ ] validation shared by cloud and engine
 - [ ] `config.yaml` fallback for local runs
 - [ ] tests
@@ -1116,6 +1135,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - **Depends on:** 806, 809
 
 - [ ] TH/EN templates incl. top-3 evidence contributions
+- [ ] (rev. 3) entry plan in push and in-app: orders (market/limit, lot, price, taps), SL, TPs, risk money per order and total, heat after
 - [ ] same-tag silent replacement on expiry/invalidation
 - [ ] app-badge count
 - [ ] per-user quiet windows and rate limits
@@ -1168,6 +1188,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - [ ] per-user suitability ranking
 - [ ] per-user accuracy views (snapshotted selection; P/L = R × the user's risk money)
 - [ ] publishes compute requirements (symbol/detector/strategy unions) to `advisory-config`
+- [ ] (rev. 3) applies the user's `TradingProfile`: thresholds, N, conflict policy, entry plan sizing, portfolio heat
 - [ ] single-user equivalence test
 
 #### TAA-8A5 — Billing-ready scaffolding (disabled)
@@ -1418,6 +1439,16 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - [ ] account profile (linked MT5 values / manual form)
 - [ ] plan & usage (billing hidden while disabled)
 - [ ] owner admin: users, plan assignment, overrides
+
+#### TAA-922 — (rev. 3) Trading profile page
+
+- **Status:** TODO
+- **Depends on:** 6B1, 915
+
+- [ ] "บุคลิกการเทรด / Trading profile" page: style slider with the resulting numbers shown live
+- [ ] per-field overrides with "custom" badges and reset
+- [ ] entry-plan editor with an example lot breakdown (orders, taps, risk money)
+- [ ] warnings for offensive settings and back-loaded scale-in
 
 ### Phase 10 — Trade analytics
 

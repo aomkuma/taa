@@ -1,6 +1,7 @@
 # TAA — FBS × MetaTrader 5 Automated Trading Platform: Design
 
-> Living design document (revision 2: advisory features, evidence engine, personalization). Work items and
+> Living design document (revision 2: advisory features, evidence engine, personalization; revision 3: Fibonacci
+> extension levels and candle location, trading profile and entry plans, §A31). Work items and
 > progress are tracked in [TICKETS.md](TICKETS.md). No profitability claims anywhere. Capital protection,
 > fail-closed behavior and auditability take priority over features. Leveraged FX/CFD trading is high risk.
 
@@ -949,7 +950,7 @@ Whether a theory actually helps is **measured** on shadow/replay outcomes (R29),
 
   | Family | Detectors | Tier |
   |---|---|---|
-  | Fibonacci | retracements 23.6/38.2/50/61.8/78.6 of the last impulse · "golden zone" pullback + rejection · extensions 127.2/161.8 (targets) · fib cluster confluence | T1 |
+  | Fibonacci | retracements 23.6/38.2/50/61.8/78.6 of the last impulse · "golden zone" pullback + rejection · extensions 127.2/161.8 (targets) · (rev. 3) extension levels 127.2/161.8/261.8/423.6 as support/resistance, two-point and trend-based (A-B-C) · fib cluster confluence | T1 |
   | Levels | S/R zones (TAA-205) · round numbers · classic/Fibonacci/Camarilla pivots · previous day/week high/low | T1 |
   | Trend & structure | Dow structure HH/HL/LH/LL · break of structure (BOS) / change of character (CHoCH) · trendlines and channels from pivots · MA alignment/crosses, price vs EMA200 · ADX trend strength | T1 |
   | Chart patterns | double top **M** / double bottom **W** · triple top/bottom · head & shoulders (+inverse) · triangles (ascending/descending/symmetrical) · wedges (rising/falling) · rectangles · flags/pennants · cup & handle; neckline/boundary break confirmation, measured-move targets | T2 |
@@ -963,6 +964,12 @@ Whether a theory actually helps is **measured** on shadow/replay outcomes (R29),
   | Sessions & time | Asian-range breakout · London/NY open breakout · hour-of-week seasonality | T1 |
 
   Backlog: Gann and Market Profile (low objectivity, or needs volume the MT5 retail feed lacks).
+- **(rev. 3) Location of single-bar evidence.** Candlestick quality is weighted by location: a pattern whose bars
+  coincide with a same-direction rejection from a level source scores higher. The sources are Fibonacci
+  retracement and extension levels, Fibonacci clusters, S/R zones, round numbers, pivots, previous day/week
+  high/low, and trendline bounces. The record names the levels it sat on (`at_levels`), so an explanation can
+  say "shooting star at the Fibonacci 161.8 % resistance". Combining independent theories into one score
+  remains the job of the confluence score (TAA-307) and the evidence model (TAA-6B2).
 - **Two uses of evidence:**
   1. **Confluence enrichment for every opportunity.** All active evidence on all enabled timeframes (including HTF)
      is attached to every opportunity and classified as *supports* or *conflicts* relative to the trade direction.
@@ -1099,6 +1106,81 @@ subscriptions later are configuration plus billing, not a rewrite.
   - **Plan & usage (แพ็กเกจและการใช้งาน):** current plan, entitlements, usage. Billing buttons stay hidden while
     subscriptions are disabled.
   - **Users & plans (owner admin, minimal):** list users, assign plans, overrides.
+
+## A31. Trading profile & entry plans (rev. 3)
+
+**Goal:** alerts carry numbers that match how *this* user trades: how much risk they take, how they split
+entries, and how selective they are. In Milestone 1 the profile shapes only alert content and thresholds; it
+never sends orders.
+
+- **`TradingProfile`** (per user, authoritative in the cloud, edited in the PWA; `config.yaml` →
+  `advisory.trading_profile` is the fallback when no cloud is configured). Shared model in
+  `app/advisory/preferences.py` (TAA-6B1).
+  - **Style slider 0–100**, defensive → offensive. Five anchor presets; values in between are interpolated
+    linearly. Any field the user sets explicitly overrides the slider and is shown as "custom".
+
+    | Parameter | 0 very defensive | 25 | 50 balanced | 75 | 100 very offensive |
+    |---|---|---|---|---|---|
+    | Risk per signal, all entries combined (% of equity) | 0.25 | 0.5 | 0.75 | 1.0 | 1.5 |
+    | Portfolio heat: open risk of all positions (%) | 0.5 | 1.0 | 2.0 | 3.0 | 4.0 |
+    | Max concurrent positions | 1 | 2 | 3 | 4 | 5 |
+    | Max daily loss (%) | 1.0 | 1.5 | 2.0 | 3.0 | 4.0 |
+    | Min RR | 2.5 | 2.0 | 1.5 | 1.3 | 1.2 |
+    | Min win probability | 62 % | 58 % | 55 % | 52 % | 50 % |
+    | Min supporting families (N, §A30) | 4 | 3 | 2 | 2 | 1 |
+    | Conflict policy (§A30) | block | block | penalize | penalize | ignore |
+    | Require higher-timeframe alignment | yes | yes | yes | no | no |
+
+  - Other fields:
+    - holding style: scalp / day / swing, which sets the alert timeframes and the signal lifetime
+    - max signals per day
+    - avoid news windows (on/off)
+    - hold over the weekend (on/off)
+    - stop placement: structure-based or ATR-based
+  - **Safety:**
+    - Hard ceilings (`CEILING_*` in `app/config.py`) always apply, whatever the slider says.
+    - The win-probability threshold never goes below break-even `(1 + c)/(1 + RR)` + 2 pp, and EV must be > 0.
+    - In Milestone 2 the engine trades with **min(profile, local `RiskConfig`)**. A cloud profile can only make
+      the owner's trading more conservative, never less: risk-increasing changes are never accepted remotely
+      (§A13, §A20).
+- **`EntryPlan` (splitting an entry, "แบ่งไม้").** Every alert carries an order plan built from the user's
+  preferences:
+  - **`lot_unit`**: the lot per tap in the MT5 app (≥ the broker's `volume_step`). Every order is a whole
+    number of units, and the alert says how many taps: "3 × 0.02".
+  - **Modes:**
+    - `SINGLE`
+    - `SAME_PRICE`: *k* orders at one price with staggered take-profits (1R, 2R, final TP); the stop moves to
+      break-even after TP1 (§A11).
+    - `SCALE_IN`: entry 1 at the signal; later entries as limit orders at `spacing_atr` × ATR or at the
+      setup's 38.2/50/61.8 % retracements; one shared stop.
+  - **Weights:** `EQUAL`, `FRONT_LOADED` (3:2:1), `BACK_LOADED` (1:2:3). Back-loaded scale-in averages into an
+    adverse move and is labelled as such.
+  - **Sizing** (extends §A9; TAA-401). Every part is sized against the stop:
+    1. `u = budget / Σ wᵢ · (loss_per_lotᵢ + costᵢ)`
+    2. `lotᵢ = floor_to_unit(wᵢ · u)`
+    3. A part below `volume_min` drops the deepest part, then recompute.
+    4. If a single part is still below `volume_min`, the result is `RISK_BELOW_MIN_LOT`.
+    5. Never round up. The risk with **every part filled** stays within the per-signal budget (property-tested).
+  - **Portfolio heat** (TAA-402): loss-to-SL of every open position, including manual ones (magic 0), plus the
+    new plan must stay within the heat limit. A position without a stop has unknown risk: the alert carries a
+    warning (fail closed).
+  - **Alert content:**
+    - the orders: market or limit, lot, price, taps
+    - the stop and each take-profit
+    - risk money per order and in total, as % of equity
+    - portfolio heat after opening
+- **Where it plugs in:**
+  - the ADVISORY decision profile and the personalizer (§A30, steps 3 and 5: thresholds, N, conflict policy,
+    sizing plan, heat)
+  - TAA-401 / 402 (sizing, heat)
+  - TAA-6B1 (models)
+  - TAA-8A4 (personalizer)
+  - TAA-810 (push content)
+  - TAA-922 (the "บุคลิกการเทรด / Trading profile" page: slider with live numbers, per-field overrides, entry-plan
+    editor with an example lot breakdown)
+  - TAA-406 (M2 min-rule)
+- Shadow trades (§A27) keep measuring the primary entry in R; plan-level hypothetical P/L can be added later
+  without changing stored outcomes.
 
 ## A22. Delivery plan
 
