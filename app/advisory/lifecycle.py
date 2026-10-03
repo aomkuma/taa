@@ -35,6 +35,7 @@ from sqlalchemy import select
 
 from app.advisory.asset_classes import AssetClass
 from app.advisory.market_sessions import session_state, sessions_for
+from app.advisory.statuses import OPEN, OpportunityStatus
 from app.broker.gateway import MarketDataGateway
 from app.config import AppConfig
 from app.core.clock import Clock, ensure_utc
@@ -47,17 +48,6 @@ from app.storage.models import OpportunityRow
 log = logging.getLogger(__name__)
 
 MANUAL_MAGIC = 0
-
-
-class OpportunityStatus(StrEnum):
-    CANDIDATE = "CANDIDATE"
-    ACTIVE = "ACTIVE"
-    EXPIRED = "EXPIRED"
-    INVALIDATED = "INVALIDATED"
-    FOLLOWED = "FOLLOWED"
-
-
-OPEN = (OpportunityStatus.CANDIDATE.value, OpportunityStatus.ACTIVE.value)
 
 
 class WindowReason(StrEnum):
