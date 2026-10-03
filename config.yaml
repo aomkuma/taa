@@ -83,11 +83,13 @@ risk:
   probation_multiplier: 0.25
   foreign_positions_policy: count   # count | halt
 
-sessions:
+sessions:                           # entry windows; local times of `timezone` (DST-aware), days are local weekdays
   default:
     - days: [0, 1, 2, 3, 4]         # Monday..Friday
-      start_utc: "07:00"
-      end_utc: "20:00"
+      start: "07:00"
+      end: "20:00"
+      timezone: UTC
+  by_symbol: {}                     # e.g. US30: [{days: [0,1,2,3,4], start: "09:30", end: "16:00", timezone: America/New_York}]
   friday_cutoff_utc: "20:00"
   news_blackouts: []                # e.g. - {start_utc: 2026-10-02T12:15:00Z, end_utc: 2026-10-02T13:00:00Z, currencies: [USD], reason: NFP}
 

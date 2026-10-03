@@ -243,9 +243,16 @@ class RiskConfig(StrictModel):
 
 
 class SessionWindow(StrictModel):
+    """A trading window in local time of ``timezone`` (an exchange's zone, or UTC), on local ``days``.
+
+    ``start > end`` spans midnight (e.g. 22:00-06:00): the part after midnight belongs to the day it
+    started on. DST is handled by the timezone rules, never by fixed UTC offsets (PLAN §A5, TAA-407).
+    """
+
     days: list[int] = Field(default_factory=lambda: [0, 1, 2, 3, 4], description="0=Monday .. 6=Sunday")
-    start_utc: str = "07:00"
-    end_utc: str = "20:00"
+    start: str = "07:00"
+    end: str = "20:00"
+    timezone: str = "UTC"
 
     @field_validator("days")
     @classmethod
@@ -254,19 +261,34 @@ class SessionWindow(StrictModel):
             raise ValueError("days must be integers 0..6")
         return value
 
-    @field_validator("start_utc", "end_utc")
+    @field_validator("start", "end")
     @classmethod
     def _hhmm(cls, value: str) -> str:
         _parse_hhmm(value)
         return value
 
-    @property
-    def start(self) -> time:
-        return _parse_hhmm(self.start_utc)
+    @field_validator("timezone")
+    @classmethod
+    def _tz(cls, value: str) -> str:
+        try:
+            ZoneInfo(value)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"unknown timezone {value!r}") from exc
+        return value
+
+    @model_validator(mode="after")
+    def _not_empty(self) -> SessionWindow:
+        if self.start == self.end:
+            raise ValueError("a session window needs start != end")
+        return self
 
     @property
-    def end(self) -> time:
-        return _parse_hhmm(self.end_utc)
+    def start_time(self) -> time:
+        return _parse_hhmm(self.start)
+
+    @property
+    def end_time(self) -> time:
+        return _parse_hhmm(self.end)
 
 
 class BlackoutWindow(StrictModel):

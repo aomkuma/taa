@@ -24,7 +24,7 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
-| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 4 | IN PROGRESS |
+| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 5 | IN PROGRESS |
 | M1 | Phase 5 — Backtesting | 6 | 0 | TODO |
 | M1 | Phase 6 — PAPER runtime | 6 | 0 | TODO |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 0 | TODO |
@@ -606,13 +606,13 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 
 #### TAA-407 — Sessions & news
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 006
 
-- [ ] per-symbol session windows
-- [ ] NewsCalendar interface + manual blackout windows
-- [ ] tests
-- [ ] (rev. 2) windows defined in exchange-local timezones (shared with TAA-6A2)
+- [x] per-symbol session windows
+- [x] NewsCalendar interface + manual blackout windows
+- [x] tests
+- [x] (rev. 2) windows defined in exchange-local timezones (shared with TAA-6A2)
 
 ### Phase 5 — Backtesting
 
