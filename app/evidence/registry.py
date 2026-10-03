@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import time
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
@@ -27,8 +28,11 @@ from app.evidence.framework import (
     Evidence,
     EvidenceContext,
     EvidenceSnapshot,
+    Family,
     activate,
 )
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -85,6 +89,14 @@ class DetectorRegistry:
             visit(det_id, ())
         return tuple(order)
 
+    def ids_in_families(self, families: Iterable[Family | str]) -> set[str]:
+        """Every detector of the given families (family toggles and presets select whole families)."""
+        try:
+            wanted = {Family(f) for f in families}
+        except ValueError as exc:
+            raise ConfigError(f"unknown detector family: {exc}") from exc
+        return {d for d, det in self._detectors.items() if det.family in wanted}
+
     def default_params(self, detector_id: str) -> DetectorParams:
         return self.get(detector_id).Params()
 
@@ -114,8 +126,10 @@ class DetectorRegistry:
     def plan_from_config(self, config: EvidenceConfig, *, only: Iterable[str] | None = None) -> RunPlan:
         """Enabled detectors from ``config.yaml`` → ``evidence:``.
 
-        *only* (the union of what active users selected) narrows the set further. Unknown ids and invalid
-        params are configuration errors.
+        *only* (the union of what active users selected, from the cloud's compute requirements) can only
+        narrow the set: it never runs a detector the local config disables. Unknown ids in the local config
+        and invalid params are configuration errors. Unknown ids in *only* (cloud and engine on different
+        catalog versions) are logged and skipped: nothing computes them, so nothing reports them.
         """
         for det_id in config.detectors:
             self.get(det_id)
@@ -130,7 +144,11 @@ class DetectorRegistry:
             )
         }
         if only is not None:
-            enabled &= set(only)
+            selected = set(only)
+            unknown = sorted(selected - self._detectors.keys())
+            if unknown:
+                log.warning("compute requirements name unknown detectors, skipped: %s", unknown)
+            enabled &= selected
         return self.plan(enabled, params)
 
 

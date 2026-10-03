@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-03, during Phase 2A (TAA-2A1..2A8 and TAA-2A10 done). This file holds **state
+Last updated: 2026-10-03, at the end of Phase 2A (all of TAA-2A1..2A10 done). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -14,9 +14,8 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
 relevant sections of docs/PLAN.md (§A29 evidence engine, §A31 trading profile). Follow CLAUDE.md and
 docs/CODING_STANDARDS.md.
-Phases 0, 1 and 2 are DONE; in Phase 2A, TAA-2A1..2A8 and 2A10 are DONE. Next: TAA-2A9 (selective
-computation), then continue in the execution order
-3 -> 4 -> 5 -> 6 -> 6A -> 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+Phases 0, 1, 2 and 2A are DONE. Next: Phase 3 (strategy engine, TAA-301..), then continue in the execution
+order 4 -> 5 -> 6 -> 6A -> 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
 ```
@@ -25,9 +24,9 @@ any phase boundary if I ask.
 
 ## Current state
 
-- **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206), TAA-2A1..2A8 and
-  TAA-2A10.
-- **Checks:** 646 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
+- **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206) and Phase 2A
+  (TAA-2A1..2A10).
+- **Checks:** 652 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
@@ -64,6 +63,8 @@ any phase boundary if I ask.
     - Elliott (TAA-2A8, `elliott.py`, tier T3, `heuristic: true`): one detector `elliott.wave` with states
       `wave3`, `wave5`, `c_completion`; hard rules filter, Fibonacci guidelines score, primary + alternates per
       bar with confidence = score / max(1, Σ scores).
+    - selective computation (TAA-2A9): `plan_from_config(config, only=union)`; the cloud's union only narrows
+      the locally enabled set, unknown ids are logged and skipped; `ids_in_families` for family toggles.
     - (rev. 3, TAA-2A10) `fib.extension_level`: 127.2/161.8/261.8/423.6 % extensions as support/resistance
       (two-point and trend-based). Candle location sources now include it, `fib.cluster` and trendline
       bounces; breaks don't count (`prev_high_low` uses `reject` variants only). Candle records carry
@@ -89,7 +90,7 @@ any phase boundary if I ask.
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
   remote yet. The working tree is clean.
-- **Next step:** TAA-2A9 (selective computation), which closes Phase 2A; then Phase 3 (strategy engine).
+- **Next step:** Phase 3 (strategy engine), starting with TAA-301 (signal & context models).
 
 ## Notes for the next session
 

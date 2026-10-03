@@ -29,9 +29,18 @@ key levels. Finding the same instance again in a later scan gives the same id; q
 `detectors:` can set `enabled` and `params`, which are validated against the detector's own bounded parameter
 model, so unknown keys or out-of-range values are startup errors. Every detector has `max_age_bars` (default 3).
 
-**Selective computation.** The engine runs only the requested detectors plus their declared prerequisites
-(`depends_on`, transitively, in dependency order). Prerequisites run only to feed others and report nothing.
-Disabled detectors are never executed.
+**Selective computation** (PLAN §A30).
+- The engine runs only the requested detectors plus their declared prerequisites (`depends_on`, transitively, in
+  dependency order). Prerequisites run only to feed others and report nothing. Disabled detectors are never
+  executed.
+- Shared computations (ATR, swings, zigzag degrees) are memoized on the context and computed only when a running
+  detector asks for them.
+- `plan_from_config(config, only=...)`: the local config decides what may run. `only` is the union of the active
+  users' selections from the cloud's compute requirements, and it can only **narrow** that set; it never runs a
+  detector the local config disables.
+  - Unknown ids in `only` (cloud and engine on different catalog versions) are logged and skipped.
+  - `ids_in_families` expands family toggles and presets into detector ids.
+- `EvidenceEngine.stats` keeps per-detector calls, records and seconds (the compute cost).
 
 **Look-ahead harness** (`tests/evidence_harness.py`). At several probe bars *t*:
 1. Scanning the frame cut at *t* must give exactly the full-frame records with `detected_at ≤ t`.
