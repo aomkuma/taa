@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-03, at the end of Phase 2A (all of TAA-2A1..2A10 done). This file holds **state
+Last updated: 2026-10-03, at the end of Phase 3 (all of TAA-301..307 done). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -14,8 +14,8 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
 relevant sections of docs/PLAN.md (§A29 evidence engine, §A31 trading profile). Follow CLAUDE.md and
 docs/CODING_STANDARDS.md.
-Phases 0, 1, 2 and 2A are DONE. Next: Phase 3 (strategy engine, TAA-301..), then continue in the execution
-order 4 -> 5 -> 6 -> 6A -> 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+Phases 0, 1, 2, 2A and 3 are DONE. Next: Phase 4 (risk, decision pipeline, breakers, TAA-401..), then
+continue in the execution order 5 -> 6 -> 6A -> 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
 ```
@@ -24,9 +24,9 @@ any phase boundary if I ask.
 
 ## Current state
 
-- **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206) and Phase 2A
-  (TAA-2A1..2A10).
-- **Checks:** 652 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
+- **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206), Phase 2A
+  (TAA-2A1..2A10) and Phase 3 (TAA-301..307).
+- **Checks:** 845 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
@@ -73,6 +73,22 @@ any phase boundary if I ask.
       (`tests/unit/test_evidence_catalog.py`)
     - test helpers: `tests/evidence_harness.py` (harness, `scan_one`) and `tests/evidence_paths.py` (`path` =
       straight legs between vertices, `bars` = explicit OHLC rows)
+  - strategy engine (`app/strategy/`, PLAN §A7, §A29; overview in `docs/STRATEGIES.md`):
+    - models (`signal_models.py`): `Signal` (idempotency key, expiry, score, conditions → setup strength,
+      evidence with relations, `confluence` points), `MarketContext`, `TimeframeState`, `StrategyContext`
+    - `context_builder.py`: per-timeframe fetch + indicators, close-time alignment (`context_at` works on
+      pre-analyzed frames, so backtests analyze once), S/R levels, session, per-TF analysis logs, optional
+      evidence engine per timeframe; `regime_detector.py` (thresholds in `config.yaml` → `regime:`)
+    - `base_strategy.py` + `registry.py` + `catalog.py`: params validated at startup (even for disabled
+      entries); the plugin boundary turns a crash or a foreign signal into HOLD `STRATEGY_ERROR`;
+      `StrategySet.evaluate` enriches every signal with confluence (TAA-307)
+    - `arbitration.py`: duplicates → cooldown → BUY/SELL conflict → ranking; cooldown state exportable
+    - `example_trend_pullback` (enabled, demo) and 8 pattern setups in `setups.py` (all `enabled: false` in
+      `config.yaml`); shared entry rules in `rules.py`; every demo entry carries `DEMO_UNPROVEN`
+    - confluence score (`app/evidence/confluence.py`, weights in `evidence.confluence` and docs/PATTERNS.md):
+      core checklist 40 pts + noisy-OR per family capped at the family weight − 0.75 × conflicts
+    - architecture rule: `app.indicators`, `app.evidence`, `app.strategy` never import broker services,
+      storage, security or settings loaders
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -90,7 +106,8 @@ any phase boundary if I ask.
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
   remote yet. The working tree is clean.
-- **Next step:** Phase 3 (strategy engine), starting with TAA-301 (signal & context models).
+- **Next step:** Phase 4 (risk, decision pipeline, breakers), starting with TAA-401 (position sizer,
+  including the rev. 3 entry-plan sizing of PLAN §A31).
 
 ## Notes for the next session
 
@@ -100,6 +117,16 @@ any phase boundary if I ask.
   preserve the line endings.
 - The catalog test is the slowest part of the suite (~15 s), because candlestick detectors run their location
   prerequisites.
+
+- Decisions made in Phase 3 that the user may want to revisit:
+  - Chart-pattern and breakout setups default to the **nearer** stop (pattern invalidation or 1.5 ATR),
+    because the textbook stop beyond the pattern extreme gives RR < 1 with a measured-move target. Recorded
+    in PLAN §A29; `stop_mode: invalidation` restores the textbook rule.
+  - The 8 pattern setups ship disabled; enabling them needs the evidence engine wired into the runtime
+    (Phase 6). The SMC setup also needs `max_age_bars` ≥ 30 for `smc.liquidity_sweep` and
+    `structure.bos_choch`.
+- Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
+  `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.
 
 ## Open items needing the user
 
