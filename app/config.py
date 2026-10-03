@@ -78,15 +78,28 @@ class SymbolOverride(StrictModel):
 class SymbolsConfig(StrictModel):
     allowed: list[str] = Field(default_factory=lambda: ["EURUSD", "GBPUSD", "USDJPY", "XAUUSD"], min_length=1)
     reference_symbol: str = Field(default="EURUSD", description="liquid symbol used to verify server time")
+    clock_fallback_symbols: list[str] = Field(
+        default_factory=lambda: ["BTCUSD", "ETHUSD"],
+        max_length=5,
+        description="24/7 symbols that verify server time while the reference symbol's market is closed",
+    )
     overrides: dict[str, SymbolOverride] = Field(default_factory=dict)
 
-    @field_validator("allowed")
+    @field_validator("allowed", "clock_fallback_symbols")
     @classmethod
     def _normalize(cls, value: list[str]) -> list[str]:
         cleaned = [s.strip() for s in value if s.strip()]
         if len(set(cleaned)) != len(cleaned):
-            raise ValueError("duplicate symbols in allowed list")
+            raise ValueError("duplicate symbols in list")
         return cleaned
+
+    @property
+    def clock_symbols(self) -> list[str]:
+        """Symbols to verify server time with, in order of preference."""
+        return [
+            self.reference_symbol,
+            *(s for s in self.clock_fallback_symbols if s != self.reference_symbol),
+        ]
 
 
 class TimeframesConfig(StrictModel):

@@ -6,18 +6,19 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from app.broker.fake_mt5 import FakeMT5
+from app.broker.fake_mt5 import ALL_SYMBOLS, FakeMT5, FakeSymbol
 from app.broker.gateway import ReadOnlyMT5Gateway
 from app.broker.mt5_client import MT5Client
 from app.config import TimeframesConfig, load_settings
 from app.core.clock import ClockStatus, ManualClock, ServerClock
 from app.core.enums import Timeframe
+from app.core.errors import ConfigError
 from app.market_data.candle_service import CandleService, CandleWatermarks
 from app.market_data.history_download import download_history
 from app.market_data.history_store import ParquetHistoryStore, SqlHistoryStore
 from app.market_data.quality import parse_breaks, validate_candles
 from app.market_data.quote_service import QuoteService
-from app.market_data.server_time import verify_server_time
+from app.market_data.server_time import verify_server_time, verify_server_time_any
 from app.storage.database import Database
 
 ENV = {
@@ -29,9 +30,9 @@ ENV = {
 }
 
 
-def setup(start: datetime):  # type: ignore[no-untyped-def]
+def setup(start: datetime, symbols: dict[str, FakeSymbol] | None = None):  # type: ignore[no-untyped-def]
     clock = ManualClock(start)
-    fake = FakeMT5(clock, history_days=40, future_days=10)
+    fake = FakeMT5(clock, history_days=40, future_days=10, symbols=symbols)
     s = load_settings(env_file=None, config_file="config.yaml", environ=ENV)
     client = MT5Client(s.env, s.mode, mt5_module=fake, clock=clock)
     client.connect()
@@ -201,6 +202,39 @@ class TestQuotesAndTime:
         clock, _, gw = setup(datetime(2026, 10, 3, 12, 0, tzinfo=UTC))
         result = verify_server_time(gw, "EURUSD", wait_seconds=3, poll_seconds=1, sleep=clock.advance)
         assert result.status is ClockStatus.UNVERIFIED_MARKET_IDLE
+
+    def test_weekend_falls_back_to_crypto(self) -> None:
+        clock, _, gw = setup(datetime(2026, 10, 3, 12, 0, tzinfo=UTC), symbols=ALL_SYMBOLS)
+        symbol, result = verify_server_time_any(
+            gw, ["EURUSD", "BTCUSD"], wait_seconds=5, poll_seconds=1, sleep=clock.advance
+        )
+        assert (symbol, result.status) == ("BTCUSD", ClockStatus.VERIFIED)
+
+    def test_weekday_uses_reference_first(self) -> None:
+        clock, _, gw = setup(datetime(2026, 9, 30, 10, 0, 30, tzinfo=UTC))
+        symbol, result = verify_server_time_any(
+            gw, ["EURUSD", "BTCUSD"], wait_seconds=5, poll_seconds=1, sleep=clock.advance
+        )
+        assert (symbol, result.status) == ("EURUSD", ClockStatus.VERIFIED)
+
+    def test_unknown_fallback_is_skipped_and_all_idle_stays_unverified(self) -> None:
+        clock, _, gw = setup(datetime(2026, 10, 3, 12, 0, tzinfo=UTC))
+        symbol, result = verify_server_time_any(
+            gw, ["EURUSD", "NOSUCH"], wait_seconds=2, poll_seconds=1, sleep=clock.advance
+        )
+        assert symbol is None
+        assert result.status is ClockStatus.UNVERIFIED_MARKET_IDLE
+
+    def test_no_available_symbol(self) -> None:
+        clock, _, gw = setup(datetime(2026, 10, 3, 12, 0, tzinfo=UTC))
+        symbol, result = verify_server_time_any(gw, ["NOSUCH"], sleep=clock.advance)
+        assert symbol is None and "available" in result.detail
+        with pytest.raises(ConfigError):
+            verify_server_time_any(gw, [])
+
+    def test_clock_symbols_order(self) -> None:
+        s = load_settings(env_file=None, config_file="config.yaml", environ=ENV)
+        assert s.config.symbols.clock_symbols == ["EURUSD", "BTCUSD", "ETHUSD"]
 
     def test_server_time_mismatch_detected(self) -> None:
         clock = ManualClock(datetime(2026, 9, 30, 10, 0, 30, tzinfo=UTC))

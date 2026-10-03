@@ -12,7 +12,7 @@ from app.broker.factory import build_read_only
 from app.broker.filling import FILLING_NAMES, allowed_fillings
 from app.config import Settings
 from app.core.enums import Side, TradingMode
-from app.market_data.server_time import verify_server_time
+from app.market_data.server_time import verify_server_time_any
 from app.security.redaction import mask_login
 
 
@@ -91,11 +91,12 @@ def run_doctor(settings: Settings, *, fake: bool = False, wait_seconds: float = 
     (r.ok if term.maxbars >= need else r.fail)(f"Max bars in chart = {term.maxbars} (need >= {need})")
 
     r.section("Server time")
-    ver = verify_server_time(
-        bundle.gateway, settings.config.symbols.reference_symbol, wait_seconds=wait_seconds
+    clock_symbol, ver = verify_server_time_any(
+        bundle.gateway, settings.config.symbols.clock_symbols, wait_seconds=wait_seconds
     )
+    via = f" (via {clock_symbol})" if clock_symbol else ""
     (r.ok if ver.ok else (r.warn if ver.status.value.startswith("UNVERIFIED") else r.fail))(
-        f"{ver.status}: {ver.detail}"
+        f"{ver.status}{via}: {ver.detail}"
     )
 
     r.section("Symbols")

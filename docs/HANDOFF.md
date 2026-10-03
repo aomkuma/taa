@@ -22,7 +22,7 @@ Tick the checklist after each item. Stop for review at the end of Milestone 1, o
 ## Current state
 
 - **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110) and Phase 2 (TAA-201..206).
-- **Checks:** 310 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
+- **Checks:** 315 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0). ruff,
   mypy and bandit are clean.
   Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Built:**
@@ -45,10 +45,13 @@ Tick the checklist after each item. Stop for review at the end of Milestone 1, o
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
   - the bot terminal is a dedicated portable copy at `C:\MT5	aa-bot` (option A in `.env`); option B, the
     installed terminal, is commented out.
-  - real terminal verified: `doctor` reports 0 failures (warnings: master password, Algo Trading button off,
-    market idle on the weekend), and `pytest -m mt5` passes 6/6. Demo account: USD, 1:200, hedging. A fresh
+  - real terminal verified: `doctor` reports 0 failures (warnings: master password, Algo Trading button off),
+    and `pytest -m mt5` passes 6/6. Server time is verified even on weekends through 24/7 crypto symbols
+    (`symbols.clock_fallback_symbols`, default BTCUSD/ETHUSD; FBS offset +3h = EEST confirmed). Demo account: USD, 1:200, hedging. A fresh
     terminal may need a moment to sync a symbol before `order_calc_profit` works (XAUUSD failed once on the
     first run).
+  - the demo account also carries a manual BTCUSD test position (magic 0). Per PLAN, manual positions count
+    toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, first commit `7d2ab1a` (Phases 0–2). No remote yet.
 - **Next step:** Phase 2A, starting with TAA-2A1 (evidence framework).
 

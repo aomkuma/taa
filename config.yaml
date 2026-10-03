@@ -5,6 +5,7 @@
 symbols:
   allowed: [EURUSD, GBPUSD, USDJPY, XAUUSD]
   reference_symbol: EURUSD          # liquid symbol used to verify broker server time
+  clock_fallback_symbols: [BTCUSD, ETHUSD]   # 24/7 crypto: verifies server time on weekends
   overrides:
     XAUUSD:
       max_spread_points: 40         # measure on your account and adjust
