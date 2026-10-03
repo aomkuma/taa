@@ -109,6 +109,11 @@ backtest:
   leverage: 100                     # simulated margin only; sizing is risk-based
   seed: 42
 
+paper:                              # PAPER mode: simulated fills on live quotes, never a broker order
+  initial_balance: null             # null: the real account's equity at the first PAPER start
+  slippage_points: 1
+  swap_enabled: true
+
 engine:
   monitor_interval_seconds: 1.0
   health_port: 8765

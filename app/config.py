@@ -364,6 +364,18 @@ class BacktestConfig(StrictModel):
     seed: int = 42
 
 
+class PaperConfig(StrictModel):
+    """PAPER mode's simulated account (fills on live quotes; never a broker order)."""
+
+    initial_balance: float | None = Field(
+        default=None, gt=0, description="None: the real account's equity at the first PAPER start"
+    )
+    slippage_points: float = Field(
+        default=1.0, ge=0, description="adverse, on market orders, closes and stops"
+    )
+    swap_enabled: bool = True
+
+
 class EngineLoopConfig(StrictModel):
     monitor_interval_seconds: float = Field(default=1.0, gt=0, le=10)
     health_interval_seconds: float = Field(default=5.0, gt=0)
@@ -482,6 +494,7 @@ class AppConfig(StrictModel):
     breakers: BreakerConfig = Field(default_factory=BreakerConfig)
     backtest: BacktestConfig = Field(default_factory=BacktestConfig)
     engine: EngineLoopConfig = Field(default_factory=EngineLoopConfig)
+    paper: PaperConfig = Field(default_factory=PaperConfig)
     sync: SyncConfig = Field(default_factory=SyncConfig)
     evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
 

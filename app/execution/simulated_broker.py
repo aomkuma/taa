@@ -151,6 +151,7 @@ class BrokerEvent:
     ticket: int | None = None
     detail: str = ""
     trade: ClosedTrade | None = None
+    order_id: int | None = None
 
 
 @dataclass(slots=True)
@@ -318,6 +319,19 @@ class SimulatedBroker:
         self.pending[order_id] = _Pending(order_id, request, ensure_utc(at))
         return order_id
 
+    @property
+    def next_id(self) -> int:
+        """The next simulated id (orders, tickets and deals share one counter); persisted by PAPER."""
+        return self._next_id
+
+    @next_id.setter
+    def next_id(self, value: int) -> None:
+        self._next_id = max(self._next_id, int(value))
+
+    def restore_pending(self, order_id: int, request: OrderRequest, created_at: datetime) -> None:
+        """Re-queue a persisted order after a restart (PAPER)."""
+        self.pending[order_id] = _Pending(order_id, request, ensure_utc(created_at))
+
     def cancel(self, order_id: int) -> None:
         self.pending.pop(order_id, None)
 
@@ -367,7 +381,7 @@ class SimulatedBroker:
         self._now = ensure_utc(bar.open_time)
         self._last_bid[symbol] = bar.open  # the price known at the open: fills and margin use it
         events: list[BrokerEvent] = []
-        self._rollover(symbol, bar)
+        self._rollover(symbol, bar.open_time)
         events += self._fill_closes(symbol, bar)
         events += self._fill_entries(symbol, bar)
         for pos in [p for p in self.positions.values() if p.symbol == symbol]:
@@ -385,6 +399,54 @@ class SimulatedBroker:
         for pos in self.positions.values():
             if pos.symbol == symbol:
                 pos.price_current = mark_price(pos.side, bar.close, bar.spread)
+        return events
+
+    def on_quote(self, symbol: str, bid: float, ask: float, at: datetime) -> list[BrokerEvent]:
+        """Advance *symbol* by one live quote (PAPER): fills, SL/TP and marking at tick level.
+
+        Orders submitted before *at* fill at this quote (a BUY at the ask, a SELL at the bid, adverse
+        slippage on market orders, closes and stops); limit entries fill when touched; a stop already passed
+        fills at the current price (a gap), a take-profit at its own price.
+        """
+        at = ensure_utc(at)
+        self._now = at
+        self._last_bid[symbol], self._last_spread[symbol] = bid, ask - bid
+        self._rollover(symbol, at)
+        events: list[BrokerEvent] = []
+        for pos in [p for p in self.positions.values() if p.symbol == symbol and p.close_requested]:
+            slip = self.slippage(symbol)
+            close_price = bid - slip if pos.side is Side.BUY else ask + slip
+            events.append(self._close(pos, close_price, at, pos.close_requested or ExitReason.SIGNAL))
+        for pending in [p for p in self.pending.values() if p.request.symbol == symbol and p.created_at < at]:
+            req = pending.request
+            fill: float | None
+            if req.entry_type is EntryType.MARKET:
+                slip = self.slippage(symbol)
+                fill = ask + slip if req.side is Side.BUY else bid - slip
+            else:
+                if req.expires_at is not None and at >= ensure_utc(req.expires_at):
+                    del self.pending[pending.order_id]
+                    events.append(BrokerEvent(EventKind.EXPIRED, at, symbol, order_id=pending.order_id))
+                    continue
+                limit = req.price or 0.0
+                touched = ask <= limit if req.side is Side.BUY else bid >= limit
+                fill = (ask if req.side is Side.BUY else bid) if touched else None
+            if fill is None:
+                continue
+            del self.pending[pending.order_id]
+            events.append(self._open(req, fill, at, pending.order_id))
+        for pos in [p for p in self.positions.values() if p.symbol == symbol]:
+            mark = mark_price(pos.side, bid, ask - bid)
+            move = (mark - pos.entry_price) * pos.side.sign
+            pos.mae, pos.mfe = max(pos.mae, -move), max(pos.mfe, move)
+            pos.price_current = mark
+            stop_hit = pos.sl is not None and (mark - pos.sl) * pos.side.sign <= 0
+            target_hit = pos.tp is not None and (mark - pos.tp) * pos.side.sign >= 0
+            if stop_hit:
+                slip = self.slippage(symbol) * pos.side.sign
+                events.append(self._close(pos, mark - slip, at, pos.stop_kind))
+            elif target_hit and pos.tp is not None:
+                events.append(self._close(pos, pos.tp, at, ExitReason.TAKE_PROFIT))
         return events
 
     def close_all(self, at: datetime, reason: ExitReason = ExitReason.END_OF_DATA) -> list[BrokerEvent]:
@@ -431,13 +493,17 @@ class SimulatedBroker:
             if price is None:
                 continue
             del self.pending[pending.order_id]
-            out.append(self._open(req, price, bar.open_time))
+            out.append(self._open(req, price, bar.open_time, pending.order_id))
         return out
 
-    def _open(self, req: OrderRequest, price: float, at: datetime) -> BrokerEvent:
+    def _open(
+        self, req: OrderRequest, price: float, at: datetime, order_id: int | None = None
+    ) -> BrokerEvent:
         margin = self.calc_margin(req.side, req.symbol, req.volume, price)
         if margin is None or margin > self.funds().margin_free:
-            return BrokerEvent(EventKind.REJECTED, at, req.symbol, detail="not enough free margin")
+            return BrokerEvent(
+                EventKind.REJECTED, at, req.symbol, detail="not enough free margin", order_id=order_id
+            )
         ticket = self._new_id()
         commission = self._commission_side(req.symbol, req.volume)
         self.balance += commission
@@ -446,7 +512,7 @@ class SimulatedBroker:
         )
         self.positions[ticket] = pos
         self.deals.append(self._deal(pos, c.DEAL_ENTRY_IN, req.side, price, at, 0.0, commission, 0.0))
-        return BrokerEvent(EventKind.ENTRY, at, req.symbol, ticket)
+        return BrokerEvent(EventKind.ENTRY, at, req.symbol, ticket, order_id=order_id)
 
     def _close(self, pos: SimPosition, price: float, at: datetime, reason: ExitReason) -> BrokerEvent:
         profit = self.calc_profit(pos.side, pos.symbol, pos.volume, pos.entry_price, price)
@@ -512,9 +578,9 @@ class SimulatedBroker:
             time_utc=ensure_utc(at),
         )
 
-    def _rollover(self, symbol: str, bar: Bar) -> None:
-        """Charge one day's swap when the broker day changes between two bars of *symbol*."""
-        local = ensure_utc(bar.open_time).astimezone(self._tz)
+    def _rollover(self, symbol: str, at: datetime) -> None:
+        """Charge one day's swap when the broker day changes between two observations of *symbol*."""
+        local = ensure_utc(at).astimezone(self._tz)
         day = local.date().isoformat()
         previous = self._last_day.get(symbol)
         self._last_day[symbol] = day
