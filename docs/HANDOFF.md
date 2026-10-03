@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-04, after Phase 6A (symbol universe & suitability ranking; TAA-6A1..6A5 done). This file holds **state
+Last updated: 2026-10-04, after Phase 6B (watchlists, opportunities & alert windows; TAA-6B1..6B5 done). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -14,9 +14,8 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
 relevant sections of docs/PLAN.md (§A29 evidence engine, §A31 trading profile). Follow CLAUDE.md and
 docs/CODING_STANDARDS.md.
-Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A and 12 (DEMO execution, pulled forward on the user's request) are DONE.
-Next: Phase 6B (watchlists, opportunities & alert windows, TAA-6B1..), then 6C -> 7 -> 8 -> 8A -> 9 -> 10
--> 11. LIVE stays disabled until Phase 14 and an explicit go-ahead.
+Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B and 12 (DEMO execution, pulled forward on the user's request) are
+DONE. Next: Phase 6C (shadow trades, accuracy & calibration, TAA-6C1..), then 7 -> 8 -> 8A -> 9 -> 10 -> 11. LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
 ```
@@ -28,8 +27,9 @@ any phase boundary if I ask.
 - **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206), Phase 2A
   (TAA-2A1..2A10), Phase 3 (TAA-301..307), Phase 4 (TAA-401..407), Phase 5 (TAA-501..506) and Phase 6
   (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
-  (TAA-6A1..6A5, symbol universe & suitability ranking).
-- **Checks:** 1814 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
+  (TAA-6A1..6A5, symbol universe & suitability ranking) and Phase 6B (TAA-6B1..6B5, watchlists,
+  opportunities & alert windows).
+- **Checks:** 1895 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
   suite takes ~2.5 min, with backtest and engine tests the slow part. ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
@@ -178,6 +178,23 @@ any phase boundary if I ask.
       retention, migration 0010); runs inside the engine loop behind its own error boundary
       (`advisory.ranking.enabled`); `Engine.request_rescan()` is the RESCAN hook for the Phase 7 command queue
     - CLI: `python -m app.cli advisory rank [--fake] [--top N] [--lang th]` (`--fake` uses a throwaway DB)
+  - opportunities (Phase 6B, PLAN §A26, §A29–§A31; `app/advisory/`):
+    - `preferences.py`: watchlists, alert rules (metric, x, lifetime, sessions, user windows, rate limits,
+      language), `TheoryPreferences` (presets, toggles, bounded params), `TradingProfile` (slider anchors,
+      defensive rounding, overrides, ceilings, break-even + 2 pp floor), `EntryPlanPreferences`;
+      `config.yaml` → `advisory.preferences` is the local fallback (`local_preferences`)
+    - `confidence.py` + `stats_math.py`: subset setup strength, hierarchical Beta-binomial buckets (κ 20,
+      replay cap 50, 90% interval, insufficient flag), IRLS logistic evidence model used only when
+      walk-forward CV beats the buckets, Shapley attribution (exact ≤ 10 players), track records,
+      `signal_features`
+    - `requirements.py`: compute requirements (symbol / detector / strategy union, lifetime) from the users'
+      preferences; `scanner.py`: per new entry bar, ADVISORY decisions, `opportunities` rows (migration
+      0011, id = signal idempotency key), time budget per cycle; `lifecycle.py`: market windows, EXPIRED /
+      INVALIDATED / FOLLOWED, restart catch-up; `statuses.py` (pure, shared with the cloud)
+    - `personalize.py`: pure per-user decision (entitlements, theory subset, metric/x/N, profile limits,
+      windows, rate limits) and TH/EN push payloads incl. the silent replacement; imports no broker code
+    - the engine runs scanner + lifecycle every cycle behind the advisory error boundary
+      (`advisory.scanner.enabled`); trading engine tests switch the scanner off
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -195,8 +212,8 @@ any phase boundary if I ask.
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
   remote yet. The working tree is clean.
-- **Next step:** Phase 6B (watchlists, opportunities & alert windows), starting with TAA-6B1. Mind the
-  evidence-scan cost (~1.6 s per symbol per bar) when scanning the monitored set.
+- **Next step:** Phase 6C (shadow trades, accuracy & calibration), starting with TAA-6C1. Opportunities
+  already store `signal` and `features`; `confidence.Outcome` is the training row shadow outcomes must feed.
 
 ## Notes for the next session
 
@@ -243,7 +260,19 @@ any phase boundary if I ask.
   - `SymbolSpec.swap_mode` was added (default UNKNOWN for specs stored earlier); S9 understands points,
     deposit currency and disabled swaps, other modes score a neutral 50 with an `unknown_swap` flag.
   - S8 (historical edge) is neutral until Phase 6C supplies shadow outcomes (`edge_source` hook).
-  - Only run on FakeMT5 so far; `advisory rank` against the real terminal is read-only and the user's call.
+  - Real demo terminal (2026-10-04, read-only, user-approved): 541 enabled symbols, 384 eligible. The first
+    run took 9.5 min; the greedy S7 pass was O(n³) with `DataFrame.at` and is now incremental (12 s for
+    the whole universe). Refreshes are time-budgeted per engine cycle (`max_refresh_seconds`), because a cold
+    terminal needs ~1 s per symbol to sync history. Open markets rank first (on Sundays: crypto).
+- Notes from Phase 6B:
+  - Hard ADVISORY failures create no opportunity (their reasons stay in `decision_records`); recorded in
+    PLAN §A26. The scanner uses `timeframes` from `config.yaml`; per-user holding styles do not change the
+    scan timeframes yet.
+  - Market windows use the longest lifetime any user wants; the personalizer applies the user's own window.
+  - ACTIVE is set through `OpportunityLifecycle.mark_active` when someone is alerted (wired in 8A4).
+  - Conflict policy: `TheoryPreferences.conflict_policy` unless the trading profile overrides it explicitly;
+    minimum supporting families = max(theories, profile). BLOCK blocks on a conflict of quality ≥ 0.6.
+  - Non-owner users get no lot in pushes until account profiles exist (8A).
 - Risk-layer test helpers: `tests/risk_data.py` (`TickCalculator`, `funds`, `XAUUSD_SPEC`).
 - Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
   `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.
