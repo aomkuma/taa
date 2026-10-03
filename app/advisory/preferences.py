@@ -29,6 +29,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import Field, ValidationError, field_validator, model_validator
 
+from app.advisory.confidence import break_even_probability
 from app.config import (
     CEILING_DAILY_LOSS_PCT,
     CEILING_RISK_PER_TRADE_PCT,
@@ -368,19 +369,9 @@ class TradingProfile(StrictModel):
         )
 
 
-def break_even_probability(rr: float, cost_r: float = 0.0) -> float:
-    """``(1 + c) / (1 + RR)`` in percent (R28): below it the expected value is negative."""
-    return (1 + cost_r) / (1 + rr) * 100
-
-
 def required_win_probability(profile: ResolvedProfile, rr: float, cost_r: float = 0.0) -> float:
     """The profile's minimum, never below break-even + 2 pp, so an alert always has EV > 0."""
     return max(profile.min_win_probability, break_even_probability(rr, cost_r) + WIN_PROBABILITY_MARGIN)
-
-
-def expected_value_r(p_percent: float, rr: float, cost_r: float = 0.0) -> float:
-    """``EV(R) = p (RR + 1) − 1 − c``."""
-    return p_percent / 100 * (rr + 1) - 1 - cost_r
 
 
 # --- entry plan ---------------------------------------------------------------------------------------------

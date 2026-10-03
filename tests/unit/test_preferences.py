@@ -7,6 +7,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 from pydantic import ValidationError
 
+from app.advisory.confidence import break_even_probability, expected_value_r
 from app.advisory.preferences import (
     PRESETS,
     AdvisoryPreferences,
@@ -20,8 +21,6 @@ from app.advisory.preferences import (
     UserWindow,
     Watchlist,
     WatchlistKind,
-    break_even_probability,
-    expected_value_r,
     local_preferences,
     parse_preferences,
     required_win_probability,
