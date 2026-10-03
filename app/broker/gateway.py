@@ -89,6 +89,7 @@ def spec_from_raw(raw: Any) -> SymbolSpec:
         swap_rollover3days=int(getattr(raw, "swap_rollover3days", 3)),
         calc_mode=int(getattr(raw, "trade_calc_mode", 0)),
         path=str(getattr(raw, "path", "")),
+        swap_mode=int(getattr(raw, "swap_mode", c.SYMBOL_SWAP_MODE_UNKNOWN)),
     )
 
 

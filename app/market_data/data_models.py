@@ -57,6 +57,7 @@ class SymbolSpec:
     swap_rollover3days: int
     calc_mode: int
     path: str = ""
+    swap_mode: int = c.SYMBOL_SWAP_MODE_UNKNOWN
 
     @property
     def can_buy(self) -> bool:

@@ -30,7 +30,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 7 | DONE |
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
-| M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 3 | IN PROGRESS |
+| M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 4 | IN PROGRESS |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 0 | TODO |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 0 | TODO |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
@@ -779,15 +779,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6A4 — Scores & ranking
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 6A2, 6A3
 
-- [ ] soft scores S1–S9 with configurable weights
-- [ ] Overall vs Now scores
-- [ ] H1 return correlations vs open exposure
-- [ ] historical-edge component (neutral when data is insufficient)
-- [ ] deterministic ordering
-- [ ] property tests (monotonic in equity)
+- [x] soft scores S1–S9 with configurable weights
+- [x] Overall vs Now scores
+- [x] H1 return correlations vs open exposure
+- [x] historical-edge component (neutral when data is insufficient)
+- [x] deterministic ordering
+- [x] property tests (monotonic in equity)
 
 #### TAA-6A5 — Ranking service
 

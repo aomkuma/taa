@@ -221,6 +221,7 @@ class Suitability:
     risk_money: Decimal | None = None
     margin: Decimal | None = None  # of the risk-sized lot (or the min lot), without the buffer
     margin_level_after: Decimal | None = None  # with the buffer
+    margin_share: float | None = None  # margin x buffer / the margin G3 allows
     effective_leverage: float | None = None
     cost_ratio: float | None = None
 
@@ -373,6 +374,7 @@ def assess(
         risk_money=sized.risk_money if lot is not None else None,
         margin=margin,
         margin_level_after=level,
+        margin_share=float(buffered / allowed) if allowed > 0 else None,
         effective_leverage=leverage,
         cost_ratio=cost_ratio,
     )

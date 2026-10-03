@@ -29,7 +29,7 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from app.core.enums import Timeframe, TradingMode
+from app.core.enums import Regime, Timeframe, TradingMode
 from app.core.errors import ConfigError
 from app.core.ids import stable_hash
 
@@ -440,10 +440,49 @@ class SuitabilityConfig(StrictModel):
     max_quote_age_seconds: float = Field(default=300.0, gt=0)
 
 
+SCORE_WEIGHTS = {
+    "S1": 1.0,
+    "S2": 1.0,
+    "S3": 1.0,
+    "S4": 1.0,
+    "S5": 0.5,
+    "S6": 0.5,
+    "S7": 1.0,
+    "S8": 1.0,
+    "S9": 0.5,
+}
+
+
+class ScoringConfig(StrictModel):
+    """Soft scores S1–S9 and their weights (PLAN §A25)."""
+
+    weights: dict[str, float] = Field(default_factory=lambda: dict(SCORE_WEIGHTS))
+    preferred_regimes: list[Regime] = Field(default_factory=lambda: [Regime.TRENDING, Regime.RANGING])
+    edge_min_trades: int = Field(default=30, ge=1, description="S8 is neutral below this")
+    edge_prior_trades: float = Field(default=20.0, ge=0, description="shrinkage towards zero expectancy")
+    edge_full_scale_r: float = Field(default=0.5, gt=0, description="expectancy (R) that scores 0 or 100")
+    swap_max_fraction: float = Field(
+        default=0.05, gt=0, le=1, description="S9: swap per night / typical loss"
+    )
+    correlation_bars: int = Field(default=500, ge=50, le=5000, description="H1 bars for return correlations")
+    correlation_min_overlap: int = Field(default=100, ge=20)
+
+    @field_validator("weights")
+    @classmethod
+    def _known_scores(cls, value: dict[str, float]) -> dict[str, float]:
+        unknown = sorted(set(value) - set(SCORE_WEIGHTS))
+        if unknown:
+            raise ValueError(f"unknown scores {unknown}")
+        if any(w < 0 for w in value.values()):
+            raise ValueError("score weights must be >= 0")
+        return {k: value.get(k, w) for k, w in SCORE_WEIGHTS.items()}
+
+
 class AdvisoryConfig(StrictModel):
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
     sessions: AdvisorySessionsConfig = Field(default_factory=AdvisorySessionsConfig)
     suitability: SuitabilityConfig = Field(default_factory=SuitabilityConfig)
+    scoring: ScoringConfig = Field(default_factory=ScoringConfig)
 
 
 class ExecutionConfig(StrictModel):
