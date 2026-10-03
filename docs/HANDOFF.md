@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-03, at the end of Phase 5 (all of TAA-501..506 done). This file holds **state
+Last updated: 2026-10-03, at the end of Phase 6 (all of TAA-601..606 done). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -14,8 +14,8 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
 relevant sections of docs/PLAN.md (§A29 evidence engine, §A31 trading profile). Follow CLAUDE.md and
 docs/CODING_STANDARDS.md.
-Phases 0, 1, 2, 2A, 3, 4 and 5 are DONE. Next: Phase 6 (PAPER runtime, TAA-601..), then continue in the
-execution order 6A -> 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+Phases 0, 1, 2, 2A, 3, 4, 5 and 6 are DONE. Next: Phase 6A (symbol universe & suitability ranking,
+TAA-6A1..), then continue in the execution order 6B -> 6C -> 7 -> 8 -> 8A -> 9 -> 10 -> 11.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
 ```
@@ -25,8 +25,9 @@ any phase boundary if I ask.
 ## Current state
 
 - **Done:** Phase 0 (TAA-001..009), Phase 1 (TAA-101..110), Phase 2 (TAA-201..206), Phase 2A
-  (TAA-2A1..2A10), Phase 3 (TAA-301..307), Phase 4 (TAA-401..407) and Phase 5 (TAA-501..506).
-- **Checks:** 1603 tests pass, 8 skipped (the suite takes ~100 s; the backtest tests are the slow part) (real-terminal, Postgres, one contract case defined from bar 0). ruff,
+  (TAA-2A1..2A10), Phase 3 (TAA-301..307), Phase 4 (TAA-401..407), Phase 5 (TAA-501..506) and Phase 6
+  (TAA-601..606).
+- **Checks:** 1646 tests pass, 8 skipped (the suite takes ~2 min; backtest and engine tests are the slow part) (real-terminal, Postgres, one contract case defined from bar 0). ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
@@ -123,6 +124,25 @@ any phase boundary if I ask.
     - non-positive prices (WTI 2020): `analyze_frame` marks bars `valid`; `context_at` flags
       `INVALID_OHLC` while a bad print is in the strategy window, so entries are rejected (`DATA_INVALID`);
       simulated margin uses |price|; documented in PLAN §A24
+  - PAPER runtime (Phase 6):
+    - `app/engine/orchestrator.py` (`Engine`): PAPER only (DEMO/LIVE refused); per cycle kill switch,
+      reconnect, quotes → breakers → paper fills → position management; new closed bars (watermarks) →
+      context (with evidence) → strategies → arbiter → decision → paper order; health interval: loss
+      tracking, breaker ticks, storage/disk, marks, heartbeat; clock re-verification (idle market = no
+      verdict, entries stay blocked until verified). Entry point `python -m app.main --mode paper [--fake]`.
+    - `app/engine/paper.py`: `PaperExecution` (persisted book: `paper_accounts/intents/positions`,
+      migration 0006; intent key = signal key + part, unique; restore at startup) and `LiveRates`;
+      `SimulatedBroker.on_quote` gives tick-level fills; paper orders carry the signal's expiry, so an order
+      left pending by a stop expires instead of filling late; starting balance = the real account's equity
+      at the first start unless `paper.initial_balance` is set
+    - `app/engine/position_manager.py`: A11 rules on every quote with stop invariants (re-attach a missing
+      stop, favourable only, stops level, rate limit), strategy close signals and time-stop bars per bar
+    - restart safety: arbiter cooldowns and last entries in `engine_state` (migration 0007); a real
+      position with the bot's magic trips ACCOUNT_CHANGE + a CRITICAL event
+    - `app/monitoring/alerts.py`: event types and severities, `EventBus` with dedupe, JSON-lines sink
+      (`logs/events.jsonl`); `health_check.py`: loopback `/health` and the heartbeat file
+      (`data/heartbeat.json`); `scripts/watchdog.ps1` (restarts a stale engine, not a deliberate stop) and
+      `scripts/setup_windows_host.ps1` (Task Scheduler, run it yourself; `-WhatIf` first)
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -140,9 +160,8 @@ any phase boundary if I ask.
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
   remote yet. The working tree is clean.
-- **Next step:** Phase 6 (PAPER runtime), starting with TAA-601 (orchestrator). Reuse
-  `SimulatedBroker` for paper fills (TAA-602) and `app/execution/management.py` for the position manager
-  (TAA-603); wire `ContextBuilder` with the evidence engine and the breaker monitor.
+- **Next step:** Phase 6A (symbol universe & suitability ranking), starting with TAA-6A1. Market sessions
+  (TAA-6A2) should reuse `SessionWindow`/`window_end` from `app/market_data/trading_sessions.py`.
 
 ## Notes for the next session
 
@@ -171,6 +190,11 @@ any phase boundary if I ask.
   - `BaseStrategy.should_close(ctx, side)` hook; the example strategy closes when the H1 bias flips.
   - The golden backtest (`tests/backtest/test_runner_cli.py::GOLDEN`) is a regression anchor on synthetic
     data; update it only for an intended behaviour change and say why in the commit.
+- Notes from Phase 6:
+  - The evidence scan costs ~1.6 s per symbol per new entry bar (61 detectors, two timeframes). Fine for
+    a few symbols every 15 min; the universe scanner (6B) needs a budget or a narrower plan.
+  - The PAPER engine has only been run on FakeMT5. Running it against the real terminal is the user's
+    call (read-only, investor or master password per `.env`).
 - Risk-layer test helpers: `tests/risk_data.py` (`TickCalculator`, `funds`, `XAUUSD_SPEC`).
 - Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
   `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.
