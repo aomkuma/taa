@@ -217,7 +217,7 @@ class PaperExecution:
                     tp=tp,
                     entry_type=part.part.order_type,
                     price=None if part.part.order_type is EntryType.MARKET else float(part.part.entry),
-                    expires_at=signal.expires_at_utc if part.part.order_type is EntryType.LIMIT else None,
+                    expires_at=signal.expires_at_utc,
                     magic=magic,
                     comment=signal.strategy[:25],
                     strategy=signal.strategy,

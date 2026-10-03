@@ -66,7 +66,7 @@ class OrderRequest:
     tp: float | None
     entry_type: EntryType = EntryType.MARKET
     price: float | None = None  # limit price
-    expires_at: datetime | None = None  # limit orders
+    expires_at: datetime | None = None  # PAPER: the signal's expiry (market and limit); backtests: limits
     magic: int = 0
     comment: str = ""
     strategy: str = ""
@@ -420,14 +420,16 @@ class SimulatedBroker:
         for pending in [p for p in self.pending.values() if p.request.symbol == symbol and p.created_at < at]:
             req = pending.request
             fill: float | None
+            if req.expires_at is not None and at >= ensure_utc(req.expires_at):
+                # a signal's lifetime also bounds a market order: after a stall or a restart it is not
+                # filled late at a price the decision never saw
+                del self.pending[pending.order_id]
+                events.append(BrokerEvent(EventKind.EXPIRED, at, symbol, order_id=pending.order_id))
+                continue
             if req.entry_type is EntryType.MARKET:
                 slip = self.slippage(symbol)
                 fill = ask + slip if req.side is Side.BUY else bid - slip
             else:
-                if req.expires_at is not None and at >= ensure_utc(req.expires_at):
-                    del self.pending[pending.order_id]
-                    events.append(BrokerEvent(EventKind.EXPIRED, at, symbol, order_id=pending.order_id))
-                    continue
                 limit = req.price or 0.0
                 touched = ask <= limit if req.side is Side.BUY else bid >= limit
                 fill = (ask if req.side is Side.BUY else bid) if touched else None

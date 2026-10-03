@@ -75,3 +75,13 @@ class KillSwitchEvent(Base):
     source: Mapped[str] = mapped_column(String(16))  # file | cli | remote | engine
     actor: Mapped[str] = mapped_column(String(64))
     reason: Mapped[str] = mapped_column(Text)
+
+
+class EngineState(Base):
+    """Small persisted engine state (arbiter cooldowns, last entry per symbol) restored at startup."""
+
+    __tablename__ = "engine_state"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[dict[str, Any]] = mapped_column(JSONType)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)

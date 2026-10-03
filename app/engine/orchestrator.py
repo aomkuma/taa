@@ -33,7 +33,7 @@ from typing import Any
 from app.broker.factory import BrokerBundle
 from app.broker.models import BrokerPosition
 from app.config import Settings
-from app.core.clock import Clock, ClockStatus, ClockVerification
+from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
 from app.core.enums import TradingMode
 from app.core.errors import SafetyViolation, SymbolUnavailable, TaaError
 from app.core.ids import new_id, stable_hash
@@ -58,11 +58,12 @@ from app.monitoring.alerts import EventBus, EventType
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
+from app.risk.exposure_manager import MAGIC_RANGE
 from app.risk.kill_switch import KillSwitch
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.storage.audit import AuditLog
 from app.storage.database import Database
-from app.storage.repositories import RunRepository
+from app.storage.repositories import EngineStateRepository, RunRepository
 from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
 from app.strategy.context_builder import ContextBuilder
@@ -225,7 +226,38 @@ class Engine:
         self.running = True
 
     def on_started(self, restored_positions: int) -> None:
-        """Hook for startup reconciliation (TAA-604)."""
+        """Startup reconciliation (TAA-604).
+
+        - Arbiter cooldowns and the last entry per symbol come back from ``engine_state``; watermarks and
+          breakers are persisted by their own services, and the paper book by :meth:`PaperExecution.restore`.
+        - A real account position carrying the bot's magic cannot exist in Milestone 1 (no broker orders):
+          it trips ACCOUNT_CHANGE and raises a CRITICAL event.
+        """
+        self.state = EngineStateRepository(self.db, self.clock)
+        cooldowns = self.state.load("arbiter_cooldowns") or {}
+        self.arbiter.restore_cooldowns({k: str(v) for k, v in cooldowns.items()})
+        entries = self.state.load("last_entry") or {}
+        self._last_entry = {sym: ensure_utc(datetime.fromisoformat(str(at))) for sym, at in entries.items()}
+        base = self.settings.env.MAGIC_NUMBER_BASE
+        try:
+            real = self.gateway.positions()
+        except TaaError:
+            log.warning("could not read account positions during reconciliation")
+            real = []
+        for pos in real:
+            if base <= pos.magic < base + MAGIC_RANGE:
+                detail = f"position #{pos.ticket} {pos.symbol} carries the bot's magic {pos.magic}"
+                self.monitor.account_changed(detail)
+                self.bus.emit(
+                    EventType.UNKNOWN_POSITION, symbol=pos.symbol, ticket=pos.ticket, magic=pos.magic
+                )
+        log.info(
+            "reconciled: %d paper position(s), %d pending order(s), %d real position(s), %d cooldown(s)",
+            restored_positions,
+            len(self.paper.broker.pending),
+            len(real),
+            len(cooldowns),
+        )
 
     # --- loop -------------------------------------------------------------------------------------------
 
@@ -363,10 +395,10 @@ class Engine:
                 )
 
     def on_arbitrated(self) -> None:
-        """Hook: persist the arbiter's cooldowns (TAA-604)."""
+        self.state.save("arbiter_cooldowns", self.arbiter.cooldown_state())
 
     def on_entry(self, symbol: str, at: datetime) -> None:
-        """Hook: persist the last entry time per symbol (TAA-604)."""
+        self.state.save("last_entry", {sym: t.isoformat() for sym, t in self._last_entry.items()})
 
     def _book(self) -> list[BrokerPosition]:
         """Paper positions plus every real position on the account (manual trades count toward exposure)."""

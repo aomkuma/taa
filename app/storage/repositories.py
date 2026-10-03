@@ -12,7 +12,7 @@ from sqlalchemy import Select, func, select
 from app import __version__
 from app.core.clock import Clock, SystemClock
 from app.storage.database import Database
-from app.storage.models import Base, ConfigSnapshot, Run
+from app.storage.models import Base, ConfigSnapshot, EngineState, Run
 
 T = TypeVar("T", bound=Base)
 
@@ -93,3 +93,21 @@ def utc_range_filter(column: Any, start: datetime | None, end: datetime | None) 
     if end is not None:
         conditions.append(column < end)
     return conditions
+
+
+class EngineStateRepository(Repository):
+    """Key/value JSON state of the engine runtime (TAA-604)."""
+
+    def load(self, key: str) -> dict[str, Any] | None:
+        with self.db.session() as sess:
+            row = sess.get(EngineState, key)
+            return None if row is None else dict(row.value)
+
+    def save(self, key: str, value: dict[str, Any]) -> None:
+        with self.db.session() as sess:
+            row = sess.get(EngineState, key)
+            if row is None:
+                sess.add(EngineState(key=key, value=value, updated_at=self.clock.now_utc()))
+            else:
+                row.value = value
+                row.updated_at = self.clock.now_utc()
