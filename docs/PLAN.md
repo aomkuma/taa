@@ -590,6 +590,20 @@ AI failures never trip trading breakers; they only produce HOLD.
   - MAE/MFE in R; costs (spread, slippage, commission, swap)
   - entry context: HTF trend, regime, volatility percentile, session, ADX, spread/SL ratio, distance to S/R, news window
   - strategy and reason codes; AI assessment (M2)
+  - (TAA-1001 decisions) `trade_builder.py` is pure; callers load the rows and pass them in.
+    - Scopes: BACKTEST (`ClosedTrade`), PAPER (closed `paper_positions` plus their intents, which supply the
+      initial stop and planned risk), SHADOW (CLOSED `shadow_trades` only, keeping `source` and `variant`).
+      DEMO/LIVE are reserved for broker deals. Backtest, paper and shadow results are labelled hypothetical.
+    - R is net of costs (`net / risk_money`; shadow: `r_net`); MAE/MFE in R use the fill-to-initial-stop
+      distance. Outcome: |R| < 0.2 is a scratch.
+    - Costs are money paid: commission and swap as recorded; spread from the decision quote (`ask - bid`) and
+      slippage when the venue's per-fill slippage is fixed or recorded (market entries and every exit except
+      TP and end of data), both valued at the trade's own money per price unit. Unknown components are None,
+      so `cost_r` is then a lower bound.
+    - Fills don't store the entry context: callers pass an `EntryContext` per signal id, built from the
+      decision record (`context_from_decision`). Shadow rows supply session, entry-TF regime, ATR and HTF
+      alignment from their stored features; "not aligned" is not treated as counter-trend.
+    - A row that can't be turned into a faithful record is skipped with a reason, never guessed.
 - **Style tags:**
   - setup (pullback or breakout, from reason codes), direction
   - holding style: scalp < 1 h, intraday < 24 h, swing ≥ 24 h
