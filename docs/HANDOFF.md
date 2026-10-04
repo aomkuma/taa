@@ -18,7 +18,7 @@ Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progres
 relevant sections of docs/PLAN.md (§A27 shadow trades & calibration, §A26 opportunities, §A29 evidence model).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B and 12 (DEMO execution, pulled forward on the user's request) are
-DONE. Phase 6C is done except the SHADOW-scope item of TAA-6C5, which is built on branch phase10-analytics.
+DONE. Phase 6C is done. Phase 10: TAA-1001..1003 done (app/analytics/, merged); 1004 is next there.
 Phase 9: TAA-901, 902, 915 done (frontend/). Phase 8: TAA-801, 802 done (app/web/, merged). Check open branches/worktrees (git worktree list)
 before starting a ticket another session may own. Phase 7: TAA-701, 702 done; TAA-704 done except the long-poll
 HTTP route. Next in this session: TAA-707 engine side (event schemas in app/sync/events.py shared with ingest,
@@ -37,11 +37,9 @@ any phase boundary if I ask.
   (TAA-2A1..2A10), Phase 3 (TAA-301..307), Phase 4 (TAA-401..407), Phase 5 (TAA-501..506) and Phase 6
   (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
   (TAA-6A1..6A5, symbol universe & suitability ranking) and Phase 6B (TAA-6B1..6B5, watchlists,
-  opportunities & alert windows).
-- **In progress:** Phase 6C (all done except TAA-6C5 item 2, "shadow trades in the analytics trade builder",
-  which lives on branch `phase10-analytics` as part of TAA-1001: tick it when that branch is merged), Phase 9
-  (TAA-901, TAA-902 and TAA-915 done; the remaining pages need the Phase 8 API), Phase 10 on
-  `phase10-analytics`, and Phase 8 in a separate session (worktree `taa-auth`, branch `phase8-auth`:
+  opportunities & alert windows), Phase 6C (TAA-6C1..6C5, shadow trades, accuracy & calibration).
+- **In progress:** Phase 9 (TAA-901, TAA-902 and TAA-915 done; the remaining pages need the Phase 8 API),
+  Phase 10 (TAA-1001..1003 done and merged; TAA-1004 next, see "Notes from Phase 10"), and Phase 8 in a separate session (worktree `taa-auth`, branch `phase8-auth`:
   TAA-801 and TAA-802 done and merged into `main`). The main session owns Phase 7 only; 705 still waits
   for TAA-808.
 - **Checks:** 2268 tests pass (after the phase8-auth merge), 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
@@ -239,6 +237,16 @@ any phase boundary if I ask.
     - `stats.py` (pure, for the cloud too): hit rate + Wilson CI, expectancy, PF, total hypothetical P/L,
       follow-all curve + max DD, breakdowns, in-sample threshold explorer, LIVE/REPLAY sections, theory
       scoreboard; `EdgeBook` feeds ranking S8 (REPLAY capped)
+  - trade analytics (Phase 10, PLAN §A16; `app/analytics/`, pure, no I/O):
+    - `trade_builder.py` (TAA-1001): one `Trade` record from backtest `ClosedTrade`s, closed PAPER positions
+      (+ intents for the initial stop and planned risk) and CLOSED shadow rows (scope SHADOW, `source` and
+      `variant` kept); R net of costs, MAE/MFE in R, costs in money (unknown parts None, `cost_r` a lower
+      bound), `hypothetical` for backtest/paper/shadow; unusable rows go to `TradeSet.skipped` with a reason
+    - `styles.py` (TAA-1002): setup, direction, holding, session, regime, volatility, weekday/hour (UTC),
+      symbol, strategy, scope (+ variant/source); unknown facts tagged UNKNOWN
+    - `attribution.py` (TAA-1003): ordered rules, 1–3 codes per trade, English one-line texts, evidence values,
+      `analytics.attribution.<CODE>` translation keys; rules with unknown facts don't fire
+    - test factories in `tests/analytics_data.py`
   - web service foundation (Phase 8, `app/web/`, PLAN §A14; branch `phase8-auth`):
     - TAA-801: `create_app(WebSettings)` (`app/web/app.py`), env-only `WebSettings` in `app/config.py`
       (`WEB_ENV` defaults to production, which requires an https `WEB_PUBLIC_ORIGIN`), `GET /api/v1/health`,
@@ -284,8 +292,9 @@ any phase boundary if I ask.
   - the demo account also carries a manual BTCUSD test position (magic 0). Per PLAN, manual positions count
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). A
-  remote `origin` exists; `main` is ahead of `origin/main` (push only when the user asks). Other worktrees:
-  `phase10-analytics` (TAA-1001..1003, `C:\Users\korap\taa-phase10`) and `phase8-auth` (Phase 8,
+  remote `origin` exists; `main` is ahead of `origin/main` (push only when the user asks). Branch
+  `phase10-analytics` (TAA-1001..1003) is merged and removed with its worktree. Other worktree:
+  `phase8-auth` (Phase 8,
   `C:\Users\korap\taa-auth`; TAA-801, 802, 902 merged into `main`, the branch stays for the rest of Phase 8).
   Branch `phase9-frontend` (TAA-901, TAA-915, docs) is merged into `main`; its worktree
   `C:\Users\korap\taa-phase9` can be removed with `git worktree remove ..\taa-phase9`.
@@ -350,6 +359,12 @@ any phase boundary if I ask.
   - The full suite crashed twice (Windows access violation in pandas groupby inside `FakeMT5._bars`, main thread,
     no other Python threads alive; once in `test_engine_restart`). It did not reproduce in 3 targeted reruns
     or the next full run (2050 passed). Possibly load from the parallel sessions; watch for it.
+    - Seen twice more in the phase10-analytics session (2026-10-04), same frame
+      (`pandas groupby.first` ← `FakeMT5._bars` ← `copy_rates_from_pos`): once in
+      `test_engine_paper::test_a_failing_cycle_blocks_entries_but_the_loop_continues` (via
+      `RankingService.refresh`), once as a stack dump mid-run. Both full reruns passed. Still only under
+      parallel sessions' load; no ticket yet. Next step if it recurs: run `tests/integration` alone in a
+      PowerShell loop with `-x` and `PYTHONFAULTHANDLER=1`, and try a pandas/numpy version pin.
   - Calibration shutdown now waits for a running build so no worker thread touches a closed database.
 - Notes from Phase 6C:
   - Shadow results have only run on FakeMT5. On a real terminal, M1 history and `copy_ticks_range` need the
@@ -385,11 +400,20 @@ any phase boundary if I ask.
     full stack was checked end to end with curl (login, cookie, CSRF-protected logout).
   - Development cookies are `taa_session` without `Secure` (loopback http); production uses
     `__Host-taa_session` with `Secure`. Origins accepted in development: Vite 5173 and app.web 8000.
-  - Engine bug found, not fixed (outside this branch): the engine's storage health check formats `free_gb`
-    when `data/` does not exist (`None` in `orchestrator.py`) and raises `TypeError`; a fresh worktree hits it.
-    Tests pass once `data/` exists.
+  - Engine bug, fixed on main (2026-10-04): `BreakerMonitor.observe_storage` formatted `free_gb=None` (no
+    `data/` directory) and raised every cycle; now the write check alone decides and the reason says
+    "unknown". Fresh worktrees no longer need `data/` for the engine tests.
   - Timing-sensitive integration tests (`test_engine_paper`, `test_scanner` time budgets) failed once under
     heavy machine load and passed on rerun.
+- Notes from Phase 10 (TAA-1001..1003):
+  - Fills store no entry context. Callers pass an `EntryContext` per signal id, built from the decision
+    record with `context_from_decision`. The backtest keeps no decision records per trade, so TAA-1004 on
+    backtests needs `BacktestEngine` to keep the selected signal's `MarketContext` (or its decision record)
+    by signal id: a small change in `app/backtest/engine.py`.
+  - Exit-time facts (HTF trend, ATR) and the news overlap are optional context. Until a caller supplies them,
+    LOSS_REGIME_SHIFT, LOSS_VOLATILITY_SPIKE and LOSS_NEWS_PROXIMITY never fire.
+  - The attribution texts are English only; the PWA needs `analytics.attribution.<CODE>` TH/EN texts in
+    `frontend/src/i18n/` with TAA-1005.
 - Risk-layer test helpers: `tests/risk_data.py` (`TickCalculator`, `funds`, `XAUUSD_SPEC`).
 - Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
   `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.
