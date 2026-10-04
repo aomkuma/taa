@@ -19,11 +19,11 @@ relevant sections of docs/PLAN.md (§A27 shadow trades & calibration, §A26 oppo
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B and 12 (DEMO execution, pulled forward on the user's request) are
 DONE. Phase 6C is done except the SHADOW-scope item of TAA-6C5, which is built on branch phase10-analytics.
-Phase 9 has its foundation (TAA-901, TAA-915 done; frontend/). Check open branches/worktrees (git worktree list)
+Phase 9: TAA-901, 902, 915 done (frontend/). Phase 8: TAA-801, 802 done (app/web/, merged). Check open branches/worktrees (git worktree list)
 before starting a ticket another session may own. Phase 7: TAA-701, 702 done; TAA-704 done except the long-poll
 HTTP route. Next in this session: TAA-707 engine side (event schemas in app/sync/events.py shared with ingest,
-advisory producers, advisory-config pull client), then 705/706 engine parts; 703 and the 704 route need TAA-801
-(branch phase8-auth) on main. Phase 8 is owned by a separate session.
+advisory producers, advisory-config pull client), then 705/706 engine parts; 703 and the 704 route can now
+build on TAA-801 (app/web). Phase 8 is owned by a separate session.
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
@@ -42,9 +42,9 @@ any phase boundary if I ask.
   which lives on branch `phase10-analytics` as part of TAA-1001: tick it when that branch is merged), Phase 9
   (TAA-901, TAA-902 and TAA-915 done; the remaining pages need the Phase 8 API), Phase 10 on
   `phase10-analytics`, and Phase 8 in a separate session (worktree `taa-auth`, branch `phase8-auth`:
-  TAA-801 and TAA-802 done). The main session owns Phase 7
-  only; tickets that need Phase 8 pieces (703 needs 801, 705 needs 808) wait for that branch.
-- **Checks:** 2050 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
+  TAA-801 and TAA-802 done and merged into `main`). The main session owns Phase 7 only; 705 still waits
+  for TAA-808.
+- **Checks:** 2268 tests pass (after the phase8-auth merge), 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
   suite takes ~5.5 min, with backtest and engine tests the slow part. ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
@@ -286,14 +286,16 @@ any phase boundary if I ask.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). A
   remote `origin` exists; `main` is ahead of `origin/main` (push only when the user asks). Other worktrees:
   `phase10-analytics` (TAA-1001..1003, `C:\Users\korap\taa-phase10`) and `phase8-auth` (Phase 8,
-  `C:\Users\korap\taa-auth`). Branch `phase9-frontend` (TAA-901, TAA-915, docs) is merged into `main`; its worktree
+  `C:\Users\korap\taa-auth`; TAA-801, 802, 902 merged into `main`, the branch stays for the rest of Phase 8).
+  Branch `phase9-frontend` (TAA-901, TAA-915, docs) is merged into `main`; its worktree
   `C:\Users\korap\taa-phase9` can be removed with `git worktree remove ..\taa-phase9`.
 - **Next step:** TAA-707 engine side (planned: replicate advisory rows as full-row upsert events through
   explicit hooks in the catalog, ranking, scanner, lifecycle, shadow tracker and calibration; shadow cursor
   progress is not replicated; suitability snapshots coalesce per symbol and hour; the advisory-config client
   uses an ETag and falls back to the cache, then local preferences). Then 705/706 engine parts. 703 and the
-  704 route wait for TAA-801 on main. Migration numbers can collide with the Phase 8 branch: renumber the later
-  one's `down_revision` at merge time.
+  704 route can use `app/web` now (TAA-801 is on main; ingest needs no session, so it goes outside the
+  auth dependencies). Migration numbers can collide with the Phase 8 branch: the later merge renumbers its
+  migration (phase8-auth's became 0017 after main's 0016).
 
 ## Notes for the next session
 
