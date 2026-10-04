@@ -1,36 +1,35 @@
 # Session handoff
 
-Last updated: 2026-10-04, single session on `main`: TAA-703 (ingest API), TAA-704 (long-poll route) and
-TAA-707 (advisory sync), TAA-708 (engine registry), TAA-709 (engine-scoped replicas) and TAA-706 (candle
-& history sync) and TAA-803 (read APIs) done. Before them, three parallel
-sessions were merged: Phase 6C (done), Phase 7 TAA-701, 702, 704 (engine side), Phase 8 TAA-801, 802,
-Phase 9 TAA-901, 902, 915, Phase 10 TAA-1001..1003, and the storage-health fix. No branch holds unmerged
-work. This file holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
+Last updated: 2026-10-04 (end of the session that did TAA-804 … TAA-8A5), single session on `main`. Done in
+that session, in order: TAA-804 SSE, 805 control API, 811 engine management API, 808 worker, 705 heartbeats &
+watchdog, 806 Web Push, 807 cloud backtests, 809 advisory APIs, 810 opportunity push, the alert risk-budget
+rule (user decision, option C), 8A1 tenancy, 8A2 plans & entitlements, 8A3 account profiles & cloud sizing,
+8A4 multi-user personalizer, 8A5 billing scaffolding. No branch holds unmerged work. This file holds **state
+only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
 ---
 
 ## Prompt for the next session
 
-The user's decision (2026-10-04): **one session at a time** from now on, working in the main checkout. No
-parallel sessions, no extra worktrees.
+The user's decision (2026-10-04): **one session at a time**, working in the main checkout. No parallel sessions,
+no extra worktrees. The user uses TAA for themselves now; selling it comes later, but the multi-user foundation
+is built properly in ticket order (it now is: Phase 8A is done).
 
 Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ```text
 Continue the TAA project. Read docs/HANDOFF.md (state, the "Next work" order), docs/TICKETS.md (progress,
-dependencies) and docs/PLAN.md §A13 (cloud sync), §A14 (web backend) and §A32 (engine registry, per-user
-engines); later tickets name their own sections (§A15/§A28 PWA, §A16 analytics, §A30 tenancy, §A31 trading
-profile).
-Follow CLAUDE.md and docs/CODING_STANDARDS.md.
-Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
-Partly done: Phase 7 (701..704, 706..709; 705 waits for the worker 808), Phase 8 (801..803),
-Phase 9 (901, 902, 915), Phase 10 (1001..1003).
+dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & advisory UI); the page tickets
+name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
+Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
+Done: Phases 0–7, 8A and 12; Phase 8 except the optional TAA-810 item 6 (cloud replay jobs).
+Partly done: Phase 9 (901, 902, 915), Phase 10 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13–14.
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Start with TAA-804 (SSE stream).
+"Next work" list in docs/HANDOFF.md. Start with TAA-903 (app shell).
 A local PostgreSQL 16 is available for tests: `pytest -m postgres` uses TAA_POSTGRES_URL from .env (role taa,
 database taa_test); never touch other projects' databases on that server.
-LIVE stays disabled until Phase 14 and an explicit go-ahead.
+LIVE stays disabled until Phase 14 and an explicit go-ahead. Subscriptions stay off (SUBSCRIPTIONS_ENABLED=false).
 Commit at each ticket boundary (allowed). Pushing from Claude Code fails (GitHub needs an interactive login),
 so I push myself. Update docs/HANDOFF.md at the end of the session. Stop for review at the end of Milestone 1,
 or at any phase boundary if I ask. Chat with me in Thai.
@@ -50,14 +49,15 @@ or at any phase boundary if I ask. Chat with me in Thai.
   `ENGINE_ID` and `ENGINE_HMAC_SECRET` (shown once), and the browser generates `CONTROL_TOTP_SECRET`, which never
   reaches the cloud. New tickets: TAA-708, 709, 811, 923. Rollout is fail-closed: one ACTIVE engine until 709, and
   `MULTI_ENGINE_ENABLED=false`.
-- **In progress (progress table):** Phase 7 8/9 (701..704, 706..709; 705 waits for the worker 808), Phase 8 3/11 (801..803),
-  Phase 9 3/23 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. The order of the
-  remaining tickets: "Next work" below.
-- **Checks:** 2270 tests on `c85d539` (2269 passed + 1 failure from a memory-allocation error under parallel
-  load, which passes alone), 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
-  suite takes ~5 min, with backtest and engine tests the slow part. ruff, mypy and bandit are clean.
-  Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/`. Architecture rules are enforced by
-  `tests/unit/test_architecture.py`.
+- **Also done:** Phase 7 (TAA-701..709), Phase 8A (TAA-8A1..8A5) and Phase 8 except TAA-810 item 6 (cloud replay
+  jobs, optional in the ticket; replay runs locally with `python -m app.cli advisory replay`).
+- **In progress (progress table):** Phase 8 10/11 (TAA-810 stays IN PROGRESS for item 6), Phase 9 3/23 (901,
+  902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14
+  (LIVE). The order of the remaining tickets: "Next work" below.
+- **Checks:** 2658 passed, 7 skipped (6 real-terminal, 1 contract case defined from bar 0) on `4bc354a`; the
+  Postgres tests run when `TAA_POSTGRES_URL` is set (they ran). The full suite takes ~7–9 min. ruff, mypy and
+  bandit are clean. Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/` (92 tests, green after
+  TAA-811's `codes` catalog). Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
     - style slider 0–100 (defensive → offensive) with five anchor presets
@@ -390,11 +390,11 @@ or at any phase boundary if I ask. Chat with me in Thai.
   - the demo account also carries a manual BTCUSD test position (magic 0). Per PLAN, manual positions count
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). A
-  remote `origin` exists; `main` is ahead of `origin/main` (push only when the user asks). Work happens on
+  remote `origin` exists; `main` is ahead of `origin/main` (18 commits at the end of this session, the handoff included; the user
+  pushes). Work happens on
   `main` in `C:\Users\korap\taa` (one session at a time). It is the only worktree and the only local branch:
   `phase8-auth`, `phase9-frontend` and `phase10-analytics` were merged, then deleted with their worktrees
-  (2026-10-04). The `origin/dependabot/*` branches are Dependabot PRs on GitHub, untouched. Latest
-  migration: **0021**.
+  (2026-10-04). The `origin/dependabot/*` branches are Dependabot PRs on GitHub, untouched. Latest migration: **0032**.
 
 ## Next work
 
@@ -412,24 +412,17 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
   engine management API → 923 Engines page (also needs 903, 915); 803 and 805 gain owner-scoping items
 - Phase 11 (Railway) after Milestone 1 features; it needs the user's Railway access.
 
-**Order for the single session** (critical path first, otherwise the TICKETS execution order
-7 → 8 → 8A → 9 → 10 → 11; each step's dependencies are done by the time it is reached):
+**Order for the single session** (critical path first, otherwise the TICKETS execution order; each step's
+dependencies are done by the time it is reached):
 
-1. ~~TAA-703 ingest API~~ (done)
-2. ~~TAA-704 long-poll route~~ (done)
-3. ~~TAA-707 advisory sync~~ (done, before 708 because it was under way)
-4. ~~(rev. 4) TAA-708 engine registry, TAA-709 engine-scoped replicas~~ (done)
-5. ~~TAA-706 candle & history sync~~ (done)
-6. ~~TAA-803 read APIs~~ (done), ~~TAA-804 SSE~~ (done)
-7. ~~TAA-805 control API~~ (done), ~~TAA-811 engine management API~~ (done)
-8. ~~TAA-808 worker service~~, ~~TAA-705 heartbeat & watchdog~~ (done; Phase 7 complete)
-9. ~~TAA-806 Web Push~~, ~~TAA-807 backtest jobs~~ (done)
-10. ~~TAA-809 advisory APIs~~, ~~TAA-810 opportunity push~~ (done except the optional item 6, cloud replay jobs)
-11. ~~TAA-8A1~~, ~~8A2~~, ~~8A3~~, ~~8A4~~ (done) → 8A5 (Phase 8A)
-12. TAA-903 app shell, then 904–913, 916–923, then 914 PWA polish (Phase 9)
-13. TAA-1004 (do the preparation in "Notes from Phase 10" first), TAA-1005 (Phase 10)
-14. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
-    Milestone 1 review.
+1. ~~TAA-703, 704, 707, 708, 709, 706, 803~~ (done in the previous session)
+2. ~~TAA-804, 805, 811, 808, 705, 806, 807, 809, 810~~ (done; TAA-810 item 6 optional and open)
+3. ~~TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5~~ (done, Phase 8A)
+4. **Next:** TAA-903 app shell (stream, navigation, engine picker from `GET /me/feed`), then 904–913,
+   916–923, then 914 PWA polish (Phase 9). The backend for every page exists; see "Notes for the PWA" below.
+5. TAA-1004 (do the preparation in "Notes from Phase 10" first), TAA-1005 (Phase 10)
+6. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
+   Milestone 1 review.
 
 Planned details:
 
@@ -464,6 +457,32 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
   real venv.
 
 ## Notes for the next session
+
+- Notes for the PWA (Phase 9; the APIs the pages read, all under `/api/v1`):
+  - Session: `/auth/session|login|logout|step-up|profile`; feed: `GET /me/feed` (which engine the user reads;
+    `own` false = the owner's market feed, where account details are redacted).
+  - Live data: `GET /engines/{id}/stream` (SSE; `ready`/`reset`, topics status, quotes, positions,
+    notifications, decisions; `Last-Event-ID` resumes; PLAN §A14 "TAA-804 decisions").
+  - Owner pages: status, account, positions, trades, intents, decisions, breakers, kill-switch, symbols,
+    candles (with overlays and markers), config, audit/verify (TAA-803); commands (TAA-805); engines (TAA-811);
+    backtests (TAA-807).
+  - Advisory pages: ranking (personal on the feed), opportunities (with `probability`, `contributions`, plan,
+    `my_sizing`), shadow-trades, accuracy (`?mine=true`), threshold-explorer, theory-scoreboard, calibration;
+    `/advisory/preferences|watchlists|favourites|detectors` (TAA-809/8A4).
+  - Me: notifications, push key/subscribe/unsubscribe/test, preferences (TAA-806); `/me/alerts`,
+    `/me/entitlements`, `/me/account-profile`, `/me/export`, `/me/erase`; admin `/admin/users|plans`.
+  - The service worker's `push` handler is not written yet: messages carry `title`, `body`, `tag`, `url`,
+    `silent`, `renotify`, `badge` (prebuilt opportunity pushes, TAA-810). Notification types and `NoAlert` /
+    plan-limit codes need `codes:` keys with TH/EN texts when their pages show them.
+- Lessons from this session:
+  - Don't edit the working tree while a full test run is going: the migration-parity test reads the
+    migration files at run time and failed on a half-written next ticket. Stage the ticket, run, commit.
+  - Long multi-line edits through a bash heredoc broke bash's quote parsing once; writing the edit as a small
+    Python script in the scratchpad and running it is more robust.
+  - A SQL `LIKE 'taa_t_%'` also matches `taa_test` (`_` is a wildcard): never clean up databases by pattern.
+    The throwaway-database teardown in `tests/integration/test_postgres.py` now retries instead.
+  - `.env` (local, git-ignored) now also has `WORKER_ENV=development` and a generated VAPID pair with
+    `VAPID_SUBJECT=mailto:owner@example.com` (the user may set a real contact; it goes to the push services).
 
 - Docstrings longer than 110 characters fail ruff (E501). Wrap them by hand, or keep the summary line short and
   put the details in a paragraph below it.
@@ -582,4 +601,8 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
   `git push origin main` in their own terminal.
 - The flaky pandas access violation has no ticket yet: open one if it recurs (see "Notes from Phase 7").
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
-- Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA). See PLAN §A30.
+- Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA, payments): the questions
+  and the enable checklist are in `docs/COMPLIANCE.md`; the gate is `SUBSCRIPTIONS_ENABLED` +
+  `SUBSCRIPTIONS_LEGAL_REVIEW`.
+- TAA-810 item 6 (cloud replay jobs, optional): build it, or mark it dropped so Phase 8 can close.
+- `VAPID_SUBJECT` in `.env` is a placeholder (`mailto:owner@example.com`); set a real contact if wanted.
