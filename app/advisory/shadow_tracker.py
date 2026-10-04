@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -98,6 +99,132 @@ def state_of(row: ShadowTradeRow) -> ShadowState:
     )
 
 
+@dataclass(frozen=True, slots=True)
+class SignalFacts:
+    """What a shadow row copies from its opportunity (or, in replay, from the signal and decision)."""
+
+    opportunity_id: str
+    source: str
+    server: str
+    strategy: str
+    symbol: str
+    asset_class: str
+    timeframe: str
+    side: str
+    session: str
+    setup_strength: float
+    rr: float | None
+    features: dict[str, float]
+    atr: float | None
+    signal_at: datetime
+    lot: float | None
+    equity: float
+    currency: str
+    alerted: bool = False
+    followed: bool = False
+
+
+@dataclass(frozen=True, slots=True)
+class EntryQuote:
+    bid: float | None
+    ask: float | None
+    spread_points: float | None
+    slippage_points: float
+
+
+def new_row(
+    facts: SignalFacts,
+    variant: Variant,
+    state: ShadowState,
+    quote: EntryQuote,
+    flags: Iterable[Flag],
+    now: datetime,
+) -> ShadowTradeRow:
+    """An OPEN shadow row at its entry (VOID when the fill is already at or beyond the stop)."""
+    void = state.risk <= 0
+    marks = {f.value for f in flags} | ({Flag.NOT_TRADABLE.value} if facts.lot is None else set())
+    return ShadowTradeRow(
+        shadow_id=shadow_id(facts.opportunity_id, variant),
+        opportunity_id=facts.opportunity_id,
+        variant=variant.value,
+        source=facts.source,
+        server=facts.server,
+        strategy=facts.strategy,
+        symbol=facts.symbol,
+        asset_class=facts.asset_class,
+        timeframe=facts.timeframe,
+        side=facts.side,
+        session=facts.session,
+        setup_strength=facts.setup_strength,
+        rr=facts.rr,
+        features=dict(facts.features),
+        atr=facts.atr,
+        alerted=facts.alerted,
+        followed=facts.followed,
+        status=(ShadowStatus.VOID if void else ShadowStatus.OPEN).value,
+        signal_at=facts.signal_at,
+        created_at=now,
+        updated_at=now,
+        entry_at=state.entry_at,
+        entry_price=state.entry,
+        bid=quote.bid,
+        ask=quote.ask,
+        spread_points=quote.spread_points,
+        slippage_points=quote.slippage_points,
+        initial_sl=state.initial_sl,
+        sl=state.sl,
+        tp=state.tp,
+        stop_kind=state.stop_kind.value,
+        deadline=state.deadline,
+        cursor=state.cursor,
+        lot=facts.lot,
+        equity=facts.equity,
+        currency=facts.currency,
+        mae=0.0,
+        mfe=0.0,
+        swap_days=0,
+        flags=sorted(marks),
+        note="fill at or beyond the stop" if void else "",
+    )
+
+
+def apply_state(row: ShadowTradeRow, state: ShadowState, now: datetime) -> None:
+    row.cursor = state.cursor
+    row.sl = state.sl
+    row.stop_kind = state.stop_kind.value
+    row.mae = state.mae
+    row.mfe = state.mfe
+    row.flags = sorted({*row.flags, *(f.value for f in state.flags)})
+    row.updated_at = now
+
+
+def apply_close(row: ShadowTradeRow, exit_: ShadowExit, result: ShadowResult) -> None:
+    row.status = ShadowStatus.CLOSED.value
+    row.exit_at = exit_.at
+    row.exit_price = exit_.price
+    row.exit_reason = exit_.reason.value
+    row.win = result.win
+    row.r_multiple = result.r_multiple
+    row.r_net = result.r_net
+    row.mae_r = result.mae_r
+    row.mfe_r = result.mfe_r
+    row.gross_pnl = result.gross_pnl
+    row.commission = result.commission
+    row.swap = result.swap
+    row.net_pnl = result.net_pnl
+    row.risk_money = result.risk_money
+    row.swap_days = result.swap_days
+    row.flags = sorted({*row.flags, *(f.value for f in result.flags)})
+
+
+def commission_per_lot(config: AppConfig, symbol: str) -> float:
+    """Round turn per lot: the symbol override, else ``advisory.shadow.commission_per_lot``."""
+    override = config.symbols.overrides.get(symbol)
+    if override is not None and override.commission_per_lot is not None:
+        return override.commission_per_lot
+    return config.advisory.shadow.commission_per_lot
+
+
 class ShadowTracker:
     def __init__(
         self,
@@ -170,7 +297,7 @@ class ShadowTracker:
         spec = self.spec(opp.symbol)
         side = Side(opp.side)
         slip = self.cfg.slippage_points * spec.point
-        flags: list[str] = []
+        flags: list[Flag] = []
         if opp.bid is not None and opp.ask is not None:
             entry = entry_fill(side, opp.bid, opp.ask, slip)
             entry_at = ensure_utc(opp.quote_at or opp.created_at)
@@ -179,9 +306,7 @@ class ShadowTracker:
             entry = opp.entry + side.sign * slip
             entry_at = ensure_utc(opp.created_at)
             spread = opp.spread_points
-            flags.append(Flag.ENTRY_FALLBACK.value)
-        if opp.lot is None:
-            flags.append(Flag.NOT_TRADABLE.value)
+            flags.append(Flag.ENTRY_FALLBACK)
         state = new_state(
             side=side,
             entry=entry,
@@ -190,56 +315,30 @@ class ShadowTracker:
             tp=opp.take_profit,
             time_stop=timedelta(hours=self.cfg.time_stop_hours),
         )
+        facts = SignalFacts(
+            opportunity_id=opp.opportunity_id,
+            source=LIVE,
+            server=self.server,
+            strategy=opp.strategy,
+            symbol=opp.symbol,
+            asset_class=opp.asset_class,
+            timeframe=opp.timeframe,
+            side=opp.side,
+            session=opp.session,
+            setup_strength=opp.setup_strength,
+            rr=opp.rr,
+            features=dict(opp.features),
+            atr=opp.atr,
+            signal_at=opp.bar_close_at,
+            lot=opp.lot,
+            equity=opp.equity,
+            currency=opp.currency,
+            alerted=opp.alerted_at is not None,
+            followed=opp.status == OpportunityStatus.FOLLOWED.value,
+        )
         now = self.clock.now_utc()
-        void = state.risk <= 0  # the fill is already at or beyond the stop: no trade to follow
-        alerted = opp.alerted_at is not None
-        followed = opp.status == OpportunityStatus.FOLLOWED.value
-        return [
-            ShadowTradeRow(
-                shadow_id=shadow_id(opp.opportunity_id, variant),
-                opportunity_id=opp.opportunity_id,
-                variant=variant.value,
-                source=LIVE,
-                server=self.server,
-                strategy=opp.strategy,
-                symbol=opp.symbol,
-                asset_class=opp.asset_class,
-                timeframe=opp.timeframe,
-                side=opp.side,
-                session=opp.session,
-                setup_strength=opp.setup_strength,
-                rr=opp.rr,
-                features=dict(opp.features),
-                atr=opp.atr,
-                alerted=alerted,
-                followed=followed,
-                status=(ShadowStatus.VOID if void else ShadowStatus.OPEN).value,
-                signal_at=opp.bar_close_at,
-                created_at=now,
-                updated_at=now,
-                entry_at=entry_at,
-                entry_price=entry,
-                bid=opp.bid,
-                ask=opp.ask,
-                spread_points=spread,
-                slippage_points=self.cfg.slippage_points,
-                initial_sl=opp.stop_loss,
-                sl=opp.stop_loss,
-                tp=opp.take_profit,
-                stop_kind=ExitReason.STOP_LOSS.value,
-                deadline=state.deadline,
-                cursor=state.cursor,
-                lot=opp.lot,
-                equity=opp.equity,
-                currency=opp.currency,
-                mae=0.0,
-                mfe=0.0,
-                swap_days=0,
-                flags=list(flags),
-                note="fill at or beyond the stop" if void else "",
-            )
-            for variant in Variant
-        ]
+        quote = EntryQuote(opp.bid, opp.ask, spread, self.cfg.slippage_points)
+        return [new_row(facts, variant, state, quote, flags, now) for variant in Variant]
 
     # --- flags ----------------------------------------------------------------------------------------------
 
@@ -325,9 +424,9 @@ class ShadowTracker:
                 stored = sess.get(ShadowTradeRow, sid)
                 if stored is None or stored.status != ShadowStatus.OPEN.value:
                     continue
-                self._store(stored, state, now)
+                apply_state(stored, state, now)
                 if exit_ is not None and result is not None:
-                    self._close(stored, exit_, result)
+                    apply_close(stored, exit_, result)
                     closed.append(sid)
         self.stats.closed += len(closed)
         for sid in closed:
@@ -358,12 +457,6 @@ class ShadowTracker:
     ) -> ShadowResult:
         """Broker calls for a closed trade happen here, outside any database session."""
         side = state.side
-        override = self.config.symbols.overrides.get(spec.name)
-        commission = (
-            override.commission_per_lot
-            if override is not None and override.commission_per_lot is not None
-            else self.cfg.commission_per_lot
-        )
         return settle(
             state,
             exit_,
@@ -371,41 +464,12 @@ class ShadowTracker:
             profit=lambda volume, price: self.gateway.calc_profit(
                 side, spec.name, volume, state.entry, price
             ),
-            commission_per_lot=commission,
+            commission_per_lot=commission_per_lot(self.config, spec.name),
             swap_per_lot_night=swap_per_night(spec, side),
             swap_days=rollover_days(
                 state.entry_at, exit_.at, tz=self._tz, triple_weekday=spec.swap_rollover3days
             ),
         )
-
-    @staticmethod
-    def _store(row: ShadowTradeRow, state: ShadowState, now: datetime) -> None:
-        row.cursor = state.cursor
-        row.sl = state.sl
-        row.stop_kind = state.stop_kind.value
-        row.mae = state.mae
-        row.mfe = state.mfe
-        row.flags = sorted({*row.flags, *(f.value for f in state.flags)})
-        row.updated_at = now
-
-    @staticmethod
-    def _close(row: ShadowTradeRow, exit_: ShadowExit, result: ShadowResult) -> None:
-        row.status = ShadowStatus.CLOSED.value
-        row.exit_at = exit_.at
-        row.exit_price = exit_.price
-        row.exit_reason = exit_.reason.value
-        row.win = result.win
-        row.r_multiple = result.r_multiple
-        row.r_net = result.r_net
-        row.mae_r = result.mae_r
-        row.mfe_r = result.mfe_r
-        row.gross_pnl = result.gross_pnl
-        row.commission = result.commission
-        row.swap = result.swap
-        row.net_pnl = result.net_pnl
-        row.risk_money = result.risk_money
-        row.swap_days = result.swap_days
-        row.flags = sorted({*row.flags, *(f.value for f in result.flags)})
 
     def _fail(self, symbol: str, exc: Exception) -> None:
         self.stats.failures += 1

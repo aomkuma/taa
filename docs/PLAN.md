@@ -895,6 +895,15 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
 - **Historical replay (`replay.py`):** replays the scanner over N months of history per symbol, reusing the backtest
   components (resolution on M5/M1). Outcomes are tagged `source=REPLAY` and bootstrap calibration. Runs via the
   local CLI or a cloud worker job.
+  - (TAA-6C2 decisions) `python -m app.cli advisory replay --server ... --symbols ... [--months 6 | --start/--end]
+    [--equity] [--strategies] [--detectors ids|none]`:
+    - The ADVISORY decision runs at the bar-close quote for a flat account of `--equity` (default
+      `backtest.initial_balance`; constant, no compounding). Every entry signal counts, without arbitration.
+    - Resolution uses the finest stored of M1/M5 and fails closed without either. History has no ticks, so SL/TP
+      ties are SL first (`AMBIGUOUS`). Money uses the conversion rate at signal time.
+    - Rows: opportunity id `replay:<signal key>`. Reruns add only new signals; the same inputs give identical rows.
+      Trades still open when the data ends are not stored.
+    - Evidence costs about 1 s per bar with every detector; `--detectors` narrows the plan for long windows.
 - **Calibration (`calibration.py`):**
   - Rebuilt nightly and on demand into versioned bucket tables.
   - REPLAY outcomes act as a capped prior (≤ 50 pseudo-counts) and LIVE outcomes update it.

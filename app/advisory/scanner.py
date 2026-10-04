@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import logging
 from collections import deque
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -58,6 +58,28 @@ from app.strategy.registry import StrategyRegistry, StrategySet
 from app.strategy.signal_models import Signal, StrategyContext
 
 log = logging.getLogger(__name__)
+
+
+def strategy_set(config: AppConfig, names: Iterable[str], registry: StrategyRegistry) -> StrategySet:
+    """The named strategies with their ``config.yaml`` params, enabled for advice whatever their trading flag.
+
+    One that cannot be built (e.g. it needs a timeframe that is not enabled) is skipped with a warning, never
+    guessed.
+    """
+    configured = {item.name: item for item in config.strategies.items}
+    built: list[BaseStrategy] = []
+    for name in sorted(names):
+        params = configured[name].params if name in configured else {}
+        one = config.strategies.model_copy(update={"items": [StrategyEntry(name=name, params=params)]})
+        try:
+            built += registry.from_config(
+                StrategiesConfig.model_validate(one.model_dump()),
+                config.timeframes,
+                config.evidence.confluence,
+            ).strategies
+        except ConfigError as exc:
+            log.warning("advisory skips strategy %s: %s", name, exc)
+    return StrategySet(tuple(built), config.evidence.confluence)
 
 
 @dataclass(slots=True)
@@ -144,20 +166,7 @@ class OpportunityScanner:
         return self._plan
 
     def _strategy_set(self, req: ComputeRequirements) -> StrategySet:
-        cfg = self.config
-        configured = {item.name: item for item in cfg.strategies.items}
-        registry = self.strategy_catalog
-        built: list[BaseStrategy] = []
-        for name in sorted(req.strategies):
-            params = configured[name].params if name in configured else {}
-            one = cfg.strategies.model_copy(update={"items": [StrategyEntry(name=name, params=params)]})
-            try:
-                built += registry.from_config(
-                    StrategiesConfig.model_validate(one.model_dump()), cfg.timeframes, cfg.evidence.confluence
-                ).strategies
-            except ConfigError as exc:  # e.g. needs a timeframe that is not enabled: skip, never guess
-                log.warning("scanner skips strategy %s: %s", name, exc)
-        return StrategySet(tuple(built), cfg.evidence.confluence)
+        return strategy_set(self.config, req.strategies, self.strategy_catalog)
 
     # --- scheduling -----------------------------------------------------------------------------------------
 

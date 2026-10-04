@@ -229,16 +229,8 @@ class BacktestEngine:
         result: BacktestResult,
     ) -> None:
         row = frames[self.entry_tf].df.iloc[pos]
-        spread = self.broker.spread_price(symbol, _float_or_none(row["spread"]))
-        bar = Bar(
-            pd.Timestamp(row["open_time"]).to_pydatetime(),
-            t,
-            float(row["open"]),
-            float(row["high"]),
-            float(row["low"]),
-            float(row["close"]),
-            spread,
-        )
+        spread = self.broker.spread_price(symbol, float_or_none(row["spread"]))
+        bar = entry_bar(row, t, spread)
         self.broker.on_bar(symbol, bar)
         try:
             ctx = self._context(symbol, frames, t, bar)
@@ -251,7 +243,7 @@ class BacktestEngine:
         if selected is None:
             return
         spec = self.broker.spec_at(symbol)
-        quote = Quote(symbol, bar.close, bar.close + spread, spread / spec.point, t, 0.0, True)
+        quote = bar_quote(symbol, bar, spec, t)
         account = AccountState(self.broker.funds(), self.broker.broker_positions(), self._loss_status())
         record = self.decisions.decide(
             DecisionRequest(
@@ -294,32 +286,7 @@ class BacktestEngine:
     def _context(
         self, symbol: str, frames: Mapping[Timeframe, AnalyzedFrame], t: datetime, bar: Bar
     ) -> StrategyContext:
-        cfg = self.config
-        evidence = None
-        if self.evidence is not None:
-            evidence = {}
-            for tf, frame in frames.items():
-                n = frame.count_upto(t)
-                window = frame.df.iloc[max(0, n - cfg.timeframes.warmup_bars) : n].reset_index(
-                    names="close_time"
-                )
-                if len(window):
-                    evidence[tf] = self.evidence.evaluate(EvidenceContext(symbol, tf, window, cfg.evidence))
-        spec = self.broker.spec_at(symbol)
-        quote = Quote(symbol, bar.close, bar.close + bar.spread, bar.spread / spec.point, t, 0.0, True)
-        return context_at(
-            frames,
-            symbol=symbol,
-            entry_timeframe=self.entry_tf,
-            higher_timeframe=cfg.timeframes.higher,
-            decision_time=t,
-            now_utc=t,
-            params=cfg.indicators,
-            quote=quote,
-            spec=spec,
-            evidence=evidence,
-            window=cfg.timeframes.warmup_bars,
-        )
+        return bar_context(self.config, frames, symbol, t, bar, self.broker.spec_at(symbol), self.evidence)
 
     def _manage(self, symbol: str, ctx: StrategyContext, bar: Bar) -> None:
         cfg = self.config.position_management
@@ -355,7 +322,60 @@ class BacktestEngine:
         self.board.tick()
 
 
-def _float_or_none(value: object) -> float | None:
+def bar_quote(symbol: str, bar: Bar, spec: SymbolSpec, t: datetime) -> Quote:
+    """The quote at a bar's close: bid = close, ask = close + the bar's spread."""
+    return Quote(symbol, bar.close, bar.close + bar.spread, bar.spread / spec.point, t, 0.0, True)
+
+
+def bar_context(
+    config: AppConfig,
+    frames: Mapping[Timeframe, AnalyzedFrame],
+    symbol: str,
+    t: datetime,
+    bar: Bar,
+    spec: SymbolSpec,
+    evidence_engine: EvidenceEngine | None,
+) -> StrategyContext:
+    """The strategy context at the close *t* of *bar* from frames analyzed once (shared with replay)."""
+    evidence = None
+    if evidence_engine is not None:
+        evidence = {}
+        for tf, frame in frames.items():
+            n = frame.count_upto(t)
+            window = frame.df.iloc[max(0, n - config.timeframes.warmup_bars) : n].reset_index(
+                names="close_time"
+            )
+            if len(window):
+                evidence[tf] = evidence_engine.evaluate(EvidenceContext(symbol, tf, window, config.evidence))
+    return context_at(
+        frames,
+        symbol=symbol,
+        entry_timeframe=config.timeframes.entry,
+        higher_timeframe=config.timeframes.higher,
+        decision_time=t,
+        now_utc=t,
+        params=config.indicators,
+        quote=bar_quote(symbol, bar, spec, t),
+        spec=spec,
+        evidence=evidence,
+        window=config.timeframes.warmup_bars,
+    )
+
+
+def entry_bar(row: pd.Series, t: datetime, spread: float) -> Bar:
+    """An analyzed entry-timeframe row as a :class:`Bar` closing at *t*."""
+    return Bar(
+        pd.Timestamp(row["open_time"]).to_pydatetime(),
+        t,
+        float(row["open"]),
+        float(row["high"]),
+        float(row["low"]),
+        float(row["close"]),
+        spread,
+    )
+
+
+def float_or_none(value: object) -> float | None:
     """A bar's spread field (NaN or missing in some histories) as a float, or None."""
     try:
         f = float(str(value))
