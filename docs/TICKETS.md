@@ -36,7 +36,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 7 — Cloud sync | 7 | 2 | IN PROGRESS |
 | M1 | Phase 8 — Web backend & worker | 10 | 2 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
-| M1 | Phase 9 — PWA frontend | 22 | 2 | IN PROGRESS |
+| M1 | Phase 9 — PWA frontend | 22 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -1217,12 +1217,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-902 — Auth UI
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 802, 901
 
-- [ ] login + TOTP
-- [ ] session-expiry handling
-- [ ] CSRF-aware API client
+- [x] login + TOTP
+- [x] session-expiry handling
+- [x] CSRF-aware API client
 
 #### TAA-903 — App shell
 

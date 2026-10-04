@@ -188,6 +188,7 @@ class TestSession:
         assert body["user"]["username"] == "owner"
         assert body["expires_at"] == (clock.now_utc() + IDLE_TIMEOUT).isoformat()
         assert body["step_up_until"] is None
+        assert body["server_time"] == clock.now_utc().isoformat()
 
     def test_tampered_token_is_rejected(self, client: TestClient, clock: ManualClock) -> None:
         login(client, clock)

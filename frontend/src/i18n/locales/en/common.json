@@ -15,5 +15,26 @@
   "notFound": {
     "title": "Page not found",
     "back": "Back to home"
+  },
+  "auth": {
+    "title": "Sign in",
+    "username": "Username",
+    "password": "Password",
+    "code": "Authenticator code",
+    "codeHint": "6 digits from your authenticator app",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "loading": "Checking your session…",
+    "logout": "Sign out",
+    "signedInAs": "Signed in as {{username}}",
+    "sessionExpired": "Your session has ended. Please sign in again.",
+    "signedOut": "You have signed out.",
+    "errors": {
+      "invalidCredentials": "The username, password or code is incorrect.",
+      "tooManyAttempts": "Too many failed attempts. Try again in {{minutes}} min.",
+      "network": "Cannot reach the server. Check your connection and try again.",
+      "unknown": "Sign-in failed. Please try again.",
+      "unavailable": "Cannot check your session right now. Try reloading the page."
+    }
   }
 }

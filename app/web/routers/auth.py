@@ -86,6 +86,8 @@ def session_payload(auth: AuthService, session: AuthSession) -> dict[str, Any]:
         "absolute_expires_at": session.expires_at.isoformat(),
         "idle_timeout_seconds": int(IDLE_TIMEOUT.total_seconds()),
         "step_up_until": session.step_up_until.isoformat() if session.step_up_until else None,
+        # Lets the PWA measure the limits against the server clock, not a possibly wrong device clock.
+        "server_time": auth.clock.now_utc().isoformat(),
     }
 
 

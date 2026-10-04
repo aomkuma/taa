@@ -1,33 +1,30 @@
 import { screen } from '@testing-library/react';
-import { createMemoryRouter, RouterProvider } from 'react-router';
 
-import { routes } from '@/app/routes';
-import type { Language } from '@/i18n/languages';
-import { renderWithI18n } from '@/test/render';
-
-function renderAt(path: string, language: Language = 'th') {
-  const router = createMemoryRouter(routes, { initialEntries: [path] });
-  return renderWithI18n(<RouterProvider router={router} />, language);
-}
+import { apiError, json, makeSession, mockApi } from '@/test/api';
+import { renderApp } from '@/test/render';
 
 describe('routes', () => {
-  it('renders the home page at /', () => {
-    renderAt('/');
-    expect(screen.getByRole('heading', { level: 1, name: 'TAA' })).toBeInTheDocument();
+  it('renders the home page at / for a signed-in user', async () => {
+    mockApi({ 'GET /auth/session': () => json(makeSession()) });
+    renderApp('/');
+    expect(await screen.findByRole('heading', { level: 1, name: 'TAA' })).toBeInTheDocument();
   });
 
-  it('renders the not-found page for unknown paths, in Thai by default', () => {
-    renderAt('/does-not-exist');
-    expect(screen.getByRole('heading', { name: 'ไม่พบหน้านี้' })).toBeInTheDocument();
+  it('renders the not-found page for unknown paths, in Thai by default', async () => {
+    mockApi({ 'GET /auth/session': () => apiError(401, 'unauthenticated') });
+    renderApp('/does-not-exist');
+    expect(await screen.findByRole('heading', { name: 'ไม่พบหน้านี้' })).toBeInTheDocument();
   });
 
-  it('renders English when the language is en', () => {
-    renderAt('/does-not-exist', 'en');
-    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
+  it('renders English when the language is en', async () => {
+    mockApi({ 'GET /auth/session': () => apiError(401, 'unauthenticated') });
+    renderApp('/does-not-exist', 'en');
+    expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
   });
 
-  it('shows the language switcher in the header', () => {
-    renderAt('/');
-    expect(screen.getByRole('group', { name: 'ภาษา' })).toBeInTheDocument();
+  it('shows the language switcher in the header', async () => {
+    mockApi({ 'GET /auth/session': () => apiError(401, 'unauthenticated') });
+    renderApp('/login');
+    expect(await screen.findByRole('group', { name: 'ภาษา' })).toBeInTheDocument();
   });
 });
