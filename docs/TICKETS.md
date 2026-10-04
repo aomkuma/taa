@@ -33,7 +33,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
-| M1 | Phase 7 — Cloud sync | 7 | 3 | IN PROGRESS |
+| M1 | Phase 7 — Cloud sync | 7 | 4 | IN PROGRESS |
 | M1 | Phase 8 — Web backend & worker | 10 | 2 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 22 | 3 | IN PROGRESS |
@@ -985,10 +985,10 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-704 — Command channel
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** 702, 008
 
-- [ ] long-poll endpoint
+- [x] long-poll endpoint
 - [x] allowlist
 - [x] expiry
 - [x] single-use TOTP verified on the engine

@@ -564,7 +564,10 @@ AI failures never trip trading breakers; they only produce HOLD.
       Re-enabling is local: `python -m app.cli strategy enable NAME --reason ...` (audited).
     - POSITION_CLOSE acts only on the bot's own positions. FLATTEN_ALL activates the kill switch in FLATTEN
       mode; it fails unless `KILL_SWITCH_FLATTEN_ALLOWED=true`, and PAPER positions are flattened too.
-    - The long-poll HTTP route is a thin loop over `CommandQueue.pending` in `app/web`, added after TAA-801.
+    - The long-poll route `GET /api/v1/engine/commands?cursor=` (`app/web/routers/engine.py`, behind
+      `SignedEngine`) loops over `CommandQueue.pending` once a second for up to 25 s: 200
+      `{"commands", "cursor"}` as soon as something is open after the cursor, else 204. The engine waits
+      `command_poll_seconds` + 10 s, so the route answers inside the engine's timeout.
 - **Heartbeats:** every 10 s. The worker raises ENGINE_OFFLINE after 60 s of silence during market hours (Web Push) and
   ENGINE_BACK when the engine resumes.
 - **History:** `scripts/download_history.py` writes local Parquet and uploads closed candles to the cloud in chunks (for

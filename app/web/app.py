@@ -25,7 +25,7 @@ from app.sync.nonces import SqlNonceStore
 from app.web.auth import AuthKeys, AuthService
 from app.web.deps import WEB_AUDIT_CHAIN, EngineLink, WebContext
 from app.web.errors import InternalErrorMiddleware, install_error_handlers
-from app.web.routers import auth, health, ingest
+from app.web.routers import auth, engine, health, ingest
 from app.web.security_headers import BodySizeLimitMiddleware, SecurityHeadersMiddleware
 from app.web.static import mount_pwa
 
@@ -96,6 +96,7 @@ def create_app(
     api.include_router(health.router)
     api.include_router(auth.router)
     api.include_router(ingest.router)
+    api.include_router(engine.router)
     app.include_router(api)
     mount_pwa(app, static_dir or static_root(settings))
 

@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-04, single session on `main`: TAA-703 (ingest API) done. Before it, three parallel
+Last updated: 2026-10-04, single session on `main`: TAA-703 (ingest API) and TAA-704 (long-poll route) done. Before it, three parallel
 sessions were merged: Phase 6C (done), Phase 7 TAA-701, 702, 704 (engine side), Phase 8 TAA-801, 802,
 Phase 9 TAA-901, 902, 915, Phase 10 TAA-1001..1003, and the storage-health fix. No branch holds unmerged
 work. This file holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
@@ -21,10 +21,9 @@ dependencies) and docs/PLAN.md §A13 (cloud sync) and §A14 (web backend); later
 sections (§A15/§A28 PWA, §A16 analytics, §A30 tenancy, §A31 trading profile).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
-Partly done: Phase 7 (701, 702, 703; 704 lacks only the long-poll route), Phase 8 (801, 802), Phase 9 (901,
-902, 915), Phase 10 (1001..1003).
+Partly done: Phase 7 (701..704), Phase 8 (801, 802), Phase 9 (901, 902, 915), Phase 10 (1001..1003).
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Start with TAA-704 (the long-poll route).
+"Next work" list in docs/HANDOFF.md. Start with TAA-707 (advisory sync).
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Update docs/HANDOFF.md at the end of the
 session. Stop for review at the end of Milestone 1, or at any phase boundary if I ask.
@@ -39,7 +38,7 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
   (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
   (TAA-6A1..6A5, symbol universe & suitability ranking) and Phase 6B (TAA-6B1..6B5, watchlists,
   opportunities & alert windows), Phase 6C (TAA-6C1..6C5, shadow trades, accuracy & calibration).
-- **In progress (progress table):** Phase 7 3/7 (701, 702, 703; 704 has 5/6 items), Phase 8 2/10 (801, 802),
+- **In progress (progress table):** Phase 7 4/7 (701..704), Phase 8 2/10 (801, 802),
   Phase 9 3/22 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. The order of the
   remaining tickets: "Next work" below.
 - **Checks:** 2270 tests on `c85d539` (2269 passed + 1 failure from a memory-allocation error under parallel
@@ -78,6 +77,8 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
       `app/web/routers/ingest.py` behind `SignedEngine` (`app/web/deps.py`); `WebSettings` gains
       `ENGINE_ID`, `ENGINE_HMAC_SECRET`, `ENGINE_HMAC_SECRET_PREVIOUS`. The sender parks events the cloud
       rejects as DEAD at once; batches are capped at 1000 events and `sync.max_batch_bytes`.
+    - TAA-704 route: `GET /api/v1/engine/commands?cursor=` (`app/web/routers/engine.py`): 200 with
+      `commands` + `cursor`, or 204 after 25 s; tested against the engine's own `CommandPoller`.
     - `app/security/totp.py` + `app/sync/commands.py`: long-poll client thread, engine-loop processing,
       allowlist, expiry, single-use TOTP, results as `command_result` outbox events; `command_log`;
       `app/sync/command_queue.py` (cloud queue, `engine_commands`, migration 0016); strategy disable persisted
@@ -327,7 +328,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 7 → 8 → 8A → 9 → 10 → 11; each step's dependencies are done by the time it is reached):
 
 1. ~~TAA-703 ingest API~~ (done)
-2. TAA-704 long-poll route (completes 704)
+2. ~~TAA-704 long-poll route~~ (done)
 3. TAA-707 advisory sync (engine producers, advisory-config client, ingest of the new event types)
 4. TAA-706 candle & history sync
 5. TAA-803 read APIs, then TAA-804 SSE
@@ -351,9 +352,6 @@ Planned details:
   option to `ReplicaSpec` (updates touching only them emit nothing). Add a sample row per table to
   `tests/sync_data.py` (a test enforces it). The advisory-config client uses an ETag and falls back to the
   cache, then local preferences.
-- **TAA-704 route:** `GET /api/v1/engine/commands?cursor=` behind `SignedEngine` (`app/web/deps.py`; the
-  signature covers the query string), a thin loop over `CommandQueue.pending` (`ctx.engine.commands`) for up
-  to 25 s; poll the database in a thread (`run_in_threadpool`) between async sleeps.
 - **TAA-1004 preparation:** see "Notes from Phase 10".
 
 ## Parallel sessions (rules learned on 2026-10-04)
