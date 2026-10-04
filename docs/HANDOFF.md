@@ -1,6 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-04, after Phase 6B (watchlists, opportunities & alert windows; TAA-6B1..6B5 done). This file holds **state
+Last updated: 2026-10-04, after Phase 6C (TAA-6C1..6C5; one 6C5 item waits for the phase10-analytics merge) and
+the Phase 9 frontend foundation (TAA-901 scaffold, TAA-915 i18n, built in a parallel worktree and merged). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -15,7 +16,9 @@ Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progres
 relevant sections of docs/PLAN.md (§A27 shadow trades & calibration, §A26 opportunities, §A29 evidence model).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B and 12 (DEMO execution, pulled forward on the user's request) are
-DONE. Next: Phase 6C (shadow trades, accuracy & calibration, TAA-6C1..), then 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+DONE. Phase 6C is done except the SHADOW-scope item of TAA-6C5, which is built on branch phase10-analytics.
+Phase 9 has its foundation (TAA-901, TAA-915 done; frontend/). Check open branches/worktrees (git worktree list)
+before starting a ticket another session may own. Next: 7 -> 8 -> 8A -> the rest of 9 -> 10 -> 11.
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
@@ -30,8 +33,13 @@ any phase boundary if I ask.
   (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
   (TAA-6A1..6A5, symbol universe & suitability ranking) and Phase 6B (TAA-6B1..6B5, watchlists,
   opportunities & alert windows).
-- **Checks:** 1895 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
-  suite takes ~2.5 min, with backtest and engine tests the slow part. ruff,
+- **In progress:** Phase 6C (all done except TAA-6C5 item 2, "shadow trades in the analytics trade builder",
+  which lives on branch `phase10-analytics` as part of TAA-1001: tick it when that branch is merged), Phase 9
+  (TAA-901 and TAA-915 done; the remaining pages need the Phase 8 API), Phase 10 on `phase10-analytics`, and
+  Phase 8 in a separate session (worktree `taa-auth`, branch `phase8-auth`). The main session owns Phase 7
+  only; tickets that need Phase 8 pieces (703 needs 801, 705 needs 808) wait for that branch.
+- **Checks:** 1983 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
+  suite takes ~5.5 min, with backtest and engine tests the slow part. ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
@@ -46,9 +54,9 @@ any phase boundary if I ask.
 - **Built:**
   - config (pydantic-settings + `config.yaml`, percent risk units, hard ceilings)
   - secrets (`keyring:` indirection, log redaction), JSON logging
-  - SQLite/Postgres storage with Alembic (migrations 0001–0010), hash-chained audit log
+  - SQLite/Postgres storage with Alembic (migrations 0001–0013), hash-chained audit log
   - kill switch; CLI (`config`, `db`, `audit`, `kill`, `doctor`, `backtest`, `breaker`, `demo-report`,
-    `advisory rank`); CI config
+    `advisory rank|replay|calibrate`); CI config
   - read-only MT5 client and gateway (explicit login, account verification, order functions blocked,
     `symbols(group)`, `ticks_range`)
   - multi-asset FakeMT5 (schedules, ticks, fixed and FBS-tiered leverage)
@@ -196,6 +204,37 @@ any phase boundary if I ask.
       windows, rate limits) and TH/EN push payloads incl. the silent replacement; imports no broker code
     - the engine runs scanner + lifecycle every cycle behind the advisory error boundary
       (`advisory.scanner.enabled`); trading engine tests switch the scanner off
+  - shadow trades, accuracy & calibration (Phase 6C, PLAN §A27, §A29; formulas in `docs/ADVISORY.md`):
+    - `shadow.py` (pure): entry at the decision's quote + slippage, PLAN and MANAGED variants, closed-M1
+      resolution with tick tie-breaks / SL-first `AMBIGUOUS`, entry-minute ticks or `PARTIAL_BAR`, `GAP`, 72 h
+      time stop, commission + swap (rollover days), broker P/L, R, MAE/MFE, `VOID`
+    - `shadow_tracker.py` (engine): opens rows for every opportunity (`shadow_trades`, migration 0012, which
+      also adds the opportunity quote and `alerted_at`), copies alerted/followed, resolves per M1 cursor
+      every `poll_seconds`, restart catch-up from history
+    - `replay.py` + `app.cli advisory replay`: the scanner over stored history (backtest context code,
+      ADVISORY profile, flat account), M1/M5 resolution, `source=REPLAY`, idempotent and deterministic;
+      `--detectors` narrows the ~1 s/bar evidence cost
+    - `calibration.py` + `app.cli advisory calibrate`: bucket + evidence model from CLOSED PLAN rows,
+      selection needs a 0.5% relative Brier gain, out-of-sample Brier + reliability, versioned
+      `calibration_tables` / `evidence_model_versions` (migration 0013, plus
+      `opportunities.calibration_version`), nightly rebuild on a worker thread, hourly retry after a failure
+    - attribution fix: a detector that did not fire is an observed zero; `ctx:n_families` adds imputed
+      players' activity rates, so useless theories get ~0 points
+    - `stats.py` (pure, for the cloud too): hit rate + Wilson CI, expectancy, PF, total hypothetical P/L,
+      follow-all curve + max DD, breakdowns, in-sample threshold explorer, LIVE/REPLAY sections, theory
+      scoreboard; `EdgeBook` feeds ranking S8 (REPLAY capped)
+  - PWA frontend foundation (Phase 9, `frontend/`, PLAN §A15/§A28; commands and conventions in
+    `frontend/README.md` and CODING_STANDARDS §9):
+    - TAA-901: Vite 8 + React 19 + TypeScript 6.0 (strict) + Tailwind 4 + React Router + TanStack Query + zod +
+      vite-plugin-pwa (app shell precache, `/api/` excluded from the navigation fallback, external
+      `registerSW.js` for the CSP); ESLint (type-aware) + Prettier + Vitest; dev proxy `/api` →
+      `127.0.0.1:8000` (`TAA_API_TARGET` overrides); `apiGet` validates every response with zod; only a
+      placeholder home page and a not-found page so far
+    - TAA-915: react-i18next (`th` default, `en`), `LanguageSwitcher` (sets `<html lang>`, remembers the choice
+      in localStorage), bundled Noto Sans Thai (variable, Thai + Latin), `format.ts` / `useFormat()` (Thai
+      Gregorian dates, Asia/Bangkok, locale-aware numbers/money/percent, "—" for missing values, naive
+      datetimes rejected), `explain:<key>` catalogs copied from `explanations.py`, the `codes:<kind>.<CODE>`
+      key scheme (keys only: untranslated codes render raw), parity tests against the backend enums
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -211,10 +250,14 @@ any phase boundary if I ask.
       on the first run)
   - the demo account also carries a manual BTCUSD test position (magic 0). Per PLAN, manual positions count
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
-- **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
-  remote yet. The working tree is clean.
-- **Next step:** Phase 6C (shadow trades, accuracy & calibration), starting with TAA-6C1. Opportunities
-  already store `signal` and `features`; `confidence.Outcome` is the training row shadow outcomes must feed.
+- **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). A
+  remote `origin` exists; `main` is ahead of `origin/main` (push only when the user asks). Other worktrees:
+  `phase10-analytics` (TAA-1001..1003, `C:\Users\korap\taa-phase10`) and `phase8-auth` (Phase 8,
+  `C:\Users\korap\taa-auth`). Branch `phase9-frontend` (TAA-901, TAA-915, docs) is merged into `main`; its worktree
+  `C:\Users\korap\taa-phase9` can be removed with `git worktree remove ..\taa-phase9`.
+- **Next step:** Phase 7 (cloud sync) in this session: TAA-701, 702 and 704 first; 703/705/706/707 after the
+  Phase 8 branch lands (801, 808). Migration numbers can collide with the Phase 8 branch: renumber the later
+  one's `down_revision` at merge time.
 
 ## Notes for the next session
 
@@ -265,6 +308,12 @@ any phase boundary if I ask.
     run took 9.5 min; the greedy S7 pass was O(n³) with `DataFrame.at` and is now incremental (12 s for
     the whole universe). Refreshes are time-budgeted per engine cycle (`max_refresh_seconds`), because a cold
     terminal needs ~1 s per symbol to sync history. Open markets rank first (on Sundays: crypto).
+- Notes from Phase 6C:
+  - Shadow results have only run on FakeMT5. On a real terminal, M1 history and `copy_ticks_range` need the
+    symbol synced; failures are retried on the next poll.
+  - Replay on real data needs M1 or M5 in `data/history` (download it first). Use `--detectors` to keep long
+    windows affordable.
+  - Win probability is read in the cloud from the calibration version stamped on each opportunity (8A4).
 - Notes from Phase 6B:
   - Hard ADVISORY failures create no opportunity (their reasons stay in `decision_records`); recorded in
     PLAN §A26. The scanner uses `timeframes` from `config.yaml`; per-user holding styles do not change the
@@ -274,6 +323,16 @@ any phase boundary if I ask.
   - Conflict policy: `TheoryPreferences.conflict_policy` unless the trading profile overrides it explicitly;
     minimum supporting families = max(theories, profile). BLOCK blocks on a conflict of quality ≥ 0.6.
   - Non-owner users get no lot in pushes until account profiles exist (8A).
+- Notes from Phase 9 (frontend foundation):
+  - The frontend parity tests (`frontend/src/i18n/codes.test.ts`, `explain.test.ts`) read `app/risk/reasons.py`,
+    `app/strategy/signal_models.py`, `app/advisory/{suitability,statuses,lifecycle,shadow,explanations}.py` and
+    `app/core/enums.py`. Changing those enums or explanation keys/placeholders needs a matching change in
+    `frontend/src/i18n/` (`npm run test` in `frontend/`). The Python suite does not run them.
+  - TypeScript is pinned to 6.0.x: typescript-eslint 8 does not support TypeScript 7 yet.
+  - The `codes` namespace has no texts yet (the ticket asked for keys only); add TH/EN texts with the pages
+    that show the codes (TAA-908 decisions, TAA-917 opportunities, TAA-919 accuracy).
+  - The app icon is a placeholder SVG; maskable/Apple icons, API caching rules and the install prompt are
+    TAA-914. FastAPI does not serve `frontend/dist` yet (Phase 8).
 - Risk-layer test helpers: `tests/risk_data.py` (`TickCalculator`, `funds`, `XAUUSD_SPEC`).
 - Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
   `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.

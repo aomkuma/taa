@@ -554,6 +554,9 @@ AI failures never trip trading breakers; they only produce HOLD.
   - Lightweight Charts 5 for price, indicator, equity and drawdown charts (attribution kept), plus small SVG components for
     categorical analytics, using one accessible color system in light and dark
   - Built output is served by FastAPI; dev uses the Vite proxy to local FastAPI
+  - Code lives in `frontend/` (TAA-901). The build has no inline scripts or styles and bundles every asset
+    (fonts included), so it runs under the §A14 CSP. A response that fails its zod schema is an error, never
+    rendered; queries retry only network and 5xx failures, mutations never.
 - **PWA behavior:**
   - manifest: standalone, maskable and Apple icons
   - the service worker precaches the app shell
@@ -931,11 +934,35 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
 - **Historical replay (`replay.py`):** replays the scanner over N months of history per symbol, reusing the backtest
   components (resolution on M5/M1). Outcomes are tagged `source=REPLAY` and bootstrap calibration. Runs via the
   local CLI or a cloud worker job.
+  - (TAA-6C2 decisions) `python -m app.cli advisory replay --server ... --symbols ... [--months 6 | --start/--end]
+    [--equity] [--strategies] [--detectors ids|none]`:
+    - The ADVISORY decision runs at the bar-close quote for a flat account of `--equity` (default
+      `backtest.initial_balance`; constant, no compounding). Every entry signal counts, without arbitration.
+    - Resolution uses the finest stored of M1/M5 and fails closed without either. History has no ticks, so SL/TP
+      ties are SL first (`AMBIGUOUS`). Money uses the conversion rate at signal time.
+    - Rows: opportunity id `replay:<signal key>`. Reruns add only new signals; the same inputs give identical rows.
+      Trades still open when the data ends are not stored.
+    - Evidence costs about 1 s per bar with every detector; `--detectors` narrows the plan for long windows.
 - **Calibration (`calibration.py`):**
   - Rebuilt nightly and on demand into versioned bucket tables.
   - REPLAY outcomes act as a capped prior (≤ 50 pseudo-counts) and LIVE outcomes update it.
   - Also produces the Brier score and reliability data.
   - Every opportunity stores the `calibration_version` it used.
+  - (TAA-6C3 decisions) `calibration.py`; config `advisory.calibration`:
+    - Training rows are CLOSED `PLAN` shadow trades. Win = TP first; a time stop counts as a loss, matching
+      the hit-rate definition. VOID trades and rows without a planned RR are skipped.
+    - Brier and reliability bins come from the walk-forward (out-of-sample) predictions of the selected model.
+    - Versions are named `<UTC timestamp>-<content hash>`; the newest `keep_versions` (30) are kept. Rebuilt daily
+      after `nightly_hour_utc`, at the first start without a version, or by `app.cli advisory calibrate`. In
+      the engine the build runs on a worker thread. A failed build keeps the previous version and retries after
+      an hour.
+    - The evidence model must beat the bucket Brier by `min_brier_improvement` (0.5% relative) out of sample, so
+      a model without real signal never wins on noise.
+    - Attribution fix (found by the 6C3 tests): a detector that did not fire is an observed zero, not unknown.
+      Only Shapley players left out of a coalition and detectors the user disabled take the training mean, and
+      `ctx:n_families` adds those imputed players' training activity rates. Before the fix a useless detector
+      could get several points of credit. With every theory enabled, the explained p now equals the model's
+      prediction.
 - **Accuracy statistics (`stats.py`, shared with cloud analytics):**
   - Core metrics:
     - hit rate (TP-first ÷ resolved) with Wilson CI
@@ -947,6 +974,14 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     agree/disagree (M2).
   - **Threshold explorer:** sweeps x and is marked in-sample.
   - Live and replay results are always reported separately.
+  - (TAA-6C4 decisions) `stats.py` is pure (the cloud reuses it) and reads PLAN-variant CLOSED shadow trades.
+    - Expectancy uses `r_net` (after costs). Trades without a lot count in R only.
+    - Profit factor is None without a loss (undefined, not infinite).
+    - The follow-all curve is realized in exit order from 0.
+    - A trade counts in every watchlist that holds its symbol.
+    - The scoreboard counts a trade once per family, however many of the family's detectors fired.
+      Conflicting evidence is not support.
+    - The AI agree/disagree breakdown waits for M2.
 - **Feedback loops:** accuracy feeds S8 (historical edge) in the ranking and the win-probability estimate. Shadow
   trades also enter `app/analytics` as scope SHADOW, so styles and P/L attribution work for them too.
 
@@ -954,9 +989,19 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
 
 - **Localization:** react-i18next with `th` (default) and `en`.
   - Dates via `th-TH-u-ca-gregory` (R27), with Asia/Bangkok as the default display timezone.
+    - The Buddhist era is opt-in per call; English uses `en-GB` (day first, 24-hour).
+    - API datetimes must carry `Z` or an offset; the PWA rejects naive values instead of guessing a zone.
   - Self-hosted Noto Sans Thai.
   - Server-side TH/EN templates for push.
-  - Explanation and reason codes map to translation keys.
+  - Explanation and reason codes map to translation keys (TAA-915, `frontend/src/i18n/`):
+    - `explain:<key>` for `app/advisory/explanations.py` keys; the PWA renders them with the same parameters
+      and formats money parameters locale-aware with two decimals.
+    - `codes:<kind>.<CODE>` for reason codes, gates and gate statuses, opportunity / window / invalidation
+      reasons, shadow statuses and exit reasons. `CODE:detail` uses the key of `CODE` with `{{detail}}`.
+    - A key without a translation renders as the raw code, so nothing is hidden.
+    - Frontend parity tests read the backend enums and explanation texts and fail on drift.
+  - Numbers and money are locale-aware (money with the ISO currency code). Missing or non-finite values show
+    "—", never 0. Percent inputs are percent units, as in the backend.
 - **New pages:**
 
   | Page | Content |

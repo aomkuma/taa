@@ -32,11 +32,11 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
-| M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 1 | IN PROGRESS |
+| M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 4 | IN PROGRESS |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
-| M1 | Phase 9 — PWA frontend | 22 | 0 | TODO |
+| M1 | Phase 9 — PWA frontend | 22 | 2 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -899,53 +899,53 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6C2 — Historical replay
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 502, 6C1
 
-- [ ] replay the scanner over N months per symbol using backtest components
-- [ ] M5/M1 resolution
-- [ ] `source=REPLAY`
-- [ ] `app.cli advisory replay`
-- [ ] determinism test
+- [x] replay the scanner over N months per symbol using backtest components
+- [x] M5/M1 resolution
+- [x] `source=REPLAY`
+- [x] `app.cli advisory replay`
+- [x] determinism test
 
 #### TAA-6C3 — Calibration & evidence-model builder
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 6C1
 
-- [ ] bucket tables from LIVE + REPLAY (replay as a capped prior)
-- [ ] empirical-Bayes pooling
-- [ ] versioned `calibration_tables`
-- [ ] Brier score + reliability data
-- [ ] (rev. 2) evidence-model training per strategy family × asset class (replay down-weighted) with walk-forward CV and model selection
-- [ ] versioned `evidence_model_versions`
-- [ ] nightly and on-demand rebuild
-- [ ] tests: synthetic known-p outcomes are recovered, synthetic informative/uninformative detectors get the right sign/≈0 weight
+- [x] bucket tables from LIVE + REPLAY (replay as a capped prior)
+- [x] empirical-Bayes pooling
+- [x] versioned `calibration_tables`
+- [x] Brier score + reliability data
+- [x] (rev. 2) evidence-model training per strategy family × asset class (replay down-weighted) with walk-forward CV and model selection
+- [x] versioned `evidence_model_versions`
+- [x] nightly and on-demand rebuild
+- [x] tests: synthetic known-p outcomes are recovered, synthetic informative/uninformative detectors get the right sign/≈0 weight
 
 #### TAA-6C4 — Accuracy statistics & theory scoreboard
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 6C1
 
-- [ ] hit rate with Wilson CI
-- [ ] expectancy (R, money)
-- [ ] PF
-- [ ] total hypothetical P/L at historical lot sizes
-- [ ] follow-all equity curve + max DD
-- [ ] breakdowns (symbol, strategy, asset class, session, bucket, watchlist, alerted/followed)
-- [ ] threshold explorer (in-sample warning)
-- [ ] live/replay separation
-- [ ] (rev. 2) **theory scoreboard** per detector/family × asset class × TF (hit rate, expectancy, lift, n)
-- [ ] tests
+- [x] hit rate with Wilson CI
+- [x] expectancy (R, money)
+- [x] PF
+- [x] total hypothetical P/L at historical lot sizes
+- [x] follow-all equity curve + max DD
+- [x] breakdowns (symbol, strategy, asset class, session, bucket, watchlist, alerted/followed)
+- [x] threshold explorer (in-sample warning)
+- [x] live/replay separation
+- [x] (rev. 2) **theory scoreboard** per detector/family × asset class × TF (hit rate, expectancy, lift, n)
+- [x] tests
 
 #### TAA-6C5 — Advisory integration & docs
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 6C3, 6C4, 6A4
 
-- [ ] accuracy feeds ranking S8 and win probability
+- [x] accuracy feeds ranking S8 and win probability
 - [ ] shadow trades accepted by the analytics trade builder (scope SHADOW)
-- [ ] `docs/ADVISORY.md` (formulas, definitions, baselines, assumptions, caveats)
+- [x] `docs/ADVISORY.md` (formulas, definitions, baselines, assumptions, caveats)
 
 ### Phase 7 — Cloud sync
 
@@ -1208,12 +1208,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-901 — Frontend scaffold
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** —
 
-- [ ] Vite + React + TS + Tailwind + Router + TanStack Query + zod + vite-plugin-pwa
-- [ ] ESLint, Prettier, Vitest
-- [ ] dev proxy
+- [x] Vite + React + TS + Tailwind + Router + TanStack Query + zod + vite-plugin-pwa
+- [x] ESLint, Prettier, Vitest
+- [x] dev proxy
 
 #### TAA-902 — Auth UI
 
@@ -1350,15 +1350,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-915 — (rev. 2) i18n foundation
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 901
 
-- [ ] react-i18next (`th` default, `en`)
-- [ ] language switcher
-- [ ] self-hosted Noto Sans Thai
-- [ ] `th-TH-u-ca-gregory` dates with Asia/Bangkok display tz (Buddhist era optional)
-- [ ] translation keys for reason codes and explanations
-- [ ] locale-aware numbers/currency
+- [x] react-i18next (`th` default, `en`)
+- [x] language switcher
+- [x] self-hosted Noto Sans Thai
+- [x] `th-TH-u-ca-gregory` dates with Asia/Bangkok display tz (Buddhist era optional)
+- [x] translation keys for reason codes and explanations
+- [x] locale-aware numbers/currency
 
 #### TAA-916 — (rev. 2) Symbol Ranking page
 

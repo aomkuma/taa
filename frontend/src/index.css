@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Self-hosted Noto Sans Thai (bundled from @fontsource-variable, imported in main.tsx); it covers Latin too. */
+  --font-sans: 'Noto Sans Thai Variable', ui-sans-serif, system-ui, sans-serif;
+}
