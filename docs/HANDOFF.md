@@ -12,10 +12,11 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ```text
 Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
-relevant sections of docs/PLAN.md (§A29 evidence engine, §A31 trading profile). Follow CLAUDE.md and
-docs/CODING_STANDARDS.md.
+relevant sections of docs/PLAN.md (§A27 shadow trades & calibration, §A26 opportunities, §A29 evidence model).
+Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B and 12 (DEMO execution, pulled forward on the user's request) are
-DONE. Next: Phase 6C (shadow trades, accuracy & calibration, TAA-6C1..), then 7 -> 8 -> 8A -> 9 -> 10 -> 11. LIVE stays disabled until Phase 14 and an explicit go-ahead.
+DONE. Next: Phase 6C (shadow trades, accuracy & calibration, TAA-6C1..), then 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
 ```
