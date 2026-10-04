@@ -373,6 +373,12 @@ def cmd_advisory_calibrate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_web(args: argparse.Namespace) -> int:
+    from app.cli.web import run
+
+    return run(args, out=sys.stdout)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="TAA operator commands")
     parser.add_argument("--env-file", default=".env")
@@ -465,6 +471,17 @@ def build_parser() -> argparse.ArgumentParser:
     cal = adv_sub.add_parser("calibrate", help="rebuild the win-probability calibration from shadow trades")
     cal.add_argument("--server", default=None, help="trade server (default: MT5_SERVER)")
     cal.set_defaults(func=cmd_advisory_calibrate)
+
+    web = sub.add_parser("web", help="web service users (there is no public sign-up; TOTP is enrolled here)")
+    web_sub = web.add_subparsers(dest="web_command", required=True)
+    cu = web_sub.add_parser("create-user", help="create a user: password prompt + TOTP enrollment")
+    cu.add_argument("username")
+    cu.add_argument("--role", choices=["OWNER", "ADMIN", "SUBSCRIBER"], default="OWNER")
+    cu.set_defaults(func=cmd_web)
+    rt = web_sub.add_parser("reset-totp", help="enroll a new TOTP secret and end the user's sessions")
+    rt.add_argument("username")
+    rt.set_defaults(func=cmd_web)
+    web_sub.add_parser("list-users", help="list web users").set_defaults(func=cmd_web)
     return parser
 
 

@@ -18,9 +18,10 @@ from app.config import REPO_ROOT, WebSettings
 from app.core.clock import Clock, SystemClock
 from app.storage.audit import AuditLog
 from app.storage.database import Database, resolve_db_url
+from app.web.auth import AuthKeys, AuthService
 from app.web.deps import WEB_AUDIT_CHAIN, WebContext
 from app.web.errors import InternalErrorMiddleware, install_error_handlers
-from app.web.routers import health
+from app.web.routers import auth, health
 from app.web.security_headers import BodySizeLimitMiddleware, SecurityHeadersMiddleware
 from app.web.static import mount_pwa
 
@@ -42,11 +43,14 @@ def create_app(
     """Build the app. Tests inject *db*, *clock* and *static_dir*; production derives them from *settings*."""
     database = db or Database(resolve_db_url(settings.DATABASE_URL))
     clock = clock or SystemClock()
+    audit = AuditLog(database, WEB_AUDIT_CHAIN, clock)
+    keys = AuthKeys(settings.WEB_SESSION_SECRET.get_secret_value())
     ctx = WebContext(
         settings=settings,
         db=database,
         clock=clock,
-        audit=AuditLog(database, WEB_AUDIT_CHAIN, clock),
+        audit=audit,
+        auth=AuthService(database, clock, audit, keys),
     )
 
     @asynccontextmanager
@@ -70,6 +74,7 @@ def create_app(
 
     api = APIRouter(prefix=API_PREFIX)
     api.include_router(health.router)
+    api.include_router(auth.router)
     app.include_router(api)
     mount_pwa(app, static_dir or static_root(settings))
 

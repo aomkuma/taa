@@ -787,6 +787,8 @@ ENV_OVERRIDES: dict[str, tuple[str, str]] = {
     "MAX_SPREAD_POINTS": ("risk", "max_spread_points"),
 }
 
+WEB_SECRET_MIN_LENGTH = 32
+
 # Origins the PWA is served from during local development: the Vite dev server and `python -m app.web`.
 WEB_DEV_ORIGINS = (
     "http://127.0.0.1:5173",
@@ -813,6 +815,9 @@ class WebSettings(BaseSettings):
     WEB_STATIC_DIR: str = "frontend/dist"
     PORT: int = Field(default=8000, ge=1, le=65535)
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    # Key material for session-token hashing, CSRF tokens and TOTP secrets at rest (app.security.crypto).
+    # At least 32 characters; rotating it ends all sessions and requires TOTP re-enrollment.
+    WEB_SESSION_SECRET: SecretStr
 
     @field_validator("WEB_PUBLIC_ORIGIN")
     @classmethod
@@ -1034,4 +1039,7 @@ def load_web_settings(
         for name in WebSettings.model_fields
         if isinstance(value := getattr(web, name), SecretStr)
     }
-    return web.model_copy(update=updates) if updates else web
+    web = web.model_copy(update=updates)
+    if len(web.WEB_SESSION_SECRET.get_secret_value()) < WEB_SECRET_MIN_LENGTH:
+        raise ConfigError(f"WEB_SESSION_SECRET must have at least {WEB_SECRET_MIN_LENGTH} characters")
+    return web

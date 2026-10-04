@@ -3,17 +3,29 @@ from __future__ import annotations
 from collections.abc import Iterator
 from pathlib import Path
 
+import httpx
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.config import WebSettings
 from app.core.clock import ManualClock
+from app.security import web_totp
 from app.storage.database import Database
+from app.storage.models import UserRow
 from app.web.app import create_app
+from app.web.auth import AuthService
 
-DEV_ENV = {"WEB_ENV": "development"}
-PROD_ENV = {"WEB_ENV": "production", "WEB_PUBLIC_ORIGIN": "https://taa.example.com"}
+SESSION_SECRET = "test-web-session-secret-0123456789abcdef"
+DEV_ENV = {"WEB_ENV": "development", "WEB_SESSION_SECRET": SESSION_SECRET}
+PROD_ENV = {
+    "WEB_ENV": "production",
+    "WEB_PUBLIC_ORIGIN": "https://taa.example.com",
+    "WEB_SESSION_SECRET": SESSION_SECRET,
+}
+DEV_ORIGIN = "http://127.0.0.1:5173"
+TOTP_SECRET = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP"
+PASSWORD = "correct horse battery staple"
 
 
 @pytest.fixture
@@ -42,6 +54,41 @@ def app(db: Database, clock: ManualClock, static_dir: Path) -> FastAPI:
 
 @pytest.fixture
 def client(app: FastAPI) -> Iterator[TestClient]:
-    # https: session cookies are Secure, so the test client must look like a TLS origin.
+    # https: production session cookies are Secure, so the test client must look like a TLS origin.
     with TestClient(app, base_url="https://testserver") as test_client:
         yield test_client
+
+
+@pytest.fixture
+def auth(app: FastAPI) -> AuthService:
+    service: AuthService = app.state.ctx.auth
+    return service
+
+
+@pytest.fixture
+def owner(auth: AuthService) -> UserRow:
+    return auth.create_user("owner", PASSWORD, TOTP_SECRET)
+
+
+def current_code(clock: ManualClock, secret: str = TOTP_SECRET) -> str:
+    return web_totp.code_at(secret, web_totp.time_step(clock.now_utc()))
+
+
+def login(
+    client: TestClient,
+    clock: ManualClock,
+    *,
+    username: str = "owner",
+    password: str = PASSWORD,
+    code: str | None = None,
+    origin: str | None = DEV_ORIGIN,
+) -> httpx.Response:
+    headers = {"Origin": origin} if origin else {}
+    body = {"username": username, "password": password, "code": code or current_code(clock)}
+    return client.post("/api/v1/auth/login", json=body, headers=headers)
+
+
+def mutation_headers(client: TestClient, origin: str = DEV_ORIGIN) -> dict[str, str]:
+    """Origin + CSRF token of the client's current session."""
+    token = client.get("/api/v1/auth/session").json()["csrf_token"]
+    return {"Origin": origin, "X-CSRF-Token": token}

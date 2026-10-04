@@ -34,7 +34,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 4 | IN PROGRESS |
 | M1 | Phase 7 — Cloud sync | 7 | 2 | IN PROGRESS |
-| M1 | Phase 8 — Web backend & worker | 10 | 1 | IN PROGRESS |
+| M1 | Phase 8 — Web backend & worker | 10 | 2 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 22 | 2 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
@@ -1040,17 +1040,17 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-802 — Authentication
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 801
 
-- [ ] argon2id users
-- [ ] TOTP enrollment
-- [ ] server-side sessions
-- [ ] CSRF
-- [ ] rate limit and lockout
-- [ ] step-up
-- [ ] `app.cli web create-user`
-- [ ] tests
+- [x] argon2id users
+- [x] TOTP enrollment
+- [x] server-side sessions
+- [x] CSRF
+- [x] rate limit and lockout
+- [x] step-up
+- [x] `app.cli web create-user`
+- [x] tests
 
 #### TAA-803 — Read APIs
 

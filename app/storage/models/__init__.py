@@ -23,6 +23,7 @@ from app.storage.models.system import (
     KillSwitchEvent,
     Run,
 )
+from app.storage.models.web import LoginThrottleRow, SessionRow, UserRow
 
 __all__ = [
     "AuditChainHead",
@@ -39,6 +40,7 @@ __all__ = [
     "HistoryCandle",
     "IngestNonceRow",
     "KillSwitchEvent",
+    "LoginThrottleRow",
     "OpportunityRow",
     "OrderIntentRow",
     "OutboxEventRow",
@@ -50,8 +52,10 @@ __all__ = [
     "RiskDeal",
     "RiskState",
     "Run",
+    "SessionRow",
     "ShadowTradeRow",
     "SuitabilitySnapshotRow",
     "SymbolCatalogRow",
+    "UserRow",
     "utcnow",
 ]

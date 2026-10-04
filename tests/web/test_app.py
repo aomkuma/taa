@@ -15,15 +15,18 @@ from app.core.clock import ManualClock
 from app.core.errors import ConfigError
 from app.storage.database import Database
 from app.web.security_headers import CONTENT_SECURITY_POLICY, DEFAULT_MAX_BODY_BYTES
-from tests.web.conftest import PROD_ENV, make_app
+from tests.web.conftest import DEV_ENV, PROD_ENV, SESSION_SECRET, make_app
 
 
 class TestSettings:
     def test_production_is_the_default_and_needs_an_https_origin(self) -> None:
         with pytest.raises(ConfigError, match="WEB_PUBLIC_ORIGIN"):
-            load_web_settings(env_file=None, environ={})
+            load_web_settings(env_file=None, environ={"WEB_SESSION_SECRET": SESSION_SECRET})
         with pytest.raises(ConfigError, match="WEB_PUBLIC_ORIGIN"):
-            load_web_settings(env_file=None, environ={"WEB_PUBLIC_ORIGIN": "http://taa.example.com"})
+            load_web_settings(
+                env_file=None,
+                environ={"WEB_PUBLIC_ORIGIN": "http://taa.example.com", "WEB_SESSION_SECRET": SESSION_SECRET},
+            )
 
     def test_production_accepts_only_its_origin(self) -> None:
         settings = load_web_settings(env_file=None, environ=PROD_ENV)
@@ -31,13 +34,13 @@ class TestSettings:
         assert settings.allowed_origins == frozenset({"https://taa.example.com"})
 
     def test_development_adds_the_local_dev_origins(self) -> None:
-        settings = load_web_settings(env_file=None, environ={"WEB_ENV": "development"})
+        settings = load_web_settings(env_file=None, environ=DEV_ENV)
         assert settings.allowed_origins == frozenset(WEB_DEV_ORIGINS)
 
     @pytest.mark.parametrize("origin", ["https://taa.example.com/app", "taa.example.com", "ftp://x.y"])
     def test_origin_must_be_scheme_and_host(self, origin: str) -> None:
         with pytest.raises(ConfigError):
-            load_web_settings(env_file=None, environ={"WEB_ENV": "development", "WEB_PUBLIC_ORIGIN": origin})
+            load_web_settings(env_file=None, environ={**DEV_ENV, "WEB_PUBLIC_ORIGIN": origin})
 
     def test_trailing_slash_is_dropped(self) -> None:
         settings = load_web_settings(
@@ -51,6 +54,18 @@ class TestSettings:
             "TRADING_MODE=PAPER\nWEB_ENV=development\nPORT=9000\nWEB_TYPO=1\n", encoding="utf-8"
         )
         assert unknown_env_file_keys(env_file) == ["WEB_TYPO"]
+
+    def test_session_secret_is_required(self) -> None:
+        with pytest.raises(ConfigError, match="WEB_SESSION_SECRET"):
+            load_web_settings(env_file=None, environ={"WEB_ENV": "development"})
+
+    def test_session_secret_must_be_long(self) -> None:
+        with pytest.raises(ConfigError, match="at least 32"):
+            load_web_settings(env_file=None, environ={**DEV_ENV, "WEB_SESSION_SECRET": "short-secret"})
+
+    def test_session_secret_is_never_shown(self) -> None:
+        settings = load_web_settings(env_file=None, environ=DEV_ENV)
+        assert SESSION_SECRET not in repr(settings)
 
 
 class TestHealth:
@@ -220,7 +235,7 @@ class TestStaticPwa:
         assert response.headers["content-type"] == "application/json"
 
     def test_missing_build_is_reported(self, db: Database, clock: ManualClock, tmp_path: Path) -> None:
-        settings = WebSettings.model_validate({"WEB_ENV": "development"})
+        settings = WebSettings.model_validate(DEV_ENV)
         from app.web.app import create_app
 
         app = create_app(settings, db=db, clock=clock, static_dir=tmp_path / "nowhere")
