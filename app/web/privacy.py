@@ -8,7 +8,7 @@ public view, never secrets).
 **Erasure** removes the personal data and keeps what must stay for integrity:
 
 - deleted: sessions, advisory and notification preferences, push subscriptions, notifications, opportunity
-  alerts, backtest runs, login-throttle counters
+  alerts, backtest runs, account profile, entitlement overrides, usage counters, login-throttle counters
 - kept but pseudonymised: the user row (username ``deleted-<id8>``, no password, no TOTP, disabled), because
   revoked engines and the append-only audit chains refer to it; replicated trading records of a revoked engine
   stay read-only for audit (§A32)
@@ -30,6 +30,7 @@ from app.core.errors import TaaError
 from app.storage.audit import AuditLog
 from app.storage.database import Database
 from app.storage.models import (
+    AccountProfileRow,
     BacktestRunRow,
     EngineRow,
     EntitlementOverrideRow,
@@ -45,6 +46,7 @@ from app.storage.models import (
 )
 from app.sync.events import json_safe
 from app.sync.notifications import notification_dict
+from app.web.account_profiles import profile_dict
 from app.web.engines import EngineRegistry
 from app.worker.backtests import run_dict
 
@@ -61,6 +63,7 @@ def export_user(db: Database, registry: EngineRegistry, user_id: str, now: datet
         if user is None:
             raise PrivacyError("user_not_found", "No such user")
         prefs = sess.get(UserAdvisoryPrefsRow, user_id)
+        account = sess.get(AccountProfileRow, user_id)
         notif_prefs = sess.get(NotificationPrefsRow, user_id)
         devices = sess.scalars(
             select(PushSubscriptionRow).where(PushSubscriptionRow.user_id == user_id)
@@ -94,6 +97,7 @@ def export_user(db: Database, registry: EngineRegistry, user_id: str, now: datet
                 "totp_enrolled_at": json_safe(user.totp_enrolled_at),
             },
             "advisory_preferences": None if prefs is None else dict(prefs.prefs),
+            "account_profile": None if account is None else profile_dict(account),
             "notification_preferences": None if notif_prefs is None else list(notif_prefs.disabled_types),
             "push_devices": [
                 {
@@ -146,6 +150,7 @@ def erase_user(db: Database, clock: Clock, audit: AuditLog, user_id: str, *, act
             (BacktestRunRow, BacktestRunRow.owner_user_id),
             (EntitlementOverrideRow, EntitlementOverrideRow.user_id),
             (UsageCounterRow, UsageCounterRow.user_id),
+            (AccountProfileRow, AccountProfileRow.user_id),
         ):
             sess.execute(delete(model).where(col == user_id))
         sess.execute(delete(LoginThrottleRow).where(LoginThrottleRow.key == f"user:{old_name}"))

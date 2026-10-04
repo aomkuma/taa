@@ -1546,6 +1546,20 @@ subscriptions later are configuration plus billing, not a rewrite.
     - `GET /admin/users` (OWNER/ADMIN): username, role, state, creation date only.
 - **Account profiles (`account_profiles`):** source LINKED_ENGINE (owner: live MT5 equity/balance/leverage) or MANUAL
   (equity, currency, leverage, risk %), used for lot sizing and suitability.
+  - (TAA-8A3 decisions) `app/web/account_profiles.py`, `app/risk/spec_calculator.py`, migration 0030.
+    `GET|PUT /me/account-profile`: LINKED_ENGINE only for an ACTIVE engine the user owns (its trades are
+    sized by MT5 on the engine, used as is); MANUAL needs equity and leverage (balance defaults to equity,
+    risk % below the ceiling).
+    - MANUAL sizing uses the engine's `PositionSizer` over `SpecCalculator`: the replicated catalog spec and
+      the simulated broker's formulas, with tick values re-derived in the user's currency so the sizer's
+      cross-check still applies. Rates come from the engine's newest close of a pair holding both
+      currencies (direct, inverse, or one hop through a common currency) no older than 7 days; otherwise the
+      sizing is refused (`no_spec`, `no_conversion`). The risk % is the lowest of the profile, the trading
+      profile and `config.yaml`.
+    - Cross-check: tests size the same trades with FakeMT5's `order_calc_profit`/`order_calc_margin` and with
+      the cloud calculator (EURUSD, USDJPY, XAUUSD, EURGBP): lots agree within one volume step, risk money
+      within 2%. The personalizer uses it for other users in TAA-8A4.
+    - The profile is part of the PDPA export and erased with the user's data.
 - **Settings pages (TH/EN):**
   - **Theories & Conditions (ทฤษฎีและเงื่อนไข):**
     - family cards with toggles, expandable per-detector toggles

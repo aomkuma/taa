@@ -8,7 +8,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.storage.models.base import Base, utcnow
@@ -102,4 +102,26 @@ class UserAdvisoryPrefsRow(Base):
         String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )
     prefs: Mapped[dict[str, Any]] = mapped_column(JSONType)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
+
+
+class AccountProfileRow(Base):
+    """The account a user's alerts are sized for (PLAN §A30 "Account profiles"; TAA-8A3).
+
+    LINKED_ENGINE: an engine the user owns; its broker account at signal time (equity and currency on each
+    opportunity) and its MT5 sizing. MANUAL: the user's own figures, sized in the cloud from the replicated
+    specs and conversion rates."""
+
+    __tablename__ = "account_profiles"
+
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    source: Mapped[str] = mapped_column(String(16))  # LINKED_ENGINE / MANUAL
+    engine_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    equity: Mapped[float | None] = mapped_column(Float, nullable=True)
+    balance: Mapped[float | None] = mapped_column(Float, nullable=True)
+    currency: Mapped[str] = mapped_column(String(8), default="USD")
+    leverage: Mapped[float | None] = mapped_column(Float, nullable=True)
+    risk_percent: Mapped[float | None] = mapped_column(Float, nullable=True)  # per trade; None: the profile's
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())

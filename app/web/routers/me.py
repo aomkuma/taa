@@ -27,8 +27,17 @@ from starlette.concurrency import run_in_threadpool
 from app.core.ids import new_id
 from app.storage.models import EntitlementOverrideRow, PlanRow, SubscriptionRow, UserRow
 from app.sync.events import json_safe
+from app.web.account_profiles import ProfileBody, ProfileError, load_profile, profile_dict, save_profile
 from app.web.auth import AuthSession, Role
-from app.web.deps import AdminSession, Context, CurrentSession, StepUpSession, WebContext, require_roles
+from app.web.deps import (
+    AdminSession,
+    Context,
+    CsrfSession,
+    CurrentSession,
+    StepUpSession,
+    WebContext,
+    require_roles,
+)
 from app.web.entitlements import ASSET_CLASSES_KEY, FAMILIES_KEY, EntitlementService, Feature, Limit
 from app.web.errors import ApiProblem
 from app.web.privacy import PrivacyError, erase_user, export_user
@@ -230,3 +239,21 @@ async def delete_override(
 ) -> Response:
     await _override(ctx, user_id[:36], key, None, session.username)
     return Response(status_code=204)
+
+
+@router.get("/me/account-profile")
+async def get_account_profile(ctx: Context, session: CurrentSession) -> dict[str, Any]:
+    """The account the user's alerts are sized for (TAA-8A3); none set yet: ``{"source": null}``."""
+    row = await run_in_threadpool(load_profile, ctx.db, session.user_id)
+    return {"source": None} if row is None else profile_dict(row)
+
+
+@router.put("/me/account-profile")
+async def put_account_profile(body: ProfileBody, ctx: Context, session: CsrfSession) -> dict[str, Any]:
+    try:
+        saved: dict[str, Any] = await run_in_threadpool(
+            save_profile, ctx.db, session.user_id, body, ctx.clock.now_utc()
+        )
+    except ProfileError as exc:
+        raise ApiProblem(404, "engine_not_found", "Link an engine you own") from exc
+    return saved

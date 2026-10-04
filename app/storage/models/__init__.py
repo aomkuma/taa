@@ -41,10 +41,18 @@ from app.storage.models.system import (
     KillSwitchEvent,
     Run,
 )
-from app.storage.models.web import EngineRow, LoginThrottleRow, SessionRow, UserAdvisoryPrefsRow, UserRow
+from app.storage.models.web import (
+    AccountProfileRow,
+    EngineRow,
+    LoginThrottleRow,
+    SessionRow,
+    UserAdvisoryPrefsRow,
+    UserRow,
+)
 from app.storage.models.worker import WorkerHeartbeatRow, WorkerJobRow, WorkerScheduleRow
 
 __all__ = [
+    "AccountProfileRow",
     "AuditChainHead",
     "AuditEvent",
     "AuditReplicaRow",

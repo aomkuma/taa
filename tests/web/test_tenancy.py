@@ -185,3 +185,44 @@ class TestPersonalData:
         assert rig.post(f"/admin/users/{rig.ids['cid']}/erase", {"confirm": "cid"}).status_code == 204
         names = {u["username"] for u in rig.client.get("/api/v1/admin/users").json()["items"]}
         assert "cid" not in names and f"deleted-{rig.ids['cid'][:8]}" in names
+
+
+class TestAccountProfile:
+    def test_manual_and_linked_profiles(self, rig: Rig) -> None:
+        rig.login("bob")
+        assert rig.client.get("/api/v1/me/account-profile").json() == {"source": None}
+        manual = {
+            "source": "MANUAL",
+            "equity": 2500,
+            "currency": "EUR",
+            "leverage": 100,
+            "risk_percent": 0.25,
+        }
+        saved = rig.client.put(
+            "/api/v1/me/account-profile", json=manual, headers=mutation_headers(rig.client)
+        )
+        assert saved.status_code == 200 and saved.json()["balance"] == 2500  # balance defaults to equity
+        for bad in (
+            manual | {"equity": None},
+            manual | {"currency": "euro"},
+            manual | {"risk_percent": 50},
+            manual | {"engine_id": "eng-x"},
+            {"source": "LINKED_ENGINE"},
+        ):
+            resp = rig.client.put(
+                "/api/v1/me/account-profile", json=bad, headers=mutation_headers(rig.client)
+            )
+            assert resp.status_code == 422, bad
+        alice = rig.app.state.ctx.engine.registry.user("alice")
+        theirs = rig.app.state.ctx.engine.registry.register(alice, "pc", actor="t").engine_id
+        linked = {"source": "LINKED_ENGINE", "engine_id": theirs}
+        resp = rig.client.put("/api/v1/me/account-profile", json=linked, headers=mutation_headers(rig.client))
+        assert resp.status_code == 404 and resp.json()["error"]["code"] == "engine_not_found"
+        mine = rig.post("/engines", {"label": "bob pc"}).json()["engine_id"]
+        ok = rig.client.put(
+            "/api/v1/me/account-profile",
+            json={"source": "LINKED_ENGINE", "engine_id": mine},
+            headers=mutation_headers(rig.client),
+        )
+        assert ok.status_code == 200 and ok.json()["engine_id"] == mine
+        assert json.loads(rig.client.get("/api/v1/me/export").text)["account_profile"]["engine_id"] == mine
