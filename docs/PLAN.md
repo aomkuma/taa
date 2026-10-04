@@ -711,6 +711,27 @@ AI failures never trip trading breakers; they only produce HOLD.
   - backtest jobs, one at a time with CPU and time limits
   - analytics recompute, engine watchdog, push retries
   - retention: quotes 7 days; snapshots 90 days, downsampled; trades and audit kept forever
+  - (TAA-808 decisions) `app/worker/` (`python -m app.worker`, env-only `WorkerSettings`), tables
+    `worker_jobs`, `worker_schedules`, `worker_heartbeats` (migration 0023):
+    - **Job queue** (`jobs.py`): every state change is a conditional UPDATE, so it behaves the same on SQLite
+      and PostgreSQL and with several workers. A claim is `UPDATE … WHERE status=QUEUED`; a RUNNING job holds
+      a lease (10 min, `extend()` for long jobs) and results are accepted only from the lease holder. Expired
+      leases go back to the queue, or FAILED after `max_attempts`. `dedupe_key` returns the open job with the
+      same key.
+    - **Handlers** are registered by kind; a worker claims only kinds it knows, so an older worker leaves a
+      newer kind alone. `RetryLater` (optionally with a delay) and other exceptions retry with exponential
+      backoff (30 s doubling to 1 h) up to `max_attempts`, which is how Web Push sends retry (TAA-806);
+      `JobFailed` is final. Failures are logged and never stop the loop.
+    - **Schedules** (`schedule.py`): a periodic task runs after one conditional UPDATE moved its
+      `next_run_at` forward, so each occurrence runs once across workers. Built in: `retention` (hourly) and
+      `expire_commands` (30 s). The engine watchdog (TAA-705) adds its own.
+    - **Retention** (`retention.py`) prunes housekeeping only: sessions 30 days after expiry or revocation,
+      idle unlocked login counters after 24 h, expired nonces, answered commands after 90 days, finished jobs
+      after 30 days, silent worker rows after 7 days. Audit chains, replicated trading records and history are
+      kept.
+    - **Health:** a heartbeat row every 10 s; `python -m app.worker check` exits 0 when a worker beat within
+      60 s. The worker does not migrate unless `--migrate` is given (the web service and Railway's pre-deploy
+      step do).
 
 ## A15. PWA frontend
 

@@ -875,23 +875,50 @@ class WebSettings(BaseSettings):
         return frozenset(configured if self.is_production else configured | set(WEB_DEV_ORIGINS))
 
 
+class WorkerSettings(BaseSettings):
+    """Settings of the cloud worker (Railway ``worker``; locally ``python -m app.worker``; TAA-808).
+
+    Environment only, like :class:`WebSettings`. The worker shares the web service's database and holds no
+    MT5, AI or engine secrets.
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=None, extra="ignore", case_sensitive=True, env_ignore_empty=True
+    )
+
+    WORKER_ENV: Literal["development", "production"] = "production"
+    DATABASE_URL: str = "sqlite:///data/taa_cloud.db"
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    # Default: <hostname>-<pid>; set it to keep one heartbeat row across restarts.
+    WORKER_ID: str | None = Field(default=None, min_length=1, max_length=64, pattern=r"^[A-Za-z0-9._-]+$")
+    WORKER_POLL_SECONDS: float = Field(default=2.0, ge=0.2, le=60.0)
+
+    @property
+    def is_production(self) -> bool:
+        return self.WORKER_ENV == "production"
+
+
 KNOWN_ENV_KEYS = frozenset(EnvSettings.model_fields)
 # Keys that may legitimately appear in a shared .env (web/worker/tooling) without being engine settings.
-EXTERNAL_ENV_KEYS = frozenset(WebSettings.model_fields) | frozenset(
-    {
-        "DATABASE_URL",
-        "WEB_SESSION_SECRET",
-        "VAPID_PRIVATE_KEY",
-        "VAPID_PUBLIC_KEY",
-        "VAPID_SUBJECT",
-        "WEB_IP_ALLOWLIST",
-        "WEB_STATIC_DIR",
-        "WEB_ENV",
-        "PORT",
-        "WEB_PUBLIC_ORIGIN",
-        "WORKER_CONCURRENCY",
-        "TAA_POSTGRES_URL",  # tests only (pytest -m postgres)
-    }
+EXTERNAL_ENV_KEYS = (
+    frozenset(WebSettings.model_fields)
+    | frozenset(WorkerSettings.model_fields)
+    | frozenset(
+        {
+            "DATABASE_URL",
+            "WEB_SESSION_SECRET",
+            "VAPID_PRIVATE_KEY",
+            "VAPID_PUBLIC_KEY",
+            "VAPID_SUBJECT",
+            "WEB_IP_ALLOWLIST",
+            "WEB_STATIC_DIR",
+            "WEB_ENV",
+            "PORT",
+            "WEB_PUBLIC_ORIGIN",
+            "WORKER_CONCURRENCY",
+            "TAA_POSTGRES_URL",  # tests only (pytest -m postgres)
+        }
+    )
 )
 
 
@@ -1036,6 +1063,23 @@ def load_settings(
         env_file=env_path if env_path and env_path.exists() else None,
         config_file=cfg_path if cfg_path.exists() else None,
     )
+
+
+def load_worker_settings(
+    env_file: str | Path | None = ".env",
+    environ: Mapping[str, str] | None = None,
+) -> WorkerSettings:
+    """Load the worker settings from the environment (and ``.env`` locally); raises :class:`ConfigError`."""
+    env_path = Path(env_file) if env_file else None
+    if env_path is not None and not env_path.is_absolute():
+        env_path = REPO_ROOT / env_path
+    try:
+        if environ is not None:
+            values = {k: v for k, v in environ.items() if k in WorkerSettings.model_fields and v != ""}
+            return WorkerSettings.model_validate(values)
+        return WorkerSettings(_env_file=env_path if env_path and env_path.exists() else None)
+    except ValidationError as exc:
+        raise ConfigError(_format_validation_error("invalid worker settings", exc)) from exc
 
 
 def load_web_settings(

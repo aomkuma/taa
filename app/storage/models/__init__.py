@@ -33,6 +33,7 @@ from app.storage.models.system import (
     Run,
 )
 from app.storage.models.web import EngineRow, LoginThrottleRow, SessionRow, UserRow
+from app.storage.models.worker import WorkerHeartbeatRow, WorkerJobRow, WorkerScheduleRow
 
 __all__ = [
     "AuditChainHead",
@@ -73,5 +74,8 @@ __all__ = [
     "SuitabilitySnapshotRow",
     "SymbolCatalogRow",
     "UserRow",
+    "WorkerHeartbeatRow",
+    "WorkerJobRow",
+    "WorkerScheduleRow",
     "utcnow",
 ]
