@@ -935,6 +935,14 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     agree/disagree (M2).
   - **Threshold explorer:** sweeps x and is marked in-sample.
   - Live and replay results are always reported separately.
+  - (TAA-6C4 decisions) `stats.py` is pure (the cloud reuses it) and reads PLAN-variant CLOSED shadow trades.
+    - Expectancy uses `r_net` (after costs). Trades without a lot count in R only.
+    - Profit factor is None without a loss (undefined, not infinite).
+    - The follow-all curve is realized in exit order from 0.
+    - A trade counts in every watchlist that holds its symbol.
+    - The scoreboard counts a trade once per family, however many of the family's detectors fired.
+      Conflicting evidence is not support.
+    - The AI agree/disagree breakdown waits for M2.
 - **Feedback loops:** accuracy feeds S8 (historical edge) in the ranking and the win-probability estimate. Shadow
   trades also enter `app/analytics` as scope SHADOW, so styles and P/L attribution work for them too.
 

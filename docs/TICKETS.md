@@ -32,7 +32,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
-| M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 3 | IN PROGRESS |
+| M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 4 | IN PROGRESS |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
@@ -924,19 +924,19 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6C4 — Accuracy statistics & theory scoreboard
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 6C1
 
-- [ ] hit rate with Wilson CI
-- [ ] expectancy (R, money)
-- [ ] PF
-- [ ] total hypothetical P/L at historical lot sizes
-- [ ] follow-all equity curve + max DD
-- [ ] breakdowns (symbol, strategy, asset class, session, bucket, watchlist, alerted/followed)
-- [ ] threshold explorer (in-sample warning)
-- [ ] live/replay separation
-- [ ] (rev. 2) **theory scoreboard** per detector/family × asset class × TF (hit rate, expectancy, lift, n)
-- [ ] tests
+- [x] hit rate with Wilson CI
+- [x] expectancy (R, money)
+- [x] PF
+- [x] total hypothetical P/L at historical lot sizes
+- [x] follow-all equity curve + max DD
+- [x] breakdowns (symbol, strategy, asset class, session, bucket, watchlist, alerted/followed)
+- [x] threshold explorer (in-sample warning)
+- [x] live/replay separation
+- [x] (rev. 2) **theory scoreboard** per detector/family × asset class × TF (hit rate, expectancy, lift, n)
+- [x] tests
 
 #### TAA-6C5 — Advisory integration & docs
 
