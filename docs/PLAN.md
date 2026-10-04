@@ -663,6 +663,20 @@ AI failures never trip trading breakers; they only produce HOLD.
     give 400 `invalid_query` (422 for FastAPI type errors).
   - Not served yet because nothing replicates them: live quotes, broker-account snapshots and heartbeats
     (TAA-705), notifications (806), backtests (807), analytics (1005).
+- (TAA-805 decisions) Control API `/api/v1/engines/{engine_id}/commands` (`app/web/routers/control.py`):
+  - `POST` (`StepUpSession`, 202) queues one allowlisted command. The body is `{type, reason?, strategy?,
+    ticket?, code?}` and each type takes exactly its fields: KILL_SWITCH_ACTIVATE `reason`; STRATEGY_DISABLE
+    `strategy` (+ `reason`); RESYNC and RESCAN_SUITABILITY nothing; POSITION_CLOSE `ticket` + `code`;
+    FLATTEN_ALL `reason` + `code`. Anything else is 400 `invalid_command`; an unknown or risk-increasing type
+    does not parse (422). `code` is the engine's control TOTP: the cloud stores it only until the command is
+    answered or expires and never returns, audits or streams it.
+  - Rights come from owning the engine (`OwnedEngine`, 404 for anyone else's), whatever the role; a revoked
+    engine answers 409 `engine_revoked`, while its command history stays readable.
+  - `GET` lists (keyset pages, `status` filter) and `GET /commands/{id}` shows state and result (expired
+    commands are marked first).
+  - Audit (`web` chain): `COMMAND_QUEUED` (actor, engine, command id, type, params) and `COMMAND_RESULT` when
+    the ingest API applies the engine's result. Queuing and results also go to the live stream (topic
+    `status`, type `command`).
 - **SSE `/api/v1/stream`:** topics are status, quotes, positions, notifications and decisions. A heartbeat comment goes out
   every 15 s, and clients reconnect with cursors (Railway caps a request at about 15 min).
   - (TAA-804 decisions) The route is engine-scoped like the read APIs: `GET /api/v1/engines/{engine_id}/stream`

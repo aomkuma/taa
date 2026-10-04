@@ -40,6 +40,8 @@ ROUTES = [
     "config",
     "audit/verify",
     "stream",
+    "commands",
+    "commands/c1",
 ]
 
 

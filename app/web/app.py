@@ -28,7 +28,7 @@ from app.web.auth import AuthKeys, AuthService
 from app.web.deps import WEB_AUDIT_CHAIN, EngineLink, WebContext
 from app.web.engines import EngineRegistry
 from app.web.errors import InternalErrorMiddleware, install_error_handlers
-from app.web.routers import auth, data, engine, health, ingest, stream
+from app.web.routers import auth, control, data, engine, health, ingest, stream
 from app.web.security_headers import BodySizeLimitMiddleware, SecurityHeadersMiddleware
 from app.web.static import mount_pwa
 
@@ -125,6 +125,7 @@ def create_app(
     api.include_router(engine.router)
     api.include_router(data.router)
     api.include_router(stream.router)
+    api.include_router(control.router)
     app.include_router(api)
     mount_pwa(app, static_dir or static_root(settings))
 

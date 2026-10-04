@@ -14,7 +14,8 @@ One ``POST /api/v1/ingest/batch`` after HMAC verification (``app/web/routers/ing
    - row events: upsert by key, skipped when :class:`ReplicaVersionRow` holds the same or a newer event id
      for that row (UUIDv7 ids are time-ordered, so a late resend never rolls a row back)
    - ``audit_event``: stored by ``(chain, seq)``, see below
-   - ``command_result``: :meth:`CommandQueue.record_result`, once per command
+   - ``command_result``: :meth:`CommandQueue.record_result`, once per command; appended to the ``web`` audit
+     chain (``COMMAND_RESULT``) after the commit, so the cloud audits remote commands end to end (TAA-805)
    - ``candles``: upserted into the engine's own ``history_candles`` by open time (TAA-706)
 
    Applied rows of streamed types also go to the engine's change feed in the same transaction
@@ -44,8 +45,8 @@ from app.core.clock import Clock, ensure_utc
 from app.core.errors import TaaError
 from app.storage.audit import GENESIS_HASH, AuditLog, compute_hash
 from app.storage.database import Database
-from app.storage.models import AuditEvent, AuditReplicaRow, HistoryCandle, ReplicaVersionRow
-from app.sync.command_queue import CommandQueue
+from app.storage.models import AuditEvent, AuditReplicaRow, EngineCommandRow, HistoryCandle, ReplicaVersionRow
+from app.sync.command_queue import CommandQueue, stream_entry
 from app.sync.events import (
     AUDIT_EVENT,
     CANDLES,
@@ -191,7 +192,9 @@ class IngestService:
             streamed: list[StreamEntry] = []
             for item in prepared:
                 if isinstance(item, _CommandEvent):
-                    self._apply_command(sess, engine_id, item, result)
+                    row = self._apply_command(sess, engine_id, item, result)
+                    if row is not None:
+                        streamed.append(stream_entry(row))
                 elif isinstance(item, _CandlesEvent):
                     self._apply_candles(sess, engine_id, item, result)
                 elif item.spec.event_type == AUDIT_EVENT:
@@ -204,6 +207,14 @@ class IngestService:
             for chain in sorted(chains):
                 self._advance(sess, engine_id, chain, broken)
             self.stream.append(sess, engine_id, streamed)
+        for entry in streamed:
+            if entry.type == "command" and self.audit is not None:
+                c = entry.item
+                self.audit.append(
+                    "COMMAND_RESULT",
+                    engine_id,
+                    {"engine_id": engine_id, "command_id": c["id"], "type": c["type"], "result": c["result"]},
+                )
         for b in broken:
             log.error("replicated audit chain %s is BROKEN at seq %s: %s", b.chain, b.seq, b.detail)
             if self.audit is not None:
@@ -357,17 +368,20 @@ class IngestService:
 
     def _apply_command(
         self, sess: Session, engine_id: str, item: _CommandEvent, result: IngestResult
-    ) -> None:
+    ) -> EngineCommandRow | None:
+        """Record a command's result; returns the command when this event changed it."""
         key = item.payload.command_id
         version = self._version(sess, engine_id, COMMAND_RESULT, key)
         if self._stale(version, item.event):
             result.duplicates += 1
-            return
-        if not self.commands.record_result(engine_id, item.payload.model_dump(mode="json"), sess):
+            return None
+        row = self.commands.record_result(engine_id, item.payload.model_dump(mode="json"), sess)
+        if row is None:
             result.reject(item.event.event_id, RejectCode.UNKNOWN_COMMAND, key)
-            return
+            return None
         self._record_version(sess, engine_id, COMMAND_RESULT, key, item.event, version)
         result.accepted += 1
+        return row
 
     def _apply_audit(
         self,

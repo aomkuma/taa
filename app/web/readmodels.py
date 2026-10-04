@@ -37,6 +37,7 @@ from app.storage.models import (
     ConfigSnapshot,
     DecisionCheckRow,
     DecisionRecordRow,
+    EngineCommandRow,
     HistoryCandle,
     KillSwitchEvent,
     OrderIntentRow,
@@ -49,6 +50,7 @@ from app.storage.models import (
     Run,
     SymbolCatalogRow,
 )
+from app.sync.command_queue import public
 from app.sync.events import json_safe
 
 DEFAULT_LIMIT = 50
@@ -358,6 +360,17 @@ class ReadModels:
                 .limit(1)
             ).scalar_one_or_none()
             return None if row is None else row_dict(row)
+
+    def commands(self, engine_id: str, *, status: str | None, limit: int | None, cursor: str | None) -> Page:
+        """Remote commands queued for the engine (TAA-805), newest first; TOTP codes are never included."""
+        m = EngineCommandRow
+        where = [m.engine_id == engine_id]
+        if status:
+            where.append(m.status == status)
+        with self.db.session() as sess:
+            return paginate(
+                sess, m, where, m.created_at, m.command_id, limit=limit, cursor=cursor, serialize=public
+            )
 
     def config(self, engine_id: str) -> dict[str, Any] | None:
         with self.db.session() as sess:
