@@ -29,6 +29,7 @@ from app.web.deps import WEB_AUDIT_CHAIN, EngineLink, WebContext
 from app.web.engines import EngineRegistry
 from app.web.errors import InternalErrorMiddleware, install_error_handlers
 from app.web.routers import (
+    advisory,
     auth,
     backtests,
     control,
@@ -140,6 +141,7 @@ def create_app(
     api.include_router(engines.router)
     api.include_router(notifications.router)
     api.include_router(backtests.router)
+    api.include_router(advisory.router)
     app.include_router(api)
     mount_pwa(app, static_dir or static_root(settings))
 

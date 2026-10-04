@@ -1,4 +1,10 @@
-"""``GET /api/v1/engine/commands?cursor=``: the engine's command long poll (PLAN §A13; TAA-704).
+"""Engine routes: the command long poll (PLAN §A13; TAA-704) and the advisory config (TAA-809).
+
+``GET /api/v1/engine/advisory-config``: the compute requirements of the engine's users
+(:func:`app.web.advisory.engine_advisory_config`), with ``ETag: "<version>"``; a matching ``If-None-Match``
+gets 304. The engine client (``app/sync/advisory_config.py``) keeps its fallback on anything else.
+
+``GET /api/v1/engine/commands?cursor=``:
 
 Authenticated by the paired engine's HMAC signature (``SignedEngine``; the signature covers the query string,
 so the cursor cannot be altered). A thin loop over :meth:`app.sync.command_queue.CommandQueue.pending`:
@@ -19,6 +25,7 @@ from fastapi import APIRouter, Query, Request, Response
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
+from app.web.advisory import engine_advisory_config
 from app.web.deps import SignedEngine
 
 router = APIRouter(prefix="/engine", tags=["sync"])
@@ -44,3 +51,13 @@ async def poll_commands(
         if remaining <= 0 or await request.is_disconnected():
             return Response(status_code=204)
         await asyncio.sleep(min(POLL_INTERVAL_SECONDS, remaining))
+
+
+@router.get("/advisory-config", response_model=None)
+async def advisory_config(request: Request, engine: SignedEngine) -> Response:
+    ctx = request.app.state.ctx
+    config = await run_in_threadpool(engine_advisory_config, ctx.db, engine.owner_user_id)
+    etag = f'"{config.version}"'
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers={"ETag": etag})
+    return JSONResponse(config.model_dump(mode="json"), headers={"ETag": etag})

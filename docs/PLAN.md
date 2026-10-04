@@ -696,6 +696,25 @@ AI failures never trip trading breakers; they only produce HOLD.
   - Audit (`web` chain): `COMMAND_QUEUED` (actor, engine, command id, type, params) and `COMMAND_RESULT` when
     the ingest API applies the engine's result. Queuing and results also go to the live stream (topic
     `status`, type `command`).
+- (TAA-809 decisions) Advisory APIs (`app/web/routers/advisory.py`, read models and preference store in
+  `app/web/advisory.py`, table `user_advisory_prefs`, migration 0027):
+  - Preferences are one `AdvisoryPreferences` document per user (defaults when absent), validated against
+    the detector and strategy catalogs on every save (400 `invalid_preferences`). Routes: `GET|PUT
+    /advisory/preferences`, `PUT /advisory/preferences/theories`, `POST /advisory/watchlists`, `PUT|DELETE
+    /advisory/watchlists/{name}`, `POST /advisory/favourites/{symbol}` (toggle), `GET /advisory/detectors`
+    (catalog), `PUT /auth/profile` (locale th/en, IANA timezone).
+  - Engine data under `/engines/{id}/` (`OwnedEngine`): `ranking` (latest snapshot, `asset_class`/`eligible`
+    filters), `ranking/{symbol}`, `ranking/{symbol}/history?hours` (≤ 90 days), `opportunities` (filters,
+    paginated, without signal/features), `opportunities/{id}` (evidence, confluence, shadow rows, and the
+    win probability with Shapley contributions recomputed for the session user's theory selection from
+    the calibration version stamped on the opportunity), `shadow-trades`, `accuracy` (the user's watchlists
+    as breakdowns), `threshold-explorer`, `theory-scoreboard`, `calibration`. `server` defaults to the
+    engine's newest ranking/opportunity server; shadow statistics carry `hypothetical: true`.
+  - The engine's `GET /api/v1/engine/advisory-config` (`SignedEngine`) serves `advisory_config` over the
+    owner's preferences with `ETag: "<version>"` and 304 on `If-None-Match`; tested with the engine's own
+    `AdvisoryConfigClient`. With multi-user tenancy (8A) the union widens to the engine's users.
+  - `load_records`, `load_version`, `latest_version` and `load_latest` take an `engine_id` (default
+    `local`), so the same advisory code reads one engine's replicas in the cloud.
 - **SSE `/api/v1/stream`:** topics are status, quotes, positions, notifications and decisions. A heartbeat comment goes out
   every 15 s, and clients reconnect with cursors (Railway caps a request at about 15 min).
   - (TAA-804 decisions) The route is engine-scoped like the read APIs: `GET /api/v1/engines/{engine_id}/stream`

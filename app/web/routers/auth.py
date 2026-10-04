@@ -12,7 +12,8 @@ Error codes the PWA relies on:
 from __future__ import annotations
 
 import base64
-from typing import Any
+from typing import Any, Literal
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import qrcode
 import qrcode.image.svg
@@ -119,6 +120,24 @@ def login(body: LoginBody, request: Request, response: Response, ctx: Context) -
 @router.get("/session")
 def get_session(ctx: Context, session: CurrentSession) -> dict[str, Any]:
     return session_payload(ctx.auth, session)
+
+
+class ProfileBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    locale: Literal["th", "en"]
+    timezone: str = Field(min_length=1, max_length=64)
+
+
+@router.put("/profile")
+def put_profile(body: ProfileBody, ctx: Context, session: CsrfSession) -> dict[str, str]:
+    """Language and display timezone (an IANA name, e.g. Asia/Bangkok); 400 ``invalid_timezone``."""
+    try:
+        ZoneInfo(body.timezone)
+    except (ZoneInfoNotFoundError, ValueError) as exc:
+        raise ApiProblem(400, "invalid_timezone", "Unknown timezone") from exc
+    ctx.auth.update_profile(session, locale=body.locale, timezone=body.timezone)
+    return {"locale": body.locale, "timezone": body.timezone}
 
 
 @router.post("/logout", status_code=204)

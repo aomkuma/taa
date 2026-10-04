@@ -344,15 +344,17 @@ def _nan(value: Any) -> float:
     return math.nan if value is None else float(value)
 
 
-def load_version(db: Database, version: str) -> LoadedCalibration:
+def load_version(db: Database, version: str, engine_id: str = LOCAL_ENGINE) -> LoadedCalibration:
     with db.session() as sess:
-        row = sess.get(CalibrationTableRow, (LOCAL_ENGINE, version))
+        row = sess.get(CalibrationTableRow, (engine_id, version))
         if row is None:
             raise TaaError(f"calibration version {version} not found")
         models = list(
             sess.execute(
                 select(EvidenceModelVersionRow)
-                .where(EvidenceModelVersionRow.version == version)
+                .where(
+                    EvidenceModelVersionRow.engine_id == engine_id, EvidenceModelVersionRow.version == version
+                )
                 .order_by(EvidenceModelVersionRow.id)
             ).scalars()
         )
@@ -390,20 +392,20 @@ def load_version(db: Database, version: str) -> LoadedCalibration:
     return LoadedCalibration(row.version, ensure_utc(row.built_at), model, row.n_live, row.n_replay)
 
 
-def latest_version(db: Database, server: str) -> tuple[str, datetime] | None:
+def latest_version(db: Database, server: str, engine_id: str = LOCAL_ENGINE) -> tuple[str, datetime] | None:
     with db.session() as sess:
         row = sess.execute(
             select(CalibrationTableRow.version, CalibrationTableRow.built_at)
-            .where(CalibrationTableRow.server == server)
+            .where(CalibrationTableRow.engine_id == engine_id, CalibrationTableRow.server == server)
             .order_by(CalibrationTableRow.built_at.desc(), CalibrationTableRow.version.desc())
             .limit(1)
         ).first()
     return None if row is None else (row[0], ensure_utc(row[1]))
 
 
-def load_latest(db: Database, server: str) -> LoadedCalibration | None:
-    latest = latest_version(db, server)
-    return None if latest is None else load_version(db, latest[0])
+def load_latest(db: Database, server: str, engine_id: str = LOCAL_ENGINE) -> LoadedCalibration | None:
+    latest = latest_version(db, server, engine_id)
+    return None if latest is None else load_version(db, latest[0], engine_id)
 
 
 # --- schedule -----------------------------------------------------------------------------------------------

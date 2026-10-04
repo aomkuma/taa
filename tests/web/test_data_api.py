@@ -46,6 +46,16 @@ ROUTES = [
     "backtests/b1",
     "backtests/b1/trades",
     "backtests/compare?ids=b1,b2",
+    "ranking",
+    "ranking/EURUSD",
+    "ranking/EURUSD/history",
+    "opportunities",
+    "opportunities/k1",
+    "shadow-trades",
+    "accuracy",
+    "threshold-explorer",
+    "theory-scoreboard",
+    "calibration",
 ]
 
 

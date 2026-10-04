@@ -254,6 +254,14 @@ class AuthService:
                 return False
             return now < row.expires_at and now < row.last_seen_at + IDLE_TIMEOUT
 
+    def update_profile(self, session: AuthSession, *, locale: str, timezone: str) -> None:
+        """The user's language and display timezone (push texts, alert times; TAA-809)."""
+        with self.db.session() as sess:
+            user = sess.get(UserRow, session.user_id)
+            if user is not None:
+                user.locale, user.timezone = locale, timezone
+        self.audit.append("auth.profile", session.username, {"locale": locale, "timezone": timezone})
+
     def logout(self, session: AuthSession) -> None:
         with self.db.session() as sess:
             row = sess.get(SessionRow, session.session_id)

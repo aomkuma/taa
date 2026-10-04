@@ -41,6 +41,7 @@ from app.advisory.stats_math import wilson_interval
 from app.core.clock import ensure_utc
 from app.storage.database import Database
 from app.storage.models import ShadowTradeRow
+from app.storage.models.base import LOCAL_ENGINE
 
 IN_SAMPLE_WARNING = "advisory.accuracy.threshold_in_sample"  # i18n key for the explorer's caveat
 
@@ -111,8 +112,11 @@ def load_records(
     variant: Variant = Variant.PLAN,
     source: Source | None = None,
     since: datetime | None = None,
+    engine_id: str = LOCAL_ENGINE,
 ) -> list[TradeRecord]:
+    """Closed shadow trades of one engine (its own database: ``local``; the cloud passes the engine id)."""
     query = select(ShadowTradeRow).where(
+        ShadowTradeRow.engine_id == engine_id,
         ShadowTradeRow.server == server,
         ShadowTradeRow.variant == variant.value,
         ShadowTradeRow.status == ShadowStatus.CLOSED.value,

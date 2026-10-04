@@ -1,4 +1,4 @@
-"""Cloud-only tables of the web service: users, sessions, login throttling and engines.
+"""Cloud-only tables of the web service: users, sessions, login throttling, engines and advisory preferences.
 
 PLAN §A14, §A18, §A32.
 """
@@ -6,12 +6,13 @@ PLAN §A14, §A18, §A32.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import BigInteger, Boolean, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.storage.models.base import Base, utcnow
-from app.storage.types import UTCDateTime
+from app.storage.types import JSONType, UTCDateTime
 
 
 class UserRow(Base):
@@ -88,3 +89,17 @@ class EngineRow(Base):
     revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     first_seen_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     last_seen_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+
+
+class UserAdvisoryPrefsRow(Base):
+    """A user's advisory preferences (PLAN §A26, §A29–§A31; TAA-809): watchlists, alert rules, theory
+    selection, trading profile and entry plan, as one validated ``AdvisoryPreferences`` document. No row:
+    the defaults."""
+
+    __tablename__ = "user_advisory_prefs"
+
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    prefs: Mapped[dict[str, Any]] = mapped_column(JSONType)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
