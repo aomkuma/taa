@@ -662,9 +662,31 @@ AI failures never trip trading breakers; they only produce HOLD.
   - Lists are keyset-paginated, newest first: `limit` ≤ 200 and an opaque `next_cursor`. Unusable parameters
     give 400 `invalid_query` (422 for FastAPI type errors).
   - Not served yet because nothing replicates them: live quotes, broker-account snapshots and heartbeats
-    (TAA-705/804), notifications (806), backtests (807), analytics (1005).
+    (TAA-705), notifications (806), backtests (807), analytics (1005).
 - **SSE `/api/v1/stream`:** topics are status, quotes, positions, notifications and decisions. A heartbeat comment goes out
   every 15 s, and clients reconnect with cursors (Railway caps a request at about 15 min).
+  - (TAA-804 decisions) The route is engine-scoped like the read APIs: `GET /api/v1/engines/{engine_id}/stream`
+    behind `OwnedEngine` (`app/web/routers/stream.py`, messages in `app/web/stream.py`).
+    - **Change feed** (`app/sync/stream.py`, migration 0022): ingest appends a `stream_events` row for every
+      applied row of a streamed type in its own transaction, so a change that rolls back is never streamed.
+      Types → topics: run, kill switch, breaker states/events, paper account, risk state/baselines → `status`;
+      paper positions/intents, order intents, deals → `positions`; decisions → `decisions` (without the
+      signal/market/plan documents, like the list API). `quotes` and `notifications` are valid topics without
+      a producer until heartbeats (TAA-705) and Web Push (TAA-806). Several changes of one row in a batch
+      collapse into the newest; an event carries the row as the read APIs serialize it.
+    - **Cursors:** `seq` counts per engine. Ingest raises the engine's `stream_heads` row with one UPDATE, which
+      holds the row lock until commit, so events become visible in `seq` order (tested on PostgreSQL) and a
+      cursor never skips a late commit. The newest 5000 events per engine are kept.
+    - **Messages:** `retry: 3000`; then `ready {cursor, resumed}` (fresh start: load the pages through REST) or
+      `reset {cursor}` (the cursor is older than the kept events or ahead of the head: refetch); then
+      `event: <topic>`, `id: <seq>`, data `{seq, type, key, at, item}`. Every 15 s a `: ping` comment with
+      `id: <cursor>`, which moves the browser's last event id without an event, so filtered streams resume
+      near the head. The browser's `Last-Event-ID` wins over `?cursor=`; `?topics=` filters (default all).
+    - The server closes a stream after 10 minutes and the EventSource reconnects. At each heartbeat the stream
+      re-checks the session without refreshing its idle timer (`AuthService.is_live`), so an open tab cannot keep
+      a session alive; an ended session gets `event: end {"reason": "session_ended"}`.
+    - Each open stream polls the feed once a second (one indexed query). At most 4 open streams per user per web
+      process (429 `too_many_streams`); slots are leases that lapse after the longest stream time.
 - **Web Push:**
   - VAPID keys are generated with `scripts/generate_vapid_keys.py`; `pywebpush` sends from the worker
   - per-type preferences; dedup so the same type and symbol is sent at most once per 10 min (except CRITICAL)

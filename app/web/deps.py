@@ -11,7 +11,7 @@ over method, path and query, timestamp, nonce and body (PLAN §A13). They never 
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Annotated
 
 from fastapi import Depends, Request
@@ -27,6 +27,7 @@ from app.sync.ingest import IngestService
 from app.web.auth import AuthService, AuthSession
 from app.web.engines import ENGINE_ID_RE, EngineInfo, EngineRegistry
 from app.web.errors import ApiProblem
+from app.web.stream import StreamHub
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ class WebContext:
     audit: AuditLog
     auth: AuthService
     engine: EngineLink
+    streams: StreamHub = field(default_factory=StreamHub)
 
 
 def get_context(request: Request) -> WebContext:

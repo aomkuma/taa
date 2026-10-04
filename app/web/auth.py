@@ -241,6 +241,19 @@ class AuthService:
                 row.last_seen_at = now
             return self._session(row, user)
 
+    def is_live(self, session: AuthSession) -> bool:
+        """Whether *session* is still valid, without refreshing its idle timer (for long-lived streams,
+        which must not keep an unattended session alive)."""
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            row = sess.get(SessionRow, session.session_id)
+            if row is None or row.revoked_at is not None:
+                return False
+            user = sess.get(UserRow, row.user_id)
+            if user is None or user.disabled:
+                return False
+            return now < row.expires_at and now < row.last_seen_at + IDLE_TIMEOUT
+
     def logout(self, session: AuthSession) -> None:
         with self.db.session() as sess:
             row = sess.get(SessionRow, session.session_id)

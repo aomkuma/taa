@@ -17,6 +17,9 @@ One ``POST /api/v1/ingest/batch`` after HMAC verification (``app/web/routers/ing
    - ``command_result``: :meth:`CommandQueue.record_result`, once per command
    - ``candles``: upserted into the engine's own ``history_candles`` by open time (TAA-706)
 
+   Applied rows of streamed types also go to the engine's change feed in the same transaction
+   (:class:`app.sync.stream.StreamLog`, TAA-804), so the live stream never shows a change that rolled back.
+
 **Audit continuity.** Only the signing engine's own chain (``engine:<id>``) is accepted. Each event's hash is
 recomputed on arrival; a mismatch, or a different event at a ``seq`` already held, is rejected and marks the
 chain BROKEN. :class:`AuditReplicaRow` then advances over the gap-free prefix, checking that each
@@ -54,6 +57,7 @@ from app.sync.events import (
     WireBatch,
     WireEvent,
 )
+from app.sync.stream import StreamEntry, StreamLog, entry_for
 
 log = logging.getLogger(__name__)
 
@@ -173,6 +177,7 @@ class IngestService:
         self.clock = clock
         self.commands = commands
         self.audit = audit  # the web chain, for BROKEN alerts
+        self.stream = StreamLog(db, clock)
 
     def ingest(self, engine_id: str, doc: Any) -> IngestResult:
         batch = self._envelope(engine_id, doc)
@@ -183,6 +188,7 @@ class IngestService:
         broken: list[_Broken] = []
         with self.db.session() as sess:
             chains: set[str] = set()
+            streamed: list[StreamEntry] = []
             for item in prepared:
                 if isinstance(item, _CommandEvent):
                     self._apply_command(sess, engine_id, item, result)
@@ -192,9 +198,12 @@ class IngestService:
                     if self._apply_audit(sess, engine_id, item, result, broken):
                         chains.add(item.values["chain"])
                 else:
-                    self._apply_row(sess, engine_id, item, result)
+                    entry = self._apply_row(sess, engine_id, item, result)
+                    if entry is not None:
+                        streamed.append(entry)
             for chain in sorted(chains):
                 self._advance(sess, engine_id, chain, broken)
+            self.stream.append(sess, engine_id, streamed)
         for b in broken:
             log.error("replicated audit chain %s is BROKEN at seq %s: %s", b.chain, b.seq, b.detail)
             if self.audit is not None:
@@ -293,12 +302,15 @@ class IngestService:
             version.received_at = now
         sess.flush()
 
-    def _apply_row(self, sess: Session, engine_id: str, item: _RowEvent, result: IngestResult) -> None:
+    def _apply_row(
+        self, sess: Session, engine_id: str, item: _RowEvent, result: IngestResult
+    ) -> StreamEntry | None:
+        """Upsert one row; returns its stream entry when it was applied and its type is streamed."""
         key = item.spec.entity_key(item.values)
         version = self._version(sess, engine_id, item.spec.event_type, key)
         if self._stale(version, item.event):
             result.duplicates += 1
-            return
+            return None
         row = item.spec.find(sess, item.values)
         if row is None:
             sess.add(item.spec.model(**item.values))
@@ -307,6 +319,7 @@ class IngestService:
                 setattr(row, name, value)
         self._record_version(sess, engine_id, item.spec.event_type, key, item.event, version)
         result.accepted += 1
+        return entry_for(item.spec.event_type, key, item.values)
 
     @staticmethod
     def _apply_candles(sess: Session, engine_id: str, item: _CandlesEvent, result: IngestResult) -> None:

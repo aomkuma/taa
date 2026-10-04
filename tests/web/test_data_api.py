@@ -20,6 +20,7 @@ from app.storage.models import ConfigSnapshot, DecisionCheckRow, DecisionRecordR
 from app.sync.command_queue import CommandQueue
 from app.sync.events import SPECS_BY_TYPE
 from app.sync.ingest import IngestService
+from app.web.stream import StreamTiming
 from tests.sync_data import T, sample_rows
 from tests.web.conftest import DEV_ENV, PASSWORD, TOTP_SECRET, login, make_app
 
@@ -38,6 +39,7 @@ ROUTES = [
     "candles?symbol=EURUSD",
     "config",
     "audit/verify",
+    "stream",
 ]
 
 
@@ -129,6 +131,7 @@ def fill(db: Database, engine_id: str, clock: ManualClock) -> None:
 @pytest.fixture
 def rig(db: Database, clock: ManualClock, static_dir: Path) -> Iterator[tuple[TestClient, str, str]]:
     app = make_app(db, clock, static_dir, DEV_ENV | {"MULTI_ENGINE_ENABLED": "true"})
+    app.state.ctx.streams.timing = StreamTiming(stream_seconds=0.0)  # the stream route answers and closes
     auth, registry = app.state.ctx.auth, app.state.ctx.engine.registry
     ids = []
     for name, role in (("alice", "OWNER"), ("bob", "SUBSCRIBER")):

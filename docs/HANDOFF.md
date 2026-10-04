@@ -94,6 +94,11 @@ or at any phase boundary if I ask. Chat with me in Thai.
     - TAA-803 read APIs (PLAN §A14 "TAA-803 decisions"): `/api/v1/engines/{engine_id}/...` in
       `app/web/routers/data.py` + `app/web/readmodels.py`, `OwnedEngine` in `app/web/deps.py`; IDOR test walks
       every route (`tests/web/test_data_api.py` `ROUTES`: add new engine routes there).
+    - TAA-804 SSE (PLAN §A14 "TAA-804 decisions", migration 0022): `GET /api/v1/engines/{id}/stream`
+      (`app/web/routers/stream.py`, `app/web/stream.py`) over a per-engine change feed that ingest writes in
+      its transaction (`app/sync/stream.py`: `stream_heads` + `stream_events`, commit-ordered `seq`, newest
+      5000 kept). `ready`/`reset`/topic events/`: ping` with `id`/`end`; `Last-Event-ID` resumes; 10-minute
+      streams; 4 per user. Tests shorten the timing with `ctx.streams.timing = StreamTiming(...)`.
     - TAA-706 candle sync (PLAN §A13 "TAA-706 decisions", migration 0021): `candles` events of up to 1000
       closed bars into the per-engine `history_candles`; `CandleStreamer` on the engine's candle poll (per
       symbol back-off, so crypto streams at weekends); `python -m app.cli sync upload-history [--send]` and
@@ -371,7 +376,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 3. ~~TAA-707 advisory sync~~ (done, before 708 because it was under way)
 4. ~~(rev. 4) TAA-708 engine registry, TAA-709 engine-scoped replicas~~ (done)
 5. ~~TAA-706 candle & history sync~~ (done)
-6. ~~TAA-803 read APIs~~ (done), then TAA-804 SSE
+6. ~~TAA-803 read APIs~~ (done), ~~TAA-804 SSE~~ (done)
 7. TAA-805 control API (owned engines only, rev. 4), then TAA-811 engine management API
 8. TAA-808 worker service, then TAA-705 heartbeat & watchdog (completes Phase 7)
 9. TAA-806 Web Push, TAA-807 backtest jobs

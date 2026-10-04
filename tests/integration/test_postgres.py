@@ -1,4 +1,5 @@
-"""PostgreSQL checks: migrations, schema parity, rev. 4 backfill and ingest (marker ``postgres``).
+"""PostgreSQL checks: migrations, schema parity, rev. 4 backfill, ingest and the stream feed (marker
+``postgres``).
 
 The URL comes from ``TAA_POSTGRES_URL`` (environment, else the repository ``.env``) or a PostgreSQL
 ``DATABASE_URL`` (CI). Every test gets a throwaway database created with that role (it needs CREATEDB) and
@@ -9,6 +10,7 @@ from __future__ import annotations
 
 import os
 import secrets
+import threading
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from typing import Any
@@ -31,6 +33,7 @@ from app.storage.models import AuditReplicaRow, Base, BreakerStateRow
 from app.sync.command_queue import CommandQueue
 from app.sync.events import SPECS_BY_MODEL, SPECS_BY_TYPE
 from app.sync.ingest import IngestService
+from app.sync.stream import StreamEntry, StreamLog
 from tests.sync_data import sample_rows
 
 pytestmark = pytest.mark.postgres
@@ -194,4 +197,37 @@ def test_two_engines_ingest_into_postgres(pg_url: str) -> None:
         assert list(states.scalars()) == ["eng-a", "eng-b"]
         status = sess.get(AuditReplicaRow, "engine:eng-b")
         assert status is not None and status.status == "OK"
+    cloud.dispose()
+
+
+@needs_postgres
+def test_stream_numbers_follow_commit_order_on_postgres(pg_url: str) -> None:
+    """Two concurrent batches of one engine take turns on the head row, so a reader can never see seq n
+    before n-1 is committed (TAA-804)."""
+    upgrade_schema(pg_url)
+    cloud = Database(pg_url)
+    log = StreamLog(cloud, ManualClock(NOW))
+
+    def entry(key: str) -> StreamEntry:
+        return StreamEntry("positions", "paper_position", key, {"ticket": key, "price": 1.5})
+
+    with cloud.session() as sess:
+        log.append(sess, "eng-a", [entry("x")])
+    heads: list[int | None] = []
+
+    def second_batch() -> None:
+        with cloud.session() as sess:
+            heads.append(log.append(sess, "eng-a", [entry("b")]))
+
+    with cloud.session() as sess:
+        assert log.append(sess, "eng-a", [entry("a")]) == 2  # holds the head row until commit
+        other = threading.Thread(target=second_batch)
+        other.start()
+        other.join(timeout=1.0)
+        assert other.is_alive()  # waits for the lock instead of taking a number of its own
+        assert log.bounds("eng-a").head == 1  # nothing uncommitted is visible
+    other.join(timeout=10.0)
+    assert heads == [3]
+    events = log.read("eng-a", 0, ("positions",), 10)[0]
+    assert [(e.seq, e.key, e.item["price"]) for e in events] == [(1, "x", 1.5), (2, "a", 1.5), (3, "b", 1.5)]
     cloud.dispose()

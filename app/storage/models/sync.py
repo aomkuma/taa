@@ -1,7 +1,7 @@
 """Cloud-sync tables (PLAN §A13).
 
 Engine: the event outbox and the command log. Cloud: the ingest nonce store, replica versions, audit-replica
-status and the command queue.
+status, the command queue and the PWA's change stream (PLAN §A14).
 """
 
 from __future__ import annotations
@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import BigInteger, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.storage.models.base import Base
@@ -122,3 +122,32 @@ class AuditReplicaRow(Base):
     first_bad_seq: Mapped[int | None] = mapped_column(Integer, nullable=True)
     detail: Mapped[str] = mapped_column(Text, default="")
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
+
+
+class StreamHeadRow(Base):
+    """Cloud side: the last stream sequence number given out per engine (TAA-804).
+
+    Ingest raises it with one UPDATE inside its transaction, which locks the row until commit, so an engine's
+    stream events become visible in sequence order."""
+
+    __tablename__ = "stream_heads"
+
+    engine_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    seq: Mapped[int] = mapped_column(BigInteger)
+
+
+class StreamEventRow(Base):
+    """Cloud side: one change of a streamed replica row, for the PWA's live stream (TAA-804).
+
+    ``item`` is the row as the read APIs serialize it. Only the newest ``app.sync.stream.KEEP_EVENTS`` per
+    engine are kept; a client whose cursor fell behind them refetches."""
+
+    __tablename__ = "stream_events"
+
+    engine_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    seq: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    topic: Mapped[str] = mapped_column(String(16))
+    type: Mapped[str] = mapped_column(String(48))
+    entity_key: Mapped[str] = mapped_column(String(160))
+    item: Mapped[dict[str, Any]] = mapped_column(JSONType)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime())

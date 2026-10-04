@@ -5,7 +5,7 @@ Every route takes ``OwnedEngine``: only the session user's own engines resolve, 
 ``invalid_query`` (400) for unusable parameters, ``<thing>_not_found`` (404).
 
 Not served yet, because no engine event carries them: live quotes, account snapshots of the broker account
-and heartbeats (TAA-705/804); notifications (TAA-806); backtests (TAA-807); analytics (TAA-1005).
+and heartbeats (TAA-705); notifications (TAA-806); backtests (TAA-807); analytics (TAA-1005).
 """
 
 from __future__ import annotations

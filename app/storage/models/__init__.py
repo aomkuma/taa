@@ -21,6 +21,8 @@ from app.storage.models.sync import (
     IngestNonceRow,
     OutboxEventRow,
     ReplicaVersionRow,
+    StreamEventRow,
+    StreamHeadRow,
 )
 from app.storage.models.system import (
     AuditChainHead,
@@ -66,6 +68,8 @@ __all__ = [
     "Run",
     "SessionRow",
     "ShadowTradeRow",
+    "StreamEventRow",
+    "StreamHeadRow",
     "SuitabilitySnapshotRow",
     "SymbolCatalogRow",
     "UserRow",
