@@ -19,16 +19,21 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ```text
 Continue the TAA project. Read docs/HANDOFF.md (state, the "Next work" order), docs/TICKETS.md (progress,
-dependencies) and docs/PLAN.md §A13 (cloud sync) and §A14 (web backend); later tickets name their own
-sections (§A15/§A28 PWA, §A16 analytics, §A30 tenancy, §A31 trading profile).
+dependencies) and docs/PLAN.md §A13 (cloud sync), §A14 (web backend) and §A32 (engine registry, per-user
+engines); later tickets name their own sections (§A15/§A28 PWA, §A16 analytics, §A30 tenancy, §A31 trading
+profile).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
-Partly done: Phase 7 (701..704, 707..709), Phase 8 (801, 802), Phase 9 (901, 902, 915), Phase 10 (1001..1003).
+Partly done: Phase 7 (701..704, 706..709; 705 waits for the worker 808), Phase 8 (801..803),
+Phase 9 (901, 902, 915), Phase 10 (1001..1003).
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
 "Next work" list in docs/HANDOFF.md. Start with TAA-804 (SSE stream).
+A local PostgreSQL 16 is available for tests: `pytest -m postgres` uses TAA_POSTGRES_URL from .env (role taa,
+database taa_test); never touch other projects' databases on that server.
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
-Commit at each ticket boundary (allowed); ask before pushing. Update docs/HANDOFF.md at the end of the
-session. Stop for review at the end of Milestone 1, or at any phase boundary if I ask.
+Commit at each ticket boundary (allowed). Pushing from Claude Code fails (GitHub needs an interactive login),
+so I push myself. Update docs/HANDOFF.md at the end of the session. Stop for review at the end of Milestone 1,
+or at any phase boundary if I ask. Chat with me in Thai.
 ```
 
 ---
