@@ -33,7 +33,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 4 | IN PROGRESS |
-| M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
+| M1 | Phase 7 — Cloud sync | 7 | 1 | IN PROGRESS |
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 22 | 2 | IN PROGRESS |
@@ -964,13 +964,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-702 — HMAC auth library
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 004
 
-- [ ] sign and verify (timestamp, nonce, body hash)
-- [ ] nonce store
-- [ ] dual-secret rotation
-- [ ] forgery, replay and skew tests
+- [x] sign and verify (timestamp, nonce, body hash)
+- [x] nonce store
+- [x] dual-secret rotation
+- [x] forgery, replay and skew tests
 
 #### TAA-703 — Ingest API
 
