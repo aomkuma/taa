@@ -33,11 +33,15 @@ from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from app.advisory.preferences import AdvisoryPreferences, TheoryPreferences, Watchlist, WatchlistKind
+from app.config import load_app_config
+from app.core.enums import Side
 from app.core.errors import ConfigError
+from app.web.account_profiles import load_profile, plan_of, size_manual
 from app.web.advisory import AdvisoryReads, PreferenceStore, detector_catalog
-from app.web.deps import Context, CsrfSession, CurrentSession, OwnedEngine, WebContext
+from app.web.deps import AdvisoryEngine, Context, CsrfSession, CurrentSession, WebContext
 from app.web.entitlements import EntitlementError, EntitlementService
 from app.web.errors import ApiProblem
+from app.web.feed import redact
 from app.web.readmodels import MAX_LIMIT, QueryError
 
 router = APIRouter(tags=["advisory"])
@@ -164,6 +168,12 @@ async def toggle_favourite(symbol: str, ctx: Context, session: CsrfSession) -> d
 
 
 # --- engine data --------------------------------------------------------------------------------------------
+# ``AdvisoryEngine``: the user's own engine, or the market feed for a subscriber without one (TAA-8A4). On the
+# feed, the engine owner's account details are redacted and the user gets their own figures instead.
+
+OWNER_METRICS = frozenset(
+    {"lot", "risk_money", "risk_budget", "margin", "effective_leverage", "required_equity"}
+)
 
 
 def reads(ctx: WebContext) -> AdvisoryReads:
@@ -177,30 +187,62 @@ async def _server(ctx: WebContext, engine_id: str, server: str | None) -> str:
     return srv
 
 
+def _risk_percent(ctx: WebContext, user_id: str, profile: Any) -> float:
+    """The lowest of config.yaml's risk per trade, the trading profile's and the account profile's risk per
+    signal: the same cap the sizer applies, so the ranking and the sizing agree."""
+    prefs = PreferenceStore(ctx.db).get(user_id)
+    values = [
+        load_app_config().risk.max_risk_per_trade_percent,
+        prefs.trading_profile.resolve().risk_per_signal_percent,
+    ]
+    if profile is not None and profile.risk_percent is not None:
+        values.append(profile.risk_percent)
+    return min(values)
+
+
 @router.get("/engines/{engine_id}/ranking")
 async def ranking(
-    engine: OwnedEngine,
+    engine: AdvisoryEngine,
     ctx: Context,
+    session: CurrentSession,
     asset_class: Annotated[str | None, Query(min_length=1, max_length=16)] = None,
     eligible: bool | None = None,
 ) -> dict[str, Any]:
-    result: dict[str, Any] = await _run(
-        reads(ctx).ranking, engine.engine_id, asset_class=asset_class, eligible=eligible
+    if engine.is_owner:
+        result: dict[str, Any] = await _run(
+            reads(ctx).ranking, engine.engine_id, asset_class=asset_class, eligible=eligible
+        )
+        return result
+    profile = await run_in_threadpool(load_profile, ctx.db, session.user_id)
+    risk = await run_in_threadpool(_risk_percent, ctx, session.user_id, profile)
+    personal: dict[str, Any] = await _run(
+        reads(ctx).personal_ranking,
+        engine.engine_id,
+        profile,
+        risk,
+        ctx.clock.now_utc(),
+        asset_class=asset_class,
     )
-    return result
+    if eligible is not None:
+        personal["items"] = [i for i in personal["items"] if i["personal"].get("eligible") is eligible]
+    return personal
 
 
 @router.get("/engines/{engine_id}/ranking/{symbol}")
-async def ranking_symbol(engine: OwnedEngine, ctx: Context, symbol: str) -> dict[str, Any]:
+async def ranking_symbol(engine: AdvisoryEngine, ctx: Context, symbol: str) -> dict[str, Any]:
     found: dict[str, Any] | None = await _run(reads(ctx).ranking_symbol, engine.engine_id, symbol[:32])
     if found is None:
         raise ApiProblem(404, "symbol_not_found", "No ranking for this symbol")
+    if not engine.is_owner:  # the owner's lot, budget and margin stay private
+        payload = dict(found.get("payload") or {})
+        metrics = {k: v for k, v in dict(payload.get("metrics") or {}).items() if k not in OWNER_METRICS}
+        found["payload"] = payload | {"metrics": metrics}
     return found
 
 
 @router.get("/engines/{engine_id}/ranking/{symbol}/history")
 async def ranking_history(
-    engine: OwnedEngine, ctx: Context, symbol: str, hours: Annotated[int, Query(ge=1)] = 168
+    engine: AdvisoryEngine, ctx: Context, symbol: str, hours: Annotated[int, Query(ge=1)] = 168
 ) -> dict[str, Any]:
     items = await _run(reads(ctx).ranking_history, engine.engine_id, symbol[:32], hours, ctx.clock.now_utc())
     return {"symbol": symbol, "items": items}
@@ -208,7 +250,7 @@ async def ranking_history(
 
 @router.get("/engines/{engine_id}/opportunities")
 async def opportunities(
-    engine: OwnedEngine,
+    engine: AdvisoryEngine,
     ctx: Context,
     status: Annotated[str | None, Query(pattern="^(CANDIDATE|ACTIVE|EXPIRED|INVALIDATED|FOLLOWED)$")] = None,
     symbol: Name = None,
@@ -216,7 +258,7 @@ async def opportunities(
     limit: Limit = None,
     cursor: Cursor = None,
 ) -> dict[str, Any]:
-    page = await _run(
+    page: Any = await _run(
         reads(ctx).opportunities,
         engine.engine_id,
         status=status,
@@ -225,12 +267,15 @@ async def opportunities(
         limit=limit,
         cursor=cursor,
     )
-    return dict(page.to_dict())
+    out = dict(page.to_dict())
+    if not engine.is_owner:
+        out["items"] = [redact(i) for i in out["items"]]
+    return out
 
 
 @router.get("/engines/{engine_id}/opportunities/{opportunity_id}")
 async def opportunity(
-    engine: OwnedEngine, ctx: Context, session: CurrentSession, opportunity_id: str
+    engine: AdvisoryEngine, ctx: Context, session: CurrentSession, opportunity_id: str
 ) -> dict[str, Any]:
     prefs = await run_in_threadpool(_store(ctx).get, session.user_id)
     found: dict[str, Any] | None = await _run(
@@ -238,12 +283,53 @@ async def opportunity(
     )
     if found is None:
         raise ApiProblem(404, "opportunity_not_found", "No such opportunity")
+    if not engine.is_owner:
+        found = redact(found)
+        found["shadow"] = [redact(s) for s in found.get("shadow", [])]
+        found["my_sizing"] = await run_in_threadpool(
+            _my_sizing, ctx, engine.engine_id, session.user_id, found
+        )
     return found
+
+
+def _my_sizing(ctx: WebContext, engine_id: str, user_id: str, opp: dict[str, Any]) -> dict[str, Any]:
+    """The opportunity sized for the user's MANUAL account profile (TAA-8A3)."""
+    profile = load_profile(ctx.db, user_id)
+    if profile is None or profile.source != "MANUAL":
+        return {"available": False, "reason": "no_manual_profile"}
+    sized = size_manual(
+        ctx.db,
+        profile,
+        engine_id=engine_id,
+        server=str(opp["server"]),
+        symbol=str(opp["symbol"]),
+        side=Side(str(opp["side"])),
+        entry=float(opp["entry"]),
+        stop=float(opp["stop_loss"]),
+        risk=load_app_config().risk,
+        risk_percent=_risk_percent(ctx, user_id, None),
+        now=ctx.clock.now_utc(),
+        take_profit=opp.get("take_profit"),
+        plan=PreferenceStore(ctx.db).get(user_id).entry_plan,
+        atr=opp.get("atr"),
+    )
+    if sized.result is None or not sized.result.ok:
+        return {"available": False, "reason": sized.reason}
+    r = sized.result
+    return {
+        "available": True,
+        "currency": profile.currency,
+        "lot": float(r.volume),
+        "risk_money": float(r.risk_money),
+        "budget": float(r.budget),
+        "taps": sum(p.taps for p in r.parts),
+        "plan": list(plan_of(r)),
+    }
 
 
 @router.get("/engines/{engine_id}/shadow-trades")
 async def shadow_trades(
-    engine: OwnedEngine,
+    engine: AdvisoryEngine,
     ctx: Context,
     status: Annotated[str | None, Query(pattern="^(OPEN|CLOSED|VOID)$")] = None,
     variant: Annotated[str | None, Query(pattern="^(PLAN|MANAGED)$")] = None,
@@ -252,7 +338,7 @@ async def shadow_trades(
     limit: Limit = None,
     cursor: Cursor = None,
 ) -> dict[str, Any]:
-    page = await _run(
+    page: Any = await _run(
         reads(ctx).shadow_trades,
         engine.engine_id,
         status=status,
@@ -262,7 +348,10 @@ async def shadow_trades(
         limit=limit,
         cursor=cursor,
     )
-    return dict(page.to_dict())
+    out = dict(page.to_dict())
+    if not engine.is_owner:
+        out["items"] = [redact(i) for i in out["items"]]
+    return out
 
 
 Variant = Annotated[str, Query(pattern="^(PLAN|MANAGED)$")]
@@ -271,14 +360,27 @@ SourceQ = Annotated[str | None, Query(pattern="^(LIVE|REPLAY)$")]
 
 @router.get("/engines/{engine_id}/accuracy")
 async def accuracy(
-    engine: OwnedEngine,
+    engine: AdvisoryEngine,
     ctx: Context,
     session: CurrentSession,
     server: Server = None,
     variant: Variant = "PLAN",
     since: datetime | None = None,
+    mine: bool = False,
 ) -> dict[str, Any]:
+    """The engine's whole record (owner), or only the alerts this user got at their own risk money (``mine``,
+    always on the market feed)."""
     srv = await _server(ctx, engine.engine_id, server)
+    if mine or not engine.is_owner:
+        user_view: dict[str, Any] = await _run(
+            reads(ctx).user_accuracy,
+            engine.engine_id,
+            srv,
+            session.user_id,
+            variant=variant,
+            since=_aware(since),
+        )
+        return user_view
     prefs = await run_in_threadpool(_store(ctx).get, session.user_id)
     result: dict[str, Any] = await _run(
         reads(ctx).accuracy, engine.engine_id, srv, variant=variant, since=_aware(since), prefs=prefs
@@ -288,7 +390,7 @@ async def accuracy(
 
 @router.get("/engines/{engine_id}/threshold-explorer")
 async def explorer(
-    engine: OwnedEngine,
+    engine: AdvisoryEngine,
     ctx: Context,
     server: Server = None,
     variant: Variant = "PLAN",
@@ -297,14 +399,20 @@ async def explorer(
 ) -> dict[str, Any]:
     srv = await _server(ctx, engine.engine_id, server)
     result: dict[str, Any] = await _run(
-        reads(ctx).explorer, engine.engine_id, srv, variant=variant, source=source, since=_aware(since)
+        reads(ctx).explorer,
+        engine.engine_id,
+        srv,
+        variant=variant,
+        source=source,
+        since=_aware(since),
+        money=engine.is_owner,
     )
     return result
 
 
 @router.get("/engines/{engine_id}/theory-scoreboard")
 async def theory_scoreboard(
-    engine: OwnedEngine,
+    engine: AdvisoryEngine,
     ctx: Context,
     server: Server = None,
     variant: Variant = "PLAN",
@@ -319,7 +427,7 @@ async def theory_scoreboard(
 
 
 @router.get("/engines/{engine_id}/calibration")
-async def calibration(engine: OwnedEngine, ctx: Context, server: Server = None) -> dict[str, Any]:
+async def calibration(engine: AdvisoryEngine, ctx: Context, server: Server = None) -> dict[str, Any]:
     srv = await _server(ctx, engine.engine_id, server)
     found: dict[str, Any] | None = await _run(reads(ctx).calibration, engine.engine_id, srv)
     if found is None:

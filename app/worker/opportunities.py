@@ -40,6 +40,7 @@ from app.advisory.requirements import pattern_setups
 from app.advisory.statuses import OPEN
 from app.config import AppConfig, load_app_config
 from app.core.clock import Clock, ensure_utc
+from app.core.enums import Side
 from app.core.errors import TaaError
 from app.storage.database import Database
 from app.storage.models import (
@@ -53,8 +54,10 @@ from app.storage.models import (
 )
 from app.sync.notifications import NotificationType, Severity, notify
 from app.sync.stream import StreamLog
+from app.web.account_profiles import load_profile, plan_of, size_manual
 from app.web.advisory import PreferenceStore, catalogs
 from app.web.entitlements import Entitlements, EntitlementService, Limit
+from app.web.feed import engine_users
 
 log = logging.getLogger(__name__)
 
@@ -84,8 +87,8 @@ class OpportunityAlerter:
                 for e in sess.scalars(select(EngineRow).where(EngineRow.status == "ACTIVE"))
             ]
         alerts = updates = 0
-        for engine_id, owner in engines:
-            a, u = self._engine(engine_id, [owner], config, now)
+        for engine_id, _owner in engines:  # the owner first, then the subscribers the market feed serves
+            a, u = self._engine(engine_id, engine_users(self.db, engine_id), config, now)
             alerts, updates = alerts + a, updates + u
         if alerts or updates:
             return f"{alerts} alerts, {updates} updates"
@@ -195,7 +198,15 @@ class OpportunityAlerter:
                 user = dataclasses.replace(
                     user, core_families=tuple(strategies.get(row.strategy).core_families)
                 )
-            opportunity = self._opportunity(sess, engine_id, row)
+            owner_view = self._opportunity(sess, engine_id, row)
+            engine = sess.get(EngineRow, engine_id)
+            is_owner = engine is not None and engine.owner_user_id == user_id
+            opportunity, sized = (
+                (owner_view, owner_view.lot is not None)
+                if is_owner
+                else self._for_user(owner_view, row, engine_id, user_id, prefs, config, now)
+            )
+            user = dataclasses.replace(user, is_owner=sized)  # the lot in the push is this user's own
             market_open = self._market_open(sess, engine_id, row, config, now)
             result = personalize(
                 opportunity,
@@ -246,6 +257,10 @@ class OpportunityAlerter:
                     notification_id=note.notification_id,
                     status=SENT,
                     final_status="",
+                    lot=opportunity.lot if sized else None,
+                    risk_money=opportunity.risk_money if sized else None,
+                    currency=opportunity.currency if sized else "",
+                    selection=prefs.theories.model_dump(mode="json"),  # what the alert was evaluated with
                 )
             )
         log.info("opportunity %s alerted to %s", row.opportunity_id, user_id)
@@ -288,6 +303,70 @@ class OpportunityAlerter:
                 now=now,
             )
         return True
+
+    def _for_user(
+        self,
+        owner_view: MarketOpportunity,
+        row: OpportunityRow,
+        engine_id: str,
+        user_id: str,
+        prefs: Any,
+        config: AppConfig,
+        now: datetime,
+    ) -> tuple[MarketOpportunity, bool]:
+        """The opportunity as another user gets it: the market facts, never the engine owner's account (lot,
+        money, equity, plan, heat); the lot and risk sized on the user's MANUAL profile when there is one."""
+        market = dataclasses.replace(
+            owner_view,
+            lot=None,
+            risk_money=None,
+            reward_money=None,
+            plan=(),
+            heat_after=None,
+            heat_limit=None,
+            positions_after=None,
+            positions_limit=None,
+        )
+        profile = load_profile(self.db, user_id)
+        if profile is None or profile.source != "MANUAL" or profile.equity is None:
+            return market, False
+        risk = [prefs.trading_profile.resolve().risk_per_signal_percent]
+        if profile.risk_percent is not None:
+            risk.append(profile.risk_percent)
+        sized = size_manual(
+            self.db,
+            profile,
+            engine_id=engine_id,
+            server=row.server,
+            symbol=row.symbol,
+            side=Side(row.side),
+            entry=row.entry,
+            stop=row.stop_loss,
+            risk=config.risk,
+            risk_percent=min(risk),
+            now=now,
+            take_profit=row.take_profit,
+            plan=prefs.entry_plan,
+            atr=row.atr,
+        )
+        if sized.result is None or not sized.result.ok:
+            return dataclasses.replace(market, currency=profile.currency, equity=float(profile.equity)), False
+        r = sized.result
+        reward = None
+        if row.take_profit is not None and row.entry != row.stop_loss:
+            reward = float(r.risk_money) * abs(row.take_profit - row.entry) / abs(row.entry - row.stop_loss)
+        return (
+            dataclasses.replace(
+                market,
+                lot=float(r.volume),
+                risk_money=float(r.risk_money),
+                reward_money=reward,
+                currency=profile.currency,
+                equity=float(profile.equity),
+                plan=plan_of(r) if len(r.parts) > 1 else (),
+            ),
+            True,
+        )
 
     # --- inputs -------------------------------------------------------------------------------------------
 

@@ -15,7 +15,8 @@ from __future__ import annotations
 
 import dataclasses
 import enum
-from collections.abc import Hashable, Mapping
+import math
+from collections.abc import Hashable, Mapping, Sequence
 from datetime import datetime, timedelta
 from functools import lru_cache
 from typing import Any
@@ -33,6 +34,7 @@ from app.advisory.stats import (
     scoreboard,
     threshold_explorer,
 )
+from app.advisory.suitability import Gate
 from app.core.clock import ensure_utc
 from app.core.errors import TaaError
 from app.evidence.catalog import default_registry as evidence_registry
@@ -40,9 +42,11 @@ from app.evidence.framework import Family
 from app.evidence.registry import DetectorRegistry
 from app.storage.database import Database
 from app.storage.models import (
+    AccountProfileRow,
     CalibrationTableRow,
     DecisionCheckRow,
     DecisionRecordRow,
+    OpportunityAlertRow,
     OpportunityRow,
     ShadowTradeRow,
     SuitabilitySnapshotRow,
@@ -51,7 +55,11 @@ from app.storage.models import (
 from app.strategy.catalog import default_registry as strategy_registry
 from app.strategy.registry import StrategyRegistry
 from app.sync.events import json_safe
+from app.web.account_profiles import HistoryRates
 from app.web.readmodels import Page, QueryError, paginate, row_dict
+
+# Minimum-lot affordability and margin share depend on the account, not the market.
+ACCOUNT_GATES = frozenset({Gate.G2_MIN_LOT.value, Gate.G3_MARGIN.value})
 
 MAX_HISTORY_HOURS = 24 * 90
 
@@ -117,18 +125,21 @@ class PreferenceStore:
 
 
 def engine_advisory_config(
-    db: Database, owner_user_id: str, families: frozenset[Family] | None = None
+    db: Database, users: Sequence[tuple[str, frozenset[Family] | None]]
 ) -> AdvisoryConfig:
-    """The engine's compute requirements: its users' needs, cut to the evidence families their plans allow
-    (``families`` None: all), so an engine never computes theories nobody may see (TAA-8A2)."""
+    """The engine's compute requirements: the union of its users' needs (TAA-8A4), each user's detectors cut
+    to the evidence families their plan allows (``None``: all, TAA-8A2), so an engine never computes a theory
+    no user may see. *users*: (user id, allowed families), the engine's owner first."""
     evidence, strategies = catalogs()
-    prefs = PreferenceStore(db).get(owner_user_id)
-    config = advisory_config([prefs], evidence=evidence, strategies=strategies)
-    if families is None:
-        return config
-    allowed = evidence.ids_in_families(families)
+    store = PreferenceStore(db)
+    prefs = [store.get(user_id) for user_id, _ in users]
+    config = advisory_config(prefs, evidence=evidence, strategies=strategies)
+    detectors: set[str] = set()
+    for p, (_, families) in zip(prefs, users, strict=True):
+        wanted = p.theories.enabled_detectors(evidence)
+        detectors |= wanted if families is None else wanted & evidence.ids_in_families(families)
     content = config.model_dump(mode="json", exclude={"version"})
-    content["detectors"] = [d for d in content["detectors"] if d in allowed]
+    content["detectors"] = sorted(detectors)
     return AdvisoryConfig(version=content_version(content), **content)
 
 
@@ -189,6 +200,69 @@ class AdvisoryReads:
             rows = sess.scalars(select(m).where(*where).order_by(m.rank, m.symbol)).all()
             items = [row_dict(r, skip=("engine_id", "id", "payload")) for r in rows]
         return {"computed_at": json_safe(ensure_utc(latest)), "items": items}
+
+    def personal_ranking(
+        self,
+        engine_id: str,
+        profile: AccountProfileRow | None,
+        risk_percent: float,
+        now: datetime,
+        *,
+        asset_class: str | None = None,
+    ) -> dict[str, Any]:
+        """The ranking for another user's account (TAA-8A4): the market gates stay, the account gates are
+        recomputed on the user's MANUAL profile (can the minimum lot be risked within their budget?), and
+        the engine owner's sizing is never shown. Eligible for the user first, then the market rank."""
+        m = SuitabilitySnapshotRow
+        with self.db.session() as sess:
+            latest = sess.scalar(
+                select(m.computed_at).where(m.engine_id == engine_id).order_by(m.computed_at.desc()).limit(1)
+            )
+            if latest is None:
+                return {"computed_at": None, "personal": True, "items": []}
+            where = [m.engine_id == engine_id, m.computed_at == latest]
+            if asset_class:
+                where.append(m.asset_class == asset_class)
+            rows = list(sess.scalars(select(m).where(*where).order_by(m.rank, m.symbol)))
+        equity = profile.equity if profile is not None and profile.source == "MANUAL" else None
+        manual = equity is not None
+        budget = float(equity) * risk_percent / 100 if equity is not None else None
+        items = []
+        for r in rows:
+            metrics = dict((r.payload or {}).get("metrics") or {})
+            market_failed = [g for g in r.failed_gates if g not in ACCOUNT_GATES]
+            personal: dict[str, Any] = {"currency": None if profile is None else profile.currency}
+            if not manual or profile is None or budget is None:
+                personal |= {"eligible": None, "reason": "no_manual_profile"}
+            else:
+                rate = HistoryRates(self.db, engine_id, r.server, profile.currency, now)(
+                    str(metrics.get("currency", ""))
+                )
+                min_lot, min_lot_risk = metrics.get("min_lot"), metrics.get("min_lot_risk")
+                if rate is None or not min_lot or min_lot_risk is None:
+                    personal |= {"eligible": None, "reason": "no_conversion"}
+                else:
+                    per_lot = float(min_lot_risk) * rate / float(min_lot)
+                    lots = (
+                        math.floor(budget / per_lot / float(min_lot) + 1e-9) * float(min_lot)
+                        if per_lot > 0
+                        else 0.0
+                    )
+                    affordable = lots >= float(min_lot)
+                    personal |= {
+                        "eligible": affordable and not market_failed,
+                        "affordable": affordable,
+                        "risk_budget": round(budget, 2),
+                        "lot": round(lots, 8) if affordable else None,
+                        "min_lot_risk": round(float(min_lot_risk) * rate, 2),
+                    }
+            item = row_dict(r, skip=("engine_id", "id", "payload"))
+            item["failed_gates"] = market_failed
+            item["eligible"] = not market_failed
+            item["personal"] = personal
+            items.append(item)
+        items.sort(key=lambda i: (i["personal"].get("eligible") is not True, i["rank"]))
+        return {"computed_at": json_safe(ensure_utc(latest)), "personal": True, "items": items}
 
     def ranking_symbol(self, engine_id: str, symbol: str) -> dict[str, Any] | None:
         m = SuitabilitySnapshotRow
@@ -357,10 +431,53 @@ class AdvisoryReads:
         report = accuracy_report(records, watchlists=lists)
         return {"server": server, "variant": variant, "hypothetical": True, **plain(report)}
 
-    def explorer(
-        self, engine_id: str, server: str, *, variant: str, source: str | None, since: datetime | None
+    def user_accuracy(
+        self, engine_id: str, server: str, user_id: str, *, variant: str, since: datetime | None
     ) -> dict[str, Any]:
+        """Accuracy over the opportunities *this user* was alerted to, with P/L = R × the user's risk money at
+        alert time (TAA-8A4; None where the user had no sizing)."""
+        records = self._records(engine_id, server, variant, since)
+        with self.db.session() as sess:
+            alerts = {
+                a.opportunity_id: a
+                for a in sess.scalars(
+                    select(OpportunityAlertRow).where(
+                        OpportunityAlertRow.user_id == user_id, OpportunityAlertRow.engine_id == engine_id
+                    )
+                )
+            }
+        mine = []
+        for r in records:
+            alert = alerts.get(r.shadow_id.rsplit(":", 1)[0])
+            if alert is None:
+                continue
+            money = None if alert.risk_money is None else r.r_net * alert.risk_money
+            mine.append(dataclasses.replace(r, net_pnl=money, alerted=True, followed=False))
+        report = accuracy_report(mine)
+        currency = next((a.currency for a in alerts.values() if a.currency), None)
+        return {
+            "server": server,
+            "variant": variant,
+            "hypothetical": True,
+            "scope": "my_alerts",
+            "currency": currency,
+            **plain(report),
+        }
+
+    def explorer(
+        self,
+        engine_id: str,
+        server: str,
+        *,
+        variant: str,
+        source: str | None,
+        since: datetime | None,
+        money: bool = True,
+    ) -> dict[str, Any]:
+        """``money`` False (the market feed): R only, the owner's money results are dropped."""
         records = self._source(self._records(engine_id, server, variant, since), source)
+        if not money:
+            records = [dataclasses.replace(r, net_pnl=None) for r in records]
         return {"server": server, "hypothetical": True, **plain(threshold_explorer(records))}
 
     def scoreboard(

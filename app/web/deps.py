@@ -28,6 +28,7 @@ from app.sync.ingest import IngestService
 from app.web.auth import AuthService, AuthSession, Role
 from app.web.engines import ENGINE_ID_RE, EngineInfo, EngineRegistry
 from app.web.errors import ApiProblem
+from app.web.feed import feed_engine
 from app.web.stream import StreamHub
 
 log = logging.getLogger(__name__)
@@ -177,3 +178,30 @@ def no_admin_controls(session: AuthSession) -> None:
     """ADMIN is a support role: no trading controls, even on an engine it might own (PLAN §A30)."""
     if session.role == Role.ADMIN.value:
         raise ApiProblem(403, "role_forbidden", "Support accounts have no trading controls")
+
+
+@dataclass(frozen=True)
+class FeedAccess:
+    """An engine whose market facts the session user may read; ``is_owner``: it is their own engine (account
+    details included), else the market feed (account details redacted, ``app.web.feed``)."""
+
+    info: EngineInfo
+    is_owner: bool
+
+    @property
+    def engine_id(self) -> str:
+        return self.info.engine_id
+
+
+def advisory_engine(engine_id: str, ctx: Context, session: CurrentSession) -> FeedAccess:
+    """Advisory routes only (ranking, opportunities, shadow statistics): the user's own engine, or the market
+    feed for a subscriber without one (TAA-8A4). Anything else is 404 ``engine_not_found``."""
+    info = ctx.engine.registry.get(engine_id) if ENGINE_ID_RE.fullmatch(engine_id) else None
+    if info is not None and info.owner_user_id == session.user_id:
+        return FeedAccess(info, True)
+    if info is not None and feed_engine(ctx.db, session.user_id, session.role) == engine_id:
+        return FeedAccess(info, False)
+    raise ApiProblem(404, "engine_not_found", "No such engine")
+
+
+AdvisoryEngine = Annotated[FeedAccess, Depends(advisory_engine)]

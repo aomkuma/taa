@@ -25,9 +25,11 @@ from fastapi import APIRouter, Query, Request, Response
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
+from app.advisory.requirements import AdvisoryConfig
 from app.web.advisory import engine_advisory_config
-from app.web.deps import SignedEngine
+from app.web.deps import SignedEngine, WebContext
 from app.web.entitlements import EntitlementService
+from app.web.feed import engine_users
 
 router = APIRouter(prefix="/engine", tags=["sync"])
 
@@ -54,11 +56,17 @@ async def poll_commands(
         await asyncio.sleep(min(POLL_INTERVAL_SECONDS, remaining))
 
 
+def _requirements(ctx: WebContext, engine_id: str) -> AdvisoryConfig:
+    """Every user the engine serves (owner, and the subscribers of the market feed), with their plans."""
+    plans = EntitlementService(ctx.db, ctx.clock)
+    users = [(u, plans.resolve(u).families) for u in engine_users(ctx.db, engine_id)]
+    return engine_advisory_config(ctx.db, users)
+
+
 @router.get("/advisory-config", response_model=None)
 async def advisory_config(request: Request, engine: SignedEngine) -> Response:
     ctx = request.app.state.ctx
-    ent = await run_in_threadpool(EntitlementService(ctx.db, ctx.clock).resolve, engine.owner_user_id)
-    config = await run_in_threadpool(engine_advisory_config, ctx.db, engine.owner_user_id, ent.families)
+    config = await run_in_threadpool(_requirements, ctx, engine.engine_id)
     etag = f'"{config.version}"'
     if request.headers.get("if-none-match") == etag:
         return Response(status_code=304, headers={"ETag": etag})

@@ -19,13 +19,22 @@ from __future__ import annotations
 import json
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from starlette.concurrency import run_in_threadpool
 
+from app.advisory.personalize import badge
+from app.core.clock import ensure_utc
 from app.core.ids import new_id
-from app.storage.models import EntitlementOverrideRow, PlanRow, SubscriptionRow, UserRow
+from app.storage.models import (
+    EntitlementOverrideRow,
+    OpportunityAlertRow,
+    OpportunityRow,
+    PlanRow,
+    SubscriptionRow,
+    UserRow,
+)
 from app.sync.events import json_safe
 from app.web.account_profiles import ProfileBody, ProfileError, load_profile, profile_dict, save_profile
 from app.web.auth import AuthSession, Role
@@ -40,7 +49,9 @@ from app.web.deps import (
 )
 from app.web.entitlements import ASSET_CLASSES_KEY, FAMILIES_KEY, EntitlementService, Feature, Limit
 from app.web.errors import ApiProblem
+from app.web.feed import feed_engine, own_engine
 from app.web.privacy import PrivacyError, erase_user, export_user
+from app.web.readmodels import MAX_LIMIT, QueryError, paginate
 
 router = APIRouter(tags=["me"])
 
@@ -257,3 +268,61 @@ async def put_account_profile(body: ProfileBody, ctx: Context, session: CsrfSess
     except ProfileError as exc:
         raise ApiProblem(404, "engine_not_found", "Link an engine you own") from exc
     return saved
+
+
+@router.get("/me/feed")
+async def my_feed(ctx: Context, session: CurrentSession) -> dict[str, Any]:
+    """Which engine's market facts the user reads: their own, or the market feed (TAA-8A4)."""
+    own = await run_in_threadpool(own_engine, ctx.db, session.user_id)
+    feed = own or await run_in_threadpool(feed_engine, ctx.db, session.user_id, session.role)
+    return {"engine_id": feed, "own": own is not None}
+
+
+@router.get("/me/alerts")
+async def my_alerts(
+    ctx: Context,
+    session: CurrentSession,
+    limit: Annotated[int | None, Query(ge=1, le=MAX_LIMIT)] = None,
+    cursor: Annotated[str | None, Query(max_length=256)] = None,
+) -> dict[str, Any]:
+    """The opportunities this user was alerted to, newest first, with the user's own sizing and the badge
+    now (ACTIVE / EXPIRING / EXPIRED / INVALIDATED / FOLLOWED; the user's window counts, TAA-8A4)."""
+    now = ctx.clock.now_utc()
+
+    def load() -> dict[str, Any]:
+        with ctx.db.session() as sess:
+
+            def item(a: OpportunityAlertRow) -> dict[str, Any]:
+                opp = sess.get(OpportunityRow, (a.engine_id, a.opportunity_id))
+                status = a.final_status or (opp.status if opp is not None else "EXPIRED")
+                return {
+                    "engine_id": a.engine_id,
+                    "opportunity_id": a.opportunity_id,
+                    "symbol": a.symbol,
+                    "side": None if opp is None else opp.side,
+                    "sent_at": json_safe(a.sent_at),
+                    "valid_until": json_safe(a.valid_until),
+                    "lot": a.lot,
+                    "risk_money": a.risk_money,
+                    "currency": a.currency or None,
+                    "badge": json_safe(
+                        badge(status, ensure_utc(a.sent_at), a.valid_until and ensure_utc(a.valid_until), now)
+                    ),
+                }
+
+            return paginate(
+                sess,
+                OpportunityAlertRow,
+                [OpportunityAlertRow.user_id == session.user_id],
+                OpportunityAlertRow.sent_at,
+                OpportunityAlertRow.opportunity_id,
+                limit=limit,
+                cursor=cursor,
+                serialize=item,
+            ).to_dict()
+
+    try:
+        result: dict[str, Any] = await run_in_threadpool(load)
+    except QueryError as exc:
+        raise ApiProblem(400, "invalid_query", str(exc)) from exc
+    return result

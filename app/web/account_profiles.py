@@ -23,11 +23,19 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import select
 
+from app.advisory.preferences import EntryPlanPreferences
 from app.config import CEILING_RISK_PER_TRADE_PCT, RiskConfig
 from app.core.clock import ensure_utc
 from app.core.enums import Side
 from app.market_data.data_models import SymbolSpec
-from app.risk.position_sizer import AccountFunds, PositionSizer, SizingResult
+from app.risk.position_sizer import (
+    AccountFunds,
+    PositionSizer,
+    SizingResult,
+    SplitMode,
+    WeightScheme,
+    build_parts,
+)
 from app.risk.spec_calculator import SpecCalculator
 from app.storage.database import Database
 from app.storage.models import AccountProfileRow, EngineRow, HistoryCandle, SymbolCatalogRow
@@ -198,8 +206,12 @@ def size_manual(
     risk: RiskConfig,
     risk_percent: float | None,
     now: datetime,
+    take_profit: float | None = None,
+    plan: EntryPlanPreferences | None = None,
+    atr: float | None = None,
 ) -> CloudSizing:
-    """Size one order for a MANUAL profile with the engine's sizer over the replicated spec."""
+    """Size a MANUAL profile's trade with the engine's sizer over the replicated spec: one market order, or
+    the user's entry plan (rev. 3: SAME_PRICE / SCALE_IN parts, lot per tap) when *plan* is given."""
     if profile.source != "MANUAL" or profile.equity is None or profile.leverage is None:
         return CloudSizing(None, "not_manual")
     rates = HistoryRates(db, engine_id, server, profile.currency, now)
@@ -222,15 +234,45 @@ def size_manual(
     sizer = PositionSizer(
         risk, SpecCalculator({symbol: converted}, profile.currency, profile.leverage, rates)
     )
-    result = sizer.size(
+    try:
+        parts = build_parts(
+            plan.mode if plan else SplitMode.SINGLE,
+            side,
+            entry,
+            stop,
+            take_profit,
+            k=plan.parts if plan else 1,
+            scheme=plan.weights if plan else WeightScheme.EQUAL,
+            atr=atr,
+            spacing_atr=plan.spacing_atr if plan else 0.5,
+        )
+    except ValueError:  # SCALE_IN without an ATR: no plan rather than a guessed spacing
+        return CloudSizing(None, "no_atr")
+    result = sizer.size_plan(
         converted,
         side,
-        entry,
+        parts,
         stop,
         funds,
         lot_limit=converted.volume_max,
+        lot_unit=plan.lot_unit if plan else None,
         risk_percent=min(pct) if pct else None,
     )
     return CloudSizing(
         result, "" if result.ok else (result.reason.value if result.reason else "sizing_failed")
+    )
+
+
+def plan_of(result: SizingResult) -> tuple[dict[str, Any], ...]:
+    """The sized orders in the decision record's plan format (what the push and the app show)."""
+    return tuple(
+        {
+            "entry": str(p.part.entry),
+            "order_type": p.part.order_type.value,
+            "take_profit": None if p.part.take_profit is None else str(p.part.take_profit),
+            "volume": str(p.volume),
+            "taps": p.taps,
+            "risk_money": str(p.risk_money),
+        }
+        for p in result.parts
     )

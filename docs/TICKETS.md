@@ -38,7 +38,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
 | M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 10 | IN PROGRESS |
-| M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 3 | IN PROGRESS |
+| M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 4 | IN PROGRESS |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
@@ -1226,17 +1226,17 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-8A4 — Personalizer service
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 6B5, 8A2, 8A3, 810
 
-- [ ] worker job: market opportunities × active users via `personalize.py`
-- [ ] user alert records + statuses (user-window expiry badge)
-- [ ] TH/EN push + in-app
-- [ ] per-user suitability ranking
-- [ ] per-user accuracy views (snapshotted selection; P/L = R × the user's risk money)
-- [ ] publishes compute requirements (symbol/detector/strategy unions) to `advisory-config`
-- [ ] (rev. 3) applies the user's `TradingProfile`: thresholds, N, conflict policy, entry plan sizing, portfolio heat
-- [ ] single-user equivalence test
+- [x] worker job: market opportunities × active users via `personalize.py`
+- [x] user alert records + statuses (user-window expiry badge)
+- [x] TH/EN push + in-app
+- [x] per-user suitability ranking
+- [x] per-user accuracy views (snapshotted selection; P/L = R × the user's risk money)
+- [x] publishes compute requirements (symbol/detector/strategy unions) to `advisory-config`
+- [x] (rev. 3) applies the user's `TradingProfile`: thresholds, N, conflict policy, entry plan sizing, portfolio heat
+- [x] single-user equivalence test
 
 #### TAA-8A5 — Billing-ready scaffolding (disabled)
 

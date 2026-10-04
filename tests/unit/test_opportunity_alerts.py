@@ -55,6 +55,32 @@ def prefs(**alerts: Any) -> AdvisoryPreferences:
     )
 
 
+def add_opportunity(
+    db: Database, oid: str = "o1", heat: float = 1.25, *, engine: str = ENGINE, **over: Any
+) -> None:
+    """One open EURUSD opportunity with its decision (the owner's entry plan) and the heat check."""
+    opp = opportunity()
+    samples = {type(r): r for r in sample_rows()}
+    row, decision = samples[OpportunityRow], samples[DecisionRecordRow]
+    assert isinstance(row, OpportunityRow) and isinstance(decision, DecisionRecordRow)
+    for name in ("strategy", "symbol", "asset_class", "side", "entry", "stop_loss", "take_profit", "rr",
+                 "created_at", "valid_until", "valid_reason", "lot", "risk_money", "currency"):  # fmt: skip
+        setattr(row, name, getattr(opp, name))
+    row.engine_id, row.opportunity_id, row.decision_id = engine, oid, f"d-{oid}"
+    row.signal, row.features, row.status = opp.signal.to_dict(), dict(opp.features), "CANDIDATE"
+    for name, value in over.items():
+        setattr(row, name, value)
+    decision.engine_id, decision.decision_id, decision.plan = engine, f"d-{oid}", PLAN
+    with db.session() as sess:
+        sess.add_all([row, decision])
+        sess.add(
+            DecisionCheckRow(
+                engine_id=engine, decision_id=f"d-{oid}", seq=0, name="max_total_open_risk",
+                reason="MAX_TOTAL_OPEN_RISK", passed=heat <= 1.5, kind="ACCOUNT", value=heat, threshold=1.5,
+            )
+        )  # fmt: skip
+
+
 class Cloud:
     def __init__(self, db: Database) -> None:
         self.db, self.clock = db, ManualClock(NOW)
@@ -73,26 +99,7 @@ class Cloud:
         PreferenceStore(self.db).save(self.owner.id, p, self.clock.now_utc())
 
     def add(self, oid: str = "o1", heat: float = 1.25, **over: Any) -> None:
-        opp = opportunity()
-        samples = {type(r): r for r in sample_rows()}
-        row, decision = samples[OpportunityRow], samples[DecisionRecordRow]
-        assert isinstance(row, OpportunityRow) and isinstance(decision, DecisionRecordRow)
-        for name in ("strategy", "symbol", "asset_class", "side", "entry", "stop_loss", "take_profit", "rr",
-                     "created_at", "valid_until", "valid_reason", "lot", "risk_money", "currency"):  # fmt: skip
-            setattr(row, name, getattr(opp, name))
-        row.engine_id, row.opportunity_id, row.decision_id = ENGINE, oid, f"d-{oid}"
-        row.signal, row.features, row.status = opp.signal.to_dict(), dict(opp.features), "CANDIDATE"
-        for name, value in over.items():
-            setattr(row, name, value)
-        decision.engine_id, decision.decision_id, decision.plan = ENGINE, f"d-{oid}", PLAN
-        with self.db.session() as sess:
-            sess.add_all([row, decision])
-            sess.add(
-                DecisionCheckRow(
-                    engine_id=ENGINE, decision_id=f"d-{oid}", seq=0, name="max_total_open_risk",
-                    reason="MAX_TOTAL_OPEN_RISK", passed=heat <= 1.5, kind="ACCOUNT", value=heat, threshold=1.5,
-                )
-            )  # fmt: skip
+        add_opportunity(self.db, oid, heat, **over)
 
     def notes(self, type_: str | None = None) -> list[NotificationRow]:
         with self.db.session() as sess:
@@ -265,3 +272,37 @@ def test_the_plan_limits_alerts(cloud: Cloud) -> None:
         )
     cloud.add()
     assert cloud.alerter.run() is None and cloud.notes("OPPORTUNITY") == []
+
+
+def test_single_user_equivalence(cloud: Cloud) -> None:
+    """TAA-8A4: with one user (the owner) the multi-user service yields exactly the personalizer's alert."""
+    import dataclasses
+
+    from app.advisory.confidence import BucketModel, WinProbability
+    from app.advisory.personalize import UserContext, personalize
+    from app.advisory.requirements import pattern_setups
+    from app.web.advisory import catalogs
+    from app.web.entitlements import EntitlementService
+    from app.web.feed import engine_users
+
+    assert engine_users(cloud.db, ENGINE) == [cloud.owner.id]
+    cloud.add()
+    with cloud.db.session() as sess:
+        row = sess.get(OpportunityRow, (ENGINE, "o1"))
+        assert row is not None
+        direct_opp = cloud.alerter._opportunity(sess, ENGINE, row)
+    _, strategies = catalogs()
+    user = (
+        UserContext(  # the inputs the service assembles: plan, pattern setups, the strategy's core families
+            prefs(),
+            entitlements=EntitlementService(cloud.db, cloud.clock).resolve(cloud.owner.id).personalizer(),
+            pattern_strategies=tuple(pattern_setups(strategies)),
+            core_families=tuple(strategies.get(direct_opp.strategy).core_families),
+        )
+    )
+    direct = personalize(
+        direct_opp, user, WinProbability(BucketModel()), CONFIG.evidence.confluence, now=NOW, market_open=True
+    )
+    cloud.alerter.run()
+    [note] = cloud.notes("OPPORTUNITY")
+    assert direct.alert and dataclasses.asdict(direct)["payload"] == note.payload["push"]

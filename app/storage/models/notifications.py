@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Integer, String
+from sqlalchemy import Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.storage.models.base import Base
@@ -78,3 +78,8 @@ class OpportunityAlertRow(Base):
     status: Mapped[str] = mapped_column(String(10), index=True)  # SENT / REPLACED
     final_status: Mapped[str] = mapped_column(String(16), default="")  # EXPIRED / INVALIDATED / FOLLOWED
     replaced_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    # (TAA-8A4) the user's own sizing at alert time and the theory selection it was evaluated with
+    lot: Mapped[float | None] = mapped_column(Float, nullable=True)
+    risk_money: Mapped[float | None] = mapped_column(Float, nullable=True)
+    currency: Mapped[str] = mapped_column(String(8), default="")
+    selection: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)

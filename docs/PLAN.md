@@ -1463,6 +1463,25 @@ subscriptions later are configuration plus billing, not a rewrite.
 
   It also computes a **per-user suitability ranking** from shared symbol metrics + the user's account profile, and
   per-user hypothetical P/L as `R outcome × the user's risk money at alert time`.
+- (TAA-8A4 decisions) Several users per market (`app/web/feed.py`, migration 0031):
+  - **Market feed:** a user with an ACTIVE engine reads it; a SUBSCRIBER without one reads the deployment
+    OWNER's oldest ACTIVE engine; ADMIN reads none (`GET /me/feed`). `engine_users` is the reverse (the owner
+    first, then the subscribers the feed serves).
+  - **Privacy of the owner's account:** advisory routes take `AdvisoryEngine` (own engine or the feed); on
+    the feed `OWNER_ONLY_FIELDS` (lots, money, equity, plan, heat, decision id, followed, account warnings)
+    and the ranking's owner metrics are removed, and trading-data routes stay `OwnedEngine` (404).
+  - **Per-user views:** `ranking` on the feed keeps the market gates and recomputes affordability (G2/G3 are
+    account gates) on the user's MANUAL profile with the same risk cap as the sizer; `opportunities/{id}`
+    adds `my_sizing` (the user's entry plan sized on their account); `accuracy` covers the alerts the user
+    received with P/L = R × their risk money at alert time (`?mine=true` for the owner); the threshold
+    explorer drops money on the feed.
+  - **Alerts:** the alerter runs `personalize` for every engine user; others get the market facts without
+    the owner's account and their own lot/plan from `size_manual` (no profile: no lot). `opportunity_alerts`
+    keeps the user's lot, risk money, currency and the theory selection evaluated (`GET /me/alerts` with the
+    live badge).
+  - **Compute union:** `advisory-config` is the union over the engine's users, each user's detectors cut to
+    their plan's families.
+  - A single-user test checks the service yields exactly the personalizer's alert when the owner is alone.
 - (TAA-810 decisions) The worker task `opportunity_alerts` (`app/worker/opportunities.py`, every 15 s) runs
   `personalize` for every open opportunity of the last 24 h of each ACTIVE engine and its owner (other users
   with 8A):
