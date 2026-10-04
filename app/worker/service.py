@@ -35,6 +35,7 @@ from app.storage.database import Database
 from app.storage.models.worker import WorkerHeartbeatRow
 from app.sync.command_queue import CommandQueue
 from app.worker.jobs import DEFAULT_LEASE, Job, JobFailed, JobQueue, RetryLater
+from app.worker.push import PushDispatcher
 from app.worker.retention import run_retention
 from app.worker.schedule import Schedule, ScheduledTask
 from app.worker.watchdog import EngineWatchdog
@@ -64,7 +65,8 @@ def default_worker_id() -> str:
     return f"{socket.gethostname()[:48]}-{os.getpid()}"
 
 
-def default_tasks(db: Database, clock: Clock) -> list[ScheduledTask]:
+def default_tasks(db: Database, clock: Clock, push: PushDispatcher | None = None) -> list[ScheduledTask]:
+    """The worker's periodic tasks; *push* (when VAPID keys are configured) adds the Web Push dispatch."""
     commands = CommandQueue(db, clock)
 
     def retention() -> str:
@@ -81,11 +83,14 @@ def default_tasks(db: Database, clock: Clock) -> list[ScheduledTask]:
         changes = watchdog.check()
         return ", ".join(changes) if changes else None
 
-    return [
+    tasks = [
         ScheduledTask("retention", timedelta(hours=1), retention),
         ScheduledTask("expire_commands", timedelta(seconds=30), expire_commands),
         ScheduledTask("engine_watchdog", timedelta(seconds=10), watch_engines),
     ]
+    if push is not None:
+        tasks.append(ScheduledTask("push_dispatch", timedelta(seconds=5), push.dispatch))
+    return tasks
 
 
 @dataclass

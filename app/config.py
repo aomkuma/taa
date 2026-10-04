@@ -794,6 +794,8 @@ ENV_OVERRIDES: dict[str, tuple[str, str]] = {
 }
 
 WEB_SECRET_MIN_LENGTH = 32
+# An uncompressed P-256 point (65 bytes), unpadded base64url: 87 characters starting with "B".
+VAPID_PUBLIC_KEY_PATTERN = r"^B[A-Za-z0-9_-]{86}$"
 
 # Origins the PWA is served from during local development: the Vite dev server and `python -m app.web`.
 WEB_DEV_ORIGINS = (
@@ -832,6 +834,8 @@ class WebSettings(BaseSettings):
     # false: only OWNER users may register engines (turning it on needs the legal review, docs/COMPLIANCE.md)
     MULTI_ENGINE_ENABLED: bool = False
     WEB_MAX_ENGINES_PER_USER: int = Field(default=1, ge=1, le=20)
+    # Web Push (TAA-806): the browsers' applicationServerKey (scripts/generate_vapid_keys.py); unset: off.
+    VAPID_PUBLIC_KEY: str | None = Field(default=None, pattern=VAPID_PUBLIC_KEY_PATTERN)
 
     @field_validator("WEB_PUBLIC_ORIGIN")
     @classmethod
@@ -892,6 +896,21 @@ class WorkerSettings(BaseSettings):
     # Default: <hostname>-<pid>; set it to keep one heartbeat row across restarts.
     WORKER_ID: str | None = Field(default=None, min_length=1, max_length=64, pattern=r"^[A-Za-z0-9._-]+$")
     WORKER_POLL_SECONDS: float = Field(default=2.0, ge=0.2, le=60.0)
+    # Web Push sender (TAA-806; scripts/generate_vapid_keys.py). Both or neither; unset: push off.
+    VAPID_PRIVATE_KEY: SecretStr | None = None
+    VAPID_SUBJECT: str | None = Field(
+        default=None, max_length=200, pattern=r"^(mailto:[^@\s]+@[^@\s]+|https://\S+)$"
+    )
+
+    @model_validator(mode="after")
+    def _vapid_pair(self) -> WorkerSettings:
+        if (self.VAPID_PRIVATE_KEY is None) != (self.VAPID_SUBJECT is None):
+            raise ValueError("VAPID_PRIVATE_KEY and VAPID_SUBJECT are set together (or neither)")
+        return self
+
+    @property
+    def push_enabled(self) -> bool:
+        return self.VAPID_PRIVATE_KEY is not None
 
     @property
     def is_production(self) -> bool:
@@ -1076,10 +1095,17 @@ def load_worker_settings(
     try:
         if environ is not None:
             values = {k: v for k, v in environ.items() if k in WorkerSettings.model_fields and v != ""}
-            return WorkerSettings.model_validate(values)
-        return WorkerSettings(_env_file=env_path if env_path and env_path.exists() else None)
+            worker = WorkerSettings.model_validate(values)
+        else:
+            worker = WorkerSettings(_env_file=env_path if env_path and env_path.exists() else None)
     except ValidationError as exc:
         raise ConfigError(_format_validation_error("invalid worker settings", exc)) from exc
+    if worker.VAPID_PRIVATE_KEY is None:
+        return worker
+    from app.security.secrets import resolve_secret  # local import avoids a cycle
+
+    key = resolve_secret(worker.VAPID_PRIVATE_KEY, name="VAPID_PRIVATE_KEY")
+    return worker.model_copy(update={"VAPID_PRIVATE_KEY": key})
 
 
 def load_web_settings(

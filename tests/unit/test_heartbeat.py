@@ -224,3 +224,39 @@ class TestWatchdog:
         cloud.registry.revoke(ENGINE, actor="test")
         cloud.clock.advance(3600)
         assert cloud.watchdog.check() == [] and cloud.notes() == []
+
+
+def test_an_offline_alert_is_pushed_to_the_owners_device(cloud: Cloud) -> None:
+    """TAA-705 item 3: the watchdog's notification goes out through the Web Push dispatch (TAA-806)."""
+    from app.storage.models import PushSubscriptionRow
+    from app.worker.jobs import JobQueue
+    from app.worker.push import PushDispatcher, SendResult
+    from app.worker.push import handlers as push_handlers
+    from app.worker.service import Worker
+
+    sent: list[str] = []
+    with cloud.db.session() as sess:
+        sess.add(
+            PushSubscriptionRow(
+                subscription_id="s1",
+                user_id=cloud.owner.id,
+                endpoint="https://fcm.googleapis.com/fcm/send/x",
+                p256dh="B" * 87,
+                auth="a" * 22,
+                created_at=WEDNESDAY,
+            )
+        )
+    push = PushDispatcher(
+        cloud.db,
+        cloud.clock,
+        JobQueue(cloud.db, cloud.clock),
+        lambda s, d, t: sent.append(d) or SendResult(201),
+    )
+    worker = Worker(cloud.db, cloud.clock, handlers=push_handlers(push), tasks=[], worker_id="w1")
+    cloud.send(beat(WEDNESDAY))
+    cloud.clock.advance(61)
+    cloud.watchdog.check()
+    push.dispatch()
+    while worker.step():
+        pass
+    assert len(sent) == 1 and "Engine ออฟไลน์" in sent[0]

@@ -726,6 +726,27 @@ AI failures never trip trading breakers; they only produce HOLD.
   - minimal payloads: masked login, no balances
   - types: breaker trip/reset, kill switch, engine offline/back, paper/demo trade opened/closed, order failure (M2),
     unprotected position (M2), stale data or connection loss (debounced), daily summary, backtest finished
+  - (TAA-806 decisions) `scripts/generate_vapid_keys.py`, `app/worker/push.py`, `app/web/routers/notifications.py`,
+    tables `push_subscriptions` and `notification_prefs` (migration 0025); notifications from TAA-705.
+    - Keys: `VAPID_PUBLIC_KEY` on web (the browsers' `applicationServerKey`; unset: push routes answer 404
+      `push_not_configured`), `VAPID_PRIVATE_KEY` + `VAPID_SUBJECT` on the worker (both or neither; the private
+      key may be a `keyring:` reference). Without them the worker runs without the push tasks.
+    - API: `GET /push/key`, `GET /push/subscriptions` (devices without endpoints or keys), `POST /push/subscribe`
+      / `unsubscribe` / `test`, `GET /notifications[?unread]`, `POST /notifications/{id}/read`,
+      `POST /notifications/read-all`, `GET|PUT /notifications/preferences`. Re-subscribing an endpoint updates
+      it and moves it to the subscribing user; at most 10 active devices per user.
+    - **Endpoint allowlist (SSRF):** the worker posts to stored endpoints, so only https URLs of known push
+      services (FCM, Mozilla, Apple, Windows; host or subdomain, no credentials, no other port) are accepted
+      at subscribe time and checked again before every send.
+    - Dispatch (worker task every 5 s) sets each PENDING notification's `push_status`: EXPIRED after 1 h,
+      SKIPPED (type switched off), SUPPRESSED (same type and subject, symbol else engine, pushed in the last
+      10 min), RATE_LIMITED (20 pushes per user per hour), NO_TARGET, or QUEUED with one `push.send` job per
+      device in the same transaction. CRITICAL skips dedup and the rate limit; TEST skips dedup.
+    - Sending: TH/EN server texts in the user's language (`TEXTS`), payload `{notification_id, type,
+      severity, title, body, tag, url}` (tag `<type>:<engine>` so a newer push replaces the older one), TTL 1 h
+      (CRITICAL 24 h). 2xx → SENT; 404/410 disables the subscription; 429/5xx/network retry with backoff and
+      `Retry-After`; other 4xx fail.
+    - The PWA's service-worker `push` handler and the notification pages come with TAA-912/914.
 - **Worker:**
   - backtest jobs, one at a time with CPU and time limits
   - analytics recompute, engine watchdog, push retries

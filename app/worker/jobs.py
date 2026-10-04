@@ -26,6 +26,7 @@ from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import select, update
+from sqlalchemy.orm import Session
 
 from app.core.clock import Clock, ensure_utc
 from app.core.errors import TaaError
@@ -119,37 +120,52 @@ class JobQueue:
         max_attempts: int = 5,
         delay: timedelta = timedelta(0),
         dedupe_key: str | None = None,
+        sess: Session | None = None,
     ) -> str:
-        """Queue a job; returns its id (or the id of the open job with the same *dedupe_key*)."""
+        """Queue a job; returns its id (or the id of the open job with the same *dedupe_key*).
+
+        With *sess*, the job is written in the caller's transaction and commits or rolls back with it."""
         if not 1 <= max_attempts <= 100:
             raise JobError("max_attempts: 1-100")
+        if sess is None:
+            with self.db.session() as own:
+                return self.enqueue(
+                    kind,
+                    payload,
+                    created_by=created_by,
+                    priority=priority,
+                    max_attempts=max_attempts,
+                    delay=delay,
+                    dedupe_key=dedupe_key,
+                    sess=own,
+                )
         now = self.clock.now_utc()
-        with self.db.session() as sess:
-            if dedupe_key is not None:
-                existing = sess.execute(
-                    select(WorkerJobRow.job_id)
-                    .where(WorkerJobRow.dedupe_key == dedupe_key, WorkerJobRow.status.in_(OPEN))
-                    .limit(1)
-                ).scalar_one_or_none()
-                if existing is not None:
-                    return existing
-            row = WorkerJobRow(
-                job_id=new_id(),
-                kind=kind,
-                payload=dict(payload or {}),
-                status=JobStatus.QUEUED.value,
-                priority=priority,
-                dedupe_key=dedupe_key,
-                run_after=now + delay,
-                attempts=0,
-                max_attempts=max_attempts,
-                created_by=created_by[:64],
-                created_at=now,
-                last_error="",
-                result={},
-            )
-            sess.add(row)
-            return row.job_id
+        if dedupe_key is not None:
+            existing = sess.execute(
+                select(WorkerJobRow.job_id)
+                .where(WorkerJobRow.dedupe_key == dedupe_key, WorkerJobRow.status.in_(OPEN))
+                .limit(1)
+            ).scalar_one_or_none()
+            if existing is not None:
+                return existing
+        row = WorkerJobRow(
+            job_id=new_id(),
+            kind=kind,
+            payload=dict(payload or {}),
+            status=JobStatus.QUEUED.value,
+            priority=priority,
+            dedupe_key=dedupe_key,
+            run_after=now + delay,
+            attempts=0,
+            max_attempts=max_attempts,
+            created_by=created_by[:64],
+            created_at=now,
+            last_error="",
+            result={},
+        )
+        sess.add(row)
+        sess.flush()  # a later enqueue in the same transaction sees it (dedupe)
+        return row.job_id
 
     def claim(
         self, worker_id: str, *, lease: timedelta = DEFAULT_LEASE, kinds: tuple[str, ...] = ()

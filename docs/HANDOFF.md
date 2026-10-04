@@ -115,8 +115,13 @@ or at any phase boundary if I ask. Chat with me in Thai.
   - heartbeats & watchdog (TAA-705 items 1–2, PLAN §A13 "TAA-705 decisions", migration 0024): engine
     `heartbeat` events with quotes and a market schedule (`app/sync/heartbeat.py`), cloud `engine_heartbeats`,
     worker task `engine_watchdog` (`app/worker/watchdog.py`) raising ENGINE_OFFLINE/ENGINE_BACK as
-    `notifications` rows (`app/sync/notifications.py`) + stream events. Item 3 (push) is done with TAA-806,
-    which delivers PENDING notifications.
+    `notifications` rows (`app/sync/notifications.py`) + stream events, pushed by TAA-806.
+  - Web Push (TAA-806, PLAN §A14 "TAA-806 decisions", migration 0025): `scripts/generate_vapid_keys.py`,
+    `app/worker/push.py` (dispatch task + `push.send` jobs, dedup 10 min, 20/h, CRITICAL exempt, push-service
+    endpoint allowlist), `app/web/routers/notifications.py` (key, subscribe/unsubscribe/test, notification
+    centre, preferences). The local `.env` has a generated VAPID pair (subject `mailto:owner@example.com`;
+    change it if you like) and `WORKER_ENV=development` (2026-10-04, at the user's request). The PWA service
+    worker's `push` handler is still to do (TAA-912/914).
     - TAA-706 candle sync (PLAN §A13 "TAA-706 decisions", migration 0021): `candles` events of up to 1000
       closed bars into the per-engine `history_candles`; `CandleStreamer` on the engine's candle poll (per
       symbol back-off, so crypto streams at weekends); `python -m app.cli sync upload-history [--send]` and
@@ -396,8 +401,8 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 5. ~~TAA-706 candle & history sync~~ (done)
 6. ~~TAA-803 read APIs~~ (done), ~~TAA-804 SSE~~ (done)
 7. ~~TAA-805 control API~~ (done), ~~TAA-811 engine management API~~ (done)
-8. ~~TAA-808 worker service~~ (done), TAA-705 heartbeat & watchdog (items 1–2 done; push with 806)
-9. TAA-806 Web Push, TAA-807 backtest jobs
+8. ~~TAA-808 worker service~~, ~~TAA-705 heartbeat & watchdog~~ (done; Phase 7 complete)
+9. ~~TAA-806 Web Push~~ (done), TAA-807 backtest jobs
 10. TAA-809 advisory APIs, TAA-810 opportunity push (completes Phase 8)
 11. TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5 (Phase 8A)
 12. TAA-903 app shell, then 904–913, 916–923, then 914 PWA polish (Phase 9)

@@ -20,7 +20,10 @@ from app.core.clock import SystemClock
 from app.core.errors import TaaError
 from app.logging_config import configure_logging
 from app.storage.database import Database, resolve_db_url, upgrade_schema
-from app.worker.service import Worker, default_worker_id, worker_health
+from app.worker.jobs import JobQueue
+from app.worker.push import PushDispatcher, WebPushSender
+from app.worker.push import handlers as push_handlers
+from app.worker.service import Handler, Worker, default_tasks, default_worker_id, worker_health
 
 log = logging.getLogger(__name__)
 
@@ -58,9 +61,19 @@ def main(argv: list[str] | None = None) -> int:
 
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, request_stop)
+    handlers: dict[str, Handler] = {}
+    push = None
+    if settings.VAPID_PRIVATE_KEY is not None and settings.VAPID_SUBJECT is not None:
+        sender = WebPushSender(settings.VAPID_PRIVATE_KEY.get_secret_value(), settings.VAPID_SUBJECT)
+        push = PushDispatcher(db, clock, JobQueue(db, clock), sender)
+        handlers |= push_handlers(push)
+    else:
+        log.warning("Web Push is off: VAPID_PRIVATE_KEY and VAPID_SUBJECT are not set")
     worker = Worker(
         db,
         clock,
+        handlers=handlers,
+        tasks=default_tasks(db, clock, push=push),
         worker_id=settings.WORKER_ID or default_worker_id(),
         poll_seconds=settings.WORKER_POLL_SECONDS,
     )

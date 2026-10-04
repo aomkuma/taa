@@ -36,8 +36,8 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
-| M1 | Phase 7 — Cloud sync | 9 | 8 | IN PROGRESS |
-| M1 | Phase 8 — Web backend & worker | 11 | 7 | IN PROGRESS |
+| M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
+| M1 | Phase 8 — Web backend & worker | 11 | 8 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
@@ -1000,12 +1000,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-705 — Heartbeat & watchdog
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** 701, 808
 
 - [x] engine heartbeats
 - [x] worker ENGINE_OFFLINE/BACK detection (market-hours aware)
-- [ ] push
+- [x] push
 
 #### TAA-706 — Candle & history sync
 
@@ -1115,14 +1115,14 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-806 — Web Push
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 802, 808
 
-- [ ] VAPID key script
-- [ ] subscribe, unsubscribe and test
-- [ ] per-type preferences
-- [ ] sender with dedup and rate limit
-- [ ] tests
+- [x] VAPID key script
+- [x] subscribe, unsubscribe and test
+- [x] per-type preferences
+- [x] sender with dedup and rate limit
+- [x] tests
 
 #### TAA-807 — Backtest jobs
 
