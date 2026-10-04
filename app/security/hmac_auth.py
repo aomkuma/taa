@@ -13,7 +13,8 @@ Every engine → cloud request (ingest, command poll, command result, advisory-c
 ``TARGET`` is the path plus the query string (``/api/v1/engine/commands?cursor=42``), so a query cannot be
 changed either.
 
-:meth:`Verifier.verify` fails closed, in this order: missing headers, unknown engine, body hash mismatch,
+:meth:`Verifier.verify` fails closed, in this order: missing headers, unknown engine (the :class:`KeyLookup`
+knows no ACTIVE engine with this id; rev. 4 keeps the keys in the web database), body hash mismatch,
 timestamp skew above ``max_skew`` (300 s), signature (constant-time, against the current **and** the previous
 secret during a rotation), then a reused nonce. The nonce is recorded only after the signature checks out, so
 forged requests cannot fill the nonce store; nonces are kept ``nonce_ttl`` (600 s, more than twice the skew
@@ -151,20 +152,38 @@ class Verified:
     previous_secret: bool  # signed with the previous secret (a rotation is in progress)
 
 
+class KeyLookup(Protocol):
+    def keys(self, engine_id: str) -> Sequence[bytes] | None:
+        """[current secret, previous secret?] of an engine allowed to connect, or None (unknown/revoked)."""
+        ...
+
+
+class StaticKeys:
+    """A fixed engine → secrets mapping (tests and tools); the web service uses the engine registry."""
+
+    def __init__(self, engines: Mapping[str, Sequence[bytes]]) -> None:
+        for engine_id, keys in engines.items():
+            if not keys or len(keys) > 2:
+                raise ConfigError(f"engine {engine_id}: one current and at most one previous secret")
+            for key in keys:
+                check_secret(key)
+        self._engines = {k: tuple(v) for k, v in engines.items()}
+
+    def keys(self, engine_id: str) -> Sequence[bytes] | None:
+        return self._engines.get(engine_id)
+
+
 @dataclass
 class Verifier:
-    engines: Mapping[str, Sequence[bytes]]  # engine id → [current secret, previous secret?]
+    engines: KeyLookup | Mapping[str, Sequence[bytes]]  # a mapping is wrapped in StaticKeys
     clock: Clock
     nonces: NonceStore = field(default_factory=MemoryNonceStore)
     max_skew: float = MAX_SKEW_SECONDS
     nonce_ttl: float = NONCE_TTL_SECONDS
 
     def __post_init__(self) -> None:
-        for engine_id, keys in self.engines.items():
-            if not keys or len(keys) > 2:
-                raise ConfigError(f"engine {engine_id}: one current and at most one previous secret")
-            for key in keys:
-                check_secret(key)
+        if isinstance(self.engines, Mapping):
+            self.engines = StaticKeys(self.engines)
 
     @classmethod
     def single(
@@ -187,7 +206,8 @@ class Verifier:
         if missing:
             raise AuthError(AuthFailure.MISSING_HEADER, ", ".join(missing))
         engine_id = h[H_ENGINE.lower()]
-        keys = self.engines.get(engine_id)
+        lookup = self.engines
+        keys = lookup.keys(engine_id) if not isinstance(lookup, Mapping) else None
         if not keys:
             raise AuthError(AuthFailure.UNKNOWN_ENGINE, engine_id)
         digest = body_sha256(body)

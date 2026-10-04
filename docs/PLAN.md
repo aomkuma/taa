@@ -1544,6 +1544,22 @@ web service's env.
     `ingest_nonces` and `audit_replicas` (chain `engine:<id>`) already are.
   - The Alembic migration uses batch mode for SQLite and backfills existing rows with the imported engine's id.
   - Then the one-engine limit is lifted.
+- **(TAA-708 decisions)** `app/web/engines.py` (`EngineRegistry`), table `engines` (migration 0019),
+  `KeyLookup`/`StaticKeys` in `app/security/hmac_auth.py`, CLI in `app/cli/web.py`.
+  - The env check runs when the app starts (`check_engine_env` in `app/web/app.py`), because it needs the
+    database, rather than in `load_web_settings`. Production refuses `ENGINE_*` (before the import with a hint
+    to import, after it with a hint to remove them). Development only warns and ignores them, because the local
+    `.env` is shared with the engine, which needs them.
+  - Engine routes no longer answer 503 `sync_disabled`: an unregistered engine is simply unknown (401).
+  - Revocation erases the stored secrets (`secret_enc` = ""), expires the engine's open commands
+    (`CommandQueue.expire_engine`) and frees the deployment's one ACTIVE slot.
+  - An imported engine keeps its env id (any `[A-Za-z0-9._-]{1,64}`) and gets the label "imported"; ids issued
+    by the server are `eng_` + 26 base32 characters.
+  - A secret that no longer decrypts (`WEB_SESSION_SECRET` changed) makes the engine unknown until it is
+    rotated: fail closed, logged at ERROR.
+  - More `EngineError` codes: `invalid_label`, `owner_not_found`, `engine_exists`, `invalid_engine_id`, and for
+    the CLI `confirmation_mismatch`, `nothing_to_import`.
+  - `python -m app.cli web engine revoke ID --confirm ID` repeats the id, like the PWA's typed confirmation.
 - **Tests:**
   - IDOR: user B cannot list, rotate, revoke, read the data of, or queue a command for A's engine.
   - Revocation inside the cache window; rotation hand-over.

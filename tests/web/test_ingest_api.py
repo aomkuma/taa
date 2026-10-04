@@ -23,10 +23,10 @@ from app.storage.models import AuditReplicaRow, BreakerStateRow, OutboxEventRow,
 from app.sync.client import CloudClient
 from app.sync.outbox import INGEST_PATH, Outbox, OutboxSender
 from app.sync.replication import install_replication
-from tests.web.conftest import DEV_ENV, make_app
+from tests.web.conftest import DEV_ENV, ENGINE_ID, ENGINE_SECRET, make_app, pair_engine
 
-ENGINE = "eng-1"
-SECRET = "engine-hmac-secret-0123456789abcdef-xyz"
+ENGINE = ENGINE_ID
+SECRET = ENGINE_SECRET
 OLD_SECRET = "engine-hmac-secret-previous-0123456789ab"
 PAIRED = DEV_ENV | {"ENGINE_ID": ENGINE, "ENGINE_HMAC_SECRET": SECRET}
 
@@ -78,7 +78,8 @@ def post(
 
 @pytest.fixture
 def paired(db: Database, clock: ManualClock, static_dir: Path) -> Iterator[TestClient]:
-    app = make_app(db, clock, static_dir, PAIRED | {"ENGINE_HMAC_SECRET_PREVIOUS": OLD_SECRET})
+    app = make_app(db, clock, static_dir)
+    pair_engine(app, ENGINE, SECRET, OLD_SECRET)
     with TestClient(app, base_url="https://testserver") as client:
         yield client
 
@@ -91,6 +92,8 @@ class TestAuthentication:
         assert resp.headers["Cache-Control"] == "no-store"
         with db.session() as sess:
             assert sess.get(RiskState, "acct") is not None
+        info = paired.app.state.ctx.engine.registry.get(ENGINE)  # type: ignore[attr-defined]
+        assert info.first_seen_at == clock.now_utc() == info.last_seen_at  # the PWA shows "connected"
 
     def test_the_previous_secret_works_during_a_rotation(
         self, paired: TestClient, clock: ManualClock
@@ -126,9 +129,9 @@ class TestAuthentication:
         resp = paired.post(INGEST_PATH + "?x=1", content=body, headers=headers | {"Content-Encoding": "gzip"})
         assert resp.status_code == 401
 
-    def test_no_paired_engine_means_503(self, client: TestClient, clock: ManualClock) -> None:
+    def test_an_unregistered_engine_is_refused(self, client: TestClient, clock: ManualClock) -> None:
         resp = post(client, clock, body_of(batch(clock)))
-        assert resp.status_code == 503 and resp.json()["error"]["code"] == "sync_disabled"
+        assert resp.status_code == 401 and resp.json()["error"]["code"] == "signature_invalid"
 
     def test_a_web_session_is_not_enough(self, paired: TestClient) -> None:
         assert paired.post(INGEST_PATH, content=b"{}").status_code == 401
@@ -186,7 +189,8 @@ def test_engine_rows_reach_the_cloud(tmp_path: Path, clock: ManualClock, static_
     outbox = Outbox(engine_db, clock, SyncConfig(enabled=True))
     outbox.emit("not_a_cloud_type", {"x": 1})
 
-    app = make_app(cloud_db, clock, static_dir, PAIRED)
+    app = make_app(cloud_db, clock, static_dir)
+    pair_engine(app, ENGINE, SECRET)
     with TestClient(app, base_url="https://testserver") as http:
         cloud = CloudClient("https://testserver", Signer(ENGINE, SECRET.encode(), clock), http=http)
         sender = OutboxSender(outbox, cloud.post_gzip, ENGINE, clock)

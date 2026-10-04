@@ -152,6 +152,17 @@ class CommandQueue:
             )
         return int(getattr(result, "rowcount", 0) or 0)
 
+    def expire_engine(self, engine_id: str) -> int:
+        """Close every open command of a revoked engine (TOTP codes are cleared)."""
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            result = sess.execute(
+                update(EngineCommandRow)
+                .where(EngineCommandRow.engine_id == engine_id, EngineCommandRow.status.in_(OPEN))
+                .values(status=QueueStatus.EXPIRED.value, totp=None, completed_at=now)
+            )
+        return int(getattr(result, "rowcount", 0) or 0)
+
     def get(self, command_id: str) -> EngineCommandRow | None:
         with self.db.session() as sess:
             return sess.get(EngineCommandRow, command_id)

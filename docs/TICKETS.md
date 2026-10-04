@@ -36,7 +36,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
-| M1 | Phase 7 — Cloud sync | 9 | 5 | IN PROGRESS |
+| M1 | Phase 7 — Cloud sync | 9 | 6 | IN PROGRESS |
 | M1 | Phase 8 — Web backend & worker | 11 | 2 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
@@ -1028,18 +1028,18 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-708 — (rev. 4) Engine registry in the database
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 702, 703, 704, 802
 
-- [ ] `engines` table + migration (owner, label, encrypted current/previous secret, status, timestamps; PLAN §A32)
-- [ ] `EngineRegistry`: issue (server-generated id + secret, shown once), rotate, revoke, list; secrets encrypted with the HKDF purpose `engine-hmac-secret`
-- [ ] `Verifier` reads keys through a `KeyLookup` (≤ 5 s cache, ACTIVE engines only); `SignedEngine` carries the owner
-- [ ] rotation hand-over: previous secret dropped on the first request signed with the new one, or after 7 days
-- [ ] `first_seen_at` / `last_seen_at` (written at most once per 60 s)
-- [ ] fail-closed limits: one ACTIVE engine per deployment until TAA-709, `WEB_MAX_ENGINES_PER_USER`, `MULTI_ENGINE_ENABLED=false` (OWNER only)
-- [ ] CLI `web engine add|rotate|revoke|list|import-env`; `engine new-totp` on the engine side; `load_web_settings` refuses `ENGINE_*` after the import
-- [ ] audit events (`ENGINE_REGISTERED`, `ENGINE_KEY_ROTATED`, `ENGINE_REVOKED`, `ENGINE_IMPORTED`) without key material
-- [ ] tests (unknown/revoked engine → 401, revocation inside the cache window, rotation, secrets never in logs/audit/listings, import)
+- [x] `engines` table + migration (owner, label, encrypted current/previous secret, status, timestamps; PLAN §A32)
+- [x] `EngineRegistry`: issue (server-generated id + secret, shown once), rotate, revoke, list; secrets encrypted with the HKDF purpose `engine-hmac-secret`
+- [x] `Verifier` reads keys through a `KeyLookup` (≤ 5 s cache, ACTIVE engines only); `SignedEngine` carries the owner
+- [x] rotation hand-over: previous secret dropped on the first request signed with the new one, or after 7 days
+- [x] `first_seen_at` / `last_seen_at` (written at most once per 60 s)
+- [x] fail-closed limits: one ACTIVE engine per deployment until TAA-709, `WEB_MAX_ENGINES_PER_USER`, `MULTI_ENGINE_ENABLED=false` (OWNER only)
+- [x] CLI `web engine add|rotate|revoke|list|import-env`; `engine new-totp` on the engine side; `load_web_settings` refuses `ENGINE_*` after the import
+- [x] audit events (`ENGINE_REGISTERED`, `ENGINE_KEY_ROTATED`, `ENGINE_REVOKED`, `ENGINE_IMPORTED`) without key material
+- [x] tests (unknown/revoked engine → 401, revocation inside the cache window, rotation, secrets never in logs/audit/listings, import)
 
 #### TAA-709 — (rev. 4) Engine-scoped replicas
 

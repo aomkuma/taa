@@ -384,6 +384,19 @@ def cmd_web(args: argparse.Namespace) -> int:
     return run(args, out=sys.stdout)
 
 
+def cmd_web_engine(args: argparse.Namespace) -> int:
+    from app.cli.web import run_engine
+
+    return run_engine(args, out=sys.stdout)
+
+
+def cmd_engine_new_totp(args: argparse.Namespace) -> int:
+    from app.cli.web import new_control_totp
+
+    new_control_totp(read_line=input, out=sys.stdout)
+    return 0
+
+
 def cmd_strategy(args: argparse.Namespace) -> int:
     """Strategies disabled by remote commands: list them, or re-enable one (local only, audited)."""
     from app.core.clock import SystemClock
@@ -522,6 +535,30 @@ def build_parser() -> argparse.ArgumentParser:
     rt.add_argument("username")
     rt.set_defaults(func=cmd_web)
     web_sub.add_parser("list-users", help="list web users").set_defaults(func=cmd_web)
+    we = web_sub.add_parser("engine", help="engines paired with the web service (PLAN §A32)")
+    we_sub = we.add_subparsers(dest="engine_command", required=True)
+    ea = we_sub.add_parser("add", help="register an engine; prints ENGINE_ID and ENGINE_HMAC_SECRET once")
+    ea.add_argument("--owner", required=True, help="username of the owner")
+    ea.add_argument("--label", required=True)
+    er = we_sub.add_parser("rotate", help="issue a new secret (the old one works until the engine switches)")
+    er.add_argument("engine_id")
+    ev = we_sub.add_parser("revoke", help="revoke an engine for good")
+    ev.add_argument("engine_id")
+    ev.add_argument("--confirm", required=True, help="the engine id again")
+    ei = we_sub.add_parser(
+        "import-env", help="move ENGINE_ID/ENGINE_HMAC_SECRET from the env into the database"
+    )
+    ei.add_argument("--owner", required=True, help="username of the owner")
+    el = we_sub.add_parser("list", help="list engines (never secrets)")
+    for p in (ea, er, ev, ei, el):
+        p.set_defaults(func=cmd_web_engine)
+
+    eng = sub.add_parser("engine", help="engine machine helpers")
+    eng_sub = eng.add_subparsers(dest="engine_tool", required=True)
+    eng_sub.add_parser(
+        "new-totp",
+        help="create CONTROL_TOTP_SECRET (QR code, confirmed with one code; never sent to the cloud)",
+    ).set_defaults(func=cmd_engine_new_totp)
     return parser
 
 

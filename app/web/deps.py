@@ -25,6 +25,7 @@ from app.storage.database import Database
 from app.sync.command_queue import CommandQueue
 from app.sync.ingest import IngestService
 from app.web.auth import AuthService, AuthSession
+from app.web.engines import EngineRegistry
 from app.web.errors import ApiProblem
 
 log = logging.getLogger(__name__)
@@ -35,9 +36,10 @@ CSRF_HEADER = "X-CSRF-Token"
 
 @dataclass(frozen=True)
 class EngineLink:
-    """The paired engine: signature verifier, ingest and the command queue it polls."""
+    """Engine-facing services: the registry (keys and owners), signature verifier, ingest and the command
+    queue engines poll."""
 
-    engine_id: str
+    registry: EngineRegistry
     verifier: Verifier
     ingest: IngestService
     commands: CommandQueue
@@ -50,7 +52,7 @@ class WebContext:
     clock: Clock
     audit: AuditLog
     auth: AuthService
-    engine: EngineLink | None = None  # None: no engine paired (ENGINE_ID / ENGINE_HMAC_SECRET unset)
+    engine: EngineLink
 
 
 def get_context(request: Request) -> WebContext:
@@ -110,12 +112,16 @@ StepUpSession = Annotated[AuthSession, Depends(step_up_session)]
 class EngineRequest:
     link: EngineLink
     verified: Verified
+    owner_user_id: str
     body: bytes
+
+    @property
+    def engine_id(self) -> str:
+        return self.verified.engine_id
 
 
 async def signed_engine(request: Request, ctx: Context) -> EngineRequest:
-    if ctx.engine is None:
-        raise ApiProblem(503, "sync_disabled", "No engine is paired with this service")
+    """A request signed by an ACTIVE registered engine (unknown, revoked or forged: 401)."""
     link = ctx.engine
     body = await request.body()
     target = request.url.path + (f"?{request.url.query}" if request.url.query else "")
@@ -126,7 +132,11 @@ async def signed_engine(request: Request, ctx: Context) -> EngineRequest:
     except AuthError as exc:
         log.warning("engine request %s %s refused: %s", request.method, request.url.path, exc)
         raise ApiProblem(401, "signature_invalid", "Request signature rejected") from exc
-    return EngineRequest(link, verified, body)
+    owner = link.registry.owner_of(verified.engine_id)
+    if owner is None:  # revoked between the key lookup and now
+        raise ApiProblem(401, "signature_invalid", "Request signature rejected")
+    await run_in_threadpool(link.registry.seen, verified.engine_id, previous_secret=verified.previous_secret)
+    return EngineRequest(link, verified, owner, body)
 
 
 SignedEngine = Annotated[EngineRequest, Depends(signed_engine)]

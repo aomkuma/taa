@@ -92,3 +92,23 @@ def mutation_headers(client: TestClient, origin: str = DEV_ORIGIN) -> dict[str, 
     """Origin + CSRF token of the client's current session."""
     token = client.get("/api/v1/auth/session").json()["csrf_token"]
     return {"Origin": origin, "X-CSRF-Token": token}
+
+
+ENGINE_ID = "eng-1"
+ENGINE_SECRET = "engine-hmac-secret-0123456789abcdef-xyz"
+
+
+def pair_engine(
+    app: FastAPI,
+    engine_id: str = ENGINE_ID,
+    secret: str = ENGINE_SECRET,
+    previous: str | None = None,
+    *,
+    username: str = "owner",
+) -> UserRow:
+    """Register an engine in the app's registry (rev. 4: engine keys live in the database)."""
+    ctx = app.state.ctx
+    users = {u.username: u for u in ctx.auth.list_users()}
+    user = users.get(username) or ctx.auth.create_user(username, PASSWORD, TOTP_SECRET)
+    ctx.engine.registry.import_env(user, engine_id, secret, previous, actor="pytest")
+    return user

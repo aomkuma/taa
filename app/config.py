@@ -824,11 +824,14 @@ class WebSettings(BaseSettings):
     # Key material for session-token hashing, CSRF tokens and TOTP secrets at rest (app.security.crypto).
     # At least 32 characters; rotating it ends all sessions and requires TOTP re-enrollment.
     WEB_SESSION_SECRET: SecretStr
-    # The paired engine (PLAN §A13): ingest and the command long poll verify its HMAC signatures. Both unset:
-    # those routes answer 503 ``sync_disabled``. The previous secret is accepted during a rotation.
+    # (rev. 4, PLAN §A32) Engines are registered in the database (`app.cli web engine ...`). These variables
+    # only feed the one-time `web engine import-env`; production refuses to start while they are set.
     ENGINE_ID: str | None = Field(default=None, min_length=1, max_length=64)
     ENGINE_HMAC_SECRET: SecretStr | None = None
     ENGINE_HMAC_SECRET_PREVIOUS: SecretStr | None = None
+    # false: only OWNER users may register engines (turning it on needs the legal review, docs/COMPLIANCE.md)
+    MULTI_ENGINE_ENABLED: bool = False
+    WEB_MAX_ENGINES_PER_USER: int = Field(default=1, ge=1, le=20)
 
     @field_validator("WEB_PUBLIC_ORIGIN")
     @classmethod

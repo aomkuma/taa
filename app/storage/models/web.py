@@ -1,4 +1,7 @@
-"""Cloud-only tables of the web service: users, sessions and login throttling (PLAN §A14, §A18)."""
+"""Cloud-only tables of the web service: users, sessions, login throttling and engines.
+
+PLAN §A14, §A18, §A32.
+"""
 
 from __future__ import annotations
 
@@ -62,3 +65,26 @@ class LoginThrottleRow(Base):
     failures: Mapped[int] = mapped_column(Integer, default=0)
     locked_until: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
+
+
+class EngineRow(Base):
+    """A paired engine (PLAN §A32, TAA-708): its owner and its HMAC secrets, encrypted with a key derived from
+    WEB_SESSION_SECRET (HMAC is symmetric, so the verifier needs the secret itself, not a hash).
+
+    ``status`` ACTIVE or REVOKED (final; the secrets are erased). ``previous_secret_enc`` is accepted until
+    ``previous_until`` or the first request signed with the new secret, whichever comes first."""
+
+    __tablename__ = "engines"
+
+    engine_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    owner_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    label: Mapped[str] = mapped_column(String(64))
+    secret_enc: Mapped[str] = mapped_column(Text)
+    previous_secret_enc: Mapped[str | None] = mapped_column(Text, nullable=True)
+    previous_until: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    status: Mapped[str] = mapped_column(String(8), index=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    rotated_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    first_seen_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    last_seen_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)

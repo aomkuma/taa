@@ -30,7 +30,7 @@ from app.storage.models.system import (
     KillSwitchEvent,
     Run,
 )
-from app.storage.models.web import LoginThrottleRow, SessionRow, UserRow
+from app.storage.models.web import EngineRow, LoginThrottleRow, SessionRow, UserRow
 
 __all__ = [
     "AuditChainHead",
@@ -45,6 +45,7 @@ __all__ = [
     "DecisionCheckRow",
     "DecisionRecordRow",
     "EngineCommandRow",
+    "EngineRow",
     "EngineState",
     "EvidenceModelVersionRow",
     "HistoryCandle",

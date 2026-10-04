@@ -20,8 +20,8 @@ from app.sync.client import CloudClient
 from app.sync.command_queue import CommandQueue
 from app.sync.commands import COMMANDS_PATH, CommandPoller
 from app.web.routers import engine as engine_router
-from tests.web.conftest import make_app
-from tests.web.test_ingest_api import ENGINE, PAIRED, SECRET
+from tests.web.conftest import make_app, pair_engine
+from tests.web.test_ingest_api import ENGINE, SECRET
 
 
 @pytest.fixture(autouse=True)
@@ -32,7 +32,9 @@ def _short_polls(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture
 def paired(db: Database, clock: ManualClock, static_dir: Path) -> Iterator[TestClient]:
-    with TestClient(make_app(db, clock, static_dir, PAIRED), base_url="https://testserver") as client:
+    app = make_app(db, clock, static_dir)
+    pair_engine(app)
+    with TestClient(app, base_url="https://testserver") as client:
         yield client
 
 
@@ -112,9 +114,9 @@ def test_a_malformed_cursor_is_422(paired: TestClient, clock: ManualClock) -> No
     assert poll(paired, clock, f"{COMMANDS_PATH}?cursor={'x' * 65}").status_code == 422
 
 
-def test_no_paired_engine_means_503(client: TestClient, clock: ManualClock) -> None:
+def test_an_unregistered_engine_is_refused(client: TestClient, clock: ManualClock) -> None:
     resp = poll(client, clock)
-    assert resp.status_code == 503 and resp.json()["error"]["code"] == "sync_disabled"
+    assert resp.status_code == 401 and resp.json()["error"]["code"] == "signature_invalid"
 
 
 def test_the_engine_poller_receives_commands(
