@@ -836,6 +836,11 @@ class WebSettings(BaseSettings):
     WEB_MAX_ENGINES_PER_USER: int = Field(default=1, ge=1, le=20)
     # Web Push (TAA-806): the browsers' applicationServerKey (scripts/generate_vapid_keys.py); unset: off.
     VAPID_PUBLIC_KEY: str | None = Field(default=None, pattern=VAPID_PUBLIC_KEY_PATTERN)
+    # (TAA-8A5) Compliance gate: every subscription and billing route is 404 while false. Turning it on
+    # needs the owner's record of the legal review (docs/COMPLIANCE.md), e.g. "2027-01-15 counsel memo #12".
+    SUBSCRIPTIONS_ENABLED: bool = False
+    SUBSCRIPTIONS_LEGAL_REVIEW: str | None = Field(default=None, min_length=8, max_length=200)
+    BILLING_WEBHOOK_SECRET: SecretStr | None = None
 
     @field_validator("WEB_PUBLIC_ORIGIN")
     @classmethod
@@ -1155,4 +1160,9 @@ def load_web_settings(
     web = web.model_copy(update=updates)
     if len(web.WEB_SESSION_SECRET.get_secret_value()) < WEB_SECRET_MIN_LENGTH:
         raise ConfigError(f"WEB_SESSION_SECRET must have at least {WEB_SECRET_MIN_LENGTH} characters")
+    if web.SUBSCRIPTIONS_ENABLED and web.SUBSCRIPTIONS_LEGAL_REVIEW is None:
+        raise ConfigError(
+            "SUBSCRIPTIONS_ENABLED needs SUBSCRIPTIONS_LEGAL_REVIEW: record the legal review first"
+            " (docs/COMPLIANCE.md)"
+        )
     return web

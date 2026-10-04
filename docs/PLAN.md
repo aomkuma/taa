@@ -1541,6 +1541,15 @@ subscriptions later are configuration plus billing, not a rewrite.
     - API: `GET /me/entitlements` (with this period's usage), `GET /admin/plans`, `POST /admin/users/{id}/plan`
       (OWNER, step-up, `provider = manual`, older subscriptions CANCELED), `PUT|DELETE
       /admin/users/{id}/overrides/{key}` (OWNER, step-up); both audited.
+  - (TAA-8A5 decisions) Billing scaffolding, disabled: `app/web/billing.py`, `app/web/routers/billing.py`,
+    table `billing_events` (migration 0032), `docs/COMPLIANCE.md`.
+    - `SUBSCRIPTIONS_ENABLED=false` (web env) makes every `/billing/*` route 404; enabling it without
+      `SUBSCRIPTIONS_LEGAL_REVIEW` (a reference to the review) is a startup `ConfigError`.
+    - `BillingProvider` protocol (checkout, cancel, parse); `StubProvider` refuses checkout (503
+      `billing_unavailable`). Webhooks: `Billing-Signature: t=<unix>,v1=<hex>` = HMAC-SHA256 of
+      `<t>.<raw body>` under `BILLING_WEBHOOK_SECRET`, 5-minute tolerance, constant-time compare; each event id
+      applied once (`billing_events`) onto `subscriptions` (ACTIVATED/RENEWED → ACTIVE, CANCELED, EXPIRED,
+      PAYMENT_FAILED → PAST_DUE), audited.
 - **Multi-tenant readiness & security:**
   - Roles: **OWNER** (everything, including controls and the kill switch), **SUBSCRIBER** (advisory features only;
     never control commands, never the owner's account, positions, decisions or trades), **ADMIN** (support, no trading

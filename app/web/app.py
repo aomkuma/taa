@@ -33,6 +33,7 @@ from app.web.routers import (
     advisory,
     auth,
     backtests,
+    billing,
     control,
     data,
     engine,
@@ -146,6 +147,7 @@ def create_app(
     api.include_router(backtests.router)
     api.include_router(advisory.router)
     api.include_router(me.router)
+    api.include_router(billing.router)
     app.include_router(api)
     mount_pwa(app, static_dir or static_root(settings))
 

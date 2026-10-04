@@ -38,7 +38,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
 | M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 10 | IN PROGRESS |
-| M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 4 | IN PROGRESS |
+| M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
@@ -1240,13 +1240,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-8A5 — Billing-ready scaffolding (disabled)
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 8A2
 
-- [ ] `BillingProvider` interface (Stripe candidate, R33)
-- [ ] signed-webhook design + stub
-- [ ] `SUBSCRIPTIONS_ENABLED=false` compliance gate (routes unreachable, tested)
-- [ ] `docs/COMPLIANCE.md` (Thai SEC advisory licensing questions, PDPA duties)
+- [x] `BillingProvider` interface (Stripe candidate, R33)
+- [x] signed-webhook design + stub
+- [x] `SUBSCRIPTIONS_ENABLED=false` compliance gate (routes unreachable, tested)
+- [x] `docs/COMPLIANCE.md` (Thai SEC advisory licensing questions, PDPA duties)
 
 ### Phase 9 — PWA frontend
 

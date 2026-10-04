@@ -70,3 +70,15 @@ class UsageCounterRow(Base):
     period: Mapped[str] = mapped_column(String(10), primary_key=True)
     count: Mapped[int] = mapped_column(Integer, default=0)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
+
+
+class BillingEventRow(Base):
+    """A billing-provider webhook event that was applied (TAA-8A5): applied once, so a replay is a no-op."""
+
+    __tablename__ = "billing_events"
+
+    event_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(16))
+    type: Mapped[str] = mapped_column(String(24))
+    user_id: Mapped[str] = mapped_column(String(36), index=True)
+    received_at: Mapped[datetime] = mapped_column(UTCDateTime())

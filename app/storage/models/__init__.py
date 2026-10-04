@@ -20,7 +20,13 @@ from app.storage.models.notifications import (
     PushSubscriptionRow,
 )
 from app.storage.models.paper import PaperAccountRow, PaperIntentRow, PaperPositionRow
-from app.storage.models.plans import EntitlementOverrideRow, PlanRow, SubscriptionRow, UsageCounterRow
+from app.storage.models.plans import (
+    BillingEventRow,
+    EntitlementOverrideRow,
+    PlanRow,
+    SubscriptionRow,
+    UsageCounterRow,
+)
 from app.storage.models.risk import BreakerEventRow, BreakerStateRow, RiskBaseline, RiskDeal, RiskState
 from app.storage.models.sync import (
     AuditReplicaRow,
@@ -58,6 +64,7 @@ __all__ = [
     "AuditReplicaRow",
     "BacktestRunRow",
     "Base",
+    "BillingEventRow",
     "BreakerEventRow",
     "BreakerStateRow",
     "CalibrationTableRow",
