@@ -25,6 +25,7 @@ from app.sync.stream import StreamEntry, StreamLog
 class NotificationType(StrEnum):
     ENGINE_OFFLINE = "ENGINE_OFFLINE"
     ENGINE_BACK = "ENGINE_BACK"
+    BACKTEST_FINISHED = "BACKTEST_FINISHED"
     TEST = "TEST"  # the PWA's "send a test push" button
 
 

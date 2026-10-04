@@ -1074,14 +1074,31 @@ def load_settings(
     from app.security.secrets import resolve_env_secrets  # local import avoids a cycle
 
     env = resolve_env_secrets(env)
-    canonical = json.dumps(config.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
     return Settings(
         env=env,
         config=config,
-        config_hash=stable_hash(canonical, length=16),
+        config_hash=config_hash(config),
         env_file=env_path if env_path and env_path.exists() else None,
         config_file=cfg_path if cfg_path.exists() else None,
     )
+
+
+def config_hash(config: AppConfig) -> str:
+    """The 16-character hash of a configuration (stored with runs and backtests)."""
+    canonical = json.dumps(config.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+    return stable_hash(canonical, length=16)
+
+
+def load_app_config(config_file: str | Path = "config.yaml") -> AppConfig:
+    """``config.yaml`` alone, without the engine's environment (the cloud worker's backtests, TAA-807).
+    Raises :class:`ConfigError`."""
+    path = Path(config_file)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    try:
+        return AppConfig.model_validate(_read_yaml(path))
+    except ValidationError as exc:
+        raise ConfigError(_format_validation_error(f"invalid configuration in {path.name}", exc)) from exc
 
 
 def load_worker_settings(

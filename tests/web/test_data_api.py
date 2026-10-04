@@ -42,6 +42,10 @@ ROUTES = [
     "stream",
     "commands",
     "commands/c1",
+    "backtests",
+    "backtests/b1",
+    "backtests/b1/trades",
+    "backtests/compare?ids=b1,b2",
 ]
 
 

@@ -8,6 +8,7 @@ from app.storage.models.advisory import (
     SuitabilitySnapshotRow,
     SymbolCatalogRow,
 )
+from app.storage.models.backtests import BacktestRunRow
 from app.storage.models.base import Base, utcnow
 from app.storage.models.decisions import DecisionCheckRow, DecisionRecordRow
 from app.storage.models.execution import OrderIntentRow
@@ -41,6 +42,7 @@ __all__ = [
     "AuditChainHead",
     "AuditEvent",
     "AuditReplicaRow",
+    "BacktestRunRow",
     "Base",
     "BreakerEventRow",
     "BreakerStateRow",

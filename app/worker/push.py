@@ -76,6 +76,10 @@ TEXTS: dict[str, dict[str, tuple[str, str]]] = {
         "th": ("Engine กลับมาออนไลน์", "{label} กลับมาทำงานแล้ว"),
         "en": ("Engine back online", "{label} is running again"),
     },
+    NotificationType.BACKTEST_FINISHED: {
+        "th": ("Backtest เสร็จแล้ว", "ผลการทดสอบย้อนหลัง ({preset}): {status}"),
+        "en": ("Backtest finished", "Backtest ({preset}): {status}"),
+    },
     NotificationType.TEST: {
         "th": ("ทดสอบการแจ้งเตือน", "การแจ้งเตือนบนอุปกรณ์นี้ใช้งานได้"),
         "en": ("Test notification", "Notifications work on this device"),
@@ -88,6 +92,10 @@ REASONS: dict[str, dict[str, str]] = {
     },
     "STOPPED": {"th": "ถูกหยุดการทำงาน", "en": "was stopped"},
 }
+STATUSES: dict[str, dict[str, str]] = {
+    "DONE": {"th": "เสร็จสมบูรณ์", "en": "done"},
+    "FAILED": {"th": "ไม่สำเร็จ", "en": "failed"},
+}
 
 
 def push_message(row: NotificationRow, language: str) -> dict[str, Any]:
@@ -96,6 +104,8 @@ def push_message(row: NotificationRow, language: str) -> dict[str, Any]:
     params = {k: str(v) for k, v in dict(row.payload).items()}
     if "reason" in params:
         params["reason"] = REASONS.get(params["reason"], {}).get(lang, params["reason"])
+    if "status" in params:
+        params["status"] = STATUSES.get(params["status"], {}).get(lang, params["status"])
     try:
         text = body.format_map(params)
     except (KeyError, ValueError):  # a missing placeholder never blocks the alert

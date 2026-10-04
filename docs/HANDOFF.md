@@ -122,6 +122,9 @@ or at any phase boundary if I ask. Chat with me in Thai.
     centre, preferences). The local `.env` has a generated VAPID pair (subject `mailto:owner@example.com`;
     change it if you like) and `WORKER_ENV=development` (2026-10-04, at the user's request). The PWA service
     worker's `push` handler is still to do (TAA-912/914).
+  - cloud backtests (TAA-807, PLAN §A17 "TAA-807 decisions", migration 0026): presets + bounded request,
+    `backtest.run` worker jobs on the engine's uploaded history, results/compare APIs under
+    `/api/v1/engines/{id}/backtests`. Tests: `tests/backtest/test_cloud_backtests.py` (CLI parity with GOLDEN).
     - TAA-706 candle sync (PLAN §A13 "TAA-706 decisions", migration 0021): `candles` events of up to 1000
       closed bars into the per-engine `history_candles`; `CandleStreamer` on the engine's candle poll (per
       symbol back-off, so crypto streams at weekends); `python -m app.cli sync upload-history [--send]` and
@@ -402,7 +405,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 6. ~~TAA-803 read APIs~~ (done), ~~TAA-804 SSE~~ (done)
 7. ~~TAA-805 control API~~ (done), ~~TAA-811 engine management API~~ (done)
 8. ~~TAA-808 worker service~~, ~~TAA-705 heartbeat & watchdog~~ (done; Phase 7 complete)
-9. ~~TAA-806 Web Push~~ (done), TAA-807 backtest jobs
+9. ~~TAA-806 Web Push~~, ~~TAA-807 backtest jobs~~ (done)
 10. TAA-809 advisory APIs, TAA-810 opportunity push (completes Phase 8)
 11. TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5 (Phase 8A)
 12. TAA-903 app shell, then 904–913, 916–923, then 914 PWA polish (Phase 9)

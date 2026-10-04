@@ -23,7 +23,7 @@ from app.core.clock import Clock, SystemClock, ensure_utc
 from app.core.enums import Timeframe
 from app.market_data.data_models import CANDLE_COLUMNS, SymbolSpec
 from app.storage.database import Database
-from app.storage.models import HistoryCandle
+from app.storage.models import HistoryCandle, SymbolCatalogRow
 from app.storage.models.base import LOCAL_ENGINE
 
 _SAFE = re.compile(r"[^A-Za-z0-9._-]")
@@ -217,3 +217,24 @@ class SqlHistoryStore:
                 "real_volume": [0] * len(rows),
             }
         )
+
+    def spec(self, server: str, symbol: str) -> dict[str, Any] | None:
+        """The spec snapshot from the engine's symbol catalog, shaped like the Parquet ``spec.json``."""
+        with self.db.session() as sess:
+            row = sess.get(SymbolCatalogRow, (self.engine_id, server, symbol))
+            return None if row is None or not row.spec else {"spec": dict(row.spec)}
+
+    def available(self) -> list[tuple[str, str, Timeframe]]:
+        with self.db.session() as sess:
+            rows = sess.execute(
+                select(HistoryCandle.server, HistoryCandle.symbol, HistoryCandle.timeframe)
+                .where(HistoryCandle.engine_id == self.engine_id)
+                .distinct()
+            ).all()
+        out = []
+        for server, symbol, tf in rows:
+            try:
+                out.append((server, symbol, Timeframe(tf)))
+            except ValueError:
+                continue
+        return sorted(out, key=lambda x: (x[0], x[1], x[2].seconds))

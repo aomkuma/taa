@@ -14,6 +14,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Protocol
 
 import pandas as pd
 
@@ -25,7 +26,6 @@ from app.config import AppConfig
 from app.core.enums import Timeframe
 from app.core.errors import DataQualityError
 from app.market_data.data_models import SymbolSpec
-from app.market_data.history_store import ParquetHistoryStore
 from app.strategy.catalog import default_registry
 
 HASH_COLUMNS = ("open_time", "open", "high", "low", "close", "spread")
@@ -58,6 +58,24 @@ def _spec_dict(spec: SymbolSpec) -> dict[str, object]:
     return asdict(spec)
 
 
+class HistorySource(Protocol):
+    """Where :func:`load_history` reads from: the local Parquet store (CLI) or an engine's uploaded history in
+    the cloud database (``SqlHistoryStore``, the worker's backtest jobs, TAA-807)."""
+
+    def load(
+        self,
+        server: str,
+        symbol: str,
+        tf: Timeframe,
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ) -> pd.DataFrame: ...
+
+    def spec(self, server: str, symbol: str) -> dict[str, Any] | None: ...
+
+    def available(self) -> list[tuple[str, str, Timeframe]]: ...
+
+
 @dataclass(frozen=True)
 class LoadedData:
     data: dict[str, SymbolData]
@@ -67,7 +85,7 @@ class LoadedData:
 
 
 def load_history(
-    store: ParquetHistoryStore,
+    store: HistorySource,
     server: str,
     symbols: Sequence[str],
     timeframes: Sequence[Timeframe],

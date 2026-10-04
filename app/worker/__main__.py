@@ -20,6 +20,8 @@ from app.core.clock import SystemClock
 from app.core.errors import TaaError
 from app.logging_config import configure_logging
 from app.storage.database import Database, resolve_db_url, upgrade_schema
+from app.worker.backtests import BacktestService
+from app.worker.backtests import handlers as backtest_handlers
 from app.worker.jobs import JobQueue
 from app.worker.push import PushDispatcher, WebPushSender
 from app.worker.push import handlers as push_handlers
@@ -61,7 +63,7 @@ def main(argv: list[str] | None = None) -> int:
 
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, request_stop)
-    handlers: dict[str, Handler] = {}
+    handlers: dict[str, Handler] = dict(backtest_handlers(BacktestService(db, clock, JobQueue(db, clock))))
     push = None
     if settings.VAPID_PRIVATE_KEY is not None and settings.VAPID_SUBJECT is not None:
         sender = WebPushSender(settings.VAPID_PRIVATE_KEY.get_secret_value(), settings.VAPID_SUBJECT)

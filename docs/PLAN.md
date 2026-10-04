@@ -910,6 +910,23 @@ AI failures never trip trading breakers; they only produce HOLD.
 - **Reproducibility and outputs:** every run stores its seed, config hash, data hash and code version. Outputs are a JSON
   summary, a trades CSV and an equity series, all rendered in the PWA.
 - **Where it runs:** locally via the CLI (Parquet) or on the Railway worker (Postgres history); local runs can be uploaded.
+  - (TAA-807 decisions) Cloud runs: `app/backtest/presets.py`, `app/worker/backtests.py`,
+    `app/web/routers/backtests.py`, table `backtest_runs` (migration 0026).
+    - A job is a **preset** plus bounded parameters (`BacktestRequest`, extra keys refused): `standard`
+      (config.yaml as is), `conservative` (half the per-trade and total open risk), `high_costs` (3× slippage,
+      +7 commission per lot); 1–5 symbols, a period of at most 366 days that has ended, optional strategies
+      from config.yaml, risk per trade below the ceiling, seed. The preset's config is re-validated.
+    - Data: the engine's uploaded `history_candles` (`SqlHistoryStore`, now with `spec()` from the replicated
+      symbol catalog and `available()`), warm-up bars before the period included, conversion series from the
+      engine's other symbols; one trade server per symbol (history from two servers fails). Missing data fails
+      the run with the loader's message.
+    - Execution: job `backtest.run` on the worker, one at a time, the same `run_backtest` as the CLI (a test
+      checks that a cloud run reproduces the CLI's golden result on the same data), progress and lease renewal
+      on the engine's progress callback, 30-minute wall-clock limit. At most 2 queued or running runs per user.
+    - Results: the CLI summary (metrics, provenance, limitations) plus server and preset, equity downsampled to
+      1000 points, the first 2000 trades (`trades_total` counts all); BACKTEST_FINISHED notification (pushed).
+    - API: `GET /backtests/presets`; `POST|GET /engines/{id}/backtests`, `GET .../{run_id}`,
+      `GET .../{run_id}/trades`, `GET .../compare?ids=` (2–4 finished runs); owned engines only.
 - **Documented limitations:** bar-based approximation, spread model, no requotes or partial fills, news gaps.
 
 ## A18. Storage & audit
