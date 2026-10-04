@@ -130,6 +130,13 @@ class TestPaperExecution:
         p.on_quote("EURUSD", 1.09992, 1.10000, clock.now_utc())
         p.modify_stop(next(iter(p.broker.positions)), 1.1002, ExitReason.BREAK_EVEN)
         p.save_marks()
+        with db.session() as sess:  # the floating P/L at the mark, for the PWA (TAA-907)
+            row = sess.scalars(select(PaperPositionRow)).one()
+            pos0 = next(iter(p.broker.positions.values()))
+            expected = p.broker.calc_profit(
+                pos0.side, "EURUSD", pos0.volume, pos0.entry_price, pos0.price_current
+            )
+            assert row.status == "OPEN" and row.profit == expected and expected is not None
         restarted = paper(db, clock)
         assert len(restarted.broker.positions) == 1
         pos = next(iter(restarted.broker.positions.values()))

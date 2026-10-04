@@ -23,6 +23,7 @@ from sqlalchemy import select
 
 from app.storage.database import Database
 from app.storage.models import (
+    AuditEvent,
     DecisionRecordRow,
     EngineHeartbeatRow,
     NotificationRow,
@@ -46,6 +47,10 @@ ENGINE_ROUTES = [
     "decisions?limit=2",
     "decisions/d1",
     "breakers?limit=1",
+    "trades?limit=2",
+    "trades/1",
+    "intents?kind=paper",
+    "intents?kind=broker",
 ]
 USER_ROUTES = ["me/feed", "engines", "notifications?limit=5"]
 
@@ -111,6 +116,32 @@ def realistic_rows(db: Database, engine_id: str) -> None:
             "outbox_pending": 0,
             "account": account,
         }
+        # ticket 1's lifecycle as app.engine.trade_audit appends it (entered T+15 min, closed 30 min later)
+        entry = T + timedelta(minutes=15)
+        lifecycle = [
+            (entry, "POSITION_OPENED", {"ticket": 1, "paper": True, "side": "BUY", "price": 1.1}),
+            (
+                entry + timedelta(minutes=10),
+                "STOP_MOVED",
+                {"ticket": 1, "paper": True, "old": 1.095, "new": 1.1, "kind": "BE", "note": "break-even"},
+            ),
+            (entry + timedelta(minutes=30), "POSITION_CLOSED", {"ticket": 1, "paper": True, "reason": "TP"}),
+        ]
+        for seq, (at, kind, payload) in enumerate(lifecycle, start=1):
+            sess.add(
+                AuditEvent(
+                    engine_id=engine_id,
+                    event_id=f"0191a0a0-0000-7000-8000-0000000002{seq:02d}",
+                    chain="engine:samples",
+                    seq=seq,
+                    ts_utc=at,
+                    actor="engine",
+                    event_type=kind,
+                    payload={**payload, "symbol": "EURUSD", "event_id": f"e{seq}"},
+                    prev_hash="0" * 64,
+                    hash=f"{seq:064x}",
+                )
+            )
         alice = sess.scalars(select(UserRow).where(UserRow.username == "alice")).one()
         sess.add(
             NotificationRow(

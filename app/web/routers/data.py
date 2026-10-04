@@ -90,6 +90,15 @@ async def trades(
     return dict(page.to_dict())
 
 
+@router.get("/trades/{ticket}")
+async def trade(engine: OwnedEngine, ctx: Context, ticket: int) -> dict[str, Any]:
+    """A paper position's detail and timeline: intent, decision with checks, lifecycle events."""
+    found: dict[str, Any] | None = await _run(models(ctx).trade, engine.engine_id, ticket)
+    if found is None:
+        raise ApiProblem(404, "trade_not_found", "No such trade")
+    return found
+
+
 @router.get("/intents")
 async def intents(
     engine: OwnedEngine,

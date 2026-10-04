@@ -268,6 +268,10 @@ class PaperExecution:
                 if row is not None:
                     row.price_current, row.mae, row.mfe = pos.price_current, pos.mae, pos.mfe
                     row.swap, row.bars_held, row.updated_at = pos.swap, pos.bars_held, now
+                    # floating gross P/L at the mark (TAA-907); a closed row's ``profit`` is the realized one
+                    row.profit = self.broker.calc_profit(
+                        pos.side, pos.symbol, pos.volume, pos.entry_price, pos.price_current
+                    )
             self._save_account(sess, now)
 
     # --- internals --------------------------------------------------------------------------------------

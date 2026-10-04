@@ -267,5 +267,69 @@
       "breakers": "เบรกเกอร์ของสัญลักษณ์นี้",
       "noBreakers": "ไม่มีเบรกเกอร์ทำงาน"
     }
+  },
+  "trades": {
+    "col": {
+      "position": "สถานะ",
+      "entry": "ราคาเข้า",
+      "current": "ราคาปัจจุบัน",
+      "slTp": "SL / TP",
+      "stop": "Stop ปัจจุบัน",
+      "pnl": "P/L ลอยตัว",
+      "r": "R",
+      "maeMfe": "MAE / MFE (R)",
+      "opened": "เปิดเมื่อ",
+      "entryExit": "เข้า → ออก",
+      "reason": "เหตุผลที่ปิด",
+      "net": "สุทธิ",
+      "held": "ถือ",
+      "closed": "ปิดเมื่อ"
+    },
+    "open": {
+      "title": "สถานะที่เปิดอยู่",
+      "none": "ไม่มีสถานะที่เปิดอยู่",
+      "note": "สถานะจำลอง (PAPER) ของเอนจิน R วัดจาก Stop Loss เริ่มต้น"
+    },
+    "pending": {
+      "title": "คำสั่งที่รออยู่",
+      "none": "ไม่มีคำสั่งที่รออยู่",
+      "expires": "หมดอายุ {{time}}"
+    },
+    "broker": {
+      "title": "คำสั่งไปยังโบรกเกอร์ (DEMO)",
+      "none": "ยังไม่มีคำสั่งไปยังโบรกเกอร์",
+      "detail": "ขอ {{requested}} · ได้ {{fill}} · SL {{sl}} · สถานะ #{{ticket}}"
+    },
+    "closed": {
+      "title": "เทรดที่ปิดแล้ว",
+      "none": "ยังไม่มีเทรดที่ปิดแล้ว",
+      "symbol": "สัญลักษณ์",
+      "export": "ส่งออก CSV",
+      "exporting": "กำลังส่งออก…",
+      "exportFailed": "ส่งออกไม่สำเร็จ กรุณาลองใหม่",
+      "more": "โหลดเพิ่ม",
+      "note": "ผลของเทรดจำลองเป็นผลสมมติ ไม่ใช่ผลการเทรดจริง และไม่บ่งบอกผลในอนาคต"
+    },
+    "duration": "{{h}} ชม. {{m}} นาที",
+    "drawer": {
+      "title": "#{{ticket}} {{symbol}} {{side}}",
+      "loading": "เทรด #{{ticket}}",
+      "risk": "ระยะถึง Stop Loss เริ่มต้น (1R): {{risk}}",
+      "chart": "ดูเทรดนี้บนกราฟ"
+    },
+    "timeline": {
+      "label": "ลำดับเหตุการณ์ของเทรด",
+      "signal": "สัญญาณจาก {{strategy}} ({{tf}})",
+      "score": "คะแนน {{score}}",
+      "decision": "การตัดสินใจ: {{decision}}",
+      "checks": "ผ่าน {{passed}} จาก {{total}} การตรวจ",
+      "fill": "เปิดสถานะ {{side}} {{volume}}",
+      "fillBody": "ราคา {{price}} · SL {{sl}} · TP {{tp}}",
+      "stopMoved": "เลื่อน Stop",
+      "stopMovedKind": "เลื่อน Stop: {{kind}}",
+      "stopBody": "{{old}} → {{new}}",
+      "exit": "ปิดสถานะ: {{reason}}",
+      "exitBody": "ราคา {{price}} · สุทธิ {{net}} · {{r}}R"
+    }
   }
 }

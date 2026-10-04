@@ -363,6 +363,71 @@
     ],
     "next_cursor": null
   },
+  "engines/ENGINE/intents?kind=broker": {
+    "items": [
+      {
+        "attempts": 1,
+        "comment": "taa",
+        "created_at": "2026-09-30T10:00:00+00:00",
+        "deal_ticket": 2,
+        "decision_id": "d1",
+        "detail": "",
+        "expires_at": "2026-09-30T10:00:00+00:00",
+        "fill_price": 1.1001,
+        "fill_volume": 0.1,
+        "idempotency_key": "k1:0",
+        "intent_id": "i1",
+        "magic": 7310000,
+        "order_ticket": 1,
+        "position_ticket": 3,
+        "price_requested": 1.1,
+        "retcode": 10009,
+        "retcode_desc": "DONE",
+        "risk_money": 5.0,
+        "sent_at": "2026-09-30T10:00:00+00:00",
+        "side": "BUY",
+        "signal_id": "s1",
+        "sl": 1.095,
+        "slippage_points": 1.0,
+        "state": "FILLED",
+        "strategy": "example_trend_pullback",
+        "symbol": "EURUSD",
+        "tp": 1.11,
+        "updated_at": "2026-09-30T10:00:00+00:00",
+        "volume": 0.1
+      }
+    ],
+    "next_cursor": null
+  },
+  "engines/ENGINE/intents?kind=paper": {
+    "items": [
+      {
+        "account_key": "acct",
+        "created_at": "2026-09-30T10:00:00+00:00",
+        "decision_id": "d1",
+        "detail": "",
+        "entry_type": "MARKET",
+        "expires_at": "2026-09-30T10:00:00+00:00",
+        "idempotency_key": "k1:0",
+        "intent_id": "p1",
+        "magic": 7310000,
+        "order_id": 1,
+        "price": null,
+        "risk_money": 5.0,
+        "side": "BUY",
+        "signal_id": "s1",
+        "sl": 1.095,
+        "status": "FILLED",
+        "strategy": "example_trend_pullback",
+        "symbol": "EURUSD",
+        "ticket": 10,
+        "tp": 1.11,
+        "updated_at": "2026-09-30T10:00:00+00:00",
+        "volume": 0.1
+      }
+    ],
+    "next_cursor": null
+  },
   "engines/ENGINE/positions?status=OPEN": {
     "items": [
       {
@@ -384,7 +449,7 @@
         "side": "BUY",
         "sl": 1.095,
         "status": "OPEN",
-        "stop_kind": "INITIAL",
+        "stop_kind": "SL",
         "swap": 0.0,
         "symbol": "EURUSD",
         "ticket": 10,
@@ -560,6 +625,309 @@
       "volume_step": 0.01
     },
     "symbol": "EURUSD"
+  },
+  "engines/ENGINE/trades/1": {
+    "decision": {
+      "action": "BUY",
+      "bar_times": {
+        "M15": "2026-09-30T10:00:00+00:00"
+      },
+      "checks": [
+        {
+          "decision_id": "d1",
+          "detail": "",
+          "kind": "HARD",
+          "name": "spread",
+          "passed": true,
+          "reason": "OK",
+          "seq": 0,
+          "threshold": 3,
+          "value": 1.2
+        }
+      ],
+      "code_version": "0.1.0",
+      "config_hash": "cccccccccccccccccccccccccccccccc",
+      "created_at": "2026-09-30T10:30:00+00:00",
+      "decision": "ACCEPT",
+      "decision_id": "d1",
+      "entry_price": 1.1,
+      "idempotency_key": "k1",
+      "profile": "EXECUTION",
+      "reason_codes": [],
+      "risk_money": 5.0,
+      "signal": {
+        "action": "BUY",
+        "bar_times": {
+          "H1": "2026-09-30T10:00:00+00:00",
+          "M15": "2026-09-30T10:15:00+00:00"
+        },
+        "conditions": [
+          {
+            "detail": "close > EMA200",
+            "name": "htf_bias",
+            "passed": true,
+            "weight": 2.0
+          },
+          {
+            "detail": "",
+            "name": "rsi_cross",
+            "passed": false,
+            "weight": 1.0
+          }
+        ],
+        "confluence": [],
+        "created_at_utc": "2026-09-30T10:15:04+00:00",
+        "data_timestamp_utc": "2026-09-30T10:15:00+00:00",
+        "entry_price": 1.1,
+        "entry_type": "MARKET",
+        "evidence": [
+          {
+            "item": {
+              "age_bars": 0,
+              "as_of": "2026-09-30T10:15:00+00:00",
+              "evidence": {
+                "details": {
+                  "ratio": 0.618
+                },
+                "detected_at": "2026-09-30T10:15:00+00:00",
+                "detector_id": "fib.golden_zone",
+                "detector_version": 1,
+                "direction": "BULL",
+                "evidence_id": "d5cbb3409dabd1897bb3ed35",
+                "family": "FIBONACCI",
+                "i18n_key": "evidence.fib.golden_zone",
+                "invalidation": 1.09,
+                "key_levels": [
+                  {
+                    "at": "2026-09-30T08:15:00+00:00",
+                    "name": "fib_61.8",
+                    "price": 1.1
+                  }
+                ],
+                "name": "Golden zone",
+                "quality": 0.8,
+                "symbol": "EURUSD",
+                "targets": [
+                  1.12
+                ],
+                "tier": "T1",
+                "timeframe": "M15"
+              }
+            },
+            "relation": "SUPPORTS"
+          },
+          {
+            "item": {
+              "age_bars": 0,
+              "as_of": "2026-09-30T10:15:00+00:00",
+              "evidence": {
+                "details": {
+                  "ratio": 0.618
+                },
+                "detected_at": "2026-09-30T10:15:00+00:00",
+                "detector_id": "fib.golden_zone",
+                "detector_version": 1,
+                "direction": "BEAR",
+                "evidence_id": "eff5766559da24fbfc2a71cb",
+                "family": "FIBONACCI",
+                "i18n_key": "evidence.fib.golden_zone",
+                "invalidation": 1.09,
+                "key_levels": [
+                  {
+                    "at": "2026-09-30T08:15:00+00:00",
+                    "name": "fib_61.8",
+                    "price": 1.1
+                  }
+                ],
+                "name": "Golden zone",
+                "quality": 0.8,
+                "symbol": "EURUSD",
+                "targets": [
+                  1.12
+                ],
+                "tier": "T1",
+                "timeframe": "M15"
+              }
+            },
+            "relation": "CONFLICTS"
+          }
+        ],
+        "expires_at_utc": "2026-09-30T10:30:00+00:00",
+        "explanation": "H1 bullish bias; M15 pullback to EMA20",
+        "idempotency_key": "86ab3211162a48ffd396176eb84b56139c0a426a5f1afc37a4c800dbe6eab545",
+        "reason_codes": [
+          "TREND_PULLBACK"
+        ],
+        "score": 72.5,
+        "setup_strength": 80.0,
+        "signal_id": "sig-1",
+        "stop_loss": 1.098,
+        "strategy": "example_trend_pullback",
+        "strategy_version": "1.0.0",
+        "symbol": "EURUSD",
+        "take_profit": 1.104,
+        "timeframe": "M15"
+      },
+      "signal_id": "s1",
+      "stop_loss": 1.095,
+      "strategy": "example_trend_pullback",
+      "symbol": "EURUSD",
+      "take_profit": 1.11,
+      "timeframe": "M15",
+      "volume": 0.1,
+      "warnings": [
+        "DEMO_UNPROVEN"
+      ]
+    },
+    "events": [
+      {
+        "at": "2026-09-30T10:15:00+00:00",
+        "payload": {
+          "event_id": "e1",
+          "paper": true,
+          "price": 1.1,
+          "side": "BUY",
+          "symbol": "EURUSD",
+          "ticket": 1
+        },
+        "type": "POSITION_OPENED"
+      },
+      {
+        "at": "2026-09-30T10:25:00+00:00",
+        "payload": {
+          "event_id": "e2",
+          "kind": "BE",
+          "new": 1.1,
+          "note": "break-even",
+          "old": 1.095,
+          "paper": true,
+          "symbol": "EURUSD",
+          "ticket": 1
+        },
+        "type": "STOP_MOVED"
+      },
+      {
+        "at": "2026-09-30T10:45:00+00:00",
+        "payload": {
+          "event_id": "e3",
+          "paper": true,
+          "reason": "TP",
+          "symbol": "EURUSD",
+          "ticket": 1
+        },
+        "type": "POSITION_CLOSED"
+      }
+    ],
+    "intent": {
+      "account_key": "acct",
+      "created_at": "2026-09-30T10:00:00+00:00",
+      "decision_id": "d1",
+      "detail": "",
+      "entry_type": "MARKET",
+      "expires_at": "2026-09-30T10:00:00+00:00",
+      "idempotency_key": "k1:0",
+      "intent_id": "p1",
+      "magic": 7310000,
+      "order_id": 1,
+      "price": null,
+      "risk_money": 5.0,
+      "side": "BUY",
+      "signal_id": "s1",
+      "sl": 1.095,
+      "status": "FILLED",
+      "strategy": "example_trend_pullback",
+      "symbol": "EURUSD",
+      "ticket": 10,
+      "tp": 1.11,
+      "updated_at": "2026-09-30T10:00:00+00:00",
+      "volume": 0.1
+    },
+    "position": {
+      "account_key": "acct",
+      "bars_held": 0,
+      "commission": 0.0,
+      "entry_price": 1.1,
+      "entry_time": "2026-09-30T10:15:00+00:00",
+      "exit_price": 1.105,
+      "exit_reason": "TP",
+      "exit_time": "2026-09-30T10:45:00+00:00",
+      "intent_id": "p1",
+      "mae": 0.0,
+      "mfe": 0.0,
+      "net": 1.0,
+      "price_current": 0.0,
+      "profit": null,
+      "r_multiple": 1.0,
+      "side": "BUY",
+      "sl": 1.095,
+      "status": "CLOSED",
+      "stop_kind": "SL",
+      "swap": 0.0,
+      "symbol": "EURUSD",
+      "ticket": 1,
+      "tp": 1.11,
+      "updated_at": "2026-09-30T10:15:00+00:00",
+      "volume": 0.1
+    }
+  },
+  "engines/ENGINE/trades?limit=2": {
+    "items": [
+      {
+        "account_key": "acct",
+        "bars_held": 0,
+        "commission": 0.0,
+        "entry_price": 1.1,
+        "entry_time": "2026-09-30T11:15:00+00:00",
+        "exit_price": 1.105,
+        "exit_reason": "TP",
+        "exit_time": "2026-09-30T11:45:00+00:00",
+        "intent_id": "p5",
+        "mae": 0.0,
+        "mfe": 0.0,
+        "net": 5.0,
+        "price_current": 0.0,
+        "profit": null,
+        "r_multiple": 1.0,
+        "side": "BUY",
+        "sl": 1.095,
+        "status": "CLOSED",
+        "stop_kind": "SL",
+        "swap": 0.0,
+        "symbol": "EURUSD",
+        "ticket": 5,
+        "tp": 1.11,
+        "updated_at": "2026-09-30T11:15:00+00:00",
+        "volume": 0.1
+      },
+      {
+        "account_key": "acct",
+        "bars_held": 0,
+        "commission": 0.0,
+        "entry_price": 1.1,
+        "entry_time": "2026-09-30T11:00:00+00:00",
+        "exit_price": 1.105,
+        "exit_reason": "TP",
+        "exit_time": "2026-09-30T11:30:00+00:00",
+        "intent_id": "p4",
+        "mae": 0.0,
+        "mfe": 0.0,
+        "net": 4.0,
+        "price_current": 0.0,
+        "profit": null,
+        "r_multiple": 1.0,
+        "side": "BUY",
+        "sl": 1.095,
+        "status": "CLOSED",
+        "stop_kind": "SL",
+        "swap": 0.0,
+        "symbol": "EURUSD",
+        "ticket": 4,
+        "tp": 1.11,
+        "updated_at": "2026-09-30T11:00:00+00:00",
+        "volume": 0.1
+      }
+    ],
+    "next_cursor": "WyIyMDI2LTA5LTMwVDExOjMwOjAwKzAwOjAwIiw0XQ"
   },
   "me/feed": {
     "engine_id": "ENGINE",

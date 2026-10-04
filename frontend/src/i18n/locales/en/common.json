@@ -267,5 +267,69 @@
       "breakers": "Breakers on this symbol",
       "noBreakers": "No breaker tripped."
     }
+  },
+  "trades": {
+    "col": {
+      "position": "Position",
+      "entry": "Entry",
+      "current": "Current",
+      "slTp": "SL / TP",
+      "stop": "Stop now",
+      "pnl": "Floating P/L",
+      "r": "R",
+      "maeMfe": "MAE / MFE (R)",
+      "opened": "Opened",
+      "entryExit": "Entry → exit",
+      "reason": "Exit reason",
+      "net": "Net",
+      "held": "Held",
+      "closed": "Closed"
+    },
+    "open": {
+      "title": "Open positions",
+      "none": "No open positions.",
+      "note": "The engine's PAPER positions; R is measured from the initial stop loss."
+    },
+    "pending": {
+      "title": "Pending orders",
+      "none": "No pending orders.",
+      "expires": "Expires {{time}}"
+    },
+    "broker": {
+      "title": "Broker orders (DEMO)",
+      "none": "No broker orders yet.",
+      "detail": "Requested {{requested}} · filled {{fill}} · SL {{sl}} · position #{{ticket}}"
+    },
+    "closed": {
+      "title": "Closed trades",
+      "none": "No closed trades yet.",
+      "symbol": "Symbol",
+      "export": "Export CSV",
+      "exporting": "Exporting…",
+      "exportFailed": "Export failed. Please try again.",
+      "more": "Load more",
+      "note": "Paper trade results are hypothetical, not real trading results, and say nothing about the future."
+    },
+    "duration": "{{h}} h {{m}} min",
+    "drawer": {
+      "title": "#{{ticket}} {{symbol}} {{side}}",
+      "loading": "Trade #{{ticket}}",
+      "risk": "Distance to the initial stop loss (1R): {{risk}}",
+      "chart": "See this trade on the chart"
+    },
+    "timeline": {
+      "label": "Trade timeline",
+      "signal": "Signal from {{strategy}} ({{tf}})",
+      "score": "Score {{score}}",
+      "decision": "Decision: {{decision}}",
+      "checks": "{{passed}} of {{total}} checks passed",
+      "fill": "Opened {{side}} {{volume}}",
+      "fillBody": "Price {{price}} · SL {{sl}} · TP {{tp}}",
+      "stopMoved": "Stop moved",
+      "stopMovedKind": "Stop moved: {{kind}}",
+      "stopBody": "{{old}} → {{new}}",
+      "exit": "Closed: {{reason}}",
+      "exitBody": "Price {{price}} · net {{net}} · {{r}}R"
+    }
   }
 }

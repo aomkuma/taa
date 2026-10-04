@@ -141,7 +141,7 @@ def sample_rows() -> list[Base]:
             entry_price=1.1,
             sl=1.095,
             tp=1.11,
-            stop_kind="INITIAL",
+            stop_kind="SL",  # ExitReason.STOP_LOSS: the initial stop
             status="OPEN",
             updated_at=T,
         ),

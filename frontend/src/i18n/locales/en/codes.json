@@ -82,5 +82,31 @@
     "NEW_YORK": "New York",
     "LONDON_NY_OVERLAP": "London–New York overlap",
     "OFF": "Off-session"
+  },
+  "exitReason": {
+    "TP": "Take profit",
+    "SL": "Stop loss",
+    "BE": "Break-even",
+    "TRAIL": "Trailing stop",
+    "TIME": "Time stop",
+    "SIGNAL": "Exit signal",
+    "KILL_SWITCH": "Kill switch",
+    "MANUAL": "Manual",
+    "STOP_OUT": "Stop out",
+    "END_OF_DATA": "End of data"
+  },
+  "orderState": {
+    "NEW": "New",
+    "PRECHECKED": "Checked",
+    "SENDING": "Sending",
+    "FILLED": "Filled",
+    "PARTIAL": "Partly filled",
+    "REJECTED": "Rejected",
+    "UNKNOWN": "Unknown",
+    "RECONCILED": "Reconciled",
+    "NOT_EXECUTED": "Not executed",
+    "PROTECTED": "Protected",
+    "UNPROTECTED": "Unprotected",
+    "EMERGENCY_CLOSED": "Emergency closed"
   }
 }

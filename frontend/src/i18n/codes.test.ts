@@ -6,6 +6,7 @@ import suitabilityPy from '../../../app/advisory/suitability.py?raw';
 import reasonsPy from '../../../app/risk/reasons.py?raw';
 import signalModelsPy from '../../../app/strategy/signal_models.py?raw';
 import enginesPy from '../../../app/web/engines.py?raw';
+import orderManagerPy from '../../../app/engine/order_manager.py?raw';
 import circuitBreakerPy from '../../../app/risk/circuit_breaker.py?raw';
 import notificationsPy from '../../../app/sync/notifications.py?raw';
 import decisionEnginePy from '../../../app/engine/decision_engine.py?raw';
@@ -28,6 +29,7 @@ import {
   GATES,
   INVALID_REASONS,
   NOTIFICATION_TYPES,
+  ORDER_STATES,
   OPPORTUNITY_STATUSES,
   parseCode,
   REASON_CODES,
@@ -95,6 +97,7 @@ describe('code lists match the backend enums', () => {
     ['Regime', enumsPy, REGIMES],
     ['VolatilityState', enumsPy, VOLATILITY_STATES],
     ['Session', enumsPy, SESSIONS],
+    ['IntentState', orderManagerPy, ORDER_STATES],
   ] as const)('%s', (className, source, values) => {
     expect(sorted(values)).toEqual(sorted(pyStrEnumValues(source, className)));
   });
@@ -111,6 +114,8 @@ describe('code texts', () => {
     ['regime', REGIMES],
     ['volatility', VOLATILITY_STATES],
     ['session', SESSIONS],
+    ['orderState', ORDER_STATES],
+    ['exitReason', EXIT_REASONS],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {
       const i18n = createI18n(language);

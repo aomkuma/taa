@@ -904,6 +904,25 @@ AI failures never trip trading breakers; they only produce HOLD.
     responses of the routes the pages read, built from engine serializers; `apiSamples.test.ts` parses each with
     the page schema. Found TAA-905 reading `/symbols` as a list. Add a route there when a page starts using it;
     regenerate with `TAA_UPDATE_API_SAMPLES=1` after an intended change.
+- (TAA-907 decisions) Positions & history (`frontend/src/pages/trades/`):
+  - Engine: `PaperExecution.save_marks` stores the floating gross P/L of open paper positions in
+    `paper_positions.profit` (closed rows keep the realized one). `TradeAuditSink` (`app/engine/trade_audit.py`)
+    appends POSITION_OPENED, STOP_MOVED and POSITION_CLOSED bus events to the engine's audit chain (payload =
+    the event params + symbol + event id; `paper` tells paper from broker events), so every change of a position
+    is audited and replicated. Broker stop moves now carry `paper: false`.
+  - `GET /engines/{id}/trades/{ticket}`: a paper position with its intent, decision (with checks; without the
+    market and plan documents) and its lifecycle events from the audit replica (paper events of that ticket
+    between entry − 5 min and exit + 5 min), oldest first; 404 `trade_not_found`.
+  - Positions page: open paper positions (entry, current, SL/TP, current stop kind, floating P/L, R and MAE/MFE
+    in R measured from the initial stop on the filled intent), pending paper orders, and in DEMO the recent
+    broker order intents with their states (`codes:orderState`). Close and flatten actions come with TAA-911's
+    step-up dialogs.
+  - History page: closed trades (keyset pages, symbol filter, "load more"), CSV export of every closed trade
+    (UTC ISO times, raw numbers, quoted fields, formula-like text defused), and a hypothetical-results note.
+  - Trade drawer (`?trade=<ticket>`, linkable): timeline signal → decision (checks passed, failed reasons) →
+    fill → stop moves → exit, sorted by time, and a link to the trade on the chart (the chart snapshot).
+  - `codes:exitReason` texts added. DEMO broker positions are not replicated as position rows yet; the page
+    shows their order intents.
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

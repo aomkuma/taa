@@ -65,6 +65,7 @@ from app.engine.order_manager import OrderManager
 from app.engine.paper import LiveRates, PaperExecution
 from app.engine.position_manager import PositionManager
 from app.engine.reconciler import Reconciler
+from app.engine.trade_audit import TradeAuditSink
 from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.registry import EvidenceEngine
 from app.market_data.candle_service import CandleService, CandleWatermarks
@@ -176,6 +177,9 @@ class Engine:
         self._health_due = _Due(loop.health_interval_seconds)
         self._clock_due = _Due(loop.clock_verify_minutes * 60)
         self.audit = AuditLog(db, f"engine:{settings.env.ENGINE_ID or 'local'}", clock)
+        # trade lifecycle on the audit chain (TAA-907); one such sink per bus, also when an engine is rebuilt
+        self.bus.sinks = [s for s in self.bus.sinks if not isinstance(s, TradeAuditSink)]
+        self.bus.sinks.append(TradeAuditSink(self.audit))
         # Replication starts before anything is written, so every row change of this run reaches the outbox.
         self.replicator: Replicator | None = (
             install_replication(db, clock, self.audit.chain)

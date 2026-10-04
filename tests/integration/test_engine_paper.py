@@ -19,7 +19,7 @@ from app.main import main
 from app.monitoring.alerts import EventBus, EventType, MemorySink
 from app.risk.circuit_breaker import BreakerName
 from app.storage.database import Database
-from app.storage.models import PaperPositionRow, Run
+from app.storage.models import AuditEvent, PaperPositionRow, Run
 from app.strategy.base_strategy import BaseStrategy
 from app.strategy.registry import StrategySet
 from app.strategy.signal_models import Condition, Signal, StrategyContext
@@ -153,6 +153,11 @@ class TestTrading:
         with h.db.session() as sess:
             rows = sess.execute(select(PaperPositionRow)).scalars().all()
         assert rows and all(r.sl is not None and r.sl < r.entry_price for r in rows)
+        with h.db.session() as sess:  # the trade lifecycle is on the audit chain too (TAA-907)
+            opened = sess.scalars(select(AuditEvent).where(AuditEvent.event_type == "POSITION_OPENED")).all()
+        assert {e.payload["ticket"] for e in opened} >= {r.ticket for r in rows}
+        assert all(e.actor == "engine" and e.payload["symbol"] for e in opened)
+        assert h.engine.audit.verify().ok  # still one intact chain
 
     def test_kill_switch_blocks_entries(self, tmp_path: Path) -> None:
         h = harness(tmp_path)

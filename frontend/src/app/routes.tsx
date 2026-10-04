@@ -15,6 +15,10 @@ import { PlaceholderPage } from '@/pages/PlaceholderPage';
 /** Built pages; the others show `PlaceholderPage`. Heavy pages load lazily in their own chunk. */
 const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'children'>>> = {
   charts: { lazy: async () => ({ Component: (await import('@/pages/charts/ChartsPage')).ChartsPage }) },
+  positions: {
+    lazy: async () => ({ Component: (await import('@/pages/trades/PositionsPage')).PositionsPage }),
+  },
+  history: { lazy: async () => ({ Component: (await import('@/pages/trades/HistoryPage')).HistoryPage }) },
   symbols: { lazy: async () => ({ Component: (await import('@/pages/symbols/SymbolsPage')).SymbolsPage }) },
 };
 

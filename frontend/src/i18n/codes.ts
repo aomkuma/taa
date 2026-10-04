@@ -14,6 +14,7 @@
  * | `NotificationType` (app/sync/notifications.py)                    | `codes:notificationType.<TYPE>`    |
  * | `Decision` (app/engine/decision_engine.py)                        | `codes:decision.<D>`               |
  * | `Family` (app/evidence/framework.py), theory families             | `codes:family.<FAMILY>`            |
+ * | `IntentState` (app/engine/order_manager.py), DEMO broker orders    | `codes:orderState.<S>`             |
  * | `Trend`, `Regime`, `VolatilityState`, `Session` (app/core/enums.py) | `codes:trend.<T>`, `codes:regime.<R>`, `codes:volatility.<V>`, `codes:session.<S>` |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
@@ -194,6 +195,22 @@ export const REGIMES = ['TRENDING', 'RANGING', 'VOLATILE', 'UNCLEAR'] as const;
 export const VOLATILITY_STATES = ['LOW', 'NORMAL', 'HIGH', 'EXTREME'] as const;
 export const SESSIONS = ['ASIA', 'LONDON', 'NEW_YORK', 'LONDON_NY_OVERLAP', 'OFF'] as const;
 
+// IntentState (app/engine/order_manager.py): DEMO broker order states (TAA-907).
+export const ORDER_STATES = [
+  'NEW',
+  'PRECHECKED',
+  'SENDING',
+  'FILLED',
+  'PARTIAL',
+  'REJECTED',
+  'UNKNOWN',
+  'RECONCILED',
+  'NOT_EXECUTED',
+  'PROTECTED',
+  'UNPROTECTED',
+  'EMERGENCY_CLOSED',
+] as const;
+
 export const CODE_KINDS = [
   'reason',
   'gate',
@@ -212,6 +229,7 @@ export const CODE_KINDS = [
   'regime',
   'volatility',
   'session',
+  'orderState',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 

@@ -82,5 +82,31 @@
     "NEW_YORK": "นิวยอร์ก",
     "LONDON_NY_OVERLAP": "ลอนดอนซ้อนนิวยอร์ก",
     "OFF": "นอกช่วงหลัก"
+  },
+  "exitReason": {
+    "TP": "Take profit",
+    "SL": "Stop loss",
+    "BE": "จุดคุ้มทุน (break-even)",
+    "TRAIL": "Trailing stop",
+    "TIME": "ครบเวลาถือ",
+    "SIGNAL": "สัญญาณปิด",
+    "KILL_SWITCH": "Kill switch",
+    "MANUAL": "ปิดเอง",
+    "STOP_OUT": "Stop out",
+    "END_OF_DATA": "สิ้นสุดข้อมูล"
+  },
+  "orderState": {
+    "NEW": "ใหม่",
+    "PRECHECKED": "ตรวจสอบแล้ว",
+    "SENDING": "กำลังส่ง",
+    "FILLED": "จับคู่แล้ว",
+    "PARTIAL": "จับคู่บางส่วน",
+    "REJECTED": "ถูกปฏิเสธ",
+    "UNKNOWN": "ไม่ทราบผล",
+    "RECONCILED": "กระทบยอดแล้ว",
+    "NOT_EXECUTED": "ไม่ได้ส่ง",
+    "PROTECTED": "มี Stop Loss แล้ว",
+    "UNPROTECTED": "ไม่มี Stop Loss",
+    "EMERGENCY_CLOSED": "ปิดฉุกเฉิน"
   }
 }

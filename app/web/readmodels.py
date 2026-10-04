@@ -16,7 +16,7 @@ import math
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 import pandas as pd
@@ -34,6 +34,7 @@ from app.indicators.volatility import atr, bollinger
 from app.market_data.history_store import SqlHistoryStore
 from app.storage.database import Database
 from app.storage.models import (
+    AuditEvent,
     AuditReplicaRow,
     BreakerEventRow,
     BreakerStateRow,
@@ -61,6 +62,9 @@ DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 MAX_CANDLES = 2000
 MAX_ZONES = 8
+# the engine's trade lifecycle events on its audit chain (app.engine.trade_audit)
+TRADE_EVENT_TYPES = ("POSITION_OPENED", "STOP_MOVED", "POSITION_CLOSED")
+TRADE_EVENT_SLACK = timedelta(minutes=5)
 ZONE_ATR_PERIOD = 14
 SECRET_KEY = re.compile(r"secret|password|token|api_key|totp|hmac", re.I)
 
@@ -273,6 +277,57 @@ class ReadModels:
             return paginate(
                 sess, PaperPositionRow, where, time_col, PaperPositionRow.ticket, limit=limit, cursor=cursor
             )
+
+    def trade(self, engine_id: str, ticket: int) -> dict[str, Any] | None:
+        """One paper position with what led to it and what happened to it (TAA-907): its intent, the
+        decision (with its checks and signal summary) and the trade lifecycle events from the engine's
+        audit chain (opened, stop moves, closed), oldest first."""
+        with self.db.session() as sess:
+            pos = sess.get(PaperPositionRow, (engine_id, ticket))
+            if pos is None:
+                return None
+            intent = sess.get(PaperIntentRow, (engine_id, pos.intent_id))
+            decision = (
+                None if intent is None else sess.get(DecisionRecordRow, (engine_id, intent.decision_id))
+            )
+            checks: list[DecisionCheckRow] = (
+                []
+                if decision is None
+                else list(
+                    sess.execute(
+                        select(DecisionCheckRow)
+                        .where(
+                            DecisionCheckRow.engine_id == engine_id,
+                            DecisionCheckRow.decision_id == decision.decision_id,
+                        )
+                        .order_by(DecisionCheckRow.seq)
+                    ).scalars()
+                )
+            )
+            start = ensure_utc(pos.entry_time) - TRADE_EVENT_SLACK
+            where = [
+                AuditEvent.engine_id == engine_id,
+                AuditEvent.event_type.in_(TRADE_EVENT_TYPES),
+                AuditEvent.ts_utc >= start,
+            ]
+            if pos.exit_time is not None:
+                where.append(AuditEvent.ts_utc <= ensure_utc(pos.exit_time) + TRADE_EVENT_SLACK)
+            events = [
+                {"type": e.event_type, "at": json_safe(ensure_utc(e.ts_utc)), "payload": dict(e.payload)}
+                for e in sess.execute(
+                    select(AuditEvent).where(*where).order_by(AuditEvent.ts_utc, AuditEvent.seq)
+                ).scalars()
+                if e.payload.get("ticket") == ticket and e.payload.get("paper") is True
+            ]
+            return {
+                "position": row_dict(pos),
+                "intent": None if intent is None else row_dict(intent),
+                "decision": None
+                if decision is None
+                else row_dict(decision, skip=("engine_id", "market", "plan"))
+                | {"checks": [row_dict(c, skip=("engine_id", "id")) for c in checks]},
+                "events": events,
+            }
 
     def intents(
         self,

@@ -17,6 +17,7 @@ from app.market_data.history_store import SqlHistoryStore
 from app.storage.audit import AuditLog
 from app.storage.database import Database
 from app.storage.models import (
+    AuditEvent,
     ConfigSnapshot,
     DecisionCheckRow,
     DecisionRecordRow,
@@ -37,6 +38,7 @@ ROUTES = [
     "account",
     "positions",
     "trades",
+    "trades/1",
     "intents",
     "decisions",
     "decisions/d1",
@@ -81,7 +83,7 @@ def position(engine_id: str, ticket: int, *, exit_minutes: int | None, net: floa
         entry_price=1.1,
         sl=1.095,
         tp=1.11,
-        stop_kind="INITIAL",
+        stop_kind="SL",  # ExitReason.STOP_LOSS: the initial stop
         status="OPEN" if exit_minutes is None else "CLOSED",
         exit_time=None if exit_minutes is None else entry + timedelta(minutes=exit_minutes),
         exit_price=None if exit_minutes is None else 1.105,
@@ -255,6 +257,55 @@ class TestReads:
             "offline_reason": "SILENT",
         }
         assert get(client, theirs, "status").status_code == 404  # still only the user's own engine
+
+    def test_a_trade_with_its_intent_decision_and_lifecycle(
+        self, rig: tuple[TestClient, str, str], db: Database
+    ) -> None:
+        client, mine, theirs = rig
+        entry = T + timedelta(minutes=15)  # ticket 1 of the rig: entered T+15 min, closed 30 min later
+        events = [
+            (entry, "POSITION_OPENED", {"ticket": 1, "paper": True, "price": 1.1}),
+            (
+                entry + timedelta(minutes=10),
+                "STOP_MOVED",
+                {"ticket": 1, "paper": True, "new": 1.1, "kind": "BREAK_EVEN"},
+            ),
+            (
+                entry + timedelta(minutes=12),
+                "STOP_MOVED",
+                {"ticket": 1, "paper": False, "new": 1.2},
+            ),  # a broker one
+            (entry + timedelta(minutes=13), "STOP_MOVED", {"ticket": 2, "paper": True, "new": 1.1}),
+            (entry + timedelta(minutes=30), "POSITION_CLOSED", {"ticket": 1, "paper": True, "reason": "TP"}),
+            (entry + timedelta(hours=3), "POSITION_CLOSED", {"ticket": 1, "paper": True}),  # a later trade's
+        ]
+        with db.session() as sess:
+            for seq, (at, kind, payload) in enumerate(events, start=1):
+                sess.add(
+                    AuditEvent(
+                        engine_id=mine,
+                        event_id=f"0191a0a0-0000-7000-8000-0000000001{seq:02d}",
+                        chain="engine:test",
+                        seq=seq,
+                        ts_utc=at,
+                        actor="engine",
+                        event_type=kind,
+                        payload=payload,
+                        prev_hash="0" * 64,
+                        hash=f"{seq:064d}",
+                    )
+                )
+        body = get(client, mine, "trades/1").json()
+        assert body["position"]["ticket"] == 1 and body["intent"]["intent_id"] == "p1"
+        assert body["decision"]["decision_id"] == "d1" and [c["name"] for c in body["decision"]["checks"]]
+        assert "market" not in body["decision"] and "signal" in body["decision"]
+        assert [(e["type"], e["payload"].get("kind")) for e in body["events"]] == [
+            ("POSITION_OPENED", None),
+            ("STOP_MOVED", "BREAK_EVEN"),
+            ("POSITION_CLOSED", None),
+        ]
+        assert get(client, mine, "trades/999").json()["error"]["code"] == "trade_not_found"
+        assert get(client, theirs, "trades/1").status_code == 404
 
     def test_positions_paginate_newest_first(self, rig: tuple[TestClient, str, str]) -> None:
         client, mine, _ = rig

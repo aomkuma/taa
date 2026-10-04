@@ -19,6 +19,13 @@ import {
   SymbolDetailSchema,
 } from '@/pages/symbols/schemas';
 
+import {
+  OrderIntentsPageSchema,
+  PaperIntentsPageSchema,
+  TradeDetailSchema,
+  TradesPageSchema,
+} from '@/pages/trades/schemas';
+
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
@@ -35,6 +42,11 @@ const CASES: [string, z.ZodType][] = [
   [`${E}decisions/d1`, DecisionMarketSchema],
   [`${E}decisions/d1`, SignalSourceSchema],
   [`${E}breakers?limit=1`, BreakersSchema],
+  [`${E}trades?limit=2`, TradesPageSchema],
+  [`${E}positions?status=OPEN`, TradesPageSchema],
+  [`${E}trades/1`, TradeDetailSchema],
+  [`${E}intents?kind=paper`, PaperIntentsPageSchema],
+  [`${E}intents?kind=broker`, OrderIntentsPageSchema],
   ['me/feed', FeedSchema],
   ['engines', EngineListSchema],
   ['notifications?limit=5', NotificationsPageSchema],

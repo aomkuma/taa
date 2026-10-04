@@ -137,6 +137,7 @@ class BrokerPositionManager:
                     old=pos.sl,
                     new=new_sl,
                     note=note,
+                    paper=False,
                 )
         else:
             log.warning("stop change on #%s refused: %s", pos.ticket, result.description)

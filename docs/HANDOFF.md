@@ -1,7 +1,7 @@
 # Session handoff
 
 Last updated: 2026-10-05 (session that started Phase 9 pages), single session on `main`. Done in this
-session: TAA-903 app shell, TAA-904 dashboard, TAA-905 charts, TAA-906 symbols. The previous session (2026-10-04) did TAA-804 … TAA-8A5. No
+session: TAA-903 app shell, TAA-904 dashboard, TAA-905 charts, TAA-906 symbols, TAA-907 positions & history. The previous session (2026-10-04) did TAA-804 … TAA-8A5. No
 branch holds unmerged work. This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
@@ -22,9 +22,9 @@ dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & ad
 name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
 Done: Phases 0–8, 8A and 12 (cloud replay jobs moved to the deferred TAA-1501, Phase 15).
-Partly done: Phase 9 (901–906, 915), Phase 10 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13–14.
+Partly done: Phase 9 (901–907, 915), Phase 10 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13–14.
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Continue with TAA-907 (positions & history).
+"Next work" list in docs/HANDOFF.md. Continue with TAA-908 (signals & decisions).
 A local PostgreSQL 16 is available for tests: `pytest -m postgres` uses TAA_POSTGRES_URL from .env (role taa,
 database taa_test); never touch other projects' databases on that server.
 LIVE stays disabled until Phase 14 and an explicit go-ahead. Subscriptions stay off (SUBSCRIPTIONS_ENABLED=false).
@@ -50,12 +50,12 @@ or at any phase boundary if I ask. Chat with me in Thai.
 - **Also done:** Phase 7 (TAA-701..709), Phase 8 (TAA-801..811) and Phase 8A (TAA-8A1..8A5). TAA-810's optional
   cloud replay jobs moved to TAA-1501 (Phase 15, deferred; reasons in TICKETS): replay runs locally with
   `python -m app.cli advisory replay` and its rows replicate up.
-- **In progress (progress table):** Phase 9 7/23 (901–906,
+- **In progress (progress table):** Phase 9 8/23 (901–907,
   915), Phase 10 3/5 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14
   (LIVE). The order of the remaining tickets: "Next work" below.
-- **Checks:** 2665 passed, 7 skipped (6 real-terminal, 1 contract case defined from bar 0) after TAA-906; the
+- **Checks:** 2666 passed, 7 skipped (6 real-terminal, 1 contract case defined from bar 0) after TAA-907; the
   Postgres tests run when `TAA_POSTGRES_URL` is set (they ran). The full suite takes ~7–9 min. ruff, mypy and
-  bandit are clean. Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/` (202 tests after TAA-906). Architecture rules are enforced by `tests/unit/test_architecture.py`.
+  bandit are clean. Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/` (224 tests after TAA-907). Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
     - style slider 0–100 (defensive → offensive) with five anchor presets
@@ -385,6 +385,9 @@ or at any phase boundary if I ask. Chat with me in Thai.
       `src/pages/symbols/`, shared `src/components/Gauge.tsx`; API samples contract
       (`tests/web/test_api_samples.py` ↔ `frontend/src/test/apiSamples.test.ts`), which caught TAA-905's
       `/symbols` shape bug (fixed).
+    - TAA-907 (PLAN §A15 "TAA-907 decisions"): floating P/L on paper marks, trade lifecycle on the audit
+      chain (`TradeAuditSink`), `GET /trades/{ticket}`, `src/pages/trades/` (positions, history with CSV, trade
+      drawer). TAA-911 should add close/flatten buttons to the positions page with its step-up dialogs.
     - Page tests use `src/test/engine.ts` (`owner()`, `status()`, `heartbeat()`, `renderShell(path)`) and
       `src/test/eventSource.ts` (fake EventSource).
   - local PostgreSQL 16 (Windows service `postgresql-x64-16`, localhost:5432), shared with other projects.
@@ -436,7 +439,7 @@ dependencies are done by the time it is reached):
 1. ~~TAA-703, 704, 707, 708, 709, 706, 803~~ (done in the previous session)
 2. ~~TAA-804, 805, 811, 808, 705, 806, 807, 809, 810~~ (done; cloud replay jobs deferred to TAA-1501)
 3. ~~TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5~~ (done, Phase 8A)
-4. ~~TAA-903 app shell, 904 dashboard, 905 charts, 906 symbols~~ (done). **Next:** 907–913, 916–923, then 914 PWA polish (Phase 9). The backend for every page exists; see "Notes for the PWA" below.
+4. ~~TAA-903 app shell, 904 dashboard, 905 charts, 906 symbols, 907 positions & history~~ (done). **Next:** 908–913, 916–923, then 914 PWA polish (Phase 9). The backend for every page exists; see "Notes for the PWA" below.
 5. TAA-1004 (do the preparation in "Notes from Phase 10" first), TAA-1005 (Phase 10)
 6. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
    Milestone 1 review.
@@ -585,6 +588,9 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
   - The app icon is a placeholder SVG; maskable/Apple icons, API caching rules and the install prompt are
     TAA-914.
   - Built pages load lazily (`BUILT` in `routes.tsx`); the main chunk is ~340 kB after TAA-906.
+  - Memory (16 GB machine): running vitest while the full pytest suite runs crashed Node workers (exit 134)
+    and once made argon2 fail with "Memory allocation error" in user-creating fixtures. Run the two suites one
+    after the other; rerun a lone `HashingError` before investigating.
   - Write page tests from `src/test/fixtures/api-samples.json` (real responses); add each new route a page
     reads to `tests/web/test_api_samples.py` and `apiSamples.test.ts`. Hand-written fakes hid a shape bug once.
   - A real-browser check of a component without the backend: build a small harness with Vite into the
