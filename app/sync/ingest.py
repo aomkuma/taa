@@ -168,7 +168,9 @@ class IngestService:
     def ingest(self, engine_id: str, doc: Any) -> IngestResult:
         batch = self._envelope(engine_id, doc)
         result = IngestResult()
-        prepared = [p for p in (self._prepare(raw, result) for raw in batch.events) if p is not None]
+        prepared = [
+            p for p in (self._prepare(raw, engine_id, result) for raw in batch.events) if p is not None
+        ]
         broken: list[_Broken] = []
         with self.db.session() as sess:
             chains: set[str] = set()
@@ -212,7 +214,9 @@ class IngestService:
         return batch
 
     @staticmethod
-    def _prepare(raw: dict[str, Any], result: IngestResult) -> _RowEvent | _CommandEvent | None:
+    def _prepare(
+        raw: dict[str, Any], engine_id: str, result: IngestResult
+    ) -> _RowEvent | _CommandEvent | None:
         raw_id = raw.get("event_id")
         try:
             event = WireEvent.model_validate(raw)
@@ -226,9 +230,12 @@ class IngestService:
             if spec is None:
                 result.reject(event.event_id, RejectCode.UNKNOWN_TYPE, event.type)
                 return None
-            values = spec.values(event.payload)
+            values = spec.values(event.payload) | {"engine_id": engine_id}  # the signer, never the payload
         except ValidationError as exc:
             result.reject(event.event_id, RejectCode.INVALID_PAYLOAD, _summary(exc))
+            return None
+        if spec.source_id and values["source_id"] is None:
+            result.reject(event.event_id, RejectCode.INVALID_PAYLOAD, "source_id: missing")
             return None
         if spec.event_type == AUDIT_EVENT and values["seq"] < 1:
             result.reject(event.event_id, RejectCode.INVALID_PAYLOAD, "seq: must be at least 1")

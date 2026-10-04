@@ -44,6 +44,7 @@ from app.market_data.data_models import Tick
 from app.news.calendar import NewsFilter
 from app.storage.database import Database
 from app.storage.models import OpportunityRow
+from app.storage.models.base import LOCAL_ENGINE
 
 log = logging.getLogger(__name__)
 
@@ -195,7 +196,7 @@ class OpportunityLifecycle:
     def mark_active(self, opportunity_id: str) -> bool:
         """Someone was alerted: CANDIDATE → ACTIVE (no-op for any other state)."""
         with self.db.session() as sess:
-            row = sess.get(OpportunityRow, opportunity_id)
+            row = sess.get(OpportunityRow, (LOCAL_ENGINE, opportunity_id))
             if row is None or row.status != OpportunityStatus.CANDIDATE.value:
                 return False
             row.status = OpportunityStatus.ACTIVE.value

@@ -6,14 +6,14 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Boolean, Float, Integer, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, Boolean, Float, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.storage.models.base import Base
+from app.storage.models.base import Base, EngineKeyed, EngineTagged
 from app.storage.types import JSONType, UTCDateTime
 
 
-class SymbolCatalogRow(Base):
+class SymbolCatalogRow(EngineKeyed, Base):
     """Every symbol the broker offers, classified; refreshed daily from ``symbols_get``."""
 
     __tablename__ = "symbol_catalog"
@@ -31,7 +31,7 @@ class SymbolCatalogRow(Base):
     present: Mapped[bool] = mapped_column(Boolean, default=True)  # still offered by the broker
 
 
-class SuitabilitySnapshotRow(Base):
+class SuitabilitySnapshotRow(EngineTagged, Base):
     """The ranking per symbol: one row per symbol and UTC hour, rewritten by every run within that hour.
 
     The rows of the newest ``computed_at`` are the latest ranking; older hours are the history (90-day
@@ -39,7 +39,9 @@ class SuitabilitySnapshotRow(Base):
     """
 
     __tablename__ = "suitability_snapshots"
-    __table_args__ = (UniqueConstraint("server", "symbol", "hour", name="uq_suitability_symbol_hour"),)
+    __table_args__ = (
+        UniqueConstraint("engine_id", "server", "symbol", "hour", name="uq_suitability_symbol_hour"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     server: Mapped[str] = mapped_column(String(64))
@@ -55,7 +57,7 @@ class SuitabilitySnapshotRow(Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSONType)  # scores, gates, metrics, session
 
 
-class OpportunityRow(Base):
+class OpportunityRow(EngineKeyed, Base):
     """A market opportunity: one strategy's entry signal on one symbol and bar that passed the ADVISORY hard
     checks. Idempotent per strategy/symbol/bar/side (the signal's idempotency key). Never an alert by itself:
     the personalizer decides who is alerted (§A30)."""
@@ -107,7 +109,7 @@ class OpportunityRow(Base):
     signal: Mapped[dict[str, Any]] = mapped_column(JSONType)  # conditions, evidence, confluence
 
 
-class ShadowTradeRow(Base):
+class ShadowTradeRow(EngineKeyed, Base):
     """A hypothetical trade of one opportunity in one variant (PLAN §A27): PLAN (fixed SL/TP) or MANAGED
     (break-even/trailing per ``position_management``). ``source`` is LIVE (engine) or REPLAY (history).
 
@@ -177,7 +179,7 @@ class ShadowTradeRow(Base):
     note: Mapped[str] = mapped_column(Text, default="")
 
 
-class CalibrationTableRow(Base):
+class CalibrationTableRow(EngineKeyed, Base):
     """One versioned build of the win-probability bucket model (PLAN §A27 "Calibration").
 
     ``cells`` holds every hierarchy cell's LIVE and REPLAY counts; ``cv`` the walk-forward verdict between the
@@ -202,12 +204,15 @@ class CalibrationTableRow(Base):
     reliability: Mapped[list[Any]] = mapped_column(JSONType)
 
 
-class EvidenceModelVersionRow(Base):
+class EvidenceModelVersionRow(EngineTagged, Base):
     """One logistic evidence model of a calibration version: per strategy x asset class, or the pooled one."""
 
     __tablename__ = "evidence_model_versions"
+    __table_args__ = (UniqueConstraint("engine_id", "source_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    # the engine's own id of this row (the cloud's ``id`` is its own; TAA-709)
+    source_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     version: Mapped[str] = mapped_column(String(48), index=True)
     server: Mapped[str] = mapped_column(String(64))
     built_at: Mapped[datetime] = mapped_column(UTCDateTime())

@@ -27,6 +27,7 @@ from app.core.clock import Clock, ensure_utc
 from app.market_data.data_models import SymbolSpec
 from app.storage.database import Database
 from app.storage.models import SymbolCatalogRow
+from app.storage.models.base import LOCAL_ENGINE
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ class SymbolCatalog:
         seen = {e.symbol for e in entries}
         with self.db.session() as sess:
             for entry in entries:
-                row = sess.get(SymbolCatalogRow, (self.server, entry.symbol))
+                row = sess.get(SymbolCatalogRow, (LOCAL_ENGINE, self.server, entry.symbol))
                 if row is None:
                     row = SymbolCatalogRow(server=self.server, symbol=entry.symbol, first_seen_at=now)
                     sess.add(row)

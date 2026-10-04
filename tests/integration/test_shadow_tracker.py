@@ -18,6 +18,7 @@ from app.core.clock import ManualClock
 from app.core.enums import Side
 from app.storage.database import Database
 from app.storage.models import OpportunityRow, ShadowTradeRow
+from app.storage.models.base import LOCAL_ENGINE
 from tests.integration.test_engine_paper import harness
 from tests.integration.test_lifecycle import CONFIG, WED, add
 from tests.unit.test_market_data import setup
@@ -38,7 +39,7 @@ def opportunity(db: Database, gw: ReadOnlyMT5Gateway, oid: str = "o1", **kw: Any
     quote = {"bid": tick.bid, "ask": tick.ask, "quote_at": tick.time_utc}
     add(db, gw, oid, **(quote | kw))
     with db.session() as sess:
-        row = sess.get(OpportunityRow, oid)
+        row = sess.get(OpportunityRow, (LOCAL_ENGINE, oid))
         assert row is not None
         return row
 
@@ -208,7 +209,7 @@ class TestFlags:
         lifecycle = OpportunityLifecycle(db, gw, CONFIG, clock, server="FBS-Demo")
         assert lifecycle.mark_active("o1")
         with db.session() as sess:
-            row = sess.get(OpportunityRow, "o2")
+            row = sess.get(OpportunityRow, (LOCAL_ENGINE, "o2"))
             assert row is not None
             row.status = "FOLLOWED"
         clock.advance(60)
@@ -224,7 +225,7 @@ class TestFlags:
         clock.advance(3600)
         lifecycle.tick()
         with db.session() as sess:
-            row = sess.get(OpportunityRow, "o1")
+            row = sess.get(OpportunityRow, (LOCAL_ENGINE, "o1"))
             assert row is not None and row.status == "EXPIRED" and row.alerted_at == WED
 
 

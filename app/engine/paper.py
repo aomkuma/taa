@@ -41,6 +41,7 @@ from app.market_data.data_models import SymbolSpec
 from app.monitoring.alerts import EventBus, EventType
 from app.storage.database import Database
 from app.storage.models import PaperAccountRow, PaperIntentRow, PaperPositionRow
+from app.storage.models.base import LOCAL_ENGINE
 
 log = logging.getLogger(__name__)
 
@@ -131,7 +132,7 @@ class PaperExecution:
         """Load the persisted book into the broker; returns the number of open positions restored."""
         now = self.clock.now_utc()
         with self.db.session() as sess:
-            account = sess.get(PaperAccountRow, self.account_key)
+            account = sess.get(PaperAccountRow, (LOCAL_ENGINE, self.account_key))
             if account is None:
                 sess.add(
                     PaperAccountRow(
@@ -235,7 +236,7 @@ class PaperExecution:
     def modify_stop(self, ticket: int, sl: float, stop_kind: ExitReason | None) -> None:
         self.broker.modify(ticket, sl=sl, stop_kind=stop_kind)
         with self.db.session() as sess:
-            row = sess.get(PaperPositionRow, ticket)
+            row = sess.get(PaperPositionRow, (LOCAL_ENGINE, ticket))
             if row is not None:
                 row.sl = sl
                 if stop_kind is not None:
@@ -263,7 +264,7 @@ class PaperExecution:
         now = self.clock.now_utc()
         with self.db.session() as sess:
             for pos in self.broker.positions.values():
-                row = sess.get(PaperPositionRow, pos.ticket)
+                row = sess.get(PaperPositionRow, (LOCAL_ENGINE, pos.ticket))
                 if row is not None:
                     row.price_current, row.mae, row.mfe = pos.price_current, pos.mae, pos.mfe
                     row.swap, row.bars_held, row.updated_at = pos.swap, pos.bars_held, now
@@ -272,7 +273,7 @@ class PaperExecution:
     # --- internals --------------------------------------------------------------------------------------
 
     def _save_account(self, sess: Session, now: datetime) -> None:
-        account = sess.get(PaperAccountRow, self.account_key)
+        account = sess.get(PaperAccountRow, (LOCAL_ENGINE, self.account_key))
         if account is not None:
             account.balance = self.broker.balance
             account.next_id = self.broker.next_id
@@ -280,7 +281,7 @@ class PaperExecution:
 
     def _persist(self, sess: Session, event: BrokerEvent) -> None:
         intent_id = self._intent_by_order.pop(event.order_id, None) if event.order_id is not None else None
-        intent = sess.get(PaperIntentRow, intent_id) if intent_id else None
+        intent = sess.get(PaperIntentRow, (LOCAL_ENGINE, intent_id)) if intent_id else None
         now = ensure_utc(event.at)
         if event.kind is EventKind.ENTRY and event.ticket is not None:
             pos = self.broker.positions[event.ticket]
@@ -310,7 +311,7 @@ class PaperExecution:
             intent.status, intent.detail, intent.updated_at = event.kind.value, event.detail, now
         elif event.kind is EventKind.EXIT and event.trade is not None:
             t = event.trade
-            row = sess.get(PaperPositionRow, t.ticket)
+            row = sess.get(PaperPositionRow, (LOCAL_ENGINE, t.ticket))
             if row is not None:
                 row.status, row.exit_time, row.exit_price = "CLOSED", t.exit_time, t.exit_price
                 row.exit_reason, row.profit, row.net = t.exit_reason.value, t.profit, t.net

@@ -51,6 +51,7 @@ from app.risk.mode_gates import GateResult
 from app.risk.position_sizer import AccountFunds
 from app.storage.database import Database
 from app.storage.models import OpportunityRow
+from app.storage.models.base import LOCAL_ENGINE
 from app.strategy.base_strategy import BaseStrategy
 from app.strategy.catalog import default_registry as strategy_registry
 from app.strategy.context_builder import ContextBuilder
@@ -245,7 +246,7 @@ class OpportunityScanner:
 
     def _consider(self, signal: Signal, ctx: StrategyContext, spec: SymbolSpec, plan: _Plan) -> str | None:
         with self.db.session() as sess:
-            if sess.get(OpportunityRow, signal.idempotency_key) is not None:
+            if sess.get(OpportunityRow, (LOCAL_ENGINE, signal.idempotency_key)) is not None:
                 return None  # idempotent: this strategy/symbol/bar/side is already recorded
         account, currency = self._account()
         quote = self.quotes.quote(spec)
@@ -268,7 +269,7 @@ class OpportunityScanner:
             return None
         row = self._row(record, ctx, spec, account, currency, plan, quote)
         with self.db.session() as sess:
-            if sess.get(OpportunityRow, row.opportunity_id) is None:
+            if sess.get(OpportunityRow, (LOCAL_ENGINE, row.opportunity_id)) is None:
                 sess.add(row)
         self.stats.opportunities += 1
         log.info(

@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Float, Integer, String, Text
+from sqlalchemy import BigInteger, Float, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.storage.models.base import Base, utcnow
+from app.storage.models.base import Base, EngineKeyed, utcnow
 from app.storage.types import UTCDateTime
 
 
-class PaperAccountRow(Base):
+class PaperAccountRow(EngineKeyed, Base):
     __tablename__ = "paper_accounts"
 
     account_key: Mapped[str] = mapped_column(String(32), primary_key=True)
@@ -23,14 +23,15 @@ class PaperAccountRow(Base):
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
 
 
-class PaperIntentRow(Base):
+class PaperIntentRow(EngineKeyed, Base):
     """One order the engine decided to place. ``idempotency_key`` is unique: a decision is executed once."""
 
     __tablename__ = "paper_intents"
+    __table_args__ = (UniqueConstraint("engine_id", "idempotency_key"),)
 
     intent_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     account_key: Mapped[str] = mapped_column(String(32), index=True)
-    idempotency_key: Mapped[str] = mapped_column(String(80), unique=True)
+    idempotency_key: Mapped[str] = mapped_column(String(80))
     decision_id: Mapped[str] = mapped_column(String(36))
     signal_id: Mapped[str] = mapped_column(String(36))
     strategy: Mapped[str] = mapped_column(String(64))
@@ -52,7 +53,7 @@ class PaperIntentRow(Base):
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
 
 
-class PaperPositionRow(Base):
+class PaperPositionRow(EngineKeyed, Base):
     __tablename__ = "paper_positions"
 
     ticket: Mapped[int] = mapped_column(BigInteger, primary_key=True)

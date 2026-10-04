@@ -39,6 +39,7 @@ from app.risk.reasons import Reason, with_detail
 from app.storage.audit import AuditLog
 from app.storage.database import Database
 from app.storage.models import BreakerEventRow, BreakerStateRow
+from app.storage.models.base import LOCAL_ENGINE
 
 log = logging.getLogger(__name__)
 
@@ -255,7 +256,7 @@ class BreakerBoard:
         now = self.clock.now_utc()
         events = []
         with self.db.session() as sess:
-            row = sess.get(BreakerStateRow, (name.value, scope_key))
+            row = sess.get(BreakerStateRow, (LOCAL_ENGINE, name.value, scope_key))
             if row is None or row.state == State.CLOSED or row.latched:
                 return
             if row.state == State.OPEN:
@@ -325,7 +326,7 @@ class BreakerBoard:
             raise SafetyViolation(f"resetting {name} requires an explicit acknowledgement")
         now = self.clock.now_utc()
         with self.db.session() as sess:
-            row = sess.get(BreakerStateRow, (name.value, scope_key))
+            row = sess.get(BreakerStateRow, (LOCAL_ENGINE, name.value, scope_key))
             if row is None or row.state == State.CLOSED:
                 return
             self._close(row, now)
@@ -379,7 +380,7 @@ class BreakerBoard:
 
     @staticmethod
     def _row(sess: Session, name: BreakerName, scope_key: str) -> BreakerStateRow:
-        row = sess.get(BreakerStateRow, (name.value, scope_key))
+        row = sess.get(BreakerStateRow, (LOCAL_ENGINE, name.value, scope_key))
         if row is None:
             row = BreakerStateRow(name=name.value, scope_key=scope_key, state=State.CLOSED.value, metrics={})
             sess.add(row)

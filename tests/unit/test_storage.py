@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from alembic.autogenerate import compare_metadata
+from alembic.migration import MigrationContext
 from sqlalchemy import inspect, update
 
 from app.risk.kill_switch import KillMode, KillSwitch
@@ -48,8 +50,15 @@ def test_migrations_match_models(tmp_path: Path) -> None:
     url = f"sqlite:///{(tmp_path / 'm.db').as_posix()}"
     upgrade_schema(url)
     database = Database(url)
-    tables = set(inspect(database.engine).get_table_names()) - {"alembic_version"}
+    insp = inspect(database.engine)
+    tables = set(insp.get_table_names()) - {"alembic_version"}
     assert tables == set(Base.metadata.tables)
+    with database.engine.connect() as conn:  # columns, types, indexes, unique constraints
+        assert compare_metadata(MigrationContext.configure(conn), Base.metadata) == []
+    for name, table in Base.metadata.tables.items():  # autogenerate does not compare primary keys
+        assert insp.get_pk_constraint(name)["constrained_columns"] == [c.name for c in table.primary_key], (
+            name
+        )
     database.dispose()
 
 

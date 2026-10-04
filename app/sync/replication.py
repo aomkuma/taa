@@ -31,6 +31,7 @@ from app.core.clock import Clock
 from app.core.ids import new_id
 from app.storage.database import Database
 from app.storage.models import AuditEvent, OutboxEventRow
+from app.storage.models.base import LOCAL_ENGINE
 from app.sync.events import REPLICAS, ReplicaSpec
 from app.sync.outbox import Status
 
@@ -134,7 +135,8 @@ class Replicator:
         for spec in self.specs:
             if wanted is not None and spec.event_type not in wanted:
                 continue
-            query = select(spec.model).order_by(*(getattr(spec.model, k) for k in spec.key))
+            query = select(spec.model).where(spec.model.engine_id == LOCAL_ENGINE)  # type: ignore[attr-defined]
+            query = query.order_by(*(getattr(spec.model, k) for k in spec.key))
             if spec.model is AuditEvent:
                 query = query.where(AuditEvent.chain == self.audit_chain)
             offset = 0

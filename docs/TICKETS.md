@@ -36,7 +36,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
-| M1 | Phase 7 — Cloud sync | 9 | 6 | IN PROGRESS |
+| M1 | Phase 7 — Cloud sync | 9 | 7 | IN PROGRESS |
 | M1 | Phase 8 — Web backend & worker | 11 | 2 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
@@ -1043,15 +1043,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-709 — (rev. 4) Engine-scoped replicas
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 708
 
-- [ ] `engine_id` on every replicated model (the engine writes its own id; the cloud sets it from the signature, never from the payload)
-- [ ] cloud keys `(engine_id, key)`, including tables keyed by name or natural key and those with engine-local integer ids
-- [ ] Alembic migration (SQLite batch mode + Postgres) with a backfill to the imported engine id
-- [ ] engine-scoped `ReplicaSpec.find`, `entity_key` and RESYNC snapshot
-- [ ] lift the one-engine limit of TAA-708
-- [ ] tests: two engines with colliding local keys stay separate
+- [x] `engine_id` on every replicated model (the engine writes its own id; the cloud sets it from the signature, never from the payload)
+- [x] cloud keys `(engine_id, key)`, including tables keyed by name or natural key and those with engine-local integer ids
+- [x] Alembic migration (SQLite batch mode + Postgres) with a backfill to the imported engine id
+- [x] engine-scoped `ReplicaSpec.find`, `entity_key` and RESYNC snapshot
+- [x] lift the one-engine limit of TAA-708
+- [x] tests: two engines with colliding local keys stay separate
 
 ### Phase 8 — Web backend & worker
 

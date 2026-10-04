@@ -5,14 +5,14 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Integer, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.storage.models.base import Base, utcnow
+from app.storage.models.base import Base, EngineKeyed, EngineTagged, utcnow
 from app.storage.types import JSONType, UTCDateTime
 
 
-class Run(Base):
+class Run(EngineKeyed, Base):
     """One process lifetime of the engine (or a backtest run)."""
 
     __tablename__ = "runs"
@@ -29,7 +29,7 @@ class Run(Base):
     detail: Mapped[str] = mapped_column(Text, default="")
 
 
-class ConfigSnapshot(Base):
+class ConfigSnapshot(EngineKeyed, Base):
     __tablename__ = "config_snapshots"
 
     config_hash: Mapped[str] = mapped_column(String(32), primary_key=True)
@@ -47,7 +47,7 @@ class AuditChainHead(Base):
     last_hash: Mapped[str] = mapped_column(String(64))
 
 
-class AuditEvent(Base):
+class AuditEvent(EngineTagged, Base):
     """Append-only, hash-chained audit record: hash = sha256(prev_hash || canonical(event))."""
 
     __tablename__ = "audit_events"
@@ -65,10 +65,13 @@ class AuditEvent(Base):
     hash: Mapped[str] = mapped_column(String(64), unique=True)
 
 
-class KillSwitchEvent(Base):
+class KillSwitchEvent(EngineTagged, Base):
     __tablename__ = "kill_switch_events"
+    __table_args__ = (UniqueConstraint("engine_id", "source_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    # the engine's own id of this row (the cloud's ``id`` is its own; TAA-709)
+    source_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     ts_utc: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, index=True)
     action: Mapped[str] = mapped_column(String(16))  # ACTIVATE | RELEASE
     mode: Mapped[str] = mapped_column(String(16))  # HALT | FLATTEN

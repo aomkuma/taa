@@ -55,6 +55,7 @@ from app.core.clock import Clock, ensure_utc
 from app.core.errors import TaaError
 from app.storage.database import Database
 from app.storage.models import CalibrationTableRow, EvidenceModelVersionRow, ShadowTradeRow
+from app.storage.models.base import LOCAL_ENGINE
 
 log = logging.getLogger(__name__)
 
@@ -274,7 +275,7 @@ def _model_row(b: CalibrationBuild, model: LogisticModel, key: Hashable | None) 
 def save(db: Database, b: CalibrationBuild, *, keep: int = 30) -> str:
     """Store a build (idempotent per version) and drop versions beyond the newest *keep* of this server."""
     with db.session() as sess:
-        if sess.get(CalibrationTableRow, b.version) is None:
+        if sess.get(CalibrationTableRow, (LOCAL_ENGINE, b.version)) is None:
             sess.add(
                 CalibrationTableRow(
                     version=b.version,
@@ -345,7 +346,7 @@ def _nan(value: Any) -> float:
 
 def load_version(db: Database, version: str) -> LoadedCalibration:
     with db.session() as sess:
-        row = sess.get(CalibrationTableRow, version)
+        row = sess.get(CalibrationTableRow, (LOCAL_ENGINE, version))
         if row is None:
             raise TaaError(f"calibration version {version} not found")
         models = list(

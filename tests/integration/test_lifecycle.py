@@ -14,6 +14,7 @@ from app.core.enums import Timeframe
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.storage.database import Database
 from app.storage.models import OpportunityRow
+from app.storage.models.base import LOCAL_ENGINE
 from tests.integration.test_scanner import scanner
 from tests.unit.test_market_data import ENV, setup
 
@@ -74,7 +75,7 @@ def add(db: Database, gw: ReadOnlyMT5Gateway, oid: str, **kw: Any) -> None:
 
 def get(db: Database, oid: str) -> OpportunityRow:
     with db.session() as sess:
-        row = sess.get(OpportunityRow, oid)
+        row = sess.get(OpportunityRow, (LOCAL_ENGINE, oid))
         assert row is not None
         return row
 

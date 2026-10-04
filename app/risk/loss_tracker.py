@@ -32,6 +32,7 @@ from app.risk.checks import Check, CheckKind
 from app.risk.reasons import Reason
 from app.storage.database import Database
 from app.storage.models import RiskBaseline, RiskDeal, RiskState
+from app.storage.models.base import LOCAL_ENGINE
 
 DAY, WEEK = "DAY", "WEEK"
 CLOSING_ENTRIES = (c.DEAL_ENTRY_OUT, c.DEAL_ENTRY_INOUT, c.DEAL_ENTRY_OUT_BY)
@@ -101,7 +102,7 @@ class LossTracker:
         now = self.clock.now_utc()
         day_key, week_key = period_keys(now, self.tz)
         with self.db.session() as sess:
-            state = sess.get(RiskState, self.account_key)
+            state = sess.get(RiskState, (LOCAL_ENGINE, self.account_key))
             if state is None:
                 state = RiskState(
                     account_key=self.account_key, hwm=equity, cumulative_cash_flow=0.0, consecutive_losses=0
@@ -109,7 +110,7 @@ class LossTracker:
                 sess.add(state)
             baselines = {}
             for period, key in ((DAY, day_key), (WEEK, week_key)):
-                row = sess.get(RiskBaseline, (self.account_key, period, key))
+                row = sess.get(RiskBaseline, (LOCAL_ENGINE, self.account_key, period, key))
                 if row is None:
                     row = RiskBaseline(
                         account_key=self.account_key,
@@ -156,7 +157,7 @@ class LossTracker:
     def reset_consecutive_losses(self) -> None:
         """Manual reset (the breaker framework audits who did it and why)."""
         with self.db.session() as sess:
-            state = sess.get(RiskState, self.account_key)
+            state = sess.get(RiskState, (LOCAL_ENGINE, self.account_key))
             if state is not None:
                 state.consecutive_losses = 0
                 state.updated_at = self.clock.now_utc()

@@ -13,6 +13,7 @@ from app import __version__
 from app.core.clock import Clock, SystemClock
 from app.storage.database import Database
 from app.storage.models import Base, ConfigSnapshot, EngineState, Run
+from app.storage.models.base import LOCAL_ENGINE
 
 T = TypeVar("T", bound=Base)
 
@@ -66,7 +67,7 @@ class RunRepository(Repository):
 
     def finish(self, run_id: str, status: str = "STOPPED", detail: str = "") -> None:
         with self.db.session() as sess:
-            run = sess.get(Run, run_id)
+            run = sess.get(Run, (LOCAL_ENGINE, run_id))
             if run is not None:
                 run.ended_at = self.clock.now_utc()
                 run.status = status
@@ -74,7 +75,7 @@ class RunRepository(Repository):
 
     def save_config_snapshot(self, config_hash: str, payload: dict[str, Any]) -> None:
         with self.db.session() as sess:
-            if sess.get(ConfigSnapshot, config_hash) is None:
+            if sess.get(ConfigSnapshot, (LOCAL_ENGINE, config_hash)) is None:
                 sess.add(
                     ConfigSnapshot(config_hash=config_hash, created_at=self.clock.now_utc(), payload=payload)
                 )

@@ -20,6 +20,7 @@ from app.security.hmac_auth import Signer
 from app.storage.audit import AuditLog, verify_chain
 from app.storage.database import Database
 from app.storage.models import AuditReplicaRow, BreakerStateRow, OutboxEventRow, RiskState
+from app.storage.models.base import LOCAL_ENGINE
 from app.sync.client import CloudClient
 from app.sync.outbox import INGEST_PATH, Outbox, OutboxSender
 from app.sync.replication import install_replication
@@ -91,7 +92,7 @@ class TestAuthentication:
         assert resp.json() == {"accepted": 1, "duplicates": 0, "rejected": []}
         assert resp.headers["Cache-Control"] == "no-store"
         with db.session() as sess:
-            assert sess.get(RiskState, "acct") is not None
+            assert sess.get(RiskState, (ENGINE, "acct")) is not None
         info = paired.app.state.ctx.engine.registry.get(ENGINE)  # type: ignore[attr-defined]
         assert info.first_seen_at == clock.now_utc() == info.last_seen_at  # the PWA shows "connected"
 
@@ -121,7 +122,7 @@ class TestAuthentication:
             assert resp.status_code == 401
             assert resp.json()["error"]["code"] == "signature_invalid"
         with db.session() as sess:
-            assert sess.get(RiskState, "acct").hwm == 1000.0  # type: ignore[union-attr]
+            assert sess.get(RiskState, (ENGINE, "acct")).hwm == 1000.0  # type: ignore[union-attr]
 
     def test_the_signature_covers_the_query_string(self, paired: TestClient, clock: ManualClock) -> None:
         body = body_of(batch(clock))
@@ -196,7 +197,7 @@ def test_engine_rows_reach_the_cloud(tmp_path: Path, clock: ManualClock, static_
         sender = OutboxSender(outbox, cloud.post_gzip, ENGINE, clock)
         assert sender.flush_once() == 5
         with engine_db.session() as sess:
-            state = sess.get(BreakerStateRow, ("DAILY_LOSS", ""))
+            state = sess.get(BreakerStateRow, (LOCAL_ENGINE, "DAILY_LOSS", ""))
             assert state is not None
             state.state = "CLOSED"
         assert sender.flush_once() == 1
@@ -208,7 +209,7 @@ def test_engine_rows_reach_the_cloud(tmp_path: Path, clock: ManualClock, static_
         dead = sess.execute(select(OutboxEventRow).where(OutboxEventRow.status == "DEAD")).scalar_one()
         assert dead.type == "not_a_cloud_type" and "UNKNOWN_TYPE" in dead.last_error
     with cloud_db.session() as sess:
-        state = sess.get(BreakerStateRow, ("DAILY_LOSS", ""))
+        state = sess.get(BreakerStateRow, (ENGINE, "DAILY_LOSS", ""))
         assert state is not None and state.state == "CLOSED" and state.reason == "limit"
         status = sess.get(AuditReplicaRow, chain)
         assert status is not None and (status.status, status.verified_seq) == ("OK", 3)

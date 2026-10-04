@@ -70,6 +70,7 @@ from app.market_data.trading_sessions import TradingSessions
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.storage.database import Database
 from app.storage.models import ShadowTradeRow
+from app.storage.models.base import LOCAL_ENGINE
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame
 from app.strategy.registry import StrategySet
 from app.strategy.signal_models import Signal, StrategyContext
@@ -192,7 +193,7 @@ class HistoricalReplay:
             rows = self._symbol(symbol, existing, report)
             with db.session() as sess:
                 for row in rows:
-                    if sess.get(ShadowTradeRow, row.shadow_id) is None:
+                    if sess.get(ShadowTradeRow, (LOCAL_ENGINE, row.shadow_id)) is None:
                         sess.add(row)
                         report.stored += 1
             log.info("replay %s: %d shadow rows", symbol, len(rows))

@@ -54,6 +54,7 @@ from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.kill_switch import KillMode, KillSwitch
 from app.storage.database import Database
 from app.storage.models import OrderIntentRow
+from app.storage.models.base import LOCAL_ENGINE
 
 log = logging.getLogger(__name__)
 
@@ -157,14 +158,14 @@ class OrderManager:
 
     def transition(self, intent_id: str, new: IntentState, detail: str = "", **fields: object) -> None:
         with self.db.session() as sess:
-            row = sess.get(OrderIntentRow, intent_id)
+            row = sess.get(OrderIntentRow, (LOCAL_ENGINE, intent_id))
             if row is None:
                 raise TaaError(f"unknown intent {intent_id}")
             self._move(sess, row, new, detail, **fields)
 
     def row(self, intent_id: str) -> OrderIntentRow:
         with self.db.session() as sess:
-            row = sess.get(OrderIntentRow, intent_id)
+            row = sess.get(OrderIntentRow, (LOCAL_ENGINE, intent_id))
             if row is None:
                 raise TaaError(f"unknown intent {intent_id}")
             sess.expunge(row)
@@ -393,7 +394,7 @@ class OrderManager:
 
     def _transition_fields(self, intent_id: str, **fields: object) -> None:
         with self.db.session() as sess:
-            row = sess.get(OrderIntentRow, intent_id)
+            row = sess.get(OrderIntentRow, (LOCAL_ENGINE, intent_id))
             if row is not None:
                 for key, value in fields.items():
                     setattr(row, key, value)

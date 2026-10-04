@@ -6,11 +6,15 @@ column required, no extra keys, string lengths and integer ranges of the column 
 timezone-aware datetimes). Engine and cloud run the same code, so a schema change is a migration on both
 sides; deploy the cloud first, or the engine's new rows are rejected (and parked as DEAD) until it catches up.
 
-**Keys.** ``ReplicaSpec.key`` identifies a row on both sides. It is the primary key, except for tables whose
-local surrogate id would collide with cloud rows: ``audit_events`` (the cloud keeps its own ``web`` chain in
-the same table) is keyed by ``(chain, seq)`` and ``decision_checks`` by ``(decision_id, seq)``; those ids are
-not sent. ``breaker_events`` and ``kill_switch_events`` have no natural key and keep the engine's id: only the
-engine writes them, and there is one engine per deployment.
+**Keys** (rev. 4, TAA-709: engine-scoped). Every replicated row carries ``engine_id``, and every key starts
+with it, so two engines with the same local keys never touch each other's rows. The engine writes
+``LOCAL_ENGINE``. ``engine_id`` is not part of the wire payload (a payload naming it is rejected as an extra
+field): the cloud sets the verified signer's id.
+``ReplicaSpec.key`` is the primary key, except for tables with a local autoincrement id: ``audit_events`` is
+keyed by ``(engine_id, chain, seq)``, ``decision_checks`` by ``(engine_id, decision_id, seq)`` and
+``suitability_snapshots`` by ``(engine_id, server, symbol, hour)``; their ids are not sent. Tables without a
+natural key (``breaker_events``, ``kill_switch_events``, ``evidence_model_versions``) send the engine's id as
+``source_id`` and are keyed by ``(engine_id, source_id)``; the cloud's ``id`` is its own.
 
 **Volume controls** (TAA-707). ``quiet`` columns change without an event of their own (the shadow tracker's
 M1 ``cursor`` moves every poll); their values travel with the row's next real change. ``throttle_seconds``
@@ -74,6 +78,8 @@ from app.storage.types import UTCDateTime
 from app.sync.outbox import Priority
 
 MAX_BATCH_EVENTS = 1000
+ENGINE_COLUMN = "engine_id"
+SOURCE_KEY = (ENGINE_COLUMN, "source_id")
 SNAPSHOT_THROTTLE_SECONDS = 300.0
 MAX_TEXT_LENGTH = 100_000
 EVENT_ID_PATTERN = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
@@ -135,11 +141,14 @@ class ReplicaSpec:
     priority: Priority = Priority.CRITICAL
     quiet: tuple[str, ...] = ()  # columns whose changes alone emit nothing
     throttle_seconds: float = 0.0  # minimum time between update events of one row
+    source_id: bool = False  # send the local ``id`` as ``source_id`` (tables without a natural key)
 
     def __post_init__(self) -> None:
         if not self.key:
             object.__setattr__(self, "key", self.primary_key)
-        if not set(self.key) <= set(self.column_names):
+        if self.key[0] != ENGINE_COLUMN:
+            raise TypeError(f"{self.event_type}: keys are engine-scoped and start with engine_id")
+        if not set(self.key[1:]) <= set(self.column_names):
             raise TypeError(f"{self.event_type}: key {self.key} must be replicated columns")
         if not set(self.quiet) <= set(self.column_names) - set(self.key):
             raise TypeError(
@@ -153,7 +162,8 @@ class ReplicaSpec:
     @cached_property
     def columns(self) -> tuple[tuple[str, Column[Any]], ...]:
         attrs: list[ColumnProperty[Any]] = list(sa_inspect(self.model).column_attrs)
-        return tuple((a.key, cast("Column[Any]", a.columns[0])) for a in attrs if a.key not in self.exclude)
+        skip = {*self.exclude, ENGINE_COLUMN}  # engine_id never travels: the cloud takes the signer's
+        return tuple((a.key, cast("Column[Any]", a.columns[0])) for a in attrs if a.key not in skip)
 
     @cached_property
     def column_names(self) -> tuple[str, ...]:
@@ -176,7 +186,10 @@ class ReplicaSpec:
 
     def payload(self, row: Any) -> dict[str, Any]:
         """The wire payload of an ORM row."""
-        return {name: json_safe(getattr(row, name)) for name in self.column_names}
+        out = {name: json_safe(getattr(row, name)) for name in self.column_names}
+        if self.source_id:
+            out["source_id"] = row.id
+        return out
 
     def values(self, payload: Mapping[str, Any]) -> dict[str, Any]:
         """Validated column values from a wire payload; raises pydantic's ValidationError."""
@@ -188,7 +201,8 @@ class ReplicaSpec:
         return values
 
     def entity_key(self, values: Mapping[str, Any]) -> str:
-        return "|".join(str(json_safe(values[k])) for k in self.key)
+        """The row's key within its engine (``replica_versions`` and the outbox are scoped per engine)."""
+        return "|".join(str(json_safe(values[k])) for k in self.key[1:])
 
     def find(self, sess: Session, values: Mapping[str, Any]) -> Any:
         """The stored row with the same key, or None."""
@@ -199,16 +213,16 @@ class ReplicaSpec:
 
 
 REPLICAS: tuple[ReplicaSpec, ...] = (
-    ReplicaSpec(AUDIT_EVENT, AuditEvent, key=("chain", "seq"), exclude=("id",)),
+    ReplicaSpec(AUDIT_EVENT, AuditEvent, key=("engine_id", "chain", "seq"), exclude=("id",)),
     ReplicaSpec("decision", DecisionRecordRow),
-    ReplicaSpec("decision_check", DecisionCheckRow, key=("decision_id", "seq"), exclude=("id",)),
+    ReplicaSpec("decision_check", DecisionCheckRow, key=("engine_id", "decision_id", "seq"), exclude=("id",)),
     ReplicaSpec("order_intent", OrderIntentRow),
     ReplicaSpec("paper_intent", PaperIntentRow),
     ReplicaSpec("paper_position", PaperPositionRow),
     ReplicaSpec("paper_account", PaperAccountRow, priority=Priority.STATE),
     ReplicaSpec("breaker", BreakerStateRow),
-    ReplicaSpec("breaker_event", BreakerEventRow),
-    ReplicaSpec("kill_switch", KillSwitchEvent),
+    ReplicaSpec("breaker_event", BreakerEventRow, key=SOURCE_KEY, exclude=("id",), source_id=True),
+    ReplicaSpec("kill_switch", KillSwitchEvent, key=SOURCE_KEY, exclude=("id",), source_id=True),
     ReplicaSpec("deal", RiskDeal),
     ReplicaSpec("risk_state", RiskState, priority=Priority.STATE),
     ReplicaSpec("risk_baseline", RiskBaseline, priority=Priority.STATE),
@@ -219,7 +233,7 @@ REPLICAS: tuple[ReplicaSpec, ...] = (
     ReplicaSpec(
         "suitability_snapshot",
         SuitabilitySnapshotRow,
-        key=("server", "symbol", "hour"),
+        key=("engine_id", "server", "symbol", "hour"),
         exclude=("id",),
         priority=Priority.TELEMETRY,
         throttle_seconds=SNAPSHOT_THROTTLE_SECONDS,
@@ -227,7 +241,14 @@ REPLICAS: tuple[ReplicaSpec, ...] = (
     ReplicaSpec("opportunity", OpportunityRow),
     ReplicaSpec("shadow_trade", ShadowTradeRow, priority=Priority.STATE, quiet=("cursor", "updated_at")),
     ReplicaSpec("calibration_version", CalibrationTableRow, priority=Priority.STATE),
-    ReplicaSpec("evidence_model_version", EvidenceModelVersionRow, priority=Priority.STATE),
+    ReplicaSpec(
+        "evidence_model_version",
+        EvidenceModelVersionRow,
+        key=SOURCE_KEY,
+        exclude=("id",),
+        source_id=True,
+        priority=Priority.STATE,
+    ),
 )
 SPECS_BY_TYPE: dict[str, ReplicaSpec] = {s.event_type: s for s in REPLICAS}
 SPECS_BY_MODEL: dict[type[Base], ReplicaSpec] = {s.model: s for s in REPLICAS}

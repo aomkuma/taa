@@ -112,7 +112,11 @@ an allow-list is a design decision: change the test and this section together, a
 - Keep schemas portable across SQLite and PostgreSQL: use `UTCDateTime`, `JSONType`, `String(n)`, `BigInteger`
   where values may exceed 32 bits, and the naming convention from `Base`.
 - Every schema change needs an Alembic revision (`--rev-id 000N`), reviewed by hand. Tests use
-  `Database("sqlite://").create_all()`; `test_migrations_match_models` keeps migrations and models in sync.
+  `Database("sqlite://").create_all()`; `test_migrations_match_models` compares the migrated schema with the
+  models, including primary keys (autogenerate misses primary-key changes: write those by hand).
+- Replicated tables (`app/sync/events.py` `REPLICAS`) are engine-scoped (rev. 4): give a new one the
+  `EngineKeyed` or `EngineTagged` mixin, look rows up with `sess.get(Model, (LOCAL_ENGINE, key))` on the
+  engine, add a `ReplicaSpec` and a sample row in `tests/sync_data.py`.
 - Use `Database.session()` (commit on success, rollback on error). Keep sessions short; don't hold one across
   broker calls.
 - Security-relevant actions append to the audit chain (`AuditLog.append`). The audit table is append-only.

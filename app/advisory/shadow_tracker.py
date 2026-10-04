@@ -55,6 +55,7 @@ from app.market_data.candle_service import normalize_rates
 from app.market_data.data_models import SymbolSpec
 from app.storage.database import Database
 from app.storage.models import OpportunityRow, ShadowTradeRow
+from app.storage.models.base import LOCAL_ENGINE
 
 log = logging.getLogger(__name__)
 
@@ -287,7 +288,7 @@ class ShadowTracker:
                 continue
             with self.db.session() as sess:
                 for row in rows:
-                    if sess.get(ShadowTradeRow, row.shadow_id) is None:
+                    if sess.get(ShadowTradeRow, (LOCAL_ENGINE, row.shadow_id)) is None:
                         sess.add(row)
                         opened.append(row.shadow_id)
         self.stats.opened += len(opened)
@@ -421,7 +422,7 @@ class ShadowTracker:
         now = self.clock.now_utc()
         with self.db.session() as sess:
             for sid, state, exit_, result in updates:
-                stored = sess.get(ShadowTradeRow, sid)
+                stored = sess.get(ShadowTradeRow, (LOCAL_ENGINE, sid))
                 if stored is None or stored.status != ShadowStatus.OPEN.value:
                     continue
                 apply_state(stored, state, now)

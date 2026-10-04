@@ -90,13 +90,14 @@ class TestIssuing:
 
 
 class TestLimits:
-    def test_one_active_engine_per_deployment_until_replicas_are_engine_scoped(
-        self, db: Database, clock: ManualClock
-    ) -> None:
-        reg = registry(db, clock, MULTI_ENGINE_ENABLED=True, WEB_MAX_ENGINES_PER_USER=5)
-        reg.register(user(db, clock, "owner"), "a", actor="owner")
+    def test_several_engines_once_replicas_are_engine_scoped(self, db: Database, clock: ManualClock) -> None:
+        reg = registry(db, clock, MULTI_ENGINE_ENABLED=True)  # TAA-709 lifted the one-engine limit
+        a = reg.register(user(db, clock, "owner"), "a", actor="owner")
+        b = reg.register(user(db, clock, "other", "SUBSCRIBER"), "b", actor="other")
+        assert {e.engine_id for e in reg.list_engines()} == {a.engine_id, b.engine_id}
+        reg.one_active_engine = True  # the pre-709 switch still refuses a second engine
         with pytest.raises(EngineError) as exc:
-            reg.register(user(db, clock, "other", "SUBSCRIBER"), "b", actor="other")
+            reg.register(user(db, clock, "third", "SUBSCRIBER"), "c", actor="third")
         assert exc.value.code == "engine_limit_reached"
 
     def test_a_revoked_engine_frees_the_slot(self, db: Database, clock: ManualClock) -> None:

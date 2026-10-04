@@ -4,18 +4,19 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Float, Integer, String, Text
+from sqlalchemy import BigInteger, Float, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.storage.models.base import Base
+from app.storage.models.base import Base, EngineKeyed
 from app.storage.types import UTCDateTime
 
 
-class OrderIntentRow(Base):
+class OrderIntentRow(EngineKeyed, Base):
     __tablename__ = "order_intents"
+    __table_args__ = (UniqueConstraint("engine_id", "idempotency_key"),)
 
     intent_id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    idempotency_key: Mapped[str] = mapped_column(String(80), unique=True)
+    idempotency_key: Mapped[str] = mapped_column(String(80))
     decision_id: Mapped[str] = mapped_column(String(36))
     signal_id: Mapped[str] = mapped_column(String(36))
     strategy: Mapped[str] = mapped_column(String(64))

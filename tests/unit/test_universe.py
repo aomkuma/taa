@@ -13,6 +13,7 @@ from app.broker.fake_mt5 import ALL_SYMBOLS
 from app.config import UniverseConfig
 from app.storage.database import Database
 from app.storage.models import SymbolCatalogRow
+from app.storage.models.base import LOCAL_ENGINE
 from tests.strategy_data import EURUSD_SPEC
 from tests.unit.test_market_data import setup
 
@@ -125,7 +126,7 @@ class TestCatalog:
         del fake.symbols["BTCUSD"]
         cat.refresh(force=True)
         with db.session() as sess:
-            row = sess.get(SymbolCatalogRow, ("FBS-Demo", "BTCUSD"))
+            row = sess.get(SymbolCatalogRow, (LOCAL_ENGINE, "FBS-Demo", "BTCUSD"))
             assert row is not None and row.present is False
             assert sess.execute(select(SymbolCatalogRow.symbol)).scalars().all()
         assert "BTCUSD" not in {e.symbol for e in cat.entries()}

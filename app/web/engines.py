@@ -119,7 +119,7 @@ class EngineRegistry:
         *,
         max_per_user: int = 1,
         multi_engine: bool = False,
-        one_active_engine: bool = True,
+        one_active_engine: bool = False,
     ) -> None:
         self.db = db
         self.clock = clock
@@ -127,7 +127,7 @@ class EngineRegistry:
         self.box = SecretBox(derive_key(session_secret, KEY_PURPOSE))
         self.max_per_user = max_per_user
         self.multi_engine = multi_engine
-        self.one_active_engine = one_active_engine  # lifted by TAA-709 (engine-scoped replicas)
+        self.one_active_engine = one_active_engine  # the pre-TAA-709 limit; replicas are engine-scoped now
         self._cache: dict[str, _Entry] = {}
         self._seen_written: dict[str, float] = {}
         self._lock = threading.Lock()

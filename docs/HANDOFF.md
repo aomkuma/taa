@@ -1,7 +1,7 @@
 # Session handoff
 
 Last updated: 2026-10-04, single session on `main`: TAA-703 (ingest API), TAA-704 (long-poll route) and
-TAA-707 (advisory sync) and TAA-708 (engine registry, rev. 4) done. Before them, three parallel
+TAA-707 (advisory sync), TAA-708 (engine registry) and TAA-709 (engine-scoped replicas) done. Before them, three parallel
 sessions were merged: Phase 6C (done), Phase 7 TAA-701, 702, 704 (engine side), Phase 8 TAA-801, 802,
 Phase 9 TAA-901, 902, 915, Phase 10 TAA-1001..1003, and the storage-health fix. No branch holds unmerged
 work. This file holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
@@ -22,10 +22,9 @@ dependencies) and docs/PLAN.md §A13 (cloud sync) and §A14 (web backend); later
 sections (§A15/§A28 PWA, §A16 analytics, §A30 tenancy, §A31 trading profile).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
-Partly done: Phase 7 (701..704), Phase 8 (801, 802), Phase 9 (901, 902, 915), Phase 10 (1001..1003).
+Partly done: Phase 7 (701..704, 707..709), Phase 8 (801, 802), Phase 9 (901, 902, 915), Phase 10 (1001..1003).
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Start with TAA-709 (engine-scoped replicas, PLAN §A32). It must
-include the advisory tables that TAA-707 added to `REPLICAS`.
+"Next work" list in docs/HANDOFF.md. Start with TAA-706 (candle & history sync).
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Update docs/HANDOFF.md at the end of the
 session. Stop for review at the end of Milestone 1, or at any phase boundary if I ask.
@@ -45,7 +44,7 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
   `ENGINE_ID` and `ENGINE_HMAC_SECRET` (shown once), and the browser generates `CONTROL_TOTP_SECRET`, which never
   reaches the cloud. New tickets: TAA-708, 709, 811, 923. Rollout is fail-closed: one ACTIVE engine until 709, and
   `MULTI_ENGINE_ENABLED=false`.
-- **In progress (progress table):** Phase 7 6/9 (701..704, 707, 708), Phase 8 2/11 (801, 802),
+- **In progress (progress table):** Phase 7 7/9 (701..704, 707..709), Phase 8 2/11 (801, 802),
   Phase 9 3/23 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. The order of the
   remaining tickets: "Next work" below.
 - **Checks:** 2270 tests on `c85d539` (2269 passed + 1 failure from a memory-allocation error under parallel
@@ -86,6 +85,11 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
       rejects as DEAD at once; batches are capped at 1000 events and `sync.max_batch_bytes`.
     - TAA-704 route: `GET /api/v1/engine/commands?cursor=` (`app/web/routers/engine.py`): 200 with
       `commands` + `cursor`, or 204 after 25 s; tested against the engine's own `CommandPoller`.
+    - TAA-709 engine-scoped replicas (PLAN §A32 "TAA-709 decisions", migration 0020): every replicated
+      table has `engine_id` (mixins `EngineKeyed`/`EngineTagged`); the engine writes `LOCAL_ENGINE` and looks
+      rows up with `(LOCAL_ENGINE, key)`; the cloud sets the signer's id (never on the wire); `source_id` for
+      tables without a natural key; several engines may be active. Two engines with identical local rows are
+      tested in `tests/web/test_engine_scoped_replicas.py`.
     - TAA-708 engine registry (PLAN §A32 "TAA-708 decisions"): table `engines` (migration 0019),
       `app/web/engines.py` `EngineRegistry` (issue/rotate/revoke/list/import-env, secrets encrypted with HKDF
       purpose `engine-hmac-secret`, 5 s key cache, rotation hand-over, first/last seen, limits: one ACTIVE
@@ -323,7 +327,7 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
   `main` in `C:\Users\korap\taa` (one session at a time). It is the only worktree and the only local branch:
   `phase8-auth`, `phase9-frontend` and `phase10-analytics` were merged, then deleted with their worktrees
   (2026-10-04). The `origin/dependabot/*` branches are Dependabot PRs on GitHub, untouched. Latest
-  migration: **0019**.
+  migration: **0020**.
 
 ## Next work
 
@@ -347,9 +351,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 1. ~~TAA-703 ingest API~~ (done)
 2. ~~TAA-704 long-poll route~~ (done)
 3. ~~TAA-707 advisory sync~~ (done, before 708 because it was under way)
-4. ~~(rev. 4) TAA-708 engine registry~~ (done), then TAA-709 engine-scoped replicas (including the advisory tables:
-   `symbol_catalog`, `suitability_snapshots`, `opportunities`, `shadow_trades`, `calibration_tables`,
-   `evidence_model_versions`)
+4. ~~(rev. 4) TAA-708 engine registry, TAA-709 engine-scoped replicas~~ (done)
 5. TAA-706 candle & history sync
 6. TAA-803 read APIs (owner-scoped, rev. 4), then TAA-804 SSE
 7. TAA-805 control API (owned engines only, rev. 4), then TAA-811 engine management API

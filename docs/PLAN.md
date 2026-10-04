@@ -1544,6 +1544,27 @@ web service's env.
     `ingest_nonces` and `audit_replicas` (chain `engine:<id>`) already are.
   - The Alembic migration uses batch mode for SQLite and backfills existing rows with the imported engine's id.
   - Then the one-engine limit is lifted.
+  - (TAA-709 decisions, migration 0020)
+    - The engine database writes the constant `local` (`LOCAL_ENGINE`), not its `ENGINE_ID`. It holds one
+      engine, so engine code looks rows up as `(LOCAL_ENGINE, key)` without passing an id through every
+      service, and nothing is rewritten when an engine is re-registered under a new id. The cloud's own rows
+      (its `web` audit chain) are `local` too.
+    - `engine_id` is not part of the wire payload at all: the strict schema rejects a payload that names it
+      (`INVALID_PAYLOAD`), and the cloud sets the signer's id.
+    - Mixins `EngineKeyed` (first primary-key column) and `EngineTagged` (indexed column for tables with an
+      autoincrement id) in `app/storage/models/base.py`. Tables without a natural key (`breaker_events`,
+      `kill_switch_events`, `evidence_model_versions`) send their local id as `source_id`, unique per engine;
+      the cloud keeps its own `id`.
+    - Unique per engine: the idempotency keys of order and paper intents and the suitability hour key. Audit
+      chains stay unique by `(chain, seq)`, and the chain name holds the engine id.
+    - `entity_key` (replica versions, outbox coalescing) leaves `engine_id` out: both are already per engine.
+    - Backfill: the registered engine seen most recently (else the newest) gets every replicated row; audit
+      events take the id from their chain (`engine:<id>`). A database without registered engines (every engine
+      database) keeps `local`. Downgrading works only while the replicas hold one engine's rows.
+    - `EngineRegistry(one_active_engine=False)` is the default now; the per-user limit and
+      `MULTI_ENGINE_ENABLED` stay.
+    - `test_migrations_match_models` now compares the full schema (`compare_metadata`) and every primary key,
+      which autogenerate does not compare.
 - **(TAA-708 decisions)** `app/web/engines.py` (`EngineRegistry`), table `engines` (migration 0019),
   `KeyLookup`/`StaticKeys` in `app/security/hmac_auth.py`, CLI in `app/cli/web.py`.
   - The env check runs when the app starts (`check_engine_env` in `app/web/app.py`), because it needs the

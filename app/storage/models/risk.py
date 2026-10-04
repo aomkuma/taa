@@ -9,14 +9,14 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, Boolean, Float, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Float, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.storage.models.base import Base, utcnow
+from app.storage.models.base import Base, EngineKeyed, EngineTagged, utcnow
 from app.storage.types import JSONType, UTCDateTime
 
 
-class RiskBaseline(Base):
+class RiskBaseline(EngineKeyed, Base):
     """Equity at the start of a broker day or week, plus the cash flows booked during it."""
 
     __tablename__ = "risk_baselines"
@@ -30,7 +30,7 @@ class RiskBaseline(Base):
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
 
 
-class RiskState(Base):
+class RiskState(EngineKeyed, Base):
     __tablename__ = "risk_state"
 
     account_key: Mapped[str] = mapped_column(String(32), primary_key=True)
@@ -41,7 +41,7 @@ class RiskState(Base):
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
 
 
-class RiskDeal(Base):
+class RiskDeal(EngineKeyed, Base):
     """A deal already applied to the risk state (cash flow or closed bot trade), so it is applied once."""
 
     __tablename__ = "risk_deals"
@@ -53,7 +53,7 @@ class RiskDeal(Base):
     time_utc: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
 
 
-class BreakerStateRow(Base):
+class BreakerStateRow(EngineKeyed, Base):
     """Current state of one circuit breaker in one scope (``scope_key`` is "" for global breakers)."""
 
     __tablename__ = "breaker_states"
@@ -74,12 +74,15 @@ class BreakerStateRow(Base):
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
 
 
-class BreakerEventRow(Base):
+class BreakerEventRow(EngineTagged, Base):
     """Every trip, half-open probe and reset, with who and why (also appended to the audit chain)."""
 
     __tablename__ = "breaker_events"
+    __table_args__ = (UniqueConstraint("engine_id", "source_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    # the engine's own id of this row (the cloud's ``id`` is its own; TAA-709)
+    source_id: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     ts_utc: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
     name: Mapped[str] = mapped_column(String(32), index=True)
     scope_key: Mapped[str] = mapped_column(String(64), default="")

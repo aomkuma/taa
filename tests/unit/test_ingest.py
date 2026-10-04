@@ -98,7 +98,7 @@ class TestRows:
         assert (first.accepted, first.duplicates, first.rejected) == (1, 0, [])
         service.ingest(ENGINE, batch(ev("risk_state", risk(1100.0))))
         with cloud.session() as sess:
-            row = sess.get(RiskState, "acct")
+            row = sess.get(RiskState, (ENGINE, "acct"))
             assert row is not None and row.hwm == 1100.0 and row.updated_at == NOW
 
     def test_resends_and_late_events_never_roll_back(self, cloud: Database, service: IngestService) -> None:
@@ -107,7 +107,7 @@ class TestRows:
         late = service.ingest(ENGINE, batch(old, new))  # an older event and a resend
         assert (late.accepted, late.duplicates) == (0, 2)
         with cloud.session() as sess:
-            assert sess.get(RiskState, "acct").hwm == 2.0  # type: ignore[union-attr]
+            assert sess.get(RiskState, (ENGINE, "acct")).hwm == 2.0  # type: ignore[union-attr]
 
     def test_integers_are_accepted_for_float_columns(self, cloud: Database, service: IngestService) -> None:
         assert service.ingest(ENGINE, batch(ev("risk_state", risk() | {"hwm": 1000}))).accepted == 1

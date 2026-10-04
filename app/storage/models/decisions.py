@@ -8,11 +8,11 @@ from typing import Any
 from sqlalchemy import Boolean, Float, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.storage.models.base import Base
+from app.storage.models.base import Base, EngineKeyed, EngineTagged
 from app.storage.types import JSONType, UTCDateTime
 
 
-class DecisionRecordRow(Base):
+class DecisionRecordRow(EngineKeyed, Base):
     __tablename__ = "decision_records"
 
     decision_id: Mapped[str] = mapped_column(String(36), primary_key=True)
@@ -40,7 +40,7 @@ class DecisionRecordRow(Base):
     code_version: Mapped[str] = mapped_column(String(32))
 
 
-class DecisionCheckRow(Base):
+class DecisionCheckRow(EngineTagged, Base):
     __tablename__ = "decision_checks"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

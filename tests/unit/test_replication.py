@@ -17,11 +17,13 @@ from app.storage.models import (
     AuditEvent,
     Base,
     BreakerEventRow,
+    BreakerStateRow,
     DecisionCheckRow,
     OutboxEventRow,
     RiskState,
     ShadowTradeRow,
 )
+from app.storage.models.base import LOCAL_ENGINE
 from app.sync import outbox as outbox_module
 from app.sync.events import (
     REPLICAS,
@@ -66,15 +68,18 @@ class TestSchemas:
     def test_every_spec_builds_a_schema_from_its_columns(self) -> None:
         for spec in REPLICAS:
             fields = set(spec.schema.model_fields)
-            assert fields == set(spec.column_names) and set(spec.key) <= fields
-            assert not set(spec.exclude) & fields
+            assert fields == set(spec.column_names) and set(spec.key[1:]) <= fields
+            assert not set(spec.exclude) & fields and "engine_id" not in fields  # the cloud sets it
+            assert spec.key[0] == "engine_id"
         assert len(SPECS_BY_TYPE) == len(REPLICAS) == len(SPECS_BY_MODEL)
 
     def test_local_surrogate_ids_are_not_sent(self) -> None:
-        assert SPECS_BY_MODEL[AuditEvent].key == ("chain", "seq")
+        assert SPECS_BY_MODEL[AuditEvent].key == ("engine_id", "chain", "seq")
         assert "id" not in SPECS_BY_MODEL[AuditEvent].column_names
-        assert SPECS_BY_MODEL[DecisionCheckRow].key == ("decision_id", "seq")
-        assert SPECS_BY_MODEL[BreakerEventRow].key == ("id",)  # no natural key: the engine's id is kept
+        assert SPECS_BY_MODEL[DecisionCheckRow].key == ("engine_id", "decision_id", "seq")
+        # no natural key: the engine's id travels as source_id
+        assert SPECS_BY_MODEL[BreakerEventRow].key == ("engine_id", "source_id")
+        assert SPECS_BY_MODEL[BreakerStateRow].key == ("engine_id", "name", "scope_key")
 
     def test_payload_round_trips_through_validation(self) -> None:
         spec = SPECS_BY_MODEL[RiskState]
@@ -154,12 +159,12 @@ class TestHook:
         with db.session() as sess:
             sess.add(risk_state())
         with db.session() as sess:
-            row = sess.get(RiskState, "acct")
+            row = sess.get(RiskState, (LOCAL_ENGINE, "acct"))
             assert row is not None
             row.hwm = 1000.0  # unchanged value: no event
         assert len(outbox_rows(db)) == 1
         with db.session() as sess:
-            row = sess.get(RiskState, "acct")
+            row = sess.get(RiskState, (LOCAL_ENGINE, "acct"))
             assert row is not None
             row.hwm = 1100.0
         [event] = outbox_rows(db)  # the unsent predecessor was replaced
@@ -187,7 +192,7 @@ class TestHook:
             assert first_row is not None
             first_row.status = "SENT"
         with db.session() as sess:
-            sess.get(RiskState, "acct").hwm = 3.0  # type: ignore[union-attr]
+            sess.get(RiskState, (LOCAL_ENGINE, "acct")).hwm = 3.0  # type: ignore[union-attr]
         events = outbox_rows(db)
         assert [e.status for e in events] == ["SENT", "PENDING"] and events[1].payload["hwm"] == 3.0
         assert events[0].payload["hwm"] == 1000.0
@@ -206,8 +211,9 @@ class TestHook:
             )
         [event] = outbox_rows(db)
         assert (
-            event.payload["id"] == 1 and event.payload["metrics"] == {} and event.payload["scope_key"] == ""
+            event.payload["source_id"] == 1 and "id" not in event.payload and "engine_id" not in event.payload
         )
+        assert event.payload["metrics"] == {} and event.payload["scope_key"] == ""
 
     def test_audit_appends_replicate_only_the_engine_chain(self, db: Database, rep: Replicator) -> None:
         AuditLog(db, CHAIN, ManualClock(NOW)).append("ENGINE_START", "engine", {"n": 1})
@@ -231,7 +237,7 @@ class TestHook:
         with db.session() as sess:
             sess.add(risk_state())
         with db.session() as sess:
-            assert sess.get(RiskState, "acct") is not None
+            assert sess.get(RiskState, (LOCAL_ENGINE, "acct")) is not None
         assert rep.errors == 1 and outbox_rows(db) == []
 
     def test_install_is_idempotent(self, db: Database, rep: Replicator) -> None:
@@ -282,14 +288,14 @@ class TestVolumeControls:
             sess.add(shadow)
         assert [e.type for e in outbox_rows(db)] == ["shadow_trade"]
         with db.session() as sess:
-            row = sess.get(ShadowTradeRow, "k1:PLAN")
+            row = sess.get(ShadowTradeRow, (LOCAL_ENGINE, "k1:PLAN"))
             assert row is not None
             row.cursor = NOW + timedelta(minutes=5)  # the tracker's M1 cursor
             row.updated_at = NOW + timedelta(minutes=5)
         [event] = outbox_rows(db)
         assert event.payload["cursor"] == shadow.cursor.isoformat()  # unchanged event
         with db.session() as sess:
-            row = sess.get(ShadowTradeRow, "k1:PLAN")
+            row = sess.get(ShadowTradeRow, (LOCAL_ENGINE, "k1:PLAN"))
             assert row is not None
             row.mfe = 0.002
         [event] = outbox_rows(db)  # a real change carries the quiet columns along
@@ -329,7 +335,7 @@ class TestVolumeControls:
 
     def test_advisory_specs(self) -> None:
         assert SPECS_BY_TYPE["opportunity"].priority is Priority.CRITICAL
-        assert SPECS_BY_TYPE["suitability_snapshot"].key == ("server", "symbol", "hour")
+        assert SPECS_BY_TYPE["suitability_snapshot"].key == ("engine_id", "server", "symbol", "hour")
         assert SPECS_BY_TYPE["shadow_trade"].quiet == ("cursor", "updated_at")
         assert {"symbol_catalog", "calibration_version", "evidence_model_version"} <= set(SPECS_BY_TYPE)
 
