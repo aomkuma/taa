@@ -27,10 +27,19 @@ class CloudClient:
         self.http = http or httpx.Client(timeout=timeout)
 
     def _send(
-        self, method: str, target: str, body: bytes = b"", extra: dict[str, str] | None = None
+        self,
+        method: str,
+        target: str,
+        body: bytes = b"",
+        extra: dict[str, str] | None = None,
+        timeout: float | None = None,
     ) -> httpx.Response:
         headers = self.signer.headers(method, target, body) | (extra or {})
-        return self.http.request(method, self.base_url + target, content=body, headers=headers)
+        if timeout is None:
+            return self.http.request(method, self.base_url + target, content=body, headers=headers)
+        return self.http.request(
+            method, self.base_url + target, content=body, headers=headers, timeout=timeout
+        )
 
     def post_gzip(self, target: str, body: bytes) -> SendResult:
         """The outbox transport: POST a gzipped JSON batch."""
@@ -45,9 +54,10 @@ class CloudClient:
             return SendResult(None, f"{type(exc).__name__}: {exc}")
         return SendResult(resp.status_code, "" if resp.is_success else f"HTTP {resp.status_code}")
 
-    def get_json(self, target: str) -> tuple[int | None, Any]:
+    def get_json(self, target: str, timeout: float | None = None) -> tuple[int | None, Any]:
+        """GET a JSON document (*timeout* overrides the default, e.g. for a long poll)."""
         try:
-            resp = self._send("GET", target)
+            resp = self._send("GET", target, timeout=timeout)
         except httpx.HTTPError as exc:
             log.warning("cloud GET %s failed: %s", target.split("?")[0], exc)
             return None, None

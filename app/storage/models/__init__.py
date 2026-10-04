@@ -14,7 +14,7 @@ from app.storage.models.execution import OrderIntentRow
 from app.storage.models.market import HistoryCandle, ProcessedCandle
 from app.storage.models.paper import PaperAccountRow, PaperIntentRow, PaperPositionRow
 from app.storage.models.risk import BreakerEventRow, BreakerStateRow, RiskBaseline, RiskDeal, RiskState
-from app.storage.models.sync import IngestNonceRow, OutboxEventRow
+from app.storage.models.sync import CommandLogRow, EngineCommandRow, IngestNonceRow, OutboxEventRow
 from app.storage.models.system import (
     AuditChainHead,
     AuditEvent,
@@ -31,9 +31,11 @@ __all__ = [
     "BreakerEventRow",
     "BreakerStateRow",
     "CalibrationTableRow",
+    "CommandLogRow",
     "ConfigSnapshot",
     "DecisionCheckRow",
     "DecisionRecordRow",
+    "EngineCommandRow",
     "EngineState",
     "EvidenceModelVersionRow",
     "HistoryCandle",

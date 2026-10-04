@@ -985,15 +985,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-704 — Command channel
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 702, 008
 
 - [ ] long-poll endpoint
-- [ ] allowlist
-- [ ] expiry
-- [ ] single-use TOTP verified on the engine
-- [ ] results posted back
-- [ ] tests
+- [x] allowlist
+- [x] expiry
+- [x] single-use TOTP verified on the engine
+- [x] results posted back
+- [x] tests
 
 #### TAA-705 — Heartbeat & watchdog
 
