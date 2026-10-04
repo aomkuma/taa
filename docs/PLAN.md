@@ -1479,6 +1479,14 @@ subscriptions later are configuration plus billing, not a rewrite.
     such updates skip the push rate limit.
   - The opportunity detail API shows the plan and heat too. Cloud replay jobs (item 6, optional) are not
     built: replay runs locally with `python -m app.cli advisory replay`.
+  - **Risk budget (user decision 2026-10-04, option C):** an alert whose trade would take the portfolio heat or
+    the number of open positions over the stricter of the trading profile and the engine's limits (the
+    decision's `max_total_open_risk` / `max_open_positions` checks, which count every account position,
+    manual ones too) follows `alerts.when_risk_full`: **PAUSE** (default, fail closed: no push, reason
+    `HEAT_LIMIT` / `MAX_POSITIONS`, still listed in the app) or **WARN** (push with a "⚠ over your risk
+    budget" line). Pausing needs no reset: the next opportunity that fits after positions close alerts
+    again. Unknown heat (no sizing) is not held against an alert. The bot itself already refused such entries
+    (EXECUTION profile); before this, advisory alerts only carried the rule as a warning.
 - **Entitlements & plans** (structure now, billing later):
   - Tables:
 

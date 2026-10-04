@@ -206,6 +206,7 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
       windows: []                   # e.g. [{days: [0, 1, 2, 3, 4], start: "14:00", end: "23:30"}]; empty: any time
       rate_limits: {max_alerts_per_hour: 6, symbol_cooldown_minutes: 30}
       expiry_updates: true
+      when_risk_full: PAUSE         # over the heat or position budget: PAUSE (no push, shown in app) or WARN
       language: th
     theories:
       preset: ALL                   # ALL CLASSIC_TA PRICE_ACTION FIB_HARMONICS TREND_FOLLOWING

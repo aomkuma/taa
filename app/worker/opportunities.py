@@ -221,6 +221,7 @@ class OpportunityAlerter:
                     ],
                     "plan": [dict(p) for p in opportunity.plan],
                     "heat_after": opportunity.heat_after,
+                    "risk_warnings": [w.value for w in result.risk_warnings],
                     "valid_until": result.valid_until,
                     "watchlist": result.watchlist,
                 },
@@ -284,18 +285,38 @@ class OpportunityAlerter:
 
     @staticmethod
     def _opportunity(sess: Session, engine_id: str, row: OpportunityRow) -> MarketOpportunity:
+        """The replicated opportunity plus its decision's entry plan and the account's risk budget then:
+        heat and open positions after the trade and the engine's limits for both."""
         base = MarketOpportunity.from_row(row)
         decision = sess.get(DecisionRecordRow, (engine_id, row.decision_id))
-        heat = sess.scalar(
-            select(DecisionCheckRow.value).where(
-                DecisionCheckRow.engine_id == engine_id,
-                DecisionCheckRow.decision_id == row.decision_id,
-                DecisionCheckRow.name == "max_total_open_risk",
+        checks = {
+            c.name: c
+            for c in sess.scalars(
+                select(DecisionCheckRow).where(
+                    DecisionCheckRow.engine_id == engine_id,
+                    DecisionCheckRow.decision_id == row.decision_id,
+                    DecisionCheckRow.name.in_(("max_total_open_risk", "max_open_positions")),
+                )
             )
+        }
+
+        def number(name: str, attr: str) -> float | None:
+            check = checks.get(name)
+            value = None if check is None else getattr(check, attr)
+            return float(value) if isinstance(value, int | float) and not isinstance(value, bool) else None
+
+        positions_after, positions_limit = (
+            number("max_open_positions", "value"),
+            number("max_open_positions", "threshold"),
         )
         plan = tuple(dict(p) for p in (decision.plan if decision is not None and decision.plan else []))
         return dataclasses.replace(
-            base, plan=plan, heat_after=float(heat) if isinstance(heat, int | float) else None
+            base,
+            plan=plan,
+            heat_after=number("max_total_open_risk", "value"),
+            heat_limit=number("max_total_open_risk", "threshold"),
+            positions_after=None if positions_after is None else int(positions_after),
+            positions_limit=None if positions_limit is None else int(positions_limit),
         )
 
     @staticmethod

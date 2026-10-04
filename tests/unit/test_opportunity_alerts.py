@@ -72,7 +72,7 @@ class Cloud:
     def set_prefs(self, p: AdvisoryPreferences) -> None:
         PreferenceStore(self.db).save(self.owner.id, p, self.clock.now_utc())
 
-    def add(self, oid: str = "o1", **over: Any) -> None:
+    def add(self, oid: str = "o1", heat: float = 1.25, **over: Any) -> None:
         opp = opportunity()
         samples = {type(r): r for r in sample_rows()}
         row, decision = samples[OpportunityRow], samples[DecisionRecordRow]
@@ -90,7 +90,7 @@ class Cloud:
             sess.add(
                 DecisionCheckRow(
                     engine_id=ENGINE, decision_id=f"d-{oid}", seq=0, name="max_total_open_risk",
-                    reason="MAX_TOTAL_OPEN_RISK", passed=True, kind="HARD", value=1.25, threshold=1.5,
+                    reason="MAX_TOTAL_OPEN_RISK", passed=heat <= 1.5, kind="ACCOUNT", value=heat, threshold=1.5,
                 )
             )  # fmt: skip
 
@@ -231,3 +231,21 @@ def test_alerts_and_updates_reach_the_device(cloud: Cloud) -> None:
         ("OPPORTUNITY_UPDATE", "o1", True),
     ]
     assert sent[0]["url"] == "/opportunities/o1" and sent[1]["body"] == "คุณเปิดออเดอร์แล้ว"
+
+
+class TestRiskBudget:
+    def test_a_full_budget_pauses_alerts_until_one_fits_again(self, cloud: Cloud) -> None:
+        cloud.add("o1", heat=2.4)  # positions already use the budget: heat after would be 2.4% > 1.5%
+        assert cloud.alerter.run() is None and cloud.notes("OPPORTUNITY") == []
+        cloud.set_prefs(prefs(rate_limits={"symbol_cooldown_minutes": 0, "max_alerts_per_hour": 10}))
+        cloud.add("o2", heat=1.2)  # positions were closed meanwhile: this one fits
+        assert cloud.alerter.run() == "1 alerts, 0 updates"
+        assert [n.payload["opportunity_id"] for n in cloud.notes("OPPORTUNITY")] == ["o2"]
+
+    def test_warn_sends_it_with_the_warning(self, cloud: Cloud) -> None:
+        cloud.set_prefs(prefs(when_risk_full="WARN"))
+        cloud.add("o1", heat=2.4)
+        cloud.alerter.run()
+        [note] = cloud.notes("OPPORTUNITY")
+        assert note.payload["risk_warnings"] == ["HEAT_LIMIT"]
+        assert note.payload["push"]["body"].startswith("⚠ เกินงบความเสี่ยง: heat 2.40% > 1.50%")

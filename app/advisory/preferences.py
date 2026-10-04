@@ -144,6 +144,16 @@ class RateLimits(StrictModel):
     symbol_cooldown_minutes: int = Field(default=30, ge=0, le=1440)
 
 
+class RiskFullPolicy(StrEnum):
+    """What an opportunity alert does when taking it would exceed the user's risk budget (portfolio heat
+    after it, or the number of open positions)."""
+
+    PAUSE = (
+        "PAUSE"  # no push; the opportunity stays visible in the app with the reason (default, fail closed)
+    )
+    WARN = "WARN"  # push anyway, with a warning line
+
+
 class AlertPreferences(StrictModel):
     metric: AlertMetric = AlertMetric.WIN_PROBABILITY
     threshold: float | None = Field(default=None, ge=0, le=100, description="global x; None: metric default")
@@ -153,6 +163,7 @@ class AlertPreferences(StrictModel):
     windows: list[UserWindow] = Field(default_factory=list, max_length=14, description="empty: any time")
     rate_limits: RateLimits = Field(default_factory=RateLimits)
     expiry_updates: bool = True  # silent same-tag replacement on expiry/invalidation (R26)
+    when_risk_full: RiskFullPolicy = RiskFullPolicy.PAUSE
     language: Literal["th", "en"] = "th"
 
     @field_validator("timezone")

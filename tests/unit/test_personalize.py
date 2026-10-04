@@ -27,6 +27,7 @@ from app.advisory.preferences import (
     AlertPreferences,
     ConflictPolicy,
     ProfileOverrides,
+    RiskFullPolicy,
     TheoryPreferences,
     TradingProfile,
     UserWindow,
@@ -285,7 +286,8 @@ def test_from_row_round_trip(model: WinProbability) -> None:
         **{
             f.name: getattr(opp, f.name)
             for f in dataclasses.fields(opp)
-            if f.name not in ("signal", "cost_r", "plan", "heat_after")  # from the decision, not the row
+            if f.name != "signal"
+            and f.name in OpportunityRow.__table__.columns  # the rest comes from the decision
         },
         signal=opp.signal.to_dict(),
     )
@@ -316,3 +318,27 @@ def test_the_entry_plan_is_in_the_owners_push(model: WinProbability) -> None:
     assert "ความเสี่ยงรวม 45.00 USD · heat หลังเข้า 1.25%" in body
     other = run(model, UserContext(prefs(), is_owner=False), opp=opp).payload["body"]
     assert "1)" not in other and "USD" not in other  # another user's lots come with account profiles (8A)
+
+
+class TestRiskBudget:
+    """Over the risk budget: PAUSE (default) holds the alert, WARN sends it with a warning (option C)."""
+
+    def test_pause_is_the_default(self, model: WinProbability) -> None:
+        full = opportunity(heat_after=2.3, heat_limit=3.0, positions_after=2, positions_limit=5)
+        r = run(model, opp=full)  # profile default heat budget (style 50) is 2.0%
+        assert not r.alert and NoAlert.HEAT_LIMIT in r.reasons and NoAlert.MAX_POSITIONS not in r.reasons
+        assert run(model, opp=opportunity(heat_after=1.9, heat_limit=3.0)).alert  # room again: alerts resume
+
+    def test_the_stricter_limit_wins(self, model: WinProbability) -> None:
+        engine_cap = opportunity(heat_after=1.6, heat_limit=1.5)
+        assert NoAlert.HEAT_LIMIT in run(model, opp=engine_cap).reasons
+        crowded = opportunity(positions_after=6, positions_limit=10)  # profile allows 3 at style 50
+        assert NoAlert.MAX_POSITIONS in run(model, opp=crowded).reasons
+        assert run(model, opp=opportunity(heat_after=None, positions_after=None)).alert  # unknown: not judged
+
+    def test_warn_alerts_with_a_warning_line(self, model: WinProbability) -> None:
+        warn = prefs(alerts=AlertPreferences(when_risk_full=RiskFullPolicy.WARN))
+        r = run(model, UserContext(warn), opp=opportunity(heat_after=2.3, heat_limit=3.0, positions_after=4))
+        assert r.alert and r.risk_warnings == (NoAlert.HEAT_LIMIT, NoAlert.MAX_POSITIONS)
+        body = r.payload["body"]
+        assert body.startswith("⚠ เกินงบความเสี่ยง: heat 2.30% > 2.00%\n⚠ เกินจำนวน position ที่ตั้งไว้: 4 > 3")

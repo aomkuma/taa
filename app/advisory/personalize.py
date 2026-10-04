@@ -9,6 +9,11 @@ it for the local owner. Steps, in order:
 3. **Decision:** the user's metric ≥ x for the most permissive alerting watchlist that holds the symbol,
    minimum supporting families, the trading profile's minimum RR, higher-timeframe alignment and EV floor
    (break-even + 2 pp), pattern-strategy toggles and the conflict policy's block.
+   **Risk budget:** the portfolio heat and the number of open positions after the trade (from the engine's
+   decision, which counts every position in the account, manual ones too) against the stricter of the
+   trading profile and the engine's own limits. Over budget, ``alerts.when_risk_full`` decides: PAUSE (no
+   alert, reason HEAT_LIMIT / MAX_POSITIONS; alerts resume by themselves once positions close and an
+   opportunity fits again) or WARN (alert with a warning line).
 4. **Windows:** the market session (if the user respects it) and the user's own time windows; the user's
    ``valid_until`` is the earlier of the market window and the user window end.
 5. **Rate limits:** no duplicate alert, a per-symbol cooldown, alerts per hour, the profile's signals per day
@@ -42,6 +47,8 @@ from app.advisory.preferences import (
     AdvisoryPreferences,
     AlertMetric,
     ConflictPolicy,
+    ResolvedProfile,
+    RiskFullPolicy,
     Watchlist,
     WatchlistKind,
     required_win_probability,
@@ -77,6 +84,8 @@ class NoAlert(StrEnum):
     SYMBOL_COOLDOWN = "SYMBOL_COOLDOWN"
     HOURLY_LIMIT = "HOURLY_LIMIT"
     DAILY_LIMIT = "DAILY_LIMIT"
+    HEAT_LIMIT = "HEAT_LIMIT"  # taking it would exceed the portfolio heat budget
+    MAX_POSITIONS = "MAX_POSITIONS"  # taking it would exceed the number of open positions
 
 
 class Badge(StrEnum):
@@ -119,6 +128,10 @@ class MarketOpportunity:
     # taps, take_profit, risk_money), and the portfolio heat after it (% of equity)
     plan: tuple[Mapping[str, Any], ...] = ()
     heat_after: float | None = None
+    # the engine's limits at decision time (``max_total_open_risk`` / ``max_open_positions`` checks)
+    heat_limit: float | None = None
+    positions_after: int | None = None
+    positions_limit: int | None = None
 
     @classmethod
     def from_row(cls, row: OpportunityRow) -> MarketOpportunity:
@@ -199,6 +212,7 @@ class Personalized:
     window_reason: str
     badge: Badge | None
     payload: dict[str, Any] | None
+    risk_warnings: tuple[NoAlert, ...] = ()  # over budget with ``when_risk_full: WARN``
 
 
 # --- steps --------------------------------------------------------------------------------------------------
@@ -263,6 +277,19 @@ def alerting_list(
     if not alerting:
         return None, bool(holding)
     return min(alerting, key=lambda w: (prefs.alerts.effective_threshold(w), w.name)), True
+
+
+def risk_budget(opportunity: MarketOpportunity, profile: ResolvedProfile) -> list[NoAlert]:
+    """Whether taking the opportunity would exceed the stricter of the profile's and the engine's limits.
+    Unknown values (no sizing on the decision) cannot be judged and are not held against it."""
+    over = []
+    heat_caps = [c for c in (opportunity.heat_limit, profile.portfolio_heat_percent) if c is not None]
+    if opportunity.heat_after is not None and heat_caps and opportunity.heat_after > min(heat_caps) + 1e-9:
+        over.append(NoAlert.HEAT_LIMIT)
+    position_caps = [c for c in (opportunity.positions_limit, profile.max_positions) if c is not None]
+    if opportunity.positions_after is not None and opportunity.positions_after > min(position_caps):
+        over.append(NoAlert.MAX_POSITIONS)
+    return over
 
 
 def badge(status: str, start: datetime, valid_until: datetime | None, now: datetime) -> Badge | None:
@@ -385,14 +412,32 @@ def personalize(
     if opportunity.status not in OPEN or (valid_until is not None and now >= valid_until):
         reasons.append(NoAlert.WINDOW_PASSED)
 
-    # 5. rate limits
+    # 5. rate limits and the risk budget
     reasons += rate_limits(user, opportunity, now)
+    over_budget = risk_budget(opportunity, profile)
+    warnings: tuple[NoAlert, ...] = ()
+    if prefs.alerts.when_risk_full is RiskFullPolicy.PAUSE:
+        reasons += over_budget
+    else:
+        warnings = tuple(over_budget)
 
     alert = not reasons
     payload = None
     if alert:
         payload = notification(
-            opportunity, user, explanation, strength, valid_until, language=prefs.alerts.language
+            opportunity,
+            user,
+            explanation,
+            strength,
+            valid_until,
+            language=prefs.alerts.language,
+            warnings=warnings,
+            heat_cap=min(
+                c for c in (opportunity.heat_limit, profile.portfolio_heat_percent) if c is not None
+            ),
+            positions_cap=min(
+                c for c in (opportunity.positions_limit, profile.max_positions) if c is not None
+            ),
         )
     return Personalized(
         opportunity_id=opportunity.opportunity_id,
@@ -409,6 +454,7 @@ def personalize(
         window_reason=window_reason,
         badge=badge(opportunity.status, opportunity.created_at, valid_until, now),
         payload=payload,
+        risk_warnings=warnings,
     )
 
 
@@ -449,6 +495,8 @@ TEXT: dict[str, dict[Language, str]] = {
     "taps": {"en": "taps", "th": "ครั้ง"},
     "total_risk": {"en": "Total risk", "th": "ความเสี่ยงรวม"},
     "heat": {"en": "heat after", "th": "heat หลังเข้า"},
+    "over_heat": {"en": "⚠ Over your risk budget: heat", "th": "⚠ เกินงบความเสี่ยง: heat"},
+    "over_positions": {"en": "⚠ Over your position limit:", "th": "⚠ เกินจำนวน position ที่ตั้งไว้:"},
 }
 ORDER_TYPES: dict[str, dict[Language, str]] = {
     "MARKET": {"en": "Market", "th": "ราคาตลาด"},
@@ -511,6 +559,9 @@ def notification(
     valid_until: datetime | None,
     *,
     language: Language,
+    warnings: Sequence[NoAlert] = (),
+    heat_cap: float | None = None,
+    positions_cap: int | None = None,
 ) -> dict[str, Any]:
     t = {k: v[language] for k, v in TEXT.items()}
     est = explanation.estimate
@@ -519,7 +570,12 @@ def notification(
         if est.insufficient
         else f"{est.p:.0f}% ({t['baseline']} {random_baseline(opportunity.rr or 0):.0f}%)"
     )
-    lines = [f"{t['probability']} {p} · {t['strength']} {strength:.0f}"]
+    lines = []
+    if NoAlert.HEAT_LIMIT in warnings and opportunity.heat_after is not None and heat_cap is not None:
+        lines.append(f"{t['over_heat']} {opportunity.heat_after:.2f}% > {heat_cap:.2f}%")
+    if NoAlert.MAX_POSITIONS in warnings and opportunity.positions_after is not None:
+        lines.append(f"{t['over_positions']} {opportunity.positions_after} > {positions_cap}")
+    lines.append(f"{t['probability']} {p} · {t['strength']} {strength:.0f}")
     tp = "-" if opportunity.take_profit is None else f"{opportunity.take_profit:g}"
     lines.append(f"Entry {opportunity.entry:g} · SL {opportunity.stop_loss:g} · TP {tp}")
     if user.is_owner and opportunity.plan:
