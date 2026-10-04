@@ -4,6 +4,8 @@
  * `dark` class on `<html>`, which the Tailwind `dark:` variant reads (`src/index.css`).
  */
 
+import { useSyncExternalStore } from 'react';
+
 export const THEMES = ['system', 'light', 'dark'] as const;
 export type Theme = (typeof THEMES)[number];
 
@@ -54,4 +56,21 @@ export function onSystemThemeChange(listener: () => void): () => void {
   return () => {
     query.removeEventListener('change', listener);
   };
+}
+
+function subscribeToClass(listener: () => void): () => void {
+  const observer = new MutationObserver(listener);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  return () => {
+    observer.disconnect();
+  };
+}
+
+/** Whether the dark theme is applied right now (follows the `dark` class on `<html>`). */
+export function useDarkMode(): boolean {
+  return useSyncExternalStore(
+    subscribeToClass,
+    () => document.documentElement.classList.contains('dark'),
+    () => false,
+  );
 }

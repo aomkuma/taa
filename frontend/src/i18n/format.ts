@@ -102,6 +102,27 @@ export function formatDate(
   return dateTimeFormat(dateLocale(language, calendar), { timeZone, dateStyle }).format(date);
 }
 
+export type AxisPart = 'year' | 'month' | 'day' | 'time';
+
+const AXIS_OPTIONS: Record<AxisPart, Intl.DateTimeFormatOptions> = {
+  year: { year: 'numeric' },
+  month: { month: 'short', year: '2-digit' },
+  day: { day: 'numeric', month: 'short' },
+  time: { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' },
+};
+
+/** A short label for a chart axis tick (year, month, day or time of day) in the display timezone. */
+export function formatAxis(
+  value: Date,
+  language: Language,
+  part: AxisPart,
+  options: Pick<DateTimeOptions, 'timeZone' | 'calendar'> = {},
+): string {
+  if (Number.isNaN(value.getTime())) return MISSING;
+  const { timeZone = DEFAULT_TIME_ZONE, calendar = 'gregory' } = options;
+  return dateTimeFormat(dateLocale(language, calendar), { timeZone, ...AXIS_OPTIONS[part] }).format(value);
+}
+
 function isFiniteNumber(value: number | null | undefined): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }

@@ -340,6 +340,16 @@ class TestCandles:
         kinds = [(m["kind"], m.get("ticket")) for m in body["markers"]]
         assert ("decision", None) in kinds and ("entry", 1) in kinds and ("exit", 1) in kinds
 
+    def test_sr_zones_at_the_last_bar(self, rig: tuple[TestClient, str, str]) -> None:
+        client, mine, _ = rig
+        assert "zones" not in get(client, mine, "candles?symbol=EURUSD&limit=50").json()
+        zones = get(client, mine, "candles?symbol=EURUSD&limit=50&zones=true").json()["zones"]
+        # the sawtooth repeats its highs (1.108) and lows (1.098): one zone each, many touches
+        assert {z["role"] for z in zones} == {"SUPPORT", "RESISTANCE"}
+        top = max(zones, key=lambda z: z["high"])
+        assert top["role"] == "RESISTANCE" and top["high"] == pytest.approx(1.108) and top["touches"] > 5
+        assert all(z["low"] <= z["high"] for z in zones) and len(zones) <= 8
+
     def test_an_empty_window(self, rig: tuple[TestClient, str, str]) -> None:
         client, mine, _ = rig
         late = (T + timedelta(days=30)).isoformat().replace("+00:00", "Z")

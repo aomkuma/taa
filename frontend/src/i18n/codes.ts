@@ -13,6 +13,7 @@
  * | `BreakerName` (app/risk/circuit_breaker.py)                       | `codes:breaker.<NAME>`             |
  * | `NotificationType` (app/sync/notifications.py)                    | `codes:notificationType.<TYPE>`    |
  * | `Decision` (app/engine/decision_engine.py)                        | `codes:decision.<D>`               |
+ * | `Family` (app/evidence/framework.py), theory families             | `codes:family.<FAMILY>`            |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
  * Parameterized reason codes arrive as `CODE:detail` (`BREAKER_OPEN:daily_loss`); the key is built from `CODE`
@@ -170,6 +171,21 @@ export const NOTIFICATION_TYPES = [
   'TEST',
 ] as const;
 export const DECISIONS = ['ACCEPT', 'REJECT', 'HOLD'] as const;
+// Family (app/evidence/framework.py): the theory toggles of the charts (TAA-905) and settings (TAA-920).
+export const FAMILIES = [
+  'FIBONACCI',
+  'LEVELS',
+  'TREND',
+  'CHART_PATTERN',
+  'CANDLESTICK',
+  'MOMENTUM',
+  'VOLATILITY_VOLUME',
+  'ICHIMOKU',
+  'SMART_MONEY',
+  'HARMONIC',
+  'ELLIOTT',
+  'SESSIONS',
+] as const;
 
 export const CODE_KINDS = [
   'reason',
@@ -184,6 +200,7 @@ export const CODE_KINDS = [
   'breaker',
   'notificationType',
   'decision',
+  'family',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 

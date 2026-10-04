@@ -164,5 +164,38 @@
       "title": "Recent notifications",
       "none": "No notifications yet."
     }
+  },
+  "charts": {
+    "symbol": "Symbol",
+    "timeframe": "Timeframe",
+    "indicators": "Indicators",
+    "indicator": {
+      "ema": "EMA 20/50",
+      "bb": "Bollinger 20",
+      "rsi": "RSI 14",
+      "atr": "ATR 14",
+      "adx": "ADX 14"
+    },
+    "zones": "S/R zones",
+    "allDecisions": "Show rejected and held decisions",
+    "evidence": "Technical evidence by theory",
+    "signalShown": "Signal {{symbol}} {{action}} ({{tf}})",
+    "signalUnavailable": "Could not load this signal.",
+    "hideSignal": "Hide signal",
+    "noSymbols": "No symbols from the engine yet.",
+    "noCandles": "No candles for this symbol yet.",
+    "chartLabel": "Price chart",
+    "attribution": "Charts by",
+    "support": "Support ×{{n}}",
+    "resistance": "Resistance ×{{n}}",
+    "zone": "Zone ×{{n}}",
+    "entry": "#{{ticket}} {{side}}",
+    "stopLoss": "SL",
+    "stopLossTicket": "SL #{{ticket}}",
+    "takeProfit": "TP",
+    "takeProfitTicket": "TP #{{ticket}}",
+    "signalEntry": "Signal entry",
+    "target": "target",
+    "invalidation": "invalidation"
   }
 }

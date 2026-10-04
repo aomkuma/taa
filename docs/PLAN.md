@@ -869,6 +869,26 @@ AI failures never trip trading breakers; they only produce HOLD.
     since". Gauges are SVG (no inline styles under the CSP).
   - Market feed (subscriber): no account widgets; links to the advisory pages and the notifications.
   - New `codes:` kinds with TH/EN texts: `breaker` (`BreakerName`), `notificationType`, `decision`.
+- (TAA-905 decisions) Charts (`frontend/src/pages/charts/`, lazy route in its own chunk):
+  - `GET /candles` gains `zones=true`: S/R zones at the last shown bar from `app.indicators` (confirmed swings,
+    default `swing_k` and `sr_tolerance_atr`, ATR 14), strongest 8, role relative to the last close.
+  - `model.ts` (pure) builds what is drawn; `chartAdapter.ts` is the only module that imports Lightweight
+    Charts 5 (tests mock it). Price pane: candles, EMA 20/50, Bollinger 20; one pane each for RSI, ATR and ADX
+    14. Markers: accepted decisions (rejected/held on request), paper entries and exits; stamps at a bar close
+    (decisions, evidence pivots) go to the bar that closed, instants (fills) to the bar containing them, and
+    marks outside the shown bars are left out. Price lines: S/R zone edges, open positions' entry/SL/TP, the
+    selected signal's plan.
+  - Evidence overlays come from a selected signal (`?decision=` or `?opportunity=`, whose `signal.evidence`
+    holds the snapshot): key levels with a time are joined in time order and labelled (XABCD, waves, pattern
+    points, swings); levels without a time are horizontal lines (fib levels, necklines, zone/PRZ edges);
+    targets and invalidation dotted. Each theory family has a colour and a toggle (`codes:family.<F>`).
+    Evidence names show the detector's English name until TAA-920 adds `evidence.*` texts.
+  - The price axis precision comes from the quoted prices. Candles refresh every minute; `positions` and
+    `decisions` stream events redraw the marks.
+  - **Attribution:** the library's own logo injects a `<style>` element, which the CSP blocks, so it is off
+    (`attributionLogo: false`) and the page shows "Charts by TradingView Lightweight Charts™" linking to
+    tradingview.com under every chart (the library's NOTICE asks for that link). Checked in headless Edge
+    under the production CSP: no violations.
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

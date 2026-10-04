@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import base64
 import json
+import math
 import re
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
@@ -22,10 +23,12 @@ import pandas as pd
 from sqlalchemy import ColumnElement, and_, func, or_, select
 from sqlalchemy.orm import InstrumentedAttribute, Session
 
+from app.config import IndicatorParams
 from app.core.clock import ensure_utc
 from app.core.enums import Timeframe
 from app.core.errors import TaaError
 from app.indicators.momentum import rsi
+from app.indicators.price_action import find_swings, sr_zones
 from app.indicators.trend import adx, ema
 from app.indicators.volatility import atr, bollinger
 from app.market_data.history_store import SqlHistoryStore
@@ -57,6 +60,8 @@ from app.sync.events import json_safe
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 MAX_CANDLES = 2000
+MAX_ZONES = 8
+ZONE_ATR_PERIOD = 14
 SECRET_KEY = re.compile(r"secret|password|token|api_key|totp|hmac", re.I)
 
 
@@ -428,6 +433,7 @@ class ReadModels:
         end: datetime | None,
         limit: int,
         overlays: Sequence[str],
+        zones: bool = False,
     ) -> dict[str, Any]:
         try:
             tf = Timeframe(timeframe)
@@ -436,7 +442,7 @@ class ReadModels:
         if not 1 <= limit <= MAX_CANDLES:
             raise QueryError(f"limit: 1-{MAX_CANDLES}")
         specs = [parse_overlay(o) for o in overlays]
-        warmup = max((w for _, _, w in specs), default=0)
+        warmup = max((w for _, _, w in specs), default=ZONE_ATR_PERIOD if zones else 0)
         stored = SqlHistoryStore(self.db, engine_id).load(server, symbol, tf, None, end)
         # shown: `limit` bars from `start` (else the newest); indicators warm up on up to `warmup` bars before
         if start is not None:
@@ -469,6 +475,8 @@ class ReadModels:
             },
         }
         out["markers"] = self._markers(engine_id, symbol, shown) if not shown.empty else []
+        if zones:
+            out["zones"] = _zones(df)
         return out
 
     def _markers(self, engine_id: str, symbol: str, shown: pd.DataFrame) -> list[dict[str, Any]]:
@@ -533,6 +541,27 @@ class ReadModels:
                         }
                     )
         return sorted(markers, key=lambda m: str(m["at"]))
+
+
+def _zones(df: pd.DataFrame) -> list[dict[str, Any]]:
+    """S/R zones as the strategies see them at the last shown bar (app.indicators: confirmed swings clustered
+    within ``sr_tolerance_atr`` × ATR, default indicator parameters), strongest first; the role is relative to
+    the last close."""
+    if len(df) <= ZONE_ATR_PERIOD:
+        return []
+    params = IndicatorParams()
+    close, high, low = df["close"], df["high"], df["low"]
+    atr_value = float(atr(high, low, close, ZONE_ATR_PERIOD).iloc[-1])
+    if not (math.isfinite(atr_value) and atr_value > 0):  # no meaningful zone width
+        return []
+    swings = find_swings(high.reset_index(drop=True), low.reset_index(drop=True), params.swing_k)
+    found = sr_zones(
+        swings, as_of_pos=len(df) - 1, atr_value=atr_value, tolerance_atr=params.sr_tolerance_atr
+    )
+    last = float(close.iloc[-1])
+    return [
+        {"low": z.low, "high": z.high, "touches": z.touches, "role": z.role(last)} for z in found[:MAX_ZONES]
+    ]
 
 
 OVERLAY_RE = re.compile(r"^(ema|bb|rsi|atr|adx):(\d{1,3})$")

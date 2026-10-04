@@ -59,6 +59,11 @@ TypeScript stays on 6.0.x until typescript-eslint supports TypeScript 7.
   `renderApp(path, lang, { createEventSource })`.
 - **Stale data:** show `<StaleBadge since={…} />` (`src/app/shell/StaleBadge.tsx`) when data stopped updating.
 - **Themes:** `src/app/theme.ts`; style both themes with Tailwind's `dark:` variant (it follows the `dark` class).
+  `useDarkMode()` tells canvas code (charts) which theme is applied.
+- **Heavy pages** load lazily: add them to `BUILT` in `routes.tsx` with `lazy: () => import(...)`.
+- **Charts:** only `src/pages/charts/chartAdapter.ts` imports `lightweight-charts`; page tests `vi.mock` it. Keep
+  the library's attribution logo off (it injects a `<style>` the CSP blocks) and keep `ChartAttribution` under
+  every chart.
 
 ## Localization (PLAN §A28)
 
@@ -90,6 +95,7 @@ Everything lives in `src/i18n/`.
 | `OpportunityStatus`, `WindowReason`, `InvalidReason`         | `codes:opportunityStatus.<S>`, `codes:windowReason.<R>`, `codes:invalidReason.<R>` |
 | `ShadowStatus`, `ExitReason`                                 | `codes:shadowStatus.<S>`, `codes:exitReason.<CODE>`                                |
 | `BreakerName`, `NotificationType`, `Decision`                | `codes:breaker.<NAME>`, `codes:notificationType.<TYPE>`, `codes:decision.<D>`      |
+| `Family` (evidence theory families)                          | `codes:family.<FAMILY>`                                                            |
 
 - Parameterized codes (`BREAKER_OPEN:daily_loss`) map to the key of the bare code, with the rest passed as
   `{{detail}}`.

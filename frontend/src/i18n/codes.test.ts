@@ -9,6 +9,7 @@ import enginesPy from '../../../app/web/engines.py?raw';
 import circuitBreakerPy from '../../../app/risk/circuit_breaker.py?raw';
 import notificationsPy from '../../../app/sync/notifications.py?raw';
 import decisionEnginePy from '../../../app/engine/decision_engine.py?raw';
+import frameworkPy from '../../../app/evidence/framework.py?raw';
 
 import { createI18n } from '@/i18n';
 import {
@@ -16,6 +17,7 @@ import {
   codeKey,
   CODES_NAMESPACE,
   DECISIONS,
+  FAMILIES,
   ENGINE_ERRORS,
   EXIT_REASONS,
   GATE_STATUSES,
@@ -84,6 +86,7 @@ describe('code lists match the backend enums', () => {
     ['BreakerName', circuitBreakerPy, BREAKER_NAMES],
     ['NotificationType', notificationsPy, NOTIFICATION_TYPES],
     ['Decision', decisionEnginePy, DECISIONS],
+    ['Family', frameworkPy, FAMILIES],
   ] as const)('%s', (className, source, values) => {
     expect(sorted(values)).toEqual(sorted(pyStrEnumValues(source, className)));
   });
@@ -95,6 +98,7 @@ describe('code texts', () => {
     ['breaker', BREAKER_NAMES],
     ['notificationType', NOTIFICATION_TYPES],
     ['decision', DECISIONS],
+    ['family', FAMILIES],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {
       const i18n = createI18n(language);

@@ -3,7 +3,7 @@ import type { RouteObject } from 'react-router';
 import { Layout } from '@/app/Layout';
 import { PublicFrame } from '@/app/PublicFrame';
 import { AppShell } from '@/app/shell/AppShell';
-import { NAV_ITEMS } from '@/app/shell/nav';
+import { NAV_ITEMS, type NavId } from '@/app/shell/nav';
 import { RequireOwnEngine } from '@/app/shell/RequireOwnEngine';
 import { RequireAuth } from '@/auth/RequireAuth';
 import type { EventSourceFactory } from '@/live/stream';
@@ -12,10 +12,15 @@ import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
 
+/** Built pages; the others show `PlaceholderPage`. Heavy pages load lazily in their own chunk. */
+const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'children'>>> = {
+  charts: { lazy: async () => ({ Component: (await import('@/pages/charts/ChartsPage')).ChartsPage }) },
+};
+
 const pages = (own: boolean): RouteObject[] =>
   NAV_ITEMS.filter((item) => item.own === own && item.id !== 'dashboard').map((item) => ({
     path: item.path,
-    element: <PlaceholderPage id={item.id} />,
+    ...(BUILT[item.id] ?? { element: <PlaceholderPage id={item.id} /> }),
   }));
 
 export interface RouteOptions {

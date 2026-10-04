@@ -44,5 +44,19 @@
     "ACCEPT": "ยอมรับ",
     "REJECT": "ปฏิเสธ",
     "HOLD": "รอ"
+  },
+  "family": {
+    "FIBONACCI": "ฟีโบนัชชี",
+    "LEVELS": "แนวรับแนวต้าน",
+    "TREND": "แนวโน้ม",
+    "CHART_PATTERN": "รูปแบบกราฟ",
+    "CANDLESTICK": "แท่งเทียน",
+    "MOMENTUM": "โมเมนตัม",
+    "VOLATILITY_VOLUME": "ความผันผวนและวอลุ่ม",
+    "ICHIMOKU": "อิชิโมกุ",
+    "SMART_MONEY": "Smart Money",
+    "HARMONIC": "ฮาร์มอนิก",
+    "ELLIOTT": "คลื่นเอลเลียต",
+    "SESSIONS": "ช่วงเวลาตลาด"
   }
 }

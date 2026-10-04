@@ -2,8 +2,10 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
+  type AxisPart,
   type DateTimeOptions,
   DEFAULT_TIME_ZONE,
+  formatAxis,
   formatDate,
   formatDateTime,
   formatMoney,
@@ -28,6 +30,7 @@ export function useFormat(timeZone: string = DEFAULT_TIME_ZONE) {
         formatDateTime(value, language, { timeZone, ...options }),
       date: (value: Date | string | null | undefined, options: Omit<DateTimeOptions, 'timeStyle'> = {}) =>
         formatDate(value, language, { timeZone, ...options }),
+      axis: (value: Date, part: AxisPart) => formatAxis(value, language, part, { timeZone }),
       number: (value: number | null | undefined, options?: NumberOptions) =>
         formatNumber(value, language, options),
       money: (

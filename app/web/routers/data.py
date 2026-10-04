@@ -183,8 +183,10 @@ async def candles(
     end: datetime | None = None,
     limit: Annotated[int, Query(ge=1, le=2000)] = 300,
     overlays: Annotated[str, Query(max_length=200)] = "",
+    zones: bool = False,
 ) -> dict[str, Any]:
-    """Closed bars with indicator overlays (``overlays=ema:20,bb:20,rsi:14``) and decision/trade markers."""
+    """Closed bars with indicator overlays (``overlays=ema:20,bb:20,rsi:14``), decision/trade markers
+    and, with ``zones=true``, the S/R zones at the last shown bar."""
     for value, name in ((start, "start"), (end, "end")):
         if value is not None and value.tzinfo is None:
             raise ApiProblem(400, "invalid_query", f"{name}: a timezone-aware time is required")
@@ -202,6 +204,7 @@ async def candles(
         end=end,
         limit=limit,
         overlays=[o for o in overlays.split(",") if o.strip()],
+        zones=zones,
     )
     return result
 

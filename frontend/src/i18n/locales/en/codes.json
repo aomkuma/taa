@@ -44,5 +44,19 @@
     "ACCEPT": "Accepted",
     "REJECT": "Rejected",
     "HOLD": "Hold"
+  },
+  "family": {
+    "FIBONACCI": "Fibonacci",
+    "LEVELS": "Support & resistance",
+    "TREND": "Trend",
+    "CHART_PATTERN": "Chart patterns",
+    "CANDLESTICK": "Candlesticks",
+    "MOMENTUM": "Momentum",
+    "VOLATILITY_VOLUME": "Volatility & volume",
+    "ICHIMOKU": "Ichimoku",
+    "SMART_MONEY": "Smart money",
+    "HARMONIC": "Harmonics",
+    "ELLIOTT": "Elliott waves",
+    "SESSIONS": "Market sessions"
   }
 }

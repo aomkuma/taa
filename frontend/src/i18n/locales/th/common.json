@@ -164,5 +164,38 @@
       "title": "การแจ้งเตือนล่าสุด",
       "none": "ยังไม่มีการแจ้งเตือน"
     }
+  },
+  "charts": {
+    "symbol": "สัญลักษณ์",
+    "timeframe": "ไทม์เฟรม",
+    "indicators": "อินดิเคเตอร์",
+    "indicator": {
+      "ema": "EMA 20/50",
+      "bb": "Bollinger 20",
+      "rsi": "RSI 14",
+      "atr": "ATR 14",
+      "adx": "ADX 14"
+    },
+    "zones": "โซนแนวรับแนวต้าน",
+    "allDecisions": "แสดงการตัดสินใจที่ถูกปฏิเสธหรือรอ",
+    "evidence": "หลักฐานทางเทคนิคตามทฤษฎี",
+    "signalShown": "สัญญาณ {{symbol}} {{action}} ({{tf}})",
+    "signalUnavailable": "โหลดสัญญาณนี้ไม่ได้",
+    "hideSignal": "ซ่อนสัญญาณ",
+    "noSymbols": "ยังไม่มีสัญลักษณ์จากเอนจิน",
+    "noCandles": "ยังไม่มีข้อมูลแท่งเทียนของสัญลักษณ์นี้",
+    "chartLabel": "กราฟราคา",
+    "attribution": "กราฟโดย",
+    "support": "แนวรับ ×{{n}}",
+    "resistance": "แนวต้าน ×{{n}}",
+    "zone": "โซน ×{{n}}",
+    "entry": "#{{ticket}} {{side}}",
+    "stopLoss": "SL",
+    "stopLossTicket": "SL #{{ticket}}",
+    "takeProfit": "TP",
+    "takeProfitTicket": "TP #{{ticket}}",
+    "signalEntry": "จุดเข้าของสัญญาณ",
+    "target": "เป้าหมาย",
+    "invalidation": "จุดที่รูปแบบใช้ไม่ได้"
   }
 }

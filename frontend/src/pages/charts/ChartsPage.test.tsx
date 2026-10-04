@@ -1,0 +1,248 @@
+import { act, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+import { apiError, json } from '@/test/api';
+import { iso, owner, renderShell } from '@/test/engine';
+import { streamEvent } from '@/test/eventSource';
+
+import type { ChartModel } from './model';
+
+// jsdom has no canvas: record what the page asks the chart to draw instead.
+const drawn: { models: ChartModel[]; themes: boolean[]; destroyed: number } = {
+  models: [],
+  themes: [],
+  destroyed: 0,
+};
+vi.mock('./chartAdapter', () => ({
+  createPriceChart: (_el: HTMLElement, theme: { dark: boolean }) => {
+    drawn.themes.push(theme.dark);
+    return {
+      update: (model: ChartModel) => drawn.models.push(model),
+      setTheme: (next: { dark: boolean }) => drawn.themes.push(next.dark),
+      destroy: () => {
+        drawn.destroyed += 1;
+      },
+    };
+  },
+}));
+
+const T0 = Date.parse('2026-09-30T10:00:00Z');
+const bars = Array.from({ length: 4 }, (_, i) => [iso(T0 + i * 900_000), 1.1, 1.102, 1.098, 1.101, 10]);
+
+function candles(symbol = 'EURUSD') {
+  return {
+    server: 'FBS-Demo',
+    symbol,
+    timeframe: 'M15',
+    bars,
+    overlays: {},
+    markers: [],
+    zones: [{ low: 1.098, high: 1.099, touches: 3, role: 'SUPPORT' }],
+  };
+}
+
+const decision = {
+  decision_id: 'd1',
+  symbol: 'XAUUSD',
+  signal: {
+    symbol: 'XAUUSD',
+    timeframe: 'H1',
+    action: 'SELL',
+    entry_price: 2600,
+    stop_loss: 2610,
+    take_profit: 2580,
+    evidence: [
+      {
+        relation: 'SUPPORTS',
+        item: {
+          evidence: {
+            evidence_id: 'e1',
+            detector_id: 'fib.retracement',
+            family: 'FIBONACCI',
+            name: 'Fibonacci retracement',
+            i18n_key: 'evidence.fib.retracement',
+            timeframe: 'H1',
+            direction: 'BEAR',
+            detected_at: iso(T0),
+            quality: 0.7,
+            key_levels: [{ name: 'fib_61.8', price: 2605, at: null }],
+            invalidation: null,
+            targets: [],
+          },
+        },
+      },
+    ],
+  },
+};
+
+const lastModel = () => {
+  const model = drawn.models.at(-1);
+  if (!model) throw new Error('nothing drawn');
+  return model;
+};
+
+function setup(extra: Record<string, () => Response> = {}) {
+  const api = owner({
+    'GET /engines/e1/symbols?enabled=true': () =>
+      json([
+        { symbol: 'EURUSD', enabled: true, asset_class: 'FX_MAJOR' },
+        { symbol: 'XAUUSD', enabled: true, asset_class: 'METAL' },
+      ]),
+    'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+      () => json(candles()),
+    'GET /engines/e1/positions?status=OPEN&limit=200': () =>
+      json({
+        items: [
+          {
+            ticket: 7,
+            symbol: 'EURUSD',
+            side: 'BUY',
+            volume: 0.1,
+            entry_price: 1.1,
+            entry_time: iso(T0),
+            sl: 1.095,
+            tp: 1.11,
+            price_current: 1.101,
+          },
+        ],
+        next_cursor: null,
+      }),
+    ...extra,
+  });
+  return api;
+}
+
+describe('charts page', () => {
+  beforeEach(() => {
+    drawn.models = [];
+    drawn.themes = [];
+    drawn.destroyed = 0;
+  });
+
+  it('draws the first symbol with the default indicators, zones and open-position lines', async () => {
+    setup();
+    renderShell('/charts');
+    expect(await screen.findByRole('heading', { name: 'Charts' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(drawn.models.length).toBeGreaterThan(0);
+    });
+    const model = lastModel();
+    expect(model.candles).toHaveLength(4);
+    expect(model.priceLines.map((p) => p.title)).toEqual(['Support ×3', '', '#7 BUY', 'SL #7', 'TP #7']);
+    expect(screen.getByRole('link', { name: 'TradingView Lightweight Charts™' })).toHaveAttribute(
+      'href',
+      'https://www.tradingview.com/',
+    );
+  });
+
+  it('asks for other overlays and no zones when the toggles change', async () => {
+    const api = setup({
+      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14': () =>
+        json(candles()),
+      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14,adx:14':
+        () => json(candles()),
+    });
+    const user = userEvent.setup();
+    renderShell('/charts');
+    await waitFor(() => {
+      expect(drawn.models.length).toBeGreaterThan(0);
+    });
+    await user.click(screen.getByRole('checkbox', { name: 'S/R zones' }));
+    await user.click(screen.getByRole('checkbox', { name: 'ADX 14' }));
+    await waitFor(() => {
+      expect(api.calls.map((c) => c.path)).toContain(
+        '/engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14,adx:14',
+      );
+    });
+    await waitFor(() => {
+      expect(lastModel().priceLines.some((p) => p.title.startsWith('Support'))).toBe(false);
+    });
+  });
+
+  it('switches symbol and timeframe through the URL', async () => {
+    const api = setup({
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+        () => json(candles('XAUUSD')),
+    });
+    const user = userEvent.setup();
+    const { router } = renderShell('/charts');
+    await waitFor(() => {
+      expect(drawn.models.length).toBeGreaterThan(0);
+    });
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Symbol' }), 'XAUUSD');
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Timeframe' }), 'H1');
+    expect(router.state.location.search).toBe('?symbol=XAUUSD&tf=H1');
+    await waitFor(() => {
+      expect(api.calls.map((c) => c.path)).toContain(
+        '/engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true',
+      );
+    });
+  });
+
+  it('shows a decision with its evidence, toggled per theory', async () => {
+    setup({
+      'GET /engines/e1/decisions/d1': () => json(decision),
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+        () => json(candles('XAUUSD')),
+    });
+    const user = userEvent.setup();
+    renderShell('/charts?decision=d1&tf=H1');
+    expect(await screen.findByText('Signal XAUUSD SELL (H1)')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(lastModel().priceLines.map((p) => p.title)).toContain('Fibonacci retracement: fib_61.8');
+    });
+    expect(lastModel().priceLines.map((p) => p.title)).toEqual(
+      expect.arrayContaining(['Signal entry', 'SL', 'TP']),
+    );
+    await user.click(screen.getByRole('checkbox', { name: 'Fibonacci' }));
+    await waitFor(() => {
+      expect(lastModel().priceLines.map((p) => p.title)).not.toContain('Fibonacci retracement: fib_61.8');
+    });
+    await user.click(screen.getByRole('button', { name: 'Hide signal' }));
+    expect(screen.queryByText('Signal XAUUSD SELL (H1)')).not.toBeInTheDocument();
+  });
+
+  it('says when a symbol has no candles yet', async () => {
+    setup({
+      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+        () => apiError(404, 'candles_not_found'),
+    });
+    renderShell('/charts');
+    expect(await screen.findByText('No candles for this symbol yet.')).toBeInTheDocument();
+  });
+
+  it('redraws markers when a position changes on the stream', async () => {
+    const api = setup();
+    const { sources } = renderShell('/charts');
+    await waitFor(() => {
+      expect(drawn.models.length).toBeGreaterThan(0);
+    });
+    const candleCalls = () => api.calls.filter((c) => c.path.startsWith('/engines/e1/candles')).length;
+    const before = candleCalls();
+    act(() => {
+      sources.last().emit('ready', { cursor: 1, resumed: true });
+      sources.last().emit('positions', streamEvent(2, 'paper_position', {}));
+    });
+    await waitFor(() => {
+      expect(candleCalls()).toBe(before + 1);
+    });
+  });
+
+  it('follows the theme and cleans up on leaving', async () => {
+    setup();
+    const user = userEvent.setup();
+    const { router } = renderShell('/charts');
+    await waitFor(() => {
+      expect(drawn.models.length).toBeGreaterThan(0);
+    });
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Theme' }), 'dark');
+    await waitFor(() => {
+      expect(drawn.themes.at(-1)).toBe(true);
+    });
+    await act(async () => {
+      await router.navigate('/settings');
+    });
+    expect(drawn.destroyed).toBe(1);
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Theme' }), 'light');
+  });
+});

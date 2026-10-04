@@ -1,4 +1,5 @@
 import {
+  formatAxis,
   dateLocale,
   formatDate,
   formatDateTime,
@@ -79,5 +80,20 @@ describe('numbers', () => {
       expect(formatMoney(value, 'USD', 'th')).toBe(MISSING);
       expect(formatPercent(value, 'th')).toBe(MISSING);
     }
+  });
+});
+
+describe('formatAxis', () => {
+  const at = new Date('2026-09-30T10:05:00Z'); // 17:05 in Bangkok
+
+  it('labels ticks in the display timezone', () => {
+    expect(formatAxis(at, 'en', 'time')).toBe('17:05');
+    expect(formatAxis(at, 'en', 'day')).toBe('30 Sept');
+    expect(formatAxis(at, 'en', 'year')).toBe('2026');
+    expect(formatAxis(at, 'th', 'year')).toBe('2026'); // Gregorian unless the Buddhist calendar is asked for
+  });
+
+  it('shows an invalid date as missing', () => {
+    expect(formatAxis(new Date('nope'), 'en', 'time')).toBe('—');
   });
 });
