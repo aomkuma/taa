@@ -64,8 +64,11 @@ class BreakerMonitor:
         self._verdict(BreakerName.CLOCK, "", not verified, detail or "server time not verified")
 
     def observe_storage(self, write_ok: bool, free_gb: float | None) -> None:
+        """*free_gb* is None when the disk could not be measured (e.g. no data directory): the database
+        write check alone decides then. This runs in the health step, so it must never raise."""
         low_disk = free_gb is not None and free_gb < self.config.disk_min_free_gb
-        reason = "database write failed" if not write_ok else f"free disk {free_gb:.2f} GB"
+        disk = "unknown" if free_gb is None else f"{free_gb:.2f} GB"
+        reason = "database write failed" if not write_ok else f"free disk {disk}"
         self._verdict(BreakerName.STORAGE, "", not write_ok or low_disk, reason, free_gb=free_gb)
 
     def account_changed(self, detail: str) -> None:

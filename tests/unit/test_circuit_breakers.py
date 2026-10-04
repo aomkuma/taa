@@ -205,6 +205,20 @@ class TestMonitor:
             m.observe_connection(True)
         assert not b.blocking()
 
+    def test_storage_low_disk_and_failed_write_trip(self, db: Database, clock: ManualClock) -> None:
+        m, b = self.monitor(db, clock)
+        m.observe_storage(True, 0.1)
+        assert state(b, N.STORAGE) is State.OPEN
+        m2, b2 = self.monitor(Database("sqlite://"), clock)
+        b2.db.create_all()
+        m2.observe_storage(False, None)
+        assert state(b2, N.STORAGE) is State.OPEN
+
+    def test_storage_with_unknown_free_disk_never_raises(self, db: Database, clock: ManualClock) -> None:
+        m, b = self.monitor(db, clock)
+        m.observe_storage(True, None)  # no data directory: the write check alone decides
+        assert not b.blocking()
+
     def quote(self, m: BreakerMonitor, **kw: object) -> None:
         base: dict[str, object] = {
             "bid": 1.1,
