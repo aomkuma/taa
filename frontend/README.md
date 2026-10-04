@@ -46,6 +46,20 @@ TypeScript stays on 6.0.x until typescript-eslint supports TypeScript 7.
 - Tests fake the API with `mockApi` (`src/test/api.ts`) and render the whole app with `renderApp`
   (`src/test/render.tsx`).
 
+## App shell (TAA-903, PLAN §A15 "TAA-903 decisions")
+
+- **Pages and navigation:** add a page to `src/app/shell/nav.ts` (id, group, `own`) and a `nav.<id>` label in both
+  catalogs; `routes.tsx` creates its route. Replace its `PlaceholderPage` in `routes.tsx` when the page is built.
+  `own: true` pages sit inside `RequireOwnEngine` and are hidden on the market feed.
+- **Engine:** `useEngine()` (`src/engine/context.ts`) gives the shown engine (`engineId`, `own`) and the picker list;
+  `useEngineStatus()` the status of the user's own engine. Engine queries use keys under `engineKey(id)` so the live
+  stream's resync refetches them.
+- **Live updates:** `useLiveEvents(topic, listener)` (`src/live/context.ts`) for stream events of the shown engine;
+  `useLive()` for the stream state. Tests drive the stream with `fakeEventSources()` (`src/test/eventSource.ts`) via
+  `renderApp(path, lang, { createEventSource })`.
+- **Stale data:** show `<StaleBadge since={…} />` (`src/app/shell/StaleBadge.tsx`) when data stopped updating.
+- **Themes:** `src/app/theme.ts`; style both themes with Tailwind's `dark:` variant (it follows the `dark` class).
+
 ## Localization (PLAN §A28)
 
 Everything lives in `src/i18n/`.

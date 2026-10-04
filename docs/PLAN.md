@@ -668,7 +668,8 @@ AI failures never trip trading breakers; they only produce HOLD.
   `app/web/readmodels.py`), all behind `OwnedEngine` (404 `engine_not_found` for anyone else's engine,
   including the OWNER role's reads of other users' data):
   - `status` (engine, latest run, kill switch, open breakers/positions, audit replica, newest applied row
-    event), `account` (paper accounts, risk state, baselines, realized equity curve from closed paper trades)
+    event; since TAA-903 also `heartbeat`: the newest heartbeat as the stream sends it plus the watchdog's
+    `watch_status`/`offline_since`/`offline_reason`, or null), `account` (paper accounts, risk state, baselines, realized equity curve from closed paper trades)
   - `positions?status=OPEN|CLOSED`, `trades` (closed positions), `intents?kind=paper|broker`,
     `decisions?decision&symbol&strategy&profile` (signals are part of each decision; the list leaves out the
     signal/market documents) and `decisions/{id}` with its checks
@@ -736,7 +737,9 @@ AI failures never trip trading breakers; they only produce HOLD.
       near the head. The browser's `Last-Event-ID` wins over `?cursor=`; `?topics=` filters (default all).
     - The server closes a stream after 10 minutes and the EventSource reconnects. At each heartbeat the stream
       re-checks the session without refreshing its idle timer (`AuthService.is_live`), so an open tab cannot keep
-      a session alive; an ended session gets `event: end {"reason": "session_ended"}`.
+      a session alive; an ended session gets `event: end {"reason": "session_ended"}`. Opening a stream does
+      not refresh the idle timer either (`StreamSession`/`StreamedEngine` in `app/web/deps.py`, fixed in
+      TAA-903), because the browser reopens it by itself every 10 minutes.
     - Each open stream polls the feed once a second (one indexed query). At most 4 open streams per user per web
       process (429 `too_many_streams`); slots are leases that lapse after the longest stream time.
 - **Web Push:**
@@ -829,6 +832,26 @@ AI failures never trip trading breakers; they only produce HOLD.
 | AI (M2) | assessments, agreement rate, cost and budget |
 
 - **UX:** mobile-first; dark and light themes; accessible; times shown in the user's timezone, with UTC and broker time on hover.
+- (TAA-903 decisions) App shell (`frontend/src/app/shell/`, `src/engine/`, `src/live/`):
+  - **Navigation:** every page is listed once in `nav.ts` (group, path, `own`). A sidebar from the `md`
+    breakpoint; on phones a bottom bar with four main pages and a "More" sheet with every page. Pages showing
+    the user's own engine (`own`: charts, symbols, trading, analytics, backtests, system) are hidden on the
+    market feed and guarded by `RequireOwnEngine`. Pages not built yet render `PlaceholderPage`.
+  - **Engine:** the shell shows `GET /me/feed`'s engine; a user with several ACTIVE engines picks one (per
+    device, `taa.engine`). Only the user's own engine has a status, a mode banner and a live stream.
+  - **Mode banner:** the newest heartbeat's mode, else the latest run's; PAPER/DEMO/LIVE colours; the kill
+    switch as an alert line. Nothing while the mode is unknown.
+  - **Health:** from the newest heartbeat with the watchdog's rule (stopped, or none for 60 s), measured on the
+    server clock (session clock offset); plus "market closed" from the heartbeat's schedule.
+  - **Live stream:** `LiveStream` (framework-free) over EventSource: `ready` without resume, `reset` and any
+    message failing its schema refetch every query under `['engine', id]`; heartbeats update the cached status
+    in place, other `status` events refetch it; pages subscribe with `useLiveEvents(topic, …)`. A refused
+    stream (429/401/5xx) is reopened with `?cursor=` after 3 s doubling to 60 s, and at once when the device
+    comes back online; `end` stops it and refetches the status, whose 401 signs the user out.
+  - **Offline and stale:** a banner while `navigator.onLine` is false; a "not updated since" badge while live
+    updates are lost (`StaleBadge`, reused by pages and by TAA-914's stale cache fallback).
+  - **Themes:** `system`/`light`/`dark` (per device, `taa.theme`), the `dark` class on `<html>` set before the
+    first render.
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

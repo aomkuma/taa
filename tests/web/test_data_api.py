@@ -16,7 +16,14 @@ from app.core.enums import Timeframe
 from app.market_data.history_store import SqlHistoryStore
 from app.storage.audit import AuditLog
 from app.storage.database import Database
-from app.storage.models import ConfigSnapshot, DecisionCheckRow, DecisionRecordRow, PaperPositionRow, Run
+from app.storage.models import (
+    ConfigSnapshot,
+    DecisionCheckRow,
+    DecisionRecordRow,
+    EngineHeartbeatRow,
+    PaperPositionRow,
+    Run,
+)
 from app.sync.command_queue import CommandQueue
 from app.sync.events import SPECS_BY_TYPE
 from app.sync.ingest import IngestService
@@ -201,6 +208,38 @@ class TestReads:
         assert (
             "last_received_at" in body
         )  # newest row event applied (none in this rig: rows were written directly)
+        assert body["heartbeat"] is None  # no heartbeat received yet
+
+    def test_status_carries_the_newest_heartbeat_and_the_watchdog_verdict(
+        self, rig: tuple[TestClient, str, str], db: Database
+    ) -> None:
+        client, mine, theirs = rig
+        brief = {"at": T.isoformat(), "mode": "PAPER", "state": "running", "connected": True, "cycles": 3}
+        with db.session() as sess:
+            sess.add(
+                EngineHeartbeatRow(
+                    engine_id=mine,
+                    received_at=T + timedelta(seconds=1),
+                    sent_at=T,
+                    run_id="r1",
+                    mode="PAPER",
+                    state="running",
+                    connected=True,
+                    payload=brief,
+                    watch_status="OFFLINE",
+                    offline_since=T + timedelta(minutes=2),
+                    offline_reason="SILENT",
+                )
+            )
+        beat = get(client, mine, "status").json()["heartbeat"]
+        assert beat == {
+            **brief,
+            "received_at": (T + timedelta(seconds=1)).isoformat(),
+            "watch_status": "OFFLINE",
+            "offline_since": (T + timedelta(minutes=2)).isoformat(),
+            "offline_reason": "SILENT",
+        }
+        assert get(client, theirs, "status").status_code == 404  # still only the user's own engine
 
     def test_positions_paginate_newest_first(self, rig: tuple[TestClient, str, str]) -> None:
         client, mine, _ = rig

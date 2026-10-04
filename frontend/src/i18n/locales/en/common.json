@@ -36,5 +36,79 @@
       "unknown": "Sign-in failed. Please try again.",
       "unavailable": "Cannot check your session right now. Try reloading the page."
     }
+  },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "nav": {
+    "main": "Main menu",
+    "quick": "Quick menu",
+    "more": "More",
+    "allPages": "All pages",
+    "close": "Close",
+    "group": {
+      "overview": "Overview",
+      "advisory": "Advisory",
+      "trading": "Trading",
+      "analysis": "Analysis",
+      "account": "Account & system"
+    },
+    "dashboard": "Dashboard",
+    "charts": "Charts",
+    "symbols": "Symbols",
+    "ranking": "Symbol ranking",
+    "opportunities": "Opportunities",
+    "accuracy": "Signal accuracy",
+    "watchlists": "Watchlists & alerts",
+    "positions": "Positions",
+    "history": "Trade history",
+    "decisions": "Signals & decisions",
+    "strategies": "Strategies",
+    "risk": "Risk & controls",
+    "analytics": "Analytics",
+    "backtests": "Backtests",
+    "notifications": "Notifications",
+    "engines": "Engines",
+    "system": "System",
+    "settings": "Settings"
+  },
+  "shell": {
+    "mode": {
+      "BACKTEST": "Backtest mode",
+      "PAPER": "PAPER mode: simulated orders only, nothing is sent to the broker",
+      "DEMO": "DEMO mode: orders go to a demo account",
+      "LIVE": "LIVE mode: orders use real money"
+    },
+    "modeUnknown": "Mode {{mode}}",
+    "killSwitch": "Kill switch active: all new entries are blocked",
+    "noEngine": "No engine linked yet.",
+    "linkEngine": "Link an engine",
+    "marketFeed": "Market data from the owner's engine: for advice only, no account data",
+    "ownEngineRequired": "This page needs an engine of your own.",
+    "engine": "Engine",
+    "loadingEngine": "Loading engine data…",
+    "engineUnavailable": "Cannot read engine data right now.",
+    "statusUnavailable": "Cannot read the engine status",
+    "health": {
+      "online": "Engine online",
+      "disconnected": "Engine running but not connected to MT5",
+      "stopped": "Engine stopped (last heartbeat {{since}})",
+      "silent": "No heartbeat from the engine since {{since}}",
+      "unknown": "No heartbeat received from the engine yet"
+    },
+    "marketClosed": "Market closed",
+    "live": {
+      "live": "Live updates",
+      "connecting": "Connecting live updates…",
+      "reconnecting": "Live updates lost, reconnecting",
+      "ended": "Live updates stopped"
+    },
+    "stale": "May be out of date",
+    "staleSince": "Not updated since {{time}}",
+    "offline": "You are offline. The data shown may be out of date.",
+    "placeholder": "This page is not available yet."
   }
 }

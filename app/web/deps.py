@@ -93,6 +93,18 @@ def current_session(request: Request, ctx: Context) -> AuthSession:
 CurrentSession = Annotated[AuthSession, Depends(current_session)]
 
 
+def stream_session(request: Request, ctx: Context) -> AuthSession:
+    """Like :func:`current_session` without refreshing the idle timer: the browser reopens a live stream by
+    itself (every few minutes and after network drops), so only real requests may keep a session alive."""
+    session = ctx.auth.authenticate(request.cookies.get(session_cookie_name(ctx.settings)), touch=False)
+    if session is None:
+        raise ApiProblem(401, "unauthenticated", "Sign in required")
+    return session
+
+
+StreamSession = Annotated[AuthSession, Depends(stream_session)]
+
+
 def csrf_session(request: Request, ctx: Context, session: CurrentSession) -> AuthSession:
     check_origin(request, ctx.settings)
     if not ctx.auth.check_csrf(session, request.headers.get(CSRF_HEADER)):
@@ -146,16 +158,28 @@ async def signed_engine(request: Request, ctx: Context) -> EngineRequest:
 SignedEngine = Annotated[EngineRequest, Depends(signed_engine)]
 
 
-def owned_engine(engine_id: str, ctx: Context, session: CurrentSession) -> EngineInfo:
-    """An engine of the session user (PLAN §A32). Anyone else's, or an unknown id, is 404 ``engine_not_found``
-    (never 403), so ids cannot be probed. The OWNER role administers engines but reads only its own data."""
+def _owned(engine_id: str, ctx: WebContext, session: AuthSession) -> EngineInfo:
     info = ctx.engine.registry.get(engine_id) if ENGINE_ID_RE.fullmatch(engine_id) else None
     if info is None or info.owner_user_id != session.user_id:
         raise ApiProblem(404, "engine_not_found", "No such engine")
     return info
 
 
+def owned_engine(engine_id: str, ctx: Context, session: CurrentSession) -> EngineInfo:
+    """An engine of the session user (PLAN §A32). Anyone else's, or an unknown id, is 404 ``engine_not_found``
+    (never 403), so ids cannot be probed. The OWNER role administers engines but reads only its own data."""
+    return _owned(engine_id, ctx, session)
+
+
 OwnedEngine = Annotated[EngineInfo, Depends(owned_engine)]
+
+
+def streamed_engine(engine_id: str, ctx: Context, session: StreamSession) -> EngineInfo:
+    """:func:`owned_engine` for the live stream (the session's idle timer is left alone)."""
+    return _owned(engine_id, ctx, session)
+
+
+StreamedEngine = Annotated[EngineInfo, Depends(streamed_engine)]
 
 
 def require_roles(*roles: Role) -> Callable[..., AuthSession]:

@@ -2,10 +2,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link, Outlet, useNavigate } from 'react-router';
 
+import { ThemeSwitcher } from '@/app/ThemeSwitcher';
+
 import { useAuthState, useSessionExpiry } from '@/auth/hooks';
 import { endSession, logout } from '@/auth/session';
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher';
 
+/** The page frame: the header (brand, account, theme, language) above every page. */
 export function Layout() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -25,14 +28,14 @@ export function Layout() {
   return (
     <div className="min-h-dvh bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <header className="border-b border-slate-200 dark:border-slate-800">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-2 px-4 py-3">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-3">
           <Link to="/" className="text-lg font-semibold">
             {t('app.name')}
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {data?.status === 'signed_in' && (
               <>
-                <span className="text-sm text-slate-600 dark:text-slate-400">
+                <span className="hidden text-sm text-slate-600 sm:inline dark:text-slate-400">
                   {t('auth.signedInAs', { username: data.session.user.username })}
                 </span>
                 <button
@@ -47,13 +50,12 @@ export function Layout() {
                 </button>
               </>
             )}
+            <ThemeSwitcher />
             <LanguageSwitcher />
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">
-        <Outlet />
-      </main>
+      <Outlet />
     </div>
   );
 }

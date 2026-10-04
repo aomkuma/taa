@@ -1,23 +1,58 @@
 import type { RouteObject } from 'react-router';
 
 import { Layout } from '@/app/Layout';
+import { PublicFrame } from '@/app/PublicFrame';
+import { AppShell } from '@/app/shell/AppShell';
+import { NAV_ITEMS } from '@/app/shell/nav';
+import { RequireOwnEngine } from '@/app/shell/RequireOwnEngine';
 import { RequireAuth } from '@/auth/RequireAuth';
+import type { EventSourceFactory } from '@/live/stream';
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
+import { PlaceholderPage } from '@/pages/PlaceholderPage';
 
-export const routes: RouteObject[] = [
-  {
-    path: '/',
-    element: <Layout />,
-    children: [
-      { path: 'login', element: <LoginPage /> },
-      {
-        // Everything that shows account or trading data goes inside this guard.
-        element: <RequireAuth />,
-        children: [{ index: true, element: <HomePage /> }],
-      },
-      { path: '*', element: <NotFoundPage /> },
-    ],
-  },
-];
+const pages = (own: boolean): RouteObject[] =>
+  NAV_ITEMS.filter((item) => item.own === own && item.id !== 'dashboard').map((item) => ({
+    path: item.path,
+    element: <PlaceholderPage id={item.id} />,
+  }));
+
+export interface RouteOptions {
+  /** Tests inject a fake EventSource for the live stream. */
+  createEventSource?: EventSourceFactory;
+}
+
+export function createRoutes({ createEventSource }: RouteOptions = {}): RouteObject[] {
+  return [
+    {
+      path: '/',
+      element: <Layout />,
+      children: [
+        {
+          element: <PublicFrame />,
+          children: [
+            { path: 'login', element: <LoginPage /> },
+            { path: '*', element: <NotFoundPage /> },
+          ],
+        },
+        {
+          // Everything that shows account or trading data goes inside this guard.
+          element: <RequireAuth />,
+          children: [
+            {
+              element: <AppShell {...(createEventSource ? { createEventSource } : {})} />,
+              children: [
+                { index: true, element: <HomePage /> },
+                ...pages(false),
+                { element: <RequireOwnEngine />, children: pages(true) },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ];
+}
+
+export const routes = createRoutes();

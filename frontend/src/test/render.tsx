@@ -4,7 +4,7 @@ import type { ReactElement } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
-import { routes } from '@/app/routes';
+import { createRoutes, type RouteOptions } from '@/app/routes';
 import { createI18n } from '@/i18n';
 import type { Language } from '@/i18n/languages';
 
@@ -15,11 +15,11 @@ export function renderWithI18n(ui: ReactElement, language: Language = 'th') {
 }
 
 /** The whole app (routes, query cache, i18n) at *path*, with retries off so failures surface at once. */
-export function renderApp(path: string, language: Language = 'th') {
+export function renderApp(path: string, language: Language = 'th', options: RouteOptions = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  const router = createMemoryRouter(routes, { initialEntries: [path] });
+  const router = createMemoryRouter(createRoutes(options), { initialEntries: [path] });
   const result = renderWithI18n(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />

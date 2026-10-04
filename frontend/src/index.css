@@ -4,3 +4,6 @@
   /* Self-hosted Noto Sans Thai (bundled from @fontsource-variable, imported in main.tsx); it covers Latin too. */
   --font-sans: 'Noto Sans Thai Variable', ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Dark mode follows the `dark` class on <html> (src/app/theme.ts), so the user can override the system setting. */
+@custom-variant dark (&:where(.dark, .dark *));

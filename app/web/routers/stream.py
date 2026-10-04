@@ -8,6 +8,9 @@ Server-sent events over the engine's change feed; the message format is in :mod:
 
 Errors before the stream starts: 401 ``unauthenticated``, 404 ``engine_not_found`` (not the user's engine),
 400 ``invalid_query`` (unknown topic, malformed cursor), 429 ``too_many_streams`` (open streams per user).
+
+Opening a stream does not refresh the session's idle timer (``StreamSession``): the browser reconnects by
+itself, so an unattended tab must not keep a session alive.
 """
 
 from __future__ import annotations
@@ -21,7 +24,7 @@ from fastapi.responses import StreamingResponse
 from starlette.background import BackgroundTask
 
 from app.sync.stream import TOPICS, StreamLog
-from app.web.deps import Context, CurrentSession, OwnedEngine
+from app.web.deps import Context, StreamedEngine, StreamSession
 from app.web.errors import ApiProblem
 from app.web.stream import EventStream
 
@@ -51,8 +54,8 @@ def parse_cursor(raw: str | None) -> int | None:
 @router.get("/stream", response_model=None)
 async def stream(
     request: Request,
-    engine: OwnedEngine,
-    session: CurrentSession,
+    engine: StreamedEngine,
+    session: StreamSession,
     ctx: Context,
     topics: Annotated[str | None, Query(max_length=100)] = None,
     cursor: Annotated[str | None, Query(max_length=32)] = None,

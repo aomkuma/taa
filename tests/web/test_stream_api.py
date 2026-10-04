@@ -5,15 +5,18 @@ from __future__ import annotations
 import asyncio
 import json
 from collections.abc import Callable, Iterator
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from sqlalchemy import select
 
-from app.core.clock import ManualClock
+from app.core.clock import ManualClock, ensure_utc
 from app.storage.database import Database
+from app.storage.models import SessionRow
 from app.sync.stream import TOPICS, StreamEntry, StreamLog
 from app.web.stream import EventStream, StreamSlots, StreamTiming, sse
 from tests.web.conftest import (
@@ -162,6 +165,31 @@ class TestStreamApi:
         client.cookies.clear()
         resp = client.get(f"/api/v1/engines/{ENGINE_ID}/stream")
         assert resp.status_code == 401 and resp.json()["error"]["code"] == "unauthenticated"
+
+    def test_opening_a_stream_does_not_keep_the_session_alive(
+        self, client: TestClient, db: Database, clock: ManualClock
+    ) -> None:
+        def last_seen() -> datetime:
+            with db.session() as sess:
+                [row] = sess.scalars(select(SessionRow)).all()
+                return ensure_utc(row.last_seen_at)
+
+        before = last_seen()
+        clock.advance(5 * 60)
+        stream(client)  # the browser reopens streams on its own: no activity
+        assert last_seen() == before
+        clock.advance(26 * 60)  # 31 min idle: the stream route sees the session gone
+        resp = client.get(f"/api/v1/engines/{ENGINE_ID}/stream")
+        assert resp.status_code == 401 and resp.json()["error"]["code"] == "unauthenticated"
+
+    def test_a_real_request_still_refreshes_the_idle_timer(
+        self, client: TestClient, db: Database, clock: ManualClock
+    ) -> None:
+        clock.advance(5 * 60)
+        assert client.get(f"/api/v1/engines/{ENGINE_ID}/status").status_code == 200
+        with db.session() as sess:
+            [row] = sess.scalars(select(SessionRow)).all()
+            assert ensure_utc(row.last_seen_at) == clock.now_utc()
 
     def test_open_streams_per_user_are_capped(self, app: FastAPI, client: TestClient) -> None:
         hub = app.state.ctx.streams

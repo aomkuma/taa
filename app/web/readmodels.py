@@ -38,6 +38,7 @@ from app.storage.models import (
     DecisionCheckRow,
     DecisionRecordRow,
     EngineCommandRow,
+    EngineHeartbeatRow,
     HistoryCandle,
     KillSwitchEvent,
     OrderIntentRow,
@@ -69,6 +70,18 @@ class QueryError(TaaError):
 def row_dict(row: Any, *, skip: Sequence[str] = ("engine_id",)) -> dict[str, Any]:
     """Every column of an ORM row, JSON-ready (the engine id is implied by the URL)."""
     return {c.key: json_safe(getattr(row, c.key)) for c in row.__table__.columns if c.key not in skip}
+
+
+def heartbeat_dict(row: EngineHeartbeatRow) -> dict[str, Any]:
+    """The newest heartbeat as the stream sends it (``status``/``heartbeat``: the payload without quotes, plus
+    ``received_at`` on the cloud clock) and the watchdog's verdict (TAA-705)."""
+    return {
+        **row.payload,
+        "received_at": json_safe(ensure_utc(row.received_at)),
+        "watch_status": row.watch_status,
+        "offline_since": json_safe(None if row.offline_since is None else ensure_utc(row.offline_since)),
+        "offline_reason": row.offline_reason,
+    }
 
 
 @dataclass(frozen=True)
@@ -173,6 +186,8 @@ class ReadModels:
                 .where(PaperPositionRow.engine_id == engine_id, PaperPositionRow.status == "OPEN")
             ).scalar_one()
             chain = sess.get(AuditReplicaRow, f"engine:{engine_id}")
+            beat = sess.get(EngineHeartbeatRow, engine_id)
+            heartbeat = None if beat is None else heartbeat_dict(beat)
         return {
             "run": None if run is None else row_dict(run, skip=("engine_id", "host")),
             "last_received_at": json_safe(None if last_received is None else ensure_utc(last_received)),
@@ -183,6 +198,7 @@ class ReadModels:
             "open_breakers": int(open_breakers),
             "open_positions": int(open_positions),
             "audit": None if chain is None else row_dict(chain, skip=("engine_id",)),
+            "heartbeat": heartbeat,
         }
 
     def account(self, engine_id: str) -> dict[str, Any]:

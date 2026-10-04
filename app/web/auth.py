@@ -232,8 +232,9 @@ class AuthService:
         self.audit.append("auth.login", name, {"session": short_id(row.id), "ip": ip})
         return self._session(row, user), token
 
-    def authenticate(self, token: str | None) -> AuthSession | None:
-        """The live session for a cookie token, or None. Refreshes the idle timer."""
+    def authenticate(self, token: str | None, *, touch: bool = True) -> AuthSession | None:
+        """The live session for a cookie token, or None. Refreshes the idle timer unless *touch* is false
+        (live streams: the EventSource reconnects by itself, which must not keep an idle session alive)."""
         if not token or len(token) > MAX_TOKEN_LENGTH:
             return None
         now = self.clock.now_utc()
@@ -247,7 +248,7 @@ class AuthService:
                 return None
             if now >= row.expires_at or now >= row.last_seen_at + IDLE_TIMEOUT:
                 return None
-            if now - row.last_seen_at >= TOUCH_INTERVAL:
+            if touch and now - row.last_seen_at >= TOUCH_INTERVAL:
                 row.last_seen_at = now
             return self._session(row, user)
 
