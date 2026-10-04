@@ -22,7 +22,7 @@ Read before larger work:
 .venv\Scripts\python -m pytest -q                                   # all tests
 .venv\Scripts\python -m pytest tests/unit/test_broker.py::TestConnection::test_reconnect_with_backoff -q  # one test
 .venv\Scripts\python -m pytest -m mt5      # real-terminal contract tests (also needs TAA_MT5_TESTS=1 and a .env)
-.venv\Scripts\python -m pytest -m postgres # needs DATABASE_URL pointing to PostgreSQL
+.venv\Scripts\python -m pytest -m postgres # local PostgreSQL 16; TAA_POSTGRES_URL in .env (role taa)
 .venv\Scripts\ruff format app tests scripts; .venv\Scripts\ruff check app tests scripts
 .venv\Scripts\mypy app
 .venv\Scripts\bandit -q -r app -c pyproject.toml

@@ -307,6 +307,11 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
     - TAA-902 (branch `phase8-auth`): `/login` (password + TOTP, TH/EN), `RequireAuth` route guard,
       `apiPost` with `X-CSRF-Token`, session end on any 401 `unauthenticated` or when the idle/absolute
       deadline passes (absolute limit measured on the server clock via `server_time`), logout
+  - local PostgreSQL 16 (Windows service `postgresql-x64-16`, localhost:5432), shared with other projects.
+    TAA has its own role `taa` (LOGIN, CREATEDB) and database `taa_test`; the URL is `TAA_POSTGRES_URL` in
+    `.env`. `pytest -m postgres` (4 tests: migrations + schema parity, rev. 4 backfill/downgrade, two-engine
+    ingest, audit chain over JSONB) creates and drops a throwaway database per test. Other databases on that
+    server (e.g. `aicentralize`) belong to other projects: never touch them.
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).

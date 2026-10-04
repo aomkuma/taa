@@ -890,6 +890,7 @@ EXTERNAL_ENV_KEYS = frozenset(WebSettings.model_fields) | frozenset(
         "PORT",
         "WEB_PUBLIC_ORIGIN",
         "WORKER_CONCURRENCY",
+        "TAA_POSTGRES_URL",  # tests only (pytest -m postgres)
     }
 )
 
