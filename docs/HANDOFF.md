@@ -1,32 +1,62 @@
 # Session handoff
 
-Last updated: 2026-10-04, after Phase 7 TAA-701, 702 and 704 (engine side), Phase 6C (done), Phase 10
-TAA-1001..1003 (merged from phase10-analytics), the Phase 9 frontend foundation (TAA-901 scaffold, TAA-915
-i18n) and Phase 8 auth (TAA-801 FastAPI skeleton, TAA-802 authentication, TAA-902 login UI; merged from
-`phase8-auth`). This file holds **state
-only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
+Last updated: 2026-10-04, end of three parallel sessions. Everything is merged into `main` (`c85d539` plus
+this handoff): Phase 6C (done), Phase 7 TAA-701, 702, 704 (engine side), Phase 8 TAA-801, 802, Phase 9
+TAA-901, 902, 915, Phase 10 TAA-1001..1003, and the storage-health fix. No branch holds unmerged work. This
+file holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
 ---
 
-## Prompt for the next session
+## Prompts for the next sessions
 
-Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
+The work splits into three parallel sessions (A, B, C) along the dependency graph below. For a single session,
+run A first: TAA-703 is on the critical path. Read "Parallel sessions" before starting any of them.
+
+Common part (paste first into every session, opened in `C:\Users\korap\taa`):
 
 ```text
-Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progress + execution order) and the
-relevant sections of docs/PLAN.md (§A27 shadow trades & calibration, §A26 opportunities, §A29 evidence model).
+Continue the TAA project. Read docs/HANDOFF.md (state, the "Parallel sessions" rules, and the "Next work"
+plan), docs/TICKETS.md (progress, dependencies) and the docs/PLAN.md sections named for your session.
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
-Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B and 12 (DEMO execution, pulled forward on the user's request) are
-DONE. Phase 6C is done. Phase 10: TAA-1001..1003 done (app/analytics/, merged); 1004 is next there.
-Phase 9: TAA-901, 902, 915 done (frontend/). Phase 8: TAA-801, 802 done (app/web/, merged). Check open branches/worktrees (git worktree list)
-before starting a ticket another session may own. Phase 7: TAA-701, 702 done; TAA-704 done except the long-poll
-HTTP route. Next in this session: TAA-707 engine side (event schemas in app/sync/events.py shared with ingest,
-advisory producers, advisory-config pull client), then 705/706 engine parts; 703 and the 704 route can now
-build on TAA-801 (app/web). Phase 8 is owned by a separate session.
+Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
+Partly done: Phase 7 (701, 702; 704 lacks only the long-poll route), Phase 8 (801, 802), Phase 9 (901, 902,
+915), Phase 10 (1001..1003).
+Work in your own git worktree and branch (see "Parallel sessions"), never in the main checkout. Run
+`git worktree list` first. Merge into main only by merging main into your branch, running the full gate,
+then `git merge --ff-only` in the main checkout.
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
+```
+
+Session A (cloud sync; worktree `C:\Users\korap\taa-sync`, branch `phase7-sync`; PLAN §A13, §A14 ingest):
+
+```text
+Your tickets, in order: TAA-703 ingest API (on app/web from 801; ingest uses HMAC, not sessions), the TAA-704
+long-poll route, TAA-707 (engine producers + advisory-config pull client, and the ingest side of the new event
+types), TAA-706, then TAA-805 control API once 704 is complete. TAA-705 waits for TAA-808 (session B).
+You own app/sync/, app/web/routers for ingest/commands/control, and the engine sync hooks.
+```
+
+Session B (web backend and tenancy; worktree `C:\Users\korap\taa-auth`, branch `phase8-auth`, already
+exists; PLAN §A14, §A30):
+
+```text
+Your tickets, in order: TAA-808 worker service (app/worker/), TAA-807 backtest jobs, TAA-806 Web Push, then
+TAA-8A1 users/roles/tenancy, TAA-8A2, TAA-8A3. When TAA-703 is on main: TAA-803 read APIs, then TAA-804 SSE
+(TAA-903 in session C waits for it). You own app/worker/ and app/web/ except the sync routes of session A.
+```
+
+Session C (frontend and analytics; worktree `C:\Users\korap\taa-phase9`, branch `phase9-frontend`, already
+exists; PLAN §A15, §A16, §A28, §A31):
+
+```text
+Your tickets, in order: TAA-922 trading profile page (preferences API not built yet: put the request/response
+zod schemas in one module and test against fixtures), the TAA-1004 preparation in "Notes from Phase 10"
+(BacktestEngine keeps each trade's decision context; small change in app/backtest/), TAA-1004 once TAA-807
+is on main, TAA-903 app shell once TAA-804 is on main (or earlier against the documented SSE contract with a
+fake stream), then pages 904–913 as their APIs land. You own frontend/, app/analytics/, app/backtest/.
 ```
 
 ---
@@ -38,13 +68,14 @@ any phase boundary if I ask.
   (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
   (TAA-6A1..6A5, symbol universe & suitability ranking) and Phase 6B (TAA-6B1..6B5, watchlists,
   opportunities & alert windows), Phase 6C (TAA-6C1..6C5, shadow trades, accuracy & calibration).
-- **In progress:** Phase 9 (TAA-901, TAA-902 and TAA-915 done; the remaining pages need the Phase 8 API),
-  Phase 10 (TAA-1001..1003 done and merged; TAA-1004 next, see "Notes from Phase 10"), and Phase 8 in a separate session (worktree `taa-auth`, branch `phase8-auth`:
-  TAA-801 and TAA-802 done and merged into `main`). The main session owns Phase 7 only; 705 still waits
-  for TAA-808.
-- **Checks:** 2268 tests pass (after the phase8-auth merge), 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
-  suite takes ~5.5 min, with backtest and engine tests the slow part. ruff,
-  mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
+- **In progress (progress table):** Phase 7 2/7 (701, 702; 704 has 5/6 items), Phase 8 2/10 (801, 802),
+  Phase 9 3/22 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. Who does what
+  next: "Next work" below.
+- **Checks:** 2270 tests on `c85d539` (2269 passed + 1 failure from a memory-allocation error under parallel
+  load, which passes alone), 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
+  suite takes ~5 min, with backtest and engine tests the slow part. ruff, mypy and bandit are clean.
+  Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/`. Architecture rules are enforced by
+  `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
     - style slider 0–100 (defensive → offensive) with five anchor presets
@@ -58,7 +89,7 @@ any phase boundary if I ask.
 - **Built:**
   - config (pydantic-settings + `config.yaml`, percent risk units, hard ceilings)
   - secrets (`keyring:` indirection, log redaction), JSON logging
-  - SQLite/Postgres storage with Alembic (migrations 0001–0016), hash-chained audit log
+  - SQLite/Postgres storage with Alembic (migrations 0001–0017), hash-chained audit log
   - kill switch; CLI (`config`, `db`, `audit`, `kill`, `doctor`, `backtest`, `breaker`, `demo-report`,
     `advisory rank|replay|calibrate`, `strategy list|enable`); CI config
   - cloud sync, engine side (Phase 7, PLAN §A13):
@@ -292,19 +323,61 @@ any phase boundary if I ask.
   - the demo account also carries a manual BTCUSD test position (magic 0). Per PLAN, manual positions count
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). A
-  remote `origin` exists; `main` is ahead of `origin/main` (push only when the user asks). Branch
-  `phase10-analytics` (TAA-1001..1003) is merged and removed with its worktree. Other worktree:
-  `phase8-auth` (Phase 8,
-  `C:\Users\korap\taa-auth`; TAA-801, 802, 902 merged into `main`, the branch stays for the rest of Phase 8).
-  Branch `phase9-frontend` (TAA-901, TAA-915, docs) is merged into `main`; its worktree
-  `C:\Users\korap\taa-phase9` can be removed with `git worktree remove ..\taa-phase9`.
-- **Next step:** TAA-707 engine side (planned: replicate advisory rows as full-row upsert events through
-  explicit hooks in the catalog, ranking, scanner, lifecycle, shadow tracker and calibration; shadow cursor
-  progress is not replicated; suitability snapshots coalesce per symbol and hour; the advisory-config client
-  uses an ETag and falls back to the cache, then local preferences). Then 705/706 engine parts. 703 and the
-  704 route can use `app/web` now (TAA-801 is on main; ingest needs no session, so it goes outside the
-  auth dependencies). Migration numbers can collide with the Phase 8 branch: the later merge renumbers its
-  migration (phase8-auth's became 0017 after main's 0016).
+  remote `origin` exists; `main` is ahead of `origin/main` (push only when the user asks). Worktrees:
+  `C:\Users\korap\taa-auth` (branch `phase8-auth`, session B) and `C:\Users\korap\taa-phase9` (branch
+  `phase9-frontend`, session C). Both are fully merged; fast-forward them to `main` before new work. Branch
+  `phase10-analytics` is merged and deleted. Latest migration: **0017**.
+
+## Next work
+
+Dependency graph of the open Milestone 1 tickets (→ = unblocks):
+
+- **Critical path:** 703 ingest → 803 read APIs → 804 SSE → 903 app shell → pages 904–913 → 914 PWA polish
+- 704 long-poll route → 805 control API → 911 risk & controls page
+- 707 advisory sync (needs 703, 704) → 809 advisory APIs → 810 opportunity push and pages 916–920
+- 703 → 706 candle & history sync
+- 808 worker → 705 heartbeat & watchdog, 806 Web Push (→ 810, 912), 807 backtest jobs (→ 910, 1004)
+- 8A1 tenancy → 8A2 plans → 8A3 account profiles → 8A4 personalizer (also needs 810), 8A5; 921 needs 8A1–8A3
+- 1004 recommendations (needs 807) → 1005 analytics API & pages (also needs 903)
+- 922 trading profile page: unblocked
+- Phase 11 (Railway) after Milestone 1 features; it needs the user's Railway access.
+
+Can start now: 703, the 704 route, 707 engine side, 808, 8A1, 922, the 1004 preparation. Session split and
+order: "Prompts for the next sessions" above. Planned details:
+
+- **TAA-707 engine side:** replicate advisory rows as full-row upsert events through explicit hooks in the
+  catalog, ranking, scanner, lifecycle, shadow tracker and calibration; shadow cursor progress is not
+  replicated; suitability snapshots coalesce per symbol and hour; the advisory-config client uses an ETag and
+  falls back to the cache, then local preferences. Event schemas go in `app/sync/events.py`, shared with
+  ingest.
+- **TAA-703 / 704 route:** build on `app/web` (TAA-801). Ingest and the long poll authenticate with HMAC
+  (`app/security/hmac_auth.py`), not web sessions, so they sit outside the auth dependencies.
+- **TAA-1004 preparation:** see "Notes from Phase 10".
+
+## Parallel sessions (rules learned on 2026-10-04)
+
+- **One worktree per session.** Never work in the main checkout `C:\Users\korap\taa` while other sessions
+  run. It only receives fast-forwards. A session that edited files there blocked two merges.
+- **Merging into main:** in your worktree, `git merge main`, resolve, run the full gate (pytest, ruff format
+  + check, mypy, bandit; plus the frontend four if `frontend/` changed), commit. Then in the main checkout:
+  `git merge --ff-only <branch>`. It refuses instead of touching another session's files. If main moved in
+  between, repeat. If the gate is slow and main keeps moving, run the fast checks (ruff, mypy, bandit, the
+  tests of the changed area, `test_architecture.py`, `test_storage.py`), fast-forward, then run the full
+  suite on that commit right away.
+- **Hot files that conflict:**
+  - `docs/TICKETS.md` progress table: take main's side, then `scripts/tickets.py sync`. It recomputes from
+    the checkboxes, which merge cleanly.
+  - `docs/PLAN.md` and `docs/HANDOFF.md`: edit only your own sections.
+  - `app/storage/models/__init__.py`, `app/config.py`, `config.yaml`, `app/cli/__main__.py`,
+    `app/web/app.py` (router registration): small additive edits only.
+- **Migrations are a single chain.** The session that merges second renumbers its revision and
+  `down_revision` to follow main's head. Re-run autogenerate against main's head if the models overlap.
+- **Test load:** three full suites at once ran out of memory (numpy `ArrayMemoryError`) and probably caused the
+  rare pandas access violations (see "Notes from Phase 7"). Stagger full runs; rerun a lone failure by itself
+  before investigating.
+- A fresh worktree needs its own venv or a junction to the main one (`mklink /J .venv
+  C:\Users\korap\taa\.venv`). Remove a junction with `rmdir`, never a recursive delete, which would empty the
+  real venv.
 
 ## Notes for the next session
 
@@ -421,5 +494,7 @@ any phase boundary if I ask.
 ## Open items needing the user
 
 - Whether and when to push to GitHub (`origin` exists; `main` is ahead).
+- How many sessions to run next: three in parallel (A/B/C above) or one (then A's tickets first).
+- The flaky pandas access violation has no ticket yet: open one if it recurs (see "Notes from Phase 7").
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA). See PLAN §A30.
