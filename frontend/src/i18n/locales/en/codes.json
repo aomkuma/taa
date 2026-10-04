@@ -1,0 +1,16 @@
+{
+  "engine": {
+    "invalid_label": "The name must have 1–64 characters.",
+    "invalid_engine_id": "This engine ID is not valid.",
+    "owner_not_found": "No active user with this name.",
+    "engine_exists": "An engine with this ID is already registered.",
+    "engine_linking_disabled": "Only the owner can connect engines on this deployment.",
+    "engine_limit_reached": "You have reached the number of engines you can connect.",
+    "engine_not_found": "Engine not found.",
+    "engine_revoked": "This engine was revoked. Connect a new engine instead.",
+    "engine_rate_limited": "Too many new engine keys in the last hour. Try again later.",
+    "confirmation_mismatch": "Type the engine ID exactly to confirm.",
+    "nothing_to_import": "There are no engine keys to import.",
+    "owner_only": "Only the owner can see every engine."
+  }
+}

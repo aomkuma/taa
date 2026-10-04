@@ -1,0 +1,16 @@
+{
+  "engine": {
+    "invalid_label": "ชื่อต้องมีความยาว 1–64 ตัวอักษร",
+    "invalid_engine_id": "รหัส Engine ไม่ถูกต้อง",
+    "owner_not_found": "ไม่พบผู้ใช้ที่ใช้งานอยู่ชื่อนี้",
+    "engine_exists": "มี Engine รหัสนี้ลงทะเบียนอยู่แล้ว",
+    "engine_linking_disabled": "ระบบนี้อนุญาตให้เฉพาะเจ้าของเชื่อมต่อ Engine",
+    "engine_limit_reached": "คุณเชื่อมต่อ Engine ครบจำนวนที่อนุญาตแล้ว",
+    "engine_not_found": "ไม่พบ Engine",
+    "engine_revoked": "Engine นี้ถูกเพิกถอนแล้ว กรุณาเชื่อมต่อ Engine ใหม่แทน",
+    "engine_rate_limited": "สร้างคีย์ Engine ใหม่บ่อยเกินไปในหนึ่งชั่วโมงที่ผ่านมา กรุณาลองใหม่ภายหลัง",
+    "confirmation_mismatch": "กรุณาพิมพ์รหัส Engine ให้ตรงทุกตัวอักษรเพื่อยืนยัน",
+    "nothing_to_import": "ไม่มีคีย์ Engine ให้นำเข้า",
+    "owner_only": "เฉพาะเจ้าของเท่านั้นที่ดู Engine ทั้งหมดได้"
+  }
+}

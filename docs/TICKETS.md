@@ -37,7 +37,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
 | M1 | Phase 7 — Cloud sync | 9 | 8 | IN PROGRESS |
-| M1 | Phase 8 — Web backend & worker | 11 | 5 | IN PROGRESS |
+| M1 | Phase 8 — Web backend & worker | 11 | 6 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
@@ -1179,14 +1179,14 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-811 — (rev. 4) Engine management API
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 708, 802
 
-- [ ] `GET /api/v1/engines`, `POST /api/v1/engines`, `POST /api/v1/engines/{id}/rotate`, `POST /api/v1/engines/{id}/revoke` (step-up for mutations; secrets returned once with `Cache-Control: no-store`; PLAN §A32)
-- [ ] `OwnedEngine` dependency (404 for engines the user doesn't own)
-- [ ] error codes (`engine_limit_reached`, `engine_linking_disabled`, `engine_not_found`, `engine_revoked`) + frontend i18n parity
-- [ ] per-user rate limit on registration and rotation
-- [ ] tests incl. IDOR (user B vs user A's engine) and secret-not-repeated
+- [x] `GET /api/v1/engines`, `POST /api/v1/engines`, `POST /api/v1/engines/{id}/rotate`, `POST /api/v1/engines/{id}/revoke` (step-up for mutations; secrets returned once with `Cache-Control: no-store`; PLAN §A32)
+- [x] `OwnedEngine` dependency (404 for engines the user doesn't own)
+- [x] error codes (`engine_limit_reached`, `engine_linking_disabled`, `engine_not_found`, `engine_revoked`) + frontend i18n parity
+- [x] per-user rate limit on registration and rotation
+- [x] tests incl. IDOR (user B vs user A's engine) and secret-not-repeated
 
 ### Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7)
 

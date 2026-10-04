@@ -9,11 +9,13 @@
  * | `OpportunityStatus`, `WindowReason`, `InvalidReason` (advisory)   | `codes:opportunityStatus.<S>`, `codes:windowReason.<R>`, `codes:invalidReason.<R>` |
  * | `ShadowStatus` (app/advisory/shadow.py)                           | `codes:shadowStatus.<S>`           |
  * | `ExitReason` (app/core/enums.py)                                  | `codes:exitReason.<CODE>`          |
+ * | `EngineErrorCode` (app/web/engines.py), engine API errors          | `codes:engine.<code>`              |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
  * Parameterized reason codes arrive as `CODE:detail` (`BREAKER_OPEN:daily_loss`); the key is built from `CODE`
  * and the detail is passed as the `{{detail}}` parameter. A code without a translation renders as the raw code,
- * so nothing is silently hidden. Texts for the `codes` namespace are added with the pages that show them.
+ * so nothing is silently hidden. Texts for the `codes` namespace are added with the pages that show them
+ * (`locales/<lang>/codes.json`; the engine API errors have theirs already, TAA-811).
  *
  * The code lists below mirror the backend enums; codes.test.ts fails when they drift.
  */
@@ -119,6 +121,22 @@ export const EXIT_REASONS = [
 
 export type ReasonCode = (typeof REASON_CODES)[number];
 
+// EngineErrorCode (app/web/engines.py): the error codes of the engine management API (PLAN §A32).
+export const ENGINE_ERRORS = [
+  'invalid_label',
+  'invalid_engine_id',
+  'owner_not_found',
+  'engine_exists',
+  'engine_linking_disabled',
+  'engine_limit_reached',
+  'engine_not_found',
+  'engine_revoked',
+  'engine_rate_limited',
+  'confirmation_mismatch',
+  'nothing_to_import',
+  'owner_only',
+] as const;
+
 export const CODE_KINDS = [
   'reason',
   'gate',
@@ -128,6 +146,7 @@ export const CODE_KINDS = [
   'invalidReason',
   'shadowStatus',
   'exitReason',
+  'engine',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 

@@ -5,11 +5,13 @@ import statusesPy from '../../../app/advisory/statuses.py?raw';
 import suitabilityPy from '../../../app/advisory/suitability.py?raw';
 import reasonsPy from '../../../app/risk/reasons.py?raw';
 import signalModelsPy from '../../../app/strategy/signal_models.py?raw';
+import enginesPy from '../../../app/web/engines.py?raw';
 
 import { createI18n } from '@/i18n';
 import {
   codeKey,
   CODES_NAMESPACE,
+  ENGINE_ERRORS,
   EXIT_REASONS,
   GATE_STATUSES,
   GATES,
@@ -72,7 +74,18 @@ describe('code lists match the backend enums', () => {
     ['InvalidReason', lifecyclePy, INVALID_REASONS],
     ['ShadowStatus', shadowPy, SHADOW_STATUSES],
     ['ExitReason', enumsPy, EXIT_REASONS],
+    ['EngineErrorCode', enginesPy, ENGINE_ERRORS],
   ] as const)('%s', (className, source, values) => {
     expect(sorted(values)).toEqual(sorted(pyStrEnumValues(source, className)));
+  });
+});
+
+describe('code texts', () => {
+  it.each(['th', 'en'] as const)('every engine API error has a %s text', (language) => {
+    const i18n = createI18n(language);
+    for (const code of ENGINE_ERRORS) {
+      expect(i18n.exists(codeKey('engine', code)), code).toBe(true);
+      expect(translateCode(i18n, 'engine', code)).not.toBe(code);
+    }
   });
 });

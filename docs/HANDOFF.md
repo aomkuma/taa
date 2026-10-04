@@ -103,6 +103,11 @@ or at any phase boundary if I ask. Chat with me in Thai.
       `GET .../commands/{cid}` (`app/web/routers/control.py`); step-up, one body with per-type fields, owned
       engines only, 409 for revoked engines; `COMMAND_QUEUED`/`COMMAND_RESULT` on the `web` audit chain; command
       state on the stream (`status`/`command`). The engine control TOTP is never returned, audited or streamed.
+    - TAA-811 engine management API (PLAN §A32 "TAA-811 decisions"): `GET|POST /api/v1/engines`,
+      `POST .../{id}/rotate|revoke` (`app/web/routers/engines.py`); secrets once with `no-store`; OWNER role
+      lists (`?scope=all`) and revokes every engine but rotates only its own; 5 new secrets per user per hour
+      counted from the audit chain. `EngineErrorCode` ↔ `frontend/src/i18n/codes.ts` `ENGINE_ERRORS` with TH/EN
+      texts in the new `codes` catalog (`locales/*/codes.json`).
     - TAA-706 candle sync (PLAN §A13 "TAA-706 decisions", migration 0021): `candles` events of up to 1000
       closed bars into the per-engine `history_candles`; `CandleStreamer` on the engine's candle poll (per
       symbol back-off, so crypto streams at weekends); `python -m app.cli sync upload-history [--send]` and
@@ -381,7 +386,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 4. ~~(rev. 4) TAA-708 engine registry, TAA-709 engine-scoped replicas~~ (done)
 5. ~~TAA-706 candle & history sync~~ (done)
 6. ~~TAA-803 read APIs~~ (done), ~~TAA-804 SSE~~ (done)
-7. ~~TAA-805 control API~~ (done), then TAA-811 engine management API
+7. ~~TAA-805 control API~~ (done), ~~TAA-811 engine management API~~ (done)
 8. TAA-808 worker service, then TAA-705 heartbeat & watchdog (completes Phase 7)
 9. TAA-806 Web Push, TAA-807 backtest jobs
 10. TAA-809 advisory APIs, TAA-810 opportunity push (completes Phase 8)

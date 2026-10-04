@@ -1571,6 +1571,20 @@ web service's env.
   - Error codes: `engine_limit_reached` (409), `engine_linking_disabled` (403), `engine_not_found` (404),
     `engine_revoked` (409). They map to i18n keys (`codes:engine.*`).
   - Registration and rotation are rate-limited per user.
+  - (TAA-811 decisions) `app/web/routers/engines.py`:
+    - `GET /api/v1/engines` lists the user's engines (`EngineInfo.public()`: id, label, status, created,
+      rotated, revoked, first/last seen, `rotation_pending`). `?scope=all` is the OWNER role's
+      deployment-wide list with each engine's owner; others get 403 `owner_only`.
+    - Rotation is for the engine's owner only (`OwnedEngine`); revocation for the owner or the OWNER role (404
+      for anyone else). A revoked engine answers 409 `engine_revoked` to both.
+    - `cloud_base_url` is `WEB_PUBLIC_ORIGIN`, or the request's own base URL in development.
+    - Issuing responses carry `Cache-Control: no-store` and `Pragma: no-cache`.
+    - Rate limit: at most 5 new secrets (registrations plus rotations) per user per hour, counted from the
+      `web` audit chain (`ENGINE_REGISTERED`, `ENGINE_KEY_ROTATED` by that actor), so every web process agrees
+      and a restart does not reset it: 429 `engine_rate_limited` with `Retry-After`. The CLI is not limited.
+    - Error codes are `EngineErrorCode` (`app/web/engines.py`), also `invalid_label` (400),
+      `confirmation_mismatch` (400) and `owner_only` (403). The PWA lists them as `codes:engine.<code>` with
+      TH/EN texts in `frontend/src/i18n/locales/*/codes.json`; a parity test reads the Python enum.
 - **CLI (TAA-708):** `python -m app.cli web engine add --owner NAME --label X | rotate ID | revoke ID | list |
   import-env --owner NAME`, built like `app/cli/web.py`. On the engine machine, `python -m app.cli engine
   new-totp` prints a new `CONTROL_TOTP_SECRET` as a QR code.

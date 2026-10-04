@@ -18,6 +18,9 @@ one user, with its secrets encrypted by a key derived from ``WEB_SESSION_SECRET`
   replicated tables are engine-scoped (TAA-709).
 - **Audit** (web chain): ENGINE_REGISTERED, ENGINE_KEY_ROTATED, ENGINE_REVOKED, ENGINE_IMPORTED, each with
   the actor, the engine id and the owner, never key material.
+- **Rate limit** (API only, TAA-811): :meth:`EngineRegistry.check_issue_rate` allows ``ISSUE_LIMIT`` new
+  secrets (registrations plus rotations) per user per ``ISSUE_WINDOW``, counted from the audit chain, so every
+  web process sees the same count and a restart does not reset it.
 """
 
 from __future__ import annotations
@@ -31,6 +34,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import StrEnum
+from typing import Any
 
 from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.orm import Session
@@ -41,7 +45,7 @@ from app.security.crypto import DecryptionError, SecretBox, derive_key
 from app.security.hmac_auth import check_secret
 from app.storage.audit import AuditLog
 from app.storage.database import Database
-from app.storage.models import EngineRow, UserRow
+from app.storage.models import AuditEvent, EngineRow, UserRow
 from app.sync.command_queue import CommandQueue
 
 log = logging.getLogger(__name__)
@@ -50,6 +54,9 @@ KEY_PURPOSE = "engine-hmac-secret"
 CACHE_SECONDS = 5.0
 SEEN_WRITE_SECONDS = 60.0
 PREVIOUS_GRACE = timedelta(days=7)
+ISSUE_LIMIT = 5
+ISSUE_WINDOW = timedelta(hours=1)
+ISSUE_EVENTS = ("ENGINE_REGISTERED", "ENGINE_KEY_ROTATED")
 ENGINE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 OWNER_ROLE = "OWNER"
 ERASED = ""  # the stored secret of a revoked engine
@@ -60,12 +67,30 @@ class EngineStatus(StrEnum):
     REVOKED = "REVOKED"
 
 
+class EngineErrorCode(StrEnum):
+    """API error codes of engine management (the PWA maps them to ``codes:engine.<code>``)."""
+
+    INVALID_LABEL = "invalid_label"
+    INVALID_ENGINE_ID = "invalid_engine_id"
+    OWNER_NOT_FOUND = "owner_not_found"
+    ENGINE_EXISTS = "engine_exists"
+    ENGINE_LINKING_DISABLED = "engine_linking_disabled"
+    ENGINE_LIMIT_REACHED = "engine_limit_reached"
+    ENGINE_NOT_FOUND = "engine_not_found"
+    ENGINE_REVOKED = "engine_revoked"
+    ENGINE_RATE_LIMITED = "engine_rate_limited"
+    CONFIRMATION_MISMATCH = "confirmation_mismatch"
+    OWNER_ONLY = "owner_only"
+    NOTHING_TO_IMPORT = "nothing_to_import"
+
+
 class EngineError(TaaError):
     """``code`` is the API error code (TAA-811 maps it to an HTTP status and an i18n key)."""
 
-    def __init__(self, code: str, message: str) -> None:
+    def __init__(self, code: EngineErrorCode, message: str, *, retry_after: int | None = None) -> None:
         super().__init__(message)
         self.code = code
+        self.retry_after = retry_after
 
 
 @dataclass(frozen=True)
@@ -91,6 +116,28 @@ class EngineInfo:
     first_seen_at: datetime | None
     last_seen_at: datetime | None
     has_previous_secret: bool
+
+    def public(self, *, with_owner: bool = False) -> dict[str, Any]:
+        """The API view: dates, status and whether a rotation hand-over is pending (``with_owner`` adds the
+        owner's username for the OWNER role's deployment-wide list)."""
+        out: dict[str, Any] = {
+            "engine_id": self.engine_id,
+            "label": self.label,
+            "status": self.status,
+            "created_at": _iso(self.created_at),
+            "rotated_at": _iso(self.rotated_at),
+            "revoked_at": _iso(self.revoked_at),
+            "first_seen_at": _iso(self.first_seen_at),
+            "last_seen_at": _iso(self.last_seen_at),
+            "rotation_pending": self.has_previous_secret,
+        }
+        if with_owner:
+            out["owner"] = self.owner
+        return out
+
+
+def _iso(value: datetime | None) -> str | None:
+    return None if value is None else ensure_utc(value).isoformat()
 
 
 @dataclass(frozen=True)
@@ -218,13 +265,14 @@ class EngineRegistry:
                 select(UserRow).where(UserRow.username == username.strip().lower())
             ).scalar_one_or_none()
         if row is None or row.disabled:
-            raise EngineError("owner_not_found", f"no active user {username!r}")
+            raise EngineError(EngineErrorCode.OWNER_NOT_FOUND, f"no active user {username!r}")
         return row
 
     def _check_limits(self, owner: UserRow) -> None:
         if owner.role != OWNER_ROLE and not self.multi_engine:
             raise EngineError(
-                "engine_linking_disabled", "only the owner may connect engines (MULTI_ENGINE_ENABLED)"
+                EngineErrorCode.ENGINE_LINKING_DISABLED,
+                "only the owner may connect engines (MULTI_ENGINE_ENABLED)",
             )
         with self.db.session() as sess:
             active = EngineRow.status == EngineStatus.ACTIVE.value
@@ -233,17 +281,41 @@ class EngineRegistry:
             ).scalar_one()
             total = sess.execute(select(func.count()).select_from(EngineRow).where(active)).scalar_one()
         if mine >= self.max_per_user:
-            raise EngineError("engine_limit_reached", f"at most {self.max_per_user} engine(s) per user")
+            raise EngineError(
+                EngineErrorCode.ENGINE_LIMIT_REACHED, f"at most {self.max_per_user} engine(s) per user"
+            )
         if self.one_active_engine and total >= 1:
             raise EngineError(
-                "engine_limit_reached", "one active engine per deployment until replicas are engine-scoped"
+                EngineErrorCode.ENGINE_LIMIT_REACHED,
+                "one active engine per deployment until replicas are engine-scoped",
+            )
+
+    def check_issue_rate(self, actor: str) -> None:
+        """At most ``ISSUE_LIMIT`` registrations and rotations by *actor* per ``ISSUE_WINDOW``."""
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            times = sess.scalars(
+                select(AuditEvent.ts_utc).where(
+                    AuditEvent.chain == self.audit.chain,
+                    AuditEvent.actor == actor[:64],
+                    AuditEvent.event_type.in_(ISSUE_EVENTS),
+                    AuditEvent.ts_utc > now - ISSUE_WINDOW,
+                )
+            ).all()
+        if len(times) >= ISSUE_LIMIT:
+            oldest = min(ensure_utc(t) for t in times)
+            wait = max(1, int((oldest + ISSUE_WINDOW - now).total_seconds()) + 1)
+            raise EngineError(
+                EngineErrorCode.ENGINE_RATE_LIMITED,
+                f"at most {ISSUE_LIMIT} engine secrets per hour",
+                retry_after=wait,
             )
 
     @staticmethod
     def _label(label: str) -> str:
         cleaned = " ".join(label.split())
         if not 1 <= len(cleaned) <= 64:
-            raise EngineError("invalid_label", "the label must have 1-64 characters")
+            raise EngineError(EngineErrorCode.INVALID_LABEL, "the label must have 1-64 characters")
         return cleaned
 
     def register(self, owner: UserRow, label: str, *, actor: str) -> IssuedKey:
@@ -263,14 +335,15 @@ class EngineRegistry:
         """Move the pre-rev. 4 ``ENGINE_*`` variables of the web service into the registry (once)."""
         if not ENGINE_ID_RE.fullmatch(engine_id):
             raise EngineError(
-                "invalid_engine_id", "ENGINE_ID: 1-64 characters of A-Z, a-z, 0-9, '.', '_', '-'"
+                EngineErrorCode.INVALID_ENGINE_ID,
+                "ENGINE_ID: 1-64 characters of A-Z, a-z, 0-9, '.', '_', '-'",
             )
         check_secret(secret)
         if previous is not None:
             check_secret(previous, "ENGINE_HMAC_SECRET_PREVIOUS")
         with self.db.session() as sess:
             if sess.get(EngineRow, engine_id) is not None:
-                raise EngineError("engine_exists", f"engine {engine_id} is already registered")
+                raise EngineError(EngineErrorCode.ENGINE_EXISTS, f"engine {engine_id} is already registered")
         self._check_limits(owner)
         self._insert(owner, engine_id, "imported", secret, previous)
         self.audit.append(
@@ -280,7 +353,7 @@ class EngineRegistry:
         )
         info = self.get(engine_id)
         if info is None:  # pragma: no cover - just inserted
-            raise EngineError("engine_not_found", engine_id)
+            raise EngineError(EngineErrorCode.ENGINE_NOT_FOUND, engine_id)
         return info
 
     def _insert(self, owner: UserRow, engine_id: str, label: str, secret: str, previous: str | None) -> None:
@@ -304,9 +377,9 @@ class EngineRegistry:
     def _active_row(sess: Session, engine_id: str) -> EngineRow:
         row = sess.get(EngineRow, engine_id)
         if row is None:
-            raise EngineError("engine_not_found", f"no engine {engine_id}")
+            raise EngineError(EngineErrorCode.ENGINE_NOT_FOUND, f"no engine {engine_id}")
         if row.status != EngineStatus.ACTIVE.value:
-            raise EngineError("engine_revoked", f"engine {engine_id} is revoked")
+            raise EngineError(EngineErrorCode.ENGINE_REVOKED, f"engine {engine_id} is revoked")
         return row
 
     def rotate(self, engine_id: str, *, actor: str) -> IssuedKey:

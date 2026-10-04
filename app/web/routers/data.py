@@ -17,9 +17,7 @@ from fastapi import APIRouter, Query
 from starlette.concurrency import run_in_threadpool
 
 from app.storage.audit import verify_chain
-from app.sync.events import json_safe
 from app.web.deps import Context, OwnedEngine, WebContext
-from app.web.engines import EngineInfo
 from app.web.errors import ApiProblem
 from app.web.readmodels import MAX_LIMIT, QueryError, ReadModels
 
@@ -28,17 +26,6 @@ router = APIRouter(prefix="/engines/{engine_id}", tags=["data"])
 Limit = Annotated[int | None, Query(ge=1, le=MAX_LIMIT)]
 Cursor = Annotated[str | None, Query(max_length=256)]
 Name = Annotated[str | None, Query(min_length=1, max_length=64)]
-
-
-def engine_dict(info: EngineInfo) -> dict[str, Any]:
-    return {
-        "engine_id": info.engine_id,
-        "label": info.label,
-        "status": info.status,
-        "created_at": json_safe(info.created_at),
-        "first_seen_at": json_safe(info.first_seen_at),
-        "last_seen_at": json_safe(info.last_seen_at),
-    }
 
 
 async def _run(fn: Any, *args: Any, **kwargs: Any) -> Any:
@@ -55,7 +42,7 @@ def models(ctx: WebContext) -> ReadModels:
 @router.get("/status")
 async def status(engine: OwnedEngine, ctx: Context) -> dict[str, Any]:
     body: dict[str, Any] = await _run(models(ctx).status, engine.engine_id)
-    return {"engine": engine_dict(engine), **body}
+    return {"engine": engine.public(), **body}
 
 
 @router.get("/account")

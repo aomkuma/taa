@@ -24,7 +24,7 @@ from app.sync.command_queue import CommandQueue
 from app.web.app import engine_registry
 from app.web.auth import AuthError, AuthKeys, AuthService, normalize_username
 from app.web.deps import WEB_AUDIT_CHAIN
-from app.web.engines import EngineError, EngineRegistry, IssuedKey
+from app.web.engines import EngineError, EngineErrorCode, EngineRegistry, IssuedKey
 
 ReadLine = Callable[[str], str]
 CONFIRM_ATTEMPTS = 3
@@ -158,12 +158,16 @@ def run_engine(
         print_engine_env(issued, settings, out=out)
     elif command == "revoke":
         if args.confirm != args.engine_id:
-            raise EngineError("confirmation_mismatch", "repeat the engine id with --confirm to revoke it")
+            raise EngineError(
+                EngineErrorCode.CONFIRMATION_MISMATCH, "repeat the engine id with --confirm to revoke it"
+            )
         registry.revoke(args.engine_id, actor=CLI_ACTOR, commands=commands)
         out.write(f"Engine {args.engine_id} revoked (final); its open commands expired.\n")
     elif command == "import-env":
         if settings.ENGINE_ID is None or settings.ENGINE_HMAC_SECRET is None:
-            raise EngineError("nothing_to_import", "ENGINE_ID and ENGINE_HMAC_SECRET are not set")
+            raise EngineError(
+                EngineErrorCode.NOTHING_TO_IMPORT, "ENGINE_ID and ENGINE_HMAC_SECRET are not set"
+            )
         previous = settings.ENGINE_HMAC_SECRET_PREVIOUS
         info = registry.import_env(
             registry.user(args.owner),
