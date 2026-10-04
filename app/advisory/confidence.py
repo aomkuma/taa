@@ -17,8 +17,9 @@ pseudo-trades per cell (§A27). The estimate carries a 90% credible interval, th
 named features. Conventions: ``ev:<FAMILY>:<detector_id>`` = quality × alignment (+ supports, − conflicts);
 ``ctx:n_families`` = the number of distinct supporting families, derived from the ``ev:`` features present;
 any other ``ctx:`` feature (RR band, session, regime, HTF alignment one-hots) is context. It is used only
-when walk-forward CV shows it beats the bucket model on both Brier score and log loss
-(:func:`walk_forward`); otherwise the bucket p is shown and contributions read "needs more history".
+when walk-forward CV shows it beats the bucket model on both Brier score (by at least the relative
+``margin``, so a model without real signal never wins on noise) and log loss (:func:`walk_forward`);
+otherwise the bucket p is shown and contributions read "needs more history".
 
 **Attribution:** Shapley values in probability space over the active ``ev:`` features. A player that is
 "absent" takes its training mean (neutral imputation, also used for detectors a user disabled), and
@@ -315,6 +316,7 @@ class LogisticModel:
     means: np.ndarray  # training means, for neutral imputation
     l2: float
     n: int
+    active: np.ndarray | None = None  # training share of rows where each feature is > 0
 
     @classmethod
     def fit(
@@ -345,7 +347,8 @@ class LogisticModel:
             if float(np.max(np.abs(step))) < tol:
                 break
         means = np.average(x, axis=0, weights=w) if n else np.zeros(d)
-        return cls(tuple(names), beta[1:], float(beta[0]), means, l2, n)
+        active = np.average((x > 0).astype(float), axis=0, weights=w) if n else np.zeros(d)
+        return cls(tuple(names), beta[1:], float(beta[0]), means, l2, n, active)
 
     def vector(self, features: Mapping[str, float]) -> np.ndarray:
         return np.array([features.get(name, 0.0) for name in self.names], dtype=float)
@@ -356,6 +359,11 @@ class LogisticModel:
 
     def mean_of(self, name: str) -> float:
         return float(self.means[self.names.index(name)]) if name in self.names else 0.0
+
+    def active_rate(self, name: str) -> float:
+        if self.active is None or name not in self.names:
+            return 0.0
+        return float(self.active[self.names.index(name)])
 
 
 def design_matrix(names: Sequence[str], rows: Sequence[Mapping[str, float]]) -> np.ndarray:
@@ -433,12 +441,15 @@ class CVReport:
     brier_evidence: float
     log_loss_bucket: float
     log_loss_evidence: float
+    margin: float = 0.0  # required relative Brier improvement of the evidence model
+    # out-of-sample (p_bucket, p_evidence, outcome) per test row, for reliability data; not persisted
+    predictions: tuple[tuple[float, float, float], ...] = field(default=(), compare=False, repr=False)
 
     @property
     def use_evidence(self) -> bool:
         return (
             self.n_test > 0
-            and self.brier_evidence < self.brier_bucket
+            and self.brier_evidence < self.brier_bucket * (1 - self.margin)
             and self.log_loss_evidence <= self.log_loss_bucket
         )
 
@@ -454,6 +465,7 @@ def walk_forward(
     bucket: Callable[[], BucketModel] = BucketModel,
     l2: float = 1.0,
     min_group: int = 200,
+    margin: float = 0.0,
 ) -> CVReport:
     """Expanding-window CV in time order: train on everything before a fold, test on the fold (LIVE only)."""
     ordered = sorted(outcomes, key=lambda o: (o.at is None, o.at.timestamp() if o.at else 0.0))
@@ -474,7 +486,16 @@ def walk_forward(
             model = em.model_for(q)
             pe.append(model.predict(with_derived(o.features)) if model else pb[-1])
             ys.append(float(o.win))
-    return CVReport(folds, len(ys), brier(pb, ys), brier(pe, ys), log_loss(pb, ys), log_loss(pe, ys))
+    return CVReport(
+        folds,
+        len(ys),
+        brier(pb, ys),
+        brier(pe, ys),
+        log_loss(pb, ys),
+        log_loss(pe, ys),
+        margin,
+        tuple(zip(pb, pe, ys, strict=True)),
+    )
 
 
 # --- attribution --------------------------------------------------------------------------------------------
@@ -575,12 +596,23 @@ class WinProbability:
             }
             context = {k: v for k, v in q.features.items() if not is_player(k)}
 
+            def enabled(name: str) -> bool:
+                return enabled_detectors is None or name.split(":", 2)[2] in enabled_detectors
+
             def value(present: frozenset[str]) -> float:
                 feats = dict(context)
+                imputed = 0.0  # expected supporting families of the imputed players
                 for name in model.names:
-                    if is_player(name):
-                        feats[name] = active[name] if name in present else model.mean_of(name)
-                feats[N_FAMILIES] = float(supporting_families({k: active[k] for k in present}))
+                    if not is_player(name):
+                        continue
+                    if name in present:
+                        feats[name] = active[name]
+                    elif name in active or not enabled(name):  # left out of the coalition, or disabled
+                        feats[name] = model.mean_of(name)
+                        imputed += model.active_rate(name)
+                    else:
+                        feats[name] = 0.0  # enabled and did not fire: an observed zero, not a missing value
+                feats[N_FAMILIES] = supporting_families({k: active[k] for k in present}) + imputed
                 return 100 * model.predict(feats)
 
             phi = shapley(value, sorted(active), seed=self.shapley_seed)
@@ -620,6 +652,7 @@ def build_win_probability(
     l2: float = 1.0,
     min_group: int = 200,
     seed: int = 0,
+    margin: float = 0.0,
 ) -> WinProbability:
     bucket = BucketModel(kappa=kappa, min_trades=min_trades, replay_cap=replay_cap).fit(outcomes)
     if not any(o.features for o in outcomes):
@@ -630,6 +663,7 @@ def build_win_probability(
         bucket=lambda: BucketModel(kappa=kappa, min_trades=min_trades, replay_cap=replay_cap),
         l2=l2,
         min_group=min_group,
+        margin=margin,
     )
     evidence = EvidenceModelSet.fit(outcomes, l2=l2, min_group=min_group) if report.use_evidence else None
     return WinProbability(bucket, evidence, report, seed)

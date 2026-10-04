@@ -265,6 +265,114 @@ def cmd_advisory_rank(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_advisory_replay(args: argparse.Namespace) -> int:
+    from datetime import timedelta
+
+    import pandas as pd
+
+    from app.advisory.replay import HistoricalReplay, load_resolution
+    from app.advisory.requirements import local_requirements
+    from app.advisory.scanner import strategy_set
+    from app.backtest.runner import load_history
+    from app.evidence.catalog import default_registry as evidence_registry
+    from app.evidence.registry import EvidenceEngine
+    from app.market_data.history_store import ParquetHistoryStore
+    from app.strategy.catalog import default_registry as strategy_registry
+
+    settings = _settings(args)
+    config = settings.config
+    server = args.server or settings.env.MT5_SERVER
+    if not server:
+        print("error: pass --server (the history store is organized by trade server)", file=sys.stderr)
+        return 1
+    symbols = args.symbols.split(",") if args.symbols else config.symbols.allowed
+    start, end = _date(args.start), _date(args.end)
+    store = ParquetHistoryStore(settings.path(args.data))
+    loaded = load_history(
+        store,
+        server,
+        symbols,
+        config.timeframes.enabled,
+        account_currency=config.backtest.account_currency,
+        end=end,
+    )
+    if start is None:  # the last N months of the stored entry-timeframe history
+        last = max(
+            pd.Timestamp(d.frames[config.timeframes.entry]["close_time"].max()) for d in loaded.data.values()
+        )
+        start = last.to_pydatetime() - timedelta(days=round(30.44 * args.months))
+    resolution = {s: load_resolution(store, server, s, start=start, end=end) for s in symbols}
+    evidence, strategies = evidence_registry(), strategy_registry()
+    req = local_requirements(config, ranked=[], evidence=evidence, strategies=strategies)
+    names = args.strategies.split(",") if args.strategies else sorted(req.strategies)
+    detectors = set(req.detectors)
+    if args.detectors is not None:  # evidence costs ~1 s per bar with every detector: narrow it for long runs
+        detectors = set() if args.detectors == "none" else set(args.detectors.split(","))
+    plan = evidence.plan_from_config(config.evidence, only=detectors)
+    replay = HistoricalReplay(
+        config,
+        loaded.data,
+        resolution,
+        loaded.rates,
+        strategy_set(config, names, strategies),
+        server=server,
+        evidence=EvidenceEngine(evidence, plan) if plan.order else None,
+        equity=args.equity,
+        start=start,
+        end=end,
+        broker_tz=settings.env.BROKER_TIMEZONE,
+        config_hash=settings.config_hash,
+        on_symbol=(lambda s, n, total: print(f"  {s} {n}/{total}", flush=True)) if args.progress else None,
+    )
+    db, _ = _db_and_audit(settings)
+    try:
+        report = replay.run(db)
+    finally:
+        db.engine.dispose()
+    print(f"replay {', '.join(report.symbols)}  {report.start} -> {report.end}  (source=REPLAY)")
+    print(f"  resolution {report.resolution}  data hash {loaded.digest}  config hash {settings.config_hash}")
+    print(
+        f"  bars {report.bars}  signals {report.signals}  accepted {report.accepted}  hidden {report.hidden}"
+    )
+    print(
+        f"  shadow rows stored {report.stored}  signals already stored {report.existing}"
+        f"  unresolved {report.unresolved}"
+    )
+    print("  (hypothetical bar-based results; past results do not predict future results)")
+    return 0
+
+
+def cmd_advisory_calibrate(args: argparse.Namespace) -> int:
+    from app.advisory.calibration import CalibrationService
+    from app.core.clock import SystemClock
+
+    settings = _settings(args)
+    server = args.server or settings.env.MT5_SERVER
+    if not server:
+        print("error: pass --server (calibration is per trade server)", file=sys.stderr)
+        return 1
+    db, _ = _db_and_audit(settings)
+    try:
+        service = CalibrationService(
+            db,
+            settings.config.advisory.calibration,
+            SystemClock(),
+            server=server,
+            executor=CalibrationService.inline(),
+        )
+        loaded = service.rebuild()
+    finally:
+        db.engine.dispose()
+    report = loaded.model.report
+    print(f"calibration {loaded.version}  server {server}")
+    print(f"  outcomes: {loaded.n_live} live + {loaded.n_replay} replay (PLAN variant, CLOSED)")
+    print(f"  evidence model: {'used' if loaded.model.uses_evidence else 'not used (bucket model only)'}")
+    if report is not None and report.n_test:
+        print(f"  walk-forward Brier: bucket {report.brier_bucket:.4f}  evidence {report.brier_evidence:.4f}")
+    print("  (calibrated on hypothetical shadow results; not a prediction of future results)")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="TAA operator commands")
     parser.add_argument("--env-file", default=".env")
@@ -338,6 +446,25 @@ def build_parser() -> argparse.ArgumentParser:
     rank.add_argument("--top", type=int, default=None, help="show only the first N rows")
     rank.add_argument("--lang", choices=["en", "th"], default="en")
     rank.set_defaults(func=cmd_advisory_rank)
+    rp = adv_sub.add_parser("replay", help="replay the scanner over stored history into REPLAY shadow trades")
+    rp.add_argument("--symbols", default=None, help="comma-separated (default: symbols.allowed)")
+    rp.add_argument("--server", default=None, help="trade server folder in the store (default: MT5_SERVER)")
+    rp.add_argument("--data", default="data/history")
+    rp.add_argument("--start", default=None, help="ISO date/time (UTC if no offset); default: --months back")
+    rp.add_argument("--end", default=None)
+    rp.add_argument("--months", type=float, default=6.0, help="window when --start is not given")
+    rp.add_argument("--equity", type=float, default=None, help="sizing equity (default: backtest balance)")
+    rp.add_argument("--strategies", default=None, help="comma-separated (default: the advisory union)")
+    rp.add_argument(
+        "--detectors",
+        default=None,
+        help="comma-separated detector ids or 'none' (default: the advisory union)",
+    )
+    rp.add_argument("--progress", action="store_true")
+    rp.set_defaults(func=cmd_advisory_replay)
+    cal = adv_sub.add_parser("calibrate", help="rebuild the win-probability calibration from shadow trades")
+    cal.add_argument("--server", default=None, help="trade server (default: MT5_SERVER)")
+    cal.set_defaults(func=cmd_advisory_calibrate)
     return parser
 
 

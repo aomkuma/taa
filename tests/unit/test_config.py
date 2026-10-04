@@ -61,6 +61,9 @@ def test_env_overrides_yaml(tmp_path: Path) -> None:
         ("advisory:\n  shadow:\n    time_stop_hours: 0\n", "time_stop_hours"),
         ("advisory:\n  shadow:\n    slippage_points: -1\n", "slippage_points"),
         ("advisory:\n  shadow:\n    poll_seconds: 0.5\n", "poll_seconds"),
+        ("advisory:\n  calibration:\n    nightly_hour_utc: 24\n", "nightly_hour_utc"),
+        ("advisory:\n  calibration:\n    min_brier_improvement: 0.9\n", "min_brier_improvement"),
+        ("advisory:\n  calibration:\n    replay_weight: 2\n", "replay_weight"),
     ],
 )
 def test_invalid_config_rejected(tmp_path: Path, yaml_text: str, fragment: str) -> None:

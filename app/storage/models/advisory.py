@@ -102,6 +102,7 @@ class OpportunityRow(Base):
     ask: Mapped[float | None] = mapped_column(Float, nullable=True)
     quote_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     requirements_version: Mapped[str] = mapped_column(String(16))
+    calibration_version: Mapped[str | None] = mapped_column(String(48), nullable=True)  # win probability used
     features: Mapped[dict[str, float]] = mapped_column(JSONType)
     signal: Mapped[dict[str, Any]] = mapped_column(JSONType)  # conditions, evidence, confluence
 
@@ -174,3 +175,48 @@ class ShadowTradeRow(Base):
     swap_days: Mapped[int] = mapped_column(Integer, default=0)
     flags: Mapped[list[str]] = mapped_column(JSONType)
     note: Mapped[str] = mapped_column(Text, default="")
+
+
+class CalibrationTableRow(Base):
+    """One versioned build of the win-probability bucket model (PLAN §A27 "Calibration").
+
+    ``cells`` holds every hierarchy cell's LIVE and REPLAY counts; ``cv`` the walk-forward verdict between the
+    bucket and evidence models; ``reliability`` predicted vs observed per probability bin (out of sample).
+    """
+
+    __tablename__ = "calibration_tables"
+
+    version: Mapped[str] = mapped_column(String(48), primary_key=True)  # <UTC timestamp>-<content hash>
+    server: Mapped[str] = mapped_column(String(64), index=True)
+    built_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    variant: Mapped[str] = mapped_column(String(8))
+    n_live: Mapped[int] = mapped_column(Integer)
+    n_replay: Mapped[int] = mapped_column(Integer)
+    window_start: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    window_end: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    params: Mapped[dict[str, Any]] = mapped_column(JSONType)
+    cells: Mapped[list[Any]] = mapped_column(JSONType)
+    cv: Mapped[dict[str, Any]] = mapped_column(JSONType)
+    uses_evidence: Mapped[bool] = mapped_column(Boolean)
+    brier: Mapped[float | None] = mapped_column(Float, nullable=True)  # of the selected model, out of sample
+    reliability: Mapped[list[Any]] = mapped_column(JSONType)
+
+
+class EvidenceModelVersionRow(Base):
+    """One logistic evidence model of a calibration version: per strategy x asset class, or the pooled one."""
+
+    __tablename__ = "evidence_model_versions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    version: Mapped[str] = mapped_column(String(48), index=True)
+    server: Mapped[str] = mapped_column(String(64))
+    built_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    pooled: Mapped[bool] = mapped_column(Boolean)
+    group_key: Mapped[list[str]] = mapped_column(JSONType)  # [strategy, asset_class]; [] when pooled
+    names: Mapped[list[str]] = mapped_column(JSONType)
+    coef: Mapped[list[float]] = mapped_column(JSONType)
+    intercept: Mapped[float] = mapped_column(Float)
+    means: Mapped[list[float]] = mapped_column(JSONType)
+    active: Mapped[list[float]] = mapped_column(JSONType)  # share of training rows with the feature > 0
+    l2: Mapped[float] = mapped_column(Float)
+    n: Mapped[int] = mapped_column(Integer)

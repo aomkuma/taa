@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from app.advisory.calibration import CalibrationService
 from app.advisory.lifecycle import OpportunityLifecycle
 from app.advisory.ranking_service import RankingService
 from app.advisory.requirements import ComputeRequirements, local_requirements
@@ -145,6 +146,7 @@ class Engine:
         self.scanner: OpportunityScanner | None = None
         self.lifecycle: OpportunityLifecycle | None = None
         self.shadow: ShadowTracker | None = None
+        self.calibration: CalibrationService | None = None
         self._requirements_cache: tuple[datetime | None, ComputeRequirements] | None = None
         loop = self.config.engine
         self._candles_due = _Due(loop.candle_poll_seconds)
@@ -254,6 +256,11 @@ class Engine:
                 log.info("expired %d opportunity windows that passed while the engine was down", len(expired))
             if cfg.advisory.shadow.enabled:  # hypothetical trades; resumes from each row's cursor
                 self.shadow = ShadowTracker(self.db, self.gateway, cfg, self.clock, server=account.server)
+            if cfg.advisory.calibration.enabled:  # nightly rebuild on a worker thread; never blocks the loop
+                self.calibration = CalibrationService(
+                    self.db, cfg.advisory.calibration, self.clock, server=account.server
+                )
+                self.calibration.load()
         by_magic = {self.magic[s.name]: s for s in self.strategies.strategies}
         restored = self._build_backend(account, by_magic)
         self.on_started(restored)
@@ -491,6 +498,13 @@ class Engine:
                 log.exception("shadow tracker failed")
                 self.shadow.stats.failures += 1
                 self.shadow.stats.last_error = f"{type(exc).__name__}: {exc}"
+        if self.calibration is not None:
+            try:
+                self.calibration.tick()
+            except Exception as exc:  # advisory boundary: the previous calibration stays in use
+                log.exception("calibration scheduling failed")
+                self.calibration.failures += 1
+                self.calibration.last_error = f"{type(exc).__name__}: {exc}"
 
     def requirements(self) -> ComputeRequirements:
         """What the scanner computes: from the local preferences until the cloud sends them (Phase 7).
@@ -711,6 +725,14 @@ class Engine:
                 "last_duration_ms": round(self.shadow.stats.last_duration_ms),
                 "last_error": self.shadow.stats.last_error,
             },
+            "calibration": None
+            if self.calibration is None
+            else {
+                "version": None if self.calibration.current is None else self.calibration.current.version,
+                "builds": self.calibration.builds,
+                "failures": self.calibration.failures,
+                "last_error": self.calibration.last_error,
+            },
             "ranking": None
             if self.ranking is None
             else {
@@ -728,6 +750,8 @@ class Engine:
     def shutdown(self) -> None:
         self.running = False
         try:
+            if self.calibration is not None:
+                self.calibration.shutdown()
             if hasattr(self, "backend") and isinstance(self.backend, PaperBackend):
                 self.backend.maintain()
             self.heartbeat("stopped")  # a deliberate stop: the watchdog does not restart it
