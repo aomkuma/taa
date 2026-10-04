@@ -1,8 +1,9 @@
 # Session handoff
 
-Last updated: 2026-10-04, after Phase 6C (TAA-6C1..6C5; one 6C5 item waits for the phase10-analytics merge) and
-the Phase 9 frontend foundation (TAA-901 scaffold, TAA-915 i18n, built in a parallel worktree and merged), plus
-Phase 8 auth on branch `phase8-auth` (TAA-801 FastAPI skeleton, TAA-802 authentication, TAA-902 login UI). This file holds **state
+Last updated: 2026-10-04, after Phase 7 TAA-701, 702 and 704 (engine side), Phase 6C (done), Phase 10
+TAA-1001..1003 (merged from phase10-analytics), the Phase 9 frontend foundation (TAA-901 scaffold, TAA-915
+i18n) and Phase 8 auth (TAA-801 FastAPI skeleton, TAA-802 authentication, TAA-902 login UI; merged from
+`phase8-auth`). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -19,7 +20,10 @@ Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B and 12 (DEMO execution, pulled forward on the user's request) are
 DONE. Phase 6C is done except the SHADOW-scope item of TAA-6C5, which is built on branch phase10-analytics.
 Phase 9 has its foundation (TAA-901, TAA-915 done; frontend/). Check open branches/worktrees (git worktree list)
-before starting a ticket another session may own. Next: 7 -> 8 -> 8A -> the rest of 9 -> 10 -> 11.
+before starting a ticket another session may own. Phase 7: TAA-701, 702 done; TAA-704 done except the long-poll
+HTTP route. Next in this session: TAA-707 engine side (event schemas in app/sync/events.py shared with ingest,
+advisory producers, advisory-config pull client), then 705/706 engine parts; 703 and the 704 route need TAA-801
+(branch phase8-auth) on main. Phase 8 is owned by a separate session.
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
@@ -40,7 +44,7 @@ any phase boundary if I ask.
   `phase10-analytics`, and Phase 8 in a separate session (worktree `taa-auth`, branch `phase8-auth`:
   TAA-801 and TAA-802 done). The main session owns Phase 7
   only; tickets that need Phase 8 pieces (703 needs 801, 705 needs 808) wait for that branch.
-- **Checks:** 1983 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
+- **Checks:** 2050 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
   suite takes ~5.5 min, with backtest and engine tests the slow part. ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
@@ -56,9 +60,19 @@ any phase boundary if I ask.
 - **Built:**
   - config (pydantic-settings + `config.yaml`, percent risk units, hard ceilings)
   - secrets (`keyring:` indirection, log redaction), JSON logging
-  - SQLite/Postgres storage with Alembic (migrations 0001–0013), hash-chained audit log
+  - SQLite/Postgres storage with Alembic (migrations 0001–0016), hash-chained audit log
   - kill switch; CLI (`config`, `db`, `audit`, `kill`, `doctor`, `backtest`, `breaker`, `demo-report`,
-    `advisory rank|replay|calibrate`); CI config
+    `advisory rank|replay|calibrate`, `strategy list|enable`); CI config
+  - cloud sync, engine side (Phase 7, PLAN §A13):
+    - `app/security/hmac_auth.py`: signer/verifier (METHOD|TARGET|TS|NONCE|BODY_SHA256), skew 300 s, nonce
+      store (memory; `app/sync/nonces.py` SQL, `ingest_nonces`, migration 0014), dual-secret rotation
+    - `app/sync/outbox.py` + `client.py` + `runtime.py`: `outbox_events` (migration 0015), priorities,
+      coalescing, gzip batches, backoff, DEAD after `max_attempts`, backlog cap, metrics in `status()["sync"]`;
+      sender thread only when `sync.enabled`. No producers are wired yet (TAA-703/706/707).
+    - `app/security/totp.py` + `app/sync/commands.py`: long-poll client thread, engine-loop processing,
+      allowlist, expiry, single-use TOTP, results as `command_result` outbox events; `command_log`;
+      `app/sync/command_queue.py` (cloud queue, `engine_commands`, migration 0016); strategy disable persisted
+      in `engine_state` (`app.cli strategy enable` re-enables); FLATTEN also flattens PAPER positions
   - read-only MT5 client and gateway (explicit login, account verification, order functions blocked,
     `symbols(group)`, `ticks_range`)
   - multi-asset FakeMT5 (schedules, ticks, fixed and FBS-tiered leverage)
@@ -231,7 +245,7 @@ any phase boundary if I ask.
       strict CSP + security headers on every response (`security_headers.py`), 64 KiB body limit, JSON error
       shape `{"error": {"code", "message"}}` (`errors.py`), the built PWA served from `frontend/dist` with SPA
       fallback (`static.py`), `python -m app.web`
-    - TAA-802: tables `users`, `sessions`, `login_throttle` (migration 0016); `app/web/auth.py`
+    - TAA-802: tables `users`, `sessions`, `login_throttle` (migration 0017); `app/web/auth.py`
       (`AuthService`): argon2id (`app/security/passwords.py`), mandatory TOTP with one-time steps
       (`app/security/web_totp.py`), TOTP secrets encrypted with a key derived from `WEB_SESSION_SECRET`
       (`app/security/crypto.py`, HKDF), keyed-hash session tokens, 30 min idle / 12 h absolute, CSRF token +
@@ -274,8 +288,11 @@ any phase boundary if I ask.
   `phase10-analytics` (TAA-1001..1003, `C:\Users\korap\taa-phase10`) and `phase8-auth` (Phase 8,
   `C:\Users\korap\taa-auth`). Branch `phase9-frontend` (TAA-901, TAA-915, docs) is merged into `main`; its worktree
   `C:\Users\korap\taa-phase9` can be removed with `git worktree remove ..\taa-phase9`.
-- **Next step:** Phase 7 (cloud sync) in this session: TAA-701, 702 and 704 first; 703/705/706/707 after the
-  Phase 8 branch lands (801, 808). Migration numbers can collide with the Phase 8 branch: renumber the later
+- **Next step:** TAA-707 engine side (planned: replicate advisory rows as full-row upsert events through
+  explicit hooks in the catalog, ranking, scanner, lifecycle, shadow tracker and calibration; shadow cursor
+  progress is not replicated; suitability snapshots coalesce per symbol and hour; the advisory-config client
+  uses an ETag and falls back to the cache, then local preferences). Then 705/706 engine parts. 703 and the
+  704 route wait for TAA-801 on main. Migration numbers can collide with the Phase 8 branch: renumber the later
   one's `down_revision` at merge time.
 
 ## Notes for the next session
@@ -327,6 +344,11 @@ any phase boundary if I ask.
     run took 9.5 min; the greedy S7 pass was O(n³) with `DataFrame.at` and is now incremental (12 s for
     the whole universe). Refreshes are time-budgeted per engine cycle (`max_refresh_seconds`), because a cold
     terminal needs ~1 s per symbol to sync history. Open markets rank first (on Sundays: crypto).
+- Notes from Phase 7:
+  - The full suite crashed twice (Windows access violation in pandas groupby inside `FakeMT5._bars`, main thread,
+    no other Python threads alive; once in `test_engine_restart`). It did not reproduce in 3 targeted reruns
+    or the next full run (2050 passed). Possibly load from the parallel sessions; watch for it.
+  - Calibration shutdown now waits for a running build so no worker thread touches a closed database.
 - Notes from Phase 6C:
   - Shadow results have only run on FakeMT5. On a real terminal, M1 history and `copy_ticks_range` need the
     symbol synced; failures are retried on the next poll.
@@ -372,7 +394,6 @@ any phase boundary if I ask.
 
 ## Open items needing the user
 
-- Whether and when to push to GitHub (remote `origin` configured).
-- Whether to merge `phase8-auth` into `main` (TAA-703 waits for TAA-801).
+- Whether and when to push to GitHub (`origin` exists; `main` is ahead).
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA). See PLAN §A30.

@@ -379,6 +379,32 @@ def cmd_web(args: argparse.Namespace) -> int:
     return run(args, out=sys.stdout)
 
 
+def cmd_strategy(args: argparse.Namespace) -> int:
+    """Strategies disabled by remote commands: list them, or re-enable one (local only, audited)."""
+    from app.core.clock import SystemClock
+    from app.engine.orchestrator import DISABLED_KEY
+    from app.storage.repositories import EngineStateRepository
+
+    settings = _settings(args)
+    db, audit = _db_and_audit(settings)
+    repo = EngineStateRepository(db, SystemClock())
+    names = {str(n) for n in (repo.load(DISABLED_KEY) or {}).get("names", [])}
+    if args.action == "list":
+        print("disabled strategies: " + (", ".join(sorted(names)) or "(none)"))
+        return 0
+    if not args.reason:
+        print("--reason is required", file=sys.stderr)
+        return 1
+    if args.name not in names:
+        print(f"{args.name} is not disabled")
+        return 0
+    repo.save(DISABLED_KEY, {"names": sorted(names - {args.name})})
+    actor = args.actor or getpass.getuser()
+    audit.append("STRATEGY_ENABLE", actor, {"strategy": args.name, "reason": args.reason, "source": "cli"})
+    print(f"{args.name} re-enabled (takes effect on the next bar)")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="TAA operator commands")
     parser.add_argument("--env-file", default=".env")
@@ -440,6 +466,15 @@ def build_parser() -> argparse.ArgumentParser:
     reset.add_argument("--symbol", default=None, help="for symbol-scoped breakers")
     reset.add_argument("--ack", action="store_true", help="required for MAX_DRAWDOWN")
     reset.set_defaults(func=cmd_breaker)
+
+    st = sub.add_parser("strategy", help="strategies disabled by remote commands (re-enable is local only)")
+    st_sub = st.add_subparsers(dest="action", required=True)
+    st_sub.add_parser("list", help="strategies disabled remotely").set_defaults(func=cmd_strategy)
+    en = st_sub.add_parser("enable", help="re-enable a remotely disabled strategy (audited)")
+    en.add_argument("name")
+    en.add_argument("--reason", default=None)
+    en.add_argument("--actor", default=None)
+    en.set_defaults(func=cmd_strategy)
 
     rep = sub.add_parser("demo-report", help="DEMO soak report from the engine database")
     rep.add_argument("--days", type=float, default=14.0)

@@ -43,7 +43,7 @@ from app.broker.factory import BrokerBundle
 from app.broker.models import BrokerPosition
 from app.config import Settings
 from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
-from app.core.enums import Side, TradingMode
+from app.core.enums import ExitReason, Side, TradingMode
 from app.core.errors import SafetyViolation, SymbolUnavailable, TaaError
 from app.core.ids import new_id, stable_hash
 from app.engine.backends import Backend, DemoBackend, PaperBackend
@@ -73,7 +73,7 @@ from app.news.calendar import ManualBlackouts, NewsFilter
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
 from app.risk.exposure_manager import MAGIC_RANGE
-from app.risk.kill_switch import KillSwitch
+from app.risk.kill_switch import KillMode, KillSwitch
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.risk.mode_gates import GateResult, evaluate_gate
 from app.storage.audit import AuditLog
@@ -83,9 +83,12 @@ from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
 from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import EvidenceSetup
+from app.sync.commands import Command, CommandFailed, CommandProcessor, CommandType, Handler, drain
 from app.sync.runtime import SyncRuntime
 
 log = logging.getLogger(__name__)
+
+DISABLED_KEY = "disabled_strategies"
 
 
 @dataclass
@@ -151,6 +154,8 @@ class Engine:
         self.shadow: ShadowTracker | None = None
         self.calibration: CalibrationService | None = None
         self.sync = sync  # cloud replication; None unless sync.enabled (built in start())
+        self.commands: CommandProcessor | None = None  # remote commands, with sync
+        self.resync_requested = False
         self._requirements_cache: tuple[datetime | None, ComputeRequirements] | None = None
         loop = self.config.engine
         self._candles_due = _Due(loop.candle_poll_seconds)
@@ -278,7 +283,16 @@ class Engine:
         self.runs.start(self.run_id, self.process, self.settings.mode.value, self.settings.config_hash)
         if self.sync is None and cfg.sync.enabled:
             self.sync = SyncRuntime.from_settings(self.settings, self.db, self.clock)
-        if self.sync is not None:  # its own thread: a slow or offline cloud never delays the loop
+        if self.sync is not None:  # its own threads: a slow or offline cloud never delays the loop
+            secret = env.CONTROL_TOTP_SECRET.get_secret_value() if env.CONTROL_TOTP_SECRET else None
+            self.commands = CommandProcessor(
+                self.db,
+                self.clock,
+                self._command_handlers(),
+                totp_secret=secret,
+                audit=self.audit,
+                outbox=self.sync.outbox,
+            )
             self.sync.start()
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
         self.audit.append(
@@ -322,7 +336,7 @@ class Engine:
                 strategies_by_magic=by_magic,
                 bus=self.bus,
             )
-            self.backend: Backend = PaperBackend(self.paper, self.positions, self.gateway)
+            self.backend: Backend = PaperBackend(self.paper, self.positions, self.gateway, self.kill_switch)
             return restored
         deviation = cfg.execution.deviation_points
         self.orders = OrderManager(
@@ -461,6 +475,7 @@ class Engine:
         self.cycles += 1
         now = self.clock.monotonic()
         try:
+            self._drain_commands()
             self._check_kill_switch()
             connected = self.bundle.client.ensure_connected()
             self._connection_changed(connected)
@@ -560,6 +575,75 @@ class Engine:
             self._requirements_cache = (key, req)
         return self._requirements_cache[1]
 
+    # --- remote commands (TAA-704) --------------------------------------------------------------------------
+
+    def disabled_strategies(self) -> set[str]:
+        """Strategies a remote command disabled; persisted, re-enabled only by ``app.cli strategy enable``."""
+        state = EngineStateRepository(self.db, self.clock).load(DISABLED_KEY) or {}
+        return {str(n) for n in state.get("names", [])}
+
+    def _drain_commands(self) -> None:
+        if self.commands is None or self.sync is None:
+            return
+        try:
+            drain(self.sync.inbox, self.commands)
+        except Exception as exc:  # command boundary: a broken command never stops the loop
+            log.exception("remote command processing failed")
+            self.last_error = f"{type(exc).__name__}: {exc}"
+
+    def _command_handlers(self) -> dict[CommandType, Handler]:
+        return {
+            CommandType.KILL_SWITCH_ACTIVATE: self._cmd_kill_switch,
+            CommandType.STRATEGY_DISABLE: self._cmd_strategy_disable,
+            CommandType.RESYNC: self._cmd_resync,
+            CommandType.RESCAN_SUITABILITY: self._cmd_rescan,
+            CommandType.POSITION_CLOSE: self._cmd_position_close,
+            CommandType.FLATTEN_ALL: self._cmd_flatten,
+        }
+
+    @staticmethod
+    def _reason(cmd: Command, default: str) -> str:
+        reason = cmd.params.get("reason", default)
+        if not isinstance(reason, str) or not reason.strip():
+            raise CommandFailed("params.reason must be a non-empty string")
+        return reason.strip()[:200]
+
+    def _cmd_kill_switch(self, cmd: Command) -> str:
+        state = self.kill_switch.activate(self._reason(cmd, "remote kill switch"), cmd.actor, "cloud")
+        self._check_kill_switch()
+        return f"kill switch active ({state.mode})"
+
+    def _cmd_strategy_disable(self, cmd: Command) -> str:
+        name = cmd.params.get("strategy")
+        if not isinstance(name, str) or name not in self.strategies.names:
+            raise CommandFailed(f"unknown strategy {name!r}")
+        names = sorted(self.disabled_strategies() | {name})
+        EngineStateRepository(self.db, self.clock).save(DISABLED_KEY, {"names": names})
+        return f"strategy {name} disabled (re-enable locally: app.cli strategy enable)"
+
+    def _cmd_resync(self, cmd: Command) -> str:
+        self.resync_requested = True  # producers re-emit their snapshots (TAA-706/707)
+        return "resync queued"
+
+    def _cmd_rescan(self, cmd: Command) -> str:
+        if not self.request_rescan():
+            raise CommandFailed("the ranking is disabled in this engine")
+        return "rescan queued"
+
+    def _cmd_position_close(self, cmd: Command) -> str:
+        ticket = cmd.params.get("ticket")
+        if not isinstance(ticket, int) or isinstance(ticket, bool):
+            raise CommandFailed("params.ticket must be an integer")
+        return self.backend.close_position(ticket, ExitReason.MANUAL)
+
+    def _cmd_flatten(self, cmd: Command) -> str:
+        reason = self._reason(cmd, "remote flatten")
+        state = self.kill_switch.activate(
+            reason, cmd.actor, "cloud", KillMode.FLATTEN
+        )  # PermissionError if off
+        self._check_kill_switch()
+        return f"kill switch active ({state.mode}); bot positions close on the next cycle"
+
     def request_rescan(self) -> bool:
         """The RESCAN_SUITABILITY command: the next cycle refreshes every symbol's ranking metrics."""
         if self.ranking is None:
@@ -625,7 +709,10 @@ class Engine:
         if ctx.market.atr is not None:
             self._atr[symbol] = ctx.market.atr
         self.backend.on_bar(symbol, ctx)
-        signals = self.strategies.evaluate(ctx)
+        disabled = self.disabled_strategies()
+        signals = [  # a remotely disabled strategy opens nothing; its close signals still count
+            s for s in self.strategies.evaluate(ctx) if not (s.is_entry and s.strategy in disabled)
+        ]
         selected = self.arbiter.arbitrate(signals).selected
         self.on_arbitrated()
         if selected is None:

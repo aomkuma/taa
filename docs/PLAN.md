@@ -517,6 +517,22 @@ AI failures never trip trading breakers; they only produce HOLD.
   - POSITION_CLOSE and FLATTEN_ALL require a TOTP code verified on the engine against `CONTROL_TOTP_SECRET`, usable once.
   - **Risk-increasing commands are always rejected remotely:** release kill switch, reset breaker, enable strategy, change limits or mode.
   - Results are posted back and audited on both sides.
+  - (TAA-704 decisions) Engine side: `app/sync/commands.py` and `app/security/totp.py`. Cloud queue:
+    `app/sync/command_queue.py`. Tables `command_log` (engine) and `engine_commands` (cloud), migration 0016.
+    - Allowlist: KILL_SWITCH_ACTIVATE (HALT), STRATEGY_DISABLE, RESYNC, RESCAN_SUITABILITY, plus POSITION_CLOSE
+      and FLATTEN_ALL with TOTP.
+    - The poller thread only queues commands. They execute on the engine loop, each id once (`command_log`).
+    - Check order: parse → once → expiry (≤ 120 s lifetime, ≤ 30 s future skew) → risk-increasing → allowlist
+      → handler present → TOTP → execute. A handler error gives a FAILED result and never stops the loop.
+    - A TOTP code is valid within ±1 step and only once. Used steps are kept in `command_log`, so they stay
+      used across a restart. Without `CONTROL_TOTP_SECRET`, protected commands are refused.
+    - Results travel as priority-0 `command_result` outbox events (signed, retried), not a separate POST.
+      The cloud queue applies them with `record_result` when the ingest API receives them.
+    - STRATEGY_DISABLE is persisted in `engine_state` and blocks entries only; close signals still count.
+      Re-enabling is local: `python -m app.cli strategy enable NAME --reason ...` (audited).
+    - POSITION_CLOSE acts only on the bot's own positions. FLATTEN_ALL activates the kill switch in FLATTEN
+      mode; it fails unless `KILL_SWITCH_FLATTEN_ALLOWED=true`, and PAPER positions are flattened too.
+    - The long-poll HTTP route is a thin loop over `CommandQueue.pending` in `app/web`, added after TAA-801.
 - **Heartbeats:** every 10 s. The worker raises ENGINE_OFFLINE after 60 s of silence during market hours (Web Push) and
   ENGINE_BACK when the engine resumes.
 - **History:** `scripts/download_history.py` writes local Parquet and uploads closed candles to the cloud in chunks (for
@@ -618,26 +634,62 @@ AI failures never trip trading breakers; they only produce HOLD.
   - MAE/MFE in R; costs (spread, slippage, commission, swap)
   - entry context: HTF trend, regime, volatility percentile, session, ADX, spread/SL ratio, distance to S/R, news window
   - strategy and reason codes; AI assessment (M2)
+  - (TAA-1001 decisions) `trade_builder.py` is pure; callers load the rows and pass them in.
+    - Scopes: BACKTEST (`ClosedTrade`), PAPER (closed `paper_positions` plus their intents, which supply the
+      initial stop and planned risk), SHADOW (CLOSED `shadow_trades` only, keeping `source` and `variant`).
+      DEMO/LIVE are reserved for broker deals. Backtest, paper and shadow results are labelled hypothetical.
+    - R is net of costs (`net / risk_money`; shadow: `r_net`); MAE/MFE in R use the fill-to-initial-stop
+      distance. Outcome: |R| < 0.2 is a scratch.
+    - Costs are money paid: commission and swap as recorded; spread from the decision quote (`ask - bid`) and
+      slippage when the venue's per-fill slippage is fixed or recorded (market entries and every exit except
+      TP and end of data), both valued at the trade's own money per price unit. Unknown components are None,
+      so `cost_r` is then a lower bound.
+    - Fills don't store the entry context: callers pass an `EntryContext` per signal id, built from the
+      decision record (`context_from_decision`). Shadow rows supply session, entry-TF regime, ATR and HTF
+      alignment from their stored features; "not aligned" is not treated as counter-trend.
+    - A row that can't be turned into a faithful record is skipped with a reason, never guessed.
 - **Style tags:**
   - setup (pullback or breakout, from reason codes), direction
   - holding style: scalp < 1 h, intraday < 24 h, swing ≥ 24 h
   - session (Asia, London, NY, overlap, off), regime, volatility bucket, weekday and hour, symbol
+  - (TAA-1002 decisions) `styles.py`:
+    - The setup comes from reason-code tokens (`PULLBACK`, `BREAKOUT`/`BREAK`), else from the strategy name
+      (shadow rows store no reason codes), else OTHER.
+    - The session comes from the entry context, else from `trading_session` at the entry instant. The regime
+      is the entry timeframe's.
+    - Volatility is the context's state, else ATR-percentile buckets (< 25 / < 75 / < 90 / else).
+    - Weekday and hour are in UTC. Unknown facts are tagged UNKNOWN.
+    - Every trade also carries strategy and scope tags; shadow trades add variant and source.
 - **Attribution:** 1–3 reason codes per trade, each with a one-line text and its evidence values:
 
 | Code | Rule / meaning |
 |---|---|
-| WIN_TREND_CONTINUATION | |
-| WIN_TRAILING_CAPTURE | |
-| SCRATCH_BREAKEVEN | |
+| WIN_TRAILING_CAPTURE | a win (R ≥ 0.2) closed by the trailing stop |
+| WIN_TREND_CONTINUATION | a win entered with the HTF trend |
+| SCRATCH_BREAKEVEN | \|R\| < 0.2 (every scratch) |
+| WEEKEND_GAP | a stop filled ≥ 0.25R beyond its level, after being held over a weekend |
+| GAP_THROUGH_STOP | a stop filled ≥ 0.25R beyond its level (slippage included), no weekend |
 | LOSS_IMMEDIATE_ADVERSE | MAE reached −1R within 3 bars and MFE < 0.3R |
 | LOSS_GAVE_BACK_PROFIT | MFE ≥ 1R before the SL was hit |
-| LOSS_REGIME_SHIFT | HTF trend flipped during the trade |
-| LOSS_VOLATILITY_SPIKE / GAP_THROUGH_STOP | |
-| LOSS_NEWS_PROXIMITY | |
-| COST_DOMINATED | costs > 30% of the absolute P/L |
-| HIGH_SLIPPAGE | |
-| COUNTER_TREND_ENTRY | |
-| WEEKEND_GAP | |
+| LOSS_REGIME_SHIFT | HTF trend flipped during the trade (to against the trade's side) |
+| LOSS_VOLATILITY_SPIKE | entry-TF ATR at the exit ≥ 1.5 × at the entry |
+| LOSS_NEWS_PROXIMITY | a news blackout window overlapped the trade |
+| COUNTER_TREND_ENTRY | a loss entered against the HTF trend |
+| COST_DOMINATED | costs > 30% of the absolute P/L before costs (in R) |
+| HIGH_SLIPPAGE | slippage of the fills ≥ 0.1R |
+| WIN_OTHER / LOSS_OTHER | fallback: no rule matched |
+
+- (TAA-1003 decisions) `attribution.py`:
+  - The rules run in the table's order and the first three that hold are kept; a trade with none gets the
+    fallback code.
+  - A rule whose facts are unknown doesn't fire: no initial stop, no exit-time trend or ATR, no news flag.
+    Neutral or merely "not aligned" trends are never counter-trend.
+  - Fills store no price path, so "−1R within 3 bars" means MAE ≥ 1R in a trade that lasted ≤ 3 entry-TF
+    bars.
+  - The HTF trend and ATR at the exit, and the news overlap, are optional context supplied by the caller.
+  - Each code has an English one-line template rendered from its evidence values, plus a translation key
+    `analytics.attribution.<CODE>` for the PWA. The attribution carries the trade's `hypothetical` label.
+  - R thresholds compare with a 1e-9 tolerance, so a fill exactly at a level counts as reaching it.
 
 - **Recommendations:** each one shows its evidence and a sample-size warning:
   - a segment with ≥ 30 trades whose bootstrap 95% CI of expectancy is entirely below 0 → "consider restricting"

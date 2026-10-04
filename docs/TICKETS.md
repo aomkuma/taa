@@ -32,12 +32,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
-| M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 4 | IN PROGRESS |
+| M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
 | M1 | Phase 7 — Cloud sync | 7 | 2 | IN PROGRESS |
 | M1 | Phase 8 — Web backend & worker | 10 | 2 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 22 | 3 | IN PROGRESS |
-| M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
+| M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
@@ -940,11 +940,11 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6C5 — Advisory integration & docs
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** 6C3, 6C4, 6A4
 
 - [x] accuracy feeds ranking S8 and win probability
-- [ ] shadow trades accepted by the analytics trade builder (scope SHADOW)
+- [x] shadow trades accepted by the analytics trade builder (scope SHADOW)
 - [x] `docs/ADVISORY.md` (formulas, definitions, baselines, assumptions, caveats)
 
 ### Phase 7 — Cloud sync
@@ -985,15 +985,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-704 — Command channel
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 702, 008
 
 - [ ] long-poll endpoint
-- [ ] allowlist
-- [ ] expiry
-- [ ] single-use TOTP verified on the engine
-- [ ] results posted back
-- [ ] tests
+- [x] allowlist
+- [x] expiry
+- [x] single-use TOTP verified on the engine
+- [x] results posted back
+- [x] tests
 
 #### TAA-705 — Heartbeat & watchdog
 
@@ -1457,33 +1457,33 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1001 — Trade builder
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 603, 502
 
-- [ ] trades from paper and backtest fills (demo and live later)
-- [ ] costs
-- [ ] exit reasons
-- [ ] MAE/MFE
-- [ ] tests
-- [ ] (rev. 2) shadow trades as scope SHADOW
+- [x] trades from paper and backtest fills (demo and live later)
+- [x] costs
+- [x] exit reasons
+- [x] MAE/MFE
+- [x] tests
+- [x] (rev. 2) shadow trades as scope SHADOW
 
 #### TAA-1002 — Style tagging
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1001
 
-- [ ] A16 tag set
-- [ ] tests
+- [x] A16 tag set
+- [x] tests
 
 #### TAA-1003 — P/L attribution
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1001
 
-- [ ] rule set
-- [ ] text templates
-- [ ] evidence values
-- [ ] a test per rule
+- [x] rule set
+- [x] text templates
+- [x] evidence values
+- [x] a test per rule
 
 #### TAA-1004 — Recommendations
 

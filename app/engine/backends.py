@@ -18,6 +18,7 @@ from typing import Protocol
 from app.broker.gateway import MarketDataGateway
 from app.broker.models import BrokerPosition, Deal
 from app.core.clock import Clock
+from app.core.enums import ExitReason
 from app.core.errors import TaaError
 from app.engine.broker_positions import BrokerPositionManager
 from app.engine.decision_engine import DecisionRecord
@@ -63,15 +64,27 @@ class Backend(Protocol):
 
     def open_positions(self) -> int: ...
 
+    def close_position(self, ticket: int, reason: ExitReason) -> str:
+        """Close one bot position (remote POSITION_CLOSE); raises TaaError when it is unknown or fails."""
+        ...
+
 
 class PaperBackend:
     name = "paper"
 
-    def __init__(self, paper: PaperExecution, positions: PositionManager, market: MarketDataGateway) -> None:
+    def __init__(
+        self,
+        paper: PaperExecution,
+        positions: PositionManager,
+        market: MarketDataGateway,
+        kill_switch: KillSwitch | None = None,
+    ) -> None:
         self.paper = paper
         self.positions = positions
         self.market = market
+        self.kill_switch = kill_switch
         self._booked = 0
+        self._flattened = False
 
     def funds(self) -> AccountFunds:
         return self.paper.broker.funds()
@@ -105,9 +118,22 @@ class PaperBackend:
 
     def maintain(self) -> None:
         self.paper.save_marks()
+        state = None if self.kill_switch is None else self.kill_switch.state()
+        if state is not None and state.active and state.mode is KillMode.FLATTEN and not self._flattened:
+            for ticket in list(self.paper.broker.positions):  # paper positions close at the next quote
+                self.paper.request_close(ticket, ExitReason.KILL_SWITCH)
+            self._flattened = True
+        elif state is None or not state.active:
+            self._flattened = False
 
     def open_positions(self) -> int:
         return len(self.paper.broker.positions)
+
+    def close_position(self, ticket: int, reason: ExitReason) -> str:
+        if ticket not in self.paper.broker.positions:
+            raise TaaError(f"no open paper position #{ticket}")
+        self.paper.request_close(ticket, reason)
+        return f"paper position #{ticket} closes at the next quote"
 
 
 class DemoBackend:
@@ -173,3 +199,13 @@ class DemoBackend:
             return len(self.positions.bot_positions())
         except TaaError:
             return 0
+
+    def close_position(self, ticket: int, reason: ExitReason) -> str:
+        """Only the bot's own positions (its magic range): a remote command never touches manual trades."""
+        pos = next((p for p in self.positions.bot_positions() if p.ticket == ticket), None)
+        if pos is None:
+            raise TaaError(f"no open bot position #{ticket}")
+        result = self.positions.close(pos, self.market.symbol_spec(pos.symbol), reason)
+        if not result.ok:
+            raise TaaError(f"close of #{ticket} failed: retcode {result.retcode}")
+        return f"position #{ticket} closed"
