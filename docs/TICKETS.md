@@ -37,7 +37,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
 | M1 | Phase 7 — Cloud sync | 9 | 8 | IN PROGRESS |
-| M1 | Phase 8 — Web backend & worker | 11 | 2 | IN PROGRESS |
+| M1 | Phase 8 — Web backend & worker | 11 | 3 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
@@ -1084,15 +1084,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-803 — Read APIs
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 703
 
-- [ ] A14 endpoint set
-- [ ] candle overlays and markers
-- [ ] pagination and filters
-- [ ] masked config
-- [ ] tests
-- [ ] (rev. 4) trading data scoped to engines the session user owns (`OwnedEngine`, PLAN §A32) + IDOR tests
+- [x] A14 endpoint set
+- [x] candle overlays and markers
+- [x] pagination and filters
+- [x] masked config
+- [x] tests
+- [x] (rev. 4) trading data scoped to engines the session user owns (`OwnedEngine`, PLAN §A32) + IDOR tests
 
 #### TAA-804 — SSE stream
 

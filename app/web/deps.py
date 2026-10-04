@@ -2,7 +2,7 @@
 
 Dependency chain for protected routes: ``current_session`` (cookie → live session, else 401
 ``unauthenticated``) → ``csrf_session`` (allowed Origin + ``X-CSRF-Token``, for every mutation) →
-``step_up_session`` (a fresh TOTP step-up, for control actions).
+``step_up_session`` (a fresh TOTP step-up, for control actions). Engine-scoped routes add ``owned_engine``.
 
 Engine routes (ingest, command long poll) use ``signed_engine`` instead: the paired engine's HMAC signature
 over method, path and query, timestamp, nonce and body (PLAN §A13). They never see a web session.
@@ -25,7 +25,7 @@ from app.storage.database import Database
 from app.sync.command_queue import CommandQueue
 from app.sync.ingest import IngestService
 from app.web.auth import AuthService, AuthSession
-from app.web.engines import EngineRegistry
+from app.web.engines import ENGINE_ID_RE, EngineInfo, EngineRegistry
 from app.web.errors import ApiProblem
 
 log = logging.getLogger(__name__)
@@ -140,3 +140,15 @@ async def signed_engine(request: Request, ctx: Context) -> EngineRequest:
 
 
 SignedEngine = Annotated[EngineRequest, Depends(signed_engine)]
+
+
+def owned_engine(engine_id: str, ctx: Context, session: CurrentSession) -> EngineInfo:
+    """An engine of the session user (PLAN §A32). Anyone else's, or an unknown id, is 404 ``engine_not_found``
+    (never 403), so ids cannot be probed. The OWNER role administers engines but reads only its own data."""
+    info = ctx.engine.registry.get(engine_id) if ENGINE_ID_RE.fullmatch(engine_id) else None
+    if info is None or info.owner_user_id != session.user_id:
+        raise ApiProblem(404, "engine_not_found", "No such engine")
+    return info
+
+
+OwnedEngine = Annotated[EngineInfo, Depends(owned_engine)]

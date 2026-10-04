@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-04, single session on `main`: TAA-703 (ingest API), TAA-704 (long-poll route) and
 TAA-707 (advisory sync), TAA-708 (engine registry), TAA-709 (engine-scoped replicas) and TAA-706 (candle
-& history sync) done. Before them, three parallel
+& history sync) and TAA-803 (read APIs) done. Before them, three parallel
 sessions were merged: Phase 6C (done), Phase 7 TAA-701, 702, 704 (engine side), Phase 8 TAA-801, 802,
 Phase 9 TAA-901, 902, 915, Phase 10 TAA-1001..1003, and the storage-health fix. No branch holds unmerged
 work. This file holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
@@ -25,7 +25,7 @@ Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
 Partly done: Phase 7 (701..704, 707..709), Phase 8 (801, 802), Phase 9 (901, 902, 915), Phase 10 (1001..1003).
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Start with TAA-803 (read APIs, owner-scoped).
+"Next work" list in docs/HANDOFF.md. Start with TAA-804 (SSE stream).
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Update docs/HANDOFF.md at the end of the
 session. Stop for review at the end of Milestone 1, or at any phase boundary if I ask.
@@ -45,7 +45,7 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
   `ENGINE_ID` and `ENGINE_HMAC_SECRET` (shown once), and the browser generates `CONTROL_TOTP_SECRET`, which never
   reaches the cloud. New tickets: TAA-708, 709, 811, 923. Rollout is fail-closed: one ACTIVE engine until 709, and
   `MULTI_ENGINE_ENABLED=false`.
-- **In progress (progress table):** Phase 7 8/9 (701..704, 706..709; 705 waits for the worker 808), Phase 8 2/11 (801, 802),
+- **In progress (progress table):** Phase 7 8/9 (701..704, 706..709; 705 waits for the worker 808), Phase 8 3/11 (801..803),
   Phase 9 3/23 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. The order of the
   remaining tickets: "Next work" below.
 - **Checks:** 2270 tests on `c85d539` (2269 passed + 1 failure from a memory-allocation error under parallel
@@ -86,6 +86,9 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
       rejects as DEAD at once; batches are capped at 1000 events and `sync.max_batch_bytes`.
     - TAA-704 route: `GET /api/v1/engine/commands?cursor=` (`app/web/routers/engine.py`): 200 with
       `commands` + `cursor`, or 204 after 25 s; tested against the engine's own `CommandPoller`.
+    - TAA-803 read APIs (PLAN §A14 "TAA-803 decisions"): `/api/v1/engines/{engine_id}/...` in
+      `app/web/routers/data.py` + `app/web/readmodels.py`, `OwnedEngine` in `app/web/deps.py`; IDOR test walks
+      every route (`tests/web/test_data_api.py` `ROUTES`: add new engine routes there).
     - TAA-706 candle sync (PLAN §A13 "TAA-706 decisions", migration 0021): `candles` events of up to 1000
       closed bars into the per-engine `history_candles`; `CandleStreamer` on the engine's candle poll (per
       symbol back-off, so crypto streams at weekends); `python -m app.cli sync upload-history [--send]` and
@@ -363,7 +366,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 3. ~~TAA-707 advisory sync~~ (done, before 708 because it was under way)
 4. ~~(rev. 4) TAA-708 engine registry, TAA-709 engine-scoped replicas~~ (done)
 5. ~~TAA-706 candle & history sync~~ (done)
-6. TAA-803 read APIs (owner-scoped, rev. 4), then TAA-804 SSE
+6. ~~TAA-803 read APIs~~ (done), then TAA-804 SSE
 7. TAA-805 control API (owned engines only, rev. 4), then TAA-811 engine management API
 8. TAA-808 worker service, then TAA-705 heartbeat & watchdog (completes Phase 7)
 9. TAA-806 Web Push, TAA-807 backtest jobs

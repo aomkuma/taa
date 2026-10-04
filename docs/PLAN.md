@@ -645,6 +645,24 @@ AI failures never trip trading breakers; they only produce HOLD.
   - backtests (list, detail, compare, create job)
   - analytics (summary, styles, attribution, recommendations, per-trade explanation)
   - system (health, sync lag, clock, data quality, audit verification); config (effective, masked); auth
+- (TAA-803 decisions) Read APIs `GET /api/v1/engines/{engine_id}/...` (`app/web/routers/data.py`, queries in
+  `app/web/readmodels.py`), all behind `OwnedEngine` (404 `engine_not_found` for anyone else's engine,
+  including the OWNER role's reads of other users' data):
+  - `status` (engine, latest run, kill switch, open breakers/positions, audit replica, newest applied row
+    event), `account` (paper accounts, risk state, baselines, realized equity curve from closed paper trades)
+  - `positions?status=OPEN|CLOSED`, `trades` (closed positions), `intents?kind=paper|broker`,
+    `decisions?decision&symbol&strategy&profile` (signals are part of each decision; the list leaves out the
+    signal/market documents) and `decisions/{id}` with its checks
+  - `breakers` (states + paginated events), `kill-switch`, `symbols[?asset_class&enabled]`, `symbols/{symbol}`
+  - `candles?symbol&timeframe&server&start&end&limit≤2000&overlays=ema:N,bb:N,rsi:N,atr:N,adx:N`: closed bars
+    from the engine's `history_candles`, overlays computed with `app.indicators` on extra warm-up bars, and
+    markers (decisions, paper entries/exits) inside the window; `server` defaults to the newest bars' server
+  - `config` (the latest run's snapshot, every secret-looking key masked again), `audit/verify` (re-verifies the
+    replicated chain)
+  - Lists are keyset-paginated, newest first: `limit` ≤ 200 and an opaque `next_cursor`. Unusable parameters
+    give 400 `invalid_query` (422 for FastAPI type errors).
+  - Not served yet because nothing replicates them: live quotes, broker-account snapshots and heartbeats
+    (TAA-705/804), notifications (806), backtests (807), analytics (1005).
 - **SSE `/api/v1/stream`:** topics are status, quotes, positions, notifications and decisions. A heartbeat comment goes out
   every 15 s, and clients reconnect with cursors (Railway caps a request at about 15 min).
 - **Web Push:**
