@@ -1517,6 +1517,18 @@ subscriptions later are configuration plus billing, not a rewrite.
   - Every user-owned row is scoped by `user_id` through one authorization dependency, backed by cross-tenant (IDOR)
     tests.
   - Per-plan API and push rate limits; PDPA-ready export/delete of a user's data.
+  - (TAA-8A1 decisions) `Role` enum (`app/web/auth.py`); `require_roles(...)` in `app/web/deps.py` is the
+    only role check (`AdminSession` = OWNER or ADMIN). Data stays scoped by `session.user_id` and
+    `OwnedEngine`; ADMIN gets 403 `role_forbidden` on commands and engine registration (the registry refuses
+    linking a support account from the CLI too), so it never owns an engine and sees no trading data.
+    - `GET /me/export`: the user's data as a JSON download (profile without hashes or TOTP, preferences,
+      devices without endpoints or keys, notifications, alerts, backtests, engines) (`app/web/privacy.py`).
+    - `POST /me/erase {confirm: username}` (step-up) and `POST /admin/users/{id}/erase` (OWNER): personal rows
+      are deleted; the user row stays pseudonymised (`deleted-<id8>`, no password or TOTP, disabled) because
+      revoked engines and the append-only audit chains refer to it. The OWNER cannot be erased; a user with an
+      ACTIVE engine must revoke it first. Earlier audit events keep the old username: retention of those is a
+      question for the legal review (`docs/COMPLIANCE.md`, TAA-8A5).
+    - `GET /admin/users` (OWNER/ADMIN): username, role, state, creation date only.
 - **Account profiles (`account_profiles`):** source LINKED_ENGINE (owner: live MT5 equity/balance/leverage) or MANUAL
   (equity, currency, leverage, risk %), used for lot sizing and suitability.
 - **Settings pages (TH/EN):**

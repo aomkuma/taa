@@ -269,6 +269,8 @@ class EngineRegistry:
         return row
 
     def _check_limits(self, owner: UserRow) -> None:
+        if owner.role == "ADMIN":  # a support role links no trading account (PLAN §A30)
+            raise EngineError(EngineErrorCode.ENGINE_LINKING_DISABLED, "support accounts link no engines")
         if owner.role != OWNER_ROLE and not self.multi_engine:
             raise EngineError(
                 EngineErrorCode.ENGINE_LINKING_DISABLED,

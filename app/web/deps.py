@@ -11,6 +11,7 @@ over method, path and query, timestamp, nonce and body (PLAN §A13). They never 
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Annotated
 
@@ -24,7 +25,7 @@ from app.storage.audit import AuditLog
 from app.storage.database import Database
 from app.sync.command_queue import CommandQueue
 from app.sync.ingest import IngestService
-from app.web.auth import AuthService, AuthSession
+from app.web.auth import AuthService, AuthSession, Role
 from app.web.engines import ENGINE_ID_RE, EngineInfo, EngineRegistry
 from app.web.errors import ApiProblem
 from app.web.stream import StreamHub
@@ -154,3 +155,25 @@ def owned_engine(engine_id: str, ctx: Context, session: CurrentSession) -> Engin
 
 
 OwnedEngine = Annotated[EngineInfo, Depends(owned_engine)]
+
+
+def require_roles(*roles: Role) -> Callable[..., AuthSession]:
+    """A dependency: the session user must have one of *roles* (403 ``role_forbidden``). The one place that
+    checks roles; data is still scoped by ``session.user_id`` and engine ownership (``OwnedEngine``)."""
+    allowed = frozenset(r.value for r in roles)
+
+    def dependency(session: CurrentSession) -> AuthSession:
+        if session.role not in allowed:
+            raise ApiProblem(403, "role_forbidden", "Your role does not allow this")
+        return session
+
+    return dependency
+
+
+AdminSession = Annotated[AuthSession, Depends(require_roles(Role.OWNER, Role.ADMIN))]
+
+
+def no_admin_controls(session: AuthSession) -> None:
+    """ADMIN is a support role: no trading controls, even on an engine it might own (PLAN §A30)."""
+    if session.role == Role.ADMIN.value:
+        raise ApiProblem(403, "role_forbidden", "Support accounts have no trading controls")

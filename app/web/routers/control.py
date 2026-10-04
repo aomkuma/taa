@@ -39,7 +39,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.sync.command_queue import CommandRefused, public
 from app.sync.commands import TOTP_REQUIRED, CommandType
-from app.web.deps import Context, OwnedEngine, StepUpSession
+from app.web.deps import Context, OwnedEngine, StepUpSession, no_admin_controls
 from app.web.errors import ApiProblem
 from app.web.readmodels import MAX_LIMIT, QueryError, ReadModels
 
@@ -90,6 +90,7 @@ class CommandBody(BaseModel):
 async def queue_command(
     body: CommandBody, engine: OwnedEngine, session: StepUpSession, ctx: Context
 ) -> dict[str, Any]:
+    no_admin_controls(session)
     params = body.params()
     if engine.status != "ACTIVE":
         raise ApiProblem(409, "engine_revoked", "This engine was revoked and takes no commands")

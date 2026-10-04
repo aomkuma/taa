@@ -17,6 +17,7 @@ import re
 import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from enum import StrEnum
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -43,7 +44,16 @@ MAX_LOCK = timedelta(hours=1)
 # Failures older than this are forgotten.
 THROTTLE_MEMORY = timedelta(hours=24)
 
-ROLES = ("OWNER", "ADMIN", "SUBSCRIBER")
+
+class Role(StrEnum):
+    """PLAN §A30. Control rights come from owning an engine (§A32), never from the role alone."""
+
+    OWNER = "OWNER"  # the deployment's owner: everything, administers users and engines
+    ADMIN = "ADMIN"  # support: user administration views, never trading controls or trading data
+    SUBSCRIBER = "SUBSCRIBER"  # advisory features; controls only an engine it owns (when linking is enabled)
+
+
+ROLES = tuple(r.value for r in Role)
 USERNAME_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{2,63}$")
 MAX_TOKEN_LENGTH = 128
 

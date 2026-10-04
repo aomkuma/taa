@@ -38,6 +38,7 @@ from app.web.routers import (
     engines,
     health,
     ingest,
+    me,
     notifications,
     stream,
 )
@@ -142,6 +143,7 @@ def create_app(
     api.include_router(notifications.router)
     api.include_router(backtests.router)
     api.include_router(advisory.router)
+    api.include_router(me.router)
     app.include_router(api)
     mount_pwa(app, static_dir or static_root(settings))
 

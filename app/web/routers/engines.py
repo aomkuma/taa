@@ -25,7 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from starlette.concurrency import run_in_threadpool
 
 from app.web.auth import AuthSession
-from app.web.deps import Context, CurrentSession, OwnedEngine, StepUpSession
+from app.web.deps import Context, CurrentSession, OwnedEngine, StepUpSession, no_admin_controls
 from app.web.engines import ENGINE_ID_RE, OWNER_ROLE, EngineError, EngineErrorCode, EngineInfo
 from app.web.errors import ApiProblem
 
@@ -114,6 +114,7 @@ async def register_engine(
     body: LabelBody, request: Request, ctx: Context, session: StepUpSession
 ) -> JSONResponse:
     registry = ctx.engine.registry
+    no_admin_controls(session)  # a support account links no trading account
     await _issue_check(ctx, session)
     owner = await _call(registry.user, session.username)
     issued = await _call(registry.register, owner, body.label, actor=session.username)
