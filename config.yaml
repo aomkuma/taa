@@ -224,6 +224,14 @@ engine:
 
 sync:
   enabled: false                    # true once the Railway web service is paired
+  batch_size: 500                   # events per signed, gzipped POST /api/v1/ingest/batch
+  flush_interval_seconds: 2
+  request_timeout_seconds: 15
+  max_backlog_events: 200000        # beyond: the oldest unsent quotes/snapshots are dropped (never audit/trades)
+  backoff_initial_seconds: 2        # failed sends back off exponentially (with jitter) up to
+  backoff_max_seconds: 300
+  max_attempts: 20                  # an event the cloud keeps rejecting is parked as DEAD (logged)
+  sent_retention_hours: 24
 
 evidence:                           # technical evidence engine (PLAN §A29, docs/PATTERNS.md)
   default_enabled: true             # detectors not listed below follow this
