@@ -3,24 +3,44 @@
 Dependency chain for protected routes: ``current_session`` (cookie → live session, else 401
 ``unauthenticated``) → ``csrf_session`` (allowed Origin + ``X-CSRF-Token``, for every mutation) →
 ``step_up_session`` (a fresh TOTP step-up, for control actions).
+
+Engine routes (ingest, command long poll) use ``signed_engine`` instead: the paired engine's HMAC signature
+over method, path and query, timestamp, nonce and body (PLAN §A13). They never see a web session.
 """
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Annotated
 
 from fastapi import Depends, Request
+from starlette.concurrency import run_in_threadpool
 
 from app.config import WebSettings
 from app.core.clock import Clock
+from app.security.hmac_auth import AuthError, Verified, Verifier
 from app.storage.audit import AuditLog
 from app.storage.database import Database
+from app.sync.command_queue import CommandQueue
+from app.sync.ingest import IngestService
 from app.web.auth import AuthService, AuthSession
 from app.web.errors import ApiProblem
 
+log = logging.getLogger(__name__)
+
 WEB_AUDIT_CHAIN = "web"
 CSRF_HEADER = "X-CSRF-Token"
+
+
+@dataclass(frozen=True)
+class EngineLink:
+    """The paired engine: signature verifier, ingest and the command queue it polls."""
+
+    engine_id: str
+    verifier: Verifier
+    ingest: IngestService
+    commands: CommandQueue
 
 
 @dataclass(frozen=True)
@@ -30,6 +50,7 @@ class WebContext:
     clock: Clock
     audit: AuditLog
     auth: AuthService
+    engine: EngineLink | None = None  # None: no engine paired (ENGINE_ID / ENGINE_HMAC_SECRET unset)
 
 
 def get_context(request: Request) -> WebContext:
@@ -83,3 +104,29 @@ def step_up_session(ctx: Context, session: CsrfSession) -> AuthSession:
 
 
 StepUpSession = Annotated[AuthSession, Depends(step_up_session)]
+
+
+@dataclass(frozen=True)
+class EngineRequest:
+    link: EngineLink
+    verified: Verified
+    body: bytes
+
+
+async def signed_engine(request: Request, ctx: Context) -> EngineRequest:
+    if ctx.engine is None:
+        raise ApiProblem(503, "sync_disabled", "No engine is paired with this service")
+    link = ctx.engine
+    body = await request.body()
+    target = request.url.path + (f"?{request.url.query}" if request.url.query else "")
+    try:  # the nonce store may hit the database
+        verified = await run_in_threadpool(
+            link.verifier.verify, request.method, target, request.headers, body
+        )
+    except AuthError as exc:
+        log.warning("engine request %s %s refused: %s", request.method, request.url.path, exc)
+        raise ApiProblem(401, "signature_invalid", "Request signature rejected") from exc
+    return EngineRequest(link, verified, body)
+
+
+SignedEngine = Annotated[EngineRequest, Depends(signed_engine)]

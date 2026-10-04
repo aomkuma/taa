@@ -14,10 +14,12 @@ same key, so a backlog of quotes collapses to the latest one per symbol.
 **Bounded backlog:** above ``sync.max_backlog_events`` pending rows, the oldest priority-2 events and then
 priority-1 events are dropped (counted); priority 0 is never dropped.
 
-**Sending** (:class:`OutboxSender`): batches of ≤ ``batch_size`` events every ``flush_interval_seconds``, as
-one gzipped JSON body signed with HMAC (:mod:`app.security.hmac_auth`). A 2xx marks the batch SENT. A network
-error, a 5xx, 401/403, 408 or 429 backs off exponentially (with jitter) up to ``backoff_max_seconds``; any
-other 4xx counts an attempt against each event and parks events that reach ``max_attempts`` as DEAD
+**Sending** (:class:`OutboxSender`): batches of ≤ ``batch_size`` events and ≤ ``max_batch_bytes`` of payload
+every ``flush_interval_seconds``, as one gzipped JSON body signed with HMAC (:mod:`app.security.hmac_auth`).
+A 2xx marks the batch SENT, except the events the cloud lists as rejected (schema or audit-chain problems,
+TAA-703): those are parked as DEAD at once and logged, since resending the same bytes cannot succeed. A
+network error, a 5xx, 401/403, 408 or 429 backs off exponentially (with jitter) up to ``backoff_max_seconds``;
+any other 4xx counts an attempt against each event and parks events that reach ``max_attempts`` as DEAD
 (logged), so one bad event cannot block the queue. Sending runs on its own thread and never blocks trading.
 """
 
@@ -126,6 +128,7 @@ class BacklogMetrics:
     dead: int
     oldest_pending_age_seconds: float | None
     sent_total: int
+    rejected_total: int
     dropped_total: int
     failed_sends: int
     consecutive_failures: int
@@ -180,6 +183,9 @@ class Outbox:
         return event_id
 
     def next_batch(self, limit: int | None = None) -> list[Event]:
+        """The next events to send: lowest priority first, then oldest, within the count and byte budgets
+        (the first event always goes, however large, so an oversized event fails visibly instead of
+        blocking the queue)."""
         with self.db.session() as sess:
             rows = sess.execute(
                 select(OutboxEventRow)
@@ -187,7 +193,14 @@ class Outbox:
                 .order_by(OutboxEventRow.priority, OutboxEventRow.event_id)
                 .limit(limit or self.config.batch_size)
             ).scalars()
-            return [Event(r.event_id, r.type, ensure_utc(r.occurred_at), dict(r.payload)) for r in rows]
+            events: list[Event] = []
+            size = 0
+            for r in rows:
+                size += len(json.dumps(r.payload, separators=(",", ":")))
+                if events and size > self.config.max_batch_bytes:
+                    break
+                events.append(Event(r.event_id, r.type, ensure_utc(r.occurred_at), dict(r.payload)))
+            return events
 
     def mark_sent(self, event_ids: list[str]) -> None:
         now = self.clock.now_utc()
@@ -197,6 +210,22 @@ class Outbox:
                 .where(OutboxEventRow.event_id.in_(event_ids))
                 .values(status=Status.SENT.value, sent_at=now)
             )
+
+    def mark_dead(self, rejected: Mapping[str, str]) -> None:
+        """Park events the cloud refused for good (event id → reason) as DEAD."""
+        with self.db.session() as sess:
+            for event_id, reason in rejected.items():
+                sess.execute(
+                    update(OutboxEventRow)
+                    .where(OutboxEventRow.event_id == event_id)
+                    .values(
+                        status=Status.DEAD.value,
+                        attempts=OutboxEventRow.attempts + 1,
+                        last_error=f"rejected by the cloud: {reason}"[:500],
+                    )
+                )
+        for event_id, reason in rejected.items():
+            log.error("outbox event %s rejected by the cloud and parked as DEAD: %s", event_id, reason)
 
     def mark_rejected(self, event_ids: list[str], error: str) -> int:
         """Count an attempt against each event; park those at ``max_attempts`` as DEAD. Returns dead count."""
@@ -306,6 +335,7 @@ class Outbox:
 class SendResult:
     status: int | None  # HTTP status, or None for a transport error
     error: str = ""
+    rejected: Mapping[str, str] = field(default_factory=dict)  # 2xx: event id → why the cloud refused it
 
 
 Transport = Callable[[str, bytes], SendResult]  # (path, gzipped body) -> result; signs and posts
@@ -321,6 +351,7 @@ class OutboxSender:
     clock: Clock
     jitter: Callable[[], float] = field(default=lambda: 0.5 + secrets.SystemRandom().random() / 2)
     sent_total: int = 0
+    rejected_total: int = 0
     failed_sends: int = 0
     consecutive_failures: int = 0
     last_error: str = ""
@@ -335,7 +366,7 @@ class OutboxSender:
         return base * self.jitter()
 
     def flush_once(self) -> int:
-        """Send one batch if due. Returns the number of events acknowledged."""
+        """Send one batch if due. Returns the number of events the cloud answered (stored or refused)."""
         if self.clock.monotonic() < self.next_attempt_at:
             return 0
         self.outbox.enforce_backlog()
@@ -349,8 +380,13 @@ class OutboxSender:
         except Exception as exc:  # transport boundary: never let a network problem escape into the engine
             result = SendResult(None, f"{type(exc).__name__}: {exc}")
         if result.status is not None and 200 <= result.status < 300:
-            self.outbox.mark_sent(ids)
-            self.sent_total += len(ids)
+            sent = set(ids)
+            rejected = {i: r for i, r in result.rejected.items() if i in sent}
+            if rejected:
+                self.outbox.mark_dead(rejected)
+                self.rejected_total += len(rejected)
+            self.outbox.mark_sent([i for i in ids if i not in rejected])
+            self.sent_total += len(ids) - len(rejected)
             self.consecutive_failures = 0
             self.last_success_at = self.clock.now_utc()
             self.next_attempt_at = 0.0
@@ -376,6 +412,7 @@ class OutboxSender:
             dead=dead,
             oldest_pending_age_seconds=age,
             sent_total=self.sent_total,
+            rejected_total=self.rejected_total,
             dropped_total=self.outbox.dropped_total,
             failed_sends=self.failed_sends,
             consecutive_failures=self.consecutive_failures,

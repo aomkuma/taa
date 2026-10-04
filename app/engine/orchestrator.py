@@ -84,11 +84,13 @@ from app.strategy.catalog import default_registry
 from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import EvidenceSetup
 from app.sync.commands import Command, CommandFailed, CommandProcessor, CommandType, Handler, drain
+from app.sync.replication import Replicator, install_replication
 from app.sync.runtime import SyncRuntime
 
 log = logging.getLogger(__name__)
 
 DISABLED_KEY = "disabled_strategies"
+SNAPSHOT_KEY = "sync_snapshot"  # set once every replicated row has been queued for the cloud
 
 
 @dataclass
@@ -162,6 +164,12 @@ class Engine:
         self._health_due = _Due(loop.health_interval_seconds)
         self._clock_due = _Due(loop.clock_verify_minutes * 60)
         self.audit = AuditLog(db, f"engine:{settings.env.ENGINE_ID or 'local'}", clock)
+        # Replication starts before anything is written, so every row change of this run reaches the outbox.
+        self.replicator: Replicator | None = (
+            install_replication(db, clock, self.audit.chain)
+            if sync is not None or self.config.sync.enabled
+            else None
+        )
         self.heartbeat_path = settings.path(loop.heartbeat_file)
         self.runs = RunRepository(db, clock)
 
@@ -284,6 +292,8 @@ class Engine:
         if self.sync is None and cfg.sync.enabled:
             self.sync = SyncRuntime.from_settings(self.settings, self.db, self.clock)
         if self.sync is not None:  # its own threads: a slow or offline cloud never delays the loop
+            if self.replicator is None:  # a runtime handed in after construction; the snapshot catches up
+                self.replicator = install_replication(self.db, self.clock, self.audit.chain)
             secret = env.CONTROL_TOTP_SECRET.get_secret_value() if env.CONTROL_TOTP_SECRET else None
             self.commands = CommandProcessor(
                 self.db,
@@ -294,6 +304,7 @@ class Engine:
                 outbox=self.sync.outbox,
             )
             self.sync.start()
+            self._initial_snapshot()
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
         self.audit.append(
             "ENGINE_START",
@@ -545,6 +556,7 @@ class Engine:
             "dead": m.dead,
             "oldest_pending_age_seconds": m.oldest_pending_age_seconds,
             "sent_total": m.sent_total,
+            "rejected_total": m.rejected_total,
             "dropped_total": m.dropped_total,
             "failed_sends": m.failed_sends,
             "consecutive_failures": m.consecutive_failures,
@@ -623,7 +635,18 @@ class Engine:
 
     def _cmd_resync(self, cmd: Command) -> str:
         self.resync_requested = True  # producers re-emit their snapshots (TAA-706/707)
-        return "resync queued"
+        rows = self.replicator.snapshot(self.db) if self.replicator is not None else 0
+        return f"resync queued ({rows} rows)"
+
+    def _initial_snapshot(self) -> None:
+        """Once per engine database: queue every replicated row, including rows from before sync was on."""
+        if self.replicator is None:
+            return
+        state = EngineStateRepository(self.db, self.clock)
+        if state.load(SNAPSHOT_KEY) is not None:
+            return
+        rows = self.replicator.snapshot(self.db)
+        state.save(SNAPSHOT_KEY, {"rows": rows, "at": self.clock.now_utc().isoformat()})
 
     def _cmd_rescan(self, cmd: Command) -> str:
         if not self.request_rescan():
@@ -848,6 +871,9 @@ class Engine:
                 "last_error": self.shadow.stats.last_error,
             },
             "sync": None if self.sync is None else self._sync_status(self.sync),
+            "replication": None
+            if self.replicator is None
+            else {"emitted": self.replicator.emitted, "errors": self.replicator.errors},
             "calibration": None
             if self.calibration is None
             else {

@@ -10,10 +10,10 @@ from typing import Any
 import httpx
 import pyotp
 from pydantic import SecretStr
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.cli.__main__ import main
-from app.engine.orchestrator import DISABLED_KEY
+from app.engine.orchestrator import DISABLED_KEY, SNAPSHOT_KEY
 from app.monitoring.alerts import EventType
 from app.storage.database import Database, upgrade_schema
 from app.storage.models import CommandLogRow, OutboxEventRow
@@ -192,4 +192,75 @@ def test_cli_re_enables_a_strategy(tmp_path: Path, capsys) -> None:  # type: ign
         main(["--env-file", str(env), "strategy", "enable", "a", "--reason", "fixed", "--actor", "me"]) == 0
     )
     assert EngineStateRepository(db, SystemClock()).load(DISABLED_KEY) == {"names": ["b"]}
+    db.dispose()
+
+
+def outbox_types(h: Harness) -> list[str]:
+    with h.db.session() as sess:
+        return list(sess.execute(select(OutboxEventRow.type).order_by(OutboxEventRow.event_id)).scalars())
+
+
+def test_engine_rows_are_replicated_and_resync_requeues_them(tmp_path: Path) -> None:
+    h = rig(tmp_path, trade=True)
+    assert h.engine.replicator is not None
+    assert EngineStateRepository(h.db, h.clock).load(SNAPSHOT_KEY) is not None
+    types = outbox_types(h)
+    assert {"audit_event", "run", "config_snapshot"} <= set(types)
+    until_open(h)
+    types = set(outbox_types(h))
+    assert {"decision", "decision_check", "paper_intent", "paper_position"} <= types
+    with h.db.session() as sess:  # the cloud has everything; only new changes queue from here
+        sess.execute(update(OutboxEventRow).values(status="SENT"))
+    send(h, "RESYNC", "rs1")
+    h.engine.cycle()
+    result, _, detail = outcome(h, "rs1")
+    assert result == "EXECUTED" and "rows" in detail and h.engine.resync_requested
+    with h.db.session() as sess:
+        pending = list(
+            sess.execute(select(OutboxEventRow.type).where(OutboxEventRow.status == "PENDING")).scalars()
+        )
+    assert {"audit_event", "decision", "paper_position", "run"} <= set(pending)
+    status = h.engine.status()["replication"]
+    assert status["emitted"] > 0 and status["errors"] == 0
+
+
+def test_the_initial_snapshot_runs_once(tmp_path: Path) -> None:
+    h = rig(tmp_path)
+    marker = EngineStateRepository(h.db, h.clock).load(SNAPSHOT_KEY)
+    assert marker is not None and marker["rows"] > 0
+    with h.db.session() as sess:
+        sess.execute(update(OutboxEventRow).values(status="SENT"))
+    h.engine._initial_snapshot()
+    assert "PENDING" not in {r for r in pending_statuses(h)}
+
+
+def pending_statuses(h: Harness) -> list[str]:
+    with h.db.session() as sess:
+        return list(sess.execute(select(OutboxEventRow.status)).scalars())
+
+
+def test_cli_changes_are_replicated_when_sync_is_on(tmp_path: Path) -> None:
+    url = f"sqlite:///{(tmp_path / 'engine.db').as_posix()}"
+    env = tmp_path / ".env"
+    env.write_text(
+        "\n".join(
+            [
+                "TRADING_MODE=BACKTEST",
+                f"ENGINE_DB_URL={url}",
+                f"KILL_SWITCH_FILE={(tmp_path / 'KILL').as_posix()}",
+                "CLOUD_BASE_URL=https://cloud.example",
+                "ENGINE_ID=eng-1",
+                f"ENGINE_HMAC_SECRET={'k' * 40}",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    config = tmp_path / "config.yaml"
+    config.write_text("sync:\n  enabled: true\n", encoding="utf-8")
+    assert main(["--env-file", str(env), "--config", str(config), "kill", "--reason", "maintenance"]) == 0
+    db = Database(url)
+    with db.session() as sess:
+        events = list(sess.execute(select(OutboxEventRow)).scalars())
+    assert {"audit_event", "kill_switch"} <= {e.type for e in events}
+    assert all(e.payload.get("chain", "engine:eng-1") == "engine:eng-1" for e in events)
     db.dispose()

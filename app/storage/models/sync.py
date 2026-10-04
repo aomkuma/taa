@@ -1,4 +1,8 @@
-"""Cloud-sync tables (PLAN §A13): the cloud's ingest nonce store and, on the engine, the event outbox."""
+"""Cloud-sync tables (PLAN §A13).
+
+Engine: the event outbox and the command log. Cloud: the ingest nonce store, replica versions, audit-replica
+status and the command queue.
+"""
 
 from __future__ import annotations
 
@@ -82,3 +86,39 @@ class EngineCommandRow(Base):
     delivered_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     result: Mapped[dict[str, Any]] = mapped_column(JSONType)
+
+
+class ReplicaVersionRow(Base):
+    """Cloud side: the newest event applied to one replicated entity (TAA-703).
+
+    An event whose id is not newer than ``event_id`` is a duplicate or arrived out of order and is skipped, so
+    a resend never rolls a row back."""
+
+    __tablename__ = "replica_versions"
+
+    engine_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    type: Mapped[str] = mapped_column(String(48), primary_key=True)
+    entity_key: Mapped[str] = mapped_column(String(160), primary_key=True)
+    event_id: Mapped[str] = mapped_column(String(36))
+    occurred_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    received_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+
+
+class AuditReplicaRow(Base):
+    """Cloud side: continuity of a replicated engine audit chain (TAA-703).
+
+    ``verified_seq``/``verified_hash`` is the end of the gap-free, hash-linked prefix received so far. Status:
+    OK (everything received is verified), GAP (later events arrived before an earlier one) or BROKEN (a hash
+    or link mismatch; sticky until investigated)."""
+
+    __tablename__ = "audit_replicas"
+
+    chain: Mapped[str] = mapped_column(String(64), primary_key=True)
+    engine_id: Mapped[str] = mapped_column(String(64))
+    status: Mapped[str] = mapped_column(String(8))
+    verified_seq: Mapped[int] = mapped_column(Integer, default=0)
+    verified_hash: Mapped[str] = mapped_column(String(64))
+    max_seq: Mapped[int] = mapped_column(Integer, default=0)
+    first_bad_seq: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    detail: Mapped[str] = mapped_column(Text, default="")
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime())

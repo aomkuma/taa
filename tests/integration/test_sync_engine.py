@@ -50,9 +50,12 @@ def test_the_engine_starts_reports_and_stops_sync(tmp_path: Path) -> None:
     runtime.thread.stop = lambda timeout=5.0: calls.append("stop")  # type: ignore[method-assign]
     h.engine.sync = runtime
     h.engine.start()
-    runtime.outbox.emit("audit_event", {"seq": 1})
+    before = h.engine.status()["sync"]
+    assert before["pending"] > 0  # the start-up snapshot queued the existing rows (TAA-703)
+    runtime.outbox.emit("command_result", {"command_id": "c1"})
     status = h.engine.status()["sync"]
-    assert status["pending"] == 1 and status["pending_by_priority"] == {0: 1} and status["failed_sends"] == 0
+    assert status["pending"] == before["pending"] + 1 and status["failed_sends"] == 0
+    assert status["pending_by_priority"][0] == before["pending_by_priority"].get(0, 0) + 1
     h.engine.run(max_cycles=2)
     assert calls == ["start", "stop"]
 

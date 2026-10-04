@@ -511,6 +511,38 @@ AI failures never trip trading breakers; they only produce HOLD.
   - Reject requests with clock skew > 300 s or a reused nonce (10 min nonce store).
   - Payloads are schema-validated and upserted idempotently by `event_id`.
   - During rotation, the current and previous secret are both accepted.
+  - (TAA-703 decisions) Event schemas: `app/sync/events.py`; engine producer: `app/sync/replication.py`; cloud:
+    `app/sync/ingest.py` and `app/web/routers/ingest.py`; tables `replica_versions` and `audit_replicas`
+    (migration 0018).
+    - **Row replication:** most events carry one full row of a replicated table (audit events, decisions and
+      checks, order intents, paper intents/positions/account, breaker states and events, kill-switch events,
+      risk deals/state/baselines, runs, config snapshots). The cloud stores them in the same tables (one model
+      set). A table's columns are its wire schema: a strict pydantic model is generated from them (all
+      columns required, no extra keys, string lengths, integer ranges, finite floats, aware datetimes). Local
+      surrogate ids are not sent where the cloud has its own rows: audit events are keyed by `(chain, seq)`,
+      decision checks by `(decision_id, seq)`. A schema change means deploying the cloud first.
+    - **Producer:** a SQLAlchemy `after_flush` hook on the engine database writes an outbox event for every
+      inserted or changed row through the flushing connection, so the event commits or rolls back with the
+      change. Events coalesce per row (full rows: the newest unsent one is enough). The engine and the CLI
+      (when `sync.enabled`) install it; bulk SQL and deletes are not replicated. The hook never raises into
+      the write. Every replicated row is queued once when an engine database first syncs (`engine_state`
+      key `sync_snapshot`) and again on RESYNC, so older rows and missed changes reach the cloud.
+    - **Idempotency and order:** `replica_versions` keeps the newest applied event id per entity; an event
+      that is not newer (a resend, or a late one) is skipped, so a row never rolls back.
+    - **Per-event rejection:** an invalid event (unknown type, schema error, audit problem) is listed in the
+      200 response as `rejected`; the engine parks it as DEAD at once and the rest of the batch is stored.
+      Whole-batch problems (bad gzip or JSON → 400, invalid envelope or another engine's batch → 422) count
+      attempts as before. Bodies: 8 MiB compressed, 32 MiB decompressed; batches are also capped by
+      `sync.max_batch_bytes` (4 MB of payload) and at most 1000 events.
+    - **Audit continuity:** only the signing engine's chain `engine:<ENGINE_ID>` is accepted. Each event's
+      hash is recomputed on arrival; `audit_replicas` tracks the verified, gap-free prefix per chain: OK, GAP
+      (a later event arrived first) or BROKEN (hash mismatch, a different event at a held seq, or a broken
+      `prev_hash` link; sticky, logged at ERROR and appended to the `web` audit chain). The cloud copy
+      verifies with the same `verify_chain` as the engine.
+    - The web service pairs with one engine through `ENGINE_ID`, `ENGINE_HMAC_SECRET` and optionally
+      `ENGINE_HMAC_SECRET_PREVIOUS` (`WebSettings`); unset, the engine routes answer 503 `sync_disabled`.
+      Nonces are kept in `ingest_nonces`, shared by every web process. Engine routes use the `SignedEngine`
+      dependency (`app/web/deps.py`), never a web session.
 - **Commands:** the engine long-polls `GET /api/v1/engine/commands?cursor=` (25 s). A command is
   `{id, type, params, created_by, created_at, expires_at (≤120 s), totp?}`.
   - The engine enforces an allowlist. KILL_SWITCH_ACTIVATE, STRATEGY_DISABLE and RESYNC need no TOTP.

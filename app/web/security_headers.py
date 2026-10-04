@@ -6,6 +6,8 @@ PWA build is made to run under it (frontend/README.md). ``img-src data:`` is nee
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
@@ -69,23 +71,33 @@ class SecurityHeadersMiddleware:
 
 
 class BodySizeLimitMiddleware:
-    """Rejects request bodies above *max_bytes*, by ``Content-Length`` up front or while streaming."""
+    """Rejects request bodies above *max_bytes*, by ``Content-Length`` up front or while streaming.
 
-    def __init__(self, app: ASGIApp, *, max_bytes: int = DEFAULT_MAX_BODY_BYTES) -> None:
+    *path_limits* raises the limit for exact paths (the engine's gzipped ingest batches)."""
+
+    def __init__(
+        self,
+        app: ASGIApp,
+        *,
+        max_bytes: int = DEFAULT_MAX_BODY_BYTES,
+        path_limits: Mapping[str, int] | None = None,
+    ) -> None:
         self.app = app
         self.max_bytes = max_bytes
+        self.path_limits = dict(path_limits or {})
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
+        limit = self.path_limits.get(str(scope.get("path", "")), self.max_bytes)
         for name, value in scope.get("headers", []):
             if name == b"content-length":
                 try:
                     declared = int(value)
                 except ValueError:
-                    declared = self.max_bytes + 1
-                if declared > self.max_bytes:
+                    declared = limit + 1
+                if declared > limit:
                     response = error_response(413, "request_too_large", "The request body is too large")
                     await response(scope, receive, send)
                     return
@@ -102,7 +114,7 @@ class BodySizeLimitMiddleware:
             message = await receive()
             if message["type"] == "http.request":
                 received += len(message.get("body", b""))
-                if received > self.max_bytes:
+                if received > limit:
                     too_large = True
                     return {"type": "http.disconnect"}
             return message

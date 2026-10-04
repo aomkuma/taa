@@ -1,9 +1,9 @@
 # Session handoff
 
-Last updated: 2026-10-04, end of three parallel sessions. Everything is merged into `main` (`c85d539` plus
-this handoff): Phase 6C (done), Phase 7 TAA-701, 702, 704 (engine side), Phase 8 TAA-801, 802, Phase 9
-TAA-901, 902, 915, Phase 10 TAA-1001..1003, and the storage-health fix. No branch holds unmerged work. This
-file holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
+Last updated: 2026-10-04, single session on `main`: TAA-703 (ingest API) done. Before it, three parallel
+sessions were merged: Phase 6C (done), Phase 7 TAA-701, 702, 704 (engine side), Phase 8 TAA-801, 802,
+Phase 9 TAA-901, 902, 915, Phase 10 TAA-1001..1003, and the storage-health fix. No branch holds unmerged
+work. This file holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
 ---
@@ -21,10 +21,10 @@ dependencies) and docs/PLAN.md §A13 (cloud sync) and §A14 (web backend); later
 sections (§A15/§A28 PWA, §A16 analytics, §A30 tenancy, §A31 trading profile).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
-Partly done: Phase 7 (701, 702; 704 lacks only the long-poll route), Phase 8 (801, 802), Phase 9 (901, 902,
-915), Phase 10 (1001..1003).
+Partly done: Phase 7 (701, 702, 703; 704 lacks only the long-poll route), Phase 8 (801, 802), Phase 9 (901,
+902, 915), Phase 10 (1001..1003).
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Start with TAA-703 (ingest API).
+"Next work" list in docs/HANDOFF.md. Start with TAA-704 (the long-poll route).
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Update docs/HANDOFF.md at the end of the
 session. Stop for review at the end of Milestone 1, or at any phase boundary if I ask.
@@ -39,7 +39,7 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
   (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
   (TAA-6A1..6A5, symbol universe & suitability ranking) and Phase 6B (TAA-6B1..6B5, watchlists,
   opportunities & alert windows), Phase 6C (TAA-6C1..6C5, shadow trades, accuracy & calibration).
-- **In progress (progress table):** Phase 7 2/7 (701, 702; 704 has 5/6 items), Phase 8 2/10 (801, 802),
+- **In progress (progress table):** Phase 7 3/7 (701, 702, 703; 704 has 5/6 items), Phase 8 2/10 (801, 802),
   Phase 9 3/22 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. The order of the
   remaining tickets: "Next work" below.
 - **Checks:** 2270 tests on `c85d539` (2269 passed + 1 failure from a memory-allocation error under parallel
@@ -68,7 +68,16 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
       store (memory; `app/sync/nonces.py` SQL, `ingest_nonces`, migration 0014), dual-secret rotation
     - `app/sync/outbox.py` + `client.py` + `runtime.py`: `outbox_events` (migration 0015), priorities,
       coalescing, gzip batches, backoff, DEAD after `max_attempts`, backlog cap, metrics in `status()["sync"]`;
-      sender thread only when `sync.enabled`. No producers are wired yet (TAA-703/706/707).
+      sender thread only when `sync.enabled`
+    - TAA-703 ingest (PLAN §A13 "TAA-703 decisions"): `app/sync/events.py` (replicated tables as
+      `ReplicaSpec`s; strict payload schemas generated from the columns; envelopes), `replication.py`
+      (`after_flush` hook → outbox in the same transaction, coalesced per row; `snapshot()` once per engine DB
+      and on RESYNC; installed by the engine and by the CLI when `sync.enabled`), `ingest.py`
+      (`IngestService`: per-event rejection, upserts guarded by `replica_versions`, audit continuity in
+      `audit_replicas`, command results via `CommandQueue.record_result`), route
+      `app/web/routers/ingest.py` behind `SignedEngine` (`app/web/deps.py`); `WebSettings` gains
+      `ENGINE_ID`, `ENGINE_HMAC_SECRET`, `ENGINE_HMAC_SECRET_PREVIOUS`. The sender parks events the cloud
+      rejects as DEAD at once; batches are capped at 1000 events and `sync.max_batch_bytes`.
     - `app/security/totp.py` + `app/sync/commands.py`: long-poll client thread, engine-loop processing,
       allowlist, expiry, single-use TOTP, results as `command_result` outbox events; `command_log`;
       `app/sync/command_queue.py` (cloud queue, `engine_commands`, migration 0016); strategy disable persisted
@@ -298,7 +307,7 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
   `main` in `C:\Users\korap\taa` (one session at a time). It is the only worktree and the only local branch:
   `phase8-auth`, `phase9-frontend` and `phase10-analytics` were merged, then deleted with their worktrees
   (2026-10-04). The `origin/dependabot/*` branches are Dependabot PRs on GitHub, untouched. Latest
-  migration: **0017**.
+  migration: **0018**.
 
 ## Next work
 
@@ -317,7 +326,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 **Order for the single session** (critical path first, otherwise the TICKETS execution order
 7 → 8 → 8A → 9 → 10 → 11; each step's dependencies are done by the time it is reached):
 
-1. TAA-703 ingest API
+1. ~~TAA-703 ingest API~~ (done)
 2. TAA-704 long-poll route (completes 704)
 3. TAA-707 advisory sync (engine producers, advisory-config client, ingest of the new event types)
 4. TAA-706 candle & history sync
@@ -334,13 +343,17 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 
 Planned details:
 
-- **TAA-707 engine side:** replicate advisory rows as full-row upsert events through explicit hooks in the
-  catalog, ranking, scanner, lifecycle, shadow tracker and calibration; shadow cursor progress is not
-  replicated; suitability snapshots coalesce per symbol and hour; the advisory-config client uses an ETag and
-  falls back to the cache, then local preferences. Event schemas go in `app/sync/events.py`, shared with
-  ingest.
-- **TAA-703 / 704 route:** build on `app/web` (TAA-801). Ingest and the long poll authenticate with HMAC
-  (`app/security/hmac_auth.py`), not web sessions, so they sit outside the auth dependencies.
+- **TAA-707 engine side:** the TAA-703 mechanism already replicates any table listed in
+  `app/sync/events.py` `REPLICAS`, so advisory rows need `ReplicaSpec`s, not hooks in each producer:
+  `symbol_catalog`, `opportunities`, `shadow_trades`, `calibration_tables`, `evidence_model_versions`,
+  `suitability_snapshots` (key `(server, symbol, hour)`, exclude `id`: coalescing per symbol and hour then
+  comes for free). Shadow cursor progress must not be replicated: add an "ignore changes to these columns"
+  option to `ReplicaSpec` (updates touching only them emit nothing). Add a sample row per table to
+  `tests/sync_data.py` (a test enforces it). The advisory-config client uses an ETag and falls back to the
+  cache, then local preferences.
+- **TAA-704 route:** `GET /api/v1/engine/commands?cursor=` behind `SignedEngine` (`app/web/deps.py`; the
+  signature covers the query string), a thin loop over `CommandQueue.pending` (`ctx.engine.commands`) for up
+  to 25 s; poll the database in a thread (`run_in_threadpool`) between async sleeps.
 - **TAA-1004 preparation:** see "Notes from Phase 10".
 
 ## Parallel sessions (rules learned on 2026-10-04)
@@ -484,7 +497,9 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
 
 ## Open items needing the user
 
-- Whether and when to push to GitHub (`origin` exists; `main` is ahead).
+- Pushing to GitHub: the user asked for a push (2026-10-04), but `git push` from Claude Code fails because
+  the Git credential manager needs an interactive GitHub login (`gh` is not installed). The user runs
+  `git push origin main` in their own terminal.
 - The flaky pandas access violation has no ticket yet: open one if it recurs (see "Notes from Phase 7").
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA). See PLAN §A30.

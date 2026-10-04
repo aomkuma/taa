@@ -160,7 +160,7 @@ class CommandResult:
             "type": self.type,
             "outcome": self.outcome.value,
             "reason": self.reason.value,
-            "detail": self.detail,
+            "detail": self.detail[:2000],
             "at": self.at.isoformat(),
         }
 

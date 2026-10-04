@@ -20,6 +20,7 @@ from enum import StrEnum
 from typing import Any
 
 from sqlalchemy import select, update
+from sqlalchemy.orm import Session
 
 from app.core.clock import Clock, ensure_utc
 from app.core.errors import TaaError
@@ -119,20 +120,27 @@ class CommandQueue:
                     row.delivered_at = now
             return [wire(r) for r in rows]
 
-    def record_result(self, engine_id: str, payload: Mapping[str, Any]) -> bool:
-        """Apply a ``command_result`` event; False when the command is unknown for this engine."""
+    def record_result(self, engine_id: str, payload: Mapping[str, Any], sess: Session | None = None) -> bool:
+        """Apply a ``command_result`` event; False when the command is unknown for this engine.
+
+        The ingest API passes its own *sess*, so the result commits with the rest of the batch."""
+        if sess is None:
+            with self.db.session() as own:
+                return self._record(own, engine_id, payload)
+        return self._record(sess, engine_id, payload)
+
+    def _record(self, sess: Session, engine_id: str, payload: Mapping[str, Any]) -> bool:
         outcome = str(payload.get("outcome", ""))
         if outcome not in (QueueStatus.EXECUTED, QueueStatus.REJECTED, QueueStatus.FAILED):
             return False
-        with self.db.session() as sess:
-            row = sess.get(EngineCommandRow, str(payload.get("command_id", "")))
-            if row is None or row.engine_id != engine_id:
-                return False
-            row.status = outcome
-            row.completed_at = self.clock.now_utc()
-            row.result = {k: payload.get(k) for k in ("outcome", "reason", "detail", "at")}
-            row.totp = None
-            return True
+        row = sess.get(EngineCommandRow, str(payload.get("command_id", "")))
+        if row is None or row.engine_id != engine_id:
+            return False
+        row.status = outcome
+        row.completed_at = self.clock.now_utc()
+        row.result = {k: payload.get(k) for k in ("outcome", "reason", "detail", "at")}
+        row.totp = None
+        return True
 
     def expire(self, now: datetime | None = None) -> int:
         now = ensure_utc(now or self.clock.now_utc())

@@ -594,7 +594,10 @@ class EngineLoopConfig(StrictModel):
 
 class SyncConfig(StrictModel):
     enabled: bool = False
-    batch_size: int = Field(default=500, ge=1, le=5000)
+    batch_size: int = Field(default=500, ge=1, le=1000, description="the ingest API accepts at most 1000")
+    max_batch_bytes: int = Field(
+        default=4_000_000, ge=64_000, le=16_000_000, description="uncompressed payload bytes per batch"
+    )
     flush_interval_seconds: float = Field(default=2.0, gt=0)
     command_poll_seconds: float = Field(default=25.0, gt=0, le=60)
     heartbeat_seconds: float = Field(default=10.0, gt=0)
@@ -818,6 +821,11 @@ class WebSettings(BaseSettings):
     # Key material for session-token hashing, CSRF tokens and TOTP secrets at rest (app.security.crypto).
     # At least 32 characters; rotating it ends all sessions and requires TOTP re-enrollment.
     WEB_SESSION_SECRET: SecretStr
+    # The paired engine (PLAN §A13): ingest and the command long poll verify its HMAC signatures. Both unset:
+    # those routes answer 503 ``sync_disabled``. The previous secret is accepted during a rotation.
+    ENGINE_ID: str | None = Field(default=None, min_length=1, max_length=64)
+    ENGINE_HMAC_SECRET: SecretStr | None = None
+    ENGINE_HMAC_SECRET_PREVIOUS: SecretStr | None = None
 
     @field_validator("WEB_PUBLIC_ORIGIN")
     @classmethod
@@ -836,6 +844,18 @@ class WebSettings(BaseSettings):
             self.WEB_PUBLIC_ORIGIN is None or not self.WEB_PUBLIC_ORIGIN.startswith("https://")
         ):
             raise ValueError("WEB_PUBLIC_ORIGIN (https://...) is required when WEB_ENV=production")
+        return self
+
+    @model_validator(mode="after")
+    def _engine_pairing(self) -> WebSettings:
+        if (self.ENGINE_ID is None) != (self.ENGINE_HMAC_SECRET is None):
+            raise ValueError("ENGINE_ID and ENGINE_HMAC_SECRET are set together (or both left unset)")
+        if self.ENGINE_HMAC_SECRET_PREVIOUS is not None and self.ENGINE_HMAC_SECRET is None:
+            raise ValueError("ENGINE_HMAC_SECRET_PREVIOUS needs ENGINE_HMAC_SECRET")
+        for name in ("ENGINE_HMAC_SECRET", "ENGINE_HMAC_SECRET_PREVIOUS"):
+            secret = getattr(self, name)
+            if secret is not None and len(secret.get_secret_value()) < WEB_SECRET_MIN_LENGTH:
+                raise ValueError(f"{name} must be at least {WEB_SECRET_MIN_LENGTH} characters")
         return self
 
     @property
@@ -862,7 +882,6 @@ EXTERNAL_ENV_KEYS = frozenset(WebSettings.model_fields) | frozenset(
         "WEB_STATIC_DIR",
         "WEB_ENV",
         "PORT",
-        "ENGINE_HMAC_SECRET_PREVIOUS",
         "WEB_PUBLIC_ORIGIN",
         "WORKER_CONCURRENCY",
     }

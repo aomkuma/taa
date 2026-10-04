@@ -18,6 +18,19 @@ from app.sync.outbox import SendResult
 log = logging.getLogger(__name__)
 
 
+def _rejected(resp: httpx.Response) -> dict[str, str]:
+    try:
+        doc = resp.json() if resp.content else {}
+    except ValueError:
+        return {}
+    items = doc.get("rejected") if isinstance(doc, dict) else None
+    out: dict[str, str] = {}
+    for item in items if isinstance(items, list) else []:
+        if isinstance(item, dict) and isinstance(item.get("event_id"), str) and item["event_id"]:
+            out[item["event_id"]] = f"{item.get('code', '')}: {item.get('detail', '')}"[:500]
+    return out
+
+
 class CloudClient:
     def __init__(
         self, base_url: str, signer: Signer, *, timeout: float = 15.0, http: httpx.Client | None = None
@@ -42,7 +55,10 @@ class CloudClient:
         )
 
     def post_gzip(self, target: str, body: bytes) -> SendResult:
-        """The outbox transport: POST a gzipped JSON batch."""
+        """The outbox transport: POST a gzipped JSON batch.
+
+        A 2xx answer lists the events the cloud refused for good (TAA-703); they come back in
+        ``SendResult.rejected`` so the sender parks them instead of resending."""
         try:
             resp = self._send(
                 "POST",
@@ -52,7 +68,9 @@ class CloudClient:
             )
         except httpx.HTTPError as exc:
             return SendResult(None, f"{type(exc).__name__}: {exc}")
-        return SendResult(resp.status_code, "" if resp.is_success else f"HTTP {resp.status_code}")
+        if not resp.is_success:
+            return SendResult(resp.status_code, f"HTTP {resp.status_code}")
+        return SendResult(resp.status_code, "", _rejected(resp))
 
     def get_json(self, target: str, timeout: float | None = None) -> tuple[int | None, Any]:
         """GET a JSON document (*timeout* overrides the default, e.g. for a long poll)."""

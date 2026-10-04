@@ -225,6 +225,7 @@ engine:
 sync:
   enabled: false                    # true once the Railway web service is paired
   batch_size: 500                   # events per signed, gzipped POST /api/v1/ingest/batch
+  max_batch_bytes: 4000000         # uncompressed payload per batch (the ingest API takes up to 32 MB)
   flush_interval_seconds: 2
   request_timeout_seconds: 15
   max_backlog_events: 200000        # beyond: the oldest unsent quotes/snapshots are dropped (never audit/trades)

@@ -155,6 +155,32 @@ class TestSender:
         assert row.status == "DEAD" and row.attempts == 3 and row.last_error == "HTTP 422"
         assert sender.metrics().dead == 1 and ob.next_batch() == []
 
+    def test_events_the_cloud_refuses_are_parked_at_once(self, db: Database) -> None:
+        ob, clock = rig(db)
+        good, bad = ob.emit("decision", {"n": 1}), ob.emit("decision", {"n": 2})
+
+        def answer(path: str, body: bytes) -> SendResult:
+            return SendResult(200, "", {bad: "INVALID_PAYLOAD: hwm: float_type", "unknown-id": "x"})
+
+        sender = OutboxSender(ob, answer, "eng-1", clock, jitter=lambda: 1.0)
+        assert sender.flush_once() == 2  # both answered: the drain loop carries on
+        by_id = {r.event_id: r for r in rows(db)}
+        assert by_id[good].status == "SENT" and by_id[bad].status == "DEAD"
+        assert "INVALID_PAYLOAD" in by_id[bad].last_error
+        m = sender.metrics()
+        assert (m.sent_total, m.rejected_total, m.dead, m.consecutive_failures) == (1, 1, 1, 0)
+
+    def test_batches_respect_the_byte_budget(self, db: Database) -> None:
+        cfg = CFG.model_copy(update={"batch_size": 10, "max_batch_bytes": 64_000})
+        ob, _ = rig(db, cfg)
+        ids = [ob.emit("decision", {"blob": "x" * 30_000}) for _ in range(3)]
+        assert [e.event_id for e in ob.next_batch()] == ids[:2]
+        ob.mark_sent(ids[:2])
+        big = ob.emit("decision", {"blob": "y" * 100_000})  # alone over budget: still sent, by itself
+        assert [e.event_id for e in ob.next_batch()] == [ids[2]]
+        ob.mark_sent([ids[2]])
+        assert [e.event_id for e in ob.next_batch()] == [big]
+
     def test_auth_and_rate_limits_do_not_burn_attempts(self, db: Database) -> None:
         ob, clock = rig(db)
         ob.emit("decision", {})
@@ -228,6 +254,20 @@ class TestClient:
         sender = OutboxSender(ob, client.post_gzip, "eng-1", clock)
         assert sender.flush_once() == 1
         assert seen[0]["encoding"] == "gzip" and seen[0]["doc"]["events"][0]["payload"] == {"seq": 7}
+
+    def test_rejections_in_the_answer_are_reported(self, db: Database) -> None:
+        clock = ManualClock(NOW)
+        answer = {
+            "accepted": 1,
+            "duplicates": 0,
+            "rejected": [{"event_id": "e2", "code": "UNKNOWN_TYPE", "detail": "x"}],
+        }
+        http = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=answer)))
+        client = CloudClient("https://cloud.example", Signer("eng-1", SECRET.encode(), clock), http=http)
+        assert client.post_gzip(INGEST_PATH, b"").rejected == {"e2": "UNKNOWN_TYPE: x"}
+        odd = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(200, content=b"not json")))
+        client = CloudClient("https://cloud.example", Signer("eng-1", SECRET.encode(), clock), http=odd)
+        assert client.post_gzip(INGEST_PATH, b"") == SendResult(200, "")
 
     def test_server_errors_and_transport_failures(self, db: Database) -> None:
         clock = ManualClock(NOW)

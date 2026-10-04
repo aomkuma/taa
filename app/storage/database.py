@@ -65,6 +65,11 @@ class Database:
         self._factory = sessionmaker(bind=self.engine, expire_on_commit=False)
 
     @property
+    def session_factory(self) -> sessionmaker[Session]:
+        """The factory behind :meth:`session` (for session event listeners such as replication)."""
+        return self._factory
+
+    @property
     def is_sqlite(self) -> bool:
         return _is_sqlite(self.url)
 

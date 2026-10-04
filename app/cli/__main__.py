@@ -30,6 +30,11 @@ def _db_and_audit(settings: Settings):
 
     upgrade_schema(resolve_db_url(settings.env.ENGINE_DB_URL))
     db = Database(resolve_db_url(settings.env.ENGINE_DB_URL))
+    if settings.config.sync.enabled:  # CLI changes (kill switch, breaker resets) reach the cloud as well
+        from app.core.clock import SystemClock
+        from app.sync.replication import install_replication
+
+        install_replication(db, SystemClock(), _engine_chain(settings))
     return db, AuditLog(db, _engine_chain(settings))
 
 
