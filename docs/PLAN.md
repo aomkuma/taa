@@ -36,6 +36,20 @@
 - **Scope change (2026-10-03, after Phase 6):** the user chose to build Phase 12 (DEMO execution) before Phases
   6A–11. Broker orders are allowed on the **DEMO account only** (trade mode DEMO, `ENABLE_DEMO_TRADING=true`, the
   DEMO gate of §A3 passed). LIVE stays disabled until Phase 14 and an explicit go-ahead.
+- **Request (rev. 4, 2026-10-04):** every web user should be able to connect **their own** MT5 account, and the
+  engine pairing keys (`ENGINE_ID`, `ENGINE_HMAC_SECRET`) should move from the web service's env into the database,
+  looked up through a user → engine mapping. A web page guides issuing `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
+  `CONTROL_TOTP_SECRET` → §A32.
+- **Rev. 4 decisions (2026-10-04):**
+  1. **Self-hosted engine per user.** Each user runs the engine and an MT5 terminal on their own Windows machine
+     or VPS. MT5 credentials never leave it. A hosted MT5 farm was rejected for three reasons: the cloud would
+     hold other people's trading passwords, the cost grows with every account, and the legal risk is highest
+     (R32).
+  2. Engine keys live in the cloud database (encrypted), each engine owned by one user. Control rights come from
+     owning the engine.
+  3. Fail-closed rollout: at most one ACTIVE engine per deployment until the replicated tables are engine-scoped
+     (TAA-709). Linking engines for non-OWNER users stays behind `MULTI_ENGINE_ENABLED=false` until the legal
+     review (R32, `docs/COMPLIANCE.md`).
 - **Workspace (rev. 1):** `C:\Users\korap\taa` was empty (greenfield).
 - **Machine:** Windows 11 Home, Python 3.11.9, Node 24.18 / npm 11.16, Git 2.43 (Docker installed but not used locally).
   FBS MetaTrader 5 terminal at `C:\Program Files\FBS MetaTrader 5\terminal64.exe` (file version 5.0.0.6230). Terminal data
@@ -234,8 +248,10 @@ LIVE start logs a prominent WARNING banner, and the first N live trades run at r
 | `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `AI_MODE` | engine | none, —, `claude-opus-5-5`, veto | M2 |
 | `KILL_SWITCH_FILE` | engine | `data/KILL_SWITCH` | |
 | `ENGINE_DB_URL` | engine | `sqlite:///data/taa_engine.db` | local SQLite, authoritative trading state |
-| `CLOUD_BASE_URL`, `ENGINE_ID`, `ENGINE_HMAC_SECRET` (+ `_PREVIOUS`) | engine, web | — | sync; sealed on Railway |
-| `CONTROL_TOTP_SECRET` | **engine only** | — | verifies remote close/flatten codes |
+| `CLOUD_BASE_URL`, `ENGINE_ID`, `ENGINE_HMAC_SECRET` | engine | — | sync; issued by the web service (PWA or CLI, §A32). (rev. 4) The web service reads engine keys from its `engines` table, not from env |
+| `CONTROL_TOTP_SECRET` | **engine only** | — | verifies remote close/flatten codes; generated in the browser or by the engine CLI, never stored in the cloud (§A32) |
+| `MULTI_ENGINE_ENABLED` | web | false | (rev. 4) false: only OWNER users may register engines (§A32) |
+| `WEB_MAX_ENGINES_PER_USER` | web | 1 | (rev. 4) per-user engine limit (§A32) |
 | `DATABASE_URL` | web, worker | `sqlite:///data/taa_cloud.db` | Railway: Postgres database `taa` (reference variable) |
 | `WEB_SESSION_SECRET`, `VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_SUBJECT` | web, worker | — | sealed on Railway |
 | `WEB_IP_ALLOWLIST` | web | empty | optional |
@@ -539,10 +555,12 @@ AI failures never trip trading breakers; they only produce HOLD.
       (a later event arrived first) or BROKEN (hash mismatch, a different event at a held seq, or a broken
       `prev_hash` link; sticky, logged at ERROR and appended to the `web` audit chain). The cloud copy
       verifies with the same `verify_chain` as the engine.
-    - The web service pairs with one engine through `ENGINE_ID`, `ENGINE_HMAC_SECRET` and optionally
-      `ENGINE_HMAC_SECRET_PREVIOUS` (`WebSettings`); unset, the engine routes answer 503 `sync_disabled`.
-      Nonces are kept in `ingest_nonces`, shared by every web process. Engine routes use the `SignedEngine`
-      dependency (`app/web/deps.py`), never a web session.
+    - Built in TAA-703: the web service pairs with one engine through `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
+      optionally `ENGINE_HMAC_SECRET_PREVIOUS` (`WebSettings`); unset, the engine routes answer 503
+      `sync_disabled`. **(rev. 4, TAA-708)** This is replaced by the engine registry (§A32). Keys are looked up
+      per request from the `engines` table; an unknown or revoked engine gets 401 `signature_invalid`, and the env
+      variables are imported once and then refused. Nonces are kept in `ingest_nonces`, shared by every web
+      process. Engine routes use the `SignedEngine` dependency (`app/web/deps.py`), never a web session.
 - **Commands:** the engine long-polls `GET /api/v1/engine/commands?cursor=` (25 s). A command is
   `{id, type, params, created_by, created_at, expires_at (≤120 s), totp?}`.
   - The engine enforces an allowlist. KILL_SWITCH_ACTIVATE, STRATEGY_DISABLE and RESYNC need no TOTP.
@@ -596,6 +614,8 @@ AI failures never trip trading breakers; they only produce HOLD.
       the reason.
     - Step-up lasts 5 minutes on the session that confirmed it.
     - The session response carries `server_time`, so the PWA measures the absolute limit on the server clock.
+- **Engines (rev. 4):** engine registration, key rotation and revocation endpoints, and owner scoping of every
+  engine-related route: §A32 (TAA-811).
 - **Security headers:** (TAA-801, `app/web/security_headers.py`; every response, including errors)
   - strict CSP (`default-src 'self'`, no inline or eval, `frame-ancestors 'none'`)
   - HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy`
@@ -794,7 +814,7 @@ AI failures never trip trading breakers; they only produce HOLD.
 | Credential leak | Secrets live only in env/.env, keyring or Railway sealed variables. `.env` is ACL-restricted to the bot user (icacls). `SecretStr` plus redaction. gitleaks in pre-commit and CI; `.gitignore`. Secrets never go to the AI or the cloud |
 | Trading the wrong account | Explicit login/server, post-connect verification, DEMO mode refuses REAL accounts, the account-bound live phrase, a dedicated portable terminal |
 | Runaway bot | Risk ceilings, breakers, kill switch (file, CLI and PWA), idempotency keys, rate limits, probation |
-| Cloud compromise | The cloud holds no MT5 or AI secrets. The engine allowlists commands, requires an engine-verified TOTP for dangerous ones, and accepts only expiring single-use commands. No risk-increasing command is accepted remotely |
+| Cloud compromise | The cloud holds no MT5 or AI secrets. The engine allowlists commands, requires an engine-verified TOTP for dangerous ones, and accepts only expiring single-use commands. No risk-increasing command is accepted remotely. (rev. 4) The cloud stores engine HMAC secrets encrypted (§A32): a compromise could forge replica data or queue no-TOTP commands (kill switch, strategy disable), never close/flatten (`CONTROL_TOTP_SECRET` never reaches the cloud) and never anything risk-increasing |
 | Dashboard attack | argon2id + TOTP, lockout, secure cookies, CSRF, strict CSP, HSTS, no CORS, audit trail, optional IP allowlist, 2FA on Railway and GitHub |
 | Ingest spoofing or replay | HMAC with timestamp, nonce and body hash; TLS; dual-secret rotation |
 | Supply chain | Pinned dependencies and lockfiles, pip-audit, npm audit, bandit, ruff security rules, Dependabot |
@@ -808,7 +828,9 @@ AI failures never trip trading breakers; they only produce HOLD.
 |---|---|
 | MT5 master or investor password | change it in the FBS Personal Area (or MT5 → Tools → Options → Server → Change), update keyring or `.env`, restart, verify |
 | AI key | create a new key, update the config, revoke the old key |
-| `ENGINE_HMAC_SECRET` | make the new secret primary and keep the old one as previous on Railway, update the engine, then remove the previous one |
+| `ENGINE_HMAC_SECRET` | (rev. 4) "Rotate" on the PWA Engines page or `python -m app.cli web engine rotate ID`: the new secret is shown once, the old one stays accepted until the engine signs with the new one (at most 7 days); update the engine's `.env` or keyring and restart (§A32) |
+| `CONTROL_TOTP_SECRET` | (rev. 4) generate a new one on the Engines page (in the browser) or with `python -m app.cli engine new-totp`, scan it into the authenticator app, update the engine and restart |
+| `WEB_SESSION_SECRET` | ends all sessions, requires TOTP re-enrollment and (rev. 4) re-issuing every engine secret, because they are encrypted with a key derived from it |
 | VAPID keys | rotate; clients re-subscribe |
 | TOTP | re-enroll |
 | Web passwords, Railway and GitHub tokens | change or reissue |
@@ -1276,6 +1298,9 @@ subscriptions later are configuration plus billing, not a rewrite.
   - Roles: **OWNER** (everything, including controls and the kill switch), **SUBSCRIBER** (advisory features only;
     never control commands, never the owner's account, positions, decisions or trades), **ADMIN** (support, no trading
     controls).
+  - (rev. 4, §A32) Control rights come from **owning an engine**. A user commands only engines they own; OWNER
+    can additionally list and revoke any engine but commands only its own. Linking engines for non-OWNER users
+    stays off (`MULTI_ENGINE_ENABLED=false`) until the legal review.
   - Every user-owned row is scoped by `user_id` through one authorization dependency, backed by cross-tenant (IDOR)
     tests.
   - Per-plan API and push rate limits; PDPA-ready export/delete of a user's data.
@@ -1369,12 +1394,154 @@ never sends orders.
 - Shadow trades (§A27) keep measuring the primary entry in R; plan-level hypothetical P/L can be added later
   without changing stored outcomes.
 
+## A32. Engine registry & per-user engines (rev. 4)
+
+**Goal:** every user can connect their own MT5 account. The engine (Python + MT5 terminal) runs on **that user's**
+Windows machine or VPS. MT5 credentials stay there, in `.env` or the keyring, exactly as today. The cloud only knows
+the engine's pairing keys, and they are stored in the database and mapped to one owner instead of being set in the
+web service's env.
+
+- **Why self-hosted:** the `MetaTrader5` package is Windows-only, with one terminal and one login per process, and
+  Railway runs Linux, so the cloud cannot reach MT5 directly anyway. A hosted MT5 farm (users type their MT5
+  password into the web) was rejected for three reasons: the cloud would hold other people's trading credentials,
+  costs grow with every account, and trading other people's accounts carries the highest licensing risk (R32).
+- **Table `engines` (cloud only):**
+
+  | Column | Notes |
+  |---|---|
+  | `engine_id` | PK. Generated by the server: `eng_` + 26 base32 chars. Never chosen by a user, so ids can't be guessed or impersonated |
+  | `owner_user_id` | FK `users.id`. Exactly one owner |
+  | `label` | user-chosen name, ≤ 64 chars |
+  | `secret_enc`, `previous_secret_enc`, `previous_until` | HMAC secrets encrypted with `SecretBox(derive_key(WEB_SESSION_SECRET, "engine-hmac-secret"))` (`app/security/crypto.py`). HMAC is symmetric, so the verifier needs the secret itself and a hash cannot be used |
+  | `status` | ACTIVE or REVOKED |
+  | `created_at`, `rotated_at`, `revoked_at`, `first_seen_at`, `last_seen_at` | `first_seen_at` drives "connected" in the PWA; `last_seen_at` is written at most once per 60 s |
+
+- **The three values:**
+
+  | Value | Who creates it | Where it is kept | The cloud sees it? |
+  |---|---|---|---|
+  | `ENGINE_ID` | web service, at registration | `engines` table; engine `.env` | yes (identifier) |
+  | `ENGINE_HMAC_SECRET` | web service: 32 random bytes, URL-safe base64 | encrypted in `engines`; engine `.env`/keyring | yes, encrypted at rest; shown to the user **once** |
+  | `CONTROL_TOTP_SECRET` | the **browser** (Web Crypto, 20 random bytes, base32) or `python -m app.cli engine new-totp` on the engine machine | the user's authenticator app; engine `.env`/keyring | **never**: it is not part of any request, so §A4 "engine only" still holds |
+
+  - The issuing response carries `Cache-Control: no-store`. The secret is never logged, audited or returned
+    again. A lost secret means rotating it.
+  - The TOTP secret is confirmed by entering one code from the authenticator app. The browser checks it
+    locally (RFC 6238 over Web Crypto HMAC-SHA1) before the `.env` block is shown.
+- **Verification (TAA-708):**
+  - `Verifier` (`app/security/hmac_auth.py`) gets keys through a `KeyLookup` protocol,
+    `keys(engine_id) -> Sequence[bytes] | None`, instead of a fixed mapping. `EngineRegistry` implements it from
+    the database.
+  - Only ACTIVE engines are returned. Decrypted keys are cached for at most 5 s, so a revocation takes effect
+    within 5 s.
+  - `SignedEngine` resolves the owner. `EngineRequest` carries `engine_id` and `owner_user_id`, and every engine
+    route scopes by the verified `engine_id` (ingest, command long poll, later heartbeats and advisory config).
+  - The batch-level check "a batch naming another engine is refused" (TAA-703) stays.
+- **Rotation:**
+  - "Rotate" makes a new secret current and the old one previous.
+  - The previous secret is dropped on the first request signed with the new one (`Verified.previous_secret` is
+    false), or after 7 days (`previous_until`).
+  - This replaces the manual dual-secret steps on Railway.
+- **Revocation:**
+  - REVOKED is final. Requests get 401 within the cache window, and open commands for the engine expire.
+  - Replicated rows are kept, read-only, for audit.
+  - A new engine needs a new registration.
+- **Ownership and roles (amends §A30):**
+  - User-facing routes resolve an engine through one dependency, `OwnedEngine`. It returns 404, not 403, for an
+    engine the session user does not own, so ids cannot be probed.
+  - Read APIs (TAA-803) show only data of owned engines.
+  - Commands (TAA-805) can be queued only for an owned engine.
+  - The OWNER role administers the deployment: it can list and revoke any engine but **commands only its own**.
+  - A SUBSCRIBER with a linked engine controls that engine and nothing else.
+- **Limits (fail-closed):**
+  - Until TAA-709 is done there is **at most one ACTIVE engine per deployment**; a second registration is refused
+    with `engine_limit_reached`.
+  - `WEB_MAX_ENGINES_PER_USER` (default 1) caps engines per user.
+  - `MULTI_ENGINE_ENABLED=false` (default) lets only OWNER users register engines; others get 403
+    `engine_linking_disabled`. Turning it on needs the legal review in `docs/COMPLIANCE.md` (R32).
+  - Engines of every user follow the same mode rules: PAPER or DEMO. LIVE stays disabled until Phase 14.
+- **Migration from env (TAA-708):**
+  - `python -m app.cli web engine import-env --owner NAME` imports today's `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
+    optional `ENGINE_HMAC_SECRET_PREVIOUS` into `engines` once.
+  - After that, `load_web_settings` raises `ConfigError` while any `ENGINE_*` variable is still set on the web
+    service, so the env and the database can never disagree.
+  - The engine side keeps its env variables unchanged.
+- **API (TAA-811):**
+  - Endpoints:
+
+    | Endpoint | Session | Result |
+    |---|---|---|
+    | `GET /api/v1/engines` | `CurrentSession` | the user's engines: id, label, status, created, rotated, first/last seen (never secrets) |
+    | `POST /api/v1/engines` `{label}` | `StepUpSession` | `{engine_id, secret, cloud_base_url}` once, `no-store` |
+    | `POST /api/v1/engines/{id}/rotate` | `StepUpSession` | `{engine_id, secret}` once, `no-store` |
+    | `POST /api/v1/engines/{id}/revoke` `{confirm: id}` | `StepUpSession` | 204 |
+
+  - Error codes: `engine_limit_reached` (409), `engine_linking_disabled` (403), `engine_not_found` (404),
+    `engine_revoked` (409). They map to i18n keys (`codes:engine.*`).
+  - Registration and rotation are rate-limited per user.
+- **CLI (TAA-708):** `python -m app.cli web engine add --owner NAME --label X | rotate ID | revoke ID | list |
+  import-env --owner NAME`, built like `app/cli/web.py`. On the engine machine, `python -m app.cli engine
+  new-totp` prints a new `CONTROL_TOTP_SECRET` as a QR code.
+- **Audit (web chain):** `ENGINE_REGISTERED`, `ENGINE_KEY_ROTATED`, `ENGINE_REVOKED`, `ENGINE_IMPORTED`. Each
+  records the actor, the engine id and the owner, never key material.
+- **PWA page "เชื่อมต่อ Engine / Engines" (TAA-923, under Settings):**
+  - **List:** label, engine id, status badge (waiting for first contact / connected / offline / revoked), last
+    seen, key age.
+  - **Add wizard** (step-up first):
+    1. Label, plus a notice that engines run PAPER or DEMO only and LIVE is disabled.
+    2. The server issues `ENGINE_ID` and `ENGINE_HMAC_SECRET`. They are shown once, with a warning that they
+       cannot be shown again.
+    3. The browser generates `CONTROL_TOTP_SECRET` and shows it as a QR code plus text. The user scans it and
+       types a code, which is checked in the browser. The secret is never sent to the server.
+    4. A ready `.env` block (`CLOUD_BASE_URL`, `ENGINE_ID`, `ENGINE_HMAC_SECRET`, `CONTROL_TOTP_SECRET`) with copy
+       and download buttons, and a tip to move the secrets into the keyring (`keyring:` indirection).
+    5. A Windows setup checklist:
+       - dedicated portable MT5 terminal
+       - investor password for PAPER, master password only for DEMO
+       - Algo Trading on
+       - `python -m app.cli doctor`
+       - start the engine
+    6. "Waiting for first contact" until `first_seen_at` is set, then "connected".
+  - **Actions:** rotate the secret (step-up; new secret shown once with the same `.env` guidance), revoke
+    (step-up, typing the engine id to confirm), re-generate the control TOTP (browser only, with update and
+    restart instructions).
+  - **Secret hygiene:**
+    - secrets live only in component state and are dropped on leaving the page
+    - never in the TanStack Query cache, localStorage or IndexedDB, and never seen by the service worker
+    - the issuing responses are `no-store`
+    - the QR library is bundled (no CDN, strict CSP) and its license is checked
+  - Every text goes through i18n (th default, en), every response through zod, with no profitability claims.
+- **Engine-scoped replicas (TAA-709):**
+  - Every replicated model (`app/sync/events.py` `REPLICAS`) gains `engine_id`. The engine writes its own id
+    (`ENGINE_ID`, or `local` without sync). The cloud sets it from the verified signature and never trusts the
+    payload.
+  - Cloud keys become `(engine_id, key)`. That includes the tables keyed by name or a natural key
+    (`breaker_states`, `paper_account`, `risk_state`, `risk_baselines`) and those with engine-local integer ids
+    (`breaker_events`, `kill_switch_events`).
+  - `ReplicaSpec.find`, `entity_key` and the RESYNC snapshot are engine-scoped. `replica_versions`,
+    `ingest_nonces` and `audit_replicas` (chain `engine:<id>`) already are.
+  - The Alembic migration uses batch mode for SQLite and backfills existing rows with the imported engine's id.
+  - Then the one-engine limit is lifted.
+- **Tests:**
+  - IDOR: user B cannot list, rotate, revoke, read the data of, or queue a command for A's engine.
+  - Revocation inside the cache window; rotation hand-over.
+  - An unknown or revoked engine gets 401.
+  - Secrets never appear in logs, audit events, listings or a second response.
+  - `import-env`, then refusal of `ENGINE_*` in env.
+  - The `MULTI_ENGINE_ENABLED` gate and the limits.
+  - Two engines with colliding local keys stay separate (TAA-709).
+
 ## A22. Delivery plan
 
 - **Milestone 1** (never sends broker orders): Phases 0–11 plus advisory Phases 6A–6C.
   - **Execution order:** 0 ✓ → 1 ✓ (+ TAA-110 fix) → 2 → **2A** (evidence engine) → 3 → 4 → 5 → 6 →
     **6A → 6B → 6C** → 7 → 8 → **8A** (personalization & entitlements) → 9 → 10 → 11.
   - **Afterwards I stop for your review.** You can ask me to pause at any phase boundary.
+  - **Rev. 4 (§A32):**
+    - TAA-708 (engine registry) and TAA-709 (engine-scoped replicas) come before the read APIs (TAA-803).
+      Ideally they also come before TAA-707, so the advisory tables are added to the replicas only once.
+    - TAA-811 (engine management API) follows TAA-805.
+    - TAA-923 (Engines page) follows the app shell (TAA-903).
 - **Milestone 2** (after review): Phases 12–14, covering DEMO execution, the AI layer (now including AI on advisory,
   TAA-1305) and LIVE readiness. LIVE stays disabled by default.
 - Tickets, checklists and dependencies are in Part B. `docs/TICKETS.md` is updated as each item completes.
@@ -1460,6 +1627,8 @@ never sends orders.
   schedule or calendar, so both are config-based.
 - A PC-hosted engine depends on the PC staying on. Web Push is best-effort (especially on iOS); the dashboard is the
   source of truth.
+- (rev. 4) With per-user engines (§A32), each user's engine is only as available as their own machine or VPS. The
+  cloud cannot restart it; it can only report it offline.
 - Leveraged FX/CFD trading is high risk. Check local regulations and tax obligations.
 - **Advisory caveats (rev. 2):**
   - The win probability is an estimate from past setups, not a promise. It is shown with sample size, CI, random

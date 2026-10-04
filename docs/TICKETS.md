@@ -12,6 +12,9 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - Revision 2 (2026-10-03) added Phases 2A, 6A–6C and 8A, TAA-110, and amended items marked "(rev. 2)".
 - Revision 3 (2026-10-03) added TAA-2A10 (do it before TAA-2A7) and TAA-922, and amended items marked "(rev. 3)":
   Fibonacci extension levels with candle location (PLAN §A29), trading profile and entry plans (PLAN §A31).
+- Revision 4 (2026-10-04) added TAA-708, TAA-709, TAA-811 and TAA-923, and amended items marked "(rev. 4)" in
+  TAA-803, TAA-805 and TAA-8A1. The topic is the engine registry and per-user self-hosted engines (PLAN §A32).
+  Do 708 → 709 before the read APIs (803), ideally before 707.
 
 **Execution order (Milestone 1):** 0 → 1 → 2 → 2A → 3 → 4 → 5 → 6 → 6A → 6B → 6C → 7 → 8 → 8A → 9 → 10 → 11
 
@@ -33,10 +36,10 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
-| M1 | Phase 7 — Cloud sync | 7 | 4 | IN PROGRESS |
-| M1 | Phase 8 — Web backend & worker | 10 | 2 | IN PROGRESS |
+| M1 | Phase 7 — Cloud sync | 9 | 4 | IN PROGRESS |
+| M1 | Phase 8 — Web backend & worker | 11 | 2 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
-| M1 | Phase 9 — PWA frontend | 22 | 3 | IN PROGRESS |
+| M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -1023,6 +1026,33 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [ ] RESCAN_SUITABILITY command
 - [ ] tests
 
+#### TAA-708 — (rev. 4) Engine registry in the database
+
+- **Status:** TODO
+- **Depends on:** 702, 703, 704, 802
+
+- [ ] `engines` table + migration (owner, label, encrypted current/previous secret, status, timestamps; PLAN §A32)
+- [ ] `EngineRegistry`: issue (server-generated id + secret, shown once), rotate, revoke, list; secrets encrypted with the HKDF purpose `engine-hmac-secret`
+- [ ] `Verifier` reads keys through a `KeyLookup` (≤ 5 s cache, ACTIVE engines only); `SignedEngine` carries the owner
+- [ ] rotation hand-over: previous secret dropped on the first request signed with the new one, or after 7 days
+- [ ] `first_seen_at` / `last_seen_at` (written at most once per 60 s)
+- [ ] fail-closed limits: one ACTIVE engine per deployment until TAA-709, `WEB_MAX_ENGINES_PER_USER`, `MULTI_ENGINE_ENABLED=false` (OWNER only)
+- [ ] CLI `web engine add|rotate|revoke|list|import-env`; `engine new-totp` on the engine side; `load_web_settings` refuses `ENGINE_*` after the import
+- [ ] audit events (`ENGINE_REGISTERED`, `ENGINE_KEY_ROTATED`, `ENGINE_REVOKED`, `ENGINE_IMPORTED`) without key material
+- [ ] tests (unknown/revoked engine → 401, revocation inside the cache window, rotation, secrets never in logs/audit/listings, import)
+
+#### TAA-709 — (rev. 4) Engine-scoped replicas
+
+- **Status:** TODO
+- **Depends on:** 708
+
+- [ ] `engine_id` on every replicated model (the engine writes its own id; the cloud sets it from the signature, never from the payload)
+- [ ] cloud keys `(engine_id, key)`, including tables keyed by name or natural key and those with engine-local integer ids
+- [ ] Alembic migration (SQLite batch mode + Postgres) with a backfill to the imported engine id
+- [ ] engine-scoped `ReplicaSpec.find`, `entity_key` and RESYNC snapshot
+- [ ] lift the one-engine limit of TAA-708
+- [ ] tests: two engines with colliding local keys stay separate
+
 ### Phase 8 — Web backend & worker
 
 #### TAA-801 — FastAPI skeleton
@@ -1062,6 +1092,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [ ] pagination and filters
 - [ ] masked config
 - [ ] tests
+- [ ] (rev. 4) trading data scoped to engines the session user owns (`OwnedEngine`, PLAN §A32) + IDOR tests
 
 #### TAA-804 — SSE stream
 
@@ -1080,6 +1111,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [ ] kill switch, strategy disable, close/flatten (TOTP) → command queue
 - [ ] audit
 - [ ] tests
+- [ ] (rev. 4) commands only for engines the session user owns (404 otherwise, PLAN §A32) + IDOR tests
 
 #### TAA-806 — Web Push
 
@@ -1145,6 +1177,17 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [ ] cloud replay jobs in the worker (optional)
 - [ ] tests
 
+#### TAA-811 — (rev. 4) Engine management API
+
+- **Status:** TODO
+- **Depends on:** 708, 802
+
+- [ ] `GET /api/v1/engines`, `POST /api/v1/engines`, `POST /api/v1/engines/{id}/rotate`, `POST /api/v1/engines/{id}/revoke` (step-up for mutations; secrets returned once with `Cache-Control: no-store`; PLAN §A32)
+- [ ] `OwnedEngine` dependency (404 for engines the user doesn't own)
+- [ ] error codes (`engine_limit_reached`, `engine_linking_disabled`, `engine_not_found`, `engine_revoked`) + frontend i18n parity
+- [ ] per-user rate limit on registration and rotation
+- [ ] tests incl. IDOR (user B vs user A's engine) and secret-not-repeated
+
 ### Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7)
 
 #### TAA-8A1 — Users, roles & tenancy
@@ -1157,6 +1200,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [ ] owner-only guards on trading data and control endpoints
 - [ ] PDPA-ready data export/delete
 - [ ] cross-tenant (IDOR) tests
+- [ ] (rev. 4) control rights come from engine ownership: OWNER lists/revokes any engine but commands only its own (PLAN §A32)
 
 #### TAA-8A2 — Plans & entitlements
 
@@ -1452,6 +1496,20 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [ ] per-field overrides with "custom" badges and reset
 - [ ] entry-plan editor with an example lot breakdown (orders, taps, risk money)
 - [ ] warnings for offensive settings and back-loaded scale-in
+
+#### TAA-923 — (rev. 4) Engines page
+
+- **Status:** TODO
+- **Depends on:** 811, 903, 915
+
+- [ ] "เชื่อมต่อ Engine / Engines" page under Settings: list with label, id, status badge (waiting / connected / offline / revoked), last seen, key age
+- [ ] add wizard (step-up): label + PAPER/DEMO-only notice → server-issued `ENGINE_ID` + `ENGINE_HMAC_SECRET` shown once
+- [ ] `CONTROL_TOTP_SECRET` generated in the browser (Web Crypto) + QR (bundled library, license checked) + one code checked locally; never sent to the server
+- [ ] ready `.env` block (copy + download, keyring tip) + Windows setup checklist (portable MT5, investor password for PAPER, Algo Trading, `doctor`, start) + "waiting for first contact"
+- [ ] rotate (new secret shown once) and revoke (typed confirmation), both with step-up; control-TOTP re-generation guidance
+- [ ] secret hygiene: component state only, never in the query cache, local storage or the service worker
+- [ ] th/en i18n keys + zod schemas; no profitability claims
+- [ ] tests
 
 ### Phase 10 — Trade analytics
 

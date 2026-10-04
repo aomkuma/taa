@@ -23,7 +23,8 @@ Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
 Partly done: Phase 7 (701..704), Phase 8 (801, 802), Phase 9 (901, 902, 915), Phase 10 (1001..1003).
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Start with TAA-707 (advisory sync).
+"Next work" list in docs/HANDOFF.md. Start with TAA-708 (engine registry, PLAN §A32), unless TAA-707 has
+uncommitted work: then finish 707 first.
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Update docs/HANDOFF.md at the end of the
 session. Stop for review at the end of Milestone 1, or at any phase boundary if I ask.
@@ -38,8 +39,13 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
   (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
   (TAA-6A1..6A5, symbol universe & suitability ranking) and Phase 6B (TAA-6B1..6B5, watchlists,
   opportunities & alert windows), Phase 6C (TAA-6C1..6C5, shadow trades, accuracy & calibration).
-- **In progress (progress table):** Phase 7 4/7 (701..704), Phase 8 2/10 (801, 802),
-  Phase 9 3/22 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. The order of the
+- **Design rev. 4 (2026-10-04, docs only):** PLAN §A32 covers the engine registry and per-user self-hosted engines.
+  Engine keys move from the web env into an `engines` table owned by a user. The PWA Engines page issues
+  `ENGINE_ID` and `ENGINE_HMAC_SECRET` (shown once), and the browser generates `CONTROL_TOTP_SECRET`, which never
+  reaches the cloud. New tickets: TAA-708, 709, 811, 923. Rollout is fail-closed: one ACTIVE engine until 709, and
+  `MULTI_ENGINE_ENABLED=false`.
+- **In progress (progress table):** Phase 7 4/9 (701..704), Phase 8 2/11 (801, 802),
+  Phase 9 3/23 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. The order of the
   remaining tickets: "Next work" below.
 - **Checks:** 2270 tests on `c85d539` (2269 passed + 1 failure from a memory-allocation error under parallel
   load, which passes alone), 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
@@ -322,6 +328,8 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 - 8A1 tenancy → 8A2 plans → 8A3 account profiles → 8A4 personalizer (also needs 810), 8A5; 921 needs 8A1–8A3
 - 1004 recommendations (needs 807) → 1005 analytics API & pages (also needs 903)
 - 922 trading profile page: unblocked
+- (rev. 4, PLAN §A32) 708 engine registry → 709 engine-scoped replicas (lifts the one-engine limit); 708 → 811
+  engine management API → 923 Engines page (also needs 903, 915); 803 and 805 gain owner-scoping items
 - Phase 11 (Railway) after Milestone 1 features; it needs the user's Railway access.
 
 **Order for the single session** (critical path first, otherwise the TICKETS execution order
@@ -329,17 +337,20 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 
 1. ~~TAA-703 ingest API~~ (done)
 2. ~~TAA-704 long-poll route~~ (done)
-3. TAA-707 advisory sync (engine producers, advisory-config client, ingest of the new event types)
-4. TAA-706 candle & history sync
-5. TAA-803 read APIs, then TAA-804 SSE
-6. TAA-805 control API
-7. TAA-808 worker service, then TAA-705 heartbeat & watchdog (completes Phase 7)
-8. TAA-806 Web Push, TAA-807 backtest jobs
-9. TAA-809 advisory APIs, TAA-810 opportunity push (completes Phase 8)
-10. TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5 (Phase 8A)
-11. TAA-903 app shell, then 904–913, 916–922, then 914 PWA polish (Phase 9)
-12. TAA-1004 (do the preparation in "Notes from Phase 10" first), TAA-1005 (Phase 10)
-13. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
+3. (rev. 4) TAA-708 engine registry, then TAA-709 engine-scoped replicas. Ideally do them before 707, so the
+   advisory tables join the replicas only once. If 707 is already under way, finish it first and include its
+   tables in 709.
+4. TAA-707 advisory sync (engine producers, advisory-config client, ingest of the new event types)
+5. TAA-706 candle & history sync
+6. TAA-803 read APIs (owner-scoped, rev. 4), then TAA-804 SSE
+7. TAA-805 control API (owned engines only, rev. 4), then TAA-811 engine management API
+8. TAA-808 worker service, then TAA-705 heartbeat & watchdog (completes Phase 7)
+9. TAA-806 Web Push, TAA-807 backtest jobs
+10. TAA-809 advisory APIs, TAA-810 opportunity push (completes Phase 8)
+11. TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5 (Phase 8A)
+12. TAA-903 app shell, then 904–913, 916–923, then 914 PWA polish (Phase 9)
+13. TAA-1004 (do the preparation in "Notes from Phase 10" first), TAA-1005 (Phase 10)
+14. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
     Milestone 1 review.
 
 Planned details:
