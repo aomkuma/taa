@@ -590,6 +590,22 @@ AI failures never trip trading breakers; they only produce HOLD.
   ENGINE_BACK when the engine resumes.
 - **History:** `scripts/download_history.py` writes local Parquet and uploads closed candles to the cloud in chunks (for
   charts and cloud backtests). The engine also streams new closed candles continuously.
+  - (TAA-706 decisions) `app/sync/candles.py`, migration 0021.
+    - Event `candles` (`CandlesPayload`): server, symbol, timeframe and up to 1000 closed bars
+      `[open_time, time_server, open, high, low, close, tick_volume, spread]`, oldest first, finite numbers. It
+      goes through the outbox at STATE priority, so it is signed, retried and dropped only after telemetry.
+    - The cloud upserts bars into `history_candles` by open time. The table is per engine (`engine_id` is the
+      first primary-key column), so one engine's data never changes another user's charts or backtests. A
+      resend or an overlapping upload rewrites the same bars.
+    - Bulk upload: `python -m app.cli sync upload-history [--symbols] [--timeframes] [--days] [--send]` reads
+      `data/history` and queues chunks in the engine outbox. `--send` delivers them right away; without it,
+      the running engine sends them. `scripts/download_history.py --upload` runs it after a download.
+    - Live stream (`CandleStreamer`, on the engine's candle poll): every traded symbol in the entry, higher and
+      refinement timeframes sends the bars closed since its cursor (`engine_state` `candle_stream`). The first
+      run seeds 500 bars, and a catch-up fetches at most 5000.
+    - The streamer asks the broker only once a symbol's next bar can have closed. If the last bar is old (the
+      market is shut), it looks again one bar later. This is per symbol, so crypto keeps streaming at
+      weekends while FX waits. Failures are counted per symbol and never touch the trading loop.
 
 ## A14. Web backend (FastAPI, Railway `web`)
 

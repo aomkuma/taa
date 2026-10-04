@@ -32,6 +32,8 @@ Read before larger work:
 .venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
 .venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
 .venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14
+.venv\Scripts\python -m app.cli sync upload-history [--send]   # local Parquet history → cloud (TAA-706)
+.venv\Scripts\python -m app.cli web engine add --owner NAME --label X | rotate ID | revoke ID --confirm ID | list | import-env --owner NAME
 .venv\Scripts\python -m app.web     # API + built PWA on 127.0.0.1:8000 (needs WEB_ENV/WEB_SESSION_SECRET)
 .venv\Scripts\python -m app.cli web create-user NAME | reset-totp NAME | list-users   # web users + TOTP
 .venv\Scripts\python scripts\tickets.py tick TAA-201 1 2   # tick checklist items; then:

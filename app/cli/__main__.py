@@ -384,6 +384,45 @@ def cmd_web(args: argparse.Namespace) -> int:
     return run(args, out=sys.stdout)
 
 
+def cmd_sync_upload_history(args: argparse.Namespace) -> int:
+    """Queue stored closed candles as ``candles`` events (TAA-706); ``--send`` delivers them right away."""
+    from datetime import timedelta
+
+    from app.core.clock import SystemClock
+    from app.core.enums import Timeframe
+    from app.market_data.history_store import ParquetHistoryStore
+    from app.sync.candles import queue_history
+    from app.sync.outbox import Outbox
+
+    settings = _settings(args)
+    server = args.server or settings.env.MT5_SERVER
+    if not server:
+        raise TaaError("--server is required when MT5_SERVER is not set")
+    clock = SystemClock()
+    db, _ = _db_and_audit(settings)
+    start = None if args.days is None else clock.now_utc() - timedelta(days=args.days)
+    events, bars = queue_history(
+        Outbox(db, clock, settings.config.sync),
+        ParquetHistoryStore(settings.path(args.history_dir)),
+        server,
+        symbols=[s.strip() for s in args.symbols.split(",")] if args.symbols else None,
+        timeframes=[Timeframe(t.strip()) for t in args.timeframes.split(",")] if args.timeframes else None,
+        start=start,
+    )
+    print(f"queued {bars} bars in {events} events for {server}")
+    if not args.send:
+        print("the engine sends them with its outbox (or run again with --send)")
+        return 0
+    from app.sync.runtime import SyncRuntime
+
+    runtime = SyncRuntime.from_settings(settings, db, clock)
+    sent = runtime.sender.drain()
+    runtime.client.close()
+    failed = runtime.sender.consecutive_failures > 0
+    print(f"sent {sent} events" + (f"; stopped: {runtime.sender.last_error}" if failed else ""))
+    return 1 if failed else 0
+
+
 def cmd_web_engine(args: argparse.Namespace) -> int:
     from app.cli.web import run_engine
 
@@ -552,6 +591,19 @@ def build_parser() -> argparse.ArgumentParser:
     el = we_sub.add_parser("list", help="list engines (never secrets)")
     for p in (ea, er, ev, ei, el):
         p.set_defaults(func=cmd_web_engine)
+
+    syn = sub.add_parser("sync", help="cloud sync tools (PLAN §A13)")
+    syn_sub = syn.add_subparsers(dest="sync_command", required=True)
+    uh = syn_sub.add_parser(
+        "upload-history", help="queue local Parquet history for the cloud (charts, backtests)"
+    )
+    uh.add_argument("--server", default=None, help="trade server (default: MT5_SERVER)")
+    uh.add_argument("--symbols", default=None, help="comma list (default: every stored symbol)")
+    uh.add_argument("--timeframes", default=None, help="comma list (default: every stored timeframe)")
+    uh.add_argument("--days", type=int, default=None, help="only the last N days (default: everything)")
+    uh.add_argument("--history-dir", default="data/history")
+    uh.add_argument("--send", action="store_true", help="also send now (else the running engine sends it)")
+    uh.set_defaults(func=cmd_sync_upload_history)
 
     eng = sub.add_parser("engine", help="engine machine helpers")
     eng_sub = eng.add_subparsers(dest="engine_tool", required=True)

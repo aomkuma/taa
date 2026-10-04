@@ -21,7 +21,8 @@ M1 ``cursor`` moves every poll); their values travel with the row's next real ch
 emits an update of the same row at most that often (the ranking rewrites every snapshot row each minute);
 inserts always go out, and the cloud copy lags at most that long behind.
 
-**Other events.** ``command_result`` (:class:`CommandResultPayload`) answers a queued command.
+**Other events.** ``command_result`` (:class:`CommandResultPayload`) answers a queued command. ``candles``
+(:class:`CandlesPayload`) carries up to 1000 closed bars of one symbol and timeframe (TAA-706).
 
 Deletes are not replicated: the cloud applies its own retention.
 """
@@ -290,3 +291,25 @@ class CommandResultPayload(BaseModel):
     reason: str = Field(max_length=32)
     detail: str = Field(max_length=4000)
     at: AwareDatetime
+
+
+CANDLES = "candles"
+MAX_CANDLES = 1000
+
+Finite = Annotated[float, Field(strict=True, allow_inf_nan=False)]
+Count = Annotated[StrictInt, Field(ge=0, lt=INT64)]
+# [open_time (UTC), time_server (broker epoch), open, high, low, close, tick_volume, spread]
+CandleBar = tuple[
+    AwareDatetime, Annotated[StrictInt, Field(ge=0, lt=INT64)], Finite, Finite, Finite, Finite, Count, Count
+]
+
+
+class CandlesPayload(BaseModel):
+    """``candles``: closed bars of one symbol and timeframe, oldest first (bulk upload or live stream)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    server: str = Field(min_length=1, max_length=64)
+    symbol: str = Field(min_length=1, max_length=32)
+    timeframe: Literal["M1", "M5", "M15", "M30", "H1", "H4", "D1"]
+    bars: list[CandleBar] = Field(min_length=1, max_length=MAX_CANDLES)

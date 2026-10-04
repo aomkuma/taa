@@ -24,6 +24,7 @@ from app.core.enums import Timeframe
 from app.market_data.data_models import CANDLE_COLUMNS, SymbolSpec
 from app.storage.database import Database
 from app.storage.models import HistoryCandle
+from app.storage.models.base import LOCAL_ENGINE
 
 _SAFE = re.compile(r"[^A-Za-z0-9._-]")
 
@@ -126,8 +127,11 @@ class ParquetHistoryStore:
 
 
 class SqlHistoryStore:
-    def __init__(self, db: Database) -> None:
+    """``history_candles`` of one engine (the cloud passes the engine's id; locally it is ``local``)."""
+
+    def __init__(self, db: Database, engine_id: str = LOCAL_ENGINE) -> None:
         self.db = db
+        self.engine_id = engine_id
 
     def save(
         self, server: str, symbol: str, tf: Timeframe, df: pd.DataFrame, spec: SymbolSpec | None = None
@@ -138,6 +142,7 @@ class SqlHistoryStore:
         with self.db.session() as sess:
             sess.execute(
                 delete(HistoryCandle).where(
+                    HistoryCandle.engine_id == self.engine_id,
                     HistoryCandle.server == server,
                     HistoryCandle.symbol == symbol,
                     HistoryCandle.timeframe == tf.value,
@@ -147,6 +152,7 @@ class SqlHistoryStore:
             sess.add_all(
                 [
                     HistoryCandle(
+                        engine_id=self.engine_id,
                         server=server,
                         symbol=symbol,
                         timeframe=tf.value,
@@ -183,6 +189,7 @@ class SqlHistoryStore:
         end: datetime | None = None,
     ) -> pd.DataFrame:
         stmt = select(HistoryCandle).where(
+            HistoryCandle.engine_id == self.engine_id,
             HistoryCandle.server == server,
             HistoryCandle.symbol == symbol,
             HistoryCandle.timeframe == tf.value,

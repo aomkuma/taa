@@ -404,6 +404,18 @@ class OutboxSender:
         )
         return 0
 
+    def drain(self, max_batches: int = 100_000) -> int:
+        """Send until the queue is empty or a send fails (tools such as the history upload). Returns events
+        answered; check ``consecutive_failures`` afterwards."""
+        total = 0
+        for _ in range(max_batches):
+            self.next_attempt_at = 0.0  # a tool retries on its own schedule, not the backoff's
+            sent = self.flush_once()
+            if sent == 0:
+                break
+            total += sent
+        return total
+
     def metrics(self) -> BacklogMetrics:
         pending, dead, oldest = self.outbox.counts()
         age = None if oldest is None else (self.clock.now_utc() - oldest).total_seconds()

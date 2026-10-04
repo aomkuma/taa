@@ -15,6 +15,7 @@ One ``POST /api/v1/ingest/batch`` after HMAC verification (``app/web/routers/ing
      for that row (UUIDv7 ids are time-ordered, so a late resend never rolls a row back)
    - ``audit_event``: stored by ``(chain, seq)``, see below
    - ``command_result``: :meth:`CommandQueue.record_result`, once per command
+   - ``candles``: upserted into the engine's own ``history_candles`` by open time (TAA-706)
 
 **Audit continuity.** Only the signing engine's own chain (``engine:<id>``) is accepted. Each event's hash is
 recomputed on arrival; a mismatch, or a different event at a ``seq`` already held, is rejected and marks the
@@ -33,19 +34,21 @@ from enum import StrEnum
 from typing import Any
 
 from pydantic import ValidationError
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import and_, delete, func, or_, select
 from sqlalchemy.orm import Session
 
-from app.core.clock import Clock
+from app.core.clock import Clock, ensure_utc
 from app.core.errors import TaaError
 from app.storage.audit import GENESIS_HASH, AuditLog, compute_hash
 from app.storage.database import Database
-from app.storage.models import AuditEvent, AuditReplicaRow, ReplicaVersionRow
+from app.storage.models import AuditEvent, AuditReplicaRow, HistoryCandle, ReplicaVersionRow
 from app.sync.command_queue import CommandQueue
 from app.sync.events import (
     AUDIT_EVENT,
+    CANDLES,
     COMMAND_RESULT,
     SPECS_BY_TYPE,
+    CandlesPayload,
     CommandResultPayload,
     ReplicaSpec,
     WireBatch,
@@ -150,6 +153,12 @@ class _CommandEvent:
 
 
 @dataclass(frozen=True, slots=True)
+class _CandlesEvent:
+    event: WireEvent
+    payload: CandlesPayload
+
+
+@dataclass(frozen=True, slots=True)
 class _Broken:
     chain: str
     seq: int | None
@@ -177,6 +186,8 @@ class IngestService:
             for item in prepared:
                 if isinstance(item, _CommandEvent):
                     self._apply_command(sess, engine_id, item, result)
+                elif isinstance(item, _CandlesEvent):
+                    self._apply_candles(sess, engine_id, item, result)
                 elif item.spec.event_type == AUDIT_EVENT:
                     if self._apply_audit(sess, engine_id, item, result, broken):
                         chains.add(item.values["chain"])
@@ -216,7 +227,7 @@ class IngestService:
     @staticmethod
     def _prepare(
         raw: dict[str, Any], engine_id: str, result: IngestResult
-    ) -> _RowEvent | _CommandEvent | None:
+    ) -> _RowEvent | _CommandEvent | _CandlesEvent | None:
         raw_id = raw.get("event_id")
         try:
             event = WireEvent.model_validate(raw)
@@ -226,6 +237,8 @@ class IngestService:
         try:
             if event.type == COMMAND_RESULT:
                 return _CommandEvent(event, CommandResultPayload.model_validate(event.payload))
+            if event.type == CANDLES:
+                return _CandlesEvent(event, CandlesPayload.model_validate(event.payload))
             spec = SPECS_BY_TYPE.get(event.type)
             if spec is None:
                 result.reject(event.event_id, RejectCode.UNKNOWN_TYPE, event.type)
@@ -293,6 +306,40 @@ class IngestService:
             for name, value in item.values.items():
                 setattr(row, name, value)
         self._record_version(sess, engine_id, item.spec.event_type, key, item.event, version)
+        result.accepted += 1
+
+    @staticmethod
+    def _apply_candles(sess: Session, engine_id: str, item: _CandlesEvent, result: IngestResult) -> None:
+        """Upsert closed bars into the engine's own history by open time (a resend rewrites the same bars)."""
+        p = item.payload
+        bars = {ensure_utc(b[0]): b for b in p.bars}  # the last copy of a repeated open time wins
+        sess.execute(
+            delete(HistoryCandle).where(
+                HistoryCandle.engine_id == engine_id,
+                HistoryCandle.server == p.server,
+                HistoryCandle.symbol == p.symbol,
+                HistoryCandle.timeframe == p.timeframe,
+                HistoryCandle.open_time.in_(list(bars)),
+            )
+        )
+        sess.add_all(
+            HistoryCandle(
+                engine_id=engine_id,
+                server=p.server,
+                symbol=p.symbol,
+                timeframe=p.timeframe,
+                open_time=t,
+                time_server=ts,
+                open=o,
+                high=h,
+                low=lo,
+                close=c,
+                tick_volume=v,
+                spread=sp,
+            )
+            for t, (_, ts, o, h, lo, c, v, sp) in bars.items()
+        )
+        sess.flush()
         result.accepted += 1
 
     def _apply_command(

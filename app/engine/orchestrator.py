@@ -87,6 +87,7 @@ from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
 from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import EvidenceSetup
+from app.sync.candles import CandleStreamer
 from app.sync.commands import Command, CommandFailed, CommandProcessor, CommandType, Handler, drain
 from app.sync.replication import Replicator, install_replication
 from app.sync.runtime import SyncRuntime
@@ -161,6 +162,7 @@ class Engine:
         self.calibration: CalibrationService | None = None
         self.sync = sync  # cloud replication; None unless sync.enabled (built in start())
         self.commands: CommandProcessor | None = None  # remote commands, with sync
+        self.candle_stream: CandleStreamer | None = None  # closed bars to the cloud, with sync (TAA-706)
         self.resync_requested = False
         self._requirements_cache: tuple[tuple[datetime | None, str | None], ComputeRequirements] | None = None
         loop = self.config.engine
@@ -309,6 +311,15 @@ class Engine:
             )
             self.sync.start()
             self._initial_snapshot()
+            tfs = self.config.timeframes
+            self.candle_stream = CandleStreamer(
+                self.candles,
+                self.sync.outbox,
+                EngineStateRepository(self.db, self.clock),
+                self.clock,
+                server=account.server,
+                timeframes=[t for t in (tfs.entry, tfs.higher, tfs.refinement) if t is not None],
+            )
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
         self.audit.append(
             "ENGINE_START",
@@ -501,6 +512,7 @@ class Engine:
                 if self._candles_due.due(now):
                     for symbol in self.symbols:
                         self._check_new_bar(symbol)
+                    self._stream_candles()
             if self._health_due.due(now):
                 self._health()
             if connected and self._clock_due.due(now):
@@ -732,6 +744,15 @@ class Engine:
         if quote.valid:
             self.backend.on_quote(symbol, quote.bid, quote.ask, atr, now)
 
+    def _stream_candles(self) -> None:
+        if self.candle_stream is None:
+            return
+        try:
+            self.candle_stream.tick(self.symbols)
+        except Exception:  # sync boundary: charts may lag, trading goes on
+            log.exception("candle stream failed")
+            self.candle_stream.failures += 1
+
     def _check_new_bar(self, symbol: str) -> None:
         tf = self.config.timeframes.entry
         frame = self.candles.closed_candles(symbol, tf, 2)
@@ -893,6 +914,9 @@ class Engine:
                 "last_error": self.shadow.stats.last_error,
             },
             "sync": None if self.sync is None else self._sync_status(self.sync),
+            "candle_stream": None
+            if self.candle_stream is None
+            else {"events": self.candle_stream.events, "failures": self.candle_stream.failures},
             "replication": None
             if self.replicator is None
             else {"emitted": self.replicator.emitted, "errors": self.replicator.errors},

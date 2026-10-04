@@ -334,3 +334,13 @@ def test_the_cloud_advisory_config_drives_the_requirements(tmp_path: Path) -> No
     assert "XAUUSD" in req.symbols or "XAUUSD" not in h.engine.symbols  # unknown symbols are filtered
     h.engine.sync.advisory.current = None
     assert h.engine.requirements() == local  # back to the local fallback
+
+
+def test_the_engine_streams_closed_candles(tmp_path: Path) -> None:
+    h = rig(tmp_path)
+    assert h.engine.candle_stream is not None
+    h.engine.running = True
+    h.engine.cycle()
+    assert "candles" in outbox_types(h)
+    stream = h.engine.status()["candle_stream"]
+    assert stream["events"] >= 2 and stream["failures"] == 0  # entry + higher timeframe per symbol

@@ -7,7 +7,7 @@ from datetime import datetime
 from sqlalchemy import BigInteger, Float, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.storage.models.base import Base, utcnow
+from app.storage.models.base import Base, EngineKeyed, utcnow
 from app.storage.types import UTCDateTime
 
 
@@ -22,8 +22,11 @@ class ProcessedCandle(Base):
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow)
 
 
-class HistoryCandle(Base):
-    """Historical closed bars (UTC open time) used by cloud backtests and PWA charts."""
+class HistoryCandle(EngineKeyed, Base):
+    """Historical closed bars (UTC open time) used by cloud backtests and PWA charts.
+
+    Per engine (TAA-706): the cloud keeps each engine's own bars (uploaded or streamed), so one engine's data
+    can never change another user's charts or backtests."""
 
     __tablename__ = "history_candles"
 

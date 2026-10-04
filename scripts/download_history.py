@@ -1,6 +1,6 @@
 """Download closed MT5 history to Parquet (and optionally the SQL store).
 
-python scripts/download_history.py --symbols EURUSD,XAUUSD --timeframes M15,H1 --days 365
+python scripts/download_history.py --symbols EURUSD,XAUUSD --timeframes M15,H1 --days 365 [--upload]
 """
 
 from __future__ import annotations
@@ -30,6 +30,11 @@ def main() -> int:
     parser.add_argument("--out", default="data/history")
     parser.add_argument("--fake", action="store_true", help="use FakeMT5 (development)")
     parser.add_argument("--env-file", default=".env")
+    parser.add_argument(
+        "--upload",
+        action="store_true",
+        help="also queue the bars for the cloud (python -m app.cli sync upload-history)",
+    )
     args = parser.parse_args()
 
     settings = load_settings(env_file=args.env_file)
@@ -48,6 +53,14 @@ def main() -> int:
             total = store.save(report.account.server, symbol, tf, df, spec)
             print(f"{symbol} {tf}: {len(df)} bars downloaded, {total} stored")
     bundle.client.shutdown()
+    if args.upload:
+        from app.cli.__main__ import main as cli
+
+        tfs = ",".join(t.strip() for t in args.timeframes.split(","))
+        argv = ["--env-file", args.env_file, "sync", "upload-history", "--server", report.account.server]
+        return cli(
+            [*argv, "--symbols", ",".join(symbols), "--timeframes", tfs, "--days", str(args.days), "--send"]
+        )
     return 0
 
 
