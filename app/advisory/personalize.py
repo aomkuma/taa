@@ -115,6 +115,10 @@ class MarketOpportunity:
     currency: str
     equity: float
     cost_r: float = 0.0
+    # (rev. 3) the owner's entry plan from the decision: one mapping per order (order_type, entry, volume,
+    # taps, take_profit, risk_money), and the portfolio heat after it (% of equity)
+    plan: tuple[Mapping[str, Any], ...] = ()
+    heat_after: float | None = None
 
     @classmethod
     def from_row(cls, row: OpportunityRow) -> MarketOpportunity:
@@ -441,6 +445,14 @@ TEXT: dict[str, dict[Language, str]] = {
     "invalidated": {"en": "conditions no longer hold", "th": "เงื่อนไขไม่เป็นจริงแล้ว"},
     "followed": {"en": "you opened a position", "th": "คุณเปิดออเดอร์แล้ว"},
     "baseline": {"en": "random", "th": "สุ่ม"},
+    "orders": {"en": "Orders", "th": "คำสั่ง"},
+    "taps": {"en": "taps", "th": "ครั้ง"},
+    "total_risk": {"en": "Total risk", "th": "ความเสี่ยงรวม"},
+    "heat": {"en": "heat after", "th": "heat หลังเข้า"},
+}
+ORDER_TYPES: dict[str, dict[Language, str]] = {
+    "MARKET": {"en": "Market", "th": "ราคาตลาด"},
+    "LIMIT": {"en": "Limit", "th": "ลิมิต"},
 }
 REASON_TEXT: dict[str, dict[Language, str]] = {
     "SIGNAL_LIFETIME": {"en": "signal lifetime ended", "th": "สัญญาณหมดอายุ"},
@@ -469,6 +481,28 @@ def _money(value: float | None, currency: str) -> str:
     return "-" if value is None else f"{value:,.2f} {currency}"
 
 
+def plan_lines(opportunity: MarketOpportunity, language: Language) -> list[str]:
+    """(rev. 3) One line per order (type, lot and MT5 taps, price, TP, risk), then the total risk and heat."""
+    t = {k: v[language] for k, v in TEXT.items()}
+    lines = []
+    total = 0.0
+    for i, order in enumerate(opportunity.plan, start=1):
+        kind = ORDER_TYPES.get(str(order.get("order_type")), {}).get(language, str(order.get("order_type")))
+        risk = float(order["risk_money"]) if order.get("risk_money") not in (None, "") else None
+        total += risk or 0.0
+        tp = order.get("take_profit")
+        lines.append(
+            f"{i}) {kind} {float(order['volume']):g} {t['lot']} ({order.get('taps', '-')} {t['taps']})"
+            f" @ {float(order['entry']):g}"
+            + (f" · TP {float(tp):g}" if tp not in (None, "") else "")
+            + f" · {t['risk']} {_money(risk, opportunity.currency)}"
+        )
+    if lines:
+        heat = "" if opportunity.heat_after is None else f" · {t['heat']} {opportunity.heat_after:.2f}%"
+        lines.append(f"{t['total_risk']} {_money(total, opportunity.currency)}{heat}")
+    return lines
+
+
 def notification(
     opportunity: MarketOpportunity,
     user: UserContext,
@@ -488,7 +522,9 @@ def notification(
     lines = [f"{t['probability']} {p} · {t['strength']} {strength:.0f}"]
     tp = "-" if opportunity.take_profit is None else f"{opportunity.take_profit:g}"
     lines.append(f"Entry {opportunity.entry:g} · SL {opportunity.stop_loss:g} · TP {tp}")
-    if user.is_owner and opportunity.lot is not None:
+    if user.is_owner and opportunity.plan:
+        lines += plan_lines(opportunity, language)
+    elif user.is_owner and opportunity.lot is not None:
         risk = _money(opportunity.risk_money, opportunity.currency)
         lines.append(f"{t['lot']} {opportunity.lot:g} · {t['risk']} {risk}")
     top = explanation.top(3)

@@ -60,3 +60,21 @@ class NotificationPrefsRow(Base):
     user_id: Mapped[str] = mapped_column(String(36), primary_key=True)
     disabled_types: Mapped[list[str]] = mapped_column(JSONType)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
+
+
+class OpportunityAlertRow(Base):
+    """An opportunity a user was alerted to (TAA-810): the personalizer's rate limits and badge count read
+    these, and the silent same-tag replacement is sent once the opportunity ends (``status`` REPLACED)."""
+
+    __tablename__ = "opportunity_alerts"
+
+    user_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    engine_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    opportunity_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    symbol: Mapped[str] = mapped_column(String(32))
+    sent_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    valid_until: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    notification_id: Mapped[str] = mapped_column(String(36))
+    status: Mapped[str] = mapped_column(String(10), index=True)  # SENT / REPLACED
+    final_status: Mapped[str] = mapped_column(String(16), default="")  # EXPIRED / INVALIDATED / FOLLOWED
+    replaced_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)

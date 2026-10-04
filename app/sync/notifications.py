@@ -26,6 +26,8 @@ class NotificationType(StrEnum):
     ENGINE_OFFLINE = "ENGINE_OFFLINE"
     ENGINE_BACK = "ENGINE_BACK"
     BACKTEST_FINISHED = "BACKTEST_FINISHED"
+    OPPORTUNITY = "OPPORTUNITY"  # personalized alert (TAA-810); the payload carries its push text
+    OPPORTUNITY_UPDATE = "OPPORTUNITY_UPDATE"  # the silent same-tag replacement when it ends
     TEST = "TEST"  # the PWA's "send a test push" button
 
 

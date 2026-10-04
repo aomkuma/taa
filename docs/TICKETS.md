@@ -1166,16 +1166,16 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-810 — (rev. 2) Opportunity push
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 806, 809
 
-- [ ] TH/EN templates incl. top-3 evidence contributions
-- [ ] (rev. 3) entry plan in push and in-app: orders (market/limit, lot, price, taps), SL, TPs, risk money per order and total, heat after
-- [ ] same-tag silent replacement on expiry/invalidation
-- [ ] app-badge count
-- [ ] per-user quiet windows and rate limits
+- [x] TH/EN templates incl. top-3 evidence contributions
+- [x] (rev. 3) entry plan in push and in-app: orders (market/limit, lot, price, taps), SL, TPs, risk money per order and total, heat after
+- [x] same-tag silent replacement on expiry/invalidation
+- [x] app-badge count
+- [x] per-user quiet windows and rate limits
 - [ ] cloud replay jobs in the worker (optional)
-- [ ] tests
+- [x] tests
 
 #### TAA-811 — (rev. 4) Engine management API
 

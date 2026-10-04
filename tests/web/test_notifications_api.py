@@ -161,10 +161,7 @@ class TestCentre:
 
     def test_preferences(self, client: TestClient) -> None:
         body = client.get("/api/v1/notifications/preferences").json()
-        assert body == {
-            "types": ["ENGINE_OFFLINE", "ENGINE_BACK", "BACKTEST_FINISHED", "TEST"],
-            "disabled": [],
-        }
+        assert body == {"types": [t.value for t in NotificationType], "disabled": []}
         resp = client.put(
             "/api/v1/notifications/preferences",
             json={"disabled": ["ENGINE_BACK", "ENGINE_BACK"]},

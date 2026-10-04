@@ -128,6 +128,10 @@ or at any phase boundary if I ask. Chat with me in Thai.
   - advisory APIs (TAA-809, PLAN §A14 "TAA-809 decisions", migration 0027): per-user preferences, watchlists,
     favourites, detector catalog, profile; per-engine ranking, opportunities with contributions, shadow
     statistics, calibration; the engine's `advisory-config` with ETag/304.
+  - opportunity push (TAA-810, PLAN §A30 "TAA-810 decisions", migration 0028): worker task
+    `opportunity_alerts` → OPPORTUNITY notifications with the personalizer's TH/EN push (top-3 contributions,
+    rev. 3 entry plan, badge) and silent same-tag OPPORTUNITY_UPDATE replacements. Item 6 (cloud replay jobs,
+    optional) is left open on purpose.
     - TAA-706 candle sync (PLAN §A13 "TAA-706 decisions", migration 0021): `candles` events of up to 1000
       closed bars into the per-engine `history_candles`; `CandleStreamer` on the engine's candle poll (per
       symbol back-off, so crypto streams at weekends); `python -m app.cli sync upload-history [--send]` and
@@ -409,7 +413,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 7. ~~TAA-805 control API~~ (done), ~~TAA-811 engine management API~~ (done)
 8. ~~TAA-808 worker service~~, ~~TAA-705 heartbeat & watchdog~~ (done; Phase 7 complete)
 9. ~~TAA-806 Web Push~~, ~~TAA-807 backtest jobs~~ (done)
-10. ~~TAA-809 advisory APIs~~ (done), TAA-810 opportunity push (completes Phase 8)
+10. ~~TAA-809 advisory APIs~~, ~~TAA-810 opportunity push~~ (done except the optional item 6, cloud replay jobs)
 11. TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5 (Phase 8A)
 12. TAA-903 app shell, then 904–913, 916–923, then 914 PWA polish (Phase 9)
 13. TAA-1004 (do the preparation in "Notes from Phase 10" first), TAA-1005 (Phase 10)

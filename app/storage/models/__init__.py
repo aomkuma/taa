@@ -13,7 +13,12 @@ from app.storage.models.base import Base, utcnow
 from app.storage.models.decisions import DecisionCheckRow, DecisionRecordRow
 from app.storage.models.execution import OrderIntentRow
 from app.storage.models.market import HistoryCandle, ProcessedCandle
-from app.storage.models.notifications import NotificationPrefsRow, NotificationRow, PushSubscriptionRow
+from app.storage.models.notifications import (
+    NotificationPrefsRow,
+    NotificationRow,
+    OpportunityAlertRow,
+    PushSubscriptionRow,
+)
 from app.storage.models.paper import PaperAccountRow, PaperIntentRow, PaperPositionRow
 from app.storage.models.risk import BreakerEventRow, BreakerStateRow, RiskBaseline, RiskDeal, RiskState
 from app.storage.models.sync import (
@@ -62,6 +67,7 @@ __all__ = [
     "LoginThrottleRow",
     "NotificationPrefsRow",
     "NotificationRow",
+    "OpportunityAlertRow",
     "OpportunityRow",
     "OrderIntentRow",
     "OutboxEventRow",

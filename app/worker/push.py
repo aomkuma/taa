@@ -13,6 +13,8 @@ decides each one's ``push_status``:
 | QUEUED | one ``push.send`` job per active subscription was queued |
 
 CRITICAL notifications skip deduplication and the rate limit; TEST notifications skip deduplication.
+Opportunity alerts (TAA-810) skip deduplication too: the personalizer already applied the user's own
+cooldowns, hourly and daily limits and windows. Their silent same-tag replacements also skip the rate limit.
 
 **Sending** (job ``push.send``): the TH/EN text in the user's language (:data:`TEXTS`), encrypted and signed
 with VAPID by pywebpush. 2xx marks the notification SENT. 404/410 means the browser unsubscribed: the
@@ -98,7 +100,27 @@ STATUSES: dict[str, dict[str, str]] = {
 }
 
 
+# Built by the personalizer (TAA-810): the notification's payload carries the finished push in ``push``.
+PREBUILT = frozenset({NotificationType.OPPORTUNITY.value, NotificationType.OPPORTUNITY_UPDATE.value})
+UNLIMITED = frozenset({NotificationType.OPPORTUNITY_UPDATE.value})
+
+
 def push_message(row: NotificationRow, language: str) -> dict[str, Any]:
+    prebuilt = dict(row.payload).get("push")
+    if row.type in PREBUILT and isinstance(prebuilt, Mapping):
+        data = dict(prebuilt.get("data") or {})
+        return {
+            "notification_id": row.notification_id,
+            "type": row.type,
+            "severity": row.severity,
+            "title": str(prebuilt.get("title", "")),
+            "body": str(prebuilt.get("body", "")),
+            "tag": str(prebuilt.get("tag", row.notification_id)),
+            "url": f"/opportunities/{data.get('opportunity_id', '')}",
+            "silent": bool(prebuilt.get("silent", False)),
+            "renotify": bool(prebuilt.get("renotify", False)),
+            "badge": prebuilt.get("badge"),
+        }
     lang = language if language in ("th", "en") else "th"
     title, body = TEXTS.get(row.type, {}).get(lang, (row.type, ""))
     params = {k: str(v) for k, v in dict(row.payload).items()}
@@ -205,7 +227,7 @@ class PushDispatcher:
         if prefs is not None and row.type in (prefs.disabled_types or []):
             return PushStatus.SKIPPED
         critical = row.severity == Severity.CRITICAL.value
-        if not critical and row.type != NotificationType.TEST.value:
+        if not critical and row.type != NotificationType.TEST.value and row.type not in PREBUILT:
             recent = sess.scalars(
                 select(NotificationRow).where(
                     NotificationRow.user_id == row.user_id,
@@ -217,7 +239,7 @@ class PushDispatcher:
             ).all()
             if any(_subject(r) == _subject(row) for r in recent):
                 return PushStatus.SUPPRESSED
-        if not critical:
+        if not critical and row.type not in UNLIMITED:
             sent = sess.scalar(
                 select(func.count())
                 .select_from(NotificationRow)

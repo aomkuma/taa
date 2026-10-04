@@ -40,6 +40,8 @@ from app.evidence.registry import DetectorRegistry
 from app.storage.database import Database
 from app.storage.models import (
     CalibrationTableRow,
+    DecisionCheckRow,
+    DecisionRecordRow,
     OpportunityRow,
     ShadowTradeRow,
     SuitabilitySnapshotRow,
@@ -259,6 +261,16 @@ class AdvisoryReads:
                 features=dict(row.features or {}),
             )
             version = row.calibration_version
+            decision = sess.get(DecisionRecordRow, (engine_id, row.decision_id))
+            heat = sess.scalar(
+                select(DecisionCheckRow.value).where(
+                    DecisionCheckRow.engine_id == engine_id,
+                    DecisionCheckRow.decision_id == row.decision_id,
+                    DecisionCheckRow.name == "max_total_open_risk",
+                )
+            )
+            out["plan"] = plain(decision.plan if decision is not None and decision.plan else [])
+            out["heat_after"] = heat if isinstance(heat, int | float) else None
         out["evidence"] = plain(signal.get("evidence", []))
         out["confluence"] = plain(signal.get("confluence"))
         out["shadow"] = shadow

@@ -35,6 +35,7 @@ from app.storage.database import Database
 from app.storage.models.worker import WorkerHeartbeatRow
 from app.sync.command_queue import CommandQueue
 from app.worker.jobs import DEFAULT_LEASE, Job, JobFailed, JobQueue, RetryLater
+from app.worker.opportunities import OpportunityAlerter
 from app.worker.push import PushDispatcher
 from app.worker.retention import run_retention
 from app.worker.schedule import Schedule, ScheduledTask
@@ -87,6 +88,7 @@ def default_tasks(db: Database, clock: Clock, push: PushDispatcher | None = None
         ScheduledTask("retention", timedelta(hours=1), retention),
         ScheduledTask("expire_commands", timedelta(seconds=30), expire_commands),
         ScheduledTask("engine_watchdog", timedelta(seconds=10), watch_engines),
+        ScheduledTask("opportunity_alerts", timedelta(seconds=15), OpportunityAlerter(db, clock).run),
     ]
     if push is not None:
         tasks.append(ScheduledTask("push_dispatch", timedelta(seconds=5), push.dispatch))

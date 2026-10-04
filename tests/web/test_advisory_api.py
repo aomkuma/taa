@@ -182,6 +182,7 @@ class TestEngineData:
         detail = get(client, mine, "opportunities/o1").json()
         assert detail["evidence"] == [{"detector": "fib.retracement", "quality": 0.8}]
         assert detail["confluence"] == {"score": 72} and len(detail["shadow"]) == 1
+        assert detail["plan"] == [] and detail["heat_after"] is None  # (rev. 3) no decision replicated here
         prob = detail["probability"]
         assert prob["available"] and 0 < prob["estimate"]["p"] < 100
         [fib] = [c for c in prob["contributions"] if c["detector"] == "fib.retracement"]

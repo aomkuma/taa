@@ -1463,6 +1463,22 @@ subscriptions later are configuration plus billing, not a rewrite.
 
   It also computes a **per-user suitability ranking** from shared symbol metrics + the user's account profile, and
   per-user hypothetical P/L as `R outcome × the user's risk money at alert time`.
+- (TAA-810 decisions) The worker task `opportunity_alerts` (`app/worker/opportunities.py`, every 15 s) runs
+  `personalize` for every open opportunity of the last 24 h of each ACTIVE engine and its owner (other users
+  with 8A):
+  - Inputs: the user's stored preferences, the opportunity's calibration version (none: "insufficient data"),
+    the decision's entry plan and the `max_total_open_risk` check value as heat after, the latest ranking for
+    AUTO_TOP_N lists, the symbol's sessions from the replicated catalog spec, and `opportunity_alerts` rows for
+    the duplicate check, cooldown, hourly/daily limits and the badge count.
+  - An alert is an OPPORTUNITY notification whose payload carries the finished push (`push`) plus the plan,
+    contributions, probability and window for the in-app view; the push text lists each order (type, lot, MT5
+    taps, price, TP, risk), the total risk and the heat after (owner only). Web Push sends prebuilt messages
+    as they are (tag, silent, badge, `url: /opportunities/<id>`) and skips its own dedup for them.
+  - When an alerted opportunity ends (EXPIRED, INVALIDATED, FOLLOWED, or the user's window passed) a silent
+    OPPORTUNITY_UPDATE with the same tag replaces it once (`replacement`, unless expiry updates are off);
+    such updates skip the push rate limit.
+  - The opportunity detail API shows the plan and heat too. Cloud replay jobs (item 6, optional) are not
+    built: replay runs locally with `python -m app.cli advisory replay`.
 - **Entitlements & plans** (structure now, billing later):
   - Tables:
 

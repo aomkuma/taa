@@ -285,7 +285,7 @@ def test_from_row_round_trip(model: WinProbability) -> None:
         **{
             f.name: getattr(opp, f.name)
             for f in dataclasses.fields(opp)
-            if f.name not in ("signal", "cost_r")
+            if f.name not in ("signal", "cost_r", "plan", "heat_after")  # from the decision, not the row
         },
         signal=opp.signal.to_dict(),
     )
@@ -301,3 +301,18 @@ def test_the_cloud_can_import_it_without_broker_code() -> None:
     )
     out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True)  # noqa: S603
     assert out.stdout.strip() == "[]"
+
+
+def test_the_entry_plan_is_in_the_owners_push(model: WinProbability) -> None:
+    """(rev. 3) Orders with lot, taps, price, TP and risk; total risk and heat after; owner only."""
+    plan = (
+        {"order_type": "MARKET", "entry": "1.1", "volume": "0.15", "taps": 15, "take_profit": "1.103", "risk_money": "30"},
+        {"order_type": "LIMIT", "entry": "1.0995", "volume": "0.10", "taps": 10, "take_profit": None, "risk_money": "15"},
+    )  # fmt: skip
+    opp = opportunity(plan=plan, heat_after=1.25)
+    body = run(model, opp=opp).payload["body"]  # Thai is the default language
+    assert "1) ราคาตลาด 0.15 ล็อต (15 ครั้ง) @ 1.1 · TP 1.103 · ความเสี่ยง 30.00 USD" in body
+    assert "2) ลิมิต 0.1 ล็อต (10 ครั้ง) @ 1.0995 · ความเสี่ยง 15.00 USD" in body
+    assert "ความเสี่ยงรวม 45.00 USD · heat หลังเข้า 1.25%" in body
+    other = run(model, UserContext(prefs(), is_owner=False), opp=opp).payload["body"]
+    assert "1)" not in other and "USD" not in other  # another user's lots come with account profiles (8A)
