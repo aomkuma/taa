@@ -940,12 +940,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6C5 — Advisory integration & docs
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 6C3, 6C4, 6A4
 
-- [ ] accuracy feeds ranking S8 and win probability
+- [x] accuracy feeds ranking S8 and win probability
 - [ ] shadow trades accepted by the analytics trade builder (scope SHADOW)
-- [ ] `docs/ADVISORY.md` (formulas, definitions, baselines, assumptions, caveats)
+- [x] `docs/ADVISORY.md` (formulas, definitions, baselines, assumptions, caveats)
 
 ### Phase 7 — Cloud sync
 

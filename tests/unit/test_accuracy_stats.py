@@ -192,3 +192,38 @@ def test_load_records(db: Database) -> None:
     assert [r.source for r in load_records(db, server="FBS-Demo", source=Source.REPLAY)] == [Source.REPLAY]
     assert len(load_records(db, server="FBS-Demo", variant=Variant.MANAGED)) == 1
     assert replace(a, win=False).win is False  # records are plain values
+
+
+class TestEdge:
+    def test_live_counts_fully_replay_is_a_capped_prior(self) -> None:
+        from app.advisory.stats import edge_estimates
+
+        live = [trade(i, True) for i in range(10)]  # +2R each
+        replay = [trade(100 + i, False, source=Source.REPLAY) for i in range(500)]  # -1R each
+        edges = edge_estimates(live + replay + [trade(900, True, symbol="XAUUSD")], replay_cap=50)
+        eur = edges["EURUSD"]
+        assert eur.trades == 60 and eur.expectancy_r == pytest.approx((10 * 2 - 50) / 60)
+        assert edges["XAUUSD"].trades == 1 and edges["XAUUSD"].expectancy_r == 2.0
+        few = edge_estimates([trade(i, False, source=Source.REPLAY) for i in range(20)], replay_cap=50)
+        assert few["EURUSD"].trades == 20  # under the cap: every replay trade counts
+
+    def test_edge_book_reloads_hourly(self, db: Database) -> None:
+        from app.advisory.stats import EdgeBook
+
+        now = {"t": 0.0}
+        book = EdgeBook(db, server="FBS-Demo", monotonic=lambda: now["t"], refresh_seconds=3600)
+        calls = {"n": 0}
+        original = book.refresh
+
+        def counted():  # type: ignore[no-untyped-def]
+            calls["n"] += 1
+            return original()
+
+        book.refresh = counted  # type: ignore[method-assign]
+        assert book("EURUSD") is None and calls["n"] == 1
+        now["t"] = 100
+        book("XAUUSD")
+        assert calls["n"] == 1
+        now["t"] = 3600
+        book("EURUSD")
+        assert calls["n"] == 2

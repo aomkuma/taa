@@ -124,6 +124,7 @@ class OpportunityScanner:
         loss: Callable[[], LossStatus | None] = lambda: None,
         gate: Callable[[], GateResult | None] = lambda: None,
         strategy_catalog: StrategyRegistry | None = None,
+        calibration_version: Callable[[], str | None] = lambda: None,
     ) -> None:
         self.db = db
         self.gateway = gateway
@@ -136,6 +137,7 @@ class OpportunityScanner:
         self.loss = loss
         self.gate = gate
         self.strategy_catalog = strategy_catalog or strategy_registry()
+        self.calibration_version = calibration_version
         self.candles = CandleService(gateway, config.timeframes, clock)
         self.quotes = QuoteService(gateway, clock, config.timeframes.stale_tick_seconds)
         self.stats = ScannerStats()
@@ -339,6 +341,7 @@ class OpportunityScanner:
             ask=quote.ask if quote.valid else None,
             quote_at=quote.time_utc if quote.valid else None,
             requirements_version=plan.version,
+            calibration_version=self.calibration_version(),  # the model its win probability is read from
             features=signal_features(signal, market),
             signal=signal.to_dict(),
         )

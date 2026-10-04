@@ -36,6 +36,7 @@ from app.advisory.ranking_service import RankingService
 from app.advisory.requirements import ComputeRequirements, local_requirements
 from app.advisory.scanner import OpportunityScanner
 from app.advisory.shadow_tracker import ShadowTracker
+from app.advisory.stats import EdgeBook
 from app.advisory.universe import SymbolCatalog
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
@@ -225,8 +226,14 @@ class Engine:
             catalog = SymbolCatalog(
                 self.db, self.gateway, cfg.advisory.universe, self.clock, server=account.server
             )
+            edges = EdgeBook(  # S8: shadow expectancy per symbol, REPLAY as a capped prior
+                self.db,
+                server=account.server,
+                monotonic=self.clock.monotonic,
+                replay_cap=cfg.advisory.calibration.replay_cap,
+            )
             self.ranking = RankingService(
-                self.db, self.gateway, catalog, cfg, self.clock, server=account.server
+                self.db, self.gateway, catalog, cfg, self.clock, server=account.server, edge_source=edges
             )
         if cfg.advisory.scanner.enabled:
             self.requirements()  # invalid advisory preferences fail at startup (ConfigError)
@@ -241,6 +248,7 @@ class Engine:
                 health=self.health_snapshot,
                 loss=self._loss_status,
                 gate=self.gate,
+                calibration_version=self._calibration_version,
             )
             self.lifecycle = OpportunityLifecycle(
                 self.db,
@@ -505,6 +513,10 @@ class Engine:
                 log.exception("calibration scheduling failed")
                 self.calibration.failures += 1
                 self.calibration.last_error = f"{type(exc).__name__}: {exc}"
+
+    def _calibration_version(self) -> str | None:
+        current = None if self.calibration is None else self.calibration.current
+        return None if current is None else current.version
 
     def requirements(self) -> ComputeRequirements:
         """What the scanner computes: from the local preferences until the cloud sends them (Phase 7).

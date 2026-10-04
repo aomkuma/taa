@@ -18,7 +18,9 @@ Definitions (every result is hypothetical; see ``docs/ADVISORY.md``):
 - **theory scoreboard**: per detector and per family × group (asset class × timeframe by default), the trades
   the theory supported: n, hit rate with CI, expectancy, and lift = hit rate ÷ the group's hit rate.
 
-LIVE and REPLAY results are never mixed: :func:`accuracy_report` builds one section per source.
+LIVE and REPLAY results are never mixed: :func:`accuracy_report` builds one section per source. The ranking's
+S8 (:func:`edge_estimates`, :class:`EdgeBook`) is the one consumer that combines them, with REPLAY as a capped
+prior like the calibration.
 """
 
 from __future__ import annotations
@@ -33,6 +35,7 @@ from typing import Any
 from sqlalchemy import select
 
 from app.advisory.confidence import Source, feature_family, is_player, strength_bucket
+from app.advisory.scoring import EdgeEstimate
 from app.advisory.shadow import ShadowStatus, Variant
 from app.advisory.stats_math import wilson_interval
 from app.core.clock import ensure_utc
@@ -381,3 +384,59 @@ def accuracy_report(
         live=section(trades, Source.LIVE, watchlists=watchlists),
         replay=section(trades, Source.REPLAY, watchlists=watchlists),
     )
+
+
+# --- ranking feed (S8) --------------------------------------------------------------------------------------
+
+
+def edge_estimates(records: Iterable[TradeRecord], *, replay_cap: float = 50.0) -> dict[str, EdgeEstimate]:
+    """Per symbol: shadow expectancy (mean ``r_net``) for ranking score S8.
+
+    LIVE trades count fully; REPLAY trades act as a capped prior, worth at most *replay_cap* trades per symbol
+    (the calibration's rule), so years of replay never drown out live results.
+    """
+    live: dict[str, list[float]] = defaultdict(list)
+    replay: dict[str, list[float]] = defaultdict(list)
+    for t in records:
+        (replay if t.source is Source.REPLAY else live)[t.symbol].append(t.r_net)
+    out = {}
+    for symbol in sorted(set(live) | set(replay)):
+        lv, rp = live.get(symbol, []), replay.get(symbol, [])
+        weight = min(1.0, replay_cap / len(rp)) if rp else 0.0
+        n = len(lv) + weight * len(rp)
+        if n <= 0:
+            continue
+        out[symbol] = EdgeEstimate(round(n), (sum(lv) + weight * sum(rp)) / n)
+    return out
+
+
+class EdgeBook:
+    """S8's ``edge_source`` for the ranking: per-symbol shadow expectancy, reloaded at most every
+    ``refresh_seconds`` (monotonic clock)."""
+
+    def __init__(
+        self,
+        db: Database,
+        *,
+        server: str,
+        monotonic: Callable[[], float],
+        replay_cap: float = 50.0,
+        refresh_seconds: float = 3600.0,
+    ) -> None:
+        self.db = db
+        self.server = server
+        self.monotonic = monotonic
+        self.replay_cap = replay_cap
+        self.refresh_seconds = refresh_seconds
+        self._edges: dict[str, EdgeEstimate] = {}
+        self._loaded_at: float | None = None
+
+    def refresh(self) -> dict[str, EdgeEstimate]:
+        self._edges = edge_estimates(load_records(self.db, server=self.server), replay_cap=self.replay_cap)
+        self._loaded_at = self.monotonic()
+        return self._edges
+
+    def __call__(self, symbol: str) -> EdgeEstimate | None:
+        if self._loaded_at is None or self.monotonic() - self._loaded_at >= self.refresh_seconds:
+            self.refresh()
+        return self._edges.get(symbol)

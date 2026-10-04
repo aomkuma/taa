@@ -250,3 +250,28 @@ class TestEngine:
         assert h.engine.last_error == "" and h.engine.status()["shadow"]["last_error"].startswith(
             "RuntimeError"
         )
+
+
+class TestIntegration:
+    def test_opportunities_record_the_calibration_version(self, db: Database) -> None:
+        from tests.integration.test_scanner import scanner
+
+        s, _, _ = scanner(db)
+        s.calibration_version = lambda: "20261004T230000Z-abc"
+        s.tick()
+        with db.session() as sess:
+            versions = set(sess.execute(select(OpportunityRow.calibration_version)).scalars())
+        assert versions == {"20261004T230000Z-abc"}
+
+    def test_the_engine_feeds_s8_and_stamps_versions(self, tmp_path: Path) -> None:
+        from app.advisory.calibration import LoadedCalibration
+        from app.advisory.confidence import BucketModel, WinProbability
+        from app.advisory.stats import EdgeBook
+
+        h = harness(tmp_path, advisory=CONFIG.advisory)
+        h.engine.start()
+        assert h.engine.ranking is not None and isinstance(h.engine.ranking.edge_source, EdgeBook)
+        assert h.engine.calibration is not None and h.engine.scanner is not None
+        h.engine.calibration.current = LoadedCalibration("v-test", WED, WinProbability(BucketModel()), 0, 0)
+        assert h.engine.scanner.calibration_version() == "v-test"
+        h.engine.shutdown()
