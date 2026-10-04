@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import secrets
 import threading
+import time
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from typing import Any
@@ -21,8 +22,9 @@ from alembic.autogenerate import compare_metadata
 from alembic.config import Config
 from alembic.migration import MigrationContext
 from dotenv import dotenv_values
-from sqlalchemy import create_engine, inspect, select, text
+from sqlalchemy import Engine, create_engine, inspect, select, text
 from sqlalchemy.engine import make_url
+from sqlalchemy.exc import DBAPIError
 
 from app.config import REPO_ROOT
 from app.core.clock import ManualClock
@@ -66,9 +68,22 @@ def pg_url() -> Iterator[str]:
     try:
         yield base.set(database=name).render_as_string(hide_password=False)
     finally:
-        with admin.connect() as conn:
-            conn.execute(text(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)'))
+        _drop(admin, name)
         admin.dispose()
+
+
+def _drop(admin: Engine, name: str, attempts: int = 10) -> None:
+    """Drop the throwaway database. FORCE cannot end a backend of another role (an autovacuum worker that
+    picked up the fresh database): the role ``taa`` lacks ``pg_signal_backend``, so wait for it and retry."""
+    for attempt in range(attempts):
+        try:
+            with admin.connect() as conn:
+                conn.execute(text(f'DROP DATABASE IF EXISTS "{name}" WITH (FORCE)'))
+            return
+        except DBAPIError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(0.5 * (attempt + 1))
 
 
 def alembic(url: str) -> Config:
