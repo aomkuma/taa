@@ -48,6 +48,8 @@ def test_the_engine_starts_reports_and_stops_sync(tmp_path: Path) -> None:
     calls: list[str] = []
     runtime.thread.start = lambda: calls.append("start")  # type: ignore[method-assign]
     runtime.thread.stop = lambda timeout=5.0: calls.append("stop")  # type: ignore[method-assign]
+    assert runtime.advisory is not None
+    runtime.advisory.start = lambda: calls.append("advisory")  # type: ignore[method-assign]
     h.engine.sync = runtime
     h.engine.start()
     before = h.engine.status()["sync"]
@@ -57,7 +59,7 @@ def test_the_engine_starts_reports_and_stops_sync(tmp_path: Path) -> None:
     assert status["pending"] == before["pending"] + 1 and status["failed_sends"] == 0
     assert status["pending_by_priority"][0] == before["pending_by_priority"].get(0, 0) + 1
     h.engine.run(max_cycles=2)
-    assert calls == ["start", "stop"]
+    assert calls == ["start", "advisory", "stop"]
 
 
 def test_without_sync_nothing_is_built(tmp_path: Path) -> None:

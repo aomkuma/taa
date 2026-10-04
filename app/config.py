@@ -600,6 +600,9 @@ class SyncConfig(StrictModel):
     )
     flush_interval_seconds: float = Field(default=2.0, gt=0)
     command_poll_seconds: float = Field(default=25.0, gt=0, le=60)
+    advisory_config_seconds: float = Field(
+        default=300.0, ge=10, le=86_400, description="how often the advisory config is pulled from the cloud"
+    )
     heartbeat_seconds: float = Field(default=10.0, gt=0)
     request_timeout_seconds: float = Field(default=15.0, gt=0)
     max_backlog_events: int = Field(default=200_000, ge=1000)

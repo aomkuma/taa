@@ -6,7 +6,8 @@ session's own connection, so the event commits or rolls back with the change it 
 code of their own: anything that writes these tables through the ORM (the engine, the CLI) is replicated.
 
 - Each event carries the full row, so only the newest unsent one per row matters: events coalesce on
-  ``<type>:<entity key>``.
+  ``<type>:<entity key>``. A spec's ``quiet`` columns and ``throttle_seconds`` (``app/sync/events.py``) cut
+  the volume of rows that change often.
 - Bulk ``update()``/``delete()`` statements bypass the ORM and are not seen; replicated tables are written
   through the ORM only. Deletes are not replicated at all.
 - The hook never raises into the write it observes: replication must not block trading. A failure is logged
@@ -36,6 +37,7 @@ from app.sync.outbox import Status
 log = logging.getLogger(__name__)
 
 SNAPSHOT_CHUNK = 500
+THROTTLE_KEYS_MAX = 5000
 
 _installed: weakref.WeakKeyDictionary[Database, Replicator] = weakref.WeakKeyDictionary()
 _install_lock = threading.Lock()
@@ -79,25 +81,45 @@ class Replicator:
         self.by_model = {s.model: s for s in self.specs}
         self.emitted = 0
         self.errors = 0
+        self._last_update: dict[str, float] = {}  # coalesce key → monotonic time of its last update event
 
     def _wanted(self, obj: object) -> bool:
         if type(obj) not in self.by_model:
             return False
         return not isinstance(obj, AuditEvent) or obj.chain == self.audit_chain
 
+    def _due(self, spec: ReplicaSpec, payload: dict[str, Any], now: float, is_update: bool) -> bool:
+        """Throttling: inserts always go out; an update only once the row's interval has passed."""
+        key = f"{spec.event_type}:{spec.entity_key(payload)}"
+        last = self._last_update.get(key)
+        if is_update and last is not None and now - last < spec.throttle_seconds:
+            return False
+        self._last_update[key] = now
+        if len(self._last_update) > THROTTLE_KEYS_MAX:  # rows of past hours never update again: forget them
+            horizon = max(s.throttle_seconds for s in self.specs)
+            self._last_update = {k: t for k, t in self._last_update.items() if now - t < horizon}
+        return True
+
     def _after_flush(self, session: Session, _flush: UOWTransaction) -> None:
         try:
-            changed = [o for o in session.new if self._wanted(o)] + [
+            inserted = [o for o in session.new if self._wanted(o)]
+            updated = [
                 o
                 for o in session.dirty
-                if self._wanted(o) and session.is_modified(o, include_collections=False)
+                if self._wanted(o)
+                and session.is_modified(o, include_collections=False)
+                and self.by_model[type(o)].changed_loudly(o)
             ]
-            if not changed:
+            if not inserted and not updated:
                 return
             conn = session.connection()
-            for obj in changed:
+            now = self.clock.monotonic()
+            for obj, is_update in [(o, False) for o in inserted] + [(o, True) for o in updated]:
                 spec = self.by_model[type(obj)]
-                write_event(conn, self.clock, spec, spec.payload(obj))
+                payload = spec.payload(obj)
+                if spec.throttle_seconds and not self._due(spec, payload, now, is_update):
+                    continue
+                write_event(conn, self.clock, spec, payload)
                 self.emitted += 1
         except Exception:  # the observed write must go through; the cloud copy catches up later
             self.errors += 1

@@ -33,7 +33,11 @@ from typing import Any
 from app.advisory.calibration import CalibrationService
 from app.advisory.lifecycle import OpportunityLifecycle
 from app.advisory.ranking_service import RankingService
-from app.advisory.requirements import ComputeRequirements, local_requirements
+from app.advisory.requirements import (
+    ComputeRequirements,
+    local_requirements,
+    requirements_from_config,
+)
 from app.advisory.scanner import OpportunityScanner
 from app.advisory.shadow_tracker import ShadowTracker
 from app.advisory.stats import EdgeBook
@@ -158,7 +162,7 @@ class Engine:
         self.sync = sync  # cloud replication; None unless sync.enabled (built in start())
         self.commands: CommandProcessor | None = None  # remote commands, with sync
         self.resync_requested = False
-        self._requirements_cache: tuple[datetime | None, ComputeRequirements] | None = None
+        self._requirements_cache: tuple[tuple[datetime | None, str | None], ComputeRequirements] | None = None
         loop = self.config.engine
         self._candles_due = _Due(loop.candle_poll_seconds)
         self._health_due = _Due(loop.health_interval_seconds)
@@ -562,6 +566,7 @@ class Engine:
             "consecutive_failures": m.consecutive_failures,
             "last_error": m.last_error,
             "last_success_at": None if m.last_success_at is None else m.last_success_at.isoformat(),
+            "advisory_config": None if sync.advisory is None else sync.advisory.status(),
         }
 
     def _calibration_version(self) -> str | None:
@@ -569,21 +574,32 @@ class Engine:
         return None if current is None else current.version
 
     def requirements(self) -> ComputeRequirements:
-        """What the scanner computes: from the local preferences until the cloud sends them (Phase 7).
+        """What the scanner computes: from the cloud's advisory config when there is one (fresh or cached),
+        else from the local preferences.
 
-        Recomputed when a new ranking arrives (its top N is part of the monitored set)."""
+        Recomputed when a new ranking arrives (its top N is part of the monitored set) or the config
+        changes."""
         run = None if self.ranking is None else self.ranking.last_run
-        key = None if run is None else run.computed_at
+        remote = None if self.sync is None or self.sync.advisory is None else self.sync.advisory.current
+        key = (None if run is None else run.computed_at, None if remote is None else remote.version)
         if self._requirements_cache is None or self._requirements_cache[0] != key:
             ranked = [] if run is None else [r.symbol for r in run.ranked if r.eligible]
             universe = [] if self.ranking is None else [e.symbol for e in self.ranking.universe]
-            req = local_requirements(
-                self.config,
-                ranked=ranked,
-                evidence=evidence_registry(),
-                strategies=default_registry(),
-                available=universe or None,
-            )
+            evidence, strategies = evidence_registry(), default_registry()
+            available = universe or None
+            if remote is None:
+                req = local_requirements(
+                    self.config, ranked=ranked, evidence=evidence, strategies=strategies, available=available
+                )
+            else:
+                req = requirements_from_config(
+                    remote,
+                    self.config,
+                    ranked=ranked,
+                    evidence=evidence,
+                    strategies=strategies,
+                    available=available,
+                )
             self._requirements_cache = (key, req)
         return self._requirements_cache[1]
 
@@ -639,14 +655,20 @@ class Engine:
         return f"resync queued ({rows} rows)"
 
     def _initial_snapshot(self) -> None:
-        """Once per engine database: queue every replicated row, including rows from before sync was on."""
+        """Once per engine database and event type: queue every replicated row, including rows written before
+        sync was on or before a later release added their type."""
         if self.replicator is None:
             return
         state = EngineStateRepository(self.db, self.clock)
-        if state.load(SNAPSHOT_KEY) is not None:
+        done = set((state.load(SNAPSHOT_KEY) or {}).get("types", []))
+        todo = [s.event_type for s in self.replicator.specs if s.event_type not in done]
+        if not todo:
             return
-        rows = self.replicator.snapshot(self.db)
-        state.save(SNAPSHOT_KEY, {"rows": rows, "at": self.clock.now_utc().isoformat()})
+        rows = self.replicator.snapshot(self.db, types=todo)
+        state.save(
+            SNAPSHOT_KEY,
+            {"types": sorted(done | set(todo)), "rows": rows, "at": self.clock.now_utc().isoformat()},
+        )
 
     def _cmd_rescan(self, cmd: Command) -> str:
         if not self.request_rescan():

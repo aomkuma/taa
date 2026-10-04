@@ -1,4 +1,5 @@
-"""The engine's cloud-sync runtime: outbox, signed client and sender thread (PLAN §A13; TAA-701).
+"""The engine's cloud-sync runtime: outbox, signed client, sender thread, command poller and the
+advisory-config client (PLAN §A13; TAA-701/704/707).
 
 Built only when ``sync.enabled`` is true (config loading then requires ``CLOUD_BASE_URL``, ``ENGINE_ID`` and
 ``ENGINE_HMAC_SECRET``). Without it, the engine runs exactly as before and nothing leaves the machine.
@@ -17,6 +18,8 @@ from app.core.clock import Clock
 from app.core.errors import ConfigError
 from app.security.hmac_auth import Signer, check_secret
 from app.storage.database import Database
+from app.storage.repositories import EngineStateRepository
+from app.sync.advisory_config import AdvisoryConfigClient
 from app.sync.client import CloudClient
 from app.sync.commands import CommandPoller
 from app.sync.outbox import Outbox, OutboxSender, SenderThread
@@ -30,6 +33,7 @@ class SyncRuntime:
     thread: SenderThread
     inbox: queue.Queue[dict[str, Any]] = field(default_factory=queue.Queue)
     poller: CommandPoller | None = None  # remote commands; processed on the engine loop
+    advisory: AdvisoryConfigClient | None = None  # the users' compute requirements (TAA-707)
 
     @classmethod
     def from_settings(
@@ -44,15 +48,26 @@ class SyncRuntime:
         sender = OutboxSender(outbox, client.post_gzip, env.ENGINE_ID, clock)
         inbox: queue.Queue[dict[str, Any]] = queue.Queue()
         poller = CommandPoller(client.get_json, inbox, poll_seconds=cfg.command_poll_seconds)
-        return cls(outbox, client, sender, SenderThread(sender, cfg.flush_interval_seconds), inbox, poller)
+        advisory = AdvisoryConfigClient(
+            client.get_conditional,
+            EngineStateRepository(db, clock),
+            clock,
+            refresh_seconds=cfg.advisory_config_seconds,
+        )
+        thread = SenderThread(sender, cfg.flush_interval_seconds)
+        return cls(outbox, client, sender, thread, inbox, poller, advisory)
 
     def start(self) -> None:
         self.thread.start()
         if self.poller is not None:
             self.poller.start()
+        if self.advisory is not None:
+            self.advisory.start()
 
     def stop(self) -> None:
         if self.poller is not None:
             self.poller.stop()
+        if self.advisory is not None:
+            self.advisory.stop()
         self.thread.stop()
         self.client.close()

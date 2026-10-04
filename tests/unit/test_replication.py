@@ -20,13 +20,16 @@ from app.storage.models import (
     DecisionCheckRow,
     OutboxEventRow,
     RiskState,
+    ShadowTradeRow,
 )
 from app.sync import outbox as outbox_module
 from app.sync.events import (
     REPLICAS,
+    SNAPSHOT_THROTTLE_SECONDS,
     SPECS_BY_MODEL,
     SPECS_BY_TYPE,
     CommandResultPayload,
+    ReplicaSpec,
     WireBatch,
     json_safe,
 )
@@ -264,3 +267,84 @@ class TestSnapshot:
 def test_model_registry_covers_only_mapped_tables() -> None:
     tables = set(Base.metadata.tables)
     assert all(spec.model.__tablename__ in tables for spec in REPLICAS)
+
+
+class TestVolumeControls:
+    """TAA-707: quiet columns and throttled rows."""
+
+    def test_quiet_columns_alone_emit_nothing(self, db: Database) -> None:
+        from tests.sync_data import sample_rows
+
+        clock = ManualClock(NOW)
+        install_replication(db, clock, CHAIN)
+        [shadow] = [r for r in sample_rows() if type(r).__name__ == "ShadowTradeRow"]
+        with db.session() as sess:
+            sess.add(shadow)
+        assert [e.type for e in outbox_rows(db)] == ["shadow_trade"]
+        with db.session() as sess:
+            row = sess.get(ShadowTradeRow, "k1:PLAN")
+            assert row is not None
+            row.cursor = NOW + timedelta(minutes=5)  # the tracker's M1 cursor
+            row.updated_at = NOW + timedelta(minutes=5)
+        [event] = outbox_rows(db)
+        assert event.payload["cursor"] == shadow.cursor.isoformat()  # unchanged event
+        with db.session() as sess:
+            row = sess.get(ShadowTradeRow, "k1:PLAN")
+            assert row is not None
+            row.mfe = 0.002
+        [event] = outbox_rows(db)  # a real change carries the quiet columns along
+        assert event.payload["mfe"] == 0.002
+        assert event.payload["cursor"] == (NOW + timedelta(minutes=5)).isoformat()
+
+    def test_throttled_rows_update_at_most_every_interval(self, db: Database) -> None:
+        from tests.sync_data import sample_rows
+
+        clock = ManualClock(NOW)
+        install_replication(db, clock, CHAIN)
+        [snap] = [r for r in sample_rows() if type(r).__name__ == "SuitabilitySnapshotRow"]
+        with db.session() as sess:
+            sess.add(snap)
+
+        def rewrite(score: float) -> None:
+            with db.session() as sess:
+                row = sess.merge(snap)
+                row.now_score = score
+
+        def sent_scores() -> list[float]:
+            events = outbox_rows(db)
+            for e in events:  # mark everything sent, so coalescing does not hide what was emitted
+                with db.session() as sess:
+                    sess.get(OutboxEventRow, e.event_id).status = "SENT"  # type: ignore[union-attr]
+            return [e.payload["now_score"] for e in events if e.status == "PENDING"]
+
+        assert sent_scores() == [70.0]  # the insert always goes out
+        clock.advance(60)
+        rewrite(71.0)
+        assert sent_scores() == []  # within the interval
+        clock.advance(SNAPSHOT_THROTTLE_SECONDS)
+        rewrite(72.0)
+        assert sent_scores() == [72.0]
+        [event] = [e for e in outbox_rows(db) if e.payload["now_score"] == 72.0]
+        assert event.priority == Priority.TELEMETRY and "id" not in event.payload
+
+    def test_advisory_specs(self) -> None:
+        assert SPECS_BY_TYPE["opportunity"].priority is Priority.CRITICAL
+        assert SPECS_BY_TYPE["suitability_snapshot"].key == ("server", "symbol", "hour")
+        assert SPECS_BY_TYPE["shadow_trade"].quiet == ("cursor", "updated_at")
+        assert {"symbol_catalog", "calibration_version", "evidence_model_version"} <= set(SPECS_BY_TYPE)
+
+    def test_quiet_columns_must_be_replicated_non_key_columns(self) -> None:
+        with pytest.raises(TypeError, match="quiet"):
+            ReplicaSpec("bad", RiskState, quiet=("account_key",))
+
+
+def test_throttle_bookkeeping_forgets_old_rows(db: Database, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("app.sync.replication.THROTTLE_KEYS_MAX", 3)
+    clock = ManualClock(NOW)
+    rep = install_replication(db, clock, CHAIN)
+    spec = SPECS_BY_TYPE["suitability_snapshot"]
+    for i in range(3):
+        assert rep._due(spec, {"server": "s", "symbol": f"S{i}", "hour": NOW.isoformat()}, 0.0, False)
+    clock_now = SNAPSHOT_THROTTLE_SECONDS + 1
+    assert rep._due(spec, {"server": "s", "symbol": "S9", "hour": NOW.isoformat()}, clock_now, False)
+    assert list(rep._last_update) == [f"suitability_snapshot:s|S9|{NOW.isoformat()}"]

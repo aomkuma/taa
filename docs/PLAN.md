@@ -1118,6 +1118,28 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     union, the detector/strategy union, and window/lifetime parameters. Per-user preferences stay in the cloud.
   - New command RESCAN_SUITABILITY (no TOTP). Watchlist and threshold changes affect **alerts only**, never the
     bot's trading universe or risk.
+  - (TAA-707 decisions)
+    - The advisory tables replicate through the TAA-703 mechanism (`ReplicaSpec`s in `app/sync/events.py`):
+      `symbol_catalog`, `suitability_snapshot` (keyed by server, symbol and hour; TELEMETRY priority),
+      `opportunity` (CRITICAL, since it drives alerts), `shadow_trade`, `calibration_version`
+      (`calibration_tables`) and `evidence_model_version`.
+    - Volume controls on `ReplicaSpec`: `quiet` columns change without an event of their own (the shadow M1
+      `cursor` and `updated_at`), and travel with the row's next real change. `throttle_seconds` emits updates
+      of one row at most every 300 s (the ranking rewrites every snapshot row each minute); inserts always go
+      out.
+    - The start-up snapshot runs once per event type (`engine_state` `sync_snapshot.types`), so a release that
+      adds replicated tables backfills them.
+    - **Wire format** `AdvisoryConfig` (`app/advisory/requirements.py`): `version` (content digest = ETag),
+      `favourites`, `lists`, `auto_top_n`, `detectors`, `pattern_strategies`, `lifetime_bars`. It is the union
+      of the users' needs, with no user identity. The engine adds what only it knows (allowlist, ranking,
+      broker symbols, locally enabled strategies) in `requirements_from_config`. Unknown detector or setup
+      names are logged and skipped, so a newer cloud cannot widen what the engine runs. The local path
+      (`local_requirements`) goes through the same two steps, so one user via the cloud equals the local
+      result (tested).
+    - Client `app/sync/advisory_config.py`: its own thread every `sync.advisory_config_seconds` (300 s),
+      `If-None-Match`; 200 is validated and cached in `engine_state` `advisory_config`; 304 keeps the config;
+      404 means not served yet (no error); other answers back off. Fallback: cloud → cache → local
+      preferences. The engine loop only reads the current value. The cloud endpoint is TAA-809.
 - **Storage:**
   - Engine tables: `symbol_catalog`, `suitability_snapshots`, `opportunities`, `shadow_trades`,
     `calibration_tables`, `advisory_preferences_cache`.

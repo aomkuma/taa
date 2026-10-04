@@ -84,6 +84,24 @@ class CloudClient:
         except ValueError:
             return resp.status_code, None
 
+    def get_conditional(self, target: str, etag: str | None) -> tuple[int | None, Any, str | None]:
+        """GET with ``If-None-Match``: (status, JSON body or None, ETag header).
+
+        The status is None for a transport error."""
+        try:
+            resp = self._send("GET", target, extra={"If-None-Match": f'"{etag}"'} if etag else None)
+        except httpx.HTTPError as exc:
+            log.warning("cloud GET %s failed: %s", target, exc)
+            return None, None, None
+        header = resp.headers.get("etag")
+        tag = header.removeprefix("W/").strip('"') if header else None
+        if resp.status_code != 200 or not resp.content:
+            return resp.status_code, None, tag
+        try:
+            return resp.status_code, resp.json(), tag
+        except ValueError:
+            return resp.status_code, None, tag
+
     def post_json(self, target: str, body: bytes) -> int | None:
         try:
             resp = self._send("POST", target, body, {"Content-Type": "application/json"})

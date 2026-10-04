@@ -1,6 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-04, single session on `main`: TAA-703 (ingest API) and TAA-704 (long-poll route) done. Before it, three parallel
+Last updated: 2026-10-04, single session on `main`: TAA-703 (ingest API), TAA-704 (long-poll route) and
+TAA-707 (advisory sync) done; rev. 4 design committed (docs). Before them, three parallel
 sessions were merged: Phase 6C (done), Phase 7 TAA-701, 702, 704 (engine side), Phase 8 TAA-801, 802,
 Phase 9 TAA-901, 902, 915, Phase 10 TAA-1001..1003, and the storage-health fix. No branch holds unmerged
 work. This file holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
@@ -23,8 +24,8 @@ Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Done: Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B, 6C and 12 (DEMO execution, pulled forward on the user's request).
 Partly done: Phase 7 (701..704), Phase 8 (801, 802), Phase 9 (901, 902, 915), Phase 10 (1001..1003).
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Start with TAA-708 (engine registry, PLAN §A32), unless TAA-707 has
-uncommitted work: then finish 707 first.
+"Next work" list in docs/HANDOFF.md. Start with TAA-708 (engine registry, PLAN §A32). TAA-709 must
+include the advisory tables that TAA-707 added to `REPLICAS`.
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Update docs/HANDOFF.md at the end of the
 session. Stop for review at the end of Milestone 1, or at any phase boundary if I ask.
@@ -44,7 +45,7 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
   `ENGINE_ID` and `ENGINE_HMAC_SECRET` (shown once), and the browser generates `CONTROL_TOTP_SECRET`, which never
   reaches the cloud. New tickets: TAA-708, 709, 811, 923. Rollout is fail-closed: one ACTIVE engine until 709, and
   `MULTI_ENGINE_ENABLED=false`.
-- **In progress (progress table):** Phase 7 4/9 (701..704), Phase 8 2/11 (801, 802),
+- **In progress (progress table):** Phase 7 5/9 (701..704, 707), Phase 8 2/11 (801, 802),
   Phase 9 3/23 (901, 902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 8A, Phase 11. The order of the
   remaining tickets: "Next work" below.
 - **Checks:** 2270 tests on `c85d539` (2269 passed + 1 failure from a memory-allocation error under parallel
@@ -337,10 +338,10 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 
 1. ~~TAA-703 ingest API~~ (done)
 2. ~~TAA-704 long-poll route~~ (done)
-3. (rev. 4) TAA-708 engine registry, then TAA-709 engine-scoped replicas. Ideally do them before 707, so the
-   advisory tables join the replicas only once. If 707 is already under way, finish it first and include its
-   tables in 709.
-4. TAA-707 advisory sync (engine producers, advisory-config client, ingest of the new event types)
+3. ~~TAA-707 advisory sync~~ (done, before 708 because it was under way)
+4. (rev. 4) TAA-708 engine registry, then TAA-709 engine-scoped replicas (including the advisory tables:
+   `symbol_catalog`, `suitability_snapshots`, `opportunities`, `shadow_trades`, `calibration_tables`,
+   `evidence_model_versions`)
 5. TAA-706 candle & history sync
 6. TAA-803 read APIs (owner-scoped, rev. 4), then TAA-804 SSE
 7. TAA-805 control API (owned engines only, rev. 4), then TAA-811 engine management API
@@ -355,14 +356,11 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 
 Planned details:
 
-- **TAA-707 engine side:** the TAA-703 mechanism already replicates any table listed in
-  `app/sync/events.py` `REPLICAS`, so advisory rows need `ReplicaSpec`s, not hooks in each producer:
-  `symbol_catalog`, `opportunities`, `shadow_trades`, `calibration_tables`, `evidence_model_versions`,
-  `suitability_snapshots` (key `(server, symbol, hour)`, exclude `id`: coalescing per symbol and hour then
-  comes for free). Shadow cursor progress must not be replicated: add an "ignore changes to these columns"
-  option to `ReplicaSpec` (updates touching only them emit nothing). Add a sample row per table to
-  `tests/sync_data.py` (a test enforces it). The advisory-config client uses an ETag and falls back to the
-  cache, then local preferences.
+- **TAA-809 advisory-config endpoint:** serve `advisory_config(users, ...)` from
+  `app/advisory/requirements.py` as `GET /api/v1/engine/advisory-config` behind `SignedEngine`, with
+  `ETag: "<version>"` and 304 on a matching `If-None-Match`. The engine client
+  (`app/sync/advisory_config.py`) treats 404 as "not served yet".
+- A new replicated table needs a sample row in `tests/sync_data.py` (a test enforces it).
 - **TAA-1004 preparation:** see "Notes from Phase 10".
 
 ## Parallel sessions (rules learned on 2026-10-04)

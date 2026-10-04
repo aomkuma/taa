@@ -12,6 +12,7 @@ import pyotp
 from pydantic import SecretStr
 from sqlalchemy import select, update
 
+from app.advisory.requirements import AdvisoryConfig, content_version
 from app.cli.__main__ import main
 from app.engine.orchestrator import DISABLED_KEY, SNAPSHOT_KEY
 from app.monitoring.alerts import EventType
@@ -41,6 +42,9 @@ def rig(tmp_path: Path, *, flatten: bool = False, trade: bool = False) -> Harnes
     assert runtime.poller is not None
     runtime.poller.start = lambda: None  # type: ignore[method-assign]
     runtime.poller.stop = lambda timeout=5.0: None  # type: ignore[method-assign]
+    assert runtime.advisory is not None
+    runtime.advisory.start = lambda: None  # type: ignore[method-assign]
+    runtime.advisory.stop = lambda timeout=5.0: None  # type: ignore[method-assign]
     h.engine.sync = runtime
     h.engine.start()
     if trade:
@@ -264,3 +268,69 @@ def test_cli_changes_are_replicated_when_sync_is_on(tmp_path: Path) -> None:
     assert {"audit_event", "kill_switch"} <= {e.type for e in events}
     assert all(e.payload.get("chain", "engine:eng-1") == "engine:eng-1" for e in events)
     db.dispose()
+
+
+class _Ranking:
+    def __init__(self) -> None:
+        self.rescans = 0
+        self.last_run = None
+        self.universe: list[Any] = []
+
+    def request_rescan(self) -> None:
+        self.rescans += 1
+
+
+def test_rescan_suitability(tmp_path: Path) -> None:
+    h = rig(tmp_path)
+    h.engine.ranking = None
+    send(h, "RESCAN_SUITABILITY", "rs-off")
+    h.engine.running = True
+    h.engine.cycle()
+    assert outcome(h, "rs-off")[0] == "FAILED"  # the ranking is switched off in this engine
+    ranking = _Ranking()
+    h.engine.ranking = ranking  # type: ignore[assignment]
+    send(h, "RESCAN_SUITABILITY", "rs-on")
+    h.engine._drain_commands()
+    assert outcome(h, "rs-on")[0] == "EXECUTED" and ranking.rescans == 1
+
+
+def test_types_added_later_are_snapshotted_once(tmp_path: Path) -> None:
+    h = rig(tmp_path)
+    state = EngineStateRepository(h.db, h.clock)
+    marker = state.load(SNAPSHOT_KEY)
+    assert marker is not None and "opportunity" in marker["types"]
+    state.save(SNAPSHOT_KEY, {"types": [t for t in marker["types"] if t != "run"]})  # an older release
+    with h.db.session() as sess:
+        sess.execute(update(OutboxEventRow).values(status="SENT"))
+    h.engine._initial_snapshot()
+    assert set(outbox_types_pending(h)) == {"run"}
+    assert "run" in (state.load(SNAPSHOT_KEY) or {})["types"]
+
+
+def outbox_types_pending(h: Harness) -> list[str]:
+    with h.db.session() as sess:
+        return list(
+            sess.execute(select(OutboxEventRow.type).where(OutboxEventRow.status == "PENDING")).scalars()
+        )
+
+
+def test_the_cloud_advisory_config_drives_the_requirements(tmp_path: Path) -> None:
+    h = rig(tmp_path)
+    local = h.engine.requirements()
+    assert h.engine.status()["sync"]["advisory_config"]["source"] == "local"
+    content: dict[str, Any] = {
+        "favourites": ["XAUUSD"],
+        "lists": {},
+        "auto_top_n": 0,
+        "detectors": ["fib.retracement"],
+        "pattern_strategies": [],
+        "lifetime_bars": 4,
+    }
+    remote = AdvisoryConfig(version=content_version(content), **content)
+    assert h.engine.sync is not None and h.engine.sync.advisory is not None
+    h.engine.sync.advisory.current = remote
+    req = h.engine.requirements()
+    assert req != local and req.detectors == frozenset({"fib.retracement"}) and req.lifetime_bars == 4
+    assert "XAUUSD" in req.symbols or "XAUUSD" not in h.engine.symbols  # unknown symbols are filtered
+    h.engine.sync.advisory.current = None
+    assert h.engine.requirements() == local  # back to the local fallback

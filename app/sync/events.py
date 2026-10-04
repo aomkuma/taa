@@ -12,6 +12,11 @@ the same table) is keyed by ``(chain, seq)`` and ``decision_checks`` by ``(decis
 not sent. ``breaker_events`` and ``kill_switch_events`` have no natural key and keep the engine's id: only the
 engine writes them, and there is one engine per deployment.
 
+**Volume controls** (TAA-707). ``quiet`` columns change without an event of their own (the shadow tracker's
+M1 ``cursor`` moves every poll); their values travel with the row's next real change. ``throttle_seconds``
+emits an update of the same row at most that often (the ranking rewrites every snapshot row each minute);
+inserts always go out, and the cloud copy lags at most that long behind.
+
 **Other events.** ``command_result`` (:class:`CommandResultPayload`) answers a queued command.
 
 Deletes are not replicated: the cloud applies its own retention.
@@ -46,10 +51,13 @@ from app.storage.models import (
     Base,
     BreakerEventRow,
     BreakerStateRow,
+    CalibrationTableRow,
     ConfigSnapshot,
     DecisionCheckRow,
     DecisionRecordRow,
+    EvidenceModelVersionRow,
     KillSwitchEvent,
+    OpportunityRow,
     OrderIntentRow,
     PaperAccountRow,
     PaperIntentRow,
@@ -58,11 +66,15 @@ from app.storage.models import (
     RiskDeal,
     RiskState,
     Run,
+    ShadowTradeRow,
+    SuitabilitySnapshotRow,
+    SymbolCatalogRow,
 )
 from app.storage.types import UTCDateTime
 from app.sync.outbox import Priority
 
 MAX_BATCH_EVENTS = 1000
+SNAPSHOT_THROTTLE_SECONDS = 300.0
 MAX_TEXT_LENGTH = 100_000
 EVENT_ID_PATTERN = r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 INT32 = 2**31
@@ -121,12 +133,18 @@ class ReplicaSpec:
     key: tuple[str, ...] = ()  # default: the primary key
     exclude: tuple[str, ...] = ()  # local surrogate ids, never sent
     priority: Priority = Priority.CRITICAL
+    quiet: tuple[str, ...] = ()  # columns whose changes alone emit nothing
+    throttle_seconds: float = 0.0  # minimum time between update events of one row
 
     def __post_init__(self) -> None:
         if not self.key:
             object.__setattr__(self, "key", self.primary_key)
         if not set(self.key) <= set(self.column_names):
             raise TypeError(f"{self.event_type}: key {self.key} must be replicated columns")
+        if not set(self.quiet) <= set(self.column_names) - set(self.key):
+            raise TypeError(
+                f"{self.event_type}: quiet columns {self.quiet} must be replicated non-key columns"
+            )
 
     @cached_property
     def primary_key(self) -> tuple[str, ...]:
@@ -148,6 +166,13 @@ class ReplicaSpec:
             f"{self.event_type}_payload", __config__=ConfigDict(extra="forbid"), **fields
         )
         return model
+
+    def changed_loudly(self, row: Any) -> bool:
+        """Whether a pending change of *row* touches a column outside ``quiet``."""
+        state = sa_inspect(row)
+        return any(
+            state.attrs[name].history.has_changes() for name in self.column_names if name not in self.quiet
+        )
 
     def payload(self, row: Any) -> dict[str, Any]:
         """The wire payload of an ORM row."""
@@ -189,6 +214,20 @@ REPLICAS: tuple[ReplicaSpec, ...] = (
     ReplicaSpec("risk_baseline", RiskBaseline, priority=Priority.STATE),
     ReplicaSpec("run", Run, priority=Priority.STATE),
     ReplicaSpec("config_snapshot", ConfigSnapshot, priority=Priority.STATE),
+    # advisory (TAA-707): opportunities drive alerts, so they travel with the critical events
+    ReplicaSpec("symbol_catalog", SymbolCatalogRow, priority=Priority.STATE),
+    ReplicaSpec(
+        "suitability_snapshot",
+        SuitabilitySnapshotRow,
+        key=("server", "symbol", "hour"),
+        exclude=("id",),
+        priority=Priority.TELEMETRY,
+        throttle_seconds=SNAPSHOT_THROTTLE_SECONDS,
+    ),
+    ReplicaSpec("opportunity", OpportunityRow),
+    ReplicaSpec("shadow_trade", ShadowTradeRow, priority=Priority.STATE, quiet=("cursor", "updated_at")),
+    ReplicaSpec("calibration_version", CalibrationTableRow, priority=Priority.STATE),
+    ReplicaSpec("evidence_model_version", EvidenceModelVersionRow, priority=Priority.STATE),
 )
 SPECS_BY_TYPE: dict[str, ReplicaSpec] = {s.event_type: s for s in REPLICAS}
 SPECS_BY_MODEL: dict[type[Base], ReplicaSpec] = {s.model: s for s in REPLICAS}

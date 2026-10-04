@@ -36,7 +36,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
-| M1 | Phase 7 — Cloud sync | 9 | 4 | IN PROGRESS |
+| M1 | Phase 7 — Cloud sync | 9 | 5 | IN PROGRESS |
 | M1 | Phase 8 — Web backend & worker | 11 | 2 | IN PROGRESS |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
@@ -1018,13 +1018,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-707 — (rev. 2) Advisory sync
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 701–704, 6B1
 
-- [ ] new event types (`symbol_catalog`, `suitability_snapshot`, `opportunity`, `shadow_trade`, `calibration_version`)
-- [ ] advisory-config pull client (ETag/version, local cache, fallback)
-- [ ] RESCAN_SUITABILITY command
-- [ ] tests
+- [x] new event types (`symbol_catalog`, `suitability_snapshot`, `opportunity`, `shadow_trade`, `calibration_version`)
+- [x] advisory-config pull client (ETag/version, local cache, fallback)
+- [x] RESCAN_SUITABILITY command
+- [x] tests
 
 #### TAA-708 — (rev. 4) Engine registry in the database
 
