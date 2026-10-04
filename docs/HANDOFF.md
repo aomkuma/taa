@@ -1,7 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-04, after Phase 7 TAA-701, 702 and 704 (engine side), Phase 6C (one 6C5 item waits for the
-phase10-analytics merge) and
+Last updated: 2026-10-04, after Phase 7 TAA-701, 702 and 704 (engine side), Phase 6C (done), Phase 10 TAA-1001..1003 (merged from
+phase10-analytics) and
 the Phase 9 frontend foundation (TAA-901 scaffold, TAA-915 i18n, built in a parallel worktree and merged). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
@@ -362,7 +362,6 @@ any phase boundary if I ask.
 ## Open items needing the user
 
 - Whether and when to push to GitHub (`origin` exists; `main` is ahead).
-- Merging `phase8-auth` (TAA-801) and `phase10-analytics` (TAA-1001..1003) into `main`; after the analytics merge,
-  tick TAA-6C5 item 2.
+- Merging `phase8-auth` (TAA-801) into `main` (`phase10-analytics` is merged; TAA-6C5 is complete).
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA). See PLAN §A30.
