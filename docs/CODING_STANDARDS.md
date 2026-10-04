@@ -153,6 +153,13 @@ an allow-list is a design decision: change the test and this section together, a
 - Tests: Vitest + Testing Library (jsdom), next to the code as `*.test.ts(x)`. Render with `renderWithI18n`
   (`src/test/render.tsx`). No network: mock `fetch`.
 - Browser storage only for per-device conveniences (language), always inside try/catch.
+- **Auth (PWA):** pages with account or trading data are routes inside `RequireAuth` (`src/app/routes.tsx`).
+  Mutations go through `apiPost` / `apiPostEmpty`, which add the CSRF token. Pages never handle a 401
+  `unauthenticated` themselves: the client ends the session and the guard returns to `/login`. Errors are shown
+  by their `code`.
+- **Web API (backend):** a protected endpoint takes `CurrentSession`, a state-changing one `CsrfSession`, a
+  control action `StepUpSession` (`app/web/deps.py`). Raise `ApiProblem` for expected errors. Return 401 only for
+  a missing session or a failed login, because the PWA treats `unauthenticated` as "signed out".
 
 ## 10. Documentation and tickets
 

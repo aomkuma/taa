@@ -32,6 +32,8 @@ Read before larger work:
 .venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
 .venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
 .venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14
+.venv\Scripts\python -m app.web     # API + built PWA on 127.0.0.1:8000 (needs WEB_ENV/WEB_SESSION_SECRET)
+.venv\Scripts\python -m app.cli web create-user NAME | reset-totp NAME | list-users   # web users + TOTP
 .venv\Scripts\python scripts\tickets.py tick TAA-201 1 2   # tick checklist items; then:
 .venv\Scripts\python scripts\tickets.py sync               # recompute statuses + progress table
 ```
@@ -85,6 +87,10 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
 - **Advisory (rev. 2):** "compute once, personalize per user". The engine computes market facts (evidence,
   opportunities, shadow trades); the cloud personalizer applies each user's theory selection, thresholds, windows
   and entitlements.
+- **Web service (`app/web/`):** `create_app(WebSettings)`; settings are env only (`WEB_ENV` defaults to
+  production). Protected routes take `CurrentSession`, mutations `CsrfSession`, control actions `StepUpSession`
+  (`app/web/deps.py`). Expected errors are `ApiProblem(status, code, message)`. Users exist only via
+  `app.cli web create-user`; TOTP is mandatory.
 - **Frontend (`frontend/`):** Vite + React + TypeScript PWA, built into `frontend/dist` and served by FastAPI
   (same origin, strict CSP: no inline scripts, no CDNs, fonts bundled). Every API response is validated with zod.
   All UI text goes through react-i18next (`th` default, `en`); backend codes map to translation keys

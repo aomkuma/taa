@@ -1,7 +1,8 @@
 # Session handoff
 
 Last updated: 2026-10-04, after Phase 6C (TAA-6C1..6C5; one 6C5 item waits for the phase10-analytics merge) and
-the Phase 9 frontend foundation (TAA-901 scaffold, TAA-915 i18n, built in a parallel worktree and merged). This file holds **state
+the Phase 9 frontend foundation (TAA-901 scaffold, TAA-915 i18n, built in a parallel worktree and merged), plus
+Phase 8 auth on branch `phase8-auth` (TAA-801 FastAPI skeleton, TAA-802 authentication, TAA-902 login UI). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -35,8 +36,9 @@ any phase boundary if I ask.
   opportunities & alert windows).
 - **In progress:** Phase 6C (all done except TAA-6C5 item 2, "shadow trades in the analytics trade builder",
   which lives on branch `phase10-analytics` as part of TAA-1001: tick it when that branch is merged), Phase 9
-  (TAA-901 and TAA-915 done; the remaining pages need the Phase 8 API), Phase 10 on `phase10-analytics`, and
-  Phase 8 in a separate session (worktree `taa-auth`, branch `phase8-auth`). The main session owns Phase 7
+  (TAA-901, TAA-902 and TAA-915 done; the remaining pages need the Phase 8 API), Phase 10 on
+  `phase10-analytics`, and Phase 8 in a separate session (worktree `taa-auth`, branch `phase8-auth`:
+  TAA-801 and TAA-802 done). The main session owns Phase 7
   only; tickets that need Phase 8 pieces (703 needs 801, 705 needs 808) wait for that branch.
 - **Checks:** 1983 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
   suite takes ~5.5 min, with backtest and engine tests the slow part. ruff,
@@ -223,6 +225,20 @@ any phase boundary if I ask.
     - `stats.py` (pure, for the cloud too): hit rate + Wilson CI, expectancy, PF, total hypothetical P/L,
       follow-all curve + max DD, breakdowns, in-sample threshold explorer, LIVE/REPLAY sections, theory
       scoreboard; `EdgeBook` feeds ranking S8 (REPLAY capped)
+  - web service foundation (Phase 8, `app/web/`, PLAN §A14; branch `phase8-auth`):
+    - TAA-801: `create_app(WebSettings)` (`app/web/app.py`), env-only `WebSettings` in `app/config.py`
+      (`WEB_ENV` defaults to production, which requires an https `WEB_PUBLIC_ORIGIN`), `GET /api/v1/health`,
+      strict CSP + security headers on every response (`security_headers.py`), 64 KiB body limit, JSON error
+      shape `{"error": {"code", "message"}}` (`errors.py`), the built PWA served from `frontend/dist` with SPA
+      fallback (`static.py`), `python -m app.web`
+    - TAA-802: tables `users`, `sessions`, `login_throttle` (migration 0016); `app/web/auth.py`
+      (`AuthService`): argon2id (`app/security/passwords.py`), mandatory TOTP with one-time steps
+      (`app/security/web_totp.py`), TOTP secrets encrypted with a key derived from `WEB_SESSION_SECRET`
+      (`app/security/crypto.py`, HKDF), keyed-hash session tokens, 30 min idle / 12 h absolute, CSRF token +
+      Origin check, lockout per username (5) and address (20) doubling from 1 min to 1 h, 5-minute step-up,
+      TOTP re-enrollment (password + step-up), audit chain `web`; routes in `app/web/routers/auth.py`,
+      dependencies `CurrentSession` / `CsrfSession` / `StepUpSession` in `app/web/deps.py`; CLI
+      `python -m app.cli web create-user | reset-totp | list-users`
   - PWA frontend foundation (Phase 9, `frontend/`, PLAN §A15/§A28; commands and conventions in
     `frontend/README.md` and CODING_STANDARDS §9):
     - TAA-901: Vite 8 + React 19 + TypeScript 6.0 (strict) + Tailwind 4 + React Router + TanStack Query + zod +
@@ -235,6 +251,9 @@ any phase boundary if I ask.
       Gregorian dates, Asia/Bangkok, locale-aware numbers/money/percent, "—" for missing values, naive
       datetimes rejected), `explain:<key>` catalogs copied from `explanations.py`, the `codes:<kind>.<CODE>`
       key scheme (keys only: untranslated codes render raw), parity tests against the backend enums
+    - TAA-902 (branch `phase8-auth`): `/login` (password + TOTP, TH/EN), `RequireAuth` route guard,
+      `apiPost` with `X-CSRF-Token`, session end on any 401 `unauthenticated` or when the idle/absolute
+      deadline passes (absolute limit measured on the server clock via `server_time`), logout
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -332,13 +351,28 @@ any phase boundary if I ask.
   - The `codes` namespace has no texts yet (the ticket asked for keys only); add TH/EN texts with the pages
     that show the codes (TAA-908 decisions, TAA-917 opportunities, TAA-919 accuracy).
   - The app icon is a placeholder SVG; maskable/Apple icons, API caching rules and the install prompt are
-    TAA-914. FastAPI does not serve `frontend/dist` yet (Phase 8).
+    TAA-914.
+- Notes from Phase 8 (web auth, branch `phase8-auth`):
+  - Two TOTP modules on purpose: `app/security/web_totp.py` (web users: stateless, last step stored per user)
+    and `app/security/totp.py` (engine-only `CONTROL_TOTP_SECRET`, single-use in memory, TAA-704).
+  - Running locally: add `WEB_ENV=development` and a `WEB_SESSION_SECRET` (at least 32 characters) to `.env`,
+    create the owner with `python -m app.cli web create-user <name>` (scan the QR, confirm a code), then
+    `python -m app.web` (http://127.0.0.1:8000 serves `frontend/dist`) or `npm run dev` in `frontend/`. The
+    full stack was checked end to end with curl (login, cookie, CSRF-protected logout).
+  - Development cookies are `taa_session` without `Secure` (loopback http); production uses
+    `__Host-taa_session` with `Secure`. Origins accepted in development: Vite 5173 and app.web 8000.
+  - Engine bug found, not fixed (outside this branch): the engine's storage health check formats `free_gb`
+    when `data/` does not exist (`None` in `orchestrator.py`) and raises `TypeError`; a fresh worktree hits it.
+    Tests pass once `data/` exists.
+  - Timing-sensitive integration tests (`test_engine_paper`, `test_scanner` time budgets) failed once under
+    heavy machine load and passed on rerun.
 - Risk-layer test helpers: `tests/risk_data.py` (`TickCalculator`, `funds`, `XAUUSD_SPEC`).
 - Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
   `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.
 
 ## Open items needing the user
 
-- Whether and when to push to GitHub (no remote configured).
+- Whether and when to push to GitHub (remote `origin` configured).
+- Whether to merge `phase8-auth` into `main` (TAA-703 waits for TAA-801).
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA). See PLAN §A30.

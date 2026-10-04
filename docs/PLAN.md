@@ -532,7 +532,20 @@ AI failures never trip trading breakers; they only produce HOLD.
   - CSRF header on mutations; login rate limit with exponential lockout
   - step-up TOTP for control actions; every login and command is audited
   - admin bootstrap only via `railway ssh -s web -- python -m app.cli web create-user`; there is no public setup endpoint
-- **Security headers:**
+  - Implementation (TAA-802, `app/web/auth.py`):
+    - TOTP is enrolled when the user is created (QR in the terminal, confirmed with a code); each code's time
+      step can be used once (`users.totp_last_step`). Re-enrollment from the PWA needs the password and a
+      step-up. TOTP secrets are encrypted at rest.
+    - `WEB_SESSION_SECRET` is the only key material: HKDF derives separate keys for session-token hashing,
+      CSRF tokens and TOTP encryption. Rotating it ends all sessions and requires TOTP re-enrollment.
+    - Cookie `__Host-taa_session` in production (`taa_session` without `Secure` for local http). Mutations need
+      `X-CSRF-Token` (HMAC of the session id) and an allowed `Origin`.
+    - Lockout per username after 5 failures and per client address after 20, doubling from 1 minute to 1 hour;
+      failures older than 24 h are forgotten. Every login failure gets the same response; the audit log keeps
+      the reason.
+    - Step-up lasts 5 minutes on the session that confirmed it.
+    - The session response carries `server_time`, so the PWA measures the absolute limit on the server clock.
+- **Security headers:** (TAA-801, `app/web/security_headers.py`; every response, including errors)
   - strict CSP (`default-src 'self'`, no inline or eval, `frame-ancestors 'none'`)
   - HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy`
   - no CORS (same origin only); all assets self-hosted; request size limits; optional IP allowlist

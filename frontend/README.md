@@ -30,6 +30,22 @@ point elsewhere. In production the API and the app share one origin, so there is
 
 TypeScript stays on 6.0.x until typescript-eslint supports TypeScript 7.
 
+## Sign-in and sessions (TAA-902, PLAN §A14)
+
+- `/login` takes username, password and the 6-digit authenticator code. Users are created only on the server
+  (`python -m app.cli web create-user <name>`); there is no sign-up page.
+- `src/auth/session.ts` keeps the signed-in state in the query cache (`AUTH_QUERY_KEY`). The session cookie is
+  HttpOnly, so the app reads its session from `GET /auth/session` and the login response.
+- Pages with account or trading data are routes inside `RequireAuth` (`src/app/routes.tsx`). While the session
+  check fails (server unreachable) nothing protected is shown.
+- `apiPost` / `apiPostEmpty` add the `X-CSRF-Token` header. Any 401 `unauthenticated` ends the session in the app
+  and the guard returns to `/login` with a "session ended" notice, then back to the original page after login.
+- The app also ends the session once the server's limits pass without requests (30 min idle after the last
+  request, 12 h absolute, measured on the server clock via `server_time`). `GET /auth/session` is not polled,
+  because it would keep the session alive.
+- Tests fake the API with `mockApi` (`src/test/api.ts`) and render the whole app with `renderApp`
+  (`src/test/render.tsx`).
+
 ## Localization (PLAN §A28)
 
 Everything lives in `src/i18n/`.
