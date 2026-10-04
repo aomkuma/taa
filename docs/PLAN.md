@@ -517,6 +517,22 @@ AI failures never trip trading breakers; they only produce HOLD.
   - POSITION_CLOSE and FLATTEN_ALL require a TOTP code verified on the engine against `CONTROL_TOTP_SECRET`, usable once.
   - **Risk-increasing commands are always rejected remotely:** release kill switch, reset breaker, enable strategy, change limits or mode.
   - Results are posted back and audited on both sides.
+  - (TAA-704 decisions) Engine side: `app/sync/commands.py` and `app/security/totp.py`. Cloud queue:
+    `app/sync/command_queue.py`. Tables `command_log` (engine) and `engine_commands` (cloud), migration 0016.
+    - Allowlist: KILL_SWITCH_ACTIVATE (HALT), STRATEGY_DISABLE, RESYNC, RESCAN_SUITABILITY, plus POSITION_CLOSE
+      and FLATTEN_ALL with TOTP.
+    - The poller thread only queues commands. They execute on the engine loop, each id once (`command_log`).
+    - Check order: parse → once → expiry (≤ 120 s lifetime, ≤ 30 s future skew) → risk-increasing → allowlist
+      → handler present → TOTP → execute. A handler error gives a FAILED result and never stops the loop.
+    - A TOTP code is valid within ±1 step and only once. Used steps are kept in `command_log`, so they stay
+      used across a restart. Without `CONTROL_TOTP_SECRET`, protected commands are refused.
+    - Results travel as priority-0 `command_result` outbox events (signed, retried), not a separate POST.
+      The cloud queue applies them with `record_result` when the ingest API receives them.
+    - STRATEGY_DISABLE is persisted in `engine_state` and blocks entries only; close signals still count.
+      Re-enabling is local: `python -m app.cli strategy enable NAME --reason ...` (audited).
+    - POSITION_CLOSE acts only on the bot's own positions. FLATTEN_ALL activates the kill switch in FLATTEN
+      mode; it fails unless `KILL_SWITCH_FLATTEN_ALLOWED=true`, and PAPER positions are flattened too.
+    - The long-poll HTTP route is a thin loop over `CommandQueue.pending` in `app/web`, added after TAA-801.
 - **Heartbeats:** every 10 s. The worker raises ENGINE_OFFLINE after 60 s of silence during market hours (Web Push) and
   ENGINE_BACK when the engine resumes.
 - **History:** `scripts/download_history.py` writes local Parquet and uploads closed candles to the cloud in chunks (for

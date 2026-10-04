@@ -6,7 +6,9 @@ Built only when ``sync.enabled`` is true (config loading then requires ``CLOUD_B
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import queue
+from dataclasses import dataclass, field
+from typing import Any
 
 import httpx
 
@@ -16,6 +18,7 @@ from app.core.errors import ConfigError
 from app.security.hmac_auth import Signer, check_secret
 from app.storage.database import Database
 from app.sync.client import CloudClient
+from app.sync.commands import CommandPoller
 from app.sync.outbox import Outbox, OutboxSender, SenderThread
 
 
@@ -25,6 +28,8 @@ class SyncRuntime:
     client: CloudClient
     sender: OutboxSender
     thread: SenderThread
+    inbox: queue.Queue[dict[str, Any]] = field(default_factory=queue.Queue)
+    poller: CommandPoller | None = None  # remote commands; processed on the engine loop
 
     @classmethod
     def from_settings(
@@ -37,11 +42,17 @@ class SyncRuntime:
         client = CloudClient(env.CLOUD_BASE_URL, signer, timeout=cfg.request_timeout_seconds, http=http)
         outbox = Outbox(db, clock, cfg)
         sender = OutboxSender(outbox, client.post_gzip, env.ENGINE_ID, clock)
-        return cls(outbox, client, sender, SenderThread(sender, cfg.flush_interval_seconds))
+        inbox: queue.Queue[dict[str, Any]] = queue.Queue()
+        poller = CommandPoller(client.get_json, inbox, poll_seconds=cfg.command_poll_seconds)
+        return cls(outbox, client, sender, SenderThread(sender, cfg.flush_interval_seconds), inbox, poller)
 
     def start(self) -> None:
         self.thread.start()
+        if self.poller is not None:
+            self.poller.start()
 
     def stop(self) -> None:
+        if self.poller is not None:
+            self.poller.stop()
         self.thread.stop()
         self.client.close()
