@@ -8,8 +8,10 @@ from pathlib import Path
 import httpx
 import pytest
 from pydantic import SecretStr
+from sqlalchemy import select
 
 from app.core.errors import ConfigError
+from app.storage.models import OutboxEventRow
 from app.sync.runtime import SyncRuntime
 from tests.integration.test_engine_paper import harness, settings
 
@@ -60,6 +62,12 @@ def test_the_engine_starts_reports_and_stops_sync(tmp_path: Path) -> None:
     assert status["pending_by_priority"][0] == before["pending_by_priority"].get(0, 0) + 1
     h.engine.run(max_cycles=2)
     assert calls == ["start", "advisory", "stop"]
+    with h.db.session() as sess:  # heartbeats coalesce; the deliberate stop's is the newest (TAA-705)
+        beats = sess.scalars(
+            select(OutboxEventRow).where(OutboxEventRow.type == "heartbeat").order_by(OutboxEventRow.event_id)
+        ).all()
+        assert beats and beats[-1].payload["state"] == "stopped" and beats[-1].payload["run_id"]
+        assert {"market_open", "market_change_at", "quotes", "connected"} <= set(beats[-1].payload)
 
 
 def test_without_sync_nothing_is_built(tmp_path: Path) -> None:

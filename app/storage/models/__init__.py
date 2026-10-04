@@ -12,12 +12,14 @@ from app.storage.models.base import Base, utcnow
 from app.storage.models.decisions import DecisionCheckRow, DecisionRecordRow
 from app.storage.models.execution import OrderIntentRow
 from app.storage.models.market import HistoryCandle, ProcessedCandle
+from app.storage.models.notifications import NotificationRow
 from app.storage.models.paper import PaperAccountRow, PaperIntentRow, PaperPositionRow
 from app.storage.models.risk import BreakerEventRow, BreakerStateRow, RiskBaseline, RiskDeal, RiskState
 from app.storage.models.sync import (
     AuditReplicaRow,
     CommandLogRow,
     EngineCommandRow,
+    EngineHeartbeatRow,
     IngestNonceRow,
     OutboxEventRow,
     ReplicaVersionRow,
@@ -48,6 +50,7 @@ __all__ = [
     "DecisionCheckRow",
     "DecisionRecordRow",
     "EngineCommandRow",
+    "EngineHeartbeatRow",
     "EngineRow",
     "EngineState",
     "EvidenceModelVersionRow",
@@ -55,6 +58,7 @@ __all__ = [
     "IngestNonceRow",
     "KillSwitchEvent",
     "LoginThrottleRow",
+    "NotificationRow",
     "OpportunityRow",
     "OrderIntentRow",
     "OutboxEventRow",

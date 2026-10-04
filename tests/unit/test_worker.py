@@ -240,7 +240,7 @@ class TestWorker:
         commands = CommandQueue(db, clock)
         cmd = commands.enqueue("eng-1", "RESYNC", created_by="alice")
         worker = Worker(db, clock, worker_id="w1")
-        assert {t.name for t in worker.schedule.tasks} == {"retention", "expire_commands"}
+        assert {t.name for t in worker.schedule.tasks} == {"retention", "expire_commands", "engine_watchdog"}
         clock.advance(121)
         worker.step()
         row = commands.get(cmd["id"])
@@ -249,6 +249,7 @@ class TestWorker:
             assert {r.name for r in sess.scalars(select(WorkerScheduleRow))} == {
                 "retention",
                 "expire_commands",
+                "engine_watchdog",
             }
 
     def test_health(self, db: Database, clock: ManualClock) -> None:

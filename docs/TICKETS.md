@@ -1000,11 +1000,11 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-705 — Heartbeat & watchdog
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 701, 808
 
-- [ ] engine heartbeats
-- [ ] worker ENGINE_OFFLINE/BACK detection (market-hours aware)
+- [x] engine heartbeats
+- [x] worker ENGINE_OFFLINE/BACK detection (market-hours aware)
 - [ ] push
 
 #### TAA-706 — Candle & history sync

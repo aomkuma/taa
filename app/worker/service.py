@@ -37,6 +37,7 @@ from app.sync.command_queue import CommandQueue
 from app.worker.jobs import DEFAULT_LEASE, Job, JobFailed, JobQueue, RetryLater
 from app.worker.retention import run_retention
 from app.worker.schedule import Schedule, ScheduledTask
+from app.worker.watchdog import EngineWatchdog
 
 log = logging.getLogger(__name__)
 
@@ -74,9 +75,16 @@ def default_tasks(db: Database, clock: Clock) -> list[ScheduledTask]:
         n = commands.expire()
         return f"{n} commands expired" if n else None
 
+    watchdog = EngineWatchdog(db, clock)
+
+    def watch_engines() -> str | None:
+        changes = watchdog.check()
+        return ", ".join(changes) if changes else None
+
     return [
         ScheduledTask("retention", timedelta(hours=1), retention),
         ScheduledTask("expire_commands", timedelta(seconds=30), expire_commands),
+        ScheduledTask("engine_watchdog", timedelta(seconds=10), watch_engines),
     ]
 
 

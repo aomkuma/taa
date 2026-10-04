@@ -588,6 +588,25 @@ AI failures never trip trading breakers; they only produce HOLD.
       `command_poll_seconds` + 10 s, so the route answers inside the engine's timeout.
 - **Heartbeats:** every 10 s. The worker raises ENGINE_OFFLINE after 60 s of silence during market hours (Web Push) and
   ENGINE_BACK when the engine resumes.
+  - (TAA-705 decisions) `app/sync/heartbeat.py`, `app/worker/watchdog.py`, `app/sync/notifications.py`; tables
+    `engine_heartbeats` and `notifications` (migration 0024).
+    - The engine queues a `heartbeat` outbox event every `sync.heartbeat_seconds` (telemetry priority, coalesced
+      to the newest): run, mode, `running`/`stopped`, connected, clock, kill switch, open positions, cycles,
+      outbox backlog, the latest valid quotes of its traded symbols, and its **market schedule**:
+      `market_open` and `market_change_at`. The schedule comes from the exchange-local session tables
+      (`app/advisory/market_sessions.py`) and follows overlapping sessions, so forex is open from Monday in
+      Sydney to Friday 17:00 in New York (crypto: open, no change).
+    - A deliberate stop queues `state: stopped` and makes one last send before the client closes
+      (`SyncRuntime.stop(final_flush=True)`).
+    - The cloud keeps the newest heartbeat per engine (an older one counts as a duplicate) and streams it
+      (`status`/`heartbeat`, `quotes`).
+    - The worker's watchdog (every 10 s) works on the cloud clock: offline means `stopped`, or no heartbeat
+      for 60 s. An offline engine alerts only while its markets are open by the last heartbeat's schedule,
+      so an engine switched off at the weekend alerts when its market opens. One ENGINE_OFFLINE per episode,
+      then ENGINE_BACK with the downtime; engines never seen and revoked engines stay quiet. A deliberate stop
+      alerts too, with reason STOPPED (PLAN §A23: "an engine stop produces an ENGINE_OFFLINE push").
+    - Notifications are rows per owner (`notifications`: type, severity, minimal payload, `push_status`
+      PENDING) plus a stream event; Web Push delivers them from `push_status` (TAA-806).
 - **History:** `scripts/download_history.py` writes local Parquet and uploads closed candles to the cloud in chunks (for
   charts and cloud backtests). The engine also streams new closed candles continuously.
   - (TAA-706 decisions) `app/sync/candles.py`, migration 0021.
@@ -685,8 +704,8 @@ AI failures never trip trading breakers; they only produce HOLD.
       applied row of a streamed type in its own transaction, so a change that rolls back is never streamed.
       Types → topics: run, kill switch, breaker states/events, paper account, risk state/baselines → `status`;
       paper positions/intents, order intents, deals → `positions`; decisions → `decisions` (without the
-      signal/market/plan documents, like the list API). `quotes` and `notifications` are valid topics without
-      a producer until heartbeats (TAA-705) and Web Push (TAA-806). Several changes of one row in a batch
+      signal/market/plan documents, like the list API). Since TAA-705, heartbeats add `status`/`heartbeat` and
+      `quotes`, and notifications `notifications`. Several changes of one row in a batch
       collapse into the newest; an event carries the row as the read APIs serialize it.
     - **Cursors:** `seq` counts per engine. Ingest raises the engine's `stream_heads` row with one UPDATE, which
       holds the row lock until commit, so events become visible in `seq` order (tested on PostgreSQL) and a

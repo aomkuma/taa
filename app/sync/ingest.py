@@ -17,6 +17,9 @@ One ``POST /api/v1/ingest/batch`` after HMAC verification (``app/web/routers/ing
    - ``command_result``: :meth:`CommandQueue.record_result`, once per command; appended to the ``web`` audit
      chain (``COMMAND_RESULT``) after the commit, so the cloud audits remote commands end to end (TAA-805)
    - ``candles``: upserted into the engine's own ``history_candles`` by open time (TAA-706)
+   - ``heartbeat``: the engine's newest heartbeat in ``engine_heartbeats`` (an older one is a duplicate),
+     streamed as ``status``/``heartbeat`` plus its quotes as ``quotes``; the worker's watchdog reads it
+     (TAA-705)
 
    Applied rows of streamed types also go to the engine's change feed in the same transaction
    (:class:`app.sync.stream.StreamLog`, TAA-804), so the live stream never shows a change that rolled back.
@@ -45,7 +48,14 @@ from app.core.clock import Clock, ensure_utc
 from app.core.errors import TaaError
 from app.storage.audit import GENESIS_HASH, AuditLog, compute_hash
 from app.storage.database import Database
-from app.storage.models import AuditEvent, AuditReplicaRow, EngineCommandRow, HistoryCandle, ReplicaVersionRow
+from app.storage.models import (
+    AuditEvent,
+    AuditReplicaRow,
+    EngineCommandRow,
+    EngineHeartbeatRow,
+    HistoryCandle,
+    ReplicaVersionRow,
+)
 from app.sync.command_queue import CommandQueue, stream_entry
 from app.sync.events import (
     AUDIT_EVENT,
@@ -58,6 +68,7 @@ from app.sync.events import (
     WireBatch,
     WireEvent,
 )
+from app.sync.heartbeat import HEARTBEAT, HeartbeatPayload
 from app.sync.stream import StreamEntry, StreamLog, entry_for
 
 log = logging.getLogger(__name__)
@@ -164,6 +175,12 @@ class _CandlesEvent:
 
 
 @dataclass(frozen=True, slots=True)
+class _HeartbeatEvent:
+    event: WireEvent
+    payload: HeartbeatPayload
+
+
+@dataclass(frozen=True, slots=True)
 class _Broken:
     chain: str
     seq: int | None
@@ -197,6 +214,8 @@ class IngestService:
                         streamed.append(stream_entry(row))
                 elif isinstance(item, _CandlesEvent):
                     self._apply_candles(sess, engine_id, item, result)
+                elif isinstance(item, _HeartbeatEvent):
+                    streamed += self._apply_heartbeat(sess, engine_id, item, result)
                 elif item.spec.event_type == AUDIT_EVENT:
                     if self._apply_audit(sess, engine_id, item, result, broken):
                         chains.add(item.values["chain"])
@@ -247,7 +266,7 @@ class IngestService:
     @staticmethod
     def _prepare(
         raw: dict[str, Any], engine_id: str, result: IngestResult
-    ) -> _RowEvent | _CommandEvent | _CandlesEvent | None:
+    ) -> _RowEvent | _CommandEvent | _CandlesEvent | _HeartbeatEvent | None:
         raw_id = raw.get("event_id")
         try:
             event = WireEvent.model_validate(raw)
@@ -259,6 +278,8 @@ class IngestService:
                 return _CommandEvent(event, CommandResultPayload.model_validate(event.payload))
             if event.type == CANDLES:
                 return _CandlesEvent(event, CandlesPayload.model_validate(event.payload))
+            if event.type == HEARTBEAT:
+                return _HeartbeatEvent(event, HeartbeatPayload.model_validate(event.payload))
             spec = SPECS_BY_TYPE.get(event.type)
             if spec is None:
                 result.reject(event.event_id, RejectCode.UNKNOWN_TYPE, event.type)
@@ -365,6 +386,46 @@ class IngestService:
         )
         sess.flush()
         result.accepted += 1
+
+    def _apply_heartbeat(
+        self, sess: Session, engine_id: str, item: _HeartbeatEvent, result: IngestResult
+    ) -> list[StreamEntry]:
+        """Keep the newest heartbeat; the watchdog's columns are left alone."""
+        p = item.payload
+        row = sess.get(EngineHeartbeatRow, engine_id)
+        if row is not None and ensure_utc(row.sent_at) >= p.at:
+            result.duplicates += 1
+            return []
+        now = self.clock.now_utc()
+        doc = p.model_dump(mode="json")
+        brief: dict[str, Any] = {k: v for k, v in doc.items() if k != "quotes"}
+        values: dict[str, Any] = {
+            "received_at": now,
+            "sent_at": p.at,
+            "run_id": p.run_id,
+            "mode": p.mode,
+            "state": p.state,
+            "connected": p.connected,
+            "market_open": p.market_open,
+            "market_change_at": p.market_change_at,
+            "payload": brief,
+        }
+        if row is None:
+            sess.add(
+                EngineHeartbeatRow(engine_id=engine_id, watch_status="ONLINE", offline_reason="", **values)
+            )
+        else:
+            for name, value in values.items():
+                setattr(row, name, value)
+        sess.flush()
+        result.accepted += 1
+        status = {**brief, "received_at": now.isoformat()}
+        entries = [StreamEntry("status", "heartbeat", "engine", status)]
+        if doc["quotes"]:
+            entries.append(
+                StreamEntry("quotes", "quotes", "latest", {"at": doc["at"], "quotes": doc["quotes"]})
+            )
+        return entries
 
     def _apply_command(
         self, sess: Session, engine_id: str, item: _CommandEvent, result: IngestResult

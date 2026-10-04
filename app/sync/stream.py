@@ -33,8 +33,9 @@ from app.sync.events import json_safe
 
 TOPICS: tuple[str, ...] = ("status", "quotes", "positions", "notifications", "decisions")
 
-# Replica event type → topic. "quotes" and "notifications" have no producer yet: quotes arrive with the
-# engine heartbeats (TAA-705) and notifications with Web Push (TAA-806).
+# Replica event type → topic. The other producers append their own entries: heartbeats (``status``/
+# ``heartbeat``, ``quotes``; app.sync.ingest), notifications (app.sync.notifications) and commands
+# (``status``/``command``; app.sync.command_queue).
 TOPIC_OF_TYPE: Mapping[str, str] = {
     "run": "status",
     "kill_switch": "status",

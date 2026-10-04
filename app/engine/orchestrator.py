@@ -23,6 +23,7 @@ current cycle and shuts down cleanly.
 from __future__ import annotations
 
 import logging
+import math
 import shutil
 import time
 from collections.abc import Callable
@@ -67,7 +68,7 @@ from app.engine.reconciler import Reconciler
 from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.registry import EvidenceEngine
 from app.market_data.candle_service import CandleService, CandleWatermarks
-from app.market_data.data_models import SymbolSpec
+from app.market_data.data_models import Quote, SymbolSpec
 from app.market_data.quote_service import QuoteService
 from app.market_data.server_time import verify_server_time_any
 from app.market_data.trading_sessions import TradingSessions
@@ -89,6 +90,7 @@ from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import EvidenceSetup
 from app.sync.candles import CandleStreamer
 from app.sync.commands import Command, CommandFailed, CommandProcessor, CommandType, Handler, drain
+from app.sync.heartbeat import MAX_QUOTES, HeartbeatEmitter, market_state
 from app.sync.replication import Replicator, install_replication
 from app.sync.runtime import SyncRuntime
 
@@ -163,6 +165,8 @@ class Engine:
         self.sync = sync  # cloud replication; None unless sync.enabled (built in start())
         self.commands: CommandProcessor | None = None  # remote commands, with sync
         self.candle_stream: CandleStreamer | None = None  # closed bars to the cloud, with sync (TAA-706)
+        self.heartbeats: HeartbeatEmitter | None = None  # liveness + market state to the cloud (TAA-705)
+        self._last_quotes: dict[str, Quote] = {}
         self.resync_requested = False
         self._requirements_cache: tuple[tuple[datetime | None, str | None], ComputeRequirements] | None = None
         loop = self.config.engine
@@ -320,6 +324,7 @@ class Engine:
                 server=account.server,
                 timeframes=[t for t in (tfs.entry, tfs.higher, tfs.refinement) if t is not None],
             )
+            self.heartbeats = HeartbeatEmitter(self.sync.outbox, cfg.sync.heartbeat_seconds)
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
         self.audit.append(
             "ENGINE_START",
@@ -515,6 +520,7 @@ class Engine:
                     self._stream_candles()
             if self._health_due.due(now):
                 self._health()
+            self._cloud_heartbeat(now)
             if connected and self._clock_due.due(now):
                 self._verify_clock()
             if connected and self.ranking is not None:
@@ -742,6 +748,7 @@ class Engine:
             median_spread=self.quotes.median_spread(symbol),
         )
         if quote.valid:
+            self._last_quotes[symbol] = quote
             self.backend.on_quote(symbol, quote.bid, quote.ask, atr, now)
 
     def _stream_candles(self) -> None:
@@ -843,6 +850,56 @@ class Engine:
 
     def heartbeat(self, state: str = "running") -> None:
         write_heartbeat(self.heartbeat_path, self.clock.now_utc(), self.status(), state=state)
+
+    def _cloud_heartbeat(self, now: float) -> None:
+        if self.heartbeats is None:
+            return
+        try:
+            self.heartbeats.maybe_emit(now, self.cloud_heartbeat)
+        except Exception:  # telemetry boundary: a heartbeat problem never touches trading
+            log.exception("cloud heartbeat failed")
+
+    def cloud_heartbeat(self, state: str = "running") -> dict[str, Any]:
+        """The heartbeat sent to the cloud (TAA-705): liveness, counters, quotes and the market schedule."""
+        now = self.clock.now_utc()
+        market_open, change_at = market_state(
+            self.symbols.values(), now, self.config.advisory.sessions.overrides
+        )
+        backend = getattr(self, "backend", None)
+        quotes = [
+            {
+                "symbol": q.symbol,
+                "bid": q.bid,
+                "ask": q.ask,
+                "spread_points": q.spread_points if math.isfinite(q.spread_points) else None,
+                "time": q.time_utc,
+            }
+            for q in sorted(self._last_quotes.values(), key=lambda q: q.symbol)
+        ][:MAX_QUOTES]
+        return {
+            "at": now,
+            "run_id": self.run_id,
+            "mode": self.settings.mode.value,
+            "state": state,
+            "connected": self._connected,
+            "clock_verified": self._clock_ok,
+            "kill_switch": self._kill_active,
+            "open_positions": 0 if backend is None else backend.open_positions(),
+            "cycles": self.cycles,
+            "market_open": market_open,
+            "market_change_at": change_at,
+            "outbox_pending": None if self.sync is None else self.sync.sender.metrics().pending_total,
+            "quotes": quotes,
+        }
+
+    def _final_cloud_heartbeat(self) -> None:
+        """A deliberate stop queues ``state: stopped``, so the cloud's watchdog alerts at once."""
+        if self.heartbeats is None:
+            return
+        try:
+            self.heartbeats.emit(self.cloud_heartbeat("stopped"))
+        except Exception:  # shutdown boundary
+            log.exception("final cloud heartbeat failed")
 
     def _verify_clock(self, *, initial: bool = False) -> None:
         cfg = self.config
@@ -948,7 +1005,8 @@ class Engine:
             if self.calibration is not None:
                 self.calibration.shutdown()
             if self.sync is not None:
-                self.sync.stop()
+                self._final_cloud_heartbeat()
+                self.sync.stop(final_flush=True)  # a deliberate stop reaches the cloud at once
             if hasattr(self, "backend") and isinstance(self.backend, PaperBackend):
                 self.backend.maintain()
             self.heartbeat("stopped")  # a deliberate stop: the watchdog does not restart it

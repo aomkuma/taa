@@ -7,6 +7,7 @@ Built only when ``sync.enabled`` is true (config loading then requires ``CLOUD_B
 
 from __future__ import annotations
 
+import logging
 import queue
 from dataclasses import dataclass, field
 from typing import Any
@@ -23,6 +24,8 @@ from app.sync.advisory_config import AdvisoryConfigClient
 from app.sync.client import CloudClient
 from app.sync.commands import CommandPoller
 from app.sync.outbox import Outbox, OutboxSender, SenderThread
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -64,10 +67,17 @@ class SyncRuntime:
         if self.advisory is not None:
             self.advisory.start()
 
-    def stop(self) -> None:
+    def stop(self, *, final_flush: bool = False) -> None:
+        """Stop the threads; with *final_flush*, make one last send attempt (the final heartbeat of a
+        deliberate stop, TAA-705) before the client closes. A failed attempt stays queued for the next run."""
         if self.poller is not None:
             self.poller.stop()
         if self.advisory is not None:
             self.advisory.stop()
         self.thread.stop()
+        if final_flush:
+            try:
+                self.sender.flush_once()
+            except Exception:  # shutdown boundary: never block or fail the stop
+                log.exception("final outbox flush failed")
         self.client.close()

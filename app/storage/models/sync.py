@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, Integer, String, Text
+from sqlalchemy import BigInteger, Boolean, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.storage.models.base import Base
@@ -151,3 +151,26 @@ class StreamEventRow(Base):
     entity_key: Mapped[str] = mapped_column(String(160))
     item: Mapped[dict[str, Any]] = mapped_column(JSONType)
     created_at: Mapped[datetime] = mapped_column(UTCDateTime())
+
+
+class EngineHeartbeatRow(Base):
+    """Cloud side: an engine's newest heartbeat and the watchdog's verdict (TAA-705).
+
+    Ingest writes the heartbeat columns; only the worker's watchdog writes ``watch_status``,
+    ``offline_since`` and ``offline_reason``."""
+
+    __tablename__ = "engine_heartbeats"
+
+    engine_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    received_at: Mapped[datetime] = mapped_column(UTCDateTime())  # cloud clock
+    sent_at: Mapped[datetime] = mapped_column(UTCDateTime())  # engine clock
+    run_id: Mapped[str] = mapped_column(String(64), default="")
+    mode: Mapped[str] = mapped_column(String(16), default="")
+    state: Mapped[str] = mapped_column(String(8))  # running / stopped
+    connected: Mapped[bool] = mapped_column(Boolean, default=False)
+    market_open: Mapped[bool] = mapped_column(Boolean, default=False)
+    market_change_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONType)
+    watch_status: Mapped[str] = mapped_column(String(8), default="ONLINE")  # ONLINE / OFFLINE
+    offline_since: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    offline_reason: Mapped[str] = mapped_column(String(16), default="")  # SILENT / STOPPED
