@@ -554,6 +554,9 @@ AI failures never trip trading breakers; they only produce HOLD.
   - Lightweight Charts 5 for price, indicator, equity and drawdown charts (attribution kept), plus small SVG components for
     categorical analytics, using one accessible color system in light and dark
   - Built output is served by FastAPI; dev uses the Vite proxy to local FastAPI
+  - Code lives in `frontend/` (TAA-901). The build has no inline scripts or styles and bundles every asset
+    (fonts included), so it runs under the §A14 CSP. A response that fails its zod schema is an error, never
+    rendered; queries retry only network and 5xx failures, mutations never.
 - **PWA behavior:**
   - manifest: standalone, maskable and Apple icons
   - the service worker precaches the app shell
@@ -950,9 +953,19 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
 
 - **Localization:** react-i18next with `th` (default) and `en`.
   - Dates via `th-TH-u-ca-gregory` (R27), with Asia/Bangkok as the default display timezone.
+    - The Buddhist era is opt-in per call; English uses `en-GB` (day first, 24-hour).
+    - API datetimes must carry `Z` or an offset; the PWA rejects naive values instead of guessing a zone.
   - Self-hosted Noto Sans Thai.
   - Server-side TH/EN templates for push.
-  - Explanation and reason codes map to translation keys.
+  - Explanation and reason codes map to translation keys (TAA-915, `frontend/src/i18n/`):
+    - `explain:<key>` for `app/advisory/explanations.py` keys; the PWA renders them with the same parameters
+      and formats money parameters locale-aware with two decimals.
+    - `codes:<kind>.<CODE>` for reason codes, gates and gate statuses, opportunity / window / invalidation
+      reasons, shadow statuses and exit reasons. `CODE:detail` uses the key of `CODE` with `{{detail}}`.
+    - A key without a translation renders as the raw code, so nothing is hidden.
+    - Frontend parity tests read the backend enums and explanation texts and fail on drift.
+  - Numbers and money are locale-aware (money with the ISO currency code). Missing or non-finite values show
+    "—", never 0. Percent inputs are percent units, as in the backend.
 - **New pages:**
 
   | Page | Content |

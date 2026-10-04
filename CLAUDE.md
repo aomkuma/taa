@@ -42,6 +42,13 @@ delete `data/dev-migrations.db`, run `.venv\Scripts\alembic upgrade head`, then
 
 A ticket is DONE only when tests, ruff (format + check), mypy and bandit are all green.
 
+Frontend (PWA, `frontend/`, run from that folder; Node ≥ 22; details in `frontend/README.md`):
+
+```powershell
+npm install; npm run dev        # http://127.0.0.1:5173, proxies /api to FastAPI on 127.0.0.1:8000
+npm run lint; npm run typecheck; npm run test; npm run build   # all four green = frontend ticket DONE
+```
+
 ## Architecture (big picture)
 
 - **Dependency direction:** `core` → `config` / `security` → `storage` → `broker` (gateway protocol) →
@@ -78,6 +85,12 @@ A ticket is DONE only when tests, ruff (format + check), mypy and bandit are all
 - **Advisory (rev. 2):** "compute once, personalize per user". The engine computes market facts (evidence,
   opportunities, shadow trades); the cloud personalizer applies each user's theory selection, thresholds, windows
   and entitlements.
+- **Frontend (`frontend/`):** Vite + React + TypeScript PWA, built into `frontend/dist` and served by FastAPI
+  (same origin, strict CSP: no inline scripts, no CDNs, fonts bundled). Every API response is validated with zod.
+  All UI text goes through react-i18next (`th` default, `en`); backend codes map to translation keys
+  (`codes:<kind>.<CODE>`, `explain:<key>`). Parity tests read the backend enums and `app/advisory/explanations.py`,
+  so **changing a reason code, status enum or explanation key/placeholder means updating
+  `frontend/src/i18n/` in the same change** (run `npm run test` in `frontend/`).
 - **Tests:**
   - `FakeMT5` (`app/broker/fake_mt5.py`) emulates the MT5 module, including server time, schedules per asset type,
     ticks, failures and call counters. Inject it via `MT5Client(..., mt5_module=fake)`.
@@ -86,10 +99,11 @@ A ticket is DONE only when tests, ruff (format + check), mypy and bandit are all
 
 ## Working rules
 
-- Chat with the user in **Thai**. Docs, code comments and docstrings are in **English**. The PWA UI will be Thai +
-  English.
+- Chat with the user in **Thai**. Docs, code comments and docstrings are in **English**. The PWA UI is Thai (default) +
+  English, through translation keys only.
 - After completing ticket items, tick them in `docs/TICKETS.md` via `scripts/tickets.py` in the same change.
 - No Docker locally. `deploy/railway/*.Dockerfile` and `.railway/railway.ts` exist only for Railway builds.
+- No profitability claims in any UI text either (`frontend/src/i18n/catalogs.test.ts` checks the catalogs).
 - Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
 - LIVE trading stays disabled (no code path until Phase 14). DEMO orders need `TRADING_MODE=DEMO` plus
   `ENABLE_DEMO_TRADING=true` and a demo account. Subscription and billing stay behind `SUBSCRIPTIONS_ENABLED=false`.

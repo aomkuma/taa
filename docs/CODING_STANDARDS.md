@@ -130,7 +130,31 @@ an allow-list is a design decision: change the test and this section together, a
 - Property-based tests (hypothesis) for numeric invariants: sizing never exceeds budget, volumes align to step,
   indicator bounds.
 
-## 9. Documentation and tickets
+## 9. Frontend (`frontend/`)
+
+`frontend/README.md` holds the commands and the full localization notes.
+
+- TypeScript strict, with `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`. ESLint runs type-aware
+  (`strictTypeChecked`); Prettier with a line length of 110. Import from `src/` through the `@/` alias.
+- `npm run lint`, `typecheck`, `test` and `build` must all pass.
+- **Fail closed in the UI, too:**
+  - Fetch through `apiGet` (`src/api/client.ts`) with a zod schema. A response that does not match is an
+    error state, never partially rendered.
+  - Missing numbers show "—" (`format.ts`), never 0. Naive datetimes are rejected.
+  - Control actions (mutations) are never retried automatically.
+- **No inline scripts or styles, no CDNs.** The build must run under the strict CSP of PLAN §A14.
+- **Text:** every user-facing string is a translation key present in both `th` and `en`
+  (`src/i18n/locales/`). Backend codes are shown through `translateCode()` / `explain()`, never as hand-written
+  strings. No profitability claims.
+- **Dates and numbers** go through `src/i18n/format.ts` or `useFormat()` (Thai Gregorian dates, Asia/Bangkok,
+  locale-aware numbers). Don't call `toLocaleString()` or build `Intl` formatters ad hoc.
+- **Backend parity:** when a backend reason code, status enum or explanation key/placeholder changes, update
+  `frontend/src/i18n/codes.ts` or the `explain` catalogs in the same change. The parity tests fail otherwise.
+- Tests: Vitest + Testing Library (jsdom), next to the code as `*.test.ts(x)`. Render with `renderWithI18n`
+  (`src/test/render.tsx`). No network: mock `fetch`.
+- Browser storage only for per-device conveniences (language), always inside try/catch.
+
+## 10. Documentation and tickets
 
 - Docs, comments and docstrings are in English. User-facing PWA text and notifications use translation keys
   (TH/EN).

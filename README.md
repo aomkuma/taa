@@ -31,6 +31,17 @@ copy .env.example .env    # then fill in values; never commit .env
 .venv\Scripts\python -m pytest
 ```
 
+### Frontend (PWA)
+
+Needs Node.js 22 or newer. See [frontend/README.md](frontend/README.md) for the stack and conventions.
+
+```powershell
+cd frontend
+npm install
+npm run dev     # http://127.0.0.1:5173; /api is proxied to the FastAPI service on 127.0.0.1:8000
+npm run lint; npm run typecheck; npm run test; npm run build   # build output: frontend/dist
+```
+
 ## Operator commands
 
 ```powershell

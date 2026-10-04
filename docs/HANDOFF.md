@@ -1,6 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-04, after Phase 6B (watchlists, opportunities & alert windows; TAA-6B1..6B5 done). This file holds **state
+Last updated: 2026-10-04, after Phase 6B (TAA-6B1..6B5), Phase 6C up to TAA-6C4, and the Phase 9 frontend foundation
+(TAA-901 scaffold, TAA-915 i18n, built in a parallel worktree and merged). This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -15,7 +16,8 @@ Continue the TAA project. Read docs/HANDOFF.md (state), docs/TICKETS.md (progres
 relevant sections of docs/PLAN.md (§A27 shadow trades & calibration, §A26 opportunities, §A29 evidence model).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md.
 Phases 0, 1, 2, 2A, 3, 4, 5, 6, 6A, 6B and 12 (DEMO execution, pulled forward on the user's request) are
-DONE. Next: Phase 6C (shadow trades, accuracy & calibration, TAA-6C1..), then 7 -> 8 -> 8A -> 9 -> 10 -> 11.
+DONE. Phase 6C is at TAA-6C5 (TAA-6C1..6C4 done). Phase 9 has its foundation (TAA-901, TAA-915 done; frontend/).
+Next: TAA-6C5, then 7 -> 8 -> 8A -> the rest of 9 -> 10 -> 11.
 LIVE stays disabled until Phase 14 and an explicit go-ahead.
 Commit at each ticket boundary (allowed); ask before pushing. Stop for review at the end of Milestone 1, or at
 any phase boundary if I ask.
@@ -30,6 +32,8 @@ any phase boundary if I ask.
   (TAA-601..606), Phase 12 (TAA-1201..1206, pulled forward: DEMO broker orders) and Phase 6A
   (TAA-6A1..6A5, symbol universe & suitability ranking) and Phase 6B (TAA-6B1..6B5, watchlists,
   opportunities & alert windows).
+- **In progress:** Phase 6C (TAA-6C1..6C4 done, TAA-6C5 open) and Phase 9 (TAA-901 and TAA-915 done; the
+  remaining pages need the Phase 8 API).
 - **Checks:** 1895 tests pass, 8 skipped (real-terminal, Postgres, one contract case defined from bar 0); the
   suite takes ~2.5 min, with backtest and engine tests the slow part. ruff,
   mypy and bandit are clean. Architecture rules are enforced by `tests/unit/test_architecture.py`.
@@ -196,6 +200,18 @@ any phase boundary if I ask.
       windows, rate limits) and TH/EN push payloads incl. the silent replacement; imports no broker code
     - the engine runs scanner + lifecycle every cycle behind the advisory error boundary
       (`advisory.scanner.enabled`); trading engine tests switch the scanner off
+  - PWA frontend foundation (Phase 9, `frontend/`, PLAN §A15/§A28; commands and conventions in
+    `frontend/README.md` and CODING_STANDARDS §9):
+    - TAA-901: Vite 8 + React 19 + TypeScript 6.0 (strict) + Tailwind 4 + React Router + TanStack Query + zod +
+      vite-plugin-pwa (app shell precache, `/api/` excluded from the navigation fallback, external
+      `registerSW.js` for the CSP); ESLint (type-aware) + Prettier + Vitest; dev proxy `/api` →
+      `127.0.0.1:8000` (`TAA_API_TARGET` overrides); `apiGet` validates every response with zod; only a
+      placeholder home page and a not-found page so far
+    - TAA-915: react-i18next (`th` default, `en`), `LanguageSwitcher` (sets `<html lang>`, remembers the choice
+      in localStorage), bundled Noto Sans Thai (variable, Thai + Latin), `format.ts` / `useFormat()` (Thai
+      Gregorian dates, Asia/Bangkok, locale-aware numbers/money/percent, "—" for missing values, naive
+      datetimes rejected), `explain:<key>` catalogs copied from `explanations.py`, the `codes:<kind>.<CODE>`
+      key scheme (keys only: untranslated codes render raw), parity tests against the backend enums
   - a local `.env` (git-ignored) with the FBS **demo** login and random `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     `CONTROL_TOTP_SECRET`. It uses the master password with `PAPER_ALLOW_MASTER_PASSWORD=true` (the user's
     choice for the demo account). Blank env values count as unset (`env_ignore_empty`).
@@ -212,9 +228,9 @@ any phase boundary if I ask.
   - the demo account also carries a manual BTCUSD test position (magic 0). Per PLAN, manual positions count
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). No
-  remote yet. The working tree is clean.
-- **Next step:** Phase 6C (shadow trades, accuracy & calibration), starting with TAA-6C1. Opportunities
-  already store `signal` and `features`; `confidence.Outcome` is the training row shadow outcomes must feed.
+  remote yet. Branch `phase9-frontend` (TAA-901, TAA-915, docs) is merged into `main`; its worktree
+  `C:\Users\korap\taa-phase9` can be removed with `git worktree remove ..\taa-phase9`.
+- **Next step:** TAA-6C5 (advisory integration & docs), then Phase 7.
 
 ## Notes for the next session
 
@@ -274,6 +290,16 @@ any phase boundary if I ask.
   - Conflict policy: `TheoryPreferences.conflict_policy` unless the trading profile overrides it explicitly;
     minimum supporting families = max(theories, profile). BLOCK blocks on a conflict of quality ≥ 0.6.
   - Non-owner users get no lot in pushes until account profiles exist (8A).
+- Notes from Phase 9 (frontend foundation):
+  - The frontend parity tests (`frontend/src/i18n/codes.test.ts`, `explain.test.ts`) read `app/risk/reasons.py`,
+    `app/strategy/signal_models.py`, `app/advisory/{suitability,statuses,lifecycle,shadow,explanations}.py` and
+    `app/core/enums.py`. Changing those enums or explanation keys/placeholders needs a matching change in
+    `frontend/src/i18n/` (`npm run test` in `frontend/`). The Python suite does not run them.
+  - TypeScript is pinned to 6.0.x: typescript-eslint 8 does not support TypeScript 7 yet.
+  - The `codes` namespace has no texts yet (the ticket asked for keys only); add TH/EN texts with the pages
+    that show the codes (TAA-908 decisions, TAA-917 opportunities, TAA-919 accuracy).
+  - The app icon is a placeholder SVG; maskable/Apple icons, API caching rules and the install prompt are
+    TAA-914. FastAPI does not serve `frontend/dist` yet (Phase 8).
 - Risk-layer test helpers: `tests/risk_data.py` (`TickCalculator`, `funds`, `XAUUSD_SPEC`).
 - Strategy-layer test helpers: `tests/strategy_data.py` (synthetic M15/H1 frames, `sawtooth_m15`,
   `EURUSD_SPEC`, `StubCandles`) and the builders in `tests/unit/test_strategy_models.py`.
