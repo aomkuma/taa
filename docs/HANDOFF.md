@@ -1,10 +1,8 @@
 # Session handoff
 
-Last updated: 2026-10-04 (end of the session that did TAA-804 … TAA-8A5), single session on `main`. Done in
-that session, in order: TAA-804 SSE, 805 control API, 811 engine management API, 808 worker, 705 heartbeats &
-watchdog, 806 Web Push, 807 cloud backtests, 809 advisory APIs, 810 opportunity push, the alert risk-budget
-rule (user decision, option C), 8A1 tenancy, 8A2 plans & entitlements, 8A3 account profiles & cloud sizing,
-8A4 multi-user personalizer, 8A5 billing scaffolding. No branch holds unmerged work. This file holds **state
+Last updated: 2026-10-05 (session that started Phase 9 pages), single session on `main`. Done in this
+session: TAA-903 app shell, TAA-904 dashboard. The previous session (2026-10-04) did TAA-804 … TAA-8A5. No
+branch holds unmerged work. This file holds **state
 only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -24,9 +22,9 @@ dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & ad
 name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
 Done: Phases 0–8, 8A and 12 (cloud replay jobs moved to the deferred TAA-1501, Phase 15).
-Partly done: Phase 9 (901, 902, 915), Phase 10 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13–14.
+Partly done: Phase 9 (901–904, 915), Phase 10 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13–14.
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Start with TAA-903 (app shell).
+"Next work" list in docs/HANDOFF.md. Continue with TAA-905 (charts).
 A local PostgreSQL 16 is available for tests: `pytest -m postgres` uses TAA_POSTGRES_URL from .env (role taa,
 database taa_test); never touch other projects' databases on that server.
 LIVE stays disabled until Phase 14 and an explicit go-ahead. Subscriptions stay off (SUBSCRIPTIONS_ENABLED=false).
@@ -52,13 +50,12 @@ or at any phase boundary if I ask. Chat with me in Thai.
 - **Also done:** Phase 7 (TAA-701..709), Phase 8 (TAA-801..811) and Phase 8A (TAA-8A1..8A5). TAA-810's optional
   cloud replay jobs moved to TAA-1501 (Phase 15, deferred; reasons in TICKETS): replay runs locally with
   `python -m app.cli advisory replay` and its rows replicate up.
-- **In progress (progress table):** Phase 9 3/23 (901,
-  902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14
+- **In progress (progress table):** Phase 9 5/23 (901–904,
+  915), Phase 10 3/5 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14
   (LIVE). The order of the remaining tickets: "Next work" below.
-- **Checks:** 2658 passed, 7 skipped (6 real-terminal, 1 contract case defined from bar 0) on `4bc354a`; the
+- **Checks:** 2663 passed, 7 skipped (6 real-terminal, 1 contract case defined from bar 0) on `06abbc6`; the
   Postgres tests run when `TAA_POSTGRES_URL` is set (they ran). The full suite takes ~7–9 min. ruff, mypy and
-  bandit are clean. Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/` (92 tests, green after
-  TAA-811's `codes` catalog). Architecture rules are enforced by `tests/unit/test_architecture.py`.
+  bandit are clean. Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/` (150 tests after TAA-904). Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
     - style slider 0–100 (defensive → offensive) with five anchor presets
@@ -370,6 +367,18 @@ or at any phase boundary if I ask. Chat with me in Thai.
     - TAA-902 (branch `phase8-auth`): `/login` (password + TOTP, TH/EN), `RequireAuth` route guard,
       `apiPost` with `X-CSRF-Token`, session end on any 401 `unauthenticated` or when the idle/absolute
       deadline passes (absolute limit measured on the server clock via `server_time`), logout
+    - TAA-903 (PLAN §A15 "TAA-903 decisions"): `src/app/shell/` (nav model `nav.ts`, sidebar + phone bottom bar
+      with a "More" sheet, mode banner, engine bar with picker/health/live state, offline banner, `StaleBadge`,
+      `RequireOwnEngine`, `PlaceholderPage` for pages not built yet), `src/engine/` (`useEngine`,
+      `useEngineStatus`, health rule = the watchdog's 60 s on the server clock), `src/live/` (`LiveStream` SSE
+      client + `LiveProvider`, `useLiveEvents(topic, …)`), themes (`src/app/theme.ts`, `dark` class). Backend:
+      `/status` gains `heartbeat`; the stream route no longer refreshes the session idle timer
+      (`StreamSession`), which would otherwise have kept idle tabs signed in forever.
+    - TAA-904 (PLAN §A15 "TAA-904 decisions", §A13 TAA-705 note): engine heartbeats carry an `account`
+      snapshot (equity, P/L, drawdown, heat, limits); dashboard in `src/pages/dashboard/` with SVG gauges and
+      per-topic live refresh; `codes:` kinds `breaker`, `notificationType`, `decision` with texts.
+    - Page tests use `src/test/engine.ts` (`owner()`, `status()`, `heartbeat()`, `renderShell(path)`) and
+      `src/test/eventSource.ts` (fake EventSource).
   - local PostgreSQL 16 (Windows service `postgresql-x64-16`, localhost:5432), shared with other projects.
     TAA has its own role `taa` (LOGIN, CREATEDB) and database `taa_test`; the URL is `TAA_POSTGRES_URL` in
     `.env`. `pytest -m postgres` (4 tests: migrations + schema parity, rev. 4 backfill/downgrade, two-engine
@@ -419,8 +428,7 @@ dependencies are done by the time it is reached):
 1. ~~TAA-703, 704, 707, 708, 709, 706, 803~~ (done in the previous session)
 2. ~~TAA-804, 805, 811, 808, 705, 806, 807, 809, 810~~ (done; cloud replay jobs deferred to TAA-1501)
 3. ~~TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5~~ (done, Phase 8A)
-4. **Next:** TAA-903 app shell (stream, navigation, engine picker from `GET /me/feed`), then 904–913,
-   916–923, then 914 PWA polish (Phase 9). The backend for every page exists; see "Notes for the PWA" below.
+4. ~~TAA-903 app shell, 904 dashboard~~ (done). **Next:** 905–913, 916–923, then 914 PWA polish (Phase 9). The backend for every page exists; see "Notes for the PWA" below.
 5. TAA-1004 (do the preparation in "Notes from Phase 10" first), TAA-1005 (Phase 10)
 6. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
    Milestone 1 review.
@@ -568,6 +576,13 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
     that show the codes (TAA-908 decisions, TAA-917 opportunities, TAA-919 accuracy).
   - The app icon is a placeholder SVG; maskable/Apple icons, API caching rules and the install prompt are
     TAA-914.
+  - The JS bundle is ~550 kB (Vite warns above 500 kB). Lazy-load page routes (`React.lazy`) when the chart
+    library arrives (TAA-905) or in TAA-914.
+  - A new page: add it to `src/app/shell/nav.ts` if missing, then replace its `PlaceholderPage` route in
+    `src/app/routes.tsx`. Engine queries go under `engineKey(id)` so the stream's resync refetches them.
+  - Windows is case-insensitive: `gauge.ts` next to `Gauge.tsx` broke the TypeScript build. Give logic modules
+    a different name than their component.
+  - The UI has only been checked through tests (jsdom), not yet in a real browser against `python -m app.web`.
 - Notes from Phase 8 (web auth, branch `phase8-auth`):
   - Two TOTP modules on purpose: `app/security/web_totp.py` (web users: stateless, last step stored per user)
     and `app/security/totp.py` (engine-only `CONTROL_TOTP_SECRET`, single-use in memory, TAA-704).
