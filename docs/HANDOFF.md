@@ -295,11 +295,10 @@ session. Stop for review at the end of Milestone 1, or at any phase boundary if 
     toward exposure (policy: count or halt), and Phase 6B uses them to detect FOLLOWED opportunities.
 - **Git:** `main`, committed per ticket (the user allows commits at ticket boundaries; ask before pushing). A
   remote `origin` exists; `main` is ahead of `origin/main` (push only when the user asks). Work happens on
-  `main` in `C:\Users\korap\taa` (one session at a time). Leftover worktrees `C:\Users\korap\taa-auth`
-  (branch `phase8-auth`) and `C:\Users\korap\taa-phase9` (branch `phase9-frontend`) are fully merged and
-  unused; remove them with the user's OK (`git worktree remove`, then `git branch -d`; a `.venv` junction
-  inside is removed with `rmdir` first). Branch `phase10-analytics` is merged and deleted. Latest migration:
-  **0017**.
+  `main` in `C:\Users\korap\taa` (one session at a time). It is the only worktree and the only local branch:
+  `phase8-auth`, `phase9-frontend` and `phase10-analytics` were merged, then deleted with their worktrees
+  (2026-10-04). The `origin/dependabot/*` branches are Dependabot PRs on GitHub, untouched. Latest
+  migration: **0017**.
 
 ## Next work
 
@@ -486,7 +485,6 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
 ## Open items needing the user
 
 - Whether and when to push to GitHub (`origin` exists; `main` is ahead).
-- Removing the leftover worktrees `taa-auth` and `taa-phase9` (fully merged; see "Git").
 - The flaky pandas access violation has no ticket yet: open one if it recurs (see "Notes from Phase 7").
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA). See PLAN §A30.
