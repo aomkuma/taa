@@ -34,6 +34,7 @@ from app.advisory.lifecycle import OpportunityLifecycle
 from app.advisory.ranking_service import RankingService
 from app.advisory.requirements import ComputeRequirements, local_requirements
 from app.advisory.scanner import OpportunityScanner
+from app.advisory.shadow_tracker import ShadowTracker
 from app.advisory.universe import SymbolCatalog
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
@@ -143,6 +144,7 @@ class Engine:
         self.ranking: RankingService | None = None
         self.scanner: OpportunityScanner | None = None
         self.lifecycle: OpportunityLifecycle | None = None
+        self.shadow: ShadowTracker | None = None
         self._requirements_cache: tuple[datetime | None, ComputeRequirements] | None = None
         loop = self.config.engine
         self._candles_due = _Due(loop.candle_poll_seconds)
@@ -250,6 +252,8 @@ class Engine:
             expired = self.lifecycle.catch_up()
             if expired:
                 log.info("expired %d opportunity windows that passed while the engine was down", len(expired))
+            if cfg.advisory.shadow.enabled:  # hypothetical trades; resumes from each row's cursor
+                self.shadow = ShadowTracker(self.db, self.gateway, cfg, self.clock, server=account.server)
         by_magic = {self.magic[s.name]: s for s in self.strategies.strategies}
         restored = self._build_backend(account, by_magic)
         self.on_started(restored)
@@ -480,6 +484,13 @@ class Engine:
             log.exception("opportunity scanner failed")
             scanner.stats.failures += 1
             scanner.stats.last_error = f"{type(exc).__name__}: {exc}"
+        if self.shadow is not None:
+            try:
+                self.shadow.tick()
+            except Exception as exc:  # advisory boundary, separate so open shadow trades keep resolving
+                log.exception("shadow tracker failed")
+                self.shadow.stats.failures += 1
+                self.shadow.stats.last_error = f"{type(exc).__name__}: {exc}"
 
     def requirements(self) -> ComputeRequirements:
         """What the scanner computes: from the local preferences until the cloud sends them (Phase 7).
@@ -690,6 +701,15 @@ class Engine:
                 "failures": self.scanner.stats.failures,
                 "last_duration_ms": round(self.scanner.stats.last_duration_ms),
                 "last_error": self.scanner.stats.last_error,
+            },
+            "shadow": None
+            if self.shadow is None
+            else {
+                "opened": self.shadow.stats.opened,
+                "closed": self.shadow.stats.closed,
+                "failures": self.shadow.stats.failures,
+                "last_duration_ms": round(self.shadow.stats.last_duration_ms),
+                "last_error": self.shadow.stats.last_error,
             },
             "ranking": None
             if self.ranking is None

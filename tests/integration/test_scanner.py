@@ -102,6 +102,8 @@ class TestScan:
         assert eur.rr == pytest.approx(2.0) and eur.currency == "USD" and eur.equity == 10_000.0
         assert eur.features["ctx:rr=2-3"] == 1.0 and "ctx:htf_aligned" in eur.features
         assert eur.requirements_version == REQ.version and xau.asset_class == "METAL"
+        assert eur.bid is not None and eur.ask is not None and eur.ask > eur.bid  # shadow entry (§A27)
+        assert eur.entry == eur.ask and eur.quote_at is not None and eur.alerted_at is None
         sig = Signal.from_dict(eur.signal)
         assert sig.idempotency_key == eur.opportunity_id and sig.action is Action.BUY
         with db.session() as sess:

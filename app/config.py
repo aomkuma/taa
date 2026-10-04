@@ -498,6 +498,20 @@ class ScannerConfig(StrictModel):
     budget_seconds: float = Field(default=3.0, gt=0, le=60, description="scan time per engine cycle")
 
 
+class ShadowConfig(StrictModel):
+    """Hypothetical trades for every opportunity (PLAN §A27); results are labelled hypothetical."""
+
+    enabled: bool = True
+    slippage_points: float = Field(default=1.0, ge=0, le=1000, description="adverse, on entry and stop exits")
+    time_stop_hours: float = Field(default=72.0, gt=0, le=24 * 30)
+    commission_per_lot: float = Field(
+        default=0.0, ge=0, description="round turn, account currency; symbols.overrides take precedence"
+    )
+    tick_tiebreak: bool = Field(default=True, description="ticks decide a bar touching both SL and TP")
+    poll_seconds: float = Field(default=60.0, ge=1, le=3600, description="M1 resolution cadence")
+    budget_seconds: float = Field(default=2.0, gt=0, le=60, description="resolution time per engine cycle")
+
+
 class AdvisoryConfig(StrictModel):
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
     sessions: AdvisorySessionsConfig = Field(default_factory=AdvisorySessionsConfig)
@@ -505,6 +519,7 @@ class AdvisoryConfig(StrictModel):
     scoring: ScoringConfig = Field(default_factory=ScoringConfig)
     ranking: RankingConfig = Field(default_factory=RankingConfig)
     scanner: ScannerConfig = Field(default_factory=ScannerConfig)
+    shadow: ShadowConfig = Field(default_factory=ShadowConfig)
     # validated by app.advisory.preferences.local_preferences (config cannot import the catalogs it checks)
     preferences: dict[str, Any] = Field(default_factory=dict, description="fallback without a cloud")
 

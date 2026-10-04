@@ -58,6 +58,9 @@ def test_env_overrides_yaml(tmp_path: Path) -> None:
         ("risk:\n  max_riskk: 1\n", "max_riskk"),
         ("timeframes:\n  higher: M15\n  entry: H1\n", "higher timeframe"),
         ("engine:\n  health_host: 0.0.0.0\n", "loopback"),
+        ("advisory:\n  shadow:\n    time_stop_hours: 0\n", "time_stop_hours"),
+        ("advisory:\n  shadow:\n    slippage_points: -1\n", "slippage_points"),
+        ("advisory:\n  shadow:\n    poll_seconds: 0.5\n", "poll_seconds"),
     ],
 )
 def test_invalid_config_rejected(tmp_path: Path, yaml_text: str, fragment: str) -> None:
@@ -143,3 +146,13 @@ def test_blank_env_value_is_unset(tmp_path: Path) -> None:
     )
     assert s.env.CLOUD_BASE_URL is None
     assert s.config.risk.max_risk_per_trade_percent == 0.5
+
+
+def test_shadow_settings(tmp_path: Path) -> None:
+    text = (
+        "advisory:\n  shadow:\n    time_stop_hours: 24\n    commission_per_lot: 7\n    tick_tiebreak: false\n"
+    )
+    s = load_settings(env_file=None, config_file=_write(tmp_path, text), environ={"TRADING_MODE": "BACKTEST"})
+    shadow = s.config.advisory.shadow
+    assert (shadow.time_stop_hours, shadow.commission_per_lot, shadow.tick_tiebreak) == (24, 7, False)
+    assert shadow.enabled and shadow.slippage_points == 1.0

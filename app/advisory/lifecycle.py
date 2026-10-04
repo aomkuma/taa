@@ -200,6 +200,7 @@ class OpportunityLifecycle:
                 return False
             row.status = OpportunityStatus.ACTIVE.value
             row.status_at = self.clock.now_utc()
+            row.alerted_at = row.alerted_at or row.status_at  # kept after expiry, for shadow statistics
             return True
 
     # --- rules ----------------------------------------------------------------------------------------------

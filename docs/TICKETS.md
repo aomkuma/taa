@@ -32,7 +32,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
-| M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 0 | TODO |
+| M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 1 | IN PROGRESS |
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
@@ -882,20 +882,20 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-6C1 — Shadow trade tracker
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 6B3, 501, 603
 
-- [ ] created for every candidate (alerted flag)
-- [ ] entry at signal ask/bid with recorded spread + configured slippage
-- [ ] lot and equity snapshot
-- [ ] PLAN and MANAGED variants
-- [ ] resolution on M1 bars with tick tie-breaks (`copy_ticks_range`) and a pessimistic fallback
-- [ ] time stop
-- [ ] gap handling
-- [ ] commission + swap estimate
-- [ ] P/L via `calc_profit` + R + MAE/MFE
-- [ ] persistence + restart catch-up
-- [ ] tests
+- [x] created for every candidate (alerted flag)
+- [x] entry at signal ask/bid with recorded spread + configured slippage
+- [x] lot and equity snapshot
+- [x] PLAN and MANAGED variants
+- [x] resolution on M1 bars with tick tie-breaks (`copy_ticks_range`) and a pessimistic fallback
+- [x] time stop
+- [x] gap handling
+- [x] commission + swap estimate
+- [x] P/L via `calc_profit` + R + MAE/MFE
+- [x] persistence + restart catch-up
+- [x] tests
 
 #### TAA-6C2 — Historical replay
 

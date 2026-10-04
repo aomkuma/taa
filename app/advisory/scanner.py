@@ -44,7 +44,7 @@ from app.engine.decision_engine import (
 from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.registry import EvidenceEngine
 from app.market_data.candle_service import CandleService
-from app.market_data.data_models import SymbolSpec
+from app.market_data.data_models import Quote, SymbolSpec
 from app.market_data.quote_service import QuoteService
 from app.risk.loss_tracker import LossStatus
 from app.risk.mode_gates import GateResult
@@ -237,12 +237,13 @@ class OpportunityScanner:
             if sess.get(OpportunityRow, signal.idempotency_key) is not None:
                 return None  # idempotent: this strategy/symbol/bar/side is already recorded
         account, currency = self._account()
+        quote = self.quotes.quote(spec)
         record = self.decisions.decide(
             DecisionRequest(
                 signal=signal,
                 market=ctx.market,
                 spec=spec,
-                quote=self.quotes.quote(spec),
+                quote=quote,
                 account=account,
                 health=self.health(),
                 specs=self.specs,
@@ -254,7 +255,7 @@ class OpportunityScanner:
         if record.decision is not Decision.ACCEPT:
             self.stats.hidden += 1
             return None
-        row = self._row(record, ctx, spec, account, currency, plan)
+        row = self._row(record, ctx, spec, account, currency, plan, quote)
         with self.db.session() as sess:
             if sess.get(OpportunityRow, row.opportunity_id) is None:
                 sess.add(row)
@@ -278,6 +279,7 @@ class OpportunityScanner:
         account: AccountState,
         currency: str,
         plan: _Plan,
+        quote: Quote,
     ) -> OpportunityRow:
         signal, market = record.signal, ctx.market
         side = signal.side
@@ -324,6 +326,9 @@ class OpportunityScanner:
             regime=market.entry.regime.value,
             atr=market.atr,
             spread_points=market.spread_points,
+            bid=quote.bid if quote.valid else None,  # the shadow trades enter at this quote (§A27)
+            ask=quote.ask if quote.valid else None,
+            quote_at=quote.time_utc if quote.valid else None,
             requirements_version=plan.version,
             features=signal_features(signal, market),
             signal=signal.to_dict(),

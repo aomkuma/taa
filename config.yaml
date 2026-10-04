@@ -173,6 +173,14 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
   scanner:                          # market opportunities on every new entry-TF bar (PLAN A26)
     enabled: true
     budget_seconds: 3.0             # per engine cycle; pending symbols wait for the next cycle
+  shadow:                           # hypothetical PLAN/MANAGED trades for every opportunity (PLAN A27)
+    enabled: true
+    slippage_points: 1.0            # adverse, on the entry and on stop exits
+    time_stop_hours: 72
+    commission_per_lot: 0.0         # round turn; symbols.overrides.<SYM>.commission_per_lot wins
+    tick_tiebreak: true             # copy_ticks_range decides an M1 bar that touches both SL and TP
+    poll_seconds: 60                # M1 resolution cadence
+    budget_seconds: 2.0             # per engine cycle
   preferences:                      # one user's advisory preferences when no cloud is configured (PLAN A26/A30/A31)
     watchlists:
       - {name: Favourites, kind: FAVOURITES, symbols: [EURUSD, XAUUSD]}

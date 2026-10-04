@@ -1,0 +1,413 @@
+"""Live shadow-trade tracker (PLAN §A27; TAA-6C1). Runs inside the engine; never trades.
+
+Every ``advisory.shadow.poll_seconds``:
+
+1. **Open:** every opportunity of this server without shadow rows gets a ``PLAN`` and a ``MANAGED`` row
+   (:mod:`app.advisory.shadow`), entered at the quote the decision used. The same query catches up
+   opportunities recorded just before a crash or restart.
+2. **Flags:** ``alerted`` (the opportunity's ``alerted_at``) and ``followed`` (status FOLLOWED) are copied
+   onto its shadow rows for the accuracy breakdowns.
+3. **Resolve:** OPEN rows advance over the closed M1 bars since their ``cursor`` (one ``rates_range`` per
+   symbol); ticks break SL/TP ties. The state is persisted after every pass, so a restart resumes from the
+   cursor and catches up from the terminal's M1 history.
+
+Resolution is time-boxed per cycle (``budget_seconds``); symbols left over wait for the next pass. Database
+sessions are never held across broker calls.
+"""
+
+from __future__ import annotations
+
+import logging
+from collections import defaultdict
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+from sqlalchemy import exists, select, update
+
+from app.advisory.scoring import swap_per_night
+from app.advisory.shadow import (
+    Flag,
+    Management,
+    ShadowExit,
+    ShadowResult,
+    ShadowState,
+    ShadowStatus,
+    TickRow,
+    TickSource,
+    Variant,
+    advance,
+    bars_from_frame,
+    entry_fill,
+    new_state,
+    rollover_days,
+    settle,
+)
+from app.advisory.statuses import OpportunityStatus
+from app.broker.gateway import MarketDataGateway
+from app.config import AppConfig
+from app.core.clock import Clock, ensure_utc
+from app.core.enums import ExitReason, Side, Timeframe
+from app.core.errors import TaaError
+from app.execution.fill_model import Bar
+from app.market_data.candle_service import normalize_rates
+from app.market_data.data_models import SymbolSpec
+from app.storage.database import Database
+from app.storage.models import OpportunityRow, ShadowTradeRow
+
+log = logging.getLogger(__name__)
+
+LIVE = "LIVE"
+
+
+@dataclass(slots=True)
+class ShadowStats:
+    opened: int = 0
+    closed: int = 0
+    void: int = 0
+    failures: int = 0
+    last_duration_ms: float = 0.0
+    last_error: str = ""
+
+
+@dataclass(frozen=True, slots=True)
+class ShadowReport:
+    opened: tuple[str, ...]  # shadow ids
+    closed: tuple[str, ...]
+    pending_symbols: int  # left for the next pass (budget)
+
+
+def shadow_id(opportunity_id: str, variant: Variant) -> str:
+    return f"{opportunity_id}:{variant.value}"
+
+
+def state_of(row: ShadowTradeRow) -> ShadowState:
+    return ShadowState(
+        side=Side(row.side),
+        entry=row.entry_price,
+        entry_at=ensure_utc(row.entry_at),
+        initial_sl=row.initial_sl,
+        sl=row.sl,
+        tp=row.tp,
+        deadline=ensure_utc(row.deadline),
+        cursor=ensure_utc(row.cursor),
+        stop_kind=ExitReason(row.stop_kind),
+        mae=row.mae,
+        mfe=row.mfe,
+        flags={Flag(f) for f in row.flags},
+    )
+
+
+class ShadowTracker:
+    def __init__(
+        self,
+        db: Database,
+        gateway: MarketDataGateway,
+        config: AppConfig,
+        clock: Clock,
+        *,
+        server: str,
+    ) -> None:
+        self.db = db
+        self.gateway = gateway
+        self.config = config
+        self.cfg = config.advisory.shadow
+        self.clock = clock
+        self.server = server
+        self.stats = ShadowStats()
+        self.specs: dict[str, SymbolSpec] = {}
+        self._tz = ZoneInfo(gateway.server_clock.tz_name)
+        self._next_poll = 0.0
+
+    def spec(self, symbol: str) -> SymbolSpec:
+        if symbol not in self.specs:
+            self.specs[symbol] = self.gateway.symbol_spec(symbol)
+        return self.specs[symbol]
+
+    # --- the tick -------------------------------------------------------------------------------------------
+
+    def tick(self, *, force: bool = False) -> ShadowReport:
+        started = self.clock.monotonic()
+        if not force and started < self._next_poll:
+            return ShadowReport((), (), 0)
+        self._next_poll = started + self.cfg.poll_seconds
+        opened = self.open_new()
+        self.sync_flags()
+        closed, pending = self.resolve(started + self.cfg.budget_seconds)
+        self.stats.last_duration_ms = (self.clock.monotonic() - started) * 1000
+        return ShadowReport(tuple(opened), tuple(closed), pending)
+
+    # --- opening --------------------------------------------------------------------------------------------
+
+    def open_new(self) -> list[str]:
+        with self.db.session() as sess:
+            missing = list(
+                sess.execute(
+                    select(OpportunityRow)
+                    .where(
+                        OpportunityRow.server == self.server,
+                        ~exists().where(ShadowTradeRow.opportunity_id == OpportunityRow.opportunity_id),
+                    )
+                    .order_by(OpportunityRow.created_at, OpportunityRow.opportunity_id)
+                ).scalars()
+            )
+        opened: list[str] = []
+        for opp in missing:
+            try:
+                rows = self._rows_for(opp)
+            except TaaError as exc:
+                self._fail(opp.symbol, exc)
+                continue
+            with self.db.session() as sess:
+                for row in rows:
+                    if sess.get(ShadowTradeRow, row.shadow_id) is None:
+                        sess.add(row)
+                        opened.append(row.shadow_id)
+        self.stats.opened += len(opened)
+        return opened
+
+    def _rows_for(self, opp: OpportunityRow) -> list[ShadowTradeRow]:
+        spec = self.spec(opp.symbol)
+        side = Side(opp.side)
+        slip = self.cfg.slippage_points * spec.point
+        flags: list[str] = []
+        if opp.bid is not None and opp.ask is not None:
+            entry = entry_fill(side, opp.bid, opp.ask, slip)
+            entry_at = ensure_utc(opp.quote_at or opp.created_at)
+            spread = (opp.ask - opp.bid) / spec.point if spec.point > 0 else None
+        else:  # rows from before quotes were recorded: the signal's entry is already the ask/bid
+            entry = opp.entry + side.sign * slip
+            entry_at = ensure_utc(opp.created_at)
+            spread = opp.spread_points
+            flags.append(Flag.ENTRY_FALLBACK.value)
+        if opp.lot is None:
+            flags.append(Flag.NOT_TRADABLE.value)
+        state = new_state(
+            side=side,
+            entry=entry,
+            entry_at=entry_at,
+            sl=opp.stop_loss,
+            tp=opp.take_profit,
+            time_stop=timedelta(hours=self.cfg.time_stop_hours),
+        )
+        now = self.clock.now_utc()
+        void = state.risk <= 0  # the fill is already at or beyond the stop: no trade to follow
+        alerted = opp.alerted_at is not None
+        followed = opp.status == OpportunityStatus.FOLLOWED.value
+        return [
+            ShadowTradeRow(
+                shadow_id=shadow_id(opp.opportunity_id, variant),
+                opportunity_id=opp.opportunity_id,
+                variant=variant.value,
+                source=LIVE,
+                server=self.server,
+                strategy=opp.strategy,
+                symbol=opp.symbol,
+                asset_class=opp.asset_class,
+                timeframe=opp.timeframe,
+                side=opp.side,
+                session=opp.session,
+                setup_strength=opp.setup_strength,
+                rr=opp.rr,
+                features=dict(opp.features),
+                atr=opp.atr,
+                alerted=alerted,
+                followed=followed,
+                status=(ShadowStatus.VOID if void else ShadowStatus.OPEN).value,
+                signal_at=opp.bar_close_at,
+                created_at=now,
+                updated_at=now,
+                entry_at=entry_at,
+                entry_price=entry,
+                bid=opp.bid,
+                ask=opp.ask,
+                spread_points=spread,
+                slippage_points=self.cfg.slippage_points,
+                initial_sl=opp.stop_loss,
+                sl=opp.stop_loss,
+                tp=opp.take_profit,
+                stop_kind=ExitReason.STOP_LOSS.value,
+                deadline=state.deadline,
+                cursor=state.cursor,
+                lot=opp.lot,
+                equity=opp.equity,
+                currency=opp.currency,
+                mae=0.0,
+                mfe=0.0,
+                swap_days=0,
+                flags=list(flags),
+                note="fill at or beyond the stop" if void else "",
+            )
+            for variant in Variant
+        ]
+
+    # --- flags ----------------------------------------------------------------------------------------------
+
+    def sync_flags(self) -> None:
+        """Copy alerted/followed from the opportunities (both only ever turn on)."""
+        alerted = select(OpportunityRow.opportunity_id).where(
+            OpportunityRow.server == self.server, OpportunityRow.alerted_at.is_not(None)
+        )
+        followed = select(OpportunityRow.opportunity_id).where(
+            OpportunityRow.server == self.server,
+            OpportunityRow.status == OpportunityStatus.FOLLOWED.value,
+        )
+        with self.db.session() as sess:
+            sess.execute(
+                update(ShadowTradeRow)
+                .where(ShadowTradeRow.alerted.is_(False), ShadowTradeRow.opportunity_id.in_(alerted))
+                .values(alerted=True)
+            )
+            sess.execute(
+                update(ShadowTradeRow)
+                .where(ShadowTradeRow.followed.is_(False), ShadowTradeRow.opportunity_id.in_(followed))
+                .values(followed=True)
+            )
+
+    # --- resolution -----------------------------------------------------------------------------------------
+
+    def resolve(self, until_monotonic: float | None = None) -> tuple[list[str], int]:
+        """Advance OPEN rows over closed M1 bars; returns (closed shadow ids, symbols left for later)."""
+        with self.db.session() as sess:
+            rows = list(
+                sess.execute(
+                    select(ShadowTradeRow)
+                    .where(
+                        ShadowTradeRow.server == self.server,
+                        ShadowTradeRow.source == LIVE,
+                        ShadowTradeRow.status == ShadowStatus.OPEN.value,
+                    )
+                    .order_by(ShadowTradeRow.cursor, ShadowTradeRow.shadow_id)
+                ).scalars()
+            )
+        by_symbol: dict[str, list[ShadowTradeRow]] = defaultdict(list)
+        for row in rows:
+            by_symbol[row.symbol].append(row)
+        closed: list[str] = []
+        pending = 0
+        for symbol, group in by_symbol.items():  # oldest cursor first
+            if until_monotonic is not None and self.clock.monotonic() >= until_monotonic:
+                pending += 1
+                continue
+            try:
+                closed += self._resolve_symbol(symbol, group)
+            except TaaError as exc:
+                self._fail(symbol, exc)
+        return closed, pending
+
+    def _resolve_symbol(self, symbol: str, group: list[ShadowTradeRow]) -> list[str]:
+        spec = self.spec(symbol)
+        horizon = self.clock.now_utc() - timedelta(seconds=self.config.timeframes.candle_close_grace_seconds)
+        start = min(ensure_utc(r.cursor) for r in group)
+        if start >= horizon:
+            return []
+        bars = self._bars(spec, start, horizon)
+        ticks = self._tick_source(symbol) if self.cfg.tick_tiebreak else None
+        slip = self.cfg.slippage_points * spec.point
+        updates: list[tuple[str, ShadowState, ShadowExit | None, ShadowResult | None]] = []
+        for row in group:
+            state = state_of(row)
+            management = None
+            if row.variant == Variant.MANAGED.value:
+                management = Management(
+                    self.config.position_management,
+                    row.atr,
+                    spec.point,
+                    Timeframe(row.timeframe).seconds,
+                )
+            exit_ = advance(state, bars, slippage=slip, ticks=ticks, management=management)
+            result = None if exit_ is None else self._settle(spec, row.lot, state, exit_)
+            updates.append((row.shadow_id, state, exit_, result))
+        closed = []
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            for sid, state, exit_, result in updates:
+                stored = sess.get(ShadowTradeRow, sid)
+                if stored is None or stored.status != ShadowStatus.OPEN.value:
+                    continue
+                self._store(stored, state, now)
+                if exit_ is not None and result is not None:
+                    self._close(stored, exit_, result)
+                    closed.append(sid)
+        self.stats.closed += len(closed)
+        for sid in closed:
+            log.info("shadow %s closed", sid)
+        return closed
+
+    def _bars(self, spec: SymbolSpec, start: datetime, horizon: datetime) -> list[Bar]:
+        raw = self.gateway.rates_range(spec.name, Timeframe.M1, start, horizon)
+        bars = bars_from_frame(normalize_rates(raw, Timeframe.M1, self.gateway), spec.point)
+        return [b for b in bars if b.close_time <= horizon]  # later bars are forming or within the grace
+
+    def _tick_source(self, symbol: str) -> TickSource:
+        def ticks(start: datetime, end: datetime) -> list[TickRow] | None:
+            try:
+                df = self.gateway.ticks_range(symbol, start, end)
+            except TaaError as exc:
+                log.warning("shadow: ticks for %s unavailable: %s", symbol, exc)
+                return None
+            return [
+                (t.to_pydatetime(), float(b), float(a))
+                for t, b, a in zip(df["time_utc"], df["bid"], df["ask"], strict=True)
+            ]
+
+        return ticks
+
+    def _settle(
+        self, spec: SymbolSpec, lot: float | None, state: ShadowState, exit_: ShadowExit
+    ) -> ShadowResult:
+        """Broker calls for a closed trade happen here, outside any database session."""
+        side = state.side
+        override = self.config.symbols.overrides.get(spec.name)
+        commission = (
+            override.commission_per_lot
+            if override is not None and override.commission_per_lot is not None
+            else self.cfg.commission_per_lot
+        )
+        return settle(
+            state,
+            exit_,
+            lot=lot,
+            profit=lambda volume, price: self.gateway.calc_profit(
+                side, spec.name, volume, state.entry, price
+            ),
+            commission_per_lot=commission,
+            swap_per_lot_night=swap_per_night(spec, side),
+            swap_days=rollover_days(
+                state.entry_at, exit_.at, tz=self._tz, triple_weekday=spec.swap_rollover3days
+            ),
+        )
+
+    @staticmethod
+    def _store(row: ShadowTradeRow, state: ShadowState, now: datetime) -> None:
+        row.cursor = state.cursor
+        row.sl = state.sl
+        row.stop_kind = state.stop_kind.value
+        row.mae = state.mae
+        row.mfe = state.mfe
+        row.flags = sorted({*row.flags, *(f.value for f in state.flags)})
+        row.updated_at = now
+
+    @staticmethod
+    def _close(row: ShadowTradeRow, exit_: ShadowExit, result: ShadowResult) -> None:
+        row.status = ShadowStatus.CLOSED.value
+        row.exit_at = exit_.at
+        row.exit_price = exit_.price
+        row.exit_reason = exit_.reason.value
+        row.win = result.win
+        row.r_multiple = result.r_multiple
+        row.r_net = result.r_net
+        row.mae_r = result.mae_r
+        row.mfe_r = result.mfe_r
+        row.gross_pnl = result.gross_pnl
+        row.commission = result.commission
+        row.swap = result.swap
+        row.net_pnl = result.net_pnl
+        row.risk_money = result.risk_money
+        row.swap_days = result.swap_days
+        row.flags = sorted({*row.flags, *(f.value for f in result.flags)})
+
+    def _fail(self, symbol: str, exc: Exception) -> None:
+        self.stats.failures += 1
+        self.stats.last_error = f"{symbol}: {type(exc).__name__}: {exc}"
+        log.warning("shadow: %s failed: %s", symbol, exc)

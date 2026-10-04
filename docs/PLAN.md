@@ -880,6 +880,18 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     snapshotted lot; R multiple; MAE/MFE.
   - **Durability:** persisted and caught up after restarts from M1 history. Results are hypothetical and labelled
     so: no requotes, partial fills or real slippage.
+  - (TAA-6C1 decisions) Implemented in `shadow.py` (pure, shared with replay) and `shadow_tracker.py` (engine):
+    - The entry uses the quote the ADVISORY decision used; opportunities now store `bid`, `ask`, `quote_at`.
+    - The M1 bar holding the entry instant is resolved from its ticks after the entry; without ticks only a
+      stop touch counts (`PARTIAL_BAR`), because its range includes prices from before the entry.
+    - An open beyond the TP fills at the TP (never better). MANAGED applies the A11 rules at every M1 close,
+      with the ATR recorded at signal time.
+    - A fill already at or beyond the stop makes the trade `VOID` (excluded from statistics).
+    - Shadow rows copy the signal facts (strength, RR, features, session, ATR), so outcomes stand alone and
+      replay trades need no opportunity row. `alerted` comes from the opportunity's `alerted_at` (set by
+      `mark_active`, kept after expiry), `followed` from status FOLLOWED.
+    - Commission: `advisory.shadow.commission_per_lot` unless the symbol override sets one. Swap: the
+      per-lot nightly swap (S9's conversion) × rollover days; unknown swap modes are flagged `SWAP_UNKNOWN`.
 - **Historical replay (`replay.py`):** replays the scanner over N months of history per symbol, reusing the backtest
   components (resolution on M5/M1). Outcomes are tagged `source=REPLAY` and bootstrap calibration. Runs via the
   local CLI or a cloud worker job.

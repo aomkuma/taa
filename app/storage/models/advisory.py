@@ -1,4 +1,5 @@
-"""Advisory tables (PLAN §A25-A27): symbol catalog, suitability snapshots and market opportunities."""
+"""Advisory tables (PLAN §A25-A27): symbol catalog, suitability snapshots, market opportunities and shadow
+trades."""
 
 from __future__ import annotations
 
@@ -83,6 +84,7 @@ class OpportunityRow(Base):
     status_at: Mapped[datetime] = mapped_column(UTCDateTime())
     valid_until: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     valid_reason: Mapped[str] = mapped_column(String(64), default="")
+    alerted_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)  # first alert, if any
     # the owner account at signal time
     decision_id: Mapped[str] = mapped_column(String(64))
     warnings: Mapped[list[str]] = mapped_column(JSONType)
@@ -96,6 +98,79 @@ class OpportunityRow(Base):
     regime: Mapped[str] = mapped_column(String(16))
     atr: Mapped[float | None] = mapped_column(Float, nullable=True)
     spread_points: Mapped[float | None] = mapped_column(Float, nullable=True)
+    bid: Mapped[float | None] = mapped_column(Float, nullable=True)  # the quote the decision used
+    ask: Mapped[float | None] = mapped_column(Float, nullable=True)
+    quote_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     requirements_version: Mapped[str] = mapped_column(String(16))
     features: Mapped[dict[str, float]] = mapped_column(JSONType)
     signal: Mapped[dict[str, Any]] = mapped_column(JSONType)  # conditions, evidence, confluence
+
+
+class ShadowTradeRow(Base):
+    """A hypothetical trade of one opportunity in one variant (PLAN §A27): PLAN (fixed SL/TP) or MANAGED
+    (break-even/trailing per ``position_management``). ``source`` is LIVE (engine) or REPLAY (history).
+
+    Signal facts (strength, RR, features, session) are copied from the opportunity so outcomes stand on their
+    own, also for replay trades that have no opportunity row. Money fields are None when the opportunity had
+    no lot ("not tradable at your capital"); R results are always set once CLOSED.
+    """
+
+    __tablename__ = "shadow_trades"
+
+    shadow_id: Mapped[str] = mapped_column(String(96), primary_key=True)  # <opportunity_id>:<variant>
+    opportunity_id: Mapped[str] = mapped_column(String(80), index=True)
+    variant: Mapped[str] = mapped_column(String(8))
+    source: Mapped[str] = mapped_column(String(8), index=True)
+    server: Mapped[str] = mapped_column(String(64), index=True)
+    strategy: Mapped[str] = mapped_column(String(64))
+    symbol: Mapped[str] = mapped_column(String(32), index=True)
+    asset_class: Mapped[str] = mapped_column(String(16))
+    timeframe: Mapped[str] = mapped_column(String(8))
+    side: Mapped[str] = mapped_column(String(4))
+    session: Mapped[str] = mapped_column(String(24))
+    setup_strength: Mapped[float] = mapped_column(Float)
+    rr: Mapped[float | None] = mapped_column(Float, nullable=True)  # planned, from the signal
+    features: Mapped[dict[str, float]] = mapped_column(JSONType)
+    atr: Mapped[float | None] = mapped_column(Float, nullable=True)  # entry TF at signal (MANAGED trailing)
+    alerted: Mapped[bool] = mapped_column(Boolean, default=False)
+    followed: Mapped[bool] = mapped_column(Boolean, default=False)
+    status: Mapped[str] = mapped_column(String(8), index=True)  # OPEN / CLOSED / VOID
+    signal_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)  # the signal bar's close
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    # entry
+    entry_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    entry_price: Mapped[float] = mapped_column(Float)
+    bid: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ask: Mapped[float | None] = mapped_column(Float, nullable=True)
+    spread_points: Mapped[float | None] = mapped_column(Float, nullable=True)
+    slippage_points: Mapped[float] = mapped_column(Float)
+    initial_sl: Mapped[float] = mapped_column(Float)
+    sl: Mapped[float] = mapped_column(Float)  # current stop (MANAGED moves it)
+    tp: Mapped[float | None] = mapped_column(Float, nullable=True)
+    stop_kind: Mapped[str] = mapped_column(String(8))  # how a stop-out is labelled: SL / BE / TRAIL
+    deadline: Mapped[datetime] = mapped_column(UTCDateTime())  # time stop
+    cursor: Mapped[datetime] = mapped_column(UTCDateTime())  # open time of the next M1 bar to resolve
+    # sizing snapshot
+    lot: Mapped[float | None] = mapped_column(Float, nullable=True)
+    equity: Mapped[float] = mapped_column(Float)
+    currency: Mapped[str] = mapped_column(String(8))
+    # result
+    mae: Mapped[float] = mapped_column(Float, default=0.0)  # price units, >= 0
+    mfe: Mapped[float] = mapped_column(Float, default=0.0)
+    exit_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True, index=True)
+    exit_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    exit_reason: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    win: Mapped[bool | None] = mapped_column(Boolean, nullable=True)  # TP first
+    r_multiple: Mapped[float | None] = mapped_column(Float, nullable=True)  # gross, price-based
+    r_net: Mapped[float | None] = mapped_column(Float, nullable=True)  # after commission and swap
+    mae_r: Mapped[float | None] = mapped_column(Float, nullable=True)
+    mfe_r: Mapped[float | None] = mapped_column(Float, nullable=True)
+    gross_pnl: Mapped[float | None] = mapped_column(Float, nullable=True)
+    commission: Mapped[float | None] = mapped_column(Float, nullable=True)  # <= 0
+    swap: Mapped[float | None] = mapped_column(Float, nullable=True)
+    net_pnl: Mapped[float | None] = mapped_column(Float, nullable=True)
+    risk_money: Mapped[float | None] = mapped_column(Float, nullable=True)
+    swap_days: Mapped[int] = mapped_column(Integer, default=0)
+    flags: Mapped[list[str]] = mapped_column(JSONType)
+    note: Mapped[str] = mapped_column(Text, default="")
