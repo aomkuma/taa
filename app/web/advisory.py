@@ -25,7 +25,7 @@ from sqlalchemy import select
 from app.advisory.calibration import latest_version, load_version
 from app.advisory.confidence import Query, Source
 from app.advisory.preferences import AdvisoryPreferences, parse_preferences
-from app.advisory.requirements import AdvisoryConfig, advisory_config, pattern_setups
+from app.advisory.requirements import AdvisoryConfig, advisory_config, content_version, pattern_setups
 from app.advisory.shadow import Variant
 from app.advisory.stats import (
     accuracy_report,
@@ -36,6 +36,7 @@ from app.advisory.stats import (
 from app.core.clock import ensure_utc
 from app.core.errors import TaaError
 from app.evidence.catalog import default_registry as evidence_registry
+from app.evidence.framework import Family
 from app.evidence.registry import DetectorRegistry
 from app.storage.database import Database
 from app.storage.models import (
@@ -115,10 +116,20 @@ class PreferenceStore:
         return checked
 
 
-def engine_advisory_config(db: Database, owner_user_id: str) -> AdvisoryConfig:
+def engine_advisory_config(
+    db: Database, owner_user_id: str, families: frozenset[Family] | None = None
+) -> AdvisoryConfig:
+    """The engine's compute requirements: its users' needs, cut to the evidence families their plans allow
+    (``families`` None: all), so an engine never computes theories nobody may see (TAA-8A2)."""
     evidence, strategies = catalogs()
     prefs = PreferenceStore(db).get(owner_user_id)
-    return advisory_config([prefs], evidence=evidence, strategies=strategies)
+    config = advisory_config([prefs], evidence=evidence, strategies=strategies)
+    if families is None:
+        return config
+    allowed = evidence.ids_in_families(families)
+    content = config.model_dump(mode="json", exclude={"version"})
+    content["detectors"] = [d for d in content["detectors"] if d in allowed]
+    return AdvisoryConfig(version=content_version(content), **content)
 
 
 def detector_catalog() -> dict[str, Any]:

@@ -15,6 +15,7 @@ carries the backtester's documented limitations.
 
 from __future__ import annotations
 
+import contextlib
 from typing import Annotated, Any, get_args
 
 from fastapi import APIRouter, Query
@@ -25,6 +26,7 @@ from app.backtest.presets import MAX_PERIOD, PRESETS, BacktestRequest, PresetNam
 from app.core.errors import ConfigError
 from app.storage.models import BacktestRunRow
 from app.web.deps import Context, CsrfSession, CurrentSession, OwnedEngine, WebContext
+from app.web.entitlements import EntitlementError, EntitlementService, Feature, Limit
 from app.web.errors import ApiProblem
 from app.web.readmodels import MAX_LIMIT, QueryError, paginate
 from app.worker.backtests import MAX_OPEN_RUNS, BacktestLimit, BacktestService, run_dict
@@ -51,6 +53,12 @@ async def presets(session: CurrentSession) -> dict[str, Any]:
 async def create(
     body: BacktestRequest, engine: OwnedEngine, ctx: Context, session: CsrfSession
 ) -> dict[str, Any]:
+    plans = EntitlementService(ctx.db, ctx.clock)
+    ent = await run_in_threadpool(plans.resolve, session.user_id)
+    limit = ent.limit(Limit.BACKTESTS_PER_MONTH)
+    used = await run_in_threadpool(plans.usage, session.user_id, Limit.BACKTESTS_PER_MONTH)
+    if not ent.has(Feature.BACKTESTS) or (limit is not None and used >= limit):
+        raise ApiProblem(403, "plan_limit", "Your plan's backtests are used up", extra={"key": "BACKTESTS"})
     try:
         run: dict[str, Any] = await run_in_threadpool(
             service(ctx).create, session.user_id, engine.engine_id, body, created_by=session.username
@@ -59,6 +67,10 @@ async def create(
         raise ApiProblem(409, "backtest_limit", str(exc)) from exc
     except ConfigError as exc:
         raise ApiProblem(400, "invalid_backtest", str(exc)) from exc
+    # Counted once the job exists (a refused request costs nothing). If a concurrent request took the last
+    # one meanwhile, the run stands and the counter is full.
+    with contextlib.suppress(EntitlementError):
+        await run_in_threadpool(plans.consume, session.user_id, Limit.BACKTESTS_PER_MONTH)
     return run
 
 

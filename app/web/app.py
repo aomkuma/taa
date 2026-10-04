@@ -27,6 +27,7 @@ from app.sync.nonces import SqlNonceStore
 from app.web.auth import AuthKeys, AuthService
 from app.web.deps import WEB_AUDIT_CHAIN, EngineLink, WebContext
 from app.web.engines import EngineRegistry
+from app.web.entitlements import seed_plans
 from app.web.errors import InternalErrorMiddleware, install_error_handlers
 from app.web.routers import (
     advisory,
@@ -111,6 +112,7 @@ def create_app(
         engine=engine_link(settings, database, clock, audit),
     )
     check_engine_env(settings, ctx.engine.registry)
+    seed_plans(database, clock.now_utc())
 
     @asynccontextmanager
     async def lifespan(_app: FastAPI) -> AsyncIterator[None]:

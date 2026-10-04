@@ -249,3 +249,19 @@ class TestRiskBudget:
         [note] = cloud.notes("OPPORTUNITY")
         assert note.payload["risk_warnings"] == ["HEAT_LIMIT"]
         assert note.payload["push"]["body"].startswith("⚠ เกินงบความเสี่ยง: heat 2.40% > 1.50%")
+
+
+def test_the_plan_limits_alerts(cloud: Cloud) -> None:
+    """TAA-8A2: the personalizer gets the user's entitlements (here an asset-class allow-list)."""
+    from app.storage.models import EntitlementOverrideRow
+    from app.web.entitlements import seed_plans
+
+    seed_plans(cloud.db, NOW)
+    with cloud.db.session() as sess:
+        sess.add(
+            EntitlementOverrideRow(
+                user_id=cloud.owner.id, key="ASSET_CLASSES", value=["METAL"], created_at=NOW
+            )
+        )
+    cloud.add()
+    assert cloud.alerter.run() is None and cloud.notes("OPPORTUNITY") == []

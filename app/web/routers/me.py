@@ -6,6 +6,12 @@
 - ``GET /admin/users`` (OWNER or ADMIN): username, role, state and creation date of every user, nothing else
 - ``POST /admin/users/{user_id}/erase`` ``{confirm: <username>}`` (OWNER, step-up): erase another user on
   their request
+- ``GET /me/entitlements``: the session user's plan, features, limits and this period's usage (TAA-8A2)
+- ``GET /admin/plans`` (OWNER/ADMIN)
+- ``POST /admin/users/{user_id}/plan`` ``{plan}`` (OWNER, step-up): assign a plan by hand
+  (``provider = "manual"``; billing stays disabled)
+- ``PUT|DELETE /admin/users/{user_id}/overrides/{key}`` (OWNER, step-up): one feature, limit or allow-list
+  exception
 """
 
 from __future__ import annotations
@@ -18,10 +24,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from starlette.concurrency import run_in_threadpool
 
-from app.storage.models import UserRow
+from app.core.ids import new_id
+from app.storage.models import EntitlementOverrideRow, PlanRow, SubscriptionRow, UserRow
 from app.sync.events import json_safe
 from app.web.auth import AuthSession, Role
 from app.web.deps import AdminSession, Context, CurrentSession, StepUpSession, WebContext, require_roles
+from app.web.entitlements import ASSET_CLASSES_KEY, FAMILIES_KEY, EntitlementService, Feature, Limit
 from app.web.errors import ApiProblem
 from app.web.privacy import PrivacyError, erase_user, export_user
 
@@ -97,4 +105,128 @@ async def erase_other(
     user_id: str, body: ConfirmBody, ctx: Context, owner: OwnerSession, session: StepUpSession
 ) -> Response:
     await _erase(ctx, user_id[:36], body.confirm, session.username)
+    return Response(status_code=204)
+
+
+@router.get("/me/entitlements")
+async def my_entitlements(ctx: Context, session: CurrentSession) -> dict[str, Any]:
+    service = EntitlementService(ctx.db, ctx.clock)
+    ent = await run_in_threadpool(service.resolve, session.user_id)
+    usage = {k.value: await run_in_threadpool(service.usage, session.user_id, k) for k in Limit}
+    return ent.to_dict() | {"usage": usage}
+
+
+@router.get("/admin/plans")
+async def plans(ctx: Context, session: AdminSession) -> dict[str, Any]:
+    def load() -> list[dict[str, Any]]:
+        with ctx.db.session() as sess:
+            return [
+                {
+                    "code": p.code,
+                    "name_th": p.name_th,
+                    "name_en": p.name_en,
+                    "active": p.active,
+                    "spec": dict(p.spec),
+                }
+                for p in sess.scalars(select(PlanRow).order_by(PlanRow.code))
+            ]
+
+    return {"items": await run_in_threadpool(load)}
+
+
+class PlanBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    plan: str = Field(min_length=1, max_length=32)
+
+
+@router.post("/admin/users/{user_id}/plan")
+async def assign_plan(
+    user_id: str, body: PlanBody, ctx: Context, owner: OwnerSession, session: StepUpSession
+) -> dict[str, Any]:
+    def assign() -> None:
+        now = ctx.clock.now_utc()
+        with ctx.db.session() as sess:
+            if sess.get(UserRow, user_id[:36]) is None:
+                raise ApiProblem(404, "user_not_found", "No such user")
+            if sess.get(PlanRow, body.plan) is None:
+                raise ApiProblem(404, "plan_not_found", "No such plan")
+            for sub in sess.scalars(
+                select(SubscriptionRow).where(
+                    SubscriptionRow.user_id == user_id, SubscriptionRow.status == "ACTIVE"
+                )
+            ):
+                sub.status = "CANCELED"
+            sess.add(
+                SubscriptionRow(
+                    subscription_id=new_id(),
+                    user_id=user_id,
+                    plan_code=body.plan,
+                    status="ACTIVE",
+                    provider="manual",
+                    created_at=now,
+                    created_by=session.username,
+                )
+            )
+        ctx.audit.append("plan.assigned", session.username, {"user_id": user_id, "plan": body.plan})
+
+    await run_in_threadpool(assign)
+    ent = await run_in_threadpool(EntitlementService(ctx.db, ctx.clock).resolve, user_id)
+    return ent.to_dict()
+
+
+OVERRIDE_KEYS = frozenset({*Feature.__members__, *Limit.__members__, ASSET_CLASSES_KEY, FAMILIES_KEY})
+
+
+class OverrideBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    value: bool | int | list[str] | None
+    reason: str = Field(default="", max_length=200)
+
+
+async def _override(ctx: WebContext, user_id: str, key: str, body: OverrideBody | None, actor: str) -> None:
+    if key not in OVERRIDE_KEYS:
+        raise ApiProblem(400, "invalid_override", "Unknown entitlement key")
+
+    def save() -> None:
+        with ctx.db.session() as sess:
+            if sess.get(UserRow, user_id) is None:
+                raise ApiProblem(404, "user_not_found", "No such user")
+            row = sess.get(EntitlementOverrideRow, (user_id, key))
+            if body is None:
+                if row is not None:
+                    sess.delete(row)
+                return
+            if row is None:
+                row = EntitlementOverrideRow(user_id=user_id, key=key, created_at=ctx.clock.now_utc())
+                sess.add(row)
+            row.value, row.reason, row.created_by = body.value, body.reason, actor
+
+    await run_in_threadpool(save)
+    ctx.audit.append(
+        "entitlement.override",
+        actor,
+        {"user_id": user_id, "key": key, "value": None if body is None else body.value},
+    )
+
+
+@router.put("/admin/users/{user_id}/overrides/{key}")
+async def put_override(
+    user_id: str, key: str, body: OverrideBody, ctx: Context, owner: OwnerSession, session: StepUpSession
+) -> dict[str, Any]:
+    await _override(ctx, user_id[:36], key, body, session.username)
+    try:
+        ent = await run_in_threadpool(EntitlementService(ctx.db, ctx.clock).resolve, user_id[:36])
+    except ValueError as exc:  # e.g. an unknown family in an allow-list
+        await _override(ctx, user_id[:36], key, None, session.username)
+        raise ApiProblem(400, "invalid_override", str(exc)) from exc
+    return ent.to_dict()
+
+
+@router.delete("/admin/users/{user_id}/overrides/{key}", status_code=204, response_model=None)
+async def delete_override(
+    user_id: str, key: str, ctx: Context, owner: OwnerSession, session: StepUpSession
+) -> Response:
+    await _override(ctx, user_id[:36], key, None, session.username)
     return Response(status_code=204)

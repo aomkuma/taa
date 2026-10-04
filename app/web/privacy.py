@@ -32,12 +32,14 @@ from app.storage.database import Database
 from app.storage.models import (
     BacktestRunRow,
     EngineRow,
+    EntitlementOverrideRow,
     LoginThrottleRow,
     NotificationPrefsRow,
     NotificationRow,
     OpportunityAlertRow,
     PushSubscriptionRow,
     SessionRow,
+    UsageCounterRow,
     UserAdvisoryPrefsRow,
     UserRow,
 )
@@ -142,6 +144,8 @@ def erase_user(db: Database, clock: Clock, audit: AuditLog, user_id: str, *, act
             (NotificationRow, NotificationRow.user_id),
             (OpportunityAlertRow, OpportunityAlertRow.user_id),
             (BacktestRunRow, BacktestRunRow.owner_user_id),
+            (EntitlementOverrideRow, EntitlementOverrideRow.user_id),
+            (UsageCounterRow, UsageCounterRow.user_id),
         ):
             sess.execute(delete(model).where(col == user_id))
         sess.execute(delete(LoginThrottleRow).where(LoginThrottleRow.key == f"user:{old_name}"))

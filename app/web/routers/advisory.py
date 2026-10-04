@@ -36,6 +36,7 @@ from app.advisory.preferences import AdvisoryPreferences, TheoryPreferences, Wat
 from app.core.errors import ConfigError
 from app.web.advisory import AdvisoryReads, PreferenceStore, detector_catalog
 from app.web.deps import Context, CsrfSession, CurrentSession, OwnedEngine, WebContext
+from app.web.entitlements import EntitlementError, EntitlementService
 from app.web.errors import ApiProblem
 from app.web.readmodels import MAX_LIMIT, QueryError
 
@@ -61,6 +62,12 @@ def _store(ctx: WebContext) -> PreferenceStore:
 
 
 async def _save(ctx: WebContext, user_id: str, prefs: AdvisoryPreferences) -> dict[str, Any]:
+    service = EntitlementService(ctx.db, ctx.clock)
+    try:  # the plan's watchlist count and size (PLAN §A30; TAA-8A2)
+        ent = await run_in_threadpool(service.resolve, user_id)
+        service.check_preferences(ent, prefs)
+    except EntitlementError as exc:
+        raise ApiProblem(403, "plan_limit", str(exc), extra={"key": exc.key}) from exc
     saved: AdvisoryPreferences = await _run(_store(ctx).save, user_id, prefs, ctx.clock.now_utc())
     return saved.model_dump(mode="json")
 

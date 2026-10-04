@@ -38,7 +38,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
 | M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 10 | IN PROGRESS |
-| M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 1 | IN PROGRESS |
+| M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 2 | IN PROGRESS |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
@@ -1204,15 +1204,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-8A2 — Plans & entitlements
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 8A1
 
-- [ ] `plans`, `subscriptions`, `entitlement_overrides`, `usage_counters` tables
-- [ ] typed `Feature`/`Limit` keys
-- [ ] `EntitlementService.resolve`
-- [ ] OWNER plan seeded (unlimited) + inactive FREE/PRO templates
-- [ ] enforcement in API, personalizer, worker quotas and the engine compute union
-- [ ] tests
+- [x] `plans`, `subscriptions`, `entitlement_overrides`, `usage_counters` tables
+- [x] typed `Feature`/`Limit` keys
+- [x] `EntitlementService.resolve`
+- [x] OWNER plan seeded (unlimited) + inactive FREE/PRO templates
+- [x] enforcement in API, personalizer, worker quotas and the engine compute union
+- [x] tests
 
 #### TAA-8A3 — Account profiles & cloud sizing
 

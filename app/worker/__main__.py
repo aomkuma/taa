@@ -20,6 +20,7 @@ from app.core.clock import SystemClock
 from app.core.errors import TaaError
 from app.logging_config import configure_logging
 from app.storage.database import Database, resolve_db_url, upgrade_schema
+from app.web.entitlements import seed_plans
 from app.worker.backtests import BacktestService
 from app.worker.backtests import handlers as backtest_handlers
 from app.worker.jobs import JobQueue
@@ -55,6 +56,7 @@ def main(argv: list[str] | None = None) -> int:
         db.dispose()
         return 0 if health["status"] == "ok" else 1
 
+    seed_plans(db, clock.now_utc())
     stop = threading.Event()
 
     def request_stop(signum: int, _frame: Any) -> None:

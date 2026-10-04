@@ -20,6 +20,7 @@ from app.storage.models.notifications import (
     PushSubscriptionRow,
 )
 from app.storage.models.paper import PaperAccountRow, PaperIntentRow, PaperPositionRow
+from app.storage.models.plans import EntitlementOverrideRow, PlanRow, SubscriptionRow, UsageCounterRow
 from app.storage.models.risk import BreakerEventRow, BreakerStateRow, RiskBaseline, RiskDeal, RiskState
 from app.storage.models.sync import (
     AuditReplicaRow,
@@ -60,6 +61,7 @@ __all__ = [
     "EngineHeartbeatRow",
     "EngineRow",
     "EngineState",
+    "EntitlementOverrideRow",
     "EvidenceModelVersionRow",
     "HistoryCandle",
     "IngestNonceRow",
@@ -74,6 +76,7 @@ __all__ = [
     "PaperAccountRow",
     "PaperIntentRow",
     "PaperPositionRow",
+    "PlanRow",
     "ProcessedCandle",
     "PushSubscriptionRow",
     "ReplicaVersionRow",
@@ -85,8 +88,10 @@ __all__ = [
     "ShadowTradeRow",
     "StreamEventRow",
     "StreamHeadRow",
+    "SubscriptionRow",
     "SuitabilitySnapshotRow",
     "SymbolCatalogRow",
+    "UsageCounterRow",
     "UserAdvisoryPrefsRow",
     "UserRow",
     "WorkerHeartbeatRow",

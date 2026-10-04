@@ -54,6 +54,7 @@ from app.storage.models import (
 from app.sync.notifications import NotificationType, Severity, notify
 from app.sync.stream import StreamLog
 from app.web.advisory import PreferenceStore, catalogs
+from app.web.entitlements import Entitlements, EntitlementService, Limit
 
 log = logging.getLogger(__name__)
 
@@ -119,14 +120,18 @@ class OpportunityAlerter:
             )
         models: dict[str | None, WinProbability] = {}
         alerts = updates = 0
+        plans = EntitlementService(self.db, self.clock)
         for user_id in users:
             prefs = PreferenceStore(self.db).get(user_id)
+            ent = plans.resolve(user_id)
+            top = ent.limit(Limit.WATCHLIST_SYMBOLS)  # an AUTO_TOP_N list takes at most this many ranks
+            ranked_for_user = ranked if top is None else ranked[:top]
             for row in rows:
                 try:
                     if self._replace(engine_id, user_id, row, prefs, now):
                         updates += 1
                     elif row.status in OPEN and self._alert(
-                        engine_id, user_id, row, prefs, ranked, models, config, now
+                        engine_id, user_id, row, prefs, ranked_for_user, models, config, now, ent
                     ):
                         alerts += 1
                 except Exception:  # one broken opportunity never stops the others
@@ -177,11 +182,14 @@ class OpportunityAlerter:
         models: dict[str | None, WinProbability],
         config: AppConfig,
         now: datetime,
+        ent: Entitlements,
     ) -> bool:
         with self.db.session() as sess:
             if sess.get(OpportunityAlertRow, (user_id, engine_id, row.opportunity_id)) is not None:
                 return False
-            user = self._user(sess, engine_id, user_id, prefs, ranked, now)
+            user = dataclasses.replace(
+                self._user(sess, engine_id, user_id, prefs, ranked, now), entitlements=ent.personalizer()
+            )
             _, strategies = catalogs()
             if row.strategy in strategies.names:
                 user = dataclasses.replace(

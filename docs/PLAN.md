@@ -1507,6 +1507,21 @@ subscriptions later are configuration plus billing, not a rewrite.
   - **Compliance gate:** `SUBSCRIPTIONS_ENABLED=false` by default. While false, every subscription and billing route
     is unreachable (tested). `docs/COMPLIANCE.md` lists the legal questions (Thai SEC advisory licensing, PDPA) to
     resolve with counsel before enabling (R32).
+  - (TAA-8A2 decisions) `app/web/entitlements.py`, tables `plans`, `subscriptions`, `entitlement_overrides`,
+    `usage_counters` (migration 0029).
+    - Keys: `Feature` (BACKTESTS, AI_NARRATIVES, DATA_EXPORT, API_ACCESS), `Limit` (ALERTS_PER_DAY,
+      WATCHLISTS, WATCHLIST_SYMBOLS, BACKTESTS_PER_MONTH, SHADOW_HISTORY_DAYS; `None` = unlimited) and two
+      allow-lists (ASSET_CLASSES, FAMILIES; `None` = all). An unknown feature is off and an unlisted limit is 0.
+    - `resolve(user)`: OWNER role → plan OWNER; others → their ACTIVE subscription whose period has not ended,
+      else FREE; then per-user overrides. Seeded at web and worker start (idempotent, edits kept): OWNER
+      (unlimited, active), FREE and PRO (templates, inactive).
+    - Enforcement: preference saves (number of watchlists, symbols per explicit list; 403 `plan_limit` with the
+      key), backtest creation (feature + monthly count), the alerter (asset classes, families, alerts per day;
+      AUTO_TOP_N lists take at most WATCHLIST_SYMBOLS ranks), the engine's `advisory-config` (detectors cut to
+      the owner's entitled families). The PDPA export is never gated.
+    - API: `GET /me/entitlements` (with this period's usage), `GET /admin/plans`, `POST /admin/users/{id}/plan`
+      (OWNER, step-up, `provider = manual`, older subscriptions CANCELED), `PUT|DELETE
+      /admin/users/{id}/overrides/{key}` (OWNER, step-up); both audited.
 - **Multi-tenant readiness & security:**
   - Roles: **OWNER** (everything, including controls and the kill switch), **SUBSCRIBER** (advisory features only;
     never control commands, never the owner's account, positions, decisions or trades), **ADMIN** (support, no trading

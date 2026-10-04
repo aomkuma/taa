@@ -27,6 +27,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.web.advisory import engine_advisory_config
 from app.web.deps import SignedEngine
+from app.web.entitlements import EntitlementService
 
 router = APIRouter(prefix="/engine", tags=["sync"])
 
@@ -56,7 +57,8 @@ async def poll_commands(
 @router.get("/advisory-config", response_model=None)
 async def advisory_config(request: Request, engine: SignedEngine) -> Response:
     ctx = request.app.state.ctx
-    config = await run_in_threadpool(engine_advisory_config, ctx.db, engine.owner_user_id)
+    ent = await run_in_threadpool(EntitlementService(ctx.db, ctx.clock).resolve, engine.owner_user_id)
+    config = await run_in_threadpool(engine_advisory_config, ctx.db, engine.owner_user_id, ent.families)
     etag = f'"{config.version}"'
     if request.headers.get("if-none-match") == etag:
         return Response(status_code=304, headers={"ETag": etag})
