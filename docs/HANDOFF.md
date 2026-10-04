@@ -23,7 +23,7 @@ Continue the TAA project. Read docs/HANDOFF.md (state, the "Next work" order), d
 dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & advisory UI); the page tickets
 name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
-Done: Phases 0–7, 8A and 12; Phase 8 except the optional TAA-810 item 6 (cloud replay jobs).
+Done: Phases 0–8, 8A and 12 (cloud replay jobs moved to the deferred TAA-1501, Phase 15).
 Partly done: Phase 9 (901, 902, 915), Phase 10 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13–14.
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
 "Next work" list in docs/HANDOFF.md. Start with TAA-903 (app shell).
@@ -49,9 +49,10 @@ or at any phase boundary if I ask. Chat with me in Thai.
   `ENGINE_ID` and `ENGINE_HMAC_SECRET` (shown once), and the browser generates `CONTROL_TOTP_SECRET`, which never
   reaches the cloud. New tickets: TAA-708, 709, 811, 923. Rollout is fail-closed: one ACTIVE engine until 709, and
   `MULTI_ENGINE_ENABLED=false`.
-- **Also done:** Phase 7 (TAA-701..709), Phase 8A (TAA-8A1..8A5) and Phase 8 except TAA-810 item 6 (cloud replay
-  jobs, optional in the ticket; replay runs locally with `python -m app.cli advisory replay`).
-- **In progress (progress table):** Phase 8 10/11 (TAA-810 stays IN PROGRESS for item 6), Phase 9 3/23 (901,
+- **Also done:** Phase 7 (TAA-701..709), Phase 8 (TAA-801..811) and Phase 8A (TAA-8A1..8A5). TAA-810's optional
+  cloud replay jobs moved to TAA-1501 (Phase 15, deferred; reasons in TICKETS): replay runs locally with
+  `python -m app.cli advisory replay` and its rows replicate up.
+- **In progress (progress table):** Phase 9 3/23 (901,
   902, 915), Phase 10 3/5 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14
   (LIVE). The order of the remaining tickets: "Next work" below.
 - **Checks:** 2658 passed, 7 skipped (6 real-terminal, 1 contract case defined from bar 0) on `4bc354a`; the
@@ -130,8 +131,8 @@ or at any phase boundary if I ask. Chat with me in Thai.
     statistics, calibration; the engine's `advisory-config` with ETag/304.
   - opportunity push (TAA-810, PLAN §A30 "TAA-810 decisions", migration 0028): worker task
     `opportunity_alerts` → OPPORTUNITY notifications with the personalizer's TH/EN push (top-3 contributions,
-    rev. 3 entry plan, badge) and silent same-tag OPPORTUNITY_UPDATE replacements. Item 6 (cloud replay jobs,
-    optional) is left open on purpose.
+    rev. 3 entry plan, badge) and silent same-tag OPPORTUNITY_UPDATE replacements. Cloud replay jobs moved to
+    TAA-1501 (deferred).
   - risk budget for alerts (user decision 2026-10-04, option C): `alerts.when_risk_full` PAUSE (default) or
     WARN when an opportunity would exceed the heat or position budget (PLAN §A30 TAA-810 notes).
   - tenancy (TAA-8A1, PLAN §A30 "TAA-8A1 decisions"): `Role`, `require_roles`, ADMIN without trading controls,
@@ -416,7 +417,7 @@ Dependency graph of the open Milestone 1 tickets (→ = unblocks):
 dependencies are done by the time it is reached):
 
 1. ~~TAA-703, 704, 707, 708, 709, 706, 803~~ (done in the previous session)
-2. ~~TAA-804, 805, 811, 808, 705, 806, 807, 809, 810~~ (done; TAA-810 item 6 optional and open)
+2. ~~TAA-804, 805, 811, 808, 705, 806, 807, 809, 810~~ (done; cloud replay jobs deferred to TAA-1501)
 3. ~~TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5~~ (done, Phase 8A)
 4. **Next:** TAA-903 app shell (stream, navigation, engine picker from `GET /me/feed`), then 904–913,
    916–923, then 914 PWA polish (Phase 9). The backend for every page exists; see "Notes for the PWA" below.
@@ -604,5 +605,5 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA, payments): the questions
   and the enable checklist are in `docs/COMPLIANCE.md`; the gate is `SUBSCRIPTIONS_ENABLED` +
   `SUBSCRIPTIONS_LEGAL_REVIEW`.
-- TAA-810 item 6 (cloud replay jobs, optional): build it, or mark it dropped so Phase 8 can close.
+- TAA-1501 (cloud replay jobs, Phase 15 deferred backlog): revisit when users without engines are served.
 - `VAPID_SUBJECT` in `.env` is a placeholder (`mailto:owner@example.com`); set a real contact if wanted.

@@ -1496,8 +1496,9 @@ subscriptions later are configuration plus billing, not a rewrite.
   - When an alerted opportunity ends (EXPIRED, INVALIDATED, FOLLOWED, or the user's window passed) a silent
     OPPORTUNITY_UPDATE with the same tag replaces it once (`replacement`, unless expiry updates are off);
     such updates skip the push rate limit.
-  - The opportunity detail API shows the plan and heat too. Cloud replay jobs (item 6, optional) are not
-    built: replay runs locally with `python -m app.cli advisory replay`.
+  - The opportunity detail API shows the plan and heat too. Cloud replay jobs are deferred (TAA-1501): the
+    engine's calibration trains on its own rows and replication runs engine → cloud only, so a cloud replay
+    would not change anyone's probabilities yet; replay runs locally with `python -m app.cli advisory replay`.
   - **Risk budget (user decision 2026-10-04, option C):** an alert whose trade would take the portfolio heat or
     the number of open positions over the stricter of the trading profile and the engine's limits (the
     decision's `max_total_open_risk` / `max_open_positions` checks, which count every account position,

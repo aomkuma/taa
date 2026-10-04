@@ -37,7 +37,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
 | M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
-| M1 | Phase 8 — Web backend & worker | 11 | 10 | IN PROGRESS |
+| M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
 | M1 | Phase 9 — PWA frontend | 23 | 3 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
@@ -45,6 +45,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
 | M2 | Phase 14 — LIVE readiness | 4 | 0 | TODO |
+| M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -1166,7 +1167,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-810 — (rev. 2) Opportunity push
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** 806, 809
 
 - [x] TH/EN templates incl. top-3 evidence contributions
@@ -1174,7 +1175,6 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [x] same-tag silent replacement on expiry/invalidation
 - [x] app-badge count
 - [x] per-user quiet windows and rate limits
-- [ ] cloud replay jobs in the worker (optional)
 - [x] tests
 
 #### TAA-811 — (rev. 4) Engine management API
@@ -1769,3 +1769,21 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 - [ ] README, runbooks and docs reflect reality
 
+### Phase 15 — Product-scale backlog (deferred)
+
+Work that only pays off once other users are served. Moved here on 2026-10-04 so the phases that matter for the
+owner's own use can close honestly; nothing here is dropped.
+
+#### TAA-1501 — Cloud replay jobs (deferred from TAA-810)
+
+- **Status:** TODO
+- **Depends on:** 807, 810, 8A4
+
+Why deferred: calibration (the win probability) trains on the engine's own shadow rows, and replication runs
+engine → cloud only, so a replay in the cloud would not improve anyone's probabilities today. The owner runs
+`python -m app.cli advisory replay` on the engine machine and the rows replicate up. Cloud replay is for users
+without an engine of their own, and it is CPU-heavy (~1 s per bar per symbol with the evidence engine).
+
+- [ ] `advisory.replay` jobs in the worker over an engine's uploaded history (like the backtest jobs: presets, quotas, time limit)
+- [ ] decide where their results count (cloud accuracy views; a cloud-side calibration if users without engines need one)
+- [ ] tests
