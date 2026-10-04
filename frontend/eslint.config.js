@@ -14,7 +14,7 @@ export default tseslint.config(
       ecmaVersion: 2023,
       globals: globals.browser,
       parserOptions: {
-        projectService: true,
+        project: ['./tsconfig.app.json', './tsconfig.node.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },

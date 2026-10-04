@@ -36,7 +36,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 7 — Cloud sync | 7 | 0 | TODO |
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
-| M1 | Phase 9 — PWA frontend | 22 | 1 | IN PROGRESS |
+| M1 | Phase 9 — PWA frontend | 22 | 2 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 0 | TODO |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -1350,15 +1350,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-915 — (rev. 2) i18n foundation
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 901
 
-- [ ] react-i18next (`th` default, `en`)
-- [ ] language switcher
-- [ ] self-hosted Noto Sans Thai
-- [ ] `th-TH-u-ca-gregory` dates with Asia/Bangkok display tz (Buddhist era optional)
-- [ ] translation keys for reason codes and explanations
-- [ ] locale-aware numbers/currency
+- [x] react-i18next (`th` default, `en`)
+- [x] language switcher
+- [x] self-hosted Noto Sans Thai
+- [x] `th-TH-u-ca-gregory` dates with Asia/Bangkok display tz (Buddhist era optional)
+- [x] translation keys for reason codes and explanations
+- [x] locale-aware numbers/currency
 
 #### TAA-916 — (rev. 2) Symbol Ranking page
 

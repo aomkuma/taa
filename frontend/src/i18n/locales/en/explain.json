@@ -1,0 +1,39 @@
+{
+  "gate": {
+    "not_evaluated": "Not evaluated: an earlier check failed or data is missing"
+  },
+  "g1": {
+    "ok": "Tradable",
+    "trade_disabled": "Trading is disabled for this symbol",
+    "no_direction": "New positions are not allowed in either direction (close only)",
+    "spec_invalid": "The broker's symbol specification is invalid",
+    "no_filling": "No order filling mode is allowed",
+    "calc_failed": "The broker could not calculate profit or margin for this symbol",
+    "spec_inconsistent": "The broker's profit calculation disagrees with its tick value"
+  },
+  "g2": {
+    "ok": "The minimum lot risks {{min_lot_risk}} {{currency}}, within your budget of {{budget}} {{currency}}",
+    "min_lot_risk": "The minimum lot risks {{min_lot_risk}} {{currency}} vs your budget of {{budget}} {{currency}}; needs equity ≥ {{required_equity}} {{currency}}",
+    "cap": "The minimum lot risks {{min_lot_risk}} {{currency}}, above the per-trade cap of {{cap}} {{currency}}"
+  },
+  "g3": {
+    "ok": "Margin {{margin}} {{currency}} (with buffer) fits in the available {{available}} {{currency}}",
+    "margin": "Margin {{margin}} {{currency}} (with buffer) exceeds the available {{available}} {{currency}}",
+    "margin_level": "The margin level after the trade would be {{level}}% (minimum {{minimum}}%)"
+  },
+  "g4": {
+    "ok": "Costs are {{cost_pct}}% of the stop (max {{max_pct}}%)",
+    "cost": "Costs are {{cost_pct}}% of the stop, above {{max_pct}}%"
+  },
+  "g5": {
+    "ok": "The broker's minimum stop distance {{stops_distance}} fits the typical stop {{typical_sl}}",
+    "stops_level": "The broker's minimum stop distance {{stops_distance}} is too wide for the typical stop {{typical_sl}}"
+  },
+  "g6": {
+    "ok": "Data is fresh and sufficient",
+    "no_quote": "No current quote",
+    "stale_quote": "The last quote is {{age}} s old",
+    "few_candles": "Only {{candles}} of {{required}} candles are available",
+    "no_atr": "Volatility (ATR) is not available"
+  }
+}

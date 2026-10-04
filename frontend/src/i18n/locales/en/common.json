@@ -1,0 +1,19 @@
+{
+  "app": {
+    "name": "TAA",
+    "home": "Home"
+  },
+  "language": {
+    "label": "Language",
+    "th": "ไทย",
+    "en": "English"
+  },
+  "home": {
+    "title": "TAA",
+    "intro": "Trading assistant console. The information here supports your own decisions and does not guarantee any result."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to home"
+  }
+}

@@ -30,6 +30,44 @@ point elsewhere. In production the API and the app share one origin, so there is
 
 TypeScript stays on 6.0.x until typescript-eslint supports TypeScript 7.
 
+## Localization (PLAN §A28)
+
+Everything lives in `src/i18n/`.
+
+- **Languages:** react-i18next with `th` (default) and `en`. `LanguageSwitcher` changes the language, sets
+  `<html lang>` and remembers the choice in `localStorage` (`taa.language`); the profile language replaces this
+  once the API has it.
+- **Catalogs:** `locales/<lang>/<namespace>.json`, typed through `i18next.d.ts`. Namespaces: `common` (UI text)
+  and `explain` (advisory explanations). Both languages must have the same keys and placeholders
+  (`catalogs.test.ts`). Placeholders use i18next syntax, `{{name}}`.
+- **Font:** Noto Sans Thai (variable, Thai + Latin subsets) is bundled from `@fontsource-variable/noto-sans-thai`
+  and precached by the service worker. No Google Fonts CDN.
+- **Formatting** (`format.ts`, or the `useFormat()` hook bound to the current language):
+  - dates use `th-TH-u-ca-gregory` (Gregorian years; `calendar: 'buddhist'` opts into the Buddhist era) or
+    `en-GB`, 24-hour, displayed in `Asia/Bangkok` by default
+  - API datetimes must carry `Z` or an offset; a naive string throws `NaiveDateTimeError`
+  - numbers and money are locale-aware (`formatMoney(value, 'USD', lang)` shows the currency code)
+  - percent inputs are in percent units like the backend (`0.5` → `0.5%`)
+  - missing or non-finite values render as `—`, never as `0`
+
+### Translation keys for backend codes
+
+| Backend source                                               | Key                                                                                |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| `explain(key, params)` keys (`app/advisory/explanations.py`) | `explain:<key>`, rendered by `explain()` in `explain.ts`                           |
+| `Reason` (`app/risk/reasons.py`) and strategy `ReasonCode`   | `codes:reason.<CODE>`                                                              |
+| `Gate`, `GateStatus`                                         | `codes:gate.<G>`, `codes:gateStatus.<S>`                                           |
+| `OpportunityStatus`, `WindowReason`, `InvalidReason`         | `codes:opportunityStatus.<S>`, `codes:windowReason.<R>`, `codes:invalidReason.<R>` |
+| `ShadowStatus`, `ExitReason`                                 | `codes:shadowStatus.<S>`, `codes:exitReason.<CODE>`                                |
+
+- Parameterized codes (`BREAKER_OPEN:daily_loss`) map to the key of the bare code, with the rest passed as
+  `{{detail}}`.
+- A code or explanation key without a translation renders as itself, so nothing is silently hidden.
+- The `explain` catalogs were generated from `app/advisory/explanations.py` (`{x}` → `{{x}}`). Texts for the
+  `codes` namespace are added with the pages that show them.
+- Parity tests read the backend sources (read-only, via Vite `?raw`) and fail when the Python enums, explanation
+  keys, placeholders or `MONEY_PARAMS` change without a matching frontend change.
+
 ## Rules
 
 - The built page must work under the strict CSP of PLAN §A14: no inline scripts or styles, no CDNs. All assets

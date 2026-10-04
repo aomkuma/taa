@@ -2,11 +2,13 @@ import { fileURLToPath, URL } from 'node:url';
 
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { searchForWorkspaceRoot } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
 
 // Local FastAPI web service (python -m app.cli web ...). Same-origin in production: FastAPI serves dist/.
 const API_TARGET = process.env.TAA_API_TARGET ?? 'http://127.0.0.1:8000';
+const BACKEND_DIR = fileURLToPath(new URL('../app', import.meta.url));
 
 export default defineConfig({
   plugins: [
@@ -47,6 +49,9 @@ export default defineConfig({
     proxy: {
       '/api': { target: API_TARGET, changeOrigin: false },
     },
+    // Parity tests read backend enums and explanation texts from ../app (read-only, `?raw` imports).
+    // The dev server itself never serves files outside frontend/.
+    ...(process.env.VITEST ? { fs: { allow: [searchForWorkspaceRoot(process.cwd()), BACKEND_DIR] } } : {}),
   },
   build: {
     sourcemap: true,
