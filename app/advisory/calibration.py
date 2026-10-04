@@ -516,4 +516,5 @@ class CalibrationService:
         return loaded
 
     def shutdown(self) -> None:
-        self.executor.shutdown(wait=False, cancel_futures=True)
+        """Cancel a queued build and wait for a running one, so no thread touches a closed database."""
+        self.executor.shutdown(wait=True, cancel_futures=True)

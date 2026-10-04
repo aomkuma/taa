@@ -494,6 +494,18 @@ AI failures never trip trading breakers; they only produce HOLD.
   - a sender thread sends batches of ≤ 500 events every 2 s, gzipped, with exponential backoff
   - priority order: audit, trades, decisions and breakers first, then snapshots, then quotes; quotes are coalesced when a backlog builds
   - it never blocks trading
+  - (TAA-701 decisions) `app/sync/outbox.py`, `client.py`, `runtime.py`; table `outbox_events` (migration 0015):
+    - Priorities are 0 (audit, trades, deals, intents, decisions, breakers, kill switch, command results,
+      engine events), 1 (default: snapshots, state) and 2 (quotes, heartbeats).
+    - An event with a `coalesce_key` replaces its unsent predecessor.
+    - Above `max_backlog_events`, the oldest priority-2 events are dropped first, then priority-1 events;
+      priority 0 is never dropped.
+    - Retries: network errors, 5xx, 401/403/408/425/429 back off exponentially with jitter (2 s → 300 s). Any
+      other 4xx counts an attempt per event; after `max_attempts` (20) the event is parked as DEAD and logged,
+      so it cannot block the queue.
+    - Sent rows are kept 24 h. Payload datetimes travel as ISO 8601; NaN/inf are refused.
+    - The signature covers the gzipped bytes exactly as sent.
+    - Producers are wired with the event schemas of the ingest API (TAA-703) and advisory sync (TAA-707).
 - **Ingest:** `POST /api/v1/ingest/batch` with headers `X-Engine-Id`, `X-Timestamp`, `X-Nonce`, `X-Content-SHA256` and
   `X-Signature = HMAC-SHA256(secret, method|path|ts|nonce|body_sha256)`.
   - Reject requests with clock skew > 300 s or a reused nonce (10 min nonce store).
