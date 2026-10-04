@@ -37,7 +37,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 8 — Web backend & worker | 10 | 0 | TODO |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 0 | TODO |
 | M1 | Phase 9 — PWA frontend | 22 | 0 | TODO |
-| M1 | Phase 10 — Trade analytics | 5 | 1 | IN PROGRESS |
+| M1 | Phase 10 — Trade analytics | 5 | 2 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
@@ -1469,11 +1469,11 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1002 — Style tagging
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1001
 
-- [ ] A16 tag set
-- [ ] tests
+- [x] A16 tag set
+- [x] tests
 
 #### TAA-1003 — P/L attribution
 

@@ -608,6 +608,14 @@ AI failures never trip trading breakers; they only produce HOLD.
   - setup (pullback or breakout, from reason codes), direction
   - holding style: scalp < 1 h, intraday < 24 h, swing ≥ 24 h
   - session (Asia, London, NY, overlap, off), regime, volatility bucket, weekday and hour, symbol
+  - (TAA-1002 decisions) `styles.py`:
+    - The setup comes from reason-code tokens (`PULLBACK`, `BREAKOUT`/`BREAK`), else from the strategy name
+      (shadow rows store no reason codes), else OTHER.
+    - The session comes from the entry context, else from `trading_session` at the entry instant. The regime
+      is the entry timeframe's.
+    - Volatility is the context's state, else ATR-percentile buckets (< 25 / < 75 / < 90 / else).
+    - Weekday and hour are in UTC. Unknown facts are tagged UNKNOWN.
+    - Every trade also carries strategy and scope tags; shadow trades add variant and source.
 - **Attribution:** 1–3 reason codes per trade, each with a one-line text and its evidence values:
 
 | Code | Rule / meaning |
