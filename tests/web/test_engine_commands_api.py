@@ -31,6 +31,16 @@ def _short_polls(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture
+def db(tmp_path: Path) -> Iterator[Database]:
+    """A file database: the long poll and the tests' own enqueues run on different threads, and the shared
+    in-memory connection (StaticPool) would interleave their transactions."""
+    database = Database(f"sqlite:///{(tmp_path / 'cloud.db').as_posix()}")
+    database.create_all()
+    yield database
+    database.dispose()
+
+
+@pytest.fixture
 def paired(db: Database, clock: ManualClock, static_dir: Path) -> Iterator[TestClient]:
     app = make_app(db, clock, static_dir)
     pair_engine(app)
