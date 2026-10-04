@@ -783,9 +783,66 @@ ENV_OVERRIDES: dict[str, tuple[str, str]] = {
     "MAX_SPREAD_POINTS": ("risk", "max_spread_points"),
 }
 
+# Origins the PWA is served from during local development: the Vite dev server and `python -m app.web`.
+WEB_DEV_ORIGINS = (
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+)
+
+
+class WebSettings(BaseSettings):
+    """Settings of the cloud web service (Railway ``web``; locally ``python -m app.web``).
+
+    Environment only: the web service has no ``config.yaml`` and never sees MT5, AI or engine trading secrets.
+    ``WEB_ENV`` defaults to production so a missing variable can only make the service stricter.
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=None, extra="ignore", case_sensitive=True, env_ignore_empty=True
+    )
+
+    WEB_ENV: Literal["development", "production"] = "production"
+    DATABASE_URL: str = "sqlite:///data/taa_cloud.db"
+    WEB_PUBLIC_ORIGIN: str | None = None
+    WEB_STATIC_DIR: str = "frontend/dist"
+    PORT: int = Field(default=8000, ge=1, le=65535)
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+
+    @field_validator("WEB_PUBLIC_ORIGIN")
+    @classmethod
+    def _origin_only(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.rstrip("/")
+        scheme, sep, rest = value.partition("://")
+        if not sep or scheme not in ("http", "https") or not rest or "/" in rest:
+            raise ValueError("WEB_PUBLIC_ORIGIN must be an origin such as https://taa.example.com (no path)")
+        return value
+
+    @model_validator(mode="after")
+    def _production_needs_https_origin(self) -> WebSettings:
+        if self.is_production and (
+            self.WEB_PUBLIC_ORIGIN is None or not self.WEB_PUBLIC_ORIGIN.startswith("https://")
+        ):
+            raise ValueError("WEB_PUBLIC_ORIGIN (https://...) is required when WEB_ENV=production")
+        return self
+
+    @property
+    def is_production(self) -> bool:
+        return self.WEB_ENV == "production"
+
+    @property
+    def allowed_origins(self) -> frozenset[str]:
+        """Origins accepted on state-changing requests (CSRF defence in depth, PLAN §A14)."""
+        configured = {self.WEB_PUBLIC_ORIGIN} if self.WEB_PUBLIC_ORIGIN else set()
+        return frozenset(configured if self.is_production else configured | set(WEB_DEV_ORIGINS))
+
+
 KNOWN_ENV_KEYS = frozenset(EnvSettings.model_fields)
 # Keys that may legitimately appear in a shared .env (web/worker/tooling) without being engine settings.
-EXTERNAL_ENV_KEYS = frozenset(
+EXTERNAL_ENV_KEYS = frozenset(WebSettings.model_fields) | frozenset(
     {
         "DATABASE_URL",
         "WEB_SESSION_SECRET",
@@ -944,3 +1001,33 @@ def load_settings(
         env_file=env_path if env_path and env_path.exists() else None,
         config_file=cfg_path if cfg_path.exists() else None,
     )
+
+
+def load_web_settings(
+    env_file: str | Path | None = ".env",
+    environ: Mapping[str, str] | None = None,
+) -> WebSettings:
+    """Load the web service settings from the environment (and ``.env`` locally).
+
+    Raises :class:`ConfigError` on any problem.
+    """
+    env_path = Path(env_file) if env_file else None
+    if env_path is not None and not env_path.is_absolute():
+        env_path = REPO_ROOT / env_path
+    try:
+        if environ is not None:
+            values = {k: v for k, v in environ.items() if k in WebSettings.model_fields and v != ""}
+            web = WebSettings.model_validate(values)
+        else:
+            web = WebSettings(_env_file=env_path if env_path and env_path.exists() else None)
+    except ValidationError as exc:
+        raise ConfigError(_format_validation_error("invalid web settings", exc)) from exc
+
+    from app.security.secrets import resolve_secret  # local import avoids a cycle
+
+    updates = {
+        name: resolve_secret(value, name=name)
+        for name in WebSettings.model_fields
+        if isinstance(value := getattr(web, name), SecretStr)
+    }
+    return web.model_copy(update=updates) if updates else web
