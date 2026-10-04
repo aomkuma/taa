@@ -78,6 +78,13 @@ class Alignment(StrEnum):
 
 
 SCRATCH_R = 0.2  # |R| below this is a scratch (break-even after costs)
+EPS = 1e-9  # thresholds in R hold up to float error: a fill exactly at a level divides to 0.9999999...
+
+
+def at_least(value: float, threshold: float) -> bool:
+    return value >= threshold - EPS
+
+
 STOP_EXITS = frozenset({ExitReason.STOP_LOSS, ExitReason.BREAK_EVEN, ExitReason.TRAILING_STOP})
 UNSLIPPED_EXITS = frozenset({ExitReason.TAKE_PROFIT, ExitReason.END_OF_DATA})
 
@@ -228,9 +235,9 @@ class Trade:
         """By R (scratch band ±``SCRATCH_R``); by the sign of the net P/L when no R is known."""
         r = self.r_multiple
         if r is not None:
-            if r >= SCRATCH_R:
+            if at_least(r, SCRATCH_R):
                 return Outcome.WIN
-            return Outcome.LOSS if r <= -SCRATCH_R else Outcome.SCRATCH
+            return Outcome.LOSS if at_least(-r, SCRATCH_R) else Outcome.SCRATCH
         net = self.net_pnl or 0.0
         if net > 0:
             return Outcome.WIN

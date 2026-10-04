@@ -620,18 +620,32 @@ AI failures never trip trading breakers; they only produce HOLD.
 
 | Code | Rule / meaning |
 |---|---|
-| WIN_TREND_CONTINUATION | |
-| WIN_TRAILING_CAPTURE | |
-| SCRATCH_BREAKEVEN | |
+| WIN_TRAILING_CAPTURE | a win (R ≥ 0.2) closed by the trailing stop |
+| WIN_TREND_CONTINUATION | a win entered with the HTF trend |
+| SCRATCH_BREAKEVEN | \|R\| < 0.2 (every scratch) |
+| WEEKEND_GAP | a stop filled ≥ 0.25R beyond its level, after being held over a weekend |
+| GAP_THROUGH_STOP | a stop filled ≥ 0.25R beyond its level (slippage included), no weekend |
 | LOSS_IMMEDIATE_ADVERSE | MAE reached −1R within 3 bars and MFE < 0.3R |
 | LOSS_GAVE_BACK_PROFIT | MFE ≥ 1R before the SL was hit |
-| LOSS_REGIME_SHIFT | HTF trend flipped during the trade |
-| LOSS_VOLATILITY_SPIKE / GAP_THROUGH_STOP | |
-| LOSS_NEWS_PROXIMITY | |
-| COST_DOMINATED | costs > 30% of the absolute P/L |
-| HIGH_SLIPPAGE | |
-| COUNTER_TREND_ENTRY | |
-| WEEKEND_GAP | |
+| LOSS_REGIME_SHIFT | HTF trend flipped during the trade (to against the trade's side) |
+| LOSS_VOLATILITY_SPIKE | entry-TF ATR at the exit ≥ 1.5 × at the entry |
+| LOSS_NEWS_PROXIMITY | a news blackout window overlapped the trade |
+| COUNTER_TREND_ENTRY | a loss entered against the HTF trend |
+| COST_DOMINATED | costs > 30% of the absolute P/L before costs (in R) |
+| HIGH_SLIPPAGE | slippage of the fills ≥ 0.1R |
+| WIN_OTHER / LOSS_OTHER | fallback: no rule matched |
+
+- (TAA-1003 decisions) `attribution.py`:
+  - The rules run in the table's order and the first three that hold are kept; a trade with none gets the
+    fallback code.
+  - A rule whose facts are unknown doesn't fire: no initial stop, no exit-time trend or ATR, no news flag.
+    Neutral or merely "not aligned" trends are never counter-trend.
+  - Fills store no price path, so "−1R within 3 bars" means MAE ≥ 1R in a trade that lasted ≤ 3 entry-TF
+    bars.
+  - The HTF trend and ATR at the exit, and the news overlap, are optional context supplied by the caller.
+  - Each code has an English one-line template rendered from its evidence values, plus a translation key
+    `analytics.attribution.<CODE>` for the PWA. The attribution carries the trade's `hypothetical` label.
+  - R thresholds compare with a 1e-9 tolerance, so a fill exactly at a level counts as reaching it.
 
 - **Recommendations:** each one shows its evidence and a sample-size warning:
   - a segment with ≥ 30 trades whose bootstrap 95% CI of expectancy is entirely below 0 → "consider restricting"
