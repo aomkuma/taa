@@ -4,10 +4,10 @@ import { apiError, json, makeSession, mockApi } from '@/test/api';
 import { renderApp } from '@/test/render';
 
 describe('routes', () => {
-  it('renders the home page at / for a signed-in user', async () => {
+  it('renders the dashboard at / for a signed-in user', async () => {
     mockApi({ 'GET /auth/session': () => json(makeSession()) });
     renderApp('/');
-    expect(await screen.findByRole('heading', { level: 1, name: 'TAA' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'แดชบอร์ด' })).toBeInTheDocument();
   });
 
   it('renders the not-found page for unknown paths, in Thai by default', async () => {

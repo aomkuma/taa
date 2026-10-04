@@ -77,7 +77,7 @@ from app.monitoring.health_check import write_heartbeat
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
-from app.risk.exposure_manager import MAGIC_RANGE
+from app.risk.exposure_manager import MAGIC_RANGE, ExposureManager
 from app.risk.kill_switch import KillMode, KillSwitch
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.risk.mode_gates import GateResult, evaluate_gate
@@ -167,6 +167,8 @@ class Engine:
         self.candle_stream: CandleStreamer | None = None  # closed bars to the cloud, with sync (TAA-706)
         self.heartbeats: HeartbeatEmitter | None = None  # liveness + market state to the cloud (TAA-705)
         self._last_quotes: dict[str, Quote] = {}
+        self._last_loss: LossStatus | None = None  # the health step's, for the cloud heartbeat (TAA-904)
+        self._currency = ""
         self.resync_requested = False
         self._requirements_cache: tuple[tuple[datetime | None, str | None], ComputeRequirements] | None = None
         loop = self.config.engine
@@ -344,6 +346,7 @@ class Engine:
         """PAPER: the persisted paper book. DEMO: orders, reconciliation and management on the demo
         account."""
         cfg, env = self.config, self.settings.env
+        self._currency = str(account.currency)
         if self.settings.mode is TradingMode.PAPER:
             self.paper = PaperExecution(
                 self.db,
@@ -839,6 +842,7 @@ class Engine:
 
     def _health(self) -> None:
         status = self._loss_status()
+        self._last_loss = status
         self.monitor.observe_losses(status)
         self.board.tick()
         write_ok = self.db.healthcheck()
@@ -889,7 +893,54 @@ class Engine:
             "market_open": market_open,
             "market_change_at": change_at,
             "outbox_pending": None if self.sync is None else self.sync.sender.metrics().pending_total,
+            "account": self._account_snapshot(),
             "quotes": quotes,
+        }
+
+    def _account_snapshot(self) -> dict[str, Any] | None:
+        """The traded account for the dashboard (TAA-904), from the last health step's loss status plus the
+        current funds and exposure. Telemetry only: any failure sends no snapshot instead of a wrong one."""
+        status, backend = self._last_loss, getattr(self, "backend", None)
+        if status is None or backend is None:
+            return None
+        try:
+            funds = backend.funds()
+            manager = ExposureManager(
+                self.config.risk, self.decisions.calculator, magic_base=self.settings.env.MAGIC_NUMBER_BASE
+            )
+            exposure = manager.snapshot(self._book(), funds, self.symbols)
+        except Exception:  # telemetry boundary
+            log.exception("account snapshot for the heartbeat failed")
+            return None
+        risk = self.config.risk
+
+        def num(value: float, digits: int = 2) -> float | None:
+            return round(value, digits) if math.isfinite(value) else None
+
+        return {
+            "as_of": status.as_of,
+            "backend": backend.name,
+            "currency": self._currency,
+            "balance": num(funds.balance),
+            "equity": num(funds.equity),
+            "margin": num(funds.margin),
+            "margin_free": num(funds.margin_free),
+            "day_pnl": num(status.day_pnl),
+            "day_pnl_percent": num(status.day_pnl_percent, 4),
+            "week_pnl": num(status.week_pnl),
+            "week_pnl_percent": num(status.week_pnl_percent, 4),
+            "drawdown_percent": num(status.drawdown_percent, 4),
+            "open_risk": num(exposure.open_risk),
+            "heat_percent": num(exposure.heat_percent, 4),
+            "unknown_risk_positions": len(exposure.unknown_risk),
+            "consecutive_losses": status.consecutive_losses,
+            "limits": {
+                "daily_loss_percent": risk.max_daily_loss_percent,
+                "weekly_loss_percent": risk.max_weekly_loss_percent,
+                "drawdown_percent": risk.max_account_drawdown_percent,
+                "heat_percent": risk.max_total_open_risk_percent,
+                "consecutive_losses": risk.max_consecutive_losses,
+            },
         }
 
     def _final_cloud_heartbeat(self) -> None:

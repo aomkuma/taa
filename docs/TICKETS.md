@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
-| M1 | Phase 9 — PWA frontend | 23 | 4 | IN PROGRESS |
+| M1 | Phase 9 — PWA frontend | 23 | 5 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -1281,11 +1281,11 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-904 — Dashboard
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 903
 
-- [ ] A15 dashboard widgets
-- [ ] live updates
+- [x] A15 dashboard widgets
+- [x] live updates
 
 #### TAA-905 — Charts
 

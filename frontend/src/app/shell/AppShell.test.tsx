@@ -1,71 +1,15 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { apiError, type Handler, json, makeSession, mockApi } from '@/test/api';
+import { apiError, json, makeSession, mockApi } from '@/test/api';
+import { engine, heartbeat, iso, owner, renderShell, status } from '@/test/engine';
 import { fakeEventSources, streamEvent } from '@/test/eventSource';
 import { renderApp } from '@/test/render';
-
-const iso = (ms: number) => new Date(ms).toISOString().replace('Z', '+00:00');
-
-function heartbeat(overrides: Record<string, unknown> = {}) {
-  const now = Date.now();
-  return {
-    at: iso(now - 1_000),
-    received_at: iso(now),
-    run_id: 'r1',
-    mode: 'PAPER',
-    state: 'running',
-    connected: true,
-    clock_verified: true,
-    kill_switch: false,
-    open_positions: 0,
-    cycles: 3,
-    market_open: true,
-    market_change_at: null,
-    ...overrides,
-  };
-}
-
-function status(engineId: string, overrides: Record<string, unknown> = {}) {
-  return {
-    engine: { engine_id: engineId, label: `${engineId} pc`, status: 'ACTIVE', last_seen_at: null },
-    run: { run_id: 'r1', mode: 'PAPER', status: 'RUNNING', started_at: iso(Date.now() - 60_000) },
-    last_received_at: null,
-    kill_switch: { active: false, last: null },
-    open_breakers: 0,
-    open_positions: 0,
-    audit: null,
-    heartbeat: heartbeat(),
-    ...overrides,
-  };
-}
-
-const engine = (engine_id: string, status_ = 'ACTIVE') => ({
-  engine_id,
-  label: `${engine_id} pc`,
-  status: status_,
-  last_seen_at: null,
-});
-
-function owner(extra: Record<string, Handler> = {}) {
-  return mockApi({
-    'GET /auth/session': () => json(makeSession()),
-    'GET /me/feed': () => json({ engine_id: 'e1', own: true }),
-    'GET /engines': () => json({ items: [engine('e1')] }),
-    'GET /engines/e1/status': () => json(status('e1')),
-    ...extra,
-  });
-}
-
-function renderShell(path = '/', language: 'th' | 'en' = 'en') {
-  const sources = fakeEventSources();
-  const result = renderApp(path, language, { createEventSource: sources.factory });
-  return { ...result, sources };
-}
 
 const statusCalls = (calls: { path: string }[], engineId = 'e1') =>
   calls.filter((c) => c.path === `/engines/${engineId}/status`).length;
 
+// Rendered on a page without engine widgets, so the shell's texts appear once.
 describe('app shell', () => {
   afterEach(() => {
     window.localStorage.clear();
@@ -73,20 +17,20 @@ describe('app shell', () => {
 
   it('shows the mode banner, engine health and both navigations for the owner', async () => {
     owner();
-    renderShell();
+    renderShell('/settings');
     expect(await screen.findByText(/PAPER mode: simulated orders only/)).toBeInTheDocument();
     expect(await screen.findByText('Engine online')).toBeInTheDocument();
     expect(screen.getByText('e1 pc')).toBeInTheDocument();
     const main = screen.getByRole('navigation', { name: 'Main menu' });
     expect(within(main).getByRole('link', { name: 'Positions' })).toHaveAttribute('href', '/positions');
-    expect(within(main).getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page');
+    expect(within(main).getByRole('link', { name: 'Settings' })).toHaveAttribute('aria-current', 'page');
     const quick = screen.getByRole('navigation', { name: 'Quick menu' });
     expect(within(quick).getAllByRole('link')).toHaveLength(4);
   });
 
   it('opens the live stream of the own engine and goes live', async () => {
     const api = owner();
-    const { sources } = renderShell();
+    const { sources } = renderShell('/settings');
     await screen.findByText('Engine online');
     expect(sources.last().url).toBe('/api/v1/engines/e1/stream');
     expect(screen.getByText('Connecting live updates…')).toBeInTheDocument();
@@ -103,7 +47,7 @@ describe('app shell', () => {
 
   it('applies heartbeats from the stream to the banner and the health', async () => {
     owner();
-    const { sources } = renderShell();
+    const { sources } = renderShell('/settings');
     await screen.findByText('Engine online');
     act(() => {
       sources.last().emit('ready', { cursor: 3, resumed: true });
@@ -117,7 +61,7 @@ describe('app shell', () => {
 
   it('refetches the status on other status changes', async () => {
     const api = owner();
-    const { sources } = renderShell();
+    const { sources } = renderShell('/settings');
     await screen.findByText('Engine online');
     const before = statusCalls(api.calls);
     act(() => {
@@ -134,7 +78,7 @@ describe('app shell', () => {
       'GET /engines/e1/status': () =>
         json(status('e1', { heartbeat: heartbeat({ received_at: iso(Date.now() - 5 * 60_000) }) })),
     });
-    renderShell();
+    renderShell('/settings');
     expect(await screen.findByText(/No heartbeat from the engine since/)).toBeInTheDocument();
   });
 
@@ -142,13 +86,13 @@ describe('app shell', () => {
     owner({
       'GET /engines/e1/status': () => json(status('e1', { heartbeat: heartbeat({ market_open: false }) })),
     });
-    renderShell();
+    renderShell('/settings');
     expect(await screen.findByText('Market closed')).toBeInTheDocument();
   });
 
   it('shows a stale badge while live updates are lost', async () => {
     owner();
-    const { sources } = renderShell();
+    const { sources } = renderShell('/settings');
     await screen.findByText('Engine online');
     act(() => {
       sources.last().emit('ready', { cursor: 3, resumed: true });
@@ -164,7 +108,7 @@ describe('app shell', () => {
     owner({
       'GET /engines/e1/status': () => json(status('e1', { kill_switch: { active: true, last: null } })),
     });
-    renderShell();
+    renderShell('/settings');
     expect(await screen.findByRole('alert')).toHaveTextContent('Kill switch active');
   });
 
@@ -172,7 +116,7 @@ describe('app shell', () => {
     owner({
       'GET /engines/e1/status': () => json(status('e1', { heartbeat: heartbeat({ mode: 'TURBO' }) })),
     });
-    renderShell();
+    renderShell('/settings');
     expect(await screen.findByText('Mode TURBO')).toBeInTheDocument();
   });
 
@@ -197,7 +141,7 @@ describe('app shell', () => {
       'GET /me/feed': () => json({ engine_id: null, own: false }),
       'GET /engines': () => json({ items: [] }),
     });
-    renderShell();
+    renderShell('/settings');
     expect(await screen.findByText('No engine linked yet.')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'Link an engine' })[0]).toHaveAttribute('href', '/engines');
   });
@@ -217,7 +161,7 @@ describe('app shell', () => {
       'GET /engines': () => json({ items: [engine('e1'), engine('e2'), engine('e3', 'REVOKED')] }),
       'GET /engines/e2/status': () => json(status('e2', { heartbeat: heartbeat({ mode: 'DEMO' }) })),
     });
-    const { sources } = renderShell();
+    const { sources } = renderShell('/settings');
     const picker = await screen.findByRole('combobox', { name: 'Engine' });
     expect(
       within(picker)
@@ -235,7 +179,7 @@ describe('app shell', () => {
   it('shows an offline banner while the device is offline', async () => {
     owner();
     const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
-    renderShell();
+    renderShell('/settings');
     act(() => {
       window.dispatchEvent(new Event('offline'));
     });
@@ -253,7 +197,7 @@ describe('app shell', () => {
   it('opens every page from the More sheet on phones and closes it on navigation or Escape', async () => {
     owner();
     const user = userEvent.setup();
-    const { router } = renderShell();
+    const { router } = renderShell('/settings');
     await screen.findByText('Engine online');
     await user.click(screen.getByRole('button', { name: 'More' }));
     const sheet = screen.getByRole('dialog', { name: 'All pages' });
@@ -269,7 +213,7 @@ describe('app shell', () => {
   it('switches to the dark theme', async () => {
     owner();
     const user = userEvent.setup();
-    renderShell();
+    renderShell('/settings');
     await user.selectOptions(await screen.findByRole('combobox', { name: 'Theme' }), 'dark');
     expect(document.documentElement).toHaveClass('dark');
     expect(window.localStorage.getItem('taa.theme')).toBe('dark');
@@ -280,7 +224,7 @@ describe('app shell', () => {
   it('is in Thai by default', async () => {
     owner();
     const sources = fakeEventSources();
-    renderApp('/', 'th', { createEventSource: sources.factory });
+    renderApp('/settings', 'th', { createEventSource: sources.factory });
     expect(await screen.findByText(/โหมด PAPER/)).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'เมนูหลัก' })).toBeInTheDocument();
   });

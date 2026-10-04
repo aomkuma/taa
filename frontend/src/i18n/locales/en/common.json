@@ -9,7 +9,6 @@
     "en": "English"
   },
   "home": {
-    "title": "TAA",
     "intro": "Trading assistant console. The information here supports your own decisions and does not guarantee any result."
   },
   "notFound": {
@@ -110,5 +109,60 @@
     "staleSince": "Not updated since {{time}}",
     "offline": "You are offline. The data shown may be out of date.",
     "placeholder": "This page is not available yet."
+  },
+  "dashboard": {
+    "loading": "Loading…",
+    "loadFailed": "Could not load this data.",
+    "viewAll": "View all",
+    "limitOf": "Limit {{limit}}",
+    "limitReached": "Limit reached",
+    "health": {
+      "title": "System health",
+      "engine": "Engine",
+      "mt5": "MT5",
+      "clock": "Server time",
+      "lastData": "Last data received",
+      "backlog": "Waiting to sync",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "verified": "Verified",
+      "notVerified": "Not verified"
+    },
+    "account": {
+      "title": "Account and risk limits",
+      "none": "No account data from the engine yet.",
+      "equity": "Equity",
+      "balance": "Balance",
+      "marginFree": "Free margin",
+      "dayPnl": "Today's P/L",
+      "weekPnl": "This week's P/L",
+      "drawdown": "Drawdown from peak",
+      "openRisk": "Open risk",
+      "losingStreak": "Consecutive losses",
+      "unknownRisk": "{{n}} position(s) with unknown risk (no stop loss or no symbol data)",
+      "asOf": "As of {{time}}"
+    },
+    "positions": {
+      "title": "Open positions",
+      "open": "{{n}} open",
+      "none": "No open paper positions.",
+      "prices": "Entry {{entry}} · SL {{sl}} · TP {{tp}}"
+    },
+    "breakers": {
+      "title": "Breakers and kill switch",
+      "killSwitchOn": "Kill switch active",
+      "killSwitchOff": "Kill switch off",
+      "allClosed": "All breakers are normal.",
+      "open": "Tripped",
+      "latched": "Tripped (manual reset)"
+    },
+    "decisions": {
+      "title": "Recent decisions",
+      "none": "No decisions yet."
+    },
+    "alerts": {
+      "title": "Recent notifications",
+      "none": "No notifications yet."
+    }
   }
 }

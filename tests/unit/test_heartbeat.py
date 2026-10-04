@@ -172,6 +172,41 @@ class TestIngest:
         assert [(e.topic, e.type) for e in events] == [("status", "heartbeat"), ("quotes", "quotes")]
         assert events[1].item["quotes"][0]["symbol"] == "EURUSD"
 
+    def test_the_account_snapshot_is_kept_with_the_heartbeat(self, cloud: Cloud) -> None:
+        account = {
+            "as_of": WEDNESDAY,
+            "backend": "paper",
+            "currency": "USD",
+            "balance": 10_000.0,
+            "equity": 9_950.0,
+            "margin": 100.0,
+            "margin_free": 9_850.0,
+            "day_pnl": -50.0,
+            "day_pnl_percent": -0.5,
+            "week_pnl": None,
+            "week_pnl_percent": None,
+            "drawdown_percent": 0.5,
+            "open_risk": 25.0,
+            "heat_percent": 0.2513,
+            "unknown_risk_positions": 0,
+            "consecutive_losses": 1,
+            "limits": {
+                "daily_loss_percent": 2.0,
+                "weekly_loss_percent": 4.0,
+                "drawdown_percent": 10.0,
+                "heat_percent": 1.5,
+                "consecutive_losses": 4,
+            },
+        }
+        assert cloud.send(beat(WEDNESDAY, account=account)).accepted == 1
+        stored = cloud.row().payload["account"]
+        assert stored["equity"] == 9_950.0 and stored["week_pnl"] is None
+        assert stored["limits"]["heat_percent"] == 1.5
+        with pytest.raises(ValueError, match=r"allow_inf_nan|finite"):
+            HeartbeatPayload.model_validate(beat(WEDNESDAY, account=account | {"equity": float("nan")}))
+        with pytest.raises(ValueError, match="extra"):
+            HeartbeatPayload.model_validate(beat(WEDNESDAY, account=account | {"password": "x"}))
+
     def test_an_invalid_heartbeat_is_rejected(self, cloud: Cloud) -> None:
         event = {
             "event_id": new_id(),

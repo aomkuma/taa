@@ -30,7 +30,11 @@ export function useFormat(timeZone: string = DEFAULT_TIME_ZONE) {
         formatDate(value, language, { timeZone, ...options }),
       number: (value: number | null | undefined, options?: NumberOptions) =>
         formatNumber(value, language, options),
-      money: (value: number | null | undefined, currency: string) => formatMoney(value, currency, language),
+      money: (
+        value: number | null | undefined,
+        currency: string,
+        options?: Pick<NumberOptions, 'signDisplay'>,
+      ) => formatMoney(value, currency, language, options),
       percent: (value: number | null | undefined, options?: NumberOptions) =>
         formatPercent(value, language, options),
     }),

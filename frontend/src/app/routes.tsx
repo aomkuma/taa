@@ -7,7 +7,7 @@ import { NAV_ITEMS } from '@/app/shell/nav';
 import { RequireOwnEngine } from '@/app/shell/RequireOwnEngine';
 import { RequireAuth } from '@/auth/RequireAuth';
 import type { EventSourceFactory } from '@/live/stream';
-import { HomePage } from '@/pages/HomePage';
+import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { PlaceholderPage } from '@/pages/PlaceholderPage';
@@ -43,7 +43,7 @@ export function createRoutes({ createEventSource }: RouteOptions = {}): RouteObj
             {
               element: <AppShell {...(createEventSource ? { createEventSource } : {})} />,
               children: [
-                { index: true, element: <HomePage /> },
+                { index: true, element: <DashboardPage /> },
                 ...pages(false),
                 { element: <RequireOwnEngine />, children: pages(true) },
               ],

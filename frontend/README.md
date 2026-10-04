@@ -89,6 +89,7 @@ Everything lives in `src/i18n/`.
 | `Gate`, `GateStatus`                                         | `codes:gate.<G>`, `codes:gateStatus.<S>`                                           |
 | `OpportunityStatus`, `WindowReason`, `InvalidReason`         | `codes:opportunityStatus.<S>`, `codes:windowReason.<R>`, `codes:invalidReason.<R>` |
 | `ShadowStatus`, `ExitReason`                                 | `codes:shadowStatus.<S>`, `codes:exitReason.<CODE>`                                |
+| `BreakerName`, `NotificationType`, `Decision`                | `codes:breaker.<NAME>`, `codes:notificationType.<TYPE>`, `codes:decision.<D>`      |
 
 - Parameterized codes (`BREAKER_OPEN:daily_loss`) map to the key of the bare code, with the rest passed as
   `{{detail}}`.

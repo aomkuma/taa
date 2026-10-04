@@ -42,6 +42,44 @@ class QuoteItem(BaseModel):
     time: AwareDatetime
 
 
+class AccountLimits(BaseModel):
+    """The engine's local risk limits (``RiskConfig``, percent of equity) the dashboard gauges compare to."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    daily_loss_percent: float = Field(gt=0, allow_inf_nan=False)
+    weekly_loss_percent: float = Field(gt=0, allow_inf_nan=False)
+    drawdown_percent: float = Field(gt=0, allow_inf_nan=False)
+    heat_percent: float = Field(gt=0, allow_inf_nan=False)
+    consecutive_losses: int = Field(ge=1)
+
+
+class AccountSnapshot(BaseModel):
+    """The traded account at the last health step (TAA-904): the paper book in PAPER, the broker account in
+    DEMO. P/L figures follow the loss tracker (flow-adjusted, broker day and ISO week); open risk is the risk
+    to stop of the counted positions (§A9). A figure that could not be measured is null, never 0."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    as_of: AwareDatetime
+    backend: str = Field(max_length=16)
+    currency: str = Field(max_length=8)
+    balance: float | None = Field(allow_inf_nan=False)
+    equity: float | None = Field(allow_inf_nan=False)
+    margin: float | None = Field(allow_inf_nan=False)
+    margin_free: float | None = Field(allow_inf_nan=False)
+    day_pnl: float | None = Field(allow_inf_nan=False)
+    day_pnl_percent: float | None = Field(allow_inf_nan=False)
+    week_pnl: float | None = Field(allow_inf_nan=False)
+    week_pnl_percent: float | None = Field(allow_inf_nan=False)
+    drawdown_percent: float | None = Field(allow_inf_nan=False)
+    open_risk: float | None = Field(ge=0, allow_inf_nan=False)
+    heat_percent: float | None = Field(ge=0, allow_inf_nan=False)
+    unknown_risk_positions: int = Field(ge=0)
+    consecutive_losses: int = Field(ge=0)
+    limits: AccountLimits
+
+
 class HeartbeatPayload(BaseModel):
     """The wire schema of a ``heartbeat`` event (strict: unknown keys are refused)."""
 
@@ -59,6 +97,7 @@ class HeartbeatPayload(BaseModel):
     market_open: bool
     market_change_at: AwareDatetime | None
     outbox_pending: int | None = Field(default=None, ge=0)
+    account: AccountSnapshot | None = None  # TAA-904; None until the first health step or when unreadable
     quotes: list[QuoteItem] = Field(default_factory=list, max_length=MAX_QUOTES)
 
 

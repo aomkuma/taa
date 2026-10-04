@@ -12,5 +12,37 @@
     "confirmation_mismatch": "Type the engine ID exactly to confirm.",
     "nothing_to_import": "There are no engine keys to import.",
     "owner_only": "Only the owner can see every engine."
+  },
+  "breaker": {
+    "CONNECTION": "MT5 connection",
+    "ACCOUNT_CHANGE": "Account change",
+    "CLOCK": "Server time",
+    "STORAGE": "Storage",
+    "INVALID_PRICE": "Invalid price",
+    "SPREAD": "Wide spread",
+    "STALE_DATA": "Stale data",
+    "SLIPPAGE": "Slippage",
+    "DAILY_LOSS": "Daily loss",
+    "WEEKLY_LOSS": "Weekly loss",
+    "MAX_DRAWDOWN": "Maximum drawdown",
+    "CONSECUTIVE_LOSSES": "Consecutive losses",
+    "UNHANDLED_EXCEPTION": "Program error",
+    "ORDER_FAILURES": "Order failures",
+    "DUPLICATE_EXECUTION": "Duplicate execution",
+    "UNPROTECTED_POSITION": "Position without stop loss",
+    "SYMBOL_RESTRICTED": "Symbol restricted"
+  },
+  "notificationType": {
+    "ENGINE_OFFLINE": "Engine offline",
+    "ENGINE_BACK": "Engine back online",
+    "BACKTEST_FINISHED": "Backtest finished",
+    "OPPORTUNITY": "New opportunity",
+    "OPPORTUNITY_UPDATE": "Opportunity update",
+    "TEST": "Test notification"
+  },
+  "decision": {
+    "ACCEPT": "Accepted",
+    "REJECT": "Rejected",
+    "HOLD": "Hold"
   }
 }

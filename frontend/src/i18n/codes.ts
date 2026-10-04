@@ -10,6 +10,9 @@
  * | `ShadowStatus` (app/advisory/shadow.py)                           | `codes:shadowStatus.<S>`           |
  * | `ExitReason` (app/core/enums.py)                                  | `codes:exitReason.<CODE>`          |
  * | `EngineErrorCode` (app/web/engines.py), engine API errors          | `codes:engine.<code>`              |
+ * | `BreakerName` (app/risk/circuit_breaker.py)                       | `codes:breaker.<NAME>`             |
+ * | `NotificationType` (app/sync/notifications.py)                    | `codes:notificationType.<TYPE>`    |
+ * | `Decision` (app/engine/decision_engine.py)                        | `codes:decision.<D>`               |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
  * Parameterized reason codes arrive as `CODE:detail` (`BREAKER_OPEN:daily_loss`); the key is built from `CODE`
@@ -137,6 +140,37 @@ export const ENGINE_ERRORS = [
   'owner_only',
 ] as const;
 
+// BreakerName (app/risk/circuit_breaker.py), NotificationType (app/sync/notifications.py) and Decision
+// (app/engine/decision_engine.py): shown on the dashboard (TAA-904), which added their texts.
+export const BREAKER_NAMES = [
+  'CONNECTION',
+  'ACCOUNT_CHANGE',
+  'CLOCK',
+  'STORAGE',
+  'INVALID_PRICE',
+  'SPREAD',
+  'STALE_DATA',
+  'SLIPPAGE',
+  'DAILY_LOSS',
+  'WEEKLY_LOSS',
+  'MAX_DRAWDOWN',
+  'CONSECUTIVE_LOSSES',
+  'UNHANDLED_EXCEPTION',
+  'ORDER_FAILURES',
+  'DUPLICATE_EXECUTION',
+  'UNPROTECTED_POSITION',
+  'SYMBOL_RESTRICTED',
+] as const;
+export const NOTIFICATION_TYPES = [
+  'ENGINE_OFFLINE',
+  'ENGINE_BACK',
+  'BACKTEST_FINISHED',
+  'OPPORTUNITY',
+  'OPPORTUNITY_UPDATE',
+  'TEST',
+] as const;
+export const DECISIONS = ['ACCEPT', 'REJECT', 'HOLD'] as const;
+
 export const CODE_KINDS = [
   'reason',
   'gate',
@@ -147,6 +181,9 @@ export const CODE_KINDS = [
   'shadowStatus',
   'exitReason',
   'engine',
+  'breaker',
+  'notificationType',
+  'decision',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 

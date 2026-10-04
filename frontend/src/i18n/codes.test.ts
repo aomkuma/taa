@@ -6,16 +6,22 @@ import suitabilityPy from '../../../app/advisory/suitability.py?raw';
 import reasonsPy from '../../../app/risk/reasons.py?raw';
 import signalModelsPy from '../../../app/strategy/signal_models.py?raw';
 import enginesPy from '../../../app/web/engines.py?raw';
+import circuitBreakerPy from '../../../app/risk/circuit_breaker.py?raw';
+import notificationsPy from '../../../app/sync/notifications.py?raw';
+import decisionEnginePy from '../../../app/engine/decision_engine.py?raw';
 
 import { createI18n } from '@/i18n';
 import {
+  BREAKER_NAMES,
   codeKey,
   CODES_NAMESPACE,
+  DECISIONS,
   ENGINE_ERRORS,
   EXIT_REASONS,
   GATE_STATUSES,
   GATES,
   INVALID_REASONS,
+  NOTIFICATION_TYPES,
   OPPORTUNITY_STATUSES,
   parseCode,
   REASON_CODES,
@@ -75,17 +81,27 @@ describe('code lists match the backend enums', () => {
     ['ShadowStatus', shadowPy, SHADOW_STATUSES],
     ['ExitReason', enumsPy, EXIT_REASONS],
     ['EngineErrorCode', enginesPy, ENGINE_ERRORS],
+    ['BreakerName', circuitBreakerPy, BREAKER_NAMES],
+    ['NotificationType', notificationsPy, NOTIFICATION_TYPES],
+    ['Decision', decisionEnginePy, DECISIONS],
   ] as const)('%s', (className, source, values) => {
     expect(sorted(values)).toEqual(sorted(pyStrEnumValues(source, className)));
   });
 });
 
 describe('code texts', () => {
-  it.each(['th', 'en'] as const)('every engine API error has a %s text', (language) => {
-    const i18n = createI18n(language);
-    for (const code of ENGINE_ERRORS) {
-      expect(i18n.exists(codeKey('engine', code)), code).toBe(true);
-      expect(translateCode(i18n, 'engine', code)).not.toBe(code);
+  it.each([
+    ['engine', ENGINE_ERRORS],
+    ['breaker', BREAKER_NAMES],
+    ['notificationType', NOTIFICATION_TYPES],
+    ['decision', DECISIONS],
+  ] as const)('every %s code has a text in both languages', (kind, codes) => {
+    for (const language of ['th', 'en'] as const) {
+      const i18n = createI18n(language);
+      for (const code of codes) {
+        expect(i18n.exists(codeKey(kind, code)), `${language} ${code}`).toBe(true);
+        expect(translateCode(i18n, kind, code)).not.toBe(code);
+      }
     }
   });
 });

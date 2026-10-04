@@ -598,6 +598,12 @@ AI failures never trip trading breakers; they only produce HOLD.
       Sydney to Friday 17:00 in New York (crypto: open, no change).
     - A deliberate stop queues `state: stopped` and makes one last send before the client closes
       (`SyncRuntime.stop(final_flush=True)`).
+    - (TAA-904) The heartbeat also carries `account` (`AccountSnapshot`): the traded account at the last health
+      step (paper book in PAPER, broker account in DEMO): balance, equity, margin, day/week P/L in money and %
+      (loss tracker, flow-adjusted), drawdown from the high-water mark, open risk and heat (§A9 counted
+      positions), positions with unknown risk, the losing streak, and the local `RiskConfig` limits. A figure
+      that cannot be measured is null; an unreadable account sends `account: null`. The cloud keeps it in
+      `engine_heartbeats.payload`, so `/status` and the stream carry it to the dashboard.
     - The cloud keeps the newest heartbeat per engine (an older one counts as a duplicate) and streams it
       (`status`/`heartbeat`, `quotes`).
     - The worker's watchdog (every 10 s) works on the cloud clock: offline means `stopped`, or no heartbeat
@@ -852,6 +858,17 @@ AI failures never trip trading breakers; they only produce HOLD.
     updates are lost (`StaleBadge`, reused by pages and by TAA-914's stale cache fallback).
   - **Themes:** `system`/`light`/`dark` (per device, `taa.theme`), the `dark` class on `<html>` set before the
     first render.
+- (TAA-904 decisions) Dashboard (`frontend/src/pages/dashboard/`):
+  - Own engine: account and limits (equity, balance, free margin; gauges for today's and this week's P/L,
+    drawdown, open risk/heat and the losing streak against the heartbeat's limits: ok < 50 %, warn < 80 %,
+    danger < 100 %, then "limit reached"; a gain uses none of a loss limit), system health (engine, MT5, clock,
+    last data, sync backlog), open positions (count from the heartbeat, newest paper positions), breakers that
+    are not CLOSED plus the kill switch, the newest EXECUTION decisions and the newest notifications.
+  - Live: heartbeats update the account and health in place; `positions`, `decisions`, `notifications` and
+    `status`/`breaker*` events refetch their widget. A silent or stopped engine marks the account "not updated
+    since". Gauges are SVG (no inline styles under the CSP).
+  - Market feed (subscriber): no account widgets; links to the advisory pages and the notifications.
+  - New `codes:` kinds with TH/EN texts: `breaker` (`BreakerName`), `notificationType`, `decision`.
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

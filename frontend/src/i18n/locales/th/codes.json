@@ -12,5 +12,37 @@
     "confirmation_mismatch": "กรุณาพิมพ์รหัส Engine ให้ตรงทุกตัวอักษรเพื่อยืนยัน",
     "nothing_to_import": "ไม่มีคีย์ Engine ให้นำเข้า",
     "owner_only": "เฉพาะเจ้าของเท่านั้นที่ดู Engine ทั้งหมดได้"
+  },
+  "breaker": {
+    "CONNECTION": "การเชื่อมต่อ MT5",
+    "ACCOUNT_CHANGE": "บัญชีเปลี่ยนแปลง",
+    "CLOCK": "เวลาเซิร์ฟเวอร์",
+    "STORAGE": "พื้นที่จัดเก็บ",
+    "INVALID_PRICE": "ราคาผิดปกติ",
+    "SPREAD": "สเปรดกว้าง",
+    "STALE_DATA": "ข้อมูลไม่อัปเดต",
+    "SLIPPAGE": "สลิปเพจ",
+    "DAILY_LOSS": "ขาดทุนรายวัน",
+    "WEEKLY_LOSS": "ขาดทุนรายสัปดาห์",
+    "MAX_DRAWDOWN": "Drawdown สูงสุด",
+    "CONSECUTIVE_LOSSES": "ขาดทุนติดต่อกัน",
+    "UNHANDLED_EXCEPTION": "ข้อผิดพลาดของโปรแกรม",
+    "ORDER_FAILURES": "ส่งคำสั่งล้มเหลว",
+    "DUPLICATE_EXECUTION": "คำสั่งซ้ำ",
+    "UNPROTECTED_POSITION": "สถานะไม่มี Stop Loss",
+    "SYMBOL_RESTRICTED": "สัญลักษณ์ถูกจำกัดการเทรด"
+  },
+  "notificationType": {
+    "ENGINE_OFFLINE": "เอนจินออฟไลน์",
+    "ENGINE_BACK": "เอนจินกลับมาออนไลน์",
+    "BACKTEST_FINISHED": "ทดสอบย้อนหลังเสร็จแล้ว",
+    "OPPORTUNITY": "โอกาสใหม่",
+    "OPPORTUNITY_UPDATE": "อัปเดตโอกาส",
+    "TEST": "ทดสอบการแจ้งเตือน"
+  },
+  "decision": {
+    "ACCEPT": "ยอมรับ",
+    "REJECT": "ปฏิเสธ",
+    "HOLD": "รอ"
   }
 }

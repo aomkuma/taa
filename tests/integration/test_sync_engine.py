@@ -10,7 +10,7 @@ import pytest
 from pydantic import SecretStr
 from sqlalchemy import select
 
-from app.core.errors import ConfigError
+from app.core.errors import ConfigError, TaaError
 from app.storage.models import OutboxEventRow
 from app.sync.runtime import SyncRuntime
 from tests.integration.test_engine_paper import harness, settings
@@ -68,6 +68,10 @@ def test_the_engine_starts_reports_and_stops_sync(tmp_path: Path) -> None:
         ).all()
         assert beats and beats[-1].payload["state"] == "stopped" and beats[-1].payload["run_id"]
         assert {"market_open", "market_change_at", "quotes", "connected"} <= set(beats[-1].payload)
+        account = beats[-1].payload["account"]  # the traded account for the dashboard (TAA-904)
+        assert account["backend"] == "paper" and account["currency"] == "USD"
+        assert account["equity"] > 0 and account["day_pnl"] == 0.0 and account["open_risk"] == 0.0
+        assert account["limits"]["daily_loss_percent"] == s.config.risk.max_daily_loss_percent
 
 
 def test_without_sync_nothing_is_built(tmp_path: Path) -> None:
@@ -75,3 +79,18 @@ def test_without_sync_nothing_is_built(tmp_path: Path) -> None:
     h.engine.start()
     assert h.engine.sync is None and h.engine.status()["sync"] is None
     h.engine.shutdown()
+
+
+def test_an_unreadable_account_sends_no_snapshot(tmp_path: Path) -> None:
+    h = harness(tmp_path)
+    h.engine.start()
+    assert h.engine.cloud_heartbeat()["account"] is None  # no health step yet
+    h.engine.run(max_cycles=1)
+    assert h.engine.cloud_heartbeat()["account"] is not None
+
+    def broken() -> None:
+        raise TaaError("terminal busy")
+
+    h.engine.backend.funds = broken  # type: ignore[method-assign]
+    beat = h.engine.cloud_heartbeat()
+    assert beat["account"] is None and beat["state"] == "running"
