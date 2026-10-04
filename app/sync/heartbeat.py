@@ -39,6 +39,7 @@ class QuoteItem(BaseModel):
     bid: float = Field(allow_inf_nan=False)
     ask: float = Field(allow_inf_nan=False)
     spread_points: float | None = Field(default=None, allow_inf_nan=False)
+    max_spread_points: float | None = Field(default=None, gt=0, allow_inf_nan=False)  # the engine's limit
     time: AwareDatetime
 
 

@@ -57,6 +57,10 @@ TypeScript stays on 6.0.x until typescript-eslint supports TypeScript 7.
 - **Live updates:** `useLiveEvents(topic, listener)` (`src/live/context.ts`) for stream events of the shown engine;
   `useLive()` for the stream state. Tests drive the stream with `fakeEventSources()` (`src/test/eventSource.ts`) via
   `renderApp(path, lang, { createEventSource })`.
+- **API samples:** `src/test/fixtures/api-samples.json` holds real responses recorded by
+  `tests/web/test_api_samples.py`; `src/test/apiSamples.test.ts` parses them with the page schemas. When a page
+  reads a new route, add the route to both and regenerate (`TAA_UPDATE_API_SAMPLES=1 pytest
+tests/web/test_api_samples.py`). Prefer the samples over hand-written fakes in page tests.
 - **Stale data:** show `<StaleBadge since={…} />` (`src/app/shell/StaleBadge.tsx`) when data stopped updating.
 - **Themes:** `src/app/theme.ts`; style both themes with Tailwind's `dark:` variant (it follows the `dark` class).
   `useDarkMode()` tells canvas code (charts) which theme is applied.
@@ -96,6 +100,7 @@ Everything lives in `src/i18n/`.
 | `ShadowStatus`, `ExitReason`                                 | `codes:shadowStatus.<S>`, `codes:exitReason.<CODE>`                                |
 | `BreakerName`, `NotificationType`, `Decision`                | `codes:breaker.<NAME>`, `codes:notificationType.<TYPE>`, `codes:decision.<D>`      |
 | `Family` (evidence theory families)                          | `codes:family.<FAMILY>`                                                            |
+| `Trend`, `Regime`, `VolatilityState`, `Session`              | `codes:trend.<T>`, `codes:regime.<R>`, `codes:volatility.<V>`, `codes:session.<S>` |
 
 - Parameterized codes (`BREAKER_OPEN:daily_loss`) map to the key of the bare code, with the rest passed as
   `{{detail}}`.

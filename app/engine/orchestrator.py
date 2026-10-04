@@ -876,6 +876,7 @@ class Engine:
                 "bid": q.bid,
                 "ask": q.ask,
                 "spread_points": q.spread_points if math.isfinite(q.spread_points) else None,
+                "max_spread_points": self.config.spread_limit(q.symbol),
                 "time": q.time_utc,
             }
             for q in sorted(self._last_quotes.values(), key=lambda q: q.symbol)

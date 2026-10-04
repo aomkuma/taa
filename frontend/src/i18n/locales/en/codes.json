@@ -58,5 +58,29 @@
     "HARMONIC": "Harmonics",
     "ELLIOTT": "Elliott waves",
     "SESSIONS": "Market sessions"
+  },
+  "trend": {
+    "BULLISH": "Bullish",
+    "BEARISH": "Bearish",
+    "NEUTRAL": "Neutral"
+  },
+  "regime": {
+    "TRENDING": "Trending",
+    "RANGING": "Ranging",
+    "VOLATILE": "Volatile",
+    "UNCLEAR": "Unclear"
+  },
+  "volatility": {
+    "LOW": "Low",
+    "NORMAL": "Normal",
+    "HIGH": "High",
+    "EXTREME": "Extreme"
+  },
+  "session": {
+    "ASIA": "Asia",
+    "LONDON": "London",
+    "NEW_YORK": "New York",
+    "LONDON_NY_OVERLAP": "London–New York overlap",
+    "OFF": "Off-session"
   }
 }

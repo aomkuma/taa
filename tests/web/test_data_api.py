@@ -33,6 +33,7 @@ from tests.web.conftest import DEV_ENV, PASSWORD, TOTP_SECRET, login, make_app
 
 ROUTES = [
     "status",
+    "quotes",
     "account",
     "positions",
     "trades",
@@ -215,6 +216,7 @@ class TestReads:
     ) -> None:
         client, mine, theirs = rig
         brief = {"at": T.isoformat(), "mode": "PAPER", "state": "running", "connected": True, "cycles": 3}
+        assert get(client, mine, "quotes").json() == {"at": None, "received_at": None, "quotes": []}
         with db.session() as sess:
             sess.add(
                 EngineHeartbeatRow(
@@ -231,6 +233,19 @@ class TestReads:
                     offline_reason="SILENT",
                 )
             )
+        assert get(client, mine, "quotes").json()["quotes"] == []  # a heartbeat from before TAA-906
+        quote = {
+            "symbol": "EURUSD",
+            "bid": 1.1,
+            "ask": 1.1001,
+            "spread_points": 10.0,
+            "max_spread_points": 30.0,
+        }
+        with db.session() as sess:
+            row = sess.get(EngineHeartbeatRow, mine)
+            assert row is not None
+            row.payload = {**brief, "quotes": [quote]}
+        assert get(client, mine, "quotes").json()["quotes"] == [quote]
         beat = get(client, mine, "status").json()["heartbeat"]
         assert beat == {
             **brief,

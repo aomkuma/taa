@@ -408,7 +408,8 @@ class IngestService:
             "connected": p.connected,
             "market_open": p.market_open,
             "market_change_at": p.market_change_at,
-            "payload": brief,
+            # the quotes are kept for GET /quotes; the status view and its stream event leave them out
+            "payload": {**brief, "quotes": doc["quotes"]},
         }
         if row is None:
             sess.add(

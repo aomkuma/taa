@@ -67,9 +67,18 @@ export const CandlesSchema = z.object({
 });
 export type Candles = z.infer<typeof CandlesSchema>;
 
-export const SymbolsSchema = z.array(
-  z.looseObject({ symbol: z.string(), enabled: z.boolean(), asset_class: z.string() }),
-);
+/** `GET /engines/{id}/symbols`: the engine's symbol catalog. */
+export const SymbolsSchema = z.object({
+  items: z.array(
+    z.looseObject({
+      symbol: z.string(),
+      enabled: z.boolean(),
+      asset_class: z.string(),
+      reason: z.string(),
+      description: z.string(),
+    }),
+  ),
+});
 
 const KeyLevelSchema = z.object({ name: z.string(), price: z.number(), at: IsoDateTime.nullable() });
 

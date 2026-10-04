@@ -84,10 +84,12 @@ const lastModel = () => {
 function setup(extra: Record<string, () => Response> = {}) {
   const api = owner({
     'GET /engines/e1/symbols?enabled=true': () =>
-      json([
-        { symbol: 'EURUSD', enabled: true, asset_class: 'FX_MAJOR' },
-        { symbol: 'XAUUSD', enabled: true, asset_class: 'METAL' },
-      ]),
+      json({
+        items: [
+          { symbol: 'EURUSD', enabled: true, asset_class: 'FX_MAJOR', reason: '', description: 'Euro' },
+          { symbol: 'XAUUSD', enabled: true, asset_class: 'METAL', reason: '', description: 'Gold' },
+        ],
+      }),
     'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
       () => json(candles()),
     'GET /engines/e1/positions?status=OPEN&limit=200': () =>

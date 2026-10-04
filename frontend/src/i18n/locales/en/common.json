@@ -197,5 +197,75 @@
     "signalEntry": "Signal entry",
     "target": "target",
     "invalidation": "invalidation"
+  },
+  "symbols": {
+    "search": "Search symbols",
+    "traded": "Symbols the engine trades",
+    "all": "All broker symbols",
+    "matches": "Showing {{shown}} of {{total}}",
+    "noTraded": "No quotes from the engine yet.",
+    "none": "No symbols found.",
+    "assetClass": "Class",
+    "status": "Status",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "openChart": "Open chart",
+    "back": "Back to symbols",
+    "notFound": "This symbol is not in the engine's catalog.",
+    "quote": {
+      "title": "Latest quote",
+      "bid": "Bid",
+      "ask": "Ask",
+      "spread": "Spread (points)",
+      "time": "Quote time",
+      "none": "No quote for this symbol yet (the engine may not trade it)."
+    },
+    "spec": {
+      "title": "Specification",
+      "digits": "Digits",
+      "point": "Point",
+      "tickSize": "Tick size",
+      "tickValue": "Tick value",
+      "contractSize": "Contract size",
+      "volumeMin": "Minimum lot",
+      "volumeMax": "Maximum lot",
+      "volumeStep": "Lot step",
+      "stopsLevel": "Stops level (points)",
+      "freezeLevel": "Freeze level (points)",
+      "filling": "Filling modes",
+      "tradeMode": "Trade mode",
+      "swapLong": "Swap long",
+      "swapShort": "Swap short",
+      "currencies": "Currencies (base / profit / margin)",
+      "spreadFloat": "Floating spread",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "tradeMode": {
+      "0": "Trading disabled",
+      "1": "Long only",
+      "2": "Short only",
+      "3": "Close only",
+      "4": "Full trading"
+    },
+    "context": {
+      "title": "Market context",
+      "none": "No analysis of this symbol yet.",
+      "asOf": "From the latest analysis, {{time}}",
+      "session": "Session",
+      "timeframe": "Timeframe",
+      "trend": "Trend",
+      "regime": "Regime",
+      "volatility": "Volatility",
+      "structure": "Structure",
+      "support": "Nearest support",
+      "resistance": "Nearest resistance"
+    },
+    "state": {
+      "title": "State",
+      "catalog": "Catalog",
+      "breakers": "Breakers on this symbol",
+      "noBreakers": "No breaker tripped."
+    }
   }
 }

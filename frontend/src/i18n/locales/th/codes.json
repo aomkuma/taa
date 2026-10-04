@@ -58,5 +58,29 @@
     "HARMONIC": "ฮาร์มอนิก",
     "ELLIOTT": "คลื่นเอลเลียต",
     "SESSIONS": "ช่วงเวลาตลาด"
+  },
+  "trend": {
+    "BULLISH": "ขาขึ้น",
+    "BEARISH": "ขาลง",
+    "NEUTRAL": "ไม่มีทิศทางชัด"
+  },
+  "regime": {
+    "TRENDING": "มีแนวโน้ม",
+    "RANGING": "แกว่งในกรอบ",
+    "VOLATILE": "ผันผวนสูง",
+    "UNCLEAR": "ไม่ชัดเจน"
+  },
+  "volatility": {
+    "LOW": "ต่ำ",
+    "NORMAL": "ปกติ",
+    "HIGH": "สูง",
+    "EXTREME": "สูงมาก"
+  },
+  "session": {
+    "ASIA": "เอเชีย",
+    "LONDON": "ลอนดอน",
+    "NEW_YORK": "นิวยอร์ก",
+    "LONDON_NY_OVERLAP": "ลอนดอนซ้อนนิวยอร์ก",
+    "OFF": "นอกช่วงหลัก"
   }
 }

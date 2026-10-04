@@ -11,8 +11,8 @@ import { engineHealth } from '@/engine/health';
 import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 
-import { Gauge } from './Gauge';
-import { lossUsed } from './gaugeLevels';
+import { Gauge } from '@/components/Gauge';
+import { lossUsed } from '@/components/gaugeLevels';
 import { dashboardKeys, RECENT } from './keys';
 import { BreakersSchema, DecisionsPageSchema, NotificationsPageSchema, PositionsPageSchema } from './schemas';
 

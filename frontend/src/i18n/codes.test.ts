@@ -18,6 +18,10 @@ import {
   CODES_NAMESPACE,
   DECISIONS,
   FAMILIES,
+  REGIMES,
+  SESSIONS,
+  TRENDS,
+  VOLATILITY_STATES,
   ENGINE_ERRORS,
   EXIT_REASONS,
   GATE_STATUSES,
@@ -87,6 +91,10 @@ describe('code lists match the backend enums', () => {
     ['NotificationType', notificationsPy, NOTIFICATION_TYPES],
     ['Decision', decisionEnginePy, DECISIONS],
     ['Family', frameworkPy, FAMILIES],
+    ['Trend', enumsPy, TRENDS],
+    ['Regime', enumsPy, REGIMES],
+    ['VolatilityState', enumsPy, VOLATILITY_STATES],
+    ['Session', enumsPy, SESSIONS],
   ] as const)('%s', (className, source, values) => {
     expect(sorted(values)).toEqual(sorted(pyStrEnumValues(source, className)));
   });
@@ -99,6 +107,10 @@ describe('code texts', () => {
     ['notificationType', NOTIFICATION_TYPES],
     ['decision', DECISIONS],
     ['family', FAMILIES],
+    ['trend', TRENDS],
+    ['regime', REGIMES],
+    ['volatility', VOLATILITY_STATES],
+    ['session', SESSIONS],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {
       const i18n = createI18n(language);

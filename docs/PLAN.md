@@ -889,6 +889,21 @@ AI failures never trip trading breakers; they only produce HOLD.
     (`attributionLogo: false`) and the page shows "Charts by TradingView Lightweight Charts™" linking to
     tradingview.com under every chart (the library's NOTICE asks for that link). Checked in headless Edge
     under the production CSP: no violations.
+- (TAA-906 decisions) Symbols (`frontend/src/pages/symbols/`):
+  - Heartbeat quotes carry `max_spread_points` (the engine's `AppConfig.spread_limit(symbol)`). The cloud keeps
+    the newest quotes in `engine_heartbeats.payload` (left out of `/status` and its stream event) and serves
+    them at `GET /engines/{id}/quotes`; the stream's `quotes` events replace them in the page.
+  - List: the traded symbols (from the quotes) with bid/ask and spread/limit; the catalog with a search.
+  - Detail (`?symbol=`): quote with a spread gauge against the limit ("not updated since" when older than
+    60 s while the market is open), the specification (trade mode, digits, point, tick size/value, contract
+    size, lot min/max/step, stops/freeze levels, filling modes, swaps, currencies), the market context of the
+    newest decision on the symbol (session, nearest S/R, trend/regime/volatility/structure per timeframe), the
+    catalog state and the breakers scoped to the symbol; a link to the chart.
+  - `codes:` kinds `trend`, `regime`, `volatility`, `session` with texts; MT5 trade modes in `symbols.tradeMode`.
+  - **API samples** (`tests/web/test_api_samples.py` → `frontend/src/test/fixtures/api-samples.json`): real
+    responses of the routes the pages read, built from engine serializers; `apiSamples.test.ts` parses each with
+    the page schema. Found TAA-905 reading `/symbols` as a list. Add a route there when a page starts using it;
+    regenerate with `TAA_UPDATE_API_SAMPLES=1` after an intended change.
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

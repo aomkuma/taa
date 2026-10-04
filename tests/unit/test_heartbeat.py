@@ -165,12 +165,13 @@ class TestIngest:
         assert cloud.send(beat(WEDNESDAY)).accepted == 1
         row = cloud.row()
         assert row.state == "running" and row.connected and row.market_open and row.watch_status == "ONLINE"
-        assert row.payload["cycles"] == 10 and "quotes" not in row.payload
+        assert row.payload["cycles"] == 10 and row.payload["quotes"][0]["symbol"] == "EURUSD"
         older = cloud.send(beat(WEDNESDAY - timedelta(seconds=10), cycles=9))
         assert older.duplicates == 1 and cloud.row().payload["cycles"] == 10
         events = StreamLog(cloud.db, cloud.clock).read(ENGINE, 0, TOPICS, 10)[0]
         assert [(e.topic, e.type) for e in events] == [("status", "heartbeat"), ("quotes", "quotes")]
         assert events[1].item["quotes"][0]["symbol"] == "EURUSD"
+        assert "quotes" not in events[0].item  # the status event stays small
 
     def test_the_account_snapshot_is_kept_with_the_heartbeat(self, cloud: Cloud) -> None:
         account = {

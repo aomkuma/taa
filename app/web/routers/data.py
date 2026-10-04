@@ -45,6 +45,14 @@ async def status(engine: OwnedEngine, ctx: Context) -> dict[str, Any]:
     return {"engine": engine.public(), **body}
 
 
+@router.get("/quotes")
+async def quotes(engine: OwnedEngine, ctx: Context) -> dict[str, Any]:
+    """The newest bid/ask/spread (with the engine's spread limit) of each traded symbol; the stream's
+    ``quotes`` topic carries the updates."""
+    result: dict[str, Any] = await _run(models(ctx).quotes, engine.engine_id)
+    return result
+
+
 @router.get("/account")
 async def account(engine: OwnedEngine, ctx: Context) -> dict[str, Any]:
     result: dict[str, Any] = await _run(models(ctx).account, engine.engine_id)

@@ -81,7 +81,7 @@ def heartbeat_dict(row: EngineHeartbeatRow) -> dict[str, Any]:
     """The newest heartbeat as the stream sends it (``status``/``heartbeat``: the payload without quotes, plus
     ``received_at`` on the cloud clock) and the watchdog's verdict (TAA-705)."""
     return {
-        **row.payload,
+        **{k: v for k, v in row.payload.items() if k != "quotes"},
         "received_at": json_safe(ensure_utc(row.received_at)),
         "watch_status": row.watch_status,
         "offline_since": json_safe(None if row.offline_since is None else ensure_utc(row.offline_since)),
@@ -205,6 +205,18 @@ class ReadModels:
             "audit": None if chain is None else row_dict(chain, skip=("engine_id",)),
             "heartbeat": heartbeat,
         }
+
+    def quotes(self, engine_id: str) -> dict[str, Any]:
+        """The newest quotes of the engine's traded symbols, from its newest heartbeat (TAA-906)."""
+        with self.db.session() as sess:
+            beat = sess.get(EngineHeartbeatRow, engine_id)
+            if beat is None:
+                return {"at": None, "received_at": None, "quotes": []}
+            return {
+                "at": beat.payload.get("at"),
+                "received_at": json_safe(ensure_utc(beat.received_at)),
+                "quotes": list(beat.payload.get("quotes", [])),
+            }
 
     def account(self, engine_id: str) -> dict[str, Any]:
         with self.db.session() as sess:

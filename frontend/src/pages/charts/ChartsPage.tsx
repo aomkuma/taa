@@ -98,7 +98,7 @@ export function ChartsPage() {
     enabled: decisionId !== null || opportunityId !== null,
   });
   const signalDoc = signalSource.data?.signal ?? null;
-  const symbol = params.get('symbol') ?? signalDoc?.symbol ?? symbols.data?.[0]?.symbol ?? null;
+  const symbol = params.get('symbol') ?? signalDoc?.symbol ?? symbols.data?.items[0]?.symbol ?? null;
 
   const overlays = overlaysQuery(indicators);
   const candles = useQuery({
@@ -187,7 +187,7 @@ export function ChartsPage() {
   };
 
   const symbolOptions = [
-    ...new Set([...(symbol ? [symbol] : []), ...(symbols.data ?? []).map((s) => s.symbol)]),
+    ...new Set([...(symbol ? [symbol] : []), ...(symbols.data?.items ?? []).map((s) => s.symbol)]),
   ].sort();
 
   return (

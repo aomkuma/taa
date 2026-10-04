@@ -68,6 +68,8 @@ def test_the_engine_starts_reports_and_stops_sync(tmp_path: Path) -> None:
         ).all()
         assert beats and beats[-1].payload["state"] == "stopped" and beats[-1].payload["run_id"]
         assert {"market_open", "market_change_at", "quotes", "connected"} <= set(beats[-1].payload)
+        quotes = beats[-1].payload["quotes"]
+        assert quotes and all(q["max_spread_points"] == s.config.spread_limit(q["symbol"]) for q in quotes)
         account = beats[-1].payload["account"]  # the traded account for the dashboard (TAA-904)
         assert account["backend"] == "paper" and account["currency"] == "USD"
         assert account["equity"] > 0 and account["day_pnl"] == 0.0 and account["open_risk"] == 0.0

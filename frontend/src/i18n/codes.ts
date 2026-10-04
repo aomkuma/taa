@@ -14,6 +14,7 @@
  * | `NotificationType` (app/sync/notifications.py)                    | `codes:notificationType.<TYPE>`    |
  * | `Decision` (app/engine/decision_engine.py)                        | `codes:decision.<D>`               |
  * | `Family` (app/evidence/framework.py), theory families             | `codes:family.<FAMILY>`            |
+ * | `Trend`, `Regime`, `VolatilityState`, `Session` (app/core/enums.py) | `codes:trend.<T>`, `codes:regime.<R>`, `codes:volatility.<V>`, `codes:session.<S>` |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
  * Parameterized reason codes arrive as `CODE:detail` (`BREAKER_OPEN:daily_loss`); the key is built from `CODE`
@@ -187,6 +188,12 @@ export const FAMILIES = [
   'SESSIONS',
 ] as const;
 
+// Market context (app/core/enums.py): the symbols page (TAA-906).
+export const TRENDS = ['BULLISH', 'BEARISH', 'NEUTRAL'] as const;
+export const REGIMES = ['TRENDING', 'RANGING', 'VOLATILE', 'UNCLEAR'] as const;
+export const VOLATILITY_STATES = ['LOW', 'NORMAL', 'HIGH', 'EXTREME'] as const;
+export const SESSIONS = ['ASIA', 'LONDON', 'NEW_YORK', 'LONDON_NY_OVERLAP', 'OFF'] as const;
+
 export const CODE_KINDS = [
   'reason',
   'gate',
@@ -201,6 +208,10 @@ export const CODE_KINDS = [
   'notificationType',
   'decision',
   'family',
+  'trend',
+  'regime',
+  'volatility',
+  'session',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 
