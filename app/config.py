@@ -600,6 +600,10 @@ class SyncConfig(StrictModel):
     heartbeat_seconds: float = Field(default=10.0, gt=0)
     request_timeout_seconds: float = Field(default=15.0, gt=0)
     max_backlog_events: int = Field(default=200_000, ge=1000)
+    backoff_initial_seconds: float = Field(default=2.0, gt=0, le=60)
+    backoff_max_seconds: float = Field(default=300.0, gt=0, le=3600)
+    max_attempts: int = Field(default=20, ge=1, le=1000, description="then an event is parked as DEAD")
+    sent_retention_hours: float = Field(default=24.0, ge=0, le=24 * 30, description="sent rows kept locally")
 
 
 class DetectorSettings(StrictModel):

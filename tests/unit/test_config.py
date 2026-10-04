@@ -64,6 +64,8 @@ def test_env_overrides_yaml(tmp_path: Path) -> None:
         ("advisory:\n  calibration:\n    nightly_hour_utc: 24\n", "nightly_hour_utc"),
         ("advisory:\n  calibration:\n    min_brier_improvement: 0.9\n", "min_brier_improvement"),
         ("advisory:\n  calibration:\n    replay_weight: 2\n", "replay_weight"),
+        ("sync:\n  backoff_max_seconds: 0\n", "backoff_max_seconds"),
+        ("sync:\n  max_attempts: 0\n", "max_attempts"),
     ],
 )
 def test_invalid_config_rejected(tmp_path: Path, yaml_text: str, fragment: str) -> None:

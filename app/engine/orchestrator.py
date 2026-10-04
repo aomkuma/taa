@@ -83,6 +83,7 @@ from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
 from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import EvidenceSetup
+from app.sync.runtime import SyncRuntime
 
 log = logging.getLogger(__name__)
 
@@ -112,6 +113,7 @@ class Engine:
         bus: EventBus,
         sleep: Callable[[float], None] = time.sleep,
         process: str = "engine",
+        sync: SyncRuntime | None = None,
     ) -> None:
         if settings.mode is TradingMode.DEMO:
             if not (settings.env.ENABLE_DEMO_TRADING and bundle.client.allow_trading):
@@ -148,6 +150,7 @@ class Engine:
         self.lifecycle: OpportunityLifecycle | None = None
         self.shadow: ShadowTracker | None = None
         self.calibration: CalibrationService | None = None
+        self.sync = sync  # cloud replication; None unless sync.enabled (built in start())
         self._requirements_cache: tuple[datetime | None, ComputeRequirements] | None = None
         loop = self.config.engine
         self._candles_due = _Due(loop.candle_poll_seconds)
@@ -273,6 +276,10 @@ class Engine:
         restored = self._build_backend(account, by_magic)
         self.on_started(restored)
         self.runs.start(self.run_id, self.process, self.settings.mode.value, self.settings.config_hash)
+        if self.sync is None and cfg.sync.enabled:
+            self.sync = SyncRuntime.from_settings(self.settings, self.db, self.clock)
+        if self.sync is not None:  # its own thread: a slow or offline cloud never delays the loop
+            self.sync.start()
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
         self.audit.append(
             "ENGINE_START",
@@ -514,6 +521,22 @@ class Engine:
                 self.calibration.failures += 1
                 self.calibration.last_error = f"{type(exc).__name__}: {exc}"
 
+    @staticmethod
+    def _sync_status(sync: SyncRuntime) -> dict[str, Any]:
+        m = sync.sender.metrics()
+        return {
+            "pending": m.pending_total,
+            "pending_by_priority": m.pending,
+            "dead": m.dead,
+            "oldest_pending_age_seconds": m.oldest_pending_age_seconds,
+            "sent_total": m.sent_total,
+            "dropped_total": m.dropped_total,
+            "failed_sends": m.failed_sends,
+            "consecutive_failures": m.consecutive_failures,
+            "last_error": m.last_error,
+            "last_success_at": None if m.last_success_at is None else m.last_success_at.isoformat(),
+        }
+
     def _calibration_version(self) -> str | None:
         current = None if self.calibration is None else self.calibration.current
         return None if current is None else current.version
@@ -737,6 +760,7 @@ class Engine:
                 "last_duration_ms": round(self.shadow.stats.last_duration_ms),
                 "last_error": self.shadow.stats.last_error,
             },
+            "sync": None if self.sync is None else self._sync_status(self.sync),
             "calibration": None
             if self.calibration is None
             else {
@@ -764,6 +788,8 @@ class Engine:
         try:
             if self.calibration is not None:
                 self.calibration.shutdown()
+            if self.sync is not None:
+                self.sync.stop()
             if hasattr(self, "backend") and isinstance(self.backend, PaperBackend):
                 self.backend.maintain()
             self.heartbeat("stopped")  # a deliberate stop: the watchdog does not restart it
