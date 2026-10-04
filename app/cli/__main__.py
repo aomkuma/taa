@@ -342,6 +342,37 @@ def cmd_advisory_replay(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_advisory_calibrate(args: argparse.Namespace) -> int:
+    from app.advisory.calibration import CalibrationService
+    from app.core.clock import SystemClock
+
+    settings = _settings(args)
+    server = args.server or settings.env.MT5_SERVER
+    if not server:
+        print("error: pass --server (calibration is per trade server)", file=sys.stderr)
+        return 1
+    db, _ = _db_and_audit(settings)
+    try:
+        service = CalibrationService(
+            db,
+            settings.config.advisory.calibration,
+            SystemClock(),
+            server=server,
+            executor=CalibrationService.inline(),
+        )
+        loaded = service.rebuild()
+    finally:
+        db.engine.dispose()
+    report = loaded.model.report
+    print(f"calibration {loaded.version}  server {server}")
+    print(f"  outcomes: {loaded.n_live} live + {loaded.n_replay} replay (PLAN variant, CLOSED)")
+    print(f"  evidence model: {'used' if loaded.model.uses_evidence else 'not used (bucket model only)'}")
+    if report is not None and report.n_test:
+        print(f"  walk-forward Brier: bucket {report.brier_bucket:.4f}  evidence {report.brier_evidence:.4f}")
+    print("  (calibrated on hypothetical shadow results; not a prediction of future results)")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="TAA operator commands")
     parser.add_argument("--env-file", default=".env")
@@ -431,6 +462,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rp.add_argument("--progress", action="store_true")
     rp.set_defaults(func=cmd_advisory_replay)
+    cal = adv_sub.add_parser("calibrate", help="rebuild the win-probability calibration from shadow trades")
+    cal.add_argument("--server", default=None, help="trade server (default: MT5_SERVER)")
+    cal.set_defaults(func=cmd_advisory_calibrate)
     return parser
 
 

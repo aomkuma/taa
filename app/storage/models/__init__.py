@@ -1,6 +1,8 @@
 """ORM models. Import everything here so Alembic autogenerate sees the full metadata."""
 
 from app.storage.models.advisory import (
+    CalibrationTableRow,
+    EvidenceModelVersionRow,
     OpportunityRow,
     ShadowTradeRow,
     SuitabilitySnapshotRow,
@@ -27,10 +29,12 @@ __all__ = [
     "Base",
     "BreakerEventRow",
     "BreakerStateRow",
+    "CalibrationTableRow",
     "ConfigSnapshot",
     "DecisionCheckRow",
     "DecisionRecordRow",
     "EngineState",
+    "EvidenceModelVersionRow",
     "HistoryCandle",
     "KillSwitchEvent",
     "OpportunityRow",

@@ -512,6 +512,27 @@ class ShadowConfig(StrictModel):
     budget_seconds: float = Field(default=2.0, gt=0, le=60, description="resolution time per engine cycle")
 
 
+class CalibrationConfig(StrictModel):
+    """Win-probability calibration and the evidence model from shadow trades (PLAN §A26, §A27, §A29)."""
+
+    enabled: bool = True
+    nightly_hour_utc: int = Field(default=23, ge=0, le=23, description="daily rebuild after this UTC hour")
+    kappa: float = Field(default=20.0, gt=0, le=1000, description="empirical-Bayes pseudo-count per level")
+    min_trades: int = Field(default=30, ge=1, description="below: 'insufficient data'")
+    replay_cap: float = Field(default=50.0, ge=0, le=10_000, description="max REPLAY pseudo-trades per cell")
+    replay_weight: float = Field(
+        default=0.5, ge=0, le=1, description="REPLAY row weight in the evidence model"
+    )
+    folds: int = Field(default=5, ge=2, le=20, description="walk-forward folds")
+    l2: float = Field(default=1.0, gt=0, le=1000)
+    min_group: int = Field(default=200, ge=10, description="outcomes for a strategy x asset-class model")
+    min_brier_improvement: float = Field(
+        default=0.005, ge=0, le=0.5, description="relative Brier gain the evidence model needs to be used"
+    )
+    reliability_bins: int = Field(default=10, ge=2, le=50)
+    keep_versions: int = Field(default=30, ge=1, le=1000)
+
+
 class AdvisoryConfig(StrictModel):
     universe: UniverseConfig = Field(default_factory=UniverseConfig)
     sessions: AdvisorySessionsConfig = Field(default_factory=AdvisorySessionsConfig)
@@ -520,6 +541,7 @@ class AdvisoryConfig(StrictModel):
     ranking: RankingConfig = Field(default_factory=RankingConfig)
     scanner: ScannerConfig = Field(default_factory=ScannerConfig)
     shadow: ShadowConfig = Field(default_factory=ShadowConfig)
+    calibration: CalibrationConfig = Field(default_factory=CalibrationConfig)
     # validated by app.advisory.preferences.local_preferences (config cannot import the catalogs it checks)
     preferences: dict[str, Any] = Field(default_factory=dict, description="fallback without a cloud")
 

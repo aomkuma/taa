@@ -159,7 +159,8 @@ class TestAttribution:
         )
         by = {c.feature: c.points for c in exp.contributions}
         assert by[FIB] > 0 and by[WPAT] > 0 and by[RSI] < 0
-        assert exp.top(1)[0].feature == FIB and exp.estimate.source == "evidence"
+        # against the average opportunity: FIB 1.2 x (1 - 0.5) ~ W 0.9 x (1 - 0.3) in logits, so no fixed order
+        assert exp.top(1)[0].feature in (FIB, WPAT) and exp.estimate.source == "evidence"
 
     def test_disabled_theories_are_neutral_and_not_explained(self, wp: WinProbability) -> None:
         q = Query("s", "EURUSD", "FOREX_MAJOR", 70.0, 2.0, features={FIB: 1.0, WPAT: 1.0, RSI: -1.0})
@@ -216,3 +217,17 @@ class TestSubsetStrength:
         assert everything == pytest.approx(sig.setup_strength)
         assert nothing < only_fib < everything
         assert nothing == pytest.approx(40 * 2 / 3)  # the checklist alone
+
+
+def test_unfired_detectors_are_observed_zeros(wp: WinProbability) -> None:
+    """With every theory enabled, the explained p is the model's own prediction for the real features."""
+    from app.advisory.confidence import with_derived
+
+    feats = {FIB: 1.0}  # W pattern and RSI did not fire: zeros, not unknowns
+    q = Query("s", "EURUSD", "FOREX_MAJOR", 70.0, 2.0, features=feats)
+    assert wp.evidence is not None
+    model = wp.evidence.model_for(q)
+    assert model is not None
+    exp = wp.explain(q)
+    assert exp.estimate.p == pytest.approx(100 * model.predict(with_derived(feats)))
+    assert model.active_rate(FIB) == pytest.approx(0.5, abs=0.03)

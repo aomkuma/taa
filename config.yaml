@@ -181,6 +181,19 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
     tick_tiebreak: true             # copy_ticks_range decides an M1 bar that touches both SL and TP
     poll_seconds: 60                # M1 resolution cadence
     budget_seconds: 2.0             # per engine cycle
+  calibration:                      # win probability + evidence model from shadow trades (PLAN A27, A29)
+    enabled: true
+    nightly_hour_utc: 23            # rebuilt once a day after this hour (and on demand: app.cli advisory calibrate)
+    kappa: 20                       # empirical-Bayes pseudo-count per hierarchy level
+    min_trades: 30                  # fewer outcomes in strategy x asset class x RR band: "insufficient data"
+    replay_cap: 50                  # REPLAY outcomes count as at most 50 pseudo-trades per cell
+    replay_weight: 0.5              # REPLAY rows' weight in the evidence model
+    folds: 5                        # walk-forward folds for model selection
+    l2: 1.0
+    min_group: 200                  # outcomes for a strategy x asset-class evidence model (else pooled)
+    min_brier_improvement: 0.005    # the evidence model must beat the bucket model's Brier by 0.5% out of sample
+    reliability_bins: 10
+    keep_versions: 30
   preferences:                      # one user's advisory preferences when no cloud is configured (PLAN A26/A30/A31)
     watchlists:
       - {name: Favourites, kind: FAVOURITES, symbols: [EURUSD, XAUUSD]}

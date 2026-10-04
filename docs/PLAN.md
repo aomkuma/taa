@@ -909,6 +909,21 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
   - REPLAY outcomes act as a capped prior (≤ 50 pseudo-counts) and LIVE outcomes update it.
   - Also produces the Brier score and reliability data.
   - Every opportunity stores the `calibration_version` it used.
+  - (TAA-6C3 decisions) `calibration.py`; config `advisory.calibration`:
+    - Training rows are CLOSED `PLAN` shadow trades. Win = TP first; a time stop counts as a loss, matching
+      the hit-rate definition. VOID trades and rows without a planned RR are skipped.
+    - Brier and reliability bins come from the walk-forward (out-of-sample) predictions of the selected model.
+    - Versions are named `<UTC timestamp>-<content hash>`; the newest `keep_versions` (30) are kept. Rebuilt daily
+      after `nightly_hour_utc`, at the first start without a version, or by `app.cli advisory calibrate`. In
+      the engine the build runs on a worker thread. A failed build keeps the previous version and retries after
+      an hour.
+    - The evidence model must beat the bucket Brier by `min_brier_improvement` (0.5% relative) out of sample, so
+      a model without real signal never wins on noise.
+    - Attribution fix (found by the 6C3 tests): a detector that did not fire is an observed zero, not unknown.
+      Only Shapley players left out of a coalition and detectors the user disabled take the training mean, and
+      `ctx:n_families` adds those imputed players' training activity rates. Before the fix a useless detector
+      could get several points of credit. With every theory enabled, the explained p now equals the model's
+      prediction.
 - **Accuracy statistics (`stats.py`, shared with cloud analytics):**
   - Core metrics:
     - hit rate (TP-first ÷ resolved) with Wilson CI
