@@ -9,6 +9,7 @@ import { engineKey } from '@/engine/schemas';
 import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
+import { ManualPositionsCard } from '@/pages/trades/ManualPositions';
 import { controlsOf } from '@/pages/risk/riskModel';
 import { EngineConfigSchema, riskKeys } from '@/pages/risk/schemas';
 import { Link } from 'react-router';
@@ -202,6 +203,8 @@ export function PositionsPage() {
             </ul>
           )}
         </Card>
+
+        <ManualPositionsCard />
 
         {mode === 'DEMO' && (
           <Card title={t('trades.broker.title')}>

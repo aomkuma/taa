@@ -76,6 +76,32 @@ class AccountLimits(BaseModel):
     consecutive_losses: int = Field(ge=1)
 
 
+MAX_FOREIGN_POSITIONS = 50
+
+
+class ForeignPosition(BaseModel):
+    """A position on the account that the bot did not open (manual trades, magic outside the bot's range):
+    read-only facts for the PWA, measured the way the exposure checks measure them."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ticket: int
+    symbol: str = Field(max_length=32)
+    side: Literal["BUY", "SELL"]
+    volume: float = Field(ge=0, allow_inf_nan=False)
+    price_open: float = Field(allow_inf_nan=False)
+    price_current: float = Field(allow_inf_nan=False)
+    sl: float | None = Field(allow_inf_nan=False)
+    tp: float | None = Field(allow_inf_nan=False)
+    profit: float = Field(allow_inf_nan=False)
+    swap: float = Field(allow_inf_nan=False)
+    opened_at: AwareDatetime
+    magic: int
+    comment: str = Field(max_length=64)
+    risk_to_stop: float | None = Field(ge=0, allow_inf_nan=False)  # None: no stop, or not measurable
+    counted: bool  # whether it counts toward the bot's limits (risk.foreign_positions_policy)
+
+
 class AccountSnapshot(BaseModel):
     """The traded account at the last health step (TAA-904): the paper book in PAPER, the broker account in
     DEMO. P/L figures follow the loss tracker (flow-adjusted, broker day and ISO week); open risk is the risk
@@ -100,6 +126,10 @@ class AccountSnapshot(BaseModel):
     unknown_risk_positions: int = Field(ge=0)
     consecutive_losses: int = Field(ge=0)
     limits: AccountLimits
+    # manual positions (since 2026-10-05); None from older engines
+    effective_leverage: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+    max_effective_leverage: float | None = Field(default=None, gt=0, allow_inf_nan=False)
+    foreign_positions: list[ForeignPosition] | None = Field(default=None, max_length=MAX_FOREIGN_POSITIONS)
 
 
 class HeartbeatPayload(BaseModel):

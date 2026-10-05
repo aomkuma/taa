@@ -79,7 +79,7 @@ from app.monitoring.health_check import write_heartbeat
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
-from app.risk.exposure_manager import MAGIC_RANGE, ExposureManager
+from app.risk.exposure_manager import MAGIC_RANGE, ExposureManager, PositionRisk
 from app.risk.kill_switch import KillMode, KillSwitch
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.risk.mode_gates import GateResult, evaluate_gate
@@ -92,7 +92,13 @@ from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import EvidenceSetup
 from app.sync.candles import CandleStreamer
 from app.sync.commands import Command, CommandFailed, CommandProcessor, CommandType, Handler, drain
-from app.sync.heartbeat import MAX_FORMING, MAX_QUOTES, HeartbeatEmitter, market_state
+from app.sync.heartbeat import (
+    MAX_FOREIGN_POSITIONS,
+    MAX_FORMING,
+    MAX_QUOTES,
+    HeartbeatEmitter,
+    market_state,
+)
 from app.sync.replication import Replicator, install_replication
 from app.sync.runtime import SyncRuntime
 
@@ -986,6 +992,12 @@ class Engine:
             "heat_percent": num(exposure.heat_percent, 4),
             "unknown_risk_positions": len(exposure.unknown_risk),
             "consecutive_losses": status.consecutive_losses,
+            "effective_leverage": num(exposure.effective_leverage),
+            "max_effective_leverage": risk.max_effective_leverage,
+            "foreign_positions": [
+                foreign_position(p, counted=risk.foreign_positions_policy == "count")
+                for p in exposure.foreign[:MAX_FOREIGN_POSITIONS]
+            ],
             "limits": {
                 "daily_loss_percent": risk.max_daily_loss_percent,
                 "weekly_loss_percent": risk.max_weekly_loss_percent,
@@ -1118,3 +1130,29 @@ class Engine:
             self.bus.emit(EventType.ENGINE_STOPPED, cycles=self.cycles)
         finally:
             self.bundle.client.shutdown()
+
+
+def foreign_position(measured: PositionRisk, *, counted: bool) -> dict[str, Any]:
+    """A manual position for the heartbeat (``ForeignPosition``): what MT5 reports plus its risk to stop."""
+    p = measured.position
+
+    def num(value: float) -> float | None:
+        return value if math.isfinite(value) else None
+
+    return {
+        "ticket": p.ticket,
+        "symbol": p.symbol,
+        "side": p.side.value,
+        "volume": p.volume,
+        "price_open": p.price_open,
+        "price_current": p.price_current,
+        "sl": p.sl if p.sl > 0 else None,
+        "tp": p.tp if p.tp > 0 else None,
+        "profit": num(p.profit) or 0.0,
+        "swap": num(p.swap) or 0.0,
+        "opened_at": p.time_utc,
+        "magic": p.magic,
+        "comment": p.comment[:64],
+        "risk_to_stop": None if measured.risk_to_stop is None else round(measured.risk_to_stop, 2),
+        "counted": counted,
+    }

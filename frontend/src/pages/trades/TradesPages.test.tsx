@@ -43,6 +43,75 @@ function setup(extra: Record<string, () => Response> = {}) {
 
 const card = (name: string) => screen.findByRole('region', { name });
 
+const ACCOUNT = (recorded['engines/ENGINE/status']?.heartbeat as { account: Record<string, unknown> })
+  .account;
+const MANUAL = {
+  ticket: 4242,
+  symbol: 'BTCUSD',
+  side: 'BUY',
+  volume: 0.1,
+  price_open: 60000,
+  price_current: 61000,
+  sl: 59000,
+  tp: null,
+  profit: 100,
+  swap: -2.5,
+  opened_at: '2026-09-29T08:00:00+00:00',
+  magic: 0,
+  comment: 'by hand',
+  risk_to_stop: 100,
+  counted: true,
+};
+const withAccount = (account: Record<string, unknown>) => () =>
+  json(status('e1', { heartbeat: heartbeat({ account: { ...ACCOUNT, ...account } }) }));
+
+describe('manual positions', () => {
+  it('lists the account’s manual positions read-only and how they count toward the limits', async () => {
+    setup({
+      'GET /engines/e1/status': withAccount({
+        foreign_positions: [MANUAL, { ...MANUAL, ticket: 4243, sl: null, risk_to_stop: null, side: 'SELL' }],
+        effective_leverage: 118.3,
+        max_effective_leverage: 10,
+      }),
+    });
+    renderShell('/positions');
+    const manual = await card('Manual positions on the MT5 account');
+    const rows = within(await within(manual).findByRole('table'))
+      .getAllByRole('row')
+      .slice(1);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent('#4242');
+    expect(rows[0]).toHaveTextContent(/\+USD\s97\.50/); // profit + swap
+    expect(rows[1]).toHaveTextContent('none');
+    expect(
+      within(manual).getByText(/count toward the bot's limits: USD\s100\.00 of open risk/),
+    ).toBeInTheDocument();
+    expect(within(manual).getByRole('alert')).toHaveTextContent('1 position(s) without a stop');
+  });
+
+  it('shows the effective leverage on the dashboard and the manual positions there', async () => {
+    setup({
+      'GET /engines/e1/status': withAccount({
+        foreign_positions: [MANUAL],
+        effective_leverage: 118.3,
+        max_effective_leverage: 10,
+      }),
+    });
+    renderShell('/');
+    expect(await screen.findByText('Effective leverage')).toBeInTheDocument();
+    expect(screen.getByText('118.3×')).toBeInTheDocument();
+    expect(await card('Manual positions on the MT5 account')).toHaveTextContent('BTCUSD');
+  });
+
+  it('says when the engine does not report them yet', async () => {
+    setup({ 'GET /engines/e1/status': withAccount({}) });
+    renderShell('/positions');
+    expect(
+      await within(await card('Manual positions on the MT5 account')).findByText(/has not reported/),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('positions page', () => {
   it('shows open positions with floating P/L, R from the initial stop and excursions', async () => {
     setup();

@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { useEngine } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
 import { useLiveEvents } from '@/live/context';
+import { ManualPositionsCard } from '@/pages/trades/ManualPositions';
 import { TopRankedCard } from '@/pages/ranking/TopRankedCard';
 
 import { AccountCard, AlertsCard, BreakersCard, DecisionsCard, HealthCard, PositionsCard } from './cards';
@@ -40,6 +41,7 @@ function OwnDashboard({ engineId }: { engineId: string }) {
       <HealthCard />
       <BreakersCard />
       <PositionsCard />
+      <ManualPositionsCard compact />
       <DecisionsCard />
       <TopRankedCard engineId={engineId} />
       <AlertsCard />

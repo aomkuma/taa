@@ -25,6 +25,28 @@ export const EngineListSchema = z.object({ items: z.array(EngineSummarySchema) }
 const Figure = z.number().nullable();
 
 /** The traded account at the engine's last health step (TAA-904; `AccountSnapshot` in app/sync/heartbeat.py). */
+/** A position the bot did not open (a manual MT5 trade), read-only (`ForeignPosition` in app/sync/heartbeat.py). */
+export const ForeignPositionSchema = z.object({
+  ticket: z.number().int(),
+  symbol: z.string(),
+  side: z.enum(['BUY', 'SELL']),
+  volume: z.number(),
+  price_open: z.number(),
+  price_current: z.number(),
+  sl: z.number().nullable(),
+  tp: z.number().nullable(),
+  profit: z.number(),
+  swap: z.number(),
+  opened_at: IsoDateTime,
+  magic: z.number().int(),
+  comment: z.string(),
+  /** Loss if the stop is hit; null: no stop (unknown risk) or not measurable. */
+  risk_to_stop: z.number().nullable(),
+  /** Whether it counts toward the bot's limits (`risk.foreign_positions_policy`). */
+  counted: z.boolean(),
+});
+export type ForeignPosition = z.infer<typeof ForeignPositionSchema>;
+
 export const AccountSnapshotSchema = z.looseObject({
   as_of: IsoDateTime,
   backend: z.string(),
@@ -42,6 +64,10 @@ export const AccountSnapshotSchema = z.looseObject({
   heat_percent: Figure,
   unknown_risk_positions: z.number().int().nonnegative(),
   consecutive_losses: z.number().int().nonnegative(),
+  /** Engines from 2026-10-05 on: the counted positions' effective leverage and the manual positions. */
+  effective_leverage: z.number().nonnegative().nullable().optional(),
+  max_effective_leverage: z.number().positive().nullable().optional(),
+  foreign_positions: z.array(ForeignPositionSchema).nullable().optional(),
   limits: z.looseObject({
     daily_loss_percent: z.number().positive(),
     weekly_loss_percent: z.number().positive(),

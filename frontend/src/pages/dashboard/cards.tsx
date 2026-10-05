@@ -181,6 +181,15 @@ export function AccountCard() {
           value={`${format.money(account.open_risk, currency)} (${pct(account.heat_percent)})`}
           limitText={pct(limits.heat_percent)}
         />
+        {account.effective_leverage != null && account.max_effective_leverage != null && (
+          <Gauge
+            label={t('dashboard.account.leverage')}
+            used={account.effective_leverage}
+            limit={account.max_effective_leverage}
+            value={`${format.number(account.effective_leverage, { maximumFractionDigits: 1 })}×`}
+            limitText={`${format.number(account.max_effective_leverage)}×`}
+          />
+        )}
         <Gauge
           label={t('dashboard.account.losingStreak')}
           used={account.consecutive_losses}

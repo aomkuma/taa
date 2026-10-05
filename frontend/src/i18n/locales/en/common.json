@@ -148,7 +148,8 @@
       "openRisk": "Open risk",
       "losingStreak": "Consecutive losses",
       "unknownRisk": "{{n}} position(s) with unknown risk (no stop loss or no symbol data)",
-      "asOf": "As of {{time}}"
+      "asOf": "As of {{time}}",
+      "leverage": "Effective leverage"
     },
     "positions": {
       "title": "Open positions",
@@ -341,6 +342,24 @@
       "stopBody": "{{old}} → {{new}}",
       "exit": "Closed: {{reason}}",
       "exitBody": "Price {{price}} · net {{net}} · {{r}}R"
+    },
+    "manual": {
+      "title": "Manual positions on the MT5 account",
+      "unknown": "The engine has not reported the account's manual positions yet (an older engine, or no health check yet).",
+      "none": "No manual positions on the account.",
+      "total": "P/L {{pnl}}",
+      "symbol": "Symbol",
+      "volume": "Lot",
+      "open": "Open",
+      "current": "Now",
+      "stop": "Stop",
+      "target": "Target",
+      "pnl": "P/L",
+      "risk": "Risk to stop",
+      "noStop": "none",
+      "counted": "Read-only: the bot never manages or closes these. They count toward the bot's limits: {{risk}} of open risk, plus their leverage.",
+      "notCounted": "Read-only: the bot never manages or closes these, and they do not count toward its limits.",
+      "noStopWarning": "{{n}} position(s) without a stop: their risk is unknown, so the bot refuses new entries while they are open."
     }
   },
   "decisions": {

@@ -12,6 +12,7 @@ from sqlalchemy import select
 
 from app.core.errors import ConfigError, TaaError
 from app.storage.models import OutboxEventRow
+from app.sync.heartbeat import HeartbeatPayload
 from app.sync.runtime import SyncRuntime
 from tests.integration.test_engine_paper import harness, settings
 
@@ -96,3 +97,25 @@ def test_an_unreadable_account_sends_no_snapshot(tmp_path: Path) -> None:
     h.engine.backend.funds = broken  # type: ignore[method-assign]
     beat = h.engine.cloud_heartbeat()
     assert beat["account"] is None and beat["state"] == "running"
+
+
+def test_manual_positions_reach_the_dashboard(tmp_path: Path) -> None:
+    h = harness(tmp_path)
+    fake = h.engine.bundle.fake
+    assert fake is not None
+    clock = h.engine.bundle.server_clock
+    h.engine.start()
+    fake.add_position(
+        ticket=4242, symbol="EURUSD", type=1, volume=0.05, price_open=1.1, sl=1.105, tp=0.0,
+        price_current=1.1, profit=-2.5, swap=0.0, magic=0, comment="by hand",
+        time=clock.utc_to_server_epoch(h.clock.now_utc()),
+    )  # fmt: skip
+    h.engine._health()  # the health step measures the account (run() would disconnect at its end)
+    account = h.engine.cloud_heartbeat()["account"]
+    [manual] = account["foreign_positions"]
+    assert manual["ticket"] == 4242 and manual["side"] == "SELL" and manual["sl"] == 1.105
+    assert manual["tp"] is None and manual["counted"] is True and manual["comment"] == "by hand"
+    assert manual["risk_to_stop"] == pytest.approx(25.0, rel=0.05)  # 50 points on 0.05 lot
+    assert account["open_risk"] >= manual["risk_to_stop"] and account["effective_leverage"] > 0
+    assert account["max_effective_leverage"] == h.engine.config.risk.max_effective_leverage
+    HeartbeatPayload.model_validate(h.engine.cloud_heartbeat())  # the wire schema accepts it
