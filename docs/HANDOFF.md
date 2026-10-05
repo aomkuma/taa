@@ -489,14 +489,16 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
 
 ## Notes for the next session
 
-- Local demo stack (2026-10-05, at the user's request; nothing of it is committed):
-  - web user `aomkuma` (OWNER); password reset with the new `app.cli web reset-password` (minimum now 8 characters)
-  - a separate engine `fake demo` (`eng_pd7dpfkuhvmbgtused2xi2nf7a`) registered for `aomkuma`, run as
-    `python -m app.main --mode paper --fake` with an env file in the session scratchpad (`ENGINE_ID`/secret of
-    that engine, `CLOUD_BASE_URL=http://127.0.0.1:8000`, its own `ENGINE_DB_URL`, a copy of config.yaml with
-    `sync.enabled: true`), so fake rows never mix with the real engine id or `data/taa_engine.db`. Revoke it
-    before pairing the real engine (`web engine revoke <id> --confirm <id>`, then `web engine import-env`).
-  - `python -m app.web` and `python -m app.worker` started by hand; one demo backtest run exists.
+- Local demo stack (2026-10-05, at the user's request): `scripts\start-demo.cmd` (double-click) or
+  `scripts\start-demo.ps1 [-NoEngine] [-NoBrowser]` opens web, worker and a PAPER FakeMT5 engine in their own
+  windows (they outlive Claude Code's 2-hour background limit) and the browser.
+  - web user `aomkuma` (OWNER); password reset with `app.cli web reset-password` (minimum now 8 characters)
+  - demo engine `fake demo` (`eng_pd7dpfkuhvmbgtused2xi2nf7a`) for `aomkuma`; its id and secret are in the
+    git-ignored `.env.demo` (`start-demo.ps1 -Setup -Owner NAME` registers a new one). It uses
+    `data/demo/engine.db` and `data/demo/config.demo.yaml` (config.yaml with `sync.enabled: true`, rebuilt at
+    every start), so demo rows never mix with the real engine id or `data/taa_engine.db`. It still shares
+    `data/heartbeat.json` and the kill-switch file with a real engine: do not run both at once. Revoke it before
+    pairing the real engine (`web engine revoke <id> --confirm <id>`, then `web engine import-env`).
 
 - Notes for the PWA (Phase 9; the APIs the pages read, all under `/api/v1`):
   - Session: `/auth/session|login|logout|step-up|profile`; feed: `GET /me/feed` (which engine the user reads;
