@@ -11,6 +11,7 @@ import { DECISIONS, REASON_CODES, translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { useLiveEvents } from '@/live/context';
 import { Card } from '@/pages/dashboard/cards';
+import { riskOrigin } from '@/pages/risk/riskLimitsModel';
 
 import {
   type Check,
@@ -100,6 +101,7 @@ function DecisionDetail({
     };
   }, [onClose]);
   const d = detail.data;
+  const origin = riskOrigin(d?.risk_source);
   return (
     <div className="fixed inset-0 z-40">
       <button
@@ -143,6 +145,14 @@ function DecisionDetail({
                 time: format.dateTime(d.created_at),
               })}
             </p>
+            {origin && d.risk_percent != null && (
+              <p className="text-xs text-slate-500">
+                {t('riskLimits.decision', {
+                  percent: format.percent(d.risk_percent, { maximumFractionDigits: 2 }),
+                  source: t(`riskLimits.origin.${origin}`),
+                })}
+              </p>
+            )}
             {d.checks.some((c) => !c.passed) && (
               <p role="status" className="mt-2 text-sm font-medium text-red-700 dark:text-red-400">
                 {t('decisions.detail.why', {

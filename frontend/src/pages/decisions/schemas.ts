@@ -22,6 +22,9 @@ export const DecisionRowSchema = z.looseObject({
   entry_price: Value,
   stop_loss: Value,
   take_profit: Value,
+  /** TAA-710: the limits it was measured against (`cloud:<version>` | `cache:…` | `local:…`). */
+  risk_source: z.string().nullable().optional(),
+  risk_percent: Value.optional(),
 });
 export type DecisionRow = z.infer<typeof DecisionRowSchema>;
 

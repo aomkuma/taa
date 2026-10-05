@@ -1919,5 +1919,37 @@
       "type": "Type the engine ID to confirm: {{id}}",
       "mismatch": "Type the engine ID exactly."
     }
+  },
+  "riskLimits": {
+    "title": "Risk limits in use",
+    "col": {
+      "limit": "Limit",
+      "profile": "Your trading profile",
+      "cage": "Engine machine (config.yaml)",
+      "effective": "In use"
+    },
+    "field": {
+      "risk_per_trade_percent": "Risk per trade",
+      "total_open_risk_percent": "Open risk of all positions",
+      "max_open_positions": "Open positions",
+      "max_daily_loss_percent": "Daily loss limit",
+      "min_risk_reward": "Minimum reward : risk"
+    },
+    "clamped": "limited by the engine machine",
+    "source": {
+      "cloud": "Source: your trading profile, received from the cloud.",
+      "cache": "Source: the last trading profile the engine received (the cloud is not reachable now).",
+      "local": "Source: the engine machine's own profile (no trading profile from the cloud yet)."
+    },
+    "age": "confirmed {{n}} min ago",
+    "explain": "For each value the engine uses the stricter of your profile and the engine machine's config.yaml. The engine machine's values can only be changed on that machine.",
+    "pending": "Saved. The engine picks up the new values within about a minute.",
+    "unavailable": "The engine has not reported the limits it uses yet (an older engine version, or no account snapshot).",
+    "decision": "Sized with {{percent}} per trade · {{source}}",
+    "origin": {
+      "cloud": "your trading profile",
+      "cache": "your last received trading profile",
+      "local": "the engine machine's profile"
+    }
   }
 }

@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { type FakeRequest, type Handler, json } from '@/test/api';
-import { owner, renderShell } from '@/test/engine';
+import { owner, renderShell, status } from '@/test/engine';
 import samples from '@/test/fixtures/api-samples.json';
 import type { Preferences } from '@/pages/watchlists/schemas';
 
@@ -43,6 +43,9 @@ function setup(extra: Record<string, Handler> = {}) {
 }
 
 const region = (name: string) => screen.findByRole('region', { name });
+// the engine's heartbeat as tests/web/test_api_samples.py records it: the owner's profile in a 0.5 % cage
+const recordedStatus = (samples as Record<string, Record<string, unknown>>)['engines/ENGINE/status'] ?? {};
+const withLimits = () => json(status('e1', { heartbeat: recordedStatus.heartbeat }));
 // a large form: typing into it takes a while when the suite runs in parallel
 vi.setConfig({ testTimeout: 20_000 });
 
@@ -120,5 +123,20 @@ describe('trading profile page', () => {
     renderShell('/profile', 'th');
     expect(await screen.findByRole('heading', { name: 'บุคลิกการเทรด' })).toBeInTheDocument();
     expect(await region('การแบ่งไม้')).toBeInTheDocument();
+  });
+
+  it('shows what the engine trades with and when it has not picked up a save yet', async () => {
+    setup({ 'GET /engines/e1/status': withLimits });
+    const user = userEvent.setup();
+    renderShell('/profile');
+    const inUse = await region('Risk limits in use');
+    const perTrade = within(inUse).getByRole('row', { name: /Risk per trade/ });
+    expect(perTrade).toHaveTextContent('limited by the engine machine');
+    expect(within(inUse).queryByRole('status')).not.toBeInTheDocument(); // the saved style 50 is applied
+
+    const style = await region('Style');
+    fireEvent.change(within(style).getByLabelText(/^Style/), { target: { value: '100' } });
+    await user.click(screen.getByRole('button', { name: 'Save trading profile' }));
+    expect(await within(inUse).findByRole('status')).toHaveTextContent('within about a minute');
   });
 });

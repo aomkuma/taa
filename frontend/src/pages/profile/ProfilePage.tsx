@@ -5,11 +5,13 @@ import { Link } from 'react-router';
 import { z } from 'zod';
 
 import { ApiError, apiPost } from '@/api/client';
-import { useEngine } from '@/engine/context';
+import { useEngine, useEngineStatus } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
 import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
+import { EngineLimits } from '@/pages/risk/EngineLimits';
+import { profilePending } from '@/pages/risk/riskLimitsModel';
 import { usePreferences, useSaveSections } from '@/pages/watchlists/hooks';
 import {
   CONFLICT_POLICIES,
@@ -591,6 +593,25 @@ function PlanCard({
   );
 }
 
+/** What the engine trades with after the cage (TAA-924); only for an engine that reports it (its owner). */
+function EngineLimitsCard({ saved }: { saved: TradingProfile }) {
+  const { t } = useTranslation();
+  const status = useEngineStatus();
+  const limits = status.data?.heartbeat?.account?.risk_limits;
+  if (!limits) return null;
+  const pending = profilePending(limits, resolve(saved).values);
+  return (
+    <Card title={t('riskLimits.title')}>
+      {pending && (
+        <p role="status" className="mb-2 text-sm text-amber-800 dark:text-amber-300">
+          {t('riskLimits.pending')}
+        </p>
+      )}
+      <EngineLimits limits={limits} />
+    </Card>
+  );
+}
+
 function ProfileForm({ saved }: { saved: { profile: TradingProfile; plan: EntryPlan } }) {
   const { t } = useTranslation();
   const save = useSaveSections();
@@ -635,6 +656,7 @@ function ProfileForm({ saved }: { saved: { profile: TradingProfile; plan: EntryP
         <div className="flex flex-col gap-4">
           <PlanCard plan={draft.plan} profile={draft.profile} change={setPlan} />
           <HabitsCard profile={draft.profile} change={setProfile} />
+          <EngineLimitsCard saved={saved.profile} />
         </div>
       </div>
       <div className="sticky bottom-0 flex flex-wrap items-center gap-2 border-t border-slate-200 bg-white/95 py-2 dark:border-slate-800 dark:bg-slate-950/95">
@@ -682,8 +704,8 @@ function ProfileForm({ saved }: { saved: { profile: TradingProfile; plan: EntryP
 
 /**
  * PLAN §A31 "บุคลิกการเทรด / Trading profile" (TAA-922): the style slider with the resulting numbers, per-field
- * overrides, holding habits and the entry plan with an example lot breakdown sized by the server. In
- * Milestone 1 it shapes alerts only; it never sends orders.
+ * overrides, holding habits and the entry plan with an example lot breakdown sized by the server. The engine
+ * owner's profile also sets the engine's own limits inside the engine machine's config.yaml (TAA-710/924).
  */
 export function ProfilePage() {
   const { t } = useTranslation();

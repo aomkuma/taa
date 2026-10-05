@@ -2360,6 +2360,15 @@ its age.
   - Decision records carry `risk_source` and `risk_percent` (migration 0033).
   - Found on the way: the orchestrator never sets `DecisionRequest.probation`, so `probation_multiplier` does
     not apply to the engine's own decisions today (unchanged here; see HANDOFF).
+- **(TAA-924 decisions)**
+  - One component, `EngineLimits` (`frontend/src/pages/risk/`), shows profile / engine machine / in use per
+    governed field with a "limited by the engine machine" badge, the source and the age. It sits on Risk &
+    controls (always, with an "not reported yet" text for older engines) and on the Trading profile page
+    (only when the selected engine reports it, i.e. for its owner).
+  - "Not applied yet" compares the saved profile's resolved values with `risk_limits.profile` from the
+    heartbeat; it clears once the engine's next pull (≤ 60 s) reaches a heartbeat.
+  - The decision detail shows "Sized with X% per trade · <source>" from `risk_source` / `risk_percent`.
+  - Parity tests read `governed()`, `GovernedLimits` and `ResolvedProfile.limits()` from the Python source.
 
 ## A22. Delivery plan
 

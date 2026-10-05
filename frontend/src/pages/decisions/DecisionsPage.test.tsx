@@ -118,6 +118,8 @@ describe('signals & decisions page', () => {
     await user.click(await screen.findByRole('button', { name: /XAUUSD SELL/ }));
     const dialog = await screen.findByRole('dialog', { name: 'XAUUSD SELL · Rejected' });
     expect(within(dialog).getByText('Checks: 1 of 3 passed')).toBeInTheDocument();
+    // the limits it was sized with (TAA-710/924)
+    expect(within(dialog).getByText('Sized with 0.5% per trade · your trading profile')).toBeInTheDocument();
     // the reasons up front, with what the check measured
     expect(within(dialog).getByRole('status')).toHaveTextContent(
       "Rejected because: Spread too high · An open position's risk cannot be measured (no stop loss, or no data for its symbol) (BTCUSD#2076338425)",

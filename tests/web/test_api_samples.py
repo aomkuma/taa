@@ -389,6 +389,32 @@ def realistic_rows(db: Database, engine_id: str) -> None:
                 "heat_percent": 1.5,
                 "consecutive_losses": 4,
             },
+            "risk_limits": {  # the owner's profile (style 50) inside a 0.5 % cage (TAA-710)
+                "source": "cloud",
+                "version": "367a33e42c836f3d",
+                "age_seconds": 120,
+                "cage": {
+                    "risk_per_trade_percent": 0.5,
+                    "total_open_risk_percent": 1.5,
+                    "max_open_positions": 3,
+                    "max_daily_loss_percent": 2.0,
+                    "min_risk_reward": 1.5,
+                },
+                "profile": {
+                    "risk_per_trade_percent": 0.75,
+                    "total_open_risk_percent": 2.0,
+                    "max_open_positions": 3,
+                    "max_daily_loss_percent": 2.0,
+                    "min_risk_reward": 1.5,
+                },
+                "effective": {
+                    "risk_per_trade_percent": 0.5,
+                    "total_open_risk_percent": 1.5,
+                    "max_open_positions": 3,
+                    "max_daily_loss_percent": 2.0,
+                    "min_risk_reward": 1.5,
+                },
+            },
         }
         brief = {
             "at": T.isoformat(),

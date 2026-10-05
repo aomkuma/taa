@@ -53,6 +53,38 @@ export const ForeignPositionSchema = z.object({
 });
 export type ForeignPosition = z.infer<typeof ForeignPositionSchema>;
 
+/** The `RiskConfig` fields a trading profile governs (`governed()` in app/risk/limits.py). */
+export const GovernedLimitsSchema = z.object({
+  risk_per_trade_percent: z.number().positive(),
+  total_open_risk_percent: z.number().positive(),
+  max_open_positions: z.number().int().positive(),
+  max_daily_loss_percent: z.number().positive(),
+  min_risk_reward: z.number().positive(),
+});
+export type GovernedLimits = z.infer<typeof GovernedLimitsSchema>;
+export const GOVERNED_FIELDS = [
+  'risk_per_trade_percent',
+  'total_open_risk_percent',
+  'max_open_positions',
+  'max_daily_loss_percent',
+  'min_risk_reward',
+] as const;
+export type GovernedField = (typeof GOVERNED_FIELDS)[number];
+
+/**
+ * Which limits the engine trades with (TAA-710, `RiskLimits` in app/sync/heartbeat.py): the engine machine's
+ * `config.yaml` cage, the owner's trading profile and the stricter of the two per field.
+ */
+export const RiskLimitsSchema = z.object({
+  source: z.enum(['cloud', 'cache', 'local']),
+  version: z.string(),
+  age_seconds: z.number().int().nonnegative().nullable(),
+  cage: GovernedLimitsSchema,
+  profile: GovernedLimitsSchema,
+  effective: GovernedLimitsSchema,
+});
+export type RiskLimits = z.infer<typeof RiskLimitsSchema>;
+
 export const AccountSnapshotSchema = z.looseObject({
   as_of: IsoDateTime,
   backend: z.string(),
@@ -85,6 +117,8 @@ export const AccountSnapshotSchema = z.looseObject({
     })
     .nullable()
     .optional(),
+  /** Engines with TAA-710: the cage, the owner's profile and the effective limits. */
+  risk_limits: RiskLimitsSchema.nullable().optional(),
   limits: z.looseObject({
     daily_loss_percent: z.number().positive(),
     weekly_loss_percent: z.number().positive(),

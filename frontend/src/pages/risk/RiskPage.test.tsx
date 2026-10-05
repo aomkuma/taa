@@ -58,6 +58,15 @@ describe('risk & controls page', () => {
     expect(within(daily).getByText('OK')).toBeInTheDocument();
     expect(within(limits).getByRole('row', { name: /Open positions/ })).toHaveTextContent('13');
 
+    const inUse = within(await card('Risk limits in use')).getByRole('table', { name: 'Risk limits in use' });
+    const perTrade = within(inUse).getByRole('row', { name: /Risk per trade/ });
+    expect(perTrade).toHaveTextContent('0.75%'); // the owner's profile …
+    expect(perTrade).toHaveTextContent('limited by the engine machine'); // … capped at the 0.5 % config.yaml
+    expect(within(inUse).getByRole('row', { name: /Open positions/ })).not.toHaveTextContent('limited');
+    expect(
+      screen.getByText(/your trading profile, received from the cloud. · confirmed 2 min ago/),
+    ).toBeInTheDocument();
+
     const breakers = await card('Circuit breakers');
     expect(await within(breakers).findByText('Normal')).toBeInTheDocument();
     expect(within(breakers).getByText(/· Tripped/)).toBeInTheDocument();

@@ -57,6 +57,8 @@ def sample_rows() -> list[Base]:
             market={"spread": 1.2},
             config_hash="c" * 32,
             code_version="0.1.0",
+            risk_source="cloud:367a33e42c836f3d",
+            risk_percent=0.5,
         ),
         DecisionCheckRow(
             decision_id="d1",

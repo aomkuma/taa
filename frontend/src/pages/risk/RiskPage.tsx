@@ -14,6 +14,7 @@ import { useFormat } from '@/i18n/useFormat';
 import { useLiveEvents } from '@/live/context';
 import { Card } from '@/pages/dashboard/cards';
 
+import { EngineLimits } from './EngineLimits';
 import { controlsOf, measuredLimits, type MeasuredLimit, sortBreakers, STATIC_LIMITS } from './riskModel';
 import { BreakersPageSchema, EngineConfigSchema, KillSwitchPageSchema, riskKeys } from './schemas';
 
@@ -306,6 +307,23 @@ function LimitsCard({ engineId }: { engineId: string }) {
   );
 }
 
+function RiskLimitsCard() {
+  const { t } = useTranslation();
+  const status = useEngineStatus();
+  const limits = status.data?.heartbeat?.account?.risk_limits;
+  return (
+    <Card title={t('riskLimits.title')}>
+      {status.data === undefined ? (
+        <Loading error={status.isError} />
+      ) : limits ? (
+        <EngineLimits limits={limits} />
+      ) : (
+        <p className="text-sm text-slate-500">{t('riskLimits.unavailable')}</p>
+      )}
+    </Card>
+  );
+}
+
 function BreakersCard({ engineId }: { engineId: string }) {
   const { t, i18n } = useTranslation();
   const format = useFormat();
@@ -490,7 +508,10 @@ function CommandsCard({ engineId }: { engineId: string }) {
   );
 }
 
-/** PLAN §A15 risk & controls (TAA-911): limits against current values, breakers, kill switch, command history. */
+/**
+ * PLAN §A15 risk & controls (TAA-911): limits against current values, the limits in use and where they come
+ * from (TAA-924), breakers, kill switch, command history.
+ */
 export function RiskPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -520,6 +541,7 @@ export function RiskPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <KillSwitchCard engineId={id} canControl={canControl} />
         <LimitsCard engineId={id} />
+        <RiskLimitsCard />
         <BreakersCard engineId={id} />
         <CommandsCard engineId={id} />
       </div>
