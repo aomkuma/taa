@@ -175,5 +175,30 @@
     "LOWER_RANK": "Another signal ranked higher",
     "STRATEGY_ERROR": "Strategy error",
     "DEMO_UNPROVEN": "Demonstration strategy, not proven"
+  },
+  "strategyState": {
+    "ENABLED": "Enabled",
+    "DISABLED_REMOTE": "Disabled from the app",
+    "DISABLED_CONFIG": "Off in config",
+    "UNKNOWN": "State unknown"
+  },
+  "commandStatus": {
+    "QUEUED": "Queued",
+    "DELIVERED": "Delivered to the engine",
+    "EXECUTED": "Done",
+    "REJECTED": "Refused by the engine",
+    "FAILED": "Failed",
+    "EXPIRED": "Expired (the engine did not answer)"
+  },
+  "strategy": {
+    "example_trend_pullback": "Higher-timeframe trend bias; enters on a pullback to the fast EMA on the entry timeframe. Demonstration only.",
+    "setup_neckline_break": "M/W, triple tops/bottoms and head & shoulders: a close beyond the neckline. Unproven.",
+    "setup_pattern_breakout": "Breaks of triangle, wedge, rectangle, flag/pennant and cup & handle boundaries. Unproven.",
+    "setup_fib_pullback": "Rejection in the Fibonacci golden zone (50–61.8 %) in the impulse direction. Unproven.",
+    "setup_harmonic_prz": "Harmonic XABCD completion: reversal at the PRZ, targets 38.2/61.8 % of AD. Unproven.",
+    "setup_elliott_wave": "Possible start of wave 3 or wave 5 of the primary (heuristic) count. Unproven.",
+    "setup_smc_reversal": "Smart money: liquidity sweep + CHoCH + FVG retest; stop beyond the sweep extreme. Unproven.",
+    "setup_breakout": "Donchian channel and Asian / London / New York opening-range breakouts. Unproven.",
+    "setup_candle_reversal": "Reversal candlestick at a level (S/R, Fibonacci, pivots, trendline). Unproven."
   }
 }

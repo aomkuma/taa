@@ -29,6 +29,7 @@ from app.sync.outbox import Outbox, Priority
 
 HEARTBEAT = "heartbeat"
 MAX_QUOTES = 100
+MAX_STRATEGIES = 64
 MAX_SESSION_HOPS = 64  # about two weeks of handovers between sessions
 
 
@@ -99,6 +100,8 @@ class HeartbeatPayload(BaseModel):
     market_change_at: AwareDatetime | None
     outbox_pending: int | None = Field(default=None, ge=0)
     account: AccountSnapshot | None = None  # TAA-904; None until the first health step or when unreadable
+    # TAA-909: strategies a remote command disabled (engine_state); None from engines older than TAA-909
+    disabled_strategies: list[str] | None = Field(default=None, max_length=MAX_STRATEGIES)
     quotes: list[QuoteItem] = Field(default_factory=list, max_length=MAX_QUOTES)
 
 

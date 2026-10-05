@@ -103,9 +103,15 @@ class TestEmitter:
             {"extra": 1},
             {"open_positions": -1},
             {"at": "2026-09-30T10:00:00"},
+            {"disabled_strategies": ["s"] * 65},
+            {"disabled_strategies": "s"},
         ):
             with pytest.raises(ValidationError):
                 HeartbeatPayload.model_validate(beat(WEDNESDAY) | bad)
+        assert HeartbeatPayload.model_validate(beat(WEDNESDAY)).disabled_strategies is None  # before TAA-909
+        assert HeartbeatPayload.model_validate(
+            beat(WEDNESDAY) | {"disabled_strategies": ["a"]}
+        ).disabled_strategies
 
 
 ENGINE = "eng-1"

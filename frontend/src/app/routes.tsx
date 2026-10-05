@@ -23,6 +23,9 @@ const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'childre
     lazy: async () => ({ Component: (await import('@/pages/decisions/DecisionsPage')).DecisionsPage }),
   },
   symbols: { lazy: async () => ({ Component: (await import('@/pages/symbols/SymbolsPage')).SymbolsPage }) },
+  strategies: {
+    lazy: async () => ({ Component: (await import('@/pages/strategies/StrategiesPage')).StrategiesPage }),
+  },
 };
 
 const pages = (own: boolean): RouteObject[] =>

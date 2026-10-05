@@ -15,6 +15,9 @@
  * | `Decision` (app/engine/decision_engine.py)                        | `codes:decision.<D>`               |
  * | `Family` (app/evidence/framework.py), theory families             | `codes:family.<FAMILY>`            |
  * | `IntentState` (app/engine/order_manager.py), DEMO broker orders    | `codes:orderState.<S>`             |
+ * | `StrategyState` (app/web/strategies.py)                          | `codes:strategyState.<S>`          |
+ * | `QueueStatus` (app/sync/command_queue.py), control commands      | `codes:commandStatus.<S>`          |
+ * | strategy names (`name = "..."` in app/strategy), their descriptions | `codes:strategy.<name>`            |
  * | `Trend`, `Regime`, `VolatilityState`, `Session` (app/core/enums.py) | `codes:trend.<T>`, `codes:regime.<R>`, `codes:volatility.<V>`, `codes:session.<S>` |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
@@ -211,6 +214,23 @@ export const ORDER_STATES = [
   'EMERGENCY_CLOSED',
 ] as const;
 
+// The strategies page (TAA-909): StrategyState (app/web/strategies.py), QueueStatus (app/sync/command_queue.py)
+// and the strategy catalog (app/strategy/catalog.py: example_strategy.py and setups.py), whose text is the
+// strategy's description.
+export const STRATEGY_STATES = ['ENABLED', 'DISABLED_REMOTE', 'DISABLED_CONFIG', 'UNKNOWN'] as const;
+export const COMMAND_STATUSES = ['QUEUED', 'DELIVERED', 'EXECUTED', 'REJECTED', 'FAILED', 'EXPIRED'] as const;
+export const STRATEGY_NAMES = [
+  'example_trend_pullback',
+  'setup_neckline_break',
+  'setup_pattern_breakout',
+  'setup_fib_pullback',
+  'setup_harmonic_prz',
+  'setup_elliott_wave',
+  'setup_smc_reversal',
+  'setup_breakout',
+  'setup_candle_reversal',
+] as const;
+
 export const CODE_KINDS = [
   'reason',
   'gate',
@@ -230,6 +250,9 @@ export const CODE_KINDS = [
   'volatility',
   'session',
   'orderState',
+  'strategyState',
+  'commandStatus',
+  'strategy',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 

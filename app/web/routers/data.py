@@ -20,6 +20,7 @@ from app.storage.audit import verify_chain
 from app.web.deps import Context, OwnedEngine, WebContext
 from app.web.errors import ApiProblem
 from app.web.readmodels import MAX_LIMIT, QueryError, ReadModels
+from app.web.strategies import DEFAULT_DAYS, MAX_DAYS, strategy_overview
 
 router = APIRouter(prefix="/engines/{engine_id}", tags=["data"])
 
@@ -236,6 +237,21 @@ async def config(engine: OwnedEngine, ctx: Context) -> dict[str, Any]:
     if found is None:
         raise ApiProblem(404, "config_not_found", "The engine has not reported a configuration yet")
     return found
+
+
+@router.get("/strategies")
+async def strategies(
+    engine: OwnedEngine,
+    ctx: Context,
+    days: Annotated[int, Query(ge=1, le=MAX_DAYS)] = DEFAULT_DAYS,
+) -> dict[str, Any]:
+    """The configured strategies of the latest run: state, effective parameters, performance over *days*
+    (TAA-909; ``app/web/strategies.py``)."""
+    await run_in_threadpool(ctx.engine.commands.expire)  # so a stale command does not show as queued
+    result: dict[str, Any] = await _run(
+        strategy_overview, ctx.db, engine.engine_id, ctx.clock.now_utc(), days
+    )
+    return result
 
 
 @router.get("/audit/verify")

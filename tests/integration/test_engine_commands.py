@@ -136,6 +136,7 @@ def test_a_disabled_strategy_opens_nothing_until_re_enabled_locally(tmp_path: Pa
     h.engine.run(max_cycles=40)
     assert outcome(h, "s1")[0] == "EXECUTED" and h.engine.disabled_strategies() == {"buy_every_bar"}
     assert EventType.POSITION_OPENED not in h.types()
+    assert h.engine.cloud_heartbeat()["disabled_strategies"] == ["buy_every_bar"]  # the PWA's state (TAA-909)
     send(h, "STRATEGY_DISABLE", "s2", {"strategy": "nope"})
     h.engine.running = True
     h.engine.cycle()

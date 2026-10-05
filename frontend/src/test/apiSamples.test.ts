@@ -27,6 +27,7 @@ import {
 } from '@/pages/trades/schemas';
 
 import { DecisionDetailSchema, DecisionLogSchema } from '@/pages/decisions/schemas';
+import { StrategiesSchema } from '@/pages/strategies/schemas';
 
 import samples from './fixtures/api-samples.json';
 
@@ -51,6 +52,8 @@ const CASES: [string, z.ZodType][] = [
   [`${E}intents?kind=broker`, OrderIntentsPageSchema],
   [`${E}decisions?limit=50&profile=EXECUTION`, DecisionLogSchema],
   [`${E}decisions/d1`, DecisionDetailSchema],
+  [`${E}strategies`, StrategiesSchema],
+  [`${E}strategies?days=7`, StrategiesSchema],
   ['me/feed', FeedSchema],
   ['engines', EngineListSchema],
   ['notifications?limit=5', NotificationsPageSchema],

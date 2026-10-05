@@ -934,6 +934,32 @@ AI failures never trip trading breakers; they only produce HOLD.
     name and detail, the measured value against the threshold, the kind (HARD/ACCOUNT); a link to the chart.
   - TH/EN texts for every reason code (`Reason` ∪ strategy `ReasonCode`), parameterized ones with
     `{{detail}}`; the code-texts test now covers `reason` too.
+- (TAA-909 decisions) Strategies (`frontend/src/pages/strategies/`, `app/web/strategies.py`):
+  - `GET /engines/{id}/strategies?days=N` (1–365, default 30): the configured strategies of the latest run's
+    config snapshot, in config order. Parameters are resolved with the web release's strategy catalog
+    (`Params` defaults + the `config.yaml` overrides, as the registry builds them); overridden keys are listed.
+    A strategy the release does not know, or whose overrides it cannot validate, shows its configured overrides
+    only (`known: false`). Page level: the configured timeframes and the shared settings (cooldown, expiry).
+  - **State** (`StrategyState`): `DISABLED_CONFIG` (`enabled: false`), `DISABLED_REMOTE`, `ENABLED`, or
+    `UNKNOWN` while no heartbeat has reported the remote list. Engine heartbeats now carry
+    `disabled_strategies` (the `engine_state` list a STRATEGY_DISABLE command writes; absent from older engines).
+    A disable command executed after the newest heartbeat was received counts as disabled already, so the page
+    does not flip back for up to 10 s; a later heartbeat is authoritative again (a local
+    `app.cli strategy enable` shows).
+  - **Performance** in the window: EXECUTION decisions by result with the three most frequent rejection codes
+    (bare, without details), and PAPER positions closed in the window joined to their intents' strategy (closed
+    trades, wins/losses, win rate, net, profit factor, average R over the trades with a known R, open
+    positions). Hypothetical (paper) with the note; DEMO broker trades are not attributed per strategy yet.
+  - **Disable action:** `StepUpDialog` (`frontend/src/components/StepUpDialog.tsx`, `src/auth/stepUp.ts`), for
+    TAA-911 too: asks for an authenticator code unless the session's step-up is valid on the server clock,
+    `POST /auth/step-up`, then the action; a 403 `step_up_required` asks again. The command
+    (`STRATEGY_DISABLE`, optional reason) is shown with its queue state (`last_command`, `codes:commandStatus`);
+    no button while one is open or the strategy is not running. Re-enabling stays local: the page shows the
+    CLI command.
+  - Live: `status` events of type `command` or `run` refetch; a heartbeat refetches only when its list changes
+    what the page shows; `positions` and `decisions` events refetch the numbers.
+  - `codes:` kinds `strategyState`, `commandStatus` and `strategy` (TH/EN descriptions; parity with the
+    `name = "..."` lines of `app/strategy/example_strategy.py` and `setups.py`).
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

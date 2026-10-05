@@ -21,10 +21,13 @@ from typing import Any
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from app.config import load_app_config
 from app.storage.database import Database
 from app.storage.models import (
     AuditEvent,
+    ConfigSnapshot,
     DecisionRecordRow,
+    EngineCommandRow,
     EngineHeartbeatRow,
     NotificationRow,
     SymbolCatalogRow,
@@ -52,6 +55,8 @@ ENGINE_ROUTES = [
     "intents?kind=paper",
     "intents?kind=broker",
     "decisions?limit=50&profile=EXECUTION",
+    "strategies",
+    "strategies?days=7",
 ]
 USER_ROUTES = ["me/feed", "engines", "notifications?limit=5"]
 
@@ -69,6 +74,12 @@ def realistic_rows(db: Database, engine_id: str) -> None:
         assert decision is not None
         decision.signal = make_signal().to_dict()
         decision.market = make_context().to_dict()
+        snapshot = sess.get(ConfigSnapshot, (engine_id, "c" * 32))
+        assert snapshot is not None
+        config = load_app_config("config.yaml").model_dump(mode="json")
+        for item in config["strategies"]["items"]:  # one strategy the owner disabled from the PWA
+            item["enabled"] = item["enabled"] or item["name"] == "setup_breakout"
+        snapshot.payload = {"env": {"MT5_PASSWORD": "***set***"}, "config": config, "config_hash": "c" * 32}
         quote = {
             "symbol": "EURUSD",
             "bid": 1.1,
@@ -116,6 +127,7 @@ def realistic_rows(db: Database, engine_id: str) -> None:
             "market_change_at": (T + timedelta(hours=8)).isoformat(),
             "outbox_pending": 0,
             "account": account,
+            "disabled_strategies": ["setup_breakout"],
         }
         # ticket 1's lifecycle as app.engine.trade_audit appends it (entered T+15 min, closed 30 min later)
         entry = T + timedelta(minutes=15)
@@ -143,6 +155,26 @@ def realistic_rows(db: Database, engine_id: str) -> None:
                     hash=f"{seq:064x}",
                 )
             )
+        sess.add(
+            EngineCommandRow(
+                command_id="0191a0a0-0000-7000-8000-0000000000c1",
+                engine_id=engine_id,
+                type="STRATEGY_DISABLE",
+                params={"strategy": "setup_breakout", "reason": "too many losses"},
+                created_by="alice",
+                created_at=T,
+                expires_at=T + timedelta(minutes=2),
+                status="EXECUTED",
+                delivered_at=T + timedelta(seconds=1),
+                completed_at=T + timedelta(seconds=2),
+                result={
+                    "outcome": "EXECUTED",
+                    "reason": None,
+                    "detail": "strategy setup_breakout disabled (re-enable locally: app.cli strategy enable)",
+                    "at": (T + timedelta(seconds=2)).isoformat(),
+                },
+            )
+        )
         alice = sess.scalars(select(UserRow).where(UserRow.username == "alice")).one()
         sess.add(
             NotificationRow(

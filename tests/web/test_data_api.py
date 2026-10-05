@@ -48,6 +48,7 @@ ROUTES = [
     "symbols/EURUSD",
     "candles?symbol=EURUSD",
     "config",
+    "strategies",
     "audit/verify",
     "stream",
     "commands",

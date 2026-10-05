@@ -11,11 +11,18 @@ import circuitBreakerPy from '../../../app/risk/circuit_breaker.py?raw';
 import notificationsPy from '../../../app/sync/notifications.py?raw';
 import decisionEnginePy from '../../../app/engine/decision_engine.py?raw';
 import frameworkPy from '../../../app/evidence/framework.py?raw';
+import strategiesPy from '../../../app/web/strategies.py?raw';
+import commandQueuePy from '../../../app/sync/command_queue.py?raw';
+import exampleStrategyPy from '../../../app/strategy/example_strategy.py?raw';
+import setupsPy from '../../../app/strategy/setups.py?raw';
 
 import { createI18n } from '@/i18n';
 import {
   BREAKER_NAMES,
   codeKey,
+  COMMAND_STATUSES,
+  STRATEGY_NAMES,
+  STRATEGY_STATES,
   CODES_NAMESPACE,
   DECISIONS,
   FAMILIES,
@@ -102,8 +109,20 @@ describe('code lists match the backend enums', () => {
     ['VolatilityState', enumsPy, VOLATILITY_STATES],
     ['Session', enumsPy, SESSIONS],
     ['IntentState', orderManagerPy, ORDER_STATES],
+    ['StrategyState', strategiesPy, STRATEGY_STATES],
+    ['QueueStatus', commandQueuePy, COMMAND_STATUSES],
   ] as const)('%s', (className, source, values) => {
     expect(sorted(values)).toEqual(sorted(pyStrEnumValues(source, className)));
+  });
+});
+
+describe('strategy names match the catalog', () => {
+  it('every strategy class of example_strategy.py and setups.py', () => {
+    const names = [exampleStrategyPy, setupsPy].flatMap((source) =>
+      [...source.matchAll(/^ {4}name = "([a-z0-9_]+)"\r?$/gm)].map((m) => m[1] ?? ''),
+    );
+    expect(names.length).toBeGreaterThan(5);
+    expect(sorted(STRATEGY_NAMES)).toEqual(sorted(names));
   });
 });
 
@@ -121,6 +140,9 @@ describe('code texts', () => {
     ['orderState', ORDER_STATES],
     ['reason', REASON_CODES],
     ['exitReason', EXIT_REASONS],
+    ['strategyState', STRATEGY_STATES],
+    ['commandStatus', COMMAND_STATUSES],
+    ['strategy', STRATEGY_NAMES],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {
       const i18n = createI18n(language);

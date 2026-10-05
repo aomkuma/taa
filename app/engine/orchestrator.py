@@ -899,6 +899,7 @@ class Engine:
             "market_change_at": change_at,
             "outbox_pending": None if self.sync is None else self.sync.sender.metrics().pending_total,
             "account": self._account_snapshot(),
+            "disabled_strategies": sorted(self.disabled_strategies()),
             "quotes": quotes,
         }
 

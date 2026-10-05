@@ -364,5 +364,65 @@
       "checksTable": "Check-by-check results",
       "chart": "See on the chart"
     }
+  },
+  "stepUp": {
+    "code": "Authenticator code",
+    "why": "This action needs a fresh 6-digit code from your authenticator app.",
+    "codeHint": "Enter the 6 digits from your authenticator app.",
+    "invalidCode": "The code is incorrect or already used. Wait for the next code and try again.",
+    "expired": "Your confirmation has expired. Enter a new code.",
+    "failed": "The action failed ({{code}}).",
+    "network": "Cannot reach the server. Check your connection and try again.",
+    "cancel": "Cancel",
+    "working": "Working…"
+  },
+  "strategies": {
+    "window": "Period",
+    "days": "{{n}} days",
+    "none": "The engine has not reported its strategies yet. Start the engine once with sync on.",
+    "shared": "Timeframes: trend {{higher}}, entry {{entry}} · cooldown {{cooldown}} bars · signals valid for {{expiry}} bar(s)",
+    "remoteUnknown": "The engine has not reported which strategies were disabled remotely; the state shows as unknown.",
+    "note": "Performance counts the bot’s decisions and its closed paper trades in the period. Paper results are hypothetical, not real trading results, and say nothing about the future.",
+    "version": "version {{version}}",
+    "warmup": "warm-up {{bars}} bars",
+    "extraTimeframes": "also reads {{tfs}}",
+    "demoOnly": "demonstration, unproven",
+    "decisions": {
+      "title": "Decisions of {{name}}",
+      "accept": "Accepted",
+      "reject": "Rejected",
+      "hold": "Held",
+      "topReasons": "Most frequent rejections:"
+    },
+    "perf": {
+      "title": "Paper trades of {{name}}",
+      "trades": "Closed trades",
+      "tradesValue": "{{trades}} ({{wins}} won / {{losses}} lost)",
+      "winRate": "Win rate",
+      "net": "Net P/L",
+      "profitFactor": "Profit factor",
+      "avgR": "Average R",
+      "avgRValue": "{{r}}R ({{n}} trades)",
+      "open": "Open positions",
+      "lastExit": "Last closed"
+    },
+    "params": {
+      "title": "Parameters ({{n}})",
+      "table": "Parameters of {{name}}",
+      "override": "config.yaml",
+      "none": "No parameters.",
+      "configuredOnly": "This web release does not know this strategy or its settings: only the values set in config.yaml are shown."
+    },
+    "command": "Disable command: {{status}} · {{user}} · {{time}}",
+    "disable": {
+      "button": "Disable",
+      "title": "Disable {{name}}?",
+      "body": "The engine stops opening new trades from this strategy. Open positions stay as they are and are still managed.",
+      "reason": "Reason (optional)",
+      "confirm": "Disable strategy",
+      "pending": "Disable command sent; waiting for the engine…"
+    },
+    "reEnable": "Re-enable on the engine computer only:",
+    "configOff": "Switched off in config.yaml (enabled: false)."
   }
 }
