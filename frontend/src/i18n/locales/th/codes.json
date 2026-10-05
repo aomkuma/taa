@@ -447,5 +447,22 @@
       "session_vwap": "ราคาตัด VWAP ของช่วงตลาด",
       "tick_spike": "ปริมาณ tick พุ่ง/จุดไคลแมกซ์"
     }
+  },
+  "attribution": {
+    "WIN_TRAILING_CAPTURE": "ชนะ ปิดด้วย trailing stop",
+    "WIN_TREND_CONTINUATION": "ชนะ ตามเทรนด์ไทม์เฟรมใหญ่",
+    "SCRATCH_BREAKEVEN": "ราว ๆ เสมอตัว",
+    "WEEKEND_GAP": "Stop ถูกกระโดดข้ามหลัง gap วันหยุด",
+    "GAP_THROUGH_STOP": "Stop ถูกกระโดดข้าม (gap)",
+    "LOSS_IMMEDIATE_ADVERSE": "สวนทางทันทีหลังเข้า",
+    "LOSS_GAVE_BACK_PROFIT": "เคยกำไร 1R แล้วกลับมาโดน stop",
+    "LOSS_REGIME_SHIFT": "เทรนด์ไทม์เฟรมใหญ่กลับทิศระหว่างถือ",
+    "LOSS_VOLATILITY_SPIKE": "ความผันผวนพุ่งระหว่างถือ",
+    "LOSS_NEWS_PROXIMITY": "มีช่วงข่าวทับช่วงที่ถือ",
+    "COUNTER_TREND_ENTRY": "ขาดทุน เข้าสวนเทรนด์ไทม์เฟรมใหญ่",
+    "COST_DOMINATED": "ต้นทุนกินผลลัพธ์ไปมาก",
+    "HIGH_SLIPPAGE": "slippage สูง",
+    "WIN_OTHER": "ชนะ (ไม่เข้ารูปแบบใด)",
+    "LOSS_OTHER": "ขาดทุน (ไม่เข้ารูปแบบใด)"
   }
 }

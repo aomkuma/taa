@@ -1982,5 +1982,71 @@
       "cache": "your last received trading profile",
       "local": "the engine machine's profile"
     }
+  },
+  "analytics": {
+    "scope": {
+      "label": "Results of",
+      "PAPER": "The bot's paper trades",
+      "SHADOW": "The signals (simulated)",
+      "BACKTEST": "A backtest run"
+    },
+    "variant": {
+      "label": "Signal handling",
+      "PLAN": "As planned",
+      "MANAGED": "With break-even and trailing"
+    },
+    "days": {
+      "label": "Period",
+      "n": "Last {{n}} days"
+    },
+    "run": "Run",
+    "pickRun": "Pick a finished backtest run.",
+    "hypothetical": "Simulated results: no real money was traded. They describe the past and are no forecast.",
+    "skipped": "{{n}} trade(s) could not be measured faithfully and were left out.",
+    "kpi": {
+      "title": "Key figures",
+      "trades": "Trades",
+      "winRate": "Win rate",
+      "expectancy": "Average per trade",
+      "netR": "Total",
+      "profitFactor": "Profit factor",
+      "maxDrawdown": "Largest drawdown",
+      "sharpe": "Sharpe",
+      "sortino": "Sortino",
+      "hold": "Average holding time"
+    },
+    "curve": "Cumulative result (R)",
+    "drawdown": "Drawdown (R)",
+    "histogram": "Result per trade (R)",
+    "maeMfe": "Worst (MAE) vs best (MFE) move, in R",
+    "style": {
+      "title": "By style",
+      "by": "Group by",
+      "strategy": "Strategy",
+      "symbol": "Symbol",
+      "session": "Session",
+      "setup": "Setup",
+      "holding": "Holding style",
+      "regime": "Regime",
+      "volatility": "Volatility",
+      "direction": "Direction",
+      "weekday": "Weekday"
+    },
+    "attribution": "Why trades won or lost",
+    "recommendations": "Recommendations",
+    "recommendation": {
+      "RESTRICT_SEGMENT": "{{dimension}} {{value}}: {{n}} trades averaging {{mean_r}}R, and the whole 95% range is below zero. Consider restricting it.",
+      "EARLIER_BREAK_EVEN": "{{gave_back}} of {{losers}} losing trades ({{share}}) were at least {{mfe_r}}R in profit before the stop. Test an earlier break-even or a partial take-profit.",
+      "STOP_TOO_TIGHT": "{{strategy}}: after {{reached_target}} of {{stops}} stop-losses ({{share}}), price still reached the take-profit within {{bars}} bars. The stop may be tight relative to ATR.",
+      "COST_DRAG": "{{symbol}}: costs took {{share}} of the result before costs. Review the spread filter or the symbol.",
+      "REDUCE_RISK": "The drawdown ({{drawdown_percent}}%) is over half of its {{limit_percent}}% limit. Consider a lower risk per trade."
+    },
+    "ci": "Average {{mean}}R, 95% range {{low}} to {{high}}R over {{n}} trades.",
+    "smallSample": "Only {{n}} trades (at least {{min}} are needed to rely on it): treat it as a hint.",
+    "backtestThis": "Backtest this change",
+    "noBacktest": "This one cannot be backtested as a single change.",
+    "backtestFailed": "The backtest could not be started ({{code}}).",
+    "noRecommendations": "Nothing to recommend from {{n}} trades.",
+    "neverApplied": "Recommendations never change the engine's settings: test one as a backtest, then decide yourself."
   }
 }

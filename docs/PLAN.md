@@ -1142,6 +1142,35 @@ AI failures never trip trading breakers; they only produce HOLD.
     `change` (a closed set of kinds, each with bounds) and `exclude_strategies`. The change exists only in
     the job's configuration. A segment by session, hour or regime has no testable change and is shown
     without the button.
+- (TAA-1005 decisions) Analytics API and page:
+  - `app/analytics/report.py` builds one report shape for every scope: KPIs, the cumulative-R curve with
+    its drawdown, the R histogram (0.5R bins from −3 to +5, open-ended at both ends), performance by the
+    A16 style tags plus weekday, MAE/MFE points and an attribution summary.
+    - R is the basis everywhere. Money figures and a money profit factor appear only when every trade has
+      its net P/L.
+    - Sharpe and Sortino use daily sums of R (√260). At most 500 curve and MAE/MFE points are returned
+      (the most recent).
+  - `app/web/analytics.py` loads the scopes:
+    - PAPER: closed paper positions, their intents, and the entry context from their decision records;
+    - SHADOW: closed shadow trades, variant PLAN or MANAGED;
+    - BACKTEST: one finished run of the engine, rebuilt from its stored trades.
+
+    DEMO and LIVE wait for broker deals. Every scope is hypothetical and labelled so.
+  - Routes: `GET /engines/{id}/analytics` and `GET /engines/{id}/recommendations`, both with
+    `?scope=&days=&run=&variant=&strategy=&symbol=`.
+    - The stop-too-tight rule reads up to 20 entry-timeframe bars after each stop-loss exit from
+      `history_candles` (at most 300 exits). Too few bars means no claim.
+    - REDUCE_RISK uses the latest heartbeat's drawdown, its limit and the effective risk, for PAPER only.
+    - Each recommendation carries `backtest`, the job fields for its change on the report's symbols (at most
+      five).
+  - The page has one scope selector for the analytics and the recommendations (a section of the page,
+    not a nav item).
+    - "Backtest this change" posts an ordinary job for the last N days, ending today 00:00 UTC, and opens
+      it on the Backtests page.
+    - The chart library loads lazily inside the page. Attribution codes became the code kind
+      `codes:attribution.<CODE>`, with a parity test against the Python enum.
+  - Shell tests: the analytics placeholder is gone. The offline-banner test now goes offline only after
+    signing in: with a lazy page the session request would otherwise start offline and be paused.
 
 ## A17. Backtesting
 

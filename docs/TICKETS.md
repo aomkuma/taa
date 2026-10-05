@@ -45,7 +45,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
 | M1 | Phase 9 — PWA frontend | 24 | 24 | DONE |
-| M1 | Phase 10 — Trade analytics | 6 | 5 | IN PROGRESS |
+| M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
@@ -1592,12 +1592,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1005 — Analytics API & pages
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1004, 903
 
-- [ ] endpoints
-- [ ] Analytics and Recommendations pages
-- [ ] scope selector
+- [x] endpoints
+- [x] Analytics and Recommendations pages
+- [x] scope selector
 
 #### TAA-1006 — (rev. 6) Manual trades matched to signals
 

@@ -62,6 +62,7 @@ import {
   PlansSchema,
   UserEntitlementsSchema,
 } from '@/pages/account/schemas';
+import { RecommendationsSchema, ReportSchema } from '@/pages/analytics/schemas';
 import { CandidatesSchema, ManualTradesSchema } from '@/pages/trades/manualSchemas';
 import samples from './fixtures/api-samples.json';
 
@@ -127,6 +128,10 @@ const CASES: [string, z.ZodType][] = [
   [`${E}manual-trades?status=OPEN&limit=100`, ManualTradesSchema],
   [`${E}manual-trades?status=CLOSED&limit=100`, ManualTradesSchema],
   [`${E}manual-trades/2078278005/candidates`, CandidatesSchema],
+  [`${E}analytics?scope=PAPER&days=366`, ReportSchema],
+  [`${E}analytics?scope=SHADOW&days=366`, ReportSchema],
+  [`${E}analytics?scope=BACKTEST&days=366&run=${RUN_A}`, ReportSchema],
+  [`${E}recommendations?scope=BACKTEST&days=366&run=${RUN_A}`, RecommendationsSchema],
   ['advisory/detectors', CatalogSchema],
   ['me/entitlements', MyEntitlementsSchema],
   ['me/account-profile', AccountProfileSchema],

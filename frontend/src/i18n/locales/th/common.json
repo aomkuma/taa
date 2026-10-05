@@ -1982,5 +1982,71 @@
       "cache": "บุคลิกการเทรดล่าสุดที่ได้รับ",
       "local": "ค่าบนเครื่องที่รัน engine"
     }
+  },
+  "analytics": {
+    "scope": {
+      "label": "ผลลัพธ์ของ",
+      "PAPER": "ไม้จำลอง (paper) ของบอท",
+      "SHADOW": "สัญญาณ (จำลอง)",
+      "BACKTEST": "backtest หนึ่งรอบ"
+    },
+    "variant": {
+      "label": "การดูแลไม้ของสัญญาณ",
+      "PLAN": "ตามแผน",
+      "MANAGED": "มี break-even และ trailing"
+    },
+    "days": {
+      "label": "ช่วงเวลา",
+      "n": "{{n}} วันล่าสุด"
+    },
+    "run": "รอบ",
+    "pickRun": "เลือก backtest ที่รันเสร็จแล้ว",
+    "hypothetical": "ผลจำลอง: ไม่ได้เทรดด้วยเงินจริง เป็นข้อมูลในอดีต ไม่ใช่การคาดการณ์",
+    "skipped": "มี {{n}} ไม้ที่วัดผลได้ไม่ครบถ้วน จึงไม่นำมาคิด",
+    "kpi": {
+      "title": "ตัวเลขสำคัญ",
+      "trades": "จำนวนไม้",
+      "winRate": "อัตราชนะ",
+      "expectancy": "เฉลี่ยต่อไม้",
+      "netR": "รวม",
+      "profitFactor": "Profit factor",
+      "maxDrawdown": "drawdown สูงสุด",
+      "sharpe": "Sharpe",
+      "sortino": "Sortino",
+      "hold": "เวลาถือเฉลี่ย"
+    },
+    "curve": "ผลสะสม (R)",
+    "drawdown": "Drawdown (R)",
+    "histogram": "ผลต่อไม้ (R)",
+    "maeMfe": "ราคาวิ่งสวนสุด (MAE) เทียบวิ่งทางเดียวกันสุด (MFE) เป็น R",
+    "style": {
+      "title": "แยกตามสไตล์",
+      "by": "แยกตาม",
+      "strategy": "กลยุทธ์",
+      "symbol": "สัญลักษณ์",
+      "session": "ช่วงตลาด",
+      "setup": "รูปแบบเข้า",
+      "holding": "ระยะถือ",
+      "regime": "สภาพตลาด",
+      "volatility": "ความผันผวน",
+      "direction": "ทิศทาง",
+      "weekday": "วันในสัปดาห์"
+    },
+    "attribution": "เหตุที่ไม้ชนะหรือแพ้",
+    "recommendations": "คำแนะนำ",
+    "recommendation": {
+      "RESTRICT_SEGMENT": "{{dimension}} {{value}}: {{n}} ไม้ เฉลี่ย {{mean_r}}R และช่วงความเชื่อมั่น 95% ต่ำกว่าศูนย์ทั้งหมด ควรพิจารณาจำกัดส่วนนี้",
+      "EARLIER_BREAK_EVEN": "{{gave_back}} จาก {{losers}} ไม้ที่แพ้ ({{share}}) เคยกำไรอย่างน้อย {{mfe_r}}R ก่อนโดน stop ลองทดสอบ break-even เร็วขึ้นหรือปิดกำไรบางส่วน",
+      "STOP_TOO_TIGHT": "{{strategy}}: หลังโดน stop {{reached_target}} จาก {{stops}} ครั้ง ({{share}}) ราคายังไปถึง take-profit ภายใน {{bars}} แท่ง stop อาจแคบเกินไปเมื่อเทียบกับ ATR",
+      "COST_DRAG": "{{symbol}}: ต้นทุนกินผลลัพธ์ก่อนหักต้นทุนไป {{share}} ลองทบทวนตัวกรอง spread หรือสัญลักษณ์นี้",
+      "REDUCE_RISK": "drawdown ({{drawdown_percent}}%) เกินครึ่งของขีดจำกัด {{limit_percent}}% ควรพิจารณาลดความเสี่ยงต่อไม้"
+    },
+    "ci": "เฉลี่ย {{mean}}R ช่วง 95% ตั้งแต่ {{low}} ถึง {{high}}R จาก {{n}} ไม้",
+    "smallSample": "มีแค่ {{n}} ไม้ (ต้องมีอย่างน้อย {{min}} ไม้จึงจะเชื่อถือได้) ให้ถือเป็นข้อสังเกต",
+    "backtestThis": "Backtest การเปลี่ยนนี้",
+    "noBacktest": "ข้อนี้ทดสอบเป็นการเปลี่ยนค่าเดียวไม่ได้",
+    "backtestFailed": "เริ่ม backtest ไม่ได้ ({{code}})",
+    "noRecommendations": "ยังไม่มีคำแนะนำจาก {{n}} ไม้",
+    "neverApplied": "คำแนะนำไม่เปลี่ยนการตั้งค่าของ engine: ทดสอบด้วย backtest ก่อน แล้วตัดสินใจเอง"
   }
 }

@@ -447,5 +447,22 @@
       "session_vwap": "Session VWAP cross",
       "tick_spike": "Tick-volume spike/climax"
     }
+  },
+  "attribution": {
+    "WIN_TRAILING_CAPTURE": "Win closed by the trailing stop",
+    "WIN_TREND_CONTINUATION": "Win with the higher-timeframe trend",
+    "SCRATCH_BREAKEVEN": "About break-even",
+    "WEEKEND_GAP": "Stop filled past its level after a weekend gap",
+    "GAP_THROUGH_STOP": "Stop filled past its level (gap)",
+    "LOSS_IMMEDIATE_ADVERSE": "Went against the trade right away",
+    "LOSS_GAVE_BACK_PROFIT": "Was 1R in profit, then hit the stop",
+    "LOSS_REGIME_SHIFT": "The higher-timeframe trend turned against it",
+    "LOSS_VOLATILITY_SPIKE": "Volatility jumped during the trade",
+    "LOSS_NEWS_PROXIMITY": "A news window overlapped the trade",
+    "COUNTER_TREND_ENTRY": "Loss entered against the higher-timeframe trend",
+    "COST_DOMINATED": "Costs took a large share of the result",
+    "HIGH_SLIPPAGE": "High slippage on the fills",
+    "WIN_OTHER": "Win (no specific pattern)",
+    "LOSS_OTHER": "Loss (no specific pattern)"
   }
 }

@@ -33,6 +33,7 @@ from app.web.entitlements import seed_plans
 from app.web.errors import InternalErrorMiddleware, install_error_handlers
 from app.web.routers import (
     advisory,
+    analytics,
     auth,
     backtests,
     billing,
@@ -144,6 +145,7 @@ def create_app(
     api.include_router(engine.router)
     api.include_router(data.router)
     api.include_router(manual.router)
+    api.include_router(analytics.router)
     api.include_router(stream.router)
     api.include_router(control.router)
     api.include_router(engines.router)

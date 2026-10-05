@@ -23,6 +23,9 @@ const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'childre
     lazy: async () => ({ Component: (await import('@/pages/decisions/DecisionsPage')).DecisionsPage }),
   },
   symbols: { lazy: async () => ({ Component: (await import('@/pages/symbols/SymbolsPage')).SymbolsPage }) },
+  analytics: {
+    lazy: async () => ({ Component: (await import('@/pages/analytics/AnalyticsPage')).AnalyticsPage }),
+  },
   backtests: {
     lazy: async () => ({ Component: (await import('@/pages/backtests/BacktestsPage')).BacktestsPage }),
   },

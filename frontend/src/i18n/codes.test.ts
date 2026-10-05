@@ -1,3 +1,4 @@
+import attributionPy from '../../../app/analytics/attribution.py?raw';
 import enumsPy from '../../../app/core/enums.py?raw';
 import lifecyclePy from '../../../app/advisory/lifecycle.py?raw';
 import shadowPy from '../../../app/advisory/shadow.py?raw';
@@ -42,6 +43,7 @@ import {
   TRENDS,
   VOLATILITY_STATES,
   ENGINE_ERRORS,
+  ATTRIBUTION_CODES,
   EXIT_REASONS,
   GATE_STATUSES,
   GATES,
@@ -113,6 +115,7 @@ describe('code lists match the backend enums', () => {
     ['ShadowStatus', shadowPy, SHADOW_STATUSES],
     ['Flag', shadowPy, SHADOW_FLAGS],
     ['ExitReason', enumsPy, EXIT_REASONS],
+    ['Code', attributionPy, ATTRIBUTION_CODES],
     ['EngineErrorCode', enginesPy, ENGINE_ERRORS],
     ['BreakerName', circuitBreakerPy, BREAKER_NAMES],
     ['NotificationType', notificationsPy, NOTIFICATION_TYPES],
@@ -183,6 +186,7 @@ describe('code texts', () => {
     ['orderState', ORDER_STATES],
     ['reason', REASON_CODES],
     ['exitReason', EXIT_REASONS],
+    ['attribution', ATTRIBUTION_CODES],
     ['strategyState', STRATEGY_STATES],
     ['commandStatus', COMMAND_STATUSES],
     ['strategy', STRATEGY_NAMES],

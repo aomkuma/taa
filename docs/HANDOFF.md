@@ -90,8 +90,7 @@ Fixes and changes found on real data (at the user's request):
    `MAX_RISK_PER_TRADE` / `MAX_DAILY_LOSS_PERCENT`), live candle ≈ one heartbeat per second (per-detector
    pulse), chart range fix and strength-styled S/R zones. Probation is LIVE-only by design (TAA-1401).
    Restarting the stack from Claude Code works when the user has approved it in the conversation.
-3. **Phase 10:** TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages
-   (the PWA's "Analytics" nav item is still a placeholder page).
+3. **Phase 10 is done** (TAA-1004 recommendations, TAA-1005 analytics API & page, 2026-10-06).
 4. Dashboard additions of PLAN §A28 still open: active opportunities and the accuracy summary (the top-5
    ranking widget is done).
 5. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the

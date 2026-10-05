@@ -178,8 +178,9 @@ describe('app shell', () => {
 
   it('shows an offline banner while the device is offline', async () => {
     owner();
-    const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     renderShell('/analytics');
+    await screen.findByText('Engine online'); // signed in, then the connection drops
+    const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     act(() => {
       window.dispatchEvent(new Event('offline'));
     });

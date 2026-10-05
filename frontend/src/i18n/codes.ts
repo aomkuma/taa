@@ -13,6 +13,7 @@
  * | `Flag` (app/advisory/shadow.py), shadow trade flags               | `codes:shadowFlag.<F>`             |
  * | detector ids (`GET /advisory/detectors`), theory names           | `codes:evidence.<id>`              |
  * | `ExitReason` (app/core/enums.py)                                  | `codes:exitReason.<CODE>`          |
+ * | `Code` (app/analytics/attribution.py), P/L attribution           | `codes:attribution.<CODE>`         |
  * | `EngineErrorCode` (app/web/engines.py), engine API errors          | `codes:engine.<code>`              |
  * | `BreakerName` (app/risk/circuit_breaker.py)                       | `codes:breaker.<NAME>`             |
  * | `NotificationType` (app/sync/notifications.py)                    | `codes:notificationType.<TYPE>`    |
@@ -157,6 +158,25 @@ export const EXIT_REASONS = [
   'MANUAL',
   'STOP_OUT',
   'END_OF_DATA',
+] as const;
+
+// Code (app/analytics/attribution.py): why a trade won or lost (TAA-1003; shown by TAA-1005).
+export const ATTRIBUTION_CODES = [
+  'WIN_TRAILING_CAPTURE',
+  'WIN_TREND_CONTINUATION',
+  'SCRATCH_BREAKEVEN',
+  'WEEKEND_GAP',
+  'GAP_THROUGH_STOP',
+  'LOSS_IMMEDIATE_ADVERSE',
+  'LOSS_GAVE_BACK_PROFIT',
+  'LOSS_REGIME_SHIFT',
+  'LOSS_VOLATILITY_SPIKE',
+  'LOSS_NEWS_PROXIMITY',
+  'COUNTER_TREND_ENTRY',
+  'COST_DOMINATED',
+  'HIGH_SLIPPAGE',
+  'WIN_OTHER',
+  'LOSS_OTHER',
 ] as const;
 
 export type ReasonCode = (typeof REASON_CODES)[number];
@@ -357,6 +377,7 @@ export const CODE_KINDS = [
   'shadowFlag',
   'evidence',
   'exitReason',
+  'attribution',
   'engine',
   'breaker',
   'notificationType',
