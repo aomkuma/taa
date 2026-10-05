@@ -43,6 +43,11 @@ class TestPasswords:
     def test_policy_accepts_a_long_passphrase(self) -> None:
         passwords.check_policy("correct horse battery staple", username="alice")
 
+    def test_policy_minimum_is_eight_characters(self) -> None:
+        passwords.check_policy("8chars!!", username="alice")
+        with pytest.raises(passwords.PasswordPolicyError, match="at least 8"):
+            passwords.check_policy("7chars!", username="alice")
+
 
 class TestTotp:
     def test_rfc6238_sha1_vector(self) -> None:

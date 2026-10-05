@@ -636,7 +636,8 @@ AI failures never trip trading breakers; they only produce HOLD.
 
 - **Auth:**
   - single owner, with optional extra users
-  - argon2id passwords; **TOTP mandatory** (pyotp)
+  - argon2id passwords (at least 8 characters, the owner's choice on 2026-10-05; TOTP and the lockout carry the
+    rest); **TOTP mandatory** (pyotp)
   - server-side sessions: a hashed random token stored in the DB
   - cookie is `HttpOnly; Secure; SameSite=Strict`, with a 30 min idle and 12 h absolute timeout
   - CSRF header on mutations; login rate limit with exponential lockout

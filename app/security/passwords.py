@@ -7,7 +7,8 @@ from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatc
 
 from app.core.errors import TaaError
 
-MIN_LENGTH = 12
+# 8 at the owner's choice (2026-10-05): login also needs TOTP and is throttled with lockouts.
+MIN_LENGTH = 8
 # Long inputs would make every hash attempt expensive; nobody types more than this.
 MAX_LENGTH = 256
 
