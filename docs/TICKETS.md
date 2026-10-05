@@ -1804,14 +1804,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1403 — Go-live checklist & drills
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 1401
 
-- [ ] kill switch
-- [ ] breaker reset
-- [ ] credential rotation
-- [ ] restore from backup
-- [ ] engine-offline response
+- [x] kill switch
+- [x] breaker reset
+- [x] credential rotation
+- [x] restore from backup
+- [x] engine-offline response
+- [ ] the owner repeats the drills on the LIVE machine (docs/RUNBOOK_LIVE.md §2, record table) before switching LIVE on
 
 #### TAA-1404 — Final documentation pass
 

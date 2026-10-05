@@ -7,6 +7,7 @@ import getpass
 import json
 import sys
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from app.config import REPO_ROOT, Settings, load_settings
@@ -50,6 +51,62 @@ def cmd_db_upgrade(args: argparse.Namespace) -> int:
     url = args.url or _settings(args).env.ENGINE_DB_URL
     upgrade_schema(url)
     print("schema is up to date")
+    return 0
+
+
+def _engine_running(settings: Settings) -> bool:
+    """Whether the engine answers on its health port (a restore needs it stopped)."""
+    import socket
+
+    engine = settings.config.engine
+    try:
+        with socket.create_connection((engine.health_host, engine.health_port), timeout=1.0):
+            return True
+    except OSError:
+        return False
+
+
+def cmd_db_backup(args: argparse.Namespace) -> int:
+    from app.core.clock import SystemClock
+    from app.storage.backup import BackupError, backup
+    from app.storage.database import resolve_db_url
+
+    settings = _settings(args)
+    url = resolve_db_url(settings.env.ENGINE_DB_URL)
+    stamp = SystemClock().now_utc().strftime("%Y%m%dT%H%M%SZ")
+    out = Path(args.out) if args.out else settings.path(f"data/backups/engine-{stamp}.db")
+    try:
+        report = backup(url, out)
+    except BackupError as exc:
+        print(f"backup failed: {exc}")
+        return 1
+    print(f"backup written: {report.path} ({report.size} bytes, sha256 {report.sha256})")
+    for chain, n in report.chains.items():
+        print(f"  audit chain {chain}: {n} events verified")
+    return 0
+
+
+def cmd_db_restore(args: argparse.Namespace) -> int:
+    from app.core.clock import SystemClock
+    from app.storage.backup import BackupError, check, restore
+    from app.storage.database import resolve_db_url
+
+    settings = _settings(args)
+    source = Path(args.source)
+    if args.confirm != source.name:
+        print(f"refused: repeat the backup's file name with --confirm {source.name}")
+        return 2
+    if _engine_running(settings):
+        print("refused: the engine is running (its health port answers); stop it first")
+        return 2
+    try:
+        report = check(source)
+        aside = restore(resolve_db_url(settings.env.ENGINE_DB_URL), source, now=SystemClock().now_utc())
+    except BackupError as exc:
+        print(f"restore refused: {exc}")
+        return 1
+    print(f"restored {source} (sha256 {report.sha256}); the previous database is kept as {aside}")
+    print("next: python -m app.cli audit verify, then start the engine (it reconciles with the broker first)")
     return 0
 
 
@@ -479,6 +536,15 @@ def build_parser() -> argparse.ArgumentParser:
     up = db_sub.add_parser("upgrade", help="apply migrations")
     up.add_argument("--url", default=None, help="database URL (default: ENGINE_DB_URL)")
     up.set_defaults(func=cmd_db_upgrade)
+    bk = db_sub.add_parser("backup", help="copy the engine database (online) and verify the copy")
+    bk.add_argument("--out", default=None, help="file to write (default: data/backups/engine-<UTC time>.db)")
+    bk.set_defaults(func=cmd_db_backup)
+    rs = db_sub.add_parser(
+        "restore", help="replace the engine database with a verified backup (engine stopped)"
+    )
+    rs.add_argument("--from", dest="source", required=True, help="the backup file")
+    rs.add_argument("--confirm", required=True, help="the backup's file name again")
+    rs.set_defaults(func=cmd_db_restore)
 
     audit = sub.add_parser("audit", help="audit trail tools")
     audit_sub = audit.add_subparsers(dest="action", required=True)
