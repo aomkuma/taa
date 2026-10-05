@@ -1,4 +1,12 @@
-"""Candle validation: ordering, OHLC consistency, session-aware gaps and staleness."""
+"""Candle validation: ordering, OHLC consistency, session-aware gaps and staleness.
+
+**Gaps** count only bars missing while the market normally trades. Weekends and configured daily breaks are
+expected; so are the symbol's own closed hours, learned from the frame itself (2026-10-05): a time-of-day
+slot (UTC) that holds a bar on fewer than half of the frame's trading days is a closure (a stock's night,
+gold's daily pause), not missing data. Before this, every overnight close of a stock counted as ~70 missing
+M15 bars and blocked all its signals as DATA_GAPS. A contiguous hole in normally traded hours (a history
+sync failure) is still reported.
+"""
 
 from __future__ import annotations
 
@@ -45,6 +53,28 @@ def _is_expected_gap(
     return False
 
 
+# a slot must be seen on this many trading days before the frame can call it closed
+MIN_DAYS_TO_LEARN = 3
+CLOSED_SHARE = 0.5
+
+
+def closed_slots(epoch_s: np.ndarray, tf: Timeframe) -> np.ndarray:
+    """Time-of-day slots (UTC, one per bar of *tf*) that hold a bar on fewer than half of the trading days in
+    *epoch_s* (bar open times): the symbol's routine closures. Empty when there are too few days to learn
+    from, or for a daily or longer timeframe."""
+    per_day = 86_400 // tf.seconds
+    if per_day <= 1 or len(epoch_s) == 0:
+        return np.empty(0, dtype="int64")
+    days = epoch_s // 86_400
+    n_days = len(np.unique(days))
+    if n_days < MIN_DAYS_TO_LEARN:
+        return np.empty(0, dtype="int64")
+    slots = (epoch_s % 86_400) // tf.seconds
+    seen = np.zeros(per_day, dtype="int64")
+    np.add.at(seen, np.unique(np.stack([days, slots]), axis=1)[1], 1)  # days with a bar, per slot
+    return np.nonzero(seen < CLOSED_SHARE * n_days)[0].astype("int64")
+
+
 def validate_candles(
     df: pd.DataFrame,
     tf: Timeframe,
@@ -82,14 +112,19 @@ def validate_candles(
         report.add("INVALID_OHLC")
 
     if len(opens) > 1:
-        epoch_s = (opens - pd.Timestamp(0, tz="UTC")) // pd.Timedelta(seconds=1)
-        deltas = np.diff(np.asarray(epoch_s, dtype="int64")) / tf.seconds
+        epoch_s = np.asarray((opens - pd.Timestamp(0, tz="UTC")) // pd.Timedelta(seconds=1), dtype="int64")
+        deltas = np.diff(epoch_s) / tf.seconds
+        closed = closed_slots(epoch_s, tf)
         for idx in np.nonzero(deltas > 1.0 + 1e-9)[0]:
             i = int(idx)
-            missing = int(np.rint(deltas[i])) - 1
             prev_open = pd.Timestamp(opens[i]).to_pydatetime()
             next_open = pd.Timestamp(opens[i + 1]).to_pydatetime()
             if _is_expected_gap(prev_open, next_open, tf, breaks):
+                continue
+            absent = np.arange(epoch_s[i] + tf.seconds, epoch_s[i + 1], tf.seconds)
+            slot = (absent % 86_400) // tf.seconds
+            missing = int(np.count_nonzero(~np.isin(slot, closed)))
+            if missing == 0:
                 continue
             report.missing_bars += missing
             report.unexpected_gaps.append((prev_open, next_open, missing))

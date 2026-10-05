@@ -166,6 +166,53 @@ class TestQuality:
         )
         assert rep.ok, rep.flags
 
+    @staticmethod
+    def _stock_days(days: int, *, skip: tuple[int, int] | None = None) -> list[datetime]:
+        """A US stock's M15 bars, 13:30-20:00 UTC on *days* weekdays from Mon 2026-09-21; *skip* = (day, bar)
+        removes eight bars of one day (a hole in trading hours)."""
+        out = []
+        day0 = datetime(2026, 9, 21, 13, 30, tzinfo=UTC)
+        weekdays = [d for d in range(days + days // 5 * 2 + 2) if (day0 + timedelta(days=d)).weekday() < 5]
+        for n, d in enumerate(weekdays[:days]):
+            for b in range(26):
+                if skip is not None and n == skip[0] and skip[1] <= b < skip[1] + 8:
+                    continue
+                out.append(day0 + timedelta(days=d, minutes=15 * b))
+        return out
+
+    def test_a_stocks_nightly_close_is_learned_not_a_gap(self) -> None:
+        opens = self._stock_days(8)
+        rep = validate_candles(
+            self._frame(opens),
+            Timeframe.M15,
+            opens[-1] + timedelta(minutes=16),
+            max_gap_bars=3,
+            expect_live=True,
+        )
+        assert rep.ok and rep.missing_bars == 0, (rep.flags, rep.unexpected_gaps[:2])
+
+    def test_a_hole_in_trading_hours_is_still_a_gap(self) -> None:
+        opens = self._stock_days(8, skip=(6, 4))
+        rep = validate_candles(
+            self._frame(opens),
+            Timeframe.M15,
+            opens[-1] + timedelta(minutes=16),
+            max_gap_bars=3,
+            expect_live=True,
+        )
+        assert rep.missing_bars == 8 and "DATA_GAPS" in rep.flags
+
+    def test_too_few_days_learn_nothing(self) -> None:
+        opens = self._stock_days(2)  # two days: one overnight close, not enough to call it routine
+        rep = validate_candles(
+            self._frame(opens),
+            Timeframe.M15,
+            opens[-1] + timedelta(minutes=16),
+            max_gap_bars=3,
+            expect_live=True,
+        )
+        assert "DATA_GAPS" in rep.flags
+
     def test_invalid_ohlc(self) -> None:
         base = datetime(2026, 9, 30, 8, 0, tzinfo=UTC)
         opens = [base + timedelta(minutes=15 * i) for i in range(3)]
