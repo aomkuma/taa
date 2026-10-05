@@ -63,7 +63,7 @@ export function LoginPage() {
       )}
       {mutation.isError && (
         <p role="alert" className="mt-3 rounded bg-red-100 px-3 py-2 text-red-900">
-          {errorText(mutation.error, t)}
+          <ErrorText error={mutation.error} />
         </p>
       )}
       <form className="mt-4 space-y-4" onSubmit={onSubmit} noValidate={false}>
@@ -133,16 +133,18 @@ export function LoginPage() {
   );
 }
 
-function errorText(error: Error, t: ReturnType<typeof useTranslation>['t']): string {
+/** A component (not a helper taking `t`): passing the typed `t` as a parameter makes TypeScript instantiate the
+ * whole catalog type too deeply once the catalogs grow (TS2589). */
+function ErrorText({ error }: { error: Error }) {
+  const { t } = useTranslation();
   if (error instanceof ApiError) {
-    if (error.code === 'invalid_credentials') return t('auth.errors.invalidCredentials');
+    if (error.code === 'invalid_credentials') return <>{t('auth.errors.invalidCredentials')}</>;
     if (error.code === 'too_many_attempts') {
-      return t('auth.errors.tooManyAttempts', {
-        minutes: Math.max(1, Math.ceil((error.retryAfter ?? 60) / 60)),
-      });
+      const minutes = Math.max(1, Math.ceil((error.retryAfter ?? 60) / 60));
+      return <>{t('auth.errors.tooManyAttempts', { minutes })}</>;
     }
-    return t('auth.errors.unknown');
+    return <>{t('auth.errors.unknown')}</>;
   }
-  if (error instanceof ApiSchemaError) return t('auth.errors.unknown');
-  return t('auth.errors.network');
+  if (error instanceof ApiSchemaError) return <>{t('auth.errors.unknown')}</>;
+  return <>{t('auth.errors.network')}</>;
 }

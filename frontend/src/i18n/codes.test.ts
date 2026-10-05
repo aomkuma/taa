@@ -16,13 +16,20 @@ import commandQueuePy from '../../../app/sync/command_queue.py?raw';
 import exampleStrategyPy from '../../../app/strategy/example_strategy.py?raw';
 import setupsPy from '../../../app/strategy/setups.py?raw';
 import backtestModelsPy from '../../../app/storage/models/backtests.py?raw';
+import commandsPy from '../../../app/sync/commands.py?raw';
+import killSwitchPy from '../../../app/risk/kill_switch.py?raw';
 
 import { createI18n } from '@/i18n';
 import {
   BREAKER_NAMES,
   codeKey,
   BACKTEST_STATUSES,
+  BREAKER_ACTIONS,
+  BREAKER_STATES,
+  COMMAND_REASONS,
   COMMAND_STATUSES,
+  COMMAND_TYPES,
+  KILL_MODES,
   STRATEGY_NAMES,
   STRATEGY_STATES,
   CODES_NAMESPACE,
@@ -113,6 +120,9 @@ describe('code lists match the backend enums', () => {
     ['IntentState', orderManagerPy, ORDER_STATES],
     ['StrategyState', strategiesPy, STRATEGY_STATES],
     ['QueueStatus', commandQueuePy, COMMAND_STATUSES],
+    ['CommandType', commandsPy, COMMAND_TYPES],
+    ['KillMode', killSwitchPy, KILL_MODES],
+    ['State', circuitBreakerPy, BREAKER_STATES],
   ] as const)('%s', (className, source, values) => {
     expect(sorted(values)).toEqual(sorted(pyStrEnumValues(source, className)));
   });
@@ -125,6 +135,19 @@ describe('strategy names match the catalog', () => {
     );
     expect(names.length).toBeGreaterThan(5);
     expect(sorted(STRATEGY_NAMES)).toEqual(sorted(names));
+  });
+});
+
+describe('control codes that are not plain enums', () => {
+  it('command result reasons = Reason without the empty NONE', () => {
+    expect(sorted(COMMAND_REASONS)).toEqual(
+      sorted(pyStrEnumValues(commandsPy, 'Reason').filter((r) => r !== '')),
+    );
+  });
+
+  it('breaker event actions = the actions named next to BreakerEvent.action', () => {
+    const comment = /action: str {2}# ([A-Z_ |]+)/.exec(circuitBreakerPy)?.[1] ?? '';
+    expect(sorted(BREAKER_ACTIONS)).toEqual(sorted(comment.split('|').map((s) => s.trim())));
   });
 });
 
@@ -153,6 +176,11 @@ describe('code texts', () => {
     ['commandStatus', COMMAND_STATUSES],
     ['strategy', STRATEGY_NAMES],
     ['backtestStatus', BACKTEST_STATUSES],
+    ['commandType', COMMAND_TYPES],
+    ['commandReason', COMMAND_REASONS],
+    ['killMode', KILL_MODES],
+    ['breakerState', BREAKER_STATES],
+    ['breakerAction', BREAKER_ACTIONS],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {
       const i18n = createI18n(language);

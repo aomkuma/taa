@@ -21,7 +21,7 @@ from typing import Any
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-from app.config import load_app_config
+from app.config import Settings, load_settings
 from app.storage.database import Database
 from app.storage.models import (
     AuditEvent,
@@ -69,8 +69,29 @@ ENGINE_ROUTES = [
     f"backtests/{RUN_A}/trades?limit=3",
     f"backtests/compare?ids={RUN_A},{RUN_B}",
     "backtests/history",
+    "config",
+    "kill-switch?limit=20",
+    "commands?limit=20",
+    "breakers?limit=20",
 ]
 USER_ROUTES = ["me/feed", "engines", "notifications?limit=5", "backtests/presets"]
+
+
+def engine_settings() -> Settings:
+    """The repository's config.yaml with a typical engine environment (PAPER, flatten allowed, control TOTP)."""
+    return load_settings(
+        env_file=None,
+        config_file="config.yaml",
+        environ={
+            "TRADING_MODE": "PAPER",
+            "MT5_LOGIN": "12345678",
+            "MT5_PASSWORD": "x",
+            "MT5_SERVER": "FBS-Demo",
+            "MT5_TERMINAL_PATH": "C:/MT5/taa-bot/terminal64.exe",
+            "CONTROL_TOTP_SECRET": "JBSWY3DPEHPK3PXP",
+            "KILL_SWITCH_FLATTEN_ALLOWED": "true",
+        },
+    )
 
 
 def backtest_runs(engine_id: str, owner_id: str) -> list[BacktestRunRow]:
@@ -132,10 +153,11 @@ def realistic_rows(db: Database, engine_id: str) -> None:
         decision.market = make_context().to_dict()
         snapshot = sess.get(ConfigSnapshot, (engine_id, "c" * 32))
         assert snapshot is not None
-        config = load_app_config("config.yaml").model_dump(mode="json")
-        for item in config["strategies"]["items"]:  # one strategy the owner disabled from the PWA
+        summary = engine_settings().summary()  # what the engine snapshots (secrets masked by the engine)
+        for item in summary["config"]["strategies"]["items"]:  # one strategy the owner disabled from the PWA
             item["enabled"] = item["enabled"] or item["name"] == "setup_breakout"
-        snapshot.payload = {"env": {"MT5_PASSWORD": "***set***"}, "config": config, "config_hash": "c" * 32}
+        snapshot.payload = summary | {"config_hash": "c" * 32}
+        snapshot.created_at = T  # stamped with the wall clock by the sample rows
         quote = {
             "symbol": "EURUSD",
             "bid": 1.1,

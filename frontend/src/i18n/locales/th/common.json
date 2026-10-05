@@ -552,5 +552,102 @@
         "other": "เริ่มรันไม่ได้ ({{code}})"
       }
     }
+  },
+  "controls": {
+    "killSwitch": "Kill switch",
+    "active": "Kill switch ทำงานอยู่ ({{mode}}): บอทจะไม่เปิดเทรดใหม่",
+    "inactive": "Kill switch ปิดอยู่: บอทเทรดได้ภายในลิมิต",
+    "lastEvent": "{{action}} โดย {{actor}} ({{source}}) · {{time}} · {{reason}}",
+    "action": {
+      "ACTIVATE": "เปิดใช้งาน",
+      "RELEASE": "ปลดแล้ว"
+    },
+    "history": "ประวัติ kill switch",
+    "noControls": "บัญชีฝ่ายสนับสนุนไม่มีสิทธิ์ควบคุมการเทรด",
+    "flattenOff": "เอนจินปิดการ flatten ไว้ (KILL_SWITCH_FLATTEN_ALLOWED=false)",
+    "noEngineCode": "เอนจินยังไม่มีรหัสควบคุม (CONTROL_TOTP_SECRET) จึงปฏิเสธการ flatten และการปิดโพซิชัน สร้างได้ที่เครื่องเอนจิน: python -m app.cli engine new-totp",
+    "releaseLocal": "การปลดทำได้ที่เครื่องเอนจินเท่านั้น:",
+    "reason": "เหตุผล",
+    "reasonRequired": "กรุณากรอกเหตุผล",
+    "engineCode": "รหัสควบคุมเอนจิน",
+    "engineCodeHint": "รหัส 6 หลักของเอนจิน (CONTROL_TOTP_SECRET) ไม่ใช่รหัสที่ใช้ล็อกอิน มีแต่เอนจินที่ตรวจรหัสนี้ได้",
+    "engineCodeRequired": "กรอกรหัสควบคุมเอนจิน 6 หลัก",
+    "toRisk": "Kill switch และ flatten",
+    "halt": {
+      "button": "เปิด kill switch",
+      "title": "เปิด kill switch?",
+      "body": "เอนจินจะหยุดเปิดเทรดใหม่ โพซิชันที่เปิดอยู่ยังคงอยู่และยังถูกดูแลต่อ (HALT)",
+      "confirm": "เปิด kill switch"
+    },
+    "flatten": {
+      "button": "ปิดทุกโพซิชัน",
+      "title": "ปิดทุกโพซิชันของบอท?",
+      "body": "เอนจินจะเปิด kill switch แบบ FLATTEN และปิดโพซิชันของบอททั้งหมดในรอบถัดไป โพซิชันที่เปิดเองจะไม่ถูกแตะ",
+      "confirm": "ปิดทุกโพซิชัน"
+    },
+    "close": {
+      "button": "ปิด",
+      "column": "ปิดโพซิชัน",
+      "title": "ปิด {{position}}?",
+      "body": "เอนจินจะปิดโพซิชันนี้ที่ราคาตลาดในรอบถัดไป",
+      "confirm": "ปิดโพซิชัน"
+    },
+    "limits": {
+      "title": "ลิมิต",
+      "limit": "ลิมิต",
+      "now": "ตอนนี้",
+      "max": "สูงสุด",
+      "state": "สถานะ",
+      "measured": {
+        "daily": "ขาดทุนวันนี้",
+        "weekly": "ขาดทุนสัปดาห์นี้",
+        "drawdown": "Drawdown",
+        "heat": "ความเสี่ยงที่เปิดอยู่ (heat)",
+        "losses": "แพ้ติดกัน",
+        "positions": "โพซิชันที่เปิดอยู่"
+      },
+      "level": {
+        "ok": "ปกติ",
+        "warn": "ใช้ไปครึ่งหนึ่ง",
+        "danger": "ใกล้ลิมิต",
+        "breached": "ถึงลิมิตแล้ว",
+        "unknown": "ไม่ทราบ"
+      },
+      "asOf": "ค่าจากเอนจินเมื่อ {{time}}",
+      "noAccount": "เอนจินยังไม่ได้รายงานข้อมูลบัญชี",
+      "perTrade": "ลิมิตต่อเทรดและความเสี่ยงรวม",
+      "hours": "{{n}} ชม.",
+      "localOnly": "แก้ลิมิตได้เฉพาะใน config.yaml ที่เครื่องเอนจิน แอปไม่มีทางเพิ่มลิมิตได้",
+      "static": {
+        "max_risk_per_trade_percent": "ความเสี่ยงต่อเทรด",
+        "max_risk_money_per_trade": "ความเสี่ยงต่อเทรด (เงิน)",
+        "max_total_open_risk_percent": "ความเสี่ยงรวมที่เปิดอยู่",
+        "max_positions_per_symbol": "โพซิชันต่อสัญลักษณ์",
+        "max_same_direction_per_currency": "ทิศเดียวกันต่อสกุลเงิน",
+        "min_risk_reward": "ผลตอบแทน/ความเสี่ยงขั้นต่ำ",
+        "max_spread_points": "สเปรดสูงสุด (จุด)",
+        "max_spread_to_sl_ratio": "สเปรด / ระยะสต็อปสูงสุด",
+        "max_slippage_points": "Slippage สูงสุด (จุด)",
+        "max_lot": "ล็อตสูงสุด",
+        "min_margin_level_percent": "Margin level ขั้นต่ำ",
+        "max_margin_utilization_percent": "การใช้ margin สูงสุด",
+        "max_effective_leverage": "เลเวอเรจจริงสูงสุด",
+        "consecutive_loss_pause_hours": "พักหลังแพ้ติดกัน"
+      }
+    },
+    "breakers": {
+      "title": "Circuit breaker",
+      "none": "ยังไม่มีเบรกเกอร์รายงานเข้ามา",
+      "since": "ตั้งแต่ {{time}}",
+      "latched": "ล็อกค้าง: ต้องรีเซ็ตเอง",
+      "resetLocal": "การรีเซ็ตทำได้ที่เครื่องเอนจินเท่านั้น:",
+      "history": "ประวัติ",
+      "noEvents": "ยังไม่มีเหตุการณ์ของเบรกเกอร์"
+    },
+    "commands": {
+      "title": "ประวัติคำสั่ง",
+      "status": "สถานะ",
+      "none": "ยังไม่เคยส่งคำสั่ง"
+    }
   }
 }

@@ -12,6 +12,8 @@ export interface StepUpDialogProps {
   children?: ReactNode;
   /** Red confirm button for actions that stop or close something. */
   danger?: boolean;
+  /** The action's own fields: a message when they are not usable yet (checked before any request). */
+  validate?: () => string | null;
   /** Runs the action once the step-up is fresh; the dialog closes when it resolves. */
   onConfirm: () => Promise<void>;
   onClose: () => void;
@@ -29,6 +31,7 @@ export function StepUpDialog({
   confirmLabel,
   children,
   danger,
+  validate,
   onConfirm,
   onClose,
 }: StepUpDialogProps) {
@@ -64,6 +67,11 @@ export function StepUpDialog({
   const submit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (busy) return;
+    const invalid = validate?.() ?? null;
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
     if (needCode && !CODE.test(code)) {
       setError(t('stepUp.codeHint'));
       return;

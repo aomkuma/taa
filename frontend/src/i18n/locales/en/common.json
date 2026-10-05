@@ -552,5 +552,102 @@
         "other": "The run could not be started ({{code}})."
       }
     }
+  },
+  "controls": {
+    "killSwitch": "Kill switch",
+    "active": "Kill switch ACTIVE ({{mode}}): the bot opens no new trades.",
+    "inactive": "Kill switch off: the bot may trade within its limits.",
+    "lastEvent": "{{action}} by {{actor}} ({{source}}) · {{time}} · {{reason}}",
+    "action": {
+      "ACTIVATE": "Activated",
+      "RELEASE": "Released"
+    },
+    "history": "Kill switch history",
+    "noControls": "Support accounts have no trading controls.",
+    "flattenOff": "Flatten is switched off on the engine (KILL_SWITCH_FLATTEN_ALLOWED=false).",
+    "noEngineCode": "The engine has no control code (CONTROL_TOTP_SECRET), so it refuses flatten and closes. Create one on the engine computer: python -m app.cli engine new-totp",
+    "releaseLocal": "Releasing is only possible on the engine computer:",
+    "reason": "Reason",
+    "reasonRequired": "Enter a reason.",
+    "engineCode": "Engine control code",
+    "engineCodeHint": "The 6-digit code of the engine (CONTROL_TOTP_SECRET), not your sign-in code. Only the engine can check it.",
+    "engineCodeRequired": "Enter the 6-digit engine control code.",
+    "toRisk": "Kill switch and flatten",
+    "halt": {
+      "button": "Activate kill switch",
+      "title": "Activate the kill switch?",
+      "body": "The engine stops opening new trades. Open positions stay and are still managed (HALT).",
+      "confirm": "Activate kill switch"
+    },
+    "flatten": {
+      "button": "Flatten all",
+      "title": "Close every bot position?",
+      "body": "The engine activates the kill switch in FLATTEN mode and closes all of the bot's positions on its next cycle. Manual positions are not touched.",
+      "confirm": "Flatten all"
+    },
+    "close": {
+      "button": "Close",
+      "column": "Close",
+      "title": "Close {{position}}?",
+      "body": "The engine closes this position at the market on its next cycle.",
+      "confirm": "Close position"
+    },
+    "limits": {
+      "title": "Limits",
+      "limit": "Limit",
+      "now": "Now",
+      "max": "Maximum",
+      "state": "State",
+      "measured": {
+        "daily": "Today's loss",
+        "weekly": "This week's loss",
+        "drawdown": "Drawdown",
+        "heat": "Open risk (heat)",
+        "losses": "Losing streak",
+        "positions": "Open positions"
+      },
+      "level": {
+        "ok": "OK",
+        "warn": "Half used",
+        "danger": "Close to the limit",
+        "breached": "Limit reached",
+        "unknown": "Unknown"
+      },
+      "asOf": "Values from the engine at {{time}}.",
+      "noAccount": "The engine has not reported its account yet.",
+      "perTrade": "Per-trade and exposure limits",
+      "hours": "{{n}} h",
+      "localOnly": "Limits can only be changed in config.yaml on the engine computer; the app never raises them.",
+      "static": {
+        "max_risk_per_trade_percent": "Risk per trade",
+        "max_risk_money_per_trade": "Risk per trade (money)",
+        "max_total_open_risk_percent": "Total open risk",
+        "max_positions_per_symbol": "Positions per symbol",
+        "max_same_direction_per_currency": "Same direction per currency",
+        "min_risk_reward": "Minimum reward/risk",
+        "max_spread_points": "Maximum spread (points)",
+        "max_spread_to_sl_ratio": "Maximum spread / stop distance",
+        "max_slippage_points": "Maximum slippage (points)",
+        "max_lot": "Maximum lot",
+        "min_margin_level_percent": "Minimum margin level",
+        "max_margin_utilization_percent": "Maximum margin use",
+        "max_effective_leverage": "Maximum effective leverage",
+        "consecutive_loss_pause_hours": "Pause after a losing streak"
+      }
+    },
+    "breakers": {
+      "title": "Circuit breakers",
+      "none": "No breaker has reported yet.",
+      "since": "since {{time}}",
+      "latched": "latched: needs a manual reset",
+      "resetLocal": "Resetting is only possible on the engine computer:",
+      "history": "History",
+      "noEvents": "No breaker events yet."
+    },
+    "commands": {
+      "title": "Command history",
+      "status": "Status",
+      "none": "No commands sent yet."
+    }
   }
 }

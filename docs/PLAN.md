@@ -979,6 +979,27 @@ AI failures never trip trading breakers; they only produce HOLD.
     word for word ↔ `LIMITATIONS`, and `codes:backtestStatus` ↔ the statuses of `BacktestRunRow.status`.
   - Not in this ticket: walk-forward results (the robustness tools run from the CLI only) and analytics per run
     (TAA-1005).
+- (TAA-911 decisions) Risk & controls (`frontend/src/pages/risk/`; no new routes):
+  - Reads `/status` (kill switch, newest heartbeat), `/config` (the run's `Settings.summary()`: risk limits,
+    `KILL_SWITCH_FLATTEN_ALLOWED`, whether `CONTROL_TOTP_SECRET` is set, masked as `***`), `/kill-switch`,
+    `/breakers` and `/commands`. Live: `status` events of type `kill_switch`, `breaker*`, `command` and `run`.
+  - Limits: the six the engine measures (today's and this week's loss, drawdown, open risk, losing streak from the
+    heartbeat's account snapshot; open positions against `max_open_positions`) with the dashboard's levels, and
+    the per-trade/exposure limits read-only. Changing a limit stays local (config.yaml); the app never raises one.
+  - Kill switch: state with the newest event, history; **Activate** (KILL_SWITCH_ACTIVATE, HALT, reason
+    required) and **Flatten all** (FLATTEN_ALL, reason + the engine's control code; disabled with the reason
+    when flatten is off or the engine has no control code). Release is shown as the local CLI command.
+  - Breakers: tripped first, then by name; event history paged; reset shown as the local CLI command.
+  - Command history: every command with its queue state, params, result reason (`codes:commandReason`) and the
+    engine's detail; status filter.
+  - Dialogs: `StepUpDialog` gained `validate` (the action's own fields are checked before any request);
+    `EngineCodeField` asks for the engine's control TOTP, labelled apart from the sign-in code. The positions page
+    gets a **Close** button per open bot position (POSITION_CLOSE, ticket + engine code) when the engine has a
+    control code. ADMIN sessions see no control buttons (the API refuses them with `role_forbidden` anyway).
+  - `src/engine/commands.ts` (command schema, `postCommand`, `ENGINE_CODE`) is shared by strategies, risk and
+    positions. New `codes:` kinds `commandType`, `commandReason`, `killMode`, `breakerState`, `breakerAction`.
+  - The login page's error text became a component: passing the typed `t` as a parameter hit TS2589 (type
+    instantiation too deep) once the catalogs grew.
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

@@ -19,6 +19,9 @@
  * | `QueueStatus` (app/sync/command_queue.py), control commands      | `codes:commandStatus.<S>`          |
  * | strategy names (`name = "..."` in app/strategy), their descriptions | `codes:strategy.<name>`            |
  * | `BacktestRunRow.status` (app/storage/models/backtests.py)        | `codes:backtestStatus.<S>`         |
+ * | `CommandType`, `Reason` (app/sync/commands.py), control commands | `codes:commandType.<T>`, `codes:commandReason.<R>` |
+ * | `KillMode` (app/risk/kill_switch.py)                             | `codes:killMode.<M>`               |
+ * | `State`, event actions (app/risk/circuit_breaker.py)             | `codes:breakerState.<S>`, `codes:breakerAction.<A>` |
  * | `Trend`, `Regime`, `VolatilityState`, `Session` (app/core/enums.py) | `codes:trend.<T>`, `codes:regime.<R>`, `codes:volatility.<V>`, `codes:session.<S>` |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
@@ -235,6 +238,31 @@ export const STRATEGY_NAMES = [
 // Cloud backtest runs (TAA-910): the statuses in the comment of BacktestRunRow.status.
 export const BACKTEST_STATUSES = ['QUEUED', 'RUNNING', 'DONE', 'FAILED'] as const;
 
+// Risk & controls (TAA-911): CommandType and the result Reason (app/sync/commands.py, without the empty
+// NONE), KillMode (app/risk/kill_switch.py), breaker State and the event actions (app/risk/circuit_breaker.py).
+export const COMMAND_TYPES = [
+  'KILL_SWITCH_ACTIVATE',
+  'STRATEGY_DISABLE',
+  'RESYNC',
+  'RESCAN_SUITABILITY',
+  'POSITION_CLOSE',
+  'FLATTEN_ALL',
+] as const;
+export const COMMAND_REASONS = [
+  'INVALID',
+  'DUPLICATE',
+  'EXPIRED',
+  'RISK_INCREASING',
+  'NOT_ALLOWED',
+  'TOTP_NOT_CONFIGURED',
+  'TOTP_INVALID',
+  'UNSUPPORTED',
+  'HANDLER_ERROR',
+] as const;
+export const KILL_MODES = ['HALT', 'FLATTEN'] as const;
+export const BREAKER_STATES = ['CLOSED', 'OPEN', 'HALF_OPEN'] as const;
+export const BREAKER_ACTIONS = ['TRIP', 'HALF_OPEN', 'RESET'] as const;
+
 export const CODE_KINDS = [
   'reason',
   'gate',
@@ -258,6 +286,11 @@ export const CODE_KINDS = [
   'commandStatus',
   'strategy',
   'backtestStatus',
+  'commandType',
+  'commandReason',
+  'killMode',
+  'breakerState',
+  'breakerAction',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 

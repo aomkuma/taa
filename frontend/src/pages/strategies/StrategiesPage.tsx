@@ -3,23 +3,16 @@ import { type ReactNode, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
-import { apiGet, apiPost } from '@/api/client';
+import { apiGet } from '@/api/client';
 import { StepUpDialog } from '@/components/StepUpDialog';
+import { type Command, postCommand } from '@/engine/commands';
 import { useEngine } from '@/engine/context';
 import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { useLiveEvents } from '@/live/context';
 import { Card } from '@/pages/dashboard/cards';
 
-import {
-  type Command,
-  CommandSchema,
-  type Strategies,
-  StrategiesSchema,
-  type Strategy,
-  strategyKeys,
-  WINDOWS,
-} from './schemas';
+import { type Strategies, StrategiesSchema, type Strategy, strategyKeys, WINDOWS } from './schemas';
 
 const DEFAULT_DAYS = 30;
 const OPEN_COMMAND = new Set(['QUEUED', 'DELIVERED']);
@@ -224,11 +217,11 @@ function DisableDialog({
   const [reason, setReason] = useState('');
   const confirm = async () => {
     const trimmed = reason.trim();
-    await apiPost(
-      `/engines/${encodeURIComponent(engineId)}/commands`,
-      { type: 'STRATEGY_DISABLE', strategy: strategy.name, ...(trimmed ? { reason: trimmed } : {}) },
-      CommandSchema,
-    );
+    await postCommand(engineId, {
+      type: 'STRATEGY_DISABLE',
+      strategy: strategy.name,
+      ...(trimmed ? { reason: trimmed } : {}),
+    });
     await queryClient.invalidateQueries({ queryKey: strategyKeys.all(engineId) });
   };
   return (

@@ -28,6 +28,8 @@ import {
 
 import { DecisionDetailSchema, DecisionLogSchema } from '@/pages/decisions/schemas';
 import { StrategiesSchema } from '@/pages/strategies/schemas';
+import { CommandsPageSchema } from '@/engine/commands';
+import { BreakersPageSchema, EngineConfigSchema, KillSwitchPageSchema } from '@/pages/risk/schemas';
 import {
   CompareSchema,
   HistorySchema,
@@ -71,6 +73,10 @@ const CASES: [string, z.ZodType][] = [
   [`${E}backtests/compare?ids=${RUN_A},${RUN_B}`, CompareSchema],
   [`${E}backtests/history`, HistorySchema],
   ['backtests/presets', PresetsSchema],
+  [`${E}config`, EngineConfigSchema],
+  [`${E}kill-switch?limit=20`, KillSwitchPageSchema],
+  [`${E}commands?limit=20`, CommandsPageSchema],
+  [`${E}breakers?limit=20`, BreakersPageSchema],
   ['me/feed', FeedSchema],
   ['engines', EngineListSchema],
   ['notifications?limit=5', NotificationsPageSchema],

@@ -206,5 +206,38 @@
     "RUNNING": "Running",
     "DONE": "Finished",
     "FAILED": "Failed"
+  },
+  "commandType": {
+    "KILL_SWITCH_ACTIVATE": "Activate kill switch",
+    "STRATEGY_DISABLE": "Disable strategy",
+    "RESYNC": "Resync",
+    "RESCAN_SUITABILITY": "Rescan symbol ranking",
+    "POSITION_CLOSE": "Close position",
+    "FLATTEN_ALL": "Flatten all"
+  },
+  "commandReason": {
+    "INVALID": "Invalid command",
+    "DUPLICATE": "Already executed",
+    "EXPIRED": "Expired before the engine received it",
+    "RISK_INCREASING": "Refused: it would increase risk",
+    "NOT_ALLOWED": "Not allowed on this engine",
+    "TOTP_NOT_CONFIGURED": "The engine has no control code",
+    "TOTP_INVALID": "Wrong or used engine control code",
+    "UNSUPPORTED": "Not supported by this engine",
+    "HANDLER_ERROR": "The engine could not carry it out"
+  },
+  "killMode": {
+    "HALT": "Halt (no new trades)",
+    "FLATTEN": "Flatten (close all)"
+  },
+  "breakerState": {
+    "CLOSED": "Normal",
+    "OPEN": "Tripped",
+    "HALF_OPEN": "Recovering"
+  },
+  "breakerAction": {
+    "TRIP": "Tripped",
+    "HALF_OPEN": "Recovering",
+    "RESET": "Reset"
   }
 }

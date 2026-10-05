@@ -206,5 +206,38 @@
     "RUNNING": "กำลังรัน",
     "DONE": "เสร็จแล้ว",
     "FAILED": "ล้มเหลว"
+  },
+  "commandType": {
+    "KILL_SWITCH_ACTIVATE": "เปิด kill switch",
+    "STRATEGY_DISABLE": "ปิดใช้งานกลยุทธ์",
+    "RESYNC": "ซิงก์ข้อมูลใหม่",
+    "RESCAN_SUITABILITY": "สแกนอันดับสัญลักษณ์ใหม่",
+    "POSITION_CLOSE": "ปิดโพซิชัน",
+    "FLATTEN_ALL": "ปิดทุกโพซิชัน"
+  },
+  "commandReason": {
+    "INVALID": "คำสั่งไม่ถูกต้อง",
+    "DUPLICATE": "ทำไปแล้ว",
+    "EXPIRED": "หมดอายุก่อนเอนจินได้รับ",
+    "RISK_INCREASING": "ปฏิเสธ: จะเพิ่มความเสี่ยง",
+    "NOT_ALLOWED": "เอนจินนี้ไม่อนุญาต",
+    "TOTP_NOT_CONFIGURED": "เอนจินไม่มีรหัสควบคุม",
+    "TOTP_INVALID": "รหัสควบคุมเอนจินผิดหรือถูกใช้แล้ว",
+    "UNSUPPORTED": "เอนจินนี้ไม่รองรับ",
+    "HANDLER_ERROR": "เอนจินทำคำสั่งไม่สำเร็จ"
+  },
+  "killMode": {
+    "HALT": "HALT (หยุดเปิดเทรด)",
+    "FLATTEN": "FLATTEN (ปิดทุกโพซิชัน)"
+  },
+  "breakerState": {
+    "CLOSED": "ปกติ",
+    "OPEN": "ตัดแล้ว",
+    "HALF_OPEN": "กำลังฟื้น"
+  },
+  "breakerAction": {
+    "TRIP": "ตัด",
+    "HALF_OPEN": "กำลังฟื้น",
+    "RESET": "รีเซ็ต"
   }
 }

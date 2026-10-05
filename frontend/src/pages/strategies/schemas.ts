@@ -1,30 +1,12 @@
-/** Responses of the strategies page (TAA-909; `app/web/strategies.py`) and the control API (TAA-805). */
+/** Responses of the strategies page (TAA-909; `app/web/strategies.py`). */
 import { z } from 'zod';
 
 import { engineKey } from '@/engine/schemas';
+import { CommandSchema } from '@/engine/commands';
 import { STRATEGY_STATES } from '@/i18n/codes';
 
 const IsoDateTime = z.iso.datetime({ offset: true });
 const Ratio = z.number().nullable();
-
-/** A queued control command as `public()` in app/sync/command_queue.py shows it (never with a code). */
-export const CommandSchema = z.looseObject({
-  id: z.string(),
-  type: z.string(),
-  params: z.record(z.string(), z.unknown()),
-  created_by: z.string(),
-  created_at: IsoDateTime,
-  expires_at: IsoDateTime,
-  status: z.string(),
-  delivered_at: IsoDateTime.nullable(),
-  completed_at: IsoDateTime.nullable(),
-  result: z.looseObject({
-    outcome: z.string().nullable().optional(),
-    reason: z.string().nullable().optional(),
-    detail: z.string().nullable().optional(),
-  }),
-});
-export type Command = z.infer<typeof CommandSchema>;
 
 /** A parameter value is whatever the strategy's pydantic model dumps: scalars, lists or small objects. */
 const ParamValue = z.unknown();

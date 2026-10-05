@@ -1,16 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { apiGet } from '@/api/client';
+import { useAuthState } from '@/auth/hooks';
 import { useEngine, useEngineStatus } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
 import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
+import { controlsOf } from '@/pages/risk/riskModel';
+import { EngineConfigSchema, riskKeys } from '@/pages/risk/schemas';
+import { Link } from 'react-router';
 
 import { OrderIntentsPageSchema, PaperIntentsPageSchema, TradesPageSchema, tradeKeys } from './schemas';
 import { useLiveTrades, useTradeDrawer } from './hooks';
+import { ClosePositionDialog } from './ClosePositionDialog';
 import { TradeDrawer } from './TradeDrawer';
 import { excursionR, initialRisk, openR } from './tradeMath';
 
@@ -56,6 +61,18 @@ export function PositionsPage() {
       apiGet(`${base}/intents?kind=broker&limit=50`, OrderIntentsPageSchema, { signal }),
     enabled: mode === 'DEMO',
   });
+  const config = useQuery({
+    queryKey: riskKeys.config(id),
+    queryFn: ({ signal }) => apiGet(`${base}/config`, EngineConfigSchema, { signal }),
+    retry: false,
+  });
+  const auth = useAuthState();
+  // closes need step-up and the engine's control code; ADMIN has no trading controls (PLAN §A30)
+  const canClose =
+    auth.data?.status === 'signed_in' &&
+    auth.data.session.user.role !== 'ADMIN' &&
+    controlsOf(config.data).engineCode;
+  const [closing, setClosing] = useState<{ ticket: number; label: string } | null>(null);
   const initialStops = useMemo(
     () => new Map((filled.data?.items ?? []).map((i) => [i.intent_id, i.sl])),
     [filled.data],
@@ -69,7 +86,14 @@ export function PositionsPage() {
     <section>
       <h1 className="mb-4 text-2xl font-semibold">{t('nav.positions')}</h1>
       <div className="grid gap-4">
-        <Card title={t('trades.open.title')}>
+        <Card
+          title={t('trades.open.title')}
+          action={
+            <Link to="/risk" className="text-sm underline">
+              {t('controls.toRisk')}
+            </Link>
+          }
+        >
           {open.data === undefined ? (
             <p className="text-sm text-slate-500">
               {open.isError ? t('dashboard.loadFailed') : t('dashboard.loading')}
@@ -90,6 +114,11 @@ export function PositionsPage() {
                     <th className={TH}>{t('trades.col.r')}</th>
                     <th className={TH}>{t('trades.col.maeMfe')}</th>
                     <th className={TH}>{t('trades.col.opened')}</th>
+                    {canClose && (
+                      <th className={TH}>
+                        <span className="sr-only">{t('controls.close.column')}</span>
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -125,6 +154,22 @@ export function PositionsPage() {
                           {r(excursionR(-p.mae, risk))} / {r(excursionR(p.mfe, risk))}
                         </td>
                         <td className={TD}>{format.dateTime(p.entry_time)}</td>
+                        {canClose && (
+                          <td className={TD}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setClosing({
+                                  ticket: p.ticket,
+                                  label: `#${String(p.ticket)} ${p.symbol} ${p.side}`,
+                                });
+                              }}
+                              className="rounded border border-red-700 px-2 py-0.5 text-xs font-medium text-red-700 hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950"
+                            >
+                              {t('controls.close.button')}
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
@@ -194,6 +239,16 @@ export function PositionsPage() {
         )}
       </div>
       {drawer.ticket !== null && <TradeDrawer engineId={id} ticket={drawer.ticket} onClose={drawer.close} />}
+      {closing && (
+        <ClosePositionDialog
+          engineId={id}
+          ticket={closing.ticket}
+          label={closing.label}
+          onClose={() => {
+            setClosing(null);
+          }}
+        />
+      )}
     </section>
   );
 }
