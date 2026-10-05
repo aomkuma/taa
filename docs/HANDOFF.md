@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-05 (end of the third session that day). Single session on `main`. This file holds
+Last updated: 2026-10-05 (fourth session that day: revision 5). Single session on `main`. This file holds
 **state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`, design decisions in
 `docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`. What was built per
 ticket is in the git history.
@@ -45,7 +45,7 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   - ruff, mypy, bandit clean. Frontend: lint, typecheck (app, node, sw, e2e), build clean; vitest 502;
     Playwright smoke 3 (`npm run build && npm run e2e`).
 - **Git:** `main` only; the user pushes (`git push` from Claude Code fails on the interactive GitHub login).
-  Latest migration: **0032** (no migration this session).
+  Latest migration: **0033** (`decision_records.risk_source` / `risk_percent`).
 
 ### What this session (2026-10-05, third) added
 
@@ -81,19 +81,20 @@ Fixes and changes found on real data (at the user's request):
 
 ## Next work
 
-1. **First: check the live-candle rate** on the `-Mt5` stack (the user wants the chart to move at least every
-   second). Measure distinct `engine_heartbeats.received_at` values over 20 s in `data/demo/cloud-mt5.db`
-   (and the chart itself). Measured at the end of the session: 9 heartbeats in 20 s (≈ every 2.2 s; was one
-   per 10 s at the start of the day, 4 per 20 s with the 1 s settings alone). One evidence scan of a symbol
-   takes ~1–1.6 s, so that gap remains during scans. If that is not enough, the next step is a separate light
-   "live" path (quotes + forming bars) on its own timer, which needs a thread-safe way to call MT5 (the
-   `MetaTrader5` module is one global connection; do not call it from two threads without a lock).
-2. **Revision 5 (planned 2026-10-05, not started):** TAA-408 → 710 → 924 (PLAN §A33). The owner's trading
-   profile drives the engine's risk inside the `config.yaml` cage, and the per-trade ceiling moves to 3 %.
-   Today `DecisionRequest.profile_limits` is never filled, so the engine uses `config.yaml` alone. Trigger: a
-   XAUUSD BUY on ~$990 at 0.5 % was `RISK_BELOW_MIN_LOT`. The same decision also failed the effective-leverage
-   gate: manual MT5 positions are counted (`foreign_positions_policy: count`), and with a 0-lot candidate the
-   leverage reads as "—".
+1. **First: restart the `-Mt5` stack and check on real data** (the classifier blocked restarting it from
+   Claude Code on 2026-10-05; the user restarts it, or allows it). Order: **web** (new heartbeat field
+   `account.risk_limits`, migration 0033 runs on startup), then worker, then engine. Then:
+   - Live-candle rate: the scan now pulses the heartbeat after every evidence detector (`ac5b4d7`). Before it:
+     ~one heartbeat per 2.2 s (measured 2026-10-05). Measure distinct `engine_heartbeats.received_at` over
+     20 s in `data/demo/cloud-mt5.db`; the target is one per second. If still short, the next step is a
+     separate light "live" path on its own timer (MT5 calls are already serialized by `MT5Client`'s lock, but
+     the heartbeat reads engine state the loop mutates).
+   - Risk limits: Risk & controls should show "Risk limits in use" with source `cloud` within a minute.
+2. **Revision 5 is done** (TAA-408 ceiling 3 %, TAA-710 the owner's profile drives the engine, TAA-924 PWA).
+   `config.yaml` → `risk` is still 0.5 % per trade, so it caps every profile (the user's XAUUSD case on ~$990
+   needs ≈ 1.4 %). Raising the cage is the user's decision (offered, not changed). Found on the way: the
+   orchestrator never sets `DecisionRequest.probation`, so `probation_multiplier` never applies to the
+   engine's own decisions (unchanged; ask the user before turning it on, it quarters the budget).
 3. **Phase 10:** TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages
    (the PWA's "Analytics" nav item is still a placeholder page).
 4. Dashboard additions of PLAN §A28 still open: active opportunities and the accuracy summary (the top-5
