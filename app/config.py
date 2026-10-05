@@ -383,8 +383,8 @@ class UniverseConfig(StrictModel):
     include: list[str] = Field(default_factory=lambda: ["*"], min_length=1, description="MT5 group patterns")
     exclude: list[str] = Field(default_factory=list)
     classes: dict[str, bool] = Field(
-        default_factory=lambda: {c: c not in ("FOREX_EXOTIC", "OTHER") for c in ASSET_CLASSES},
-        description="per asset class; exotics and unclassified symbols are opt-in",
+        default_factory=lambda: {c: c != "FOREX_EXOTIC" for c in ASSET_CLASSES},
+        description="per asset class; exotics are opt-in, unclassified symbols (OTHER) are scanned too",
     )
     symbols: dict[str, bool] = Field(default_factory=dict, description="per-symbol overrides")
     auto_top_n: int = Field(default=30, ge=0, le=60)
@@ -397,7 +397,7 @@ class UniverseConfig(StrictModel):
         unknown = sorted(set(value) - set(ASSET_CLASSES))
         if unknown:
             raise ValueError(f"unknown asset classes {unknown}")
-        return {c: value.get(c, c not in ("FOREX_EXOTIC", "OTHER")) for c in ASSET_CLASSES}
+        return {c: value.get(c, c != "FOREX_EXOTIC") for c in ASSET_CLASSES}
 
     @field_validator("include", "exclude")
     @classmethod

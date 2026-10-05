@@ -3,7 +3,8 @@
 Order of evidence, strongest first:
 
 1. **Currency codes:** a precious-metal base (XAU, XAG, XPT, XPD) is METAL; a crypto base (BTC, ETH, ...) is
-   CRYPTO.
+   CRYPTO. Some brokers report the quote currency as the base of a metal (FBS: XAUUSD has base USD under
+   ``Forex\\Main``), so a name that starts with a metal code or names the metal (``Platinum``) is METAL too.
 2. **The terminal's symbol path** (``Forex\\Majors\\EURUSD``, ``Indices\\US30``, ``Stocks\\US\\AAPL``, ...):
    keywords for crypto, metals, energies, indices and stocks.
 3. **``trade_calc_mode``:** CFDINDEX is INDEX, exchange stocks are STOCK, the Forex modes are Forex.
@@ -50,6 +51,7 @@ MAJORS = frozenset(
     }
 )
 METALS = frozenset({"XAU", "XAG", "XPT", "XPD"})
+METAL_NAMES = ("gold", "silver", "platinum", "palladium")
 CRYPTO = frozenset(
     {"BTC", "ETH", "LTC", "XRP", "BCH", "ADA", "DOT", "SOL", "DOGE", "BNB", "XLM", "LINK", "AVAX", "TRX"}
 )
@@ -75,7 +77,8 @@ def forex_class(base: str, quote: str) -> AssetClass:
 
 def classify(spec: SymbolSpec) -> AssetClass:
     base, quote = spec.currency_base.upper(), spec.currency_profit.upper()
-    if base in METALS:
+    name = spec.name.lower()
+    if base in METALS or name[:3].upper() in METALS or name.startswith(METAL_NAMES):
         return AssetClass.METAL
     if base in CRYPTO:
         return AssetClass.CRYPTO

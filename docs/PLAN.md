@@ -1242,6 +1242,10 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
   - Asset classes come from `trade_calc_mode` + `path` + currency codes: FOREX_MAJOR / FOREX_MINOR / FOREX_EXOTIC /
     METAL / INDEX / ENERGY / CRYPTO / STOCK / OTHER. Every class is enabled by default except Forex exotics (opt-in);
     per-symbol overrides are allowed.
+    - (2026-10-05) OTHER is enabled too (it used to be opt-in), so a symbol the rules cannot place is still
+      ranked and scanned rather than silently dropped. Metals are also recognised by name (a metal code prefix,
+      or gold/silver/platinum/palladium): FBS reports XAUUSD with base USD under `Forex\Main`, which made every
+      FBS metal OTHER and off.
   - Monitored set = favourites ∪ custom lists ∪ AUTO top-N (default 30) ∪ `ALLOWED_SYMBOLS`, capped at 60 so
     terminal load stays bounded.
 - **Market sessions (`market_sessions.py`):**

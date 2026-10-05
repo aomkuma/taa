@@ -129,7 +129,7 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
   universe:
     include: ["*"]                  # MT5 group patterns (wildcards)
     exclude: []                     # e.g. ["*.m", "*_raw"]
-    classes:                        # exotics and unclassified symbols are opt-in
+    classes:                        # exotics are opt-in; unclassified (OTHER) are scanned too
       FOREX_MAJOR: true
       FOREX_MINOR: true
       FOREX_EXOTIC: false
@@ -138,7 +138,7 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
       ENERGY: true
       CRYPTO: true
       STOCK: true
-      OTHER: false
+      OTHER: true
     symbols: {}                     # per-symbol overrides, e.g. {USDZAR: true, AAPL: false}
     auto_top_n: 30
     monitored_cap: 60

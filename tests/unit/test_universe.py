@@ -38,6 +38,11 @@ class TestClassification:
             (spec("USDZAR", "USD", "ZAR"), A.FOREX_EXOTIC),
             (spec("EURTRY", "EUR", "TRY"), A.FOREX_EXOTIC),
             (spec("XAUUSD", "XAU", "USD", "Forex\\XAUUSD"), A.METAL),  # the base wins over a Forex path
+            # FBS reports a metal's quote currency as its base, under Forex\Main: the name tells
+            (spec("XAUUSD", "USD", "USD", "Forex\\Main\\XAUUSD", c.SYMBOL_CALC_MODE_CFD), A.METAL),
+            (spec("XAGEUR", "EUR", "EUR", "Forex\\Main\\XAGEUR", c.SYMBOL_CALC_MODE_CFD), A.METAL),
+            (spec("Platinum", "USD", "USD", "Forex\\Main\\Platinum", c.SYMBOL_CALC_MODE_CFD), A.METAL),
+            (spec("Palladium", "USD", "USD", "Forex\\Main\\Palladium", c.SYMBOL_CALC_MODE_CFD), A.METAL),
             (spec("BTCUSD", "BTC", "USD", "", c.SYMBOL_CALC_MODE_CFD), A.CRYPTO),
             (spec("US30", "USD", "USD", "Indices\\US30", c.SYMBOL_CALC_MODE_CFDINDEX), A.INDEX),
             (spec("DE40", "EUR", "EUR", "", c.SYMBOL_CALC_MODE_CFDINDEX), A.INDEX),
@@ -70,10 +75,11 @@ class TestClassification:
 
 
 class TestConfig:
-    def test_defaults_exotics_and_other_opt_in(self) -> None:
+    def test_defaults_exotics_opt_in_and_other_scanned(self) -> None:
         cfg = UniverseConfig()
-        assert not cfg.classes["FOREX_EXOTIC"] and not cfg.classes["OTHER"]
-        assert all(v for k, v in cfg.classes.items() if k not in ("FOREX_EXOTIC", "OTHER"))
+        assert not cfg.classes["FOREX_EXOTIC"]
+        assert all(v for k, v in cfg.classes.items() if k != "FOREX_EXOTIC")  # OTHER too: nothing is dropped
+        assert evaluate_entry(spec("WEIRD", "USD", "USD", "Misc\\WEIRD", c.SYMBOL_CALC_MODE_CFD), cfg).enabled
         assert not evaluate_entry(spec("USDZAR", "USD", "ZAR"), cfg).enabled
         assert "opt-in" in evaluate_entry(spec("USDZAR", "USD", "ZAR"), cfg).reason
 
