@@ -979,6 +979,16 @@ SHADOW (signals + shadow trades only) → PAPER → ACTIVE in DEMO → ACTIVE in
 - A position whose magic is in the bot range but unknown to the registry is treated like a stray: the
   reconciler's existing policy applies, and it is never managed by a guess.
 - The order comment carries `bot_id` (≤ 25 chars, informational only). Matching stays by magic + ticket.
+- (TAA-L901 decisions, 2026-10-06) `app/engine/magic_registry.py`, table `magic_registry` (migration 0038):
+  - Slots are stored, not absolute numbers, so a new `MAGIC_NUMBER_BASE` moves the whole block, as before.
+  - The table is **engine-local** for now; replication comes with the Squad page (TAA-L909).
+  - The backtester keeps its in-memory index mapping: a run starts empty and has no open positions to re-map.
+  - Found while doing it: the loss tracker counted only the magics of the strategies enabled *now*, so the
+    closing deal of a disabled strategy's open trade did not count toward the loss breakers. It now uses the
+    whole bot range, like `ExposureManager`.
+  - The orchestrator no longer falls back to the base magic (which belonged to the first strategy) for an
+    unknown strategy; every enabled strategy is registered at start.
+  - The bot `comment` with `bot_id` waits for squad mode (TAA-L902).
 
 ### L21.9 Cloud, API & PWA
 
@@ -1234,7 +1244,7 @@ Hard ceilings in code: `confirmation.timeout_seconds ≤ 600`, `max_symbols ≤ 
 | `playbook_state` | replicated | server, symbol, playbook, since, regime inputs, switch pending |
 | `expectancy_reports` | replicated | version, scope, p, W, L, c, E[R] + CI, opportunity rate |
 | `behavior_reports` | replicated (user-scoped) | user, period, pattern, count, share, ΔR vs plan |
-| `magic_registry` | replicated | bot_id, strategy, magic, assigned_at (never reused) |
+| `magic_registry` | engine (replicated later, L909) | bot_id, strategy, bot_slot, strategy_slot, assigned_at (never reused) |
 | `bots` | replicated | bot_id, spec hash, status, risk share, status history |
 | `bot_reports` | replicated | bot_id, version, expectancy decomposition, failure modes, max DD, overlap with other bots |
 | `bot_id` columns | both | added to decisions, opportunities, shadow trades, intents, positions |

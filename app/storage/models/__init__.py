@@ -14,7 +14,7 @@ from app.storage.models.advisory import (
 from app.storage.models.backtests import BacktestRunRow
 from app.storage.models.base import Base, utcnow
 from app.storage.models.decisions import DecisionCheckRow, DecisionRecordRow
-from app.storage.models.execution import OrderIntentRow
+from app.storage.models.execution import MagicRegistryRow, OrderIntentRow
 from app.storage.models.market import HistoryCandle, ProcessedCandle
 from app.storage.models.notifications import (
     NotificationPrefsRow,
@@ -86,6 +86,7 @@ __all__ = [
     "IngestNonceRow",
     "KillSwitchEvent",
     "LoginThrottleRow",
+    "MagicRegistryRow",
     "ManualTradeLinkRow",
     "ManualTradeOverrideRow",
     "NotificationPrefsRow",

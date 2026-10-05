@@ -59,7 +59,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
 | M3 | Phase L7 — Entry timing (right direction, wrong time) | 6 | 0 | IN PROGRESS |
 | M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 0 | IN PROGRESS |
-| M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 0 | TODO |
+| M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
 ## Milestone 3 — Learning layer
 
@@ -579,17 +579,17 @@ Design: PLAN_LEARNING §L21. Legacy single-engine mode stays the default and mus
 
 #### TAA-L901 — Stable magic registry (L21.8)
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** — (Wave 0)
 
 Note: this fixes a latent issue of today's engine (magic = base + index of enabled strategies). Recommended
 during Phase 14 / wrap-up, before LIVE go-live.
 
-- [ ] `magic_registry` table `(bot_id, strategy) → magic`, assigned once, never reused + migration
-- [ ] first start registers `("default", strategy)` with today's values (open positions keep their mapping)
-- [ ] orchestrator, position manager, broker positions and exposure use the registry
-- [ ] unknown magic inside the bot range → stray policy, never managed by a guess
-- [ ] tests (enable/disable/reorder strategies with open positions keeps every mapping)
+- [x] `magic_registry` table `(bot_id, strategy) → slots`, assigned once, never reused + migration (0038; engine-local, replicated later with L909)
+- [x] first start registers `("default", strategy)` with today's values (open positions keep their mapping)
+- [x] orchestrator, position manager, broker positions and exposure use the registry
+- [x] unknown magic inside the bot range → stray policy, never managed by a guess
+- [x] tests (enable/disable/reorder strategies with open positions keeps every mapping)
 
 #### TAA-L902 — Bot model and legacy wrapper (L21.2)
 

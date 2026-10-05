@@ -44,3 +44,17 @@ class OrderIntentRow(EngineKeyed, Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
     detail: Mapped[str] = mapped_column(Text, default="")
+
+
+class MagicRegistryRow(Base):
+    """Stable magic numbers (PLAN_LEARNING §L21.8; TAA-L901): ``(bot_id, strategy)`` → its slots, assigned
+    once and never reused. Magic = ``MAGIC_NUMBER_BASE + bot_slot × 100 + strategy_slot``. Engine-local."""
+
+    __tablename__ = "magic_registry"
+    __table_args__ = (UniqueConstraint("bot_slot", "strategy_slot"),)
+
+    bot_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    strategy: Mapped[str] = mapped_column(String(64), primary_key=True)
+    bot_slot: Mapped[int] = mapped_column(Integer)
+    strategy_slot: Mapped[int] = mapped_column(Integer)
+    assigned_at: Mapped[datetime] = mapped_column(UTCDateTime())

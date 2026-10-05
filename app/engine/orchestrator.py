@@ -67,6 +67,7 @@ from app.engine.decision_engine import (
     DecisionStore,
     SystemHealth,
 )
+from app.engine.magic_registry import MagicRegistry
 from app.engine.manual_links import ManualTradeLinker, link_dict
 from app.engine.order_manager import OrderManager
 from app.engine.paper import LiveRates, PaperExecution
@@ -266,7 +267,10 @@ class Engine:
         self.strategies = default_registry().from_config(
             cfg.strategies, cfg.timeframes, cfg.evidence.confluence
         )
-        self.magic = {s.name: env.MAGIC_NUMBER_BASE + i for i, s in enumerate(self.strategies.strategies)}
+        # stable per strategy (TAA-L901): enabling, disabling or reordering strategies never re-maps positions
+        self.magic = MagicRegistry(self.db, env.MAGIC_NUMBER_BASE, self.clock).ensure(
+            [s.name for s in self.strategies.strategies]
+        )
         self.arbiter = SignalArbiter(cfg.strategies.cooldown_bars)
         needs_evidence = any(isinstance(s, EvidenceSetup) for s in self.strategies.strategies)
         evidence = None
@@ -918,7 +922,7 @@ class Engine:
             )
         )
         if record.decision is Decision.ACCEPT:
-            magic = self.magic.get(selected.strategy, self.settings.env.MAGIC_NUMBER_BASE)
+            magic = self.magic[selected.strategy]
             if self.backend.place(record, spec, magic):
                 self._last_entry[symbol] = ctx.decision_time_utc
                 self.on_entry(symbol, ctx.decision_time_utc)
@@ -957,9 +961,12 @@ class Engine:
             return []
 
     def _loss_status(self) -> LossStatus:
-        magics = set(self.magic.values())
+        # the whole bot range, not only today's strategies: a disabled strategy's open trade still counts
+        base = self.settings.env.MAGIC_NUMBER_BASE
         return self.losses.observe(
-            self.backend.equity(), self.backend.new_deals(), is_bot=lambda d: d.magic in magics
+            self.backend.equity(),
+            self.backend.new_deals(),
+            is_bot=lambda d: base <= d.magic < base + MAGIC_RANGE,
         )
 
     def _health(self) -> None:
