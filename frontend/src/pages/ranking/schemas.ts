@@ -105,21 +105,6 @@ export const RankingDetailSchema = z.looseObject({
 });
 export type RankingDetail = z.infer<typeof RankingDetailSchema>;
 
-/** The watchlists of `GET /advisory/preferences` (the rest of the document is not read here). */
-export const PreferencesWatchlistsSchema = z.looseObject({
-  watchlists: z.array(z.looseObject({ name: z.string(), kind: z.string(), symbols: z.array(z.string()) })),
-});
-export type PreferencesWatchlists = z.infer<typeof PreferencesWatchlistsSchema>;
-
-/** `POST /advisory/favourites/{symbol}` (a toggle). */
-export const FavouriteToggleSchema = z.object({
-  symbol: z.string(),
-  favourite: z.boolean(),
-  favourites: z.array(z.string()),
-});
-
-export const PREFERENCES_QUERY_KEY = ['advisory', 'preferences'] as const;
-
 export const rankingKeys = {
   list: (engineId: string) => [...engineKey(engineId), 'ranking', 'list'] as const,
   detail: (engineId: string, symbol: string) =>

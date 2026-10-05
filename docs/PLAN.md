@@ -1534,6 +1534,24 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     events. The page sets the app icon badge to the ACTIVE count (`setAppBadge`/`clearAppBadge`) where the
     Badging API exists; the service worker already sets it from each push.
   - Evidence names show the detector's English name until TAA-920 adds `evidence.*` texts.
+- (TAA-918 decisions) Watchlists (`frontend/src/pages/watchlists/`) and alert settings
+  (`frontend/src/pages/notifications/AlertSettings.tsx`):
+  - One cached preferences document (`['advisory', 'preferences']`, full schema in `watchlists/schemas.ts`)
+    serves the ranking page's ★, the watchlists page and the alert settings. Lists save through the watchlist
+    routes (a rename is a PUT under the old name); alert settings re-read the document and PUT it whole with
+    only `alerts` changed, so other sections edited meanwhile are kept.
+  - Each list card edits a draft (name, symbols or top N, alerts switch, own threshold) with Save/Undo; the
+    client checks the backend bounds (name length, case-insensitive uniqueness, top N 1–60, at most one
+    FAVOURITES and one AUTO_TOP_N, 20 lists, 200 symbols) and the server's `plan_limit` has its own message.
+    The auto top-N card previews the symbols it takes now: the first N ranks of the latest ranking, as the
+    alerter does. The favourites list cannot be deleted (★ recreates it anyway).
+  - Alert settings sit on the Notifications page (`#alert-settings`, linked from the watchlists page): metric,
+    x slider (null = the metric default, with a reset), signal lifetime, session rule, time windows (start
+    days, HH:MM, may span midnight; none = any time) in a chosen timezone, rate limits, expiry updates, the
+    risk-full policy and the push language. The page says that win-probability alerts never go below
+    break-even + 2 pp (`required_win_probability`) and that lists and alerts never change what the bot trades.
+  - Parity tests read `WatchlistKind`, `AlertMetric`, `RiskFullPolicy` and `DEFAULT_THRESHOLDS` from
+    `app/advisory/preferences.py`.
 
 - **Engine ↔ cloud:**
   - New event types: `symbol_catalog`, `suitability_snapshot`, `opportunity` (create/update), `shadow_trade`

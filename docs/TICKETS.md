@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
-| M1 | Phase 9 — PWA frontend | 23 | 16 | IN PROGRESS |
+| M1 | Phase 9 — PWA frontend | 23 | 17 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -1432,19 +1432,19 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-918 — (rev. 2) Watchlists & alert settings
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 809, 915
 
-- [ ] favourites and custom lists
-- [ ] per-list alerts and x override
-- [ ] auto top-N
-- [ ] metric choice
-- [ ] x slider
-- [ ] user time windows editor
-- [ ] session rule
-- [ ] rate limits
-- [ ] expiry updates
-- [ ] language
+- [x] favourites and custom lists
+- [x] per-list alerts and x override
+- [x] auto top-N
+- [x] metric choice
+- [x] x slider
+- [x] user time windows editor
+- [x] session rule
+- [x] rate limits
+- [x] expiry updates
+- [x] language
 
 #### TAA-919 — (rev. 2) Signal Accuracy page
 

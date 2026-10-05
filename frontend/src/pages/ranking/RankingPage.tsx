@@ -8,8 +8,9 @@ import { ASSET_CLASSES, translateCode } from '@/i18n/codes';
 import { explain } from '@/i18n/explain';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
+import { useFavourites } from '@/pages/watchlists/hooks';
 
-import { useFavourites, useRanking } from './hooks';
+import { useRanking } from './hooks';
 import {
   defaultDirection,
   explainParams,

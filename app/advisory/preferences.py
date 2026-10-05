@@ -148,9 +148,8 @@ class RiskFullPolicy(StrEnum):
     """What an opportunity alert does when taking it would exceed the user's risk budget (portfolio heat
     after it, or the number of open positions)."""
 
-    PAUSE = (
-        "PAUSE"  # no push; the opportunity stays visible in the app with the reason (default, fail closed)
-    )
+    # no push; the opportunity stays visible in the app with the reason (default, fail closed)
+    PAUSE = "PAUSE"
     WARN = "WARN"  # push anyway, with a warning line
 
 

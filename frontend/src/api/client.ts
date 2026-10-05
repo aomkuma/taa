@@ -88,7 +88,7 @@ async function toApiError(response: Response, path: string): Promise<ApiError> {
 }
 
 async function request(
-  method: 'GET' | 'POST' | 'PUT',
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   path: string,
   body: unknown,
   options: RequestOptions,
@@ -153,4 +153,9 @@ export async function apiPostEmpty(
   options: RequestOptions = {},
 ): Promise<void> {
   await request('POST', path, body, options);
+}
+
+/** DELETE that answers 204 No Content. */
+export async function apiDelete(path: string, options: RequestOptions = {}): Promise<void> {
+  await request('DELETE', path, undefined, options);
 }

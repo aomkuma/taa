@@ -1126,5 +1126,137 @@
     "distance": "{{d}} from entry",
     "riskRange": "Risk {{from}} – {{to}}",
     "rewardRange": "Reward {{from}} – {{to}}"
+  },
+  "watchlists": {
+    "intro": "You get opportunity alerts only for symbols in a list whose alerts are on. Lists never change what the bot trades.",
+    "kind": {
+      "FAVOURITES": "Favourites",
+      "CUSTOM": "Custom list",
+      "AUTO_TOP_N": "Auto top N"
+    },
+    "summary": {
+      "title": "Alert rule",
+      "rule": "Alert when {{metric}} ≥ {{x}}",
+      "how": "A list with its own threshold uses that instead. A symbol in several lists alerts at the lowest threshold among them.",
+      "edit": "Change the alert settings"
+    },
+    "list": {
+      "name": "List name",
+      "symbols": "Symbols in the list",
+      "empty": "No symbols yet. Add some below.",
+      "noFavourites": "No favourites yet. Add symbols here or with ★ on the ranking page.",
+      "remove": "Remove {{symbol}}",
+      "addLabel": "Symbols to add",
+      "addPlaceholder": "e.g. EURUSD, XAUUSD",
+      "add": "Add",
+      "invalidSymbols": "Not a valid symbol name: {{symbols}}",
+      "topN": "Take the top",
+      "topNHow": "The best-ranked symbols of the latest symbol ranking; the list follows the ranking as it changes.",
+      "topNow": "Right now: {{symbols}}{{more}}",
+      "andMore": " and {{n}} more",
+      "noRanking": "The ranking has no symbols yet.",
+      "alerts": "Alerts for this list",
+      "alertsAt": "Alerts at ≥ {{x}}",
+      "alertsOff": "Alerts off",
+      "ownThreshold": "Own threshold for this list",
+      "threshold": "Threshold for this list",
+      "usesGlobal": "Uses the global threshold ({{x}}).",
+      "save": "Save",
+      "undo": "Undo changes",
+      "saved": "Saved.",
+      "delete": "Delete list",
+      "confirmDelete": "Delete \"{{name}}\" now",
+      "keep": "Keep it"
+    },
+    "new": {
+      "title": "New list",
+      "kind": "Kind of list",
+      "create": "Create list",
+      "oneTop": "You already have an auto top N list (one is allowed).",
+      "full": "You have the maximum of {{n}} lists."
+    },
+    "problem": {
+      "name": "Give the list a name of up to {{max}} characters.",
+      "nameTaken": "Another list already has this name.",
+      "topN": "Take between {{min}} and {{top}} symbols.",
+      "threshold": "The threshold must be between 0 and 100%.",
+      "tooMany": "A list holds at most {{max}} symbols."
+    },
+    "error": {
+      "planLimit": "Your plan's watchlist limit is reached.",
+      "exists": "A list with this name already exists.",
+      "notFound": "This list no longer exists; reload the page.",
+      "invalid": "The server rejected the list: {{detail}}",
+      "failed": "Could not save. Try again."
+    }
+  },
+  "alerts": {
+    "title": "Opportunity alert settings",
+    "intro": "When an opportunity on a symbol in your lists may send you a push. Everything here affects alerts only, never the bot's trading.",
+    "metric": {
+      "title": "Measure",
+      "WIN_PROBABILITY": {
+        "name": "Win probability",
+        "about": "The calibrated chance that the take-profit is hit before the stop-loss, from past outcomes of similar setups."
+      },
+      "SETUP_STRENGTH": {
+        "name": "Setup strength",
+        "about": "The weighted share of the strategy's conditions that passed (0–100); available at once, not a probability."
+      }
+    },
+    "threshold": {
+      "title": "Threshold (x)",
+      "label": "Alert at or above",
+      "isDefault": "default",
+      "reset": "Back to the default ({{x}})",
+      "floor": "Never below break-even plus 2 points for the trade's reward-to-risk; your trading profile can raise it further.",
+      "strength": "Setup strength says how complete the setup is, not how likely it is to work.",
+      "perList": "Each watchlist can set its own threshold on the watchlists page."
+    },
+    "timing": {
+      "title": "Timing",
+      "lifetime": "Signal stays valid for (entry bars)",
+      "sessions": "Only while the symbol's market session is open"
+    },
+    "windows": {
+      "title": "When I want alerts",
+      "timezone": "Time zone",
+      "anyTime": "Any time (no windows set).",
+      "window": "Window {{n}}",
+      "from": "From",
+      "to": "to",
+      "remove": "Remove",
+      "add": "Add a time window",
+      "noDays": "Pick at least one day.",
+      "badTime": "Enter both times as HH:MM.",
+      "note": "Days are the days a window starts; a window may run past midnight (22:00–02:00)."
+    },
+    "rate": {
+      "title": "How often",
+      "perHour": "At most alerts per hour",
+      "cooldown": "Minutes between alerts for one symbol"
+    },
+    "delivery": {
+      "title": "Delivery",
+      "expiry": "Update the alert when its suitable time passes or it is invalidated",
+      "riskFull": "When taking it would exceed my risk budget:",
+      "policy": {
+        "PAUSE": "Do not push; show it in the app with the reason",
+        "WARN": "Push anyway, with a warning"
+      },
+      "language": "Alert language"
+    },
+    "problem": {
+      "threshold": "The threshold must be between 0 and 100%.",
+      "lifetime": "Signal lifetime: 1 to 20 bars.",
+      "windows": "Fix the time windows (at least one day and both times each, at most 14 windows).",
+      "perHour": "Alerts per hour: 1 to 60.",
+      "cooldown": "Cooldown: 0 to 1440 minutes."
+    },
+    "save": "Save alert settings",
+    "undo": "Undo changes",
+    "saved": "Saved.",
+    "invalid": "The server rejected the settings: {{detail}}",
+    "failed": "Could not save. Try again."
   }
 }

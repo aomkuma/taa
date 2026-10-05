@@ -46,7 +46,8 @@ import {
   SessionsSchema,
   SystemStatusSchema,
 } from '@/pages/system/schemas';
-import { PreferencesWatchlistsSchema, RankingDetailSchema, RankingSchema } from '@/pages/ranking/schemas';
+import { RankingDetailSchema, RankingSchema } from '@/pages/ranking/schemas';
+import { PreferencesSchema as AdvisoryPreferencesSchema } from '@/pages/watchlists/schemas';
 import {
   OpportunitiesPageSchema,
   OpportunityDetailSchema,
@@ -104,7 +105,7 @@ const CASES: [string, z.ZodType][] = [
   [`${E}config`, MaskedConfigSchema],
   [`${E}ranking`, RankingSchema],
   [`${E}ranking/XAUUSD`, RankingDetailSchema],
-  ['advisory/preferences', PreferencesWatchlistsSchema],
+  ['advisory/preferences', AdvisoryPreferencesSchema],
   [`${E}opportunities?limit=50`, OpportunitiesPageSchema],
   [`${E}opportunities/${OPP}`, OpportunityDetailSchema],
   [`${E}opportunities/${OPP}`, SignalSourceSchema],

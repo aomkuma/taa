@@ -17,6 +17,7 @@ function setup(extra: Record<string, Handler> = {}) {
     'GET /notifications/preferences': () => json(PREFS),
     'GET /push/subscriptions': () => json(DEVICES),
     'GET /push/key': () => json({ public_key: 'BAEC_w' }),
+    'GET /advisory/preferences': () => json(samples['advisory/preferences']),
     ...extra,
   });
 }

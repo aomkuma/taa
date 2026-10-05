@@ -11,6 +11,7 @@ import { useLiveEvents } from '@/live/context';
 import { Card } from '@/pages/dashboard/cards';
 import { NOTIFICATIONS_QUERY_KEY } from '@/pages/dashboard/schemas';
 
+import { AlertSettingsCard } from './AlertSettings';
 import { describe, type NotificationText } from './notificationModel';
 import { currentEndpoint, disablePush, enablePush, PushSetupError, pushSupport } from './push';
 import {
@@ -444,7 +445,10 @@ function CentreCard() {
   );
 }
 
-/** PLAN §A15 Notifications (TAA-912): the centre, push on this device, devices and per-type preferences. */
+/**
+ * PLAN §A15 Notifications (TAA-912): the centre, push on this device, devices and per-type preferences; the
+ * opportunity alert settings of §A28 (TAA-918).
+ */
 export function NotificationsPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -456,7 +460,10 @@ export function NotificationsPage() {
     <section>
       <h1 className="mb-4 text-2xl font-semibold">{t('nav.notifications')}</h1>
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <CentreCard />
+        <div className="flex flex-col gap-4">
+          <CentreCard />
+          <AlertSettingsCard />
+        </div>
         <div className="flex flex-col gap-4">
           <PushCard />
           <PreferencesCard />

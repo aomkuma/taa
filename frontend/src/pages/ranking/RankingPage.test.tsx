@@ -19,7 +19,19 @@ function setup() {
     'GET /engines/e1/ranking': () => json(RANKING),
     'GET /engines/e1/ranking/XAUUSD': () => json(recorded['engines/ENGINE/ranking/XAUUSD']),
     'GET /advisory/preferences': () =>
-      json({ ...PREFS, watchlists: [{ name: 'Favourites', kind: 'FAVOURITES', symbols: favourites }] }),
+      json({
+        ...PREFS,
+        watchlists: [
+          {
+            name: 'Favourites',
+            kind: 'FAVOURITES',
+            symbols: favourites,
+            top_n: null,
+            alerts: true,
+            threshold: null,
+          },
+        ],
+      }),
     'POST /advisory/favourites/EURUSD': () => {
       const added = !favourites.includes('EURUSD');
       favourites = added ? [...favourites, 'EURUSD'] : favourites.filter((s) => s !== 'EURUSD');
