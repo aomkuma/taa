@@ -223,6 +223,7 @@ too.
 | 2026-10-06 | New work is **built separately from the existing process**: new modules read existing outputs and plug in through defined, default-off hook points; the existing path stays unchanged | §L0.2 |
 | 2026-10-06 | Claude orders the work by suitability | §L16, TICKETS_LEARNING "Waves" |
 | 2026-10-06 | Session discussions are kept in project `.md` files (this file) | — |
+| 2026-10-06 | While the other session finishes Phase 14 / wrap-up, parts of this track that do not collide with it may be picked up (supersedes the strict reading of Q1 for non-conflicting work). Started with the pure parts of TAA-L701 and TAA-L801 in `app/learning/` | TICKETS_LEARNING |
 
 **Open questions:** PLAN_LEARNING §L18 (Q2–Q8, Q11–Q12).
 

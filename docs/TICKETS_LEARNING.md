@@ -57,8 +57,8 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L4 — Signal-quality model | 6 | 0 | TODO |
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
-| M3 | Phase L7 — Entry timing (right direction, wrong time) | 6 | 0 | TODO |
-| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 0 | TODO |
+| M3 | Phase L7 — Entry timing (right direction, wrong time) | 6 | 0 | IN PROGRESS |
+| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 0 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 0 | TODO |
 
 ## Milestone 3 — Learning layer
@@ -402,16 +402,18 @@ the TP.
 
 #### TAA-L701 — Timing diagnostics (L19.1, L19.2)
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** — (Wave 1; σ from ATR first, the L303 profile σ once it exists); uses existing shadow data and TAA-1006 matches
 
-- [ ] `app/learning/timing.py`: reads `app/analytics/recommendations.py` (`stop_too_tight`, `earlier_break_even`), the attribution codes and the TAA-1005 after-exit loader without changing them; own look-ahead H on M1/M5
-- [ ] failure-mode classification `EARLY` / `LATE` / `STALL` / `TF_MISMATCH` / `WRONG` (+ i18n codes)
-- [ ] winners' MAE quantiles (R, ATR), time-to-target quantiles, entry efficiency, TF agreement
-- [ ] random-walk first-passage baseline (P(TP first) = b/(a+b), E[τ] = a·b/σ²) shown beside the observed values
+- [x] `app/learning/timing.py`: pure follow-up after a stop with its own look-ahead H, over analytics `Trade` records (read-only)
+- [ ] wiring: load trades and bars (M1/M5, look-ahead H) for the report, reading the TAA-1005 after-exit loader approach and `stop_too_tight` without changing them
+- [x] failure-mode classification `EARLY` / `LATE` / `STALL` / `TF_MISMATCH` / `WRONG` / `OTHER` / `UNKNOWN`
+- [ ] i18n codes for the failure modes (th + en) with the first API/PWA use
+- [x] winners' MAE quantiles (R, ATR), time-to-target quantiles, pre-entry run (chase), TF agreement
+- [x] random-walk first-passage baseline (P(TP first) = b/(a+b), E[τ] = a·b/σ²) shown beside the observed values
 - [ ] `timing_diagnostics` table (replicated) + migration + nightly build
 - [ ] same report for matched manual trades in analytics
-- [ ] tests (synthetic paths with known outcomes; baseline formula against simulation)
+- [x] tests (synthetic paths with known outcomes; baseline formula against simulation)
 
 #### TAA-L702 — Entry-mode shadow variants (L19.3)
 
@@ -479,14 +481,15 @@ per-signal budget.
 
 #### TAA-L801 — Expectancy report (L20.0)
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** — (Wave 1 by strategy × symbol; playbook and bot dimensions added when L802/L902 exist)
 
-- [ ] `app/learning/expectancy.py`: p, W, L, c, E[R] with bootstrap CI (reuse `bootstrap_mean_ci`) and opportunity rate per playbook × bot × symbol × strategy
-- [ ] "which lever moved" vs the previous version; LIVE and REPLAY separate
+- [x] `app/learning/expectancy.py`: p, W, L, c, E[R] with bootstrap CI (reuse `bootstrap_mean_ci`) and opportunity rate per any grouping (strategy × symbol, LIVE/REPLAY, …)
+- [ ] playbook and bot dimensions (with L802 / L902)
+- [x] "which lever moved" vs the previous version; LIVE and REPLAY separate
 - [ ] `expectancy_reports` table (replicated) + nightly build + API
 - [ ] PWA section on the Learning page (hypothetical label, th + en)
-- [ ] tests (decomposition sums to the measured E[R])
+- [x] tests (decomposition sums to the measured E[R])
 
 #### TAA-L802 — Playbook router (L20.1)
 

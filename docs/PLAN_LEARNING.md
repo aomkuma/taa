@@ -538,11 +538,15 @@ look-ahead `H` (default = the strategy's time stop, 72 h) using M1/M5 bars:
 - **MAE profile of winners:** the distribution of how far winners went against the entry, in R and in ATR, before
   reaching the TP. Its quantiles define the natural "breathing room" of a symbol × strategy.
 - **Time to target:** the distribution of bars from entry to TP (winners) and to +0.5R / +1R (all trades).
-- **Entry efficiency:** the entry's position within the range of the next N bars (0 = the best price in the
-  direction, 1 = the worst). If entries are often near the worst point, they are chasing (`LATE` when the trade
-  also lost).
-- **TF agreement:** whether the entry TF and the HTF trends agreed at entry (`TF_MISMATCH` when they did not and
-  the HTF move later happened).
+- **Pre-entry run (chase):** how far price ran in the trade's direction over the `pre_bars` (10) entry-TF bars
+  before the entry, in ATR. A stopped-out trade after a run of ≥ `late_run_atr` (1.5) ATR is `LATE`. (TAA-L701
+  decision: this replaced an "entry efficiency within the next N bars" measure, which looks at bars after the
+  entry and mixes chasing with ordinary adverse moves.)
+- **TF agreement:** `TF_MISMATCH` when the HTF trend was on the trade's side at entry **and** at the exit, while
+  the entry TF closed on the far side of its `pre_trend_bars` (50) mean against the trade. A pullback entry also
+  sits against its short-term move by design, so the 50-bar mean is used rather than the last few bars.
+- **Precedence** for a stopped-out loser: `EARLY` → `LATE` → `TF_MISMATCH` → `WRONG` (not vindicated) →
+  `UNKNOWN`. Time stops and flat manual/signal closes are `STALL`; other losing exits are `OTHER`.
 - **Random-walk baseline (first passage):** for a driftless walk with volatility σ (from ATR at entry in Wave 1,
   and from the §L5 hour-of-week profile once it exists) and barriers +a (TP) and −b (SL), P(TP first) = b / (a + b), and the expected exit time is a·b / σ².
   The diagnostics report the observed vindicated-stop rate and time to target **next to** this baseline. Only

@@ -59,6 +59,7 @@ LAYERS: dict[str, int] = {
     "app.advisory": 9,
     "app.analytics": 9,
     "app.ai": 9,
+    "app.learning": 9,
     "app.monitoring": 9,
     # 10: engine runtime and sync
     "app.engine": 10,
