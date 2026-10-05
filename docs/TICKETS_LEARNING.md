@@ -15,7 +15,7 @@ references such as §A27 point to [PLAN.md](PLAN.md). The main tickets live in [
 - New reason codes, statuses and explanation keys go into `frontend/src/i18n/` (th + en) in the same change.
 - No profitability claims in any text.
 
-**Execution order:** L0 → L1 → L2 → L3 → L4 → L5 → L6. The track starts only after Phase 14 and the wrap-up of
+**Execution order:** L0 → L1 → L2 → L3 → L4 → L5 → L6 → L7. The track starts only after Phase 14 and the wrap-up of
 TICKETS.md are finished (user decision 2026-10-06: no early start, not even for tick capture; PLAN_LEARNING
 §L16, Q1).
 
@@ -30,6 +30,7 @@ TICKETS.md are finished (user decision 2026-10-06: no early start, not even for 
 | M3 | Phase L4 — Signal-quality model | 6 | 0 | TODO |
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
+| M3 | Phase L7 — Entry timing (right direction, wrong time) | 6 | 0 | TODO |
 
 ## Milestone 3 — Learning layer
 
@@ -353,3 +354,77 @@ TICKETS.md are finished (user decision 2026-10-06: no early start, not even for 
 - [ ] runbook: enable, promote, demote, disk housekeeping, what to do on `MODEL_DRIFT`
 - [ ] README and HANDOFF links
 - [ ] CLAUDE.md commands section updated with the new CLI commands
+
+### Phase L7 — Entry timing (right direction, wrong time)
+
+Design: PLAN_LEARNING §L19. Every variant is evaluated in shadow first; none increases money at risk or moves
+the TP.
+
+#### TAA-L701 — Timing diagnostics (L19.1, L19.2)
+
+- **Status:** TODO
+- **Depends on:** L303 (σ profile); uses existing shadow data and TAA-1006 matches
+
+- [ ] `app/learning/timing.py`: post-exit path follow-up over look-ahead H on M1/M5
+- [ ] failure-mode classification `EARLY` / `LATE` / `STALL` / `TF_MISMATCH` / `WRONG` (+ i18n codes)
+- [ ] winners' MAE quantiles (R, ATR), time-to-target quantiles, entry efficiency, TF agreement
+- [ ] random-walk first-passage baseline (P(TP first) = b/(a+b), E[τ] = a·b/σ²) shown beside the observed values
+- [ ] `timing_diagnostics` table (replicated) + migration + nightly build
+- [ ] same report for matched manual trades in analytics
+- [ ] tests (synthetic paths with known outcomes; baseline formula against simulation)
+
+#### TAA-L702 — Entry-mode shadow variants (L19.3)
+
+- **Status:** TODO
+- **Depends on:** L701
+
+- [ ] shadow variants `PULLBACK`, `LTF_TRIGGER`, `WIDE_STOP` (point-in-time quantiles; same TP price; sizer-based lots)
+- [ ] paired ΔR vs `PLAN` with bootstrap CI, fill rate, avoided losers vs missed winners, failure-mode mix before and after
+- [ ] replay support (REPLAY reported separately)
+- [ ] API `GET /engines/{id}/timing` (diagnostics + variant stats)
+- [ ] tests (missed entry = 0 R; risk percent unchanged in `WIDE_STOP`; no variant moves the TP)
+
+#### TAA-L703 — Timing detectors (L19.4)
+
+- **Status:** TODO
+- **Depends on:** L303
+
+- [ ] compression: ATR percentile, Bollinger-inside-Keltner squeeze, NR4/NR7, inside bar; direction-neutral (timing family)
+- [ ] session timing (minutes to high-activity hour, dead hour) and news timing
+- [ ] expected-time `ctx:` feature from L701
+- [ ] `docs/INDICATORS.md` / `docs/PATTERNS.md` entries, explanation keys th + en
+- [ ] tests (no lookahead; direction-neutral detectors never add directional support)
+
+#### TAA-L704 — Learned time stop and one re-entry (L19.5)
+
+- **Status:** TODO
+- **Depends on:** L702
+
+- [ ] shadow variant `TIME_STOP_LEARNED` (q75 time to +0.5R, bounded by min bars and the configured time stop)
+- [ ] shadow variant `REENTRY_1`: HTF structure intact, within lifetime, new trigger, sized from the remaining idea budget
+- [ ] re-entry counts toward daily loss and breakers; disabled after a daily-loss or breaker event; labelled everywhere
+- [ ] `timing.reentry_enabled` gate for real re-entries (default false; Q7)
+- [ ] tests (idea risk never exceeds the original budget; skip below `volume_min`)
+
+#### TAA-L705 — Time-to-move model (L19.6)
+
+- **Status:** TODO
+- **Depends on:** L402, L701
+
+- [ ] censored first-passage dataset (+1R vs −1R, TP vs SL)
+- [ ] discrete-time hazard (logistic), LightGBM hazard, Kaplan–Meier and random-walk baselines
+- [ ] integrated Brier score under purged walk-forward; registry lifecycle as L404
+- [ ] alert text "similar setups reached the target in about X–Y h" (th + en), only when n ≥ `eta_min_n` and the model beats Kaplan–Meier
+- [ ] holding-style filter and optional predicted q75 for `TIME_STOP_LEARNED`
+- [ ] tests (censoring handled; no-signal data never beats the baseline)
+
+#### TAA-L706 — Entry-mode policy and execution (L19.7)
+
+- **Status:** TODO
+- **Depends on:** L702, L704
+
+- [ ] `entry_mode_policy` versions per symbol × strategy (pooled fallback); selection only by §L19.7 criteria
+- [ ] PWA: timing report, variant comparison, per-strategy override (only among variants; Q8 confirmation flow)
+- [ ] engine: market vs limit (`PULLBACK`, expiry = signal lifetime) vs waiting for `LTF_TRIGGER`, through the unchanged risk → mode gate → execution path
+- [ ] pending limits cancelled on kill switch and breaker events
+- [ ] tests (mode never changes risk; LIVE stays on `PLAN` until the further DEMO period and go-ahead)

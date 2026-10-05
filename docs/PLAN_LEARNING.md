@@ -1,7 +1,7 @@
 # TAA — Learning Layer: Symbol Character, Tick Microstructure & Signal Quality (Design)
 
 > Separate design track, started 2026-10-06. It extends [PLAN.md](PLAN.md) and does not replace any part of it.
-> Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). Section numbers here are `L0`–`L18`; references
+> Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). Section numbers here are `L0`–`L8`, `L19`, then `L9`–`L18`; references
 > such as §A27 point to PLAN.md. No profitability claims anywhere: every model here can only estimate, filter
 > or explain. Capital protection, fail-closed behavior and auditability still come first.
 
@@ -75,6 +75,15 @@ are valid for **this broker's feed only**. Profiles and models are always keyed 
 - **Random-walk tests.** Lo & MacKinlay (1988) give the variance-ratio test with a heteroskedasticity-robust
   statistic. Detrended fluctuation analysis is a more robust Hurst estimate than R/S on short, noisy series.
   Both are reported with uncertainty (L5).
+- **Volatility compression (L19.4).** The idea that contraction is followed by expansion (Crabel's NR4/NR7 and
+  inside days; the Bollinger-inside-Keltner squeeze) rests on volatility clustering. Every source agrees that
+  compression is **direction-neutral**: it says a larger move is more likely soon, not which way. The direction
+  must come from elsewhere.
+- **First passage (L19.2, L19.6).** For a driftless random walk with barriers +a and −b, P(+a first) = b/(a+b)
+  and the expected exit time is a·b/σ². The first-passage hazard is non-monotone: it rises, peaks near the most
+  likely crossing time and then flattens. This gives a principled **null model** for "how often noise alone
+  hits this stop" and "how long a move should take". It also motivates a hazard model with censoring rather
+  than a plain classifier for timing.
 - **Jumps.** The ratio of realized variance to bipower variation (Barndorff-Nielsen & Shephard, 2004) separates
   continuous volatility from jumps (L4 `jump_flag`).
 - **Model storage.** LightGBM serializes boosters to its own text format (`Booster.model_to_string()` and
@@ -404,6 +413,137 @@ strategy × regime, with the same empirical-Bayes pooling as `BucketModel`, so s
 - **Re-enable:** automatically when the bound recovers, since shadow trades keep accumulating for gated cells
   (they are still evaluated, just not traded).
 
+## L19. Entry timing: right direction, wrong time (added 2026-10-06)
+
+Section numbers run L0–L8, then L19, then L9–L18. L19 sits here because it builds on L5–L8 and feeds L9.
+
+**Problem (user, 2026-10-06):** traders often read the direction correctly and still lose, because the move
+comes later than their position can survive. This section treats timing as a **separate, measurable problem**
+next to direction.
+
+### L19.1 Failure modes
+
+| Code | Mode | What happens | Typical cause |
+|---|---|---|---|
+| `EARLY` | Too early | SL hit first, then price reaches the original TP | Stop inside the symbol's normal noise for that hour; entry before any trigger |
+| `LATE` | Too late (chase) | Entry after the move ran; a normal pullback hits the SL | No wait for a pullback; the effective RR is worse than planned |
+| `STALL` | Not yet | Price goes sideways until the time stop, a manual close or swap costs | Entry in a quiet session or in the wrong regime |
+| `TF_MISMATCH` | Wrong timeframe | The HTF direction is right, but the entry TF is still against it | Direction and timing judged on the same TF |
+| `WRONG` | Wrong direction | The TP is never reached within the look-ahead | Not a timing problem |
+
+### L19.2 Timing diagnostics (`app/learning/timing.py`)
+
+The diagnostics run on CLOSED shadow trades (PLAN variant) and on matched manual trades (TAA-1006). They need only
+the candles that are already stored, no ticks. For every trade, the path is followed **after the exit** for a
+look-ahead `H` (default = the strategy's time stop, 72 h) using M1/M5 bars:
+
+- **`vindicated_stop`:** the SL was hit, and later, within H, price reached the original TP before going a
+  further 1R beyond the SL. A trade is classified `EARLY` when this is true.
+- **MAE profile of winners:** the distribution of how far winners went against the entry, in R and in ATR, before
+  reaching the TP. Its quantiles define the natural "breathing room" of a symbol × strategy.
+- **Time to target:** the distribution of bars from entry to TP (winners) and to +0.5R / +1R (all trades).
+- **Entry efficiency:** the entry's position within the range of the next N bars (0 = the best price in the
+  direction, 1 = the worst). If entries are often near the worst point, they are chasing (`LATE` when the trade
+  also lost).
+- **TF agreement:** whether the entry TF and the HTF trends agreed at entry (`TF_MISMATCH` when they did not and
+  the HTF move later happened).
+- **Random-walk baseline (first passage):** for a driftless walk with volatility σ (from the L5 hour-of-week
+  profile) and barriers +a (TP) and −b (SL), P(TP first) = b / (a + b), and the expected exit time is a·b / σ².
+  The diagnostics report the observed vindicated-stop rate and time to target **next to** this baseline. Only
+  the difference counts as evidence: a stop that a pure random walk would hit 60% of the time is a stop-placement
+  problem, not bad luck.
+
+**Outputs** (`timing_diagnostics`, replicated): per symbol × strategy × session, the share of each failure mode with
+a Wilson CI, the MAE quantiles of winners, the time-to-target quantiles, the baseline comparison, and n. Manual
+trades get the same report in the analytics page ("your losses that were right too early").
+
+### L19.3 Entry-mode variants (shadow A/B)
+
+Each opportunity is simulated under several entry modes at once, as extra shadow variants beside `PLAN`,
+`MANAGED` and `CONFIRMED` (L7). They always use the same plan direction, the same risk budget and the same TP
+**price**:
+
+| Variant | Entry rule | Main trade-off |
+|---|---|---|
+| `PLAN` (existing) | At the signal, at market | Baseline |
+| `PULLBACK` | A limit at the learned pullback depth: the winners' MAE quantile q (default q50) of this symbol × strategy, at least 0.2 ATR; expires at the signal lifetime | Misses trades that never pull back |
+| `LTF_TRIGGER` | Waits for a lower-TF trigger in the plan direction: a break of the last swing on the trigger TF (entry TF ÷ 3–4, e.g. M15 → M5 or M1); expires at the signal lifetime | Worse price, fewer whipsaws |
+| `CONFIRMED` (L7) | Tick confirmation | Minute-level only; needs ticks |
+| `WIDE_STOP` | `PLAN` entry with the SL at max(structure stop, winners' MAE q80 + spread), and the lot recomputed so risk percent is unchanged | Smaller lot; fewer `EARLY` stop-outs |
+
+**Rules.**
+
+- The SL stays at the plan's structure level unless the variant says otherwise. A better entry therefore raises
+  the effective RR, and a variant may not move the TP.
+- Sizing always goes through the risk sizer. No variant increases money at risk.
+- Learned depths and quantiles come from profile/diagnostics versions **valid at signal time** (point in time).
+- Statistics: the paired ΔR per opportunity against `PLAN` (a missed entry = 0 R) with a bootstrap 90% CI, the
+  fill rate, avoided losers vs missed winners, and the failure-mode mix before and after.
+
+### L19.4 Timing features and detectors
+
+New evidence detectors (`app/evidence/volatility.py` and `app/evidence/sessions_ranges.py`), shown as **timing**
+evidence and never as direction:
+
+- **Volatility compression:** the ATR percentile over the last 100 bars < 20; Bollinger Bands inside Keltner
+  Channels (squeeze); NR4/NR7 and inside bars (Crabel). Compression says that **an expansion is more likely
+  soon** and is direction-neutral. The direction must come from the HTF and the strategy.
+- **Session timing:** minutes until the next high-activity hour from the L5 profile (London or New York open);
+  "dead hour" when the profile's activity is in the bottom quartile.
+- **News timing:** minutes to the next high-impact event for the symbol's currencies (`app/news`).
+- **Expected-time context:** time to target q50/q75 for this symbol × strategy (from L19.2), as a `ctx:` feature.
+
+### L19.5 Learned time stop and one re-entry (shadow first)
+
+- **Variant `TIME_STOP_LEARNED`:** exit at market when the trade has not reached +0.5R by the time-to-+0.5R q75 of
+  its symbol × strategy (min 4 bars, max the configured time stop). The idea is to cut `STALL` trades at a small
+  loss instead of a full SL.
+- **Variant `REENTRY_1`:** after a SL hit, **one** re-entry with the same plan is allowed only when all of these
+  hold:
+  - the HTF structure is intact (the invalidation level of the setup was not broken)
+  - the signal lifetime has not expired, and a new `LTF_TRIGGER` or `CONFIRMED` entry appears
+  - **the total risk of the idea, including the first loss, stays within the original per-signal budget**. The
+    re-entry is sized from what is left of the budget, and is skipped when it is below `volume_min`.
+
+  Re-entries are labelled as such everywhere, count toward the daily loss limit and the breakers, and are
+  disabled after a daily loss or breaker event. The point is to rescue the `EARLY` mode without becoming revenge
+  trading.
+
+### L19.6 Time-to-move model (extends L6)
+
+L6 estimates P(TP before SL). Timing needs a **when** as well:
+
+- **Target:** the first passage of +1R vs −1R (and of TP vs SL), with the exit time as a duration. Trades still
+  open at the look-ahead end are censored, not dropped.
+- **Models:**
+  1. a discrete-time hazard model: logistic regression on (trade, bar-since-entry) rows, with time features
+     plus the L6 features
+  2. a LightGBM version under the same validation
+  3. baseline: the empirical Kaplan–Meier curve per symbol × strategy and the random-walk first-passage curve
+
+  The same purged walk-forward, calibration and lifecycle as L6 and L9 apply.
+- **Output in alerts:** "similar setups reached the target in roughly 4–12 h (middle half) in the past" with n.
+  It is explicitly historical and hypothetical, not a promise. It is shown only when n ≥ `min_n` and the
+  model beats the Kaplan–Meier baseline out of sample (integrated Brier score).
+- **Uses:**
+  - the user sets realistic expectations and avoids premature manual closes
+  - `TIME_STOP_LEARNED` can use the predicted q75 instead of the group q75
+  - holding style (§A31 scalp/day/swing) filters signals whose expected time does not fit
+
+### L19.7 Selection and enabling
+
+- A variant can become the **default entry mode** for a symbol × strategy only when its paired ΔR CI against
+  `PLAN` lies above 0 with n ≥ 200 opportunities in live shadow. Replay results are reported separately and do
+  not count toward this threshold.
+- The selection is per symbol × strategy (pooled to asset class when small) and stored in a versioned
+  `entry_mode_policy`. It is shown in the PWA with the evidence. The user can override it per strategy; the
+  override can only choose among variants, it cannot change risk.
+- In DEMO and LIVE, the chosen mode only changes **how** the entry is placed (market vs limit vs waiting for a
+  trigger). Risk checks, the mode gate and execution are unchanged. A limit order placed by `PULLBACK` gets the
+  signal lifetime as its expiry and is cancelled on kill switch or breaker events like any pending order.
+- `REENTRY_1` and `TIME_STOP_LEARNED` follow the same rule, and they also stay off in LIVE until a further DEMO
+  period confirms them (L13).
+
 ## L9. Learning loop & model governance
 
 **Schedule** (engine, worker thread, never in the trading loop):
@@ -413,6 +553,7 @@ strategy × regime, with the same empirical-Bayes pooling as `BucketModel`, so s
 | Micro-bar build | Every minute, for closed minutes | micro-bars |
 | Profiles + regime | Nightly after `nightly_hour_utc` | `symbol_profiles` version |
 | Fit matrix | Nightly after calibration | `fit_matrix` version |
+| Timing diagnostics + entry-mode policy | Nightly after the fit matrix | `timing_diagnostics`, `entry_mode_policy` versions |
 | Dataset + model training | Weekly (`retrain_weekday`), or `app.cli learning train` | `ml_model_versions` CANDIDATE |
 | Drift monitor | Hourly | drift metrics, possible demotion |
 
@@ -498,6 +639,10 @@ claimed.
 | Fit-matrix gate | Always (labelled hypothetical) | n ≥ 40 per gated cell, opt-in | Same + ≥ 4 weeks of DEMO with the gate on |
 | Meta-label model | A SHADOW version exists | ACTIVE: L6 validation passed + shadow period passed | ACTIVE for ≥ 4 weeks in DEMO with no drift demotion |
 | Tick confirmation | ≥ 50 A/B opportunities | Paired ΔR CI > 0 over ≥ 200 opportunities | Same result repeated over a further DEMO period, p95 latency within limit |
+| Timing diagnostics (L19.2) | Always (labelled hypothetical, with n and CI) | — (diagnostic only) | — |
+| Entry-mode variant (L19.3) | ≥ 50 A/B opportunities | Paired ΔR CI > 0 over ≥ 200 live-shadow opportunities | Same result over a further DEMO period |
+| `TIME_STOP_LEARNED`, `REENTRY_1` (L19.5) | ≥ 50 A/B opportunities | Same as entry modes + the user opts in | Same + explicit user go-ahead |
+| Time-to-move estimate (L19.6) | n ≥ `min_n` and beats Kaplan–Meier OOS | Not used for trading decisions except the learned time stop | Same |
 
 Every acceptance decision is recorded in `docs/HANDOFF.md` with the numbers. Reaching a criterion means
 "allowed to be tried", not "expected to be profitable".
@@ -544,6 +689,17 @@ learning:
     chase_atr: 0.3
     on_no_ticks: immediate       # immediate | cancel (forced to cancel in LIVE)
     max_latency_ms: 1500
+  timing:
+    enabled: false
+    lookahead_hours: null        # null = the strategy's time stop
+    pullback_quantile: 0.5       # winners' MAE quantile for PULLBACK
+    min_pullback_atr: 0.2
+    wide_stop_quantile: 0.8
+    trigger_tf_divisor: 3        # entry TF ÷ this ≈ trigger TF (M15 → M5)
+    time_stop_quantile: 0.75
+    reentry_enabled: false       # shadow evaluation always runs; this only allows real re-entries
+    min_policy_n: 200
+    eta_min_n: 50                # time-to-move text in alerts
   drift:
     psi_threshold: 0.25
     rolling_trades: 50
@@ -564,6 +720,8 @@ Hard ceilings in code: `confirmation.timeout_seconds ≤ 600`, `max_symbols ≤ 
 | `ml_model_versions` | replicated (without model text) | id, kind, scope, status, metrics, schema hash |
 | `model_predictions` | replicated | opportunity_id, model_id, p, explanation hash, used |
 | `pending_entries` | engine (+ outcome replicated) | decision_id, state, reason, timestamps, prices |
+| `timing_diagnostics` | replicated | version, scope (symbol × strategy × session or manual), failure-mode shares + CI, MAE and time quantiles, baseline, n |
+| `entry_mode_policy` | replicated | version, symbol, strategy, mode, ΔR + CI, n, user override |
 
 Types stay portable (`UTCDateTime`, `JSONType`) and use one Alembic history, as PLAN §A18 requires.
 
@@ -578,6 +736,7 @@ Types stay portable (`UTCDateTime`, `JSONType`) and use one Alembic history, as 
 | L4 | Meta-label model, evaluation, registry | Needs enough shadow/replay outcomes |
 | L5 | Tick confirmation + A/B shadow variant + latency | Needs L1 data + L2 features + DEMO time |
 | L6 | Fit matrix, drift, Learning page, runbook | Closes the loop |
+| L7 | Entry timing (L19): diagnostics, entry-mode variants, timing detectors, learned time stop and re-entry, time-to-move model | L701 needs only existing shadow data, but follows the same order |
 
 **Placement against the main plan:** after Phase 14 and the wrap-up (the 2026-10-06 decision). TAA-L001 (probe)
 and TAA-L101–L102 (tick capture) are small, read-only and independent, so starting them early was considered.
@@ -613,3 +772,7 @@ order L0 → L6.
 4. Q4: Should deep learning or RL be revisited after L4 has ≥ 6 months of live shadow data?
 5. Q5: Should the HMM regime experiment be in scope, or rules only?
 6. Q6: Should the profile-based SL/TP suggestion be applied automatically in DEMO, or shown only?
+7. Q7: Should `REENTRY_1` be evaluated at all, or left out because of its behavioral risk? (Default: evaluate
+   in shadow only, and keep real re-entries off.)
+8. Q8: Should the default entry mode switch automatically per symbol × strategy once the L19.7 criteria are met,
+   or always need the user's confirmation in the PWA? (Default: needs confirmation.)
