@@ -1,7 +1,7 @@
 # TAA — Learning Layer: Symbol Character, Tick Microstructure & Signal Quality (Design)
 
 > Separate design track, started 2026-10-06. It extends [PLAN.md](PLAN.md) and does not replace any part of it.
-> Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). Section numbers here are `L0`–`L8`, `L19`, then `L9`–`L18`; references
+> Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). Section numbers here are `L0`–`L8`, `L19`, `L20`, then `L9`–`L18`; references
 > such as §A27 point to PLAN.md. No profitability claims anywhere: every model here can only estimate, filter
 > or explain. Capital protection, fail-closed behavior and auditability still come first.
 
@@ -415,7 +415,7 @@ strategy × regime, with the same empirical-Bayes pooling as `BucketModel`, so s
 
 ## L19. Entry timing: right direction, wrong time (added 2026-10-06)
 
-Section numbers run L0–L8, then L19, then L9–L18. L19 sits here because it builds on L5–L8 and feeds L9.
+Section numbers run L0–L8, then L19–L20, then L9–L18. L19 sits here because it builds on L5–L8 and feeds L9.
 
 **Problem (user, 2026-10-06):** traders often read the direction correctly and still lose, because the move
 comes later than their position can survive. This section treats timing as a **separate, measurable problem**
@@ -544,6 +544,175 @@ L6 estimates P(TP before SL). Timing needs a **when** as well:
 - `REENTRY_1` and `TIME_STOP_LEARNED` follow the same rule, and they also stay off in LIVE until a further DEMO
   period confirms them (L13).
 
+## L20. Regime playbooks: closing the human gaps (added 2026-10-06)
+
+**Purpose (user, 2026-10-06):** the system exists to close the weaknesses of a human trader:
+
+- emotions (fear, greed, FOMO, revenge trading)
+- a bias toward one style (trend or sideways)
+- comfort with only a few assets
+
+It should take every qualifying opportunity with sniper entries, ride a trend when the larger picture trends,
+and trade ranges when the market is sideways. **Profit cannot be predicted. The goal is to make each trade's
+expected value as favorable as the evidence allows, and to measure it honestly.**
+
+### L20.0 Guiding principle: the expectancy decomposition
+
+Per trade, in R after costs: **E[R] = p · W − (1 − p) · L − c**. The **growth of the account** also depends on how
+many independent opportunities are taken (n), and on surviving drawdowns. Every component of this track maps to
+one lever, and progress is judged on these process metrics (with CIs), never on single-trade outcomes:
+
+| Lever | Meaning | Components |
+|---|---|---|
+| p ↑ | Take better signals | L4 signal quality, L8 fit matrix, L20.1 playbook router |
+| W ↑ | Let winners run when the trend allows | L20.3 trend runner, L20.4 transitions |
+| L ↓ | Lose less on the losers: fewer full stop-outs, stops outside noise | L19 timing, L7 confirmation, learned time stop |
+| c ↓ | Pay less in spread, commission and swap | L3 spread profile (costly hours), L4 `spread_ratio` |
+| n ↑ | More independent opportunities | L20.5 tiered scanning of all symbols, L20.2 range playbook |
+| Survival | Never risk ruin | §A9/§A33 sizing and ceilings, breakers, heat, L20.6 correlation-aware selection |
+| Discipline | The plan is followed | L20.7 behavior report on manual trades |
+
+**Expectancy report** (`app/learning/expectancy.py`): per playbook × symbol × strategy, from CLOSED shadow
+trades (LIVE and REPLAY separate), it shows p, W, L, c, the resulting E[R] with a bootstrap CI, the
+opportunity rate, and which lever moved since the previous version. It is labelled hypothetical, and it is the
+first screen to read when deciding what to change.
+
+### L20.1 Playbook router
+
+`app/learning/playbooks.py`. The HTF regime chooses the playbook, and the entry TF executes it:
+
+| Playbook | HTF condition (defaults, profile-normalized where possible) | Allowed strategy families |
+|---|---|---|
+| `TREND_RUNNER` | Regime `TREND` (`regime_detector` TRENDING and L3 `TREND`), HTF trend direction set | Pullback, continuation, breakout in the trend direction |
+| `RANGE` | Regime `RANGE` with a qualified range (L20.2) | Range fade |
+| `BREAKOUT` | Compression active (L19.4) and the range edge broken on a closed HTF bar | Breakout, retest |
+| `STAND_ASIDE` | `VOLATILE`, `UNCLEAR`, `QUIET` with costly hours, news blackout, spread stress or insufficient data | None |
+
+**Rules.**
+
+- **Hysteresis:** a regime change takes effect only after it has held for `switch_bars` (default 2) closed HTF bars,
+  so the router does not flip on noise.
+- Each strategy and setup declares its playbooks (`playbooks: [...]` in config). The router **only disables**
+  strategies that do not fit the current playbook; it never enables one that config.yaml disabled.
+- The L8 fit matrix decides per symbol whether a playbook is allowed there. A playbook without a credible edge
+  on a symbol is not used on it, so the system does not trade a style where it shows no edge.
+- Decisions carry reason codes (`PLAYBOOK_TREND`, `PLAYBOOK_RANGE`, `PLAYBOOK_BREAKOUT`, `PLAYBOOK_STAND_ASIDE`,
+  `PLAYBOOK_MISMATCH`) shown in alerts and the PWA.
+
+### L20.2 Range playbook
+
+The existing setups are mostly breakout, pullback and reversal. A dedicated range fade is added
+(`setup_range_fade`, starting with `DEMO_UNPROVEN` like the other setups).
+
+- **Qualified range** (HTF):
+  - ADX below `range_adx` and efficiency ratio < 0.3 over the range
+  - at least 2 touches at each edge
+  - a width of at least `min_width_atr` (default 2) HTF ATR, and the distance from the edge to the middle at least
+    4× the round-trip cost
+  - no active compression (L19.4: a squeeze inside a range means a breakout is likely, so the playbook becomes
+    `BREAKOUT` watch)
+- **Entry:** inside the outer `edge_zone` (default 20%) of the range, after an LTF rejection trigger (reversal
+  candle, failed break, `tick_imbalance` turning; L19.3 `LTF_TRIGGER`).
+- **Stop:** beyond the edge by max(`stop_buffer_atr`, the winners' MAE q80 from L19.2), so it sits outside the
+  normal noise.
+- **Targets:** TP1 at the middle of the range, TP2 at the opposite edge zone (`SAME_PRICE` split, §A31).
+- **Exits:** a closed HTF bar outside the range → exit at market (`RANGE_BROKEN`), and a short time stop
+  (learned, L19.5).
+
+### L20.3 Trend runner and risk-free adds
+
+- **Entry:** a pullback in the HTF trend direction with sniper timing (L19 `PULLBACK` or `LTF_TRIGGER`, L7
+  confirmation).
+- **Split position** (separate positions, `SAME_PRICE` mode of §A31):
+  - part A (default 50%) takes profit at `runner_tp1_r` (default 1.5R)
+  - part B is the **runner**, with no fixed TP
+- **Runner trailing:** the stop trails behind the more conservative (closer to price) of:
+  - the last confirmed HTF swing low/high minus a buffer (structure trail)
+  - a chandelier stop of `k × ATR(HTF)` from the extreme since entry (default k = 3)
+
+  After TP1 the stop is at least at break-even plus costs. The SL only moves in the favorable direction (§A11
+  invariant).
+- **Runner exit:** the trailing stop, an HTF change of character against the trend (`structure.bos_choch`), the
+  regime leaving `TREND` for `switch_bars`, the kill switch or a breaker. Swap is accrued and shown, because
+  runners hold longer.
+- **Risk-free adds (pyramiding), opt-in:** at most `max_adds` (default 2) adds in the trend direction, each on a
+  fresh pullback trigger. An add is allowed only when the stops of the existing parts already lock in at least
+  the add's risk. The **total open risk of the idea never exceeds the initial per-signal budget**
+  (property-tested). Adds count toward portfolio heat, and they are disabled after a daily-loss or breaker
+  event.
+- **Evaluation:** shadow variants `RUNNER` and `RUNNER_ADDS` beside `PLAN` and `MANAGED`, with the paired ΔR,
+  W and L shifts (L20.0) and max drawdown compared. A runner usually lowers the hit rate and raises W, and the
+  report shows both.
+
+### L20.4 Regime transitions and open positions
+
+All transition policies are defined in advance per playbook and evaluated in shadow. Nothing changes on the
+fly from a model:
+
+| Open trade | Transition | Policy |
+|---|---|---|
+| Range fade | The range breaks against the trade | Exit (`RANGE_BROKEN`) |
+| Range fade | The range breaks in the trade's direction | Variant `RANGE_TO_RUNNER`: part B converts to the runner rules (L20.3) instead of exiting at the opposite edge. Shadow first |
+| Trend runner | Exhaustion: a failed higher high/lower low, momentum divergence, or the regime going to `RANGE` | Tighten the trail to the nearest LTF swing (`TREND_EXHAUSTION`) |
+| Trend runner | HTF change of character against it | Exit (`TREND_ENDED`) |
+| Any | `VOLATILE` or news blackout begins | No new entries; existing stops are kept, never widened |
+
+### L20.5 Tiered scanning of all symbols
+
+To take opportunities across the whole FBS universe (hundreds of symbols) without running the full evidence
+engine (about 1 s per bar per symbol) everywhere:
+
+- **Tier 0, every entry-TF close, all tradable symbols.** It runs indicators only: session open, spread ok vs the
+  profile, ATR state, regime, compression, distance to range edges and HTF swing levels. Cost: milliseconds per
+  symbol.
+- **Tier 1, the full evidence and strategy pipeline,** for:
+  - symbols with open positions, plus watchlist symbols
+  - the top `tier1_max` (default 30) of a tier-0 interest score (playbook not `STAND_ASIDE`, price near an
+    actionable zone, compression, fit-matrix edge)
+- **Rotation:** every tradable symbol gets a tier-1 pass at least every `rotation_bars` bars, so a tier-0 blind
+  spot cannot hide one forever.
+- **Budget:** a CPU time budget per cycle with metrics (scan latency, symbols per tier, skipped). If the budget is
+  exceeded, the lowest-interest symbols are dropped from tier 1 and counted.
+
+### L20.6 Opportunity selection under heat and correlation
+
+When more signals qualify than the heat and position limits allow (for example, broad USD weakness):
+
+- **Rank** by expected R per unit of risk from the selected model (L4/L20.0, cost included), then by setup
+  strength.
+- **Deduplicate correlated exposure:** at most `max_per_cluster_direction` (default 1) per correlation cluster
+  (L5) and direction, where exposure in the same currency counts as the same bet.
+- Rejected signals keep shadow tracking with reason `HEAT_RANKED_OUT` or `CORRELATED_DUPLICATE`, so the
+  selection rule itself can be evaluated.
+- This extends the existing arbitration (`app/strategy/arbitration.py`); it does not replace it.
+
+### L20.7 Behavior report on manual trades
+
+The owner also trades by hand. From the manual trades and their matched signals (TAA-1006), the analytics show
+patterns that are typical human weaknesses. The text is descriptive and non-judgmental, and the values are
+hypothetical comparisons, not promises:
+
+| Pattern | Detection |
+|---|---|
+| Early exit of winners | Closed in profit before TP while the plan was intact, and price later reached the TP |
+| Stop moved away | The SL was widened or removed after entry |
+| Revenge trade | A new trade within `revenge_minutes` (default 30) after a loss, or with a larger risk than the previous one |
+| Overtrading | Trades per day above the profile's `max signals per day`, or after the daily loss limit |
+| Off-plan trade | A manual trade without a matching signal, or against the current playbook |
+| Comfort-zone bias | The share of trades by playbook and asset class vs where the opportunities were |
+
+Each pattern gets its count, its share, and the hypothetical difference in R between "as traded" and "as
+planned". The point is to show where the system's discipline would have helped, not to grade the user.
+
+### L20.8 Safety
+
+- The router, playbooks, transitions and selection can only **choose among predefined, shadow-evaluated
+  rules** or **disable** trading. None of them creates risk beyond the per-signal budget, widens a stop, or
+  bypasses risk, mode gates, breakers or the kill switch.
+- Runner and adds: the total idea risk is always ≤ the initial budget, and the SL only moves favorably.
+- Each new playbook rule follows L13: shadow first, then DEMO with the acceptance numbers, and LIVE only after
+  Phase 14 and the user's explicit go-ahead.
+
 ## L9. Learning loop & model governance
 
 **Schedule** (engine, worker thread, never in the trading loop):
@@ -643,6 +812,10 @@ claimed.
 | Entry-mode variant (L19.3) | ≥ 50 A/B opportunities | Paired ΔR CI > 0 over ≥ 200 live-shadow opportunities | Same result over a further DEMO period |
 | `TIME_STOP_LEARNED`, `REENTRY_1` (L19.5) | ≥ 50 A/B opportunities | Same as entry modes + the user opts in | Same + explicit user go-ahead |
 | Time-to-move estimate (L19.6) | n ≥ `min_n` and beats Kaplan–Meier OOS | Not used for trading decisions except the learned time stop | Same |
+| Expectancy report, behavior report (L20.0, L20.7) | Always (hypothetical, with n and CI) | — (reports only) | — |
+| Playbook router (L20.1) | Always (reason codes) | Disable-only; the fit matrix allows the playbook on the symbol | Same + ≥ 4 weeks in DEMO |
+| Range fade, runner, adds, transitions (L20.2–L20.4) | ≥ 50 A/B opportunities | Paired ΔR CI > 0 over ≥ 200 live-shadow opportunities, max DD not worse beyond the CI | Same over a further DEMO period + explicit go-ahead |
+| Tiered scanning, correlation selection (L20.5–L20.6) | Always | When scan metrics stay within budget for 2 weeks | Same |
 
 Every acceptance decision is recorded in `docs/HANDOFF.md` with the numbers. Reaching a criterion means
 "allowed to be tried", not "expected to be profitable".
@@ -700,6 +873,14 @@ learning:
     reentry_enabled: false       # shadow evaluation always runs; this only allows real re-entries
     min_policy_n: 200
     eta_min_n: 50                # time-to-move text in alerts
+  playbooks:
+    enabled: false
+    switch_bars: 2
+    range: {min_width_atr: 2.0, edge_zone: 0.2, min_touches: 2}
+    runner: {tp1_r: 1.5, part_a_share: 0.5, chandelier_atr: 3.0, adds_enabled: false, max_adds: 2}
+    scan: {tier1_max: 30, rotation_bars: 12, cycle_budget_seconds: 20}
+    selection: {max_per_cluster_direction: 1}
+    behavior: {revenge_minutes: 30}
   drift:
     psi_threshold: 0.25
     rolling_trades: 50
@@ -722,6 +903,9 @@ Hard ceilings in code: `confirmation.timeout_seconds ≤ 600`, `max_symbols ≤ 
 | `pending_entries` | engine (+ outcome replicated) | decision_id, state, reason, timestamps, prices |
 | `timing_diagnostics` | replicated | version, scope (symbol × strategy × session or manual), failure-mode shares + CI, MAE and time quantiles, baseline, n |
 | `entry_mode_policy` | replicated | version, symbol, strategy, mode, ΔR + CI, n, user override |
+| `playbook_state` | replicated | server, symbol, playbook, since, regime inputs, switch pending |
+| `expectancy_reports` | replicated | version, scope, p, W, L, c, E[R] + CI, opportunity rate |
+| `behavior_reports` | replicated (user-scoped) | user, period, pattern, count, share, ΔR vs plan |
 
 Types stay portable (`UTCDateTime`, `JSONType`) and use one Alembic history, as PLAN §A18 requires.
 
@@ -737,6 +921,7 @@ Types stay portable (`UTCDateTime`, `JSONType`) and use one Alembic history, as 
 | L5 | Tick confirmation + A/B shadow variant + latency | Needs L1 data + L2 features + DEMO time |
 | L6 | Fit matrix, drift, Learning page, runbook | Closes the loop |
 | L7 | Entry timing (L19): diagnostics, entry-mode variants, timing detectors, learned time stop and re-entry, time-to-move model | L701 needs only existing shadow data, but follows the same order |
+| L8 | Regime playbooks (L20): expectancy report, router, range playbook, trend runner + adds, transitions, tiered scanning, correlation selection, behavior report | Combines L3, L8 and L19 into one trading approach |
 
 **Placement against the main plan:** after Phase 14 and the wrap-up (the 2026-10-06 decision). TAA-L001 (probe)
 and TAA-L101–L102 (tick capture) are small, read-only and independent, so starting them early was considered.
@@ -776,3 +961,7 @@ order L0 → L6.
    in shadow only, and keep real re-entries off.)
 8. Q8: Should the default entry mode switch automatically per symbol × strategy once the L19.7 criteria are met,
    or always need the user's confirmation in the PWA? (Default: needs confirmation.)
+9. Q9: Should risk-free adds (pyramiding) be evaluated, and with what cap? (Default: shadow only, max 2 adds,
+   real adds off.)
+10. Q10: How large should the tier-0 universe be: every symbol on the account, or the asset classes the user
+    picks? (Default: everything tradable whose spread fits the cost threshold.)

@@ -15,7 +15,7 @@ references such as §A27 point to [PLAN.md](PLAN.md). The main tickets live in [
 - New reason codes, statuses and explanation keys go into `frontend/src/i18n/` (th + en) in the same change.
 - No profitability claims in any text.
 
-**Execution order:** L0 → L1 → L2 → L3 → L4 → L5 → L6 → L7. The track starts only after Phase 14 and the wrap-up of
+**Execution order:** L0 → L1 → L2 → L3 → L4 → L5 → L6 → L7 → L8. The track starts only after Phase 14 and the wrap-up of
 TICKETS.md are finished (user decision 2026-10-06: no early start, not even for tick capture; PLAN_LEARNING
 §L16, Q1).
 
@@ -31,6 +31,7 @@ TICKETS.md are finished (user decision 2026-10-06: no early start, not even for 
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
 | M3 | Phase L7 — Entry timing (right direction, wrong time) | 6 | 0 | TODO |
+| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 0 | TODO |
 
 ## Milestone 3 — Learning layer
 
@@ -428,3 +429,98 @@ the TP.
 - [ ] engine: market vs limit (`PULLBACK`, expiry = signal lifetime) vs waiting for `LTF_TRIGGER`, through the unchanged risk → mode gate → execution path
 - [ ] pending limits cancelled on kill switch and breaker events
 - [ ] tests (mode never changes risk; LIVE stays on `PLAN` until the further DEMO period and go-ahead)
+
+### Phase L8 — Regime playbooks (closing the human gaps)
+
+Design: PLAN_LEARNING §L20. Principle: profit cannot be predicted; every rule here must improve a lever of
+E[R] = p·W − (1−p)·L − c (or n, survival, discipline), proven in shadow first. Nothing raises the idea's risk above the
+per-signal budget.
+
+#### TAA-L801 — Expectancy report (L20.0)
+
+- **Status:** TODO
+- **Depends on:** L601
+
+- [ ] `app/learning/expectancy.py`: p, W, L, c, E[R] with bootstrap CI and opportunity rate per playbook × symbol × strategy
+- [ ] "which lever moved" vs the previous version; LIVE and REPLAY separate
+- [ ] `expectancy_reports` table (replicated) + nightly build + API
+- [ ] PWA section on the Learning page (hypothetical label, th + en)
+- [ ] tests (decomposition sums to the measured E[R])
+
+#### TAA-L802 — Playbook router (L20.1)
+
+- **Status:** TODO
+- **Depends on:** L302, L601, L703
+
+- [ ] `app/learning/playbooks.py`: `TREND_RUNNER` / `RANGE` / `BREAKOUT` / `STAND_ASIDE` from HTF regime, compression, news, spread and costly hours
+- [ ] hysteresis `switch_bars`; `playbook_state` table (replicated)
+- [ ] `playbooks: [...]` declared per strategy/setup in config; router is disable-only; fit matrix allows a playbook per symbol
+- [ ] reason codes `PLAYBOOK_*` + i18n; playbook shown in alerts and on the symbol page
+- [ ] tests (never enables a disabled strategy; no flip-flop within `switch_bars`)
+
+#### TAA-L803 — Range playbook (L20.2)
+
+- **Status:** TODO
+- **Depends on:** L802, L702
+
+- [ ] qualified-range detector (ADX, efficiency ratio, touches, width vs ATR and cost, no compression)
+- [ ] `setup_range_fade` (`DEMO_UNPROVEN`): edge-zone entry after LTF rejection, stop outside noise (MAE q80), TP1 mid / TP2 opposite edge
+- [ ] exit on a closed HTF bar outside the range (`RANGE_BROKEN`), learned time stop
+- [ ] `docs/STRATEGIES.md` entry
+- [ ] tests
+
+#### TAA-L804 — Trend runner and risk-free adds (L20.3)
+
+- **Status:** TODO
+- **Depends on:** L802, L702
+
+- [ ] split position (part A at `tp1_r`, part B runner without fixed TP) on the `SAME_PRICE` plan
+- [ ] runner trailing: the tighter of HTF structure trail and chandelier `k × ATR`; at least break-even + costs after TP1; SL moves only favorably
+- [ ] runner exits: trail, HTF CHoCH against, regime leaves `TREND`, kill switch, breaker; swap accrued and shown
+- [ ] adds (opt-in, `max_adds`): only when existing stops lock in the add's risk; idea risk ≤ initial budget (property test); count toward heat; off after daily loss or breaker
+- [ ] shadow variants `RUNNER`, `RUNNER_ADDS` with paired ΔR, W/L shifts and max DD
+- [ ] broker position management (§A11) supports runner trailing in DEMO
+- [ ] tests
+
+#### TAA-L805 — Regime transition policies (L20.4)
+
+- **Status:** TODO
+- **Depends on:** L803, L804
+
+- [ ] `RANGE_BROKEN`, `RANGE_TO_RUNNER` (shadow variant), `TREND_EXHAUSTION` tighten, `TREND_ENDED` exit
+- [ ] no new entries in `VOLATILE` or news blackout; existing stops never widened
+- [ ] reason codes + i18n
+- [ ] tests (each policy on FakeMT5 scenarios)
+
+#### TAA-L806 — Tiered scanning of all symbols (L20.5)
+
+- **Status:** TODO
+- **Depends on:** L802
+
+- [ ] tier 0 indicator-only pass over all tradable symbols each entry-TF close; interest score
+- [ ] tier 1 full pipeline for positions, watchlists and the top `tier1_max`; rotation every `rotation_bars`
+- [ ] CPU budget per cycle with metrics (latency, symbols per tier, dropped) in `/health` and `doctor`
+- [ ] universe filter by spread vs cost threshold (Q10)
+- [ ] tests (rotation guarantees coverage; budget overrun drops lowest interest first)
+
+#### TAA-L807 — Selection under heat and correlation (L20.6)
+
+- **Status:** TODO
+- **Depends on:** L405, L301
+
+- [ ] ranking by expected R per unit risk (cost included), then setup strength
+- [ ] at most `max_per_cluster_direction` per correlation cluster and direction; same-currency exposure as one bet
+- [ ] rejected signals keep shadow tracking (`HEAT_RANKED_OUT`, `CORRELATED_DUPLICATE`)
+- [ ] extends `app/strategy/arbitration.py`
+- [ ] tests
+
+#### TAA-L808 — Behavior report on manual trades (L20.7)
+
+- **Status:** TODO
+- **Depends on:** L701, L802
+
+- [ ] detectors: early exit of winners, stop moved away, revenge trade, overtrading, off-plan trade, comfort-zone bias
+- [ ] per pattern: count, share, hypothetical ΔR "as traded" vs "as planned"
+- [ ] `behavior_reports` (user-scoped, replicated) + API + analytics page section
+- [ ] descriptive, non-judgmental th + en texts; catalogs test passes
+- [ ] tests
