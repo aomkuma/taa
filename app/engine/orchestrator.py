@@ -22,6 +22,7 @@ current cycle and shuts down cleanly.
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 import math
 import shutil
@@ -82,6 +83,7 @@ from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
 from app.risk.exposure_manager import MAGIC_RANGE, ExposureManager, PositionRisk
 from app.risk.kill_switch import KillMode, KillSwitch
+from app.risk.limits import ProfileLimits
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.risk.mode_gates import GateResult, evaluate_gate
 from app.storage.audit import AuditLog
@@ -299,6 +301,7 @@ class Engine:
                 health=self.health_snapshot,
                 loss=self._loss_status,
                 gate=self.gate,
+                profile_limits=self._scan_limits,
                 calibration_version=self._calibration_version,
             )
             self.lifecycle = OpportunityLifecycle(
@@ -872,6 +875,13 @@ class Engine:
 
     def on_entry(self, symbol: str, at: datetime) -> None:
         self.state.save("last_entry", {sym: t.isoformat() for sym, t in self._last_entry.items()})
+
+    def _scan_limits(self) -> ProfileLimits | None:
+        """The owner's limits for the scanner's ADVISORY decisions: the owner's sizing and account limits, but
+        not min RR, a HARD check there that would hide opportunities other users' profiles accept."""
+        if self.risk_limits is None:
+            return None
+        return dataclasses.replace(self.risk_limits.current().limits, min_risk_reward=None)
 
     def effective_risk(self) -> RiskConfig:
         """The limits the engine trades with now (TAA-710); ``config.yaml`` alone before ``start()``."""

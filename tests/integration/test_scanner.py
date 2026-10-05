@@ -20,6 +20,7 @@ from app.engine.decision_engine import DecisionEngine, DecisionStore
 from app.evidence.catalog import default_registry as evidence_registry
 from app.market_data.trading_sessions import TradingSessions
 from app.news.calendar import ManualBlackouts, NewsFilter
+from app.risk.limits import ProfileLimits
 from app.storage.database import Database
 from app.storage.models import DecisionRecordRow, OpportunityRow
 from app.strategy.catalog import STRATEGIES
@@ -145,6 +146,20 @@ class TestScan:
                 .where(DecisionRecordRow.decision == "REJECT")
             ).scalar_one()
         assert refused == 0
+
+    def test_the_owners_profile_sizes_the_owners_lot(self, db: Database) -> None:
+        """TAA-710: the opportunity's lot follows the owner's trading profile inside config.yaml."""
+        plain, _, _ = scanner(db)
+        plain.tick()
+        full = {r.symbol: r.risk_money for r in rows(db)}
+        db2 = Database("sqlite://")
+        db2.create_all()
+        s, _, _ = scanner(db2)
+        s.profile_limits = lambda: ProfileLimits(risk_per_trade_percent=0.1)
+        s.tick()
+        lowered = {r.symbol: r.risk_money for r in rows(db2)}
+        assert lowered["EURUSD"] is not None and full["EURUSD"] is not None
+        assert lowered["EURUSD"] <= 10_000 * 0.1 / 100 < full["EURUSD"]
 
     def test_scanning_is_time_boxed(self, db: Database) -> None:
         req = ComputeRequirements(("EURUSD", "GBPUSD", "USDJPY", "XAUUSD"), REQ.detectors, REQ.strategies)

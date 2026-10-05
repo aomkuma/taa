@@ -14,11 +14,14 @@ from __future__ import annotations
 import dataclasses
 import json
 import os
+import tempfile
 from dataclasses import asdict
 from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
+import pytest
+import yaml
 from fastapi.testclient import TestClient
 from sqlalchemy import delete, select, update
 
@@ -27,7 +30,7 @@ from app.advisory.personalize import UserContext, replacement
 from app.advisory.requirements import ComputeRequirements
 from app.advisory.shadow import ShadowExit, ShadowResult, Variant, new_state
 from app.advisory.shadow_tracker import EntryQuote, SignalFacts, apply_close, new_row
-from app.config import Settings, load_settings
+from app.config import AppConfig, Settings, load_app_config, load_settings
 from app.core.enums import ExitReason, Side
 from app.evidence.catalog import default_registry as evidence_registry
 from app.storage.database import Database
@@ -52,6 +55,7 @@ from app.storage.models import (
 )
 from tests.backtest.test_cloud_backtests import Rig as BacktestRig
 from tests.backtest.test_cloud_backtests import upload
+from tests.integration.test_ranking_service import CONFIG as RANKING_CONFIG
 from tests.integration.test_ranking_service import service as ranking_service
 from tests.integration.test_scanner import REQ, scanner
 from tests.integration.test_scanner import config as scanner_config
@@ -126,11 +130,34 @@ USER_ROUTES = [
 ]
 
 
+# The samples' sizes and money must not move when the owner edits the cage in config.yaml (PLAN §A33).
+PINNED_RISK = {
+    "max_risk_per_trade_percent": 0.5,
+    "max_total_open_risk_percent": 1.5,
+    "max_daily_loss_percent": 2.0,
+    "max_weekly_loss_percent": 4.0,
+}
+
+
+def pin(cfg: AppConfig) -> AppConfig:
+    return cfg.model_copy(update={"risk": cfg.risk.model_copy(update=PINNED_RISK)})
+
+
+def pinned_config() -> Path:
+    """The repository's config.yaml with :data:`PINNED_RISK`, in a temporary file."""
+    raw = yaml.safe_load(Path("config.yaml").read_text(encoding="utf-8"))
+    raw["risk"] |= PINNED_RISK
+    path = Path(tempfile.mkdtemp(prefix="taa-samples-")) / "config.yaml"
+    path.write_text(yaml.safe_dump(raw, sort_keys=False), encoding="utf-8", newline="\n")
+    return path
+
+
 def engine_settings() -> Settings:
-    """The repository's config.yaml with a typical engine environment (PAPER, flatten allowed, control TOTP)."""
+    """The repository's config.yaml (risk pinned) with a typical engine environment (PAPER, flatten allowed,
+    control TOTP)."""
     return load_settings(
         env_file=None,
-        config_file="config.yaml",
+        config_file=pinned_config(),
         environ={
             "TRADING_MODE": "PAPER",
             "MT5_LOGIN": "12345678",
@@ -192,7 +219,7 @@ def ranking_rows(engine_id: str) -> list[SuitabilitySnapshotRow]:
     symbols fail the minimum-lot gate ("needs equity ≥ $Z")."""
     scratch = Database("sqlite://")
     scratch.create_all()
-    svc, _, fake = ranking_service(scratch)
+    svc, _, fake = ranking_service(scratch, pin(RANKING_CONFIG))
     fake.account.balance = 1_000.0
     assert svc.tick() is not None
     rows = svc.latest()
@@ -235,7 +262,7 @@ def opportunity_rows(engine_id: str) -> list[Any]:
     scratch = Database("sqlite://")
     scratch.create_all()
     req = ComputeRequirements(("EURUSD", "XAUUSD"), frozenset(evidence_registry().ids), REQ.strategies)
-    svc, _, _ = scanner(scratch, req=req, cfg=scanner_config(budget=60.0))
+    svc, _, _ = scanner(scratch, req=req, cfg=pin(scanner_config(budget=60.0)))
     assert len(svc.tick().created) == 2
     with scratch.session() as sess:
         opps = list(sess.scalars(select(OpportunityRow).order_by(OpportunityRow.symbol)))
@@ -586,8 +613,12 @@ def normalize(value: Any, engine_id: str, users: dict[str, str] | None = None) -
 def test_api_samples_match_the_shared_file(
     rig: tuple[TestClient, str, str],  # noqa: F811
     db: Database,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     client, mine, _ = rig
+    pinned = load_app_config(pinned_config())  # the cloud reads config.yaml too: same pinned risk
+    for module in ("app.web.routers.advisory", "app.worker.opportunities", "app.worker.backtests"):
+        monkeypatch.setattr(f"{module}.load_app_config", lambda *_a, **_k: pinned)
     realistic_rows(db, mine)
     calibrate(db, mine)
     samples: dict[str, Any] = {}

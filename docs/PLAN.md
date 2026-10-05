@@ -2292,8 +2292,8 @@ alerts only. Trigger: on a ~$990 account at 0.5 % a XAUUSD signal (stop 13 USD a
   risk per signal, all entries combined), total open risk (portfolio heat), max open positions, max daily
   loss, min RR. Everything else (spread, slippage, margin, effective leverage, breakers, kill switch,
   probation, `min_lot`) stays local only.
-  - Probation (`probation_multiplier` 0.25 for the first `probation_trades`) still applies on top of the
-    working value.
+  - Probation (`probation_multiplier` 0.25 for the first `probation_trades`) is a LIVE-only gate (§A3,
+    TAA-1401); when it is wired it applies on top of the working value.
   - Open question, not part of this revision: whether `max_effective_leverage` should become a profile field,
     since tolerance for leverage also differs per person.
 
@@ -2355,11 +2355,14 @@ its age.
     from cache to cloud), and `RISK_PROFILE_REJECTED` once per refused version.
   - The ranking's affordability (`RankingService(risk=...)`) and the heartbeat's `account.limits` use the
     effective limits too, so "affordable" matches what the engine will actually trade. The opportunity
-    scanner (ADVISORY profile) still uses `config.yaml`: it computes market facts for every user, and each
-    user's own profile is applied by the personalizer.
+    scanner (ADVISORY profile) gets the owner's limits **without min RR**: the opportunity's lot is the
+    owner's sizing, so it follows the owner's profile (once the cage was raised to 2 %, sizing with
+    `config.yaml` alone would have shown lots at 2 %), but min RR is a HARD check there and an owner's
+    defensive RR must not hide opportunities that other users' profiles accept (the personalizer applies
+    each user's own thresholds).
   - Decision records carry `risk_source` and `risk_percent` (migration 0033).
-  - Found on the way: the orchestrator never sets `DecisionRequest.probation`, so `probation_multiplier` does
-    not apply to the engine's own decisions today (unchanged here; see HANDOFF).
+  - The orchestrator does not set `DecisionRequest.probation` yet. That is by design: probation is for the
+    first LIVE trades (§A3) and is wired with the live gate (TAA-1401), not in PAPER or DEMO.
 - **(TAA-924 decisions)**
   - One component, `EngineLimits` (`frontend/src/pages/risk/`), shows profile / engine machine / in use per
     governed field with a "limited by the engine machine" badge, the source and the age. It sits on Risk &

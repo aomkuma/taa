@@ -91,10 +91,9 @@ Fixes and changes found on real data (at the user's request):
      the heartbeat reads engine state the loop mutates).
    - Risk limits: Risk & controls should show "Risk limits in use" with source `cloud` within a minute.
 2. **Revision 5 is done** (TAA-408 ceiling 3 %, TAA-710 the owner's profile drives the engine, TAA-924 PWA).
-   `config.yaml` → `risk` is still 0.5 % per trade, so it caps every profile (the user's XAUUSD case on ~$990
-   needs ≈ 1.4 %). Raising the cage is the user's decision (offered, not changed). Found on the way: the
-   orchestrator never sets `DecisionRequest.probation`, so `probation_multiplier` never applies to the
-   engine's own decisions (unchanged; ask the user before turning it on, it quarters the budget).
+   The cage in `config.yaml` → `risk` is now 2 % per trade, 4 % heat, 4 % daily, 8 % weekly (user decision
+   2026-10-05); the owner's trading profile sets the values used inside it. Probation is LIVE-only by design
+   (PLAN §A3) and is wired with TAA-1401.
 3. **Phase 10:** TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages
    (the PWA's "Analytics" nav item is still a placeholder page).
 4. Dashboard additions of PLAN §A28 still open: active opportunities and the accuracy summary (the top-5

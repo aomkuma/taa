@@ -46,6 +46,7 @@ from app.evidence.registry import EvidenceEngine
 from app.market_data.candle_service import CandleService
 from app.market_data.data_models import Quote, SymbolSpec
 from app.market_data.quote_service import QuoteService
+from app.risk.limits import ProfileLimits
 from app.risk.loss_tracker import LossStatus
 from app.risk.mode_gates import GateResult
 from app.risk.position_sizer import AccountFunds
@@ -126,6 +127,7 @@ class OpportunityScanner:
         gate: Callable[[], GateResult | None] = lambda: None,
         strategy_catalog: StrategyRegistry | None = None,
         calibration_version: Callable[[], str | None] = lambda: None,
+        profile_limits: Callable[[], ProfileLimits | None] = lambda: None,
     ) -> None:
         self.db = db
         self.gateway = gateway
@@ -139,6 +141,8 @@ class OpportunityScanner:
         self.gate = gate
         self.strategy_catalog = strategy_catalog or strategy_registry()
         self.calibration_version = calibration_version
+        # the owner's limits for the owner's own sizing (TAA-710); per-user thresholds are the personalizer's
+        self.profile_limits = profile_limits
         self.candles = CandleService(gateway, config.timeframes, clock)
         self.quotes = QuoteService(gateway, clock, config.timeframes.stale_tick_seconds)
         self.stats = ScannerStats()
@@ -281,6 +285,7 @@ class OpportunityScanner:
                 specs=self.specs,
                 gate=self.gate(),
                 universe=universe,
+                profile_limits=self.profile_limits(),
             ),
             Profile.ADVISORY,
         )
