@@ -45,7 +45,7 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   - ruff, mypy, bandit clean. Frontend: lint, typecheck (app, node, sw, e2e), build clean; vitest 502;
     Playwright smoke 3 (`npm run build && npm run e2e`).
 - **Git:** `main` only; the user pushes (`git push` from Claude Code fails on the interactive GitHub login).
-  Latest migration: **0034** (`manual_trade_links`).
+  Latest migration: **0036** (`manual_trade_overrides`).
 
 ### What this session (2026-10-05, third) added
 
@@ -81,9 +81,10 @@ Fixes and changes found on real data (at the user's request):
 
 ## Next work
 
-1. **TAA-1006 (rev. 6) part 2:** the owner's override of a link (cloud-side table + dialog on Positions,
-   audited) and closed manual trades with their link in trade history and accuracy (signal vs bot vs me).
-   Part 1 runs on the `-Mt5` stack since 2026-10-06: both manual positions linked HIGH.
+1. **TAA-1006 is done** (rev. 6, 2026-10-06): manual trades are linked to signals on the engine, the owner
+   corrects a link on Positions, and closed manual trades show me / signal / bot in R on Trade history. When
+   the owner's two open manual trades (GBPUSD, EURUSD) close, check that they appear there with an R. Open
+   idea: an aggregate of manual trades on the accuracy page once there are enough of them.
 2. **Done on 2026-10-05/06 and checked on the real stack:** revision 5 (owner's profile inside the
    `config.yaml` cage, now 2 % / 4 % heat / 4 % daily / 8 % weekly; `.env` no longer overrides
    `MAX_RISK_PER_TRADE` / `MAX_DAILY_LOSS_PERCENT`), live candle ≈ one heartbeat per second (per-detector
