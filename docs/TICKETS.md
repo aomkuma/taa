@@ -51,7 +51,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
-| M2 | Phase 14 — LIVE readiness | 4 | 0 | TODO |
+| M2 | Phase 14 — LIVE readiness | 4 | 1 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 
 ## Milestone 1 — everything that never sends a broker order
@@ -1784,13 +1784,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1401 — Live gate wiring
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 406, 1206
 
-- [ ] 6 conditions + account-bound phrase
-- [ ] probation multiplier
-- [ ] warning banner
-- [ ] tests
+- [x] 6 conditions + account-bound phrase
+- [x] probation multiplier
+- [x] warning banner
+- [x] tests
 
 #### TAA-1402 — Security review
 

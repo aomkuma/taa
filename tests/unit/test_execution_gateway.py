@@ -79,8 +79,8 @@ class TestRequestBuilder:
 
 
 class TestGuards:
-    def test_trading_client_only_in_demo_with_the_flag(self) -> None:
-        with pytest.raises(SafetyViolation, match="DEMO only"):
+    def test_trading_client_only_in_demo_or_live_with_their_gates(self) -> None:
+        with pytest.raises(SafetyViolation, match="DEMO or LIVE"):
             build_trading(
                 load_settings(
                     env_file=None,
@@ -97,15 +97,37 @@ class TestGuards:
             )
         with pytest.raises(SafetyViolation, match="ENABLE_DEMO_TRADING"):
             build_trading(settings(ENABLE_DEMO_TRADING="false"), fake=True)
+        live = {"MT5_SERVER": "FBS-Real", "ENABLE_DEMO_TRADING": "false"}
+        with pytest.raises(SafetyViolation, match="ENABLE_LIVE_TRADING"):
+            build_trading(settings("LIVE", **live), fake=True)
+        for phrase in ("", "I-ACCEPT-LIVE-RISK-99999999", "i-accept-live-risk-12345678"):
+            with pytest.raises(SafetyViolation, match="LIVE_TRADING_CONFIRMATION"):
+                build_trading(
+                    settings("LIVE", ENABLE_LIVE_TRADING="true", LIVE_TRADING_CONFIRMATION=phrase, **live),
+                    fake=True,
+                )
+        ok = settings(
+            "LIVE",
+            ENABLE_LIVE_TRADING="true",
+            LIVE_TRADING_CONFIRMATION="I-ACCEPT-LIVE-RISK-12345678",
+            **live,
+        )
+        bundle = build_trading(ok, fake=True, clock=ManualClock(WED))
+        assert bundle.client.allow_trading and bundle.fake is not None
+        assert bundle.fake.account.trade_mode == c.ACCOUNT_TRADE_MODE_REAL
+        bundle.client.connect()  # a LIVE connection needs a REAL account
+        gw = ExecutionGateway(bundle.client)
+        gw._require_demo_account()  # the account guard passes: a REAL account in LIVE mode
 
-    def test_gateway_refuses_read_only_and_live(self) -> None:
+    def test_gateway_refuses_read_only_and_a_mismatched_account(self) -> None:
         read_only = build_read_only(settings(), fake=True)
         with pytest.raises(SafetyViolation, match="trading-enabled"):
             ExecutionGateway(read_only.client)
-        bundle = build_trading(settings(), fake=True)
-        bundle.client.mode = TradingMode.LIVE
-        with pytest.raises(SafetyViolation, match="DEMO only"):
-            ExecutionGateway(bundle.client)
+        bundle = build_trading(settings(), fake=True, clock=ManualClock(WED))
+        bundle.client.connect()  # a DEMO account
+        bundle.client.mode = TradingMode.LIVE  # a LIVE client on a demo account: every request is refused
+        with pytest.raises(SafetyViolation, match="verified REAL"):
+            ExecutionGateway(bundle.client).check({})
 
     def test_a_real_account_is_refused(self) -> None:
         clock = ManualClock(WED)

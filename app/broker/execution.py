@@ -1,8 +1,9 @@
 """Broker order access (PLAN §A12; TAA-1201). The only module that builds and sends trade requests.
 
 - :class:`ExecutionGateway` wraps ``order_check`` / ``order_send`` on a trading-enabled :class:`MT5Client`.
-  It refuses to exist unless the mode is DEMO and the connected account is a DEMO account: LIVE stays
-  disabled until Phase 14 wires the live gate (§A3). Every send and every result is logged.
+  It refuses to exist unless the mode is DEMO or LIVE, and refuses every request unless the connected
+  account is a DEMO account in DEMO mode or a REAL account in LIVE mode (§A3; LIVE since TAA-1401, behind the
+  live gate the engine evaluates before each order). Every send and every result is logged.
 - :class:`RequestBuilder` makes the three requests the engine needs: a market entry with SL and TP, an SL/TP
   change, and a (partial) close. Filling comes from the symbol (``filling.resolve_filling``), ``deviation`` is
   the slippage limit in points, orders are GTC, ``magic`` identifies the strategy and the comment is at most
@@ -155,19 +156,24 @@ class RequestBuilder:
 
 
 class ExecutionGateway:
-    """``order_check`` / ``order_send`` for the DEMO account. LIVE is refused until Phase 14."""
+    """``order_check`` / ``order_send`` for a DEMO account in DEMO mode or a REAL account in LIVE mode."""
 
     def __init__(self, client: MT5Client) -> None:
         if not client.allow_trading:
             raise SafetyViolation("the execution gateway needs a trading-enabled client")
-        if client.mode is not TradingMode.DEMO:
-            raise SafetyViolation(f"broker orders are enabled for DEMO only (mode {client.mode.value})")
+        if not client.mode.may_send_broker_orders:
+            raise SafetyViolation(f"broker orders need DEMO or LIVE (mode {client.mode.value})")
         self.client = client
+        self.account_mode = (
+            c.ACCOUNT_TRADE_MODE_REAL if client.mode is TradingMode.LIVE else c.ACCOUNT_TRADE_MODE_DEMO
+        )
 
     def _require_demo_account(self) -> None:
+        """The connected account matches the mode: DEMO ↔ demo account, LIVE ↔ real account."""
         report = self.client.last_report
-        if report is None or report.account.trade_mode != c.ACCOUNT_TRADE_MODE_DEMO:
-            raise SafetyViolation("broker orders need a verified DEMO account connection")
+        if report is None or report.account.trade_mode != self.account_mode:
+            needed = c.ACCOUNT_TRADE_MODE_NAMES[self.account_mode]
+            raise SafetyViolation(f"broker orders need a verified {needed} account connection")
 
     def check(self, request: dict[str, Any]) -> CheckResult:
         self._require_demo_account()

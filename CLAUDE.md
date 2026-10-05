@@ -66,8 +66,9 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
   - The `MarketDataGateway` protocol, implemented by `ReadOnlyMT5Gateway` over `MT5Client`.
   - Nothing outside `app/broker/` imports `MetaTrader5`.
   - `MT5Client.call` refuses `order_send` / `order_check` unless `allow_trading=True`, which is only possible in
-    DEMO/LIVE. Broker orders go only through `app/broker/execution.py` (`ExecutionGateway`), which accepts
-    **DEMO only** (Phase 12 was pulled forward; LIVE waits for Phase 14). PAPER never sends broker orders.
+    DEMO/LIVE. Broker orders go only through `app/broker/execution.py` (`ExecutionGateway`): a DEMO account
+    in DEMO mode, a REAL account in LIVE mode (TAA-1401), and every order passes the mode gate
+    (`app/risk/mode_gates.py`) first. PAPER never sends broker orders.
 - **Time:** MT5 returns bar/tick/deal epochs in **broker server wall-clock time** (FBS = EET, `Europe/Athens`),
   not UTC. Convert only via `ServerClock` (`app/core/clock.py`). Internally everything is timezone-aware UTC;
   history queries widen the window by ±1 day, then filter.
@@ -114,5 +115,7 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
 - No Docker locally. `deploy/railway/*.Dockerfile` and `.railway/railway.ts` exist only for Railway builds.
 - No profitability claims in any UI text either (`frontend/src/i18n/catalogs.test.ts` checks the catalogs).
 - Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
-- LIVE trading stays disabled (no code path until Phase 14). DEMO orders need `TRADING_MODE=DEMO` plus
-  `ENABLE_DEMO_TRADING=true` and a demo account. Subscription and billing stay behind `SUBSCRIPTIONS_ENABLED=false`.
+- LIVE (real money) is off by default. Its path exists since TAA-1401 and needs `TRADING_MODE=LIVE`,
+  `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-<MT5_LOGIN>` and a REAL account; never
+  switch it on without the finished Phase 14 and the user's explicit go-ahead at that moment. DEMO orders need
+  `TRADING_MODE=DEMO` plus `ENABLE_DEMO_TRADING=true` and a demo account. Subscription and billing stay behind `SUBSCRIPTIONS_ENABLED=false`.

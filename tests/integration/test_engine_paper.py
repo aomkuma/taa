@@ -123,7 +123,7 @@ class TestLifecycle:
 
     @pytest.mark.parametrize(
         ("mode", "match"),
-        [(TradingMode.DEMO, "ENABLE_DEMO_TRADING"), (TradingMode.LIVE, "LIVE waits")],
+        [(TradingMode.DEMO, "ENABLE_DEMO_TRADING"), (TradingMode.LIVE, "ENABLE_LIVE_TRADING")],
     )
     def test_modes_other_than_paper_need_their_gates(
         self, tmp_path: Path, mode: TradingMode, match: str

@@ -67,7 +67,7 @@ describe('engines page', () => {
     const user = userEvent.setup();
     const { queryClient } = renderShell('/engines');
     const add = await card('Connect an engine');
-    expect(within(add).getByText(/PAPER or DEMO only/)).toBeInTheDocument();
+    expect(within(add).getByText(/is switched on only on the engine machine/)).toBeInTheDocument();
     await user.type(within(add).getByLabelText('Name'), ' vps ');
     await user.click(within(add).getByRole('button', { name: 'Create keys' }));
     const dialog = await screen.findByRole('dialog', { name: 'Create engine keys' });

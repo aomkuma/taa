@@ -32,6 +32,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+from sqlalchemy import func, select
+
 from app.advisory.calibration import CalibrationService
 from app.advisory.lifecycle import OpportunityLifecycle
 from app.advisory.ranking_service import RankingService
@@ -89,7 +91,7 @@ from app.risk.loss_tracker import LossStatus, LossTracker
 from app.risk.mode_gates import GateResult, evaluate_gate
 from app.storage.audit import AuditLog
 from app.storage.database import Database
-from app.storage.models import ManualTradeLinkRow
+from app.storage.models import ManualTradeLinkRow, RiskDeal
 from app.storage.repositories import EngineStateRepository, RunRepository
 from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
@@ -111,6 +113,14 @@ log = logging.getLogger(__name__)
 
 DISABLED_KEY = "disabled_strategies"
 SNAPSHOT_KEY = "sync_snapshot"  # set once every replicated row has been queued for the cloud
+
+
+LIVE_BANNER = """
+########################################################################################################
+##  LIVE TRADING: REAL MONEY. Orders go to account %s on %s (%s, equity %s).
+##  Every order passes the live gate (6 conditions); the kill switch stops new orders at once:
+##  python -m app.cli kill --reason "..."
+########################################################################################################"""
 
 
 @dataclass
@@ -145,10 +155,17 @@ class Engine:
                 raise SafetyViolation(
                     "DEMO needs ENABLE_DEMO_TRADING=true and a trading client (build_trading)"
                 )
+        elif settings.mode is TradingMode.LIVE:
+            # build_trading checked the flag and the account-bound phrase; the live gate checks them again,
+            # with the account, terminal, kill switch and breakers, before every order (PLAN §A3; TAA-1401)
+            if not (settings.env.ENABLE_LIVE_TRADING and bundle.client.allow_trading):
+                raise SafetyViolation(
+                    "LIVE needs ENABLE_LIVE_TRADING=true and a trading client (build_trading)"
+                )
         elif settings.mode is not TradingMode.PAPER:
             raise SafetyViolation(
-                f"the engine runs PAPER or DEMO (TRADING_MODE={settings.mode.value}); LIVE waits for "
-                "Phase 14 and backtests run with `python -m app.cli backtest`"
+                f"the engine runs PAPER, DEMO or LIVE (TRADING_MODE={settings.mode.value}); backtests run "
+                "with `python -m app.cli backtest`"
             )
         self.settings = settings
         self.config = settings.config
@@ -378,8 +395,8 @@ class Engine:
         self.running = True
 
     def _build_backend(self, account: Any, by_magic: dict[int, Any]) -> int:
-        """PAPER: the persisted paper book. DEMO: orders, reconciliation and management on the demo
-        account."""
+        """PAPER: the persisted paper book. DEMO / LIVE: orders, reconciliation and management on the broker
+        account (the same code path; LIVE only behind its gate)."""
         cfg, env = self.config, self.settings.env
         self._currency = str(account.currency)
         if self.settings.mode is TradingMode.PAPER:
@@ -446,12 +463,34 @@ class Engine:
             self.orders, self.reconciler, self.broker_positions, self.gateway, self.kill_switch, self.clock
         )
         report = self.reconciler.run()
-        log.warning("DEMO mode: broker orders go to the demo account (%s)", report)
+        if self.settings.mode is TradingMode.LIVE:
+            self.backend.name = "live"
+            log.warning(LIVE_BANNER, account.login, account.server, account.currency, account.equity)
+            self.audit.append(
+                "LIVE_START",
+                self.process,
+                {"login": account.login, "server": account.server, "probation": self._probation()},
+            )
+        log.warning("%s mode: broker orders go to the account (%s)", self.settings.mode.value, report)
         return len(self.broker_positions.bot_positions())
 
+    def _probation(self) -> bool:
+        """LIVE only (PLAN §A3): the first ``risk.probation_trades`` bot trades on the account (closed plus
+        open) are sized with ``risk.probation_multiplier``. PAPER and DEMO never run on probation."""
+        if self.settings.mode is not TradingMode.LIVE:
+            return False
+        with self.db.session() as sess:
+            closed = sess.scalar(
+                select(func.count())
+                .select_from(RiskDeal)
+                .where(RiskDeal.account_key == self.account_key, RiskDeal.kind == "CLOSE")
+            )
+        opened = len(self.broker_positions.bot_positions()) if hasattr(self, "broker_positions") else 0
+        return (closed or 0) + opened < self.config.risk.probation_trades
+
     def gate(self) -> GateResult | None:
-        """The DEMO gate (PLAN §A3), evaluated on fresh account and terminal snapshots."""
-        if self.settings.mode is not TradingMode.DEMO:
+        """The DEMO or LIVE gate (PLAN §A3), evaluated on fresh account and terminal snapshots."""
+        if not self.settings.mode.may_send_broker_orders:
             return None
         try:
             account, terminal = self.gateway.account(), self.gateway.terminal()
@@ -855,6 +894,7 @@ class Engine:
                 last_entry_at=self._last_entry.get(symbol),
                 profile_limits=None if applied is None else applied.limits,
                 risk_source=None if applied is None else applied.source,
+                probation=self._probation(),
             )
         )
         if record.decision is Decision.ACCEPT:

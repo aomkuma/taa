@@ -73,6 +73,8 @@ def verify_connection(
             )
         if mode is TradingMode.DEMO and not env.ENABLE_DEMO_TRADING:
             r.problems.append("DEMO mode requires ENABLE_DEMO_TRADING=true")
+        if mode is TradingMode.LIVE and not env.ENABLE_LIVE_TRADING:
+            r.problems.append("LIVE mode requires ENABLE_LIVE_TRADING=true")
         if not account.trade_allowed:
             r.problems.append("trading is not allowed for this login (investor password?)")
         if not account.trade_expert:

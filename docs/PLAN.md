@@ -221,6 +221,23 @@ The mode comes only from `TRADING_MODE` (required, no default) and is never infe
 
 LIVE start logs a prominent WARNING banner, and the first N live trades run at reduced risk (probation multiplier).
 
+- (TAA-1401 decisions) LIVE wiring:
+  - **Construction:** `build_trading` refuses LIVE without `ENABLE_LIVE_TRADING` or without the exact
+    account-bound phrase, so the engine cannot even start.
+  - **Connection:** `verify_connection` requires a REAL account in LIVE mode (and the flag).
+  - **Requests:** `ExecutionGateway` refuses every request unless the connected account matches the mode
+    (DEMO ↔ demo account, LIVE ↔ real account).
+  - **Order path:** LIVE shares DEMO's code (`OrderManager`, `Reconciler`, `BrokerPositionManager`; the
+    backend reports `live`). The six-condition gate is evaluated for every decision and again right before
+    `order_send`.
+  - **Probation:** the first `risk.probation_trades` bot trades on the account (the bot's closing deals
+    recorded by the loss tracker, plus its open positions) are sized with `risk.probation_multiplier`.
+    LIVE only.
+  - **Banner:** LIVE start logs a block WARNING banner (account, server, equity, how to stop) and audits
+    `LIVE_START`. The PWA's red LIVE mode banner already existed.
+  - **Off by default:** LIVE stays off. Switching it on needs Phase 14 complete and the user's explicit
+    go-ahead.
+
 ## A4. Configuration & secrets
 
 - `.env` holds secrets and safety flags (including every env var the spec mandates). `config.yaml` holds non-secret

@@ -1891,7 +1891,7 @@
     },
     "add": {
       "newTitle": "Connect an engine",
-      "notice": "Engines run PAPER or DEMO only; LIVE trading is disabled.",
+      "notice": "Engines run PAPER or DEMO. LIVE (real money) is switched on only on the engine machine, behind its live gate: ENABLE_LIVE_TRADING, the confirmation phrase bound to the account and a REAL account.",
       "label": "Name",
       "labelHint": "e.g. home PC",
       "create": "Create keys",

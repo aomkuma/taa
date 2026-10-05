@@ -1,5 +1,5 @@
-"""Mode gates for broker orders (PLAN §A3; TAA-406). Evaluated, logged and tested in Milestone 1, but **not
-wired to any order path**: Milestone 1 never sends broker orders.
+"""Mode gates for broker orders (PLAN §A3; TAA-406). The engine evaluates the gate on fresh account and
+terminal snapshots for every DEMO or LIVE decision and again right before ``order_send`` (TAA-1206, TAA-1401).
 
 The gate lives in the risk layer (not ``app/security`` as the PLAN layout sketch has it) because it reuses
 the broker-layer identity check (``verify_identity``), which a lower layer may not import.
