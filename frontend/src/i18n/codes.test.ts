@@ -57,15 +57,19 @@ describe('code key scheme', () => {
   });
 
   it('renders an untranslated code as the raw code', () => {
-    expect(translateCode(createI18n('th'), 'reason', 'BREAKER_OPEN:daily_loss')).toBe(
-      'BREAKER_OPEN:daily_loss',
-    );
+    expect(translateCode(createI18n('th'), 'reason', 'NOT_A_CODE:x')).toBe('NOT_A_CODE:x');
   });
 
   it('renders a translated code with its detail', () => {
+    expect(translateCode(createI18n('th'), 'reason', 'BREAKER_OPEN:daily_loss')).toBe(
+      'เบรกเกอร์ทำงาน: daily_loss',
+    );
+    expect(translateCode(createI18n('en'), 'reason', 'ORDER_CHECK_FAILED:10019')).toBe(
+      'Broker order check failed: 10019',
+    );
     const i18n = createI18n('th');
-    i18n.addResourceBundle('th', CODES_NAMESPACE, { reason: { BREAKER_OPEN: 'เบรกเกอร์ทำงาน: {{detail}}' } });
-    expect(translateCode(i18n, 'reason', 'BREAKER_OPEN:daily_loss')).toBe('เบรกเกอร์ทำงาน: daily_loss');
+    i18n.addResourceBundle('th', CODES_NAMESPACE, { reason: { NEW_CODE: 'ใหม่: {{detail}}' } });
+    expect(translateCode(i18n, 'reason', 'NEW_CODE:a:b')).toBe('ใหม่: a:b');
   });
 });
 
@@ -115,6 +119,7 @@ describe('code texts', () => {
     ['volatility', VOLATILITY_STATES],
     ['session', SESSIONS],
     ['orderState', ORDER_STATES],
+    ['reason', REASON_CODES],
     ['exitReason', EXIT_REASONS],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {

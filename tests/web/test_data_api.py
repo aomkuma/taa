@@ -330,6 +330,42 @@ class TestReads:
         assert [p["equity"] for p in curve] == [1001.0, 1003.0, 1006.0, 1010.0, 1015.0]
         assert body["paper_accounts"][0]["balance"] == 1000.0
 
+    def test_decisions_filter_by_reason_code(self, rig: tuple[TestClient, str, str], db: Database) -> None:
+        client, mine, _ = rig
+        rows = {
+            "r1": ["SPREAD_TOO_WIDE"],
+            "r2": ["BREAKER_OPEN:daily_loss", "SPREAD_TOO_WIDE"],
+            "r3": ["SPREADXTOOXWIDE"],  # matches only if "_" were a wildcard
+            "r4": ["BREAKER_OPEN_SOON"],  # a longer code: not BREAKER_OPEN
+        }
+        with db.session() as sess:
+            d1 = sess.get(DecisionRecordRow, (mine, "d1"))
+            assert d1 is not None
+            for i, (decision_id, codes) in enumerate(rows.items(), start=1):
+                sess.add(
+                    DecisionRecordRow(
+                        **{
+                            c.key: getattr(d1, c.key)
+                            for c in DecisionRecordRow.__table__.columns
+                            if c.key not in ("decision_id", "reason_codes", "decision", "created_at")
+                        },
+                        decision_id=decision_id,
+                        reason_codes=codes,
+                        decision="REJECT",
+                        created_at=T + timedelta(hours=i),
+                    )
+                )
+
+        def ids(query: str) -> list[str]:
+            return [d["decision_id"] for d in get(client, mine, f"decisions?{query}").json()["items"]]
+
+        assert ids("reason=SPREAD_TOO_WIDE") == ["r2", "r1"]
+        assert ids("reason=BREAKER_OPEN") == ["r2"]  # the parameterized code, not BREAKER_OPEN_SOON
+        assert ids("reason=SPREAD") == []
+        assert ids("reason=SPREAD_TOO_WIDE&symbol=XAUUSD") == []
+        assert get(client, mine, "decisions?reason=spread").status_code == 422
+        assert get(client, mine, "decisions?reason=%25%22").status_code == 422
+
     def test_decisions_list_and_detail(self, rig: tuple[TestClient, str, str]) -> None:
         client, mine, _ = rig
         [item] = get(client, mine, "decisions?decision=ACCEPT").json()["items"]

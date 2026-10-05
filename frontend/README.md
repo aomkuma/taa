@@ -103,7 +103,7 @@ Everything lives in `src/i18n/`.
 | `Trend`, `Regime`, `VolatilityState`, `Session`              | `codes:trend.<T>`, `codes:regime.<R>`, `codes:volatility.<V>`, `codes:session.<S>` |
 
 - Parameterized codes (`BREAKER_OPEN:daily_loss`) map to the key of the bare code, with the rest passed as
-  `{{detail}}`.
+  `{{detail}}`. Every reason code has TH/EN texts since TAA-908.
 - A code or explanation key without a translation renders as itself, so nothing is silently hidden.
 - The `explain` catalogs were generated from `app/advisory/explanations.py` (`{x}` → `{{x}}`). Texts for the
   `codes` namespace are added with the pages that show them.

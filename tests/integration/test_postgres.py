@@ -246,3 +246,47 @@ def test_stream_numbers_follow_commit_order_on_postgres(pg_url: str) -> None:
     events = log.read("eng-a", 0, ("positions",), 10)[0]
     assert [(e.seq, e.key, e.item["price"]) for e in events] == [(1, "x", 1.5), (2, "a", 1.5), (3, "b", 1.5)]
     cloud.dispose()
+
+
+def test_reason_code_filter_on_jsonb(pg_url: str) -> None:
+    """The decision log's reason filter matches on the JSON text; JSONB renders it differently from SQLite's
+    JSON, so the filter is checked here too (TAA-908)."""
+    from app.storage.models import DecisionRecordRow
+    from app.web.readmodels import ReadModels
+
+    db = Database(pg_url)
+    db.create_all()
+    template = next(r for r in sample_rows() if isinstance(r, DecisionRecordRow))
+    columns = [c.key for c in DecisionRecordRow.__table__.columns]
+    codes = {
+        "r1": ["SPREAD_TOO_WIDE"],
+        "r2": ["BREAKER_OPEN:daily_loss", "SPREAD_TOO_WIDE"],
+        "r3": ["SPREADXTOOXWIDE"],
+        "r4": ["BREAKER_OPEN_SOON"],
+    }
+    with db.session() as sess:
+        for decision_id, reason_codes in codes.items():
+            values = {k: getattr(template, k) for k in columns}
+            values.update(
+                engine_id="e1", decision_id=decision_id, reason_codes=reason_codes, decision="REJECT"
+            )
+            sess.add(DecisionRecordRow(**values))
+    models = ReadModels(db)
+
+    def ids(reason: str) -> set[str]:
+        page = models.decisions(
+            "e1",
+            decision=None,
+            symbol=None,
+            strategy=None,
+            profile=None,
+            limit=None,
+            cursor=None,
+            reason=reason,
+        )
+        return {d["decision_id"] for d in page.items}
+
+    assert ids("SPREAD_TOO_WIDE") == {"r1", "r2"}
+    assert ids("BREAKER_OPEN") == {"r2"}
+    assert ids("SPREAD") == set()
+    db.dispose()

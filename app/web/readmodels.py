@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import pandas as pd
-from sqlalchemy import ColumnElement, and_, func, or_, select
+from sqlalchemy import ColumnElement, String, and_, func, or_, select
 from sqlalchemy.orm import InstrumentedAttribute, Session
 
 from app.config import IndicatorParams
@@ -79,6 +79,19 @@ class QueryError(TaaError):
 def row_dict(row: Any, *, skip: Sequence[str] = ("engine_id",)) -> dict[str, Any]:
     """Every column of an ORM row, JSON-ready (the engine id is implied by the URL)."""
     return {c.key: json_safe(getattr(row, c.key)) for c in row.__table__.columns if c.key not in skip}
+
+
+REASON_RE = re.compile(r"[A-Z][A-Z0-9_]{1,47}")
+
+
+def reason_filter(column: Any, code: str) -> ColumnElement[bool]:
+    """Rows whose JSON list of reason codes holds *code*, bare or parameterized (``CODE:detail``). Matched on
+    the JSON text, which works on SQLite and PostgreSQL alike; ``_`` is escaped (a LIKE wildcard)."""
+    if not REASON_RE.fullmatch(code):
+        raise QueryError("reason: an upper-case reason code")
+    text = func.cast(column, String)
+    escaped = code.replace("_", r"\_")
+    return or_(text.like(f'%"{escaped}"%', escape="\\"), text.like(f'%"{escaped}:%', escape="\\"))
 
 
 def heartbeat_dict(row: EngineHeartbeatRow) -> dict[str, Any]:
@@ -361,9 +374,12 @@ class ReadModels:
         profile: str | None,
         limit: int | None,
         cursor: str | None,
+        reason: str | None = None,
     ) -> Page:
         m = DecisionRecordRow
         where = [m.engine_id == engine_id]
+        if reason:
+            where.append(reason_filter(m.reason_codes, reason))
         for col, value in (
             (m.decision, decision),
             (m.symbol, symbol),

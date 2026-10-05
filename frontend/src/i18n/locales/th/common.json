@@ -331,5 +331,38 @@
       "exit": "ปิดสถานะ: {{reason}}",
       "exitBody": "ราคา {{price}} · สุทธิ {{net}} · {{r}}R"
     }
+  },
+  "decisions": {
+    "log": "บันทึกการตัดสินใจ",
+    "none": "ไม่พบการตัดสินใจตามตัวกรองนี้",
+    "passed": "ผ่าน",
+    "failed": "ไม่ผ่าน",
+    "profile": {
+      "EXECUTION": "การเทรดของบอท",
+      "ADVISORY": "คำแนะนำ"
+    },
+    "filter": {
+      "decision": "ผล",
+      "profile": "ประเภท",
+      "reason": "เหตุผล",
+      "symbol": "สัญลักษณ์",
+      "all": "ทั้งหมด"
+    },
+    "col": {
+      "result": "ผล",
+      "check": "การตรวจ",
+      "value": "ค่าที่วัดได้",
+      "threshold": "เกณฑ์",
+      "kind": "ชนิด"
+    },
+    "detail": {
+      "title": "{{symbol}} {{action}} · {{decision}}",
+      "meta": "{{strategy}} · {{tf}} · {{profile}} · {{time}}",
+      "signal": "สัญญาณ",
+      "score": "คะแนน {{score}} · ความครบของเงื่อนไข {{strength}}",
+      "checks": "การตรวจ: ผ่าน {{passed}} จาก {{total}}",
+      "checksTable": "ผลการตรวจทีละข้อ",
+      "chart": "ดูบนกราฟ"
+    }
   }
 }

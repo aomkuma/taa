@@ -129,10 +129,12 @@ async def decisions(
     symbol: Name = None,
     strategy: Name = None,
     profile: Annotated[str | None, Query(pattern="^(EXECUTION|ADVISORY)$")] = None,
+    reason: Annotated[str | None, Query(pattern="^[A-Z][A-Z0-9_]{1,47}$")] = None,
     limit: Limit = None,
     cursor: Cursor = None,
 ) -> dict[str, Any]:
-    """Decisions (each carries its signal), newest first; the detail route adds the checks."""
+    """Decisions (each carries its signal), newest first; ``reason`` keeps those whose reason codes hold that
+    code (bare or with a detail). The detail route adds the checks."""
     page = await _run(
         models(ctx).decisions,
         engine.engine_id,
@@ -142,6 +144,7 @@ async def decisions(
         profile=profile,
         limit=limit,
         cursor=cursor,
+        reason=reason,
     )
     return dict(page.to_dict())
 

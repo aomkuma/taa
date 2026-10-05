@@ -923,6 +923,17 @@ AI failures never trip trading breakers; they only produce HOLD.
     fill → stop moves → exit, sorted by time, and a link to the trade on the chart (the chart snapshot).
   - `codes:exitReason` texts added. DEMO broker positions are not replicated as position rows yet; the page
     shows their order intents.
+- (TAA-908 decisions) Signals & decisions (`frontend/src/pages/decisions/`):
+  - `GET /decisions?reason=CODE` keeps decisions whose `reason_codes` hold the code, bare or parameterized
+    (`CODE:detail`), matched on the JSON text with `_` escaped (a LIKE wildcard); tested on SQLite and on
+    PostgreSQL JSONB (`tests/integration/test_postgres.py`). A decision's reason codes are why it was rejected
+    (empty when accepted; the signal's codes on HOLD).
+  - Page: the decision log (bot trading by default, advisory or all; result, reason and symbol filters in the
+    URL; keyset paging; live refresh on `decisions` events) and a detail dialog (`?id=`) with the signal (score,
+    setup strength, conditions, explanation) and every check in order: pass/fail, the rule's reason text, its
+    name and detail, the measured value against the threshold, the kind (HARD/ACCOUNT); a link to the chart.
+  - TH/EN texts for every reason code (`Reason` ∪ strategy `ReasonCode`), parameterized ones with
+    `{{detail}}`; the code-texts test now covers `reason` too.
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

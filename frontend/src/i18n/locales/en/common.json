@@ -331,5 +331,38 @@
       "exit": "Closed: {{reason}}",
       "exitBody": "Price {{price}} · net {{net}} · {{r}}R"
     }
+  },
+  "decisions": {
+    "log": "Decision log",
+    "none": "No decisions match these filters.",
+    "passed": "Pass",
+    "failed": "Fail",
+    "profile": {
+      "EXECUTION": "Bot trading",
+      "ADVISORY": "Advisory"
+    },
+    "filter": {
+      "decision": "Result",
+      "profile": "Profile",
+      "reason": "Reason",
+      "symbol": "Symbol",
+      "all": "All"
+    },
+    "col": {
+      "result": "Result",
+      "check": "Check",
+      "value": "Measured",
+      "threshold": "Threshold",
+      "kind": "Kind"
+    },
+    "detail": {
+      "title": "{{symbol}} {{action}} · {{decision}}",
+      "meta": "{{strategy}} · {{tf}} · {{profile}} · {{time}}",
+      "signal": "Signal",
+      "score": "Score {{score}} · setup strength {{strength}}",
+      "checks": "Checks: {{passed}} of {{total}} passed",
+      "checksTable": "Check-by-check results",
+      "chart": "See on the chart"
+    }
   }
 }

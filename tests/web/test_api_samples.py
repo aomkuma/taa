@@ -51,6 +51,7 @@ ENGINE_ROUTES = [
     "trades/1",
     "intents?kind=paper",
     "intents?kind=broker",
+    "decisions?limit=50&profile=EXECUTION",
 ]
 USER_ROUTES = ["me/feed", "engines", "notifications?limit=5"]
 
