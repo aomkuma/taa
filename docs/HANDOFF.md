@@ -1,9 +1,10 @@
 # Session handoff
 
-Last updated: 2026-10-05 (fourth session that day: revision 5). Single session on `main`. This file holds
-**state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`, design decisions in
-`docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`. What was built per
-ticket is in the git history.
+Last updated: 2026-10-06 (end of the session that did revisions 5–6, Phase 10, Phase 14 and Phase 13 core).
+This file holds **state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`,
+design decisions in `docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`.
+What was built per ticket is in the git history. A separate **learning track** (Milestone 3) is designed in
+`docs/PLAN_LEARNING.md` / `docs/TICKETS_LEARNING.md` (another session started it on 2026-10-06).
 
 ---
 
@@ -13,20 +14,18 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ```text
 Continue the TAA project. Read docs/HANDOFF.md first (state, "Next work", gotchas), then docs/TICKETS.md
-(progress, dependencies) and the PLAN sections the next ticket names (Phase 10: PLAN §A15 Recommendations and
-Analytics, §A27 for shadow statistics).
+(progress, dependencies) and the PLAN sections the next ticket names.
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
-This is the only session: work on main, one ticket at a time, in the "Next work" order. Start with the open
-item at the top of "Next work" (heartbeat rate check), then TAA-1004 (recommendations).
+Work on main, one ticket at a time, in the "Next work" order; another session may work on the learning track
+(docs/*_LEARNING.md): commit by explicit paths only.
 For PWA pages: build page tests from frontend/src/test/fixtures/api-samples.json (real API responses) and add
 every new route a page reads to tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts
 (regenerate with TAA_UPDATE_API_SAMPLES=1). Run the full pytest suite and vitest one after the other, never
 at the same time, and not while the local demo stack runs (the machine runs out of memory).
 Check every change against real data, not only samples: the local stack on the real MT5 demo account (PAPER)
 runs with scripts\start-demo.cmd -Mt5 (http://localhost:8001). After changing Python code or config.yaml,
-restart that stack's web, worker and/or engine (a running process refuses new config keys); after a frontend
-build I press Reload on the "new version" banner.
-Commit at each ticket boundary (allowed); I push myself. LIVE stays disabled; subscriptions stay off.
+restart that stack's web, worker and/or engine (web first when the heartbeat or a migration changed).
+Commit at each ticket boundary (allowed); I push myself. LIVE stays off until I say so; subscriptions stay off.
 Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 ```
 
@@ -34,94 +33,60 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Current state
 
-- **Done:** Phases 0–8, 2A, 6A–6C, 8A, **9 (complete: 901–923)** and 12 (DEMO orders, pulled forward).
-  Phase 10: 1001–1003.
-- **Not started:** Phase 10 TAA-1004/1005, Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14 (LIVE),
-  Phase 15 (deferred backlog: TAA-1501 cloud replay jobs).
-- **Checks:**
-  - Last **full** pytest: 2699 passed, 7 skipped (earlier on 2026-10-05; ~10 min). Since then, run next to the
-    demo stack: tests/unit + tests/integration + tests/backtest 2405 passed (after the DATA_GAPS fix), tests/web
-    350 (one sample regenerated since). **Run the full suite once with the stack stopped.**
-  - ruff, mypy, bandit clean. Frontend: lint, typecheck (app, node, sw, e2e), build clean; vitest 502;
-    Playwright smoke 3 (`npm run build && npm run e2e`).
-- **Git:** `main` only; the user pushes (`git push` from Claude Code fails on the interactive GitHub login).
-  Latest migration: **0036** (`manual_trade_overrides`).
+- **Done:** Phases 0–10, 2A, 6A–6C, 8A, 12 (DEMO), **14 except the owner's part** (1401 live gate wiring, 1402
+  security review, 1403 drills automated; 1404 final docs pass started) and **13 core** (1301 AI interface,
+  1302 Anthropic provider, 1303 veto, 1304 AI page without the narrative). Revisions 5 (owner's profile drives
+  the engine's risk) and 6 (manual trades matched to signals, TAA-1006) are done.
+- **Not started / open:** Phase 11 Railway (**skipped for now**, user decision 2026-10-06), TAA-1305 (AI on
+  advisory), the 1304 narrative, TAA-1403's last item (the owner repeats the drills on the LIVE machine), TAA-1404
+  (final docs pass; README, runbooks and PLAN notes are current as of this session), Phase 15 (deferred).
+- **Checks (2026-10-06, stack stopped):** full pytest **2791 passed, 7 skipped** (10 min); vitest 526; Playwright
+  smoke 3; ruff, mypy, bandit clean; `pip-audit` and `npm audit` clean.
+- **Git:** `main` only; the user pushes. Latest migration: **0037** (`ai_assessments`).
+- **The `-Mt5` stack** runs with this session's code (restarted at the end).
 
-### What this session (2026-10-05, third) added
+### What this session added (2026-10-05/06)
 
-Tickets, each with a "decisions" note in PLAN:
-
-- **TAA-918** watchlists page + alert settings card on Notifications (PLAN §A28).
-- **TAA-919** signal accuracy page; `GET /accuracy` carries the owner's `currency`; `codes:shadowFlag`.
-- **TAA-920** theories & conditions page; detector names TH/EN (`codes:evidence.<id>`, `evidenceName()`);
-  **the engine owner's bounded detector parameters now reach the scan** (`AdvisoryConfig.params`, the user's
-  decision; merged over `config.yaml`, invalid ones skipped).
-- **TAA-921** "My account & plan" (`/account`) and "Users & plans" (`/admin`, OWNER/ADMIN only);
-  `GET /admin/users` carries `plan`; new `GET /admin/users/{id}/entitlements`.
-- **TAA-922** trading profile page; new `POST /engines/{id}/entry-plan/preview` (sizes a draft plan with the
-  alerts' own sizer).
-- **TAA-923** engines page (add wizard, browser-made control TOTP with QR via `uqr`, rotate, revoke).
-- **TAA-914** PWA polish: PNG/maskable/Apple icons (`npm run icons`), caching rules, install prompt, gzip for
-  the static app (not `/api/`), Playwright smoke tests (installed Chrome, `@playwright/test` 1.63).
-
-Fixes and changes found on real data (at the user's request):
-
-- **Manual MT5 positions** were invisible but blocked every paper entry: the heartbeat now carries
-  `foreign_positions` (risk to stop, counted or not) and `effective_leverage`; Positions page and dashboard
-  list them; dashboard has an effective-leverage gauge.
-- **Two accounts, now named:** the dashboard showed the bot's simulated PAPER book ($989.67) while the ranking
-  showed the real MT5 account ($1,105.05). In PAPER the heartbeat now also carries `broker_account`, and the
-  dashboard shows both with explanations. The numbers differ by design.
-- **DATA_GAPS** refused most stock signals and XAUUSD: closed hours counted as missing bars and the configured
-  `daily_breaks_utc` never reached the check. `app/market_data/quality.py` now learns each symbol's closed
-  time-of-day slots from its own bars and counts only bars missing in normally traded hours.
-- **Live candle speed:** `sync.heartbeat_seconds: 1` and `flush_interval_seconds: 1` (were 10 / 2), and the
-  scanner pulses the heartbeat between symbols (an engine cycle takes ~7 s, mostly the evidence scan, and the
-  heartbeat used to go out once per cycle). See "Next work" item 1.
+- **Revision 5 (PLAN §A33):** the owner's Trading profile drives the engine's risk inside the `config.yaml` cage
+  (TAA-408 ceiling 3 %, TAA-710, TAA-924). Cage now 2 % / 4 % heat / 4 % daily / 8 % weekly (`.env` no longer
+  overrides it). The scanner sizes the owner's lots with the profile too (without min RR).
+- **Revision 6 (PLAN §A34, TAA-1006):** manual MT5 trades matched to the signals they followed (HIGH / LIKELY /
+  UNMATCHED), the owner's correction, closed manual trades compared me / signal / bot in R.
+- **Phase 10:** TAA-1004 recommendations (bootstrap CI, A16 rules, "Backtest this change" as a bounded job
+  change), TAA-1005 analytics API and page (scopes PAPER / SHADOW / BACKTEST).
+- **Phase 14:** LIVE path behind its gate (TAA-1401: flag, account-bound phrase, REAL account, gate per decision
+  and before `order_send`, probation, banner, `LIVE_START` audit); `docs/SECURITY_REVIEW.md`; `db backup` /
+  `db restore`; LIVE drills on FakeMT5; `docs/RUNBOOK_LIVE.md`.
+- **Phase 13:** AI review (`app/ai/`): schema v1.0, Anthropic provider (`beta.messages.parse`,
+  `claude-opus-5-5`, low effort, `fallbacks: "default"`), veto/advisory gate after all other checks (can only
+  block), per-candle cache, daily budgets (`config.yaml` → `ai`), AI review page. `AI_PROVIDER=none` by default.
+- PWA: chart follows the newest bar, strength-styled S/R zones; dashboard open opportunities and signal track
+  record; live candle ≈ one heartbeat per second (per-detector pulse).
 
 ## Next work
 
-**Focus (user decision 2026-10-06):** skip Phase 11 (Railway) for now. Work toward LIVE auto-trading, Phase
-14: TAA-1401 live gate wiring (6 conditions + account-bound phrase, probation, banner) → 1402 security review →
-1403 go-live checklist & drills → 1404 final docs. Do this together with wrap-up work: the loose ends below,
-the dashboard additions (§A28), and a full pytest + vitest run with the stack stopped. Phase 13 (AI) is optional
-and comes after. Turning LIVE on still needs Phase 14 done and the user's explicit go-ahead at that moment.
-
-1. **TAA-1006 is done** (rev. 6, 2026-10-06): manual trades are linked to signals on the engine, the owner
-   corrects a link on Positions, and closed manual trades show me / signal / bot in R on Trade history. When
-   the owner's two open manual trades (GBPUSD, EURUSD) close, check that they appear there with an R. Open
-   idea: an aggregate of manual trades on the accuracy page once there are enough of them.
-2. **Done on 2026-10-05/06 and checked on the real stack:** revision 5 (owner's profile inside the
-   `config.yaml` cage, now 2 % / 4 % heat / 4 % daily / 8 % weekly; `.env` no longer overrides
-   `MAX_RISK_PER_TRADE` / `MAX_DAILY_LOSS_PERCENT`), live candle ≈ one heartbeat per second (per-detector
-   pulse), chart range fix and strength-styled S/R zones. Probation is LIVE-only by design (TAA-1401).
-   Restarting the stack from Claude Code works when the user has approved it in the conversation.
-3. **Phase 10 is done** (TAA-1004 recommendations, TAA-1005 analytics API & page, 2026-10-06).
-4. Dashboard additions of PLAN §A28: done (top-5 ranking, open opportunities, signal track record).
-5. Phase 11 Railway deployment: **skipped for now** (user decision 2026-10-06). Later, only with the user's
-   Railway access and go-ahead.
-6. **Homework from the user (2026-10-05), after all remaining tickets:** the system's purpose is to sweep
-   **every** tradable symbol (hundreds) for opportunities, not 4. Make it as flexible as possible, including
-   future strategies, and let AI take part in learning and adapting the trading playbook to current
-   conditions. Findings so far (check again before designing):
+1. **LIVE is ready to be switched on only by the owner.** What is left before real money:
+   - the two-week DEMO soak (`docs/RUNBOOK_DEMO.md` §4; DEMO has only run on FakeMT5 so far);
+   - the drills on the LIVE machine with the record table (`docs/RUNBOOK_LIVE.md` §2) — TAA-1403's last item;
+   - the go-live checklist (`docs/RUNBOOK_LIVE.md` §1), then the owner's explicit go-ahead on the day.
+   Never enable LIVE (`ENABLE_LIVE_TRADING`, the phrase) on the owner's behalf.
+2. **AI (optional):** to try it, set `AI_PROVIDER=anthropic`, `AI_API_KEY`, `AI_MODE=advisory` first (records
+   only) in `.env` on the engine machine, then restart the engine; watch the "AI review" page. TAA-1305 (AI on
+   advisory: narratives, AI opinion per opportunity, AI accuracy from shadow outcomes, opt-in filter,
+   entitlement) is next if wanted; the 1304 narrative needs the engine to write it (the cloud has no AI key).
+3. **TAA-1404 final docs pass:** check README, both runbooks, CLAUDE.md and `.env.example` against reality once
+   LIVE has run (or before the owner's go-live).
+4. Phase 11 Railway: skipped for now; later only with the owner's Railway access and go-ahead.
+5. **Learning track (Milestone 3):** see `docs/TICKETS_LEARNING.md`; it covers the owner's homework (scan every
+   symbol, symbol character, tick features, adaptive selection). The findings below stay valid input:
    - Ranking covers the whole broker universe (549 symbols on the FBS demo). The opportunity scanner covers
-     only the advisory requirements: allowlist + favourites + lists + `advisory.universe.auto_top_n: 30`
-     (affordable symbols only), with a per-cycle time budget (~1–1.6 s per symbol per bar for the evidence
-     scan), which also makes the engine cycle slow (~7 s).
-   - Affordability is judged on the engine owner's account; with subscribers on the feed the scanner would
-     need their accounts too.
-   - Trading, candle streaming, chart data and forming bars cover only the traded symbols:
-     `ALLOWED_SYMBOLS` in `.env` overrides `symbols.allowed` in `config.yaml` (EURUSD, GBPUSD, USDJPY,
-     XAUUSD). Charts of other symbols have no bars.
-   - Strategies and their parameters are fixed in `config.yaml` (`extra="forbid"`; a running process must be
-     restarted after a config change). Detector parameters can now come from the owner's theory settings
-     (TAA-920), strategy parameters cannot.
-   - Learning today: calibration from shadow outcomes (PLAN §A27) and analytics (Phase 10); AI is the
-     optional M2 Phase 13 (assessment/veto). Neither adapts strategies.
-   - To design: scanning cost at hundreds of symbols (budget, priorities, sharding, probably a separate scan
-     process), chart data on demand for any symbol, strategies and parameters changeable without a restart
-     (from the PWA, versioned and audited), and an AI loop that proposes changes from outcomes and backtests
-     them before anything goes live (never auto-applied, PLAN §A15 Recommendations).
+     only the advisory requirements (allowlist + favourites + lists + `advisory.universe.auto_top_n: 30`) with a
+     per-cycle time budget (~1–1.6 s per symbol per bar for the evidence scan).
+   - Trading, candle streaming and charts cover only `ALLOWED_SYMBOLS` (EURUSD, GBPUSD, USDJPY, XAUUSD).
+   - Strategy parameters are fixed in `config.yaml` (restart needed); detector parameters can come from the
+     owner's theory settings (TAA-920).
+6. Small open ideas: an aggregate of manual trades on the accuracy page once enough have closed; check that the
+   owner's open manual trades (GBPUSD, EURUSD) show an R on Trade history when they close.
 
 ### Why the real stack shows little data (explained to the user on 2026-10-05)
 
@@ -255,7 +220,13 @@ and comes after. Turning LIVE on still needs Phase 14 done and the user's explic
 
 ## Open items needing the user
 
-- Before Phase 11: Railway account access (only with explicit go-ahead).
+- **Before LIVE:** the DEMO soak, the drills on the LIVE machine (record table in `docs/RUNBOOK_LIVE.md`), the
+  go-live checklist, a separate `ENGINE_DB_URL` for LIVE, the MT5 password in Windows Credential Manager, and
+  the explicit go-ahead. Only the owner sets `ENABLE_LIVE_TRADING` and the confirmation phrase.
+- **AI (optional):** an Anthropic API key in `.env` (`AI_PROVIDER=anthropic`, `AI_API_KEY`), starting with
+  `AI_MODE=advisory`; budgets in `config.yaml` → `ai` (default 50 calls and $2 a day).
+- The current Trading profile uses 1.5 % per trade (inside the 2 % cage); lower it in the PWA if wanted.
+- Phase 11 (skipped for now): Railway account access, only with an explicit go-ahead.
 - Before ever enabling subscriptions: legal review (`docs/COMPLIANCE.md`; gate `SUBSCRIPTIONS_ENABLED` +
   `SUBSCRIPTIONS_LEGAL_REVIEW`).
 - TAA-1501 (cloud replay jobs): revisit when users without engines are served.

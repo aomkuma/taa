@@ -1,7 +1,7 @@
 # DEMO runbook: broker orders on the demo account (Phase 12)
 
-The engine sends real orders to the **FBS demo account** in DEMO mode. Real money (LIVE) stays disabled until
-Phase 14 and an explicit go-ahead. The strategies are demonstrations; a demo soak tests the *machinery*
+The engine sends real orders to the **FBS demo account** in DEMO mode. Real money (LIVE) has its own path behind
+the live gate, off by default: see [RUNBOOK_LIVE.md](RUNBOOK_LIVE.md) before ever switching it on. The strategies are demonstrations; a demo soak tests the *machinery*
 (orders, stops, reconciliation, breakers), not whether a strategy makes money.
 
 ## 1. Before the first start

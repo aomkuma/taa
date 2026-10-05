@@ -37,7 +37,8 @@
      ones**. This needs settings pages, and the structure must be ready for a future **subscription package** → §A30.
 - **Scope change (2026-10-03, after Phase 6):** the user chose to build Phase 12 (DEMO execution) before Phases
   6A–11. Broker orders are allowed on the **DEMO account only** (trade mode DEMO, `ENABLE_DEMO_TRADING=true`, the
-  DEMO gate of §A3 passed). LIVE stays disabled until Phase 14 and an explicit go-ahead.
+  DEMO gate of §A3 passed). LIVE stays disabled until Phase 14 and an explicit go-ahead. (2026-10-06: the LIVE
+  path exists behind its gate since TAA-1401, off by default; Railway is deferred and Phase 14 comes first.)
 - **Request (rev. 4, 2026-10-04):** every web user should be able to connect **their own** MT5 account, and the
   engine pairing keys (`ENGINE_ID`, `ENGINE_HMAC_SECRET`) should move from the web service's env into the database,
   looked up through a user → engine mapping. A web page guides issuing `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
@@ -2223,7 +2224,8 @@ web service's env.
   - `WEB_MAX_ENGINES_PER_USER` (default 1) caps engines per user.
   - `MULTI_ENGINE_ENABLED=false` (default) lets only OWNER users register engines; others get 403
     `engine_linking_disabled`. Turning it on needs the legal review in `docs/COMPLIANCE.md` (R32).
-  - Engines of every user follow the same mode rules: PAPER or DEMO. LIVE stays disabled until Phase 14.
+  - Engines of every user follow the same mode rules: PAPER or DEMO, and LIVE only behind its gate on the
+    engine machine (TAA-1401), off by default.
 - **Migration from env (TAA-708):**
   - `python -m app.cli web engine import-env --owner NAME` imports today's `ENGINE_ID`, `ENGINE_HMAC_SECRET` and
     optional `ENGINE_HMAC_SECRET_PREVIOUS` into `engines` once.
