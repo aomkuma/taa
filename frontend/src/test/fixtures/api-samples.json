@@ -4680,7 +4680,9 @@
         "preset": "standard",
         "progress": 0.0,
         "request": {
+          "change": null,
           "end": "2026-09-16T02:45:00Z",
+          "exclude_strategies": null,
           "preset": "standard",
           "risk_percent": null,
           "seed": null,
@@ -4731,7 +4733,9 @@
         "preset": "high_costs",
         "progress": 1.0,
         "request": {
+          "change": null,
           "end": "2026-09-16T02:45:00Z",
+          "exclude_strategies": null,
           "preset": "high_costs",
           "risk_percent": null,
           "seed": null,
@@ -4782,7 +4786,9 @@
         "preset": "standard",
         "progress": 1.0,
         "request": {
+          "change": null,
           "end": "2026-09-16T02:45:00Z",
+          "exclude_strategies": null,
           "preset": "standard",
           "risk_percent": null,
           "seed": null,
@@ -7098,7 +7104,9 @@
     "preset": "standard",
     "progress": 1.0,
     "request": {
+      "change": null,
       "end": "2026-09-16T02:45:00Z",
+      "exclude_strategies": null,
       "preset": "standard",
       "risk_percent": null,
       "seed": null,
@@ -7291,7 +7299,9 @@
           ]
         },
         "request": {
+          "change": null,
           "end": "2026-09-16T02:45:00Z",
+          "exclude_strategies": null,
           "preset": "standard",
           "risk_percent": null,
           "seed": null,
@@ -7344,7 +7354,9 @@
           ]
         },
         "request": {
+          "change": null,
           "end": "2026-09-16T02:45:00Z",
+          "exclude_strategies": null,
           "preset": "high_costs",
           "risk_percent": null,
           "seed": null,

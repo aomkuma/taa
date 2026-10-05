@@ -110,3 +110,21 @@ def test_history_lists_the_uploaded_bars_per_symbol_and_timeframe(rig: Rig) -> N
     assert m15_row["first"].startswith(str(m15["open_time"].iloc[0].date()))
     assert m15_row["first"] < m15_row["last"]
     assert client.get(f"/api/v1/engines/{theirs}/backtests/history").status_code == 404
+
+
+def test_backtest_this_change_runs_as_a_job(rig: Rig) -> None:
+    """TAA-1004: a recommendation's bounded change is an ordinary cloud job; config.yaml is never touched."""
+    app, client, mine, _, m15 = rig
+    url = f"/api/v1/engines/{mine}/backtests"
+    change = {"kind": "break_even_trigger_r", "value": 0.75}
+    run = client.post(url, json=body(m15, change=change), headers=mutation_headers(client))
+    assert run.status_code == 202
+    run_worker(app)
+    done = client.get(f"{url}/{run.json()['run_id']}").json()
+    assert done["status"] == "DONE" and done["request"]["change"] == change | {"strategy": None}
+    wild = client.post(
+        url,
+        json=body(m15, change={"kind": "break_even_trigger_r", "value": 9}),
+        headers=mutation_headers(client),
+    )
+    assert wild.status_code == 422

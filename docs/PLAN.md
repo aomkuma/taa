@@ -1119,6 +1119,29 @@ AI failures never trip trading breakers; they only produce HOLD.
 
   "Backtest this change" creates a parameter-variant backtest job. Recommendations **never** change live config.
   An optional AI narrative (M2) is clearly labelled as AI opinion.
+- (TAA-1004 decisions) `app/analytics/recommendations.py`:
+  - **Statistics:** a seeded percentile bootstrap of the mean R (2000 resamples, 95 %), so the same trades
+    always give the same interval. Only trades with an R take part.
+  - **Sample sizes:** a rule says nothing below 10 trades (`MIN_REPORT`). From 10 to 29 trades it is shown with
+    `enough: false` (a sample-size warning). The segment rule needs ≥ 30 (`MIN_SAMPLES`) and a CI entirely
+    below 0.
+  - **Segments:** strategy, symbol, session, setup, holding style, regime, volatility and direction, from
+    the style tags. The "UNKNOWN" bucket and the whole book are not segments.
+  - **Stop too tight:** this rule needs to know whether price reached the take-profit within N bars after a
+    stop-loss exit. Fills store no price path, so the caller supplies that per trade id (TAA-1005 measures
+    it from the bars after the exit). An unknown follow-up makes no claim. The rule runs per strategy.
+  - **Cost drag:** per symbol, Σ cost_r / Σ |R before costs|. **Reduce risk:** from the account's drawdown
+    and its limit.
+  - **"Backtest this change":** each rule offers at most one bounded change:
+    - leave out a strategy or a symbol;
+    - break-even at 0.75 R;
+    - `sl_atr_multiple` 2.0 for one strategy;
+    - `max_spread_to_sl_ratio` 0.10;
+    - half the risk per trade.
+  - `request_fields()` turns a change into the fields of an ordinary cloud job. `BacktestRequest` gained
+    `change` (a closed set of kinds, each with bounds) and `exclude_strategies`. The change exists only in
+    the job's configuration. A segment by session, hour or regime has no testable change and is shown
+    without the button.
 
 ## A17. Backtesting
 
