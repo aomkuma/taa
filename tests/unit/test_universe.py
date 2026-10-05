@@ -125,6 +125,20 @@ class TestCatalog:
         cat.refresh(force=True)
         assert fake.calls["symbols_get"] == calls + 2
 
+    def test_a_restart_rediscovers_once_with_the_new_config(self, db: Database) -> None:
+        cat, _, fake = self.catalog(db)
+        cat.refresh()
+        assert "USDZAR" not in {e.symbol for e in cat.entries()}
+        # a new process (restart) with exotics switched on: within the day, but the catalog is rebuilt once
+        again = SymbolCatalog(
+            db, cat.gateway, UniverseConfig(classes={"FOREX_EXOTIC": True}), cat.clock, server="FBS-Demo"
+        )
+        calls = fake.calls["symbols_get"]
+        again.refresh()
+        assert fake.calls["symbols_get"] == calls + 1 and "USDZAR" in {e.symbol for e in again.entries()}
+        again.refresh()
+        assert fake.calls["symbols_get"] == calls + 1  # then daily again
+
     def test_include_exclude_and_disappearing_symbols(self, db: Database) -> None:
         cat, _, fake = self.catalog(db, UniverseConfig(exclude=["AAPL"]))
         cat.refresh()

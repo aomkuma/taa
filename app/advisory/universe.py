@@ -4,7 +4,8 @@
   ``exclude`` patterns. Each symbol is classified (:mod:`app.advisory.asset_classes`) and enabled by its
   class switch (all on, except Forex exotics and unclassified symbols) or a per-symbol override.
 - **Catalog:** the result is kept in ``symbol_catalog`` and refreshed every ``refresh_hours`` (daily by
-  default); a symbol the broker no longer offers stays in the table with ``present = false``.
+  default) and once at every process start, so a changed config or classifier applies after a restart; a
+  symbol the broker no longer offers stays in the table with ``present = false``.
 - **Monitored set** = the bot's allowlist ∪ favourites ∪ custom lists ∪ auto top-N of the ranking, in that
   priority, de-duplicated and capped at ``monitored_cap`` (default 60) so terminal load stays bounded.
 
@@ -66,6 +67,7 @@ class SymbolCatalog:
         self.config = config
         self.clock = clock
         self.server = server
+        self._refreshed = False  # this process has not rediscovered yet
 
     def last_refresh(self) -> datetime | None:
         with self.db.session() as sess:
@@ -78,7 +80,7 @@ class SymbolCatalog:
         now = self.clock.now_utc()
         last = self.last_refresh()
         due = last is None or now - ensure_utc(last) >= timedelta(hours=self.config.refresh_hours)
-        if not (force or due):
+        if not (force or due or not self._refreshed):
             return self.entries(enabled_only=False)
         specs = self.gateway.symbols(self.config.group)
         entries = [evaluate_entry(spec, self.config) for spec in specs]
@@ -106,6 +108,7 @@ class SymbolCatalog:
         log.info(
             "symbol catalog refreshed: %d symbols, %d enabled", len(entries), sum(e.enabled for e in entries)
         )
+        self._refreshed = True
         return entries
 
     def entries(self, *, enabled_only: bool = True) -> list[CatalogEntry]:
