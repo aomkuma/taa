@@ -215,6 +215,16 @@ class TestStaticPwa:
         assert response.headers["cache-control"] == "public, max-age=31536000, immutable"
         assert response.headers["content-type"].startswith("text/javascript")
 
+    def test_static_files_are_compressed_and_the_api_is_not(
+        self, static_dir: Path, client: TestClient
+    ) -> None:
+        (static_dir / "assets" / "big-1.js").write_text("const a = 1;\n" * 500, encoding="utf-8")
+        gz = {"Accept-Encoding": "gzip"}
+        static = client.get("/assets/big-1.js", headers=gz)
+        assert static.headers.get("content-encoding") == "gzip" and "const a" in static.text
+        api = client.get("/api/v1/health", headers=gz)
+        assert "content-encoding" not in api.headers  # secrets and the live stream stay uncompressed (BREACH)
+
     def test_service_worker_and_manifest_revalidate(self, client: TestClient) -> None:
         assert client.get("/sw.js").headers["cache-control"] == "no-cache"
         manifest = client.get("/manifest.webmanifest")

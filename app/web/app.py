@@ -13,6 +13,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import APIRouter, FastAPI
+from starlette.middleware.gzip import GZipMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app import __version__
 from app.config import REPO_ROOT, WebSettings
@@ -156,4 +158,23 @@ def create_app(
     )
     app.add_middleware(InternalErrorMiddleware)
     app.add_middleware(SecurityHeadersMiddleware, production=settings.is_production)
+    app.add_middleware(StaticGZipMiddleware)
     return app
+
+
+class StaticGZipMiddleware:
+    """Gzip for the PWA's static files only (TAA-914: the app shell was sent uncompressed, ~800 KB).
+
+    ``/api/`` is left alone: its responses carry session data and once-shown secrets, and compressing secrets
+    next to request-controlled text leaks them through the response length (BREACH); the live stream must not
+    be buffered either."""
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+        self.gzip = GZipMiddleware(app, minimum_size=1024)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] == "http" and not str(scope.get("path", "")).startswith("/api/"):
+            await self.gzip(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)

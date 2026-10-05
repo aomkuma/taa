@@ -8,6 +8,7 @@ import { I18nextProvider } from 'react-i18next';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { registerSW } from 'virtual:pwa-register';
 
+import { listenForInstall } from '@/app/install';
 import { createQueryClient } from '@/app/queryClient';
 import { routes } from '@/app/routes';
 import { UPDATE_CHECK_MS, updateReady } from '@/app/swUpdate';
@@ -19,6 +20,7 @@ if (!container) {
   throw new Error('#root element is missing from index.html');
 }
 
+listenForInstall();
 // Before the first render, so the page does not flash in the wrong theme.
 applyTheme(loadTheme());
 const i18n = initAppI18n();

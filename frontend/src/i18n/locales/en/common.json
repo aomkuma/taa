@@ -954,6 +954,15 @@
       "charts": "Charts by",
       "font": "Noto Sans Thai font (SIL Open Font License 1.1)",
       "mt5": "MetaTrader 5 is a trademark of MetaQuotes Ltd. This system is not affiliated with MetaQuotes or FBS."
+    },
+    "install": {
+      "title": "Install the app",
+      "why": "Install TAA to open it like an app, with its own window and notifications.",
+      "button": "Install TAA",
+      "installed": "TAA is installed on this device.",
+      "ios": "On iPhone or iPad: tap Share in Safari, then Add to Home Screen.",
+      "unavailable": "This browser does not offer installing right now. In Chrome or Edge, use the install icon in the address bar.",
+      "later": "You can install it later from here or from the browser's menu."
     }
   },
   "ranking": {

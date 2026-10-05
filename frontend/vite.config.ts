@@ -29,7 +29,14 @@ export default defineConfig({
         scope: '/',
         theme_color: '#0f172a',
         background_color: '#0f172a',
-        icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+        id: '/',
+        // PNGs rendered from icon.svg by scripts/icons.mjs (TAA-914)
+        icons: [
+          { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
       },
       // Our own worker (src/sw/sw.ts) for Web Push; it also does the app-shell precache and navigation
       // fallback the generated worker did (`/api/` is never answered with index.html).
@@ -37,7 +44,7 @@ export default defineConfig({
       srcDir: 'src/sw',
       filename: 'sw.ts',
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
       },
     }),
   ],

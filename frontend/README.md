@@ -6,10 +6,12 @@ React + TypeScript + Vite PWA for the TAA web service (PLAN §A15). Run every co
 npm install            # once
 npm run dev            # http://127.0.0.1:5173, proxies /api to the FastAPI service
 npm run lint           # ESLint (type-aware) + Prettier check
-npm run typecheck      # tsc for the app and for vite.config.ts
+npm run typecheck      # tsc for the app, vite.config.ts, the service worker and e2e/
 npm run test           # Vitest (jsdom)
 npm run build          # type-check + production build into dist/ (served by FastAPI)
 npm run format         # Prettier write
+npm run e2e            # Playwright smoke tests on the built app (npm run build first; uses the installed Chrome)
+npm run icons          # render public/icons/*.png from public/icon.svg (commit the PNGs)
 ```
 
 A change is done only when `lint`, `typecheck`, `test` and `build` are all green.

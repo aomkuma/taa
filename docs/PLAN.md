@@ -1493,6 +1493,25 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
   | Signal Accuracy (ความแม่นยำ) | KPIs; follow-all equity curve; calibration chart; strength buckets vs hit rate; breakdowns; outcome history with hypothetical P/L; live/replay toggle; threshold explorer |
   | Dashboard additions | top-5 ranked symbols, active opportunities, accuracy summary |
 
+- (TAA-914 decisions) PWA polish:
+  - Icons: PNGs rendered from `public/icon.svg` by `npm run icons` (`scripts/icons.mjs`, the installed Chrome
+    through Playwright): 192/512 "any", a 512 maskable with the drawing inside the 80% safe zone, and a
+    180 px opaque `apple-touch-icon` (+ Apple meta tags). Push notifications use the 192 PNG (no badge
+    image: Android wants a monochrome one).
+  - Caching rules (`src/sw/sw.ts`): only the built app shell is precached (js, css, html, svg, png, woff2) and
+    replaced per release; navigations get `index.html` except `/api/`; nothing else is cached, so API data
+    and issued secrets always come from the network.
+  - Install: `beforeinstallprompt` is captured at start-up (`src/app/install.ts`, no mini-infobar) and the
+    Settings page offers "Install the app"; iOS gets the Add-to-Home-Screen steps; installed shows as such.
+  - The web service gzips the static app (not `/api/`: session data and once-shown secrets must not be
+    compressed next to request-controlled text (BREACH), and the live stream must not be buffered).
+    Lighthouse 12 on the login page of the local stack (simulated mobile, 2026-10-05): performance 62 → 86,
+    accessibility 100, best practices 93 (the remaining findings are the signed-out session probe's 401 and
+    a CSP report entry).
+  - Playwright smoke tests (`e2e/`, `npm run build && npm run e2e`): the built app under `vite preview` in the
+    installed Chrome, the API answered from the recorded samples: installability (manifest, maskable and
+    Apple icons, the service worker), the login redirect in Thai, and the owner moving between pages without
+    page errors. They are not part of `npm run test`.
 - (TAA-916 decisions) Symbol Ranking (`frontend/src/pages/ranking/`):
   - Each ranking run stores the account it was sized for in every row's payload (`account`: equity, balance,
     margin free, leverage, currency, `risk_percent`, sizing basis); the page header shows it, because the

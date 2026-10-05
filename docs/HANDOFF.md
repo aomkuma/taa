@@ -16,7 +16,7 @@ dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & ad
 name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
 This is the only session: work on main, one ticket at a time, in the "Next work" order. Continue with
-TAA-914 (PWA polish).
+TAA-1004 (recommendations).
 For PWA pages: build page tests from frontend/src/test/fixtures/api-samples.json (real API responses) and add
 every new route a page reads to tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts
 (regenerate with TAA_UPDATE_API_SAMPLES=1). Run the full pytest suite and vitest one after the other, never
@@ -35,11 +35,11 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 ## Current state
 
 - **Done:** Phases 0–8, 2A, 6A–6C, 8A and 12 (DEMO orders, pulled forward). Phase 9: 901–913 and
-  915–923. Phase 10: 1001–1003.
+  914–923 (Phase 9 complete). Phase 10: 1001–1003.
 - **Not started:** Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14 (LIVE), Phase 15 (deferred
   backlog: TAA-1501 cloud replay jobs).
 - **Checks** (last full runs): pytest 2699 passed, 7 skipped (~10 min; the Postgres tests run when
-  `TAA_POSTGRES_URL` is set); ruff, mypy, bandit clean; frontend lint, typecheck, build clean, vitest 500 (2026-10-05, third session:
+  `TAA_POSTGRES_URL` is set); ruff, mypy, bandit clean; frontend lint, typecheck, build clean, vitest 501, Playwright smoke 3 (`npm run e2e`) (2026-10-05, third session:
   tests/web + advisory/scanner units 369 passed; the full pytest suite was not rerun next to the running demo stack).
 - **Git:** `main` only (the user pushes; `git push` from Claude Code
   fails on the interactive GitHub login). Latest migration: **0032**.
@@ -61,7 +61,8 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Next work
 
-1. Phase 9: **TAA-914** PWA polish is the last ticket (918–923 are done; PLAN §A28, §A30–§A32).
+1. Phase 9 is done (PLAN §A15, §A28, §A30–§A32). Open from 2026-10-05: DATA_GAPS rejects most stock and
+   some metal signals because closed-market hours count as missing bars (see below).
    Manual MT5 positions are shown since 2026-10-05 (heartbeat `foreign_positions`). Since 920 the engine owner's bounded detector parameters reach the scan (`AdvisoryConfig.params`). The backend for every page exists (API list below).
    Dashboard additions of §A28 still open: active opportunities and the accuracy summary (the top-5 ranking
    widget is done).

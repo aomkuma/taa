@@ -6,7 +6,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'dev-dist', 'coverage'] },
+  { ignores: ['dist', 'dev-dist', 'coverage', 'test-results', 'playwright-report'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.strictTypeChecked],
@@ -14,7 +14,7 @@ export default tseslint.config(
       ecmaVersion: 2023,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json', './tsconfig.sw.json'],
+        project: ['./tsconfig.app.json', './tsconfig.node.json', './tsconfig.sw.json', './tsconfig.e2e.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -33,7 +33,7 @@ export default tseslint.config(
     languageOptions: { globals: globals.serviceworker },
   },
   {
-    files: ['*.config.{js,ts}'],
+    files: ['*.config.{js,ts}', 'e2e/**/*.ts', 'scripts/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },
   {

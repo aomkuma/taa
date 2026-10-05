@@ -1,7 +1,9 @@
 /**
  * The PWA service worker (vite-plugin-pwa `injectManifest`; PLAN §A15, TAA-912).
  *
- * - App shell: precached; navigations get `index.html`, except `/api/` (never answered from the cache).
+ * - Caching rules (TAA-914): the built app shell (JS, CSS, HTML, icons, fonts) is precached and replaced as a
+ *   whole on each release; navigations get the precached `index.html`, except `/api/`. Nothing else is
+ *   cached: API responses (account data, issued secrets) always go to the network.
  * - Updates: a new version waits until the page sends SKIP_WAITING (the "new version" banner).
  * - Web Push: shows the worker's message (app/worker/push.py), sets the app icon badge where supported
  *   (R25), and a click focuses an open TAA window on the message's in-app link, or opens one.
@@ -44,7 +46,7 @@ self.addEventListener('push', (event) => {
       // `renotify` is not in TypeScript's NotificationOptions yet; browsers that know it use it
       const options: NotificationOptions & { renotify?: boolean } = {
         body: message.body,
-        icon: '/icon.svg',
+        icon: '/icons/icon-192.png',
         data: { url: message.url },
         silent: message.silent,
         ...(message.tag ? { tag: message.tag, renotify: message.renotify } : {}),

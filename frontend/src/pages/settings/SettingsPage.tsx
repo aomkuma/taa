@@ -3,6 +3,7 @@ import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { ApiError, apiGet, apiPost, apiPostEmpty, apiPut } from '@/api/client';
+import { promptInstall, useInstallState } from '@/app/install';
 import { useAuthState } from '@/auth/hooks';
 import { AUTH_QUERY_KEY } from '@/auth/session';
 import { StepUpDialog } from '@/components/StepUpDialog';
@@ -479,6 +480,39 @@ function ConfigCard({ engineId }: { engineId: string }) {
   );
 }
 
+function InstallCard() {
+  const { t } = useTranslation();
+  const install = useInstallState();
+  const [declined, setDeclined] = useState(false);
+  return (
+    <Card title={t('settings.install.title')}>
+      {install === 'installed' ? (
+        <p className="text-sm">{t('settings.install.installed')}</p>
+      ) : install === 'available' ? (
+        <>
+          <p className="mb-2 text-sm">{t('settings.install.why')}</p>
+          <button
+            type="button"
+            className={BUTTON}
+            onClick={() => {
+              void promptInstall().then((accepted) => {
+                setDeclined(!accepted);
+              });
+            }}
+          >
+            {t('settings.install.button')}
+          </button>
+        </>
+      ) : install === 'ios' ? (
+        <p className="text-sm">{t('settings.install.ios')}</p>
+      ) : (
+        <p className="text-sm text-slate-600 dark:text-slate-400">{t('settings.install.unavailable')}</p>
+      )}
+      {declined && <p className="mt-2 text-xs text-slate-500">{t('settings.install.later')}</p>}
+    </Card>
+  );
+}
+
 function AboutCard() {
   const { t } = useTranslation();
   return (
@@ -513,6 +547,7 @@ export function SettingsPage() {
         <ProfileCard />
         <SecurityCard />
         <SessionsCard />
+        <InstallCard />
         <AboutCard />
         {own && engineId !== null && (
           <div className="lg:col-span-2">
