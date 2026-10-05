@@ -45,7 +45,7 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   - ruff, mypy, bandit clean. Frontend: lint, typecheck (app, node, sw, e2e), build clean; vitest 502;
     Playwright smoke 3 (`npm run build && npm run e2e`).
 - **Git:** `main` only; the user pushes (`git push` from Claude Code fails on the interactive GitHub login).
-  Latest migration: **0033** (`decision_records.risk_source` / `risk_percent`).
+  Latest migration: **0034** (`manual_trade_links`).
 
 ### What this session (2026-10-05, third) added
 
@@ -81,19 +81,14 @@ Fixes and changes found on real data (at the user's request):
 
 ## Next work
 
-1. **First: restart the `-Mt5` stack and check on real data** (the classifier blocked restarting it from
-   Claude Code on 2026-10-05; the user restarts it, or allows it). Order: **web** (new heartbeat field
-   `account.risk_limits`, migration 0033 runs on startup), then worker, then engine. Then:
-   - Live-candle rate: the scan now pulses the heartbeat after every evidence detector (`ac5b4d7`). Before it:
-     ~one heartbeat per 2.2 s (measured 2026-10-05). Measure distinct `engine_heartbeats.received_at` over
-     20 s in `data/demo/cloud-mt5.db`; the target is one per second. If still short, the next step is a
-     separate light "live" path on its own timer (MT5 calls are already serialized by `MT5Client`'s lock, but
-     the heartbeat reads engine state the loop mutates).
-   - Risk limits: Risk & controls should show "Risk limits in use" with source `cloud` within a minute.
-2. **Revision 5 is done** (TAA-408 ceiling 3 %, TAA-710 the owner's profile drives the engine, TAA-924 PWA).
-   The cage in `config.yaml` → `risk` is now 2 % per trade, 4 % heat, 4 % daily, 8 % weekly (user decision
-   2026-10-05); the owner's trading profile sets the values used inside it. Probation is LIVE-only by design
-   (PLAN §A3) and is wired with TAA-1401.
+1. **TAA-1006 (rev. 6) part 2:** the owner's override of a link (cloud-side table + dialog on Positions,
+   audited) and closed manual trades with their link in trade history and accuracy (signal vs bot vs me).
+   Part 1 runs on the `-Mt5` stack since 2026-10-06: both manual positions linked HIGH.
+2. **Done on 2026-10-05/06 and checked on the real stack:** revision 5 (owner's profile inside the
+   `config.yaml` cage, now 2 % / 4 % heat / 4 % daily / 8 % weekly; `.env` no longer overrides
+   `MAX_RISK_PER_TRADE` / `MAX_DAILY_LOSS_PERCENT`), live candle ≈ one heartbeat per second (per-detector
+   pulse), chart range fix and strength-styled S/R zones. Probation is LIVE-only by design (TAA-1401).
+   Restarting the stack from Claude Code works when the user has approved it in the conversation.
 3. **Phase 10:** TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages
    (the PWA's "Analytics" nav item is still a placeholder page).
 4. Dashboard additions of PLAN §A28 still open: active opportunities and the accuracy summary (the top-5
