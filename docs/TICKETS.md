@@ -20,6 +20,8 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
   Order: 408 → 710 → 924.
 - Revision 6 (2026-10-05) added TAA-1006: the engine matches the owner's manual MT5 trades to the signals they
   followed, without typing anything into MT5 (PLAN §A34).
+- Learning layer (2026-10-06): symbol character, tick microstructure and the signal-quality model are a
+  separate track in [TICKETS_LEARNING.md](TICKETS_LEARNING.md) (design: [PLAN_LEARNING.md](PLAN_LEARNING.md)).
 
 **Execution order (Milestone 1):** 0 → 1 → 2 → 2A → 3 → 4 → 5 → 6 → 6A → 6B → 6C → 7 → 8 → 8A → 9 → 10 → 11
 

@@ -1,6 +1,7 @@
 """Maintain docs/TICKETS.md: tick checklist items, set statuses, recompute the progress table.
 
 Usage:
+    python scripts/tickets.py --file docs/TICKETS_LEARNING.md sync   # any command, on another ticket file
     python scripts/tickets.py tick TAA-002 1 3        # tick items 1 and 3 of TAA-002
     python scripts/tickets.py tick TAA-001 all        # tick every item
     python scripts/tickets.py status TAA-005 BLOCKED  # set status explicitly
@@ -21,6 +22,7 @@ HEAD_RE = re.compile(r"^#### (TAA-[0-9A-Z]+) — ")
 ITEM_RE = re.compile(r"^- \[( |x)\] ")
 STATUS_RE = re.compile(r"^- \*\*Status:\*\* (\S+(?: \S+)?)$")
 PHASE_RE = re.compile(r"^### (Phase .+)$")
+PROGRESS_ROW_RE = re.compile(r"^\| M\d+ \|")
 
 
 def load() -> list[str]:
@@ -82,7 +84,7 @@ def recompute(lines: list[str]) -> None:
             continue
         i += 1
     for k, line in enumerate(lines):
-        if line.startswith("| M1 |") or line.startswith("| M2 |"):
+        if PROGRESS_ROW_RE.match(line):
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
             ms, ph = cells[0], cells[1]
             total, done, active = phase_stats.get(ph, [int(cells[2]), 0, 0])
@@ -95,6 +97,10 @@ def recompute(lines: list[str]) -> None:
 
 def main(argv: list[str]) -> None:
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+    global TICKETS
+    if argv[:1] == ["--file"] and len(argv) >= 2:
+        TICKETS = Path(argv[1]).resolve()
+        argv = argv[2:]
     if not argv:
         raise SystemExit(__doc__)
     cmd, *rest = argv

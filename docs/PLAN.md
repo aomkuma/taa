@@ -3,7 +3,8 @@
 > Living design document (revision 2: advisory features, evidence engine, personalization; revision 3: Fibonacci
 > extension levels and candle location, trading profile and entry plans, §A31; revision 4: engine registry,
 > §A32; revision 5: the owner's trading profile drives the engine's risk, §A33). Work items and
-> progress are tracked in [TICKETS.md](TICKETS.md). No profitability claims anywhere. Capital protection,
+> progress are tracked in [TICKETS.md](TICKETS.md). The learning layer (symbol character, tick microstructure,
+> signal-quality model) is designed in [PLAN_LEARNING.md](PLAN_LEARNING.md). No profitability claims anywhere. Capital protection,
 > fail-closed behavior and auditability take priority over features. Leveraged FX/CFD trading is high risk.
 
 ## Context
