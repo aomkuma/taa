@@ -19,7 +19,7 @@ candidate's risk, an upper bound on what any accepted size could add.
 from __future__ import annotations
 
 import logging
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -158,6 +158,7 @@ class DecisionEngine:
         config_hash: str,
         breakers: BreakerBoard | None = None,
         store: DecisionStore | None = None,
+        spec_lookup: Callable[[str], SymbolSpec] | None = None,
     ) -> None:
         self.config = config
         self.mode = mode
@@ -169,6 +170,29 @@ class DecisionEngine:
         self.config_hash = config_hash
         self.breakers = breakers
         self.store = store
+        self.spec_lookup = spec_lookup
+        self._looked_up: dict[str, SymbolSpec | None] = {}
+
+    def position_specs(
+        self, specs: Mapping[str, SymbolSpec], positions: Sequence[BrokerPosition]
+    ) -> dict[str, SymbolSpec]:
+        """*specs* plus the spec of every other symbol with an open position (a manual BTCUSD trade while the
+        bot trades Forex), looked up once per symbol. Without a spec a position's risk to its stop cannot be
+        measured and blocks new entries as unknown risk; a lookup that fails keeps it so (fail closed)."""
+        out = dict(specs)
+        if self.spec_lookup is None:
+            return out
+        for symbol in {p.symbol for p in positions} - set(out):
+            if symbol not in self._looked_up:
+                try:
+                    self._looked_up[symbol] = self.spec_lookup(symbol)
+                except Exception:  # broker boundary: an unknown spec stays unknown risk
+                    log.warning("no symbol spec for the open position on %s", symbol, exc_info=True)
+                    self._looked_up[symbol] = None
+            found = self._looked_up[symbol]
+            if found is not None:
+                out[symbol] = found
+        return out
 
     def decide(self, req: DecisionRequest, profile: Profile = Profile.EXECUTION) -> DecisionRecord:
         now = self.clock.now_utc()
@@ -544,7 +568,7 @@ class DecisionEngine:
             )
             return out
         manager = ExposureManager(risk, self.calculator, magic_base=self.magic_base)
-        specs = dict(req.specs)
+        specs = self.position_specs(req.specs, req.account.positions)
         if req.spec is not None:
             specs[req.spec.name] = req.spec
         exposure = manager.snapshot(req.account.positions, req.account.funds, specs)

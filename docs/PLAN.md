@@ -1246,6 +1246,15 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
       ranked and scanned rather than silently dropped. Metals are also recognised by name (a metal code prefix,
       or gold/silver/platinum/palladium): FBS reports XAUUSD with base USD under `Forex\Main`, which made every
       FBS metal OTHER and off.
+    - (2026-10-05) The monitored set leaves out symbols the account cannot trade (the latest ranking failed
+      G2 minimum lot or G3 margin), wherever they are listed (allowlist, favourites, lists): every entry on them
+      would be refused, so scanning them only costs time; they come back once equity allows. The account is
+      the engine's: with subscribers on the feed this would need their accounts (homework item 4).
+    - (2026-10-05) A symbol queued for its new bar is scanned even if the plan changed meanwhile (the top N
+      moves every minute); it used to be refused as SYMBOL_NOT_ALLOWED.
+    - (2026-10-05) The decision engine looks up the spec of every symbol with an open position
+      (`spec_lookup`, cached): a manual BTCUSD trade with a stop next to a Forex-only bot was unknown risk
+      and blocked every entry.
   - Monitored set = favourites ∪ custom lists ∪ AUTO top-N (default 30) ∪ `ALLOWED_SYMBOLS`, capped at 60 so
     terminal load stays bounded.
 - **Market sessions (`market_sessions.py`):**

@@ -81,6 +81,17 @@ class TestRequirements:
         assert {i.name for i in config.strategies.items if i.enabled} <= req.strategies
         assert req.lifetime_bars == 3
 
+    def test_symbols_the_account_cannot_trade_are_left_out(self) -> None:
+        req = requirements_from_config(
+            remote(),
+            AppConfig(),
+            ranked=["GBPUSD"],
+            evidence=evidence_registry(),
+            strategies=default_registry(),
+            unaffordable=["XAUUSD", "XAGUSD"],  # a favourite and a custom list's symbol
+        )
+        assert "XAUUSD" not in req.symbols and "XAGUSD" not in req.symbols and "GBPUSD" in req.symbols
+
     def test_unknown_setups_cannot_be_enabled(self) -> None:
         req = requirements_from_config(
             remote(pattern_strategies=["no_such_setup"]),

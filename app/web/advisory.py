@@ -34,7 +34,7 @@ from app.advisory.stats import (
     scoreboard,
     threshold_explorer,
 )
-from app.advisory.suitability import Gate
+from app.advisory.suitability import ACCOUNT_GATES
 from app.core.clock import ensure_utc
 from app.core.errors import TaaError
 from app.evidence.catalog import default_registry as evidence_registry
@@ -57,9 +57,6 @@ from app.strategy.registry import StrategyRegistry
 from app.sync.events import json_safe
 from app.web.account_profiles import HistoryRates
 from app.web.readmodels import Page, QueryError, paginate, row_dict
-
-# Minimum-lot affordability and margin share depend on the account, not the market.
-ACCOUNT_GATES = frozenset({Gate.G2_MIN_LOT.value, Gate.G3_MARGIN.value})
 
 MAX_HISTORY_HOURS = 24 * 90
 

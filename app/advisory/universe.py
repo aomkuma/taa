@@ -134,13 +134,18 @@ def monitored_set(
     auto_top_n: int = 30,
     cap: int = 60,
     available: Iterable[str] | None = None,
+    unaffordable: Iterable[str] = (),
 ) -> list[str]:
-    """Allowlist, favourites, custom lists, then the ranking's top N; de-duplicated, in priority, capped."""
+    """Allowlist, favourites, custom lists, then the ranking's top N; de-duplicated, in priority, capped.
+
+    *unaffordable* (the ranking's minimum-lot or margin gate failed for the account) are left out wherever
+    they are listed: every entry on them would be refused, so scanning them only costs time."""
     known = None if available is None else set(available)
+    skip = set(unaffordable)
     ordered: list[str] = []
     for group in (allowlist, favourites, *(lists or {}).values(), list(ranked)[:auto_top_n]):
         for symbol in group:
-            if symbol not in ordered and (known is None or symbol in known):
+            if symbol not in ordered and symbol not in skip and (known is None or symbol in known):
                 ordered.append(symbol)
     if len(ordered) > cap:
         log.info("monitored set capped at %d of %d symbols", cap, len(ordered))

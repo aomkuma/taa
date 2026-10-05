@@ -42,6 +42,7 @@ from app.advisory.requirements import (
 from app.advisory.scanner import OpportunityScanner
 from app.advisory.shadow_tracker import ShadowTracker
 from app.advisory.stats import EdgeBook
+from app.advisory.suitability import ACCOUNT_GATES
 from app.advisory.universe import SymbolCatalog
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
@@ -253,6 +254,7 @@ class Engine:
             config_hash=self.settings.config_hash,
             breakers=self.board,
             store=DecisionStore(self.db),
+            spec_lookup=self.gateway.symbol_spec,  # positions on symbols the bot does not trade (manual)
         )
         if cfg.advisory.ranking.enabled:  # advice about the broker account; never changes what the bot trades
             catalog = SymbolCatalog(
@@ -612,12 +614,23 @@ class Engine:
         key = (None if run is None else run.computed_at, None if remote is None else remote.version)
         if self._requirements_cache is None or self._requirements_cache[0] != key:
             ranked = [] if run is None else [r.symbol for r in run.ranked if r.eligible]
+            # the account cannot trade these (minimum lot or margin): not scanned until equity allows it
+            unaffordable = (
+                []
+                if run is None
+                else [r.symbol for r in run.ranked if ACCOUNT_GATES & {g.value for g in r.suitability.failed}]
+            )
             universe = [] if self.ranking is None else [e.symbol for e in self.ranking.universe]
             evidence, strategies = evidence_registry(), default_registry()
             available = universe or None
             if remote is None:
                 req = local_requirements(
-                    self.config, ranked=ranked, evidence=evidence, strategies=strategies, available=available
+                    self.config,
+                    ranked=ranked,
+                    evidence=evidence,
+                    strategies=strategies,
+                    available=available,
+                    unaffordable=unaffordable,
                 )
             else:
                 req = requirements_from_config(
@@ -627,6 +640,7 @@ class Engine:
                     evidence=evidence,
                     strategies=strategies,
                     available=available,
+                    unaffordable=unaffordable,
                 )
             self._requirements_cache = (key, req)
         return self._requirements_cache[1]
@@ -945,7 +959,8 @@ class Engine:
             manager = ExposureManager(
                 self.config.risk, self.decisions.calculator, magic_base=self.settings.env.MAGIC_NUMBER_BASE
             )
-            exposure = manager.snapshot(self._book(), funds, self.symbols)
+            book = self._book()
+            exposure = manager.snapshot(book, funds, self.decisions.position_specs(self.symbols, book))
         except Exception:  # telemetry boundary
             log.exception("account snapshot for the heartbeat failed")
             return None

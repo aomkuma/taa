@@ -59,6 +59,10 @@ class Gate(StrEnum):
     G6_DATA = "G6_DATA"
 
 
+# Minimum-lot affordability and margin depend on the account, not the market.
+ACCOUNT_GATES = frozenset({Gate.G2_MIN_LOT.value, Gate.G3_MARGIN.value})
+
+
 class GateStatus(StrEnum):
     OK = "OK"
     FAIL = "FAIL"

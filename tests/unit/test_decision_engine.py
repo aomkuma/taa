@@ -357,3 +357,40 @@ def test_mutations_are_all_rejections_in_isolation(db: Database) -> None:
         if extra:
             noisy[code] = sorted(extra)
     assert not noisy, noisy
+
+
+class TestPositionsOnOtherSymbols:
+    """A manual trade (magic 0) with a stop on a symbol the bot does not trade, e.g. BTCUSD next to Forex: the
+    request carries only the traded symbols' specs (2026-10-05: every entry was refused as unknown risk)."""
+
+    def manual(self) -> dict[str, Any]:
+        return account(pos("GBPUSD", price=1.3, sl=1.298, magic=0, ticket=7))
+
+    def unknown(self, record: Any) -> bool:
+        return any(ch.name == "unknown_position_risk" and not ch.passed for ch in record.checks)
+
+    def test_its_spec_is_looked_up_once_and_its_risk_measured(self, db: Database) -> None:
+        eng = engine(db)
+        calls: list[str] = []
+
+        def lookup(symbol: str) -> Any:
+            calls.append(symbol)
+            return GBPUSD_SPEC
+
+        eng.spec_lookup = lookup
+        only_traded = {"EURUSD": EURUSD_SPEC}
+        assert not self.unknown(eng.decide(request(specs=only_traded, **self.manual())))
+        assert not self.unknown(eng.decide(request(specs=only_traded, **self.manual())))
+        assert calls == ["GBPUSD"]
+
+    def test_without_a_spec_it_stays_unknown_risk(self, db: Database) -> None:
+        eng = engine(db)
+        assert self.unknown(eng.decide(request(specs={"EURUSD": EURUSD_SPEC}, **self.manual())))
+
+        def broken(symbol: str) -> Any:
+            raise RuntimeError("symbol_info failed")
+
+        eng.spec_lookup = broken
+        assert self.unknown(
+            eng.decide(request(specs={"EURUSD": EURUSD_SPEC}, **self.manual()))
+        )  # fail closed

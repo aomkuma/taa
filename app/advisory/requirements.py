@@ -133,6 +133,7 @@ def requirements_from_config(
     evidence: DetectorRegistry,
     strategies: StrategyRegistry,
     available: Sequence[str] | None = None,
+    unaffordable: Sequence[str] = (),
 ) -> ComputeRequirements:
     symbols = monitored_set(
         allowlist=config.symbols.allowed,
@@ -142,6 +143,7 @@ def requirements_from_config(
         auto_top_n=remote.auto_top_n,
         cap=config.advisory.universe.monitored_cap,
         available=available,
+        unaffordable=unaffordable,
     )
     known = set(evidence.ids)
     setups = set(pattern_setups(strategies))
@@ -165,6 +167,7 @@ def compute_requirements(
     evidence: DetectorRegistry,
     strategies: StrategyRegistry,
     available: Sequence[str] | None = None,
+    unaffordable: Sequence[str] = (),
 ) -> ComputeRequirements:
     return requirements_from_config(
         advisory_config(users, evidence=evidence, strategies=strategies),
@@ -173,6 +176,7 @@ def compute_requirements(
         evidence=evidence,
         strategies=strategies,
         available=available,
+        unaffordable=unaffordable,
     )
 
 
@@ -183,6 +187,7 @@ def local_requirements(
     evidence: DetectorRegistry,
     strategies: StrategyRegistry,
     available: Sequence[str] | None = None,
+    unaffordable: Sequence[str] = (),
 ) -> ComputeRequirements:
     """The single local user from ``config.yaml`` → ``advisory.preferences`` (no cloud yet)."""
     return compute_requirements(
@@ -192,4 +197,5 @@ def local_requirements(
         evidence=evidence,
         strategies=strategies,
         available=available,
+        unaffordable=unaffordable,
     )

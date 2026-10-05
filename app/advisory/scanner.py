@@ -144,6 +144,9 @@ class OpportunityScanner:
         self.stats = ScannerStats()
         self.specs: dict[str, SymbolSpec] = {}
         self.pending: deque[str] = deque()
+        # symbols queued while they were monitored: their bar is scanned even if a newer plan (the ranking's
+        # top N changes every minute) no longer lists them, instead of being refused as outside the universe
+        self._admitted: set[str] = set()
         self._last_bar: dict[str, datetime] = {}
         self._plan: _Plan | None = None
         self._next_poll = 0.0
@@ -187,6 +190,7 @@ class OpportunityScanner:
             symbol = self.pending.popleft()
             scanned.append(symbol)
             created += self.scan_symbol(symbol, plan)
+            self._admitted.discard(symbol)
         self.stats.last_duration_ms = (self.clock.monotonic() - started) * 1000
         return ScanReport(tuple(scanned), tuple(created), len(self.pending))
 
@@ -203,6 +207,7 @@ class OpportunityScanner:
             if opened is not None and (symbol not in self._last_bar or opened > self._last_bar[symbol]):
                 self._last_bar[symbol] = opened  # each bar is queued once, even if its scan fails
                 self.pending.append(symbol)
+                self._admitted.add(symbol)
 
     def _fail(self, symbol: str, exc: Exception) -> None:
         self.stats.failures += 1
@@ -245,6 +250,7 @@ class OpportunityScanner:
         return AccountState(funds, self.gateway.positions(), self.loss()), acct.currency
 
     def _consider(self, signal: Signal, ctx: StrategyContext, spec: SymbolSpec, plan: _Plan) -> str | None:
+        universe = plan.universe | ({signal.symbol} if signal.symbol in self._admitted else set())
         with self.db.session() as sess:
             if sess.get(OpportunityRow, (LOCAL_ENGINE, signal.idempotency_key)) is not None:
                 return None  # idempotent: this strategy/symbol/bar/side is already recorded
@@ -260,7 +266,7 @@ class OpportunityScanner:
                 health=self.health(),
                 specs=self.specs,
                 gate=self.gate(),
-                universe=plan.universe,
+                universe=universe,
             ),
             Profile.ADVISORY,
         )

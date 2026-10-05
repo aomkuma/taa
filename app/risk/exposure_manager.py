@@ -225,7 +225,7 @@ class ExposureManager:
                 not exposure.unknown_risk,
                 acct,
                 ",".join(f"{p.position.symbol}#{p.position.ticket}" for p in exposure.unknown_risk),
-                "every open position has a stop",
+                "every open position has a measurable stop",
             ),
             Check(
                 "max_total_open_risk",

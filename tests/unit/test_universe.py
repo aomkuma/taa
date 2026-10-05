@@ -171,3 +171,13 @@ class TestMonitoredSet:
     def test_default_cap_is_60(self) -> None:
         ranked = [f"S{i}" for i in range(100)]
         assert len(monitored_set(allowlist=[], ranked=ranked, auto_top_n=100)) == 60
+
+    def test_symbols_the_account_cannot_trade_are_not_scanned(self) -> None:
+        # a 50 USD account: the minimum lot of AAPL and XAUUSD is out of reach, wherever they are listed
+        out = monitored_set(
+            allowlist=["EURUSD", "XAUUSD"],
+            favourites=["AAPL"],
+            ranked=["GBPUSD"],
+            unaffordable=["AAPL", "XAUUSD"],
+        )
+        assert out == ["EURUSD", "GBPUSD"]

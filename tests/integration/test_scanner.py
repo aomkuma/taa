@@ -123,6 +123,29 @@ class TestScan:
         assert len(s.tick().created) == 2  # the next bar
         assert len(rows(db)) == 4
 
+    def test_a_queued_symbol_is_scanned_after_it_leaves_the_monitored_set(self, db: Database) -> None:
+        s, clock, _ = scanner(db, cfg=config(budget=3.0))
+        original = s.plan().builder.build
+
+        def slow(*args: Any, **kwargs: Any) -> Any:
+            clock.advance(4.0)  # one symbol uses the whole cycle budget
+            return original(*args, **kwargs)
+
+        s.plan().builder.build = slow  # type: ignore[method-assign]
+        first = s.tick()
+        assert first.scanned == ("EURUSD",) and first.pending == 1
+        # the ranking's top N moved on before XAUUSD's turn: its queued bar is still scanned, not refused
+        s.state["req"] = ComputeRequirements(("EURUSD",), REQ.detectors, REQ.strategies)  # type: ignore[attr-defined]
+        second = s.tick()
+        assert second.scanned == ("XAUUSD",) and len(second.created) == 1
+        with db.session() as sess:
+            refused = sess.execute(
+                select(func.count())
+                .select_from(DecisionRecordRow)
+                .where(DecisionRecordRow.decision == "REJECT")
+            ).scalar_one()
+        assert refused == 0
+
     def test_scanning_is_time_boxed(self, db: Database) -> None:
         req = ComputeRequirements(("EURUSD", "GBPUSD", "USDJPY", "XAUUSD"), REQ.detectors, REQ.strategies)
         s, clock, _ = scanner(db, req=req, cfg=config(budget=3.0))
