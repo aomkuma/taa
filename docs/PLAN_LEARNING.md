@@ -1,7 +1,7 @@
 # TAA — Learning Layer: Symbol Character, Tick Microstructure & Signal Quality (Design)
 
 > Separate design track, started 2026-10-06. It extends [PLAN.md](PLAN.md) and does not replace any part of it.
-> Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). Section numbers here are `L0`–`L8`, `L19`, `L20`, then `L9`–`L18`; references
+> Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). Section numbers here are `L0`–`L8`, `L19`–`L21`, then `L9`–`L18`; references
 > such as §A27 point to PLAN.md. No profitability claims anywhere: every model here can only estimate, filter
 > or explain. Capital protection, fail-closed behavior and auditability still come first.
 
@@ -41,6 +41,31 @@
 - No online learning inside the trading loop. Training always runs off the loop, and a model is promoted only
   through the explicit lifecycle (L9).
 - The LLM provider (Phase 13 in TICKETS.md) is not part of prediction here. Its role is narrative only (L12).
+
+### L0.1 What already exists: reuse map (checked against PLAN.md, PATTERNS.md, HANDOFF.md and the code, 2026-10-06)
+
+This track **extends** the existing system. It does not rebuild it. Before a ticket starts, re-check this table.
+Every ticket names the module it extends.
+
+| Planned here | Already exists | What is new |
+|---|---|---|
+| Hour-of-week activity (L5) | `LiquidityProfile` (median tick volume per hour of week from H1) and `hour_of_week` in `app/advisory/market_sessions.py`; ranking S4 "Liquidity now" | Add volatility and spread per hour of week, CIs and stability; share the profile with strategies, not only the ranking |
+| Spread profile (L5) | Median and current spread in the ranking (S2, G4); `QuoteService` rolling median spread | Per hour of week, p95, rollover spikes, "costly hours" |
+| Regime (L5 regime, L20.1) | `app/strategy/regime_detector.py` (TRENDING / RANGING / VOLATILE / UNCLEAR, ADX + ATR percentile); ranking S6 regime fit; style tag `regime` | Profile-normalized inputs, efficiency ratio, `QUIET`, hysteresis. **Extend the existing detector and enum** rather than adding a second classifier |
+| Correlation clusters (L5, L20.6) | `app/advisory/correlations.py` (rolling H1 return correlations, `max_correlation`); ranking S7; `risk.correlation_groups` | Clustering, plus cross-bot and same-currency dedup at selection time |
+| Compression and breakout detectors (L19.4) | `volatility.bollinger_squeeze` (squeeze then breakout), `candle.inside_outside` (inside bar), `volatility.donchian`, `volatility.keltner`, `volatility.atr_expansion`, `sessions.asian_breakout`, `sessions.open_breakout`, `levels.sr_breakout` | Only NR4/NR7 and a **direction-neutral compression state** (ATR percentile, squeeze active *before* the breakout) as timing context; session/news timing context |
+| Range triggers (L20.2) | `wyckoff.spring_upthrust` (range + false break), `levels.sr_zone` rejection, `chart.rectangle`, `smc.liquidity_sweep`, reversal candles | The qualified-range object and `setup_range_fade` that **uses these detectors as triggers** |
+| Trend structure (L20.3/L20.4) | `structure.bos_choch`, `structure.dow`, `structure.trendline`, `trend.ma_alignment`, `momentum.divergence` | Runner trailing and exhaustion/transition policies that read them |
+| Trailing and break-even (L20.3) | §A11 position management: break-even at +1R, ATR trailing after +1.5R, CLOSE when the H1 bias flips; §A31 `EntryPlan` `SAME_PRICE` staggered TPs and `SCALE_IN` | A runner part without a fixed TP, structure/chandelier trail, budget-capped adds |
+| Timing diagnostics (L19.2) | Analytics recommendations (`app/analytics/recommendations.py`): `stop_too_tight` (SL exit followed by TP within N bars; TAA-1005 reads 20 bars after each SL exit), `earlier_break_even` (losers with MFE ≥ 1R), `cost_drag`; attribution codes `LOSS_IMMEDIATE_ADVERSE`, `LOSS_GAVE_BACK_PROFIT`, `COUNTER_TREND_ENTRY`, `LOSS_REGIME_SHIFT` | Classifying every trade into failure modes, the MAE profile of winners, time-to-target, entry efficiency and the random-walk baseline. **Built on top of the existing follow-up loader and attribution**, not beside them |
+| Expectancy report (L20.0) | Segment expectancy with a seeded bootstrap CI (`restrict_segments`, `bootstrap_mean_ci`), style tags, `app/advisory/stats.py` | The p/W/L/c decomposition per playbook/bot, and "which lever moved" |
+| Win probability and explanations (L6) | `BucketModel`, `LogisticModel`, walk-forward selection, Shapley attribution (`app/advisory/confidence.py`, `calibration.py`) | The GBT candidate, purged CV with embargo, the economic metric, the model lifecycle |
+| Tick data (L3, L4) | `copy_ticks_range` in the gateway (used by shadow resolution); `volume.tick_spike` from bar tick volume | Continuous capture, storage, micro-bars, quote-flow features |
+| Manual-trade behavior (L20.7) | TAA-1006 matching of manual trades to signals; Trade history "me / signal / bot" in R | Behavior patterns (early exit, stop moved, revenge, overtrading, off-plan) |
+| Scanning all symbols (L20.5) | Catalog and ranking over the whole broker universe (549 symbols on FBS demo); scanner on the monitored set (allowlist ∪ favourites ∪ lists ∪ auto top-30, cap 60, affordable only), with a per-cycle budget; evidence ≈ 1–1.6 s per symbol per bar; an engine cycle ≈ 7 s | Tiered scanning, rotation, and probably a **separate scan process** (HANDOFF homework item 6) so the trading loop never waits |
+| Trading many symbols (L21.6) | Trading, candle streaming, charts and forming bars cover only `ALLOWED_SYMBOLS` (`.env` overrides `symbols.allowed`) | `trade_universe: catalog`, and chart data on demand for any symbol |
+| Strategy flexibility (L21) | Strategies fixed in `config.yaml` (restart needed); detector parameters can come from the owner's theory settings (TAA-920) | Bot specs versioned and audited, changeable without a restart (remote edits can only lower risk) |
+| AI proposing changes (L9) | Recommendations with "Backtest this change" (never auto-applied); calibration rebuilt nightly | The model lifecycle and drift demotion; proposals stay "backtest first, never auto-apply" |
 
 ## L1. Data reality: what FBS × MT5 actually provides
 
@@ -257,8 +282,9 @@ needs `min_samples` (per metric) or it is `None` with reason `INSUFFICIENT_DATA`
    hierarchical clustering into groups (reused from `app/advisory/correlations.py`).
 10. **Strategy fit:** a link to the L8 fit matrix row for this symbol.
 
-**Regime classifier** (`app/learning/regime.py`). It is rule-based first, for explainability, using
-profile-normalized inputs on the entry TF:
+**Regime classifier.** This extends `app/strategy/regime_detector.py` and its `Regime` enum (L0.1); there is no
+second classifier. It is rule-based first, for explainability, and adds profile-normalized inputs on the
+entry TF:
 
 | Regime | Rule (defaults) |
 |---|---|
@@ -415,7 +441,7 @@ strategy × regime, with the same empirical-Bayes pooling as `BucketModel`, so s
 
 ## L19. Entry timing: right direction, wrong time (added 2026-10-06)
 
-Section numbers run L0–L8, then L19–L20, then L9–L18. L19 sits here because it builds on L5–L8 and feeds L9.
+Section numbers run L0–L8, then L19–L21, then L9–L18. L19 sits here because it builds on L5–L8 and feeds L9.
 
 **Problem (user, 2026-10-06):** traders often read the direction correctly and still lose, because the move
 comes later than their position can survive. This section treats timing as a **separate, measurable problem**
@@ -433,7 +459,9 @@ next to direction.
 
 ### L19.2 Timing diagnostics (`app/learning/timing.py`)
 
-The diagnostics run on CLOSED shadow trades (PLAN variant) and on matched manual trades (TAA-1006). They need only
+The diagnostics extend the analytics recommendations (`stop_too_tight`, `earlier_break_even`) and the
+attribution codes (L0.1), and reuse their after-exit bar loader. They run on CLOSED shadow trades (PLAN
+variant) and on matched manual trades (TAA-1006). They need only
 the candles that are already stored, no ticks. For every trade, the path is followed **after the exit** for a
 look-ahead `H` (default = the strategy's time stop, 72 h) using M1/M5 bars:
 
@@ -482,8 +510,9 @@ Each opportunity is simulated under several entry modes at once, as extra shadow
 
 ### L19.4 Timing features and detectors
 
-New evidence detectors (`app/evidence/volatility.py` and `app/evidence/sessions_ranges.py`), shown as **timing**
-evidence and never as direction:
+Squeeze breakouts, inside bars, Donchian, opening-range and Asian-range breakouts already exist as detectors
+(L0.1). New are the **direction-neutral timing states**, shown as timing evidence and never as direction
+(`app/evidence/volatility.py`, `app/evidence/sessions_ranges.py`):
 
 - **Volatility compression:** the ATR percentile over the last 100 bars < 20; Bollinger Bands inside Keltner
   Channels (squeeze); NR4/NR7 and inside bars (Crabel). Compression says that **an expansion is more likely
@@ -713,6 +742,177 @@ planned". The point is to show where the system's discipline would have helped, 
 - Each new playbook rule follows L13: shadow first, then DEMO with the acceptance numbers, and LIVE only after
   Phase 14 and the user's explicit go-ahead.
 
+## L21. Squad mode: a team of specialist bots (added 2026-10-06)
+
+**Vision (user, 2026-10-06):** the system works like a squad of skilled traders on the board. Each bot has its
+own specialty and sees different opportunities, and together they collect many small edges. The existing
+single-engine way of working must keep working unchanged.
+
+### L21.1 What the current structure can and cannot do
+
+Checked in the code on 2026-10-06:
+
+| Area | Today | Gap for squad mode |
+|---|---|---|
+| Strategies | One `StrategySet` from `strategies.items`. All strategies share one timeframe pair (`timeframes.higher`/`entry`, H1/M15) | Each bot needs its own timeframes, symbols, sessions and playbooks |
+| Risk | One `risk` cage plus the owner's profile (§A33), applied to the whole engine (`max_open_positions: 3`, `max_positions_per_symbol: 1`) | Each bot needs its own budget inside the account cage, and its own probation and breakers |
+| Arbitration | Per symbol and bar: BUY vs SELL cancels both (`CONFLICT`); same direction → best rank wins | Cross-bot rules: different horizons may disagree, so a commander decides by policy |
+| Magic numbers | `MAGIC_NUMBER_BASE + index` of the **enabled** strategies (`app/engine/orchestrator.py`) | **Fragile today, not only for squads.** Enabling, disabling or reordering a strategy while positions are open re-maps those positions to another strategy's management rules. A stable, persisted mapping is needed (TAA-L901) |
+| Universe | `symbol_catalog` discovers every symbol (`include: ["*"]`), and the ranking covers all of them. The scanner evaluates strategies only on the monitored set (cap 60) | Q10 answer: scan everything tradable. Tiered scanning (L20.5, TAA-L806) removes the cap for tier 0 |
+| What is traded | Only `symbols.allowed` (4 symbols) | A per-bot symbol scope, inside an account-level trading universe that can be the whole tradable catalog (L21.6) |
+| Account type | Hedging is detected (`margin_mode`), and FakeMT5 defaults to retail hedging | Squad policies must also handle netting accounts (L21.4) |
+
+### L21.2 Concepts
+
+- **Bot** (`BotSpec`, one per specialty): a stable `bot_id` and display name, plus:
+  - playbooks (L20) and strategies/setups
+  - timeframes (bias TF, entry TF, optional trigger TF)
+  - symbol scope (asset classes, include/exclude patterns, or "the universe")
+  - session windows
+  - entry/exit style (entry-mode policy L19, runner or fixed TP L20.3, time stop)
+  - a **risk budget share**
+  - a status (`SHADOW` / `PAPER` / `ACTIVE` / `PAUSED` / `RETIRED`)
+
+  Bots are configured locally in `config.yaml` (`squad.bots`), because they carry risk.
+- **Commander** (`app/engine/commander.py`): the single place that sees every bot's candidates for a decision
+  cycle. It:
+  - applies cross-bot conflict and correlation rules (L21.4)
+  - ranks candidates by expected R per unit of risk (L20.6)
+  - allocates the account's open-risk headroom among bots (L21.5)
+  - hands the selected decisions to the unchanged decision engine → risk → mode gate → execution path
+
+  It never sizes above the cage and never bypasses breakers or the kill switch.
+- **Shared intelligence (compute once):** candles, indicators, evidence, profiles (L5), regime and playbook state
+  (L20.1) and micro features (L4) are computed once per symbol × TF × bar and shared by every bot that needs
+  them. Bots only add their own strategy logic. This extends the PLAN §A30 principle and keeps CPU proportional
+  to symbols × TFs, not symbols × bots.
+- **Legacy mode** = squad mode with exactly one implicit bot, `default`, built from today's `strategies`,
+  `timeframes`, `symbols.allowed` and `risk`. `squad.enabled: false` (default) gives today's behavior
+  bit-for-bit: the same decisions, sizes and backtest results (golden test).
+
+### L21.3 Starting roster (proposal; each bot proves itself before it trades)
+
+| Bot | Specialty | Bias → entry (→ trigger) TF | Scope | Playbook / style |
+|---|---|---|---|---|
+| `trend_rider` | Rides established trends | H4 → H1 (→ M15) | Majors, metals, indices | `TREND_RUNNER`: pullback entries, runner exits, budget-capped adds |
+| `range_sniper` | Fades clean ranges | H1 → M15 (→ M5) | Majors/minors, quiet sessions | `RANGE`: edge entries, mid/opposite-edge targets |
+| `breakout_hunter` | Compression → expansion | H1 → M15 | All liquid classes, session opens | `BREAKOUT`: squeeze/NR7, opening-range, retest entries |
+| `pattern_specialist` | Chart and harmonic patterns | H1 → M15 | Universe (tiered) | Existing pattern setups (§A29), filtered by the router |
+| `session_opener` | Cash-session opens of indices and stocks | M15 → M5 | Indices, stocks | Opening-range breakout and fade, within the exchange session |
+| `crypto_247` | Crypto including weekends | H1 → M15 | Crypto | Trend and range playbooks with the crypto profile (spread, weekend liquidity) |
+
+The roster is a starting point. Bots are added, retired or re-scoped by evidence (L21.7). "Small profits" only
+work when costs are small relative to targets, so each bot × symbol pair must pass the cost filter
+(target ≥ `min_target_cost_ratio` × round-trip cost, default 4).
+
+### L21.4 Cross-bot rules (commander)
+
+1. **Opposite directions on one symbol:**
+   - Default policy `net_direction`: at most one direction per symbol across all bots. When candidates
+     disagree, the candidate with the higher expected R per unit of risk wins if its lower CI bound beats the
+     other's point estimate. Otherwise neither trades (`SQUAD_CONFLICT`), which keeps today's fail-closed
+     spirit.
+   - An existing position's direction holds until it is closed, so new opposite candidates are suppressed
+     (`SQUAD_OPPOSES_OPEN`).
+   - Hedging-only policy `independent` (opt-in, shadow first) lets bots on different horizons hold opposite
+     positions. It is shown with the cost of paying the spread twice for a near-zero net exposure.
+   - On a **netting** account, `independent` is impossible: the commander forces `net_direction` and refuses to
+     start with `independent`.
+2. **Same direction, same symbol, several bots:** allowed up to `max_bots_per_symbol` (default 1, then raised
+   by evidence) and within the per-symbol risk cap (`max_symbol_risk_percent`). Each bot's position keeps its
+   own magic, stop and management.
+3. **Correlation:** L20.6 clusters apply across bots. Same-currency exposure from different bots counts as one
+   bet against `max_per_cluster_direction`.
+4. **Ordering:** commander decisions are deterministic for a given cycle (stable sort by expected R, then
+   bot priority, then `bot_id`). The decision record stores the whole candidate list and why each lost.
+
+### L21.5 Risk budgets
+
+- **Account cage first:** `risk` + the owner's profile (§A33) stays the outer limit for the sum of all bots. No
+  bot setting can exceed it, and remote changes can only lower risk (§A13/§A20).
+- **Per-bot budget:**
+  - `risk_share` (fraction of the account's open-risk headroom, Σ ≤ 1)
+  - `max_risk_per_trade_percent` (≤ the cage)
+  - `max_open_positions`
+  - its own daily-loss stop
+
+  A bot that hits its own daily stop pauses itself, and the others continue. The account-level breakers still
+  stop everyone.
+- **Per-bot probation:** the existing probation (`probation_trades`, `probation_multiplier`) applies per bot,
+  so a new bot starts small even when the account is past probation.
+- **Evidence-based allocation (opt-in, `allocation: evidence`):**
+  - weekly, each ACTIVE bot's `risk_share` is moved toward a weight proportional to the lower 90% bound of
+    its expectancy (L20.0) per unit of risk, floored at 0
+  - steps ≤ `max_share_step` (default 0.05) per week, floor `min_share` while ACTIVE, every change audited
+  - a bot whose lower bound is ≤ 0 over ≥ `min_n` trades is set to `PAUSED` with reason `BOT_NO_EDGE`; its
+    signals keep shadow tracking so it can come back
+- **Default allocation `static`:** the shares from config only.
+
+### L21.6 Trading universe (Q10)
+
+- `squad.trade_universe`:
+  - `allowlist` (today's `symbols.allowed`, the default)
+  - `catalog`: every symbol that is enabled in `symbol_catalog`, present, tradable (trade mode full), and passes
+    the cost filter and the spec checks (min lot vs risk, margin, stops level)
+- Each bot's scope is intersected with the trading universe. Symbol overrides (`max_spread_points`,
+  `max_lot`, daily breaks) still apply.
+- Tier-0 scanning (L20.5) runs over the whole catalog either way, so advisory alerts cover everything. Only
+  trading is limited by `trade_universe`.
+- Switching to `catalog` for DEMO is a config decision. For LIVE it needs Phase 14, the further DEMO evidence
+  of L13 and the user's explicit go-ahead.
+
+### L21.7 Bot lifecycle and evaluation
+
+```
+SHADOW (signals + shadow trades only) → PAPER → ACTIVE in DEMO → ACTIVE in LIVE
+                      ↘ PAUSED (BOT_NO_EDGE, own daily stop, user) ↗        → RETIRED
+```
+
+- Promotion per bot with the L13 criteria (n, paired CI, drawdown), via `app.cli squad promote BOT --reason`,
+  audited. LIVE always needs Phase 14 and the user's explicit go-ahead.
+- **Per-bot reports:** the expectancy decomposition (L20.0), the timing failure modes (L19.2), the fit matrix
+  slice, the trade count, max drawdown and the correlation with other bots. Bots that only duplicate another
+  bot's trades add risk without adding opportunities, and this is flagged.
+- **Squad backtest:** the backtester runs the commander over all bots together (portfolio mode), because
+  interactions (conflicts, heat, correlation) change results. Each bot's stand-alone backtest is shown next to
+  its squad contribution.
+
+### L21.8 Identity and magic numbers
+
+- **`magic_registry` table:** `(bot_id, strategy) → magic`, assigned once, persisted, never reused. Legacy mode
+  registers `("default", strategy)` with today's values on first start, so existing open positions keep their
+  mapping.
+- **Block layout:** `MAGIC_NUMBER_BASE + bot_slot × 100 + strategy_slot` (fits in today's `MAGIC_RANGE`
+  10 000: up to 100 bots × 100 strategies).
+- A position whose magic is in the bot range but unknown to the registry is treated like a stray: the
+  reconciler's existing policy applies, and it is never managed by a guess.
+- The order comment carries `bot_id` (≤ 25 chars, informational only). Matching stays by magic + ticket.
+
+### L21.9 Cloud, API & PWA
+
+- Replicated tables: `bots` (spec summary, status, budget), `bot_reports`, `magic_registry`, and the commander
+  decision summaries. Opportunities and shadow rows get `bot_id`.
+- **Squad page:**
+  - one card per bot: specialty, status, budget share, open positions, today's P/L in R, and the expectancy CI
+    (hypothetical where shadow)
+  - the commander's recent decisions (who won, who lost and why)
+  - pause/resume per bot as a step-up control action through the command queue (risk-lowering only, like the
+    kill switch)
+- Alerts and opportunities show which bot found them.
+- i18n th + en for bot names, statuses and reason codes (`SQUAD_CONFLICT`, `SQUAD_OPPOSES_OPEN`,
+  `BOT_NO_EDGE`, `BOT_DAILY_STOP`, `BOT_BUDGET_FULL`). No ranking text implies future profit.
+
+### L21.10 Safety invariants (tests)
+
+1. Σ of all bots' open risk ≤ the account cage. Each bot stays within its own budget (property test with random
+   candidate sets).
+2. Legacy mode (`squad.enabled: false`) yields identical decisions and backtest results to the pre-squad code
+   (golden test).
+3. Magic numbers are stable across config changes; an unknown magic is never managed.
+4. The commander can only select, suppress or scale down candidates; it never creates a signal or scales up.
+5. On a netting account, opposite positions across bots are impossible.
+6. The kill switch, account breakers and mode gates act on every bot at once.
+
 ## L9. Learning loop & model governance
 
 **Schedule** (engine, worker thread, never in the trading loop):
@@ -816,6 +1016,8 @@ claimed.
 | Playbook router (L20.1) | Always (reason codes) | Disable-only; the fit matrix allows the playbook on the symbol | Same + ≥ 4 weeks in DEMO |
 | Range fade, runner, adds, transitions (L20.2–L20.4) | ≥ 50 A/B opportunities | Paired ΔR CI > 0 over ≥ 200 live-shadow opportunities, max DD not worse beyond the CI | Same over a further DEMO period + explicit go-ahead |
 | Tiered scanning, correlation selection (L20.5–L20.6) | Always | When scan metrics stay within budget for 2 weeks | Same |
+| Squad mode, per bot (L21.7) | Always (SHADOW bots show signals) | The bot passes L13 for its own playbooks; commander and budget tests green | Per bot: further DEMO period + Phase 14 + explicit go-ahead |
+| `trade_universe: catalog` (L21.6) | — | Config decision | Further DEMO evidence + explicit go-ahead |
 
 Every acceptance decision is recorded in `docs/HANDOFF.md` with the numbers. Reaching a criterion means
 "allowed to be tried", not "expected to be profitable".
@@ -881,9 +1083,33 @@ learning:
     scan: {tier1_max: 30, rotation_bars: 12, cycle_budget_seconds: 20}
     selection: {max_per_cluster_direction: 1}
     behavior: {revenge_minutes: 30}
+  # squad mode lives at the top level of config.yaml (not under learning), because it carries risk
   drift:
     psi_threshold: 0.25
     rolling_trades: 50
+```
+
+Squad mode (§L21), top level of `config.yaml`:
+
+```yaml
+squad:
+  enabled: false                 # false = legacy: one implicit `default` bot, identical behavior
+  trade_universe: allowlist      # allowlist | catalog
+  conflict_policy: net_direction # net_direction | independent (hedging accounts only, shadow first)
+  max_bots_per_symbol: 1
+  max_symbol_risk_percent: 1.0
+  allocation: static             # static | evidence
+  max_share_step: 0.05
+  min_target_cost_ratio: 4
+  bots:
+    - id: trend_rider
+      status: SHADOW
+      playbooks: [TREND_RUNNER]
+      timeframes: {bias: H4, entry: H1, trigger: M15}
+      scope: {classes: [FOREX_MAJOR, METAL, INDEX]}
+      risk: {share: 0.3, max_risk_per_trade_percent: 0.5, max_open_positions: 2, max_daily_loss_percent: 1.0}
+      strategies: [setup_fib_pullback, example_trend_pullback]
+    # range_sniper, breakout_hunter, pattern_specialist, session_opener, crypto_247 ...
 ```
 
 Hard ceilings in code: `confirmation.timeout_seconds ≤ 600`, `max_symbols ≤ 60`, and `filter_mode` cannot be
@@ -906,6 +1132,10 @@ Hard ceilings in code: `confirmation.timeout_seconds ≤ 600`, `max_symbols ≤ 
 | `playbook_state` | replicated | server, symbol, playbook, since, regime inputs, switch pending |
 | `expectancy_reports` | replicated | version, scope, p, W, L, c, E[R] + CI, opportunity rate |
 | `behavior_reports` | replicated (user-scoped) | user, period, pattern, count, share, ΔR vs plan |
+| `magic_registry` | replicated | bot_id, strategy, magic, assigned_at (never reused) |
+| `bots` | replicated | bot_id, spec hash, status, risk share, status history |
+| `bot_reports` | replicated | bot_id, version, expectancy decomposition, failure modes, max DD, overlap with other bots |
+| `bot_id` columns | both | added to decisions, opportunities, shadow trades, intents, positions |
 
 Types stay portable (`UTCDateTime`, `JSONType`) and use one Alembic history, as PLAN §A18 requires.
 
@@ -922,6 +1152,7 @@ Types stay portable (`UTCDateTime`, `JSONType`) and use one Alembic history, as 
 | L6 | Fit matrix, drift, Learning page, runbook | Closes the loop |
 | L7 | Entry timing (L19): diagnostics, entry-mode variants, timing detectors, learned time stop and re-entry, time-to-move model | L701 needs only existing shadow data, but follows the same order |
 | L8 | Regime playbooks (L20): expectancy report, router, range playbook, trend runner + adds, transitions, tiered scanning, correlation selection, behavior report | Combines L3, L8 and L19 into one trading approach |
+| L9 | Squad mode (L21): stable magic registry, bots, shared computation, commander, per-bot budgets, trading universe, lifecycle, squad backtest, Squad page | Turns the playbooks into a team of specialist bots; legacy mode stays the default |
 
 **Placement against the main plan:** after Phase 14 and the wrap-up (the 2026-10-06 decision). TAA-L001 (probe)
 and TAA-L101–L102 (tick capture) are small, read-only and independent, so starting them early was considered.
@@ -961,7 +1192,12 @@ order L0 → L6.
    in shadow only, and keep real re-entries off.)
 8. Q8: Should the default entry mode switch automatically per symbol × strategy once the L19.7 criteria are met,
    or always need the user's confirmation in the PWA? (Default: needs confirmation.)
-9. Q9: Should risk-free adds (pyramiding) be evaluated, and with what cap? (Default: shadow only, max 2 adds,
-   real adds off.)
-10. Q10: How large should the tier-0 universe be: every symbol on the account, or the asset classes the user
-    picks? (Default: everything tradable whose spread fits the cost threshold.)
+9. ~~Q9: Should risk-free adds (pyramiding) be evaluated, and with what cap?~~ **Answered 2026-10-06: yes.**
+   They are evaluated in shadow with at most 2 adds. Real adds stay off until they pass L13.
+10. ~~Q10: How large should the tier-0 universe be?~~ **Answered 2026-10-06: scan everything tradable.**
+    Today the catalog and ranking already cover every symbol, but strategies run only on the monitored set
+    (cap 60) and trading is limited to `symbols.allowed`. TAA-L806 (tiered scanning) and TAA-L906 (trading
+    universe) close that gap.
+11. Q11: Should TAA-L901 (stable magic registry) be pulled forward into the main tickets (Phase 14), because
+    it fixes a latent issue of today's engine?
+12. Q12: Which bots of the starting roster (L21.3) should exist first, and with which risk shares?
