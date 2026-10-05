@@ -563,14 +563,15 @@ per-signal budget.
 
 #### TAA-L808 — Behavior report on manual trades (L20.7)
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** L701 (Wave 1; the "against the current playbook" check is added when L802 exists)
 
-- [ ] detectors: early exit of winners, stop moved away, revenge trade, overtrading, off-plan trade, comfort-zone bias
-- [ ] per pattern: count, share, hypothetical ΔR "as traded" vs "as planned"
+- [x] detectors: early exit of winners, stop moved away, revenge trade, overtrading, off-plan trade, comfort-zone bias
+- [x] per pattern: count, share, hypothetical ΔR "as traded" vs "as planned"
+- [ ] engine records the stop history of manual positions (today `manual_trade_links` keeps only `sl_initial`), so `STOP_MOVED` can be judged
 - [ ] `behavior_reports` (user-scoped, replicated) + API + analytics page section
 - [ ] descriptive, non-judgmental th + en texts; catalogs test passes
-- [ ] tests
+- [x] tests
 
 ### Phase L9 — Squad mode (team of specialist bots)
 

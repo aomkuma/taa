@@ -122,27 +122,55 @@ def _risk(trade: Trade) -> float | None:
     return trade.risk_distance
 
 
+class Touch(StrEnum):
+    TARGET = "TARGET"
+    ADVERSE = "ADVERSE"
+    NEITHER = "NEITHER"
+
+
+def first_touch(
+    side: Side,
+    bars: pd.DataFrame,
+    start: datetime,
+    lookahead: timedelta,
+    *,
+    target: float,
+    adverse: float,
+    spread: float = 0.0,
+) -> Touch:
+    """Which level a position on ``side`` reaches first in the bars opening in [start, start + lookahead):
+    ``target`` in its favour or ``adverse`` against it. Both in one bar counts as ``ADVERSE`` (pessimistic).
+    """
+    start = ensure_utc(start)
+    after = _window(bars, start, start + lookahead)
+    sign = side.sign
+    high, low = _side_prices(side, after, spread)
+    for hi, lo in zip(high, low, strict=True):
+        if (lo <= adverse) if sign > 0 else (hi >= adverse):
+            return Touch.ADVERSE
+        if (hi >= target) if sign > 0 else (lo <= target):
+            return Touch.TARGET
+    return Touch.NEITHER
+
+
 def follow_up(trade: Trade, bars: pd.DataFrame, lookahead: timedelta) -> Vindication:
     """After a stop-loss exit: was the original take-profit reached before a further 1R against the trade?"""
     risk = _risk(trade)
     if trade.exit_reason not in STOP_LOSS_EXITS or risk is None or trade.initial_tp is None:
         return Vindication.UNKNOWN
-    exit_at = ensure_utc(trade.exit_time)
-    after = _window(bars, exit_at, exit_at + lookahead)
-    if after.empty:
-        return Vindication.UNKNOWN
-    sign = trade.side.sign
     stop = trade.initial_sl if trade.initial_sl is not None else trade.exit_price
-    beyond = stop - sign * risk
-    high, low = _side_prices(trade.side, after, trade.context.spread or 0.0)
-    for hi, lo in zip(high, low, strict=True):
-        hit_beyond = lo <= beyond if sign > 0 else hi >= beyond
-        hit_tp = hi >= trade.initial_tp if sign > 0 else lo <= trade.initial_tp
-        if hit_beyond:  # checked first: both in one bar counts as not vindicated (pessimistic)
-            return Vindication.NOT_VINDICATED
-        if hit_tp:
-            return Vindication.VINDICATED
-    return Vindication.UNKNOWN
+    touch = first_touch(
+        trade.side,
+        bars,
+        trade.exit_time,
+        lookahead,
+        target=trade.initial_tp,
+        adverse=stop - trade.side.sign * risk,
+        spread=trade.context.spread or 0.0,
+    )
+    if touch is Touch.TARGET:
+        return Vindication.VINDICATED
+    return Vindication.NOT_VINDICATED if touch is Touch.ADVERSE else Vindication.UNKNOWN
 
 
 def pre_entry_run_atr(trade: Trade, bars: pd.DataFrame, pre_bars: int) -> float | None:
