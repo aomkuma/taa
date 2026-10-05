@@ -39,6 +39,16 @@ function setup(extra: Record<string, () => Response> = {}) {
         checks: [
           {
             seq: 0,
+            name: 'daily_loss',
+            reason: 'DAILY_LOSS_LIMIT',
+            passed: true,
+            kind: 'ACCOUNT',
+            value: -0.4,
+            threshold: -2,
+            detail: '',
+          },
+          {
+            seq: 1,
             name: 'spread',
             reason: 'SPREAD_TOO_HIGH',
             passed: false,
@@ -48,13 +58,13 @@ function setup(extra: Record<string, () => Response> = {}) {
             detail: '',
           },
           {
-            seq: 1,
-            name: 'daily_loss',
-            reason: 'DAILY_LOSS_LIMIT',
-            passed: true,
+            seq: 2,
+            name: 'unknown_position_risk',
+            reason: 'UNKNOWN_POSITION_RISK',
+            passed: false,
             kind: 'ACCOUNT',
-            value: -0.4,
-            threshold: -2,
+            value: 'BTCUSD#2076338425',
+            threshold: 'every open position has a measurable stop',
             detail: '',
           },
         ],
@@ -107,15 +117,27 @@ describe('signals & decisions page', () => {
     renderShell('/decisions');
     await user.click(await screen.findByRole('button', { name: /XAUUSD SELL/ }));
     const dialog = await screen.findByRole('dialog', { name: 'XAUUSD SELL · Rejected' });
-    expect(within(dialog).getByText('Checks: 1 of 2 passed')).toBeInTheDocument();
+    expect(within(dialog).getByText('Checks: 1 of 3 passed')).toBeInTheDocument();
+    // the reasons up front, with what the check measured
+    expect(within(dialog).getByRole('status')).toHaveTextContent(
+      "Rejected because: Spread too high · An open position's risk cannot be measured (no stop loss, or no data for its symbol) (BTCUSD#2076338425)",
+    );
     const rows = within(within(dialog).getByRole('table', { name: 'Check-by-check results' })).getAllByRole(
       'row',
     );
-    expect(within(rows[1] as HTMLElement).getByText('Fail')).toBeInTheDocument();
-    expect(within(rows[1] as HTMLElement).getByText('Spread too high')).toBeInTheDocument();
-    expect(within(rows[1] as HTMLElement).getByText('45')).toBeInTheDocument();
-    expect(within(rows[1] as HTMLElement).getByText('30')).toBeInTheDocument();
-    expect(within(rows[2] as HTMLElement).getByText('Pass')).toBeInTheDocument();
+    // failed checks first; every row named neutrally, the failure text only where it failed
+    const [, spread, unknown, daily] = rows;
+    expect(within(spread as HTMLElement).getByText('Fail')).toBeInTheDocument();
+    expect(within(spread as HTMLElement).getByText('Spread')).toBeInTheDocument();
+    expect(within(spread as HTMLElement).getByText('Spread too high')).toBeInTheDocument();
+    expect(within(spread as HTMLElement).getByText('45')).toBeInTheDocument();
+    expect(within(spread as HTMLElement).getByText('30')).toBeInTheDocument();
+    expect(
+      within(unknown as HTMLElement).getByText('Every open position has a measurable stop'),
+    ).toBeInTheDocument();
+    expect(within(daily as HTMLElement).getByText('Pass')).toBeInTheDocument();
+    expect(within(daily as HTMLElement).getByText('Daily loss limit')).toBeInTheDocument();
+    expect(within(daily as HTMLElement).queryByText(/reached/)).not.toBeInTheDocument();
     expect(within(dialog).getByRole('link', { name: 'See on the chart' })).toHaveAttribute(
       'href',
       '/charts?symbol=XAUUSD&tf=M15&decision=d9',
@@ -133,6 +155,14 @@ describe('signals & decisions page', () => {
     expect(await within(dialog).findByText(/Score 72.5/)).toBeInTheDocument();
     expect(within(dialog).getByText('✓ htf_bias')).toBeInTheDocument();
     expect(within(dialog).getByText('✗ rsi_cross')).toBeInTheDocument();
+    // entry, stop and target as badges, the risk and reward ranges to scale
+    const prices = within(dialog).getByRole('group', { name: 'Entry, stop loss and take profit' });
+    expect(within(prices).getByText('1.1')).toBeInTheDocument();
+    expect(within(prices).getByText('1.098')).toBeInTheDocument();
+    expect(within(prices).getByText('1.104')).toBeInTheDocument();
+    expect(within(prices).getByText('1:2')).toBeInTheDocument();
+    expect(within(prices).getByText('0.002 from entry')).toBeInTheDocument();
+    expect(within(prices).getByRole('img')).toHaveAccessibleName('Risk 1.098 – 1.1 · Reward 1.1 – 1.104');
   });
 
   it('refreshes the log when the engine makes a decision', async () => {

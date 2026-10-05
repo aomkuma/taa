@@ -6,6 +6,7 @@ import { Link, useSearchParams } from 'react-router';
 import { apiGet } from '@/api/client';
 import { useEngine } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
+import { PriceBadges } from '@/components/PriceBadges';
 import { DECISIONS, REASON_CODES, translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { useLiveEvents } from '@/live/context';
@@ -37,6 +38,24 @@ function logPath(engineId: string, f: DecisionFilters, cursor: string | null): s
   if (f.reason) query.set('reason', f.reason);
   if (cursor) query.set('cursor', cursor);
   return `/engines/${encodeURIComponent(engineId)}/decisions?${query.toString()}`;
+}
+
+/** Failed checks first, then the rest in the engine's order (`seq`). */
+function failedFirst(checks: readonly Check[]): Check[] {
+  return [...checks].sort((a, b) => Number(a.passed) - Number(b.passed) || a.seq - b.seq);
+}
+
+/**
+ * A neutral label for a check ("Kill switch"), not its failure text: a passed row read "passed · kill switch
+ * active". A breaker's own check (`breaker_<name>`) takes the breaker's name; an unknown name shows as itself.
+ */
+function CheckName({ name }: { name: string }) {
+  const { t, i18n } = useTranslation();
+  if (name.startsWith('breaker_')) {
+    const breaker = name.slice('breaker_'.length).toUpperCase();
+    return <>{t('decisions.detail.breaker', { name: translateCode(i18n, 'breaker', breaker) })}</>;
+  }
+  return <>{translateCode(i18n, 'check', name)}</>;
 }
 
 function measured(value: Check['value'], format: ReturnType<typeof useFormat>): string {
@@ -124,6 +143,20 @@ function DecisionDetail({
                 time: format.dateTime(d.created_at),
               })}
             </p>
+            {d.checks.some((c) => !c.passed) && (
+              <p role="status" className="mt-2 text-sm font-medium text-red-700 dark:text-red-400">
+                {t('decisions.detail.why', {
+                  reasons: d.checks
+                    .filter((c) => !c.passed)
+                    .map((c) => {
+                      const text = translateCode(i18n, 'reason', c.reason);
+                      const measured = typeof c.value === 'string' ? c.value : null;
+                      return measured ? `${text} (${measured})` : text;
+                    })
+                    .join(' · '),
+                })}
+              </p>
+            )}
             <section aria-label={t('decisions.detail.signal')} className="mt-3">
               <h3 className="text-sm font-semibold">{t('decisions.detail.signal')}</h3>
               <p className="text-sm">
@@ -132,6 +165,15 @@ function DecisionDetail({
                   strength: format.number(d.signal.setup_strength ?? null, { maximumFractionDigits: 0 }),
                 })}
               </p>
+              {d.signal.entry_price != null && (
+                <div className="mt-2">
+                  <PriceBadges
+                    entry={d.signal.entry_price}
+                    stop={d.signal.stop_loss}
+                    target={d.signal.take_profit}
+                  />
+                </div>
+              )}
               {d.signal.explanation && (
                 <p className="text-sm text-slate-600 dark:text-slate-400">{d.signal.explanation}</p>
               )}
@@ -167,7 +209,7 @@ function DecisionDetail({
                     </tr>
                   </thead>
                   <tbody>
-                    {d.checks.map((c) => (
+                    {failedFirst(d.checks).map((c) => (
                       <tr key={c.seq} className="border-t border-slate-100 align-top dark:border-slate-800">
                         <td
                           className={`py-1 pr-3 font-semibold ${c.passed ? (TONE.ACCEPT ?? '') : (TONE.REJECT ?? '')}`}
@@ -175,7 +217,12 @@ function DecisionDetail({
                           {t(c.passed ? 'decisions.passed' : 'decisions.failed')}
                         </td>
                         <td className="py-1 pr-3">
-                          {translateCode(i18n, 'reason', c.reason)}
+                          <CheckName name={c.name} />
+                          {!c.passed && (
+                            <span className="block text-red-700 dark:text-red-400">
+                              {translateCode(i18n, 'reason', c.reason)}
+                            </span>
+                          )}
                           <span className="block text-xs text-slate-500">
                             {c.name}
                             {c.detail && ` · ${c.detail}`}

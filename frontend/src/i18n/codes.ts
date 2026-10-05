@@ -7,6 +7,7 @@
  * | `Reason` (app/risk/reasons.py), `ReasonCode` (app/strategy)       | `codes:reason.<CODE>`              |
  * | `Gate`, `GateStatus` (app/advisory/suitability.py)                | `codes:gate.<G>`, `codes:gateStatus.<S>` |
  * | `AssetClass` (app/advisory/asset_classes.py)                      | `codes:assetClass.<C>`             |
+ * | decision check names (`Check("<name>")` in app/engine, app/risk) | `codes:check.<name>`               |
  * | `OpportunityStatus`, `WindowReason`, `InvalidReason` (advisory)   | `codes:opportunityStatus.<S>`, `codes:windowReason.<R>`, `codes:invalidReason.<R>` |
  * | `ShadowStatus` (app/advisory/shadow.py)                           | `codes:shadowStatus.<S>`           |
  * | `ExitReason` (app/core/enums.py)                                  | `codes:exitReason.<CODE>`          |
@@ -277,11 +278,66 @@ export const KILL_MODES = ['HALT', 'FLATTEN'] as const;
 export const BREAKER_STATES = ['CLOSED', 'OPEN', 'HALF_OPEN'] as const;
 export const BREAKER_ACTIONS = ['TRIP', 'HALF_OPEN', 'RESET'] as const;
 
+// Decision check names (`Check("<name>", ...)` in app/engine and app/risk): neutral row labels of the
+// decision drawer; a breaker's own check is `breaker_<name>` (codes:breaker).
+export const CHECK_NAMES = [
+  'account_state',
+  'breakers',
+  'broker_healthy',
+  'clock_verified',
+  'conflicting_position',
+  'consecutive_losses',
+  'correlation_group',
+  'currency_direction',
+  'daily_loss',
+  'data_fresh',
+  'data_gaps',
+  'data_valid',
+  'direction_allowed',
+  'duplicate_signal',
+  'effective_leverage',
+  'expected_slippage',
+  'foreign_positions',
+  'in_universe',
+  'kill_switch',
+  'loss_status',
+  'margin_utilization',
+  'market_open',
+  'max_drawdown',
+  'max_open_positions',
+  'max_positions_per_symbol',
+  'max_total_open_risk',
+  'mode',
+  'mode_gate',
+  'news_blackout',
+  'pending_intent',
+  'price_drift',
+  'risk_reward',
+  'session_open',
+  'signal_not_expired',
+  'sizing',
+  'sl_not_too_close',
+  'sl_not_too_far',
+  'sl_present',
+  'sl_side',
+  'spread',
+  'spread_to_sl',
+  'storage_healthy',
+  'symbol_allowed',
+  'symbol_available',
+  'symbol_cooldown',
+  'symbol_trade_enabled',
+  'tp_present',
+  'unknown_position_risk',
+  'weekly_loss',
+] as const;
+
 export const CODE_KINDS = [
   'reason',
   'gate',
   'gateStatus',
   'assetClass',
+  'check',
   'opportunityStatus',
   'windowReason',
   'invalidReason',

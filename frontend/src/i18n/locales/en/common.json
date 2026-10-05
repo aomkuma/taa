@@ -370,7 +370,9 @@
       "score": "Score {{score}} · setup strength {{strength}}",
       "checks": "Checks: {{passed}} of {{total}} passed",
       "checksTable": "Check-by-check results",
-      "chart": "See on the chart"
+      "chart": "See on the chart",
+      "why": "Rejected because: {{reasons}}",
+      "breaker": "Breaker: {{name}}"
     }
   },
   "stepUp": {
@@ -1114,5 +1116,15 @@
       "part": "{{n}}) {{type}} {{volume}} lot at {{price}}",
       "heat": "Open risk after entry: {{heat}}"
     }
+  },
+  "prices": {
+    "label": "Entry, stop loss and take profit",
+    "entry": "Entry",
+    "stop": "Stop loss",
+    "target": "Take profit",
+    "rr": "Risk : reward",
+    "distance": "{{d}} from entry",
+    "riskRange": "Risk {{from}} – {{to}}",
+    "rewardRange": "Reward {{from}} – {{to}}"
   }
 }

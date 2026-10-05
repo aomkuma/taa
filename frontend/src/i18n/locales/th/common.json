@@ -370,7 +370,9 @@
       "score": "คะแนน {{score}} · ความครบของเงื่อนไข {{strength}}",
       "checks": "การตรวจ: ผ่าน {{passed}} จาก {{total}}",
       "checksTable": "ผลการตรวจทีละข้อ",
-      "chart": "ดูบนกราฟ"
+      "chart": "ดูบนกราฟ",
+      "why": "ปฏิเสธเพราะ: {{reasons}}",
+      "breaker": "เบรกเกอร์: {{name}}"
     }
   },
   "stepUp": {
@@ -1114,5 +1116,15 @@
       "part": "{{n}}) {{type}} {{volume}} ล็อต ที่ {{price}}",
       "heat": "ความเสี่ยงรวมหลังเข้า: {{heat}}"
     }
+  },
+  "prices": {
+    "label": "จุดเข้า stop loss และ take profit",
+    "entry": "จุดเข้า",
+    "stop": "Stop loss",
+    "target": "Take profit",
+    "rr": "ความเสี่ยง : ผลตอบแทน",
+    "distance": "ห่างจุดเข้า {{d}}",
+    "riskRange": "ช่วงเสี่ยง {{from}} – {{to}}",
+    "rewardRange": "ช่วงกำไร {{from}} – {{to}}"
   }
 }

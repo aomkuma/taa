@@ -55,6 +55,9 @@ export const DecisionDetailSchema = DecisionRowSchema.extend({
     conditions: z.array(ConditionSchema),
     reason_codes: z.array(z.string()),
     explanation: z.string().optional(),
+    entry_price: z.number().nullable().optional(),
+    stop_loss: z.number().nullable().optional(),
+    take_profit: z.number().nullable().optional(),
   }),
   checks: z.array(CheckSchema),
 });
