@@ -57,6 +57,7 @@ ROUTES = [
     "backtests/b1",
     "backtests/b1/trades",
     "backtests/compare?ids=b1,b2",
+    "backtests/history",
     "ranking",
     "ranking/EURUSD",
     "ranking/EURUSD/history",

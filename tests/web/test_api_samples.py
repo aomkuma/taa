@@ -25,6 +25,7 @@ from app.config import load_app_config
 from app.storage.database import Database
 from app.storage.models import (
     AuditEvent,
+    BacktestRunRow,
     ConfigSnapshot,
     DecisionRecordRow,
     EngineCommandRow,
@@ -33,12 +34,18 @@ from app.storage.models import (
     SymbolCatalogRow,
     UserRow,
 )
+from tests.backtest.test_cloud_backtests import Rig as BacktestRig
+from tests.backtest.test_cloud_backtests import upload
 from tests.strategy_data import EURUSD_SPEC
 from tests.sync_data import T
 from tests.unit.test_strategy_models import make_context, make_signal
 from tests.web.test_data_api import rig  # noqa: F401  (fixture)
 
 SAMPLES = Path(__file__).resolve().parents[2] / "frontend" / "src" / "test" / "fixtures" / "api-samples.json"
+
+RUN_A = "0191a0a0-0000-7000-8000-0000000000b1"  # finished, standard preset
+RUN_B = "0191a0a0-0000-7000-8000-0000000000b2"  # finished, high_costs (a copy of A's result)
+RUN_F = "0191a0a0-0000-7000-8000-0000000000b3"  # failed
 
 ENGINE_ROUTES = [
     "status",
@@ -57,8 +64,57 @@ ENGINE_ROUTES = [
     "decisions?limit=50&profile=EXECUTION",
     "strategies",
     "strategies?days=7",
+    "backtests",
+    f"backtests/{RUN_A}",
+    f"backtests/{RUN_A}/trades?limit=3",
+    f"backtests/compare?ids={RUN_A},{RUN_B}",
+    "backtests/history",
 ]
-USER_ROUTES = ["me/feed", "engines", "notifications?limit=5"]
+USER_ROUTES = ["me/feed", "engines", "notifications?limit=5", "backtests/presets"]
+
+
+def backtest_runs(engine_id: str, owner_id: str) -> list[BacktestRunRow]:
+    """A real cloud run on the synthetic history (in a throwaway database), plus a copy and a failed run."""
+    scratch = Database("sqlite://")
+    scratch.create_all()
+    runner = BacktestRig(scratch)
+    m15 = upload(scratch, engine=engine_id)
+    run = runner.service.create(owner_id, engine_id, runner.request(m15), created_by="alice")
+    runner.run()
+    done = runner.row(run["run_id"])
+    assert done.status == "DONE", done.error
+    columns = {c.key: getattr(done, c.key) for c in BacktestRunRow.__table__.columns}
+    # signal ids are random per run: fixed ones keep the samples file stable
+    columns["trades"] = [t | {"signal_id": f"sig-{i}"} for i, t in enumerate(done.trades)]
+    later = timedelta(minutes=5)
+    return [
+        BacktestRunRow(**columns | {"run_id": RUN_A, "job_id": None}),
+        BacktestRunRow(
+            **columns
+            | {
+                "run_id": RUN_B,
+                "job_id": None,
+                "preset": "high_costs",
+                "request": columns["request"] | {"preset": "high_costs"},
+                "created_at": done.created_at + later,
+            }
+        ),
+        BacktestRunRow(
+            **columns
+            | {
+                "run_id": RUN_F,
+                "job_id": None,
+                "status": "FAILED",
+                "progress": 0.0,
+                "error": "no M15 history for GBPUSD on FBS-Demo",
+                "summary": {},
+                "equity": [],
+                "trades": [],
+                "trades_total": 0,
+                "created_at": done.created_at + 2 * later,
+            }
+        ),
+    ]
 
 
 def realistic_rows(db: Database, engine_id: str) -> None:
@@ -176,6 +232,7 @@ def realistic_rows(db: Database, engine_id: str) -> None:
             )
         )
         alice = sess.scalars(select(UserRow).where(UserRow.username == "alice")).one()
+        sess.add_all(backtest_runs(engine_id, alice.id))
         sess.add(
             NotificationRow(
                 notification_id="0191a0a0-0000-7000-8000-0000000000aa",

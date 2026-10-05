@@ -200,5 +200,11 @@
     "setup_smc_reversal": "Smart money: liquidity sweep + CHoCH + FVG retest; stop beyond the sweep extreme. Unproven.",
     "setup_breakout": "Donchian channel and Asian / London / New York opening-range breakouts. Unproven.",
     "setup_candle_reversal": "Reversal candlestick at a level (S/R, Fibonacci, pivots, trendline). Unproven."
+  },
+  "backtestStatus": {
+    "QUEUED": "Queued",
+    "RUNNING": "Running",
+    "DONE": "Finished",
+    "FAILED": "Failed"
   }
 }

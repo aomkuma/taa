@@ -961,6 +961,24 @@ AI failures never trip trading breakers; they only produce HOLD.
     what the page shows; `positions` and `decisions` events refetch the numbers.
   - `codes:` kinds `strategyState`, `commandStatus` and `strategy` (TH/EN descriptions; parity with the
     `name = "..."` lines of `app/strategy/example_strategy.py` and `setups.py`).
+- (TAA-910 decisions) Backtests (`frontend/src/pages/backtests/`):
+  - One page with views in the URL: the run list (default), `?run=<id>` (detail), `?compare=a,b` (2–4 finished
+    runs) and `?new=1` (the form above the list). Runs are cloud jobs, not engine events: the list and an open
+    run poll every 3 s while a run is queued or running; a `notifications` event (BACKTEST_FINISHED) refetches.
+  - New route `GET /engines/{id}/backtests/history`: the uploaded `history_candles` per server, symbol and
+    timeframe (first/last bar, count). The form offers the symbols with M15 history (with their range), a
+    preset (TH/EN name and description), whole UTC days (default: the last 90 ended days of the newest
+    history), optional strategies from the engine's config, risk per trade and seed. The body is checked in the
+    browser as the server would (1–5 symbols, ≤ 366 days, ended, risk > 0, integer seed) before it is posted
+    (CSRF, no step-up: a backtest changes nothing on the engine).
+  - Detail: six headline figures, equity (line) and drawdown in percent of the running peak (area) as two
+    single-series Lightweight Charts (no dual axis; colours checked with the palette validator in both themes),
+    every `Metrics` field, signals and decisions with the rejection codes, provenance, the trades table (100 per
+    page, "first N of M stored") and the limitations. Compare: one row per metric, one column per run.
+  - Parity tests: the metric list ↔ the `Metrics` dataclass, presets ↔ `PresetName`, the English limitation texts
+    word for word ↔ `LIMITATIONS`, and `codes:backtestStatus` ↔ the statuses of `BacktestRunRow.status`.
+  - Not in this ticket: walk-forward results (the robustness tools run from the CLI only) and analytics per run
+    (TAA-1005).
 
 ## A16. Trade analytics (`app/analytics`, deterministic)
 

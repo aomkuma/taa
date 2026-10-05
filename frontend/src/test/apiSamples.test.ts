@@ -28,10 +28,21 @@ import {
 
 import { DecisionDetailSchema, DecisionLogSchema } from '@/pages/decisions/schemas';
 import { StrategiesSchema } from '@/pages/strategies/schemas';
+import {
+  CompareSchema,
+  HistorySchema,
+  PresetsSchema,
+  RunDetailSchema,
+  RunsPageSchema,
+  TradesSchema,
+} from '@/pages/backtests/schemas';
 
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
+// the backtest runs of tests/web/test_api_samples.py
+const RUN_A = '0191a0a0-0000-7000-8000-0000000000b1';
+const RUN_B = '0191a0a0-0000-7000-8000-0000000000b2';
 
 const CASES: [string, z.ZodType][] = [
   [`${E}status`, EngineStatusSchema],
@@ -54,6 +65,12 @@ const CASES: [string, z.ZodType][] = [
   [`${E}decisions/d1`, DecisionDetailSchema],
   [`${E}strategies`, StrategiesSchema],
   [`${E}strategies?days=7`, StrategiesSchema],
+  [`${E}backtests`, RunsPageSchema],
+  [`${E}backtests/${RUN_A}`, RunDetailSchema],
+  [`${E}backtests/${RUN_A}/trades?limit=3`, TradesSchema],
+  [`${E}backtests/compare?ids=${RUN_A},${RUN_B}`, CompareSchema],
+  [`${E}backtests/history`, HistorySchema],
+  ['backtests/presets', PresetsSchema],
   ['me/feed', FeedSchema],
   ['engines', EngineListSchema],
   ['notifications?limit=5', NotificationsPageSchema],

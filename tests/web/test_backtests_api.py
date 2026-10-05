@@ -99,3 +99,14 @@ def test_validation_and_ownership(rig: Rig) -> None:
     missing = client.get(f"{url}/nope")
     assert missing.status_code == 404 and missing.json()["error"]["code"] == "backtest_not_found"
     assert client.get(f"{url}/compare?ids={run['run_id']}").json()["error"]["code"] == "invalid_query"
+
+
+def test_history_lists_the_uploaded_bars_per_symbol_and_timeframe(rig: Rig) -> None:
+    _, client, mine, theirs, m15 = rig
+    items = client.get(f"/api/v1/engines/{mine}/backtests/history").json()["items"]
+    assert [(i["symbol"], i["timeframe"]) for i in items] == [("EURUSD", "H1"), ("EURUSD", "M15")]
+    m15_row = items[1]
+    assert m15_row["bars"] == len(m15) and m15_row["server"]
+    assert m15_row["first"].startswith(str(m15["open_time"].iloc[0].date()))
+    assert m15_row["first"] < m15_row["last"]
+    assert client.get(f"/api/v1/engines/{theirs}/backtests/history").status_code == 404

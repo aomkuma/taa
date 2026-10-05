@@ -6,6 +6,7 @@
  * (PLAN §A14, `style-src 'self'`) blocks. The page shows the attribution link itself (`ChartAttribution`).
  */
 import {
+  AreaSeries,
   CandlestickSeries,
   createChart,
   createSeriesMarkers,
@@ -146,6 +147,61 @@ export function createPriceChart(container: HTMLElement, theme: ChartTheme): Cha
       } else {
         chart.timeScale().setVisibleLogicalRange(range);
       }
+    },
+    setTheme(next) {
+      chart.applyOptions(themeOptions(next));
+    },
+    destroy() {
+      chart.remove();
+    },
+  };
+}
+
+/** One value series over time (equity or drawdown of a backtest, TAA-910): a line, or an area under it. */
+export interface SeriesData {
+  points: { time: number; value: number }[];
+  kind: 'line' | 'area';
+  /** Line colour; the area fills with it, faded. */
+  color: string;
+  precision: number;
+}
+
+export interface SeriesChartHandle {
+  update: (data: SeriesData) => void;
+  setTheme: (theme: ChartTheme) => void;
+  destroy: () => void;
+}
+
+export function createSeriesChart(container: HTMLElement, theme: ChartTheme): SeriesChartHandle {
+  const chart: IChartApi = createChart(container, { autoSize: true, ...themeOptions(theme) });
+  let series: ISeriesApi<'Line' | 'Area'> | null = null;
+  return {
+    update(data) {
+      if (series) chart.removeSeries(series);
+      const priceFormat = {
+        type: 'price' as const,
+        precision: data.precision,
+        minMove: 10 ** -data.precision,
+      };
+      series =
+        data.kind === 'area'
+          ? chart.addSeries(AreaSeries, {
+              lineColor: data.color,
+              topColor: `${data.color}10`,
+              bottomColor: `${data.color}55`,
+              lineWidth: 2,
+              priceLineVisible: false,
+              priceFormat,
+              invertFilledArea: true,
+            })
+          : chart.addSeries(LineSeries, {
+              color: data.color,
+              lineWidth: 2,
+              priceLineVisible: false,
+              priceFormat,
+            });
+      series.setData(data.points.map((p) => ({ time: ts(p.time), value: p.value })));
+      chart.timeScale().fitContent();
     },
     setTheme(next) {
       chart.applyOptions(themeOptions(next));

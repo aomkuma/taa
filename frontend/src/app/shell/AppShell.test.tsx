@@ -202,7 +202,9 @@ describe('app shell', () => {
     await user.click(screen.getByRole('button', { name: 'More' }));
     const sheet = screen.getByRole('dialog', { name: 'All pages' });
     await user.click(within(sheet).getByRole('link', { name: 'Backtests' }));
-    expect(router.state.location.pathname).toBe('/backtests');
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/backtests'); // a lazily loaded page
+    });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Backtests' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'More' }));

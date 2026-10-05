@@ -18,6 +18,7 @@
  * | `StrategyState` (app/web/strategies.py)                          | `codes:strategyState.<S>`          |
  * | `QueueStatus` (app/sync/command_queue.py), control commands      | `codes:commandStatus.<S>`          |
  * | strategy names (`name = "..."` in app/strategy), their descriptions | `codes:strategy.<name>`            |
+ * | `BacktestRunRow.status` (app/storage/models/backtests.py)        | `codes:backtestStatus.<S>`         |
  * | `Trend`, `Regime`, `VolatilityState`, `Session` (app/core/enums.py) | `codes:trend.<T>`, `codes:regime.<R>`, `codes:volatility.<V>`, `codes:session.<S>` |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
@@ -231,6 +232,9 @@ export const STRATEGY_NAMES = [
   'setup_candle_reversal',
 ] as const;
 
+// Cloud backtest runs (TAA-910): the statuses in the comment of BacktestRunRow.status.
+export const BACKTEST_STATUSES = ['QUEUED', 'RUNNING', 'DONE', 'FAILED'] as const;
+
 export const CODE_KINDS = [
   'reason',
   'gate',
@@ -253,6 +257,7 @@ export const CODE_KINDS = [
   'strategyState',
   'commandStatus',
   'strategy',
+  'backtestStatus',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 

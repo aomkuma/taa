@@ -6,6 +6,8 @@
   per user), 422 for a body that does not validate
 - ``GET /engines/{id}/backtests``: runs, newest first (paginated); ``GET .../backtests/{run_id}``: summary and
   equity curve; ``GET .../backtests/{run_id}/trades?offset&limit``: the stored trades
+- ``GET /engines/{id}/backtests/history``: the uploaded history per trade server, symbol and timeframe (first
+  and last bar, bar count), so the PWA's form offers only symbols with data (TAA-910)
 - ``GET /engines/{id}/backtests/compare?ids=a,b[,c,d]``: finished runs side by side (request, metrics,
   provenance)
 
@@ -19,12 +21,14 @@ import contextlib
 from typing import Annotated, Any, get_args
 
 from fastapi import APIRouter, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 from starlette.concurrency import run_in_threadpool
 
 from app.backtest.presets import MAX_PERIOD, PRESETS, BacktestRequest, PresetName
+from app.core.clock import ensure_utc
 from app.core.errors import ConfigError
-from app.storage.models import BacktestRunRow
+from app.storage.models import BacktestRunRow, HistoryCandle
+from app.sync.events import json_safe
 from app.web.deps import Context, CsrfSession, CurrentSession, OwnedEngine, WebContext
 from app.web.entitlements import EntitlementError, EntitlementService, Feature, Limit
 from app.web.errors import ApiProblem
@@ -115,6 +119,38 @@ def _runs(ctx: WebContext, engine_id: str, run_ids: list[str]) -> list[BacktestR
     if missing:
         raise ApiProblem(404, "backtest_not_found", f"No such backtest: {missing[0]}")
     return [rows[i] for i in run_ids]
+
+
+@router.get("/engines/{engine_id}/backtests/history")
+async def history(engine: OwnedEngine, ctx: Context) -> dict[str, Any]:
+    def load() -> list[dict[str, Any]]:
+        with ctx.db.session() as sess:
+            rows = sess.execute(
+                select(
+                    HistoryCandle.server,
+                    HistoryCandle.symbol,
+                    HistoryCandle.timeframe,
+                    func.min(HistoryCandle.open_time),
+                    func.max(HistoryCandle.open_time),
+                    func.count(),
+                )
+                .where(HistoryCandle.engine_id == engine.engine_id)
+                .group_by(HistoryCandle.server, HistoryCandle.symbol, HistoryCandle.timeframe)
+                .order_by(HistoryCandle.server, HistoryCandle.symbol, HistoryCandle.timeframe)
+            ).all()
+        return [
+            {
+                "server": server,
+                "symbol": symbol,
+                "timeframe": tf,
+                "first": json_safe(ensure_utc(first)),
+                "last": json_safe(ensure_utc(last)),
+                "bars": int(bars),
+            }
+            for server, symbol, tf, first, last, bars in rows
+        ]
+
+    return {"items": await run_in_threadpool(load)}
 
 
 @router.get("/engines/{engine_id}/backtests/compare")

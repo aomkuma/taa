@@ -424,5 +424,133 @@
     },
     "reEnable": "Re-enable on the engine computer only:",
     "configOff": "Switched off in config.yaml (enabled: false)."
+  },
+  "backtests": {
+    "list": "Runs",
+    "none": "No backtests yet. Start one with \"New run\".",
+    "new": "New run",
+    "compareSelected": "Compare ({{n}})",
+    "compareHint": "Tick {{min}}–{{max}} finished runs to compare them.",
+    "select": "Select {{run}}",
+    "listMetrics": "net {{net}} · {{trades}} trades · win rate {{winRate}} · PF {{pf}}",
+    "days": "{{n}} days",
+    "note": "Backtest results are hypothetical, computed on past bars with the limitations below, and say nothing about the future.",
+    "preset": {
+      "standard": {
+        "name": "Standard",
+        "desc": "config.yaml as it is."
+      },
+      "conservative": {
+        "name": "Conservative",
+        "desc": "Half the risk per trade and half the total open risk."
+      },
+      "high_costs": {
+        "name": "High costs",
+        "desc": "Three times the slippage and 7 more commission per lot: does the result survive worse fills?"
+      }
+    },
+    "metric": {
+      "net_profit": "Net P/L",
+      "trades": "Trades",
+      "wins": "Wins",
+      "losses": "Losses",
+      "win_rate": "Win rate",
+      "profit_factor": "Profit factor",
+      "expectancy_money": "Expectancy per trade",
+      "expectancy_r": "Expectancy (R)",
+      "avg_win_r": "Average win (R)",
+      "avg_loss_r": "Average loss (R)",
+      "max_drawdown": "Max drawdown",
+      "max_drawdown_percent": "Max drawdown (%)",
+      "longest_drawdown_days": "Longest drawdown",
+      "cagr_percent": "CAGR",
+      "calmar": "Calmar",
+      "sharpe": "Sharpe",
+      "sortino": "Sortino",
+      "exposure_percent": "Time in the market",
+      "gross_profit": "Gross profit",
+      "gross_loss": "Gross loss",
+      "commission": "Commission",
+      "swap": "Swap",
+      "avg_mae_r": "Average MAE (R)",
+      "avg_mfe_r": "Average MFE (R)",
+      "initial_equity": "Starting equity",
+      "final_equity": "Final equity"
+    },
+    "detail": {
+      "back": "All runs",
+      "notFound": "This run was not found.",
+      "meta": "{{start}} – {{end}} · created {{created}}",
+      "failed": "The run failed:",
+      "waiting": "Waiting for the worker service to run it…",
+      "curves": "Equity and drawdown",
+      "equity": "Equity",
+      "drawdown": "Drawdown (%)",
+      "metrics": "All metrics",
+      "decisions": "Signals and decisions",
+      "signals": "{{signals}} signals · {{accepted}} accepted · {{rejected}} rejected",
+      "provenance": "Provenance",
+      "trades": "Trades",
+      "noTrades": "This run made no trades.",
+      "tradesStored": "The first {{stored}} of {{total}} trades are stored."
+    },
+    "provenance": {
+      "strategies": "Strategies",
+      "seed": "Seed",
+      "configHash": "Config hash",
+      "dataHash": "Data hash",
+      "codeVersion": "Code version"
+    },
+    "tcol": {
+      "trade": "Trade",
+      "entryExit": "Entry → exit",
+      "reason": "Exit reason",
+      "net": "Net"
+    },
+    "compare": {
+      "title": "Comparison",
+      "metric": "Metric",
+      "notFinished": "Every compared run must be finished."
+    },
+    "limitations": {
+      "title": "Limitations",
+      "l0": "bar-based approximation: the order of prices inside a bar is unknown (SL assumed first)",
+      "l1": "spread from the bar field or a fixed model, not tick-accurate",
+      "l2": "no requotes, partial fills or rejections other than margin",
+      "l3": "news gaps and weekend gaps are only seen at the next bar's open",
+      "l4": "past results do not predict future results"
+    },
+    "form": {
+      "title": "New run",
+      "preset": "Preset",
+      "symbols": "Symbols",
+      "symbolsHint": "Up to {{max}}; only symbols whose M15 history the engine has uploaded.",
+      "noHistory": "The engine has not uploaded any history yet. On the engine computer run:",
+      "start": "From",
+      "end": "To",
+      "utc": "Whole days in UTC; at most {{days}} days, and the period must have ended.",
+      "strategies": "Strategies",
+      "strategiesHint": "None ticked: the strategies enabled in config.yaml.",
+      "risk": "Risk per trade (%)",
+      "seed": "Seed",
+      "fromPreset": "from the preset",
+      "submit": "Start backtest",
+      "submitting": "Starting…",
+      "problem": {
+        "symbols": "Choose at least one symbol.",
+        "tooManySymbols": "Choose at most {{max}} symbols.",
+        "period": "The end must be on or after the start.",
+        "tooLong": "The period is at most {{days}} days.",
+        "notEnded": "The period must have ended: choose yesterday or earlier.",
+        "risk": "The risk must be a number above 0.",
+        "seed": "The seed must be a whole number from 0."
+      },
+      "error": {
+        "invalid_backtest": "The run was refused: {{message}}",
+        "backtest_limit": "Too many runs are queued or running. Wait for one to finish.",
+        "plan_limit": "Your plan's backtests are used up.",
+        "other": "The run could not be started ({{code}})."
+      }
+    }
   }
 }

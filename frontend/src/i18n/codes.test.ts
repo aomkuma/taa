@@ -15,11 +15,13 @@ import strategiesPy from '../../../app/web/strategies.py?raw';
 import commandQueuePy from '../../../app/sync/command_queue.py?raw';
 import exampleStrategyPy from '../../../app/strategy/example_strategy.py?raw';
 import setupsPy from '../../../app/strategy/setups.py?raw';
+import backtestModelsPy from '../../../app/storage/models/backtests.py?raw';
 
 import { createI18n } from '@/i18n';
 import {
   BREAKER_NAMES,
   codeKey,
+  BACKTEST_STATUSES,
   COMMAND_STATUSES,
   STRATEGY_NAMES,
   STRATEGY_STATES,
@@ -126,6 +128,13 @@ describe('strategy names match the catalog', () => {
   });
 });
 
+describe('backtest statuses match the run model', () => {
+  it('the statuses named next to BacktestRunRow.status', () => {
+    const comment = /status: Mapped\[str\].*# ([A-Z /]+)/.exec(backtestModelsPy)?.[1] ?? '';
+    expect(sorted(BACKTEST_STATUSES)).toEqual(sorted(comment.split('/').map((s) => s.trim())));
+  });
+});
+
 describe('code texts', () => {
   it.each([
     ['engine', ENGINE_ERRORS],
@@ -143,6 +152,7 @@ describe('code texts', () => {
     ['strategyState', STRATEGY_STATES],
     ['commandStatus', COMMAND_STATUSES],
     ['strategy', STRATEGY_NAMES],
+    ['backtestStatus', BACKTEST_STATUSES],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {
       const i18n = createI18n(language);
