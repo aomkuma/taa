@@ -158,3 +158,13 @@ export function buildRequest(
   }
   return { body };
 }
+
+/**
+ * Selected symbols whose uploaded M15 history starts after the requested start: the run can test only the
+ * bars that exist (after the warm-up), so a short history gives few or no signals.
+ */
+export function historyShortfall(form: RunForm, available: readonly SymbolHistory[]): SymbolHistory[] {
+  const start = Date.parse(`${form.start}T00:00:00Z`);
+  if (!Number.isFinite(start)) return [];
+  return available.filter((s) => form.symbols.includes(s.symbol) && Date.parse(s.first) > start + DAY_MS);
+}

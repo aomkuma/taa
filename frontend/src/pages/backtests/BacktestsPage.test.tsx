@@ -48,7 +48,8 @@ describe('backtests page', () => {
   it('lists runs with their status and headline figures', async () => {
     setup();
     renderShell('/backtests');
-    expect(await screen.findAllByText(/Standard · EURUSD/)).toHaveLength(2); // A and the failed run
+    // the first test loads the lazy page chunk cold; under load that can take more than findBy's 1 s
+    expect(await screen.findAllByText(/Standard · EURUSD/, undefined, { timeout: 5_000 })).toHaveLength(2);
     expect(screen.getAllByText('Finished')).toHaveLength(2);
     expect(screen.getByText('Failed')).toBeInTheDocument();
     expect(screen.getByText(/no M15 history for GBPUSD/)).toBeInTheDocument();
@@ -97,6 +98,8 @@ describe('backtests page', () => {
     });
     expect(charts.updates[0]?.points.length).toBeGreaterThan(100);
     expect(screen.getByText('6 signals · 4 accepted · 0 rejected')).toBeInTheDocument();
+    expect(screen.getByText(/History used: .*2026.*–.*2026/)).toBeInTheDocument();
+    expect(screen.queryByText(/No strategy signalled/)).not.toBeInTheDocument();
     expect(screen.getByText('example_trend_pullback', { selector: 'dd' })).toBeInTheDocument();
     const table = await screen.findByRole('table', { name: 'Trades' });
     expect(within(table).getAllByRole('row')).toHaveLength(4); // header + 3
@@ -146,7 +149,7 @@ describe('backtests page', () => {
       seed: 7,
     });
     expect(post?.headers['x-csrf-token']).toBe('csrf-123');
-    expect(await screen.findByText('Waiting for the worker service to run it…')).toBeInTheDocument();
+    expect(await screen.findByText(/Waiting for the worker service to run it…/)).toBeInTheDocument();
   });
 
   it('explains a refused run and checks the form first', async () => {
@@ -168,7 +171,28 @@ describe('backtests page', () => {
   it('tells how to upload history when there is none', async () => {
     setup({ [`GET ${BASE}/history`]: () => json({ items: [] }) });
     renderShell('/backtests?new=1');
-    expect(await screen.findByText('python -m app.cli sync upload-history --send')).toBeInTheDocument();
+    expect(await screen.findByText(/download_history\.py --days 365 --upload/)).toBeInTheDocument();
+  });
+
+  it('warns when the history starts after the chosen start', async () => {
+    setup();
+    renderShell('/backtests?new=1');
+    const form = await screen.findByRole('region', { name: 'New run' });
+    await within(form).findByRole('checkbox', { name: /EURUSD/ });
+    expect(within(form).queryByRole('status')).not.toBeInTheDocument();
+    fireEvent.change(within(form).getByLabelText('From'), { target: { value: '2026-09-01' } });
+    expect(within(form).getByRole('status')).toHaveTextContent(
+      /EURUSD: the uploaded history starts 30 Sept 2026/,
+    );
+  });
+
+  it('explains a finished run without signals', async () => {
+    const run = sample(`backtests/${A}`) as { summary: Record<string, unknown> };
+    setup({
+      [`GET ${BASE}/${A}`]: () => json({ ...run, summary: { ...run.summary, signals: 0, decisions: {} } }),
+    });
+    renderShell(`/backtests?run=${A}`);
+    expect(await screen.findByText(/No strategy signalled in this period/)).toBeInTheDocument();
   });
 
   it('is in Thai by default', async () => {

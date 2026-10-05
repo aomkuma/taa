@@ -588,7 +588,7 @@
       "notFound": "This run was not found.",
       "meta": "{{start}} – {{end}} · created {{created}}",
       "failed": "The run failed:",
-      "waiting": "Waiting for the worker service to run it…",
+      "waiting": "Waiting for the worker service to run it… Queued runs start only while the worker runs (scripts\\start-demo.cmd starts it).",
       "curves": "Equity and drawdown",
       "equity": "Equity",
       "drawdown": "Drawdown (%)",
@@ -598,7 +598,9 @@
       "provenance": "Provenance",
       "trades": "Trades",
       "noTrades": "This run made no trades.",
-      "tradesStored": "The first {{stored}} of {{total}} trades are stored."
+      "tradesStored": "The first {{stored}} of {{total}} trades are stored.",
+      "dataPeriod": "History used: {{start}} – {{end}} (the first 400 bars warm up the indicators).",
+      "noSignals": "No strategy signalled in this period. That usually means the history was too short (look at the period above) or the enabled strategies found no setup; it is not an error. Try a longer period or more strategies."
     },
     "provenance": {
       "strategies": "Strategies",
@@ -656,7 +658,8 @@
         "backtest_limit": "Too many runs are queued or running. Wait for one to finish.",
         "plan_limit": "Your plan's backtests are used up.",
         "other": "The run could not be started ({{code}})."
-      }
+      },
+      "shortHistory": "{{symbol}}: the uploaded history starts {{first}}, after the start you chose. The run tests only the bars that exist, and the first 400 bars (about 4 days of M15) warm up the indicators, so a short history gives few or no signals. Load more history on the engine computer:"
     }
   },
   "controls": {

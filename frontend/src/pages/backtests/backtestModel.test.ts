@@ -9,6 +9,7 @@ import {
   defaultPeriod,
   drawdownPoints,
   equityPoints,
+  historyShortfall,
   LIMITATION_KEYS,
   METRICS,
   PRESETS,
@@ -130,5 +131,31 @@ describe('new run', () => {
     const start = '2025-09-30';
     const end = new Date(Date.parse(`${start}T00:00:00Z`) + 365 * DAY).toISOString().slice(0, 10);
     expect(buildRequest(form({ start, end }), NOW, LIMITS)).toHaveProperty('body');
+  });
+});
+
+describe('history shortfall', () => {
+  const eur = {
+    symbol: 'EURUSD',
+    server: 'FBS-Demo',
+    first: '2026-09-27T23:30:00+00:00',
+    last: '2026-10-05T08:30:00+00:00',
+  };
+  const gold = { ...eur, symbol: 'XAUUSD', first: '2025-10-05T22:00:00+00:00' };
+  const form = (start: string, symbols = ['EURUSD', 'XAUUSD']): RunForm => ({
+    preset: 'standard',
+    symbols,
+    start,
+    end: '2026-10-04',
+    strategies: [],
+    riskPercent: '',
+    seed: '',
+  });
+
+  it('names the selected symbols whose history starts after the requested start', () => {
+    expect(historyShortfall(form('2026-09-25'), [eur, gold])).toEqual([eur]);
+    expect(historyShortfall(form('2026-09-25', ['XAUUSD']), [eur, gold])).toEqual([]);
+    expect(historyShortfall(form('2026-09-27'), [eur, gold])).toEqual([]); // within a day
+    expect(historyShortfall(form(''), [eur, gold])).toEqual([]);
   });
 });

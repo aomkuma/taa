@@ -9,7 +9,13 @@ import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
 import { StrategiesSchema, strategyKeys } from '@/pages/strategies/schemas';
 
-import { buildRequest, defaultPeriod, type RunForm, symbolsWithHistory } from './backtestModel';
+import {
+  buildRequest,
+  defaultPeriod,
+  historyShortfall,
+  type RunForm,
+  symbolsWithHistory,
+} from './backtestModel';
 import { backtestKeys, HistorySchema, PresetsSchema, RunSchema } from './schemas';
 
 const INPUT =
@@ -108,7 +114,7 @@ export function NewRunForm({
     <Card title={t('backtests.form.title')}>
       {available.length === 0 ? (
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          {t('backtests.form.noHistory')} <code>python -m app.cli sync upload-history --send</code>
+          {t('backtests.form.noHistory')} <code>python scripts\download_history.py --days 365 --upload</code>
         </p>
       ) : (
         <form onSubmit={(e) => void submit(e)} className="space-y-4 text-sm">
@@ -192,6 +198,16 @@ export function NewRunForm({
             </div>
             <p className="text-xs text-slate-500">{t('backtests.form.utc', { days: limits.maxDays })}</p>
           </div>
+          {historyShortfall(current, available).map((s) => (
+            <p
+              key={`${s.server}/${s.symbol}`}
+              role="status"
+              className="text-xs text-amber-700 dark:text-amber-400"
+            >
+              {t('backtests.form.shortHistory', { symbol: s.symbol, first: format.date(s.first) })}{' '}
+              <code>python scripts\download_history.py --days 365 --upload</code>
+            </p>
+          ))}
           {configured.length > 0 && (
             <fieldset>
               <legend className="font-medium">{t('backtests.form.strategies')}</legend>

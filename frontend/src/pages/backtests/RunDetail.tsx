@@ -220,6 +220,19 @@ export function RunDetail({
                   rejected: format.number(summary.decisions?.REJECT ?? 0),
                 })}
               </p>
+              {summary.period?.start && summary.period.end && (
+                <p className="mt-1 text-xs text-slate-500">
+                  {t('backtests.detail.dataPeriod', {
+                    start: format.dateTime(summary.period.start),
+                    end: format.dateTime(summary.period.end),
+                  })}
+                </p>
+              )}
+              {summary.signals === 0 && (
+                <p role="status" className="mt-2 text-sm text-amber-700 dark:text-amber-400">
+                  {t('backtests.detail.noSignals')}
+                </p>
+              )}
               {rejections.length > 0 && (
                 <ul className="mt-2 text-sm">
                   {rejections.map(([code, n]) => (
