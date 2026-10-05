@@ -328,7 +328,10 @@ class Engine:
                 EngineStateRepository(self.db, self.clock),
                 self.clock,
                 server=account.server,
-                timeframes=[t for t in (tfs.entry, tfs.higher, tfs.refinement) if t is not None],
+                timeframes=[
+                    *(t for t in (tfs.entry, tfs.higher, tfs.refinement) if t is not None),
+                    *cfg.sync.chart_timeframes,
+                ],
             )
             self.heartbeats = HeartbeatEmitter(self.sync.outbox, cfg.sync.heartbeat_seconds)
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())

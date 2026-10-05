@@ -235,6 +235,7 @@ sync:
   backoff_max_seconds: 300
   max_attempts: 20                  # an event the cloud keeps rejecting is parked as DEAD (logged)
   sent_retention_hours: 24
+  chart_timeframes: [M1, M5, M15, M30, H1, H4, D1]  # closed bars streamed for the charts (plus the strategy's)
 
 evidence:                           # technical evidence engine (PLAN §A29, docs/PATTERNS.md)
   default_enabled: true             # detectors not listed below follow this

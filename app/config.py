@@ -610,6 +610,10 @@ class SyncConfig(StrictModel):
     backoff_max_seconds: float = Field(default=300.0, gt=0, le=3600)
     max_attempts: int = Field(default=20, ge=1, le=1000, description="then an event is parked as DEAD")
     sent_retention_hours: float = Field(default=24.0, ge=0, le=24 * 30, description="sent rows kept locally")
+    chart_timeframes: list[Timeframe] = Field(
+        default_factory=lambda: list(Timeframe),
+        description="closed bars streamed for the PWA charts, on top of the strategy timeframes",
+    )
 
 
 class DetectorSettings(StrictModel):

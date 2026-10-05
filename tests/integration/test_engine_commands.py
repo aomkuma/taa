@@ -14,6 +14,7 @@ from sqlalchemy import select, update
 
 from app.advisory.requirements import AdvisoryConfig, content_version
 from app.cli.__main__ import main
+from app.core.enums import Timeframe
 from app.engine.orchestrator import DISABLED_KEY, SNAPSHOT_KEY
 from app.monitoring.alerts import EventType
 from app.storage.database import Database, upgrade_schema
@@ -345,3 +346,5 @@ def test_the_engine_streams_closed_candles(tmp_path: Path) -> None:
     assert "candles" in outbox_types(h)
     stream = h.engine.status()["candle_stream"]
     assert stream["events"] >= 2 and stream["failures"] == 0  # entry + higher timeframe per symbol
+    # every chart timeframe, not only the strategy's (sync.chart_timeframes defaults to all of them)
+    assert set(h.engine.candle_stream.timeframes) == set(Timeframe)
