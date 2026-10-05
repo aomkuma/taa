@@ -181,8 +181,8 @@ class OpportunityScanner:
     def tick(self, between: Callable[[], None] | None = None) -> ScanReport:
         """Queue symbols with a new closed entry bar, then scan the queue until the cycle budget is used.
 
-        *between* runs after each symbol: the engine's heartbeat, so the PWA's live candle keeps moving
-        during a long scan (one symbol's evidence scan takes about a second)."""
+        *between* runs after each symbol and each evidence detector: the engine's heartbeat, so the PWA's
+        live candle keeps moving during a long scan (one symbol's evidence scan takes about a second)."""
         plan = self.plan()
         started = self.clock.monotonic()
         if started >= self._next_poll:
@@ -191,13 +191,20 @@ class OpportunityScanner:
         scanned: list[str] = []
         created: list[str] = []
         budget = self.config.advisory.scanner.budget_seconds
-        while self.pending and self.clock.monotonic() - started < budget:
-            symbol = self.pending.popleft()
-            scanned.append(symbol)
-            created += self.scan_symbol(symbol, plan)
-            self._admitted.discard(symbol)
-            if between is not None:
-                between()
+        evidence = plan.builder.evidence
+        if evidence is not None:
+            evidence.pulse = between
+        try:
+            while self.pending and self.clock.monotonic() - started < budget:
+                symbol = self.pending.popleft()
+                scanned.append(symbol)
+                created += self.scan_symbol(symbol, plan)
+                self._admitted.discard(symbol)
+                if between is not None:
+                    between()
+        finally:
+            if evidence is not None:
+                evidence.pulse = None
         self.stats.last_duration_ms = (self.clock.monotonic() - started) * 1000
         return ScanReport(tuple(scanned), tuple(created), len(self.pending))
 

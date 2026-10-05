@@ -10,7 +10,7 @@ the MT5 terminal (the `MetaTrader5` package is Windows-only). A FastAPI **web** 
 auditability over features. No profitability claims anywhere.
 
 Read before larger work:
-- `docs/PLAN.md`: design, revision 4. Section numbers run A1–A21, then A25–A32, then A22–A24.
+- `docs/PLAN.md`: design, revision 5. Section numbers run A1–A21, then A25–A33, then A22–A24.
 - `docs/TICKETS.md`: tickets, checklists, progress table and execution order.
 - `docs/HANDOFF.md`: current state and open items.
 - `docs/CODING_STANDARDS.md`: detailed coding conventions. **Follow them.**

@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import logging
 import time
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 
@@ -176,6 +176,9 @@ class EvidenceEngine:
     registry: DetectorRegistry
     plan: RunPlan
     stats: dict[str, DetectorStats] = field(default_factory=dict)
+    # runs after each detector (the engine's rate-limited heartbeat), so a long scan never starves the PWA's
+    # live candle; same thread, so it may read the engine's state
+    pulse: Callable[[], None] | None = None
 
     def scan(self, ctx: EvidenceContext) -> dict[str, list[Evidence]]:
         """Run every detector of the plan; return the evidence of the requested (output) detectors."""
@@ -193,6 +196,8 @@ class EvidenceEngine:
             ctx.store_results(det_id, records)
             if det_id in self.plan.outputs:
                 out[det_id] = records
+            if self.pulse is not None:
+                self.pulse()
         return out
 
     def evaluate(self, ctx: EvidenceContext) -> EvidenceSnapshot:

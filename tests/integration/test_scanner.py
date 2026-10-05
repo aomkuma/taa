@@ -159,7 +159,12 @@ class TestScan:
         pulses: list[float] = []
         first = s.tick(between=lambda: pulses.append(clock.monotonic()))
         assert first.scanned == ("EURUSD", "GBPUSD") and first.pending == 2
-        assert len(pulses) == 2  # the engine's heartbeat runs after every symbol, not once per cycle
+        # the engine's heartbeat runs after every detector and every symbol, not once per cycle
+        engine = s.plan().builder.evidence
+        assert engine is not None
+        per_symbol = len(engine.plan.order) * 2  # two enabled timeframes
+        assert len(pulses) == 2 * (per_symbol + 1)
+        assert engine.pulse is None  # only while the scanner runs
         second = s.tick()
         assert second.scanned == ("USDJPY", "XAUUSD") and second.pending == 0
 

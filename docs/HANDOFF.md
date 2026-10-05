@@ -96,11 +96,11 @@ Fixes and changes found on real data (at the user's request):
    leverage reads as "—".
 3. **Phase 10:** TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages
    (the PWA's "Analytics" nav item is still a placeholder page).
-3. Dashboard additions of PLAN §A28 still open: active opportunities and the accuracy summary (the top-5
+4. Dashboard additions of PLAN §A28 still open: active opportunities and the accuracy summary (the top-5
    ranking widget is done).
-4. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
+5. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
    Milestone 1 review.
-5. **Homework from the user (2026-10-05), after all remaining tickets:** the system's purpose is to sweep
+6. **Homework from the user (2026-10-05), after all remaining tickets:** the system's purpose is to sweep
    **every** tradable symbol (hundreds) for opportunities, not 4. Make it as flexible as possible, including
    future strategies, and let AI take part in learning and adapting the trading playbook to current
    conditions. Findings so far (check again before designing):
