@@ -21,6 +21,7 @@ from typing import Any
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from app.advisory.personalize import UserContext, replacement
 from app.config import Settings, load_settings
 from app.storage.database import Database
 from app.storage.models import (
@@ -30,7 +31,9 @@ from app.storage.models import (
     DecisionRecordRow,
     EngineCommandRow,
     EngineHeartbeatRow,
+    NotificationPrefsRow,
     NotificationRow,
+    PushSubscriptionRow,
     SymbolCatalogRow,
     UserRow,
 )
@@ -38,6 +41,7 @@ from tests.backtest.test_cloud_backtests import Rig as BacktestRig
 from tests.backtest.test_cloud_backtests import upload
 from tests.strategy_data import EURUSD_SPEC
 from tests.sync_data import T
+from tests.unit.test_personalize import opportunity, prefs
 from tests.unit.test_strategy_models import make_context, make_signal
 from tests.web.test_data_api import rig  # noqa: F401  (fixture)
 
@@ -74,7 +78,15 @@ ENGINE_ROUTES = [
     "commands?limit=20",
     "breakers?limit=20",
 ]
-USER_ROUTES = ["me/feed", "engines", "notifications?limit=5", "backtests/presets"]
+USER_ROUTES = [
+    "me/feed",
+    "engines",
+    "notifications?limit=5",
+    "notifications?limit=20",
+    "notifications/preferences",
+    "push/subscriptions",
+    "backtests/presets",
+]
 
 
 def engine_settings() -> Settings:
@@ -255,17 +267,64 @@ def realistic_rows(db: Database, engine_id: str) -> None:
         )
         alice = sess.scalars(select(UserRow).where(UserRow.username == "alice")).one()
         sess.add_all(backtest_runs(engine_id, alice.id))
+        # one notification of each kind, with the payloads their producers write (app/worker/*)
+        expired = replacement(
+            opportunity(),
+            UserContext(prefs(), active_alerts=3),
+            status="EXPIRED",
+            reason="SESSION_END:LONDON",
+        )
+        notes = [
+            (
+                "ENGINE_OFFLINE",
+                "CRITICAL",
+                {"label": "alice pc", "reason": "SILENT", "last_seen_at": T.isoformat()},
+            ),
+            (
+                "ENGINE_BACK",
+                "INFO",
+                {"label": "alice pc", "offline_since": T.isoformat(), "downtime_seconds": 300},
+            ),
+            ("BACKTEST_FINISHED", "INFO", {"run_id": RUN_A, "status": "DONE", "preset": "standard"}),
+            (
+                "OPPORTUNITY_UPDATE",
+                "INFO",
+                {
+                    "push": expired,
+                    "opportunity_id": "o1",
+                    "status": "EXPIRED",
+                    "reason": "SESSION_END:LONDON",
+                },
+            ),
+            ("TEST", "INFO", {}),
+        ]
+        for i, (kind, severity, payload) in enumerate(notes):
+            sess.add(
+                NotificationRow(
+                    notification_id=f"0191a0a0-0000-7000-8000-0000000000a{i}",
+                    user_id=alice.id,
+                    engine_id=None if kind == "TEST" else engine_id,
+                    type=kind,
+                    severity=severity,
+                    payload=payload,
+                    created_at=T + timedelta(minutes=i),
+                    read_at=T + timedelta(minutes=10) if kind == "ENGINE_BACK" else None,
+                    push_status="SENT",
+                )
+            )
         sess.add(
-            NotificationRow(
-                notification_id="0191a0a0-0000-7000-8000-0000000000aa",
+            PushSubscriptionRow(
+                subscription_id="0191a0a0-0000-7000-8000-0000000000d1",
                 user_id=alice.id,
-                engine_id=engine_id,
-                type="ENGINE_OFFLINE",
-                severity="CRITICAL",
-                payload={"reason": "SILENT"},
+                endpoint="https://fcm.googleapis.com/fcm/send/sample",
+                p256dh="B" + "A" * 86,
+                auth="A" * 22,
+                label="Edge · Windows",
                 created_at=T,
+                last_success_at=T + timedelta(minutes=4),
             )
         )
+        sess.add(NotificationPrefsRow(user_id=alice.id, disabled_types=["BACKTEST_FINISHED"], updated_at=T))
         sess.add(
             EngineHeartbeatRow(
                 engine_id=engine_id,

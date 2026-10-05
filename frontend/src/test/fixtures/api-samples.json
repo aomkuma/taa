@@ -2512,7 +2512,7 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "07b10b207e897f99",
+        "config_hash": "cb9d793e89e7041e",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
         "seed": 42,
         "strategies": [
@@ -2638,7 +2638,7 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "07b10b207e897f99",
+          "config_hash": "cb9d793e89e7041e",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "seed": 42,
           "strategies": [
@@ -2691,7 +2691,7 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "07b10b207e897f99",
+          "config_hash": "cb9d793e89e7041e",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "seed": 42,
           "strategies": [
@@ -3296,6 +3296,15 @@
           "backoff_initial_seconds": 2.0,
           "backoff_max_seconds": 300.0,
           "batch_size": 500,
+          "chart_timeframes": [
+            "M1",
+            "M5",
+            "M15",
+            "M30",
+            "H1",
+            "H4",
+            "D1"
+          ],
           "command_poll_seconds": 25.0,
           "enabled": false,
           "flush_interval_seconds": 2.0,
@@ -5182,21 +5191,195 @@
     "engine_id": "ENGINE",
     "own": true
   },
-  "notifications?limit=5": {
+  "notifications/preferences": {
+    "disabled": [
+      "BACKTEST_FINISHED"
+    ],
+    "types": [
+      "ENGINE_OFFLINE",
+      "ENGINE_BACK",
+      "BACKTEST_FINISHED",
+      "OPPORTUNITY",
+      "OPPORTUNITY_UPDATE",
+      "TEST"
+    ]
+  },
+  "notifications?limit=20": {
     "items": [
+      {
+        "created_at": "2026-09-30T10:04:00+00:00",
+        "engine_id": null,
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a4",
+        "payload": {},
+        "push_status": "SENT",
+        "read_at": null,
+        "severity": "INFO",
+        "type": "TEST"
+      },
+      {
+        "created_at": "2026-09-30T10:03:00+00:00",
+        "engine_id": "ENGINE",
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a3",
+        "payload": {
+          "opportunity_id": "o1",
+          "push": {
+            "badge": 2,
+            "body": "หมดเวลาที่เหมาะสมแล้ว: ช่วงตลาดปิด",
+            "data": {
+              "opportunity_id": "86ab3211162a48ffd396176eb84b56139c0a426a5f1afc37a4c800dbe6eab545",
+              "status": "EXPIRED"
+            },
+            "renotify": false,
+            "silent": true,
+            "tag": "86ab3211162a48ffd396176eb84b56139c0a426a5f1afc37a4c800dbe6eab545",
+            "title": "EURUSD ซื้อ"
+          },
+          "reason": "SESSION_END:LONDON",
+          "status": "EXPIRED"
+        },
+        "push_status": "SENT",
+        "read_at": null,
+        "severity": "INFO",
+        "type": "OPPORTUNITY_UPDATE"
+      },
+      {
+        "created_at": "2026-09-30T10:02:00+00:00",
+        "engine_id": "ENGINE",
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a2",
+        "payload": {
+          "preset": "standard",
+          "run_id": "0191a0a0-0000-7000-8000-0000000000b1",
+          "status": "DONE"
+        },
+        "push_status": "SENT",
+        "read_at": null,
+        "severity": "INFO",
+        "type": "BACKTEST_FINISHED"
+      },
+      {
+        "created_at": "2026-09-30T10:01:00+00:00",
+        "engine_id": "ENGINE",
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a1",
+        "payload": {
+          "downtime_seconds": 300,
+          "label": "alice pc",
+          "offline_since": "2026-09-30T10:00:00+00:00"
+        },
+        "push_status": "SENT",
+        "read_at": "2026-09-30T10:10:00+00:00",
+        "severity": "INFO",
+        "type": "ENGINE_BACK"
+      },
       {
         "created_at": "2026-09-30T10:00:00+00:00",
         "engine_id": "ENGINE",
-        "notification_id": "0191a0a0-0000-7000-8000-0000000000aa",
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a0",
         "payload": {
+          "label": "alice pc",
+          "last_seen_at": "2026-09-30T10:00:00+00:00",
           "reason": "SILENT"
         },
-        "push_status": "PENDING",
+        "push_status": "SENT",
         "read_at": null,
         "severity": "CRITICAL",
         "type": "ENGINE_OFFLINE"
       }
     ],
     "next_cursor": null
+  },
+  "notifications?limit=5": {
+    "items": [
+      {
+        "created_at": "2026-09-30T10:04:00+00:00",
+        "engine_id": null,
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a4",
+        "payload": {},
+        "push_status": "SENT",
+        "read_at": null,
+        "severity": "INFO",
+        "type": "TEST"
+      },
+      {
+        "created_at": "2026-09-30T10:03:00+00:00",
+        "engine_id": "ENGINE",
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a3",
+        "payload": {
+          "opportunity_id": "o1",
+          "push": {
+            "badge": 2,
+            "body": "หมดเวลาที่เหมาะสมแล้ว: ช่วงตลาดปิด",
+            "data": {
+              "opportunity_id": "86ab3211162a48ffd396176eb84b56139c0a426a5f1afc37a4c800dbe6eab545",
+              "status": "EXPIRED"
+            },
+            "renotify": false,
+            "silent": true,
+            "tag": "86ab3211162a48ffd396176eb84b56139c0a426a5f1afc37a4c800dbe6eab545",
+            "title": "EURUSD ซื้อ"
+          },
+          "reason": "SESSION_END:LONDON",
+          "status": "EXPIRED"
+        },
+        "push_status": "SENT",
+        "read_at": null,
+        "severity": "INFO",
+        "type": "OPPORTUNITY_UPDATE"
+      },
+      {
+        "created_at": "2026-09-30T10:02:00+00:00",
+        "engine_id": "ENGINE",
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a2",
+        "payload": {
+          "preset": "standard",
+          "run_id": "0191a0a0-0000-7000-8000-0000000000b1",
+          "status": "DONE"
+        },
+        "push_status": "SENT",
+        "read_at": null,
+        "severity": "INFO",
+        "type": "BACKTEST_FINISHED"
+      },
+      {
+        "created_at": "2026-09-30T10:01:00+00:00",
+        "engine_id": "ENGINE",
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a1",
+        "payload": {
+          "downtime_seconds": 300,
+          "label": "alice pc",
+          "offline_since": "2026-09-30T10:00:00+00:00"
+        },
+        "push_status": "SENT",
+        "read_at": "2026-09-30T10:10:00+00:00",
+        "severity": "INFO",
+        "type": "ENGINE_BACK"
+      },
+      {
+        "created_at": "2026-09-30T10:00:00+00:00",
+        "engine_id": "ENGINE",
+        "notification_id": "0191a0a0-0000-7000-8000-0000000000a0",
+        "payload": {
+          "label": "alice pc",
+          "last_seen_at": "2026-09-30T10:00:00+00:00",
+          "reason": "SILENT"
+        },
+        "push_status": "SENT",
+        "read_at": null,
+        "severity": "CRITICAL",
+        "type": "ENGINE_OFFLINE"
+      }
+    ],
+    "next_cursor": null
+  },
+  "push/subscriptions": {
+    "items": [
+      {
+        "active": true,
+        "created_at": "2026-09-30T10:00:00+00:00",
+        "label": "Edge · Windows",
+        "last_success_at": "2026-09-30T10:04:00+00:00",
+        "service": "fcm.googleapis.com",
+        "subscription_id": "0191a0a0-0000-7000-8000-0000000000d1"
+      }
+    ]
   }
 }

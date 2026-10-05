@@ -657,5 +657,68 @@
       "status": "Status",
       "none": "No commands sent yet."
     }
+  },
+  "notifications": {
+    "centre": {
+      "title": "Notification centre",
+      "all": "All",
+      "unread": "Unread",
+      "unreadMark": "Unread:",
+      "markAllRead": "Mark all read",
+      "markRead": "Mark as read",
+      "open": "Open",
+      "none": "No notifications yet.",
+      "noneUnread": "No unread notifications.",
+      "more": "Load more"
+    },
+    "text": {
+      "ENGINE_OFFLINE": "{{label}}: {{reason}}",
+      "ENGINE_BACK": "{{label}} is running again",
+      "BACKTEST_FINISHED": "Backtest ({{preset}}): {{status}}",
+      "TEST": "Notifications work on this device"
+    },
+    "reason": {
+      "SILENT": "no heartbeat for over a minute while its market is open",
+      "STOPPED": "was stopped"
+    },
+    "status": {
+      "DONE": "done",
+      "FAILED": "failed"
+    },
+    "push": {
+      "title": "Push on this device",
+      "on": "On for this device",
+      "off": "Off for this device",
+      "enable": "Turn on notifications",
+      "disable": "Turn off notifications",
+      "test": "Send a test notification",
+      "enabled": "Notifications are on for this device.",
+      "disabled": "Notifications are off for this device.",
+      "testQueued": "Test notification sent; it should arrive within seconds.",
+      "denied": "The browser blocked notifications. Allow them in the browser's site settings, then try again.",
+      "noWorker": "The app has not finished loading (no service worker). Reload the page and try again.",
+      "limit": "This account already has notifications on 10 devices. Turn them off on another device first.",
+      "failed": "That did not work. Try again.",
+      "unsupported": "This browser does not support push notifications.",
+      "notConfigured": "Push notifications are not set up on the server (VAPID).",
+      "ios": {
+        "intro": "On iPhone and iPad, notifications work only after you add the app to the Home Screen (iOS 16.4 or later):",
+        "share": "Tap the Share button in Safari",
+        "add": "Choose \"Add to Home Screen\"",
+        "open": "Open TAA from its Home Screen icon and come back here to turn notifications on"
+      }
+    },
+    "devices": {
+      "title": "Devices receiving notifications",
+      "none": "No device has notifications on yet.",
+      "active": "active",
+      "inactive": "stopped",
+      "lastSuccess": "Last delivered: {{at}}",
+      "never": "never"
+    },
+    "prefs": {
+      "title": "Types to push",
+      "note": "Types you turn off are not pushed, but still appear in the notification centre."
+    }
   }
 }

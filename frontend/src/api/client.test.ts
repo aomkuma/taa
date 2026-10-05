@@ -5,6 +5,7 @@ import {
   ApiError,
   apiPost,
   apiPostEmpty,
+  apiPut,
   ApiSchemaError,
   CSRF_HEADER,
   lastActivityAt,
@@ -89,6 +90,14 @@ describe('mutations', () => {
       body: { a: 1 },
       headers: { 'content-type': 'application/json', 'x-csrf-token': 'csrf-1' },
     });
+  });
+
+  it('PUT the same way', async () => {
+    setCsrfToken('csrf-1');
+    const { calls } = mockApi({ 'PUT /thing': () => json({ mode: 'DEMO' }) });
+
+    await expect(apiPut('/thing', { b: 2 }, Status)).resolves.toEqual({ mode: 'DEMO' });
+    expect(calls[0]).toMatchObject({ method: 'PUT', body: { b: 2 }, headers: { 'x-csrf-token': 'csrf-1' } });
   });
 
   it('accept 204 No Content', async () => {

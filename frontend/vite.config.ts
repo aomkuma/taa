@@ -31,12 +31,13 @@ export default defineConfig({
         background_color: '#0f172a',
         icons: [{ src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
       },
-      workbox: {
-        // App shell only. API caching rules (network-first, stale fallback) arrive with TAA-914;
-        // the API must never be answered with index.html.
+      // Our own worker (src/sw/sw.ts) for Web Push; it also does the app-shell precache and navigation
+      // fallback the generated worker did (`/api/` is never answered with index.html).
+      strategies: 'injectManifest',
+      srcDir: 'src/sw',
+      filename: 'sw.ts',
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
-        navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api\//],
       },
     }),
   ],

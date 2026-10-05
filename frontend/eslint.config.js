@@ -14,7 +14,7 @@ export default tseslint.config(
       ecmaVersion: 2023,
       globals: globals.browser,
       parserOptions: {
-        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        project: ['./tsconfig.app.json', './tsconfig.node.json', './tsconfig.sw.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -27,6 +27,10 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
     },
+  },
+  {
+    files: ['src/sw/**/*.ts'],
+    languageOptions: { globals: globals.serviceworker },
   },
   {
     files: ['*.config.{js,ts}'],

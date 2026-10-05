@@ -39,6 +39,7 @@ import {
   TradesSchema,
 } from '@/pages/backtests/schemas';
 
+import { DevicesSchema, NotificationListSchema, PreferencesSchema } from '@/pages/notifications/schemas';
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
@@ -80,6 +81,9 @@ const CASES: [string, z.ZodType][] = [
   ['me/feed', FeedSchema],
   ['engines', EngineListSchema],
   ['notifications?limit=5', NotificationsPageSchema],
+  ['notifications?limit=20', NotificationListSchema],
+  ['notifications/preferences', PreferencesSchema],
+  ['push/subscriptions', DevicesSchema],
 ];
 
 const recorded = samples as Record<string, unknown>;

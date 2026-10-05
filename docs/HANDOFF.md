@@ -16,7 +16,7 @@ dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & ad
 name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
 This is the only session: work on main, one ticket at a time, in the "Next work" order. Continue with
-TAA-912 (notifications).
+TAA-913 (system & settings).
 For PWA pages: build page tests from frontend/src/test/fixtures/api-samples.json (real API responses) and add
 every new route a page reads to tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts
 (regenerate with TAA_UPDATE_API_SAMPLES=1). Run the full pytest suite and vitest one after the other, never
@@ -29,12 +29,12 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Current state
 
-- **Done:** Phases 0–8, 2A, 6A–6C, 8A and 12 (DEMO orders, pulled forward). Phase 9: 901–911 and 915.
+- **Done:** Phases 0–8, 2A, 6A–6C, 8A and 12 (DEMO orders, pulled forward). Phase 9: 901–912 and 915.
   Phase 10: 1001–1003.
 - **Not started:** Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14 (LIVE), Phase 15 (deferred
   backlog: TAA-1501 cloud replay jobs).
 - **Checks** (last full runs): pytest 2683 passed, 7 skipped (~7–9 min; the Postgres tests run when
-  `TAA_POSTGRES_URL` is set); ruff, mypy, bandit clean; frontend lint, typecheck, build clean, vitest 312.
+  `TAA_POSTGRES_URL` is set); ruff, mypy, bandit clean; frontend lint, typecheck, build clean, vitest 334.
 - **Git:** `main` only (the user pushes; `git push` from Claude Code
   fails on the interactive GitHub login). Latest migration: **0032**.
 - **2026-10-05 extras** (outside the tickets, at the user's request): `start-demo.ps1 -Mt5`, the searchable
@@ -43,7 +43,7 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Next work
 
-1. Phase 9 pages: **TAA-912** notifications, 913 system & settings, 916–923 (ranking, opportunities,
+1. Phase 9 pages: **TAA-913** system & settings, 916–923 (ranking, opportunities,
    watchlists, accuracy, theories, account/plan/admin, trading profile, engines), then **914** PWA polish.
    The backend for every page exists (API list below).
 2. Phase 10: TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages.
@@ -63,11 +63,9 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
     `/advisory/preferences|watchlists|favourites|detectors`.
   - Me: notifications, push key/subscribe/unsubscribe/test, preferences; `/me/alerts`, `/me/entitlements`,
     `/me/account-profile`, `/me/export`, `/me/erase`; admin `/admin/users|plans`.
-- **TAA-912:** the service worker has no `push` handler yet. Messages carry `title`, `body`, `tag`, `url`,
-  `silent`, `renotify`, `badge`; `codes:notificationType` texts exist. A handler needs the vite-plugin-pwa
-  `injectManifest` strategy (the build uses `generateSW` now). `.env` has a generated VAPID pair;
-  `VAPID_SUBJECT` is a placeholder.
-- **TAA-917 / 919:** add TH/EN texts for the `codes:` they show (opportunity statuses, accuracy codes).
+- **TAA-917:** opportunity pushes link to `/opportunities/{id}` (app/worker/push.py) and the notification centre
+  to `/charts?opportunity=`: add the `/opportunities/:id` route. TAA-917 / 919: add TH/EN texts for the
+  `codes:` they show (opportunity statuses, accuracy codes).
 - **TAA-914:** the app icon is a placeholder SVG; maskable/Apple icons, API caching rules (network-first,
   `/api/` never answered with `index.html`) and the install prompt are still to do.
 - **TAA-1004 preparation:** fills store no entry context; callers pass an `EntryContext` per signal id
@@ -102,6 +100,9 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 - **Memory (16 GB):** full pytest + vitest at once, or either next to the demo stack, crashes workers (vitest
   exit 134, numpy `ArrayMemoryError`, pandas access violations, argon2 `HashingError`). Run them one after the
   other; with the stack up use `npx vitest run --maxWorkers=2`; rerun a lone failure before investigating.
+- Web Push is untested with a real push service so far: turn it on in the browser on the `-Mt5` stack
+  (`.env` has the VAPID pair; `VAPID_SUBJECT` is a placeholder) and send a test from the Notifications page.
+- The service worker is `frontend/src/sw/sw.ts` (`injectManifest`, own `tsconfig.sw.json`).
 - After a frontend rebuild the open PWA keeps the old version until the "new version" banner's Reload (or
   all tabs are closed).
 - Don't edit the working tree during a full test run (the migration-parity test reads migration files).

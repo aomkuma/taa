@@ -88,7 +88,7 @@ async function toApiError(response: Response, path: string): Promise<ApiError> {
 }
 
 async function request(
-  method: 'GET' | 'POST',
+  method: 'GET' | 'POST' | 'PUT',
   path: string,
   body: unknown,
   options: RequestOptions,
@@ -135,6 +135,15 @@ export async function apiPost<S extends z.ZodType>(
   options: RequestOptions = {},
 ): Promise<z.output<S>> {
   return validate(path, schema, await request('POST', path, body, options));
+}
+
+export async function apiPut<S extends z.ZodType>(
+  path: string,
+  body: unknown,
+  schema: S,
+  options: RequestOptions = {},
+): Promise<z.output<S>> {
+  return validate(path, schema, await request('PUT', path, body, options));
 }
 
 /** POST that answers 204 No Content. */

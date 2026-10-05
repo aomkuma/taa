@@ -30,6 +30,11 @@ const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'childre
   strategies: {
     lazy: async () => ({ Component: (await import('@/pages/strategies/StrategiesPage')).StrategiesPage }),
   },
+  notifications: {
+    lazy: async () => ({
+      Component: (await import('@/pages/notifications/NotificationsPage')).NotificationsPage,
+    }),
+  },
 };
 
 const pages = (own: boolean): RouteObject[] =>

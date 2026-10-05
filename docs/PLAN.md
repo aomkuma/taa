@@ -998,6 +998,22 @@ AI failures never trip trading breakers; they only produce HOLD.
     control code. ADMIN sessions see no control buttons (the API refuses them with `role_forbidden` anyway).
   - `src/engine/commands.ts` (command schema, `postCommand`, `ENGINE_CODE`) is shared by strategies, risk and
     positions. New `codes:` kinds `commandType`, `commandReason`, `killMode`, `breakerState`, `breakerAction`.
+- (TAA-912 decisions) Notifications (`frontend/src/pages/notifications/`; no new routes):
+  - Centre: newest first, all/unread, 20 per page, mark one or all read; a live `notifications` event refetches.
+    Texts come from the payload the producer wrote: engine and backtest notifications through TH/EN keys
+    (`notifications.text|reason|status`, the same wording as the worker's push `TEXTS`), opportunity
+    notifications show the personalizer's prebuilt push text as it was sent. Links: engine → dashboard,
+    backtest → `/backtests?run=`, opportunity → `/charts?opportunity=` (TAA-917 adds the opportunity page).
+  - Push on this device: support check (iOS outside the Home Screen gets the add-to-Home-Screen steps, R17),
+    **Turn on** asks for permission first inside the click, subscribes with the VAPID key and posts the
+    subscription with a device label ("Edge · Windows"); **Turn off** unsubscribes and tells the server;
+    **Send a test notification**. Devices list from `/push/subscriptions`; per-type push preferences
+    (`PUT /notifications/preferences`; switched-off types still reach the centre).
+  - Service worker: vite-plugin-pwa `injectManifest` with `src/sw/sw.ts` (own tsconfig with the WebWorker lib):
+    app-shell precache and navigation fallback as before (`/api/` excluded), SKIP_WAITING for the update
+    banner, `push` shows the message (tag, renotify, silent) and sets the app badge from `badge` (R25),
+    `notificationclick` focuses an open TAA window on the in-app link or opens one; links outside the app are
+    replaced by `/` (`src/app/pushMessage.ts`).
   - The login page's error text became a component: passing the typed `t` as a parameter hit TS2589 (type
     instantiation too deep) once the catalogs grew.
 
