@@ -18,6 +18,8 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - Revision 5 (2026-10-05) added TAA-408, TAA-710 and TAA-924: the engine owner's trading profile drives the
   engine's risk inside the local `config.yaml` cage, and the per-trade hard ceiling moves to 3 % (PLAN §A33).
   Order: 408 → 710 → 924.
+- Revision 6 (2026-10-05) added TAA-1006: the engine matches the owner's manual MT5 trades to the signals they
+  followed, without typing anything into MT5 (PLAN §A34).
 
 **Execution order (Milestone 1):** 0 → 1 → 2 → 2A → 3 → 4 → 5 → 6 → 6A → 6B → 6C → 7 → 8 → 8A → 9 → 10 → 11
 
@@ -43,7 +45,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
 | M1 | Phase 9 — PWA frontend | 24 | 24 | DONE |
-| M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
+| M1 | Phase 10 — Trade analytics | 6 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
@@ -1596,6 +1598,18 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [ ] endpoints
 - [ ] Analytics and Recommendations pages
 - [ ] scope selector
+
+#### TAA-1006 — (rev. 6) Manual trades matched to signals
+
+- **Status:** TODO
+- **Depends on:** 1001, 6B2, 904
+
+- [ ] pure matcher: execution decisions + opportunities, same symbol/side, time window + grace, price within `match_tolerance_r`, score, HIGH / LIKELY / UNMATCHED
+- [ ] `manual_trade_links` table (migration, replicated), written once per position; owner override (confirm / other signal / own idea), audited
+- [ ] engine: match on the account snapshot; heartbeat `foreign_positions[].link`
+- [ ] PWA: "follows signal X (likely)" on Positions; override dialog; th/en keys
+- [ ] closed manual trades with their link in trade history and accuracy (signal vs bot vs me)
+- [ ] tests (incl. the 2026-10-05 GBPUSD case)
 
 ### Phase 11 — Railway deployment
 

@@ -2370,6 +2370,56 @@ its age.
   - The decision detail shows "Sized with X% per trade · <source>" from `risk_source` / `risk_percent`.
   - Parity tests read `governed()`, `GovernedLimits` and `ResolvedProfile.limits()` from the Python source.
 
+## A34. Manual trades matched to signals (rev. 6)
+
+**Why (2026-10-05, user request):** the owner also trades by hand in MT5, following the same signals the
+engine shows (example: the engine's PAPER #2 GBPUSD SELL at 22:15 and the owner's manual 0.1-lot SELL at
+22:19, same setup). The engine sees a manual trade only as "not the bot's" (magic 0). The user rejected
+typing a code into the MT5 comment ("nobody will do that"); letting the bot place the order is the existing
+PAPER → DEMO → LIVE path. So the engine must **match manual trades to signals by itself**.
+
+**Matching (engine, on every account snapshot; pure function, unit-tested):**
+
+- **Candidates:**
+  - the engine's own accepted EXECUTION decisions (what the bot traded or would have traded);
+  - ADVISORY opportunities (what alerts showed);
+  - same symbol, same side.
+- **Time:** the manual position opened between the signal's bar close and its expiry (`signal_expires_at`,
+  or the opportunity's `valid_until`), plus a grace of one entry-timeframe bar.
+- **Price:** the open price within `match_tolerance_r` × the signal's stop distance of the signal's entry
+  (default 0.5 R). A fill far from the signal's entry is not that signal's trade.
+- **Score:** closeness in price (60 %) and in time (40 %).
+  - The best candidate wins.
+  - Confidence is **HIGH** when it is the only candidate within tolerance and its price is within 0.25 R.
+  - Otherwise it is **LIKELY**.
+- **Ties:** an EXECUTION decision and an opportunity from the same strategy, bar and side are one signal
+  (the opportunity id carries the idempotency key); they are not counted twice.
+- **No candidate:** UNMATCHED, which is a manual idea of the owner's own.
+
+**Stored:** the table `manual_trade_links` (ticket, position id, signal / opportunity id, confidence, score,
+matched_at, rule version). It is written once, when the position is first seen. Later snapshots never
+rewrite it, and it is replicated to the cloud. The owner can override a link in the PWA: confirm it, pick
+another signal or mark it "my own idea". The override is audited.
+
+**Shown:**
+
+- Positions: a manual position carries a "follows signal X (likely)" link to the signal and its decision.
+- Trade history and accuracy: once the manual trade closes, its real result (R, measured with the manual
+  stop) sits next to the signal's shadow outcome and the bot's paper trade, so "the signal", "the bot" and
+  "me" can be compared.
+- Analytics (Phase 10): manual trades become a third source next to bot and shadow.
+
+**Risk is unchanged:** manual positions still count toward the bot's limits, and the bot never manages
+them. A link changes labels and statistics only, never trading.
+
+**Tests:**
+
+- The 22:15 / 22:19 GBPUSD case matches HIGH.
+- Opposite side, too late, or too far in price → UNMATCHED.
+- Two signals within tolerance → the closer one wins as LIKELY.
+- A link is written once and survives restarts.
+- An override wins over the automatic match.
+
 ## A22. Delivery plan
 
 - **Milestone 1** (never sends broker orders): Phases 0–11 plus advisory Phases 6A–6C.
