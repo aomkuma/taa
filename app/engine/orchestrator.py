@@ -543,6 +543,7 @@ class Engine:
                 self._verify_clock()
             if connected and self.ranking is not None:
                 self._advisory(self.ranking)
+                self._cloud_heartbeat(self.clock.monotonic())  # rate-limited by sync.heartbeat_seconds
             if connected and self.scanner is not None:
                 self._scan(self.scanner)
         except Exception as exc:  # process boundary: keep monitoring, block entries, tell the operator
@@ -565,7 +566,7 @@ class Engine:
 
     def _scan(self, scanner: OpportunityScanner) -> None:
         try:
-            scanner.tick()
+            scanner.tick(between=lambda: self._cloud_heartbeat(self.clock.monotonic()))
             if self.lifecycle is not None:
                 self.lifecycle.tick()
         except Exception as exc:  # advisory boundary: a scanner failure never touches trading

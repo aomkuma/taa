@@ -15,6 +15,9 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 - Revision 4 (2026-10-04) added TAA-708, TAA-709, TAA-811 and TAA-923, and amended items marked "(rev. 4)" in
   TAA-803, TAA-805 and TAA-8A1. The topic is the engine registry and per-user self-hosted engines (PLAN §A32).
   Do 708 → 709 before the read APIs (803), ideally before 707.
+- Revision 5 (2026-10-05) added TAA-408, TAA-710 and TAA-924: the engine owner's trading profile drives the
+  engine's risk inside the local `config.yaml` cage, and the per-trade hard ceiling moves to 3 % (PLAN §A33).
+  Order: 408 → 710 → 924.
 
 **Execution order (Milestone 1):** 0 → 1 → 2 → 2A → 3 → 4 → 5 → 6 → 6A → 6B → 6C → 7 → 8 → 8A → 9 → 10 → 11
 
@@ -30,16 +33,16 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
-| M1 | Phase 4 — Risk, decision pipeline, breakers | 7 | 7 | DONE |
+| M1 | Phase 4 — Risk, decision pipeline, breakers | 8 | 7 | IN PROGRESS |
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
-| M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
+| M1 | Phase 7 — Cloud sync | 10 | 9 | IN PROGRESS |
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
-| M1 | Phase 9 — PWA frontend | 23 | 23 | DONE |
+| M1 | Phase 9 — PWA frontend | 24 | 23 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -621,6 +624,16 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [x] tests
 - [x] (rev. 2) windows defined in exchange-local timezones (shared with TAA-6A2)
 
+#### TAA-408 — (rev. 5) Per-trade hard ceiling 3 %
+
+- **Status:** TODO
+- **Depends on:** 406, 922
+
+- [ ] `CEILING_RISK_PER_TRADE_PCT` 2 → 3; the other ceilings stay (daily 10, weekly 20, drawdown 50, total open 10)
+- [ ] every mirror follows: `ProfileOverrides`, backtest presets, account profiles, `profileModel.ts`, account model, zod schemas
+- [ ] PWA warning above 2 % per trade (in addition to the existing one above 1 %), th/en keys, no profitability claims
+- [ ] Python/TypeScript parity tests; a config above 3 % is a `ConfigError`
+
 ### Phase 5 — Backtesting
 
 #### TAA-501 — SimulatedBroker
@@ -1053,6 +1066,18 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [x] engine-scoped `ReplicaSpec.find`, `entity_key` and RESYNC snapshot
 - [x] lift the one-engine limit of TAA-708
 - [x] tests: two engines with colliding local keys stay separate
+
+#### TAA-710 — (rev. 5) Owner's trading profile reaches the engine's risk
+
+- **Status:** TODO
+- **Depends on:** 406, 707, 408
+
+- [ ] cloud: signed `GET /api/v1/engine/risk-profile` (conditional, ETag) with the engine owner's resolved `ProfileLimits`; 404 when the owner has none
+- [ ] engine: `RiskProfileClient` (own thread, `sync.risk_profile_seconds`, backoff), local validation, cache in `engine_state` (`risk_profile`)
+- [ ] orchestrator fills `DecisionRequest.profile_limits`; fallback order received → cache → local `advisory.trading_profile`, never the bare cage
+- [ ] audit `RISK_PROFILE_APPLIED` / `RISK_PROFILE_REJECTED`; decision records carry `risk_source` and the effective per-trade percent
+- [ ] heartbeat `risk_limits` (cage, profile, effective, source, version, age)
+- [ ] tests: clamp above the cage, fallback across offline + restart, bad payload ignored, XAUUSD $990 / 13 USD stop case, 1:1 field mapping
 
 ### Phase 8 — Web backend & worker
 
@@ -1510,6 +1535,16 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [x] secret hygiene: component state only, never in the query cache, local storage or the service worker
 - [x] th/en i18n keys + zod schemas; no profitability claims
 - [x] tests
+
+#### TAA-924 — (rev. 5) Effective risk in the PWA
+
+- **Status:** TODO
+- **Depends on:** 710, 922, 911
+
+- [ ] Trading profile page: "engine uses: X" per governed field, a note when the engine's config clamps it, and "not applied yet" until the heartbeat reports the saved version
+- [ ] Risk & controls page: cage / profile / effective side by side, with the source and age
+- [ ] decision detail shows the risk source the decision was measured against
+- [ ] th/en i18n keys + zod schemas; tests
 
 ### Phase 10 — Trade analytics
 

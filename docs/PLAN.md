@@ -1,7 +1,8 @@
 # TAA — FBS × MetaTrader 5 Automated Trading Platform: Design
 
 > Living design document (revision 2: advisory features, evidence engine, personalization; revision 3: Fibonacci
-> extension levels and candle location, trading profile and entry plans, §A31). Work items and
+> extension levels and candle location, trading profile and entry plans, §A31; revision 4: engine registry,
+> §A32; revision 5: the owner's trading profile drives the engine's risk, §A33). Work items and
 > progress are tracked in [TICKETS.md](TICKETS.md). No profitability claims anywhere. Capital protection,
 > fail-closed behavior and auditability take priority over features. Leveraged FX/CFD trading is high risk.
 
@@ -351,6 +352,11 @@ Any failure means REJECT, with the exact reason codes:
 | Mode | ORDERS_NOT_ALLOWED_IN_MODE, LIVE_GATE_FAILED |
 | Symbol | SYMBOL_NOT_ALLOWED, SYMBOL_UNAVAILABLE, SYMBOL_TRADE_DISABLED, DIRECTION_NOT_ALLOWED (LONGONLY/SHORTONLY/CLOSEONLY) |
 | Data | DATA_STALE, DATA_GAPS, DATA_INVALID, SIGNAL_EXPIRED, PRICE_DRIFT (entry moved more than x·ATR) |
+
+(2026-10-05) DATA_GAPS counts only bars missing in a symbol's normally traded hours: weekends, configured
+daily breaks and the closed time-of-day slots learned from the frame itself (a slot empty on most trading days
+is a closure) are expected (`app/market_data/quality.py`). Before, every night of a stock and gold's daily
+pause were gaps.
 | Session | SESSION_CLOSED, MARKET_CLOSED, NEWS_BLACKOUT |
 | Costs | SPREAD_TOO_HIGH, SPREAD_TO_SL_TOO_HIGH, EXPECTED_SLIPPAGE_TOO_HIGH |
 | Signal | SL_MISSING, TP_MISSING, SL_WRONG_SIDE, SL_TOO_CLOSE (stops level + buffer), SL_TOO_FAR, RR_TOO_LOW |
@@ -596,6 +602,12 @@ AI failures never trip trading breakers; they only produce HOLD.
       `market_open` and `market_change_at`. The schedule comes from the exchange-local session tables
       (`app/advisory/market_sessions.py`) and follows overlapping sessions, so forex is open from Monday in
       Sydney to Friday 17:00 in New York (crypto: open, no change).
+    - (2026-10-05, the user: the chart should move at least every second) `sync.heartbeat_seconds: 1` and
+      `flush_interval_seconds: 1` (were 10 and 2); the cloud stream polls every second. An engine cycle takes
+      ~7 s on the real stack (mostly the evidence scan), so the heartbeat is also offered after the ranking
+      step and after every scanned symbol (`OpportunityScanner.tick(between=...)`); the emitter's own
+      interval keeps it to one per second. The account snapshot also carries `foreign_positions`,
+      `effective_leverage` and, in PAPER, `broker_account` (the real MT5 account next to the paper book).
     - A deliberate stop queues `state: stopped` and makes one last send before the client closes
       (`SyncRuntime.stop(final_flush=True)`).
     - (TAA-904) The heartbeat also carries `account` (`AccountSnapshot`): the traded account at the last health
@@ -2247,6 +2259,88 @@ web service's env.
   - `import-env`, then refusal of `ENGINE_*` in env.
   - The `MULTI_ENGINE_ENABLED` gate and the limits.
   - Two engines with colliding local keys stay separate (TAA-709).
+
+## A33. Per-user risk appetite: the owner's trading profile drives the engine (rev. 5)
+
+**Why (2026-10-05, user request):** people tolerate different amounts of risk, so the risk numbers must be a
+per-user setting edited in the PWA, not a static `config.yaml`. Today they are not: the engine trades with
+`config.yaml` → `risk` alone. TAA-406 built `effective_risk(local, profile)` (`app/risk/limits.py`) and the
+`DecisionRequest.profile_limits` slot, but nothing fills the slot, so the Trading profile page (TAA-922) shapes
+alerts only. Trigger: on a ~$990 account at 0.5 % a XAUUSD signal (stop 13 USD away, so 0.01 lot = 1 oz risks
+~13 USD) was rejected with `RISK_BELOW_MIN_LOT`. The budget was 4.95 USD and the volume floors to 0.00.
+
+**Decisions:**
+
+- **Two layers, the stricter wins (unchanged rule from §A31 safety):**
+  - **Outer cage** = `config.yaml` → `risk`, set by whoever runs the engine machine. It changes rarely and only
+    locally. It is the most that machine will ever allow.
+  - **Working values** = the engine owner's `TradingProfile` (the style slider plus overrides), edited in the
+    PWA. The engine trades with `effective_risk(cage, profile)`.
+  - A cloud profile still **never raises** a limit above the cage (§A13/§A20 hold). Moving the slider above the
+    cage is allowed and saved, but the engine clamps it and the PWA says so (see "Visibility").
+- **Hard ceiling per trade: 2 % → 3 %** (`CEILING_RISK_PER_TRADE_PCT`, user decision 2026-10-05). The other
+  ceilings stay: daily loss 10 %, weekly 20 %, drawdown 50 %, total open risk 10 %. 50 % per trade was
+  considered and rejected. The coherence rules stay too: per trade ≤ daily loss ≤ weekly loss, and per trade
+  ≤ total open risk.
+  - The slider anchors (§A31 table) stay at 0.25 … 1.5 %. Values above 1.5 % up to 3 % come only from an
+    explicit override, with the existing "above 1 %" warning plus a stronger one above 2 %.
+  - Every mirror of the ceiling moves in the same change: `ProfileOverrides`, the backtest presets, account
+    profiles, the TypeScript models (`profileModel.ts`, `accountModel`, zod schemas) and their parity tests.
+- **Profiles that drive trading:** only the **engine owner's** (one engine = one MT5 account = one owner,
+  §A32). Other users' profiles keep shaping their own alerts only (personalizer, §A30).
+- **Fields the profile governs on the engine** (exactly `ProfileLimits`): risk per trade (= the profile's
+  risk per signal, all entries combined), total open risk (portfolio heat), max open positions, max daily
+  loss, min RR. Everything else (spread, slippage, margin, effective leverage, breakers, kill switch,
+  probation, `min_lot`) stays local only.
+  - Probation (`probation_multiplier` 0.25 for the first `probation_trades`) still applies on top of the
+    working value.
+  - Open question, not part of this revision: whether `max_effective_leverage` should become a profile field,
+    since tolerance for leverage also differs per person.
+
+**Transport (engine pulls, cloud never pushes):**
+
+- A new signed endpoint `GET /api/v1/engine/risk-profile` returns the owner's resolved limits:
+  `{version, limits: ProfileLimits, updated_at, updated_by}`. It is conditional on `If-None-Match`, like
+  `advisory-config` (TAA-707).
+  - The endpoint is separate on purpose: the advisory-config contract says it "never touches the bot's
+    trading universe, strategies or risk", and that invariant stays true.
+- `RiskProfileClient` (`app/sync/risk_profile.py`) works like `AdvisoryConfigClient`: its own thread, polls
+  every `sync.risk_profile_seconds` (default 60), and the engine loop only reads `.current`. It handles
+  200 / 304 / 404 / failure with backoff in the same way.
+- **The engine validates locally**: `ProfileLimits` validation, then `effective_risk()` (which re-validates the
+  combined `RiskConfig`). A payload that fails validation is ignored, logged at WARNING and audited
+  (`RISK_PROFILE_REJECTED`). The last good one stays in use.
+
+**Fallback (fail closed):** the order is the last profile received in this run, then the cached copy
+(`engine_state` key `risk_profile`, survives restarts), then the **local** profile `advisory.trading_profile`
+in `config.yaml` (default style 50). The fallback **never** falls through to the bare cage. A profile older
+than `sync.risk_profile_max_age_hours` (default 72) keeps working: it can only ever lower risk, so a stale
+copy is not a hazard. The heartbeat reports its age.
+
+**Audit & records:**
+
+- Every change of the working values on the engine is a hash-chained audit event, `RISK_PROFILE_APPLIED`. It
+  carries the old and new effective values, the profile version and its source: cloud, cache or local.
+- Each decision record stores `risk_source` (`cloud:<version>` / `cache:<version>` / `local`) and the
+  effective per-trade percent, so the decision log shows which numbers a rejection was measured against.
+
+**Visibility (PWA):**
+
+- The heartbeat carries `risk_limits: {cage, profile, effective, source, profile_version, age_seconds}`.
+- The Trading profile page shows, next to each governed field, "engine uses: X", with a "limited by the engine
+  machine's config (Y)" note when the cage clamps it. It also shows "not applied yet" until the heartbeat
+  reports the saved version.
+- The Risk & controls page lists the cage, the profile and the effective values side by side.
+
+**Tests:**
+
+- A cloud value above the cage is clamped; a value below it is applied.
+- Fallback order across an offline cloud and a restart (cache), and no cache → local profile, never the cage.
+- A malformed or out-of-range payload is ignored, the last good one stays, and the event is audited.
+- A sized XAUUSD case ($990 equity, 13 USD stop): rejected at 0.5 %, accepted at a 1.5 % profile within a 3 %
+  cage.
+- The 3 % ceiling is rejected above 3, and its parity holds in Python and TypeScript.
+- The `ProfileLimits` fields map 1:1 onto `RiskConfig` (a test catches a new governed field that is not wired).
 
 ## A22. Delivery plan
 

@@ -178,8 +178,11 @@ class OpportunityScanner:
 
     # --- scheduling -----------------------------------------------------------------------------------------
 
-    def tick(self) -> ScanReport:
-        """Queue symbols with a new closed entry bar, then scan the queue until the cycle budget is used."""
+    def tick(self, between: Callable[[], None] | None = None) -> ScanReport:
+        """Queue symbols with a new closed entry bar, then scan the queue until the cycle budget is used.
+
+        *between* runs after each symbol: the engine's heartbeat, so the PWA's live candle keeps moving
+        during a long scan (one symbol's evidence scan takes about a second)."""
         plan = self.plan()
         started = self.clock.monotonic()
         if started >= self._next_poll:
@@ -193,6 +196,8 @@ class OpportunityScanner:
             scanned.append(symbol)
             created += self.scan_symbol(symbol, plan)
             self._admitted.discard(symbol)
+            if between is not None:
+                between()
         self.stats.last_duration_ms = (self.clock.monotonic() - started) * 1000
         return ScanReport(tuple(scanned), tuple(created), len(self.pending))
 

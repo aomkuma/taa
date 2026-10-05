@@ -156,8 +156,10 @@ class TestScan:
             return original(*args, **kwargs)
 
         s.plan().builder.build = slow  # type: ignore[method-assign]
-        first = s.tick()
+        pulses: list[float] = []
+        first = s.tick(between=lambda: pulses.append(clock.monotonic()))
         assert first.scanned == ("EURUSD", "GBPUSD") and first.pending == 2
+        assert len(pulses) == 2  # the engine's heartbeat runs after every symbol, not once per cycle
         second = s.tick()
         assert second.scanned == ("USDJPY", "XAUUSD") and second.pending == 0
 
@@ -241,7 +243,7 @@ class TestEngine:
         h.engine.start()
         assert h.engine.scanner is not None
 
-        def boom() -> None:
+        def boom(**_: object) -> None:
             raise RuntimeError("scanner exploded")
 
         h.engine.scanner.tick = boom  # type: ignore[method-assign]
