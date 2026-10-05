@@ -51,7 +51,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
-| M2 | Phase 14 — LIVE readiness | 4 | 1 | IN PROGRESS |
+| M2 | Phase 14 — LIVE readiness | 4 | 2 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 
 ## Milestone 1 — everything that never sends a broker order
@@ -1794,13 +1794,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1402 — Security review
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** Phases 12–13
 
-- [ ] threat-model re-check
-- [ ] dependency audits
-- [ ] web security checklist (OWASP ASVS L2-lite)
-- [ ] secrets scan
+- [x] threat-model re-check
+- [x] dependency audits
+- [x] web security checklist (OWASP ASVS L2-lite)
+- [x] secrets scan
 
 #### TAA-1403 — Go-live checklist & drills
 
