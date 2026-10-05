@@ -343,7 +343,8 @@
     "symbol_trade_enabled": "สัญลักษณ์เปิดให้เทรด",
     "tp_present": "มี take profit",
     "unknown_position_risk": "ทุก position ที่เปิดอยู่มี stop ที่วัดความเสี่ยงได้",
-    "weekly_loss": "เพดานขาดทุนรายสัปดาห์"
+    "weekly_loss": "เพดานขาดทุนรายสัปดาห์",
+    "ai_review": "AI ตรวจทาน"
   },
   "shadowFlag": {
     "AMBIGUOUS": "สมมติชน SL ก่อน",

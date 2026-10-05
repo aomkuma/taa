@@ -274,3 +274,31 @@ class ManualTradeOverrideRow(EngineKeyed, Base):
     opportunity_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
     user_id: Mapped[str] = mapped_column(String(36))
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
+
+
+class AIAssessmentRow(EngineKeyed, Base):
+    """One AI review of a proposed entry (TAA-1303), recorded whether it answered or not; replicated for the
+    PWA's assessments page (agreement and cost, TAA-1304). ``effect``: VETOED / PASSED in veto mode,
+    ADVISORY in advisory mode."""
+
+    __tablename__ = "ai_assessments"
+
+    assessment_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    signal_key: Mapped[str] = mapped_column(String(80), index=True)
+    symbol: Mapped[str] = mapped_column(String(32), index=True)
+    strategy: Mapped[str] = mapped_column(String(64))
+    side: Mapped[str] = mapped_column(String(4))
+    bar_close_utc: Mapped[str] = mapped_column(String(40))
+    mode: Mapped[str] = mapped_column(String(10))
+    status: Mapped[str] = mapped_column(String(12), index=True)
+    verdict: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    confidence: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reasons: Mapped[list[str]] = mapped_column(JSONType, default=list)
+    model: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    latency_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
+    effect: Mapped[str] = mapped_column(String(10))
+    detail: Mapped[str] = mapped_column(Text, default="")

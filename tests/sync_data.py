@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from app.storage.models import (
+    AIAssessmentRow,
     Base,
     BreakerEventRow,
     BreakerStateRow,
@@ -183,6 +184,27 @@ def sample_rows() -> list[Base]:
             now_score=70.0,
             failed_gates=[],
             payload={"scores": {"S1": 90.0}},
+        ),
+        AIAssessmentRow(
+            assessment_id="a1",
+            created_at=T,
+            signal_key="k1",
+            symbol="EURUSD",
+            strategy="example_trend_pullback",
+            side="BUY",
+            bar_close_utc=T.isoformat(),
+            mode="veto",
+            status="OK",
+            verdict="AGREE",
+            confidence=80,
+            reasons=["H1 trend agrees"],
+            model="claude-opus-5-5",
+            input_tokens=1200,
+            output_tokens=300,
+            cost_usd=0.0108,
+            latency_ms=2400.0,
+            effect="PASSED",
+            detail="",
         ),
         ManualTradeLinkRow(
             position_id=2078278005,

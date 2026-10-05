@@ -52,7 +52,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
-| M2 | Phase 13 — AI assessment (optional layer) | 5 | 2 | IN PROGRESS |
+| M2 | Phase 13 — AI assessment (optional layer) | 5 | 3 | IN PROGRESS |
 | M2 | Phase 14 — LIVE readiness | 4 | 2 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 
@@ -1752,14 +1752,14 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1303 — Veto integration
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1302, 405
 
-- [ ] modes off/advisory/veto
-- [ ] per-candle cache
-- [ ] daily call and cost budgets
-- [ ] timestamp and schema checks
-- [ ] AI never increases size
+- [x] modes off/advisory/veto
+- [x] per-candle cache
+- [x] daily call and cost budgets
+- [x] timestamp and schema checks
+- [x] AI never increases size
 
 #### TAA-1304 — AI in PWA
 

@@ -254,3 +254,10 @@ evidence:                           # technical evidence engine (PLAN §A29, doc
   confluence:                       # setup-strength points (docs/PATTERNS.md "Confluence score"); not a probability
     core_weight: 40                 # a fully passed strategy checklist
     conflict_penalty: 0.75          # family_weights / tier_weights: built-in defaults unless overridden here
+
+ai:                                 # optional review of entries (AI_PROVIDER / AI_MODEL / AI_MODE in .env)
+  effort: low                       # low medium high: the cost lever
+  timeout_seconds: 20               # one retry; a late answer is no answer (HOLD in veto mode)
+  min_confidence: 60                # veto mode: AGREE below this counts as unsure
+  max_calls_per_day: 50             # budgets: when used up, veto mode holds (AI_UNAVAILABLE)
+  max_cost_per_day_usd: 2.0

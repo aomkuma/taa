@@ -592,6 +592,18 @@ class EngineLoopConfig(StrictModel):
         return value
 
 
+class AIConfig(StrictModel):
+    """The optional AI review of entries (PLAN R21; TAA-1303). Provider, model and mode come from the env
+    (``AI_PROVIDER``, ``AI_MODEL``, ``AI_MODE``); this section bounds what the AI may cost and when it
+    counts."""
+
+    effort: Literal["low", "medium", "high"] = "low"
+    timeout_seconds: float = Field(default=20.0, gt=0, le=60)
+    min_confidence: int = Field(default=60, ge=0, le=100, description="veto: an AGREE below this is UNSURE")
+    max_calls_per_day: int = Field(default=50, ge=0, le=10_000)
+    max_cost_per_day_usd: float = Field(default=2.0, ge=0, le=1_000)
+
+
 class SyncConfig(StrictModel):
     enabled: bool = False
     batch_size: int = Field(default=500, ge=1, le=1000, description="the ingest API accepts at most 1000")
@@ -714,6 +726,7 @@ class AppConfig(StrictModel):
     execution: ExecutionConfig = Field(default_factory=ExecutionConfig)
     advisory: AdvisoryConfig = Field(default_factory=AdvisoryConfig)
     sync: SyncConfig = Field(default_factory=SyncConfig)
+    ai: AIConfig = Field(default_factory=AIConfig)
     evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
 
     def spread_limit(self, symbol: str) -> float:

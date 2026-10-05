@@ -47,6 +47,8 @@ from app.advisory.shadow_tracker import ShadowTracker
 from app.advisory.stats import EdgeBook
 from app.advisory.suitability import ACCOUNT_GATES
 from app.advisory.universe import SymbolCatalog
+from app.ai.gate import AIGate
+from app.ai.providers import AIProvider, AnthropicProvider, NullProvider
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
 from app.broker.models import BrokerPosition
@@ -287,6 +289,10 @@ class Engine:
             store=DecisionStore(self.db),
             spec_lookup=self.gateway.symbol_spec,  # positions on symbols the bot does not trade (manual)
         )
+        self.ai = self._ai_gate()
+        if self.ai.active:
+            self.decisions.reviewer = self.ai.review
+            log.info("AI review on: %s, mode %s", env.AI_MODEL, env.AI_MODE)
         if cfg.advisory.ranking.enabled:  # advice about the broker account; never changes what the bot trades
             catalog = SymbolCatalog(
                 self.db, self.gateway, cfg.advisory.universe, self.clock, server=account.server
@@ -473,6 +479,20 @@ class Engine:
             )
         log.warning("%s mode: broker orders go to the account (%s)", self.settings.mode.value, report)
         return len(self.broker_positions.bot_positions())
+
+    def _ai_gate(self) -> AIGate:
+        """The optional AI review (TAA-1303): Claude with ``AI_PROVIDER=anthropic`` and a key, else none."""
+        env = self.settings.env
+        provider: AIProvider = NullProvider(self.clock)
+        if env.AI_PROVIDER == "anthropic" and env.AI_API_KEY is not None and env.AI_MODE != "off":
+            provider = AnthropicProvider(
+                env.AI_API_KEY.get_secret_value(),
+                self.clock,
+                model=env.AI_MODEL,
+                effort=self.config.ai.effort,
+                timeout_seconds=self.config.ai.timeout_seconds,
+            )
+        return AIGate(self.db, provider, self.config.ai, env.AI_MODE, self.clock)
 
     def _probation(self) -> bool:
         """LIVE only (PLAN §A3): the first ``risk.probation_trades`` bot trades on the account (closed plus

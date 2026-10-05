@@ -343,7 +343,8 @@
     "symbol_trade_enabled": "Symbol open for trading",
     "tp_present": "Take profit set",
     "unknown_position_risk": "Every open position has a measurable stop",
-    "weekly_loss": "Weekly loss limit"
+    "weekly_loss": "Weekly loss limit",
+    "ai_review": "AI review"
   },
   "shadowFlag": {
     "AMBIGUOUS": "SL first (assumed)",

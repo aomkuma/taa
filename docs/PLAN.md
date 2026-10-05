@@ -476,6 +476,29 @@ Milestone 1 code.
 
 AI failures never trip trading breakers; they only produce HOLD.
 
+- (TAA-1301–1303 decisions) AI review:
+  - **Contract (`app/ai/schema.py`, v1.0):** the input is numeric market facts only: signal geometry, score,
+    reason codes, the checklist, per-timeframe trend/regime/volatility/ADX/RSI/ATR/EMAs, the session, the
+    spread and the nearest S/R. There is no account data. The answer (`AssessmentV1`, strict) is a verdict
+    AGREE/DISAGREE/UNSURE, a confidence of 0–100 and up to five short reasons, and it must repeat the judged
+    `bar_close_utc`; an answer about another bar is refused.
+  - **Provider (`app/ai/providers.py`):** `client.beta.messages.parse` with the Pydantic schema, `AI_MODEL`
+    (default `claude-opus-5-5`), effort from `ai.effort` (default low), a timeout from `ai.timeout_seconds`
+    (default 20 s) with one retry, and server-side `fallbacks: "default"`. A refusal, `max_tokens`, an invalid
+    answer, a timeout or an API error is a status, never an exception. Every call logs its tokens and cost
+    (first-party prices per model).
+  - **Gate (`app/ai/gate.py`):** the decision engine asks it only on EXECUTION decisions and only after every
+    other check passed (no cost for entries that were going to be rejected anyway). It returns one check
+    (`ai_review`), so the AI can only block; size and orders are never touched.
+    - veto: AGREE at or above `ai.min_confidence` (default 60) passes; DISAGREE → `AI_DISAGREES`; UNSURE or
+      low confidence → `AI_LOW_CONFIDENCE`; no usable answer or a used-up budget → `AI_UNAVAILABLE`.
+    - advisory: always passes, recorded.
+    - One call per signal key (memory and `ai_assessments`, so not again after a restart). The budgets are
+      `ai.max_calls_per_day` / `ai.max_cost_per_day_usd` per UTC day.
+    - The call is synchronous on the engine loop, bounded by the timeout. It happens at most once per accepted
+      signal (a bar close), so monitoring waits at most `ai.timeout_seconds` × 2 on such a bar.
+  - **Records:** `ai_assessments` (migration 0037, replicated) feed the PWA's assessments page (TAA-1304).
+
 **Kill switch**
 - **Activation:** the file `data/KILL_SWITCH`, checked every loop and immediately before any send; the CLI
   `python -m app.cli kill --reason "..."`; or a PWA command. A PWA activation needs no TOTP because it only reduces risk.

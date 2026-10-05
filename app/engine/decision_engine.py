@@ -164,8 +164,11 @@ class DecisionEngine:
         breakers: BreakerBoard | None = None,
         store: DecisionStore | None = None,
         spec_lookup: Callable[[str], SymbolSpec] | None = None,
+        reviewer: Callable[[Signal, MarketContext], Check | None] | None = None,
     ) -> None:
         self.config = config
+        # the optional AI review (TAA-1303): one more check after all others passed; it can only block
+        self.reviewer = reviewer
         self.mode = mode
         self.calculator = calculator
         self.clock = clock
@@ -228,6 +231,11 @@ class DecisionEngine:
         blocking = [
             ch for ch in checks if not ch.passed and (profile is Profile.EXECUTION or ch.kind is HARD)
         ]
+        if profile is Profile.EXECUTION and not blocking and self.reviewer is not None:
+            review = self.reviewer(signal, req.market)
+            if review is not None:
+                checks.append(review)
+                blocking = [] if review.passed else [review]
         decision = Decision.REJECT if blocking else Decision.ACCEPT
         record = self._record(now, profile, decision, req, tuple(checks), sizing, risk)
         log.info(
