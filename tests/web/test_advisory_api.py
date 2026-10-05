@@ -271,3 +271,31 @@ def test_the_engines_own_client_follows_the_config(rig: Any) -> None:
     post(client, "/advisory/favourites/EURUSD")
     poller.poll_once()
     assert poller.current.favourites == ["EURUSD"] and poller.current.version != version
+
+
+def test_the_engine_pulls_its_owners_risk_profile(rig: Any) -> None:
+    """``RiskProfileClient`` (engine) against the real route (TAA-710): 404 until the owner saves a profile,
+    then the resolved limits with an ETag, then the change."""
+    from app.storage.repositories import EngineStateRepository
+    from app.sync.client import CloudClient
+    from app.sync.risk_profile import RISK_PROFILE_PATH, RiskProfileClient
+
+    app, client, _, _ = rig
+    clock = app.state.ctx.clock
+    assert client.get(RISK_PROFILE_PATH).status_code == 401  # a web session is not an engine
+    engine_db = Database("sqlite://")
+    engine_db.create_all()
+    cloud = CloudClient("https://testserver", Signer("eng-a", SECRET.encode(), clock), http=client)
+    poller = RiskProfileClient(cloud.get_conditional, EngineStateRepository(engine_db, clock), clock)
+    assert poller.poll_once() and poller.current is None  # 404 no_profile: the engine keeps its fallback
+    prefs = client.get("/api/v1/advisory/preferences").json()
+    prefs["trading_profile"]["overrides"]["risk_per_signal_percent"] = 1.5
+    assert put(client, "/advisory/preferences", prefs).status_code == 200
+    assert poller.poll_once() and poller.current is not None and poller.source == "cloud"
+    assert poller.current.risk_per_trade_percent == 1.5
+    version = poller.current.version
+    assert poller.poll_once() and poller.current.version == version  # 304
+    prefs["trading_profile"]["overrides"]["risk_per_signal_percent"] = 0.4
+    put(client, "/advisory/preferences", prefs)
+    poller.poll_once()
+    assert poller.current.risk_per_trade_percent == 0.4 and poller.current.version != version

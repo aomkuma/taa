@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
 | M1 | Phase 6C — Shadow trades, accuracy & calibration (rev. 2, requirement 3) | 5 | 5 | DONE |
-| M1 | Phase 7 — Cloud sync | 10 | 9 | IN PROGRESS |
+| M1 | Phase 7 — Cloud sync | 10 | 10 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
 | M1 | Phase 9 — PWA frontend | 24 | 23 | IN PROGRESS |
@@ -1069,15 +1069,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-710 — (rev. 5) Owner's trading profile reaches the engine's risk
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 406, 707, 408
 
-- [ ] cloud: signed `GET /api/v1/engine/risk-profile` (conditional, ETag) with the engine owner's resolved `ProfileLimits`; 404 when the owner has none
-- [ ] engine: `RiskProfileClient` (own thread, `sync.risk_profile_seconds`, backoff), local validation, cache in `engine_state` (`risk_profile`)
-- [ ] orchestrator fills `DecisionRequest.profile_limits`; fallback order received → cache → local `advisory.trading_profile`, never the bare cage
-- [ ] audit `RISK_PROFILE_APPLIED` / `RISK_PROFILE_REJECTED`; decision records carry `risk_source` and the effective per-trade percent
-- [ ] heartbeat `risk_limits` (cage, profile, effective, source, version, age)
-- [ ] tests: clamp above the cage, fallback across offline + restart, bad payload ignored, XAUUSD $990 / 13 USD stop case, 1:1 field mapping
+- [x] cloud: signed `GET /api/v1/engine/risk-profile` (conditional, ETag) with the engine owner's resolved `ProfileLimits`; 404 when the owner has none
+- [x] engine: `RiskProfileClient` (own thread, `sync.risk_profile_seconds`, backoff), local validation, cache in `engine_state` (`risk_profile`)
+- [x] orchestrator fills `DecisionRequest.profile_limits`; fallback order received → cache → local `advisory.trading_profile`, never the bare cage
+- [x] audit `RISK_PROFILE_APPLIED` / `RISK_PROFILE_REJECTED`; decision records carry `risk_source` and the effective per-trade percent
+- [x] heartbeat `risk_limits` (cage, profile, effective, source, version, age)
+- [x] tests: clamp above the cage, fallback across offline + restart, bad payload ignored, XAUUSD $990 / 13 USD stop case, 1:1 field mapping
 
 ### Phase 8 — Web backend & worker
 

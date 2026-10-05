@@ -2313,9 +2313,9 @@ alerts only. Trigger: on a ~$990 account at 0.5 % a XAUUSD signal (stop 13 USD a
 
 **Fallback (fail closed):** the order is the last profile received in this run, then the cached copy
 (`engine_state` key `risk_profile`, survives restarts), then the **local** profile `advisory.trading_profile`
-in `config.yaml` (default style 50). The fallback **never** falls through to the bare cage. A profile older
-than `sync.risk_profile_max_age_hours` (default 72) keeps working: it can only ever lower risk, so a stale
-copy is not a hazard. The heartbeat reports its age.
+in `config.yaml` (default style 50). The fallback **never** falls through to the bare cage. A cached profile
+of any age keeps working: it can only ever lower risk, so a stale copy is not a hazard. The heartbeat reports
+its age.
 
 **Audit & records:**
 
@@ -2341,6 +2341,25 @@ copy is not a hazard. The heartbeat reports its age.
   cage.
 - The 3 % ceiling is rejected above 3, and its parity holds in Python and TypeScript.
 - The `ProfileLimits` fields map 1:1 onto `RiskConfig` (a test catches a new governed field that is not wired).
+
+- **(TAA-710 decisions)**
+  - The wire model `RiskProfileDoc` and `governed()` live in `app/risk/limits.py`; `ResolvedProfile.limits()`
+    converts a profile. The version is a digest of the five limits only, so saving the same values again is a
+    304 for the engine.
+  - The cloud answers 404 `no_profile` when the owner has no saved (valid) preferences row: the engine keeps
+    its own local profile rather than a default the owner never chose.
+  - `app/sync/pull.py` (`PulledDocument`) now holds the conditional-GET client logic; `AdvisoryConfigClient`
+    and `RiskProfileClient` are thin subclasses. `sync.risk_profile_seconds` defaults to 60.
+  - `app/engine/risk_limits.py` (`RiskLimitSelector`) picks the limits on the engine loop and audits
+    `RISK_PROFILE_APPLIED` when the version or the effective values change (not when only the origin moves
+    from cache to cloud), and `RISK_PROFILE_REJECTED` once per refused version.
+  - The ranking's affordability (`RankingService(risk=...)`) and the heartbeat's `account.limits` use the
+    effective limits too, so "affordable" matches what the engine will actually trade. The opportunity
+    scanner (ADVISORY profile) still uses `config.yaml`: it computes market facts for every user, and each
+    user's own profile is applied by the personalizer.
+  - Decision records carry `risk_source` and `risk_percent` (migration 0033).
+  - Found on the way: the orchestrator never sets `DecisionRequest.probation`, so `probation_multiplier` does
+    not apply to the engine's own decisions today (unchanged here; see HANDOFF).
 
 ## A22. Delivery plan
 

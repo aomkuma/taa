@@ -44,6 +44,7 @@ from app.core.errors import ConfigError
 from app.evidence.framework import Family
 from app.evidence.registry import DetectorRegistry
 from app.market_data.trading_sessions import window_end
+from app.risk.limits import ProfileLimits
 from app.risk.position_sizer import SplitMode, WeightScheme
 from app.strategy.registry import StrategyRegistry
 from app.strategy.setups import EvidenceSetup
@@ -328,6 +329,16 @@ class ResolvedProfile:
     @property
     def timeframes(self) -> tuple[Timeframe, Timeframe]:
         return HOLDING_TIMEFRAMES[self.holding_style]
+
+    def limits(self) -> ProfileLimits:
+        """The values the engine trades with when this is its owner's profile (PLAN §A33)."""
+        return ProfileLimits(
+            risk_per_trade_percent=self.risk_per_signal_percent,
+            total_open_risk_percent=self.portfolio_heat_percent,
+            max_open_positions=self.max_positions,
+            max_daily_loss_percent=self.max_daily_loss_percent,
+            min_risk_reward=self.min_rr,
+        )
 
 
 def interpolate(field: str, style: float) -> Any:

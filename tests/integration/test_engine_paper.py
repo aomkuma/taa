@@ -19,7 +19,7 @@ from app.main import main
 from app.monitoring.alerts import EventBus, EventType, MemorySink
 from app.risk.circuit_breaker import BreakerName
 from app.storage.database import Database
-from app.storage.models import AuditEvent, PaperPositionRow, Run
+from app.storage.models import AuditEvent, DecisionRecordRow, PaperPositionRow, Run
 from app.strategy.base_strategy import BaseStrategy
 from app.strategy.registry import StrategySet
 from app.strategy.signal_models import Condition, Signal, StrategyContext
@@ -158,6 +158,16 @@ class TestTrading:
         assert {e.payload["ticket"] for e in opened} >= {r.ticket for r in rows}
         assert all(e.actor == "engine" and e.payload["symbol"] for e in opened)
         assert h.engine.audit.verify().ok  # still one intact chain
+        with h.db.session() as sess:  # each decision names the limits it was measured against (TAA-710)
+            decided = sess.scalars(
+                select(DecisionRecordRow).where(DecisionRecordRow.decision == "ACCEPT")
+            ).all()
+            applied = sess.scalars(
+                select(AuditEvent).where(AuditEvent.event_type == "RISK_PROFILE_APPLIED")
+            ).all()
+        assert decided and all(r.risk_source and r.risk_source.startswith("local:") for r in decided)
+        assert all(r.risk_percent == h.engine.effective_risk().max_risk_per_trade_percent for r in decided)
+        assert len(applied) == 1  # the limits this run started with; unchanged since
 
     def test_kill_switch_blocks_entries(self, tmp_path: Path) -> None:
         h = harness(tmp_path)

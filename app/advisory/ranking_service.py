@@ -42,7 +42,7 @@ from app.advisory.scoring import Candidate, DynamicMetrics, EdgeEstimate, Ranked
 from app.advisory.suitability import GateStatus, SymbolFacts, assess, collect_facts
 from app.advisory.universe import CatalogEntry, SymbolCatalog
 from app.broker.gateway import MarketDataGateway
-from app.config import AppConfig
+from app.config import AppConfig, RiskConfig
 from app.core.clock import Clock, ensure_utc
 from app.core.enums import Regime, Timeframe
 from app.core.errors import TaaError
@@ -113,6 +113,7 @@ class RankingService:
         *,
         server: str,
         edge_source: Callable[[str], EdgeEstimate | None] | None = None,
+        risk: Callable[[], RiskConfig] | None = None,
     ) -> None:
         self.db = db
         self.gateway = gateway
@@ -122,6 +123,8 @@ class RankingService:
         self.clock = clock
         self.server = server
         self.edge_source = edge_source
+        # the limits the engine trades with (the owner's profile inside config.yaml, TAA-710)
+        self.risk = risk or (lambda: config.risk)
         self.candles = CandleService(gateway, config.timeframes, clock)
         self.cache: dict[str, SymbolMetrics] = {}
         self.universe: list[CatalogEntry] = []
@@ -288,6 +291,7 @@ class RankingService:
         account = self.gateway.account()
         funds = AccountFunds(account.equity, account.balance, account.margin, account.margin_free)
         exposure = sorted({p.symbol for p in self.gateway.positions()})
+        risk = self.risk()
         names = {e.symbol for e in self.universe}
         candidates: list[Candidate] = []
         sessions: dict[str, SessionStatus] = {}
@@ -300,7 +304,7 @@ class RankingService:
             suitability = assess(
                 facts,
                 funds,
-                self.config.risk,
+                risk,
                 self.advisory.suitability,
                 currency=account.currency,
             )
@@ -314,7 +318,7 @@ class RankingService:
         ranked = rank(
             candidates,
             self.advisory.scoring,
-            self.config.risk,
+            risk,
             correlations=self.correlations(),
             exposure=exposure,
         )
@@ -332,8 +336,8 @@ class RankingService:
                 "margin_free": _num(account.margin_free),
                 "leverage": account.leverage,
                 "currency": account.currency,
-                "risk_percent": self.config.risk.max_risk_per_trade_percent,
-                "sizing_basis": self.config.risk.sizing_basis,
+                "risk_percent": risk.max_risk_per_trade_percent,
+                "sizing_basis": risk.sizing_basis,
             },
         )
         self._persist(run)

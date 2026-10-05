@@ -74,7 +74,14 @@ def test_the_engine_starts_reports_and_stops_sync(tmp_path: Path) -> None:
         account = beats[-1].payload["account"]  # the traded account for the dashboard (TAA-904)
         assert account["backend"] == "paper" and account["currency"] == "USD"
         assert account["equity"] > 0 and account["day_pnl"] == 0.0 and account["open_risk"] == 0.0
-        assert account["limits"]["daily_loss_percent"] == s.config.risk.max_daily_loss_percent
+        # the limits are the owner's profile inside the local cage (TAA-710); no cloud profile: the local one
+        limits = account["risk_limits"]
+        assert limits["source"] == "local" and limits["age_seconds"] is None
+        assert limits["cage"]["risk_per_trade_percent"] == s.config.risk.max_risk_per_trade_percent
+        assert all(
+            limits["effective"][k] <= limits["cage"][k] for k in limits["cage"] if k != "min_risk_reward"
+        )
+        assert account["limits"]["daily_loss_percent"] == limits["effective"]["max_daily_loss_percent"]
 
 
 def test_without_sync_nothing_is_built(tmp_path: Path) -> None:

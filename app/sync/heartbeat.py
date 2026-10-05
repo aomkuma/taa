@@ -65,7 +65,8 @@ class FormingBar(BaseModel):
 
 
 class AccountLimits(BaseModel):
-    """The engine's local risk limits (``RiskConfig``, percent of equity) the dashboard gauges compare to."""
+    """The risk limits (percent of equity) the dashboard gauges compare to: the effective ones since TAA-710
+    (the owner's trading profile inside the local ``RiskConfig``)."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -74,6 +75,32 @@ class AccountLimits(BaseModel):
     drawdown_percent: float = Field(gt=0, allow_inf_nan=False)
     heat_percent: float = Field(gt=0, allow_inf_nan=False)
     consecutive_losses: int = Field(ge=1)
+
+
+class GovernedLimits(BaseModel):
+    """The ``RiskConfig`` fields a trading profile governs (``app.risk.limits.governed``)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    risk_per_trade_percent: float = Field(gt=0, allow_inf_nan=False)
+    total_open_risk_percent: float = Field(gt=0, allow_inf_nan=False)
+    max_open_positions: int = Field(ge=1)
+    max_daily_loss_percent: float = Field(gt=0, allow_inf_nan=False)
+    min_risk_reward: float = Field(gt=0, allow_inf_nan=False)
+
+
+class RiskLimits(BaseModel):
+    """Which limits the engine trades with (PLAN §A33, TAA-710): the local cage, the owner's profile and the
+    stricter of the two per field; ``source`` cloud/cache/local, ``age_seconds`` since the cloud sent it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    source: Literal["cloud", "cache", "local"]
+    version: str = Field(max_length=64)
+    age_seconds: int | None = Field(default=None, ge=0)
+    cage: GovernedLimits
+    profile: GovernedLimits
+    effective: GovernedLimits
 
 
 MAX_FOREIGN_POSITIONS = 50
@@ -144,6 +171,7 @@ class AccountSnapshot(BaseModel):
     max_effective_leverage: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     foreign_positions: list[ForeignPosition] | None = Field(default=None, max_length=MAX_FOREIGN_POSITIONS)
     broker_account: BrokerAccount | None = None  # PAPER only: the real MT5 account next to the paper book
+    risk_limits: RiskLimits | None = None  # since TAA-710; None from older engines
 
 
 class HeartbeatPayload(BaseModel):

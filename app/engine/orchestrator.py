@@ -47,7 +47,7 @@ from app.advisory.universe import SymbolCatalog
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
 from app.broker.models import BrokerPosition
-from app.config import Settings
+from app.config import RiskConfig, Settings
 from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
 from app.core.enums import ExitReason, Side, TradingMode
 from app.core.errors import SafetyViolation, SymbolUnavailable, TaaError
@@ -66,6 +66,7 @@ from app.engine.order_manager import OrderManager
 from app.engine.paper import LiveRates, PaperExecution
 from app.engine.position_manager import PositionManager
 from app.engine.reconciler import Reconciler
+from app.engine.risk_limits import RiskLimitSelector
 from app.engine.trade_audit import TradeAuditSink
 from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.registry import EvidenceEngine
@@ -174,6 +175,9 @@ class Engine:
         self.commands: CommandProcessor | None = None  # remote commands, with sync
         self.candle_stream: CandleStreamer | None = None  # closed bars to the cloud, with sync (TAA-706)
         self.heartbeats: HeartbeatEmitter | None = None  # liveness + market state to the cloud (TAA-705)
+        self.risk_limits: RiskLimitSelector | None = (
+            None  # the owner's profile inside the local cage (TAA-710)
+        )
         self._last_quotes: dict[str, Quote] = {}
         self._last_loss: LossStatus | None = None  # the health step's, for the cloud heartbeat (TAA-904)
         self._currency = ""
@@ -273,7 +277,14 @@ class Engine:
                 replay_cap=cfg.advisory.calibration.replay_cap,
             )
             self.ranking = RankingService(
-                self.db, self.gateway, catalog, cfg, self.clock, server=account.server, edge_source=edges
+                self.db,
+                self.gateway,
+                catalog,
+                cfg,
+                self.clock,
+                server=account.server,
+                edge_source=edges,
+                risk=self.effective_risk,
             )
         if cfg.advisory.scanner.enabled:
             self.requirements()  # invalid advisory preferences fail at startup (ConfigError)
@@ -342,6 +353,10 @@ class Engine:
                 ],
             )
             self.heartbeats = HeartbeatEmitter(self.sync.outbox, cfg.sync.heartbeat_seconds)
+        self.risk_limits = RiskLimitSelector(
+            cfg, None if self.sync is None else self.sync.risk_profile, self.audit, self.clock
+        )
+        self.risk_limits.current()  # audit the limits this run starts with
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
         self.audit.append(
             "ENGINE_START",
@@ -821,6 +836,7 @@ class Engine:
         self.on_arbitrated()
         if selected is None:
             return
+        applied = None if self.risk_limits is None else self.risk_limits.current()
         record = self.decisions.decide(
             DecisionRequest(
                 signal=selected,
@@ -832,6 +848,8 @@ class Engine:
                 specs=self.symbols,
                 gate=self.gate(),
                 last_entry_at=self._last_entry.get(symbol),
+                profile_limits=None if applied is None else applied.limits,
+                risk_source=None if applied is None else applied.source,
             )
         )
         if record.decision is Decision.ACCEPT:
@@ -854,6 +872,10 @@ class Engine:
 
     def on_entry(self, symbol: str, at: datetime) -> None:
         self.state.save("last_entry", {sym: t.isoformat() for sym, t in self._last_entry.items()})
+
+    def effective_risk(self) -> RiskConfig:
+        """The limits the engine trades with now (TAA-710); ``config.yaml`` alone before ``start()``."""
+        return self.config.risk if self.risk_limits is None else self.risk_limits.current().effective
 
     def _book(self) -> list[BrokerPosition]:
         try:
@@ -971,7 +993,8 @@ class Engine:
         except Exception:  # telemetry boundary
             log.exception("account snapshot for the heartbeat failed")
             return None
-        risk = self.config.risk
+        applied = None if self.risk_limits is None else self.risk_limits.current()
+        risk = self.config.risk if applied is None else applied.effective
 
         def num(value: float, digits: int = 2) -> float | None:
             return round(value, digits) if math.isfinite(value) else None
@@ -1007,6 +1030,7 @@ class Engine:
                 "heat_percent": risk.max_total_open_risk_percent,
                 "consecutive_losses": risk.max_consecutive_losses,
             },
+            "risk_limits": None if self.risk_limits is None else self.risk_limits.snapshot(),
         }
 
     def _broker_account(self) -> dict[str, Any] | None:

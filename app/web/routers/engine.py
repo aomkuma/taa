@@ -4,6 +4,10 @@
 (:func:`app.web.advisory.engine_advisory_config`), with ``ETag: "<version>"``; a matching ``If-None-Match``
 gets 304. The engine client (``app/sync/advisory_config.py``) keeps its fallback on anything else.
 
+``GET /api/v1/engine/risk-profile``: the engine owner's trading-profile limits (PLAN §A33, TAA-710) as a
+:class:`app.risk.limits.RiskProfileDoc`, with ``ETag`` / 304 like the advisory config; 404 ``no_profile`` when
+the owner has not saved one. The engine (``app/sync/risk_profile.py``) can only lower its local limits.
+
 ``GET /api/v1/engine/commands?cursor=``:
 
 Authenticated by the paired engine's HMAC signature (``SignedEngine``; the signature covers the query string,
@@ -26,7 +30,8 @@ from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
 from app.advisory.requirements import AdvisoryConfig
-from app.web.advisory import engine_advisory_config
+from app.risk.limits import RiskProfileDoc
+from app.web.advisory import engine_advisory_config, engine_risk_profile
 from app.web.deps import SignedEngine, WebContext
 from app.web.entitlements import EntitlementService
 from app.web.feed import engine_users
@@ -71,3 +76,20 @@ async def advisory_config(request: Request, engine: SignedEngine) -> Response:
     if request.headers.get("if-none-match") == etag:
         return Response(status_code=304, headers={"ETag": etag})
     return JSONResponse(config.model_dump(mode="json"), headers={"ETag": etag})
+
+
+def _risk_profile(ctx: WebContext, engine_id: str) -> RiskProfileDoc | None:
+    users = engine_users(ctx.db, engine_id)
+    return engine_risk_profile(ctx.db, users[0]) if users else None
+
+
+@router.get("/risk-profile", response_model=None)
+async def risk_profile(request: Request, engine: SignedEngine) -> Response:
+    ctx = request.app.state.ctx
+    doc = await run_in_threadpool(_risk_profile, ctx, engine.engine_id)
+    if doc is None:
+        return JSONResponse({"code": "no_profile"}, status_code=404)
+    etag = f'"{doc.version}"'
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=304, headers={"ETag": etag})
+    return JSONResponse(doc.model_dump(mode="json"), headers={"ETag": etag})

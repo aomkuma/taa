@@ -41,6 +41,7 @@ from app.core.errors import TaaError
 from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.framework import Family
 from app.evidence.registry import DetectorRegistry
+from app.risk.limits import RiskProfileDoc
 from app.storage.database import Database
 from app.storage.models import (
     AccountProfileRow,
@@ -181,6 +182,21 @@ def engine_advisory_config(
     content = config.model_dump(mode="json", exclude={"version"})
     content["detectors"] = sorted(detectors)
     return AdvisoryConfig(version=content_version(content), **content)
+
+
+def engine_risk_profile(db: Database, owner_id: str) -> RiskProfileDoc | None:
+    """The engine owner's trading-profile limits (PLAN §A33, TAA-710), or None when the owner has not saved a
+    valid profile: the engine then keeps its own fallback rather than a default it never chose."""
+    with db.session() as sess:
+        row = sess.get(UserAdvisoryPrefsRow, owner_id)
+        raw, updated_at = (None, None) if row is None else (dict(row.prefs), row.updated_at)
+    if raw is None:
+        return None
+    try:
+        prefs = AdvisoryPreferences.model_validate(raw)
+    except ValueError:
+        return None
+    return RiskProfileDoc.of(prefs.trading_profile.resolve().limits(), updated_at)
 
 
 def param_bounds(model: type[BaseModel]) -> dict[str, dict[str, Any]]:

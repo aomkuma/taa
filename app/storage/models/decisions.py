@@ -38,6 +38,9 @@ class DecisionRecordRow(EngineKeyed, Base):
     market: Mapped[dict[str, Any]] = mapped_column(JSONType)
     config_hash: Mapped[str] = mapped_column(String(32))
     code_version: Mapped[str] = mapped_column(String(32))
+    # the limits the decision was measured against (PLAN §A33, TAA-710): cloud:<v> | cache:<v> | local:<v>
+    risk_source: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    risk_percent: Mapped[float | None] = mapped_column(Float, nullable=True)  # effective per-trade risk
 
 
 class DecisionCheckRow(EngineTagged, Base):

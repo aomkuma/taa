@@ -7157,7 +7157,7 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "f9bf8fbf443ba01b",
+        "config_hash": "b3ae1887b0351a92",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
         "seed": 42,
         "strategies": [
@@ -7283,7 +7283,7 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "f9bf8fbf443ba01b",
+          "config_hash": "b3ae1887b0351a92",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "seed": 42,
           "strategies": [
@@ -7336,7 +7336,7 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "f9bf8fbf443ba01b",
+          "config_hash": "b3ae1887b0351a92",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "seed": 42,
           "strategies": [
@@ -8062,6 +8062,7 @@
           "max_backlog_events": 200000,
           "max_batch_bytes": 4000000,
           "request_timeout_seconds": 15.0,
+          "risk_profile_seconds": 60.0,
           "sent_retention_hours": 24.0
         },
         "timeframes": {
@@ -8207,6 +8208,8 @@
     "profile": "EXECUTION",
     "reason_codes": [],
     "risk_money": 5.0,
+    "risk_percent": null,
+    "risk_source": null,
     "signal": {
       "action": "BUY",
       "bar_times": {
@@ -8348,6 +8351,8 @@
         "profile": "EXECUTION",
         "reason_codes": [],
         "risk_money": 5.0,
+        "risk_percent": null,
+        "risk_source": null,
         "signal_id": "s1",
         "stop_loss": 1.095,
         "strategy": "example_trend_pullback",
@@ -8375,6 +8380,8 @@
         "profile": "ADVISORY",
         "reason_codes": [],
         "risk_money": 49.9,
+        "risk_percent": 0.5,
+        "risk_source": null,
         "signal_id": "0191a0a0-0000-7000-8000-000000000103",
         "stop_loss": 2325.42,
         "strategy": "buy_every_bar",
@@ -8406,6 +8413,8 @@
         "profile": "EXECUTION",
         "reason_codes": [],
         "risk_money": 5.0,
+        "risk_percent": null,
+        "risk_source": null,
         "signal_id": "s1",
         "stop_loss": 1.095,
         "strategy": "example_trend_pullback",
@@ -11998,6 +12007,8 @@
       "profile": "EXECUTION",
       "reason_codes": [],
       "risk_money": 5.0,
+      "risk_percent": null,
+      "risk_source": null,
       "signal": {
         "action": "BUY",
         "bar_times": {

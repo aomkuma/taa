@@ -99,6 +99,9 @@ class DecisionRequest:
     expected_slippage_points: float | None = None
     probation: bool = False
     profile_limits: ProfileLimits | None = None
+    risk_source: str | None = (
+        None  # where profile_limits came from (PLAN §A33): cloud:<v> | cache:<v> | local:<v>
+    )
 
 
 @dataclass(frozen=True)
@@ -113,6 +116,8 @@ class DecisionRecord:
     sizing: SizingResult | None
     config_hash: str
     code_version: str
+    risk_source: str | None = None
+    risk_percent: float | None = None  # the effective per-trade risk the decision was sized with
 
     @property
     def failed(self) -> tuple[Check, ...]:
@@ -224,7 +229,7 @@ class DecisionEngine:
             ch for ch in checks if not ch.passed and (profile is Profile.EXECUTION or ch.kind is HARD)
         ]
         decision = Decision.REJECT if blocking else Decision.ACCEPT
-        record = self._record(now, profile, decision, req, tuple(checks), sizing)
+        record = self._record(now, profile, decision, req, tuple(checks), sizing, risk)
         log.info(
             "decision %s %s %s %s %s reasons=%s warnings=%s",
             record.decision.value,
@@ -592,6 +597,7 @@ class DecisionEngine:
         req: DecisionRequest,
         checks: tuple[Check, ...],
         sizing: SizingResult | None,
+        risk: RiskConfig | None = None,
     ) -> DecisionRecord:
         return DecisionRecord(
             decision_id=new_id(),
@@ -604,6 +610,8 @@ class DecisionEngine:
             sizing=sizing,
             config_hash=self.config_hash,
             code_version=__version__,
+            risk_source=req.risk_source,
+            risk_percent=None if risk is None else risk.max_risk_per_trade_percent,
         )
 
     def _persist(self, record: DecisionRecord) -> DecisionRecord:
@@ -663,6 +671,8 @@ class DecisionStore:
                     market=record.market.to_dict(),
                     config_hash=record.config_hash,
                     code_version=record.code_version,
+                    risk_source=record.risk_source,
+                    risk_percent=record.risk_percent,
                 )
             )
             for seq, ch in enumerate(record.checks):

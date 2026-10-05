@@ -231,6 +231,7 @@ sync:
   flush_interval_seconds: 1         # the live candle and quotes reach the PWA within ~1-2 s
   heartbeat_seconds: 1              # liveness + quotes + forming bars (coalesced: a backlog keeps the newest)
   advisory_config_seconds: 300      # pull the users' compute requirements (ETag; cached locally)
+  risk_profile_seconds: 60          # pull the owner's trading-profile limits (can only lower `risk`)
   request_timeout_seconds: 15
   max_backlog_events: 200000        # beyond: the oldest unsent quotes/snapshots are dropped (never audit/trades)
   backoff_initial_seconds: 2        # failed sends back off exponentially (with jitter) up to
