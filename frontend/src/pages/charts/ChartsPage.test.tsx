@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { apiError, json } from '@/test/api';
@@ -171,7 +171,14 @@ describe('charts page', () => {
     await waitFor(() => {
       expect(drawn.models.length).toBeGreaterThan(0);
     });
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Symbol' }), 'XAUUSD');
+    await user.click(screen.getByRole('combobox', { name: 'Symbol' }));
+    await user.keyboard('xau');
+    expect(
+      within(screen.getByRole('listbox'))
+        .getAllByRole('option')
+        .map((o) => o.textContent),
+    ).toEqual(['XAUUSD']);
+    await user.click(screen.getByRole('option', { name: 'XAUUSD' }));
     await user.selectOptions(screen.getByRole('combobox', { name: 'Timeframe' }), 'H1');
     expect(router.state.location.search).toBe('?symbol=XAUUSD&tf=H1');
     await waitFor(() => {
@@ -179,6 +186,61 @@ describe('charts page', () => {
         '/engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true',
       );
     });
+  });
+
+  it('opens a symbol that has candles and lists the charted symbols first', async () => {
+    const api = setup({
+      'GET /engines/e1/backtests/history': () =>
+        json({
+          items: [
+            {
+              server: 'FBS-Demo',
+              symbol: 'XAUUSD',
+              timeframe: 'M15',
+              first: iso(T0),
+              last: iso(T0),
+              bars: 4,
+            },
+          ],
+        }),
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+        () => json(candles('XAUUSD')),
+    });
+    const user = userEvent.setup();
+    renderShell('/charts');
+    const input = await screen.findByRole('combobox', { name: 'Symbol' });
+    await waitFor(() => {
+      expect(input).toHaveValue('XAUUSD');
+    });
+    expect(api.calls.map((c) => c.path)).not.toContain(
+      '/engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true',
+    );
+    await user.click(input);
+    expect(
+      within(screen.getByRole('listbox'))
+        .getAllByRole('option')
+        .map((o) => o.textContent),
+    ).toEqual(['XAUUSDchart', 'EURUSD']);
+    await user.keyboard('zzz');
+    expect(screen.getByText('No matching symbol')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(input).toHaveValue('XAUUSD');
+  });
+
+  it('picks a symbol with the keyboard', async () => {
+    setup({
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+        () => json(candles('XAUUSD')),
+    });
+    const user = userEvent.setup();
+    const { router } = renderShell('/charts');
+    await waitFor(() => {
+      expect(drawn.models.length).toBeGreaterThan(0);
+    });
+    await user.click(screen.getByRole('combobox', { name: 'Symbol' }));
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(router.state.location.search).toBe('?symbol=XAUUSD');
   });
 
   it('shows a decision with its evidence, toggled per theory', async () => {

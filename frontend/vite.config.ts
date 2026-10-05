@@ -16,8 +16,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt',
-      // An external registerSW.js keeps the build compatible with the strict CSP (no inline scripts, PLAN §A14).
-      injectRegister: 'script',
+      // Registered from main.tsx (bundled, so the strict CSP holds: no inline scripts, PLAN §A14), which also
+      // shows the "new version" banner (src/app/swUpdate.ts).
+      injectRegister: false,
       manifest: {
         name: 'TAA',
         short_name: 'TAA',

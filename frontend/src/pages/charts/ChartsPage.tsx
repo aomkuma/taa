@@ -4,10 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { apiGet } from '@/api/client';
+import { SymbolCombobox } from '@/components/SymbolCombobox';
+import type { SymbolOption } from '@/components/symbolFilter';
 import { useEngine } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
 import { translateCode } from '@/i18n/codes';
 import { useLiveEvents } from '@/live/context';
+import { backtestKeys, HistorySchema } from '@/pages/backtests/schemas';
 import { PositionsPageSchema } from '@/pages/dashboard/schemas';
 
 import {
@@ -97,8 +100,24 @@ export function ChartsPage() {
       ),
     enabled: decisionId !== null || opportunityId !== null,
   });
+  // which symbols and timeframes have closed bars in the cloud (the engine streams only the ones it trades)
+  const coverage = useQuery({
+    queryKey: backtestKeys.history(id),
+    queryFn: ({ signal }) => apiGet(`${base}/backtests/history`, HistorySchema, { signal }),
+  });
+  const charted = useMemo(() => {
+    const items = coverage.data?.items ?? [];
+    const any = new Set(items.map((i) => i.symbol));
+    const here = items.filter((i) => i.timeframe === timeframe).map((i) => i.symbol);
+    return { any, first: [...here].sort()[0] ?? [...any].sort()[0] ?? null };
+  }, [coverage.data, timeframe]);
+
   const signalDoc = signalSource.data?.signal ?? null;
-  const symbol = params.get('symbol') ?? signalDoc?.symbol ?? symbols.data?.items[0]?.symbol ?? null;
+  // without a choice, open a symbol that has bars (the catalog's first entry rarely does)
+  const symbol =
+    params.get('symbol') ??
+    signalDoc?.symbol ??
+    (coverage.isPending ? null : (charted.first ?? symbols.data?.items[0]?.symbol ?? null));
 
   const overlays = overlaysQuery(indicators);
   const candles = useQuery({
@@ -186,30 +205,28 @@ export function ChartsPage() {
     setParams(next, { replace: true });
   };
 
-  const symbolOptions = [
-    ...new Set([...(symbol ? [symbol] : []), ...(symbols.data?.items ?? []).map((s) => s.symbol)]),
-  ].sort();
+  const symbolOptions = useMemo<SymbolOption[]>(() => {
+    const names = new Set([
+      ...(symbol ? [symbol] : []),
+      ...charted.any,
+      ...(symbols.data?.items ?? []).map((s) => s.symbol),
+    ]);
+    return [...names].map((name) => ({ symbol: name, featured: charted.any.has(name) }));
+  }, [symbol, charted, symbols.data]);
 
   return (
     <section>
       <h1 className="mb-4 text-2xl font-semibold">{t('nav.charts')}</h1>
       <div className="mb-3 flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-1.5 text-sm">
-          {t('charts.symbol')}
-          <select
-            value={symbol ?? ''}
-            onChange={(event) => {
-              setParam('symbol', event.target.value);
-            }}
-            className={SELECT}
-          >
-            {symbolOptions.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SymbolCombobox
+          label={t('charts.symbol')}
+          value={symbol}
+          options={symbolOptions}
+          featuredLabel={t('charts.hasCandles')}
+          onChange={(next) => {
+            setParam('symbol', next);
+          }}
+        />
         <label className="flex items-center gap-1.5 text-sm">
           {t('charts.timeframe')}
           <select

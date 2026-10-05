@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, Outlet, useNavigate } from 'react-router';
 
 import { ThemeSwitcher } from '@/app/ThemeSwitcher';
+import { UpdateBanner } from '@/app/UpdateBanner';
 
 import { useAuthState, useSessionExpiry } from '@/auth/hooks';
 import { endSession, logout } from '@/auth/session';
@@ -55,6 +56,7 @@ export function Layout() {
           </div>
         </div>
       </header>
+      <UpdateBanner />
       <Outlet />
     </div>
   );

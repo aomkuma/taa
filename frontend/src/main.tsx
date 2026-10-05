@@ -6,9 +6,11 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { createBrowserRouter, RouterProvider } from 'react-router';
+import { registerSW } from 'virtual:pwa-register';
 
 import { createQueryClient } from '@/app/queryClient';
 import { routes } from '@/app/routes';
+import { UPDATE_CHECK_MS, updateReady } from '@/app/swUpdate';
 import { applyTheme, loadTheme } from '@/app/theme';
 import { initAppI18n } from '@/i18n';
 
@@ -22,6 +24,19 @@ applyTheme(loadTheme());
 const i18n = initAppI18n();
 const router = createBrowserRouter(routes);
 const queryClient = createQueryClient();
+
+// A new version waits until the user agrees (UpdateBanner); open pages look for one every hour.
+const updateServiceWorker = registerSW({
+  onNeedRefresh: () => {
+    updateReady(() => updateServiceWorker(true));
+  },
+  onRegisteredSW: (_url, registration) => {
+    if (!registration) return;
+    setInterval(() => {
+      void registration.update();
+    }, UPDATE_CHECK_MS);
+  },
+});
 
 createRoot(container).render(
   <StrictMode>

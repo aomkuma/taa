@@ -108,7 +108,12 @@
     "stale": "May be out of date",
     "staleSince": "Not updated since {{time}}",
     "offline": "You are offline. The data shown may be out of date.",
-    "placeholder": "This page is not available yet."
+    "placeholder": "This page is not available yet.",
+    "update": {
+      "available": "A new version of TAA is available.",
+      "reload": "Reload",
+      "later": "Later"
+    }
   },
   "dashboard": {
     "loading": "Loading…",
@@ -184,6 +189,9 @@
     "hideSignal": "Hide signal",
     "noSymbols": "No symbols from the engine yet.",
     "noCandles": "No candles for this symbol yet.",
+    "hasCandles": "chart",
+    "noSymbolMatch": "No matching symbol",
+    "moreSymbols": "Showing {{shown}} of {{total}}; type to narrow",
     "chartLabel": "Price chart",
     "attribution": "Charts by",
     "support": "Support ×{{n}}",
