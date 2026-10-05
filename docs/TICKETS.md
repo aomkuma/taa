@@ -52,7 +52,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
-| M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
+| M2 | Phase 13 — AI assessment (optional layer) | 5 | 2 | IN PROGRESS |
 | M2 | Phase 14 — LIVE readiness | 4 | 2 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 
@@ -1728,27 +1728,27 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1301 — AI interface
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 301
 
-- [ ] AIProvider protocol
-- [ ] NullProvider
-- [ ] strict Pydantic schema v1.0
-- [ ] parser and validator
-- [ ] tests
+- [x] AIProvider protocol
+- [x] NullProvider
+- [x] strict Pydantic schema v1.0
+- [x] parser and validator
+- [x] tests
 
 #### TAA-1302 — Anthropic provider
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1301
 
-- [ ] structured outputs (`output_config.format` / `messages.parse`)
-- [ ] `AI_MODEL` (default `claude-opus-5-5`), low effort
-- [ ] short timeout + 1 retry
-- [ ] refusal or max_tokens → HOLD
-- [ ] `fallbacks: "default"` on by default
-- [ ] usage and cost logging
-- [ ] mocked-client tests
+- [x] structured outputs (`output_config.format` / `messages.parse`)
+- [x] `AI_MODEL` (default `claude-opus-5-5`), low effort
+- [x] short timeout + 1 retry
+- [x] refusal or max_tokens → HOLD
+- [x] `fallbacks: "default"` on by default
+- [x] usage and cost logging
+- [x] mocked-client tests
 
 #### TAA-1303 — Veto integration
 

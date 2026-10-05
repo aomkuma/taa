@@ -3,3 +3,4 @@
 MetaTrader5==5.0.6231; sys_platform == "win32"
 keyring==25.7.0
 pyarrow==25.0.1
+anthropic==1.11.0  # the optional AI layer (Phase 13); only used when AI_PROVIDER=anthropic
