@@ -26,6 +26,8 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
 **Change (2026-10-03, user decision):** after Phase 6, Phase 12 (DEMO execution, demo account only) is done
 first, then the order continues with 6A → 6B → … → 11. LIVE stays disabled until Phase 14 and a user go-ahead.
 
+**Change (2026-10-06, user decision):** Phase 11 (Railway deployment) is skipped for now. The focus is LIVE auto-trading readiness, Phase 14 (1401 → 1402 → 1403 → 1404), plus wrap-up work (open loose ends, a full test run with the stack stopped, docs). Phase 13 (AI) stays optional and comes after. Switching LIVE on still needs the completed Phase 14 and the user's explicit go-ahead at that moment.
+
 ## Progress
 
 | Milestone | Phase | Tickets | Done | Status |

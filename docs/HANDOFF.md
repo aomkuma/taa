@@ -81,6 +81,12 @@ Fixes and changes found on real data (at the user's request):
 
 ## Next work
 
+**Focus (user decision 2026-10-06):** skip Phase 11 (Railway) for now. Work toward LIVE auto-trading, Phase
+14: TAA-1401 live gate wiring (6 conditions + account-bound phrase, probation, banner) → 1402 security review →
+1403 go-live checklist & drills → 1404 final docs. Do this together with wrap-up work: the loose ends below,
+the dashboard additions (§A28), and a full pytest + vitest run with the stack stopped. Phase 13 (AI) is optional
+and comes after. Turning LIVE on still needs Phase 14 done and the user's explicit go-ahead at that moment.
+
 1. **TAA-1006 is done** (rev. 6, 2026-10-06): manual trades are linked to signals on the engine, the owner
    corrects a link on Positions, and closed manual trades show me / signal / bot in R on Trade history. When
    the owner's two open manual trades (GBPUSD, EURUSD) close, check that they appear there with an R. Open
@@ -93,8 +99,8 @@ Fixes and changes found on real data (at the user's request):
 3. **Phase 10 is done** (TAA-1004 recommendations, TAA-1005 analytics API & page, 2026-10-06).
 4. Dashboard additions of PLAN §A28 still open: active opportunities and the accuracy summary (the top-5
    ranking widget is done).
-5. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
-   Milestone 1 review.
+5. Phase 11 Railway deployment: **skipped for now** (user decision 2026-10-06). Later, only with the user's
+   Railway access and go-ahead.
 6. **Homework from the user (2026-10-05), after all remaining tickets:** the system's purpose is to sweep
    **every** tradable symbol (hundreds) for opportunities, not 4. Make it as flexible as possible, including
    future strategies, and let AI take part in learning and adapting the trading playbook to current
