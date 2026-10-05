@@ -38,6 +38,7 @@ const TITLES: Record<string, string> = {
   example_trend_pullback: 'Trend pullback (example)',
   setup_breakout: 'Range breakout',
   setup_fib_pullback: 'Fibonacci pullback',
+  setup_elliott_wave: 'Elliott wave',
   setup_neckline_break: 'Neckline break',
 };
 /** A strategy's card, found by its display name; the raw name stays visible in the card. */
@@ -68,7 +69,7 @@ describe('strategies page', () => {
     expect(within(off).getByText(/Disable command: Done · alice/)).toBeInTheDocument();
     expect(within(off).getByText('python -m app.cli strategy enable setup_breakout')).toBeInTheDocument();
     expect(within(off).queryByRole('button', { name: 'Disable' })).not.toBeInTheDocument();
-    const config = await card('setup_fib_pullback');
+    const config = await card('setup_elliott_wave');
     expect(within(config).getByText('Off in config')).toBeInTheDocument();
     expect(within(config).getByText(/Switched off in config.yaml/)).toBeInTheDocument();
     expect(screen.getByText(/Paper results are hypothetical/)).toBeInTheDocument();

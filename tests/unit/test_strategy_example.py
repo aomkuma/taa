@@ -211,7 +211,7 @@ class TestCatalog:
             env_file=None, config_file="config.yaml", environ={"TRADING_MODE": "BACKTEST"}
         )
         built = default_registry().from_config(settings.config.strategies, settings.config.timeframes)
-        assert built.names == ["example_trend_pullback"]
+        assert built.names[0] == "example_trend_pullback" and len(built.names) == 9  # with the 8 setups
         assert built.strategies[0].demo_only
 
     def test_unknown_param_is_a_config_error(self) -> None:

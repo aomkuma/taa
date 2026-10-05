@@ -47,16 +47,17 @@ strategies:
     - name: example_trend_pullback  # DEMONSTRATION ONLY - not production-proven
       enabled: true
       params: {}
-    # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): demonstration only, unproven. They need the
-    # evidence engine; enable one at a time and watch its shadow results before trusting it.
-    - {name: setup_neckline_break, enabled: false}
-    - {name: setup_pattern_breakout, enabled: false}
-    - {name: setup_fib_pullback, enabled: false}
-    - {name: setup_harmonic_prz, enabled: false}
-    - {name: setup_elliott_wave, enabled: false}
-    - {name: setup_smc_reversal, enabled: false}    # needs max_age_bars >= confirm_window for sweep/CHoCH
-    - {name: setup_breakout, enabled: false}
-    - {name: setup_candle_reversal, enabled: false}
+    # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. They need the evidence engine. All on
+    # since 2026-10-05 (the user's choice: the bot follows every opportunity; PAPER only), so their paper and
+    # shadow results accumulate; risk limits and breakers still gate every order.
+    - {name: setup_neckline_break, enabled: true}
+    - {name: setup_pattern_breakout, enabled: true}
+    - {name: setup_fib_pullback, enabled: true}
+    - {name: setup_harmonic_prz, enabled: true}
+    - {name: setup_elliott_wave, enabled: true}
+    - {name: setup_smc_reversal, enabled: true}    # needs max_age_bars >= confirm_window for sweep/CHoCH
+    - {name: setup_breakout, enabled: true}
+    - {name: setup_candle_reversal, enabled: true}
 
 risk:
   max_risk_per_trade_percent: 0.5

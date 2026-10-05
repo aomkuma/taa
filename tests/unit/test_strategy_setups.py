@@ -293,12 +293,12 @@ class TestCatalog:
             assert cls.triggers <= set(evidence_registry().ids), cls.name
         assert len(STRATEGIES) == 1 + len(SETUPS)
 
-    def test_config_yaml_lists_every_setup_disabled(self) -> None:
+    def test_config_yaml_lists_every_setup_enabled(self) -> None:
         settings = load_settings(
             env_file=None, config_file="config.yaml", environ={"TRADING_MODE": "BACKTEST"}
         )
         listed = {item.name: item.enabled for item in settings.config.strategies.items}
-        assert listed == {"example_trend_pullback": True, **{cls.name: False for cls in SETUPS}}
+        assert listed == {"example_trend_pullback": True, **{cls.name: True for cls in SETUPS}}
 
     def test_each_setup_can_be_enabled_alone(self) -> None:
         for cls in SETUPS:
