@@ -16,7 +16,7 @@ dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & ad
 name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
 This is the only session: work on main, one ticket at a time, in the "Next work" order. Continue with
-TAA-918 (watchlists & alert settings).
+TAA-920 (theories & conditions settings).
 For PWA pages: build page tests from frontend/src/test/fixtures/api-samples.json (real API responses) and add
 every new route a page reads to tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts
 (regenerate with TAA_UPDATE_API_SAMPLES=1). Run the full pytest suite and vitest one after the other, never
@@ -35,11 +35,12 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 ## Current state
 
 - **Done:** Phases 0–8, 2A, 6A–6C, 8A and 12 (DEMO orders, pulled forward). Phase 9: 901–913 and
-  915–917. Phase 10: 1001–1003.
+  915–919. Phase 10: 1001–1003.
 - **Not started:** Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14 (LIVE), Phase 15 (deferred
   backlog: TAA-1501 cloud replay jobs).
 - **Checks** (last full runs): pytest 2699 passed, 7 skipped (~10 min; the Postgres tests run when
-  `TAA_POSTGRES_URL` is set); ruff, mypy, bandit clean; frontend lint, typecheck, build clean, vitest 402.
+  `TAA_POSTGRES_URL` is set); ruff, mypy, bandit clean; frontend lint, typecheck, build clean, vitest 439 (2026-10-05, third session:
+  tests/web 294 passed; the full pytest suite was not rerun next to the running demo stack).
 - **Git:** `main` only (the user pushes; `git push` from Claude Code
   fails on the interactive GitHub login). Latest migration: **0032**.
 - **2026-10-05 extras** (outside the tickets, at the user's request): `start-demo.ps1 -Mt5`, the searchable
@@ -60,8 +61,8 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Next work
 
-1. Phase 9 pages: **TAA-918**–923 (watchlists & alert settings, accuracy, theories, account/plan/admin,
-   trading profile, engines), then **914** PWA polish. The backend for every page exists (API list below).
+1. Phase 9 pages: **TAA-920**–923 (theories, account/plan/admin, trading profile, engines), then **914**
+   PWA polish. 918 (watchlists, alert settings in Notifications) and 919 (accuracy) are done (PLAN §A28). The backend for every page exists (API list below).
    Dashboard additions of §A28 still open: active opportunities and the accuracy summary (the top-5 ranking
    widget is done).
 2. Phase 10: TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages.
@@ -103,9 +104,10 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
     `/advisory/preferences|watchlists|favourites|detectors`.
   - Me: notifications, push key/subscribe/unsubscribe/test, preferences; `/me/alerts`, `/me/entitlements`,
     `/me/account-profile`, `/me/export`, `/me/erase`; admin `/admin/users|plans`.
-- **TAA-918:** favourites are toggled from the ranking page already (`useFavourites` in
-  `src/pages/ranking/hooks.ts`, query key `['advisory', 'preferences']`); reuse it. **TAA-919:** add TH/EN
-  texts for the accuracy `codes:` it shows; the opportunities page has the probability/interval wording.
+- The preferences document has one schema and query (`src/pages/watchlists/schemas.ts`, `hooks.ts`:
+  `usePreferences`, `useFavourites`); pages saving one section should re-read and PUT the whole document as
+  `useSaveAlerts` does. **TAA-920:** the accuracy scoreboard and the opportunity detail show detector ids /
+  English names until `evidence.*` texts exist; `PUT /advisory/preferences/theories` saves the selection.
 - Routes with a detail param: `DETAIL_PARAM` in `src/app/routes.tsx` (`/opportunities/:opportunityId`).
 - **TAA-914:** the app icon is a placeholder SVG; maskable/Apple icons, API caching rules (network-first,
   `/api/` never answered with `index.html`) and the install prompt are still to do.
