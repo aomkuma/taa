@@ -103,9 +103,9 @@ describe('account page', () => {
     expect(save).toBeDisabled();
     await user.type(within(profile).getByLabelText('Equity'), '1000');
     await user.type(within(profile).getByLabelText('Leverage (the x of 1:x)'), '200');
-    await user.type(within(profile).getByLabelText('Risk per trade, % (optional)'), '3');
+    await user.type(within(profile).getByLabelText('Risk per trade, % (optional)'), '3.5');
     expect(
-      within(profile).getByText('Risk per trade: above 0 and at most 2%, or empty.'),
+      within(profile).getByText('Risk per trade: above 0 and at most 3%, or empty.'),
     ).toBeInTheDocument();
     await user.clear(within(profile).getByLabelText('Risk per trade, % (optional)'));
     await user.type(within(profile).getByLabelText('Risk per trade, % (optional)'), '0.5');

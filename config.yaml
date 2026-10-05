@@ -1,6 +1,6 @@
 # TAA non-secret configuration. Environment variables override the matching risk values.
 # Unknown keys are rejected at startup (typos are errors, not silently ignored).
-# Risk values are PERCENT of equity (0.5 = 0.5%). Hard ceilings: 2% per trade, 10% daily, 50% drawdown.
+# Risk values are PERCENT of equity (0.5 = 0.5%). Hard ceilings: 3% per trade, 10% daily, 50% drawdown.
 
 symbols:
   allowed: [EURUSD, GBPUSD, USDJPY, XAUUSD]

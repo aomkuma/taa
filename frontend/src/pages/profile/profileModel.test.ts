@@ -116,6 +116,8 @@ describe('overrides', () => {
     expect(
       warnings(resolve(profile(100)).values, plan({ mode: 'SCALE_IN', parts: 3, weights: 'BACK_LOADED' })),
     ).toEqual(['risk', 'heat', 'dailyLoss', 'rr', 'conflict', 'htf', 'backLoaded']);
+    const custom = { ...profile(50), overrides: { ...NO_OVERRIDES, risk_per_signal_percent: 2.5 } };
+    expect(warnings(resolve(custom).values, plan())).toEqual(['riskVeryHigh']);
   });
 });
 

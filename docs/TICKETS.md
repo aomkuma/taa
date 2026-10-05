@@ -33,7 +33,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 2 — Indicators & features | 6 | 6 | DONE |
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
-| M1 | Phase 4 — Risk, decision pipeline, breakers | 8 | 7 | IN PROGRESS |
+| M1 | Phase 4 — Risk, decision pipeline, breakers | 8 | 8 | DONE |
 | M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
@@ -626,13 +626,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-408 — (rev. 5) Per-trade hard ceiling 3 %
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 406, 922
 
-- [ ] `CEILING_RISK_PER_TRADE_PCT` 2 → 3; the other ceilings stay (daily 10, weekly 20, drawdown 50, total open 10)
-- [ ] every mirror follows: `ProfileOverrides`, backtest presets, account profiles, `profileModel.ts`, account model, zod schemas
-- [ ] PWA warning above 2 % per trade (in addition to the existing one above 1 %), th/en keys, no profitability claims
-- [ ] Python/TypeScript parity tests; a config above 3 % is a `ConfigError`
+- [x] `CEILING_RISK_PER_TRADE_PCT` 2 → 3; the other ceilings stay (daily 10, weekly 20, drawdown 50, total open 10)
+- [x] every mirror follows: `ProfileOverrides`, backtest presets, account profiles, `profileModel.ts`, account model, zod schemas
+- [x] PWA warning above 2 % per trade (it replaces the 1 % one there), th/en keys, no profitability claims
+- [x] Python/TypeScript parity tests; a config above 3 % is a `ConfigError`
 
 ### Phase 5 — Backtesting
 

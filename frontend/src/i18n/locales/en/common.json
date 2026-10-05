@@ -1822,6 +1822,7 @@
     "warnings": {
       "title": "Worth a second look",
       "risk": "Risk per signal above 1% of equity.",
+      "riskVeryHigh": "Risk per signal above 2% of equity: an ordinary losing streak takes a large share of the account.",
       "heat": "Open risk of all positions above 3% of equity.",
       "dailyLoss": "Daily loss limit above 3% of equity.",
       "rr": "Minimum reward : risk below 1.5.",

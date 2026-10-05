@@ -38,7 +38,7 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Hard ceilings: configuration above these values is rejected at startup.
-CEILING_RISK_PER_TRADE_PCT = 2.0
+CEILING_RISK_PER_TRADE_PCT = 3.0  # raised from 2.0 on 2026-10-05 (PLAN §A33)
 CEILING_DAILY_LOSS_PCT = 10.0
 CEILING_WEEKLY_LOSS_PCT = 20.0
 CEILING_DRAWDOWN_PCT = 50.0

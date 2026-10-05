@@ -25,7 +25,7 @@ export const PROFILE_FIELDS = Object.keys(PROFILE_ANCHORS) as ProfileField[];
 
 /** `CEILING_*` of app/config.py that bound the slider (the overrides' field limits match them). */
 export const CEILINGS: Partial<Record<ProfileField, number>> = {
-  risk_per_signal_percent: 2.0,
+  risk_per_signal_percent: 3.0,
   portfolio_heat_percent: 10.0,
   max_daily_loss_percent: 10.0,
 };
@@ -99,13 +99,16 @@ export function overrideValid(field: ProfileField, value: unknown): boolean {
   return (bound.minExclusive === true ? value > bound.min : value >= bound.min) && value <= bound.max;
 }
 
-export type ProfileWarning = 'risk' | 'heat' | 'dailyLoss' | 'rr' | 'conflict' | 'htf' | 'backLoaded';
+export type ProfileWarning =
+  'risk' | 'riskVeryHigh' | 'heat' | 'dailyLoss' | 'rr' | 'conflict' | 'htf' | 'backLoaded';
 
 /** Settings worth a second look: more offensive than the balanced anchor's, or a back-loaded scale-in. */
 export function warnings(values: Resolved, plan: EntryPlan): ProfileWarning[] {
   const out: ProfileWarning[] = [];
   const num = (field: ProfileField) => Number(values[field]);
-  if (num('risk_per_signal_percent') > 1.0) out.push('risk');
+  const risk = num('risk_per_signal_percent');
+  if (risk > 2.0) out.push('riskVeryHigh');
+  else if (risk > 1.0) out.push('risk');
   if (num('portfolio_heat_percent') > 3.0) out.push('heat');
   if (num('max_daily_loss_percent') > 3.0) out.push('dailyLoss');
   if (num('min_rr') < 1.5) out.push('rr');

@@ -15,7 +15,7 @@ export const LIMITS = [
 /** Allow-list override keys (`ASSET_CLASSES_KEY`, `FAMILIES_KEY`). */
 export const ALLOW_LISTS = ['ASSET_CLASSES', 'FAMILIES'] as const;
 /** `CEILING_RISK_PER_TRADE_PCT` (app/config.py): the most a profile may risk per trade. */
-export const RISK_CEILING = 2.0;
+export const RISK_CEILING = 3.0;
 
 /** `GET|PUT /me/account-profile`: `source` null before the user set one. */
 export const AccountProfileSchema = z.union([

@@ -53,6 +53,7 @@ def test_env_overrides_yaml(tmp_path: Path) -> None:
     ("yaml_text", "fragment"),
     [
         ("risk:\n  max_risk_per_trade_percent: 5\n", "max_risk_per_trade_percent"),
+        ("risk:\n  max_risk_per_trade_percent: 3.1\n", "max_risk_per_trade_percent"),  # ceiling 3 (rev. 5)
         ("risk:\n  max_account_drawdown_percent: 80\n", "max_account_drawdown_percent"),
         ("risk:\n  max_risk_per_trade_percent: 2\n  max_daily_loss_percent: 1\n", "must not exceed"),
         ("risk:\n  max_riskk: 1\n", "max_riskk"),
@@ -73,6 +74,14 @@ def test_invalid_config_rejected(tmp_path: Path, yaml_text: str, fragment: str) 
         load_settings(
             env_file=None, config_file=_write(tmp_path, yaml_text), environ={"TRADING_MODE": "BACKTEST"}
         )
+
+
+def test_risk_per_trade_up_to_the_ceiling(tmp_path: Path) -> None:
+    yaml_text = "risk:\n  max_risk_per_trade_percent: 3\n  max_daily_loss_percent: 4\n  max_total_open_risk_percent: 3\n"
+    s = load_settings(
+        env_file=None, config_file=_write(tmp_path, yaml_text), environ={"TRADING_MODE": "BACKTEST"}
+    )
+    assert s.config.risk.max_risk_per_trade_percent == 3.0
 
 
 def test_paper_requires_mt5_credentials(tmp_path: Path) -> None:

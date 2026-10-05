@@ -19,7 +19,7 @@ describe('manual account form', () => {
   it('needs equity, a currency and leverage; balance and risk are optional', () => {
     expect(manualProblems(form)).toEqual([]);
     expect(
-      manualProblems({ equity: '0', balance: '-1', currency: 'usd', leverage: '5000', risk: '2.5' }),
+      manualProblems({ equity: '0', balance: '-1', currency: 'usd', leverage: '5000', risk: '3.5' }),
     ).toEqual(['equity', 'balance', 'currency', 'leverage', 'risk']);
   });
 

@@ -227,8 +227,8 @@ LIVE start logs a prominent WARNING banner, and the first N live trades run at r
   parameters: symbols, timeframes, indicator params, strategies, risk details, sessions and per-symbol overrides.
   Precedence: env > yaml > code defaults. Pydantic models have range validators, unknown keys are rejected, and startup
   logs an effective-config summary with secrets masked.
-- **Units:** risk values are **percent of equity** (`MAX_RISK_PER_TRADE=0.5` means 0.5%). Hard ceilings: 2% per trade,
-  10% daily loss, 50% drawdown. Values above them stop startup. A unit mistake (0.01 meant as 1%) errs on the safe side.
+- **Units:** risk values are **percent of equity** (`MAX_RISK_PER_TRADE=0.5` means 0.5%). Hard ceilings: 3% per
+  trade (2% before rev. 5), 10% daily loss, 50% drawdown. Values above them stop startup. A unit mistake (0.01 meant as 1%) errs on the safe side.
 - **Secret sources:** env/.env, or Windows Credential Manager via `keyring` (value `keyring:<service>/<name>`); Railway
   sealed variables in the cloud. `SecretStr` is used everywhere and secrets are never logged.
 
@@ -1625,7 +1625,7 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
   - `/account` (every user, nav "My account & plan"): the sizing account. An engine owner chooses "my
     engine's MT5 account" (LINKED_ENGINE; the values shown are the broker account of the latest ranking run,
     the same the ranking header uses) or a manual form; a market-feed user has the manual form only (equity,
-    optional balance, currency, leverage as the x of 1:x, optional risk % up to the 2% ceiling, checked like
+    optional balance, currency, leverage as the x of 1:x, optional risk % up to the per-trade ceiling (3% since rev. 5), checked like
     `ProfileBody`). Plan & usage: the plan, each limit with this period's usage ("adjusted for you" when an
     override changed it), the features, the allowed asset classes and families. The "change plan" card shows
     only when `GET /billing/plans` answers, i.e. while `SUBSCRIPTIONS_ENABLED`; the checkout returns to
