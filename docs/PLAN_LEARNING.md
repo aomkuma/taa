@@ -1,7 +1,8 @@
 # TAA — Learning Layer: Symbol Character, Tick Microstructure & Signal Quality (Design)
 
 > Separate design track, started 2026-10-06. It extends [PLAN.md](PLAN.md) and does not replace any part of it.
-> Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). Section numbers here are `L0`–`L8`, `L19`–`L21`, then `L9`–`L18`; references
+> Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). The reasoning behind this design (the
+> conversation of 2026-10-06) is kept in [LEARNING_DISCUSSION.md](LEARNING_DISCUSSION.md). Section numbers here are `L0`–`L8`, `L19`–`L21`, then `L9`–`L18`; references
 > such as §A27 point to PLAN.md. No profitability claims anywhere: every model here can only estimate, filter
 > or explain. Capital protection, fail-closed behavior and auditability still come first.
 
@@ -44,20 +45,21 @@
 
 ### L0.1 What already exists: reuse map (checked against PLAN.md, PATTERNS.md, HANDOFF.md and the code, 2026-10-06)
 
-This track **extends** the existing system. It does not rebuild it. Before a ticket starts, re-check this table.
-Every ticket names the module it extends.
+This track builds **on top of** the existing system and does not rebuild it. It reads existing outputs and plugs
+in through the hook points of §L0.2. Before a ticket starts, re-check this table. Every ticket names the module
+it reads.
 
 | Planned here | Already exists | What is new |
 |---|---|---|
 | Hour-of-week activity (L5) | `LiquidityProfile` (median tick volume per hour of week from H1) and `hour_of_week` in `app/advisory/market_sessions.py`; ranking S4 "Liquidity now" | Add volatility and spread per hour of week, CIs and stability; share the profile with strategies, not only the ranking |
 | Spread profile (L5) | Median and current spread in the ranking (S2, G4); `QuoteService` rolling median spread | Per hour of week, p95, rollover spikes, "costly hours" |
-| Regime (L5 regime, L20.1) | `app/strategy/regime_detector.py` (TRENDING / RANGING / VOLATILE / UNCLEAR, ADX + ATR percentile); ranking S6 regime fit; style tag `regime` | Profile-normalized inputs, efficiency ratio, `QUIET`, hysteresis. **Extend the existing detector and enum** rather than adding a second classifier |
+| Regime (L5 regime, L20.1) | `app/strategy/regime_detector.py` (TRENDING / RANGING / VOLATILE / UNCLEAR, ADX + ATR percentile); ranking S6 regime fit; style tag `regime` | A learning overlay (`app/learning/regime.py`) that reads the detector's output and adds profile-normalized inputs, efficiency ratio, `QUIET` and hysteresis. The existing detector and enum stay unchanged (§L0.2) |
 | Correlation clusters (L5, L20.6) | `app/advisory/correlations.py` (rolling H1 return correlations, `max_correlation`); ranking S7; `risk.correlation_groups` | Clustering, plus cross-bot and same-currency dedup at selection time |
 | Compression and breakout detectors (L19.4) | `volatility.bollinger_squeeze` (squeeze then breakout), `candle.inside_outside` (inside bar), `volatility.donchian`, `volatility.keltner`, `volatility.atr_expansion`, `sessions.asian_breakout`, `sessions.open_breakout`, `levels.sr_breakout` | Only NR4/NR7 and a **direction-neutral compression state** (ATR percentile, squeeze active *before* the breakout) as timing context; session/news timing context |
 | Range triggers (L20.2) | `wyckoff.spring_upthrust` (range + false break), `levels.sr_zone` rejection, `chart.rectangle`, `smc.liquidity_sweep`, reversal candles | The qualified-range object and `setup_range_fade` that **uses these detectors as triggers** |
 | Trend structure (L20.3/L20.4) | `structure.bos_choch`, `structure.dow`, `structure.trendline`, `trend.ma_alignment`, `momentum.divergence` | Runner trailing and exhaustion/transition policies that read them |
 | Trailing and break-even (L20.3) | §A11 position management: break-even at +1R, ATR trailing after +1.5R, CLOSE when the H1 bias flips; §A31 `EntryPlan` `SAME_PRICE` staggered TPs and `SCALE_IN` | A runner part without a fixed TP, structure/chandelier trail, budget-capped adds |
-| Timing diagnostics (L19.2) | Analytics recommendations (`app/analytics/recommendations.py`): `stop_too_tight` (SL exit followed by TP within N bars; TAA-1005 reads 20 bars after each SL exit), `earlier_break_even` (losers with MFE ≥ 1R), `cost_drag`; attribution codes `LOSS_IMMEDIATE_ADVERSE`, `LOSS_GAVE_BACK_PROFIT`, `COUNTER_TREND_ENTRY`, `LOSS_REGIME_SHIFT` | Classifying every trade into failure modes, the MAE profile of winners, time-to-target, entry efficiency and the random-walk baseline. **Built on top of the existing follow-up loader and attribution**, not beside them |
+| Timing diagnostics (L19.2) | Analytics recommendations (`app/analytics/recommendations.py`): `stop_too_tight` (SL exit followed by TP within N bars; TAA-1005 reads 20 bars after each SL exit), `earlier_break_even` (losers with MFE ≥ 1R), `cost_drag`; attribution codes `LOSS_IMMEDIATE_ADVERSE`, `LOSS_GAVE_BACK_PROFIT`, `COUNTER_TREND_ENTRY`, `LOSS_REGIME_SHIFT` | Classifying every trade into failure modes, the MAE profile of winners, time-to-target, entry efficiency and the random-walk baseline, in `app/learning/timing.py`. It imports the existing follow-up loader and attribution read-only |
 | Expectancy report (L20.0) | Segment expectancy with a seeded bootstrap CI (`restrict_segments`, `bootstrap_mean_ci`), style tags, `app/advisory/stats.py` | The p/W/L/c decomposition per playbook/bot, and "which lever moved" |
 | Win probability and explanations (L6) | `BucketModel`, `LogisticModel`, walk-forward selection, Shapley attribution (`app/advisory/confidence.py`, `calibration.py`) | The GBT candidate, purged CV with embargo, the economic metric, the model lifecycle |
 | Tick data (L3, L4) | `copy_ticks_range` in the gateway (used by shadow resolution); `volume.tick_spike` from bar tick volume | Continuous capture, storage, micro-bars, quote-flow features |
@@ -66,6 +68,47 @@ Every ticket names the module it extends.
 | Trading many symbols (L21.6) | Trading, candle streaming, charts and forming bars cover only `ALLOWED_SYMBOLS` (`.env` overrides `symbols.allowed`) | `trade_universe: catalog`, and chart data on demand for any symbol |
 | Strategy flexibility (L21) | Strategies fixed in `config.yaml` (restart needed); detector parameters can come from the owner's theory settings (TAA-920) | Bot specs versioned and audited, changeable without a restart (remote edits can only lower risk) |
 | AI proposing changes (L9) | Recommendations with "Backtest this change" (never auto-applied); calibration rebuilt nightly | The model lifecycle and drift demotion; proposals stay "backtest first, never auto-apply" |
+
+### L0.2 Separation from the existing process (user decision 2026-10-06)
+
+New work is **built separately** from the existing trading, advisory and analytics process. "Reuse" in L0.1
+means *reading* what exists, not rewriting it.
+
+**Rules.**
+
+1. **New code lives in new modules:**
+   - `app/learning/` (layer 9): profiles, regime overlay, timing, expectancy, models, playbooks, behavior
+   - `app/squad/` (layer 10, beside `app.engine`): bots, commander, allocation
+   - `app/market_data/tick_*.py` and `micro_bars.py` (layer 4)
+   - `app/indicators/microstructure.py` (layer 5)
+
+   New evidence detectors and setups are new files registered through the existing plugin registries
+   (`app/evidence/registry.py`, `app/strategy/catalog.py`). They do not edit existing detectors or setups.
+2. **Existing modules are read, not rewritten.** For example:
+   - The learning regime (`app/learning/regime.py`) takes `regime_detector` output plus profile inputs and
+     produces its own overlay. `regime_detector.py` and the `Regime` enum stay as they are.
+   - Timing diagnostics import the analytics loaders and attribution read-only.
+   - The profile reads `LiquidityProfile` and correlations.
+3. **The only changes to existing code are hook points**, each a small protocol defined in the lower layer and
+   injected by the orchestrator, with a pass-through default:
+
+   | Hook | Defined in | Default (= today) | Implemented by |
+   |---|---|---|---|
+   | H1 `CandidateFilter`: after strategy evaluation and arbitration, before the decision engine | `app/engine` | Pass everything through | Router (L20.1), model filter (L6), commander (L21) |
+   | H2 `EntryPlacer`: how an accepted entry is placed | `app/engine` | Market order now | Confirmation (L7), pullback limit / LTF trigger (L19.7) |
+   | H3 `ExitPolicy`: position management rules | `app/engine` | The §A11 rules | Runner, transitions (L20.3–L20.4), learned time stop |
+   | H4 Shadow variant registry | `app/advisory/shadow.py` | `PLAN`, `MANAGED` | `CONFIRMED`, `PULLBACK`, `RUNNER`, … |
+   | H5 Context enrichment (extra `ctx:` features) | `app/advisory/confidence.py` | None | Profile, regime, timing, micro features |
+   | H6 Magic registry | `app/engine` | — (replaces the index mapping; a fix, see TAA-L901) | — |
+   | H7 Orchestrator wiring behind `learning.enabled` / `squad.enabled` | `app/engine/orchestrator.py` | Off | — |
+   | H8 New replicated tables (migrations, outbox mapping) | `app/storage`, `app/sync` | — | Each ticket |
+
+   Each hook ships with a **golden test**: with the new flags off, decisions, sizes, shadow rows and backtest
+   results equal the pre-hook results.
+4. **The architecture test keeps it honest:** `app.learning` and `app.squad` get `LAYERS` entries. Lower layers
+   never import them; they only see the hook protocols.
+5. **Turning it off is always possible:** `learning.enabled: false` and `squad.enabled: false` return the
+   engine to today's process. This also holds after the track is complete.
 
 ## L1. Data reality: what FBS × MT5 actually provides
 
@@ -282,9 +325,9 @@ needs `min_samples` (per metric) or it is `None` with reason `INSUFFICIENT_DATA`
    hierarchical clustering into groups (reused from `app/advisory/correlations.py`).
 10. **Strategy fit:** a link to the L8 fit matrix row for this symbol.
 
-**Regime classifier.** This extends `app/strategy/regime_detector.py` and its `Regime` enum (L0.1); there is no
-second classifier. It is rule-based first, for explainability, and adds profile-normalized inputs on the
-entry TF:
+**Regime overlay** (`app/learning/regime.py`). It reads the output of `app/strategy/regime_detector.py`, which
+stays unchanged (§L0.2), and adds profile-normalized inputs on the entry TF. It is rule-based first, for
+explainability:
 
 | Regime | Rule (defaults) |
 |---|---|
@@ -459,8 +502,9 @@ next to direction.
 
 ### L19.2 Timing diagnostics (`app/learning/timing.py`)
 
-The diagnostics extend the analytics recommendations (`stop_too_tight`, `earlier_break_even`) and the
-attribution codes (L0.1), and reuse their after-exit bar loader. They run on CLOSED shadow trades (PLAN
+The diagnostics live in `app/learning/timing.py`. They read the analytics recommendations
+(`stop_too_tight`, `earlier_break_even`), the attribution codes and the after-exit bar loader, and change none of
+them (§L0.1, §L0.2). They run on CLOSED shadow trades (PLAN
 variant) and on matched manual trades (TAA-1006). They need only
 the candles that are already stored, no ticks. For every trade, the path is followed **after the exit** for a
 look-ahead `H` (default = the strategy's time stop, 72 h) using M1/M5 bars:
@@ -774,7 +818,7 @@ Checked in the code on 2026-10-06:
   - a status (`SHADOW` / `PAPER` / `ACTIVE` / `PAUSED` / `RETIRED`)
 
   Bots are configured locally in `config.yaml` (`squad.bots`), because they carry risk.
-- **Commander** (`app/engine/commander.py`): the single place that sees every bot's candidates for a decision
+- **Commander** (`app/squad/commander.py`, plugged in through hook H1): the single place that sees every bot's candidates for a decision
   cycle. It:
   - applies cross-bot conflict and correlation rules (L21.4)
   - ranks candidates by expected R per unit of risk (L20.6)
@@ -1156,8 +1200,23 @@ Types stay portable (`UTCDateTime`, `JSONType`) and use one Alembic history, as 
 
 **Placement against the main plan:** after Phase 14 and the wrap-up (the 2026-10-06 decision). TAA-L001 (probe)
 and TAA-L101–L102 (tick capture) are small, read-only and independent, so starting them early was considered.
-**User decision (2026-10-06): no early start.** Phase 14 and the wrap-up finish first, then this track runs in
-order L0 → L6.
+**User decision (2026-10-06): no early start.** Phase 14 and the wrap-up finish first.
+
+**Order of work (decided by Claude, 2026-10-06, at the user's request):** the phases above group tickets by
+topic. The order of work is the **waves** in TICKETS_LEARNING.md:
+
+- Wave 0: TAA-L901, recommended during Phase 14 / wrap-up, before LIVE go-live
+- Wave 1: quick wins on existing data (L701, L801, L808)
+- Wave 2: tick foundation
+- Wave 3: character and regime
+- Wave 4: scan everything + squad foundation
+- Wave 5: playbooks
+- Wave 6: squad
+- Wave 7: timing variants and models
+- Wave 8: tick microstructure in use
+- Wave 9: governance
+
+Measure first (Wave 1), so later waves work on the levers that matter most.
 
 ## L17. Risks & limitations
 
@@ -1181,7 +1240,7 @@ order L0 → L6.
 
 1. ~~Q1: May TAA-L001 (feed probe, read-only on the real demo terminal) and TAA-L101–L102 (tick recording) start
    before Phase 14 is finished, so data accumulates early?~~ **Answered 2026-10-06: no.** Finish Phase 14 and
-   the wrap-up first, then follow the L0 → L6 order.
+   the wrap-up first, then follow the waves of TICKETS_LEARNING.md.
 2. Q2: Which symbols get ticks recorded first (default: watchlists + open positions, max 20)?
 3. Q3: Is a new dependency (`lightgbm`, engine only) acceptable, or should L4 stay numpy-only (logistic + simple
    trees)?
@@ -1198,6 +1257,6 @@ order L0 → L6.
     Today the catalog and ranking already cover every symbol, but strategies run only on the monitored set
     (cap 60) and trading is limited to `symbols.allowed`. TAA-L806 (tiered scanning) and TAA-L906 (trading
     universe) close that gap.
-11. Q11: Should TAA-L901 (stable magic registry) be pulled forward into the main tickets (Phase 14), because
-    it fixes a latent issue of today's engine?
+11. ~~Q11~~ **Decided 2026-10-06 (ordering delegated to Claude):** TAA-L901 is Wave 0, recommended during
+    Phase 14 / wrap-up before LIVE go-live. Its hand-over to the Phase 14 work is the user's call.
 12. Q12: Which bots of the starting roster (L21.3) should exist first, and with which risk shares?

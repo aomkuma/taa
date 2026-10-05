@@ -14,12 +14,30 @@ references such as §A27 point to [PLAN.md](PLAN.md). The main tickets live in [
   create a trade or increase size.
 - New reason codes, statuses and explanation keys go into `frontend/src/i18n/` (th + en) in the same change.
 - No profitability claims in any text.
-- **Extend, don't rebuild:** check PLAN_LEARNING §L0.1 (reuse map) before starting a ticket. The first item
-  of the work is to read the existing module the ticket extends.
+- **Separate from the existing process:** new code goes into new modules (`app/learning`, `app/squad`, new
+  detector/setup files). Existing modules are read, not rewritten, and change only at the hook points of
+  PLAN_LEARNING §L0.2, with a golden test that flags-off behavior is unchanged. Check the reuse map (§L0.1)
+  before starting a ticket.
 
-**Execution order:** L0 → L1 → L2 → L3 → L4 → L5 → L6 → L7 → L8 → L9. The track starts only after Phase 14 and the wrap-up of
-TICKETS.md are finished (user decision 2026-10-06: no early start, not even for tick capture; PLAN_LEARNING
-§L16, Q1).
+**Execution order: waves** (decided by Claude on 2026-10-06 at the user's request; PLAN_LEARNING §L16). Phases
+group tickets by topic. **The waves below are the order of work.** The whole track starts after Phase 14 and
+the wrap-up of TICKETS.md, except Wave 0.
+
+| Wave | Tickets | Why at this point |
+|---|---|---|
+| 0 — Safety fix | L901 | Fixes a latent issue of today's engine (magic = index of enabled strategies). Recommended **before LIVE go-live**, i.e. during Phase 14 / wrap-up (Q11) |
+| 1 — Quick wins on existing data | L701, L801, L808 (patterns that need no playbook) | Uses shadow trades, analytics and TAA-1006 data that already exist. Shows which lever (p, W, L, c) and which failure mode matter most, which steers everything after |
+| 2 — Data foundation | L001, L101, L102, L103, L104, L203 | Ticks take calendar time to accumulate. Start capture early in the track so L5 has months of data later |
+| 3 — Character & regime | L301, L302, L303, L304, L305, L703 | Profiles and regimes feed playbooks, timing and bots. Low risk, explainable, visible in the PWA |
+| 4 — Scan everything + squad foundation | L806, L902, L903, L906 | Q10 (scan everything tradable); the bot model, shared computation and trading universe, with legacy mode golden-tested |
+| 5 — Playbooks | L601, L802, L803, L804, L805, L807, L306 | The trading approach: router, range, runner + adds, transitions, selection, profile uses |
+| 6 — Squad | L904, L905, L907, L908, L909 | Commander, budgets, lifecycle, squad backtest, Squad page; bots start as SHADOW |
+| 7 — Timing variants & models | L702, L704, L401, L402, L403, L404, L405, L406, L705, L706 | Need enough shadow outcomes from Waves 3–6 to evaluate fairly |
+| 8 — Tick microstructure in use | L201, L202, L501, L502, L503, L504 | Needs months of recorded ticks from Wave 2 and DEMO time |
+| 9 — Governance & wrap-up | L602, L603, L604 | Drift, Learning page, runbook once models are live |
+
+Rules: one ticket at a time; every ticket keeps the legacy path identical with flags off (PLAN_LEARNING §L0.2);
+LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 
 ## Progress
 
@@ -140,7 +158,7 @@ TICKETS.md are finished (user decision 2026-10-06: no early start, not even for 
 - **Depends on:** L201
 
 - [ ] `app/learning/` package + `LAYERS` entry + "no execution imports" architecture test
-- [ ] hour-of-week activity, volatility and spread profiles (168 buckets), extending `LiquidityProfile` (`app/advisory/market_sessions.py`)
+- [ ] hour-of-week activity, volatility and spread profiles (168 buckets), reading `LiquidityProfile` (`app/advisory/market_sessions.py`) without changing it
 - [ ] trend vs mean reversion: autocorrelation (Newey–West), variance ratio (robust z), Hurst via DFA with bootstrap CI, OU half-life, summary label
 - [ ] breakout behavior (follow-through, false break, MFE/MAE in ATR)
 - [ ] level respect vs random-level baseline
@@ -153,7 +171,7 @@ TICKETS.md are finished (user decision 2026-10-06: no early start, not even for 
 - **Status:** TODO
 - **Depends on:** L301
 
-- [ ] extend `app/strategy/regime_detector.py` and the `Regime` enum (no second classifier): profile-normalized inputs, efficiency ratio, `QUIET`
+- [ ] `app/learning/regime.py`: overlay that reads `regime_detector` output (unchanged) and adds profile-normalized inputs, efficiency ratio, `QUIET`, hysteresis
 - [ ] regime added to opportunity `ctx:` features and shadow rows
 - [ ] reason/status codes + i18n
 - [ ] tests
@@ -367,9 +385,9 @@ the TP.
 #### TAA-L701 — Timing diagnostics (L19.1, L19.2)
 
 - **Status:** TODO
-- **Depends on:** L303 (σ profile); uses existing shadow data and TAA-1006 matches
+- **Depends on:** — (Wave 1; σ from ATR first, the L303 profile σ once it exists); uses existing shadow data and TAA-1006 matches
 
-- [ ] `app/learning/timing.py` on top of `app/analytics/recommendations.py` (`stop_too_tight`, `earlier_break_even`) and the attribution codes; reuse the after-exit bar loader of TAA-1005, extended to look-ahead H on M1/M5
+- [ ] `app/learning/timing.py`: reads `app/analytics/recommendations.py` (`stop_too_tight`, `earlier_break_even`), the attribution codes and the TAA-1005 after-exit loader without changing them; own look-ahead H on M1/M5
 - [ ] failure-mode classification `EARLY` / `LATE` / `STALL` / `TF_MISMATCH` / `WRONG` (+ i18n codes)
 - [ ] winners' MAE quantiles (R, ATR), time-to-target quantiles, entry efficiency, TF agreement
 - [ ] random-walk first-passage baseline (P(TP first) = b/(a+b), E[τ] = a·b/σ²) shown beside the observed values
@@ -442,7 +460,7 @@ per-signal budget.
 #### TAA-L801 — Expectancy report (L20.0)
 
 - **Status:** TODO
-- **Depends on:** L601
+- **Depends on:** — (Wave 1 by strategy × symbol; playbook and bot dimensions added when L802/L902 exist)
 
 - [ ] `app/learning/expectancy.py`: p, W, L, c, E[R] with bootstrap CI (reuse `bootstrap_mean_ci`) and opportunity rate per playbook × bot × symbol × strategy
 - [ ] "which lever moved" vs the previous version; LIVE and REPLAY separate
@@ -464,7 +482,7 @@ per-signal budget.
 #### TAA-L803 — Range playbook (L20.2)
 
 - **Status:** TODO
-- **Depends on:** L802, L702
+- **Depends on:** L802, L701 (entry-mode variants of L702 plug in when they exist)
 
 - [ ] qualified-range detector (ADX, efficiency ratio, touches, width vs ATR and cost, no compression); triggers reuse `wyckoff.spring_upthrust`, `levels.sr_zone`, `smc.liquidity_sweep` and reversal candles
 - [ ] `setup_range_fade` (`DEMO_UNPROVEN`): edge-zone entry after LTF rejection, stop outside noise (MAE q80), TP1 mid / TP2 opposite edge
@@ -475,9 +493,9 @@ per-signal budget.
 #### TAA-L804 — Trend runner and risk-free adds (L20.3)
 
 - **Status:** TODO
-- **Depends on:** L802, L702
+- **Depends on:** L802, L701 (entry-mode variants of L702 plug in when they exist)
 
-- [ ] split position (part A at `tp1_r`, part B runner without fixed TP) on the `SAME_PRICE` plan; extends §A11 break-even/trailing
+- [ ] split position (part A at `tp1_r`, part B runner without fixed TP) on the `SAME_PRICE` plan; runner rules as an `ExitPolicy` (hook H3); the §A11 rules stay the default
 - [ ] runner trailing: the tighter of HTF structure trail and chandelier `k × ATR`; at least break-even + costs after TP1; SL moves only favorably
 - [ ] runner exits: trail, HTF CHoCH against, regime leaves `TREND`, kill switch, breaker; swap accrued and shown
 - [ ] adds (opt-in, `max_adds`): only when existing stops lock in the add's risk; idea risk ≤ initial budget (property test); count toward heat; off after daily loss or breaker
@@ -498,7 +516,7 @@ per-signal budget.
 #### TAA-L806 — Tiered scanning of all symbols (L20.5)
 
 - **Status:** TODO
-- **Depends on:** L802
+- **Depends on:** L302 (interest score uses the playbook once L802 exists)
 
 - [ ] tier 0 indicator-only pass over all tradable symbols (549 on FBS demo) each entry-TF close; interest score; replaces the monitored-set cap of 60 for scanning (alerts keep their own requirements)
 - [ ] tier 1 full pipeline for positions, watchlists and the top `tier1_max`; rotation every `rotation_bars`
@@ -511,18 +529,18 @@ per-signal budget.
 #### TAA-L807 — Selection under heat and correlation (L20.6)
 
 - **Status:** TODO
-- **Depends on:** L405, L301
+- **Depends on:** L301 (ranks with the current win probability; the L4 model once selected)
 
 - [ ] ranking by expected R per unit risk (cost included), then setup strength
 - [ ] at most `max_per_cluster_direction` per correlation cluster and direction; same-currency exposure as one bet
 - [ ] rejected signals keep shadow tracking (`HEAT_RANKED_OUT`, `CORRELATED_DUPLICATE`)
-- [ ] extends `app/strategy/arbitration.py`
+- [ ] runs after the existing `app/strategy/arbitration.py` (unchanged), through hook H1
 - [ ] tests
 
 #### TAA-L808 — Behavior report on manual trades (L20.7)
 
 - **Status:** TODO
-- **Depends on:** L701, L802
+- **Depends on:** L701 (Wave 1; the "against the current playbook" check is added when L802 exists)
 
 - [ ] detectors: early exit of winners, stop moved away, revenge trade, overtrading, off-plan trade, comfort-zone bias
 - [ ] per pattern: count, share, hypothetical ΔR "as traded" vs "as planned"
@@ -537,10 +555,10 @@ Design: PLAN_LEARNING §L21. Legacy single-engine mode stays the default and mus
 #### TAA-L901 — Stable magic registry (L21.8)
 
 - **Status:** TODO
-- **Depends on:** —
+- **Depends on:** — (Wave 0)
 
-Note: this fixes a latent issue of today's engine (magic = base + index of enabled strategies), so it may be
-pulled into the main ticket order with the user's agreement.
+Note: this fixes a latent issue of today's engine (magic = base + index of enabled strategies). Recommended
+during Phase 14 / wrap-up, before LIVE go-live.
 
 - [ ] `magic_registry` table `(bot_id, strategy) → magic`, assigned once, never reused + migration
 - [ ] first start registers `("default", strategy)` with today's values (open positions keep their mapping)
@@ -576,7 +594,7 @@ pulled into the main ticket order with the user's agreement.
 - **Status:** TODO
 - **Depends on:** L902, L807
 
-- [ ] `app/engine/commander.py`: collect every bot's candidates per cycle; deterministic ranking (expected R per unit risk, priority, `bot_id`)
+- [ ] `app/squad/commander.py` behind hook H1: collect every bot's candidates per cycle; deterministic ranking (expected R per unit risk, priority, `bot_id`)
 - [ ] `net_direction` policy (`SQUAD_CONFLICT`, `SQUAD_OPPOSES_OPEN`); `independent` opt-in, hedging only, refused on netting accounts
 - [ ] same-direction stacking within `max_bots_per_symbol` and `max_symbol_risk_percent`; cross-bot correlation clusters
 - [ ] decision record keeps the full candidate list and the reason each lost
