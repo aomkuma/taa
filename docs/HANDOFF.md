@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-05 (session that started the Phase 9 pages), single session on `main`. Done in this
 session: TAA-903 app shell, 904 dashboard, 905 charts, 906 symbols, 907 positions & history, 908 signals &
-decisions, 909 strategies. The previous session (2026-10-04) did TAA-804 … TAA-8A5. No branch holds unmerged work. This file
+decisions, 909 strategies, 910 backtests. The previous session (2026-10-04) did TAA-804 … TAA-8A5. No branch holds unmerged work. This file
 holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
@@ -22,9 +22,9 @@ dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & ad
 name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
 Done: Phases 0–8, 8A and 12 (cloud replay jobs moved to the deferred TAA-1501, Phase 15).
-Partly done: Phase 9 (901–909, 915), Phase 10 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13–14.
+Partly done: Phase 9 (901–910, 915), Phase 10 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13–14.
 This is the only session: work on main in C:\Users\korap\taa, one ticket at a time, in the order of the
-"Next work" list in docs/HANDOFF.md. Continue with TAA-910 (backtests UI).
+"Next work" list in docs/HANDOFF.md. Continue with TAA-911 (risk & controls).
 A local PostgreSQL 16 is available for tests: `pytest -m postgres` uses TAA_POSTGRES_URL from .env (role taa,
 database taa_test); never touch other projects' databases on that server.
 LIVE stays disabled until Phase 14 and an explicit go-ahead. Subscriptions stay off (SUBSCRIPTIONS_ENABLED=false).
@@ -54,12 +54,12 @@ or at any phase boundary if I ask. Chat with me in Thai.
 - **Also done:** Phase 7 (TAA-701..709), Phase 8 (TAA-801..811) and Phase 8A (TAA-8A1..8A5). TAA-810's optional
   cloud replay jobs moved to TAA-1501 (Phase 15, deferred; reasons in TICKETS): replay runs locally with
   `python -m app.cli advisory replay` and its rows replicate up.
-- **In progress (progress table):** Phase 9 10/23 (901–909,
+- **In progress (progress table):** Phase 9 11/23 (901–910,
   915), Phase 10 3/5 (1001..1003). Not started: Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14
   (LIVE). The order of the remaining tickets: "Next work" below.
-- **Checks:** 2678 passed, 7 skipped (6 real-terminal, 1 contract case defined from bar 0) after TAA-909; the
+- **Checks:** 2683 passed, 7 skipped (6 real-terminal, 1 contract case defined from bar 0) after TAA-910; the
   Postgres tests run when `TAA_POSTGRES_URL` is set (they ran). The full suite takes ~7–9 min. ruff, mypy and
-  bandit are clean. Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/` (251 tests after TAA-909). Architecture rules are enforced by `tests/unit/test_architecture.py`.
+  bandit are clean. Frontend: `npm run lint`, `typecheck`, `test`, `build` in `frontend/` (280 tests after TAA-910). Architecture rules are enforced by `tests/unit/test_architecture.py`.
 - **Design rev. 3** (committed docs, code later in its phases):
   - PLAN §A31 "Trading profile & entry plans":
     - style slider 0–100 (defensive → offensive) with five anchor presets
@@ -397,6 +397,8 @@ or at any phase boundary if I ask. Chat with me in Thai.
     - TAA-909 (PLAN §A15 "TAA-909 decisions"): `GET /strategies?days=` (`app/web/strategies.py`), heartbeats
       carry `disabled_strategies`, `src/pages/strategies/`, and the reusable `StepUpDialog`
       (`src/components/StepUpDialog.tsx`, `src/auth/stepUp.ts`): TAA-911 should use it for its controls.
+    - TAA-910 (PLAN §A15 "TAA-910 decisions"): `GET /backtests/history`, `src/pages/backtests/`,
+      `createSeriesChart` in `src/pages/charts/chartAdapter.ts` (equity/drawdown; reuse it for TAA-1005).
     - Page tests use `src/test/engine.ts` (`owner()`, `status()`, `heartbeat()`, `renderShell(path)`) and
       `src/test/eventSource.ts` (fake EventSource).
   - local PostgreSQL 16 (Windows service `postgresql-x64-16`, localhost:5432), shared with other projects.
@@ -448,7 +450,7 @@ dependencies are done by the time it is reached):
 1. ~~TAA-703, 704, 707, 708, 709, 706, 803~~ (done in the previous session)
 2. ~~TAA-804, 805, 811, 808, 705, 806, 807, 809, 810~~ (done; cloud replay jobs deferred to TAA-1501)
 3. ~~TAA-8A1 → 8A2 → 8A3 → 8A4 → 8A5~~ (done, Phase 8A)
-4. ~~TAA-903 app shell, 904 dashboard, 905 charts, 906 symbols, 907 positions & history, 908 decisions, 909 strategies~~ (done). **Next:** 910–913, 916–923, then 914 PWA polish (Phase 9). The backend for every page exists; see "Notes for the PWA" below.
+4. ~~TAA-903 app shell, 904 dashboard, 905 charts, 906 symbols, 907 positions & history, 908 decisions, 909 strategies, 910 backtests~~ (done). **Next:** 911–913, 916–923, then 914 PWA polish (Phase 9). The backend for every page exists; see "Notes for the PWA" below.
 5. TAA-1004 (do the preparation in "Notes from Phase 10" first), TAA-1005 (Phase 10)
 6. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
    Milestone 1 review.
@@ -486,6 +488,15 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
   real venv.
 
 ## Notes for the next session
+
+- Local demo stack (2026-10-05, at the user's request; nothing of it is committed):
+  - web user `aomkuma` (OWNER); password reset with the new `app.cli web reset-password` (minimum now 8 characters)
+  - a separate engine `fake demo` (`eng_pd7dpfkuhvmbgtused2xi2nf7a`) registered for `aomkuma`, run as
+    `python -m app.main --mode paper --fake` with an env file in the session scratchpad (`ENGINE_ID`/secret of
+    that engine, `CLOUD_BASE_URL=http://127.0.0.1:8000`, its own `ENGINE_DB_URL`, a copy of config.yaml with
+    `sync.enabled: true`), so fake rows never mix with the real engine id or `data/taa_engine.db`. Revoke it
+    before pairing the real engine (`web engine revoke <id> --confirm <id>`, then `web engine import-env`).
+  - `python -m app.web` and `python -m app.worker` started by hand; one demo backtest run exists.
 
 - Notes for the PWA (Phase 9; the APIs the pages read, all under `/api/v1`):
   - Session: `/auth/session|login|logout|step-up|profile`; feed: `GET /me/feed` (which engine the user reads;
@@ -642,7 +653,10 @@ Not used now (one session at a time). Kept for the case the user runs sessions i
 - Pushing to GitHub: the user asked for a push (2026-10-04), but `git push` from Claude Code fails because
   the Git credential manager needs an interactive GitHub login (`gh` is not installed). The user runs
   `git push origin main` in their own terminal.
-- The flaky pandas access violation has no ticket yet: open one if it recurs (see "Notes from Phase 7").
+- The flaky pandas access violation: **cause found 2026-10-05** — memory exhaustion. The fake engine died with
+  `numpy ArrayMemoryError` (1.85 MiB) in `FakeMT5._bars`, then a segfault, while the full pytest suite ran next to
+  the web, worker and engine; the same run had 6 argon2 `HashingError`s that passed alone. Do not run the full
+  suite while the local stack runs (or accept reruns). No code bug; no ticket needed unless it happens alone.
 - Before Phase 11: Railway account access for deployment (only with explicit go-ahead).
 - Before ever enabling subscriptions: legal review (Thai SEC advisory licensing, PDPA, payments): the questions
   and the enable checklist are in `docs/COMPLIANCE.md`; the gate is `SUBSCRIPTIONS_ENABLED` +
