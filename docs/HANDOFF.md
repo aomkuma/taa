@@ -1,6 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-06 (end of the session that did revisions 5–6, Phase 10, Phase 14 and Phase 13 core).
+Last updated: 2026-10-06, later the same day (the learning-track session took over after the session that did
+revisions 5–6, Phase 10, Phase 14 and Phase 13 core).
 This file holds **state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`,
 design decisions in `docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`.
 What was built per ticket is in the git history. A separate **learning track** (Milestone 3) is designed in
@@ -42,8 +43,29 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   (final docs pass; README, runbooks and PLAN notes are current as of this session), Phase 15 (deferred).
 - **Checks (2026-10-06, stack stopped):** full pytest **2791 passed, 7 skipped** (10 min); vitest 526; Playwright
   smoke 3; ruff, mypy, bandit clean; `pip-audit` and `npm audit` clean.
-- **Git:** `main` only; the user pushes. Latest migration: **0037** (`ai_assessments`).
-- **The `-Mt5` stack** runs with this session's code (restarted at the end).
+- **Git:** `main` only; the user pushes. Latest migration: **0038** (`magic_registry`).
+- **The `-Mt5` stack** still runs the code from before the learning-track commits below: restart it (web
+  first for the new `/learning` routes and the rebuilt PWA, then the engine for the magic registry and
+  migration 0038), only with the user's go-ahead.
+
+### Learning track, started 2026-10-06 (Milestone 3; `docs/PLAN_LEARNING.md`, `docs/TICKETS_LEARNING.md`)
+
+- Design: 52 tickets in waves 0–9; the reasoning of the design conversation is in
+  `docs/LEARNING_DISCUSSION.md`. New work stays separate from the existing process (§L0.2).
+- **TAA-L901 (Wave 0, a fix for today's engine):** stable magic numbers (`app/engine/magic_registry.py`,
+  migration 0038). Before, magic = base + index of the *enabled* strategies, so enabling/disabling/reordering a
+  strategy with open positions re-mapped them; the loss tracker now counts the whole bot range.
+- **TAA-L002:** golden harness `tests/golden/` (backtest trades, replay shadow trades, PAPER engine decisions
+  and positions). Regenerate only on purpose with `TAA_UPDATE_GOLDEN=1` and review the JSON diff.
+- **Wave 1 reports:** `app/learning/` (timing failure modes vs a random-walk baseline, the E[R] = p·W −
+  (1 − p)·L − c split, manual-trade behavior) served on request by `GET /engines/{id}/learning/timing|
+  expectancy|behavior` and the new PWA page **Learning** (Analysis group). Open in Wave 1: timing for manual
+  trades (L701 item 8) and the stop history of manual positions (L808).
+- Checks after these commits: unit 2351 + web 312 + golden 3 + engine integration 48 passed; vitest 535,
+  lint, typecheck, build; ruff, mypy, bandit clean. The full pytest run with the stack stopped is still due.
+- Next in the learning track: Wave 2 starts with TAA-L001 (a read-only probe of DOM and tick-history depth on
+  the real terminal: **needs the user's OK**), then tick capture. Open questions Q2–Q8, Q12 in
+  `docs/PLAN_LEARNING.md` §L18.
 
 ### What this session added (2026-10-05/06)
 
@@ -77,8 +99,9 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 3. **TAA-1404 final docs pass:** check README, both runbooks, CLAUDE.md and `.env.example` against reality once
    LIVE has run (or before the owner's go-live).
 4. Phase 11 Railway: skipped for now; later only with the owner's Railway access and go-ahead.
-5. **Learning track (Milestone 3):** see `docs/TICKETS_LEARNING.md`; it covers the owner's homework (scan every
-   symbol, symbol character, tick features, adaptive selection). The findings below stay valid input:
+5. **Learning track (Milestone 3):** in progress (see the section above and `docs/TICKETS_LEARNING.md`); it
+   covers the owner's homework (scan every symbol, symbol character, tick features, adaptive selection). The
+   findings below stay valid input:
    - Ranking covers the whole broker universe (549 symbols on the FBS demo). The opportunity scanner covers
      only the advisory requirements (allowlist + favourites + lists + `advisory.universe.auto_top_n: 30`) with a
      per-cycle time budget (~1–1.6 s per symbol per bar for the evidence scan).
