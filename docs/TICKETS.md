@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
-| M1 | Phase 9 — PWA frontend | 23 | 21 | IN PROGRESS |
+| M1 | Phase 9 — PWA frontend | 23 | 22 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -1499,17 +1499,17 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-923 — (rev. 4) Engines page
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 811, 903, 915
 
-- [ ] "เชื่อมต่อ Engine / Engines" page under Settings: list with label, id, status badge (waiting / connected / offline / revoked), last seen, key age
-- [ ] add wizard (step-up): label + PAPER/DEMO-only notice → server-issued `ENGINE_ID` + `ENGINE_HMAC_SECRET` shown once
-- [ ] `CONTROL_TOTP_SECRET` generated in the browser (Web Crypto) + QR (bundled library, license checked) + one code checked locally; never sent to the server
-- [ ] ready `.env` block (copy + download, keyring tip) + Windows setup checklist (portable MT5, investor password for PAPER, Algo Trading, `doctor`, start) + "waiting for first contact"
-- [ ] rotate (new secret shown once) and revoke (typed confirmation), both with step-up; control-TOTP re-generation guidance
-- [ ] secret hygiene: component state only, never in the query cache, local storage or the service worker
-- [ ] th/en i18n keys + zod schemas; no profitability claims
-- [ ] tests
+- [x] "เชื่อมต่อ Engine / Engines" page under Settings: list with label, id, status badge (waiting / connected / offline / revoked), last seen, key age
+- [x] add wizard (step-up): label + PAPER/DEMO-only notice → server-issued `ENGINE_ID` + `ENGINE_HMAC_SECRET` shown once
+- [x] `CONTROL_TOTP_SECRET` generated in the browser (Web Crypto) + QR (bundled library, license checked) + one code checked locally; never sent to the server
+- [x] ready `.env` block (copy + download, keyring tip) + Windows setup checklist (portable MT5, investor password for PAPER, Algo Trading, `doctor`, start) + "waiting for first contact"
+- [x] rotate (new secret shown once) and revoke (typed confirmation), both with step-up; control-TOTP re-generation guidance
+- [x] secret hygiene: component state only, never in the query cache, local storage or the service worker
+- [x] th/en i18n keys + zod schemas; no profitability claims
+- [x] tests
 
 ### Phase 10 — Trade analytics
 

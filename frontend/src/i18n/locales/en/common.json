@@ -1822,5 +1822,88 @@
     "invalidFields": "Some values are outside their allowed range.",
     "invalid": "The server rejected the profile: {{detail}}",
     "failed": "Could not save. Try again."
+  },
+  "engines": {
+    "intro": "An engine is the program on your Windows computer or VPS next to the MT5 terminal. Your MT5 password stays there; this page only issues the keys that let it talk to this app.",
+    "list": {
+      "title": "Your engines",
+      "none": "No engine connected yet."
+    },
+    "badge": {
+      "waiting": "Waiting for first contact",
+      "connected": "Connected",
+      "offline": "Offline",
+      "revoked": "Revoked"
+    },
+    "rotationPending": "the previous key still works for a short while",
+    "lastSeen": "Last seen {{at}}",
+    "never": "never",
+    "keyAge": "key {{n}} days old",
+    "action": {
+      "rotate": "New key",
+      "totp": "New control code",
+      "revoke": "Revoke"
+    },
+    "add": {
+      "newTitle": "Connect an engine",
+      "notice": "Engines run PAPER or DEMO only; LIVE trading is disabled.",
+      "label": "Name",
+      "labelHint": "e.g. home PC",
+      "create": "Create keys",
+      "confirmTitle": "Create engine keys",
+      "confirmBody": "Create keys for \"{{label}}\". They are shown only once.",
+      "title": "Set up {{label}}",
+      "keysTitle": "Engine keys",
+      "once": "Copy these now: they are shown only this once. A lost key means making a new one.",
+      "contactTitle": "First contact",
+      "waiting": "Waiting for first contact: start the engine with the .env above.",
+      "connected": "Connected: the engine has reached this app.",
+      "done": "Done"
+    },
+    "totp": {
+      "title": "Control code",
+      "newTitle": "New control code for {{label}}",
+      "intro": "Remote close and flatten need a code from this second authenticator entry, checked on the engine machine. Scan it and type the code it shows.",
+      "qr": "QR code for the engine's control code",
+      "manual": "Or type this key:",
+      "code": "Code from the app",
+      "check": "Check",
+      "ok": "The code matches.",
+      "bad": "That code does not match; check the phone's time and try the next code.",
+      "never": "Made in this browser and never sent to the server.",
+      "restart": "Replace CONTROL_TOTP_SECRET in the engine's .env, restart the engine, and remove the old entry from the authenticator app."
+    },
+    "env": {
+      "title": "Settings for the engine machine",
+      "afterTotp": "CONTROL_TOTP_SECRET is added once the code above matches.",
+      "copy": "Copy",
+      "download": "Download",
+      "copied": "Copied.",
+      "keyring": "Tip: put the secrets in the Windows keyring and write keyring:<service>/<name> in the .env instead (see the runbook)."
+    },
+    "checklist": {
+      "title": "Windows setup",
+      "terminal": "Install a separate portable MT5 terminal for the engine.",
+      "password": "Log in with the investor (read-only) password for PAPER; the master password only for DEMO.",
+      "algo": "Turn Algo Trading on in the terminal.",
+      "env": "Put the settings above into the engine's .env and set sync.enabled: true in config.yaml.",
+      "doctor": "Run python -m app.cli doctor and fix anything it reports.",
+      "start": "Start the engine: python -m app.main --mode paper."
+    },
+    "rotate": {
+      "title": "Make a new engine key",
+      "button": "Make new key",
+      "body": "A new key for \"{{label}}\". The old one keeps working for a short while so you can update the engine.",
+      "doneTitle": "New key for {{label}}",
+      "once": "Copy it now: it is shown only this once.",
+      "restart": "Replace ENGINE_HMAC_SECRET in the engine's .env and restart the engine."
+    },
+    "revoke": {
+      "title": "Revoke this engine?",
+      "button": "Revoke",
+      "body": "\"{{label}}\" can no longer send data or receive commands. Its history stays readable. This cannot be undone.",
+      "type": "Type the engine ID to confirm: {{id}}",
+      "mismatch": "Type the engine ID exactly."
+    }
   }
 }

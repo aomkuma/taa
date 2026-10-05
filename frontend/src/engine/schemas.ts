@@ -15,6 +15,12 @@ export const EngineSummarySchema = z.looseObject({
   label: z.string(),
   status: z.string(),
   last_seen_at: IsoDateTime.nullable(),
+  /** `EngineInfo.public()` (TAA-811); optional so older test fixtures still parse. */
+  first_seen_at: IsoDateTime.nullable().optional(),
+  created_at: IsoDateTime.optional(),
+  rotated_at: IsoDateTime.nullable().optional(),
+  revoked_at: IsoDateTime.nullable().optional(),
+  rotation_pending: z.boolean().optional(),
 });
 export type EngineSummary = z.infer<typeof EngineSummarySchema>;
 

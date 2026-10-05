@@ -2157,6 +2157,21 @@ web service's env.
     - the issuing responses are `no-store`
     - the QR library is bundled (no CDN, strict CSP) and its license is checked
   - Every text goes through i18n (th default, en), every response through zod, with no profitability claims.
+  - (TAA-923 decisions) `frontend/src/pages/engines/`:
+    - Status badge from the list: revoked; waiting while `first_seen_at` is null; connected when
+      `last_seen_at` is within 3 minutes (it is written at most once a minute); otherwise offline. Key age
+      counts from `rotated_at`, else `created_at`. While a new engine waits, the list is polled every 5 s.
+    - Issued keys are fetched with plain `apiPost` inside the step-up dialog (not a TanStack mutation, whose
+      cache would keep the result) and held in page state only; a test checks the query cache holds no
+      secret. The service worker only answers navigations (`/api/` excluded), so it never sees them.
+    - The control TOTP is RFC 6238 SHA-1/6/30 s in Web Crypto (`totp.ts`, checked against pyotp codes),
+      accepted one step either side like the engine; the secret is 20 random bytes in base32, the URI
+      `otpauth://totp/TAA%20engine:<label>?...&issuer=TAA%20engine`. The QR is drawn as one SVG path from
+      `uqr` 0.1.3 (MIT, no dependencies; module matrix only, no innerHTML).
+    - The `.env` block (CLOUD_BASE_URL, ENGINE_ID, ENGINE_HMAC_SECRET, and CONTROL_TOTP_SECRET once its code
+      matched) has copy and download (a Blob, nothing stored). Rotation shows the new secret once with the
+      restart note; revocation needs the typed engine id; "new control code" is browser-only with the
+      replace-and-restart steps. Engine API errors use the existing `codes:engine.<code>` texts.
 - **Engine-scoped replicas (TAA-709):**
   - Every replicated model (`app/sync/events.py` `REPLICAS`) gains `engine_id`. The engine writes its own id
     (`ENGINE_ID`, or `local` without sync). The cloud sets it from the verified signature and never trusts the
