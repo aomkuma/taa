@@ -1,9 +1,9 @@
 # Session handoff
 
-Last updated: 2026-10-05 (session that started Phase 9 pages), single session on `main`. Done in this
-session: TAA-903 app shell, TAA-904 dashboard, TAA-905 charts, TAA-906 symbols, TAA-907 positions & history, TAA-908 signals & decisions. The previous session (2026-10-04) did TAA-804 … TAA-8A5. No
-branch holds unmerged work. This file holds **state
-only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
+Last updated: 2026-10-05 (session that started the Phase 9 pages), single session on `main`. Done in this
+session: TAA-903 app shell, 904 dashboard, 905 charts, 906 symbols, 907 positions & history, 908 signals &
+decisions. The previous session (2026-10-04) did TAA-804 … TAA-8A5. No branch holds unmerged work. This file
+holds **state only**. Rules and conventions live in `CLAUDE.md` (loaded automatically by Claude Code) and
 `docs/CODING_STANDARDS.md`.
 
 ---
@@ -28,6 +28,10 @@ This is the only session: work on main in C:\Users\korap\taa, one ticket at a ti
 A local PostgreSQL 16 is available for tests: `pytest -m postgres` uses TAA_POSTGRES_URL from .env (role taa,
 database taa_test); never touch other projects' databases on that server.
 LIVE stays disabled until Phase 14 and an explicit go-ahead. Subscriptions stay off (SUBSCRIPTIONS_ENABLED=false).
+For PWA pages: build page tests from frontend/src/test/fixtures/api-samples.json (real API responses) and add
+every new route a page reads to tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts
+(regenerate with TAA_UPDATE_API_SAMPLES=1). Run the full pytest suite and vitest one after the other, never
+at the same time (the machine runs out of memory).
 Commit at each ticket boundary (allowed). Pushing from Claude Code fails (GitHub needs an interactive login),
 so I push myself. Update docs/HANDOFF.md at the end of the session. Stop for review at the end of Milestone 1,
 or at any phase boundary if I ask. Chat with me in Thai.
