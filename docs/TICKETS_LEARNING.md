@@ -14,6 +14,13 @@ references such as §A27 point to [PLAN.md](PLAN.md). The main tickets live in [
   create a trade or increase size.
 - New reason codes, statuses and explanation keys go into `frontend/src/i18n/` (th + en) in the same change.
 - No profitability claims in any text.
+- Project rules that apply to every ticket here (see HANDOFF "Notes for the remaining tickets"):
+  - a new replicated table needs a sample row in `tests/sync_data.py`
+  - every new route a page reads is added to `tests/web/test_api_samples.py` and
+    `frontend/src/test/apiSamples.test.ts`
+  - run the full pytest and vitest suites one after the other, with the demo stack stopped
+- Every ticket that adds or uses a hook (H1–H4) or changes engine behavior under a flag depends on TAA-L002
+  (golden harness), even where its "Depends on" line does not repeat it.
 - **Separate from the existing process:** new code goes into new modules (`app/learning`, `app/squad`, new
   detector/setup files). Existing modules are read, not rewritten, and change only at the hook points of
   PLAN_LEARNING §L0.2, with a golden test that flags-off behavior is unchanged. Check the reuse map (§L0.1)
@@ -26,7 +33,7 @@ the wrap-up of TICKETS.md, except Wave 0.
 | Wave | Tickets | Why at this point |
 |---|---|---|
 | 0 — Safety fix | L901 | Fixes a latent issue of today's engine (magic = index of enabled strategies). Recommended **before LIVE go-live**, i.e. during Phase 14 / wrap-up (Q11) |
-| 1 — Quick wins on existing data | L701, L801, L808 (patterns that need no playbook) | Uses shadow trades, analytics and TAA-1006 data that already exist. Shows which lever (p, W, L, c) and which failure mode matter most, which steers everything after |
+| 1 — Quick wins on existing data | L002, L701, L801, L808 (patterns that need no playbook) | Uses shadow trades, analytics and TAA-1006 data that already exist. Shows which lever (p, W, L, c) and which failure mode matter most, which steers everything after |
 | 2 — Data foundation | L001, L101, L102, L103, L104, L203 | Ticks take calendar time to accumulate. Start capture early in the track so L5 has months of data later |
 | 3 — Character & regime | L301, L302, L303, L304, L305, L703 | Profiles and regimes feed playbooks, timing and bots. Low risk, explainable, visible in the PWA |
 | 4 — Scan everything + squad foundation | L806, L902, L903, L906 | Q10 (scan everything tradable); the bot model, shared computation and trading universe, with legacy mode golden-tested |
@@ -43,7 +50,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 
 | Milestone | Phase | Tickets | Done | Status |
 |---|---|---|---|---|
-| M3 | Phase L0 — Feed probe | 1 | 0 | TODO |
+| M3 | Phase L0 — Feed probe & foundations | 2 | 0 | TODO |
 | M3 | Phase L1 — Tick data foundation | 4 | 0 | TODO |
 | M3 | Phase L2 — Microstructure features | 3 | 0 | TODO |
 | M3 | Phase L3 — Symbol profile & regime | 6 | 0 | TODO |
@@ -56,7 +63,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 
 ## Milestone 3 — Learning layer
 
-### Phase L0 — Feed probe
+### Phase L0 — Feed probe & foundations
 
 #### TAA-L001 — DOM and tick-history probe (L1)
 
@@ -68,6 +75,17 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 - [ ] FakeMT5 gains `market_book_*` emulation (empty and populated modes)
 - [ ] record the findings in PLAN_LEARNING §L1 and decide whether `book_imbalance` (L4) is enabled
 - [ ] tests (FakeMT5)
+
+#### TAA-L002 — Hook points and golden harness (§L0.2)
+
+- **Status:** TODO
+- **Depends on:** L901
+
+- [ ] golden harness: fixed scenarios (FakeMT5 + ManualClock + a backtest window) recording decisions, sizes, shadow rows and backtest results; a test compares against the stored golden files
+- [ ] structural protocols H1 `CandidateFilter`, H2 `EntryPlacer`, H3 `ExitPolicy` in `app/engine` with pass-through defaults (today's behavior)
+- [ ] backtester and replay call the same hooks (one code path)
+- [ ] `learning` and `squad` config sections (all off) + `LAYERS` entries for `app.learning`, `app.squad`; architecture test: lower layers never import them
+- [ ] golden test green with every flag off
 
 ### Phase L1 — Tick data foundation
 
@@ -181,7 +199,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 - **Status:** TODO
 - **Depends on:** L302
 
-- [ ] `SymbolProfileService`: nightly build on a worker thread, `keep_versions`
+- [ ] `SymbolProfileService`: nightly build on a worker thread, `keep_versions`; data budget: traded, watchlist and tier-1 symbols first, rotation through the catalog via `history_download.py`
 - [ ] stability check 30 vs 90 days → `SHIFTING`
 - [ ] `symbol_profiles` table + migration + outbox mapping
 - [ ] `app.cli learning profile build | show SYMBOL`
@@ -296,7 +314,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 - **Status:** TODO
 - **Depends on:** L201, L202
 
-- [ ] `app/engine/entry_confirmation.py`: PENDING → CONFIRMED / CANCELLED_CHASE / CANCELLED_INVALID / CANCELLED_MARKET / EXPIRED_TIMEOUT
+- [ ] `app/learning/entry_confirmation.py` behind hook H2: PENDING → CONFIRMED / CANCELLED_CHASE / CANCELLED_INVALID / CANCELLED_MARKET / EXPIRED_TIMEOUT
 - [ ] `pending_entries` table; pending rows expire after restart (fail closed)
 - [ ] risk re-check at confirmation time; one evaluation per bar preserved
 - [ ] `on_no_ticks` immediate/cancel (forced to cancel in LIVE); config `learning.confirmation` with ceilings
@@ -400,7 +418,9 @@ the TP.
 - **Status:** TODO
 - **Depends on:** L701
 
-- [ ] shadow variants `PULLBACK`, `LTF_TRIGGER`, `WIDE_STOP` (point-in-time quantiles; same TP price; sizer-based lots)
+- [ ] shadow variants `PULLBACK`, `LTF_TRIGGER`, `WIDE_STOP` (point-in-time quantiles; same TP price; sizer-based lots) through hook H4
+- [ ] `entry_window_bars` per waiting mode (default 2, ceiling 6; `signal_expiry_bars` unchanged for `PLAN`); invalidation re-checked each trigger-TF bar (`ENTRY_SETUP_INVALID`)
+- [ ] batch resolution on M1 for tier-1 opportunities within the scanner budget
 - [ ] paired ΔR vs `PLAN` with bootstrap CI, fill rate, avoided losers vs missed winners, failure-mode mix before and after
 - [ ] replay support (REPLAY reported separately)
 - [ ] API `GET /engines/{id}/timing` (diagnostics + variant stats)
@@ -411,7 +431,7 @@ the TP.
 - **Status:** TODO
 - **Depends on:** L303
 
-- [ ] new only: NR4/NR7 and a direction-neutral compression state (ATR percentile, squeeze active before breakout); reuse `volatility.bollinger_squeeze`, `candle.inside_outside`, `sessions.*_breakout` as they are
+- [ ] new file `app/evidence/timing.py`: NR4/NR7 and a direction-neutral compression state (ATR percentile, squeeze active before breakout); `volatility.bollinger_squeeze`, `candle.inside_outside`, `sessions.*_breakout` stay as they are
 - [ ] session timing (minutes to high-activity hour, dead hour) and news timing
 - [ ] expected-time `ctx:` feature from L701
 - [ ] `docs/INDICATORS.md` / `docs/PATTERNS.md` entries, explanation keys th + en
@@ -424,7 +444,7 @@ the TP.
 
 - [ ] shadow variant `TIME_STOP_LEARNED` (q75 time to +0.5R, bounded by min bars and the configured time stop)
 - [ ] shadow variant `REENTRY_1`: HTF structure intact, within lifetime, new trigger, sized from the remaining idea budget
-- [ ] re-entry counts toward daily loss and breakers; disabled after a daily-loss or breaker event; labelled everywhere
+- [ ] re-entry = same `signal_id`, new part number (arbitration cooldown for new signals unchanged); counts toward daily loss and breakers; disabled after a daily-loss or breaker event; labelled everywhere
 - [ ] `timing.reentry_enabled` gate for real re-entries (default false; Q7)
 - [ ] tests (idea risk never exceeds the original budget; skip below `volume_min`)
 
@@ -498,6 +518,7 @@ per-signal budget.
 - [ ] split position (part A at `tp1_r`, part B runner without fixed TP) on the `SAME_PRICE` plan; runner rules as an `ExitPolicy` (hook H3); the §A11 rules stay the default
 - [ ] runner trailing: the tighter of HTF structure trail and chandelier `k × ATR`; at least break-even + costs after TP1; SL moves only favorably
 - [ ] runner exits: trail, HTF CHoCH against, regime leaves `TREND`, kill switch, breaker; swap accrued and shown
+- [ ] under the learning flags, position-count limits count ideas (one signal = one idea) while risk sums all parts; flags off keeps per-position counting (golden test)
 - [ ] adds (opt-in, `max_adds`): only when existing stops lock in the add's risk; idea risk ≤ initial budget (property test); count toward heat; off after daily loss or breaker
 - [ ] shadow variants `RUNNER`, `RUNNER_ADDS` with paired ΔR, W/L shifts and max DD
 - [ ] broker position management (§A11) supports runner trailing in DEMO
@@ -573,7 +594,7 @@ during Phase 14 / wrap-up, before LIVE go-live.
 
 - [ ] `BotSpec` + `squad` config (`enabled`, `bots`, `trade_universe`, `conflict_policy`, `allocation`) with `extra="forbid"` and ceilings
 - [ ] legacy mode = one implicit `default` bot from `strategies`, `timeframes`, `symbols.allowed`, `risk`
-- [ ] per-bot timeframes, symbol scope, sessions, playbooks and entry/exit style
+- [ ] per-bot timeframes, symbol scope, sessions (own weekend rule within its scope, e.g. crypto; news blackouts and account breakers still global), playbooks and entry/exit style
 - [ ] `bot_id` on decisions, opportunities, shadow rows, intents and positions (+ migration)
 - [ ] bot specs versioned and audited, reloadable without a restart; PWA edits can only lower risk (HANDOFF homework item 6)
 - [ ] golden test: legacy decisions and backtest identical to before
@@ -608,7 +629,7 @@ during Phase 14 / wrap-up, before LIVE go-live.
 - [ ] per-bot `risk_share`, per-trade risk, max positions, own daily stop (`BOT_DAILY_STOP`), `BOT_BUDGET_FULL`
 - [ ] per-bot probation multiplier
 - [ ] account cage and breakers above all bots; remote changes lower-only
-- [ ] `allocation: evidence` (weekly, step-limited, floored, audited) and `BOT_NO_EDGE` auto-pause with shadow kept
+- [ ] `allocation: evidence` (weekly, step-limited, floored, audited): decreases automatic, increases as proposals the owner confirms (CLI / step-up); `BOT_NO_EDGE` auto-pause with shadow kept
 - [ ] tests (property: Σ bot risk ≤ cage; each bot ≤ its budget)
 
 #### TAA-L906 — Trading universe (L21.6)

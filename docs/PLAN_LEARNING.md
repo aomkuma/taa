@@ -2,8 +2,12 @@
 
 > Separate design track, started 2026-10-06. It extends [PLAN.md](PLAN.md) and does not replace any part of it.
 > Work items live in [TICKETS_LEARNING.md](TICKETS_LEARNING.md). The reasoning behind this design (the
-> conversation of 2026-10-06) is kept in [LEARNING_DISCUSSION.md](LEARNING_DISCUSSION.md). Section numbers here are `L0`–`L8`, `L19`–`L21`, then `L9`–`L18`; references
-> such as §A27 point to PLAN.md. No profitability claims anywhere: every model here can only estimate, filter
+> conversation of 2026-10-06) is kept in [LEARNING_DISCUSSION.md](LEARNING_DISCUSSION.md).
+>
+> **Numbering:** sections run `L0`–`L8`, `L19`–`L21`, then `L9`–`L18`. **Section numbers and ticket phases
+> are different things:** "§L8" or a bare "L8" in running text is a section (the fit matrix), while
+> "Phase L8" in TICKETS_LEARNING.md is a ticket group (playbooks). Tickets are `TAA-Lxyy`. References such as
+> §A27 point to PLAN.md. No profitability claims anywhere: every model here can only estimate, filter
 > or explain. Capital protection, fail-closed behavior and auditability still come first.
 
 ## L0. Context & goals
@@ -109,6 +113,17 @@ means *reading* what exists, not rewriting it.
    never import them; they only see the hook protocols.
 5. **Turning it off is always possible:** `learning.enabled: false` and `squad.enabled: false` return the
    engine to today's process. This also holds after the track is complete.
+6. **Hook protocols are structural** (`typing.Protocol`). `app.learning` (layer 9) implements them **without
+   importing** `app.engine` (layer 10); the orchestrator wires the implementations and mypy checks them
+   there. `app.squad` (layer 10) may import `app.engine` directly.
+7. **One code path for live, shadow, replay and backtest:** the backtester (§A17) and advisory replay (§A27)
+   call the same hooks (H1–H4) as the engine, so a rule is evaluated identically everywhere. A hook that
+   cannot run in backtest (for example, tick confirmation without recorded ticks) fails closed there, as
+   §L4 describes.
+8. **Existing reviewers keep their place:** the optional AI review of entries (Phase 13,
+   `DecisionEngine.reviewer`) runs inside the decision engine, after H1, and is not affected by this track.
+9. **Built once, by its first user:** each hook is added by the ticket that first needs it, on top of the
+   golden harness of TAA-L002.
 
 ## L1. Data reality: what FBS × MT5 actually provides
 
@@ -173,7 +188,7 @@ MT5 terminal ──copy_ticks_range──▶ TickRecorder (engine, own thread)
   (pure, app/indicators)      (nightly, app/learning)         (shadow + replay labels)
           │                            │                             │
           ▼                            ▼                             ▼
-  EntryConfirmation (engine)   symbol_profiles (versioned) ──▶ ModelTrainer (off-loop)
+  EntryConfirmation (hook H2)  symbol_profiles (versioned) ──▶ ModelTrainer (off-loop)
           │                            │                             │
           ▼                            ▼                             ▼
   decision pipeline ◀── filter/delay only ── ModelRegistry (CANDIDATE → SHADOW → ACTIVE)
@@ -190,8 +205,11 @@ MT5 terminal ──copy_ticks_range──▶ TickRecorder (engine, own thread)
 | `app/market_data/tick_recorder.py` | 4 | Incremental capture through `MarketDataGateway.ticks_range` |
 | `app/market_data/micro_bars.py` | 4 | Raw ticks → per-minute summaries |
 | `app/indicators/microstructure.py` | 5 (indicators) | Pure functions, no I/O, no clock |
-| `app/learning/` (new package) | 9 (with advisory/analytics) | profile, regime, dataset, models, registry, drift, fit matrix |
-| `app/engine/entry_confirmation.py` | 10 (engine) | Confirmation state machine inside the decision path |
+| `app/learning/` (new package) | 9 (with advisory/analytics) | profile, regime overlay, timing, expectancy, dataset, models, registry, drift, fit matrix, playbooks, behavior, entry confirmation (state machine, wired through H2) |
+| `app/squad/` (new package) | 10 (beside `app.engine`) | bots, commander (H1), allocation, magic registry use |
+| `app/evidence/timing.py` | 5 (evidence) | New direction-neutral timing detectors (§L19.4), registered in the existing registry |
+| `app/strategy/setups_range.py` | 6 (strategy) | `setup_range_fade` (§L20.2), registered in the existing catalog |
+| Hook protocols H1–H3 | in `app/engine` (structural) | §L0.2; defaults reproduce today's behavior |
 
 **Rules.**
 
@@ -289,6 +307,11 @@ in config.
 
 `app/learning/profile.py`, `SymbolProfileService`. It is computed nightly per server × symbol from candles
 (M1…D1), micro-bars when available, shadow and replay outcomes, and the news calendar (`app/news`).
+
+**Data budget:** profiles need M5…D1 history (M1 for the hour-of-week ranges). For the whole catalog
+(hundreds of symbols) this means download time and disk space. Profiles are built for traded, watchlist and
+tier-1 symbols first and rotate through the rest, through the existing history download (`app/market_data/
+history_download.py`) with a per-night budget.
 
 **Windows:** the primary window is the last 90 days, plus a 30-day window for the stability check. A metric
 needs `min_samples` (per metric) or it is `None` with reason `INSUFFICIENT_DATA`.
@@ -419,7 +442,8 @@ same Shapley procedure runs on its predictions.
 
 ## L7. Tick confirmation of entries
 
-`app/engine/entry_confirmation.py`. The closed-bar signal rule (PLAN §A5) is unchanged. Confirmation can only
+`app/learning/entry_confirmation.py`, wired through hook H2 (§L0.2). The closed-bar signal rule (PLAN §A5) is
+unchanged. Confirmation can only
 **delay or cancel** an entry, never create one or move its plan.
 
 **State machine** per accepted entry decision (after risk checks, before the mode gate and execution):
@@ -519,8 +543,8 @@ look-ahead `H` (default = the strategy's time stop, 72 h) using M1/M5 bars:
   also lost).
 - **TF agreement:** whether the entry TF and the HTF trends agreed at entry (`TF_MISMATCH` when they did not and
   the HTF move later happened).
-- **Random-walk baseline (first passage):** for a driftless walk with volatility σ (from the L5 hour-of-week
-  profile) and barriers +a (TP) and −b (SL), P(TP first) = b / (a + b), and the expected exit time is a·b / σ².
+- **Random-walk baseline (first passage):** for a driftless walk with volatility σ (from ATR at entry in Wave 1,
+  and from the §L5 hour-of-week profile once it exists) and barriers +a (TP) and −b (SL), P(TP first) = b / (a + b), and the expected exit time is a·b / σ².
   The diagnostics report the observed vindicated-stop rate and time to target **next to** this baseline. Only
   the difference counts as evidence: a stop that a pure random walk would hit 60% of the time is a stop-placement
   problem, not bad luck.
@@ -549,14 +573,21 @@ Each opportunity is simulated under several entry modes at once, as extra shadow
   the effective RR, and a variant may not move the TP.
 - Sizing always goes through the risk sizer. No variant increases money at risk.
 - Learned depths and quantiles come from profile/diagnostics versions **valid at signal time** (point in time).
+- **Entry window vs signal expiry:** today a trading signal expires after `strategies.signal_expiry_bars`
+  (1 entry bar), while advisory windows default to 2 bars. Waiting modes (`PULLBACK`, `LTF_TRIGGER`,
+  `CONFIRMED`) get their own `entry_window_bars` per mode (default 2, ceiling 6). The existing expiry stays
+  unchanged for `PLAN`. While waiting, the setup's invalidation is re-checked on every closed trigger-TF bar,
+  and an invalidated setup cancels the pending entry (`ENTRY_SETUP_INVALID`).
+- **Compute budget:** variants are resolved in batch on M1 bars for tier-1 opportunities only (§L20.5), with
+  the same per-cycle budget as the scanner, so more variants never slow the trading loop.
 - Statistics: the paired ΔR per opportunity against `PLAN` (a missed entry = 0 R) with a bootstrap 90% CI, the
   fill rate, avoided losers vs missed winners, and the failure-mode mix before and after.
 
 ### L19.4 Timing features and detectors
 
 Squeeze breakouts, inside bars, Donchian, opening-range and Asian-range breakouts already exist as detectors
-(L0.1). New are the **direction-neutral timing states**, shown as timing evidence and never as direction
-(`app/evidence/volatility.py`, `app/evidence/sessions_ranges.py`):
+(L0.1) and stay unchanged. New are the **direction-neutral timing states**, shown as timing evidence and never
+as direction, in a new file `app/evidence/timing.py`:
 
 - **Volatility compression:** the ATR percentile over the last 100 bars < 20; Bollinger Bands inside Keltner
   Channels (squeeze); NR4/NR7 and inside bars (Crabel). Compression says that **an expansion is more likely
@@ -578,6 +609,8 @@ Squeeze breakouts, inside bars, Donchian, opening-range and Asian-range breakout
   - **the total risk of the idea, including the first loss, stays within the original per-signal budget**. The
     re-entry is sized from what is left of the budget, and is skipped when it is below `volume_min`.
 
+  A re-entry belongs to the **same signal and idea** (same `signal_id`, a new part number). It is not a new
+  signal, so the arbitration cooldown (`strategies.cooldown_bars`) for new signals stays unchanged.
   Re-entries are labelled as such everywhere, count toward the daily loss limit and the breakers, and are
   disabled after a daily loss or breaker event. The point is to rescue the `EARLY` mode without becoming revenge
   trading.
@@ -713,6 +746,11 @@ The existing setups are mostly breakout, pullback and reversal. A dedicated rang
   the add's risk. The **total open risk of the idea never exceeds the initial per-signal budget**
   (property-tested). Adds count toward portfolio heat, and they are disabled after a daily-loss or breaker
   event.
+- **Position limits:** the parts of one idea (part A, the runner, adds, a re-entry) are separate broker
+  positions. Today's `max_positions_per_symbol: 1` and `max_open_positions` count positions, so they would
+  block the second part. Under the learning flags, these limits count **ideas** (one signal = one idea),
+  while risk always counts the sum of all parts. The cage values do not change, and with the flags off the
+  existing per-position counting stays (golden test).
 - **Evaluation:** shadow variants `RUNNER` and `RUNNER_ADDS` beside `PLAN` and `MANAGED`, with the paired ΔR,
   W and L shifts (L20.0) and max drawdown compared. A runner usually lowers the hit rate and raises W, and the
   report shows both.
@@ -757,7 +795,7 @@ When more signals qualify than the heat and position limits allow (for example, 
   (L5) and direction, where exposure in the same currency counts as the same bet.
 - Rejected signals keep shadow tracking with reason `HEAT_RANKED_OUT` or `CORRELATED_DUPLICATE`, so the
   selection rule itself can be evaluated.
-- This extends the existing arbitration (`app/strategy/arbitration.py`); it does not replace it.
+- It runs after the existing arbitration (`app/strategy/arbitration.py`, unchanged), through hook H1.
 
 ### L20.7 Behavior report on manual trades
 
@@ -818,6 +856,9 @@ Checked in the code on 2026-10-06:
   - a status (`SHADOW` / `PAPER` / `ACTIVE` / `PAUSED` / `RETIRED`)
 
   Bots are configured locally in `config.yaml` (`squad.bots`), because they carry risk.
+  - **Sessions and weekends:** today `sessions` and `friday_cutoff_utc` apply engine-wide, which would stop
+    `crypto_247` at the weekend. A bot may declare its own sessions and weekend rule only for its own scope
+    (for example, crypto). News blackouts and the account breakers still apply to every bot.
 - **Commander** (`app/squad/commander.py`, plugged in through hook H1): the single place that sees every bot's candidates for a decision
   cycle. It:
   - applies cross-bot conflict and correlation rules (L21.4)
@@ -888,6 +929,9 @@ work when costs are small relative to targets, so each bot × symbol pair must p
   - weekly, each ACTIVE bot's `risk_share` is moved toward a weight proportional to the lower 90% bound of
     its expectancy (L20.0) per unit of risk, floored at 0
   - steps ≤ `max_share_step` (default 0.05) per week, floor `min_share` while ACTIVE, every change audited
+  - **decreases apply automatically** (fail closed). **Increases are proposals** that the owner confirms
+    (CLI or a step-up PWA action), in line with "backtest first, never auto-apply" for anything that adds
+    risk
   - a bot whose lower bound is ≤ 0 over ≥ `min_n` trades is set to `PAUSED` with reason `BOT_NO_EDGE`; its
     signals keep shadow tracking so it can come back
 - **Default allocation `static`:** the shares from config only.
@@ -969,6 +1013,9 @@ SHADOW (signals + shadow trades only) → PAPER → ACTIVE in DEMO → ACTIVE in
 | Timing diagnostics + entry-mode policy | Nightly after the fit matrix | `timing_diagnostics`, `entry_mode_policy` versions |
 | Dataset + model training | Weekly (`retrain_weekday`), or `app.cli learning train` | `ml_model_versions` CANDIDATE |
 | Drift monitor | Hourly | drift metrics, possible demotion |
+| Expectancy, behavior and bot reports | Nightly | `expectancy_reports`, `behavior_reports`, `bot_reports` |
+| Evidence-based allocation (§L21.5) | Weekly | Automatic decreases, increase proposals |
+| Tier-0 scan (§L20.5) | Every entry-TF close | Interest scores, tier-1 queue |
 
 **Model lifecycle** (`ml_model_versions`: id, kind, scope, feature schema hash, training data hash, code
 version, seed, hyperparameters, configurations tried, metrics JSON, reliability JSON, model text, status,
@@ -1013,6 +1060,8 @@ CANDIDATE ──(passes L6 validation)──▶ SHADOW ──(promote, CLI + rea
    record (audit).
 6. `app/learning` is read-only towards the broker (architecture test), and training is CPU-bounded: a nice level
    or thread cap (`max_train_threads`, default 2) protects the trading loop.
+7. The separation rules of §L0.2 and the squad invariants of §L21.10 are part of this list: flags off means
+   today's behavior (golden tests), and nothing automatic ever raises risk.
 
 ## L11. Cloud, API & PWA
 
@@ -1024,6 +1073,9 @@ CANDIDATE ──(passes L6 validation)──▶ SHADOW ──(promote, CLI + rea
   - `GET /engines/{id}/fit-matrix`
   - `GET /engines/{id}/models` and `.../models/{mid}` (metrics, reliability, status history)
   - `GET /engines/{id}/confirmation/stats` (A/B results)
+  - `GET /engines/{id}/timing`, `.../expectancy`, `.../playbooks`, `GET /me/behavior` (timing, expectancy,
+    playbook state, the owner's behavior report)
+  - `GET /engines/{id}/bots`, `.../bots/{bot_id}`, `.../commander/decisions` (squad)
 - **PWA:**
   - Symbol page → **Character** tab: hour-of-week heat maps (volatility, spread, activity), the trend/mean-reversion
     summary with CI, breakout behavior, session character, news sensitivity, regime now, and stability flags.
@@ -1062,6 +1114,8 @@ claimed.
 | Tiered scanning, correlation selection (L20.5–L20.6) | Always | When scan metrics stay within budget for 2 weeks | Same |
 | Squad mode, per bot (L21.7) | Always (SHADOW bots show signals) | The bot passes L13 for its own playbooks; commander and budget tests green | Per bot: further DEMO period + Phase 14 + explicit go-ahead |
 | `trade_universe: catalog` (L21.6) | — | Config decision | Further DEMO evidence + explicit go-ahead |
+| `conflict_policy: independent` (L21.4) | Shadow comparison | Hedging account + paired ΔR CI > 0 vs `net_direction` | Same + explicit go-ahead |
+| `allocation: evidence` (L21.5) | Proposals shown | Decreases automatic, increases confirmed by the owner | Same |
 
 Every acceptance decision is recorded in `docs/HANDOFF.md` with the numbers. Reaching a criterion means
 "allowed to be tried", not "expected to be profitable".
@@ -1235,6 +1289,17 @@ Measure first (Wave 1), so later waves work on the levers that matter most.
 - **Compute:** profiles and training are CPU-heavy on the engine machine. Thread caps and off-hours scheduling
   (weekends) apply.
 - **Storage:** raw ticks grow quickly; retention and the size cap are enforced.
+- **Multiple comparisons:** many bots × variants × symbols × playbooks are tested. Some will pass a threshold by
+  chance. The counter-measures are pooled (hierarchical) estimates, CIs instead of point values, recording
+  the number of comparisons, requiring live-shadow confirmation (replay alone never enables anything), and
+  the further DEMO period before LIVE.
+- **More trades, more costs:** a squad that takes many small edges pays spread and commission on each. The
+  cost filter (`min_target_cost_ratio`) and the `c` lever of the expectancy report must stay visible.
+- **Instrument specifics:** stock and index CFDs have dividend adjustments, corporate actions and session
+  gaps; crypto has thin weekend liquidity and wide spreads. Profiles and costs are per symbol for this
+  reason.
+- **One account's view:** affordability and the trading universe are judged on the engine owner's account
+  (as today, HANDOFF homework item 6). Serving other users' accounts is a later, multi-user question.
 
 ## L18. Open questions for the user
 

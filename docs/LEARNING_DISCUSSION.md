@@ -226,7 +226,48 @@ too.
 
 **Open questions:** PLAN_LEARNING §L18 (Q2–Q8, Q11–Q12).
 
-## 7. Sources consulted
+## 7. Re-check of the plan (2026-10-06)
+
+The owner asked for a re-check of everything planned. Both files were read end to end against this record and
+the existing system. The fixes (all in PLAN_LEARNING and TICKETS_LEARNING):
+
+**Contradictions with the separation rule (§L0.2):**
+
+- Entry confirmation moved from `app/engine/` to `app/learning/` (hook H2).
+- The new timing detectors go into a new `app/evidence/timing.py`; existing detector files are not edited.
+- Selection "extends arbitration" became "runs after arbitration through H1".
+
+**Layering:** hook protocols are structural, so `app.learning` (layer 9) never imports `app.engine` (layer 10).
+The backtester and replay call the same hooks.
+
+**Clashes with existing engine rules that the plan had not handled:**
+
+- Trading signals expire after 1 entry bar (`signal_expiry_bars`), which would kill pullback and trigger
+  entries. Waiting modes now get their own `entry_window_bars` and re-check invalidation while waiting.
+- The arbitration cooldown would block re-entries. A re-entry is now part of the same signal/idea.
+- `max_positions_per_symbol: 1` would block runner parts and adds. Under the flags, limits count ideas while
+  risk sums all parts.
+- The engine-wide Friday cut-off and sessions would stop the crypto bot at weekends. Bots may declare their own
+  sessions within their scope.
+
+**Safety gap:** evidence-based allocation could raise a bot's risk share automatically. Now only decreases are
+automatic, and increases are owner-confirmed proposals ("never auto-apply" anything that adds risk).
+
+**Missing pieces added:**
+
+- TAA-L002 (hook points + golden harness)
+- a profile data budget for hundreds of symbols
+- schedule rows for reports and allocation
+- API routes for timing, expectancy, playbooks, behavior and squad
+- acceptance rows for `independent` and evidence allocation
+- project test rules (sync sample rows, API samples, full test runs with the stack stopped)
+
+**Risks added:** multiple comparisons across bots × variants × symbols, higher total costs from many small
+trades, CFD and crypto specifics, and the single-account view of affordability.
+
+**Clarified:** section numbers (§L8 = fit matrix) vs ticket phases (Phase L8 = playbooks).
+
+## 8. Sources consulted
 
 - FBS review (DOM offered in MT5): https://www.fxempire.com/brokers/fbs
 - MT5 Depth of Market help: https://www.metatrader5.com/en/terminal/help/trading/depth_of_market
