@@ -130,7 +130,7 @@ describe('charts page', () => {
     });
     const model = lastModel();
     expect(model.candles).toHaveLength(4);
-    expect(model.priceLines.map((p) => p.title)).toEqual(['Support ×3', '', '#7 BUY', 'SL #7', 'TP #7']);
+    expect(model.priceLines.map((p) => p.title)).toEqual(['Support ×3', '#7 BUY', 'SL #7', 'TP #7']);
     expect(screen.getByRole('link', { name: 'TradingView Lightweight Charts™' })).toHaveAttribute(
       'href',
       'https://www.tradingview.com/',

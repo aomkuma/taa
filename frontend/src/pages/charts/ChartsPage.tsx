@@ -331,6 +331,7 @@ export function ChartsPage() {
       ) : (
         <>
           <PriceChart model={model} />
+          {zones && <p className="mt-1 text-xs text-slate-500">{t('charts.zoneLegend')}</p>}
           <ChartAttribution />
         </>
       )}

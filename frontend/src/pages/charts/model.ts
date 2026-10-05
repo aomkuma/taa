@@ -53,6 +53,8 @@ export interface PriceLineModel {
   color: string;
   title: string;
   style: LineStyle;
+  /** Line width in pixels (1 when absent); S/R zones are wider the stronger they are. */
+  width?: number;
 }
 
 export interface ChartModel {
@@ -64,6 +66,8 @@ export interface ChartModel {
   panes: number;
   /** Decimals of the price axis, from the quoted prices (EURUSD 5, XAUUSD 2–3, indices 0–2). */
   precision: number;
+  /** Symbol and timeframe: a new view starts zoomed to fit instead of keeping the previous chart's range. */
+  view: string;
 }
 
 export interface OpenPosition {
@@ -284,18 +288,53 @@ function tradeMarkers(
   return out;
 }
 
+/** The most zones drawn per role (support, resistance, other): the strongest, as the API sorts them. */
+export const ZONES_PER_ROLE = 3;
+
+export type ZoneStrength = 'strong' | 'medium' | 'weak';
+
+/** Strength from the number of swing touches: ≥ 6 strong, 4–5 medium, fewer weak. */
+export function zoneStrength(touches: number): ZoneStrength {
+  return touches >= 6 ? 'strong' : touches >= 4 ? 'medium' : 'weak';
+}
+
+/** Colour shade, width and dash per strength: the stronger the zone, the bolder its line. */
+const ZONE_STYLE: Record<ZoneStrength, { shade: 0 | 1 | 2; width: number; style: LineStyle }> = {
+  strong: { shade: 0, width: 3, style: 'solid' },
+  medium: { shade: 1, width: 2, style: 'dashed' },
+  weak: { shade: 2, width: 1, style: 'dotted' },
+};
+export const ZONE_COLORS = {
+  SUPPORT: ['#16a34a', '#4ade80', '#86efac'],
+  RESISTANCE: ['#dc2626', '#f87171', '#fca5a5'],
+  OTHER: ['#475569', '#64748b', '#94a3b8'],
+} as const;
+
+/**
+ * One line per zone at its middle (a zone spans at most `sr_tolerance_atr` × ATR), only the strongest
+ * {@link ZONES_PER_ROLE} of each role, styled by strength so the busy levels stand out.
+ */
 function zoneLines(zones: readonly Zone[], text: ModelText): PriceLineModel[] {
+  const kept: Record<string, number> = {};
   return zones.flatMap((z) => {
-    const color = z.role === 'SUPPORT' ? COLORS.up : z.role === 'RESISTANCE' ? COLORS.down : COLORS.neutral;
+    const role = z.role === 'SUPPORT' || z.role === 'RESISTANCE' ? z.role : 'OTHER';
+    kept[role] = (kept[role] ?? 0) + 1;
+    if ((kept[role] ?? 0) > ZONES_PER_ROLE) return [];
+    const look = ZONE_STYLE[zoneStrength(z.touches)];
     const title =
-      z.role === 'SUPPORT'
+      role === 'SUPPORT'
         ? text.support(z.touches)
-        : z.role === 'RESISTANCE'
+        : role === 'RESISTANCE'
           ? text.resistance(z.touches)
           : text.zone(z.touches);
     return [
-      { price: z.high, color, title, style: 'dotted' as const },
-      ...(z.low !== z.high ? [{ price: z.low, color, title: '', style: 'dotted' as const }] : []),
+      {
+        price: (z.low + z.high) / 2,
+        color: ZONE_COLORS[role][look.shade],
+        title,
+        style: look.style,
+        width: look.width,
+      },
     ];
   });
 }
@@ -433,5 +472,27 @@ export function buildChartModel(input: ModelInput, options: ModelOptions, text: 
     ],
     panes,
     precision: pricePrecision(candles.bars),
+    view: `${candles.symbol}/${candles.timeframe}`,
   };
+}
+
+/** Empty bars kept right of the newest one while the view follows it. */
+export const RIGHT_GAP_BARS = 3;
+
+/**
+ * The visible range after the data was replaced. A view that showed the newest bar keeps showing it, with the
+ * same width and at most {@link RIGHT_GAP_BARS} of space after it, even when the number of bars changed (the
+ * forming bar comes and goes; a refetch can return fewer bars than the live view had). A view scrolled back
+ * into history stays where it was.
+ */
+export function followRange(
+  range: { from: number; to: number },
+  before: number,
+  after: number,
+): { from: number; to: number } {
+  const oldLast = before - 1;
+  if (before === 0 || range.to < oldLast - 0.5) return range;
+  const width = range.to - range.from;
+  const to = after - 1 + Math.min(Math.max(range.to - oldLast, 0), RIGHT_GAP_BARS);
+  return { from: to - width, to };
 }

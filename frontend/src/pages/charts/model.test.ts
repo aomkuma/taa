@@ -4,12 +4,16 @@ import { pyStrEnumValues } from '@/test/python';
 
 import {
   buildChartModel,
+  followRange,
   type ModelOptions,
   type ModelText,
   overlaysQuery,
   pricePrecision,
   signalEvidence,
   snapTime,
+  ZONE_COLORS,
+  ZONES_PER_ROLE,
+  zoneStrength,
 } from './model';
 import { type Candles, type Evidence, TIMEFRAMES } from './schemas';
 
@@ -245,8 +249,7 @@ describe('buildChartModel', () => {
       text,
     );
     expect(model.priceLines.map((p) => [p.price, p.title])).toEqual([
-      [1.099, 'S4'],
-      [1.098, ''],
+      [1.0985, 'S4'], // one line per zone, at its middle
       [1.108, 'R2'],
       [1.1, '#7 BUY'],
       [1.095, 'SL #7'],
@@ -260,6 +263,32 @@ describe('buildChartModel', () => {
       text,
     );
     expect(noZones.priceLines).toEqual([]);
+  });
+
+  it('keeps the strongest zones per role and draws them bolder the more touches they have', () => {
+    const zones = [7, 6, 5, 4, 4].map((touches, i) => ({
+      low: 1.11 + i / 1000,
+      high: 1.1105 + i / 1000,
+      touches,
+      role: 'RESISTANCE' as const,
+    }));
+    const model = buildChartModel(
+      {
+        candles: candles({ zones: [...zones, { low: 1.09, high: 1.09, touches: 2, role: 'SUPPORT' }] }),
+        positions: [],
+        signal: null,
+      },
+      options(),
+      text,
+    );
+    expect(model.priceLines.map((p) => [p.title, p.width, p.style, p.color])).toEqual([
+      ['R7', 3, 'solid', ZONE_COLORS.RESISTANCE[0]],
+      ['R6', 3, 'solid', ZONE_COLORS.RESISTANCE[0]],
+      ['R5', 2, 'dashed', ZONE_COLORS.RESISTANCE[1]], // only ZONES_PER_ROLE resistances
+      ['S2', 1, 'dotted', ZONE_COLORS.SUPPORT[2]],
+    ]);
+    expect(ZONES_PER_ROLE).toBe(3);
+    expect([zoneStrength(6), zoneStrength(4), zoneStrength(3)]).toEqual(['strong', 'medium', 'weak']);
   });
 
   it('draws evidence: pattern points joined and labelled, untimed levels, targets and invalidation', () => {
@@ -303,5 +332,16 @@ describe('buildChartModel', () => {
 describe('timeframes', () => {
   it('match Timeframe in app/core/enums.py', () => {
     expect([...TIMEFRAMES]).toEqual(pyStrEnumValues(enumsPy, 'Timeframe'));
+  });
+});
+
+describe('chart view across data updates', () => {
+  it('follows the newest bar with the same width when the bar count changes', () => {
+    // 300 bars, showing the last 100 with 2 bars of space; a refetch returns 280 bars (the live view had more)
+    expect(followRange({ from: 201, to: 301 }, 300, 280)).toEqual({ from: 181, to: 281 });
+    // a view scrolled far past the newest bar is pulled back to at most RIGHT_GAP_BARS of space
+    expect(followRange({ from: 250, to: 450 }, 300, 300)).toEqual({ from: 102, to: 302 });
+    // a view scrolled back into history stays put
+    expect(followRange({ from: 10, to: 110 }, 300, 301)).toEqual({ from: 10, to: 110 });
   });
 });

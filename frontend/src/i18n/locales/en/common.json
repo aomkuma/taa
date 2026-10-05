@@ -206,6 +206,7 @@
     "support": "Support ×{{n}}",
     "resistance": "Resistance ×{{n}}",
     "zone": "Zone ×{{n}}",
+    "zoneLegend": "S/R zones: the 3 strongest per side. ×N is how often price turned there; a thick solid line is a strong zone (6+), dashed medium (4–5), dotted weak.",
     "entry": "#{{ticket}} {{side}}",
     "stopLoss": "SL",
     "stopLossTicket": "SL #{{ticket}}",

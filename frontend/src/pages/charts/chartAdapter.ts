@@ -14,13 +14,14 @@ import {
   type ISeriesApi,
   LineSeries,
   LineStyle as LwLineStyle,
+  type LineWidth,
   type SeriesMarker,
   TickMarkType,
   type Time,
   type UTCTimestamp,
 } from 'lightweight-charts';
 
-import type { ChartModel, LineStyle } from './model';
+import { type ChartModel, followRange, type LineStyle } from './model';
 
 export interface ChartTheme {
   dark: boolean;
@@ -77,7 +78,8 @@ function themeOptions(theme: ChartTheme) {
 export function createPriceChart(container: HTMLElement, theme: ChartTheme): ChartHandle {
   const chart: IChartApi = createChart(container, { autoSize: true, ...themeOptions(theme) });
   let series: ISeriesApi<'Candlestick' | 'Line'>[] = [];
-  let first = true;
+  let view = ''; // symbol/timeframe on screen; another one starts zoomed to fit
+  let bars = 0;
 
   const clear = () => {
     for (const s of series) chart.removeSeries(s);
@@ -120,7 +122,7 @@ export function createPriceChart(container: HTMLElement, theme: ChartTheme): Cha
           color: p.color,
           title: p.title,
           lineStyle: STYLES[p.style],
-          lineWidth: 1,
+          lineWidth: (p.width ?? 1) as LineWidth,
           axisLabelVisible: p.title !== '',
         });
       }
@@ -141,12 +143,14 @@ export function createPriceChart(container: HTMLElement, theme: ChartTheme): Cha
       panes.forEach((pane, i) => {
         pane.setStretchFactor(i === 0 ? 3 : 1);
       });
-      if (first || range === null) {
+      const count = model.candles.length;
+      if (range === null || model.view !== view) {
         chart.timeScale().fitContent();
-        first = false;
       } else {
-        chart.timeScale().setVisibleLogicalRange(range);
+        chart.timeScale().setVisibleLogicalRange(followRange(range, bars, count));
       }
+      view = model.view;
+      bars = count;
     },
     setTheme(next) {
       chart.applyOptions(themeOptions(next));
