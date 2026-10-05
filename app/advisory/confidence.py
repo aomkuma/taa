@@ -581,11 +581,15 @@ class WinProbability:
     def uses_evidence(self) -> bool:
         return self.evidence is not None and self.report is not None and self.report.use_evidence
 
-    def explain(self, q: Query, enabled_detectors: Collection[str] | None = None) -> Explanation:
-        """*enabled_detectors* (a user's theory subset): other ``ev:`` features are neutrally imputed."""
+    def explain(
+        self, q: Query, enabled_detectors: Collection[str] | None = None, *, contributions: bool = True
+    ) -> Explanation:
+        """*enabled_detectors* (a user's theory subset): other ``ev:`` features are neutrally imputed.
+        ``contributions=False`` skips the Shapley split (lists need only the %; ``contributions`` is None)."""
         estimate = self.bucket.predict(q)
         model = self.evidence.model_for(q) if self.uses_evidence and self.evidence else None
-        base = contributions = None
+        base: float | None = None
+        parts: tuple[Contribution, ...] | None = None
         if model is not None:
             active = {
                 k: v
@@ -615,13 +619,14 @@ class WinProbability:
                 feats[N_FAMILIES] = supporting_families({k: active[k] for k in present}) + imputed
                 return 100 * model.predict(feats)
 
-            phi = shapley(value, sorted(active), seed=self.shapley_seed)
-            base = value(frozenset())
             p = value(frozenset(active))
-            contributions = tuple(
-                Contribution(name, feature_family(name), name.split(":", 2)[2], points)
-                for name, points in phi.items()
-            )
+            if contributions:
+                phi = shapley(value, sorted(active), seed=self.shapley_seed)
+                base = value(frozenset())
+                parts = tuple(
+                    Contribution(name, feature_family(name), name.split(":", 2)[2], points)
+                    for name, points in phi.items()
+                )
             estimate = ProbabilityEstimate(
                 p=p,
                 low=estimate.low,  # the bucket interval stays the honest uncertainty statement
@@ -635,7 +640,7 @@ class WinProbability:
         return Explanation(
             estimate=estimate,
             base_rate=base,
-            contributions=contributions,
+            contributions=parts,
             random_baseline=random_baseline(q.rr),
             break_even=break_even_probability(q.rr, q.cost_r),
             ev_r=expected_value_r(estimate.p, q.rr, q.cost_r),

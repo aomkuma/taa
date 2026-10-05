@@ -274,5 +274,24 @@
     "CRYPTO": "คริปโต",
     "STOCK": "หุ้น",
     "OTHER": "อื่น ๆ"
+  },
+  "opportunityStatus": {
+    "CANDIDATE": "ติดตามอยู่",
+    "ACTIVE": "ใช้งานอยู่",
+    "EXPIRING": "ใกล้หมดเวลา",
+    "EXPIRED": "หมดเวลาที่เหมาะสมแล้ว",
+    "INVALIDATED": "ไม่สมเหตุสมผลแล้ว",
+    "FOLLOWED": "เข้าเทรดแล้ว"
+  },
+  "windowReason": {
+    "SIGNAL_LIFETIME": "สัญญาณหมดอายุ",
+    "SESSION_END": "ตลาดช่วง {{detail}} ปิดแล้ว",
+    "NEWS_BLACKOUT": "เข้าช่วงงดเทรดเพราะข่าว"
+  },
+  "invalidReason": {
+    "PRICE_DRIFT": "ราคาวิ่งห่างจุดเข้ามากเกินไป",
+    "SL_TOUCHED": "ราคาแตะ stop ก่อนได้เข้า",
+    "SPREAD_SPIKE": "spread สูงเกินเกณฑ์ต่อเนื่อง",
+    "OPPOSITE_SIGNAL": "มีสัญญาณฝั่งตรงข้าม"
   }
 }

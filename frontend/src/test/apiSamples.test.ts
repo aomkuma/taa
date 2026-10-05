@@ -47,12 +47,19 @@ import {
   SystemStatusSchema,
 } from '@/pages/system/schemas';
 import { PreferencesWatchlistsSchema, RankingDetailSchema, RankingSchema } from '@/pages/ranking/schemas';
+import {
+  OpportunitiesPageSchema,
+  OpportunityDetailSchema,
+  ScoreboardSchema,
+} from '@/pages/opportunities/schemas';
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
 // the backtest runs of tests/web/test_api_samples.py
 const RUN_A = '0191a0a0-0000-7000-8000-0000000000b1';
 const RUN_B = '0191a0a0-0000-7000-8000-0000000000b2';
+// the scanner's EURUSD opportunity (tests/web/test_api_samples.py OPP_EUR)
+const OPP = 'ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de';
 
 const CASES: [string, z.ZodType][] = [
   [`${E}status`, EngineStatusSchema],
@@ -98,6 +105,10 @@ const CASES: [string, z.ZodType][] = [
   [`${E}ranking`, RankingSchema],
   [`${E}ranking/XAUUSD`, RankingDetailSchema],
   ['advisory/preferences', PreferencesWatchlistsSchema],
+  [`${E}opportunities?limit=50`, OpportunitiesPageSchema],
+  [`${E}opportunities/${OPP}`, OpportunityDetailSchema],
+  [`${E}opportunities/${OPP}`, SignalSourceSchema],
+  [`${E}theory-scoreboard`, ScoreboardSchema],
 ];
 
 const recorded = samples as Record<string, unknown>;

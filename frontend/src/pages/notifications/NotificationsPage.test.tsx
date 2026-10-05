@@ -69,7 +69,7 @@ describe('notifications page', () => {
       .getAllByRole('link', { name: 'Open' })
       .map((a) => a.getAttribute('href'));
     expect(links).toContain(`/backtests?run=${RUN_A}`);
-    expect(links).toContain('/charts?opportunity=o1');
+    expect(links).toContain('/opportunities/o1');
     // ENGINE_BACK was read already: no "mark as read" for it
     expect(within(centre).getAllByRole('button', { name: 'Mark as read' })).toHaveLength(4);
   });

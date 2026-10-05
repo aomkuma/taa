@@ -40,13 +40,25 @@ const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'childre
     }),
   },
   ranking: { lazy: async () => ({ Component: (await import('@/pages/ranking/RankingPage')).RankingPage }) },
+  opportunities: {
+    lazy: async () => ({
+      Component: (await import('@/pages/opportunities/OpportunitiesPage')).OpportunitiesPage,
+    }),
+  },
 };
 
+/** Pages that also answer `<path>/:<param>` (deep links from pushes, e.g. `/opportunities/<id>`). */
+const DETAIL_PARAM: Partial<Record<NavId, string>> = { opportunities: 'opportunityId' };
+
 const pages = (own: boolean): RouteObject[] =>
-  NAV_ITEMS.filter((item) => item.own === own && item.id !== 'dashboard').map((item) => ({
-    path: item.path,
-    ...(BUILT[item.id] ?? { element: <PlaceholderPage id={item.id} /> }),
-  }));
+  NAV_ITEMS.filter((item) => item.own === own && item.id !== 'dashboard').flatMap((item) => {
+    const page = BUILT[item.id] ?? { element: <PlaceholderPage id={item.id} /> };
+    const param = DETAIL_PARAM[item.id];
+    return [
+      { path: item.path, ...page },
+      ...(param && BUILT[item.id] ? [{ path: `${item.path}/:${param}`, ...page }] : []),
+    ];
+  });
 
 export interface RouteOptions {
   /** Tests inject a fake EventSource for the live stream. */

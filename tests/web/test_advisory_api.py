@@ -182,6 +182,7 @@ class TestEngineData:
         _, client, mine, _ = rig
         [item] = get(client, mine, "opportunities").json()["items"]
         assert item["opportunity_id"] == "o1" and "signal" not in item and "features" not in item
+        assert item["supporting"] == 0 and item["conflicting"] == 0  # the sample evidence has no relation
         detail = get(client, mine, "opportunities/o1").json()
         assert detail["evidence"] == [{"detector": "fib.retracement", "quality": 0.8}]
         assert detail["confluence"] == {"score": 72} and len(detail["shadow"]) == 1
@@ -193,6 +194,10 @@ class TestEngineData:
         assert sum(c["points"] for c in prob["contributions"]) == pytest.approx(
             prob["estimate"]["p"] - prob["base_rate"]
         )
+        # the list card carries the same % without the Shapley split
+        brief = item["probability"]
+        assert brief["estimate"]["p"] == pytest.approx(prob["estimate"]["p"])
+        assert brief["contributions"] is None and brief["base_rate"] is None
         # the same opportunity for a user who switched Fibonacci off: no contribution from it
         prefs = client.get("/api/v1/advisory/preferences").json()
         put(

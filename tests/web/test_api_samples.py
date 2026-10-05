@@ -19,21 +19,29 @@ from pathlib import Path
 from typing import Any
 
 from fastapi.testclient import TestClient
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 
+from app.advisory.calibration import build, save
 from app.advisory.personalize import UserContext, replacement
+from app.advisory.requirements import ComputeRequirements
 from app.config import Settings, load_settings
+from app.evidence.catalog import default_registry as evidence_registry
 from app.storage.database import Database
 from app.storage.models import (
     AuditEvent,
     BacktestRunRow,
+    CalibrationTableRow,
     ConfigSnapshot,
+    DecisionCheckRow,
     DecisionRecordRow,
     EngineCommandRow,
     EngineHeartbeatRow,
+    EvidenceModelVersionRow,
     NotificationPrefsRow,
     NotificationRow,
+    OpportunityRow,
     PushSubscriptionRow,
+    ShadowTradeRow,
     SuitabilitySnapshotRow,
     SymbolCatalogRow,
     UserRow,
@@ -41,8 +49,11 @@ from app.storage.models import (
 from tests.backtest.test_cloud_backtests import Rig as BacktestRig
 from tests.backtest.test_cloud_backtests import upload
 from tests.integration.test_ranking_service import service as ranking_service
+from tests.integration.test_scanner import REQ, scanner
+from tests.integration.test_scanner import config as scanner_config
 from tests.strategy_data import EURUSD_SPEC
 from tests.sync_data import T
+from tests.unit.test_calibration import CFG, INFORMATIVE, outcomes, shadow
 from tests.unit.test_personalize import opportunity, prefs
 from tests.unit.test_strategy_models import make_context, make_signal
 from tests.web.test_data_api import rig  # noqa: F401  (fixture)
@@ -52,6 +63,8 @@ SAMPLES = Path(__file__).resolve().parents[2] / "frontend" / "src" / "test" / "f
 RUN_A = "0191a0a0-0000-7000-8000-0000000000b1"  # finished, standard preset
 RUN_B = "0191a0a0-0000-7000-8000-0000000000b2"  # finished, high_costs (a copy of A's result)
 RUN_F = "0191a0a0-0000-7000-8000-0000000000b3"  # failed
+# the scanner's opportunity ids are the signals' idempotency keys (deterministic on the FakeMT5 bar)
+OPP_EUR = "ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de"
 
 ENGINE_ROUTES = [
     "status",
@@ -82,6 +95,9 @@ ENGINE_ROUTES = [
     "audit/verify",
     "ranking",
     "ranking/XAUUSD",
+    "opportunities?limit=50",
+    f"opportunities/{OPP_EUR}",
+    "theory-scoreboard",
 ]
 USER_ROUTES = [
     "me/feed",
@@ -170,6 +186,75 @@ def ranking_rows(engine_id: str) -> list[SuitabilitySnapshotRow]:
     return [SuitabilitySnapshotRow(engine_id=engine_id, **{c: getattr(r, c) for c in columns}) for r in rows]
 
 
+def copy_rows(rows: list[Any], engine_id: str) -> list[Any]:
+    """Detached copies of *rows* (from a throwaway database) for *engine_id*, without autoincrement ids."""
+    out = []
+    for r in rows:
+        model = type(r)
+        columns = [
+            c.key for c in model.__table__.columns if c.key != "engine_id" and c.autoincrement is not True
+        ]
+        out.append(model(engine_id=engine_id, **{c: getattr(r, c) for c in columns}))
+    return out
+
+
+def pin_ids(rows: list[Any], ids: list[str]) -> None:
+    """Replace random ids (uuid7 decision and signal ids) everywhere in *rows* by fixed ones."""
+    fixed = {old: f"0191a0a0-0000-7000-8000-0000000001{i:02d}" for i, old in enumerate(ids)}
+
+    def swap(value: Any) -> Any:
+        text = json.dumps(value)
+        for old, new in fixed.items():
+            text = text.replace(old, new)
+        return json.loads(text)
+
+    for row in rows:
+        for column in type(row).__table__.columns:
+            value = getattr(row, column.key)
+            if isinstance(value, str | dict | list):
+                setattr(row, column.key, swap(value))
+
+
+def opportunity_rows(engine_id: str) -> list[Any]:
+    """Two opportunities from the engine's scanner on FakeMT5 with every detector (the EURUSD one alerted and
+    ACTIVE), with their ADVISORY decision records."""
+    scratch = Database("sqlite://")
+    scratch.create_all()
+    req = ComputeRequirements(("EURUSD", "XAUUSD"), frozenset(evidence_registry().ids), REQ.strategies)
+    svc, _, _ = scanner(scratch, req=req, cfg=scanner_config(budget=60.0))
+    assert len(svc.tick().created) == 2
+    with scratch.session() as sess:
+        opps = list(sess.scalars(select(OpportunityRow).order_by(OpportunityRow.symbol)))
+        decisions = list(sess.scalars(select(DecisionRecordRow)))
+        checks = list(sess.scalars(select(DecisionCheckRow)))
+        rows = copy_rows([*opps, *decisions, *checks], engine_id)
+    pin_ids(rows, [o.decision_id for o in opps] + [str(o.signal["signal_id"]) for o in opps])
+    eur = rows[0]
+    assert isinstance(eur, OpportunityRow) and eur.opportunity_id == OPP_EUR
+    eur.status, eur.alerted_at = "ACTIVE", eur.created_at  # as the personalizer leaves an alerted one
+    for opp in rows[:2]:  # the window the lifecycle tracker sets (bar close + 2 entry bars)
+        assert isinstance(opp, OpportunityRow)
+        opp.valid_until, opp.valid_reason = opp.bar_close_at + timedelta(minutes=30), "SIGNAL_LIFETIME"
+    eur.features = dict(eur.features) | {INFORMATIVE: 0.8}  # a feature the sample calibration knows
+    return rows
+
+
+def calibrate(db: Database, engine_id: str) -> None:
+    """A calibration version (synthetic outcomes where the Fibonacci theory is informative) stamped on the
+    opportunities, and three closed shadow trades for the theory scoreboard."""
+    version = save(db, build(outcomes(1500, informative=True, seed=4), CFG, server="FBS-Demo", built_at=T))
+    for oid in ("s1", "s2", "s3"):
+        shadow(db, oid)
+    with db.session() as sess:
+        for model in (CalibrationTableRow, EvidenceModelVersionRow, ShadowTradeRow):
+            sess.execute(update(model).where(model.engine_id == "local").values(engine_id=engine_id))
+        sess.execute(
+            update(OpportunityRow)
+            .where(OpportunityRow.engine_id == engine_id)
+            .values(calibration_version=version)
+        )
+
+
 def realistic_rows(db: Database, engine_id: str) -> None:
     """Replace the sample placeholders with documents the engine's serializers produce."""
     with db.session() as sess:
@@ -186,8 +271,10 @@ def realistic_rows(db: Database, engine_id: str) -> None:
         snapshot = sess.get(ConfigSnapshot, (engine_id, "c" * 32))
         assert snapshot is not None
         summary = engine_settings().summary()  # what the engine snapshots (secrets masked by the engine)
-        for item in summary["config"]["strategies"]["items"]:  # one strategy the owner disabled from the PWA
-            item["enabled"] = item["enabled"] or item["name"] == "setup_breakout"
+        # setup_breakout runs but the owner disabled it from the PWA (heartbeat below); setup_elliott_wave is
+        # off in the file, so the samples cover both states while config.yaml enables every strategy
+        for item in summary["config"]["strategies"]["items"]:
+            item["enabled"] = item["name"] != "setup_elliott_wave"
         snapshot.payload = summary | {"config_hash": "c" * 32}
         snapshot.created_at = T  # stamped with the wall clock by the sample rows
         quote = {
@@ -287,6 +374,8 @@ def realistic_rows(db: Database, engine_id: str) -> None:
         )
         sess.execute(delete(SuitabilitySnapshotRow).where(SuitabilitySnapshotRow.engine_id == engine_id))
         sess.add_all(ranking_rows(engine_id))
+        sess.execute(delete(OpportunityRow).where(OpportunityRow.engine_id == engine_id))
+        sess.add_all(opportunity_rows(engine_id))
         alice = sess.scalars(select(UserRow).where(UserRow.username == "alice")).one()
         sess.add_all(backtest_runs(engine_id, alice.id))
         # one notification of each kind, with the payloads their producers write (app/worker/*)
@@ -390,6 +479,7 @@ def test_api_samples_match_the_shared_file(
 ) -> None:
     client, mine, _ = rig
     realistic_rows(db, mine)
+    calibrate(db, mine)
     samples: dict[str, Any] = {}
     for route in ENGINE_ROUTES:
         resp = client.get(f"/api/v1/engines/{mine}/{route}")

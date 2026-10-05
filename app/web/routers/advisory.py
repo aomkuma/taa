@@ -252,12 +252,14 @@ async def ranking_history(
 async def opportunities(
     engine: AdvisoryEngine,
     ctx: Context,
+    session: CurrentSession,
     status: Annotated[str | None, Query(pattern="^(CANDIDATE|ACTIVE|EXPIRED|INVALIDATED|FOLLOWED)$")] = None,
     symbol: Name = None,
     strategy: Name = None,
     limit: Limit = None,
     cursor: Cursor = None,
 ) -> dict[str, Any]:
+    prefs = await run_in_threadpool(_store(ctx).get, session.user_id)
     page: Any = await _run(
         reads(ctx).opportunities,
         engine.engine_id,
@@ -266,6 +268,7 @@ async def opportunities(
         strategy=strategy,
         limit=limit,
         cursor=cursor,
+        prefs=prefs,
     )
     out = dict(page.to_dict())
     if not engine.is_owner:

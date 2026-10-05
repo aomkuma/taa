@@ -77,6 +77,17 @@ def _universe(rows: Sequence[SuitabilitySnapshotRow]) -> int | None:
     return None
 
 
+def _query(row: OpportunityRow) -> Query:
+    return Query(
+        strategy=row.strategy,
+        symbol=row.symbol,
+        asset_class=row.asset_class,
+        strength=row.setup_strength,
+        rr=row.rr or 0.0,
+        features=dict(row.features or {}),
+    )
+
+
 def ranking_brief(row: SuitabilitySnapshotRow, *, owner: bool) -> dict[str, Any]:
     """A ranking row for the list: the columns plus what the table shows from the payload (session open,
     flags, the gates that did not pass with their explanation key and parameters, the owner's sizing). The
@@ -368,15 +379,29 @@ class AdvisoryReads:
         strategy: str | None,
         limit: int | None,
         cursor: str | None,
+        prefs: AdvisoryPreferences | None = None,
     ) -> Page:
+        """Cards: the row without the signal and features, plus the number of supporting and conflicting
+        theories and (with *prefs*) the user's win probability without its Shapley split (TAA-917)."""
         m = OpportunityRow
         where = [m.engine_id == engine_id]
         for col, value in ((m.status, status), (m.symbol, symbol), (m.strategy, strategy)):
             if value:
                 where.append(col == value)
+        loaded: dict[str, Any] = {}
 
         def brief(row: OpportunityRow) -> dict[str, Any]:
-            return row_dict(row, skip=("engine_id", "signal", "features"))
+            out = row_dict(row, skip=("engine_id", "signal", "features"))
+            relations = [
+                e.get("relation") for e in (row.signal or {}).get("evidence", []) if isinstance(e, dict)
+            ]
+            out["supporting"] = relations.count("SUPPORTS")
+            out["conflicting"] = relations.count("CONFLICTS")
+            if prefs is not None:
+                out["probability"] = self._probability(
+                    engine_id, row.calibration_version, _query(row), prefs, contributions=False, cache=loaded
+                )
+            return out
 
         with self.db.session() as sess:
             return paginate(
@@ -398,14 +423,7 @@ class AdvisoryReads:
             out = row_dict(row, skip=("engine_id", "features"))
             shadow = [row_dict(s, skip=("engine_id", "features", "cursor")) for s in shadows]
             signal = dict(row.signal or {})
-            query = Query(
-                strategy=row.strategy,
-                symbol=row.symbol,
-                asset_class=row.asset_class,
-                strength=row.setup_strength,
-                rr=row.rr or 0.0,
-                features=dict(row.features or {}),
-            )
+            query = _query(row)
             version = row.calibration_version
             decision = sess.get(DecisionRecordRow, (engine_id, row.decision_id))
             heat = sess.scalar(
@@ -424,18 +442,33 @@ class AdvisoryReads:
         return out
 
     def _probability(
-        self, engine_id: str, version: str | None, query: Query, prefs: AdvisoryPreferences
+        self,
+        engine_id: str,
+        version: str | None,
+        query: Query,
+        prefs: AdvisoryPreferences,
+        *,
+        contributions: bool = True,
+        cache: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """The win probability and its per-theory contributions for this user's theory selection, from the
-        calibration version stamped on the opportunity (None: not calibrated when it was found)."""
+        calibration version stamped on the opportunity (None: not calibrated when it was found). *cache*
+        keeps loaded versions across the rows of one list."""
         if version is None:
             return {"available": False, "reason": "no_calibration"}
-        try:
-            loaded = load_version(self.db, version, engine_id)
-        except TaaError:
+        cache = {} if cache is None else cache
+        if version not in cache:
+            try:
+                cache[version] = load_version(self.db, version, engine_id)
+            except TaaError:
+                cache[version] = None
+        loaded = cache[version]
+        if loaded is None:
             return {"available": False, "reason": "calibration_missing"}
         evidence, _ = catalogs()
-        explanation = loaded.model.explain(query, prefs.theories.enabled_detectors(evidence))
+        explanation = loaded.model.explain(
+            query, prefs.theories.enabled_detectors(evidence), contributions=contributions
+        )
         out = plain(explanation)
         if out.get("contributions"):
             out["contributions"] = sorted(out["contributions"], key=lambda c: -abs(c.get("points") or 0))

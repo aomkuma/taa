@@ -29,7 +29,7 @@ describe('notification view', () => {
     const push = { title: 'XAUUSD ซื้อ', body: 'line 1\nline 2', tag: 'o1' };
     expect(view(item('OPPORTUNITY', { push, opportunity_id: 'o1' }))).toEqual({
       text: { kind: 'text', title: 'XAUUSD ซื้อ', body: 'line 1\nline 2' },
-      link: '/charts?opportunity=o1',
+      link: '/opportunities/o1',
     });
     expect(view(item('OPPORTUNITY_UPDATE', { opportunity_id: 'o1' })).text).toEqual({ kind: 'none' });
   });

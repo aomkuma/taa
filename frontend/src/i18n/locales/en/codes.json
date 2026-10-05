@@ -274,5 +274,24 @@
     "CRYPTO": "Crypto",
     "STOCK": "Stocks",
     "OTHER": "Other"
+  },
+  "opportunityStatus": {
+    "CANDIDATE": "Tracked",
+    "ACTIVE": "Active",
+    "EXPIRING": "Ending soon",
+    "EXPIRED": "Suitable time has passed",
+    "INVALIDATED": "No longer valid",
+    "FOLLOWED": "Followed"
+  },
+  "windowReason": {
+    "SIGNAL_LIFETIME": "the signal's lifetime ended",
+    "SESSION_END": "the {{detail}} session ended",
+    "NEWS_BLACKOUT": "a news blackout started"
+  },
+  "invalidReason": {
+    "PRICE_DRIFT": "the price moved too far from the entry",
+    "SL_TOUCHED": "the price touched the stop before entry",
+    "SPREAD_SPIKE": "the spread stayed above its limit",
+    "OPPOSITE_SIGNAL": "an opposite signal appeared"
   }
 }

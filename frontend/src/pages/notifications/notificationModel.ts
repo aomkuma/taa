@@ -54,7 +54,7 @@ export function describe(n: NotificationItem): NotificationView {
       const text = prebuilt(p);
       return {
         text: text ? { kind: 'text', ...text } : { kind: 'none' },
-        link: id ? `/charts?opportunity=${encodeURIComponent(id)}` : null,
+        link: id ? `/opportunities/${encodeURIComponent(id)}` : null,
       };
     }
     case 'TEST':

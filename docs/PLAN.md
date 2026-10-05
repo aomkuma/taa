@@ -1003,7 +1003,7 @@ AI failures never trip trading breakers; they only produce HOLD.
     Texts come from the payload the producer wrote: engine and backtest notifications through TH/EN keys
     (`notifications.text|reason|status`, the same wording as the worker's push `TEXTS`), opportunity
     notifications show the personalizer's prebuilt push text as it was sent. Links: engine → dashboard,
-    backtest → `/backtests?run=`, opportunity → `/charts?opportunity=` (TAA-917 adds the opportunity page).
+    backtest → `/backtests?run=`, opportunity → `/opportunities/<id>` (TAA-917; it was `/charts?opportunity=` before).
   - Push on this device: support check (iOS outside the Home Screen gets the add-to-Home-Screen steps, R17),
     **Turn on** asks for permission first inside the click, subscribes with the VAPID key and posts the
     subscription with a device label ("Edge · Windows"); **Turn off** unsubscribes and tells the server;
@@ -1500,6 +1500,27 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     correlation. Score names and flags are texts in `common.json` (`ranking.score.S1`…, `ranking.flag.*`);
     `codes:gate`, `codes:gateStatus` and the new `codes:assetClass` kind have TH/EN texts.
   - Dashboard: "Top ranked symbols" (the first five the user can trade) for the owner and the feed.
+- (TAA-917 decisions) Opportunities (`frontend/src/pages/opportunities/`):
+  - `GET /opportunities` rows carry the session user's win probability (same calibration version and theory
+    selection as the detail, but `explain(..., contributions=False)`: no Shapley split, so a list stays cheap;
+    loaded versions are cached per request) and `supporting` / `conflicting` theory counts from the signal's
+    evidence. The detail keeps the contributions.
+  - Cards: both metrics (probability with its interval and n, or "insufficient data"; setup strength), random
+    baseline, break-even, EV in R, entry/SL/TP and RR, lot/risk/reward money (owner; the feed sees its own
+    sizing in the detail), theory counts, the owner's warnings, the countdown. "Open" (the default) shows
+    CANDIDATE/ACTIVE inside their window, open ones first by soonest end; "All recent" the last 50.
+  - Status is computed against the server clock: EXPIRING in the last 20% of the window; an open one past its
+    `valid_until` shows EXPIRED with the window's reason before the engine's next lifecycle pass. Reasons:
+    `codes:windowReason` (SESSION_END takes the session as `{{detail}}`) and `codes:invalidReason`.
+  - `/opportunities/:id` (push deep link; the notification centre links there instead of the charts page):
+    "where the % comes from" = base rate → contributions split into raising and lowering theories, bars from
+    the middle, each theory's hypothetical record for the opportunity's asset class and timeframe from
+    `theory-scoreboard`, and "show on chart" on the evidence's timeframe (owner only: the charts page is
+    `own`); the evidence by relation; the owner's MT5 entry plan and heat after, or the feed user's sizing.
+  - Opportunities are not a stream topic: the list and detail poll every 30 s and refetch on `notifications`
+    events. The page sets the app icon badge to the ACTIVE count (`setAppBadge`/`clearAppBadge`) where the
+    Badging API exists; the service worker already sets it from each push.
+  - Evidence names show the detector's English name until TAA-920 adds `evidence.*` texts.
 
 - **Engine ↔ cloud:**
   - New event types: `symbol_catalog`, `suitability_snapshot`, `opportunity` (create/update), `shadow_trade`

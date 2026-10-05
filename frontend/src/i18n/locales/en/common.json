@@ -1037,5 +1037,82 @@
       "none": "No symbol is suitable for the account right now.",
       "now": "Now {{score}}"
     }
+  },
+  "opportunities": {
+    "noEngine": "No engine reports opportunities to you yet.",
+    "advice": "Advice only: you decide whether to trade. The win probability is estimated from past hypothetical (shadow and replay) outcomes and can be wrong; it does not predict results.",
+    "view": {
+      "open": "Open ({{n}})",
+      "all": "All recent ({{n}})"
+    },
+    "noneOpen": "No open opportunity right now. New ones appear when a monitored symbol's bar closes.",
+    "none": "No opportunities yet.",
+    "cardLabel": "{{symbol}} {{side}}",
+    "found": "Found {{time}}",
+    "validUntil": "suitable until {{time}}",
+    "countdown": "{{time}} left",
+    "countdownHint": "Time left in the suitable window",
+    "buy": "BUY",
+    "sell": "SELL",
+    "entry": "Entry",
+    "stop": "Stop loss",
+    "target": "Take profit",
+    "rr": "Risk : reward",
+    "lot": "Lot",
+    "risk": "Risk",
+    "reward": "Reward",
+    "r": "{{value}}R",
+    "ownSizingInDetail": "Your own lot and risk are in the details.",
+    "theories": "{{supporting}} theories support · {{conflicting}} conflict",
+    "why": {
+      "title": "Where the % comes from",
+      "summary": "Starting from the base rate of {{base}} for this strategy, symbol and setup, each theory moves the estimate; together they give {{p}}.",
+      "bucketOnly": "{{p}} is the base estimate for this strategy, symbol and setup strength; there is not enough history yet to split it by theory.",
+      "raise": "Theories that raise it",
+      "lower": "Theories that lower it",
+      "points": "{{points}} pts",
+      "record": "Track record here: hit {{hit}} of {{n}}, {{r}}R on average",
+      "noRecord": "No track record here yet",
+      "showOnChart": "show on chart ({{tf}})",
+      "families": "{{n}} theory families support it.",
+      "hypothetical": "Track records are hypothetical (shadow trades)."
+    },
+    "link": "Details",
+    "back": "← All opportunities",
+    "notFound": "This opportunity no longer exists.",
+    "summary": "Summary",
+    "metric": {
+      "probability": "Win probability",
+      "probabilityHint": "Estimated chance the take profit is hit before the stop loss",
+      "interval": "{{low}}–{{high}} · n={{n}}",
+      "insufficient": "insufficient data",
+      "notCalibrated": "Not calibrated yet",
+      "strength": "Setup strength",
+      "strengthHint": "Share of the strategy's conditions that passed",
+      "baseline": "Random baseline",
+      "baselineHint": "What a random entry with this risk : reward would hit: 1/(1+RR)",
+      "breakEven": "Break-even",
+      "breakEvenHint": "The win probability at which this trade breaks even after costs",
+      "ev": "Expected value",
+      "evHint": "p × (RR + 1) − 1 − costs, in R (multiples of the risk)"
+    },
+    "evidence": {
+      "title": "Evidence",
+      "none": "No evidence recorded.",
+      "SUPPORTS": "Supports",
+      "CONFLICTS": "Conflicts",
+      "NEUTRAL": "Neutral",
+      "quality": "fit {{q}}%"
+    },
+    "mySizing": {
+      "title": "For your account",
+      "body": "Lot {{lot}}, risking {{risk}}",
+      "none": "Set a manual account profile to size it for your account."
+    },
+    "plan": {
+      "title": "Entry plan (MT5)",
+      "part": "{{n}}) {{type}} {{volume}} lot at {{price}}",
+      "heat": "Open risk after entry: {{heat}}"
+    }
   }
 }

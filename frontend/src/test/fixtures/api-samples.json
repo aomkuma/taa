@@ -3322,22 +3322,22 @@
               "params": {}
             },
             {
-              "enabled": false,
+              "enabled": true,
               "name": "setup_neckline_break",
               "params": {}
             },
             {
-              "enabled": false,
+              "enabled": true,
               "name": "setup_pattern_breakout",
               "params": {}
             },
             {
-              "enabled": false,
+              "enabled": true,
               "name": "setup_fib_pullback",
               "params": {}
             },
             {
-              "enabled": false,
+              "enabled": true,
               "name": "setup_harmonic_prz",
               "params": {}
             },
@@ -3347,7 +3347,7 @@
               "params": {}
             },
             {
-              "enabled": false,
+              "enabled": true,
               "name": "setup_smc_reversal",
               "params": {}
             },
@@ -3357,7 +3357,7 @@
               "params": {}
             },
             {
-              "enabled": false,
+              "enabled": true,
               "name": "setup_candle_reversal",
               "params": {}
             }
@@ -3705,9 +3705,36 @@
         "warnings": [
           "DEMO_UNPROVEN"
         ]
+      },
+      {
+        "action": "BUY",
+        "bar_times": {
+          "H1": "2026-09-30T10:00:00+00:00",
+          "M15": "2026-09-30T10:00:00+00:00"
+        },
+        "code_version": "0.1.0",
+        "config_hash": "cfg",
+        "created_at": "2026-09-30T10:00:30+00:00",
+        "decision": "ACCEPT",
+        "decision_id": "0191a0a0-0000-7000-8000-000000000101",
+        "entry_price": 2330.36,
+        "idempotency_key": "353f5eeb588b213dcc36408099d0df43d8e706b325664042936c9eb2751ce4fa",
+        "profile": "ADVISORY",
+        "reason_codes": [],
+        "risk_money": 49.9,
+        "signal_id": "0191a0a0-0000-7000-8000-000000000103",
+        "stop_loss": 2325.42,
+        "strategy": "buy_every_bar",
+        "symbol": "XAUUSD",
+        "take_profit": 2340.2222005180706,
+        "timeframe": "M15",
+        "volume": 0.1,
+        "warnings": [
+          "DAILY_LOSS_LIMIT"
+        ]
       }
     ],
-    "next_cursor": null
+    "next_cursor": "WyIyMDI2LTA5LTMwVDEwOjAwOjMwKzAwOjAwIiwiMDE5MWEwYTAtMDAwMC03MDAwLTgwMDAtMDAwMDAwMDAwMTAxIl0"
   },
   "engines/ENGINE/decisions?limit=50&profile=EXECUTION": {
     "items": [
@@ -3815,6 +3842,1163 @@
         "source": "cli",
         "source_id": null,
         "ts_utc": "2026-09-30T10:00:00+00:00"
+      }
+    ],
+    "next_cursor": null
+  },
+  "engines/ENGINE/opportunities/ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de": {
+    "alerted_at": "2026-09-30T10:00:30+00:00",
+    "ask": 1.12652,
+    "asset_class": "FOREX_MAJOR",
+    "atr": 0.0008438264310628077,
+    "bar_close_at": "2026-09-30T10:00:00+00:00",
+    "bid": 1.12639,
+    "calibration_version": "20260930T100000Z-b607b85dfd7e",
+    "confluence": [
+      [
+        "core",
+        40.0
+      ],
+      [
+        "VOLATILITY_VOLUME",
+        5.1216
+      ],
+      [
+        "MOMENTUM",
+        4.8378
+      ],
+      [
+        "ICHIMOKU",
+        4.2
+      ],
+      [
+        "SMART_MONEY",
+        -4.1618
+      ],
+      [
+        "TREND",
+        2.625
+      ],
+      [
+        "LEVELS",
+        0.8635
+      ]
+    ],
+    "created_at": "2026-09-30T10:00:30+00:00",
+    "currency": "USD",
+    "decision_id": "0191a0a0-0000-7000-8000-000000000100",
+    "entry": 1.12652,
+    "equity": 10000.0,
+    "evidence": [
+      {
+        "item": {
+          "age_bars": 1,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {
+              "at_level": false,
+              "at_levels": "",
+              "bars": 2
+            },
+            "detected_at": "2026-09-30T09:00:00+00:00",
+            "detector_id": "candle.inside_outside",
+            "detector_version": 1,
+            "direction": "NEUTRAL",
+            "evidence_id": "d57eeb386e46341836593115",
+            "family": "CANDLESTICK",
+            "i18n_key": "evidence.candle.inside_outside.inside",
+            "invalidation": null,
+            "key_levels": [],
+            "name": "Inside/outside bar (inside)",
+            "quality": 0.29333333333336886,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "H1"
+          }
+        },
+        "relation": "NEUTRAL"
+      },
+      {
+        "item": {
+          "age_bars": 2,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {},
+            "detected_at": "2026-09-30T08:00:00+00:00",
+            "detector_id": "ichimoku.chikou",
+            "detector_version": 1,
+            "direction": "BULL",
+            "evidence_id": "1e2eeb62c7a57d0e0fc95dc2",
+            "family": "ICHIMOKU",
+            "i18n_key": "evidence.ichimoku.chikou",
+            "invalidation": 1.10374,
+            "key_levels": [
+              {
+                "at": null,
+                "name": "price_then",
+                "price": 1.10374
+              }
+            ],
+            "name": "Chikou confirmation",
+            "quality": 0.7,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "H1"
+          }
+        },
+        "relation": "SUPPORTS"
+      },
+      {
+        "item": {
+          "age_bars": 2,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {
+              "period": "day"
+            },
+            "detected_at": "2026-09-30T08:00:00+00:00",
+            "detector_id": "levels.pivot_points",
+            "detector_version": 1,
+            "direction": "BEAR",
+            "evidence_id": "3e99dc0f5c8f0bc208161e53",
+            "family": "LEVELS",
+            "i18n_key": "evidence.levels.pivot_points.classic.R2",
+            "invalidation": 1.1277972972074441,
+            "key_levels": [
+              {
+                "at": null,
+                "name": "classic.R2",
+                "price": 1.1274533333333332
+              }
+            ],
+            "name": "Pivot point (classic.R2)",
+            "quality": 0.4954717263451748,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "H1"
+          }
+        },
+        "relation": "CONFLICTS"
+      },
+      {
+        "item": {
+          "age_bars": 3,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {
+              "step": 0.01
+            },
+            "detected_at": "2026-09-30T07:00:00+00:00",
+            "detector_id": "levels.round_number",
+            "detector_version": 1,
+            "direction": "BULL",
+            "evidence_id": "4450daf56c35eaed6e84a96a",
+            "family": "LEVELS",
+            "i18n_key": "evidence.levels.round_number.half",
+            "invalidation": 1.1247481445632181,
+            "key_levels": [
+              {
+                "at": null,
+                "name": "round",
+                "price": 1.125
+              }
+            ],
+            "name": "Round number (half)",
+            "quality": 0.44355828220858773,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "H1"
+          }
+        },
+        "relation": "SUPPORTS"
+      },
+      {
+        "item": {
+          "age_bars": 2,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {},
+            "detected_at": "2026-09-30T09:30:00+00:00",
+            "detector_id": "momentum.cci_extreme",
+            "detector_version": 1,
+            "direction": "BULL",
+            "evidence_id": "f5f199c3b58c1951704a69d7",
+            "family": "MOMENTUM",
+            "i18n_key": "evidence.momentum.cci_extreme.breakout",
+            "invalidation": 1.12611,
+            "key_levels": [],
+            "name": "CCI extreme (breakout)",
+            "quality": 0.5543319769413388,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "M15"
+          }
+        },
+        "relation": "SUPPORTS"
+      },
+      {
+        "item": {
+          "age_bars": 2,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {
+              "osc_1": 85.662221,
+              "osc_2": 59.186689,
+              "oscillator": "stoch"
+            },
+            "detected_at": "2026-09-30T09:30:00+00:00",
+            "detector_id": "momentum.divergence",
+            "detector_version": 1,
+            "direction": "BULL",
+            "evidence_id": "b905f24899900381cfe63b7f",
+            "family": "MOMENTUM",
+            "i18n_key": "evidence.momentum.divergence.stoch.hidden",
+            "invalidation": 1.12559,
+            "key_levels": [
+              {
+                "at": "2026-09-30T03:45:00+00:00",
+                "name": "pivot_1",
+                "price": 1.1214
+              },
+              {
+                "at": "2026-09-30T09:00:00+00:00",
+                "name": "pivot_2",
+                "price": 1.12559
+              }
+            ],
+            "name": "Divergence (stoch.hidden)",
+            "quality": 1.0,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "M15"
+          }
+        },
+        "relation": "SUPPORTS"
+      },
+      {
+        "item": {
+          "age_bars": 0,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {
+              "bars_in_zone": 1,
+              "oscillator": "rsi"
+            },
+            "detected_at": "2026-09-30T10:00:00+00:00",
+            "detector_id": "momentum.ob_os",
+            "detector_version": 1,
+            "direction": "BEAR",
+            "evidence_id": "7250583c9e6c6a09e20fc205",
+            "family": "MOMENTUM",
+            "i18n_key": "evidence.momentum.ob_os.rsi.overbought_exit",
+            "invalidation": 1.12742,
+            "key_levels": [
+              {
+                "at": null,
+                "name": "zone_extreme",
+                "price": 1.12742
+              }
+            ],
+            "name": "Overbought/oversold exit (rsi.overbought_exit)",
+            "quality": 0.5270393452737419,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "M15"
+          }
+        },
+        "relation": "CONFLICTS"
+      },
+      {
+        "item": {
+          "age_bars": 1,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {
+              "pools": 1
+            },
+            "detected_at": "2026-09-30T09:45:00+00:00",
+            "detector_id": "smc.liquidity_sweep",
+            "detector_version": 1,
+            "direction": "BEAR",
+            "evidence_id": "c3b3868d4c82d2fb8639cf2d",
+            "family": "SMART_MONEY",
+            "i18n_key": "evidence.smc.liquidity_sweep",
+            "invalidation": 1.12742,
+            "key_levels": [
+              {
+                "at": "2026-09-30T08:00:00+00:00",
+                "name": "pool",
+                "price": 1.12735
+              }
+            ],
+            "name": "Liquidity sweep",
+            "quality": 0.7707127554408633,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T2",
+            "timeframe": "M15"
+          }
+        },
+        "relation": "CONFLICTS"
+      },
+      {
+        "item": {
+          "age_bars": 29,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {},
+            "detected_at": "2026-09-29T05:00:00+00:00",
+            "detector_id": "structure.dow",
+            "detector_version": 1,
+            "direction": "BULL",
+            "evidence_id": "bf6b207e775f9a7b529cb5a7",
+            "family": "TREND",
+            "i18n_key": "evidence.structure.dow.up",
+            "invalidation": 1.10022,
+            "key_levels": [
+              {
+                "at": "2026-09-28T23:00:00+00:00",
+                "name": "last_high",
+                "price": 1.10593
+              },
+              {
+                "at": "2026-09-28T19:00:00+00:00",
+                "name": "last_low",
+                "price": 1.10022
+              }
+            ],
+            "name": "Dow structure (up)",
+            "quality": 0.7,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "H1"
+          }
+        },
+        "relation": "SUPPORTS"
+      },
+      {
+        "item": {
+          "age_bars": 45,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {},
+            "detected_at": "2026-09-28T13:00:00+00:00",
+            "detector_id": "structure.dow",
+            "detector_version": 1,
+            "direction": "BEAR",
+            "evidence_id": "e978b193e580c556c41ee164",
+            "family": "TREND",
+            "i18n_key": "evidence.structure.dow.down",
+            "invalidation": 1.18301,
+            "key_levels": [
+              {
+                "at": "2026-09-22T15:00:00+00:00",
+                "name": "last_high",
+                "price": 1.18301
+              },
+              {
+                "at": "2026-09-28T08:00:00+00:00",
+                "name": "last_low",
+                "price": 1.09961
+              }
+            ],
+            "name": "Dow structure (down)",
+            "quality": 0.7,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "H1"
+          }
+        },
+        "relation": "CONFLICTS"
+      },
+      {
+        "item": {
+          "age_bars": 2,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {},
+            "detected_at": "2026-09-30T08:00:00+00:00",
+            "detector_id": "volatility.donchian",
+            "detector_version": 1,
+            "direction": "BULL",
+            "evidence_id": "ebd4cf06dea71740e3112d96",
+            "family": "VOLATILITY_VOLUME",
+            "i18n_key": "evidence.volatility.donchian.n20",
+            "invalidation": 1.116585,
+            "key_levels": [
+              {
+                "at": null,
+                "name": "channel_20",
+                "price": 1.12601
+              }
+            ],
+            "name": "Donchian breakout (n20)",
+            "quality": 0.7,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "H1"
+          }
+        },
+        "relation": "SUPPORTS"
+      },
+      {
+        "item": {
+          "age_bars": 1,
+          "as_of": "2026-09-30T10:00:00+00:00",
+          "evidence": {
+            "details": {},
+            "detected_at": "2026-09-30T09:45:00+00:00",
+            "detector_id": "volatility.keltner",
+            "detector_version": 1,
+            "direction": "BULL",
+            "evidence_id": "bf0626d0310eebb576bfe433",
+            "family": "VOLATILITY_VOLUME",
+            "i18n_key": "evidence.volatility.keltner",
+            "invalidation": 1.125306853300571,
+            "key_levels": [
+              {
+                "at": null,
+                "name": "channel",
+                "price": 1.1270097914494837
+              },
+              {
+                "at": null,
+                "name": "mid",
+                "price": 1.125306853300571
+              }
+            ],
+            "name": "Keltner channel breakout",
+            "quality": 0.5119893379836175,
+            "symbol": "EURUSD",
+            "targets": [],
+            "tier": "T1",
+            "timeframe": "M15"
+          }
+        },
+        "relation": "SUPPORTS"
+      }
+    ],
+    "heat_after": 0.4872,
+    "lot": 0.28,
+    "opportunity_id": "ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de",
+    "plan": [
+      {
+        "entry": "1.12652",
+        "order_type": "MARKET",
+        "risk_money": "48.72000000",
+        "take_profit": null,
+        "taps": 28,
+        "volume": "0.28"
+      }
+    ],
+    "probability": {
+      "available": true,
+      "base_rate": 44.023362451583694,
+      "break_even": 33.33333333333479,
+      "calibration_version": "20260930T100000Z-b607b85dfd7e",
+      "contributions": [
+        {
+          "detector": "fib.retracement",
+          "family": "FIBONACCI",
+          "feature": "ev:FIBONACCI:fib.retracement",
+          "points": 12.718451667225123
+        },
+        {
+          "detector": "ichimoku.chikou",
+          "family": "ICHIMOKU",
+          "feature": "ev:ICHIMOKU:ichimoku.chikou",
+          "points": 8.256889667612356
+        },
+        {
+          "detector": "levels.round_number",
+          "family": "LEVELS",
+          "feature": "ev:LEVELS:levels.round_number",
+          "points": 8.256889667612356
+        },
+        {
+          "detector": "volatility.donchian",
+          "family": "VOLATILITY_VOLUME",
+          "feature": "ev:VOLATILITY_VOLUME:volatility.donchian",
+          "points": 5.125956262620108
+        },
+        {
+          "detector": "volatility.keltner",
+          "family": "VOLATILITY_VOLUME",
+          "feature": "ev:VOLATILITY_VOLUME:volatility.keltner",
+          "points": 5.125956262620108
+        },
+        {
+          "detector": "momentum.cci_extreme",
+          "family": "MOMENTUM",
+          "feature": "ev:MOMENTUM:momentum.cci_extreme",
+          "points": 5.125956262620107
+        },
+        {
+          "detector": "momentum.divergence",
+          "family": "MOMENTUM",
+          "feature": "ev:MOMENTUM:momentum.divergence",
+          "points": 5.125956262620107
+        },
+        {
+          "detector": "levels.pivot_points",
+          "family": "LEVELS",
+          "feature": "ev:LEVELS:levels.pivot_points",
+          "points": 0.0
+        },
+        {
+          "detector": "momentum.ob_os",
+          "family": "MOMENTUM",
+          "feature": "ev:MOMENTUM:momentum.ob_os",
+          "points": 0.0
+        },
+        {
+          "detector": "smc.liquidity_sweep",
+          "family": "SMART_MONEY",
+          "feature": "ev:SMART_MONEY:smc.liquidity_sweep",
+          "points": 0.0
+        }
+      ],
+      "estimate": {
+        "calibration": "NONE",
+        "high": 51.21670876687858,
+        "insufficient": true,
+        "low": 17.390553231234662,
+        "n": 0.0,
+        "n_pooled": 0.0,
+        "p": 93.75941850451387,
+        "source": "evidence"
+      },
+      "ev_r": 1.8127825551352927,
+      "random_baseline": 33.33333333333479
+    },
+    "quote_at": "2026-09-30T10:00:30+00:00",
+    "regime": "TRENDING",
+    "requirements_version": "91e854707831f93c",
+    "reward_money": 94.51,
+    "risk_money": 48.72,
+    "rr": 1.9999999999998683,
+    "score": 50.0,
+    "server": "FBS-Demo",
+    "session": "LONDON",
+    "setup_strength": 53.48594970674388,
+    "shadow": [],
+    "side": "BUY",
+    "signal": {
+      "action": "BUY",
+      "bar_times": {
+        "H1": "2026-09-30T10:00:00+00:00",
+        "M15": "2026-09-30T10:00:00+00:00"
+      },
+      "conditions": [
+        {
+          "detail": "",
+          "name": "always",
+          "passed": true,
+          "weight": 1.0
+        }
+      ],
+      "confluence": [
+        [
+          "core",
+          40.0
+        ],
+        [
+          "VOLATILITY_VOLUME",
+          5.1216
+        ],
+        [
+          "MOMENTUM",
+          4.8378
+        ],
+        [
+          "ICHIMOKU",
+          4.2
+        ],
+        [
+          "SMART_MONEY",
+          -4.1618
+        ],
+        [
+          "TREND",
+          2.625
+        ],
+        [
+          "LEVELS",
+          0.8635
+        ]
+      ],
+      "created_at_utc": "2026-09-30T10:00:30+00:00",
+      "data_timestamp_utc": "2026-09-30T10:00:00+00:00",
+      "entry_price": 1.12652,
+      "entry_type": "MARKET",
+      "evidence": [
+        {
+          "item": {
+            "age_bars": 1,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {
+                "at_level": false,
+                "at_levels": "",
+                "bars": 2
+              },
+              "detected_at": "2026-09-30T09:00:00+00:00",
+              "detector_id": "candle.inside_outside",
+              "detector_version": 1,
+              "direction": "NEUTRAL",
+              "evidence_id": "d57eeb386e46341836593115",
+              "family": "CANDLESTICK",
+              "i18n_key": "evidence.candle.inside_outside.inside",
+              "invalidation": null,
+              "key_levels": [],
+              "name": "Inside/outside bar (inside)",
+              "quality": 0.29333333333336886,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "H1"
+            }
+          },
+          "relation": "NEUTRAL"
+        },
+        {
+          "item": {
+            "age_bars": 2,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {},
+              "detected_at": "2026-09-30T08:00:00+00:00",
+              "detector_id": "ichimoku.chikou",
+              "detector_version": 1,
+              "direction": "BULL",
+              "evidence_id": "1e2eeb62c7a57d0e0fc95dc2",
+              "family": "ICHIMOKU",
+              "i18n_key": "evidence.ichimoku.chikou",
+              "invalidation": 1.10374,
+              "key_levels": [
+                {
+                  "at": null,
+                  "name": "price_then",
+                  "price": 1.10374
+                }
+              ],
+              "name": "Chikou confirmation",
+              "quality": 0.7,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "H1"
+            }
+          },
+          "relation": "SUPPORTS"
+        },
+        {
+          "item": {
+            "age_bars": 2,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {
+                "period": "day"
+              },
+              "detected_at": "2026-09-30T08:00:00+00:00",
+              "detector_id": "levels.pivot_points",
+              "detector_version": 1,
+              "direction": "BEAR",
+              "evidence_id": "3e99dc0f5c8f0bc208161e53",
+              "family": "LEVELS",
+              "i18n_key": "evidence.levels.pivot_points.classic.R2",
+              "invalidation": 1.1277972972074441,
+              "key_levels": [
+                {
+                  "at": null,
+                  "name": "classic.R2",
+                  "price": 1.1274533333333332
+                }
+              ],
+              "name": "Pivot point (classic.R2)",
+              "quality": 0.4954717263451748,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "H1"
+            }
+          },
+          "relation": "CONFLICTS"
+        },
+        {
+          "item": {
+            "age_bars": 3,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {
+                "step": 0.01
+              },
+              "detected_at": "2026-09-30T07:00:00+00:00",
+              "detector_id": "levels.round_number",
+              "detector_version": 1,
+              "direction": "BULL",
+              "evidence_id": "4450daf56c35eaed6e84a96a",
+              "family": "LEVELS",
+              "i18n_key": "evidence.levels.round_number.half",
+              "invalidation": 1.1247481445632181,
+              "key_levels": [
+                {
+                  "at": null,
+                  "name": "round",
+                  "price": 1.125
+                }
+              ],
+              "name": "Round number (half)",
+              "quality": 0.44355828220858773,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "H1"
+            }
+          },
+          "relation": "SUPPORTS"
+        },
+        {
+          "item": {
+            "age_bars": 2,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {},
+              "detected_at": "2026-09-30T09:30:00+00:00",
+              "detector_id": "momentum.cci_extreme",
+              "detector_version": 1,
+              "direction": "BULL",
+              "evidence_id": "f5f199c3b58c1951704a69d7",
+              "family": "MOMENTUM",
+              "i18n_key": "evidence.momentum.cci_extreme.breakout",
+              "invalidation": 1.12611,
+              "key_levels": [],
+              "name": "CCI extreme (breakout)",
+              "quality": 0.5543319769413388,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "M15"
+            }
+          },
+          "relation": "SUPPORTS"
+        },
+        {
+          "item": {
+            "age_bars": 2,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {
+                "osc_1": 85.662221,
+                "osc_2": 59.186689,
+                "oscillator": "stoch"
+              },
+              "detected_at": "2026-09-30T09:30:00+00:00",
+              "detector_id": "momentum.divergence",
+              "detector_version": 1,
+              "direction": "BULL",
+              "evidence_id": "b905f24899900381cfe63b7f",
+              "family": "MOMENTUM",
+              "i18n_key": "evidence.momentum.divergence.stoch.hidden",
+              "invalidation": 1.12559,
+              "key_levels": [
+                {
+                  "at": "2026-09-30T03:45:00+00:00",
+                  "name": "pivot_1",
+                  "price": 1.1214
+                },
+                {
+                  "at": "2026-09-30T09:00:00+00:00",
+                  "name": "pivot_2",
+                  "price": 1.12559
+                }
+              ],
+              "name": "Divergence (stoch.hidden)",
+              "quality": 1.0,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "M15"
+            }
+          },
+          "relation": "SUPPORTS"
+        },
+        {
+          "item": {
+            "age_bars": 0,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {
+                "bars_in_zone": 1,
+                "oscillator": "rsi"
+              },
+              "detected_at": "2026-09-30T10:00:00+00:00",
+              "detector_id": "momentum.ob_os",
+              "detector_version": 1,
+              "direction": "BEAR",
+              "evidence_id": "7250583c9e6c6a09e20fc205",
+              "family": "MOMENTUM",
+              "i18n_key": "evidence.momentum.ob_os.rsi.overbought_exit",
+              "invalidation": 1.12742,
+              "key_levels": [
+                {
+                  "at": null,
+                  "name": "zone_extreme",
+                  "price": 1.12742
+                }
+              ],
+              "name": "Overbought/oversold exit (rsi.overbought_exit)",
+              "quality": 0.5270393452737419,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "M15"
+            }
+          },
+          "relation": "CONFLICTS"
+        },
+        {
+          "item": {
+            "age_bars": 1,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {
+                "pools": 1
+              },
+              "detected_at": "2026-09-30T09:45:00+00:00",
+              "detector_id": "smc.liquidity_sweep",
+              "detector_version": 1,
+              "direction": "BEAR",
+              "evidence_id": "c3b3868d4c82d2fb8639cf2d",
+              "family": "SMART_MONEY",
+              "i18n_key": "evidence.smc.liquidity_sweep",
+              "invalidation": 1.12742,
+              "key_levels": [
+                {
+                  "at": "2026-09-30T08:00:00+00:00",
+                  "name": "pool",
+                  "price": 1.12735
+                }
+              ],
+              "name": "Liquidity sweep",
+              "quality": 0.7707127554408633,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T2",
+              "timeframe": "M15"
+            }
+          },
+          "relation": "CONFLICTS"
+        },
+        {
+          "item": {
+            "age_bars": 29,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {},
+              "detected_at": "2026-09-29T05:00:00+00:00",
+              "detector_id": "structure.dow",
+              "detector_version": 1,
+              "direction": "BULL",
+              "evidence_id": "bf6b207e775f9a7b529cb5a7",
+              "family": "TREND",
+              "i18n_key": "evidence.structure.dow.up",
+              "invalidation": 1.10022,
+              "key_levels": [
+                {
+                  "at": "2026-09-28T23:00:00+00:00",
+                  "name": "last_high",
+                  "price": 1.10593
+                },
+                {
+                  "at": "2026-09-28T19:00:00+00:00",
+                  "name": "last_low",
+                  "price": 1.10022
+                }
+              ],
+              "name": "Dow structure (up)",
+              "quality": 0.7,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "H1"
+            }
+          },
+          "relation": "SUPPORTS"
+        },
+        {
+          "item": {
+            "age_bars": 45,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {},
+              "detected_at": "2026-09-28T13:00:00+00:00",
+              "detector_id": "structure.dow",
+              "detector_version": 1,
+              "direction": "BEAR",
+              "evidence_id": "e978b193e580c556c41ee164",
+              "family": "TREND",
+              "i18n_key": "evidence.structure.dow.down",
+              "invalidation": 1.18301,
+              "key_levels": [
+                {
+                  "at": "2026-09-22T15:00:00+00:00",
+                  "name": "last_high",
+                  "price": 1.18301
+                },
+                {
+                  "at": "2026-09-28T08:00:00+00:00",
+                  "name": "last_low",
+                  "price": 1.09961
+                }
+              ],
+              "name": "Dow structure (down)",
+              "quality": 0.7,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "H1"
+            }
+          },
+          "relation": "CONFLICTS"
+        },
+        {
+          "item": {
+            "age_bars": 2,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {},
+              "detected_at": "2026-09-30T08:00:00+00:00",
+              "detector_id": "volatility.donchian",
+              "detector_version": 1,
+              "direction": "BULL",
+              "evidence_id": "ebd4cf06dea71740e3112d96",
+              "family": "VOLATILITY_VOLUME",
+              "i18n_key": "evidence.volatility.donchian.n20",
+              "invalidation": 1.116585,
+              "key_levels": [
+                {
+                  "at": null,
+                  "name": "channel_20",
+                  "price": 1.12601
+                }
+              ],
+              "name": "Donchian breakout (n20)",
+              "quality": 0.7,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "H1"
+            }
+          },
+          "relation": "SUPPORTS"
+        },
+        {
+          "item": {
+            "age_bars": 1,
+            "as_of": "2026-09-30T10:00:00+00:00",
+            "evidence": {
+              "details": {},
+              "detected_at": "2026-09-30T09:45:00+00:00",
+              "detector_id": "volatility.keltner",
+              "detector_version": 1,
+              "direction": "BULL",
+              "evidence_id": "bf0626d0310eebb576bfe433",
+              "family": "VOLATILITY_VOLUME",
+              "i18n_key": "evidence.volatility.keltner",
+              "invalidation": 1.125306853300571,
+              "key_levels": [
+                {
+                  "at": null,
+                  "name": "channel",
+                  "price": 1.1270097914494837
+                },
+                {
+                  "at": null,
+                  "name": "mid",
+                  "price": 1.125306853300571
+                }
+              ],
+              "name": "Keltner channel breakout",
+              "quality": 0.5119893379836175,
+              "symbol": "EURUSD",
+              "targets": [],
+              "tier": "T1",
+              "timeframe": "M15"
+            }
+          },
+          "relation": "SUPPORTS"
+        }
+      ],
+      "expires_at_utc": "2026-09-30T10:15:00+00:00",
+      "explanation": "",
+      "idempotency_key": "ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de",
+      "reason_codes": [
+        "DEMO_UNPROVEN"
+      ],
+      "score": 50.0,
+      "setup_strength": 53.48594970674388,
+      "signal_id": "0191a0a0-0000-7000-8000-000000000102",
+      "stop_loss": 1.1248323471378743,
+      "strategy": "buy_every_bar",
+      "strategy_version": "1.0.0",
+      "symbol": "EURUSD",
+      "take_profit": 1.1298953057242511,
+      "timeframe": "M15"
+    },
+    "signal_expires_at": "2026-09-30T10:15:00+00:00",
+    "spread_points": 13.0,
+    "status": "ACTIVE",
+    "status_at": "2026-09-30T10:00:30+00:00",
+    "status_reason": "",
+    "stop_loss": 1.1248323471378743,
+    "strategy": "buy_every_bar",
+    "symbol": "EURUSD",
+    "take_profit": 1.1298953057242511,
+    "timeframe": "M15",
+    "valid_reason": "SIGNAL_LIFETIME",
+    "valid_until": "2026-09-30T10:30:00+00:00",
+    "warnings": [
+      "DAILY_LOSS_LIMIT"
+    ]
+  },
+  "engines/ENGINE/opportunities?limit=50": {
+    "items": [
+      {
+        "alerted_at": "2026-09-30T10:00:30+00:00",
+        "ask": 1.12652,
+        "asset_class": "FOREX_MAJOR",
+        "atr": 0.0008438264310628077,
+        "bar_close_at": "2026-09-30T10:00:00+00:00",
+        "bid": 1.12639,
+        "calibration_version": "20260930T100000Z-b607b85dfd7e",
+        "conflicting": 4,
+        "created_at": "2026-09-30T10:00:30+00:00",
+        "currency": "USD",
+        "decision_id": "0191a0a0-0000-7000-8000-000000000100",
+        "entry": 1.12652,
+        "equity": 10000.0,
+        "lot": 0.28,
+        "opportunity_id": "ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de",
+        "probability": {
+          "available": true,
+          "base_rate": null,
+          "break_even": 33.33333333333479,
+          "calibration_version": "20260930T100000Z-b607b85dfd7e",
+          "contributions": null,
+          "estimate": {
+            "calibration": "NONE",
+            "high": 51.21670876687858,
+            "insufficient": true,
+            "low": 17.390553231234662,
+            "n": 0.0,
+            "n_pooled": 0.0,
+            "p": 93.75941850451387,
+            "source": "evidence"
+          },
+          "ev_r": 1.8127825551352927,
+          "random_baseline": 33.33333333333479
+        },
+        "quote_at": "2026-09-30T10:00:30+00:00",
+        "regime": "TRENDING",
+        "requirements_version": "91e854707831f93c",
+        "reward_money": 94.51,
+        "risk_money": 48.72,
+        "rr": 1.9999999999998683,
+        "score": 50.0,
+        "server": "FBS-Demo",
+        "session": "LONDON",
+        "setup_strength": 53.48594970674388,
+        "side": "BUY",
+        "signal_expires_at": "2026-09-30T10:15:00+00:00",
+        "spread_points": 13.0,
+        "status": "ACTIVE",
+        "status_at": "2026-09-30T10:00:30+00:00",
+        "status_reason": "",
+        "stop_loss": 1.1248323471378743,
+        "strategy": "buy_every_bar",
+        "supporting": 7,
+        "symbol": "EURUSD",
+        "take_profit": 1.1298953057242511,
+        "timeframe": "M15",
+        "valid_reason": "SIGNAL_LIFETIME",
+        "valid_until": "2026-09-30T10:30:00+00:00",
+        "warnings": [
+          "DAILY_LOSS_LIMIT"
+        ]
+      },
+      {
+        "alerted_at": null,
+        "ask": 2330.36,
+        "asset_class": "METAL",
+        "atr": 2.4655501295176707,
+        "bar_close_at": "2026-09-30T10:00:00+00:00",
+        "bid": 2330.13,
+        "calibration_version": "20260930T100000Z-b607b85dfd7e",
+        "conflicting": 2,
+        "created_at": "2026-09-30T10:00:30+00:00",
+        "currency": "USD",
+        "decision_id": "0191a0a0-0000-7000-8000-000000000101",
+        "entry": 2330.36,
+        "equity": 10000.0,
+        "lot": 0.1,
+        "opportunity_id": "353f5eeb588b213dcc36408099d0df43d8e706b325664042936c9eb2751ce4fa",
+        "probability": {
+          "available": true,
+          "base_rate": null,
+          "break_even": 33.33333333333333,
+          "calibration_version": "20260930T100000Z-b607b85dfd7e",
+          "contributions": null,
+          "estimate": {
+            "calibration": "NONE",
+            "high": 51.21670876687858,
+            "insufficient": true,
+            "low": 17.390553231234662,
+            "n": 0.0,
+            "n_pooled": 0.0,
+            "p": 68.09033267521744,
+            "source": "evidence"
+          },
+          "ev_r": 1.042709980256523,
+          "random_baseline": 33.333333333333336
+        },
+        "quote_at": "2026-09-30T10:00:30+00:00",
+        "regime": "VOLATILE",
+        "requirements_version": "91e854707831f93c",
+        "reward_money": 98.62,
+        "risk_money": 49.9,
+        "rr": 2.0,
+        "score": 50.0,
+        "server": "FBS-Demo",
+        "session": "LONDON",
+        "setup_strength": 63.55699289225869,
+        "side": "BUY",
+        "signal_expires_at": "2026-09-30T10:15:00+00:00",
+        "spread_points": 23.0,
+        "status": "CANDIDATE",
+        "status_at": "2026-09-30T10:00:30+00:00",
+        "status_reason": "",
+        "stop_loss": 2325.428899740965,
+        "strategy": "buy_every_bar",
+        "supporting": 9,
+        "symbol": "XAUUSD",
+        "take_profit": 2340.2222005180706,
+        "timeframe": "M15",
+        "valid_reason": "SIGNAL_LIFETIME",
+        "valid_until": "2026-09-30T10:30:00+00:00",
+        "warnings": [
+          "DAILY_LOSS_LIMIT"
+        ]
       }
     ],
     "next_cursor": null
@@ -4504,7 +5688,7 @@
         "warmup_bars": 250
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -4546,14 +5730,14 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -4595,14 +5779,14 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -4644,14 +5828,14 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -4693,7 +5877,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
@@ -4749,7 +5933,7 @@
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -4791,7 +5975,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
@@ -4866,7 +6050,7 @@
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -4908,7 +6092,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
@@ -4984,7 +6168,7 @@
         "warmup_bars": 250
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -5026,14 +6210,14 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -5075,14 +6259,14 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -5124,14 +6308,14 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -5173,7 +6357,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
@@ -5229,7 +6413,7 @@
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -5271,7 +6455,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
@@ -5346,7 +6530,7 @@
         "warmup_bars": 120
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -5388,7 +6572,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
@@ -5464,6 +6648,42 @@
       "volume_step": 0.01
     },
     "symbol": "EURUSD"
+  },
+  "engines/ENGINE/theory-scoreboard": {
+    "hypothetical": true,
+    "items": [
+      {
+        "base_rate": 100.0,
+        "expectancy_r": 1.8999999999999997,
+        "group": [
+          "FOREX_MAJOR",
+          "M15"
+        ],
+        "high": 100.0,
+        "hit_rate": 100.0,
+        "level": "detector",
+        "lift": 1.0,
+        "low": 52.58044258424872,
+        "n": 3,
+        "theory": "ev:FIBONACCI:fib.retracement"
+      },
+      {
+        "base_rate": 100.0,
+        "expectancy_r": 1.8999999999999997,
+        "group": [
+          "FOREX_MAJOR",
+          "M15"
+        ],
+        "high": 100.0,
+        "hit_rate": 100.0,
+        "level": "family",
+        "lift": 1.0,
+        "low": 52.58044258424872,
+        "n": 3,
+        "theory": "FIBONACCI"
+      }
+    ],
+    "server": "FBS-Demo"
   },
   "engines/ENGINE/trades/1": {
     "decision": {
