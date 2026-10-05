@@ -1010,6 +1010,9 @@ class Engine:
         foreign = exposure.foreign[:MAX_FOREIGN_POSITIONS]
         try:
             links = self.manual_links.observe([p.position for p in foreign])
+            self.manual_links.settle(
+                [p.position.identifier or p.position.ticket for p in exposure.foreign], self.gateway.deals
+            )
         except Exception:  # telemetry boundary: an unlinked position is still shown
             log.exception("manual trade links failed")
             links = {}

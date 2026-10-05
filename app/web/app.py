@@ -42,6 +42,7 @@ from app.web.routers import (
     engines,
     health,
     ingest,
+    manual,
     me,
     notifications,
     stream,
@@ -142,6 +143,7 @@ def create_app(
     api.include_router(ingest.router)
     api.include_router(engine.router)
     api.include_router(data.router)
+    api.include_router(manual.router)
     api.include_router(stream.router)
     api.include_router(control.router)
     api.include_router(engines.router)

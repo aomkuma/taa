@@ -8508,6 +8508,107 @@
     ],
     "next_cursor": null
   },
+  "engines/ENGINE/manual-trades/2078278005/candidates": {
+    "items": [
+      {
+        "decision_id": "0191a0a0-0000-7000-8000-000000000100",
+        "distance_r": 15.5956,
+        "entry": 1.12652,
+        "expires_at": "2026-09-30T10:30:00+00:00",
+        "issued_at": "2026-09-30T10:00:00+00:00",
+        "opportunity_id": "ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de",
+        "qualifies": false,
+        "score": null,
+        "signal_key": "ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de",
+        "stop": 1.1248323471378743,
+        "strategy": "buy_every_bar"
+      }
+    ]
+  },
+  "engines/ENGINE/manual-trades?status=CLOSED&limit=100": {
+    "items": [
+      {
+        "auto": {
+          "candidates": 1,
+          "confidence": "HIGH",
+          "decision_id": "d1",
+          "distance_r": 0.04,
+          "opportunity_id": "k1",
+          "strategy": "example_trend_pullback"
+        },
+        "close_price": 1.1065,
+        "closed_at": "2026-09-30T12:00:00+00:00",
+        "compare": {
+          "bot_r": 1.0,
+          "bot_status": "CLOSED",
+          "signal_r": null,
+          "signal_status": "OPEN"
+        },
+        "effective": {
+          "confidence": "HIGH",
+          "decision_id": "d1",
+          "followed": true,
+          "opportunity_id": "k1",
+          "signal_key": "k1",
+          "source": "AUTO",
+          "strategy": "example_trend_pullback"
+        },
+        "net_profit": 62.5,
+        "opened_at": "2026-09-30T10:00:00+00:00",
+        "position_id": 2078278001,
+        "price_open": 1.1002,
+        "r_multiple": 1.25,
+        "side": "BUY",
+        "sl_initial": 1.0952,
+        "status": "CLOSED",
+        "symbol": "EURUSD",
+        "ticket": 2078278001,
+        "volume": 0.1
+      }
+    ]
+  },
+  "engines/ENGINE/manual-trades?status=OPEN&limit=100": {
+    "items": [
+      {
+        "auto": {
+          "candidates": 1,
+          "confidence": "HIGH",
+          "decision_id": "d1",
+          "distance_r": 0.04,
+          "opportunity_id": "k1",
+          "strategy": "example_trend_pullback"
+        },
+        "close_price": null,
+        "closed_at": null,
+        "compare": {
+          "bot_r": 1.0,
+          "bot_status": "CLOSED",
+          "signal_r": null,
+          "signal_status": "OPEN"
+        },
+        "effective": {
+          "confidence": "HIGH",
+          "decision_id": "d1",
+          "followed": true,
+          "opportunity_id": "k1",
+          "signal_key": "k1",
+          "source": "AUTO",
+          "strategy": "example_trend_pullback"
+        },
+        "net_profit": null,
+        "opened_at": "2026-09-30T10:00:00+00:00",
+        "position_id": 2078278005,
+        "price_open": 1.1002,
+        "r_multiple": null,
+        "side": "BUY",
+        "sl_initial": 1.0952,
+        "status": "OPEN",
+        "symbol": "EURUSD",
+        "ticket": 2078278005,
+        "volume": 0.1
+      }
+    ]
+  },
   "engines/ENGINE/opportunities/ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de": {
     "alerted_at": "2026-09-30T10:00:30+00:00",
     "ask": 1.12652,

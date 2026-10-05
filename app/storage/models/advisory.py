@@ -251,3 +251,26 @@ class ManualTradeLinkRow(EngineKeyed, Base):
     candidates: Mapped[int] = mapped_column(Integer, default=0)
     rule_version: Mapped[str] = mapped_column(String(8))
     matched_at: Mapped[datetime] = mapped_column(UTCDateTime())
+    # the trade itself (TAA-1006 part 2): the stop when first seen (1R), then the close from the MT5 deals
+    sl_initial: Mapped[float | None] = mapped_column(Float, nullable=True)
+    status: Mapped[str] = mapped_column(String(8), default="OPEN", server_default="OPEN")  # OPEN | CLOSED
+    closed_at: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
+    close_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    net_profit: Mapped[float | None] = mapped_column(Float, nullable=True)  # profit + commission + swap + fee
+    r_multiple: Mapped[float | None] = mapped_column(Float, nullable=True)  # (close − open) / initial risk
+
+
+class ManualTradeOverrideRow(EngineKeyed, Base):
+    """The owner's correction of a manual-trade link (TAA-1006), cloud-only: ``CONFIRMED`` (the engine's link
+    is right), ``OWN_IDEA`` (no signal) or ``SIGNAL`` (this other signal). Audited on the web chain."""
+
+    __tablename__ = "manual_trade_overrides"
+
+    position_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    choice: Mapped[str] = mapped_column(String(16))
+    signal_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    strategy: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    decision_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    opportunity_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    user_id: Mapped[str] = mapped_column(String(36))
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime())

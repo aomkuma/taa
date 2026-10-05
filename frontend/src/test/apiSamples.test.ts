@@ -62,6 +62,7 @@ import {
   PlansSchema,
   UserEntitlementsSchema,
 } from '@/pages/account/schemas';
+import { CandidatesSchema, ManualTradesSchema } from '@/pages/trades/manualSchemas';
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
@@ -123,6 +124,9 @@ const CASES: [string, z.ZodType][] = [
   [`${E}accuracy?mine=true`, AccuracySchema],
   [`${E}calibration`, CalibrationSchema],
   [`${E}shadow-trades?limit=20`, ShadowTradesSchema],
+  [`${E}manual-trades?status=OPEN&limit=100`, ManualTradesSchema],
+  [`${E}manual-trades?status=CLOSED&limit=100`, ManualTradesSchema],
+  [`${E}manual-trades/2078278005/candidates`, CandidatesSchema],
   ['advisory/detectors', CatalogSchema],
   ['me/entitlements', MyEntitlementsSchema],
   ['me/account-profile', AccountProfileSchema],

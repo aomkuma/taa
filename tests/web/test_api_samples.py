@@ -44,6 +44,7 @@ from app.storage.models import (
     EngineCommandRow,
     EngineHeartbeatRow,
     EvidenceModelVersionRow,
+    ManualTradeLinkRow,
     NotificationPrefsRow,
     NotificationRow,
     OpportunityRow,
@@ -110,6 +111,9 @@ ENGINE_ROUTES = [
     "accuracy?mine=true",
     "calibration",
     "shadow-trades?limit=20",
+    "manual-trades?status=OPEN&limit=100",
+    "manual-trades?status=CLOSED&limit=100",
+    "manual-trades/2078278005/candidates",
 ]
 USER_ROUTES = [
     "me/feed",
@@ -365,6 +369,16 @@ def calibrate(db: Database, engine_id: str) -> None:
 def realistic_rows(db: Database, engine_id: str) -> None:
     """Replace the sample placeholders with documents the engine's serializers produce."""
     with db.session() as sess:
+        open_link = sess.get(ManualTradeLinkRow, (engine_id, 2078278005))
+        assert open_link is not None
+        open_link.sl_initial = 1.0952
+        closed = ManualTradeLinkRow(  # the owner's earlier manual trade on the same signal, closed at +1.25 R
+            **{c.key: getattr(open_link, c.key) for c in ManualTradeLinkRow.__table__.columns}
+        )
+        closed.position_id = closed.ticket = 2078278001
+        closed.status, closed.closed_at, closed.close_price = "CLOSED", T + timedelta(hours=2), 1.1065
+        closed.net_profit, closed.r_multiple = 62.5, 1.25
+        sess.add(closed)
         catalog = sess.scalars(
             select(SymbolCatalogRow).where(
                 SymbolCatalogRow.engine_id == engine_id, SymbolCatalogRow.symbol == "EURUSD"

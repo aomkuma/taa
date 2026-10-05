@@ -10,6 +10,7 @@ import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
 
 import { useLiveTrades, useTradeDrawer } from './hooks';
+import { ManualTradesCard } from './ManualTradesCard';
 import { type Trade, TradesPageSchema, tradeKeys } from './schemas';
 import { TradeDrawer } from './TradeDrawer';
 import { heldMinutes, tradesCsv } from './tradeMath';
@@ -37,7 +38,10 @@ function download(name: string, text: string) {
   URL.revokeObjectURL(url);
 }
 
-/** PLAN §A15 history (TAA-907): closed trades, symbol filter, CSV export, per-trade drawer. */
+/**
+ * PLAN §A15 history (TAA-907): closed trades, symbol filter, CSV export, per-trade drawer; then the owner's
+ * closed manual trades with "signal vs bot vs me" (TAA-1006).
+ */
 export function HistoryPage() {
   const { t, i18n } = useTranslation();
   const format = useFormat();
@@ -182,6 +186,9 @@ export function HistoryPage() {
         )}
         <p className="mt-2 text-xs text-slate-500">{t('trades.closed.note')}</p>
       </Card>
+      <div className="mt-4">
+        <ManualTradesCard />
+      </div>
       {drawer.ticket !== null && <TradeDrawer engineId={id} ticket={drawer.ticket} onClose={drawer.close} />}
     </section>
   );

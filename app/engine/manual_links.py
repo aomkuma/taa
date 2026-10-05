@@ -4,48 +4,34 @@ A position is matched once, when the engine first sees it (:func:`app.analytics.
 the result is stored in ``manual_trade_links`` (replicated to the cloud). Later snapshots read the stored
 link, so a match never changes after the fact; the owner corrects it in the PWA (a cloud-side override).
 
-Candidates come from the engine's own database: accepted EXECUTION decisions (what the bot traded or would
-have traded) and ADVISORY opportunities (what alerts showed) on the position's symbol and side, issued within
-:data:`LOOKBACK` before the position opened.
+When a linked position is no longer open, :meth:`ManualTradeLinker.settle` books its close from the MT5 deals
+(price, net profit, R against the stop it had when first seen), so "signal vs bot vs me" can be compared.
+
+Candidates come from the engine's own database (:func:`app.analytics.manual_signals.load_candidates`).
 """
 
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
+from collections.abc import Callable, Iterable, Sequence
 from datetime import datetime, timedelta
 from typing import Any
 
 from sqlalchemy import select
 
 from app.analytics.manual_match import RULE_VERSION, ManualFill, SignalCandidate, match
-from app.broker.models import BrokerPosition
+from app.analytics.manual_signals import load_candidates
+from app.broker import mt5_constants as c
+from app.broker.models import BrokerPosition, Deal
 from app.core.clock import Clock, ensure_utc
-from app.core.enums import Side, Timeframe
+from app.core.enums import Side
 from app.storage.database import Database
-from app.storage.models import DecisionRecordRow, ManualTradeLinkRow, OpportunityRow
+from app.storage.models import ManualTradeLinkRow
 
 log = logging.getLogger(__name__)
 
-LOOKBACK = timedelta(days=2)
-
-
-def _bar_seconds(timeframe: str) -> int:
-    try:
-        return Timeframe(timeframe).seconds
-    except ValueError:
-        return 900
-
-
-def _when(value: Any) -> datetime | None:
-    if isinstance(value, datetime):
-        return ensure_utc(value)
-    if isinstance(value, str):
-        try:
-            return ensure_utc(datetime.fromisoformat(value))
-        except ValueError:
-            return None
-    return None
+SETTLE_SECONDS = 30.0  # how often closed positions are looked up in the deal history
+EXIT_ENTRIES = frozenset({c.DEAL_ENTRY_OUT, c.DEAL_ENTRY_OUT_BY, c.DEAL_ENTRY_INOUT})
 
 
 def link_dict(row: ManualTradeLinkRow) -> dict[str, Any]:
@@ -65,6 +51,7 @@ class ManualTradeLinker:
         self.clock = clock
         self.tolerance_r = tolerance_r
         self._links: dict[int, ManualTradeLinkRow] = {}
+        self._next_settle = 0.0
 
     def observe(self, positions: Sequence[BrokerPosition]) -> dict[int, ManualTradeLinkRow]:
         """The link of every given (manual) position, matching the ones seen for the first time."""
@@ -84,67 +71,8 @@ class ManualTradeLinker:
             return row
 
     def candidates(self, symbol: str, side: Side, opened_at: datetime) -> list[SignalCandidate]:
-        since = opened_at - LOOKBACK
-        out: list[SignalCandidate] = []
         with self.db.session() as sess:
-            decisions = sess.scalars(
-                select(DecisionRecordRow).where(
-                    DecisionRecordRow.symbol == symbol,
-                    DecisionRecordRow.action == side.value,
-                    DecisionRecordRow.decision == "ACCEPT",
-                    DecisionRecordRow.profile == "EXECUTION",
-                    DecisionRecordRow.created_at >= since,
-                    DecisionRecordRow.created_at <= opened_at,
-                )
-            ).all()
-            for d in decisions:
-                signal = d.signal or {}
-                issued = _when(signal.get("data_timestamp_utc")) or ensure_utc(d.created_at)
-                expires = _when(signal.get("expires_at_utc"))
-                if d.entry_price is None or d.stop_loss is None or expires is None:
-                    continue
-                out.append(
-                    SignalCandidate(
-                        key=d.idempotency_key,
-                        symbol=symbol,
-                        side=side,
-                        entry=d.entry_price,
-                        stop=d.stop_loss,
-                        issued_at=issued,
-                        expires_at=expires,
-                        bar_seconds=_bar_seconds(d.timeframe),
-                        strategy=d.strategy,
-                        decision_id=d.decision_id,
-                    )
-                )
-            opportunities = sess.scalars(
-                select(OpportunityRow).where(
-                    OpportunityRow.symbol == symbol,
-                    OpportunityRow.side == side.value,
-                    OpportunityRow.bar_close_at >= since,
-                    OpportunityRow.bar_close_at <= opened_at,
-                )
-            ).all()
-            for o in opportunities:
-                expires = ensure_utc(o.signal_expires_at)
-                if o.valid_until is not None:
-                    expires = max(expires, ensure_utc(o.valid_until))
-                out.append(
-                    SignalCandidate(
-                        key=o.opportunity_id,
-                        symbol=symbol,
-                        side=side,
-                        entry=o.entry,
-                        stop=o.stop_loss,
-                        issued_at=ensure_utc(o.bar_close_at),
-                        expires_at=expires,
-                        bar_seconds=_bar_seconds(o.timeframe),
-                        strategy=o.strategy,
-                        decision_id=o.decision_id or None,
-                        opportunity_id=o.opportunity_id,
-                    )
-                )
-        return out
+            return load_candidates(sess, symbol, side, opened_at)
 
     def _match(self, p: BrokerPosition, pid: int) -> ManualTradeLinkRow:
         opened = ensure_utc(p.time_utc)
@@ -169,6 +97,8 @@ class ManualTradeLinker:
             candidates=m.candidates,
             rule_version=RULE_VERSION,
             matched_at=self.clock.now_utc(),
+            sl_initial=p.sl if p.sl > 0 else None,
+            status="OPEN",
         )
         with self.db.session() as sess:
             if sess.scalar(select(ManualTradeLinkRow).where(ManualTradeLinkRow.position_id == pid)) is None:
@@ -184,3 +114,48 @@ class ManualTradeLinker:
             "" if c is None else f"{c.strategy} ({c.decision_id or c.opportunity_id})",
         )
         return row
+
+    # closing -----------------------------------------------------------------------------------------------
+
+    def settle(self, open_ids: Iterable[int], deals: Callable[[datetime, datetime], list[Deal]]) -> int:
+        """Book the close of every OPEN link whose position is gone (at most every :data:`SETTLE_SECONDS`).
+        A position whose exit deal is not in the history yet stays OPEN and is tried again. Returns the
+        number of trades closed."""
+        now = self.clock.monotonic()
+        if now < self._next_settle:
+            return 0
+        self._next_settle = now + SETTLE_SECONDS
+        still_open = set(open_ids)
+        with self.db.session() as sess:
+            gone = [
+                r
+                for r in sess.scalars(select(ManualTradeLinkRow).where(ManualTradeLinkRow.status == "OPEN"))
+                if r.position_id not in still_open
+            ]
+            if not gone:
+                return 0
+            since = min(ensure_utc(r.opened_at) for r in gone) - timedelta(minutes=1)
+            history = deals(since, self.clock.now_utc())
+            closed = 0
+            for row in gone:
+                if self._close(row, [d for d in history if d.position_id == row.position_id]):
+                    self._links.pop(row.position_id, None)
+                    closed += 1
+            return closed
+
+    @staticmethod
+    def _close(row: ManualTradeLinkRow, deals: Sequence[Deal]) -> bool:
+        exits = [d for d in deals if d.entry in EXIT_ENTRIES and not d.is_cash_flow]
+        volume = sum(d.volume for d in exits)
+        if not exits or volume <= 0:
+            return False
+        price = sum(d.price * d.volume for d in exits) / volume
+        row.status = "CLOSED"
+        row.closed_at = max(d.time_utc for d in exits)
+        row.close_price = round(price, 8)
+        row.net_profit = round(sum(d.net for d in deals if not d.is_cash_flow), 2)
+        risk = None if row.sl_initial is None else abs(row.price_open - row.sl_initial)
+        direction = 1 if row.side == Side.BUY.value else -1
+        row.r_multiple = None if not risk else round(direction * (price - row.price_open) / risk, 3)
+        log.info("manual position %s closed at %s (%s R)", row.position_id, row.close_price, row.r_multiple)
+        return True

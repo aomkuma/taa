@@ -2438,8 +2438,26 @@ them. A link changes labels and statistics only, never trading.
     candidate).
   - Positions page: each manual position shows "Follows the X signal (sure / likely)" with a link to the
     opportunity, or to the decision when there is no opportunity, or "Not from a signal: your own idea".
-  - Still open in TAA-1006: the owner's override (a cloud-side table and a dialog) and closed manual trades
-    in trade history and accuracy.
+- **(TAA-1006 decisions, second part)**
+  - Closing: when a linked position is no longer open, the engine looks up its exit deals
+    (`history_deals_get`, at most every 30 s) and books `status` CLOSED, the volume-weighted close price,
+    the net profit (profit + commission + swap + fee) and R. R is measured against `sl_initial`, the stop
+    the position had when the engine first saw it (migration 0035). A position whose exit is not in the
+    history yet stays OPEN; a position that is missing only because of a read error does too.
+  - Candidate loading moved to `app/analytics/manual_signals.py`, so the engine and the cloud share it (the
+    web layer must not import `app.engine`).
+  - Override: `manual_trade_overrides` (cloud-only, migration 0036). Its choices are CONFIRMED, OWN_IDEA
+    and SIGNAL; SIGNAL must name one of the trade's candidates.
+  - API: `GET/PUT/DELETE /engines/{id}/manual-trades…` (owner only; CSRF for changes; audited on the web
+    chain as `manual_trade.link` / `manual_trade.link_cleared`). The effective link is the override when
+    there is one, else the engine's match.
+  - "Signal vs bot vs me", per closed trade, in R:
+    - me: the owner's result;
+    - signal: the PLAN shadow trade of the effective signal;
+    - bot: the paper position of the effective decision.
+  - Shown on Trade history ("My closed manual trades"). The Positions page shows the effective link with a
+    "Correct" dialog. An aggregate on the accuracy page waits until there are enough closed manual
+    trades to be meaningful.
 
 ## A22. Delivery plan
 

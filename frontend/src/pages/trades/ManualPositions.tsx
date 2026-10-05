@@ -1,16 +1,53 @@
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
-import { useEngineStatus } from '@/engine/context';
+import { apiGet } from '@/api/client';
+
+import { useEngine, useEngineStatus } from '@/engine/context';
 import type { ForeignPosition } from '@/engine/schemas';
 import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
 
+import { ManualLinkDialog } from './ManualLinkDialog';
+import { type ManualTrade, manualKeys, manualPath, ManualTradesSchema } from './manualSchemas';
+import { FollowedSignal } from './ManualTradesCard';
+
 const TH = 'px-2 py-1 text-left font-medium';
 const TD = 'px-2 py-1 tabular-nums';
 
-/** The signal a manual position followed (TAA-1006): a link to it, or "your own idea". */
+/** Where the effective signal of a manual trade is shown: its opportunity, else its decision. */
+function signalHref(e: ManualTrade['effective']): string | null {
+  if (!e.followed) return null;
+  if (e.opportunity_id) return `/opportunities/${encodeURIComponent(e.opportunity_id)}`;
+  return e.decision_id ? `/decisions?profile=ALL&id=${encodeURIComponent(e.decision_id)}` : null;
+}
+
+/** The signal as the cloud knows it (the owner's correction included), with the correction button. */
+function TradeSignal({ trade, onCorrect }: { trade: ManualTrade; onCorrect: () => void }) {
+  const { t } = useTranslation();
+  const href = signalHref(trade.effective);
+  return (
+    <span className="block text-xs">
+      {href ? (
+        <Link to={href} className="underline">
+          <FollowedSignal trade={trade} />
+        </Link>
+      ) : (
+        <span className="text-slate-500">
+          <FollowedSignal trade={trade} />
+        </span>
+      )}{' '}
+      <button type="button" onClick={onCorrect} className="text-slate-500 underline">
+        {t('trades.manual.correct')}
+      </button>
+    </span>
+  );
+}
+
+/** The signal a manual position followed (TAA-1006), from the heartbeat while the cloud has no record. */
 function SignalLink({ link }: { link: ForeignPosition['link'] }) {
   const { t, i18n } = useTranslation();
   if (!link) return null;
@@ -45,8 +82,17 @@ export function ManualPositionsCard({ compact = false }: { compact?: boolean }) 
   const { t } = useTranslation();
   const format = useFormat();
   const status = useEngineStatus();
+  const { engineId } = useEngine();
+  const id = engineId ?? '';
+  const [editing, setEditing] = useState<ManualTrade | null>(null);
   const account = status.data?.heartbeat?.account;
   const positions: ForeignPosition[] | null | undefined = account?.foreign_positions;
+  const open = useQuery({
+    queryKey: manualKeys.list(id, 'OPEN'),
+    queryFn: ({ signal }) => apiGet(manualPath(id, '?status=OPEN&limit=100'), ManualTradesSchema, { signal }),
+    enabled: engineId !== null && (positions?.length ?? 0) > 0,
+  });
+  const byTicket = new Map((open.data?.items ?? []).map((m) => [m.position_id, m]));
   if (positions === undefined || positions === null) {
     // an engine older than this report, or no account snapshot yet
     return compact ? null : (
@@ -105,7 +151,16 @@ export function ManualPositionsCard({ compact = false }: { compact?: boolean }) 
                             {p.comment && ` · ${p.comment}`}
                           </span>
                         )}
-                        <SignalLink link={p.link} />
+                        {byTicket.has(p.ticket) ? (
+                          <TradeSignal
+                            trade={byTicket.get(p.ticket) as ManualTrade}
+                            onCorrect={() => {
+                              setEditing(byTicket.get(p.ticket) ?? null);
+                            }}
+                          />
+                        ) : (
+                          <SignalLink link={p.link} />
+                        )}
                       </td>
                       <td className={TD}>{format.number(p.volume)}</td>
                       {!compact && <td className={TD}>{price(p.price_open)}</td>}
@@ -139,6 +194,15 @@ export function ManualPositionsCard({ compact = false }: { compact?: boolean }) 
               ? t('trades.manual.counted', { risk: format.money(risk, currency) })
               : t('trades.manual.notCounted')}
           </p>
+          {editing && (
+            <ManualLinkDialog
+              engineId={id}
+              trade={editing}
+              onClose={() => {
+                setEditing(null);
+              }}
+            />
+          )}
           {noStop > 0 && (
             <p role="alert" className="mt-1 text-sm text-amber-800 dark:text-amber-300">
               {t('trades.manual.noStopWarning', { n: noStop })}

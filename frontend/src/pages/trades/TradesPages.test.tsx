@@ -1,7 +1,7 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { json } from '@/test/api';
+import { type Handler, json } from '@/test/api';
 import { heartbeat, owner, renderShell, status } from '@/test/engine';
 import { streamEvent } from '@/test/eventSource';
 import samples from '@/test/fixtures/api-samples.json';
@@ -22,7 +22,7 @@ const openOne: Record<string, unknown> = {
 };
 const filledIntent = { ...(sample('intents?kind=paper').items as Record<string, unknown>[])[0] };
 
-function setup(extra: Record<string, () => Response> = {}) {
+function setup(extra: Record<string, Handler> = {}) {
   return owner({
     'GET /engines/e1/positions?status=OPEN&limit=200': () => json({ items: [openOne], next_cursor: null }),
     'GET /engines/e1/intents?kind=paper&status=FILLED&limit=200': () =>
@@ -158,6 +158,60 @@ describe('manual positions', () => {
     expect(
       await within(await card('Manual positions on the MT5 account')).findByText(/has not reported/),
     ).toBeInTheDocument();
+  });
+});
+
+describe('manual trades and their signals (TAA-1006)', () => {
+  const manualOpen = sample('manual-trades?status=OPEN&limit=100');
+  const linked = { ...MANUAL, ticket: 2078278005, symbol: 'EURUSD' };
+
+  it('shows the effective signal and lets the owner correct it', async () => {
+    const api = setup({
+      'GET /engines/e1/status': withAccount({ foreign_positions: [linked] }),
+      'GET /engines/e1/manual-trades?status=OPEN&limit=100': () => json(manualOpen),
+      'GET /engines/e1/manual-trades/2078278005/candidates': serve('manual-trades/2078278005/candidates'),
+      'PUT /engines/e1/manual-trades/2078278005/link': (request) => {
+        const item = (manualOpen.items as Record<string, unknown>[])[0] ?? {};
+        const own = {
+          ...(item.effective as object),
+          source: 'OWNER',
+          followed: false,
+          confidence: 'OWN_IDEA',
+        };
+        expect(request.body).toEqual({ choice: 'OWN_IDEA' });
+        return json({ ...item, effective: own });
+      },
+    });
+    const user = userEvent.setup();
+    renderShell('/positions');
+    const manual = await card('Manual positions on the MT5 account');
+    expect(
+      await within(manual).findByRole('link', { name: /Follows the .* signal \(sure\)/ }),
+    ).toHaveAttribute('href', '/opportunities/k1');
+    await user.click(within(manual).getByRole('button', { name: 'Correct' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Which signal did #2078278005 EURUSD follow?' });
+    expect(await within(dialog).findByText(/from its entry or outside its window/)).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('radio', { name: 'No signal: my own idea' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await waitFor(() => {
+      expect(api.calls.some((c) => c.method === 'PUT')).toBe(true);
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  it('compares signal, bot and me for closed manual trades on the history page', async () => {
+    setup({
+      'GET /engines/e1/manual-trades?status=CLOSED&limit=100': serve('manual-trades?status=CLOSED&limit=100'),
+    });
+    renderShell('/history');
+    const table = await screen.findByRole('table', { name: 'My closed manual trades' });
+    const [row] = within(table).getAllByRole('row').slice(1);
+    expect(row).toHaveTextContent('#2078278001');
+    expect(row).toHaveTextContent('+1.25R'); // me
+    expect(row).toHaveTextContent('+1R'); // the bot's paper position
+    expect(row).toHaveTextContent('—'); // the signal's shadow trade is still open
   });
 });
 

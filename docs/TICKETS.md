@@ -45,7 +45,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
 | M1 | Phase 9 — PWA frontend | 24 | 24 | DONE |
-| M1 | Phase 10 — Trade analytics | 6 | 3 | IN PROGRESS |
+| M1 | Phase 10 — Trade analytics | 6 | 4 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 0 | TODO |
@@ -1601,15 +1601,15 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1006 — (rev. 6) Manual trades matched to signals
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** 1001, 6B2, 904
 
 - [x] pure matcher: execution decisions + opportunities, same symbol/side, time window + grace, price within `match_tolerance_r`, score, HIGH / LIKELY / UNMATCHED
-- [ ] `manual_trade_links` table (migration, replicated), written once per position; owner override (confirm / other signal / own idea), audited
+- [x] `manual_trade_links` table (migration, replicated), written once per position; owner override (confirm / other signal / own idea), audited
 - [x] engine: match on the account snapshot; heartbeat `foreign_positions[].link`
-- [ ] PWA: "follows signal X (likely)" on Positions; override dialog; th/en keys
-- [ ] closed manual trades with their link in trade history and accuracy (signal vs bot vs me)
-- [ ] tests (incl. the 2026-10-05 GBPUSD case)
+- [x] PWA: "follows signal X (likely)" on Positions; override dialog; th/en keys
+- [x] closed manual trades with their link in trade history, signal vs bot vs me per trade (an aggregate on the accuracy page waits for enough closed trades; PLAN §A34)
+- [x] tests (incl. the 2026-10-05 GBPUSD case)
 
 ### Phase 11 — Railway deployment
 

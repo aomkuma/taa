@@ -370,7 +370,31 @@
         "follows": "Follows the {{strategy}} signal",
         "high": "sure",
         "likely": "likely; another signal was also close",
-        "none": "Not from a signal: your own idea"
+        "none": "Not from a signal: your own idea",
+        "owner": "you chose it"
+      },
+      "correct": "Correct",
+      "dialog": {
+        "title": "Which signal did #{{ticket}} {{symbol}} follow?",
+        "body": "Only labels and statistics change; the bot's trading is not affected.",
+        "confirm": "The {{strategy}} signal, as the engine matched it",
+        "own": "No signal: my own idea",
+        "signal": "{{strategy}} at {{entry}} ({{time}})",
+        "fits": "fits: {{r}}R from its entry, inside its window",
+        "outside": "{{r}}R from its entry or outside its window",
+        "save": "Save",
+        "reset": "Back to the engine's match",
+        "cancel": "Cancel",
+        "failed": "Could not save. Try again."
+      },
+      "closed": {
+        "title": "My closed manual trades",
+        "none": "No closed manual trades yet.",
+        "signal": "Followed",
+        "me": "Me",
+        "signalR": "Signal (simulated)",
+        "botR": "Bot (paper)",
+        "note": "R is measured from each trade's own first stop: mine from the stop the position had when the engine first saw it, the signal's from its plan, the bot's from its paper position. A dash means there is no such trade."
       }
     }
   },

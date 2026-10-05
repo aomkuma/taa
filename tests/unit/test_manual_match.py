@@ -8,7 +8,8 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import select
 
 from app.analytics.manual_match import Confidence, ManualFill, SignalCandidate, match, merge
-from app.broker.models import BrokerPosition
+from app.broker import mt5_constants as c
+from app.broker.models import BrokerPosition, Deal
 from app.core.clock import ManualClock
 from app.core.enums import Side
 from app.engine.manual_links import ManualTradeLinker
@@ -121,3 +122,36 @@ class TestLinker:
         clock = ManualClock(SYNC_T)
         row = ManualTradeLinker(db, clock).observe([position(1.2, SYNC_T, pid=78)])[78]
         assert row.confidence == "UNMATCHED" and row.opportunity_id is None and row.decision_id is None
+
+    def test_a_closed_position_is_booked_from_its_deals(self, db: Database) -> None:
+        clock = ManualClock(SYNC_T)
+        linker = ManualTradeLinker(db, clock)
+        linker.observe([position(1.1, SYNC_T, pid=79)])  # BUY at 1.1, stop 1.095: 1 R = 0.005
+
+        def deal(entry: int, price: float, profit: float, ticket: int) -> Deal:
+            return Deal(
+                ticket=ticket, order=ticket, position_id=79, symbol="EURUSD", type=c.DEAL_TYPE_SELL,
+                entry=entry, volume=0.1, price=price, profit=profit, commission=-0.35, swap=0.0, fee=0.0,
+                magic=0, comment="", time_utc=SYNC_T + timedelta(hours=1),
+            )  # fmt: skip
+
+        history: list[Deal] = []
+        assert linker.settle([79], lambda *_: history) == 0  # still open: nothing to book
+        clock.advance(31)
+        assert linker.settle([], lambda *_: history) == 0  # gone, but the exit is not in the history yet
+        history.append(deal(c.DEAL_ENTRY_OUT, 1.1075, 75.0, 2))
+        assert linker.settle([], lambda *_: history) == 0  # throttled
+        clock.advance(31)
+        assert linker.settle([], lambda *_: history) == 1
+        with db.session() as sess:
+            row = sess.scalars(select(ManualTradeLinkRow).where(ManualTradeLinkRow.position_id == 79)).one()
+        assert (row.status, row.close_price, row.net_profit, row.r_multiple) == ("CLOSED", 1.1075, 74.65, 1.5)
+
+
+def test_rank_lists_the_qualifying_signals_first() -> None:
+    from app.analytics.manual_match import rank
+
+    far = dataclasses.replace(BOT, key="k-far", entry=1.3215 + 0.002, decision_id="d4")
+    ranked = rank(OWNER, [far, BOT, dataclasses.replace(BOT, key="k-buy", side=Side.BUY)])
+    assert [r.candidate.key for r in ranked] == ["k-gbp", "k-far"]  # the BUY is not offered
+    assert ranked[0].qualifies and not ranked[1].qualifies and ranked[1].score is None

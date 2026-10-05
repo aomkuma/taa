@@ -127,3 +127,30 @@ def match(
     score, distance, best = scored[0]
     confidence = Confidence.HIGH if len(scored) == 1 else Confidence.LIKELY
     return Match(confidence, best, score, distance, len(scored))
+
+
+@dataclass(frozen=True, slots=True)
+class Ranked:
+    candidate: SignalCandidate
+    qualifies: bool  # within the time window and the price tolerance
+    score: float | None
+    distance_r: float | None
+
+
+def rank(
+    fill: ManualFill, candidates: Sequence[SignalCandidate], *, tolerance_r: float = DEFAULT_TOLERANCE_R
+) -> list[Ranked]:
+    """Every signal on the fill's symbol and side, for the owner to pick from: the qualifying ones first (best
+    score first), then the rest by price distance."""
+    out: list[Ranked] = []
+    for c in merge(candidates):
+        if c.symbol != fill.symbol or c.side is not fill.side:
+            continue
+        risk = abs(c.entry - c.stop)
+        result = _score(fill, c, tolerance_r)
+        distance = round(abs(fill.price_open - c.entry) / risk, 4) if risk > 0 else None
+        out.append(Ranked(c, result is not None, None if result is None else result[0], distance))
+    out.sort(
+        key=lambda r: (not r.qualifies, -(r.score or 0.0), r.distance_r or float("inf"), r.candidate.key)
+    )
+    return out
