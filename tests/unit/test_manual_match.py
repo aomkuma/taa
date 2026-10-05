@@ -155,3 +155,12 @@ def test_rank_lists_the_qualifying_signals_first() -> None:
     ranked = rank(OWNER, [far, BOT, dataclasses.replace(BOT, key="k-buy", side=Side.BUY)])
     assert [r.candidate.key for r in ranked] == ["k-gbp", "k-far"]  # the BUY is not offered
     assert ranked[0].qualifies and not ranked[1].qualifies and ranked[1].score is None
+
+    def test_a_link_without_a_stop_gets_the_positions_stop(self, db: Database) -> None:
+        clock = ManualClock(SYNC_T)
+        ManualTradeLinker(db, clock).observe([position(1.1, SYNC_T, pid=80)])
+        with db.session() as sess:
+            sess.scalars(select(ManualTradeLinkRow)).one().sl_initial = None  # an early (part 1) link
+        ManualTradeLinker(db, clock).observe([position(1.1, SYNC_T, pid=80)])
+        with db.session() as sess:
+            assert sess.scalars(select(ManualTradeLinkRow)).one().sl_initial == 1.095

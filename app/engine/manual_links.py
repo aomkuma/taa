@@ -59,6 +59,8 @@ class ManualTradeLinker:
         for p in positions:
             pid = p.identifier or p.ticket
             row = self._links.get(pid) or self._load(pid) or self._match(p, pid)
+            if row.sl_initial is None and p.sl > 0:  # linked before the stop was kept (TAA-1006 part 1)
+                row = self._keep_stop(pid, p.sl) or row
             self._links[pid] = row
             out[pid] = row
         return out
@@ -68,6 +70,16 @@ class ManualTradeLinker:
             row = sess.scalar(select(ManualTradeLinkRow).where(ManualTradeLinkRow.position_id == pid))
             if row is not None:
                 sess.expunge(row)
+            return row
+
+    def _keep_stop(self, pid: int, sl: float) -> ManualTradeLinkRow | None:
+        with self.db.session() as sess:
+            row = sess.scalar(select(ManualTradeLinkRow).where(ManualTradeLinkRow.position_id == pid))
+            if row is None:
+                return None
+            row.sl_initial = sl
+            sess.flush()
+            sess.expunge(row)
             return row
 
     def candidates(self, symbol: str, side: Side, opened_at: datetime) -> list[SignalCandidate]:
