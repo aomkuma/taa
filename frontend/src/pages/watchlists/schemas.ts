@@ -79,10 +79,55 @@ export const TheoriesSchema = z.object({
 });
 export type Theories = z.infer<typeof TheoriesSchema>;
 
+/** `HoldingStyle`, `StopPlacement` (app/advisory/preferences.py), `SplitMode`, `WeightScheme` (position_sizer). */
+export const HOLDING_STYLES = ['SCALP', 'DAY', 'SWING'] as const;
+export const STOP_PLACEMENTS = ['STRUCTURE', 'ATR'] as const;
+export const SPLIT_MODES = ['SINGLE', 'SAME_PRICE', 'SCALE_IN'] as const;
+export const WEIGHT_SCHEMES = ['EQUAL', 'FRONT_LOADED', 'BACK_LOADED'] as const;
+
+/** `ProfileOverrides`: a field set here replaces the style slider's value ("custom"). */
+export const ProfileOverridesSchema = z.object({
+  risk_per_signal_percent: z.number().nullable(),
+  portfolio_heat_percent: z.number().nullable(),
+  max_positions: z.number().int().nullable(),
+  max_daily_loss_percent: z.number().nullable(),
+  min_rr: z.number().nullable(),
+  min_win_probability: z.number().nullable(),
+  min_supporting_families: z.number().int().nullable(),
+  conflict_policy: z.enum(CONFLICT_POLICIES).nullable(),
+  require_htf_alignment: z.boolean().nullable(),
+});
+export type ProfileOverrides = z.infer<typeof ProfileOverridesSchema>;
+
+/** `TradingProfile` (TAA-922). */
+export const TradingProfileSchema = z.object({
+  style: z.number().int(),
+  overrides: ProfileOverridesSchema,
+  holding_style: z.enum(HOLDING_STYLES),
+  max_signals_per_day: z.number().int(),
+  avoid_news: z.boolean(),
+  hold_over_weekend: z.boolean(),
+  stop_placement: z.enum(STOP_PLACEMENTS),
+});
+export type TradingProfile = z.infer<typeof TradingProfileSchema>;
+
+/** `EntryPlanPreferences` (TAA-922). */
+export const EntryPlanSchema = z.object({
+  lot_unit: z.number().nullable(),
+  mode: z.enum(SPLIT_MODES),
+  parts: z.number().int(),
+  weights: z.enum(WEIGHT_SCHEMES),
+  spacing_atr: z.number(),
+  partial_tp_r: z.array(z.number()),
+});
+export type EntryPlan = z.infer<typeof EntryPlanSchema>;
+
 export const PreferencesSchema = z.looseObject({
   watchlists: z.array(WatchlistSchema),
   alerts: AlertPreferencesSchema,
   theories: TheoriesSchema,
+  trading_profile: TradingProfileSchema,
+  entry_plan: EntryPlanSchema,
 });
 export type Preferences = z.infer<typeof PreferencesSchema>;
 

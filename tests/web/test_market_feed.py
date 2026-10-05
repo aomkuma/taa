@@ -32,7 +32,7 @@ from tests.unit.test_calibration import shadow
 from tests.unit.test_cloud_sizing import store
 from tests.unit.test_opportunity_alerts import CONFIG, add_opportunity, prefs
 from tests.unit.test_personalize import NOW
-from tests.web.conftest import DEV_ENV, PASSWORD, TOTP_SECRET, login, make_app
+from tests.web.conftest import DEV_ENV, PASSWORD, TOTP_SECRET, login, make_app, mutation_headers
 from tests.web.test_auth import next_step
 
 FEED, OWN = "eng-a", "eng-c"
@@ -229,3 +229,35 @@ def test_a_subscribers_entry_plan_is_sized_on_their_account(rig: Rig) -> None:
     [sub] = rig.alerts("bob")
     body = sub.payload["push"]["body"]
     assert "1) ราคาตลาด" in body and "2) ราคาตลาด" in body and "heat" not in body  # bob's own heat is unknown
+
+
+def test_an_entry_plan_preview_sizes_the_draft_on_an_example_trade(rig: Rig) -> None:
+    """(TAA-922) The trading profile page's example: the draft plan on the user's own account, nothing saved."""
+    rig.login("bob")
+    draft = {"entry_plan": {"mode": "SCALE_IN", "parts": 3, "weights": "FRONT_LOADED", "spacing_atr": 0.5}}
+    resp = rig.client.post(
+        f"/api/v1/engines/{FEED}/entry-plan/preview", json=draft, headers=mutation_headers(rig.client)
+    )
+    preview = resp.json()
+    assert resp.status_code == 200 and preview["available"], preview
+    assert preview["example"]["symbol"] == "EURUSD" and preview["currency"] == "USD"
+    kinds = [
+        p["order_type"] for p in preview["plan"]
+    ]  # a part below the minimum lot is dropped, deepest first
+    assert kinds[0] == "MARKET" and set(kinds[1:]) <= {"LIMIT"} and 1 <= len(kinds) <= 3
+    volumes = [float(p["volume"]) for p in preview["plan"]]
+    assert volumes == sorted(volumes, reverse=True)  # front-loaded
+    assert sum(float(p["risk_money"]) for p in preview["plan"]) == pytest.approx(preview["risk_money"])
+    assert preview["risk_money"] <= preview["budget"] + 1e-9  # never above the budget with every part filled
+    # a riskier draft profile changes the budget; the stored preferences stay as they were
+    bold = draft | {"trading_profile": {"style": 100}}
+    bigger = rig.client.post(
+        f"/api/v1/engines/{FEED}/entry-plan/preview", json=bold, headers=mutation_headers(rig.client)
+    ).json()
+    assert bigger["budget"] >= preview["budget"]
+    assert PreferenceStore(rig.ctx.db).get(rig.ids["bob"]).entry_plan.mode.value == "SINGLE"
+    rig.login("carol")  # an engine owner without a ranking account or a manual profile
+    none = rig.client.post(
+        f"/api/v1/engines/{OWN}/entry-plan/preview", json=draft, headers=mutation_headers(rig.client)
+    )
+    assert none.status_code in (200, 404) and not none.json().get("available", False)

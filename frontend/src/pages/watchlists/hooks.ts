@@ -55,20 +55,31 @@ export function useWatchlistMutations() {
 }
 
 /**
- * Saves the alert settings: a PUT of the whole document with only `alerts` changed. The document is read
- * again first, so sections changed elsewhere since the page loaded (watchlists, theories) are kept.
+ * Saves some sections of the preferences document: a PUT of the whole document with only *sections*
+ * changed. The document is read again first, so sections changed elsewhere since the page loaded are kept.
  */
-export function useSaveAlerts() {
+export function useSaveSections() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (alerts: AlertPreferences) => {
+    mutationFn: async (sections: Partial<Pick<Preferences, 'alerts' | 'trading_profile' | 'entry_plan'>>) => {
       const current = await apiGet('/advisory/preferences', PreferencesSchema);
-      return apiPut('/advisory/preferences', { ...current, alerts }, PreferencesSchema);
+      return apiPut('/advisory/preferences', { ...current, ...sections }, PreferencesSchema);
     },
     onSuccess: (data) => {
       queryClient.setQueryData(PREFERENCES_QUERY_KEY, data);
     },
   });
+}
+
+/** Saves the alert settings (TAA-918). */
+export function useSaveAlerts() {
+  const save = useSaveSections();
+  return {
+    ...save,
+    mutate: (alerts: AlertPreferences) => {
+      save.mutate({ alerts });
+    },
+  };
 }
 
 const FAVOURITES = 'FAVOURITES';

@@ -1606,6 +1606,26 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     allow-list override is "all" (null) or a non-empty list: an empty list would leave the user nothing, so it
     cannot be saved.
   - API samples normalise user ids (`USER` for the owner, `USER_<NAME>` for others).
+- (TAA-922 decisions) Trading profile (`frontend/src/pages/profile/`, nav "Trading profile"):
+  - The page resolves the profile in the browser exactly as `TradingProfile.resolve()` (`profileModel.ts`;
+    tests compare the anchors and ceilings with the Python source and the resolved values of several styles
+    with the backend's, `src/test/fixtures/profile-resolved.json`). Each field shows the slider's value or,
+    once "customized", an editor bounded like `ProfileOverrides`, with a "custom" badge and a reset.
+  - Warnings (not blocks): risk per signal above 1%, heat above 3%, daily loss above 3%, min RR below 1.5,
+    conflicts ignored, no higher-timeframe agreement, and a back-loaded scale-in.
+  - The entry-plan editor follows `EntryPlanPreferences._coherent` (one part for SINGLE, 2–5 otherwise,
+    increasing partial take-profits). Its example comes from the server, not a TypeScript copy of the sizer:
+    `POST /engines/{id}/entry-plan/preview {entry_plan, trading_profile?}` sizes the draft on a made-up BUY
+    (the first of EURUSD/GBPUSD/USDJPY/XAUUSD with a spec and a recent close, stop 200 points, RR 2, ATR =
+    the stop distance) with `size_manual`, on the user's MANUAL profile, or for the engine owner without one
+    on the broker account of the latest ranking run; nothing is saved. On the real demo account ($972) a
+    3-part front-loaded scale-in becomes two 0.01-lot parts.
+  - Both sections save with one PUT of the whole document (`useSaveSections`, shared with the alert settings).
+- (2026-10-05, at the user's request) Manual MT5 positions: the engine's heartbeat account snapshot carries
+  `foreign_positions` (what MT5 reports plus the risk to stop and whether they count toward the bot's
+  limits) and `effective_leverage` / `max_effective_leverage`. The Positions page and the dashboard list them
+  read-only; the dashboard's account card has an effective-leverage gauge. They were invisible before, while
+  they put the real account at 15% heat and 113x leverage and so blocked every paper entry.
 
 - **Engine ↔ cloud:**
   - New event types: `symbol_catalog`, `suitability_snapshot`, `opportunity` (create/update), `shadow_trade`

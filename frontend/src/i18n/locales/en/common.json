@@ -63,6 +63,7 @@
     "accuracy": "Signal accuracy",
     "watchlists": "Watchlists & alerts",
     "theories": "Theories & conditions",
+    "profile": "Trading profile",
     "positions": "Positions",
     "history": "Trade history",
     "decisions": "Signals & decisions",
@@ -1694,5 +1695,132 @@
         "body": "{{name}} gets the plan's {{key}} again."
       }
     }
+  },
+  "profile": {
+    "intro": "How you trade: how much you risk, how selective your alerts are and how you split an entry. It shapes the numbers in your alerts; it never sends orders.",
+    "yes": "Yes",
+    "no": "No",
+    "custom": "custom",
+    "reset": "Reset",
+    "customize": "Customize",
+    "resetField": "Reset {{field}} to the slider",
+    "customizeField": "Set {{field}} yourself",
+    "setting": "Setting",
+    "value": "Value",
+    "source": "From",
+    "field": {
+      "risk_per_signal_percent": "Risk per signal (all entries)",
+      "portfolio_heat_percent": "Open risk of all positions",
+      "max_positions": "Positions at the same time",
+      "max_daily_loss_percent": "Max daily loss",
+      "min_rr": "Min reward : risk",
+      "min_win_probability": "Min win probability",
+      "min_supporting_families": "Min supporting theory families",
+      "conflict_policy": "When a theory points the other way",
+      "require_htf_alignment": "Higher timeframe must agree"
+    },
+    "style": {
+      "title": "Style",
+      "label": "Style",
+      "anchor": {
+        "0": "Very defensive",
+        "25": "Defensive",
+        "50": "Balanced",
+        "75": "Offensive",
+        "100": "Very offensive"
+      },
+      "note": "The slider moves every value at once; a value you set yourself stays put. Hard limits apply whatever the slider says (risk per signal at most 2%, open risk 10%, daily loss 10%), and alerts never ask for a win probability below break-even + 2 points."
+    },
+    "habits": {
+      "title": "Habits",
+      "holding": "Holding style",
+      "holdingName": {
+        "SCALP": "Scalp (M5 entries)",
+        "DAY": "Day (M15 entries)",
+        "SWING": "Swing (H1 entries)"
+      },
+      "signals": "Max signals per day",
+      "avoid_news": "Avoid news windows",
+      "hold_over_weekend": "Hold over the weekend",
+      "stop": "Stop placement",
+      "stopName": {
+        "STRUCTURE": "Beyond the structure",
+        "ATR": "By ATR distance"
+      }
+    },
+    "plan": {
+      "title": "Splitting an entry",
+      "mode": "Orders per signal",
+      "modeName": {
+        "SINGLE": "One order",
+        "SAME_PRICE": "Several orders at one price",
+        "SCALE_IN": "Scale in"
+      },
+      "modeAbout": {
+        "SINGLE": "One market order with the setup's stop and target.",
+        "SAME_PRICE": "Several orders at the entry, each closing at its own take-profit; the stop moves to break-even after the first.",
+        "SCALE_IN": "The first order at the signal, the others as limit orders toward the stop; one shared stop."
+      },
+      "parts": "Orders",
+      "weights": "Lot weights",
+      "weightName": {
+        "EQUAL": "Equal",
+        "FRONT_LOADED": "Front-loaded (3:2:1)",
+        "BACK_LOADED": "Back-loaded (1:2:3)"
+      },
+      "spacing": "Limit spacing (× ATR)",
+      "takeProfits": "Take-profits",
+      "tpN": "TP{{n}}",
+      "lastRuns": "The last order runs to the setup's target.",
+      "lotUnit": "Lot per tap in the MT5 app",
+      "lotUnitAuto": "the volume step",
+      "fixFirst": "Fix the plan above to see an example.",
+      "problem": {
+        "parts": "One order, or 2 to 5 orders for a split.",
+        "lotUnit": "Lot per tap: above 0 and at most 100, or empty.",
+        "spacing": "Spacing: 0.1 to 3 ATR.",
+        "takeProfits": "One take-profit per order except the last, each above 0 and higher than the one before."
+      }
+    },
+    "preview": {
+      "title": "Example",
+      "example": "{{symbol}} BUY at {{entry}}, stop {{stop}}, target {{target}}:",
+      "order": "Order",
+      "price": "Price",
+      "lot": "Lot",
+      "taps": "Taps",
+      "target": "Take-profit",
+      "risk": "Risk to stop",
+      "type": {
+        "MARKET": "Market",
+        "LIMIT": "Limit"
+      },
+      "total": "Total {{lot}} lot in {{taps}} taps: {{risk}} at risk with every order filled ({{pct}} of equity; budget {{budget}}).",
+      "note": "Sized by the same calculator as your alerts, on your account; the example trade is made up.",
+      "setAccount": "Set your account",
+      "reason": {
+        "no_account": "No account to size with yet.",
+        "no_example": "No example market data yet: the engine has not sent prices of EURUSD, GBPUSD, USDJPY or XAUUSD.",
+        "no_spec": "The example symbol's contract details are missing.",
+        "no_conversion": "No exchange rate into your account currency yet.",
+        "sizing_failed": "This plan cannot be sized on your account."
+      }
+    },
+    "warnings": {
+      "title": "Worth a second look",
+      "risk": "Risk per signal above 1% of equity.",
+      "heat": "Open risk of all positions above 3% of equity.",
+      "dailyLoss": "Daily loss limit above 3% of equity.",
+      "rr": "Minimum reward : risk below 1.5.",
+      "conflict": "Conflicting theories are ignored.",
+      "htf": "The higher timeframe does not have to agree.",
+      "backLoaded": "Back-loaded scale-in puts the largest orders where the trade is already going against you."
+    },
+    "save": "Save trading profile",
+    "undo": "Undo changes",
+    "saved": "Saved.",
+    "invalidFields": "Some values are outside their allowed range.",
+    "invalid": "The server rejected the profile: {{detail}}",
+    "failed": "Could not save. Try again."
   }
 }

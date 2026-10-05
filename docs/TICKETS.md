@@ -39,7 +39,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 7 — Cloud sync | 9 | 9 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
-| M1 | Phase 9 — PWA frontend | 23 | 20 | IN PROGRESS |
+| M1 | Phase 9 — PWA frontend | 23 | 21 | IN PROGRESS |
 | M1 | Phase 10 — Trade analytics | 5 | 3 | IN PROGRESS |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
@@ -1489,13 +1489,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-922 — (rev. 3) Trading profile page
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 6B1, 915
 
-- [ ] "บุคลิกการเทรด / Trading profile" page: style slider with the resulting numbers shown live
-- [ ] per-field overrides with "custom" badges and reset
-- [ ] entry-plan editor with an example lot breakdown (orders, taps, risk money)
-- [ ] warnings for offensive settings and back-loaded scale-in
+- [x] "บุคลิกการเทรด / Trading profile" page: style slider with the resulting numbers shown live
+- [x] per-field overrides with "custom" badges and reset
+- [x] entry-plan editor with an example lot breakdown (orders, taps, risk money)
+- [x] warnings for offensive settings and back-loaded scale-in
 
 #### TAA-923 — (rev. 4) Engines page
 

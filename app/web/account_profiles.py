@@ -131,6 +131,10 @@ class HistoryRates:
                 self._specs = {r.symbol: dict(r.spec or {}) for r in rows}
         return self._specs
 
+    def last_close(self, symbol: str) -> float | None:
+        """The engine's newest close of *symbol* (any timeframe) no older than the rate age limit."""
+        return self._last_close(symbol)
+
     def _last_close(self, symbol: str) -> float | None:
         with self.db.session() as sess:
             row = sess.execute(
@@ -261,6 +265,69 @@ def size_manual(
     return CloudSizing(
         result, "" if result.ok else (result.reason.value if result.reason else "sizing_failed")
     )
+
+
+EXAMPLE_SYMBOLS = ("EURUSD", "GBPUSD", "USDJPY", "XAUUSD")
+EXAMPLE_STOP_POINTS = 200  # 20 pips on a 5-digit pair
+EXAMPLE_RR = 2.0
+
+
+def preview_plan(
+    db: Database,
+    profile: AccountProfileRow,
+    *,
+    engine_id: str,
+    server: str,
+    plan: EntryPlanPreferences,
+    risk: RiskConfig,
+    risk_percent: float | None,
+    now: datetime,
+) -> dict[str, Any]:
+    """An entry plan sized on an example trade (TAA-922): a BUY of the first of :data:`EXAMPLE_SYMBOLS` with a
+    spec and a recent close, the stop :data:`EXAMPLE_STOP_POINTS` points below, the target at RR 2 and the ATR
+    equal to the stop distance (SCALE_IN spacing). The same sizer as every alert's plan."""
+    rates = HistoryRates(db, engine_id, server, profile.currency, now)
+    specs = rates.specs()
+    for symbol in EXAMPLE_SYMBOLS:
+        point = (specs.get(symbol) or {}).get("point")
+        close = rates.last_close(symbol)
+        if point and close:
+            break
+    else:
+        return {"available": False, "reason": "no_example"}
+    distance = EXAMPLE_STOP_POINTS * float(point)
+    entry, stop, target = close, close - distance, close + EXAMPLE_RR * distance
+    sized = size_manual(
+        db,
+        profile,
+        engine_id=engine_id,
+        server=server,
+        symbol=symbol,
+        side=Side.BUY,
+        entry=entry,
+        stop=stop,
+        risk=risk,
+        risk_percent=risk_percent,
+        now=now,
+        take_profit=target,
+        plan=plan,
+        atr=distance,
+    )
+    example = {"symbol": symbol, "side": Side.BUY.value, "entry": entry, "stop": stop, "take_profit": target}
+    if sized.result is None or not sized.result.ok:
+        return {"available": False, "reason": sized.reason, "example": example}
+    r = sized.result
+    return {
+        "available": True,
+        "example": example,
+        "currency": profile.currency,
+        "equity": profile.equity,
+        "budget": float(r.budget),
+        "lot": float(r.volume),
+        "risk_money": float(r.risk_money),
+        "taps": sum(p.taps for p in r.parts),
+        "plan": list(plan_of(r)),
+    }
 
 
 def plan_of(result: SizingResult) -> tuple[dict[str, Any], ...]:

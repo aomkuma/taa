@@ -29,14 +29,22 @@ from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Query, Response
-from pydantic import ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 from starlette.concurrency import run_in_threadpool
 
-from app.advisory.preferences import AdvisoryPreferences, TheoryPreferences, Watchlist, WatchlistKind
+from app.advisory.preferences import (
+    AdvisoryPreferences,
+    EntryPlanPreferences,
+    TheoryPreferences,
+    TradingProfile,
+    Watchlist,
+    WatchlistKind,
+)
 from app.config import load_app_config
 from app.core.enums import Side
 from app.core.errors import ConfigError
-from app.web.account_profiles import load_profile, plan_of, size_manual
+from app.storage.models import AccountProfileRow
+from app.web.account_profiles import load_profile, plan_of, preview_plan, size_manual
 from app.web.advisory import AdvisoryReads, PreferenceStore, detector_catalog
 from app.web.deps import AdvisoryEngine, Context, CsrfSession, CurrentSession, WebContext
 from app.web.entitlements import EntitlementError, EntitlementService
@@ -328,6 +336,57 @@ def _my_sizing(ctx: WebContext, engine_id: str, user_id: str, opp: dict[str, Any
         "taps": sum(p.taps for p in r.parts),
         "plan": list(plan_of(r)),
     }
+
+
+class PreviewBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    entry_plan: EntryPlanPreferences
+    trading_profile: TradingProfile | None = None
+
+
+@router.post("/engines/{engine_id}/entry-plan/preview")
+async def entry_plan_preview(
+    body: PreviewBody, engine: AdvisoryEngine, ctx: Context, session: CsrfSession
+) -> dict[str, Any]:
+    """A draft entry plan and trading profile sized on an example trade (TAA-922), before they are saved: the
+    user's MANUAL account, or for the engine owner without one the engine's broker account from the latest
+    ranking run (the account the owner's alerts are sized with)."""
+    srv = await _server(ctx, engine.engine_id, None)
+
+    def run() -> dict[str, Any]:
+        profile = load_profile(ctx.db, session.user_id)
+        if profile is None or profile.source != "MANUAL":
+            account = reads(ctx).ranking(engine.engine_id, asset_class=None, eligible=None)["account"]
+            if not engine.is_owner or not account or not account.get("equity") or not account.get("leverage"):
+                return {"available": False, "reason": "no_account"}
+            profile = AccountProfileRow(
+                user_id=session.user_id,
+                source="MANUAL",
+                equity=float(account["equity"]),
+                balance=float(account.get("balance") or account["equity"]),
+                currency=str(account.get("currency") or "USD"),
+                leverage=float(account["leverage"]),
+                risk_percent=None,
+            )
+        prefs = PreferenceStore(ctx.db).get(session.user_id)
+        trading = body.trading_profile or prefs.trading_profile
+        pct = [load_app_config().risk.max_risk_per_trade_percent, trading.resolve().risk_per_signal_percent]
+        if profile.risk_percent is not None:
+            pct.append(profile.risk_percent)
+        return preview_plan(
+            ctx.db,
+            profile,
+            engine_id=engine.engine_id,
+            server=srv,
+            plan=body.entry_plan,
+            risk=load_app_config().risk,
+            risk_percent=min(pct),
+            now=ctx.clock.now_utc(),
+        )
+
+    result: dict[str, Any] = await run_in_threadpool(run)
+    return result
 
 
 @router.get("/engines/{engine_id}/shadow-trades")
