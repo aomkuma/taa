@@ -579,9 +579,10 @@ Types stay portable (`UTCDateTime`, `JSONType`) and use one Alembic history, as 
 | L5 | Tick confirmation + A/B shadow variant + latency | Needs L1 data + L2 features + DEMO time |
 | L6 | Fit matrix, drift, Learning page, runbook | Closes the loop |
 
-**Placement against the main plan:** after Phase 14 and the wrap-up (the 2026-10-06 decision). **Exception:**
-TAA-L001 (probe) and TAA-L101–L102 (tick capture) are small, read-only and independent. With the user's
-agreement they may run earlier, so ticks start accumulating while other work continues.
+**Placement against the main plan:** after Phase 14 and the wrap-up (the 2026-10-06 decision). TAA-L001 (probe)
+and TAA-L101–L102 (tick capture) are small, read-only and independent, so starting them early was considered.
+**User decision (2026-10-06): no early start.** Phase 14 and the wrap-up finish first, then this track runs in
+order L0 → L6.
 
 ## L17. Risks & limitations
 
@@ -603,8 +604,9 @@ agreement they may run earlier, so ticks start accumulating while other work con
 
 ## L18. Open questions for the user
 
-1. Q1: May TAA-L001 (feed probe, read-only on the real demo terminal) and TAA-L101–L102 (tick recording) start
-   before Phase 14 is finished, so data accumulates early?
+1. ~~Q1: May TAA-L001 (feed probe, read-only on the real demo terminal) and TAA-L101–L102 (tick recording) start
+   before Phase 14 is finished, so data accumulates early?~~ **Answered 2026-10-06: no.** Finish Phase 14 and
+   the wrap-up first, then follow the L0 → L6 order.
 2. Q2: Which symbols get ticks recorded first (default: watchlists + open positions, max 20)?
 3. Q3: Is a new dependency (`lightgbm`, engine only) acceptable, or should L4 stay numpy-only (logistic + simple
    trees)?

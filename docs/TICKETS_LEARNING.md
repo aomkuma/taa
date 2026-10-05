@@ -15,9 +15,9 @@ references such as §A27 point to [PLAN.md](PLAN.md). The main tickets live in [
 - New reason codes, statuses and explanation keys go into `frontend/src/i18n/` (th + en) in the same change.
 - No profitability claims in any text.
 
-**Execution order:** L0 → L1 → L2 → L3 → L4 → L5 → L6. The track starts after Phase 14 and the wrap-up of
-TICKETS.md. Exception: TAA-L001, L101 and L102 may start earlier with the user's agreement (PLAN_LEARNING §L16,
-Q1).
+**Execution order:** L0 → L1 → L2 → L3 → L4 → L5 → L6. The track starts only after Phase 14 and the wrap-up of
+TICKETS.md are finished (user decision 2026-10-06: no early start, not even for tick capture; PLAN_LEARNING
+§L16, Q1).
 
 ## Progress
 
