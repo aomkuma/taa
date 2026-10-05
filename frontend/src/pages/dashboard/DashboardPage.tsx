@@ -8,6 +8,8 @@ import { useLiveEvents } from '@/live/context';
 import { ManualPositionsCard } from '@/pages/trades/ManualPositions';
 import { TopRankedCard } from '@/pages/ranking/TopRankedCard';
 
+import { AccuracySummaryCard, ActiveOpportunitiesCard } from './AdvisoryCards';
+
 import { AccountCard, AlertsCard, BreakersCard, DecisionsCard, HealthCard, PositionsCard } from './cards';
 import { NOTIFICATIONS_QUERY_KEY } from './schemas';
 
@@ -44,6 +46,8 @@ function OwnDashboard({ engineId }: { engineId: string }) {
       <ManualPositionsCard compact />
       <DecisionsCard />
       <TopRankedCard engineId={engineId} />
+      <ActiveOpportunitiesCard engineId={engineId} />
+      <AccuracySummaryCard engineId={engineId} />
       <AlertsCard />
     </div>
   );
@@ -69,6 +73,8 @@ function FeedDashboard({ engineId }: { engineId: string | null }) {
         </div>
       </section>
       {engineId !== null && <TopRankedCard engineId={engineId} />}
+      {engineId !== null && <ActiveOpportunitiesCard engineId={engineId} />}
+      {engineId !== null && <AccuracySummaryCard engineId={engineId} />}
       <AlertsCard />
     </div>
   );

@@ -97,8 +97,7 @@ and comes after. Turning LIVE on still needs Phase 14 done and the user's explic
    pulse), chart range fix and strength-styled S/R zones. Probation is LIVE-only by design (TAA-1401).
    Restarting the stack from Claude Code works when the user has approved it in the conversation.
 3. **Phase 10 is done** (TAA-1004 recommendations, TAA-1005 analytics API & page, 2026-10-06).
-4. Dashboard additions of PLAN §A28 still open: active opportunities and the accuracy summary (the top-5
-   ranking widget is done).
+4. Dashboard additions of PLAN §A28: done (top-5 ranking, open opportunities, signal track record).
 5. Phase 11 Railway deployment: **skipped for now** (user decision 2026-10-06). Later, only with the user's
    Railway access and go-ahead.
 6. **Homework from the user (2026-10-05), after all remaining tickets:** the system's purpose is to sweep

@@ -3,6 +3,7 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import { json, makeSession, mockApi } from '@/test/api';
 import { heartbeat, iso, owner, renderShell, status } from '@/test/engine';
 import { streamEvent } from '@/test/eventSource';
+import samples from '@/test/fixtures/api-samples.json';
 
 function account(overrides: Record<string, unknown> = {}) {
   return {
@@ -136,6 +137,22 @@ describe('dashboard', () => {
     expect(await within(decisions).findByText('XAUUSD SELL · Rejected')).toBeInTheDocument();
     const alerts = await card('Recent notifications');
     expect(await within(alerts).findByText('Engine offline')).toBeInTheDocument();
+  });
+
+  it('shows open opportunities and the signal track record', async () => {
+    const recorded = samples as Record<string, unknown>;
+    ownerWithData({
+      'GET /engines/e1/opportunities?limit=50': () => json(recorded['engines/ENGINE/opportunities?limit=50']),
+      'GET /engines/e1/accuracy?variant=PLAN': () => json(recorded['engines/ENGINE/accuracy']),
+    });
+    renderShell('/');
+    const open = await card('Open opportunities');
+    expect(await within(open).findByRole('link', { name: 'EURUSD BUY' })).toBeInTheDocument();
+    expect(within(open).queryByText(/XAUUSD/)).not.toBeInTheDocument(); // a candidate is not open
+    const track = await card('Signal track record');
+    expect(await within(track).findByText('40%')).toBeInTheDocument();
+    expect(track).toHaveTextContent('+0.35R');
+    expect(track).toHaveTextContent('Simulated');
   });
 
   it('shows system health from the heartbeat', async () => {

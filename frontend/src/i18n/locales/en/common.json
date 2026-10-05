@@ -177,6 +177,23 @@
     "alerts": {
       "title": "Recent notifications",
       "none": "No notifications yet."
+    },
+    "opportunities": {
+      "title": "Open opportunities",
+      "all": "All opportunities",
+      "none": "No opportunity is open right now.",
+      "strength": "Strength {{value}}",
+      "more": "{{n}} more"
+    },
+    "accuracy": {
+      "title": "Signal track record",
+      "all": "Details",
+      "none": "No signal has closed yet.",
+      "closed": "Closed",
+      "hitRate": "Hit rate",
+      "expectancy": "Average",
+      "range": "Hit rate likely between {{low}} and {{high}} (95%).",
+      "simulated": "Simulated: each signal followed exactly as planned, past results only."
     }
   },
   "charts": {
