@@ -37,3 +37,26 @@ export function pyMoneyParams(source: string): string[] {
   if (!match?.[1]) throw new Error('MONEY_PARAMS not found');
   return [...match[1].matchAll(/"([a-z_]+)"/g)].map((m) => m[1] ?? '');
 }
+
+/** Field names of every `class <Name>Params(...)` (and `StrategyParams`) in *source*. */
+export function pyParamFields(source: string): string[] {
+  const fields: string[] = [];
+  let inParams = false;
+  for (const line of source.split(/\r?\n/)) {
+    if (/^class \w*Params\(/.test(line)) {
+      inParams = true;
+      continue;
+    }
+    if (line.trim() !== '' && !/^\s/.test(line)) inParams = false;
+    const match = inParams ? /^ {4}([a-z][a-z0-9_]*): /.exec(line) : null;
+    if (match?.[1] && match[1] !== 'model_config') fields.push(match[1]);
+  }
+  return fields;
+}
+
+/** The string choices of `<name> = Literal["a", "b"]` in *source*. */
+export function pyLiteralValues(source: string, name: string): string[] {
+  const line = source.split(/\r?\n/).find((l) => l.startsWith(`${name} = Literal[`));
+  if (line === undefined) throw new Error(`${name} = Literal[...] not found`);
+  return [...line.matchAll(/"([^"]+)"/g)].map((m) => m[1] ?? '');
+}

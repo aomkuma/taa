@@ -239,5 +239,16 @@
     "TRIP": "Tripped",
     "HALF_OPEN": "Recovering",
     "RESET": "Reset"
+  },
+  "strategyName": {
+    "example_trend_pullback": "Trend pullback (example)",
+    "setup_neckline_break": "Neckline break",
+    "setup_pattern_breakout": "Chart-pattern breakout",
+    "setup_fib_pullback": "Fibonacci pullback",
+    "setup_harmonic_prz": "Harmonic PRZ",
+    "setup_elliott_wave": "Elliott wave",
+    "setup_smc_reversal": "SMC reversal",
+    "setup_breakout": "Range breakout",
+    "setup_candle_reversal": "Candlestick reversal"
   }
 }

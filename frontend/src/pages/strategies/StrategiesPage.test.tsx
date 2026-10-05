@@ -34,7 +34,18 @@ function setup(extra: Record<string, () => Response> = {}, session: Record<strin
   });
 }
 
-const card = async (name: string) => screen.findByRole('region', { name });
+const TITLES: Record<string, string> = {
+  example_trend_pullback: 'Trend pullback (example)',
+  setup_breakout: 'Range breakout',
+  setup_fib_pullback: 'Fibonacci pullback',
+  setup_neckline_break: 'Neckline break',
+};
+/** A strategy's card, found by its display name; the raw name stays visible in the card. */
+const card = async (name: string) => {
+  const region = await screen.findByRole('region', { name: TITLES[name] ?? name });
+  expect(region).toHaveTextContent(name);
+  return region;
+};
 
 describe('strategies page', () => {
   it('shows each strategy with its state, decisions and paper performance', async () => {
@@ -72,10 +83,25 @@ describe('strategies page', () => {
     await user.click(within(example).getByText('Parameters (13)'));
     const table = within(example).getByRole('table', { name: `Parameters of ${EXAMPLE}` });
     const adx = within(table).getByRole('row', { name: /adx_min/ });
+    expect(adx).toHaveTextContent('Minimum ADX');
+    expect(adx).toHaveTextContent('Trend strength needed (ADX 0–100)');
     expect(within(adx).getByText('20')).toBeInTheDocument();
     expect(within(table).getByRole('row', { name: /session_start_utc/ })).toHaveTextContent('07:00');
     expect(within(table).queryByText('config.yaml')).not.toBeInTheDocument(); // nothing overridden
     expect(within(example).queryByRole('textbox')).not.toBeInTheDocument();
+  });
+
+  it('names parameter choices and yes/no values', async () => {
+    setup();
+    const user = userEvent.setup();
+    renderShell('/strategies');
+    const neckline = await card('setup_neckline_break');
+    await user.click(within(neckline).getByText(/^Parameters/));
+    const table = within(neckline).getByRole('table');
+    expect(within(table).getByRole('row', { name: /stop_mode/ })).toHaveTextContent(
+      /^Stop placement.*the nearer of the two$/,
+    );
+    expect(within(table).getByRole('row', { name: /require_htf_alignment/ })).toHaveTextContent(/no$/);
   });
 
   it('switches the performance period through the URL', async () => {
@@ -205,9 +231,10 @@ describe('strategies page', () => {
   it('is in Thai by default', async () => {
     setup();
     renderShell('/strategies', 'th');
-    const example = await card(EXAMPLE);
+    const example = await screen.findByRole('region', { name: 'ย่อตามเทรนด์ (ตัวอย่าง)' });
     expect(within(example).getByText('เปิดใช้งาน')).toBeInTheDocument();
     expect(within(example).getByRole('button', { name: 'ปิดใช้งาน' })).toBeInTheDocument();
-    expect(within(await card('setup_breakout')).getByText('ปิดจากแอป')).toBeInTheDocument();
+    const breakout = screen.getByRole('region', { name: 'เบรกกรอบราคา' });
+    expect(within(breakout).getByText('ปิดจากแอป')).toBeInTheDocument();
   });
 });

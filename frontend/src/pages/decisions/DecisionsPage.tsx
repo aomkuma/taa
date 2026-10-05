@@ -336,7 +336,7 @@ export function DecisionsPage() {
                       <span className="text-slate-500">{format.dateTime(d.created_at)}</span>
                     </span>
                     <span className="block text-xs text-slate-500">
-                      {d.strategy} · {d.timeframe}
+                      {translateCode(i18n, 'strategyName', d.strategy)} · {d.timeframe}
                       {d.reason_codes.length > 0 &&
                         ` · ${d.reason_codes.map((c) => translateCode(i18n, 'reason', c)).join(' · ')}`}
                     </span>

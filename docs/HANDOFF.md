@@ -114,6 +114,8 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
     component may only export components (react-refresh lint).
   - A new page: add it to `src/app/shell/nav.ts`, replace its `PlaceholderPage` route in
     `src/app/routes.tsx`; engine queries go under `engineKey(id)`.
+  - A new strategy parameter or strategy needs TH/EN texts (`strategies.param.<name>` in `common.json`,
+    `codes:strategyName` / `codes:strategy`); parity tests read the Python models.
   - Parity tests read backend enums and `app/advisory/explanations.py`; TypeScript stays on 6.0.x
     (typescript-eslint 8).
   - API samples must be stable: pin wall-clock stamps and random ids in `tests/web/test_api_samples.py`.

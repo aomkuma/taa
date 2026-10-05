@@ -8,6 +8,7 @@ import { StepUpDialog } from '@/components/StepUpDialog';
 import { type Command, postCommand } from '@/engine/commands';
 import { useEngine } from '@/engine/context';
 import { translateCode } from '@/i18n/codes';
+import { translateDynamic } from '@/i18n/dynamic';
 import { useFormat } from '@/i18n/useFormat';
 import { useLiveEvents } from '@/live/context';
 import { Card } from '@/pages/dashboard/cards';
@@ -39,10 +40,34 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-function paramText(value: unknown): string {
-  if (value === null || value === undefined) return '—';
-  if (typeof value === 'string') return value;
-  return JSON.stringify(value);
+/** A parameter value as text: choices and yes/no through their translations, other values as they are. */
+function ParamValue({ name, value }: { name: string; value: unknown }) {
+  const { i18n } = useTranslation();
+  if (value === null || value === undefined) return <>—</>;
+  const key =
+    typeof value === 'boolean'
+      ? `strategies.paramValue.bool.${String(value)}`
+      : typeof value === 'string'
+        ? `strategies.paramValue.${name}.${value}`
+        : null;
+  if (key !== null && i18n.exists(key)) return <>{translateDynamic(i18n, key)}</>;
+  return <>{typeof value === 'string' ? value : JSON.stringify(value)}</>;
+}
+
+/** The parameter's name and one-line explanation, with its config.yaml key underneath. */
+function ParamName({ name }: { name: string }) {
+  const { i18n } = useTranslation();
+  const label = `strategies.param.${name}.label`;
+  if (!i18n.exists(label)) return <code className="text-xs">{name}</code>;
+  return (
+    <>
+      <span>{translateDynamic(i18n, label)}</span>
+      <span className="block text-xs text-slate-500">
+        {translateDynamic(i18n, `strategies.param.${name}.hint`)}
+      </span>
+      <code className="block text-xs text-slate-400 dark:text-slate-500">{name}</code>
+    </>
+  );
 }
 
 /** Effective parameters (read-only); values set in config.yaml are marked. */
@@ -69,14 +94,16 @@ function Parameters({ strategy }: { strategy: Strategy }) {
             {entries.map(([key, value]) => (
               <tr key={key} className="border-t border-slate-100 dark:border-slate-800">
                 <th scope="row" className="py-1 pr-3 text-left font-normal">
-                  <code className="text-xs">{key}</code>
+                  <ParamName name={key} />
                   {overrides.has(key) && (
                     <span className="ml-1.5 rounded bg-sky-100 px-1 text-xs text-sky-900 dark:bg-sky-900/40 dark:text-sky-200">
                       {t('strategies.params.override')}
                     </span>
                   )}
                 </th>
-                <td className="py-1 text-right tabular-nums">{paramText(value)}</td>
+                <td className="py-1 text-right align-top tabular-nums">
+                  <ParamValue name={key} value={value} />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -114,7 +141,7 @@ function StrategyCard({ strategy, onDisable }: { strategy: Strategy; onDisable: 
   const d = strategy.decisions;
   return (
     <Card
-      title={strategy.name}
+      title={translateCode(i18n, 'strategyName', strategy.name)}
       action={
         <span className={`rounded px-2 py-0.5 text-xs font-medium ${STATE_TONE[strategy.state]}`}>
           {translateCode(i18n, 'strategyState', strategy.state)}
@@ -124,6 +151,7 @@ function StrategyCard({ strategy, onDisable }: { strategy: Strategy; onDisable: 
       {description && <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>}
       <p className="mt-1 text-xs text-slate-500">
         {[
+          strategy.name,
           strategy.version && t('strategies.version', { version: strategy.version }),
           strategy.warmup_bars !== null && t('strategies.warmup', { bars: strategy.warmup_bars }),
           strategy.timeframes.length > 0 &&

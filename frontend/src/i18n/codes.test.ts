@@ -175,6 +175,7 @@ describe('code texts', () => {
     ['strategyState', STRATEGY_STATES],
     ['commandStatus', COMMAND_STATUSES],
     ['strategy', STRATEGY_NAMES],
+    ['strategyName', STRATEGY_NAMES],
     ['backtestStatus', BACKTEST_STATUSES],
     ['commandType', COMMAND_TYPES],
     ['commandReason', COMMAND_REASONS],

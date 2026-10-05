@@ -18,6 +18,7 @@
  * | `StrategyState` (app/web/strategies.py)                          | `codes:strategyState.<S>`          |
  * | `QueueStatus` (app/sync/command_queue.py), control commands      | `codes:commandStatus.<S>`          |
  * | strategy names (`name = "..."` in app/strategy), their descriptions | `codes:strategy.<name>`            |
+ * | the same strategy names, short display names                     | `codes:strategyName.<name>`        |
  * | `BacktestRunRow.status` (app/storage/models/backtests.py)        | `codes:backtestStatus.<S>`         |
  * | `CommandType`, `Reason` (app/sync/commands.py), control commands | `codes:commandType.<T>`, `codes:commandReason.<R>` |
  * | `KillMode` (app/risk/kill_switch.py)                             | `codes:killMode.<M>`               |
@@ -285,6 +286,7 @@ export const CODE_KINDS = [
   'strategyState',
   'commandStatus',
   'strategy',
+  'strategyName',
   'backtestStatus',
   'commandType',
   'commandReason',

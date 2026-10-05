@@ -431,7 +431,105 @@
       "pending": "Disable command sent; waiting for the engine…"
     },
     "reEnable": "Re-enable on the engine computer only:",
-    "configOff": "Switched off in config.yaml (enabled: false)."
+    "configOff": "Switched off in config.yaml (enabled: false).",
+    "param": {
+      "adx_min": {
+        "label": "Minimum ADX",
+        "hint": "Trend strength needed (ADX 0–100)"
+      },
+      "confirm_window_bars": {
+        "label": "Confirmation window (bars)",
+        "hint": "Bars a pattern may take to confirm before it is dropped"
+      },
+      "expiry_bars": {
+        "label": "Signal lifetime (bars)",
+        "hint": "How many entry-timeframe bars a signal stays valid"
+      },
+      "friday_cutoff_utc": {
+        "label": "Friday cut-off (UTC)",
+        "hint": "No new entries after this time on Fridays (empty: none)"
+      },
+      "level_clearance_atr": {
+        "label": "Room to the next level (ATR)",
+        "hint": "Minimum distance to the next support/resistance, in ATR"
+      },
+      "max_sl_atr": {
+        "label": "Widest stop (ATR)",
+        "hint": "Signals with a wider stop than this are skipped"
+      },
+      "max_spread_to_sl": {
+        "label": "Max spread vs stop",
+        "hint": "The spread may be at most this share of the stop distance (0.15 = 15%)"
+      },
+      "min_quality": {
+        "label": "Minimum pattern quality",
+        "hint": "0–1; 0 accepts any"
+      },
+      "min_rr": {
+        "label": "Minimum reward:risk",
+        "hint": "The target must be at least this many times the risk"
+      },
+      "pullback_bars": {
+        "label": "Pullback bars",
+        "hint": "Recent bars searched for the pullback to the EMA"
+      },
+      "require_htf_alignment": {
+        "label": "Require the higher-timeframe trend",
+        "hint": "Enter only when the higher-timeframe trend does not oppose"
+      },
+      "rr_target": {
+        "label": "Take-profit (R)",
+        "hint": "Take-profit in multiples of the risk when no measured target is used"
+      },
+      "session_end_utc": {
+        "label": "Session end (UTC)",
+        "hint": "New entries until this time"
+      },
+      "session_start_utc": {
+        "label": "Session start (UTC)",
+        "hint": "New entries from this time"
+      },
+      "sl_atr_multiple": {
+        "label": "Stop distance (ATR)",
+        "hint": "Stop distance in ATR when the ATR stop is used"
+      },
+      "stop_buffer_atr": {
+        "label": "Stop buffer (ATR)",
+        "hint": "Extra room beyond the pattern's invalidation"
+      },
+      "stop_mode": {
+        "label": "Stop placement",
+        "hint": "Where the signal's stop goes"
+      },
+      "swing_k": {
+        "label": "Swing width (bars)",
+        "hint": "Bars on each side that confirm a swing high or low"
+      },
+      "target_mode": {
+        "label": "Take-profit placement",
+        "hint": "Where the signal's take-profit goes"
+      },
+      "trigger_max_age_bars": {
+        "label": "Trigger age limit (bars)",
+        "hint": "0: the pattern must fire on the decision bar"
+      }
+    },
+    "paramValue": {
+      "stop_mode": {
+        "invalidation": "pattern invalidation",
+        "atr": "ATR distance",
+        "nearer": "the nearer of the two"
+      },
+      "target_mode": {
+        "measured": "measured move",
+        "level": "next level",
+        "rr": "fixed R multiple"
+      },
+      "bool": {
+        "true": "yes",
+        "false": "no"
+      }
+    }
   },
   "backtests": {
     "list": "Runs",

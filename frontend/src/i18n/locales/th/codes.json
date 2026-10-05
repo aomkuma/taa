@@ -239,5 +239,16 @@
     "TRIP": "ตัด",
     "HALF_OPEN": "กำลังฟื้น",
     "RESET": "รีเซ็ต"
+  },
+  "strategyName": {
+    "example_trend_pullback": "ย่อตามเทรนด์ (ตัวอย่าง)",
+    "setup_neckline_break": "เบรกเส้นคอ",
+    "setup_pattern_breakout": "เบรกรูปแบบกราฟ",
+    "setup_fib_pullback": "ย่อที่ฟีโบนัชชี",
+    "setup_harmonic_prz": "ฮาร์โมนิก PRZ",
+    "setup_elliott_wave": "คลื่นเอลเลียต",
+    "setup_smc_reversal": "กลับตัวแบบ SMC",
+    "setup_breakout": "เบรกกรอบราคา",
+    "setup_candle_reversal": "แท่งเทียนกลับตัว"
   }
 }
