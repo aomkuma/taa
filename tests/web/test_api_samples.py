@@ -118,6 +118,7 @@ ENGINE_ROUTES = [
     "analytics?scope=SHADOW&days=366",
     f"analytics?scope=BACKTEST&days=366&run={RUN_A}",
     f"recommendations?scope=BACKTEST&days=366&run={RUN_A}",
+    "ai-assessments?days=366",
 ]
 USER_ROUTES = [
     "me/feed",

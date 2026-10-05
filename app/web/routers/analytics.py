@@ -3,6 +3,8 @@
 - ``GET /engines/{id}/analytics?scope=PAPER|SHADOW|BACKTEST&run=&days=&variant=&strategy=&symbol=``: KPIs,
   curves, R distribution, performance by style, MAE/MFE and the P/L attribution summary
   (:func:`app.analytics.report.build_report`).
+- ``GET /engines/{id}/ai-assessments?days=&limit=``: the AI reviews of entries with agreement (against the
+  signals' simulated outcomes) and cost (TAA-1304).
 - ``GET /engines/{id}/recommendations`` with the same query: the A16 rules with evidence, sample sizes and,
   where possible, the fields of a "Backtest this change" job (``POST /engines/{id}/backtests``).
 
@@ -16,6 +18,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Query
 from starlette.concurrency import run_in_threadpool
 
+from app.web.ai import AIReadModel
 from app.web.analytics import DEFAULT_DAYS, MAX_DAYS, Analytics
 from app.web.deps import Context, OwnedEngine
 from app.web.errors import ApiProblem
@@ -84,3 +87,13 @@ async def recommendations(
         strategy=strategy,
         symbol=symbol,
     )
+
+
+@router.get("/ai-assessments")
+async def ai_assessments(
+    engine: OwnedEngine,
+    ctx: Context,
+    days: Annotated[int, Query(ge=1, le=MAX_DAYS)] = 30,
+    limit: Annotated[int, Query(ge=1, le=200)] = 100,
+) -> dict[str, Any]:
+    return await _run(AIReadModel(ctx.db, ctx.clock).assessments, engine.engine_id, days=days, limit=limit)

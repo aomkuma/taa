@@ -70,6 +70,7 @@
     "strategies": "Strategies",
     "risk": "Risk & controls",
     "analytics": "Analytics",
+    "ai": "AI review",
     "backtests": "Backtests",
     "notifications": "Notifications",
     "account": "My account & plan",
@@ -2065,5 +2066,39 @@
     "backtestFailed": "The backtest could not be started ({{code}}).",
     "noRecommendations": "Nothing to recommend from {{n}} trades.",
     "neverApplied": "Recommendations never change the engine's settings: test one as a backtest, then decide yourself."
+  },
+  "ai": {
+    "intro": "The optional AI review of each entry the bot is about to place. It can only object (veto) or be recorded (advisory); it never sizes a trade. Off unless AI_PROVIDER is set on the engine machine.",
+    "summary": {
+      "title": "Summary",
+      "calls": "Reviews",
+      "agreement": "Agreed",
+      "vetoed": "Vetoed",
+      "unavailable": "No usable answer",
+      "right": "Right afterwards",
+      "cost": "Cost",
+      "costToday": "Cost today",
+      "latency": "Average answer time"
+    },
+    "seconds": "{{n}} s",
+    "outcomes": "When the AI agreed, the signal won {{agree}} of the time; when it disagreed, {{disagree}} (simulated outcomes).",
+    "models": "Model: {{models}}",
+    "simulated": "Outcomes are the signals' simulated trades, not real money.",
+    "none": "No AI review yet.",
+    "list": "Reviews",
+    "verdict": {
+      "AGREE": "Agrees ({{confidence}})",
+      "DISAGREE": "Disagrees ({{confidence}})",
+      "UNSURE": "Unsure ({{confidence}})"
+    },
+    "status": "No answer: {{status}}",
+    "effect": {
+      "PASSED": "passed",
+      "VETOED": "vetoed",
+      "ADVISORY": "advisory only"
+    },
+    "outcome": "Afterwards (simulated): {{result}}, {{r}}R",
+    "won": "won",
+    "lost": "lost"
   }
 }

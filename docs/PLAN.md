@@ -498,6 +498,14 @@ AI failures never trip trading breakers; they only produce HOLD.
     - The call is synchronous on the engine loop, bounded by the timeout. It happens at most once per accepted
       signal (a bar close), so monitoring waits at most `ai.timeout_seconds` × 2 on such a bar.
   - **Records:** `ai_assessments` (migration 0037, replicated) feed the PWA's assessments page (TAA-1304).
+- (TAA-1304 decisions) The "AI review" page (nav under Analysis) reads `GET /engines/{id}/ai-assessments`:
+  - **Counts:** calls, answered, verdicts, agreement rate, vetoed/passed/advisory, budget holds.
+  - **Cost:** total, today, tokens, average answer time and the models that answered.
+  - **"Right afterwards":** each verdict is checked against the signal's closed PLAN shadow trade (AGREE and a
+    win, or DISAGREE and a loss), with the win rate when it agreed vs. when it disagreed. These are simulated
+    outcomes, labelled so.
+  - **Narrative:** the optional AI narrative in Analytics is not built. The cloud holds no AI key, so it
+    would have to be written on the engine and replicated.
 
 **Kill switch**
 - **Activation:** the file `data/KILL_SWITCH`, checked every loop and immediately before any send; the CLI

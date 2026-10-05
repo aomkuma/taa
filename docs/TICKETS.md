@@ -1763,13 +1763,13 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1304 — AI in PWA
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 1303, 1005
 
-- [ ] assessments page
-- [ ] agreement stats
-- [ ] cost tracking
-- [ ] optional labelled AI narrative in analytics
+- [x] assessments page
+- [x] agreement stats
+- [x] cost tracking
+- [ ] optional labelled AI narrative in analytics (the cloud holds no AI key by design, PLAN §A20: the narrative must be produced on the engine and replicated; not started)
 
 #### TAA-1305 — (rev. 2) AI on advisory
 
