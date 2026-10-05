@@ -27,6 +27,9 @@ const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'childre
     lazy: async () => ({ Component: (await import('@/pages/analytics/AnalyticsPage')).AnalyticsPage }),
   },
   ai: { lazy: async () => ({ Component: (await import('@/pages/ai/AIPage')).AIPage }) },
+  learning: {
+    lazy: async () => ({ Component: (await import('@/pages/learning/LearningPage')).LearningPage }),
+  },
   backtests: {
     lazy: async () => ({ Component: (await import('@/pages/backtests/BacktestsPage')).BacktestsPage }),
   },

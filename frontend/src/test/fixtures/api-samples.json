@@ -9400,6 +9400,448 @@
     ],
     "next_cursor": null
   },
+  "engines/ENGINE/learning/behavior?days=366": {
+    "class_mix": {
+      "UNKNOWN": 1.0
+    },
+    "comfort_distance": 1.0,
+    "days": 366,
+    "hypothetical": true,
+    "lookahead_hours": 24,
+    "max_trades_per_day": null,
+    "opportunity_mix": {
+      "FOREX_MAJOR": 0.5,
+      "METAL": 0.5
+    },
+    "patterns": [
+      {
+        "considered": 0,
+        "count": 0,
+        "delta_r": 0,
+        "pattern": "EARLY_EXIT",
+        "share": 0.0
+      },
+      {
+        "considered": 0,
+        "count": 0,
+        "delta_r": 0,
+        "pattern": "STOP_MOVED",
+        "share": 0.0
+      },
+      {
+        "considered": 1,
+        "count": 0,
+        "delta_r": 0,
+        "pattern": "REVENGE",
+        "share": 0.0
+      },
+      {
+        "considered": 0,
+        "count": 0,
+        "delta_r": 0,
+        "pattern": "OVERTRADING",
+        "share": 0.0
+      },
+      {
+        "considered": 1,
+        "count": 0,
+        "delta_r": 0,
+        "pattern": "OFF_PLAN",
+        "share": 0.0
+      }
+    ],
+    "trades": 1
+  },
+  "engines/ENGINE/learning/expectancy?scope=SHADOW&days=183": {
+    "change": null,
+    "days": 183,
+    "groups": [
+      {
+        "ci": {
+          "high": 1.91,
+          "low": -1.095,
+          "mean": 0.41
+        },
+        "cost_r": 0.11,
+        "expectancy_r": 0.41,
+        "key": [
+          "example_trend_pullback",
+          "EURUSD"
+        ],
+        "loss_r": 0.98,
+        "n": 4,
+        "p": 0.5,
+        "per_week": 18.67,
+        "unknown_costs": 0,
+        "win_r": 2.02
+      },
+      {
+        "ci": {
+          "high": 1.9,
+          "low": -0.4,
+          "mean": 0.75
+        },
+        "cost_r": 0.12,
+        "expectancy_r": 0.75,
+        "key": [
+          "example_trend_pullback",
+          "GBPUSD"
+        ],
+        "loss_r": 0.28,
+        "n": 2,
+        "p": 0.5,
+        "per_week": 14.0,
+        "unknown_costs": 0,
+        "win_r": 2.02
+      },
+      {
+        "ci": {
+          "high": 2.4,
+          "low": -1.05,
+          "mean": 0.675
+        },
+        "cost_r": 0.095,
+        "expectancy_r": 0.675,
+        "key": [
+          "example_trend_pullback",
+          "XAUUSD"
+        ],
+        "loss_r": 0.98,
+        "n": 2,
+        "p": 0.5,
+        "per_week": 28.0,
+        "unknown_costs": 0,
+        "win_r": 2.52
+      }
+    ],
+    "hypothetical": true,
+    "overall": {
+      "ci": {
+        "high": 1.595,
+        "low": -0.5288,
+        "mean": 0.5613
+      },
+      "cost_r": 0.1087,
+      "expectancy_r": 0.5612,
+      "key": [
+        "all"
+      ],
+      "loss_r": 0.805,
+      "n": 8,
+      "p": 0.5,
+      "per_week": 32.0,
+      "unknown_costs": 0,
+      "win_r": 2.145
+    },
+    "previous": null,
+    "scope": "SHADOW"
+  },
+  "engines/ENGINE/learning/timing?scope=BACKTEST&days=366&run=0191a0a0-0000-7000-8000-0000000000b1": {
+    "groups": [
+      {
+        "baseline_hit_rate": 0.3357,
+        "baseline_vindicated": null,
+        "hit_rate": {
+          "count": 4,
+          "high": 1.0,
+          "low": 0.5965,
+          "n": 4,
+          "share": 1.0
+        },
+        "key": [
+          "example_trend_pullback"
+        ],
+        "losers": 0,
+        "modes": {
+          "EARLY": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "LATE": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "OTHER": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "STALL": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "TF_MISMATCH": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "UNKNOWN": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "WRONG": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          }
+        },
+        "trades": 4,
+        "vindicated": null,
+        "winner_bars_to_tp": null,
+        "winner_mae_atr": null,
+        "winner_mae_r": null
+      }
+    ],
+    "hypothetical": true,
+    "lookahead_hours": 24,
+    "overall": [
+      {
+        "baseline_hit_rate": 0.3357,
+        "baseline_vindicated": null,
+        "hit_rate": {
+          "count": 4,
+          "high": 1.0,
+          "low": 0.5965,
+          "n": 4,
+          "share": 1.0
+        },
+        "key": [
+          "all"
+        ],
+        "losers": 0,
+        "modes": {
+          "EARLY": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "LATE": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "OTHER": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "STALL": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "TF_MISMATCH": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "UNKNOWN": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "WRONG": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          }
+        },
+        "trades": 4,
+        "vindicated": null,
+        "winner_bars_to_tp": null,
+        "winner_mae_atr": null,
+        "winner_mae_r": null
+      }
+    ],
+    "scope": "BACKTEST",
+    "skipped": 0,
+    "trades": 4
+  },
+  "engines/ENGINE/learning/timing?scope=SHADOW&days=366": {
+    "groups": [
+      {
+        "baseline_hit_rate": 0.3333,
+        "baseline_vindicated": null,
+        "hit_rate": {
+          "count": 4,
+          "high": 0.8136,
+          "low": 0.2895,
+          "n": 7,
+          "share": 0.5714
+        },
+        "key": [
+          "example_trend_pullback"
+        ],
+        "losers": 4,
+        "modes": {
+          "EARLY": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          },
+          "LATE": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          },
+          "OTHER": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          },
+          "STALL": {
+            "count": 1,
+            "high": 0.6438,
+            "low": 0.0579,
+            "n": 4,
+            "share": 0.25
+          },
+          "TF_MISMATCH": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          },
+          "UNKNOWN": {
+            "count": 3,
+            "high": 0.9421,
+            "low": 0.3562,
+            "n": 4,
+            "share": 0.75
+          },
+          "WRONG": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          }
+        },
+        "trades": 8,
+        "vindicated": null,
+        "winner_bars_to_tp": null,
+        "winner_mae_atr": null,
+        "winner_mae_r": null
+      }
+    ],
+    "hypothetical": true,
+    "lookahead_hours": 24,
+    "overall": [
+      {
+        "baseline_hit_rate": 0.3333,
+        "baseline_vindicated": null,
+        "hit_rate": {
+          "count": 4,
+          "high": 0.8136,
+          "low": 0.2895,
+          "n": 7,
+          "share": 0.5714
+        },
+        "key": [
+          "all"
+        ],
+        "losers": 4,
+        "modes": {
+          "EARLY": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          },
+          "LATE": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          },
+          "OTHER": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          },
+          "STALL": {
+            "count": 1,
+            "high": 0.6438,
+            "low": 0.0579,
+            "n": 4,
+            "share": 0.25
+          },
+          "TF_MISMATCH": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          },
+          "UNKNOWN": {
+            "count": 3,
+            "high": 0.9421,
+            "low": 0.3562,
+            "n": 4,
+            "share": 0.75
+          },
+          "WRONG": {
+            "count": 0,
+            "high": 0.4035,
+            "low": 0.0,
+            "n": 4,
+            "share": 0.0
+          }
+        },
+        "trades": 8,
+        "vindicated": null,
+        "winner_bars_to_tp": null,
+        "winner_mae_atr": null,
+        "winner_mae_r": null
+      }
+    ],
+    "scope": "SHADOW",
+    "skipped": 0,
+    "trades": 8
+  },
   "engines/ENGINE/manual-trades/2078278005/candidates": {
     "items": [
       {

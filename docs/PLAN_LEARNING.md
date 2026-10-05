@@ -554,7 +554,10 @@ look-ahead `H` (default = the strategy's time stop, 72 h) using M1/M5 bars:
   the difference counts as evidence: a stop that a pure random walk would hit 60% of the time is a stop-placement
   problem, not bad luck.
 
-**Outputs** (`timing_diagnostics`, replicated): per symbol × strategy × session, the share of each failure mode with
+**Outputs** (TAA-L701/L801/L808 decision: computed on request in the cloud from the replicas, like the analytics of
+TAA-1005, through `GET /engines/{id}/learning/timing|expectancy|behavior` and the PWA **Learning** page; the
+cloud follow-up uses 24 h of stored bars per trade and at most the 200 most recent trades; no table until the load
+needs one): per symbol × strategy × session, the share of each failure mode with
 a Wilson CI, the MAE quantiles of winners, the time-to-target quantiles, the baseline comparison, and n. Manual
 trades get the same report in the analytics page ("your losses that were right too early").
 

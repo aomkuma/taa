@@ -29,6 +29,8 @@
  * | `KillMode` (app/risk/kill_switch.py)                             | `codes:killMode.<M>`               |
  * | `State`, event actions (app/risk/circuit_breaker.py)             | `codes:breakerState.<S>`, `codes:breakerAction.<A>` |
  * | `Trend`, `Regime`, `VolatilityState`, `Session` (app/core/enums.py) | `codes:trend.<T>`, `codes:regime.<R>`, `codes:volatility.<V>`, `codes:session.<S>` |
+ * | `FailureMode` (app/learning/timing.py), why losing trades lost    | `codes:failureMode.<M>`            |
+ * | `Pattern` (app/learning/behavior.py), manual-trade behaviour      | `codes:behaviorPattern.<P>`        |
  * | explanation keys (app/advisory/explanations.py)                   | `explain:<key>` (see explain.ts)   |
  *
  * Parameterized reason codes arrive as `CODE:detail` (`BREAKER_OPEN:daily_loss`); the key is built from `CODE`
@@ -180,6 +182,12 @@ export const ATTRIBUTION_CODES = [
 ] as const;
 
 export type ReasonCode = (typeof REASON_CODES)[number];
+
+// FailureMode (app/learning/timing.py): why a losing trade lost (TAA-L701).
+export const FAILURE_MODES = ['EARLY', 'LATE', 'STALL', 'TF_MISMATCH', 'WRONG', 'OTHER', 'UNKNOWN'] as const;
+
+// Pattern (app/learning/behavior.py): behaviour patterns in the owner's manual trades (TAA-L808).
+export const BEHAVIOR_PATTERNS = ['EARLY_EXIT', 'STOP_MOVED', 'REVENGE', 'OVERTRADING', 'OFF_PLAN'] as const;
 
 // EngineErrorCode (app/web/engines.py): the error codes of the engine management API (PLAN §A32).
 export const ENGINE_ERRORS = [
@@ -398,6 +406,8 @@ export const CODE_KINDS = [
   'killMode',
   'breakerState',
   'breakerAction',
+  'failureMode',
+  'behaviorPattern',
 ] as const;
 export type CodeKind = (typeof CODE_KINDS)[number];
 

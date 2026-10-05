@@ -410,12 +410,12 @@ the TP.
 - **Depends on:** — (Wave 1; σ from ATR first, the L303 profile σ once it exists); uses existing shadow data and TAA-1006 matches
 
 - [x] `app/learning/timing.py`: pure follow-up after a stop with its own look-ahead H, over analytics `Trade` records (read-only)
-- [ ] wiring: load trades and bars (M1/M5, look-ahead H) for the report, reading the TAA-1005 after-exit loader approach and `stop_too_tight` without changing them
+- [x] wiring: load trades and bars (M1/M5, look-ahead H) for the report, reading the TAA-1005 after-exit loader approach and `stop_too_tight` without changing them
 - [x] failure-mode classification `EARLY` / `LATE` / `STALL` / `TF_MISMATCH` / `WRONG` / `OTHER` / `UNKNOWN`
-- [ ] i18n codes for the failure modes (th + en) with the first API/PWA use
+- [x] i18n codes for the failure modes (th + en) with the first API/PWA use
 - [x] winners' MAE quantiles (R, ATR), time-to-target quantiles, pre-entry run (chase), TF agreement
 - [x] random-walk first-passage baseline (P(TP first) = b/(a+b), E[τ] = a·b/σ²) shown beside the observed values
-- [ ] `timing_diagnostics` table (replicated) + migration + nightly build
+- [x] served by `GET /engines/{id}/learning/timing`, computed on request from the replicas like TAA-1005 (a `timing_diagnostics` table only if the load needs one)
 - [ ] same report for matched manual trades in analytics
 - [x] tests (synthetic paths with known outcomes; baseline formula against simulation)
 
@@ -492,8 +492,8 @@ per-signal budget.
 - [x] `app/learning/expectancy.py`: p, W, L, c, E[R] with bootstrap CI (reuse `bootstrap_mean_ci`) and opportunity rate per any grouping (strategy × symbol, LIVE/REPLAY, …)
 - [ ] playbook and bot dimensions (with L802 / L902)
 - [x] "which lever moved" vs the previous version; LIVE and REPLAY separate
-- [ ] `expectancy_reports` table (replicated) + nightly build + API
-- [ ] PWA section on the Learning page (hypothetical label, th + en)
+- [x] `GET /engines/{id}/learning/expectancy`, computed on request (current vs previous period); a table only if needed
+- [x] PWA Learning page section (hypothetical label, th + en)
 - [x] tests (decomposition sums to the measured E[R])
 
 #### TAA-L802 — Playbook router (L20.1)
@@ -576,8 +576,8 @@ per-signal budget.
 - [x] detectors: early exit of winners, stop moved away, revenge trade, overtrading, off-plan trade, comfort-zone bias
 - [x] per pattern: count, share, hypothetical ΔR "as traded" vs "as planned"
 - [ ] engine records the stop history of manual positions (today `manual_trade_links` keeps only `sl_initial`), so `STOP_MOVED` can be judged
-- [ ] `behavior_reports` (user-scoped, replicated) + API + analytics page section
-- [ ] descriptive, non-judgmental th + en texts; catalogs test passes
+- [x] `GET /engines/{id}/learning/behavior`, computed on request + Learning page section
+- [x] descriptive, non-judgmental th + en texts; catalogs test passes
 - [x] tests
 
 ### Phase L9 — Squad mode (team of specialist bots)

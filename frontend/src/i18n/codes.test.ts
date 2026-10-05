@@ -1,4 +1,6 @@
 import attributionPy from '../../../app/analytics/attribution.py?raw';
+import learningBehaviorPy from '../../../app/learning/behavior.py?raw';
+import learningTimingPy from '../../../app/learning/timing.py?raw';
 import enumsPy from '../../../app/core/enums.py?raw';
 import lifecyclePy from '../../../app/advisory/lifecycle.py?raw';
 import shadowPy from '../../../app/advisory/shadow.py?raw';
@@ -44,6 +46,8 @@ import {
   VOLATILITY_STATES,
   ENGINE_ERRORS,
   ATTRIBUTION_CODES,
+  BEHAVIOR_PATTERNS,
+  FAILURE_MODES,
   EXIT_REASONS,
   GATE_STATUSES,
   GATES,
@@ -116,6 +120,8 @@ describe('code lists match the backend enums', () => {
     ['Flag', shadowPy, SHADOW_FLAGS],
     ['ExitReason', enumsPy, EXIT_REASONS],
     ['Code', attributionPy, ATTRIBUTION_CODES],
+    ['FailureMode', learningTimingPy, FAILURE_MODES],
+    ['Pattern', learningBehaviorPy, BEHAVIOR_PATTERNS],
     ['EngineErrorCode', enginesPy, ENGINE_ERRORS],
     ['BreakerName', circuitBreakerPy, BREAKER_NAMES],
     ['NotificationType', notificationsPy, NOTIFICATION_TYPES],
@@ -198,6 +204,8 @@ describe('code texts', () => {
     ['breakerState', BREAKER_STATES],
     ['breakerAction', BREAKER_ACTIONS],
     ['shadowFlag', SHADOW_FLAGS],
+    ['failureMode', FAILURE_MODES],
+    ['behaviorPattern', BEHAVIOR_PATTERNS],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {
       const i18n = createI18n(language);

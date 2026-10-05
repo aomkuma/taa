@@ -465,5 +465,21 @@
     "HIGH_SLIPPAGE": "High slippage on the fills",
     "WIN_OTHER": "Win (no specific pattern)",
     "LOSS_OTHER": "Loss (no specific pattern)"
+  },
+  "failureMode": {
+    "EARLY": "Too early: stopped out, then price reached the target",
+    "LATE": "Too late: entered after price had already run",
+    "STALL": "Not yet: price went nowhere until the trade was closed",
+    "TF_MISMATCH": "Timeframe mismatch: the bigger trend was right, the entry timeframe was not yet",
+    "WRONG": "Direction did not play out",
+    "OTHER": "Other exit",
+    "UNKNOWN": "Not enough data after the exit"
+  },
+  "behaviorPattern": {
+    "EARLY_EXIT": "Closed a winner before the plan's target",
+    "STOP_MOVED": "Moved the stop further away",
+    "REVENGE": "Traded again right after a loss, or with more at risk",
+    "OVERTRADING": "More trades in a day than the profile allows",
+    "OFF_PLAN": "Traded without a matching signal"
   }
 }

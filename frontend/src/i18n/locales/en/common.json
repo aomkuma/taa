@@ -71,6 +71,7 @@
     "risk": "Risk & controls",
     "analytics": "Analytics",
     "ai": "AI review",
+    "learning": "Learning",
     "backtests": "Backtests",
     "notifications": "Notifications",
     "account": "My account & plan",
@@ -2100,5 +2101,53 @@
     "outcome": "Afterwards (simulated): {{result}}, {{r}}R",
     "won": "won",
     "lost": "lost"
+  },
+  "learning": {
+    "intro": "What the system learns from closed trades: why losing trades lost (often the timing, not the direction), which part of the expected result moved, and patterns in your own manual trades. Descriptive only: nothing here changes a setting.",
+    "range": "({{low}}–{{high}}, n={{n}})",
+    "none": "No closed trades in this period yet.",
+    "fewTrades": "Too few trades",
+    "hypothetical": "Based on simulated (shadow or paper) trades unless stated otherwise; past results do not predict future results.",
+    "scope": {
+      "label": "Trades",
+      "SHADOW": "Signals (simulated)",
+      "PAPER": "Bot (paper)"
+    },
+    "timing": {
+      "title": "Why losing trades lost",
+      "losers": "{{losers}} of {{trades}} trades lost or stalled. Share of them by cause:",
+      "hitRate": "Reached the target first",
+      "baseline": "random walk: {{value}}",
+      "vindicated": "Stopped out, then reached the target",
+      "winnerMae": "Typical dip of winners before the target",
+      "barsToTarget": "Typical time to target",
+      "bars": "{{n}} bars",
+      "note": "Follow-up after each exit: {{hours}} h of stored bars. Only a clear difference from the random-walk value is evidence."
+    },
+    "expectancy": {
+      "title": "Expected result per trade",
+      "result": "Average {{value}} per trade (range {{low}} to {{high}}, n={{n}}) = win share × average win − loss share × average loss − costs.",
+      "p": "Win share (before costs)",
+      "w": "Average win",
+      "l": "Average loss",
+      "c": "Average costs",
+      "change": "Against the previous period: {{total}}, mostly from {{lever}}.",
+      "lever": {
+        "p": "the win share",
+        "W": "the size of wins",
+        "L": "the size of losses",
+        "c": "costs"
+      },
+      "group": "Strategy · symbol"
+    },
+    "behavior": {
+      "title": "Your manual trades",
+      "none": "No closed manual trades in this period.",
+      "unknown": "not measurable yet",
+      "count": "{{hits}} of {{considered}}",
+      "delta": "(plan − as traded: {{r}})",
+      "comfort": "Difference between the asset classes you traded and those the signals offered: {{value}}",
+      "note": "A description, not a grade. \"Plan − as traded\" compares with following the signal's plan (or not taking the trade); it is hypothetical."
+    }
   }
 }
