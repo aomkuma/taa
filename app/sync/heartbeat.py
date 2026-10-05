@@ -103,6 +103,18 @@ class RiskLimits(BaseModel):
     effective: GovernedLimits
 
 
+class ManualLink(BaseModel):
+    """The signal a manual position followed, as the engine matched it (TAA-1006, PLAN §A34)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    confidence: Literal["HIGH", "LIKELY", "UNMATCHED"]
+    strategy: str | None = Field(default=None, max_length=64)
+    decision_id: str | None = Field(default=None, max_length=64)
+    opportunity_id: str | None = Field(default=None, max_length=64)
+    distance_r: float | None = Field(default=None, ge=0, allow_inf_nan=False)
+
+
 MAX_FOREIGN_POSITIONS = 50
 
 
@@ -127,6 +139,7 @@ class ForeignPosition(BaseModel):
     comment: str = Field(max_length=64)
     risk_to_stop: float | None = Field(ge=0, allow_inf_nan=False)  # None: no stop, or not measurable
     counted: bool  # whether it counts toward the bot's limits (risk.foreign_positions_policy)
+    link: ManualLink | None = None  # since TAA-1006
 
 
 class BrokerAccount(BaseModel):

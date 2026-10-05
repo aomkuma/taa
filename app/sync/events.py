@@ -62,6 +62,7 @@ from app.storage.models import (
     DecisionRecordRow,
     EvidenceModelVersionRow,
     KillSwitchEvent,
+    ManualTradeLinkRow,
     OpportunityRow,
     OrderIntentRow,
     PaperAccountRow,
@@ -240,6 +241,7 @@ REPLICAS: tuple[ReplicaSpec, ...] = (
         throttle_seconds=SNAPSHOT_THROTTLE_SECONDS,
     ),
     ReplicaSpec("opportunity", OpportunityRow),
+    ReplicaSpec("manual_trade_link", ManualTradeLinkRow),
     ReplicaSpec("shadow_trade", ShadowTradeRow, priority=Priority.STATE, quiet=("cursor", "updated_at")),
     ReplicaSpec("calibration_version", CalibrationTableRow, priority=Priority.STATE),
     ReplicaSpec(

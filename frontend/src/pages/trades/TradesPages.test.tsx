@@ -69,7 +69,32 @@ describe('manual positions', () => {
   it('lists the account’s manual positions read-only and how they count toward the limits', async () => {
     setup({
       'GET /engines/e1/status': withAccount({
-        foreign_positions: [MANUAL, { ...MANUAL, ticket: 4243, sl: null, risk_to_stop: null, side: 'SELL' }],
+        foreign_positions: [
+          {
+            ...MANUAL,
+            link: {
+              confidence: 'HIGH',
+              strategy: 'setup_candle_reversal',
+              decision_id: 'd2',
+              opportunity_id: null,
+              distance_r: 0.28,
+            },
+          },
+          {
+            ...MANUAL,
+            ticket: 4243,
+            sl: null,
+            risk_to_stop: null,
+            side: 'SELL',
+            link: {
+              confidence: 'UNMATCHED',
+              strategy: null,
+              decision_id: null,
+              opportunity_id: null,
+              distance_r: null,
+            },
+          },
+        ],
         effective_leverage: 118.3,
         max_effective_leverage: 10,
       }),
@@ -83,6 +108,11 @@ describe('manual positions', () => {
     expect(rows[0]).toHaveTextContent('#4242');
     expect(rows[0]).toHaveTextContent(/\+USD\s97\.50/); // profit + swap
     expect(rows[1]).toHaveTextContent('none');
+    // the signal each one followed, as the engine matched it (TAA-1006)
+    const follows = within(rows[0] as HTMLElement).getByRole('link', { name: /Follows the .* signal/ });
+    expect(follows).toHaveAttribute('href', '/decisions?profile=ALL&id=d2');
+    expect(rows[0]).toHaveTextContent('(sure)');
+    expect(rows[1]).toHaveTextContent('Not from a signal: your own idea');
     expect(
       within(manual).getByText(/count toward the bot's limits: USD\s100\.00 of open risk/),
     ).toBeInTheDocument();

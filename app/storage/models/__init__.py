@@ -3,6 +3,7 @@
 from app.storage.models.advisory import (
     CalibrationTableRow,
     EvidenceModelVersionRow,
+    ManualTradeLinkRow,
     OpportunityRow,
     ShadowTradeRow,
     SuitabilitySnapshotRow,
@@ -82,6 +83,7 @@ __all__ = [
     "IngestNonceRow",
     "KillSwitchEvent",
     "LoginThrottleRow",
+    "ManualTradeLinkRow",
     "NotificationPrefsRow",
     "NotificationRow",
     "OpportunityAlertRow",

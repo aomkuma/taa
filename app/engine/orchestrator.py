@@ -63,6 +63,7 @@ from app.engine.decision_engine import (
     DecisionStore,
     SystemHealth,
 )
+from app.engine.manual_links import ManualTradeLinker, link_dict
 from app.engine.order_manager import OrderManager
 from app.engine.paper import LiveRates, PaperExecution
 from app.engine.position_manager import PositionManager
@@ -88,6 +89,7 @@ from app.risk.loss_tracker import LossStatus, LossTracker
 from app.risk.mode_gates import GateResult, evaluate_gate
 from app.storage.audit import AuditLog
 from app.storage.database import Database
+from app.storage.models import ManualTradeLinkRow
 from app.storage.repositories import EngineStateRepository, RunRepository
 from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
@@ -177,9 +179,9 @@ class Engine:
         self.commands: CommandProcessor | None = None  # remote commands, with sync
         self.candle_stream: CandleStreamer | None = None  # closed bars to the cloud, with sync (TAA-706)
         self.heartbeats: HeartbeatEmitter | None = None  # liveness + market state to the cloud (TAA-705)
-        self.risk_limits: RiskLimitSelector | None = (
-            None  # the owner's profile inside the local cage (TAA-710)
-        )
+        # the owner's profile inside the local cage (TAA-710)
+        self.risk_limits: RiskLimitSelector | None = None
+        self.manual_links = ManualTradeLinker(db, clock)  # manual MT5 trades matched to signals (TAA-1006)
         self._last_quotes: dict[str, Quote] = {}
         self._last_loss: LossStatus | None = None  # the health step's, for the cloud heartbeat (TAA-904)
         self._currency = ""
@@ -1005,6 +1007,12 @@ class Engine:
             return None
         applied = None if self.risk_limits is None else self.risk_limits.current()
         risk = self.config.risk if applied is None else applied.effective
+        foreign = exposure.foreign[:MAX_FOREIGN_POSITIONS]
+        try:
+            links = self.manual_links.observe([p.position for p in foreign])
+        except Exception:  # telemetry boundary: an unlinked position is still shown
+            log.exception("manual trade links failed")
+            links = {}
 
         def num(value: float, digits: int = 2) -> float | None:
             return round(value, digits) if math.isfinite(value) else None
@@ -1030,8 +1038,12 @@ class Engine:
             "max_effective_leverage": risk.max_effective_leverage,
             "broker_account": self._broker_account() if backend.name == "paper" else None,
             "foreign_positions": [
-                foreign_position(p, counted=risk.foreign_positions_policy == "count")
-                for p in exposure.foreign[:MAX_FOREIGN_POSITIONS]
+                foreign_position(
+                    p,
+                    counted=risk.foreign_positions_policy == "count",
+                    link=links.get(p.position.identifier or p.position.ticket),
+                )
+                for p in foreign
             ],
             "limits": {
                 "daily_loss_percent": risk.max_daily_loss_percent,
@@ -1182,7 +1194,9 @@ class Engine:
             self.bundle.client.shutdown()
 
 
-def foreign_position(measured: PositionRisk, *, counted: bool) -> dict[str, Any]:
+def foreign_position(
+    measured: PositionRisk, *, counted: bool, link: ManualTradeLinkRow | None = None
+) -> dict[str, Any]:
     """A manual position for the heartbeat (``ForeignPosition``): what MT5 reports plus its risk to stop."""
     p = measured.position
 
@@ -1205,4 +1219,5 @@ def foreign_position(measured: PositionRisk, *, counted: bool) -> dict[str, Any]
         "comment": p.comment[:64],
         "risk_to_stop": None if measured.risk_to_stop is None else round(measured.risk_to_stop, 2),
         "counted": counted,
+        "link": None if link is None else link_dict(link),
     }

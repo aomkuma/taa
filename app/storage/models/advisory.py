@@ -225,3 +225,29 @@ class EvidenceModelVersionRow(EngineTagged, Base):
     active: Mapped[list[float]] = mapped_column(JSONType)  # share of training rows with the feature > 0
     l2: Mapped[float] = mapped_column(Float)
     n: Mapped[int] = mapped_column(Integer)
+
+
+class ManualTradeLinkRow(EngineKeyed, Base):
+    """Which signal a manual MT5 position followed (PLAN §A34, TAA-1006), matched by the engine when it
+    first sees the position and never rewritten. ``confidence`` HIGH / LIKELY / UNMATCHED; the owner's
+    override lives in the cloud (``manual_trade_overrides``)."""
+
+    __tablename__ = "manual_trade_links"
+
+    position_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    ticket: Mapped[int] = mapped_column(BigInteger)
+    symbol: Mapped[str] = mapped_column(String(32), index=True)
+    side: Mapped[str] = mapped_column(String(4))
+    volume: Mapped[float] = mapped_column(Float)
+    price_open: Mapped[float] = mapped_column(Float)
+    opened_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    confidence: Mapped[str] = mapped_column(String(16))
+    signal_key: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    strategy: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    decision_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    opportunity_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    distance_r: Mapped[float | None] = mapped_column(Float, nullable=True)
+    candidates: Mapped[int] = mapped_column(Integer, default=0)
+    rule_version: Mapped[str] = mapped_column(String(8))
+    matched_at: Mapped[datetime] = mapped_column(UTCDateTime())

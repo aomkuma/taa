@@ -365,7 +365,13 @@
       "noStop": "none",
       "counted": "Read-only: the bot never manages or closes these. They count toward the bot's limits: {{risk}} of open risk, plus their leverage.",
       "notCounted": "Read-only: the bot never manages or closes these, and they do not count toward its limits.",
-      "noStopWarning": "{{n}} position(s) without a stop: their risk is unknown, so the bot refuses new entries while they are open."
+      "noStopWarning": "{{n}} position(s) without a stop: their risk is unknown, so the bot refuses new entries while they are open.",
+      "link": {
+        "follows": "Follows the {{strategy}} signal",
+        "high": "sure",
+        "likely": "likely; another signal was also close",
+        "none": "Not from a signal: your own idea"
+      }
     }
   },
   "decisions": {

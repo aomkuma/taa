@@ -2393,8 +2393,9 @@ PAPER → DEMO → LIVE path. So the engine must **match manual trades to signal
   (default 0.5 R). A fill far from the signal's entry is not that signal's trade.
 - **Score:** closeness in price (60 %) and in time (40 %).
   - The best candidate wins.
-  - Confidence is **HIGH** when it is the only candidate within tolerance and its price is within 0.25 R.
-  - Otherwise it is **LIKELY**.
+  - Confidence is **HIGH** when it is the only signal that qualifies, and **LIKELY** when several do (the
+    best one is kept). A manual entry a few minutes after the signal is often 0.2–0.3 R away from the
+    signal's price, so price closeness only ranks; it does not lower the confidence.
 - **Ties:** an EXECUTION decision and an opportunity from the same strategy, bar and side are one signal
   (the opportunity id carries the idempotency key); they are not counted twice.
 - **No candidate:** UNMATCHED, which is a manual idea of the owner's own.
@@ -2422,6 +2423,23 @@ them. A link changes labels and statistics only, never trading.
 - Two signals within tolerance → the closer one wins as LIKELY.
 - A link is written once and survives restarts.
 - An override wins over the automatic match.
+
+- **(TAA-1006 decisions, first part)**
+  - The pure matcher is `app/analytics/manual_match.py` (`RULE_VERSION` "1"). The engine-side
+    `ManualTradeLinker` (`app/engine/manual_links.py`) reads candidates from the engine's own database,
+    covering accepted EXECUTION decisions and opportunities issued within two days before the fill.
+  - The linker runs inside the heartbeat's account snapshot (a telemetry boundary: if it fails, the
+    position is still shown, just without a link). It writes `manual_trade_links` (migration 0034,
+    replicated as `manual_trade_link`) once per position id.
+  - An EXECUTION candidate's window runs from the signal's `data_timestamp_utc` to its `expires_at_utc`.
+    An opportunity's window runs from `bar_close_at` to the later of `signal_expires_at` and `valid_until`.
+  - Checked on the real engine database: the owner's 2026-10-05 GBPUSD SELL (1.32167 at 15:19:57 UTC)
+    linked HIGH to the bot's `setup_candle_reversal` decision (entry 1.32198, 0.28 R away, the only
+    candidate).
+  - Positions page: each manual position shows "Follows the X signal (sure / likely)" with a link to the
+    opportunity, or to the decision when there is no opportunity, or "Not from a signal: your own idea".
+  - Still open in TAA-1006: the owner's override (a cloud-side table and a dialog) and closed manual trades
+    in trade history and accuracy.
 
 ## A22. Delivery plan
 

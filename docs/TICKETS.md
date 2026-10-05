@@ -1601,12 +1601,12 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1006 — (rev. 6) Manual trades matched to signals
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 1001, 6B2, 904
 
-- [ ] pure matcher: execution decisions + opportunities, same symbol/side, time window + grace, price within `match_tolerance_r`, score, HIGH / LIKELY / UNMATCHED
+- [x] pure matcher: execution decisions + opportunities, same symbol/side, time window + grace, price within `match_tolerance_r`, score, HIGH / LIKELY / UNMATCHED
 - [ ] `manual_trade_links` table (migration, replicated), written once per position; owner override (confirm / other signal / own idea), audited
-- [ ] engine: match on the account snapshot; heartbeat `foreign_positions[].link`
+- [x] engine: match on the account snapshot; heartbeat `foreign_positions[].link`
 - [ ] PWA: "follows signal X (likely)" on Positions; override dialog; th/en keys
 - [ ] closed manual trades with their link in trade history and accuracy (signal vs bot vs me)
 - [ ] tests (incl. the 2026-10-05 GBPUSD case)

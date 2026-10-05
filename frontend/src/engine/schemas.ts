@@ -50,6 +50,17 @@ export const ForeignPositionSchema = z.object({
   risk_to_stop: z.number().nullable(),
   /** Whether it counts toward the bot's limits (`risk.foreign_positions_policy`). */
   counted: z.boolean(),
+  /** TAA-1006: the signal it followed, as the engine matched it (`ManualLink`); absent from older engines. */
+  link: z
+    .object({
+      confidence: z.enum(['HIGH', 'LIKELY', 'UNMATCHED']),
+      strategy: z.string().nullable(),
+      decision_id: z.string().nullable(),
+      opportunity_id: z.string().nullable(),
+      distance_r: z.number().nullable(),
+    })
+    .nullable()
+    .optional(),
 });
 export type ForeignPosition = z.infer<typeof ForeignPositionSchema>;
 

@@ -123,6 +123,7 @@ def test_manual_positions_reach_the_dashboard(tmp_path: Path) -> None:
     assert manual["ticket"] == 4242 and manual["side"] == "SELL" and manual["sl"] == 1.105
     assert manual["tp"] is None and manual["counted"] is True and manual["comment"] == "by hand"
     assert manual["risk_to_stop"] == pytest.approx(25.0, rel=0.05)  # 50 points on 0.05 lot
+    assert manual["link"]["confidence"] == "UNMATCHED"  # no signal to follow here (TAA-1006)
     assert account["open_risk"] >= manual["risk_to_stop"] and account["effective_leverage"] > 0
     assert account["max_effective_leverage"] == h.engine.config.risk.max_effective_leverage
     broker = account["broker_account"]  # PAPER: the real MT5 account next to the simulated book
