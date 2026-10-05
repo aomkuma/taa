@@ -150,7 +150,11 @@
       "losingStreak": "Consecutive losses",
       "unknownRisk": "{{n}} position(s) with unknown risk (no stop loss or no symbol data)",
       "asOf": "As of {{time}}",
-      "leverage": "Effective leverage"
+      "leverage": "Effective leverage",
+      "paperBook": "The bot's PAPER book: a simulated account that started from its own balance and books only the bot's simulated trades.",
+      "mt5Title": "MT5 account (real demo account)",
+      "mt5Leverage": "Leverage",
+      "mt5Note": "Your actual MT5 account, including manual trades. The ranking and your alerts' lot sizes use this one."
     },
     "positions": {
       "title": "Open positions",

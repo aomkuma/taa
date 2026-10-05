@@ -103,6 +103,25 @@ describe('manual positions', () => {
     expect(await card('Manual positions on the MT5 account')).toHaveTextContent('BTCUSD');
   });
 
+  it('names the simulated paper book and shows the real MT5 account next to it', async () => {
+    setup({
+      'GET /engines/e1/status': withAccount({
+        broker_account: {
+          currency: 'USD',
+          balance: 1105.05,
+          equity: 1105.05,
+          margin_free: 1100,
+          leverage: 200,
+        },
+      }),
+    });
+    renderShell('/');
+    expect(await screen.findByText(/The bot's PAPER book: a simulated account/)).toBeInTheDocument();
+    const mt5 = await card('MT5 account (real demo account)');
+    expect(mt5).toHaveTextContent(/USD\s1,105\.05/);
+    expect(mt5).toHaveTextContent('1:200');
+  });
+
   it('says when the engine does not report them yet', async () => {
     setup({ 'GET /engines/e1/status': withAccount({}) });
     renderShell('/positions');

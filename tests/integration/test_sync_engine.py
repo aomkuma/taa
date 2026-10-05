@@ -118,4 +118,6 @@ def test_manual_positions_reach_the_dashboard(tmp_path: Path) -> None:
     assert manual["risk_to_stop"] == pytest.approx(25.0, rel=0.05)  # 50 points on 0.05 lot
     assert account["open_risk"] >= manual["risk_to_stop"] and account["effective_leverage"] > 0
     assert account["max_effective_leverage"] == h.engine.config.risk.max_effective_leverage
+    broker = account["broker_account"]  # PAPER: the real MT5 account next to the simulated book
+    assert broker["currency"] == "USD" and broker["equity"] > 0 and broker["leverage"] > 0
     HeartbeatPayload.model_validate(h.engine.cloud_heartbeat())  # the wire schema accepts it

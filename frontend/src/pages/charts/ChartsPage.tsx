@@ -34,7 +34,7 @@ import {
 
 const BARS = 300;
 const DEFAULT_INDICATORS: readonly Indicator[] = ['ema', 'rsi'];
-/** The engine's heartbeat carries the forming bar every 10 s; the chart follows it. */
+/** The engine's heartbeat carries the forming bar every second (`sync.heartbeat_seconds`); the chart follows it. */
 const CANDLE_REFRESH_MS = 10_000;
 
 const isTimeframe = (value: string | null): value is ChartTimeframe =>

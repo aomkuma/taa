@@ -102,6 +102,19 @@ class ForeignPosition(BaseModel):
     counted: bool  # whether it counts toward the bot's limits (risk.foreign_positions_policy)
 
 
+class BrokerAccount(BaseModel):
+    """The MT5 account itself while the bot trades a simulated PAPER book: the two equities differ by design,
+    and the PWA shows both, named (the ranking sizes with this one)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    currency: str = Field(max_length=8)
+    balance: float = Field(allow_inf_nan=False)
+    equity: float = Field(allow_inf_nan=False)
+    margin_free: float = Field(allow_inf_nan=False)
+    leverage: int = Field(ge=0)
+
+
 class AccountSnapshot(BaseModel):
     """The traded account at the last health step (TAA-904): the paper book in PAPER, the broker account in
     DEMO. P/L figures follow the loss tracker (flow-adjusted, broker day and ISO week); open risk is the risk
@@ -130,6 +143,7 @@ class AccountSnapshot(BaseModel):
     effective_leverage: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     max_effective_leverage: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     foreign_positions: list[ForeignPosition] | None = Field(default=None, max_length=MAX_FOREIGN_POSITIONS)
+    broker_account: BrokerAccount | None = None  # PAPER only: the real MT5 account next to the paper book
 
 
 class HeartbeatPayload(BaseModel):

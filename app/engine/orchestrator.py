@@ -994,6 +994,7 @@ class Engine:
             "consecutive_losses": status.consecutive_losses,
             "effective_leverage": num(exposure.effective_leverage),
             "max_effective_leverage": risk.max_effective_leverage,
+            "broker_account": self._broker_account() if backend.name == "paper" else None,
             "foreign_positions": [
                 foreign_position(p, counted=risk.foreign_positions_policy == "count")
                 for p in exposure.foreign[:MAX_FOREIGN_POSITIONS]
@@ -1005,6 +1006,20 @@ class Engine:
                 "heat_percent": risk.max_total_open_risk_percent,
                 "consecutive_losses": risk.max_consecutive_losses,
             },
+        }
+
+    def _broker_account(self) -> dict[str, Any] | None:
+        """The real MT5 account's figures while the bot trades a PAPER book (None if unreadable)."""
+        try:
+            a = self.gateway.account()
+        except TaaError:
+            return None
+        return {
+            "currency": a.currency,
+            "balance": a.balance,
+            "equity": a.equity,
+            "margin_free": a.margin_free,
+            "leverage": a.leverage,
         }
 
     def _final_cloud_heartbeat(self) -> None:

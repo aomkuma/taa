@@ -147,11 +147,34 @@ export function AccountCard() {
       title={t('dashboard.account.title')}
       action={stale ? <StaleBadge since={beat?.received_at ?? null} /> : undefined}
     >
+      {account.backend === 'paper' && (
+        <p className="mb-2 text-xs text-slate-500">{t('dashboard.account.paperBook')}</p>
+      )}
       <dl className="mb-4">
         <Row label={t('dashboard.account.equity')}>{format.money(account.equity, currency)}</Row>
         <Row label={t('dashboard.account.balance')}>{format.money(account.balance, currency)}</Row>
         <Row label={t('dashboard.account.marginFree')}>{format.money(account.margin_free, currency)}</Row>
       </dl>
+      {account.broker_account && (
+        <section
+          aria-label={t('dashboard.account.mt5Title')}
+          className="mb-4 rounded border border-slate-200 p-3 dark:border-slate-800"
+        >
+          <h3 className="mb-1 text-sm font-medium">{t('dashboard.account.mt5Title')}</h3>
+          <dl>
+            <Row label={t('dashboard.account.equity')}>
+              {format.money(account.broker_account.equity, account.broker_account.currency)}
+            </Row>
+            <Row label={t('dashboard.account.balance')}>
+              {format.money(account.broker_account.balance, account.broker_account.currency)}
+            </Row>
+            <Row label={t('dashboard.account.mt5Leverage')}>
+              1:{format.number(account.broker_account.leverage)}
+            </Row>
+          </dl>
+          <p className="mt-1 text-xs text-slate-500">{t('dashboard.account.mt5Note')}</p>
+        </section>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <Gauge
           label={t('dashboard.account.dayPnl')}

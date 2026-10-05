@@ -74,6 +74,17 @@ export const AccountSnapshotSchema = z.looseObject({
   effective_leverage: z.number().nonnegative().nullable().optional(),
   max_effective_leverage: z.number().positive().nullable().optional(),
   foreign_positions: z.array(ForeignPositionSchema).nullable().optional(),
+  /** PAPER only: the real MT5 account next to the simulated book (the two equities differ by design). */
+  broker_account: z
+    .object({
+      currency: z.string(),
+      balance: z.number(),
+      equity: z.number(),
+      margin_free: z.number(),
+      leverage: z.number().int(),
+    })
+    .nullable()
+    .optional(),
   limits: z.looseObject({
     daily_loss_percent: z.number().positive(),
     weekly_loss_percent: z.number().positive(),
