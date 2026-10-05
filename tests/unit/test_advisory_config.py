@@ -118,6 +118,24 @@ class TestRequirements:
         assert via_cloud == local_requirements(config, **kwargs)
         assert via_cloud == compute_requirements([local_preferences(config)], config, **kwargs)
 
+    def test_only_the_owners_bounded_params_reach_the_scan(self) -> None:
+        config = AppConfig()
+        owner, subscriber = local_preferences(config), local_preferences(config)
+        owner.theories.params["fib.retracement"] = {"tol_atr": 0.5}
+        subscriber.theories.params["fib.retracement"] = {"tol_atr": 1.5}
+        evidence, strategies = evidence_registry(), default_registry()
+        wire = advisory_config([owner, subscriber], evidence=evidence, strategies=strategies)
+        assert wire.params == {"fib.retracement": {"tol_atr": 0.5}}  # the engine owner comes first
+        bad = remote(params={"fib.retracement": {"tol_atr": 0.5}, "fib.cluster": {"tol_atr": 9}, "x.y": {}})
+        req = requirements_from_config(bad, config, ranked=[], evidence=evidence, strategies=strategies)
+        assert req.params == {"fib.retracement": {"tol_atr": 0.5}}  # out of bounds or unknown: skipped
+        plain = requirements_from_config(
+            remote(), config, ranked=[], evidence=evidence, strategies=strategies
+        )
+        assert req.version != plain.version  # a parameter change rebuilds the scanner's plan
+        plan = evidence.plan_from_config(config.evidence, only=req.detectors, overrides=req.params)
+        assert plan.params["fib.retracement"].tol_atr == 0.5  # type: ignore[attr-defined]
+
     def test_the_version_follows_the_content(self) -> None:
         a, b = remote(), remote(auto_top_n=5)
         assert a.version != b.version and remote().version == a.version
@@ -129,6 +147,7 @@ class TestRequirements:
             {"lifetime_bars": 0},
             {"favourites": ["X" * 33]},
             {"lists": {"a": ["S"] * 501}},
+            {"params": {"": {}}},
             {"x": 1},
         ],
     )

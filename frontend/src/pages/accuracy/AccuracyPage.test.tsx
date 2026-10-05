@@ -134,7 +134,7 @@ describe('signal accuracy page', () => {
     const forex = within(theories).getByRole('region', { name: 'Forex majors M15' });
     expect(within(forex).getByText('Fibonacci')).toBeInTheDocument();
     await user.click(within(theories).getByRole('button', { name: 'Detectors' }));
-    expect(within(theories).getAllByText('fib.retracement')).not.toHaveLength(0);
+    expect(within(theories).getAllByText('Fibonacci retracement')).not.toHaveLength(0);
   });
 
   it('explains a missing calibration and shows only my alerts on the market feed', async () => {

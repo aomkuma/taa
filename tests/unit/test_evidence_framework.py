@@ -298,6 +298,19 @@ class TestRegistry:
                 registry.plan_from_config(
                     EvidenceConfig(detectors={"test.cross_up": DetectorSettings(params=bad)})
                 )
+
+    def test_overrides_lay_over_the_config_params(self) -> None:
+        registry = DetectorRegistry([CrossUp(), Counting()])
+        cfg = EvidenceConfig(
+            detectors={"test.cross_up": DetectorSettings(params={"n": 8, "max_age_bars": 7})}
+        )
+        plan = registry.plan_from_config(cfg, overrides={"test.cross_up": {"n": 5}})
+        assert plan.params["test.cross_up"].n == 5  # type: ignore[attr-defined]
+        assert plan.params["test.cross_up"].max_age_bars == 7  # kept from config.yaml
+        off = EvidenceConfig(detectors={"test.counting": DetectorSettings(enabled=False)})
+        assert (
+            "test.counting" not in registry.plan_from_config(off, overrides={"test.counting": {}}).outputs
+        )  # an override never enables a detector
         with pytest.raises(ConfigError, match="unknown detector"):
             registry.plan_from_config(EvidenceConfig(detectors={"test.typo": DetectorSettings()}))
 

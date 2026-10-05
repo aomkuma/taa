@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
 
 import { useEngine } from '@/engine/context';
-import { translateCode } from '@/i18n/codes';
+import { evidenceName, translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { SeriesChart } from '@/pages/backtests/SeriesChart';
 import { Card } from '@/pages/dashboard/cards';
@@ -573,7 +573,9 @@ function TheoriesTab({ section }: { section: Section }) {
                     return (
                       <tr key={row.theory}>
                         <td className="px-2 py-1">
-                          {parts.detector ?? translateCode(i18n, 'family', parts.family)}
+                          {parts.detector !== null
+                            ? evidenceName(i18n, parts.detector)
+                            : translateCode(i18n, 'family', parts.family)}
                           {parts.detector !== null && (
                             <span className="ml-1 text-xs text-slate-500">
                               {translateCode(i18n, 'family', parts.family)}

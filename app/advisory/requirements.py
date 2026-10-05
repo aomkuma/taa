@@ -10,7 +10,11 @@ need:
   only narrow it further to what the local config enables);
 - **strategies:** the strategies enabled in ``config.yaml`` ∪ the pattern setups any user lets alert;
 - **lifetime_bars:** the longest signal lifetime any user wants (market windows use it; a user's own shorter
-  lifetime is applied by the personalizer).
+  lifetime is applied by the personalizer);
+- **params:** bounded detector parameters (TAA-920) from the engine **owner's** theory settings only (the
+  first user): the scan is shared by everyone the engine serves, so a subscriber's parameters cannot change
+  it. They are laid over ``config.yaml``'s params key by key; invalid ones are logged and skipped, and the
+  local config still decides which detectors may run at all.
 
 The ``version`` digest changes whenever the content does, so the scanner rebuilds its plan only then.
 
@@ -25,8 +29,8 @@ from __future__ import annotations
 
 import json
 import logging
-from collections.abc import Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
 from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -34,6 +38,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.advisory.preferences import AdvisoryPreferences, WatchlistKind, local_preferences
 from app.advisory.universe import monitored_set
 from app.config import AppConfig
+from app.core.errors import TaaError
 from app.core.ids import stable_hash
 from app.evidence.registry import DetectorRegistry
 from app.strategy.registry import StrategyRegistry
@@ -48,6 +53,7 @@ class ComputeRequirements:
     detectors: frozenset[str]
     strategies: frozenset[str]
     lifetime_bars: int = 2
+    params: Mapping[str, Mapping[str, Any]] = field(default_factory=dict)  # detector id → raw params
 
     @property
     def version(self) -> str:
@@ -56,6 +62,7 @@ class ComputeRequirements:
             "d": sorted(self.detectors),
             "t": sorted(self.strategies),
             "l": self.lifetime_bars,
+            "p": {k: dict(v) for k, v in sorted(self.params.items())},
         }
         return stable_hash(json.dumps(payload, separators=(",", ":")), length=16)
 
@@ -81,6 +88,9 @@ class AdvisoryConfig(BaseModel):
         default=[], max_length=200
     )
     lifetime_bars: int = Field(default=2, ge=1, le=50)
+    params: dict[Annotated[str, Field(min_length=1, max_length=64)], dict[str, Any]] = Field(
+        default={}, max_length=200
+    )
 
     @field_validator("lists")
     @classmethod
@@ -121,6 +131,7 @@ def advisory_config(
         "detectors": sorted(detectors),
         "pattern_strategies": sorted(allowed_setups),
         "lifetime_bars": max((p.alerts.signal_lifetime_bars for p in users), default=2),
+        "params": dict(users[0].theories.params) if users else {},  # the engine owner's only
     }
     return AdvisoryConfig(version=content_version(content), **content)
 
@@ -151,11 +162,22 @@ def requirements_from_config(
     if unknown:
         log.warning("advisory config %s names unknown detectors/setups, skipped: %s", remote.version, unknown)
     trading = {item.name for item in config.strategies.items if item.enabled}
+    params: dict[str, dict[str, Any]] = {}
+    for det_id, raw in sorted(remote.params.items()):
+        local = config.evidence.detectors.get(det_id)
+        # bounded by the detector's Params model, merged as the scanner merges; a bad one keeps config.yaml's
+        try:
+            evidence.parse_params(det_id, {**(local.params if local else {}), **raw})
+        except TaaError as exc:
+            log.warning("advisory config %s: detector params %s skipped: %s", remote.version, det_id, exc)
+            continue
+        params[det_id] = dict(raw)
     return ComputeRequirements(
         tuple(symbols),
         frozenset(set(remote.detectors) & known),
         frozenset(trading | (set(remote.pattern_strategies) & setups)),
         remote.lifetime_bars,
+        params,
     )
 
 

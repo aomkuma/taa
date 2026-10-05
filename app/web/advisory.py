@@ -21,6 +21,7 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 from typing import Any
 
+from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.advisory.calibration import latest_version, load_version
@@ -182,6 +183,28 @@ def engine_advisory_config(
     return AdvisoryConfig(version=content_version(content), **content)
 
 
+def param_bounds(model: type[BaseModel]) -> dict[str, dict[str, Any]]:
+    """The parameters a user may change (TAA-920): numbers with both bounds, and switches. Strings, lists
+    and unbounded numbers stay ``config.yaml`` matters."""
+    out: dict[str, dict[str, Any]] = {}
+    for name, prop in model.model_json_schema().get("properties", {}).items():
+        kind = prop.get("type")
+        if kind == "boolean":
+            out[name] = {"type": kind}
+        elif kind in ("integer", "number"):
+            low = prop.get("minimum", prop.get("exclusiveMinimum"))
+            high = prop.get("maximum", prop.get("exclusiveMaximum"))
+            if low is not None and high is not None:
+                out[name] = {
+                    "type": kind,
+                    "min": low,
+                    "max": high,
+                    "min_exclusive": "exclusiveMinimum" in prop,
+                    "max_exclusive": "exclusiveMaximum" in prop,
+                }
+    return out
+
+
 def detector_catalog() -> dict[str, Any]:
     evidence, strategies = catalogs()
     detectors = []
@@ -195,6 +218,7 @@ def detector_catalog() -> dict[str, Any]:
                 "tier": det.tier.value,
                 "depends_on": list(det.depends_on),
                 "params": evidence.default_params(det_id).model_dump(mode="json"),
+                "bounds": param_bounds(det.Params),
             }
         )
     return {"detectors": detectors, "pattern_strategies": pattern_setups(strategies)}

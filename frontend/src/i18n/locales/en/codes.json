@@ -354,5 +354,98 @@
     "ENTRY_FALLBACK": "signal price used",
     "SWAP_UNKNOWN": "swap unknown",
     "PNL_UNAVAILABLE": "money not valued"
+  },
+  "evidence": {
+    "fib": {
+      "retracement": "Fibonacci retracement",
+      "extension_level": "Fibonacci extension level",
+      "cluster": "Fibonacci cluster",
+      "extension": "Fibonacci extension targets",
+      "golden_zone": "Fibonacci golden-zone rejection"
+    },
+    "levels": {
+      "sr_zone": "Support/resistance zone",
+      "round_number": "Round number",
+      "pivot_points": "Pivot point",
+      "prev_high_low": "Previous period high/low",
+      "sr_breakout": "S/R zone breakout"
+    },
+    "structure": {
+      "trendline": "Trendline / channel",
+      "bos_choch": "Break of structure / change of character",
+      "dow": "Dow structure"
+    },
+    "trend": {
+      "adx_strength": "ADX trend strength",
+      "ma_alignment": "Moving-average trend"
+    },
+    "candle": {
+      "doji": "Doji",
+      "engulfing": "Engulfing",
+      "hammer": "Hammer / pin bar",
+      "harami": "Harami",
+      "inside_outside": "Inside/outside bar",
+      "marubozu": "Marubozu",
+      "shooting_star": "Shooting star",
+      "star": "Morning/evening star",
+      "three": "Three soldiers/crows",
+      "tweezer": "Tweezer"
+    },
+    "chart": {
+      "cup_handle": "Cup and handle",
+      "double": "Double top/bottom",
+      "flag": "Flag/pennant",
+      "head_shoulders": "Head and shoulders",
+      "rectangle": "Rectangle",
+      "triangle": "Triangle",
+      "triple": "Triple top/bottom",
+      "wedge": "Wedge"
+    },
+    "elliott": {
+      "wave": "Elliott wave count (heuristic)"
+    },
+    "harmonic": {
+      "abcd": "AB=CD",
+      "bat": "Bat",
+      "butterfly": "Butterfly",
+      "crab": "Crab",
+      "cypher": "Cypher",
+      "gartley": "Gartley",
+      "shark": "Shark"
+    },
+    "ichimoku": {
+      "chikou": "Chikou confirmation",
+      "kumo": "Ichimoku cloud",
+      "tk_cross": "Tenkan/Kijun cross"
+    },
+    "momentum": {
+      "cci_extreme": "CCI extreme",
+      "cross": "MACD/Stochastic cross",
+      "divergence": "Divergence",
+      "ob_os": "Overbought/oversold exit"
+    },
+    "sessions": {
+      "asian_breakout": "Asian-range breakout",
+      "open_breakout": "Opening-range breakout"
+    },
+    "smc": {
+      "fvg": "Fair value gap retest",
+      "liquidity_sweep": "Liquidity sweep",
+      "order_block": "Order block retest",
+      "supply_demand": "Supply/demand zone retest"
+    },
+    "wyckoff": {
+      "spring_upthrust": "Wyckoff spring/upthrust"
+    },
+    "volatility": {
+      "atr_expansion": "Range expansion",
+      "bollinger_squeeze": "Bollinger squeeze breakout",
+      "donchian": "Donchian breakout",
+      "keltner": "Keltner channel breakout"
+    },
+    "volume": {
+      "session_vwap": "Session VWAP cross",
+      "tick_spike": "Tick-volume spike/climax"
+    }
   }
 }

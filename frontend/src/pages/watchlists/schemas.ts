@@ -1,7 +1,7 @@
 /**
  * The advisory preferences document (`GET|PUT /advisory/preferences`, `app/advisory/preferences.py`) as far as
- * the watchlists and alert settings read it (TAA-918). The other sections (theories, trading profile, entry
- * plan) pass through untouched, so a PUT of the whole document keeps them.
+ * the watchlists, alert and theory settings read it (TAA-918, TAA-920). The other sections (trading profile,
+ * entry plan) pass through untouched, so a PUT of the whole document keeps them.
  */
 import { z } from 'zod';
 
@@ -64,9 +64,25 @@ export const AlertPreferencesSchema = z.object({
 });
 export type AlertPreferences = z.infer<typeof AlertPreferencesSchema>;
 
+/** `ConflictPolicy` (app/advisory/preferences.py). */
+export const CONFLICT_POLICIES = ['IGNORE', 'PENALIZE', 'BLOCK'] as const;
+
+/** `TheoryPreferences`: a preset (null: custom) with family and detector overrides on top (TAA-920). */
+export const TheoriesSchema = z.object({
+  preset: z.string().nullable(),
+  families: z.record(z.string(), z.boolean()),
+  detectors: z.record(z.string(), z.boolean()),
+  params: z.record(z.string(), z.record(z.string(), z.unknown())),
+  pattern_strategies: z.record(z.string(), z.boolean()),
+  min_supporting_families: z.number().int(),
+  conflict_policy: z.enum(CONFLICT_POLICIES),
+});
+export type Theories = z.infer<typeof TheoriesSchema>;
+
 export const PreferencesSchema = z.looseObject({
   watchlists: z.array(WatchlistSchema),
   alerts: AlertPreferencesSchema,
+  theories: TheoriesSchema,
 });
 export type Preferences = z.infer<typeof PreferencesSchema>;
 

@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { ApiError } from '@/api/client';
 import { useServerNow } from '@/app/useNow';
 import { useEngine } from '@/engine/context';
-import { translateCode } from '@/i18n/codes';
+import { evidenceName, translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
 
@@ -63,7 +63,7 @@ function ContributionRow({
     <li className="mb-2">
       <div className="flex items-baseline justify-between gap-2 text-sm">
         <span>
-          {evidence?.item.evidence.name ?? c.detector}
+          {evidenceName(i18n, c.detector, evidence?.item.evidence.name ?? c.detector)}
           <span className="ml-1 text-xs text-slate-500">{translateCode(i18n, 'family', c.family)}</span>
         </span>
         <span
@@ -169,7 +169,9 @@ function EvidenceList({ detail, own }: { detail: Detail; own: boolean }) {
       key={`${e.item.evidence.detector_id}-${e.item.evidence.timeframe}-${e.item.evidence.name}`}
       className="border-b border-slate-100 py-1 last:border-0 dark:border-slate-800"
     >
-      <span className="font-medium">{e.item.evidence.name}</span>{' '}
+      <span className="font-medium">
+        {evidenceName(i18n, e.item.evidence.detector_id, e.item.evidence.name)}
+      </span>{' '}
       <span className="text-xs text-slate-500">
         {translateCode(i18n, 'family', e.item.evidence.family)} · {e.item.evidence.timeframe} ·{' '}
         {t('opportunities.evidence.quality', {

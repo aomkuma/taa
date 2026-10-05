@@ -117,6 +117,8 @@ USER_ROUTES = [
     "auth/sessions",
     "backtests/presets",
     "advisory/preferences",
+    "advisory/detectors",
+    "me/entitlements",
 ]
 
 

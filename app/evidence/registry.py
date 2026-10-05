@@ -123,8 +123,17 @@ class DetectorRegistry:
         order = tuple(d for d in self._topo if d in needed)
         return RunPlan(order, frozenset(wanted), MappingProxyType(resolved))
 
-    def plan_from_config(self, config: EvidenceConfig, *, only: Iterable[str] | None = None) -> RunPlan:
+    def plan_from_config(
+        self,
+        config: EvidenceConfig,
+        *,
+        only: Iterable[str] | None = None,
+        overrides: Mapping[str, Mapping[str, object]] | None = None,
+    ) -> RunPlan:
         """Enabled detectors from ``config.yaml`` → ``evidence:``.
+
+        *overrides* (the engine owner's bounded parameters, TAA-920) are laid over the config's params of the
+        same detector, key by key; they never enable a detector.
 
         *only* (the union of what active users selected, from the cloud's compute requirements) can only
         narrow the set: it never runs a detector the local config disables. Unknown ids in the local config
@@ -134,6 +143,9 @@ class DetectorRegistry:
         for det_id in config.detectors:
             self.get(det_id)
         params = {d: self.parse_params(d, s.params) for d, s in config.detectors.items()}
+        for det_id, raw in (overrides or {}).items():
+            base = config.detectors[det_id].params if det_id in config.detectors else {}
+            params[det_id] = self.parse_params(det_id, {**base, **raw})
         enabled = {
             d
             for d in self._detectors

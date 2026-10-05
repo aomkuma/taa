@@ -1,4 +1,2885 @@
 {
+  "advisory/detectors": {
+    "detectors": [
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "FIBONACCI",
+        "id": "fib.retracement",
+        "name": "Fibonacci retracement",
+        "params": {
+          "degree": "intermediate",
+          "levels": [
+            0.236,
+            0.382,
+            0.5,
+            0.618,
+            0.786
+          ],
+          "max_age_bars": 3,
+          "tol_atr": 0.25
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "FIBONACCI",
+        "id": "fib.extension_level",
+        "name": "Fibonacci extension level",
+        "params": {
+          "degree": "intermediate",
+          "max_age_bars": 3,
+          "methods": [
+            "external",
+            "projection"
+          ],
+          "ratios": [
+            1.272,
+            1.618,
+            2.618,
+            4.236
+          ],
+          "tol_atr": 0.25
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "cluster_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "cooldown_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_levels": {
+            "max": 10,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "FIBONACCI",
+        "id": "fib.cluster",
+        "name": "Fibonacci cluster",
+        "params": {
+          "cluster_atr": 0.3,
+          "cooldown_bars": 10,
+          "degrees": [
+            "minor",
+            "intermediate",
+            "major"
+          ],
+          "max_age_bars": 3,
+          "min_levels": 2,
+          "tol_atr": 0.25
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "cooldown_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_touches": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_wick": {
+            "max": 1,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "swing_k": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "zone_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "LEVELS",
+        "id": "levels.sr_zone",
+        "name": "Support/resistance zone",
+        "params": {
+          "cooldown_bars": 10,
+          "max_age_bars": 3,
+          "min_touches": 3,
+          "min_wick": 0.3,
+          "swing_k": 3,
+          "tol_atr": 0.15,
+          "zone_atr": 0.5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "cooldown_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "half_levels": {
+            "type": "boolean"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "LEVELS",
+        "id": "levels.round_number",
+        "name": "Round number",
+        "params": {
+          "cooldown_bars": 5,
+          "half_levels": true,
+          "max_age_bars": 3,
+          "step": null,
+          "tol_atr": 0.15
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "LEVELS",
+        "id": "levels.pivot_points",
+        "name": "Pivot point",
+        "params": {
+          "max_age_bars": 3,
+          "methods": [
+            "classic"
+          ],
+          "tol_atr": 0.2
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "LEVELS",
+        "id": "levels.prev_high_low",
+        "name": "Previous period high/low",
+        "params": {
+          "max_age_bars": 3,
+          "periods": [
+            "day",
+            "week"
+          ],
+          "tol_atr": 0.2
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "parallel_tol": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "tol_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "TREND",
+        "id": "structure.trendline",
+        "name": "Trendline / channel",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3,
+          "parallel_tol": 0.3,
+          "tol_atr": 0.25
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.doji",
+        "name": "Doji",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.engulfing",
+        "name": "Engulfing",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.hammer",
+        "name": "Hammer / pin bar",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.harami",
+        "name": "Harami",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.inside_outside",
+        "name": "Inside/outside bar",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.marubozu",
+        "name": "Marubozu",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.shooting_star",
+        "name": "Shooting star",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.star",
+        "name": "Morning/evening star",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.three",
+        "name": "Three soldiers/crows",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "trend_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "trend_bars": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [
+          "fib.retracement",
+          "fib.extension_level",
+          "fib.cluster",
+          "levels.sr_zone",
+          "levels.round_number",
+          "levels.pivot_points",
+          "levels.prev_high_low",
+          "structure.trendline"
+        ],
+        "family": "CANDLESTICK",
+        "id": "candle.tweezer",
+        "name": "Tweezer",
+        "params": {
+          "max_age_bars": 2,
+          "trend_atr": 1.0,
+          "trend_bars": 5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "bottom_band": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "breakout_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_handle": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_handle_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_bottom_dwell": {
+            "max": 1,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "min_cup_bars": {
+            "max": 2000,
+            "max_exclusive": false,
+            "min": 5,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_depth_atr": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "rim_tol_frac": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.cup_handle",
+        "name": "Cup and handle",
+        "params": {
+          "bottom_band": 0.1,
+          "breakout_atr": 0.05,
+          "degree": "intermediate",
+          "max_age_bars": 3,
+          "max_handle": 0.5,
+          "max_handle_bars": 20,
+          "min_bottom_dwell": 0.15,
+          "min_cup_bars": 15,
+          "min_depth_atr": 3.0,
+          "rim_tol_frac": 0.15
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "breakout_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_frac": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_wait_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_height_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "min_separation_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.double",
+        "name": "Double top/bottom",
+        "params": {
+          "breakout_atr": 0.05,
+          "degree": "minor",
+          "equal_tol_atr": 0.5,
+          "equal_tol_frac": 0.1,
+          "max_age_bars": 3,
+          "max_wait_bars": 20,
+          "min_height_atr": 2.0,
+          "min_separation_bars": 5
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "breakout_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_flag_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 3,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_pole_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_retrace": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "min_flag_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "pole_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.flag",
+        "name": "Flag/pennant",
+        "params": {
+          "breakout_atr": 0.05,
+          "degree": "minor",
+          "max_age_bars": 3,
+          "max_flag_bars": 20,
+          "max_pole_bars": 15,
+          "max_retrace": 0.382,
+          "min_flag_bars": 3,
+          "pole_atr": 4.0
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "breakout_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_frac": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_wait_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_height_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "min_separation_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.head_shoulders",
+        "name": "Head and shoulders",
+        "params": {
+          "breakout_atr": 0.05,
+          "degree": "minor",
+          "equal_tol_atr": 0.5,
+          "equal_tol_frac": 0.1,
+          "max_age_bars": 3,
+          "max_wait_bars": 20,
+          "min_height_atr": 2.0,
+          "min_separation_bars": 5
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "breakout_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_frac": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "fit_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_wait_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_converge": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "min_height_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.rectangle",
+        "name": "Rectangle",
+        "params": {
+          "breakout_atr": 0.05,
+          "degree": "minor",
+          "equal_tol_atr": 0.5,
+          "equal_tol_frac": 0.1,
+          "fit_tol_atr": 0.5,
+          "max_age_bars": 3,
+          "max_wait_bars": 20,
+          "min_converge": 0.2,
+          "min_height_atr": 2.0
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "breakout_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_frac": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "fit_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_wait_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_converge": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "min_height_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.triangle",
+        "name": "Triangle",
+        "params": {
+          "breakout_atr": 0.05,
+          "degree": "minor",
+          "equal_tol_atr": 0.5,
+          "equal_tol_frac": 0.1,
+          "fit_tol_atr": 0.5,
+          "max_age_bars": 3,
+          "max_wait_bars": 20,
+          "min_converge": 0.2,
+          "min_height_atr": 2.0
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "breakout_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_frac": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_wait_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_height_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "min_separation_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.triple",
+        "name": "Triple top/bottom",
+        "params": {
+          "breakout_atr": 0.05,
+          "degree": "minor",
+          "equal_tol_atr": 0.5,
+          "equal_tol_frac": 0.1,
+          "max_age_bars": 3,
+          "max_wait_bars": 20,
+          "min_height_atr": 2.0,
+          "min_separation_bars": 5
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "breakout_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "equal_tol_frac": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "fit_tol_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_wait_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_converge": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "min_height_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.wedge",
+        "name": "Wedge",
+        "params": {
+          "breakout_atr": 0.05,
+          "degree": "minor",
+          "equal_tol_atr": 0.5,
+          "equal_tol_frac": 0.1,
+          "fit_tol_atr": 0.5,
+          "max_age_bars": 3,
+          "max_wait_bars": 20,
+          "min_converge": 0.2,
+          "min_height_atr": 2.0
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_counts": {
+            "max": 10,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_score": {
+            "max": 1,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "stop_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "zone_tol": {
+            "max": 0.25,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "ELLIOTT",
+        "id": "elliott.wave",
+        "name": "Elliott wave count (heuristic)",
+        "params": {
+          "c_zone": [
+            1.0,
+            1.618
+          ],
+          "degrees": [
+            "minor",
+            "intermediate"
+          ],
+          "max_age_bars": 3,
+          "max_counts": 2,
+          "min_score": 0.5,
+          "stop_atr": 0.25,
+          "zone_tol": 0.05
+        },
+        "tier": "T3"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_retrace": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "min_retrace": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "FIBONACCI",
+        "id": "fib.extension",
+        "name": "Fibonacci extension targets",
+        "params": {
+          "degree": "intermediate",
+          "max_age_bars": 3,
+          "max_retrace": 0.786,
+          "min_retrace": 0.236,
+          "tol_atr": 0.25
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "floor": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_wick": {
+            "max": 1,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "FIBONACCI",
+        "id": "fib.golden_zone",
+        "name": "Fibonacci golden-zone rejection",
+        "params": {
+          "degree": "intermediate",
+          "floor": 0.786,
+          "max_age_bars": 3,
+          "min_wick": 0.3,
+          "tol_atr": 0.25,
+          "zone": [
+            0.5,
+            0.618
+          ]
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "ratio_tol": {
+            "max": 0.25,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stop_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "HARMONIC",
+        "id": "harmonic.abcd",
+        "name": "AB=CD",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3,
+          "ratio_tol": 0.05,
+          "stop_atr": 0.25
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "ratio_tol": {
+            "max": 0.25,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stop_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "HARMONIC",
+        "id": "harmonic.bat",
+        "name": "Bat",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3,
+          "ratio_tol": 0.05,
+          "stop_atr": 0.25
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "ratio_tol": {
+            "max": 0.25,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stop_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "HARMONIC",
+        "id": "harmonic.butterfly",
+        "name": "Butterfly",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3,
+          "ratio_tol": 0.05,
+          "stop_atr": 0.25
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "ratio_tol": {
+            "max": 0.25,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stop_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "HARMONIC",
+        "id": "harmonic.crab",
+        "name": "Crab",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3,
+          "ratio_tol": 0.05,
+          "stop_atr": 0.25
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "ratio_tol": {
+            "max": 0.25,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stop_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "HARMONIC",
+        "id": "harmonic.cypher",
+        "name": "Cypher",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3,
+          "ratio_tol": 0.05,
+          "stop_atr": 0.25
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "ratio_tol": {
+            "max": 0.25,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stop_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "HARMONIC",
+        "id": "harmonic.gartley",
+        "name": "Gartley",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3,
+          "ratio_tol": 0.05,
+          "stop_atr": 0.25
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "ratio_tol": {
+            "max": 0.25,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stop_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "HARMONIC",
+        "id": "harmonic.shark",
+        "name": "Shark",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3,
+          "ratio_tol": 0.05,
+          "stop_atr": 0.25
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "kijun": {
+            "max": 400,
+            "max_exclusive": false,
+            "min": 3,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "senkou": {
+            "max": 800,
+            "max_exclusive": false,
+            "min": 4,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tenkan": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "ICHIMOKU",
+        "id": "ichimoku.chikou",
+        "name": "Chikou confirmation",
+        "params": {
+          "kijun": 26,
+          "max_age_bars": 3,
+          "senkou": 52,
+          "tenkan": 9
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "kijun": {
+            "max": 400,
+            "max_exclusive": false,
+            "min": 3,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "senkou": {
+            "max": 800,
+            "max_exclusive": false,
+            "min": 4,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tenkan": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "ICHIMOKU",
+        "id": "ichimoku.kumo",
+        "name": "Ichimoku cloud",
+        "params": {
+          "kijun": 26,
+          "max_age_bars": 3,
+          "senkou": 52,
+          "tenkan": 9
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "kijun": {
+            "max": 400,
+            "max_exclusive": false,
+            "min": 3,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "senkou": {
+            "max": 800,
+            "max_exclusive": false,
+            "min": 4,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tenkan": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "ICHIMOKU",
+        "id": "ichimoku.tk_cross",
+        "name": "Tenkan/Kijun cross",
+        "params": {
+          "kijun": 26,
+          "max_age_bars": 3,
+          "senkou": 52,
+          "tenkan": 9
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "buffer_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "confirm_bars": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "cooldown_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_bars_before": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_touches": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_wick": {
+            "max": 1,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "swing_k": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "tol_atr": {
+            "max": 2,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "zone_atr": {
+            "max": 3,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "LEVELS",
+        "id": "levels.sr_breakout",
+        "name": "S/R zone breakout",
+        "params": {
+          "buffer_atr": 0.1,
+          "confirm_bars": 3,
+          "cooldown_bars": 10,
+          "max_age_bars": 3,
+          "min_bars_before": 5,
+          "min_touches": 2,
+          "min_wick": 0.3,
+          "swing_k": 3,
+          "tol_atr": 0.15,
+          "zone_atr": 0.5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "extreme": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 100,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "lookback": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "n": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "MOMENTUM",
+        "id": "momentum.cci_extreme",
+        "name": "CCI extreme",
+        "params": {
+          "extreme": 200.0,
+          "lookback": 10,
+          "max_age_bars": 3,
+          "n": 20
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "stoch_high": {
+            "max": 100,
+            "max_exclusive": true,
+            "min": 50,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stoch_low": {
+            "max": 50,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "MOMENTUM",
+        "id": "momentum.cross",
+        "name": "MACD/Stochastic cross",
+        "params": {
+          "max_age_bars": 3,
+          "stoch_high": 80.0,
+          "stoch_low": 20.0
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_bars": {
+            "max": 2000,
+            "max_exclusive": false,
+            "min": 3,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "MOMENTUM",
+        "id": "momentum.divergence",
+        "name": "Divergence",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 5,
+          "max_bars": 60,
+          "min_bars": 5,
+          "oscillators": [
+            "rsi",
+            "macd",
+            "stoch"
+          ]
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "rsi_high": {
+            "max": 100,
+            "max_exclusive": true,
+            "min": 50,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "rsi_low": {
+            "max": 50,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stoch_high": {
+            "max": 100,
+            "max_exclusive": true,
+            "min": 50,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "stoch_low": {
+            "max": 50,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "MOMENTUM",
+        "id": "momentum.ob_os",
+        "name": "Overbought/oversold exit",
+        "params": {
+          "max_age_bars": 3,
+          "rsi_high": 70.0,
+          "rsi_low": 30.0,
+          "stoch_high": 80.0,
+          "stoch_low": 20.0
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_range_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "min_range_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "SESSIONS",
+        "id": "sessions.asian_breakout",
+        "name": "Asian-range breakout",
+        "params": {
+          "asian_end": "15:00",
+          "asian_start": "09:00",
+          "asian_tz": "Asia/Tokyo",
+          "breakout_end": "12:00",
+          "breakout_start": "08:00",
+          "breakout_tz": "Europe/London",
+          "max_age_bars": 3,
+          "max_range_atr": 4.0,
+          "min_range_atr": 0.5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_range_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "min_range_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "number"
+          },
+          "range_minutes": {
+            "max": 600,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "window_minutes": {
+            "max": 1440,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "SESSIONS",
+        "id": "sessions.open_breakout",
+        "name": "Opening-range breakout",
+        "params": {
+          "max_age_bars": 3,
+          "max_range_atr": 4.0,
+          "min_range_atr": 0.5,
+          "range_minutes": 60,
+          "sessions": {
+            "london": [
+              "Europe/London",
+              "08:00"
+            ],
+            "new_york": [
+              "America/New_York",
+              "08:00"
+            ]
+          },
+          "window_minutes": 180
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_bars": {
+            "max": 1000,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_gap_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "SMART_MONEY",
+        "id": "smc.fvg",
+        "name": "Fair value gap retest",
+        "params": {
+          "max_age_bars": 3,
+          "max_bars": 50,
+          "min_gap_atr": 0.2
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "lookback": {
+            "max": 1000,
+            "max_exclusive": false,
+            "min": 5,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "swing_k": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "SMART_MONEY",
+        "id": "smc.liquidity_sweep",
+        "name": "Liquidity sweep",
+        "params": {
+          "lookback": 50,
+          "max_age_bars": 3,
+          "swing_k": 3
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "base_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "break_lookback": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "displacement_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_bars": {
+            "max": 1000,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_base_bars": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_leg_bars": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "SMART_MONEY",
+        "id": "smc.order_block",
+        "name": "Order block retest",
+        "params": {
+          "base_atr": 0.6,
+          "break_lookback": 10,
+          "displacement_atr": 2.0,
+          "max_age_bars": 3,
+          "max_bars": 50,
+          "max_base_bars": 4,
+          "max_leg_bars": 3
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "base_atr": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "break_lookback": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "displacement_atr": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_bars": {
+            "max": 1000,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_base_bars": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_leg_bars": {
+            "max": 20,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "SMART_MONEY",
+        "id": "smc.supply_demand",
+        "name": "Supply/demand zone retest",
+        "params": {
+          "base_atr": 0.6,
+          "break_lookback": 10,
+          "displacement_atr": 2.0,
+          "max_age_bars": 3,
+          "max_bars": 50,
+          "max_base_bars": 4,
+          "max_leg_bars": 3
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "TREND",
+        "id": "structure.bos_choch",
+        "name": "Break of structure / change of character",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 3
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 2000,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "TREND",
+        "id": "structure.dow",
+        "name": "Dow structure",
+        "params": {
+          "degree": "minor",
+          "max_age_bars": 50
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 2000,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "threshold": {
+            "max": 100,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "TREND",
+        "id": "trend.adx_strength",
+        "name": "ADX trend strength",
+        "params": {
+          "max_age_bars": 20,
+          "threshold": 25.0
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "fast": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 2000,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "mid": {
+            "max": 1000,
+            "max_exclusive": false,
+            "min": 3,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "slow": {
+            "max": 2000,
+            "max_exclusive": false,
+            "min": 4,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "TREND",
+        "id": "trend.ma_alignment",
+        "name": "Moving-average trend",
+        "params": {
+          "fast": 20,
+          "max_age_bars": 50,
+          "mid": 50,
+          "slow": 200
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "close_zone": {
+            "max": 0.5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "mult": {
+            "max": 10,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "VOLATILITY_VOLUME",
+        "id": "volatility.atr_expansion",
+        "name": "Range expansion",
+        "params": {
+          "close_zone": 0.3,
+          "max_age_bars": 3,
+          "mult": 2.0
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "k": {
+            "max": 5,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "lookback": {
+            "max": 5000,
+            "max_exclusive": false,
+            "min": 20,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "n": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "squeeze_pct": {
+            "max": 1,
+            "max_exclusive": true,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "window": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "VOLATILITY_VOLUME",
+        "id": "volatility.bollinger_squeeze",
+        "name": "Bollinger squeeze breakout",
+        "params": {
+          "k": 2.0,
+          "lookback": 120,
+          "max_age_bars": 3,
+          "n": 20,
+          "squeeze_pct": 0.1,
+          "window": 20
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "n": {
+            "max": 1000,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "VOLATILITY_VOLUME",
+        "id": "volatility.donchian",
+        "name": "Donchian breakout",
+        "params": {
+          "max_age_bars": 3,
+          "n": 20
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "atr_n": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "mult": {
+            "max": 10,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "n": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "VOLATILITY_VOLUME",
+        "id": "volatility.keltner",
+        "name": "Keltner channel breakout",
+        "params": {
+          "atr_n": 10,
+          "max_age_bars": 3,
+          "mult": 2.0,
+          "n": 20
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "min_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "VOLATILITY_VOLUME",
+        "id": "volume.session_vwap",
+        "name": "Session VWAP cross",
+        "params": {
+          "max_age_bars": 3,
+          "min_bars": 3
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "climax_bars": {
+            "max": 200,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "climax_move_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "n": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "spike": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": true,
+            "type": "number"
+          }
+        },
+        "depends_on": [],
+        "family": "VOLATILITY_VOLUME",
+        "id": "volume.tick_spike",
+        "name": "Tick-volume spike/climax",
+        "params": {
+          "climax_bars": 10,
+          "climax_move_atr": 3.0,
+          "max_age_bars": 3,
+          "n": 20,
+          "spike": 2.5
+        },
+        "tier": "T1"
+      },
+      {
+        "bounds": {
+          "cooldown_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_drift": {
+            "max": 1,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "max_range_atr": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "min_range_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "range_bars": {
+            "max": 1000,
+            "max_exclusive": false,
+            "min": 5,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "SMART_MONEY",
+        "id": "wyckoff.spring_upthrust",
+        "name": "Wyckoff spring/upthrust",
+        "params": {
+          "cooldown_bars": 10,
+          "max_age_bars": 3,
+          "max_drift": 0.5,
+          "max_range_atr": 6.0,
+          "min_range_atr": 2.0,
+          "range_bars": 30
+        },
+        "tier": "T2"
+      }
+    ],
+    "pattern_strategies": [
+      "setup_breakout",
+      "setup_candle_reversal",
+      "setup_elliott_wave",
+      "setup_fib_pullback",
+      "setup_harmonic_prz",
+      "setup_neckline_break",
+      "setup_pattern_breakout",
+      "setup_smc_reversal"
+    ]
+  },
   "advisory/preferences": {
     "alerts": {
       "expiry_updates": true,
@@ -6034,7 +8915,7 @@
     },
     "quote_at": "2026-09-30T10:00:30+00:00",
     "regime": "TRENDING",
-    "requirements_version": "91e854707831f93c",
+    "requirements_version": "cc3f62bf9225ffad",
     "reward_money": 94.51,
     "risk_money": 48.72,
     "rr": 1.9999999999998683,
@@ -6562,7 +9443,7 @@
         },
         "quote_at": "2026-09-30T10:00:30+00:00",
         "regime": "TRENDING",
-        "requirements_version": "91e854707831f93c",
+        "requirements_version": "cc3f62bf9225ffad",
         "reward_money": 94.51,
         "risk_money": 48.72,
         "rr": 1.9999999999998683,
@@ -6625,7 +9506,7 @@
         },
         "quote_at": "2026-09-30T10:00:30+00:00",
         "regime": "VOLATILE",
-        "requirements_version": "91e854707831f93c",
+        "requirements_version": "cc3f62bf9225ffad",
         "reward_money": 98.62,
         "risk_money": 49.9,
         "rr": 2.0,
@@ -9269,6 +12150,32 @@
       }
     ],
     "next_cursor": "WyIyMDI2LTA5LTMwVDExOjMwOjAwKzAwOjAwIiw0XQ"
+  },
+  "me/entitlements": {
+    "asset_classes": null,
+    "families": null,
+    "features": {
+      "AI_NARRATIVES": true,
+      "API_ACCESS": true,
+      "BACKTESTS": true,
+      "DATA_EXPORT": true
+    },
+    "limits": {
+      "ALERTS_PER_DAY": null,
+      "BACKTESTS_PER_MONTH": null,
+      "SHADOW_HISTORY_DAYS": null,
+      "WATCHLISTS": null,
+      "WATCHLIST_SYMBOLS": null
+    },
+    "overrides": [],
+    "plan": "OWNER",
+    "usage": {
+      "ALERTS_PER_DAY": 0,
+      "BACKTESTS_PER_MONTH": 0,
+      "SHADOW_HISTORY_DAYS": 0,
+      "WATCHLISTS": 0,
+      "WATCHLIST_SYMBOLS": 0
+    }
   },
   "me/feed": {
     "engine_id": "ENGINE",

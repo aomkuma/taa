@@ -354,5 +354,98 @@
     "ENTRY_FALLBACK": "ใช้ราคาจากสัญญาณ",
     "SWAP_UNKNOWN": "ไม่ทราบค่า swap",
     "PNL_UNAVAILABLE": "ประเมินเป็นเงินไม่ได้"
+  },
+  "evidence": {
+    "fib": {
+      "retracement": "Fibonacci retracement (ย่อตัว)",
+      "extension_level": "ระดับ Fibonacci extension",
+      "cluster": "กลุ่มระดับ Fibonacci ซ้อนกัน",
+      "extension": "เป้าหมาย Fibonacci extension",
+      "golden_zone": "ราคาเด้งกลับในโซนทอง Fibonacci"
+    },
+    "levels": {
+      "sr_zone": "โซนแนวรับ/แนวต้าน",
+      "round_number": "ตัวเลขกลม",
+      "pivot_points": "Pivot point",
+      "prev_high_low": "จุดสูง/ต่ำของวัน/สัปดาห์ก่อน",
+      "sr_breakout": "ทะลุโซนแนวรับ/แนวต้าน"
+    },
+    "structure": {
+      "trendline": "เส้นแนวโน้ม / ช่องราคา",
+      "bos_choch": "เบรกโครงสร้าง / เปลี่ยนลักษณะ (BOS/CHoCH)",
+      "dow": "โครงสร้างแบบ Dow (HH/HL, LH/LL)"
+    },
+    "trend": {
+      "adx_strength": "ความแรงของแนวโน้ม ADX",
+      "ma_alignment": "แนวโน้มจากเส้นค่าเฉลี่ย"
+    },
+    "candle": {
+      "doji": "โดจิ",
+      "engulfing": "แท่งกลืนกิน (Engulfing)",
+      "hammer": "ค้อน / พินบาร์",
+      "harami": "ฮารามิ",
+      "inside_outside": "Inside/outside bar",
+      "marubozu": "มารูโบซุ",
+      "shooting_star": "ดาวตก (Shooting star)",
+      "star": "ดาวรุ่ง/ดาวค่ำ",
+      "three": "สามทหาร/สามอีกา",
+      "tweezer": "แหนบ (Tweezer)"
+    },
+    "chart": {
+      "cup_handle": "ถ้วยและหูจับ",
+      "double": "สองยอด/สองก้น (M/W)",
+      "flag": "ธง/ธงสามเหลี่ยม",
+      "head_shoulders": "หัวและไหล่",
+      "rectangle": "กรอบสี่เหลี่ยม",
+      "triangle": "สามเหลี่ยม",
+      "triple": "สามยอด/สามก้น",
+      "wedge": "ลิ่ม"
+    },
+    "elliott": {
+      "wave": "การนับคลื่น Elliott (ประมาณการ)"
+    },
+    "harmonic": {
+      "abcd": "AB=CD",
+      "bat": "Bat (ค้างคาว)",
+      "butterfly": "Butterfly (ผีเสื้อ)",
+      "crab": "Crab (ปู)",
+      "cypher": "Cypher",
+      "gartley": "Gartley",
+      "shark": "Shark (ฉลาม)"
+    },
+    "ichimoku": {
+      "chikou": "การยืนยันด้วย Chikou",
+      "kumo": "เมฆ Ichimoku",
+      "tk_cross": "Tenkan/Kijun ตัดกัน"
+    },
+    "momentum": {
+      "cci_extreme": "CCI สุดโต่ง",
+      "cross": "MACD/Stochastic ตัดกัน",
+      "divergence": "Divergence (ราคาสวนอินดิเคเตอร์)",
+      "ob_os": "ออกจากโซนซื้อมาก/ขายมาก"
+    },
+    "sessions": {
+      "asian_breakout": "ทะลุกรอบช่วงตลาดเอเชีย",
+      "open_breakout": "ทะลุกรอบช่วงเปิดตลาด"
+    },
+    "smc": {
+      "fvg": "ราคากลับมาทดสอบ Fair value gap",
+      "liquidity_sweep": "กวาดสภาพคล่อง (Liquidity sweep)",
+      "order_block": "ราคากลับมาทดสอบ Order block",
+      "supply_demand": "ราคากลับมาทดสอบโซนอุปสงค์/อุปทาน"
+    },
+    "wyckoff": {
+      "spring_upthrust": "Wyckoff spring/upthrust"
+    },
+    "volatility": {
+      "atr_expansion": "ช่วงราคาขยายตัว",
+      "bollinger_squeeze": "ทะลุหลัง Bollinger บีบตัว",
+      "donchian": "ทะลุ Donchian channel",
+      "keltner": "ทะลุ Keltner channel"
+    },
+    "volume": {
+      "session_vwap": "ราคาตัด VWAP ของช่วงตลาด",
+      "tick_spike": "ปริมาณ tick พุ่ง/จุดไคลแมกซ์"
+    }
   }
 }

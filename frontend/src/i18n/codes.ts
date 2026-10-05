@@ -11,6 +11,7 @@
  * | `OpportunityStatus`, `WindowReason`, `InvalidReason` (advisory)   | `codes:opportunityStatus.<S>`, `codes:windowReason.<R>`, `codes:invalidReason.<R>` |
  * | `ShadowStatus` (app/advisory/shadow.py)                           | `codes:shadowStatus.<S>`           |
  * | `Flag` (app/advisory/shadow.py), shadow trade flags               | `codes:shadowFlag.<F>`             |
+ * | detector ids (`GET /advisory/detectors`), theory names           | `codes:evidence.<id>`              |
  * | `ExitReason` (app/core/enums.py)                                  | `codes:exitReason.<CODE>`          |
  * | `EngineErrorCode` (app/web/engines.py), engine API errors          | `codes:engine.<code>`              |
  * | `BreakerName` (app/risk/circuit_breaker.py)                       | `codes:breaker.<NAME>`             |
@@ -354,6 +355,7 @@ export const CODE_KINDS = [
   'invalidReason',
   'shadowStatus',
   'shadowFlag',
+  'evidence',
   'exitReason',
   'engine',
   'breaker',
@@ -395,6 +397,12 @@ export function parseCode(raw: string): ParsedCode {
 
 export function codeKey(kind: CodeKind, raw: string): string {
   return `${CODES_NAMESPACE}:${kind}.${parseCode(raw).code}`;
+}
+
+/** A detector's TH/EN name (`codes:evidence.<id>`), else *fallback* (the backend's English name or the id). */
+export function evidenceName(i18n: I18n, detectorId: string, fallback: string = detectorId): string {
+  const key = `${CODES_NAMESPACE}:evidence.${detectorId}`;
+  return i18n.exists(key) ? translateDynamic(i18n, key) : fallback;
 }
 
 /** The text for a backend code, or the raw code when no translation exists yet. */

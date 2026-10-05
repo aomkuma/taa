@@ -54,6 +54,7 @@ import {
   ScoreboardSchema,
 } from '@/pages/opportunities/schemas';
 import { AccuracySchema, CalibrationSchema, ShadowTradesSchema } from '@/pages/accuracy/schemas';
+import { CatalogSchema, EntitlementsSchema } from '@/pages/theories/schemas';
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
@@ -115,6 +116,8 @@ const CASES: [string, z.ZodType][] = [
   [`${E}accuracy?mine=true`, AccuracySchema],
   [`${E}calibration`, CalibrationSchema],
   [`${E}shadow-trades?limit=20`, ShadowTradesSchema],
+  ['advisory/detectors', CatalogSchema],
+  ['me/entitlements', EntitlementsSchema],
 ];
 
 const recorded = samples as Record<string, unknown>;

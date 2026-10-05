@@ -1570,6 +1570,26 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     the explorer's (setup strength). The scoreboard shows detector ids until TAA-920 adds `evidence.*` names.
   - The API samples now seed eight closed shadow trades (LIVE and REPLAY, wins, losses, a time stop, one
     not tradable) plus a MANAGED copy and an open one.
+- (TAA-920 decisions) Theories & conditions (`frontend/src/pages/theories/`, nav item `theories`):
+  - Edits mirror `TheoryPreferences` exactly (`theoryModel.ts`, presets with a parity test): a preset turns
+    families on, family overrides sit on it, detector overrides on the family; an override equal to the layer
+    below is removed, choosing a preset clears both, and turning a family on or off clears its detectors'
+    overrides. Saved with `PUT /advisory/preferences/theories`; "applies from the next closed bar".
+  - Family cards: a schematic SVG per family (`diagrams.tsx`, illustration only), a TH/EN explanation, the
+    family's hypothetical record per asset class × timeframe from `theory-scoreboard`, and the theories with
+    tier badges (T1–T3 explained) and their own records. A family the plan leaves out
+    (`/me/entitlements.families`) shows "not in your plan" and no switch.
+  - Detector names have TH/EN texts (`codes:evidence.<id>`, `evidenceName()`), now also on the Opportunities
+    and Accuracy pages; a parity test checks every catalog detector and every changeable parameter label.
+  - **Bounded parameters apply to the scan (the user's decision, 2026-10-05):** `GET /advisory/detectors`
+    lists each detector's changeable parameters (`bounds`: numbers with both bounds, and switches; strings,
+    lists and unbounded numbers stay `config.yaml` matters). `AdvisoryConfig.params` carries the engine
+    **owner's** `theories.params` only (the scan is shared by the market feed, so a subscriber's parameters
+    cannot change it; the page hides them on the feed). The engine checks each entry merged over
+    `config.yaml`'s params (`requirements_from_config`; invalid ones are logged and skipped), the params enter
+    the requirements version (so a change rebuilds the scanner's plan), and `plan_from_config(overrides=)`
+    lays them over the config key by key. They never enable a detector the local config disables. An engine
+    older than this field rejects the new wire format and keeps its fallback until it is updated.
 
 - **Engine ↔ cloud:**
   - New event types: `symbol_catalog`, `suitability_snapshot`, `opportunity` (create/update), `shadow_trade`

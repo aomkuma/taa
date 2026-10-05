@@ -159,7 +159,9 @@ class OpportunityScanner:
             return self._plan
         cfg = self.config
         registry = evidence_registry()
-        evidence = EvidenceEngine(registry, registry.plan_from_config(cfg.evidence, only=req.detectors))
+        evidence = EvidenceEngine(
+            registry, registry.plan_from_config(cfg.evidence, only=req.detectors, overrides=req.params)
+        )
         builder = ContextBuilder(self.candles, cfg, self.clock, self.quotes, evidence)
         self._plan = _Plan(req.version, req, builder, self._strategy_set(req), frozenset(req.symbols))
         log.info(
