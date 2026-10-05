@@ -21,6 +21,11 @@ For PWA pages: build page tests from frontend/src/test/fixtures/api-samples.json
 every new route a page reads to tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts
 (regenerate with TAA_UPDATE_API_SAMPLES=1). Run the full pytest suite and vitest one after the other, never
 at the same time, and not while the local demo stack runs (the machine runs out of memory).
+Check every page against real data, not samples: the local stack on the real MT5 demo account (PAPER) runs
+with scripts\start-demo.cmd -Mt5 (http://localhost:8001). After changing Python code or config.yaml, restart
+that stack's web, worker and engine (a running process refuses new config keys); after a frontend build I
+press Reload on the "new version" banner. Scanning every symbol, flexible strategies and AI learning are
+homework for after the remaining tickets ("Next work" item 4).
 Commit at each ticket boundary (allowed); I push myself. LIVE stays disabled; subscriptions stay off.
 Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 ```
