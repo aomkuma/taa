@@ -250,5 +250,29 @@
     "setup_smc_reversal": "กลับตัวแบบ SMC",
     "setup_breakout": "เบรกกรอบราคา",
     "setup_candle_reversal": "แท่งเทียนกลับตัว"
+  },
+  "gate": {
+    "G1_TRADABLE": "เทรดได้",
+    "G2_MIN_LOT": "ล็อตขั้นต่ำ",
+    "G3_MARGIN": "มาร์จิ้น",
+    "G4_COST": "ต้นทุน",
+    "G5_STOPS_LEVEL": "ระยะ stop",
+    "G6_DATA": "ข้อมูล"
+  },
+  "gateStatus": {
+    "OK": "ผ่าน",
+    "FAIL": "ไม่ผ่าน",
+    "NOT_EVALUATED": "ยังไม่ได้ประเมิน"
+  },
+  "assetClass": {
+    "FOREX_MAJOR": "ฟอเร็กซ์คู่หลัก",
+    "FOREX_MINOR": "ฟอเร็กซ์คู่รอง",
+    "FOREX_EXOTIC": "ฟอเร็กซ์คู่เงินแปลก (exotic)",
+    "METAL": "โลหะ",
+    "INDEX": "ดัชนี",
+    "ENERGY": "พลังงาน",
+    "CRYPTO": "คริปโต",
+    "STOCK": "หุ้น",
+    "OTHER": "อื่น ๆ"
   }
 }

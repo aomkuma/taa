@@ -6,6 +6,7 @@
  * | ----------------------------------------------------------------- | ---------------------------------- |
  * | `Reason` (app/risk/reasons.py), `ReasonCode` (app/strategy)       | `codes:reason.<CODE>`              |
  * | `Gate`, `GateStatus` (app/advisory/suitability.py)                | `codes:gate.<G>`, `codes:gateStatus.<S>` |
+ * | `AssetClass` (app/advisory/asset_classes.py)                      | `codes:assetClass.<C>`             |
  * | `OpportunityStatus`, `WindowReason`, `InvalidReason` (advisory)   | `codes:opportunityStatus.<S>`, `codes:windowReason.<R>`, `codes:invalidReason.<R>` |
  * | `ShadowStatus` (app/advisory/shadow.py)                           | `codes:shadowStatus.<S>`           |
  * | `ExitReason` (app/core/enums.py)                                  | `codes:exitReason.<CODE>`          |
@@ -116,6 +117,18 @@ export const GATES = [
   'G6_DATA',
 ] as const;
 export const GATE_STATUSES = ['OK', 'FAIL', 'NOT_EVALUATED'] as const;
+// AssetClass (app/advisory/asset_classes.py): the ranking's class filter (TAA-916), in the backend's order.
+export const ASSET_CLASSES = [
+  'FOREX_MAJOR',
+  'FOREX_MINOR',
+  'FOREX_EXOTIC',
+  'METAL',
+  'INDEX',
+  'ENERGY',
+  'CRYPTO',
+  'STOCK',
+  'OTHER',
+] as const;
 export const OPPORTUNITY_STATUSES = ['CANDIDATE', 'ACTIVE', 'EXPIRED', 'INVALIDATED', 'FOLLOWED'] as const;
 export const WINDOW_REASONS = ['SIGNAL_LIFETIME', 'SESSION_END', 'NEWS_BLACKOUT'] as const;
 export const INVALID_REASONS = ['PRICE_DRIFT', 'SL_TOUCHED', 'SPREAD_SPIKE', 'OPPOSITE_SIGNAL'] as const;
@@ -268,6 +281,7 @@ export const CODE_KINDS = [
   'reason',
   'gate',
   'gateStatus',
+  'assetClass',
   'opportunityStatus',
   'windowReason',
   'invalidReason',

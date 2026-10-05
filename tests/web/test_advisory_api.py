@@ -167,6 +167,9 @@ class TestEngineData:
         assert body["computed_at"] == NOW.isoformat()
         assert [(i["symbol"], i["rank"]) for i in body["items"]] == [("EURUSD", 1), ("XAUUSD", 2)]
         assert "payload" not in body["items"][0]
+        gold = body["items"][1]
+        assert gold["gates"] == [] and gold["flags"] == [] and gold["market_open"] is None  # no payload parts
+        assert body["account"] is None and body["universe"] is None  # rows from before TAA-916
         assert [i["symbol"] for i in get(client, mine, "ranking?eligible=true").json()["items"]] == ["EURUSD"]
         assert get(client, mine, "ranking/EURUSD").json()["payload"] == {"scores": {"S1": 90.0}}
         history = get(client, mine, "ranking/EURUSD/history?hours=24").json()["items"]

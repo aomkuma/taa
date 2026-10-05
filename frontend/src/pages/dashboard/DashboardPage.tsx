@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { useEngine } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
 import { useLiveEvents } from '@/live/context';
+import { TopRankedCard } from '@/pages/ranking/TopRankedCard';
 
 import { AccountCard, AlertsCard, BreakersCard, DecisionsCard, HealthCard, PositionsCard } from './cards';
 import { NOTIFICATIONS_QUERY_KEY } from './schemas';
@@ -40,15 +41,14 @@ function OwnDashboard({ engineId }: { engineId: string }) {
       <BreakersCard />
       <PositionsCard />
       <DecisionsCard />
-      <div className="lg:col-span-2">
-        <AlertsCard />
-      </div>
+      <TopRankedCard engineId={engineId} />
+      <AlertsCard />
     </div>
   );
 }
 
 /** Subscribers on the market feed: no account data; the advisory pages are where their information is. */
-function FeedDashboard() {
+function FeedDashboard({ engineId }: { engineId: string | null }) {
   const { t } = useTranslation();
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -66,9 +66,8 @@ function FeedDashboard() {
           </Link>
         </div>
       </section>
-      <div className="lg:col-span-2">
-        <AlertsCard />
-      </div>
+      {engineId !== null && <TopRankedCard engineId={engineId} />}
+      <AlertsCard />
     </div>
   );
 }
@@ -81,7 +80,11 @@ export function DashboardPage() {
     <section>
       <h1 className="mb-4 text-2xl font-semibold">{t('nav.dashboard')}</h1>
       {state === 'ready' &&
-        (own && engineId !== null ? <OwnDashboard engineId={engineId} /> : <FeedDashboard />)}
+        (own && engineId !== null ? (
+          <OwnDashboard engineId={engineId} />
+        ) : (
+          <FeedDashboard engineId={engineId} />
+        ))}
     </section>
   );
 }

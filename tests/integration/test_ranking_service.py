@@ -67,6 +67,10 @@ class TestFirstRun:
         assert [g["gate"][:2] for g in eur.payload["gates"]] == [f"G{i}" for i in range(1, 7)]
         assert eur.payload["metrics"]["currency"] == "USD" and eur.payload["metrics"]["lot"] > 0
         assert len(eur.payload["best_hours_utc"]) == 3
+        account = eur.payload["account"]  # the account the run was sized for (the ranking page header)
+        assert account["currency"] == "USD" and account["leverage"] > 0 and account["equity"] > 0
+        assert account["risk_percent"] == CONFIG.risk.max_risk_per_trade_percent
+        assert eur.payload["universe"] == len(ENABLED)
         assert svc.stats.runs == 1 and svc.stats.refreshed == len(ENABLED) and svc.stats.failures == 0
 
     def test_small_account_excludes_xauusd(self, db: Database) -> None:

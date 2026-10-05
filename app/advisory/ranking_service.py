@@ -22,7 +22,7 @@ import logging
 import math
 import time
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -80,6 +80,8 @@ class RankingRun:
     universe: int
     duration_ms: float
     currency: str
+    # the account the run was sized for: equity, balance, margin_free, leverage, currency, risk_percent
+    account: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -324,6 +326,15 @@ class RankingService:
             universe=len(self.universe),
             duration_ms=(time.perf_counter() - started) * 1000,
             currency=account.currency,
+            account={
+                "equity": _num(account.equity),
+                "balance": _num(account.balance),
+                "margin_free": _num(account.margin_free),
+                "leverage": account.leverage,
+                "currency": account.currency,
+                "risk_percent": self.config.risk.max_risk_per_trade_percent,
+                "sizing_basis": self.config.risk.sizing_basis,
+            },
         )
         self._persist(run)
         self._last_now = now
@@ -441,6 +452,8 @@ def snapshot_payload(r: RankedSymbol, run: RankingRun) -> dict[str, Any]:
             "next_open": _time(session.next_open),
         },
         "best_hours_utc": [describe_hour(h) for h in run.best_hours.get(r.symbol, [])],
+        "account": run.account,
+        "universe": run.universe,  # symbols in the universe; a run after a restart ranks only those measured
     }
 
 

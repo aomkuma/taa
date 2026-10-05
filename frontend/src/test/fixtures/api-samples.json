@@ -1,4 +1,79 @@
 {
+  "advisory/preferences": {
+    "alerts": {
+      "expiry_updates": true,
+      "language": "th",
+      "metric": "WIN_PROBABILITY",
+      "rate_limits": {
+        "max_alerts_per_hour": 6,
+        "symbol_cooldown_minutes": 30
+      },
+      "respect_market_sessions": true,
+      "signal_lifetime_bars": 2,
+      "threshold": null,
+      "timezone": "Asia/Bangkok",
+      "when_risk_full": "PAUSE",
+      "windows": []
+    },
+    "entry_plan": {
+      "lot_unit": null,
+      "mode": "SINGLE",
+      "partial_tp_r": [
+        1.0,
+        2.0
+      ],
+      "parts": 1,
+      "spacing_atr": 0.5,
+      "weights": "EQUAL"
+    },
+    "theories": {
+      "conflict_policy": "PENALIZE",
+      "detectors": {},
+      "families": {},
+      "min_supporting_families": 2,
+      "params": {},
+      "pattern_strategies": {},
+      "preset": "ALL"
+    },
+    "trading_profile": {
+      "avoid_news": true,
+      "hold_over_weekend": false,
+      "holding_style": "DAY",
+      "max_signals_per_day": 10,
+      "overrides": {
+        "conflict_policy": null,
+        "max_daily_loss_percent": null,
+        "max_positions": null,
+        "min_rr": null,
+        "min_supporting_families": null,
+        "min_win_probability": null,
+        "portfolio_heat_percent": null,
+        "require_htf_alignment": null,
+        "risk_per_signal_percent": null
+      },
+      "stop_placement": "STRUCTURE",
+      "style": 50
+    },
+    "version": 1,
+    "watchlists": [
+      {
+        "alerts": true,
+        "kind": "FAVOURITES",
+        "name": "Favourites",
+        "symbols": [],
+        "threshold": null,
+        "top_n": null
+      },
+      {
+        "alerts": true,
+        "kind": "AUTO_TOP_N",
+        "name": "Top 30",
+        "symbols": [],
+        "threshold": null,
+        "top_n": 30
+      }
+    ]
+  },
   "auth/sessions": {
     "items": [
       {
@@ -3789,6 +3864,491 @@
       }
     ],
     "received_at": "2026-09-30T10:00:01+00:00"
+  },
+  "engines/ENGINE/ranking": {
+    "account": {
+      "balance": 1000.0,
+      "currency": "USD",
+      "equity": 1000.0,
+      "leverage": 500,
+      "margin_free": 1000.0,
+      "risk_percent": 0.5,
+      "sizing_basis": "min_equity_balance"
+    },
+    "computed_at": "2026-09-30T10:00:30+00:00",
+    "items": [
+      {
+        "asset_class": "FOREX_MAJOR",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": true,
+        "failed_gates": [],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": 0.02,
+          "min_lot_risk": 2.073285,
+          "required_equity": 414.656958,
+          "risk_money": 4.14657
+        },
+        "now_score": 72.02,
+        "overall": 64.8,
+        "rank": 1,
+        "server": "FBS-Demo",
+        "symbol": "USDJPY"
+      },
+      {
+        "asset_class": "FOREX_MAJOR",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": true,
+        "failed_gates": [],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": 0.01,
+          "min_lot_risk": 2.660039,
+          "required_equity": 532.00775,
+          "risk_money": 2.660039
+        },
+        "now_score": 66.02,
+        "overall": 63.21,
+        "rank": 2,
+        "server": "FBS-Demo",
+        "symbol": "EURUSD"
+      },
+      {
+        "asset_class": "FOREX_MAJOR",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": true,
+        "failed_gates": [],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": 0.02,
+          "min_lot_risk": 2.149976,
+          "required_equity": 429.995158,
+          "risk_money": 4.299952
+        },
+        "now_score": 65.39,
+        "overall": 62.17,
+        "rank": 3,
+        "server": "FBS-Demo",
+        "symbol": "AUDUSD"
+      },
+      {
+        "asset_class": "FOREX_MAJOR",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": true,
+        "failed_gates": [],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": 0.01,
+          "min_lot_risk": 3.009953,
+          "required_equity": 601.990656,
+          "risk_money": 3.009953
+        },
+        "now_score": 60.22,
+        "overall": 61.79,
+        "rank": 4,
+        "server": "FBS-Demo",
+        "symbol": "GBPUSD"
+      },
+      {
+        "asset_class": "FOREX_MINOR",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": true,
+        "failed_gates": [],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": 0.02,
+          "min_lot_risk": 2.289623,
+          "required_equity": 457.92459,
+          "risk_money": 4.579246
+        },
+        "now_score": 57.83,
+        "overall": 56.18,
+        "rank": 5,
+        "server": "FBS-Demo",
+        "symbol": "EURGBP"
+      },
+      {
+        "asset_class": "METAL",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": false,
+        "failed_gates": [
+          "G2_MIN_LOT"
+        ],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [
+          {
+            "gate": "G2_MIN_LOT",
+            "key": "g2.min_lot_risk",
+            "params": {
+              "budget": 5.0,
+              "currency": "USD",
+              "min_lot_risk": 7.69,
+              "required_equity": 1538.0
+            },
+            "status": "FAIL"
+          }
+        ],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": null,
+          "min_lot_risk": 7.690024,
+          "required_equity": 1538.004848,
+          "risk_money": null
+        },
+        "now_score": 69.13,
+        "overall": 59.76,
+        "rank": 6,
+        "server": "FBS-Demo",
+        "symbol": "XAUUSD"
+      },
+      {
+        "asset_class": "CRYPTO",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": false,
+        "failed_gates": [
+          "G2_MIN_LOT"
+        ],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [
+          {
+            "gate": "G2_MIN_LOT",
+            "key": "g2.min_lot_risk",
+            "params": {
+              "budget": 5.0,
+              "currency": "USD",
+              "min_lot_risk": 5.16,
+              "required_equity": 1032.62
+            },
+            "status": "FAIL"
+          }
+        ],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": null,
+          "min_lot_risk": 5.16311,
+          "required_equity": 1032.621918,
+          "risk_money": null
+        },
+        "now_score": 67.46,
+        "overall": 61.67,
+        "rank": 7,
+        "server": "FBS-Demo",
+        "symbol": "BTCUSD"
+      },
+      {
+        "asset_class": "ENERGY",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": false,
+        "failed_gates": [
+          "G2_MIN_LOT"
+        ],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [
+          {
+            "gate": "G2_MIN_LOT",
+            "key": "g2.min_lot_risk",
+            "params": {
+              "budget": 5.0,
+              "currency": "USD",
+              "min_lot_risk": 7.1,
+              "required_equity": 1420.01
+            },
+            "status": "FAIL"
+          }
+        ],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": null,
+          "min_lot_risk": 7.100034,
+          "required_equity": 1420.006708,
+          "risk_money": null
+        },
+        "now_score": 63.54,
+        "overall": 49.86,
+        "rank": 8,
+        "server": "FBS-Demo",
+        "symbol": "USOIL"
+      },
+      {
+        "asset_class": "METAL",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": false,
+        "failed_gates": [
+          "G2_MIN_LOT"
+        ],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [
+          {
+            "gate": "G2_MIN_LOT",
+            "key": "g2.min_lot_risk",
+            "params": {
+              "budget": 5.0,
+              "currency": "USD",
+              "min_lot_risk": 9.65,
+              "required_equity": 1929.99
+            },
+            "status": "FAIL"
+          }
+        ],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": null,
+          "min_lot_risk": 9.64995,
+          "required_equity": 1929.990054,
+          "risk_money": null
+        },
+        "now_score": 61.18,
+        "overall": 46.58,
+        "rank": 9,
+        "server": "FBS-Demo",
+        "symbol": "XAGUSD"
+      },
+      {
+        "asset_class": "STOCK",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": false,
+        "failed_gates": [
+          "G6_DATA"
+        ],
+        "flags": [
+          "insufficient_history",
+          "market_closed"
+        ],
+        "gates": [
+          {
+            "gate": "G6_DATA",
+            "key": "g6.few_candles",
+            "params": {
+              "candles": 196,
+              "required": 200
+            },
+            "status": "FAIL"
+          }
+        ],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": false,
+        "metrics": {
+          "currency": "USD",
+          "lot": 1.0,
+          "min_lot_risk": 1.677129,
+          "required_equity": 335.4258,
+          "risk_money": 1.677129
+        },
+        "now_score": 64.82,
+        "overall": 63.58,
+        "rank": 10,
+        "server": "FBS-Demo",
+        "symbol": "AAPL"
+      },
+      {
+        "asset_class": "INDEX",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": false,
+        "failed_gates": [
+          "G2_MIN_LOT"
+        ],
+        "flags": [
+          "insufficient_history",
+          "market_closed"
+        ],
+        "gates": [
+          {
+            "gate": "G2_MIN_LOT",
+            "key": "g2.min_lot_risk",
+            "params": {
+              "budget": 5.0,
+              "currency": "USD",
+              "min_lot_risk": 14.22,
+              "required_equity": 2844.58
+            },
+            "status": "FAIL"
+          }
+        ],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": false,
+        "metrics": {
+          "currency": "USD",
+          "lot": null,
+          "min_lot_risk": 14.222913,
+          "required_equity": 2844.58254,
+          "risk_money": null
+        },
+        "now_score": 58.24,
+        "overall": 60.04,
+        "rank": 11,
+        "server": "FBS-Demo",
+        "symbol": "US30"
+      }
+    ],
+    "universe": 11
+  },
+  "engines/ENGINE/ranking/XAUUSD": {
+    "asset_class": "METAL",
+    "computed_at": "2026-09-30T10:00:30+00:00",
+    "eligible": false,
+    "failed_gates": [
+      "G2_MIN_LOT"
+    ],
+    "hour": "2026-09-30T10:00:00+00:00",
+    "now_score": 69.13,
+    "overall": 59.76,
+    "payload": {
+      "account": {
+        "balance": 1000.0,
+        "currency": "USD",
+        "equity": 1000.0,
+        "leverage": 500,
+        "margin_free": 1000.0,
+        "risk_percent": 0.5,
+        "sizing_basis": "min_equity_balance"
+      },
+      "best_hours_utc": [
+        "Tue 02:00 UTC",
+        "Thu 19:00 UTC",
+        "Thu 04:00 UTC"
+      ],
+      "correlated_with": null,
+      "correlation": null,
+      "flags": [
+        "insufficient_history"
+      ],
+      "gates": [
+        {
+          "gate": "G1_TRADABLE",
+          "key": "g1.ok",
+          "params": {},
+          "status": "OK"
+        },
+        {
+          "gate": "G2_MIN_LOT",
+          "key": "g2.min_lot_risk",
+          "params": {
+            "budget": 5.0,
+            "currency": "USD",
+            "min_lot_risk": 7.69,
+            "required_equity": 1538.0
+          },
+          "status": "FAIL"
+        },
+        {
+          "gate": "G3_MARGIN",
+          "key": "g3.ok",
+          "params": {
+            "available": 300.0,
+            "currency": "USD",
+            "margin": 9.32
+          },
+          "status": "OK"
+        },
+        {
+          "gate": "G4_COST",
+          "key": "g4.ok",
+          "params": {
+            "cost_pct": 1.7,
+            "max_pct": 15.0
+          },
+          "status": "OK"
+        },
+        {
+          "gate": "G5_STOPS_LEVEL",
+          "key": "g5.ok",
+          "params": {
+            "stops_distance": 0.0,
+            "typical_sl": 7.64
+          },
+          "status": "OK"
+        },
+        {
+          "gate": "G6_DATA",
+          "key": "g6.ok",
+          "params": {},
+          "status": "OK"
+        }
+      ],
+      "metrics": {
+        "cost_ratio": 0.017016,
+        "currency": "USD",
+        "effective_leverage": 2.33036,
+        "lot": null,
+        "margin": 4.6603,
+        "min_lot": 0.01,
+        "min_lot_risk": 7.690024,
+        "required_equity": 1538.004848,
+        "risk_budget": 5.0,
+        "risk_money": null,
+        "typical_sl": 7.639476
+      },
+      "scores": {
+        "S1": 0.0,
+        "S2": 88.66,
+        "S3": 86.79,
+        "S4": 49.6,
+        "S5": 100.0,
+        "S6": 100.0,
+        "S7": 100.0,
+        "S8": 50.0,
+        "S9": 86.91
+      },
+      "session": {
+        "active": [
+          "LONDON"
+        ],
+        "ends_at": "2026-09-30T16:00:00+00:00",
+        "next_open": "2026-09-30T12:00:00+00:00",
+        "open": true
+      },
+      "side": "BUY",
+      "universe": 11
+    },
+    "rank": 6,
+    "server": "FBS-Demo",
+    "symbol": "XAUUSD"
   },
   "engines/ENGINE/status": {
     "audit": {

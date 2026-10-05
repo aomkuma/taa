@@ -39,6 +39,7 @@ const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'childre
       Component: (await import('@/pages/notifications/NotificationsPage')).NotificationsPage,
     }),
   },
+  ranking: { lazy: async () => ({ Component: (await import('@/pages/ranking/RankingPage')).RankingPage }) },
 };
 
 const pages = (own: boolean): RouteObject[] =>

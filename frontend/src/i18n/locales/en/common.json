@@ -927,5 +927,112 @@
       "font": "Noto Sans Thai font (SIL Open Font License 1.1)",
       "mt5": "MetaTrader 5 is a trademark of MetaQuotes Ltd. This system is not affiliated with MetaQuotes or FBS."
     }
+  },
+  "ranking": {
+    "noEngine": "No engine reports a ranking to you yet.",
+    "empty": "No ranking yet: the engine ranks the broker's symbols a few minutes after it starts.",
+    "advice": "Advice only: the ranking never changes which symbols the bot trades or its risk. Scores describe how well a symbol suits this account now; they do not predict results.",
+    "account": {
+      "title": "Account used for the ranking",
+      "asOf": "Ranked {{time}}",
+      "equity": "Equity",
+      "balance": "Balance",
+      "leverage": "Leverage",
+      "leverageValue": "1:{{leverage}}",
+      "riskPercent": "Risk per trade",
+      "yours": "Sized for your own account profile.",
+      "noProfile": "Enter your account (equity and risk) in a manual account profile to see which symbols your account can trade.",
+      "unknown": "The engine has not reported the account it ranked for yet.",
+      "partial": "Ranked {{ranked}} of {{universe}} symbols so far: after a restart the engine measures about 20 more each minute."
+    },
+    "list": {
+      "title": "Symbols",
+      "eligible": "{{eligible}} of {{total}} suitable",
+      "none": "No symbols match the filters."
+    },
+    "filter": {
+      "class": "Asset class",
+      "allClasses": "All classes",
+      "search": "Search symbols",
+      "eligibleOnly": "Suitable only"
+    },
+    "col": {
+      "favourite": "Favourite",
+      "rank": "#",
+      "symbol": "Symbol",
+      "now": "Now",
+      "overall": "Overall",
+      "gates": "Checks",
+      "lot": "Lot"
+    },
+    "sortBy": "Sort by {{column}}",
+    "allPassed": "All checks passed",
+    "notRated": "Not suitable",
+    "needsEquity": "needs equity ≥ {{amount}}",
+    "marketClosed": "Market closed",
+    "shown": "Showing {{shown}} of {{total}}",
+    "showMore": "Show more",
+    "favourite": {
+      "add": "Add {{symbol}} to favourites",
+      "remove": "Remove {{symbol}} from favourites",
+      "failed": "Could not update your favourites.",
+      "planLimit": "Your plan's watchlist limit is reached."
+    },
+    "score": {
+      "S1": "Sizing room",
+      "S2": "Cost efficiency",
+      "S3": "Leverage and margin comfort",
+      "S4": "Liquidity now",
+      "S5": "Volatility",
+      "S6": "Regime fit",
+      "S7": "Diversification",
+      "S8": "Historical edge",
+      "S9": "Holding cost"
+    },
+    "flag": {
+      "unknown_volatility": "Volatility unknown (neutral score)",
+      "unknown_regime": "Regime unknown (neutral score)",
+      "insufficient_history": "Too few past outcomes for the historical edge (neutral score)",
+      "unknown_swap": "Swap unknown (neutral score)",
+      "market_closed": "Market closed"
+    },
+    "metric": {
+      "risk_budget": "Risk budget per trade",
+      "min_lot_risk": "Risk of the minimum lot",
+      "required_equity": "Equity the minimum lot needs",
+      "risk_money": "Risk at the suggested lot",
+      "margin": "Margin of the suggested lot",
+      "typical_sl": "Typical stop distance (price)",
+      "min_lot": "Minimum lot",
+      "lot": "Suggested lot",
+      "effective_leverage": "Effective leverage",
+      "cost_ratio": "Costs as a share of the stop"
+    },
+    "drawer": {
+      "title": "{{symbol}} · rank {{rank}}",
+      "notFound": "No ranking details for this symbol.",
+      "eligible": "Suitable for the account",
+      "notEligible": "Not suitable for the account",
+      "personalYes": "Your account can trade the minimum lot within your risk.",
+      "personalNo": "Not suitable for your account.",
+      "personalUnknown": "Set a manual account profile to check your own account.",
+      "inOverall": "(Overall)",
+      "scores": "Scores (0–100)",
+      "gates": "Checks",
+      "metrics": "Sizing and costs",
+      "session": "Market hours",
+      "marketNow": "Now",
+      "openUntil": "Open ({{sessions}}) until {{time}}",
+      "closedUntil": "Closed; opens {{time}}",
+      "bestHours": "Most active hours",
+      "correlation": "Most correlated with",
+      "openSymbol": "Symbol details"
+    },
+    "top": {
+      "title": "Top ranked symbols",
+      "all": "Full ranking",
+      "none": "No symbol is suitable for the account right now.",
+      "now": "Now {{score}}"
+    }
   }
 }

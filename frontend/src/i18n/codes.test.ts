@@ -3,6 +3,7 @@ import lifecyclePy from '../../../app/advisory/lifecycle.py?raw';
 import shadowPy from '../../../app/advisory/shadow.py?raw';
 import statusesPy from '../../../app/advisory/statuses.py?raw';
 import suitabilityPy from '../../../app/advisory/suitability.py?raw';
+import assetClassesPy from '../../../app/advisory/asset_classes.py?raw';
 import reasonsPy from '../../../app/risk/reasons.py?raw';
 import signalModelsPy from '../../../app/strategy/signal_models.py?raw';
 import enginesPy from '../../../app/web/engines.py?raw';
@@ -21,6 +22,7 @@ import killSwitchPy from '../../../app/risk/kill_switch.py?raw';
 
 import { createI18n } from '@/i18n';
 import {
+  ASSET_CLASSES,
   BREAKER_NAMES,
   codeKey,
   BACKTEST_STATUSES,
@@ -103,6 +105,7 @@ describe('code lists match the backend enums', () => {
   it.each([
     ['Gate', suitabilityPy, GATES],
     ['GateStatus', suitabilityPy, GATE_STATUSES],
+    ['AssetClass', assetClassesPy, ASSET_CLASSES],
     ['OpportunityStatus', statusesPy, OPPORTUNITY_STATUSES],
     ['WindowReason', lifecyclePy, WINDOW_REASONS],
     ['InvalidReason', lifecyclePy, INVALID_REASONS],
@@ -160,6 +163,9 @@ describe('backtest statuses match the run model', () => {
 
 describe('code texts', () => {
   it.each([
+    ['gate', GATES],
+    ['gateStatus', GATE_STATUSES],
+    ['assetClass', ASSET_CLASSES],
     ['engine', ENGINE_ERRORS],
     ['breaker', BREAKER_NAMES],
     ['notificationType', NOTIFICATION_TYPES],

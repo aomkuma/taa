@@ -63,6 +63,37 @@ ACCOUNT_GATES = frozenset({Gate.G2_MIN_LOT.value, Gate.G3_MARGIN.value})
 
 MAX_HISTORY_HOURS = 24 * 90
 
+# The owner's sizing shown in each ranking row (the full metrics are in ``ranking/{symbol}``).
+BRIEF_METRICS = ("currency", "lot", "risk_money", "min_lot_risk", "required_equity")
+
+
+def _universe(rows: Sequence[SuitabilitySnapshotRow]) -> int | None:
+    """How many symbols the run's universe holds; a run can rank fewer (after a restart the engine ranks the
+    symbols measured so far, about 20 more each minute). None for rows older than TAA-916."""
+    for row in rows:
+        value = (row.payload or {}).get("universe")
+        if isinstance(value, int):
+            return value
+    return None
+
+
+def ranking_brief(row: SuitabilitySnapshotRow, *, owner: bool) -> dict[str, Any]:
+    """A ranking row for the list: the columns plus what the table shows from the payload (session open,
+    flags, the gates that did not pass with their explanation key and parameters, the owner's sizing). The
+    market feed keeps only the market gates and no sizing (TAA-8A4)."""
+    payload = row.payload or {}
+    item = row_dict(row, skip=("engine_id", "id", "payload"))
+    session = payload.get("session")
+    item["market_open"] = session.get("open") if isinstance(session, Mapping) else None
+    item["flags"] = list(payload.get("flags") or [])
+    gates = [g for g in payload.get("gates") or [] if g.get("status") != "OK"]
+    if not owner:
+        gates = [g for g in gates if g.get("gate") not in ACCOUNT_GATES]
+    item["gates"] = gates
+    metrics = payload.get("metrics") or {}
+    item["metrics"] = {k: metrics.get(k) for k in BRIEF_METRICS} if owner else {}
+    return item
+
 
 @lru_cache(maxsize=1)
 def catalogs() -> tuple[DetectorRegistry, StrategyRegistry]:
@@ -191,15 +222,22 @@ class AdvisoryReads:
                 select(m.computed_at).where(m.engine_id == engine_id).order_by(m.computed_at.desc()).limit(1)
             )
             if latest is None:
-                return {"computed_at": None, "items": []}
+                return {"computed_at": None, "universe": None, "account": None, "items": []}
             where = [m.engine_id == engine_id, m.computed_at == latest]
             if asset_class:
                 where.append(m.asset_class == asset_class)
             if eligible is not None:
                 where.append(m.eligible.is_(eligible))
             rows = sess.scalars(select(m).where(*where).order_by(m.rank, m.symbol)).all()
-            items = [row_dict(r, skip=("engine_id", "id", "payload")) for r in rows]
-        return {"computed_at": json_safe(ensure_utc(latest)), "items": items}
+            items = [ranking_brief(r, owner=True) for r in rows]
+            account = next((r.payload.get("account") for r in rows if (r.payload or {}).get("account")), None)
+            universe = _universe(rows)
+        return {
+            "computed_at": json_safe(ensure_utc(latest)),
+            "universe": universe,
+            "account": account,
+            "items": items,
+        }
 
     def personal_ranking(
         self,
@@ -219,11 +257,12 @@ class AdvisoryReads:
                 select(m.computed_at).where(m.engine_id == engine_id).order_by(m.computed_at.desc()).limit(1)
             )
             if latest is None:
-                return {"computed_at": None, "personal": True, "items": []}
+                return {"computed_at": None, "personal": True, "universe": None, "account": None, "items": []}
             where = [m.engine_id == engine_id, m.computed_at == latest]
             if asset_class:
                 where.append(m.asset_class == asset_class)
             rows = list(sess.scalars(select(m).where(*where).order_by(m.rank, m.symbol)))
+            universe = _universe(rows)
         equity = profile.equity if profile is not None and profile.source == "MANUAL" else None
         manual = equity is not None
         budget = float(equity) * risk_percent / 100 if equity is not None else None
@@ -249,20 +288,42 @@ class AdvisoryReads:
                         else 0.0
                     )
                     affordable = lots >= float(min_lot)
+                    user_min_risk = float(min_lot_risk) * rate
                     personal |= {
                         "eligible": affordable and not market_failed,
                         "affordable": affordable,
                         "risk_budget": round(budget, 2),
                         "lot": round(lots, 8) if affordable else None,
-                        "min_lot_risk": round(float(min_lot_risk) * rate, 2),
+                        "min_lot_risk": round(user_min_risk, 2),
+                        "required_equity": None
+                        if affordable or risk_percent <= 0
+                        else round(user_min_risk * 100 / risk_percent, 2),
                     }
-            item = row_dict(r, skip=("engine_id", "id", "payload"))
+            item = ranking_brief(r, owner=False)
             item["failed_gates"] = market_failed
             item["eligible"] = not market_failed
             item["personal"] = personal
             items.append(item)
         items.sort(key=lambda i: (i["personal"].get("eligible") is not True, i["rank"]))
-        return {"computed_at": json_safe(ensure_utc(latest)), "personal": True, "items": items}
+        account = (
+            None
+            if profile is None
+            else {
+                "source": profile.source,
+                "equity": equity,
+                "balance": profile.balance if manual else None,
+                "leverage": profile.leverage if manual else None,
+                "currency": profile.currency,
+                "risk_percent": risk_percent,
+            }
+        )
+        return {
+            "computed_at": json_safe(ensure_utc(latest)),
+            "personal": True,
+            "universe": universe,
+            "account": account,
+            "items": items,
+        }
 
     def ranking_symbol(self, engine_id: str, symbol: str) -> dict[str, Any] | None:
         m = SuitabilitySnapshotRow

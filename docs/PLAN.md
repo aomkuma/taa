@@ -1480,6 +1480,27 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
   | Signal Accuracy (ความแม่นยำ) | KPIs; follow-all equity curve; calibration chart; strength buckets vs hit rate; breakdowns; outcome history with hypothetical P/L; live/replay toggle; threshold explorer |
   | Dashboard additions | top-5 ranked symbols, active opportunities, accuracy summary |
 
+- (TAA-916 decisions) Symbol Ranking (`frontend/src/pages/ranking/`):
+  - Each ranking run stores the account it was sized for in every row's payload (`account`: equity, balance,
+    margin free, leverage, currency, `risk_percent`, sizing basis); the page header shows it, because the
+    ranking uses the broker account, which can differ from the PAPER book on the dashboard. On the market feed
+    the header is the user's own profile (no profile: a hint to set a MANUAL one). The payload also carries
+    `universe` (symbols in the universe): after a restart a run ranks only the symbols measured so far (about
+    20 more each minute), so the header says "ranked 20 of 541 so far" instead of looking like lost data.
+  - `GET /ranking` rows stay without the payload (541 symbols on the FBS demo) but carry a summary:
+    `market_open`, `flags`, the gates that did not pass (key and parameters, so chips explain themselves) and
+    the owner's sizing (`currency`, `lot`, `risk_money`, `min_lot_risk`, `required_equity`). The feed keeps
+    only the market gates and no sizing; `personal` adds `required_equity` when the minimum lot is not
+    affordable. "Needs equity ≥ $Z" shows only when G2 fails.
+  - Sorting (rank = the server's order, Now, Overall, name), the asset-class filter, "suitable only" and the
+    search run in the browser on one response; the list refreshes every minute and shows 100 rows at a time.
+    ★ toggles `POST /advisory/favourites/{symbol}` (`plan_limit` has its own message).
+  - The drawer (`?symbol=`, also the dashboard widget's links) reads `ranking/{symbol}`: nine score bars
+    (SVG, CSP-safe; the Overall ones marked), every gate with its explanation, metrics, session, best hours,
+    correlation. Score names and flags are texts in `common.json` (`ranking.score.S1`…, `ranking.flag.*`);
+    `codes:gate`, `codes:gateStatus` and the new `codes:assetClass` kind have TH/EN texts.
+  - Dashboard: "Top ranked symbols" (the first five the user can trade) for the owner and the feed.
+
 - **Engine ↔ cloud:**
   - New event types: `symbol_catalog`, `suitability_snapshot`, `opportunity` (create/update), `shadow_trade`
     (create/update/resolve), `calibration_version`.

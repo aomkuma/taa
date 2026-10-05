@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from app.advisory.personalize import UserContext, replacement
 from app.config import Settings, load_settings
@@ -34,11 +34,13 @@ from app.storage.models import (
     NotificationPrefsRow,
     NotificationRow,
     PushSubscriptionRow,
+    SuitabilitySnapshotRow,
     SymbolCatalogRow,
     UserRow,
 )
 from tests.backtest.test_cloud_backtests import Rig as BacktestRig
 from tests.backtest.test_cloud_backtests import upload
+from tests.integration.test_ranking_service import service as ranking_service
 from tests.strategy_data import EURUSD_SPEC
 from tests.sync_data import T
 from tests.unit.test_personalize import opportunity, prefs
@@ -78,6 +80,8 @@ ENGINE_ROUTES = [
     "commands?limit=20",
     "breakers?limit=20",
     "audit/verify",
+    "ranking",
+    "ranking/XAUUSD",
 ]
 USER_ROUTES = [
     "me/feed",
@@ -88,6 +92,7 @@ USER_ROUTES = [
     "push/subscriptions",
     "auth/sessions",
     "backtests/presets",
+    "advisory/preferences",
 ]
 
 
@@ -150,6 +155,19 @@ def backtest_runs(engine_id: str, owner_id: str) -> list[BacktestRunRow]:
             }
         ),
     ]
+
+
+def ranking_rows(engine_id: str) -> list[SuitabilitySnapshotRow]:
+    """A real ranking run on the multi-asset FakeMT5 (in a throwaway database) for a small account, so some
+    symbols fail the minimum-lot gate ("needs equity ≥ $Z")."""
+    scratch = Database("sqlite://")
+    scratch.create_all()
+    svc, _, fake = ranking_service(scratch)
+    fake.account.balance = 1_000.0
+    assert svc.tick() is not None
+    rows = svc.latest()
+    columns = [c.key for c in SuitabilitySnapshotRow.__table__.columns if c.key not in ("id", "engine_id")]
+    return [SuitabilitySnapshotRow(engine_id=engine_id, **{c: getattr(r, c) for c in columns}) for r in rows]
 
 
 def realistic_rows(db: Database, engine_id: str) -> None:
@@ -267,6 +285,8 @@ def realistic_rows(db: Database, engine_id: str) -> None:
                 },
             )
         )
+        sess.execute(delete(SuitabilitySnapshotRow).where(SuitabilitySnapshotRow.engine_id == engine_id))
+        sess.add_all(ranking_rows(engine_id))
         alice = sess.scalars(select(UserRow).where(UserRow.username == "alice")).one()
         sess.add_all(backtest_runs(engine_id, alice.id))
         # one notification of each kind, with the payloads their producers write (app/worker/*)

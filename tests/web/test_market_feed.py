@@ -145,9 +145,20 @@ class TestAccess:
             gold["failed_gates"] == [] and gold["personal"]["eligible"] is True
         )  # the owner's G2, not bob's
         assert gold["personal"]["risk_budget"] == 25.0 and gold["personal"]["lot"] == 0.12
+        assert gold["personal"]["required_equity"] is None  # affordable: no hint
+        assert gold["metrics"] == {} and gold["gates"] == []  # no owner sizing, no account gates
+        assert body["account"] == {
+            "source": "MANUAL",
+            "equity": 5000.0,
+            "balance": 5000.0,
+            "leverage": 100.0,
+            "currency": "USD",
+            "risk_percent": 0.5,
+        }
         rig.login("alice")
         owner = rig.get(f"/engines/{FEED}/ranking").json()
         assert "personal" not in owner and owner["items"][0]["symbol"] == "XAUUSD"
+        assert owner["items"][0]["metrics"]["required_equity"] == 400.0
 
 
 class TestAlerts:

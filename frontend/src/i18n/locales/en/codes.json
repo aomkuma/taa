@@ -250,5 +250,29 @@
     "setup_smc_reversal": "SMC reversal",
     "setup_breakout": "Range breakout",
     "setup_candle_reversal": "Candlestick reversal"
+  },
+  "gate": {
+    "G1_TRADABLE": "Tradable",
+    "G2_MIN_LOT": "Minimum lot",
+    "G3_MARGIN": "Margin",
+    "G4_COST": "Costs",
+    "G5_STOPS_LEVEL": "Stop distance",
+    "G6_DATA": "Data"
+  },
+  "gateStatus": {
+    "OK": "Passed",
+    "FAIL": "Failed",
+    "NOT_EVALUATED": "Not evaluated"
+  },
+  "assetClass": {
+    "FOREX_MAJOR": "Forex majors",
+    "FOREX_MINOR": "Forex minors",
+    "FOREX_EXOTIC": "Forex exotics",
+    "METAL": "Metals",
+    "INDEX": "Indices",
+    "ENERGY": "Energies",
+    "CRYPTO": "Crypto",
+    "STOCK": "Stocks",
+    "OTHER": "Other"
   }
 }

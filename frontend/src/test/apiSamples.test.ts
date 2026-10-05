@@ -46,6 +46,7 @@ import {
   SessionsSchema,
   SystemStatusSchema,
 } from '@/pages/system/schemas';
+import { PreferencesWatchlistsSchema, RankingDetailSchema, RankingSchema } from '@/pages/ranking/schemas';
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
@@ -94,6 +95,9 @@ const CASES: [string, z.ZodType][] = [
   [`${E}audit/verify`, AuditVerifySchema],
   [`${E}status`, SystemStatusSchema],
   [`${E}config`, MaskedConfigSchema],
+  [`${E}ranking`, RankingSchema],
+  [`${E}ranking/XAUUSD`, RankingDetailSchema],
+  ['advisory/preferences', PreferencesWatchlistsSchema],
 ];
 
 const recorded = samples as Record<string, unknown>;
