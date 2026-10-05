@@ -355,7 +355,7 @@ or at any phase boundary if I ask. Chat with me in Thai.
       Origin check, lockout per username (5) and address (20) doubling from 1 min to 1 h, 5-minute step-up,
       TOTP re-enrollment (password + step-up), audit chain `web`; routes in `app/web/routers/auth.py`,
       dependencies `CurrentSession` / `CsrfSession` / `StepUpSession` in `app/web/deps.py`; CLI
-      `python -m app.cli web create-user | reset-totp | list-users`
+      `python -m app.cli web create-user | reset-password | reset-totp | list-users`
   - PWA frontend foundation (Phase 9, `frontend/`, PLAN §A15/§A28; commands and conventions in
     `frontend/README.md` and CODING_STANDARDS §9):
     - TAA-901: Vite 8 + React 19 + TypeScript 6.0 (strict) + Tailwind 4 + React Router + TanStack Query + zod +

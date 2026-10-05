@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 from app.cli.__main__ import build_parser
-from app.cli.web import create_user, list_users, reset_totp, run
+from app.cli.web import create_user, list_users, reset_password, reset_totp, run
 from app.core.clock import ManualClock
 from app.security import web_totp
 from app.storage.database import Database
@@ -136,6 +136,44 @@ def test_reset_totp_replaces_the_secret_and_ends_sessions(
 def test_reset_totp_for_an_unknown_user(auth: AuthService, clock: ManualClock) -> None:
     with pytest.raises(AuthError, match="no user"):
         reset_totp(auth, "ghost", read_line=AppCodes(io.StringIO(), clock), out=io.StringIO())
+
+
+NEW_PASSWORD = "a different long passphrase 42"
+
+
+@pytest.mark.usefixtures("owner")
+def test_reset_password_replaces_it_lifts_the_lockout_and_ends_sessions(
+    auth: AuthService, client: TestClient, clock: ManualClock, db: Database
+) -> None:
+    assert login(client, clock).status_code == 200
+    for _ in range(6):  # lock the user out with wrong passwords (the lock lasts a minute)
+        login(client, clock, password="wrong password here")
+    assert login(client, clock).status_code == 429
+    out = io.StringIO()
+    secrets_ = answers(NEW_PASSWORD, NEW_PASSWORD)
+    reset_password(auth, "owner", read_secret=lambda _p: next(secrets_), out=out)
+    assert "all of their sessions were ended" in out.getvalue()
+    with db.session() as sess:
+        assert all(row.revoked_at is not None for row in sess.scalars(select(SessionRow)))
+    clock.advance(web_totp.INTERVAL)
+    assert login(client, clock).status_code == 401  # the old password no longer works
+    clock.advance(web_totp.INTERVAL)
+    assert login(client, clock, password=NEW_PASSWORD).status_code == 200
+
+
+@pytest.mark.usefixtures("owner")
+def test_reset_password_refusals(auth: AuthService) -> None:
+    for answers_, match in (
+        ((NEW_PASSWORD, NEW_PASSWORD + "x"), "do not match"),
+        (("short", "short"), ""),
+    ):
+        it = answers(*answers_)
+        with pytest.raises(AuthError, match=match):
+            reset_password(auth, "owner", read_secret=lambda _p, it=it: next(it), out=io.StringIO())
+    with pytest.raises(AuthError, match="no user"):
+        reset_password(auth, "ghost", read_secret=lambda _p: NEW_PASSWORD, out=io.StringIO())
+    args = build_parser().parse_args(["web", "reset-password", "owner"])
+    assert args.username == "owner"
 
 
 @pytest.mark.usefixtures("owner")

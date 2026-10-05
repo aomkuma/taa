@@ -172,6 +172,25 @@ class AuthService:
             revoked = self._revoke_user_sessions(sess, user.id, now)
         self.audit.append("user.totp_reset", "cli", {"username": name, "sessions_revoked": revoked})
 
+    def reset_password(self, username: str, password: str) -> None:
+        """Set a new password (local CLI; the old one cannot be recovered), lift the user's login lockout
+        and end all of their sessions. The TOTP enrollment stays."""
+        name = normalize_username(username)
+        try:
+            passwords.check_policy(password, username=name)
+        except passwords.PasswordPolicyError as exc:
+            raise AuthError(str(exc)) from exc
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            user = sess.scalar(select(UserRow).where(UserRow.username == name))
+            if user is None:
+                raise AuthError(f"no user {name!r}")
+            user.password_hash = passwords.hash_password(password)
+            user.password_changed_at = now
+            self._clear_throttle(sess, {f"user:{name}": USER_LOCK_THRESHOLD})
+            revoked = self._revoke_user_sessions(sess, user.id, now)
+        self.audit.append("user.password_reset", "cli", {"username": name, "sessions_revoked": revoked})
+
     def list_users(self) -> list[UserRow]:
         with self.db.session() as sess:
             return list(sess.scalars(select(UserRow).order_by(UserRow.created_at)))

@@ -88,6 +88,19 @@ def reset_totp(service: AuthService, username: str, *, read_line: ReadLine, out:
     out.write(f"TOTP for {name!r} replaced; all of their sessions were ended.\n")
 
 
+def reset_password(service: AuthService, username: str, *, read_secret: ReadLine, out: TextIO) -> None:
+    name = normalize_username(username)
+    if name not in {u.username for u in service.list_users()}:
+        raise AuthError(f"no user {name!r}")
+    password = read_secret("New password: ")
+    if read_secret("Repeat the password: ") != password:
+        raise AuthError("the passwords do not match; nothing was saved")
+    service.reset_password(name, password)
+    out.write(
+        f"Password for {name!r} replaced; all of their sessions were ended. The TOTP app stays the same.\n"
+    )
+
+
 def list_users(service: AuthService, *, out: TextIO) -> None:
     users = service.list_users()
     if not users:
@@ -107,6 +120,8 @@ def run(args: argparse.Namespace, *, out: TextIO, service: AuthService | None = 
         )
     elif args.web_command == "reset-totp":
         reset_totp(service, args.username, read_line=input, out=out)
+    elif args.web_command == "reset-password":
+        reset_password(service, args.username, read_secret=getpass.getpass, out=out)
     else:
         list_users(service, out=out)
     return 0
