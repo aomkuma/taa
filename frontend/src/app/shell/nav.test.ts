@@ -15,7 +15,12 @@ describe('navigation model', () => {
     const feed = visibleItems(false).map((item) => item.id);
     expect(feed).toContain('opportunities');
     expect(feed).not.toContain('positions');
-    expect(visibleItems(true)).toHaveLength(NAV_ITEMS.length);
+    expect(visibleItems(true, true)).toHaveLength(NAV_ITEMS.length);
+  });
+
+  it('shows the user administration to OWNER and ADMIN users only', () => {
+    expect(visibleItems(true).map((item) => item.id)).not.toContain('admin');
+    expect(visibleItems(false, true).map((item) => item.id)).toContain('admin');
   });
 
   it('fills the bottom bar from the visible pages', () => {

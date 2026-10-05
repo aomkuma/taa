@@ -119,6 +119,10 @@ USER_ROUTES = [
     "advisory/preferences",
     "advisory/detectors",
     "me/entitlements",
+    "me/account-profile",
+    "admin/users",
+    "admin/plans",
+    "admin/users/USER/entitlements",
 ]
 
 
@@ -536,8 +540,9 @@ VOLATILE = {
 }
 
 
-def normalize(value: Any, engine_id: str) -> Any:
-    """Random engine ids become ``ENGINE`` and volatile values fixed ones, so the file is stable."""
+def normalize(value: Any, engine_id: str, users: dict[str, str] | None = None) -> Any:
+    """Random engine and user ids become ``ENGINE`` and *users*' placeholders (id → name) and volatile values
+    fixed ones, so the file is stable."""
 
     def fix(node: Any) -> Any:
         if isinstance(node, dict):
@@ -546,7 +551,10 @@ def normalize(value: Any, engine_id: str) -> Any:
             return [fix(v) for v in node]
         return node
 
-    return fix(json.loads(json.dumps(value).replace(engine_id, "ENGINE")))
+    text = json.dumps(value).replace(engine_id, "ENGINE")
+    for user_id, name in (users or {}).items():
+        text = text.replace(user_id, name)
+    return fix(json.loads(text))
 
 
 def test_api_samples_match_the_shared_file(
@@ -561,10 +569,13 @@ def test_api_samples_match_the_shared_file(
         resp = client.get(f"/api/v1/engines/{mine}/{route}")
         assert resp.status_code == 200, (route, resp.text)
         samples[f"engines/ENGINE/{route}"] = normalize(resp.json(), mine)
+    user_id = client.get("/api/v1/auth/session").json()["user"]["id"]
+    listed = client.get("/api/v1/admin/users").json()["items"]
+    users = {u["id"]: "USER" if u["id"] == user_id else f"USER_{u['username'].upper()}" for u in listed}
     for route in USER_ROUTES:
-        resp = client.get(f"/api/v1/{route}")
+        resp = client.get(f"/api/v1/{route.replace('USER', user_id)}")
         assert resp.status_code == 200, (route, resp.text)
-        samples[route] = normalize(resp.json(), mine)
+        samples[route] = normalize(resp.json(), mine, users)
     text = json.dumps(samples, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     if os.environ.get("TAA_UPDATE_API_SAMPLES") == "1":
         SAMPLES.parent.mkdir(parents=True, exist_ok=True)

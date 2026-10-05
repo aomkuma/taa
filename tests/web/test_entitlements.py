@@ -183,6 +183,14 @@ class TestAdministration:
             f"/admin/users/{bob}/overrides/ALERTS_PER_DAY", {"value": 99, "reason": "beta tester"}
         )
         assert changed.json()["limits"]["ALERTS_PER_DAY"] == 99
+        seen = rig.client.get(f"/api/v1/admin/users/{bob}/entitlements").json()
+        assert seen["plan"] == "PRO" and seen["limits"]["ALERTS_PER_DAY"] == 99
+        assert [(r["key"], r["value"], r["reason"]) for r in seen["override_rows"]] == [
+            ("ALERTS_PER_DAY", 99, "beta tester")
+        ]
+        listed = {u["username"]: u["plan"] for u in rig.client.get("/api/v1/admin/users").json()["items"]}
+        assert listed["bob"] == "PRO" and listed["alice"] == "OWNER"
+        assert rig.client.get("/api/v1/admin/users/nobody/entitlements").status_code == 404
         assert rig.put(f"/admin/users/{bob}/overrides/MADE_UP", {"value": 1}).status_code == 400
         bad = rig.put(f"/admin/users/{bob}/overrides/FAMILIES", {"value": ["NOT_A_FAMILY"]})
         assert bad.status_code == 400 and bad.json()["error"]["code"] == "invalid_override"
@@ -203,6 +211,7 @@ class TestAdministration:
     def test_admin_reads_plans_but_assigns_nothing(self, rig: Rig) -> None:
         rig.login("ada", step_up=True)
         assert rig.client.get("/api/v1/admin/plans").status_code == 200
+        assert rig.client.get(f"/api/v1/admin/users/{rig.ids['bob']}/entitlements").status_code == 200
         resp = rig.post(f"/admin/users/{rig.ids['bob']}/plan", {"plan": "PRO"})
         assert resp.status_code == 403 and resp.json()["error"]["code"] == "role_forbidden"
 

@@ -65,8 +65,8 @@ async def checkout(body: CheckoutBody, ctx: Enabled, session: CsrfSession) -> di
         result = PROVIDER.checkout(
             session.user_id,
             body.plan,
-            success_url=f"{origin}/settings/plan",
-            cancel_url=f"{origin}/settings/plan",
+            success_url=f"{origin}/account",
+            cancel_url=f"{origin}/account",
         )
     except BillingError as exc:
         raise ApiProblem(503, exc.code, str(exc)) from exc

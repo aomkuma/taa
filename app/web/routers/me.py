@@ -3,7 +3,10 @@
 - ``GET /me/export``: everything stored about the session user as a JSON download (:mod:`app.web.privacy`)
 - ``POST /me/erase`` ``{confirm: <username>}`` (step-up): erase the session user's personal data; 409
   ``owner_cannot_be_erased`` / ``engines_active``, 400 ``confirmation_mismatch``
-- ``GET /admin/users`` (OWNER or ADMIN): username, role, state and creation date of every user, nothing else
+- ``GET /admin/users`` (OWNER or ADMIN): username, role, state, creation date and plan of every user,
+  nothing else
+- ``GET /admin/users/{user_id}/entitlements`` (OWNER or ADMIN): one user's resolved entitlements and the
+  override rows behind them (key, value, reason, who and when; TAA-921)
 - ``POST /admin/users/{user_id}/erase`` ``{confirm: <username>}`` (OWNER, step-up): erase another user on
   their request
 - ``GET /me/entitlements``: the session user's plan, features, limits and this period's usage (TAA-8A2)
@@ -100,10 +103,12 @@ async def erase_me(body: ConfirmBody, ctx: Context, session: StepUpSession) -> R
 
 @router.get("/admin/users")
 async def users(ctx: Context, session: AdminSession) -> dict[str, Any]:
+    service = EntitlementService(ctx.db, ctx.clock)
+
     def load() -> list[dict[str, Any]]:
         with ctx.db.session() as sess:
             rows = sess.scalars(select(UserRow).order_by(UserRow.created_at)).all()
-            return [
+            listed = [
                 {
                     "id": u.id,
                     "username": u.username,
@@ -113,6 +118,7 @@ async def users(ctx: Context, session: AdminSession) -> dict[str, Any]:
                 }
                 for u in rows
             ]
+        return [u | {"plan": service.resolve(u["id"]).plan} for u in listed]
 
     return {"items": await run_in_threadpool(load)}
 
@@ -126,6 +132,35 @@ async def erase_other(
 ) -> Response:
     await _erase(ctx, user_id[:36], body.confirm, session.username)
     return Response(status_code=204)
+
+
+@router.get("/admin/users/{user_id}/entitlements")
+async def user_entitlements(user_id: str, ctx: Context, session: AdminSession) -> dict[str, Any]:
+    def load() -> dict[str, Any]:
+        with ctx.db.session() as sess:
+            if sess.get(UserRow, user_id[:36]) is None:
+                raise ApiProblem(404, "user_not_found", "No such user")
+            rows = sess.scalars(
+                select(EntitlementOverrideRow)
+                .where(EntitlementOverrideRow.user_id == user_id[:36])
+                .order_by(EntitlementOverrideRow.key)
+            ).all()
+            return {
+                "override_rows": [
+                    {
+                        "key": r.key,
+                        "value": r.value,
+                        "reason": r.reason,
+                        "created_by": r.created_by,
+                        "created_at": json_safe(r.created_at),
+                    }
+                    for r in rows
+                ]
+            }
+
+    rows = await run_in_threadpool(load)
+    ent = await run_in_threadpool(EntitlementService(ctx.db, ctx.clock).resolve, user_id[:36])
+    return ent.to_dict() | rows
 
 
 @router.get("/me/entitlements")

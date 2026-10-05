@@ -1,4 +1,4 @@
-/** Responses of the theories & conditions page (TAA-809 catalog, TAA-8A2 entitlements; TAA-920). */
+/** The detector catalog of the theories & conditions page (TAA-809; TAA-920). */
 import { z } from 'zod';
 
 /** A changeable parameter: a number with both bounds, or a switch (`param_bounds` in app/web/advisory.py). */
@@ -32,13 +32,4 @@ export const CatalogSchema = z.object({
 });
 export type Catalog = z.infer<typeof CatalogSchema>;
 
-/** `GET /me/entitlements`: `families` null means every family. */
-export const EntitlementsSchema = z.looseObject({
-  plan: z.string(),
-  families: z.array(z.string()).nullable(),
-  asset_classes: z.array(z.string()).nullable(),
-});
-export type Entitlements = z.infer<typeof EntitlementsSchema>;
-
 export const CATALOG_QUERY_KEY = ['advisory', 'detectors'] as const;
-export const ENTITLEMENTS_QUERY_KEY = ['me', 'entitlements'] as const;

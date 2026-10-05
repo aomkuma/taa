@@ -24,9 +24,11 @@ export const NAV_IDS = [
   'analytics',
   'backtests',
   'notifications',
+  'account',
   'engines',
   'system',
   'settings',
+  'admin',
 ] as const;
 export type NavId = (typeof NAV_IDS)[number];
 
@@ -36,13 +38,16 @@ export interface NavItem {
   path: string;
   group: NavGroup;
   own: boolean;
+  /** Only for OWNER and ADMIN users (user administration). */
+  admin?: boolean;
 }
 
-const item = (id: NavId, group: NavGroup, own = false): NavItem => ({
+const item = (id: NavId, group: NavGroup, own = false, admin = false): NavItem => ({
   id,
   path: id === 'dashboard' ? '' : id,
   group,
   own,
+  ...(admin ? { admin } : {}),
 });
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -62,9 +67,11 @@ export const NAV_ITEMS: readonly NavItem[] = [
   item('analytics', 'analysis', true),
   item('backtests', 'analysis', true),
   item('notifications', 'account'),
+  item('account', 'account'),
   item('engines', 'account'),
   item('system', 'account', true),
   item('settings', 'account'),
+  item('admin', 'account', false, true),
 ];
 
 /** The phone's bottom bar: the first `BOTTOM_BAR_SIZE` visible of these, then "More". */
@@ -77,9 +84,12 @@ const BOTTOM_BAR_ORDER: readonly NavId[] = [
 ];
 export const BOTTOM_BAR_SIZE = 4;
 
-export function visibleItems(own: boolean): NavItem[] {
-  return NAV_ITEMS.filter((navItem) => own || !navItem.own);
+/** The pages this user sees: own-engine pages need an own engine, `admin` ones an OWNER or ADMIN role. */
+export function visibleItems(own: boolean, admin = false): NavItem[] {
+  return NAV_ITEMS.filter((navItem) => (own || !navItem.own) && (admin || navItem.admin !== true));
 }
+
+export const ADMIN_ROLES: readonly string[] = ['OWNER', 'ADMIN'];
 
 export function bottomBarItems(own: boolean): NavItem[] {
   const visible = visibleItems(own);

@@ -1,4 +1,125 @@
 {
+  "admin/plans": {
+    "items": [
+      {
+        "active": false,
+        "code": "FREE",
+        "name_en": "Free",
+        "name_th": "ฟรี",
+        "spec": {
+          "asset_classes": [
+            "FOREX_MAJOR",
+            "METAL"
+          ],
+          "families": [
+            "TREND",
+            "LEVELS",
+            "FIBONACCI",
+            "CANDLESTICK"
+          ],
+          "features": {
+            "AI_NARRATIVES": false,
+            "API_ACCESS": false,
+            "BACKTESTS": false,
+            "DATA_EXPORT": false
+          },
+          "limits": {
+            "ALERTS_PER_DAY": 5,
+            "BACKTESTS_PER_MONTH": 0,
+            "SHADOW_HISTORY_DAYS": 30,
+            "WATCHLISTS": 2,
+            "WATCHLIST_SYMBOLS": 10
+          }
+        }
+      },
+      {
+        "active": true,
+        "code": "OWNER",
+        "name_en": "Owner",
+        "name_th": "เจ้าของระบบ",
+        "spec": {
+          "asset_classes": null,
+          "families": null,
+          "features": {
+            "AI_NARRATIVES": true,
+            "API_ACCESS": true,
+            "BACKTESTS": true,
+            "DATA_EXPORT": true
+          },
+          "limits": {
+            "ALERTS_PER_DAY": null,
+            "BACKTESTS_PER_MONTH": null,
+            "SHADOW_HISTORY_DAYS": null,
+            "WATCHLISTS": null,
+            "WATCHLIST_SYMBOLS": null
+          }
+        }
+      },
+      {
+        "active": false,
+        "code": "PRO",
+        "name_en": "Pro",
+        "name_th": "โปร",
+        "spec": {
+          "asset_classes": null,
+          "families": null,
+          "features": {
+            "AI_NARRATIVES": false,
+            "API_ACCESS": false,
+            "BACKTESTS": true,
+            "DATA_EXPORT": true
+          },
+          "limits": {
+            "ALERTS_PER_DAY": 30,
+            "BACKTESTS_PER_MONTH": 20,
+            "SHADOW_HISTORY_DAYS": 365,
+            "WATCHLISTS": 10,
+            "WATCHLIST_SYMBOLS": 60
+          }
+        }
+      }
+    ]
+  },
+  "admin/users": {
+    "items": [
+      {
+        "created_at": "2026-10-01T12:00:00+00:00",
+        "disabled": false,
+        "id": "USER",
+        "plan": "OWNER",
+        "role": "OWNER",
+        "username": "alice"
+      },
+      {
+        "created_at": "2026-10-01T12:00:00+00:00",
+        "disabled": false,
+        "id": "USER_BOB",
+        "plan": "FREE",
+        "role": "SUBSCRIBER",
+        "username": "bob"
+      }
+    ]
+  },
+  "admin/users/USER/entitlements": {
+    "asset_classes": null,
+    "families": null,
+    "features": {
+      "AI_NARRATIVES": true,
+      "API_ACCESS": true,
+      "BACKTESTS": true,
+      "DATA_EXPORT": true
+    },
+    "limits": {
+      "ALERTS_PER_DAY": null,
+      "BACKTESTS_PER_MONTH": null,
+      "SHADOW_HISTORY_DAYS": null,
+      "WATCHLISTS": null,
+      "WATCHLIST_SYMBOLS": null
+    },
+    "override_rows": [],
+    "overrides": [],
+    "plan": "OWNER"
+  },
   "advisory/detectors": {
     "detectors": [
       {
@@ -12150,6 +12271,9 @@
       }
     ],
     "next_cursor": "WyIyMDI2LTA5LTMwVDExOjMwOjAwKzAwOjAwIiw0XQ"
+  },
+  "me/account-profile": {
+    "source": null
   },
   "me/entitlements": {
     "asset_classes": null,

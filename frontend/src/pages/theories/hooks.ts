@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPut } from '@/api/client';
 import { PREFERENCES_QUERY_KEY, PreferencesSchema, type Theories } from '@/pages/watchlists/schemas';
 
-import { CATALOG_QUERY_KEY, CatalogSchema, ENTITLEMENTS_QUERY_KEY, EntitlementsSchema } from './schemas';
+import { accountKeys, MyEntitlementsSchema } from '@/pages/account/schemas';
+
+import { CATALOG_QUERY_KEY, CatalogSchema } from './schemas';
 
 /** The detector catalog changes only with a release. */
 export function useCatalog() {
@@ -14,10 +16,11 @@ export function useCatalog() {
   });
 }
 
+/** `GET /me/entitlements` (shared with the account page). */
 export function useEntitlements() {
   return useQuery({
-    queryKey: ENTITLEMENTS_QUERY_KEY,
-    queryFn: ({ signal }) => apiGet('/me/entitlements', EntitlementsSchema, { signal }),
+    queryKey: accountKeys.entitlements,
+    queryFn: ({ signal }) => apiGet('/me/entitlements', MyEntitlementsSchema, { signal }),
   });
 }
 

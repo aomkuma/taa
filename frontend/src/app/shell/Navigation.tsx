@@ -2,9 +2,16 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router';
 
+import { useAuthState } from '@/auth/hooks';
 import { useEngine } from '@/engine/context';
 
-import { bottomBarItems, href, NAV_GROUPS, type NavId, type NavItem, visibleItems } from './nav';
+import { ADMIN_ROLES, bottomBarItems, href, NAV_GROUPS, type NavId, type NavItem, visibleItems } from './nav';
+
+/** Whether the signed-in user may see the user administration. */
+function useIsAdmin(): boolean {
+  const { data } = useAuthState();
+  return data?.status === 'signed_in' && ADMIN_ROLES.includes(data.session.user.role);
+}
 
 const ICON_PATHS: Partial<Record<NavId | 'more', string>> = {
   dashboard: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z',
@@ -73,9 +80,10 @@ function GroupedLinks({ items, onNavigate }: { items: NavItem[]; onNavigate?: ()
 export function SideNav() {
   const { t } = useTranslation();
   const { own } = useEngine();
+  const admin = useIsAdmin();
   return (
     <nav aria-label={t('nav.main')} className="hidden w-56 shrink-0 px-2 py-4 md:block">
-      <GroupedLinks items={visibleItems(own)} />
+      <GroupedLinks items={visibleItems(own, admin)} />
     </nav>
   );
 }
@@ -84,6 +92,7 @@ export function SideNav() {
 export function BottomNav() {
   const { t } = useTranslation();
   const { own } = useEngine();
+  const admin = useIsAdmin();
   const location = useLocation();
   // The sheet belongs to the page it was opened on, so any navigation (a link, the back button) closes it.
   const [openOn, setOpenOn] = useState<string | null>(null);
@@ -181,7 +190,7 @@ export function BottomNav() {
               </button>
             </div>
             <GroupedLinks
-              items={visibleItems(own)}
+              items={visibleItems(own, admin)}
               onNavigate={() => {
                 setOpen(false);
               }}

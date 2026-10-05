@@ -1590,6 +1590,22 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     the requirements version (so a change rebuilds the scanner's plan), and `plan_from_config(overrides=)`
     lays them over the config key by key. They never enable a detector the local config disables. An engine
     older than this field rejects the new wire format and keeps its fallback until it is updated.
+- (TAA-921 decisions) Account, plan and admin pages (`frontend/src/pages/account/`):
+  - `/account` (every user, nav "My account & plan"): the sizing account. An engine owner chooses "my
+    engine's MT5 account" (LINKED_ENGINE; the values shown are the broker account of the latest ranking run,
+    the same the ranking header uses) or a manual form; a market-feed user has the manual form only (equity,
+    optional balance, currency, leverage as the x of 1:x, optional risk % up to the 2% ceiling, checked like
+    `ProfileBody`). Plan & usage: the plan, each limit with this period's usage ("adjusted for you" when an
+    override changed it), the features, the allowed asset classes and families. The "change plan" card shows
+    only when `GET /billing/plans` answers, i.e. while `SUBSCRIPTIONS_ENABLED`; the checkout returns to
+    `/account` (was the nonexistent `/settings/plan`).
+  - `/admin` (nav "Users & plans", shown to OWNER and ADMIN roles only; `visibleItems(own, admin)`): the
+    users with role and plan (`GET /admin/users` now carries `plan`); per user (`?user=`) the resolved
+    entitlements and the override rows behind them (new `GET /admin/users/{id}/entitlements`, OWNER/ADMIN).
+    The OWNER assigns plans and saves or removes overrides through the step-up dialog; ADMIN reads only. An
+    allow-list override is "all" (null) or a non-empty list: an empty list would leave the user nothing, so it
+    cannot be saved.
+  - API samples normalise user ids (`USER` for the owner, `USER_<NAME>` for others).
 
 - **Engine ↔ cloud:**
   - New event types: `symbol_catalog`, `suitability_snapshot`, `opportunity` (create/update), `shadow_trade`

@@ -71,9 +71,11 @@
     "analytics": "Analytics",
     "backtests": "Backtests",
     "notifications": "Notifications",
+    "account": "My account & plan",
     "engines": "Engines",
     "system": "System",
-    "settings": "Settings"
+    "settings": "Settings",
+    "admin": "Users & plans"
   },
   "shell": {
     "mode": {
@@ -1532,5 +1534,146 @@
     "saved": "Saved. Applies from the next closed bar.",
     "invalid": "The server rejected the selection: {{detail}}",
     "failed": "Could not save. Try again."
+  },
+  "account": {
+    "profile": {
+      "title": "Account for sizing",
+      "intro": "The account your alerts' lot, risk and reward money are worked out for.",
+      "notSet": "Not set yet: alerts show no money until you set an account here.",
+      "source": "Where the account values come from",
+      "sourceName": {
+        "LINKED_ENGINE": "My engine's MT5 account",
+        "MANUAL": "Enter by hand"
+      },
+      "linkedNote": "Sized by MT5 on your engine with the live account; there is nothing to type.",
+      "linkedUnknown": "The engine has not reported its account yet.",
+      "asOf": "As of {{time}}",
+      "equity": "Equity",
+      "balance": "Balance",
+      "balanceOptional": "Balance (optional)",
+      "balanceHint": "Empty: the same as equity.",
+      "currency": "Account currency",
+      "leverage": "Leverage",
+      "leverageInput": "Leverage (the x of 1:x)",
+      "leverageHint": "e.g. 200 for 1:200",
+      "riskPercent": "Risk per trade",
+      "riskOptional": "Risk per trade, % (optional)",
+      "riskHint": "At most {{max}}%; the lowest of this, your trading profile and the system limit applies.",
+      "problem": {
+        "equity": "Enter the equity, above 0.",
+        "balance": "The balance must be above 0, or empty.",
+        "currency": "Pick the account currency.",
+        "leverage": "Enter the leverage, above 0 and at most 3000.",
+        "risk": "Risk per trade: above 0 and at most {{max}}%, or empty."
+      },
+      "save": "Save account",
+      "saved": "Saved.",
+      "engineGone": "That engine is not active any more; enter the account by hand.",
+      "failed": "Could not save. Try again."
+    },
+    "plan": {
+      "title": "Plan & usage",
+      "usage": "This period",
+      "used": "{{used}} of {{max}}",
+      "noLimit": "{{used}} used, no limit",
+      "adjusted": "adjusted for you",
+      "features": "Included",
+      "included": "included",
+      "notIncluded": "not included",
+      "assetClasses": "Asset classes",
+      "families": "Theory families",
+      "all": "All"
+    },
+    "planName": {
+      "OWNER": "Owner",
+      "FREE": "Free",
+      "PRO": "Pro"
+    },
+    "limit": {
+      "ALERTS_PER_DAY": "Alerts per day",
+      "WATCHLISTS": "Watchlists",
+      "WATCHLIST_SYMBOLS": "Symbols per watchlist",
+      "BACKTESTS_PER_MONTH": "Backtests per month",
+      "SHADOW_HISTORY_DAYS": "Days of accuracy history"
+    },
+    "feature": {
+      "BACKTESTS": "Backtests",
+      "AI_NARRATIVES": "AI explanations",
+      "DATA_EXPORT": "Trade and CSV exports",
+      "API_ACCESS": "API access"
+    },
+    "billing": {
+      "title": "Change plan",
+      "choose": "Choose",
+      "current": "Current plan",
+      "unavailable": "Payments are not available right now."
+    }
+  },
+  "admin": {
+    "forbidden": "Only the owner and support accounts can see this page.",
+    "readOnly": "Support accounts can look but not change plans or overrides.",
+    "users": {
+      "title": "Users",
+      "username": "User",
+      "role": "Role",
+      "plan": "Plan",
+      "since": "Since",
+      "disabled": "(disabled)",
+      "note": "Users are created with the local CLI (app.cli web create-user)."
+    },
+    "role": {
+      "OWNER": "Owner",
+      "SUBSCRIBER": "Subscriber",
+      "ADMIN": "Support"
+    },
+    "user": {
+      "title": "{{name}}",
+      "plan": "Plan"
+    },
+    "allowList": {
+      "ASSET_CLASSES": "Allowed asset classes",
+      "FAMILIES": "Allowed theory families"
+    },
+    "assign": {
+      "title": "Assign a plan",
+      "choose": "Choose a plan",
+      "button": "Assign",
+      "note": "Assigned by hand; billing stays off until the legal review."
+    },
+    "override": {
+      "title": "Overrides",
+      "none": "No overrides: the plan applies as it is.",
+      "add": "Add or change an override",
+      "key": "Setting",
+      "value": "Value",
+      "reason": "Reason",
+      "by": "By",
+      "remove": "Remove",
+      "removeKey": "Remove the override of {{key}}",
+      "save": "Save override",
+      "on": "Included",
+      "off": "Not included",
+      "included": "Included",
+      "limit": "Limit",
+      "unlimited": "No limit",
+      "emptyUnlimited": "Empty: no limit."
+    },
+    "confirm": {
+      "plan": {
+        "title": "Assign a plan",
+        "button": "Assign",
+        "body": "Give {{name}} the {{plan}} plan."
+      },
+      "override": {
+        "title": "Save an override",
+        "button": "Save",
+        "body": "Change {{key}} for {{name}}."
+      },
+      "remove": {
+        "title": "Remove an override",
+        "button": "Remove",
+        "body": "{{name}} gets the plan's {{key}} again."
+      }
+    }
   }
 }

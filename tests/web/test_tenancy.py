@@ -81,7 +81,7 @@ class TestRoles:
         rig.login("ada")
         users = rig.client.get("/api/v1/admin/users").json()["items"]
         assert {u["username"] for u in users} == {"alice", "ada", "bob", "cid"}
-        assert set(users[0]) == {"id", "username", "role", "disabled", "created_at"}
+        assert set(users[0]) == {"id", "username", "role", "disabled", "created_at", "plan"}
         resp = rig.post("/engines", {"label": "x"})
         assert resp.status_code == 403 and resp.json()["error"]["code"] == "role_forbidden"
         ada = rig.app.state.ctx.engine.registry.user("ada")
