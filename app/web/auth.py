@@ -8,7 +8,10 @@
 - Failed logins count per username and per client address, with an exponential lockout. Responses never say
   which factor failed; the audit log does.
 - Step-up: control actions need a fresh TOTP code (valid for 5 minutes on that session).
-- Every login, failure, lockout, logout, step-up and enrollment is appended to the ``web`` audit chain.
+- Self-service security (TAA-913): change the password (current password + step-up; the user's other
+  sessions end), list the user's live sessions and end any of the others.
+- Every login, failure, lockout, logout, step-up, enrollment, password change and session revocation is
+  appended to the ``web`` audit chain.
 """
 
 from __future__ import annotations
@@ -87,6 +90,19 @@ class AuthSession:
     @property
     def idle_expires_at(self) -> datetime:
         return min(self.last_seen_at + IDLE_TIMEOUT, self.expires_at)
+
+
+@dataclass(frozen=True)
+class SessionInfo:
+    """One of the user's live sessions, as the Settings page lists it."""
+
+    session_id: str
+    created_at: datetime
+    last_seen_at: datetime
+    expires_at: datetime  # whichever comes first: idle or absolute expiry
+    ip: str
+    user_agent: str
+    current: bool
 
 
 @dataclass(frozen=True)
@@ -371,6 +387,77 @@ class AuthService:
             row.totp_enrolled_at = now
             revoked = self._revoke_user_sessions(sess, user.id, now, keep=session.session_id)
         self.audit.append("auth.totp_enrolled", session.username, {"other_sessions_revoked": revoked})
+
+    # ------------------------------------------------------------------------------------------ self-service
+    def change_password(self, session: AuthSession, current: str, new: str) -> int:
+        """Replace the password (the current one is required again) and end the user's other sessions.
+        Returns how many sessions ended. Raises ``invalid_password`` or ``weak_password``."""
+        user = self._user(session.user_id)
+        if not passwords.verify_password(user.password_hash, current):
+            self.audit.append("auth.password_change_failed", session.username, {"reason": "bad_password"})
+            raise AuthFailure("invalid_password")
+        try:
+            passwords.check_policy(new, username=user.username)
+        except passwords.PasswordPolicyError as exc:
+            raise AuthFailure("weak_password") from exc
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            row = sess.get(UserRow, user.id)
+            if row is None:  # pragma: no cover - deleted concurrently
+                raise AuthFailure("invalid_password")
+            row.password_hash = passwords.hash_password(new)
+            row.password_changed_at = now
+            revoked = self._revoke_user_sessions(sess, user.id, now, keep=session.session_id)
+        self.audit.append("auth.password_changed", session.username, {"other_sessions_revoked": revoked})
+        return revoked
+
+    def list_sessions(self, session: AuthSession) -> list[SessionInfo]:
+        """The user's live sessions, newest first."""
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            rows = sess.scalars(
+                select(SessionRow)
+                .where(
+                    SessionRow.user_id == session.user_id,
+                    SessionRow.revoked_at.is_(None),
+                    SessionRow.expires_at > now,
+                    SessionRow.last_seen_at > now - IDLE_TIMEOUT,
+                )
+                .order_by(SessionRow.created_at.desc())
+            ).all()
+        return [
+            SessionInfo(
+                session_id=r.id,
+                created_at=r.created_at,
+                last_seen_at=r.last_seen_at,
+                expires_at=min(r.last_seen_at + IDLE_TIMEOUT, r.expires_at),
+                ip=r.ip,
+                user_agent=r.user_agent,
+                current=r.id == session.session_id,
+            )
+            for r in rows
+        ]
+
+    def revoke_session(self, session: AuthSession, session_id: str) -> bool:
+        """End one of the user's *other* sessions; False when it is not theirs, not live or the current one
+        (that one signs out with logout)."""
+        if session_id == session.session_id:
+            return False
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            row = sess.get(SessionRow, session_id)
+            if row is None or row.user_id != session.user_id or row.revoked_at is not None:
+                return False
+            row.revoked_at = now
+        self.audit.append("auth.session_revoked", session.username, {"session": short_id(session_id)})
+        return True
+
+    def revoke_other_sessions(self, session: AuthSession) -> int:
+        now = self.clock.now_utc()
+        with self.db.session() as sess:
+            revoked = self._revoke_user_sessions(sess, session.user_id, now, keep=session.session_id)
+        self.audit.append("auth.sessions_revoked", session.username, {"other_sessions_revoked": revoked})
+        return revoked
 
     # ------------------------------------------------------------------------------------------ internals
     def _user(self, user_id: str) -> UserRow:

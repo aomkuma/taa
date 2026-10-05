@@ -1,4 +1,5 @@
-"""``/api/v1/auth``: login with password + TOTP, session info, logout, step-up and TOTP re-enrollment.
+"""``/api/v1/auth``: login with password + TOTP, session info, logout, step-up, TOTP re-enrollment, and the
+Settings page's security (TAA-913): password change and the user's sessions.
 
 Error codes the PWA relies on:
 
@@ -7,6 +8,8 @@ Error codes the PWA relies on:
 - ``unauthenticated`` (401): no live session
 - ``csrf_failed`` / ``origin_not_allowed`` / ``step_up_required`` (403)
 - ``invalid_code`` / ``invalid_password`` (400; not 401, so they never look like an expired session)
+- ``weak_password`` (400): the new password breaks the policy (at least 8 characters, not the username)
+- ``session_not_found`` (404): not one of the user's other live sessions
 """
 
 from __future__ import annotations
@@ -54,6 +57,13 @@ class PasswordBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     password: str = Field(min_length=1, max_length=MAX_LENGTH)
+
+
+class PasswordChangeBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    current_password: str = Field(min_length=1, max_length=MAX_LENGTH)
+    new_password: str = Field(min_length=1, max_length=MAX_LENGTH)
 
 
 def _problem(exc: AuthFailure) -> ApiProblem:
@@ -182,3 +192,45 @@ def totp_confirm(body: CodeBody, ctx: Context, session: CsrfSession) -> None:
         ctx.auth.confirm_totp_enrollment(session, body.code)
     except AuthFailure as exc:
         raise _problem(exc) from None
+
+
+@router.post("/password")
+def change_password(body: PasswordChangeBody, ctx: Context, session: StepUpSession) -> dict[str, int]:
+    """New password: needs a recent step-up and the current password; the user's other sessions end."""
+    try:
+        revoked = ctx.auth.change_password(session, body.current_password, body.new_password)
+    except AuthFailure as exc:
+        if exc.code == "weak_password":
+            raise ApiProblem(400, "weak_password", "At least 8 characters, not the username") from None
+        raise _problem(exc) from None
+    return {"other_sessions_revoked": revoked}
+
+
+@router.get("/sessions")
+def list_sessions(ctx: Context, session: CurrentSession) -> dict[str, Any]:
+    """The user's live sessions (device, address, times), newest first; ``current`` marks this one."""
+    return {
+        "items": [
+            {
+                "session_id": s.session_id,
+                "created_at": s.created_at.isoformat(),
+                "last_seen_at": s.last_seen_at.isoformat(),
+                "expires_at": s.expires_at.isoformat(),
+                "ip": s.ip,
+                "user_agent": s.user_agent,
+                "current": s.current,
+            }
+            for s in ctx.auth.list_sessions(session)
+        ]
+    }
+
+
+@router.post("/sessions/revoke-others")
+def revoke_other_sessions(ctx: Context, session: CsrfSession) -> dict[str, int]:
+    return {"revoked": ctx.auth.revoke_other_sessions(session)}
+
+
+@router.post("/sessions/{session_id}/revoke", status_code=204)
+def revoke_session(session_id: str, ctx: Context, session: CsrfSession) -> None:
+    if not ctx.auth.revoke_session(session, session_id[:36]):
+        raise ApiProblem(404, "session_not_found", "No such session")

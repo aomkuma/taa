@@ -1,4 +1,17 @@
 {
+  "auth/sessions": {
+    "items": [
+      {
+        "created_at": "2026-10-01T12:00:00+00:00",
+        "current": true,
+        "expires_at": "2026-10-01T12:30:00+00:00",
+        "ip": "testclient",
+        "last_seen_at": "2026-10-01T12:00:00+00:00",
+        "session_id": "0191a0a0-0000-7000-8000-0000000000e1",
+        "user_agent": "testclient"
+      }
+    ]
+  },
   "backtests/presets": {
     "max_days": 366,
     "max_open_runs": 2,
@@ -23,6 +36,13 @@
         "status": "ACTIVE"
       }
     ]
+  },
+  "engines/ENGINE/audit/verify": {
+    "chain": "engine:ENGINE",
+    "detail": "3 events verified",
+    "events_checked": 3,
+    "first_bad_seq": null,
+    "ok": true
   },
   "engines/ENGINE/backtests": {
     "items": [

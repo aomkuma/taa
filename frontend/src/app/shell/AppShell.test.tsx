@@ -17,20 +17,20 @@ describe('app shell', () => {
 
   it('shows the mode banner, engine health and both navigations for the owner', async () => {
     owner();
-    renderShell('/settings');
+    renderShell('/engines');
     expect(await screen.findByText(/PAPER mode: simulated orders only/)).toBeInTheDocument();
     expect(await screen.findByText('Engine online')).toBeInTheDocument();
     expect(screen.getByText('e1 pc')).toBeInTheDocument();
     const main = screen.getByRole('navigation', { name: 'Main menu' });
     expect(within(main).getByRole('link', { name: 'Positions' })).toHaveAttribute('href', '/positions');
-    expect(within(main).getByRole('link', { name: 'Settings' })).toHaveAttribute('aria-current', 'page');
+    expect(within(main).getByRole('link', { name: 'Engines' })).toHaveAttribute('aria-current', 'page');
     const quick = screen.getByRole('navigation', { name: 'Quick menu' });
     expect(within(quick).getAllByRole('link')).toHaveLength(4);
   });
 
   it('opens the live stream of the own engine and goes live', async () => {
     const api = owner();
-    const { sources } = renderShell('/settings');
+    const { sources } = renderShell('/engines');
     await screen.findByText('Engine online');
     expect(sources.last().url).toBe('/api/v1/engines/e1/stream');
     expect(screen.getByText('Connecting live updates…')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('app shell', () => {
 
   it('applies heartbeats from the stream to the banner and the health', async () => {
     owner();
-    const { sources } = renderShell('/settings');
+    const { sources } = renderShell('/engines');
     await screen.findByText('Engine online');
     act(() => {
       sources.last().emit('ready', { cursor: 3, resumed: true });
@@ -61,7 +61,7 @@ describe('app shell', () => {
 
   it('refetches the status on other status changes', async () => {
     const api = owner();
-    const { sources } = renderShell('/settings');
+    const { sources } = renderShell('/engines');
     await screen.findByText('Engine online');
     const before = statusCalls(api.calls);
     act(() => {
@@ -78,7 +78,7 @@ describe('app shell', () => {
       'GET /engines/e1/status': () =>
         json(status('e1', { heartbeat: heartbeat({ received_at: iso(Date.now() - 5 * 60_000) }) })),
     });
-    renderShell('/settings');
+    renderShell('/engines');
     expect(await screen.findByText(/No heartbeat from the engine since/)).toBeInTheDocument();
   });
 
@@ -86,13 +86,13 @@ describe('app shell', () => {
     owner({
       'GET /engines/e1/status': () => json(status('e1', { heartbeat: heartbeat({ market_open: false }) })),
     });
-    renderShell('/settings');
+    renderShell('/engines');
     expect(await screen.findByText('Market closed')).toBeInTheDocument();
   });
 
   it('shows a stale badge while live updates are lost', async () => {
     owner();
-    const { sources } = renderShell('/settings');
+    const { sources } = renderShell('/engines');
     await screen.findByText('Engine online');
     act(() => {
       sources.last().emit('ready', { cursor: 3, resumed: true });
@@ -108,7 +108,7 @@ describe('app shell', () => {
     owner({
       'GET /engines/e1/status': () => json(status('e1', { kill_switch: { active: true, last: null } })),
     });
-    renderShell('/settings');
+    renderShell('/engines');
     expect(await screen.findByRole('alert')).toHaveTextContent('Kill switch active');
   });
 
@@ -116,7 +116,7 @@ describe('app shell', () => {
     owner({
       'GET /engines/e1/status': () => json(status('e1', { heartbeat: heartbeat({ mode: 'TURBO' }) })),
     });
-    renderShell('/settings');
+    renderShell('/engines');
     expect(await screen.findByText('Mode TURBO')).toBeInTheDocument();
   });
 
@@ -141,7 +141,7 @@ describe('app shell', () => {
       'GET /me/feed': () => json({ engine_id: null, own: false }),
       'GET /engines': () => json({ items: [] }),
     });
-    renderShell('/settings');
+    renderShell('/engines');
     expect(await screen.findByText('No engine linked yet.')).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: 'Link an engine' })[0]).toHaveAttribute('href', '/engines');
   });
@@ -161,7 +161,7 @@ describe('app shell', () => {
       'GET /engines': () => json({ items: [engine('e1'), engine('e2'), engine('e3', 'REVOKED')] }),
       'GET /engines/e2/status': () => json(status('e2', { heartbeat: heartbeat({ mode: 'DEMO' }) })),
     });
-    const { sources } = renderShell('/settings');
+    const { sources } = renderShell('/engines');
     const picker = await screen.findByRole('combobox', { name: 'Engine' });
     expect(
       within(picker)
@@ -179,7 +179,7 @@ describe('app shell', () => {
   it('shows an offline banner while the device is offline', async () => {
     owner();
     const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
-    renderShell('/settings');
+    renderShell('/engines');
     act(() => {
       window.dispatchEvent(new Event('offline'));
     });
@@ -197,7 +197,7 @@ describe('app shell', () => {
   it('opens every page from the More sheet on phones and closes it on navigation or Escape', async () => {
     owner();
     const user = userEvent.setup();
-    const { router } = renderShell('/settings');
+    const { router } = renderShell('/engines');
     await screen.findByText('Engine online');
     await user.click(screen.getByRole('button', { name: 'More' }));
     const sheet = screen.getByRole('dialog', { name: 'All pages' });
@@ -215,7 +215,7 @@ describe('app shell', () => {
   it('switches to the dark theme', async () => {
     owner();
     const user = userEvent.setup();
-    renderShell('/settings');
+    renderShell('/engines');
     await user.selectOptions(await screen.findByRole('combobox', { name: 'Theme' }), 'dark');
     expect(document.documentElement).toHaveClass('dark');
     expect(window.localStorage.getItem('taa.theme')).toBe('dark');
@@ -226,7 +226,7 @@ describe('app shell', () => {
   it('is in Thai by default', async () => {
     owner();
     const sources = fakeEventSources();
-    renderApp('/settings', 'th', { createEventSource: sources.factory });
+    renderApp('/engines', 'th', { createEventSource: sources.factory });
     expect(await screen.findByText(/โหมด PAPER/)).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'เมนูหลัก' })).toBeInTheDocument();
   });

@@ -365,6 +365,91 @@ class TestTotpEnrollment:
         assert response.status_code == 409
 
 
+class TestSelfService:
+    """TAA-913: password change and the user's sessions."""
+
+    def _stepped_up(self, client: TestClient, clock: ManualClock) -> dict[str, str]:
+        return TestTotpEnrollment._stepped_up(TestTotpEnrollment(), client, clock)
+
+    def test_password_change_needs_step_up_and_the_current_password(
+        self, app: object, client: TestClient, clock: ManualClock, db: Database
+    ) -> None:
+        login(client, clock)
+        body = {"current_password": PASSWORD, "new_password": "a brand new secret"}
+        plain = client.post("/api/v1/auth/password", json=body, headers=mutation_headers(client))
+        assert plain.status_code == 403 and plain.json()["error"]["code"] == "step_up_required"
+        with TestClient(app, base_url="https://testserver") as other:  # type: ignore[arg-type]
+            next_step(clock)
+            login(other, clock)
+            headers = self._stepped_up(client, clock)
+            wrong = client.post(
+                "/api/v1/auth/password", json=body | {"current_password": "not it"}, headers=headers
+            )
+            assert wrong.status_code == 400 and wrong.json()["error"]["code"] == "invalid_password"
+            weak = client.post(
+                "/api/v1/auth/password", json=body | {"new_password": "short"}, headers=headers
+            )
+            assert weak.status_code == 400 and weak.json()["error"]["code"] == "weak_password"
+            same = client.post(
+                "/api/v1/auth/password", json=body | {"new_password": "Owner"}, headers=headers
+            )
+            assert same.json()["error"]["code"] == "weak_password"
+            done = client.post("/api/v1/auth/password", json=body, headers=headers)
+            assert done.status_code == 200 and done.json() == {"other_sessions_revoked": 1}
+            assert client.get("/api/v1/auth/session").status_code == 200  # this one stays
+            assert other.get("/api/v1/auth/session").status_code == 401
+        next_step(clock)
+        fresh = TestClient(app, base_url="https://testserver")  # type: ignore[arg-type]
+        assert login(fresh, clock).status_code == 401
+        next_step(clock)
+        assert login(fresh, clock, password="a brand new secret").status_code == 200
+        assert audit_events(db, "auth.password_changed") and audit_events(db, "auth.password_change_failed")
+
+    def test_sessions_are_listed_and_others_can_be_ended(
+        self, app: object, client: TestClient, clock: ManualClock, db: Database
+    ) -> None:
+        login(client, clock)
+        with (
+            TestClient(app, base_url="https://testserver", headers={"User-Agent": "phone"}) as phone,  # type: ignore[arg-type]
+            TestClient(app, base_url="https://testserver") as tablet,  # type: ignore[arg-type]
+        ):
+            next_step(clock)
+            login(phone, clock)
+            next_step(clock)
+            login(tablet, clock)
+            items = client.get("/api/v1/auth/sessions").json()["items"]
+            assert len(items) == 3 and [i["current"] for i in items].count(True) == 1
+            current = next(i for i in items if i["current"])
+            phone_id = next(i["session_id"] for i in items if i["user_agent"] == "phone")
+            headers = mutation_headers(client)
+            own = client.post(f"/api/v1/auth/sessions/{current['session_id']}/revoke", headers=headers)
+            assert own.status_code == 404  # this one signs out with logout
+            gone = client.post(f"/api/v1/auth/sessions/{phone_id}/revoke", headers=headers)
+            assert gone.status_code == 204 and phone.get("/api/v1/auth/session").status_code == 401
+            again = client.post(f"/api/v1/auth/sessions/{phone_id}/revoke", headers=headers)
+            assert again.status_code == 404
+            rest = client.post("/api/v1/auth/sessions/revoke-others", headers=headers)
+            assert rest.json() == {"revoked": 1} and tablet.get("/api/v1/auth/session").status_code == 401
+            assert [i["current"] for i in client.get("/api/v1/auth/sessions").json()["items"]] == [True]
+        assert audit_events(db, "auth.session_revoked") and audit_events(db, "auth.sessions_revoked")
+
+    def test_another_users_session_cannot_be_ended(
+        self, app: object, client: TestClient, clock: ManualClock, db: Database
+    ) -> None:
+        app.state.ctx.auth.create_user("bob", PASSWORD, TOTP_SECRET, role="SUBSCRIBER")  # type: ignore[attr-defined]
+        with TestClient(app, base_url="https://testserver") as bob:  # type: ignore[arg-type]
+            assert login(bob, clock, username="bob").status_code == 200
+            next_step(clock)
+            login(client, clock)
+            with db.session() as sess:
+                bob_id = sess.scalar(select(UserRow.id).where(UserRow.username == "bob"))
+                theirs = sess.scalar(select(SessionRow.id).where(SessionRow.user_id == bob_id))
+            assert theirs is not None
+            resp = client.post(f"/api/v1/auth/sessions/{theirs}/revoke", headers=mutation_headers(client))
+            assert resp.status_code == 404 and bob.get("/api/v1/auth/session").status_code == 200
+            assert all(i["session_id"] != theirs for i in client.get("/api/v1/auth/sessions").json()["items"])
+
+
 class TestUsers:
     def test_single_owner(self, auth: AuthService) -> None:
         with pytest.raises(AuthError, match="OWNER already exists"):

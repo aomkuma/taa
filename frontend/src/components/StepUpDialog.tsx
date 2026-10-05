@@ -16,6 +16,8 @@ export interface StepUpDialogProps {
   validate?: () => string | null;
   /** Runs the action once the step-up is fresh; the dialog closes when it resolves. */
   onConfirm: () => Promise<void>;
+  /** A message for an action's own errors (a wrong password, for example); null falls back to the default. */
+  errorText?: (err: unknown) => string | null;
   onClose: () => void;
 }
 
@@ -33,6 +35,7 @@ export function StepUpDialog({
   danger,
   validate,
   onConfirm,
+  errorText,
   onClose,
 }: StepUpDialogProps) {
   const { t, i18n } = useTranslation();
@@ -97,7 +100,7 @@ export function StepUpDialog({
           setAskCode(true);
           setError(t('stepUp.expired'));
         } else {
-          setError(failure(err));
+          setError(errorText?.(err) ?? failure(err));
         }
         return;
       }

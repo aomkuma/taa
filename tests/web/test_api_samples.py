@@ -77,6 +77,7 @@ ENGINE_ROUTES = [
     "kill-switch?limit=20",
     "commands?limit=20",
     "breakers?limit=20",
+    "audit/verify",
 ]
 USER_ROUTES = [
     "me/feed",
@@ -85,6 +86,7 @@ USER_ROUTES = [
     "notifications?limit=20",
     "notifications/preferences",
     "push/subscriptions",
+    "auth/sessions",
     "backtests/presets",
 ]
 
@@ -342,7 +344,11 @@ def realistic_rows(db: Database, engine_id: str) -> None:
 
 # Values that differ between runs (the audit hash covers the random engine id; the sample run row is stamped
 # with the wall clock), replaced by fixed values of the same shape.
-VOLATILE = {"verified_hash": "0" * 64, "started_at": T.isoformat()}
+VOLATILE = {
+    "verified_hash": "0" * 64,
+    "started_at": T.isoformat(),
+    "session_id": "0191a0a0-0000-7000-8000-0000000000e1",  # a login's random id
+}
 
 
 def normalize(value: Any, engine_id: str) -> Any:

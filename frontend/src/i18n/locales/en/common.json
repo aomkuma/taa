@@ -818,5 +818,114 @@
       "title": "Types to push",
       "note": "Types you turn off are not pushed, but still appear in the notification centre."
     }
+  },
+  "system": {
+    "yes": "yes",
+    "no": "no",
+    "none": "no data yet",
+    "engine": {
+      "title": "Engine and connection",
+      "label": "Engine",
+      "run": "Run",
+      "started": "Started",
+      "version": "Version",
+      "configHash": "Config hash",
+      "heartbeat": "Heartbeat",
+      "watch": "Status",
+      "online": "Online",
+      "offline": "Offline",
+      "stopped": "Stopped",
+      "mt5": "MT5 connected",
+      "clock": "Server time verified",
+      "market": "Market",
+      "marketOpen": "open",
+      "marketClosed": "closed",
+      "until": "changes {{at}}",
+      "cycles": "Loop cycles"
+    },
+    "sync": {
+      "title": "Sync",
+      "lastHeartbeat": "Last heartbeat",
+      "lag": "Sync delay",
+      "seconds": "{{n}} s",
+      "backlog": "Waiting to upload",
+      "lastBatch": "Last batch received"
+    },
+    "account": {
+      "title": "Terminal and account",
+      "masked": "The engine hides passwords and part of the login before anything leaves the PC."
+    },
+    "audit": {
+      "title": "Audit chain",
+      "stored": "Last check",
+      "ok": "intact",
+      "broken": "problem found",
+      "events": "Events verified",
+      "checkedAt": "Checked",
+      "verify": "Verify now",
+      "verifying": "Verifying…",
+      "verifiedOk": "The chain is intact ({{n}} events checked).",
+      "verifiedBad": "The chain breaks at {{seq}}: {{detail}}"
+    }
+  },
+  "settings": {
+    "failed": "That did not work. Try again.",
+    "cancel": "Cancel",
+    "profile": {
+      "title": "Language and time zone",
+      "language": "Notification language",
+      "timezone": "Time zone",
+      "note": "Used for push texts and alert times. The screen language is switched at the top right."
+    },
+    "security": {
+      "title": "Security",
+      "note": "Both need a code from your authenticator app and sign you out on every other device."
+    },
+    "password": {
+      "title": "Change password",
+      "confirm": "Change password",
+      "body": "At least 8 characters, and not your username.",
+      "current": "Current password",
+      "new": "New password",
+      "again": "New password again",
+      "required": "Fill in the passwords.",
+      "weak": "The new password needs at least 8 characters and must not be your username.",
+      "mismatch": "The new passwords do not match.",
+      "wrong": "The current password is not correct.",
+      "done": "Password changed; signed out on {{n}} other device(s)."
+    },
+    "totp": {
+      "title": "Set up a new authenticator",
+      "start": "Continue",
+      "body": "For a new phone or authenticator app. The old one keeps working until a code from the new one is confirmed.",
+      "scan": "Scan this QR code with your authenticator app, then enter a 6-digit code from it.",
+      "qr": "QR code for the authenticator app",
+      "manual": "Or enter the key by hand:",
+      "code": "Code from the new app",
+      "confirm": "Confirm",
+      "wrongCode": "That code does not match; check the app and the device clock.",
+      "done": "The new authenticator is active; other devices were signed out."
+    },
+    "sessions": {
+      "title": "Signed-in devices",
+      "current": "this device",
+      "detail": "IP {{ip}} · signed in {{since}} · last active {{seen}}",
+      "end": "Sign out",
+      "endOthers": "Sign out all other devices"
+    },
+    "config": {
+      "title": "Effective configuration (read-only)",
+      "env": "Environment (secrets masked)",
+      "meta": "Hash {{hash}} · recorded {{at}}",
+      "note": "Change it in config.yaml and .env on the engine's PC, then restart the engine."
+    },
+    "about": {
+      "title": "About",
+      "body": "TAA, an analysis and automated trading assistant for MetaTrader 5 accounts.",
+      "disclaimer": "Backtest and paper results are hypothetical and say nothing about the future. No profit is promised.",
+      "charts": "Charts by",
+      "font": "Noto Sans Thai font (SIL Open Font License 1.1)",
+      "mt5": "MetaTrader 5 is a trademark of MetaQuotes Ltd. This system is not affiliated with MetaQuotes or FBS."
+    }
   }
 }

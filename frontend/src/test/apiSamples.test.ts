@@ -40,6 +40,12 @@ import {
 } from '@/pages/backtests/schemas';
 
 import { DevicesSchema, NotificationListSchema, PreferencesSchema } from '@/pages/notifications/schemas';
+import {
+  AuditVerifySchema,
+  MaskedConfigSchema,
+  SessionsSchema,
+  SystemStatusSchema,
+} from '@/pages/system/schemas';
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
@@ -84,6 +90,10 @@ const CASES: [string, z.ZodType][] = [
   ['notifications?limit=20', NotificationListSchema],
   ['notifications/preferences', PreferencesSchema],
   ['push/subscriptions', DevicesSchema],
+  ['auth/sessions', SessionsSchema],
+  [`${E}audit/verify`, AuditVerifySchema],
+  [`${E}status`, SystemStatusSchema],
+  [`${E}config`, MaskedConfigSchema],
 ];
 
 const recorded = samples as Record<string, unknown>;

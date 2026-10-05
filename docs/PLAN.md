@@ -1014,6 +1014,21 @@ AI failures never trip trading breakers; they only produce HOLD.
     banner, `push` shows the message (tag, renotify, silent) and sets the app badge from `badge` (R25),
     `notificationclick` focuses an open TAA window on the in-app link or opens one; links outside the app are
     replaced by `/` (`src/app/pushMessage.ts`).
+- (TAA-913 decisions) System and Settings (`frontend/src/pages/system/`, `frontend/src/pages/settings/`):
+  - System (own engine): engine and run, heartbeat health (watch status, MT5, clock, market and its next change,
+    cycles), sync (last heartbeat, delay between sending and receiving it, outbox backlog, last batch), the
+    terminal and account from the masked `/config` env, and the audit chain (stored check + "Verify now" through
+    `GET /audit/verify`). Server-time offset, data quality and recent warnings need engine fields that do not
+    exist yet; they are left out rather than shown empty.
+  - Settings (every user): notification language and time zone (`PUT /auth/profile`), security, signed-in
+    devices, about and attributions, and for the engine's owner the effective configuration (read-only, secrets
+    masked by the engine; one collapsible section per config block).
+  - New auth routes: `POST /auth/password` (step-up + the current password; policy errors `weak_password`; the
+    user's other sessions end), `GET /auth/sessions` (live sessions: device, address, times, `current`),
+    `POST /auth/sessions/{id}/revoke` (another of the user's sessions; 404 for the current one or anyone else's)
+    and `POST /auth/sessions/revoke-others`. All audited on the `web` chain. TOTP re-enrollment uses the existing
+    enroll/confirm routes; the QR is a `data:` SVG (`img-src data:` in the CSP).
+  - `StepUpDialog` gained `errorText` for an action's own errors (a wrong password).
   - The login page's error text became a component: passing the typed `t` as a parameter hit TS2589 (type
     instantiation too deep) once the catalogs grew.
 
