@@ -39,6 +39,9 @@ const BUILT: Partial<Record<NavId, Omit<RouteObject, 'path' | 'index' | 'childre
       Component: (await import('@/pages/notifications/NotificationsPage')).NotificationsPage,
     }),
   },
+  accuracy: {
+    lazy: async () => ({ Component: (await import('@/pages/accuracy/AccuracyPage')).AccuracyPage }),
+  },
   watchlists: {
     lazy: async () => ({ Component: (await import('@/pages/watchlists/WatchlistsPage')).WatchlistsPage }),
   },

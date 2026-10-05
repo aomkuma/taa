@@ -344,5 +344,15 @@
     "tp_present": "มี take profit",
     "unknown_position_risk": "ทุก position ที่เปิดอยู่มี stop ที่วัดความเสี่ยงได้",
     "weekly_loss": "เพดานขาดทุนรายสัปดาห์"
+  },
+  "shadowFlag": {
+    "AMBIGUOUS": "สมมติชน SL ก่อน",
+    "TICK_RESOLVED": "ตัดสินจาก tick",
+    "PARTIAL_BAR": "แท่งเข้าไม่ครบ",
+    "GAP": "เติมที่ช่องว่างราคา",
+    "NOT_TRADABLE": "นับเป็น R เท่านั้น (ล็อตใหญ่เกินทุน)",
+    "ENTRY_FALLBACK": "ใช้ราคาจากสัญญาณ",
+    "SWAP_UNKNOWN": "ไม่ทราบค่า swap",
+    "PNL_UNAVAILABLE": "ประเมินเป็นเงินไม่ได้"
   }
 }

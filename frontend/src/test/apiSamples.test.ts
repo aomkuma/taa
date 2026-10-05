@@ -53,6 +53,7 @@ import {
   OpportunityDetailSchema,
   ScoreboardSchema,
 } from '@/pages/opportunities/schemas';
+import { AccuracySchema, CalibrationSchema, ShadowTradesSchema } from '@/pages/accuracy/schemas';
 import samples from './fixtures/api-samples.json';
 
 const E = 'engines/ENGINE/';
@@ -110,6 +111,10 @@ const CASES: [string, z.ZodType][] = [
   [`${E}opportunities/${OPP}`, OpportunityDetailSchema],
   [`${E}opportunities/${OPP}`, SignalSourceSchema],
   [`${E}theory-scoreboard`, ScoreboardSchema],
+  [`${E}accuracy`, AccuracySchema],
+  [`${E}accuracy?mine=true`, AccuracySchema],
+  [`${E}calibration`, CalibrationSchema],
+  [`${E}shadow-trades?limit=20`, ShadowTradesSchema],
 ];
 
 const recorded = samples as Record<string, unknown>;

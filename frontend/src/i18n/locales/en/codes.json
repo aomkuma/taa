@@ -344,5 +344,15 @@
     "tp_present": "Take profit set",
     "unknown_position_risk": "Every open position has a measurable stop",
     "weekly_loss": "Weekly loss limit"
+  },
+  "shadowFlag": {
+    "AMBIGUOUS": "SL first (assumed)",
+    "TICK_RESOLVED": "decided by ticks",
+    "PARTIAL_BAR": "partial entry bar",
+    "GAP": "gap fill",
+    "NOT_TRADABLE": "R only (lot too large)",
+    "ENTRY_FALLBACK": "signal price used",
+    "SWAP_UNKNOWN": "swap unknown",
+    "PNL_UNAVAILABLE": "money not valued"
   }
 }

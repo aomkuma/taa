@@ -520,7 +520,20 @@ class AdvisoryReads:
         records = self._records(engine_id, server, variant, since)
         lists = {w.name: w.symbols for w in prefs.watchlists if w.symbols}
         report = accuracy_report(records, watchlists=lists)
-        return {"server": server, "variant": variant, "hypothetical": True, **plain(report)}
+        with self.db.session() as sess:  # the account currency of the money results (the newest trade's)
+            currency = sess.scalar(
+                select(ShadowTradeRow.currency)
+                .where(ShadowTradeRow.engine_id == engine_id, ShadowTradeRow.server == server)
+                .order_by(ShadowTradeRow.signal_at.desc())
+                .limit(1)
+            )
+        return {
+            "server": server,
+            "variant": variant,
+            "hypothetical": True,
+            "currency": currency,
+            **plain(report),
+        }
 
     def user_accuracy(
         self, engine_id: str, server: str, user_id: str, *, variant: str, since: datetime | None

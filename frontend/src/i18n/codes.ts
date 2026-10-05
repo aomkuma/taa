@@ -10,6 +10,7 @@
  * | decision check names (`Check("<name>")` in app/engine, app/risk) | `codes:check.<name>`               |
  * | `OpportunityStatus`, `WindowReason`, `InvalidReason` (advisory)   | `codes:opportunityStatus.<S>`, `codes:windowReason.<R>`, `codes:invalidReason.<R>` |
  * | `ShadowStatus` (app/advisory/shadow.py)                           | `codes:shadowStatus.<S>`           |
+ * | `Flag` (app/advisory/shadow.py), shadow trade flags               | `codes:shadowFlag.<F>`             |
  * | `ExitReason` (app/core/enums.py)                                  | `codes:exitReason.<CODE>`          |
  * | `EngineErrorCode` (app/web/engines.py), engine API errors          | `codes:engine.<code>`              |
  * | `BreakerName` (app/risk/circuit_breaker.py)                       | `codes:breaker.<NAME>`             |
@@ -134,6 +135,16 @@ export const OPPORTUNITY_STATUSES = ['CANDIDATE', 'ACTIVE', 'EXPIRED', 'INVALIDA
 export const WINDOW_REASONS = ['SIGNAL_LIFETIME', 'SESSION_END', 'NEWS_BLACKOUT'] as const;
 export const INVALID_REASONS = ['PRICE_DRIFT', 'SL_TOUCHED', 'SPREAD_SPIKE', 'OPPOSITE_SIGNAL'] as const;
 export const SHADOW_STATUSES = ['OPEN', 'CLOSED', 'VOID'] as const;
+export const SHADOW_FLAGS = [
+  'AMBIGUOUS',
+  'TICK_RESOLVED',
+  'PARTIAL_BAR',
+  'GAP',
+  'NOT_TRADABLE',
+  'ENTRY_FALLBACK',
+  'SWAP_UNKNOWN',
+  'PNL_UNAVAILABLE',
+] as const;
 export const EXIT_REASONS = [
   'TP',
   'SL',
@@ -342,6 +353,7 @@ export const CODE_KINDS = [
   'windowReason',
   'invalidReason',
   'shadowStatus',
+  'shadowFlag',
   'exitReason',
   'engine',
   'breaker',

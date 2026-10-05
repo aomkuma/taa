@@ -1258,5 +1258,124 @@
     "saved": "Saved.",
     "invalid": "The server rejected the settings: {{detail}}",
     "failed": "Could not save. Try again."
+  },
+  "accuracy": {
+    "hypothetical": "Hypothetical results: every opportunity is followed on paper (shadow trades) at the recorded quote, without requotes, partial fills or real slippage. Past results do not predict future results.",
+    "none": "No closed outcomes yet.",
+    "table": "Show as a table",
+    "tabs": "Accuracy views",
+    "tab": {
+      "overview": "Overview",
+      "explorer": "Threshold explorer",
+      "theories": "Theory scoreboard"
+    },
+    "source": {
+      "label": "Source",
+      "LIVE": "Live",
+      "REPLAY": "Replay (history)",
+      "onlyReplay": "No live outcomes yet; replay has {{n}}.",
+      "onlyLive": "No replay outcomes; live has {{n}}."
+    },
+    "variant": {
+      "label": "Trade handling",
+      "PLAN": "As planned",
+      "MANAGED": "Managed"
+    },
+    "scope": {
+      "label": "Which opportunities",
+      "all": "All opportunities",
+      "mine": "My alerts",
+      "mineNote": "Only the opportunities you were alerted to, with money at your own risk per alert."
+    },
+    "kpi": {
+      "title": "Key figures",
+      "trades": "Trades",
+      "wins": "{{n}} reached the target",
+      "hitRate": "Hit rate",
+      "ci": "90% interval in brackets",
+      "expectancy": "Expectancy",
+      "profitFactor": "Profit factor",
+      "total": "Hypothetical P/L",
+      "withMoney": "{{n}} of {{total}} trades in money",
+      "drawdown": "Max drawdown",
+      "drawdownR": "Max drawdown (R)"
+    },
+    "curve": {
+      "title": "Following every opportunity",
+      "unit": "Unit",
+      "money": "Money",
+      "r": "R",
+      "note": "Cumulative result in exit order, starting from 0, at the lot of each moment."
+    },
+    "calibration": {
+      "title": "Calibration",
+      "chart": "Predicted against observed win rate",
+      "predicted": "Predicted %",
+      "observed": "Observed %",
+      "point": "predicted {{predicted}}, observed {{observed}} ({{low}}–{{high}}), {{n}} trades",
+      "none": "No calibration has been built yet.",
+      "backtest": "Backtest-calibrated",
+      "about": "Points on the dashed line mean the % matched reality; whiskers are 90% intervals. Brier {{brier}} (lower is better), out of sample; trained on {{live}} live and {{replay}} replay outcomes, built {{at}}.",
+      "empty": "This version was built before enough trades had closed; the next rebuild (daily) uses the outcomes since."
+    },
+    "buckets": {
+      "title": "Setup strength against hit rate",
+      "chart": "Hit rate per setup strength bucket",
+      "strength": "Setup strength",
+      "hitRate": "Hit rate %",
+      "point": "strength {{bucket}}: {{rate}} ({{low}}–{{high}}), {{n}} trades",
+      "note": "Whiskers are 90% intervals; with few trades they are wide."
+    },
+    "breakdown": {
+      "title": "Breakdowns",
+      "by": "By"
+    },
+    "dimension": {
+      "symbol": "Symbol",
+      "strategy": "Strategy",
+      "asset_class": "Asset class",
+      "session": "Session",
+      "side": "Side",
+      "timeframe": "Timeframe",
+      "watchlist": "Watchlist",
+      "alerted": "Alerted",
+      "followed": "Followed"
+    },
+    "key": {
+      "alerted": "Alerted",
+      "not_alerted": "Not alerted",
+      "followed": "Followed",
+      "not_followed": "Not followed"
+    },
+    "history": {
+      "title": "Outcome history",
+      "note": "Every closed opportunity of the engine, newest first; money at the lot sized at the signal.",
+      "noteFeed": "Every closed opportunity of the market feed, in R (the feed shows no account money).",
+      "signal": "Signal",
+      "symbol": "Symbol",
+      "strategy": "Strategy",
+      "strength": "Strength",
+      "exit": "Exit",
+      "result": "Result",
+      "pnl": "Hypothetical P/L",
+      "more": "Load more"
+    },
+    "explorer": {
+      "title": "Threshold explorer",
+      "inSample": "In-sample: these rows are measured on the same trades they would be chosen on, so the best-looking threshold flatters itself. Use them to understand the trade-off, not to predict.",
+      "about": "\"Follow every opportunity with {{metric}} ≥ x\" for each x.",
+      "threshold": "x",
+      "yours": "The highlighted row is your current alert threshold."
+    },
+    "theories": {
+      "title": "Theory scoreboard",
+      "level": "Level",
+      "family": "Families",
+      "detector": "Detectors",
+      "note": "Each theory's record on the trades it supported, per asset class and timeframe. Lift = its hit rate ÷ the group's hit rate.",
+      "base": "group hit rate {{rate}}",
+      "theory": "Theory",
+      "lift": "Lift"
+    }
   }
 }

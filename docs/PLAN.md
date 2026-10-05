@@ -1552,6 +1552,24 @@ The ranking is **advisory only**: it never adds symbols to the bot's trading all
     break-even + 2 pp (`required_win_probability`) and that lists and alerts never change what the bot trades.
   - Parity tests read `WatchlistKind`, `AlertMetric`, `RiskFullPolicy` and `DEFAULT_THRESHOLDS` from
     `app/advisory/preferences.py`.
+- (TAA-919 decisions) Signal Accuracy (`frontend/src/pages/accuracy/`):
+  - One `accuracy` response feeds the page: its LIVE or REPLAY section (a toggle, never mixed) gives the KPIs,
+    the follow-all curve (money or R; a trade "not tradable at your capital" adds 0 money), the strength
+    buckets, the breakdowns, the threshold explorer and the theory scoreboard, so every tab agrees with the
+    toggle. The owner can switch to "my alerts" (`mine=true`); the market feed always sees its own. A
+    PLAN/MANAGED switch picks the variant. `GET /accuracy` now carries the owner's `currency` (the newest
+    shadow trade's), like the `mine` view.
+  - Calibration comes from `/calibration`: reliability bins with outcomes as points, the observed rate's 90%
+    Wilson interval computed in the browser (same z as the backend), the dashed diagonal, Brier and the
+    training counts; "backtest-calibrated" while replay outcomes outnumber live ones. A version built before
+    any outcome closed (a fresh engine) says so instead of "no outcomes".
+  - Charts are small inline SVGs (one hue, `<title>` tooltips, a table view); the curve reuses the
+    backtests' `SeriesChart`. The outcome history pages `shadow-trades?status=CLOSED&source&variant`, with
+    money for the owner only; shadow flags have TH/EN texts (`codes:shadowFlag`, parity with `Flag`).
+  - The explorer is always marked in-sample and highlights the user's current x when the alert metric is
+    the explorer's (setup strength). The scoreboard shows detector ids until TAA-920 adds `evidence.*` names.
+  - The API samples now seed eight closed shadow trades (LIVE and REPLAY, wins, losses, a time stop, one
+    not tradable) plus a MANAGED copy and an open one.
 
 - **Engine ↔ cloud:**
   - New event types: `symbol_catalog`, `suitability_snapshot`, `opportunity` (create/update), `shadow_trade`

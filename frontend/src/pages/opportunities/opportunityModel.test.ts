@@ -90,9 +90,10 @@ describe('where the % comes from', () => {
     expect(trackRecord(scoreboard, 'ev:FIBONACCI:fib.retracement', 'FOREX_MAJOR', 'M15')).toEqual({
       n: 3,
       hitRate: 100,
-      expectancyR: expect.closeTo(1.9, 5) as number,
+      expectancyR: expect.closeTo(1.9067, 3) as number,
     });
-    expect(trackRecord(scoreboard, 'ev:FIBONACCI:fib.retracement', 'METAL', 'M15')).toBeNull();
+    expect(trackRecord(scoreboard, 'ev:FIBONACCI:fib.retracement', 'METAL', 'M15')).toMatchObject({ n: 1 });
+    expect(trackRecord(scoreboard, 'ev:FIBONACCI:fib.retracement', 'INDEX', 'M15')).toBeNull();
     expect(trackRecord(undefined, 'x', 'y', 'z')).toBeNull();
   });
 

@@ -51,6 +51,7 @@ import {
   OPPORTUNITY_STATUSES,
   parseCode,
   REASON_CODES,
+  SHADOW_FLAGS,
   SHADOW_STATUSES,
   translateCode,
   WINDOW_REASONS,
@@ -110,6 +111,7 @@ describe('code lists match the backend enums', () => {
     ['WindowReason', lifecyclePy, WINDOW_REASONS],
     ['InvalidReason', lifecyclePy, INVALID_REASONS],
     ['ShadowStatus', shadowPy, SHADOW_STATUSES],
+    ['Flag', shadowPy, SHADOW_FLAGS],
     ['ExitReason', enumsPy, EXIT_REASONS],
     ['EngineErrorCode', enginesPy, ENGINE_ERRORS],
     ['BreakerName', circuitBreakerPy, BREAKER_NAMES],
@@ -191,6 +193,7 @@ describe('code texts', () => {
     ['killMode', KILL_MODES],
     ['breakerState', BREAKER_STATES],
     ['breakerAction', BREAKER_ACTIONS],
+    ['shadowFlag', SHADOW_FLAGS],
   ] as const)('every %s code has a text in both languages', (kind, codes) => {
     for (const language of ['th', 'en'] as const) {
       const i18n = createI18n(language);

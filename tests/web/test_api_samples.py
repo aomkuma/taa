@@ -11,6 +11,7 @@ Regenerate after an intended API change: ``TAA_UPDATE_API_SAMPLES=1 pytest tests
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import os
 from dataclasses import asdict
@@ -24,7 +25,10 @@ from sqlalchemy import delete, select, update
 from app.advisory.calibration import build, save
 from app.advisory.personalize import UserContext, replacement
 from app.advisory.requirements import ComputeRequirements
+from app.advisory.shadow import ShadowExit, ShadowResult, Variant, new_state
+from app.advisory.shadow_tracker import EntryQuote, SignalFacts, apply_close, new_row
 from app.config import Settings, load_settings
+from app.core.enums import ExitReason, Side
 from app.evidence.catalog import default_registry as evidence_registry
 from app.storage.database import Database
 from app.storage.models import (
@@ -53,7 +57,7 @@ from tests.integration.test_scanner import REQ, scanner
 from tests.integration.test_scanner import config as scanner_config
 from tests.strategy_data import EURUSD_SPEC
 from tests.sync_data import T
-from tests.unit.test_calibration import CFG, INFORMATIVE, outcomes, shadow
+from tests.unit.test_calibration import CFG, INFORMATIVE, outcomes
 from tests.unit.test_personalize import opportunity, prefs
 from tests.unit.test_strategy_models import make_context, make_signal
 from tests.web.test_data_api import rig  # noqa: F401  (fixture)
@@ -98,6 +102,10 @@ ENGINE_ROUTES = [
     "opportunities?limit=50",
     f"opportunities/{OPP_EUR}",
     "theory-scoreboard",
+    "accuracy",
+    "accuracy?mine=true",
+    "calibration",
+    "shadow-trades?limit=20",
 ]
 USER_ROUTES = [
     "me/feed",
@@ -239,12 +247,78 @@ def opportunity_rows(engine_id: str) -> list[Any]:
     return rows
 
 
+# Shadow trades of the accuracy samples: (id, source, symbol, side, session, strength, exit reason, R gross,
+# R net, net money or None for "not tradable", hours to exit, alerted, followed)
+SHADOWS = [
+    ("s1", "LIVE", "EURUSD", "BUY", "LONDON", 82.0, "TAKE_PROFIT", 2.0, 1.9, 19.0, 1, True, False),
+    ("s2", "LIVE", "EURUSD", "SELL", "NEW_YORK", 64.0, "STOP_LOSS", -1.0, -1.1, -11.0, 5, True, False),
+    ("s3", "LIVE", "XAUUSD", "BUY", "LONDON", 91.0, "TAKE_PROFIT", 2.5, 2.4, 24.0, 9, True, True),
+    ("s4", "LIVE", "GBPUSD", "SELL", "ASIA", 58.0, "TIME_STOP", -0.3, -0.4, None, 30, False, False),
+    ("s5", "LIVE", "XAUUSD", "SELL", "NEW_YORK", 77.0, "STOP_LOSS", -1.0, -1.05, -10.5, 40, False, False),
+    ("r1", "REPLAY", "EURUSD", "BUY", "LONDON", 71.0, "TAKE_PROFIT", 2.0, 1.92, 19.2, 2, False, False),
+    ("r2", "REPLAY", "EURUSD", "SELL", "ASIA", 66.0, "STOP_LOSS", -1.0, -1.08, -10.8, 6, False, False),
+    ("r3", "REPLAY", "GBPUSD", "BUY", "LONDON_NY_OVERLAP", 88.0, "TAKE_PROFIT", 2.0, 1.9, 19.0, 12, False, False),
+]  # fmt: skip
+
+
+def shadow_samples(db: Database) -> None:
+    """Closed PLAN trades of :data:`SHADOWS`, a MANAGED copy of the first and one still open."""
+    rows = []
+    for i, (
+        oid,
+        source,
+        symbol,
+        side,
+        session,
+        strength,
+        reason,
+        r,
+        r_net,
+        money,
+        hours,
+        alerted,
+        followed,
+    ) in enumerate(SHADOWS):
+        buy = side == "BUY"
+        facts = SignalFacts(
+            opportunity_id=oid, source=source, server="FBS-Demo", strategy="example_trend_pullback",
+            symbol=symbol, asset_class="METAL" if symbol == "XAUUSD" else "FOREX_MAJOR", timeframe="M15",
+            side=side, session=session, setup_strength=strength, rr=2.0,
+            features={INFORMATIVE: 0.9} if r > 0 else {}, atr=0.001, signal_at=T - timedelta(days=5) + timedelta(hours=6 * i),
+            lot=None if money is None else 0.1, equity=1_000.0, currency="USD", alerted=alerted, followed=followed,
+        )  # fmt: skip
+        entry, risk = 1.1, 0.005 if buy else -0.005
+        for variant in (Variant.PLAN, Variant.MANAGED) if oid == "s1" else (Variant.PLAN,):
+            state = new_state(
+                side=Side(side), entry=entry, entry_at=facts.signal_at, sl=entry - risk, tp=entry + 2 * risk,
+                time_stop=timedelta(hours=72),
+            )  # fmt: skip
+            row = new_row(
+                facts, variant, state, EntryQuote(entry - 0.0001, entry, 1.0, 1.0), (), facts.signal_at
+            )
+            exit_ = ShadowExit(ExitReason[reason], entry + r * risk, facts.signal_at + timedelta(hours=hours))
+            gross = None if money is None else 10.0 * r
+            result = ShadowResult(
+                r > 0, r, r_net, -0.4, max(r, 0.3), 0, gross, None if money is None else -0.7, 0.0, money,
+                None if money is None else 10.0, frozenset(),
+            )  # fmt: skip
+            apply_close(row, exit_, result)
+            rows.append(row)
+    open_facts = dataclasses.replace(
+        facts, opportunity_id="s6", source="LIVE", signal_at=T - timedelta(hours=2)
+    )
+    state = new_state(side=Side.SELL, entry=1.1, entry_at=open_facts.signal_at, sl=1.105, tp=1.09,
+                      time_stop=timedelta(hours=72))  # fmt: skip
+    rows.append(new_row(open_facts, Variant.PLAN, state, EntryQuote(1.0999, 1.1, 1.0, 1.0), (), T))
+    with db.session() as sess:
+        sess.add_all(rows)
+
+
 def calibrate(db: Database, engine_id: str) -> None:
     """A calibration version (synthetic outcomes where the Fibonacci theory is informative) stamped on the
-    opportunities, and three closed shadow trades for the theory scoreboard."""
+    opportunities, and the shadow trades of :data:`SHADOWS` for the accuracy pages."""
     version = save(db, build(outcomes(1500, informative=True, seed=4), CFG, server="FBS-Demo", built_at=T))
-    for oid in ("s1", "s2", "s3"):
-        shadow(db, oid)
+    shadow_samples(db)
     with db.session() as sess:
         for model in (CalibrationTableRow, EvidenceModelVersionRow, ShadowTradeRow):
             sess.execute(update(model).where(model.engine_id == "local").values(engine_id=engine_id))

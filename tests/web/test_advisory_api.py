@@ -215,6 +215,7 @@ class TestEngineData:
         assert len(page["items"]) == 3 and "features" not in page["items"][0]
         acc = get(client, mine, "accuracy").json()
         assert acc["hypothetical"] is True and acc["server"] == SERVER and acc["live"]["summary"]["n"] == 3
+        assert acc["currency"] == "USD"  # of the money results
         assert get(client, mine, "threshold-explorer?source=LIVE").json()["in_sample"] is True
         assert "items" in get(client, mine, "theory-scoreboard").json()
         calib = get(client, mine, "calibration").json()
