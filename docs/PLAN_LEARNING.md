@@ -123,7 +123,8 @@ means *reading* what exists, not rewriting it.
 8. **Existing reviewers keep their place:** the optional AI review of entries (Phase 13,
    `DecisionEngine.reviewer`) runs inside the decision engine, after H1, and is not affected by this track.
 9. **Built once, by its first user:** each hook is added by the ticket that first needs it, on top of the
-   golden harness of TAA-L002.
+   golden harness of TAA-L002 (`tests/golden/`: backtest trades, replay shadow trades, PAPER engine decisions
+   and positions; regenerated only on purpose with `TAA_UPDATE_GOLDEN=1`, diff reviewed).
 
 ## L1. Data reality: what FBS × MT5 actually provides
 

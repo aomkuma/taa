@@ -50,7 +50,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 
 | Milestone | Phase | Tickets | Done | Status |
 |---|---|---|---|---|
-| M3 | Phase L0 — Feed probe & foundations | 2 | 0 | TODO |
+| M3 | Phase L0 — Feed probe & foundations | 2 | 1 | IN PROGRESS |
 | M3 | Phase L1 — Tick data foundation | 4 | 0 | TODO |
 | M3 | Phase L2 — Microstructure features | 3 | 0 | TODO |
 | M3 | Phase L3 — Symbol profile & regime | 6 | 0 | TODO |
@@ -78,14 +78,17 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 
 #### TAA-L002 — Hook points and golden harness (§L0.2)
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** L901
 
-- [ ] golden harness: fixed scenarios (FakeMT5 + ManualClock + a backtest window) recording decisions, sizes, shadow rows and backtest results; a test compares against the stored golden files
-- [ ] structural protocols H1 `CandidateFilter`, H2 `EntryPlacer`, H3 `ExitPolicy` in `app/engine` with pass-through defaults (today's behavior)
-- [ ] backtester and replay call the same hooks (one code path)
-- [ ] `learning` and `squad` config sections (all off) + `LAYERS` entries for `app.learning`, `app.squad`; architecture test: lower layers never import them
-- [ ] golden test green with every flag off
+Scope (decided 2026-10-06, §L0.2 rule 9): the harness only. Each hook, and each config section, is added by
+the first ticket that needs it, on top of this harness (H1 → L802, H2 → L501/L702, H3 → L804, H4 → L702;
+`learning.*` config with its first user, `squad` with L902).
+
+- [x] golden harness `tests/golden/`: backtest trades, advisory replay shadow trades, and the PAPER engine's decisions and positions on FakeMT5 + ManualClock, compared with stored JSON
+- [x] regeneration only on purpose (`TAA_UPDATE_GOLDEN=1`), the JSON diff reviewed in the same change
+- [x] `LAYERS` entry for `app.learning` (done with L701); `app.squad` with L902
+- [x] golden green on today's code
 
 ### Phase L1 — Tick data foundation
 
@@ -314,6 +317,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 - **Status:** TODO
 - **Depends on:** L201, L202
 
+- [ ] hook H2 `EntryPlacer` (pass-through default: place now) if L702 has not added it; golden unchanged
 - [ ] `app/learning/entry_confirmation.py` behind hook H2: PENDING → CONFIRMED / CANCELLED_CHASE / CANCELLED_INVALID / CANCELLED_MARKET / EXPIRED_TIMEOUT
 - [ ] `pending_entries` table; pending rows expire after restart (fail closed)
 - [ ] risk re-check at confirmation time; one evaluation per bar preserved
@@ -420,6 +424,7 @@ the TP.
 - **Status:** TODO
 - **Depends on:** L701
 
+- [ ] hook H4 shadow variant registry (defaults `PLAN`, `MANAGED`) and H2 for waiting entries; golden unchanged
 - [ ] shadow variants `PULLBACK`, `LTF_TRIGGER`, `WIDE_STOP` (point-in-time quantiles; same TP price; sizer-based lots) through hook H4
 - [ ] `entry_window_bars` per waiting mode (default 2, ceiling 6; `signal_expiry_bars` unchanged for `PLAN`); invalidation re-checked each trigger-TF bar (`ENTRY_SETUP_INVALID`)
 - [ ] batch resolution on M1 for tier-1 opportunities within the scanner budget
@@ -496,6 +501,7 @@ per-signal budget.
 - **Status:** TODO
 - **Depends on:** L302, L601, L703
 
+- [ ] hook H1 `CandidateFilter` (structural protocol, pass-through default) in the engine, backtester and replay; golden unchanged
 - [ ] `app/learning/playbooks.py`: `TREND_RUNNER` / `RANGE` / `BREAKOUT` / `STAND_ASIDE` from HTF regime, compression, news, spread and costly hours
 - [ ] hysteresis `switch_bars`; `playbook_state` table (replicated)
 - [ ] `playbooks: [...]` declared per strategy/setup in config; router is disable-only; fit matrix allows a playbook per symbol
@@ -518,6 +524,7 @@ per-signal budget.
 - **Status:** TODO
 - **Depends on:** L802, L701 (entry-mode variants of L702 plug in when they exist)
 
+- [ ] hook H3 `ExitPolicy` (default = the §A11 rules) in the engine and backtester; golden unchanged
 - [ ] split position (part A at `tp1_r`, part B runner without fixed TP) on the `SAME_PRICE` plan; runner rules as an `ExitPolicy` (hook H3); the §A11 rules stay the default
 - [ ] runner trailing: the tighter of HTF structure trail and chandelier `k × ATR`; at least break-even + costs after TP1; SL moves only favorably
 - [ ] runner exits: trail, HTF CHoCH against, regime leaves `TREND`, kill switch, breaker; swap accrued and shown
