@@ -16,7 +16,7 @@ dependencies) and docs/PLAN.md §A15 (PWA frontend) and §A28 (localization & ad
 name their own sections (§A14 APIs, §A26/§A27 advisory, §A30/§A31 settings, §A32 engines).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
 This is the only session: work on main, one ticket at a time, in the "Next work" order. Continue with
-TAA-916 (symbol ranking).
+TAA-918 (watchlists & alert settings).
 For PWA pages: build page tests from frontend/src/test/fixtures/api-samples.json (real API responses) and add
 every new route a page reads to tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts
 (regenerate with TAA_UPDATE_API_SAMPLES=1). Run the full pytest suite and vitest one after the other, never
@@ -34,23 +34,36 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Current state
 
-- **Done:** Phases 0–8, 2A, 6A–6C, 8A and 12 (DEMO orders, pulled forward). Phase 9: 901–913 and 915.
-  Phase 10: 1001–1003.
+- **Done:** Phases 0–8, 2A, 6A–6C, 8A and 12 (DEMO orders, pulled forward). Phase 9: 901–913 and
+  915–917. Phase 10: 1001–1003.
 - **Not started:** Phase 11 (Railway), M2 Phases 13 (AI, optional) and 14 (LIVE), Phase 15 (deferred
   backlog: TAA-1501 cloud replay jobs).
-- **Checks** (last full runs): pytest 2683 passed, 7 skipped (~7–9 min; the Postgres tests run when
-  `TAA_POSTGRES_URL` is set); ruff, mypy, bandit clean; frontend lint, typecheck, build clean, vitest 353.
+- **Checks** (last full runs): pytest 2699 passed, 7 skipped (~10 min; the Postgres tests run when
+  `TAA_POSTGRES_URL` is set); ruff, mypy, bandit clean; frontend lint, typecheck, build clean, vitest 402.
 - **Git:** `main` only (the user pushes; `git push` from Claude Code
   fails on the interactive GitHub login). Latest migration: **0032**.
 - **2026-10-05 extras** (outside the tickets, at the user's request): `start-demo.ps1 -Mt5`, the searchable
   symbol picker on the charts page, `sync.chart_timeframes` (every chart timeframe streamed) and the
   service-worker "new version" banner.
+- **2026-10-05, second session** (TAA-916, 917 plus fixes found on real data; details in PLAN §A25/§A28):
+  - `config.yaml` enables **all 9 strategies** (the user: the bot should follow every opportunity; PAPER).
+  - Asset classes: FBS metals were OTHER (base reported as USD); recognised by name now, and **OTHER is
+    enabled** by default. The symbol catalog rebuilds once at every engine start.
+  - Decision engine: specs of every symbol with an open position are looked up (a manual BTCUSD trade with
+    a stop used to block every entry as unknown risk). Scanner: a queued symbol is scanned even if the top N
+    moved on (was SYMBOL_NOT_ALLOWED). The monitored set leaves out symbols the account cannot trade (G2/G3).
+  - Backtests page: shows the history used and explains 0-signal runs; history comes from
+    `python scripts\download_history.py --days 365 --upload` (the `-Mt5` cloud has 1 year of EURUSD, GBPUSD,
+    USDJPY, XAUUSD M15/H1/H4/D1 since 2026-10-05).
+  - Decisions page: neutral check names (`codes:check.<name>`), failed checks first, the reasons up front,
+    entry/SL/TP badges with the risk and reward ranges (`src/components/PriceBadges.tsx`).
 
 ## Next work
 
-1. Phase 9 pages: **TAA-916**–923 (ranking, opportunities,
-   watchlists, accuracy, theories, account/plan/admin, trading profile, engines), then **914** PWA polish.
-   The backend for every page exists (API list below).
+1. Phase 9 pages: **TAA-918**–923 (watchlists & alert settings, accuracy, theories, account/plan/admin,
+   trading profile, engines), then **914** PWA polish. The backend for every page exists (API list below).
+   Dashboard additions of §A28 still open: active opportunities and the accuracy summary (the top-5 ranking
+   widget is done).
 2. Phase 10: TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages.
 3. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
    Milestone 1 review.
@@ -58,9 +71,13 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
    **every** tradable symbol (hundreds) for opportunities, not 4. Make it as flexible as possible, including
    future strategies, and let AI take part in learning and adapting the trading playbook to current
    conditions. Findings so far (check again before designing):
-   - Ranking already covers the whole broker universe (541 enabled symbols on the FBS demo). The opportunity
-     scanner covers only the advisory requirements: favourites + `advisory.universe.auto_top_n: 30` (31
-     symbols today), with a per-cycle time budget (~1.6 s per symbol per bar for the evidence scan).
+   - Ranking already covers the whole broker universe (541 symbols on the FBS demo, 505 enabled). After an
+     engine restart it ranks ~20 more each minute (the page says "ranked 20 of 541 so far"). The opportunity
+     scanner covers only the advisory requirements: allowlist + favourites + lists +
+     `advisory.universe.auto_top_n: 30` (affordable symbols only), with a per-cycle time budget (~1.6 s per
+     symbol per bar for the evidence scan).
+   - Affordability is judged on the engine owner's account; with subscribers on the feed the scanner would
+     need their accounts too.
    - Trading, candle streaming, chart data and forming bars cover only the traded symbols:
      `ALLOWED_SYMBOLS` in `.env` overrides `symbols.allowed` in `config.yaml` (EURUSD, GBPUSD, USDJPY,
      XAUUSD). Charts of other symbols have no bars.
@@ -86,9 +103,10 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
     `/advisory/preferences|watchlists|favourites|detectors`.
   - Me: notifications, push key/subscribe/unsubscribe/test, preferences; `/me/alerts`, `/me/entitlements`,
     `/me/account-profile`, `/me/export`, `/me/erase`; admin `/admin/users|plans`.
-- **TAA-917:** opportunity pushes link to `/opportunities/{id}` (app/worker/push.py) and the notification centre
-  to `/charts?opportunity=`: add the `/opportunities/:id` route. TAA-917 / 919: add TH/EN texts for the
-  `codes:` they show (opportunity statuses, accuracy codes).
+- **TAA-918:** favourites are toggled from the ranking page already (`useFavourites` in
+  `src/pages/ranking/hooks.ts`, query key `['advisory', 'preferences']`); reuse it. **TAA-919:** add TH/EN
+  texts for the accuracy `codes:` it shows; the opportunities page has the probability/interval wording.
+- Routes with a detail param: `DETAIL_PARAM` in `src/app/routes.tsx` (`/opportunities/:opportunityId`).
 - **TAA-914:** the app icon is a placeholder SVG; maskable/Apple icons, API caching rules (network-first,
   `/api/` never answered with `index.html`) and the install prompt are still to do.
 - **TAA-1004 preparation:** fills store no entry context; callers pass an `EntryContext` per signal id
@@ -128,7 +146,18 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 - The service worker is `frontend/src/sw/sw.ts` (`injectManifest`, own `tsconfig.sw.json`).
 - After a frontend rebuild the open PWA keeps the old version until the "new version" banner's Reload (or
   all tabs are closed).
-- Don't edit the working tree during a full test run (the migration-parity test reads migration files).
+- Don't edit Python or migration files during a full pytest run (the migration-parity test reads them);
+  frontend edits are fine.
+- Restarting the `-Mt5` stack from Claude Code: stop the `python.exe` processes whose command line has
+  `app.web|app.worker|app.main` (and their `start-demo.ps1` windows), start the roles with
+  `start-demo.ps1 -Role web|worker -Mt5`, wait for `http://localhost:8001/api/v1/health`, then `-Role engine`
+  (health on port 8766). `start-demo.cmd -Mt5` gives up when web takes over 60 s to answer and then starts no
+  engine. A Python-only change in the engine needs only the engine restarted.
+- `Path.write_text` without `newline="
+"` writes CRLF on Windows; the repo is LF (`.gitattributes`).
+- i18next: a `count` parameter triggers plural lookups (`_one`/`_other`); name it `n` for plain numbers.
+- Real data beats samples: on 2026-10-05 the `-Mt5` stack showed FBS metals as OTHER, a manual position
+  blocking every entry, and scanner races that no test had covered.
 - Frontend:
   - Passing the typed i18next `t` as a parameter fails with TS2589: put the text in a small component that
     calls `useTranslation()` itself.
@@ -148,9 +177,12 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 ## Decisions the user may want to revisit
 
 - Chart-pattern and breakout setups default to the **nearer** stop (`stop_mode: invalidation` restores the
-  textbook stop); the 8 pattern setups ship disabled (PLAN §A29).
+  textbook stop). Since 2026-10-05 all 8 pattern setups are enabled in `config.yaml` (unproven; PAPER).
 - Hard ADVISORY failures create no opportunity; per-user holding styles don't change the scan timeframes yet
   (PLAN §A26).
+- Forex exotics stay opt-in (wide spreads); OTHER is on.
+- A manual position counts toward the bot's limits (`risk.foreign_positions_policy: count`); separate the
+  bot's account from manual trading if that is unwanted.
 
 ## Open items needing the user
 
