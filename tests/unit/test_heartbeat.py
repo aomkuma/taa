@@ -179,6 +179,24 @@ class TestIngest:
         assert events[1].item["quotes"][0]["symbol"] == "EURUSD"
         assert "quotes" not in events[0].item  # the status event stays small
 
+    def test_forming_bars_are_kept_but_not_streamed(self, cloud: Cloud) -> None:
+        bar = {
+            "symbol": "EURUSD",
+            "timeframe": "M15",
+            "open_time": WEDNESDAY,
+            "open": 1.1,
+            "high": 1.102,
+            "low": 1.099,
+            "close": 1.101,
+            "tick_volume": 42,
+        }
+        assert cloud.send(beat(WEDNESDAY, forming=[bar])).accepted == 1
+        assert cloud.row().payload["forming"][0]["close"] == 1.101
+        events = StreamLog(cloud.db, cloud.clock).read(ENGINE, 0, TOPICS, 10)[0]
+        assert "forming" not in events[0].item
+        with pytest.raises(ValidationError):
+            HeartbeatPayload.model_validate(beat(WEDNESDAY, forming=[bar | {"timeframe": "M2"}]))
+
     def test_the_account_snapshot_is_kept_with_the_heartbeat(self, cloud: Cloud) -> None:
         account = {
             "as_of": WEDNESDAY,

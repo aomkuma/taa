@@ -91,7 +91,7 @@ from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import EvidenceSetup
 from app.sync.candles import CandleStreamer
 from app.sync.commands import Command, CommandFailed, CommandProcessor, CommandType, Handler, drain
-from app.sync.heartbeat import MAX_QUOTES, HeartbeatEmitter, market_state
+from app.sync.heartbeat import MAX_FORMING, MAX_QUOTES, HeartbeatEmitter, market_state
 from app.sync.replication import Replicator, install_replication
 from app.sync.runtime import SyncRuntime
 
@@ -904,7 +904,35 @@ class Engine:
             "account": self._account_snapshot(),
             "disabled_strategies": sorted(self.disabled_strategies()),
             "quotes": quotes,
+            "forming": self._forming_bars(),
         }
+
+    def _forming_bars(self) -> list[dict[str, Any]]:
+        """The forming bar of every traded symbol on every streamed timeframe, for the chart's live candle."""
+        if self.candle_stream is None or not self._connected:
+            return []
+        out: list[dict[str, Any]] = []
+        for symbol in sorted(self.symbols):
+            for tf in self.candle_stream.timeframes:
+                try:
+                    bar = self.candles.forming_bar(symbol, tf)
+                except TaaError:  # a broker hiccup costs this heartbeat one bar, nothing more
+                    continue
+                if bar is None:
+                    continue
+                out.append(
+                    {
+                        "symbol": symbol,
+                        "timeframe": tf.value,
+                        "open_time": ensure_utc(bar["open_time"].to_pydatetime()),
+                        "open": float(bar["open"]),
+                        "high": float(bar["high"]),
+                        "low": float(bar["low"]),
+                        "close": float(bar["close"]),
+                        "tick_volume": int(bar["tick_volume"]),
+                    }
+                )
+        return out[:MAX_FORMING]
 
     def _account_snapshot(self) -> dict[str, Any] | None:
         """The traded account for the dashboard (TAA-904), from the last health step's loss status plus the

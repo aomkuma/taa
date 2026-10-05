@@ -150,6 +150,32 @@ describe('buildChartModel', () => {
     });
   });
 
+  it('ends with the forming bar, without indicator values for it', () => {
+    const forming = [iso(T0 + 6 * M15), 1.101, 1.105, 1.1, 1.104, 3] as Candles['bars'][number];
+    const model = buildChartModel(
+      { candles: candles({ forming }), positions: [], signal: null },
+      options(),
+      text,
+    );
+    expect(model.candles).toHaveLength(7);
+    expect(model.candles.at(-1)).toEqual({
+      time: T0 + 6 * M15,
+      open: 1.101,
+      high: 1.105,
+      low: 1.1,
+      close: 1.104,
+    });
+    expect(Math.max(...(model.lines.find((l) => l.id === 'ema:20')?.points ?? []).map((p) => p.time))).toBe(
+      T0 + 5 * M15,
+    );
+    // a forming bar that is not newer than the last closed one (a race with the next closed bar) is dropped
+    const stale = [iso(T0 + 5 * M15), 1, 1, 1, 1, 1] as Candles['bars'][number];
+    expect(
+      buildChartModel({ candles: candles({ forming: stale }), positions: [], signal: null }, options(), text)
+        .candles,
+    ).toHaveLength(6);
+  });
+
   it('marks accepted decisions and fills; rejected decisions only on request', () => {
     const c = candles({
       markers: [

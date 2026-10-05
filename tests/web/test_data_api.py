@@ -454,6 +454,44 @@ class TestCandles:
         assert top["role"] == "RESISTANCE" and top["high"] == pytest.approx(1.108) and top["touches"] > 5
         assert all(z["low"] <= z["high"] for z in zones) and len(zones) <= 8
 
+    def test_the_live_view_ends_with_the_forming_bar(
+        self, rig: tuple[TestClient, str, str], db: Database
+    ) -> None:
+        client, mine, _ = rig
+        body = get(client, mine, "candles?symbol=EURUSD&limit=5").json()
+        assert body["forming"] is None  # no heartbeat with one yet
+        last = datetime.fromisoformat(body["bars"][-1][0])
+        bar = {
+            "symbol": "EURUSD",
+            "timeframe": "M15",
+            "open": 1.1,
+            "high": 1.102,
+            "low": 1.099,
+            "close": 1.101,
+        }
+        stale = bar | {"open_time": last.isoformat(), "tick_volume": 1}
+        fresh = bar | {"open_time": (last + timedelta(minutes=15)).isoformat(), "tick_volume": 42}
+        other = fresh | {"timeframe": "H1"}
+        with db.session() as sess:
+            beat = sess.get(EngineHeartbeatRow, mine)
+            payload = {} if beat is None else dict(beat.payload)
+            if beat is None:
+                sess.add(EngineHeartbeatRow(engine_id=mine, received_at=T, sent_at=T, run_id="r1", mode="PAPER",
+                                            state="running", connected=True, market_open=True,
+                                            watch_status="ONLINE", offline_reason="",
+                                            payload={"forming": [other, stale]}))  # fmt: skip
+            else:
+                beat.payload = payload | {"forming": [other, stale]}
+        assert get(client, mine, "candles?symbol=EURUSD&limit=5").json()["forming"] is None  # already closed
+        with db.session() as sess:
+            beat = sess.get(EngineHeartbeatRow, mine)
+            assert beat is not None
+            beat.payload = dict(beat.payload) | {"forming": [other, fresh]}
+        live = get(client, mine, "candles?symbol=EURUSD&limit=5").json()
+        assert live["forming"] == [fresh["open_time"], 1.1, 1.102, 1.099, 1.101, 42]
+        start = T.isoformat().replace("+00:00", "Z")
+        assert get(client, mine, f"candles?symbol=EURUSD&start={start}&limit=5").json()["forming"] is None
+
     def test_an_empty_window(self, rig: tuple[TestClient, str, str]) -> None:
         client, mine, _ = rig
         late = (T + timedelta(days=30)).isoformat().replace("+00:00", "Z")

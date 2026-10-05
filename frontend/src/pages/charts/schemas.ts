@@ -55,12 +55,16 @@ export const ZoneSchema = z.object({
 });
 export type Zone = z.infer<typeof ZoneSchema>;
 
+const Bar = z.tuple([IsoDateTime, z.number(), z.number(), z.number(), z.number(), z.number()]);
+
 /** `GET /engines/{id}/candles`: bars are `[open_time, open, high, low, close, tick_volume]`, oldest first. */
 export const CandlesSchema = z.object({
   server: z.string(),
   symbol: z.string(),
   timeframe: z.string(),
-  bars: z.array(z.tuple([IsoDateTime, z.number(), z.number(), z.number(), z.number(), z.number()])),
+  bars: z.array(Bar),
+  /** The bar still forming (live view only): drawn last, never used for indicators or decisions. */
+  forming: Bar.nullable().optional(),
   overlays: z.record(z.string(), z.array(Value)),
   markers: z.array(MarkerSchema),
   zones: z.array(ZoneSchema).optional(),

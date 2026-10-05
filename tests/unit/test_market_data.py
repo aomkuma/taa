@@ -65,6 +65,23 @@ class TestCandleService:
             2026, 9, 30, 9, 45, tzinfo=UTC
         )
 
+    def test_the_forming_bar_for_the_chart_only(self) -> None:
+        clock, _, gw = setup(datetime(2026, 9, 30, 10, 7, 30, tzinfo=UTC))
+        svc = CandleService(gw, TimeframesConfig(), clock)
+        bar = svc.forming_bar("EURUSD", Timeframe.M15)
+        assert bar is not None and bar["open_time"] == pd.Timestamp("2026-09-30 10:00", tz="UTC")
+        assert bar["low"] <= min(bar["open"], bar["close"]) <= max(bar["open"], bar["close"]) <= bar["high"]
+        h1 = svc.forming_bar("EURUSD", Timeframe.H1)
+        assert h1 is not None and h1["open_time"] == pd.Timestamp("2026-09-30 10:00", tz="UTC")
+        # closed bars never include it
+        assert svc.closed_candles("EURUSD", Timeframe.M15, 3).last_open_time < datetime(
+            2026, 9, 30, 10, 0, tzinfo=UTC
+        )
+
+    def test_no_forming_bar_while_the_market_is_shut(self) -> None:
+        clock, _, gw = setup(datetime(2026, 10, 3, 12, 0, tzinfo=UTC))  # Saturday
+        assert CandleService(gw, TimeframesConfig(), clock).forming_bar("EURUSD", Timeframe.M15) is None
+
     def test_h1_aligned_to_hour_and_consistent_with_m15(self) -> None:
         clock, _, gw = setup(datetime(2026, 9, 30, 10, 7, 0, tzinfo=UTC))
         svc = CandleService(gw, TimeframesConfig(), clock)

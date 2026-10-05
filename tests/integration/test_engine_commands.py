@@ -348,3 +348,8 @@ def test_the_engine_streams_closed_candles(tmp_path: Path) -> None:
     assert stream["events"] >= 2 and stream["failures"] == 0  # entry + higher timeframe per symbol
     # every chart timeframe, not only the strategy's (sync.chart_timeframes defaults to all of them)
     assert set(h.engine.candle_stream.timeframes) == set(Timeframe)
+    # and the heartbeat carries each one's forming bar for the chart's live candle
+    forming = h.engine.cloud_heartbeat()["forming"]
+    assert {(b["symbol"], b["timeframe"]) for b in forming} == {
+        (s, tf.value) for s in h.engine.symbols for tf in Timeframe
+    }

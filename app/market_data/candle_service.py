@@ -80,6 +80,19 @@ class CandleService:
             quality.flags.append(f"SHORT_HISTORY:{len(df)}/{count}")
         return CandleFrame(symbol=symbol, timeframe=tf, df=df, quality=quality, fetched_at_utc=now)
 
+    def forming_bar(self, symbol: str, tf: Timeframe) -> pd.Series | None:
+        """The bar still forming (position 0), normalized like closed bars; ``None`` when the newest bar
+        has closed already (a shut market). **Display only** (the PWA chart's live candle), never for
+        decisions."""
+        raw = self.gateway.rates_from_pos(symbol, tf, 0, 1)
+        if raw.empty:
+            return None
+        limit = self.gateway.server_clock.server_now_epoch() - self.config.candle_close_grace_seconds
+        if int(raw["time"].iloc[-1]) + tf.seconds <= limit:
+            return None
+        df = normalize_rates(raw, tf, self.gateway)
+        return None if df.empty else df.iloc[-1]
+
 
 class CandleWatermarks:
     """Persisted last-evaluated bar per symbol/timeframe, so a restart never re-processes a candle."""

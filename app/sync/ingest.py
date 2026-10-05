@@ -68,7 +68,7 @@ from app.sync.events import (
     WireBatch,
     WireEvent,
 )
-from app.sync.heartbeat import HEARTBEAT, HeartbeatPayload
+from app.sync.heartbeat import BULKY, HEARTBEAT, HeartbeatPayload
 from app.sync.stream import StreamEntry, StreamLog, entry_for
 
 log = logging.getLogger(__name__)
@@ -398,7 +398,7 @@ class IngestService:
             return []
         now = self.clock.now_utc()
         doc = p.model_dump(mode="json")
-        brief: dict[str, Any] = {k: v for k, v in doc.items() if k != "quotes"}
+        brief: dict[str, Any] = {k: v for k, v in doc.items() if k not in BULKY}
         values: dict[str, Any] = {
             "received_at": now,
             "sent_at": p.at,
@@ -408,8 +408,9 @@ class IngestService:
             "connected": p.connected,
             "market_open": p.market_open,
             "market_change_at": p.market_change_at,
-            # the quotes are kept for GET /quotes; the status view and its stream event leave them out
-            "payload": {**brief, "quotes": doc["quotes"]},
+            # quotes (GET /quotes) and forming bars (the chart's live candle) are kept; the status view and
+            # its stream event leave them out
+            "payload": {**brief, "quotes": doc["quotes"], "forming": doc["forming"]},
         }
         if row is None:
             sess.add(

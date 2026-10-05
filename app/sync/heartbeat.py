@@ -2,7 +2,8 @@
 
 Every ``sync.heartbeat_seconds`` (10 s) the engine queues one ``heartbeat`` outbox event (telemetry priority,
 coalesced, so a backlog never holds more than the newest). It says whether the engine runs and is connected,
-a few counters, the latest quotes of its traded symbols, and **whether its markets are open**:
+a few counters, the latest quotes of its traded symbols, their forming bars (display only: the PWA chart's
+live candle; decisions use closed bars), and **whether its markets are open**:
 ``market_open`` plus ``market_change_at``, the moment that flips (the session end while open, the next
 session start while closed; ``None`` for markets that never close). The cloud watchdog cannot see the broker,
 so this is how it knows whether a silent engine matters: it raises ENGINE_OFFLINE only while the engine's
@@ -24,11 +25,15 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 from app.advisory.asset_classes import classify
 from app.advisory.market_sessions import session_state, sessions_for
 from app.core.clock import ensure_utc
+from app.core.enums import Timeframe
 from app.market_data.data_models import SymbolSpec
 from app.sync.outbox import Outbox, Priority
 
 HEARTBEAT = "heartbeat"
 MAX_QUOTES = 100
+MAX_FORMING = 300  # traded symbols x chart timeframes
+# Heartbeat fields the cloud keeps for their own routes but leaves out of the status view and stream
+BULKY = frozenset({"quotes", "forming"})
 MAX_STRATEGIES = 64
 MAX_SESSION_HOPS = 64  # about two weeks of handovers between sessions
 
@@ -42,6 +47,21 @@ class QuoteItem(BaseModel):
     spread_points: float | None = Field(default=None, allow_inf_nan=False)
     max_spread_points: float | None = Field(default=None, gt=0, allow_inf_nan=False)  # the engine's limit
     time: AwareDatetime
+
+
+class FormingBar(BaseModel):
+    """A bar still forming (MT5 position 0), for the chart's live candle only."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    symbol: str = Field(min_length=1, max_length=32)
+    timeframe: Timeframe
+    open_time: AwareDatetime
+    open: float = Field(allow_inf_nan=False)
+    high: float = Field(allow_inf_nan=False)
+    low: float = Field(allow_inf_nan=False)
+    close: float = Field(allow_inf_nan=False)
+    tick_volume: int = Field(ge=0)
 
 
 class AccountLimits(BaseModel):
@@ -103,6 +123,7 @@ class HeartbeatPayload(BaseModel):
     # TAA-909: strategies a remote command disabled (engine_state); None from engines older than TAA-909
     disabled_strategies: list[str] | None = Field(default=None, max_length=MAX_STRATEGIES)
     quotes: list[QuoteItem] = Field(default_factory=list, max_length=MAX_QUOTES)
+    forming: list[FormingBar] = Field(default_factory=list, max_length=MAX_FORMING)
 
 
 def market_state(

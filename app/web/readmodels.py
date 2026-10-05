@@ -57,6 +57,7 @@ from app.storage.models import (
 )
 from app.sync.command_queue import public
 from app.sync.events import json_safe
+from app.sync.heartbeat import BULKY
 
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
@@ -98,7 +99,7 @@ def heartbeat_dict(row: EngineHeartbeatRow) -> dict[str, Any]:
     """The newest heartbeat as the stream sends it (``status``/``heartbeat``: the payload without quotes, plus
     ``received_at`` on the cloud clock) and the watchdog's verdict (TAA-705)."""
     return {
-        **{k: v for k, v in row.payload.items() if k != "quotes"},
+        **{k: v for k, v in row.payload.items() if k not in BULKY},
         "received_at": json_safe(ensure_utc(row.received_at)),
         "watch_status": row.watch_status,
         "offline_since": json_safe(None if row.offline_since is None else ensure_utc(row.offline_since)),
@@ -560,7 +561,37 @@ class ReadModels:
         out["markers"] = self._markers(engine_id, symbol, shown) if not shown.empty else []
         if zones:
             out["zones"] = _zones(df)
+        # the live view (no time window) gets the engine's forming bar from its newest heartbeat
+        last_open = (
+            None if shown.empty else ensure_utc(pd.Timestamp(shown["open_time"].iloc[-1]).to_pydatetime())
+        )
+        live = start is None and end is None
+        out["forming"] = self._forming(engine_id, symbol, tf, last_open) if live else None
         return out
+
+    def _forming(
+        self, engine_id: str, symbol: str, tf: Timeframe, after: datetime | None
+    ) -> list[Any] | None:
+        """``[open_time, o, h, l, c, tick_volume]`` of the bar still forming, newer than the last closed one.
+        Display only: it changes until it closes, then arrives as a closed bar."""
+        with self.db.session() as sess:
+            beat = sess.get(EngineHeartbeatRow, engine_id)
+            bars = [] if beat is None else list(beat.payload.get("forming") or [])
+        for bar in bars:
+            if bar.get("symbol") != symbol or bar.get("timeframe") != tf.value:
+                continue
+            opened = datetime.fromisoformat(str(bar["open_time"]))
+            if after is not None and opened <= after:
+                return None
+            return [
+                json_safe(ensure_utc(opened)),
+                bar["open"],
+                bar["high"],
+                bar["low"],
+                bar["close"],
+                bar["tick_volume"],
+            ]
+        return None
 
     def _markers(self, engine_id: str, symbol: str, shown: pd.DataFrame) -> list[dict[str, Any]]:
         first = ensure_utc(pd.Timestamp(shown["open_time"].iloc[0]).to_pydatetime())

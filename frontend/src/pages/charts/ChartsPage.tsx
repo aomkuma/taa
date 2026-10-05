@@ -34,8 +34,8 @@ import {
 
 const BARS = 300;
 const DEFAULT_INDICATORS: readonly Indicator[] = ['ema', 'rsi'];
-/** Closed bars are streamed by the engine continuously; the chart looks for new ones once a minute. */
-const CANDLE_REFRESH_MS = 60_000;
+/** The engine's heartbeat carries the forming bar every 10 s; the chart follows it. */
+const CANDLE_REFRESH_MS = 10_000;
 
 const isTimeframe = (value: string | null): value is ChartTimeframe =>
   value !== null && (TIMEFRAMES as readonly string[]).includes(value);

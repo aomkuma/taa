@@ -49,6 +49,24 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 2. Phase 10: TAA-1004 recommendations (preparation below), then TAA-1005 analytics API & pages.
 3. Phase 11 Railway deployment: only with the user's Railway access and go-ahead. Then stop for the
    Milestone 1 review.
+4. **Homework from the user (2026-10-05), after all remaining tickets:** the system's purpose is to sweep
+   **every** tradable symbol (hundreds) for opportunities, not 4. Make it as flexible as possible, including
+   future strategies, and let AI take part in learning and adapting the trading playbook to current
+   conditions. Findings so far (check again before designing):
+   - Ranking already covers the whole broker universe (541 enabled symbols on the FBS demo). The opportunity
+     scanner covers only the advisory requirements: favourites + `advisory.universe.auto_top_n: 30` (31
+     symbols today), with a per-cycle time budget (~1.6 s per symbol per bar for the evidence scan).
+   - Trading, candle streaming, chart data and forming bars cover only the traded symbols:
+     `ALLOWED_SYMBOLS` in `.env` overrides `symbols.allowed` in `config.yaml` (EURUSD, GBPUSD, USDJPY,
+     XAUUSD). Charts of other symbols have no bars.
+   - Strategies and their parameters are fixed in `config.yaml` (`extra="forbid"`; a running process must be
+     restarted after a config change, or it refuses the new keys, as the backtest form did on 2026-10-05).
+   - Learning today: calibration from shadow outcomes (PLAN §A27) and analytics (Phase 10); AI is the
+     optional M2 Phase 13 (assessment/veto). Neither adapts strategies.
+   - To design: scanning cost at hundreds of symbols (budget, priorities, sharding), chart data on demand for
+     any symbol, strategies and parameters changeable without a restart (from the PWA, versioned and
+     audited), and an AI loop that proposes changes from outcomes and backtests them before anything goes live
+     (never auto-applied, PLAN §A15 Recommendations).
 
 ### Notes for the remaining tickets
 

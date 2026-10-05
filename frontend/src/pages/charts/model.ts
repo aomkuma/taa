@@ -415,8 +415,14 @@ export function buildChartModel(input: ModelInput, options: ModelOptions, text: 
   const markers = [...tradeMarkers(candles.markers, times, options, text), ...evidence.markers].sort(
     (a, b) => a.time - b.time,
   );
+  // the forming bar goes last; indicators and marks stay on the closed bars
+  const live = candles.forming;
+  const shown =
+    live && (times.length === 0 || seconds(live[0]) > (times.at(-1) ?? 0))
+      ? [...bars, { time: seconds(live[0]), open: live[1], high: live[2], low: live[3], close: live[4] }]
+      : bars;
   return {
-    candles: bars,
+    candles: shown,
     lines: [...lines, ...evidence.lines],
     markers,
     priceLines: [
