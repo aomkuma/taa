@@ -211,6 +211,19 @@ class TestBaseline:
         assert all(ch.passed for ch in record.checks)
         assert len(record.checks) >= 35
 
+    def test_a_tight_stop_is_sized_down_to_the_leverage_cap(self, db: Database) -> None:
+        """2026-10-06 on FBS: 1.5 % of a 1,080 USD account on a 9-pip GBPUSD stop was 0.16 lot (~20x) and the
+        whole trade was rejected for leverage. The lot is now cut to what 10x allows."""
+        tight = make_signal(evidence=(), stop_loss=1.0991, take_profit=1.1020)  # 9 pips
+        record = engine(
+            db, Setup(config=risk(max_risk_per_trade_percent=2.0, max_total_open_risk_percent=4.0))
+        ).decide(request(signal=tight))
+        assert record.decision is Decision.ACCEPT, [c.reason_code for c in record.failed]
+        lever = next(ch for ch in record.checks if ch.name == "effective_leverage")
+        assert lever.passed and float(lever.value) <= 10.0
+        assert record.volume == Decimal("0.9")  # 10x of 10,000 USD at 1.10 = 0.909 lot, floored
+        assert record.sizing is not None and float(record.sizing.risk_money) < 200.0  # below the 2 % budget
+
     def test_missing_loss_status_fails_closed(self, db: Database) -> None:
         record = engine(db).decide(request(account=AccountState(funds())))
         assert record.reason_codes == ("DAILY_LOSS_LIMIT",)

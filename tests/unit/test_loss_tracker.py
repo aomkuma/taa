@@ -105,6 +105,17 @@ class TestCashFlows:
         s = tracker(db, clock).observe(10_500, [early])
         assert s.day_start == pytest.approx(10_500)
 
+    def test_flows_before_tracking_began_are_inside_the_first_equity(
+        self, db: Database, clock: ManualClock
+    ) -> None:
+        opening = cash(1, 1_000, T0 - timedelta(days=1))  # the account's opening deposit, in the deal history
+        t = tracker(db, clock)
+        s = t.observe(1_080, [opening])
+        assert (s.hwm, s.drawdown_percent, s.day_pnl) == (1_080, 0.0, 0.0)
+        clock.advance(60)
+        s = t.observe(1_580, [opening, cash(2, 500, clock.now_utc())])  # a real later deposit still counts
+        assert s.drawdown_percent == 0.0 and s.day_pnl == pytest.approx(0)
+
     def test_each_deal_is_booked_once(self, db: Database, clock: ManualClock) -> None:
         t = tracker(db, clock)
         t.observe(10_000)

@@ -233,6 +233,11 @@ class Engine:
         report = self.bundle.client.connect()
         account = report.account
         self.account_key = stable_hash(account.login, account.server, length=16)
+        # the loss tracker's state (high-water mark, cash flows, period baselines, booked deals) belongs to
+        # the equity it measures: the paper book's in PAPER, the broker account's in DEMO/LIVE. Sharing one
+        # key (until 2026-10-06) carried PAPER's state into DEMO on the same account and latched MAX_DRAWDOWN.
+        family = "PAPER" if self.settings.mode is TradingMode.PAPER else "BROKER"
+        self.risk_key = stable_hash(account.login, account.server, family, length=16)
         self._verify_clock(initial=True)
         for symbol in cfg.symbols.allowed:
             try:
@@ -262,7 +267,7 @@ class Engine:
             self.clock,
             flatten_allowed=env.KILL_SWITCH_FLATTEN_ALLOWED,
         )
-        self.losses = LossTracker(self.db, self.account_key, env.BROKER_TIMEZONE, self.clock)
+        self.losses = LossTracker(self.db, self.risk_key, env.BROKER_TIMEZONE, self.clock)
         self.watermarks = CandleWatermarks(self.db, self.clock)
         self.candles = CandleService(self.gateway, cfg.timeframes, self.clock)
         self.quotes = QuoteService(self.gateway, self.clock, cfg.timeframes.stale_tick_seconds)
@@ -521,7 +526,7 @@ class Engine:
             closed = sess.scalar(
                 select(func.count())
                 .select_from(RiskDeal)
-                .where(RiskDeal.account_key == self.account_key, RiskDeal.kind == "CLOSE")
+                .where(RiskDeal.account_key == self.risk_key, RiskDeal.kind == "CLOSE")
             )
         opened = len(self.broker_positions.bot_positions()) if hasattr(self, "broker_positions") else 0
         return (closed or 0) + opened < self.config.risk.probation_trades

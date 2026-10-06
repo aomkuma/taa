@@ -14,6 +14,12 @@ portfolio, account, sizing. (The AI veto and the broker ``order_check`` precheck
 
 Sizing feeds the exposure checks. When sizing fails, exposure is evaluated with the full risk budget as the
 candidate's risk, an upper bound on what any accepted size could add.
+
+**Leverage cap on the size** (2026-10-06): the risk budget is an upper bound, not a target. When the
+budget's lot would push the account's effective leverage above ``risk.max_effective_leverage`` (tight M15
+stops: 1.5 % risk on a 9-pip GBPUSD stop is 0.16 lot, ~20× a 1,080 USD account), the lot is cut to what the
+remaining leverage allows (risk then below budget) instead of rejecting the trade. Only when even the
+minimum lot does not fit does ``effective_leverage`` reject it.
 """
 
 from __future__ import annotations
@@ -40,7 +46,7 @@ from app.market_data.trading_sessions import SessionState, TradingSessions
 from app.news.calendar import NewsFilter
 from app.risk.checks import Check, CheckKind
 from app.risk.circuit_breaker import BreakerBoard
-from app.risk.exposure_manager import Candidate, ExposureManager
+from app.risk.exposure_manager import LEVERAGE_MOVE, Candidate, ExposureManager
 from app.risk.limits import ProfileLimits, effective_risk
 from app.risk.loss_tracker import LossStatus, loss_checks
 from app.risk.mode_gates import GateResult
@@ -523,15 +529,39 @@ class DecisionEngine:
         if override is not None and override.commission_per_lot is not None:
             commission = override.commission_per_lot
         sizer = PositionSizer(risk, self.calculator, commission_per_lot=commission)
+        lot_limit = self.config.lot_limit(spec.name)
+        leverage_lots = self._leverage_lots(req, risk)
+        if leverage_lots is not None and leverage_lots >= max(spec.volume_min, risk.min_lot or 0.0):
+            lot_limit = min(lot_limit, leverage_lots)
         return sizer.size(
             spec,
             s.side,
             s.entry_price,
             s.stop_loss,
             req.account.funds,
-            lot_limit=self.config.lot_limit(spec.name),
+            lot_limit=lot_limit,
             probation=req.probation,
         )
+
+    def _leverage_lots(self, req: DecisionRequest, risk: RiskConfig) -> float | None:
+        """The most lots the remaining effective leverage allows (see the module notes), or None when it
+        cannot be measured (then the exposure check decides on the risk-sized lot, fail closed)."""
+        s, account = req.signal, req.account
+        if account is None or s.side is None or s.entry_price is None or account.funds.equity <= 0:
+            return None
+        move = self.calculator.calc_profit(
+            s.side, s.symbol, 1.0, s.entry_price, s.entry_price * (1 + LEVERAGE_MOVE)
+        )
+        if move is None or move == 0:
+            return None
+        manager = ExposureManager(risk, self.calculator, magic_base=self.magic_base)
+        specs = self.position_specs(req.specs, account.positions)
+        if req.spec is not None:
+            specs[req.spec.name] = req.spec
+        exposure = manager.snapshot(account.positions, account.funds, specs)
+        room = risk.max_effective_leverage - exposure.effective_leverage
+        per_lot = 100.0 * abs(move) / account.funds.equity
+        return max(0.0, room / per_lot)
 
     def _sizing_checks(self, sizing: SizingResult | None) -> list[Check]:
         if sizing is None:

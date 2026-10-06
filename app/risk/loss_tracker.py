@@ -103,6 +103,10 @@ class LossTracker:
         day_key, week_key = period_keys(now, self.tz)
         with self.db.session() as sess:
             state = sess.get(RiskState, (LOCAL_ENGINE, self.account_key))
+            # a flow booked in the call that starts tracking is history: it is already inside this equity,
+            # which becomes the high-water mark (2026-10-06: a new demo account's opening deposit of 1000
+            # counted as a later flow made a 1080 account look 92% down and latched MAX_DRAWDOWN)
+            fresh = state is None
             if state is None:
                 state = RiskState(
                     account_key=self.account_key, hwm=equity, cumulative_cash_flow=0.0, consecutive_losses=0
@@ -132,7 +136,8 @@ class LossTracker:
                 if deal.ticket in seen:
                     continue
                 if deal.is_cash_flow:
-                    self._book_cash_flow(deal, state, baselines.values())
+                    if not fresh:
+                        self._book_cash_flow(deal, state, baselines.values())
                     sess.add(self._deal_row(deal, "CASH_FLOW", deal.profit))
                 elif deal.entry in CLOSING_ENTRIES and is_bot(deal):
                     self._book_close(deal, state)
