@@ -53,6 +53,7 @@ from sqlalchemy.orm import ColumnProperty, Session
 from app.core.clock import ensure_utc
 from app.storage.models import (
     AIAssessmentRow,
+    AINoteRow,
     AuditEvent,
     Base,
     BreakerEventRow,
@@ -244,6 +245,7 @@ REPLICAS: tuple[ReplicaSpec, ...] = (
     ReplicaSpec("opportunity", OpportunityRow),
     ReplicaSpec("manual_trade_link", ManualTradeLinkRow),
     ReplicaSpec("ai_assessment", AIAssessmentRow),
+    ReplicaSpec("ai_note", AINoteRow),
     ReplicaSpec("shadow_trade", ShadowTradeRow, priority=Priority.STATE, quiet=("cursor", "updated_at")),
     ReplicaSpec("calibration_version", CalibrationTableRow, priority=Priority.STATE),
     ReplicaSpec(

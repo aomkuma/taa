@@ -305,3 +305,32 @@ class AIAssessmentRow(EngineKeyed, Base):
     latency_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
     effect: Mapped[str] = mapped_column(String(10))
     detail: Mapped[str] = mapped_column(Text, default="")
+
+
+class AINoteRow(EngineKeyed, Base):
+    """An AI note on advisory (TAA-1305, TAA-1304), written on the engine and replicated: an OPPORTUNITY
+    opinion (verdict, confidence, reasons and a TH/EN narrative), a RANKING narrative of one snapshot or an
+    ANALYTICS narrative of recent shadow results. One per kind and subject (``note_id`` = ``KIND:subject``),
+    recorded whether it answered or not; descriptive only, it never changes a score, alert or trade."""
+
+    __tablename__ = "ai_notes"
+
+    note_id: Mapped[str] = mapped_column(String(140), primary_key=True)
+    kind: Mapped[str] = mapped_column(String(12), index=True)
+    subject: Mapped[str] = mapped_column(
+        String(120), index=True
+    )  # the opportunity id, snapshot hour or period
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    status: Mapped[str] = mapped_column(String(12), index=True)
+    verdict: Mapped[str | None] = mapped_column(String(10), nullable=True)  # OPPORTUNITY only
+    confidence: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reasons: Mapped[list[str]] = mapped_column(JSONType, default=list)
+    text_en: Mapped[str] = mapped_column(Text, default="")
+    text_th: Mapped[str] = mapped_column(Text, default="")
+    facts: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)  # the input, for audit
+    model: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    latency_ms: Mapped[float | None] = mapped_column(Float, nullable=True)
+    detail: Mapped[str] = mapped_column(Text, default="")

@@ -48,6 +48,7 @@ from app.advisory.stats import EdgeBook
 from app.advisory.suitability import ACCOUNT_GATES
 from app.advisory.universe import SymbolCatalog
 from app.ai.gate import AIGate
+from app.ai.notes import AINotes
 from app.ai.providers import AIProvider, AnthropicProvider, NullProvider
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
@@ -192,6 +193,7 @@ class Engine:
         self._booked_deals = 0
         self.ranking: RankingService | None = None
         self.scanner: OpportunityScanner | None = None
+        self.ai_notes: AINotes | None = None
         self.lifecycle: OpportunityLifecycle | None = None
         self.shadow: ShadowTracker | None = None
         self.calibration: CalibrationService | None = None
@@ -294,6 +296,7 @@ class Engine:
             spec_lookup=self.gateway.symbol_spec,  # positions on symbols the bot does not trade (manual)
         )
         self.ai = self._ai_gate()
+        self.ai_notes = self._ai_notes()
         if self.ai.active:
             self.decisions.reviewer = self.ai.review
             log.info("AI review on: %s, mode %s", env.AI_MODEL, env.AI_MODE)
@@ -484,18 +487,29 @@ class Engine:
         log.warning("%s mode: broker orders go to the account (%s)", self.settings.mode.value, report)
         return len(self.broker_positions.bot_positions())
 
-    def _ai_gate(self) -> AIGate:
-        """The optional AI review (TAA-1303): Claude with ``AI_PROVIDER=anthropic`` and a key, else none."""
+    def _ai_provider(self) -> AIProvider:
         env = self.settings.env
-        provider: AIProvider = NullProvider(self.clock)
-        if env.AI_PROVIDER == "anthropic" and env.AI_API_KEY is not None and env.AI_MODE != "off":
-            provider = AnthropicProvider(
+        if env.AI_PROVIDER == "anthropic" and env.AI_API_KEY is not None:
+            return AnthropicProvider(
                 env.AI_API_KEY.get_secret_value(),
                 self.clock,
                 model=env.AI_MODEL,
                 effort=self.config.ai.effort,
                 timeout_seconds=self.config.ai.timeout_seconds,
             )
+        return NullProvider(self.clock)
+
+    def _ai_notes(self) -> AINotes | None:
+        """AI on advisory (TAA-1305): ``ai.advisory.enabled`` and a provider, whatever ``AI_MODE`` says."""
+        if not self.config.ai.advisory.enabled:
+            return None
+        notes = AINotes(self.db, self._ai_provider(), self.config.ai.advisory, self.clock)
+        return notes if notes.active else None
+
+    def _ai_gate(self) -> AIGate:
+        """The optional AI review (TAA-1303): Claude with ``AI_PROVIDER=anthropic`` and a key, else none."""
+        env = self.settings.env
+        provider = self._ai_provider() if env.AI_MODE != "off" else NullProvider(self.clock)
         return AIGate(self.db, provider, self.config.ai, env.AI_MODE, self.clock)
 
     def _probation(self) -> bool:
@@ -663,6 +677,13 @@ class Engine:
                 log.exception("shadow tracker failed")
                 self.shadow.stats.failures += 1
                 self.shadow.stats.last_error = f"{type(exc).__name__}: {exc}"
+        if self.ai_notes is not None:
+            try:
+                self.ai_notes.tick()  # starts at most one background call; never waits for it
+            except Exception as exc:  # advisory boundary: an AI failure never touches trading
+                log.exception("AI notes failed")
+                self.ai_notes.stats.failures += 1
+                self.ai_notes.stats.last_error = f"{type(exc).__name__}: {exc}"
         if self.calibration is not None:
             try:
                 self.calibration.tick()
@@ -1217,6 +1238,15 @@ class Engine:
                 "last_duration_ms": round(self.shadow.stats.last_duration_ms),
                 "last_error": self.shadow.stats.last_error,
             },
+            "ai_notes": None
+            if self.ai_notes is None
+            else {
+                "calls": self.ai_notes.stats.calls,
+                "answered": self.ai_notes.stats.answered,
+                "failures": self.ai_notes.stats.failures,
+                "budget_holds": self.ai_notes.stats.budget_holds,
+                "last_error": self.ai_notes.stats.last_error,
+            },
             "sync": None if self.sync is None else self._sync_status(self.sync),
             "candle_stream": None
             if self.candle_stream is None
@@ -1251,6 +1281,8 @@ class Engine:
         try:
             if self.calibration is not None:
                 self.calibration.shutdown()
+            if self.ai_notes is not None:
+                self.ai_notes.close()
             if self.sync is not None:
                 self._final_cloud_heartbeat()
                 self.sync.stop(final_flush=True)  # a deliberate stop reaches the cloud at once

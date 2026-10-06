@@ -2,6 +2,7 @@
 
 from app.storage.models.advisory import (
     AIAssessmentRow,
+    AINoteRow,
     CalibrationTableRow,
     EvidenceModelVersionRow,
     ManualTradeLinkRow,
@@ -62,6 +63,7 @@ from app.storage.models.worker import WorkerHeartbeatRow, WorkerJobRow, WorkerSc
 
 __all__ = [
     "AIAssessmentRow",
+    "AINoteRow",
     "AccountProfileRow",
     "AuditChainHead",
     "AuditEvent",

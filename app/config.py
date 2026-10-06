@@ -602,6 +602,25 @@ class AIConfig(StrictModel):
     min_confidence: int = Field(default=60, ge=0, le=100, description="veto: an AGREE below this is UNSURE")
     max_calls_per_day: int = Field(default=50, ge=0, le=10_000)
     max_cost_per_day_usd: float = Field(default=2.0, ge=0, le=1_000)
+    advisory: AIAdvisoryConfig = Field(default_factory=lambda: AIAdvisoryConfig())
+
+
+class AIAdvisoryConfig(StrictModel):
+    """AI on advisory (TAA-1305, TAA-1304; :mod:`app.ai.advisory`): opinions on opportunities and TH/EN
+    narratives, written on the engine with the same provider (``AI_PROVIDER`` + key) whatever ``AI_MODE``
+    says. Off by default; its own daily budget, separate from the entry review's."""
+
+    enabled: bool = False
+    opinions: bool = True  # one opinion per new opportunity
+    ranking_narrative: bool = True
+    analytics_narrative: bool = True
+    min_score: float = Field(default=0.0, ge=0, le=100, description="opportunities below this get no opinion")
+    max_age_minutes: int = Field(default=10, ge=1, le=240, description="older opportunities get no opinion")
+    ranking_every_hours: int = Field(default=24, ge=1, le=168)
+    analytics_every_hours: int = Field(default=24, ge=1, le=168)
+    analytics_days: int = Field(default=7, ge=1, le=90)
+    max_calls_per_day: int = Field(default=100, ge=0, le=10_000)
+    max_cost_per_day_usd: float = Field(default=3.0, ge=0, le=1_000)
 
 
 class SyncConfig(StrictModel):

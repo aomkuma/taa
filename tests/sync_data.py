@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 
 from app.storage.models import (
     AIAssessmentRow,
+    AINoteRow,
     Base,
     BreakerEventRow,
     BreakerStateRow,
@@ -204,6 +205,25 @@ def sample_rows() -> list[Base]:
             cost_usd=0.0108,
             latency_ms=2400.0,
             effect="PASSED",
+            detail="",
+        ),
+        AINoteRow(
+            note_id="OPPORTUNITY:k1",
+            kind="OPPORTUNITY",
+            subject="k1",
+            created_at=T,
+            status="OK",
+            verdict="AGREE",
+            confidence=66,
+            reasons=["H1 trend agrees with the BUY"],
+            text_en="The pullback entry agrees with the higher-timeframe trend evidence.",
+            text_th="จุดเข้าหลังการย่อตัวสอดคล้องกับหลักฐานแนวโน้มใน timeframe ใหญ่",
+            facts={"subject": "k1", "score": 0.7},
+            model="claude-opus-5-5",
+            input_tokens=900,
+            output_tokens=250,
+            cost_usd=0.0086,
+            latency_ms=1200.0,
             detail="",
         ),
         ManualTradeLinkRow(

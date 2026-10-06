@@ -2,7 +2,9 @@
 
 - :class:`AIProvider` is the protocol the engine calls: one :class:`~app.ai.schema.AssessmentInput` in, one
   :class:`~app.ai.schema.Assessment` out, never an exception. Every failure becomes a status that the veto
-  gate treats as HOLD (``AI_UNAVAILABLE``).
+  gate treats as HOLD (``AI_UNAVAILABLE``). :meth:`AIProvider.ask` is the general call under it (any system
+  prompt and answer schema, one :class:`Answer` out, never an exception); the advisory opinions and
+  narratives use it (:mod:`app.ai.advisory`, TAA-1305).
 - :class:`NullProvider` answers ``SKIPPED`` (no AI).
 - :class:`AnthropicProvider` asks Claude through the official SDK with structured outputs
   (``client.beta.messages.parse`` with the :class:`~app.ai.schema.AssessmentV1` model). It uses low effort,
@@ -15,7 +17,11 @@ from __future__ import annotations
 import logging
 import time
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Protocol, cast
+
+from pydantic import BaseModel
 
 from app.ai.schema import Assessment, AssessmentInput, AssessmentV1, Status, validate
 from app.core.clock import Clock
@@ -55,10 +61,28 @@ def cost_usd(model: str | None, input_tokens: int, output_tokens: int) -> float:
     return round(input_tokens * price[0] / 1_000_000 + output_tokens * price[1] / 1_000_000, 6)
 
 
+@dataclass(frozen=True, slots=True)
+class Answer:
+    """One call's outcome: ``parsed`` is the schema instance when ``status`` is OK (not yet checked against
+    the request; the caller validates it), else None."""
+
+    status: Status
+    parsed: Any = None
+    model: str | None = None
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cost_usd: float = 0.0
+    latency_ms: float | None = None
+    detail: str = ""
+    created_at: datetime | None = None
+
+
 class AIProvider(Protocol):
     name: str
 
     def assess(self, request: AssessmentInput) -> Assessment: ...
+
+    def ask(self, key: str, system: str, content: str, output_format: type[BaseModel]) -> Answer: ...
 
 
 class NullProvider:
@@ -71,6 +95,9 @@ class NullProvider:
         return Assessment(
             Status.SKIPPED, request.signal_key, created_at=self.clock.now_utc(), detail="AI is off"
         )
+
+    def ask(self, key: str, system: str, content: str, output_format: type[BaseModel]) -> Answer:
+        return Answer(Status.SKIPPED, created_at=self.clock.now_utc(), detail="AI is off")
 
 
 class AnthropicProvider:
@@ -99,21 +126,43 @@ class AnthropicProvider:
         self.client = client_factory(api_key=api_key, timeout=timeout_seconds, max_retries=1)
 
     def assess(self, request: AssessmentInput) -> Assessment:
+        answer = self.ask(request.signal_key, SYSTEM_PROMPT, request.to_json(), AssessmentV1)
+        spend: dict[str, Any] = {
+            "model": answer.model,
+            "input_tokens": answer.input_tokens,
+            "output_tokens": answer.output_tokens,
+            "cost_usd": answer.cost_usd,
+            "latency_ms": answer.latency_ms,
+            "created_at": answer.created_at,
+        }
+        if answer.status is not Status.OK:
+            return Assessment(answer.status, request.signal_key, detail=answer.detail, **spend)
+        try:
+            checked = validate(answer.parsed, request)
+        except ValueError as exc:
+            return Assessment(Status.INVALID, request.signal_key, detail=str(exc)[:500], **spend)
+        return Assessment(
+            Status.OK,
+            request.signal_key,
+            verdict=checked.verdict,
+            confidence=checked.confidence,
+            reasons=tuple(checked.reasons),
+            **spend,
+        )
+
+    def ask(self, key: str, system: str, content: str, output_format: type[BaseModel]) -> Answer:
         started = time.perf_counter()
         now = self.clock.now_utc()
 
-        def done(status: Status, detail: str = "", **kw: Any) -> Assessment:
+        def done(status: Status, detail: str = "", **kw: Any) -> Answer:
             latency = round((time.perf_counter() - started) * 1000, 1)
-            result = Assessment(
-                status, request.signal_key, latency_ms=latency, created_at=now, detail=detail[:500], **kw
-            )
+            result = Answer(status, latency_ms=latency, created_at=now, detail=detail[:500], **kw)
             log.info(
-                "AI %s %s: %s %s conf=%s tokens=%s/%s cost=$%.4f %sms %s",
-                request.signal_key[:12],
+                "AI %s %s %s: %s tokens=%s/%s cost=$%.4f %sms %s",
+                output_format.__name__,
+                key[:24],
                 result.model or self.model,
                 status.value,
-                result.verdict.value if result.verdict else "-",
-                result.confidence,
                 result.input_tokens,
                 result.output_tokens,
                 result.cost_usd,
@@ -130,9 +179,9 @@ class AnthropicProvider:
             response = self.client.beta.messages.parse(
                 model=self.model,
                 max_tokens=MAX_TOKENS,
-                system=SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": request.to_json()}],
-                output_format=AssessmentV1,
+                system=system,
+                messages=[{"role": "user", "content": content}],
+                output_format=output_format,
                 output_config=cast(Any, {"effort": self.effort}),
                 betas=[FALLBACK_BETA],
                 fallbacks="default",
@@ -158,14 +207,7 @@ class AnthropicProvider:
             return done(Status.REFUSED, f"refusal ({category})", **spend)
         if stop == "max_tokens":
             return done(Status.TRUNCATED, "max_tokens", **spend)
-        try:
-            answer = validate(getattr(response, "parsed_output", None), request)
-        except ValueError as exc:
-            return done(Status.INVALID, str(exc), **spend)
-        return done(
-            Status.OK,
-            verdict=answer.verdict,
-            confidence=answer.confidence,
-            reasons=tuple(answer.reasons),
-            **spend,
-        )
+        parsed = getattr(response, "parsed_output", None)
+        if parsed is None:
+            return done(Status.INVALID, "no parsed answer", **spend)
+        return done(Status.OK, parsed=parsed, **spend)
