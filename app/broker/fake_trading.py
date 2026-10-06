@@ -2,7 +2,8 @@
 
 It validates requests the way the trade server does (market hours, trade mode, volume, filling, price
 deviation, stops level, freeze level, margin), executes market deals, SL/TP changes and closes on the
-fake account, and closes positions whose SL or TP the current price has reached. Fault injection:
+fake account, works pending limit orders (place, fill when the price reaches them, expire, remove; TAA-1207),
+and closes positions whose SL or TP the current price has reached. Fault injection:
 :meth:`FakeTradeDesk.force` makes the next ``order_send`` return a chosen retcode (or ``None``), optionally
 while still executing it: the "outcome unknown but the order exists" case a reconciler must handle.
 """
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from app.broker.fake_mt5 import FakeMT5, FakeSymbol
 
 DONE, PLACED = 10009, 10008
+ORDER_STATE_PLACED = 1
 FILLING_FLAG = {c.ORDER_FILLING_FOK: c.SYMBOL_FILLING_FOK, c.ORDER_FILLING_IOC: c.SYMBOL_FILLING_IOC}
 
 
@@ -96,6 +98,8 @@ class FakeTradeDesk:
         if fake.account.investor:
             return 10017
         action = request.get("action")
+        if action == c.TRADE_ACTION_REMOVE:
+            return self._validate_remove(request)
         symbol = str(request.get("symbol", ""))
         sym = fake.symbols.get(symbol)
         quote = self._quote(symbol)
@@ -104,6 +108,8 @@ class FakeTradeDesk:
         if not self._market_open(sym):
             return 10018
         bid, ask = quote
+        if action == c.TRADE_ACTION_PENDING:
+            return self._validate_pending(request, sym, bid, ask)
         if action == c.TRADE_ACTION_SLTP:
             pos = self._position(request.get("position"))
             if pos is None:
@@ -164,6 +170,63 @@ class FakeTradeDesk:
                 return 10019
         return 0
 
+    def _validate_pending(self, request: dict[str, Any], sym: FakeSymbol, bid: float, ask: float) -> int:
+        """A BUY_LIMIT below the ask / SELL_LIMIT above the bid, outside the stops level (TAA-1207)."""
+        order_type = request.get("type")
+        if order_type not in (c.ORDER_TYPE_BUY_LIMIT, c.ORDER_TYPE_SELL_LIMIT):
+            return 10013
+        buy = order_type == c.ORDER_TYPE_BUY_LIMIT
+        if sym.trade_mode == c.SYMBOL_TRADE_MODE_DISABLED:
+            return 10017
+        if sym.trade_mode == c.SYMBOL_TRADE_MODE_CLOSEONLY:
+            return 10044
+        if sym.trade_mode == c.SYMBOL_TRADE_MODE_LONGONLY and not buy:
+            return 10042
+        if sym.trade_mode == c.SYMBOL_TRADE_MODE_SHORTONLY and buy:
+            return 10043
+        volume = float(request.get("volume", 0.0))
+        if not (sym.volume_min <= volume <= sym.volume_max) or not is_multiple_of(volume, sym.volume_step):
+            return 10014
+        filling = int(request.get("type_filling", -1))
+        if filling == c.ORDER_FILLING_RETURN:
+            if not sym.pending_return_filling:
+                return 10030
+        else:
+            flag = FILLING_FLAG.get(filling)
+            if flag is None or not (sym.filling_mode & flag):
+                return 10030
+        gap = sym.stops_level * sym.point
+        price = float(request.get("price", 0.0))
+        if (buy and price >= ask - gap) or (not buy and price <= bid + gap) or price <= 0:
+            return 10015
+        pos_type = c.POSITION_TYPE_BUY if buy else c.POSITION_TYPE_SELL
+        if not self._stops_ok(
+            sym, pos_type, price, float(request.get("sl", 0.0)), float(request.get("tp", 0.0))
+        ):
+            return 10016
+        if int(request.get("type_time", c.ORDER_TIME_GTC)) == c.ORDER_TIME_SPECIFIED:
+            expiration = int(request.get("expiration", 0) or 0)
+            if not sym.pending_expiration or expiration <= self._now_server():
+                return 10022
+        return 0
+
+    def _validate_remove(self, request: dict[str, Any]) -> int:
+        order = self._order(request.get("order"))
+        if order is None:
+            return 10013
+        sym = self.fake.symbols.get(order.symbol)
+        quote = self._quote(order.symbol)
+        if sym is None or quote is None:
+            return 10013
+        mark = quote[1] if order.type == c.ORDER_TYPE_BUY_LIMIT else quote[0]
+        frozen = sym.freeze_level * sym.point
+        if frozen and abs(mark - order.price_open) <= frozen:
+            return 10029
+        return 0
+
+    def _order(self, ticket: Any) -> SimpleNamespace | None:
+        return next((o for o in self.fake.orders if o.ticket == ticket), None)
+
     @staticmethod
     def _stops_ok(sym: FakeSymbol, pos_type: int, mark: float, sl: float, tp: float) -> bool:
         gap = sym.stops_level * sym.point
@@ -197,6 +260,8 @@ class FakeTradeDesk:
                 return None
             return self._result(forced.retcode, request)
         code = self.validate(request)
+        if request.get("action") == c.TRADE_ACTION_REMOVE:
+            return self._remove(request) if code == 0 else self._result(code, request)
         if code == 10025 and request.get("action") == c.TRADE_ACTION_SLTP:
             return self._result(10025, request)
         if code != 0:
@@ -211,9 +276,44 @@ class FakeTradeDesk:
 
     # --- execution ----------------------------------------------------------------------------------
 
+    def _place(self, request: dict[str, Any]) -> SimpleNamespace:
+        ticket = self._id()
+        volume = float(request["volume"])
+        timed = int(request.get("type_time", c.ORDER_TIME_GTC)) == c.ORDER_TIME_SPECIFIED
+        self.fake.orders.append(
+            SimpleNamespace(
+                ticket=ticket,
+                time_setup=self._now_server(),
+                type=int(request["type"]),
+                state=ORDER_STATE_PLACED,
+                volume_initial=volume,
+                volume_current=volume,
+                price_open=float(request["price"]),
+                sl=float(request.get("sl", 0.0)),
+                tp=float(request.get("tp", 0.0)),
+                price_current=0.0,
+                symbol=str(request["symbol"]),
+                magic=int(request.get("magic", 0)),
+                comment=str(request.get("comment", "")),
+                type_time=int(request.get("type_time", c.ORDER_TIME_GTC)),
+                time_expiration=int(request.get("expiration", 0) or 0) if timed else 0,
+                type_filling=int(request.get("type_filling", 0)),
+            )
+        )
+        return self._result(PLACED, request, order=ticket, volume=volume)
+
+    def _remove(self, request: dict[str, Any]) -> SimpleNamespace:
+        order = self._order(request["order"])
+        if order is None:
+            return self._result(10013, request)
+        self.fake.orders.remove(order)
+        return self._result(DONE, request, order=order.ticket)
+
     def _execute(self, request: dict[str, Any]) -> SimpleNamespace:
         action, symbol = request["action"], str(request["symbol"])
         bid, ask = self._quote(symbol) or (0.0, 0.0)
+        if action == c.TRADE_ACTION_PENDING:
+            return self._place(request)
         if action == c.TRADE_ACTION_SLTP:
             pos = self._position(request["position"])
             if pos is None:
@@ -335,8 +435,70 @@ class FakeTradeDesk:
             pos.volume = remaining
         return deal
 
+    def _fill(self, order: SimpleNamespace, price: float) -> None:
+        """A limit order the price reached becomes a position with the order's ticket (as in MT5, the
+        position identifier is the order that opened it). Without the free margin it is cancelled."""
+        self.fake.orders.remove(order)
+        order_type = c.ORDER_TYPE_BUY if order.type == c.ORDER_TYPE_BUY_LIMIT else c.ORDER_TYPE_SELL
+        margin = self.fake.order_calc_margin(order_type, order.symbol, order.volume_current, price) or 0.0
+        positions = self.fake.positions
+        equity = self.fake.account.balance + sum(float(getattr(p, "profit", 0.0)) for p in positions)
+        if margin > equity - sum(float(getattr(p, "margin", 0.0)) for p in positions):
+            return
+        now = self._now_server()
+        positions.append(
+            SimpleNamespace(
+                ticket=order.ticket,
+                symbol=order.symbol,
+                type=c.POSITION_TYPE_BUY if order_type == c.ORDER_TYPE_BUY else c.POSITION_TYPE_SELL,
+                volume=order.volume_current,
+                price_open=price,
+                sl=order.sl,
+                tp=order.tp,
+                price_current=price,
+                profit=0.0,
+                swap=0.0,
+                magic=order.magic,
+                comment=order.comment,
+                time=now,
+                identifier=order.ticket,
+                margin=margin,
+            )
+        )
+        self._deal(
+            order.symbol,
+            order_type,
+            c.DEAL_ENTRY_IN,
+            order.volume_current,
+            price,
+            0.0,
+            order.ticket,
+            order.ticket,
+            None,
+            now,
+            magic=order.magic,
+            comment=order.comment,
+        )
+
+    def _work_orders(self) -> None:
+        """Expire timed orders and fill limits the price has reached (ask for a buy, bid for a sell)."""
+        now = self._now_server()
+        for order in list(self.fake.orders):
+            if order.time_expiration and now >= order.time_expiration:
+                self.fake.orders.remove(order)
+                continue
+            quote = self._quote(order.symbol)
+            if quote is None:
+                continue
+            bid, ask = quote
+            buy = order.type == c.ORDER_TYPE_BUY_LIMIT
+            if (ask <= order.price_open) if buy else (bid >= order.price_open):
+                self._fill(order, order.price_open)
+
     def refresh(self) -> None:
-        """Mark positions to market and close those whose SL or TP the price has reached."""
+        """Work resting orders, mark positions to market and close those whose SL or TP the price has
+        reached."""
+        self._work_orders()
         for pos in list(self.fake.positions):
             quote = self._quote(pos.symbol)
             if quote is None:

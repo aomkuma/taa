@@ -87,6 +87,8 @@ class FakeSymbol:
     calc_mode: int = c.SYMBOL_CALC_MODE_FOREX
     schedule: str = SCHEDULE_FX
     fixed_leverage: int | None = None  # instrument leverage independent of the account (metals, indices, ...)
+    pending_return_filling: bool = True  # pending orders accept ORDER_FILLING_RETURN (most brokers)
+    pending_expiration: bool = True  # pending orders may carry ORDER_TIME_SPECIFIED
 
     @property
     def point(self) -> float:
@@ -287,9 +289,11 @@ class FakeMT5:
     TIMEFRAME_M1, TIMEFRAME_M5, TIMEFRAME_M15, TIMEFRAME_M30 = 1, 5, 15, 30
     TIMEFRAME_H1, TIMEFRAME_H4, TIMEFRAME_D1 = 16385, 16388, 16408
     ORDER_TYPE_BUY, ORDER_TYPE_SELL = c.ORDER_TYPE_BUY, c.ORDER_TYPE_SELL
+    ORDER_TYPE_BUY_LIMIT, ORDER_TYPE_SELL_LIMIT = c.ORDER_TYPE_BUY_LIMIT, c.ORDER_TYPE_SELL_LIMIT
     TRADE_ACTION_DEAL, TRADE_ACTION_SLTP = c.TRADE_ACTION_DEAL, c.TRADE_ACTION_SLTP
+    TRADE_ACTION_PENDING, TRADE_ACTION_REMOVE = c.TRADE_ACTION_PENDING, c.TRADE_ACTION_REMOVE
     ORDER_FILLING_FOK, ORDER_FILLING_IOC, ORDER_FILLING_RETURN = 0, 1, 2
-    ORDER_TIME_GTC = 0
+    ORDER_TIME_GTC, ORDER_TIME_SPECIFIED = c.ORDER_TIME_GTC, c.ORDER_TIME_SPECIFIED
     COPY_TICKS_ALL, COPY_TICKS_INFO, COPY_TICKS_TRADE = (
         c.COPY_TICKS_ALL,
         c.COPY_TICKS_INFO,
@@ -318,6 +322,7 @@ class FakeMT5:
         self.init_kwargs: dict[str, Any] = {}
         self.calls: Counter[str] = Counter()
         self.positions: list[SimpleNamespace] = []
+        self.orders: list[SimpleNamespace] = []  # resting pending orders
         self.deals: list[SimpleNamespace] = []
         self.selected: set[str] = set()
         self._failures: dict[str, _Failure] = {}
@@ -790,7 +795,8 @@ class FakeMT5:
     def orders_get(self, symbol: str | None = None) -> tuple[Any, ...] | None:
         if not self._enter("orders_get"):
             return None
-        return ()
+        self.desk.refresh()
+        return tuple(o for o in self.orders if symbol is None or o.symbol == symbol)
 
     def history_deals_get(self, date_from: Any, date_to: Any) -> tuple[Any, ...] | None:
         if not self._enter("history_deals_get"):

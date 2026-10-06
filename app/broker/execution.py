@@ -4,10 +4,11 @@
   It refuses to exist unless the mode is DEMO or LIVE, and refuses every request unless the connected
   account is a DEMO account in DEMO mode or a REAL account in LIVE mode (§A3; LIVE since TAA-1401, behind the
   live gate the engine evaluates before each order). Every send and every result is logged.
-- :class:`RequestBuilder` makes the three requests the engine needs: a market entry with SL and TP, an SL/TP
-  change, and a (partial) close. Filling comes from the symbol (``filling.resolve_filling``), ``deviation`` is
-  the slippage limit in points, orders are GTC, ``magic`` identifies the strategy and the comment is at most
-  25 ASCII characters (brokers overwrite the tail of the 31-character field).
+- :class:`RequestBuilder` makes the requests the engine needs: a market entry with SL and TP, a limit entry
+  and its removal (entry-plan parts, TAA-1207), an SL/TP change, and a (partial) close. Filling comes from
+  the symbol (``filling.resolve_filling``), ``deviation`` is the slippage limit in points, orders are GTC
+  (a limit part may carry a broker-side expiration), ``magic`` identifies the strategy and the comment is
+  at most 25 ASCII characters (brokers overwrite the tail of the 31-character field).
 - ``order_send`` returning ``None`` means *unknown*: the order may exist. The result says so explicitly
   (``retcode=None``) and the caller must reconcile before anything else; nothing here retries.
 """
@@ -115,6 +116,56 @@ class RequestBuilder:
             "type_time": c.ORDER_TIME_GTC,
             "type_filling": self._filling(spec),
         }
+
+    def limit_entry(
+        self,
+        spec: SymbolSpec,
+        side: Side,
+        volume: float,
+        price: float,
+        sl: float,
+        tp: float | None,
+        *,
+        magic: int,
+        comment: str,
+        filling: int,
+        expiration_server: int | None,
+    ) -> dict[str, Any]:
+        """A BUY_LIMIT / SELL_LIMIT at *price* (a scale-in part, TAA-1207). *filling* is chosen by the caller
+        through ``order_check`` (pending orders often need RETURN); *expiration_server* is the broker-side
+        backstop in server-time epoch seconds (None: good till cancelled)."""
+        if sl <= 0:
+            raise SafetyViolation("every entry needs a stop-loss")
+        request: dict[str, Any] = {
+            "action": c.TRADE_ACTION_PENDING,
+            "symbol": spec.name,
+            "volume": float(volume),
+            "type": c.ORDER_TYPE_BUY_LIMIT if side is Side.BUY else c.ORDER_TYPE_SELL_LIMIT,
+            "price": self._price(spec, price),
+            "sl": self._price(spec, sl),
+            "tp": 0.0 if tp is None else self._price(spec, tp),
+            "magic": int(magic),
+            "comment": safe_comment(comment),
+            "type_time": c.ORDER_TIME_GTC if expiration_server is None else c.ORDER_TIME_SPECIFIED,
+            "type_filling": int(filling),
+        }
+        if expiration_server is not None:
+            request["expiration"] = int(expiration_server)
+        return request
+
+    @staticmethod
+    def remove_order(ticket: int) -> dict[str, Any]:
+        """Delete a resting order (an unfilled limit part)."""
+        return {"action": c.TRADE_ACTION_REMOVE, "order": int(ticket)}
+
+    @classmethod
+    def pending_fillings(cls, spec: SymbolSpec) -> list[int]:
+        """Filling modes to try for a pending order, in order: RETURN, then the market order's mode."""
+        out = [c.ORDER_FILLING_RETURN]
+        market = resolve_filling(spec)
+        if market is not None and market not in out:
+            out.append(market)
+        return out
 
     def modify_stops(
         self, spec: SymbolSpec, position: BrokerPosition, sl: float, tp: float | None

@@ -71,6 +71,24 @@ class AccountSnapshot:
 
 
 @dataclass(frozen=True, slots=True)
+class BrokerOrder:
+    """A resting (pending) order: the limit parts of an entry plan (TAA-1207)."""
+
+    ticket: int
+    symbol: str
+    side: Side
+    type: int  # ORDER_TYPE_*
+    volume: float  # volume_current: what is still unfilled
+    price_open: float
+    sl: float
+    tp: float
+    magic: int
+    comment: str
+    time_setup_utc: datetime
+    expiration_utc: datetime | None  # None: good till cancelled
+
+
+@dataclass(frozen=True, slots=True)
 class BrokerPosition:
     ticket: int
     symbol: str

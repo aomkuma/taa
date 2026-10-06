@@ -1734,7 +1734,7 @@ limit; heat sums every part including resting limits; unfilled limits live at mo
 cancelled when the market part closes, on any kill switch and before the Friday cut-off.
 
 - [x] the owner's entry plan reaches the engine (`EntryPlanSpec` in the risk profile doc and the local fallback); the decision engine sizes it with `size_plan`; `execution.entry_plans` switch (off until everything works); SAME_PRICE honours the profile's partial TPs
-- [ ] broker pending orders: limit entry and remove requests, `orders()` in the gateway, FakeMT5 pending orders (place, fill on cross, expire, remove)
+- [x] broker pending orders: limit entry and remove requests, `orders()` in the gateway, FakeMT5 pending orders (place, fill on cross, expire, remove)
 - [ ] intents for limit parts (PLACED, CANCELLED, EXPIRED; plan key, part index, cancel time), market part first, limits only after it is protected; plan supervisor (fill → post-fill guard, cancel on lifetime, kill switch, market part closed, Friday cut-off); reconciler resolves PLACED intents and stray orders; PAPER parity
 - [ ] exposure counts a plan as one position (total and per symbol) and adds the risk of pending orders to portfolio heat
 - [ ] SAME_PRICE: every part has its own TP; after the first TP the remaining parts' stops move to break-even (DEMO and PAPER)

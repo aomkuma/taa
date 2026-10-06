@@ -22,10 +22,14 @@ TIMEFRAME: dict[Timeframe, int] = {
 # Order types
 ORDER_TYPE_BUY = 0
 ORDER_TYPE_SELL = 1
+ORDER_TYPE_BUY_LIMIT = 2
+ORDER_TYPE_SELL_LIMIT = 3
 
 # Trade request actions
 TRADE_ACTION_DEAL = 1
+TRADE_ACTION_PENDING = 5
 TRADE_ACTION_SLTP = 6
+TRADE_ACTION_REMOVE = 8
 
 # Order filling (request field type_filling)
 ORDER_FILLING_FOK = 0
@@ -34,6 +38,7 @@ ORDER_FILLING_RETURN = 2
 ORDER_FILLING_BOC = 3
 
 ORDER_TIME_GTC = 0
+ORDER_TIME_SPECIFIED = 2  # the order expires at the request's "expiration" (server time)
 
 # Symbol filling flags (symbol_info().filling_mode bitmask)
 # ENUM_SYMBOL_SWAP_MODE (-1: unknown, e.g. a spec stored before the field existed)

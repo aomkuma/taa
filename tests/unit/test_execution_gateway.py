@@ -227,3 +227,142 @@ class TestFakeTradeServer:
         before = bundle.fake.calls["order_send"]
         gw.send(self.entry(bundle))
         assert bundle.fake.calls["order_send"] == before + 1
+
+
+class TestPendingOrders:
+    """Limit parts of an entry plan (TAA-1207) on the fake trade server."""
+
+    def limit(self, bundle: BrokerBundle, side: Side = Side.BUY, **kw: object):  # type: ignore[no-untyped-def]
+        bid, ask = quote(bundle)
+        price = float(kw.get("price", ask - 0.001 if side is Side.BUY else bid + 0.001))  # type: ignore[arg-type]
+        sign = side.sign
+        return BUILDER.limit_entry(
+            EURUSD_SPEC,
+            side,
+            float(kw.get("volume", 0.1)),  # type: ignore[arg-type]
+            price,
+            float(kw.get("sl", price - 0.002 * sign)),  # type: ignore[arg-type]
+            price + 0.004 * sign,
+            magic=7_310_000,
+            comment="taa:limit",
+            filling=int(kw.get("filling", c.ORDER_FILLING_RETURN)),  # type: ignore[call-overload]
+            expiration_server=kw.get("expiration"),  # type: ignore[arg-type]
+        )
+
+    def test_builder(self) -> None:
+        req = BUILDER.limit_entry(
+            EURUSD_SPEC,
+            Side.SELL,
+            0.05,
+            1.10123,
+            1.103,
+            1.098,
+            magic=9,
+            comment="x",
+            filling=2,
+            expiration_server=123,
+        )
+        assert (req["action"], req["type"], req["type_time"], req["expiration"]) == (
+            c.TRADE_ACTION_PENDING,
+            c.ORDER_TYPE_SELL_LIMIT,
+            c.ORDER_TIME_SPECIFIED,
+            123,
+        )
+        gtc = BUILDER.limit_entry(
+            EURUSD_SPEC,
+            Side.BUY,
+            0.05,
+            1.099,
+            1.098,
+            None,
+            magic=9,
+            comment="x",
+            filling=2,
+            expiration_server=None,
+        )
+        assert gtc["type_time"] == c.ORDER_TIME_GTC and "expiration" not in gtc and gtc["tp"] == 0.0
+        with pytest.raises(SafetyViolation):
+            BUILDER.limit_entry(
+                EURUSD_SPEC,
+                Side.BUY,
+                0.05,
+                1.099,
+                0.0,
+                None,
+                magic=9,
+                comment="x",
+                filling=2,
+                expiration_server=None,
+            )
+        assert BUILDER.remove_order(77) == {"action": c.TRADE_ACTION_REMOVE, "order": 77}
+        assert RequestBuilder.pending_fillings(EURUSD_SPEC) == [c.ORDER_FILLING_RETURN, c.ORDER_FILLING_FOK]
+
+    def test_place_list_fill_and_close_at_the_stop(self) -> None:
+        bundle, gw, _ = connected()
+        assert bundle.fake is not None
+        placed = gw.send(self.limit(bundle))
+        assert placed.ok and placed.retcode == 10008 and placed.order and placed.deal == 0
+        [order] = bundle.gateway.orders()
+        assert (order.ticket, order.side, order.type, order.volume) == (
+            placed.order,
+            Side.BUY,
+            c.ORDER_TYPE_BUY_LIMIT,
+            0.1,
+        )
+        assert order.expiration_utc is None and bundle.gateway.positions() == []
+        bundle.fake.price_override["EURUSD"] = order.price_open - 0.0005  # the ask trades through the limit
+        [pos] = bundle.gateway.positions()
+        assert (pos.ticket, pos.identifier, pos.price_open, pos.sl, pos.comment) == (
+            order.ticket,
+            order.ticket,
+            order.price_open,
+            order.sl,
+            "taa:limit",
+        )
+        assert bundle.gateway.orders() == []
+        deal = bundle.gateway.deals(WED - timedelta(days=1), WED + timedelta(days=1))[-1]
+        assert (deal.entry, deal.order, deal.position_id) == (c.DEAL_ENTRY_IN, order.ticket, order.ticket)
+
+    def test_remove(self) -> None:
+        bundle, gw, _ = connected()
+        placed = gw.send(self.limit(bundle, Side.SELL))
+        removed = gw.send(BUILDER.remove_order(placed.order))
+        assert removed.ok and bundle.gateway.orders() == []
+        assert gw.send(BUILDER.remove_order(placed.order)).retcode == 10013
+
+    def test_broker_side_expiration(self) -> None:
+        bundle, gw, clock = connected()
+        expires = bundle.gateway.server_clock.utc_to_server_epoch(WED + timedelta(hours=4))
+        placed = gw.send(self.limit(bundle, expiration=expires))
+        assert placed.ok
+        [order] = bundle.gateway.orders()
+        assert order.expiration_utc == WED + timedelta(hours=4)
+        clock.advance(4 * 3600 + 1)
+        assert bundle.gateway.orders() == []
+
+    @pytest.mark.parametrize(
+        ("kw", "code"),
+        [
+            ({"price": 2.0}, 10015),  # a BUY limit above the market
+            ({"sl": 1.5}, 10016),
+            ({"volume": 0.015}, 10014),
+            ({"filling": 7}, 10030),
+            ({"expiration": 1}, 10022),  # already past
+        ],
+    )
+    def test_rejections(self, kw: dict[str, object], code: int) -> None:
+        bundle, gw, _ = connected()
+        assert gw.check(self.limit(bundle, **kw)).retcode == code
+        assert gw.send(self.limit(bundle, **kw)).retcode == code
+        assert bundle.gateway.orders() == []
+
+    def test_symbol_options(self) -> None:
+        bundle, gw, _ = connected()
+        assert bundle.fake is not None
+        sym = bundle.fake.symbols["EURUSD"]
+        sym.pending_return_filling = False
+        assert gw.check(self.limit(bundle)).retcode == 10030
+        assert gw.check(self.limit(bundle, filling=c.ORDER_FILLING_FOK)).ok
+        sym.pending_expiration = False
+        expires = bundle.gateway.server_clock.utc_to_server_epoch(WED + timedelta(hours=4))
+        assert gw.check(self.limit(bundle, filling=c.ORDER_FILLING_FOK, expiration=expires)).retcode == 10022

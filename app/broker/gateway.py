@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 
 from app.broker import mt5_constants as c
-from app.broker.models import AccountSnapshot, BrokerPosition, Deal, TerminalSnapshot
+from app.broker.models import AccountSnapshot, BrokerOrder, BrokerPosition, Deal, TerminalSnapshot
 from app.broker.mt5_client import MT5Client, account_from_raw, terminal_from_raw
 from app.core.clock import ServerClock, ensure_utc
 from app.core.enums import Side, Timeframe
@@ -48,6 +48,8 @@ class MarketDataGateway(Protocol):
     ) -> pd.DataFrame: ...
 
     def positions(self, symbol: str | None = None) -> list[BrokerPosition]: ...
+
+    def orders(self, symbol: str | None = None) -> list[BrokerOrder]: ...
 
     def deals(self, start_utc: datetime, end_utc: datetime) -> list[Deal]: ...
 
@@ -280,6 +282,32 @@ class ReadOnlyMT5Gateway:
                     comment=str(getattr(p, "comment", "")),
                     time_utc=self.server_clock.server_epoch_to_utc(int(p.time)),
                     identifier=int(getattr(p, "identifier", p.ticket)),
+                )
+            )
+        return out
+
+    def orders(self, symbol: str | None = None) -> list[BrokerOrder]:
+        """Resting (pending) orders. Buy types are even (BUY_LIMIT, BUY_STOP, BUY_STOP_LIMIT)."""
+        raw = self.client.call("orders_get", symbol=symbol) if symbol else self.client.call("orders_get")
+        if raw is None:
+            raise BrokerError(f"orders_get failed: {self.client.last_error()}")
+        out = []
+        for o in raw:
+            expires = int(getattr(o, "time_expiration", 0) or 0)
+            out.append(
+                BrokerOrder(
+                    ticket=int(o.ticket),
+                    symbol=str(o.symbol),
+                    side=Side.BUY if int(o.type) % 2 == 0 else Side.SELL,
+                    type=int(o.type),
+                    volume=float(getattr(o, "volume_current", 0.0)),
+                    price_open=float(o.price_open),
+                    sl=float(o.sl),
+                    tp=float(o.tp),
+                    magic=int(o.magic),
+                    comment=str(getattr(o, "comment", "")),
+                    time_setup_utc=self.server_clock.server_epoch_to_utc(int(o.time_setup)),
+                    expiration_utc=self.server_clock.server_epoch_to_utc(expires) if expires else None,
                 )
             )
         return out
