@@ -28,12 +28,17 @@
     TOTP, interactive) if it does not exist yet, then registers the engine. Check the terminal first with:
     python -m app.cli doctor
 
+    -Mt5 -Demo runs that engine in DEMO mode instead: it SENDS ORDERS to the demo account (TRADING_MODE=DEMO,
+    ENABLE_DEMO_TRADING=true for this process only; .env is not changed). DEMO refuses any account that is
+    not a demo account. See docs\RUNBOOK_DEMO.md. Without -Demo the engine stays PAPER.
+
 .EXAMPLE
     scripts\start-demo.cmd                       (double-click: same as below)
     powershell -NoProfile -ExecutionPolicy Bypass -File scripts\start-demo.ps1
     powershell -NoProfile -ExecutionPolicy Bypass -File scripts\start-demo.ps1 -NoEngine
     scripts\start-demo.cmd -Setup -Mt5 -Owner aomkuma    (once)
     scripts\start-demo.cmd -Mt5                          (real MT5 prices, PAPER)
+    scripts\start-demo.cmd -Mt5 -Demo                    (real MT5, DEMO: orders on the demo account)
 #>
 [CmdletBinding()]
 param(
@@ -42,16 +47,19 @@ param(
     [switch]$NoEngine,
     [switch]$NoBrowser,
     [switch]$Mt5,
+    [switch]$Demo,
     # internal: the child windows call this script again with one role
     [ValidateSet("", "web", "worker", "engine")]
     [string]$Role = ""
 )
 
 $ErrorActionPreference = "Stop"
+if ($Demo -and -not $Mt5) { Write-Host "-Demo needs -Mt5 (DEMO sends orders through the real terminal)" -ForegroundColor Red; exit 1 }
 $Root = Split-Path -Parent $PSScriptRoot
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $DemoEnv = Join-Path $Root $(if ($Mt5) { ".env.demo-mt5" } else { ".env.demo" })
 $EngineLabel = $(if ($Mt5) { "mt5 demo (paper)" } else { "fake demo" })
+$EngineMode = $(if ($Demo) { "DEMO" } else { "PAPER" })
 $EngineDb = $(if ($Mt5) { "engine-mt5.db" } else { "engine.db" })
 $DemoDir = Join-Path $Root "data\demo"
 $WebUrl = $(if ($Mt5) { "http://localhost:8001" } else { "http://127.0.0.1:8000" })
@@ -108,7 +116,7 @@ if ($Mt5) {
 
 # --- one part, inside its own window ------------------------------------------------------------------------
 if ($Role -ne "") {
-    $Host.UI.RawUI.WindowTitle = "TAA demo - $Role$(if ($Mt5 -and $Role -eq 'engine') { ' (MT5)' })"
+    $Host.UI.RawUI.WindowTitle = "TAA demo - $Role$(if ($Mt5 -and $Role -eq 'engine') { " (MT5, $EngineMode)" })"
     switch ($Role) {
         "web" { & $Python -m app.web }
         "worker" { & $Python -m app.worker }
@@ -122,8 +130,12 @@ if ($Role -ne "") {
             $env:CLOUD_BASE_URL = $WebUrl
             $env:ENGINE_DB_URL = "sqlite:///$dbPath"
             $env:CONFIG_FILE = $config
-            $env:TRADING_MODE = "PAPER"
-            if ($Mt5) {
+            $env:TRADING_MODE = $EngineMode
+            if ($Demo) {
+                # real terminal and demo account from .env; DEMO sends broker orders (RUNBOOK_DEMO.md)
+                $env:ENABLE_DEMO_TRADING = "true"
+                & $Python -m app.main --mode demo
+            } elseif ($Mt5) {
                 # real terminal and account from .env; PAPER never sends broker orders
                 & $Python -m app.main --mode paper
             } else {
@@ -180,6 +192,7 @@ function Start-Part([string]$part) {
     $script = Join-Path $PSScriptRoot "start-demo.ps1"
     $arguments = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-NoExit", "-File", "`"$script`"", "-Role", $part)
     if ($Mt5) { $arguments += "-Mt5" }
+    if ($Demo) { $arguments += "-Demo" }
     Start-Process powershell -ArgumentList $arguments | Out-Null
 }
 
@@ -212,5 +225,5 @@ if (-not $ready) { Fail "the web service did not answer within 60 s; look at the
 if (-not $NoEngine) { Start-Part "engine" }
 if (-not $NoBrowser) { Start-Process $WebUrl }
 
-Write-Host "TAA demo is running ($(if ($Mt5) { 'real MT5 terminal, PAPER' } else { 'FakeMT5, PAPER' })): $WebUrl" -ForegroundColor Green
+Write-Host "TAA demo is running ($(if ($Mt5) { "real MT5 terminal, $EngineMode" } else { 'FakeMT5, PAPER' })): $WebUrl" -ForegroundColor Green
 Write-Host "Stop it by closing the 'TAA demo - ...' windows (or Ctrl+C in each)."
