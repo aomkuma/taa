@@ -8,6 +8,9 @@ Evaluated on closed bars only; a change applies from the next bar on.
 - **Invariants:** the stop only ever moves in the favourable direction, never through the current price, never
   removed, and by at least ``min_sl_step_points`` per change.
 - **Time stop:** after ``time_stop_bars`` bars the position is closed (``TIME``).
+- **Entry plans** (PLAN §A31, TAA-1207): once another part of the same plan has closed (a SAME_PRICE part at
+  its earlier target), the remaining parts' stops move to break-even (:func:`plan_break_even`), whichever of
+  that and the rules above is the better stop.
 """
 
 from __future__ import annotations
@@ -33,6 +36,29 @@ class Adjustment:
     stop_kind: ExitReason | None = None  # BREAK_EVEN or TRAILING_STOP: how a later stop-out is labelled
     close: ExitReason | None = None
     note: str = ""
+
+
+def plan_break_even(
+    pos: PositionView, *, mark: float, point: float, cfg: PositionManagementConfig
+) -> Adjustment:
+    """Break-even after another part of the position's entry plan closed. Favourable only, never through the
+    current price."""
+    sign = pos.side.sign
+    be = pos.entry + sign * cfg.break_even_buffer_points * point
+    if (be - pos.sl) * sign <= 0 or (mark - be) * sign <= 0:
+        return Adjustment()
+    return Adjustment(
+        new_sl=be, stop_kind=ExitReason.BREAK_EVEN, note="break-even: another part of the plan has closed"
+    )
+
+
+def better_stop(side: Side, first: Adjustment, second: Adjustment) -> Adjustment:
+    """The adjustment with the more favourable stop (a close always wins)."""
+    if first.close is not None or second.new_sl is None:
+        return first
+    if first.new_sl is None or (second.new_sl - first.new_sl) * side.sign > 0:
+        return second
+    return first
 
 
 def manage(

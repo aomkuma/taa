@@ -23,7 +23,7 @@ from app.core.clock import Clock
 from app.core.enums import ExitReason
 from app.engine.paper import PaperExecution
 from app.execution.fill_model import mark_price
-from app.execution.management import PositionView, manage
+from app.execution.management import PositionView, better_stop, manage, plan_break_even
 from app.market_data.data_models import SymbolSpec
 from app.monitoring.alerts import EventBus, EventType
 from app.strategy.base_strategy import BaseStrategy
@@ -54,7 +54,9 @@ class PositionManager:
     def on_quote(self, symbol: str, bid: float, ask: float, atr: float | None) -> None:
         spec = self.specs[symbol]
         now = self.clock.now_utc()
-        for pos in [p for p in self.paper.broker.positions.values() if p.symbol == symbol]:
+        mine = [p for p in self.paper.broker.positions.values() if p.symbol == symbol]
+        to_break_even = self.paper.plan_parts_closed({p.ticket for p in mine}) if mine else set()
+        for pos in mine:
             if pos.close_requested:
                 continue
             if pos.sl is None:
@@ -63,13 +65,11 @@ class PositionManager:
             if pos.request.sl is None:
                 continue
             mark = mark_price(pos.side, bid, ask - bid)
-            adj = manage(
-                PositionView(pos.side, pos.entry_price, pos.request.sl, pos.sl, pos.bars_held),
-                mark=mark,
-                atr=atr,
-                point=spec.point,
-                cfg=self.config,
-            )
+            view = PositionView(pos.side, pos.entry_price, pos.request.sl, pos.sl, pos.bars_held)
+            adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=self.config)
+            if pos.ticket in to_break_even:
+                plan = plan_break_even(view, mark=mark, point=spec.point, cfg=self.config)
+                adj = better_stop(pos.side, adj, plan)
             if adj.close is not None:
                 self.paper.request_close(pos.ticket, adj.close)
                 continue

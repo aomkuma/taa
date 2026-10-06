@@ -220,3 +220,74 @@ class TestReconciler:
         assert rig.om.execution.send(request).ok
         report = reconciler(rig).run()
         assert report.stray_orders and BreakerName.ACCOUNT_CHANGE in rig.blocking()
+
+
+class TestBreakEven:
+    """SAME_PRICE: after one part closes at its target the rest go to break-even (TAA-1207)."""
+
+    def same_price(self, rig: Rig) -> float:
+        base = record(rig)
+        s = base.signal
+        assert s.entry_price is not None and s.stop_loss is not None
+        plan = build_parts(
+            SplitMode.SAME_PRICE, Side.BUY, s.entry_price, s.stop_loss, s.take_profit, k=3, tp_r=(1.0, 1.5)
+        )
+        account = rig.bundle.gateway.account()
+        funds = AccountFunds(account.equity, account.balance, account.margin, account.margin_free)
+        sizing = PositionSizer(RiskConfig(), rig.bundle.gateway).size_plan(
+            rig.bundle.gateway.symbol_spec("EURUSD"), Side.BUY, plan, s.stop_loss, funds, lot_limit=5.0
+        )
+        execute(rig, dataclasses.replace(base, sizing=sizing))
+        return min(p.price_open for p in rig.bundle.gateway.positions())
+
+    def test_the_rest_move_to_break_even_once_a_part_closes(self, rig: Rig) -> None:
+        from tests.unit.test_broker_positions import ATR as BP_ATR
+        from tests.unit.test_broker_positions import manager, tick
+
+        entry = self.same_price(rig)
+        rig.fake.price_override["EURUSD"] = entry + 0.0006  # +0.3R: the A11 break-even (1R) is not due
+        mgr = manager(rig)
+        mgr.on_quote("EURUSD", *tick(rig), BP_ATR)
+        assert all(p.sl < entry for p in rig.bundle.gateway.positions())  # all parts open: nothing moves
+        first = min(rig.bundle.gateway.positions(), key=lambda p: p.tp)
+        bid, _ = tick(rig)
+        spec = rig.bundle.gateway.symbol_spec("EURUSD")
+        assert rig.om.execution.send(rig.om.builder.close(spec, first, bid)).ok  # its target, in effect
+        rig.clock.advance(60)
+        mgr.on_quote("EURUSD", *tick(rig), BP_ATR)
+        rest = rig.bundle.gateway.positions()
+        assert len(rest) == 2
+        assert all(p.sl == pytest.approx(p.price_open + 2 * spec.point) for p in rest)
+
+
+def test_paper_parts_move_to_break_even_too(db: Database) -> None:
+    from app.config import PositionManagementConfig
+    from app.core.clock import ManualClock
+    from app.engine.decision_engine import Decision
+    from app.engine.position_manager import PositionManager
+    from app.risk.limits import EntryPlanSpec, ProfileLimits
+    from tests.unit.test_decision_engine import NOW, Setup, engine, request
+    from tests.unit.test_paper_execution import paper
+
+    spec = EntryPlanSpec(SplitMode.SAME_PRICE, 3, tp_r=(0.5, 1.0))
+    on = Setup(config={"execution": {"entry_plans": True}})
+    rec = engine(db, on).decide(request(profile_limits=ProfileLimits(entry_plan=spec)))
+    assert rec.decision is Decision.ACCEPT and rec.sizing is not None
+    clock = ManualClock(NOW)
+    p = paper(db, clock)
+    p.place(rec, magic=7_310_000)
+    clock.advance(1)
+    p.on_quote("EURUSD", 1.09992, 1.10000, clock.now_utc())  # all three parts fill at 1.10000
+    assert len(p.broker.positions) == 3
+    clock.advance(1)
+    p.on_quote("EURUSD", 1.10105, 1.10113, clock.now_utc())  # through the first target (+0.5R = 1.1010)
+    assert len(p.broker.positions) == 2
+    from tests.strategy_data import EURUSD_SPEC
+
+    pm = PositionManager(
+        p, PositionManagementConfig(), {"EURUSD": EURUSD_SPEC}, clock, strategies_by_magic={}
+    )
+    pm.on_quote("EURUSD", 1.10060, 1.10068, None)
+    assert all(
+        pos.sl == pytest.approx(1.10000 + 2 * EURUSD_SPEC.point) for pos in p.broker.positions.values()
+    )

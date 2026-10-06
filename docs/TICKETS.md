@@ -1737,7 +1737,7 @@ cancelled when the market part closes, on any kill switch and before the Friday 
 - [x] broker pending orders: limit entry and remove requests, `orders()` in the gateway, FakeMT5 pending orders (place, fill on cross, expire, remove)
 - [x] intents for limit parts (PLACED, CANCELLED, EXPIRED; plan key, part index, cancel time), market part first, limits only after it is protected; plan supervisor (fill → post-fill guard, cancel on lifetime, kill switch, market part closed, Friday cut-off); reconciler resolves PLACED intents and stray orders; PAPER parity
 - [x] exposure counts a plan as one position (total and per symbol) and adds the risk of pending orders to portfolio heat
-- [ ] SAME_PRICE: every part has its own TP; after the first TP the remaining parts' stops move to break-even (DEMO and PAPER)
+- [x] SAME_PRICE: every part has its own TP; after the first TP the remaining parts' stops move to break-even (DEMO and PAPER)
 - [ ] PWA: the Splitting section and the profile intro say what the bot does; the plan in use shows on the Risk page
 - [ ] docs: PLAN §A31/§A33 and TAA-1207 notes, RUNBOOK_DEMO, HANDOFF; `entry_plans` switched on in `config.yaml`
 

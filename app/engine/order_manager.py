@@ -193,6 +193,13 @@ class OrderManager:
             ).all()
         return {int(ticket): str(plan) for ticket, plan in rows if ticket is not None}
 
+    def plan_parts_closed(self, open_tickets: set[int]) -> set[int]:
+        """Of *open_tickets*, those whose entry plan has another part that became a position and is closed
+        now (TAA-1207: the remaining parts go to break-even)."""
+        groups = self.plan_groups()
+        closed = {plan for ticket, plan in groups.items() if ticket not in open_tickets}
+        return {t for t in open_tickets if groups.get(t) in closed}
+
     def row(self, intent_id: str) -> OrderIntentRow:
         with self.db.session() as sess:
             row = sess.get(OrderIntentRow, (LOCAL_ENGINE, intent_id))

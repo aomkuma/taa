@@ -28,7 +28,7 @@ from app.core.clock import Clock
 from app.core.enums import ExitReason, Side, Timeframe
 from app.core.errors import SafetyViolation, TaaError
 from app.engine.order_manager import OrderManager
-from app.execution.management import PositionView, manage
+from app.execution.management import PositionView, better_stop, manage, plan_break_even
 from app.market_data.data_models import SymbolSpec
 from app.monitoring.alerts import EventBus, EventType
 from app.risk.exposure_manager import MAGIC_RANGE
@@ -94,18 +94,18 @@ class BrokerPositionManager:
         if spec is None:
             return
         initial = self._initial_stops()
-        for pos in self.bot_positions(symbol):
+        mine = self.bot_positions(symbol)
+        to_break_even = self.orders.plan_parts_closed({p.ticket for p in mine}) if mine else set()
+        for pos in mine:
             first_sl = initial.get(pos.ticket)
             if first_sl is None or pos.sl <= 0:
                 continue  # unknown positions and missing stops belong to the reconciler's sweep
             mark = bid if pos.side is Side.BUY else ask
-            adj = manage(
-                PositionView(pos.side, pos.price_open, first_sl, pos.sl, self._bars_held(pos)),
-                mark=mark,
-                atr=atr,
-                point=spec.point,
-                cfg=self.config,
-            )
+            view = PositionView(pos.side, pos.price_open, first_sl, pos.sl, self._bars_held(pos))
+            adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=self.config)
+            if pos.ticket in to_break_even:
+                plan = plan_break_even(view, mark=mark, point=spec.point, cfg=self.config)
+                adj = better_stop(pos.side, adj, plan)
             if adj.close is not None:
                 self.close(pos, spec, adj.close)
             elif adj.new_sl is not None:

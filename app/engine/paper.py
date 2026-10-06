@@ -307,6 +307,28 @@ class PaperExecution:
             )
         return out
 
+    def plan_parts_closed(self, open_tickets: set[int]) -> set[int]:
+        """Of *open_tickets*, those whose entry plan has another part that filled and is closed now."""
+        with self.db.session() as sess:
+            mine = sess.execute(
+                select(PaperIntentRow.ticket, PaperIntentRow.decision_id).where(
+                    PaperIntentRow.account_key == self.account_key,
+                    PaperIntentRow.ticket.in_(sorted(open_tickets)),
+                )
+            ).all()
+            decisions = {d for _, d in mine}
+            if not decisions:
+                return set()
+            siblings = sess.execute(
+                select(PaperIntentRow.ticket, PaperIntentRow.decision_id).where(
+                    PaperIntentRow.account_key == self.account_key,
+                    PaperIntentRow.decision_id.in_(decisions),
+                    PaperIntentRow.ticket.is_not(None),
+                )
+            ).all()
+        closed = {d for t, d in siblings if t not in self.broker.positions}
+        return {int(t) for t, d in mine if t is not None and d in closed}
+
     def plan_groups(self) -> dict[int, str]:
         """Open paper position ticket -> the decision (plan) it belongs to."""
         tickets = list(self.broker.positions)
