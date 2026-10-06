@@ -847,6 +847,9 @@ WEB_DEV_ORIGINS = (
     "http://localhost:5173",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    # the second local deployment (scripts/start-demo.ps1 -Mt5); a login there from 127.0.0.1 was refused
+    "http://127.0.0.1:8001",
+    "http://localhost:8001",
 )
 
 
