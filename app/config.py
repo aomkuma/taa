@@ -110,7 +110,7 @@ class TimeframesConfig(StrictModel):
     warmup_bars: int = Field(default=400, ge=50, le=20_000)
     candle_close_grace_seconds: float = Field(default=3.0, ge=0, le=60)
     stale_tick_seconds: float = Field(default=120.0, gt=0)
-    max_gap_bars: int = Field(default=3, ge=0)
+    max_gap_bars: int = Field(default=3, ge=0)  # the longest hole in trading hours (quality.py)
 
     @model_validator(mode="after")
     def _order(self) -> TimeframesConfig:

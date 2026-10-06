@@ -19,7 +19,8 @@ timeframes:
   warmup_bars: 400
   candle_close_grace_seconds: 3
   stale_tick_seconds: 120
-  max_gap_bars: 3
+  max_gap_bars: 3                   # longest hole (bars) in trading hours before DATA_GAPS; holidays and the
+                                    # symbol's own closed hours do not count (app/market_data/quality.py)
 
 indicators:
   ema_fast: 20

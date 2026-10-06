@@ -202,6 +202,34 @@ class TestQuality:
         )
         assert rep.missing_bars == 8 and "DATA_GAPS" in rep.flags
 
+    def test_a_holiday_is_a_closure_not_a_gap(self) -> None:
+        opens = [t for t in self._stock_days(8) if t.date() != datetime(2026, 9, 28).date()]  # Monday shut
+        rep = validate_candles(
+            self._frame(opens),
+            Timeframe.M15,
+            opens[-1] + timedelta(minutes=16),
+            max_gap_bars=3,
+            expect_live=True,
+        )
+        assert rep.ok and rep.missing_bars == 0, (rep.flags, rep.unexpected_gaps[:2])
+
+    def test_scattered_quiet_bars_pass_but_a_sparse_frame_does_not(self) -> None:
+        base = datetime(2026, 9, 29, 0, 0, tzinfo=UTC)  # a 24-hour symbol, Tuesday to Thursday
+        every = [base + timedelta(minutes=15 * i) for i in range(288)]
+
+        def check(drop_every: int) -> list[str]:
+            opens = [t for i, t in enumerate(every) if i == 0 or i % drop_every]  # one-bar holes
+            return validate_candles(
+                self._frame(opens),
+                Timeframe.M15,
+                opens[-1] + timedelta(minutes=16),
+                max_gap_bars=3,
+                expect_live=True,
+            ).flags
+
+        assert "DATA_GAPS" not in check(20)  # 14 one-bar holes, 5% of the frame
+        assert "DATA_GAPS" in check(5)  # 57 holes, 20%: too little data to trust
+
     def test_too_few_days_learn_nothing(self) -> None:
         opens = self._stock_days(2)  # two days: one overnight close, not enough to call it routine
         rep = validate_candles(

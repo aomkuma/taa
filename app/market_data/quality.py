@@ -6,6 +6,15 @@ slot (UTC) that holds a bar on fewer than half of the frame's trading days is a 
 gold's daily pause), not missing data. Before this, every overnight close of a stock counted as ~70 missing
 M15 bars and blocked all its signals as DATA_GAPS. A contiguous hole in normally traded hours (a history
 sync failure) is still reported.
+
+Two more closures are not missing data (2026-10-06, measured on FBS: 48 of 69 scanned symbols were blocked):
+
+- **Holidays:** a bar that would fall on a UTC day with no bars at all in the frame. Labor Day (Mon
+  2026-09-07) showed as 21 missing H1 bars on every US stock and blocked them for the ~8 weeks a 400-bar H1
+  frame spans.
+- **Quiet bars:** MT5 makes no bar when no tick arrives, so a thin symbol has scattered one-bar holes in quiet
+  hours. ``DATA_GAPS`` therefore judges the **longest** hole against ``max_gap_bars``; scattered holes block
+  only when together they exceed :data:`SPARSE_SHARE` of the frame (too little data to trust indicators).
 """
 
 from __future__ import annotations
@@ -56,6 +65,7 @@ def _is_expected_gap(
 # a slot must be seen on this many trading days before the frame can call it closed
 MIN_DAYS_TO_LEARN = 3
 CLOSED_SHARE = 0.5
+SPARSE_SHARE = 0.10  # scattered holes beyond this share of the frame's bars still block (DATA_GAPS)
 
 
 def closed_slots(epoch_s: np.ndarray, tf: Timeframe) -> np.ndarray:
@@ -115,6 +125,8 @@ def validate_candles(
         epoch_s = np.asarray((opens - pd.Timestamp(0, tz="UTC")) // pd.Timedelta(seconds=1), dtype="int64")
         deltas = np.diff(epoch_s) / tf.seconds
         closed = closed_slots(epoch_s, tf)
+        days_with_bars = np.unique(epoch_s // 86_400) if tf.seconds < 86_400 else None
+        longest = 0
         for idx in np.nonzero(deltas > 1.0 + 1e-9)[0]:
             i = int(idx)
             prev_open = pd.Timestamp(opens[i]).to_pydatetime()
@@ -123,12 +135,16 @@ def validate_candles(
                 continue
             absent = np.arange(epoch_s[i] + tf.seconds, epoch_s[i + 1], tf.seconds)
             slot = (absent % 86_400) // tf.seconds
-            missing = int(np.count_nonzero(~np.isin(slot, closed)))
+            expected = np.isin(slot, closed)
+            if days_with_bars is not None and len(days_with_bars) >= MIN_DAYS_TO_LEARN:
+                expected |= ~np.isin(absent // 86_400, days_with_bars)  # a whole day without bars: a holiday
+            missing = int(np.count_nonzero(~expected))
             if missing == 0:
                 continue
             report.missing_bars += missing
             report.unexpected_gaps.append((prev_open, next_open, missing))
-        if report.missing_bars > max_gap_bars:
+            longest = max(longest, missing)
+        if longest > max_gap_bars or report.missing_bars > SPARSE_SHARE * len(opens):
             report.add("DATA_GAPS")
 
     last_close = opens[-1].to_pydatetime() + timedelta(seconds=tf.seconds)
