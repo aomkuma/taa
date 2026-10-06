@@ -566,6 +566,12 @@ class ExecutionConfig(StrictModel):
     excess_risk_policy: Literal["reduce", "close"] = "reduce"
     unprotected_grace_seconds: float = Field(default=5.0, gt=0, le=60)
     symbol_pause_minutes: float = Field(default=60.0, gt=0)
+    entry_plans: bool = Field(
+        default=False, description="follow the owner's entry plan (split orders, TAA-1207); off: one order"
+    )
+    limit_lifetime_bars: int = Field(
+        default=16, ge=1, le=96, description="an unfilled limit part is cancelled after this many entry bars"
+    )
 
 
 class PaperConfig(StrictModel):

@@ -196,7 +196,7 @@ def engine_risk_profile(db: Database, owner_id: str) -> RiskProfileDoc | None:
         prefs = AdvisoryPreferences.model_validate(raw)
     except ValueError:
         return None
-    return RiskProfileDoc.of(prefs.trading_profile.resolve().limits(), updated_at)
+    return RiskProfileDoc.of(prefs.engine_limits(), updated_at)
 
 
 def param_bounds(model: type[BaseModel]) -> dict[str, dict[str, Any]]:

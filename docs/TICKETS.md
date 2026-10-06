@@ -51,7 +51,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 24 | 24 | DONE |
 | M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
+| M2 | Phase 12 — DEMO execution | 7 | 6 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
 | M2 | Phase 14 — LIVE readiness | 4 | 2 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
@@ -1723,6 +1723,23 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [x] account must be DEMO
 - [x] `ENABLE_DEMO_TRADING`
 - [x] 2-week demo soak runbook and report
+
+#### TAA-1207 — The bot sends split entries (Trading profile "Splitting an entry")
+
+- **Status:** IN PROGRESS
+- **Depends on:** 1201–1206, 401, 710
+
+Owner decisions (2026-10-06): a plan counts as one trade for "Positions at the same time" and the per-symbol
+limit; heat sums every part including resting limits; unfilled limits live at most 4 h (16 entry bars) and are
+cancelled when the market part closes, on any kill switch and before the Friday cut-off.
+
+- [x] the owner's entry plan reaches the engine (`EntryPlanSpec` in the risk profile doc and the local fallback); the decision engine sizes it with `size_plan`; `execution.entry_plans` switch (off until everything works); SAME_PRICE honours the profile's partial TPs
+- [ ] broker pending orders: limit entry and remove requests, `orders()` in the gateway, FakeMT5 pending orders (place, fill on cross, expire, remove)
+- [ ] intents for limit parts (PLACED, CANCELLED, EXPIRED; plan key, part index, cancel time), market part first, limits only after it is protected; plan supervisor (fill → post-fill guard, cancel on lifetime, kill switch, market part closed, Friday cut-off); reconciler resolves PLACED intents and stray orders; PAPER parity
+- [ ] exposure counts a plan as one position (total and per symbol) and adds the risk of pending orders to portfolio heat
+- [ ] SAME_PRICE: every part has its own TP; after the first TP the remaining parts' stops move to break-even (DEMO and PAPER)
+- [ ] PWA: the Splitting section and the profile intro say what the bot does; the plan in use shows on the Risk page
+- [ ] docs: PLAN §A31/§A33 and TAA-1207 notes, RUNBOOK_DEMO, HANDOFF; `entry_plans` switched on in `config.yaml`
 
 ### Phase 13 — AI assessment (optional layer)
 

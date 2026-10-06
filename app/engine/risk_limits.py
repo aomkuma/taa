@@ -53,11 +53,10 @@ class RiskLimitSelector:
         self.audit = audit
         self.clock = clock
         try:
-            profile = local_preferences(config).trading_profile
+            self.local = local_preferences(config).engine_limits()
         except ConfigError:
             log.warning("advisory.preferences is invalid; the local risk profile uses the defaults")
-            profile = TradingProfile()
-        self.local = profile.resolve().limits()
+            self.local = TradingProfile().resolve().limits()
         self._applied: AppliedRisk | None = None
         self._refused: set[str] = set()
 
@@ -80,18 +79,19 @@ class RiskLimitSelector:
         doc = None if self.client is None else self.client.current
         if self.client is None or doc is None:
             return None
-        limits = doc.limits()
         try:
+            limits = doc.limits()
             effective = effective_risk(self.cage, limits)
         except (ValidationError, ValueError) as exc:
             if doc.version not in self._refused:
                 self._refused.add(doc.version)
                 log.warning("risk profile %s refused: %s; the local profile applies", doc.version, exc)
                 if self.audit is not None:
+                    profile = doc.model_dump(mode="json", exclude={"version", "updated_at"})
                     self.audit.append(
                         "RISK_PROFILE_REJECTED",
                         "engine",
-                        {"version": doc.version, "profile": limits.to_dict(), "error": str(exc)[:500]},
+                        {"version": doc.version, "profile": profile, "error": str(exc)[:500]},
                     )
             return None
         return AppliedRisk(limits, self.client.source, doc.version, effective)
@@ -127,7 +127,11 @@ class RiskLimitSelector:
             "version": applied.version,
             "age_seconds": None if age is None else round(age),
             "cage": governed(self.cage),
-            "profile": {k: v for k, v in applied.limits.to_dict().items() if k != "min_lot_fallback"},
+            "profile": {
+                k: v
+                for k, v in applied.limits.to_dict().items()
+                if k not in ("min_lot_fallback", "entry_plan")
+            },
             "effective": governed(applied.effective),
             "min_lot_fallback": applied.effective.min_lot_fallback,
         }

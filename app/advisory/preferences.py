@@ -21,7 +21,7 @@ from __future__ import annotations
 import math
 import re
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, time
 from enum import StrEnum
 from typing import Any, Literal
@@ -44,7 +44,7 @@ from app.core.errors import ConfigError
 from app.evidence.framework import Family
 from app.evidence.registry import DetectorRegistry
 from app.market_data.trading_sessions import window_end
-from app.risk.limits import ProfileLimits
+from app.risk.limits import EntryPlanSpec, ProfileLimits
 from app.risk.position_sizer import SplitMode, WeightScheme
 from app.strategy.registry import StrategyRegistry
 from app.strategy.setups import EvidenceSetup
@@ -434,6 +434,12 @@ class EntryPlanPreferences(StrictModel):
         """The partial take-profits a SAME_PRICE plan uses (the last part runs to the setup's target)."""
         return self.partial_tp_r[: self.parts - 1] if self.mode is SplitMode.SAME_PRICE else []
 
+    def spec(self) -> EntryPlanSpec:
+        """The engine's copy of this plan (TAA-1207)."""
+        return EntryPlanSpec(
+            self.mode, self.parts, self.weights, self.spacing_atr, self.lot_unit, tuple(self.take_profits_r)
+        )
+
 
 # --- the whole set ------------------------------------------------------------------------------------------
 
@@ -465,6 +471,12 @@ class AdvisoryPreferences(StrictModel):
         for w in self.watchlists:
             out.update(dict.fromkeys(w.symbols))
         return list(out)
+
+    def engine_limits(self) -> ProfileLimits:
+        """What the engine owner's preferences govern on the engine (PLAN §A33, TAA-1207): the Trading
+        profile's limits plus the entry plan (None for SINGLE, which is the engine's default)."""
+        plan = self.entry_plan.spec()
+        return replace(self.trading_profile.resolve().limits(), entry_plan=plan if plan.split else None)
 
 
 def validate_against_catalogs(

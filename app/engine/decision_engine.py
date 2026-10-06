@@ -25,6 +25,7 @@ less than the minimum lot opens the minimum lot when margin allows; its risk the
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -40,6 +41,7 @@ from app.broker import mt5_constants as c
 from app.broker.models import BrokerPosition
 from app.config import AppConfig, RiskConfig
 from app.core.clock import Clock
+from app.core.decimal_utils import to_decimal
 from app.core.enums import Side, TradingMode
 from app.core.ids import new_id
 from app.market_data.data_models import Quote, SymbolSpec
@@ -48,10 +50,17 @@ from app.news.calendar import NewsFilter
 from app.risk.checks import Check, CheckKind
 from app.risk.circuit_breaker import BreakerBoard
 from app.risk.exposure_manager import LEVERAGE_MOVE, Candidate, ExposureManager
-from app.risk.limits import ProfileLimits, effective_risk
+from app.risk.limits import EntryPlanSpec, ProfileLimits, effective_risk
 from app.risk.loss_tracker import LossStatus, loss_checks
 from app.risk.mode_gates import GateResult
-from app.risk.position_sizer import AccountFunds, PositionSizer, ProfitCalculator, SizingResult
+from app.risk.position_sizer import (
+    AccountFunds,
+    PlanPart,
+    PositionSizer,
+    ProfitCalculator,
+    SizingResult,
+    build_parts,
+)
 from app.risk.reasons import Reason
 from app.storage.database import Database
 from app.storage.models import DecisionCheckRow, DecisionRecordRow
@@ -534,16 +543,47 @@ class DecisionEngine:
         room = self._room_lots(req, risk)
         if room is not None and room >= max(spec.volume_min, risk.min_lot or 0.0):
             lot_limit = min(lot_limit, room)
-        return sizer.size(
+        plan = self.entry_plan(req)
+        parts = [PlanPart(to_decimal(s.entry_price), Decimal(1))]
+        note = ""
+        if plan is not None:
+            try:
+                parts = build_parts(
+                    plan.mode,
+                    s.side,
+                    s.entry_price,
+                    s.stop_loss,
+                    s.take_profit,
+                    k=plan.parts,
+                    scheme=plan.weights,
+                    atr=req.market.atr,
+                    spacing_atr=plan.spacing_atr,
+                    tp_r=plan.tp_r,
+                )
+            except ValueError:  # SCALE_IN without an ATR: one order rather than a guessed spacing
+                note = "entry plan needs an ATR: one order"
+        result = sizer.size_plan(
             spec,
             s.side,
-            s.entry_price,
+            parts,
             s.stop_loss,
             req.account.funds,
             lot_limit=lot_limit,
+            lot_unit=None if plan is None else plan.lot_unit,
             probation=req.probation,
             min_lot_fallback=risk.min_lot_fallback,
         )
+        if note and result.ok:
+            result = dataclasses.replace(result, detail=note)
+        return result
+
+    def entry_plan(self, req: DecisionRequest) -> EntryPlanSpec | None:
+        """The owner's split plan when the engine follows plans (``execution.entry_plans``; TAA-1207), else
+        None (one order)."""
+        plan = None if req.profile_limits is None else req.profile_limits.entry_plan
+        if plan is None or not plan.split or not self.config.execution.entry_plans:
+            return None
+        return plan
 
     def _room_lots(self, req: DecisionRequest, risk: RiskConfig) -> float | None:
         """The most lots the remaining margin (and the leverage cap, if any) allows; see the module notes.

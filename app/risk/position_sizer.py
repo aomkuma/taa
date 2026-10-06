@@ -170,11 +170,12 @@ def build_parts(
     scheme: WeightScheme = WeightScheme.EQUAL,
     atr: float | None = None,
     spacing_atr: float = 0.5,
+    tp_r: Sequence[float] = (),
 ) -> list[PlanPart]:
     """The orders of a plan (PLAN §A31), before sizing.
 
-    - ``SAME_PRICE``: *k* market orders at *entry*; part *i* < *k* takes profit at *i* R (never beyond
-      the final target), the last at *take_profit*.
+    - ``SAME_PRICE``: *k* market orders at *entry*; part *i* < *k* takes profit at ``tp_r[i]`` R (*i* + 1 R
+      when *tp_r* is shorter; never beyond the final target), the last at *take_profit*.
     - ``SCALE_IN``: part 1 at market, part *i* a limit order ``i × spacing_atr × ATR`` toward the stop; levels
       that would reach the stop are dropped.
     """
@@ -190,7 +191,8 @@ def build_parts(
         for i in range(k):
             target = tp
             if i < k - 1:
-                staggered = e + sign * risk * (i + 1)
+                r_multiple = to_decimal(tp_r[i]) if i < len(tp_r) else Decimal(i + 1)
+                staggered = e + sign * risk * r_multiple
                 target = staggered if tp is None or (tp - staggered) * sign > 0 else tp
             parts.append(PlanPart(e, w[i], EntryType.MARKET, target))
         return parts

@@ -15,6 +15,7 @@ import json
 import math
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -25,11 +26,61 @@ from app.config import (
     RiskConfig,
 )
 from app.core.ids import stable_hash
+from app.risk.position_sizer import SplitMode, WeightScheme
+
+MAX_PLAN_PARTS = 5
+
+
+@dataclass(frozen=True, slots=True)
+class EntryPlanSpec:
+    """How the owner splits an entry (PLAN §A31 "แบ่งไม้"; TAA-1207): the engine's copy of the Trading
+    profile's ``entry_plan``, defined here because ``app.risk`` never imports ``app.advisory``."""
+
+    mode: SplitMode = SplitMode.SINGLE
+    parts: int = 1
+    weights: WeightScheme = WeightScheme.EQUAL
+    spacing_atr: float = 0.5  # SCALE_IN: limit i sits i x spacing x ATR toward the stop
+    lot_unit: float | None = None  # lot per tap; None: the symbol's volume step
+    tp_r: tuple[float, ...] = ()  # SAME_PRICE: the take-profits (in R) of every part but the last
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "mode", SplitMode(self.mode))
+        object.__setattr__(self, "weights", WeightScheme(self.weights))
+        object.__setattr__(self, "tp_r", tuple(float(r) for r in self.tp_r))
+        if not 1 <= self.parts <= MAX_PLAN_PARTS:
+            raise ValueError(f"an entry plan has 1 to {MAX_PLAN_PARTS} parts (got {self.parts})")
+        if (self.mode is SplitMode.SINGLE) != (self.parts == 1):
+            raise ValueError("a SINGLE plan has exactly one part, a split plan at least two")
+        if not (math.isfinite(self.spacing_atr) and 0.1 <= self.spacing_atr <= 3.0):
+            raise ValueError("spacing_atr must be within 0.1..3")
+        if self.lot_unit is not None and not (math.isfinite(self.lot_unit) and 0 < self.lot_unit <= 100):
+            raise ValueError("lot_unit must be within (0, 100]")
+        if self.mode is SplitMode.SAME_PRICE:
+            levels = list(self.tp_r)
+            if len(levels) < self.parts - 1:
+                raise ValueError("SAME_PRICE needs one partial take-profit (in R) per part but the last")
+            if any(not math.isfinite(r) or r <= 0 for r in levels) or levels != sorted(set(levels)):
+                raise ValueError("partial take-profits must be positive and increasing")
+
+    @property
+    def split(self) -> bool:
+        return self.mode is not SplitMode.SINGLE
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "mode": self.mode.value,
+            "parts": self.parts,
+            "weights": self.weights.value,
+            "spacing_atr": self.spacing_atr,
+            "lot_unit": self.lot_unit,
+            "tp_r": list(self.tp_r),
+        }
 
 
 @dataclass(frozen=True, slots=True)
 class ProfileLimits:
-    """Trading-profile values that also exist in ``RiskConfig`` (``None``: the profile does not set it)."""
+    """Trading-profile values that also exist in ``RiskConfig`` (``None``: the profile does not set it), plus
+    the owner's entry plan (TAA-1207), which the engine follows only when ``execution.entry_plans`` allows."""
 
     risk_per_trade_percent: float | None = None
     total_open_risk_percent: float | None = None  # portfolio heat
@@ -37,6 +88,7 @@ class ProfileLimits:
     max_daily_loss_percent: float | None = None
     min_risk_reward: float | None = None
     min_lot_fallback: bool | None = None  # open the minimum lot above the budget (needs the cage's consent)
+    entry_plan: EntryPlanSpec | None = None
 
     def __post_init__(self) -> None:
         for name in (
@@ -51,11 +103,33 @@ class ProfileLimits:
         if self.max_open_positions is not None and self.max_open_positions < 1:
             raise ValueError("profile max_open_positions must be >= 1")
 
-    def to_dict(self) -> dict[str, float | int | bool | None]:
-        return asdict(self)
+    def to_dict(self) -> dict[str, Any]:
+        """Without ``entry_plan`` when it is not set, so profiles from before TAA-1207 keep their version."""
+        data: dict[str, Any] = {k: v for k, v in asdict(self).items() if k != "entry_plan"}
+        if self.entry_plan is not None:
+            data["entry_plan"] = self.entry_plan.to_dict()
+        return data
 
     def version(self) -> str:
         return stable_hash(json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":")), length=16)
+
+
+class EntryPlanDoc(BaseModel):
+    """The wire format of :class:`EntryPlanSpec` (bounds as ``EntryPlanPreferences``)."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
+
+    mode: SplitMode = SplitMode.SINGLE
+    parts: int = Field(default=1, ge=1, le=MAX_PLAN_PARTS)
+    weights: WeightScheme = WeightScheme.EQUAL
+    spacing_atr: float = Field(default=0.5, ge=0.1, le=3.0)
+    lot_unit: float | None = Field(default=None, gt=0, le=100)
+    tp_r: tuple[float, ...] = Field(default=(), max_length=MAX_PLAN_PARTS)
+
+    def spec(self) -> EntryPlanSpec:
+        return EntryPlanSpec(
+            self.mode, self.parts, self.weights, self.spacing_atr, self.lot_unit, tuple(self.tp_r)
+        )
 
 
 class RiskProfileDoc(BaseModel):
@@ -71,6 +145,7 @@ class RiskProfileDoc(BaseModel):
     max_daily_loss_percent: float = Field(gt=0, le=CEILING_DAILY_LOSS_PCT)
     min_risk_reward: float = Field(ge=1.0, le=10)
     min_lot_fallback: bool = False
+    entry_plan: EntryPlanDoc | None = None
     updated_at: datetime | None = None
 
     @classmethod
@@ -80,6 +155,7 @@ class RiskProfileDoc(BaseModel):
         return cls(version=limits.version(), updated_at=updated_at, **data)
 
     def limits(self) -> ProfileLimits:
+        """Raises ``ValueError`` when the entry plan is incoherent (the caller refuses the document)."""
         return ProfileLimits(
             risk_per_trade_percent=self.risk_per_trade_percent,
             total_open_risk_percent=self.total_open_risk_percent,
@@ -87,6 +163,7 @@ class RiskProfileDoc(BaseModel):
             max_daily_loss_percent=self.max_daily_loss_percent,
             min_risk_reward=self.min_risk_reward,
             min_lot_fallback=self.min_lot_fallback,
+            entry_plan=None if self.entry_plan is None else self.entry_plan.spec(),
         )
 
 

@@ -129,6 +129,8 @@ execution:                          # broker orders: DEMO account only (Phase 12
   excess_risk_policy: reduce
   unprotected_grace_seconds: 5      # a position without SL: re-attach within this, else close
   symbol_pause_minutes: 60          # after a "symbol restricted" retcode
+  entry_plans: false                # follow the Trading profile's "Splitting an entry" (TAA-1207); off: one order
+  limit_lifetime_bars: 16           # unfilled limit parts are cancelled after 16 entry bars (4 h on M15)
 
 advisory:                           # PLAN §A25-A27: ranking and alerts; never changes what the bot trades
   universe:

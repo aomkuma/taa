@@ -970,10 +970,11 @@ class Engine:
 
     def _scan_limits(self) -> ProfileLimits | None:
         """The owner's limits for the scanner's ADVISORY decisions: the owner's sizing and account limits, but
-        not min RR, a HARD check there that would hide opportunities other users' profiles accept."""
+        not min RR, a HARD check there that would hide opportunities other users' profiles accept, and not
+        the entry plan (alerts carry each user's own plan, TAA-1207)."""
         if self.risk_limits is None:
             return None
-        return dataclasses.replace(self.risk_limits.current().limits, min_risk_reward=None)
+        return dataclasses.replace(self.risk_limits.current().limits, min_risk_reward=None, entry_plan=None)
 
     def effective_risk(self) -> RiskConfig:
         """The limits the engine trades with now (TAA-710); ``config.yaml`` alone before ``start()``."""

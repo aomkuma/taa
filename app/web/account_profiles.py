@@ -249,6 +249,7 @@ def size_manual(
             scheme=plan.weights if plan else WeightScheme.EQUAL,
             atr=atr,
             spacing_atr=plan.spacing_atr if plan else 0.5,
+            tp_r=plan.take_profits_r if plan else (),
         )
     except ValueError:  # SCALE_IN without an ATR: no plan rather than a guessed spacing
         return CloudSizing(None, "no_atr")
