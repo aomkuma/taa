@@ -3,7 +3,7 @@ import preferencesPy from '../../../../app/advisory/preferences.py?raw';
 import heartbeatPy from '../../../../app/sync/heartbeat.py?raw';
 import { GOVERNED_FIELDS, type RiskLimits } from '@/engine/schemas';
 
-import { limitRows, PROFILE_FIELD, profilePending, riskOrigin } from './riskLimitsModel';
+import { limitRows, planInUse, PROFILE_FIELD, profilePending, riskOrigin } from './riskLimitsModel';
 
 const base = {
   risk_per_trade_percent: 3,
@@ -58,5 +58,41 @@ describe('engine risk limits', () => {
     expect(riskOrigin('local:abc')).toBe('local');
     expect(riskOrigin(null)).toBeNull();
     expect(riskOrigin('other:x')).toBeNull();
+  });
+});
+
+describe('the entry plan in use (TAA-1207)', () => {
+  const plan = {
+    mode: 'SCALE_IN',
+    parts: 5,
+    weights: 'EQUAL',
+    spacing_atr: 0.5,
+    lot_unit: 0.01,
+    tp_r: [],
+  } as const;
+  const split = { ...plan, tp_r: [] as number[] };
+
+  it('shows the plan the engine follows', () => {
+    expect(planInUse({ ...LIMITS, entry_plan: split, entry_plans_enabled: true })).toEqual({
+      key: 'active',
+      plan: split,
+    });
+  });
+
+  it('says one order when the plan is single or the engine machine has plans off', () => {
+    expect(planInUse({ ...LIMITS, entry_plan: null, entry_plans_enabled: true }).key).toBe('single');
+    expect(planInUse({ ...LIMITS, entry_plan: split, entry_plans_enabled: false }).key).toBe('off');
+    expect(planInUse({ ...LIMITS, entry_plan: null, entry_plans_enabled: false }).key).toBe('single');
+  });
+
+  it('admits an engine that does not report it', () => {
+    expect(planInUse(LIMITS)).toEqual({ key: 'unknown', plan: null });
+  });
+
+  it('follows the heartbeat model', () => {
+    const wire = /class EntryPlanInUse[\s\S]*?\n\n\n/.exec(heartbeatPy)?.[0] ?? '';
+    expect([...wire.matchAll(/^ {4}(\w+): /gm)].map((m) => m[1]).filter((n) => n !== 'model_config')).toEqual(
+      Object.keys(plan),
+    );
   });
 });

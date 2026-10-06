@@ -1847,7 +1847,8 @@
         "lotUnit": "Lot per tap: above 0 and at most 100, or empty.",
         "spacing": "Spacing: 0.1 to 3 ATR.",
         "takeProfits": "One take-profit per order except the last, each above 0 and higher than the one before."
-      }
+      },
+      "bot": "Your bot follows this plan too, when its engine machine allows entry plans: the first order at the market, the others as limit orders at their levels, all with the same stop. Limit orders that have not filled are cancelled after 4 hours, when the first order closes, when the kill switch is on and before the Friday cut-off. A split signal counts as one position in “Open positions”, and the risk of all its orders together stays within your risk per signal."
     },
     "preview": {
       "title": "Example",
@@ -2004,6 +2005,12 @@
       "cloud": "your trading profile",
       "cache": "your last received trading profile",
       "local": "the engine machine's profile"
+    },
+    "plan": {
+      "active": "Splitting an entry: {{mode}}, {{parts}} orders ({{weights}}).",
+      "single": "Splitting an entry: one order per signal.",
+      "off": "Splitting an entry: one order per signal. Your plan is saved, but the engine machine has entry plans switched off (execution.entry_plans in config.yaml).",
+      "unknown": "Splitting an entry: not reported by this engine version."
     }
   },
   "analytics": {

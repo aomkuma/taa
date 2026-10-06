@@ -485,6 +485,9 @@ function PlanCard({
           ))}
         </fieldset>
         {plan.mode !== 'SINGLE' && (
+          <p className="text-xs text-slate-600 dark:text-slate-400">{t('profile.plan.bot')}</p>
+        )}
+        {plan.mode !== 'SINGLE' && (
           <>
             <div className="flex flex-wrap items-center gap-2">
               <label htmlFor={ids.parts}>{t('profile.plan.parts')}</label>

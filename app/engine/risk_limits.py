@@ -49,6 +49,7 @@ class RiskLimitSelector:
         self, config: AppConfig, client: RiskProfileClient | None, audit: AuditLog | None, clock: Clock
     ) -> None:
         self.cage = config.risk
+        self.plans_enabled = config.execution.entry_plans
         self.client = client
         self.audit = audit
         self.clock = clock
@@ -134,4 +135,6 @@ class RiskLimitSelector:
             },
             "effective": governed(applied.effective),
             "min_lot_fallback": applied.effective.min_lot_fallback,
+            "entry_plan": None if applied.limits.entry_plan is None else applied.limits.entry_plan.to_dict(),
+            "entry_plans_enabled": self.plans_enabled,
         }

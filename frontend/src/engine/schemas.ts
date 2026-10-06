@@ -86,6 +86,17 @@ export type GovernedField = (typeof GOVERNED_FIELDS)[number];
  * Which limits the engine trades with (TAA-710, `RiskLimits` in app/sync/heartbeat.py): the engine machine's
  * `config.yaml` cage, the owner's trading profile and the stricter of the two per field.
  */
+// The owner's entry plan as the engine follows it (TAA-1207); null: one order per signal.
+export const EntryPlanInUseSchema = z.object({
+  mode: z.enum(['SINGLE', 'SAME_PRICE', 'SCALE_IN']),
+  parts: z.number().int().min(1).max(5),
+  weights: z.enum(['EQUAL', 'FRONT_LOADED', 'BACK_LOADED']),
+  spacing_atr: z.number(),
+  lot_unit: z.number().nullable(),
+  tp_r: z.array(z.number()),
+});
+export type EntryPlanInUse = z.infer<typeof EntryPlanInUseSchema>;
+
 export const RiskLimitsSchema = z.object({
   source: z.enum(['cloud', 'cache', 'local']),
   version: z.string(),
@@ -93,6 +104,8 @@ export const RiskLimitsSchema = z.object({
   cage: GovernedLimitsSchema,
   profile: GovernedLimitsSchema,
   effective: GovernedLimitsSchema,
+  entry_plan: EntryPlanInUseSchema.nullable().optional(),
+  entry_plans_enabled: z.boolean().nullable().optional(),
 });
 export type RiskLimits = z.infer<typeof RiskLimitsSchema>;
 

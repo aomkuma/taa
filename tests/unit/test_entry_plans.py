@@ -205,3 +205,27 @@ class TestExposure:
         assert checks["max_open_positions"].passed  # GBPUSD's two parts are one trade
         heat = checks["max_total_open_risk"].value
         assert heat is not None and float(heat) > 0
+
+
+def test_the_heartbeat_reports_the_plan_in_use() -> None:
+    from app.sync.heartbeat import RiskLimits
+
+    cfg = AppConfig()
+    prefs = {"entry_plan": {"mode": "SCALE_IN", "parts": 5, "lot_unit": 0.01}}
+    cfg = cfg.model_copy(
+        update={
+            "advisory": cfg.advisory.model_copy(update={"preferences": prefs}),
+            "execution": cfg.execution.model_copy(update={"entry_plans": True}),
+        }
+    )
+    selector = RiskLimitSelector(cfg, None, None, ManualClock(NOW))
+    selector.current()
+    snapshot = selector.snapshot()
+    assert snapshot is not None
+    report = RiskLimits.model_validate(snapshot)  # the cloud's strict heartbeat model accepts it
+    assert report.entry_plans_enabled is True and report.entry_plan is not None
+    assert (report.entry_plan.mode, report.entry_plan.parts, report.entry_plan.lot_unit) == (
+        "SCALE_IN",
+        5,
+        0.01,
+    )

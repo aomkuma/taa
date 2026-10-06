@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { GovernedField, RiskLimits } from '@/engine/schemas';
 import { useFormat } from '@/i18n/useFormat';
 
-import { limitRows, PERCENT_FIELDS } from './riskLimitsModel';
+import { limitRows, PERCENT_FIELDS, planInUse } from './riskLimitsModel';
 
 /**
  * The limits the engine trades with (TAA-924, PLAN §A33): the engine machine's `config.yaml`, the owner's
@@ -19,6 +19,7 @@ export function EngineLimits({ limits }: { limits: RiskLimits }) {
         ? format.number(v, { maximumFractionDigits: 2 })
         : format.number(v);
   const minutes = limits.age_seconds === null ? null : Math.round(limits.age_seconds / 60);
+  const line = planInUse(limits);
   return (
     <div>
       <table aria-label={t('riskLimits.title')} className="w-full text-sm">
@@ -53,6 +54,15 @@ export function EngineLimits({ limits }: { limits: RiskLimits }) {
       <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
         {t(`riskLimits.source.${limits.source}`)}
         {minutes !== null && ` · ${t('riskLimits.age', { n: format.number(minutes) })}`}
+      </p>
+      <p className="mt-2 text-sm">
+        {line.plan
+          ? t('riskLimits.plan.active', {
+              mode: t(`profile.plan.modeName.${line.plan.mode}`),
+              parts: line.plan.parts,
+              weights: t(`profile.plan.weightName.${line.plan.weights}`),
+            })
+          : t(`riskLimits.plan.${line.key}`)}
       </p>
       <p className="mt-1 text-xs text-slate-500">{t('riskLimits.explain')}</p>
     </div>

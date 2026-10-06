@@ -1,4 +1,4 @@
-import { GOVERNED_FIELDS, type GovernedField, type RiskLimits } from '@/engine/schemas';
+import { type EntryPlanInUse, GOVERNED_FIELDS, type GovernedField, type RiskLimits } from '@/engine/schemas';
 import type { ProfileField } from '@/pages/profile/profileModel';
 
 /** The trading-profile field behind each governed engine limit (`ResolvedProfile.limits()` in Python). */
@@ -50,4 +50,18 @@ export function profilePending(limits: RiskLimits, saved: Partial<Record<Profile
 export function riskOrigin(source: string | null | undefined): 'cloud' | 'cache' | 'local' | null {
   const origin = source?.split(':', 1)[0];
   return origin === 'cloud' || origin === 'cache' || origin === 'local' ? origin : null;
+}
+
+/** How the bot splits its entries now (TAA-1207): the owner's split plan when the engine follows plans, else
+ * one order; `off` when a split plan is saved but the engine machine has entry plans switched off. */
+export function planInUse(limits: RiskLimits): {
+  key: 'active' | 'single' | 'off' | 'unknown';
+  plan: EntryPlanInUse | null;
+} {
+  const plan = limits.entry_plan && limits.entry_plan.mode !== 'SINGLE' ? limits.entry_plan : null;
+  if (limits.entry_plans_enabled === undefined || limits.entry_plans_enabled === null) {
+    return { key: 'unknown', plan: null };
+  }
+  if (!limits.entry_plans_enabled) return { key: plan ? 'off' : 'single', plan: null };
+  return plan ? { key: 'active', plan } : { key: 'single', plan: null };
 }

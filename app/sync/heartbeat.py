@@ -89,6 +89,19 @@ class GovernedLimits(BaseModel):
     min_risk_reward: float = Field(gt=0, allow_inf_nan=False)
 
 
+class EntryPlanInUse(BaseModel):
+    """The owner's entry plan as the engine follows it (TAA-1207)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["SINGLE", "SAME_PRICE", "SCALE_IN"]
+    parts: int = Field(ge=1, le=5)
+    weights: Literal["EQUAL", "FRONT_LOADED", "BACK_LOADED"]
+    spacing_atr: float = Field(gt=0, allow_inf_nan=False)
+    lot_unit: float | None = Field(default=None, gt=0, allow_inf_nan=False)
+    tp_r: list[float] = Field(default_factory=list, max_length=5)
+
+
 class RiskLimits(BaseModel):
     """Which limits the engine trades with (PLAN §A33, TAA-710): the local cage, the owner's profile and the
     stricter of the two per field; ``source`` cloud/cache/local, ``age_seconds`` since the cloud sent it."""
@@ -102,6 +115,8 @@ class RiskLimits(BaseModel):
     profile: GovernedLimits
     effective: GovernedLimits
     min_lot_fallback: bool | None = None  # in effect: the minimum lot above the budget when margin allows
+    entry_plan: EntryPlanInUse | None = None  # the owner's split plan; None: one order (TAA-1207)
+    entry_plans_enabled: bool | None = None  # execution.entry_plans on the engine machine
 
 
 class ManualLink(BaseModel):
