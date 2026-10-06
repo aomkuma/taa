@@ -16,7 +16,8 @@ the live gate, off by default: see [RUNBOOK_LIVE.md](RUNBOOK_LIVE.md) before eve
 3. In the bot terminal (`C:\MT5\taa-bot`): press **Algo Trading** (it must be on) and check Tools → Options
    → Expert Advisors → "Disable automatic trading via external Python API" is **off**.
 4. `python -m app.cli doctor` must report 0 failures. It confirms the account is DEMO; DEMO mode refuses any
-   other account.
+   other account. Then run the real-terminal contract tests (`$env:TAA_MT5_TESTS="1"; $env:TAA_MT5_TRADING_TESTS="1"; .venv\Scripts\python -m pytest -m mt5 tests/integration/test_mt5_terminal.py`):
+   their trading part sends `order_check` only and shows broker-module problems FakeMT5 cannot.
 5. Start small: keep one or two symbols in `config.yaml` → `symbols.allowed`, and set the risk in the PWA →
    Trading profile (risk per signal 0.25–0.5 % to begin). `config.yaml` → `risk` is only the machine's hard
    ceiling (PLAN §A33, 2026-10-06).

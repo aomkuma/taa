@@ -89,6 +89,10 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   `TAA_MT5_TESTS=1 TAA_MT5_TRADING_TESTS=1 pytest -m mt5 -k order_check` (DEMO, order_check only) does.
 - The `-Mt5 -Demo` stack was restarted at ~12:48 UTC with TAA-1207 and the fix (web, worker, engine; no open
   positions). The engine reports the owner's plan (cloud profile: SCALE_IN, 5 parts, 0.01 lot, 0.5 × ATR).
+- **First real plan, 2026-10-06 13:00 UTC:** USDJPY SELL, market part 0.07 filled and PROTECTED, 3 SELL_LIMIT
+  parts of 0.07 resting with the same SL/TP, magic 7310005, broker expiration 17:05 UTC (engine cancel 17:00);
+  the 5th part was dropped (its level reached the stop). Worth checking afterwards: the limits are removed at
+  17:00 UTC or when the market part closes, and `demo-report` lists them CANCELLED/EXPIRED.
 
 ### What this session added (2026-10-05/06)
 

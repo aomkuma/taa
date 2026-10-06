@@ -26,6 +26,9 @@ Tick every line, write the date, and keep this file's copy with the ticks.
       the values used inside it. Start low: 0.25–0.5 % per trade.
 - [ ] Probation: `risk.probation_trades` / `probation_multiplier` (default the first 20 trades at ¼ risk).
 - [ ] Manual trades on the same account count toward the bot's limits (`risk.foreign_positions_policy`).
+- [ ] The entry split is the one you want for real money (PWA → Trading profile → Splitting an entry; "Risk
+      limits in use" shows what the bot follows). A split plan places resting limit orders for up to 4 hours
+      (`execution.limit_lifetime_bars`); `execution.entry_plans: false` makes every signal one order.
 
 **Machine** (a Windows VPS is recommended)
 
@@ -53,6 +56,9 @@ ENGINE_DB_URL=sqlite:///data/taa_engine_live.db
 ```
 
 - [ ] `python -m app.cli doctor` (real terminal) reports 0 failures and a REAL account.
+- [ ] The real-terminal contract tests passed on this machine with the DEMO login (they call `order_check`
+      only, never `order_send`): `$env:TAA_MT5_TESTS="1"; $env:TAA_MT5_TRADING_TESTS="1"; .venv\Scripts\python -m pytest -m mt5 tests/integration/test_mt5_terminal.py`. FakeMT5 cannot catch quirks of the
+      real module: on 2026-10-06 every DEMO `order_check` failed until `MT5Client.call` was fixed.
 - [ ] All drills in §2 done on this machine within the last 7 days.
 
 ## 2. Drills
@@ -81,12 +87,13 @@ Record:
 | Action | Command |
 |---|---|
 | start | `.venv\Scripts\python -m app.main --mode live` |
-| what you should see | the block **LIVE TRADING: REAL MONEY** warning in the log; `LIVE_START` in the audit log; the red LIVE banner in the PWA; Risk & controls → "Risk limits in use" |
+| what you should see | the block **LIVE TRADING: REAL MONEY** warning in the log; `LIVE_START` in the audit log; the red LIVE banner in the PWA; Risk & controls → "Risk limits in use" (with the entry split the bot follows) |
 | halt at once | `python -m app.cli kill --reason "..."` (or the PWA, step-up) |
 | back to safety | stop the engine, set `TRADING_MODE=PAPER` (`ENABLE_LIVE_TRADING=false`), start with `--mode paper`. Open LIVE positions stay at the broker with their stops: close them in MT5 or flatten first. |
 
-First days: check every order in the terminal (stop-loss present, volume as planned), the PWA's decisions
-and the daily P/L against the limits. Halt at once on any order you do not understand.
+First days: check every order in the terminal (stop-loss present, volume as planned; with a split plan also
+the resting limit orders and that they disappear after their lifetime or when the first part closes), the PWA's
+decisions and the daily P/L against the limits. Halt at once on any order you do not understand.
 
 ## 4. When something is wrong
 

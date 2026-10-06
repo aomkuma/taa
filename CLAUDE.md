@@ -21,7 +21,8 @@ Read before larger work:
 .venv\Scripts\python -m pip install -r requirements.txt -r requirements/dev.txt   # setup
 .venv\Scripts\python -m pytest -q                                   # all tests
 .venv\Scripts\python -m pytest tests/unit/test_broker.py::TestConnection::test_reconnect_with_backoff -q  # one test
-.venv\Scripts\python -m pytest -m mt5      # real-terminal contract tests (also needs TAA_MT5_TESTS=1 and a .env)
+.venv\Scripts\python -m pytest -m mt5      # real-terminal contract tests (also needs TAA_MT5_TESTS=1 and a .env;
+                                            # TAA_MT5_TRADING_TESTS=1 adds order_check on a DEMO login, never order_send)
 .venv\Scripts\python -m pytest -m postgres # local PostgreSQL 16; TAA_POSTGRES_URL in .env (role taa)
 .venv\Scripts\ruff format app tests scripts; .venv\Scripts\ruff check app tests scripts
 .venv\Scripts\mypy app
@@ -103,7 +104,8 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
   `frontend/src/i18n/` in the same change** (run `npm run test` in `frontend/`).
 - **Tests:**
   - `FakeMT5` (`app/broker/fake_mt5.py`) emulates the MT5 module, including server time, schedules per asset type,
-    ticks, failures and call counters. Inject it via `MT5Client(..., mt5_module=fake)`.
+    ticks, pending orders, failures and call counters. Inject it via `MT5Client(..., mt5_module=fake)`. It is pure
+    Python, so C-module quirks (e.g. an empty `**kwargs` refused by `order_check`) only show in `-m mt5` tests.
   - Use `ManualClock` for time. Fixtures use Wednesday 2026-09-30 (market open, EEST +3) and Saturday 2026-10-03
     (market closed).
 

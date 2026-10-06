@@ -53,7 +53,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 7 | 7 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
-| M2 | Phase 14 — LIVE readiness | 4 | 2 | IN PROGRESS |
+| M2 | Phase 14 — LIVE readiness | 4 | 3 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 
 ## Milestone 1 — everything that never sends a broker order
@@ -1835,10 +1835,10 @@ cancelled when the market part closes, on any kill switch and before the Friday 
 
 #### TAA-1404 — Final documentation pass
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** all
 
-- [ ] README, runbooks and docs reflect reality
+- [x] README, runbooks and docs reflect reality
 
 ### Phase 15 — Product-scale backlog (deferred)
 
