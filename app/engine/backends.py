@@ -24,6 +24,7 @@ from app.engine.broker_positions import BrokerPositionManager
 from app.engine.decision_engine import DecisionRecord
 from app.engine.order_manager import IntentState, OrderManager
 from app.engine.paper import PaperExecution
+from app.engine.plan_supervisor import PlanSupervisor
 from app.engine.position_manager import PositionManager
 from app.engine.reconciler import Reconciler
 from app.market_data.data_models import SymbolSpec
@@ -39,6 +40,7 @@ PLACED_STATES = frozenset(
         IntentState.PROTECTED,
         IntentState.RECONCILED,
         IntentState.UNKNOWN,
+        IntentState.PLACED,
     }
 )
 
@@ -119,6 +121,7 @@ class PaperBackend:
     def maintain(self) -> None:
         self.paper.save_marks()
         state = None if self.kill_switch is None else self.kill_switch.state()
+        self.paper.supervise_plans(state is not None and state.active)
         if state is not None and state.active and state.mode is KillMode.FLATTEN and not self._flattened:
             for ticket in list(self.paper.broker.positions):  # paper positions close at the next quote
                 self.paper.request_close(ticket, ExitReason.KILL_SWITCH)
@@ -147,9 +150,12 @@ class DemoBackend:
         market: MarketDataGateway,
         kill_switch: KillSwitch,
         clock: Clock,
+        *,
+        plans: PlanSupervisor | None = None,
     ) -> None:
         self.orders = orders
         self.reconciler = reconciler
+        self.plans = plans
         self.positions = positions
         self.market = market
         self.kill_switch = kill_switch
@@ -187,6 +193,8 @@ class DemoBackend:
 
     def maintain(self) -> None:
         self.reconciler.run()
+        if self.plans is not None:
+            self.plans.run()  # resting limit parts: fills, lifetime, kill switch, closed market parts
         state = self.kill_switch.state()
         if state.active and state.mode is KillMode.FLATTEN and not self._flattened:
             self.positions.flatten(state.reason or "kill switch FLATTEN")

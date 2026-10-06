@@ -15,7 +15,7 @@ No broker order is ever sent: the broker here is simulated, and the MT5 gateway 
 from __future__ import annotations
 
 import logging
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -110,11 +110,13 @@ class PaperExecution:
         leverage: float,
         starting_equity: float,
         bus: EventBus | None = None,
+        limit_deadline: Callable[[str, datetime], datetime] | None = None,
     ) -> None:
         self.db = db
         self.account_key = account_key
         self.clock = clock
         self.bus = bus
+        self.limit_deadline = limit_deadline
         self._account_currency = account_currency
         initial = paper.initial_balance or starting_equity
         self.broker = SimulatedBroker(
@@ -210,6 +212,10 @@ class PaperExecution:
                     placed.append(PlacedIntent(existing.intent_id, key, existing.order_id, True))
                     continue
                 tp = float(part.part.take_profit) if part.part.take_profit is not None else signal.take_profit
+                limit = part.part.order_type is EntryType.LIMIT
+                expires_at = signal.expires_at_utc
+                if limit and self.limit_deadline is not None:  # an entry plan's limit part rests longer
+                    expires_at = self.limit_deadline(signal.symbol, now)
                 request = OrderRequest(
                     symbol=signal.symbol,
                     side=side,
@@ -217,8 +223,8 @@ class PaperExecution:
                     sl=sl,
                     tp=tp,
                     entry_type=part.part.order_type,
-                    price=None if part.part.order_type is EntryType.MARKET else float(part.part.entry),
-                    expires_at=signal.expires_at_utc,
+                    price=float(part.part.entry) if limit else None,
+                    expires_at=expires_at,
                     magic=magic,
                     comment=signal.strategy[:25],
                     strategy=signal.strategy,
@@ -232,6 +238,47 @@ class PaperExecution:
                 placed.append(PlacedIntent(intent_id, key, order_id, False))
             self._save_account(sess, now)
         return placed
+
+    def supervise_plans(self, kill_active: bool) -> list[str]:
+        """Cancel the resting limit parts of entry plans (TAA-1207) when the kill switch is active or the
+        plan's market part is closed (or never opened); their lifetime is the order's expiry. Returns the
+        cancelled intents."""
+        now = self.clock.now_utc()
+        cancelled: list[str] = []
+        with self.db.session() as sess:
+            rows = list(
+                sess.execute(
+                    select(PaperIntentRow).where(
+                        PaperIntentRow.account_key == self.account_key,
+                        PaperIntentRow.status == "PENDING",
+                        PaperIntentRow.entry_type == EntryType.LIMIT.value,
+                    )
+                ).scalars()
+            )
+            if not rows:
+                return cancelled
+            markets = sess.execute(
+                select(PaperIntentRow).where(
+                    PaperIntentRow.decision_id.in_({r.decision_id for r in rows}),
+                    PaperIntentRow.entry_type == EntryType.MARKET.value,
+                )
+            ).scalars()
+            alive: dict[str, bool] = {}
+            for m in markets:
+                open_ = m.status == "PENDING" or (m.status == "FILLED" and m.ticket in self.broker.positions)
+                alive[m.decision_id] = alive.get(m.decision_id, False) or open_
+            for row in rows:
+                if not kill_active and alive.get(row.decision_id, False):
+                    continue
+                self.broker.cancel(row.order_id)
+                self._intent_by_order.pop(row.order_id, None)
+                row.status = "CANCELLED"
+                row.detail = "kill switch" if kill_active else "the plan's market part is closed"
+                row.updated_at = now
+                cancelled.append(row.intent_id)
+        if cancelled:
+            log.info("paper: %d limit part(s) cancelled", len(cancelled))
+        return cancelled
 
     def modify_stop(self, ticket: int, sl: float, stop_kind: ExitReason | None) -> None:
         self.broker.modify(ticket, sl=sl, stop_kind=stop_kind)

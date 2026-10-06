@@ -17,7 +17,7 @@ invoked in read-only modes.
 from __future__ import annotations
 
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any
@@ -316,7 +316,8 @@ class FakeMT5:
         self.clock = clock
         self.account = account or FakeAccount()
         self.terminal = terminal or FakeTerminal()
-        self.symbols = dict(symbols or DEFAULT_SYMBOLS)
+        # copies: a test that changes a symbol must not change it for the next FakeMT5
+        self.symbols = {k: replace(v) for k, v in (symbols or DEFAULT_SYMBOLS).items()}
         self.server_clock = ServerClock(tz, clock)
         self.initialized = False
         self.init_kwargs: dict[str, Any] = {}

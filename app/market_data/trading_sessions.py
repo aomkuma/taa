@@ -95,6 +95,11 @@ class TradingSessions:
             candidates.append(cutoff)
         return SessionVerdict(SessionState.OPEN, "", min(candidates))
 
+    def friday_cutoff(self, symbol: str, at_utc: datetime) -> datetime | None:
+        """This week's Friday cut-off (UTC) for *symbol*, or None when it does not apply (TAA-1207: resting
+        limit parts are cancelled by then)."""
+        return self._cutoff_start(symbol, ensure_utc(at_utc))
+
     def _cutoff_start(self, symbol: str, at: datetime) -> datetime | None:
         """Start of this week's Friday cutoff (UTC) when it applies to *symbol*, else None."""
         if self.sessions.friday_cutoff_utc is None or self.trades_weekends(symbol):

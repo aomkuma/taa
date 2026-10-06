@@ -175,3 +175,67 @@ def test_live_rates_from_fake_mt5() -> None:
     jpy = rates.rate("JPY", NOW)
     assert jpy is not None and jpy < 0.05  # 1 / USDJPY
     assert rates.rate("XYZ", NOW) is None
+
+
+class TestPaperPlans:
+    """PAPER mirrors the broker path for entry plans (TAA-1207)."""
+
+    def plan(self, db: Database) -> DecisionRecord:
+        from app.risk.limits import EntryPlanSpec, ProfileLimits
+        from app.risk.position_sizer import SplitMode
+        from tests.unit.test_decision_engine import Setup
+
+        spec = EntryPlanSpec(SplitMode.SCALE_IN, 3, lot_unit=0.01)
+        on = Setup(config={"execution": {"entry_plans": True}})
+        record = engine(db, on).decide(request(profile_limits=ProfileLimits(entry_plan=spec)))
+        assert record.decision is Decision.ACCEPT and record.sizing is not None
+        assert [p.part.order_type for p in record.sizing.parts] == [
+            EntryType.MARKET,
+            EntryType.LIMIT,
+            EntryType.LIMIT,
+        ]
+        return record
+
+    def execution(self, db: Database, clock: ManualClock) -> PaperExecution:
+        p = paper(db, clock)
+        p.limit_deadline = lambda _symbol, now: now + timedelta(hours=4)
+        return p
+
+    def statuses(self, db: Database) -> list[str]:
+        with db.session() as sess:
+            rows = sess.execute(select(PaperIntentRow).order_by(PaperIntentRow.idempotency_key)).scalars()
+            return [r.status for r in rows]
+
+    def test_limit_parts_rest_for_their_lifetime(self, db: Database) -> None:
+        clock = ManualClock(NOW)
+        p = self.execution(db, clock)
+        p.place(self.plan(db), magic=7_310_000)
+        with db.session() as sess:
+            limits = sess.execute(
+                select(PaperIntentRow).where(PaperIntentRow.entry_type == "LIMIT")
+            ).scalars()
+            assert {r.expires_at for r in limits} == {NOW + timedelta(hours=4)}
+        clock.advance(1)
+        p.on_quote("EURUSD", 1.09992, 1.10000, clock.now_utc())
+        clock.advance(4 * 3600)
+        p.on_quote("EURUSD", 1.09992, 1.10000, clock.now_utc())
+        assert self.statuses(db) == ["FILLED", "EXPIRED", "EXPIRED"]
+
+    def test_the_market_part_closing_cancels_the_rest(self, db: Database) -> None:
+        clock = ManualClock(NOW)
+        p = self.execution(db, clock)
+        p.place(self.plan(db), magic=7_310_000)
+        clock.advance(1)
+        p.on_quote("EURUSD", 1.09992, 1.10000, clock.now_utc())
+        assert p.supervise_plans(kill_active=False) == []  # the market part is open
+        clock.advance(1)
+        p.on_quote("EURUSD", 1.10410, 1.10418, clock.now_utc())  # through the TP
+        assert len(p.supervise_plans(kill_active=False)) == 2
+        assert self.statuses(db) == ["FILLED", "CANCELLED", "CANCELLED"] and p.broker.pending == {}
+
+    def test_the_kill_switch_cancels_resting_parts(self, db: Database) -> None:
+        clock = ManualClock(NOW)
+        p = self.execution(db, clock)
+        p.place(self.plan(db), magic=7_310_000)
+        assert len(p.supervise_plans(kill_active=True)) == 2
+        assert self.statuses(db) == ["PENDING", "CANCELLED", "CANCELLED"]

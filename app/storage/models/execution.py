@@ -44,6 +44,12 @@ class OrderIntentRow(EngineKeyed, Base):
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
     detail: Mapped[str] = mapped_column(Text, default="")
+    # entry plans (TAA-1207): the parts of one signal share plan_key; a LIMIT part rests until cancel_after
+    plan_key: Mapped[str] = mapped_column(String(80), default="", server_default="", index=True)
+    part_index: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    order_type: Mapped[str] = mapped_column(String(8), default="MARKET", server_default="MARKET")
+    limit_price: Mapped[float | None] = mapped_column(Float, nullable=True)
+    cancel_after: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
 
 
 class MagicRegistryRow(Base):

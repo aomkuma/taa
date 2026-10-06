@@ -107,7 +107,10 @@
     "NOT_EXECUTED": "ไม่ได้ส่ง",
     "PROTECTED": "มี Stop Loss แล้ว",
     "UNPROTECTED": "ไม่มี Stop Loss",
-    "EMERGENCY_CLOSED": "ปิดฉุกเฉิน"
+    "EMERGENCY_CLOSED": "ปิดฉุกเฉิน",
+    "PLACED": "ตั้ง Limit แล้ว",
+    "CANCELLED": "ยกเลิก Limit แล้ว",
+    "EXPIRED": "Limit หมดอายุ"
   },
   "reason": {
     "KILL_SWITCH_ACTIVE": "Kill switch ทำงานอยู่",

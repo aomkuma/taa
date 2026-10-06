@@ -271,6 +271,9 @@ export const ORDER_STATES = [
   'PROTECTED',
   'UNPROTECTED',
   'EMERGENCY_CLOSED',
+  'PLACED',
+  'CANCELLED',
+  'EXPIRED',
 ] as const;
 
 // The strategies page (TAA-909): StrategyState (app/web/strategies.py), QueueStatus (app/sync/command_queue.py)

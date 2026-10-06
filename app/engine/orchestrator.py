@@ -29,7 +29,7 @@ import shutil
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from sqlalchemy import func, select
@@ -72,6 +72,7 @@ from app.engine.magic_registry import MagicRegistry
 from app.engine.manual_links import ManualTradeLinker, link_dict
 from app.engine.order_manager import OrderManager
 from app.engine.paper import LiveRates, PaperExecution
+from app.engine.plan_supervisor import PlanSupervisor
 from app.engine.position_manager import PositionManager
 from app.engine.reconciler import Reconciler
 from app.engine.risk_limits import RiskLimitSelector
@@ -430,6 +431,7 @@ class Engine:
                 leverage=float(account.leverage or cfg.backtest.leverage),
                 starting_equity=account.equity,
                 bus=self.bus,
+                limit_deadline=self._limit_deadline,
             )
             restored = self.paper.restore()
             self.positions = PositionManager(
@@ -454,6 +456,7 @@ class Engine:
             deviation_points=int(cfg.risk.max_slippage_points if deviation is None else deviation),
             presend=self._presend,
             bus=self.bus,
+            limit_deadline=self._limit_deadline,
         )
         self.reconciler = Reconciler(
             self.db,
@@ -477,10 +480,18 @@ class Engine:
             flatten_allowed=env.KILL_SWITCH_FLATTEN_ALLOWED,
             bus=self.bus,
         )
+        self.plans = PlanSupervisor(self.orders, self.kill_switch, self.clock, cfg.execution, self.symbols)
         self.backend = DemoBackend(
-            self.orders, self.reconciler, self.broker_positions, self.gateway, self.kill_switch, self.clock
+            self.orders,
+            self.reconciler,
+            self.broker_positions,
+            self.gateway,
+            self.kill_switch,
+            self.clock,
+            plans=self.plans,
         )
         report = self.reconciler.run()
+        self.plans.run()
         if self.settings.mode is TradingMode.LIVE:
             self.backend.name = "live"
             log.warning(LIVE_BANNER, account.login, account.server, account.currency, account.equity)
@@ -491,6 +502,15 @@ class Engine:
             )
         log.warning("%s mode: broker orders go to the account (%s)", self.settings.mode.value, report)
         return len(self.broker_positions.bot_positions())
+
+    def _limit_deadline(self, symbol: str, now: datetime) -> datetime:
+        """When an unfilled limit part placed now is cancelled (TAA-1207): after ``limit_lifetime_bars``
+        entry bars, never past the Friday cut-off."""
+        cfg = self.config
+        bars = cfg.execution.limit_lifetime_bars * cfg.timeframes.entry.seconds
+        deadline = now + timedelta(seconds=bars)
+        cutoff = self.sessions.friday_cutoff(symbol, now)
+        return deadline if cutoff is None or cutoff <= now else min(deadline, cutoff)
 
     def _ai_provider(self) -> AIProvider:
         env = self.settings.env

@@ -107,7 +107,10 @@
     "NOT_EXECUTED": "Not executed",
     "PROTECTED": "Protected",
     "UNPROTECTED": "Unprotected",
-    "EMERGENCY_CLOSED": "Emergency closed"
+    "EMERGENCY_CLOSED": "Emergency closed",
+    "PLACED": "Limit placed",
+    "CANCELLED": "Limit cancelled",
+    "EXPIRED": "Limit expired"
   },
   "reason": {
     "KILL_SWITCH_ACTIVE": "Kill switch is active",

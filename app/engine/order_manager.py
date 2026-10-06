@@ -6,6 +6,8 @@
     UNKNOWN → RECONCILED | NOT_EXECUTED                       (the reconciler decides)
     FILLED | PARTIAL | RECONCILED → PROTECTED | UNPROTECTED → EMERGENCY_CLOSED
     NEW | PRECHECKED → NOT_EXECUTED                            (pre-send re-check failed)
+    SENDING → PLACED → FILLED | CANCELLED | EXPIRED            (a limit part of an entry plan, TAA-1207)
+    UNKNOWN → PLACED                                           (an unknown limit found resting)
 
 - **Write-ahead:** the intent row (unique ``idempotency_key`` = signal key + part) is committed before
   anything is sent. A second attempt with the same key sends nothing and trips DUPLICATE_EXECUTION.
@@ -19,6 +21,11 @@
   symbol restrictions → SYMBOL_RESTRICTED for that symbol; no money / autotrading disabled / account-mode
   conflicts → the kill switch is activated (HALT); too many requests → ORDER_FAILURES. Every failed send
   counts toward ORDER_FAILURES.
+- **Entry plans** (TAA-1207): the market part(s) go first; the limit parts are placed only when every market
+  part is protected, each with the plan's stop and target, a cancel time (``cancel_after``: the limit
+  lifetime, never past the Friday cut-off) and a broker-side expiration a few minutes later as a backstop.
+  The pending order's filling is chosen by ``order_check`` (RETURN, then the market filling; without the
+  expiration if the symbol refuses one). :mod:`app.engine.plan_supervisor` follows the resting parts.
 - **Post-fill guard:** slippage feeds the SLIPPAGE breaker; a fill whose risk at the stop exceeds the plan by
   more than ``realized_risk_tolerance`` is reduced (or closed, per policy); a position without its stop gets
   it re-attached, or is closed and UNPROTECTED_POSITION trips.
@@ -31,15 +38,15 @@ import math
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from decimal import Decimal
 from enum import StrEnum
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.broker.execution import ExecutionGateway, RequestBuilder, SendResult
+from app.broker.execution import CheckResult, ExecutionGateway, RequestBuilder, SendResult
 from app.broker.gateway import MarketDataGateway
-from app.broker.models import BrokerPosition
+from app.broker.models import BrokerPosition, Deal
 from app.broker.retcodes import RetcodeClass
 from app.config import ExecutionConfig
 from app.core.clock import Clock, ensure_utc
@@ -52,6 +59,7 @@ from app.market_data.data_models import SymbolSpec
 from app.monitoring.alerts import EventBus, EventType
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.kill_switch import KillMode, KillSwitch
+from app.risk.position_sizer import SizedPart
 from app.storage.database import Database
 from app.storage.models import OrderIntentRow
 from app.storage.models.base import LOCAL_ENGINE
@@ -72,14 +80,18 @@ class IntentState(StrEnum):
     PROTECTED = "PROTECTED"
     UNPROTECTED = "UNPROTECTED"
     EMERGENCY_CLOSED = "EMERGENCY_CLOSED"
+    PLACED = "PLACED"  # a limit part rests at the broker
+    CANCELLED = "CANCELLED"  # an unfilled limit part removed (first part closed, kill switch, outside)
+    EXPIRED = "EXPIRED"  # an unfilled limit part past its lifetime
 
 
 S = IntentState
 TRANSITIONS: dict[IntentState, frozenset[IntentState]] = {
     S.NEW: frozenset({S.PRECHECKED, S.REJECTED, S.NOT_EXECUTED}),
     S.PRECHECKED: frozenset({S.SENDING, S.NOT_EXECUTED}),
-    S.SENDING: frozenset({S.FILLED, S.PARTIAL, S.REJECTED, S.UNKNOWN, S.PRECHECKED}),
-    S.UNKNOWN: frozenset({S.RECONCILED, S.NOT_EXECUTED}),
+    S.SENDING: frozenset({S.FILLED, S.PARTIAL, S.REJECTED, S.UNKNOWN, S.PRECHECKED, S.PLACED}),
+    S.UNKNOWN: frozenset({S.RECONCILED, S.NOT_EXECUTED, S.PLACED}),
+    S.PLACED: frozenset({S.FILLED, S.CANCELLED, S.EXPIRED}),
     S.FILLED: frozenset({S.PROTECTED, S.UNPROTECTED}),
     S.PARTIAL: frozenset({S.PROTECTED, S.UNPROTECTED}),
     S.RECONCILED: frozenset({S.PROTECTED, S.UNPROTECTED}),
@@ -88,8 +100,12 @@ TRANSITIONS: dict[IntentState, frozenset[IntentState]] = {
     S.REJECTED: frozenset(),
     S.NOT_EXECUTED: frozenset(),
     S.EMERGENCY_CLOSED: frozenset(),
+    S.CANCELLED: frozenset(),
+    S.EXPIRED: frozenset(),
 }
 OPEN_STATES = frozenset({S.NEW, S.PRECHECKED, S.SENDING, S.UNKNOWN})
+INVALID_REQUEST, INVALID_EXPIRATION, INVALID_FILL = 10013, 10022, 10030
+BACKSTOP = timedelta(minutes=5)  # the broker-side expiration of a limit part, after the engine's cancel time
 
 
 class IllegalTransition(SafetyViolation):
@@ -98,6 +114,8 @@ class IllegalTransition(SafetyViolation):
 
 # the caller's time-of-use checks: (symbol, side, fresh price, expires_at) -> problems
 PreSendCheck = Callable[[str, Side, float, datetime], list[str]]
+# when an unfilled limit part of a plan placed now is cancelled: (symbol, now) -> cancel time
+LimitDeadline = Callable[[str, datetime], datetime]
 
 
 @dataclass(frozen=True, slots=True)
@@ -128,6 +146,7 @@ class OrderManager:
         deviation_points: int,
         presend: PreSendCheck,
         bus: EventBus | None = None,
+        limit_deadline: LimitDeadline | None = None,
     ) -> None:
         self.db = db
         self.execution = execution
@@ -139,6 +158,7 @@ class OrderManager:
         self.builder = RequestBuilder(deviation_points)
         self.presend = presend
         self.bus = bus
+        self.limit_deadline = limit_deadline or (lambda _symbol, now: now + timedelta(hours=4))
 
     # --- state ------------------------------------------------------------------------------------------
 
@@ -174,38 +194,53 @@ class OrderManager:
     # --- execution --------------------------------------------------------------------------------------
 
     def execute(self, record: DecisionRecord, spec: SymbolSpec, magic: int) -> list[ExecutionOutcome]:
-        """Send the market orders of an accepted decision (limit parts of a plan are not sent in Phase 12)."""
+        """Send the orders of an accepted decision: the market part(s) first, then, only when every market
+        part is protected, the limit parts of the entry plan. An unknown outcome stops the plan."""
         if record.decision is not Decision.ACCEPT or record.sizing is None or not record.sizing.ok:
             return []
         side = record.signal.side
         if side is None or record.sizing.stop_loss is None:
             return []
-        outcomes = []
-        for i, part in enumerate(record.sizing.parts):
-            key = f"{record.signal.idempotency_key}:{i}"
-            if part.part.order_type is not EntryType.MARKET:
-                log.info(
-                    "part %s of %s is a %s order: not sent in Phase 12", i, key[:12], part.part.order_type
-                )
-                continue
-            outcome = self._execute_part(record, spec, magic, side, key, part.volume, part.risk_money)
+        plan_key = record.signal.idempotency_key
+        parts = list(enumerate(record.sizing.parts))
+        market = [(i, p) for i, p in parts if p.part.order_type is EntryType.MARKET]
+        limits = [(i, p) for i, p in parts if p.part.order_type is EntryType.LIMIT]
+        outcomes: list[ExecutionOutcome] = []
+        for i, part in market:
+            outcome = self._execute_part(record, spec, magic, side, plan_key, i, part)
             outcomes.append(outcome)
             if outcome.state is S.UNKNOWN:
-                break  # an unknown outcome stops the plan: nothing more is sent until reconciled
+                return outcomes  # nothing more is sent until reconciled
+        if limits and not (outcomes and all(o.state is S.PROTECTED for o in outcomes)):
+            log.warning(
+                "plan %s: the market part is not protected; %d limit part(s) not sent",
+                plan_key[:12],
+                len(limits),
+            )
+            return outcomes
+        for i, part in limits:
+            outcome = self._place_limit(record, spec, magic, side, plan_key, i, part)
+            outcomes.append(outcome)
+            if outcome.state is S.UNKNOWN:
+                break
         return outcomes
 
-    def _execute_part(
+    def _new_intent(
         self,
         record: DecisionRecord,
         spec: SymbolSpec,
         magic: int,
         side: Side,
-        key: str,
-        volume: Decimal,
-        risk_money: Decimal,
-    ) -> ExecutionOutcome:
+        plan_key: str,
+        index: int,
+        part: SizedPart,
+        **fields: object,
+    ) -> str | ExecutionOutcome:
+        """Write the intent ahead of any send; an existing key is a second attempt (DUPLICATE_EXECUTION)."""
         signal = record.signal
+        key = f"{plan_key}:{index}"
         now = self.clock.now_utc()
+        tp = part.part.take_profit
         with self.db.session() as sess:
             existing = sess.execute(
                 select(OrderIntentRow).where(OrderIntentRow.idempotency_key == key)
@@ -216,30 +251,193 @@ class OrderManager:
                     existing.intent_id, key, IntentState(existing.state), detail="duplicate"
                 )
             intent_id = new_id()
-            sess.add(
-                OrderIntentRow(
-                    intent_id=intent_id,
-                    idempotency_key=key,
-                    decision_id=record.decision_id,
-                    signal_id=signal.signal_id,
-                    strategy=signal.strategy,
-                    symbol=spec.name,
-                    side=side.value,
-                    volume=float(volume),
-                    price_requested=float(signal.entry_price or 0.0),
-                    sl=float(record.sizing.stop_loss or 0.0) if record.sizing else 0.0,
-                    tp=signal.take_profit,
-                    magic=magic,
-                    comment=intent_comment(intent_id),
-                    risk_money=float(risk_money),
-                    state=S.NEW.value,
-                    attempts=0,
-                    expires_at=signal.expires_at_utc,
-                    created_at=now,
-                    updated_at=now,
-                )
+            values: dict[str, object] = {
+                "intent_id": intent_id,
+                "idempotency_key": key,
+                "decision_id": record.decision_id,
+                "signal_id": signal.signal_id,
+                "strategy": signal.strategy,
+                "symbol": spec.name,
+                "side": side.value,
+                "volume": float(part.volume),
+                "price_requested": float(signal.entry_price or 0.0),
+                "sl": float(record.sizing.stop_loss or 0.0) if record.sizing else 0.0,
+                "tp": signal.take_profit if tp is None else float(tp),
+                "magic": magic,
+                "comment": intent_comment(intent_id),
+                "risk_money": float(part.risk_money),
+                "state": S.NEW.value,
+                "attempts": 0,
+                "expires_at": signal.expires_at_utc,
+                "created_at": now,
+                "updated_at": now,
+                "plan_key": plan_key,
+                "part_index": index,
+            }
+            values.update(fields)
+            sess.add(OrderIntentRow(**values))
+        return intent_id
+
+    def _execute_part(
+        self,
+        record: DecisionRecord,
+        spec: SymbolSpec,
+        magic: int,
+        side: Side,
+        plan_key: str,
+        index: int,
+        part: SizedPart,
+    ) -> ExecutionOutcome:
+        created = self._new_intent(record, spec, magic, side, plan_key, index, part)
+        if isinstance(created, ExecutionOutcome):
+            return created
+        return self._send(created, spec)
+
+    # --- limit parts (TAA-1207) -------------------------------------------------------------------------
+
+    def _place_limit(
+        self,
+        record: DecisionRecord,
+        spec: SymbolSpec,
+        magic: int,
+        side: Side,
+        plan_key: str,
+        index: int,
+        part: SizedPart,
+    ) -> ExecutionOutcome:
+        level = float(part.part.entry)
+        created = self._new_intent(
+            record,
+            spec,
+            magic,
+            side,
+            plan_key,
+            index,
+            part,
+            order_type=EntryType.LIMIT.value,
+            limit_price=level,
+            price_requested=level,
+            cancel_after=self.limit_deadline(spec.name, self.clock.now_utc()),
+        )
+        if isinstance(created, ExecutionOutcome):
+            return created
+        return self._send_limit(created, spec)
+
+    def _send_limit(self, intent_id: str, spec: SymbolSpec) -> ExecutionOutcome:
+        row = self.row(intent_id)
+        side = Side(row.side)
+        tick = self.market.tick(spec.name)
+        if tick is None or row.limit_price is None:
+            return self._finish(row, S.NOT_EXECUTED, "no price to place the limit against")
+        market_price = tick.ask if side is Side.BUY else tick.bid
+        edge = market_price - side.sign * spec.stops_level * spec.point
+        if (row.limit_price - edge) * side.sign >= 0:  # the price is already at (or through) the level
+            return self._finish(
+                row, S.NOT_EXECUTED, f"limit {row.limit_price} is not away from the market {market_price}"
             )
-        return self._send(intent_id, spec)
+        expiration = None
+        if row.cancel_after is not None:
+            expiration = self.market.server_clock.utc_to_server_epoch(ensure_utc(row.cancel_after) + BACKSTOP)
+        request, check = self._check_limit(row, spec, side, expiration)
+        if not check.ok:
+            self.monitor.observe_order_failure(f"order_check {check.retcode} {check.comment}")
+            return self._finish(
+                row, S.REJECTED, f"order_check {check.retcode}: {check.comment}", check.retcode
+            )
+        self.transition(intent_id, S.PRECHECKED)
+        problems = self.presend(spec.name, side, market_price, ensure_utc(row.expires_at))
+        if problems:
+            return self._finish(row, S.NOT_EXECUTED, "pre-send: " + "; ".join(problems))
+        self.transition(intent_id, S.SENDING, attempts=1, sent_at=self.clock.now_utc())
+        result = self.execution.send(request)
+        fields: dict[str, object] = {"retcode": result.retcode, "retcode_desc": result.description[:48]}
+        if result.ok:
+            self.transition(intent_id, S.PLACED, result.description, order_ticket=result.order, **fields)
+            return ExecutionOutcome(intent_id, row.idempotency_key, S.PLACED, result.retcode)
+        self.monitor.observe_order_failure(result.description)
+        return self._failed(intent_id, spec, result, fields)
+
+    def _check_limit(
+        self, row: OrderIntentRow, spec: SymbolSpec, side: Side, expiration: int | None
+    ) -> tuple[dict[str, Any], CheckResult]:
+        """``order_check`` over the filling modes (RETURN first) and, if the symbol refuses an expiration,
+        without one. Returns the first accepted request, else the last refusal."""
+        last: tuple[dict[str, Any], CheckResult] | None = None
+        expirations = (expiration, None) if expiration is not None else (None,)
+        for filling in self.builder.pending_fillings(spec):
+            for exp in expirations:
+                request = self.builder.limit_entry(
+                    spec,
+                    side,
+                    row.volume,
+                    float(row.limit_price or 0.0),
+                    row.sl,
+                    row.tp,
+                    magic=int(row.magic),
+                    comment=row.comment,
+                    filling=filling,
+                    expiration_server=exp,
+                )
+                check = self.execution.check(request)
+                if check.ok:
+                    return request, check
+                last = (request, check)
+                if check.retcode != INVALID_EXPIRATION:
+                    break
+            if last is not None and last[1].retcode not in (INVALID_FILL, INVALID_EXPIRATION):
+                break
+        if last is None:  # pending_fillings always offers RETURN; this is a bug
+            raise SafetyViolation("no filling mode to check a limit order with")
+        return last
+
+    def cancel(self, intent_id: str, state: IntentState, why: str) -> bool:
+        """Remove an unfilled limit part (CANCELLED or EXPIRED). False when the broker refused, or the order
+        is no longer there: the plan supervisor then finds out whether it filled."""
+        row = self.row(intent_id)
+        if row.order_ticket is None:
+            self.transition(intent_id, state, why)
+            return True
+        result = self.execution.send(self.builder.remove_order(int(row.order_ticket)))
+        if result.ok:
+            self.transition(intent_id, state, why)
+            log.info("limit part #%s of %s removed: %s", row.order_ticket, row.symbol, why)
+            return True
+        if result.retcode != INVALID_REQUEST:
+            self.monitor.observe_order_failure(f"remove #{row.order_ticket}: {result.description}")
+        log.warning("removing limit #%s failed: %s", row.order_ticket, result.description)
+        return False
+
+    def limit_filled(
+        self, intent_id: str, spec: SymbolSpec, position: BrokerPosition | None, deal: Deal | None
+    ) -> IntentState:
+        """A resting limit part became a position: record the fill, then the post-fill guard."""
+        fields: dict[str, object] = {}
+        if position is not None:
+            fields = {
+                "fill_price": position.price_open,
+                "fill_volume": position.volume,
+                "position_ticket": position.ticket,
+            }
+        elif deal is not None:
+            fields = {
+                "fill_price": deal.price,
+                "fill_volume": deal.volume,
+                "position_ticket": deal.position_id,
+                "deal_ticket": deal.ticket,
+            }
+        self.transition(intent_id, S.FILLED, "limit filled", slippage_points=0.0, **fields)
+        row = self.row(intent_id)
+        if self.bus is not None:
+            self.bus.emit(
+                EventType.POSITION_OPENED,
+                symbol=row.symbol,
+                side=row.side,
+                volume=row.fill_volume,
+                price=row.fill_price,
+                ticket=row.position_ticket,
+                paper=False,
+            )
+        return self.guard(intent_id, spec)
 
     def _send(self, intent_id: str, spec: SymbolSpec) -> ExecutionOutcome:
         row = self.row(intent_id)
@@ -330,6 +528,14 @@ class OrderManager:
         self.monitor.observe_order_failure(desc)
         if cls is RetcodeClass.RETRY_ONCE and attempt < self.config.max_send_attempts:
             return None
+        return self._failed(intent_id, spec, result, fields)
+
+    def _failed(
+        self, intent_id: str, spec: SymbolSpec, result: SendResult, fields: dict[str, object]
+    ) -> ExecutionOutcome:
+        """A send that did not succeed: UNKNOWN (reconcile first) or REJECTED, with the §A12 side effects."""
+        row = self.row(intent_id)
+        cls, desc = result.retcode_class, result.description
         if cls is RetcodeClass.UNKNOWN:
             self.transition(intent_id, S.UNKNOWN, f"{desc} {result.last_error}", **fields)
             self.monitor.unknown_order(f"{spec.name} intent {short_id(intent_id)}: {desc}")

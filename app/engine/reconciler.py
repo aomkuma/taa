@@ -9,7 +9,11 @@
    becomes UNKNOWN and is resolved as above; NEW or PRECHECKED was never sent: NOT_EXECUTED.
 3. **Protection sweep:** every position carrying the bot's magic must have a stop. A missing one is
    re-attached from its intent, otherwise the position is closed and UNPROTECTED_POSITION trips.
-4. **Strays:** a position with the bot's magic that no intent explains trips ACCOUNT_CHANGE.
+4. **Strays:** a position or a resting order with the bot's magic that no intent explains trips
+   ACCOUNT_CHANGE.
+
+A limit part of an entry plan (TAA-1207) whose send was unknown is looked up among the resting orders first:
+found → PLACED (the plan supervisor follows it from there).
 """
 
 from __future__ import annotations
@@ -23,9 +27,10 @@ from sqlalchemy import select
 
 from app.broker import mt5_constants as c
 from app.broker.gateway import MarketDataGateway
-from app.broker.models import BrokerPosition, Deal
+from app.broker.models import BrokerOrder, BrokerPosition, Deal
 from app.config import ExecutionConfig
 from app.core.clock import Clock, ensure_utc
+from app.core.enums import EntryType
 from app.core.errors import TaaError
 from app.core.ids import short_id
 from app.engine.order_manager import IntentState, OrderManager
@@ -48,10 +53,12 @@ class ReconcileReport:
     reattached: list[int] = field(default_factory=list)
     closed_unprotected: list[int] = field(default_factory=list)
     strays: list[int] = field(default_factory=list)
+    placed: list[str] = field(default_factory=list)  # unknown limit parts found resting
+    stray_orders: list[int] = field(default_factory=list)
 
     @property
     def clean(self) -> bool:
-        return not (self.still_unknown or self.closed_unprotected or self.strays)
+        return not (self.still_unknown or self.closed_unprotected or self.strays or self.stray_orders)
 
 
 class Reconciler:
@@ -85,9 +92,12 @@ class Reconciler:
         report = ReconcileReport()
         positions = self._positions()
         deals = self._deals()
+        orders = self._orders()
         for row in self._open_intents():
-            self._resolve(row, positions, deals, report)
+            self._resolve(row, positions, deals, orders, report)
         self._sweep(self._positions(), report)
+        if orders is not None:
+            self._sweep_orders(orders, report)
         if not report.clean:
             log.warning("reconciliation: %s", report)
         return report
@@ -108,7 +118,12 @@ class Reconciler:
             return out
 
     def _resolve(
-        self, row: OrderIntentRow, positions: list[BrokerPosition], deals: list[Deal], report: ReconcileReport
+        self,
+        row: OrderIntentRow,
+        positions: list[BrokerPosition],
+        deals: list[Deal],
+        orders: list[BrokerOrder] | None,
+        report: ReconcileReport,
     ) -> None:
         state = IntentState(row.state)
         if state in (S.NEW, S.PRECHECKED):
@@ -120,6 +135,17 @@ class Reconciler:
             self.monitor.unknown_order(
                 f"{row.symbol} intent {short_id(row.intent_id)} interrupted while sending"
             )
+        resting = next(
+            (o for o in orders or () if o.magic == row.magic and o.comment.startswith(row.comment)), None
+        )
+        if resting is not None:
+            self.orders.transition(row.intent_id, S.PLACED, "found resting", order_ticket=resting.ticket)
+            report.placed.append(row.intent_id)
+            self._announce(row, "PLACED")
+            return
+        if orders is None and row.order_type == EntryType.LIMIT.value:
+            report.still_unknown.append(row.intent_id)  # it may be resting: decide when orders_get works
+            return
         position = next(
             (p for p in positions if p.magic == row.magic and p.comment.startswith(row.comment)), None
         )
@@ -203,6 +229,29 @@ class Reconciler:
             else:
                 report.closed_unprotected.append(pos.ticket)
                 self.orders.close_unprotected(pos, spec, "no stop found by the reconciler")
+
+    def _sweep_orders(self, orders: list[BrokerOrder], report: ReconcileReport) -> None:
+        with self.db.session() as sess:
+            intents = list(sess.execute(select(OrderIntentRow)).scalars())
+            sess.expunge_all()
+        tickets = {r.order_ticket for r in intents if r.order_ticket}
+        comments = [r.comment for r in intents]
+        for order in orders:
+            if not self.is_bot(order.magic) or order.ticket in tickets:
+                continue
+            if any(order.comment.startswith(comment) for comment in comments):
+                continue
+            report.stray_orders.append(order.ticket)
+            self.monitor.account_changed(
+                f"resting order #{order.ticket} {order.symbol} has the bot's magic but no intent"
+            )
+
+    def _orders(self) -> list[BrokerOrder] | None:
+        try:
+            return self.market.orders()
+        except TaaError:
+            log.warning("orders_get failed during reconciliation")
+            return None
 
     def _positions(self) -> list[BrokerPosition]:
         try:
