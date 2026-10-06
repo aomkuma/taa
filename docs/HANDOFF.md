@@ -93,7 +93,9 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 ## Next work
 
 1. **LIVE is ready to be switched on only by the owner.** What is left before real money:
-   - the two-week DEMO soak (`docs/RUNBOOK_DEMO.md` §4; DEMO has only run on FakeMT5 so far);
+   - the two-week DEMO soak (`docs/RUNBOOK_DEMO.md` §4): **started 2026-10-06 ~06:57 UTC** on the FBS demo
+     account (`scripts\start-demo.cmd -Mt5 -Demo`, engine db `data/demo/engine-mt5.db`; effective risk 1.5% per
+     trade, 3 positions, 4% heat and daily loss, RR ≥ 1.5); `demo-report --days 14` from 2026-10-20;
    - the drills on the LIVE machine with the record table (`docs/RUNBOOK_LIVE.md` §2) — TAA-1403's last item;
    - the go-live checklist (`docs/RUNBOOK_LIVE.md` §1), then the owner's explicit go-ahead on the day.
    Never enable LIVE (`ENABLE_LIVE_TRADING`, the phrase) on the owner's behalf.
