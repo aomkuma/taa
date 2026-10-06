@@ -291,3 +291,13 @@ def test_paper_parts_move_to_break_even_too(db: Database) -> None:
     assert all(
         pos.sl == pytest.approx(1.10000 + 2 * EURUSD_SPEC.point) for pos in p.broker.positions.values()
     )
+
+
+def test_the_soak_report_flags_limit_parts_left_past_their_lifetime(rig: Rig) -> None:
+    from app.engine.demo_report import build_report
+
+    execute(rig, plan_record(rig, parts=2))
+    fresh = build_report(rig.db, WED + timedelta(hours=1))
+    assert fresh.overdue_limits == 0 and fresh.checks["no limit part left past its lifetime"]
+    late = build_report(rig.db, WED + timedelta(hours=5))  # nobody removed it: the supervisor did not run
+    assert late.overdue_limits == 1 and not late.checks["no limit part left past its lifetime"]

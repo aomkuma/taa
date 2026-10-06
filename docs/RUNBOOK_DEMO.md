@@ -46,12 +46,22 @@ the live gate, off by default: see [RUNBOOK_LIVE.md](RUNBOOK_LIVE.md) before eve
 5. After a fill: slippage is checked; risk above plan is reduced; a position without its stop gets it back
    or is closed (UNPROTECTED_POSITION trips).
 6. Break-even, trailing, the time stop and strategy close signals are sent as SL/TP changes or closes.
+7. **Split entries** (`execution.entry_plans: true` and a split plan in the PWA → Trading profile, TAA-1207):
+   the market part goes first; only when it is protected are the limit parts placed (MT5 → Trade tab →
+   orders "buy limit" / "sell limit", the bot's magic, comment `taa:...`, the same stop and target). They
+   are removed after 4 hours (`execution.limit_lifetime_bars`), when the first part closes, on the kill
+   switch and before the Friday cut-off; each also carries a broker-side expiration 5 minutes later. A
+   filled limit becomes a position and goes through the same post-fill checks. "Open positions" counts a
+   split signal once; heat counts every part.
 
 ## 4. Two-week soak: what to check
 
 Run it for two full trading weeks, including at least one news day and one weekend restart. Each day:
 
-- [ ] `demo-report` shows **every order in a final state** (no NEW/SENDING/UNKNOWN/UNPROTECTED left).
+- [ ] `demo-report` shows **every order in a final state** (no NEW/SENDING/UNKNOWN/UNPROTECTED left;
+  PLACED only for limit parts younger than their lifetime).
+- [ ] No resting bot order older than its lifetime in the terminal (Trade tab), and none after the first part
+  of its plan has closed.
 - [ ] No UNPROTECTED_POSITION or DUPLICATE_EXECUTION trip (if one happened: read §5 before resetting).
 - [ ] Every bot position in the terminal has a stop-loss.
 - [ ] Positions in the terminal match the report (magic `7310000`+, comment `taa:...`).
@@ -76,6 +86,7 @@ Drills, once each:
 | kill switch activated by the engine | the server answered NO_MONEY, autotrading disabled, or an account-mode conflict | Fix the terminal or account, then release the kill switch locally. |
 | SYMBOL_RESTRICTED | the server said trade disabled / market closed / long-only for a symbol | It resets after `execution.symbol_pause_minutes`. Frequent trips: check the symbol's schedule. |
 | ORDER_FAILURES | 3 failed sends in 15 minutes, or the server asked to back off | Read `order_intents.retcode_desc` and the logs; usually a config or symbol problem. |
-| ACCOUNT_CHANGE | another account, or a bot-magic position with no intent | Do not reset until you know where the position came from. |
+| ACCOUNT_CHANGE | another account, or a bot-magic position or resting order with no intent | Do not reset until you know where it came from. |
+| limit parts not placed (`order_check 10030` / `10015` in the intent) | the broker refused the pending order's filling, or the level was already passed | 10030 on every filling mode: report it (the engine tries RETURN, then the market filling); 10015 is expected when price moved fast. |
 
 Manual breaker resets are local and audited (actor and reason); MAX_DRAWDOWN also needs an acknowledgement.

@@ -43,7 +43,7 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   (final docs pass; README, runbooks and PLAN notes are current as of this session), Phase 15 (deferred).
 - **Checks (2026-10-06, stack stopped):** full pytest **2791 passed, 7 skipped** (10 min); vitest 526; Playwright
   smoke 3; ruff, mypy, bandit clean; `pip-audit` and `npm audit` clean.
-- **Git:** `main` only; the user pushes. Latest migration: **0038** (`magic_registry`).
+- **Git:** `main` only; the user pushes. Latest migration: **0041** (`entry_plan_intents`, TAA-1207).
 - **The `-Mt5` stack** still runs the code from before the learning-track commits below: restart it (web
   first for the new `/learning` routes and the rebuilt PWA, then the engine for the magic registry and
   migration 0038), only with the user's go-ahead.
@@ -66,6 +66,25 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 - **TAA-L001 done** (`app.cli ticks probe`, read-only): FBS has no depth of market, `last`/`volume` are always
   0, ~58% of EURUSD ticks change neither bid nor ask (flag 96 alone; filter them), XAUUSD tick history ≥ 12
   months. Next: tick capture (TAA-L101…). Open questions Q2–Q8, Q12 in `docs/PLAN_LEARNING.md` §L18.
+
+### TAA-1207: the bot sends split entries (2026-10-06, evening)
+
+- The Trading profile's "Splitting an entry" now drives the bot (PLAN §A31 "TAA-1207 decisions"): the plan
+  rides on the risk-profile document; `execution.entry_plans: true` in `config.yaml` (code default off).
+  Owner's choice in the PWA: Scale in, 5 orders, equal weights, 0.5 × ATR, 0.01 lot per tap.
+- Owner decisions: one plan = one trade for "Positions at the same time" and the per-symbol limit; heat sums
+  every part including resting limits; unfilled limits live 4 h (16 × M15), and are cancelled when the
+  market part closes, on any kill switch and before the Friday cut-off.
+- DEMO: market part first, limits (BUY_LIMIT / SELL_LIMIT, same SL/TP, broker-side expiration +5 min) only
+  after it is protected; `app/engine/plan_supervisor.py` follows them; the reconciler knows resting orders;
+  SAME_PRICE parts go to break-even once one part has closed. PAPER mirrors it. FakeMT5 emulates pending
+  orders. `demo-report` adds "no limit part left past its lifetime".
+- **Not yet checked on the real FBS terminal:** whether `order_check` accepts the pending order's filling
+  (RETURN first, then the market filling) and `ORDER_TIME_SPECIFIED`. The engine falls back automatically
+  (GTC without the broker expiration); watch the first plan's intents (`retcode_desc`) and the MT5 Trade tab.
+- **The running `-Mt5 -Demo` stack still runs the old code** (one order per signal). To switch: tell the
+  owner, then restart web first (migration 0041 on the replica, heartbeat fields `entry_plan` /
+  `entry_plans_enabled`), then the worker, then the engine (it reconciles open positions).
 
 ### What this session added (2026-10-05/06)
 

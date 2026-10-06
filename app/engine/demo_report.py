@@ -20,6 +20,7 @@ from app.storage.database import Database
 from app.storage.models import BreakerEventRow, DecisionRecordRow, OrderIntentRow, RiskDeal
 
 UNRESOLVED = ("NEW", "PRECHECKED", "SENDING", "UNKNOWN", "UNPROTECTED")
+OVERDUE_GRACE = timedelta(minutes=10)  # a resting limit part this long past its cancel time is overdue
 
 
 @dataclass
@@ -35,6 +36,7 @@ class DemoReport:
     closed_trades: int = 0
     winning_trades: int = 0
     net_result: float = 0.0
+    overdue_limits: int = 0  # PLACED limit parts past their cancel time (TAA-1207)
 
     @property
     def unresolved(self) -> int:
@@ -46,6 +48,7 @@ class DemoReport:
         sent = sum(self.intents_by_state.values())
         return {
             "every order in a final state": self.unresolved == 0,
+            "no limit part left past its lifetime": self.overdue_limits == 0,
             "no unprotected position": self.breaker_trips["UNPROTECTED_POSITION"] == 0
             and self.intents_by_state["EMERGENCY_CLOSED"] == 0,
             "no duplicate or unknown execution": self.breaker_trips["DUPLICATE_EXECUTION"] == 0,
@@ -57,6 +60,7 @@ class DemoReport:
         return {
             "period": {"since": self.since.isoformat(), "until": self.until.isoformat()},
             "intents_by_state": dict(self.intents_by_state),
+            "overdue_limit_parts": self.overdue_limits,
             "retcodes": dict(self.retcodes),
             "slippage_points": {
                 "fills": len(slip),
@@ -83,6 +87,12 @@ def build_report(db: Database, until: datetime, days: float = 14.0) -> DemoRepor
     with db.session() as sess:
         for row in sess.execute(select(OrderIntentRow).where(OrderIntentRow.created_at >= since)).scalars():
             report.intents_by_state[row.state] += 1
+            if (
+                row.state == "PLACED"
+                and row.cancel_after is not None
+                and until - ensure_utc(row.cancel_after) > OVERDUE_GRACE
+            ):
+                report.overdue_limits += 1
             if row.retcode_desc:
                 report.retcodes[row.retcode_desc] += 1
             if row.slippage_points is not None:

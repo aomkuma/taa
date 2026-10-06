@@ -51,7 +51,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 24 | 24 | DONE |
 | M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 7 | 6 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 7 | 7 | DONE |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
 | M2 | Phase 14 — LIVE readiness | 4 | 2 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
@@ -1726,7 +1726,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1207 — The bot sends split entries (Trading profile "Splitting an entry")
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** 1201–1206, 401, 710
 
 Owner decisions (2026-10-06): a plan counts as one trade for "Positions at the same time" and the per-symbol
@@ -1739,7 +1739,7 @@ cancelled when the market part closes, on any kill switch and before the Friday 
 - [x] exposure counts a plan as one position (total and per symbol) and adds the risk of pending orders to portfolio heat
 - [x] SAME_PRICE: every part has its own TP; after the first TP the remaining parts' stops move to break-even (DEMO and PAPER)
 - [x] PWA: the Splitting section and the profile intro say what the bot does; the plan in use shows on the Risk page
-- [ ] docs: PLAN §A31/§A33 and TAA-1207 notes, RUNBOOK_DEMO, HANDOFF; `entry_plans` switched on in `config.yaml`
+- [x] docs: PLAN §A31/§A33 and TAA-1207 notes, RUNBOOK_DEMO, HANDOFF; `entry_plans` switched on in `config.yaml`
 
 ### Phase 13 — AI assessment (optional layer)
 

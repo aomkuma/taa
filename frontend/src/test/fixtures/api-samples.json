@@ -8831,7 +8831,7 @@
         },
         "execution": {
           "deviation_points": null,
-          "entry_plans": false,
+          "entry_plans": true,
           "excess_risk_policy": "reduce",
           "limit_lifetime_bars": 16,
           "max_send_attempts": 2,

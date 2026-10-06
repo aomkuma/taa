@@ -2114,7 +2114,8 @@ subscriptions later are configuration plus billing, not a rewrite.
 
 **Goal:** alerts carry numbers that match how *this* user trades: how much risk they take, how they split
 entries, and how selective they are. In Milestone 1 the profile shapes only alert content and thresholds; it
-never sends orders.
+never sends orders. Since rev. 5 (§A33) the engine owner's profile also drives the bot's risk, and since TAA-1207
+the bot splits its entries with the owner's entry plan (notes at the end of this section).
 
 - **`TradingProfile`** (per user, authoritative in the cloud, edited in the PWA; `config.yaml` →
   `advisory.trading_profile` is the fallback when no cloud is configured). Shared model in
@@ -2184,6 +2185,32 @@ never sends orders.
   - TAA-406 (M2 min-rule)
 - Shadow trades (§A27) keep measuring the primary entry in R; plan-level hypothetical P/L can be added later
   without changing stored outcomes.
+- (TAA-1207 decisions, 2026-10-06) **The bot follows the engine owner's entry plan.**
+  - Transport: `EntryPlanSpec` (`app/risk/limits.py`) rides on `ProfileLimits` and the risk-profile document
+    (§A33); the local fallback is `advisory.preferences.entry_plan`. A SINGLE plan is sent as "no plan".
+  - Switch: `execution.entry_plans` on the engine machine (code default off). Off: one order per signal.
+  - Sizing: `DecisionEngine` builds the parts (`build_parts`, the entry-TF ATR for SCALE_IN spacing, the
+    profile's partial TPs for SAME_PRICE) and sizes them with `size_plan` (lot per tap, margin room,
+    min-lot fallback). SCALE_IN without an ATR falls back to one order. The scanner's ADVISORY decisions
+    ignore the owner's plan: alerts carry each user's own.
+  - Execution (DEMO/LIVE, `OrderManager`): the market part(s) first; limit parts only when every market part
+    is PROTECTED, each with the plan's stop and target. Intents carry `plan_key`, `part_index`, `order_type`,
+    `limit_price`, `cancel_after` (migration 0041) and the states PLACED → FILLED | CANCELLED | EXPIRED. The
+    pending order's filling is chosen by `order_check` (RETURN first, then the market filling) and it carries
+    a broker-side expiration 5 minutes after `cancel_after` (GTC if the symbol refuses one). A level the
+    market already passed is not placed.
+  - Lifetime (owner decision): unfilled limits are cancelled after `execution.limit_lifetime_bars` (16 entry
+    bars = 4 h on M15), never past the Friday cut-off, when the plan's market part is closed and on any kill
+    switch (`app/engine/plan_supervisor.py`, every health interval; PAPER in `PaperExecution.supervise_plans`).
+  - Counting (owner decision): one plan = one trade for `max_open_positions` and `max_positions_per_symbol`
+    (and the currency-direction counts); positions without a plan count one each. Heat always sums every
+    part, including resting limits (`ExposureManager`, `AccountState.pending` / `groups`).
+  - SAME_PRICE: once a part of the plan has closed, the remaining parts' stops move to break-even
+    (`plan_break_even`, favourable only), in DEMO and PAPER.
+  - Reconciliation: an unknown limit part found resting becomes PLACED; a resting order with the bot's magic
+    and no intent trips ACCOUNT_CHANGE.
+  - Visibility: the heartbeat's risk-limit snapshot reports the plan and the switch; the PWA shows the split
+    in use under "Risk limits in use", and the Splitting section says what the bot does.
 
 ## A32. Engine registry & per-user engines (rev. 4)
 
@@ -2438,7 +2465,9 @@ alerts only. Trigger: on a ~$990 account at 0.5 % a XAUUSD signal (stop 13 USD a
     budget buys less than the minimum lot, the minimum lot is opened if margin allows; its risk then exceeds
     the budget, and the sizing check says so ("minimum lot above the risk budget"). The heat and loss limits
     still apply.
-  - The entry split of the Trading profile ("Splitting an entry") drives the bot's orders too (TAA-1206).
+  - The entry split of the Trading profile ("Splitting an entry") drives the bot's orders too (TAA-1207, §A31
+    notes): it travels in the same risk-profile document (`entry_plan`), and the engine follows it when
+    `execution.entry_plans` is on.
 
 **Transport (engine pulls, cloud never pushes):**
 
