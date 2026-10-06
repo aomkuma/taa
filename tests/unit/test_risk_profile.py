@@ -94,8 +94,13 @@ class TestWire:
 
     def test_fields_map_one_to_one_onto_risk_config(self) -> None:
         """A field a profile governs must exist in ProfileLimits, the wire and ``governed`` alike."""
-        names = {f.name for f in dataclasses.fields(ProfileLimits)}
-        assert names == set(governed(CAGE)) == set(RiskProfileDoc.model_fields) - {"version", "updated_at"}
+        switches = {"min_lot_fallback"}  # a switch the cage must also allow, not a numeric limit
+        names = {f.name for f in dataclasses.fields(ProfileLimits)} - switches
+        assert (
+            names
+            == set(governed(CAGE))
+            == set(RiskProfileDoc.model_fields) - {"version", "updated_at"} - switches
+        )
         lowered = effective_risk(CAGE, ProfileLimits(**{n: 1 for n in names}))
         assert all(v == 1 or n == "min_risk_reward" for n, v in governed(lowered).items())
 

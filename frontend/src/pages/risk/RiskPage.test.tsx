@@ -56,7 +56,7 @@ describe('risk & controls page', () => {
     expect(within(daily).getByText('0.1%')).toBeInTheDocument();
     expect(within(daily).getByText('2%')).toBeInTheDocument();
     expect(within(daily).getByText('OK')).toBeInTheDocument();
-    expect(within(limits).getByRole('row', { name: /Open positions/ })).toHaveTextContent('13');
+    expect(within(limits).getByRole('row', { name: /Open positions/ })).toHaveTextContent('120');
 
     const inUse = within(await card('Risk limits in use')).getByRole('table', { name: 'Risk limits in use' });
     const perTrade = within(inUse).getByRole('row', { name: /Risk per trade/ });

@@ -44,6 +44,7 @@ const profile = (style: number): TradingProfile => ({
   avoid_news: true,
   hold_over_weekend: false,
   stop_placement: 'STRUCTURE',
+  min_lot_fallback: false,
 });
 const plan = (over: Partial<EntryPlan> = {}): EntryPlan => ({
   lot_unit: null,

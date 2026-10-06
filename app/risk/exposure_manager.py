@@ -247,10 +247,11 @@ class ExposureManager:
             Check(
                 "effective_leverage",
                 Reason.LEVERAGE_LIMIT,
-                leverage_after <= r.max_effective_leverage,
+                r.max_effective_leverage is None or leverage_after <= r.max_effective_leverage,
                 acct,
-                round(leverage_after, 4),
+                round(leverage_after, 4) if leverage_after != float("inf") else None,
                 r.max_effective_leverage,
+                "" if r.max_effective_leverage is not None else "no cap: margin decides",
             ),
         ]
 

@@ -104,6 +104,7 @@ class SizingResult:
     dropped_parts: int = 0
     margin_required: Decimal | None = None
     margin_level_after: Decimal | None = None
+    over_budget: bool = False  # the minimum lot was taken although the budget buys less (min_lot_fallback)
 
     @property
     def volume(self) -> Decimal:
@@ -130,6 +131,7 @@ class _Draft:
     dropped_parts: int = 0
     margin_required: Decimal | None = None
     margin_level_after: Decimal | None = None
+    over_budget: bool = False
 
     def done(self, reason: Reason | None = None, detail: str = "") -> SizingResult:
         return SizingResult(
@@ -143,6 +145,7 @@ class _Draft:
             dropped_parts=self.dropped_parts,
             margin_required=self.margin_required,
             margin_level_after=self.margin_level_after,
+            over_budget=self.over_budget,
         )
 
 
@@ -274,6 +277,7 @@ class PositionSizer:
         lot_limit: float,
         probation: bool = False,
         risk_percent: float | None = None,
+        min_lot_fallback: bool = False,
     ) -> SizingResult:
         """A single market order."""
         parts = [PlanPart(to_decimal(entry), Decimal(1))]
@@ -286,6 +290,7 @@ class PositionSizer:
             lot_limit=lot_limit,
             probation=probation,
             risk_percent=risk_percent,
+            min_lot_fallback=min_lot_fallback,
         )
 
     def size_plan(
@@ -300,6 +305,7 @@ class PositionSizer:
         lot_unit: float | None = None,
         probation: bool = False,
         risk_percent: float | None = None,
+        min_lot_fallback: bool = False,
     ) -> SizingResult:
         draft = _Draft(self.risk_budget(funds, probation=probation, risk_percent=risk_percent))
         problems = spec.validation_errors()
@@ -352,6 +358,11 @@ class PositionSizer:
             lots = [floor_to_step(wi * u, unit) for wi in w]
             if all(lot >= v_min for lot in lots):
                 break
+            if n == 1 and min_lot_fallback and v_min <= min(v_max, total_cap):
+                # the owner's choice: the minimum lot although its risk exceeds the budget; margin decides
+                lots = [v_min]
+                draft.over_budget = True
+                break
             if n == 1:
                 return draft.done(
                     Reason.RISK_BELOW_MIN_LOT,
@@ -364,7 +375,7 @@ class PositionSizer:
             for p, lot, loss in zip(aligned[:n], lots, losses[:n], strict=True)
         )
         total_risk = sum((s.risk_money for s in draft.parts), ZERO)
-        if total_risk > draft.budget or any(
+        if (total_risk > draft.budget and not draft.over_budget) or any(
             s.volume > v_max or not is_multiple_of(s.volume, step) for s in draft.parts
         ):
             return draft.done(

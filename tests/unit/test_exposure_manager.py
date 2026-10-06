@@ -182,4 +182,5 @@ class TestChecks:
     def test_margin_and_leverage(self) -> None:
         assert not checks(manager(), [], cand(margin=3_500.0))["margin_utilization"]  # 35 % > 30 %
         big = cand("EURUSD", volume=1.0, entry=1.1)  # 11x > 10x
-        assert not checks(manager(), [], big)["effective_leverage"]
+        assert checks(manager(), [], big)["effective_leverage"]  # no cap by default: margin decides
+        assert not checks(manager(max_effective_leverage=10.0), [], big)["effective_leverage"]

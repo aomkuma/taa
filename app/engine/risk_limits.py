@@ -67,10 +67,11 @@ class RiskLimitSelector:
             self.local, "local", self.local.version(), effective_risk(self.cage, self.local)
         )
         previous = self._applied
-        if previous is None or (chosen.version, governed(chosen.effective)) != (
-            previous.version,
-            governed(previous.effective),
-        ):
+        if previous is None or (
+            chosen.version,
+            governed(chosen.effective),
+            chosen.effective.min_lot_fallback,
+        ) != (previous.version, governed(previous.effective), previous.effective.min_lot_fallback):
             self._record(chosen, previous)
         self._applied = chosen
         return chosen
@@ -107,6 +108,7 @@ class RiskLimitSelector:
                     "profile": chosen.limits.to_dict(),
                     "cage": governed(self.cage),
                     "effective": effective,
+                    "min_lot_fallback": chosen.effective.min_lot_fallback,
                     "previous": None if previous is None else governed(previous.effective),
                 },
             )
@@ -125,6 +127,7 @@ class RiskLimitSelector:
             "version": applied.version,
             "age_seconds": None if age is None else round(age),
             "cage": governed(self.cage),
-            "profile": applied.limits.to_dict(),
+            "profile": {k: v for k, v in applied.limits.to_dict().items() if k != "min_lot_fallback"},
             "effective": governed(applied.effective),
+            "min_lot_fallback": applied.effective.min_lot_fallback,
         }

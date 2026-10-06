@@ -101,6 +101,7 @@ class RiskLimits(BaseModel):
     cage: GovernedLimits
     profile: GovernedLimits
     effective: GovernedLimits
+    min_lot_fallback: bool | None = None  # in effect: the minimum lot above the budget when margin allows
 
 
 class ManualLink(BaseModel):

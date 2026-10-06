@@ -100,7 +100,10 @@ class PulledDocument(Generic[D]):
         try:
             doc = self.model.model_validate(data)
         except ValidationError as exc:
-            return self._failed(f"invalid {self.name}: {exc.error_count()} errors")
+            errors = exc.errors()
+            where = ".".join(str(x) for x in errors[0]["loc"]) if errors else ""
+            detail = f"{where}: {errors[0]['msg']}" if errors else ""
+            return self._failed(f"invalid {self.name}: {exc.error_count()} errors ({detail})")
         version = getattr(doc, "version", "")
         self.etag = etag or version
         if self.current is None or version != getattr(self.current, "version", None):

@@ -194,7 +194,10 @@ CASES: dict[str, tuple[Setup, dict[str, Any]]] = {
     "CONSECUTIVE_LOSSES": (Setup(), account(loss=status(consecutive_losses=4, last_loss_at=BAR))),
     "MARGIN_INSUFFICIENT": (Setup(), account(margin=9_500.0)),
     "MARGIN_LEVEL_TOO_LOW": (Setup(), account(margin=1_900.0)),
-    "LEVERAGE_LIMIT": (Setup(), account(pos("USDJPY", volume=1.0, price=150.0, sl=149.95))),
+    "LEVERAGE_LIMIT": (
+        Setup(config=risk(max_effective_leverage=10)),  # off by default (margin decides)
+        account(pos("USDJPY", volume=1.0, price=150.0, sl=149.95)),
+    ),
     "SYMBOL_SPEC_INCONSISTENT": (Setup(calc=TickCalculator(*SPECS.values(), skew=1.5)), {}),
     "RISK_BELOW_MIN_LOT": (Setup(), account(equity=300.0)),
     "VOLUME_INVALID": (Setup(), {"account": None}),
@@ -211,18 +214,34 @@ class TestBaseline:
         assert all(ch.passed for ch in record.checks)
         assert len(record.checks) >= 35
 
-    def test_a_tight_stop_is_sized_down_to_the_leverage_cap(self, db: Database) -> None:
+    def test_a_tight_stop_is_sized_down_to_a_configured_leverage_cap(self, db: Database) -> None:
         """2026-10-06 on FBS: 1.5 % of a 1,080 USD account on a 9-pip GBPUSD stop was 0.16 lot (~20x) and the
-        whole trade was rejected for leverage. The lot is now cut to what 10x allows."""
+        whole trade was rejected for leverage. With a cap configured, the lot is cut to what it allows."""
         tight = make_signal(evidence=(), stop_loss=1.0991, take_profit=1.1020)  # 9 pips
-        record = engine(
-            db, Setup(config=risk(max_risk_per_trade_percent=2.0, max_total_open_risk_percent=4.0))
-        ).decide(request(signal=tight))
+        config = risk(
+            max_risk_per_trade_percent=2.0, max_total_open_risk_percent=4.0, max_effective_leverage=10
+        )
+        record = engine(db, Setup(config=config)).decide(request(signal=tight))
         assert record.decision is Decision.ACCEPT, [c.reason_code for c in record.failed]
         lever = next(ch for ch in record.checks if ch.name == "effective_leverage")
         assert lever.passed and float(lever.value) <= 10.0
         assert record.volume == Decimal("0.9")  # 10x of 10,000 USD at 1.10 = 0.909 lot, floored
         assert record.sizing is not None and float(record.sizing.risk_money) < 200.0  # below the 2 % budget
+
+    def test_margin_decides_by_default_and_the_lot_shrinks_to_fit_it(self, db: Database) -> None:
+        tight = make_signal(evidence=(), stop_loss=1.0991, take_profit=1.1020)
+        config = risk(max_risk_per_trade_percent=2.0, max_total_open_risk_percent=4.0)
+        other = Database("sqlite://")  # each decision on its own store: the same signal is not a duplicate
+        other.create_all()
+        record = engine(other, Setup(config=config)).decide(request(signal=tight))
+        assert record.decision is Decision.ACCEPT
+        assert record.volume == Decimal("1.0")  # no leverage cap: the risk-sized lot, within max_lot
+        config["risk"]["max_margin_utilization_percent"] = 5.0  # 500 USD of margin at 1,100 USD per lot
+        record = engine(db, Setup(config=config)).decide(request(signal=tight))
+        assert record.decision is Decision.ACCEPT, [c.reason_code for c in record.failed]
+        assert record.volume == Decimal("0.45")
+        margin = next(ch for ch in record.checks if ch.name == "margin_utilization")
+        assert margin.passed and float(margin.value) <= 5.0
 
     def test_missing_loss_status_fails_closed(self, db: Database) -> None:
         record = engine(db).decide(request(account=AccountState(funds())))

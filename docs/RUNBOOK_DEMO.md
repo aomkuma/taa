@@ -17,8 +17,9 @@ the live gate, off by default: see [RUNBOOK_LIVE.md](RUNBOOK_LIVE.md) before eve
    → Expert Advisors → "Disable automatic trading via external Python API" is **off**.
 4. `python -m app.cli doctor` must report 0 failures. It confirms the account is DEMO; DEMO mode refuses any
    other account.
-5. Start small: in `config.yaml`, keep one or two symbols in `symbols.allowed` and
-   `risk.max_risk_per_trade_percent` at 0.25–0.5.
+5. Start small: keep one or two symbols in `config.yaml` → `symbols.allowed`, and set the risk in the PWA →
+   Trading profile (risk per signal 0.25–0.5 % to begin). `config.yaml` → `risk` is only the machine's hard
+   ceiling (PLAN §A33, 2026-10-06).
 
 ## 2. Start, watch, stop
 

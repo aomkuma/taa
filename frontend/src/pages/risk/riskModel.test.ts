@@ -18,7 +18,7 @@ describe('limits against current values', () => {
       ['drawdown', 0.1, 10, 'ok'],
       ['heat', 0.2, 1.5, 'ok'],
       ['losses', 1, 4, 'ok'],
-      ['positions', 2, 3, 'warn'],
+      ['positions', 2, 20, 'ok'], // config.yaml is only the outer ceiling since 2026-10-06
     ]);
   });
 

@@ -88,10 +88,14 @@ def cost_score(s: Suitability, risk: RiskConfig) -> float:
     return 0.0 if s.cost_ratio is None else _clamp(1 - s.cost_ratio / risk.max_spread_to_sl_ratio)
 
 
+LEVERAGE_REFERENCE = 30.0  # the comfort scale when no leverage cap is configured (margin decides)
+
+
 def leverage_score(s: Suitability, risk: RiskConfig) -> float:
     if s.effective_leverage is None or s.margin_share is None:
         return 0.0
-    leverage = max(0.0, 1 - s.effective_leverage / risk.max_effective_leverage)
+    reference = risk.max_effective_leverage or LEVERAGE_REFERENCE
+    leverage = max(0.0, 1 - s.effective_leverage / reference)
     share = max(0.0, 1 - s.margin_share)
     return _clamp((leverage + share) / 2)
 

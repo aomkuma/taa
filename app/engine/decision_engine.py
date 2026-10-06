@@ -15,11 +15,12 @@ portfolio, account, sizing. (The AI veto and the broker ``order_check`` precheck
 Sizing feeds the exposure checks. When sizing fails, exposure is evaluated with the full risk budget as the
 candidate's risk, an upper bound on what any accepted size could add.
 
-**Leverage cap on the size** (2026-10-06): the risk budget is an upper bound, not a target. When the
-budget's lot would push the account's effective leverage above ``risk.max_effective_leverage`` (tight M15
-stops: 1.5 % risk on a 9-pip GBPUSD stop is 0.16 lot, ~20× a 1,080 USD account), the lot is cut to what the
-remaining leverage allows (risk then below budget) instead of rejecting the trade. Only when even the
-minimum lot does not fit does ``effective_leverage`` reject it.
+**Margin first** (2026-10-06, user decision): the risk budget is an upper bound, not a target. When the
+budget's lot would need more margin than ``risk.max_margin_utilization_percent`` of equity leaves (or push the
+effective leverage above ``risk.max_effective_leverage``, when such a cap is configured; off by default), the
+lot is cut to what fits instead of rejecting the trade. Only when even the minimum lot does not fit do the
+margin / leverage checks reject it. With ``min_lot_fallback`` (cage and trading profile) a budget that buys
+less than the minimum lot opens the minimum lot when margin allows; its risk then exceeds the budget.
 """
 
 from __future__ import annotations
@@ -530,9 +531,9 @@ class DecisionEngine:
             commission = override.commission_per_lot
         sizer = PositionSizer(risk, self.calculator, commission_per_lot=commission)
         lot_limit = self.config.lot_limit(spec.name)
-        leverage_lots = self._leverage_lots(req, risk)
-        if leverage_lots is not None and leverage_lots >= max(spec.volume_min, risk.min_lot or 0.0):
-            lot_limit = min(lot_limit, leverage_lots)
+        room = self._room_lots(req, risk)
+        if room is not None and room >= max(spec.volume_min, risk.min_lot or 0.0):
+            lot_limit = min(lot_limit, room)
         return sizer.size(
             spec,
             s.side,
@@ -541,27 +542,35 @@ class DecisionEngine:
             req.account.funds,
             lot_limit=lot_limit,
             probation=req.probation,
+            min_lot_fallback=risk.min_lot_fallback,
         )
 
-    def _leverage_lots(self, req: DecisionRequest, risk: RiskConfig) -> float | None:
-        """The most lots the remaining effective leverage allows (see the module notes), or None when it
-        cannot be measured (then the exposure check decides on the risk-sized lot, fail closed)."""
+    def _room_lots(self, req: DecisionRequest, risk: RiskConfig) -> float | None:
+        """The most lots the remaining margin (and the leverage cap, if any) allows; see the module notes.
+        None when it cannot be measured: the exposure checks then decide on the risk-sized lot (fail
+        closed)."""
         s, account = req.signal, req.account
         if account is None or s.side is None or s.entry_price is None or account.funds.equity <= 0:
             return None
-        move = self.calculator.calc_profit(
-            s.side, s.symbol, 1.0, s.entry_price, s.entry_price * (1 + LEVERAGE_MOVE)
-        )
-        if move is None or move == 0:
-            return None
-        manager = ExposureManager(risk, self.calculator, magic_base=self.magic_base)
-        specs = self.position_specs(req.specs, account.positions)
-        if req.spec is not None:
-            specs[req.spec.name] = req.spec
-        exposure = manager.snapshot(account.positions, account.funds, specs)
-        room = risk.max_effective_leverage - exposure.effective_leverage
-        per_lot = 100.0 * abs(move) / account.funds.equity
-        return max(0.0, room / per_lot)
+        equity = account.funds.equity
+        rooms: list[float] = []
+        margin = self.calculator.calc_margin(s.side, s.symbol, 1.0, s.entry_price)
+        if margin is not None and margin > 0:
+            free = risk.max_margin_utilization_percent / 100.0 * equity - account.funds.margin
+            rooms.append(max(0.0, free / margin))
+        if risk.max_effective_leverage is not None:
+            move = self.calculator.calc_profit(
+                s.side, s.symbol, 1.0, s.entry_price, s.entry_price * (1 + LEVERAGE_MOVE)
+            )
+            if move:
+                manager = ExposureManager(risk, self.calculator, magic_base=self.magic_base)
+                specs = self.position_specs(req.specs, account.positions)
+                if req.spec is not None:
+                    specs[req.spec.name] = req.spec
+                exposure = manager.snapshot(account.positions, account.funds, specs)
+                left = risk.max_effective_leverage - exposure.effective_leverage
+                rooms.append(max(0.0, left / (100.0 * abs(move) / equity)))
+        return min(rooms) if rooms else None
 
     def _sizing_checks(self, sizing: SizingResult | None) -> list[Check]:
         if sizing is None:
@@ -571,8 +580,17 @@ class DecisionEngine:
                 )
             ]
         if sizing.ok:
+            detail = "minimum lot above the risk budget (min_lot_fallback)" if sizing.over_budget else ""
             return [
-                Check("sizing", Reason.VOLUME_INVALID, True, HARD, float(sizing.volume), float(sizing.budget))
+                Check(
+                    "sizing",
+                    Reason.VOLUME_INVALID,
+                    True,
+                    HARD,
+                    float(sizing.volume),
+                    float(sizing.budget),
+                    detail,
+                )
             ]
         reason = sizing.reason or Reason.VOLUME_INVALID
         # margin that depends on other open positions is an account rule; everything else is infeasible

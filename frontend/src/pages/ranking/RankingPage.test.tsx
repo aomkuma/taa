@@ -56,7 +56,7 @@ describe('symbol ranking page', () => {
     const list = screen.getByRole('region', { name: 'Symbols' });
     expect(within(list).getByText('5 of 11 suitable')).toBeInTheDocument();
     const table = within(list).getByRole('table');
-    expect(firstCellSymbols(table).slice(0, 3)).toEqual(['USDJPY', 'EURUSD', 'AUDUSD']);
+    expect(firstCellSymbols(table).slice(0, 3)).toEqual(['USDJPY', 'AUDUSD', 'EURUSD']);
     const gold = within(table).getByRole('button', { name: 'XAUUSD' }).closest('tr') as HTMLElement;
     expect(within(gold).getByText('Minimum lot')).toHaveAttribute(
       'title',
@@ -229,8 +229,8 @@ describe('dashboard top-ranked widget', () => {
     expect(links.map((l) => l.textContent)).toEqual([
       'Full ranking',
       'USDJPY',
-      'EURUSD',
       'AUDUSD',
+      'EURUSD',
       'GBPUSD',
       'EURGBP',
     ]);

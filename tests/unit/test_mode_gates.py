@@ -209,6 +209,14 @@ class TestEffectiveLimits:
         assert (eff.max_risk_per_trade_percent, eff.max_total_open_risk_percent) == (0.25, 0.5)
         assert (eff.max_open_positions, eff.max_daily_loss_percent, eff.min_risk_reward) == (1, 1.0, 2.5)
 
+    def test_min_lot_fallback_needs_the_cage_and_the_profile(self) -> None:
+        on = ProfileLimits(min_lot_fallback=True)
+        assert not effective_risk(LOCAL, on).min_lot_fallback  # the cage says no
+        cage = LOCAL.model_copy(update={"min_lot_fallback": True})
+        assert effective_risk(cage, on).min_lot_fallback
+        assert not effective_risk(cage, ProfileLimits(min_lot_fallback=False)).min_lot_fallback
+        assert not effective_risk(cage, ProfileLimits()).min_lot_fallback  # a profile that does not say
+
     def test_coherence_is_restored_by_lowering(self) -> None:
         eff = effective_risk(LOCAL, ProfileLimits(max_daily_loss_percent=0.3))
         assert eff.max_risk_per_trade_percent == 0.3  # lowered to the daily cap, never the cap raised

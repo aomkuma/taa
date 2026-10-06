@@ -2424,7 +2424,21 @@ alerts only. Trigger: on a ~$990 account at 0.5 % a XAUUSD signal (stop 13 USD a
   - Probation (`probation_multiplier` 0.25 for the first `probation_trades`) is a LIVE-only gate (§A3,
     TAA-1401); when it is wired it applies on top of the working value.
   - Open question, not part of this revision: whether `max_effective_leverage` should become a profile field,
-    since tolerance for leverage also differs per person.
+    since tolerance for leverage also differs per person. (Answered 2026-10-06 below: it is off.)
+- **2026-10-06 (user decision, after the first DEMO run rejected every signal): the PWA decides.**
+  - The cage in `config.yaml` is set to the app's own ceilings (3 % per trade, 10 % open risk, 10 % daily,
+    20 positions, min RR 1.0), so it never binds in normal use; the Trading profile's values apply as saved.
+    The security rule is unchanged: a cloud profile still cannot exceed the cage.
+  - **Margin first.** `max_effective_leverage` is off by default (null): the broker's margin decides through
+    `max_margin_utilization_percent` and `min_margin_level_percent`. The risk budget is an upper bound: a
+    lot that needs more margin than is left (or exceeds a leverage cap someone configures) is cut to what
+    fits instead of rejecting the trade (`DecisionEngine._room_lots`).
+  - **Minimum lot fallback:** a profile switch (`TradingProfile.min_lot_fallback`, carried by
+    `ProfileLimits` / `RiskProfileDoc`) that the cage must also allow (`risk.min_lot_fallback`). When the risk
+    budget buys less than the minimum lot, the minimum lot is opened if margin allows; its risk then exceeds
+    the budget, and the sizing check says so ("minimum lot above the risk budget"). The heat and loss limits
+    still apply.
+  - The entry split of the Trading profile ("Splitting an entry") drives the bot's orders too (TAA-1206).
 
 **Transport (engine pulls, cloud never pushes):**
 

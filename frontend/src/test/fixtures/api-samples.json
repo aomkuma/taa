@@ -3043,6 +3043,7 @@
       "hold_over_weekend": false,
       "holding_style": "DAY",
       "max_signals_per_day": 10,
+      "min_lot_fallback": false,
       "overrides": {
         "conflict_policy": null,
         "max_daily_loss_percent": null,
@@ -8108,7 +8109,7 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "c3ee1c4fc598bf93",
+        "config_hash": "ef912d012b077568",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
         "seed": 42,
         "strategies": [
@@ -8234,7 +8235,7 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "c3ee1c4fc598bf93",
+          "config_hash": "ef912d012b077568",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "seed": 42,
           "strategies": [
@@ -8289,7 +8290,7 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "c3ee1c4fc598bf93",
+          "config_hash": "ef912d012b077568",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "seed": 42,
           "strategies": [
@@ -8896,10 +8897,10 @@
           "max_account_drawdown_percent": 10.0,
           "max_consecutive_losses": 4,
           "max_daily_loss_percent": 2.0,
-          "max_effective_leverage": 10.0,
+          "max_effective_leverage": null,
           "max_lot": 1.0,
           "max_margin_utilization_percent": 30.0,
-          "max_open_positions": 3,
+          "max_open_positions": 20,
           "max_positions_per_symbol": 1,
           "max_risk_money_per_trade": null,
           "max_risk_per_trade_percent": 0.5,
@@ -8911,8 +8912,9 @@
           "max_total_open_risk_percent": 1.5,
           "max_weekly_loss_percent": 4.0,
           "min_lot": null,
+          "min_lot_fallback": true,
           "min_margin_level_percent": 500.0,
-          "min_risk_reward": 1.5,
+          "min_risk_reward": 1.0,
           "price_drift_atr": 0.5,
           "probation_multiplier": 0.25,
           "probation_trades": 20,
@@ -11401,35 +11403,11 @@
           "required_equity": 414.656958,
           "risk_money": 4.14657
         },
-        "now_score": 72.02,
-        "overall": 64.8,
+        "now_score": 72.9,
+        "overall": 66.27,
         "rank": 1,
         "server": "FBS-Demo",
         "symbol": "USDJPY"
-      },
-      {
-        "asset_class": "FOREX_MAJOR",
-        "computed_at": "2026-09-30T10:00:30+00:00",
-        "eligible": true,
-        "failed_gates": [],
-        "flags": [
-          "insufficient_history"
-        ],
-        "gates": [],
-        "hour": "2026-09-30T10:00:00+00:00",
-        "market_open": true,
-        "metrics": {
-          "currency": "USD",
-          "lot": 0.01,
-          "min_lot_risk": 2.660039,
-          "required_equity": 532.00775,
-          "risk_money": 2.660039
-        },
-        "now_score": 66.02,
-        "overall": 63.21,
-        "rank": 2,
-        "server": "FBS-Demo",
-        "symbol": "EURUSD"
       },
       {
         "asset_class": "FOREX_MAJOR",
@@ -11449,11 +11427,35 @@
           "required_equity": 429.995158,
           "risk_money": 4.299952
         },
-        "now_score": 65.39,
-        "overall": 62.17,
-        "rank": 3,
+        "now_score": 66.55,
+        "overall": 63.19,
+        "rank": 2,
         "server": "FBS-Demo",
         "symbol": "AUDUSD"
+      },
+      {
+        "asset_class": "FOREX_MAJOR",
+        "computed_at": "2026-09-30T10:00:30+00:00",
+        "eligible": true,
+        "failed_gates": [],
+        "flags": [
+          "insufficient_history"
+        ],
+        "gates": [],
+        "hour": "2026-09-30T10:00:00+00:00",
+        "market_open": true,
+        "metrics": {
+          "currency": "USD",
+          "lot": 0.01,
+          "min_lot_risk": 2.660039,
+          "required_equity": 532.00775,
+          "risk_money": 2.660039
+        },
+        "now_score": 65.72,
+        "overall": 64.04,
+        "rank": 3,
+        "server": "FBS-Demo",
+        "symbol": "EURUSD"
       },
       {
         "asset_class": "FOREX_MAJOR",
@@ -11473,8 +11475,8 @@
           "required_equity": 601.990656,
           "risk_money": 3.009953
         },
-        "now_score": 60.22,
-        "overall": 61.79,
+        "now_score": 60.82,
+        "overall": 62.78,
         "rank": 4,
         "server": "FBS-Demo",
         "symbol": "GBPUSD"
@@ -11497,8 +11499,8 @@
           "required_equity": 457.92459,
           "risk_money": 4.579246
         },
-        "now_score": 57.83,
-        "overall": 56.18,
+        "now_score": 58.86,
+        "overall": 57.9,
         "rank": 5,
         "server": "FBS-Demo",
         "symbol": "EURGBP"
@@ -11535,8 +11537,8 @@
           "required_equity": 1538.004848,
           "risk_money": null
         },
-        "now_score": 69.13,
-        "overall": 59.76,
+        "now_score": 70.17,
+        "overall": 61.48,
         "rank": 6,
         "server": "FBS-Demo",
         "symbol": "XAUUSD"
@@ -11573,8 +11575,8 @@
           "required_equity": 1032.621918,
           "risk_money": null
         },
-        "now_score": 67.46,
-        "overall": 61.67,
+        "now_score": 67.85,
+        "overall": 62.31,
         "rank": 7,
         "server": "FBS-Demo",
         "symbol": "BTCUSD"
@@ -11611,8 +11613,8 @@
           "required_equity": 1420.006708,
           "risk_money": null
         },
-        "now_score": 63.54,
-        "overall": 49.86,
+        "now_score": 63.9,
+        "overall": 50.46,
         "rank": 8,
         "server": "FBS-Demo",
         "symbol": "USOIL"
@@ -11649,8 +11651,8 @@
           "required_equity": 1929.990054,
           "risk_money": null
         },
-        "now_score": 61.18,
-        "overall": 46.58,
+        "now_score": 61.87,
+        "overall": 47.72,
         "rank": 9,
         "server": "FBS-Demo",
         "symbol": "XAGUSD"
@@ -11686,8 +11688,8 @@
           "required_equity": 335.4258,
           "risk_money": 1.677129
         },
-        "now_score": 64.82,
-        "overall": 63.58,
+        "now_score": 64.92,
+        "overall": 63.76,
         "rank": 10,
         "server": "FBS-Demo",
         "symbol": "AAPL"
@@ -11725,8 +11727,8 @@
           "required_equity": 2844.58254,
           "risk_money": null
         },
-        "now_score": 58.24,
-        "overall": 60.04,
+        "now_score": 60.15,
+        "overall": 63.23,
         "rank": 11,
         "server": "FBS-Demo",
         "symbol": "US30"
@@ -11742,8 +11744,8 @@
       "G2_MIN_LOT"
     ],
     "hour": "2026-09-30T10:00:00+00:00",
-    "now_score": 69.13,
-    "overall": 59.76,
+    "now_score": 70.17,
+    "overall": 61.48,
     "payload": {
       "account": {
         "balance": 1000.0,
@@ -11833,7 +11835,7 @@
       "scores": {
         "S1": 0.0,
         "S2": 88.66,
-        "S3": 86.79,
+        "S3": 94.56,
         "S4": 49.6,
         "S5": 100.0,
         "S6": 100.0,

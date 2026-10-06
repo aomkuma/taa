@@ -328,6 +328,7 @@ class ResolvedProfile:
     hold_over_weekend: bool
     stop_placement: StopPlacement
     custom: frozenset[str]  # fields that came from overrides
+    min_lot_fallback: bool = False
 
     @property
     def timeframes(self) -> tuple[Timeframe, Timeframe]:
@@ -341,6 +342,7 @@ class ResolvedProfile:
             max_open_positions=self.max_positions,
             max_daily_loss_percent=self.max_daily_loss_percent,
             min_risk_reward=self.min_rr,
+            min_lot_fallback=self.min_lot_fallback,
         )
 
 
@@ -366,6 +368,9 @@ class TradingProfile(StrictModel):
     avoid_news: bool = True
     hold_over_weekend: bool = False
     stop_placement: StopPlacement = StopPlacement.STRUCTURE
+    # when the risk budget buys less than the minimum lot: open the minimum lot if margin allows (its risk is
+    # then above the budget); the engine also needs risk.min_lot_fallback in its config.yaml cage
+    min_lot_fallback: bool = False
 
     def resolve(self) -> ResolvedProfile:
         values: dict[str, Any] = {}
@@ -389,6 +394,7 @@ class TradingProfile(StrictModel):
             hold_over_weekend=self.hold_over_weekend,
             stop_placement=self.stop_placement,
             custom=frozenset(custom),
+            min_lot_fallback=self.min_lot_fallback,
             **values,
         )
 

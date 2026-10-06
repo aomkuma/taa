@@ -110,6 +110,8 @@ export const TradingProfileSchema = z.object({
   avoid_news: z.boolean(),
   hold_over_weekend: z.boolean(),
   stop_placement: z.enum(STOP_PLACEMENTS),
+  /** Open the minimum lot above the risk budget when margin allows (the engine's cage must allow it). */
+  min_lot_fallback: z.boolean(),
 });
 export type TradingProfile = z.infer<typeof TradingProfileSchema>;
 

@@ -54,9 +54,9 @@ describe('watchlists page', () => {
     expect(within(top).getByText('Auto top N')).toBeInTheDocument();
     // the sample ranking holds 11 symbols, best first
     expect(
-      await within(top).findByText(/Right now: USDJPY, EURUSD, AUDUSD, GBPUSD, EURGBP, XAUUSD/),
+      await within(top).findByText(/Right now: USDJPY, AUDUSD, EURUSD, GBPUSD, EURGBP, XAUUSD/),
     ).toHaveTextContent(
-      'Right now: USDJPY, EURUSD, AUDUSD, GBPUSD, EURGBP, XAUUSD, BTCUSD, USOIL, XAGUSD, AAPL, US30',
+      'Right now: USDJPY, AUDUSD, EURUSD, GBPUSD, EURGBP, XAUUSD, BTCUSD, USOIL, XAGUSD, AAPL, US30',
     );
     const rule = screen.getByRole('region', { name: 'Alert rule' });
     expect(within(rule).getByText('Alert when Win probability ≥ 55%')).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe('watchlists page', () => {
     expect(within(top).getByRole('button', { name: 'Save' })).toBeDisabled();
     await user.clear(n);
     await user.type(n, '3');
-    expect(within(top).getByText(/Right now: USDJPY, EURUSD, AUDUSD$/)).toBeInTheDocument();
+    expect(within(top).getByText(/Right now: USDJPY, AUDUSD, EURUSD$/)).toBeInTheDocument();
     await user.click(within(top).getByLabelText('Own threshold for this list'));
     expect(within(top).getByLabelText('Threshold for this list')).toHaveValue('55');
     await user.click(within(top).getByRole('button', { name: 'Save' }));

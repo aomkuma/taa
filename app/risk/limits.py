@@ -36,6 +36,7 @@ class ProfileLimits:
     max_open_positions: int | None = None
     max_daily_loss_percent: float | None = None
     min_risk_reward: float | None = None
+    min_lot_fallback: bool | None = None  # open the minimum lot above the budget (needs the cage's consent)
 
     def __post_init__(self) -> None:
         for name in (
@@ -50,7 +51,7 @@ class ProfileLimits:
         if self.max_open_positions is not None and self.max_open_positions < 1:
             raise ValueError("profile max_open_positions must be >= 1")
 
-    def to_dict(self) -> dict[str, float | int | None]:
+    def to_dict(self) -> dict[str, float | int | bool | None]:
         return asdict(self)
 
     def version(self) -> str:
@@ -69,11 +70,14 @@ class RiskProfileDoc(BaseModel):
     max_open_positions: int = Field(ge=1, le=20)
     max_daily_loss_percent: float = Field(gt=0, le=CEILING_DAILY_LOSS_PCT)
     min_risk_reward: float = Field(ge=1.0, le=10)
+    min_lot_fallback: bool = False
     updated_at: datetime | None = None
 
     @classmethod
     def of(cls, limits: ProfileLimits, updated_at: datetime | None = None) -> RiskProfileDoc:
-        return cls(version=limits.version(), updated_at=updated_at, **limits.to_dict())
+        data = limits.to_dict()
+        data["min_lot_fallback"] = bool(data.get("min_lot_fallback"))
+        return cls(version=limits.version(), updated_at=updated_at, **data)
 
     def limits(self) -> ProfileLimits:
         return ProfileLimits(
@@ -82,6 +86,7 @@ class RiskProfileDoc(BaseModel):
             max_open_positions=self.max_open_positions,
             max_daily_loss_percent=self.max_daily_loss_percent,
             min_risk_reward=self.min_risk_reward,
+            min_lot_fallback=self.min_lot_fallback,
         )
 
 
@@ -114,7 +119,8 @@ def effective_risk(local: RiskConfig, profile: ProfileLimits | None) -> RiskConf
         if profile.min_risk_reward is None
         else max(local.min_risk_reward, profile.min_risk_reward)
     )
-    update = {
+    update: dict[str, float | int | bool] = {
+        "min_lot_fallback": local.min_lot_fallback and bool(profile.min_lot_fallback),
         "max_daily_loss_percent": daily,
         "max_total_open_risk_percent": total,
         "max_risk_per_trade_percent": per_trade,

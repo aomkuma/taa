@@ -215,7 +215,12 @@ class RiskConfig(StrictModel):
     )
     min_margin_level_percent: float = Field(default=500.0, ge=100)
     max_margin_utilization_percent: float = Field(default=30.0, gt=0, le=100)
-    max_effective_leverage: float = Field(default=10.0, gt=0, le=100)
+    # off by default (2026-10-06, user decision): the broker's margin decides what fits, through
+    # max_margin_utilization_percent and min_margin_level_percent; a number re-enables a notional cap
+    max_effective_leverage: float | None = Field(default=None, gt=0, le=1000)
+    # the cage for the trading profile's "open the minimum lot when the risk budget buys less" (the profile
+    # switches it on; both must agree). The minimum lot's risk can then exceed the per-trade budget.
+    min_lot_fallback: bool = False
     require_take_profit: bool = True
     sizing_basis: Literal["min_equity_balance", "equity", "balance"] = "min_equity_balance"
     tick_value_tolerance: float = Field(default=0.10, gt=0, le=0.5)

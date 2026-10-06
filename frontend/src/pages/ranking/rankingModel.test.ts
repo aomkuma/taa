@@ -76,6 +76,6 @@ describe('ranking model', () => {
   });
 
   it('takes the top eligible symbols in rank order', () => {
-    expect(topEligible(items, 3).map((i) => i.symbol)).toEqual(['USDJPY', 'EURUSD', 'AUDUSD']);
+    expect(topEligible(items, 3).map((i) => i.symbol)).toEqual(['USDJPY', 'AUDUSD', 'EURUSD']);
   });
 });

@@ -92,6 +92,24 @@ class TestSingleOrder:
         r = sizer().size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, funds(408.0), lot_limit=1.0)
         assert r.reason is Reason.RISK_BELOW_MIN_LOT
 
+    def test_min_lot_fallback_opens_the_minimum_when_margin_allows(self) -> None:
+        """The owner's choice (2026-10-06): a 30 USD account at 1:2000 on a 20-pip EURUSD stop has a 0.15 USD
+        budget; the minimum 0.01 lot (2 USD at risk, 0.55 USD margin) opens anyway, flagged over budget."""
+        small, high = funds(30.0), TickCalculator(leverage=2000.0)
+        no = sizer(calc=high).size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, small, lot_limit=1.0)
+        assert no.reason is Reason.RISK_BELOW_MIN_LOT
+        r = sizer(calc=high).size(
+            EURUSD_SPEC, Side.BUY, 1.1, 1.098, small, lot_limit=1.0, min_lot_fallback=True
+        )
+        assert r.ok and r.volume == Decimal("0.01") and r.over_budget and r.risk_money > r.budget
+        low = TickCalculator(
+            leverage=100.0
+        )  # 0.01 lot needs 11 USD margin, above 30 % of 30 USD: margin wins
+        r = sizer(calc=low).size(
+            EURUSD_SPEC, Side.BUY, 1.1, 1.098, small, lot_limit=1.0, min_lot_fallback=True
+        )
+        assert r.reason is Reason.MARGIN_INSUFFICIENT
+
     def test_lot_limits(self) -> None:
         r = sizer().size(EURUSD_SPEC, Side.BUY, 1.1, 1.0999, funds(), lot_limit=0.5)
         assert r.volume == Decimal("0.50")

@@ -311,7 +311,7 @@ function HabitsCard({
             }}
           />
         </div>
-        {(['avoid_news', 'hold_over_weekend'] as const).map((key) => (
+        {(['avoid_news', 'hold_over_weekend', 'min_lot_fallback'] as const).map((key) => (
           <label key={key} className="flex items-center gap-2">
             <input
               type="checkbox"

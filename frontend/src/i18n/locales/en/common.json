@@ -1763,7 +1763,7 @@
     }
   },
   "profile": {
-    "intro": "How you trade: how much you risk, how selective your alerts are and how you split an entry. It shapes the numbers in your alerts; it never sends orders.",
+    "intro": "How you trade: how much you risk, how selective your alerts are and how you split an entry. Your bot trades with these values, inside the hard limits of its engine machine, and your alerts use them too.",
     "yes": "Yes",
     "no": "No",
     "custom": "custom",
@@ -1795,7 +1795,7 @@
         "75": "Offensive",
         "100": "Very offensive"
       },
-      "note": "The slider moves every value at once; a value you set yourself stays put. Hard limits apply whatever the slider says (risk per signal at most 2%, open risk 10%, daily loss 10%), and alerts never ask for a win probability below break-even + 2 points."
+      "note": "The slider moves every value at once; a value you set yourself stays put. Hard limits apply whatever the slider says (risk per signal at most 3%, open risk 10%, daily loss 10%), and alerts never ask for a win probability below break-even + 2 points."
     },
     "habits": {
       "title": "Habits",
@@ -1812,7 +1812,8 @@
       "stopName": {
         "STRUCTURE": "Beyond the structure",
         "ATR": "By ATR distance"
-      }
+      },
+      "min_lot_fallback": "If the risk budget buys less than the minimum lot, open the minimum lot when margin allows (that trade then risks more than your risk per signal)"
     },
     "plan": {
       "title": "Splitting an entry",
