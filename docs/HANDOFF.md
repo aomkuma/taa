@@ -79,12 +79,16 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   after it is protected; `app/engine/plan_supervisor.py` follows them; the reconciler knows resting orders;
   SAME_PRICE parts go to break-even once one part has closed. PAPER mirrors it. FakeMT5 emulates pending
   orders. `demo-report` adds "no limit part left past its lifetime".
-- **Not yet checked on the real FBS terminal:** whether `order_check` accepts the pending order's filling
-  (RETURN first, then the market filling) and `ORDER_TIME_SPECIFIED`. The engine falls back automatically
-  (GTC without the broker expiration); watch the first plan's intents (`retcode_desc`) and the MT5 Trade tab.
-- **The running `-Mt5 -Demo` stack still runs the old code** (one order per signal). To switch: tell the
-  owner, then restart web first (migration 0041 on the replica, heartbeat fields `entry_plan` /
-  `entry_plans_enabled`), then the worker, then the engine (it reconciles open positions).
+- **Checked on the FBS demo terminal (order_check only, 2026-10-06):** EURUSD, GBPUSD, USDJPY and XAUUSD
+  accept a BUY_LIMIT with RETURN, FOK or IOC filling, with or without `ORDER_TIME_SPECIFIED`
+  (`expiration_mode` 15). The engine uses RETURN + the broker expiration.
+- **Critical fix found on the way (964221a):** `MT5Client.call` passed an empty `**kwargs` to the C module, and
+  the real `order_check` / `order_send` then answer None with (-2, "Unnamed arguments not allowed"). **No DEMO
+  order ever reached the broker before 2026-10-06 12:48 UTC**: the 5 accepted signals of the morning were
+  REJECTED at `order_check`. FakeMT5 cannot show this; the opt-in contract test
+  `TAA_MT5_TESTS=1 TAA_MT5_TRADING_TESTS=1 pytest -m mt5 -k order_check` (DEMO, order_check only) does.
+- The `-Mt5 -Demo` stack was restarted at ~12:48 UTC with TAA-1207 and the fix (web, worker, engine; no open
+  positions). The engine reports the owner's plan (cloud profile: SCALE_IN, 5 parts, 0.01 lot, 0.5 × ATR).
 
 ### What this session added (2026-10-05/06)
 
@@ -112,9 +116,10 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 ## Next work
 
 1. **LIVE is ready to be switched on only by the owner.** What is left before real money:
-   - the two-week DEMO soak (`docs/RUNBOOK_DEMO.md` §4): **started 2026-10-06 ~06:57 UTC** on the FBS demo
-     account (`scripts\start-demo.cmd -Mt5 -Demo`, engine db `data/demo/engine-mt5.db`; effective risk 1.5% per
-     trade, 3 positions, 4% heat and daily loss, RR ≥ 1.5); `demo-report --days 14` from 2026-10-20;
+   - the two-week DEMO soak (`docs/RUNBOOK_DEMO.md` §4): first started 2026-10-06 ~06:57 UTC, but no order
+     reached the broker until the MT5 client fix, so it **really starts 2026-10-06 ~12:48 UTC** on the FBS demo
+     account (`scripts\start-demo.cmd -Mt5 -Demo`, engine db `data/demo/engine-mt5.db`; the owner's Trading
+     profile decides the risk; split entries per TAA-1207); `demo-report --days 14` from 2026-10-20 ~13:00 UTC;
    - the drills on the LIVE machine with the record table (`docs/RUNBOOK_LIVE.md` §2) — TAA-1403's last item;
    - the go-live checklist (`docs/RUNBOOK_LIVE.md` §1), then the owner's explicit go-ahead on the day.
    Never enable LIVE (`ENABLE_LIVE_TRADING`, the phrase) on the owner's behalf.
