@@ -210,6 +210,27 @@ separate sections; S8 is the only consumer that combines them, with REPLAY cappe
 | Threshold explorer | the metrics for "follow every opportunity with metric ≥ x". It is always flagged **in-sample**, because x is chosen on the same data. |
 | Theory scoreboard | per detector and per family × (asset class, timeframe): n, hit rate with CI, expectancy, and lift = hit rate ÷ the group's hit rate. A trade counts once per family; conflicting evidence is not support. |
 
+### AI opinions (TAA-1305, `app/web/ai.py`)
+
+Optional (`ai.advisory`). The engine asks the AI once per new opportunity for a verdict AGREE / DISAGREE /
+UNSURE with a confidence *c* (0–100). The AI sees the opportunity's numeric facts only and never changes a
+score, probability or alert by itself. Measured against the opportunity's closed PLAN shadow trade:
+
+| Metric | Definition |
+|---|---|
+| Right rate | (AGREE and TP first) + (DISAGREE and SL first), ÷ judged AGREE/DISAGREE opinions |
+| Per verdict | n, hit rate and mean R of the trades the AI agreed with, disagreed with, was unsure about |
+| Implied p | AGREE → *c*/100, DISAGREE → 1 − *c*/100, UNSURE → 0.5 (the AI's implied P(TP first)) |
+| Calibration | implied p in buckets of 0.2: n, mean implied p, observed hit rate |
+| Brier score | mean (implied p − outcome)², shown beside always predicting the window's base hit rate (in-sample) |
+| Filter evaluation | mean R of AGREE trades − mean R of all, with a seeded bootstrap 95% interval (1000 resamples) |
+
+The opt-in alert filter (`alerts.ai_filter`) is **offered** only when, over 90 days, at least 30 judged AGREE
+opinions and 50 judged opinions exist and the interval lies wholly above 0. While offered and switched on,
+DISAGREE / UNSURE opportunities are not pushed; an opportunity whose opinion has not arrived after 90 s is
+pushed as usual. The evaluation is in-sample like the threshold explorer, and it is re-checked every 10
+minutes, so the offer can disappear again.
+
 ---
 
 ## 7. Assumptions and caveats
@@ -227,6 +248,8 @@ separate sections; S8 is the only consumer that combines them, with REPLAY cappe
   interval and *n* must not be shown.
 - **Non-stationarity.** Calibration and scoreboard figures describe the past window only. Markets, spreads and
   broker conditions change.
+- **AI text is opinion.** AI narratives and opinions are labelled "AI opinion, not advice". A text claiming
+  profit or certainty is refused before it is stored, but the wording is still the model's, not a measurement.
 - **Heuristic theories.** Tier-T3 detectors (Elliott) are labelled heuristic. A theory's weight comes from
   measured outcomes, not from its popularity.
 - **Not advice to trade.** The numbers describe hypothetical past behaviour. Subscriptions stay disabled until a

@@ -43,6 +43,7 @@ const alerts = (overrides: Partial<AlertPreferences> = {}): AlertPreferences => 
   expiry_updates: true,
   when_risk_full: 'PAUSE',
   language: 'th',
+  ai_filter: false,
   ...overrides,
 });
 

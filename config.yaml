@@ -262,3 +262,15 @@ ai:                                 # optional review of entries (AI_PROVIDER / 
   min_confidence: 60                # veto mode: AGREE below this counts as unsure
   max_calls_per_day: 50             # budgets: when used up, veto mode holds (AI_UNAVAILABLE)
   max_cost_per_day_usd: 2.0
+  advisory:                         # AI on advisory (TAA-1305): opinions and TH/EN narratives, written on the
+    enabled: false                  # engine with the same provider whatever AI_MODE says; descriptive only
+    opinions: true                  # one opinion per new opportunity (verdict, confidence, reasons, narrative)
+    ranking_narrative: true         # the latest ranking snapshot, at most every ranking_every_hours
+    analytics_narrative: true       # the last analytics_days of closed shadow trades, every analytics_every_hours
+    min_score: 0                    # opportunities scoring below this get no opinion
+    max_age_minutes: 10             # older opportunities get no opinion
+    ranking_every_hours: 24
+    analytics_every_hours: 24
+    analytics_days: 7
+    max_calls_per_day: 100          # its own budget, separate from the entry review's
+    max_cost_per_day_usd: 3.0

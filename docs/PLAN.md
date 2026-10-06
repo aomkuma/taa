@@ -505,8 +505,34 @@ AI failures never trip trading breakers; they only produce HOLD.
   - **"Right afterwards":** each verdict is checked against the signal's closed PLAN shadow trade (AGREE and a
     win, or DISAGREE and a loss), with the win rate when it agreed vs. when it disagreed. These are simulated
     outcomes, labelled so.
-  - **Narrative:** the optional AI narrative in Analytics is not built. The cloud holds no AI key, so it
-    would have to be written on the engine and replicated.
+  - **Narrative:** written on the engine and replicated (TAA-1305 below): the Analytics page shows the
+    latest ANALYTICS note.
+- (TAA-1305 decisions) AI on advisory (`app/ai/advisory.py`, `app/ai/notes.py`, `app/web/ai.py`):
+  - **Where:** only the engine calls the AI (the cloud holds no key). `AINotes` runs one call at a time on a
+    worker thread from the engine cycle, so monitoring never waits. Switch: `ai.advisory.enabled` (off by
+    default) plus `AI_PROVIDER` and a key, whatever `AI_MODE` says. Its own daily budget
+    (`ai.advisory.max_calls_per_day` / `max_cost_per_day_usd`).
+  - **Notes (`ai_notes`, migration 0040, replicated):** one per kind and subject, recorded whether it answered
+    or not, so nothing is asked twice. OPPORTUNITY: an opinion on each new opportunity (newest first, younger
+    than `max_age_minutes`, score ≥ `min_score`): AGREE/DISAGREE/UNSURE, confidence, up to five reasons and a
+    TH/EN narrative. RANKING: a TH/EN narrative of the latest snapshot. ANALYTICS: a TH/EN narrative of the
+    last `analytics_days` of closed PLAN shadow trades.
+  - **Safety:** inputs are numeric facts and engine-made codes only (no lot, money, equity or account; no free
+    text). Strict schemas (`OpinionV1`, `NarrativeV1`) must echo their subject. A text that claims profit or
+    certainty (EN/TH pattern list `CLAIMS`) is refused as INVALID. Descriptive only: no score, probability,
+    alert or trade changes.
+  - **Accuracy and calibration (cloud):** answered opinions joined with their closed PLAN shadow trades
+    (simulated): right rate (AGREE and a win, DISAGREE and a loss), win rate and average R per verdict, the
+    implied win probability (AGREE c → c, DISAGREE → 1 − c, UNSURE → 0.5) in calibration buckets, and its
+    Brier score against always predicting the base rate.
+  - **Opt-in alert filter:** `alerts.ai_filter` (off by default). It is **offered** only when, over 90 days,
+    there are ≥ 30 judged AGREE opinions and ≥ 50 in all, and the bootstrap 95% interval of
+    (mean R of AGREE − mean R of all) lies wholly above 0. While offered and on, the personalizer holds
+    DISAGREE/UNSURE opportunities (`AI_FILTERED`). A fresh opportunity waits up to 90 s for its opinion
+    (`AI_PENDING`), then alerts without it, so an AI outage never hides alerts. Not offered: no effect.
+  - **Entitlement:** `AI_NARRATIVES` gates `GET /engines/{id}/ai-notes`, the opportunity's `ai` field and the
+    filter (403 `plan_feature`). The OWNER plan has it; FREE and PRO do not by default. The PWA labels every
+    AI text "AI opinion, not advice".
 
 **Kill switch**
 - **Activation:** the file `data/KILL_SWITCH`, checked every loop and immediately before any send; the CLI

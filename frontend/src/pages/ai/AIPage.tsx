@@ -8,6 +8,7 @@ import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
 
+import { AIOpinionStats } from './AINotes';
 import { AIAssessmentsSchema, type AIAssessments, aiKeys } from './schemas';
 
 const DAYS = [7, 30, 90, 366] as const;
@@ -96,6 +97,9 @@ export function AIPage() {
             </option>
           ))}
         </select>
+      </div>
+      <div className="mb-4">
+        <AIOpinionStats />
       </div>
       {data === undefined ? (
         <p className="text-sm text-slate-500">

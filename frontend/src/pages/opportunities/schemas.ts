@@ -2,6 +2,7 @@
 import { z } from 'zod';
 
 import { engineKey } from '@/engine/schemas';
+import { AINoteSchema } from '@/pages/ai/schemas';
 
 const IsoDateTime = z.iso.datetime({ offset: true });
 const Value = z.number().nullable();
@@ -126,6 +127,8 @@ export const OpportunityDetailSchema = OpportunityBaseSchema.extend({
       risk_money: z.number().optional(),
     })
     .optional(),
+  /** The engine's AI opinion (TAA-1305); null without one or without the plan's AI feature. */
+  ai: AINoteSchema.nullable().optional(),
 });
 export type OpportunityDetail = z.infer<typeof OpportunityDetailSchema>;
 

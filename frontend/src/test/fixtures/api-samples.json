@@ -3003,6 +3003,7 @@
   },
   "advisory/preferences": {
     "alerts": {
+      "ai_filter": false,
       "expiry_updates": true,
       "language": "th",
       "metric": "WIN_PROBABILITY",
@@ -4709,6 +4710,75 @@
       "win_rate_when_disagree": null,
       "with_outcome": 0
     }
+  },
+  "engines/ENGINE/ai-notes?kind=OPPORTUNITY&days=366": {
+    "cost_usd": 0.0086,
+    "days": 366,
+    "filter": {
+      "avg_r_all": null,
+      "avg_r_kept": null,
+      "ci_high": null,
+      "ci_low": null,
+      "diff": null,
+      "min_all": 50,
+      "min_kept": 30,
+      "n_all": 0,
+      "n_kept": 0,
+      "offered": false
+    },
+    "items": [
+      {
+        "confidence": 66,
+        "cost_usd": 0.0086,
+        "created_at": "2026-09-30T10:00:00+00:00",
+        "kind": "OPPORTUNITY",
+        "model": "claude-opus-5-5",
+        "note_id": "OPPORTUNITY:k1",
+        "reasons": [
+          "H1 trend agrees with the BUY"
+        ],
+        "status": "OK",
+        "subject": "k1",
+        "text_en": "The pullback entry agrees with the higher-timeframe trend evidence.",
+        "text_th": "จุดเข้าหลังการย่อตัวสอดคล้องกับหลักฐานแนวโน้มใน timeframe ใหญ่",
+        "verdict": "AGREE"
+      }
+    ],
+    "kind": "OPPORTUNITY",
+    "stats": {
+      "base_win_rate": null,
+      "brier": null,
+      "brier_baseline": null,
+      "calibration": [],
+      "judged": 0,
+      "right_rate": null,
+      "simulated": true,
+      "verdicts": {
+        "AGREE": {
+          "avg_r": null,
+          "n": 0,
+          "win_rate": null
+        },
+        "DISAGREE": {
+          "avg_r": null,
+          "n": 0,
+          "win_rate": null
+        },
+        "UNSURE": {
+          "avg_r": null,
+          "n": 0,
+          "win_rate": null
+        }
+      }
+    }
+  },
+  "engines/ENGINE/ai-notes?kind=RANKING&days=366": {
+    "cost_usd": 0.0086,
+    "days": 366,
+    "filter": null,
+    "items": [],
+    "kind": "RANKING",
+    "stats": null
   },
   "engines/ENGINE/analytics?scope=BACKTEST&days=366&run=0191a0a0-0000-7000-8000-0000000000b1": {
     "attribution": [
@@ -8038,7 +8108,7 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "f5dd4b11cb133400",
+        "config_hash": "c3ee1c4fc598bf93",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
         "seed": 42,
         "strategies": [
@@ -8164,7 +8234,7 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "f5dd4b11cb133400",
+          "config_hash": "c3ee1c4fc598bf93",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "seed": 42,
           "strategies": [
@@ -8219,7 +8289,7 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "f5dd4b11cb133400",
+          "config_hash": "c3ee1c4fc598bf93",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "seed": 42,
           "strategies": [
@@ -8665,6 +8735,19 @@
           }
         },
         "ai": {
+          "advisory": {
+            "analytics_days": 7,
+            "analytics_every_hours": 24,
+            "analytics_narrative": true,
+            "enabled": false,
+            "max_age_minutes": 10,
+            "max_calls_per_day": 100,
+            "max_cost_per_day_usd": 3.0,
+            "min_score": 0.0,
+            "opinions": true,
+            "ranking_every_hours": 24,
+            "ranking_narrative": true
+          },
           "effort": "low",
           "max_calls_per_day": 50,
           "max_cost_per_day_usd": 2.0,
@@ -10085,6 +10168,7 @@
     ]
   },
   "engines/ENGINE/opportunities/ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de": {
+    "ai": null,
     "alerted_at": "2026-09-30T10:00:30+00:00",
     "ask": 1.12652,
     "asset_class": "FOREX_MAJOR",

@@ -165,6 +165,9 @@ class AlertPreferences(StrictModel):
     expiry_updates: bool = True  # silent same-tag replacement on expiry/invalidation (R26)
     when_risk_full: RiskFullPolicy = RiskFullPolicy.PAUSE
     language: Literal["th", "en"] = "th"
+    # (TAA-1305) alert only what the engine's AI agrees with; applies only while the filter is offered (it
+    # beat the baseline on the engine's shadow outcomes, app.web.ai.filter_evaluation) and the plan has AI
+    ai_filter: bool = False
 
     @field_validator("timezone")
     @classmethod

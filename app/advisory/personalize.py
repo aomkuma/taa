@@ -86,6 +86,8 @@ class NoAlert(StrEnum):
     DAILY_LIMIT = "DAILY_LIMIT"
     HEAT_LIMIT = "HEAT_LIMIT"  # taking it would exceed the portfolio heat budget
     MAX_POSITIONS = "MAX_POSITIONS"  # taking it would exceed the number of open positions
+    AI_PENDING = "AI_PENDING"  # the opt-in AI filter waits for the opinion (briefly; then alerts without it)
+    AI_FILTERED = "AI_FILTERED"  # the opt-in AI filter: the AI disagreed or was unsure (TAA-1305)
 
 
 class Badge(StrEnum):
@@ -132,6 +134,10 @@ class MarketOpportunity:
     heat_limit: float | None = None
     positions_after: int | None = None
     positions_limit: int | None = None
+    # (TAA-1305) the engine's AI opinion, if any: AGREE / DISAGREE / UNSURE; ``ai_pending`` while the AI is on
+    # and the opinion of a fresh opportunity has not arrived yet
+    ai_verdict: str | None = None
+    ai_pending: bool = False
 
     @classmethod
     def from_row(cls, row: OpportunityRow) -> MarketOpportunity:
@@ -166,6 +172,7 @@ class Entitlements:
     asset_classes: frozenset[str] | None = None
     families: frozenset[Family] | None = None
     alerts_per_day: int | None = None
+    ai: bool = True  # the AI_NARRATIVES feature: AI notes and the opt-in AI alert filter
 
     @classmethod
     def owner(cls) -> Entitlements:
@@ -191,6 +198,7 @@ class UserContext:
     is_owner: bool = True  # owner: the engine's exact MT5 sizing; others need their account profile (8A)
     pattern_strategies: Collection[str] = ()  # names of pattern setups (their toggles apply)
     core_families: Collection[Family] = ()  # the strategy's checklist families (no double counting)
+    ai_filter_offered: bool = False  # the AI alert filter beat the baseline on this engine (app.web.ai)
 
 
 # --- outputs ------------------------------------------------------------------------------------------------
@@ -399,6 +407,14 @@ def personalize(
         reasons.append(NoAlert.RR_BELOW_PROFILE)
     if profile.require_htf_alignment and not opportunity.features.get("ctx:htf_aligned"):
         reasons.append(NoAlert.HTF_NOT_ALIGNED)
+
+    # 3b. the opt-in AI filter (TAA-1305): only where offered and entitled; a missing opinion never hides an
+    # alert (the worker stops marking it pending after a short wait)
+    if prefs.alerts.ai_filter and user.ai_filter_offered and user.entitlements.ai:
+        if opportunity.ai_pending:
+            reasons.append(NoAlert.AI_PENDING)
+        elif opportunity.ai_verdict in ("DISAGREE", "UNSURE"):
+            reasons.append(NoAlert.AI_FILTERED)
 
     # 4. windows
     if prefs.alerts.respect_market_sessions and not market_open:

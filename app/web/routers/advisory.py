@@ -19,6 +19,10 @@ Engine-level (``OwnedEngine``; ``server`` defaults to the engine's newest rankin
   probability with per-theory contributions for this user's theory selection, and the shadow results
 - ``shadow-trades`` (filters, paginated), ``accuracy``, ``threshold-explorer``, ``theory-scoreboard``,
   ``calibration``: shadow statistics are hypothetical and labelled so
+- ``ai-notes?kind=OPPORTUNITY|RANKING|ANALYTICS&days=&limit=``: the engine's AI opinions and narratives
+  (TAA-1305, TAA-1304), with the opinions' accuracy, calibration and the alert filter's evaluation; and
+  ``opportunities/{id}`` carries its AI opinion as ``ai``. Both need the plan's ``AI_NARRATIVES`` feature
+  (403 ``plan_feature``; ``ai`` is null without it). The AI text is opinion, labelled so in the PWA.
 
 The engine's own ``GET /api/v1/engine/advisory-config`` lives in ``app/web/routers/engine.py``.
 """
@@ -46,8 +50,9 @@ from app.core.errors import ConfigError
 from app.storage.models import AccountProfileRow
 from app.web.account_profiles import load_profile, plan_of, preview_plan, size_manual
 from app.web.advisory import AdvisoryReads, PreferenceStore, detector_catalog
+from app.web.ai import AINotesReadModel
 from app.web.deps import AdvisoryEngine, Context, CsrfSession, CurrentSession, WebContext
-from app.web.entitlements import EntitlementError, EntitlementService
+from app.web.entitlements import EntitlementError, EntitlementService, Feature
 from app.web.errors import ApiProblem
 from app.web.feed import redact
 from app.web.readmodels import MAX_LIMIT, QueryError
@@ -294,12 +299,42 @@ async def opportunity(
     )
     if found is None:
         raise ApiProblem(404, "opportunity_not_found", "No such opportunity")
+    found["ai"] = (
+        await run_in_threadpool(
+            AINotesReadModel(ctx.db, ctx.clock).note, engine.engine_id, "OPPORTUNITY", opportunity_id[:64]
+        )
+        if await run_in_threadpool(_has_ai, ctx, session.user_id)
+        else None
+    )
     if not engine.is_owner:
         found = redact(found)
         found["shadow"] = [redact(s) for s in found.get("shadow", [])]
         found["my_sizing"] = await run_in_threadpool(
             _my_sizing, ctx, engine.engine_id, session.user_id, found
         )
+    return found
+
+
+def _has_ai(ctx: WebContext, user_id: str) -> bool:
+    return EntitlementService(ctx.db, ctx.clock).resolve(user_id).has(Feature.AI_NARRATIVES)
+
+
+@router.get("/engines/{engine_id}/ai-notes")
+async def ai_notes(
+    engine: AdvisoryEngine,
+    ctx: Context,
+    session: CurrentSession,
+    kind: Annotated[str, Query(min_length=7, max_length=12)] = "OPPORTUNITY",
+    days: Annotated[int, Query(ge=1, le=366)] = 30,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> dict[str, Any]:
+    if not await run_in_threadpool(_has_ai, ctx, session.user_id):
+        raise ApiProblem(
+            403, "plan_feature", "Your plan does not include AI notes", extra={"key": "AI_NARRATIVES"}
+        )
+    found: dict[str, Any] = await _run(
+        AINotesReadModel(ctx.db, ctx.clock).notes, engine.engine_id, kind=kind, days=days, limit=limit
+    )
     return found
 
 

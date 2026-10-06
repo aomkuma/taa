@@ -148,6 +148,7 @@ class Entitlements:
             asset_classes=self.asset_classes,
             families=self.families,
             alerts_per_day=self.limit(Limit.ALERTS_PER_DAY),
+            ai=self.has(Feature.AI_NARRATIVES),
         )
 
     def to_dict(self) -> dict[str, Any]:

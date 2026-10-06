@@ -7,6 +7,7 @@ import { useEngine } from '@/engine/context';
 import { evidenceName, translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
+import { AIOpinion } from '@/pages/ai/AINotes';
 
 import { useOpportunity, useScoreboard } from './hooks';
 import {
@@ -328,6 +329,7 @@ export function OpportunityDetail({ engineId, id }: { engineId: string; id: stri
         <WhyPanel detail={o} own={own} />
         <EvidenceList detail={o} own={own} />
         <SizingCard detail={o} />
+        <AIOpinion note={o.ai} />
       </div>
       <p className="text-xs text-slate-500">{t('opportunities.advice')}</p>
     </div>

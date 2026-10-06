@@ -9,6 +9,7 @@ import { explain } from '@/i18n/explain';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
 import { useFavourites } from '@/pages/watchlists/hooks';
+import { AINarrative } from '@/pages/ai/AINotes';
 
 import { useRanking } from './hooks';
 import {
@@ -454,6 +455,9 @@ export function RankingPage() {
   return (
     <section>
       <h1 className="mb-4 text-2xl font-semibold">{t('nav.ranking')}</h1>
+      <div className="mb-4">
+        <AINarrative kind="RANKING" />
+      </div>
       {body}
       {open !== null && engineId !== null && (
         <RankingDrawer

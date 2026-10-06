@@ -52,7 +52,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 6 | 6 | DONE |
-| M2 | Phase 13 — AI assessment (optional layer) | 5 | 3 | IN PROGRESS |
+| M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
 | M2 | Phase 14 — LIVE readiness | 4 | 2 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 
@@ -1763,24 +1763,24 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 
 #### TAA-1304 — AI in PWA
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** 1303, 1005
 
 - [x] assessments page
 - [x] agreement stats
 - [x] cost tracking
-- [ ] optional labelled AI narrative in analytics (the cloud holds no AI key by design, PLAN §A20: the narrative must be produced on the engine and replicated; not started)
+- [x] optional labelled AI narrative in analytics (written on the engine and replicated, PLAN §A20; with TAA-1305)
 
 #### TAA-1305 — (rev. 2) AI on advisory
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1303, 6C4, 8A2
 
-- [ ] TH/EN AI narrative for ranking and opportunities (descriptive only)
-- [ ] AI opinion recorded per opportunity
-- [ ] AI accuracy and calibration measured from shadow outcomes
-- [ ] opt-in AI alert filter, offered only when it beats the baseline
-- [ ] AI as an optional entitlement-gated feature
+- [x] TH/EN AI narrative for ranking and opportunities (descriptive only)
+- [x] AI opinion recorded per opportunity
+- [x] AI accuracy and calibration measured from shadow outcomes
+- [x] opt-in AI alert filter, offered only when it beats the baseline
+- [x] AI as an optional entitlement-gated feature
 
 ### Phase 14 — LIVE readiness
 

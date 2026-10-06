@@ -119,6 +119,8 @@ ENGINE_ROUTES = [
     f"analytics?scope=BACKTEST&days=366&run={RUN_A}",
     f"recommendations?scope=BACKTEST&days=366&run={RUN_A}",
     "ai-assessments?days=366",
+    "ai-notes?kind=OPPORTUNITY&days=366",
+    "ai-notes?kind=RANKING&days=366",
     "learning/timing?scope=SHADOW&days=366",
     "learning/timing?scope=MANUAL&days=366",
     f"learning/timing?scope=BACKTEST&days=366&run={RUN_A}",

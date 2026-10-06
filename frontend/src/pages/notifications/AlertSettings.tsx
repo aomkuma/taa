@@ -4,6 +4,7 @@ import { useLocation } from 'react-router';
 
 import { ApiError } from '@/api/client';
 import { useFormat } from '@/i18n/useFormat';
+import { useAINotes } from '@/pages/ai/hooks';
 import { Card } from '@/pages/dashboard/cards';
 import { usePreferences, useSaveAlerts } from '@/pages/watchlists/hooks';
 import {
@@ -78,6 +79,22 @@ function NumberField({
           onChange(e.target.value === '' ? Number.NaN : Number(e.target.value));
         }}
       />
+    </div>
+  );
+}
+
+/** TAA-1305: the opt-in AI alert filter; it acts only while offered (it beat the baseline). */
+function AIFilterToggle({ checked, onChange }: { checked: boolean; onChange: (on: boolean) => void }) {
+  const { t } = useTranslation();
+  const notes = useAINotes('OPPORTUNITY', 90);
+  if (notes.isError && !checked) return null; // the plan has no AI feature
+  const offered = notes.data?.filter?.offered ?? false;
+  return (
+    <div className="space-y-1">
+      <Check label={t('alerts.delivery.aiFilter')} checked={checked} onChange={onChange} />
+      <p className="pl-6 text-xs text-slate-500">
+        {offered ? t('alerts.delivery.aiFilterOffered') : t('alerts.delivery.aiFilterNotOffered')}
+      </p>
     </div>
   );
 }
@@ -384,6 +401,12 @@ function AlertForm({ saved }: { saved: AlertPreferences }) {
             {t(`alerts.delivery.policy.${policy}`)}
           </label>
         ))}
+        <AIFilterToggle
+          checked={draft.ai_filter}
+          onChange={(ai_filter) => {
+            change({ ai_filter });
+          }}
+        />
         <div className="flex items-center gap-2 text-sm">
           <label htmlFor={langId}>{t('alerts.delivery.language')}</label>
           <select

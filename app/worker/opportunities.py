@@ -14,6 +14,11 @@ engine's users (its owner until tenancy, 8A), and turns its decisions into notif
   a silent same-tag OPPORTUNITY_UPDATE replaces the alert on the device (unless the user turned expiry
   updates off), once.
 
+**AI filter** (TAA-1305): a user with ``alerts.ai_filter`` on gets the opportunity's AI verdict in the
+personalizer, and the filter's "offered" state for the engine (:meth:`AINotesReadModel.filter_offered`,
+recomputed at most every ``AI_OFFER_TTL``). While the engine writes AI opinions (one in the last day), a fresh
+opportunity without one waits up to ``AI_WAIT``; after that it alerts without it.
+
 Inputs per opportunity: its calibration version (win probability and contributions; without one the
 probability reads "insufficient data"), the decision's entry plan and heat, the latest ranking (AUTO_TOP_N
 lists) and the symbol's market session from the replicated symbol catalog. Opportunities older than
@@ -44,6 +49,7 @@ from app.core.enums import Side
 from app.core.errors import TaaError
 from app.storage.database import Database
 from app.storage.models import (
+    AINoteRow,
     DecisionCheckRow,
     DecisionRecordRow,
     EngineRow,
@@ -56,6 +62,7 @@ from app.sync.notifications import NotificationType, Severity, notify
 from app.sync.stream import StreamLog
 from app.web.account_profiles import load_profile, plan_of, size_manual
 from app.web.advisory import PreferenceStore, catalogs
+from app.web.ai import AINotesReadModel
 from app.web.entitlements import Entitlements, EntitlementService, Limit
 from app.web.feed import engine_users
 
@@ -63,6 +70,8 @@ log = logging.getLogger(__name__)
 
 LOOKBACK = timedelta(hours=24)
 MAX_PER_PASS = 200
+AI_WAIT = timedelta(seconds=90)
+AI_OFFER_TTL = timedelta(minutes=10)
 SENT, REPLACED = "SENT", "REPLACED"
 
 
@@ -73,6 +82,7 @@ class OpportunityAlerter:
         self._config = config
         self.stream = StreamLog(db, clock)
         self.failures = 0
+        self._ai: dict[str, tuple[datetime, bool, bool]] = {}  # engine → (computed at, offered, AI active)
 
     def config(self) -> AppConfig:
         return self._config() if self._config is not None else load_app_config()
@@ -124,8 +134,11 @@ class OpportunityAlerter:
         models: dict[str | None, WinProbability] = {}
         alerts = updates = 0
         plans = EntitlementService(self.db, self.clock)
+        preferences = {u: PreferenceStore(self.db).get(u) for u in users}
+        if any(p.alerts.ai_filter for p in preferences.values()):
+            self._ai_state(engine_id, now)
         for user_id in users:
-            prefs = PreferenceStore(self.db).get(user_id)
+            prefs = preferences[user_id]
             ent = plans.resolve(user_id)
             top = ent.limit(Limit.WATCHLIST_SYMBOLS)  # an AUTO_TOP_N list takes at most this many ranks
             ranked_for_user = ranked if top is None else ranked[:top]
@@ -141,6 +154,28 @@ class OpportunityAlerter:
                     self.failures += 1
                     log.exception("opportunity %s for user %s failed", row.opportunity_id, user_id)
         return alerts, updates
+
+    def _ai_state(self, engine_id: str, now: datetime) -> tuple[bool, bool]:
+        """(Is the AI filter offered on this engine, does the engine write AI opinions), cached."""
+        cached = self._ai.get(engine_id)
+        if cached is None or now - cached[0] >= AI_OFFER_TTL:
+            offered = AINotesReadModel(self.db, self.clock).filter_offered(engine_id)
+            with self.db.session() as sess:
+                active = (
+                    sess.scalar(
+                        select(AINoteRow.note_id)
+                        .where(
+                            AINoteRow.engine_id == engine_id,
+                            AINoteRow.kind == "OPPORTUNITY",
+                            AINoteRow.created_at >= now - timedelta(days=1),
+                        )
+                        .limit(1)
+                    )
+                    is not None
+                )
+            cached = (now, offered, active)
+            self._ai[engine_id] = cached
+        return cached[1], cached[2]
 
     def _model(
         self, engine_id: str, version: str | None, cache: dict[str | None, WinProbability]
@@ -207,6 +242,15 @@ class OpportunityAlerter:
                 else self._for_user(owner_view, row, engine_id, user_id, prefs, config, now)
             )
             user = dataclasses.replace(user, is_owner=sized)  # the lot in the push is this user's own
+            if prefs.alerts.ai_filter:
+                offered, active = self._ai_state(engine_id, now)
+                ai_note = sess.get(AINoteRow, (engine_id, f"OPPORTUNITY:{row.opportunity_id}"))
+                opportunity = dataclasses.replace(
+                    opportunity,
+                    ai_verdict=ai_note.verdict if ai_note is not None and ai_note.status == "OK" else None,
+                    ai_pending=ai_note is None and active and now - ensure_utc(row.created_at) < AI_WAIT,
+                )
+                user = dataclasses.replace(user, ai_filter_offered=offered)
             market_open = self._market_open(sess, engine_id, row, config, now)
             result = personalize(
                 opportunity,

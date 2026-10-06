@@ -20,6 +20,7 @@ No blocking finding. Four recommendations for the LIVE machine (below) are opera
 | Forged or replayed engine traffic | HMAC-SHA256 over method, path, query, body hash and timestamp; nonce store; skew limit; per-engine keys in the database, revocable. | yes |
 | Data tampering after the fact | Hash-chained audit logs (engine and web chains); `app.cli audit verify`. | yes |
 | Another user's data (IDOR) | Every engine route resolves only the session user's engines (`OwnedEngine`, 404 otherwise); tests cover every route. | yes |
+| AI misuse, prompt injection or data leaving to the AI provider (added 2026-10-06 with TAA-1305) | Only the engine calls the AI; the cloud holds no key. Inputs are numeric facts and engine-made codes (no account number, lot, money, equity or free text from outside); answers are strict schemas that must echo their subject, and a text claiming profit or certainty is refused. The AI never sizes, orders or changes an alert by itself: the entry review can only veto, the advisory notes are descriptive, and the opt-in alert filter only removes alerts. Budgets cap calls and cost per day. | yes (tests) |
 | Secrets in logs, API or replicas | `SecretStr` everywhere, a log redaction filter, the engine masks secrets in config snapshots, API samples are checked for them. | yes |
 
 ## 2. Dependency audits

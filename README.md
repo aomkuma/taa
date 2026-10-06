@@ -40,7 +40,9 @@ trading, advisory signals and a PWA dashboard.
 | LIVE | real money | `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-<login>`, a REAL account, the [go-live checklist](docs/RUNBOOK_LIVE.md) |
 
 Risk: `config.yaml` → `risk` is the engine machine's cage; the owner's Trading profile in the PWA sets the
-values used inside it. The optional AI review (`AI_PROVIDER=anthropic`) can only veto an entry.
+values used inside it. The optional AI review (`AI_PROVIDER=anthropic`) can only veto an entry; the optional AI
+notes (`ai.advisory`) add a labelled opinion per opportunity and TH/EN narratives, and never change a score,
+alert or trade (an opt-in alert filter acts only once the AI has measurably beaten the baseline).
 
 ## Quick start (local, no Docker)
 

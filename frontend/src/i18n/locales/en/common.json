@@ -1330,7 +1330,10 @@
         "PAUSE": "Do not push; show it in the app with the reason",
         "WARN": "Push anyway, with a warning"
       },
-      "language": "Alert language"
+      "language": "Alert language",
+      "aiFilter": "Only alert opportunities the AI agrees with",
+      "aiFilterOffered": "Active: the AI's agreement has done better than all opportunities (simulated outcomes).",
+      "aiFilterNotOffered": "Not active yet: it applies only once the AI's agreement has clearly done better than all opportunities. Until then every alert comes as usual."
     },
     "problem": {
       "threshold": "The threshold must be between 0 and 100%.",
@@ -2150,6 +2153,35 @@
       "delta": "(plan − as traded: {{r}})",
       "comfort": "Difference between the asset classes you traded and those the signals offered: {{value}}",
       "note": "A description, not a grade. \"Plan − as traded\" compares with following the signal's plan (or not taking the trade); it is hypothetical."
+    }
+  },
+  "aiNotes": {
+    "label": "AI opinion, not advice",
+    "title": {
+      "OPPORTUNITY": "AI opinion",
+      "RANKING": "AI summary of the ranking",
+      "ANALYTICS": "AI summary of recent results"
+    },
+    "unavailable": "The AI gave no usable answer ({{status}}).",
+    "none": "No AI opinion yet. They are written on the engine when ai.advisory is enabled.",
+    "verdict": {
+      "AGREE": "Agreed",
+      "DISAGREE": "Disagreed",
+      "UNSURE": "Unsure"
+    },
+    "stats": {
+      "title": "AI opinions on opportunities",
+      "summary": "{{n}} opinions with a simulated outcome: right {{right}} of the time (all signals won {{base}}).",
+      "verdict": "AI said",
+      "winRate": "Won",
+      "avgR": "Average R",
+      "brier": "Calibration (Brier score, lower is better): AI {{ai}}, always the base rate {{base}}.",
+      "bucket": "Implied {{low}}–{{high}}: {{n}} opinions, implied {{implied}}, observed {{observed}}",
+      "cost": "AI cost in the period: {{cost}}"
+    },
+    "filter": {
+      "offered": "The AI filter is offered: opportunities it agreed with averaged {{kept}} R against {{all}} R for all (simulated).",
+      "notOffered": "The AI filter is not offered yet: {{kept}} of at least {{minKept}} agreeing opinions and {{all}} of at least {{minAll}} with outcomes, and the agreed ones must do clearly better."
     }
   }
 }

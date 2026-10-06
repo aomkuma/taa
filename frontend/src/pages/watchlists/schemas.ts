@@ -61,6 +61,8 @@ export const AlertPreferencesSchema = z.object({
   expiry_updates: z.boolean(),
   when_risk_full: z.enum(RISK_FULL_POLICIES),
   language: z.enum(['th', 'en']),
+  /** TAA-1305: alert only what the engine's AI agrees with, while the filter is offered. */
+  ai_filter: z.boolean(),
 });
 export type AlertPreferences = z.infer<typeof AlertPreferencesSchema>;
 

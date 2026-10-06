@@ -58,3 +58,75 @@ export type AIAssessments = z.infer<typeof AIAssessmentsSchema>;
 export const aiKeys = {
   list: (engineId: string, days: number) => [...engineKey(engineId), 'ai-assessments', days] as const,
 };
+
+/** An AI note on advisory (TAA-1305, TAA-1304; `ai_notes`, app/web/ai.py `note_dict`): opinion, not advice. */
+export const AINoteSchema = z.object({
+  note_id: z.string(),
+  /** OPPORTUNITY RANKING ANALYTICS */
+  kind: z.string(),
+  subject: z.string(),
+  created_at: z.iso.datetime({ offset: true }),
+  status: z.string(),
+  verdict: z.enum(['AGREE', 'DISAGREE', 'UNSURE']).nullable(),
+  confidence: z.number().int().nullable(),
+  reasons: z.array(z.string()),
+  text_en: z.string(),
+  text_th: z.string(),
+  model: z.string().nullable(),
+  cost_usd: z.number(),
+});
+export type AINote = z.infer<typeof AINoteSchema>;
+
+const VerdictStats = z.object({ n: z.number().int(), win_rate: Value, avg_r: Value });
+
+export const AINotesSchema = z.object({
+  kind: z.string(),
+  days: z.number().int(),
+  cost_usd: z.number(),
+  items: z.array(AINoteSchema),
+  /** OPPORTUNITY only: accuracy and calibration against the shadow outcomes (simulated). */
+  stats: z
+    .object({
+      judged: z.number().int(),
+      right_rate: Value,
+      base_win_rate: Value,
+      verdicts: z.record(z.string(), VerdictStats),
+      brier: Value,
+      brier_baseline: Value,
+      calibration: z.array(
+        z.object({
+          low: z.number(),
+          high: z.number(),
+          n: z.number().int(),
+          implied: z.number(),
+          observed: z.number(),
+        }),
+      ),
+      simulated: z.boolean(),
+    })
+    .nullable(),
+  /** OPPORTUNITY only: would alerting only AGREE have done better (the opt-in filter's offer). */
+  filter: z
+    .object({
+      n_all: z.number().int(),
+      n_kept: z.number().int(),
+      avg_r_all: Value,
+      avg_r_kept: Value,
+      diff: Value,
+      ci_low: Value,
+      ci_high: Value,
+      min_kept: z.number().int(),
+      min_all: z.number().int(),
+      offered: z.boolean(),
+    })
+    .nullable(),
+});
+export type AINotes = z.infer<typeof AINotesSchema>;
+
+export const AI_NOTE_KINDS = ['OPPORTUNITY', 'RANKING', 'ANALYTICS'] as const;
+export type AINoteKind = (typeof AI_NOTE_KINDS)[number];
+
+export const aiNoteKeys = {
+  list: (engineId: string, kind: AINoteKind, days: number) =>
+    [...engineKey(engineId), 'ai-notes', kind, days] as const,
+};

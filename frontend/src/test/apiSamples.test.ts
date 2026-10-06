@@ -62,7 +62,7 @@ import {
   PlansSchema,
   UserEntitlementsSchema,
 } from '@/pages/account/schemas';
-import { AIAssessmentsSchema } from '@/pages/ai/schemas';
+import { AIAssessmentsSchema, AINotesSchema } from '@/pages/ai/schemas';
 import { BehaviorSchema, ExpectancySchema, TimingSchema } from '@/pages/learning/schemas';
 import { RecommendationsSchema, ReportSchema } from '@/pages/analytics/schemas';
 import { CandidatesSchema, ManualTradesSchema } from '@/pages/trades/manualSchemas';
@@ -135,6 +135,8 @@ const CASES: [string, z.ZodType][] = [
   [`${E}analytics?scope=BACKTEST&days=366&run=${RUN_A}`, ReportSchema],
   [`${E}recommendations?scope=BACKTEST&days=366&run=${RUN_A}`, RecommendationsSchema],
   [`${E}ai-assessments?days=366`, AIAssessmentsSchema],
+  [`${E}ai-notes?kind=OPPORTUNITY&days=366`, AINotesSchema],
+  [`${E}ai-notes?kind=RANKING&days=366`, AINotesSchema],
   [`${E}learning/timing?scope=SHADOW&days=366`, TimingSchema],
   [`${E}learning/timing?scope=MANUAL&days=366`, TimingSchema],
   [`${E}learning/timing?scope=BACKTEST&days=366&run=${RUN_A}`, TimingSchema],

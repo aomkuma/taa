@@ -9,6 +9,7 @@ import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { backtestKeys, RunSchema, RunsPageSchema } from '@/pages/backtests/schemas';
 import { Card } from '@/pages/dashboard/cards';
+import { AINarrative } from '@/pages/ai/AINotes';
 
 import { backtestPeriod, curvePoints, histogramShares } from './analyticsModel';
 import {
@@ -464,6 +465,7 @@ export function AnalyticsPage() {
               {t('analytics.hypothetical')}
             </p>
           )}
+          <AINarrative kind="ANALYTICS" />
           <Card title={t('analytics.kpi.title')}>
             <Kpis report={data} />
             {data.skipped > 0 && (

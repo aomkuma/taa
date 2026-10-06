@@ -31,6 +31,9 @@ Questions for counsel:
    already marks them `hypothetical` and never claims profitability.
 7. Does the FBS broker relationship (or any referral/affiliate arrangement) create additional duties?
 8. Record-keeping: how long must alerts, the evidence behind them and user communications be kept?
+9. AI-written text (TAA-1305): opinions and narratives produced by a third-party model are shown to users,
+   labelled "AI opinion, not advice", and the opt-in filter can suppress alerts the AI disagreed with. Does
+   that change questions 1–5, and is a disclosure of the model provider required?
 
 ## 2. Personal data (PDPA)
 

@@ -35,11 +35,11 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 ## Current state
 
 - **Done:** Phases 0–10, 2A, 6A–6C, 8A, 12 (DEMO), **14 except the owner's part** (1401 live gate wiring, 1402
-  security review, 1403 drills automated; 1404 final docs pass started) and **13 core** (1301 AI interface,
-  1302 Anthropic provider, 1303 veto, 1304 AI page without the narrative). Revisions 5 (owner's profile drives
+  security review, 1403 drills automated; 1404 final docs pass started) and **13** (1301 AI interface,
+  1302 Anthropic provider, 1303 veto, 1304 AI page and narrative, 1305 AI on advisory). Revisions 5 (owner's profile drives
   the engine's risk) and 6 (manual trades matched to signals, TAA-1006) are done.
-- **Not started / open:** Phase 11 Railway (**skipped for now**, user decision 2026-10-06), TAA-1305 (AI on
-  advisory), the 1304 narrative, TAA-1403's last item (the owner repeats the drills on the LIVE machine), TAA-1404
+- **Not started / open:** Phase 11 Railway (**the only deferred work**, user decision 2026-10-06; AI is in
+  scope), TAA-1403's last item (the owner repeats the drills on the LIVE machine), TAA-1404
   (final docs pass; README, runbooks and PLAN notes are current as of this session), Phase 15 (deferred).
 - **Checks (2026-10-06, stack stopped):** full pytest **2791 passed, 7 skipped** (10 min); vitest 526; Playwright
   smoke 3; ruff, mypy, bandit clean; `pip-audit` and `npm audit` clean.
@@ -82,6 +82,11 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 - **Phase 13:** AI review (`app/ai/`): schema v1.0, Anthropic provider (`beta.messages.parse`,
   `claude-opus-5-5`, low effort, `fallbacks: "default"`), veto/advisory gate after all other checks (can only
   block), per-candle cache, daily budgets (`config.yaml` → `ai`), AI review page. `AI_PROVIDER=none` by default.
+  TAA-1305 (2026-10-06): `ai_notes` (migration 0040) — the engine writes an opinion per new opportunity and
+  TH/EN narratives of the ranking and recent shadow results on a background thread (`ai.advisory`, off by
+  default, own budget); the PWA shows them labelled "AI opinion, not advice" (opportunity detail, Ranking,
+  Analytics), the AI page shows accuracy/calibration, and alert settings have the opt-in AI filter (offered
+  only once AGREE beats all opportunities, bootstrap CI). Gated by `AI_NARRATIVES`. PLAN §A8 TAA-1305 notes.
 - PWA: chart follows the newest bar, strength-styled S/R zones; dashboard open opportunities and signal track
   record; live candle ≈ one heartbeat per second (per-detector pulse).
 
@@ -92,10 +97,10 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
    - the drills on the LIVE machine with the record table (`docs/RUNBOOK_LIVE.md` §2) — TAA-1403's last item;
    - the go-live checklist (`docs/RUNBOOK_LIVE.md` §1), then the owner's explicit go-ahead on the day.
    Never enable LIVE (`ENABLE_LIVE_TRADING`, the phrase) on the owner's behalf.
-2. **AI (optional):** to try it, set `AI_PROVIDER=anthropic`, `AI_API_KEY`, `AI_MODE=advisory` first (records
-   only) in `.env` on the engine machine, then restart the engine; watch the "AI review" page. TAA-1305 (AI on
-   advisory: narratives, AI opinion per opportunity, AI accuracy from shadow outcomes, opt-in filter,
-   entitlement) is next if wanted; the 1304 narrative needs the engine to write it (the cloud has no AI key).
+2. **AI:** built, off until a key is set. Set `AI_PROVIDER=anthropic`, `AI_API_KEY`, `AI_MODE=advisory` (entry
+   reviews, records only) in `.env` on the engine machine and `ai.advisory.enabled: true` in `config.yaml`
+   (opinions and narratives), then restart the engine; watch the "AI review" page and the opportunity detail.
+   Costs real money: budgets `ai` (50 calls / $2 a day) and `ai.advisory` (100 calls / $3 a day).
 3. **TAA-1404 final docs pass:** check README, both runbooks, CLAUDE.md and `.env.example` against reality once
    LIVE has run (or before the owner's go-live).
 4. Phase 11 Railway: skipped for now; later only with the owner's Railway access and go-ahead.
