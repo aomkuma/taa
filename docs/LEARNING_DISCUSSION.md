@@ -223,6 +223,7 @@ too.
 | 2026-10-06 | New work is **built separately from the existing process**: new modules read existing outputs and plug in through defined, default-off hook points; the existing path stays unchanged | §L0.2 |
 | 2026-10-06 | Claude orders the work by suitability | §L16, TICKETS_LEARNING "Waves" |
 | 2026-10-06 | Session discussions are kept in project `.md` files (this file) | — |
+| 2026-10-06 | TAA-L001 probe on the real terminal: no depth of market on FBS (`book_imbalance` dropped), `last`/`volume` always 0, ~58% of EURUSD ticks change neither bid nor ask. **Incident:** the first, uncapped depth search made the terminal download ~5.4 GB of tick months and filled drive C; the probe's downloads were deleted (5.27 GB freed) and the search is now capped (8 weeks) with a free-disk guard | PLAN_LEARNING §L1, TICKETS_LEARNING L001 |
 | 2026-10-06 | While the other session finishes Phase 14 / wrap-up, parts of this track that do not collide with it may be picked up (supersedes the strict reading of Q1 for non-conflicting work). Started with the pure parts of TAA-L701 and TAA-L801 in `app/learning/` | TICKETS_LEARNING |
 
 **Open questions:** PLAN_LEARNING §L18 (Q2–Q8, Q11–Q12).

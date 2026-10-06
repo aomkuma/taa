@@ -50,7 +50,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 
 | Milestone | Phase | Tickets | Done | Status |
 |---|---|---|---|---|
-| M3 | Phase L0 — Feed probe & foundations | 2 | 1 | IN PROGRESS |
+| M3 | Phase L0 — Feed probe & foundations | 2 | 2 | DONE |
 | M3 | Phase L1 — Tick data foundation | 4 | 0 | TODO |
 | M3 | Phase L2 — Microstructure features | 3 | 0 | TODO |
 | M3 | Phase L3 — Symbol profile & regime | 6 | 0 | TODO |
@@ -67,14 +67,14 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 
 #### TAA-L001 — DOM and tick-history probe (L1)
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** — (needs the user's OK to read from the real demo terminal)
 
-- [ ] `app.cli ticks probe --symbols ...`: read-only; `market_book_add/get/release`, `copy_ticks_range` depth search (binary search for the oldest available day), tick rate per symbol
-- [ ] report: DOM empty/static/changing, levels and sizes seen, tick-history depth per symbol, `last`/`volume` usage, flags distribution
-- [ ] FakeMT5 gains `market_book_*` emulation (empty and populated modes)
-- [ ] record the findings in PLAN_LEARNING §L1 and decide whether `book_imbalance` (L4) is enabled
-- [ ] tests (FakeMT5)
+- [x] `app.cli ticks probe --symbols ... [--max-weeks 8]`: read-only; `market_book_add/get/release`, a capped `copy_ticks_range` depth search (week granularity, cold-cache retries), tick rate per symbol; refuses with little free disk
+- [x] report: DOM empty/static/changing, levels and sizes seen, tick-history depth per symbol, `last`/`volume` usage, flags distribution
+- [x] FakeMT5 gains `market_book_*` emulation (empty and populated modes)
+- [x] record the findings in PLAN_LEARNING §L1 and decide whether `book_imbalance` (L4) is enabled (2026-10-06: no book on FBS → dropped; flag-96-only ticks must be filtered)
+- [x] tests (FakeMT5)
 
 #### TAA-L002 — Hook points and golden harness (§L0.2)
 

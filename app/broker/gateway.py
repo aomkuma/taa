@@ -166,6 +166,50 @@ class ReadOnlyMT5Gateway:
         )
         return df.loc[mask].reset_index(drop=True)
 
+    def raw_ticks(self, symbol: str, start_utc: datetime, end_utc: datetime) -> pd.DataFrame:
+        """Like :meth:`ticks_range`, with every field the broker sends: time_utc, bid, ask, last, volume,
+        flags (feed probe, TAA-L001; not part of :class:`MarketDataGateway`)."""
+        lo = ensure_utc(start_utc) - _HISTORY_MARGIN
+        hi = ensure_utc(end_utc) + _HISTORY_MARGIN
+        flags = getattr(self.client.mt5, "COPY_TICKS_ALL", c.COPY_TICKS_ALL)
+        raw = self.client.call("copy_ticks_range", symbol, int(lo.timestamp()), int(hi.timestamp()), flags)
+        if raw is None:
+            raise BrokerError(f"copy_ticks_range({symbol}) failed: {self.client.last_error()}")
+        arr = np.asarray(raw)
+        columns = ["time_utc", "bid", "ask", "last", "volume", "flags"]
+        if len(arr) == 0:
+            return pd.DataFrame(columns=columns)
+        msc = arr["time_msc"].astype("int64")
+        times = self.server_clock.server_epochs_to_utc(msc // 1000) + pd.to_timedelta(msc % 1000, unit="ms")
+        df = pd.DataFrame(
+            {
+                "time_utc": times,
+                "bid": arr["bid"].astype(float),
+                "ask": arr["ask"].astype(float),
+                "last": arr["last"].astype(float),
+                "volume": arr["volume"].astype("int64"),
+                "flags": arr["flags"].astype("int64"),
+            }
+        )
+        mask = (df["time_utc"] >= pd.Timestamp(ensure_utc(start_utc))) & (
+            df["time_utc"] < pd.Timestamp(ensure_utc(end_utc))
+        )
+        return df.loc[mask, columns].reset_index(drop=True)
+
+    def book_open(self, symbol: str) -> bool:
+        """Subscribe to the symbol's depth of market (feed probe, TAA-L001; read-only)."""
+        return bool(self.client.call("market_book_add", symbol))
+
+    def book_snapshot(self, symbol: str) -> list[tuple[int, float, float]] | None:
+        """The current depth of market as (type, price, volume); None when the terminal refused."""
+        raw = self.client.call("market_book_get", symbol)
+        if raw is None:
+            return None
+        return [(int(b.type), float(b.price), float(getattr(b, "volume_dbl", b.volume))) for b in raw]
+
+    def book_close(self, symbol: str) -> None:
+        self.client.call("market_book_release", symbol)
+
     def tick(self, symbol: str) -> Tick | None:
         raw = self.client.call("symbol_info_tick", symbol)
         if raw is None:

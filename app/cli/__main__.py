@@ -173,6 +173,47 @@ def _date(value: str | None) -> datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
 
 
+def cmd_ticks_probe(args: argparse.Namespace) -> int:
+    """Read-only probe of the broker feed: depth of market, tick history depth, tick character (TAA-L001)."""
+    import time
+
+    from app.broker.factory import build_read_only
+    from app.core.clock import SystemClock
+    from app.market_data.feed_probe import format_report, probe
+
+    settings = _settings(args)
+    if not args.fake:  # the terminal caches every month the depth search touches (~40-60 MB per symbol)
+        import shutil
+
+        terminal = Path(settings.env.MT5_TERMINAL_PATH or ".").resolve()
+        free_gb = shutil.disk_usage(terminal.anchor or ".").free / 1e9
+        need_gb = 0.1 * len(args.symbols) * max(1, args.max_weeks // 4 + 1)
+        if free_gb < 2 + need_gb:
+            print(
+                f"refused: {free_gb:.1f} GB free on {terminal.anchor}; the probe may need ~{need_gb:.1f} GB"
+            )
+            return 2
+    clock = SystemClock()
+    bundle = build_read_only(settings, fake=args.fake, clock=clock)
+    bundle.client.connect()
+    try:
+        reports = probe(
+            bundle.gateway,
+            args.symbols,
+            clock.now_utc(),
+            book_samples=args.book_samples,
+            book_interval=args.book_interval,
+            max_weeks=args.max_weeks,
+            sleep=time.sleep,
+        )
+    finally:
+        bundle.client.shutdown()
+    print("TAA feed probe" + (" (FAKE broker)" if args.fake else "") + " - read-only")
+    for line in format_report(reports):
+        print(line)
+    return 0
+
+
 def cmd_backtest(args: argparse.Namespace) -> int:
     from pathlib import Path
 
@@ -589,6 +630,23 @@ def build_parser() -> argparse.ArgumentParser:
     reset.add_argument("--symbol", default=None, help="for symbol-scoped breakers")
     reset.add_argument("--ack", action="store_true", help="required for MAX_DRAWDOWN")
     reset.set_defaults(func=cmd_breaker)
+
+    ticks = sub.add_parser("ticks", help="tick data tools (read-only)")
+    ticks_sub = ticks.add_subparsers(dest="ticks_cmd", required=True)
+    tp = ticks_sub.add_parser(
+        "probe", help="depth of market, tick history depth and tick character (TAA-L001)"
+    )
+    tp.add_argument("--symbols", nargs="+", default=["EURUSD", "XAUUSD", "BTCUSD"])
+    tp.add_argument("--book-samples", type=int, default=5)
+    tp.add_argument("--book-interval", type=float, default=1.0, help="seconds between book samples")
+    tp.add_argument(
+        "--max-weeks",
+        type=int,
+        default=8,
+        help="how far back to search tick history; each month touched costs ~40-60 MB of terminal cache",
+    )
+    tp.add_argument("--fake", action="store_true", help="use FakeMT5 instead of the real terminal")
+    tp.set_defaults(func=cmd_ticks_probe)
 
     st = sub.add_parser("strategy", help="strategies disabled by remote commands (re-enable is local only)")
     st_sub = st.add_subparsers(dest="action", required=True)

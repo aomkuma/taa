@@ -130,11 +130,11 @@ means *reading* what exists, not rewriting it.
 
 | Data | What it really is | Consequence |
 |---|---|---|
-| `copy_ticks_*` (`time_msc`, `bid`, `ask`, `last`, `volume`, `flags`) | The broker's quote stream, already filtered or aggregated by FBS. For FX/CFD, `last` and `volume` are usually 0. | Microstructure means **quote dynamics**, not trades. |
+| `copy_ticks_*` (`time_msc`, `bid`, `ask`, `last`, `volume`, `flags`) | The broker's quote stream. **Measured:** `last` and `volume` are 0 on 100% of ticks for all five probed symbols. FX/metals/indices ticks carry flag 96 (BUY+SELL) plus 2/4 for a bid/ask change; **about 58% of EURUSD ticks change neither bid nor ask** (flag 96 alone). Rates in the Asian session: EURUSD ~86/min, GBPUSD ~95, XAUUSD ~166, US30 ~38, BTCUSD ~40 | Microstructure means **quote dynamics**, not trades. Tick counts and imbalance must use only ticks with a bid or ask change (flags 2/4), or quote activity is overstated |
 | Bar `tick_volume` | The number of quote updates in the bar | An activity proxy, not traded volume |
 | Bar `real_volume` | 0 for FX/CFD on FBS | Unusable |
-| `market_book_*` (DOM) | **Unverified.** FBS advertises DOM in its MT5 offering, but for OTC FX a retail DOM shows the broker's own quote ladder (indicative sizes), not a market-wide book | Probe it first (TAA-L001). Book features stay optional, behind the probe result, and the design must work without them |
-| Tick history depth | `copy_ticks_range` returns only what the broker's server keeps. The depth varies by symbol and server and is not documented | Probe the depth (TAA-L001) and **record ticks ourselves** from day one (L3) |
+| `market_book_*` (DOM) | **Measured 2026-10-06 (TAA-L001): unavailable.** `market_book_add` is refused for EURUSD, GBPUSD, XAUUSD, US30 and BTCUSD on FBS-Demo | `book_imbalance` (L4) stays off. No feature depends on a book |
+| Tick history depth | **Measured 2026-10-06:** XAUUSD served back to at least 2025-10 (≥ 12 months); EURUSD/GBPUSD ≥ 62 days in a capped search. Every month touched is downloaded whole into the terminal's `Bases/<server>/ticks` (~40–60 MB per month for XAUUSD/BTCUSD), and a month missing from the cache can come back empty on the first query | A 30–90-day backfill is feasible; deeper history costs disk. Still **record ticks ourselves** (L3), with the size cap |
 | Time | `time_msc` in broker server wall-clock (EET/EEST) | Convert only through `ServerClock` (as in PLAN §A5) |
 
 **Real buy/sell pressure is not observable.** Every "pressure" feature here is a proxy, named and explained as
@@ -291,7 +291,7 @@ in config.
 | `run_persistence` | Mean run length of same-sign mid changes over W vs a shuffled baseline | Micro-trend vs noise |
 | `range_position` | (mid − low_W) / (high_W − low_W) | Chasing guard |
 | `efficiency_ratio` | \|net Δmid\| / Σ\|Δmid\| over W (Kaufman) | Trending vs choppy quotes |
-| `book_imbalance` (optional) | (Σ bid size − Σ ask size) / total over the top k levels of `market_book_get` | The broker ladder's lean. Enabled only if TAA-L001 shows a non-empty, changing book |
+| ~~`book_imbalance`~~ | — | Dropped: TAA-L001 found no depth of market on FBS (2026-10-06) |
 
 **Rules.**
 

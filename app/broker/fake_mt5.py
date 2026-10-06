@@ -325,6 +325,9 @@ class FakeMT5:
         self._seed = seed
         self.desk = FakeTradeDesk(self)
         self.price_override: dict[str, float] = {}  # tests: pin a symbol's bid
+        # tests: depth of market per symbol, as (type, price, volume); an absent symbol has an empty book
+        self.book: dict[str, list[tuple[int, float, float]]] = {}
+        self._book_subscribed: set[str] = set()
         start = clock.now_utc() - timedelta(days=history_days)
         end = clock.now_utc() + timedelta(days=future_days)
         self._series = {
@@ -745,6 +748,33 @@ class FakeMT5:
         out["ask"] = np.round(prices + spreads, sym.digits)
         out["flags"] = 6
         return out
+
+    def market_book_add(self, symbol: str) -> bool:
+        if not self._enter("market_book_add"):
+            return False
+        if symbol not in self.symbols:
+            self._last_error = (-2, "Invalid arguments")
+            return False
+        self._book_subscribed.add(symbol)
+        return True
+
+    def market_book_get(self, symbol: str) -> tuple[SimpleNamespace, ...] | None:
+        """The book set in :attr:`book` (empty by default, like most retail FX books)."""
+        if not self._enter("market_book_get"):
+            return None
+        if symbol not in self._book_subscribed:
+            self._last_error = (-1, "Market book not subscribed")
+            return None
+        return tuple(
+            SimpleNamespace(type=t, price=p, volume=int(v), volume_dbl=float(v))
+            for t, p, v in self.book.get(symbol, [])
+        )
+
+    def market_book_release(self, symbol: str) -> bool:
+        if not self._enter("market_book_release"):
+            return False
+        self._book_subscribed.discard(symbol)
+        return True
 
     def positions_get(self, symbol: str | None = None, ticket: int | None = None) -> tuple[Any, ...] | None:
         if not self._enter("positions_get"):
