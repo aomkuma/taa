@@ -90,3 +90,49 @@ def test_symbol_catalog_and_ticks(bundle) -> None:  # type: ignore[no-untyped-de
     end = b.client.clock.now_utc()
     ticks = b.gateway.ticks_range(sym, end - timedelta(days=7), end)
     assert list(ticks.columns) == ["time_utc", "bid", "ask"]
+
+
+@pytest.mark.skipif(
+    os.environ.get("TAA_MT5_TRADING_TESTS") != "1",
+    reason="set TAA_MT5_TRADING_TESTS=1 (a DEMO account with its master password) to run",
+)
+def test_order_check_answers_through_the_client() -> None:
+    """order_check only, never order_send. On 2026-10-06 every order_check through MT5Client.call answered
+    None, (-2, "Unnamed arguments not allowed"), because an empty **kwargs reached the C module."""
+    from app.broker.execution import ExecutionGateway, RequestBuilder
+    from app.broker.factory import build_trading
+
+    os.environ.setdefault("TRADING_MODE", "DEMO")
+    os.environ.setdefault("ENABLE_DEMO_TRADING", "true")
+    settings = load_settings(env_file=".env", config_file="config.yaml")
+    assert settings.mode is TradingMode.DEMO, "the order_check contract runs on a DEMO account only"
+    b = build_trading(settings)
+    b.client.connect()
+    try:
+        gw = ExecutionGateway(b.client)
+        builder = RequestBuilder(10)
+        sym = settings.config.symbols.reference_symbol
+        spec = b.gateway.symbol_spec(sym)
+        tick = b.gateway.tick(sym)
+        assert tick is not None
+        far = 200 * spec.tick_size
+        market = builder.market_entry(
+            spec, Side.BUY, spec.volume_min, tick.ask, tick.ask - far, None, magic=1, comment="taa:check"
+        )
+        assert gw.check(market).retcode is not None
+        for filling in RequestBuilder.pending_fillings(spec):
+            limit = builder.limit_entry(
+                spec,
+                Side.BUY,
+                spec.volume_min,
+                tick.ask - far,
+                tick.ask - 2 * far,
+                None,
+                magic=1,
+                comment="taa:check",
+                filling=filling,
+                expiration_server=None,
+            )
+            assert gw.check(limit).retcode is not None
+    finally:
+        b.client.shutdown()

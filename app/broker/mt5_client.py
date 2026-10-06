@@ -150,7 +150,11 @@ class MT5Client:
         stats = self.stats.setdefault(name, CallStats())
         with self._lock:
             t0 = time.perf_counter()
-            result = getattr(self.mt5, name)(*args, **kwargs)
+            function = getattr(self.mt5, name)
+            # never pass an empty **kwargs: the real module's order_check/order_send then answer None with
+            # (-2, "Unnamed arguments not allowed") (found on the FBS demo terminal, 2026-10-06; FakeMT5 is
+            # pure Python and cannot tell the difference, so tests/integration/test_mt5_terminal.py checks it)
+            result = function(*args, **kwargs) if kwargs else function(*args)
             latency = (time.perf_counter() - t0) * 1000
             if result is None or result is False:
                 err = self.mt5.last_error()
