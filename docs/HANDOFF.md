@@ -63,9 +63,9 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   trades (L701 item 8) and the stop history of manual positions (L808).
 - Checks after these commits: unit 2351 + web 312 + golden 3 + engine integration 48 passed; vitest 535,
   lint, typecheck, build; ruff, mypy, bandit clean. The full pytest run with the stack stopped is still due.
-- Next in the learning track: Wave 2 starts with TAA-L001 (a read-only probe of DOM and tick-history depth on
-  the real terminal: **needs the user's OK**), then tick capture. Open questions Q2–Q8, Q12 in
-  `docs/PLAN_LEARNING.md` §L18.
+- **TAA-L001 done** (`app.cli ticks probe`, read-only): FBS has no depth of market, `last`/`volume` are always
+  0, ~58% of EURUSD ticks change neither bid nor ask (flag 96 alone; filter them), XAUUSD tick history ≥ 12
+  months. Next: tick capture (TAA-L101…). Open questions Q2–Q8, Q12 in `docs/PLAN_LEARNING.md` §L18.
 
 ### What this session added (2026-10-05/06)
 
@@ -177,6 +177,11 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Gotchas
 
+- **Drive C is nearly full (~5 GB free on 2026-10-06).** Asking MT5 for old ticks (`copy_ticks_range`) makes the
+  terminal download whole months into `C:\MT5	aa-bot\Bases\<server>	icks` (~40–60 MB per month and
+  symbol). An uncapped depth search filled the drive once; `ticks probe` is now capped with a free-disk
+  guard. Keep any backfill bounded. The tick months deleted that day (before 2026-09) may read as empty until
+  the terminal is restarted (its cache index still lists them).
 - **Memory (16 GB):** full pytest + vitest at once, or either next to the demo stack, crashes workers (vitest
   exit 134, numpy `ArrayMemoryError`, pandas access violations, argon2 `HashingError`). Run them one after the
   other; with the stack up use `npx vitest run --maxWorkers=2`; rerun a lone failure before investigating.
