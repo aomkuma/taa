@@ -9689,6 +9689,147 @@
     "skipped": 0,
     "trades": 4
   },
+  "engines/ENGINE/learning/timing?scope=MANUAL&days=366": {
+    "groups": [
+      {
+        "baseline_hit_rate": null,
+        "baseline_vindicated": null,
+        "hit_rate": null,
+        "key": [
+          "example_trend_pullback"
+        ],
+        "losers": 0,
+        "modes": {
+          "EARLY": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "LATE": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "OTHER": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "STALL": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "TF_MISMATCH": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "UNKNOWN": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "WRONG": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          }
+        },
+        "trades": 1,
+        "vindicated": null,
+        "winner_bars_to_tp": null,
+        "winner_mae_atr": null,
+        "winner_mae_r": null
+      }
+    ],
+    "hypothetical": false,
+    "lookahead_hours": 24,
+    "overall": [
+      {
+        "baseline_hit_rate": null,
+        "baseline_vindicated": null,
+        "hit_rate": null,
+        "key": [
+          "all"
+        ],
+        "losers": 0,
+        "modes": {
+          "EARLY": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "LATE": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "OTHER": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "STALL": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "TF_MISMATCH": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "UNKNOWN": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          },
+          "WRONG": {
+            "count": 0,
+            "high": 1.0,
+            "low": 0.0,
+            "n": 0,
+            "share": 0.0
+          }
+        },
+        "trades": 1,
+        "vindicated": null,
+        "winner_bars_to_tp": null,
+        "winner_mae_atr": null,
+        "winner_mae_r": null
+      }
+    ],
+    "scope": "MANUAL",
+    "skipped": 0,
+    "trades": 1
+  },
   "engines/ENGINE/learning/timing?scope=SHADOW&days=366": {
     "groups": [
       {

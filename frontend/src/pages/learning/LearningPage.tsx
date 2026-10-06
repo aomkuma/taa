@@ -19,7 +19,7 @@ import {
   TimingSchema,
 } from './schemas';
 
-const SCOPES = ['SHADOW', 'PAPER'] as const;
+const SCOPES = ['SHADOW', 'PAPER', 'MANUAL'] as const;
 const DAYS = [30, 90, 180] as const;
 const MODES = ['EARLY', 'LATE', 'STALL', 'TF_MISMATCH', 'WRONG', 'OTHER', 'UNKNOWN'] as const;
 
@@ -236,7 +236,7 @@ export function LearningPage() {
     queryKey: learningKeys.expectancy(id, scope, days),
     queryFn: ({ signal }) =>
       apiGet(`${base}/expectancy?scope=${scope}&days=${String(days)}`, ExpectancySchema, { signal }),
-    enabled: engineId !== null,
+    enabled: engineId !== null && scope !== 'MANUAL',
   });
   const behavior = useQuery({
     queryKey: learningKeys.behavior(id, days),
@@ -293,7 +293,13 @@ export function LearningPage() {
           {timing.data ? <TimingCard data={timing.data} /> : waiting(timing.isError)}
         </Card>
         <Card title={t('learning.expectancy.title')}>
-          {expectancy.data ? <ExpectancyCard data={expectancy.data} /> : waiting(expectancy.isError)}
+          {scope === 'MANUAL' ? (
+            <p className="text-sm text-slate-500">{t('learning.expectancy.noManual')}</p>
+          ) : expectancy.data ? (
+            <ExpectancyCard data={expectancy.data} />
+          ) : (
+            waiting(expectancy.isError)
+          )}
         </Card>
         <Card title={t('learning.behavior.title')}>
           {behavior.data ? <BehaviorCard data={behavior.data} /> : waiting(behavior.isError)}

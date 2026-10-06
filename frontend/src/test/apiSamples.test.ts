@@ -136,6 +136,7 @@ const CASES: [string, z.ZodType][] = [
   [`${E}recommendations?scope=BACKTEST&days=366&run=${RUN_A}`, RecommendationsSchema],
   [`${E}ai-assessments?days=366`, AIAssessmentsSchema],
   [`${E}learning/timing?scope=SHADOW&days=366`, TimingSchema],
+  [`${E}learning/timing?scope=MANUAL&days=366`, TimingSchema],
   [`${E}learning/timing?scope=BACKTEST&days=366&run=${RUN_A}`, TimingSchema],
   [`${E}learning/expectancy?scope=SHADOW&days=183`, ExpectancySchema],
   [`${E}learning/behavior?days=366`, BehaviorSchema],

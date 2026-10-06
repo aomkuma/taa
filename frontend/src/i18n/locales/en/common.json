@@ -2111,7 +2111,8 @@
     "scope": {
       "label": "Trades",
       "SHADOW": "Signals (simulated)",
-      "PAPER": "Bot (paper)"
+      "PAPER": "Bot (paper)",
+      "MANUAL": "My manual trades"
     },
     "timing": {
       "title": "Why losing trades lost",
@@ -2138,7 +2139,8 @@
         "L": "the size of losses",
         "c": "costs"
       },
-      "group": "Strategy · symbol"
+      "group": "Strategy · symbol",
+      "noManual": "Costs of manual trades are not recorded, so the expected result is shown for signals and the bot only."
     },
     "behavior": {
       "title": "Your manual trades",

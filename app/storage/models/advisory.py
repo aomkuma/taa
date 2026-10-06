@@ -258,6 +258,9 @@ class ManualTradeLinkRow(EngineKeyed, Base):
     close_price: Mapped[float | None] = mapped_column(Float, nullable=True)
     net_profit: Mapped[float | None] = mapped_column(Float, nullable=True)  # profit + commission + swap + fee
     r_multiple: Mapped[float | None] = mapped_column(Float, nullable=True)  # (close − open) / initial risk
+    # every later stop change as {"at": iso, "sl": price or None when removed} (TAA-L808); None: not recorded
+    # (links made before the history was kept)
+    stop_history: Mapped[list[dict[str, Any]] | None] = mapped_column(JSONType, nullable=True)
 
 
 class ManualTradeOverrideRow(EngineKeyed, Base):

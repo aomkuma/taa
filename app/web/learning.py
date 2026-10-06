@@ -15,6 +15,7 @@ unknown and no claim is made. Everything here is hypothetical and labelled so; n
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Hashable, Sequence
 from dataclasses import asdict
 from datetime import datetime, timedelta
@@ -25,8 +26,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.advisory.preferences import AdvisoryPreferences
+from app.analytics.trade_builder import (
+    AnalyticsError,
+    Costs,
+    EntryContext,
+    Scope,
+    Trade,
+    TradeSet,
+    context_from_decision,
+)
 from app.core.clock import Clock, ensure_utc
-from app.core.enums import Side, Timeframe
+from app.core.enums import ExitReason, Side, Timeframe
 from app.learning import behavior as lb
 from app.learning import expectancy as le
 from app.learning import timing as lt
@@ -112,12 +122,22 @@ class LearningReports:
     # timing ----------------------------------------------------------------------------------------------
 
     def timing(self, engine_id: str, **query: Any) -> dict[str, Any]:
-        found = self.analytics.trades(engine_id, **query)
-        recent = sorted(found.trades, key=lambda t: t.exit_time)[-MAX_TIMING_TRADES:]
         params = lt.TimingParams(lookahead=LOOKAHEAD)
         frames: dict[str, pd.DataFrame] = {}
+        if query.get("scope") == "MANUAL":  # the owner's closed manual trades (TAA-L701 item 8)
+            trades, skipped = self._manual_as_trades(
+                engine_id, query.get("days", DEFAULT_DAYS), params, frames
+            )
+            found = TradeSet(tuple(trades), ())
+            skipped_n = skipped
+        else:
+            found = self.analytics.trades(engine_id, **query)
+            skipped_n = len(found.skipped)
+        recent = sorted(found.trades, key=lambda t: t.exit_time)[-MAX_TIMING_TRADES:]
         with self.db.session() as sess:
             for t in recent:
+                if t.trade_id in frames:
+                    continue
                 tf = t.context.timeframe or Timeframe.M15
                 start = ensure_utc(t.entry_time) - timedelta(seconds=tf.seconds * (params.pre_trend_bars + 1))
                 end = ensure_utc(t.exit_time) + params.lookahead
@@ -129,12 +149,116 @@ class LearningReports:
         return {
             "scope": query["scope"],
             "trades": len(recent),
-            "skipped": len(found.skipped),
+            "skipped": skipped_n,
             "lookahead_hours": int(params.lookahead.total_seconds() // 3600),
             "hypothetical": any(t.hypothetical for t in recent),
             "overall": [self._timing_doc(r) for r in overall],
             "groups": [self._timing_doc(r) for r in groups],
         }
+
+    def _manual_as_trades(
+        self, engine_id: str, days: int, params: lt.TimingParams, frames: dict[str, pd.DataFrame]
+    ) -> tuple[list[Trade], int]:
+        """Closed manual trades as analytics records: the stop when first seen is 1R, the matched signal's
+        take-profit is the plan, and MAE/MFE come from the stored bars while the trade was open. The exit
+        reason is inferred: at the stop (within 0.1R) a stop-loss, at the plan's target a take-profit,
+        otherwise a manual close. Trades without a stop or bars are skipped."""
+        if not 1 <= days <= MAX_DAYS:
+            raise QueryError(f"days: 1-{MAX_DAYS}")
+        since = self.clock.now_utc() - timedelta(days=days)
+        out: list[Trade] = []
+        skipped = 0
+        tf = Timeframe.M15
+        with self.db.session() as sess:
+            links = list(
+                sess.scalars(
+                    select(ManualTradeLinkRow).where(
+                        ManualTradeLinkRow.engine_id == engine_id,
+                        ManualTradeLinkRow.status == "CLOSED",
+                        ManualTradeLinkRow.closed_at >= since,
+                    )
+                )
+            )
+            manual = {t.position_id: t for t in self._manual_trades(sess, engine_id, links)}
+            contexts = self._decision_contexts(sess, engine_id, [link.decision_id for link in links])
+            for link in links:
+                m = manual.get(link.position_id)
+                if m is None or m.sl_initial is None or m.r_multiple is None:
+                    skipped += 1
+                    continue
+                opened, closed = ensure_utc(m.opened_at), ensure_utc(m.closed_at)
+                start = opened - timedelta(seconds=tf.seconds * (params.pre_trend_bars + 1))
+                bars = self._bars(sess, engine_id, m.symbol, tf, start, closed + params.lookahead)
+                held = bars.loc[
+                    (bars["open_time"] >= opened - timedelta(seconds=tf.seconds))
+                    & (bars["open_time"] < closed)
+                ]
+                if held.empty:
+                    skipped += 1
+                    continue
+                sign = m.side.sign
+                risk = abs(m.price_open - m.sl_initial)
+                extreme_for = held["high"].max() if sign > 0 else held["low"].min()
+                extreme_against = held["low"].min() if sign > 0 else held["high"].max()
+                if abs(m.close_price - m.sl_initial) <= 0.1 * risk:
+                    reason = ExitReason.STOP_LOSS
+                elif m.tp_plan is not None and abs(m.close_price - m.tp_plan) <= 0.1 * risk:
+                    reason = ExitReason.TAKE_PROFIT
+                else:
+                    reason = ExitReason.MANUAL
+                trade_id = f"MANUAL:{m.position_id}"
+                frames[trade_id] = bars
+                context = contexts.get(link.decision_id or "") or EntryContext(timeframe=tf)
+                out.append(
+                    Trade(
+                        trade_id=trade_id,
+                        scope=Scope.DEMO,  # real broker fills on the owner's account, not a simulation
+                        symbol=m.symbol,
+                        side=m.side,
+                        strategy=link.strategy or "manual",
+                        signal_id=link.signal_key or "",
+                        volume=link.volume,
+                        entry_time=opened,
+                        entry_price=m.price_open,
+                        exit_time=closed,
+                        exit_price=m.close_price,
+                        exit_reason=reason,
+                        initial_sl=m.sl_initial,
+                        initial_tp=m.tp_plan,
+                        stop_at_exit=None,
+                        risk_money=None,
+                        gross_pnl=None,
+                        net_pnl=link.net_profit,
+                        r_multiple=m.r_multiple,
+                        costs=Costs(),
+                        cost_r=None,
+                        slippage_price=None,
+                        mae=max(0.0, float((m.price_open - extreme_against) * sign)),
+                        mfe=max(0.0, float((extreme_for - m.price_open) * sign)),
+                        bars_held=len(held),
+                        context=dataclasses.replace(context, timeframe=context.timeframe or tf),
+                    )
+                )
+        return out, skipped
+
+    @staticmethod
+    def _decision_contexts(
+        sess: Session, engine_id: str, ids: Sequence[str | None]
+    ) -> dict[str, EntryContext]:
+        wanted = {i for i in ids if i}
+        out: dict[str, EntryContext] = {}
+        if not wanted:
+            return out
+        for d in sess.scalars(
+            select(DecisionRecordRow).where(
+                DecisionRecordRow.engine_id == engine_id, DecisionRecordRow.decision_id.in_(wanted)
+            )
+        ):
+            try:
+                out[d.decision_id] = context_from_decision(d.signal or {}, d.market or {})
+            except AnalyticsError:
+                continue
+        return out
 
     @staticmethod
     def _timing_doc(r: lt.TimingReport) -> dict[str, Any]:
@@ -307,6 +431,9 @@ class LearningReports:
                     tp_plan=tp,
                     matched=matched,
                     asset_class=classes.get(link.symbol),
+                    stop_history=None
+                    if link.stop_history is None
+                    else [e.get("sl") for e in link.stop_history if isinstance(e, dict)],
                 )
             )
         return out

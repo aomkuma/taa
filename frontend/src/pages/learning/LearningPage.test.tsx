@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { json } from '@/test/api';
 import { owner, renderShell } from '@/test/engine';
@@ -28,5 +29,26 @@ describe('Learning page', () => {
     expect(behavior).toHaveTextContent('Traded without a matching signal');
     expect(behavior).toHaveTextContent('not a grade');
     expect(screen.getByText(/past results do not predict future results/)).toBeInTheDocument();
+  });
+
+  it('switches to my manual trades without asking for an expectancy', async () => {
+    const user = userEvent.setup();
+    owner({
+      'GET /engines/e1/learning/timing?scope=SHADOW&days=90': () =>
+        json(recorded['engines/ENGINE/learning/timing?scope=SHADOW&days=366']),
+      'GET /engines/e1/learning/expectancy?scope=SHADOW&days=90': () =>
+        json(recorded['engines/ENGINE/learning/expectancy?scope=SHADOW&days=183']),
+      'GET /engines/e1/learning/behavior?days=90': () =>
+        json(recorded['engines/ENGINE/learning/behavior?days=366']),
+      'GET /engines/e1/learning/timing?scope=MANUAL&days=90': () =>
+        json(recorded['engines/ENGINE/learning/timing?scope=MANUAL&days=366']),
+    });
+    renderShell('/learning');
+    await user.selectOptions(await screen.findByLabelText('Trades'), 'MANUAL');
+    const expectancy = await screen.findByRole('region', { name: 'Expected result per trade' });
+    expect(
+      await within(expectancy).findByText(/Costs of manual trades are not recorded/),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole('region', { name: 'Why losing trades lost' })).toBeInTheDocument();
   });
 });

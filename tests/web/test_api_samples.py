@@ -120,6 +120,7 @@ ENGINE_ROUTES = [
     f"recommendations?scope=BACKTEST&days=366&run={RUN_A}",
     "ai-assessments?days=366",
     "learning/timing?scope=SHADOW&days=366",
+    "learning/timing?scope=MANUAL&days=366",
     f"learning/timing?scope=BACKTEST&days=366&run={RUN_A}",
     "learning/expectancy?scope=SHADOW&days=183",
     "learning/behavior?days=366",

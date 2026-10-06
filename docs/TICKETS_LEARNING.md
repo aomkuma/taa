@@ -57,8 +57,8 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L4 — Signal-quality model | 6 | 0 | TODO |
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
-| M3 | Phase L7 — Entry timing (right direction, wrong time) | 6 | 0 | IN PROGRESS |
-| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 0 | IN PROGRESS |
+| M3 | Phase L7 — Entry timing (right direction, wrong time) | 6 | 1 | IN PROGRESS |
+| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 1 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
 ## Milestone 3 — Learning layer
@@ -406,7 +406,7 @@ the TP.
 
 #### TAA-L701 — Timing diagnostics (L19.1, L19.2)
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** — (Wave 1; σ from ATR first, the L303 profile σ once it exists); uses existing shadow data and TAA-1006 matches
 
 - [x] `app/learning/timing.py`: pure follow-up after a stop with its own look-ahead H, over analytics `Trade` records (read-only)
@@ -416,7 +416,7 @@ the TP.
 - [x] winners' MAE quantiles (R, ATR), time-to-target quantiles, pre-entry run (chase), TF agreement
 - [x] random-walk first-passage baseline (P(TP first) = b/(a+b), E[τ] = a·b/σ²) shown beside the observed values
 - [x] served by `GET /engines/{id}/learning/timing`, computed on request from the replicas like TAA-1005 (a `timing_diagnostics` table only if the load needs one)
-- [ ] same report for matched manual trades in analytics
+- [x] same report for matched manual trades in analytics
 - [x] tests (synthetic paths with known outcomes; baseline formula against simulation)
 
 #### TAA-L702 — Entry-mode shadow variants (L19.3)
@@ -570,12 +570,12 @@ per-signal budget.
 
 #### TAA-L808 — Behavior report on manual trades (L20.7)
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** L701 (Wave 1; the "against the current playbook" check is added when L802 exists)
 
 - [x] detectors: early exit of winners, stop moved away, revenge trade, overtrading, off-plan trade, comfort-zone bias
 - [x] per pattern: count, share, hypothetical ΔR "as traded" vs "as planned"
-- [ ] engine records the stop history of manual positions (today `manual_trade_links` keeps only `sl_initial`), so `STOP_MOVED` can be judged
+- [x] engine records the stop history of manual positions (today `manual_trade_links` keeps only `sl_initial`), so `STOP_MOVED` can be judged
 - [x] `GET /engines/{id}/learning/behavior`, computed on request + Learning page section
 - [x] descriptive, non-judgmental th + en texts; catalogs test passes
 - [x] tests

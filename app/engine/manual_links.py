@@ -61,6 +61,8 @@ class ManualTradeLinker:
             row = self._links.get(pid) or self._load(pid) or self._match(p, pid)
             if row.sl_initial is None and p.sl > 0:  # linked before the stop was kept (TAA-1006 part 1)
                 row = self._keep_stop(pid, p.sl) or row
+            elif row.stop_history is not None and row.sl_initial is not None:
+                row = self._track_stop(row, p.sl) or row
             self._links[pid] = row
             out[pid] = row
         return out
@@ -81,6 +83,25 @@ class ManualTradeLinker:
             sess.flush()
             sess.expunge(row)
             return row
+
+    def _track_stop(self, row: ManualTradeLinkRow, sl: float) -> ManualTradeLinkRow | None:
+        """Record a stop change of a manual position (TAA-L808: was the stop widened or removed?)."""
+        history = list(row.stop_history or [])
+        last = history[-1]["sl"] if history else row.sl_initial
+        current = sl if sl > 0 else None
+        if current == last:
+            return None
+        history.append({"at": self.clock.now_utc().isoformat(), "sl": current})
+        with self.db.session() as sess:
+            stored = sess.scalar(
+                select(ManualTradeLinkRow).where(ManualTradeLinkRow.position_id == row.position_id)
+            )
+            if stored is None:
+                return None
+            stored.stop_history = history
+            sess.flush()
+            sess.expunge(stored)
+            return stored
 
     def candidates(self, symbol: str, side: Side, opened_at: datetime) -> list[SignalCandidate]:
         with self.db.session() as sess:
@@ -110,6 +131,7 @@ class ManualTradeLinker:
             rule_version=RULE_VERSION,
             matched_at=self.clock.now_utc(),
             sl_initial=p.sl if p.sl > 0 else None,
+            stop_history=[],
             status="OPEN",
         )
         with self.db.session() as sess:

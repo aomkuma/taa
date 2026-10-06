@@ -147,15 +147,6 @@ class TestLinker:
             row = sess.scalars(select(ManualTradeLinkRow).where(ManualTradeLinkRow.position_id == 79)).one()
         assert (row.status, row.close_price, row.net_profit, row.r_multiple) == ("CLOSED", 1.1075, 74.65, 1.5)
 
-
-def test_rank_lists_the_qualifying_signals_first() -> None:
-    from app.analytics.manual_match import rank
-
-    far = dataclasses.replace(BOT, key="k-far", entry=1.3215 + 0.002, decision_id="d4")
-    ranked = rank(OWNER, [far, BOT, dataclasses.replace(BOT, key="k-buy", side=Side.BUY)])
-    assert [r.candidate.key for r in ranked] == ["k-gbp", "k-far"]  # the BUY is not offered
-    assert ranked[0].qualifies and not ranked[1].qualifies and ranked[1].score is None
-
     def test_a_link_without_a_stop_gets_the_positions_stop(self, db: Database) -> None:
         clock = ManualClock(SYNC_T)
         ManualTradeLinker(db, clock).observe([position(1.1, SYNC_T, pid=80)])
@@ -164,3 +155,37 @@ def test_rank_lists_the_qualifying_signals_first() -> None:
         ManualTradeLinker(db, clock).observe([position(1.1, SYNC_T, pid=80)])
         with db.session() as sess:
             assert sess.scalars(select(ManualTradeLinkRow)).one().sl_initial == 1.095
+
+    def test_stop_changes_are_recorded_for_new_links(self, db: Database) -> None:
+        clock = ManualClock(SYNC_T)
+        linker = ManualTradeLinker(db, clock)
+        moved = dataclasses.replace(position(1.1, SYNC_T, pid=81), sl=1.093)  # widened (BUY: lower stop)
+        linker.observe([position(1.1, SYNC_T, pid=81)])
+        clock.advance(60)
+        linker.observe([moved])
+        linker.observe([moved])  # unchanged: nothing new
+        clock.advance(60)
+        linker.observe([dataclasses.replace(moved, sl=0.0)])  # removed
+        with db.session() as sess:
+            row = sess.scalars(select(ManualTradeLinkRow)).one()
+        assert [e["sl"] for e in row.stop_history or []] == [1.093, None]
+        assert row.sl_initial == 1.095
+
+    def test_links_made_before_the_history_stay_unknown(self, db: Database) -> None:
+        clock = ManualClock(SYNC_T)
+        ManualTradeLinker(db, clock).observe([position(1.1, SYNC_T, pid=82)])
+        with db.session() as sess:
+            sess.scalars(select(ManualTradeLinkRow)).one().stop_history = None
+        later = dataclasses.replace(position(1.1, SYNC_T, pid=82), sl=1.09)
+        ManualTradeLinker(db, clock).observe([later])
+        with db.session() as sess:
+            assert sess.scalars(select(ManualTradeLinkRow)).one().stop_history is None
+
+
+def test_rank_lists_the_qualifying_signals_first() -> None:
+    from app.analytics.manual_match import rank
+
+    far = dataclasses.replace(BOT, key="k-far", entry=1.3215 + 0.002, decision_id="d4")
+    ranked = rank(OWNER, [far, BOT, dataclasses.replace(BOT, key="k-buy", side=Side.BUY)])
+    assert [r.candidate.key for r in ranked] == ["k-gbp", "k-far"]  # the BUY is not offered
+    assert ranked[0].qualifies and not ranked[1].qualifies and ranked[1].score is None
