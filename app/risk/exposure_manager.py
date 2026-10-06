@@ -9,11 +9,14 @@ trade against it. Rules:
 - **Risk to stop** of a position = the broker loss from its open price to its stop (0 once the stop is
   past break-even). A position **without a stop**, or on a symbol whose spec or price is unusable, has
   *unknown* risk: the check ``UNKNOWN_POSITION_RISK`` fails (fail closed).
-- **Portfolio heat** = Σ risk to stop + the candidate's risk with every part filled, as % of equity, within
-  ``risk.max_total_open_risk_percent`` (or a lower trading-profile value).
+- **Portfolio heat** = Σ risk to stop + the risk to stop of resting orders (the limit parts of entry plans,
+  TAA-1207; foreign ones only under ``count``) + the candidate's risk with every part filled, as % of equity,
+  within ``risk.max_total_open_risk_percent`` (or a lower trading-profile value).
 - **Counts:** total open positions, positions per symbol, an opposite position on the symbol (never
   reversed automatically), correlation groups (at most one position per side within a group), and the
-  number of positions long / short each currency (``max_same_direction_per_currency``).
+  number of positions long / short each currency (``max_same_direction_per_currency``). The parts of one
+  entry plan count as **one** position (owner decision 2026-10-06): ``groups`` maps a position ticket to its
+  plan; a position without a plan (manual, older) counts on its own.
 - **Margin utilization** = (margin used + candidate margin) / equity; **effective leverage** = Σ |P/L of a
   1 % move| × 100 / equity, broker-computed.
 """
@@ -24,7 +27,7 @@ from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from app.broker.models import BrokerPosition
+from app.broker.models import BrokerOrder, BrokerPosition
 from app.config import RiskConfig
 from app.core.enums import Side
 from app.market_data.data_models import SymbolSpec
@@ -49,15 +52,36 @@ class PositionRisk:
 
 
 @dataclass(frozen=True, slots=True)
+class PendingRisk:
+    order: BrokerOrder
+    is_bot: bool
+    risk_to_stop: float | None  # None: the broker could not price it
+
+
+@dataclass(frozen=True, slots=True)
 class Exposure:
     positions: tuple[PositionRisk, ...]
     equity: float
     margin: float
     counted: tuple[PositionRisk, ...] = field(default=())  # positions that count toward limits
+    pending: tuple[PendingRisk, ...] = ()  # resting orders that count toward heat
+    groups: Mapping[int, str] = field(default_factory=dict)  # position ticket -> entry plan
 
     @property
     def open_risk(self) -> float:
-        return sum(p.risk_to_stop or 0.0 for p in self.counted)
+        positions = sum(p.risk_to_stop or 0.0 for p in self.counted)
+        return positions + sum(o.risk_to_stop or 0.0 for o in self.pending)
+
+    def trades(self) -> list[BrokerPosition]:
+        """The counted positions, one per trade: the parts of one entry plan count once."""
+        seen: set[str] = set()
+        out = []
+        for p in self.counted:
+            key = self.groups.get(p.position.ticket) or f"#{p.position.ticket}"
+            if key not in seen:
+                seen.add(key)
+                out.append(p.position)
+        return out
 
     @property
     def heat_percent(self) -> float:
@@ -66,6 +90,10 @@ class Exposure:
     @property
     def unknown_risk(self) -> tuple[PositionRisk, ...]:
         return tuple(p for p in self.counted if p.unknown)
+
+    @property
+    def unknown_pending(self) -> tuple[PendingRisk, ...]:
+        return tuple(o for o in self.pending if o.risk_to_stop is None)
 
     @property
     def foreign(self) -> tuple[PositionRisk, ...]:
@@ -118,16 +146,31 @@ class ExposureManager:
             return PositionRisk(position, bot, None, move_value)
         return PositionRisk(position, bot, max(0.0, -pnl), move_value)
 
+    def pending_risk(self, order: BrokerOrder) -> PendingRisk | None:
+        """The loss if a resting order fills and stops out; None for one without a stop (no risk until it
+        fills, and then the position itself is measured)."""
+        if order.sl <= 0:
+            return None
+        bot = self.magic_base <= order.magic < self.magic_base + MAGIC_RANGE
+        pnl = self.calculator.calc_profit(order.side, order.symbol, order.volume, order.price_open, order.sl)
+        return PendingRisk(order, bot, None if pnl is None else max(0.0, -pnl))
+
     def snapshot(
-        self, positions: Sequence[BrokerPosition], funds: AccountFunds, specs: Mapping[str, SymbolSpec]
+        self,
+        positions: Sequence[BrokerPosition],
+        funds: AccountFunds,
+        specs: Mapping[str, SymbolSpec],
+        *,
+        pending: Sequence[BrokerOrder] = (),
+        groups: Mapping[int, str] | None = None,
     ) -> Exposure:
         measured = tuple(self.position_risk(p, specs.get(p.symbol)) for p in positions)
-        counted = (
-            measured
-            if self.risk.foreign_positions_policy == "count"
-            else tuple(m for m in measured if m.is_bot)
+        count_all = self.risk.foreign_positions_policy == "count"
+        counted = measured if count_all else tuple(m for m in measured if m.is_bot)
+        orders = tuple(
+            r for r in (self.pending_risk(o) for o in pending) if r is not None and (count_all or r.is_bot)
         )
-        return Exposure(measured, funds.equity, funds.margin, counted)
+        return Exposure(measured, funds.equity, funds.margin, counted, orders, dict(groups or {}))
 
     # checking ----------------------------------------------------------------------------------------------
 
@@ -143,6 +186,8 @@ class ExposureManager:
         acct = CheckKind.ACCOUNT
         book = [p.position for p in exposure.counted]
         on_symbol = [p for p in book if p.symbol == candidate.symbol]
+        trades = exposure.trades()  # plan parts count once (TAA-1207)
+        trades_on_symbol = [p for p in trades if p.symbol == candidate.symbol]
         heat_limit = r.max_total_open_risk_percent
         if max_heat_percent is not None:
             heat_limit = min(heat_limit, max_heat_percent)
@@ -166,7 +211,7 @@ class ExposureManager:
             else exposure.effective_leverage + 100.0 * abs(cand_move) / equity
         )
         group_conflicts = self._group_conflicts(candidate, book)
-        currency_counts = self._currency_counts(candidate, book, specs)
+        currency_counts = self._currency_counts(candidate, trades, specs)
         worst_currency = max(currency_counts.items(), key=lambda kv: kv[1], default=("", 0))
         foreign = exposure.foreign
         return [
@@ -181,17 +226,17 @@ class ExposureManager:
             Check(
                 "max_open_positions",
                 Reason.MAX_OPEN_POSITIONS,
-                len(book) + 1 <= r.max_open_positions,
+                len(trades) + 1 <= r.max_open_positions,
                 acct,
-                len(book) + 1,
+                len(trades) + 1,
                 r.max_open_positions,
             ),
             Check(
                 "max_positions_per_symbol",
                 Reason.MAX_POSITIONS_PER_SYMBOL,
-                len(on_symbol) + 1 <= r.max_positions_per_symbol,
+                len(trades_on_symbol) + 1 <= r.max_positions_per_symbol,
                 acct,
-                len(on_symbol) + 1,
+                len(trades_on_symbol) + 1,
                 r.max_positions_per_symbol,
             ),
             Check(
@@ -222,10 +267,13 @@ class ExposureManager:
             Check(
                 "unknown_position_risk",
                 Reason.UNKNOWN_POSITION_RISK,
-                not exposure.unknown_risk,
+                not (exposure.unknown_risk or exposure.unknown_pending),
                 acct,
-                ",".join(f"{p.position.symbol}#{p.position.ticket}" for p in exposure.unknown_risk),
-                "every open position has a measurable stop",
+                ",".join(
+                    [f"{p.position.symbol}#{p.position.ticket}" for p in exposure.unknown_risk]
+                    + [f"{o.order.symbol}order#{o.order.ticket}" for o in exposure.unknown_pending]
+                ),
+                "every open position and resting order has a measurable stop",
             ),
             Check(
                 "max_total_open_risk",

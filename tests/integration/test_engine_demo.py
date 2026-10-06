@@ -160,3 +160,42 @@ def test_no_entries_while_the_kill_switch_halts(tmp_path: Path) -> None:
     assert d.engine.gateway.positions() == []
     assert d.engine.bundle.fake is not None and d.engine.bundle.fake.calls["order_send"] == 0
     d.engine.shutdown()
+
+
+def test_the_owner_entry_plan_runs_end_to_end(tmp_path: Path) -> None:
+    """TAA-1207: a 5-part SCALE_IN from the local profile: market part, resting limits, kill switch."""
+    s = demo_settings(tmp_path)
+    prefs = {"entry_plan": {"mode": "SCALE_IN", "parts": 5, "lot_unit": 0.01, "spacing_atr": 0.5}}
+    cfg = s.config.model_copy(
+        update={
+            "execution": s.config.execution.model_copy(update={"entry_plans": True}),
+            "advisory": s.config.advisory.model_copy(update={"preferences": prefs}),
+        }
+    )
+    clock = ManualClock(START)
+    db = Database("sqlite://")
+    db.create_all()
+    sink = MemorySink()
+    settings = dataclasses.replace(s, config=cfg)
+    engine = Engine(
+        settings,
+        build_trading(settings, fake=True, clock=clock),
+        db,
+        clock,
+        bus=EventBus(clock, [sink], dedupe_seconds=0),
+        sleep=clock.advance,
+    )
+    d = Demo(engine, clock, sink, db)
+    start_buyer(d)
+    run_until(d, EventType.POSITION_OPENED)
+    states = sorted(d.intents())
+    assert states.count("PROTECTED") >= 1 and "PLACED" in states, states
+    resting = d.engine.gateway.orders()
+    assert resting and all(o.magic == MAGIC and o.type == c.ORDER_TYPE_BUY_LIMIT for o in resting)
+    [market] = [p for p in d.engine.gateway.positions() if p.magic == MAGIC]
+    assert all(o.sl == market.sl for o in resting)  # one shared stop
+    d.engine.kill_switch.activate("test", "op", "cli", KillMode.HALT)
+    d.engine.backend.maintain()
+    assert d.engine.gateway.orders() == []
+    assert "PLACED" not in d.intents() and "CANCELLED" in d.intents()
+    d.engine.shutdown()

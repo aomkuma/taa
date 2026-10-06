@@ -52,7 +52,7 @@ from app.ai.notes import AINotes
 from app.ai.providers import AIProvider, AnthropicProvider, NullProvider
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
-from app.broker.models import BrokerPosition
+from app.broker.models import BrokerOrder, BrokerPosition
 from app.config import RiskConfig, Settings
 from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
 from app.core.enums import ExitReason, Side, TradingMode
@@ -957,7 +957,13 @@ class Engine:
                 market=ctx.market,
                 spec=spec,
                 quote=self.quotes.quote(spec),
-                account=AccountState(self.backend.funds(), self._book(), self._loss_status()),
+                account=AccountState(
+                    self.backend.funds(),
+                    self._book(),
+                    self._loss_status(),
+                    self._pending_orders(),
+                    self.backend.position_groups(),
+                ),
                 health=self.health_snapshot(),
                 specs=self.symbols,
                 gate=self.gate(),
@@ -999,6 +1005,13 @@ class Engine:
     def effective_risk(self) -> RiskConfig:
         """The limits the engine trades with now (TAA-710); ``config.yaml`` alone before ``start()``."""
         return self.config.risk if self.risk_limits is None else self.risk_limits.current().effective
+
+    def _pending_orders(self) -> list[BrokerOrder]:
+        try:
+            return self.backend.pending_orders()
+        except TaaError:
+            log.warning("could not read resting orders for exposure")
+            return []
 
     def _book(self) -> list[BrokerPosition]:
         try:
@@ -1115,7 +1128,13 @@ class Engine:
                 self.config.risk, self.decisions.calculator, magic_base=self.settings.env.MAGIC_NUMBER_BASE
             )
             book = self._book()
-            exposure = manager.snapshot(book, funds, self.decisions.position_specs(self.symbols, book))
+            exposure = manager.snapshot(
+                book,
+                funds,
+                self.decisions.position_specs(self.symbols, book),
+                pending=self._pending_orders(),
+                groups=backend.position_groups(),
+            )
         except Exception:  # telemetry boundary
             log.exception("account snapshot for the heartbeat failed")
             return None

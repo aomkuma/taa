@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 from typing import Protocol
 
 from app.broker.gateway import MarketDataGateway
-from app.broker.models import BrokerPosition, Deal
+from app.broker.models import BrokerOrder, BrokerPosition, Deal
 from app.core.clock import Clock
 from app.core.enums import ExitReason
 from app.core.errors import TaaError
@@ -51,6 +51,14 @@ class Backend(Protocol):
     def funds(self) -> AccountFunds: ...
 
     def book(self) -> list[BrokerPosition]: ...
+
+    def pending_orders(self) -> list[BrokerOrder]:
+        """Resting orders whose risk counts toward portfolio heat (TAA-1207)."""
+        ...
+
+    def position_groups(self) -> dict[int, str]:
+        """Position ticket -> entry plan: the parts of one plan count as one position (TAA-1207)."""
+        ...
 
     def equity(self) -> float: ...
 
@@ -99,6 +107,18 @@ class PaperBackend:
             log.warning("could not read account positions; exposure uses the paper book only")
             real = []
         return [*self.paper.broker.broker_positions(), *real]
+
+    def pending_orders(self) -> list[BrokerOrder]:
+        """Paper limit parts plus the account's own resting orders (manual ones count under ``count``)."""
+        try:
+            real = self.market.orders()
+        except TaaError:
+            log.warning("could not read account orders; heat uses the paper orders only")
+            real = []
+        return [*self.paper.pending_orders(), *real]
+
+    def position_groups(self) -> dict[int, str]:
+        return self.paper.plan_groups()
 
     def equity(self) -> float:
         return self.paper.broker.equity
@@ -168,6 +188,12 @@ class DemoBackend:
 
     def book(self) -> list[BrokerPosition]:
         return self.market.positions()
+
+    def pending_orders(self) -> list[BrokerOrder]:
+        return self.market.orders()
+
+    def position_groups(self) -> dict[int, str]:
+        return self.orders.plan_groups()
 
     def equity(self) -> float:
         return self.market.account().equity

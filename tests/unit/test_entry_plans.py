@@ -134,3 +134,74 @@ def _without_atr(market: Any) -> Any:
 
     states = tuple(dataclasses.replace(s, atr=None) for s in market.states)
     return dataclasses.replace(market, states=states)
+
+
+class TestExposure:
+    """A plan counts as one position; resting limit parts add their risk to heat (owner, 2026-10-06)."""
+
+    @staticmethod
+    def order(ticket: int = 50, sl: float = 1.098, magic: int = 7_310_000) -> Any:
+        from datetime import UTC, datetime
+
+        from app.broker import mt5_constants as c
+        from app.broker.models import BrokerOrder
+
+        return BrokerOrder(
+            ticket,
+            "EURUSD",
+            Side.BUY,
+            c.ORDER_TYPE_BUY_LIMIT,
+            0.1,
+            1.099,
+            sl,
+            1.104,
+            magic,
+            "taa:x",
+            datetime(2026, 9, 30, 9, 0, tzinfo=UTC),
+            None,
+        )
+
+    def test_the_parts_of_one_plan_count_once(self) -> None:
+        from tests.risk_data import funds
+        from tests.unit.test_exposure_manager import SPECS, cand, manager, pos
+
+        book = [pos(ticket=1), pos(ticket=2, price=1.099), pos(ticket=3, price=1.0985)]
+        m = manager(max_open_positions=2, max_positions_per_symbol=1)
+        exposure = m.snapshot(book, funds(), SPECS, groups={1: "plan-a", 2: "plan-a", 3: "plan-a"})
+        checks = {ch.name: ch for ch in m.check(cand(), exposure, SPECS)}
+        assert checks["max_open_positions"].passed and checks["max_open_positions"].value == 2
+        same = {ch.name: ch for ch in m.check(cand("EURUSD"), exposure, SPECS)}
+        assert not same["max_positions_per_symbol"].passed  # a new signal waits until the plan ends
+        alone = m.snapshot(book, funds(), SPECS)  # without plans every position counts
+        assert not {ch.name: ch for ch in m.check(cand(), alone, SPECS)}["max_open_positions"].passed
+
+    def test_resting_orders_add_to_heat(self) -> None:
+        from tests.risk_data import funds
+        from tests.unit.test_exposure_manager import SPECS, manager, pos
+
+        m = manager()
+        bare = m.snapshot([pos()], funds(), SPECS)
+        with_order = m.snapshot([pos()], funds(), SPECS, pending=[self.order()])
+        assert with_order.open_risk == pytest.approx(bare.open_risk + 10.0)  # 0.1 lot, 10 pips
+        no_stop = m.snapshot([pos()], funds(), SPECS, pending=[self.order(sl=0.0)])
+        assert no_stop.open_risk == bare.open_risk
+        manual = manager(foreign_positions_policy="halt").snapshot(
+            [], funds(), SPECS, pending=[self.order(magic=0)]
+        )
+        assert manual.open_risk == 0.0  # foreign orders count only under "count"
+
+    def test_the_decision_sees_resting_orders_and_plans(self, db: Database) -> None:
+        from app.engine.decision_engine import AccountState
+        from tests.risk_data import funds
+        from tests.unit.test_exposure_manager import pos
+        from tests.unit.test_loss_tracker import status
+
+        book = (pos(ticket=1, symbol="GBPUSD"), pos(ticket=2, symbol="GBPUSD"))
+        account = AccountState(funds(), book, status(), (self.order(),), {1: "p", 2: "p"})
+        record = engine(db).decide(
+            request(account=account, profile_limits=ProfileLimits(max_open_positions=2))
+        )
+        checks = {ch.name: ch for ch in record.checks}
+        assert checks["max_open_positions"].passed  # GBPUSD's two parts are one trade
+        heat = checks["max_total_open_risk"].value
+        assert heat is not None and float(heat) > 0

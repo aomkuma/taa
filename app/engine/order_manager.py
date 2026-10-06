@@ -183,6 +183,16 @@ class OrderManager:
                 raise TaaError(f"unknown intent {intent_id}")
             self._move(sess, row, new, detail, **fields)
 
+    def plan_groups(self) -> dict[int, str]:
+        """Position ticket -> entry plan, for every intent of a plan that became a position (TAA-1207)."""
+        with self.db.session() as sess:
+            rows = sess.execute(
+                select(OrderIntentRow.position_ticket, OrderIntentRow.plan_key).where(
+                    OrderIntentRow.position_ticket.is_not(None), OrderIntentRow.plan_key != ""
+                )
+            ).all()
+        return {int(ticket): str(plan) for ticket, plan in rows if ticket is not None}
+
     def row(self, intent_id: str) -> OrderIntentRow:
         with self.db.session() as sess:
             row = sess.get(OrderIntentRow, (LOCAL_ENGINE, intent_id))

@@ -38,7 +38,7 @@ from sqlalchemy import select
 
 from app import __version__
 from app.broker import mt5_constants as c
-from app.broker.models import BrokerPosition
+from app.broker.models import BrokerOrder, BrokerPosition
 from app.config import AppConfig, RiskConfig
 from app.core.clock import Clock
 from app.core.decimal_utils import to_decimal
@@ -97,6 +97,8 @@ class AccountState:
     funds: AccountFunds
     positions: Sequence[BrokerPosition] = ()
     loss: LossStatus | None = None
+    pending: Sequence[BrokerOrder] = ()  # resting orders (limit parts of entry plans): heat
+    groups: Mapping[int, str] = field(default_factory=dict)  # position ticket -> entry plan: counts
 
 
 @dataclass(frozen=True)
@@ -607,7 +609,13 @@ class DecisionEngine:
                 specs = self.position_specs(req.specs, account.positions)
                 if req.spec is not None:
                     specs[req.spec.name] = req.spec
-                exposure = manager.snapshot(account.positions, account.funds, specs)
+                exposure = manager.snapshot(
+                    account.positions,
+                    account.funds,
+                    specs,
+                    pending=account.pending,
+                    groups=account.groups,
+                )
                 left = risk.max_effective_leverage - exposure.effective_leverage
                 rooms.append(max(0.0, left / (100.0 * abs(move) / equity)))
         return min(rooms) if rooms else None
@@ -672,7 +680,13 @@ class DecisionEngine:
         specs = self.position_specs(req.specs, req.account.positions)
         if req.spec is not None:
             specs[req.spec.name] = req.spec
-        exposure = manager.snapshot(req.account.positions, req.account.funds, specs)
+        exposure = manager.snapshot(
+            req.account.positions,
+            req.account.funds,
+            specs,
+            pending=req.account.pending,
+            groups=req.account.groups,
+        )
         if sizing is not None and sizing.ok:
             volume, risk_money = float(sizing.volume), float(sizing.risk_money)
             margin = float(sizing.margin_required or 0)

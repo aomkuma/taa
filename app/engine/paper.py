@@ -22,7 +22,9 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.broker import mt5_constants as c
 from app.broker.gateway import MarketDataGateway
+from app.broker.models import BrokerOrder
 from app.config import BacktestConfig, PaperConfig
 from app.core.clock import Clock, ensure_utc
 from app.core.enums import EntryType, ExitReason, Side
@@ -279,6 +281,44 @@ class PaperExecution:
         if cancelled:
             log.info("paper: %d limit part(s) cancelled", len(cancelled))
         return cancelled
+
+    def pending_orders(self) -> list[BrokerOrder]:
+        """The resting paper limit parts, shaped like broker orders (heat; TAA-1207)."""
+        out = []
+        for pending in self.broker.pending.values():
+            req = pending.request
+            if req.entry_type is not EntryType.LIMIT or req.price is None:
+                continue
+            out.append(
+                BrokerOrder(
+                    ticket=pending.order_id,
+                    symbol=req.symbol,
+                    side=req.side,
+                    type=c.ORDER_TYPE_BUY_LIMIT if req.side is Side.BUY else c.ORDER_TYPE_SELL_LIMIT,
+                    volume=req.volume,
+                    price_open=req.price,
+                    sl=req.sl or 0.0,
+                    tp=req.tp or 0.0,
+                    magic=req.magic,
+                    comment=req.comment,
+                    time_setup_utc=pending.created_at,
+                    expiration_utc=None if req.expires_at is None else ensure_utc(req.expires_at),
+                )
+            )
+        return out
+
+    def plan_groups(self) -> dict[int, str]:
+        """Open paper position ticket -> the decision (plan) it belongs to."""
+        tickets = list(self.broker.positions)
+        if not tickets:
+            return {}
+        with self.db.session() as sess:
+            rows = sess.execute(
+                select(PaperIntentRow.ticket, PaperIntentRow.decision_id).where(
+                    PaperIntentRow.account_key == self.account_key, PaperIntentRow.ticket.in_(tickets)
+                )
+            ).all()
+        return {int(ticket): str(decision) for ticket, decision in rows if ticket is not None}
 
     def modify_stop(self, ticket: int, sl: float, stop_kind: ExitReason | None) -> None:
         self.broker.modify(ticket, sl=sl, stop_kind=stop_kind)
