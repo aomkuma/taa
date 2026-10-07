@@ -4,11 +4,14 @@ import { pyStrEnumValues } from '@/test/python';
 
 import {
   buildChartModel,
+  focusEvidence,
   followRange,
+  mergeLines,
   type ModelOptions,
   type ModelText,
   overlaysQuery,
   pricePrecision,
+  relatedEvidence,
   signalEvidence,
   snapTime,
   ZONE_COLORS,
@@ -63,7 +66,8 @@ function options(overrides: Partial<ModelOptions> = {}): ModelOptions {
     indicators: new Set(['ema', 'rsi', 'adx']),
     zones: true,
     allDecisions: false,
-    families: new Set(['HARMONIC', 'FIBONACCI']),
+    evidence: new Set(['ev1']),
+    invalidations: true,
     timeframeSeconds: M15,
     ...overrides,
   };
@@ -94,14 +98,14 @@ function evidence(overrides: Partial<Evidence> = {}): Evidence {
   };
 }
 
-const signal = (items: Evidence[]) => ({
+const signal = (items: Evidence[], relations: string[] = []) => ({
   symbol: 'EURUSD',
   timeframe: 'M15',
   action: 'BUY',
   entry_price: 1.1,
   stop_loss: 1.095,
   take_profit: 1.11,
-  evidence: items.map((e) => ({ item: { evidence: e }, relation: 'SUPPORTS' })),
+  evidence: items.map((e, i) => ({ item: { evidence: e }, relation: relations[i] ?? 'SUPPORTS' })),
 });
 
 describe('snapTime', () => {
@@ -313,14 +317,83 @@ describe('buildChartModel', () => {
     );
   });
 
-  it('hides evidence of families switched off', () => {
+  it('draws only the chosen evidence items', () => {
     const model = buildChartModel(
       { candles: candles(), positions: [], signal: signal([evidence()]) },
-      options({ families: new Set(['FIBONACCI']) }),
+      options({ evidence: new Set(['other']) }),
       text,
     );
     expect(model.lines.some((l) => l.id.startsWith('evidence:'))).toBe(false);
     expect(model.priceLines.some((p) => p.title.startsWith('Gartley'))).toBe(false);
+  });
+
+  it('leaves out invalidation levels unless asked for', () => {
+    const model = buildChartModel(
+      { candles: candles(), positions: [], signal: signal([evidence()]) },
+      options({ invalidations: false }),
+      text,
+    );
+    const titles = model.priceLines.map((p) => p.title);
+    expect(titles).toContain('Gartley: target');
+    expect(titles).not.toContain('Gartley: invalidation');
+  });
+
+  it('draws evidence levels at the same price as one line', () => {
+    const twin = evidence({
+      evidence_id: 'ev2',
+      name: 'Donchian',
+      key_levels: [{ name: 'channel', price: 1.097, at: null }],
+      targets: [],
+      invalidation: null,
+    });
+    const model = buildChartModel(
+      { candles: candles(), positions: [], signal: signal([evidence(), twin]) },
+      options({ evidence: new Set(['ev1', 'ev2']) }),
+      text,
+    );
+    expect(model.priceLines.filter((p) => p.price === 1.097).map((p) => p.title)).toEqual([
+      'Gartley: prz_near · Donchian: channel',
+    ]);
+  });
+
+  it('opens a signal with its best supporting items, best quality first', () => {
+    const items = relatedEvidence(
+      signal(
+        [
+          evidence({ evidence_id: 'a', quality: 0.5 }),
+          evidence({ evidence_id: 'b', quality: 0.9 }),
+          evidence({ evidence_id: 'c', quality: 0.95 }),
+          evidence({ evidence_id: 'd', quality: 0.7 }),
+          evidence({ evidence_id: 'e', quality: 0.6 }),
+          evidence({ evidence_id: 'f', quality: 0.1 }),
+        ],
+        ['SUPPORTS', 'SUPPORTS', 'CONFLICTS', 'SUPPORTS', 'SUPPORTS', 'ODD'],
+      ),
+    );
+    expect(items.map((e) => [e.evidence.evidence_id, e.relation])).toEqual([
+      ['c', 'CONFLICTS'],
+      ['b', 'SUPPORTS'],
+      ['d', 'SUPPORTS'],
+      ['e', 'SUPPORTS'],
+      ['a', 'SUPPORTS'],
+      ['f', 'NEUTRAL'], // an unknown relation is shown as neutral
+    ]);
+    expect([...focusEvidence(items)]).toEqual(['b', 'd', 'e']);
+    expect(focusEvidence([])).toEqual(new Set());
+  });
+
+  it('merges near lines and keeps two titles, then counts the rest', () => {
+    const line = (price: number, title: string) => ({
+      price,
+      color: '#000',
+      title,
+      style: 'dashed' as const,
+    });
+    expect(mergeLines([line(2, 'b'), line(1, 'a'), line(1.001, 'c'), line(1, 'a')], 0.01)).toEqual([
+      line(1, 'a · c'),
+      line(2, 'b'),
+    ]);
+    expect(mergeLines([line(1, 'a'), line(1, 'b'), line(1, 'c')], 0).map((l) => l.title)).toEqual(['a (+2)']);
   });
 
   it('lists each evidence item once', () => {
@@ -336,12 +409,24 @@ describe('timeframes', () => {
 });
 
 describe('chart view across data updates', () => {
-  it('follows the newest bar with the same width when the bar count changes', () => {
+  const bars = (first: number, n: number) => Array.from({ length: n }, (_, i) => (first + i) * M15);
+
+  it('follows the newest bar with the same width and the same space after it', () => {
     // 300 bars, showing the last 100 with 2 bars of space; a refetch returns 280 bars (the live view had more)
-    expect(followRange({ from: 201, to: 301 }, 300, 280)).toEqual({ from: 181, to: 281 });
-    // a view scrolled far past the newest bar is pulled back to at most RIGHT_GAP_BARS of space
-    expect(followRange({ from: 250, to: 450 }, 300, 300)).toEqual({ from: 102, to: 302 });
-    // a view scrolled back into history stays put
-    expect(followRange({ from: 10, to: 110 }, 300, 301)).toEqual({ from: 10, to: 110 });
+    expect(followRange({ from: 201, to: 301 }, bars(0, 300), bars(20, 280))).toEqual({ from: 181, to: 281 });
+    // the owner's chart shift (40 bars of space) survives a new bar
+    expect(followRange({ from: 239, to: 339 }, bars(0, 300), bars(1, 300))).toEqual({ from: 239, to: 339 });
+    // at least one bar stays in view
+    expect(followRange({ from: 400, to: 500 }, bars(0, 300), bars(0, 300))).toEqual({ from: 298, to: 398 });
+  });
+
+  it('keeps a view scrolled back into history on the same bars when the window slides', () => {
+    // a new bar closed: the oldest one drops out and every index moves down by one
+    expect(followRange({ from: 10, to: 110 }, bars(0, 300), bars(1, 300))).toEqual({ from: 9, to: 109 });
+    // the forming bar came: nothing before it moves
+    expect(followRange({ from: 10, to: 110 }, bars(0, 300), bars(0, 301))).toEqual({ from: 10, to: 110 });
+    // bars no longer in the data: left as it was
+    expect(followRange({ from: 10, to: 110 }, bars(0, 300), bars(500, 300))).toEqual({ from: 10, to: 110 });
+    expect(followRange({ from: 10, to: 110 }, [], bars(0, 300))).toEqual({ from: 10, to: 110 });
   });
 });

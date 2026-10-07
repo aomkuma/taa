@@ -84,8 +84,10 @@ export interface ModelOptions {
   zones: boolean;
   /** Also rejected and held decisions (by default only accepted ones are marked). */
   allDecisions: boolean;
-  /** Evidence families shown (theory toggles). */
-  families: ReadonlySet<string>;
+  /** Evidence items drawn (ids); the page picks the strongest supporting ones first (TAA-925). */
+  evidence: ReadonlySet<string>;
+  /** Also each drawn item's invalidation level (off by default: the signal's own SL is what counts). */
+  invalidations: boolean;
   timeframeSeconds: number;
 }
 
@@ -364,10 +366,65 @@ function positionLines(
 
 /** The evidence items of a signal, newest detection first per id (a signal may list one item per timeframe). */
 export function signalEvidence(signal: SignalSource['signal'] | null): Evidence[] {
+  return relatedEvidence(signal).map((e) => e.evidence);
+}
+
+export type Relation = 'SUPPORTS' | 'CONFLICTS' | 'NEUTRAL';
+export const RELATIONS: readonly Relation[] = ['SUPPORTS', 'CONFLICTS', 'NEUTRAL'];
+
+export interface RelatedEvidence {
+  evidence: Evidence;
+  /** How the item relates to the signal's direction (`Relation` in app/evidence/confluence.py). */
+  relation: Relation;
+}
+
+/** Each evidence item once with its relation to the signal, best quality first. */
+export function relatedEvidence(signal: SignalSource['signal'] | null): RelatedEvidence[] {
   if (signal === null) return [];
-  const byId = new Map<string, Evidence>();
-  for (const e of signal.evidence) byId.set(e.item.evidence.evidence_id, e.item.evidence);
-  return [...byId.values()];
+  const byId = new Map<string, RelatedEvidence>();
+  for (const e of signal.evidence) {
+    const relation = (RELATIONS as readonly string[]).includes(e.relation)
+      ? (e.relation as Relation)
+      : 'NEUTRAL';
+    byId.set(e.item.evidence.evidence_id, { evidence: e.item.evidence, relation });
+  }
+  return [...byId.values()].sort((a, b) => b.evidence.quality - a.evidence.quality);
+}
+
+/** How many supporting items a signal opens with: enough to see why, few enough to read (TAA-925). */
+export const FOCUS_EVIDENCE = 3;
+
+/** The items drawn when a signal opens: its {@link FOCUS_EVIDENCE} best supporting ones. */
+export function focusEvidence(items: readonly RelatedEvidence[]): Set<string> {
+  return new Set(
+    items
+      .filter((e) => e.relation === 'SUPPORTS')
+      .slice(0, FOCUS_EVIDENCE)
+      .map((e) => e.evidence.evidence_id),
+  );
+}
+
+/** Evidence lines this close (a share of the shown price range, about a pixel) are drawn as one. */
+export const MERGE_SHARE = 0.003;
+
+/**
+ * One line for evidence levels at (nearly) the same price, e.g. a channel seen on two timeframes: the first
+ * line's look, the distinct titles joined (more than two become "first (+n)").
+ */
+export function mergeLines(lines: readonly PriceLineModel[], tolerance: number): PriceLineModel[] {
+  const groups: { line: PriceLineModel; titles: string[] }[] = [];
+  for (const line of [...lines].sort((a, b) => a.price - b.price)) {
+    const last = groups.at(-1);
+    if (last && Math.abs(line.price - last.line.price) <= tolerance) {
+      if (!last.titles.includes(line.title)) last.titles.push(line.title);
+    } else {
+      groups.push({ line, titles: [line.title] });
+    }
+  }
+  return groups.map(({ line, titles }) => ({
+    ...line,
+    title: titles.length <= 2 ? titles.join(' · ') : `${titles[0] ?? ''} (+${String(titles.length - 1)})`,
+  }));
 }
 
 function evidenceDrawing(
@@ -380,7 +437,7 @@ function evidenceDrawing(
   const markers: MarkerModel[] = [];
   const priceLines: PriceLineModel[] = [];
   for (const ev of items) {
-    if (!options.families.has(ev.family)) continue;
+    if (!options.evidence.has(ev.evidence_id)) continue;
     const color = FAMILY_COLORS[ev.family] ?? COLORS.neutral;
     const points: Point[] = [];
     for (const level of ev.key_levels) {
@@ -415,7 +472,7 @@ function evidenceDrawing(
     for (const target of ev.targets) {
       priceLines.push({ price: target, color, title: `${ev.name}: ${text.target}`, style: 'dotted' });
     }
-    if (ev.invalidation !== null) {
+    if (options.invalidations && ev.invalidation !== null) {
       priceLines.push({
         price: ev.invalidation,
         color: COLORS.down,
@@ -451,6 +508,9 @@ export function buildChartModel(input: ModelInput, options: ModelOptions, text: 
   const times = bars.map((b) => b.time);
   const { lines, panes } = indicatorLines(candles, times, options.indicators);
   const evidence = evidenceDrawing(signalEvidence(input.signal), times, options, text);
+  const highs = candles.bars.map((b) => b[2]);
+  const lows = candles.bars.map((b) => b[3]);
+  const range = highs.length ? Math.max(...highs) - Math.min(...lows) : 0;
   const markers = [...tradeMarkers(candles.markers, times, options, text), ...evidence.markers].sort(
     (a, b) => a.time - b.time,
   );
@@ -468,7 +528,7 @@ export function buildChartModel(input: ModelInput, options: ModelOptions, text: 
       ...(options.zones ? zoneLines(candles.zones ?? [], text) : []),
       ...positionLines(input.positions, candles.symbol, text),
       ...signalLines(input.signal, text),
-      ...evidence.priceLines,
+      ...mergeLines(evidence.priceLines, range * MERGE_SHARE),
     ],
     panes,
     precision: pricePrecision(candles.bars),
@@ -476,23 +536,32 @@ export function buildChartModel(input: ModelInput, options: ModelOptions, text: 
   };
 }
 
-/** Empty bars kept right of the newest one while the view follows it. */
-export const RIGHT_GAP_BARS = 3;
-
 /**
- * The visible range after the data was replaced. A view that showed the newest bar keeps showing it, with the
- * same width and at most {@link RIGHT_GAP_BARS} of space after it, even when the number of bars changed (the
- * forming bar comes and goes; a refetch can return fewer bars than the live view had). A view scrolled back
- * into history stays where it was.
+ * The visible range after the data was replaced (bar open times before and after), so a refresh never undoes
+ * the owner's zoom or scroll (TAA-925):
+ * - A view that showed the newest bar keeps showing it with the same width and the same space after it (the
+ *   owner's "chart shift"), even when the number of bars changed (the forming bar comes and goes; a refetch
+ *   can return fewer bars than the live view had). At least one bar stays in view.
+ * - A view scrolled back into history stays on the same bars: logical indexes move when the bar window slides,
+ *   so the view is anchored on the time of its right edge.
  */
 export function followRange(
   range: { from: number; to: number },
-  before: number,
-  after: number,
+  before: readonly number[],
+  after: readonly number[],
 ): { from: number; to: number } {
-  const oldLast = before - 1;
-  if (before === 0 || range.to < oldLast - 0.5) return range;
+  const oldLast = before.length - 1;
+  if (oldLast < 0) return range;
   const width = range.to - range.from;
-  const to = after - 1 + Math.min(Math.max(range.to - oldLast, 0), RIGHT_GAP_BARS);
-  return { from: to - width, to };
+  if (range.to >= oldLast - 0.5) {
+    const gap = Math.min(range.to - oldLast, Math.max(width - 1, 0));
+    const to = after.length - 1 + gap;
+    return { from: to - width, to };
+  }
+  const anchor = Math.min(Math.max(Math.round(range.to), 0), oldLast);
+  const time = before[anchor];
+  const moved = time === undefined ? -1 : after.indexOf(time);
+  if (moved < 0) return range;
+  const shift = moved - anchor;
+  return { from: range.from + shift, to: range.to + shift };
 }

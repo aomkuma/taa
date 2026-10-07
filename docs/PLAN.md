@@ -970,8 +970,19 @@ AI failures never trip trading breakers; they only produce HOLD.
   - Evidence overlays come from a selected signal (`?decision=` or `?opportunity=`, whose `signal.evidence`
     holds the snapshot): key levels with a time are joined in time order and labelled (XABCD, waves, pattern
     points, swings); levels without a time are horizontal lines (fib levels, necklines, zone/PRZ edges);
-    targets and invalidation dotted. Each theory family has a colour and a toggle (`codes:family.<F>`).
+    targets and invalidation dotted. Each theory family has a colour (`codes:family.<F>`).
     Evidence names show the detector's English name until TAA-920 adds `evidence.*` texts.
+  - (TAA-925) Opened from a signal the chart starts focused: the signal's plan plus its
+    `FOCUS_EVIDENCE` (3) best-quality SUPPORTS items, S/R zones off, invalidation levels off (a toggle). The
+    per-family toggles became a per-item evidence list grouped by `relation` (supports / against / neutral,
+    the last two folded) with timeframe and quality, and "key items only / show all / hide all"; the choice
+    belongs to one signal. Evidence lines within 0.3 % of the shown price range are merged into one line
+    (two titles joined, more as "first (+n)"), so the same channel on two timeframes is labelled once.
+  - (TAA-925) A refresh keeps the view: `chartAdapter` updates the candle series, the lines (kept by id, so
+    their panes stay) and the markers in place instead of rebuilding them, so a hand-set price scale and pane
+    heights survive; `followRange` keeps the owner's space after the newest bar (chart shift, at least one
+    bar stays visible) and anchors a view scrolled back on the time of its right edge. Another symbol or
+    timeframe starts fitted and auto-scaled.
   - The price axis precision comes from the quoted prices. Candles refresh every minute; `positions` and
     `decisions` stream events redraw the marks.
   - **Attribution:** the library's own logo injects a `<style>` element, which the CSP blocks, so it is off

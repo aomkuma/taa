@@ -13,14 +13,15 @@ import { useLiveEvents } from '@/live/context';
 import { backtestKeys, HistorySchema } from '@/pages/backtests/schemas';
 import { PositionsPageSchema } from '@/pages/dashboard/schemas';
 
+import { EvidenceList } from './EvidenceList';
 import {
   buildChartModel,
-  FAMILY_COLORS,
+  focusEvidence,
   type Indicator,
   INDICATORS,
   type ModelText,
   overlaysQuery,
-  signalEvidence,
+  relatedEvidence,
 } from './model';
 import { ChartAttribution, PriceChart } from './PriceChart';
 import {
@@ -66,7 +67,11 @@ function Toggle({
 const SELECT =
   'rounded border border-slate-300 bg-white px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-900';
 
-/** PLAN §A15 charts (TAA-905): candles × timeframe, indicators, markers, SL/TP, S/R zones, signal evidence. */
+/**
+ * PLAN §A15 charts (TAA-905): candles × timeframe, indicators, markers, SL/TP, S/R zones, signal evidence.
+ * Opened from a signal it starts focused (TAA-925): the signal's plan and its strongest supporting evidence,
+ * no S/R zones and no invalidation levels; the evidence list adds the rest one item at a time.
+ */
 export function ChartsPage() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
@@ -78,11 +83,15 @@ export function ChartsPage() {
   const timeframe: ChartTimeframe = isTimeframe(tfParam) ? tfParam : 'M15';
   const decisionId = params.get('decision');
   const opportunityId = params.get('opportunity');
+  const fromSignal = decisionId !== null || opportunityId !== null;
+  const sourceKey = `${decisionId ?? ''}|${opportunityId ?? ''}`;
 
   const [indicators, setIndicators] = useState<ReadonlySet<Indicator>>(new Set(DEFAULT_INDICATORS));
-  const [zones, setZones] = useState(true);
+  const [zones, setZones] = useState(!fromSignal);
   const [allDecisions, setAllDecisions] = useState(false);
-  const [hiddenFamilies, setHiddenFamilies] = useState<ReadonlySet<string>>(new Set());
+  // the owner's evidence choice belongs to one signal; another signal starts focused again
+  const [picked, setPicked] = useState<{ key: string; ids: ReadonlySet<string> } | null>(null);
+  const [invalidations, setInvalidations] = useState(false);
 
   const symbols = useQuery({
     queryKey: [...engineKey(id), 'symbols', 'enabled'],
@@ -152,8 +161,9 @@ export function ChartsPage() {
     refetch('candles');
   });
 
-  const evidence = useMemo(() => signalEvidence(signalDoc), [signalDoc]);
-  const families = useMemo(() => [...new Set(evidence.map((e) => e.family))].sort(), [evidence]);
+  const related = useMemo(() => relatedEvidence(signalDoc), [signalDoc]);
+  const focus = useMemo(() => focusEvidence(related), [related]);
+  const shownEvidence = picked?.key === sourceKey ? picked.ids : focus;
 
   const text = useMemo<ModelText>(
     () => ({
@@ -180,7 +190,8 @@ export function ChartsPage() {
         indicators,
         zones,
         allDecisions,
-        families: new Set(families.filter((f) => !hiddenFamilies.has(f))),
+        evidence: shownEvidence,
+        invalidations,
         timeframeSeconds: TIMEFRAME_SECONDS[timeframe],
       },
       text,
@@ -192,8 +203,8 @@ export function ChartsPage() {
     indicators,
     zones,
     allDecisions,
-    families,
-    hiddenFamilies,
+    shownEvidence,
+    invalidations,
     timeframe,
     text,
   ]);
@@ -263,7 +274,7 @@ export function ChartsPage() {
         <Toggle label={t('charts.allDecisions')} checked={allDecisions} onChange={setAllDecisions} />
       </fieldset>
 
-      {(decisionId !== null || opportunityId !== null) && (
+      {fromSignal && (
         <div className="mb-3 rounded border border-slate-200 p-2 text-sm dark:border-slate-800">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="font-medium">
@@ -290,28 +301,17 @@ export function ChartsPage() {
               {t('charts.hideSignal')}
             </button>
           </div>
-          {families.length > 0 && (
-            <fieldset className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-              <legend className="mb-1 text-xs text-slate-500">{t('charts.evidence')}</legend>
-              {families.map((family) => (
-                <label key={family} className="flex items-center gap-1.5">
-                  <input
-                    type="checkbox"
-                    checked={!hiddenFamilies.has(family)}
-                    onChange={(event) => {
-                      const next = new Set(hiddenFamilies);
-                      if (event.target.checked) next.delete(family);
-                      else next.add(family);
-                      setHiddenFamilies(next);
-                    }}
-                  />
-                  <svg aria-hidden="true" viewBox="0 0 10 10" className="h-2.5 w-2.5">
-                    <circle cx="5" cy="5" r="5" fill={FAMILY_COLORS[family] ?? '#64748b'} />
-                  </svg>
-                  {translateCode(i18n, 'family', family)}
-                </label>
-              ))}
-            </fieldset>
+          {signalDoc && (
+            <EvidenceList
+              items={related}
+              shown={shownEvidence}
+              focus={focus}
+              onChange={(ids) => {
+                setPicked({ key: sourceKey, ids });
+              }}
+              invalidations={invalidations}
+              onInvalidations={setInvalidations}
+            />
           )}
         </div>
       )}

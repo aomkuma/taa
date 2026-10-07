@@ -48,7 +48,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 7 — Cloud sync | 10 | 10 | DONE |
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
-| M1 | Phase 9 — PWA frontend | 24 | 24 | DONE |
+| M1 | Phase 9 — PWA frontend | 25 | 25 | DONE |
 | M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 9 | 8 | IN PROGRESS |
@@ -1552,6 +1552,21 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [x] Risk & controls page: cage / profile / effective side by side, with the source and age
 - [x] decision detail shows the risk source the decision was measured against
 - [x] th/en i18n keys + zod schemas; tests
+
+#### TAA-925 — Chart: a focused signal view and a view that survives refreshes
+
+- **Status:** DONE
+- **Depends on:** 905, 2A
+
+Owner's report (2026-10-07): the chart opened from a signal was unreadable (30+ overlapping axis labels:
+every evidence item's levels, targets and invalidations, duplicates across timeframes, all theories and the
+S/R zones on), and every data refresh reset the chart shift, a hand-set price scale and pane heights.
+
+- [x] opened from a signal: the plan plus its 3 best supporting evidence items, no S/R zones, no invalidation levels (a toggle)
+- [x] evidence list per item, grouped supports / against / neutral with timeframe and quality; "key items only / show all / hide all"
+- [x] evidence levels at (nearly) the same price merged into one line
+- [x] refresh keeps the view: series updated in place (price scale, pane heights), chart shift kept, a view scrolled back anchored on time
+- [x] th/en i18n keys; tests
 
 ### Phase 10 — Trade analytics
 

@@ -11,11 +11,12 @@ import {
   createChart,
   createSeriesMarkers,
   type IChartApi,
+  type IPriceLine,
   type ISeriesApi,
+  type ISeriesMarkersPluginApi,
   LineSeries,
   LineStyle as LwLineStyle,
   type LineWidth,
-  type SeriesMarker,
   TickMarkType,
   type Time,
   type UTCTimestamp,
@@ -75,82 +76,115 @@ function themeOptions(theme: ChartTheme) {
   };
 }
 
+/**
+ * The price chart. A data refresh (every few seconds while the engine streams the forming bar) updates the
+ * series in place instead of rebuilding them, so the owner's zoom, scroll and chart shift, a hand-set price
+ * scale and dragged pane heights stay as they were (TAA-925). Only another symbol or timeframe starts fresh.
+ */
 export function createPriceChart(container: HTMLElement, theme: ChartTheme): ChartHandle {
   const chart: IChartApi = createChart(container, { autoSize: true, ...themeOptions(theme) });
-  let series: ISeriesApi<'Candlestick' | 'Line'>[] = [];
+  let candles: ISeriesApi<'Candlestick'> | null = null;
+  let markers: ISeriesMarkersPluginApi<Time> | null = null;
+  let priceLines: IPriceLine[] = [];
+  const lines = new Map<string, { series: ISeriesApi<'Line'>; pane: number }>();
   let view = ''; // symbol/timeframe on screen; another one starts zoomed to fit
-  let bars = 0;
+  let times: number[] = [];
+  let panes = 0;
 
-  const clear = () => {
-    for (const s of series) chart.removeSeries(s);
-    series = [];
-  };
-
-  return {
-    update(model) {
-      const range = chart.timeScale().getVisibleLogicalRange();
-      clear();
-      const candles = chart.addSeries(CandlestickSeries, {
+  const candleSeries = () => {
+    if (candles === null) {
+      candles = chart.addSeries(CandlestickSeries, {
         upColor: '#16a34a',
         downColor: '#dc2626',
         borderVisible: false,
         wickUpColor: '#16a34a',
         wickDownColor: '#dc2626',
+      });
+      markers = createSeriesMarkers(candles, []);
+    }
+    return candles;
+  };
+
+  return {
+    update(model) {
+      const range = chart.timeScale().getVisibleLogicalRange();
+      const fresh = model.view !== view;
+      const series = candleSeries();
+      series.applyOptions({
         priceFormat: { type: 'price', precision: model.precision, minMove: 10 ** -model.precision },
       });
-      candles.setData(model.candles.map((c) => ({ ...c, time: ts(c.time) })));
-      series.push(candles);
-      for (const line of model.lines) {
-        const s = chart.addSeries(
-          LineSeries,
-          {
-            color: line.color,
-            lineWidth: line.width,
-            lineStyle: STYLES[line.style],
-            priceLineVisible: false,
-            lastValueVisible: line.pane > 0,
-            crosshairMarkerVisible: false,
-          },
-          line.pane,
-        );
-        s.setData(line.points.map((p) => ({ time: ts(p.time), value: p.value })));
-        series.push(s);
+      series.setData(model.candles.map((c) => ({ ...c, time: ts(c.time) })));
+
+      // indicator and evidence lines: kept by id, so their panes (and the heights the owner gave them) stay
+      const wanted = new Map(model.lines.map((l) => [l.id, l]));
+      for (const [id, kept] of lines) {
+        const line = wanted.get(id);
+        if (line === undefined || line.pane !== kept.pane) {
+          chart.removeSeries(kept.series);
+          lines.delete(id);
+        }
       }
-      for (const p of model.priceLines) {
-        candles.createPriceLine({
+      for (const line of model.lines) {
+        const style = {
+          color: line.color,
+          lineWidth: line.width,
+          lineStyle: STYLES[line.style],
+          priceLineVisible: false,
+          lastValueVisible: line.pane > 0,
+          crosshairMarkerVisible: false,
+        };
+        let kept = lines.get(line.id);
+        if (kept === undefined) {
+          kept = { series: chart.addSeries(LineSeries, style, line.pane), pane: line.pane };
+          lines.set(line.id, kept);
+        } else {
+          kept.series.applyOptions(style);
+        }
+        kept.series.setData(line.points.map((p) => ({ time: ts(p.time), value: p.value })));
+      }
+
+      for (const line of priceLines) series.removePriceLine(line);
+      priceLines = model.priceLines.map((p) =>
+        series.createPriceLine({
           price: p.price,
           color: p.color,
           title: p.title,
           lineStyle: STYLES[p.style],
           lineWidth: (p.width ?? 1) as LineWidth,
           axisLabelVisible: p.title !== '',
-        });
-      }
-      const markers: SeriesMarker<Time>[] = model.markers.map((m) =>
-        m.position === 'atPriceMiddle'
-          ? {
-              time: ts(m.time),
-              position: m.position,
-              price: m.price ?? 0,
-              shape: m.shape,
-              color: m.color,
-              text: m.text,
-            }
-          : { time: ts(m.time), position: m.position, shape: m.shape, color: m.color, text: m.text },
+        }),
       );
-      createSeriesMarkers(candles, markers);
-      const panes = chart.panes();
-      panes.forEach((pane, i) => {
-        pane.setStretchFactor(i === 0 ? 3 : 1);
-      });
-      const count = model.candles.length;
-      if (range === null || model.view !== view) {
+      markers?.setMarkers(
+        model.markers.map((m) =>
+          m.position === 'atPriceMiddle'
+            ? {
+                time: ts(m.time),
+                position: m.position,
+                price: m.price ?? 0,
+                shape: m.shape,
+                color: m.color,
+                text: m.text,
+              }
+            : { time: ts(m.time), position: m.position, shape: m.shape, color: m.color, text: m.text },
+        ),
+      );
+
+      const paneList = chart.panes();
+      if (fresh || paneList.length !== panes) {
+        paneList.forEach((pane, i) => {
+          pane.setStretchFactor(i === 0 ? 3 : 1);
+        });
+        panes = paneList.length;
+      }
+      const shown = model.candles.map((c) => c.time);
+      if (range === null || fresh) {
+        series.priceScale().setAutoScale(true);
         chart.timeScale().fitContent();
       } else {
-        chart.timeScale().setVisibleLogicalRange(followRange(range, bars, count));
+        chart.timeScale().setVisibleLogicalRange(followRange(range, times, shown));
       }
       view = model.view;
-      bars = count;
+      times = shown;
     },
     setTheme(next) {
       chart.applyOptions(themeOptions(next));

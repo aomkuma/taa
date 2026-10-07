@@ -71,6 +71,25 @@ const decision = {
           },
         },
       },
+      {
+        relation: 'CONFLICTS',
+        item: {
+          evidence: {
+            evidence_id: 'e2',
+            detector_id: 'levels.donchian',
+            family: 'LEVELS',
+            name: 'Donchian breakout',
+            i18n_key: 'evidence.levels.donchian',
+            timeframe: 'H1',
+            direction: 'BULL',
+            detected_at: iso(T0),
+            quality: 0.9,
+            key_levels: [{ name: 'channel_20', price: 2620, at: null }],
+            invalidation: 2590,
+            targets: [],
+          },
+        },
+      },
     ],
   },
 };
@@ -243,11 +262,12 @@ describe('charts page', () => {
     expect(router.state.location.search).toBe('?symbol=XAUUSD');
   });
 
-  it('shows a decision with its evidence, toggled per theory', async () => {
+  it('opens a decision focused on its supporting evidence and adds items from the list', async () => {
     setup({
       'GET /engines/e1/decisions/d1': () => json(decision),
-      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
-        () => json(candles('XAUUSD')),
+      // no S/R zones while a signal is shown
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14': () =>
+        json(candles('XAUUSD')),
     });
     const user = userEvent.setup();
     renderShell('/charts?decision=d1&tf=H1');
@@ -258,10 +278,27 @@ describe('charts page', () => {
     expect(lastModel().priceLines.map((p) => p.title)).toEqual(
       expect.arrayContaining(['Signal entry', 'SL', 'TP']),
     );
-    await user.click(screen.getByRole('checkbox', { name: 'Fibonacci' }));
+    const titles = () => lastModel().priceLines.map((p) => p.title);
+    expect(titles().some((x) => x.startsWith('Donchian'))).toBe(false); // conflicting: not drawn at first
+    await user.click(screen.getByText('Against the signal (1)'));
+    await user.click(screen.getByRole('checkbox', { name: /Donchian breakout/ }));
     await waitFor(() => {
-      expect(lastModel().priceLines.map((p) => p.title)).not.toContain('Fibonacci retracement: fib_61.8');
+      expect(titles()).toContain('Donchian breakout: channel_20');
     });
+    expect(titles()).not.toContain('Donchian breakout: invalidation');
+    await user.click(screen.getByRole('checkbox', { name: 'Show invalidation levels' }));
+    await waitFor(() => {
+      expect(titles()).toContain('Donchian breakout: invalidation');
+    });
+    await user.click(screen.getByRole('checkbox', { name: /Fibonacci retracement/ }));
+    await waitFor(() => {
+      expect(titles()).not.toContain('Fibonacci retracement: fib_61.8');
+    });
+    await user.click(screen.getByRole('button', { name: 'Key items only' }));
+    await waitFor(() => {
+      expect(titles()).toContain('Fibonacci retracement: fib_61.8');
+    });
+    expect(titles().some((x) => x.startsWith('Donchian'))).toBe(false);
     await user.click(screen.getByRole('button', { name: 'Hide signal' }));
     expect(screen.queryByText('Signal XAUUSD SELL (H1)')).not.toBeInTheDocument();
   });
