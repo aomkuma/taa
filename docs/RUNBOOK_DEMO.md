@@ -34,6 +34,7 @@ the live gate, off by default: see [RUNBOOK_LIVE.md](RUNBOOK_LIVE.md) before eve
 | stop | Ctrl+C (the heartbeat records a deliberate stop; the watchdog leaves it alone) |
 | report | `.venv\Scripts\python -m app.cli demo-report --days 14` |
 | breakers | `.venv\Scripts\python -m app.cli breaker list` |
+| keep the local `-Mt5 -Demo` stack alive | `scripts\demo-tasks.ps1 -Register` once (run it yourself), then `-Start` / `-Stop`: web, worker and engine run as Task Scheduler tasks, so they survive a closed terminal or a reset assistant session; "TAA Demo check" restarts a part whose health check fails every 5 minutes (an engine stopped on purpose is left alone). `-Unregister` removes them |
 | reset one | `.venv\Scripts\python -m app.cli breaker reset DUPLICATE_EXECUTION --reason "..."` (`--ack` for MAX_DRAWDOWN, `--symbol` for symbol breakers) |
 
 ## 3. What happens to an order
