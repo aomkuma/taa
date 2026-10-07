@@ -10,11 +10,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 import pandas as pd
 
@@ -25,6 +25,8 @@ from app.backtest.report import Provenance, write_reports
 from app.config import AppConfig
 from app.core.enums import Timeframe
 from app.core.errors import DataQualityError
+from app.evidence.catalog import default_registry as evidence_registry
+from app.evidence.registry import EvidenceEngine
 from app.market_data.data_models import SymbolSpec
 from app.strategy.catalog import default_registry
 
@@ -139,7 +141,12 @@ def run_backtest(
     start: datetime | None = None,
     end: datetime | None = None,
     on_progress: Callable[[Progress], None] | None = None,
+    detectors: Collection[str] | Literal["all"] | None = None,
 ) -> tuple[BacktestResult, Provenance]:
+    """*detectors*: the evidence detectors to run. None: those the selected strategies need to fire (the
+    pattern setups trigger on evidence; without it they never fire); ``"all"``: every detector
+    ``config.evidence`` enables, as the engine runs live (setup strength then matches live, at roughly
+    0.5-1 s per bar); a collection: exactly those (empty: none)."""
     items = [i for i in config.strategies.items if strategy_names is None or i.name in strategy_names]
     if strategy_names is not None:
         unknown = sorted(set(strategy_names) - {i.name for i in items})
@@ -149,11 +156,18 @@ def run_backtest(
     strategies = default_registry().from_config(
         config.strategies.model_copy(update={"items": items}), config.timeframes, config.evidence.confluence
     )
+    registry = evidence_registry()
+    if detectors is None:
+        only: set[str] | None = set(strategies.required_detectors())
+    else:
+        only = None if detectors == "all" else set(detectors)
+    plan = registry.plan_from_config(config.evidence, only=only)
     engine = BacktestEngine(
         config,
         loaded.data,
         strategies,
         loaded.rates,
+        evidence=EvidenceEngine(registry, plan) if plan.order else None,
         start=start,
         end=end,
         on_progress=on_progress,
@@ -165,7 +179,7 @@ def run_backtest(
         config_hash=config_hash,
         data_hash=loaded.digest,
         code_version=__version__,
-        extra={"strategies": strategies.names},
+        extra={"strategies": strategies.names, "detectors": list(plan.order)},
     )
     return result, provenance
 
@@ -180,6 +194,7 @@ def run_and_write(
     start: datetime | None = None,
     end: datetime | None = None,
     on_progress: Callable[[Progress], None] | None = None,
+    detectors: Collection[str] | Literal["all"] | None = None,
 ) -> tuple[BacktestResult, dict[str, Path]]:
     result, provenance = run_backtest(
         config,
@@ -189,5 +204,6 @@ def run_and_write(
         start=start,
         end=end,
         on_progress=on_progress,
+        detectors=detectors,
     )
     return result, write_reports(result, provenance, out_dir)

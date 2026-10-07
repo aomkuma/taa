@@ -87,6 +87,9 @@ class StrategySet:
     def names(self) -> list[str]:
         return [s.name for s in self.strategies]
 
+    def required_detectors(self) -> frozenset[str]:
+        return frozenset().union(*(s.required_detectors() for s in self.strategies))
+
     def evaluate(self, ctx: StrategyContext) -> list[Signal]:
         """One signal per strategy, enriched with the context's evidence (confluence setup strength)."""
         return [

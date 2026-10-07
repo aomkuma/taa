@@ -8,7 +8,7 @@ import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from app.config import REPO_ROOT, Settings, load_settings
 from app.core.errors import ConfigError, TaaError
@@ -245,6 +245,11 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         end=end,
     )
     names = args.strategies.split(",") if args.strategies else None
+    detectors: list[str] | Literal["all"] | None = None
+    if args.detectors in ("all", "none"):
+        detectors = "all" if args.detectors == "all" else []
+    elif args.detectors is not None:
+        detectors = args.detectors.split(",")
     out = (
         settings.path(args.out)
         if args.out
@@ -265,6 +270,7 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         start=start,
         end=end,
         on_progress=progress if args.progress else None,
+        detectors=detectors,
     )
     m = compute_metrics(result.trades, result.equity_curve, result.initial_balance)
     print(f"backtest {', '.join(symbols)}  {result.start} -> {result.end}")
@@ -614,6 +620,12 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("--end", default=None)
     bt.add_argument(
         "--strategies", default=None, help="comma-separated names from config.yaml (enabled for the run)"
+    )
+    bt.add_argument(
+        "--detectors",
+        default=None,
+        help="comma-separated detector ids, 'all' (every enabled detector, as live; ~0.5-1 s per bar) or "
+        "'none' (default: the detectors the selected strategies need to fire)",
     )
     bt.add_argument("--seed", type=int, default=None)
     bt.add_argument("--out", default=None, help="output folder (default: data/backtests/<hashes>)")

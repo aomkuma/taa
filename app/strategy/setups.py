@@ -76,9 +76,13 @@ class EvidenceSetup(BaseStrategy):
     """A strategy driven by one family of trigger detectors. Subclasses set the class attributes."""
 
     triggers: ClassVar[frozenset[str]]
+    confirming: ClassVar[frozenset[str]] = frozenset()  # other detectors the confirmations read
     setup_code: ClassVar[str]  # the entry's reason code, e.g. NECKLINE_BREAK
     Params = SetupParams
     demo_only = True
+
+    def required_detectors(self) -> frozenset[str]:
+        return self.triggers | self.confirming
 
     def required_timeframes(self) -> tuple[Timeframe, ...]:
         return ()
@@ -324,6 +328,7 @@ class SmcReversal(EvidenceSetup):
     description = "Smart money: sweep + CHoCH + FVG retest; stop beyond the sweep extreme. Unproven."
     setup_code = "SMC_REVERSAL"
     triggers = frozenset({"smc.fvg"})
+    confirming = frozenset({"smc.liquidity_sweep", "structure.bos_choch"})
     core_families = frozenset({Family.SMART_MONEY, Family.TREND})
     Params = SmcParams
 

@@ -55,6 +55,10 @@ class BaseStrategy(ABC):
 
     # contract ------------------------------------------------------------------------------------------
 
+    def required_detectors(self) -> frozenset[str]:
+        """The evidence detectors the strategy needs to fire at all (backtests run only these by default)."""
+        return frozenset()
+
     @abstractmethod
     def required_timeframes(self) -> tuple[Timeframe, ...]:
         """Timeframes whose frames ``evaluate`` reads; they must be enabled in ``timeframes:``."""

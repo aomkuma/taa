@@ -161,3 +161,52 @@ def test_cli_backtest_writes_reports(
     assert data["provenance"]["strategies"] == ["example_trend_pullback"]
     assert (out / "trades.csv").exists() and (out / "equity.csv").exists()
     assert "past results do not predict" in capsys.readouterr().out
+
+
+class TestEvidence:
+    """The pattern setups trigger on evidence: a backtest runs the detectors its strategies need."""
+
+    def test_the_selected_strategies_bring_their_detectors(self, store: ParquetHistoryStore) -> None:
+        start, end = window(store)
+        loaded = load_history(store, SERVER, ["EURUSD"], TFS, account_currency="USD")
+        cfg = CONFIG.model_copy(
+            update={
+                "strategies": CONFIG.strategies.model_copy(
+                    update={
+                        "items": [*CONFIG.strategies.items, *_setups("setup_breakout", "setup_smc_reversal")]
+                    }
+                )
+            }
+        )
+        _, plain = run_backtest(
+            cfg, loaded, config_hash="h", start=start, end=end, strategy_names=["example_trend_pullback"]
+        )
+        assert plain.extra["detectors"] == []  # no evidence: as fast as before
+        _, setups = run_backtest(
+            cfg,
+            loaded,
+            config_hash="h",
+            start=start,
+            end=end,
+            strategy_names=["setup_breakout", "setup_smc_reversal"],
+        )
+        ran = set(setups.extra["detectors"])
+        assert {"volatility.donchian", "sessions.open_breakout", "smc.fvg"} <= ran
+        assert {"smc.liquidity_sweep", "structure.bos_choch"} <= ran  # the SMC confirmations
+        assert "chart.triangle" not in ran
+        _, none = run_backtest(
+            cfg,
+            loaded,
+            config_hash="h",
+            start=start,
+            end=end,
+            strategy_names=["setup_breakout"],
+            detectors=[],
+        )
+        assert none.extra["detectors"] == []
+
+
+def _setups(*names: str):  # type: ignore[no-untyped-def]
+    from app.config import StrategyEntry
+
+    return [StrategyEntry(name=n, enabled=False) for n in names]
