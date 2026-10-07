@@ -26,19 +26,23 @@ random.seed(5)
 
 trades = []
 for path in sorted(glob.glob(f"{S}/{sys.argv[2] if len(sys.argv) > 2 else 'fam_light_*'}.db")):
-    q = ("select symbol, side, signal_at, entry_price, initial_sl, tp, atr, spread_points, features, r_net "
+    q = ("select symbol, side, signal_at, entry_price, initial_sl, tp, atr, spread_points, features, r_net, timeframe "
          "from shadow_trades where status='CLOSED' and variant='PLAN' and strategy=?")
     for row in sqlite3.connect(path).execute(q, (STRATEGY,)):
-        trades.append(dict(zip(["symbol", "side", "t", "entry", "sl", "tp", "atr", "spread", "features", "r_net"], row)))
+        trades.append(dict(zip(["symbol", "side", "t", "entry", "sl", "tp", "atr", "spread", "features", "r_net", "tf"], row)))
 trades.sort(key=lambda x: (x["symbol"], x["t"]))
-print(f"{STRATEGY}: {len(trades)} signals")
+TF = {t["tf"] for t in trades}
+assert len(TF) == 1, f"one entry timeframe per run, got {TF}"
+TF = TF.pop()
+PER = {"M15": 3, "M30": 6, "H1": 12, "H4": 48}[TF]  # M5 bars per entry bar: "N bars" below are entry bars
+print(f"{STRATEGY}: {len(trades)} signals, entry timeframe {TF}")
 
 bars, m15, point = {}, {}, {}
 for sym in {t["symbol"] for t in trades}:
     point[sym] = json.load(open(f"{H}/{sym}/spec.json"))["spec"]["point"]
     a = pd.read_parquet(f"{H}/{sym}/M5.parquet")
     bars[sym] = a.set_index(pd.DatetimeIndex(a["open_time"])).sort_index()
-    b = pd.read_parquet(f"{H}/{sym}/M15.parquet")
+    b = pd.read_parquet(f"{H}/{sym}/{TF}.parquet")
     b = b.set_index(pd.DatetimeIndex(b["close_time"])).sort_index()
     b["ema20"] = b["close"].ewm(span=20, adjust=False).mean()
     m15[sym] = b
@@ -85,7 +89,7 @@ def run(tr: dict, *, tp=None, tp_scale=1.0, sl_mult=1.0, be_at=None, be_to=0.0, 
             stop = max(stop, be_to)
         if trail is not None and best >= trail[0]:
             stop = max(stop, best - trail[1])
-        if time_bars is not None and i + 1 >= time_bars * 3 and best < 0.5:
+        if time_bars is not None and i + 1 >= time_bars * PER and best < 0.5:
             return (taken + rest * close[i]) / sl_mult
     return (taken + rest * close[-1]) / sl_mult if len(close) else 0.0
 
@@ -186,10 +190,10 @@ print(f"  D1 stopped trades whose ORIGINAL target was reached later (within 72 h
 
 
 def run_retest(tr: dict, depth: float, stop: float, wait_bars: int, tp_scale: float = 1.0) -> float | None:
-    """A limit `depth` original risks against the signal, valid `wait_bars` M15 bars; stop at `stop` (original
+    """A limit `depth` original risks against the signal, valid `wait_bars` entry bars; stop at `stop` (original
     units, from the signal's entry); target the signal's target x tp_scale. None: never filled."""
     fav, adv, close = tr["fav"], tr["adv"], tr["close"]
-    window = min(len(adv), wait_bars * 3)
+    window = min(len(adv), wait_bars * PER)
     touched = np.nonzero(adv[:window] <= -depth)[0]
     if len(touched) == 0:
         return None
@@ -205,13 +209,13 @@ def run_retest(tr: dict, depth: float, stop: float, wait_bars: int, tp_scale: fl
 
 
 def run_reentry(tr: dict, within_bars: int) -> float:
-    """As traded; if stopped, enter again when price comes back to the entry within `within_bars` M15 bars."""
+    """As traded; if stopped, enter again when price comes back to the entry within `within_bars` entry bars."""
     first = run(tr)
     hit = np.nonzero(tr["adv"] <= -1)[0]
     if first > -0.99 or not len(hit):
         return first
     j0 = int(hit[0]) + 1
-    back = np.nonzero(tr["fav"][j0 : j0 + within_bars * 3] >= 0)[0]
+    back = np.nonzero(tr["fav"][j0 : j0 + within_bars * PER] >= 0)[0]
     if not len(back):
         return first
     k = j0 + int(back[0])
@@ -227,9 +231,33 @@ def line2(label: str, fn) -> None:
     print(f"  {label:46} n={len(filled):4d}/{len(res)} all {ci([r for _, r in filled]):24} train {ci(tr_):24} test {ci(te_)}")
 
 
-for depth, stop in ((0.5, 2.0), (0.5, 2.5), (1.0, 2.0), (1.0, 3.0)):
-    line2(f"D2 retest -{depth} R, stop -{stop} R, 16 bars", lambda tr, d=depth, s=stop: run_retest(tr, d, s, 16))
+for wait in (4, 16):
+    for depth, stop in ((0.5, 2.0), (0.5, 2.5), (1.0, 2.0), (1.0, 3.0)):
+        line2(f"D2 retest -{depth} R, stop -{stop} R, {wait} bars",
+              lambda tr, d=depth, s=stop, w=wait: run_retest(tr, d, s, w))
 for n in (4, 16):
     line2(f"D3 re-enter at the entry within {n} bars of the stop", lambda tr, n=n: run_reentry(tr, n))
 line("D4 stop x2 + trail 0.5 R once +0.5 R (original units x2)", sl_mult=2.0, trail=(1.0, 1.0))
 line("D4 stop x2 + target 1 R of the wider stop", sl_mult=2.0, tp=2.0)
+
+
+print("\n=== E. paired: variant minus as traded on the same signals (unfilled retest = 0 R, no trade) ===")
+for t_ in trades:
+    t_["base"] = run(t_) if len(t_["fav"]) else None
+
+
+def paired(label: str, fn) -> None:
+    rows = [(t_["half"], t_["symbol"], (fn(t_) or 0.0) - t_["base"]) for t_ in trades if t_["base"] is not None]
+    parts = {h: [d for hh, _, d in rows if hh == h] for h in ("train", "test")}
+    syms = defaultdict(list)
+    for _, s_, d in rows:
+        syms[s_].append(d)
+    print(f"  {label:40} all {ci([d for *_, d in rows]):24} train {ci(parts['train']):24} test {ci(parts['test'])}")
+    print("      symbols: " + ", ".join(f"{s_} {statistics.fmean(v):+.2f}" for s_, v in sorted(syms.items())))
+
+
+for wait in (4, 16):
+    for depth, stop in ((0.5, 2.0), (1.0, 2.0), (1.0, 3.0)):
+        paired(f"retest -{depth} R, stop -{stop} R, {wait} bars", lambda t_, d=depth, s=stop, w=wait: run_retest(t_, d, s, w))
+paired("stop x2, same R multiple", lambda t_: run(t_, sl_mult=2.0, tp_scale=2.0))
+paired("stop x2, same target price", lambda t_: run(t_, sl_mult=2.0))

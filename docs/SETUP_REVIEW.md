@@ -140,9 +140,59 @@ other), then forward in shadow, then DEMO, then LIVE (PLAN_LEARNING §L13).
 
 The AI never sizes a trade, widens a stop or bypasses a risk check.
 
-## 8. Still to do
+## 8. The H1 leads and the stop-plus-retest lever (2026-10-07, second session)
 
-- Heavy family (pattern breakout, neckline, harmonic): the replay ran out of commit memory with four processes
-  (the page file is a fixed 2 GB); to run two at a time or after the page file is enlarged.
-- The same review for setup_fib_pullback and setup_elliott_wave.
-- Tests of the two hypotheses in §5.2 (replay with an H1/H4 configuration; a failed-break setup in shadow).
+Same method, `hypotheses.py STRATEGY DB_GLOB` (now aware of the entry timeframe: "N bars" are entry bars,
+so a 16-bar wait is 4 h on M15 and 16 h on H1). H1 = `fam_lightH1_*` (H1 entries, H4 bias). Train = Oct-Mar,
+test = Apr-Oct. Outputs in `data/research/hyp_*.txt`.
+
+**Absolute results, setup_breakout** (mean R [90 % CI]):
+
+| Variant | M15 all | H1 all | H1 train | H1 test |
+|---|---|---|---|---|
+| as traded | −0.13 | −0.061 [−0.13, +0.01] | +0.053 | −0.161 [−0.25, −0.07] |
+| stop ×2, same R multiple | −0.05 | +0.032 [−0.03, +0.09] | +0.122 | −0.047 [−0.12, +0.03] |
+| retest 0.5 R, stop 2 R, 4 bars | −0.04 | +0.074 [−0.00, +0.15] | +0.144 | +0.014 [−0.08, +0.11] |
+| retest 1 R, stop 2 R, 16 bars | +0.01 | +0.134 [+0.03, +0.24] | +0.212 | +0.069 [−0.06, +0.21] |
+| retest 1 R, stop 3 R, 16 bars | +0.02 | +0.075 [+0.00, +0.14] | +0.156 | +0.007 [−0.08, +0.09] |
+
+- On H1 almost **every** rule is positive on Oct-Mar and negative on Apr-Oct (as traded +0.05 → −0.16; BUY
+  +0.15 → −0.28). The half-year (the market's regime) moves the result more than any rule does.
+- Honest walk-forward: the rule with the best train result (retest 1 R, stop 2 R, 16 bars, out of ~45 tried)
+  gives **+0.069 R [−0.06, +0.21]** on the test half. Not an edge: the interval contains zero and the choice
+  was made among many rules.
+
+**Paired effect** (variant minus as traded on the same signal; an unfilled retest counts 0 R):
+
+| Strategy, TF | retest 1 R, stop 3 R, 16 bars: all / train / test | stop ×2, same R multiple: all / train / test |
+|---|---|---|
+| setup_breakout M15 (3,750) | **+0.139** [+0.09, +0.18] / +0.15 / +0.13 | +0.082 / +0.14 / +0.03 |
+| setup_breakout H1 (1,141) | **+0.103** [+0.02, +0.18] / +0.03 / +0.17 | +0.093 / +0.07 / +0.11 |
+| setup_fib_pullback M15 (378) | +0.141 [+0.01, +0.28] / −0.02 / +0.27 | +0.035 / −0.05 / +0.11 |
+| setup_fib_pullback H1 (114) | −0.154 [−0.37, +0.06] / +0.10 / −0.38 | −0.035 / −0.00 / −0.07 |
+| setup_elliott_wave M15 (552) | +0.061 [−0.06, +0.17] / −0.02 / +0.14 | +0.051 / −0.01 / +0.11 |
+| setup_elliott_wave H1 (171) | −0.027 [−0.19, +0.14] / −0.06 / +0.02 | −0.096 / −0.15 / −0.02 |
+
+1. **For the breakout the lever is robust:** waiting for a retest and putting the stop beyond the noise
+   improves the same signals by about +0.10 to +0.14 R, in both halves, on M15 and H1, and on every symbol on
+   M15 (EURUSD +0.10, GBPUSD +0.11, USDJPY +0.21, XAUUSD +0.14). Part of it is simply not trading a third of
+   the signals (unfilled); with a losing baseline that also counts.
+2. **The lever does not create an edge by itself:** the absolute result is about zero on M15 (+0.02 R) and
+   depends on the half-year on H1. It removes most of the loss; it does not add a gain.
+3. **It is not a general rule:** for setups that already enter on a pullback (fib, elliott) a second wait on
+   H1 picks the failures (fib H1 test −0.38 R) and the M15 gains appear only in one half. An entry mode must be
+   chosen per setup and measured per setup (TAA-L702 reports per strategy; L706 selects per strategy).
+4. setup_fib_pullback H1 as traded: +0.118 [−0.08, +0.33] (train −0.13, test +0.34) on 114 signals: unstable,
+   too few.
+
+**Decision for the bot (recommendation):** no product change from history alone. Next: TAA-L702 adds
+`PULLBACK_WIDE` / `WIDE_STOP` as shadow variants so the lever is measured forward on live signals, per
+strategy and timeframe; the H1-vs-M15 question for the bot (TAA-1602) waits for that forward evidence and the
+heavy family.
+
+## 9. Still to do
+
+- Heavy family (pattern breakout, neckline, harmonic, candle reversal): replay running two symbols at a time
+  (`run_heavy.sh`); then the same tables.
+- Harmonic variants (swing size, ratio tolerance, M5): counts with `harmonic_funnel.py`, replays per variant.
+- A failed-break setup in shadow (TAA-L803).

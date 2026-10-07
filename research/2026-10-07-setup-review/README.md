@@ -11,7 +11,7 @@ writes only to `data/research/` (git-ignored). All results are hypothetical, bar
 | `diagnose_breakout.py` | re-simulates `setup_breakout` on M5 (market vs retest entries) and splits by context at the signal bar |
 | `baseline_breakout.py` | the same signals as traded, faded and in a random direction (information and cost drag) |
 | `walkforward_breakout.py` | context × direction, then single-condition rules chosen on Oct-Mar and measured on Apr-Oct |
-| `hypotheses.py STRATEGY` | groups A (exits), B (stop size, costs), C (entry location and time), D (retest with a wide stop, re-entry) |
+| `hypotheses.py STRATEGY ["DB_GLOB"]` | groups A (exits), B (stop size, costs), C (entry location and time), D (retest with a wide stop, re-entry), E (paired: variant minus as traded on the same signals); "N bars" are entry-timeframe bars |
 
 Families used:
 
