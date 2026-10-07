@@ -189,6 +189,12 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
     tick_tiebreak: true             # copy_ticks_range decides an M1 bar that touches both SL and TP
     poll_seconds: 60                # M1 resolution cadence
     budget_seconds: 2.0             # per engine cycle
+    entry_modes:                    # TAA-L702: the same signals entered another way, measured forward (shadow only)
+      variants: [PULLBACK, WIDE_STOP, PULLBACK_WIDE]
+      pullback_depth_r: 0.5         # limit 0.5 x the signal's risk against it (docs/SETUP_REVIEW.md section 8)
+      wide_stop_mult: 2.0           # WIDE_STOP: twice the plan's stop, same TP price, same money at risk
+      pullback_wide_stop_r: 2.0     # PULLBACK_WIDE: stop 2 risks from the signal's entry
+      entry_window_bars: 4          # an unfilled limit is MISSED after 4 entry bars
   calibration:                      # win probability + evidence model from shadow trades (PLAN A27, A29)
     enabled: true
     nightly_hour_utc: 23            # rebuilt once a day after this hour (and on demand: app.cli advisory calibrate)
