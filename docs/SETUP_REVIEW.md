@@ -200,9 +200,44 @@ alone do not fix scale-in; a single entry stays the recommendation until a wide-
 variants on the DEMO engine (TAA-L702); the production code reproduces the harness on H1 breakout (paired
 +0.060 / +0.077 / +0.115 R against +0.057 / +0.075 / +0.116 R).
 
-## 9. Still to do
+## 9. Heavy family, first pair (EURUSD, GBPUSD; 2026-10-08)
 
-- Heavy family (pattern breakout, neckline, harmonic, candle reversal): replay running two symbols at a time
-  (`run_heavy.sh`); then the same tables.
+`app.cli research hypotheses --strategy NAME --from "data/research/fam_heavy_*.db"` (M15 entries, H1 bias,
+2025-10-15 .. 2026-10-05; outputs `data/research/l707_heavy_*_M15_pair1.txt`). USDJPY and XAUUSD were still
+replaying; these numbers cover half the symbols. "Random" is now the exact expectation of a coin per signal (the
+mean of both directions), not one draw: a single draw added about ±0.1 R of noise on a few hundred signals.
+
+| Setup | n | As traded, all [90 % CI] | Oct-Mar / Apr-Oct | Other direction | Random | Stopped trades that reached the target later |
+|---|---|---|---|---|---|---|
+| setup_pattern_breakout | 901 | −0.222 [−0.30, −0.14] | −0.16 / −0.29 | −0.172 | −0.197 | 44 % |
+| setup_harmonic_prz | 272 | +0.050 [−0.09, +0.19] | +0.15 / −0.06 | −0.171 | −0.060 | 76 % |
+| setup_candle_reversal | 331 | −0.098 [−0.21, +0.01] | −0.10 / −0.10 | −0.196 | −0.147 | 68 % |
+| setup_neckline_break | 89 | +0.003 [−0.25, +0.27] | +0.05 / −0.04 | −0.034 | −0.015 | 50 % |
+
+- **setup_pattern_breakout repeats setup_breakout:** negative in both halves and on both symbols (EURUSD −0.23,
+  GBPUSD −0.21), and the traded direction is worse than both the other direction and random. Retest 0.5 R with
+  a stop 2 R from the entry (16 bars) improves the same signals by +0.126 R (+0.05 / +0.21) and stop ×2 by +0.086
+  (+0.02 / +0.16), but the absolute stays negative (−0.125 / −0.136 R).
+- **setup_harmonic_prz is the only setup whose direction carries information:** as traded beats the other
+  direction by +0.22 R (both halves) and random by +0.11 R (−0.19 / −0.02 paired against random, i.e. the traded
+  side wins in both halves). Its result still depends on the half (+0.15 / −0.06) and the symbol (EURUSD +0.20,
+  GBPUSD −0.02); no edge is shown. 76 % of its stopped trades reached the target later, yet a wider stop or a
+  retest does **not** help it (paired −0.03 / −0.05 R): its stops are not the problem, its targets are far.
+- **setup_candle_reversal:** about −0.10 R in both halves; the traded direction beats random by +0.05 R in both
+  halves (weak information). A retest 0.5 R with a 2 R stop gives −0.039 R (paired +0.065: +0.04 / +0.12).
+- **setup_neckline_break:** 89 signals, no conclusion.
+- The walk-forward selections (best rule on one half, judged on the other) pick different rules for each half
+  and none holds up (pattern breakout: −0.39 R on the other half for the first half's choice). No setup in this
+  family has a rule that survives walk-forward.
+
+**Reading:** across both families, breakout-type setups lose with the direction worse than random; the stop
+lever reduces their loss but does not turn it. Harmonics are the one place where the direction is informative,
+which makes them the better candidate for further work (more symbols, M5, swing size and tolerance variants,
+targets nearer than the far D-leg projection), measured the same way.
+
+## 10. Still to do
+
+- Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
+  §9 on all four symbols.
 - Harmonic variants (swing size, ratio tolerance, M5): counts with `harmonic_funnel.py`, replays per variant.
 - A failed-break setup in shadow (TAA-L803).

@@ -460,3 +460,10 @@ class TestReplayFamily:
             sleep=lambda _: None,
         )
         assert code == 1
+
+
+def test_random_direction_is_the_mean_of_both_directions() -> None:
+    (rand,) = [h for h in default_hypotheses() if h.label == "random direction"]
+    p, m = path([(0, 2.1, -0.2, 2)]), path([(0, 0.2, -2.1, -2)])
+    assert rand.run(signal(), p, m) == pytest.approx((2.0 - 1.0) / 2)
+    assert rand.run(signal(), p, None) is None

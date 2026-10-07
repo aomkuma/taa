@@ -362,19 +362,16 @@ class Hypothesis:
 
 def default_hypotheses(seed: int = 0) -> list[Hypothesis]:
     """The setup review's set (SETUP_REVIEW §6, §8): exits, stop size, retests, re-entry and the baselines."""
-    rng = np.random.default_rng(seed)
-    coins: dict[str, bool] = {}
-
-    def coin(signal: Signal) -> bool:
-        if signal.shadow_id not in coins:
-            coins[signal.shadow_id] = bool(rng.random() < 0.5)
-        return coins[signal.shadow_id]
+    del seed  # the baselines are exact expectations (no draws); kept for a stable signature
 
     def market(rules: Rules) -> Callable[[Signal, PricePath, PricePath | None], float | None]:
         return lambda _s, p, _m: simulate(p, rules)
 
-    def random_direction(s: Signal, p: PricePath, m: PricePath | None) -> float | None:
-        return simulate(m) if coin(s) and m is not None else simulate(p)
+    def random_direction(_s: Signal, p: PricePath, m: PricePath | None) -> float | None:
+        """The expected R of a fair coin per signal: the mean of both directions (one draw would add noise of
+        about ±0.1 R on a few hundred signals with far targets)."""
+        a, b = simulate(p), None if m is None else simulate(m)
+        return None if a is None or b is None else (a + b) / 2
 
     out = [
         Hypothesis("baseline", "as traded", market(Rules()), paired=False),
