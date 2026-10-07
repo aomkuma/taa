@@ -171,6 +171,9 @@ def run_engine(
             f"New secret for {issued.engine_id}; the old one works until the engine uses the new one.\n"
         )
         print_engine_env(issued, settings, out=out)
+    elif command == "rename":
+        name = registry.rename(args.engine_id, args.label, actor=CLI_ACTOR)
+        out.write(f"Engine {args.engine_id} is now labelled {name!r}.\n")
     elif command == "revoke":
         if args.confirm != args.engine_id:
             raise EngineError(

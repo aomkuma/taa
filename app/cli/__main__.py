@@ -739,6 +739,9 @@ def build_parser() -> argparse.ArgumentParser:
     ea.add_argument("--label", required=True)
     er = we_sub.add_parser("rotate", help="issue a new secret (the old one works until the engine switches)")
     er.add_argument("engine_id")
+    en = we_sub.add_parser("rename", help="give an engine a new label (shown in the PWA)")
+    en.add_argument("engine_id")
+    en.add_argument("--label", required=True)
     ev = we_sub.add_parser("revoke", help="revoke an engine for good")
     ev.add_argument("engine_id")
     ev.add_argument("--confirm", required=True, help="the engine id again")
@@ -747,7 +750,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ei.add_argument("--owner", required=True, help="username of the owner")
     el = we_sub.add_parser("list", help="list engines (never secrets)")
-    for p in (ea, er, ev, ei, el):
+    for p in (ea, er, en, ev, ei, el):
         p.set_defaults(func=cmd_web_engine)
 
     syn = sub.add_parser("sync", help="cloud sync tools (PLAN §A13)")

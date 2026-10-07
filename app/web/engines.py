@@ -400,6 +400,15 @@ class EngineRegistry:
         )
         return IssuedKey(engine_id, secret)
 
+    def rename(self, engine_id: str, label: str, *, actor: str) -> str:
+        """A new label for an ACTIVE engine (shown in the PWA); returns the normalized label."""
+        name = self._label(label)
+        with self.db.session() as sess:
+            row = self._active_row(sess, engine_id)
+            old, row.label = row.label, name
+        self.audit.append("ENGINE_RENAMED", actor, {"engine_id": engine_id, "from": old, "to": name})
+        return name
+
     def revoke(self, engine_id: str, *, actor: str, commands: CommandQueue | None = None) -> None:
         now = self.clock.now_utc()
         with self.db.session() as sess:

@@ -66,10 +66,11 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
 - Checked on a copy of `data\demo\engine-mt5.db` against the demo terminal (read-only): 13 trades booked, each
   profit equal to the terminal's, total net −39.96 (the bot's part of the balance).
 - Same comparison, not bugs: the terminal's Profit column leaves out swap (GBPUSD manual −13.80 + swap −0.12 =
-  −13.92 in the PWA). Still open from it: manual trades that opened and closed while the engine did not watch
-  are never linked (BTCUSD −13.95 and EURUSD 1 lot +119 on 10-05, before TAA-1006 ran); the engine label
-  "mt5 demo (paper)" is fixed in `scripts\start-demo.ps1` even in `-Demo`; charts, analytics and the manual
-  "bot" column still read paper only.
+  −13.92 in the PWA). Fixed the same day: manual trades that opened and closed while the engine did not
+  watch are linked from the deal history (**TAA-1007**; the BTCUSD −13.95 and EURUSD 1 lot +119 of 10-05
+  appear after the next engine restart); the engine label is "mt5 demo" (`app.cli web engine rename`, and
+  `scripts\start-demo.ps1` no longer names a mode). Still open: charts, analytics and the manual "bot" column
+  read paper only.
 
 ### Edge work, 2026-10-07 afternoon (this session; docs/SETUP_REVIEW.md §8, PLAN_LEARNING §L19.3, §L19.8)
 

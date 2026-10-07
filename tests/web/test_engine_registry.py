@@ -294,6 +294,13 @@ class TestCli:
         assert engine_id in listing and secret not in listing and "never" in listing
         rotated = self.run(services, "rotate", engine_id=engine_id)
         assert "ENGINE_HMAC_SECRET=" in rotated and secret not in rotated
+        assert "'mt5 demo'" in self.run(services, "rename", engine_id=engine_id, label="  mt5   demo ")
+        assert "mt5 demo" in self.run(services, "list")
+        with pytest.raises(EngineError, match="1-64"):
+            self.run(services, "rename", engine_id=engine_id, label=" ")
+        assert [e.payload for e in audit_events(db) if e.event_type == "ENGINE_RENAMED"] == [
+            {"engine_id": engine_id, "from": "vps", "to": "mt5 demo"}
+        ]
         with pytest.raises(EngineError, match="confirm"):
             self.run(services, "revoke", engine_id=engine_id, confirm="other")
         assert "revoked" in self.run(services, "revoke", engine_id=engine_id, confirm=engine_id)

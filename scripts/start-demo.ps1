@@ -58,7 +58,8 @@ if ($Demo -and -not $Mt5) { Write-Host "-Demo needs -Mt5 (DEMO sends orders thro
 $Root = Split-Path -Parent $PSScriptRoot
 $Python = Join-Path $Root ".venv\Scripts\python.exe"
 $DemoEnv = Join-Path $Root $(if ($Mt5) { ".env.demo-mt5" } else { ".env.demo" })
-$EngineLabel = $(if ($Mt5) { "mt5 demo (paper)" } else { "fake demo" })
+# the engine is the same in PAPER and DEMO (-Demo), so its label names no mode: the mode banner shows it
+$EngineLabel = $(if ($Mt5) { "mt5 demo" } else { "fake demo" })
 $EngineMode = $(if ($Demo) { "DEMO" } else { "PAPER" })
 $EngineDb = $(if ($Mt5) { "engine-mt5.db" } else { "engine.db" })
 $DemoDir = Join-Path $Root "data\demo"
