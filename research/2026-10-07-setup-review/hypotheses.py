@@ -3,7 +3,7 @@ re-simulating it on M5 bars (read-only, hypothetical; bid bars, the spread on th
 both the stop and another level counts as the stop first). Every row: mean R [90 % CI] all / train (Oct-Mar) /
 test (Apr-Oct), so a rule that only fits one half shows up.
 
-usage: python hypotheses.py setup_breakout
+usage: python hypotheses.py STRATEGY ["fam_light_*"]   (the second argument picks the replay databases)
 """
 
 import glob
@@ -25,7 +25,7 @@ HORIZON = timedelta(hours=72)
 random.seed(5)
 
 trades = []
-for path in sorted(glob.glob(f"{S}/fam_light_*.db")):
+for path in sorted(glob.glob(f"{S}/{sys.argv[2] if len(sys.argv) > 2 else 'fam_light_*'}.db")):
     q = ("select symbol, side, signal_at, entry_price, initial_sl, tp, atr, spread_points, features, r_net "
          "from shadow_trades where status='CLOSED' and variant='PLAN' and strategy=?")
     for row in sqlite3.connect(path).execute(q, (STRATEGY,)):

@@ -1,7 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-06, later the same day (the learning-track session took over after the session that did
-revisions 5–6, Phase 10, Phase 14 and Phase 13 core).
+Last updated: 2026-10-07 (the session that did TAA-1207, the MT5 client fix, the backtest evidence fix, the
+setup quality review and revision 7). Another session works on the learning track and TAA-1208 at the same time.
 This file holds **state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`,
 design decisions in `docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`.
 What was built per ticket is in the git history. A separate **learning track** (Milestone 3) is designed in
@@ -28,6 +28,10 @@ runs with scripts\start-demo.cmd -Mt5 (http://localhost:8001). After changing Py
 restart that stack's web, worker and/or engine (web first when the heartbeat or a migration changed).
 Commit at each ticket boundary (allowed); I push myself. LIVE stays off until I say so; subscriptions stay off.
 Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
+The goal now is an edge, measured honestly: read docs/SETUP_REVIEW.md, then follow "Next work" (finish the
+setup review, then TAA-L707 and TAA-L702). Test every idea as a hypothesis on the year of replay data in
+data/research/ (scripts in research/2026-10-07-setup-review/), judged walk-forward, before any code change
+reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1); check its health first.
 ```
 
 ---
@@ -38,15 +42,45 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   security review, 1403 drills automated; 1404 final docs pass started) and **13** (1301 AI interface,
   1302 Anthropic provider, 1303 veto, 1304 AI page and narrative, 1305 AI on advisory). Revisions 5 (owner's profile drives
   the engine's risk) and 6 (manual trades matched to signals, TAA-1006) are done.
-- **Not started / open:** Phase 11 Railway (**the only deferred work**, user decision 2026-10-06; AI is in
-  scope), TAA-1403's last item (the owner repeats the drills on the LIVE machine), TAA-1404
-  (final docs pass; README, runbooks and PLAN notes are current as of this session), Phase 15 (deferred).
+- **Also done 2026-10-06/07:** TAA-1207 (split entries), TAA-1404 (final docs pass), the MT5 client fix
+  (964221a), the backtest evidence fix (a384617), `scripts\demo-tasks.ps1`, revision 7 (PLAN §A35).
+- **Not started / open:** the setup review's follow-ups (Next work 1-5), TAA-1209, Phase 16 (AI analyst),
+  Phase 11 Railway (deferred), TAA-1403's last item (the owner repeats the drills on the LIVE machine),
+  Phase 15 (deferred).
 - **Checks (2026-10-06, stack stopped):** full pytest **2791 passed, 7 skipped** (10 min); vitest 526; Playwright
   smoke 3; ruff, mypy, bandit clean; `pip-audit` and `npm audit` clean.
 - **Git:** `main` only; the user pushes. Latest migration: **0041** (`entry_plan_intents`, TAA-1207).
-- **The `-Mt5` stack** still runs the code from before the learning-track commits below: restart it (web
-  first for the new `/learning` routes and the rebuilt PWA, then the engine for the magic registry and
-  migration 0038), only with the user's go-ahead.
+- **The `-Mt5 -Demo` stack** runs from Windows Task Scheduler since 2026-10-07 05:30 UTC (`scripts\demo-tasks.ps1`,
+  registered by the owner): "TAA Demo web/worker/engine" at logon plus "TAA Demo check" every 5 minutes. Use
+  `-Stop` / `-Start` around restarts; it no longer dies with an assistant session.
+
+### Setup quality review, 2026-10-07 (docs/SETUP_REVIEW.md; the owner's question: why do the setups lose?)
+
+One-year `advisory replay` (2025-10-15..2026-10-05, EURUSD/GBPUSD/USDJPY/XAUUSD, net of costs, hypothetical).
+Results in `data/research/fam_*.db` (git-ignored), scripts in `research/2026-10-07-setup-review/`.
+
+| Setup | M15 entries, mean R | H1 entries (H4 bias), mean R | Note |
+|---|---|---|---|
+| setup_breakout | −0.154 (3,750/yr) | −0.081 (1,141/yr) | 74 % of all M15 signals |
+| setup_fib_pullback | −0.163 (378) | +0.125 (114; halves −0.15 / +0.37) | not stable yet |
+| setup_elliott_wave | −0.075 (552) | −0.083 (171) | no edge |
+| example_trend_pullback | +0.03 (55) | −0.38 (23) | too few |
+| setup_smc_reversal | 1 signal a year | — | conditions too strict |
+| pattern_breakout, neckline, harmonic, candle_reversal | replay running (`fam_heavy_*`) | — | see Next work 1 |
+
+What explains the breakout losses (M15): the stop sits inside the noise (55 % of stopped trades reached their
+target later; 43 % of losers were +0.5 R first); the costs take ~0.07-0.08 R per trade (random direction:
+−0.08 R); the M15 break direction is worse than random (fade −0.01 R); a retest entry with the plan's stop is
+worse (deeper fills win 9-20 %); single context rules do not survive walk-forward. **What helped:** a retest
+of 0.5-1 R with a stop 2.5-3 R from the signal's entry (M15: about 0 to +0.02 R, both halves); on **H1** the
+same idea gave **+0.074 R** [−0.00, +0.15] (Oct-Mar +0.14, Apr-Oct +0.01) and a twice-wider stop +0.03 R. No
+edge is proven yet; these are the leads. Harmonic detections are plentiful (EURUSD M15 ~9.5 a week pass the
+setup geometry; looser swings/tolerance or M5 give 2-7×), so their replay will have enough samples.
+
+The live DEMO plans showed the scale-in flaw (TAA-1209): 0.5 ATR spacing on a 1.5 ATR stop puts the limit
+parts into the noise under the stop (GBPUSD parts with 7.2/4.1/1.1 pip stops; USDJPY three parts stopped
+within 51 minutes). **Recommended to the owner: a single entry until TAA-1209**; his PWA profile still says
+SCALE_IN 5 parts.
 
 ### Learning track, started 2026-10-06 (Milestone 3; `docs/PLAN_LEARNING.md`, `docs/TICKETS_LEARNING.md`)
 
@@ -130,32 +164,29 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Next work
 
-1. **LIVE is ready to be switched on only by the owner.** What is left before real money:
-   - the two-week DEMO soak (`docs/RUNBOOK_DEMO.md` §4): first started 2026-10-06 ~06:57 UTC, but no order
-     reached the broker until the MT5 client fix, so it **really starts 2026-10-06 ~12:48 UTC** on the FBS demo
-     account (`scripts\start-demo.cmd -Mt5 -Demo`, engine db `data/demo/engine-mt5.db`; the owner's Trading
-     profile decides the risk; split entries per TAA-1207); `demo-report --days 14` from 2026-10-20 ~13:00 UTC;
-   - the drills on the LIVE machine with the record table (`docs/RUNBOOK_LIVE.md` §2) — TAA-1403's last item;
-   - the go-live checklist (`docs/RUNBOOK_LIVE.md` §1), then the owner's explicit go-ahead on the day.
-   Never enable LIVE (`ENABLE_LIVE_TRADING`, the phrase) on the owner's behalf.
-2. **AI:** built, off until a key is set. Set `AI_PROVIDER=anthropic`, `AI_API_KEY`, `AI_MODE=advisory` (entry
-   reviews, records only) in `.env` on the engine machine and `ai.advisory.enabled: true` in `config.yaml`
-   (opinions and narratives), then restart the engine; watch the "AI review" page and the opportunity detail.
-   Costs real money: budgets `ai` (50 calls / $2 a day) and `ai.advisory` (100 calls / $3 a day).
-3. **TAA-1404 final docs pass:** check README, both runbooks, CLAUDE.md and `.env.example` against reality once
-   LIVE has run (or before the owner's go-live).
-4. Phase 11 Railway: skipped for now; later only with the owner's Railway access and go-ahead.
-5. **Learning track (Milestone 3):** in progress (see the section above and `docs/TICKETS_LEARNING.md`); it
-   covers the owner's homework (scan every symbol, symbol character, tick features, adaptive selection). The
-   findings below stay valid input:
-   - Ranking covers the whole broker universe (549 symbols on the FBS demo). The opportunity scanner covers
-     only the advisory requirements (allowlist + favourites + lists + `advisory.universe.auto_top_n: 30`) with a
-     per-cycle time budget (~1–1.6 s per symbol per bar for the evidence scan).
-   - Trading, candle streaming and charts cover only `ALLOWED_SYMBOLS` (EURUSD, GBPUSD, USDJPY, XAUUSD).
-   - Strategy parameters are fixed in `config.yaml` (restart needed); detector parameters can come from the
-     owner's theory settings (TAA-920).
-6. Small open ideas: an aggregate of manual trades on the accuracy page once enough have closed; check that the
-   owner's open manual trades (GBPUSD, EURUSD) show an R on Trade history when they close.
+The order below aims at an edge first; LIVE stays the owner's decision after the soak.
+
+1. **Finish the setup review** (research only, no product code):
+   - the heavy family replay started 2026-10-07 ~09:00 UTC (`research/2026-10-07-setup-review/run_heavy.sh`,
+     two symbols at a time, idle priority) writes `data/research/fam_heavy_*.db`. If it did not finish, rerun
+     it. Then `analyze_replays.py "fam_heavy_*"` and `hypotheses.py setup_harmonic_prz "fam_heavy_*"` (and the
+     same for pattern_breakout, neckline_break, candle_reversal);
+   - harmonics as hypotheses: swing size 1.5 vs 1.0 ATR, ratio tolerance 5 vs 10 %, M15 vs M5
+     (`harmonic_funnel.py` counts; a replay per variant for results);
+   - the H1 leads: `hypotheses.py setup_breakout "fam_lightH1_*"` gave the best combination so far (retest
+     0.5 R, stop 2 R: +0.07 R); confirm on H1 for the heavy family, then decide the bot's timeframe (TAA-1602);
+   - write the results into docs/SETUP_REVIEW.md and report them to the owner with walk-forward CIs.
+2. **TAA-L707 research harness** (docs/TICKETS_LEARNING.md): turn the prototypes into `app.cli research` so
+   every later idea is tested the same way.
+3. **TAA-L702 entry-mode shadow variants** with `PULLBACK_WIDE` and `WIDE_STOP` (the only levers with evidence),
+   then TAA-L706 to let the bot use a variant that wins in shadow.
+4. **TAA-1209** scale-in parts outside the noise (or keep the bot on a single entry).
+5. **TAA-L803 `setup_failed_break`** and TAA-L708 (weekly research report: the AI's research role).
+6. **Phase 16 AI analyst** (PLAN §A35): after the above; needs `AI_PROVIDER`/`AI_API_KEY` and the owner's budget.
+7. **Owner, before LIVE:** the DEMO soak (really started 2026-10-06 ~12:48 UTC; `demo-report --days 14` from
+   2026-10-20 ~13:00 UTC; the engine was down 10-06 ~17:00 → 10-07 04:47 UTC), the drills on the LIVE machine
+   (TAA-1403), the go-live checklist and the explicit go-ahead. Never enable LIVE on the owner's behalf.
+8. Phase 11 Railway: skipped for now.
 
 ### Why the real stack shows little data (explained to the user on 2026-10-05)
 
@@ -213,8 +244,8 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 - **MT5:** a dedicated portable terminal at `C:\MT5\taa-bot`. `doctor` passes (warning: Algo Trading off).
   Demo account: USD, 1:200, hedging, ~$1,105 equity; the user also trades it by hand (manual positions are now
   shown in the PWA). `.env` has `TRADING_MODE=PAPER`; DEMO orders need `TRADING_MODE=DEMO` +
-  `ENABLE_DEMO_TRADING=true` and `docs/RUNBOOK_DEMO.md` (DEMO has only run on the FakeMT5 trade server so far;
-  limit parts of entry plans are not sent yet).
+  `ENABLE_DEMO_TRADING=true` and `docs/RUNBOOK_DEMO.md`. The `-Mt5 -Demo` stack sends real DEMO orders (market
+  and limit parts) since 2026-10-06 12:48 UTC. Its `Bases` folder is a junction to `D:\MT5	aa-bot-Bases`.
 - **PostgreSQL 16** (service `postgresql-x64-16`, shared with other projects): role `taa`, database
   `taa_test`, URL `TAA_POSTGRES_URL` in `.env`. Never touch other projects' databases; never clean up
   databases by `LIKE` pattern (`_` is a wildcard).
@@ -223,7 +254,13 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
 
 ## Gotchas
 
-- **Drive C is nearly full (~5 GB free on 2026-10-06).** Asking MT5 for old ticks (`copy_ticks_range`) makes the
+- **Disk and memory (2026-10-07):** drive C has ~18 GB free since the bot terminal's `Bases` (4.5 GB) moved to
+  `D:\MT5	aa-bot-Bases` behind a junction at `C:\MT5	aa-bot\Bases` (D has ~200 GB). The page file is a fixed
+  2 GB on D, so the commit limit is ~17.8 GB: four replays with the chart detectors ran out of commit memory
+  (PowerShell OutOfMemory). Run heavy replays two at a time, at idle priority (they otherwise slow the DEMO
+  engine's loop), and never next to a full test run. A full drive C on 2026-10-06 gave the engine
+  `disk I/O error` and an UNHANDLED_EXCEPTION trip.
+- Asking MT5 for old ticks (`copy_ticks_range`) makes the
   terminal download whole months into `C:\MT5	aa-bot\Bases\<server>	icks` (~40–60 MB per month and
   symbol). An uncapped depth search filled the drive once; `ticks probe` is now capped with a free-disk
   guard. Keep any backfill bounded. The tick months deleted that day (before 2026-09) may read as empty until
