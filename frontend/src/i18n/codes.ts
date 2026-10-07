@@ -138,7 +138,7 @@ export const ASSET_CLASSES = [
 export const OPPORTUNITY_STATUSES = ['CANDIDATE', 'ACTIVE', 'EXPIRED', 'INVALIDATED', 'FOLLOWED'] as const;
 export const WINDOW_REASONS = ['SIGNAL_LIFETIME', 'SESSION_END', 'NEWS_BLACKOUT'] as const;
 export const INVALID_REASONS = ['PRICE_DRIFT', 'SL_TOUCHED', 'SPREAD_SPIKE', 'OPPOSITE_SIGNAL'] as const;
-export const SHADOW_STATUSES = ['OPEN', 'CLOSED', 'VOID'] as const;
+export const SHADOW_STATUSES = ['OPEN', 'CLOSED', 'VOID', 'PENDING', 'MISSED'] as const;
 export const SHADOW_FLAGS = [
   'AMBIGUOUS',
   'TICK_RESOLVED',
