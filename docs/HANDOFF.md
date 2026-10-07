@@ -1,7 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-07 (the session that did TAA-1207, the MT5 client fix, the backtest evidence fix, the
-setup quality review and revision 7). Another session works on the learning track and TAA-1208 at the same time.
+Last updated: 2026-10-07 (the edge session: H1 leads, TAA-L707 research harness, TAA-L702 entry-mode shadow
+variants measured forward). Another session did TAA-1208/925 and demo-tasks fixes at the same time.
 This file holds **state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`,
 design decisions in `docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`.
 What was built per ticket is in the git history. A separate **learning track** (Milestone 3) is designed in
@@ -70,6 +70,30 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
   are never linked (BTCUSD −13.95 and EURUSD 1 lot +119 on 10-05, before TAA-1006 ran); the engine label
   "mt5 demo (paper)" is fixed in `scripts\start-demo.ps1` even in `-Demo`; charts, analytics and the manual
   "bot" column still read paper only.
+
+### Edge work, 2026-10-07 afternoon (this session; docs/SETUP_REVIEW.md §8, PLAN_LEARNING §L19.3, §L19.8)
+
+- **H1 leads (SETUP_REVIEW §8):** on H1 almost every rule is positive in Oct-Mar and negative in Apr-Oct; the
+  half-year moves results more than any rule. Honest walk-forward of the best H1 rule: +0.069 R [−0.06, +0.21]
+  (not an edge). **Robust lever:** retest + stop beyond the noise improves the *same* breakout signals by
+  ≈ +0.10 to +0.14 R per signal (paired) in both halves, M15 and H1; it removes most of the loss, it does not
+  add a gain (M15 absolute ≈ 0). For pullback-type setups (fib, elliott) a second wait on H1 hurts.
+- **TAA-L707 done:** `python -m app.cli research hypotheses --strategy NAME --from "data/research/fam_*.db"`
+  and `research replay-family NAME ...` (idle priority, free-commit guard). Matches stored `r_net` with
+  correlation 1.000 on the year of replay. Outputs saved in `data/research/l707_*.txt`.
+- **TAA-L702 parts 1-2 (items 3, 7, 8 ticked):** shadow variants `PULLBACK`, `WIDE_STOP`, `PULLBACK_WIDE`
+  (PENDING → OPEN/MISSED for limits), live tracker + replay, migration **0043**, stats + `GET /engines/{id}/
+  learning/entry-modes`. **Enabled in config.yaml** (shadow only) and the stack restarted 2026-10-07 14:00 UTC:
+  the DEMO engine now records the three variants for every opportunity. The production code reproduces the
+  harness on H1 breakout (paired +0.060 / +0.077 / +0.115 R). Open in L702: `LTF_TRIGGER`, opposite-signal
+  cancel while waiting, tier-1 M1 budget, failure-mode mix. §L19.7: a variant needs paired CI > 0 over
+  ≥ 200 LIVE opportunities before L706 may use it.
+- **Scale-in evidence for TAA-1209 (M15 breakout, harness):** a limit part 0.5 R deep with the plan's stop
+  gives **−0.234 R** (market −0.149 R), both halves; with the stop at 2 R −0.065/−0.095 R. Spacing alone does
+  not fix scale-in; the stop does. Recommended again: a single entry until a wide-stop policy wins in shadow.
+- **Heavy family replay:** still running (EURUSD/GBPUSD at 12,500/24,081 bars at 14:00 UTC, ~2,500 bars/h
+  each; then `run_heavy.sh` starts USDJPY/XAUUSD **at normal priority** — run_family.sh has no idle priority).
+  Analyze with `app.cli research hypotheses --from "data/research/fam_heavy_*.db"` per strategy.
 
 ### Setup quality review, 2026-10-07 (docs/SETUP_REVIEW.md; the owner's question: why do the setups lose?)
 
@@ -183,21 +207,15 @@ SCALE_IN 5 parts.
 
 The order below aims at an edge first; LIVE stays the owner's decision after the soak.
 
-1. **Finish the setup review** (research only, no product code):
-   - the heavy family replay started 2026-10-07 ~09:00 UTC (`research/2026-10-07-setup-review/run_heavy.sh`,
-     two symbols at a time, idle priority) writes `data/research/fam_heavy_*.db`. If it did not finish, rerun
-     it. Then `analyze_replays.py "fam_heavy_*"` and `hypotheses.py setup_harmonic_prz "fam_heavy_*"` (and the
-     same for pattern_breakout, neckline_break, candle_reversal);
-   - harmonics as hypotheses: swing size 1.5 vs 1.0 ATR, ratio tolerance 5 vs 10 %, M15 vs M5
-     (`harmonic_funnel.py` counts; a replay per variant for results);
-   - the H1 leads: `hypotheses.py setup_breakout "fam_lightH1_*"` gave the best combination so far (retest
-     0.5 R, stop 2 R: +0.07 R); confirm on H1 for the heavy family, then decide the bot's timeframe (TAA-1602);
-   - write the results into docs/SETUP_REVIEW.md and report them to the owner with walk-forward CIs.
-2. **TAA-L707 research harness** (docs/TICKETS_LEARNING.md): turn the prototypes into `app.cli research` so
-   every later idea is tested the same way.
-3. **TAA-L702 entry-mode shadow variants** with `PULLBACK_WIDE` and `WIDE_STOP` (the only levers with evidence),
-   then TAA-L706 to let the bot use a variant that wins in shadow.
-4. **TAA-1209** scale-in parts outside the noise (or keep the bot on a single entry).
+1. **Finish the setup review:** when `fam_heavy_*` finishes (EURUSD/GBPUSD ~19:00 UTC 10-07, the second pair
+   ~10 h later), run `app.cli research hypotheses --strategy <setup_pattern_breakout | setup_neckline_break |
+   setup_harmonic_prz | setup_candle_reversal> --from "data/research/fam_heavy_*.db"`, write SETUP_REVIEW §9,
+   report with walk-forward CIs. Harmonic variants (swing size, tolerance, M5) via `harmonic_funnel.py` + replays.
+2. **Watch the entry-mode variants forward:** `GET /engines/{id}/learning/entry-modes?source=LIVE` (no PWA page
+   yet; L706 adds it). Finish L702's open items when useful.
+3. **TAA-1209** (scale-in) only together with a wider stop (see the evidence above), or keep a single entry;
+   the owner's PWA profile still says SCALE_IN 5 parts: **the owner's decision**.
+4. **TAA-L706** once a variant passes §L19.7 (weeks of LIVE shadow).
 5. **TAA-L803 `setup_failed_break`** and TAA-L708 (weekly research report: the AI's research role).
 6. **Phase 16 AI analyst** (PLAN §A35): after the above; needs `AI_PROVIDER`/`AI_API_KEY` and the owner's budget.
 7. **Owner, before LIVE:** the DEMO soak (really started 2026-10-06 ~12:48 UTC; `demo-report --days 14` from
