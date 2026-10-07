@@ -9,9 +9,10 @@ from __future__ import annotations
 
 import logging
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from datetime import timedelta
+from typing import Any
 
 import pandas as pd
 from sqlalchemy import select
@@ -30,45 +31,52 @@ PLAN = "PLAN"
 CLOSED = "CLOSED"
 
 
+# Only the columns read here: scratch replay databases keep the schema of the run that wrote them, so a
+# select of the whole entity would fail on any column added later.
+COLUMNS = (
+    "server", "shadow_id", "strategy", "symbol", "timeframe", "side", "signal_at", "entry_at", "entry_price",
+    "initial_sl", "tp", "atr", "spread_points", "r_multiple", "r_net", "features",
+)  # fmt: skip
+
+
 def load_signals(
     db: Database, *, strategy: str, source: str | None = None, timeframe: str | None = None
 ) -> list[tuple[str, Signal]]:
     """(server, signal) for each closed PLAN shadow trade of *strategy* (optionally one source/timeframe)."""
-    query = select(ShadowTradeRow).where(
-        ShadowTradeRow.strategy == strategy,
-        ShadowTradeRow.variant == PLAN,
-        ShadowTradeRow.status == CLOSED,
+    m = ShadowTradeRow
+    query = select(*(getattr(m, c) for c in COLUMNS)).where(
+        m.strategy == strategy, m.variant == PLAN, m.status == CLOSED
     )
     if source is not None:
-        query = query.where(ShadowTradeRow.source == source)
+        query = query.where(m.source == source)
     if timeframe is not None:
-        query = query.where(ShadowTradeRow.timeframe == timeframe)
+        query = query.where(m.timeframe == timeframe)
     out = []
     with db.session() as sess:
-        for row in sess.scalars(query):
-            if row.r_net is None or row.r_multiple is None:
+        for row in sess.execute(query).mappings():
+            if row["r_net"] is None or row["r_multiple"] is None:
                 continue
-            out.append((row.server, _signal(row)))
+            out.append((row["server"], _signal(dict(row))))
     return out
 
 
-def _signal(row: ShadowTradeRow) -> Signal:
+def _signal(row: Mapping[str, Any]) -> Signal:
     return Signal(
-        shadow_id=row.shadow_id,
-        strategy=row.strategy,
-        symbol=row.symbol,
-        timeframe=Timeframe(row.timeframe),
-        side=Side(row.side),
-        signal_at=ensure_utc(row.signal_at),
-        entry_at=ensure_utc(row.entry_at),
-        entry=row.entry_price,
-        initial_sl=row.initial_sl,
-        tp=row.tp,
-        atr=row.atr,
-        spread=float(row.spread_points or 0.0),  # points until with_point() converts it
-        cost_r=float((row.r_multiple or 0.0) - (row.r_net or 0.0)),
-        r_net=float(row.r_net or 0.0),
-        features=dict(row.features or {}),
+        shadow_id=row["shadow_id"],
+        strategy=row["strategy"],
+        symbol=row["symbol"],
+        timeframe=Timeframe(row["timeframe"]),
+        side=Side(row["side"]),
+        signal_at=ensure_utc(row["signal_at"]),
+        entry_at=ensure_utc(row["entry_at"]),
+        entry=row["entry_price"],
+        initial_sl=row["initial_sl"],
+        tp=row["tp"],
+        atr=row["atr"],
+        spread=float(row["spread_points"] or 0.0),  # points until with_point() converts it
+        cost_r=float(row["r_multiple"] - row["r_net"]),
+        r_net=float(row["r_net"]),
+        features=dict(row["features"] or {}),
     )
 
 
