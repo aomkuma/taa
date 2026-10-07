@@ -190,6 +190,16 @@ test = Apr-Oct. Outputs in `data/research/hyp_*.txt`.
 strategy and timeframe; the H1-vs-M15 question for the bot (TAA-1602) waits for that forward evidence and the
 heavy family.
 
+**Scale-in parts (TAA-1209), M15 breakout, `app.cli research hypotheses` (all / Oct-Mar / Apr-Oct):** a limit
+0.5 R deep with the plan's stop, i.e. the shape of today's scale-in parts, gives −0.234 R (−0.226 / −0.243) on
+the filled trades, against −0.149 R at market; with the stop 2 R from the signal's entry −0.095 R (4 bars) /
+−0.065 R (16 bars). The deeper part is the worse part unless its stop moves beyond the noise, so spacing rules
+alone do not fix scale-in; a single entry stays the recommendation until a wide-stop variant wins forward.
+
+**Forward measurement (2026-10-07 14:00 UTC):** `PULLBACK`, `WIDE_STOP` and `PULLBACK_WIDE` run as shadow
+variants on the DEMO engine (TAA-L702); the production code reproduces the harness on H1 breakout (paired
++0.060 / +0.077 / +0.115 R against +0.057 / +0.075 / +0.116 R).
+
 ## 9. Still to do
 
 - Heavy family (pattern breakout, neckline, harmonic, candle reversal): replay running two symbols at a time
