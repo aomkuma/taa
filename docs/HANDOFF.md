@@ -91,8 +91,19 @@ Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
   positions). The engine reports the owner's plan (cloud profile: SCALE_IN, 5 parts, 0.01 lot, 0.5 × ATR).
 - **First real plan, 2026-10-06 13:00 UTC:** USDJPY SELL, market part 0.07 filled and PROTECTED, 3 SELL_LIMIT
   parts of 0.07 resting with the same SL/TP, magic 7310005, broker expiration 17:05 UTC (engine cancel 17:00);
-  the 5th part was dropped (its level reached the stop). Worth checking afterwards: the limits are removed at
-  17:00 UTC or when the market part closes, and `demo-report` lists them CANCELLED/EXPIRED.
+  the 5th part was dropped (its level reached the stop). Its limits were cancelled within a minute when the
+  market part closed (13:53 UTC); a GBPUSD plan filled two limit parts (both PROTECTED).
+- **Incident 2026-10-06 16:54 UTC:** `sqlite3.OperationalError: disk I/O error` on the engine database (drive C
+  briefly full while four replays, a test run and an M5 download ran at once; 3.5 GB free again on 10-07).
+  UNHANDLED_EXCEPTION tripped and blocked entries; the engine later died with the session reset and the stack
+  was restarted on 2026-10-07 ~04:47 UTC. `pragma quick_check` ok; the breaker closed by itself once healthy.
+  USDJPY's resting limits expired at the broker meanwhile (the broker-side backstop worked) and were recorded
+  EXPIRED on restart. **The stack dies when the Claude Code session resets:** check health after every reset.
+- **Setup quality review (owner, 2026-10-07):** losses are a setup question. First day: the two breakout losses
+  never went in favour (MFE 0.00R), pattern_breakout targets averaged 3.1R against an MFE of 0.9R in shadow,
+  and HTF-aligned shadow trades did worse (7 % wins) than the others. To test on a year of history, one-year
+  `advisory replay` runs per setup family (M5 history downloaded for the four symbols); a fix found on the way:
+  `backtest` never ran evidence, so the pattern setups could not fire in a backtest (a384617).
 
 ### What this session added (2026-10-05/06)
 
