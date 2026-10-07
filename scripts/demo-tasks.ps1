@@ -11,8 +11,11 @@
                    the web) and "TAA Demo check" (every 5 minutes: starts a part whose health endpoint does
                    not answer; an engine whose heartbeat says "stopped" was stopped on purpose and is left
                    alone, unless -Force)
-      -Start       starts the three part tasks now (web first, then worker, then engine)
-      -Stop        stops the three part tasks (their windows close; the engine reconciles at the next start)
+      -Start       starts the three part tasks now (web first, then worker, then engine) and enables
+                   "TAA Demo check" again
+      -Stop        stops the three part tasks and ends their python processes (a stopped task only ends its
+                   powershell.exe; the python children it started would keep running), and disables
+                   "TAA Demo check" so it does not start the stack again; the engine reconciles at the next start
       -Check       what "TAA Demo check" runs
       -Unregister  removes the four tasks
 
@@ -62,6 +65,37 @@ function Answers([string]$url) {
 function StoppedOnPurpose {
     if (-not (Test-Path $Heartbeat)) { return $false }
     try { return ((Get-Content $Heartbeat -Raw | ConvertFrom-Json).status -eq "stopped") } catch { return $false }
+}
+
+# The processes a part's task started: its powershell.exe (start-demo.ps1 -Role <part> -Mt5) and everything
+# below it (the venv launcher and the real python). Matched on the command line, so the FakeMT5 stack
+# (start-demo.cmd without -Mt5) and other python processes are never touched.
+function PartTree([string]$part) {
+    $all = @(Get-CimInstance Win32_Process)
+    $roots = @($all | Where-Object {
+            $_.Name -eq "powershell.exe" -and $_.CommandLine -match "start-demo\.ps1" -and
+            $_.CommandLine -match "-Role $part\b" -and $_.CommandLine -match "-Mt5\b"
+        })
+    $tree = @()
+    $queue = [System.Collections.Generic.Queue[object]]::new()
+    foreach ($r in $roots) { $queue.Enqueue($r) }
+    while ($queue.Count -gt 0) {
+        $p = $queue.Dequeue()
+        $tree += $p
+        foreach ($child in $all | Where-Object { $_.ParentProcessId -eq $p.ProcessId }) { $queue.Enqueue($child) }
+    }
+    return $tree
+}
+
+function StopPart([string]$part) {
+    $name = TaskName $part
+    if (-not $PSCmdlet.ShouldProcess($name, "Stop scheduled task and end its processes")) { return }
+    $tree = @(PartTree $part)  # read before the task stops: its powershell.exe links the tree together
+    Stop-ScheduledTask -TaskName $name
+    foreach ($p in $tree) {
+        Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+    Log "stopped $name ($($tree.Count) process(es) ended)"
 }
 
 function StartPart([string]$part) {
@@ -114,17 +148,21 @@ if ($Register) {
 }
 
 if ($Stop) {
-    foreach ($part in @("engine", "worker", "web")) {
-        $name = TaskName $part
-        if ($PSCmdlet.ShouldProcess($name, "Stop scheduled task")) {
-            Stop-ScheduledTask -TaskName $name
-            Log "stopped $name"
-        }
+    if ((Get-ScheduledTask -TaskName $CheckTask -ErrorAction SilentlyContinue) -and
+        $PSCmdlet.ShouldProcess($CheckTask, "Disable")) {
+        Disable-ScheduledTask -TaskName $CheckTask | Out-Null
+        Log "disabled $CheckTask"
     }
+    foreach ($part in @("engine", "worker", "web")) { StopPart $part }
     exit 0
 }
 
 if ($Start) {
+    if ((Get-ScheduledTask -TaskName $CheckTask -ErrorAction SilentlyContinue) -and
+        $PSCmdlet.ShouldProcess($CheckTask, "Enable")) {
+        Enable-ScheduledTask -TaskName $CheckTask | Out-Null
+        Log "enabled $CheckTask"
+    }
     StartPart "web"
     for ($i = 0; $i -lt 30 -and -not (Answers $WebHealth); $i++) { Start-Sleep -Seconds 2 }
     StartPart "worker"

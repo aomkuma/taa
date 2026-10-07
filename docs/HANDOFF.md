@@ -50,10 +50,13 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
   Phase 15 (deferred).
 - **Checks (2026-10-06, stack stopped):** full pytest **2791 passed, 7 skipped** (10 min); vitest 526; Playwright
   smoke 3; ruff, mypy, bandit clean; `pip-audit` and `npm audit` clean.
-- **Git:** `main` only; the user pushes. Latest migration: **0042** (`broker_trades`, TAA-1208).
+- **Git:** `main` only; the user pushes. Latest migration: **0043** (`shadow_entry_modes`, TAA-L702; 0042 `broker_trades`, TAA-1208).
 - **The `-Mt5 -Demo` stack** runs from Windows Task Scheduler since 2026-10-07 05:30 UTC (`scripts\demo-tasks.ps1`,
   registered by the owner): "TAA Demo web/worker/engine" at logon plus "TAA Demo check" every 5 minutes. Use
-  `-Stop` / `-Start` around restarts; it no longer dies with an assistant session.
+  `-Stop` / `-Start` around restarts; it no longer dies with an assistant session. Until 2026-10-07 `-Stop`
+  only stopped the tasks and left their python processes running (a `-Start` then would have run a second
+  DEMO engine); now it ends each part's process tree and disables "TAA Demo check" until `-Start`.
+  Restarted 2026-10-07 09:48 UTC for 0042/0043 (pre-restart DB backups were taken first).
 
 ### TAA-1208: the bot's closed broker trades on Trade history (2026-10-07)
 
