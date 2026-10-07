@@ -98,9 +98,17 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
 - **Scale-in evidence for TAA-1209 (M15 breakout, harness):** a limit part 0.5 R deep with the plan's stop
   gives **−0.234 R** (market −0.149 R), both halves; with the stop at 2 R −0.065/−0.095 R. Spacing alone does
   not fix scale-in; the stop does. Recommended again: a single entry until a wide-stop policy wins in shadow.
-- **Heavy family replay:** still running (EURUSD/GBPUSD at 12,500/24,081 bars at 14:00 UTC, ~2,500 bars/h
-  each; then `run_heavy.sh` starts USDJPY/XAUUSD **at normal priority** — run_family.sh has no idle priority).
-  Analyze with `app.cli research hypotheses --from "data/research/fam_heavy_*.db"` per strategy.
+- **Heavy family, first pair done (SETUP_REVIEW §9):** EURUSD/GBPUSD finished 2026-10-07 19:48 UTC.
+  setup_pattern_breakout −0.222 R (n = 901, both halves negative, direction worse than random, like
+  setup_breakout); setup_harmonic_prz +0.050 R [−0.09, +0.19] (n = 272, halves +0.15 / −0.06) is the only setup
+  whose direction carries information (+0.22 R over the other direction in both halves), but no edge is shown
+  and a wider stop does not help it; candle_reversal −0.098 R; neckline 89 signals. No rule survives
+  walk-forward. The research "random direction" is now the exact mean of both directions (04dcee8).
+- **USDJPY/XAUUSD heavy replays** started 2026-10-07 19:48 UTC (`run_heavy.sh`), set to Idle priority by hand,
+  ~2,000 bars/h of 24,081: expected ~08:00 UTC 10-08 if the machine stays on. If they were cut short, rerun
+  with `python -m app.cli research replay-family heavy --symbols USDJPY,XAUUSD --strategies
+  setup_pattern_breakout,setup_neckline_break,setup_harmonic_prz,setup_candle_reversal --detectors <the list in
+  run_heavy.sh>` (idle priority and memory guard built in), then rerun §9 on all four symbols.
 - **Checks of this work:** ruff, mypy (app), bandit clean; the related pytest sets (~400 tests: research,
   entry modes, shadow tracker, replay, golden, storage/migration parity, postgres migrations, replication,
   learning and advisory APIs, API samples) and the full vitest (64 files, 554 tests) passed. **The full pytest
@@ -222,10 +230,9 @@ SCALE_IN 5 parts.
 
 The order below aims at an edge first; LIVE stays the owner's decision after the soak.
 
-1. **Finish the setup review:** when `fam_heavy_*` finishes (EURUSD/GBPUSD ~19:00 UTC 10-07, the second pair
-   ~10 h later), run `app.cli research hypotheses --strategy <setup_pattern_breakout | setup_neckline_break |
-   setup_harmonic_prz | setup_candle_reversal> --from "data/research/fam_heavy_*.db"`, write SETUP_REVIEW §9,
-   report with walk-forward CIs. Harmonic variants (swing size, tolerance, M5) via `harmonic_funnel.py` + replays.
+1. **Finish the setup review:** §9 on all four symbols once `fam_heavy_USDJPY/XAUUSD.db` are complete (see
+   above); then the harmonic follow-ups (more symbols, M5, swing size and tolerance, nearer targets), the only
+   family where the direction carries information. Run the full pytest suite when the machine is quiet.
 2. **Watch the entry-mode variants forward:** `GET /engines/{id}/learning/entry-modes?source=LIVE` (no PWA page
    yet; L706 adds it). Finish L702's open items when useful.
 3. **TAA-1209** (scale-in) only together with a wider stop (see the evidence above), or keep a single entry;
