@@ -82,6 +82,51 @@ def test_engine_writes_heartbeats(tmp_path: Path) -> None:
     assert data["run_id"] == h.engine.run_id
 
 
+def test_a_stop_after_a_failure_says_failed(tmp_path: Path) -> None:
+    """2026-10-07: a disk I/O error in a cycle, then a stop seconds later. The heartbeat must not read as a
+    deliberate stop, or the watchdogs leave the engine down."""
+    from tests.integration.test_engine_paper import harness
+
+    h = harness(tmp_path)
+    h.engine.start()
+
+    def broken() -> None:
+        raise OSError("disk I/O error")
+
+    h.engine._drain_commands = broken  # type: ignore[method-assign]
+    h.engine.run(max_cycles=2)
+    data = json.loads((tmp_path / "heartbeat.json").read_text(encoding="utf-8"))
+    assert data["status"] == "failed" and "disk I/O error" in data["last_error"]
+
+
+def test_an_old_failure_does_not_make_a_deliberate_stop_failed(tmp_path: Path) -> None:
+    from app.engine.orchestrator import FAILED_STOP_WINDOW
+    from tests.integration.test_engine_paper import harness
+
+    h = harness(tmp_path)
+    h.engine.start()
+    h.engine._error_at = h.clock.now_utc() - FAILED_STOP_WINDOW - timedelta(seconds=1)
+    h.engine.run(max_cycles=1)
+    data = json.loads((tmp_path / "heartbeat.json").read_text(encoding="utf-8"))
+    assert data["status"] == "stopped"
+
+
+def test_a_loop_ended_by_an_exception_says_failed(tmp_path: Path) -> None:
+    from tests.integration.test_engine_paper import harness
+
+    h = harness(tmp_path)
+    h.engine.start()
+
+    def interrupted(_: float) -> None:
+        raise KeyboardInterrupt
+
+    h.engine.sleep = interrupted
+    with pytest.raises(KeyboardInterrupt):
+        h.engine.run(max_cycles=5)
+    data = json.loads((tmp_path / "heartbeat.json").read_text(encoding="utf-8"))
+    assert data["status"] == "failed"
+
+
 POWERSHELL = shutil.which("powershell") or shutil.which("pwsh")
 
 
@@ -123,6 +168,14 @@ class TestWatchdog:
         result = self.run(tmp_path, "-WhatIf")
         assert result.returncode == 0, result.stderr
         assert "Start" in result.stdout and "heartbeat" in result.stdout
+
+    def test_a_failed_stop_would_restart(self, tmp_path: Path) -> None:
+        self.heartbeat(tmp_path, 3600, "failed")  # stopped after an error: not a deliberate stop
+        (tmp_path / ".venv" / "Scripts").mkdir(parents=True)
+        (tmp_path / ".venv" / "Scripts" / "python.exe").write_text("", encoding="utf-8")
+        result = self.run(tmp_path, "-WhatIf")
+        assert result.returncode == 0, result.stderr
+        assert "Start" in result.stdout
 
     def test_missing_python_is_reported(self, tmp_path: Path) -> None:
         result = self.run(tmp_path)

@@ -57,6 +57,10 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
   only stopped the tasks and left their python processes running (a `-Start` then would have run a second
   DEMO engine); now it ends each part's process tree and disables "TAA Demo check" until `-Start`.
   Restarted 2026-10-07 09:48 UTC for 0042/0043 (pre-restart DB backups were taken first).
+  **Incident 2026-10-07 15:41 UTC:** a full vitest run + build next to the stack and two replays exhausted memory;
+  SQLite `disk I/O error`, a stop signal, and the engine wrote heartbeat "stopped", so the check left it down
+  (~6 min, until a planned restart). Now such a stop writes "failed" and is restarted (PLAN §A19). Never run
+  full test suites while this stack runs.
 
 ### TAA-1208: the bot's closed broker trades on Trade history (2026-10-07)
 

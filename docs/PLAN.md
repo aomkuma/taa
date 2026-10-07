@@ -1350,6 +1350,10 @@ AI failures never trip trading breakers; they only produce HOLD.
   P/L %, drawdown %, breaker states, outbox backlog, sync lag, AI latency and cost (M2).
 - **Engine-local health:** `http://127.0.0.1:8765/health` (localhost only) plus a heartbeat file. `scripts/watchdog.ps1`,
   run by Task Scheduler, restarts the engine if the heartbeat goes stale.
+  - The last heartbeat of a run says `stopped` (a deliberate stop, left alone) or `failed`: the run ended on an
+    exception, or stopped within 10 minutes of a failed cycle. `failed` is restarted by `watchdog.ps1` and
+    `demo-tasks.ps1 -Check`. Found 2026-10-07: a SQLite `disk I/O error` (memory exhausted by test runs next to
+    the stack), then a stop signal seconds later, wrote `stopped`, and the check left the DEMO engine down.
 
 ## A20. Security
 

@@ -3,8 +3,10 @@
 - The endpoint binds to loopback only (the config refuses anything else) and serves the engine's status as
   JSON: 200 while the engine runs and is connected, 503 otherwise. Nothing else is served.
 - The heartbeat file is rewritten atomically every health interval and once more on shutdown with
-  ``"status": "stopped"``. ``scripts/watchdog.ps1`` restarts the engine when the heartbeat goes stale, but not
-  after a deliberate stop.
+  ``"status": "stopped"`` (a deliberate stop) or ``"failed"`` (the run ended on an error, or stopped within
+  10 minutes of a failed cycle). ``scripts/watchdog.ps1`` and ``scripts/demo-tasks.ps1 -Check`` restart the
+  engine when the heartbeat goes stale or the health endpoint does not answer, but not after a deliberate
+  stop.
 """
 
 from __future__ import annotations

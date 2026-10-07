@@ -10,7 +10,7 @@
       -Register    creates "TAA Demo web", "TAA Demo worker", "TAA Demo engine" (at logon, the engine 60 s after
                    the web) and "TAA Demo check" (every 5 minutes: starts a part whose health endpoint does
                    not answer; an engine whose heartbeat says "stopped" was stopped on purpose and is left
-                   alone, unless -Force)
+                   alone, unless -Force; "failed" means it stopped after an error and is started again)
       -Start       starts the three part tasks now (web first, then worker, then engine) and enables
                    "TAA Demo check" again
       -Stop        stops the three part tasks and ends their python processes (a stopped task only ends its

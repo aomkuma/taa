@@ -7,7 +7,8 @@
       - missing or older than -MaxAgeSeconds  -> stop the old engine process (if it is still there) and start
         a new one;
       - status "stopped"                       -> the operator stopped the engine on purpose: do nothing
-        (unless -Force);
+        (unless -Force); "failed" (it stopped after an error) is no deliberate stop: it is restarted once
+        the heartbeat is older than -MaxAgeSeconds;
       - fresh                                  -> do nothing.
     The engine itself runs PAPER only in Milestone 1; this script never changes TRADING_MODE.
     Every action is appended to logs/watchdog.log.

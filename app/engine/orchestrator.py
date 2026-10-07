@@ -119,6 +119,7 @@ log = logging.getLogger(__name__)
 
 DISABLED_KEY = "disabled_strategies"
 SNAPSHOT_KEY = "sync_snapshot"  # set once every replicated row has been queued for the cloud
+FAILED_STOP_WINDOW = timedelta(minutes=10)  # a stop this soon after a failed cycle counts as a failure
 
 
 LIVE_BANNER = """
@@ -187,6 +188,7 @@ class Engine:
         self.cycles = 0
         self.symbols: dict[str, SymbolSpec] = {}
         self.last_error: str = ""
+        self._error_at: datetime | None = None  # the last failed cycle (wall clock)
         self._clock_ok = False
         self._kill_active = False
         self._connected = True
@@ -636,12 +638,19 @@ class Engine:
 
     def run(self, max_cycles: int | None = None) -> None:
         interval = self.config.engine.monitor_interval_seconds
+        clean = False
         try:
             while self.running and (max_cycles is None or self.cycles < max_cycles):
                 self.cycle()
                 self.sleep(interval)
+            clean = True
         finally:
-            self.shutdown()
+            self.shutdown(failed=not clean or self._failed_recently())
+
+    def _failed_recently(self) -> bool:
+        """A cycle failed shortly before this stop: the stop most likely followed the failure (2026-10-07: a
+        disk I/O error, then a stop signal seconds later), so the watchdogs must restart the engine."""
+        return self._error_at is not None and self.clock.now_utc() - self._error_at <= FAILED_STOP_WINDOW
 
     def stop(self) -> None:
         self.running = False
@@ -674,6 +683,7 @@ class Engine:
                 self._scan(self.scanner)
         except Exception as exc:  # process boundary: keep monitoring, block entries, tell the operator
             log.exception("engine cycle %s failed", self.cycles)
+            self._error_at = self.clock.now_utc()
             self.last_error = f"{type(exc).__name__}: {exc}"
             self.monitor.record_exception("cycle", exc)
             self.bus.emit(
@@ -1329,7 +1339,10 @@ class Engine:
 
     # --- shutdown ---------------------------------------------------------------------------------------
 
-    def shutdown(self) -> None:
+    def shutdown(self, *, failed: bool = False) -> None:
+        """*failed*: the run ended on an error (see :meth:`run`). The heartbeat file then says ``failed``
+        instead of ``stopped``, so ``scripts/watchdog.ps1`` and ``demo-tasks.ps1 -Check`` restart the engine
+        rather than leave it down as a deliberate stop."""
         self.running = False
         try:
             if self.calibration is not None:
@@ -1341,10 +1354,15 @@ class Engine:
                 self.sync.stop(final_flush=True)  # a deliberate stop reaches the cloud at once
             if hasattr(self, "backend") and isinstance(self.backend, PaperBackend):
                 self.backend.maintain()
-            self.heartbeat("stopped")  # a deliberate stop: the watchdog does not restart it
+            # "stopped": a deliberate stop the watchdogs leave alone; "failed": they restart the engine
+            self.heartbeat("failed" if failed else "stopped")
+            if failed:
+                log.error("engine stopped after a failure (%s): heartbeat says failed", self.last_error)
             self.runs.finish(self.run_id, "STOPPED", self.last_error)
-            self.audit.append("ENGINE_STOP", self.process, {"run_id": self.run_id, "cycles": self.cycles})
-            self.bus.emit(EventType.ENGINE_STOPPED, cycles=self.cycles)
+            self.audit.append(
+                "ENGINE_STOP", self.process, {"run_id": self.run_id, "cycles": self.cycles, "failed": failed}
+            )
+            self.bus.emit(EventType.ENGINE_STOPPED, cycles=self.cycles, failed=failed)
         finally:
             self.bundle.client.shutdown()
 
