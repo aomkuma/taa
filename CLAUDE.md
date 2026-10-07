@@ -34,6 +34,7 @@ Read before larger work:
 .venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
 .venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14
 .venv\Scripts\python -m app.cli sync upload-history [--send]   # local Parquet history → cloud (TAA-706)
+.venv\Scripts\python -m app.cli research hypotheses --strategy NAME --from "data/research/fam_*.db" | replay-family NAME ...  # TAA-L707
 .venv\Scripts\python -m app.cli web engine add --owner NAME --label X | rotate ID | revoke ID --confirm ID | list | import-env --owner NAME
 .venv\Scripts\python -m app.web     # API + built PWA on 127.0.0.1:8000 (needs WEB_ENV/WEB_SESSION_SECRET)
 scripts\start-demo.cmd                # local demo: web + worker + FakeMT5 PAPER engine (once: start-demo.ps1 -Setup -Owner NAME)

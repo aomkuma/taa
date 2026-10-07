@@ -1,7 +1,9 @@
 # Setup review research scripts (2026-10-07)
 
 Prototypes behind [docs/SETUP_REVIEW.md](../../docs/SETUP_REVIEW.md). Not part of the product, not linted, not
-tested: TAA-L707 turns them into a supported `app.cli research` harness. Everything is read-only on history and
+tested. **Superseded by TAA-L707** (PLAN_LEARNING §L19.8): use
+`python -m app.cli research hypotheses --strategy NAME --from "data/research/fam_light_*.db"` and
+`python -m app.cli research replay-family NAME --strategies ... --detectors ...` (idle priority, memory guard). Everything is read-only on history and
 writes only to `data/research/` (git-ignored). All results are hypothetical, bar-based replays.
 
 | Script | What it does |

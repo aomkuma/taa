@@ -666,6 +666,33 @@ L6 estimates P(TP before SL). Timing needs a **when** as well:
 - `REENTRY_1` and `TIME_STOP_LEARNED` follow the same rule, and they also stay off in LIVE until a further DEMO
   period confirms them (L13).
 
+### L19.8 Research harness (TAA-L707 decisions, 2026-10-07)
+
+The supported form of the setup review's scripts (`docs/SETUP_REVIEW.md`), so every hypothesis about a setup is
+tested the same way: `python -m app.cli research hypotheses --strategy NAME [--from DB_GLOB]` and
+`research replay-family NAME --strategies … --detectors …`.
+
+- **Pure core, thin loaders:** `app/learning/research.py` (paths, exit/stop/retest/re-entry re-simulation,
+  baselines, statistics, walk-forward, context rules) and `app/learning/research_data.py` (closed `PLAN` shadow
+  trades from any engine-schema database, bars from the Parquet store: M1, else M5).
+- **Same price rules as the shadow resolver** (`app/advisory/shadow.py`): exit-side prices (bid for a BUY, ask
+  for a SELL), gap at the open, the target never better, the stop first when one bar reaches both, the open of the
+  first bar at or after the time stop closes the rest. A test checks the market re-simulation against `advance()`
+  on random walks; on the year of replay data it matches the stored `r_net` with correlation 1.000 (H1: 99.6 % of
+  signals within 0.01 R; the means differ by 0.003-0.005 R, the resolver's stop slippage).
+- **Stricter than the prototypes:** a retest limit fills only when the entry-side price reaches it (the spread
+  counts); a re-entry is counted from the bar after the price came back (the touch bar's range came first);
+  commission and swap (`r_multiple − r_net`) are subtracted and scale with the stop multiplier (same risk percent).
+- **Honesty rules:** halves split at the midpoint of the signals' time range (or `--split`); every row shows all /
+  first / second half and the paired effect against "as traded" (an unfilled retest = 0 R); the walk-forward picks
+  the best rule on one half and reports it only on the other, with the number of candidates it was chosen from.
+  Context rules (quartile edges of hour, stretch from EMA20, bar size, ATR percentile, prior range, cost share,
+  first signal of the day, HTF alignment) are chosen and judged the same way.
+- **Replay runner:** one subprocess per symbol at idle priority (Windows `IDLE_PRIORITY_CLASS`, `nice 19`
+  elsewhere), at most `--parallel` at once, each started only while the free commit memory (Windows
+  `GlobalMemoryStatusEx`) is above `--min-free-gb` (default 3): the DEMO engine shares the machine's commit limit.
+- Output is a proposal at most: a finding becomes a shadow variant (L702) and is judged forward (L19.7, L13).
+
 ## L20. Regime playbooks: closing the human gaps (added 2026-10-06)
 
 **Purpose (user, 2026-10-06):** the system exists to close the weaknesses of a human trader:
@@ -1140,6 +1167,7 @@ claimed.
 | Meta-label model | A SHADOW version exists | ACTIVE: L6 validation passed + shadow period passed | ACTIVE for ≥ 4 weeks in DEMO with no drift demotion |
 | Tick confirmation | ≥ 50 A/B opportunities | Paired ΔR CI > 0 over ≥ 200 opportunities | Same result repeated over a further DEMO period, p95 latency within limit |
 | Timing diagnostics (L19.2) | Always (labelled hypothetical, with n and CI) | — (diagnostic only) | — |
+| Research harness (L19.8) | Always (hypothetical; findings only when they hold on the other half) | — (proposals for shadow variants only) | — |
 | Entry-mode variant (L19.3) | ≥ 50 A/B opportunities | Paired ΔR CI > 0 over ≥ 200 live-shadow opportunities | Same result over a further DEMO period |
 | `TIME_STOP_LEARNED`, `REENTRY_1` (L19.5) | ≥ 50 A/B opportunities | Same as entry modes + the user opts in | Same + explicit user go-ahead |
 | Time-to-move estimate (L19.6) | n ≥ `min_n` and beats Kaplan–Meier OOS | Not used for trading decisions except the learned time stop | Same |

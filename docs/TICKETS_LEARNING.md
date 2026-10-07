@@ -62,7 +62,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L4 — Signal-quality model | 6 | 0 | TODO |
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
-| M3 | Phase L7 — Entry timing (right direction, wrong time) | 8 | 1 | IN PROGRESS |
+| M3 | Phase L7 — Entry timing (right direction, wrong time) | 8 | 2 | IN PROGRESS |
 | M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 1 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
@@ -490,18 +490,18 @@ the TP.
 
 #### TAA-L707 — Research harness (2026-10-07)
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** — (prototypes in `research/2026-10-07-setup-review/`)
 
 The supported version of the setup review's scripts, so a hypothesis about a setup can be tested the same way
 every time (by the owner, a session or the research report of L708).
 
-- [ ] `app/learning/research.py` (pure): load REPLAY/LIVE shadow trades and the stored M1/M5 bars of their horizon; re-simulate exits (target in R, break-even, partial, trail, time stop), stop multipliers with the same risk percent, retest entries with a stop from the signal's entry, re-entry after a stop
-- [ ] baselines on the same signals: random direction and the other direction (information and cost drag)
-- [ ] context splits at the signal bar (hour, stretch from EMA, bar size, ATR percentile, compression, cost share, first signal of the day, HTF alignment)
-- [ ] every statistic as mean R with a bootstrap CI for all / first half / second half; rules chosen on one half are reported on the other (walk-forward), never on the same data
-- [ ] `python -m app.cli research hypotheses --strategy NAME [--from DB] [--json]` and `research replay-family` (the per-symbol replay runner with idle priority and a memory guard)
-- [ ] tests (synthetic paths with known outcomes; the market re-simulation matches the shadow resolver)
+- [x] `app/learning/research.py` (pure): load REPLAY/LIVE shadow trades and the stored M1/M5 bars of their horizon; re-simulate exits (target in R, break-even, partial, trail, time stop), stop multipliers with the same risk percent, retest entries with a stop from the signal's entry, re-entry after a stop
+- [x] baselines on the same signals: random direction and the other direction (information and cost drag)
+- [x] context splits at the signal bar (hour, stretch from EMA, bar size, ATR percentile, compression, cost share, first signal of the day, HTF alignment)
+- [x] every statistic as mean R with a bootstrap CI for all / first half / second half; rules chosen on one half are reported on the other (walk-forward), never on the same data
+- [x] `python -m app.cli research hypotheses --strategy NAME [--from DB] [--json]` and `research replay-family` (the per-symbol replay runner with idle priority and a memory guard)
+- [x] tests (synthetic paths with known outcomes; the market re-simulation matches the shadow resolver)
 
 #### TAA-L708 — Research report (the AI's research role)
 

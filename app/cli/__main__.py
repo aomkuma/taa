@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+from app.cli.research import add_parser as add_research
 from app.config import REPO_ROOT, Settings, load_settings
 from app.core.errors import ConfigError, TaaError
 
@@ -566,6 +567,24 @@ def cmd_strategy(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_research_hypotheses(args: argparse.Namespace) -> int:
+    from app.cli.research import cmd_research_hypotheses as run
+    from app.storage.database import resolve_db_url
+
+    data = Path(args.data)
+    return run(
+        args,
+        lambda: resolve_db_url(_settings(args).env.ENGINE_DB_URL),
+        data if data.is_absolute() else REPO_ROOT / data,
+    )
+
+
+def cmd_research_replay_family(args: argparse.Namespace) -> int:
+    from app.cli.research import cmd_research_replay_family as run
+
+    return run(args)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="TAA operator commands")
     parser.add_argument("--env-file", default=".env")
@@ -750,6 +769,8 @@ def build_parser() -> argparse.ArgumentParser:
         "new-totp",
         help="create CONTROL_TOTP_SECRET (QR code, confirmed with one code; never sent to the cloud)",
     ).set_defaults(func=cmd_engine_new_totp)
+
+    add_research(sub, hypotheses=cmd_research_hypotheses, replay_family=cmd_research_replay_family)
     return parser
 
 
