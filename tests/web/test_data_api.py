@@ -466,6 +466,8 @@ class TestCandles:
         assert body["overlays"]["ema:5"][0] is None  # nothing before the first stored bar to warm up on
         kinds = [(m["kind"], m.get("ticket")) for m in body["markers"]]
         assert ("decision", None) in kinds and ("entry", 1) in kinds and ("exit", 1) in kinds
+        # the sample broker trade (TAA-1208) is marked like a paper position
+        assert ("entry", 2079981852) in kinds and ("exit", 2079981852) in kinds
 
     def test_sr_zones_at_the_last_bar(self, rig: tuple[TestClient, str, str]) -> None:
         client, mine, _ = rig

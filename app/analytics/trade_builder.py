@@ -31,6 +31,7 @@ trades). ``DEMO`` and ``LIVE`` are reserved for broker deals. Backtest, paper an
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -41,7 +42,13 @@ from app.core.clock import ensure_utc
 from app.core.enums import ExitReason, Regime, Session, Side, Timeframe, Trend, VolatilityState
 from app.core.errors import TaaError
 from app.execution.simulated_broker import ClosedTrade
-from app.storage.models import PaperIntentRow, PaperPositionRow, ShadowTradeRow
+from app.storage.models import (
+    BrokerTradeRow,
+    OrderIntentRow,
+    PaperIntentRow,
+    PaperPositionRow,
+    ShadowTradeRow,
+)
 from app.strategy.signal_models import MarketContext, SignalError
 
 
@@ -165,8 +172,8 @@ class Trade:
     costs: Costs
     cost_r: float | None  # known costs in R (a lower bound when ``costs`` is incomplete)
     slippage_price: float | None  # total adverse slippage of the fills, price units
-    mae: float  # price units from the fill, >= 0
-    mfe: float
+    mae: float | None  # price units from the fill, >= 0; None: not recorded (broker trades)
+    mfe: float | None
     bars_held: int | None  # entry-timeframe bars
     context: EntryContext = field(default_factory=EntryContext)
     shadow: ShadowInfo | None = None
@@ -470,6 +477,64 @@ def trades_from_paper(
                 bars_held=row.bars_held,
             )
         )
+    return TradeSet(tuple(trades), tuple(skipped))
+
+
+# --- broker (DEMO / LIVE) -----------------------------------------------------------------------------------
+
+
+def trades_from_broker(
+    rows: Iterable[BrokerTradeRow],
+    intents: Mapping[str, OrderIntentRow],
+    *,
+    contexts: Mapping[str, EntryContext] | None = None,
+) -> TradeSet:
+    """The bot's closed broker positions (``broker_trades``, TAA-1208): real fills on the DEMO or LIVE
+    account. *intents* by intent id supply the planned risk and the signal (R is net / planned risk, as for
+    PAPER). One trade per MT5 position, so each part of a split entry is a trade of its own. MT5 records no
+    excursion, so MAE/MFE stay unknown."""
+    contexts = contexts or {}
+    trades: list[Trade] = []
+    skipped: list[Skipped] = []
+    for row in rows:
+        source_id = f"{row.mode}:{row.account_key}:{row.position_ticket}"
+        try:
+            scope, side = Scope(row.mode), Side(row.side)
+            reason = ExitReason(row.exit_reason) if row.exit_reason else ExitReason.MANUAL
+        except ValueError as exc:
+            skipped.append(Skipped(source_id, str(exc)))
+            continue
+        intent = intents.get(row.intent_id)
+        closed = ClosedTrade(
+            ticket=int(row.position_ticket),
+            symbol=row.symbol,
+            side=side,
+            volume=row.volume,
+            entry_time=row.entry_time,
+            entry_price=row.entry_price,
+            exit_time=row.exit_time,
+            exit_price=row.exit_price,
+            exit_reason=reason,
+            sl_initial=row.sl_initial,
+            tp_initial=row.tp,
+            profit=row.profit,
+            commission=row.commission,
+            swap=row.swap,
+            mae=0.0,
+            mfe=0.0,
+            risk_money=0.0 if intent is None else intent.risk_money,
+            strategy=row.strategy,
+            signal_id="" if intent is None else intent.signal_id,
+            magic=int(row.magic),
+        )
+        trade = from_closed_trade(
+            closed,
+            scope=scope,
+            trade_id=source_id,
+            context=contexts.get(closed.signal_id),
+            market_entry=intent is None or intent.order_type == "MARKET",
+        )
+        trades.append(dataclasses.replace(trade, mae=None, mfe=None))
     return TradeSet(tuple(trades), tuple(skipped))
 
 

@@ -1,6 +1,7 @@
 """Analytics and recommendations of the owner's engine (PLAN §A15, §A16; TAA-1005).
 
-- ``GET /engines/{id}/analytics?scope=PAPER|SHADOW|BACKTEST&run=&days=&variant=&strategy=&symbol=``: KPIs,
+- ``GET /engines/{id}/analytics?scope=PAPER|SHADOW|BACKTEST|DEMO|LIVE&run=&days=&variant=&strategy=&symbol=``:
+  KPIs,
   curves, R distribution, performance by style, MAE/MFE and the P/L attribution summary
   (:func:`app.analytics.report.build_report`).
 - ``GET /engines/{id}/ai-assessments?days=&limit=``: the AI reviews of entries with agreement (against the
@@ -8,7 +9,8 @@
 - ``GET /engines/{id}/recommendations`` with the same query: the A16 rules with evidence, sample sizes and,
   where possible, the fields of a "Backtest this change" job (``POST /engines/{id}/backtests``).
 
-Every scope here is hypothetical and labelled so. Recommendations never change any configuration.
+Every scope but DEMO/LIVE (the bot's real broker fills, TAA-1210) is hypothetical and labelled so.
+Recommendations never change any configuration.
 """
 
 from __future__ import annotations

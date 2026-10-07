@@ -434,8 +434,14 @@
         "signal": "Followed",
         "me": "Me",
         "signalR": "Signal (simulated)",
-        "botR": "Bot (paper)",
-        "note": "R is measured from each trade's own first stop: mine from the stop the position had when the engine first saw it, the signal's from its plan, the bot's from its paper position. A dash means there is no such trade, or for mine that the engine never saw the position open (it opened and closed while the engine was not watching), so its stop is not known."
+        "botR": "Bot",
+        "note": "R is measured from each trade's own first stop: mine from the stop the position had when the engine first saw it, the signal's from its plan, the bot's from its trade on the demo account when the decision filled there, else from its paper position. A dash means there is no such trade, or for mine that the engine never saw the position open (it opened and closed while the engine was not watching), so its stop is not known.",
+        "botOpen": "open",
+        "source": {
+          "PAPER": "paper",
+          "DEMO": "demo",
+          "LIVE": "live"
+        }
       }
     }
   },
@@ -2039,6 +2045,7 @@
     "scope": {
       "label": "Results of",
       "PAPER": "The bot's paper trades",
+      "DEMO": "The bot's trades on the demo account",
       "SHADOW": "The signals (simulated)",
       "BACKTEST": "A backtest run"
     },
@@ -2054,6 +2061,7 @@
     "run": "Run",
     "pickRun": "Pick a finished backtest run.",
     "hypothetical": "Simulated results: no real money was traded. They describe the past and are no forecast.",
+    "demoNote": "Trades the bot sent to the demo account: real executions with play money, net of swap and commission. Excursions (MAE/MFE) are not recorded for them. Past results say nothing about the future.",
     "skipped": "{{n}} trade(s) could not be measured faithfully and were left out.",
     "kpi": {
       "title": "Key figures",
@@ -2071,6 +2079,7 @@
     "drawdown": "Drawdown (R)",
     "histogram": "Result per trade (R)",
     "maeMfe": "Worst (MAE) vs best (MFE) move, in R",
+    "noMaeMfe": "No excursions recorded for these trades.",
     "style": {
       "title": "By style",
       "by": "Group by",

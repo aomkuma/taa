@@ -8,7 +8,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 from app.storage.database import Database
-from app.storage.models import AuditEvent, ManualTradeLinkRow
+from app.storage.models import AuditEvent, BrokerTradeRow, ManualTradeLinkRow, OrderIntentRow
+from tests.sync_data import sample_rows
 from tests.web.conftest import mutation_headers
 from tests.web.test_data_api import rig  # noqa: F401  (fixture)
 
@@ -38,7 +39,7 @@ def test_lists_the_engines_link_and_closed_comparison(
         "decision_id": "d1",
         "opportunity_id": "k1",
     }
-    assert set(item["compare"]) == {"signal_r", "signal_status", "bot_r", "bot_status"}
+    assert set(item["compare"]) == {"signal_r", "signal_status", "bot_r", "bot_status", "bot_source"}
     assert client.get(path(mine) + "?status=CLOSED").json()["items"] == []
     assert client.get(path(mine) + "?status=MAYBE").status_code == 400
     assert client.get(path(theirs)).status_code == 404  # another user's engine
@@ -95,3 +96,25 @@ def test_a_closed_trade_compares_signal_bot_and_me(
     assert item["r_multiple"] == 1.25 and item["net_profit"] == 62.5
     compare = item["compare"]  # the sample shadow trade of k1 (PLAN) and the bot's paper position of d1
     assert compare["signal_status"] is not None and compare["bot_status"] is not None
+
+
+def test_the_bot_result_is_its_broker_trade_when_the_decision_filled_there(
+    rig: tuple[TestClient, str, str],  # noqa: F811
+    db: Database,
+) -> None:
+    client, mine, _ = rig
+
+    def compare() -> dict[str, Any]:
+        [item] = client.get(path(mine)).json()["items"]
+        return {k: v for k, v in item["compare"].items() if k.startswith("bot")}
+
+    # decision d1 filled on the broker account as position 3 (the sample intent), still open there
+    assert compare() == {"bot_r": None, "bot_status": "OPEN", "bot_source": "DEMO"}
+    with db.session() as sess:
+        trade = next(r for r in sample_rows() if isinstance(r, BrokerTradeRow))
+        trade.engine_id, trade.position_ticket, trade.r_multiple = mine, 3, -1.0
+        sess.add(trade)
+    assert compare() == {"bot_r": -1.0, "bot_status": "CLOSED", "bot_source": "DEMO"}
+    with db.session() as sess:  # no broker fill for d1: the paper position answers, as before
+        sess.query(OrderIntentRow).filter(OrderIntentRow.engine_id == mine).delete()
+    assert compare()["bot_source"] == "PAPER"

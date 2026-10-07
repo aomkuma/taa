@@ -69,8 +69,9 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
   −13.92 in the PWA). Fixed the same day: manual trades that opened and closed while the engine did not
   watch are linked from the deal history (**TAA-1007**; the BTCUSD −13.95 and EURUSD 1 lot +119 of 10-05
   appear after the next engine restart); the engine label is "mt5 demo" (`app.cli web engine rename`, and
-  `scripts\start-demo.ps1` no longer names a mode). Still open: charts, analytics and the manual "bot" column
-  read paper only.
+  `scripts\start-demo.ps1` no longer names a mode); **TAA-1210**: analytics scope DEMO, broker trades on the
+  chart and in the manual "bot" column. Still open: the `/account` realized equity curve and open broker
+  positions on the chart read the paper book only.
 
 ### Edge work, 2026-10-07 afternoon (this session; docs/SETUP_REVIEW.md §8, PLAN_LEARNING §L19.3, §L19.8)
 

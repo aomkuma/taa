@@ -5,9 +5,10 @@ Loads one scope's closed trades from the engine's replicas and turns them into :
 - ``PAPER``: the engine's closed paper positions, with their intents (initial stop, planned risk, strategy)
   and the entry context of their decision records;
 - ``SHADOW``: the closed shadow trades of the signals (variant ``PLAN`` by default, or ``MANAGED``);
-- ``BACKTEST``: one cloud backtest run of the engine (its stored trades).
-
-DEMO and LIVE are reserved for broker deals (not served yet). Every scope here is hypothetical and labelled.
+- ``BACKTEST``: one cloud backtest run of the engine (its stored trades);
+- ``DEMO`` / ``LIVE``: the bot's closed positions on the broker account (``broker_trades``, TAA-1208) with
+  their order intents (planned risk, signal) and decision contexts. Real fills, not hypothetical (a demo
+  account is real execution with play money); MAE/MFE are not recorded for them.
 
 For the "stop too tight" rule, the bars after a stop-loss exit come from the engine's uploaded history
 (``history_candles``): did price reach the take-profit within :data:`AFTER_STOP_BARS` bars of the trade's
@@ -32,6 +33,7 @@ from app.analytics.trade_builder import (
     TradeSet,
     context_from_decision,
     trades_from_backtest,
+    trades_from_broker,
     trades_from_paper,
     trades_from_shadow,
 )
@@ -41,16 +43,18 @@ from app.execution.simulated_broker import ClosedTrade
 from app.storage.database import Database
 from app.storage.models import (
     BacktestRunRow,
+    BrokerTradeRow,
     DecisionRecordRow,
     EngineHeartbeatRow,
     HistoryCandle,
+    OrderIntentRow,
     PaperIntentRow,
     PaperPositionRow,
     ShadowTradeRow,
 )
 from app.web.readmodels import QueryError
 
-SCOPES = ("PAPER", "SHADOW", "BACKTEST")
+SCOPES = ("PAPER", "SHADOW", "BACKTEST", "DEMO", "LIVE")
 VARIANTS = ("PLAN", "MANAGED")
 DEFAULT_DAYS = 90
 MAX_DAYS = 366
@@ -102,7 +106,7 @@ class Analytics:
         symbol: str | None = None,
     ) -> TradeSet:
         if scope not in SCOPES:
-            raise QueryError("scope: PAPER, SHADOW or BACKTEST")
+            raise QueryError("scope: PAPER, SHADOW, BACKTEST, DEMO or LIVE")
         if not 1 <= days <= MAX_DAYS:
             raise QueryError(f"days: 1-{MAX_DAYS}")
         if variant not in VARIANTS:
@@ -113,6 +117,8 @@ class Analytics:
                 found = self._paper(sess, engine_id, since)
             elif scope == "SHADOW":
                 found = self._shadow(sess, engine_id, since, variant)
+            elif scope in ("DEMO", "LIVE"):
+                found = self._broker(sess, engine_id, since, scope)
             else:
                 if not run_id:
                     raise QueryError("run: a backtest run of this engine")
@@ -144,11 +150,17 @@ class Analytics:
                 )
             )
         }
+        contexts = Analytics._contexts(sess, engine_id, {i.decision_id for i in intents.values()})
+        return trades_from_paper(positions, intents, contexts=contexts)
+
+    @staticmethod
+    def _contexts(sess: Session, engine_id: str, decision_ids: set[str]) -> dict[str, EntryContext]:
+        """The entry context of each decision's signal, by signal id."""
         contexts: dict[str, EntryContext] = {}
         decisions = sess.scalars(
             select(DecisionRecordRow).where(
                 DecisionRecordRow.engine_id == engine_id,
-                DecisionRecordRow.decision_id.in_({i.decision_id for i in intents.values()}),
+                DecisionRecordRow.decision_id.in_(decision_ids),
             )
         )
         for d in decisions:
@@ -156,7 +168,30 @@ class Analytics:
                 contexts[d.signal_id] = context_from_decision(d.signal or {}, d.market or {})
             except AnalyticsError:
                 continue  # a record from an older schema: the trade keeps an empty context
-        return trades_from_paper(positions, intents, contexts=contexts)
+        return contexts
+
+    @staticmethod
+    def _broker(sess: Session, engine_id: str, since: datetime, mode: str) -> TradeSet:
+        rows = list(
+            sess.scalars(
+                select(BrokerTradeRow).where(
+                    BrokerTradeRow.engine_id == engine_id,
+                    BrokerTradeRow.mode == mode,
+                    BrokerTradeRow.exit_time >= since,
+                )
+            )
+        )
+        intents = {
+            i.intent_id: i
+            for i in sess.scalars(
+                select(OrderIntentRow).where(
+                    OrderIntentRow.engine_id == engine_id,
+                    OrderIntentRow.intent_id.in_({r.intent_id for r in rows}),
+                )
+            )
+        }
+        contexts = Analytics._contexts(sess, engine_id, {r.decision_id for r in rows})
+        return trades_from_broker(rows, intents, contexts=contexts)
 
     @staticmethod
     def _shadow(sess: Session, engine_id: str, since: datetime, variant: str) -> TradeSet:

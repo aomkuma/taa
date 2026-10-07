@@ -6,7 +6,8 @@ import { engineKey } from '@/engine/schemas';
 const IsoDateTime = z.iso.datetime({ offset: true });
 const Value = z.number().nullable();
 
-export const SCOPES = ['PAPER', 'SHADOW', 'BACKTEST'] as const;
+/** DEMO: the bot's closed trades on the demo account (TAA-1208), real fills; LIVE is not offered yet. */
+export const SCOPES = ['PAPER', 'DEMO', 'SHADOW', 'BACKTEST'] as const;
 export type AnalyticsScope = (typeof SCOPES)[number];
 export const DAYS = [30, 90, 180, 366] as const;
 /** `STYLE_DIMENSIONS` in app/analytics/report.py. */

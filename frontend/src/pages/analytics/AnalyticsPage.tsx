@@ -269,6 +269,7 @@ function ByStyle({ report }: { report: Report }) {
 function MaeMfe({ report }: { report: Report }) {
   const { t } = useTranslation();
   const points = report.mae_mfe.filter((p) => p.mae_r !== null && p.mfe_r !== null);
+  if (points.length === 0) return <p className="text-sm text-slate-500">{t('analytics.noMaeMfe')}</p>;
   const max = Math.max(1, ...points.map((p) => Math.max(p.mae_r ?? 0, p.mfe_r ?? 0)));
   const scale = (v: number) => (Math.min(v, max) / max) * 190 + 5;
   return (
@@ -422,8 +423,9 @@ function Recommendations({ query }: { query: AnalyticsQuery }) {
 
 /**
  * PLAN §A15 analytics and recommendations (TAA-1005): KPIs, curves, R distribution, performance by style,
- * MAE/MFE, attribution and the A16 recommendations, for one scope (paper, shadow or a backtest run). Every
- * result here is hypothetical; recommendations are never applied, only offered as a backtest.
+ * MAE/MFE, attribution and the A16 recommendations, for one scope (paper, the demo account, shadow or a
+ * backtest run). Every result but the demo account's is hypothetical; recommendations are never applied, only
+ * offered as a backtest.
  */
 export function AnalyticsPage() {
   const { t, i18n } = useTranslation();
@@ -463,6 +465,11 @@ export function AnalyticsPage() {
               className="rounded bg-amber-50 p-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
             >
               {t('analytics.hypothetical')}
+            </p>
+          )}
+          {data.scope === 'DEMO' && (
+            <p role="note" className="rounded bg-slate-100 p-2 text-sm dark:bg-slate-800">
+              {t('analytics.demoNote')}
             </p>
           )}
           <AINarrative kind="ANALYTICS" />

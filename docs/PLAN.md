@@ -1037,8 +1037,16 @@ AI failures never trip trading breakers; they only produce HOLD.
     `taa:<reason>`), or a broker stop: SL at ≤ −0.25 R, BE below +0.25 R, TRAIL above.
   - `GET /engines/{id}/broker-trades` (keyset pages, symbol filter); the PWA card "Bot trades on the demo
     account" sits above the paper trades under one symbol filter and is hidden in PAPER when there are none.
-  - Not yet: chart markers, analytics, the account equity curve and the manual-trade "bot" column still read the
-    paper book only.
+  - (TAA-1210) Analytics has a DEMO scope (LIVE in the API): `trades_from_broker` turns `broker_trades` into
+    trades with R = net / the order intent's planned risk (as for PAPER), not hypothetical, MAE/MFE unknown
+    (`Trade.mae/mfe` may be None, so the MAE/MFE chart and the "gave back profit" rule skip them). The
+    learning reports that reuse the analytics scopes accept it too. Chart markers include the bot's closed
+    broker trades. In "signal vs bot vs me" the bot's trade is its broker position when the decision filled
+    on the broker account (the first part of a split entry, R from its fill and the intent's stop; OPEN
+    while it is open, DEMO/LIVE taken from the run that sent it), else its paper position; `bot_source`
+    says which and the PWA shows it next to the R.
+  - Not yet: the realized equity curve of the account (`/account`) and open broker positions on the chart
+    still come from the paper book only.
 - (TAA-908 decisions) Signals & decisions (`frontend/src/pages/decisions/`):
   - `GET /decisions?reason=CODE` keeps decisions whose `reason_codes` hold the code, bare or parameterized
     (`CODE:detail`), matched on the JSON text with `_` escaped (a LIKE wildcard); tested on SQLite and on

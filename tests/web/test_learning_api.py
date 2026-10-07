@@ -31,7 +31,7 @@ def test_timing_and_expectancy(rig: tuple[TestClient, str, str]) -> None:  # noq
 
 def test_invalid_queries(rig: tuple[TestClient, str, str]) -> None:  # noqa: F811
     client, mine, _ = rig
-    for route in ("timing?scope=LIVE", "timing?days=0", "expectancy?days=200", "behavior?days=400"):
+    for route in ("timing?scope=OTHER", "timing?days=0", "expectancy?days=200", "behavior?days=400"):
         assert client.get(f"/api/v1/engines/{mine}/learning/{route}").status_code in (400, 422), route
 
 

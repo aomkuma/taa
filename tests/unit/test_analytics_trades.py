@@ -16,10 +16,12 @@ from app.analytics.trade_builder import (
     context_from_decision,
     from_closed_trade,
     trades_from_backtest,
+    trades_from_broker,
     trades_from_paper,
     trades_from_shadow,
 )
 from app.core.enums import ExitReason, Regime, Session, Side, Timeframe, Trend, VolatilityState
+from app.storage.models import BrokerTradeRow, OrderIntentRow
 from tests.analytics_data import T0, closed_trade, intent_row, market_dict, position_row, shadow_row, trade
 
 SLIP = 0.00001
@@ -151,6 +153,74 @@ class TestPaper:
         assert t.initial_sl == pytest.approx(1.0950)
         assert t.r_multiple is None  # no planned risk money without the intent
         assert t.mae_r == pytest.approx(0.2)
+
+
+def broker_row(**kw: object) -> BrokerTradeRow:
+    values: dict[str, object] = {
+        "position_ticket": 2079981852,
+        "account_key": "acc",
+        "mode": "DEMO",
+        "intent_id": "bi-1",
+        "decision_id": "d-1",
+        "strategy": "setup_breakout",
+        "magic": 7310002,
+        "symbol": "EURUSD",
+        "side": "BUY",
+        "volume": 0.1,
+        "plan_key": "",
+        "part_index": 0,
+        "entry_time": T0,
+        "entry_price": 1.1000,
+        "sl_initial": 1.0950,
+        "tp": 1.1100,
+        "exit_time": T0 + timedelta(hours=3),
+        "exit_price": 1.0950,
+        "exit_reason": "SL",
+        "profit": -50.0,
+        "swap": -0.4,
+        "commission": -0.6,
+        "net": -51.0,
+        "r_multiple": -1.0,
+        "booked_at": T0 + timedelta(hours=3),
+    }
+    values.update(kw)
+    return BrokerTradeRow(**values)
+
+
+def broker_intent(**kw: object) -> OrderIntentRow:
+    values: dict[str, object] = {
+        "intent_id": "bi-1",
+        "decision_id": "d-1",
+        "signal_id": "sig-1",
+        "strategy": "setup_breakout",
+        "risk_money": 50.0,
+        "order_type": "MARKET",
+    }
+    values.update(kw)
+    return OrderIntentRow(**values)
+
+
+class TestBroker:
+    def test_a_real_fill_with_r_from_the_planned_risk_and_no_excursions(self) -> None:
+        ctx = EntryContext(timeframe=Timeframe.M15)
+        result = trades_from_broker([broker_row()], {"bi-1": broker_intent()}, contexts={"sig-1": ctx})
+        (t,) = result.trades
+        assert t.trade_id == "DEMO:acc:2079981852" and t.scope is Scope.DEMO and not t.hypothetical
+        assert t.net_pnl == pytest.approx(-51.0)  # swap and commission included
+        assert t.r_multiple == pytest.approx(-51.0 / 50.0)
+        assert t.costs.swap == pytest.approx(0.4) and t.costs.commission == pytest.approx(0.6)
+        assert t.mae is None and t.mfe is None and t.mae_r is None and t.mfe_r is None
+        assert t.signal_id == "sig-1" and t.context is ctx and t.bars_held == 12
+        assert t.stop_at_exit == pytest.approx(1.0950)
+
+    def test_without_its_intent_the_risk_is_unknown(self) -> None:
+        (t,) = trades_from_broker([broker_row(exit_reason=None)], {}).trades
+        assert t.r_multiple is None and t.signal_id == "" and t.exit_reason is ExitReason.MANUAL
+
+    def test_live_rows_and_unreadable_rows(self) -> None:
+        result = trades_from_broker([broker_row(mode="LIVE"), broker_row(position_ticket=9, side="UP")], {})
+        assert [t.scope for t in result.trades] == [Scope.LIVE]
+        assert [s.source_id for s in result.skipped] == ["DEMO:acc:9"]
 
 
 class TestShadow:

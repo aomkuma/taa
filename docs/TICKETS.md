@@ -51,7 +51,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 25 | 25 | DONE |
 | M1 | Phase 10 — Trade analytics | 7 | 7 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 9 | 8 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 10 | 9 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
 | M2 | Phase 14 — LIVE readiness | 4 | 3 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
@@ -1783,6 +1783,19 @@ read paper only (a follow-up).
 - [x] API `GET /engines/{id}/broker-trades` (keyset pages, symbol filter)
 - [x] PWA: Trade history card "Bot trades on the demo account" (one row per MT5 position, part of a split entry, net incl. swap) under the shared symbol filter
 - [x] docs: PLAN §A15 note, HANDOFF
+
+#### TAA-1210 — The bot's broker trades in analytics, on the chart and in "signal vs bot vs me"
+
+- **Status:** DONE
+- **Depends on:** 1208, 1005, 1006
+
+Follow-up of TAA-1208 (owner, 2026-10-07): charts, analytics and the manual-trade "bot" column read the paper
+book only, so in DEMO they showed none of the bot's real trades.
+
+- [x] analytics scope DEMO (and LIVE): `trades_from_broker` (R = net / the intent's planned risk, one trade per MT5 position, MAE/MFE unknown: `Trade.mae/mfe` may be None), not hypothetical; PWA scope "The bot's trades on the demo account" with its note and "no excursions recorded"
+- [x] chart markers: the bot's closed broker trades marked like paper positions (entry, exit)
+- [x] "signal vs bot vs me": the bot's trade is its broker position when the decision filled there (first part; OPEN while it is open; DEMO/LIVE from the run), else its paper position; `bot_source` shown next to the R
+- [x] tests, API samples, PLAN note
 
 #### TAA-1209 — Scale-in parts outside the noise
 

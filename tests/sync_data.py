@@ -231,7 +231,7 @@ def sample_rows() -> list[Base]:
             position_ticket=2079981852,
             account_key="acc",
             mode="DEMO",
-            intent_id="bi1",
+            intent_id="i1",
             decision_id="d1",
             strategy="example_trend_pullback",
             magic=7310002,

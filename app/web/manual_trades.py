@@ -8,7 +8,9 @@ owner reads them, sees the alternatives and corrects a link (``manual_trade_over
 - ``SIGNAL``: it followed this other signal (one of :meth:`ManualTrades.candidates`).
 
 A closed trade compares three results in R for its effective signal: the owner's own (from the MT5 deals),
-the signal's PLAN shadow trade and the bot's paper position, so "signal vs bot vs me" can be read per trade.
+the signal's PLAN shadow trade and the bot's trade, so "signal vs bot vs me" can be read per trade. The bot's
+trade is its position on the broker account when the decision was executed there (DEMO/LIVE, TAA-1208: the
+first part of a split entry, as for PAPER), else its paper position; ``bot_source`` says which.
 """
 
 from __future__ import annotations
@@ -25,10 +27,13 @@ from app.core.clock import Clock, ensure_utc
 from app.core.enums import Side
 from app.storage.database import Database
 from app.storage.models import (
+    BrokerTradeRow,
     ManualTradeLinkRow,
     ManualTradeOverrideRow,
+    OrderIntentRow,
     PaperIntentRow,
     PaperPositionRow,
+    Run,
     ShadowTradeRow,
 )
 from app.web.readmodels import QueryError
@@ -133,8 +138,8 @@ class ManualTrades:
 
     @staticmethod
     def _compare(sess: Session, engine_id: str, effective: dict[str, Any]) -> dict[str, Any]:
-        """The signal's PLAN shadow trade and the bot's paper position, in R (None when there is none)."""
-        signal_r = signal_status = bot_r = bot_status = None
+        """The signal's PLAN shadow trade and the bot's trade, in R (None when there is none)."""
+        signal_r = signal_status = bot_r = bot_status = bot_source = None
         key = effective.get("opportunity_id") or effective.get("signal_key")
         if key:
             shadow = sess.scalar(
@@ -146,7 +151,13 @@ class ManualTrades:
             )
             if shadow is not None:
                 signal_r, signal_status = shadow.r_multiple, shadow.status
-        if effective.get("decision_id"):
+        decision_id = effective.get("decision_id")
+        broker = None
+        if decision_id:
+            broker = ManualTrades._broker(sess, engine_id, decision_id)
+        if broker is not None:
+            bot_r, bot_status, bot_source = broker
+        elif decision_id:
             position = sess.scalar(
                 select(PaperPositionRow)
                 .join(
@@ -162,13 +173,41 @@ class ManualTrades:
                 .limit(1)
             )
             if position is not None:
-                bot_r, bot_status = position.r_multiple, position.status
+                bot_r, bot_status, bot_source = position.r_multiple, position.status, "PAPER"
         return {
             "signal_r": signal_r,
             "signal_status": signal_status,
             "bot_r": bot_r,
             "bot_status": bot_status,
+            "bot_source": bot_source,
         }
+
+    @staticmethod
+    def _broker(sess: Session, engine_id: str, decision_id: str) -> tuple[float | None, str, str] | None:
+        """The bot's first broker position of the decision: (R, CLOSED/OPEN, DEMO/LIVE); None when the
+        decision never filled on the broker account."""
+        intent = sess.scalar(
+            select(OrderIntentRow)
+            .where(
+                OrderIntentRow.engine_id == engine_id,
+                OrderIntentRow.decision_id == decision_id,
+                OrderIntentRow.position_ticket.is_not(None),
+            )
+            .order_by(OrderIntentRow.part_index, OrderIntentRow.created_at)
+            .limit(1)
+        )
+        if intent is None or intent.position_ticket is None:
+            return None
+        trade = sess.get(BrokerTradeRow, (engine_id, intent.position_ticket))
+        if trade is not None:
+            return trade.r_multiple, "CLOSED", trade.mode
+        run_mode = sess.scalar(  # the mode the engine ran in when it sent the order
+            select(Run.mode)
+            .where(Run.engine_id == engine_id, Run.started_at <= intent.created_at)
+            .order_by(Run.started_at.desc())
+            .limit(1)
+        )
+        return None, "OPEN", "LIVE" if run_mode == "LIVE" else "DEMO"
 
     def candidates(self, engine_id: str, position_id: int) -> dict[str, Any]:
         """Every signal on the trade's symbol and side the owner can pick, qualifying ones first."""

@@ -44,12 +44,14 @@ export const ManualTradeSchema = z.object({
     candidates: z.number().int(),
   }),
   effective: EffectiveLinkSchema,
-  /** "Signal vs bot vs me": the signal's PLAN shadow trade and the bot's paper position, in R. */
+  /** "Signal vs bot vs me": the signal's PLAN shadow trade and the bot's trade, in R; `bot_source` says
+   * whether the bot's trade is its demo/live broker position or its paper position. */
   compare: z.object({
     signal_r: Value,
     signal_status: z.string().nullable(),
     bot_r: Value,
     bot_status: z.string().nullable(),
+    bot_source: z.enum(['PAPER', 'DEMO', 'LIVE']).nullable(),
   }),
 });
 export type ManualTrade = z.infer<typeof ManualTradeSchema>;

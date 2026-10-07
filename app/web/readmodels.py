@@ -673,6 +673,43 @@ class ReadModels:
                             "net": p.net,
                         }
                     )
+            # the bot's closed positions on the broker account (DEMO/LIVE, TAA-1208), marked like paper ones
+            trades = sess.execute(
+                select(BrokerTradeRow).where(
+                    BrokerTradeRow.engine_id == engine_id,
+                    BrokerTradeRow.symbol == symbol,
+                    or_(
+                        and_(BrokerTradeRow.entry_time >= first, BrokerTradeRow.entry_time < last),
+                        and_(BrokerTradeRow.exit_time >= first, BrokerTradeRow.exit_time < last),
+                    ),
+                )
+            ).scalars()
+            for b in trades:
+                entry = ensure_utc(b.entry_time)
+                if first <= entry < last:
+                    markers.append(
+                        {
+                            "kind": "entry",
+                            "at": json_safe(entry),
+                            "side": b.side,
+                            "price": b.entry_price,
+                            "ticket": b.position_ticket,
+                            "sl": b.sl_initial,
+                            "tp": b.tp,
+                        }
+                    )
+                if first <= ensure_utc(b.exit_time) < last:
+                    markers.append(
+                        {
+                            "kind": "exit",
+                            "at": json_safe(ensure_utc(b.exit_time)),
+                            "side": b.side,
+                            "price": b.exit_price,
+                            "ticket": b.position_ticket,
+                            "reason": b.exit_reason,
+                            "net": b.net,
+                        }
+                    )
         return sorted(markers, key=lambda m: str(m["at"]))
 
 

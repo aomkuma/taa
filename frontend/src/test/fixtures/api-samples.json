@@ -5077,6 +5077,223 @@
     "scope": "BACKTEST",
     "skipped": 0
   },
+  "engines/ENGINE/analytics?scope=DEMO&days=366": {
+    "attribution": [
+      {
+        "code": "LOSS_OTHER",
+        "count": 1,
+        "share": 1.0
+      }
+    ],
+    "by_style": {
+      "direction": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "LONG",
+          "win_rate": 0.0
+        }
+      ],
+      "holding": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "SCALP",
+          "win_rate": 0.0
+        }
+      ],
+      "regime": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "TRENDING",
+          "win_rate": 0.0
+        }
+      ],
+      "session": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "LONDON",
+          "win_rate": 0.0
+        }
+      ],
+      "setup": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "PULLBACK",
+          "win_rate": 0.0
+        }
+      ],
+      "strategy": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "example_trend_pullback",
+          "win_rate": 0.0
+        }
+      ],
+      "symbol": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "EURUSD",
+          "win_rate": 0.0
+        }
+      ],
+      "volatility": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "NORMAL",
+          "win_rate": 0.0
+        }
+      ],
+      "weekday": [
+        {
+          "expectancy_r": -2.824,
+          "net_r": -2.824,
+          "trades": 1,
+          "value": "WED",
+          "win_rate": 0.0
+        }
+      ]
+    },
+    "curve": [
+      {
+        "drawdown_r": -2.824,
+        "money": -14.12,
+        "r": -2.824,
+        "time": "2026-09-30T10:00:00+00:00"
+      }
+    ],
+    "hypothetical": false,
+    "kpis": {
+      "avg_hold_minutes": 0.0,
+      "basis": "MONEY",
+      "expectancy_r": -2.824,
+      "losses": 1,
+      "max_drawdown_r": 2.824,
+      "net_pnl": -14.12,
+      "net_r": -2.824,
+      "profit_factor": 0.0,
+      "rated": 1,
+      "scratches": 0,
+      "sharpe": null,
+      "sortino": null,
+      "trades": 1,
+      "win_rate": 0.0,
+      "wins": 0
+    },
+    "mae_mfe": [],
+    "period": {
+      "end": "2026-09-30T10:00:00+00:00",
+      "start": "2026-09-30T10:00:00+00:00"
+    },
+    "r_histogram": [
+      {
+        "count": 0,
+        "high": -3.0,
+        "low": null
+      },
+      {
+        "count": 1,
+        "high": -2.5,
+        "low": -3.0
+      },
+      {
+        "count": 0,
+        "high": -2.0,
+        "low": -2.5
+      },
+      {
+        "count": 0,
+        "high": -1.5,
+        "low": -2.0
+      },
+      {
+        "count": 0,
+        "high": -1.0,
+        "low": -1.5
+      },
+      {
+        "count": 0,
+        "high": -0.5,
+        "low": -1.0
+      },
+      {
+        "count": 0,
+        "high": 0.0,
+        "low": -0.5
+      },
+      {
+        "count": 0,
+        "high": 0.5,
+        "low": 0.0
+      },
+      {
+        "count": 0,
+        "high": 1.0,
+        "low": 0.5
+      },
+      {
+        "count": 0,
+        "high": 1.5,
+        "low": 1.0
+      },
+      {
+        "count": 0,
+        "high": 2.0,
+        "low": 1.5
+      },
+      {
+        "count": 0,
+        "high": 2.5,
+        "low": 2.0
+      },
+      {
+        "count": 0,
+        "high": 3.0,
+        "low": 2.5
+      },
+      {
+        "count": 0,
+        "high": 3.5,
+        "low": 3.0
+      },
+      {
+        "count": 0,
+        "high": 4.0,
+        "low": 3.5
+      },
+      {
+        "count": 0,
+        "high": 4.5,
+        "low": 4.0
+      },
+      {
+        "count": 0,
+        "high": 5.0,
+        "low": 4.5
+      },
+      {
+        "count": 0,
+        "high": null,
+        "low": 5.0
+      }
+    ],
+    "scope": "DEMO",
+    "skipped": 0
+  },
   "engines/ENGINE/analytics?scope=PAPER&days=366": {
     "attribution": [],
     "by_style": {
@@ -8414,7 +8631,7 @@
         "exit_price": 1.0982,
         "exit_reason": "SL",
         "exit_time": "2026-09-30T10:00:00+00:00",
-        "intent_id": "bi1",
+        "intent_id": "i1",
         "magic": 7310002,
         "mode": "DEMO",
         "net": -14.12,
@@ -10152,8 +10369,9 @@
         "close_price": 1.1065,
         "closed_at": "2026-09-30T12:00:00+00:00",
         "compare": {
-          "bot_r": 1.0,
-          "bot_status": "CLOSED",
+          "bot_r": null,
+          "bot_source": "DEMO",
+          "bot_status": "OPEN",
           "signal_r": null,
           "signal_status": "OPEN"
         },
@@ -10194,8 +10412,9 @@
         "close_price": null,
         "closed_at": null,
         "compare": {
-          "bot_r": 1.0,
-          "bot_status": "CLOSED",
+          "bot_r": null,
+          "bot_source": "DEMO",
+          "bot_status": "OPEN",
           "signal_r": null,
           "signal_status": "OPEN"
         },

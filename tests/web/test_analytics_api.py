@@ -24,9 +24,20 @@ def test_paper_and_shadow_reports(rig: tuple[TestClient, str, str]) -> None:  # 
     assert client.get(f"/api/v1/engines/{theirs}/analytics").status_code == 404
 
 
+def test_the_bots_broker_trades_are_a_scope_of_their_own(rig: tuple[TestClient, str, str]) -> None:  # noqa: F811
+    client, mine, _ = rig
+    demo = client.get(f"/api/v1/engines/{mine}/analytics?scope=DEMO&days=366").json()
+    assert demo["scope"] == "DEMO" and demo["kpis"]["trades"] == 1  # the sample broker trade
+    assert demo["mae_mfe"] == []  # MT5 records no excursions
+    recs = client.get(f"/api/v1/engines/{mine}/recommendations?scope=DEMO&days=366").json()
+    assert recs["trades"] == 1 and recs["hypothetical"] is False  # real fills on the demo account
+    live = client.get(f"/api/v1/engines/{mine}/analytics?scope=LIVE&days=366").json()
+    assert live["kpis"]["trades"] == 0
+
+
 def test_invalid_queries(rig: tuple[TestClient, str, str]) -> None:  # noqa: F811
     client, mine, _ = rig
-    for query in ("scope=LIVE", "scope=BACKTEST", "variant=OTHER", "days=0", "days=400"):
+    for query in ("scope=OTHER", "scope=BACKTEST", "variant=OTHER", "days=0", "days=400"):
         resp = client.get(f"/api/v1/engines/{mine}/analytics?{query}")
         assert resp.status_code in (400, 422), query
     missing = client.get(f"/api/v1/engines/{mine}/analytics?scope=BACKTEST&run=nope")

@@ -116,3 +116,22 @@ describe('analytics page', () => {
     });
   });
 });
+
+describe('the demo account scope (TAA-1208)', () => {
+  it('reads the bot trades on the demo account as real fills without excursions', async () => {
+    setup({
+      'GET /engines/e1/analytics?scope=DEMO&days=90': () => json(sample('analytics?scope=DEMO&days=366')),
+      'GET /engines/e1/recommendations?scope=DEMO&days=90': () =>
+        json({ ...sample(`recommendations?scope=BACKTEST&days=366&run=${RUN}`), scope: 'DEMO', items: [] }),
+    });
+    const user = userEvent.setup();
+    renderShell('/analytics');
+    await user.selectOptions(
+      await screen.findByLabelText('Results of'),
+      "The bot's trades on the demo account",
+    );
+    expect(await screen.findByText(/real executions with play money/)).toBeInTheDocument();
+    expect(screen.queryByText(/Simulated results/)).not.toBeInTheDocument();
+    expect(await screen.findByText('No excursions recorded for these trades.')).toBeInTheDocument();
+  });
+});

@@ -210,8 +210,32 @@ describe('manual trades and their signals (TAA-1006)', () => {
     const [row] = within(table).getAllByRole('row').slice(1);
     expect(row).toHaveTextContent('#2078278001');
     expect(row).toHaveTextContent('+1.25R'); // me
-    expect(row).toHaveTextContent('+1R'); // the bot's paper position
+    expect(row).toHaveTextContent(/open\s*demo/); // the bot's position on the demo account is still open
     expect(row).toHaveTextContent('—'); // the signal's shadow trade is still open
+  });
+
+  it('shows where the bot result comes from: the demo account or the paper book', async () => {
+    const recorded = sample('manual-trades?status=CLOSED&limit=100').items as Record<string, unknown>[];
+    const first = recorded[0] ?? {};
+    const compare = first.compare as Record<string, unknown>;
+    const items = [
+      { ...first, compare: { ...compare, bot_r: -1, bot_status: 'CLOSED', bot_source: 'DEMO' } },
+      {
+        ...first,
+        position_id: 7,
+        ticket: 7,
+        compare: { ...compare, bot_r: 1, bot_status: 'CLOSED', bot_source: 'PAPER' },
+      },
+    ];
+    setup({
+      'GET /engines/e1/manual-trades?status=CLOSED&limit=100': () => json({ items }),
+    });
+    renderShell('/history');
+    const table = await screen.findByRole('table', { name: 'My closed manual trades' });
+    const [demo, paper] = within(table).getAllByRole('row').slice(1);
+    expect(demo).toHaveTextContent(/-1R\s*demo/);
+    expect(paper).toHaveTextContent(/\+1R\s*paper/);
+    expect(within(table).getByRole('columnheader', { name: 'Bot' })).toBeInTheDocument();
   });
 });
 

@@ -324,7 +324,7 @@ def report(
         counts = Counter(d.mode for d in failed)
         winners = [t for t, _ in rows if t.outcome is Outcome.WIN and t.exit_reason is ExitReason.TAKE_PROFIT]
         mae_r = [t.mae_r for t in winners if t.mae_r is not None]
-        mae_atr = [t.mae / t.context.atr for t in winners if t.context.atr]
+        mae_atr = [t.mae / t.context.atr for t in winners if t.context.atr and t.mae is not None]
         to_tp = [float(t.bars_held) for t in winners if t.bars_held is not None]
         resolved = [(t, d) for t, d in rows if t.exit_reason in STOP_LOSS_EXITS | {ExitReason.TAKE_PROFIT}]
         tp_first = sum(1 for t, _ in resolved if t.exit_reason is ExitReason.TAKE_PROFIT)

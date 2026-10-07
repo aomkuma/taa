@@ -95,7 +95,14 @@ export function ManualTradesCard() {
                   </td>
                   <td className={`${TD} font-semibold`}>{r(m.r_multiple)}</td>
                   <td className={TD}>{r(m.compare.signal_r)}</td>
-                  <td className={TD}>{r(m.compare.bot_r)}</td>
+                  <td className={TD}>
+                    {m.compare.bot_status === 'OPEN' ? t('trades.manual.closed.botOpen') : r(m.compare.bot_r)}
+                    {m.compare.bot_source !== null && (
+                      <span className="ml-1 text-xs text-slate-500">
+                        {t(`trades.manual.closed.source.${m.compare.bot_source}`)}
+                      </span>
+                    )}
+                  </td>
                   <td className={TD}>
                     {format.number(m.net_profit, { maximumFractionDigits: 2, signDisplay: 'exceptZero' })}
                   </td>

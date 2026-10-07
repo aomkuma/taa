@@ -116,6 +116,7 @@ ENGINE_ROUTES = [
     "manual-trades?status=CLOSED&limit=100",
     "manual-trades/2078278005/candidates",
     "analytics?scope=PAPER&days=366",
+    "analytics?scope=DEMO&days=366",
     "analytics?scope=SHADOW&days=366",
     f"analytics?scope=BACKTEST&days=366&run={RUN_A}",
     f"recommendations?scope=BACKTEST&days=366&run={RUN_A}",
