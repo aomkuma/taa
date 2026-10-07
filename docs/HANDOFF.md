@@ -95,6 +95,14 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
 - **Heavy family replay:** still running (EURUSD/GBPUSD at 12,500/24,081 bars at 14:00 UTC, ~2,500 bars/h
   each; then `run_heavy.sh` starts USDJPY/XAUUSD **at normal priority** — run_family.sh has no idle priority).
   Analyze with `app.cli research hypotheses --from "data/research/fam_heavy_*.db"` per strategy.
+- **Checks of this work:** ruff, mypy (app), bandit clean; the related pytest sets (~400 tests: research,
+  entry modes, shadow tracker, replay, golden, storage/migration parity, postgres migrations, replication,
+  learning and advisory APIs, API samples) and the full vitest (64 files, 554 tests) passed. **The full pytest
+  suite was not run** (the heavy replays held the memory): run it once they finish and the machine is quiet.
+- Lessons: a new shadow status needs `SHADOW_STATUSES` in `frontend/src/i18n/codes.ts` (fixed in f86dbc6); the
+  research loaders select columns, not the entity, because scratch replay databases keep their old schema.
+- The stack was restarted twice on 10-07 afternoon: 14:00 UTC by this session (config with the entry modes)
+  and 14:12 UTC by the other session (TAA-1007), both with `scripts\demo-tasks.ps1 -Stop` / `-Start`.
 
 ### Setup quality review, 2026-10-07 (docs/SETUP_REVIEW.md; the owner's question: why do the setups lose?)
 
