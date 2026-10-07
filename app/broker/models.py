@@ -123,6 +123,7 @@ class Deal:
     magic: int
     comment: str
     time_utc: datetime
+    reason: int = -1  # DEAL_REASON_* (what closed it: SL, TP, the bot, the owner); -1 when not known
 
     @property
     def is_cash_flow(self) -> bool:

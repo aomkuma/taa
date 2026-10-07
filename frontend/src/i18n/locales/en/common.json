@@ -337,6 +337,16 @@
       "none": "No broker orders yet.",
       "detail": "Requested {{requested}} · filled {{fill}} · SL {{sl}} · position #{{ticket}}"
     },
+    "brokerClosed": {
+      "title": {
+        "DEMO": "Bot trades on the demo account",
+        "LIVE": "Bot trades on the real-money account"
+      },
+      "none": "No closed bot trades on the broker account yet.",
+      "strategy": "Strategy",
+      "part": "part {{n}}",
+      "note": "One row per MT5 position, as in the terminal's History. Net includes swap, commission and fees, so it can differ from the terminal's Profit column. Past results say nothing about the future."
+    },
     "closed": {
       "title": "Closed trades",
       "none": "No closed trades yet.",

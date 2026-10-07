@@ -340,6 +340,7 @@ class ReadOnlyMT5Gateway:
                     magic=int(getattr(d, "magic", 0)),
                     comment=str(getattr(d, "comment", "")),
                     time_utc=t,
+                    reason=int(getattr(d, "reason", -1)),
                 )
             )
         return out

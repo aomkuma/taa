@@ -22,7 +22,7 @@ export function excursionR(excursion: number, risk: number | null): number | nul
 }
 
 /** Whole minutes between entry and exit (null while open). */
-export function heldMinutes(trade: Trade): number | null {
+export function heldMinutes(trade: Pick<Trade, 'entry_time' | 'exit_time'>): number | null {
   if (trade.exit_time === null) return null;
   return Math.max(0, Math.round((Date.parse(trade.exit_time) - Date.parse(trade.entry_time)) / 60_000));
 }

@@ -47,6 +47,7 @@ TOPIC_OF_TYPE: Mapping[str, str] = {
     "paper_position": "positions",
     "paper_intent": "positions",
     "order_intent": "positions",
+    "broker_trade": "positions",
     "deal": "positions",
     "decision": "decisions",
 }

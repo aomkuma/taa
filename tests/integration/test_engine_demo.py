@@ -12,11 +12,12 @@ from app.broker.factory import build_trading
 from app.config import Settings, load_settings
 from app.core.clock import ManualClock
 from app.engine.backends import DemoBackend
+from app.engine.broker_trades import BOOK_SECONDS
 from app.engine.orchestrator import Engine
 from app.monitoring.alerts import EventBus, EventType, MemorySink
 from app.risk.kill_switch import KillMode
 from app.storage.database import Database
-from app.storage.models import OrderIntentRow
+from app.storage.models import BrokerTradeRow, OrderIntentRow
 from app.strategy.registry import StrategySet
 from tests.integration.test_engine_paper import START, BuyEveryBar
 
@@ -147,6 +148,14 @@ def test_kill_switch_flatten_closes_bot_positions(tmp_path: Path) -> None:
     assert EventType.POSITION_CLOSED in d.types()
     deals = d.engine.bundle.fake.deals if d.engine.bundle.fake else []
     assert any(x.entry == c.DEAL_ENTRY_OUT for x in deals)
+    d.clock.advance(BOOK_SECONDS)
+    d.engine.cycle()  # the next maintenance books the closed position (TAA-1208)
+    with d.db.session() as sess:
+        [trade] = sess.scalars(select(BrokerTradeRow)).all()
+        intent = sess.scalars(select(OrderIntentRow)).one()
+        assert trade.position_ticket == intent.position_ticket and trade.mode == "DEMO"
+        assert trade.exit_reason == "KILL_SWITCH" and trade.magic == MAGIC
+        assert trade.net == round(sum(x.profit for x in deals if x.position_id == trade.position_ticket), 2)
     d.engine.shutdown()
 
 

@@ -87,6 +87,7 @@ ENGINE_ROUTES = [
     "breakers?limit=1",
     "trades?limit=2",
     "trades/1",
+    "broker-trades?limit=50",
     "intents?kind=paper",
     "intents?kind=broker",
     "decisions?limit=50&profile=EXECUTION",

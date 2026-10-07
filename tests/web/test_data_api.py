@@ -18,6 +18,7 @@ from app.storage.audit import AuditLog
 from app.storage.database import Database
 from app.storage.models import (
     AuditEvent,
+    BrokerTradeRow,
     ConfigSnapshot,
     DecisionCheckRow,
     DecisionRecordRow,
@@ -39,6 +40,7 @@ ROUTES = [
     "positions",
     "trades",
     "trades/1",
+    "broker-trades",
     "intents",
     "decisions",
     "decisions/d1",
@@ -324,6 +326,27 @@ class TestReads:
         assert [p["ticket"] for p in get(client, mine, "positions?status=OPEN").json()["items"]] == [10]
         assert get(client, mine, "positions?cursor=garbage").json()["error"]["code"] == "invalid_query"
         assert get(client, mine, "positions?limit=500").status_code == 422
+
+    def test_broker_trades_newest_exit_first(self, rig: tuple[TestClient, str, str], db: Database) -> None:
+        client, mine, _ = rig
+        with db.session() as sess:  # a second trade of the sample, an hour later, on another symbol
+            sample = next(r for r in sample_rows() if isinstance(r, BrokerTradeRow))
+            sample.engine_id, sample.position_ticket, sample.symbol = mine, 2079981861, "GBPUSD"
+            sample.exit_time = T + timedelta(hours=1)
+            sess.add(sample)
+        page = get(client, mine, "broker-trades").json()
+        assert [t["position_ticket"] for t in page["items"]] == [2079981861, 2079981852]
+        first = page["items"][1]
+        assert (first["mode"], first["net"], first["swap"], first["exit_reason"]) == (
+            "DEMO",
+            -14.12,
+            -0.12,
+            "SL",
+        )
+        assert "engine_id" not in first
+        only = get(client, mine, "broker-trades?symbol=GBPUSD&limit=1").json()
+        assert [t["position_ticket"] for t in only["items"]] == [2079981861] and only["next_cursor"] is None
+        assert get(client, mine, "broker-trades?limit=1").json()["next_cursor"] is not None
 
     def test_account_has_a_realized_equity_curve(self, rig: tuple[TestClient, str, str]) -> None:
         client, mine, _ = rig

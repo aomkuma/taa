@@ -20,6 +20,7 @@ import {
 } from '@/pages/symbols/schemas';
 
 import {
+  BrokerTradesPageSchema,
   OrderIntentsPageSchema,
   PaperIntentsPageSchema,
   TradeDetailSchema,
@@ -90,6 +91,7 @@ const CASES: [string, z.ZodType][] = [
   [`${E}trades?limit=2`, TradesPageSchema],
   [`${E}positions?status=OPEN`, TradesPageSchema],
   [`${E}trades/1`, TradeDetailSchema],
+  [`${E}broker-trades?limit=50`, BrokerTradesPageSchema],
   [`${E}intents?kind=paper`, PaperIntentsPageSchema],
   [`${E}intents?kind=broker`, OrderIntentsPageSchema],
   [`${E}decisions?limit=50&profile=EXECUTION`, DecisionLogSchema],

@@ -64,3 +64,39 @@ class MagicRegistryRow(Base):
     bot_slot: Mapped[int] = mapped_column(Integer)
     strategy_slot: Mapped[int] = mapped_column(Integer)
     assigned_at: Mapped[datetime] = mapped_column(UTCDateTime())
+
+
+class BrokerTradeRow(EngineKeyed, Base):
+    """A closed bot position on the broker account (DEMO/LIVE; TAA-1208), booked once from the MT5 deals.
+
+    One row per MT5 position, so a split entry's parts are separate rows like in the terminal. ``net`` is
+    profit + swap + commission + fee (the balance change); ``r_multiple`` is measured from the intent's stop.
+    """
+
+    __tablename__ = "broker_trades"
+
+    position_ticket: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    account_key: Mapped[str] = mapped_column(String(32), index=True)
+    mode: Mapped[str] = mapped_column(String(8))  # DEMO | LIVE
+    intent_id: Mapped[str] = mapped_column(String(36))
+    decision_id: Mapped[str] = mapped_column(String(36))
+    strategy: Mapped[str] = mapped_column(String(64))
+    magic: Mapped[int] = mapped_column(BigInteger)
+    symbol: Mapped[str] = mapped_column(String(32), index=True)
+    side: Mapped[str] = mapped_column(String(4))
+    volume: Mapped[float] = mapped_column(Float)
+    plan_key: Mapped[str] = mapped_column(String(80), default="")
+    part_index: Mapped[int] = mapped_column(Integer, default=0)
+    entry_time: Mapped[datetime] = mapped_column(UTCDateTime())
+    entry_price: Mapped[float] = mapped_column(Float)
+    sl_initial: Mapped[float] = mapped_column(Float)
+    tp: Mapped[float | None] = mapped_column(Float, nullable=True)
+    exit_time: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)
+    exit_price: Mapped[float] = mapped_column(Float)
+    exit_reason: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    profit: Mapped[float] = mapped_column(Float)
+    swap: Mapped[float] = mapped_column(Float)
+    commission: Mapped[float] = mapped_column(Float)  # commission + fee
+    net: Mapped[float] = mapped_column(Float)
+    r_multiple: Mapped[float | None] = mapped_column(Float, nullable=True)
+    booked_at: Mapped[datetime] = mapped_column(UTCDateTime())

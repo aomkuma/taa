@@ -51,7 +51,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 24 | 24 | DONE |
 | M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 8 | 7 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 9 | 8 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
 | M2 | Phase 14 — LIVE readiness | 4 | 3 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
@@ -1741,6 +1741,21 @@ cancelled when the market part closes, on any kill switch and before the Friday 
 - [x] SAME_PRICE: every part has its own TP; after the first TP the remaining parts' stops move to break-even (DEMO and PAPER)
 - [x] PWA: the Splitting section and the profile intro say what the bot does; the plan in use shows on the Risk page
 - [x] docs: PLAN §A31/§A33 and TAA-1207 notes, RUNBOOK_DEMO, HANDOFF; `entry_plans` switched on in `config.yaml`
+
+#### TAA-1208 — The bot's closed broker trades in the trade history
+
+- **Status:** DONE
+- **Depends on:** 1202, 1205, 1207, 907
+
+Found 2026-10-07: in DEMO the Trade history page showed only paper trades, so it never matched the terminal
+(13 closed bot positions, net −39.96, were missing). Charts, analytics and the manual-trade "bot" column still
+read paper only (a follow-up).
+
+- [x] `broker_trades` (model, migration 0042, replica, stream topic `positions`); `Deal.reason` from MT5
+- [x] engine: `BrokerTradeBook` books each closed bot position from its MT5 deals (net = profit + swap + commission + fee, exit reason from the deal reason or the bot's close comment, R from the intent's stop), also positions that closed while the engine was down
+- [x] API `GET /engines/{id}/broker-trades` (keyset pages, symbol filter)
+- [x] PWA: Trade history card "Bot trades on the demo account" (one row per MT5 position, part of a split entry, net incl. swap) under the shared symbol filter
+- [x] docs: PLAN §A15 note, HANDOFF
 
 #### TAA-1209 — Scale-in parts outside the noise
 

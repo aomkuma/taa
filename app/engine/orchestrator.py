@@ -60,6 +60,7 @@ from app.core.errors import SafetyViolation, SymbolUnavailable, TaaError
 from app.core.ids import new_id, stable_hash
 from app.engine.backends import Backend, DemoBackend, PaperBackend
 from app.engine.broker_positions import BrokerPositionManager
+from app.engine.broker_trades import BrokerTradeBook
 from app.engine.decision_engine import (
     AccountState,
     Decision,
@@ -489,6 +490,9 @@ class Engine:
             self.kill_switch,
             self.clock,
             plans=self.plans,
+            trades=BrokerTradeBook(
+                self.db, self.gateway, self.clock, account_key=self.account_key, mode=self.settings.mode.value
+            ),
         )
         report = self.reconciler.run()
         self.plans.run()

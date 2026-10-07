@@ -38,6 +38,32 @@ export const TradeSchema = z.looseObject({
 export type Trade = z.infer<typeof TradeSchema>;
 export const TradesPageSchema = page(TradeSchema);
 
+/** A closed bot position on the broker account (`broker_trades`, DEMO/LIVE; TAA-1208); `net` includes swap,
+ * commission and fees. */
+export const BrokerTradeSchema = z.looseObject({
+  position_ticket: z.number().int(),
+  mode: z.string(),
+  strategy: z.string(),
+  symbol: z.string(),
+  side: z.string(),
+  volume: z.number(),
+  part_index: z.number().int(),
+  entry_time: IsoDateTime,
+  entry_price: z.number(),
+  sl_initial: z.number(),
+  tp: Value,
+  exit_time: IsoDateTime,
+  exit_price: z.number(),
+  exit_reason: z.string().nullable(),
+  profit: z.number(),
+  swap: z.number(),
+  commission: z.number(),
+  net: z.number(),
+  r_multiple: Value,
+});
+export type BrokerTrade = z.infer<typeof BrokerTradeSchema>;
+export const BrokerTradesPageSchema = page(BrokerTradeSchema);
+
 export const PaperIntentSchema = z.looseObject({
   intent_id: z.string(),
   decision_id: z.string(),
@@ -117,6 +143,8 @@ export const tradeKeys = {
   open: (engineId: string) => [...engineKey(engineId), 'positions', 'open', 'list'] as const,
   closed: (engineId: string, symbol: string) =>
     [...engineKey(engineId), 'positions', 'closed', symbol] as const,
+  broker: (engineId: string, symbol: string) =>
+    [...engineKey(engineId), 'positions', 'broker', symbol] as const,
   paperIntents: (engineId: string) => [...engineKey(engineId), 'intents', 'paper', 'PENDING'] as const,
   orderIntents: (engineId: string) => [...engineKey(engineId), 'intents', 'broker'] as const,
   detail: (engineId: string, ticket: number) =>

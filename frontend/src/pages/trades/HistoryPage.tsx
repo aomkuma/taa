@@ -9,6 +9,7 @@ import { translateCode } from '@/i18n/codes';
 import { useFormat } from '@/i18n/useFormat';
 import { Card } from '@/pages/dashboard/cards';
 
+import { BrokerTradesCard } from './BrokerTradesCard';
 import { useLiveTrades, useTradeDrawer } from './hooks';
 import { ManualTradesCard } from './ManualTradesCard';
 import { type Trade, TradesPageSchema, tradeKeys } from './schemas';
@@ -39,8 +40,9 @@ function download(name: string, text: string) {
 }
 
 /**
- * PLAN §A15 history (TAA-907): closed trades, symbol filter, CSV export, per-trade drawer; then the owner's
- * closed manual trades with "signal vs bot vs me" (TAA-1006).
+ * PLAN §A15 history (TAA-907): the bot's closed trades on the broker account (DEMO/LIVE, TAA-1208), closed
+ * paper trades with CSV export and a per-trade drawer, both under one symbol filter; then the owner's closed
+ * manual trades with "signal vs bot vs me" (TAA-1006).
  */
 export function HistoryPage() {
   const { t, i18n } = useTranslation();
@@ -93,6 +95,18 @@ export function HistoryPage() {
   return (
     <section>
       <h1 className="mb-4 text-2xl font-semibold">{t('nav.history')}</h1>
+      <label className="mb-3 flex items-center gap-2 text-sm">
+        {t('trades.closed.symbol')}
+        <input
+          type="search"
+          value={symbol}
+          onChange={(event) => {
+            setSymbol(event.target.value);
+          }}
+          className="w-40 rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900"
+        />
+      </label>
+      <BrokerTradesCard engineId={id} symbol={filter} />
       <Card
         title={t('trades.closed.title')}
         action={
@@ -106,17 +120,6 @@ export function HistoryPage() {
           </button>
         }
       >
-        <label className="mb-3 flex items-center gap-2 text-sm">
-          {t('trades.closed.symbol')}
-          <input
-            type="search"
-            value={symbol}
-            onChange={(event) => {
-              setSymbol(event.target.value);
-            }}
-            className="w-40 rounded border border-slate-300 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900"
-          />
-        </label>
         {exporting === 'failed' && (
           <p role="alert" className="mb-2 text-sm text-red-700 dark:text-red-400">
             {t('trades.closed.exportFailed')}

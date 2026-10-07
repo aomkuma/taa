@@ -43,16 +43,30 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
   1302 Anthropic provider, 1303 veto, 1304 AI page and narrative, 1305 AI on advisory). Revisions 5 (owner's profile drives
   the engine's risk) and 6 (manual trades matched to signals, TAA-1006) are done.
 - **Also done 2026-10-06/07:** TAA-1207 (split entries), TAA-1404 (final docs pass), the MT5 client fix
-  (964221a), the backtest evidence fix (a384617), `scripts\demo-tasks.ps1`, revision 7 (PLAN §A35).
+  (964221a), the backtest evidence fix (a384617), `scripts\demo-tasks.ps1`, revision 7 (PLAN §A35),
+  **TAA-1208** (the bot's closed broker trades on Trade history; see below).
 - **Not started / open:** the setup review's follow-ups (Next work 1-5), TAA-1209, Phase 16 (AI analyst),
   Phase 11 Railway (deferred), TAA-1403's last item (the owner repeats the drills on the LIVE machine),
   Phase 15 (deferred).
 - **Checks (2026-10-06, stack stopped):** full pytest **2791 passed, 7 skipped** (10 min); vitest 526; Playwright
   smoke 3; ruff, mypy, bandit clean; `pip-audit` and `npm audit` clean.
-- **Git:** `main` only; the user pushes. Latest migration: **0041** (`entry_plan_intents`, TAA-1207).
+- **Git:** `main` only; the user pushes. Latest migration: **0042** (`broker_trades`, TAA-1208).
 - **The `-Mt5 -Demo` stack** runs from Windows Task Scheduler since 2026-10-07 05:30 UTC (`scripts\demo-tasks.ps1`,
   registered by the owner): "TAA Demo web/worker/engine" at logon plus "TAA Demo check" every 5 minutes. Use
   `-Stop` / `-Start` around restarts; it no longer dies with an assistant session.
+
+### TAA-1208: the bot's closed broker trades on Trade history (2026-10-07)
+
+- The owner compared Trade history with the MT5 History tab: in DEMO the page showed only paper trades. Now
+  `BrokerTradeBook` books each closed bot position from its MT5 deals into `broker_trades` (PLAN §A15
+  "TAA-1208 decisions") and the page shows "Bot trades on the demo account" above the paper trades.
+- Checked on a copy of `data\demo\engine-mt5.db` against the demo terminal (read-only): 13 trades booked, each
+  profit equal to the terminal's, total net −39.96 (the bot's part of the balance).
+- Same comparison, not bugs: the terminal's Profit column leaves out swap (GBPUSD manual −13.80 + swap −0.12 =
+  −13.92 in the PWA). Still open from it: manual trades that opened and closed while the engine did not watch
+  are never linked (BTCUSD −13.95 and EURUSD 1 lot +119 on 10-05, before TAA-1006 ran); the engine label
+  "mt5 demo (paper)" is fixed in `scripts\start-demo.ps1` even in `-Demo`; charts, analytics and the manual
+  "bot" column still read paper only.
 
 ### Setup quality review, 2026-10-07 (docs/SETUP_REVIEW.md; the owner's question: why do the setups lose?)
 

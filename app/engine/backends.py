@@ -4,7 +4,8 @@
   paper position manager. Real account positions only count toward exposure.
 - :class:`DemoBackend` (DEMO, Phase 12): real broker orders on the **demo** account through the
   :class:`OrderManager`, the :class:`Reconciler` on every maintenance pass, and the
-  :class:`BrokerPositionManager`. A kill switch in FLATTEN mode closes every bot position (when allowed).
+  :class:`BrokerPositionManager`; the :class:`BrokerTradeBook` books closed positions. A kill switch in
+  FLATTEN mode closes every bot position (when allowed).
 
 The engine talks to either through the same small interface, so the decision path is identical in both.
 """
@@ -21,6 +22,7 @@ from app.core.clock import Clock
 from app.core.enums import ExitReason
 from app.core.errors import TaaError
 from app.engine.broker_positions import BrokerPositionManager
+from app.engine.broker_trades import BrokerTradeBook
 from app.engine.decision_engine import DecisionRecord
 from app.engine.order_manager import IntentState, OrderManager
 from app.engine.paper import PaperExecution
@@ -172,10 +174,12 @@ class DemoBackend:
         clock: Clock,
         *,
         plans: PlanSupervisor | None = None,
+        trades: BrokerTradeBook | None = None,
     ) -> None:
         self.orders = orders
         self.reconciler = reconciler
         self.plans = plans
+        self.trades = trades
         self.positions = positions
         self.market = market
         self.kill_switch = kill_switch
@@ -221,6 +225,8 @@ class DemoBackend:
         self.reconciler.run()
         if self.plans is not None:
             self.plans.run()  # resting limit parts: fills, lifetime, kill switch, closed market parts
+        if self.trades is not None:
+            self.trades.run()  # closed positions into the trade history (TAA-1208)
         state = self.kill_switch.state()
         if state.active and state.mode is KillMode.FLATTEN and not self._flattened:
             self.positions.flatten(state.reason or "kill switch FLATTEN")

@@ -286,9 +286,41 @@ describe('history page', () => {
     renderShell('/history');
     const region = await card('Closed trades');
     await within(region).findByRole('button', { name: /#5/ });
-    await user.type(within(region).getByRole('searchbox', { name: 'Symbol' }), 'xauusd');
+    await user.type(screen.getByRole('searchbox', { name: 'Symbol' }), 'xauusd');
     expect(await within(region).findByText('No closed trades yet.')).toBeInTheDocument();
     expect(api.calls.map((c) => c.path)).toContain('/engines/e1/trades?limit=50&symbol=XAUUSD');
+  });
+
+  it('lists the bot’s closed trades on the demo account in DEMO (TAA-1208)', async () => {
+    const api = setup({
+      'GET /engines/e1/status': () => json(status('e1', { heartbeat: heartbeat({ mode: 'DEMO' }) })),
+      'GET /engines/e1/broker-trades?limit=50': serve('broker-trades?limit=50'),
+      'GET /engines/e1/broker-trades?limit=50&symbol=XAUUSD': () => json({ items: [], next_cursor: null }),
+    });
+    const user = userEvent.setup();
+    renderShell('/history');
+    const table = await screen.findByRole('table', { name: 'Bot trades on the demo account' });
+    const [row] = within(table).getAllByRole('row').slice(1);
+    expect(row).toHaveTextContent('#2079981852 EURUSD BUY 0.07');
+    expect(row).toHaveTextContent('Trend pullback (example)');
+    expect(row).toHaveTextContent('Stop loss');
+    expect(row).toHaveTextContent('-14.12'); // net, swap included
+    expect(row).toHaveTextContent('-1');
+    await user.type(screen.getByRole('searchbox', { name: 'Symbol' }), 'xauusd');
+    const region = await card('Bot trades on the demo account');
+    expect(
+      await within(region).findByText('No closed bot trades on the broker account yet.'),
+    ).toBeInTheDocument();
+    expect(api.calls.map((c) => c.path)).toContain('/engines/e1/broker-trades?limit=50&symbol=XAUUSD');
+  });
+
+  it('shows no broker trades card in PAPER when there are none', async () => {
+    setup({
+      'GET /engines/e1/broker-trades?limit=50': () => json({ items: [], next_cursor: null }),
+    });
+    renderShell('/history');
+    await card('Closed trades');
+    expect(screen.queryByRole('region', { name: /Bot trades on the/ })).not.toBeInTheDocument();
   });
 
   it('exports every closed trade as CSV', async () => {

@@ -91,6 +91,16 @@ async def trades(
     return dict(page.to_dict())
 
 
+@router.get("/broker-trades")
+async def broker_trades(
+    engine: OwnedEngine, ctx: Context, symbol: Name = None, limit: Limit = None, cursor: Cursor = None
+) -> dict[str, Any]:
+    """The bot's closed positions on the broker account (DEMO/LIVE), newest exit first; net includes swap,
+    commission and fees (TAA-1208)."""
+    page = await _run(models(ctx).broker_trades, engine.engine_id, symbol=symbol, limit=limit, cursor=cursor)
+    return dict(page.to_dict())
+
+
 @router.get("/trades/{ticket}")
 async def trade(engine: OwnedEngine, ctx: Context, ticket: int) -> dict[str, Any]:
     """A paper position's detail and timeline: intent, decision with checks, lifecycle events."""

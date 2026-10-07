@@ -38,6 +38,7 @@ from app.storage.models import (
     AuditReplicaRow,
     BreakerEventRow,
     BreakerStateRow,
+    BrokerTradeRow,
     ConfigSnapshot,
     DecisionCheckRow,
     DecisionRecordRow,
@@ -290,6 +291,24 @@ class ReadModels:
         with self.db.session() as sess:
             return paginate(
                 sess, PaperPositionRow, where, time_col, PaperPositionRow.ticket, limit=limit, cursor=cursor
+            )
+
+    def broker_trades(
+        self, engine_id: str, *, symbol: str | None, limit: int | None, cursor: str | None
+    ) -> Page:
+        """Closed bot positions on the broker account (DEMO/LIVE; TAA-1208), newest exit first."""
+        where = [BrokerTradeRow.engine_id == engine_id]
+        if symbol:
+            where.append(BrokerTradeRow.symbol == symbol)
+        with self.db.session() as sess:
+            return paginate(
+                sess,
+                BrokerTradeRow,
+                where,
+                BrokerTradeRow.exit_time,
+                BrokerTradeRow.position_ticket,
+                limit=limit,
+                cursor=cursor,
             )
 
     def trade(self, engine_id: str, ticket: int) -> dict[str, Any] | None:

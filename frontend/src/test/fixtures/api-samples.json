@@ -8111,6 +8111,7 @@
         "code_version": "0.1.0",
         "config_hash": "385371bfed03ffdb",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
+        "detectors": [],
         "seed": 42,
         "strategies": [
           "example_trend_pullback"
@@ -8237,6 +8238,7 @@
           "code_version": "0.1.0",
           "config_hash": "385371bfed03ffdb",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
+          "detectors": [],
           "seed": 42,
           "strategies": [
             "example_trend_pullback"
@@ -8292,6 +8294,7 @@
           "code_version": "0.1.0",
           "config_hash": "385371bfed03ffdb",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
+          "detectors": [],
           "seed": 42,
           "strategies": [
             "example_trend_pullback"
@@ -8398,6 +8401,38 @@
         "updated_at": "2026-09-30T10:00:00+00:00"
       }
     ]
+  },
+  "engines/ENGINE/broker-trades?limit=50": {
+    "items": [
+      {
+        "account_key": "acc",
+        "booked_at": "2026-09-30T10:00:00+00:00",
+        "commission": 0.0,
+        "decision_id": "d1",
+        "entry_price": 1.1002,
+        "entry_time": "2026-09-30T10:00:00+00:00",
+        "exit_price": 1.0982,
+        "exit_reason": "SL",
+        "exit_time": "2026-09-30T10:00:00+00:00",
+        "intent_id": "bi1",
+        "magic": 7310002,
+        "mode": "DEMO",
+        "net": -14.12,
+        "part_index": 0,
+        "plan_key": "",
+        "position_ticket": 2079981852,
+        "profit": -14.0,
+        "r_multiple": -1.0,
+        "side": "BUY",
+        "sl_initial": 1.0982,
+        "strategy": "example_trend_pullback",
+        "swap": -0.12,
+        "symbol": "EURUSD",
+        "tp": 1.1042,
+        "volume": 0.07
+      }
+    ],
+    "next_cursor": null
   },
   "engines/ENGINE/calibration": {
     "brier": 0.21387224480384703,

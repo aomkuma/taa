@@ -1010,8 +1010,24 @@ AI failures never trip trading breakers; they only produce HOLD.
     (UTC ISO times, raw numbers, quoted fields, formula-like text defused), and a hypothetical-results note.
   - Trade drawer (`?trade=<ticket>`, linkable): timeline signal → decision (checks passed, failed reasons) →
     fill → stop moves → exit, sorted by time, and a link to the trade on the chart (the chart snapshot).
-  - `codes:exitReason` texts added. DEMO broker positions are not replicated as position rows yet; the page
-    shows their order intents.
+  - `codes:exitReason` texts added. Open DEMO broker positions are not replicated as position rows; the
+    Positions page shows their order intents. Closed ones are, since TAA-1208 (below).
+- (TAA-1208 decisions) The bot's closed broker trades (DEMO/LIVE) on Trade history:
+  - Found 2026-10-07: the page read `paper_positions` only, so in DEMO it never matched the terminal.
+  - `broker_trades` (replicated, engine-keyed by the MT5 position ticket): one row per MT5 position, so the
+    parts of a split entry are separate rows, as in the terminal's History. Booked by `BrokerTradeBook`
+    (`app/engine/broker_trades.py`) on the DEMO backend's maintenance pass (at most every 30 s) once the
+    position is no longer open, from its MT5 deals; the intents of the last 30 days are looked at, so positions
+    that closed while the engine was down are booked after a restart. Nothing is booked when positions or the
+    deal history cannot be read.
+  - `net` = profit + swap + commission + fee (the balance change), so it differs from the terminal's Profit
+    column by the swap; R is measured from the part's own fill and the intent's stop.
+  - Exit reason from the last exit deal's `reason`: TP, stop-out, the owner (MANUAL), the bot (its close comment
+    `taa:<reason>`), or a broker stop: SL at ≤ −0.25 R, BE below +0.25 R, TRAIL above.
+  - `GET /engines/{id}/broker-trades` (keyset pages, symbol filter); the PWA card "Bot trades on the demo
+    account" sits above the paper trades under one symbol filter and is hidden in PAPER when there are none.
+  - Not yet: chart markers, analytics, the account equity curve and the manual-trade "bot" column still read the
+    paper book only.
 - (TAA-908 decisions) Signals & decisions (`frontend/src/pages/decisions/`):
   - `GET /decisions?reason=CODE` keeps decisions whose `reason_codes` hold the code, bare or parameterized
     (`CODE:detail`), matched on the JSON text with `_` escaped (a LIKE wildcard); tested on SQLite and on
