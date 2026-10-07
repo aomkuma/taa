@@ -2657,6 +2657,15 @@ them. A link changes labels and statistics only, never trading.
   - Shown on Trade history ("My closed manual trades"). The Positions page shows the effective link with a
     "Correct" dialog. An aggregate on the accuracy page waits until there are enough closed manual
     trades to be meaningful.
+- **(TAA-1007 decisions)** Manual trades the engine never saw open (it was stopped, or the trade opened and
+  closed between two snapshots) are found in the deal history: every 5 minutes the engine reads the deals of
+  the last 30 days and links each fully closed position that is not the bot's (magic outside the bot range),
+  has its opening deal in the window and has no link yet. It is matched as a live position would have been
+  (same candidates at its open time) and booked CLOSED at once. Its stop is unknown (deals carry none, and
+  the owner sets the stop after the fill, so the opening order has none either: checked on the FBS demo
+  terminal), so `sl_initial` and R stay empty and the "Me" column shows a dash. Checked on a copy of the
+  demo engine database: the two 10-05 trades (BTCUSD UNMATCHED, EURUSD 1 lot HIGH setup_candle_reversal)
+  were linked; the four manual trades now sum to the terminal's (80.25 profit − 0.12 swap).
 
 ## A35. AI analyst and bot executor (rev. 7)
 

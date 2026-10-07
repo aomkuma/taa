@@ -435,7 +435,7 @@
         "me": "Me",
         "signalR": "Signal (simulated)",
         "botR": "Bot (paper)",
-        "note": "R is measured from each trade's own first stop: mine from the stop the position had when the engine first saw it, the signal's from its plan, the bot's from its paper position. A dash means there is no such trade."
+        "note": "R is measured from each trade's own first stop: mine from the stop the position had when the engine first saw it, the signal's from its plan, the bot's from its paper position. A dash means there is no such trade, or for mine that the engine never saw the position open (it opened and closed while the engine was not watching), so its stop is not known."
       }
     }
   },

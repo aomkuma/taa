@@ -49,7 +49,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 8 — Web backend & worker | 11 | 11 | DONE |
 | M1 | Phase 8A — Personalization, entitlements & multi-tenant readiness (rev. 2 follow-up 7) | 5 | 5 | DONE |
 | M1 | Phase 9 — PWA frontend | 25 | 25 | DONE |
-| M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
+| M1 | Phase 10 — Trade analytics | 7 | 7 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
 | M2 | Phase 12 — DEMO execution | 9 | 8 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
@@ -1630,6 +1630,18 @@ S/R zones on), and every data refresh reset the chart shift, a hand-set price sc
 - [x] PWA: "follows signal X (likely)" on Positions; override dialog; th/en keys
 - [x] closed manual trades with their link in trade history, signal vs bot vs me per trade (an aggregate on the accuracy page waits for enough closed trades; PLAN §A34)
 - [x] tests (incl. the 2026-10-05 GBPUSD case)
+
+#### TAA-1007 — Manual trades closed while the engine did not watch
+
+- **Status:** DONE
+- **Depends on:** 1006
+
+Found 2026-10-07 comparing Trade history with the MT5 History tab: a manual position that opened and closed
+while the engine was stopped (or between two snapshots) was never linked, so it was missing (BTCUSD −13.95
+and EURUSD 1 lot +119 on 10-05).
+
+- [x] engine: `ManualTradeLinker.backfill` links, closed at once, every fully closed non-bot position of the last 30 days found in the deal history without a link (matched like a live one; no stop seen, so no R)
+- [x] the trade-history note says what a dash in "Me" means; tests; PLAN §A34 note
 
 ### Phase 11 — Railway deployment
 

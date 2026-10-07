@@ -12,7 +12,8 @@ from app.broker import mt5_constants as c
 from app.broker.models import BrokerPosition, Deal
 from app.core.clock import ManualClock
 from app.core.enums import Side
-from app.engine.manual_links import ManualTradeLinker
+from app.core.errors import BrokerError
+from app.engine.manual_links import BACKFILL_SECONDS, ManualTradeLinker
 from app.storage.database import Database
 from app.storage.models import ManualTradeLinkRow, OpportunityRow
 from tests.sync_data import T as SYNC_T
@@ -180,6 +181,91 @@ class TestLinker:
         ManualTradeLinker(db, clock).observe([later])
         with db.session() as sess:
             assert sess.scalars(select(ManualTradeLinkRow)).one().stop_history is None
+
+
+def hist(
+    pid: int,
+    entry: int,
+    price: float,
+    at: datetime,
+    *,
+    volume: float = 0.1,
+    profit: float = 0.0,
+    magic: int = 0,
+    kind: int = c.DEAL_TYPE_BUY,
+) -> Deal:
+    return Deal(
+        ticket=pid * 10 + entry, order=pid, position_id=pid, symbol="EURUSD", type=kind, entry=entry,
+        volume=volume, price=price, profit=profit, commission=-0.35, swap=0.0, fee=0.0, magic=magic,
+        comment="", time_utc=at,
+    )  # fmt: skip
+
+
+class TestBackfill:
+    """Manual trades that opened and closed while the engine did not watch, found in the deal history."""
+
+    OPEN = SYNC_T + timedelta(minutes=5)
+    CLOSE = SYNC_T + timedelta(hours=2)
+
+    def bot(self, magic: int) -> bool:
+        return 7_310_000 <= magic < 7_320_000
+
+    def test_a_trade_never_seen_open_is_linked_and_closed(self, db: Database) -> None:
+        with db.session() as sess:
+            sess.add_all([r for r in sample_rows() if isinstance(r, OpportunityRow)])
+        clock = ManualClock(SYNC_T + timedelta(hours=3))
+        history = [
+            hist(90, c.DEAL_ENTRY_IN, 1.1004, self.OPEN),
+            hist(90, c.DEAL_ENTRY_OUT, 1.1075, self.CLOSE, profit=71.0, kind=c.DEAL_TYPE_SELL),
+            Deal(1, 0, 0, "", c.DEAL_TYPE_BALANCE, 0, 0.0, 0.0, 1000.0, 0.0, 0.0, 0.0, 0, "", SYNC_T),
+        ]
+        assert ManualTradeLinker(db, clock).backfill([], lambda *_: history, self.bot) == 1
+        with db.session() as sess:
+            row = sess.scalars(select(ManualTradeLinkRow)).one()
+        assert (row.position_id, row.side, row.volume, row.price_open) == (90, "BUY", 0.1, 1.1004)
+        assert (row.confidence, row.opportunity_id) == ("HIGH", "k1")  # matched as it would have been live
+        assert (row.status, row.close_price, row.net_profit) == ("CLOSED", 1.1075, 70.3)
+        assert row.sl_initial is None and row.r_multiple is None  # the stop was never seen
+        assert row.opened_at == self.OPEN and row.closed_at == self.CLOSE
+
+    def test_open_partial_bot_known_and_older_positions_are_left_alone(self, db: Database) -> None:
+        clock = ManualClock(SYNC_T + timedelta(hours=3))
+        linker = ManualTradeLinker(db, clock)
+        linker.observe([position(1.1, SYNC_T, pid=95)])  # seen open: settle() books it, not backfill()
+        history = [
+            hist(91, c.DEAL_ENTRY_IN, 1.1, self.OPEN),  # still open
+            hist(92, c.DEAL_ENTRY_IN, 1.1, self.OPEN, volume=0.2),  # half closed, then gone from the book
+            hist(92, c.DEAL_ENTRY_OUT, 1.101, self.CLOSE, volume=0.1),
+            hist(93, c.DEAL_ENTRY_IN, 1.1, self.OPEN, magic=7_310_005),  # the bot's
+            hist(93, c.DEAL_ENTRY_OUT, 1.101, self.CLOSE, magic=7_310_005),
+            hist(94, c.DEAL_ENTRY_OUT, 1.101, self.CLOSE),  # opened before the window
+            hist(95, c.DEAL_ENTRY_IN, 1.1, self.OPEN),
+            hist(95, c.DEAL_ENTRY_OUT, 1.101, self.CLOSE),
+        ]
+        assert linker.backfill([91], lambda *_: history, self.bot) == 0
+        with db.session() as sess:
+            assert [r.position_id for r in sess.scalars(select(ManualTradeLinkRow))] == [95]
+
+    def test_throttled_and_fails_closed(self, db: Database) -> None:
+        clock = ManualClock(SYNC_T + timedelta(hours=3))
+        linker = ManualTradeLinker(db, clock)
+        calls: list[int] = []
+
+        def failing(*_: datetime) -> list[Deal]:
+            calls.append(1)
+            raise BrokerError("history_deals_get failed")
+
+        assert linker.backfill([], failing, self.bot) == 0
+        assert linker.backfill([], failing, self.bot) == 0  # within BACKFILL_SECONDS: not asked again
+        assert len(calls) == 1
+        clock.advance(BACKFILL_SECONDS)
+        history = [
+            hist(96, c.DEAL_ENTRY_IN, 1.1, self.OPEN),
+            hist(96, c.DEAL_ENTRY_OUT, 1.101, self.CLOSE),
+        ]
+        assert linker.backfill([], lambda *_: history, self.bot) == 1
+        clock.advance(BACKFILL_SECONDS)
+        assert linker.backfill([], lambda *_: history, self.bot) == 0  # linked once
 
 
 def test_rank_lists_the_qualifying_signals_first() -> None:

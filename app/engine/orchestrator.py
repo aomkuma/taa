@@ -1147,8 +1147,12 @@ class Engine:
         foreign = exposure.foreign[:MAX_FOREIGN_POSITIONS]
         try:
             links = self.manual_links.observe([p.position for p in foreign])
-            self.manual_links.settle(
-                [p.position.identifier or p.position.ticket for p in exposure.foreign], self.gateway.deals
+            open_ids = [p.position.identifier or p.position.ticket for p in exposure.foreign]
+            self.manual_links.settle(open_ids, self.gateway.deals)
+            base = self.settings.env.MAGIC_NUMBER_BASE
+            # manual trades that opened and closed while the engine did not watch (stopped, or in between)
+            self.manual_links.backfill(
+                open_ids, self.gateway.deals, lambda magic: base <= magic < base + MAGIC_RANGE
             )
         except Exception:  # telemetry boundary: an unlinked position is still shown
             log.exception("manual trade links failed")
