@@ -87,7 +87,60 @@ breakout. The best single conditions chosen on Oct-Mar (+0.10 to +0.22 R) all fa
    fairly.
 4. Switching setups off is a separate risk decision for the bot; the shadow measurement continues either way.
 
-## 6. Still to do
+## 6. More hypotheses (owner, 2026-10-07): "it breaks out, comes back to the entry, then really runs"
+
+Same 3,750 breakout signals, re-simulated on M5 (all / Oct-Mar / Apr-Oct agree unless noted):
+
+| Hypothesis | Mean R |
+|---|---|
+| as traded | −0.13 |
+| target 0.5 R / 1 R (target too far?) | −0.10 / −0.12 |
+| break-even after +0.5 R | −0.12 |
+| trail 0.5 R once +0.5 R | −0.08 |
+| time stop after 4 bars without +0.5 R | −0.10 |
+| stop ×2, same R multiple (stop inside the noise?) | −0.05 |
+| cheapest quarter of spread/stop vs dearest | −0.08 vs −0.17 |
+| first signal of the day vs later ones | −0.08 vs −0.15 (Oct-Mar: both −0.15) |
+| re-enter at the entry after a stop | −0.14 |
+| **retest 0.5-1 R with a stop 2.5-3 R from the signal entry** | **0.00 to +0.02** (both halves) |
+
+- 61 % of the losers were +0.25 R, 43 % +0.5 R and 21 % +1 R before their stop; **55 % of the stopped trades
+  reached the original target later** (within 72 h). The owner's reading is right: the direction is often right
+  and the stop sits inside the noise; a retest entry only works together with a stop beyond the noise.
+- The live DEMO plans of 2026-10-07 show the same: a 0.5 ATR scale-in spacing on a 1.5 ATR stop puts every
+  limit part into the noise band under the stop (GBPUSD parts with 7.2, 4.1 and 1.1 pip stops; USDJPY: three
+  parts filled within 51 minutes, then all stopped).
+
+## 7. Development approach and the roles of AI (owner's question, 2026-10-07)
+
+**Approach:** one hypothesis at a time per layer of the algorithm, each measured in R net of costs, as a shadow
+variant on the same signals (A/B), on a year of history with walk-forward (choose on one half, judge on the
+other), then forward in shadow, then DEMO, then LIVE (PLAN_LEARNING §L13).
+
+| Layer | Question | Next candidates |
+|---|---|---|
+| Signal | where to look | the setups and their detectors; a failed-break setup (§L20.2) |
+| Interpretation | is this break meaningful here | timeframe (H1/H4 replay running), playbook by regime (§L20.1), level significance |
+| Entry timing | when | retest entry modes with waiting entries (§L19.3, hook H2) |
+| Stop | where the idea is wrong | beyond the noise (winners' MAE quantile, structure), lots cut to keep the risk % (§L19) |
+| Exit | how to keep winners | trailing, partials, time stop as exit policies (hook H3) |
+| Portfolio and costs | how much at once, at what cost | heat and plan counting (TAA-1207), spread-to-stop limits |
+
+**AI roles, each measured before it is trusted:**
+
+1. **Research agent** (this review): turns the owner's hypotheses into tests on the data, runs them and writes the
+   synthesis; can run as a regular research report. It proposes; the owner decides.
+2. **Signal-quality model** (statistical, §L6 meta-labeling): learns from thousands of shadow outcomes whether a
+   setup is ready to enter; judged walk-forward. The simple context rules here did not survive walk-forward,
+   so it needs the richer evidence features.
+3. **LLM analyst** (docs/AI_ANALYST_DISCUSSION.md): a multi-timeframe thesis per symbol, measured forward in
+   shadow against the bot; its verdict can later become one input of the signal-quality model.
+4. **Explanation and review** (TAA-1303/1305, built): narratives in Thai and English, and the veto review once
+   its calibration is shown.
+
+The AI never sizes a trade, widens a stop or bypasses a risk check.
+
+## 8. Still to do
 
 - Heavy family (pattern breakout, neckline, harmonic): the replay ran out of commit memory with four processes
   (the page file is a fixed 2 GB); to run two at a time or after the page file is enlarged.
