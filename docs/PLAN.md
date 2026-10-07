@@ -93,7 +93,7 @@
 | R18 | Railway runs Linux containers. Config-as-Code (`railway.toml/json`) is **deprecated and stops being read on 2026-12-01**; the replacement is IaC in `.railway/railway.ts` (`railway config plan/apply`). Private networking uses `*.railway.internal`; Postgres is exposed via a `DATABASE_URL` reference; regions include Singapore `asia-southeast1-eqsg3a`; `railway ssh` runs one-off commands. HTTP requests (including SSE) are capped at about 15 min, or 5 min idle | Use the IaC file, Dockerfile builds on Railway only, Postgres on the private network only, SSE heartbeats with client reconnect, and admin CLI tasks via `railway ssh`. |
 | R19 | The original pandas-ta warns of discontinuation risk; TA-Lib has shipped official wheels since 0.6.5 | Indicators are implemented in-house (numpy/pandas, documented formulas). TA-Lib is only an optional reference in tests. |
 | R20 | Lightweight Charts 5.x (Apache-2.0) requires TradingView attribution | Use it for price and equity charts and keep the attribution (logo option or NOTICE plus link). |
-| R21 | Claude API: structured outputs via `output_config.format` or `client.messages.parse()` (Pydantic); `stop_reason == "refusal"` must be handled; server-side `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`); the SDK defaults to a 10 min timeout and 2 retries; default model `claude-opus-5-5` ($4/$20 per MTok), with effort as the cost lever | AI layer (Milestone 2) is veto-only, uses a strict schema and a short timeout, turns a refusal into HOLD, enables fallbacks by default, and reads the model from `AI_MODEL`. |
+| R21 | Claude API: structured outputs via `output_config.format` or `client.messages.parse()` (Pydantic); `stop_reason == "refusal"` must be handled; server-side `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`); the SDK defaults to a 10 min timeout and 2 retries; default model `claude-opus-5-5` ($4/$20 per MTok), with effort as the cost lever | AI layer (Milestone 2) is veto-only for entries (rev. 7, §A35: it may also propose theses that the engine validates and executes only through its own triggers and gates), uses a strict schema and a short timeout, turns a refusal into HOLD, enables fallbacks by default, and reads the model from `AI_MODEL`. |
 | R22 | `symbols_get(group)` returns all symbols in one call; the filter supports `*` wildcards and `!` negation, comma-separated with inclusions before exclusions (e.g. `"*, !*EUR*"`) | The universe is discovered at runtime with configurable include/exclude patterns. Asset classes are inferred from `trade_calc_mode`, `path` and currency codes, never hardcoded. |
 | R23 | `copy_ticks_range(symbol, from, to, COPY_TICKS_ALL)` returns tick history (`time_msc`, bid, ask) | Shadow trades resolve "SL and TP inside the same bar" exactly from ticks; only when ticks are unavailable do they fall back to a pessimistic rule (SL first). |
 | R24 | FBS sets **Forex leverage by equity tier**: 1:3000 below $200, 1:2000 for $200–4,999, 1:1000 for $5k–29,999, 1:500 for $30k–149,999, lower above. Metals, indices, energies, crypto and stocks have **fixed instrument leverage** (e.g. metals 1:500, indices/energies 1:200, US30/US100/US500 1:500, stocks up to 1:100). The industry also commonly raises margin around news and weekends | Leverage is **not** an identity field: a leverage change is a WARNING that triggers margin re-checks, not ACCOUNT_CHANGE (fixes Phase-1 behavior, TAA-110). Margin is always computed with `order_calc_margin`, with a buffer factor for temporary margin hikes. |
@@ -1328,7 +1328,7 @@ AI failures never trip trading breakers; they only produce HOLD.
 | Ingest spoofing or replay | HMAC with timestamp, nonce and body hash; TLS; dual-secret rotation |
 | Supply chain | Pinned dependencies and lockfiles, pip-audit, npm audit, bandit, ruff security rules, Dependabot |
 | Tampering with history | Hash-chained audit trail, replicated off-host |
-| AI misuse or prompt injection (M2) | Numeric inputs only, no account data, schema-validated output, veto-only, nothing is ever executed from text |
+| AI misuse or prompt injection (M2) | Numeric inputs only, no account data, schema-validated output, veto-only (rev. 7: theses are validated numbers and enums, executed only through the engine's own triggers and gates, §A35), nothing is ever executed from text |
 | Host compromise | Dedicated non-admin Windows user, no inbound ports, Defender, OS and terminal updates, 2FA on the FBS Personal Area, withdrawal restrictions |
 
 **Credential rotation** (`docs/SECURITY.md`):
@@ -2630,6 +2630,35 @@ them. A link changes labels and statistics only, never trading.
   - Shown on Trade history ("My closed manual trades"). The Positions page shows the effective link with a
     "Correct" dialog. An aggregate on the accuracy page waits until there are enough closed manual
     trades to be meaningful.
+
+## A35. AI analyst and bot executor (rev. 7)
+
+**Why (2026-10-06/07, owner):** the bot executes signals but lacks the wider view an analyst gets from reading a
+chart; the owner wants the AI to judge whether a setup is ready. The setup review (docs/SETUP_REVIEW.md) showed
+where judgement is missing: the entries are mostly mistimed and the stops sit inside the noise, while the
+direction is often right. Discussion and feasibility: docs/AI_ANALYST_DISCUSSION.md.
+
+**Decision (owner, 2026-10-06):** the AI may **propose**: a thesis per symbol. The engine **decides and executes**
+only through its own deterministic triggers, the risk sizer, the mode gate and every check. Shadow measures
+everything.
+
+| Role | Who | Does |
+|---|---|---|
+| Analyst | LLM (Claude) | Multi-timeframe thesis: bias, playbook, entry zone, invalidation, targets, a trigger from a closed enum, expiry |
+| Executor | engine | waits for the zone and the trigger on a closed bar, sizes by the owner's profile, passes every gate |
+| Referee | shadow | each thesis tracked in R (zone touch and triggered variants), compared with the bot's own signals |
+
+**Stages** (each behind its own flag, default off): A — Ask AI in the PWA (on demand); B — scheduled shadow
+theses on a capped set (budget, on-demand reserve); C — a reduce-only filter on bot signals (learning hook H1);
+D — owner-armed watch plans executed by the engine (hook H2 waiting entries); E — automatic arming only with
+evidence per symbol, never before Phase 14 sign-off for LIVE.
+
+**Rules:** Opus 5.5 (hybrid: on demand plus a capped schedule); numbers first, chart images later as a shadow
+A/B; the chart pack is engine-made data only (no account data, no external text); a thesis is a strict schema
+(`ThesisV1`, enums and prices) and is geometry-checked by the engine (zone near price, invalidation on the
+correct side, stop distance, RR after spread, expiry cap); the AI never sizes, widens a stop, touches an open
+position or bypasses a check; evaluation is forward only (a model may have seen historical prices). Tickets:
+Phase 16 in docs/TICKETS.md.
 
 ## A22. Delivery plan
 

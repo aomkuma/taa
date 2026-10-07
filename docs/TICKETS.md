@@ -51,10 +51,11 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 24 | 24 | DONE |
 | M1 | Phase 10 — Trade analytics | 6 | 6 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 7 | 7 | DONE |
+| M2 | Phase 12 — DEMO execution | 8 | 7 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
 | M2 | Phase 14 — LIVE readiness | 4 | 3 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
+| M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -1741,6 +1742,21 @@ cancelled when the market part closes, on any kill switch and before the Friday 
 - [x] PWA: the Splitting section and the profile intro say what the bot does; the plan in use shows on the Risk page
 - [x] docs: PLAN §A31/§A33 and TAA-1207 notes, RUNBOOK_DEMO, HANDOFF; `entry_plans` switched on in `config.yaml`
 
+#### TAA-1209 — Scale-in parts outside the noise
+
+- **Status:** TODO
+- **Depends on:** 1207 (TAA-1208 is taken by another session's broker-trade work)
+
+Found on the FBS demo account on 2026-10-07 (docs/SETUP_REVIEW.md §6): a 0.5 × ATR spacing on a ~1.5 ATR stop
+puts every limit part into the noise band just above the stop (GBPUSD parts with 7.2, 4.1 and 1.1 pip stops;
+USDJPY: three parts filled within 51 minutes, then all stopped). The replay shows deeper fills win far less.
+
+- [ ] spacing measured as a fraction of the stop distance (`spacing_stop_fraction`) instead of a fixed ATR multiple; the PWA editor and the alerts' plan use the same rule
+- [ ] no part closer to the stop than `min_part_stop_atr` × ATR and `min_part_stop_spreads` × spread; such parts are dropped (never moved)
+- [ ] break-even and trailing per plan (from the plan's average entry and total risk), not per part, so a deep part with a tiny stop does not move to break-even on noise
+- [ ] when a wider stop policy (TAA-L702 `WIDE_STOP` / `PULLBACK_WIDE`) is adopted, the plan uses its stop
+- [ ] tests (geometry per side; parts dropped near the stop; per-plan break-even); PWA text TH/EN
+
 ### Phase 13 — AI assessment (optional layer)
 
 #### TAA-1301 — AI interface
@@ -1839,6 +1855,97 @@ cancelled when the market part closes, on any kill switch and before the Friday 
 - **Depends on:** all
 
 - [x] README, runbooks and docs reflect reality
+
+### Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35)
+
+Discussion and feasibility: docs/AI_ANALYST_DISCUSSION.md. The AI proposes theses; the engine decides and executes
+only through its own triggers and gates; shadow measures. Opus 5.5, on demand plus a capped schedule; numbers
+first, images later. Needs `AI_PROVIDER`/`AI_API_KEY` (costs money; owner's budget).
+
+#### TAA-1601 — PLAN revision 7 and tickets
+
+- **Status:** DONE
+- **Depends on:** —
+
+- [x] PLAN §A35; R21 and the AI threat row amended
+- [x] Phase 16 tickets; docs/AI_ANALYST_DISCUSSION.md committed with the owner's decisions
+- [x] PLAN_LEARNING §L12 pointer to §A35 (the LLM is no longer narrative only)
+
+#### TAA-1602 — Bias timeframe for the bot (H4 context)
+
+- **Status:** TODO
+- **Depends on:** — (read the H1/H4 replay result in HANDOFF first)
+
+- [ ] `timeframes.bias` (optional, > higher) in `TimeframesConfig.enabled`; `MarketContext.bias`; every `context_at` caller, the candle stream and the strategies page key tuple
+- [ ] shared condition `bias_aligned` (`BIAS_OPPOSED`), blocking only with `bias_filter: true`; i18n TH/EN
+- [ ] tests (three frames, `from_dict` of old records, golden unchanged with defaults, Monday-open `ALIGNMENT_LAG`)
+
+#### TAA-1603 — Chart pack and thesis schema
+
+- **Status:** TODO
+- **Depends on:** 1602
+
+- [ ] `app/ai/thesis.py`: `build_chart_pack` (compact OHLC D1/H4/H1/M15, timeframe states, active evidence with prices, S/R zones, session, spread, news code; no account data)
+- [ ] `TriggerKind` enum mapped to detector ids; `ThesisV1` (bias, confidence, playbook, ≤ 2 scenarios with zone, invalidation, targets, trigger; reasons; TH/EN narrative; `valid_for_bars`)
+- [ ] `check_thesis`: schema, subject echo, `CLAIMS`, per-scenario geometry (zone distance and width in ATR, invalidation side, stop ≤ `max_sl_atr`, RR after spread, ordered targets)
+- [ ] tests
+
+#### TAA-1604 — Provider overrides, storage, engine worker, Ask-AI command
+
+- **Status:** TODO
+- **Depends on:** 1603
+
+- [ ] `AIProvider.ask` per-call effort, timeout and max tokens
+- [ ] `ai_theses` and `ai_thesis_tracks` tables (migration, replica specs, sync sample rows); `ai.thesis` config (budget, on-demand reserve, auto symbols at each bias-bar close)
+- [ ] `AITheses` worker like `AINotes` (one thread; candles fetched on the engine loop); skip when the input hash is unchanged
+- [ ] `AI_THESIS_REQUEST` command (not risk-increasing, no TOTP) and its engine handler
+- [ ] tests (fake client: OK, refusal, timeout, budget, reserve)
+
+#### TAA-1605 — Thesis tracker (shadow referee)
+
+- **Status:** TODO
+- **Depends on:** 1604
+
+- [ ] variants `ZONE_TOUCH` and `TRIGGERED` per valid scenario; PENDING → INVALIDATED / EXPIRED / OPEN → CLOSED; resolution with `app/advisory/shadow.py`
+- [ ] comparison with the bot's own shadow trades on the same symbols and period
+- [ ] tests
+
+#### TAA-1606 — API and PWA (Ask AI, thesis on the chart, accuracy)
+
+- **Status:** TODO
+- **Depends on:** 1605
+
+- [ ] `GET/POST /engines/{id}/ai-theses`, detail route, rate limit, `AI_NARRATIVES` entitlement; API samples
+- [ ] Charts page: Ask AI, thesis panel ("AI opinion, not advice"), zones/invalidation/targets drawn; AI page: theses and their R with CIs and calibration
+- [ ] i18n TH/EN and parity tests
+
+#### TAA-1607 — Thesis as a reduce-only filter (stage C)
+
+- **Status:** TODO
+- **Depends on:** 1605, TAA-L002 hook H1
+
+- [ ] an active thesis may only remove bot signals against its bias or outside its zones; evaluated in shadow first
+
+#### TAA-1608 — Owner-armed watch plans (stage D)
+
+- **Status:** TODO
+- **Depends on:** 1605, TAA-L702 waiting entries (hook H2)
+
+- [ ] "Arm" with step-up; the engine waits for the zone and the trigger on a closed bar and raises an ordinary signal through every gate; PAPER, then DEMO
+
+#### TAA-1609 — Chart images A/B
+
+- **Status:** TODO
+- **Depends on:** 1605
+
+- [ ] engine-rendered images beside the numbers as a shadow variant; kept only if they improve the theses' R
+
+#### TAA-1610 — AI code-execution experiment
+
+- **Status:** TODO
+- **Depends on:** 1605
+
+- [ ] the analyst may run its own calculations on the chart pack (server-side code execution) as a shadow variant against the numbers-only prompt
 
 ### Phase 15 — Product-scale backlog (deferred)
 

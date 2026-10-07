@@ -574,6 +574,14 @@ Each opportunity is simulated under several entry modes at once, as extra shadow
 | `LTF_TRIGGER` | Waits for a lower-TF trigger in the plan direction: a break of the last swing on the trigger TF (entry TF ÷ 3–4, e.g. M15 → M5 or M1); expires at the signal lifetime | Worse price, fewer whipsaws |
 | `CONFIRMED` (L7) | Tick confirmation | Minute-level only; needs ticks |
 | `WIDE_STOP` | `PLAN` entry with the SL at max(structure stop, winners' MAE q80 + spread), and the lot recomputed so risk percent is unchanged | Smaller lot; fewer `EARLY` stop-outs |
+| `PULLBACK_WIDE` (added 2026-10-07) | `PULLBACK`'s limit together with `WIDE_STOP`'s stop (measured from the signal's entry) | Misses trades that never pull back; the only combination with evidence so far |
+
+**Evidence (docs/SETUP_REVIEW.md, 2026-10-07; one-year replay, 4 symbols, net of costs):** for `setup_breakout`
+(3,750 signals) a pullback limit with the plan's stop made results *worse* (−0.13 → −0.15 R; win rate 30 % →
+9-20 %, deeper = worse): fills happen when the break is failing. A stop twice as wide (same R) gave −0.05 R, and
+a pullback of 0.5-1 R with a stop 2.5-3 R from the signal's entry gave about 0 to +0.02 R in both half-years.
+55 % of the stopped trades reached their original target later. So `PULLBACK` is only evaluated together with a
+wider stop, and **TAA-L702 is the first learning-track ticket to build** (the only lever with evidence).
 
 **Rules.**
 
@@ -732,6 +740,12 @@ The existing setups are mostly breakout, pullback and reversal. A dedicated rang
 - **Targets:** TP1 at the middle of the range, TP2 at the opposite edge zone (`SAME_PRICE` split, §A31).
 - **Exits:** a closed HTF bar outside the range → exit at market (`RANGE_BROKEN`), and a short time stop
   (learned, L19.5).
+
+- **Failed break (added 2026-10-07):** on M15, the breakout direction did worse than a random direction
+  (−0.13 vs −0.08 R; fading every break −0.01 R; docs/SETUP_REVIEW.md). A dedicated `setup_failed_break`: a
+  break of the range edge, then a closed bar back inside within `failed_break_bars` (default 3); entry toward
+  the middle, stop beyond the break's extreme plus the noise buffer of `WIDE_STOP`, target the middle then the
+  opposite edge. Shadow first, like every setup.
 
 ### L20.3 Trend runner and risk-free adds
 
@@ -1109,7 +1123,10 @@ CANDIDATE ──(passes L6 validation)──▶ SHADOW ──(promote, CLI + rea
 
 ## L12. Role of the LLM (link to Phase 13)
 
-The LLM (TAA-1301…1305) is used only for **narrative**: turning a profile or a model explanation into a short
+Revision 7 (PLAN §A35, 2026-10-07) adds the LLM as an **analyst** that proposes theses which the engine validates
+and executes only through its own triggers and gates (Phase 16); a thesis verdict may become one input of the
+signal-quality model (L4) once its forward accuracy is measured. Within this track otherwise: the LLM
+(TAA-1301…1305) is used for **narrative**: turning a profile or a model explanation into a short
 TH/EN paragraph. Its input is the structured profile or explanation JSON, never raw prices for prediction. Its
 output is labelled as AI narrative. It is not a feature of any model in this track, and its accuracy is not
 claimed.

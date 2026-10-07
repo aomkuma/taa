@@ -40,6 +40,11 @@ the wrap-up of TICKETS.md, except Wave 0.
 | 5 — Playbooks | L601, L802, L803, L804, L805, L807, L306 | The trading approach: router, range, runner + adds, transitions, selection, profile uses |
 | 6 — Squad | L904, L905, L907, L908, L909 | Commander, budgets, lifecycle, squad backtest, Squad page; bots start as SHADOW |
 | 7 — Timing variants & models | L702, L704, L401, L402, L403, L404, L405, L406, L705, L706 | Need enough shadow outcomes from Waves 3–6 to evaluate fairly |
+
+**Reprioritized 2026-10-07 (docs/SETUP_REVIEW.md):** a one-year replay showed that the setups lose mainly on
+entry timing and stops inside the noise (55 % of stopped breakout trades reached their target later; a pullback
+entry with a wide stop moved −0.13 R to about 0 R). **L702 (with `PULLBACK_WIDE`) and L707 come first**, ahead of
+the waves above; the replay supplies enough history, so L702 no longer waits for Waves 3–6.
 | 8 — Tick microstructure in use | L201, L202, L501, L502, L503, L504 | Needs months of recorded ticks from Wave 2 and DEMO time |
 | 9 — Governance & wrap-up | L602, L603, L604 | Drift, Learning page, runbook once models are live |
 
@@ -57,7 +62,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L4 — Signal-quality model | 6 | 0 | TODO |
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
-| M3 | Phase L7 — Entry timing (right direction, wrong time) | 6 | 1 | IN PROGRESS |
+| M3 | Phase L7 — Entry timing (right direction, wrong time) | 8 | 1 | IN PROGRESS |
 | M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 1 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
@@ -240,6 +245,10 @@ the first ticket that needs it, on top of this harness (H1 → L802, H2 → L501
 - [ ] tests (gates never enable; size risk percent unchanged)
 
 ### Phase L4 — Signal-quality model
+
+Note 2026-10-07 (docs/SETUP_REVIEW.md §4): single context rules chosen on one half-year (+0.1 to +0.2 R) fell to
+about 0 R on the other half. The model needs the richer evidence features and purged walk-forward; simple
+filters are not a substitute.
 
 #### TAA-L401 — Dataset builder (L6)
 
@@ -426,6 +435,7 @@ the TP.
 
 - [ ] hook H4 shadow variant registry (defaults `PLAN`, `MANAGED`) and H2 for waiting entries; golden unchanged
 - [ ] shadow variants `PULLBACK`, `LTF_TRIGGER`, `WIDE_STOP` (point-in-time quantiles; same TP price; sizer-based lots) through hook H4
+- [ ] shadow variant `PULLBACK_WIDE` (2026-10-07): the pullback limit with the `WIDE_STOP` stop measured from the signal's entry; `PULLBACK` alone is reported but expected to be worse (SETUP_REVIEW §4, §6)
 - [ ] `entry_window_bars` per waiting mode (default 2, ceiling 6; `signal_expiry_bars` unchanged for `PLAN`); invalidation re-checked each trigger-TF bar (`ENTRY_SETUP_INVALID`)
 - [ ] batch resolution on M1 for tier-1 opportunities within the scanner budget
 - [ ] paired ΔR vs `PLAN` with bootstrap CI, fill rate, avoided losers vs missed winners, failure-mode mix before and after
@@ -478,6 +488,32 @@ the TP.
 - [ ] pending limits cancelled on kill switch and breaker events
 - [ ] tests (mode never changes risk; LIVE stays on `PLAN` until the further DEMO period and go-ahead)
 
+#### TAA-L707 — Research harness (2026-10-07)
+
+- **Status:** TODO
+- **Depends on:** — (prototypes in `research/2026-10-07-setup-review/`)
+
+The supported version of the setup review's scripts, so a hypothesis about a setup can be tested the same way
+every time (by the owner, a session or the research report of L708).
+
+- [ ] `app/learning/research.py` (pure): load REPLAY/LIVE shadow trades and the stored M1/M5 bars of their horizon; re-simulate exits (target in R, break-even, partial, trail, time stop), stop multipliers with the same risk percent, retest entries with a stop from the signal's entry, re-entry after a stop
+- [ ] baselines on the same signals: random direction and the other direction (information and cost drag)
+- [ ] context splits at the signal bar (hour, stretch from EMA, bar size, ATR percentile, compression, cost share, first signal of the day, HTF alignment)
+- [ ] every statistic as mean R with a bootstrap CI for all / first half / second half; rules chosen on one half are reported on the other (walk-forward), never on the same data
+- [ ] `python -m app.cli research hypotheses --strategy NAME [--from DB] [--json]` and `research replay-family` (the per-symbol replay runner with idle priority and a memory guard)
+- [ ] tests (synthetic paths with known outcomes; the market re-simulation matches the shadow resolver)
+
+#### TAA-L708 — Research report (the AI's research role)
+
+- **Status:** TODO
+- **Depends on:** L707
+
+- [ ] a scheduled job (weekly, after the calibration rebuild) runs the L707 hypothesis set on the new LIVE and REPLAY shadow trades per strategy and stores a versioned report
+- [ ] the report lists only findings that hold on both halves, with what would change (a proposal, never an applied change)
+- [ ] optional TH/EN narrative of the report through the AI notes path (TAA-1305), labelled AI opinion
+- [ ] PWA: the report on the Learning page; a proposal links to "Backtest this change" (TAA-1004)
+- [ ] tests
+
 ### Phase L8 — Regime playbooks (closing the human gaps)
 
 Design: PLAN_LEARNING §L20. Principle: profit cannot be predicted; every rule here must improve a lever of
@@ -516,6 +552,7 @@ per-signal budget.
 - [ ] qualified-range detector (ADX, efficiency ratio, touches, width vs ATR and cost, no compression); triggers reuse `wyckoff.spring_upthrust`, `levels.sr_zone`, `smc.liquidity_sweep` and reversal candles
 - [ ] `setup_range_fade` (`DEMO_UNPROVEN`): edge-zone entry after LTF rejection, stop outside noise (MAE q80), TP1 mid / TP2 opposite edge
 - [ ] exit on a closed HTF bar outside the range (`RANGE_BROKEN`), learned time stop
+- [ ] `setup_failed_break` (2026-10-07, §L20.2): a range-edge break, then a closed bar back inside within `failed_break_bars`; stop beyond the break's extreme plus the `WIDE_STOP` buffer; shadow first
 - [ ] `docs/STRATEGIES.md` entry
 - [ ] tests
 
