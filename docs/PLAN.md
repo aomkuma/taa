@@ -1045,8 +1045,14 @@ AI failures never trip trading breakers; they only produce HOLD.
     on the broker account (the first part of a split entry, R from its fill and the intent's stop; OPEN
     while it is open, DEMO/LIVE taken from the run that sent it), else its paper position; `bot_source`
     says which and the PWA shows it next to the R.
-  - Not yet: the realized equity curve of the account (`/account`) and open broker positions on the chart
-    still come from the paper book only.
+  - (TAA-1211) The bot's open broker positions reach the cloud in the heartbeat
+    (`account.bot_positions`, `BotPosition`: the stop in force, the floating P/L, `sl_initial` from the
+    intent for R, the strategy from the magic number; None in PAPER, whose book is replicated). The Positions
+    page lists them first in DEMO/LIVE, with the same step-up "Close" as paper positions (the engine's
+    POSITION_CLOSE already closes the bot's broker positions), and the chart draws their entry/SL/TP lines.
+    The heartbeat schema is strict, so the web must run the new schema before the engine sends the field.
+  - The `realized_equity` curve of `GET /account` still sums paper trades only; no PWA page reads it (the
+    dashboard's equity and balance come from the heartbeat, the broker account's in DEMO).
 - (TAA-908 decisions) Signals & decisions (`frontend/src/pages/decisions/`):
   - `GET /decisions?reason=CODE` keeps decisions whose `reason_codes` hold the code, bare or parameterized
     (`CODE:detail`), matched on the JSON text with `_` escaped (a LIKE wildcard); tested on SQLite and on

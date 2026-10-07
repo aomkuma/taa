@@ -1,7 +1,7 @@
 import samples from '@/test/fixtures/api-samples.json';
 
 import { type Trade, TradesPageSchema } from './schemas';
-import { CSV_COLUMNS, excursionR, heldMinutes, initialRisk, openR, tradesCsv } from './tradeMath';
+import { botR, CSV_COLUMNS, excursionR, heldMinutes, initialRisk, openR, tradesCsv } from './tradeMath';
 
 const closed = TradesPageSchema.parse(
   (samples as Record<string, unknown>)['engines/ENGINE/trades?limit=2'],
@@ -46,5 +46,30 @@ describe('tradesCsv', () => {
     expect(row).toContain('"A,""B"""');
     expect(row).toContain(`"'=HYPERLINK(""x"")"`);
     expect(tradesCsv([{ ...(closed[0] as Trade), net: -5 }])).toContain(',-5,');
+  });
+});
+
+describe('botR', () => {
+  const base = {
+    ticket: 1,
+    symbol: 'EURUSD',
+    volume: 0.1,
+    sl: null,
+    tp: null,
+    profit: 0,
+    swap: 0,
+    opened_at: '2026-10-07T08:00:00+00:00',
+    magic: 7310002,
+    strategy: null,
+    risk_to_stop: null,
+  };
+  it('measures R from the first stop on either side', () => {
+    expect(
+      botR({ ...base, side: 'BUY', price_open: 1.1, price_current: 1.105, sl_initial: 1.095 }),
+    ).toBeCloseTo(1);
+    expect(
+      botR({ ...base, side: 'SELL', price_open: 1.1, price_current: 1.105, sl_initial: 1.105 }),
+    ).toBeCloseTo(-1);
+    expect(botR({ ...base, side: 'BUY', price_open: 1.1, price_current: 1.2, sl_initial: null })).toBeNull();
   });
 });

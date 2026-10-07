@@ -2,8 +2,9 @@ import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { apiError, json } from '@/test/api';
-import { iso, owner, renderShell } from '@/test/engine';
+import { heartbeat, iso, owner, renderShell, status } from '@/test/engine';
 import { streamEvent } from '@/test/eventSource';
+import samples from '@/test/fixtures/api-samples.json';
 
 import type { ChartModel } from './model';
 
@@ -27,6 +28,12 @@ vi.mock('./chartAdapter', () => ({
 }));
 
 const T0 = Date.parse('2026-09-30T10:00:00Z');
+// a real account snapshot (tests/web/test_api_samples.py), to carry the bot's positions
+const ACCOUNT = (
+  (samples as Record<string, Record<string, unknown>>)['engines/ENGINE/status']?.heartbeat as {
+    account: Record<string, unknown>;
+  }
+).account;
 const bars = Array.from({ length: 4 }, (_, i) => [iso(T0 + i * 900_000), 1.1, 1.102, 1.098, 1.101, 10]);
 
 function candles(symbol = 'EURUSD') {
@@ -301,6 +308,40 @@ describe('charts page', () => {
     expect(titles().some((x) => x.startsWith('Donchian'))).toBe(false);
     await user.click(screen.getByRole('button', { name: 'Hide signal' }));
     expect(screen.queryByText('Signal XAUUSD SELL (H1)')).not.toBeInTheDocument();
+  });
+
+  it('draws the bot open broker positions like paper ones (TAA-1211)', async () => {
+    const bot = {
+      ticket: 77,
+      symbol: 'EURUSD',
+      side: 'BUY',
+      volume: 0.1,
+      price_open: 1.1005,
+      price_current: 1.101,
+      sl: 1.099,
+      tp: 1.104,
+      sl_initial: 1.099,
+      profit: 5,
+      swap: 0,
+      opened_at: iso(T0),
+      magic: 7310002,
+      strategy: null,
+      risk_to_stop: 15,
+    };
+    setup({
+      'GET /engines/e1/status': () =>
+        json(
+          status('e1', {
+            heartbeat: heartbeat({ mode: 'DEMO', account: { ...ACCOUNT, bot_positions: [bot] } }),
+          }),
+        ),
+    });
+    renderShell('/charts');
+    await waitFor(() => {
+      expect(lastModel().priceLines.map((p) => p.title)).toEqual(
+        expect.arrayContaining(['#77 BUY', 'SL #77']),
+      );
+    });
   });
 
   it('says when a symbol has no candles yet', async () => {

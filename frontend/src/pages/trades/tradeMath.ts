@@ -1,4 +1,6 @@
 /** Position arithmetic and CSV export for the positions and history pages (pure, tested). */
+import type { BotPosition } from '@/engine/schemas';
+
 import type { Trade } from './schemas';
 
 const direction = (side: string) => (side === 'SELL' ? -1 : 1);
@@ -14,6 +16,13 @@ export function initialRisk(entry: number, initialStop: number | null | undefine
 export function openR(trade: Trade, risk: number | null): number | null {
   if (risk === null) return null;
   return ((trade.price_current - trade.entry_price) * direction(trade.side)) / risk;
+}
+
+/** Where an open broker position stands in R at its current price, from the stop of its intent (TAA-1211). */
+export function botR(p: BotPosition): number | null {
+  const risk = initialRisk(p.price_open, p.sl_initial);
+  if (risk === null) return null;
+  return ((p.price_current - p.price_open) * direction(p.side)) / risk;
 }
 
 /** MAE/MFE (price units) in R. */

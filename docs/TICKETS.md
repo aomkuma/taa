@@ -51,7 +51,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 25 | 25 | DONE |
 | M1 | Phase 10 — Trade analytics | 7 | 7 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 10 | 9 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 11 | 10 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
 | M2 | Phase 14 — LIVE readiness | 4 | 3 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
@@ -1796,6 +1796,19 @@ book only, so in DEMO they showed none of the bot's real trades.
 - [x] chart markers: the bot's closed broker trades marked like paper positions (entry, exit)
 - [x] "signal vs bot vs me": the bot's trade is its broker position when the decision filled there (first part; OPEN while it is open; DEMO/LIVE from the run), else its paper position; `bot_source` shown next to the R
 - [x] tests, API samples, PLAN note
+
+#### TAA-1211 — The bot's open broker positions on the Positions page and the chart
+
+- **Status:** DONE
+- **Depends on:** 1210, 904, 911
+
+In DEMO the Positions page showed only order states and the chart no lines for the bot's open broker
+positions: the cloud knew only their number (the heartbeat's `open_positions`).
+
+- [x] heartbeat `account.bot_positions` (`BotPosition`: stop in force, floating P/L, `sl_initial`, strategy); None in PAPER
+- [x] Positions page: "The bot's open positions on the demo account" with R from the first stop and the step-up close
+- [x] chart: their entry/SL/TP lines like paper positions
+- [x] tests; PLAN note; HANDOFF
 
 #### TAA-1209 — Scale-in parts outside the noise
 

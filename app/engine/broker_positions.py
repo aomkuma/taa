@@ -74,7 +74,8 @@ class BrokerPositionManager:
             return []
         return [p for p in positions if self.magic_base <= p.magic < self.magic_base + MAGIC_RANGE]
 
-    def _initial_stops(self) -> dict[int, float]:
+    def initial_stops(self) -> dict[int, float]:
+        """Position ticket -> the stop of the intent that opened it (the trade's 1R)."""
         with self.orders.db.session() as sess:
             rows = sess.execute(
                 select(OrderIntentRow.position_ticket, OrderIntentRow.sl).where(
@@ -93,7 +94,7 @@ class BrokerPositionManager:
         spec = self.specs.get(symbol)
         if spec is None:
             return
-        initial = self._initial_stops()
+        initial = self.initial_stops()
         mine = self.bot_positions(symbol)
         to_break_even = self.orders.plan_parts_closed({p.ticket for p in mine}) if mine else set()
         for pos in mine:

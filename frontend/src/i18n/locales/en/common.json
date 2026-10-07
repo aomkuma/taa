@@ -339,6 +339,14 @@
       "none": "No open positions.",
       "note": "The engine's PAPER positions; R is measured from the initial stop loss."
     },
+    "bot": {
+      "title": {
+        "DEMO": "The bot's open positions on the demo account",
+        "LIVE": "The bot's open positions on the real-money account"
+      },
+      "none": "The bot has no open position on the broker account.",
+      "note": "From the engine's latest heartbeat: the stop in force, the floating P/L with swap, and R from the stop the trade was opened with."
+    },
     "pending": {
       "title": "Pending orders",
       "none": "No pending orders.",

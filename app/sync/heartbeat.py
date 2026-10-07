@@ -158,6 +158,30 @@ class ForeignPosition(BaseModel):
     link: ManualLink | None = None  # since TAA-1006
 
 
+class BotPosition(BaseModel):
+    """An open position of the bot on the broker account (DEMO/LIVE; TAA-1211), as MT5 reports it now: the
+    stop in force (moved by break-even or trailing) and the floating P/L. ``sl_initial`` is the stop of its
+    order intent (the trade's 1R); ``strategy`` comes from its magic number."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ticket: int
+    symbol: str = Field(max_length=32)
+    side: Literal["BUY", "SELL"]
+    volume: float = Field(ge=0, allow_inf_nan=False)
+    price_open: float = Field(allow_inf_nan=False)
+    price_current: float = Field(allow_inf_nan=False)
+    sl: float | None = Field(allow_inf_nan=False)
+    tp: float | None = Field(allow_inf_nan=False)
+    sl_initial: float | None = Field(allow_inf_nan=False)
+    profit: float = Field(allow_inf_nan=False)
+    swap: float = Field(allow_inf_nan=False)
+    opened_at: AwareDatetime
+    magic: int
+    strategy: str | None = Field(max_length=64)
+    risk_to_stop: float | None = Field(ge=0, allow_inf_nan=False)
+
+
 class BrokerAccount(BaseModel):
     """The MT5 account itself while the bot trades a simulated PAPER book: the two equities differ by design,
     and the PWA shows both, named (the ranking sizes with this one)."""
@@ -199,6 +223,9 @@ class AccountSnapshot(BaseModel):
     effective_leverage: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     max_effective_leverage: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     foreign_positions: list[ForeignPosition] | None = Field(default=None, max_length=MAX_FOREIGN_POSITIONS)
+    # the bot's own open broker positions (TAA-1211); None in PAPER (the paper book is replicated) and from
+    # older engines
+    bot_positions: list[BotPosition] | None = Field(default=None, max_length=MAX_FOREIGN_POSITIONS)
     broker_account: BrokerAccount | None = None  # PAPER only: the real MT5 account next to the paper book
     risk_limits: RiskLimits | None = None  # since TAA-710; None from older engines
 

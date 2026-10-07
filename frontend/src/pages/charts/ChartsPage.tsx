@@ -6,7 +6,7 @@ import { useSearchParams } from 'react-router';
 import { apiGet } from '@/api/client';
 import { SymbolCombobox } from '@/components/SymbolCombobox';
 import type { SymbolOption } from '@/components/symbolFilter';
-import { useEngine } from '@/engine/context';
+import { useEngine, useEngineStatus } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
 import { translateCode } from '@/i18n/codes';
 import { useLiveEvents } from '@/live/context';
@@ -182,10 +182,28 @@ export function ChartsPage() {
     [t, i18n],
   );
 
+  // the bot's open broker positions (DEMO/LIVE, TAA-1211) get the same entry/SL/TP lines as paper ones
+  const engineStatus = useEngineStatus();
+  const botPositions = engineStatus.data?.heartbeat?.account?.bot_positions;
+  const open = useMemo(
+    () => [
+      ...(positions.data?.items ?? []),
+      ...(botPositions ?? []).map((p) => ({
+        ticket: p.ticket,
+        symbol: p.symbol,
+        side: p.side,
+        entry_price: p.price_open,
+        sl: p.sl,
+        tp: p.tp,
+      })),
+    ],
+    [positions.data, botPositions],
+  );
+
   const model = useMemo(() => {
     if (!candles.data) return null;
     return buildChartModel(
-      { candles: candles.data, positions: positions.data?.items ?? [], signal: signalDoc },
+      { candles: candles.data, positions: open, signal: signalDoc },
       {
         indicators,
         zones,
@@ -198,7 +216,7 @@ export function ChartsPage() {
     );
   }, [
     candles.data,
-    positions.data,
+    open,
     signalDoc,
     indicators,
     zones,

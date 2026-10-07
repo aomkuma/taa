@@ -74,8 +74,9 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
   watch are linked from the deal history (**TAA-1007**; the BTCUSD −13.95 and EURUSD 1 lot +119 of 10-05
   appear after the next engine restart); the engine label is "mt5 demo" (`app.cli web engine rename`, and
   `scripts\start-demo.ps1` no longer names a mode); **TAA-1210**: analytics scope DEMO, broker trades on the
-  chart and in the manual "bot" column. Still open: the `/account` realized equity curve and open broker
-  positions on the chart read the paper book only.
+  chart and in the manual "bot" column; **TAA-1211**: the bot's open broker positions in the heartbeat, on the
+  Positions page (with the step-up close) and as chart lines. (The `/account` realized-equity curve still sums
+  paper trades, but no PWA page reads it.)
 
 ### Edge work, 2026-10-07 afternoon (this session; docs/SETUP_REVIEW.md §8, PLAN_LEARNING §L19.3, §L19.8)
 

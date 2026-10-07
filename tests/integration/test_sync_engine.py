@@ -126,6 +126,7 @@ def test_manual_positions_reach_the_dashboard(tmp_path: Path) -> None:
     assert manual["link"]["confidence"] == "UNMATCHED"  # no signal to follow here (TAA-1006)
     assert account["open_risk"] >= manual["risk_to_stop"] and account["effective_leverage"] > 0
     assert account["max_effective_leverage"] == h.engine.config.risk.max_effective_leverage
+    assert account["bot_positions"] is None  # PAPER: the paper book is replicated instead (TAA-1211)
     broker = account["broker_account"]  # PAPER: the real MT5 account next to the simulated book
     assert broker["currency"] == "USD" and broker["equity"] > 0 and broker["leverage"] > 0
     HeartbeatPayload.model_validate(h.engine.cloud_heartbeat())  # the wire schema accepts it

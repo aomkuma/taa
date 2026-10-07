@@ -90,7 +90,7 @@ from app.monitoring.health_check import write_heartbeat
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
-from app.risk.exposure_manager import MAGIC_RANGE, ExposureManager, PositionRisk
+from app.risk.exposure_manager import MAGIC_RANGE, Exposure, ExposureManager, PositionRisk
 from app.risk.kill_switch import KillMode, KillSwitch
 from app.risk.limits import ProfileLimits
 from app.risk.loss_tracker import LossStatus, LossTracker
@@ -1191,6 +1191,7 @@ class Engine:
             "effective_leverage": num(exposure.effective_leverage),
             "max_effective_leverage": risk.max_effective_leverage,
             "broker_account": self._broker_account() if backend.name == "paper" else None,
+            "bot_positions": None if backend.name == "paper" else self._bot_positions(exposure),
             "foreign_positions": [
                 foreign_position(
                     p,
@@ -1208,6 +1209,19 @@ class Engine:
             },
             "risk_limits": None if self.risk_limits is None else self.risk_limits.snapshot(),
         }
+
+    def _bot_positions(self, exposure: Exposure) -> list[dict[str, Any]]:
+        """The bot's open broker positions for the heartbeat (TAA-1211), as MT5 reports them now."""
+        base = self.settings.env.MAGIC_NUMBER_BASE
+        by_magic = {magic: name for name, magic in self.magic.items()}
+        initial = self.broker_positions.initial_stops() if hasattr(self, "broker_positions") else {}
+        mine = [p for p in exposure.positions if base <= p.position.magic < base + MAGIC_RANGE]
+        return [
+            bot_position(
+                p, strategy=by_magic.get(p.position.magic), sl_initial=initial.get(p.position.ticket)
+            )
+            for p in mine[:MAX_FOREIGN_POSITIONS]
+        ]
 
     def _broker_account(self) -> dict[str, Any] | None:
         """The real MT5 account's figures while the bot trades a PAPER book (None if unreadable)."""
@@ -1365,6 +1379,32 @@ class Engine:
             self.bus.emit(EventType.ENGINE_STOPPED, cycles=self.cycles, failed=failed)
         finally:
             self.bundle.client.shutdown()
+
+
+def bot_position(measured: PositionRisk, *, strategy: str | None, sl_initial: float | None) -> dict[str, Any]:
+    """One of the bot's own broker positions for the heartbeat (``BotPosition``)."""
+    p = measured.position
+
+    def num(value: float) -> float | None:
+        return value if math.isfinite(value) else None
+
+    return {
+        "ticket": p.ticket,
+        "symbol": p.symbol,
+        "side": p.side.value,
+        "volume": p.volume,
+        "price_open": p.price_open,
+        "price_current": p.price_current,
+        "sl": p.sl if p.sl > 0 else None,
+        "tp": p.tp if p.tp > 0 else None,
+        "sl_initial": sl_initial,
+        "profit": num(p.profit) or 0.0,
+        "swap": num(p.swap) or 0.0,
+        "opened_at": p.time_utc,
+        "magic": p.magic,
+        "strategy": strategy,
+        "risk_to_stop": None if measured.risk_to_stop is None else round(measured.risk_to_stop, 2),
+    }
 
 
 def foreign_position(

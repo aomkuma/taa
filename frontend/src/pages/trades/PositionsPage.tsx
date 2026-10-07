@@ -16,6 +16,7 @@ import { Link } from 'react-router';
 
 import { OrderIntentsPageSchema, PaperIntentsPageSchema, TradesPageSchema, tradeKeys } from './schemas';
 import { useLiveTrades, useTradeDrawer } from './hooks';
+import { BotPositionsCard } from './BotPositions';
 import { ClosePositionDialog } from './ClosePositionDialog';
 import { TradeDrawer } from './TradeDrawer';
 import { excursionR, initialRisk, openR } from './tradeMath';
@@ -24,7 +25,10 @@ const PAGE = 200;
 const TH = 'py-1 pr-3 font-normal whitespace-nowrap';
 const TD = 'py-1.5 pr-3 whitespace-nowrap tabular-nums';
 
-/** PLAN §A15 positions (TAA-907): open positions with R, P/L, stop state and excursions; pending orders. */
+/**
+ * PLAN §A15 positions (TAA-907): open positions with R, P/L, stop state and excursions; pending orders. In
+ * DEMO/LIVE the bot's open broker positions come first (TAA-1211).
+ */
 export function PositionsPage() {
   const { t, i18n } = useTranslation();
   const format = useFormat();
@@ -87,6 +91,12 @@ export function PositionsPage() {
     <section>
       <h1 className="mb-4 text-2xl font-semibold">{t('nav.positions')}</h1>
       <div className="grid gap-4">
+        <BotPositionsCard
+          canClose={canClose}
+          onClose={(ticket, label) => {
+            setClosing({ ticket, label });
+          }}
+        />
         <Card
           title={t('trades.open.title')}
           action={

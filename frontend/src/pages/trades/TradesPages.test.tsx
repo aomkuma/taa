@@ -411,3 +411,48 @@ describe('history page', () => {
     });
   });
 });
+
+describe('the bot positions on the broker account (TAA-1211)', () => {
+  const BOT = {
+    ticket: 2081407430,
+    symbol: 'GBPUSD',
+    side: 'SELL',
+    volume: 0.06,
+    price_open: 1.324,
+    price_current: 1.3235,
+    sl: 1.3238, // moved past the entry
+    tp: 1.3218,
+    sl_initial: 1.325, // 1R = 0.001
+    profit: 10,
+    swap: -0.12,
+    opened_at: '2026-10-07T08:00:06+00:00',
+    magic: 7310007,
+    strategy: 'setup_pattern_breakout',
+    risk_to_stop: 0,
+  };
+
+  it('lists them with the stop in force, P/L with swap and R from the first stop', async () => {
+    setup({
+      'GET /engines/e1/status': () =>
+        json(
+          status('e1', {
+            heartbeat: heartbeat({ mode: 'DEMO', account: { ...ACCOUNT, bot_positions: [BOT] } }),
+          }),
+        ),
+    });
+    renderShell('/positions');
+    const table = await screen.findByRole('table', { name: "The bot's open positions on the demo account" });
+    const [row] = within(table).getAllByRole('row').slice(1);
+    expect(row).toHaveTextContent('#2081407430 GBPUSD SELL 0.06');
+    expect(row).toHaveTextContent('1.3238 / 1.3218'); // the stop in force
+    expect(row).toHaveTextContent('+9.88'); // profit + swap
+    expect(row).toHaveTextContent('+0.5'); // (1.324 − 1.3235) / 0.001
+  });
+
+  it('shows no such card in PAPER', async () => {
+    setup();
+    renderShell('/positions');
+    await card('Open positions');
+    expect(screen.queryByRole('region', { name: /open positions on the/ })).not.toBeInTheDocument();
+  });
+});

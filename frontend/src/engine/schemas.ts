@@ -109,6 +109,27 @@ export const RiskLimitsSchema = z.object({
 });
 export type RiskLimits = z.infer<typeof RiskLimitsSchema>;
 
+/** One of the bot's own open broker positions (`BotPosition` in app/sync/heartbeat.py; DEMO/LIVE, TAA-1211). */
+export const BotPositionSchema = z.object({
+  ticket: z.number().int(),
+  symbol: z.string(),
+  side: z.enum(['BUY', 'SELL']),
+  volume: z.number().nonnegative(),
+  price_open: z.number(),
+  price_current: z.number(),
+  sl: z.number().nullable(),
+  tp: z.number().nullable(),
+  /** The stop of the intent that opened it: the trade's 1R. */
+  sl_initial: z.number().nullable(),
+  profit: z.number(),
+  swap: z.number(),
+  opened_at: IsoDateTime,
+  magic: z.number().int(),
+  strategy: z.string().nullable(),
+  risk_to_stop: z.number().nonnegative().nullable(),
+});
+export type BotPosition = z.infer<typeof BotPositionSchema>;
+
 export const AccountSnapshotSchema = z.looseObject({
   as_of: IsoDateTime,
   backend: z.string(),
@@ -130,6 +151,8 @@ export const AccountSnapshotSchema = z.looseObject({
   effective_leverage: z.number().nonnegative().nullable().optional(),
   max_effective_leverage: z.number().positive().nullable().optional(),
   foreign_positions: z.array(ForeignPositionSchema).nullable().optional(),
+  /** The bot's open broker positions (TAA-1211); null in PAPER, absent from older engines. */
+  bot_positions: z.array(BotPositionSchema).nullable().optional(),
   /** PAPER only: the real MT5 account next to the simulated book (the two equities differ by design). */
   broker_account: z
     .object({

@@ -19,6 +19,7 @@ from app.risk.kill_switch import KillMode
 from app.storage.database import Database
 from app.storage.models import BrokerTradeRow, OrderIntentRow
 from app.strategy.registry import StrategySet
+from app.sync.heartbeat import HeartbeatPayload
 from tests.integration.test_engine_paper import START, BuyEveryBar
 
 MAGIC = 7_310_000
@@ -111,6 +112,25 @@ def test_demo_sends_a_protected_broker_order(tmp_path: Path) -> None:
     assert positions[0].magic == MAGIC and positions[0].sl > 0
     assert d.intents() == ["PROTECTED"]
     assert d.engine.bundle.fake is not None and d.engine.bundle.fake.calls["order_send"] >= 1
+    d.engine.shutdown()
+
+
+def test_the_heartbeat_carries_the_bots_open_positions(tmp_path: Path) -> None:
+    """TAA-1211: the PWA shows the bot's open broker positions with the stop in force and the 1R stop."""
+    d = demo(tmp_path)
+    start_buyer(d)
+    run_until(d, EventType.POSITION_OPENED)
+    d.engine._health()
+    beat = d.engine.cloud_heartbeat()
+    [mine] = beat["account"]["bot_positions"]
+    [position] = d.engine.gateway.positions()
+    with d.db.session() as sess:
+        intent = sess.scalars(select(OrderIntentRow)).one()
+    assert (mine["ticket"], mine["side"], mine["magic"]) == (position.ticket, "BUY", MAGIC)
+    assert mine["strategy"] == "buy_every_bar" and mine["sl"] == position.sl
+    assert mine["sl_initial"] == intent.sl and mine["risk_to_stop"] > 0
+    assert beat["account"]["foreign_positions"] == []  # the bot's own position is no manual trade
+    HeartbeatPayload.model_validate(beat)  # the wire schema accepts it
     d.engine.shutdown()
 
 
