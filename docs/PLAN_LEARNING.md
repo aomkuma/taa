@@ -614,8 +614,13 @@ wider stop, and **TAA-L702 is the first learning-track ticket to build** (the on
   fills when the entry-side price reaches it (the ask for a BUY limit), always at the limit; on the fill bar only
   a stop counts. The time stop stays the signal's (same horizon for every variant). Lots keep the plan's money at
   risk (floored to the step; below the minimum: R only).
+- Statistics (`app/learning/entry_mode_stats.py`) and the API: `GET /engines/{id}/learning/entry-modes?source=
+  LIVE|REPLAY&days=&strategy=&symbol=` beside the existing `/learning/timing` diagnostics (instead of a separate
+  `/timing` route): per variant and per strategy the paired ΔR against `PLAN` (missed = 0 R) with a bootstrap
+  CI, the fill rate, the variant's own R, avoided losers vs missed winners, and `eligible` (CI above 0 with
+  n ≥ 200, shown only; L706 decides).
 - Still open in L702: `LTF_TRIGGER`, the invalidation re-check while waiting, the tier-1 M1 batch budget, the
-  paired statistics with the API, and the engine side of H2 (L706).
+  failure-mode mix before and after, and the engine side of H2 (L706).
 
 ### L19.4 Timing features and detectors
 

@@ -142,3 +142,53 @@ class TestAwaitFill:
             slippage=0,
         )
         assert again.filled and state.entry_at == T0 + timedelta(minutes=1)
+
+
+class TestCompare:
+    @staticmethod
+    def outcomes(n: int, plan_r: float, variants: dict[str, tuple[str, float | None]]):  # type: ignore[no-untyped-def]
+        from app.learning.entry_mode_stats import VariantOutcome
+
+        out = []
+        for i in range(n):
+            out.append(VariantOutcome(f"o{plan_r}{i}", "PLAN", "CLOSED", "s", "EURUSD", plan_r))
+            out.append(VariantOutcome(f"o{plan_r}{i}", "MANAGED", "CLOSED", "s", "EURUSD", 9.0))
+            for name, (status, r) in variants.items():
+                out.append(VariantOutcome(f"o{plan_r}{i}", name, status, "s", "EURUSD", r))
+        return out
+
+    def test_paired_delta_counts_a_missed_entry_as_zero(self) -> None:
+        from app.learning.entry_mode_stats import compare
+
+        rows = self.outcomes(30, -1.0, {"PULLBACK": ("MISSED", None), "WIDE_STOP": ("CLOSED", -0.5)})
+        rows += self.outcomes(10, 2.0, {"PULLBACK": ("CLOSED", 3.0), "WIDE_STOP": ("CLOSED", 1.0)})
+        report = compare(rows, resamples=200)
+        pull, wide = report.variants
+        assert (pull.variant, pull.opportunities, pull.filled, pull.missed) == ("PULLBACK", 40, 10, 30)
+        assert pull.fill_rate == pytest.approx(0.25)
+        assert pull.paired.mean == pytest.approx((30 * 1.0 + 10 * 1.0) / 40)
+        assert pull.own.mean == pytest.approx(3.0) and pull.plan.mean == pytest.approx((-30 + 20) / 40)
+        assert (pull.avoided_losers, pull.missed_winners) == (30, 0)
+        assert wide.paired.mean == pytest.approx((30 * 0.5 - 10 * 1.0) / 40)
+        assert (wide.avoided_losers, wide.missed_winners) == (0, 0)
+        assert not pull.eligible  # n < 200
+        assert set(report.by_strategy) == {"s"}
+
+    def test_waiting_rows_and_open_plans_are_left_out(self) -> None:
+        from app.learning.entry_mode_stats import VariantOutcome, compare
+
+        rows = [
+            VariantOutcome("a", "PLAN", "CLOSED", "s", "X", 1.0),
+            VariantOutcome("a", "PULLBACK", "PENDING", "s", "X", None),
+            VariantOutcome("b", "PLAN", "OPEN", "s", "X", None),
+            VariantOutcome("b", "PULLBACK", "CLOSED", "s", "X", 1.0),
+        ]
+        report = compare(rows)
+        assert report.variants == [] and report.waiting == 1
+
+    def test_eligible_needs_n_and_a_positive_interval(self) -> None:
+        from app.learning.entry_mode_stats import compare
+
+        rows = self.outcomes(210, -1.0, {"WIDE_STOP": ("CLOSED", -0.4)})
+        (wide,) = compare(rows, resamples=200).variants
+        assert wide.eligible and wide.paired.low is not None and wide.paired.low > 0

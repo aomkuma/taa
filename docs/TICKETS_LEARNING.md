@@ -440,7 +440,7 @@ the TP.
 - [ ] batch resolution on M1 for tier-1 opportunities within the scanner budget
 - [ ] paired ΔR vs `PLAN` with bootstrap CI, fill rate, avoided losers vs missed winners, failure-mode mix before and after
 - [x] replay support (REPLAY reported separately)
-- [ ] API `GET /engines/{id}/timing` (diagnostics + variant stats)
+- [x] API `GET /engines/{id}/timing` (diagnostics + variant stats)
 - [ ] tests (missed entry = 0 R; risk percent unchanged in `WIDE_STOP`; no variant moves the TP)
 
 #### TAA-L703 — Timing detectors (L19.4)

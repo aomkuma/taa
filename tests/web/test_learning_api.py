@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.core.clock import ManualClock
@@ -120,3 +121,38 @@ def test_manual_timing_uses_the_bars_and_the_stop(
     assert doc["scope"] == "MANUAL" and doc["trades"] >= 1 and doc["hypothetical"] is False
     (overall,) = doc["overall"]
     assert overall["losers"] >= 1
+
+
+def test_entry_modes_pairs_variants_with_plan(
+    rig: tuple[TestClient, str, str],  # noqa: F811
+    db: Database,
+    clock: ManualClock,
+) -> None:
+    from tests.unit.test_learning_research import _row
+
+    client, mine, theirs = rig
+    now = clock.now_utc() - timedelta(days=1)
+    with db.session() as sess:
+        for oid, plan_r, pull in (("e1", -1.0, None), ("e2", 2.0, 2.5)):
+            for variant, status, r in (
+                ("PLAN", "CLOSED", plan_r),
+                ("MANAGED", "CLOSED", 0.0),
+                ("PULLBACK", "MISSED" if pull is None else "CLOSED", pull),
+            ):
+                row = _row(oid, "CLOSED")
+                row.engine_id, row.shadow_id, row.variant, row.status = (
+                    mine,
+                    f"{oid}:{variant}",
+                    variant,
+                    status,
+                )
+                row.source, row.signal_at, row.r_net = "LIVE", now, r
+                sess.add(row)
+    doc = client.get(f"/api/v1/engines/{mine}/learning/entry-modes?days=7").json()
+    assert doc["source"] == "LIVE" and doc["hypothetical"] is True and doc["eligible_n"] == 200
+    (pull,) = doc["variants"]
+    assert (pull["variant"], pull["opportunities"], pull["filled"], pull["missed"]) == ("PULLBACK", 2, 1, 1)
+    assert pull["paired"]["mean"] == pytest.approx((1.0 + 0.5) / 2)
+    assert client.get(f"/api/v1/engines/{mine}/learning/entry-modes?source=REPLAY").json()["variants"] == []
+    assert client.get(f"/api/v1/engines/{mine}/learning/entry-modes?source=X").status_code == 422
+    assert client.get(f"/api/v1/engines/{theirs}/learning/entry-modes").status_code == 404

@@ -38,6 +38,7 @@ from app.analytics.trade_builder import (
 from app.core.clock import Clock, ensure_utc
 from app.core.enums import ExitReason, Side, Timeframe
 from app.learning import behavior as lb
+from app.learning import entry_mode_stats as lm
 from app.learning import expectancy as le
 from app.learning import timing as lt
 from app.storage.database import Database
@@ -47,6 +48,7 @@ from app.storage.models import (
     ManualTradeLinkRow,
     ManualTradeOverrideRow,
     OpportunityRow,
+    ShadowTradeRow,
     UserAdvisoryPrefsRow,
 )
 from app.web.analytics import DEFAULT_DAYS, MAX_DAYS, Analytics
@@ -298,6 +300,45 @@ class LearningReports:
             if change is None
             else {**{k: _num(v) for k, v in asdict(change).items()}, "main": change.main},
             "groups": [_decomposition(d) for d in le.by_group(current, key=lambda t: (t.strategy, t.symbol))],
+        }
+
+    # entry modes -----------------------------------------------------------------------------------------
+
+    def entry_modes(
+        self,
+        engine_id: str,
+        *,
+        source: str = "LIVE",
+        days: int = DEFAULT_DAYS,
+        strategy: str | None = None,
+        symbol: str | None = None,
+    ) -> dict[str, Any]:
+        """Entry-mode variants against PLAN on the same opportunities (TAA-L702); LIVE and REPLAY apart."""
+        if source not in ("LIVE", "REPLAY"):
+            raise QueryError("source: LIVE or REPLAY")
+        if not 1 <= days <= MAX_DAYS:
+            raise QueryError(f"days: 1-{MAX_DAYS}")
+        since = self.clock.now_utc() - timedelta(days=days)
+        m = ShadowTradeRow
+        query = select(m.opportunity_id, m.variant, m.status, m.strategy, m.symbol, m.r_net).where(
+            m.engine_id == engine_id,
+            m.source == source,
+            m.signal_at >= since,
+            m.variant != "MANAGED",
+        )
+        if strategy:
+            query = query.where(m.strategy == strategy)
+        if symbol:
+            query = query.where(m.symbol == symbol)
+        with self.db.session() as sess:
+            outcomes = [lm.VariantOutcome(*row) for row in sess.execute(query).all()]
+        report = lm.compare(outcomes)
+        return {
+            "source": source,
+            "days": days,
+            "hypothetical": True,
+            "eligible_n": lm.ELIGIBLE_N,
+            **report.to_dict(),
         }
 
     # behavior --------------------------------------------------------------------------------------------

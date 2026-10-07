@@ -1,10 +1,12 @@
-"""Learning reports of the owner's engine (PLAN_LEARNING §L19.2, §L20.0, §L20.7; TAA-L701, L801, L808).
+"""Learning reports of the owner's engine (PLAN_LEARNING §L19, §L20.0, §L20.7; TAA-L701, L702, L801, L808).
 
 - ``GET /engines/{id}/learning/timing?scope=&days=&run=&variant=&strategy=&symbol=``: why losing trades lost
   (EARLY / LATE / STALL / TF_MISMATCH / WRONG …) next to the random-walk baseline;
 - ``GET /engines/{id}/learning/expectancy`` with the same query: E[R] = p·W − (1 − p)·L − c, per strategy ×
   symbol, and which lever moved against the previous period;
-- ``GET /engines/{id}/learning/behavior?days=``: patterns in the owner's closed manual trades.
+- ``GET /engines/{id}/learning/behavior?days=``: patterns in the owner's closed manual trades;
+- ``GET /engines/{id}/learning/entry-modes?source=LIVE|REPLAY&days=&strategy=&symbol=``: entry-mode shadow
+  variants against PLAN on the same opportunities (paired ΔR, fill rate; TAA-L702).
 
 Read-only and hypothetical, like the analytics (TAA-1005); nothing here changes a setting.
 """
@@ -91,4 +93,23 @@ async def expectancy(
 async def behavior(engine: OwnedEngine, ctx: Context, days: Days = DEFAULT_DAYS) -> dict[str, Any]:
     return await _run(
         LearningReports(ctx.db, ctx.clock).behavior, engine.engine_id, engine.owner_user_id, days=days
+    )
+
+
+@router.get("/entry-modes")
+async def entry_modes(
+    engine: OwnedEngine,
+    ctx: Context,
+    source: Annotated[str, Query(pattern="^(LIVE|REPLAY)$")] = "LIVE",
+    days: Days = DEFAULT_DAYS,
+    strategy: Name = None,
+    symbol: Name = None,
+) -> dict[str, Any]:
+    return await _run(
+        LearningReports(ctx.db, ctx.clock).entry_modes,
+        engine.engine_id,
+        source=source,
+        days=days,
+        strategy=strategy,
+        symbol=symbol,
     )
