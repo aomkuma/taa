@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -28,6 +28,7 @@ from sqlalchemy import exists, select, update
 
 from app.advisory.scoring import swap_per_night
 from app.advisory.shadow import (
+    BASE_VARIANTS,
     Flag,
     Management,
     ShadowExit,
@@ -51,6 +52,7 @@ from app.core.clock import Clock, ensure_utc
 from app.core.enums import ExitReason, Side, Timeframe
 from app.core.errors import TaaError
 from app.execution.fill_model import Bar
+from app.learning.entry_modes import await_fill, configured, geometry
 from app.market_data.candle_service import normalize_rates
 from app.market_data.data_models import SymbolSpec
 from app.storage.database import Database
@@ -199,6 +201,14 @@ def apply_state(row: ShadowTradeRow, state: ShadowState, now: datetime) -> None:
     row.updated_at = now
 
 
+def mark_missed(row: ShadowTradeRow, state: ShadowState, now: datetime) -> None:
+    """A PENDING entry-mode limit that was not filled within its window: no trade (TAA-L702)."""
+    row.status = ShadowStatus.MISSED.value
+    row.cursor = state.cursor
+    row.updated_at = now
+    row.note = "limit not filled within the entry window"
+
+
 def apply_close(row: ShadowTradeRow, exit_: ShadowExit, result: ShadowResult) -> None:
     row.status = ShadowStatus.CLOSED.value
     row.exit_at = exit_.at
@@ -339,7 +349,35 @@ class ShadowTracker:
         )
         now = self.clock.now_utc()
         quote = EntryQuote(opp.bid, opp.ask, spread, self.cfg.slippage_points)
-        return [new_row(facts, variant, state, quote, flags, now) for variant in Variant]
+        rows = [new_row(facts, variant, state, quote, flags, now) for variant in BASE_VARIANTS]
+        for variant in configured(self.cfg.entry_modes):
+            geo = geometry(
+                variant,
+                side=side,
+                fill=entry,
+                plan_sl=opp.stop_loss,
+                tp=opp.take_profit,
+                lot=opp.lot,
+                entry_at=entry_at,
+                bar_seconds=Timeframe(opp.timeframe).seconds,
+                cfg=self.cfg.entry_modes,
+                volume_step=spec.volume_step,
+                volume_min=spec.volume_min,
+            )
+            variant_state = new_state(
+                side=side,
+                entry=geo.entry,
+                entry_at=entry_at,
+                sl=geo.sl,
+                tp=geo.tp,
+                time_stop=timedelta(hours=self.cfg.time_stop_hours),
+            )
+            row = new_row(replace(facts, lot=geo.lot), variant, variant_state, quote, flags, now)
+            if geo.window_end is not None and row.status == ShadowStatus.OPEN.value:
+                row.status = ShadowStatus.PENDING.value
+                row.entry_window_end = geo.window_end
+            rows.append(row)
+        return rows
 
     # --- flags ----------------------------------------------------------------------------------------------
 
@@ -375,7 +413,7 @@ class ShadowTracker:
                     .where(
                         ShadowTradeRow.server == self.server,
                         ShadowTradeRow.source == LIVE,
-                        ShadowTradeRow.status == ShadowStatus.OPEN.value,
+                        ShadowTradeRow.status.in_((ShadowStatus.OPEN.value, ShadowStatus.PENDING.value)),
                     )
                     .order_by(ShadowTradeRow.cursor, ShadowTradeRow.shadow_id)
                 ).scalars()
@@ -404,27 +442,47 @@ class ShadowTracker:
         bars = self._bars(spec, start, horizon)
         ticks = self._tick_source(symbol) if self.cfg.tick_tiebreak else None
         slip = self.cfg.slippage_points * spec.point
-        updates: list[tuple[str, ShadowState, ShadowExit | None, ShadowResult | None]] = []
+        updates: list[tuple[str, str, ShadowState, ShadowExit | None, ShadowResult | None]] = []
         for row in group:
             state = state_of(row)
-            management = None
-            if row.variant == Variant.MANAGED.value:
-                management = Management(
-                    self.config.position_management,
-                    row.atr,
-                    spec.point,
-                    Timeframe(row.timeframe).seconds,
-                )
-            exit_ = advance(state, bars, slippage=slip, ticks=ticks, management=management)
+            status = row.status
+            exit_ = None
+            if status == ShadowStatus.PENDING.value:
+                window_end = ensure_utc(row.entry_window_end) if row.entry_window_end else state.entry_at
+                waiting = await_fill(state, bars, window_end=window_end, slippage=slip)
+                if waiting.missed:
+                    status = ShadowStatus.MISSED.value
+                elif waiting.filled:
+                    status = ShadowStatus.OPEN.value
+                    exit_ = waiting.exit
+            if status == ShadowStatus.OPEN.value and exit_ is None:
+                management = None
+                if row.variant == Variant.MANAGED.value:
+                    management = Management(
+                        self.config.position_management,
+                        row.atr,
+                        spec.point,
+                        Timeframe(row.timeframe).seconds,
+                    )
+                exit_ = advance(state, bars, slippage=slip, ticks=ticks, management=management)
             result = None if exit_ is None else self._settle(spec, row.lot, state, exit_)
-            updates.append((row.shadow_id, state, exit_, result))
+            updates.append((row.shadow_id, status, state, exit_, result))
         closed = []
         now = self.clock.now_utc()
         with self.db.session() as sess:
-            for sid, state, exit_, result in updates:
+            for sid, status, state, exit_, result in updates:
                 stored = sess.get(ShadowTradeRow, (LOCAL_ENGINE, sid))
-                if stored is None or stored.status != ShadowStatus.OPEN.value:
+                if stored is None or stored.status not in (
+                    ShadowStatus.OPEN.value,
+                    ShadowStatus.PENDING.value,
+                ):
                     continue
+                if status == ShadowStatus.MISSED.value:
+                    mark_missed(stored, state, now)
+                    continue
+                if stored.status == ShadowStatus.PENDING.value and status == ShadowStatus.OPEN.value:
+                    stored.status = status
+                    stored.entry_at = state.entry_at
                 apply_state(stored, state, now)
                 if exit_ is not None and result is not None:
                     apply_close(stored, exit_, result)

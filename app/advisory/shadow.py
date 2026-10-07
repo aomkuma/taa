@@ -47,12 +47,21 @@ from app.execution.management import PositionView, manage
 class Variant(StrEnum):
     PLAN = "PLAN"
     MANAGED = "MANAGED"
+    # entry modes (PLAN_LEARNING §L19.3; TAA-L702): only those ``advisory.shadow.entry_modes`` lists
+    PULLBACK = "PULLBACK"
+    WIDE_STOP = "WIDE_STOP"
+    PULLBACK_WIDE = "PULLBACK_WIDE"
+
+
+BASE_VARIANTS = (Variant.PLAN, Variant.MANAGED)  # hook H4: every opportunity gets these; the rest by config
 
 
 class ShadowStatus(StrEnum):
     OPEN = "OPEN"
     CLOSED = "CLOSED"
     VOID = "VOID"  # no valid geometry at the fill (the stop was already reached): excluded from statistics
+    PENDING = "PENDING"  # an entry-mode limit waiting for its fill (TAA-L702)
+    MISSED = "MISSED"  # the limit was not filled within its window: no trade (0 R in paired comparisons)
 
 
 class Flag(StrEnum):

@@ -430,16 +430,16 @@ the TP.
 
 #### TAA-L702 — Entry-mode shadow variants (L19.3)
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** L701
 
 - [ ] hook H4 shadow variant registry (defaults `PLAN`, `MANAGED`) and H2 for waiting entries; golden unchanged
 - [ ] shadow variants `PULLBACK`, `LTF_TRIGGER`, `WIDE_STOP` (point-in-time quantiles; same TP price; sizer-based lots) through hook H4
-- [ ] shadow variant `PULLBACK_WIDE` (2026-10-07): the pullback limit with the `WIDE_STOP` stop measured from the signal's entry; `PULLBACK` alone is reported but expected to be worse (SETUP_REVIEW §4, §6)
+- [x] shadow variant `PULLBACK_WIDE` (2026-10-07): the pullback limit with the `WIDE_STOP` stop measured from the signal's entry; `PULLBACK` alone is reported but expected to be worse (SETUP_REVIEW §4, §6)
 - [ ] `entry_window_bars` per waiting mode (default 2, ceiling 6; `signal_expiry_bars` unchanged for `PLAN`); invalidation re-checked each trigger-TF bar (`ENTRY_SETUP_INVALID`)
 - [ ] batch resolution on M1 for tier-1 opportunities within the scanner budget
 - [ ] paired ΔR vs `PLAN` with bootstrap CI, fill rate, avoided losers vs missed winners, failure-mode mix before and after
-- [ ] replay support (REPLAY reported separately)
+- [x] replay support (REPLAY reported separately)
 - [ ] API `GET /engines/{id}/timing` (diagnostics + variant stats)
 - [ ] tests (missed entry = 0 R; risk percent unchanged in `WIDE_STOP`; no variant moves the TP)
 

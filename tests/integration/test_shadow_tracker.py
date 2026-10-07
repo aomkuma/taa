@@ -276,3 +276,66 @@ class TestIntegration:
         h.engine.calibration.current = LoadedCalibration("v-test", WED, WinProbability(BucketModel()), 0, 0)
         assert h.engine.scanner.calibration_version() == "v-test"
         h.engine.shutdown()
+
+
+def with_modes(cfg: AppConfig = CONFIG, **modes: Any) -> AppConfig:
+    data = cfg.model_dump(mode="json")
+    data["advisory"]["shadow"]["entry_modes"] = {
+        "variants": ["PULLBACK", "WIDE_STOP", "PULLBACK_WIDE"]
+    } | modes
+    return AppConfig.model_validate(data)
+
+
+class TestEntryModes:
+    """TAA-L702: entry-mode variants beside PLAN and MANAGED (off by default)."""
+
+    def test_variants_open_beside_plan_and_resolve(self, db: Database) -> None:
+        tr, clock, _, gw = tracker(db, with_modes())
+        opportunity(db, gw)
+        report = tr.tick()
+        assert report.opened == ("o1:PLAN", "o1:MANAGED", "o1:PULLBACK", "o1:WIDE_STOP", "o1:PULLBACK_WIDE")
+        rows = {r.variant: r for r in shadows(db)}
+        plan, wide, pull, pw = rows["PLAN"], rows["WIDE_STOP"], rows["PULLBACK"], rows["PULLBACK_WIDE"]
+        risk = plan.entry_price - plan.initial_sl
+        assert wide.status == "OPEN" and wide.entry_price == plan.entry_price and wide.tp == plan.tp
+        assert wide.initial_sl == pytest.approx(plan.entry_price - 2 * risk) and wide.lot == pytest.approx(
+            0.05
+        )
+        for row in (pull, pw):
+            assert row.status == "PENDING" and row.tp == plan.tp
+            assert row.entry_price == pytest.approx(plan.entry_price - 0.5 * risk)
+            assert row.entry_window_end == plan.entry_at + timedelta(minutes=60)
+        assert pull.initial_sl == plan.initial_sl
+        assert pw.initial_sl == pytest.approx(plan.entry_price - 2 * risk)
+        clock.advance(72 * 3600 + 120)
+        tr.tick()
+        for row in shadows(db):
+            assert row.status in ("CLOSED", "MISSED"), row.shadow_id
+            if row.status == "MISSED":
+                assert row.r_net is None and row.exit_at is None and "not filled" in row.note
+            elif row.variant.startswith("PULLBACK"):
+                assert row.entry_at >= plan.entry_at.replace(second=0, microsecond=0)
+                assert row.entry_at < plan.entry_at + timedelta(minutes=60)
+        assert tr.tick(force=True).closed == ()
+
+    def test_a_limit_out_of_reach_is_missed_after_its_window(self, db: Database) -> None:
+        tr, clock, _, gw = tracker(
+            db,
+            with_modes(
+                variants=["PULLBACK_WIDE"],
+                pullback_depth_r=0.99,
+                pullback_wide_stop_r=3.0,
+                entry_window_bars=1,
+            ),
+        )
+        opportunity(db, gw, stop_loss=gw.tick("EURUSD").ask - 0.0400)  # type: ignore[union-attr]
+        tr.tick()
+        clock.advance(20 * 60)
+        tr.tick(force=True)
+        row = next(r for r in shadows(db) if r.variant == "PULLBACK_WIDE")
+        assert row.status == "MISSED" and row.cursor >= row.entry_window_end  # type: ignore[operator]
+
+    def test_off_by_default(self, db: Database) -> None:
+        tr, _, _, gw = tracker(db)
+        opportunity(db, gw)
+        assert tr.tick().opened == ("o1:PLAN", "o1:MANAGED")

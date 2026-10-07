@@ -599,6 +599,24 @@ wider stop, and **TAA-L702 is the first learning-track ticket to build** (the on
 - Statistics: the paired ΔR per opportunity against `PLAN` (a missed entry = 0 R) with a bootstrap 90% CI, the
   fill rate, avoided losers vs missed winners, and the failure-mode mix before and after.
 
+**TAA-L702 decisions (first part, 2026-10-07).**
+
+- Hook H4: `BASE_VARIANTS` (`PLAN`, `MANAGED`) in `app/advisory/shadow.py`; the entry modes are listed in
+  `advisory.shadow.entry_modes.variants` (default empty = today, golden unchanged) and built by
+  `app/learning/entry_modes.py` for the live tracker and the replay alike. Migration 0043 widens
+  `shadow_trades.variant` to 16 characters and adds `entry_window_end`.
+- **Fixed multiples instead of learned quantiles (for now):** a winner's MAE in `PLAN` is censored at its own stop,
+  so the "winners' MAE q80" can never place a stop beyond the plan's. Until the uncensored excursion is measured
+  (the research harness does it on bars, §L19.8), the variants use the setup review's multiples: limit 0.5 r,
+  `WIDE_STOP` 2 r, `PULLBACK_WIDE` stop 2 r from the signal's fill (`r` = the signal's own risk).
+- `entry_window_bars` defaults to **4** (ceiling 6), not 2: the research evidence used 4- and 16-bar waits.
+- Waiting rows are `PENDING` (`entry_price` = the limit) → `OPEN` on the fill → `CLOSED`, or `MISSED`. A limit
+  fills when the entry-side price reaches it (the ask for a BUY limit), always at the limit; on the fill bar only
+  a stop counts. The time stop stays the signal's (same horizon for every variant). Lots keep the plan's money at
+  risk (floored to the step; below the minimum: R only).
+- Still open in L702: `LTF_TRIGGER`, the invalidation re-check while waiting, the tier-1 M1 batch budget, the
+  paired statistics with the API, and the engine side of H2 (L706).
+
 ### L19.4 Timing features and detectors
 
 Squeeze breakouts, inside bars, Donchian, opening-range and Asian-range breakouts already exist as detectors

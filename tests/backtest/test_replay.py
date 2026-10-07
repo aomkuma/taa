@@ -13,6 +13,7 @@ from app.advisory.replay import HistoricalReplay, load_resolution
 from app.advisory.scanner import strategy_set
 from app.backtest.runner import load_history
 from app.cli.__main__ import main
+from app.config import AppConfig
 from app.core.enums import Timeframe
 from app.core.errors import DataQualityError
 from app.market_data.history_store import ParquetHistoryStore
@@ -189,3 +190,34 @@ def test_evidence_features_are_recorded(store: ParquetHistoryStore, db: Database
     replay(store, evidence=EvidenceEngine(registry, plan)).run(db)
     stored = rows(db)
     assert stored and any(k.startswith("ev:") for r in stored for k in r.features)
+
+
+class TestEntryModes:
+    """TAA-L702: replay support (REPLAY rows of the entry-mode variants)."""
+
+    def test_variants_are_replayed_beside_plan(self, store: ParquetHistoryStore, db: Database) -> None:
+        data = CONFIG.model_dump(mode="json")
+        data["advisory"]["shadow"]["entry_modes"] = {"variants": ["PULLBACK", "WIDE_STOP", "PULLBACK_WIDE"]}
+        cfg = AppConfig.model_validate(data)
+        start, end = window(store)
+        loaded = load_history(store, SERVER, ["EURUSD"], TFS, account_currency="USD")
+        res = {"EURUSD": load_resolution(store, SERVER, "EURUSD")}
+        strategies = strategy_set(cfg, ["example_trend_pullback"], default_registry())
+        HistoricalReplay(
+            cfg, loaded.data, res, loaded.rates, strategies, server=SERVER, start=start, end=end
+        ).run(db)
+        stored = rows(db)
+        by_opp: dict[str, dict[str, ShadowTradeRow]] = {}
+        for r in stored:
+            by_opp.setdefault(r.opportunity_id, {})[r.variant] = r
+        assert {r.variant for r in stored} >= {"PLAN", "MANAGED", "WIDE_STOP"}
+        assert {r.status for r in stored} <= {"CLOSED", "MISSED", "VOID"}  # never PENDING in a replay
+        for variants in by_opp.values():
+            plan = variants.get("PLAN")
+            if plan is None or plan.status != "CLOSED":
+                continue
+            for name, row in variants.items():
+                assert row.tp == plan.tp, name  # no variant moves the TP
+                if name in ("PULLBACK", "PULLBACK_WIDE") and row.status == "CLOSED":
+                    assert row.entry_window_end is not None and row.entry_at < row.entry_window_end
+                    assert (plan.entry_price - row.entry_price) * (1 if plan.side == "BUY" else -1) > 0

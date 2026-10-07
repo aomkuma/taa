@@ -503,6 +503,36 @@ class ScannerConfig(StrictModel):
     budget_seconds: float = Field(default=3.0, gt=0, le=60, description="scan time per engine cycle")
 
 
+class EntryModesConfig(StrictModel):
+    """Entry-mode shadow variants beside PLAN/MANAGED (PLAN_LEARNING §L19.3; TAA-L702). Measurement only.
+
+    Distances are in risks of the signal's own stop (entry to the plan's SL), from the setup review's
+    evidence (docs/SETUP_REVIEW.md §8); every variant keeps the plan's TP price and the risk percent.
+    """
+
+    variants: list[Literal["PULLBACK", "WIDE_STOP", "PULLBACK_WIDE"]] = Field(
+        default_factory=list, description="empty: PLAN and MANAGED only (today)"
+    )
+    pullback_depth_r: float = Field(
+        default=0.5, gt=0, lt=1, description="limit this many risks against the signal (PULLBACK*)"
+    )
+    wide_stop_mult: float = Field(default=2.0, gt=1, le=5, description="WIDE_STOP: the plan's stop x this")
+    pullback_wide_stop_r: float = Field(
+        default=2.0, gt=0, le=5, description="PULLBACK_WIDE: stop this many risks from the signal's entry"
+    )
+    entry_window_bars: int = Field(
+        default=4, ge=1, le=6, description="entry-timeframe bars a limit waits before it is MISSED"
+    )
+
+    @model_validator(mode="after")
+    def _check(self) -> EntryModesConfig:
+        if len(set(self.variants)) != len(self.variants):
+            raise ValueError("entry_modes.variants: no duplicates")
+        if self.pullback_wide_stop_r <= self.pullback_depth_r:
+            raise ValueError("entry_modes: pullback_wide_stop_r must lie beyond pullback_depth_r")
+        return self
+
+
 class ShadowConfig(StrictModel):
     """Hypothetical trades for every opportunity (PLAN §A27); results are labelled hypothetical."""
 
@@ -515,6 +545,7 @@ class ShadowConfig(StrictModel):
     tick_tiebreak: bool = Field(default=True, description="ticks decide a bar touching both SL and TP")
     poll_seconds: float = Field(default=60.0, ge=1, le=3600, description="M1 resolution cadence")
     budget_seconds: float = Field(default=2.0, gt=0, le=60, description="resolution time per engine cycle")
+    entry_modes: EntryModesConfig = Field(default_factory=EntryModesConfig)
 
 
 class CalibrationConfig(StrictModel):

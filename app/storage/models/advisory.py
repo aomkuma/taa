@@ -122,7 +122,7 @@ class ShadowTradeRow(EngineKeyed, Base):
 
     shadow_id: Mapped[str] = mapped_column(String(96), primary_key=True)  # <opportunity_id>:<variant>
     opportunity_id: Mapped[str] = mapped_column(String(80), index=True)
-    variant: Mapped[str] = mapped_column(String(8))
+    variant: Mapped[str] = mapped_column(String(16))
     source: Mapped[str] = mapped_column(String(8), index=True)
     server: Mapped[str] = mapped_column(String(64), index=True)
     strategy: Mapped[str] = mapped_column(String(64))
@@ -137,13 +137,17 @@ class ShadowTradeRow(EngineKeyed, Base):
     atr: Mapped[float | None] = mapped_column(Float, nullable=True)  # entry TF at signal (MANAGED trailing)
     alerted: Mapped[bool] = mapped_column(Boolean, default=False)
     followed: Mapped[bool] = mapped_column(Boolean, default=False)
-    status: Mapped[str] = mapped_column(String(8), index=True)  # OPEN / CLOSED / VOID
+    status: Mapped[str] = mapped_column(String(8), index=True)  # PENDING / OPEN / CLOSED / VOID / MISSED
     signal_at: Mapped[datetime] = mapped_column(UTCDateTime(), index=True)  # the signal bar's close
     created_at: Mapped[datetime] = mapped_column(UTCDateTime())
     updated_at: Mapped[datetime] = mapped_column(UTCDateTime())
     # entry
-    entry_at: Mapped[datetime] = mapped_column(UTCDateTime())
-    entry_price: Mapped[float] = mapped_column(Float)
+    entry_at: Mapped[datetime] = mapped_column(
+        UTCDateTime()
+    )  # PENDING: the signal's entry time until the fill
+    entry_price: Mapped[float] = mapped_column(Float)  # PENDING: the limit price
+    # entry modes (TAA-L702): a limit not filled before this instant is MISSED; None for market entries
+    entry_window_end: Mapped[datetime | None] = mapped_column(UTCDateTime(), nullable=True)
     bid: Mapped[float | None] = mapped_column(Float, nullable=True)
     ask: Mapped[float | None] = mapped_column(Float, nullable=True)
     spread_points: Mapped[float | None] = mapped_column(Float, nullable=True)

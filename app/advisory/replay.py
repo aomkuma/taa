@@ -27,7 +27,7 @@ from __future__ import annotations
 import bisect
 import logging
 from collections.abc import Callable, Collection, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -38,6 +38,7 @@ from app.advisory.asset_classes import classify
 from app.advisory.confidence import Source, signal_features
 from app.advisory.scoring import swap_per_night
 from app.advisory.shadow import (
+    BASE_VARIANTS,
     Management,
     Variant,
     advance,
@@ -53,6 +54,7 @@ from app.advisory.shadow_tracker import (
     apply_close,
     apply_state,
     commission_per_lot,
+    mark_missed,
     new_row,
 )
 from app.backtest.conversion import SeriesRates
@@ -65,6 +67,7 @@ from app.engine.decision_engine import AccountState, Decision, DecisionEngine, D
 from app.evidence.registry import EvidenceEngine
 from app.execution.fill_model import Bar
 from app.execution.simulated_broker import SimulatedBroker
+from app.learning.entry_modes import await_fill, configured, geometry
 from app.market_data.history_store import ParquetHistoryStore
 from app.market_data.trading_sessions import TradingSessions
 from app.news.calendar import ManualBlackouts, NewsFilter
@@ -306,17 +309,35 @@ class HistoricalReplay:
         )
         entry_quote = EntryQuote(quote.bid, quote.ask, quote.spread_points, cfg.slippage_points)
         first = bisect.bisect_left(opens, t)
+        fill = entry_fill(side, quote.bid, quote.ask, slip)
         rows = []
-        for variant in Variant:
+        for variant in (*BASE_VARIANTS, *configured(cfg.entry_modes)):
+            geo = None
+            if variant not in BASE_VARIANTS:
+                geo = geometry(
+                    variant,
+                    side=side,
+                    fill=fill,
+                    plan_sl=signal.stop_loss,
+                    tp=signal.take_profit,
+                    lot=lot,
+                    entry_at=t,
+                    bar_seconds=self.entry_tf.seconds,
+                    cfg=cfg.entry_modes,
+                    volume_step=spec.volume_step,
+                    volume_min=spec.volume_min,
+                )
             state = new_state(
                 side=side,
-                entry=entry_fill(side, quote.bid, quote.ask, slip),
+                entry=fill if geo is None else geo.entry,
                 entry_at=t,
-                sl=signal.stop_loss,
+                sl=signal.stop_loss if geo is None else geo.sl,
                 tp=signal.take_profit,
                 time_stop=timedelta(hours=cfg.time_stop_hours),
             )
-            row = new_row(facts, variant, state, entry_quote, (), t)
+            row = new_row(
+                facts if geo is None else replace(facts, lot=geo.lot), variant, state, entry_quote, (), t
+            )
             if state.risk <= 0:
                 rows.append(row)  # VOID
                 continue
@@ -326,7 +347,22 @@ class HistoricalReplay:
                     self.config.position_management, ctx.market.atr, spec.point, self.entry_tf.seconds
                 )
             later = (bars[i] for i in range(first, len(bars)))  # lazy: stops at the exit
-            exit_ = advance(state, later, slippage=slip, management=management)
+            exit_ = None
+            if geo is not None and geo.window_end is not None:
+                row.entry_window_end = geo.window_end
+                waiting = await_fill(state, later, window_end=geo.window_end, slippage=slip)
+                if waiting.missed:
+                    mark_missed(row, state, t)
+                    rows.append(row)
+                    continue
+                if not waiting.filled:
+                    report.unresolved += 1
+                    continue
+                row.entry_at = state.entry_at
+                exit_ = waiting.exit
+                later = (bars[i] for i in range(bisect.bisect_left(opens, state.cursor), len(bars)))
+            if exit_ is None:
+                exit_ = advance(state, later, slippage=slip, management=management)
             if exit_ is None:
                 report.unresolved += 1
                 continue
@@ -338,11 +374,13 @@ class HistoricalReplay:
             result = settle(
                 state,
                 exit_,
-                lot=lot,
+                lot=lot if geo is None else geo.lot,
                 profit=profit,
                 commission_per_lot=commission_per_lot(self.config, symbol),
                 swap_per_lot_night=swap_per_night(spec, side),
-                swap_days=rollover_days(t, exit_.at, tz=self.tz, triple_weekday=spec.swap_rollover3days),
+                swap_days=rollover_days(
+                    state.entry_at, exit_.at, tz=self.tz, triple_weekday=spec.swap_rollover3days
+                ),
             )
             apply_state(row, state, t)
             apply_close(row, exit_, result)
