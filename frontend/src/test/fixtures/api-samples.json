@@ -9094,7 +9094,7 @@
         },
         "execution": {
           "deviation_points": null,
-          "entry_plans": true,
+          "entry_plans": false,
           "excess_risk_policy": "reduce",
           "limit_lifetime_bars": 16,
           "max_send_attempts": 2,
