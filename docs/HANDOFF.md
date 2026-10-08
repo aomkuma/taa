@@ -104,6 +104,11 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
   whose direction carries information (+0.22 R over the other direction in both halves), but no edge is shown
   and a wider stop does not help it; candle_reversal −0.098 R; neckline 89 signals. No rule survives
   walk-forward. The research "random direction" is now the exact mean of both directions (04dcee8).
+- **Single entry (owner, 2026-10-08):** `execution.entry_plans: false` in config.yaml (d400514): the engine sends
+  one order per signal whatever the PWA profile says (it still shows SCALE_IN 5 parts; the owner may set it to
+  Single in the PWA for consistency). The engine loads it at the next stack start: the -Mt5 -Demo stack was
+  **stopped** on 2026-10-08 ~20:10 UTC (the owner travels; "TAA Demo check" disabled): start it with
+  `scripts\demo-tasks.ps1 -Start`.
 - **USDJPY/XAUUSD heavy replays** started 2026-10-07 19:48 UTC (`run_heavy.sh`), set to Idle priority by hand,
   ~2,000 bars/h of 24,081: expected ~08:00 UTC 10-08 if the machine stays on. If they were cut short, rerun
   with `python -m app.cli research replay-family heavy --symbols USDJPY,XAUUSD --strategies
@@ -235,8 +240,8 @@ The order below aims at an edge first; LIVE stays the owner's decision after the
    family where the direction carries information. Run the full pytest suite when the machine is quiet.
 2. **Watch the entry-mode variants forward:** `GET /engines/{id}/learning/entry-modes?source=LIVE` (no PWA page
    yet; L706 adds it). Finish L702's open items when useful.
-3. **TAA-1209** (scale-in) only together with a wider stop (see the evidence above), or keep a single entry;
-   the owner's PWA profile still says SCALE_IN 5 parts: **the owner's decision**.
+3. **TAA-1209** (scale-in) only together with a wider stop (see the evidence above); the bot is on a single
+   entry since 2026-10-08 (owner's decision).
 4. **TAA-L706** once a variant passes §L19.7 (weeks of LIVE shadow).
 5. **TAA-L803 `setup_failed_break`** and TAA-L708 (weekly research report: the AI's research role).
 6. **Phase 16 AI analyst** (PLAN §A35): after the above; needs `AI_PROVIDER`/`AI_API_KEY` and the owner's budget.
