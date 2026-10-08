@@ -77,6 +77,13 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
   chart and in the manual "bot" column; **TAA-1211**: the bot's open broker positions in the heartbeat, on the
   Positions page (with the step-up close) and as chart lines. (The `/account` realized-equity curve still sums
   paper trades, but no PWA page reads it.)
+- **TAA-925** (same session): the chart opened from a signal starts focused (the plan plus its 3 best
+  supporting evidence items, no S/R zones, invalidation levels behind a toggle, per-item evidence list, near
+  lines merged), and a data refresh no longer resets the chart shift, a hand-set price scale or pane heights.
+- **Checks still due for this session's work:** the full pytest + vitest runs have not been repeated since
+  TAA-1007 (TAA-1007, the engine rename, TAA-1210, TAA-1211 and the "failed" heartbeat ran targeted tests
+  only, all green, plus ruff/mypy/bandit). Run both, one after the other, with the stack stopped and no heavy
+  replays running (memory: see the 15:41 UTC incident above).
 
 ### Edge work, 2026-10-07 afternoon (this session; docs/SETUP_REVIEW.md §8, PLAN_LEARNING §L19.3, §L19.8)
 
