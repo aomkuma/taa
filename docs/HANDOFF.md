@@ -107,7 +107,7 @@ reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1
 - **Single entry (owner, 2026-10-08):** `execution.entry_plans: false` in config.yaml (d400514): the engine sends
   one order per signal whatever the PWA profile says (it still shows SCALE_IN 5 parts; the owner may set it to
   Single in the PWA for consistency). The engine loads it at the next stack start: the -Mt5 -Demo stack was
-  **stopped** on 2026-10-07 ~20:10 UTC (the owner travels; "TAA Demo check" disabled): start it with
+  **stopped** on 2026-10-08 ~00:25 UTC (the owner travels; "TAA Demo check" disabled): start it with
   `scripts\demo-tasks.ps1 -Start`.
 - **USDJPY/XAUUSD heavy replays** started 2026-10-07 19:48 UTC (`run_heavy.sh`), set to Idle priority by hand,
   ~2,000 bars/h of 24,081: expected ~08:00 UTC 10-08 if the machine stays on. If they were cut short, rerun
