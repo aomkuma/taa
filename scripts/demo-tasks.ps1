@@ -16,7 +16,10 @@
       -Stop        stops the three part tasks and ends their python processes (a stopped task only ends its
                    powershell.exe; the python children it started would keep running), and disables
                    "TAA Demo check" so it does not start the stack again; the engine reconciles at the next start
-      -Check       what "TAA Demo check" runs
+      -Pause       stops the stack and keeps it stopped (logon and "TAA Demo check" start nothing) until -Resume:
+                   for closing the laptop; open positions keep their broker-side SL/TP
+      -Resume      the reverse of -Pause: re-enables the tasks and starts web, worker and engine
+      -Check       what "TAA Demo check" runs (does nothing while paused)
       -Unregister  removes the four tasks
 
     Every part runs scripts\start-demo.ps1 -Role <part> -Mt5 [-Demo], so the databases, ports and .env.demo-mt5
@@ -34,6 +37,8 @@ param(
     [switch]$Register,
     [switch]$Start,
     [switch]$Stop,
+    [switch]$Pause,
+    [switch]$Resume,
     [switch]$Check,
     [switch]$Unregister,
     [switch]$Demo = $true,
@@ -48,6 +53,7 @@ $WebHealth = "http://localhost:8001/api/v1/health"
 $EngineHealth = "http://127.0.0.1:8766/health"
 $Heartbeat = Join-Path $Root "data\demo\heartbeat-mt5.json"
 $LogFile = Join-Path $Root "logs\demo-tasks.log"
+$PausedFlag = Join-Path $Root "data\demo\paused.json"  # present while paused (-Pause / -Resume)
 
 function TaskName([string]$part) { "TAA Demo $part" }
 
@@ -147,6 +153,37 @@ if ($Register) {
     exit 0
 }
 
+function SetPartTasks([bool]$enabled) {
+    foreach ($name in @($Parts | ForEach-Object { TaskName $_ })) {
+        if (-not (Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue)) { continue }
+        if ($enabled) { Enable-ScheduledTask -TaskName $name | Out-Null } else { Disable-ScheduledTask -TaskName $name | Out-Null }
+    }
+}
+
+if ($Pause) {
+    if ($PSCmdlet.ShouldProcess("TAA demo stack", "Pause")) {
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $PausedFlag) | Out-Null
+        $flag = @{ paused_at = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"); by = $env:USERNAME }
+        Set-Content -Path $PausedFlag -Value ($flag | ConvertTo-Json) -Encoding utf8
+        if (Get-ScheduledTask -TaskName $CheckTask -ErrorAction SilentlyContinue) {
+            Disable-ScheduledTask -TaskName $CheckTask | Out-Null
+        }
+        foreach ($part in @("engine", "worker", "web")) { StopPart $part }
+        SetPartTasks $false  # after the stop: Stop-ScheduledTask needs the task, logon must not start it
+        Log "paused (resume with -Resume)"
+    }
+    exit 0
+}
+
+if ($Resume -or ($Start -and (Test-Path $PausedFlag))) {  # -Start while paused resumes too
+    if ($PSCmdlet.ShouldProcess("TAA demo stack", "Resume")) {
+        Remove-Item -Path $PausedFlag -ErrorAction SilentlyContinue
+        SetPartTasks $true
+        Log "resumed"
+    }
+    $Start = $true
+}
+
 if ($Stop) {
     if ((Get-ScheduledTask -TaskName $CheckTask -ErrorAction SilentlyContinue) -and
         $PSCmdlet.ShouldProcess($CheckTask, "Disable")) {
@@ -171,6 +208,7 @@ if ($Start) {
 }
 
 if ($Check) {
+    if (Test-Path $PausedFlag) { exit 0 }  # paused on purpose: start nothing until -Resume
     if (-not (Answers $WebHealth)) {
         StartPart "web"
         StartPart "worker"  # IgnoreNew: a worker that still runs is left alone
@@ -185,4 +223,4 @@ if ($Check) {
     exit 0
 }
 
-Write-Output "Nothing to do: pass -Register, -Start, -Stop, -Check or -Unregister (see Get-Help $PSCommandPath)."
+Write-Output "Nothing to do: pass -Register, -Start, -Stop, -Pause, -Resume, -Check or -Unregister (see Get-Help $PSCommandPath)."
