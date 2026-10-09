@@ -82,8 +82,16 @@ Every parameter is in `TrendPullbackParams` and can be set under `strategies.ite
 ## Pattern-based setups (DEMONSTRATION ONLY, unproven)
 
 `app/strategy/setups.py` (PLAN §A29, use 2). Each setup turns one family of trigger detectors on the entry
-timeframe into an explicit plan. All are listed in `config.yaml` with `enabled: false`; they need the evidence
-engine in the context builder. Every entry carries the reason codes `<SETUP_CODE>` and `DEMO_UNPROVEN`.
+timeframe into an explicit plan. All are listed in `config.yaml`; since 2026-10-09 the bot trades **one setup
+at a time** (the one under study, `setup_harmonic_prz` first; docs/SETUP_REVIEW.md), while the scanner and shadow
+keep every setup the users follow. They need the evidence engine in the context builder. Every entry carries the
+reason codes `<SETUP_CODE>` and `DEMO_UNPROVEN`.
+
+**Higher-timeframe market map (TAA-L809).** Every signal of every setup records the H4/D1 map as `ctx:h4_*` /
+`ctx:d1_*` features: trend vs consolidation, range position, compression, whether the entry sits at a demand
+(BUY) or supply (SELL) zone, the room to the nearest opposing zone in R and whether one lies before the target
+(docs/INDICATORS.md, "Market map"). It is **measured, not a filter**: a setup gets a context rule only after the
+rule holds walk-forward on the half and the symbols it was not chosen on (TAA-L810, hook H1).
 
 **Shared rules** (`SetupParams`, all overridable per setup under `params`):
 

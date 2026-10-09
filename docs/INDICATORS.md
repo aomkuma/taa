@@ -135,6 +135,45 @@ swings confirmed at or before it, the last high and low labels and `trend`: UP (
 - The caller must build the zones from swings confirmed **before** `start_pos`; zones built later would leak
   future pivots into earlier breakouts.
 
+## Market map (`app/indicators/market_map.py`, TAA-L809)
+
+The higher-timeframe context every setup records (`timeframes.context: [H4, D1]`, parameters in `context_map:`).
+Closed bars only; the value at bar *t* uses bars ≤ *t* (a mutation test checks it).
+
+**State per bar** (`state_frame`):
+
+| State | Rule |
+|---|---|
+| `UP` | ADX ≥ `regime.trend_adx`, efficiency ratio ≥ `er_trend`, close and EMA50 above EMA200, swing structure not DOWN |
+| `DOWN` | the mirror |
+| `RANGE` | ADX < `regime.range_adx` and efficiency ratio < `er_range` |
+| `TRANSITION` | anything else |
+| `UNKNOWN` | warm-up (EMA200, ADX or the ratio not defined yet) |
+
+- Efficiency ratio over *n* = `er_bars` bars: `|C_t − C_{t−n}| / Σ |C_i − C_{i−1}|` (1 = a straight line, near 0 =
+  back and forth).
+- Hysteresis: the reported state changes only after `switch_bars` consecutive bars agree on a new raw state.
+- `compression` (direction-neutral): the ATR percentile and the Bollinger width percentile (both over
+  `atr_percentile_lookback` bars) are below `compression_pct`.
+- In `RANGE`, the box is the high and low of the last `range_bars` bars, with its width in ATR and the confirmed
+  swing highs (lows) within `zone_tolerance_atr` × ATR of the top (bottom).
+
+**Zones** (`zones_at`, over the last `zone_lookback_bars` bars):
+
+- `SWING`: `sr_zones` clusters with at least `min_touches` touches; below the close `DEMAND`, above `SUPPLY`, a
+  cluster containing the close takes the side of most of its touches. Strength = touches.
+- `BASE`: 1-4 tight bars (range ≤ 0.6 ATR) right before a displacement leg of ≤ 3 bars that moves
+  ≥ `displacement_atr` ATR and closes beyond the previous 10 bars' extreme (the `smc.supply_demand` rule, kept as a
+  map). `DEMAND` below a rally, `SUPPLY` above a drop. `tests` counts later bars that traded into it; a close
+  through its far side removes it, and so do more than `max_tests` tests. Strength = the base's bars.
+- The nearest `max_zones` per kind are kept.
+
+**Features of a trade** (`signal_features`, keys `ctx:<tf>_*`): `trend` (+1 with the side, −1 against, 0 in a
+range or transition; absent while UNKNOWN), `range`, `range_pos` (0 = the favourable edge of the box, 1 = the
+opposite edge), `compression`, `zone_with` and `zone_with_strength` (the entry within `zone_near_atr` ATR of a zone
+on its side: demand for a BUY), `room_r` (distance to the nearest opposing zone, in R of the trade's risk, capped at
+10) and `zone_before_tp` (an opposing zone lies between the entry and the target).
+
 ## Verification
 
 | Check | Where |
