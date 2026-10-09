@@ -272,6 +272,15 @@ from swings, 8 symbols, one year): a close back inside the zone within 3 bars af
 (2) entry-timing rules in the setup's direction (wait for the sweep / false break to finish, stop beyond its
 extreme; avoid or delay the high-false-break hours), walk-forward with hold-out symbols on every setup.
 
+## 13. Inverted setups on DEMO (owner, 2026-10-09)
+
+All setups were far from the target, so the owner chose to trade each setup's signals **the other way** at the
+same exit prices (SL = the original TP, TP = the original SL). History, re-simulated with both spreads: breakout
++0.036 R, pattern breakout +0.059, fib +0.055, harmonic −0.196 (R of the original risk); none reaches +0.15. The
+nine `*_inverted` strategies trade on DEMO since 2026-10-09 13:45 UTC (first trade: EURUSD BUY, the inverted
+`setup_breakout` SELL on the New York opening-range break). Concept, mechanics and the work that remains:
+docs/INVERTED_SETUPS.md.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun

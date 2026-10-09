@@ -87,6 +87,11 @@ at a time** (the one under study, `setup_harmonic_prz` first; docs/SETUP_REVIEW.
 keep every setup the users follow. They need the evidence engine in the context builder. Every entry carries the
 reason codes `<SETUP_CODE>` and `DEMO_UNPROVEN`.
 
+**Inverted setups (owner, 2026-10-09).** Every strategy also exists as `<name>_inverted`: the same signal on the
+other side, with the stop at the original's target and the target at the original's stop. The bot trades these on
+DEMO instead of the originals. This goes against classic technical analysis on purpose; read
+[docs/INVERTED_SETUPS.md](INVERTED_SETUPS.md) for the reasons, the numbers and the work that remains.
+
 **Higher-timeframe market map (TAA-L809).** Every signal of every setup records the H4/D1 map as `ctx:h4_*` /
 `ctx:d1_*` features: trend vs consolidation, range position, compression, whether the entry sits at a demand
 (BUY) or supply (SELL) zone, the room to the nearest opposing zone in R and whether one lies before the target
