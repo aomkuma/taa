@@ -147,32 +147,33 @@ def zone(kind: ZoneKind, low: float, high: float, strength: int = 3) -> MapZone:
 class TestSignalFeatures:
     def test_trend_sign_follows_the_side(self) -> None:
         up = MarketMap({"H4": tf_map(MapState.UP)})
-        buy = signal_features(up, buy=True, entry=1.1, stop=1.09, target=1.13, p=P)
-        sell = signal_features(up, buy=False, entry=1.1, stop=1.11, target=1.07, p=P)
+        buy = signal_features(up, buy=True, entry=1.1, stop=1.09, target=1.13)
+        sell = signal_features(up, buy=False, entry=1.1, stop=1.11, target=1.07)
         assert (buy["ctx:h4_trend"], sell["ctx:h4_trend"], buy["ctx:h4_range"]) == (1.0, -1.0, 0.0)
 
     def test_zone_with_room_and_a_zone_before_the_target(self) -> None:
         zones = (zone(ZoneKind.DEMAND, 1.0990, 1.1005, 4), zone(ZoneKind.SUPPLY, 1.1150, 1.1170))
         m = MarketMap({"H4": tf_map(MapState.RANGE, zones)})
-        f = signal_features(m, buy=True, entry=1.1000, stop=1.0950, target=1.1200, p=P)
+        f = signal_features(m, buy=True, entry=1.1000, stop=1.0950, target=1.1200)
         assert f["ctx:h4_zone_with"] == 1.0 and f["ctx:h4_zone_with_strength"] == 4.0
         assert f["ctx:h4_room_r"] == pytest.approx(0.0150 / 0.0050)
         assert f["ctx:h4_zone_before_tp"] == 1.0
-        far = signal_features(m, buy=True, entry=1.1000, stop=1.0950, target=1.1100, p=P)
+        far = signal_features(m, buy=True, entry=1.1000, stop=1.0950, target=1.1100)
         assert far["ctx:h4_zone_before_tp"] == 0.0
 
     def test_range_position_is_measured_from_the_favourable_edge(self) -> None:
         box = RangeBox(1.12, 1.10, 4.0, 2, 2)
         m = MarketMap({"H4": tf_map(MapState.RANGE, box=box)})
-        assert (
-            signal_features(m, buy=True, entry=1.105, stop=1.10, target=1.12, p=P)["ctx:h4_range_pos"] == 0.25
-        )
-        assert (
-            signal_features(m, buy=False, entry=1.105, stop=1.11, target=1.10, p=P)["ctx:h4_range_pos"]
-            == 0.75
-        )
+        assert signal_features(m, buy=True, entry=1.105, stop=1.10, target=1.12)["ctx:h4_range_pos"] == 0.25
+        assert signal_features(m, buy=False, entry=1.105, stop=1.11, target=1.10)["ctx:h4_range_pos"] == 0.75
 
     def test_no_opposing_zone_gives_the_capped_room(self) -> None:
         m = MarketMap({"H4": tf_map(MapState.UP)})
-        f = signal_features(m, buy=True, entry=1.1, stop=1.09, target=1.13, p=P)
-        assert f["ctx:h4_room_r"] == P.room_cap_r and f["ctx:h4_zone_with"] == 0.0
+        f = signal_features(m, buy=True, entry=1.1, stop=1.09, target=1.13)
+        assert f["ctx:h4_room_r"] == MarketMap().room_cap_r and f["ctx:h4_zone_with"] == 0.0
+
+
+def test_the_map_round_trips_through_a_dict() -> None:
+    zones = (zone(ZoneKind.DEMAND, 1.0990, 1.1005, 4),)
+    m = MarketMap({"H4": tf_map(MapState.RANGE, zones, RangeBox(1.12, 1.10, 4.0, 2, 3))}, 0.3, 8.0)
+    assert MarketMap.from_dict(m.to_dict()) == m

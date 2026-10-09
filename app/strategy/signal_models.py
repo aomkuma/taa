@@ -32,6 +32,7 @@ from app.core.errors import TaaError
 from app.core.ids import stable_hash
 from app.evidence.confluence import Relation
 from app.evidence.framework import ActiveEvidence, EvidenceSnapshot
+from app.indicators.market_map import MarketMap
 from app.market_data.data_models import SymbolSpec
 
 
@@ -379,6 +380,7 @@ class MarketContext:
     quality_flags: tuple[str, ...] = ()
     support_levels: tuple[float, ...] = ()  # nearest S/R zone centres below / above the close (entry TF)
     resistance_levels: tuple[float, ...] = ()
+    htf: MarketMap | None = None  # TAA-L809: higher-timeframe market map (timeframes.context), else None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "decision_time_utc", ensure_utc(self.decision_time_utc))
@@ -451,6 +453,8 @@ class MarketContext:
             "quality_flags": list(self.quality_flags),
             "support_levels": list(self.support_levels),
             "resistance_levels": list(self.resistance_levels),
+            # only when present, so records (and their digests) without a map stay as they were
+            **({} if self.htf is None else {"htf": self.htf.to_dict()}),
         }
 
     def to_json(self) -> str:
@@ -472,6 +476,7 @@ class MarketContext:
             quality_flags=tuple(d["quality_flags"]),
             support_levels=tuple(float(x) for x in d["support_levels"]),
             resistance_levels=tuple(float(x) for x in d["resistance_levels"]),
+            htf=MarketMap.from_dict(d["htf"]) if d.get("htf") else None,
         )
 
     @property

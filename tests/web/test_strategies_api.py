@@ -32,10 +32,12 @@ SETUP = "setup_fib_pullback"
 
 def real_config(db: Database, engine_id: str, **changes: Any) -> dict[str, Any]:
     """The repository's config.yaml as the engine snapshots it (``Settings.summary()["config"]``), with
-    :data:`SETUP` switched off in the file (config.yaml enables every strategy since 2026-10-05)."""
+    :data:`EXAMPLE` on and :data:`SETUP` off in the file (config.yaml trades one setup at a time since
+    2026-10-09, so the test sets both states itself)."""
     config = load_app_config("config.yaml").model_dump(mode="json")
+    fixed = {SETUP: {"enabled": False}, EXAMPLE: {"enabled": True}}
     for item in config["strategies"]["items"]:
-        item.update({SETUP: {"enabled": False}}.get(item["name"], {}) | changes.get(item["name"], {}))
+        item.update(fixed.get(item["name"], {}) | changes.get(item["name"], {}))
     with db.session() as sess:
         snap = sess.get(ConfigSnapshot, (engine_id, "c" * 32))
         assert snap is not None

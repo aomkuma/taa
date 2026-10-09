@@ -45,6 +45,7 @@ from app.evidence.registry import EvidenceEngine
 from app.execution.fill_model import Bar, mark_price
 from app.execution.management import PositionView, manage
 from app.execution.simulated_broker import ClosedTrade, EquityPoint, OrderRequest, RateSource, SimulatedBroker
+from app.indicators.market_map import MarketMap
 from app.market_data.data_models import Quote, SymbolSpec
 from app.market_data.trading_sessions import TradingSessions
 from app.news.calendar import ManualBlackouts, NewsFilter
@@ -335,6 +336,7 @@ def bar_context(
     bar: Bar,
     spec: SymbolSpec,
     evidence_engine: EvidenceEngine | None,
+    htf: MarketMap | None = None,
 ) -> StrategyContext:
     """The strategy context at the close *t* of *bar* from frames analyzed once (shared with replay)."""
     evidence = None
@@ -359,6 +361,7 @@ def bar_context(
         spec=spec,
         evidence=evidence,
         window=config.timeframes.warmup_bars,
+        htf=htf,
     )
 
 

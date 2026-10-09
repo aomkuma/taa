@@ -44,6 +44,7 @@ from app.advisory.stats_math import beta_interval, brier, log_loss, wilson_inter
 from app.config import ConfluenceConfig
 from app.evidence.confluence import Relation, confluence_score
 from app.evidence.framework import Family
+from app.indicators.market_map import signal_features as map_features
 from app.strategy.signal_models import MarketContext, Signal, condition_strength
 
 # --- baselines ----------------------------------------------------------------------------------------------
@@ -143,6 +144,17 @@ def signal_features(signal: Signal, market: MarketContext) -> dict[str, float]:
     trend = market.higher.trend.value
     aligned = side is not None and trend == ("BULLISH" if side.sign > 0 else "BEARISH")
     features["ctx:htf_aligned"] = 1.0 if aligned else 0.0
+    if market.htf is not None and side is not None:  # TAA-L809: the higher-timeframe map, when configured
+        entry = signal.entry_price
+        if entry is None:
+            entry = market.ask if side.sign > 0 else market.bid
+        if entry is None:
+            entry = market.entry.close
+        features.update(
+            map_features(
+                market.htf, buy=side.sign > 0, entry=entry, stop=signal.stop_loss, target=signal.take_profit
+            )
+        )
     return features
 
 

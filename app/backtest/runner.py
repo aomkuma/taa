@@ -29,6 +29,7 @@ from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.registry import EvidenceEngine
 from app.market_data.data_models import SymbolSpec
 from app.strategy.catalog import default_registry
+from app.strategy.market_maps import candle_frame
 
 HASH_COLUMNS = ("open_time", "open", "high", "low", "close", "spread")
 
@@ -84,6 +85,29 @@ class LoadedData:
     rates: SeriesRates
     conversion: dict[str, pd.DataFrame]
     digest: str
+
+
+def load_context(
+    store: HistorySource,
+    server: str,
+    symbols: Sequence[str],
+    timeframes: Sequence[Timeframe],
+    *,
+    end: datetime | None = None,
+) -> dict[str, dict[Timeframe, pd.DataFrame]]:
+    """Closed candles of the market-map timeframes (TAA-L809) per symbol, oldest first; missing ones skipped.
+
+    Kept apart from :func:`load_history` so the strategy frames and the conversion timeframe stay as they are.
+    """
+    out: dict[str, dict[Timeframe, pd.DataFrame]] = {}
+    for symbol in symbols:
+        frames = {}
+        for tf in timeframes:
+            df = store.load(server, symbol, tf, None, end)
+            if not df.empty:
+                frames[tf] = candle_frame(df)
+        out[symbol] = frames
+    return out
 
 
 def load_history(

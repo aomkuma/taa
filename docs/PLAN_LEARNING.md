@@ -896,6 +896,30 @@ planned". The point is to show where the system's discipline would have helped, 
 - Each new playbook rule follows L13: shadow first, then DEMO with the acceptance numbers, and LIVE only after
   Phase 14 and the user's explicit go-ahead.
 
+### L20.9 Higher-timeframe market map (TAA-L809, decisions 2026-10-09)
+
+The owner asked that every setup look further back, with **demand/supply zones** and **trend vs consolidation**
+from higher timeframes as core axes, measured first. Before this, strategies saw M15 + H1 only (400 bars,
+about 4 days of M15), zones reached them as three bare M15 prices, and H4/D1 were streamed to the charts only.
+
+- **Where:** `app/indicators/market_map.py` (pure, layer 5), `app/strategy/market_maps.py` (`MapBook` cache),
+  `MarketContext.htf`, `ctx:<tf>_*` features in `app/advisory/confidence.signal_features`. The context
+  timeframes (`timeframes.context: [H4, D1]`, `context_bars: 700`) are **never strategy frames**: they add no
+  states, no quality flags and no evidence, so existing decisions are unchanged; the map is stored in the
+  decision's market document only when present (digests of older records stay valid).
+- **State:** UP / DOWN need ADX >= `regime.trend_adx`, efficiency ratio >= `er_trend`, close and EMA50 on the
+  same side of EMA200 and swing structure not against; RANGE needs ADX < `regime.range_adx` and ER < `er_range`;
+  otherwise TRANSITION; UNKNOWN in warm-up (the trend feature is then absent). Hysteresis `switch_bars` = 2.
+  This is the bar-based part of L302's overlay (no profile normalisation yet) plus L703's compression state.
+- **Zones:** swing clusters (`sr_zones`, >= 2 touches) and bases before displacement legs (the
+  `smc.supply_demand` rule as a persistent map: tests counted, a close through the zone removes it), H4 over
+  ~3 months, D1 over ~1.5 years; the nearest 6 per kind.
+- **Features per context TF:** `trend` (+1 with the side, −1 against, 0 range/transition), `range`,
+  `range_pos` (0 = the favourable edge), `compression`, `zone_with` (+ `zone_with_strength`), `room_r` (to the
+  nearest opposing zone, in R, capped at 10), `zone_before_tp`.
+- **Use:** measurement only. A setup gets a context rule (hook H1, `CONTEXT_GATE`, disable-only) only after the
+  rule holds walk-forward on the half and the symbols it was not chosen on (TAA-L810).
+
 ## L21. Squad mode: a team of specialist bots (added 2026-10-06)
 
 **Vision (user, 2026-10-06):** the system works like a squad of skilled traders on the board. Each bot has its

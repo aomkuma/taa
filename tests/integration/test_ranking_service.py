@@ -13,7 +13,7 @@ from app.advisory.asset_classes import AssetClass
 from app.advisory.ranking_report import format_ranking
 from app.advisory.ranking_service import RankingService
 from app.advisory.universe import SymbolCatalog
-from app.broker.fake_mt5 import ALL_SYMBOLS, FakeMT5
+from app.broker.fake_mt5 import ALL_SYMBOLS, FACTORY_SYMBOLS, FakeMT5
 from app.config import AppConfig, load_settings
 from app.core.clock import ManualClock
 from app.core.errors import SymbolUnavailable
@@ -182,7 +182,8 @@ class TestEngine:
         h.engine.start()
         h.engine.run(max_cycles=4)
         status = h.engine.status()["ranking"]
-        assert status["runs"] == 2 and status["failures"] == 0 and status["symbols"] == len(ENABLED)
+        engine_symbols = [s for s in FACTORY_SYMBOLS if s != "USDZAR"]  # the engine's broker (factory)
+        assert status["runs"] == 2 and status["failures"] == 0 and status["symbols"] == len(engine_symbols)
         assert h.engine.request_rescan()
 
     def test_a_ranking_failure_never_stops_the_engine(self, tmp_path: Path) -> None:

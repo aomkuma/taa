@@ -383,7 +383,7 @@ def cmd_advisory_replay(args: argparse.Namespace) -> int:
     from app.advisory.replay import HistoricalReplay, load_resolution
     from app.advisory.requirements import local_requirements
     from app.advisory.scanner import strategy_set
-    from app.backtest.runner import load_history
+    from app.backtest.runner import load_context, load_history
     from app.evidence.catalog import default_registry as evidence_registry
     from app.evidence.registry import EvidenceEngine
     from app.market_data.history_store import ParquetHistoryStore
@@ -412,6 +412,11 @@ def cmd_advisory_replay(args: argparse.Namespace) -> int:
         )
         start = last.to_pydatetime() - timedelta(days=round(30.44 * args.months))
     resolution = {s: load_resolution(store, server, s, start=start, end=end) for s in symbols}
+    context = (
+        load_context(store, server, symbols, config.timeframes.context, end=end)
+        if config.timeframes.context
+        else None
+    )
     evidence, strategies = evidence_registry(), strategy_registry()
     req = local_requirements(config, ranked=[], evidence=evidence, strategies=strategies)
     names = args.strategies.split(",") if args.strategies else sorted(req.strategies)
@@ -433,6 +438,7 @@ def cmd_advisory_replay(args: argparse.Namespace) -> int:
         broker_tz=settings.env.BROKER_TIMEZONE,
         config_hash=settings.config_hash,
         on_symbol=(lambda s, n, total: print(f"  {s} {n}/{total}", flush=True)) if args.progress else None,
+        context=context,
     )
     db, _ = _db_and_audit(settings)
     try:

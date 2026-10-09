@@ -27,14 +27,16 @@ import pandas as pd
 from app.config import AppConfig, IndicatorParams, RegimeConfig
 from app.core.clock import Clock, ensure_utc
 from app.core.enums import Regime, Session, Timeframe, Trend, VolatilityState
-from app.core.errors import DataQualityError, InsufficientDataError
+from app.core.errors import DataQualityError, InsufficientDataError, TaaError
 from app.evidence.framework import EvidenceContext, EvidenceSnapshot
 from app.evidence.registry import EvidenceEngine
+from app.indicators.market_map import MarketMap
 from app.indicators.momentum import rsi
 from app.indicators.price_action import Swing, find_swings, market_structure, sr_zones
 from app.indicators.trend import adx, ema
 from app.indicators.volatility import atr, atr_percentile
 from app.market_data.data_models import CandleFrame, Quote, SymbolSpec
+from app.strategy.market_maps import MapBook, candle_frame
 from app.strategy.regime_detector import regime_series, trend_series, volatility_series
 from app.strategy.signal_models import MarketContext, StrategyContext, TimeframeState
 
@@ -219,6 +221,7 @@ def context_at(
     spec: SymbolSpec | None = None,
     evidence: Mapping[Timeframe, EvidenceSnapshot] | None = None,
     window: int | None = None,
+    htf: MarketMap | None = None,
 ) -> StrategyContext:
     """The strategy context at *decision_time* (an entry-timeframe bar close) from pre-analyzed frames.
 
@@ -263,6 +266,7 @@ def context_at(
         quality_flags=tuple(flags),
         support_levels=support,
         resistance_levels=resistance,
+        htf=htf,
     )
     return StrategyContext(market, cut, now_utc, spec, evidence or {})
 
@@ -283,6 +287,7 @@ class ContextBuilder:
         self.clock = clock
         self.quotes = quotes
         self.evidence = evidence
+        self.maps = MapBook.from_config(config)
 
     def analyze(self, symbol: str) -> dict[Timeframe, AnalyzedFrame]:
         tfs = self.config.timeframes
@@ -302,6 +307,7 @@ class ContextBuilder:
         decision_time = pd.Timestamp(frames[entry_tf].df.index[-1]).to_pydatetime()
         quote = self.quotes.quote(spec) if self.quotes is not None and spec is not None else None
         snapshots = self.evaluate_evidence(symbol, frames, decision_time)
+        htf = self.market_map(symbol, decision_time)
         ctx = context_at(
             frames,
             symbol=symbol,
@@ -313,9 +319,26 @@ class ContextBuilder:
             quote=quote,
             spec=spec,
             evidence=snapshots,
+            htf=htf,
         )
         log_analysis(ctx.market)
         return ctx
+
+    def market_map(self, symbol: str, decision_time: datetime) -> MarketMap | None:
+        """The higher-timeframe map at *decision_time*; None when off or unavailable (measurement only)."""
+        if self.maps is None:
+            return None
+        tfs = self.config.timeframes
+        candles: dict[Timeframe, pd.DataFrame] = {}
+        try:
+            for tf in tfs.context:
+                frame = self.candles.closed_candles(symbol, tf, tfs.context_bars)
+                if not frame.df.empty:
+                    candles[tf] = candle_frame(frame.df)
+            return self.maps.at(symbol, candles, decision_time)
+        except TaaError as exc:
+            log.warning("market map for %s unavailable: %s", symbol, exc)
+            return None
 
     def evaluate_evidence(
         self, symbol: str, frames: Mapping[Timeframe, AnalyzedFrame], decision_time: datetime

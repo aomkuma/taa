@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from app.broker import mt5_constants as c
-from app.broker.fake_mt5 import ALL_SYMBOLS, FakeAccount, FakeMT5
+from app.broker.fake_mt5 import FACTORY_SYMBOLS, FakeAccount, FakeMT5
 from app.broker.gateway import ReadOnlyMT5Gateway
 from app.broker.mt5_client import MT5Client
 from app.config import Settings
@@ -39,7 +39,7 @@ def fake_module_for(settings: Settings, clock: Clock) -> FakeMT5:
         if settings.mode is TradingMode.LIVE
         else c.ACCOUNT_TRADE_MODE_DEMO,
     )
-    return FakeMT5(clock, account=account, symbols=ALL_SYMBOLS, tz=env.BROKER_TIMEZONE)
+    return FakeMT5(clock, account=account, symbols=FACTORY_SYMBOLS, tz=env.BROKER_TIMEZONE)
 
 
 def build_read_only(

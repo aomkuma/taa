@@ -21,6 +21,9 @@ timeframes:
   stale_tick_seconds: 120
   max_gap_bars: 3                   # longest hole (bars) in trading hours before DATA_GAPS; holidays and the
                                     # symbol's own closed hours do not count (app/market_data/quality.py)
+  context: [H4, D1]                 # TAA-L809: higher-timeframe market map (trend/consolidation + demand/supply
+                                    # zones) on every signal as ctx: features; measurement only, never a gate here
+  context_bars: 700                 # closed bars per context timeframe (EMA200 + a 400-bar zone lookback)
 
 indicators:
   ema_fast: 20
@@ -39,6 +42,21 @@ regime:                             # PLAN §A7: ADX >= 20 trending, < 18 rangin
   low_atr_percentile: 25            # volatility state bands (ATR percentile over indicators.atr_percentile_lookback)
   high_atr_percentile: 75
   extreme_atr_percentile: 90
+
+context_map:                        # TAA-L809, app/indicators/market_map.py (docs/PLAN_LEARNING.md §L20.9)
+  er_bars: 20                       # efficiency ratio window: |net move| / path length
+  er_trend: 0.3                     # UP/DOWN need ADX >= regime.trend_adx and ER >= this (plus EMA and swing structure)
+  er_range: 0.25                    # RANGE: ADX < regime.range_adx and ER < this
+  switch_bars: 2                    # hysteresis: closed bars agreeing before the state changes
+  range_bars: 30                    # the range box
+  compression_pct: 20               # ATR percentile and Bollinger width both in their lowest 20 %
+  zone_lookback_bars: 400           # zones from the last 400 context bars (H4 ~ 3 months, D1 ~ 1.5 years)
+  zone_tolerance_atr: 0.5
+  min_touches: 2                    # swing zones need two touches
+  displacement_atr: 2.0             # base zones: the leg away moves >= 2 ATR
+  max_tests: 3                      # a base zone traded into more often than this is spent
+  max_zones: 6                      # per kind, nearest first
+  zone_near_atr: 0.25               # "at a zone": within 0.25 ATR of it
 
 strategies:
   cooldown_bars: 4

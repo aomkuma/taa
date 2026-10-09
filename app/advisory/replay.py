@@ -75,6 +75,7 @@ from app.storage.database import Database
 from app.storage.models import ShadowTradeRow
 from app.storage.models.base import LOCAL_ENGINE
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame
+from app.strategy.market_maps import MapBook
 from app.strategy.registry import StrategySet
 from app.strategy.signal_models import Signal, StrategyContext
 
@@ -141,6 +142,7 @@ class HistoricalReplay:
         broker_tz: str = "Europe/Athens",
         config_hash: str = "",
         on_symbol: Callable[[str, int, int], None] | None = None,
+        context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
     ) -> None:
         missing = sorted(set(data) - set(resolution))
         if missing:
@@ -179,6 +181,9 @@ class HistoricalReplay:
             config_hash=config_hash,
         )
         self.universe = frozenset(self.data)
+        # TAA-L809: the higher-timeframe market map per signal (ctx: features), when context frames are given
+        self.context = dict(context or {})
+        self.maps = MapBook.from_config(config) if self.context else None
 
     # --- run ------------------------------------------------------------------------------------------------
 
@@ -235,8 +240,9 @@ class HistoricalReplay:
             bar = entry_bar(row, t, self.broker.spread_price(symbol, float_or_none(row["spread"])))
             self.broker.on_bar(symbol, bar)  # conversion rates and tick values at t
             spec = self.broker.spec_at(symbol)
+            htf = None if self.maps is None else self.maps.at(symbol, self.context.get(symbol, {}), t)
             try:
-                ctx = bar_context(self.config, analyzed, symbol, t, bar, spec, self.evidence)
+                ctx = bar_context(self.config, analyzed, symbol, t, bar, spec, self.evidence, htf)
             except (InsufficientDataError, DataQualityError):
                 continue
             report.bars += 1

@@ -36,9 +36,10 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -138,6 +139,75 @@ class MarketMap:
     """The context timeframes' maps at one instant, keyed by timeframe name (``H4``, ``D1``)."""
 
     frames: Mapping[str, TimeframeMap] = field(default_factory=dict)
+    near_atr: float = 0.25  # "at a zone": within this many ATR of it (MapParams.zone_near_atr)
+    room_cap_r: float = 10.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "near_atr": self.near_atr,
+            "room_cap_r": self.room_cap_r,
+            "frames": {tf: _tf_to_dict(m) for tf, m in self.frames.items()},
+        }
+
+    @classmethod
+    def from_dict(cls, d: Mapping[str, Any]) -> MarketMap:
+        return cls(
+            {tf: _tf_from_dict(m) for tf, m in d["frames"].items()},
+            float(d["near_atr"]),
+            float(d["room_cap_r"]),
+        )
+
+
+def _tf_to_dict(m: TimeframeMap) -> dict[str, Any]:
+    return {
+        "timeframe": m.timeframe,
+        "at": m.at.isoformat(),
+        "state": m.state.value,
+        "raw_state": m.raw_state.value,
+        "adx": m.adx,
+        "efficiency": m.efficiency,
+        "atr": m.atr,
+        "close": m.close,
+        "compression": m.compression,
+        "box": None if m.box is None else asdict(m.box),
+        "zones": [
+            {
+                **asdict(z),
+                "kind": z.kind.value,
+                "source": z.source.value,
+                "formed_at": z.formed_at.isoformat(),
+            }
+            for z in m.zones
+        ],
+    }
+
+
+def _tf_from_dict(d: Mapping[str, Any]) -> TimeframeMap:
+    box = d["box"]
+    return TimeframeMap(
+        timeframe=str(d["timeframe"]),
+        at=datetime.fromisoformat(d["at"]),
+        state=MapState(d["state"]),
+        raw_state=MapState(d["raw_state"]),
+        adx=d["adx"],
+        efficiency=d["efficiency"],
+        atr=d["atr"],
+        close=float(d["close"]),
+        compression=bool(d["compression"]),
+        box=None if box is None else RangeBox(**box),
+        zones=tuple(
+            MapZone(
+                ZoneKind(z["kind"]),
+                ZoneSource(z["source"]),
+                float(z["low"]),
+                float(z["high"]),
+                int(z["strength"]),
+                int(z["tests"]),
+                datetime.fromisoformat(z["formed_at"]),
+            )
+            for z in d["zones"]
+        ),
+    )
 
 
 # --- per-bar state ----------------------------------------------------------------------------------------
@@ -366,7 +436,7 @@ def timeframe_map(
 
 
 def signal_features(
-    market_map: MarketMap, *, buy: bool, entry: float, stop: float | None, target: float | None, p: MapParams
+    market_map: MarketMap, *, buy: bool, entry: float, stop: float | None, target: float | None
 ) -> dict[str, float]:
     """``ctx:<tf>_*`` features of a trade against the map (absent keys = unknown)."""
     out: dict[str, float] = {}
@@ -387,7 +457,7 @@ def signal_features(
             out[key + "range_pos"] = round(pos if buy else 1.0 - pos, 4)
         if m.atr is None:
             continue
-        near = p.zone_near_atr * m.atr
+        near = market_map.near_atr * m.atr
         with_kind = ZoneKind.DEMAND if buy else ZoneKind.SUPPLY
         against = ZoneKind.SUPPLY if buy else ZoneKind.DEMAND
         mine = [z for z in m.zones if z.kind is with_kind and z.low - near <= entry <= z.high + near]
@@ -401,7 +471,8 @@ def signal_features(
         nearest = min((abs(d) for d in ahead), default=None)
         if risk:
             out[key + "room_r"] = round(
-                min(p.room_cap_r, nearest / risk) if nearest is not None else p.room_cap_r, 4
+                min(market_map.room_cap_r, nearest / risk) if nearest is not None else market_map.room_cap_r,
+                4,
             )
         if target is not None:
             span = (target - entry) * sign

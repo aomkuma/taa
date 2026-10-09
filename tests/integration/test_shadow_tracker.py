@@ -20,10 +20,15 @@ from app.storage.database import Database
 from app.storage.models import OpportunityRow, ShadowTradeRow
 from app.storage.models.base import LOCAL_ENGINE
 from tests.integration.test_engine_paper import harness
-from tests.integration.test_lifecycle import CONFIG, WED, add
+from tests.integration.test_lifecycle import CONFIG as YAML_CONFIG
+from tests.integration.test_lifecycle import WED, add
 from tests.unit.test_market_data import setup
 
 SLIP = 1.0  # points, config.yaml
+# config.yaml measures the entry modes (TAA-L702); these tests start from PLAN and MANAGED only
+_BASE = YAML_CONFIG.model_dump(mode="json")
+_BASE["advisory"]["shadow"]["entry_modes"] = {}
+CONFIG = AppConfig.model_validate(_BASE)
 
 
 def tracker(

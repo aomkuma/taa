@@ -111,6 +111,10 @@ class TimeframesConfig(StrictModel):
     candle_close_grace_seconds: float = Field(default=3.0, ge=0, le=60)
     stale_tick_seconds: float = Field(default=120.0, gt=0)
     max_gap_bars: int = Field(default=3, ge=0)  # the longest hole in trading hours (quality.py)
+    # TAA-L809: higher-timeframe market map (trend vs consolidation, demand/supply zones) for every setup.
+    # Measured on every signal (ctx: features); never a strategy frame, so it adds no quality flags.
+    context: list[Timeframe] = Field(default_factory=list, description="empty: no market map (today)")
+    context_bars: int = Field(default=700, ge=300, le=5000, description="closed bars per context timeframe")
 
     @model_validator(mode="after")
     def _order(self) -> TimeframesConfig:
@@ -118,6 +122,11 @@ class TimeframesConfig(StrictModel):
             raise ValueError("higher timeframe must be longer than the entry timeframe")
         if self.refinement and self.refinement.seconds >= self.entry.seconds:
             raise ValueError("refinement timeframe must be shorter than the entry timeframe")
+        if len(set(self.context)) != len(self.context):
+            raise ValueError("timeframes.context: no duplicates")
+        for tf in self.context:
+            if tf.seconds <= self.entry.seconds:
+                raise ValueError(f"timeframes.context: {tf} must be longer than the entry timeframe")
         return self
 
     @property
@@ -533,6 +542,30 @@ class EntryModesConfig(StrictModel):
         return self
 
 
+class ContextMapConfig(StrictModel):
+    """Parameters of the higher-timeframe market map (TAA-L809; app/indicators/market_map.py)."""
+
+    er_bars: int = Field(default=20, ge=5, le=200, description="efficiency-ratio window")
+    er_trend: float = Field(default=0.3, gt=0, lt=1)
+    er_range: float = Field(default=0.25, gt=0, lt=1)
+    switch_bars: int = Field(default=2, ge=1, le=20, description="hysteresis: bars before a state changes")
+    range_bars: int = Field(default=30, ge=5, le=500)
+    compression_pct: float = Field(default=20.0, gt=0, lt=100)
+    zone_lookback_bars: int = Field(default=400, ge=50, le=5000)
+    zone_tolerance_atr: float = Field(default=0.5, gt=0, le=5)
+    min_touches: int = Field(default=2, ge=1, le=20)
+    displacement_atr: float = Field(default=2.0, gt=0, le=20)
+    max_tests: int = Field(default=3, ge=0, le=50)
+    max_zones: int = Field(default=6, ge=1, le=50, description="per kind, nearest first")
+    zone_near_atr: float = Field(default=0.25, ge=0, le=5)
+
+    @model_validator(mode="after")
+    def _check(self) -> ContextMapConfig:
+        if self.er_range > self.er_trend:
+            raise ValueError("context_map: er_range must not exceed er_trend")
+        return self
+
+
 class ShadowConfig(StrictModel):
     """Hypothetical trades for every opportunity (PLAN §A27); results are labelled hypothetical."""
 
@@ -776,6 +809,7 @@ class AppConfig(StrictModel):
     timeframes: TimeframesConfig = Field(default_factory=TimeframesConfig)
     indicators: IndicatorParams = Field(default_factory=IndicatorParams)
     regime: RegimeConfig = Field(default_factory=RegimeConfig)
+    context_map: ContextMapConfig = Field(default_factory=ContextMapConfig)
     strategies: StrategiesConfig = Field(default_factory=StrategiesConfig)
     risk: RiskConfig = Field(default_factory=RiskConfig)
     sessions: SessionsConfig = Field(default_factory=SessionsConfig)

@@ -63,7 +63,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
 | M3 | Phase L7 — Entry timing (right direction, wrong time) | 8 | 2 | IN PROGRESS |
-| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 8 | 1 | IN PROGRESS |
+| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 10 | 1 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
 ## Milestone 3 — Learning layer
@@ -616,6 +616,38 @@ per-signal budget.
 - [x] `GET /engines/{id}/learning/behavior`, computed on request + Learning page section
 - [x] descriptive, non-judgmental th + en texts; catalogs test passes
 - [x] tests
+
+#### TAA-L809 — Higher-timeframe market map for every setup (L20.9, 2026-10-09)
+
+- **Status:** IN PROGRESS
+- **Depends on:** — (the bar-based parts of L302 and L703; their profile/tick parts stay there)
+
+The owner's request (2026-10-09): every setup looks further back, with demand/supply zones and trend vs
+consolidation from higher timeframes as core axes, in the analysis and on the chart; measured first, a filter
+for a setup only after it holds walk-forward.
+
+- [x] `app/indicators/market_map.py` (pure, closed bars only): state UP/DOWN/RANGE/TRANSITION per context bar (ADX, efficiency ratio, EMA and swing structure, hysteresis), compression, range box, DEMAND/SUPPLY zones from swing clusters and bases before displacement legs (tests, invalidation); no-look-ahead mutation test
+- [x] `timeframes.context` (code default empty = today) and `context_map:`; `MapBook` cache (`app/strategy/market_maps.py`); `MarketContext.htf` (stored only when present); live `ContextBuilder`, replay (`load_context`) — never a strategy frame, so no quality flags
+- [x] `ctx:<tf>_*` signal features (trend with the side, range, range position, compression, zone with the side + strength, room to the opposing zone in R, opposing zone before the TP) on opportunities and shadow rows; golden unchanged with the context off; config.yaml `context: [H4, D1]`
+- [ ] backtester: the same map through `bar_context` (with the hook H1 gate, Step 6)
+- [ ] research harness reads every `ctx:*` feature; symbol hold-out in `research()` and `--holdout-symbols`
+- [ ] PWA chart: 1000 bars; `GET /engines/{id}/market-map?symbol=` from the cloud's H4/D1 candles with the same functions; zones as bands, state chips, range box; zod, i18n th + en, page tests from api samples
+- [ ] docs: `docs/INDICATORS.md` (market map), `docs/STRATEGIES.md` (the ctx axes per setup)
+
+#### TAA-L810 — Setup workbench: `setup_harmonic_prz` first (2026-10-09)
+
+- **Status:** IN PROGRESS
+- **Depends on:** L809 (features), L707 (harness)
+
+One setup at a time until it is proven or dropped (owner, 2026-10-09); the bot trades only the setup under
+study, shadow keeps recording every setup.
+
+- [x] config: the forex majors + gold (`symbols.allowed`), the bot trades only `setup_harmonic_prz`; history for USDCHF, AUDUSD, USDCAD, NZDUSD (M5-D1) and H4/D1 depth for all eight
+- [ ] harmonic-only replay on the eight symbols with the H4/D1 map (`research replay-family harmonic`)
+- [ ] `research hypotheses` on harmonic: direction information, exits (far targets), stops, the ctx axes; walk-forward + symbol hold-out; at most 3-5 pre-registered hypotheses judged
+- [ ] variants needing a replay: swing size, ratio tolerance, H1 entries, nearer targets
+- [ ] SETUP_REVIEW §11 with the decision (a harmonic version with its context rule, or drop) and the next setup
+- [ ] hook H1 `CandidateFilter` + `app/learning/context_gate.py` (disable-only per-setup rules, `CONTEXT_GATE`, shadow records "would block"), only after a rule holds
 
 ### Phase L9 — Squad mode (team of specialist bots)
 

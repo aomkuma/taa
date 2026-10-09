@@ -859,3 +859,19 @@ def _as_epoch(value: Any) -> int:
             raise ValueError("naive datetime passed to FakeMT5")
         return int(value.timestamp())
     return int(value)
+
+
+# The remaining forex majors (owner, 2026-10-09: the bot trades all majors + gold). Kept out of ALL_SYMBOLS so
+# the catalog-shaped tests and API samples stay as they are; the factory's dev/doctor broker serves them too.
+MAJOR_SYMBOLS: dict[str, FakeSymbol] = {
+    "USDCHF": FakeSymbol(
+        "USDCHF", 0.8800, 0.00010, 5, 100_000, "USD", "CHF", 14, path="Forex\\Majors\\USDCHF"
+    ),
+    "USDCAD": FakeSymbol(
+        "USDCAD", 1.3600, 0.00010, 5, 100_000, "USD", "CAD", 14, path="Forex\\Majors\\USDCAD"
+    ),
+    "NZDUSD": FakeSymbol(
+        "NZDUSD", 0.6000, 0.00010, 5, 100_000, "NZD", "USD", 15, path="Forex\\Majors\\NZDUSD"
+    ),
+}
+FACTORY_SYMBOLS: dict[str, FakeSymbol] = {**ALL_SYMBOLS, **MAJOR_SYMBOLS}

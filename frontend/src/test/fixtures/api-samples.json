@@ -8326,7 +8326,7 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "126bfaa2dd5d36bd",
+        "config_hash": "3cb13b5d30dbeef5",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
         "detectors": [],
         "seed": 42,
@@ -8453,7 +8453,7 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "126bfaa2dd5d36bd",
+          "config_hash": "3cb13b5d30dbeef5",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "detectors": [],
           "seed": 42,
@@ -8509,7 +8509,7 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "126bfaa2dd5d36bd",
+          "config_hash": "3cb13b5d30dbeef5",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "detectors": [],
           "seed": 42,
@@ -9049,6 +9049,21 @@
           "spread_spike_multiple": 3.0,
           "stale_data_seconds": 120.0
         },
+        "context_map": {
+          "compression_pct": 20.0,
+          "displacement_atr": 2.0,
+          "er_bars": 20,
+          "er_range": 0.25,
+          "er_trend": 0.3,
+          "max_tests": 3,
+          "max_zones": 6,
+          "min_touches": 2,
+          "range_bars": 30,
+          "switch_bars": 2,
+          "zone_lookback_bars": 400,
+          "zone_near_atr": 0.25,
+          "zone_tolerance_atr": 0.5
+        },
         "engine": {
           "candle_poll_seconds": 2.0,
           "clock_verify_minutes": 10.0,
@@ -9313,6 +9328,11 @@
         },
         "timeframes": {
           "candle_close_grace_seconds": 3.0,
+          "context": [
+            "H4",
+            "D1"
+          ],
+          "context_bars": 700,
           "entry": "M15",
           "higher": "H1",
           "max_gap_bars": 3,
