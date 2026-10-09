@@ -9264,6 +9264,10 @@
             "EURUSD",
             "GBPUSD",
             "USDJPY",
+            "USDCHF",
+            "AUDUSD",
+            "USDCAD",
+            "NZDUSD",
             "XAUUSD"
           ],
           "clock_fallback_symbols": [

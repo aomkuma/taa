@@ -3,7 +3,7 @@
 # Risk values are PERCENT of equity (0.5 = 0.5%). Hard ceilings: 3% per trade, 10% daily, 50% drawdown.
 
 symbols:
-  allowed: [EURUSD, GBPUSD, USDJPY, XAUUSD]
+  allowed: [EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD, XAUUSD]   # the forex majors + gold (owner, 2026-10-09)
   reference_symbol: EURUSD          # liquid symbol used to verify broker server time
   clock_fallback_symbols: [BTCUSD, ETHUSD]   # 24/7 crypto: verifies server time on weekends
   overrides:
@@ -46,19 +46,19 @@ strategies:
   allow_single_indicator_signals: false
   items:
     - name: example_trend_pullback  # DEMONSTRATION ONLY - not production-proven
-      enabled: true
+      enabled: false
       params: {}
-    # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. They need the evidence engine. All on
-    # since 2026-10-05 (the user's choice: the bot follows every opportunity; PAPER only), so their paper and
-    # shadow results accumulate; risk limits and breakers still gate every order.
-    - {name: setup_neckline_break, enabled: true}
-    - {name: setup_pattern_breakout, enabled: true}
-    - {name: setup_fib_pullback, enabled: true}
-    - {name: setup_harmonic_prz, enabled: true}
-    - {name: setup_elliott_wave, enabled: true}
-    - {name: setup_smc_reversal, enabled: true}    # needs max_age_bars >= confirm_window for sweep/CHoCH
-    - {name: setup_breakout, enabled: true}
-    - {name: setup_candle_reversal, enabled: true}
+    # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. Owner, 2026-10-09: one setup at a time
+    # (docs/SETUP_REVIEW.md §11): the bot trades only the setup under study; `enabled: false` stops only the
+    # bot's trading, the scanner and shadow keep every setup the users follow (app/advisory/requirements.py).
+    - {name: setup_neckline_break, enabled: false}
+    - {name: setup_pattern_breakout, enabled: false}
+    - {name: setup_fib_pullback, enabled: false}
+    - {name: setup_harmonic_prz, enabled: true}    # under study (TAA-L810)
+    - {name: setup_elliott_wave, enabled: false}
+    - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
+    - {name: setup_breakout, enabled: false}
+    - {name: setup_candle_reversal, enabled: false}
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
