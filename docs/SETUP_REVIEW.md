@@ -235,6 +235,43 @@ lever reduces their loss but does not turn it. Harmonics are the one place where
 which makes them the better candidate for further work (more symbols, M5, swing size and tolerance variants,
 targets nearer than the far D-leg projection), measured the same way.
 
+## 11. Setup workbench: `setup_harmonic_prz` on eight symbols (2026-10-09)
+
+Owner, 2026-10-09: one setup at a time; **target ≥ +0.15 R/trade net of costs** (90 % CI lower bound > 0 in both
+halves), ≥ 300 trades a year on the eight symbols (EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD,
+XAUUSD), max drawdown ≤ 15 R. Harmonic-only replay with the H4/D1 market map on every signal
+(`research replay-family harmonic`), analysed with `research hypotheses --holdout-symbols AUDUSD,XAUUSD`
+(`data/research/l810_harmonic_M15.txt`).
+
+| | Mean R [90 % CI] | Oct-Mar / Apr-Oct |
+|---|---|---|
+| as traded (821 signals, ~820 a year) | **+0.021 [−0.07, +0.11]** | +0.013 / +0.030 |
+| the other direction | −0.135 | −0.08 / −0.20 |
+| random direction (expectation) | −0.057 | −0.04 / −0.09 |
+
+- **Gap to the target: about +0.13 R per trade.** The direction carries information on all eight symbols (+0.16 R
+  over the other direction, +0.08 R over random, both halves), but the result is about zero after costs.
+- Exits: nearer targets are worse (1 R −0.017, 0.5 R −0.10); wider stops ~0 (+0.01 to +0.03); a retest entry does
+  not help (−0.015 at 0.5 R / 2 R). 73 % of the stopped trades reached their target later, yet no exit or stop
+  variant turns that into a gain: the losers' paths do not separate from the winners' at entry.
+- Walk-forward: the best rule of one half (a ×2 stop) gives +0.01 to +0.02 R on the other half and −0.04 to −0.09 R
+  on the hold-out symbols. Context rules (115 candidates incl. the H4/D1 map features): the best of each half fall
+  to about zero on the hold-out symbols; a low cost share (spread ≤ ~0.13 of the stop) holds on the other half
+  (+0.12 to +0.16 R) but not on the hold-out symbols (−0.01 to −0.02 R).
+- **Decision:** no harmonic rule reaches the target yet; the bot keeps trading it on DEMO only as the measured
+  setup. Next (owner, 2026-10-09): the **pre-run price behaviour** study, independent of the setup (§12).
+
+## 12. Pre-run price behaviour (owner's question, 2026-10-09)
+
+The owner's observation: before price really runs it often swings or makes a false break (60-70 %), more so
+before the New York open, before news and in the illiquid morning. **Not** a request to trade against the break:
+the setup keeps its direction; the question is the entry timing after that behaviour. Measured so far (S/R zones
+from swings, 8 symbols, one year): a close back inside the zone within 3 bars after a break 45 % (M15) / 44 %
+(H1), within 12 bars **69 % / 66 %**, the same on every symbol. Planned study: (1) what happens before real runs
+(sweep of the other side, break-and-shake, compression), how long and how deep, by session and news time;
+(2) entry-timing rules in the setup's direction (wait for the sweep / false break to finish, stop beyond its
+extreme; avoid or delay the high-false-break hours), walk-forward with hold-out symbols on every setup.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun

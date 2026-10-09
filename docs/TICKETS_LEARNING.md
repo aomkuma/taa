@@ -643,8 +643,8 @@ One setup at a time until it is proven or dropped (owner, 2026-10-09); the bot t
 study, shadow keeps recording every setup.
 
 - [x] config: the forex majors + gold (`symbols.allowed`), the bot trades only `setup_harmonic_prz`; history for USDCHF, AUDUSD, USDCAD, NZDUSD (M5-D1) and H4/D1 depth for all eight
-- [ ] harmonic-only replay on the eight symbols with the H4/D1 map (`research replay-family harmonic`)
-- [ ] `research hypotheses` on harmonic: direction information, exits (far targets), stops, the ctx axes; walk-forward + symbol hold-out; at most 3-5 pre-registered hypotheses judged
+- [x] harmonic-only replay on the eight symbols with the H4/D1 map (`research replay-family harmonic`)
+- [x] `research hypotheses` on harmonic: direction information, exits (far targets), stops, the ctx axes; walk-forward + symbol hold-out; at most 3-5 pre-registered hypotheses judged
 - [ ] variants needing a replay: swing size, ratio tolerance, H1 entries, nearer targets
 - [ ] SETUP_REVIEW §11 with the decision (a harmonic version with its context rule, or drop) and the next setup
 - [ ] hook H1 `CandidateFilter` + `app/learning/context_gate.py` (disable-only per-setup rules, `CONTEXT_GATE`, shadow records "would block"), only after a rule holds
