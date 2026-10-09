@@ -467,3 +467,34 @@ def test_random_direction_is_the_mean_of_both_directions() -> None:
     p, m = path([(0, 2.1, -0.2, 2)]), path([(0, 0.2, -2.1, -2)])
     assert rand.run(signal(), p, m) == pytest.approx((2.0 - 1.0) / 2)
     assert rand.run(signal(), p, None) is None
+
+
+def test_context_reads_every_numeric_ctx_feature() -> None:
+    from app.learning.research import context_of
+
+    s = dataclasses.replace(
+        signal(at=T0), features={"ctx:h4_zone_with": 1.0, "ctx:session=LONDON": 1.0, "ctx:htf_aligned": 1.0}
+    )
+    bars = frame([(1.1, 1.101, 1.099, 1.1)] * 300, start=T0 - 299 * M5)
+    ctx = context_of([s], {"EURUSD": context_frame(bars)})
+    assert ctx[s.shadow_id]["ctx:h4_zone_with"] == 1.0
+    assert "ctx:session=LONDON" not in ctx[s.shadow_id] and ctx[s.shadow_id]["htf_aligned"] == 1.0
+
+
+def test_hold_out_symbols_never_choose_a_rule_but_judge_it() -> None:
+    rng = np.random.default_rng(9)
+    signals, paths = [], {}
+    for i in range(400):
+        sym = "GBPUSD" if i % 4 == 0 else "EURUSD"
+        s = signal(sid=f"h{i}", at=T0 + timedelta(hours=3 * i), symbol=sym)
+        s = dataclasses.replace(s, features={"ctx:h4_trend": float(i % 2)})
+        fav, adv = float(rng.uniform(0, 3)), float(rng.uniform(-1.5, 0))
+        signals.append(s)
+        paths[s.shadow_id] = path([(0, fav, adv, fav + adv)])
+    rows = [(1.1, 1.101, 1.099, 1.1)] * 6000
+    bars = {sym: frame(rows, start=T0 - 1000 * M5) for sym in ("EURUSD", "GBPUSD")}
+    report = research(signals, paths, {}, bars, resamples=100, holdout_symbols=frozenset({"GBPUSD"}))
+    assert report.holdout_symbols == ["GBPUSD"]
+    assert all(wf.holdout is not None and wf.holdout.n <= 100 for wf in report.walk_forward)
+    assert all(rule.holdout is not None for rule in report.context)
+    assert all(rule.chosen_n <= 300 for rule in report.context)  # chosen on the 300 EURUSD signals only

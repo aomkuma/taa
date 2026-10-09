@@ -485,12 +485,19 @@ class WalkForward:
     candidates: int  # how many rules it was chosen from (multiple testing)
     chosen_mean: float
     judged: Stat
+    holdout: Stat | None = None  # the same rule on the hold-out symbols (both halves), when any
 
 
 def walk_forward(
-    rows: Sequence[Row], *, measure: str = "result", min_n: int = MIN_RULE_N
+    rows: Sequence[Row],
+    *,
+    measure: str = "result",
+    min_n: int = MIN_RULE_N,
+    holdout: Sequence[Row] = (),
 ) -> list[WalkForward]:
-    """For each half: pick the row with the best mean on it, report that row on the other half."""
+    """For each half: pick the row with the best mean on it, report that row on the other half (and on the
+    *holdout* rows of the hold-out symbols, both halves, when given)."""
+    held = {r.label: r for r in holdout}
     out = []
     for chosen_on, judged_on in (("first", "second"), ("second", "first")):
         best: tuple[float, Row] | None = None
@@ -510,7 +517,14 @@ def walk_forward(
         chosen = best[1].result if measure == "result" else best[1].paired
         if chosen is None:
             continue
-        out.append(WalkForward(chosen_on, best[1].label, candidates, best[0], getattr(chosen, judged_on)))
+        hold_row = held.get(best[1].label)
+        hold = None
+        if hold_row is not None:
+            hold_halves = hold_row.result if measure == "result" else hold_row.paired
+            hold = None if hold_halves is None else hold_halves.all
+        out.append(
+            WalkForward(chosen_on, best[1].label, candidates, best[0], getattr(chosen, judged_on), hold)
+        )
     return out
 
 
@@ -562,6 +576,13 @@ def context_of(signals: Sequence[Signal], frames: Mapping[str, pd.DataFrame]) ->
             "cost_share": s.spread / s.risk,
             "first_of_day": 1.0 if first_of_day else 0.0,
             "htf_aligned": float(s.features.get("ctx:htf_aligned", 0.0)),
+            # every numeric ctx: feature recorded at signal time (the H4/D1 market map, TAA-L809); one-hots
+            # (``ctx:session=…``) are left to their own rows
+            **{
+                k: float(v)
+                for k, v in s.features.items()
+                if k.startswith("ctx:") and "=" not in k and k != "ctx:htf_aligned"
+            },
         }
     return out
 
@@ -577,6 +598,7 @@ class ContextRule:
     chosen_mean: float
     chosen_n: int
     judged: Stat
+    holdout: Stat | None = None  # the rule on the hold-out symbols (both halves), when any
 
 
 def context_rules(
@@ -587,9 +609,15 @@ def context_rules(
     min_n: int = MIN_RULE_N,
     seed: int = 0,
     resamples: int = RESAMPLES,
+    holdout: Mapping[str, tuple[bool, float]] | None = None,
 ) -> tuple[list[ContextRule], int]:
-    """Quartile-edge rules per feature, chosen per half and judged on the other; also the candidate count."""
+    """Quartile-edge rules per feature, chosen per half and judged on the other; also the candidate count.
+
+    With *holdout* (signal id -> (first half, R) of the hold-out symbols) each rule is also reported there.
+    """
     rows = [(values[k][0], values[k][1], context[k]) for k in values if k in context]
+    hold_map = holdout or {}
+    held = [(hold_map[k][1], context[k]) for k in hold_map if k in context]
     out: list[ContextRule] = []
     candidates = 0
     for chosen_on, first_flag in (("first", True), ("second", False)):
@@ -615,7 +643,15 @@ def context_rules(
                 if feature in c and not math.isnan(c[feature]) and ((c[feature] <= edge) == (op == "<="))
             ]
             stat = summarize(judged, seed=seed, resamples=resamples)
-            out.append(ContextRule(chosen_on, feature, op, round(edge, 4), round(mean, 4), n, stat))
+            hold = None
+            if held:
+                matched = [
+                    r
+                    for r, c in held
+                    if feature in c and not math.isnan(c[feature]) and ((c[feature] <= edge) == (op == "<="))
+                ]
+                hold = summarize(matched, seed=seed, resamples=resamples)
+            out.append(ContextRule(chosen_on, feature, op, round(edge, 4), round(mean, 4), n, stat, hold))
     return out, candidates
 
 
@@ -673,6 +709,7 @@ class ResearchReport:
     context_candidates: int
     losers: LoserProfile
     by_symbol: dict[str, Stat]  # as traded, per symbol
+    holdout_symbols: list[str] = field(default_factory=list)  # rules were chosen without these symbols
     notes: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -691,20 +728,36 @@ def research(
     split_at: datetime | None = None,
     seed: int = 0,
     resamples: int = RESAMPLES,
+    holdout_symbols: frozenset[str] = frozenset(),
 ) -> ResearchReport:
     """The hypothesis set for one strategy: *paths*/*mirrors* by signal id, *frames* (entry TF) by symbol."""
     if not signals:
         raise ResearchError("no closed PLAN shadow trades for this selection")
     split = ensure_utc(split_at) if split_at is not None else split_time(signals)
     items = [(s, paths[s.shadow_id], mirrors.get(s.shadow_id)) for s in signals if s.shadow_id in paths]
-    rows = evaluate(
-        items, hypotheses or default_hypotheses(seed), split_at=split, seed=seed, resamples=resamples
+    hyps = hypotheses or default_hypotheses(seed)
+    rows = evaluate(items, hyps, split_at=split, seed=seed, resamples=resamples)
+    groups = {"exit", "stop", "retest", "reentry", "baseline"}
+    # rules are chosen on the symbols outside the hold-out only; the hold-out judges them once more
+    train = [it for it in items if it[0].symbol not in holdout_symbols]
+    held = [it for it in items if it[0].symbol in holdout_symbols]
+    chooser = (
+        rows if not holdout_symbols else evaluate(train, hyps, split_at=split, seed=seed, resamples=resamples)
     )
-    market = [r for r in rows if r.group in {"exit", "stop", "retest", "reentry", "baseline"}]
+    held_rows = [] if not held else evaluate(held, hyps, split_at=split, seed=seed, resamples=resamples)
+    market = [r for r in chooser if r.group in groups]
+    market_held = [r for r in held_rows if r.group in groups]
     as_traded = {s.shadow_id: (s.signal_at < split, simulate(p)) for s, p, _ in items if len(p)}
     values = {k: (first, v) for k, (first, v) in as_traded.items() if v is not None}
+    held_ids = {s.shadow_id for s, _, _ in held}
     ctx = context_of(signals, {sym: context_frame(df) for sym, df in frames.items()})
-    rules, candidates = context_rules(values, ctx, seed=seed, resamples=resamples)
+    rules, candidates = context_rules(
+        {k: v for k, v in values.items() if k not in held_ids},
+        ctx,
+        seed=seed,
+        resamples=resamples,
+        holdout={k: v for k, v in values.items() if k in held_ids} or None,
+    )
     by_symbol: dict[str, list[float]] = defaultdict(list)
     for s, p, _ in items:
         v = simulate(p)
@@ -717,8 +770,9 @@ def research(
         with_path=sum(1 for _, p, _ in items if len(p)),
         split_at=split,
         rows=rows,
-        walk_forward=walk_forward(market),
-        walk_forward_paired=walk_forward(market, measure="paired"),
+        walk_forward=walk_forward(market, holdout=market_held),
+        walk_forward_paired=walk_forward(market, measure="paired", holdout=market_held),
+        holdout_symbols=sorted(holdout_symbols),
         context=rules,
         context_candidates=candidates,
         losers=loser_profile(p for _, p, _ in items),

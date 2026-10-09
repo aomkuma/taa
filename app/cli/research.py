@@ -54,6 +54,7 @@ def _print_report(data: dict[str, Any]) -> None:
     print(
         f"{data['strategy']}  timeframes {','.join(data['timeframes'])}  signals {data['signals']}"
         f" (with a path {data['with_path']})  halves split at {data['split_at'][:10]}"
+        + (f"  hold-out symbols {','.join(data['holdout_symbols'])}" if data.get("holdout_symbols") else "")
     )
     losers = data["losers"]
     print(
@@ -88,17 +89,19 @@ def _print_report(data: dict[str, Any]) -> None:
     for title, key in (("own result", "walk_forward"), ("paired effect", "walk_forward_paired")):
         print(f"\n  walk-forward ({title}): best on one half, judged on the other")
         for wf in data[key]:
+            hold = "" if wf.get("holdout") is None else f"; hold-out symbols {_fmt(wf['holdout']).strip()}"
             print(
                 f"    chosen on the {wf['chosen_on']} half among {wf['candidates']}: {wf['label']} "
-                f"({wf['chosen_mean']:+.3f}) -> other half {_fmt(wf['judged']).strip()}"
+                f"({wf['chosen_mean']:+.3f}) -> other half {_fmt(wf['judged']).strip()}{hold}"
             )
     print(
         f"\n  context rules chosen on one half ({data['context_candidates']} candidates), judged on the other"
     )
     for rule in data["context"]:
+        hold = "" if rule.get("holdout") is None else f"; hold-out {_fmt(rule['holdout']).strip()}"
         print(
             f"    {rule['chosen_on']:6} {rule['feature']} {rule['op']} {rule['edge']:g}: "
-            f"{rule['chosen_mean']:+.3f} (n={rule['chosen_n']}) -> {_fmt(rule['judged']).strip()}"
+            f"{rule['chosen_mean']:+.3f} (n={rule['chosen_n']}) -> {_fmt(rule['judged']).strip()}{hold}"
         )
     for note in data["notes"]:
         print(f"  ({note})")
@@ -129,6 +132,7 @@ def cmd_research_hypotheses(
         split_at=split,
         seed=args.seed,
         resamples=args.resamples,
+        holdout_symbols=frozenset(x for x in (args.holdout_symbols or "").split(",") if x),
     )
     data = report.to_dict()
     data["resolution"] = inputs.resolution
@@ -267,6 +271,11 @@ def add_parser(
     )
     hyp.add_argument("--seed", type=int, default=0)
     hyp.add_argument("--resamples", type=int, default=1000)
+    hyp.add_argument(
+        "--holdout-symbols",
+        default=None,
+        help="comma-separated: rules are chosen without these symbols and judged on them too",
+    )
     hyp.add_argument("--json", action="store_true")
     hyp.set_defaults(func=hypotheses)
     fam = res_sub.add_parser("replay-family", help="one-year advisory replay per symbol into data/research")
