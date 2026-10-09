@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 from datetime import timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 
@@ -426,3 +426,35 @@ class TestPositionsOnOtherSymbols:
         assert self.unknown(
             eng.decide(request(specs={"EURUSD": EURUSD_SPEC}, **self.manual()))
         )  # fail closed
+
+
+class TestInvertedLimits:
+    """Inverted setups (owner, 2026-10-09): only the RR floor and the SL cap change, and only for them."""
+
+    INV: ClassVar[dict[str, Any]] = risk(inverted={"min_risk_reward": 0.2, "max_sl_atr_multiple": 12})
+    GEOMETRY: ClassVar[dict[str, float]] = {"stop_loss": 1.0960, "take_profit": 1.1020}  # RR 0.5
+
+    def _reasons(self, db: Database, setup: Setup, codes: tuple[str, ...], **kw: Any) -> tuple[str, ...]:
+        return (
+            engine(db, setup)
+            .decide(request(**signal(reason_codes=codes, **self.GEOMETRY), **kw))
+            .reason_codes
+        )
+
+    def test_an_inverted_signal_passes_the_rr_floor_and_the_sl_cap(self, db: Database) -> None:
+        reasons = self._reasons(db, Setup(config=self.INV), ("NECKLINE_BREAK", "INVERTED"))
+        assert "RR_TOO_LOW" not in reasons and "SL_TOO_FAR" not in reasons
+
+    def test_the_profile_min_rr_does_not_apply_to_it(self, db: Database) -> None:
+        from app.risk.limits import ProfileLimits
+
+        reasons = self._reasons(
+            db, Setup(config=self.INV), ("INVERTED",), profile_limits=ProfileLimits(min_risk_reward=2.5)
+        )
+        assert "RR_TOO_LOW" not in reasons
+
+    def test_an_original_with_the_same_geometry_is_still_rejected(self, db: Database) -> None:
+        assert "RR_TOO_LOW" in self._reasons(db, Setup(config=self.INV), ("NECKLINE_BREAK",))
+
+    def test_without_the_config_inverted_signals_cannot_trade(self, db: Database) -> None:
+        assert "RR_TOO_LOW" in self._reasons(db, Setup(), ("INVERTED",))

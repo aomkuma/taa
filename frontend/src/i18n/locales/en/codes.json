@@ -177,7 +177,9 @@
     "CONFLICT": "Conflicting signals",
     "LOWER_RANK": "Another signal ranked higher",
     "STRATEGY_ERROR": "Strategy error",
-    "DEMO_UNPROVEN": "Demonstration strategy, not proven"
+    "DEMO_UNPROVEN": "Demonstration strategy, not proven",
+    "INVERTED": "Inverted setup (the original signal on the other side)",
+    "NO_TARGET": "The original signal has no target, so the inverted trade has no stop"
   },
   "strategyState": {
     "ENABLED": "Enabled",
@@ -202,7 +204,16 @@
     "setup_elliott_wave": "Possible start of wave 3 or wave 5 of the primary (heuristic) count. Unproven.",
     "setup_smc_reversal": "Smart money: liquidity sweep + CHoCH + FVG retest; stop beyond the sweep extreme. Unproven.",
     "setup_breakout": "Donchian channel and Asian / London / New York opening-range breakouts. Unproven.",
-    "setup_candle_reversal": "Reversal candlestick at a level (S/R, Fibonacci, pivots, trendline). Unproven."
+    "setup_candle_reversal": "Reversal candlestick at a level (S/R, Fibonacci, pivots, trendline). Unproven.",
+    "example_trend_pullback_inverted": "Trend pullback (example) signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven.",
+    "setup_neckline_break_inverted": "Neckline break signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven.",
+    "setup_pattern_breakout_inverted": "Chart-pattern breakout signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven.",
+    "setup_fib_pullback_inverted": "Fibonacci pullback signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven.",
+    "setup_harmonic_prz_inverted": "Harmonic PRZ signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven.",
+    "setup_elliott_wave_inverted": "Elliott wave signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven.",
+    "setup_smc_reversal_inverted": "SMC reversal signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven.",
+    "setup_breakout_inverted": "Range breakout signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven.",
+    "setup_candle_reversal_inverted": "Candlestick reversal signals traded on the other side: the stop at the original's target and the target at the original's stop. Bot only, DEMO. Unproven."
   },
   "backtestStatus": {
     "QUEUED": "Queued",
@@ -252,7 +263,16 @@
     "setup_elliott_wave": "Elliott wave",
     "setup_smc_reversal": "SMC reversal",
     "setup_breakout": "Range breakout",
-    "setup_candle_reversal": "Candlestick reversal"
+    "setup_candle_reversal": "Candlestick reversal",
+    "example_trend_pullback_inverted": "Trend pullback (example) (inverted)",
+    "setup_neckline_break_inverted": "Neckline break (inverted)",
+    "setup_pattern_breakout_inverted": "Chart-pattern breakout (inverted)",
+    "setup_fib_pullback_inverted": "Fibonacci pullback (inverted)",
+    "setup_harmonic_prz_inverted": "Harmonic PRZ (inverted)",
+    "setup_elliott_wave_inverted": "Elliott wave (inverted)",
+    "setup_smc_reversal_inverted": "SMC reversal (inverted)",
+    "setup_breakout_inverted": "Range breakout (inverted)",
+    "setup_candle_reversal_inverted": "Candlestick reversal (inverted)"
   },
   "gate": {
     "G1_TRADABLE": "Tradable",

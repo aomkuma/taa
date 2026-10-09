@@ -216,7 +216,7 @@ class TestCatalog:
             }
         )  # config.yaml trades one setup at a time (2026-10-09); every listed one must still build
         built = default_registry().from_config(items, settings.config.timeframes)
-        assert built.names[0] == "example_trend_pullback" and len(built.names) == 9  # with the 8 setups
+        assert built.names[0] == "example_trend_pullback" and len(built.names) == 18  # 9 + 9 inverted
         assert built.strategies[0].demo_only
 
     def test_unknown_param_is_a_config_error(self) -> None:

@@ -44,6 +44,8 @@ class BaseStrategy(ABC):
     version: ClassVar[str] = "1.0.0"
     description: ClassVar[str] = ""
     demo_only: ClassVar[bool] = True  # not production-proven; the PWA labels its signals accordingly
+    advised: ClassVar[bool] = True  # offered to users as a theory / alert source; False: the bot only
+    inverted: ClassVar[bool] = False  # an inverted setup (app/strategy/inverted.py)
     Params: ClassVar[type[StrategyParams]] = StrategyParams
     # evidence families the checklist already measures: they add no confluence support (TAA-307)
     core_families: ClassVar[frozenset[Family]] = frozenset()

@@ -498,7 +498,7 @@ def validate_against_catalogs(
     for name in sorted(theories.pattern_strategies):
         if name not in strategies.names:
             problems.append(f"unknown strategy {name!r}")
-        elif not issubclass(strategies.get(name), EvidenceSetup):
+        elif not issubclass(strategies.get(name), EvidenceSetup) or not strategies.get(name).advised:
             problems.append(f"{name!r} is not a pattern strategy")
     return problems
 

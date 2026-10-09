@@ -68,7 +68,11 @@ class ComputeRequirements:
 
 
 def pattern_setups(strategies: StrategyRegistry) -> list[str]:
-    return [n for n in strategies.names if issubclass(strategies.get(n), EvidenceSetup)]
+    return [
+        n
+        for n in strategies.names
+        if issubclass(strategies.get(n), EvidenceSetup) and strategies.get(n).advised  # inverted: bot only
+    ]
 
 
 class AdvisoryConfig(BaseModel):

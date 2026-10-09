@@ -66,17 +66,28 @@ strategies:
     - name: example_trend_pullback  # DEMONSTRATION ONLY - not production-proven
       enabled: false
       params: {}
-    # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. Owner, 2026-10-09: one setup at a time
-    # (docs/SETUP_REVIEW.md §11): the bot trades only the setup under study; `enabled: false` stops only the
-    # bot's trading, the scanner and shadow keep every setup the users follow (app/advisory/requirements.py).
+    # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. `enabled: false` stops only the bot's
+    # trading; the scanner and shadow keep every setup the users follow (app/advisory/requirements.py). Owner,
+    # 2026-10-09: the bot trades the inverted copies below (docs/SETUP_REVIEW.md §13), not the originals.
     - {name: setup_neckline_break, enabled: false}
     - {name: setup_pattern_breakout, enabled: false}
     - {name: setup_fib_pullback, enabled: false}
-    - {name: setup_harmonic_prz, enabled: true}    # under study (TAA-L810)
+    - {name: setup_harmonic_prz, enabled: false}   # studied (TAA-L810); its inverted copy is traded
     - {name: setup_elliott_wave, enabled: false}
     - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
     - {name: setup_breakout, enabled: false}
     - {name: setup_candle_reversal, enabled: false}
+    # Inverted setups (owner, 2026-10-09; app/strategy/inverted.py): the same signals on the other side, SL and TP
+    # at the original's TP and SL prices. The bot trades these on DEMO; never advised to users.
+    - {name: example_trend_pullback_inverted, enabled: true}
+    - {name: setup_neckline_break_inverted, enabled: true}
+    - {name: setup_pattern_breakout_inverted, enabled: true}
+    - {name: setup_fib_pullback_inverted, enabled: true}
+    - {name: setup_harmonic_prz_inverted, enabled: true}
+    - {name: setup_elliott_wave_inverted, enabled: true}
+    - {name: setup_smc_reversal_inverted, enabled: true}
+    - {name: setup_breakout_inverted, enabled: true}
+    - {name: setup_candle_reversal_inverted, enabled: true}
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
@@ -95,6 +106,9 @@ risk:
   max_spread_to_sl_ratio: 0.15
   max_slippage_points: 10
   min_risk_reward: 1.0                # the profile's minimum RR applies (it is never below 1.0)
+  inverted:                         # inverted setups only (owner, 2026-10-09): R:R is the original's inverse and
+    min_risk_reward: 0.2            # the stop sits at the original's target; every other risk rule is unchanged
+    max_sl_atr_multiple: 12
   max_lot: 1.0
   min_margin_level_percent: 500
   max_margin_utilization_percent: 30

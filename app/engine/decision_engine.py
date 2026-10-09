@@ -64,7 +64,7 @@ from app.risk.position_sizer import (
 from app.risk.reasons import Reason
 from app.storage.database import Database
 from app.storage.models import DecisionCheckRow, DecisionRecordRow
-from app.strategy.signal_models import MarketContext, Signal
+from app.strategy.signal_models import MarketContext, ReasonCode, Signal
 
 log = logging.getLogger(__name__)
 
@@ -227,6 +227,16 @@ class DecisionEngine:
             record = self._record(now, profile, Decision.HOLD, req, (), None)
             return self._persist(record)
         risk = effective_risk(self.config.risk, req.profile_limits)
+        inverted = self.config.risk.inverted
+        if inverted is not None and ReasonCode.INVERTED.value in signal.reason_codes:
+            # an inverted setup's R:R is the original's inverse, its stop the original's target: only the RR
+            # floor and the SL cap change (config risk.inverted); the profile's min RR does not apply
+            risk = risk.model_copy(
+                update={
+                    "min_risk_reward": inverted.min_risk_reward,
+                    "max_sl_atr_multiple": inverted.max_sl_atr_multiple,
+                }
+            )
         checks: list[Check] = []
         checks += self._system(req, profile)
         checks += self._mode(req)

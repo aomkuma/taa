@@ -202,6 +202,14 @@ class StrategiesConfig(StrictModel):
     signal_expiry_bars: int = Field(default=1, ge=1)
 
 
+class InvertedRiskConfig(StrictModel):
+    """Limits for inverted setups only: the original's signal on the other side, its SL and TP at the
+    original's TP and SL prices, so R:R is the original's inverse (owner, 2026-10-09). Others unchanged."""
+
+    min_risk_reward: float = Field(default=0.2, gt=0, le=1)
+    max_sl_atr_multiple: float = Field(default=12.0, gt=0, le=30)
+
+
 class RiskConfig(StrictModel):
     max_risk_per_trade_percent: float = Field(default=0.5, gt=0, le=CEILING_RISK_PER_TRADE_PCT)
     max_risk_money_per_trade: float | None = Field(default=None, gt=0)
@@ -242,6 +250,8 @@ class RiskConfig(StrictModel):
     probation_trades: int = Field(default=20, ge=0)
     probation_multiplier: float = Field(default=0.25, gt=0, le=1)
     foreign_positions_policy: Literal["count", "halt"] = "count"
+    # None: inverted signals meet the normal min RR and SL cap, i.e. they cannot trade (code default)
+    inverted: InvertedRiskConfig | None = None
 
     @model_validator(mode="after")
     def _coherence(self) -> RiskConfig:
