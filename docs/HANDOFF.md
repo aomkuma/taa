@@ -1,7 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-07 (the edge session: H1 leads, TAA-L707 research harness, TAA-L702 entry-mode shadow
-variants measured forward). Another session did TAA-1208/925 and demo-tasks fixes at the same time.
+Last updated: 2026-10-09 (setup workbench: the H4/D1 market map, harmonic on eight symbols, the inverted setups
+traded on DEMO, pause/resume of the stack). Other sessions (TAA-1007/1208-1211) may work in parallel.
 This file holds **state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`,
 design decisions in `docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`.
 What was built per ticket is in the git history. A separate **learning track** (Milestone 3) is designed in
@@ -14,29 +14,63 @@ What was built per ticket is in the git history. A separate **learning track** (
 Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ```text
-Continue the TAA project. Read docs/HANDOFF.md first (state, "Next work", gotchas), then docs/TICKETS.md
-(progress, dependencies) and the PLAN sections the next ticket names.
+Continue the TAA project. Read docs/HANDOFF.md first (state, "Next work", gotchas), then docs/INVERTED_SETUPS.md
+and docs/SETUP_REVIEW.md §9-§13 (the edge work), then docs/TICKETS_LEARNING.md (TAA-L702, L809, L810).
 Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
-Work on main, one ticket at a time, in the "Next work" order; another session may work on the learning track
-(docs/*_LEARNING.md): commit by explicit paths only.
-For PWA pages: build page tests from frontend/src/test/fixtures/api-samples.json (real API responses) and add
-every new route a page reads to tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts
-(regenerate with TAA_UPDATE_API_SAMPLES=1). Run the full pytest suite and vitest one after the other, never
-at the same time, and not while the local demo stack runs (the machine runs out of memory).
-Check every change against real data, not only samples: the local stack on the real MT5 demo account (PAPER)
-runs with scripts\start-demo.cmd -Mt5 (http://localhost:8001). After changing Python code or config.yaml,
-restart that stack's web, worker and/or engine (web first when the heartbeat or a migration changed).
-Commit at each ticket boundary (allowed); I push myself. LIVE stays off until I say so; subscriptions stay off.
-Update docs/HANDOFF.md at the end of the session. Chat with me in Thai.
-The goal now is an edge, measured honestly: read docs/SETUP_REVIEW.md, then follow "Next work" (finish the
-setup review, then TAA-L707 and TAA-L702). Test every idea as a hypothesis on the year of replay data in
-data/research/ (scripts in research/2026-10-07-setup-review/), judged walk-forward, before any code change
-reaches the bot. The DEMO stack runs from Task Scheduler (scripts\demo-tasks.ps1); check its health first.
+Work on main; other sessions may run in parallel: commit by explicit paths only, coordinate shared files.
+The owner's goal: >= +0.15 R/trade net of costs, 90 % CI lower bound > 0 in both half-years, >= 300 trades a
+year on the eight symbols, max drawdown <= 15 R. State the gap before and after every experiment. When my meaning
+is unclear, ask back; never guess.
+Since 2026-10-09 the bot trades the nine *_inverted setups on the FBS DEMO account (the originals stay
+shadow-only). First check the DEMO stack: http://127.0.0.1:8766/health (breakers, open positions); I pause it
+with "TAA Pause"/"TAA Resume" on the desktop (scripts\demo-tasks.ps1 -Pause/-Resume) when the laptop closes.
+Report the inverted trades per strategy against their originals' shadow results on the same signals.
+Test every idea on the year of replay in data/research/ with `python -m app.cli research hypotheses`
+(walk-forward + --holdout-symbols) before it reaches the bot. Never run full pytest/vitest/npm build next to
+the running stack (memory crashes): targeted tests only, full suites only while the stack is paused.
+For PWA pages: page tests from frontend/src/test/fixtures/api-samples.json; new routes in
+tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts (TAA_UPDATE_API_SAMPLES=1).
+After Python/config changes restart the stack (demo-tasks -Stop/-Start, web first). Commit per step (allowed);
+I push myself. LIVE stays off until I say so; subscriptions stay off. Update docs/HANDOFF.md at the end.
+Chat with me in Thai.
 ```
 
 ---
 
 ## Current state
+
+### 2026-10-09: setup workbench, market map, inverted setups on DEMO
+
+- **Owner decisions:** the bot trades the forex majors + gold (EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD,
+  NZDUSD, XAUUSD; `.env` `ALLOWED_SYMBOLS` overrides config.yaml and was updated too); the profit target above;
+  one setup at a time (harmonic first), then (same day) **all nine setups inverted on DEMO**.
+- **Market map (TAA-L809, PLAN_LEARNING §L20.9):** `app/indicators/market_map.py` (H4/D1 trend vs
+  consolidation, compression, range box, demand/supply zones), `app/strategy/market_maps.py` (`MapBook`),
+  `MarketContext.htf`, `ctx:h4_*`/`ctx:d1_*` features on every signal (opportunities, shadow rows, replays),
+  `timeframes.context: [H4, D1]`. Measurement only; golden unchanged. Chart: 1000 bars and
+  `GET /engines/{id}/market-map` (zones, state chips, range box); H4/D1 history uploaded to the cloud.
+  Open: the backtester path (with a gate).
+- **Research:** `research hypotheses` reads every `ctx:*` feature and has `--holdout-symbols`; the random
+  baseline is the exact mean of both directions. Harmonic on eight symbols (821 signals): **+0.02 R**
+  [-0.07, +0.11], the direction is informative (+0.16 R over the other side), no exit/stop/context rule
+  survives the hold-out (SETUP_REVIEW §11). False breaks: a close back inside a zone within 12 bars
+  **66-69 %** (M15/H1, all symbols; §12). The **pre-run behaviour study** the owner asked for (sweeps,
+  break-and-shake, compression; by session, pre-NY, pre-news, illiquid mornings; entry timing in the setup's
+  direction) is designed, **not started**.
+- **Inverted setups (docs/INVERTED_SETUPS.md):** `app/strategy/inverted.py`; `risk.inverted` (min RR 0.2, SL
+  cap 12 ATR, `INVERTED` signals only; the profile min RR does not apply); originals `enabled: false`; never
+  advised to users. History estimate (both spreads, R of the original risk): breakout +0.036, pattern breakout
+  +0.059, fib +0.055, harmonic -0.20. On DEMO since 2026-10-09 13:45 UTC: first trade EURUSD BUY 0.07
+  (`setup_breakout_inverted`, entry 1.1193, SL 1.1173, TP 1.1202; it missed TP by 0.3 pip several times),
+  second GBPUSD SELL 0.06. **The owner asked for a summary of the EURUSD trade when it closes** (any result).
+- **Pause/resume (`scripts\demo-tasks.ps1 -Pause/-Resume`, desktop "TAA Pause"/"TAA Resume"):** stops the
+  stack and keeps it stopped (part tasks + check disabled, `data/demo/paused.json`) until resume. Tested both
+  ways on 2026-10-09.
+- **Incident:** UNHANDLED_EXCEPTION tripped three times on 10-09 (DB locked 01:34, MT5 "No IPC connection"
+  07:22 and 12:15 after the laptop slept) and **latched**; reset by hand with the owner's approval (audited).
+- **Checks:** targeted suites green (unit + backtest + golden + scanner/shadow/engine integration + web, about
+  2,700 tests; PWA sample-based tests 271, lint, typecheck); ruff, mypy, bandit clean. **Full pytest and vitest
+  are due** while the stack is paused.
 
 - **Done:** Phases 0–10, 2A, 6A–6C, 8A, 12 (DEMO), **14 except the owner's part** (1401 live gate wiring, 1402
   security review, 1403 drills automated; 1404 final docs pass started) and **13** (1301 AI interface,
@@ -240,22 +274,26 @@ SCALE_IN 5 parts.
 
 ## Next work
 
-The order below aims at an edge first; LIVE stays the owner's decision after the soak.
+The order below aims at an edge first (the owner's target above); LIVE stays the owner's decision.
 
-1. **Finish the setup review:** §9 on all four symbols once `fam_heavy_USDJPY/XAUUSD.db` are complete (see
-   above); then the harmonic follow-ups (more symbols, M5, swing size and tolerance, nearer targets), the only
-   family where the direction carries information. Run the full pytest suite when the machine is quiet.
-2. **Watch the entry-mode variants forward:** `GET /engines/{id}/learning/entry-modes?source=LIVE` (no PWA page
-   yet; L706 adds it). Finish L702's open items when useful.
-3. **TAA-1209** (scale-in) only together with a wider stop (see the evidence above); the bot is on a single
-   entry since 2026-10-08 (owner's decision).
-4. **TAA-L706** once a variant passes §L19.7 (weeks of LIVE shadow).
-5. **TAA-L803 `setup_failed_break`** and TAA-L708 (weekly research report: the AI's research role).
-6. **Phase 16 AI analyst** (PLAN §A35): after the above; needs `AI_PROVIDER`/`AI_API_KEY` and the owner's budget.
-7. **Owner, before LIVE:** the DEMO soak (really started 2026-10-06 ~12:48 UTC; `demo-report --days 14` from
-   2026-10-20 ~13:00 UTC; the engine was down 10-06 ~17:00 → 10-07 04:47 UTC), the drills on the LIVE machine
-   (TAA-1403), the go-live checklist and the explicit go-ahead. Never enable LIVE on the owner's behalf.
-8. Phase 11 Railway: skipped for now.
+1. **The EURUSD inverted trade's summary** for the owner when it closes (result in R and $, what price did
+   against the NY opening-range break and the H4 demand zone, what the original would have done).
+2. **Measure the inverted setups on DEMO per strategy** against the originals' shadow on the same signals
+   (n, mean R net, CI, win rate, average win/loss). Propose switching off the copies history says lose
+   (harmonic, neckline, trend pullback, candle reversal) once DEMO agrees; the owner decides.
+3. **Sleep resilience:** an MT5 IPC loss after a laptop sleep should be a CONNECTION problem that heals itself,
+   not an UNHANDLED_EXCEPTION that latches; reconnect, verify and reconcile after a wall-clock jump.
+4. **Pre-run behaviour study** (SETUP_REVIEW §12): part 1 measure, part 2 entry-timing rules in the setup's
+   direction, walk-forward + hold-out; then apply to the inverted and the original setups.
+5. Inverted-trade exits, tested on history first: TP minus the original's spread buffer (the EURUSD trade
+   missed TP by about one spread), break-even/trailing in units of the TP distance, a time stop. The owner said
+   to watch DEMO first (2026-10-09).
+6. PWA "Pause" button (resume cannot be in the PWA: the web stops with the stack).
+7. TAA-L702 open items, the TAA-L810 hook H1 gate (only once a context rule holds), TAA-L803
+   `setup_failed_break`.
+8. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
+   explicit go-ahead. Never enable LIVE on the owner's behalf. Phase 11 Railway skipped; a Windows VPS for
+   24/5 DEMO is the owner's option (the laptop travels).
 
 ### Why the real stack shows little data (explained to the user on 2026-10-05)
 
@@ -322,6 +360,15 @@ The order below aims at an edge first; LIVE stays the owner's decision after the
   `npx lighthouse@12` works with `CHROME_PATH` set to Chrome (retry once on `NO_NAVSTART`).
 
 ## Gotchas
+
+- **2026-10-09:** a laptop sleep drops the MT5 IPC link; three UNHANDLED_EXCEPTION trips in a day **latch** the
+  breaker (manual `breaker reset` with `ENGINE_DB_URL=sqlite:///data/demo/engine-mt5.db`, owner's approval).
+  Pause the stack before closing the laptop. `.env` `ALLOWED_SYMBOLS` overrides `symbols.allowed`.
+- Tests that read the repo's `config.yaml` (doctor, scanner, strategies API, catalog tests) break when it
+  changes: rerun them after every config edit. FakeMT5's factory broker serves `FACTORY_SYMBOLS` (ALL_SYMBOLS +
+  the extra majors) so `doctor --fake` passes on the eight-symbol config; catalog-shaped tests keep ALL_SYMBOLS.
+- Research loaders select columns, not ORM entities: scratch replay databases keep their old schema.
+- Bash heredocs/printf eat backslashes in Windows paths (`\t`, `\U`): write such files with the Write tool.
 
 - **Disk and memory (2026-10-07):** drive C has ~18 GB free since the bot terminal's `Bases` (4.5 GB) moved to
   `D:\MT5	aa-bot-Bases` behind a junction at `C:\MT5	aa-bot\Bases` (D has ~200 GB). The page file is a fixed
