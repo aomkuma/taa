@@ -31,8 +31,9 @@ from app.advisory.requirements import ComputeRequirements
 from app.advisory.shadow import ShadowExit, ShadowResult, Variant, new_state
 from app.advisory.shadow_tracker import EntryQuote, SignalFacts, apply_close, new_row
 from app.config import AppConfig, Settings, load_app_config, load_settings
-from app.core.enums import ExitReason, Side
+from app.core.enums import ExitReason, Side, Timeframe
 from app.evidence.catalog import default_registry as evidence_registry
+from app.market_data.history_store import SqlHistoryStore
 from app.storage.database import Database
 from app.storage.models import (
     AuditEvent,
@@ -65,7 +66,10 @@ from tests.sync_data import T
 from tests.unit.test_calibration import CFG, INFORMATIVE, outcomes
 from tests.unit.test_personalize import opportunity, prefs
 from tests.unit.test_strategy_models import make_context, make_signal
-from tests.web.test_data_api import rig  # noqa: F401  (fixture)
+from tests.web.test_data_api import (
+    h4_candles,
+    rig,  # noqa: F401  (fixture)
+)
 
 SAMPLES = Path(__file__).resolve().parents[2] / "frontend" / "src" / "test" / "fixtures" / "api-samples.json"
 
@@ -81,6 +85,7 @@ ENGINE_ROUTES = [
     "symbols",
     "symbols/EURUSD",
     "candles?symbol=EURUSD&limit=5&overlays=ema:5,rsi:5&zones=true",
+    "market-map?symbol=EURUSD",
     "positions?status=OPEN",
     "decisions?limit=2",
     "decisions/d1",
@@ -649,6 +654,8 @@ def test_api_samples_match_the_shared_file(
         monkeypatch.setattr(f"{module}.load_app_config", lambda *_a, **_k: pinned)
     realistic_rows(db, mine)
     calibrate(db, mine)
+    # H4 bars for the market map (TAA-L809): seeded, so the sample is stable
+    SqlHistoryStore(db, mine).save("FBS-Demo", "EURUSD", Timeframe.H4, h4_candles(500))
     samples: dict[str, Any] = {}
     for route in ENGINE_ROUTES:
         resp = client.get(f"/api/v1/engines/{mine}/{route}")

@@ -20,10 +20,11 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import pandas as pd
+from pydantic import ValidationError
 from sqlalchemy import ColumnElement, String, and_, func, or_, select
 from sqlalchemy.orm import InstrumentedAttribute, Session
 
-from app.config import IndicatorParams
+from app.config import AppConfig, IndicatorParams
 from app.core.clock import ensure_utc
 from app.core.enums import Timeframe
 from app.core.errors import TaaError
@@ -56,6 +57,7 @@ from app.storage.models import (
     Run,
     SymbolCatalogRow,
 )
+from app.strategy.market_maps import MapBook, candle_frame, map_params
 from app.sync.command_queue import public
 from app.sync.events import json_safe
 from app.sync.heartbeat import BULKY
@@ -63,6 +65,7 @@ from app.sync.heartbeat import BULKY
 DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 MAX_CANDLES = 2000
+MAP_BARS = 700  # context bars per timeframe for the market map (timeframes.context_bars)
 MAX_ZONES = 8
 # the engine's trade lifecycle events on its audit chain (app.engine.trade_audit)
 TRADE_EVENT_TYPES = ("POSITION_OPENED", "STOP_MOVED", "POSITION_CLOSED")
@@ -511,6 +514,41 @@ class ReadModels:
                 "created_at": json_safe(ensure_utc(snap.created_at)),
                 "config": mask_config(snap.payload),
             }
+
+    # --- market map (TAA-L809) --------------------------------------------------------------------------
+
+    def _map_config(self, engine_id: str) -> AppConfig:
+        """The engine's own map parameters (its latest config snapshot), else the defaults."""
+        found = self.config(engine_id)
+        try:
+            raw = (found or {}).get("config", {}).get("config", {})
+            return AppConfig.model_validate(
+                {k: raw[k] for k in ("indicators", "regime", "context_map") if k in raw}
+            )
+        except ValidationError:
+            return AppConfig()
+
+    def market_map(
+        self, engine_id: str, *, server: str, symbol: str, end: datetime | None = None
+    ) -> dict[str, Any]:
+        """The H4/D1 market map at the newest stored context bar (or at *end*), computed from the engine's
+        uploaded candles with the same functions the engine uses for its ``ctx:`` features."""
+        cfg = self._map_config(engine_id)
+        tfs = [Timeframe.H4, Timeframe.D1]
+        store = SqlHistoryStore(self.db, engine_id)
+        frames: dict[Timeframe, pd.DataFrame] = {}
+        for tf in tfs:
+            stored = store.load(server, symbol, tf, None, end)
+            if not stored.empty:
+                frames[tf] = candle_frame(stored.tail(MAP_BARS))
+        at = end or max((ensure_utc(f.index[-1].to_pydatetime()) for f in frames.values()), default=None)
+        found = None if at is None else MapBook(map_params(cfg), tfs).at(symbol, frames, at)
+        return {
+            "server": server,
+            "symbol": symbol,
+            "at": None if at is None else json_safe(at),
+            "map": None if found is None else found.to_dict(),
+        }
 
     # --- candles ----------------------------------------------------------------------------------------
 

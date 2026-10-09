@@ -7,7 +7,7 @@
  * - `instant` stamps (fills, exits) go to the bar that contains them
  * A mark outside the shown bars is left out rather than drawn at the edge.
  */
-import type { Candles, ChartMarker, Evidence, SignalSource, Zone } from './schemas';
+import type { Candles, ChartMarker, Evidence, MapZone, MarketMap, SignalSource, Zone } from './schemas';
 
 export const INDICATORS = ['ema', 'bb', 'rsi', 'atr', 'adx'] as const;
 export type Indicator = (typeof INDICATORS)[number];
@@ -89,12 +89,15 @@ export interface ModelOptions {
   /** Also each drawn item's invalidation level (off by default: the signal's own SL is what counts). */
   invalidations: boolean;
   timeframeSeconds: number;
+  /** The H4/D1 demand/supply zones and range box (TAA-L809). */
+  htfMap?: boolean;
 }
 
 export interface ModelInput {
   candles: Candles;
   positions: readonly OpenPosition[];
   signal: SignalSource['signal'] | null;
+  marketMap?: MarketMap | null;
 }
 
 /** Labels the model needs in the user's language. */
@@ -109,6 +112,10 @@ export interface ModelText {
   signalEntry: string;
   target: string;
   invalidation: string;
+  /** e.g. "Demand H4 ×3" */
+  mapZone?: (kind: MapZone['kind'], timeframe: string, strength: number) => string;
+  /** e.g. "H4 range top" */
+  rangeEdge?: (timeframe: string, edge: 'top' | 'bottom') => string;
 }
 
 export const COLORS = {
@@ -341,6 +348,48 @@ function zoneLines(zones: readonly Zone[], text: ModelText): PriceLineModel[] {
   });
 }
 
+/** The nearest zones drawn per kind and timeframe of the market map. */
+export const MAP_ZONES_PER_KIND = 2;
+export const MAP_COLORS = { DEMAND: '#0d9488', SUPPLY: '#ea580c', RANGE: '#64748b' } as const;
+
+/**
+ * The H4/D1 map as price lines: each zone's near edge (demand: its top, supply: its bottom) solid with its
+ * label, the far edge dotted, D1 bolder than H4; a range's top and bottom dashed (TAA-L809).
+ */
+export function mapLines(map: MarketMap['map'], text: ModelText): PriceLineModel[] {
+  if (!map) return [];
+  const out: PriceLineModel[] = [];
+  for (const tf of ['D1', 'H4']) {
+    const frame = map.frames[tf];
+    if (!frame) continue;
+    const width = tf === 'D1' ? 2 : 1;
+    for (const kind of ['DEMAND', 'SUPPLY'] as const) {
+      for (const z of frame.zones.filter((zone) => zone.kind === kind).slice(0, MAP_ZONES_PER_KIND)) {
+        const near = kind === 'DEMAND' ? z.high : z.low;
+        const far = kind === 'DEMAND' ? z.low : z.high;
+        const title = text.mapZone
+          ? text.mapZone(kind, tf, z.strength)
+          : `${kind} ${tf} ×${String(z.strength)}`;
+        out.push({ price: near, color: MAP_COLORS[kind], title, style: 'solid', width });
+        if (far !== near)
+          out.push({ price: far, color: MAP_COLORS[kind], title: '', style: 'dotted', width: 1 });
+      }
+    }
+    if (frame.box) {
+      for (const edge of ['top', 'bottom'] as const) {
+        out.push({
+          price: edge === 'top' ? frame.box.high : frame.box.low,
+          color: MAP_COLORS.RANGE,
+          title: text.rangeEdge ? text.rangeEdge(tf, edge) : `${tf} range ${edge}`,
+          style: 'dashed',
+          width,
+        });
+      }
+    }
+  }
+  return out;
+}
+
 function positionLines(
   positions: readonly OpenPosition[],
   symbol: string,
@@ -526,6 +575,7 @@ export function buildChartModel(input: ModelInput, options: ModelOptions, text: 
     markers,
     priceLines: [
       ...(options.zones ? zoneLines(candles.zones ?? [], text) : []),
+      ...(options.htfMap ? mapLines(input.marketMap?.map ?? null, text) : []),
       ...positionLines(input.positions, candles.symbol, text),
       ...signalLines(input.signal, text),
       ...mergeLines(evidence.priceLines, range * MERGE_SHARE),

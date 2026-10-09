@@ -8538,6 +8538,14 @@
   "engines/ENGINE/backtests/history": {
     "items": [
       {
+        "bars": 500,
+        "first": "2026-07-09T02:00:00+00:00",
+        "last": "2026-09-30T06:00:00+00:00",
+        "server": "FBS-Demo",
+        "symbol": "EURUSD",
+        "timeframe": "H4"
+      },
+      {
         "bars": 200,
         "first": "2026-09-30T10:00:00+00:00",
         "last": "2026-10-02T11:45:00+00:00",
@@ -10464,6 +10472,91 @@
         "volume": 0.1
       }
     ]
+  },
+  "engines/ENGINE/market-map?symbol=EURUSD": {
+    "at": "2026-09-30T10:00:00+00:00",
+    "map": {
+      "frames": {
+        "H4": {
+          "adx": 14.192634926338792,
+          "at": "2026-09-30T10:00:00+00:00",
+          "atr": 0.003534087410770949,
+          "box": {
+            "bottom_touches": 2,
+            "high": 1.23560774068013,
+            "low": 1.2256625844314728,
+            "top_touches": 1,
+            "width_atr": 2.814066290026402
+          },
+          "close": 1.2312178705929473,
+          "compression": false,
+          "efficiency": 0.10511672190776493,
+          "raw_state": "RANGE",
+          "state": "RANGE",
+          "timeframe": "H4",
+          "zones": [
+            {
+              "formed_at": "2026-09-29T14:00:00+00:00",
+              "high": 1.2313784970659767,
+              "kind": "DEMAND",
+              "low": 1.2307262327293809,
+              "source": "SWING",
+              "strength": 2,
+              "tests": 0
+            },
+            {
+              "formed_at": "2026-09-24T10:00:00+00:00",
+              "high": 1.2289964687926647,
+              "kind": "DEMAND",
+              "low": 1.227817052612142,
+              "source": "SWING",
+              "strength": 2,
+              "tests": 0
+            },
+            {
+              "formed_at": "2026-09-29T06:00:00+00:00",
+              "high": 1.227227157041402,
+              "kind": "DEMAND",
+              "low": 1.2256625844314728,
+              "source": "SWING",
+              "strength": 4,
+              "tests": 0
+            },
+            {
+              "formed_at": "2026-09-24T18:00:00+00:00",
+              "high": 1.2231940080775745,
+              "kind": "DEMAND",
+              "low": 1.221977827453037,
+              "source": "SWING",
+              "strength": 3,
+              "tests": 0
+            },
+            {
+              "formed_at": "2026-09-23T22:00:00+00:00",
+              "high": 1.2212383530933164,
+              "kind": "DEMAND",
+              "low": 1.2198944735649322,
+              "source": "SWING",
+              "strength": 2,
+              "tests": 0
+            },
+            {
+              "formed_at": "2026-09-19T18:00:00+00:00",
+              "high": 1.2176946048668147,
+              "kind": "DEMAND",
+              "low": 1.2163819191075824,
+              "source": "SWING",
+              "strength": 2,
+              "tests": 0
+            }
+          ]
+        }
+      },
+      "near_atr": 0.25,
+      "room_cap_r": 10.0
+    },
+    "server": "FBS-Demo",
+    "symbol": "EURUSD"
   },
   "engines/ENGINE/opportunities/ebf613a7581b7648eaca8328cdccb599d0751b14ec0d0d451901e2799917e5de": {
     "ai": null,

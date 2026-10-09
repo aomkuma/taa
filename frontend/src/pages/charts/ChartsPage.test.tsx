@@ -116,7 +116,7 @@ function setup(extra: Record<string, () => Response> = {}) {
           { symbol: 'XAUUSD', enabled: true, asset_class: 'METAL', reason: '', description: 'Gold' },
         ],
       }),
-    'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+    'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14&zones=true':
       () => json(candles()),
     'GET /engines/e1/positions?status=OPEN&limit=200': () =>
       json({
@@ -165,9 +165,9 @@ describe('charts page', () => {
 
   it('asks for other overlays and no zones when the toggles change', async () => {
     const api = setup({
-      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14': () =>
+      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14': () =>
         json(candles()),
-      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14,adx:14':
+      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14,adx:14':
         () => json(candles()),
     });
     const user = userEvent.setup();
@@ -179,7 +179,7 @@ describe('charts page', () => {
     await user.click(screen.getByRole('checkbox', { name: 'ADX 14' }));
     await waitFor(() => {
       expect(api.calls.map((c) => c.path)).toContain(
-        '/engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14,adx:14',
+        '/engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14,adx:14',
       );
     });
     await waitFor(() => {
@@ -189,7 +189,7 @@ describe('charts page', () => {
 
   it('switches symbol and timeframe through the URL', async () => {
     const api = setup({
-      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=1000&overlays=ema:20,ema:50,rsi:14&zones=true':
         () => json(candles('XAUUSD')),
     });
     const user = userEvent.setup();
@@ -209,7 +209,7 @@ describe('charts page', () => {
     expect(router.state.location.search).toBe('?symbol=XAUUSD&tf=H1');
     await waitFor(() => {
       expect(api.calls.map((c) => c.path)).toContain(
-        '/engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true',
+        '/engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=1000&overlays=ema:20,ema:50,rsi:14&zones=true',
       );
     });
   });
@@ -229,7 +229,7 @@ describe('charts page', () => {
             },
           ],
         }),
-      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14&zones=true':
         () => json(candles('XAUUSD')),
     });
     const user = userEvent.setup();
@@ -239,7 +239,7 @@ describe('charts page', () => {
       expect(input).toHaveValue('XAUUSD');
     });
     expect(api.calls.map((c) => c.path)).not.toContain(
-      '/engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true',
+      '/engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14&zones=true',
     );
     await user.click(input);
     expect(
@@ -256,7 +256,7 @@ describe('charts page', () => {
 
   it('picks a symbol with the keyboard', async () => {
     setup({
-      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14&zones=true':
         () => json(candles('XAUUSD')),
     });
     const user = userEvent.setup();
@@ -273,7 +273,7 @@ describe('charts page', () => {
     setup({
       'GET /engines/e1/decisions/d1': () => json(decision),
       // no S/R zones while a signal is shown
-      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=300&overlays=ema:20,ema:50,rsi:14': () =>
+      'GET /engines/e1/candles?symbol=XAUUSD&timeframe=H1&limit=1000&overlays=ema:20,ema:50,rsi:14': () =>
         json(candles('XAUUSD')),
     });
     const user = userEvent.setup();
@@ -346,7 +346,7 @@ describe('charts page', () => {
 
   it('says when a symbol has no candles yet', async () => {
     setup({
-      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=300&overlays=ema:20,ema:50,rsi:14&zones=true':
+      'GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14&zones=true':
         () => apiError(404, 'candles_not_found'),
     });
     renderShell('/charts');
@@ -386,5 +386,39 @@ describe('charts page', () => {
     });
     expect(drawn.destroyed).toBe(1);
     await user.selectOptions(screen.getByRole('combobox', { name: 'Theme' }), 'light');
+  });
+});
+
+describe('charts page: the H4/D1 market map (TAA-L809)', () => {
+  const MAP = (samples as Record<string, unknown>)['engines/ENGINE/market-map?symbol=EURUSD'] as {
+    map: { frames: Record<string, { zones: { kind: string }[]; box: unknown }> };
+  };
+
+  beforeEach(() => {
+    drawn.models = [];
+  });
+
+  it('shows the H4 state and draws the nearest demand/supply zones and the range box', async () => {
+    setup({ 'GET /engines/e1/market-map?symbol=EURUSD': () => json(MAP) });
+    renderShell('/charts');
+    const states = await screen.findByRole('list', { name: 'Higher-timeframe states' });
+    expect(within(states).getByText(/H4: consolidation/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(lastModel().priceLines.some((p) => p.title.startsWith('Demand H4'))).toBe(true);
+    });
+    const titles = lastModel().priceLines.map((p) => p.title);
+    expect(titles).toContain('H4 range top');
+    expect(titles).toContain('H4 range bottom');
+    const h4 = MAP.map.frames.H4;
+    const zones = Math.min(2, h4?.zones.filter((z) => z.kind === 'DEMAND').length ?? 0);
+    expect(titles.filter((title) => title.startsWith('Demand H4'))).toHaveLength(zones);
+  });
+
+  it('turns the map off and says when there is none', async () => {
+    setup();
+    renderShell('/charts');
+    expect(await screen.findByText(/No H4\/D1 map for this symbol yet/)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'H4/D1 map' }));
+    expect(screen.queryByText(/No H4\/D1 map for this symbol yet/)).not.toBeInTheDocument();
   });
 });

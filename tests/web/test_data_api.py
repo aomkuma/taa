@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
@@ -535,3 +536,40 @@ class TestCandles:
     def test_bad_queries(self, rig: tuple[TestClient, str, str], query: str, code: str) -> None:
         client, mine, _ = rig
         assert get(client, mine, query).json()["error"]["code"] == code
+
+
+def h4_candles(n: int) -> pd.DataFrame:
+    rng = np.random.default_rng(11)
+    times = pd.date_range(T - timedelta(hours=4 * n), periods=n, freq="4h", tz=UTC)
+    closes = 1.1 + np.cumsum(rng.normal(0.0002, 0.002, n))
+    return pd.DataFrame(
+        {
+            "open_time": times,
+            "close_time": times + pd.Timedelta(hours=4),
+            "time_server": [int(t.timestamp()) for t in times],
+            "open": np.r_[closes[0], closes[:-1]],
+            "high": np.maximum(np.r_[closes[0], closes[:-1]], closes) + 0.001,
+            "low": np.minimum(np.r_[closes[0], closes[:-1]], closes) - 0.001,
+            "close": closes,
+            "tick_volume": 10,
+            "spread": 12,
+            "real_volume": 0,
+        }
+    )
+
+
+def test_market_map_from_the_uploaded_h4_candles(
+    rig: tuple[TestClient, str, str],
+    db: Database,
+) -> None:
+    client, mine, theirs = rig
+    SqlHistoryStore(db, mine).save("FBS-Demo", "EURUSD", Timeframe.H4, h4_candles(500))
+    body = client.get(f"/api/v1/engines/{mine}/market-map?symbol=EURUSD").json()
+    assert body["symbol"] == "EURUSD" and body["server"] == "FBS-Demo" and body["at"] is not None
+    h4 = body["map"]["frames"]["H4"]
+    assert h4["state"] in ("UP", "DOWN", "RANGE", "TRANSITION") and "D1" not in body["map"]["frames"]
+    assert all(z["kind"] in ("DEMAND", "SUPPLY") and z["low"] <= z["high"] for z in h4["zones"])
+    assert client.get(f"/api/v1/engines/{mine}/market-map?symbol=GBPUSD").status_code == 404
+    assert client.get(f"/api/v1/engines/{theirs}/market-map?symbol=EURUSD").status_code == 404
+    naive = client.get(f"/api/v1/engines/{mine}/market-map?symbol=EURUSD&end=2026-09-30T10:00:00")
+    assert naive.status_code == 400

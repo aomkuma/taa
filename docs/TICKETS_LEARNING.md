@@ -631,7 +631,7 @@ for a setup only after it holds walk-forward.
 - [x] `ctx:<tf>_*` signal features (trend with the side, range, range position, compression, zone with the side + strength, room to the opposing zone in R, opposing zone before the TP) on opportunities and shadow rows; golden unchanged with the context off; config.yaml `context: [H4, D1]`
 - [ ] backtester: the same map through `bar_context` (with the hook H1 gate, Step 6)
 - [x] research harness reads every `ctx:*` feature; symbol hold-out in `research()` and `--holdout-symbols`
-- [ ] PWA chart: 1000 bars; `GET /engines/{id}/market-map?symbol=` from the cloud's H4/D1 candles with the same functions; zones as bands, state chips, range box; zod, i18n th + en, page tests from api samples
+- [x] PWA chart: 1000 bars; `GET /engines/{id}/market-map?symbol=` from the cloud's H4/D1 candles with the same functions; zones as bands, state chips, range box; zod, i18n th + en, page tests from api samples
 - [ ] docs: `docs/INDICATORS.md` (market map), `docs/STRATEGIES.md` (the ctx axes per setup)
 
 #### TAA-L810 — Setup workbench: `setup_harmonic_prz` first (2026-10-09)

@@ -245,7 +245,29 @@
     "takeProfitTicket": "TP #{{ticket}}",
     "signalEntry": "Signal entry",
     "target": "target",
-    "invalidation": "invalidation"
+    "invalidation": "invalidation",
+    "map": {
+      "toggle": "H4/D1 map",
+      "title": "Higher-timeframe states",
+      "state": "{{tf}}: {{state}}",
+      "states": {
+        "UP": "uptrend",
+        "DOWN": "downtrend",
+        "RANGE": "consolidation",
+        "TRANSITION": "transition",
+        "UNKNOWN": "not enough bars"
+      },
+      "compression": "compression",
+      "kind": {
+        "DEMAND": "Demand",
+        "SUPPLY": "Supply"
+      },
+      "zone": "{{kind}} {{tf}} ×{{n}}",
+      "rangeTop": "{{tf}} range top",
+      "rangeBottom": "{{tf}} range bottom",
+      "legend": "H4/D1 map: the two nearest demand (teal) and supply (orange) zones per timeframe; the solid line is the zone's near edge, the dotted line its far edge; ×N is its strength (touches, or base bars); D1 lines are thicker. Grey dashed lines are a consolidation range. The bot records this map with every signal; it does not decide entries yet.",
+      "unavailable": "No H4/D1 map for this symbol yet (the engine has not uploaded enough H4/D1 bars)."
+    }
   },
   "symbols": {
     "search": "Search symbols",

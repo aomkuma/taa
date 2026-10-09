@@ -240,6 +240,26 @@ async def candles(
     return result
 
 
+@router.get("/market-map")
+async def market_map(
+    engine: OwnedEngine,
+    ctx: Context,
+    symbol: Annotated[str, Query(min_length=1, max_length=32)],
+    server: Annotated[str | None, Query(min_length=1, max_length=64)] = None,
+    end: datetime | None = None,
+) -> dict[str, Any]:
+    """The H4/D1 market map (trend vs consolidation, demand/supply zones; TAA-L809) at the newest context bar,
+    or at *end*: what the engine records on every signal as ``ctx:`` features."""
+    if end is not None and end.tzinfo is None:
+        raise ApiProblem(400, "invalid_query", "end: a timezone-aware time is required")
+    rm = models(ctx)
+    srv = server or await _run(rm.default_server, engine.engine_id, symbol)
+    if srv is None:
+        raise ApiProblem(404, "candles_not_found", "No candles for this symbol yet")
+    result: dict[str, Any] = await _run(rm.market_map, engine.engine_id, server=srv, symbol=symbol, end=end)
+    return result
+
+
 @router.get("/config")
 async def config(engine: OwnedEngine, ctx: Context) -> dict[str, Any]:
     """The engine's effective configuration of its latest run, secrets masked."""

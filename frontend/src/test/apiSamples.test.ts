@@ -5,7 +5,7 @@
 import type { z } from 'zod';
 
 import { EngineListSchema, EngineStatusSchema, FeedSchema } from '@/engine/schemas';
-import { CandlesSchema, SignalSourceSchema, SymbolsSchema } from '@/pages/charts/schemas';
+import { CandlesSchema, MarketMapSchema, SignalSourceSchema, SymbolsSchema } from '@/pages/charts/schemas';
 import {
   BreakersSchema,
   DecisionsPageSchema,
@@ -82,6 +82,7 @@ const CASES: [string, z.ZodType][] = [
   [`${E}symbols`, SymbolsSchema],
   [`${E}symbols/EURUSD`, SymbolDetailSchema],
   [`${E}candles?symbol=EURUSD&limit=5&overlays=ema:5,rsi:5&zones=true`, CandlesSchema],
+  [`${E}market-map?symbol=EURUSD`, MarketMapSchema],
   [`${E}positions?status=OPEN`, PositionsPageSchema],
   [`${E}decisions?limit=2`, DecisionsPageSchema],
   [`${E}decisions?limit=2`, DecisionRefsSchema],

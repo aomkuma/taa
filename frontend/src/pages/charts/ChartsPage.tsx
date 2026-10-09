@@ -27,19 +27,47 @@ import { ChartAttribution, PriceChart } from './PriceChart';
 import {
   type ChartTimeframe,
   CandlesSchema,
+  type MarketMap,
+  MarketMapSchema,
   SignalSourceSchema,
   SymbolsSchema,
   TIMEFRAME_SECONDS,
   TIMEFRAMES,
 } from './schemas';
 
-const BARS = 300;
+/** Bars shown: a wider window (TAA-L809, owner 2026-10-09); the API serves up to 2000. */
+const BARS = 1000;
+/** The H4/D1 map changes once per H4 bar at most. */
+const MAP_REFRESH_MS = 60_000;
 const DEFAULT_INDICATORS: readonly Indicator[] = ['ema', 'rsi'];
 /** The engine's heartbeat carries the forming bar every second (`sync.heartbeat_seconds`); the chart follows it. */
 const CANDLE_REFRESH_MS = 10_000;
 
 const isTimeframe = (value: string | null): value is ChartTimeframe =>
   value !== null && (TIMEFRAMES as readonly string[]).includes(value);
+
+/** The H4/D1 states (trend vs consolidation) above the chart: what the engine records on every signal. */
+function MapStates({ data, failed }: { data: MarketMap | null; failed: boolean }) {
+  const { t } = useTranslation();
+  const frames = data?.map?.frames ?? {};
+  const shown = ['D1', 'H4'].flatMap((tf) => {
+    const frame = frames[tf];
+    return frame ? [{ tf, frame }] : [];
+  });
+  if (failed || shown.length === 0) {
+    return <p className="mb-1 text-xs text-slate-500">{t('charts.map.unavailable')}</p>;
+  }
+  return (
+    <ul className="mb-1 flex flex-wrap gap-2 text-xs" aria-label={t('charts.map.title')}>
+      {shown.map(({ tf, frame }) => (
+        <li key={tf} className="rounded border border-slate-300 px-2 py-0.5 dark:border-slate-700">
+          {t('charts.map.state', { tf, state: t(`charts.map.states.${frame.state}`) })}
+          {frame.compression ? ` · ${t('charts.map.compression')}` : ''}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function Toggle({
   label,
@@ -88,6 +116,7 @@ export function ChartsPage() {
 
   const [indicators, setIndicators] = useState<ReadonlySet<Indicator>>(new Set(DEFAULT_INDICATORS));
   const [zones, setZones] = useState(!fromSignal);
+  const [htfMap, setHtfMap] = useState(!fromSignal);
   const [allDecisions, setAllDecisions] = useState(false);
   // the owner's evidence choice belongs to one signal; another signal starts focused again
   const [picked, setPicked] = useState<{ key: string; ids: ReadonlySet<string> } | null>(null);
@@ -143,6 +172,13 @@ export function ChartsPage() {
     refetchInterval: CANDLE_REFRESH_MS,
     placeholderData: (previous) => previous,
   });
+  const marketMap = useQuery({
+    queryKey: [...engineKey(id), 'market-map', symbol],
+    queryFn: ({ signal }) =>
+      apiGet(`${base}/market-map?symbol=${encodeURIComponent(symbol ?? '')}`, MarketMapSchema, { signal }),
+    enabled: symbol !== null && htfMap,
+    refetchInterval: MAP_REFRESH_MS,
+  });
   const positions = useQuery({
     queryKey: [...engineKey(id), 'positions', 'open', 'chart'],
     queryFn: ({ signal }) =>
@@ -178,6 +214,9 @@ export function ChartsPage() {
       signalEntry: t('charts.signalEntry'),
       target: t('charts.target'),
       invalidation: t('charts.invalidation'),
+      mapZone: (kind, tf, n) => t('charts.map.zone', { kind: t(`charts.map.kind.${kind}`), tf, n }),
+      rangeEdge: (tf, edge) =>
+        edge === 'top' ? t('charts.map.rangeTop', { tf }) : t('charts.map.rangeBottom', { tf }),
     }),
     [t, i18n],
   );
@@ -203,10 +242,11 @@ export function ChartsPage() {
   const model = useMemo(() => {
     if (!candles.data) return null;
     return buildChartModel(
-      { candles: candles.data, positions: open, signal: signalDoc },
+      { candles: candles.data, positions: open, signal: signalDoc, marketMap: marketMap.data ?? null },
       {
         indicators,
         zones,
+        htfMap,
         allDecisions,
         evidence: shownEvidence,
         invalidations,
@@ -218,6 +258,8 @@ export function ChartsPage() {
     candles.data,
     open,
     signalDoc,
+    marketMap.data,
+    htfMap,
     indicators,
     zones,
     allDecisions,
@@ -289,6 +331,7 @@ export function ChartsPage() {
           />
         ))}
         <Toggle label={t('charts.zones')} checked={zones} onChange={setZones} />
+        <Toggle label={t('charts.map.toggle')} checked={htfMap} onChange={setHtfMap} />
         <Toggle label={t('charts.allDecisions')} checked={allDecisions} onChange={setAllDecisions} />
       </fieldset>
 
@@ -348,8 +391,10 @@ export function ChartsPage() {
         <p className="text-sm text-slate-500">{t('charts.noCandles')}</p>
       ) : (
         <>
+          {htfMap && <MapStates data={marketMap.data ?? null} failed={marketMap.isError} />}
           <PriceChart model={model} />
           {zones && <p className="mt-1 text-xs text-slate-500">{t('charts.zoneLegend')}</p>}
+          {htfMap && <p className="mt-1 text-xs text-slate-500">{t('charts.map.legend')}</p>}
           <ChartAttribution />
         </>
       )}

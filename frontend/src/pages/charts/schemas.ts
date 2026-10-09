@@ -71,6 +71,57 @@ export const CandlesSchema = z.object({
 });
 export type Candles = z.infer<typeof CandlesSchema>;
 
+export const MAP_STATES = ['UP', 'DOWN', 'RANGE', 'TRANSITION', 'UNKNOWN'] as const;
+
+const MapZoneSchema = z.object({
+  kind: z.enum(['DEMAND', 'SUPPLY']),
+  source: z.enum(['SWING', 'BASE']),
+  low: z.number(),
+  high: z.number(),
+  strength: z.number().int(),
+  tests: z.number().int(),
+  formed_at: IsoDateTime,
+});
+export type MapZone = z.infer<typeof MapZoneSchema>;
+
+const TimeframeMapSchema = z.object({
+  timeframe: z.string(),
+  at: IsoDateTime,
+  state: z.enum(MAP_STATES),
+  raw_state: z.enum(MAP_STATES),
+  adx: Value,
+  efficiency: Value,
+  atr: Value,
+  close: z.number(),
+  compression: z.boolean(),
+  box: z
+    .object({
+      high: z.number(),
+      low: z.number(),
+      width_atr: z.number(),
+      top_touches: z.number().int(),
+      bottom_touches: z.number().int(),
+    })
+    .nullable(),
+  zones: z.array(MapZoneSchema),
+});
+export type TimeframeMap = z.infer<typeof TimeframeMapSchema>;
+
+/** `GET /engines/{id}/market-map`: the H4/D1 map the engine records on every signal (TAA-L809). */
+export const MarketMapSchema = z.object({
+  server: z.string(),
+  symbol: z.string(),
+  at: IsoDateTime.nullable(),
+  map: z
+    .object({
+      near_atr: z.number(),
+      room_cap_r: z.number(),
+      frames: z.record(z.string(), TimeframeMapSchema),
+    })
+    .nullable(),
+});
+export type MarketMap = z.infer<typeof MarketMapSchema>;
+
 /** `GET /engines/{id}/symbols`: the engine's symbol catalog. */
 export const SymbolsSchema = z.object({
   items: z.array(
