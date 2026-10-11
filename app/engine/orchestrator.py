@@ -16,8 +16,11 @@ here.
   CLOCK).
 
 A failure inside a cycle is logged with its traceback, trips UNHANDLED_EXCEPTION (which blocks entries) and is
-announced; the loop keeps monitoring and managing positions. :meth:`Engine.stop` ends the loop after the
-current cycle and shuts down cleanly.
+announced; the loop keeps monitoring and managing positions. A lost terminal link in the health step's
+broker reads (e.g. "No IPC connection" after a laptop sleep) is a connection problem instead: the step skips
+them, the next cycle's probe reconnects (the CONNECTION breaker blocks entries meanwhile), and a restored
+connection runs the health step (reconcile, book closed trades) and the clock check at once.
+:meth:`Engine.stop` ends the loop after the current cycle and shuts down cleanly.
 """
 
 from __future__ import annotations
@@ -56,7 +59,7 @@ from app.broker.models import BrokerOrder, BrokerPosition
 from app.config import RiskConfig, Settings
 from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
 from app.core.enums import ExitReason, Side, TradingMode
-from app.core.errors import SafetyViolation, SymbolUnavailable, TaaError
+from app.core.errors import BrokerError, SafetyViolation, SymbolUnavailable, TaaError
 from app.core.ids import new_id, stable_hash
 from app.engine.backends import Backend, DemoBackend, PaperBackend
 from app.engine.broker_positions import BrokerPositionManager
@@ -897,6 +900,9 @@ class Engine:
     def _connection_changed(self, connected: bool) -> None:
         if connected != self._connected:
             self._connected = connected
+            if connected:  # positions may have closed and the clock moved while the link was down
+                self._health_due.next_at = 0.0
+                self._clock_due.next_at = 0.0
             self.bus.emit(
                 EventType.CONNECTION_RESTORED if connected else EventType.CONNECTION_LOST,
                 dedupe_key="connection",
@@ -1044,16 +1050,31 @@ class Engine:
         )
 
     def _health(self) -> None:
-        status = self._loss_status()
-        self._last_loss = status
-        self.monitor.observe_losses(status)
+        self._broker_step("loss tracking", self._observe_losses)
         self.board.tick()
         write_ok = self.db.healthcheck()
         data_dir = self.settings.path("data")
         free_gb = shutil.disk_usage(data_dir).free / 1e9 if data_dir.exists() else None
         self.monitor.observe_storage(write_ok, free_gb)
-        self.backend.maintain()
+        self._broker_step("broker maintenance", self.backend.maintain)
         self.heartbeat()
+
+    def _observe_losses(self) -> None:
+        status = self._loss_status()
+        self._last_loss = status
+        self.monitor.observe_losses(status)
+
+    def _broker_step(self, what: str, step: Callable[[], None]) -> None:
+        """Run a health step that reads the broker. A lost terminal link is a connection problem, not an
+        unhandled one (2026-10-09: "No IPC connection" after a laptop sleep tripped UNHANDLED_EXCEPTION three
+        times and latched it): when the link probe fails too, skip the step; the loss status keeps its last
+        value until the link is back."""
+        try:
+            step()
+        except BrokerError as exc:
+            if self.bundle.client.is_healthy():
+                raise  # the link is fine: a real failure, UNHANDLED_EXCEPTION as before
+            log.warning("%s skipped: the terminal link is down (%s)", what, exc)
 
     def heartbeat(self, state: str = "running") -> None:
         write_heartbeat(self.heartbeat_path, self.clock.now_utc(), self.status(), state=state)

@@ -5,16 +5,19 @@ from __future__ import annotations
 import dataclasses
 from pathlib import Path
 
+import pytest
 from sqlalchemy import select
 
 from app.broker import mt5_constants as c
 from app.broker.factory import build_trading
 from app.config import Settings, load_settings
 from app.core.clock import ManualClock
+from app.core.errors import BrokerError
 from app.engine.backends import DemoBackend
 from app.engine.broker_trades import BOOK_SECONDS
 from app.engine.orchestrator import Engine
 from app.monitoring.alerts import EventBus, EventType, MemorySink
+from app.risk.circuit_breaker import BreakerName
 from app.risk.kill_switch import KillMode
 from app.storage.database import Database
 from app.storage.models import BrokerTradeRow, OrderIntentRow
@@ -227,4 +230,43 @@ def test_the_owner_entry_plan_runs_end_to_end(tmp_path: Path) -> None:
     d.engine.backend.maintain()
     assert d.engine.gateway.orders() == []
     assert "PLACED" not in d.intents() and "CANCELLED" in d.intents()
+    d.engine.shutdown()
+
+
+def test_a_lost_terminal_link_is_a_connection_problem(tmp_path: Path) -> None:
+    """2026-10-09: "No IPC connection" after a laptop sleep failed the health step's account read, tripped
+    UNHANDLED_EXCEPTION three times and latched it. Now the CONNECTION breaker covers it and heals itself."""
+    d = demo(tmp_path)
+    start_buyer(d)
+    run_until(d, EventType.POSITION_OPENED)
+    fake = d.engine.bundle.fake
+    assert fake is not None
+    fake.disconnect()
+    d.engine._health()  # the link died after the cycle's probe: the health step's broker reads fail
+    for _ in range(6):
+        d.engine.cycle()
+        d.clock.advance(10)
+    blocking = {b.name for b in d.engine.board.blocking()}
+    assert BreakerName.CONNECTION in blocking
+    assert BreakerName.UNHANDLED_EXCEPTION not in blocking
+    assert EventType.ENGINE_ERROR not in d.types()
+    fake.reconnect()
+    for _ in range(70):  # reconnect backoff, then the healthy checks
+        d.engine.cycle()
+        d.clock.advance(10)
+    assert EventType.CONNECTION_RESTORED in d.types()
+    assert not d.engine.board.blocking()
+    d.engine.shutdown()
+
+
+def test_a_broker_failure_with_a_healthy_link_still_trips(tmp_path: Path) -> None:
+    """Fail-closed: only a dead link excuses a failed broker read in the health step."""
+    d = demo(tmp_path)
+    start_buyer(d)
+    run_until(d, EventType.POSITION_OPENED)
+    fake = d.engine.bundle.fake
+    assert fake is not None
+    fake.fail_next("positions_get", times=1)
+    with pytest.raises(BrokerError):
+        d.engine._broker_step("broker maintenance", lambda: d.engine.gateway.positions() and None)
     d.engine.shutdown()

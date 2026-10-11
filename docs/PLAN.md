@@ -1360,6 +1360,12 @@ AI failures never trip trading breakers; they only produce HOLD.
     exception, or stopped within 10 minutes of a failed cycle. `failed` is restarted by `watchdog.ps1` and
     `demo-tasks.ps1 -Check`. Found 2026-10-07: a SQLite `disk I/O error` (memory exhausted by test runs next to
     the stack), then a stop signal seconds later, wrote `stopped`, and the check left the DEMO engine down.
+  - (2026-10-11) A lost terminal link is a CONNECTION problem, not UNHANDLED_EXCEPTION: the health step's broker
+    reads (loss tracking, reconcile, plans, trade booking) are skipped when they fail with a `BrokerError` **and**
+    the link probe fails too (a failure with a healthy link still trips UNHANDLED_EXCEPTION). The CONNECTION
+    breaker blocks entries meanwhile; a restored connection runs the health step and the clock check at once.
+    Found 2026-10-09: "No IPC connection" after a laptop sleep tripped UNHANDLED_EXCEPTION three times a day
+    and latched it.
 
 ## A20. Security
 
