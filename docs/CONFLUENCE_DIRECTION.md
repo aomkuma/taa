@@ -53,6 +53,26 @@ which side does the evidence favour, and is the agreement strong enough to act?*
 - At most 3 pre-registered settings of (net threshold, *k*), judged walk-forward and on hold-out symbols as in
   SETUP_REVIEW; the goal and the gap are stated before and after (HANDOFF prompt).
 
+### 3.1 Triple screen and the market phase of each setup (owner, 2026-10-11)
+
+Elder's triple screen (*Trading for a Living*) on the owner's timeframes: **H4** the tide (direction),
+**H1** the wave (a pullback against the tide), **M15** the ripple (the entry, here the setup's own trigger).
+Every timeframe has its own trend: a sideways H4 can hold a trending H1, so the phase is read on all three
+screens, not on one.
+
+1. **Measure first:** each backtest trade gets the state of H4, H1 and M15 at the last bar closed before its
+   entry (`state_frame`: WITH / AGAINST / RANGE / TRANSITION relative to the side), grouped into a few phases
+   with enough trades: `aligned` (H4 and H1 with), `pullback` (H4 with, M15 against or ranging: the triple
+   screen entry), `range_h1_with` (H4 range, H1 with), `range_h1_other`, `against_h4`, `other`.
+   Tool: `research/2026-10-11-pre-run/three_screens.py`, both worlds side by side.
+2. **Assign by data, not by label:** a setup gets a phase (and a side: normal or inverted) only where the phase
+   holds in both halves and on the hold-out symbols. Textbook expectations, to be confirmed or rejected:
+   pullback setups (fib, elliott, trend pullback) in `pullback`; breakouts at a range turning into a trend;
+   reversals (harmonic, candle, neckline, SMC) at range edges or a trend's end.
+3. **Then gate:** each setup trades only in its phases (a per-setup rule through the L810 hook H1), confirmed
+   by two-world backtests like any rule.
+4. Results and the assignment per setup: SETUP_REVIEW §15.
+
 ## 4. Path B — the AI reads the same chart (forward only)
 
 Phase 16 as designed in AI_ANALYST_DISCUSSION (§3 chart pack and thesis, §3.4 stages, §4.4 why it can only be

@@ -680,6 +680,7 @@ deterministically and backtests it; Path B (Phase 16) asks the AI the same quest
 - [ ] two-world backtests (4 months, then a year) with at most 3 pre-registered settings, walk-forward + hold-out symbols; direction hit rate at 4 h / 1 d / 3 d
 - [ ] SETUP_REVIEW section with the result and the gap to the target
 - [ ] Path B hand-off: Phase 16 stage A/B on the same bars once the owner provides an API key and a budget
+- [ ] triple screen (H4 tide / H1 wave / M15 trigger): the market phase of every setup measured on three screens, a phase assigned only where it holds in both halves and on the hold-out symbols, then gated (CONFLUENCE_DIRECTION §3.1)
 
 ### Phase L9 — Squad mode (team of specialist bots)
 
