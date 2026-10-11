@@ -63,7 +63,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
 | M3 | Phase L7 — Entry timing (right direction, wrong time) | 8 | 2 | IN PROGRESS |
-| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 11 | 1 | IN PROGRESS |
+| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 12 | 1 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
 ## Milestone 3 — Learning layer
@@ -664,6 +664,22 @@ Results: docs/SETUP_REVIEW.md §14.
 - [x] part 2: every setup as traded and inverted, walk-forward + hold-out symbols (`data/research/l811_*.txt`); no rule survives
 - [ ] two-world backtests (owner, 2026-10-11): per setup, the original and the inverted as two separate `app.cli backtest` runs started together (4 months, 8 symbols, widest research config), all nine setups, reported side by side
 - [ ] SETUP_REVIEW §15 with the results and the owner's choice of side per setup
+
+#### TAA-L812 — Confluence direction: the whole chart chooses the side (2026-10-11)
+
+- **Status:** TODO
+- **Depends on:** L811 (two-world backtests), L809 (market map), TAA-307 (confluence score)
+
+Plan: `docs/CONFLUENCE_DIRECTION.md`. The owner's AI reads S/R, key zones and chart patterns on M15/H1/H4
+together before choosing a side; the bot's setups trade one trigger. Path A builds that reading
+deterministically and backtests it; Path B (Phase 16) asks the AI the same question in shadow.
+
+- [ ] `setup_confluence`: both sides scored with `confluence_score` over M15/H1/H4 evidence and the H4/D1 map; act on |net| ≥ threshold, ≥ k families, an HTF agreeing, no opposing zone before the target
+- [ ] stop and target from the structure (invalidation / leaning zone; next opposing zone), capped by `max_sl_atr`
+- [ ] config, TH/EN texts, tests (no look-ahead; both sides symmetric; gates unchanged)
+- [ ] two-world backtests (4 months, then a year) with at most 3 pre-registered settings, walk-forward + hold-out symbols; direction hit rate at 4 h / 1 d / 3 d
+- [ ] SETUP_REVIEW section with the result and the gap to the target
+- [ ] Path B hand-off: Phase 16 stage A/B on the same bars once the owner provides an API key and a budget
 
 ### Phase L9 — Squad mode (team of specialist bots)
 
