@@ -350,7 +350,10 @@ class HistoricalReplay:
             management = None
             if variant is Variant.MANAGED:
                 management = Management(
-                    self.config.position_management, ctx.market.atr, spec.point, self.entry_tf.seconds
+                    self.config.position_management.for_strategy(signal.strategy),
+                    ctx.market.atr,
+                    spec.point,
+                    self.entry_tf.seconds,
                 )
             later = (bars[i] for i in range(first, len(bars)))  # lazy: stops at the exit
             exit_ = None

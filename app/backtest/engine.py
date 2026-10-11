@@ -294,7 +294,8 @@ class BacktestEngine:
         by_name = {s.name: s for s in self.strategies.strategies}
         spec = self.data[symbol].spec
         for p in [p for p in self.broker.positions.values() if p.symbol == symbol]:
-            strategy = by_name.get(self._by_magic.get(p.request.magic, ""))
+            name = self._by_magic.get(p.request.magic, "")
+            strategy = by_name.get(name)
             if strategy is not None and strategy.should_close(ctx, p.side):
                 self.broker.request_close(p.ticket, ExitReason.SIGNAL)
                 continue
@@ -305,7 +306,7 @@ class BacktestEngine:
                 mark=mark_price(p.side, bar.close, bar.spread),
                 atr=ctx.market.atr,
                 point=spec.point,
-                cfg=cfg,
+                cfg=cfg.for_strategy(name),
             )
             if adj.close is not None:
                 self.broker.request_close(p.ticket, adj.close)

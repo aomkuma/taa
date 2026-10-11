@@ -384,6 +384,25 @@ for harmonic (a per-strategy exit setting), to be confirmed by a two-world backt
 `against_h4` phase and avoid `pullback` as a gate candidate, measured again once implemented. None of these
 reaches the goal yet; the next lever is the entry itself (58 % of the losers turn at once).
 
+### 15.1 Without break-even, confirmed by the backtester (2026-10-11, late)
+
+Same year and research config, `break_even_trigger_r` and `trailing_start_r` switched off
+(`data/research/config_paired_bt_nobe.yaml`); normal world only; output `data/backtests/inv/harmonic_nobe_*.txt`.
+
+| Variant | Trades | Win % | R/trade [90 % CI] | Halves | Max DD | Avg win / loss |
+|---|---|---|---|---|---|---|
+| as configured (break-even +1 R) | 779 | 39 % | −0.027 [−0.10, +0.05] | −0.011 / −0.047 | 44.6 R | +1.42 / −0.97 |
+| **no break-even / trailing** | 773 | 34 % | **+0.024** [−0.06, +0.11] | +0.021 / +0.028 | 30.2 R | +1.97 / −0.97 |
+
+- **+0.051 R a trade, in both halves**, and a third less drawdown: the re-simulation's estimate holds in the
+  backtester. Losers turning at once: 53 % (58 % before).
+- **Three screens without break-even:** `against_h4` +0.211 R (n = 73; halves +0.20 / +0.23; **hold-out
+  symbols +0.13**); `range_h1_other` +0.067 (hold-out +0.22); `pullback` −0.444 (n = 26; every half and the
+  hold-out negative). `other` (H4/H1 in transition, 69 % of the trades) ≈ 0.
+- **Gap after: about +0.13 R per trade** (+0.024 against +0.15); drawdown 30 R (target ≤ 15 R); 773 trades a
+  year. Code: `position_management.by_strategy` (PLAN §A11) can switch break-even/trailing off for harmonic
+  alone; **not set in config.yaml until the owner decides**.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun

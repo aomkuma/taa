@@ -77,6 +77,10 @@ Chat with me in Thai.
   inverted −0.133 R (CI below zero, DD 101 R). Break-even at +1 R costs ≈ 0.05 R/trade; `against_h4` phase
   +0.15 R, `pullback` −0.38 R (small groups). Gap ≈ +0.18 R (≈ +0.11 R with break-even off). Proposals to the
   owner: normal side, no break-even for harmonic, phase gate candidates; none applied yet.
+- **Without break-even (SETUP_REVIEW §15.1):** harmonic +0.024 R/trade (halves +0.021 / +0.028, DD 30 R) vs
+  −0.027 with it; `against_h4` +0.21 R holds on the hold-out symbols (+0.13), `pullback` −0.44. Gap ≈ +0.13 R.
+  New code: `position_management.by_strategy` (per-strategy break-even/trailing, PLAN §A11), empty in
+  config.yaml. **Owner to decide:** harmonic without break-even, harmonic on the normal side on DEMO.
 - **The DEMO stack is PAUSED** since 2026-10-11 14:41 UTC (owner, to free memory for the backtests); one bot
   position open at the broker (GBPUSD SELL, SL/TP set). Resume with "TAA Resume" / `demo-tasks.ps1 -Resume`.
 - **Checks:** targeted tests green (engine integration demo/paper/restart/live/commands + golden 40, research +

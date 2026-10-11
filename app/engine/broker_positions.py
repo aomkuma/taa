@@ -84,6 +84,11 @@ class BrokerPositionManager:
             ).all()
         return {int(ticket): float(sl) for ticket, sl in rows if ticket is not None}
 
+    def _strategy_name(self, magic: int) -> str | None:
+        """The strategy that owns a magic number, for its own break-even/trailing (``by_strategy``)."""
+        strategy = self.strategies_by_magic.get(magic)
+        return None if strategy is None else strategy.name
+
     def _bars_held(self, position: BrokerPosition) -> int:
         held = (self.clock.now_utc() - position.time_utc).total_seconds()
         return max(0, int(held // self.entry_timeframe.seconds))
@@ -103,9 +108,10 @@ class BrokerPositionManager:
                 continue  # unknown positions and missing stops belong to the reconciler's sweep
             mark = bid if pos.side is Side.BUY else ask
             view = PositionView(pos.side, pos.price_open, first_sl, pos.sl, self._bars_held(pos))
-            adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=self.config)
+            cfg = self.config.for_strategy(self._strategy_name(pos.magic))
+            adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=cfg)
             if pos.ticket in to_break_even:
-                plan = plan_break_even(view, mark=mark, point=spec.point, cfg=self.config)
+                plan = plan_break_even(view, mark=mark, point=spec.point, cfg=cfg)
                 adj = better_stop(pos.side, adj, plan)
             if adj.close is not None:
                 self.close(pos, spec, adj.close)

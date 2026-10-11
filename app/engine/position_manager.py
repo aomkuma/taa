@@ -51,6 +51,11 @@ class PositionManager:
         self.bus = bus
         self._last_modify: dict[int, datetime] = {}
 
+    def _strategy_name(self, magic: int) -> str | None:
+        """The strategy that owns a magic number, for its own break-even/trailing (``by_strategy``)."""
+        strategy = self.strategies_by_magic.get(magic)
+        return None if strategy is None else strategy.name
+
     def on_quote(self, symbol: str, bid: float, ask: float, atr: float | None) -> None:
         spec = self.specs[symbol]
         now = self.clock.now_utc()
@@ -66,9 +71,10 @@ class PositionManager:
                 continue
             mark = mark_price(pos.side, bid, ask - bid)
             view = PositionView(pos.side, pos.entry_price, pos.request.sl, pos.sl, pos.bars_held)
-            adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=self.config)
+            cfg = self.config.for_strategy(self._strategy_name(pos.request.magic))
+            adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=cfg)
             if pos.ticket in to_break_even:
-                plan = plan_break_even(view, mark=mark, point=spec.point, cfg=self.config)
+                plan = plan_break_even(view, mark=mark, point=spec.point, cfg=cfg)
                 adj = better_stop(pos.side, adj, plan)
             if adj.close is not None:
                 self.paper.request_close(pos.ticket, adj.close)

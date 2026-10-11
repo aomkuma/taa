@@ -67,6 +67,10 @@ def test_env_overrides_yaml(tmp_path: Path) -> None:
         ("advisory:\n  calibration:\n    replay_weight: 2\n", "replay_weight"),
         ("sync:\n  backoff_max_seconds: 0\n", "backoff_max_seconds"),
         ("sync:\n  max_attempts: 0\n", "max_attempts"),
+        (
+            "position_management:\n  by_strategy:\n    no_such_setup: {break_even: false}\n",
+            "unknown strategies",
+        ),
     ],
 )
 def test_invalid_config_rejected(tmp_path: Path, yaml_text: str, fragment: str) -> None:

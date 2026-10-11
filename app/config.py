@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, time
@@ -345,6 +346,16 @@ class SessionsConfig(StrictModel):
         return value
 
 
+class StrategyManagement(StrictModel):
+    """One strategy's own break-even and trailing (SETUP_REVIEW §15: break-even cost harmonic about 0.05 R a
+    trade). ``false`` switches the rule off for that strategy; a number replaces the global trigger."""
+
+    break_even: bool = True
+    trailing: bool = True
+    break_even_trigger_r: float | None = Field(default=None, gt=0)
+    trailing_start_r: float | None = Field(default=None, gt=0)
+
+
 class PositionManagementConfig(StrictModel):
     break_even_trigger_r: float = Field(default=1.0, gt=0)
     break_even_buffer_points: float = Field(default=2.0, ge=0)
@@ -353,6 +364,23 @@ class PositionManagementConfig(StrictModel):
     time_stop_bars: int | None = Field(default=None, ge=1)
     min_sl_step_points: float = Field(default=5.0, ge=0)
     modify_min_interval_seconds: float = Field(default=10.0, ge=0)
+    by_strategy: dict[str, StrategyManagement] = Field(default_factory=dict)
+
+    def for_strategy(self, name: str | None) -> PositionManagementConfig:
+        """The rules for one strategy's positions: the global ones with its ``by_strategy`` entry applied
+        (a switched-off rule gets an infinite trigger, so it never fires)."""
+        own = self.by_strategy.get(name or "")
+        if own is None:
+            return self
+        be = own.break_even_trigger_r or self.break_even_trigger_r
+        trail = own.trailing_start_r or self.trailing_start_r
+        return self.model_copy(
+            update={
+                "break_even_trigger_r": be if own.break_even else math.inf,
+                "trailing_start_r": trail if own.trailing else math.inf,
+                "by_strategy": {},
+            }
+        )
 
 
 class BreakerConfig(StrictModel):
@@ -833,6 +861,14 @@ class AppConfig(StrictModel):
     sync: SyncConfig = Field(default_factory=SyncConfig)
     ai: AIConfig = Field(default_factory=AIConfig)
     evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
+
+    @model_validator(mode="after")
+    def _management_names_known(self) -> AppConfig:
+        known = {item.name for item in self.strategies.items}
+        unknown = sorted(set(self.position_management.by_strategy) - known)
+        if unknown:
+            raise ValueError(f"position_management.by_strategy names unknown strategies: {unknown}")
+        return self
 
     def spread_limit(self, symbol: str) -> float:
         override = self.symbols.overrides.get(symbol)

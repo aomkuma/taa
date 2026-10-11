@@ -555,6 +555,11 @@ AI failures never trip trading breakers; they only produce HOLD.
 - **Analytics:** track MAE/MFE per position from ticks.
 - **Reconciliation:** compare broker and DB every cycle, matching bot positions by magic. Manual or foreign positions count
   toward exposure; the policy is configurable (count or halt).
+- (2026-10-11) **Per strategy:** `position_management.by_strategy.<name>` switches break-even and/or trailing
+  off (or sets its own triggers) for one strategy's positions, in the backtester, PAPER, DEMO/LIVE and the
+  shadow `MANAGED` variant alike; an unknown name is a config error; empty by default (behaviour unchanged).
+  Why: on a year of harmonic backtests the move to break-even at +1 R cost about 0.05 R a trade
+  (SETUP_REVIEW §15).
 
 ## A12. Order execution & idempotency (Milestone 2, designed now)
 

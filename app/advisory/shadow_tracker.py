@@ -459,7 +459,7 @@ class ShadowTracker:
                 management = None
                 if row.variant == Variant.MANAGED.value:
                     management = Management(
-                        self.config.position_management,
+                        self.config.position_management.for_strategy(row.strategy),
                         row.atr,
                         spec.point,
                         Timeframe(row.timeframe).seconds,

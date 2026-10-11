@@ -136,6 +136,8 @@ position_management:
   trailing_start_r: 1.5
   trailing_atr_multiple: 2.0
   time_stop_bars: null
+  by_strategy: {}                   # per strategy, e.g. setup_harmonic_prz: {break_even: false, trailing: false}
+                                    # (SETUP_REVIEW §15; the owner decides before it is set)
 
 backtest:
   initial_balance: 10000

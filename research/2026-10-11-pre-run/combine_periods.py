@@ -16,6 +16,8 @@ ROOT = Path("data/backtests/inv")
 
 def main(setup: str, label: str, periods: list[str]) -> None:
     for name in (setup, f"{setup}_inverted"):
+        if not (ROOT / f"{name}_{periods[0]}").exists():
+            continue  # one world only (e.g. a variant run for the normal side)
         frames = []
         for period in periods:
             t = pd.read_csv(ROOT / f"{name}_{period}" / "trades.csv")

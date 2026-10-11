@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import dataclasses
+import math
 
 import pytest
 from sqlalchemy import select
 
-from app.config import PositionManagementConfig
+from app.config import PositionManagementConfig, StrategyManagement
 from app.core.clock import ManualClock
 from app.core.enums import ExitReason, Side, Timeframe
 from app.engine.decision_engine import DecisionRecord
@@ -141,3 +142,45 @@ class TestRules:
             row = sess.execute(select(PaperPositionRow)).scalar_one()
         assert row.mae == pytest.approx(0.0010)
         assert row.mfe == pytest.approx(0.0015)
+
+
+class Quiet(Closer):
+    name = "quiet"
+
+    def should_close(self, ctx: StrategyContext, side: Side) -> bool:
+        return False
+
+
+class TestPerStrategyManagement:
+    """SETUP_REVIEW §15: a strategy may switch break-even/trailing off (``position_management.by_strategy``)."""
+
+    def test_switched_off_break_even_and_trailing_never_move_the_stop(
+        self, db: Database, record: DecisionRecord
+    ) -> None:
+        cfg = PositionManagementConfig(
+            by_strategy={"quiet": StrategyManagement(break_even=False, trailing=False)}
+        )
+        clock, p, pm, sink = setup(db, record, cfg)
+        pm.strategies_by_magic = {MAGIC: Quiet()}
+        start = position(p).sl
+        for bid in (1.10200, 1.10310, 1.10500):  # +1R, +1.5R, +2.5R
+            clock.advance(11)
+            pm.on_quote("EURUSD", bid, bid + 0.00008, ATR)
+        assert position(p).sl == start
+        assert not [e for e in sink.events if e.type is EventType.STOP_MOVED]
+
+    def test_other_strategies_keep_the_global_rules(self, db: Database, record: DecisionRecord) -> None:
+        cfg = PositionManagementConfig(by_strategy={"other": StrategyManagement(break_even=False)})
+        clock, p, pm, _ = setup(db, record, cfg)
+        pm.strategies_by_magic = {MAGIC: Quiet()}
+        clock.advance(1)
+        pm.on_quote("EURUSD", 1.10200, 1.10208, ATR)  # +1R
+        assert position(p).stop_kind is ExitReason.BREAK_EVEN
+
+    def test_for_strategy_merges_and_defaults(self) -> None:
+        cfg = PositionManagementConfig(
+            by_strategy={"a": StrategyManagement(break_even_trigger_r=2.0, trailing=False)}
+        )
+        own = cfg.for_strategy("a")
+        assert own.break_even_trigger_r == 2.0 and own.trailing_start_r == math.inf
+        assert cfg.for_strategy("b") is cfg and cfg.for_strategy(None) is cfg
