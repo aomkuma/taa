@@ -339,10 +339,10 @@ hold-out XAUUSD for the light family, GBPUSD for the heavy pair, AUDUSD+XAUUSD f
   original's loss on the breakout family and leaves the costs; it does not create an edge. Harmonic and candle
   reversal inverted lose with the CI below zero (their original direction carries information, §9, §11).
 
-**Proposal to the owner (decides):** switch off `setup_harmonic_prz_inverted` and
-`setup_candle_reversal_inverted` on DEMO now (history: CI below zero); neckline and trend pullback inverted are
-negative on few signals. Keep the breakout-family copies only as the DEMO measurement, knowing history
-expects ≈ 0 R per trade. The next lever has to change the trades themselves (where the original direction is
+**Owner's decision (2026-10-11):** nothing is switched off on these harness numbers. Every setup is
+measured with the backtester instead, in two worlds: two separate backtests over the same four months
+(2026-06-05 .. 2026-10-05, eight symbols), started together, the original and the inverted each with its own
+account (INVERTED_SETUPS §5; results in §15 when they finish). The next lever has to change the trades themselves (where the original direction is
 informative: harmonic; the cost share: higher timeframes, wider structures), not their side.
 
 ## 10. Still to do

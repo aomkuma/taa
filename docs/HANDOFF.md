@@ -65,8 +65,12 @@ Chat with me in Thai.
   trend pullback −0.062, harmonic **−0.118** (CI below zero for the two in bold). The §13 estimates (+0.036 etc.)
   were too high (INVERTED_SETUPS §4 corrected). No context rule (incl. the New York-time and pre-run features)
   survives walk-forward + hold-out. **Gap: about +0.15 R per trade for every inverted setup.**
-- **Waiting for the owner:** switch off `setup_harmonic_prz_inverted` and `setup_candle_reversal_inverted` on
-  DEMO (history says they lose)? Not changed.
+- **Owner's decisions (later the same day):** switch nothing off from the harness; measure with the
+  backtester, not DEMO: per setup, two separate backtests per setup over the same period, run side by side: the original (`X`) and the inverted (`X_inverted`), each its own world with its own account (4 months,
+  2026-06-05 .. 2026-10-05, eight symbols, research config `data/research/config_paired_bt.yaml` with the
+  breakers and filters at their widest; drawdown via `MAX_ACCOUNT_DRAWDOWN_PERCENT=50` in the command's
+  environment, since `.env` sets 10). Running since 20:20 Thai time, one setup at a time, outputs in
+  `data/backtests/inv/` (queue in `queue.log`). Report times to the owner in Thai time.
 - **Checks:** targeted tests green (engine integration demo/paper/restart/live/commands + golden 40, research +
   architecture 69); ruff, mypy, bandit clean. **Full pytest and vitest still due** while the stack is paused.
 
@@ -307,11 +311,10 @@ SCALE_IN 5 parts.
 
 The order below aims at an edge first (the owner's target above); LIVE stays the owner's decision.
 
-1. **The owner's decision** on switching off the harmonic and candle-reversal inverted copies (SETUP_REVIEW §14).
-2. **Measure the inverted setups on DEMO per strategy** against the originals' shadow on the same signals
-   (n, mean R net, CI, win rate, average win/loss) once there are enough closed pairs (weeks); history now
-   expects ≈ 0 R per trade for the breakout family. (Done 10-11: the EURUSD summary, the sleep fix, the pre-run
-   study parts 1-2.)
+1. **Two-world backtests of all nine setups** (running; see Current state): report the original and the
+   inverted side by side, write SETUP_REVIEW §15, and let the owner choose the side per setup.
+2. DEMO keeps trading the inverted copies as a live check only. (Done 10-11: the EURUSD summary, the sleep fix,
+   the pre-run study parts 1-2.)
 3. **A new lever, not a new side** (SETUP_REVIEW §14): the cost share (H1/H4 entries, wider structures) and the
    setups whose direction is informative (harmonic variants: swing size, tolerance, nearer targets; L810).
 4. Inverted-trade exits (TP minus a spread buffer, break-even, time stop): history shows no exit rule that holds

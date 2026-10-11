@@ -92,12 +92,16 @@ in R of the **original** risk (`docs/SETUP_REVIEW.md` §13 when written):
 
 ## 5. What to focus on (the work that remains)
 
-1. **Measure per strategy, not in total.** Report each `*_inverted` separately (n, mean R net, 90 % CI, win
-   rate, average win/loss in R, max drawdown) against the original's shadow on the same signals. Use
-   `GET /engines/{id}/learning/entry-modes` / analytics scopes (DEMO) and `python -m app.cli research hypotheses`.
-2. **Switch off the inverted copies that history already says lose** if DEMO confirms it after enough trades:
-   harmonic (its original direction is informative), neckline, trend pullback, candle reversal. This is the
-   owner's decision; propose it with numbers.
+1. **Measure with the backtester, per setup, in two worlds** (owner, 2026-10-11): two separate
+   `app.cli backtest` runs over the same period, started together, one for the original (`X`) and one for the
+   inverted (`X_inverted`), each with its own account, the same history and the same config. Report both side
+   by side (trades, win rate, R per trade, net, max drawdown). DEMO is a live check, not the evidence; the
+   research harness is for quick hypotheses only. Research runs use a config copy with the loss breakers and
+   the trade filters at their widest (`data/research/config_paired_bt.yaml`: 0.5 % risk, drawdown 50 %,
+   consecutive losses 50 with no pause, 5 positions per symbol, spread/SL 1.0, min R:R 0.01), so a breaker
+   does not cut the sample (the first harmonic run latched MAX_DRAWDOWN at 10 % within three weeks).
+2. **Switch nothing off from the harness alone.** The two-world backtests decide which side of each setup
+   works, if any; the owner decides what the bot trades.
 3. **Costs are the lever.** The inverted edge on breakouts is mostly eaten by two spreads. Test filters that keep
    only signals where the spread is a small share of the original stop (cost share), and higher timeframes (H1)
    where the spread share is smaller.
