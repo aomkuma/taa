@@ -81,6 +81,9 @@ Chat with me in Thai.
   −0.027 with it; `against_h4` +0.21 R holds on the hold-out symbols (+0.13), `pullback` −0.44. Gap ≈ +0.13 R.
   New code: `position_management.by_strategy` (per-strategy break-even/trailing, PLAN §A11), empty in
   config.yaml. **Owner to decide:** harmonic without break-even, harmonic on the normal side on DEMO.
+- **How to improve harmonic (SETUP_REVIEW §15.2):** H4 against/ranging +0.142 R (203/yr, DD 11.7 R, hold-out
+  +0.25); New York afternoon +0.183 R (167/yr); skip `pullback` +0.041. Next: code the phase gate, backtest in two
+  worlds, then more symbols for ≥ 300 trades a year.
 - **The DEMO stack is PAUSED** since 2026-10-11 14:41 UTC (owner, to free memory for the backtests); one bot
   position open at the broker (GBPUSD SELL, SL/TP set). Resume with "TAA Resume" / `demo-tasks.ps1 -Resume`.
 - **Checks:** targeted tests green (engine integration demo/paper/restart/live/commands + golden 40, research +

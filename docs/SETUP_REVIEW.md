@@ -403,6 +403,26 @@ Same year and research config, `break_even_trigger_r` and `trailing_start_r` swi
   year. Code: `position_management.by_strategy` (PLAN §A11) can switch break-even/trailing off for harmonic
   alone; **not set in config.yaml until the owner decides**.
 
+### 15.2 How to improve harmonic, from its backtest trades (2026-10-11, owner's question)
+
+On the 773 no-break-even trades (`data/backtests/inv/harmonic_nobe_filters.txt`), each filter judged on both
+halves and the hold-out symbols (AUDUSD, XAUUSD). The filters were picked after looking at this data (about ten
+tried), so each must be confirmed as a coded gate in a new two-world backtest and on symbols not seen yet.
+
+| Filter | Trades/yr | R/trade | Halves | Hold-out | Max DD |
+|---|---|---|---|---|---|
+| none (no break-even) | 773 | +0.024 | +0.02 / +0.03 | +0.00 | 30.2 R |
+| skip `pullback` | 747 | +0.041 | +0.04 / +0.04 | +0.03 | 25.3 R |
+| **H4 against the trade or ranging** | 203 | **+0.142** | +0.14 / +0.14 | **+0.25** | **11.7 R** |
+| **New York 12:00-20:00** | 167 | **+0.183** | +0.17 / +0.19 | +0.14 | **7.1 R** |
+| London / New York morning | 266 / 340 | ~0 | mixed | negative | — |
+
+- Harmonic works as a **reversal at the end of a move or inside a range**; it loses while the H4 trend still
+  runs with the trade. With that gate the drawdown target holds and R/trade is near the goal (gap ≈ +0.01 R),
+  but trades fall below 300 a year: more symbols are the lever for the count.
+- Next: the phase gate (H4 against/range, no `pullback`) coded for harmonic and backtested in two worlds; then
+  the New York afternoon on top; then more symbols (out-of-sample and the trade count).
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
