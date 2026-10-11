@@ -46,40 +46,24 @@ which side does the evidence favour, and is the agreement strong enough to act?*
 
 ### Measurement (fixed before any run)
 
-- Two-world backtests (normal and inverted, separate accounts, the widest research config), 4 months first
-  (2026-06-05 .. 2026-10-05), then the full year on the eight symbols.
-- Report per world: trades, win rate, R per trade with a 90 % CI, net, max drawdown in R, how far losers ran
-  toward the target before turning and how far winners went against the stop (`two_worlds.py`).
-- **Horizons:** how often the chosen side is right after 4 hours, 1 day and 3 days (direction hit rate against
-  a coin and against the bot's setups on the same bars), next to the traded result with stop and target.
-- **Thresholds:** at most 3 pre-registered settings of (net threshold, *k*); chosen on one half and judged on
-  the other half and on hold-out symbols, like every rule in SETUP_REVIEW. A setting that only works
-  in-sample is not a finding.
-- **Goal and gap stated before and after:** ≥ +0.15 R per trade net, CI lower bound > 0 in both halves,
-  ≥ 300 trades a year on the eight symbols, max drawdown ≤ 15 R.
+- The two-world backtests of INVERTED_SETUPS §5 (same method and research config), 4 months first
+  (2026-06-05 .. 2026-10-05), then the full year; per-world report from `two_worlds.py`.
+- Also the **direction hit rate** after 4 hours, 1 day and 3 days, against a coin and against the bot's setups
+  on the same bars.
+- At most 3 pre-registered settings of (net threshold, *k*), judged walk-forward and on hold-out symbols as in
+  SETUP_REVIEW; the goal and the gap are stated before and after (HANDOFF prompt).
 
-## 4. Path B — the AI reads the same chart (after or beside A; forward only)
+## 4. Path B — the AI reads the same chart (forward only)
 
-The Phase 16 analyst (AI_ANALYST_DISCUSSION §3): the engine sends the AI the same chart pack (M15/H1/H4 numbers,
-the evidence and zones of Path A, optionally a chart image) and records its side and thesis **in shadow** for
-every Path A candidate and on a schedule.
+Phase 16 as designed in AI_ANALYST_DISCUSSION (§3 chart pack and thesis, §3.4 stages, §4.4 why it can only be
+measured forward, §4.5 safety). The only addition here: the AI is also asked on **every Path A candidate**, so
+the AI's side, Path A's side, the bot's setups and a coin are compared on the same bars. Needs the owner's API
+key and a daily budget.
 
-- **Forward only:** an AI cannot be backtested fairly (it may have seen those prices in training).
-- **The comparison that matters:** the AI's side vs Path A's side vs the bot's setups vs a coin, on the same
-  bars, in R after costs, over hundreds of cases (weeks). A handful of correct calls cannot be told apart
-  from luck at 50/50.
-- Needs the owner's Anthropic API key and a daily budget (the default 50 calls / $2 a day is too small for
-  every candidate on eight symbols; an estimate comes with the stage-B ticket).
+## 5. How an AI may take part in orders
 
-## 5. How an AI may take part in orders (stages, each the owner's decision)
-
-| Stage | The AI may | Gates |
-|---|---|---|
-| Today | veto or comment (Phase 13) | after every other check; can only block |
-| B. shadow | give a side and a thesis, recorded and scored | no orders |
-| C. filter | remove bot signals against its side | can only reduce risk |
-| D. armed plan | the owner arms a thesis; the engine waits for its trigger and raises an ordinary signal | every risk rule, breaker and the mode gate; DEMO first |
-| Never | send orders to MT5 directly or size, widen a stop or bypass a gate | — |
+The stages in AI_ANALYST_DISCUSSION §3.4 (shadow → filter → armed plan, each behind a flag and the owner's
+decision). The AI never sends orders to MT5 directly and never bypasses a risk rule, a breaker or the mode gate.
 
 ## 6. Steps
 

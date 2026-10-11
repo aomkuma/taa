@@ -1,8 +1,9 @@
 # AI Analyst + Bot Executor — Discussion Record and Feasibility
 
 Record of the design conversation of 2026-10-06 between the owner and Claude Code (in Thai, summarized here in
-English). **Status: proposal; nothing decided or built yet.** No profitability claims: everything here is about
-process and measurement, not results.
+English). **Status: proposal; nothing decided or built yet.** Follow-up 2026-10-11:
+`docs/CONFLUENCE_DIRECTION.md` (a deterministic whole-chart direction first, then this analyst on the same
+bars). No profitability claims: everything here is about process and measurement, not results.
 
 ---
 

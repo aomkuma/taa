@@ -313,17 +313,18 @@ The order below aims at an edge first (the owner's target above); LIVE stays the
 
 1. **Two-world backtests of all nine setups** (running; see Current state): report the original and the
    inverted side by side, write SETUP_REVIEW §15, and let the owner choose the side per setup.
-2. DEMO keeps trading the inverted copies as a live check only. (Done 10-11: the EURUSD summary, the sleep fix,
+2. **Confluence direction** (TAA-L812, plan in `docs/CONFLUENCE_DIRECTION.md`): Path A after the two-world runs.
+3. DEMO keeps trading the inverted copies as a live check only. (Done 10-11: the EURUSD summary, the sleep fix,
    the pre-run study parts 1-2.)
-3. **A new lever, not a new side** (SETUP_REVIEW §14): the cost share (H1/H4 entries, wider structures) and the
+4. **A new lever, not a new side** (SETUP_REVIEW §14): the cost share (H1/H4 entries, wider structures) and the
    setups whose direction is informative (harmonic variants: swing size, tolerance, nearer targets; L810).
-4. Inverted-trade exits (TP minus a spread buffer, break-even, time stop): history shows no exit rule that holds
+5. Inverted-trade exits (TP minus a spread buffer, break-even, time stop): history shows no exit rule that holds
    for the inverted breakout (`l811_breakout_M15_inverted.txt`); the owner said to watch DEMO first.
-5. Full pytest + vitest while the stack is paused.
-6. PWA "Pause" button (resume cannot be in the PWA: the web stops with the stack).
-7. TAA-L702 open items, the TAA-L810 hook H1 gate (only once a context rule holds), TAA-L803
+6. Full pytest + vitest while the stack is paused.
+7. PWA "Pause" button (resume cannot be in the PWA: the web stops with the stack).
+8. TAA-L702 open items, the TAA-L810 hook H1 gate (only once a context rule holds), TAA-L803
    `setup_failed_break`.
-8. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
+9. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
    explicit go-ahead. Never enable LIVE on the owner's behalf. Phase 11 Railway skipped; a Windows VPS for
    24/5 DEMO is the owner's option (the laptop travels).
 
