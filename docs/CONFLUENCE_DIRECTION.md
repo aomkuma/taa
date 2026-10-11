@@ -87,8 +87,8 @@ decision). The AI never sends orders to MT5 directly and never bypasses a risk r
 
 ## 6. Steps
 
-1. Finish the two-world backtests of the nine setups (running since 2026-10-11 20:20 Thai time) and write
-   SETUP_REVIEW §15.
+1. Harmonic first, alone (owner, 2026-10-11): two-world backtests over a year, its three-screen phase (§3.1)
+   and the entry/exit hypotheses on its trades; SETUP_REVIEW §15. The other eight setups wait.
 2. Path A: `setup_confluence` (strategy, config, TH/EN texts, tests incl. no look-ahead), then two-world
    backtests, 4 months then a year; SETUP_REVIEW section with the result and the gap.
 3. Path B: Phase 16 stage A/B tickets (chart pack, `ThesisV1`, shadow tracker) once the owner provides a key and

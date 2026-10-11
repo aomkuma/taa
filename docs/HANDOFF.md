@@ -69,8 +69,10 @@ Chat with me in Thai.
   backtester, not DEMO: per setup, two separate backtests per setup over the same period, run side by side: the original (`X`) and the inverted (`X_inverted`), each its own world with its own account (4 months,
   2026-06-05 .. 2026-10-05, eight symbols, research config `data/research/config_paired_bt.yaml` with the
   breakers and filters at their widest; drawdown via `MAX_ACCOUNT_DRAWDOWN_PERCENT=50` in the command's
-  environment, since `.env` sets 10). Running since 20:20 Thai time, one setup at a time, outputs in
-  `data/backtests/inv/` (queue in `queue.log`). Report times to the owner in Thai time.
+  environment, since `.env` sets 10). **Focus: `setup_harmonic_prz` only** (owner, 2026-10-11 21:15 Thai time): 4 months
+  (2026-06-05 .. 10-05) then the 8 months before, both worlds together; the other eight setups wait. Outputs in
+  `data/backtests/inv/` (queue in `queue.log`); analysis scripts in `research/2026-10-11-pre-run/`
+  (`two_worlds.py`, `three_screens.py`, `backtest_hypotheses.py`). Report times to the owner in Thai time.
 - **Checks:** targeted tests green (engine integration demo/paper/restart/live/commands + golden 40, research +
   architecture 69); ruff, mypy, bandit clean. **Full pytest and vitest still due** while the stack is paused.
 
@@ -311,8 +313,8 @@ SCALE_IN 5 parts.
 
 The order below aims at an edge first (the owner's target above); LIVE stays the owner's decision.
 
-1. **Two-world backtests of all nine setups** (running; see Current state): report the original and the
-   inverted side by side, write SETUP_REVIEW §15, and let the owner choose the side per setup.
+1. **Harmonic first, alone** (running; see Current state): two worlds over a year, the three-screen phase and
+   the entry/exit hypotheses on its trades; SETUP_REVIEW §15; then the owner decides the next setup.
 2. **Confluence direction** (TAA-L812, plan in `docs/CONFLUENCE_DIRECTION.md`): Path A after the two-world runs.
 3. DEMO keeps trading the inverted copies as a live check only. (Done 10-11: the EURUSD summary, the sleep fix,
    the pre-run study parts 1-2.)

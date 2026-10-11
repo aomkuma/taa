@@ -662,7 +662,7 @@ Results: docs/SETUP_REVIEW.md §14.
 - [x] `research hypotheses --inverted`: the inverted setup's trade (other side of the spread, swapped exits, R of its own risk, costs scaled to the smaller lot)
 - [x] research features: New York-time buckets, `pre_news` (US release-slot proxy), `pre:sweep_against`, `pre:false_break_with`, `pre:compression_pct`
 - [x] part 2: every setup as traded and inverted, walk-forward + hold-out symbols (`data/research/l811_*.txt`); no rule survives
-- [ ] two-world backtests (owner, 2026-10-11): per setup, the original and the inverted as two separate `app.cli backtest` runs started together (4 months, 8 symbols, widest research config), all nine setups, reported side by side
+- [ ] two-world backtests (owner, 2026-10-11): per setup, the original and the inverted as two separate `app.cli backtest` runs started together (8 symbols, widest research config), reported side by side; **harmonic only for now** (a full year: 2026-06-05 .. 10-05 plus 2025-10-15 .. 2026-06-05); the other eight setups wait until harmonic is settled (owner, 2026-10-11)
 - [ ] SETUP_REVIEW §15 with the results and the owner's choice of side per setup
 
 #### TAA-L812 — Confluence direction: the whole chart chooses the side (2026-10-11)
