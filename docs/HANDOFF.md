@@ -1,7 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-09 (setup workbench: the H4/D1 market map, harmonic on eight symbols, the inverted setups
-traded on DEMO, pause/resume of the stack). Other sessions (TAA-1007/1208-1211) may work in parallel.
+Last updated: 2026-10-11 (the sleep fix, the pre-run behaviour study, the inverted setups measured on history;
+before that 2026-10-09: the market map, harmonic on eight symbols, inverted setups on DEMO, pause/resume). Other sessions (TAA-1007/1208-1211) may work in parallel.
 This file holds **state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`,
 design decisions in `docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`.
 What was built per ticket is in the git history. A separate **learning track** (Milestone 3) is designed in
@@ -38,6 +38,37 @@ Chat with me in Thai.
 ---
 
 ## Current state
+
+### 2026-10-11: sleep fix, pre-run study, inverted setups measured (SETUP_REVIEW §14, TAA-L811)
+
+- **Stack:** the owner resumed it 11:53 UTC; restarted 11:59 UTC for the sleep fix (`demo-tasks -Stop/-Start`).
+  Healthy: DEMO, connected, clock verified, no breakers, equity 1,014.22, one open bot position.
+- **Inverted trades on DEMO so far** (only ~3 h of trading, 10-09 13:45-16:49 UTC, before the pause): EURUSD
+  BUY 0.07 `setup_breakout_inverted` closed at **TP 1.1202 on 10-09 18:47 UTC** (while paused; booked at the
+  resume): **+$6.30, +0.45 R** of its own stop (≈ +0.91 R of the original's risk). The original SELL (shadow)
+  went +0.43 R in favour, then was stopped at 18:47 (−1.01 R). Signal context: H4/D1 neither trend nor range,
+  no zone on its side, room to the opposing zone 2.1 R (H4) / 3.1 R (D1). GBPUSD SELL 0.06
+  (`setup_breakout_inverted`, entry 1.32294, SL 1.32535, TP 1.32185) is **still open**. Shadow pairs closed on
+  the eight symbols: 3 (inverted won all three, about +0.4 R each, own risk): no evidence yet. Report script:
+  query `shadow_trades` PLAN rows of `X` and `X_inverted` on the same (symbol, timeframe, signal_at).
+  Of 12 inverted EXECUTION decisions, 2 were accepted; the rest hit MAX_TOTAL_OPEN_RISK, CORRELATION_LIMIT,
+  MAX_POSITIONS_PER_SYMBOL or RISK_BELOW_MIN_LOT.
+- **Sleep fix (012974d, PLAN §A19):** a `BrokerError` in the health step's broker reads while the link probe
+  also fails is a connection problem (CONNECTION breaker), not UNHANDLED_EXCEPTION; a restored connection runs
+  the health step (reconcile, trade booking) and the clock check at once. Tests in
+  `tests/integration/test_engine_demo.py`.
+- **Pre-run study + inverted on history (10456ea, SETUP_REVIEW §14):** sweeps, false breaks and compression do
+  not announce runs (lift ≈ 1, like a shuffled-bar random walk); the 66-69 % false-break rate is mostly
+  random-walk (66-70 %); breaks fail more in Asia/London/rollover/pre-news (72-75 %) and less at the New York
+  open (65 %), both halves. `research hypotheses --inverted` (R of the inverted trade's own risk): breakout
+  −0.002, pattern breakout −0.005, fib −0.025, elliott −0.025, candle reversal **−0.095**, neckline −0.103,
+  trend pullback −0.062, harmonic **−0.118** (CI below zero for the two in bold). The §13 estimates (+0.036 etc.)
+  were too high (INVERTED_SETUPS §4 corrected). No context rule (incl. the New York-time and pre-run features)
+  survives walk-forward + hold-out. **Gap: about +0.15 R per trade for every inverted setup.**
+- **Waiting for the owner:** switch off `setup_harmonic_prz_inverted` and `setup_candle_reversal_inverted` on
+  DEMO (history says they lose)? Not changed.
+- **Checks:** targeted tests green (engine integration demo/paper/restart/live/commands + golden 40, research +
+  architecture 69); ruff, mypy, bandit clean. **Full pytest and vitest still due** while the stack is paused.
 
 ### 2026-10-09: setup workbench, market map, inverted setups on DEMO
 
@@ -276,18 +307,16 @@ SCALE_IN 5 parts.
 
 The order below aims at an edge first (the owner's target above); LIVE stays the owner's decision.
 
-1. **The EURUSD inverted trade's summary** for the owner when it closes (result in R and $, what price did
-   against the NY opening-range break and the H4 demand zone, what the original would have done).
+1. **The owner's decision** on switching off the harmonic and candle-reversal inverted copies (SETUP_REVIEW §14).
 2. **Measure the inverted setups on DEMO per strategy** against the originals' shadow on the same signals
-   (n, mean R net, CI, win rate, average win/loss). Propose switching off the copies history says lose
-   (harmonic, neckline, trend pullback, candle reversal) once DEMO agrees; the owner decides.
-3. **Sleep resilience:** an MT5 IPC loss after a laptop sleep should be a CONNECTION problem that heals itself,
-   not an UNHANDLED_EXCEPTION that latches; reconnect, verify and reconcile after a wall-clock jump.
-4. **Pre-run behaviour study** (SETUP_REVIEW §12): part 1 measure, part 2 entry-timing rules in the setup's
-   direction, walk-forward + hold-out; then apply to the inverted and the original setups.
-5. Inverted-trade exits, tested on history first: TP minus the original's spread buffer (the EURUSD trade
-   missed TP by about one spread), break-even/trailing in units of the TP distance, a time stop. The owner said
-   to watch DEMO first (2026-10-09).
+   (n, mean R net, CI, win rate, average win/loss) once there are enough closed pairs (weeks); history now
+   expects ≈ 0 R per trade for the breakout family. (Done 10-11: the EURUSD summary, the sleep fix, the pre-run
+   study parts 1-2.)
+3. **A new lever, not a new side** (SETUP_REVIEW §14): the cost share (H1/H4 entries, wider structures) and the
+   setups whose direction is informative (harmonic variants: swing size, tolerance, nearer targets; L810).
+4. Inverted-trade exits (TP minus a spread buffer, break-even, time stop): history shows no exit rule that holds
+   for the inverted breakout (`l811_breakout_M15_inverted.txt`); the owner said to watch DEMO first.
+5. Full pytest + vitest while the stack is paused.
 6. PWA "Pause" button (resume cannot be in the PWA: the web stops with the stack).
 7. TAA-L702 open items, the TAA-L810 hook H1 gate (only once a context rule holds), TAA-L803
    `setup_failed_break`.
