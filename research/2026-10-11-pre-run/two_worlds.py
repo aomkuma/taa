@@ -8,7 +8,7 @@ For each trade (``trades.csv`` of ``app.cli backtest``; ``mae``/``mfe`` are pric
 - winners: how far price went against the trade before reaching the target, as a share of the stop distance
   (MAE / |entry - SL|).
 
-    .venv/Scripts/python research/2026-10-11-pre-run/two_worlds.py setup_harmonic_prz [data/backtests/inv]
+    .venv/Scripts/python research/2026-10-11-pre-run/two_worlds.py setup_harmonic_prz [4m|1y]
 """
 
 from __future__ import annotations
@@ -64,9 +64,9 @@ def world(folder: Path) -> dict:
     }
 
 
-def main(setup: str, root: Path) -> None:
-    rows = {"normal": world(root / f"{setup}_4m"), "inverted": world(root / f"{setup}_inverted_4m")}
-    print(f"=== {setup}: two worlds, 2026-06-05 .. 2026-10-05, 8 symbols (bar-based backtest) ===")
+def main(setup: str, root: Path, period: str) -> None:
+    rows = {"normal": world(root / f"{setup}_{period}"), "inverted": world(root / f"{setup}_inverted_{period}")}
+    print(f"=== {setup}: two worlds, period {period}, 8 symbols (bar-based backtest) ===")
     print(f"{'world':9} {'trades':>6} {'win%':>5} {'R/trade':>8} {'90% CI':>16} {'net':>10} {'maxDD R':>8} {'avg win':>8} {'avg loss':>8}")
     for name, w in rows.items():
         print(
@@ -81,4 +81,4 @@ def main(setup: str, root: Path) -> None:
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], Path(sys.argv[2] if len(sys.argv) > 2 else "data/backtests/inv"))
+    main(sys.argv[1], Path("data/backtests/inv"), sys.argv[2] if len(sys.argv) > 2 else "4m")

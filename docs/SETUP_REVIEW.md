@@ -345,6 +345,45 @@ measured with the backtester instead, in two worlds: two separate backtests over
 account (INVERTED_SETUPS §5; results in §15 when they finish). The next lever has to change the trades themselves (where the original direction is
 informative: harmonic; the cost share: higher timeframes, wider structures), not their side.
 
+## 15. Harmonic in two worlds, backtested over a year (2026-10-11)
+
+Owner, 2026-10-11: judge setups with the backtester, one setup at a time, harmonic first; the original and
+the inverted as two separate worlds (INVERTED_SETUPS §5). `setup_harmonic_prz` and
+`setup_harmonic_prz_inverted`, 8 symbols, 2025-10-15 .. 2026-10-05 as three 4-month runs (`4mA`, `4mB`, `4m`)
+joined per world, research config `data/research/config_paired_bt.yaml` (breakers at their widest, 0.5 %
+risk). Outputs `data/backtests/inv/harmonic_1y_*.txt`; scripts in `research/2026-10-11-pre-run/`.
+Goal before: harmonic +0.02 R in the replay harness (§11), gap +0.13 R.
+
+| World | Trades | Win % | R/trade [90 % CI] | Max DD | Avg win / loss |
+|---|---|---|---|---|---|
+| normal | 779 (~780 a year) | 39 % | **−0.027** [−0.10, +0.05] | 44.6 R | +1.42 / −0.97 R |
+| inverted | 746 | 61 % | **−0.133** [−0.18, −0.09] | 101.2 R | +0.41 / −1.00 R |
+
+- **The normal side is the better world** in every period and every symbol group; the inverted world loses
+  with its CI below zero, in every market phase and both halves. The harmonic direction carries information
+  (as §9 and §11 found), so inverting it pays the spread twice *and* takes the wrong side.
+- **How price moved:** 58 % of the normal world's losers turned at once (under 25 % of the way to the target),
+  22 % went 25-50 %, 20 % more than half way; 73 % of the stopped trades reached the target later. A wider stop
+  at the same target does not convert that (×1.5: ±0.00 R paired).
+- **Break-even costs about 0.05 R a trade:** the engine moves the stop to entry at +1 R (79 trades closed at
+  break-even). On the same trades without it: +0.042 R [−0.04, +0.13] (halves +0.043 / +0.040); with
+  break-even at +1 R −0.008 (paired −0.050; first half −0.017, second half also negative). The rest of the gap
+  between the re-simulation and the backtest is fills and spreads at the exit.
+- **Market phase on three screens (§3.1 of CONFLUENCE_DIRECTION):** normal world `against_h4` (H4 trending
+  against the trade, i.e. a reversal at the end of a move) +0.151 R (n = 74; halves +0.08 / +0.25; hold-out
+  symbols +0.02); `pullback` (H4 with, M15 against: the classic triple-screen entry) −0.38 R (n = 26, both
+  halves negative): a reversal pattern does not fit a continuation phase. 68 % of the trades fall in
+  `other` (an H4 or H1 transition), −0.06 R. Groups are small; no phase reaches the goal alone.
+- **No context rule survives** (90 candidates incl. the New York-time and pre-run features): the best of each
+  half falls to about 0 on the hold-out symbols (AUDUSD, XAUUSD).
+- **Gap after: about +0.18 R per trade** for the backtest as it trades now (−0.027); about +0.11 R with
+  break-even off (≈ +0.04). Trades per year (780) meet the target; drawdown (44.6 R) does not.
+
+**Proposals to the owner (decides):** (1) trade harmonic on the normal side, not inverted; (2) no break-even
+for harmonic (a per-strategy exit setting), to be confirmed by a two-world backtest with it off; (3) prefer the
+`against_h4` phase and avoid `pullback` as a gate candidate, measured again once implemented. None of these
+reaches the goal yet; the next lever is the entry itself (58 % of the losers turn at once).
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
