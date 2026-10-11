@@ -281,6 +281,70 @@ nine `*_inverted` strategies trade on DEMO since 2026-10-09 13:45 UTC (first tra
 `setup_breakout` SELL on the New York opening-range break). Concept, mechanics and the work that remains:
 docs/INVERTED_SETUPS.md.
 
+## 14. Pre-run behaviour and the inverted trades, measured (2026-10-11)
+
+Goal before: the best history estimate of an inverted setup was +0.059 / +0.036 R (pattern breakout / breakout,
+R of the original risk; §13), a gap of about +0.10 R to the target (≥ +0.15 R/trade net).
+
+**Part 1, what happens before real runs** (`research/2026-10-11-pre-run/pre_run.py`, output
+`data/research/pre_run_part1.txt`; 8 symbols, M15 and H1, 2025-10-15 .. 2026-10-05; definitions fixed before
+the run). A run = +3 ATR within 16 bars before −1 ATR. Precursors over the 8 bars before: a sweep of the other
+side's 20-bar extreme closing back inside, a false break on the run's side, compression (lowest fifth of the
+window range). Every number is compared with a **random-walk baseline**: the same bars shuffled per symbol.
+
+| | M15 market | M15 random walk | H1 market | H1 random walk |
+|---|---|---|---|---|
+| lift of P(run) after a sweep of the other side | 1.01 (halves 1.05 / 0.97) | 0.98 | 0.88 | 0.93 |
+| lift after a false break on the run's side | 0.96 | 0.98 | 0.98 | 0.98 |
+| lift after compression | 0.90 | 1.00 | 1.06 | 1.00 |
+| a break closes back inside within 12 bars | 64.9-74.5 % by hour | 66-70 % | 62-78 % | 63-71 % |
+
+- **Sweeps, false breaks and compression do not announce runs:** they precede runs exactly as often as they
+  precede any bar (lift ≈ 1, like the random walk). The behaviour the owner sees before runs is real, but it is
+  just as common before moves that never come.
+- **The 66-69 % false-break rate of §12 is mostly what a random walk does** (66-70 %). What exceeds it, in both
+  halves on M15: breaks in the Asian session (72.5 %), London (74 %), the rollover hours 17-20 New York (74.5 %)
+  and the hour before the US release slots (73.8 %; a proxy, no historical calendar here). At the New York
+  open (09:30-11:30 NY) breaks fail **less** (64.9 %, 65.2 / 64.7 by half), about like a random walk.
+- Sweeps before runs reach a median 0.5 ATR (p75 0.9) beyond the swing and end a median 4 bars before the run.
+
+**Part 2, the setups and their inverted trades** (`research hypotheses`, new: `--inverted` simulates the inverted
+setup's trade itself, in R of its own wider risk; new features `ny:<bucket>`, `ny_minute`, `pre_news`,
+`pre:sweep_against`, `pre:false_break_with`, `pre:compression_pct`; outputs `data/research/l811_*.txt`;
+hold-out XAUUSD for the light family, GBPUSD for the heavy pair, AUDUSD+XAUUSD for harmonic):
+
+| Setup | n | Original, R | Inverted, R of its own risk [90 % CI] | Halves (inverted) |
+|---|---|---|---|---|
+| setup_breakout | 3,750 | −0.149 | −0.002 [−0.02, +0.02] | +0.012 / −0.017 |
+| setup_pattern_breakout (EURUSD, GBPUSD) | 901 | −0.222 | −0.005 [−0.04, +0.03] | −0.022 / +0.014 |
+| setup_fib_pullback | 378 | −0.159 | −0.025 [−0.08, +0.03] | −0.097 / +0.045 |
+| setup_elliott_wave | 552 | −0.072 | −0.025 [−0.08, +0.02] | −0.051 / +0.004 |
+| example_trend_pullback | 55 | +0.028 | −0.062 [−0.20, +0.10] | — |
+| setup_candle_reversal (EURUSD, GBPUSD) | 331 | −0.098 | **−0.095 [−0.16, −0.03]** | −0.063 / −0.157 |
+| setup_neckline_break (EURUSD, GBPUSD) | 89 | +0.003 | −0.103 [−0.24, +0.02] | −0.159 / −0.048 |
+| setup_harmonic_prz (8 symbols) | 821 | +0.021 | **−0.118 [−0.16, −0.07]** | −0.111 / −0.126 |
+
+- **The §13 estimate was too high.** It took −(the original's result) − two spreads; the full re-simulation also
+  pays what the bar-based fills charge both sides (a gap through a target fills at the target, a bar touching
+  both levels counts the stop, the exit-side spread at the exit bar): for setup_breakout original + inverted =
+  −0.150 R against −0.118 R for two spreads and costs. In R of the original risk the inverted breakout is
+  −0.001 (the identity alone gives +0.03); the account risks the inverted trade's own stop (≈ 2× wider), so per
+  trade it sees about half of that. The truth for fills at the target price or better lies between.
+- **No context rule survives** (walk-forward on the other half and the hold-out symbols, 144-160 candidates per
+  setup, with the new New York-time and pre-run features): the New York buckets chosen on one half fall on the
+  other (breakout inverted: London open +0.062 → −0.089). A low cost share (spread ≤ ~0.03 of the stop) is the
+  recurring best rule for the inverted breakout family (+0.04 to +0.10 R on the other half) but about +0.01 to
+  +0.015 R on the hold-out symbols.
+- **Gap after: about +0.15 R per trade** for every inverted setup (the best is ≈ 0). Inverting removes the
+  original's loss on the breakout family and leaves the costs; it does not create an edge. Harmonic and candle
+  reversal inverted lose with the CI below zero (their original direction carries information, §9, §11).
+
+**Proposal to the owner (decides):** switch off `setup_harmonic_prz_inverted` and
+`setup_candle_reversal_inverted` on DEMO now (history: CI below zero); neckline and trend pullback inverted are
+negative on few signals. Keep the breakout-family copies only as the DEMO measurement, knowing history
+expects ≈ 0 R per trade. The next lever has to change the trades themselves (where the original direction is
+informative: harmonic; the cost share: higher timeframes, wider structures), not their side.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun

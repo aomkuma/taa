@@ -498,3 +498,68 @@ def test_hold_out_symbols_never_choose_a_rule_but_judge_it() -> None:
     assert all(wf.holdout is not None and wf.holdout.n <= 100 for wf in report.walk_forward)
     assert all(rule.holdout is not None for rule in report.context)
     assert all(rule.chosen_n <= 300 for rule in report.context)  # chosen on the 300 EURUSD signals only
+
+
+class TestInverted:
+    def test_the_inverted_trade_takes_the_original_exits_and_the_other_side(self) -> None:
+        s = signal(entry=1.1001, spread=0.0001, cost_r=0.04)  # BUY at the ask, 1 R = 0.0010, TP +2 R
+        inv = s.inverted()
+        assert inv is not None and inv.side is Side.SELL
+        assert inv.entry == pytest.approx(1.1000)  # the bid of the same quote
+        assert inv.initial_sl == pytest.approx(s.tp) and inv.tp == pytest.approx(s.initial_sl)
+        assert inv.risk == pytest.approx(0.0021)  # the original's target distance plus the spread
+        assert inv.cost_r == pytest.approx(0.04 * 0.0010 / 0.0021)  # a smaller lot at the same risk percent
+        assert signal(target=None).inverted() is None
+
+    def test_a_win_of_the_original_is_a_full_loss_of_the_inverted(self) -> None:
+        s = signal(entry=1.1000)
+        inv = s.inverted()
+        assert inv is not None
+        bars = frame([(1.1000, 1.1025, 1.0999, 1.1022)])  # the original's target 1.1020 is hit
+        assert simulate(build_path(inv, bars, point=POINT)) == pytest.approx(-1.0)
+
+    def test_loading_inverted_skips_signals_without_a_target(self, tmp_path: Path) -> None:
+        store = ParquetHistoryStore(tmp_path)
+        bars = frame([(1.1, 1.1015, 1.0995, 1.101)] * 40, start=T0 - 4 * M5)
+        bars["time_server"] = bars["open_time"]
+        bars["tick_volume"] = 1
+        bars["real_volume"] = 0
+        store.save("FBS-Demo", "EURUSD", Timeframe.M5, bars)
+        store.save("FBS-Demo", "EURUSD", Timeframe.M15, bars)
+        (tmp_path / "FBS-Demo" / "EURUSD" / "spec.json").write_text(
+            '{"spec": {"point": 1e-05}}', encoding="utf-8"
+        )
+        found = [("FBS-Demo", signal(sid="a")), ("FBS-Demo", signal(sid="b", target=None))]
+        inputs = load_inputs(found, store, inverted=True)
+        assert [s.shadow_id for s in inputs.signals] == ["a:inverted"] and inputs.skipped == 1
+        assert inputs.signals[0].side is Side.SELL
+
+
+class TestPreRunFeatures:
+    def test_new_york_buckets_follow_daylight_saving(self) -> None:
+        from app.learning.research import ny_time
+
+        summer = ny_time(datetime(2026, 9, 30, 13, 45, tzinfo=UTC))  # 09:45 EDT
+        winter = ny_time(datetime(2026, 1, 14, 14, 45, tzinfo=UTC))  # 09:45 EST
+        assert summer["ny:ny_open"] == winter["ny:ny_open"] == 1.0
+        assert summer["ny_minute"] == winter["ny_minute"] == 9 * 60 + 45
+        assert sum(v for k, v in summer.items() if k.startswith("ny:")) == 1.0
+        assert ny_time(datetime(2026, 9, 30, 12, 0, tzinfo=UTC))["pre_news"] == 1.0  # 08:00 EDT, before 08:30
+        assert ny_time(datetime(2026, 10, 3, 12, 0, tzinfo=UTC))["pre_news"] == 0.0  # a Saturday
+        assert (
+            ny_time(datetime(2026, 9, 30, 1, 0, tzinfo=UTC))["ny:asia"] == 1.0
+        )  # 21:00 EDT, past midnight wrap
+
+    def test_sweep_and_false_break_are_relative_to_the_side(self) -> None:
+        from app.learning.research import context_of
+
+        flat = [(1.1, 1.101, 1.099, 1.1)] * 600
+        swept = [*flat[:-1], (1.1, 1.1005, 1.097, 1.1)]  # the last bar takes the lows and closes back inside
+        bars = frame(swept, start=T0 - 599 * M5)
+        at = T0 + M5
+        buy = dataclasses.replace(signal(at=at, sid="b"), timeframe=Timeframe.M5)
+        sell = dataclasses.replace(signal(Side.SELL, at=at, sid="s"), timeframe=Timeframe.M5)
+        ctx = context_of([buy, sell], {"EURUSD": context_frame(bars)})
+        assert ctx["b"]["pre:sweep_against"] == 1.0  # the lows swept before a BUY
+        assert ctx["s"]["pre:sweep_against"] == 0.0
+        assert 0.0 <= ctx["b"]["pre:compression_pct"] <= 1.0

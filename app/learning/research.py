@@ -24,6 +24,12 @@ at a better price. The stop sits ``stop`` risks from the signal's entry; an unfi
 **Costs.** The spread is in the prices. Commission and swap are the stored trade's ``r_multiple − r_net``
 (swap depends on the holding time, so this is an approximation for variants that hold longer or shorter).
 
+**Inverted trades** (:meth:`Signal.inverted`, ``research hypotheses --inverted``; docs/INVERTED_SETUPS.md):
+the opposite trade on the same signal, as ``app/strategy/inverted.py`` places it (the other side of the
+spread, the stop at the original's target, the target at the original's stop). Results are in R of the
+inverted trade's own (wider) risk, which is what the account risks; the recorded ``ctx:`` features still
+describe the original's side.
+
 **Honesty rules.** Every statistic is a mean R with a seeded bootstrap CI for all signals and for each half
 (split at the midpoint of the signals' time range unless given). A rule chosen on one half is reported only
 on the other (:func:`walk_forward`), with the number of rules it was chosen from.
@@ -54,6 +60,20 @@ EMA_SPAN = 20
 ATR_BARS = 14
 ATR_PCT_BARS = 100
 RANGE_BARS = 20
+PRE_RUN_BARS = 8  # the pre-run window before the signal bar (SETUP_REVIEW §12)
+COMPRESSION_BARS = 500  # the past windows a compression percentile is ranked against
+NY_TZ = "America/New_York"
+# New York-time buckets of the pre-run study (minutes from midnight, [start, end), wrapping past midnight)
+NY_BUCKETS = (
+    ("rollover", 17 * 60, 20 * 60),  # the illiquid early Asian morning
+    ("asia", 20 * 60, 26 * 60),
+    ("london_open", 2 * 60, 4 * 60),
+    ("london", 4 * 60, 8 * 60),
+    ("pre_ny", 8 * 60, 9 * 60 + 30),
+    ("ny_open", 9 * 60 + 30, 11 * 60 + 30),
+    ("ny_late", 11 * 60 + 30, 17 * 60),
+)
+NEWS_SLOTS = (8 * 60 + 30, 10 * 60)  # scheduled US release times (a proxy: no historical calendar here)
 
 
 class ResearchError(TaaError):
@@ -86,6 +106,35 @@ class Signal:
     @property
     def risk(self) -> float:
         return (self.entry - self.initial_sl) * self.side.sign
+
+    def inverted(self) -> Signal | None:
+        """The inverted setup's trade on this signal; None without a target (the inverted trade has no stop).
+
+        Commission and swap scale with the lot, which the wider stop shrinks at the same risk percent, so the
+        known costs in R shrink by the ratio of the risks."""
+        if self.tp is None:
+            return None
+        entry = self.entry - self.side.sign * self.spread
+        risk = abs(self.tp - entry)
+        if not risk > 0:
+            return None
+        return Signal(
+            f"{self.shadow_id}:inverted",
+            self.strategy,
+            self.symbol,
+            self.timeframe,
+            self.side.opposite,
+            self.signal_at,
+            self.entry_at,
+            entry,
+            self.tp,
+            self.initial_sl,
+            self.atr,
+            self.spread,
+            self.cost_r * self.risk / risk,
+            float("nan"),
+            self.features,
+        )
 
     def mirrored(self) -> Signal:
         """The same instant taken the other way: the other side of the spread, same distances and costs."""
@@ -547,6 +596,35 @@ def context_frame(bars: pd.DataFrame) -> pd.DataFrame:
     out["atr_pct"] = atr.rolling(ATR_PCT_BARS).rank(pct=True)
     prior = df["high"].rolling(RANGE_BARS).max().shift(1) - df["low"].rolling(RANGE_BARS).min().shift(1)
     out["range_atr"] = prior / atr
+    # the pre-run window (the last PRE_RUN_BARS bars) against the RANGE_BARS bars before it (SETUP_REVIEW §12)
+    ref_hi = df["high"].shift(PRE_RUN_BARS).rolling(RANGE_BARS).max()
+    ref_lo = df["low"].shift(PRE_RUN_BARS).rolling(RANGE_BARS).min()
+    win_hi = df["high"].rolling(PRE_RUN_BARS).max()
+    win_lo = df["low"].rolling(PRE_RUN_BARS).min()
+    close = df["close"]
+    out["sweep_lo"] = ((win_lo < ref_lo) & (close > ref_lo)).astype(float)  # took the lows, back above
+    out["sweep_hi"] = ((win_hi > ref_hi) & (close < ref_hi)).astype(float)
+    broke_up = (close > ref_hi).astype(float).rolling(PRE_RUN_BARS).max() > 0
+    broke_dn = (close < ref_lo).astype(float).rolling(PRE_RUN_BARS).max() > 0
+    out["fb_up"] = (broke_up & (close <= ref_hi)).astype(float)  # closed above, then back inside
+    out["fb_dn"] = (broke_dn & (close >= ref_lo)).astype(float)
+    window = (win_hi - win_lo) / atr
+    out["compression_pct"] = window.rolling(COMPRESSION_BARS, min_periods=COMPRESSION_BARS // 2).rank(
+        pct=True
+    )
+    return out
+
+
+def ny_time(at: datetime) -> dict[str, float]:
+    """New York-time features of a signal bar's close: minutes from midnight, bucket, the pre-news hour."""
+    ny = pd.Timestamp(ensure_utc(at)).tz_convert(NY_TZ)
+    minute = ny.hour * 60 + ny.minute
+    out = {"ny_minute": float(minute)}
+    for name, start, end in NY_BUCKETS:
+        inside = start <= minute < end if end <= 24 * 60 else minute >= start or minute < end - 24 * 60
+        out[f"ny:{name}"] = 1.0 if inside else 0.0
+    weekday = ny.weekday() < 5
+    out["pre_news"] = 1.0 if weekday and any(slot - 60 <= minute < slot for slot in NEWS_SLOTS) else 0.0
     return out
 
 
@@ -567,6 +645,7 @@ def context_of(signals: Sequence[Signal], frames: Mapping[str, pd.DataFrame]) ->
         atr = bar["atr"]
         if not atr > 0:
             continue
+        buy = s.side is Side.BUY
         out[s.shadow_id] = {
             "hour_utc": float(t.hour),
             "stretch_ema_atr": (bar["close"] - bar["ema"]) * s.side.sign / atr,
@@ -576,6 +655,11 @@ def context_of(signals: Sequence[Signal], frames: Mapping[str, pd.DataFrame]) ->
             "cost_share": s.spread / s.risk,
             "first_of_day": 1.0 if first_of_day else 0.0,
             "htf_aligned": float(s.features.get("ctx:htf_aligned", 0.0)),
+            # the pre-run behaviour before the signal bar, relative to the side traded (SETUP_REVIEW §12)
+            "pre:sweep_against": bar["sweep_lo"] if buy else bar["sweep_hi"],
+            "pre:false_break_with": bar["fb_up"] if buy else bar["fb_dn"],
+            "pre:compression_pct": bar["compression_pct"],
+            **ny_time(s.signal_at),
             # every numeric ctx: feature recorded at signal time (the H4/D1 market map, TAA-L809); one-hots
             # (``ctx:session=…``) are left to their own rows
             **{

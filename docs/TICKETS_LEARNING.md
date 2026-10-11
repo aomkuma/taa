@@ -63,7 +63,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
 | M3 | Phase L7 — Entry timing (right direction, wrong time) | 8 | 2 | IN PROGRESS |
-| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 10 | 1 | IN PROGRESS |
+| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 11 | 1 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
 ## Milestone 3 — Learning layer
@@ -648,6 +648,22 @@ study, shadow keeps recording every setup.
 - [ ] variants needing a replay: swing size, ratio tolerance, H1 entries, nearer targets
 - [ ] SETUP_REVIEW §11 with the decision (a harmonic version with its context rule, or drop) and the next setup
 - [ ] hook H1 `CandidateFilter` + `app/learning/context_gate.py` (disable-only per-setup rules, `CONTEXT_GATE`, shadow records "would block"), only after a rule holds
+
+#### TAA-L811 — Pre-run behaviour study and the inverted setups measured (2026-10-11)
+
+- **Status:** IN PROGRESS
+- **Depends on:** L707 (harness), L809 (ctx features)
+
+The owner's questions (2026-10-09): what price does before it really runs (sweeps, false breaks, compression;
+by session, pre-New York, pre-news, illiquid mornings), and whether the inverted setups traded on DEMO hold up.
+Results: docs/SETUP_REVIEW.md §14.
+
+- [x] part 1: runs and their precursors on 8 symbols (M15, H1) against a shuffled-bar random-walk baseline (`research/2026-10-11-pre-run/pre_run.py`)
+- [x] `research hypotheses --inverted`: the inverted setup's trade (other side of the spread, swapped exits, R of its own risk, costs scaled to the smaller lot)
+- [x] research features: New York-time buckets, `pre_news` (US release-slot proxy), `pre:sweep_against`, `pre:false_break_with`, `pre:compression_pct`
+- [x] part 2: every setup as traded and inverted, walk-forward + hold-out symbols (`data/research/l811_*.txt`); no rule survives
+- [ ] DEMO: the inverted trades per strategy against the originals' shadow on the same signals, once there are enough (weeks)
+- [ ] the owner's decision on switching off `setup_harmonic_prz_inverted` and `setup_candle_reversal_inverted`
 
 ### Phase L9 — Squad mode (team of specialist bots)
 

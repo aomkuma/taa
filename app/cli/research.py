@@ -51,8 +51,9 @@ def _fmt(stat: dict[str, Any]) -> str:
 
 
 def _print_report(data: dict[str, Any]) -> None:
+    inverted = " INVERTED (R of the inverted risk)" if data.get("inverted") else ""
     print(
-        f"{data['strategy']}  timeframes {','.join(data['timeframes'])}  signals {data['signals']}"
+        f"{data['strategy']}{inverted}  timeframes {','.join(data['timeframes'])}  signals {data['signals']}"
         f" (with a path {data['with_path']})  halves split at {data['split_at'][:10]}"
         + (f"  hold-out symbols {','.join(data['holdout_symbols'])}" if data.get("holdout_symbols") else "")
     )
@@ -122,7 +123,7 @@ def cmd_research_hypotheses(
             found += load_signals(db, strategy=args.strategy, source=args.source, timeframe=args.timeframe)
         finally:
             db.engine.dispose()
-    inputs = load_inputs(found, ParquetHistoryStore(data_root))
+    inputs = load_inputs(found, ParquetHistoryStore(data_root), inverted=args.inverted)
     split = datetime.fromisoformat(args.split).replace(tzinfo=UTC) if args.split else None
     report = research(
         inputs.signals,
@@ -135,6 +136,7 @@ def cmd_research_hypotheses(
         holdout_symbols=frozenset(x for x in (args.holdout_symbols or "").split(",") if x),
     )
     data = report.to_dict()
+    data["inverted"] = args.inverted
     data["resolution"] = inputs.resolution
     data["skipped"] = inputs.skipped
     if args.json:
@@ -275,6 +277,11 @@ def add_parser(
         "--holdout-symbols",
         default=None,
         help="comma-separated: rules are chosen without these symbols and judged on them too",
+    )
+    hyp.add_argument(
+        "--inverted",
+        action="store_true",
+        help="the inverted setup's trades on the same signals (R of their own risk; docs/INVERTED_SETUPS.md)",
     )
     hyp.add_argument("--json", action="store_true")
     hyp.set_defaults(func=hypotheses)

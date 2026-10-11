@@ -96,9 +96,16 @@ class ResearchInputs:
 
 
 def load_inputs(
-    found: Sequence[tuple[str, Signal]], store: ParquetHistoryStore, *, horizon: timedelta = HORIZON
+    found: Sequence[tuple[str, Signal]],
+    store: ParquetHistoryStore,
+    *,
+    horizon: timedelta = HORIZON,
+    inverted: bool = False,
 ) -> ResearchInputs:
-    """Paths (and mirrored paths) of every signal from the stored bars; fails closed without a symbol spec."""
+    """Paths (and mirrored paths) of every signal from the stored bars; fails closed without a symbol spec.
+
+    With *inverted* each signal becomes the inverted setup's trade (:meth:`Signal.inverted`); a signal without
+    a target has none and is skipped."""
     by_symbol: dict[tuple[str, str], list[Signal]] = defaultdict(list)
     for server, signal in found:
         by_symbol[(server, signal.symbol)].append(signal)
@@ -123,10 +130,12 @@ def load_inputs(
             raise ResearchError(f"{symbol}: one entry timeframe per run, got {sorted(t.value for t in tfs)}")
         frames[symbol] = store.load(server, symbol, tfs.pop(), start - timedelta(days=30), end)
         for raw in group:
-            signal = with_point(raw, point)
-            if not signal.risk > 0:
+            priced = with_point(raw, point)
+            chosen = priced.inverted() if inverted else priced
+            if chosen is None or not chosen.risk > 0:
                 skipped += 1
                 continue
+            signal = chosen
             path = build_path(signal, bars, point=point, horizon=horizon)
             if len(path) == 0:
                 skipped += 1

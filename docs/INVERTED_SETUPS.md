@@ -79,6 +79,11 @@ in R of the **original** risk (`docs/SETUP_REVIEW.md` §13 when written):
 | example_trend_pullback (55) | +0.025 | −0.109 |
 | setup_harmonic_prz (821, 8 symbols) | +0.015 | **−0.196** |
 
+- **Corrected 2026-10-11 (SETUP_REVIEW §14):** the table above is the identity −(original) − two spreads. The
+  full re-simulation (`research hypotheses --inverted`) also pays the bar-based fills' cost on both sides and
+  reports R of the inverted trade's **own** risk (what the account risks): breakout −0.002, pattern breakout
+  −0.005, fib −0.025, elliott −0.025, candle reversal −0.095, neckline −0.103, trend pullback −0.062, harmonic
+  −0.118 R per trade. None is above zero; harmonic and candle reversal are below zero with the CI.
 - Inverting **does not reach the target** on history. The costs (spread ≈ 5-10 % of the original stop per side)
   eat most of what the original lost.
 - It helps where the original direction was worse than random (the breakout family); it hurts where the original
