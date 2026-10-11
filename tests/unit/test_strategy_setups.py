@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+import math
 from datetime import UTC, datetime, timedelta
 
 import numpy as np
@@ -20,6 +22,7 @@ from app.evidence.framework import (
     Tier,
 )
 from app.evidence.registry import EvidenceEngine
+from app.indicators.market_map import MapState, MarketMap, TimeframeMap
 from app.strategy.catalog import STRATEGIES, default_registry
 from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import (
@@ -293,16 +296,22 @@ class TestCatalog:
             assert cls.triggers <= set(evidence_registry().ids), cls.name
         assert len(STRATEGIES) == 2 * (1 + len(SETUPS))  # every original and its inverted copy
 
-    def test_config_yaml_trades_the_inverted_copies_only(self) -> None:
+    def test_config_yaml_trades_harmonic_on_its_normal_side_only(self) -> None:
         settings = load_settings(
             env_file=None, config_file="config.yaml", environ={"TRADING_MODE": "BACKTEST"}
         )
         listed = {item.name: item.enabled for item in settings.config.strategies.items}
         originals = {"example_trend_pullback", *(cls.name for cls in SETUPS)}
         assert set(listed) == originals | {f"{n}_inverted" for n in originals}
-        # owner, 2026-10-09: the bot trades the inverted copies; an original and its copy would cancel out
-        assert {n for n, on in listed.items() if on} == {f"{n}_inverted" for n in originals}
-        assert settings.config.risk.inverted is not None
+        # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing; inverted copies off
+        assert {n for n, on in listed.items() if on} == {"setup_harmonic_prz"}
+        own = settings.config.position_management.for_strategy("setup_harmonic_prz")
+        assert own.break_even_trigger_r == math.inf and own.trailing_start_r == math.inf
+        harmonic = next(i for i in settings.config.strategies.items if i.name == "setup_harmonic_prz")
+        assert harmonic.params == {
+            "phase_gate": "h4_against_or_range",
+            "max_rr": 3.0,
+        }  # §15.3, no PRZ confirmation
 
     def test_each_setup_can_be_enabled_alone(self) -> None:
         for cls in SETUPS:
@@ -351,3 +360,72 @@ class TestScenario:
 
     def test_no_signal_before_the_break(self) -> None:
         assert self.signal_at(46).action is Action.HOLD
+
+
+def _bat(age: int = 0, invalidation: float = 1.0990) -> ActiveEvidence:
+    return ev(
+        "harmonic.bat",
+        family=Family.HARMONIC,
+        invalidation=invalidation,
+        targets=(1.1040, 1.1060),
+        var="bullish",
+        age=age,
+    )
+
+
+def _with_h4(ctx: StrategyContext, state_: MapState | None) -> StrategyContext:
+    frames = {}
+    if state_ is not None:
+        frames["H4"] = TimeframeMap("H4", T, state_, state_, 25.0, 0.4, 0.004, CLOSE, False, None)
+    market = dataclasses.replace(ctx.market, htf=MarketMap(frames))
+    return dataclasses.replace(ctx, market=market)
+
+
+def _bars(
+    ctx: StrategyContext, highs: list[float], lows: list[float], closes: list[float]
+) -> StrategyContext:
+    idx = pd.date_range(end=T, periods=len(closes), freq="15min")
+    n = len(closes)
+    frame = pd.DataFrame(
+        {"high": highs, "low": lows, "close": closes, "atr": np.full(n, ATR), "spread": np.full(n, 8.0)},
+        index=idx,
+    )
+    return dataclasses.replace(ctx, frames={Timeframe.M15: frame})
+
+
+class TestHarmonicRefinements:
+    """SETUP_REVIEW §15: the H4 phase gate, the PRZ confirmation and the R:R ceiling (all off by default)."""
+
+    @pytest.mark.parametrize(
+        ("h4", "fires"),
+        [(MapState.DOWN, True), (MapState.RANGE, True), (MapState.UP, False), (None, False)],
+    )
+    def test_phase_gate_buys_against_the_h4_trend_or_in_a_range(
+        self, h4: MapState | None, fires: bool
+    ) -> None:
+        sig = run(HarmonicPrz, _with_h4(sctx(_bat()), h4), phase_gate="h4_against_or_range")
+        assert (sig.action is Action.BUY) is fires, sig.explanation
+
+    def test_confirmation_waits_for_the_first_close_beyond_the_previous_bar(self) -> None:
+        ctx = sctx(_bat(age=2))
+        # bars: [.., PRZ-1, PRZ, after-1, decision]; after-1 does not break the PRZ bar's high, the decision does
+        fresh = _bars(ctx, [1.1010, 1.1008, 1.1007, 1.1015], [1.0995] * 4, [1.1000, 1.0998, 1.1004, 1.1012])
+        sig = run(HarmonicPrz, fresh, confirm="prior_bar_break", trigger_max_age_bars=6)
+        assert sig.action is Action.BUY, sig.explanation
+        stale = _bars(ctx, [1.1010, 1.1008, 1.1007, 1.1015], [1.0995] * 4, [1.1000, 1.0998, 1.1009, 1.1012])
+        assert (
+            run(HarmonicPrz, stale, confirm="prior_bar_break", trigger_max_age_bars=6).action is Action.HOLD
+        )
+        failed = _bars(ctx, [1.1010, 1.1008, 1.1007, 1.1015], [1.0980] * 4, [1.1000, 1.0985, 1.1004, 1.1012])
+        sig = run(HarmonicPrz, failed, confirm="prior_bar_break", trigger_max_age_bars=6)
+        assert sig.action is Action.HOLD and "invalidation" in sig.explanation
+
+    def test_confirmation_never_enters_on_the_prz_bar_itself(self) -> None:
+        ctx = _bars(
+            sctx(_bat(age=0)), [1.1010, 1.1008, 1.1007, 1.1015], [1.0995] * 4, [1.1, 1.1, 1.1, 1.1012]
+        )
+        assert run(HarmonicPrz, ctx, confirm="prior_bar_break").action is Action.HOLD
+
+    def test_max_rr_refuses_far_targets(self) -> None:
+        assert run(HarmonicPrz, sctx(_bat()), max_rr=1.0).action is Action.HOLD
+        assert run(HarmonicPrz, sctx(_bat()), max_rr=5.0).action is Action.BUY

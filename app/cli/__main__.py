@@ -220,7 +220,7 @@ def cmd_backtest(args: argparse.Namespace) -> int:
 
     from app.backtest.engine import Progress
     from app.backtest.metrics import compute_metrics
-    from app.backtest.runner import load_history, run_and_write
+    from app.backtest.runner import load_context, load_history, run_and_write
     from app.market_data.history_store import ParquetHistoryStore
 
     settings = _settings(args)
@@ -272,6 +272,10 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         end=end,
         on_progress=progress if args.progress else None,
         detectors=detectors,
+        # the H4/D1 market map as live (TAA-L809): strategies that read MarketContext.htf need it
+        context=load_context(store, server, symbols, config.timeframes.context, end=end)
+        if config.timeframes.context
+        else None,
     )
     m = compute_metrics(result.trades, result.equity_curve, result.initial_balance)
     print(f"backtest {', '.join(symbols)}  {result.start} -> {result.end}")

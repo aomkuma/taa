@@ -166,6 +166,7 @@ def run_backtest(
     end: datetime | None = None,
     on_progress: Callable[[Progress], None] | None = None,
     detectors: Collection[str] | Literal["all"] | None = None,
+    context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
 ) -> tuple[BacktestResult, Provenance]:
     """*detectors*: the evidence detectors to run. None: those the selected strategies need to fire (the
     pattern setups trigger on evidence; without it they never fire); ``"all"``: every detector
@@ -196,6 +197,7 @@ def run_backtest(
         end=end,
         on_progress=on_progress,
         config_hash=config_hash,
+        context=context,
     )
     result = engine.run()
     provenance = Provenance(
@@ -219,6 +221,7 @@ def run_and_write(
     end: datetime | None = None,
     on_progress: Callable[[Progress], None] | None = None,
     detectors: Collection[str] | Literal["all"] | None = None,
+    context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
 ) -> tuple[BacktestResult, dict[str, Path]]:
     result, provenance = run_backtest(
         config,
@@ -229,5 +232,6 @@ def run_and_write(
         end=end,
         on_progress=on_progress,
         detectors=detectors,
+        context=context,
     )
     return result, write_reports(result, provenance, out_dir)

@@ -88,8 +88,8 @@ keep every setup the users follow. They need the evidence engine in the context 
 reason codes `<SETUP_CODE>` and `DEMO_UNPROVEN`.
 
 **Inverted setups (owner, 2026-10-09).** Every strategy also exists as `<name>_inverted`: the same signal on the
-other side, with the stop at the original's target and the target at the original's stop. The bot trades these on
-DEMO instead of the originals. This goes against classic technical analysis on purpose; read
+other side, with the stop at the original's target and the target at the original's stop. The bot traded these on
+DEMO from 2026-10-09; **off since 2026-10-12** (owner; a year of backtests, SETUP_REVIEW §15). This goes against classic technical analysis on purpose; read
 [docs/INVERTED_SETUPS.md](INVERTED_SETUPS.md) for the reasons, the numbers and the work that remains.
 
 **Higher-timeframe market map (TAA-L809).** Every signal of every setup records the H4/D1 map as `ctx:h4_*` /
@@ -114,7 +114,7 @@ rule holds walk-forward on the half and the symbols it was not chosen on (TAA-L8
 | `setup_neckline_break` | `chart.double`, `chart.triple`, `chart.head_shoulders` | nearer / measured move | — |
 | `setup_pattern_breakout` | `chart.triangle`, `chart.wedge`, `chart.rectangle`, `chart.flag`, `chart.cup_handle` | nearer / measured (pattern height) | — |
 | `setup_fib_pullback` | `fib.golden_zone` | beyond 78.6 % / prior high B or 127.2 % | `htf_not_opposed` (higher-TF trend not against) |
-| `setup_harmonic_prz` | `harmonic.*` (7 patterns) | beyond the PRZ far edge / 38.2 or 61.8 % of AD | — |
+| `setup_harmonic_prz` | `harmonic.*` (7 patterns) | beyond the PRZ far edge / 38.2 or 61.8 % of AD | optional (off by default): `h4_phase` (`phase_gate: h4_against_or_range`), `prz_confirmed` (`confirm: prior_bar_break`), `rr_not_too_far` (`max_rr`) |
 | `setup_elliott_wave` | `elliott.wave`, variants `wave3`/`wave5`, primary count only | beyond the wave-1/4 limit / the detector's projections | — |
 | `setup_smc_reversal` | `smc.fvg` retest | beyond the sweep extreme / next opposing level | `liquidity_sweep` and `change_of_character` (CHoCH) the same way within `confirm_window_bars` (30) |
 | `setup_breakout` | `volatility.donchian`, `sessions.asian_breakout`, `sessions.open_breakout` | nearer / measured, else 2R | — |
@@ -125,6 +125,11 @@ Notes:
 - **Why "nearer" for chart patterns.** A stop beyond the pattern extreme with a measured-move target gives
   RR below 1 by construction, so the setup could never pass min RR. Set `stop_mode: invalidation` to use the
   textbook stop anyway.
+- **Harmonic refinements (SETUP_REVIEW §15, 2026-10-12).** `phase_gate: h4_against_or_range` trades only while
+  the H4 market map trends against the trade or ranges (a missing map holds); `confirm: prior_bar_break` waits
+  after the PRZ completion (at most `trigger_max_age_bars` bars) for the first close beyond the previous bar's
+  high/low (Elder's third screen) and drops a pattern that closed through its invalidation; `max_rr` (any setup)
+  refuses targets farther than that many R. The backtester gives strategies the H4/D1 map since 2026-10-12.
 - **SMC confirmations** are read from the active evidence, so `smc.liquidity_sweep` and `structure.bos_choch`
   need `max_age_bars` ≥ `confirm_window_bars` under `evidence.detectors` (their default is 3 bars).
 - Confluence enrichment ignores support from each setup's own family (`core_families`), so a setup is not

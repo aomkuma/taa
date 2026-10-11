@@ -63,7 +63,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
 | M3 | Phase L7 — Entry timing (right direction, wrong time) | 8 | 2 | IN PROGRESS |
-| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 12 | 1 | IN PROGRESS |
+| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 12 | 2 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
 ## Milestone 3 — Learning layer
@@ -619,7 +619,7 @@ per-signal budget.
 
 #### TAA-L809 — Higher-timeframe market map for every setup (L20.9, 2026-10-09)
 
-- **Status:** IN PROGRESS
+- **Status:** DONE
 - **Depends on:** — (the bar-based parts of L302 and L703; their profile/tick parts stay there)
 
 The owner's request (2026-10-09): every setup looks further back, with demand/supply zones and trend vs
@@ -629,7 +629,7 @@ for a setup only after it holds walk-forward.
 - [x] `app/indicators/market_map.py` (pure, closed bars only): state UP/DOWN/RANGE/TRANSITION per context bar (ADX, efficiency ratio, EMA and swing structure, hysteresis), compression, range box, DEMAND/SUPPLY zones from swing clusters and bases before displacement legs (tests, invalidation); no-look-ahead mutation test
 - [x] `timeframes.context` (code default empty = today) and `context_map:`; `MapBook` cache (`app/strategy/market_maps.py`); `MarketContext.htf` (stored only when present); live `ContextBuilder`, replay (`load_context`) — never a strategy frame, so no quality flags
 - [x] `ctx:<tf>_*` signal features (trend with the side, range, range position, compression, zone with the side + strength, room to the opposing zone in R, opposing zone before the TP) on opportunities and shadow rows; golden unchanged with the context off; config.yaml `context: [H4, D1]`
-- [ ] backtester: the same map through `bar_context` (with the hook H1 gate, Step 6)
+- [x] backtester: the same map through `bar_context` (2026-10-12; the per-setup gate lives in the strategy, `HarmonicParams.phase_gate`)
 - [x] research harness reads every `ctx:*` feature; symbol hold-out in `research()` and `--holdout-symbols`
 - [x] PWA chart: 1000 bars; `GET /engines/{id}/market-map?symbol=` from the cloud's H4/D1 candles with the same functions; zones as bands, state chips, range box; zod, i18n th + en, page tests from api samples
 - [x] docs: `docs/INDICATORS.md` (market map), `docs/STRATEGIES.md` (the ctx axes per setup)
@@ -646,7 +646,7 @@ study, shadow keeps recording every setup.
 - [x] harmonic-only replay on the eight symbols with the H4/D1 map (`research replay-family harmonic`)
 - [x] `research hypotheses` on harmonic: direction information, exits (far targets), stops, the ctx axes; walk-forward + symbol hold-out; at most 3-5 pre-registered hypotheses judged
 - [ ] variants needing a replay: swing size, ratio tolerance, H1 entries, nearer targets
-- [ ] SETUP_REVIEW §11 with the decision (a harmonic version with its context rule, or drop) and the next setup
+- [x] SETUP_REVIEW §11/§15 with the decision: harmonic V1 (no break-even, H4 against/range, R:R ≤ 3), 2026-10-12
 - [ ] hook H1 `CandidateFilter` + `app/learning/context_gate.py` (disable-only per-setup rules, `CONTEXT_GATE`, shadow records "would block"), only after a rule holds
 
 #### TAA-L811 — Pre-run behaviour study and the inverted setups measured (2026-10-11)
@@ -664,7 +664,7 @@ Results: docs/SETUP_REVIEW.md §14.
 - [x] part 2: every setup as traded and inverted, walk-forward + hold-out symbols (`data/research/l811_*.txt`); no rule survives
 - [ ] two-world backtests (owner, 2026-10-11): per setup, the original and the inverted as two separate `app.cli backtest` runs started together (8 symbols, widest research config), reported side by side; **harmonic only for now** (a full year: 2026-06-05 .. 10-05 plus 2025-10-15 .. 2026-06-05); the other eight setups wait until harmonic is settled (owner, 2026-10-11)
 - [x] SETUP_REVIEW §15 with the results (harmonic, a year, 2026-10-11)
-- [ ] the owner's choice of side and exit per setup (harmonic proposals in §15)
+- [x] the owner's choice for harmonic: normal side, V1, inverted copies off (2026-10-12)
 
 #### TAA-L812 — Confluence direction: the whole chart chooses the side (2026-10-11)
 
@@ -681,7 +681,7 @@ deterministically and backtests it; Path B (Phase 16) asks the AI the same quest
 - [ ] two-world backtests (4 months, then a year) with at most 3 pre-registered settings, walk-forward + hold-out symbols; direction hit rate at 4 h / 1 d / 3 d
 - [ ] SETUP_REVIEW section with the result and the gap to the target
 - [ ] Path B hand-off: Phase 16 stage A/B on the same bars once the owner provides an API key and a budget
-- [ ] triple screen (H4 tide / H1 wave / M15 trigger): the market phase of every setup measured on three screens, a phase assigned only where it holds in both halves and on the hold-out symbols, then gated (CONFLUENCE_DIRECTION §3.1)
+- [ ] triple screen (H4 tide / H1 wave / M15 trigger): the market phase of every setup measured on three screens, a phase assigned only where it holds in both halves and on the hold-out symbols, then gated (CONFLUENCE_DIRECTION §3.1); harmonic done (§15.3, the PRZ confirmation rejected)
 
 ### Phase L9 — Squad mode (team of specialist bots)
 

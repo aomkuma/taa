@@ -1,6 +1,7 @@
 # Inverted setups — why the bot trades the classic setups the other way
 
-Status: **experiment on DEMO since 2026-10-09** (owner's decision). Read this before changing anything named
+Status: **switched off 2026-10-12** (owner; a year of two-world backtests, SETUP_REVIEW §15: the inverted
+harmonic lost on every symbol). Traded on DEMO 2026-10-09 .. 10-12. Read this before changing anything named
 `*_inverted`, the `risk.inverted` config or `app/strategy/inverted.py`.
 
 ## 1. Why this looks wrong, and why it exists

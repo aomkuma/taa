@@ -68,26 +68,29 @@ strategies:
       params: {}
     # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. `enabled: false` stops only the bot's
     # trading; the scanner and shadow keep every setup the users follow (app/advisory/requirements.py). Owner,
-    # 2026-10-09: the bot trades the inverted copies below (docs/SETUP_REVIEW.md §13), not the originals.
+    # 2026-10-12: the bot trades setup_harmonic_prz on its normal side only (SETUP_REVIEW §15); the inverted
+    # copies are off (a year of backtests: the inverted harmonic lost on every symbol).
     - {name: setup_neckline_break, enabled: false}
     - {name: setup_pattern_breakout, enabled: false}
     - {name: setup_fib_pullback, enabled: false}
-    - {name: setup_harmonic_prz, enabled: false}   # studied (TAA-L810); its inverted copy is traded
+    - name: setup_harmonic_prz         # SETUP_REVIEW §15.3: no break-even (position_management), only while H4 is
+      enabled: true                    # against the trade or ranging, targets at most 3R; the PRZ confirmation
+      params: {phase_gate: h4_against_or_range, max_rr: 3.0}   # was tested and rejected
     - {name: setup_elliott_wave, enabled: false}
     - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
     - {name: setup_breakout, enabled: false}
     - {name: setup_candle_reversal, enabled: false}
     # Inverted setups (owner, 2026-10-09; app/strategy/inverted.py): the same signals on the other side, SL and TP
-    # at the original's TP and SL prices. The bot trades these on DEMO; never advised to users.
-    - {name: example_trend_pullback_inverted, enabled: true}
-    - {name: setup_neckline_break_inverted, enabled: true}
-    - {name: setup_pattern_breakout_inverted, enabled: true}
-    - {name: setup_fib_pullback_inverted, enabled: true}
-    - {name: setup_harmonic_prz_inverted, enabled: true}
-    - {name: setup_elliott_wave_inverted, enabled: true}
-    - {name: setup_smc_reversal_inverted, enabled: true}
-    - {name: setup_breakout_inverted, enabled: true}
-    - {name: setup_candle_reversal_inverted, enabled: true}
+    # at the original's TP and SL prices; never advised to users. Off since 2026-10-12 (owner).
+    - {name: example_trend_pullback_inverted, enabled: false}
+    - {name: setup_neckline_break_inverted, enabled: false}
+    - {name: setup_pattern_breakout_inverted, enabled: false}
+    - {name: setup_fib_pullback_inverted, enabled: false}
+    - {name: setup_harmonic_prz_inverted, enabled: false}
+    - {name: setup_elliott_wave_inverted, enabled: false}
+    - {name: setup_smc_reversal_inverted, enabled: false}
+    - {name: setup_breakout_inverted, enabled: false}
+    - {name: setup_candle_reversal_inverted, enabled: false}
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
@@ -136,8 +139,8 @@ position_management:
   trailing_start_r: 1.5
   trailing_atr_multiple: 2.0
   time_stop_bars: null
-  by_strategy: {}                   # per strategy, e.g. setup_harmonic_prz: {break_even: false, trailing: false}
-                                    # (SETUP_REVIEW §15; the owner decides before it is set)
+  by_strategy:                      # per strategy (PLAN §A11); harmonic without break-even/trailing: +0.05 R a
+    setup_harmonic_prz: {break_even: false, trailing: false}   # trade over a year (SETUP_REVIEW §15.1)
 
 backtest:
   initial_balance: 10000

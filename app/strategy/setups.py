@@ -60,6 +60,9 @@ class SetupParams(EntryRuleParams):
     sl_atr_multiple: float = Field(default=1.5, gt=0, le=10)
     require_htf_alignment: bool = False
     confirm_window_bars: int = Field(default=30, ge=1, le=200)
+    max_rr: float | None = Field(
+        default=None, gt=0, le=20, description="refuse plans whose target is farther than this many R"
+    )
 
 
 def variant(ev: Evidence) -> str:
@@ -167,6 +170,9 @@ class EvidenceSetup(BaseStrategy):
             p=p,
         )
         conds += time_conditions(market.decision_time_utc, p)
+        if p.max_rr is not None and risk > 0:
+            rr = abs(take_profit - entry) / risk
+            conds.append(Condition("rr_not_too_far", rr <= p.max_rr, 1.0, f"RR {rr:.2f} vs max {p.max_rr:g}"))
         conds.append(Condition("plan", True, 1.0, f"stop {stop_note}; target {target_note}"))
 
         if not all(c.passed for c in conds):
@@ -288,6 +294,20 @@ class FibPullback(EvidenceSetup):
     Params = FibPullbackParams
 
 
+class HarmonicParams(SetupParams):
+    """SETUP_REVIEW §15 (2026-10-11): harmonic is a reversal at the end of a move or inside a range.
+
+    - ``phase_gate``: ``h4_against_or_range`` trades only while the H4 market map (``MarketContext.htf``)
+      trends against the trade or ranges (a missing map holds: fail closed);
+    - ``confirm``: ``prior_bar_break`` waits after the PRZ completion (``trigger_max_age_bars`` bars at most)
+      for the first entry-timeframe close beyond the previous bar's high (BUY) / low (SELL), Elder's third
+      screen; a close through the pattern's invalidation before that cancels it.
+    """
+
+    phase_gate: Literal["none", "h4_against_or_range"] = "none"
+    confirm: Literal["none", "prior_bar_break"] = "none"
+
+
 class HarmonicPrz(EvidenceSetup):
     name = "setup_harmonic_prz"
     description = "Harmonic XABCD completion: reversal at the PRZ, targets 38.2/61.8 % of AD. Unproven."
@@ -304,6 +324,46 @@ class HarmonicPrz(EvidenceSetup):
         }
     )
     core_families = frozenset({Family.HARMONIC})
+    Params = HarmonicParams
+
+    def confirmations(
+        self, trigger: ActiveEvidence, items: Sequence[ActiveEvidence], ctx: StrategyContext
+    ) -> list[Condition]:
+        p: HarmonicParams = self.params
+        buy = trigger.evidence.direction is Direction.BULL
+        out: list[Condition] = []
+        if p.phase_gate == "h4_against_or_range":
+            h4 = None if ctx.market.htf is None else ctx.market.htf.frames.get("H4")
+            state = "none" if h4 is None else h4.state.value
+            against = "DOWN" if buy else "UP"
+            out.append(Condition("h4_phase", state in (against, "RANGE"), 1.0, f"H4 {state}"))
+        if p.confirm == "prior_bar_break":
+            out.append(self._prior_bar_break(trigger, ctx, buy))
+        return out
+
+    def _prior_bar_break(self, trigger: ActiveEvidence, ctx: StrategyContext, buy: bool) -> Condition:
+        frame = ctx.frame(ctx.market.entry_timeframe)
+        age = trigger.age_bars
+        if age < 1 or len(frame) < age + 2:
+            return Condition(
+                "prz_confirmed", False, 1.0, f"waiting for a close beyond the previous bar ({age})"
+            )
+        high = frame["high"].to_numpy(dtype=float)[-(age + 2) :]
+        low = frame["low"].to_numpy(dtype=float)[-(age + 2) :]
+        close = frame["close"].to_numpy(dtype=float)[-(age + 2) :]
+        # positions: [-age-1] the PRZ bar's predecessor... [-1] the decision bar; bars after the PRZ: 2..end
+        breaks = [close[i] > high[i - 1] if buy else close[i] < low[i - 1] for i in range(2, len(close))]
+        inv = trigger.evidence.invalidation
+        failed = inv is not None and any(
+            (c < inv) if buy else (c > inv) for c in close[1:]
+        )  # from the PRZ bar
+        if failed:
+            return Condition("prz_confirmed", False, 1.0, "closed through the invalidation")
+        if not breaks[-1] or any(breaks[:-1]):
+            return Condition("prz_confirmed", False, 1.0, "no fresh close beyond the previous bar")
+        return Condition(
+            "prz_confirmed", True, 1.0, f"close beyond the previous bar, {age} bar(s) after the PRZ"
+        )
 
 
 class ElliottWave(EvidenceSetup):

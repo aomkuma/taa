@@ -84,6 +84,12 @@ Chat with me in Thai.
 - **How to improve harmonic (SETUP_REVIEW §15.2):** H4 against/ranging +0.142 R (203/yr, DD 11.7 R, hold-out
   +0.25); New York afternoon +0.183 R (167/yr); skip `pullback` +0.041. Next: code the phase gate, backtest in two
   worlds, then more symbols for ≥ 300 trades a year.
+- **Refined harmonic, coded (SETUP_REVIEW §15.3), 2026-10-12:** V1 = no break-even + H4 against/ranging +
+  R:R ≤ 3: **+0.211 R/trade** [+0.04, +0.39], halves +0.23 / +0.18, hold-out +0.37, DD 8.5 R, 181 trades/yr
+  (gap: the count). PRZ confirmation rejected (−0.10). **config.yaml now:** inverted copies off,
+  `setup_harmonic_prz` enabled with `{phase_gate: h4_against_or_range, max_rr: 3.0}`, no break-even/trailing
+  for it. The backtester has the H4/D1 map since this change. Next: V1 on more symbols (out of sample, trade
+  count).
 - **The DEMO stack is PAUSED** since 2026-10-11 14:41 UTC (owner, to free memory for the backtests); one bot
   position open at the broker (GBPUSD SELL, SL/TP set). Resume with "TAA Resume" / `demo-tasks.ps1 -Resume`.
 - **Checks:** targeted tests green (engine integration demo/paper/restart/live/commands + golden 40, research +
@@ -326,8 +332,8 @@ SCALE_IN 5 parts.
 
 The order below aims at an edge first (the owner's target above); LIVE stays the owner's decision.
 
-1. **Harmonic first, alone** (running; see Current state): two worlds over a year, the three-screen phase and
-   the entry/exit hypotheses on its trades; SETUP_REVIEW §15; then the owner decides the next setup.
+1. **Harmonic V1 on more symbols** (SETUP_REVIEW §15.3): out-of-sample check and the trade count (181 → ≥ 300 a
+   year); then the owner decides the next setup.
 2. **Confluence direction** (TAA-L812, plan in `docs/CONFLUENCE_DIRECTION.md`): Path A after the two-world runs.
 3. DEMO keeps trading the inverted copies as a live check only. (Done 10-11: the EURUSD summary, the sleep fix,
    the pre-run study parts 1-2.)

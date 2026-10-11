@@ -574,6 +574,10 @@
         "label": "Minimum ADX",
         "hint": "Trend strength needed (ADX 0–100)"
       },
+      "confirm": {
+        "label": "Entry confirmation",
+        "hint": "Wait after the pattern completes for a close beyond the previous bar before entering"
+      },
       "confirm_window_bars": {
         "label": "Confirmation window (bars)",
         "hint": "Bars a pattern may take to confirm before it is dropped"
@@ -590,6 +594,10 @@
         "label": "Room to the next level (ATR)",
         "hint": "Minimum distance to the next support/resistance, in ATR"
       },
+      "max_rr": {
+        "label": "Farthest target (R)",
+        "hint": "Skip plans whose target is farther than this many times the risk (empty: no limit)"
+      },
       "max_sl_atr": {
         "label": "Widest stop (ATR)",
         "hint": "Signals with a wider stop than this are skipped"
@@ -605,6 +613,10 @@
       "min_rr": {
         "label": "Minimum reward:risk",
         "hint": "The target must be at least this many times the risk"
+      },
+      "phase_gate": {
+        "label": "Market phase",
+        "hint": "Trade only in this higher-timeframe phase"
       },
       "pullback_bars": {
         "label": "Pullback bars",
@@ -665,6 +677,14 @@
       "bool": {
         "true": "yes",
         "false": "no"
+      },
+      "confirm": {
+        "none": "enter at once",
+        "prior_bar_break": "close beyond the previous bar"
+      },
+      "phase_gate": {
+        "none": "any phase",
+        "h4_against_or_range": "H4 against the trade or ranging"
       }
     }
   },

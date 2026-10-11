@@ -423,6 +423,29 @@ tried), so each must be confirmed as a coded gate in a new two-world backtest an
 - Next: the phase gate (H4 against/range, no `pullback`) coded for harmonic and backtested in two worlds; then
   the New York afternoon on top; then more symbols (out-of-sample and the trade count).
 
+### 15.3 The refined harmonic, coded and backtested (2026-10-12)
+
+Owner, 2026-10-11/12: turn the inverted copies off, code the improvements, including a confirmation at the PRZ.
+New code: the backtester gives strategies the H4/D1 market map (`MarketContext.htf`, as live and replay;
+TAA-L809), `HarmonicParams.phase_gate` / `confirm`, `SetupParams.max_rr`. Year, 8 symbols, no break-even,
+research config; outputs `data/backtests/inv/harmonic_v12_compare.txt`.
+
+| Variant | Trades/yr | Win % | R/trade [90 % CI] | Halves | Hold-out | Max DD | Net |
+|---|---|---|---|---|---|---|---|
+| no break-even (§15.1) | 773 | 34 % | +0.024 [−0.06, +0.11] | +0.02 / +0.03 | +0.00 | 30.2 R | +705 |
+| **V1: + H4 against/range, R:R ≤ 3** | **181** | **41 %** | **+0.211 [+0.04, +0.39]** | **+0.23 / +0.18** | **+0.37** | **8.5 R** | +1,821 |
+| V2: V1 + PRZ confirmation (`prior_bar_break`, ≤ 6 bars) | 89 | 31 % | −0.096 [−0.32, +0.14] | +0.08 / −0.31 | +0.12 | 16.3 R | −465 |
+
+- **V1 meets three of the four goals:** +0.211 R/trade (≥ +0.15; +0.16 with 0.05 R extra cost), the CI's lower
+  bound above zero over the year, max drawdown 8.5 R (≤ 15 R); positive on 7 of 8 symbols (USDJPY −0.11).
+  **Gap: trades, 181 a year against ≥ 300.**
+- **The PRZ confirmation fails:** waiting for a close beyond the previous bar removes the good entries and
+  enters late (win rate 31 %); rejected.
+- **Caveat:** the H4 gate was found on this year (§15.2); V1 confirms the code reproduces it, not that it holds
+  out of sample. Next: the same V1 on symbols not used yet (also the lever for the trade count), and forward.
+- **Owner's decision, 2026-10-12:** the bot trades `setup_harmonic_prz` with V1 (config.yaml), no break-even
+  or trailing for it, the inverted copies off.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun

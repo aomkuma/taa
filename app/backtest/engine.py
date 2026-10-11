@@ -55,6 +55,7 @@ from app.risk.loss_tracker import LossStatus, LossTracker
 from app.storage.database import Database
 from app.strategy.arbitration import SignalArbiter
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame, context_at
+from app.strategy.market_maps import MapBook
 from app.strategy.registry import StrategySet
 from app.strategy.signal_models import StrategyContext
 
@@ -113,9 +114,14 @@ class BacktestEngine:
         on_progress: Callable[[Progress], None] | None = None,
         progress_every: int = 500,
         config_hash: str = "",
+        context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
     ) -> None:
         self.config = config
         self.data = dict(data)
+        # TAA-L809: the higher-timeframe market map (MarketContext.htf), as in live and replay, when the
+        # context timeframes' candles are given (app.backtest.runner.load_context)
+        self.context = {s: dict(frames) for s, frames in (context or {}).items()}
+        self.maps = MapBook.from_config(config) if self.context else None
         self.strategies = strategies
         self.evidence = evidence
         self.start, self.end = start, end
@@ -287,7 +293,10 @@ class BacktestEngine:
     def _context(
         self, symbol: str, frames: Mapping[Timeframe, AnalyzedFrame], t: datetime, bar: Bar
     ) -> StrategyContext:
-        return bar_context(self.config, frames, symbol, t, bar, self.broker.spec_at(symbol), self.evidence)
+        htf = None if self.maps is None else self.maps.at(symbol, self.context.get(symbol, {}), t)
+        return bar_context(
+            self.config, frames, symbol, t, bar, self.broker.spec_at(symbol), self.evidence, htf
+        )
 
     def _manage(self, symbol: str, ctx: StrategyContext, bar: Bar) -> None:
         cfg = self.config.position_management
