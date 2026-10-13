@@ -116,6 +116,10 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
   English, through translation keys only.
 - After completing ticket items, tick them in `docs/TICKETS.md` via `scripts/tickets.py` in the same change.
 - No Docker locally. `deploy/railway/*.Dockerfile` and `.railway/railway.ts` exist only for Railway builds.
+- **Setup work, one setup at a time (owner, 2026-10-13):** backtest a setup, then change its conditions (stop,
+  entry, timeframe, filters, exits) and backtest again until it reaches the goal (docs/SETUP_REVIEW.md, ≥ +0.15
+  R/trade net). A losing result means *change the conditions*, never *drop the setup and move on*. Don't propose
+  switching to another setup unless the owner asks; if the levers run out, say so and ask.
 - No profitability claims in any UI text either (`frontend/src/i18n/catalogs.test.ts` checks the catalogs).
 - Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
 - LIVE (real money) is off by default. Its path exists since TAA-1401 and needs `TRADING_MODE=LIVE`,
