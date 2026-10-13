@@ -14,25 +14,29 @@ What was built per ticket is in the git history. A separate **learning track** (
 Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ```text
-Continue the TAA project. Read docs/HANDOFF.md first (state, "Next work", gotchas), then docs/INVERTED_SETUPS.md
-and docs/SETUP_REVIEW.md §9-§13 (the edge work), then docs/TICKETS_LEARNING.md (TAA-L702, L809, L810).
-Follow CLAUDE.md and docs/CODING_STANDARDS.md (§9 for the frontend; frontend/README.md for its commands).
-Work on main; other sessions may run in parallel: commit by explicit paths only, coordinate shared files.
-The owner's goal: >= +0.15 R/trade net of costs, 90 % CI lower bound > 0 in both half-years, >= 300 trades a
-year on the eight symbols, max drawdown <= 15 R. State the gap before and after every experiment. When my meaning
-is unclear, ask back; never guess.
-Since 2026-10-09 the bot trades the nine *_inverted setups on the FBS DEMO account (the originals stay
-shadow-only). First check the DEMO stack: http://127.0.0.1:8766/health (breakers, open positions); I pause it
-with "TAA Pause"/"TAA Resume" on the desktop (scripts\demo-tasks.ps1 -Pause/-Resume) when the laptop closes.
-Report the inverted trades per strategy against their originals' shadow results on the same signals.
-Test every idea on the year of replay in data/research/ with `python -m app.cli research hypotheses`
-(walk-forward + --holdout-symbols) before it reaches the bot. Never run full pytest/vitest/npm build next to
-the running stack (memory crashes): targeted tests only, full suites only while the stack is paused.
-For PWA pages: page tests from frontend/src/test/fixtures/api-samples.json; new routes in
-tests/web/test_api_samples.py and frontend/src/test/apiSamples.test.ts (TAA_UPDATE_API_SAMPLES=1).
-After Python/config changes restart the stack (demo-tasks -Stop/-Start, web first). Commit per step (allowed);
-I push myself. LIVE stays off until I say so; subscriptions stay off. Update docs/HANDOFF.md at the end.
-Chat with me in Thai.
+Continue the TAA project. Read docs/HANDOFF.md first (current state, Next work, gotchas), then
+docs/SETUP_REVIEW.md §14-§15 (how harmonic was measured and refined), docs/CONFLUENCE_DIRECTION.md §3.1 (triple
+screen and market phases) and docs/INVERTED_SETUPS.md §5 (the two-world method). Follow CLAUDE.md and
+docs/CODING_STANDARDS.md. Work on main; commit by explicit paths; I push myself. Chat with me in Thai and give
+times in Thai time (UTC+7).
+
+Task: setup_breakout, done the same way as setup_harmonic_prz (SETUP_REVIEW §15-§15.3), one setup at a time.
+1. Two worlds over a year on the eight symbols: setup_breakout and setup_breakout_inverted as separate
+   `app.cli backtest` runs with the research config data/research/config_paired_bt.yaml
+   (MAX_ACCOUNT_DRAWDOWN_PERCENT=50 in the command's environment), the year split into three 4-month runs
+   (2025-10-15..2026-02-05, 2026-02-05..06-05, 2026-06-05..10-05) started together, joined with
+   research/2026-10-11-pre-run/combine_periods.py. Report both worlds side by side (two_worlds.py), with how
+   price moved (losers: share of the way to the target before turning; winners: heat against the stop).
+2. Without break-even/trailing (config_paired_bt_nobe.yaml), compare_variants.py.
+3. Market phase on three screens (three_screens.py), per-symbol table, filters and R:R checks on the trades
+   (backtest_hypotheses.py), each judged on both halves and the hold-out symbols (AUDUSD, XAUUSD).
+4. Code what holds as strategy params (like HarmonicParams), backtest it again for the year, and only then
+   propose a config change. Write SETUP_REVIEW §16 and update HANDOFF.
+Goal: >= +0.15 R/trade net, 90 % CI lower bound > 0 in both half-years, >= 300 trades a year on the eight
+symbols, max drawdown <= 15 R; state the gap before and after every step. Judge by the backtester, not DEMO.
+The DEMO stack is paused and I decide when it resumes: leave DEMO out of reports and questions unless I raise
+it. Report progress every 2-3 minutes while backtests run. When my meaning is unclear, ask back; never guess.
+Full pytest/vitest only while the stack is paused.
 ```
 
 ---
