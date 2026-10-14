@@ -2490,7 +2490,9 @@ alerts only. Trigger: on a ~$990 account at 0.5 % a XAUUSD signal (stop 13 USD a
     PWA. The engine trades with `effective_risk(cage, profile)`.
   - A cloud profile still **never raises** a limit above the cage (§A13/§A20 hold). Moving the slider above the
     cage is allowed and saved, but the engine clamps it and the PWA says so (see "Visibility").
-- **Hard ceiling per trade: 2 % → 3 %** (`CEILING_RISK_PER_TRADE_PCT`, user decision 2026-10-05). The other
+- **Hard ceiling per trade: 2 % → 3 %** (`CEILING_RISK_PER_TRADE_PCT`, user decision 2026-10-05). The
+  opt-in aggressive preset (§A36, 2026-10-14) has its own, separate cage (5-10 % a trade, PAPER/DEMO only);
+  these standard ceilings are unchanged by it. The other
   ceilings stay: daily loss 10 %, weekly 20 %, drawdown 50 %, total open risk 10 %. 50 % per trade was
   considered and rejected. The coherence rules stay too: per trade ≤ daily loss ≤ weekly loss, and per trade
   ≤ total open risk.
@@ -2724,6 +2726,69 @@ A/B; the chart pack is engine-made data only (no account data, no external text)
 correct side, stop distance, RR after spread, expiry cap); the AI never sizes, widens a stop, touches an open
 position or bypasses a check; evaluation is forward only (a model may have seen historical prices). Tickets:
 Phase 16 in docs/TICKETS.md.
+
+## A36. Aggressive Trading-profile preset for small accounts (rev. 8)
+
+**Why (2026-10-14, owner):** a second, **aggressive** risk profile for small accounts that accept high risk:
+**7.5 % of equity per trade by default, 5-10 % allowed**, chosen as a preset in the Trading profile, trading
+**only setups proven by backtest** (now: harmonic V1, SETUP_REVIEW §15.3, and breakout F1, §16). Counter-trend
+fades (`FADE`; win ~+0.44 R, lose -1 R) risk **half** the preset. Breakout F1 is also switched on in the
+standard mode (config.yaml).
+
+**Cage (PLAN §A33 still holds: the stricter value wins).** `config.yaml` → `high_risk:` builds a separate
+`HighRiskCage` (app/config.py); a plain `risk:` block can never reach these values.
+
+| Limit | Cage ceiling | Preset (risk r) |
+|---|---|---|
+| risk per trade | 10 % | r (fades r x `fade_risk_factor`, 0.5) |
+| total open risk | 20 % | 2r |
+| open positions | 3 | 2 |
+| daily loss | 20 % | 2r, also checked **before** entry: today's loss + open risk + this trade |
+| weekly loss | 35 % | 35 % |
+| drawdown kill (MAX_DRAWDOWN latches, manual reset) | 60 % from the peak | 60 %, also checked before entry: drawdown + open risk + this trade |
+| consecutive losses | 4, then a 24 h pause | same |
+| one trade per currency direction, notional leverage cap 50, **no minimum-lot fallback** | | |
+
+**Fail closed.** The preset applies only when every condition holds; otherwise the engine refuses it (audited
+`HIGH_RISK_REFUSED`) and trades the owner's STANDARD profile:
+
+- `ENABLE_HIGH_RISK_PROFILE=true` and `HIGH_RISK_CONFIRMATION=I-ACCEPT-HIGH-RISK-<MT5_LOGIN>` in the engine's
+  `.env`, plus a `high_risk:` section; a flag without a matching phrase or section stops startup;
+  otherwise `HIGH_RISK_NOT_ENABLED`;
+- the trading mode is in `high_risk.modes`: **PAPER and DEMO only in v1**; LIVE is refused by the config model,
+  by `load_settings` and by the selector (`HIGH_RISK_MODE_NOT_ALLOWED`);
+- the signal's strategy is in `high_risk.setups` (`STRATEGY_NOT_IN_PRESET`).
+
+**Wire and versions.** `ProfileLimits`/`RiskProfileDoc` carry `risk_mode` only when AGGRESSIVE: standard
+documents keep their versions, and engines from before §A36 refuse an aggressive document (unknown field).
+An AGGRESSIVE profile against a standard cage raises (`HighRiskRefused`), never clamps. The scanner (advisory)
+always sizes STANDARD; manual alert sizing stays inside the standard ceiling.
+
+**Loss breakers follow the active cage**: in the preset they trip on its limits (daily 2r, weekly 35 %,
+drawdown 60 %), on `risk:` otherwise. Leaving the preset after a deep drawdown latches MAX_DRAWDOWN on the
+standard 10 %; after a review the owner runs `app.cli risk rebase-hwm --ack --reason "..."` (local, audited)
+and `app.cli breaker reset MAX_DRAWDOWN --ack --reason "..."`. The mode gate's RISK_CONFIG condition is now
+computed (the limits in use validate inside their cage).
+
+**PWA and web.** Profile page: Standard / Aggressive, enabled only when the engine's heartbeat reports the
+preset available; risk 5-10 %; a computed warning (loss per trade, 4 losses in a row, daily budget, 60 % stop;
+no outcome claims); raising needs a typed `AGGRESSIVE` and a TOTP step-up. `PUT /advisory/preferences/risk-mode`:
+raising needs `StepUpSession` semantics plus an own engine reporting the preset available; lowering needs CSRF
+only; the plain preferences PUT can never raise it (403 `risk_mode_locked`). No migration (JSON columns).
+
+**Measured before any use (`app.cli backtest ruin`, 2026-10-14).** Compounding Monte Carlo on the proven setups'
+backtest year (280 trades, +0.192 R; harmonic V1 181, breakout F1 99 fades at half risk), 2000 runs of 252
+resampled trading days, the rules above (trades sequential, overlaps not modelled):
+
+| Risk / trade | Max DD median [p5-p95] | P(DD > 50 %) | P(kill) | Final equity median [p5-p95] | P(loss) | Days to kill (median) |
+|---|---|---|---|---|---|---|
+| 5 % | 39.1 % [26.0-55.8] | 17.5 % | 8.6 % | x5.68 [x1.02-x25.79] | 4.8 % | 157 |
+| 7.5 % | 52.8 % [37.3-55.7] | 63.6 % | 54.4 % | x5.08 [x0.53-x91.34] | 20.8 % | 115 |
+| 10 % | 52.1 % [47.7-54.8] | 91.8 % | 90.9 % | x1.71 [x0.49-x116.68] | 34.3 % | 73 |
+
+At 7.5 % about half the simulated years hit the drawdown stop; at 10 % nine in ten. The preset stays on
+PAPER/DEMO until the owner decides otherwise; LIVE is refused in code. Backtests: `app.cli backtest --preset
+aggressive --risk 7.5` (local CLI only; cloud jobs keep the standard ceiling).
 
 ## A22. Delivery plan
 

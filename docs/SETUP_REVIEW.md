@@ -446,6 +446,26 @@ research config; outputs `data/backtests/inv/harmonic_v12_compare.txt`.
 - **Owner's decision, 2026-10-12:** the bot trades `setup_harmonic_prz` with V1 (config.yaml), no break-even
   or trailing for it, the inverted copies off.
 
+## 16. Breakout F1 and the aggressive preset (2026-10-14)
+
+Breakout F1 (`setup_breakout` with `{screen_h4: with, screen_h1: with, fade_counter_trend: true,
+trend_entries: false, friday_cutoff_utc: "16:00"}`, market map H1/H4/D1): wait for a break against the H4 and
+H1 trend, then trade it with the trend; every trade is a `FADE` (the plan's inverse: stop at the plan's target,
+target at the plan's stop; `risk.fade` sets its RR floor and SL cap). Monthly runs Oct 2025 - Sep 2026 on the
+eight symbols (`data/backtests/inv/setup_breakout_f1_YYYY-MM`):
+
+| Setup | Trades/yr | Win % | Avg win / loss | R/trade | Halves |
+|---|---|---|---|---|---|
+| breakout F1 | 99 | 80 % | +0.44 / -0.97 R | **+0.159** | +0.159 / +0.158 |
+| harmonic V1 (§15.3) | 181 | 41 % | +1.92 / -0.97 R | +0.211 | +0.238 / +0.184 |
+| both | 280 | | | +0.192 | |
+
+- F1 meets the +0.15 R/trade goal on its own, with both halves alike; the trade count (99/yr) is the gap.
+- **Owner's decision, 2026-10-14:** F1 trades in both modes (config.yaml) and both setups form the aggressive
+  preset (PLAN §A36), fades at half risk. The compounding Monte Carlo of that preset (PLAN §A36 table) is the
+  risk the owner accepts by choosing it: at 7.5 % about half the simulated years reach the 60 % stop.
+- Caveat as in §15.3: F1 was shaped on this year; forward results (DEMO) are the test.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun

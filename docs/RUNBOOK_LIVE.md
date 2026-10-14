@@ -8,6 +8,11 @@ the money on the account.
 Read [RUNBOOK_DEMO.md](RUNBOOK_DEMO.md) first: LIVE uses the same order path (write-ahead intents,
 reconciliation, protection, retcode handling) and the same commands.
 
+**The aggressive preset (PLAN §A36) is not allowed in LIVE in v1:** `high_risk.modes` accepts PAPER and
+DEMO only, `ENABLE_HIGH_RISK_PROFILE=true` with `TRADING_MODE=LIVE` stops startup, and the engine refuses an
+aggressive profile in LIVE (`HIGH_RISK_MODE_NOT_ALLOWED`). Allowing it needs a new owner decision and a code
+change.
+
 ## 1. Go-live checklist
 
 Tick every line, write the date, and keep this file's copy with the ticks.

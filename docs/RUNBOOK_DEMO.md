@@ -92,3 +92,33 @@ Drills, once each:
 | limit parts not placed (`order_check 10030` / `10015` in the intent) | the broker refused the pending order's filling, or the level was already passed | 10030 on every filling mode: report it (the engine tries RETURN, then the market filling); 10015 is expected when price moved fast. |
 
 Manual breaker resets are local and audited (actor and reason); MAX_DRAWDOWN also needs an acknowledgement.
+
+## 6. The aggressive preset (PLAN §A36)
+
+High risk: 5-10 % of equity a trade (7.5 % by default), only the proven setups, fades at half risk. Read the
+`backtest ruin` table in PLAN §A36 first: at 7.5 % about half the simulated years reach the drawdown stop.
+PAPER and DEMO only; LIVE is refused in code.
+
+**Switch on (engine machine, local):**
+
+1. Uncomment `high_risk:` in `config.yaml` (the defaults are the cage of §A36; `setups` lists only proven
+   setups; lower values are allowed, higher ones are refused at startup).
+2. In `.env`: `ENABLE_HIGH_RISK_PROFILE=true` and `HIGH_RISK_CONFIRMATION=I-ACCEPT-HIGH-RISK-<MT5_LOGIN>`
+   (the login of this account; a wrong phrase stops startup).
+3. Restart the engine. The heartbeat now reports the preset available (Trading profile → Risk mode).
+4. In the PWA: Trading profile → Risk mode → Aggressive, pick the risk, read the warning, type `AGGRESSIVE`
+   and confirm with the authenticator code. The engine picks it up within about a minute and audits
+   `RISK_PROFILE_APPLIED` with `risk_mode: AGGRESSIVE`.
+
+**Switch off:** choose Standard in the PWA (no code needed), or remove the env flag and restart: an aggressive
+profile then is refused (`HIGH_RISK_REFUSED`, `HIGH_RISK_NOT_ENABLED`) and the standard profile trades.
+
+**After the drawdown stop (MAX_DRAWDOWN latched at 60 %, or leaving the preset with a drawdown above the
+standard 10 %):** nothing trades until a local reset. Review the trades first, then:
+
+```powershell
+.venv\Scripts\python -m app.cli risk rebase-hwm --ack --reason "reviewed: <why>"   # forget the old peak
+.venv\Scripts\python -m app.cli breaker reset MAX_DRAWDOWN --ack --reason "reviewed: <why>"
+```
+
+Both are audited; the next equity observation becomes the new high-water mark.
