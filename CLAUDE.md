@@ -127,6 +127,9 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
   **System principle (owner, 2026-10-14): when the market phase does not suit a setup, that setup trades less,
   not never:** in an unsuitable phase (measured per setup, e.g. low H4 volatility for breakouts) it takes only
   its surest signals (stricter conditions), and the other setups carry the portfolio.
+  **A signal alone is not enough (owner, 2026-10-14):** every setup is judged with the trend (H4/H1 screens),
+  support/resistance (demand/supply zones, range box) and market structure (HH/HL vs LH/LL) around it; how each
+  is used is measured per setup (docs/STRATEGIES.md, "A signal alone is not enough").
 - No profitability claims in any UI text either (`frontend/src/i18n/catalogs.test.ts` checks the catalogs).
 - Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
 - LIVE (real money) is off by default. Its path exists since TAA-1401 and needs `TRADING_MODE=LIVE`,

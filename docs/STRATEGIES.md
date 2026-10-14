@@ -87,10 +87,27 @@ at a time** (the one under study, `setup_harmonic_prz` first; docs/SETUP_REVIEW.
 keep every setup the users follow. They need the evidence engine in the context builder. Every entry carries the
 reason codes `<SETUP_CODE>` and `DEMO_UNPROVEN`.
 
-**Inverted setups (owner, 2026-10-09).** Every strategy also exists as `<name>_inverted`: the same signal on the
-other side, with the stop at the original's target and the target at the original's stop. The bot traded these on
-DEMO from 2026-10-09; **off since 2026-10-12** (owner; a year of backtests, SETUP_REVIEW §15). This goes against classic technical analysis on purpose; read
-[docs/INVERTED_SETUPS.md](INVERTED_SETUPS.md) for the reasons, the numbers and the work that remains.
+**A signal alone is not enough (owner, 2026-10-14; a principle for every setup).** A trigger is only the
+timing. Every setup is read together with its context before it trades:
+
+- **the trend** on the higher timeframes (Elder's screens: H4 the tide, H1 the wave; `screen_h4` / `screen_h1`);
+- **support and resistance** (the H4/D1 demand and supply zones and the range box of the market map);
+- **market structure**: higher highs and higher lows (an up structure), lower highs and lower lows (a down
+  structure), and where the last swing broke (`app/indicators/price_action.py`: `label_structure`,
+  `market_structure`; the market map's UP/DOWN state already needs a structure that is not against it);
+- **the market phase** that suits the setup (a setup trades less, only its surest signals, in a phase that does
+  not suit it: CLAUDE.md, "System principle").
+
+How each element is used is decided per setup from its backtests (theory about a third, measured price behaviour
+the rest): for `setup_breakout` the trend screens and a counter-trend fade held, a blanket "no zone before the
+target" gate did not (it removed winners; SETUP_REVIEW §16). Each element is coded as a setup parameter, off by
+default, and switched on per setup in `config.yaml` once its backtest holds.
+
+**Inverted setups (2026-10-09 .. 2026-10-14, removed).** Every strategy used to exist as `<name>_inverted` (the
+signal on the other side, the stop at the original's target). A year of two-world backtests showed no edge on the
+blind inverted side (SETUP_REVIEW §14-§16), so the copies were removed from the code on 2026-10-14 (owner). What
+held is narrower and lives inside the setup: a trigger against both the H4 and the H1 trend is faded
+(`fade_counter_trend`). [docs/INVERTED_SETUPS.md](INVERTED_SETUPS.md) keeps the history.
 
 **Higher-timeframe market map (TAA-L809).** Every signal of every setup records the H4/D1 map as `ctx:h4_*` /
 `ctx:d1_*` features: trend vs consolidation, range position, compression, whether the entry sits at a demand

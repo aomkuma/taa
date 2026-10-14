@@ -1,5 +1,7 @@
 # Inverted setups — why the bot trades the classic setups the other way
 
+> **Removed from the code on 2026-10-14 (owner).** The inverted copies (`<name>_inverted`) no longer exist; a counter-trend trigger is faded inside its setup instead (`fade_counter_trend`, docs/SETUP_REVIEW.md §16). This file is kept as the history of the experiment.
+
 Status: **switched off 2026-10-12** (owner; a year of two-world backtests, SETUP_REVIEW §15: the inverted
 harmonic lost on every symbol). Traded on DEMO 2026-10-09 .. 10-12. Read this before changing anything named
 `*_inverted`, the `risk.inverted` config or `app/strategy/inverted.py`.
