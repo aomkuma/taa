@@ -5,6 +5,13 @@ within each group, never chosen by result. Each link opens the PWA chart as it w
 with the bot's read drawn (`read=1`, `end=`). The check passes when the bot's trend and its two nearest
 levels agree with the owner's reading on at least 16 of the 20 (docs/CHART_READ.md §8).
 
+**How to check:** sign in to the DEMO PWA (http://localhost:8001) and open each link: the chart stops at
+that bar, with the bot's swings (purple, HH/HL/LH/LL), levels (green support, red resistance, orange
+flipped), trendlines and the pink dotted line where the trend's structure ends; the panel above the chart
+states the bot's read in words. Read the chart yourself first, then compare. *Trend*: the same structure
+(up, down, triangle, megaphone, flat). *Levels*: the bot's nearest support and resistance sit where you
+would draw them. Mark ✓ or ✗ with a word in the last two columns; every ✗ becomes a test case.
+
 | # | Symbol | TF | Bar close (Thai time) | Group | Bot's trend | Nearest support | Nearest resistance | Link | Owner: trend | Owner: levels |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | USDCAD | M15 | 2026-02-05 14:45 | UP | UP | 1.36285 (support) | 1.37024 (resistance) | [open](http://localhost:8001/charts?symbol=USDCAD&tf=M15&end=2026-02-05T07:45:00Z&read=1) | | |

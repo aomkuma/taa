@@ -98,6 +98,12 @@ def main() -> None:
     print("within each group, never chosen by result. Each link opens the PWA chart as it was at that bar's close")
     print("with the bot's read drawn (`read=1`, `end=`). The check passes when the bot's trend and its two nearest")
     print("levels agree with the owner's reading on at least 16 of the 20 (docs/CHART_READ.md §8).\n")
+    print("**How to check:** sign in to the DEMO PWA (http://localhost:8001) and open each link: the chart stops at")
+    print("that bar, with the bot's swings (purple, HH/HL/LH/LL), levels (green support, red resistance, orange")
+    print("flipped), trendlines and the pink dotted line where the trend's structure ends; the panel above the chart")
+    print("states the bot's read in words. Read the chart yourself first, then compare. *Trend*: the same structure")
+    print("(up, down, triangle, megaphone, flat). *Levels*: the bot's nearest support and resistance sit where you")
+    print("would draw them. Mark ✓ or ✗ with a word in the last two columns; every ✗ becomes a test case.\n")
     print("| # | Symbol | TF | Bar close (Thai time) | Group | Bot's trend | Nearest support | Nearest resistance | Link | Owner: trend | Owner: levels |")
     print("|---|---|---|---|---|---|---|---|---|---|---|")
     for n, sym, tf, group, r in rows:
