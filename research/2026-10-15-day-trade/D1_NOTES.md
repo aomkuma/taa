@@ -56,3 +56,25 @@ stop and target on the M5 scale), flat by 20:45 UTC, then the ladder; the sessio
   tested the window mistake, not the idea, and is not counted.
 - **Fixed:** `session_end_utc: 18:30` and a 24-bar (2-hour) time stop, so entries run 07:00-12:00 and
   16:00-18:30 UTC and every trade still closes by 20:30 UTC. March rerun for both variants.
+
+## Second mistake found, then the results (2026-10-15, 02:20-03:18 Thai time)
+
+- **The cooldown was not rescaled:** `strategies.cooldown_bars: 60` came from S1 (60 M1 bars = 1 hour) and meant
+  5 hours on M5, so most re-entries were blocked (August D1d: 6 signals, 2 trades). Every bar-counted setting was
+  then listed against S1; only the cooldown needed scaling (→ 12 bars). The runs with the 5-hour cooldown are kept
+  in `data/backtests/inv/d1_invalid/*_cooldown5h` and not counted.
+
+| Variant (XAUUSD M5, cooldown 1 h, flat by 20:30 UTC) | Screens | March | August |
+|---|---|---|---|
+| D1a | H1 / M15, map state | −0.736 (3 trades) | dropped |
+| D1b | H4 / M30, map state | +0.480 (2) | **0 trades** (0 signals) |
+| D1c | H1 / M15, swings | −0.596 (7) | dropped |
+| D1d | H4 / M30, swings | +0.431 (2) | **−1.016** (3, all stopped) |
+
+**Result: no D1 variant passes two rungs.** Counts stay at 0-7 trades a month: the fade needs a break against both
+screens at once, which the M5 bars rarely give (H1 and M15 trend the same way on 6 % of March's M5 bars by the
+map state, 17 % by the swings). S1's logic does not carry to M5 with S1's scale-free parameters.
+
+Levers not tried yet: the stop/target scale on M5 (measure the fade's MFE/MAE first), the entry windows, trend
+entries with the screens. Proposal to the owner instead: treat S1 (M1, year +0.277 R, 76 trades) as the
+day-trade/scalping setup and work on its trade count.
