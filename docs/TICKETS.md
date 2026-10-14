@@ -20,6 +20,8 @@ Design reference: [PLAN.md](PLAN.md). Section references such as A9 or A29 point
   Order: 408 → 710 → 924.
 - Revision 6 (2026-10-05) added TAA-1006: the engine matches the owner's manual MT5 trades to the signals they
   followed, without typing anything into MT5 (PLAN §A34).
+- Revision 8 (2026-10-14) added TAA-1212: the aggressive Trading-profile preset for small accounts (5-10 % a
+  trade, proven setups only, PAPER/DEMO only) and breakout F1 in config.yaml (PLAN §A36).
 - Learning layer (2026-10-06): symbol character, tick microstructure and the signal-quality model are a
   separate track in [TICKETS_LEARNING.md](TICKETS_LEARNING.md) (design: [PLAN_LEARNING.md](PLAN_LEARNING.md)).
 
@@ -51,7 +53,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 9 — PWA frontend | 25 | 25 | DONE |
 | M1 | Phase 10 — Trade analytics | 7 | 7 | DONE |
 | M1 | Phase 11 — Railway deployment | 4 | 0 | TODO |
-| M2 | Phase 12 — DEMO execution | 11 | 10 | IN PROGRESS |
+| M2 | Phase 12 — DEMO execution | 12 | 10 | IN PROGRESS |
 | M2 | Phase 13 — AI assessment (optional layer) | 5 | 5 | DONE |
 | M2 | Phase 14 — LIVE readiness | 4 | 3 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
@@ -1824,6 +1826,25 @@ USDJPY: three parts filled within 51 minutes, then all stopped). The replay show
 - [ ] break-even and trailing per plan (from the plan's average entry and total risk), not per part, so a deep part with a tiny stop does not move to break-even on noise
 - [ ] when a wider stop policy (TAA-L702 `WIDE_STOP` / `PULLBACK_WIDE`) is adopted, the plan uses its stop
 - [ ] tests (geometry per side; parts dropped near the stop; per-plan break-even); PWA text TH/EN
+
+#### TAA-1212 — (rev. 8) Aggressive Trading-profile preset (PLAN §A36)
+
+- **Status:** IN PROGRESS
+- **Depends on:** 710, 924, 1206
+
+Owner, 2026-10-14: an aggressive preset for small accounts, 7.5 % a trade by default (5-10 %), only proven
+setups, fades at half risk; breakout F1 also in the standard mode.
+
+- [x] config: `HighRiskCage`, `high_risk:` section (PAPER/DEMO, setups, fade factor), env opt-in with the account-bound phrase; LIVE refused
+- [x] profile: `RiskMode` on ProfileLimits / RiskProfileDoc (standard versions unchanged), `TradingProfile.risk_mode` + `aggressive_risk_percent`
+- [x] engine: refusals audited, `STRATEGY_NOT_IN_PRESET`, fades at half risk, pre-entry daily and drawdown budgets, no min-lot fallback, breakers follow the cage, computed RISK_CONFIG, `app.cli risk rebase-hwm`
+- [x] config.yaml: breakout F1 on, market map H1/H4/D1
+- [x] heartbeat availability; `PUT /advisory/preferences/risk-mode` (step-up to raise); plain PUT cannot raise
+- [x] backtest `--preset aggressive`, `backtest ruin` compounding Monte Carlo; table in PLAN §A36
+- [x] PWA risk mode with warning, typed confirmation and step-up; TH/EN; zod
+- [x] docs: PLAN §A36, runbooks, .env.example, SETUP_REVIEW §16, HANDOFF
+- [ ] full pytest + vitest green (owner: at the end of the setup round)
+- [ ] PAPER/DEMO run with the opt-in, after the owner has reviewed the ruin table
 
 ### Phase 13 — AI assessment (optional layer)
 

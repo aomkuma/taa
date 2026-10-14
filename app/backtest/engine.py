@@ -16,6 +16,10 @@ At each bar close *t* of a symbol:
 
 After all symbols at *t*: the equity point is recorded, the loss tracker books the new deals and the loss
 breakers are evaluated. Progress events are emitted every ``progress_every`` steps.
+
+A :class:`RiskPreset` (the aggressive Trading-profile preset, PLAN §A36) makes every decision combine its
+profile limits with its cage, as the live engine's risk-limit selector does, and the loss breakers trip on the
+combined limits.
 """
 
 from __future__ import annotations
@@ -29,7 +33,7 @@ from datetime import UTC, datetime
 
 import pandas as pd
 
-from app.config import AppConfig
+from app.config import AppConfig, RiskConfig
 from app.core.clock import ManualClock
 from app.core.enums import ExitReason, Timeframe, TradingMode
 from app.core.errors import DataQualityError, InsufficientDataError
@@ -51,6 +55,7 @@ from app.market_data.trading_sessions import TradingSessions
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
+from app.risk.limits import ProfileLimits, effective_risk
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.storage.database import Database
 from app.strategy.arbitration import SignalArbiter
@@ -68,6 +73,19 @@ MAGIC_BASE = 7_310_000  # same default as MAGIC_NUMBER_BASE; position i of the s
 class SymbolData:
     spec: SymbolSpec
     frames: Mapping[Timeframe, pd.DataFrame]  # closed candles (``CANDLE_COLUMNS``) per enabled timeframe
+
+
+@dataclass(frozen=True)
+class RiskPreset:
+    """A cage and the profile limits combined with it for every decision (PLAN §A36)."""
+
+    name: str
+    cage: RiskConfig
+    limits: ProfileLimits
+
+    @property
+    def effective(self) -> RiskConfig:
+        return effective_risk(self.cage, self.limits)
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,8 +133,10 @@ class BacktestEngine:
         progress_every: int = 500,
         config_hash: str = "",
         context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
+        risk_preset: RiskPreset | None = None,
     ) -> None:
         self.config = config
+        self.risk_preset = risk_preset
         self.data = dict(data)
         # TAA-L809: the higher-timeframe market map (MarketContext.htf), as in live and replay, when the
         # context timeframes' candles are given (app.backtest.runner.load_context)
@@ -154,7 +174,8 @@ class BacktestEngine:
             mode=TradingMode.BACKTEST,
             tz_name=tz,
         )
-        self.monitor = BreakerMonitor(self.board, config.breakers, config.risk, self.clock)
+        loss_limits = config.risk if risk_preset is None else risk_preset.effective
+        self.monitor = BreakerMonitor(self.board, config.breakers, loss_limits, self.clock)
         self.decisions = DecisionEngine(
             config,
             TradingMode.BACKTEST,
@@ -262,6 +283,9 @@ class BacktestEngine:
                 health=SystemHealth(),
                 specs={s: d.spec for s, d in self.data.items()},
                 last_entry_at=self._last_entry.get(symbol),
+                profile_limits=None if self.risk_preset is None else self.risk_preset.limits,
+                cage=None if self.risk_preset is None else self.risk_preset.cage,
+                risk_source=None if self.risk_preset is None else f"preset:{self.risk_preset.name}",
             )
         )
         result.decisions[record.decision.value] += 1

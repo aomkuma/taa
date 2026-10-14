@@ -13,6 +13,11 @@ Parameters: 1-5 symbols, a period of at most 366 days that has ended, optionally
 listed in ``config.yaml`` (they are then run even if disabled there), a risk per trade below the hard
 ceiling, and a seed. Anything else is refused (fail closed).
 
+**Aggressive** (PLAN §A36; local CLI only, ``app.cli backtest --preset aggressive [--risk 7.5]``): the
+high-risk cage (``config.yaml`` → ``high_risk``, or its defaults with the proven setups) and the preset's
+limits for r = 5-10 % (:func:`aggressive_preset`), trading only the cage's setups. Cloud jobs cannot ask for
+it: :class:`BacktestRequest` keeps the standard ceiling (fail closed).
+
 "Backtest this change" (TAA-1004, a recommendation's offer) adds at most one bounded
 :class:`ParameterChange` (an earlier break-even, a wider stop for one strategy, a tighter spread filter)
 and/or strategies to leave out. The change exists only in the job's configuration, never in ``config.yaml``.
@@ -22,12 +27,23 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from datetime import timedelta
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
-from app.config import CEILING_RISK_PER_TRADE_PCT, AppConfig
+from app.config import (
+    AGGRESSIVE_DEFAULT_RISK_PCT,
+    AGGRESSIVE_MIN_RISK_PCT,
+    CEILING_RISK_PER_TRADE_PCT,
+    HIGH_RISK_CEILING_RISK_PER_TRADE_PCT,
+    AppConfig,
+    HighRiskConfig,
+)
 from app.core.errors import ConfigError
+from app.risk.limits import aggressive_limits, effective_risk
+
+if TYPE_CHECKING:
+    from app.backtest.engine import RiskPreset
 
 MAX_PERIOD = timedelta(days=366)
 PresetName = Literal["standard", "conservative", "high_costs"]
@@ -169,3 +185,40 @@ def apply_preset(config: AppConfig, request: BacktestRequest) -> AppConfig:
     out = out.model_copy(update=updates) if updates else out
     # model_copy skips validation: re-validate, so a preset can never produce a config the loader would refuse
     return AppConfig.model_validate(out.model_dump())
+
+
+# the setups proven by backtest (SETUP_REVIEW §15.3 harmonic V1, §16 breakout F1): the preset's default list
+PROVEN_SETUPS = ("setup_harmonic_prz", "setup_breakout")
+
+
+def aggressive_preset(
+    config: AppConfig, risk_percent: float = AGGRESSIVE_DEFAULT_RISK_PCT
+) -> tuple[AppConfig, RiskPreset]:
+    """The aggressive preset for a local backtest (PLAN §A36): only the cage's setups enabled, the high-risk
+    cage from ``config.yaml`` → ``high_risk`` (or its defaults with :data:`PROVEN_SETUPS`), and the preset's
+    limits for *risk_percent*. The profile's minimum RR is left to ``risk:`` (as the standard backtests run).
+    Raises :class:`ConfigError` for a risk outside 5-10 % or setups that ``config.yaml`` lacks."""
+    if not AGGRESSIVE_MIN_RISK_PCT <= risk_percent <= HIGH_RISK_CEILING_RISK_PER_TRADE_PCT:
+        raise ConfigError(
+            f"the aggressive preset risks {AGGRESSIVE_MIN_RISK_PCT:g}-"
+            f"{HIGH_RISK_CEILING_RISK_PER_TRADE_PCT:g} % a trade (got {risk_percent:g})"
+        )
+    known = {i.name for i in config.strategies.items}
+    section = config.high_risk
+    if section is None:
+        setups = [s for s in PROVEN_SETUPS if s in known]
+        if not setups:
+            raise ConfigError(f"config.yaml lists none of the proven setups {list(PROVEN_SETUPS)}")
+        section = HighRiskConfig(setups=setups)
+    items = [i.model_copy(update={"enabled": i.name in section.setups}) for i in config.strategies.items]
+    out = config.model_copy(update={"strategies": config.strategies.model_copy(update={"items": items})})
+    out = AppConfig.model_validate(out.model_dump())
+    from app.backtest.engine import RiskPreset  # local: the web imports this module, not the engine
+
+    preset = RiskPreset(
+        name=f"aggressive-{risk_percent:g}",
+        cage=section.cage(out.risk),
+        limits=aggressive_limits(risk_percent),
+    )
+    effective_risk(preset.cage, preset.limits)  # an incoherent combination fails here, not mid-run
+    return out, preset

@@ -116,6 +116,22 @@ risk:
   probation_multiplier: 0.25
   foreign_positions_policy: count   # count | halt
 
+# The aggressive Trading-profile preset (PLAN §A36): an opt-in cage for small accounts that accept high risk
+# (5-10 % a trade). Absent: the preset is not available here. It also needs ENABLE_HIGH_RISK_PROFILE=true and
+# HIGH_RISK_CONFIRMATION=I-ACCEPT-HIGH-RISK-<MT5_LOGIN> in .env (docs/RUNBOOK_DEMO.md). PAPER/DEMO only (v1).
+# high_risk:
+#   max_risk_per_trade_percent: 10     # cage ceilings (hard maxima: 10 / 20 / 20 / 35 / 60 / 3 / 200 / 20)
+#   max_total_open_risk_percent: 20
+#   max_daily_loss_percent: 20
+#   max_weekly_loss_percent: 35
+#   max_account_drawdown_percent: 60   # the kill: MAX_DRAWDOWN latches, manual reset only
+#   max_open_positions: 3
+#   max_effective_leverage: 200        # 0.01 lot of gold on a 50 USD account is ~90x
+#   min_lot_max_risk_percent: 15       # the minimum lot above the budget, up to this risk (else no trade)
+#   modes: [PAPER, DEMO]
+#   setups: [setup_harmonic_prz, setup_breakout]   # only proven setups
+#   fade_risk_factor: 0.5              # fades (FADE) risk half the preset
+
 sessions:                           # entry windows; local times of `timezone` (DST-aware), days are local weekdays
   default:
     - days: [0, 1, 2, 3, 4]         # Monday..Friday

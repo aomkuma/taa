@@ -15,20 +15,37 @@ import json
 import math
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.config import (
     CEILING_DAILY_LOSS_PCT,
     CEILING_RISK_PER_TRADE_PCT,
     CEILING_TOTAL_OPEN_RISK_PCT,
+    HIGH_RISK_CEILING_DAILY_LOSS_PCT,
+    HIGH_RISK_CEILING_RISK_PER_TRADE_PCT,
+    HIGH_RISK_CEILING_TOTAL_OPEN_RISK_PCT,
+    HighRiskCage,
     RiskConfig,
 )
 from app.core.ids import stable_hash
 from app.risk.position_sizer import SplitMode, WeightScheme
 
 MAX_PLAN_PARTS = 5
+
+
+class RiskMode(StrEnum):
+    """The Trading profile's preset (PLAN §A36): ``STANDARD`` inside ``risk:``, ``AGGRESSIVE`` inside the
+    opt-in high-risk cage (:class:`app.config.HighRiskCage`)."""
+
+    STANDARD = "STANDARD"
+    AGGRESSIVE = "AGGRESSIVE"
+
+
+class HighRiskRefused(ValueError):
+    """An AGGRESSIVE profile met a standard cage: it never trades (the caller falls back to STANDARD)."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,8 +106,10 @@ class ProfileLimits:
     min_risk_reward: float | None = None
     min_lot_fallback: bool | None = None  # open the minimum lot above the budget (needs the cage's consent)
     entry_plan: EntryPlanSpec | None = None
+    risk_mode: RiskMode = RiskMode.STANDARD  # AGGRESSIVE needs the high-risk cage (PLAN §A36)
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "risk_mode", RiskMode(self.risk_mode))
         for name in (
             "risk_per_trade_percent",
             "total_open_risk_percent",
@@ -104,11 +123,18 @@ class ProfileLimits:
             raise ValueError("profile max_open_positions must be >= 1")
 
     def to_dict(self) -> dict[str, Any]:
-        """Without ``entry_plan`` when it is not set, so profiles from before TAA-1207 keep their version."""
-        data: dict[str, Any] = {k: v for k, v in asdict(self).items() if k != "entry_plan"}
+        """Without ``entry_plan`` when it is not set and without ``risk_mode`` when STANDARD, so profiles from
+        before TAA-1207 and before the aggressive preset (PLAN §A36) keep their versions."""
+        data: dict[str, Any] = {k: v for k, v in asdict(self).items() if k not in ("entry_plan", "risk_mode")}
         if self.entry_plan is not None:
             data["entry_plan"] = self.entry_plan.to_dict()
+        if self.risk_mode is RiskMode.AGGRESSIVE:
+            data["risk_mode"] = self.risk_mode.value
         return data
+
+    @property
+    def aggressive(self) -> bool:
+        return self.risk_mode is RiskMode.AGGRESSIVE
 
     def version(self) -> str:
         return stable_hash(json.dumps(self.to_dict(), sort_keys=True, separators=(",", ":")), length=16)
@@ -134,25 +160,46 @@ class EntryPlanDoc(BaseModel):
 
 class RiskProfileDoc(BaseModel):
     """The wire format of the owner's limits (cloud → engine). Validated again on the engine: a document the
-    engine refuses is never applied (fail closed to the last good one)."""
+    engine refuses is never applied (fail closed to the last good one).
+
+    ``risk_mode`` is on the wire only when AGGRESSIVE (:meth:`wire`): standard documents stay readable by
+    engines from before PLAN §A36, and those engines refuse an aggressive one (unknown field)."""
 
     model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
 
     version: str = Field(min_length=1, max_length=64)
-    risk_per_trade_percent: float = Field(gt=0, le=CEILING_RISK_PER_TRADE_PCT)
-    total_open_risk_percent: float = Field(gt=0, le=CEILING_TOTAL_OPEN_RISK_PCT)
+    risk_per_trade_percent: float = Field(gt=0, le=HIGH_RISK_CEILING_RISK_PER_TRADE_PCT)
+    total_open_risk_percent: float = Field(gt=0, le=HIGH_RISK_CEILING_TOTAL_OPEN_RISK_PCT)
     max_open_positions: int = Field(ge=1, le=20)
-    max_daily_loss_percent: float = Field(gt=0, le=CEILING_DAILY_LOSS_PCT)
+    max_daily_loss_percent: float = Field(gt=0, le=HIGH_RISK_CEILING_DAILY_LOSS_PCT)
     min_risk_reward: float = Field(ge=1.0, le=10)
     min_lot_fallback: bool = False
     entry_plan: EntryPlanDoc | None = None
+    risk_mode: RiskMode | None = None  # None: STANDARD
     updated_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def _standard_ceilings(self) -> RiskProfileDoc:
+        if self.risk_mode is not RiskMode.AGGRESSIVE and (
+            self.risk_per_trade_percent > CEILING_RISK_PER_TRADE_PCT
+            or self.total_open_risk_percent > CEILING_TOTAL_OPEN_RISK_PCT
+            or self.max_daily_loss_percent > CEILING_DAILY_LOSS_PCT
+        ):
+            raise ValueError("a standard profile stays within the standard ceilings")
+        return self
 
     @classmethod
     def of(cls, limits: ProfileLimits, updated_at: datetime | None = None) -> RiskProfileDoc:
         data = limits.to_dict()
         data["min_lot_fallback"] = bool(data.get("min_lot_fallback"))
         return cls(version=limits.version(), updated_at=updated_at, **data)
+
+    def wire(self) -> dict[str, Any]:
+        """The JSON body for the engine: ``risk_mode`` only when it is set (see the class notes)."""
+        data = self.model_dump(mode="json")
+        if self.risk_mode is None:
+            data.pop("risk_mode")
+        return data
 
     def limits(self) -> ProfileLimits:
         """Raises ``ValueError`` when the entry plan is incoherent (the caller refuses the document)."""
@@ -164,7 +211,27 @@ class RiskProfileDoc(BaseModel):
             min_risk_reward=self.min_risk_reward,
             min_lot_fallback=self.min_lot_fallback,
             entry_plan=None if self.entry_plan is None else self.entry_plan.spec(),
+            risk_mode=self.risk_mode or RiskMode.STANDARD,
         )
+
+
+AGGRESSIVE_POSITIONS = 2  # the preset's open positions (the high-risk cage allows at most 3)
+
+
+def aggressive_limits(risk_percent: float, min_risk_reward: float | None = None) -> ProfileLimits:
+    """The aggressive preset's limits for risk r (PLAN §A36): r per trade, 2r total open risk and daily loss,
+    two open positions, the minimum lot when the budget buys less (the cage caps its risk; owner, 2026-10-14:
+    a 50-100 USD account must still trade). The Trading profile and the backtest share it."""
+    r = float(risk_percent)
+    return ProfileLimits(
+        risk_per_trade_percent=r,
+        total_open_risk_percent=2 * r,
+        max_open_positions=AGGRESSIVE_POSITIONS,
+        max_daily_loss_percent=2 * r,
+        min_risk_reward=min_risk_reward,
+        min_lot_fallback=True,
+        risk_mode=RiskMode.AGGRESSIVE,
+    )
 
 
 def governed(risk: RiskConfig) -> dict[str, float | int]:
@@ -183,6 +250,11 @@ def _lower(local: float, profile: float | None) -> float:
 
 
 def effective_risk(local: RiskConfig, profile: ProfileLimits | None) -> RiskConfig:
+    """The stricter value of each governed field. The result keeps the cage's class (a
+    :class:`HighRiskCage` stays one, with its own bounds). An AGGRESSIVE profile against a standard cage
+    raises :class:`HighRiskRefused`: it is never clamped into a standard cage's ceiling (PLAN §A36)."""
+    if profile is not None and profile.aggressive and not isinstance(local, HighRiskCage):
+        raise HighRiskRefused("an aggressive profile needs the high-risk cage")
     if profile is None:
         return local
     daily = _lower(local.max_daily_loss_percent, profile.max_daily_loss_percent)
@@ -205,4 +277,4 @@ def effective_risk(local: RiskConfig, profile: ProfileLimits | None) -> RiskConf
         "min_risk_reward": min_rr,
     }
     # validate the combination (bounds and coherence) exactly as a local config would be
-    return RiskConfig.model_validate({**local.model_dump(), **update})
+    return type(local).model_validate({**local.model_dump(), **update})

@@ -8,7 +8,7 @@ import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from app.cli.research import add_parser as add_research
 from app.config import REPO_ROOT, Settings, load_settings
@@ -220,7 +220,9 @@ def cmd_backtest(args: argparse.Namespace) -> int:
 
     from app.backtest.engine import Progress
     from app.backtest.metrics import compute_metrics
+    from app.backtest.presets import aggressive_preset
     from app.backtest.runner import load_context, load_history, run_and_write
+    from app.config import config_hash
     from app.market_data.history_store import ParquetHistoryStore
 
     settings = _settings(args)
@@ -229,6 +231,20 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         config = config.model_copy(
             update={"backtest": config.backtest.model_copy(update={"seed": args.seed})}
         )
+    if args.balance is not None:  # e.g. a small account for the aggressive preset (PLAN §A36)
+        if not args.balance > 0:
+            print("error: --balance must be positive", file=sys.stderr)
+            return 1
+        config = config.model_copy(
+            update={"backtest": config.backtest.model_copy(update={"initial_balance": args.balance})}
+        )
+    risk_preset = None
+    if args.preset == "aggressive":  # PLAN §A36: the high-risk cage, only its setups
+        config, risk_preset = aggressive_preset(config, 7.5 if args.risk is None else args.risk)
+    elif args.risk is not None:
+        print("error: --risk goes with --preset aggressive", file=sys.stderr)
+        return 1
+    run_hash = settings.config_hash if risk_preset is None and args.balance is None else config_hash(config)
     server = args.server or settings.env.MT5_SERVER
     if not server:
         print("error: pass --server (the history store is organized by trade server)", file=sys.stderr)
@@ -255,7 +271,8 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         settings.path(args.out)
         if args.out
         else settings.path(
-            f"data/backtests/{loaded.digest[:8]}-{settings.config_hash[:8]}-seed{config.backtest.seed}"
+            f"data/backtests/{loaded.digest[:8]}-{run_hash[:8]}-seed{config.backtest.seed}"
+            + ("" if risk_preset is None else f"-{risk_preset.name}")
         )
     )
 
@@ -266,7 +283,7 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         config,
         loaded,
         Path(out),
-        config_hash=settings.config_hash,
+        config_hash=run_hash,
         strategy_names=names,
         start=start,
         end=end,
@@ -276,16 +293,94 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         context=load_context(store, server, symbols, config.timeframes.context, end=end)
         if config.timeframes.context
         else None,
+        risk_preset=risk_preset,
     )
     m = compute_metrics(result.trades, result.equity_curve, result.initial_balance)
     print(f"backtest {', '.join(symbols)}  {result.start} -> {result.end}")
-    print(f"  data hash {loaded.digest}  config hash {settings.config_hash}  seed {config.backtest.seed}")
+    print(f"  data hash {loaded.digest}  config hash {run_hash}  seed {config.backtest.seed}")
+    if risk_preset is not None:
+        eff = risk_preset.effective
+        fade = getattr(risk_preset.cage, "fade_risk_factor", 1.0)
+        print(
+            f"  preset {risk_preset.name}: {eff.max_risk_per_trade_percent:g} % a trade (fades x{fade:g}), "
+            f"daily {eff.max_daily_loss_percent:g} %, drawdown kill {eff.max_account_drawdown_percent:g} %"
+        )
     print(f"  trades {m.trades}  win rate {m.win_rate}  profit factor {m.profit_factor}")
     print(f"  net {m.net_profit:,.2f}")
     print(f"  max drawdown {m.max_drawdown_percent:.2f}%  expectancy {m.expectancy_r} R")
     for name, path in paths.items():
         print(f"  {name}: {path}")
     print("  (a bar-based simulation; past results do not predict future results)")
+    return 0
+
+
+def _ruin_trades(paths: list[str], fades: set[str]) -> list[Any]:
+    """Trades from backtest ``trades.csv`` files (a folder means its ``trades.csv``)."""
+    import csv
+
+    from app.backtest.robustness import RuinTrade
+
+    out = []
+    for raw in paths:
+        path = Path(raw)
+        if path.is_dir():
+            path = path / "trades.csv"
+        with path.open(encoding="utf-8", newline="") as fh:
+            for row in csv.DictReader(fh):
+                if not row.get("r_multiple"):
+                    continue
+                entry = datetime.fromisoformat(row["entry_time"])
+                if entry.tzinfo is None:
+                    entry = entry.replace(tzinfo=UTC)
+                out.append(RuinTrade(entry, float(row["r_multiple"]), row.get("strategy", "") in fades))
+    return out
+
+
+def cmd_ruin(args: argparse.Namespace) -> int:
+    """``backtest ruin``: the compounding Monte Carlo of the aggressive preset (PLAN §A36)."""
+    from app.backtest.robustness import RuinRules, ruin_monte_carlo
+
+    fades = {s.strip() for s in (args.fade_strategies or "").split(",") if s.strip()}
+    trades = _ruin_trades(args.trades, fades)
+    if not trades:
+        print("error: no trades with an R multiple in the given files", file=sys.stderr)
+        return 1
+    risks = [float(r) for r in args.risk.split(",")]
+    rs = [t.r for t in trades]
+    span_days = (max(t.entry for t in trades) - min(t.entry for t in trades)).days or 1
+    per_year = len(trades) * 365 / span_days
+    fade_count = sum(t.fade for t in trades)
+    print(
+        f"compounding Monte Carlo: {len(trades)} trades ({per_year:.0f}/yr), "
+        f"mean {sum(rs) / len(rs):+.3f} R, "
+        f"{fade_count} fades at x{args.fade_factor:g} risk; {args.runs} runs, seed {args.seed}"
+    )
+    print(
+        "  risk %  | max DD median [p5-p95] | P(DD>50%) | P(kill 60%) | final equity median [p5-p95] "
+        "| P(loss) | days to kill (median)"
+    )
+    for risk in risks:
+        rules = RuinRules(
+            risk_percent=risk,
+            fade_factor=args.fade_factor,
+            weekly_loss_percent=args.weekly,
+            kill_percent=args.kill,
+        )
+        rep = ruin_monte_carlo(trades, rules, runs=args.runs, seed=args.seed, days=args.days)
+        kill_days = rep.median_days_to_kill
+        dd = [rep.drawdown_percentile(q) for q in (50, 5, 95)]
+        final = [rep.final_percentile(q) for q in (50, 5, 95)]
+        print(
+            f"  {risk:6.2f}  | {dd[0]:5.1f} % [{dd[1]:4.1f}-{dd[2]:4.1f}] | "
+            f"{rep.probability_drawdown_above(50):8.1%} | {rep.probability_of_kill:10.1%} | "
+            f"x{final[0]:.2f} [x{final[1]:.2f}-x{final[2]:.2f}] | {rep.probability_of_loss:6.1%} | "
+            f"{'-' if kill_days is None else f'{kill_days:.0f}'}"
+        )
+    print(
+        f"  ({rep.days} trading days per run; daily budget 2x risk, weekly stop {args.weekly:g} %, "
+        "4 losses -> 24 h pause; trades are sequential, overlaps not modelled)"
+    )
+    print("  (a resampling of past backtest trades; it measures fragility, it does not predict results)")
     return 0
 
 
@@ -328,6 +423,42 @@ def cmd_breaker(args: argparse.Namespace) -> int:
         acknowledge=args.ack,
     )
     print(f"breaker {args.name.upper()} reset by {actor}")
+    return 0
+
+
+def cmd_risk(args: argparse.Namespace) -> int:
+    """``risk rebase-hwm``: forget the drawdown peak (PLAN §A36), local and audited, with an explicit
+    acknowledgement. The next engine observation's equity becomes the new high-water mark."""
+    from sqlalchemy import select
+
+    from app.core.clock import SystemClock
+    from app.risk.loss_tracker import LossTracker
+    from app.storage.models import RiskState
+
+    if not args.ack or not args.reason:
+        print(
+            "--ack and --reason are required: the drawdown history of this account is reset", file=sys.stderr
+        )
+        return 1
+    settings = _settings(args)
+    db, audit = _db_and_audit(settings)
+    with db.session() as sess:
+        keys = list(sess.execute(select(RiskState.account_key)).scalars())
+    if args.account is not None:
+        keys = [k for k in keys if k == args.account]
+    if len(keys) != 1:
+        print("pass --account KEY (one of: " + ", ".join(sorted(keys)) + ")", file=sys.stderr)
+        return 1
+    tracker = LossTracker(db, keys[0], settings.env.BROKER_TIMEZONE, SystemClock())
+    old = tracker.rebase_high_water_mark()
+    actor = args.actor or getpass.getuser()
+    audit.append(
+        "RISK_HWM_REBASED",
+        f"cli:{actor}",
+        {"account_key": keys[0], "previous_hwm": old, "reason": args.reason},
+    )
+    print(f"high-water mark of {keys[0]} reset (was {old}); the next observation sets it")
+    print("a latched MAX_DRAWDOWN breaker still needs: breaker reset MAX_DRAWDOWN --ack --reason ...")
     return 0
 
 
@@ -659,7 +790,36 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("--seed", type=int, default=None)
     bt.add_argument("--out", default=None, help="output folder (default: data/backtests/<hashes>)")
     bt.add_argument("--progress", action="store_true")
+    bt.add_argument(
+        "--preset",
+        choices=["standard", "aggressive"],
+        default="standard",
+        help="aggressive: the high-risk cage and its setups only (PLAN §A36)",
+    )
+    bt.add_argument("--risk", type=float, default=None, help="aggressive: risk per trade, 5-10 (default 7.5)")
+    bt.add_argument(
+        "--balance",
+        type=float,
+        default=None,
+        help="initial balance (default: backtest.initial_balance); aggressive targets small accounts",
+    )
     bt.set_defaults(func=cmd_backtest)
+    bt_sub = bt.add_subparsers(dest="backtest_cmd", required=False)
+    ruin = bt_sub.add_parser(
+        "ruin", help="compounding Monte Carlo of the aggressive preset on backtest trades (PLAN §A36)"
+    )
+    ruin.add_argument("trades", nargs="+", help="trades.csv files or backtest folders")
+    ruin.add_argument("--risk", default="5,7.5,10", help="comma-separated risks per trade, percent")
+    ruin.add_argument("--fade-strategies", default="", help="strategies whose trades are all fades")
+    ruin.add_argument("--fade-factor", type=float, default=0.5)
+    ruin.add_argument("--weekly", type=float, default=35.0, help="weekly loss stop, percent")
+    ruin.add_argument("--kill", type=float, default=60.0, help="drawdown kill, percent")
+    ruin.add_argument("--runs", type=int, default=2000)
+    ruin.add_argument(
+        "--days", type=int, default=None, help="trading days per run (default: the trades' span)"
+    )
+    ruin.add_argument("--seed", type=int, default=42)
+    ruin.set_defaults(func=cmd_ruin)
 
     br = sub.add_parser("breaker", help="list or reset circuit breakers (local only, audited)")
     br_sub = br.add_subparsers(dest="action", required=True)
@@ -671,6 +831,17 @@ def build_parser() -> argparse.ArgumentParser:
     reset.add_argument("--symbol", default=None, help="for symbol-scoped breakers")
     reset.add_argument("--ack", action="store_true", help="required for MAX_DRAWDOWN")
     reset.set_defaults(func=cmd_breaker)
+
+    rk = sub.add_parser("risk", help="risk state tools (local only, audited)")
+    rk_sub = rk.add_subparsers(dest="action", required=True)
+    rb = rk_sub.add_parser(
+        "rebase-hwm", help="forget the drawdown peak, e.g. after leaving the aggressive preset (PLAN §A36)"
+    )
+    rb.add_argument("--ack", action="store_true", help="required: acknowledge the reset")
+    rb.add_argument("--reason", default=None)
+    rb.add_argument("--actor", default=None)
+    rb.add_argument("--account", default=None, help="risk account key (when there is more than one)")
+    rb.set_defaults(func=cmd_risk)
 
     ticks = sub.add_parser("ticks", help="tick data tools (read-only)")
     ticks_sub = ticks.add_subparsers(dest="ticks_cmd", required=True)

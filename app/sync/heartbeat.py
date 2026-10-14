@@ -102,6 +102,23 @@ class EntryPlanInUse(BaseModel):
     tp_r: list[float] = Field(default_factory=list, max_length=5)
 
 
+HighRiskReason = Literal["HIGH_RISK_NOT_ENABLED", "HIGH_RISK_MODE_NOT_ALLOWED"]
+
+
+class HighRiskAvailability(BaseModel):
+    """Whether the engine can trade the aggressive preset (PLAN §A36): its local opt-in and cage."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    available: bool
+    reason: HighRiskReason | None = None  # why not, when not available
+    max_risk_percent: float | None = Field(default=None, gt=0, le=10, allow_inf_nan=False)
+    drawdown_kill_percent: float | None = Field(default=None, gt=0, le=60, allow_inf_nan=False)
+    weekly_loss_percent: float | None = Field(default=None, gt=0, le=35, allow_inf_nan=False)
+    setups: list[str] = Field(default_factory=list, max_length=20)
+    fade_risk_factor: float | None = Field(default=None, gt=0, le=1, allow_inf_nan=False)
+
+
 class RiskLimits(BaseModel):
     """Which limits the engine trades with (PLAN §A33, TAA-710): the local cage, the owner's profile and the
     stricter of the two per field; ``source`` cloud/cache/local, ``age_seconds`` since the cloud sent it."""
@@ -117,6 +134,10 @@ class RiskLimits(BaseModel):
     min_lot_fallback: bool | None = None  # in effect: the minimum lot above the budget when margin allows
     entry_plan: EntryPlanInUse | None = None  # the owner's split plan; None: one order (TAA-1207)
     entry_plans_enabled: bool | None = None  # execution.entry_plans on the engine machine
+    # the aggressive preset (PLAN §A36); None from older engines
+    risk_mode: Literal["STANDARD", "AGGRESSIVE"] | None = None  # the preset in effect
+    refused: HighRiskReason | None = None  # the owner chose AGGRESSIVE, the engine refused it
+    high_risk: HighRiskAvailability | None = None
 
 
 class ManualLink(BaseModel):

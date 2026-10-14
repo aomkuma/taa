@@ -159,6 +159,21 @@ class LossTracker:
                 last_loss_at=state.last_loss_at,
             )
 
+    def rebase_high_water_mark(self) -> float | None:
+        """Manual, audited by the caller (``app.cli risk rebase-hwm``; PLAN §A36): forget the peak, so the
+        next observation's equity becomes the high-water mark. For leaving the aggressive preset after a
+        reviewed drawdown that the standard limit would otherwise latch. Returns the old mark (None: no
+        state yet)."""
+        with self.db.session() as sess:
+            state = sess.get(RiskState, (LOCAL_ENGINE, self.account_key))
+            if state is None:
+                return None
+            old = state.hwm
+            # 0 is below any equity: observe() sets max(0, adjusted equity) on its next call
+            state.hwm = 0.0
+            state.updated_at = self.clock.now_utc()
+            return old
+
     def reset_consecutive_losses(self) -> None:
         """Manual reset (the breaker framework audits who did it and why)."""
         with self.db.session() as sess:

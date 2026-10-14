@@ -101,6 +101,9 @@ export const ProfileOverridesSchema = z.object({
 });
 export type ProfileOverrides = z.infer<typeof ProfileOverridesSchema>;
 
+export const RISK_MODES = ['STANDARD', 'AGGRESSIVE'] as const;
+export type RiskMode = (typeof RISK_MODES)[number];
+
 /** `TradingProfile` (TAA-922). */
 export const TradingProfileSchema = z.object({
   style: z.number().int(),
@@ -112,6 +115,10 @@ export const TradingProfileSchema = z.object({
   stop_placement: z.enum(STOP_PLACEMENTS),
   /** Open the minimum lot above the risk budget when margin allows (the engine's cage must allow it). */
   min_lot_fallback: z.boolean(),
+  /** The preset (PLAN §A36): AGGRESSIVE only through `PUT /advisory/preferences/risk-mode` with a step-up. */
+  risk_mode: z.enum(RISK_MODES),
+  /** The aggressive preset's risk per trade, 5-10 % (fades risk half). */
+  aggressive_risk_percent: z.number(),
 });
 export type TradingProfile = z.infer<typeof TradingProfileSchema>;
 

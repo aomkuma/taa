@@ -1968,6 +1968,43 @@
     }
   },
   "profile": {
+    "riskMode": {
+      "title": "Risk mode",
+      "about": "Standard trades with the limits of your trading profile. Aggressive is for small accounts that accept high risk: it trades only the setups proven by backtest, with its own limits on the engine machine.",
+      "choose": "Mode",
+      "name": {
+        "STANDARD": "Standard",
+        "AGGRESSIVE": "Aggressive (high risk)"
+      },
+      "nameAbout": {
+        "STANDARD": "The risk per signal, open risk and daily loss limit of your trading profile.",
+        "AGGRESSIVE": "5-10% of equity per trade, two open positions, only the proven setups; the engine stops at a 60% drawdown."
+      },
+      "unavailable": "Aggressive is not available: the engine machine has not switched it on (PAPER and DEMO only).",
+      "refused": "The engine refused the aggressive mode and trades with the standard profile: {{reason}}",
+      "active": "The engine trades in aggressive mode now.",
+      "risk": "Risk per trade (%)",
+      "riskRange": "{{min}} to {{max}}; counter-trend fades risk half",
+      "apply": "Apply mode",
+      "raise": "Switch to the higher risk",
+      "confirmTitle": "Switch on the aggressive mode",
+      "type": "Type {{word}} to confirm",
+      "mismatch": "Type {{word}} exactly to confirm.",
+      "warn": {
+        "title": "What this risk means",
+        "perTrade": "Each trade can lose {{pct}} of equity ({{fade}} for a counter-trend fade).",
+        "streak": "{{n}} losses in a row take about {{pct}} of equity.",
+        "daily": "New trades stop for the day once today's loss and open risk would pass {{pct}}.",
+        "kill": "The engine stops trading at a {{pct}} drawdown from the peak; only a local reset on the engine machine starts it again.",
+        "setups": "Past backtests do not predict results; deep drawdowns are likely at this risk."
+      },
+      "error": {
+        "high_risk_unavailable": "The engine has not switched the aggressive mode on.",
+        "engine_required": "Choose your engine first.",
+        "engine_not_found": "This engine is not yours.",
+        "risk_mode_locked": "The risk mode changes only here, with a confirmation."
+      }
+    },
     "intro": "How you trade: how much you risk, how selective your alerts are and how you split an entry. Your bot trades with these values, inside the hard limits of its engine machine, and your alerts use them too.",
     "yes": "Yes",
     "no": "No",

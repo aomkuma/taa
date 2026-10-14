@@ -1,11 +1,13 @@
 import configPy from '../../../../app/config.py?raw';
 import preferencesPy from '../../../../app/advisory/preferences.py?raw';
+import limitsPy from '../../../../app/risk/limits.py?raw';
 import positionSizerPy from '../../../../app/risk/position_sizer.py?raw';
 // TradingProfile(style=s).resolve() for a few styles, printed by the backend (see the profile page decisions)
 import resolvedByPython from '@/test/fixtures/profile-resolved.json';
 import { pyStrEnumValues } from '@/test/python';
 import {
   HOLDING_STYLES,
+  RISK_MODES,
   SPLIT_MODES,
   STOP_PLACEMENTS,
   type EntryPlan,
@@ -14,8 +16,12 @@ import {
 } from '@/pages/watchlists/schemas';
 
 import {
+  AGGRESSIVE,
+  aggressiveRiskValid,
+  aggressiveWarning,
   CEILINGS,
   fillTakeProfits,
+  OVERRIDE_BOUNDS,
   overrideValid,
   planProblems,
   PROFILE_ANCHORS,
@@ -45,6 +51,8 @@ const profile = (style: number): TradingProfile => ({
   hold_over_weekend: false,
   stop_placement: 'STRUCTURE',
   min_lot_fallback: false,
+  risk_mode: 'STANDARD',
+  aggressive_risk_percent: 7.5,
 });
 const plan = (over: Partial<EntryPlan> = {}): EntryPlan => ({
   lot_unit: null,
@@ -62,6 +70,19 @@ describe('backend parity', () => {
     expect([...STOP_PLACEMENTS]).toEqual(pyStrEnumValues(preferencesPy, 'StopPlacement'));
     expect([...SPLIT_MODES]).toEqual(pyStrEnumValues(positionSizerPy, 'SplitMode'));
     expect([...WEIGHT_SCHEMES]).toEqual(pyStrEnumValues(positionSizerPy, 'WeightScheme'));
+    expect([...RISK_MODES]).toEqual(pyStrEnumValues(limitsPy, 'RiskMode'));
+  });
+
+  it('aggressive preset constants', () => {
+    const num = (source: string, name: string) =>
+      Number(new RegExp(String.raw`^${name} = ([\d.]+)`, 'm').exec(source)?.[1]);
+    expect(AGGRESSIVE.minRisk).toBe(num(configPy, 'AGGRESSIVE_MIN_RISK_PCT'));
+    expect(AGGRESSIVE.defaultRisk).toBe(num(configPy, 'AGGRESSIVE_DEFAULT_RISK_PCT'));
+    expect(AGGRESSIVE.maxRisk).toBe(num(configPy, 'HIGH_RISK_CEILING_RISK_PER_TRADE_PCT'));
+    expect(AGGRESSIVE.drawdownKill).toBe(num(configPy, 'HIGH_RISK_CEILING_DRAWDOWN_PCT'));
+    expect(AGGRESSIVE.weeklyStop).toBe(num(configPy, 'HIGH_RISK_CEILING_WEEKLY_LOSS_PCT'));
+    expect(AGGRESSIVE.positions).toBe(num(limitsPy, 'AGGRESSIVE_POSITIONS'));
+    expect(OVERRIDE_BOUNDS.risk_per_signal_percent?.max).toBe(num(configPy, 'CEILING_RISK_PER_TRADE_PCT'));
   });
 
   it('anchors and ceilings', () => {
@@ -119,6 +140,32 @@ describe('overrides', () => {
     ).toEqual(['risk', 'heat', 'dailyLoss', 'rr', 'conflict', 'htf', 'backLoaded']);
     const custom = { ...profile(50), overrides: { ...NO_OVERRIDES, risk_per_signal_percent: 2.5 } };
     expect(warnings(resolve(custom).values, plan())).toEqual(['riskVeryHigh']);
+  });
+});
+
+describe('aggressive preset', () => {
+  it('replaces the risk values of the slider and the overrides', () => {
+    const p: TradingProfile = {
+      ...profile(0),
+      overrides: { ...NO_OVERRIDES, risk_per_signal_percent: 1, min_rr: 2 },
+      risk_mode: 'AGGRESSIVE',
+      aggressive_risk_percent: 8,
+    };
+    const { values, custom } = resolve(p);
+    expect(values.risk_per_signal_percent).toBe(8);
+    expect(values.portfolio_heat_percent).toBe(16);
+    expect(values.max_daily_loss_percent).toBe(16);
+    expect(values.max_positions).toBe(2);
+    expect([...custom]).toEqual(['min_rr']);
+  });
+
+  it('bounds and warning arithmetic', () => {
+    expect(aggressiveRiskValid(5)).toBe(true);
+    expect(aggressiveRiskValid(10)).toBe(true);
+    expect(aggressiveRiskValid(4.5)).toBe(false);
+    expect(aggressiveRiskValid(Number.NaN)).toBe(false);
+    const w = aggressiveWarning(7.5);
+    expect(w).toEqual({ perTrade: 7.5, fade: 3.75, streak: 4, streakLoss: 26.8, daily: 15, kill: 60 });
   });
 });
 

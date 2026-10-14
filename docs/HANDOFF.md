@@ -9,6 +9,24 @@ What was built per ticket is in the git history. A separate **learning track** (
 
 ---
 
+## 2026-10-14: aggressive Trading-profile preset (TAA-1212, PLAN §A36)
+
+- Built on a worktree branch (not yet merged/pushed): the high-risk cage (`high_risk:` + env opt-in, PAPER/DEMO
+  only, LIVE refused), `risk_mode` in the Trading profile and on the wire, engine refusals and pre-entry
+  budgets, breakers on the active cage, `app.cli risk rebase-hwm`, the step-up route
+  `PUT /advisory/preferences/risk-mode`, the PWA risk-mode card, `backtest --preset aggressive` and
+  `backtest ruin`. Breakout F1 is on in `config.yaml` (both modes; SETUP_REVIEW §16).
+- Ruin table (PLAN §A36): at 7.5 % P(kill at 60 %) 54 %, median max DD 53 %; at 5 % 9 %; at 10 % 91 %.
+- March 2026 backtests of the preset (PLAN §A36 table): at 10,000 the lot cap `risk.max_lot` 1.0 holds most
+  trades near 1 %; at 1,000 and 1:100 every harmonic signal is rejected for the margin level; at 1:500 the 50x
+  leverage cap cuts tight harmonic stops. Use `backtest --balance 1000` (new) for the preset.
+- Only targeted tests ran; the full pytest + vitest run is the owner's, at the end of the setup round.
+- Not switched on anywhere: `high_risk:` is commented out in `config.yaml`, the env flag is off.
+- Open: whether the preset should size the advisory scanner too (now always STANDARD), cloud backtest jobs
+  for the preset (refused now), and the margin-level vs utilization mismatch below (it can reject 7.5 % trades
+  on low-leverage symbols: `max_margin_utilization_percent` 30 lets the lot grow until the margin level is
+  ~333 %, below `min_margin_level_percent` 500, so the trade is rejected instead of cut further).
+
 ## Prompt for the next session
 
 Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:

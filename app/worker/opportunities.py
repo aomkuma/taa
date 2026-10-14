@@ -43,7 +43,7 @@ from app.advisory.market_sessions import session_state, sessions_for
 from app.advisory.personalize import MarketOpportunity, SentAlert, UserContext, personalize, replacement
 from app.advisory.requirements import pattern_setups
 from app.advisory.statuses import OPEN
-from app.config import AppConfig, load_app_config
+from app.config import CEILING_RISK_PER_TRADE_PCT, AppConfig, load_app_config
 from app.core.clock import Clock, ensure_utc
 from app.core.enums import Side
 from app.core.errors import TaaError
@@ -374,7 +374,8 @@ class OpportunityAlerter:
         profile = load_profile(self.db, user_id)
         if profile is None or profile.source != "MANUAL" or profile.equity is None:
             return market, False
-        risk = [prefs.trading_profile.resolve().risk_per_signal_percent]
+        # manual alert sizing stays inside the standard ceiling: the aggressive preset is the bot's (§A36)
+        risk = [min(prefs.trading_profile.resolve().risk_per_signal_percent, CEILING_RISK_PER_TRADE_PCT)]
         if profile.risk_percent is not None:
             risk.append(profile.risk_percent)
         sized = size_manual(

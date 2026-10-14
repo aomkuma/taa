@@ -299,3 +299,28 @@ def test_the_engine_pulls_its_owners_risk_profile(rig: Any) -> None:
     put(client, "/advisory/preferences", prefs)
     poller.poll_once()
     assert poller.current.risk_per_trade_percent == 0.4 and poller.current.version != version
+
+
+def test_the_risk_profile_carries_the_mode_only_when_aggressive(rig: Any) -> None:
+    """PLAN §A36: standard documents keep the pre-§A36 shape; an aggressive one names its mode."""
+    from app.advisory.preferences import AdvisoryPreferences
+    from app.sync.risk_profile import RISK_PROFILE_PATH
+    from app.web.advisory import PreferenceStore
+
+    app, client, _, _ = rig
+    ctx = app.state.ctx
+
+    def fetch() -> Any:
+        headers = Signer("eng-a", SECRET.encode(), ctx.clock).headers("GET", RISK_PROFILE_PATH)
+        return client.get(RISK_PROFILE_PATH, headers=headers)
+
+    alice = next(u for u in ctx.auth.list_users() if u.username == "alice")
+    store = PreferenceStore(ctx.db)
+    store.save(alice.id, AdvisoryPreferences(), ctx.clock.now_utc())
+    standard = fetch()
+    assert standard.status_code == 200 and "risk_mode" not in standard.json()
+    aggressive = {"trading_profile": {"risk_mode": "AGGRESSIVE", "aggressive_risk_percent": 7.5}}
+    store.save(alice.id, AdvisoryPreferences.model_validate(aggressive), ctx.clock.now_utc())
+    body = fetch().json()
+    assert body["risk_mode"] == "AGGRESSIVE"
+    assert body["risk_per_trade_percent"] == 7.5 and body["max_open_positions"] == 2
