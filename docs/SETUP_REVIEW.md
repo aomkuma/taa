@@ -466,6 +466,29 @@ eight symbols (`data/backtests/inv/setup_breakout_f1_YYYY-MM`):
   risk the owner accepts by choosing it: at 7.5 % about half the simulated years reach the 60 % stop.
 - Caveat as in §15.3: F1 was shaped on this year; forward results (DEMO) are the test.
 
+## 17. M1 gold scalping S1, the year (2026-10-15)
+
+S1 = breakout F1's fade on M1, XAUUSD only (`data/research/config_scalp_s1.yaml`: screens H1 tide / M15 wave,
+stop 2 × the mean range of the last 60 M1 bars, the fade's target about twice its stop, no entries 08:00-12:00
+New York, Friday cut-off 16:00 UTC, time stop 60 bars, 7 points of slippage for the account's spread). Monthly
+runs 2025-10 .. 2026-09 (`data/backtests/inv/scalp_s1_YYYY-MM`, `scalp_s1_months.md`); no breaker blocked a
+trade in any month.
+
+| Goal | Bar | S1 year | |
+|---|---|---|---|
+| R per trade | ≥ +0.15 | +0.277 (76 trades, +21.06 R) | ✓ |
+| 90 % interval of the year | lower bound > 0 | +0.021 .. +0.535 | ✓ |
+| 1st half (to 2026-04-08) | lower bound > 0 | n 37, +0.154, −0.214 .. +0.533 | ✗ |
+| 2nd half | lower bound > 0 | n 39, +0.394, +0.042 .. +0.740 | ✓ |
+| Max drawdown | ≤ 15 R | 6.2 R | ✓ |
+
+- Wins and losses: 37 targets, 39 stops; average win +1.67 R, average loss −1.04 R.
+- Months: 9 of 12 positive; the losers are November (−0.22, 3 trades), December (−0.60, 6) and July (−0.18, 6).
+- **Gap:** the first half's interval reaches below zero, and 76 trades a year is few for scalping. The rules were
+  shaped on the same year's M1 study (`research/2026-10-11-pre-run/m1_scalp_study.py`), so this is in-sample.
+- Nothing changes on the bot: S1 is not in `config.yaml`. Its next lever is the trade count (the owner's
+  portfolio goal), e.g. the swing screens that tripled the trend-aligned bars for D1 (§ D1_NOTES).
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
