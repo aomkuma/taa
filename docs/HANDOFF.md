@@ -1,537 +1,311 @@
 # Session handoff
 
-Last updated: 2026-10-11 (the sleep fix, the pre-run behaviour study, the inverted setups measured on history;
-before that 2026-10-09: the market map, harmonic on eight symbols, inverted setups on DEMO, pause/resume). Other sessions (TAA-1007/1208-1211) may work in parallel.
-This file holds **state only**: rules and conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`,
-design decisions in `docs/PLAN.md` (each ticket's "TAA-xxx decisions" notes), progress in `docs/TICKETS.md`.
-What was built per ticket is in the git history. A separate **learning track** (Milestone 3) is designed in
-`docs/PLAN_LEARNING.md` / `docs/TICKETS_LEARNING.md` (another session started it on 2026-10-06).
+Last updated: 2026-10-14 (breakout F1 and harmonic V1 on DEMO in the aggressive preset, M1 gold scalping S1,
+the chart read plan). This file holds **state only**: rules and conventions live in `CLAUDE.md` and
+`docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`, progress in `docs/TICKETS.md` /
+`docs/TICKETS_LEARNING.md`, setup results in `docs/SETUP_REVIEW.md`. The dated session logs of 2026-10-05 ..
+10-11 were removed on 2026-10-14 (see git history; their findings are in SETUP_REVIEW §8-§15 and the plans).
 
 ---
-
-## 2026-10-14: aggressive Trading-profile preset (TAA-1212, PLAN §A36)
-
-- Built on a worktree branch (not yet merged/pushed): the high-risk cage (`high_risk:` + env opt-in, PAPER/DEMO
-  only, LIVE refused), `risk_mode` in the Trading profile and on the wire, engine refusals and pre-entry
-  budgets, breakers on the active cage, `app.cli risk rebase-hwm`, the step-up route
-  `PUT /advisory/preferences/risk-mode`, the PWA risk-mode card, `backtest --preset aggressive` and
-  `backtest ruin`. Breakout F1 is on in `config.yaml` (both modes; SETUP_REVIEW §16).
-- Ruin table (PLAN §A36): at 7.5 % P(kill at 60 %) 54 %, median max DD 53 %; at 5 % 9 %; at 10 % 91 %.
-- March 2026 backtests of the preset (PLAN §A36 table): at 10,000 the lot cap `risk.max_lot` 1.0 holds most
-  trades near 1 %; at 1,000 and 1:100 every harmonic signal is rejected for the margin level; at 1:500 the 50x
-  leverage cap cuts tight harmonic stops. Use `backtest --balance 1000` (new) for the preset.
-- Only targeted tests ran; the full pytest + vitest run is the owner's, at the end of the setup round.
-- Not switched on anywhere: `high_risk:` is commented out in `config.yaml`, the env flag is off.
-- Open: whether the preset should size the advisory scanner too (now always STANDARD), cloud backtest jobs
-  for the preset (refused now), and the margin-level vs utilization mismatch below (it can reject 7.5 % trades
-  on low-leverage symbols: `max_margin_utilization_percent` 30 lets the lot grow until the margin level is
-  ~333 %, below `min_margin_level_percent` 500, so the trade is rejected instead of cut further).
 
 ## Prompt for the next session
 
 Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
-```text
-Continue the TAA project. Read docs/HANDOFF.md first (current state, Next work, gotchas), then
-docs/SETUP_REVIEW.md §14-§15 (how harmonic was measured and refined), docs/CONFLUENCE_DIRECTION.md §3.1 (triple
-screen and market phases) and docs/INVERTED_SETUPS.md §5 (the two-world method). Follow CLAUDE.md and
-docs/CODING_STANDARDS.md. Work on main; commit by explicit paths; I push myself. Chat with me in Thai and give
-times in Thai time (UTC+7).
+````text
+Continue two tasks on TAA (C:\Users\korap\taa). Chat with me in Thai and give times in Thai time (UTC+7).
+Docs and code stay in English. Follow CLAUDE.md and the memory rules. Report results as tables, and report
+progress every few minutes while backtests run. Ask me when the meaning is unclear; don't guess.
+Read docs/HANDOFF.md ("Current state" and "Gotchas") first.
 
-Task: setup_breakout, done the same way as setup_harmonic_prz (SETUP_REVIEW §15-§15.3), one setup at a time.
-1. Two worlds over a year on the eight symbols: setup_breakout and setup_breakout_inverted as separate
-   `app.cli backtest` runs with the research config data/research/config_paired_bt.yaml
-   (MAX_ACCOUNT_DRAWDOWN_PERCENT=50 in the command's environment), the year split into three 4-month runs
-   (2025-10-15..2026-02-05, 2026-02-05..06-05, 2026-06-05..10-05) started together, joined with
-   research/2026-10-11-pre-run/combine_periods.py. Report both worlds side by side (two_worlds.py), with how
-   price moved (losers: share of the way to the target before turning; winners: heat against the stop).
-2. Without break-even/trailing (config_paired_bt_nobe.yaml), compare_variants.py.
-3. Market phase on three screens (three_screens.py), per-symbol table, filters and R:R checks on the trades
-   (backtest_hypotheses.py), each judged on both halves and the hold-out symbols (AUDUSD, XAUUSD).
-4. Code what holds as strategy params (like HarmonicParams), backtest it again for the year, and only then
-   propose a config change. Write SETUP_REVIEW §16 and update HANDOFF.
-Goal: >= +0.15 R/trade net, 90 % CI lower bound > 0 in both half-years, >= 300 trades a year on the eight
-symbols, max drawdown <= 15 R; state the gap before and after every step. Judge by the backtester, not DEMO.
-The DEMO stack is paused and I decide when it resumes: leave DEMO out of reports and questions unless I raise
-it. Report progress every 2-3 minutes while backtests run. When my meaning is unclear, ask back; never guess.
-Full pytest/vitest only while the stack is paused.
-```
+## State at the hand-over (2026-10-14, about 17:30 Thai time)
+
+- main has 4 new commits, NOT pushed (I push myself):
+  - 33629a6: M1 scalping params atr_bars / skip_window_ny
+  - 038608b: docs/CHART_READ.md, the chart read plan (TAA-L813)
+  - e1d2635: aggressive preset for small accounts (minimum lot up to 15 % risk, leverage cap 200)
+  - da2569b: merge of the aggressive preset (PLAN §A36, TAA-1212)
+  - plus this HANDOFF rewrite
+- Uncommitted: config.yaml has the `high_risk:` block switched ON. .env has ENABLE_HIGH_RISK_PROFILE and
+  HIGH_RISK_CONFIRMATION (not in git). Ask me before committing the config.yaml change.
+- The DEMO stack (scripts\demo-tasks.ps1 -Pause / -Resume; web http://localhost:8001, engine health
+  http://127.0.0.1:8766/health) runs harmonic V1 + breakout F1 in **Aggressive 7.5 %** on the demo account
+  (~1,005 USD).
+  - Don't change anything that touches the account without asking.
+  - Pause the stack before any heavy run (npm run build, full pytest/vitest): it crashed the engine before.
+  - Remind me to pause it before I close the laptop.
+- The old worktree .claude/worktrees/agent-a8b3410ffe49fb0d1 (branch worktree-agent-a8b3410ffe49fb0d1) is
+  merged; it holds a copied .env. Ask me before removing it.
+
+## Rules that apply (CLAUDE.md + memory)
+
+- Backtest ladder: March 2026 (03-01..04-01), then August 2026 (08-01..09-01), then the full year.
+- A variant whose first run is negative is dropped. Keep only profitable ones, or the least-losing one.
+- Goal per setup: >= +0.15 R/trade net (±0.05 tolerance), 90 % CI lower bound > 0 in both halves (split
+  2026-04-09), max DD <= 15 R. The >= 300 trades/yr target is portfolio-wide.
+- One setup at a time. A losing setup gets its conditions changed, never dropped.
+- Theory 30-40 %, measured price behaviour the rest. A signal alone is not enough: trend, S/R and structure.
+- In a phase that doesn't suit a setup, it trades only its surest signals (fewer trades, not none).
+- Targeted tests + ruff/mypy per change; the full pytest + vitest suite only at the end of the setup round.
+- Changing a reason code or i18n key means updating frontend/src/i18n in the same change (run vitest files one
+  at a time: the pool crashes under memory pressure).
+- Commits: by explicit paths, one commit per finished piece is OK. Never push.
+- Machine: 16 GB. At most 3-4 backtests at once, and never next to full tests (MemoryError / paging file).
+
+## Task 1 — M1 gold scalping S1: next rung of the ladder
+
+- Config: data/research/config_scalp_s1.yaml (not in git).
+  - Entry M1, context [M15, M30, H1, H4, D1], cooldown 60 bars, 1 position per symbol, slippage 7 points
+    (approximates my gold spread of ~30 points).
+  - setup_breakout params: screen_h4/h1 "with" on tide H1 / wave M15, fade_counter_trend, no trend entries,
+    atr_bars 60, stop 2.0 x ATR(60) (the fade's stop is ~1 ATR, its target ~2 ATR), rr_target 0.5, min_rr 0.5,
+    max_sl_atr 4, skip_window_ny 08:00-12:00, friday_cutoff 16:00, time stop 60 bars, no break-even/trailing.
+- March 2026 result: 10 trades, win 50 %, PF 1.68, **+0.40 R/trade**, net +168 on 10,000, DD 0.65 %.
+  (data/backtests/inv/scalp_s1_2026-03). It passes, but 10 trades a month is very few for scalping.
+- Next: run **August 2026** with the same config:
+  ```
+  CONFIG_FILE=data/research/config_scalp_s1.yaml ALLOWED_SYMBOLS=XAUUSD MAX_ACCOUNT_DRAWDOWN_PERCENT=50 PYTHONUNBUFFERED=1 \
+  .venv/Scripts/python -m app.cli backtest --server FBS-Demo --symbols XAUUSD --start 2026-08-01 --end 2026-09-01 \
+  --strategies setup_breakout --out data/backtests/inv/scalp_s1_2026-08 --progress > data/backtests/inv/scalp_s1_2026-08.log 2>&1
+  ```
+  - One month of M1 gold takes about 1 hour.
+  - The progress line's equity can lag; trust the final summary (summary.json has signals/rejections).
+- If August holds: run the full year (2025-10..2026-09), monthly runs are OK. Judge both halves and the CI.
+- If it fails, or to raise the trade count: analyse the trades (worst 3, by NY hour, by stop/target) and the
+  rejections.
+  - Then change the conditions, guided by research/2026-10-11-pre-run/m1_scalp_study.py
+    (data/backtests/inv/m1_scalp_study_1y.txt). Only gold is viable on cost; counter-break fades inside an
+    H1+M15 trend had the edge; NY 08:00-12:00 loses.
+  - Each variant goes through March first.
+- Report as a table and keep going until it meets the goal or the levers run out (then say so and ask).
+
+## Task 2 — Chart read (docs/CHART_READ.md, ticket TAA-L813), starting with breakout F1
+
+Read docs/CHART_READ.md fully first. Decisions made (owner, 2026-10-14):
+- swings = the **MT5 standard ZigZag (Depth 12, Deviation 5, Backstep 3)**, ported with no repainting: a pivot
+  is used only once the opposite pivot has registered, from backstep bars after that;
+- the bot samples the 20 eye-check charts itself (8 symbols, M15/H1/H4, every phase, random within each
+  group, never by result); the check passes at 16/20 agreements;
+- **breakout F1 first**, then harmonic V1.
+
+Measured so far (§2, research/2026-10-14-chart-read/*.py):
+- The map state calls a trend on 17-19 % of H1/H4 bars vs ~60 % for the swings.
+- The fractal k=3 labels are ~3x noisier.
+- A trend read alone does not predict the next 24 bars (~50 %).
+- The trade splits are NOT robust: they flipped between 3xATR and MT5 12/5/3. With MT5, F1 is +0.40 R in the
+  mixed phase on H1 and H4 (n 21 / 29) and −0.12 R when H4 is against (n 25). So rules are chosen on the
+  first half only and judged on the second half + hold-out symbols (AUDUSD, XAUUSD), never off the full year.
+
+Steps, in this order (tick docs/TICKETS_LEARNING.md via `scripts/tickets.py --file docs/TICKETS_LEARNING.md`
+as items finish):
+1. **CR-1:** app/indicators/chart_read.py (pure, indicators layer) with:
+   - the MT5 ZigZag port (start from research/2026-10-14-chart-read/mt5_zigzag.py);
+   - structure (UP/DOWN/CONTRACTING/BROADENING/FLAT/NONE, invalidation, broken, age);
+   - levels with roles (SUPPORT/RESISTANCE/FLIPPED/SPENT, retests);
+   - trendline, position (retrace vs the previous leg; retrace_major vs the next-higher TF's read);
+   - events (BREAK_HOLD / SWEEP_RECLAIM / RETEST);
+   - scenario text;
+   - the `context_map.chart_read` config (extra="forbid");
+   - tests: the prefix property on random cut points, synthetic paths for each case, serialization, and the
+     architecture layer table.
+   - Check the port against MT5: the Python MetaTrader5 package cannot run indicators, so write a small MQL5
+     script that exports ZigZag(12,5,3) buffer values to CSV for a few hundred bars per timeframe. Give it to
+     me to run in the terminal, then compare (ties and equal highs are the likely differences).
+2. **CR-2:** MapBook + market document (optional key: old digests stay valid) + ctx features
+   (sw_trend, sw_phase, sw_age, sw_broken, inv_r, lvl_with_atr, lvl_against_r, lvl_flipped, tl_atr, retrace,
+   retrace_major, ev_*). Backtest runtime may grow 10 % at most.
+3. **CR-5 (F1 only):** setup params, off by default, each a Condition with TH/EN labels:
+   screen_source map|swings, structure_tf + structure_gate, mixed_rule any|surest|skip, level_gate, room_min_r,
+   stop_mode structure. API samples regenerated (TAA_UPDATE_API_SAMPLES=1).
+4. **CR-3 for F1:**
+   - Replay F1's year with the features (trades: data/backtests/inv/setup_breakout_f1_2025-10 .. _2026-09).
+   - Choose at most 3 rules on the first half and write them down before judging them on the second half and
+     the hold-out symbols.
+5. **CR-6 for F1:** the ladder (March → August → year) for the surviving variants.
+   - F1 baseline config: config.yaml setup_breakout params {screen_h4: with, screen_h1: with,
+     fade_counter_trend: true, trend_entries: false, friday_cutoff_utc: "16:00"}, risk.fade
+     {min_risk_reward: 0.2, max_sl_atr_multiple: 12}; research config data/research/config_bo_f1.yaml.
+   - Monthly results: data/backtests/inv/breakout_f1_months.md.
+   - The baseline must be matched or beaten.
+6. **CR-4 (can run next to 3-5):** the PWA overlay (pivots + labels, levels by role, trendline, invalidation,
+   scenarios; zod; TH/EN) and the 20-chart eye check with me.
+
+Before any rule changes trading: a SETUP_REVIEW section with the results, and config.yaml changed only for
+what passed (ask me first, because the DEMO bot reads config.yaml on restart).
+
+## Also open (don't start unless I ask)
+
+- Aggressive on DEMO: watch it; the drawdown kill at 60 % needs a manual reset (RUNBOOK_DEMO §6).
+- The full pytest + vitest suite at the end of the setup round, with the DEMO stack paused.
+````
 
 ---
 
-## Current state
+## Current state (2026-10-14, evening)
 
-### 2026-10-11: sleep fix, pre-run study, inverted setups measured (SETUP_REVIEW §14, TAA-L811)
+### Trading on DEMO
 
-- **Stack:** the owner resumed it 11:53 UTC; restarted 11:59 UTC for the sleep fix (`demo-tasks -Stop/-Start`).
-  Healthy: DEMO, connected, clock verified, no breakers, equity 1,014.22, one open bot position.
-- **Inverted trades on DEMO so far** (only ~3 h of trading, 10-09 13:45-16:49 UTC, before the pause): EURUSD
-  BUY 0.07 `setup_breakout_inverted` closed at **TP 1.1202 on 10-09 18:47 UTC** (while paused; booked at the
-  resume): **+$6.30, +0.45 R** of its own stop (≈ +0.91 R of the original's risk). The original SELL (shadow)
-  went +0.43 R in favour, then was stopped at 18:47 (−1.01 R). Signal context: H4/D1 neither trend nor range,
-  no zone on its side, room to the opposing zone 2.1 R (H4) / 3.1 R (D1). GBPUSD SELL 0.06
-  (`setup_breakout_inverted`, entry 1.32294, SL 1.32535, TP 1.32185) is **still open**. Shadow pairs closed on
-  the eight symbols: 3 (inverted won all three, about +0.4 R each, own risk): no evidence yet. Report script:
-  query `shadow_trades` PLAN rows of `X` and `X_inverted` on the same (symbol, timeframe, signal_at).
-  Of 12 inverted EXECUTION decisions, 2 were accepted; the rest hit MAX_TOTAL_OPEN_RISK, CORRELATION_LIMIT,
-  MAX_POSITIONS_PER_SYMBOL or RISK_BELOW_MIN_LOT.
-- **Sleep fix (012974d, PLAN §A19):** a `BrokerError` in the health step's broker reads while the link probe
-  also fails is a connection problem (CONNECTION breaker), not UNHANDLED_EXCEPTION; a restored connection runs
-  the health step (reconcile, trade booking) and the clock check at once. Tests in
-  `tests/integration/test_engine_demo.py`.
-- **Pre-run study + inverted on history (10456ea, SETUP_REVIEW §14):** sweeps, false breaks and compression do
-  not announce runs (lift ≈ 1, like a shuffled-bar random walk); the 66-69 % false-break rate is mostly
-  random-walk (66-70 %); breaks fail more in Asia/London/rollover/pre-news (72-75 %) and less at the New York
-  open (65 %), both halves. `research hypotheses --inverted` (R of the inverted trade's own risk): breakout
-  −0.002, pattern breakout −0.005, fib −0.025, elliott −0.025, candle reversal **−0.095**, neckline −0.103,
-  trend pullback −0.062, harmonic **−0.118** (CI below zero for the two in bold). The §13 estimates (+0.036 etc.)
-  were too high (INVERTED_SETUPS §4 corrected). No context rule (incl. the New York-time and pre-run features)
-  survives walk-forward + hold-out. **Gap: about +0.15 R per trade for every inverted setup.**
-- **Owner's decisions (later the same day):** switch nothing off from the harness; measure with the
-  backtester, not DEMO: per setup, two separate backtests per setup over the same period, run side by side: the original (`X`) and the inverted (`X_inverted`), each its own world with its own account (4 months,
-  2026-06-05 .. 2026-10-05, eight symbols, research config `data/research/config_paired_bt.yaml` with the
-  breakers and filters at their widest; drawdown via `MAX_ACCOUNT_DRAWDOWN_PERCENT=50` in the command's
-  environment, since `.env` sets 10). **Focus: `setup_harmonic_prz` only** (owner, 2026-10-11 21:15 Thai time): 4 months
-  (2026-06-05 .. 10-05) then the 8 months before, both worlds together; the other eight setups wait. Outputs in
-  `data/backtests/inv/` (queue in `queue.log`); analysis scripts in `research/2026-10-11-pre-run/`
-  (`two_worlds.py`, `three_screens.py`, `backtest_hypotheses.py`). Report times to the owner in Thai time.
-- **Harmonic, two worlds over a year (SETUP_REVIEW §15):** normal −0.027 R/trade (779 trades, DD 44.6 R),
-  inverted −0.133 R (CI below zero, DD 101 R). Break-even at +1 R costs ≈ 0.05 R/trade; `against_h4` phase
-  +0.15 R, `pullback` −0.38 R (small groups). Gap ≈ +0.18 R (≈ +0.11 R with break-even off). Proposals to the
-  owner: normal side, no break-even for harmonic, phase gate candidates; none applied yet.
-- **Without break-even (SETUP_REVIEW §15.1):** harmonic +0.024 R/trade (halves +0.021 / +0.028, DD 30 R) vs
-  −0.027 with it; `against_h4` +0.21 R holds on the hold-out symbols (+0.13), `pullback` −0.44. Gap ≈ +0.13 R.
-  New code: `position_management.by_strategy` (per-strategy break-even/trailing, PLAN §A11), empty in
-  config.yaml. **Owner to decide:** harmonic without break-even, harmonic on the normal side on DEMO.
-- **How to improve harmonic (SETUP_REVIEW §15.2):** H4 against/ranging +0.142 R (203/yr, DD 11.7 R, hold-out
-  +0.25); New York afternoon +0.183 R (167/yr); skip `pullback` +0.041. Next: code the phase gate, backtest in two
-  worlds, then more symbols for ≥ 300 trades a year.
-- **Refined harmonic, coded (SETUP_REVIEW §15.3), 2026-10-12:** V1 = no break-even + H4 against/ranging +
-  R:R ≤ 3: **+0.211 R/trade** [+0.04, +0.39], halves +0.23 / +0.18, hold-out +0.37, DD 8.5 R, 181 trades/yr
-  (gap: the count). PRZ confirmation rejected (−0.10). **config.yaml now:** inverted copies off,
-  `setup_harmonic_prz` enabled with `{phase_gate: h4_against_or_range, max_rr: 3.0}`, no break-even/trailing
-  for it. The backtester has the H4/D1 map since this change. Next: V1 on more symbols (out of sample, trade
-  count).
-- **The DEMO stack is PAUSED** since 2026-10-11 14:41 UTC (owner, to free memory for the backtests); one bot
-  position open at the broker (GBPUSD SELL, SL/TP set). Resume with "TAA Resume" / `demo-tasks.ps1 -Resume`.
-- **Checks:** targeted tests green (engine integration demo/paper/restart/live/commands + golden 40, research +
-  architecture 69); ruff, mypy, bandit clean. **Full pytest and vitest still due** while the stack is paused.
+- **Stack:** `-Mt5 -Demo` from Windows Task Scheduler (`scripts\demo-tasks.ps1`; desktop "TAA Pause" /
+  "TAA Resume"). Restarted 10:22 UTC with the merged code and a fresh PWA build. Demo account ~1,005 USD, no
+  open positions at the restart. Pause it before the laptop sleeps (see Gotchas).
+- **Setups trading:** harmonic V1 (`{phase_gate: h4_against_or_range, max_rr: 3.0}`, no break-even;
+  SETUP_REVIEW §15.3) and breakout F1 (fades of counter-trend breaks with the H4 and H1 trend, `risk.fade`
+  RR floor 0.2 / SL cap 12 ATR; §16). The other seven setups are off; the inverted copies were removed from the
+  code (INVERTED_SETUPS.md keeps the history).
+- **Aggressive preset ON (owner, 2026-10-14):**
+  - Switched on by `high_risk:` in `config.yaml` (uncommitted), `ENABLE_HIGH_RISK_PROFILE` +
+    `HIGH_RISK_CONFIRMATION` in `.env`, and the owner's PWA choice.
+  - The engine applies 7.5 % a trade (fades 3.75 %), 15 % open risk, 2 positions, 15 % daily loss, 35 % weekly,
+    the drawdown kill at 60 % (latched; RUNBOOK_DEMO §6), the minimum lot up to 15 % risk, and the leverage cap
+    200.
+  - Switch off: Standard in the PWA.
+- **Backtest of the preset, March 2026, 1:2000** (scratchpad runs, not kept):
 
-### 2026-10-09: setup workbench, market map, inverted setups on DEMO
+  | Account | Trades | Net | R/trade | DD |
+  |---|---|---|---|---|
+  | 50 USD | 24 | −3 % | +0.02 | 41 % |
+  | 100 USD | 25 | −1 % | +0.02 | 36 % |
 
-- **Owner decisions:** the bot trades the forex majors + gold (EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD,
-  NZDUSD, XAUUSD; `.env` `ALLOWED_SYMBOLS` overrides config.yaml and was updated too); the profit target above;
-  one setup at a time (harmonic first), then (same day) **all nine setups inverted on DEMO**.
-- **Market map (TAA-L809, PLAN_LEARNING §L20.9):** `app/indicators/market_map.py` (H4/D1 trend vs
-  consolidation, compression, range box, demand/supply zones), `app/strategy/market_maps.py` (`MapBook`),
-  `MarketContext.htf`, `ctx:h4_*`/`ctx:d1_*` features on every signal (opportunities, shadow rows, replays),
-  `timeframes.context: [H4, D1]`. Measurement only; golden unchanged. Chart: 1000 bars and
-  `GET /engines/{id}/market-map` (zones, state chips, range box); H4/D1 history uploaded to the cloud.
-  Open: the backtester path (with a gate).
-- **Research:** `research hypotheses` reads every `ctx:*` feature and has `--holdout-symbols`; the random
-  baseline is the exact mean of both directions. Harmonic on eight symbols (821 signals): **+0.02 R**
-  [-0.07, +0.11], the direction is informative (+0.16 R over the other side), no exit/stop/context rule
-  survives the hold-out (SETUP_REVIEW §11). False breaks: a close back inside a zone within 12 bars
-  **66-69 %** (M15/H1, all symbols; §12). The **pre-run behaviour study** the owner asked for (sweeps,
-  break-and-shake, compression; by session, pre-NY, pre-news, illiquid mornings; entry timing in the setup's
-  direction) is designed, **not started**.
-- **Inverted setups (docs/INVERTED_SETUPS.md):** `app/strategy/inverted.py`; `risk.inverted` (min RR 0.2, SL
-  cap 12 ATR, `INVERTED` signals only; the profile min RR does not apply); originals `enabled: false`; never
-  advised to users. History estimate (both spreads, R of the original risk): breakout +0.036, pattern breakout
-  +0.059, fib +0.055, harmonic -0.20. On DEMO since 2026-10-09 13:45 UTC: first trade EURUSD BUY 0.07
-  (`setup_breakout_inverted`, entry 1.1193, SL 1.1173, TP 1.1202; it missed TP by 0.3 pip several times),
-  second GBPUSD SELL 0.06. **The owner asked for a summary of the EURUSD trade when it closes** (any result).
-- **Pause/resume (`scripts\demo-tasks.ps1 -Pause/-Resume`, desktop "TAA Pause"/"TAA Resume"):** stops the
-  stack and keeps it stopped (part tasks + check disabled, `data/demo/paused.json`) until resume. Tested both
-  ways on 2026-10-09.
-- **Incident:** UNHANDLED_EXCEPTION tripped three times on 10-09 (DB locked 01:34, MT5 "No IPC connection"
-  07:22 and 12:15 after the laptop slept) and **latched**; reset by hand with the owner's approval (audited).
-- **Checks:** targeted suites green (unit + backtest + golden + scanner/shadow/engine integration + web, about
-  2,700 tests; PWA sample-based tests 271, lint, typecheck); ruff, mypy, bandit clean. **Full pytest and vitest
-  are due** while the stack is paused.
+  Harmonic lost in March; gold rarely fits 15 % at 50 USD. Ruin table: PLAN §A36 (7.5 % → P(kill) 54 %; 5 % → 9 %).
 
-- **Done:** Phases 0–10, 2A, 6A–6C, 8A, 12 (DEMO), **14 except the owner's part** (1401 live gate wiring, 1402
-  security review, 1403 drills automated; 1404 final docs pass started) and **13** (1301 AI interface,
-  1302 Anthropic provider, 1303 veto, 1304 AI page and narrative, 1305 AI on advisory). Revisions 5 (owner's profile drives
-  the engine's risk) and 6 (manual trades matched to signals, TAA-1006) are done.
-- **Also done 2026-10-06/07:** TAA-1207 (split entries), TAA-1404 (final docs pass), the MT5 client fix
-  (964221a), the backtest evidence fix (a384617), `scripts\demo-tasks.ps1`, revision 7 (PLAN §A35),
-  **TAA-1208** (the bot's closed broker trades on Trade history; see below).
-- **Not started / open:** the setup review's follow-ups (Next work 1-5), TAA-1209, Phase 16 (AI analyst),
-  Phase 11 Railway (deferred), TAA-1403's last item (the owner repeats the drills on the LIVE machine),
-  Phase 15 (deferred).
-- **Checks (2026-10-06, stack stopped):** full pytest **2791 passed, 7 skipped** (10 min); vitest 526; Playwright
-  smoke 3; ruff, mypy, bandit clean; `pip-audit` and `npm audit` clean.
-- **Git:** `main` only; the user pushes. Latest migration: **0043** (`shadow_entry_modes`, TAA-L702; 0042 `broker_trades`, TAA-1208).
-- **The `-Mt5 -Demo` stack** runs from Windows Task Scheduler since 2026-10-07 05:30 UTC (`scripts\demo-tasks.ps1`,
-  registered by the owner): "TAA Demo web/worker/engine" at logon plus "TAA Demo check" every 5 minutes. Use
-  `-Stop` / `-Start` around restarts; it no longer dies with an assistant session. Until 2026-10-07 `-Stop`
-  only stopped the tasks and left their python processes running (a `-Start` then would have run a second
-  DEMO engine); now it ends each part's process tree and disables "TAA Demo check" until `-Start`.
-  Restarted 2026-10-07 09:48 UTC for 0042/0043 (pre-restart DB backups were taken first).
-  **Incident 2026-10-07 15:41 UTC:** a full vitest run + build next to the stack and two replays exhausted memory;
-  SQLite `disk I/O error`, a stop signal, and the engine wrote heartbeat "stopped", so the check left it down
-  (~6 min, until a planned restart). Now such a stop writes "failed" and is restarted (PLAN §A19). Never run
-  full test suites while this stack runs.
+### Setup round (CLAUDE.md "Setup work")
 
-### TAA-1208: the bot's closed broker trades on Trade history (2026-10-07)
+| Setup | State | Result (year unless noted) |
+|---|---|---|
+| harmonic V1 | passes, trading | +0.211 R/trade, 181/yr, halves +0.24 / +0.18 (§15.3) |
+| breakout F1 | passes, trading | +0.159 R/trade, 99/yr, halves +0.16 / +0.16 (§16) |
+| M1 gold scalping S1 (breakout fade on M1, screens H1/M15) | March passed | +0.40 R, 10 trades; next: August (prompt, task 1) |
+| the other seven setups | waiting | one at a time, after the current work |
 
-- The owner compared Trade history with the MT5 History tab: in DEMO the page showed only paper trades. Now
-  `BrokerTradeBook` books each closed bot position from its MT5 deals into `broker_trades` (PLAN §A15
-  "TAA-1208 decisions") and the page shows "Bot trades on the demo account" above the paper trades.
-- Checked on a copy of `data\demo\engine-mt5.db` against the demo terminal (read-only): 13 trades booked, each
-  profit equal to the terminal's, total net −39.96 (the bot's part of the balance).
-- Same comparison, not bugs: the terminal's Profit column leaves out swap (GBPUSD manual −13.80 + swap −0.12 =
-  −13.92 in the PWA). Fixed the same day: manual trades that opened and closed while the engine did not
-  watch are linked from the deal history (**TAA-1007**; the BTCUSD −13.95 and EURUSD 1 lot +119 of 10-05
-  appear after the next engine restart); the engine label is "mt5 demo" (`app.cli web engine rename`, and
-  `scripts\start-demo.ps1` no longer names a mode); **TAA-1210**: analytics scope DEMO, broker trades on the
-  chart and in the manual "bot" column; **TAA-1211**: the bot's open broker positions in the heartbeat, on the
-  Positions page (with the step-up close) and as chart lines. (The `/account` realized-equity curve still sums
-  paper trades, but no PWA page reads it.)
-- **TAA-925** (same session): the chart opened from a signal starts focused (the plan plus its 3 best
-  supporting evidence items, no S/R zones, invalidation levels behind a toggle, per-item evidence list, near
-  lines merged), and a data refresh no longer resets the chart shift, a hand-set price scale or pane heights.
-- **Checks still due for this session's work:** the full pytest + vitest runs have not been repeated since
-  TAA-1007 (TAA-1007, the engine rename, TAA-1210, TAA-1211 and the "failed" heartbeat ran targeted tests
-  only, all green, plus ruff/mypy/bandit). Run both, one after the other, with the stack stopped and no heavy
-  replays running (memory: see the 15:41 UTC incident above).
+- **Chart read (TAA-L813, docs/CHART_READ.md):** a planned major change, nothing built; next session task 2.
+- **Confluence direction (TAA-L812, docs/CONFLUENCE_DIRECTION.md):** waits for the chart read.
 
-### Edge work, 2026-10-07 afternoon (this session; docs/SETUP_REVIEW.md §8, PLAN_LEARNING §L19.3, §L19.8)
+### Code and checks
 
-- **H1 leads (SETUP_REVIEW §8):** on H1 almost every rule is positive in Oct-Mar and negative in Apr-Oct; the
-  half-year moves results more than any rule. Honest walk-forward of the best H1 rule: +0.069 R [−0.06, +0.21]
-  (not an edge). **Robust lever:** retest + stop beyond the noise improves the *same* breakout signals by
-  ≈ +0.10 to +0.14 R per signal (paired) in both halves, M15 and H1; it removes most of the loss, it does not
-  add a gain (M15 absolute ≈ 0). For pullback-type setups (fib, elliott) a second wait on H1 hurts.
-- **TAA-L707 done:** `python -m app.cli research hypotheses --strategy NAME --from "data/research/fam_*.db"`
-  and `research replay-family NAME ...` (idle priority, free-commit guard). Matches stored `r_net` with
-  correlation 1.000 on the year of replay. Outputs saved in `data/research/l707_*.txt`.
-- **TAA-L702 parts 1-2 (items 3, 7, 8 ticked):** shadow variants `PULLBACK`, `WIDE_STOP`, `PULLBACK_WIDE`
-  (PENDING → OPEN/MISSED for limits), live tracker + replay, migration **0043**, stats + `GET /engines/{id}/
-  learning/entry-modes`. **Enabled in config.yaml** (shadow only) and the stack restarted 2026-10-07 14:00 UTC:
-  the DEMO engine now records the three variants for every opportunity. The production code reproduces the
-  harness on H1 breakout (paired +0.060 / +0.077 / +0.115 R). Open in L702: `LTF_TRIGGER`, opposite-signal
-  cancel while waiting, tier-1 M1 budget, failure-mode mix. §L19.7: a variant needs paired CI > 0 over
-  ≥ 200 LIVE opportunities before L706 may use it.
-- **Scale-in evidence for TAA-1209 (M15 breakout, harness):** a limit part 0.5 R deep with the plan's stop
-  gives **−0.234 R** (market −0.149 R), both halves; with the stop at 2 R −0.065/−0.095 R. Spacing alone does
-  not fix scale-in; the stop does. Recommended again: a single entry until a wide-stop policy wins in shadow.
-- **Heavy family, first pair done (SETUP_REVIEW §9):** EURUSD/GBPUSD finished 2026-10-07 19:48 UTC.
-  setup_pattern_breakout −0.222 R (n = 901, both halves negative, direction worse than random, like
-  setup_breakout); setup_harmonic_prz +0.050 R [−0.09, +0.19] (n = 272, halves +0.15 / −0.06) is the only setup
-  whose direction carries information (+0.22 R over the other direction in both halves), but no edge is shown
-  and a wider stop does not help it; candle_reversal −0.098 R; neckline 89 signals. No rule survives
-  walk-forward. The research "random direction" is now the exact mean of both directions (04dcee8).
-- **Single entry (owner, 2026-10-08):** `execution.entry_plans: false` in config.yaml (d400514): the engine sends
-  one order per signal whatever the PWA profile says (it still shows SCALE_IN 5 parts; the owner may set it to
-  Single in the PWA for consistency). The engine loads it at the next stack start: the -Mt5 -Demo stack was
-  **stopped** on 2026-10-08 ~00:25 UTC (the owner travels; "TAA Demo check" disabled): start it with
-  `scripts\demo-tasks.ps1 -Start`.
-- **USDJPY/XAUUSD heavy replays** started 2026-10-07 19:48 UTC (`run_heavy.sh`), set to Idle priority by hand,
-  ~2,000 bars/h of 24,081: expected ~08:00 UTC 10-08 if the machine stays on. If they were cut short, rerun
-  with `python -m app.cli research replay-family heavy --symbols USDJPY,XAUUSD --strategies
-  setup_pattern_breakout,setup_neckline_break,setup_harmonic_prz,setup_candle_reversal --detectors <the list in
-  run_heavy.sh>` (idle priority and memory guard built in), then rerun §9 on all four symbols.
-- **Checks of this work:** ruff, mypy (app), bandit clean; the related pytest sets (~400 tests: research,
-  entry modes, shadow tracker, replay, golden, storage/migration parity, postgres migrations, replication,
-  learning and advisory APIs, API samples) and the full vitest (64 files, 554 tests) passed. **The full pytest
-  suite was not run** (the heavy replays held the memory): run it once they finish and the machine is quiet.
-- Lessons: a new shadow status needs `SHADOW_STATUSES` in `frontend/src/i18n/codes.ts` (fixed in f86dbc6); the
-  research loaders select columns, not the entity, because scratch replay databases keep their old schema.
-- The stack was restarted twice on 10-07 afternoon: 14:00 UTC by this session (config with the entry modes)
-  and 14:12 UTC by the other session (TAA-1007), both with `scripts\demo-tasks.ps1 -Stop` / `-Start`.
-
-### Setup quality review, 2026-10-07 (docs/SETUP_REVIEW.md; the owner's question: why do the setups lose?)
-
-One-year `advisory replay` (2025-10-15..2026-10-05, EURUSD/GBPUSD/USDJPY/XAUUSD, net of costs, hypothetical).
-Results in `data/research/fam_*.db` (git-ignored), scripts in `research/2026-10-07-setup-review/`.
-
-| Setup | M15 entries, mean R | H1 entries (H4 bias), mean R | Note |
-|---|---|---|---|
-| setup_breakout | −0.154 (3,750/yr) | −0.081 (1,141/yr) | 74 % of all M15 signals |
-| setup_fib_pullback | −0.163 (378) | +0.125 (114; halves −0.15 / +0.37) | not stable yet |
-| setup_elliott_wave | −0.075 (552) | −0.083 (171) | no edge |
-| example_trend_pullback | +0.03 (55) | −0.38 (23) | too few |
-| setup_smc_reversal | 1 signal a year | — | conditions too strict |
-| pattern_breakout, neckline, harmonic, candle_reversal | replay running (`fam_heavy_*`) | — | see Next work 1 |
-
-What explains the breakout losses (M15): the stop sits inside the noise (55 % of stopped trades reached their
-target later; 43 % of losers were +0.5 R first); the costs take ~0.07-0.08 R per trade (random direction:
-−0.08 R); the M15 break direction is worse than random (fade −0.01 R); a retest entry with the plan's stop is
-worse (deeper fills win 9-20 %); single context rules do not survive walk-forward. **What helped:** a retest
-of 0.5-1 R with a stop 2.5-3 R from the signal's entry (M15: about 0 to +0.02 R, both halves); on **H1** the
-same idea gave **+0.074 R** [−0.00, +0.15] (Oct-Mar +0.14, Apr-Oct +0.01) and a twice-wider stop +0.03 R. No
-edge is proven yet; these are the leads. Harmonic detections are plentiful (EURUSD M15 ~9.5 a week pass the
-setup geometry; looser swings/tolerance or M5 give 2-7×), so their replay will have enough samples.
-
-The live DEMO plans showed the scale-in flaw (TAA-1209): 0.5 ATR spacing on a 1.5 ATR stop puts the limit
-parts into the noise under the stop (GBPUSD parts with 7.2/4.1/1.1 pip stops; USDJPY three parts stopped
-within 51 minutes). **Recommended to the owner: a single entry until TAA-1209**; his PWA profile still says
-SCALE_IN 5 parts.
-
-### Learning track, started 2026-10-06 (Milestone 3; `docs/PLAN_LEARNING.md`, `docs/TICKETS_LEARNING.md`)
-
-- Design: 52 tickets in waves 0–9; the reasoning of the design conversation is in
-  `docs/LEARNING_DISCUSSION.md`. New work stays separate from the existing process (§L0.2).
-- **TAA-L901 (Wave 0, a fix for today's engine):** stable magic numbers (`app/engine/magic_registry.py`,
-  migration 0038). Before, magic = base + index of the *enabled* strategies, so enabling/disabling/reordering a
-  strategy with open positions re-mapped them; the loss tracker now counts the whole bot range.
-- **TAA-L002:** golden harness `tests/golden/` (backtest trades, replay shadow trades, PAPER engine decisions
-  and positions). Regenerate only on purpose with `TAA_UPDATE_GOLDEN=1` and review the JSON diff.
-- **Wave 1 reports:** `app/learning/` (timing failure modes vs a random-walk baseline, the E[R] = p·W −
-  (1 − p)·L − c split, manual-trade behavior) served on request by `GET /engines/{id}/learning/timing|
-  expectancy|behavior` and the new PWA page **Learning** (Analysis group). Open in Wave 1: timing for manual
-  trades (L701 item 8) and the stop history of manual positions (L808).
-- Checks after these commits: unit 2351 + web 312 + golden 3 + engine integration 48 passed; vitest 535,
-  lint, typecheck, build; ruff, mypy, bandit clean. The full pytest run with the stack stopped is still due.
-- **TAA-L001 done** (`app.cli ticks probe`, read-only): FBS has no depth of market, `last`/`volume` are always
-  0, ~58% of EURUSD ticks change neither bid nor ask (flag 96 alone; filter them), XAUUSD tick history ≥ 12
-  months. Next: tick capture (TAA-L101…). Open questions Q2–Q8, Q12 in `docs/PLAN_LEARNING.md` §L18.
-
-### TAA-1207: the bot sends split entries (2026-10-06, evening)
-
-- The Trading profile's "Splitting an entry" now drives the bot (PLAN §A31 "TAA-1207 decisions"): the plan
-  rides on the risk-profile document; `execution.entry_plans: true` in `config.yaml` (code default off).
-  Owner's choice in the PWA: Scale in, 5 orders, equal weights, 0.5 × ATR, 0.01 lot per tap.
-- Owner decisions: one plan = one trade for "Positions at the same time" and the per-symbol limit; heat sums
-  every part including resting limits; unfilled limits live 4 h (16 × M15), and are cancelled when the
-  market part closes, on any kill switch and before the Friday cut-off.
-- DEMO: market part first, limits (BUY_LIMIT / SELL_LIMIT, same SL/TP, broker-side expiration +5 min) only
-  after it is protected; `app/engine/plan_supervisor.py` follows them; the reconciler knows resting orders;
-  SAME_PRICE parts go to break-even once one part has closed. PAPER mirrors it. FakeMT5 emulates pending
-  orders. `demo-report` adds "no limit part left past its lifetime".
-- **Checked on the FBS demo terminal (order_check only, 2026-10-06):** EURUSD, GBPUSD, USDJPY and XAUUSD
-  accept a BUY_LIMIT with RETURN, FOK or IOC filling, with or without `ORDER_TIME_SPECIFIED`
-  (`expiration_mode` 15). The engine uses RETURN + the broker expiration.
-- **Critical fix found on the way (964221a):** `MT5Client.call` passed an empty `**kwargs` to the C module, and
-  the real `order_check` / `order_send` then answer None with (-2, "Unnamed arguments not allowed"). **No DEMO
-  order ever reached the broker before 2026-10-06 12:48 UTC**: the 5 accepted signals of the morning were
-  REJECTED at `order_check`. FakeMT5 cannot show this; the opt-in contract test
-  `TAA_MT5_TESTS=1 TAA_MT5_TRADING_TESTS=1 pytest -m mt5 -k order_check` (DEMO, order_check only) does.
-- The `-Mt5 -Demo` stack was restarted at ~12:48 UTC with TAA-1207 and the fix (web, worker, engine; no open
-  positions). The engine reports the owner's plan (cloud profile: SCALE_IN, 5 parts, 0.01 lot, 0.5 × ATR).
-- **First real plan, 2026-10-06 13:00 UTC:** USDJPY SELL, market part 0.07 filled and PROTECTED, 3 SELL_LIMIT
-  parts of 0.07 resting with the same SL/TP, magic 7310005, broker expiration 17:05 UTC (engine cancel 17:00);
-  the 5th part was dropped (its level reached the stop). Its limits were cancelled within a minute when the
-  market part closed (13:53 UTC); a GBPUSD plan filled two limit parts (both PROTECTED).
-- **Incident 2026-10-06 16:54 UTC:** `sqlite3.OperationalError: disk I/O error` on the engine database (drive C
-  briefly full while four replays, a test run and an M5 download ran at once; 3.5 GB free again on 10-07).
-  UNHANDLED_EXCEPTION tripped and blocked entries; the engine later died with the session reset and the stack
-  was restarted on 2026-10-07 ~04:47 UTC. `pragma quick_check` ok; the breaker closed by itself once healthy.
-  USDJPY's resting limits expired at the broker meanwhile (the broker-side backstop worked) and were recorded
-  EXPIRED on restart. **The stack dies when the Claude Code session resets:** check health after every reset.
-- **Setup quality review (owner, 2026-10-07):** losses are a setup question. First day: the two breakout losses
-  never went in favour (MFE 0.00R), pattern_breakout targets averaged 3.1R against an MFE of 0.9R in shadow,
-  and HTF-aligned shadow trades did worse (7 % wins) than the others. To test on a year of history, one-year
-  `advisory replay` runs per setup family (M5 history downloaded for the four symbols); a fix found on the way:
-  `backtest` never ran evidence, so the pattern setups could not fire in a backtest (a384617).
-
-### What this session added (2026-10-05/06)
-
-- **Revision 5 (PLAN §A33):** the owner's Trading profile drives the engine's risk inside the `config.yaml` cage
-  (TAA-408 ceiling 3 %, TAA-710, TAA-924). Cage now 2 % / 4 % heat / 4 % daily / 8 % weekly (`.env` no longer
-  overrides it). The scanner sizes the owner's lots with the profile too (without min RR).
-- **Revision 6 (PLAN §A34, TAA-1006):** manual MT5 trades matched to the signals they followed (HIGH / LIKELY /
-  UNMATCHED), the owner's correction, closed manual trades compared me / signal / bot in R.
-- **Phase 10:** TAA-1004 recommendations (bootstrap CI, A16 rules, "Backtest this change" as a bounded job
-  change), TAA-1005 analytics API and page (scopes PAPER / SHADOW / BACKTEST).
-- **Phase 14:** LIVE path behind its gate (TAA-1401: flag, account-bound phrase, REAL account, gate per decision
-  and before `order_send`, probation, banner, `LIVE_START` audit); `docs/SECURITY_REVIEW.md`; `db backup` /
-  `db restore`; LIVE drills on FakeMT5; `docs/RUNBOOK_LIVE.md`.
-- **Phase 13:** AI review (`app/ai/`): schema v1.0, Anthropic provider (`beta.messages.parse`,
-  `claude-opus-5-5`, low effort, `fallbacks: "default"`), veto/advisory gate after all other checks (can only
-  block), per-candle cache, daily budgets (`config.yaml` → `ai`), AI review page. `AI_PROVIDER=none` by default.
-  TAA-1305 (2026-10-06): `ai_notes` (migration 0040) — the engine writes an opinion per new opportunity and
-  TH/EN narratives of the ranking and recent shadow results on a background thread (`ai.advisory`, off by
-  default, own budget); the PWA shows them labelled "AI opinion, not advice" (opportunity detail, Ranking,
-  Analytics), the AI page shows accuracy/calibration, and alert settings have the opt-in AI filter (offered
-  only once AGREE beats all opportunities, bootstrap CI). Gated by `AI_NARRATIVES`. PLAN §A8 TAA-1305 notes.
-- PWA: chart follows the newest bar, strength-styled S/R zones; dashboard open opportunities and signal track
-  record; live candle ≈ one heartbeat per second (per-detector pulse).
+- **Git:** `main`; the owner pushes. Not pushed: 33629a6, 038608b, e1d2635, da2569b and this HANDOFF commit.
+  Latest migration **0043**.
+- **Checks:**
+  - Since the last full run (2026-10-06: pytest 2791 passed, vitest 526) every change ran targeted tests only,
+    plus ruff, mypy, bandit and the frontend typecheck.
+  - The full pytest + vitest suite is due at the end of the setup round, with the stack paused.
 
 ## Next work
 
-The order below aims at an edge first (the owner's target above); LIVE stays the owner's decision.
-
-1. **Harmonic V1 on more symbols** (SETUP_REVIEW §15.3): out-of-sample check and the trade count (181 → ≥ 300 a
-   year); then the owner decides the next setup.
-2. **Confluence direction** (TAA-L812, plan in `docs/CONFLUENCE_DIRECTION.md`): Path A after the two-world runs.
-3. DEMO keeps trading the inverted copies as a live check only. (Done 10-11: the EURUSD summary, the sleep fix,
-   the pre-run study parts 1-2.)
-4. **A new lever, not a new side** (SETUP_REVIEW §14): the cost share (H1/H4 entries, wider structures) and the
-   setups whose direction is informative (harmonic variants: swing size, tolerance, nearer targets; L810).
-5. Inverted-trade exits (TP minus a spread buffer, break-even, time stop): history shows no exit rule that holds
-   for the inverted breakout (`l811_breakout_M15_inverted.txt`); the owner said to watch DEMO first.
-6. Full pytest + vitest while the stack is paused.
-7. PWA "Pause" button (resume cannot be in the PWA: the web stops with the stack).
-8. TAA-L702 open items, the TAA-L810 hook H1 gate (only once a context rule holds), TAA-L803
-   `setup_failed_break`.
-9. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
-   explicit go-ahead. Never enable LIVE on the owner's behalf. Phase 11 Railway skipped; a Windows VPS for
-   24/5 DEMO is the owner's option (the laptop travels).
-
-### Why the real stack shows little data (explained to the user on 2026-10-05)
-
-- **No paper trades yet:** every EXECUTION decision was refused with `MAX_TOTAL_OPEN_RISK` and
-  `LEVERAGE_LIMIT` because of a manual 1.0-lot EURUSD trade on a ~$1,000 account (15% heat, 113x). That trade
-  has since been closed (effective leverage 0 at the end of the session). The user may still choose
-  `risk.foreign_positions_policy` or a separate bot account (see "Decisions the user may want to revisit").
-- **No alerts yet:** the alert metric is win probability ≥ 55%, but the calibration version was built before
-  any shadow trade closed (0 outcomes), so every opportunity reads "insufficient data". It rebuilds daily
-  (after `advisory.calibration.nightly_hour_utc`); switching the metric to setup strength in the alert
-  settings gives alerts meanwhile. Offered to the user, not changed.
-- **No sizing money in alerts:** the owner's account profile is not set (`/account` → save "My engine's MT5
-  account").
-
-### Notes for the remaining tickets
-
-- **APIs the pages read** (all under `/api/v1`):
-  - Session `/auth/session|login|logout|step-up|profile`; `GET /me/feed` (`own` false = the owner's market
-    feed, account details redacted).
-  - Live data: `GET /engines/{id}/stream` (SSE; topics status, quotes, positions, notifications, decisions);
-    the status topic carries every heartbeat (now ~1/s).
-  - Owner: status, account, positions, trades, intents, decisions, breakers, kill-switch, symbols, candles,
-    config, audit/verify, commands, engines, backtests.
-  - Advisory: ranking, opportunities, shadow-trades, accuracy (`?mine=true`), threshold-explorer,
-    theory-scoreboard, calibration, entry-plan/preview; `/advisory/preferences|watchlists|favourites|
-    detectors`.
-  - Me: notifications, push, preferences; `/me/alerts|entitlements|account-profile|export|erase`; admin
-    `/admin/users|plans`, `/admin/users/{id}/entitlements|plan|overrides/{key}`.
-- The preferences document has one schema and query (`src/pages/watchlists/schemas.ts`, `hooks.ts`):
-  `usePreferences`, `useFavourites`, `useSaveSections` (re-reads, then PUTs the whole document).
-- Engine-wide account data for pages: `useEngineStatus().data.heartbeat.account` (paper book, limits,
-  `foreign_positions`, `broker_account`, `effective_leverage`).
-- Routes with a detail param: `DETAIL_PARAM` in `src/app/routes.tsx` (`/opportunities/:opportunityId`).
-  Only `analytics` is still a `PlaceholderPage`; the shell tests use `/analytics` as their widget-free page,
-  so move them when TAA-1005 builds it.
-- **TAA-1004 preparation:** fills store no entry context; callers pass an `EntryContext` per signal id
-  (`context_from_decision`). For backtests, `BacktestEngine` must keep the selected signal's `MarketContext`
-  (or decision record) by signal id: a small change in `app/backtest/engine.py`. Until exit-time facts and
-  news overlap are supplied, LOSS_REGIME_SHIFT, LOSS_VOLATILITY_SPIKE and LOSS_NEWS_PROXIMITY never fire.
-- **TAA-1005:** `analytics.attribution.<CODE>` needs TH/EN texts in `frontend/src/i18n/`; reuse
-  `SeriesChart` (`src/pages/backtests/SeriesChart.tsx`) for equity/drawdown, as the accuracy page does.
-- A new replicated table needs a sample row in `tests/sync_data.py` (a test enforces it).
+1. M1 gold scalping S1: August 2026, then the year (prompt, task 1).
+2. Chart read CR-1 → CR-6 for breakout F1, then harmonic V1 (prompt, task 2).
+3. The remaining seven setups, one at a time (owner picks the order).
+4. Aggressive preset follow-ups:
+   - whether the advisory scanner sizes with the preset (now always STANDARD);
+   - cloud backtest jobs for the preset (refused now);
+   - the margin-level vs utilization mismatch: `max_margin_utilization_percent` 30 lets the lot grow until the
+     margin level is ~333 %, below `min_margin_level_percent` 500, so a trade is rejected instead of cut
+     further; it matters at 1:100, not at 1:2000.
+5. Optional: a backtester spread floor (gold 30, currencies 10 points), so backtests use the owner's real costs.
+6. Full pytest + vitest with the stack paused; PWA "Pause" button; TAA-L702 open items; TAA-L803.
+7. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
+   explicit go-ahead. Never enable LIVE on the owner's behalf; the aggressive preset refuses LIVE in code.
 
 ## Local environment
 
-- **Demo stack** (`scripts\start-demo.cmd`, details in the script header): web + worker + PAPER engine, each in
-  its own window.
-  - Default: FakeMT5 engine, web `http://127.0.0.1:8000`, `data/taa_cloud.db`, engine `fake demo` in
-    `.env.demo`. It shares `data/heartbeat.json` and the kill-switch file with a real engine.
-  - `-Mt5` (the user's preferred way to look at the app): PAPER on the real MT5 terminal (FBS demo account),
-    web `http://localhost:8001` with its own database `data/demo/cloud-mt5.db`, engine `mt5 demo (paper)` in
-    `.env.demo-mt5`, health `http://127.0.0.1:8766/health`. Both stacks can run at once. It was running at the
-    end of this session (web and engine restarted with the latest code).
+- **Demo stacks** (`scripts\start-demo.cmd`, details in the script header):
+  - Default: FakeMT5 PAPER engine, web `http://127.0.0.1:8000`, `data/taa_cloud.db`, `.env.demo`.
+  - `-Mt5 -Demo` (the one in use): the real MT5 terminal and FBS demo account, DEMO orders
+    (`TRADING_MODE=DEMO`, `ENABLE_DEMO_TRADING=true` set for that process only; `.env` keeps PAPER), web
+    `http://localhost:8001` with `data/demo/cloud-mt5.db`, engine db `data/demo/engine-mt5.db`, health
+    `http://127.0.0.1:8766/health`, config generated at every start from `config.yaml` into
+    `data/demo/config.demo-mt5.yaml`.
   - Web user `aomkuma` (OWNER) in both databases; `app.cli web reset-password` resets it.
-- **MT5:** a dedicated portable terminal at `C:\MT5\taa-bot`. `doctor` passes (warning: Algo Trading off).
-  Demo account: USD, 1:200, hedging, ~$1,105 equity; the user also trades it by hand (manual positions are now
-  shown in the PWA). `.env` has `TRADING_MODE=PAPER`; DEMO orders need `TRADING_MODE=DEMO` +
-  `ENABLE_DEMO_TRADING=true` and `docs/RUNBOOK_DEMO.md`. The `-Mt5 -Demo` stack sends real DEMO orders (market
-  and limit parts) since 2026-10-06 12:48 UTC. Its `Bases` folder is a junction to `D:\MT5	aa-bot-Bases`.
+- **MT5:** a dedicated portable terminal at `C:\MT5\taa-bot` (its `Bases` is a junction to D:). The owner also
+  trades the demo account by hand (manual positions show in the PWA).
+  - **Spreads on the owner's account:** gold ~30 points, currencies ~10.
+  - **The owner's real account** (not connected): 50-100 USD at 1:2000.
+- **History:** `data/history/FBS-Demo/<symbol>/{M1,M5,M15,M30,H1,H4,D1}.parquet`, 2025-10 .. 2026-09, for the
+  8 symbols; gold M1 covers the whole year.
+- **Research:** configs `data/research/config_*.yaml` (not in git); backtest outputs `data/backtests/inv/`;
+  scripts `research/2026-10-11-pre-run/`, `research/2026-10-14-chart-read/`.
 - **PostgreSQL 16** (service `postgresql-x64-16`, shared with other projects): role `taa`, database
   `taa_test`, URL `TAA_POSTGRES_URL` in `.env`. Never touch other projects' databases; never clean up
   databases by `LIKE` pattern (`_` is a wildcard).
-- **Browsers:** Google Chrome and Edge are installed; Playwright drives Chrome (`channel: 'chrome'`), and
-  `npx lighthouse@12` works with `CHROME_PATH` set to Chrome (retry once on `NO_NAVSTART`).
+- **Browsers:** Chrome and Edge; Playwright drives Chrome (`channel: 'chrome'`).
 
 ## Gotchas
 
-- **2026-10-09:** a laptop sleep drops the MT5 IPC link; three UNHANDLED_EXCEPTION trips in a day **latch** the
-  breaker (manual `breaker reset` with `ENGINE_DB_URL=sqlite:///data/demo/engine-mt5.db`, owner's approval).
-  Pause the stack before closing the laptop. `.env` `ALLOWED_SYMBOLS` overrides `symbols.allowed`.
-- Tests that read the repo's `config.yaml` (doctor, scanner, strategies API, catalog tests) break when it
-  changes: rerun them after every config edit. FakeMT5's factory broker serves `FACTORY_SYMBOLS` (ALL_SYMBOLS +
-  the extra majors) so `doctor --fake` passes on the eight-symbol config; catalog-shaped tests keep ALL_SYMBOLS.
-- Research loaders select columns, not ORM entities: scratch replay databases keep their old schema.
-- Bash heredocs/printf eat backslashes in Windows paths (`\t`, `\U`): write such files with the Write tool.
-
-- **Disk and memory (2026-10-07):** drive C has ~18 GB free since the bot terminal's `Bases` (4.5 GB) moved to
-  `D:\MT5	aa-bot-Bases` behind a junction at `C:\MT5	aa-bot\Bases` (D has ~200 GB). The page file is a fixed
-  2 GB on D, so the commit limit is ~17.8 GB: four replays with the chart detectors ran out of commit memory
-  (PowerShell OutOfMemory). Run heavy replays two at a time, at idle priority (they otherwise slow the DEMO
-  engine's loop), and never next to a full test run. A full drive C on 2026-10-06 gave the engine
-  `disk I/O error` and an UNHANDLED_EXCEPTION trip.
-- Asking MT5 for old ticks (`copy_ticks_range`) makes the
-  terminal download whole months into `C:\MT5	aa-bot\Bases\<server>	icks` (~40–60 MB per month and
-  symbol). An uncapped depth search filled the drive once; `ticks probe` is now capped with a free-disk
-  guard. Keep any backfill bounded. The tick months deleted that day (before 2026-09) may read as empty until
-  the terminal is restarted (its cache index still lists them).
-- **Memory (16 GB):** full pytest + vitest at once, or either next to the demo stack, crashes workers (vitest
-  exit 134, numpy `ArrayMemoryError`, pandas access violations, argon2 `HashingError`). Run them one after the
-  other; with the stack up use `npx vitest run --maxWorkers=2`; rerun a lone failure before investigating.
+- **Backtests:**
+  - `CONFIG_FILE` picks the config.
+  - `MAX_ACCOUNT_DRAWDOWN_PERCENT=50` in the command's environment (`.env` sets 10).
+  - `ALLOWED_SYMBOLS` for symbols outside `symbols.allowed`; without it: SYMBOL_NOT_ALLOWED.
+  - `PYTHONUNBUFFERED=1` to see progress.
+  - `--symbols` is comma-separated.
+  - A bar touching both levels counts as the stop.
+  - `--preset aggressive --risk R --balance B` for the aggressive preset (local CLI only).
+  - A worktree has no `data/` or `.env`: pass `--data C:/Users/korap/taa/data/history` and copy `.env`.
+- **Memory (16 GB, commit limit ~17.8 GB):**
+  - At most 3-4 backtests at once; heavy replays two at a time at idle priority.
+  - Never run full test suites next to the stack: on 2026-10-07 that crashed the engine (SQLite
+    `disk I/O error`).
+  - Run vitest files one at a time when the machine is busy (workers die with exit 3221226505).
+  - `npm run build` with the stack paused.
+- **Laptop sleep** drops the MT5 IPC link; three UNHANDLED_EXCEPTION trips in a day **latch** the breaker
+  (manual `breaker reset` with `ENGINE_DB_URL=sqlite:///data/demo/engine-mt5.db`, owner's approval). Pause the
+  stack before closing the laptop.
+- **`.env` overrides `config.yaml`:** `ALLOWED_SYMBOLS` overrides `symbols.allowed`.
+- **Tests that read the repo's `config.yaml`** (doctor, scanner, strategies API, catalog tests, the API samples)
+  break when it changes: rerun them after every config edit.
+  - Regenerate the samples with `TAA_UPDATE_API_SAMPLES=1 pytest tests/web/test_api_samples.py`.
+  - A new strategy parameter changes the samples too.
 - **Heartbeat schema is strict** (`extra="forbid"`): when the engine's heartbeat gains a field, restart the
-  **web** first, then the engine, or the cloud refuses the heartbeats.
-- Changing `config.yaml` values that `/engines/{id}/config` shows changes the `engines/ENGINE/config` API
-  sample: regenerate with `TAA_UPDATE_API_SAMPLES=1`.
-- Web Push is untested with a real push service so far: turn it on in the browser on the `-Mt5` stack
-  (`.env` has the VAPID pair; `VAPID_SUBJECT` is a placeholder) and send a test from the Notifications page.
-- The service worker is `frontend/src/sw/sw.ts` (`injectManifest`, own `tsconfig.sw.json`); it caches only
-  the app shell and never `/api/`.
-- After a frontend rebuild the open PWA keeps the old version until the "new version" banner's Reload (or
-  all tabs are closed).
-- Don't edit Python or migration files during a full pytest run (the migration-parity test reads them);
-  frontend edits are fine.
-- Restarting the `-Mt5` stack from Claude Code: stop the `python.exe` processes whose command line has
-  `app.web|app.worker|app.main` (and their `start-demo.ps1 -Role ...` PowerShell windows), start the roles
-  with `start-demo.ps1 -Role web|worker -Mt5`, wait for `http://localhost:8001/api/v1/health`, then
-  `-Role engine` (health on port 8766). A Python-only change in the engine needs only the engine restarted.
-- In Engine tests, `run(max_cycles=n)` ends with `shutdown()`, which disconnects MT5: read the heartbeat
-  during the run (or call `_health()` after `start()`), not after it.
-- `Path.write_text` without `newline="\n"` writes CRLF on Windows; the repo is LF (`.gitattributes`).
-- i18next: a `count` parameter triggers plural lookups (`_one`/`_other`); name it `n` for plain numbers.
-  Detector ids contain dots, so `codes:evidence.<id>` is nested JSON (`fib` → `retracement`).
-- Real data beats samples: on 2026-10-05 the `-Mt5` stack showed FBS metals as OTHER, a manual position
-  blocking every entry, stocks blocked by DATA_GAPS and two different account equities; no test had covered
-  any of them.
-- Frontend:
+  **web** first, then the engine. `demo-tasks.ps1 -Resume` starts web first.
+- **After a frontend rebuild** the open PWA keeps the old version until the "new version" banner's Reload (or a
+  hard refresh, or all tabs closed).
+- **`ReasonCode` enum lines must stay on one line:** the frontend parity parser reads them, so keep their
+  comments short.
+- **Windows file writes:**
+  - Bash heredocs/printf eat backslashes in Windows paths: write such files with the Write tool or a small
+    Python script.
+  - `Path.write_text` without `newline="\n"` writes CRLF (the repo is LF).
+  - `scripts/tickets.py` may write CRLF: convert back.
+- Research loaders select columns, not ORM entities: scratch replay databases keep their old schema.
+- Asking MT5 for old ticks (`copy_ticks_range`) downloads whole months into the terminal's `Bases`; keep any
+  backfill bounded (`ticks probe` has a free-disk guard).
+- Don't edit Python or migration files during a full pytest run (the migration-parity test reads them).
+- In Engine tests, `run(max_cycles=n)` ends with `shutdown()`: read the heartbeat during the run.
+- **Frontend:**
   - Passing the typed i18next `t` as a parameter fails with TS2589: put the text in a small component that
     calls `useTranslation()` itself.
-  - `z.looseObject` types keys as `string`; use `z.object` where the page indexes translation keys by field.
+  - `z.looseObject` types keys as `string`: use `z.object` where the page indexes translation keys by field.
   - Windows is case-insensitive: don't name a module `gauge.ts` next to `Gauge.tsx`. A file exporting a
-    component may only export components (react-refresh lint): keep helpers in `*Model.ts` files.
-  - A new page: add it to `src/app/shell/nav.ts`, replace its `PlaceholderPage` route in
-    `src/app/routes.tsx`; engine queries go under `engineKey(id)`. Nav items can be `admin` (OWNER/ADMIN).
-  - Secrets (engine keys, TOTP) never go through TanStack mutations or queries (their caches keep results):
-    call `apiPost` directly and keep the result in component state.
+    component exports only components: keep helpers in `*Model.ts` files.
+  - A new page: add it to `src/app/shell/nav.ts` and `src/app/routes.tsx`; engine queries go under
+    `engineKey(id)`.
+  - Secrets (engine keys, TOTP) never go through TanStack mutations or queries: call `apiPost` directly.
   - Template literals in `new RegExp(...)` drop backslashes: use `String.raw`.
-  - A new strategy parameter or strategy needs TH/EN texts (`strategies.param.<name>` in `common.json`,
-    `codes:strategyName` / `codes:strategy`); parity tests read the Python models.
-  - Parity tests read backend enums and `app/advisory/explanations.py`; TypeScript stays on 6.0.x
-    (typescript-eslint 8).
-  - API samples must be stable: pin wall-clock stamps and random ids in `tests/web/test_api_samples.py`
-    (engine ids → `ENGINE`, user ids → `USER` / `USER_<NAME>`).
-  - Large page tests (theories, profile, engines) set `vi.setConfig({ testTimeout: 20_000 })`: typing is slow
-    when the suite runs in parallel.
-- Python: docstrings over 110 characters fail ruff E501. `docs/TICKETS.md` uses CRLF (`scripts/tickets.py`
-  handles it). Long edits are safer as a small Python script than as a bash heredoc (heredocs expand `\n`).
+  - A new strategy parameter or reason code needs TH/EN texts (`strategies.param.<name>` in `common.json`,
+    `codes:*`).
+  - i18next: a `count` parameter triggers plural lookups; name it `n` for plain numbers.
+  - API samples must be stable: pin wall-clock stamps and random ids in `tests/web/test_api_samples.py`.
+- Python: docstrings over 110 characters fail ruff E501. Long edits are safer as a small Python script.
 
 ## Decisions the user may want to revisit
 
+- **The aggressive preset at 7.5 %:** 5 % has a much lower chance of the 60 % stop (ruin table, PLAN §A36).
 - **Manual trades on the bot's account** count toward the bot's limits (`risk.foreign_positions_policy:
-  count`), measured against the paper book's equity in PAPER. With a large manual trade the bot opens nothing.
-  Options: separate the bot's account from manual trading, or change the policy.
+  count`). With a large manual trade the bot opens nothing.
 - **Alert metric** is win probability (needs closed shadow outcomes for calibration); setup strength works from
   day one.
-- Chart-pattern and breakout setups default to the **nearer** stop (`stop_mode: invalidation` restores the
-  textbook stop). All 9 strategies are enabled in `config.yaml` (unproven; PAPER).
-- Hard ADVISORY failures create no opportunity; per-user holding styles don't change the scan timeframes yet
-  (PLAN §A26).
-- Forex exotics stay opt-in (wide spreads); OTHER is on.
-- The DATA_GAPS check learns closed hours from the last ~400 bars: around a DST change a stock's shifted hour
-  can count as missing for a few days; holidays (a whole missing day) still count as gaps.
+- `execution.entry_plans: false`: the engine sends one order per signal whatever the PWA's split-entry choice
+  says (SETUP_REVIEW: scale-in with a 0.5 ATR spacing put parts into the noise, TAA-1209).
 
 ## Open items needing the user
 
-- **Before LIVE:** the DEMO soak, the drills on the LIVE machine (record table in `docs/RUNBOOK_LIVE.md`), the
-  go-live checklist, a separate `ENGINE_DB_URL` for LIVE, the MT5 password in Windows Credential Manager, and
-  the explicit go-ahead. Only the owner sets `ENABLE_LIVE_TRADING` and the confirmation phrase.
+- **Before LIVE:**
+  - the DEMO soak and the drills on the LIVE machine (record table in `docs/RUNBOOK_LIVE.md`);
+  - the go-live checklist, a separate `ENGINE_DB_URL` for LIVE, and the MT5 password in Windows Credential
+    Manager;
+  - the explicit go-ahead. Only the owner sets `ENABLE_LIVE_TRADING` and the confirmation phrase.
+- Commit (or not) the `high_risk:` block in `config.yaml`.
+- Remove the merged worktree `.claude/worktrees/agent-a8b3410ffe49fb0d1` (it holds a copied `.env`).
 - **AI (optional):** an Anthropic API key in `.env` (`AI_PROVIDER=anthropic`, `AI_API_KEY`), starting with
-  `AI_MODE=advisory`; budgets in `config.yaml` → `ai` (default 50 calls and $2 a day).
-- The current Trading profile uses 1.5 % per trade (inside the 2 % cage); lower it in the PWA if wanted.
-- Phase 11 (skipped for now): Railway account access, only with an explicit go-ahead.
-- Before ever enabling subscriptions: legal review (`docs/COMPLIANCE.md`; gate `SUBSCRIPTIONS_ENABLED` +
-  `SUBSCRIPTIONS_LEGAL_REVIEW`).
-- TAA-1501 (cloud replay jobs): revisit when users without engines are served.
-- `VAPID_SUBJECT` in `.env` is a placeholder; set a real contact if wanted.
-- Set the owner's account profile on `/account` so alerts carry money (one click: "My engine's MT5 account").
+  `AI_MODE=advisory`.
+- Phase 11 (Railway) only with an explicit go-ahead; subscriptions only after legal review
+  (`docs/COMPLIANCE.md`).
+- `VAPID_SUBJECT` in `.env` is a placeholder; the owner's account profile on `/account` lets alerts carry money.
