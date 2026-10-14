@@ -120,6 +120,8 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
   entry, timeframe, filters, exits) and backtest again until it reaches the goal (docs/SETUP_REVIEW.md, ≥ +0.15
   R/trade net). A losing result means *change the conditions*, never *drop the setup and move on*. Don't propose
   switching to another setup unless the owner asks; if the levers run out, say so and ask.
+  Backtest window (owner, 2026-10-14): **March 2026** (2026-03-01 .. 2026-04-01, the year's most volatile
+  month) for every setup backtest until the owner changes it.
 - No profitability claims in any UI text either (`frontend/src/i18n/catalogs.test.ts` checks the catalogs).
 - Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
 - LIVE (real money) is off by default. Its path exists since TAA-1401 and needs `TRADING_MODE=LIVE`,
