@@ -2809,7 +2809,13 @@ of cut further (a pre-existing mismatch of the two margin rules). **Resolved 202
 now cuts the lot until both margin rules hold (§A9 step 8), e.g. the DEMO GBPUSD harmonic BUY of 2026-10-14
 (7.5 % of 1,127 USD, a 12.9-pip stop: 0.65 lot, margin level 336 %) becomes about 0.43 lot (about 5 % risk)
 instead of a rejection. A refused trade no longer adds a false LEVERAGE_LIMIT (its zero volume read as infinite
-leverage). One month says nothing about
+leverage). **Margin floors of the preset (owner, 2026-10-15: "the full 7.5 %"):** on a 1,127 USD demo
+account at 1:200 the standard floors (margin level ≥ 500 %, margin ≤ 30 % of free margin) cut a tight-stop FX
+trade to about 2 % (USDJPY, 7.9-pip stop: 0.45 lot instead of 1.69). `high_risk.min_margin_level_percent` /
+`max_margin_utilization_percent` lower them for the preset only (hard floor 120 %, ceiling 90 %; FBS calls
+margin at 40 % and stops out at 20 %); the owner chose 150 % / 80 %: most trades take the full risk, the
+tightest stops are still cut (the USDJPY example to about 6.6 %), and a second position can still open.
+Unset, the preset keeps the standard floors. One month says nothing about
 results; the ruin table above uses the full-risk R of the year's trades and is the more pessimistic view. The preset stays on
 PAPER/DEMO until the owner decides otherwise; LIVE is refused in code. Backtests: `app.cli backtest --preset
 aggressive --risk 7.5` (local CLI only; cloud jobs keep the standard ceiling).

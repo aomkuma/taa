@@ -58,6 +58,10 @@ HIGH_RISK_MAX_LEVERAGE = 200.0
 # the most a minimum lot opened above the budget may risk (min_lot_fallback in the cage; owner, 2026-10-14)
 HIGH_RISK_CEILING_MIN_LOT_RISK_PCT = 20.0
 HIGH_RISK_DEFAULT_MIN_LOT_RISK_PCT = 15.0
+# the aggressive preset may lower the margin floors (owner, 2026-10-15: the full preset risk on tight stops),
+# never below these: FBS calls margin at 40 % and stops out at 20 %
+HIGH_RISK_FLOOR_MARGIN_LEVEL_PCT = 120.0
+HIGH_RISK_CEILING_MARGIN_UTILIZATION_PCT = 90.0
 # the aggressive preset's own risk per trade (Trading profile): 5-10 %, 7.5 % by default (owner, 2026-10-14)
 AGGRESSIVE_MIN_RISK_PCT = 5.0
 AGGRESSIVE_DEFAULT_RISK_PCT = 7.5
@@ -346,6 +350,13 @@ class HighRiskConfig(StrictModel):
     )
     setups: list[str] = Field(min_length=1, description="the proven setups the preset may trade")
     fade_risk_factor: float = Field(default=0.5, gt=0, le=1, description="fades risk this x the preset")
+    # unset: the standard risk: values (500 % / 30 %); the sizer cuts the lot to whatever these allow
+    min_margin_level_percent: float | None = Field(
+        default=None, ge=HIGH_RISK_FLOOR_MARGIN_LEVEL_PCT, le=10_000, description="after the trade"
+    )
+    max_margin_utilization_percent: float | None = Field(
+        default=None, gt=0, le=HIGH_RISK_CEILING_MARGIN_UTILIZATION_PCT, description="% of free margin"
+    )
 
     @field_validator("modes")
     @classmethod
@@ -386,6 +397,10 @@ class HighRiskConfig(StrictModel):
             "setups": tuple(self.setups),
             "fade_risk_factor": self.fade_risk_factor,
         }
+        if self.min_margin_level_percent is not None:
+            update["min_margin_level_percent"] = self.min_margin_level_percent
+        if self.max_margin_utilization_percent is not None:
+            update["max_margin_utilization_percent"] = self.max_margin_utilization_percent
         return HighRiskCage.model_validate({**base.model_dump(), **update})
 
 

@@ -274,3 +274,43 @@ def test_a_split_entry_shrinks_every_part_for_the_margin() -> None:
     assert all(t.volume < p.volume for t, p in zip(tight.parts, plain.parts, strict=True))
     assert all(t.volume >= Decimal(str(EURUSD_SPEC.volume_min)) for t in tight.parts)
     assert tight.margin_level_after is not None and tight.margin_level_after >= 500
+
+
+class TestAggressiveMarginFloors:
+    """Owner, 2026-10-15: the aggressive preset takes its full risk on tight stops, within margin floors
+    lowered to 150 % / 80 % (hard floor 120 %, ceiling 90 %)."""
+
+    @staticmethod
+    def cage(**kw: float) -> RiskConfig:
+        from app.config import HighRiskConfig
+
+        return HighRiskConfig(setups=["setup_harmonic_prz"], **kw).cage(RiskConfig())  # type: ignore[arg-type]
+
+    def test_the_preset_takes_its_full_risk_where_the_standard_floors_cut_it(self) -> None:
+        account = funds(1_126.86, 1_126.86)
+        calc = TickCalculator(leverage=200.0)
+        standard = PositionSizer(self.cage(), calc).size(
+            EURUSD_SPEC, Side.BUY, 1.1, 1.099, account, lot_limit=10.0, risk_percent=7.5
+        )
+        lowered = PositionSizer(
+            self.cage(min_margin_level_percent=150.0, max_margin_utilization_percent=80.0), calc
+        ).size(EURUSD_SPEC, Side.BUY, 1.1, 1.099, account, lot_limit=10.0, risk_percent=7.5)
+        assert standard.ok and standard.margin_reduced_from is not None  # cut by 500 % / 30 %
+        assert lowered.ok and lowered.margin_reduced_from is None  # the full 7.5 % fits
+        assert lowered.risk_money > standard.risk_money
+        assert lowered.margin_level_after is not None and lowered.margin_level_after >= 150
+
+    def test_unset_keeps_the_standard_floors(self) -> None:
+        c = self.cage()
+        assert (c.min_margin_level_percent, c.max_margin_utilization_percent) == (500.0, 30.0)
+        c = self.cage(min_margin_level_percent=150.0, max_margin_utilization_percent=80.0)
+        assert (c.min_margin_level_percent, c.max_margin_utilization_percent) == (150.0, 80.0)
+
+    @pytest.mark.parametrize(
+        "kw", [{"min_margin_level_percent": 110.0}, {"max_margin_utilization_percent": 95.0}]
+    )
+    def test_the_hard_floors_hold(self, kw: dict[str, float]) -> None:
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            self.cage(**kw)
