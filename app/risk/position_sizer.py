@@ -20,6 +20,10 @@ A single order is a one-part plan, so both paths share one implementation:
    a single part still below it means ``RISK_BELOW_MIN_LOT``.
 8. Re-verify ``Σ lotᵢ(lossᵢ + costᵢ) ≤ budget``, then the margin: the plan's margin must fit within
    ``free margin × max_margin_utilization_percent`` and leave a margin level ≥ ``min_margin_level_percent``.
+   A plan that does not fit is **scaled down** until it does (owner, 2026-10-14: trade flexibly with a smaller
+   lot): every part × the factor both limits allow, floored to the lot unit, never below the minimum lot; a
+   plan already at the minimum lot that still does not fit is refused. The risk can then only fall below the
+   budget; ``margin_reduced_from`` keeps the volume before the cut.
 """
 
 from __future__ import annotations
@@ -105,6 +109,7 @@ class SizingResult:
     margin_required: Decimal | None = None
     margin_level_after: Decimal | None = None
     over_budget: bool = False  # the minimum lot was taken although the budget buys less (min_lot_fallback)
+    margin_reduced_from: Decimal | None = None  # the plan's volume before margin scaled it down
 
     @property
     def volume(self) -> Decimal:
@@ -132,6 +137,11 @@ class _Draft:
     margin_required: Decimal | None = None
     margin_level_after: Decimal | None = None
     over_budget: bool = False
+    margin_reduced_from: Decimal | None = None
+
+    @property
+    def volume(self) -> Decimal:
+        return sum((p.volume for p in self.parts), ZERO)
 
     def done(self, reason: Reason | None = None, detail: str = "") -> SizingResult:
         return SizingResult(
@@ -146,6 +156,7 @@ class _Draft:
             margin_required=self.margin_required,
             margin_level_after=self.margin_level_after,
             over_budget=self.over_budget,
+            margin_reduced_from=self.margin_reduced_from,
         )
 
 
@@ -398,32 +409,67 @@ class PositionSizer:
             return draft.done(
                 Reason.VOLUME_INVALID, f"risk {total_risk:.2f} exceeds budget {draft.budget:.2f}"
             )
-        return self._margin(spec, side, funds, draft)
+        return self._margin(spec, side, funds, draft, v_min, unit)
 
-    def _margin(self, spec: SymbolSpec, side: Side, funds: AccountFunds, draft: _Draft) -> SizingResult:
-        """Step 8, for the whole plan as if every part were filled."""
+    def _required(self, spec: SymbolSpec, side: Side, parts: Sequence[SizedPart]) -> Decimal | None:
         required = ZERO
-        for s in draft.parts:
+        for s in parts:
             m = self.calculator.calc_margin(side, spec.name, float(s.volume), float(s.part.entry))
             if m is None or m < 0:
-                return draft.done(Reason.MARGIN_INSUFFICIENT, "order_calc_margin failed")
+                return None
             required += to_decimal(m)
+        return required
+
+    def _margin(
+        self, spec: SymbolSpec, side: Side, funds: AccountFunds, draft: _Draft, v_min: Decimal, unit: Decimal
+    ) -> SizingResult:
+        """Step 8, for the whole plan as if every part were filled; a plan that does not fit shrinks."""
         allowed = (
             to_decimal(funds.margin_free) * to_decimal(self.risk.max_margin_utilization_percent) / HUNDRED
         )
-        used = to_decimal(funds.margin) + required
-        draft.margin_required = required
-        draft.margin_level_after = to_decimal(funds.equity) / used * HUNDRED if used > 0 else None
-        if required > allowed:
+        min_level = to_decimal(self.risk.min_margin_level_percent)
+        # the most margin in use that keeps the level at min_level: equity / used × 100 >= min_level
+        level_room = to_decimal(funds.equity) * HUNDRED / min_level - to_decimal(funds.margin)
+        original, start = draft.volume, draft.parts
+        for _ in range(100):  # each round shrinks at least one part by one lot unit
+            required = self._required(spec, side, draft.parts)
+            if required is None:
+                return draft.done(Reason.MARGIN_INSUFFICIENT, "order_calc_margin failed")
+            used = to_decimal(funds.margin) + required
+            draft.margin_required = required
+            draft.margin_level_after = to_decimal(funds.equity) / used * HUNDRED if used > 0 else None
+            over_free = required > allowed
+            level = draft.margin_level_after
+            too_low = level is not None and level < min_level
+            if not over_free and not too_low:
+                if draft.volume < original:
+                    draft.margin_reduced_from = original
+                return draft.done()
+            fit = min(allowed, level_room)
+            factor = fit / required if required > 0 and fit > 0 else ZERO
+            parts = []
+            for p in draft.parts:
+                lot = max(v_min, floor_to_step(p.volume * factor, unit))
+                if lot >= p.volume and p.volume - unit >= v_min:
+                    lot = p.volume - unit  # the factor rounds back to the same lot: one unit less
+                parts.append(SizedPart(p.part, lot, int(lot / unit), p.loss_per_lot, p.cost_per_lot))
+            if all(n.volume >= o.volume for n, o in zip(parts, draft.parts, strict=True)):
+                break  # every part is at the minimum lot and the plan still does not fit
+            draft.parts = tuple(parts)
+        # refused: report the plan the risk asked for (as before), judged at the minimum lot
+        draft.parts = start
+        full = self._required(spec, side, start)
+        if full is not None:
+            draft.margin_required = full
+            used = to_decimal(funds.margin) + full
+            draft.margin_level_after = to_decimal(funds.equity) / used * HUNDRED if used > 0 else None
+        if over_free:
             cap = self.risk.max_margin_utilization_percent
             return draft.done(
                 Reason.MARGIN_INSUFFICIENT,
-                f"margin {required:.2f} > {cap:g}% of free margin {funds.margin_free:.2f}",
+                f"margin {required:.2f} > {cap:g}% of free margin {funds.margin_free:.2f} at the minimum lot",
             )
-        level = draft.margin_level_after
-        if level is not None and level < to_decimal(self.risk.min_margin_level_percent):
-            return draft.done(
-                Reason.MARGIN_LEVEL_TOO_LOW,
-                f"margin level after the trade {level:.0f}% < {self.risk.min_margin_level_percent:g}%",
-            )
-        return draft.done()
+        return draft.done(
+            Reason.MARGIN_LEVEL_TOO_LOW,
+            f"margin level after the trade {level:.0f}% < {min_level:g}% at the minimum lot",
+        )

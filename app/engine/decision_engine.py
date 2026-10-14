@@ -673,7 +673,12 @@ class DecisionEngine:
                 )
             ]
         if sizing.ok:
-            detail = "minimum lot above the risk budget (min_lot_fallback)" if sizing.over_budget else ""
+            notes = []
+            if sizing.over_budget:
+                notes.append("minimum lot above the risk budget (min_lot_fallback)")
+            if sizing.margin_reduced_from is not None:
+                notes.append(f"lot cut from {sizing.margin_reduced_from} to fit the margin")
+            detail = "; ".join(notes)
             return [
                 Check(
                     "sizing",

@@ -184,3 +184,19 @@ class TestChecks:
         big = cand("EURUSD", volume=1.0, entry=1.1)  # 11x > 10x
         assert checks(manager(), [], big)["effective_leverage"]  # no cap by default: margin decides
         assert not checks(manager(max_effective_leverage=10.0), [], big)["effective_leverage"]
+
+
+def test_a_refused_candidate_adds_no_leverage() -> None:
+    """2026-10-14: a trade the sizer refused (volume 0) failed LEVERAGE_LIMIT too, because MT5 returns no
+    profit for a zero volume; the refusal is the sizing check's alone."""
+
+    class NoZeroVolume:
+        def calc_profit(self, side: Side, symbol: str, volume: float, a: float, b: float) -> float | None:
+            return None if volume <= 0 else CALC.calc_profit(side, symbol, volume, a, b)
+
+        def calc_margin(self, side: Side, symbol: str, volume: float, price: float) -> float | None:
+            return CALC.calc_margin(side, symbol, volume, price)
+
+    mgr = ExposureManager(RiskConfig(max_effective_leverage=200.0), NoZeroVolume(), magic_base=BASE)
+    refused = cand(volume=0.0, margin=0.0)
+    assert checks(mgr, [], refused)["effective_leverage"]

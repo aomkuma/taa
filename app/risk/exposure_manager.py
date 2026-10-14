@@ -198,12 +198,19 @@ class ExposureManager:
         margin_after = (
             100.0 * (exposure.margin + candidate.margin_required) / equity if equity > 0 else float("inf")
         )
-        cand_move = self.calculator.calc_profit(
-            candidate.side,
-            candidate.symbol,
-            candidate.volume,
-            candidate.entry,
-            candidate.entry * (1 + LEVERAGE_MOVE),
+        # a candidate the sizer refused has no volume: it adds no leverage (MT5's calc_profit returns None for
+        # a zero volume, which read as infinite leverage and added a false LEVERAGE_LIMIT; the sizing check
+        # already reports why the trade was refused)
+        cand_move = (
+            0.0
+            if candidate.volume <= 0
+            else self.calculator.calc_profit(
+                candidate.side,
+                candidate.symbol,
+                candidate.volume,
+                candidate.entry,
+                candidate.entry * (1 + LEVERAGE_MOVE),
+            )
         )
         leverage_after = (
             float("inf")

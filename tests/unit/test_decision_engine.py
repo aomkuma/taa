@@ -203,8 +203,12 @@ CASES: dict[str, tuple[Setup, dict[str, Any]]] = {
     "WEEKLY_LOSS_LIMIT": (Setup(), account(loss=status(equity=9_850.0, week_start=10_300.0))),
     "MAX_DRAWDOWN": (Setup(), account(loss=status(hwm=11_200.0))),
     "CONSECUTIVE_LOSSES": (Setup(), account(loss=status(consecutive_losses=4, last_loss_at=BAR))),
-    "MARGIN_INSUFFICIENT": (Setup(), account(margin=9_500.0)),
-    "MARGIN_LEVEL_TOO_LOW": (Setup(), account(margin=1_900.0)),
+    "MARGIN_INSUFFICIENT": (
+        Setup(calc=TickCalculator(*SPECS.values(), leverage=0.01)),
+        {},
+    ),  # 0.01 lot > free
+    # the lot shrinks to fit the margin (owner, 2026-10-14); refused only when the minimum lot leaves < 500 %
+    "MARGIN_LEVEL_TOO_LOW": (Setup(), account(margin=1_995.0)),
     "LEVERAGE_LIMIT": (
         Setup(config=risk(max_effective_leverage=10)),  # off by default (margin decides)
         account(pos("USDJPY", volume=1.0, price=150.0, sl=149.95)),

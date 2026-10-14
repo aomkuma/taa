@@ -143,15 +143,32 @@ class TestSingleOrder:
         r = sizer().size(broken, Side.BUY, 1.1, 1.098, funds(), lot_limit=1.0)
         assert r.reason is Reason.SYMBOL_SPEC_INCONSISTENT
 
-    def test_margin_checks(self) -> None:
+    def test_a_plan_too_big_for_the_margin_shrinks_until_it_fits(self) -> None:
+        """Owner, 2026-10-14: trade flexibly with a smaller lot instead of refusing."""
         calc = TickCalculator(leverage=2.0)  # 0.24 lot needs $13,200 margin
-        assert sizer(calc=calc).size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, funds(), lot_limit=1.0).reason is (
-            Reason.MARGIN_INSUFFICIENT
-        )
-        busy = funds(10_000, margin=1_900)  # level after = 10000 / (1900 + 264) = 462 % < 500 %
-        assert sizer().size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, busy, lot_limit=1.0).reason is (
-            Reason.MARGIN_LEVEL_TOO_LOW
-        )
+        r = sizer(calc=calc).size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, funds(), lot_limit=1.0)
+        assert r.ok, r.detail
+        assert r.margin_reduced_from == Decimal("0.24")
+        assert r.volume == Decimal("0.03")  # both limits: 30 % of free margin and a level >= 500 %
+        assert r.margin_required is not None and r.margin_required <= Decimal(3000)
+        assert r.margin_level_after is not None and r.margin_level_after >= 500
+        assert r.risk_money <= r.budget
+        busy = funds(10_000, margin=1_900)  # 0.24 lot would leave 10000 / (1900 + 264) = 462 %
+        r = sizer().size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, busy, lot_limit=1.0)
+        assert r.ok and r.margin_reduced_from == Decimal("0.24") and r.volume < Decimal("0.24")
+        assert r.margin_level_after is not None and r.margin_level_after >= 500
+
+    def test_a_plan_that_fits_keeps_its_lot(self) -> None:
+        r = sizer().size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, funds(), lot_limit=1.0)
+        assert r.ok and r.volume == Decimal("0.24") and r.margin_reduced_from is None
+
+    def test_the_minimum_lot_that_still_does_not_fit_is_refused(self) -> None:
+        nearly_full = funds(10_000, margin=1_995)  # even 0.01 lot leaves 10000 / 2006 = 498.5 %
+        r = sizer().size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, nearly_full, lot_limit=1.0)
+        assert r.reason is Reason.MARGIN_LEVEL_TOO_LOW and "minimum lot" in r.detail
+        thin = TickCalculator(leverage=0.01)  # 0.01 lot needs $110,000
+        r = sizer(calc=thin).size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, funds(), lot_limit=1.0)
+        assert r.reason is Reason.MARGIN_INSUFFICIENT and "minimum lot" in r.detail
         calc = TickCalculator()
         calc.margin_none = True
         assert sizer(calc=calc).size(EURUSD_SPEC, Side.BUY, 1.1, 1.098, funds(), lot_limit=1.0).reason is (
@@ -244,3 +261,16 @@ def test_fake_mt5_gateway_is_a_calculator() -> None:
     r = PositionSizer(RISK, gateway).size(spec, Side.BUY, 1.1, 1.098, funds(), lot_limit=1.0)
     assert r.ok, r.detail
     assert r.risk_money <= r.budget
+
+
+def test_a_split_entry_shrinks_every_part_for_the_margin() -> None:
+    parts = build_parts(SplitMode.SAME_PRICE, Side.BUY, 1.1, 1.098, 1.106, k=3)
+    plain = sizer().size_plan(EURUSD_SPEC, Side.BUY, parts, 1.098, funds(), lot_limit=1.0)
+    tight = sizer(calc=TickCalculator(leverage=3.0)).size_plan(
+        EURUSD_SPEC, Side.BUY, parts, 1.098, funds(), lot_limit=1.0
+    )
+    assert plain.ok and tight.ok, tight.detail
+    assert tight.margin_reduced_from == plain.volume
+    assert all(t.volume < p.volume for t, p in zip(tight.parts, plain.parts, strict=True))
+    assert all(t.volume >= Decimal(str(EURUSD_SPEC.volume_min)) for t in tight.parts)
+    assert tight.margin_level_after is not None and tight.margin_level_after >= 500

@@ -408,7 +408,11 @@ Milestone 1 code.
    `volume_min` means `RISK_BELOW_MIN_LOT`; volume is **never rounded up**.
 7. Re-verify `volume · (loss_1lot + cost_1lot) ≤ risk_budget`.
 8. Margin: `order_calc_margin` ≤ free margin × utilization cap, and the projected margin level must be
-   ≥ `MIN_MARGIN_LEVEL` (default 500%, far above FBS stop-out). In M2, `order_check` must also return retcode 0.
+   ≥ `MIN_MARGIN_LEVEL` (default 500%, far above FBS stop-out). A plan that does not fit is **scaled down**
+   until it does (owner, 2026-10-14: "trade flexibly by cutting the lot"): each part × the factor both
+   limits allow, floored to the lot unit, never below the minimum lot; only a minimum-lot plan that still
+   does not fit is refused. The decision's sizing check notes "lot cut from X to fit the margin". In M2,
+   `order_check` must also return retcode 0.
 
 **Exposure**
 - Open risk = the sum of loss-to-SL across bot positions; capped by `MAX_TOTAL_OPEN_RISK`.
@@ -2801,7 +2805,11 @@ At 7.5 % about half the simulated years hit the drawdown stop; at 10 % nine in t
 So the preset's 7.5 % is reached only by fades and wide stops; tight harmonic stops are cut by the 50x cap
 (by design) or, at 1:100, rejected: the lot is cut to `max_margin_utilization_percent` (30 %) of equity, which
 leaves a margin level of ~333 %, below `min_margin_level_percent` (500 %), so the trade is rejected instead
-of cut further (a pre-existing mismatch of the two margin rules; open question). One month says nothing about
+of cut further (a pre-existing mismatch of the two margin rules). **Resolved 2026-10-14 (owner):** the sizer
+now cuts the lot until both margin rules hold (§A9 step 8), e.g. the DEMO GBPUSD harmonic BUY of 2026-10-14
+(7.5 % of 1,127 USD, a 12.9-pip stop: 0.65 lot, margin level 336 %) becomes about 0.43 lot (about 5 % risk)
+instead of a rejection. A refused trade no longer adds a false LEVERAGE_LIMIT (its zero volume read as infinite
+leverage). One month says nothing about
 results; the ruin table above uses the full-risk R of the year's trades and is the more pessimistic view. The preset stays on
 PAPER/DEMO until the owner decides otherwise; LIVE is refused in code. Backtests: `app.cli backtest --preset
 aggressive --risk 7.5` (local CLI only; cloud jobs keep the standard ceiling).
