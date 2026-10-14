@@ -101,7 +101,7 @@ export const REASON_CODES = [
   'ORDER_CHECK_FAILED',
   // ReasonCode (app/strategy/signal_models.py), codes not already listed above
   'INSUFFICIENT_DATA',
-  'INVERTED',
+  'FADE',
   'NO_TARGET',
   'DATA_QUALITY',
   'NO_SETUP',
@@ -293,16 +293,6 @@ export const STRATEGY_NAMES = [
   'setup_smc_reversal',
   'setup_breakout',
   'setup_candle_reversal',
-  // inverted copies (app/strategy/inverted.py): the same signals on the other side
-  'example_trend_pullback_inverted',
-  'setup_neckline_break_inverted',
-  'setup_pattern_breakout_inverted',
-  'setup_fib_pullback_inverted',
-  'setup_harmonic_prz_inverted',
-  'setup_elliott_wave_inverted',
-  'setup_smc_reversal_inverted',
-  'setup_breakout_inverted',
-  'setup_candle_reversal_inverted',
 ] as const;
 
 // Cloud backtest runs (TAA-910): the statuses in the comment of BacktestRunRow.status.

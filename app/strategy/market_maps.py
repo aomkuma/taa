@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Mapping
+from dataclasses import replace
 from datetime import datetime
 
 import pandas as pd
@@ -30,7 +31,24 @@ log = logging.getLogger(__name__)
 MIN_BARS = 60  # fewer closed context bars than this: the timeframe is left out (warm-up)
 
 
-def map_params(config: AppConfig) -> MapParams:
+def map_params(config: AppConfig, timeframe: Timeframe | None = None) -> MapParams:
+    """The map parameters, with ``context_map.by_timeframe`` applied for *timeframe* (if given)."""
+    c, reg = config.context_map, config.regime
+    base = _base_params(config)
+    o = None if timeframe is None else c.by_timeframe.get(timeframe)
+    if o is None:
+        return base
+    return replace(
+        base,
+        er_bars=base.er_bars if o.er_bars is None else o.er_bars,
+        er_trend=base.er_trend if o.er_trend is None else o.er_trend,
+        er_range=base.er_range if o.er_range is None else o.er_range,
+        trend_adx=reg.trend_adx if o.trend_adx is None else o.trend_adx,
+        range_adx=reg.range_adx if o.range_adx is None else o.range_adx,
+    )
+
+
+def _base_params(config: AppConfig) -> MapParams:
     c, ind, reg = config.context_map, config.indicators, config.regime
     return MapParams(
         ema_mid=ind.ema_mid,
@@ -68,16 +86,24 @@ def candle_frame(df: pd.DataFrame) -> pd.DataFrame:
 
 
 class MapBook:
-    def __init__(self, params: MapParams, timeframes: list[Timeframe]) -> None:
+    def __init__(
+        self,
+        params: MapParams,
+        timeframes: list[Timeframe],
+        by_timeframe: dict[Timeframe, MapParams] | None = None,
+    ) -> None:
         self.params = params
         self.timeframes = list(timeframes)
+        self.by_timeframe = dict(by_timeframe or {})
         self._states: dict[tuple[str, Timeframe], tuple[tuple[object, object, int], pd.DataFrame]] = {}
         self._maps: dict[tuple[str, Timeframe, object], TimeframeMap] = {}
 
     @classmethod
     def from_config(cls, config: AppConfig) -> MapBook | None:
         tfs = config.timeframes.context
-        return cls(map_params(config), tfs) if tfs else None
+        if not tfs:
+            return None
+        return cls(map_params(config), tfs, {tf: map_params(config, tf) for tf in tfs})
 
     def at(self, symbol: str, candles: Mapping[Timeframe, pd.DataFrame], t: datetime) -> MarketMap | None:
         """The map at *t* from *candles* (per context timeframe, :func:`candle_frame` form); None if empty."""
@@ -94,19 +120,22 @@ class MapBook:
             key = (symbol, tf, frame.index[pos])
             m = self._maps.get(key)
             if m is None:
-                m = timeframe_map(tf.value, frame, states, pos, self.params)
+                m = timeframe_map(tf.value, frame, states, pos, self._params(tf))
                 self._maps[key] = m
             frames[tf.value] = m
         if not frames:
             return None
         return MarketMap(frames, near_atr=self.params.zone_near_atr, room_cap_r=self.params.room_cap_r)
 
+    def _params(self, tf: Timeframe) -> MapParams:
+        return self.by_timeframe.get(tf, self.params)
+
     def _states_of(self, symbol: str, tf: Timeframe, frame: pd.DataFrame) -> pd.DataFrame:
         sig = (frame.index[0], frame.index[-1], len(frame))
         cached = self._states.get((symbol, tf))
         if cached is not None and cached[0] == sig:
             return cached[1]
-        states = state_frame(frame, self.params)
+        states = state_frame(frame, self._params(tf))
         self._states[(symbol, tf)] = (sig, states)
         stale = [k for k in self._maps if k[0] == symbol and k[1] is tf and k[2] < frame.index[0]]
         for k in stale:

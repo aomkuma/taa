@@ -24,12 +24,6 @@ at a better price. The stop sits ``stop`` risks from the signal's entry; an unfi
 **Costs.** The spread is in the prices. Commission and swap are the stored trade's ``r_multiple − r_net``
 (swap depends on the holding time, so this is an approximation for variants that hold longer or shorter).
 
-**Inverted trades** (:meth:`Signal.inverted`, ``research hypotheses --inverted``; docs/INVERTED_SETUPS.md):
-the opposite trade on the same signal, as ``app/strategy/inverted.py`` places it (the other side of the
-spread, the stop at the original's target, the target at the original's stop). Results are in R of the
-inverted trade's own (wider) risk, which is what the account risks; the recorded ``ctx:`` features still
-describe the original's side.
-
 **Honesty rules.** Every statistic is a mean R with a seeded bootstrap CI for all signals and for each half
 (split at the midpoint of the signals' time range unless given). A rule chosen on one half is reported only
 on the other (:func:`walk_forward`), with the number of rules it was chosen from.
@@ -106,35 +100,6 @@ class Signal:
     @property
     def risk(self) -> float:
         return (self.entry - self.initial_sl) * self.side.sign
-
-    def inverted(self) -> Signal | None:
-        """The inverted setup's trade on this signal; None without a target (the inverted trade has no stop).
-
-        Commission and swap scale with the lot, which the wider stop shrinks at the same risk percent, so the
-        known costs in R shrink by the ratio of the risks."""
-        if self.tp is None:
-            return None
-        entry = self.entry - self.side.sign * self.spread
-        risk = abs(self.tp - entry)
-        if not risk > 0:
-            return None
-        return Signal(
-            f"{self.shadow_id}:inverted",
-            self.strategy,
-            self.symbol,
-            self.timeframe,
-            self.side.opposite,
-            self.signal_at,
-            self.entry_at,
-            entry,
-            self.tp,
-            self.initial_sl,
-            self.atr,
-            self.spread,
-            self.cost_r * self.risk / risk,
-            float("nan"),
-            self.features,
-        )
 
     def mirrored(self) -> Signal:
         """The same instant taken the other way: the other side of the spread, same distances and costs."""

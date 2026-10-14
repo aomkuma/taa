@@ -203,9 +203,10 @@ class StrategiesConfig(StrictModel):
     signal_expiry_bars: int = Field(default=1, ge=1)
 
 
-class InvertedRiskConfig(StrictModel):
-    """Limits for inverted setups only: the original's signal on the other side, its SL and TP at the
-    original's TP and SL prices, so R:R is the original's inverse (owner, 2026-10-09). Others unchanged."""
+class FadeRiskConfig(StrictModel):
+    """Limits for counter-trend fades only (``FADE``, SETUP_REVIEW §16): the plan traded the other way, its SL
+    and TP at the plan's TP and SL prices, so R:R is the plan's inverse (owner, 2026-10-14). Others unchanged.
+    """
 
     min_risk_reward: float = Field(default=0.2, gt=0, le=1)
     max_sl_atr_multiple: float = Field(default=12.0, gt=0, le=30)
@@ -251,8 +252,8 @@ class RiskConfig(StrictModel):
     probation_trades: int = Field(default=20, ge=0)
     probation_multiplier: float = Field(default=0.25, gt=0, le=1)
     foreign_positions_policy: Literal["count", "halt"] = "count"
-    # None: inverted signals meet the normal min RR and SL cap, i.e. they cannot trade (code default)
-    inverted: InvertedRiskConfig | None = None
+    # None: fades meet the normal min RR and SL cap, i.e. they cannot trade (code default)
+    fade: FadeRiskConfig | None = None
 
     @model_validator(mode="after")
     def _coherence(self) -> RiskConfig:
@@ -580,6 +581,17 @@ class EntryModesConfig(StrictModel):
         return self
 
 
+class ContextMapOverride(StrictModel):
+    """Per-timeframe trend/range thresholds of the market map (owner, 2026-10-14): the defaults suit H1 and
+    above; an M5 map needs its own (unset fields keep the global value)."""
+
+    er_bars: int | None = Field(default=None, ge=5, le=200)
+    er_trend: float | None = Field(default=None, gt=0, lt=1)
+    er_range: float | None = Field(default=None, gt=0, lt=1)
+    trend_adx: float | None = Field(default=None, gt=0, lt=100)
+    range_adx: float | None = Field(default=None, gt=0, lt=100)
+
+
 class ContextMapConfig(StrictModel):
     """Parameters of the higher-timeframe market map (TAA-L809; app/indicators/market_map.py)."""
 
@@ -596,11 +608,17 @@ class ContextMapConfig(StrictModel):
     max_tests: int = Field(default=3, ge=0, le=50)
     max_zones: int = Field(default=6, ge=1, le=50, description="per kind, nearest first")
     zone_near_atr: float = Field(default=0.25, ge=0, le=5)
+    by_timeframe: dict[Timeframe, ContextMapOverride] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def _check(self) -> ContextMapConfig:
         if self.er_range > self.er_trend:
             raise ValueError("context_map: er_range must not exceed er_trend")
+        for tf, o in self.by_timeframe.items():
+            trend = self.er_trend if o.er_trend is None else o.er_trend
+            rng = self.er_range if o.er_range is None else o.er_range
+            if rng > trend:
+                raise ValueError(f"context_map.by_timeframe.{tf.value}: er_range must not exceed er_trend")
         return self
 
 

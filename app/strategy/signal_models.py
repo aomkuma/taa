@@ -44,8 +44,8 @@ class ReasonCode(StrEnum):
     """Why a strategy holds, or the main facts behind an entry. PWA text uses ``reason.<code>``."""
 
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
-    INVERTED = "INVERTED"  # an inverted setup: the original's signal on the other side (owner, 2026-10-09)
-    NO_TARGET = "NO_TARGET"  # the original signal has no TP, so its inverted copy has no stop
+    FADE = "FADE"  # a counter-trend trigger traded with the trend, exits swapped (SETUP_REVIEW §16)
+    NO_TARGET = "NO_TARGET"  # the plan has no TP, so a fade of it has no stop
     DATA_QUALITY = "DATA_QUALITY"
     NO_SETUP = "NO_SETUP"
     NO_BIAS = "NO_BIAS"

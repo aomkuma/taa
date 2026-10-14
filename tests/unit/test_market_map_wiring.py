@@ -137,3 +137,26 @@ def test_the_replay_records_the_map_features(tmp_path: Path) -> None:
     with_map = [r for r in rows if "ctx:h4_range" in r.features]  # trend is absent while EMA200 warms up
     assert with_map, "signals after the H4 warm-up carry the map"
     assert all(r.signal_at >= datetime(2000, 1, 1, tzinfo=UTC) for r in with_map)
+
+
+def test_context_map_thresholds_per_timeframe() -> None:
+    """Owner, 2026-10-14: an M5 map needs its own trend thresholds; other timeframes keep the global ones."""
+    import pytest
+
+    from app.config import AppConfig, ConfigError, ContextMapConfig
+    from app.core.enums import Timeframe
+    from app.strategy.market_maps import MapBook, map_params
+
+    cfg = AppConfig.model_validate(
+        {
+            "timeframes": {"entry": "M1", "higher": "M15", "context": ["M5", "H1"]},
+            "context_map": {"by_timeframe": {"M5": {"er_trend": 0.2, "er_range": 0.15, "trend_adx": 15}}},
+        }
+    )
+    m5, h1 = map_params(cfg, Timeframe.M5), map_params(cfg, Timeframe.H1)
+    assert (m5.er_trend, m5.er_range, m5.trend_adx) == (0.2, 0.15, 15)
+    assert (h1.er_trend, h1.trend_adx) == (cfg.context_map.er_trend, cfg.regime.trend_adx)
+    book = MapBook.from_config(cfg)
+    assert book is not None and book._params(Timeframe.M5).er_trend == 0.2
+    with pytest.raises((ValueError, ConfigError)):
+        ContextMapConfig.model_validate({"by_timeframe": {"M5": {"er_range": 0.5}}})

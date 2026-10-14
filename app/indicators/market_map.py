@@ -132,6 +132,7 @@ class TimeframeMap:
     compression: bool
     box: RangeBox | None
     zones: tuple[MapZone, ...] = ()
+    atr_pct: float | None = None  # ATR percentile over ``MapParams.pct_lookback`` bars, 0..100 (quiet phases)
 
 
 @dataclass(frozen=True, slots=True)
@@ -169,6 +170,7 @@ def _tf_to_dict(m: TimeframeMap) -> dict[str, Any]:
         "atr": m.atr,
         "close": m.close,
         "compression": m.compression,
+        "atr_pct": m.atr_pct,
         "box": None if m.box is None else asdict(m.box),
         "zones": [
             {
@@ -194,6 +196,7 @@ def _tf_from_dict(d: Mapping[str, Any]) -> TimeframeMap:
         atr=d["atr"],
         close=float(d["close"]),
         compression=bool(d["compression"]),
+        atr_pct=d.get("atr_pct"),  # absent in records before 2026-10-14
         box=None if box is None else RangeBox(**box),
         zones=tuple(
             MapZone(
@@ -258,6 +261,7 @@ def state_frame(candles: pd.DataFrame, p: MapParams) -> pd.DataFrame:
     width = bollinger(close, p.bb_period)["width"]
     width_pct = width.rolling(p.pct_lookback).rank(pct=True) * 100
     out["compression"] = (atr_pct < p.compression_pct) & (width_pct < p.compression_pct)
+    out["atr_pct"] = atr_pct
     a, e, c = out["adx"].to_numpy(), out["er"].to_numpy(), close.to_numpy()
     mid, slow = out["ema_mid"].to_numpy(), out["ema_slow"].to_numpy()
     structure = out["structure"].to_numpy()
@@ -429,6 +433,7 @@ def timeframe_map(
         compression=bool(row["compression"]),
         box=range_box(candles, states, pos, p) if state is MapState.RANGE else None,
         zones=zones_at(candles, states, pos, p),
+        atr_pct=num(row["atr_pct"]),
     )
 
 

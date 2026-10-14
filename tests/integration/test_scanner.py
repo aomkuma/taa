@@ -234,7 +234,9 @@ class TestRequirements:
         assert "fib.retracement" in req.detectors and "trend.ma_alignment" in req.detectors
         assert not any(d.startswith("harmonic.") for d in req.detectors)
         assert "setup_breakout" in req.strategies  # the owner still allows it
-        assert "setup_harmonic_prz" in req.strategies  # the one setup the bot trades (config.yaml, 2026-10-09)
+        assert (
+            "setup_harmonic_prz" in req.strategies
+        )  # the one setup the bot trades (config.yaml, 2026-10-09)
         only_owner = compute_requirements(
             [owner], cfg, ranked=["GBPUSD"], evidence=evidence, strategies=strategies
         )

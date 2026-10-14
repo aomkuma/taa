@@ -428,10 +428,10 @@ class TestPositionsOnOtherSymbols:
         )  # fail closed
 
 
-class TestInvertedLimits:
-    """Inverted setups (owner, 2026-10-09): only the RR floor and the SL cap change, and only for them."""
+class TestFadeLimits:
+    """Counter-trend fades (FADE, SETUP_REVIEW §16): only the RR floor and the SL cap change, and only for them."""
 
-    INV: ClassVar[dict[str, Any]] = risk(inverted={"min_risk_reward": 0.2, "max_sl_atr_multiple": 12})
+    INV: ClassVar[dict[str, Any]] = risk(fade={"min_risk_reward": 0.2, "max_sl_atr_multiple": 12})
     GEOMETRY: ClassVar[dict[str, float]] = {"stop_loss": 1.0960, "take_profit": 1.1020}  # RR 0.5
 
     def _reasons(self, db: Database, setup: Setup, codes: tuple[str, ...], **kw: Any) -> tuple[str, ...]:
@@ -441,20 +441,20 @@ class TestInvertedLimits:
             .reason_codes
         )
 
-    def test_an_inverted_signal_passes_the_rr_floor_and_the_sl_cap(self, db: Database) -> None:
-        reasons = self._reasons(db, Setup(config=self.INV), ("NECKLINE_BREAK", "INVERTED"))
+    def test_a_fade_passes_the_rr_floor_and_the_sl_cap(self, db: Database) -> None:
+        reasons = self._reasons(db, Setup(config=self.INV), ("RANGE_BREAKOUT", "FADE"))
         assert "RR_TOO_LOW" not in reasons and "SL_TOO_FAR" not in reasons
 
     def test_the_profile_min_rr_does_not_apply_to_it(self, db: Database) -> None:
         from app.risk.limits import ProfileLimits
 
         reasons = self._reasons(
-            db, Setup(config=self.INV), ("INVERTED",), profile_limits=ProfileLimits(min_risk_reward=2.5)
+            db, Setup(config=self.INV), ("FADE",), profile_limits=ProfileLimits(min_risk_reward=2.5)
         )
         assert "RR_TOO_LOW" not in reasons
 
     def test_an_original_with_the_same_geometry_is_still_rejected(self, db: Database) -> None:
-        assert "RR_TOO_LOW" in self._reasons(db, Setup(config=self.INV), ("NECKLINE_BREAK",))
+        assert "RR_TOO_LOW" in self._reasons(db, Setup(config=self.INV), ("RANGE_BREAKOUT",))
 
-    def test_without_the_config_inverted_signals_cannot_trade(self, db: Database) -> None:
-        assert "RR_TOO_LOW" in self._reasons(db, Setup(), ("INVERTED",))
+    def test_without_the_config_fades_cannot_trade(self, db: Database) -> None:
+        assert "RR_TOO_LOW" in self._reasons(db, Setup(), ("FADE",))

@@ -586,6 +586,10 @@
         "label": "Signal lifetime (bars)",
         "hint": "How many entry-timeframe bars a signal stays valid"
       },
+      "fade_counter_trend": {
+        "label": "Fade counter-trend breaks",
+        "hint": "A trigger against both the H4 and H1 trends is traded the other way, with the trend"
+      },
       "friday_cutoff_utc": {
         "label": "Friday cut-off (UTC)",
         "hint": "No new entries after this time on Fridays (empty: none)"
@@ -622,6 +626,14 @@
         "label": "Pullback bars",
         "hint": "Recent bars searched for the pullback to the EMA"
       },
+      "quiet_h4_atr_pct": {
+        "label": "Quiet H4 (ATR percentile)",
+        "hint": "Below this H4 volatility percentile the market counts as quiet for this setup (empty: off)"
+      },
+      "quiet_rule": {
+        "label": "Rule in a quiet market",
+        "hint": "The stricter condition the setup needs while H4 is quiet"
+      },
       "require_htf_alignment": {
         "label": "Require the higher-timeframe trend",
         "hint": "Enter only when the higher-timeframe trend does not oppose"
@@ -630,6 +642,22 @@
         "label": "Take-profit (R)",
         "hint": "Take-profit in multiples of the risk when no measured target is used"
       },
+      "screen_h1": {
+        "label": "Second screen (H1)",
+        "hint": "The H1 trend the trade needs (triple screen: the wave)"
+      },
+      "screen_h4": {
+        "label": "First screen (H4)",
+        "hint": "The H4 trend the trade needs (triple screen: the tide)"
+      },
+      "screen_tide_tf": {
+        "label": "First screen timeframe",
+        "hint": "The tide: about 4-6 times the second screen (H4 for M15 entries, M30 for M1)"
+      },
+      "screen_wave_tf": {
+        "label": "Second screen timeframe",
+        "hint": "The wave: about 4-6 times the entry timeframe (H1 for M15 entries, M5 for M1)"
+      },
       "session_end_utc": {
         "label": "Session end (UTC)",
         "hint": "New entries until this time"
@@ -637,6 +665,10 @@
       "session_start_utc": {
         "label": "Session start (UTC)",
         "hint": "New entries from this time"
+      },
+      "skip_broadening": {
+        "label": "Skip broadening markets",
+        "hint": "No entry while the higher timeframe makes a higher high and a lower low"
       },
       "sl_atr_multiple": {
         "label": "Stop distance (ATR)",
@@ -658,21 +690,51 @@
         "label": "Take-profit placement",
         "hint": "Where the signal's take-profit goes"
       },
+      "trend_entries": {
+        "label": "Trend entries",
+        "hint": "Also enter in the signal's direction; off: only the counter-trend fades"
+      },
+      "trend_entry_window_ny": {
+        "label": "Trend-entry hours (New York)",
+        "hint": "Entries in the signal's direction only inside these New York hours, e.g. 09:30-17:00 (fades are not limited; empty: any time)"
+      },
+      "trend_stop_scale": {
+        "label": "Trend-entry stop scale",
+        "hint": "Widen the stop and target of entries in the signal's direction by this factor (same R:R)"
+      },
+      "trend_structure": {
+        "label": "Swing structure for trend entries",
+        "hint": "Entries in the signal's direction need higher highs and lows (BUY) or lower ones (SELL)"
+      },
       "trigger_max_age_bars": {
         "label": "Trigger age limit (bars)",
         "hint": "0: the pattern must fire on the decision bar"
+      },
+      "zone_gate": {
+        "label": "Demand/supply check",
+        "hint": "Skip plans whose path to the target crosses an opposing zone"
+      },
+      "zone_scope": {
+        "label": "Zone timeframes",
+        "hint": "Which higher-timeframe zones block or set the target"
+      },
+      "zone_stop_frame": {
+        "label": "Zone for the stop",
+        "hint": "The timeframe whose zone the zone stop sits behind"
       }
     },
     "paramValue": {
       "stop_mode": {
         "invalidation": "pattern invalidation",
         "atr": "ATR distance",
-        "nearer": "the nearer of the two"
+        "nearer": "the nearer of the two",
+        "zone": "behind the nearest own zone"
       },
       "target_mode": {
         "measured": "measured move",
         "level": "next level",
-        "rr": "fixed R multiple"
+        "rr": "fixed R multiple",
+        "zone": "the nearest opposing zone"
       },
       "bool": {
         "true": "yes",
@@ -685,6 +747,63 @@
       "phase_gate": {
         "none": "any phase",
         "h4_against_or_range": "H4 against the trade or ranging"
+      },
+      "zone_gate": {
+        "none": "no check",
+        "clear_to_target": "no opposing zone before the target"
+      },
+      "zone_scope": {
+        "H4": "H4",
+        "H4_D1": "H4 and D1"
+      },
+      "zone_stop_frame": {
+        "H1": "H1",
+        "H4": "H4"
+      },
+      "screen_h4": {
+        "any": "any state",
+        "with": "with the trade",
+        "with_or_range": "with the trade or ranging",
+        "not_against": "not against the trade",
+        "against": "against the trade",
+        "against_or_range": "against the trade or ranging"
+      },
+      "screen_h1": {
+        "any": "any state",
+        "with": "with the trade",
+        "with_or_range": "with the trade or ranging",
+        "not_against": "not against the trade",
+        "against": "against the trade",
+        "against_or_range": "against the trade or ranging"
+      },
+      "quiet_rule": {
+        "none": "no extra condition",
+        "m15_not_range": "M15 not ranging"
+      },
+      "trend_structure": {
+        "any": "any structure",
+        "entry": "entry timeframe",
+        "entry_and_higher": "entry and higher timeframe"
+      },
+      "skip_broadening": {
+        "none": "no",
+        "higher": "on the higher timeframe"
+      },
+      "screen_tide_tf": {
+        "M5": "M5",
+        "M15": "M15",
+        "M30": "M30",
+        "H1": "H1",
+        "H4": "H4",
+        "D1": "D1"
+      },
+      "screen_wave_tf": {
+        "M5": "M5",
+        "M15": "M15",
+        "M30": "M30",
+        "H1": "H1",
+        "H4": "H4",
+        "D1": "D1"
       }
     }
   },

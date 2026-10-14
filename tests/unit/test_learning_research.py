@@ -500,41 +500,6 @@ def test_hold_out_symbols_never_choose_a_rule_but_judge_it() -> None:
     assert all(rule.chosen_n <= 300 for rule in report.context)  # chosen on the 300 EURUSD signals only
 
 
-class TestInverted:
-    def test_the_inverted_trade_takes_the_original_exits_and_the_other_side(self) -> None:
-        s = signal(entry=1.1001, spread=0.0001, cost_r=0.04)  # BUY at the ask, 1 R = 0.0010, TP +2 R
-        inv = s.inverted()
-        assert inv is not None and inv.side is Side.SELL
-        assert inv.entry == pytest.approx(1.1000)  # the bid of the same quote
-        assert inv.initial_sl == pytest.approx(s.tp) and inv.tp == pytest.approx(s.initial_sl)
-        assert inv.risk == pytest.approx(0.0021)  # the original's target distance plus the spread
-        assert inv.cost_r == pytest.approx(0.04 * 0.0010 / 0.0021)  # a smaller lot at the same risk percent
-        assert signal(target=None).inverted() is None
-
-    def test_a_win_of_the_original_is_a_full_loss_of_the_inverted(self) -> None:
-        s = signal(entry=1.1000)
-        inv = s.inverted()
-        assert inv is not None
-        bars = frame([(1.1000, 1.1025, 1.0999, 1.1022)])  # the original's target 1.1020 is hit
-        assert simulate(build_path(inv, bars, point=POINT)) == pytest.approx(-1.0)
-
-    def test_loading_inverted_skips_signals_without_a_target(self, tmp_path: Path) -> None:
-        store = ParquetHistoryStore(tmp_path)
-        bars = frame([(1.1, 1.1015, 1.0995, 1.101)] * 40, start=T0 - 4 * M5)
-        bars["time_server"] = bars["open_time"]
-        bars["tick_volume"] = 1
-        bars["real_volume"] = 0
-        store.save("FBS-Demo", "EURUSD", Timeframe.M5, bars)
-        store.save("FBS-Demo", "EURUSD", Timeframe.M15, bars)
-        (tmp_path / "FBS-Demo" / "EURUSD" / "spec.json").write_text(
-            '{"spec": {"point": 1e-05}}', encoding="utf-8"
-        )
-        found = [("FBS-Demo", signal(sid="a")), ("FBS-Demo", signal(sid="b", target=None))]
-        inputs = load_inputs(found, store, inverted=True)
-        assert [s.shadow_id for s in inputs.signals] == ["a:inverted"] and inputs.skipped == 1
-        assert inputs.signals[0].side is Side.SELL
-
-
 class TestPreRunFeatures:
     def test_new_york_buckets_follow_daylight_saving(self) -> None:
         from app.learning.research import ny_time

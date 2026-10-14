@@ -4,14 +4,12 @@ from __future__ import annotations
 
 from app.strategy.base_strategy import BaseStrategy
 from app.strategy.example_strategy import TrendPullback
-from app.strategy.inverted import inverted
 from app.strategy.registry import StrategyRegistry
 from app.strategy.setups import SETUPS
 
-ORIGINALS: tuple[type[BaseStrategy], ...] = (TrendPullback, *SETUPS)
-# owner, 2026-10-09: every original also as ``<name>_inverted`` (the other side, the same exit prices)
-INVERTED: tuple[type[BaseStrategy], ...] = tuple(inverted(c) for c in ORIGINALS)
-STRATEGIES: tuple[type[BaseStrategy], ...] = (*ORIGINALS, *INVERTED)
+# the inverted copies (``<name>_inverted``, 2026-10-09) were removed on 2026-10-14 (owner): a counter-trend
+# trigger is faded inside its own setup instead (``fade_counter_trend``, SETUP_REVIEW §16)
+STRATEGIES: tuple[type[BaseStrategy], ...] = (TrendPullback, *SETUPS)
 
 
 def default_registry() -> StrategyRegistry:

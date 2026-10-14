@@ -10,7 +10,9 @@ Each setup turns one *trigger* detector's evidence on the entry timeframe into a
   - ``invalidation``: beyond the trigger's invalidation level (or the setup's own reference, e.g. the
     sweep extreme for SMC) by ``stop_buffer_atr`` × ATR;
   - ``atr``: ``sl_atr_multiple`` × ATR from the entry;
-  - ``nearer``: whichever of the two is closer to the entry.
+  - ``nearer``: whichever of the two is closer to the entry;
+  - ``zone``: beyond the nearest demand (BUY) / supply (SELL) zone behind the entry on the
+    ``zone_stop_frame`` market map, by ``stop_buffer_atr`` x ATR (no such zone: the ATR stop).
 
   An invalidation on the wrong side of the entry falls back to the ATR stop. The spread is added as a
   buffer in every mode.
@@ -18,7 +20,37 @@ Each setup turns one *trigger* detector's evidence on the entry timeframe into a
   - ``measured``: the nearest of the trigger's targets beyond the entry that gives at least ``min_rr``
     (else the farthest, which then fails the RR check);
   - ``level``: the nearest opposing S/R zone of the context, under the same rule;
-  - ``rr``: ``rr_target`` × the risk. Measured or level modes without a usable price fall back to it.
+  - ``rr``: ``rr_target`` × the risk. Measured or level modes without a usable price fall back to it;
+  - ``zone``: the near edge of the nearest opposing zone (supply for a BUY) on the ``zone_scope`` maps.
+- **Triple screen and demand/supply (owner, 2026-10-13; SETUP_REVIEW §16, CONFLUENCE_DIRECTION §3.1):** every
+  setup may gate on the higher-timeframe market map (``MarketContext.htf``, ``timeframes.context``). The first
+  screen ``screen_h4`` (the tide) and the second ``screen_h1`` (the wave) read the map's state relative to the
+  trade (with / against / range / transition); the setup's trigger is the third screen. ``zone_gate:
+  clear_to_target`` refuses a plan whose path to the target meets an opposing zone (one starting ahead of the
+  entry).
+  A gate whose map is missing holds (fail closed). All are off by default.
+- **Screen timeframes** (owner, 2026-10-14): ``screen_tide_tf`` / ``screen_wave_tf`` (H4 / H1) follow
+  the entry timeframe (Elder: each screen about 4-6 times the next); they must be in ``timeframes.context``.
+- **Counter-trend fade** (``fade_counter_trend``, owner 2026-10-14, SETUP_REVIEW §16): a trigger running
+  against both the H4 and the H1 trend is a trap more often than a move; it is traded the other way, with the
+  trend, at the plan's prices swapped (the stop at the plan's target, the target at the plan's stop; the entry
+  on the other side of the spread). Every rule except the screens still applies to the plan; the entry carries
+  ``FADE`` so the decision engine applies ``risk.fade`` (its R:R is the plan's inverse). Off by default.
+- **Regime fit** (owner, 2026-10-14: a setup trades less, not never, in a phase that does not suit it):
+  ``quiet_h4_atr_pct`` marks a quiet phase (the H4 map's ATR percentile below it; a missing map counts as
+  quiet: fail closed), in which ``quiet_rule`` adds a stricter condition: ``m15_not_range`` refuses triggers
+  while the entry timeframe's own market-map state is RANGE (a break out of a narrow M15 box). Off by default.
+- **Trend-entry window** (``trend_entry_window_ny``, "HH:MM-HH:MM" New York time, DST-aware; §16):
+  entries in the trigger's own direction only inside it (breaks fail less at the New York session, §14);
+  counter-trend fades are not limited by it. Off by default.
+- **Trend entries** (§16; entries in the trigger's direction, not fades): ``trend_stop_scale`` widens their
+  stop and target by the same factor (the same R multiple; the stop out of the hunted noise band);
+  ``trend_structure`` needs the swing structure (HH+HL for a BUY, LH+LL for a SELL) on the entry timeframe
+  (``entry``) or on it and the higher one (``entry_and_higher``).
+  ``trend_entries: false`` keeps only the fades (wait for a counter-trend break, then trade with the trend).
+- **Broadening** (``skip_broadening: higher``, owner 2026-10-14: "gold often makes an inverted triangle"): no
+  entry, trend or fade, while the higher timeframe's last swings are a higher high and a lower low (false
+  breaks on both sides before the real run).
 - **Rules:** the shared checks of :mod:`app.strategy.rules` (SL ≤ ``max_sl_atr`` ATR, RR ≥ ``min_rr``,
   spread ≤ ``max_spread_to_sl`` of the SL, session window, Friday cutoff), plus each setup's confirmations.
 
@@ -28,18 +60,23 @@ Score (ranking only, **not a probability**): ``setup_strength × (0.5 + 0.5 × t
 from __future__ import annotations
 
 from collections.abc import Sequence
+from datetime import datetime
 from typing import ClassVar, Literal
+from zoneinfo import ZoneInfo
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from app.core.enums import Action, Timeframe, Trend
 from app.evidence.framework import ActiveEvidence, Direction, Evidence, Family
+from app.indicators.market_map import MapParams, MapState, MapZone, ZoneKind, state_frame
+from app.indicators.price_action import market_structure
 from app.strategy.base_strategy import BaseStrategy
 from app.strategy.rules import (
     EntryRuleParams,
     entry_price,
     explain,
     failed_reasons,
+    hhmm,
     known,
     risk_conditions,
     spread_price,
@@ -47,8 +84,26 @@ from app.strategy.rules import (
 )
 from app.strategy.signal_models import Condition, MarketContext, ReasonCode, Signal, StrategyContext
 
-StopMode = Literal["invalidation", "atr", "nearer"]
-TargetMode = Literal["measured", "level", "rr"]
+NEW_YORK = ZoneInfo("America/New_York")
+StopMode = Literal["invalidation", "atr", "nearer", "zone"]
+TargetMode = Literal["measured", "level", "rr", "zone"]
+ScreenFrame = Literal["M5", "M15", "M30", "H1", "H4", "D1"]
+ScreenGate = Literal["any", "with", "with_or_range", "not_against", "against", "against_or_range"]
+ZoneGate = Literal["none", "clear_to_target"]
+ZoneScope = Literal["H4", "H4_D1"]
+ZoneStopFrame = Literal["H1", "H4"]
+QuietRule = Literal["none", "m15_not_range"]
+TrendStructure = Literal["any", "entry", "entry_and_higher"]
+SkipBroadening = Literal["none", "higher"]
+
+# the trade-relative map states each screen gate lets through
+_SCREEN_OK: dict[str, frozenset[str]] = {
+    "with": frozenset({"WITH"}),
+    "with_or_range": frozenset({"WITH", "RANGE"}),
+    "not_against": frozenset({"WITH", "RANGE", "TRANSITION"}),
+    "against": frozenset({"AGAINST"}),
+    "against_or_range": frozenset({"AGAINST", "RANGE"}),
+}
 
 
 class SetupParams(EntryRuleParams):
@@ -63,6 +118,34 @@ class SetupParams(EntryRuleParams):
     max_rr: float | None = Field(
         default=None, gt=0, le=20, description="refuse plans whose target is farther than this many R"
     )
+    screen_h4: ScreenGate = "any"  # the first screen (the tide) on ``screen_tide_tf``
+    screen_h1: ScreenGate = "any"  # the second screen (the wave) on ``screen_wave_tf``
+    screen_tide_tf: ScreenFrame = "H4"  # Elder: each screen ~4-6x the next (M15 -> H1 -> H4; M1 -> M5 -> M30)
+    screen_wave_tf: ScreenFrame = "H1"
+    zone_gate: ZoneGate = "none"
+    zone_scope: ZoneScope = "H4_D1"
+    zone_stop_frame: ZoneStopFrame = "H1"
+    fade_counter_trend: bool = False
+    quiet_h4_atr_pct: float | None = Field(
+        default=None, gt=0, lt=100, description="H4 ATR percentile below which the phase counts as quiet"
+    )
+    quiet_rule: QuietRule = "none"
+    trend_stop_scale: float = Field(default=1.0, ge=1.0, le=4.0)
+    trend_entries: bool = True  # False: only fades (owner, 2026-10-14: wait, then trade with the big trend)
+    trend_structure: TrendStructure = "any"
+    skip_broadening: SkipBroadening = "none"
+    trend_entry_window_ny: str | None = Field(
+        default=None, description="HH:MM-HH:MM New York time for entries in the trigger's direction"
+    )
+
+    @field_validator("trend_entry_window_ny")
+    @classmethod
+    def _check_window(cls, value: str | None) -> str | None:
+        if value is not None:
+            start, sep, end = value.partition("-")
+            if not sep or hhmm(start) >= hhmm(end):
+                raise ValueError("trend_entry_window_ny must be HH:MM-HH:MM with start before end")
+        return value
 
 
 def variant(ev: Evidence) -> str:
@@ -145,6 +228,8 @@ class EvidenceSetup(BaseStrategy):
                 )
             )
         conds += self.confirmations(trigger, items, ctx)
+        conds += _screens(market, p, buy)
+        conds += _quiet_phase(ctx, p)
 
         frame = ctx.frame(market.entry_timeframe)
         if frame.empty:
@@ -156,10 +241,17 @@ class EvidenceSetup(BaseStrategy):
             return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA, conditions=conds, explanation=explain(conds))
         spread_points, spread = costs
         entry = entry_price(market, close, spread, buy)
-        stop, stop_note = self._stop(trigger, items, entry, atr_v, sign)
+        stop, stop_note = self._stop(trigger, items, market, entry, atr_v, sign)
         stop -= sign * spread
         risk = abs(entry - stop)
         take_profit, target_note = self._target(ev, market, entry, risk, sign)
+        fade = p.fade_counter_trend and _against_both(market, p, buy)
+        if not fade and p.trend_stop_scale != 1.0:
+            # a trend entry's stop out of the noise band, the target at the same R multiple (SETUP_REVIEW §16)
+            stop = entry - sign * risk * p.trend_stop_scale
+            take_profit = entry + (take_profit - entry) * p.trend_stop_scale
+            risk *= p.trend_stop_scale
+            stop_note += f", x{p.trend_stop_scale:g}"
         conds += risk_conditions(
             entry=entry,
             stop=stop,
@@ -173,12 +265,51 @@ class EvidenceSetup(BaseStrategy):
         if p.max_rr is not None and risk > 0:
             rr = abs(take_profit - entry) / risk
             conds.append(Condition("rr_not_too_far", rr <= p.max_rr, 1.0, f"RR {rr:.2f} vs max {p.max_rr:g}"))
+        if p.zone_gate == "clear_to_target":
+            conds.append(_zone_clear(market, p, entry, take_profit, sign))
         conds.append(Condition("plan", True, 1.0, f"stop {stop_note}; target {target_note}"))
 
+        if p.skip_broadening == "higher":
+            conds.append(_not_broadening(ctx))
+        if fade:
+            conds = [c for c in conds if c.name not in ("screen_h4", "screen_h1")]
+            conds.append(
+                Condition("counter_trend_fade", True, 1.0, "against H4 and H1: traded with the trend")
+            )
+        else:
+            if not p.trend_entries:
+                conds.append(
+                    Condition("trend_entry", False, 1.0, "entries in the trigger's direction are off")
+                )
+            if p.trend_entry_window_ny is not None:
+                conds.append(_ny_window(market.decision_time_utc, p.trend_entry_window_ny))
+            if p.trend_structure != "any":
+                frames = [market.entry_timeframe]
+                if p.trend_structure == "entry_and_higher":
+                    frames.append(market.higher_timeframe)
+                conds += [_structure_with(ctx, tf, buy) for tf in frames]
         if not all(c.passed for c in conds):
             reasons = failed_reasons(conds, {"htf_not_opposed": ReasonCode.CONFLICT})
             return self.hold(ctx, *reasons, conditions=conds, explanation=explain(conds))
         total = sum(c.weight for c in conds)
+        score = 100.0 * sum(c.weight for c in conds if c.passed) / total * (0.5 + 0.5 * ev.quality)
+        if fade:
+            # the plan the other way: its target becomes the stop, its stop the target (owner, 2026-10-14)
+            quoted = market.bid if buy else market.ask
+            fade_entry = (
+                quoted if quoted is not None and market.bid is not None and market.ask is not None else entry
+            )
+            return self.entry(
+                ctx,
+                Action.SELL if buy else Action.BUY,
+                entry_price=fade_entry,
+                stop_loss=take_profit,
+                take_profit=stop,
+                conditions=conds,
+                score=score,
+                reasons=(self.setup_code, ReasonCode.FADE),
+                explanation=f"fade: {explain(conds)}",
+            )
         return self.entry(
             ctx,
             Action.BUY if buy else Action.SELL,
@@ -186,7 +317,7 @@ class EvidenceSetup(BaseStrategy):
             stop_loss=stop,
             take_profit=take_profit,
             conditions=conds,
-            score=100.0 * sum(c.weight for c in conds if c.passed) / total * (0.5 + 0.5 * ev.quality),
+            score=score,
             reasons=(self.setup_code,),
             explanation=explain(conds),
         )
@@ -195,12 +326,24 @@ class EvidenceSetup(BaseStrategy):
         self,
         trigger: ActiveEvidence,
         items: Sequence[ActiveEvidence],
+        market: MarketContext,
         entry: float,
         atr_v: float,
         sign: int,
     ) -> tuple[float, str]:
         p: SetupParams = self.params
         atr_stop = entry - sign * p.sl_atr_multiple * atr_v
+        if p.stop_mode == "zone":
+            own = ZoneKind.DEMAND if sign > 0 else ZoneKind.SUPPLY
+            behind = [
+                edge
+                for z in _zones(market, (p.zone_stop_frame,), own)
+                if ((edge := z.low if sign > 0 else z.high) - entry) * sign < 0
+            ]
+            if not behind:
+                return atr_stop, f"{p.sl_atr_multiple:g} ATR (no {p.zone_stop_frame} zone behind the entry)"
+            edge = max(behind) if sign > 0 else min(behind)
+            return edge - sign * p.stop_buffer_atr * atr_v, f"beyond the {p.zone_stop_frame} zone {edge:.5g}"
         ref = self.stop_reference(trigger, items)
         usable = ref is not None and (entry - ref) * sign > 0
         if p.stop_mode == "atr" or not usable or ref is None:
@@ -220,6 +363,14 @@ class EvidenceSetup(BaseStrategy):
         rr_tp = entry + sign * p.rr_target * risk
         if p.target_mode == "rr" or risk <= 0:
             return rr_tp, f"{p.rr_target:g}R"
+        if p.target_mode == "zone":
+            ahead_zones = sorted(
+                (e for e in _opposing_edges(market, p, sign) if (e - entry) * sign > 0),
+                key=lambda e: abs(e - entry),
+            )
+            if not ahead_zones:
+                return rr_tp, f"{p.rr_target:g}R (no opposing zone ahead)"
+            return ahead_zones[0], f"opposing zone {ahead_zones[0]:.5g}"
         if p.target_mode == "measured":
             prices, label = list(ev.targets), "measured target"
         else:
@@ -232,6 +383,125 @@ class EvidenceSetup(BaseStrategy):
             if abs(t - entry) / risk >= p.min_rr:
                 return t, f"{label} {t:.5g}"
         return ahead[-1], f"{label} {ahead[-1]:.5g}"
+
+
+def _relative(state: MapState | None, buy: bool) -> str:
+    """A map state relative to the trade: WITH, AGAINST, RANGE, TRANSITION, or NONE (unknown / no map)."""
+    if state is None or state is MapState.UNKNOWN:
+        return "NONE"
+    if state in (MapState.UP, MapState.DOWN):
+        return "WITH" if (state is MapState.UP) == buy else "AGAINST"
+    return state.value
+
+
+def _swings(ctx: StrategyContext, tf: Timeframe) -> tuple[str | None, str | None] | None:
+    """The last confirmed swing labels (HH/LH/EQH, HL/LL/EQL) of *tf*; None without a frame."""
+    frame = ctx.frames.get(tf)
+    if frame is None or frame.empty or not {"high", "low"} <= set(frame.columns):
+        return None
+    ms = market_structure(frame["high"].astype(float), frame["low"].astype(float), 3)
+    high, low = ms["last_high_label"].iloc[-1], ms["last_low_label"].iloc[-1]
+    return (None if high is None else str(high)), (None if low is None else str(low))
+
+
+def _structure_with(ctx: StrategyContext, tf: Timeframe, buy: bool) -> Condition:
+    """The swing structure of *tf* trends the trade's way: HH+HL for a BUY, LH+LL for a SELL."""
+    labels = _swings(ctx, tf)
+    if labels is None:
+        return Condition(f"structure_{tf.value.lower()}", False, 1.0, f"no {tf.value} frame")
+    want = ("HH", "HL") if buy else ("LH", "LL")
+    return Condition(
+        f"structure_{tf.value.lower()}", labels == want, 1.0, f"{tf.value} {labels[0]}+{labels[1]}"
+    )
+
+
+def _not_broadening(ctx: StrategyContext) -> Condition:
+    """The higher timeframe is not a broadening swing (HH + LL: false breaks on both sides)."""
+    tf = ctx.market.higher_timeframe
+    labels = _swings(ctx, tf)
+    if labels is None:
+        return Condition("not_broadening", False, 1.0, f"no {tf.value} frame")
+    return Condition("not_broadening", labels != ("HH", "LL"), 1.0, f"{tf.value} {labels[0]}+{labels[1]}")
+
+
+def _ny_window(at: datetime, window: str) -> Condition:
+    """The decision bar's close inside *window* (HH:MM-HH:MM, New York local time, DST-aware)."""
+    start, _, end = window.partition("-")
+    local = at.astimezone(NEW_YORK).time()
+    inside = hhmm(start) <= local < hhmm(end)
+    return Condition("trend_entry_window", inside, 1.0, f"{local:%H:%M} New York vs {window}")
+
+
+def _against_both(market: MarketContext, p: SetupParams, buy: bool) -> bool:
+    """The trigger runs against both the tide and the wave trend (H4/H1 by default; a missing map: no)."""
+    if market.htf is None:
+        return False
+    frames = [market.htf.frames.get(f) for f in (p.screen_tide_tf, p.screen_wave_tf)]
+    return all(m is not None and _relative(m.state, buy) == "AGAINST" for m in frames)
+
+
+def _screens(market: MarketContext, p: SetupParams, buy: bool) -> list[Condition]:
+    """Elder's first (the tide) and second (the wave) screens on the market map (H4 and H1 by default)."""
+    out = []
+    for name, frame, gate in (
+        ("screen_h4", p.screen_tide_tf, p.screen_h4),
+        ("screen_h1", p.screen_wave_tf, p.screen_h1),
+    ):
+        if gate == "any":
+            continue
+        m = None if market.htf is None else market.htf.frames.get(frame)
+        rel = _relative(None if m is None else m.state, buy)
+        out.append(Condition(name, rel in _SCREEN_OK[gate], 1.0, f"{frame} {rel.lower()} (needs {gate})"))
+    return out
+
+
+def _quiet_phase(ctx: StrategyContext, p: SetupParams) -> list[Condition]:
+    """Regime fit: in a quiet H4 phase the setup takes only the signals that pass ``quiet_rule``."""
+    if p.quiet_h4_atr_pct is None or p.quiet_rule == "none":
+        return []
+    h4 = None if ctx.market.htf is None else ctx.market.htf.frames.get("H4")
+    pct = None if h4 is None else h4.atr_pct
+    if pct is not None and pct >= p.quiet_h4_atr_pct:
+        return []
+    note = "no H4 volatility" if pct is None else f"H4 ATR percentile {pct:.0f} < {p.quiet_h4_atr_pct:g}"
+    frame = ctx.frame(ctx.market.entry_timeframe)
+    if frame.empty or not {"high", "low", "close"} <= set(frame.columns):
+        return [Condition("quiet_phase_rule", False, 1.0, f"{note}; no entry frame")]
+    state = str(state_frame(frame[["high", "low", "close"]], MapParams())["state"].iloc[-1])
+    return [Condition("quiet_phase_rule", state != MapState.RANGE.value, 1.0, f"{note}; entry frame {state}")]
+
+
+def _zones(market: MarketContext, frames: Sequence[str], kind: ZoneKind) -> list[MapZone]:
+    if market.htf is None:
+        return []
+    maps = [m for f in frames if (m := market.htf.frames.get(f)) is not None]
+    return [z for m in maps for z in m.zones if z.kind is kind]
+
+
+def _scope(p: SetupParams) -> tuple[str, ...]:
+    return ("H4",) if p.zone_scope == "H4" else ("H4", "D1")
+
+
+def _opposing_edges(market: MarketContext, p: SetupParams, sign: int) -> list[float]:
+    """Near edges of the opposing zones (a supply zone's low for a BUY, a demand zone's high for a SELL)."""
+    kind = ZoneKind.SUPPLY if sign > 0 else ZoneKind.DEMAND
+    return [z.low if sign > 0 else z.high for z in _zones(market, _scope(p), kind)]
+
+
+def _zone_clear(market: MarketContext, p: SetupParams, entry: float, target: float, sign: int) -> Condition:
+    """No opposing zone starts between the entry and the target (a zone the entry is breaking through does not
+    count: a breakout enters inside the zone of the level it breaks)."""
+    frames = _scope(p)
+    if market.htf is None or not any(f in market.htf.frames for f in frames):
+        return Condition("zone_clear", False, 1.0, "no market map")
+    kind = ZoneKind.SUPPLY if sign > 0 else ZoneKind.DEMAND
+    span = (target - entry) * sign
+    for z in _zones(market, frames, kind):
+        near = ((z.low if sign > 0 else z.high) - entry) * sign
+        if 0 < near < span:
+            note = f"{kind.value.lower()} zone {z.low:.5g}-{z.high:.5g} in the way"
+            return Condition("zone_clear", False, 1.0, note)
+    return Condition("zone_clear", True, 1.0, "no opposing zone before the target")
 
 
 def _confirmed_by(

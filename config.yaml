@@ -68,8 +68,8 @@ strategies:
       params: {}
     # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. `enabled: false` stops only the bot's
     # trading; the scanner and shadow keep every setup the users follow (app/advisory/requirements.py). Owner,
-    # 2026-10-12: the bot trades setup_harmonic_prz on its normal side only (SETUP_REVIEW §15); the inverted
-    # copies are off (a year of backtests: the inverted harmonic lost on every symbol).
+    # 2026-10-12: the bot trades setup_harmonic_prz (SETUP_REVIEW §15). The inverted copies were removed from the
+    # code on 2026-10-14 (owner); a counter-trend trigger is faded inside its setup (fade_counter_trend, §16).
     - {name: setup_neckline_break, enabled: false}
     - {name: setup_pattern_breakout, enabled: false}
     - {name: setup_fib_pullback, enabled: false}
@@ -80,17 +80,6 @@ strategies:
     - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
     - {name: setup_breakout, enabled: false}
     - {name: setup_candle_reversal, enabled: false}
-    # Inverted setups (owner, 2026-10-09; app/strategy/inverted.py): the same signals on the other side, SL and TP
-    # at the original's TP and SL prices; never advised to users. Off since 2026-10-12 (owner).
-    - {name: example_trend_pullback_inverted, enabled: false}
-    - {name: setup_neckline_break_inverted, enabled: false}
-    - {name: setup_pattern_breakout_inverted, enabled: false}
-    - {name: setup_fib_pullback_inverted, enabled: false}
-    - {name: setup_harmonic_prz_inverted, enabled: false}
-    - {name: setup_elliott_wave_inverted, enabled: false}
-    - {name: setup_smc_reversal_inverted, enabled: false}
-    - {name: setup_breakout_inverted, enabled: false}
-    - {name: setup_candle_reversal_inverted, enabled: false}
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
@@ -109,8 +98,8 @@ risk:
   max_spread_to_sl_ratio: 0.15
   max_slippage_points: 10
   min_risk_reward: 1.0                # the profile's minimum RR applies (it is never below 1.0)
-  inverted:                         # inverted setups only (owner, 2026-10-09): R:R is the original's inverse and
-    min_risk_reward: 0.2            # the stop sits at the original's target; every other risk rule is unchanged
+  fade:                             # counter-trend fades only (FADE, SETUP_REVIEW §16): R:R is the plan's inverse
+    min_risk_reward: 0.2            # and the stop sits at the plan's target; every other risk rule is unchanged
     max_sl_atr_multiple: 12
   max_lot: 1.0
   min_margin_level_percent: 500

@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import math
 from datetime import UTC, datetime, timedelta
+from typing import ClassVar
 
 import numpy as np
 import pandas as pd
@@ -22,7 +23,7 @@ from app.evidence.framework import (
     Tier,
 )
 from app.evidence.registry import EvidenceEngine
-from app.indicators.market_map import MapState, MarketMap, TimeframeMap
+from app.indicators.market_map import MapState, MapZone, MarketMap, TimeframeMap, ZoneKind, ZoneSource
 from app.strategy.catalog import STRATEGIES, default_registry
 from app.strategy.context_builder import ContextBuilder
 from app.strategy.setups import (
@@ -294,7 +295,7 @@ class TestCatalog:
             assert cls.demo_only
             assert "Unproven" in cls.description
             assert cls.triggers <= set(evidence_registry().ids), cls.name
-        assert len(STRATEGIES) == 2 * (1 + len(SETUPS))  # every original and its inverted copy
+        assert len(STRATEGIES) == 1 + len(SETUPS)  # the inverted copies were removed (2026-10-14)
 
     def test_config_yaml_trades_harmonic_on_its_normal_side_only(self) -> None:
         settings = load_settings(
@@ -302,8 +303,8 @@ class TestCatalog:
         )
         listed = {item.name: item.enabled for item in settings.config.strategies.items}
         originals = {"example_trend_pullback", *(cls.name for cls in SETUPS)}
-        assert set(listed) == originals | {f"{n}_inverted" for n in originals}
-        # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing; inverted copies off
+        assert set(listed) == originals
+        # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing
         assert {n for n, on in listed.items() if on} == {"setup_harmonic_prz"}
         own = settings.config.position_management.for_strategy("setup_harmonic_prz")
         assert own.break_even_trigger_r == math.inf and own.trailing_start_r == math.inf
@@ -429,3 +430,301 @@ class TestHarmonicRefinements:
     def test_max_rr_refuses_far_targets(self) -> None:
         assert run(HarmonicPrz, sctx(_bat()), max_rr=1.0).action is Action.HOLD
         assert run(HarmonicPrz, sctx(_bat()), max_rr=5.0).action is Action.BUY
+
+
+DONCHIAN = ev("volatility.donchian", family=Family.VOLATILITY_VOLUME, invalidation=1.0950, var="n20")
+BO_RISK = 1.5 * ATR + SPREAD  # the breakout's nearer (ATR) stop; its 2R target is ENTRY + 2 * BO_RISK
+
+
+def _zone(kind: ZoneKind, low: float, high: float) -> MapZone:
+    return MapZone(kind, ZoneSource.SWING, low, high, 2, 0, T)
+
+
+def _with_map(ctx: StrategyContext, **frames: tuple[MapState, tuple[MapZone, ...]]) -> StrategyContext:
+    maps = {
+        tf: TimeframeMap(tf, T, st, st, 25.0, 0.4, 0.004, CLOSE, False, None, zones)
+        for tf, (st, zones) in frames.items()
+    }
+    market = dataclasses.replace(ctx.market, htf=MarketMap(maps))
+    return dataclasses.replace(ctx, market=market)
+
+
+class TestTripleScreenAndZones:
+    """SETUP_REVIEW §16 (owner, 2026-10-13): Elder's screens and demand/supply for every setup, off by default."""
+
+    @pytest.mark.parametrize(
+        ("gate", "h4", "fires"),
+        [
+            ("with", MapState.UP, True),
+            ("with", MapState.RANGE, False),
+            ("with", MapState.DOWN, False),
+            ("with_or_range", MapState.RANGE, True),
+            ("not_against", MapState.TRANSITION, True),
+            ("not_against", MapState.DOWN, False),
+            ("not_against", MapState.UNKNOWN, False),
+            ("against_or_range", MapState.DOWN, True),
+        ],
+    )
+    def test_first_screen_reads_h4_relative_to_the_trade(self, gate: str, h4: MapState, fires: bool) -> None:
+        sig = run(RangeBreakout, _with_map(sctx(DONCHIAN), H4=(h4, ())), screen_h4=gate)
+        assert (sig.action is Action.BUY) is fires, sig.explanation
+
+    def test_a_sell_is_with_a_falling_h4(self) -> None:
+        sell = mirror_item(DONCHIAN)
+        assert run(RangeBreakout, _with_map(sctx(sell), H4=(MapState.DOWN, ())), screen_h4="with").action is (
+            Action.SELL
+        )
+
+    def test_second_screen_reads_h1_and_a_missing_map_holds(self) -> None:
+        ctx = _with_map(sctx(DONCHIAN), H4=(MapState.UP, ()), H1=(MapState.DOWN, ()))
+        assert run(RangeBreakout, ctx, screen_h4="with").action is Action.BUY
+        sig = run(RangeBreakout, ctx, screen_h4="with", screen_h1="not_against")
+        assert sig.action is Action.HOLD and "H1 against" in sig.explanation
+        assert run(RangeBreakout, sctx(DONCHIAN), screen_h1="not_against").action is Action.HOLD  # no map
+
+    def test_default_ignores_the_map(self) -> None:
+        ctx = _with_map(sctx(DONCHIAN), H4=(MapState.DOWN, (_zone(ZoneKind.SUPPLY, 1.1020, 1.1025),)))
+        assert run(RangeBreakout, ctx).action is Action.BUY
+
+    def test_zone_gate_refuses_an_opposing_zone_before_the_target(self) -> None:
+        tp = ENTRY + 2 * BO_RISK
+        blocked = _with_map(
+            sctx(DONCHIAN), H4=(MapState.UP, (_zone(ZoneKind.SUPPLY, tp - 0.0005, tp + 0.0005),))
+        )
+        sig = run(RangeBreakout, blocked, zone_gate="clear_to_target")
+        assert sig.action is Action.HOLD and "supply zone" in sig.explanation
+        beyond = _with_map(
+            sctx(DONCHIAN), H4=(MapState.UP, (_zone(ZoneKind.SUPPLY, tp + 0.0005, tp + 0.0010),))
+        )
+        assert run(RangeBreakout, beyond, zone_gate="clear_to_target").action is Action.BUY
+        inside = _with_map(
+            sctx(DONCHIAN), H4=(MapState.UP, (_zone(ZoneKind.SUPPLY, ENTRY - 0.0002, ENTRY + 0.0002),))
+        )
+        assert (
+            run(RangeBreakout, inside, zone_gate="clear_to_target").action is Action.BUY
+        )  # the zone it breaks
+        demand = _with_map(
+            sctx(DONCHIAN), H4=(MapState.UP, (_zone(ZoneKind.DEMAND, tp - 0.0005, tp + 0.0005),))
+        )
+        assert run(RangeBreakout, demand, zone_gate="clear_to_target").action is Action.BUY
+        assert run(RangeBreakout, sctx(DONCHIAN), zone_gate="clear_to_target").action is Action.HOLD  # no map
+
+    def test_zone_scope_h4_ignores_the_daily_zones(self) -> None:
+        tp = ENTRY + 2 * BO_RISK
+        ctx = _with_map(
+            sctx(DONCHIAN), H4=(MapState.UP, ()), D1=(MapState.UP, (_zone(ZoneKind.SUPPLY, tp - 0.0005, tp),))
+        )
+        assert run(RangeBreakout, ctx, zone_gate="clear_to_target").action is Action.HOLD
+        assert run(RangeBreakout, ctx, zone_gate="clear_to_target", zone_scope="H4").action is Action.BUY
+
+    def test_zone_stop_sits_beyond_the_nearest_own_zone(self) -> None:
+        zones = (_zone(ZoneKind.DEMAND, 1.0990, 1.1000), _zone(ZoneKind.DEMAND, 1.0960, 1.0970))
+        sig = run(RangeBreakout, _with_map(sctx(DONCHIAN), H1=(MapState.UP, zones)), stop_mode="zone")
+        assert sig.action is Action.BUY, sig.explanation
+        assert sig.stop_loss == pytest.approx(1.0990 - 0.1 * ATR - SPREAD)
+        none = run(RangeBreakout, _with_map(sctx(DONCHIAN), H1=(MapState.UP, ())), stop_mode="zone")
+        assert none.stop_loss == pytest.approx(ENTRY - BO_RISK)  # no zone behind: the ATR stop
+
+    def test_zone_target_is_the_near_edge_of_the_nearest_opposing_zone(self) -> None:
+        zones = (_zone(ZoneKind.SUPPLY, 1.1070, 1.1080), _zone(ZoneKind.SUPPLY, 1.1060, 1.1065))
+        sig = run(RangeBreakout, _with_map(sctx(DONCHIAN), H4=(MapState.UP, zones)), target_mode="zone")
+        assert sig.action is Action.BUY and sig.take_profit == pytest.approx(1.1060)
+        near = (_zone(ZoneKind.SUPPLY, ENTRY + 0.0005, ENTRY + 0.0010),)  # under min_rr: no trade
+        assert run(
+            RangeBreakout, _with_map(sctx(DONCHIAN), H4=(MapState.UP, near)), target_mode="zone"
+        ).action is (Action.HOLD)
+
+
+class TestTradeWithTheTide:
+    """SETUP_REVIEW §16: a break with H4 and H1 is taken; a break against both is faded (fade_counter_trend)."""
+
+    PARAMS: ClassVar[dict[str, object]] = {
+        "screen_h4": "with",
+        "screen_h1": "with",
+        "fade_counter_trend": True,
+    }
+
+    def test_a_break_against_h4_and_h1_is_faded_at_the_plan_swapped(self) -> None:
+        against = _with_map(sctx(DONCHIAN), H4=(MapState.DOWN, ()), H1=(MapState.DOWN, ()))
+        sig = run(RangeBreakout, against, **self.PARAMS)
+        assert sig.action is Action.SELL, sig.explanation  # the BUY break, faded: with the falling H4/H1
+        assert sig.stop_loss == pytest.approx(ENTRY + 2 * BO_RISK)  # the plan's target
+        assert sig.take_profit == pytest.approx(ENTRY - BO_RISK)  # the plan's stop
+        assert sig.entry_price == pytest.approx(ENTRY)  # no live quote: the plan's price stands
+        assert "FADE" in sig.reason_codes and "RANGE_BREAKOUT" in sig.reason_codes
+
+    def test_a_live_quote_sells_the_fade_at_the_bid(self) -> None:
+        against = _with_map(sctx(DONCHIAN), H4=(MapState.DOWN, ()), H1=(MapState.DOWN, ()))
+        quoted = dataclasses.replace(
+            against, market=dataclasses.replace(against.market, bid=CLOSE, ask=ENTRY)
+        )
+        assert run(RangeBreakout, quoted, **self.PARAMS).entry_price == pytest.approx(CLOSE)
+
+    def test_a_break_with_h4_and_h1_is_taken(self) -> None:
+        with_ = _with_map(sctx(DONCHIAN), H4=(MapState.UP, ()), H1=(MapState.UP, ()))
+        sig = run(RangeBreakout, with_, **self.PARAMS)
+        assert sig.action is Action.BUY and "FADE" not in sig.reason_codes
+
+    @pytest.mark.parametrize(
+        ("h4", "h1"),
+        [(MapState.DOWN, MapState.UP), (MapState.DOWN, MapState.RANGE), (MapState.RANGE, MapState.DOWN)],
+    )
+    def test_anything_else_holds(self, h4: MapState, h1: MapState) -> None:
+        ctx = _with_map(sctx(DONCHIAN), H4=(h4, ()), H1=(h1, ()))
+        assert run(RangeBreakout, ctx, **self.PARAMS).action is Action.HOLD
+
+    def test_off_by_default_a_counter_trend_break_just_holds(self) -> None:
+        against = _with_map(sctx(DONCHIAN), H4=(MapState.DOWN, ()), H1=(MapState.DOWN, ()))
+        assert run(RangeBreakout, against, screen_h4="with", screen_h1="with").action is Action.HOLD
+
+    def test_a_fade_still_needs_the_other_rules(self) -> None:
+        against = _with_map(sctx(DONCHIAN), H4=(MapState.DOWN, ()), H1=(MapState.DOWN, ()))
+        assert run(RangeBreakout, against, max_rr=1.0, **self.PARAMS).action is Action.HOLD
+
+    def test_against_needs_a_trend_not_a_range(self) -> None:
+        ranging = _with_map(sctx(DONCHIAN), H4=(MapState.RANGE, ()))
+        assert run(RangeBreakout, ranging, screen_h4="against").action is Action.HOLD
+
+
+def _m15(ctx: StrategyContext, closes: np.ndarray) -> StrategyContext:
+    idx = pd.date_range(end=T, periods=len(closes), freq="15min")
+    frame = pd.DataFrame(
+        {
+            "high": closes + 0.0004,
+            "low": closes - 0.0004,
+            "close": closes,
+            "atr": np.full(len(closes), ATR),
+            "spread": np.full(len(closes), 8.0),
+        },
+        index=idx,
+    )
+    frame.iloc[-1, frame.columns.get_loc("close")] = CLOSE
+    return dataclasses.replace(ctx, frames={Timeframe.M15: frame})
+
+
+def _quiet(ctx: StrategyContext, h4_atr_pct: float | None) -> StrategyContext:
+    h4 = TimeframeMap("H4", T, MapState.UP, MapState.UP, 25.0, 0.4, 0.004, CLOSE, False, None, (), h4_atr_pct)
+    market = dataclasses.replace(ctx.market, htf=MarketMap({"H4": h4}))
+    return dataclasses.replace(ctx, market=market)
+
+
+RANGING = 1.1000 + 0.0003 * (-1.0) ** np.arange(300)  # a narrow box: low ADX and efficiency
+TRENDING = 1.0700 + 0.00001 * np.arange(300)  # a steady rise
+
+
+class TestRegimeFit:
+    """Owner, 2026-10-14: in a phase that does not suit a setup it takes only its surest signals."""
+
+    QUIET: ClassVar[dict[str, object]] = {"quiet_h4_atr_pct": 30.0, "quiet_rule": "m15_not_range"}
+
+    def test_a_quiet_h4_refuses_a_break_out_of_a_ranging_m15(self) -> None:
+        sig = run(RangeBreakout, _quiet(_m15(sctx(DONCHIAN), RANGING), 10.0), **self.QUIET)
+        assert sig.action is Action.HOLD
+        assert [c.name for c in sig.conditions if not c.passed] == ["quiet_phase_rule"]
+
+    def test_a_quiet_h4_still_takes_a_trending_m15(self) -> None:
+        sig = run(RangeBreakout, _quiet(_m15(sctx(DONCHIAN), TRENDING), 10.0), **self.QUIET)
+        assert sig.action is Action.BUY, sig.explanation
+
+    def test_a_normal_h4_ignores_the_rule(self) -> None:
+        assert (
+            run(RangeBreakout, _quiet(_m15(sctx(DONCHIAN), RANGING), 60.0), **self.QUIET).action is Action.BUY
+        )
+
+    def test_an_unknown_h4_volatility_counts_as_quiet(self) -> None:
+        assert (
+            run(RangeBreakout, _quiet(_m15(sctx(DONCHIAN), RANGING), None), **self.QUIET).action
+            is Action.HOLD
+        )
+
+    def test_off_by_default(self) -> None:
+        assert run(RangeBreakout, _quiet(_m15(sctx(DONCHIAN), RANGING), 10.0)).action is Action.BUY
+
+
+class TestTrendEntryWindow:
+    """SETUP_REVIEW §16: entries in the trigger's direction only in the New York window; fades unaffected."""
+
+    PARAMS: ClassVar[dict[str, object]] = {
+        "screen_h4": "with",
+        "screen_h1": "with",
+        "fade_counter_trend": True,
+        "trend_entry_window_ny": "09:30-17:00",
+    }
+
+    def _at(self, when: datetime, h4: MapState) -> StrategyContext:
+        return _with_map(sctx(DONCHIAN, at=when), H4=(h4, ()), H1=(h4, ()))
+
+    def test_a_break_with_the_trend_waits_for_new_york(self) -> None:
+        london = datetime(2026, 9, 30, 8, 0, tzinfo=UTC)  # 04:00 New York (EDT)
+        new_york = datetime(2026, 9, 30, 15, 0, tzinfo=UTC)  # 11:00 New York
+        sig = run(RangeBreakout, self._at(london, MapState.UP), **self.PARAMS)
+        assert sig.action is Action.HOLD and "trend_entry_window" in [
+            c.name for c in sig.conditions if not c.passed
+        ]
+        assert run(RangeBreakout, self._at(new_york, MapState.UP), **self.PARAMS).action is Action.BUY
+
+    def test_a_fade_is_not_limited_by_the_window(self) -> None:
+        london = datetime(2026, 9, 30, 8, 0, tzinfo=UTC)
+        assert run(RangeBreakout, self._at(london, MapState.DOWN), **self.PARAMS).action is Action.SELL
+
+    def test_the_window_follows_daylight_saving(self) -> None:
+        winter = datetime(2026, 1, 14, 14, 45, tzinfo=UTC)  # 09:45 New York (EST): inside
+        assert run(RangeBreakout, self._at(winter, MapState.UP), **self.PARAMS).action is Action.BUY
+
+    @pytest.mark.parametrize("window", ["17:00-09:30", "0930-1700", "09:30"])
+    def test_a_bad_window_is_rejected(self, window: str) -> None:
+        with pytest.raises(ValueError):
+            RangeBreakout.Params(trend_entry_window_ny=window)
+
+
+class TestFadeOnly:
+    """Owner, 2026-10-14: wait for the counter-trend break, then trade with the big trend (no trend entries)."""
+
+    PARAMS: ClassVar[dict[str, object]] = {
+        "screen_h4": "with",
+        "screen_h1": "with",
+        "fade_counter_trend": True,
+        "trend_entries": False,
+    }
+
+    def test_only_the_fade_trades(self) -> None:
+        with_ = _with_map(sctx(DONCHIAN), H4=(MapState.UP, ()), H1=(MapState.UP, ()))
+        against = _with_map(sctx(DONCHIAN), H4=(MapState.DOWN, ()), H1=(MapState.DOWN, ()))
+        assert run(RangeBreakout, with_, **self.PARAMS).action is Action.HOLD
+        assert run(RangeBreakout, against, **self.PARAMS).action is Action.SELL
+
+
+class TestScreenTimeframes:
+    """Owner, 2026-10-14: the screens follow the entry timeframe (e.g. M1 -> M5 -> M30), H4/H1 by default."""
+
+    def test_the_screens_read_the_chosen_timeframes(self) -> None:
+        ctx = _with_map(
+            sctx(DONCHIAN),
+            H4=(MapState.DOWN, ()),
+            H1=(MapState.DOWN, ()),
+            M30=(MapState.UP, ()),
+            M5=(MapState.UP, ()),
+        )
+        params = {"screen_h4": "with", "screen_h1": "with"}
+        assert run(RangeBreakout, ctx, **params).action is Action.HOLD  # H4/H1 against the BUY
+        assert (
+            run(RangeBreakout, ctx, screen_tide_tf="M30", screen_wave_tf="M5", **params).action is Action.BUY
+        )
+
+    def test_the_fade_reads_them_too(self) -> None:
+        ctx = _with_map(
+            sctx(DONCHIAN),
+            H4=(MapState.UP, ()),
+            H1=(MapState.UP, ()),
+            M30=(MapState.DOWN, ()),
+            M5=(MapState.DOWN, ()),
+        )
+        sig = run(
+            RangeBreakout,
+            ctx,
+            fade_counter_trend=True,
+            screen_tide_tf="M30",
+            screen_wave_tf="M5",
+            trend_entries=False,
+        )
+        assert sig.action is Action.SELL, sig.explanation

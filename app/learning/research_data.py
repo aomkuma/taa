@@ -100,12 +100,8 @@ def load_inputs(
     store: ParquetHistoryStore,
     *,
     horizon: timedelta = HORIZON,
-    inverted: bool = False,
 ) -> ResearchInputs:
-    """Paths (and mirrored paths) of every signal from the stored bars; fails closed without a symbol spec.
-
-    With *inverted* each signal becomes the inverted setup's trade (:meth:`Signal.inverted`); a signal without
-    a target has none and is skipped."""
+    """Paths (and mirrored paths) of every signal from the stored bars; fails closed without a symbol spec."""
     by_symbol: dict[tuple[str, str], list[Signal]] = defaultdict(list)
     for server, signal in found:
         by_symbol[(server, signal.symbol)].append(signal)
@@ -131,11 +127,10 @@ def load_inputs(
         frames[symbol] = store.load(server, symbol, tfs.pop(), start - timedelta(days=30), end)
         for raw in group:
             priced = with_point(raw, point)
-            chosen = priced.inverted() if inverted else priced
-            if chosen is None or not chosen.risk > 0:
+            if not priced.risk > 0:
                 skipped += 1
                 continue
-            signal = chosen
+            signal = priced
             path = build_path(signal, bars, point=point, horizon=horizon)
             if len(path) == 0:
                 skipped += 1

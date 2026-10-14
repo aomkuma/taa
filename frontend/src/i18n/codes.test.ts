@@ -148,8 +148,7 @@ describe('strategy names match the catalog', () => {
       [...source.matchAll(/^ {4}name = "([a-z0-9_]+)"\r?$/gm)].map((m) => m[1] ?? ''),
     );
     expect(names.length).toBeGreaterThan(5);
-    // app/strategy/catalog.py also ships every original as `<name>_inverted` (app/strategy/inverted.py)
-    expect(sorted(STRATEGY_NAMES)).toEqual(sorted([...names, ...names.map((n) => `${n}_inverted`)]));
+    expect(sorted(STRATEGY_NAMES)).toEqual(sorted(names));
   });
 });
 

@@ -227,14 +227,14 @@ class DecisionEngine:
             record = self._record(now, profile, Decision.HOLD, req, (), None)
             return self._persist(record)
         risk = effective_risk(self.config.risk, req.profile_limits)
-        inverted = self.config.risk.inverted
-        if inverted is not None and ReasonCode.INVERTED.value in signal.reason_codes:
-            # an inverted setup's R:R is the original's inverse, its stop the original's target: only the RR
-            # floor and the SL cap change (config risk.inverted); the profile's min RR does not apply
+        fade = self.config.risk.fade
+        if fade is not None and ReasonCode.FADE.value in signal.reason_codes:
+            # a fade's R:R is the plan's inverse, its stop the plan's target: only the RR floor and the SL cap
+            # change (config risk.fade); the profile's min RR does not apply
             risk = risk.model_copy(
                 update={
-                    "min_risk_reward": inverted.min_risk_reward,
-                    "max_sl_atr_multiple": inverted.max_sl_atr_multiple,
+                    "min_risk_reward": fade.min_risk_reward,
+                    "max_sl_atr_multiple": fade.max_sl_atr_multiple,
                 }
             )
         checks: list[Check] = []
