@@ -268,7 +268,7 @@ class TestAggressivePreset:
         p = profile.resolve()
         assert p.risk_per_signal_percent == 7.5 and p.max_positions == 2
         assert p.custom == {"min_rr"}
-        assert p.min_lot_fallback is False
+        assert p.min_lot_fallback is True  # the preset always; the cage caps its risk
 
     def test_old_documents_load_as_standard(self) -> None:
         prefs = AdvisoryPreferences.model_validate({"trading_profile": {"style": 40}})

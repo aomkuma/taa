@@ -225,17 +225,22 @@ class PositionSizer:
         pct = to_decimal(self.risk.max_risk_per_trade_percent)
         if risk_percent is not None:
             pct = min(pct, to_decimal(risk_percent))
-        basis = {
-            "min_equity_balance": min(funds.equity, funds.balance),
-            "equity": funds.equity,
-            "balance": funds.balance,
-        }[self.risk.sizing_basis]
-        budget = max(ZERO, to_decimal(basis) * pct / HUNDRED)
+        budget = max(ZERO, self.sizing_basis(funds) * pct / HUNDRED)
         if self.risk.max_risk_money_per_trade is not None:
             budget = min(budget, to_decimal(self.risk.max_risk_money_per_trade))
         if probation:
             budget *= to_decimal(self.risk.probation_multiplier)
         return budget
+
+    def sizing_basis(self, funds: AccountFunds) -> Decimal:
+        """The account value the percent limits apply to (``risk.sizing_basis``)."""
+        return to_decimal(
+            {
+                "min_equity_balance": min(funds.equity, funds.balance),
+                "equity": funds.equity,
+                "balance": funds.balance,
+            }[self.risk.sizing_basis]
+        )
 
     # per-lot loss ----------------------------------------------------------------------------------------
 
@@ -360,8 +365,18 @@ class PositionSizer:
             lots = [floor_to_step(wi * u, unit) for wi in w]
             if all(lot >= v_min for lot in lots):
                 break
-            if n == 1 and min_lot_fallback and v_min <= min(v_max, total_cap):
+            cap = self.risk.min_lot_max_risk_percent
+            if (
+                n == 1
+                and min_lot_fallback
+                and v_min <= min(v_max, total_cap)
+                and (
+                    cap is None
+                    or v_min * (losses[0] + cost) <= self.sizing_basis(funds) * to_decimal(cap) / HUNDRED
+                )
+            ):
                 # the owner's choice: the minimum lot although its risk exceeds the budget; margin decides
+                # (and, in the high-risk cage, min_lot_max_risk_percent)
                 lots = [v_min]
                 draft.over_budget = True
                 break

@@ -108,10 +108,9 @@ class TestWire:
         with pytest.raises(ValidationError):
             RiskProfileDoc.model_validate(data)
 
-    def test_aggressive_document_never_takes_the_fallback(self) -> None:
-        data = RiskProfileDoc.of(aggressive(), NOW).wire() | {"min_lot_fallback": True}
-        with pytest.raises(ValidationError, match="minimum lot"):
-            RiskProfileDoc.model_validate(data)
+    def test_aggressive_document_takes_the_fallback(self) -> None:
+        doc = RiskProfileDoc.of(aggressive(), NOW)
+        assert doc.min_lot_fallback  # the cage caps the minimum lot's risk (owner, 2026-10-14)
 
 
 class TestEffectiveRisk:
@@ -128,7 +127,7 @@ class TestEffectiveRisk:
         assert eff.max_open_positions == 2
         assert eff.max_weekly_loss_percent == 35.0
         assert eff.max_account_drawdown_percent == 60.0
-        assert eff.min_lot_fallback is False
+        assert eff.min_lot_fallback is True and eff.min_lot_max_risk_percent == 15.0
 
     def test_ten_percent_is_the_most(self) -> None:
         assert effective_risk(HIGH, aggressive(10.0)).max_risk_per_trade_percent == 10.0

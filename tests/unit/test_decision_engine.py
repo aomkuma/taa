@@ -475,8 +475,9 @@ class TestFadeLimits:
 
 
 class TestAggressivePreset:
-    """PLAN §A36: inside the high-risk cage the preset trades its setups only, fades at half risk, never the
-    minimum-lot fallback, and checks the daily and drawdown budgets before entry."""
+    """PLAN §A36: inside the high-risk cage the preset trades its setups only, fades at half risk, opens the
+    minimum lot above the budget only up to the cage's cap, and checks the daily and drawdown budgets before
+    entry."""
 
     BIG: ClassVar[dict[str, Any]] = risk(max_lot=20.0, min_margin_level_percent=200.0)
 
@@ -521,12 +522,15 @@ class TestAggressivePreset:
         assert record.decision is Decision.REJECT
         assert record.reason_codes == ("HIGH_RISK_NOT_ENABLED",)
 
-    def test_no_minimum_lot_fallback(self, db: Database) -> None:
-        import dataclasses as dc
+    def test_minimum_lot_within_the_cap(self, db: Database) -> None:
+        # 0.01 lot risks 2.05 USD: 10.3 % of 20 USD, above the 7.5 % budget, within the cage's 15 %
+        record = self._decide(db, **account(equity=20.0, balance=20.0))
+        assert "RISK_BELOW_MIN_LOT" not in record.reason_codes
+        assert record.sizing is not None and record.sizing.over_budget
 
-        limits = dc.replace(aggressive(), min_lot_fallback=True)
-        record = self._decide(db, profile_limits=limits, **account(equity=20.0))
-        assert "RISK_BELOW_MIN_LOT" in record.reason_codes
+    def test_minimum_lot_above_the_cap_is_refused(self, db: Database) -> None:
+        record = self._decide(db, **account(equity=10.0, balance=10.0))  # 20.5 % of 10 USD
+        assert record.reason_codes == ("RISK_BELOW_MIN_LOT",)
 
     def test_daily_budget_counts_today_and_this_trade(self, db: Database) -> None:
         ok = self._decide(db, **account(loss=status(equity=9_500.0)))  # 5 % + 7.5 % <= 15 %

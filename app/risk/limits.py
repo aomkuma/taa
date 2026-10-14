@@ -186,8 +186,6 @@ class RiskProfileDoc(BaseModel):
             or self.max_daily_loss_percent > CEILING_DAILY_LOSS_PCT
         ):
             raise ValueError("a standard profile stays within the standard ceilings")
-        if self.risk_mode is RiskMode.AGGRESSIVE and self.min_lot_fallback:
-            raise ValueError("an aggressive profile never opens the minimum lot above its budget")
         return self
 
     @classmethod
@@ -222,7 +220,8 @@ AGGRESSIVE_POSITIONS = 2  # the preset's open positions (the high-risk cage allo
 
 def aggressive_limits(risk_percent: float, min_risk_reward: float | None = None) -> ProfileLimits:
     """The aggressive preset's limits for risk r (PLAN §A36): r per trade, 2r total open risk and daily loss,
-    two open positions, never the minimum-lot fallback. The Trading profile and the backtest share it."""
+    two open positions, the minimum lot when the budget buys less (the cage caps its risk; owner, 2026-10-14:
+    a 50-100 USD account must still trade). The Trading profile and the backtest share it."""
     r = float(risk_percent)
     return ProfileLimits(
         risk_per_trade_percent=r,
@@ -230,7 +229,7 @@ def aggressive_limits(risk_percent: float, min_risk_reward: float | None = None)
         max_open_positions=AGGRESSIVE_POSITIONS,
         max_daily_loss_percent=2 * r,
         min_risk_reward=min_risk_reward,
-        min_lot_fallback=False,
+        min_lot_fallback=True,
         risk_mode=RiskMode.AGGRESSIVE,
     )
 

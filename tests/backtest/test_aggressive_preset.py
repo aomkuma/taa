@@ -44,7 +44,7 @@ class TestPreset:
         eff = preset.effective
         assert eff.max_risk_per_trade_percent == 7.5 and eff.max_daily_loss_percent == 15.0
         assert eff.max_account_drawdown_percent == 60.0 and eff.max_open_positions == 2
-        assert eff.min_lot_fallback is False
+        assert eff.min_lot_fallback is True and eff.min_lot_max_risk_percent == 15.0  # small accounts trade
 
     def test_the_section_of_config_yaml_wins(self) -> None:
         section = {"setups": ["setup_breakout"], "max_account_drawdown_percent": 50}

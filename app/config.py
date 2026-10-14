@@ -53,7 +53,11 @@ HIGH_RISK_CEILING_DAILY_LOSS_PCT = 20.0
 HIGH_RISK_CEILING_WEEKLY_LOSS_PCT = 35.0
 HIGH_RISK_CEILING_DRAWDOWN_PCT = 60.0
 HIGH_RISK_MAX_OPEN_POSITIONS = 3
-HIGH_RISK_MAX_LEVERAGE = 50.0
+# owner, 2026-10-14: the preset is for 50-100 USD accounts at 1:2000, where 0.01 lot of gold alone is ~90x
+HIGH_RISK_MAX_LEVERAGE = 200.0
+# the most a minimum lot opened above the budget may risk (min_lot_fallback in the cage; owner, 2026-10-14)
+HIGH_RISK_CEILING_MIN_LOT_RISK_PCT = 20.0
+HIGH_RISK_DEFAULT_MIN_LOT_RISK_PCT = 15.0
 # the aggressive preset's own risk per trade (Trading profile): 5-10 %, 7.5 % by default (owner, 2026-10-14)
 AGGRESSIVE_MIN_RISK_PCT = 5.0
 AGGRESSIVE_DEFAULT_RISK_PCT = 7.5
@@ -254,6 +258,9 @@ class RiskConfig(StrictModel):
     # the cage for the trading profile's "open the minimum lot when the risk budget buys less" (the profile
     # switches it on; both must agree). The minimum lot's risk can then exceed the per-trade budget.
     min_lot_fallback: bool = False
+    # with min_lot_fallback: the minimum lot only while its risk stays at or under this percent of the sizing
+    # basis (None: margin alone decides, the standard cage)
+    min_lot_max_risk_percent: float | None = Field(default=None, gt=0, le=100)
     require_take_profit: bool = True
     sizing_basis: Literal["min_equity_balance", "equity", "balance"] = "min_equity_balance"
     tick_value_tolerance: float = Field(default=0.10, gt=0, le=0.5)
@@ -287,9 +294,10 @@ class HighRiskCage(RiskConfig):
     :meth:`HighRiskConfig.cage` from ``config.yaml`` → ``high_risk`` plus the env opt-in; ``risk:`` always
     validates as a plain :class:`RiskConfig`, so no edit of that block can raise its ceilings to these.
 
-    Inside it: no minimum-lot fallback (the minimum lot could exceed the budget), one trade per currency
-    direction, a notional leverage cap, and the setups the preset may trade (``setups``). Fades risk
-    ``fade_risk_factor`` x the preset's risk per trade.
+    Inside it: the minimum lot when the budget buys less, but only while it risks at most
+    ``min_lot_max_risk_percent`` of the account (a 50-100 USD account must still trade; owner, 2026-10-14),
+    one trade per currency direction, a notional leverage cap, and the setups the preset may trade
+    (``setups``). Fades risk ``fade_risk_factor`` x the preset's risk per trade.
     """
 
     max_risk_per_trade_percent: float = Field(default=10.0, gt=0, le=HIGH_RISK_CEILING_RISK_PER_TRADE_PCT)
@@ -301,15 +309,18 @@ class HighRiskCage(RiskConfig):
     max_effective_leverage: float | None = Field(
         default=HIGH_RISK_MAX_LEVERAGE, gt=0, le=HIGH_RISK_MAX_LEVERAGE
     )
-    min_lot_fallback: bool = False
+    min_lot_fallback: bool = True
+    min_lot_max_risk_percent: float | None = Field(
+        default=HIGH_RISK_DEFAULT_MIN_LOT_RISK_PCT, gt=0, le=HIGH_RISK_CEILING_MIN_LOT_RISK_PCT
+    )
     max_same_direction_per_currency: int = Field(default=1, ge=1, le=1)
     setups: tuple[str, ...] = Field(default=(), min_length=1)
     fade_risk_factor: float = Field(default=0.5, gt=0, le=1)
 
     @model_validator(mode="after")
     def _cage_rules(self) -> HighRiskCage:
-        if self.min_lot_fallback:
-            raise ValueError("the high-risk cage never opens the minimum lot above the budget")
+        if self.min_lot_fallback and self.min_lot_max_risk_percent is None:
+            raise ValueError("the high-risk cage opens the minimum lot above the budget only with a risk cap")
         if self.max_effective_leverage is None:
             raise ValueError("the high-risk cage needs a leverage cap")
         return self
@@ -327,6 +338,9 @@ class HighRiskConfig(StrictModel):
     max_weekly_loss_percent: float = Field(default=35.0, gt=0, le=HIGH_RISK_CEILING_WEEKLY_LOSS_PCT)
     max_account_drawdown_percent: float = Field(default=60.0, gt=0, le=HIGH_RISK_CEILING_DRAWDOWN_PCT)
     max_effective_leverage: float = Field(default=HIGH_RISK_MAX_LEVERAGE, gt=0, le=HIGH_RISK_MAX_LEVERAGE)
+    min_lot_max_risk_percent: float = Field(
+        default=HIGH_RISK_DEFAULT_MIN_LOT_RISK_PCT, gt=0, le=HIGH_RISK_CEILING_MIN_LOT_RISK_PCT
+    )
     modes: list[TradingMode] = Field(
         default_factory=lambda: [TradingMode.PAPER, TradingMode.DEMO], min_length=1
     )
@@ -366,7 +380,8 @@ class HighRiskConfig(StrictModel):
             "max_weekly_loss_percent": self.max_weekly_loss_percent,
             "max_account_drawdown_percent": self.max_account_drawdown_percent,
             "max_effective_leverage": self.max_effective_leverage,
-            "min_lot_fallback": False,
+            "min_lot_fallback": True,
+            "min_lot_max_risk_percent": self.min_lot_max_risk_percent,
             "max_same_direction_per_currency": 1,
             "setups": tuple(self.setups),
             "fade_risk_factor": self.fade_risk_factor,

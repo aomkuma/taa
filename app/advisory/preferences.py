@@ -426,7 +426,8 @@ class TradingProfile(StrictModel):
             hold_over_weekend=self.hold_over_weekend,
             stop_placement=self.stop_placement,
             custom=frozenset(custom),
-            min_lot_fallback=self.min_lot_fallback and not aggressive,
+            min_lot_fallback=self.min_lot_fallback
+            or aggressive,  # the preset always (the cage caps its risk)
             risk_mode=self.risk_mode,
             **values,
         )

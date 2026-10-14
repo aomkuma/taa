@@ -69,14 +69,16 @@ class TestCage:
         assert cage.max_weekly_loss_percent == 35.0
         assert cage.max_open_positions == 3
         assert cage.max_same_direction_per_currency == 1
-        assert cage.max_effective_leverage == 50.0
-        assert cage.min_lot_fallback is False
+        assert cage.max_effective_leverage == 200.0  # 0.01 lot of gold on 50 USD is ~90x (owner, 2026-10-14)
+        assert cage.min_lot_fallback is True and cage.min_lot_max_risk_percent == 15.0
         assert cage.setups == ("a",)
         assert cage.fade_risk_factor == 0.5
 
-    def test_cage_takes_no_fallback_from_the_base(self) -> None:
-        cage = HighRiskConfig(setups=["a"]).cage(RiskConfig(min_lot_fallback=True))
-        assert cage.min_lot_fallback is False
+    def test_cage_caps_the_fallback_whatever_the_base(self) -> None:
+        cage = HighRiskConfig(setups=["a"], min_lot_max_risk_percent=10).cage(
+            RiskConfig(min_lot_fallback=False)
+        )
+        assert cage.min_lot_fallback is True and cage.min_lot_max_risk_percent == 10.0
 
     @pytest.mark.parametrize(
         ("field", "value"),
@@ -87,16 +89,17 @@ class TestCage:
             ("max_weekly_loss_percent", 36),
             ("max_account_drawdown_percent", 61),
             ("max_open_positions", 4),
-            ("max_effective_leverage", 51),
+            ("max_effective_leverage", 201),
+            ("min_lot_max_risk_percent", 21),
         ],
     )
     def test_section_above_the_cage_ceilings_is_refused(self, field: str, value: float) -> None:
         with pytest.raises(ValidationError):
             HighRiskConfig.model_validate({"setups": ["a"], field: value})
 
-    def test_cage_refuses_the_fallback(self) -> None:
+    def test_cage_refuses_an_uncapped_fallback(self) -> None:
         with pytest.raises(ValidationError, match="minimum lot"):
-            HighRiskCage(setups=("a",), min_lot_fallback=True)
+            HighRiskCage(setups=("a",), min_lot_fallback=True, min_lot_max_risk_percent=None)
 
     @pytest.mark.parametrize("mode", ["LIVE", "BACKTEST"])
     def test_modes_paper_and_demo_only(self, mode: str) -> None:

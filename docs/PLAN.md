@@ -2747,7 +2747,9 @@ standard mode (config.yaml).
 | weekly loss | 35 % | 35 % |
 | drawdown kill (MAX_DRAWDOWN latches, manual reset) | 60 % from the peak | 60 %, also checked before entry: drawdown + open risk + this trade |
 | consecutive losses | 4, then a 24 h pause | same |
-| one trade per currency direction, notional leverage cap 50, **no minimum-lot fallback** | | |
+| minimum lot when the budget buys less (owner, 2026-10-14: a 50-100 USD account must trade) | its risk at most 20 % | 15 % (`min_lot_max_risk_percent`), else no trade |
+| notional leverage cap | 200 (0.01 lot of gold on 50 USD is ~90x) | 200 |
+| one trade per currency direction | | |
 
 **Fail closed.** The preset applies only when every condition holds; otherwise the engine refuses it (audited
 `HIGH_RISK_REFUSED`) and trades the owner's STANDARD profile:
