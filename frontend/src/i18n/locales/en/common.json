@@ -602,6 +602,10 @@
         "label": "Room to the next level (ATR)",
         "hint": "Minimum distance to the next support/resistance, in ATR"
       },
+      "level_gate": {
+        "label": "Entry at a level",
+        "hint": "Enter only near a support (BUY) or resistance (SELL) of the chart read, including a broken level that flipped"
+      },
       "max_rr": {
         "label": "Farthest target (R)",
         "hint": "Skip plans whose target is farther than this many times the risk (empty: no limit)"
@@ -621,6 +625,10 @@
       "min_rr": {
         "label": "Minimum reward:risk",
         "hint": "The target must be at least this many times the risk"
+      },
+      "mixed_rule": {
+        "label": "In a triangle or megaphone",
+        "hint": "Trade as usual, only the surest signals (the next timeframe up trends with the trade and the entry is at a supportive level), or not at all"
       },
       "phase_gate": {
         "label": "Market phase",
@@ -642,6 +650,10 @@
         "label": "Require the higher-timeframe trend",
         "hint": "Enter only when the higher-timeframe trend does not oppose"
       },
+      "room_min_r": {
+        "label": "Room to the next level (R)",
+        "hint": "At least this many R to the nearest opposing level of the chart read (empty: no check)"
+      },
       "rr_target": {
         "label": "Take-profit (R)",
         "hint": "Take-profit in multiples of the risk when no measured target is used"
@@ -653,6 +665,10 @@
       "screen_h4": {
         "label": "First screen (H4)",
         "hint": "The H4 trend the trade needs (triple screen: the tide)"
+      },
+      "screen_source": {
+        "label": "Screens read",
+        "hint": "What the two screens read: the market-map state, or the swing structure of the MT5 ZigZag (triangles and megaphones count as a range)"
       },
       "screen_tide_tf": {
         "label": "First screen timeframe",
@@ -689,6 +705,18 @@
       "stop_mode": {
         "label": "Stop placement",
         "hint": "Where the signal's stop goes"
+      },
+      "structure_gate": {
+        "label": "Swing structure",
+        "hint": "The swing structure of the chart read timeframe the trade needs"
+      },
+      "structure_stop": {
+        "label": "Stop beyond the swing",
+        "hint": "The stop goes beyond the last swing behind the entry (at most the maximum SL in ATR); the target keeps its R multiple"
+      },
+      "structure_tf": {
+        "label": "Chart read timeframe",
+        "hint": "The timeframe whose swings, levels and phase the chart-read rules below use"
       },
       "swing_k": {
         "label": "Swing width (bars)",
@@ -812,6 +840,32 @@
         "H1": "H1",
         "H4": "H4",
         "D1": "D1"
+      },
+      "screen_source": {
+        "map": "the market-map state",
+        "swings": "the swing structure"
+      },
+      "structure_tf": {
+        "M5": "M5",
+        "M15": "M15",
+        "M30": "M30",
+        "H1": "H1",
+        "H4": "H4",
+        "D1": "D1"
+      },
+      "structure_gate": {
+        "off": "no check",
+        "not_against": "not against the trade",
+        "with": "with the trade"
+      },
+      "mixed_rule": {
+        "any": "trade as usual",
+        "surest": "only the surest signals",
+        "skip": "no trade"
+      },
+      "level_gate": {
+        "off": "no check",
+        "at_level": "at a supportive level"
       }
     }
   },

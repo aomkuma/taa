@@ -174,6 +174,46 @@ opposite edge), `compression`, `zone_with` and `zone_with_strength` (the entry w
 on its side: demand for a BUY), `room_r` (distance to the nearest opposing zone, in R of the trade's risk, capped at
 10) and `zone_before_tp` (an opposing zone lies between the entry and the target).
 
+## Chart read (`app/indicators/chart_read.py`, TAA-L813)
+
+One timeframe's chart read the way a trader does (design: `docs/CHART_READ.md` §4; parameters in
+`context_map.chart_read:`). `ChartReadFrame(timeframe, candles, point, params)` computes the swings and ATR(14)
+of a frame once; `.at(pos)` reads one bar (None before the ATR is defined). Closed bars only.
+
+**Swings: the MT5 standard ZigZag** (Depth 12, Deviation 5 points, Backstep 3), ported from MetaQuotes'
+`ZigZag.mq5` (full-calculation path):
+
+- maps: at bar *s* the lowest low of the last `depth` bars is a low candidate when it differs from the previous
+  bar's window low and the bar's own low equals it (within `deviation` × point for the erase step); a new
+  candidate erases higher candidates of the last `backstep` bars. Highs mirrored;
+- cutting: highs and lows alternate; a lower low replaces the pending low while searching for a peak, and the
+  first high candidate (on a bar without a low candidate) fixes the pending low. A bar with both candidates is
+  skipped.
+- **No repainting:** a pivot is known from the opposite candidate's bar + `backstep` (when that candidate is
+  final). In a straight leg every candidate but the extreme is erased, so a pivot is known only once the next
+  leg's extreme has held `backstep` bars: on FBS-Demo history (XAUUSD, EURUSD, GBPUSD, USDJPY) the median lag
+  from the pivot bar is 11-12 bars (p90 about 21-23) against a median leg of 13-14 bars, on M15, H1 and H4 alike.
+- The live MT5 chart recalculates only its last three extremes, with its tie memory reset, so a chart left
+  open can differ from a fresh calculation on equal-high/equal-low bars of its last legs. The port is checked
+  against values exported from the terminal: `scripts/mt5/TAA_ExportZigZag.mq5` + `scripts/compare_zigzag.py`.
+
+**The read at bar *t*** (all distances in ATR of bar *t*; the tolerance is `tol_atr` × ATR of the bar tested):
+
+| Part | Rule |
+|---|---|
+| Labels | HH/LH/EQH, HL/LL/EQL against the previous pivot of the kind; equal within `equal_atr` × ATR at the pivot's known bar |
+| Structure | UP = HH + HL, DOWN = LH + LL, CONTRACTING = LH + HL, BROADENING = HH + LL, FLAT = an EQH/EQL, NONE before two labelled kinds |
+| Invalidation / broken | DOWN: the last LH, UP: the last HL; `broken` = a close beyond it since the last pivot's bar |
+| Age | pivots since the structure last changed |
+| Leg in progress | from the last pivot to the extreme since; `retrace` = (P1 − close) / (P1 − P0), 0 at the last pivot, 1 back at the previous one |
+| Levels | known pivots of the last `level_lookback` bars, clustered within `level_tol_atr` × ATR; price = the mean |
+| Roles | closes through the level (beyond by the tolerance, and the next `hold_bars` closes stay beyond the level; a close inside the band keeps the side): none = SUPPORT/RESISTANCE by side, one = FLIPPED, two or more = SPENT (dropped). A false break does not count as a close through |
+| Retests | for a FLIPPED level: bars probing it from the new side within the tolerance that close on that side in their colour |
+| Trendlines | DOWN/CONTRACTING: through the last two highs when falling; UP/CONTRACTING: through the last two lows when rising; touches, slope, distance, first close beyond by the tolerance = broken |
+| Events (known within the last `event_bars`) | BREAK_HOLD: a close beyond a level or trendline by the tolerance from a close that was not, and `hold_bars` closes beyond; SWEEP_RECLAIM: a high/low beyond a level by the tolerance from a close on the other side, and a close back within `reclaim_bars` (direction = the reclaim's); RETEST: as above, on the last bars |
+| Scenarios | at the nearer of the nearest support and resistance: BREAK (on to the next level beyond) and REJECT (back to the opposite level), plus the trend's invalidation in the text |
+| `retrace_major` | `with_major(read, higher)`: the close inside the last leg of the next-higher timeframe's read |
+
 ## Verification
 
 | Check | Where |
@@ -182,6 +222,7 @@ on its side: demand for a BUY), `room_r` (distance to the nearest opposing zone,
 | TA-Lib cross-check (skipped when TA-Lib is absent): exact for SMA, EMA, RSI, Stochastic, CCI, TR, ATR and Bollinger; within 1e-10 (MACD) and 1e-6 (±DI, ADX) after a 300-bar burn-in | `TestTalibCrossCheck` in the per-module test files |
 | Contract for every indicator: output columns and index, NaN exactly before the documented first position and finite after it on clean data, all-NaN (not an error) on short input, and no look-ahead (replacing the bars after *t* leaves every output at or before *t* unchanged) | `tests/unit/test_indicators_contract.py` (`REGISTRY`) |
 | Structured price action (swings, structure, breakouts) has its own look-ahead and truncation tests | `tests/unit/test_indicators_price_action.py` |
+| Chart read: the read on data cut at *t* equals the read at *t* (30 random cut points), future mutation, synthetic staircase/triangle/megaphone/flat paths, flips, retests, sweeps, holds, JSON round trip | `tests/unit/test_chart_read.py` |
 | Invariants on arbitrary valid OHLC (hypothesis): oscillators in [0, 100], averages within the input range, Bollinger ordering, ATR ≤ the largest true range, candle ratios partition the range, swings are local extremes confirmed *k* bars later | `tests/property/test_indicator_properties.py` |
 
 A new indicator gets an entry in this document, a hand-computed reference test and a `REGISTRY` entry in the

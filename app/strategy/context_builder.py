@@ -307,7 +307,7 @@ class ContextBuilder:
         decision_time = pd.Timestamp(frames[entry_tf].df.index[-1]).to_pydatetime()
         quote = self.quotes.quote(spec) if self.quotes is not None and spec is not None else None
         snapshots = self.evaluate_evidence(symbol, frames, decision_time)
-        htf = self.market_map(symbol, decision_time)
+        htf = self.market_map(symbol, decision_time, None if spec is None else spec.point)
         ctx = context_at(
             frames,
             symbol=symbol,
@@ -324,8 +324,12 @@ class ContextBuilder:
         log_analysis(ctx.market)
         return ctx
 
-    def market_map(self, symbol: str, decision_time: datetime) -> MarketMap | None:
-        """The higher-timeframe map at *decision_time*; None when off or unavailable (measurement only)."""
+    def market_map(
+        self, symbol: str, decision_time: datetime, point: float | None = None
+    ) -> MarketMap | None:
+        """The higher-timeframe map at *decision_time*; None when off or unavailable (measurement only).
+
+        *point* (the symbol's) adds the chart read (TAA-L813)."""
         if self.maps is None:
             return None
         tfs = self.config.timeframes
@@ -335,7 +339,7 @@ class ContextBuilder:
                 frame = self.candles.closed_candles(symbol, tf, tfs.context_bars)
                 if not frame.df.empty:
                     candles[tf] = candle_frame(frame.df)
-            return self.maps.at(symbol, candles, decision_time)
+            return self.maps.at(symbol, candles, decision_time, point)
         except TaaError as exc:
             log.warning("market map for %s unavailable: %s", symbol, exc)
             return None

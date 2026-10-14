@@ -55,6 +55,22 @@ Each setup turns one *trigger* detector's evidence on the entry timeframe into a
   many entry bars instead of the frame's ATR(14) (M1: 60 bars = one hour, the scale the behaviour was
   measured on); ``skip_window_ny`` ("HH:MM-HH:MM" New York time) takes no entry inside it (gold scalps lose
   around the US releases, 08:00-12:00 New York). Both off by default.
+- **Chart read gates** (TAA-L813, docs/CHART_READ.md §7; each off by default, chosen per setup only after
+  its backtests hold). They read the chart read of ``structure_tf`` (a context timeframe; the MT5 ZigZag
+  swings) relative to the trade actually taken (the fade's side for a fade), at the plan's entry; a missing
+  read holds (fail closed):
+  - ``screen_source: swings``: the two screens (and the fade's "against both") read the swing structure
+    instead of the map state; CONTRACTING / BROADENING / FLAT count as a range;
+  - ``structure_gate`` (``not_against`` / ``with``): the swing structure must not oppose (must follow) the
+    trade; a mixed phase is not against;
+  - ``mixed_rule`` in a CONTRACTING / BROADENING / FLAT phase: ``any`` trades as usual, ``surest`` needs the
+    next-higher context timeframe's swing trend with the trade **and** the entry at a supportive or flipped
+    level, ``skip`` takes nothing (the system principle: ``surest`` before ``skip``);
+  - ``level_gate: at_level``: the entry within the read's tolerance of a supportive or flipped level;
+  - ``room_min_r``: at least this many R to the nearest opposing level of the read;
+  - ``structure_stop``: the trade's stop beyond the last swing pivot behind the entry (the low for a BUY) by
+    ``stop_buffer_atr`` × ATR, at most ``max_sl_atr`` ATR; the target keeps its R multiple. A separate switch
+    rather than a ``stop_mode`` because a fade mirrors the trigger plan, whose stop becomes the fade's target.
 - **Rules:** the shared checks of :mod:`app.strategy.rules` (SL ≤ ``max_sl_atr`` ATR, RR ≥ ``min_rr``,
   spread ≤ ``max_spread_to_sl`` of the SL, session window, Friday cutoff), plus each setup's confirmations.
 
@@ -74,8 +90,9 @@ from pydantic import Field, field_validator
 
 from app.core.enums import Action, Timeframe, Trend
 from app.evidence.framework import ActiveEvidence, Direction, Evidence, Family
-from app.indicators.market_map import MapParams, MapState, MapZone, ZoneKind, state_frame
-from app.indicators.price_action import market_structure
+from app.indicators.chart_read import MIXED, ChartRead, Structure
+from app.indicators.market_map import MapParams, MapState, MapZone, TimeframeMap, ZoneKind, state_frame
+from app.indicators.price_action import SwingKind, market_structure
 from app.strategy.base_strategy import BaseStrategy
 from app.strategy.rules import (
     EntryRuleParams,
@@ -101,6 +118,10 @@ ZoneStopFrame = Literal["H1", "H4"]
 QuietRule = Literal["none", "m15_not_range"]
 TrendStructure = Literal["any", "entry", "entry_and_higher"]
 SkipBroadening = Literal["none", "higher"]
+ScreenSource = Literal["map", "swings"]
+StructureGate = Literal["off", "not_against", "with"]
+MixedRule = Literal["any", "surest", "skip"]
+LevelGate = Literal["off", "at_level"]
 
 # the trade-relative map states each screen gate lets through
 _SCREEN_OK: dict[str, frozenset[str]] = {
@@ -145,6 +166,13 @@ class SetupParams(EntryRuleParams):
     trend_entry_window_ny: str | None = Field(
         default=None, description="HH:MM-HH:MM New York time for entries in the trigger's direction"
     )
+    screen_source: ScreenSource = "map"
+    structure_tf: ScreenFrame = "H1"  # the chart read the gates below use (a context timeframe)
+    structure_gate: StructureGate = "off"
+    mixed_rule: MixedRule = "any"
+    level_gate: LevelGate = "off"
+    room_min_r: float | None = Field(default=None, gt=0, le=10, description="R to the nearest opposing level")
+    structure_stop: bool = False
 
     @field_validator("trend_entry_window_ny", "skip_window_ny")
     @classmethod
@@ -262,6 +290,10 @@ class EvidenceSetup(BaseStrategy):
             take_profit = entry + (take_profit - entry) * p.trend_stop_scale
             risk *= p.trend_stop_scale
             stop_note += f", x{p.trend_stop_scale:g}"
+        if p.structure_stop:
+            stop, take_profit, risk, stop_note = self._structure_stop(
+                market, entry, stop, take_profit, atr_v, spread, -sign if fade else sign, fade, stop_note
+            )
         conds += risk_conditions(
             entry=entry,
             stop=stop,
@@ -301,6 +333,9 @@ class EvidenceSetup(BaseStrategy):
                 if p.trend_structure == "entry_and_higher":
                     frames.append(market.higher_timeframe)
                 conds += [_structure_with(ctx, tf, buy) for tf in frames]
+        trade_buy = buy is not fade
+        trade_risk = abs(take_profit - entry) if fade else risk
+        conds += _read_gates(market, p, trade_buy, entry, trade_risk)
         if not all(c.passed for c in conds):
             reasons = failed_reasons(conds, {"htf_not_opposed": ReasonCode.CONFLICT})
             return self.hold(ctx, *reasons, conditions=conds, explanation=explain(conds))
@@ -368,6 +403,47 @@ class EvidenceSetup(BaseStrategy):
         if p.stop_mode == "nearer" and (atr_stop - inv_stop) * sign > 0:
             return atr_stop, f"{p.sl_atr_multiple:g} ATR (nearer than the invalidation {ref:.5g})"
         return inv_stop, f"beyond the invalidation {ref:.5g}"
+
+    def _structure_stop(
+        self,
+        market: MarketContext,
+        entry: float,
+        stop: float,
+        take_profit: float,
+        atr_v: float,
+        spread: float,
+        side: int,
+        fade: bool,
+        note: str,
+    ) -> tuple[float, float, float, str]:
+        """``structure_stop``: the stop of the trade taken (*side*) beyond the last swing pivot behind the
+        entry, the target at the same R multiple. A fade's trade stop is the plan's target (and its target the
+        plan's stop), so for a fade the plan's two prices move. Returns the plan's (stop, take_profit, risk,
+        note)."""
+        p: SetupParams = self.params
+        read = _read(market, p.structure_tf)
+        kind = SwingKind.LOW if side > 0 else SwingKind.HIGH
+        pivots = () if read is None else read.pivots
+        pivot = next(
+            (q.price for q in reversed(pivots) if q.kind is kind and (entry - q.price) * side > 0), None
+        )
+        if pivot is None:
+            return (
+                stop,
+                take_profit,
+                abs(entry - stop),
+                note + f" (no {p.structure_tf} swing behind the entry)",
+            )
+        dist = min((entry - pivot) * side + p.stop_buffer_atr * atr_v + spread, p.max_sl_atr * atr_v)
+        trade_stop = entry - side * dist
+        where = f"the {p.structure_tf} swing {pivot:.5g}"
+        if fade:  # the trade's stop is the plan's target; the trade's target (the plan's stop) keeps its R
+            old = abs(take_profit - entry)
+            stop = entry + (stop - entry) * (dist / old) if old > 0 else stop
+            return stop, trade_stop, abs(entry - stop), note + f"; the fade's stop beyond {where}"
+        old = abs(entry - stop)
+        take_profit = entry + (take_profit - entry) * (dist / old) if old > 0 else take_profit
+        return trade_stop, take_profit, dist, f"beyond {where}"
 
     def _target(
         self, ev: Evidence, market: MarketContext, entry: float, risk: float, sign: int
@@ -456,12 +532,32 @@ def _ny_window(at: datetime, window: str) -> Condition:
     return Condition("trend_entry_window", inside, 1.0, f"{local:%H:%M} New York vs {window}")
 
 
+def _swing_relative(read: ChartRead | None, buy: bool) -> str:
+    """A chart read's structure relative to the trade: WITH, AGAINST, RANGE (a mixed phase) or NONE."""
+    if read is None or read.structure is Structure.NONE:
+        return "NONE"
+    if read.structure in MIXED:
+        return "RANGE"
+    return "WITH" if (read.structure is Structure.UP) == buy else "AGAINST"
+
+
+def _screen_relative(m: TimeframeMap | None, p: SetupParams, buy: bool) -> str:
+    if m is None:
+        return "NONE"
+    return _swing_relative(m.read, buy) if p.screen_source == "swings" else _relative(m.state, buy)
+
+
+def _read(market: MarketContext, tf: str) -> ChartRead | None:
+    m = None if market.htf is None else market.htf.frames.get(tf)
+    return None if m is None else m.read
+
+
 def _against_both(market: MarketContext, p: SetupParams, buy: bool) -> bool:
     """The trigger runs against both the tide and the wave trend (H4/H1 by default; a missing map: no)."""
     if market.htf is None:
         return False
     frames = [market.htf.frames.get(f) for f in (p.screen_tide_tf, p.screen_wave_tf)]
-    return all(m is not None and _relative(m.state, buy) == "AGAINST" for m in frames)
+    return all(m is not None and _screen_relative(m, p, buy) == "AGAINST" for m in frames)
 
 
 def _screens(market: MarketContext, p: SetupParams, buy: bool) -> list[Condition]:
@@ -474,8 +570,80 @@ def _screens(market: MarketContext, p: SetupParams, buy: bool) -> list[Condition
         if gate == "any":
             continue
         m = None if market.htf is None else market.htf.frames.get(frame)
-        rel = _relative(None if m is None else m.state, buy)
-        out.append(Condition(name, rel in _SCREEN_OK[gate], 1.0, f"{frame} {rel.lower()} (needs {gate})"))
+        rel = _screen_relative(m, p, buy)
+        src = " swings" if p.screen_source == "swings" else ""
+        out.append(
+            Condition(name, rel in _SCREEN_OK[gate], 1.0, f"{frame}{src} {rel.lower()} (needs {gate})")
+        )
+    return out
+
+
+def _at_level(read: ChartRead, buy: bool, entry: float) -> tuple[bool, str]:
+    """The entry within the read's tolerance of a level that supports the trade (a support or a flipped level
+    below for a BUY, a resistance or a flipped level above for a SELL)."""
+    tol = read.tol_atr * read.atr
+    hits = [lv for lv in read.levels if lv.above is not buy and abs(entry - lv.price) <= tol]
+    if not hits:
+        return False, f"{read.timeframe} no supportive level within {read.tol_atr:g} ATR"
+    lv = min(hits, key=lambda x: abs(entry - x.price))
+    return True, f"{read.timeframe} {lv.role.value.lower()} {lv.price:.5g}"
+
+
+def _higher_read(market: MarketContext, tf: str) -> ChartRead | None:
+    """The chart read of the next-higher context timeframe than *tf*."""
+    if market.htf is None:
+        return None
+    base = Timeframe(tf).seconds
+    above = sorted(
+        (Timeframe(k) for k in market.htf.frames if Timeframe(k).seconds > base), key=lambda t: t.seconds
+    )
+    return None if not above else _read(market, above[0].value)
+
+
+def _read_gates(
+    market: MarketContext, p: SetupParams, buy: bool, entry: float, risk: float
+) -> list[Condition]:
+    """The chart read gates of the trade actually taken (*buy* is its side; CHART_READ.md §7)."""
+    on = (
+        p.structure_gate != "off"
+        or p.mixed_rule != "any"
+        or p.level_gate != "off"
+        or p.room_min_r is not None
+    )
+    if not on:
+        return []
+    tf = p.structure_tf
+    read = _read(market, tf)
+    if read is None:
+        return [Condition("chart_read", False, 1.0, f"no {tf} chart read")]
+    out: list[Condition] = []
+    rel = _swing_relative(read, buy)
+    if p.structure_gate != "off":
+        ok = rel == "WITH" or (p.structure_gate == "not_against" and rel == "RANGE")
+        detail = f"{tf} {read.structure.value} {rel.lower()} (needs {p.structure_gate})"
+        out.append(Condition("structure_gate", ok, 1.0, detail))
+    if p.mixed_rule != "any" and read.structure in MIXED:
+        if p.mixed_rule == "skip":
+            out.append(Condition("mixed_phase", False, 1.0, f"{tf} {read.structure.value}: skipped"))
+        else:
+            higher = _higher_read(market, tf)
+            trend = _swing_relative(higher, buy)
+            at, where = _at_level(read, buy, entry)
+            name = "-" if higher is None else higher.timeframe
+            detail = f"{tf} {read.structure.value}: surest: {name} {trend.lower()}, {where}"
+            out.append(Condition("mixed_phase", trend == "WITH" and at, 1.0, detail))
+    if p.level_gate == "at_level":
+        at, where = _at_level(read, buy, entry)
+        out.append(Condition("at_read_level", at, 1.0, where))
+    if p.room_min_r is not None:
+        sign = 1 if buy else -1
+        ahead = [(lv.price - entry) * sign for lv in read.levels if (lv.price - entry) * sign > 0]
+        if not ahead or risk <= 0:
+            out.append(Condition("room_to_level", risk > 0, 1.0, f"{tf} no opposing level ahead"))
+        else:
+            room = min(ahead) / risk
+            detail = f"{room:.2f} R to the {tf} level (needs {p.room_min_r:g})"
+            out.append(Condition("room_to_level", room >= p.room_min_r, 1.0, detail))
     return out
 
 

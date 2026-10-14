@@ -240,7 +240,11 @@ class HistoricalReplay:
             bar = entry_bar(row, t, self.broker.spread_price(symbol, float_or_none(row["spread"])))
             self.broker.on_bar(symbol, bar)  # conversion rates and tick values at t
             spec = self.broker.spec_at(symbol)
-            htf = None if self.maps is None else self.maps.at(symbol, self.context.get(symbol, {}), t)
+            htf = (
+                None
+                if self.maps is None
+                else self.maps.at(symbol, self.context.get(symbol, {}), t, spec.point)
+            )
             try:
                 ctx = bar_context(self.config, analyzed, symbol, t, bar, spec, self.evidence, htf)
             except (InsufficientDataError, DataQualityError):

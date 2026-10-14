@@ -317,10 +317,9 @@ class BacktestEngine:
     def _context(
         self, symbol: str, frames: Mapping[Timeframe, AnalyzedFrame], t: datetime, bar: Bar
     ) -> StrategyContext:
-        htf = None if self.maps is None else self.maps.at(symbol, self.context.get(symbol, {}), t)
-        return bar_context(
-            self.config, frames, symbol, t, bar, self.broker.spec_at(symbol), self.evidence, htf
-        )
+        spec = self.broker.spec_at(symbol)
+        htf = None if self.maps is None else self.maps.at(symbol, self.context.get(symbol, {}), t, spec.point)
+        return bar_context(self.config, frames, symbol, t, bar, spec, self.evidence, htf)
 
     def _manage(self, symbol: str, ctx: StrategyContext, bar: Bar) -> None:
         cfg = self.config.position_management

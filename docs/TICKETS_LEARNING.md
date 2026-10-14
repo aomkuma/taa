@@ -685,7 +685,7 @@ deterministically and backtests it; Path B (Phase 16) asks the AI the same quest
 
 #### TAA-L813 — Chart read: the bot reads a chart the way a trader does (2026-10-14)
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** L809 (market map), L811 (two-world backtests), L810 (setup workbench)
 
 Plan: `docs/CHART_READ.md` (a major change). The owner asked how the bot can read a chart as a trader does: major
@@ -695,11 +695,11 @@ first (§2): the map state calls a trend on 17-19 % of H1/H4 bars vs about 60 % 
 alone does not predict the next 24 bars; the proven setups' trade splits change with the swing definition, so
 rules are chosen walk-forward (first half), never off the full year.
 
-- [ ] CR-1: `app/indicators/chart_read.py` (MT5 ZigZag 12/5/3 port checked against values exported from the terminal; swings, structure, levels with roles, trendline, position, events, scenario text), `context_map.chart_read` config, tests (prefix property, synthetic paths)
-- [ ] CR-2: `MapBook` + market document (optional key, old digests valid) + `ctx:<tf>_sw_*` / `lvl_*` / `tl_*` / `ev_*` features
-- [ ] CR-3: the proven setups' year replayed with the features; at most three pre-registered rules per setup; halves + hold-out symbols
+- [x] CR-1: `app/indicators/chart_read.py` (MT5 ZigZag 12/5/3 port checked against values exported from the terminal; swings, structure, levels with roles, trendline, position, events, scenario text), `context_map.chart_read` config, tests (prefix property, synthetic paths)
+- [x] CR-2: `MapBook` + market document (optional key, old digests valid) + `ctx:<tf>_sw_*` / `lvl_*` / `tl_*` / `ev_*` features
+- [x] CR-3: the proven setups' year replayed with the features; at most three pre-registered rules per setup; halves + hold-out symbols
 - [ ] CR-4: PWA overlay (pivots, labels, levels by role, trendline, invalidation, scenarios; TH/EN) and the owner's eye check (20 charts the bot samples across symbols, timeframes and phases; 16 must agree)
-- [ ] CR-5: setup parameters `screen_source`, `structure_tf`/`structure_gate`, `mixed_rule`, `level_gate`, `room_min_r`, `stop_mode: structure` (off by default; TH/EN labels)
+- [x] CR-5: setup parameters `screen_source`, `structure_tf`/`structure_gate`, `mixed_rule`, `level_gate`, `room_min_r`, `stop_mode: structure` (off by default; TH/EN labels)
 - [ ] CR-6: backtest ladder (March 2026 → August 2026 → year) for breakout F1, then harmonic V1; SETUP_REVIEW sections; config.yaml only for what passes
 - [ ] CR-7: the read feeds `setup_confluence` (L812) and the M1 scalping screens (M15/M30/H1)
 

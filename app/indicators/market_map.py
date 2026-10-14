@@ -30,6 +30,8 @@ number of confirmed swing highs (lows) within ``zone_tolerance_atr`` × ATR of t
   removes it.
 
 Signal features (:func:`signal_features`) express the map relative to one trade (side, entry, stop, target).
+A frame may carry the timeframe's chart read (:mod:`app.indicators.chart_read`, TAA-L813); its features are
+``ctx:<tf>_sw_*``, ``_inv_r``, ``_lvl_*``, ``_tl_atr``, ``_retrace*`` and ``_ev_*``.
 """
 
 from __future__ import annotations
@@ -44,6 +46,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from app.indicators.chart_read import ChartRead, EventKind, LevelRole, Structure
 from app.indicators.common import FloatArray
 from app.indicators.price_action import SwingKind, find_swings, market_structure, sr_zones
 from app.indicators.trend import adx, ema
@@ -133,6 +136,7 @@ class TimeframeMap:
     box: RangeBox | None
     zones: tuple[MapZone, ...] = ()
     atr_pct: float | None = None  # ATR percentile over ``MapParams.pct_lookback`` bars, 0..100 (quiet phases)
+    read: ChartRead | None = None  # TAA-L813: the chart read at the same bar, when configured
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,6 +176,8 @@ def _tf_to_dict(m: TimeframeMap) -> dict[str, Any]:
         "compression": m.compression,
         "atr_pct": m.atr_pct,
         "box": None if m.box is None else asdict(m.box),
+        # only when present, so maps (and decision digests) without a read stay as they were
+        **({} if m.read is None else {"read": m.read.to_dict()}),
         "zones": [
             {
                 **asdict(z),
@@ -197,6 +203,7 @@ def _tf_from_dict(d: Mapping[str, Any]) -> TimeframeMap:
         close=float(d["close"]),
         compression=bool(d["compression"]),
         atr_pct=d.get("atr_pct"),  # absent in records before 2026-10-14
+        read=ChartRead.from_dict(d["read"]) if d.get("read") else None,
         box=None if box is None else RangeBox(**box),
         zones=tuple(
             MapZone(
@@ -482,4 +489,66 @@ def signal_features(
         if target is not None:
             span = (target - entry) * sign
             out[key + "zone_before_tp"] = 1.0 if nearest is not None and 0 < nearest < span else 0.0
+        if m.read is not None:
+            out.update(
+                read_features(m.read, key, buy=buy, entry=entry, risk=risk, room_cap=market_map.room_cap_r)
+            )
+    return out
+
+
+_PHASE = {
+    Structure.UP: 0.0,
+    Structure.DOWN: 0.0,
+    Structure.CONTRACTING: 1.0,
+    Structure.BROADENING: 2.0,
+    Structure.FLAT: 3.0,
+}
+
+
+def read_features(
+    r: ChartRead, key: str, *, buy: bool, entry: float, risk: float | None, room_cap: float
+) -> dict[str, float]:
+    """The chart read relative to one trade (docs/CHART_READ.md §6); absent keys = unknown.
+
+    ``inv_r`` = (entry − invalidation) × side / risk: positive when the structure's invalidation lies behind
+    the entry (below 1 the stop is beyond it), negative when it lies ahead (a trade against the structure).
+    ``tl_atr`` uses the line behind the trade (the support line for a BUY) when there is one, else the other.
+    """
+    out: dict[str, float] = {}
+    sign = 1 if buy else -1
+    a = r.atr
+    if r.structure is not Structure.NONE:
+        trend = sign if r.structure is Structure.UP else -sign if r.structure is Structure.DOWN else 0
+        out[key + "sw_trend"] = float(trend)
+        out[key + "sw_phase"] = _PHASE[r.structure]
+        out[key + "sw_age"] = float(r.age_legs)
+        out[key + "sw_broken"] = 1.0 if r.broken else 0.0
+    if r.invalidation is not None and risk:
+        out[key + "inv_r"] = round((entry - r.invalidation) * sign / risk, 4)
+    behind = [(entry - lv.price) * sign for lv in r.levels if (entry - lv.price) * sign >= 0]
+    if behind:
+        out[key + "lvl_with_atr"] = round(min(behind) / a, 4)
+    if risk:
+        ahead = [(lv.price - entry) * sign for lv in r.levels if (lv.price - entry) * sign > 0]
+        out[key + "lvl_against_r"] = round(min(room_cap, min(ahead) / risk) if ahead else room_cap, 4)
+    tol = r.tol_atr * a
+    out[key + "lvl_flipped"] = (
+        1.0
+        if any(
+            lv.role is LevelRole.FLIPPED and lv.above is not buy and abs(entry - lv.price) <= tol
+            for lv in r.levels
+        )
+        else 0.0
+    )
+    lines = {tl.kind.value: tl for tl in r.trendlines}
+    line = lines.get("LOW" if buy else "HIGH") or lines.get("HIGH" if buy else "LOW")
+    if line is not None:
+        out[key + "tl_atr"] = round((entry - line.value) * sign / a, 4)
+    if r.leg is not None and r.leg.retrace is not None:
+        out[key + "retrace"] = r.leg.retrace
+    if r.retrace_major is not None:
+        out[key + "retrace_major"] = r.retrace_major
+    for kind in EventKind:
+        last = max((e for e in r.events if e.kind is kind), key=lambda e: e.known_at, default=None)
+        out[key + "ev_" + kind.value.lower()] = 0.0 if last is None else float(last.direction * sign)
     return out

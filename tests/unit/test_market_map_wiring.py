@@ -136,6 +136,7 @@ def test_the_replay_records_the_map_features(tmp_path: Path) -> None:
     assert rows
     with_map = [r for r in rows if "ctx:h4_range" in r.features]  # trend is absent while EMA200 warms up
     assert with_map, "signals after the H4 warm-up carry the map"
+    assert any("ctx:h4_ev_break_hold" in r.features for r in with_map), "and the H4 chart read (TAA-L813)"
     assert all(r.signal_at >= datetime(2000, 1, 1, tzinfo=UTC) for r in with_map)
 
 

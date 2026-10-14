@@ -10,6 +10,12 @@
 
 Only bars closed at or before the decision time are used (``close_time <= t``). A context timeframe without
 enough bars is left out of the map instead of guessed.
+
+**Chart read** (TAA-L813, ``context_map.chart_read``): with the symbol's ``point`` given, each context
+timeframe's map also carries its :class:`~app.indicators.chart_read.ChartRead` at the same bar. The swings of
+a candle frame are computed once (cached like the states), the read once per context bar (inside the cached
+map), and ``retrace_major`` is set from the next-higher context timeframe at assembly. Without a point (or
+with the block disabled) the map is exactly as before.
 """
 
 from __future__ import annotations
@@ -18,12 +24,14 @@ import logging
 from collections.abc import Mapping
 from dataclasses import replace
 from datetime import datetime
+from itertools import pairwise
 
 import pandas as pd
 
 from app.config import AppConfig
 from app.core.clock import ensure_utc
 from app.core.enums import Timeframe
+from app.indicators.chart_read import ChartReadFrame, ChartReadParams, with_major
 from app.indicators.market_map import MapParams, MarketMap, TimeframeMap, state_frame, timeframe_map
 
 log = logging.getLogger(__name__)
@@ -45,6 +53,29 @@ def map_params(config: AppConfig, timeframe: Timeframe | None = None) -> MapPara
         er_range=base.er_range if o.er_range is None else o.er_range,
         trend_adx=reg.trend_adx if o.trend_adx is None else o.trend_adx,
         range_adx=reg.range_adx if o.range_adx is None else o.range_adx,
+    )
+
+
+def chart_read_params(config: AppConfig, timeframe: Timeframe | None = None) -> ChartReadParams | None:
+    """The chart read parameters for *timeframe* (``by_timeframe`` applied); None when the block is off."""
+    c = config.context_map.chart_read
+    if not c.enabled:
+        return None
+    o = None if timeframe is None else c.by_timeframe.get(timeframe)
+    return ChartReadParams(
+        depth=c.depth if o is None or o.depth is None else o.depth,
+        deviation=c.deviation if o is None or o.deviation is None else o.deviation,
+        backstep=c.backstep if o is None or o.backstep is None else o.backstep,
+        atr_period=config.indicators.atr_period,
+        equal_atr=c.equal_atr,
+        max_swings=c.max_swings,
+        level_lookback=c.level_lookback,
+        level_tol_atr=c.level_tol_atr,
+        max_levels=c.max_levels,
+        tol_atr=c.tol_atr,
+        event_bars=c.event_bars,
+        hold_bars=c.hold_bars,
+        reclaim_bars=c.reclaim_bars,
     )
 
 
@@ -91,11 +122,14 @@ class MapBook:
         params: MapParams,
         timeframes: list[Timeframe],
         by_timeframe: dict[Timeframe, MapParams] | None = None,
+        reads: Mapping[Timeframe, ChartReadParams] | None = None,
     ) -> None:
         self.params = params
         self.timeframes = list(timeframes)
         self.by_timeframe = dict(by_timeframe or {})
+        self.reads = dict(reads or {})
         self._states: dict[tuple[str, Timeframe], tuple[tuple[object, object, int], pd.DataFrame]] = {}
+        self._frames: dict[tuple[str, Timeframe], tuple[tuple[object, object, int], ChartReadFrame]] = {}
         self._maps: dict[tuple[str, Timeframe, object], TimeframeMap] = {}
 
     @classmethod
@@ -103,10 +137,19 @@ class MapBook:
         tfs = config.timeframes.context
         if not tfs:
             return None
-        return cls(map_params(config), tfs, {tf: map_params(config, tf) for tf in tfs})
+        reads = {tf: p for tf in tfs if (p := chart_read_params(config, tf)) is not None}
+        return cls(map_params(config), tfs, {tf: map_params(config, tf) for tf in tfs}, reads)
 
-    def at(self, symbol: str, candles: Mapping[Timeframe, pd.DataFrame], t: datetime) -> MarketMap | None:
-        """The map at *t* from *candles* (per context timeframe, :func:`candle_frame` form); None if empty."""
+    def at(
+        self,
+        symbol: str,
+        candles: Mapping[Timeframe, pd.DataFrame],
+        t: datetime,
+        point: float | None = None,
+    ) -> MarketMap | None:
+        """The map at *t* from *candles* (per context timeframe, :func:`candle_frame` form); None if empty.
+
+        *point* (the symbol's) enables the chart read of the configured timeframes."""
         at = pd.Timestamp(ensure_utc(t))
         frames: dict[str, TimeframeMap] = {}
         for tf in self.timeframes:
@@ -121,11 +164,34 @@ class MapBook:
             m = self._maps.get(key)
             if m is None:
                 m = timeframe_map(tf.value, frame, states, pos, self._params(tf))
+                if point is not None and tf in self.reads:
+                    m = replace(m, read=self._reader(symbol, tf, frame, point).at(pos))
                 self._maps[key] = m
             frames[tf.value] = m
         if not frames:
             return None
-        return MarketMap(frames, near_atr=self.params.zone_near_atr, room_cap_r=self.params.room_cap_r)
+        return MarketMap(
+            self._with_major(frames), near_atr=self.params.zone_near_atr, room_cap_r=self.params.room_cap_r
+        )
+
+    def _with_major(self, frames: dict[str, TimeframeMap]) -> dict[str, TimeframeMap]:
+        """Each read with ``retrace_major`` against the next-higher context timeframe's read."""
+        order = sorted((tf for tf in self.timeframes if tf.value in frames), key=lambda tf: tf.seconds)
+        out = dict(frames)
+        for low, high in pairwise(order):
+            m, h = frames[low.value], frames[high.value]
+            if m.read is not None and h.read is not None:
+                out[low.value] = replace(m, read=with_major(m.read, h.read))
+        return out
+
+    def _reader(self, symbol: str, tf: Timeframe, frame: pd.DataFrame, point: float) -> ChartReadFrame:
+        sig = (frame.index[0], frame.index[-1], len(frame))
+        cached = self._frames.get((symbol, tf))
+        if cached is not None and cached[0] == sig:
+            return cached[1]
+        reader = ChartReadFrame(tf.value, frame, point, self.reads[tf])
+        self._frames[(symbol, tf)] = (sig, reader)
+        return reader
 
     def _params(self, tf: Timeframe) -> MapParams:
         return self.by_timeframe.get(tf, self.params)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -225,7 +226,7 @@ class TestContextBuilder:
 
         builder = ContextBuilder(source, CFG, ManualClock(now), Quotes())
         with caplog.at_level(logging.INFO, logger="app.strategy.context_builder"):
-            ctx = builder.build("EURUSD", spec=object())  # type: ignore[arg-type]
+            ctx = builder.build("EURUSD", spec=SimpleNamespace(point=0.00001))  # type: ignore[arg-type]
         assert {(tf, count) for _, tf, count in source.calls} == {
             (Timeframe.H1, CFG.timeframes.warmup_bars),
             (Timeframe.M15, CFG.timeframes.warmup_bars),

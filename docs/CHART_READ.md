@@ -1,6 +1,7 @@
 # Chart read — the bot reads a chart the way a trader does
 
-Status: **plan, a major change, nothing built yet** (owner, 2026-10-14). Ticket: TAA-L813 in
+Status: **CR-1 done (2026-10-14): `app/indicators/chart_read.py`, `context_map.chart_read`; the port matches
+the terminal's ZigZag on 15 of 15 exports** (§4.8). CR-2 in work; the rest is a plan (owner, 2026-10-14). Ticket: TAA-L813 in
 `docs/TICKETS_LEARNING.md`. Related: `docs/CONFLUENCE_DIRECTION.md` (TAA-L812, which this read feeds),
 `docs/STRATEGIES.md` ("A signal alone is not enough"), `docs/PLAN_LEARNING.md` §L20.9 (the market map),
 `docs/SETUP_REVIEW.md` §15-§16. No profitability claims: this is a plan to measure, not a result.
@@ -213,6 +214,49 @@ From §4.2-§4.6 the read writes the two main paths with their trigger and inval
 explanation and the PWA. Example: "break below 2,345 that holds → next support 2,318; reclaim above 2,345 →
 resistance 2,361-2,366; the down trend ends above 2,384". The engine never acts on this text.
 
+### 4.8 Notes from building CR-1 (2026-10-14)
+
+- **The port is the full-calculation path of MetaQuotes' `ZigZag.mq5`** (version 1.00, read from the owner's FBS
+  terminal). A live chart recalculates only its last three extremes with its tie memory reset, so a chart left
+  open can differ from a fresh calculation on equal-high/low bars of its last legs.
+- **The swing read lags by about one leg.** In a straight leg the backstep erases every candidate but the
+  extreme, so a pivot is fixed only once the next leg's extreme has held `backstep` bars. On FBS-Demo history
+  (XAUUSD, EURUSD, GBPUSD, USDJPY; M15, H1, H4) the median lag from the pivot bar is 11-12 bars (p90 about
+  21-23) against a median leg of 13-14 bars. The §2 measurements used the same rule. `broken` (§4.2) and the
+  leg in progress (§4.5) are the read's early signs of a turn.
+- **A false break does not spend a level.** A close through counts only when the next `hold_bars` closes stay
+  beyond the level (the BREAK_HOLD rule), so a level that was swept and reclaimed keeps its role and carries
+  the SWEEP_RECLAIM event.
+- **`retrace` uses the close** (the position inside the previous leg: 0 at the last pivot, 1 back at the one
+  before), not the leg's extreme; the extreme is in `leg.extreme` / `leg_atr`. `retrace_major` is the close
+  inside the next-higher timeframe's last leg (`with_major`).
+- **Trendlines:** a CONTRACTING read has both lines; DOWN only the falling-tops line, UP only the rising-bottoms
+  line; none when the last two tops (bottoms) do not fall (rise).
+- **Runtime:** about 2 ms per read on H1 (300-bar level lookback), one read per context bar and symbol.
+- **The check against MT5 (2026-10-14): an exact match.** `scripts/mt5/TAA_ExportZigZag.mq5` (a read-only
+  script) ran headless in the FBS demo terminal (`/config` with `[StartUp] Script=…, ShutdownTerminal=1`, the
+  DEMO stack paused for one minute) and wrote the ZigZag buffer and its maps for XAUUSD, EURUSD, GBPUSD,
+  USDJPY and AUDUSD × M15/H1/H4, 3,000 closed bars each. `scripts/compare_zigzag.py`: 15 of 15 files match,
+  2,513 fixed pivots and every candidate-map bar equal (past the warm-up, before MT5's redrawn last leg). Two
+  files (800 bars each) are test fixtures (`tests/fixtures/mt5_zigzag/`).
+
+### 4.9 CR-2 built (2026-10-14)
+
+- `TimeframeMap.read` (only in the map's dict when present: older decision records and their digests load and
+  verify unchanged); `MapBook.at(..., point)` builds the read of every context timeframe (the swings once per
+  candle frame, the read once per context bar) and sets `retrace_major` from the next-higher context
+  timeframe. The backtest, the replay and the live context builder pass the symbol's point; the PWA's map
+  endpoint does not yet (CR-4).
+- The `ctx:<tf>_*` features of §6 come from `read_features` (`app/indicators/market_map.py`). `inv_r` =
+  (entry − invalidation) × side / risk: positive when the invalidation lies behind the entry (below 1 the stop
+  is beyond it), negative when it lies ahead.
+- Only the context timeframes are read, not the entry timeframe: an M15 (or M1) read on every entry bar would
+  cost far more than the budget, and the setups' screens are context timeframes. An entry-timeframe read can be
+  added by listing it in `timeframes.context`.
+- **Budget and golden check** (breakout F1, March 2026, 8 symbols, run side by side): 1,234 s with the read,
+  1,216 s without (+1.5 %); both runs and the earlier baseline give the same 12 trades (identical entries,
+  stops, targets and results).
+
 ## 5. Where it runs
 
 - **Computation:**
@@ -283,6 +327,17 @@ setup's trades without new tooling.
 
 Each one becomes a `Condition` with a TH/EN label (frontend `common.json`) and its numbers in the detail, like
 today's screens.
+
+**Built (CR-5, 2026-10-14), `app/strategy/setups.py`:** `screen_source`, `structure_tf` (default H1: the one read
+every gate below uses), `structure_gate`, `mixed_rule`, `level_gate: at_level`, `room_min_r` and
+`structure_stop`. All are judged on the trade actually taken (for a fade, the fade's side) at the plan's entry; a
+missing read holds (condition `chart_read`). Two choices made while building:
+- `stop_mode: structure` became a separate switch, **`structure_stop: true`**: a fade mirrors the trigger plan,
+  whose stop becomes the fade's target, so a stop mode of the plan cannot move the fade's stop. The switch moves
+  the stop of the trade taken beyond the last swing pivot behind the entry (`stop_buffer_atr` × ATR plus the
+  spread, at most `max_sl_atr` ATR) and keeps the target's R multiple.
+- `screen_source: swings` also drives the fade's "against both screens" test, so a fade reads the same trend
+  the screens do.
 
 ## 8. Measurement and adoption (theory a third, measured behaviour the rest)
 

@@ -713,6 +713,46 @@ class ContextMapOverride(StrictModel):
     range_adx: float | None = Field(default=None, gt=0, lt=100)
 
 
+class ChartReadOverride(StrictModel):
+    """Per-timeframe ZigZag settings of the chart read, only to match the owner's charts (never fitted to a
+    backtest; docs/CHART_READ.md §12). Unset fields keep the block's value."""
+
+    depth: int | None = Field(default=None, ge=2, le=500)
+    deviation: int | None = Field(default=None, ge=0, le=100_000)
+    backstep: int | None = Field(default=None, ge=1, le=100)
+
+
+class ChartReadConfig(StrictModel):
+    """The chart read (TAA-L813; app/indicators/chart_read.py): computed and recorded on every signal; no
+    setup uses it until its own params opt in. Swings: the MT5 standard ZigZag 12/5/3 (owner, 2026-10-14)."""
+
+    enabled: bool = True
+    depth: int = Field(default=12, ge=2, le=500)
+    deviation: int = Field(default=5, ge=0, le=100_000, description="points")
+    backstep: int = Field(default=3, ge=1, le=100)
+    equal_atr: float = Field(default=0.1, ge=0, le=2, description="EQH/EQL within this many ATR")
+    max_swings: int = Field(default=8, ge=2, le=50)
+    level_lookback: int = Field(default=300, ge=20, le=5000)
+    level_tol_atr: float = Field(default=0.5, gt=0, le=5)
+    max_levels: int = Field(default=6, ge=1, le=50, description="per side, nearest first")
+    tol_atr: float = Field(default=0.25, gt=0, le=3)
+    event_bars: int = Field(default=3, ge=1, le=50)
+    hold_bars: int = Field(default=1, ge=1, le=20)
+    reclaim_bars: int = Field(default=1, ge=1, le=20)
+    by_timeframe: dict[Timeframe, ChartReadOverride] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _check(self) -> ChartReadConfig:
+        if self.backstep >= self.depth:
+            raise ValueError("context_map.chart_read: backstep must be < depth")
+        for tf, o in self.by_timeframe.items():
+            depth = self.depth if o.depth is None else o.depth
+            backstep = self.backstep if o.backstep is None else o.backstep
+            if backstep >= depth:
+                raise ValueError(f"context_map.chart_read.by_timeframe.{tf.value}: backstep must be < depth")
+        return self
+
+
 class ContextMapConfig(StrictModel):
     """Parameters of the higher-timeframe market map (TAA-L809; app/indicators/market_map.py)."""
 
@@ -730,6 +770,7 @@ class ContextMapConfig(StrictModel):
     max_zones: int = Field(default=6, ge=1, le=50, description="per kind, nearest first")
     zone_near_atr: float = Field(default=0.25, ge=0, le=5)
     by_timeframe: dict[Timeframe, ContextMapOverride] = Field(default_factory=dict)
+    chart_read: ChartReadConfig = Field(default_factory=ChartReadConfig)
 
     @model_validator(mode="after")
     def _check(self) -> ContextMapConfig:
