@@ -7,7 +7,9 @@ with the owner's reading on at least 16 of 20.
 Groups (the phase the bot reads at the bar): UP, DOWN, CONTRACTING, BROADENING, FLIPPED (a flipped level within
 1 ATR of the close), SWEEP_RECLAIM and BREAK_HOLD (the event among the read's events). The 20 slots go round the
 groups, the timeframes and a shuffled symbol order; each slot draws random bars of the year (2025-10-01 ..
-2026-09-30) until the bar's read is in the slot's group. Seed 20261014, so the sample can be redrawn.
+2026-09-30) until the bar's read is in the slot's group. Seed 20261014, so the sample can be redrawn. Each read
+is computed as the PWA computes it (``market-map?read_tf=``): on the last ``READ_BARS`` bars up to that bar, so
+the table shows what the owner sees.
 
     .venv/Scripts/python research/2026-10-14-chart-read/eye_check_sample.py > research/2026-10-14-chart-read/EYE_CHECK.md
 """
@@ -32,6 +34,7 @@ START, END = pd.Timestamp("2025-10-01", tz="UTC"), pd.Timestamp("2026-09-30", tz
 SEED = 20261014
 WEB = "http://localhost:8001"
 THAI = timedelta(hours=7)
+READ_BARS = 1500  # app/web/readmodels.py READ_BARS
 
 
 def in_group(r: ChartRead, group: str) -> bool:
@@ -42,11 +45,24 @@ def in_group(r: ChartRead, group: str) -> bool:
     return any(e.kind is EventKind(group) for e in r.events)
 
 
-def load(sym: str, tf: str) -> ChartReadFrame:
-    d = pd.read_parquet(f"{H}/{sym}/{tf}.parquet").sort_values("close_time")
-    d.index = pd.DatetimeIndex(pd.to_datetime(d["close_time"], utc=True))
-    point = json.loads(open(f"{H}/{sym}/spec.json", encoding="utf-8").read())["spec"]["point"]
-    return ChartReadFrame(tf, d[["open", "high", "low", "close"]].astype(float), float(point))
+class Windowed:
+    """Reads at a bar from its own window of the last READ_BARS bars (as the PWA's endpoint does)."""
+
+    def __init__(self, sym: str, tf: str) -> None:
+        d = pd.read_parquet(f"{H}/{sym}/{tf}.parquet").sort_values("close_time")
+        d.index = pd.DatetimeIndex(pd.to_datetime(d["close_time"], utc=True))
+        self.tf = tf
+        self.candles = d[["open", "high", "low", "close"]].astype(float)
+        self.index = self.candles.index
+        self.point = float(json.loads(open(f"{H}/{sym}/spec.json", encoding="utf-8").read())["spec"]["point"])
+
+    def at(self, pos: int) -> ChartRead | None:
+        window = self.candles.iloc[max(0, pos - READ_BARS + 1) : pos + 1]
+        return ChartReadFrame(self.tf, window, self.point).at(len(window) - 1)
+
+
+def load(sym: str, tf: str) -> Windowed:
+    return Windowed(sym, tf)
 
 
 def fmt(x: float | None, digits: int) -> str:
@@ -56,7 +72,7 @@ def fmt(x: float | None, digits: int) -> str:
 def main() -> None:
     rng = np.random.default_rng(SEED)
     order = list(rng.permutation(SYMBOLS))
-    frames: dict[tuple[str, str], ChartReadFrame] = {}
+    frames: dict[tuple[str, str], Windowed] = {}
     rows = []
     for slot in range(20):
         group, tf, sym = GROUPS[slot % len(GROUPS)], TFS[slot % len(TFS)], str(order[slot % len(order)])
@@ -66,7 +82,7 @@ def main() -> None:
         f = frames[key]
         lo, hi = int(f.index.searchsorted(START)), int(f.index.searchsorted(END)) - 1
         found = None
-        for _ in range(20000):
+        for _ in range(3000):
             pos = int(rng.integers(lo, hi))
             r = f.at(pos)
             if r is not None and in_group(r, group):

@@ -3,7 +3,7 @@
 Drawn by `eye_check_sample.py` (seed 20261014): 8 symbols, M15/H1/H4, 7 groups, random bars of the year
 within each group, never chosen by result. Each link opens the PWA chart as it was at that bar's close
 with the bot's read drawn (`read=1`, `end=`). The check passes when the bot's trend and its two nearest
-levels agree with the owner's reading on at least 16 of the 20 (docs/CHART_READ.md ง8).
+levels agree with the owner's reading on at least 16 of the 20 (docs/CHART_READ.md ยง8).
 
 | # | Symbol | TF | Bar close (Thai time) | Group | Bot's trend | Nearest support | Nearest resistance | Link | Owner: trend | Owner: levels |
 |---|---|---|---|---|---|---|---|---|---|---|
