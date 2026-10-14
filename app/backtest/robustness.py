@@ -7,6 +7,9 @@ real engine (the CLI builds it) and fast fakes in tests. The objective is a metr
 trades scores ``None`` and is never selected, because a handful of trades says nothing.
 
 These tools *measure fragility*; none of them makes a strategy profitable or proves it will be.
+
+:func:`ruin_monte_carlo` (PLAN §A36) compounds a risk per trade over resampled trading days under the
+aggressive preset's account rules: it measures how deep and how likely the drawdowns are at that risk.
 """
 
 from __future__ import annotations
@@ -15,7 +18,7 @@ import itertools
 import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import numpy as np
@@ -225,6 +228,160 @@ def monte_carlo(
             dds[i] = _max_drawdown(path)
             finals[i] = path[-1]
     return MonteCarloReport(runs, dds, finals, initial_equity)
+
+
+# --- compounding ruin Monte Carlo (PLAN §A36) ---------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class RuinTrade:
+    """One backtest trade for :func:`ruin_monte_carlo`: when it opened (UTC), its net R, and whether it was a
+    counter-trend fade (risked at ``fade_factor`` x the preset)."""
+
+    entry: datetime
+    r: float
+    fade: bool = False
+
+
+@dataclass(frozen=True)
+class RuinRules:
+    """The aggressive preset's account rules as the engine applies them (percent of equity)."""
+
+    risk_percent: float
+    fade_factor: float = 0.5
+    daily_loss_percent: float | None = None  # None: 2 x risk_percent (the preset)
+    weekly_loss_percent: float = 35.0
+    kill_percent: float = 60.0  # drawdown from the peak; the engine refuses a trade that could pass it
+    max_consecutive_losses: int = 4
+    pause_hours: float = 24.0
+
+    @property
+    def daily(self) -> float:
+        return 2 * self.risk_percent if self.daily_loss_percent is None else self.daily_loss_percent
+
+
+@dataclass(frozen=True)
+class RuinReport:
+    rules: RuinRules
+    runs: int
+    days: int  # trading days per run
+    trades: int  # trades in the pool
+    max_drawdowns: np.ndarray = field(repr=False)  # percent from the peak, one per run
+    finals: np.ndarray = field(repr=False)  # final equity / initial equity
+    kill_days: np.ndarray = field(repr=False)  # trading day the drawdown kill stopped the run; nan: never
+    taken: np.ndarray = field(repr=False)  # trades taken per run
+
+    def drawdown_percentile(self, q: float) -> float:
+        return float(np.percentile(self.max_drawdowns, q))
+
+    def probability_drawdown_above(self, percent: float) -> float:
+        return float(np.mean(self.max_drawdowns > percent))
+
+    @property
+    def probability_of_kill(self) -> float:
+        return float(np.mean(~np.isnan(self.kill_days)))
+
+    def final_percentile(self, q: float) -> float:
+        return float(np.percentile(self.finals, q))
+
+    @property
+    def probability_of_loss(self) -> float:
+        return float(np.mean(self.finals < 1.0))
+
+    @property
+    def median_days_to_kill(self) -> float | None:
+        killed = self.kill_days[~np.isnan(self.kill_days)]
+        return float(np.median(killed)) if len(killed) else None
+
+
+DAY_SECONDS = 86_400.0
+
+
+def trading_day_pool(trades: Sequence[RuinTrade]) -> list[list[tuple[float, float, bool]]]:
+    """Every weekday from the first trade's date to the last one's, each with its trades as (seconds after
+    midnight UTC, R, fade) in time order. Days without a trade stay in the pool, so resampling keeps the
+    trade frequency; a weekend trade joins the Friday before it."""
+    if not trades:
+        return []
+    by_day: dict[Any, list[tuple[float, float, bool]]] = {}
+    for t in trades:
+        entry = t.entry.astimezone(UTC)
+        day = entry.date()
+        offset = (entry - datetime(day.year, day.month, day.day, tzinfo=UTC)).total_seconds()
+        while day.weekday() > 4:
+            day -= timedelta(days=1)
+            offset += DAY_SECONDS
+        by_day.setdefault(day, []).append((offset, t.r, t.fade))
+    first, last = min(by_day), max(by_day)
+    pool = []
+    day = first
+    while day <= last:
+        if day.weekday() <= 4:
+            pool.append(sorted(by_day.get(day, [])))
+        day += timedelta(days=1)
+    return pool
+
+
+def _ruin_run(
+    pool: Sequence[Sequence[tuple[float, float, bool]]], picks: np.ndarray, rules: RuinRules
+) -> tuple[float, float, float, int]:
+    """One path: (max drawdown %, final equity multiple, kill day or nan, trades taken)."""
+    equity = peak = week_start = 1.0
+    max_dd = 0.0
+    streak = 0
+    paused_until = -math.inf
+    taken = 0
+    for d, index in enumerate(picks):
+        if d % 5 == 0:
+            week_start = equity
+        day_start = equity
+        for offset, r, fade in pool[int(index)]:
+            now = d * DAY_SECONDS + offset
+            if now < paused_until:  # the consecutive-loss pause
+                continue
+            if 100.0 * (1 - equity / week_start) >= rules.weekly_loss_percent:
+                break  # the weekly breaker: nothing more this day (and the check repeats until Monday)
+            risk = rules.risk_percent * (rules.fade_factor if fade else 1.0)
+            if 100.0 * (1 - equity / peak) + risk > rules.kill_percent:
+                return max_dd, equity, float(d), taken  # the drawdown kill: no trade fits any more
+            if max(0.0, 100.0 * (1 - equity / day_start)) + risk > rules.daily:
+                continue  # the daily budget: a smaller (fade) trade may still fit
+            equity *= 1 + risk / 100.0 * r
+            taken += 1
+            peak = max(peak, equity)
+            max_dd = max(max_dd, 100.0 * (1 - equity / peak))
+            if r < 0:
+                streak += 1
+                if streak >= rules.max_consecutive_losses:
+                    paused_until = now + rules.pause_hours * 3600.0
+            elif r > 0:
+                streak = 0
+    return max_dd, equity, math.nan, taken
+
+
+def ruin_monte_carlo(
+    trades: Sequence[RuinTrade],
+    rules: RuinRules,
+    *,
+    runs: int = 2000,
+    seed: int = 42,
+    days: int | None = None,
+) -> RuinReport:
+    """Compounding Monte Carlo of the aggressive preset (PLAN §A36): each run resamples whole trading days
+    (with replacement, keeping a day's trades and their order together) for *days* trading days (default: the
+    pool's span), and trades them at ``risk_percent`` of the current equity (fades at ``fade_factor`` x): the
+    equity moves by risk x R. The engine's rules apply: daily budget, weekly stop, the consecutive-loss pause
+    and the drawdown kill. Trades are sequential (overlapping positions are not modelled)."""
+    pool = trading_day_pool(trades)
+    n_days = len(pool) if days is None else days
+    rng = np.random.default_rng(seed)
+    dds, finals = np.zeros(runs), np.ones(runs)
+    kills, taken = np.full(runs, np.nan), np.zeros(runs, dtype=int)
+    if pool and n_days > 0:
+        for i in range(runs):
+            picks = rng.integers(0, len(pool), size=n_days)
+            dds[i], finals[i], kills[i], taken[i] = _ruin_run(pool, picks, rules)
+    return RuinReport(rules, runs, n_days, len(trades), dds, finals, kills, taken)
 
 
 # --- overfitting warnings -----------------------------------------------------------------------------------

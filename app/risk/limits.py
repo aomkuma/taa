@@ -217,6 +217,24 @@ class RiskProfileDoc(BaseModel):
         )
 
 
+AGGRESSIVE_POSITIONS = 2  # the preset's open positions (the high-risk cage allows at most 3)
+
+
+def aggressive_limits(risk_percent: float, min_risk_reward: float | None = None) -> ProfileLimits:
+    """The aggressive preset's limits for risk r (PLAN §A36): r per trade, 2r total open risk and daily loss,
+    two open positions, never the minimum-lot fallback. The Trading profile and the backtest share it."""
+    r = float(risk_percent)
+    return ProfileLimits(
+        risk_per_trade_percent=r,
+        total_open_risk_percent=2 * r,
+        max_open_positions=AGGRESSIVE_POSITIONS,
+        max_daily_loss_percent=2 * r,
+        min_risk_reward=min_risk_reward,
+        min_lot_fallback=False,
+        risk_mode=RiskMode.AGGRESSIVE,
+    )
+
+
 def governed(risk: RiskConfig) -> dict[str, float | int]:
     """The ``RiskConfig`` values a profile can lower, keyed like :class:`ProfileLimits`."""
     return {

@@ -20,7 +20,7 @@ import pandas as pd
 
 from app import __version__
 from app.backtest.conversion import SeriesRates, missing_currencies
-from app.backtest.engine import BacktestEngine, BacktestResult, Progress, SymbolData
+from app.backtest.engine import BacktestEngine, BacktestResult, Progress, RiskPreset, SymbolData
 from app.backtest.report import Provenance, write_reports
 from app.config import AppConfig
 from app.core.enums import Timeframe
@@ -167,6 +167,7 @@ def run_backtest(
     on_progress: Callable[[Progress], None] | None = None,
     detectors: Collection[str] | Literal["all"] | None = None,
     context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
+    risk_preset: RiskPreset | None = None,
 ) -> tuple[BacktestResult, Provenance]:
     """*detectors*: the evidence detectors to run. None: those the selected strategies need to fire (the
     pattern setups trigger on evidence; without it they never fire); ``"all"``: every detector
@@ -198,6 +199,7 @@ def run_backtest(
         on_progress=on_progress,
         config_hash=config_hash,
         context=context,
+        risk_preset=risk_preset,
     )
     result = engine.run()
     provenance = Provenance(
@@ -205,7 +207,11 @@ def run_backtest(
         config_hash=config_hash,
         data_hash=loaded.digest,
         code_version=__version__,
-        extra={"strategies": strategies.names, "detectors": list(plan.order)},
+        extra={
+            "strategies": strategies.names,
+            "detectors": list(plan.order),
+            **({} if risk_preset is None else {"risk_preset": risk_preset.name}),
+        },
     )
     return result, provenance
 
@@ -222,6 +228,7 @@ def run_and_write(
     on_progress: Callable[[Progress], None] | None = None,
     detectors: Collection[str] | Literal["all"] | None = None,
     context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
+    risk_preset: RiskPreset | None = None,
 ) -> tuple[BacktestResult, dict[str, Path]]:
     result, provenance = run_backtest(
         config,
@@ -233,5 +240,6 @@ def run_and_write(
         on_progress=on_progress,
         detectors=detectors,
         context=context,
+        risk_preset=risk_preset,
     )
     return result, write_reports(result, provenance, out_dir)

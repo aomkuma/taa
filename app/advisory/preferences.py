@@ -52,7 +52,7 @@ from app.core.errors import ConfigError
 from app.evidence.framework import Family
 from app.evidence.registry import DetectorRegistry
 from app.market_data.trading_sessions import window_end
-from app.risk.limits import EntryPlanSpec, ProfileLimits, RiskMode
+from app.risk.limits import AGGRESSIVE_POSITIONS, EntryPlanSpec, ProfileLimits, RiskMode, aggressive_limits
 from app.risk.position_sizer import SplitMode, WeightScheme
 from app.strategy.registry import StrategyRegistry
 from app.strategy.setups import EvidenceSetup
@@ -283,7 +283,6 @@ PROFILE_ANCHORS: dict[str, tuple[Any, ...]] = {
     "require_htf_alignment": (True, True, True, False, False),
 }
 INT_DEFENSIVE = {"max_positions": math.floor, "min_supporting_families": math.ceil}
-AGGRESSIVE_POSITIONS = 2  # the preset's open positions (the high-risk cage allows at most 3)
 AGGRESSIVE_RISK_FIELDS = (
     "risk_per_signal_percent",
     "portfolio_heat_percent",
@@ -413,11 +412,11 @@ class TradingProfile(StrictModel):
         values["max_daily_loss_percent"] = min(values["max_daily_loss_percent"], CEILING_DAILY_LOSS_PCT)
         aggressive = self.risk_mode is RiskMode.AGGRESSIVE
         if aggressive:  # the preset's risk values replace the slider and the overrides
-            r = self.aggressive_risk_percent
-            values["risk_per_signal_percent"] = r
-            values["portfolio_heat_percent"] = 2 * r
+            preset = aggressive_limits(self.aggressive_risk_percent)
+            values["risk_per_signal_percent"] = preset.risk_per_trade_percent
+            values["portfolio_heat_percent"] = preset.total_open_risk_percent
             values["max_positions"] = AGGRESSIVE_POSITIONS
-            values["max_daily_loss_percent"] = 2 * r
+            values["max_daily_loss_percent"] = preset.max_daily_loss_percent
             custom.difference_update(AGGRESSIVE_RISK_FIELDS)
         return ResolvedProfile(
             style=self.style,
