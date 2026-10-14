@@ -2,7 +2,8 @@
 
 Status: **plan, nothing built yet** (owner, 2026-10-11). Ticket: TAA-L812 in `docs/TICKETS_LEARNING.md`.
 Related: `docs/AI_ANALYST_DISCUSSION.md` (Phase 16, the AI analyst), `docs/INVERTED_SETUPS.md`,
-`docs/SETUP_REVIEW.md` §14-§15. No profitability claims: this is a plan to measure, not a result.
+`docs/SETUP_REVIEW.md` §14-§15, `docs/CHART_READ.md` (TAA-L813: the deterministic chart read this path
+builds on). No profitability claims: this is a plan to measure, not a result.
 
 ## 1. The owner's observation (2026-10-11, in Thai, summarized)
 

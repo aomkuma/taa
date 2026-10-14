@@ -63,7 +63,7 @@ LIVE use of anything here needs Phase 14 and the user's explicit go-ahead.
 | M3 | Phase L5 — Tick confirmation of entries | 4 | 0 | TODO |
 | M3 | Phase L6 — Adaptive selection, governance & wrap-up | 4 | 0 | TODO |
 | M3 | Phase L7 — Entry timing (right direction, wrong time) | 8 | 2 | IN PROGRESS |
-| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 12 | 2 | IN PROGRESS |
+| M3 | Phase L8 — Regime playbooks (closing the human gaps) | 13 | 2 | IN PROGRESS |
 | M3 | Phase L9 — Squad mode (team of specialist bots) | 9 | 1 | IN PROGRESS |
 
 ## Milestone 3 — Learning layer
@@ -682,6 +682,26 @@ deterministically and backtests it; Path B (Phase 16) asks the AI the same quest
 - [ ] SETUP_REVIEW section with the result and the gap to the target
 - [ ] Path B hand-off: Phase 16 stage A/B on the same bars once the owner provides an API key and a budget
 - [ ] triple screen (H4 tide / H1 wave / M15 trigger): the market phase of every setup measured on three screens, a phase assigned only where it holds in both halves and on the hold-out symbols, then gated (CONFLUENCE_DIRECTION §3.1); harmonic done (§15.3, the PRZ confirmation rejected)
+
+#### TAA-L813 — Chart read: the bot reads a chart the way a trader does (2026-10-14)
+
+- **Status:** TODO
+- **Depends on:** L809 (market map), L811 (two-world backtests), L810 (setup workbench)
+
+Plan: `docs/CHART_READ.md` (a major change). The owner asked how the bot can read a chart as a trader does: major
+swings and HH/HL/LH/LL, levels whose role flips when broken, the trendline, the depth of the pullback, and
+break-and-hold vs false break. Swings: the MT5 standard ZigZag 12/5/3 (owner), without repainting. Measured
+first (§2): the map state calls a trend on 17-19 % of H1/H4 bars vs about 60 % for the swings, and a trend read
+alone does not predict the next 24 bars; the proven setups' trade splits change with the swing definition, so
+rules are chosen walk-forward (first half), never off the full year.
+
+- [ ] CR-1: `app/indicators/chart_read.py` (MT5 ZigZag 12/5/3 port checked against values exported from the terminal; swings, structure, levels with roles, trendline, position, events, scenario text), `context_map.chart_read` config, tests (prefix property, synthetic paths)
+- [ ] CR-2: `MapBook` + market document (optional key, old digests valid) + `ctx:<tf>_sw_*` / `lvl_*` / `tl_*` / `ev_*` features
+- [ ] CR-3: the proven setups' year replayed with the features; at most three pre-registered rules per setup; halves + hold-out symbols
+- [ ] CR-4: PWA overlay (pivots, labels, levels by role, trendline, invalidation, scenarios; TH/EN) and the owner's eye check (20 charts the bot samples across symbols, timeframes and phases; 16 must agree)
+- [ ] CR-5: setup parameters `screen_source`, `structure_tf`/`structure_gate`, `mixed_rule`, `level_gate`, `room_min_r`, `stop_mode: structure` (off by default; TH/EN labels)
+- [ ] CR-6: backtest ladder (March 2026 → August 2026 → year) for breakout F1, then harmonic V1; SETUP_REVIEW sections; config.yaml only for what passes
+- [ ] CR-7: the read feeds `setup_confluence` (L812) and the M1 scalping screens (M15/M30/H1)
 
 ### Phase L9 — Squad mode (team of specialist bots)
 

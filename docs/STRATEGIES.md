@@ -102,6 +102,9 @@ How each element is used is decided per setup from its backtests (theory about a
 the rest): for `setup_breakout` the trend screens and a counter-trend fade held, a blanket "no zone before the
 target" gate did not (it removed winners; SETUP_REVIEW §16). Each element is coded as a setup parameter, off by
 default, and switched on per setup in `config.yaml` once its backtest holds.
+The planned chart read (`docs/CHART_READ.md`, TAA-L813) gives every setup the same reading of major swings,
+levels with their role, trendline and false breaks; measured first (its §2), adopted per setup only after its
+backtests hold.
 
 **Inverted setups (2026-10-09 .. 2026-10-14, removed).** Every strategy used to exist as `<name>_inverted` (the
 signal on the other side, the stop at the original's target). A year of two-world backtests showed no edge on the
