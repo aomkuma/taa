@@ -21,8 +21,8 @@ timeframes:
   stale_tick_seconds: 120
   max_gap_bars: 3                   # longest hole (bars) in trading hours before DATA_GAPS; holidays and the
                                     # symbol's own closed hours do not count (app/market_data/quality.py)
-  context: [H4, D1]                 # TAA-L809: higher-timeframe market map (trend/consolidation + demand/supply
-                                    # zones) on every signal as ctx: features; measurement only, never a gate here
+  context: [H1, H4, D1]             # TAA-L809: higher-timeframe market map (trend/consolidation + demand/supply
+                                    # zones) on every signal as ctx: features; breakout F1 screens H4 and H1 on it
   context_bars: 700                 # closed bars per context timeframe (EMA200 + a 400-bar zone lookback)
 
 indicators:
@@ -68,8 +68,9 @@ strategies:
       params: {}
     # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. `enabled: false` stops only the bot's
     # trading; the scanner and shadow keep every setup the users follow (app/advisory/requirements.py). Owner,
-    # 2026-10-12: the bot trades setup_harmonic_prz (SETUP_REVIEW §15). The inverted copies were removed from the
-    # code on 2026-10-14 (owner); a counter-trend trigger is faded inside its setup (fade_counter_trend, §16).
+    # 2026-10-12: the bot trades setup_harmonic_prz (SETUP_REVIEW §15); 2026-10-14: and breakout F1 (§16). The
+    # inverted copies were removed from the code on 2026-10-14 (owner); a counter-trend trigger is faded inside
+    # its setup (fade_counter_trend, §16).
     - {name: setup_neckline_break, enabled: false}
     - {name: setup_pattern_breakout, enabled: false}
     - {name: setup_fib_pullback, enabled: false}
@@ -78,7 +79,9 @@ strategies:
       params: {phase_gate: h4_against_or_range, max_rr: 3.0}   # was tested and rejected
     - {name: setup_elliott_wave, enabled: false}
     - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
-    - {name: setup_breakout, enabled: false}
+    - name: setup_breakout             # breakout F1 (SETUP_REVIEW §16): wait for a counter-trend break, then
+      enabled: true                    # trade it with the H4 and H1 trend (fades only; risk.fade sets their RR)
+      params: {screen_h4: with, screen_h1: with, fade_counter_trend: true, trend_entries: false, friday_cutoff_utc: "16:00"}
     - {name: setup_candle_reversal, enabled: false}
 
 risk:
