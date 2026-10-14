@@ -122,7 +122,11 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
   switching to another setup unless the owner asks; if the levers run out, say so and ask.
   Backtest ladder (owner, 2026-10-14), until the owner changes it: **March 2026** (2026-03-01 .. 04-01, the
   year's most volatile month) for every variant; one that passes then runs on **August 2026** (08-01 .. 09-01,
-  the quietest); only after both, the full year.
+  the quietest); only after both, the full year. Selection (owner, 2026-10-14): a variant whose first run is
+  negative is dropped; only the profitable ones (or, if none is, the least-losing one) are developed further.
+  **System principle (owner, 2026-10-14): when the market phase does not suit a setup, that setup trades less,
+  not never:** in an unsuitable phase (measured per setup, e.g. low H4 volatility for breakouts) it takes only
+  its surest signals (stricter conditions), and the other setups carry the portfolio.
 - No profitability claims in any UI text either (`frontend/src/i18n/catalogs.test.ts` checks the catalogs).
 - Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
 - LIVE (real money) is off by default. Its path exists since TAA-1401 and needs `TRADING_MODE=LIVE`,
