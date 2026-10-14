@@ -5,6 +5,11 @@ User-level (the session user's own preferences; mutations need CSRF):
 - ``GET|PUT /advisory/preferences``: the whole :class:`AdvisoryPreferences` document (PUT validates it against
   the detector and strategy catalogs; 400 ``invalid_preferences``)
 - ``PUT /advisory/preferences/theories``: only the theory selection (presets, family/detector toggles, params)
+- ``PUT /advisory/preferences/risk-mode`` ``{risk_mode, aggressive_risk_percent?, engine_id?}``: the Trading
+  profile's preset (PLAN §A36). Raising it (to AGGRESSIVE, or a higher aggressive risk) needs a TOTP step-up
+  (403 ``step_up_required``) and an own engine that reports the preset available (404 ``engine_not_found``,
+  409 ``high_risk_unavailable``); lowering needs only CSRF. The plain preferences PUT can never raise it (403
+  ``risk_mode_locked``). Both changes go to the ``web`` audit chain (``RISK_MODE_CHANGED``).
 - ``POST /advisory/watchlists``, ``PUT|DELETE /advisory/watchlists/{name}``: watchlists (409
   ``watchlist_exists``, 404 ``watchlist_not_found``); ``POST /advisory/favourites/{symbol}``: toggles the
   symbol in the favourites list (created when missing)
@@ -33,7 +38,7 @@ from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Query, Response
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from app.advisory.preferences import (
@@ -44,14 +49,23 @@ from app.advisory.preferences import (
     Watchlist,
     WatchlistKind,
 )
-from app.config import load_app_config
+from app.config import AGGRESSIVE_MIN_RISK_PCT, HIGH_RISK_CEILING_RISK_PER_TRADE_PCT, load_app_config
 from app.core.enums import Side
 from app.core.errors import ConfigError
-from app.storage.models import AccountProfileRow
+from app.risk.limits import RiskMode
+from app.storage.models import AccountProfileRow, EngineHeartbeatRow
 from app.web.account_profiles import load_profile, plan_of, preview_plan, size_manual
 from app.web.advisory import AdvisoryReads, PreferenceStore, detector_catalog
 from app.web.ai import AINotesReadModel
-from app.web.deps import AdvisoryEngine, Context, CsrfSession, CurrentSession, WebContext
+from app.web.deps import (
+    AdvisoryEngine,
+    Context,
+    CsrfSession,
+    CurrentSession,
+    WebContext,
+    no_admin_controls,
+    owned_engine,
+)
 from app.web.entitlements import EntitlementError, EntitlementService, Feature
 from app.web.errors import ApiProblem
 from app.web.feed import redact
@@ -106,10 +120,81 @@ async def get_preferences(ctx: Context, session: CurrentSession) -> dict[str, An
     return prefs.model_dump(mode="json")
 
 
+def raises_risk(old: TradingProfile, new: TradingProfile) -> bool:
+    """Whether *new* takes more risk than *old* through the preset (PLAN §A36): AGGRESSIVE from STANDARD,
+    or a higher aggressive risk while AGGRESSIVE."""
+    if new.risk_mode is not RiskMode.AGGRESSIVE:
+        return False
+    return (
+        old.risk_mode is not RiskMode.AGGRESSIVE or new.aggressive_risk_percent > old.aggressive_risk_percent
+    )
+
+
 @router.put("/advisory/preferences")
 async def put_preferences(body: dict[str, Any], ctx: Context, session: CsrfSession) -> dict[str, Any]:
     prefs = await _run(PreferenceStore.validate, body)
+    stored: AdvisoryPreferences = await run_in_threadpool(_store(ctx).get, session.user_id)
+    if raises_risk(stored.trading_profile, prefs.trading_profile):
+        raise ApiProblem(
+            403, "risk_mode_locked", "Raise the risk mode with PUT /advisory/preferences/risk-mode"
+        )
     return await _save(ctx, session.user_id, prefs)
+
+
+class RiskModeBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    risk_mode: RiskMode
+    aggressive_risk_percent: float | None = Field(
+        default=None, ge=AGGRESSIVE_MIN_RISK_PCT, le=HIGH_RISK_CEILING_RISK_PER_TRADE_PCT, allow_inf_nan=False
+    )
+    engine_id: str | None = Field(default=None, min_length=1, max_length=64)
+
+
+def high_risk_available(ctx: WebContext, engine_id: str) -> bool:
+    """The engine's newest heartbeat says it can trade the aggressive preset (its local opt-in, §A36)."""
+    with ctx.db.session() as sess:
+        beat = sess.get(EngineHeartbeatRow, engine_id)
+        payload = None if beat is None else dict(beat.payload)
+    account = (payload or {}).get("account") or {}
+    high_risk = (account.get("risk_limits") or {}).get("high_risk") or {}
+    return high_risk.get("available") is True
+
+
+@router.put("/advisory/preferences/risk-mode")
+async def put_risk_mode(body: RiskModeBody, ctx: Context, session: CsrfSession) -> dict[str, Any]:
+    prefs: AdvisoryPreferences = await run_in_threadpool(_store(ctx).get, session.user_id)
+    old = prefs.trading_profile
+    pct = (
+        old.aggressive_risk_percent if body.aggressive_risk_percent is None else body.aggressive_risk_percent
+    )
+    new = TradingProfile.model_validate(
+        old.model_dump(mode="json") | {"risk_mode": body.risk_mode.value, "aggressive_risk_percent": pct}
+    )
+    if raises_risk(old, new):
+        no_admin_controls(session)
+        if not ctx.auth.has_step_up(session):
+            raise ApiProblem(403, "step_up_required", "Confirm with a current authenticator code")
+        if body.engine_id is None:
+            raise ApiProblem(400, "engine_required", "Name the engine that trades the aggressive preset")
+        engine = owned_engine(body.engine_id, ctx, session)
+        if not await run_in_threadpool(high_risk_available, ctx, engine.engine_id):
+            raise ApiProblem(
+                409, "high_risk_unavailable", "The engine has not switched the aggressive preset on"
+            )
+    saved = await _save(ctx, session.user_id, _rebuild(prefs, trading_profile=new.model_dump(mode="json")))
+    await run_in_threadpool(
+        ctx.audit.append,
+        "RISK_MODE_CHANGED",
+        session.username,
+        {
+            "from": {"risk_mode": old.risk_mode.value, "risk_percent": old.aggressive_risk_percent},
+            "to": {"risk_mode": new.risk_mode.value, "risk_percent": new.aggressive_risk_percent},
+            "engine_id": body.engine_id,
+            "raised": raises_risk(old, new),
+        },
+    )
+    return saved
 
 
 @router.put("/advisory/preferences/theories")
