@@ -33,6 +33,7 @@ the live gate, off by default: see [RUNBOOK_LIVE.md](RUNBOOK_LIVE.md) before eve
 | release | `.venv\Scripts\python -m app.cli kill --release --reason "..."` (local only) |
 | stop | Ctrl+C (the heartbeat records a deliberate stop; the watchdog leaves it alone) |
 | report | `.venv\Scripts\python -m app.cli demo-report --days 14` |
+| vs backtest | `.venv\Scripts\python -m app.cli demo-track [--since 2026-10-14] [--proven-only] [--out FILE]`: closed bot trades per setup and per Thai day, each proven setup's R/trade against its backtest and the 90 % range the backtest expects for that many trades (app/engine/forward_track.py); for the `-Mt5` stack set `ENGINE_DB_URL=sqlite:///data/demo/engine-mt5.db`, `CONFIG_FILE=data/demo/config.demo-mt5.yaml`, `CLOUD_BASE_URL=http://localhost:8001` |
 | breakers | `.venv\Scripts\python -m app.cli breaker list` |
 | keep the local `-Mt5 -Demo` stack alive | `scripts\demo-tasks.ps1 -Register` once (run it yourself), then `-Start` / `-Stop`: web, worker and engine run as Task Scheduler tasks, so they survive a closed terminal or a reset assistant session; "TAA Demo check" restarts a part whose health check fails every 5 minutes (an engine stopped on purpose is left alone). `-Stop` ends each part's processes (a hard stop; the engine reconciles at the next start) and disables "TAA Demo check" until `-Start`. `-Unregister` removes them |
 | reset one | `.venv\Scripts\python -m app.cli breaker reset DUPLICATE_EXECUTION --reason "..."` (`--ack` for MAX_DRAWDOWN, `--symbol` for symbol breakers) |

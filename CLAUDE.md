@@ -32,7 +32,7 @@ Read before larger work:
 .venv\Scripts\python -m app.cli backtest --server FBS-Demo --symbols EURUSD --start 2026-01-01 --end 2026-09-30   # needs data/history
 .venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
 .venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
-.venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14
+.venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14 | demo-track --proven-only
 .venv\Scripts\python -m app.cli sync upload-history [--send]   # local Parquet history → cloud (TAA-706)
 .venv\Scripts\python -m app.cli research hypotheses --strategy NAME --from "data/research/fam_*.db" | replay-family NAME ...  # TAA-L707
 .venv\Scripts\python -m app.cli web engine add --owner NAME --label X | rotate ID | rename ID --label X | revoke ID --confirm ID | list | import-env --owner NAME

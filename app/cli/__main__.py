@@ -474,6 +474,26 @@ def cmd_demo_report(args: argparse.Namespace) -> int:
     return 0 if all(report.checks.values()) else 3
 
 
+def cmd_demo_track(args: argparse.Namespace) -> int:
+    from datetime import UTC, datetime
+
+    from app.engine.forward_track import report
+    from app.storage.database import Database, resolve_db_url
+
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    settings = _settings(args)
+    db = Database(resolve_db_url(settings.env.ENGINE_DB_URL))
+    since = None if args.since is None else datetime.fromisoformat(args.since).replace(tzinfo=UTC)
+    text = report(db, since, proven_only=args.proven_only)
+    if args.out:
+        from pathlib import Path
+
+        Path(args.out).write_text(text, encoding="utf-8")
+    print(text)
+    return 0
+
+
 def cmd_advisory_rank(args: argparse.Namespace) -> int:
     import tempfile
     from pathlib import Path
@@ -872,6 +892,11 @@ def build_parser() -> argparse.ArgumentParser:
     rep = sub.add_parser("demo-report", help="DEMO soak report from the engine database")
     rep.add_argument("--days", type=float, default=14.0)
     rep.set_defaults(func=cmd_demo_report)
+    trk = sub.add_parser("demo-track", help="DEMO trades per setup and per day against the backtests")
+    trk.add_argument("--since", default=None, help="UTC date/time, e.g. 2026-10-14 (default: every trade)")
+    trk.add_argument("--proven-only", action="store_true", help="only the setups with a backtest baseline")
+    trk.add_argument("--out", default=None, help="also write the Markdown to this file")
+    trk.set_defaults(func=cmd_demo_track)
 
     adv = sub.add_parser("advisory", help="advisory tools (read-only; never changes what the bot trades)")
     adv_sub = adv.add_subparsers(dest="advisory_command", required=True)
