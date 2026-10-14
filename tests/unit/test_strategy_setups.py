@@ -304,8 +304,19 @@ class TestCatalog:
         listed = {item.name: item.enabled for item in settings.config.strategies.items}
         originals = {"example_trend_pullback", *(cls.name for cls in SETUPS)}
         assert set(listed) == originals
-        # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing
-        assert {n for n, on in listed.items() if on} == {"setup_harmonic_prz"}
+        # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
+        # 2026-10-14 (§16, PLAN §A36 step 4): breakout F1, fades with the H4/H1 trend only
+        assert {n for n, on in listed.items() if on} == {"setup_harmonic_prz", "setup_breakout"}
+        breakout = next(i for i in settings.config.strategies.items if i.name == "setup_breakout")
+        assert breakout.params == {
+            "screen_h4": "with",
+            "screen_h1": "with",
+            "fade_counter_trend": True,
+            "trend_entries": False,
+            "friday_cutoff_utc": "16:00",
+        }
+        assert settings.config.timeframes.context == [Timeframe.H1, Timeframe.H4, Timeframe.D1]
+        assert settings.config.risk.fade is not None  # fades need their own RR floor and SL cap
         own = settings.config.position_management.for_strategy("setup_harmonic_prz")
         assert own.break_even_trigger_r == math.inf and own.trailing_start_r == math.inf
         harmonic = next(i for i in settings.config.strategies.items if i.name == "setup_harmonic_prz")
