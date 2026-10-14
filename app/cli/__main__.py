@@ -231,13 +231,20 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         config = config.model_copy(
             update={"backtest": config.backtest.model_copy(update={"seed": args.seed})}
         )
+    if args.balance is not None:  # e.g. a small account for the aggressive preset (PLAN §A36)
+        if not args.balance > 0:
+            print("error: --balance must be positive", file=sys.stderr)
+            return 1
+        config = config.model_copy(
+            update={"backtest": config.backtest.model_copy(update={"initial_balance": args.balance})}
+        )
     risk_preset = None
     if args.preset == "aggressive":  # PLAN §A36: the high-risk cage, only its setups
         config, risk_preset = aggressive_preset(config, 7.5 if args.risk is None else args.risk)
     elif args.risk is not None:
         print("error: --risk goes with --preset aggressive", file=sys.stderr)
         return 1
-    run_hash = settings.config_hash if risk_preset is None else config_hash(config)
+    run_hash = settings.config_hash if risk_preset is None and args.balance is None else config_hash(config)
     server = args.server or settings.env.MT5_SERVER
     if not server:
         print("error: pass --server (the history store is organized by trade server)", file=sys.stderr)
@@ -790,6 +797,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="aggressive: the high-risk cage and its setups only (PLAN §A36)",
     )
     bt.add_argument("--risk", type=float, default=None, help="aggressive: risk per trade, 5-10 (default 7.5)")
+    bt.add_argument(
+        "--balance",
+        type=float,
+        default=None,
+        help="initial balance (default: backtest.initial_balance); aggressive targets small accounts",
+    )
     bt.set_defaults(func=cmd_backtest)
     bt_sub = bt.add_subparsers(dest="backtest_cmd", required=False)
     ruin = bt_sub.add_parser(

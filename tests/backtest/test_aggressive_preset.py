@@ -191,5 +191,8 @@ class TestCli:
         assert sum(line.strip().startswith(("5.00", "10.00")) for line in out.splitlines()) == 2
 
     def test_plain_backtest_still_parses(self) -> None:
-        args = build_parser().parse_args(["backtest", "--preset", "aggressive", "--risk", "7.5"])
+        args = build_parser().parse_args(
+            ["backtest", "--preset", "aggressive", "--risk", "7.5", "--balance", "1000"]
+        )
         assert args.preset == "aggressive" and args.risk == 7.5 and args.func.__name__ == "cmd_backtest"
+        assert args.balance == 1000
