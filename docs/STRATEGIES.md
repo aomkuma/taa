@@ -4,6 +4,31 @@ How strategies are built, configured and explained (PLAN §A7, §A29). Every str
 **demonstration**: none is production-proven, and nothing in this project claims profitability. Leveraged
 FX/CFD trading is high risk.
 
+## Setups and variants at a glance (kept current; last update 2026-10-15)
+
+The short names used in the setup work. A *variant* is a set of parameters of an existing setup, not new code.
+Results are backtests (R per trade, net of the modelled costs); they describe the past, not the future.
+
+| Name | Code setup | What it does | Entry TF, symbols | State | Result | Details |
+|---|---|---|---|---|---|---|
+| **V1** (harmonic V1) | `setup_harmonic_prz` | Harmonic patterns (AB=CD, XABCD) entered at the PRZ (point D), only while the H4 map is against the trade or ranging, R:R ≤ 3, no break-even | M15, 8 | **ON (DEMO)** | year +0.211, 181 trades | SETUP_REVIEW §15.3 |
+| **F1** (breakout F1) | `setup_breakout` | Waits for a break *against* the H4 and H1 trend (usually a false break) and trades it the other way, with the big trend (`fade_counter_trend: true`, `trend_entries: false`) | M15, 8 | **ON (DEMO)** | year +0.159, 99 trades | SETUP_REVIEW §16 |
+| Breakout (original) | `setup_breakout` | Trades every break in its own direction | M15, 8 | off (replaced by F1) | year −0.154 | SETUP_REVIEW §3-§5 |
+| **S1** (M1 gold scalping) | `setup_breakout` | F1's fade on M1: screens H1 (tide) / M15 (wave), stop 2 × ATR(60 M1 bars), target about 2 × the fade's stop, no entries 08:00-12:00 New York, time stop 60 bars | M1, XAUUSD only | testing (year ladder) | 8 of 12 months +0.27, 50 trades | `data/research/config_scalp_s1.yaml`; HANDOFF |
+| **D1a / D1b** (day trade) | `setup_breakout` | S1's logic on M5, flat within the day (no entries after 16:00 UTC, time stop 4 hours); D1a screens H1/M15, D1b H4/M30 | M5, XAUUSD only | testing (March first) | - | `research/2026-10-15-day-trade/D1_NOTES.md` |
+| V1 + h4_room_2 | `setup_harmonic_prz` | V1 plus at least 2 R of room to the nearest opposing level of the H4 chart read (`structure_tf: H4`, `room_min_r: 2`) | M15, 8 | testing (Mar/Jun/Aug) | - | `research/2026-10-14-chart-read/CR3_V1.md` |
+| Pattern breakout | `setup_pattern_breakout` | Chart-pattern breakouts | M15 | off | DEMO 6 trades, all stopped | - |
+| Candle reversal | `setup_candle_reversal` | Reversal candles at levels | M15 | off | losing | - |
+| Fib pullback | `setup_fib_pullback` | Pullbacks to Fibonacci levels | M15 | off | year −0.16 | SETUP_REVIEW §3 |
+| Elliott wave | `setup_elliott_wave` | Elliott wave entries | M15 | off | year −0.08 | SETUP_REVIEW §3 |
+| Neckline break | `setup_neckline_break` | Double top/bottom, head and shoulders neckline breaks | M15 | off | not reworked yet | - |
+| SMC reversal | `setup_smc_reversal` | Liquidity sweep + change of character | M15 | off | about 1 signal a year | SETUP_REVIEW §3 |
+
+Tried and not kept: the inverted copies (`*_inverted`, docs/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
+−0.10); plain session breaks on M5 for day trading (FX lose to the spread, gold flips in the second half;
+D1_NOTES.md). Building blocks used by the variants: the market map (`MarketContext.htf`) and the chart read
+(docs/CHART_READ.md). Planned: `setup_confluence` (docs/CONFLUENCE_DIRECTION.md).
+
 ## Framework
 
 | Piece | Module | Role |
