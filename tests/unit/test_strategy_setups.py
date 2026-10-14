@@ -739,3 +739,38 @@ class TestScreenTimeframes:
             trend_entries=False,
         )
         assert sig.action is Action.SELL, sig.explanation
+
+
+class TestScalpingParams:
+    """Owner, 2026-10-14: M1 scalping sizes stops on an hour of bars and skips the US-release window."""
+
+    def test_atr_bars_sizes_the_stop_on_that_many_bars(self) -> None:
+        closes = np.full(80, 1.1000)
+        ctx = _m15(sctx(DONCHIAN), closes)  # every bar spans 0.0008 (high - low)
+        sig = run(RangeBreakout, ctx, atr_bars=60, stop_mode="atr", sl_atr_multiple=2.0)
+        assert sig.action is Action.BUY, sig.explanation
+        frame = ctx.frame(Timeframe.M15)
+        prev = frame["close"].shift(1)
+        tr = pd.concat(
+            [frame["high"] - frame["low"], (frame["high"] - prev).abs(), (frame["low"] - prev).abs()], axis=1
+        )
+        expected = float(tr.max(axis=1).iloc[-60:].mean())
+        assert sig.entry_price - sig.stop_loss == pytest.approx(2.0 * expected + SPREAD)
+
+    def test_too_few_bars_hold(self) -> None:
+        ctx = _m15(sctx(DONCHIAN), np.full(30, 1.1000))
+        assert run(RangeBreakout, ctx, atr_bars=60).action is Action.HOLD
+
+    def test_the_skip_window_blocks_entries_and_fades(self) -> None:
+        pre_ny = datetime(2026, 9, 30, 13, 0, tzinfo=UTC)  # 09:00 New York (EDT)
+        after = datetime(2026, 9, 30, 17, 0, tzinfo=UTC)  # 13:00 New York
+        for at in (pre_ny, after):
+            fade = _with_map(sctx(DONCHIAN, at=at), H4=(MapState.DOWN, ()), H1=(MapState.DOWN, ()))
+            sig = run(
+                RangeBreakout,
+                fade,
+                fade_counter_trend=True,
+                trend_entries=False,
+                skip_window_ny="08:00-12:00",
+            )
+            assert (sig.action is Action.SELL) is (at == after), sig.explanation

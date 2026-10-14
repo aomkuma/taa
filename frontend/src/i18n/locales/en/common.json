@@ -574,6 +574,10 @@
         "label": "Minimum ADX",
         "hint": "Trend strength needed (ADX 0–100)"
       },
+      "atr_bars": {
+        "label": "ATR bars for stops",
+        "hint": "Size stops and targets on the mean range of this many entry bars (empty: ATR 14); M1 scalping uses 60"
+      },
       "confirm": {
         "label": "Entry confirmation",
         "hint": "Wait after the pattern completes for a close beyond the previous bar before entering"
@@ -669,6 +673,10 @@
       "skip_broadening": {
         "label": "Skip broadening markets",
         "hint": "No entry while the higher timeframe makes a higher high and a lower low"
+      },
+      "skip_window_ny": {
+        "label": "No-entry hours (New York)",
+        "hint": "No entries inside these New York hours, e.g. 08:00-12:00 around US releases (empty: none)"
       },
       "sl_atr_multiple": {
         "label": "Stop distance (ATR)",

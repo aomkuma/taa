@@ -51,6 +51,10 @@ Each setup turns one *trigger* detector's evidence on the entry timeframe into a
 - **Broadening** (``skip_broadening: higher``, owner 2026-10-14: "gold often makes an inverted triangle"): no
   entry, trend or fade, while the higher timeframe's last swings are a higher high and a lower low (false
   breaks on both sides before the real run).
+- **Scalping on small timeframes** (owner, 2026-10-14): ``atr_bars`` measures the stop/target ATR over that
+  many entry bars instead of the frame's ATR(14) (M1: 60 bars = one hour, the scale the behaviour was
+  measured on); ``skip_window_ny`` ("HH:MM-HH:MM" New York time) takes no entry inside it (gold scalps lose
+  around the US releases, 08:00-12:00 New York). Both off by default.
 - **Rules:** the shared checks of :mod:`app.strategy.rules` (SL ≤ ``max_sl_atr`` ATR, RR ≥ ``min_rr``,
   spread ≤ ``max_spread_to_sl`` of the SL, session window, Friday cutoff), plus each setup's confirmations.
 
@@ -64,6 +68,8 @@ from datetime import datetime
 from typing import ClassVar, Literal
 from zoneinfo import ZoneInfo
 
+import numpy as np
+import pandas as pd
 from pydantic import Field, field_validator
 
 from app.core.enums import Action, Timeframe, Trend
@@ -134,17 +140,19 @@ class SetupParams(EntryRuleParams):
     trend_entries: bool = True  # False: only fades (owner, 2026-10-14: wait, then trade with the big trend)
     trend_structure: TrendStructure = "any"
     skip_broadening: SkipBroadening = "none"
+    atr_bars: int | None = Field(default=None, ge=2, le=1000)
+    skip_window_ny: str | None = Field(default=None, description="HH:MM-HH:MM New York time with no entries")
     trend_entry_window_ny: str | None = Field(
         default=None, description="HH:MM-HH:MM New York time for entries in the trigger's direction"
     )
 
-    @field_validator("trend_entry_window_ny")
+    @field_validator("trend_entry_window_ny", "skip_window_ny")
     @classmethod
     def _check_window(cls, value: str | None) -> str | None:
         if value is not None:
             start, sep, end = value.partition("-")
             if not sep or hhmm(start) >= hhmm(end):
-                raise ValueError("trend_entry_window_ny must be HH:MM-HH:MM with start before end")
+                raise ValueError("a New York window must be HH:MM-HH:MM with start before end")
         return value
 
 
@@ -236,6 +244,8 @@ class EvidenceSetup(BaseStrategy):
             return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA, conditions=conds)
         last = frame.iloc[-1]
         close, atr_v = float(last["close"]), float(last["atr"])
+        if p.atr_bars is not None:
+            atr_v = _atr_over(frame, p.atr_bars)
         costs = spread_price(ctx, last)
         if not known(close, atr_v) or atr_v <= 0 or costs is None:
             return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA, conditions=conds, explanation=explain(conds))
@@ -271,6 +281,9 @@ class EvidenceSetup(BaseStrategy):
 
         if p.skip_broadening == "higher":
             conds.append(_not_broadening(ctx))
+        if p.skip_window_ny is not None:
+            inside = _ny_window(market.decision_time_utc, p.skip_window_ny)
+            conds.append(Condition("outside_skip_window", not inside.passed, 1.0, inside.detail))
         if fade:
             conds = [c for c in conds if c.name not in ("screen_h4", "screen_h1")]
             conds.append(
@@ -422,6 +435,17 @@ def _not_broadening(ctx: StrategyContext) -> Condition:
     if labels is None:
         return Condition("not_broadening", False, 1.0, f"no {tf.value} frame")
     return Condition("not_broadening", labels != ("HH", "LL"), 1.0, f"{tf.value} {labels[0]}+{labels[1]}")
+
+
+def _atr_over(frame: pd.DataFrame, bars: int) -> float:
+    """Mean true range of the last *bars* closed bars (NaN with fewer bars or no high/low)."""
+    if len(frame) < bars + 1 or not {"high", "low", "close"} <= set(frame.columns):
+        return float("nan")
+    tail = frame.iloc[-(bars + 1) :]
+    high, low = tail["high"].to_numpy(dtype=float), tail["low"].to_numpy(dtype=float)
+    prev = tail["close"].to_numpy(dtype=float)[:-1]
+    tr = np.maximum(high[1:] - low[1:], np.maximum(np.abs(high[1:] - prev), np.abs(low[1:] - prev)))
+    return float(tr.mean())
 
 
 def _ny_window(at: datetime, window: str) -> Condition:
