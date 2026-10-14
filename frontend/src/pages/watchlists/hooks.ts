@@ -63,7 +63,14 @@ export function useSaveSections() {
   return useMutation({
     mutationFn: async (sections: Partial<Pick<Preferences, 'alerts' | 'trading_profile' | 'entry_plan'>>) => {
       const current = await apiGet('/advisory/preferences', PreferencesSchema);
-      return apiPut('/advisory/preferences', { ...current, ...sections }, PreferencesSchema);
+      const body = { ...current, ...sections };
+      // the preset changes only through its own step-up route (PLAN §A36): never with the plain PUT
+      body.trading_profile = {
+        ...body.trading_profile,
+        risk_mode: current.trading_profile.risk_mode,
+        aggressive_risk_percent: current.trading_profile.aggressive_risk_percent,
+      };
+      return apiPut('/advisory/preferences', body, PreferencesSchema);
     },
     onSuccess: (data) => {
       queryClient.setQueryData(PREFERENCES_QUERY_KEY, data);

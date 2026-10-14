@@ -139,4 +139,136 @@ describe('trading profile page', () => {
     await user.click(screen.getByRole('button', { name: 'Save trading profile' }));
     expect(await within(inUse).findByRole('status')).toHaveTextContent('within about a minute');
   });
+
+  describe('risk mode (PLAN §A36)', () => {
+    /** The recorded heartbeat with the engine's aggressive-preset availability. */
+    function highRisk(available: boolean, extra: Record<string, unknown> = {}) {
+      const heartbeat = structuredClone(recordedStatus.heartbeat) as {
+        account: { risk_limits: Record<string, unknown> };
+      };
+      heartbeat.account.risk_limits = {
+        ...heartbeat.account.risk_limits,
+        risk_mode: 'STANDARD',
+        refused: null,
+        high_risk: available
+          ? { available: true, reason: null, max_risk_percent: 10, drawdown_kill_percent: 60 }
+          : { available: false, reason: 'HIGH_RISK_NOT_ENABLED' },
+        ...extra,
+      };
+      return () => json(status('e1', { heartbeat }));
+    }
+    const until = () => new Date(Date.now() + 300_000).toISOString().replace('Z', '+00:00');
+
+    it('keeps aggressive disabled until the engine reports it available', async () => {
+      setup({ 'GET /engines/e1/status': highRisk(false) });
+      renderShell('/profile');
+      const card = await region('Risk mode');
+      expect(within(card).getByRole('radio', { name: /^Standard/ })).toBeChecked();
+      expect(within(card).getByRole('radio', { name: /^Aggressive/ })).toBeDisabled();
+      expect(await within(card).findByText(/not switched on on the engine machine/)).toHaveTextContent(
+        'Aggressive is not available',
+      );
+    });
+
+    it('raises with a warning, a typed confirmation and a step-up', async () => {
+      const api = setup({
+        'GET /engines/e1/status': highRisk(true),
+        'POST /auth/step-up': () => json({ step_up_until: until() }),
+        'PUT /advisory/preferences/risk-mode': (request) => {
+          const body = request.body as { risk_mode: string; aggressive_risk_percent: number };
+          return json({
+            ...PREFS,
+            trading_profile: {
+              ...PREFS.trading_profile,
+              risk_mode: body.risk_mode,
+              aggressive_risk_percent: body.aggressive_risk_percent,
+            },
+          });
+        },
+      });
+      const user = userEvent.setup();
+      renderShell('/profile');
+      const card = await region('Risk mode');
+      const radio = within(card).getByRole('radio', { name: /^Aggressive/ });
+      await waitFor(() => {
+        expect(radio).toBeEnabled();
+      });
+      await user.click(radio);
+      const risk = within(card).getByRole('spinbutton', { name: 'Risk per trade (%)' });
+      expect(risk).toHaveValue(7.5);
+      await user.clear(risk);
+      await user.type(risk, '8');
+      const warning = within(card).getByRole('region', { name: 'What this risk means' });
+      expect(warning).toHaveTextContent('Each trade can lose 8% of equity (4% for a counter-trend fade).');
+      expect(warning).toHaveTextContent('4 losses in a row take about 28.4% of equity.');
+      expect(warning).toHaveTextContent('60% drawdown');
+      await user.click(within(card).getByRole('button', { name: 'Switch to the higher risk' }));
+      const dialog = await screen.findByRole('dialog', { name: 'Switch on the aggressive mode' });
+      await user.click(within(dialog).getByRole('button', { name: 'Switch to the higher risk' }));
+      expect(within(dialog).getByRole('alert')).toHaveTextContent('Type AGGRESSIVE exactly');
+      await user.type(
+        within(dialog).getByRole('textbox', { name: 'Type AGGRESSIVE to confirm' }),
+        'AGGRESSIVE',
+      );
+      await user.type(within(dialog).getByRole('textbox', { name: 'Authenticator code' }), '123456');
+      await user.click(within(dialog).getByRole('button', { name: 'Switch to the higher risk' }));
+      await waitFor(
+        () => {
+          expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        },
+        { timeout: 5_000 },
+      );
+      const put = api.calls.find((c) => c.path === '/advisory/preferences/risk-mode');
+      expect(put?.body).toEqual({ risk_mode: 'AGGRESSIVE', aggressive_risk_percent: 8, engine_id: 'e1' });
+    });
+
+    it('lowers without a step-up and shows a refusal by the engine', async () => {
+      const aggressive = {
+        ...PREFS,
+        trading_profile: { ...PREFS.trading_profile, risk_mode: 'AGGRESSIVE', aggressive_risk_percent: 7.5 },
+      };
+      const api = setup({
+        'GET /advisory/preferences': () => json(aggressive),
+        'GET /engines/e1/status': highRisk(false, { refused: 'HIGH_RISK_NOT_ENABLED' }),
+        'PUT /advisory/preferences/risk-mode': () => json(PREFS),
+      });
+      const user = userEvent.setup();
+      renderShell('/profile');
+      const card = await region('Risk mode');
+      expect(await within(card).findByRole('alert')).toHaveTextContent(
+        'The engine refused the aggressive mode',
+      );
+      await user.click(within(card).getByRole('radio', { name: /^Standard/ }));
+      await user.click(within(card).getByRole('button', { name: 'Apply mode' }));
+      await waitFor(() => {
+        expect(api.calls.some((c) => c.path === '/advisory/preferences/risk-mode')).toBe(true);
+      });
+      expect(api.calls.find((c) => c.path === '/advisory/preferences/risk-mode')?.body).toEqual({
+        risk_mode: 'STANDARD',
+      });
+      expect(api.calls.some((c) => c.path === '/auth/step-up')).toBe(false);
+    });
+
+    it('never changes the mode with the plain profile save', async () => {
+      const aggressive = {
+        ...PREFS,
+        trading_profile: { ...PREFS.trading_profile, risk_mode: 'AGGRESSIVE', aggressive_risk_percent: 6 },
+      };
+      const api = setup({ 'GET /advisory/preferences': () => json(aggressive) });
+      const user = userEvent.setup();
+      renderShell('/profile');
+      const style = await region('Style');
+      fireEvent.change(within(style).getByLabelText(/^Style/), { target: { value: '20' } });
+      await user.click(screen.getByRole('button', { name: 'Save trading profile' }));
+      await waitFor(() => {
+        expect(api.calls.some((c) => c.method === 'PUT')).toBe(true);
+      });
+      const put = api.calls.find((c) => c.method === 'PUT')?.body as Preferences;
+      expect(put.trading_profile).toMatchObject({
+        risk_mode: 'AGGRESSIVE',
+        aggressive_risk_percent: 6,
+        style: 20,
+      });
+    });
+  });
 });

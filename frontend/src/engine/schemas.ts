@@ -97,6 +97,18 @@ export const EntryPlanInUseSchema = z.object({
 });
 export type EntryPlanInUse = z.infer<typeof EntryPlanInUseSchema>;
 
+/** Whether the engine can trade the aggressive preset (`HighRiskAvailability`, PLAN §A36). */
+export const HighRiskSchema = z.object({
+  available: z.boolean(),
+  reason: z.enum(['HIGH_RISK_NOT_ENABLED', 'HIGH_RISK_MODE_NOT_ALLOWED']).nullable().optional(),
+  max_risk_percent: z.number().nullable().optional(),
+  drawdown_kill_percent: z.number().nullable().optional(),
+  weekly_loss_percent: z.number().nullable().optional(),
+  setups: z.array(z.string()).optional(),
+  fade_risk_factor: z.number().nullable().optional(),
+});
+export type HighRisk = z.infer<typeof HighRiskSchema>;
+
 export const RiskLimitsSchema = z.object({
   source: z.enum(['cloud', 'cache', 'local']),
   version: z.string(),
@@ -106,6 +118,10 @@ export const RiskLimitsSchema = z.object({
   effective: GovernedLimitsSchema,
   entry_plan: EntryPlanInUseSchema.nullable().optional(),
   entry_plans_enabled: z.boolean().nullable().optional(),
+  // the aggressive preset (PLAN §A36); absent from older engines
+  risk_mode: z.enum(['STANDARD', 'AGGRESSIVE']).nullable().optional(),
+  refused: z.enum(['HIGH_RISK_NOT_ENABLED', 'HIGH_RISK_MODE_NOT_ALLOWED']).nullable().optional(),
+  high_risk: HighRiskSchema.nullable().optional(),
 });
 export type RiskLimits = z.infer<typeof RiskLimitsSchema>;
 

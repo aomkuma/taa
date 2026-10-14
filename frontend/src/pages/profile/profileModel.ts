@@ -34,7 +34,7 @@ export const CEILINGS: Partial<Record<ProfileField, number>> = {
 export const OVERRIDE_BOUNDS: Partial<
   Record<ProfileField, { min: number; max: number; minExclusive?: boolean }>
 > = {
-  risk_per_signal_percent: { min: 0, max: 2.0, minExclusive: true },
+  risk_per_signal_percent: { min: 0, max: 3.0, minExclusive: true },
   portfolio_heat_percent: { min: 0, max: 10.0, minExclusive: true },
   max_positions: { min: 1, max: 20 },
   max_daily_loss_percent: { min: 0, max: 10.0, minExclusive: true },
@@ -63,6 +63,47 @@ export function interpolate(field: ProfileField, style: number): number | boolea
 
 export type Resolved = Record<ProfileField, number | boolean | Policy>;
 
+/** The aggressive preset (PLAN §A36; `aggressive_limits()` in app/risk/limits.py). */
+export const AGGRESSIVE = {
+  minRisk: 5,
+  maxRisk: 10,
+  defaultRisk: 7.5,
+  step: 0.5,
+  positions: 2,
+  /** The engine's drawdown kill and weekly stop in the high-risk cage (defaults of `high_risk:`). */
+  drawdownKill: 60,
+  weeklyStop: 35,
+  fadeFactor: 0.5,
+  streak: 4,
+} as const;
+const AGGRESSIVE_FIELDS: readonly ProfileField[] = [
+  'risk_per_signal_percent',
+  'portfolio_heat_percent',
+  'max_positions',
+  'max_daily_loss_percent',
+];
+
+/** Whether an aggressive risk per trade is within the preset's bounds. */
+export function aggressiveRiskValid(value: number): boolean {
+  return Number.isFinite(value) && value >= AGGRESSIVE.minRisk && value <= AGGRESSIVE.maxRisk;
+}
+
+/**
+ * The numbers the aggressive warning shows (no outcome claims, only arithmetic on the risk): one loss, a streak
+ * of `streak` losses in a row compounded, and the drawdown at which the engine stops.
+ */
+export function aggressiveWarning(riskPercent: number, streak: number = AGGRESSIVE.streak) {
+  const r = riskPercent / 100;
+  return {
+    perTrade: riskPercent,
+    fade: riskPercent * AGGRESSIVE.fadeFactor,
+    streak,
+    streakLoss: Math.round((1 - (1 - r) ** streak) * 1000) / 10,
+    daily: 2 * riskPercent,
+    kill: AGGRESSIVE.drawdownKill,
+  };
+}
+
 /** `resolve()`: every field's value and the fields that came from overrides. */
 export function resolve(profile: TradingProfile): { values: Resolved; custom: Set<ProfileField> } {
   const custom = new Set<ProfileField>();
@@ -78,6 +119,15 @@ export function resolve(profile: TradingProfile): { values: Resolved; custom: Se
     const ceiling = CEILINGS[field];
     const value = values[field];
     if (ceiling !== undefined && typeof value === 'number') values[field] = Math.min(value, ceiling);
+  }
+  if (profile.risk_mode === 'AGGRESSIVE') {
+    // the preset's risk values replace the slider and the overrides (TradingProfile.resolve)
+    const r = profile.aggressive_risk_percent;
+    values.risk_per_signal_percent = r;
+    values.portfolio_heat_percent = 2 * r;
+    values.max_positions = AGGRESSIVE.positions;
+    values.max_daily_loss_percent = 2 * r;
+    for (const field of AGGRESSIVE_FIELDS) custom.delete(field);
   }
   return { values, custom };
 }

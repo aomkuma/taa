@@ -1,10 +1,11 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useId, useState } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { z } from 'zod';
 
-import { ApiError, apiPost } from '@/api/client';
+import { ApiError, apiPost, apiPut } from '@/api/client';
+import { StepUpDialog } from '@/components/StepUpDialog';
 import { useEngine, useEngineStatus } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
 import { translateCode } from '@/i18n/codes';
@@ -17,6 +18,9 @@ import {
   CONFLICT_POLICIES,
   type EntryPlan,
   HOLDING_STYLES,
+  PREFERENCES_QUERY_KEY,
+  PreferencesSchema,
+  type RiskMode,
   SPLIT_MODES,
   STOP_PLACEMENTS,
   type TradingProfile,
@@ -24,6 +28,9 @@ import {
 } from '@/pages/watchlists/schemas';
 
 import {
+  AGGRESSIVE,
+  aggressiveRiskValid,
+  aggressiveWarning,
   ANCHORS,
   fillTakeProfits,
   OVERRIDE_BOUNDS,
@@ -615,6 +622,217 @@ function EngineLimitsCard({ saved }: { saved: TradingProfile }) {
   );
 }
 
+const CONFIRM_WORD = 'AGGRESSIVE';
+
+/** The numbers behind the aggressive preset, shown before it is switched on (arithmetic only, no outcomes). */
+function AggressiveWarning({ risk }: { risk: number }) {
+  const { t } = useTranslation();
+  const format = useFormat();
+  const w = aggressiveWarning(risk);
+  const pct = (v: number) => format.percent(v, { maximumFractionDigits: 2 });
+  return (
+    <ul className="list-disc space-y-1 pl-5">
+      <li>{t('profile.riskMode.warn.perTrade', { pct: pct(w.perTrade), fade: pct(w.fade) })}</li>
+      <li>{t('profile.riskMode.warn.streak', { n: w.streak, pct: pct(w.streakLoss) })}</li>
+      <li>{t('profile.riskMode.warn.daily', { pct: pct(w.daily) })}</li>
+      <li>{t('profile.riskMode.warn.kill', { pct: pct(w.kill) })}</li>
+      <li>{t('profile.riskMode.warn.setups')}</li>
+    </ul>
+  );
+}
+
+/**
+ * The preset (PLAN §A36): Standard, or Aggressive at 5-10 % a trade. Aggressive can be chosen only when the
+ * engine reports the preset available (its machine opted in); raising it needs a typed confirmation and a TOTP
+ * step-up, lowering it does not. Saved through its own route, never with the rest of the profile.
+ */
+function RiskModeCard({ saved }: { saved: TradingProfile }) {
+  const { t, i18n } = useTranslation();
+  const format = useFormat();
+  const ids = { mode: useId(), risk: useId(), typed: useId() };
+  const { engineId } = useEngine();
+  const status = useEngineStatus();
+  const queryClient = useQueryClient();
+  const limits = status.data?.heartbeat?.account?.risk_limits;
+  const highRisk = limits?.high_risk;
+  const available = highRisk?.available === true;
+  const [mode, setMode] = useState<RiskMode>(saved.risk_mode);
+  const [risk, setRisk] = useState(saved.aggressive_risk_percent);
+  const [confirming, setConfirming] = useState(false);
+  const [typed, setTyped] = useState('');
+  // stable: the dialog refocuses its first field whenever onClose changes
+  const closeDialog = useCallback(() => {
+    setConfirming(false);
+  }, []);
+  const [base, setBase] = useState(saved);
+  if (base !== saved) {
+    setBase(saved);
+    setMode(saved.risk_mode);
+    setRisk(saved.aggressive_risk_percent);
+  }
+  const body = (withEngine: boolean) => ({
+    risk_mode: mode,
+    ...(mode === 'AGGRESSIVE' ? { aggressive_risk_percent: risk } : {}),
+    ...(withEngine && engineId !== null ? { engine_id: engineId } : {}),
+  });
+  const store = (data: z.infer<typeof PreferencesSchema>) => {
+    queryClient.setQueryData(PREFERENCES_QUERY_KEY, data);
+  };
+  const lower = useMutation({
+    mutationFn: () => apiPut('/advisory/preferences/risk-mode', body(false), PreferencesSchema),
+    onSuccess: store,
+  });
+  const changed =
+    mode !== saved.risk_mode || (mode === 'AGGRESSIVE' && risk !== saved.aggressive_risk_percent);
+  const raising =
+    mode === 'AGGRESSIVE' && (saved.risk_mode !== 'AGGRESSIVE' || risk > saved.aggressive_risk_percent);
+  const valid = mode === 'STANDARD' || aggressiveRiskValid(risk);
+  const errorText = (err: unknown): string | null =>
+    err instanceof ApiError && i18n.exists(`profile.riskMode.error.${err.code}`)
+      ? t(`profile.riskMode.error.${err.code as 'high_risk_unavailable'}`)
+      : null;
+  return (
+    <Card title={t('profile.riskMode.title')}>
+      <div className="space-y-3 text-sm">
+        <p className="text-xs text-slate-600 dark:text-slate-400">{t('profile.riskMode.about')}</p>
+        {limits?.refused && (
+          <p role="alert" className="text-amber-800 dark:text-amber-300">
+            {t('profile.riskMode.refused', { reason: translateCode(i18n, 'reason', limits.refused) })}
+          </p>
+        )}
+        {limits?.risk_mode === 'AGGRESSIVE' && (
+          <p role="status" className="font-medium text-red-800 dark:text-red-300">
+            {t('profile.riskMode.active')}
+          </p>
+        )}
+        <fieldset className="space-y-1">
+          <legend className="mb-1 font-medium">{t('profile.riskMode.choose')}</legend>
+          {(['STANDARD', 'AGGRESSIVE'] as const).map((m) => (
+            <label key={m} className="flex items-start gap-2">
+              <input
+                type="radio"
+                name={ids.mode}
+                className="mt-1"
+                checked={mode === m}
+                disabled={m === 'AGGRESSIVE' && !available && saved.risk_mode !== 'AGGRESSIVE'}
+                onChange={() => {
+                  lower.reset();
+                  setMode(m);
+                }}
+              />
+              <span>
+                {t(`profile.riskMode.name.${m}`)}
+                <span className="block text-xs text-slate-500">{t(`profile.riskMode.nameAbout.${m}`)}</span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
+        {!available && (
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            {t('profile.riskMode.unavailable')}
+            {highRisk?.reason ? ` (${translateCode(i18n, 'reason', highRisk.reason)})` : ''}
+          </p>
+        )}
+        {mode === 'AGGRESSIVE' && (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor={ids.risk}>{t('profile.riskMode.risk')}</label>
+              <input
+                id={ids.risk}
+                type="number"
+                min={AGGRESSIVE.minRisk}
+                max={AGGRESSIVE.maxRisk}
+                step={AGGRESSIVE.step}
+                aria-invalid={!valid}
+                className={`${INPUT} w-24 ${valid ? '' : 'border-red-500'}`}
+                value={Number.isFinite(risk) ? risk : ''}
+                onChange={(e) => {
+                  lower.reset();
+                  setRisk(e.target.value === '' ? Number.NaN : Number(e.target.value));
+                }}
+              />
+              <span className="text-xs text-slate-500">
+                {t('profile.riskMode.riskRange', {
+                  min: format.percent(AGGRESSIVE.minRisk),
+                  max: format.percent(AGGRESSIVE.maxRisk),
+                })}
+              </span>
+            </div>
+            {valid && (
+              <section
+                aria-label={t('profile.riskMode.warn.title')}
+                className="rounded border border-red-300 bg-red-50 p-3 text-red-900 dark:border-red-800 dark:bg-red-950/40 dark:text-red-200"
+              >
+                <h3 className="mb-1 font-semibold">{t('profile.riskMode.warn.title')}</h3>
+                <AggressiveWarning risk={risk} />
+              </section>
+            )}
+          </>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className={
+              raising
+                ? 'rounded bg-red-700 px-3 py-1 text-sm font-medium text-white hover:bg-red-800 disabled:opacity-50'
+                : PRIMARY
+            }
+            disabled={!changed || !valid || lower.isPending}
+            onClick={() => {
+              if (raising) {
+                setTyped('');
+                setConfirming(true);
+              } else {
+                lower.mutate();
+              }
+            }}
+          >
+            {t(raising ? 'profile.riskMode.raise' : 'profile.riskMode.apply')}
+          </button>
+          {lower.isSuccess && !changed && (
+            <span role="status" className="text-slate-600 dark:text-slate-400">
+              {t('profile.saved')}
+            </span>
+          )}
+          {lower.error && (
+            <span role="alert" className="text-red-700 dark:text-red-400">
+              {errorText(lower.error) ?? t('profile.failed')}
+            </span>
+          )}
+        </div>
+      </div>
+      {confirming && (
+        <StepUpDialog
+          title={t('profile.riskMode.confirmTitle')}
+          confirmLabel={t('profile.riskMode.raise')}
+          danger
+          errorText={errorText}
+          validate={() =>
+            typed === CONFIRM_WORD ? null : t('profile.riskMode.mismatch', { word: CONFIRM_WORD })
+          }
+          onConfirm={async () => {
+            store(await apiPut('/advisory/preferences/risk-mode', body(true), PreferencesSchema));
+          }}
+          onClose={closeDialog}
+        >
+          <AggressiveWarning risk={risk} />
+          <label htmlFor={ids.typed} className="block font-medium">
+            {t('profile.riskMode.type', { word: CONFIRM_WORD })}
+          </label>
+          <input
+            id={ids.typed}
+            className={`${INPUT} w-full font-mono`}
+            value={typed}
+            onChange={(e) => {
+              setTyped(e.target.value.trim());
+            }}
+          />
+        </StepUpDialog>
+      )}
+    </Card>
+  );
+}
+
 function ProfileForm({ saved }: { saved: { profile: TradingProfile; plan: EntryPlan } }) {
   const { t } = useTranslation();
   const save = useSaveSections();
@@ -655,7 +873,10 @@ function ProfileForm({ saved }: { saved: { profile: TradingProfile; plan: EntryP
         </section>
       )}
       <div className="grid gap-4 lg:grid-cols-2">
-        <StyleCard profile={draft.profile} change={setProfile} />
+        <div className="flex flex-col gap-4">
+          <RiskModeCard saved={saved.profile} />
+          <StyleCard profile={draft.profile} change={setProfile} />
+        </div>
         <div className="flex flex-col gap-4">
           <PlanCard plan={draft.plan} profile={draft.profile} change={setPlan} />
           <HabitsCard profile={draft.profile} change={setProfile} />
