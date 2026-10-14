@@ -44,3 +44,15 @@ The one intraday edge on gold that has held so far is S1 (M1 fades of counter-tr
 trend; 8 months +0.27 R/trade at the time of writing). Day trade D1 = that logic on M5 entries (context M30/H1/H4,
 stop and target on the M5 scale), flat by 20:45 UTC, then the ladder; the session triggers only as context
 (where the break happens), not as the signal.
+
+## D1 = S1's logic on M5 (owner, 2026-10-15: "go on")
+
+`data/research/config_d1a_m5.yaml` (screens H1/M15) and `config_d1b_m5.yaml` (H4/M30): S1's params with
+`atr_bars: 12` (one hour of M5), flat within the day.
+
+- **First March run invalid (00:43-00:52 Thai time, kept in `data/backtests/inv/d1_invalid/`):** the day cut
+  `session_end_utc: 16:00` together with S1's `skip_window_ny: 08:00-12:00` (12:00-16:00 UTC in March after the
+  US DST change) left entries only 07:00-12:00 UTC: 3 signals (S1 on M1 had 24 that month), 3 stop-outs. It
+  tested the window mistake, not the idea, and is not counted.
+- **Fixed:** `session_end_utc: 18:30` and a 24-bar (2-hour) time stop, so entries run 07:00-12:00 and
+  16:00-18:30 UTC and every trade still closes by 20:30 UTC. March rerun for both variants.
