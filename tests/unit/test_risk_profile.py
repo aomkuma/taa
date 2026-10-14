@@ -95,7 +95,7 @@ class TestWire:
     def test_fields_map_one_to_one_onto_risk_config(self) -> None:
         """A field a profile governs must exist in ProfileLimits, the wire and ``governed`` alike."""
         # a switch the cage must also allow and the entry plan (TAA-1207): not numeric limits
-        switches = {"min_lot_fallback", "entry_plan"}
+        switches = {"min_lot_fallback", "entry_plan", "risk_mode"}  # + the preset (PLAN §A36)
         names = {f.name for f in dataclasses.fields(ProfileLimits)} - switches
         assert (
             names

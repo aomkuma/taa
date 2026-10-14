@@ -21,6 +21,12 @@ effective leverage above ``risk.max_effective_leverage``, when such a cap is con
 lot is cut to what fits instead of rejecting the trade. Only when even the minimum lot does not fit do the
 margin / leverage checks reject it. With ``min_lot_fallback`` (cage and trading profile) a budget that buys
 less than the minimum lot opens the minimum lot when margin allows; its risk then exceeds the budget.
+
+**Aggressive preset** (PLAN §A36): a request whose ``cage`` is the high-risk cage trades only the preset's
+setups (``STRATEGY_NOT_IN_PRESET``), sizes a fade (``FADE``) at ``fade_risk_factor`` x the preset's risk,
+never opens the minimum lot above the budget, and checks two budgets before entry: today's loss + open risk +
+this trade within the daily limit, and drawdown + open risk + this trade within the drawdown kill. An
+AGGRESSIVE profile without that cage is rejected (``HIGH_RISK_NOT_ENABLED``), never clamped.
 """
 
 from __future__ import annotations
@@ -39,7 +45,7 @@ from sqlalchemy import select
 from app import __version__
 from app.broker import mt5_constants as c
 from app.broker.models import BrokerOrder, BrokerPosition
-from app.config import AppConfig, RiskConfig
+from app.config import AppConfig, HighRiskCage, RiskConfig
 from app.core.clock import Clock
 from app.core.decimal_utils import to_decimal
 from app.core.enums import Side, TradingMode
@@ -50,7 +56,7 @@ from app.news.calendar import NewsFilter
 from app.risk.checks import Check, CheckKind
 from app.risk.circuit_breaker import BreakerBoard
 from app.risk.exposure_manager import LEVERAGE_MOVE, Candidate, ExposureManager
-from app.risk.limits import EntryPlanSpec, ProfileLimits, effective_risk
+from app.risk.limits import EntryPlanSpec, HighRiskRefused, ProfileLimits, effective_risk
 from app.risk.loss_tracker import LossStatus, loss_checks
 from app.risk.mode_gates import GateResult
 from app.risk.position_sizer import (
@@ -120,6 +126,7 @@ class DecisionRequest:
     risk_source: str | None = (
         None  # where profile_limits came from (PLAN §A33): cloud:<v> | cache:<v> | local:<v>
     )
+    cage: RiskConfig | None = None  # the cage profile_limits combine with; None: config.yaml risk (§A36)
 
 
 @dataclass(frozen=True)
@@ -226,9 +233,15 @@ class DecisionEngine:
         if not signal.is_entry:
             record = self._record(now, profile, Decision.HOLD, req, (), None)
             return self._persist(record)
-        risk = effective_risk(self.config.risk, req.profile_limits)
-        fade = self.config.risk.fade
-        if fade is not None and ReasonCode.FADE.value in signal.reason_codes:
+        cage = self.config.risk if req.cage is None else req.cage
+        try:
+            risk = effective_risk(cage, req.profile_limits)
+        except HighRiskRefused as exc:  # fail closed: never clamped into the standard cage
+            check = Check("risk_profile", Reason.HIGH_RISK_NOT_ENABLED, False, HARD, detail=str(exc))
+            return self._persist(self._record(now, profile, Decision.REJECT, req, (check,), None))
+        fade = cage.fade
+        is_fade = ReasonCode.FADE.value in signal.reason_codes
+        if fade is not None and is_fade:
             # a fade's R:R is the plan's inverse, its stop the plan's target: only the RR floor and the SL cap
             # change (config risk.fade); the profile's min RR does not apply
             risk = risk.model_copy(
@@ -237,9 +250,15 @@ class DecisionEngine:
                     "max_sl_atr_multiple": fade.max_sl_atr_multiple,
                 }
             )
+        if isinstance(risk, HighRiskCage) and is_fade:
+            # aggressive preset: a fade (win ~+0.44 R, lose -1 R) risks a fraction of the preset (PLAN §A36)
+            risk = risk.model_copy(
+                update={"max_risk_per_trade_percent": risk.max_risk_per_trade_percent * risk.fade_risk_factor}
+            )
         checks: list[Check] = []
         checks += self._system(req, profile)
         checks += self._mode(req)
+        checks += self._preset(signal, risk)
         checks += self._symbol(req, profile)
         checks += self._data(req, now, risk)
         checks += self._session(req, now)
@@ -303,6 +322,22 @@ class DecisionEngine:
         detail = "no gate result" if gate is None else "; ".join(f"{cond}: {d}" for cond, d in gate.failures)
         reason = Reason.LIVE_GATE_FAILED if gate is None or gate.reason is None else gate.reason
         return [Check("mode_gate", reason, ok, ACCOUNT, self.mode.value, "gate passed", detail)]
+
+    @staticmethod
+    def _preset(signal: Signal, risk: RiskConfig) -> list[Check]:
+        """The aggressive preset trades only its proven setups (``high_risk.setups``)."""
+        if not isinstance(risk, HighRiskCage):
+            return []
+        return [
+            Check(
+                "strategy_in_preset",
+                Reason.STRATEGY_NOT_IN_PRESET,
+                signal.strategy in risk.setups,
+                ACCOUNT,
+                signal.strategy,
+                ",".join(risk.setups),
+            )
+        ]
 
     def _symbol(self, req: DecisionRequest, profile: Profile) -> list[Check]:
         symbol, spec = req.signal.symbol, req.spec
@@ -705,7 +740,42 @@ class DecisionEngine:
             volume, risk_money, margin = 0.0, budget, 0.0
         candidate = Candidate(s.symbol, s.side, volume, s.entry_price, risk_money, margin)
         out += manager.check(candidate, exposure, specs)
+        if isinstance(risk, HighRiskCage):
+            out += self._budgets(req, risk, exposure.heat_percent, risk_money)
         return out
+
+    @staticmethod
+    def _budgets(req: DecisionRequest, risk: HighRiskCage, heat: float, risk_money: float) -> list[Check]:
+        """Aggressive preset (PLAN §A36): what this trade could add, checked before entry, so the daily limit
+        and the drawdown kill are budgets, not only triggers after the fact. Unknown figures fail closed."""
+        loss = None if req.account is None else req.account.loss
+        equity = 0.0 if req.account is None else req.account.funds.equity
+        trade = 100.0 * risk_money / equity if equity > 0 else float("inf")
+        if loss is None or not (heat < float("inf")):
+            day = drawdown = float("inf")
+        else:
+            day = max(0.0, -loss.day_pnl_percent) + heat + trade
+            drawdown = loss.drawdown_percent + heat + trade
+        return [
+            Check(
+                "daily_loss_budget",
+                Reason.DAILY_LOSS_LIMIT,
+                day <= risk.max_daily_loss_percent,
+                ACCOUNT,
+                round(day, 4) if day < float("inf") else None,
+                risk.max_daily_loss_percent,
+                "today's loss + open risk + this trade, % of equity",
+            ),
+            Check(
+                "drawdown_budget",
+                Reason.MAX_DRAWDOWN,
+                drawdown <= risk.max_account_drawdown_percent,
+                ACCOUNT,
+                round(drawdown, 4) if drawdown < float("inf") else None,
+                risk.max_account_drawdown_percent,
+                "drawdown + open risk + this trade, %",
+            ),
+        ]
 
     # records ---------------------------------------------------------------------------------------------
 

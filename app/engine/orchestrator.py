@@ -401,7 +401,12 @@ class Engine:
             )
             self.heartbeats = HeartbeatEmitter(self.sync.outbox, cfg.sync.heartbeat_seconds)
         self.risk_limits = RiskLimitSelector(
-            cfg, None if self.sync is None else self.sync.risk_profile, self.audit, self.clock
+            cfg,
+            None if self.sync is None else self.sync.risk_profile,
+            self.audit,
+            self.clock,
+            high_risk=self.settings.high_risk_cage(),  # PLAN §A36: only with the local opt-in
+            high_risk_refusal=self.settings.high_risk_refusal(),
         )
         self.risk_limits.current()  # audit the limits this run starts with
         self.runs.save_config_snapshot(self.settings.config_hash, self.settings.summary())
@@ -574,10 +579,15 @@ class Engine:
             self.settings.env,
             account=account,
             terminal=terminal,
-            risk_config_ok=True,  # settings were validated at startup
+            risk_config_ok=self._risk_config_ok(),
             kill_switch_active=self.kill_switch.is_active(),
             latched_breakers=latched,
         )
+
+    def _risk_config_ok(self) -> bool:
+        """The gate's RISK_CONFIG condition: the limits in use validate inside their cage (an AGGRESSIVE
+        profile only inside the high-risk cage). Before the selector exists (startup), no entry may pass."""
+        return self.risk_limits is not None and self.risk_limits.config_ok()
 
     def _presend(self, symbol: str, side: Side, price: float, expires_at: datetime) -> list[str]:
         """Time-of-use checks right before ``order_send`` (PLAN §A12 write-ahead)."""
@@ -990,6 +1000,7 @@ class Engine:
                 last_entry_at=self._last_entry.get(symbol),
                 profile_limits=None if applied is None else applied.limits,
                 risk_source=None if applied is None else applied.source,
+                cage=None if applied is None else applied.cage,
                 probation=self._probation(),
             )
         )
@@ -1017,10 +1028,10 @@ class Engine:
     def _scan_limits(self) -> ProfileLimits | None:
         """The owner's limits for the scanner's ADVISORY decisions: the owner's sizing and account limits, but
         not min RR, a HARD check there that would hide opportunities other users' profiles accept, and not
-        the entry plan (alerts carry each user's own plan, TAA-1207)."""
+        the entry plan (alerts carry each user's own plan, TAA-1207); always STANDARD (PLAN §A36)."""
         if self.risk_limits is None:
             return None
-        return dataclasses.replace(self.risk_limits.current().limits, min_risk_reward=None, entry_plan=None)
+        return dataclasses.replace(self.risk_limits.scan_limits(), min_risk_reward=None, entry_plan=None)
 
     def effective_risk(self) -> RiskConfig:
         """The limits the engine trades with now (TAA-710); ``config.yaml`` alone before ``start()``."""
@@ -1062,7 +1073,16 @@ class Engine:
     def _observe_losses(self) -> None:
         status = self._loss_status()
         self._last_loss = status
+        self.monitor.risk = self._breaker_risk()
         self.monitor.observe_losses(status)
+
+    def _breaker_risk(self) -> RiskConfig:
+        """The limits the loss breakers trip on: ``config.yaml`` → ``risk``, or in the aggressive preset its
+        cage's (daily 2r, weekly 35 %, drawdown kill 60 %; PLAN §A36). Leaving the preset returns to
+        ``risk:``, where a deeper drawdown latches MAX_DRAWDOWN (``app.cli risk rebase-hwm`` after a
+        review)."""
+        applied = None if self.risk_limits is None else self.risk_limits.current()
+        return applied.effective if applied is not None and applied.aggressive else self.config.risk
 
     def _broker_step(self, what: str, step: Callable[[], None]) -> None:
         """Run a health step that reads the broker. A lost terminal link is a connection problem, not an

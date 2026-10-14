@@ -45,6 +45,20 @@ CEILING_WEEKLY_LOSS_PCT = 20.0
 CEILING_DRAWDOWN_PCT = 50.0
 CEILING_TOTAL_OPEN_RISK_PCT = 10.0
 
+# The high-risk (aggressive) cage (PLAN §A36): a separate, opt-in set of ceilings for small accounts that
+# accept high risk. A normal ``risk:`` block can never reach these values; only :class:`HighRiskCage` can.
+HIGH_RISK_CEILING_RISK_PER_TRADE_PCT = 10.0
+HIGH_RISK_CEILING_TOTAL_OPEN_RISK_PCT = 20.0
+HIGH_RISK_CEILING_DAILY_LOSS_PCT = 20.0
+HIGH_RISK_CEILING_WEEKLY_LOSS_PCT = 35.0
+HIGH_RISK_CEILING_DRAWDOWN_PCT = 60.0
+HIGH_RISK_MAX_OPEN_POSITIONS = 3
+HIGH_RISK_MAX_LEVERAGE = 50.0
+# the aggressive preset's own risk per trade (Trading profile): 5-10 %, 7.5 % by default (owner, 2026-10-14)
+AGGRESSIVE_MIN_RISK_PCT = 5.0
+AGGRESSIVE_DEFAULT_RISK_PCT = 7.5
+HIGH_RISK_CONFIRMATION_PREFIX = "I-ACCEPT-HIGH-RISK-"
+
 
 class StrictModel(BaseModel):
     """Immutable model that rejects unknown keys (typos must not be silently ignored)."""
@@ -266,6 +280,98 @@ class RiskConfig(StrictModel):
         if self.min_lot is not None and self.min_lot > self.max_lot:
             raise ValueError("min_lot must not exceed max_lot")
         return self
+
+
+class HighRiskCage(RiskConfig):
+    """The outer cage of the aggressive Trading-profile preset (PLAN §A36). Built only by
+    :meth:`HighRiskConfig.cage` from ``config.yaml`` → ``high_risk`` plus the env opt-in; ``risk:`` always
+    validates as a plain :class:`RiskConfig`, so no edit of that block can raise its ceilings to these.
+
+    Inside it: no minimum-lot fallback (the minimum lot could exceed the budget), one trade per currency
+    direction, a notional leverage cap, and the setups the preset may trade (``setups``). Fades risk
+    ``fade_risk_factor`` x the preset's risk per trade.
+    """
+
+    max_risk_per_trade_percent: float = Field(default=10.0, gt=0, le=HIGH_RISK_CEILING_RISK_PER_TRADE_PCT)
+    max_total_open_risk_percent: float = Field(default=20.0, gt=0, le=HIGH_RISK_CEILING_TOTAL_OPEN_RISK_PCT)
+    max_open_positions: int = Field(default=3, ge=1, le=HIGH_RISK_MAX_OPEN_POSITIONS)
+    max_daily_loss_percent: float = Field(default=20.0, gt=0, le=HIGH_RISK_CEILING_DAILY_LOSS_PCT)
+    max_weekly_loss_percent: float = Field(default=35.0, gt=0, le=HIGH_RISK_CEILING_WEEKLY_LOSS_PCT)
+    max_account_drawdown_percent: float = Field(default=60.0, gt=0, le=HIGH_RISK_CEILING_DRAWDOWN_PCT)
+    max_effective_leverage: float | None = Field(
+        default=HIGH_RISK_MAX_LEVERAGE, gt=0, le=HIGH_RISK_MAX_LEVERAGE
+    )
+    min_lot_fallback: bool = False
+    max_same_direction_per_currency: int = Field(default=1, ge=1, le=1)
+    setups: tuple[str, ...] = Field(default=(), min_length=1)
+    fade_risk_factor: float = Field(default=0.5, gt=0, le=1)
+
+    @model_validator(mode="after")
+    def _cage_rules(self) -> HighRiskCage:
+        if self.min_lot_fallback:
+            raise ValueError("the high-risk cage never opens the minimum lot above the budget")
+        if self.max_effective_leverage is None:
+            raise ValueError("the high-risk cage needs a leverage cap")
+        return self
+
+
+class HighRiskConfig(StrictModel):
+    """``config.yaml`` → ``high_risk`` (PLAN §A36): the aggressive preset's cage. Absent: the preset is not
+    available on this machine. It applies only with ``ENABLE_HIGH_RISK_PROFILE`` and the account-bound
+    ``HIGH_RISK_CONFIRMATION``, in one of ``modes`` (PAPER/DEMO only in v1: LIVE is refused)."""
+
+    max_risk_per_trade_percent: float = Field(default=10.0, gt=0, le=HIGH_RISK_CEILING_RISK_PER_TRADE_PCT)
+    max_total_open_risk_percent: float = Field(default=20.0, gt=0, le=HIGH_RISK_CEILING_TOTAL_OPEN_RISK_PCT)
+    max_open_positions: int = Field(default=3, ge=1, le=HIGH_RISK_MAX_OPEN_POSITIONS)
+    max_daily_loss_percent: float = Field(default=20.0, gt=0, le=HIGH_RISK_CEILING_DAILY_LOSS_PCT)
+    max_weekly_loss_percent: float = Field(default=35.0, gt=0, le=HIGH_RISK_CEILING_WEEKLY_LOSS_PCT)
+    max_account_drawdown_percent: float = Field(default=60.0, gt=0, le=HIGH_RISK_CEILING_DRAWDOWN_PCT)
+    max_effective_leverage: float = Field(default=HIGH_RISK_MAX_LEVERAGE, gt=0, le=HIGH_RISK_MAX_LEVERAGE)
+    modes: list[TradingMode] = Field(
+        default_factory=lambda: [TradingMode.PAPER, TradingMode.DEMO], min_length=1
+    )
+    setups: list[str] = Field(min_length=1, description="the proven setups the preset may trade")
+    fade_risk_factor: float = Field(default=0.5, gt=0, le=1, description="fades risk this x the preset")
+
+    @field_validator("modes")
+    @classmethod
+    def _modes(cls, value: list[TradingMode]) -> list[TradingMode]:
+        refused = sorted(m.value for m in value if m not in (TradingMode.PAPER, TradingMode.DEMO))
+        if refused:
+            raise ValueError(f"high_risk.modes allows PAPER and DEMO only (v1); refused: {refused}")
+        return list(dict.fromkeys(value))
+
+    @field_validator("setups")
+    @classmethod
+    def _setups(cls, value: list[str]) -> list[str]:
+        if len(set(value)) != len(value):
+            raise ValueError("high_risk.setups: no duplicates")
+        return value
+
+    @model_validator(mode="after")
+    def _coherence(self) -> HighRiskConfig:
+        if not self.max_risk_per_trade_percent <= self.max_daily_loss_percent <= self.max_weekly_loss_percent:
+            raise ValueError("high_risk: risk per trade <= daily loss <= weekly loss")
+        if self.max_total_open_risk_percent < self.max_risk_per_trade_percent:
+            raise ValueError("high_risk: max_total_open_risk_percent must be >= max_risk_per_trade_percent")
+        return self
+
+    def cage(self, base: RiskConfig) -> HighRiskCage:
+        """*base* (``risk:``: spreads, slippage, margin, streak pause, fades) with this section's limits."""
+        update: dict[str, Any] = {
+            "max_risk_per_trade_percent": self.max_risk_per_trade_percent,
+            "max_total_open_risk_percent": self.max_total_open_risk_percent,
+            "max_open_positions": self.max_open_positions,
+            "max_daily_loss_percent": self.max_daily_loss_percent,
+            "max_weekly_loss_percent": self.max_weekly_loss_percent,
+            "max_account_drawdown_percent": self.max_account_drawdown_percent,
+            "max_effective_leverage": self.max_effective_leverage,
+            "min_lot_fallback": False,
+            "max_same_direction_per_currency": 1,
+            "setups": tuple(self.setups),
+            "fade_risk_factor": self.fade_risk_factor,
+        }
+        return HighRiskCage.model_validate({**base.model_dump(), **update})
 
 
 class SessionWindow(StrictModel):
@@ -879,6 +985,8 @@ class AppConfig(StrictModel):
     sync: SyncConfig = Field(default_factory=SyncConfig)
     ai: AIConfig = Field(default_factory=AIConfig)
     evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
+    # the aggressive preset's cage (PLAN §A36); None: the preset is not available on this machine
+    high_risk: HighRiskConfig | None = None
 
     @model_validator(mode="after")
     def _management_names_known(self) -> AppConfig:
@@ -886,6 +994,10 @@ class AppConfig(StrictModel):
         unknown = sorted(set(self.position_management.by_strategy) - known)
         if unknown:
             raise ValueError(f"position_management.by_strategy names unknown strategies: {unknown}")
+        if self.high_risk is not None:
+            unknown = sorted(set(self.high_risk.setups) - known)
+            if unknown:
+                raise ValueError(f"high_risk.setups names strategies not in strategies.items: {unknown}")
         return self
 
     def spread_limit(self, symbol: str) -> float:
@@ -924,6 +1036,9 @@ class EnvSettings(BaseSettings):
     ENABLE_DEMO_TRADING: bool = False
     ENABLE_LIVE_TRADING: bool = False
     LIVE_TRADING_CONFIRMATION: str | None = None
+    # the aggressive Trading-profile preset (PLAN §A36): off unless both are set; PAPER/DEMO only in v1
+    ENABLE_HIGH_RISK_PROFILE: bool = False
+    HIGH_RISK_CONFIRMATION: str | None = None
     MAGIC_NUMBER_BASE: int = Field(default=7_310_000, ge=1, le=2_000_000_000)
 
     KILL_SWITCH_FILE: str = "data/KILL_SWITCH"
@@ -1141,6 +1256,28 @@ class Settings:
     def mode(self) -> TradingMode:
         return self.env.TRADING_MODE
 
+    def high_risk_refusal(self) -> str | None:
+        """Why the aggressive preset cannot apply here (PLAN §A36), or None when it can:
+        ``NOT_ENABLED`` (no ``high_risk:`` section, no opt-in or a wrong confirmation) or
+        ``MODE_NOT_ALLOWED`` (this trading mode is not in ``high_risk.modes``; LIVE never is in v1)."""
+        section, env = self.config.high_risk, self.env
+        if (
+            section is None
+            or not env.ENABLE_HIGH_RISK_PROFILE
+            or env.MT5_LOGIN is None
+            or high_risk_phrase(env.MT5_LOGIN) != env.HIGH_RISK_CONFIRMATION
+        ):
+            return "NOT_ENABLED"
+        if self.mode is TradingMode.LIVE or self.mode not in section.modes:
+            return "MODE_NOT_ALLOWED"
+        return None
+
+    def high_risk_cage(self) -> HighRiskCage | None:
+        """The aggressive preset's cage, only when every condition of :meth:`high_risk_refusal` holds."""
+        if self.high_risk_refusal() is not None or self.config.high_risk is None:
+            return None
+        return self.config.high_risk.cage(self.config.risk)
+
     def path(self, value: str) -> Path:
         """Resolve a configured relative path against the repository root."""
         p = Path(value)
@@ -1156,8 +1293,9 @@ class Settings:
                 env[key] = "***set***" if value is not None else None
         if env.get("MT5_LOGIN") is not None:
             env["MT5_LOGIN"] = mask_login(env["MT5_LOGIN"])
-        if env.get("LIVE_TRADING_CONFIRMATION"):
-            env["LIVE_TRADING_CONFIRMATION"] = "***set***"
+        for key in ("LIVE_TRADING_CONFIRMATION", "HIGH_RISK_CONFIRMATION"):
+            if env.get(key):
+                env[key] = "***set***"
         return {
             "env": json.loads(json.dumps(env, default=str)),
             "config": self.config.model_dump(mode="json"),
@@ -1224,6 +1362,26 @@ def _require_mode_fields(env: EnvSettings, config: AppConfig) -> None:
         raise ConfigError("missing required configuration: " + ", ".join(missing))
 
 
+def high_risk_phrase(login: int | None) -> str:
+    """The account-bound confirmation of the aggressive preset (like ``I-ACCEPT-LIVE-RISK-<login>``)."""
+    return f"{HIGH_RISK_CONFIRMATION_PREFIX}{login}"
+
+
+def _check_high_risk(env: EnvSettings, config: AppConfig) -> None:
+    """An opt-in that cannot apply is a startup error, never a silent no-op (PLAN §A36)."""
+    if not env.ENABLE_HIGH_RISK_PROFILE:
+        return
+    problems: list[str] = []
+    if env.TRADING_MODE is TradingMode.LIVE:
+        problems.append("the aggressive preset is not allowed with TRADING_MODE=LIVE (v1)")
+    if config.high_risk is None:
+        problems.append("config.yaml has no high_risk: section")
+    if env.MT5_LOGIN is None or high_risk_phrase(env.MT5_LOGIN) != env.HIGH_RISK_CONFIRMATION:
+        problems.append("HIGH_RISK_CONFIRMATION does not match the phrase for MT5_LOGIN")
+    if problems:
+        raise ConfigError("ENABLE_HIGH_RISK_PROFILE=true but " + "; ".join(problems))
+
+
 def load_settings(
     env_file: str | Path | None = ".env",
     config_file: str | Path | None = None,
@@ -1257,6 +1415,7 @@ def load_settings(
         raise ConfigError(_format_validation_error(f"invalid configuration in {cfg_path.name}", exc)) from exc
 
     _require_mode_fields(env, config)
+    _check_high_risk(env, config)
 
     from app.security.secrets import resolve_env_secrets  # local import avoids a cycle
 

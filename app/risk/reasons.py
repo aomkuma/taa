@@ -20,6 +20,10 @@ class Reason(StrEnum):
     # mode
     ORDERS_NOT_ALLOWED_IN_MODE = "ORDERS_NOT_ALLOWED_IN_MODE"
     LIVE_GATE_FAILED = "LIVE_GATE_FAILED"
+    # aggressive preset (PLAN §A36)
+    HIGH_RISK_NOT_ENABLED = "HIGH_RISK_NOT_ENABLED"  # no opt-in on the engine machine
+    HIGH_RISK_MODE_NOT_ALLOWED = "HIGH_RISK_MODE_NOT_ALLOWED"  # this trading mode is not in high_risk.modes
+    STRATEGY_NOT_IN_PRESET = "STRATEGY_NOT_IN_PRESET"  # the preset trades only its proven setups
     # symbol
     SYMBOL_NOT_ALLOWED = "SYMBOL_NOT_ALLOWED"
     SYMBOL_UNAVAILABLE = "SYMBOL_UNAVAILABLE"

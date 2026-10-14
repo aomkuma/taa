@@ -7,8 +7,9 @@ from typing import Any, ClassVar
 
 import pytest
 
+from app.advisory.preferences import TradingProfile
 from app.broker import mt5_constants as c
-from app.config import AppConfig, BlackoutWindow
+from app.config import AppConfig, BlackoutWindow, HighRiskConfig, RiskConfig
 from app.core.clock import ManualClock
 from app.core.enums import Action, Side, Timeframe, TradingMode
 from app.engine.decision_engine import (
@@ -25,6 +26,7 @@ from app.market_data.trading_sessions import TradingSessions
 from app.news.calendar import ManualBlackouts, NewsFilter
 from app.risk.checks import CheckKind
 from app.risk.circuit_breaker import BreakerBoard, BreakerName, default_specs
+from app.risk.limits import ProfileLimits, RiskMode
 from app.risk.mode_gates import GateCondition, GateResult
 from app.risk.reasons import Reason
 from app.storage.database import Database
@@ -125,6 +127,15 @@ BLACKOUT = BlackoutWindow(
 )
 PAPER_GATE = GateResult(TradingMode.LIVE, ((GateCondition.MODE, "x"),))
 
+
+def aggressive(r: float = 7.5) -> ProfileLimits:
+    return TradingProfile(risk_mode=RiskMode.AGGRESSIVE, aggressive_risk_percent=r).resolve().limits()
+
+
+def high_cage(*setups: str, base: RiskConfig | None = None) -> RiskConfig:
+    return HighRiskConfig(setups=list(setups or ("setup_breakout",))).cage(base or RiskConfig())
+
+
 # reason -> (engine setup, request overrides)
 CASES: dict[str, tuple[Setup, dict[str, Any]]] = {
     "KILL_SWITCH_ACTIVE": (Setup(), {"health": SystemHealth(kill_switch_active=True)}),
@@ -201,8 +212,11 @@ CASES: dict[str, tuple[Setup, dict[str, Any]]] = {
     "SYMBOL_SPEC_INCONSISTENT": (Setup(calc=TickCalculator(*SPECS.values(), skew=1.5)), {}),
     "RISK_BELOW_MIN_LOT": (Setup(), account(equity=300.0)),
     "VOLUME_INVALID": (Setup(), {"account": None}),
+    "HIGH_RISK_NOT_ENABLED": (Setup(), {"profile_limits": aggressive()}),
+    "STRATEGY_NOT_IN_PRESET": (Setup(), {"cage": high_cage("setup_breakout")}),
 }
 M2_ONLY = {"AI_DISAGREES", "AI_LOW_CONFIDENCE", "AI_UNAVAILABLE", "ORDER_CHECK_FAILED"}
+SELECTOR_ONLY = {"HIGH_RISK_MODE_NOT_ALLOWED"}  # reported by the risk-limit selector, not a decision
 
 
 class TestBaseline:
@@ -276,7 +290,7 @@ class TestEveryReasonCode:
 
     def test_every_milestone_1_reason_is_covered(self) -> None:
         covered = {code.split(":")[0] for code in CASES}
-        assert covered == {r.value for r in Reason} - M2_ONLY
+        assert covered == {r.value for r in Reason} - M2_ONLY - SELECTOR_ONLY
 
     def test_all_checks_are_evaluated_after_a_failure(self, db: Database) -> None:
         record = engine(db).decide(
@@ -458,3 +472,79 @@ class TestFadeLimits:
 
     def test_without_the_config_fades_cannot_trade(self, db: Database) -> None:
         assert "RR_TOO_LOW" in self._reasons(db, Setup(), ("FADE",))
+
+
+class TestAggressivePreset:
+    """PLAN §A36: inside the high-risk cage the preset trades its setups only, fades at half risk, never the
+    minimum-lot fallback, and checks the daily and drawdown budgets before entry."""
+
+    BIG: ClassVar[dict[str, Any]] = risk(max_lot=20.0, min_margin_level_percent=200.0)
+
+    def _decide(self, db: Database, *, codes: tuple[str, ...] = ("TREND_PULLBACK",), **kw: Any) -> Any:
+        base = AppConfig.model_validate(self.BIG).risk
+        req: dict[str, Any] = {
+            "cage": high_cage("example_trend_pullback", base=base),
+            "profile_limits": aggressive(),
+            **signal(reason_codes=codes),
+        }
+        req.update(kw)
+        return engine(db, Setup(config=self.BIG)).decide(request(**req))
+
+    def test_the_preset_risk_applies(self, db: Database) -> None:
+        record = self._decide(db)
+        assert record.decision is Decision.ACCEPT, [c.reason_code for c in record.failed]
+        assert record.risk_percent == 7.5
+        assert record.sizing is not None and float(record.sizing.budget) == 750.0
+
+    def test_a_fade_risks_half(self, db: Database) -> None:
+        fade_cfg = AppConfig.model_validate(self.BIG).risk
+        record = self._decide(db, codes=("RANGE_BREAKOUT", "FADE"))
+        assert fade_cfg.fade is None  # geometry rules of fades are not the point here
+        assert record.risk_percent == 3.75
+        assert record.sizing is not None and float(record.sizing.budget) == 375.0
+
+    @pytest.mark.parametrize("r", [5.0, 7.5, 10.0])
+    def test_never_above_ten_percent(self, db: Database, r: float) -> None:
+        record = self._decide(db, profile_limits=aggressive(r))
+        assert record.sizing is not None
+        assert float(record.sizing.risk_money) <= 0.10 * 10_000.0 + 1e-9
+        assert record.risk_percent == r
+
+    def test_a_setup_outside_the_preset_is_refused(self, db: Database) -> None:
+        record = self._decide(
+            db, cage=high_cage("setup_breakout", base=AppConfig.model_validate(self.BIG).risk)
+        )
+        assert record.reason_codes == ("STRATEGY_NOT_IN_PRESET",)
+
+    def test_without_the_cage_it_never_trades(self, db: Database) -> None:
+        record = self._decide(db, cage=None)
+        assert record.decision is Decision.REJECT
+        assert record.reason_codes == ("HIGH_RISK_NOT_ENABLED",)
+
+    def test_no_minimum_lot_fallback(self, db: Database) -> None:
+        import dataclasses as dc
+
+        limits = dc.replace(aggressive(), min_lot_fallback=True)
+        record = self._decide(db, profile_limits=limits, **account(equity=20.0))
+        assert "RISK_BELOW_MIN_LOT" in record.reason_codes
+
+    def test_daily_budget_counts_today_and_this_trade(self, db: Database) -> None:
+        ok = self._decide(db, **account(loss=status(equity=9_500.0)))  # 5 % + 7.5 % <= 15 %
+        assert "DAILY_LOSS_LIMIT" not in ok.reason_codes
+        other = Database("sqlite://")
+        other.create_all()
+        lost = self._decide(other, **account(loss=status(equity=8_800.0), equity=8_800.0))  # 12 % + trade
+        assert lost.reason_codes == ("DAILY_LOSS_LIMIT",)
+        budget = next(ch for ch in lost.checks if ch.name == "daily_loss_budget")
+        assert not budget.passed and budget.threshold == 15.0
+
+    def test_drawdown_budget_stops_before_the_kill(self, db: Database) -> None:
+        loss = status(hwm=22_000.0)  # 54.5 % below the peak; + 7.5 % would pass 60 %
+        record = self._decide(db, **account(loss=loss))
+        assert record.reason_codes == ("MAX_DRAWDOWN",)
+        budget = next(ch for ch in record.checks if ch.name == "drawdown_budget")
+        assert not budget.passed and budget.threshold == 60.0
+
+    def test_standard_decisions_have_no_budget_checks(self, db: Database) -> None:
+        record = engine(db).decide(request())
+        assert not any(ch.name in ("daily_loss_budget", "drawdown_budget") for ch in record.checks)

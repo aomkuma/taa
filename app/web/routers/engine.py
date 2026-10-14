@@ -92,4 +92,4 @@ async def risk_profile(request: Request, engine: SignedEngine) -> Response:
     etag = f'"{doc.version}"'
     if request.headers.get("if-none-match") == etag:
         return Response(status_code=304, headers={"ETag": etag})
-    return JSONResponse(doc.model_dump(mode="json"), headers={"ETag": etag})
+    return JSONResponse(doc.wire(), headers={"ETag": etag})

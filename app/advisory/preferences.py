@@ -14,6 +14,11 @@ Integer fields are rounded to the defensive side (fewer positions, more supporti
 fields take the more defensive neighbouring anchor. A field set in ``overrides`` replaces the slider value
 and is reported as custom. Hard ceilings (``CEILING_*``) always apply, and the win-probability threshold
 never goes below break-even + 2 pp (:func:`required_win_probability`).
+
+**Aggressive preset** (``risk_mode: AGGRESSIVE``, PLAN §A36): the risk values come from the preset instead of
+the slider: ``aggressive_risk_percent`` r (5-10 %) per trade, 2r total open risk and daily loss, two open
+positions, never the minimum-lot fallback. It trades only inside the engine's opt-in high-risk cage; raising
+it from the PWA needs a TOTP step-up (``PUT /advisory/preferences/risk-mode``).
 """
 
 from __future__ import annotations
@@ -31,9 +36,12 @@ from pydantic import Field, ValidationError, field_validator, model_validator
 
 from app.advisory.confidence import break_even_probability
 from app.config import (
+    AGGRESSIVE_DEFAULT_RISK_PCT,
+    AGGRESSIVE_MIN_RISK_PCT,
     CEILING_DAILY_LOSS_PCT,
     CEILING_RISK_PER_TRADE_PCT,
     CEILING_TOTAL_OPEN_RISK_PCT,
+    HIGH_RISK_CEILING_RISK_PER_TRADE_PCT,
     AppConfig,
     SessionWindow,
     StrictModel,
@@ -44,7 +52,7 @@ from app.core.errors import ConfigError
 from app.evidence.framework import Family
 from app.evidence.registry import DetectorRegistry
 from app.market_data.trading_sessions import window_end
-from app.risk.limits import EntryPlanSpec, ProfileLimits
+from app.risk.limits import EntryPlanSpec, ProfileLimits, RiskMode
 from app.risk.position_sizer import SplitMode, WeightScheme
 from app.strategy.registry import StrategyRegistry
 from app.strategy.setups import EvidenceSetup
@@ -275,6 +283,13 @@ PROFILE_ANCHORS: dict[str, tuple[Any, ...]] = {
     "require_htf_alignment": (True, True, True, False, False),
 }
 INT_DEFENSIVE = {"max_positions": math.floor, "min_supporting_families": math.ceil}
+AGGRESSIVE_POSITIONS = 2  # the preset's open positions (the high-risk cage allows at most 3)
+AGGRESSIVE_RISK_FIELDS = (
+    "risk_per_signal_percent",
+    "portfolio_heat_percent",
+    "max_positions",
+    "max_daily_loss_percent",
+)
 WIN_PROBABILITY_MARGIN = 2.0  # percentage points above break-even
 
 
@@ -329,6 +344,7 @@ class ResolvedProfile:
     stop_placement: StopPlacement
     custom: frozenset[str]  # fields that came from overrides
     min_lot_fallback: bool = False
+    risk_mode: RiskMode = RiskMode.STANDARD
 
     @property
     def timeframes(self) -> tuple[Timeframe, Timeframe]:
@@ -343,6 +359,7 @@ class ResolvedProfile:
             max_daily_loss_percent=self.max_daily_loss_percent,
             min_risk_reward=self.min_rr,
             min_lot_fallback=self.min_lot_fallback,
+            risk_mode=self.risk_mode,
         )
 
 
@@ -371,6 +388,14 @@ class TradingProfile(StrictModel):
     # when the risk budget buys less than the minimum lot: open the minimum lot if margin allows (its risk is
     # then above the budget); the engine also needs risk.min_lot_fallback in its config.yaml cage
     min_lot_fallback: bool = False
+    # the aggressive preset (PLAN §A36): only through the step-up endpoint, never the plain preferences PUT
+    risk_mode: RiskMode = RiskMode.STANDARD
+    aggressive_risk_percent: float = Field(
+        default=AGGRESSIVE_DEFAULT_RISK_PCT,
+        ge=AGGRESSIVE_MIN_RISK_PCT,
+        le=HIGH_RISK_CEILING_RISK_PER_TRADE_PCT,
+        allow_inf_nan=False,
+    )
 
     def resolve(self) -> ResolvedProfile:
         values: dict[str, Any] = {}
@@ -386,6 +411,14 @@ class TradingProfile(StrictModel):
         values["risk_per_signal_percent"] = min(values["risk_per_signal_percent"], CEILING_RISK_PER_TRADE_PCT)
         values["portfolio_heat_percent"] = min(values["portfolio_heat_percent"], CEILING_TOTAL_OPEN_RISK_PCT)
         values["max_daily_loss_percent"] = min(values["max_daily_loss_percent"], CEILING_DAILY_LOSS_PCT)
+        aggressive = self.risk_mode is RiskMode.AGGRESSIVE
+        if aggressive:  # the preset's risk values replace the slider and the overrides
+            r = self.aggressive_risk_percent
+            values["risk_per_signal_percent"] = r
+            values["portfolio_heat_percent"] = 2 * r
+            values["max_positions"] = AGGRESSIVE_POSITIONS
+            values["max_daily_loss_percent"] = 2 * r
+            custom.difference_update(AGGRESSIVE_RISK_FIELDS)
         return ResolvedProfile(
             style=self.style,
             holding_style=self.holding_style,
@@ -394,7 +427,8 @@ class TradingProfile(StrictModel):
             hold_over_weekend=self.hold_over_weekend,
             stop_placement=self.stop_placement,
             custom=frozenset(custom),
-            min_lot_fallback=self.min_lot_fallback,
+            min_lot_fallback=self.min_lot_fallback and not aggressive,
+            risk_mode=self.risk_mode,
             **values,
         )
 

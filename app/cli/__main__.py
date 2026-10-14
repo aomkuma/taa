@@ -331,6 +331,42 @@ def cmd_breaker(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_risk(args: argparse.Namespace) -> int:
+    """``risk rebase-hwm``: forget the drawdown peak (PLAN §A36), local and audited, with an explicit
+    acknowledgement. The next engine observation's equity becomes the new high-water mark."""
+    from sqlalchemy import select
+
+    from app.core.clock import SystemClock
+    from app.risk.loss_tracker import LossTracker
+    from app.storage.models import RiskState
+
+    if not args.ack or not args.reason:
+        print(
+            "--ack and --reason are required: the drawdown history of this account is reset", file=sys.stderr
+        )
+        return 1
+    settings = _settings(args)
+    db, audit = _db_and_audit(settings)
+    with db.session() as sess:
+        keys = list(sess.execute(select(RiskState.account_key)).scalars())
+    if args.account is not None:
+        keys = [k for k in keys if k == args.account]
+    if len(keys) != 1:
+        print("pass --account KEY (one of: " + ", ".join(sorted(keys)) + ")", file=sys.stderr)
+        return 1
+    tracker = LossTracker(db, keys[0], settings.env.BROKER_TIMEZONE, SystemClock())
+    old = tracker.rebase_high_water_mark()
+    actor = args.actor or getpass.getuser()
+    audit.append(
+        "RISK_HWM_REBASED",
+        f"cli:{actor}",
+        {"account_key": keys[0], "previous_hwm": old, "reason": args.reason},
+    )
+    print(f"high-water mark of {keys[0]} reset (was {old}); the next observation sets it")
+    print("a latched MAX_DRAWDOWN breaker still needs: breaker reset MAX_DRAWDOWN --ack --reason ...")
+    return 0
+
+
 def cmd_demo_report(args: argparse.Namespace) -> int:
     from app.core.clock import SystemClock
     from app.engine.demo_report import build_report
@@ -671,6 +707,17 @@ def build_parser() -> argparse.ArgumentParser:
     reset.add_argument("--symbol", default=None, help="for symbol-scoped breakers")
     reset.add_argument("--ack", action="store_true", help="required for MAX_DRAWDOWN")
     reset.set_defaults(func=cmd_breaker)
+
+    rk = sub.add_parser("risk", help="risk state tools (local only, audited)")
+    rk_sub = rk.add_subparsers(dest="action", required=True)
+    rb = rk_sub.add_parser(
+        "rebase-hwm", help="forget the drawdown peak, e.g. after leaving the aggressive preset (PLAN §A36)"
+    )
+    rb.add_argument("--ack", action="store_true", help="required: acknowledge the reset")
+    rb.add_argument("--reason", default=None)
+    rb.add_argument("--actor", default=None)
+    rb.add_argument("--account", default=None, help="risk account key (when there is more than one)")
+    rb.set_defaults(func=cmd_risk)
 
     ticks = sub.add_parser("ticks", help="tick data tools (read-only)")
     ticks_sub = ticks.add_subparsers(dest="ticks_cmd", required=True)

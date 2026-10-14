@@ -32,6 +32,7 @@ from app.core.enums import Timeframe
 from app.core.errors import ConfigError
 from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.framework import Family
+from app.risk.limits import RiskMode
 from app.risk.position_sizer import SplitMode
 from app.strategy.catalog import default_registry as strategy_registry
 from tests.unit.test_market_data import ENV
@@ -229,6 +230,49 @@ class TestTradingProfile:
         p = TradingProfile(style=100).resolve()  # min win probability 50%
         assert break_even_probability(1.2, 0.1) == pytest.approx(50.0)
         assert required_win_probability(p, 1.2, 0.1) == pytest.approx(52.0)
+
+
+class TestAggressivePreset:
+    """PLAN §A36: the preset's risk values replace the slider; everything else stays the slider's."""
+
+    def test_default_is_standard_and_its_limits_unchanged(self) -> None:
+        profile = TradingProfile()
+        assert profile.risk_mode is RiskMode.STANDARD and profile.aggressive_risk_percent == 7.5
+        limits = profile.resolve().limits()
+        assert not limits.aggressive and "risk_mode" not in limits.to_dict()
+
+    @pytest.mark.parametrize("r", [5.0, 7.5, 10.0])
+    def test_preset_values(self, r: float) -> None:
+        p = TradingProfile(style=0, risk_mode=RiskMode.AGGRESSIVE, aggressive_risk_percent=r).resolve()
+        assert p.risk_mode is RiskMode.AGGRESSIVE
+        assert (p.risk_per_signal_percent, p.portfolio_heat_percent, p.max_daily_loss_percent) == (
+            r,
+            2 * r,
+            2 * r,
+        )
+        assert p.max_positions == 2
+        assert p.min_rr == 2.5  # the slider's other fields stay
+        assert p.limits().aggressive
+
+    @pytest.mark.parametrize("r", [4.9, 10.1, float("nan")])
+    def test_preset_risk_bounds(self, r: float) -> None:
+        with pytest.raises(ValidationError):
+            TradingProfile(risk_mode=RiskMode.AGGRESSIVE, aggressive_risk_percent=r)
+
+    def test_preset_replaces_the_risk_overrides_and_the_fallback(self) -> None:
+        profile = TradingProfile(
+            risk_mode=RiskMode.AGGRESSIVE,
+            overrides=ProfileOverrides(risk_per_signal_percent=1.0, max_positions=5, min_rr=2.0),
+            min_lot_fallback=True,
+        )
+        p = profile.resolve()
+        assert p.risk_per_signal_percent == 7.5 and p.max_positions == 2
+        assert p.custom == {"min_rr"}
+        assert p.min_lot_fallback is False
+
+    def test_old_documents_load_as_standard(self) -> None:
+        prefs = AdvisoryPreferences.model_validate({"trading_profile": {"style": 40}})
+        assert prefs.trading_profile.risk_mode is RiskMode.STANDARD
 
 
 class TestEntryPlan:

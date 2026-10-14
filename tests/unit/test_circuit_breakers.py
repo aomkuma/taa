@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from app.config import BreakerConfig, RiskConfig
+from app.config import BreakerConfig, HighRiskConfig, RiskConfig
 from app.core.clock import ManualClock
 from app.core.enums import Severity, TradingMode
 from app.core.errors import SafetyViolation
@@ -149,7 +149,7 @@ class TestBoard:
         with pytest.raises(SafetyViolation, match="acknowledgement"):
             b.reset(N.MAX_DRAWDOWN, actor="cli:operator", reason="reviewed")
         b.reset(N.MAX_DRAWDOWN, actor="cli:operator", reason="reviewed", acknowledge=True)
-        assert state(b, N.MAX_DRAWDOWN) is State.CLOSED
+        assert state(b, N.MAX_DRAWDOWN) is not State.OPEN
 
     def test_order_path_breakers_inactive_in_milestone_1(self, db: Database, clock: ManualClock) -> None:
         paper = board(db, clock, TradingMode.PAPER)
@@ -183,6 +183,24 @@ class TestMonitor:
     def monitor(self, db: Database, clock: ManualClock) -> tuple[BreakerMonitor, BreakerBoard]:
         b = board(db, clock)
         return BreakerMonitor(b, BreakerConfig(), RiskConfig(), clock), b
+
+    def test_aggressive_cage_thresholds_and_the_latch_on_switch_back(
+        self, db: Database, clock: ManualClock
+    ) -> None:
+        """PLAN §A36: in the aggressive preset the loss breakers trip on its cage (drawdown kill 60 %), not on
+        ``risk:`` (10 %); back on ``risk:`` the same drawdown latches MAX_DRAWDOWN until a manual reset."""
+        m, b = self.monitor(db, clock)
+        m.risk = HighRiskConfig(setups=["x"]).cage(RiskConfig())
+        deep = status(hwm=14_000.0)  # 28.6 % below the peak
+        m.observe_losses(deep)
+        assert state(b, N.MAX_DRAWDOWN) is not State.OPEN
+        m.observe_losses(status(hwm=26_000.0))  # 61.5 %: the kill
+        assert state(b, N.MAX_DRAWDOWN) is State.OPEN
+        m2, b2 = self.monitor(Database("sqlite://"), clock)
+        b2.db.create_all()
+        m2.observe_losses(deep)  # standard limits
+        assert state(b2, N.MAX_DRAWDOWN) is State.OPEN
+        assert next(s for s in b2.statuses() if s.name is N.MAX_DRAWDOWN).latched
 
     def test_connection_grace(self, db: Database, clock: ManualClock) -> None:
         m, b = self.monitor(db, clock)
