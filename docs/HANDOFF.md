@@ -17,6 +17,9 @@ What was built per ticket is in the git history. A separate **learning track** (
   `PUT /advisory/preferences/risk-mode`, the PWA risk-mode card, `backtest --preset aggressive` and
   `backtest ruin`. Breakout F1 is on in `config.yaml` (both modes; SETUP_REVIEW §16).
 - Ruin table (PLAN §A36): at 7.5 % P(kill at 60 %) 54 %, median max DD 53 %; at 5 % 9 %; at 10 % 91 %.
+- March 2026 backtests of the preset (PLAN §A36 table): at 10,000 the lot cap `risk.max_lot` 1.0 holds most
+  trades near 1 %; at 1,000 and 1:100 every harmonic signal is rejected for the margin level; at 1:500 the 50x
+  leverage cap cuts tight harmonic stops. Use `backtest --balance 1000` (new) for the preset.
 - Only targeted tests ran; the full pytest + vitest run is the owner's, at the end of the setup round.
 - Not switched on anywhere: `high_risk:` is commented out in `config.yaml`, the env flag is off.
 - Open: whether the preset should size the advisory scanner too (now always STANDARD), cloud backtest jobs

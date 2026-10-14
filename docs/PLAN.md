@@ -2786,7 +2786,21 @@ resampled trading days, the rules above (trades sequential, overlaps not modelle
 | 7.5 % | 52.8 % [37.3-55.7] | 63.6 % | 54.4 % | x5.08 [x0.53-x91.34] | 20.8 % | 115 |
 | 10 % | 52.1 % [47.7-54.8] | 91.8 % | 90.9 % | x1.71 [x0.49-x116.68] | 34.3 % | 73 |
 
-At 7.5 % about half the simulated years hit the drawdown stop; at 10 % nine in ten. The preset stays on
+At 7.5 % about half the simulated years hit the drawdown stop; at 10 % nine in ten.
+
+**What binds the lot (March 2026 backtest, 8 symbols, `--preset aggressive --risk 7.5`):**
+
+| Balance, simulated leverage | Trades | Risk / budget (median) | What capped it | Rejections | R/trade | Max DD |
+|---|---|---|---|---|---|---|
+| 10,000, 1:100 | 31 | 0.12 | `risk.max_lot` 1.0 on 26 trades (~1 % a trade, not 7.5 %) | margin level 4, exposure 5 | +0.02 | 5.0 % |
+| 1,000, 1:100 | 8 (all fades) | 0.98 | none | **MARGIN_LEVEL_TOO_LOW 26** (every harmonic signal), min lot 2 | +0.14 | 5.4 % |
+| 1,000, 1:500 | 27 | 0.64 | the 50x leverage cap on 16 trades (harmonic, tight stops) | streak pause 4, daily budget 2, min lot 2 | -0.05 | 20.3 % |
+
+So the preset's 7.5 % is reached only by fades and wide stops; tight harmonic stops are cut by the 50x cap
+(by design) or, at 1:100, rejected: the lot is cut to `max_margin_utilization_percent` (30 %) of equity, which
+leaves a margin level of ~333 %, below `min_margin_level_percent` (500 %), so the trade is rejected instead
+of cut further (a pre-existing mismatch of the two margin rules; open question). One month says nothing about
+results; the ruin table above uses the full-risk R of the year's trades and is the more pessimistic view. The preset stays on
 PAPER/DEMO until the owner decides otherwise; LIVE is refused in code. Backtests: `app.cli backtest --preset
 aggressive --risk 7.5` (local CLI only; cloud jobs keep the standard ceiling).
 
