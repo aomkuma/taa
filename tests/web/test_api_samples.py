@@ -86,6 +86,7 @@ ENGINE_ROUTES = [
     "symbols/EURUSD",
     "candles?symbol=EURUSD&limit=5&overlays=ema:5,rsi:5&zones=true",
     "market-map?symbol=EURUSD",
+    "market-map?symbol=EURUSD&read_tf=M15",
     "positions?status=OPEN",
     "decisions?limit=2",
     "decisions/d1",

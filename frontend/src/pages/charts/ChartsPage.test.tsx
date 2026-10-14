@@ -5,6 +5,7 @@ import { apiError, json } from '@/test/api';
 import { heartbeat, iso, owner, renderShell, status } from '@/test/engine';
 import { streamEvent } from '@/test/eventSource';
 import samples from '@/test/fixtures/api-samples.json';
+import readFixture from '@/test/fixtures/chart-read-xauusd-h1.json';
 
 import type { ChartModel } from './model';
 
@@ -420,5 +421,48 @@ describe('charts page: the H4/D1 market map (TAA-L809)', () => {
     expect(await screen.findByText(/No H4\/D1 map for this symbol yet/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('checkbox', { name: 'H4/D1 map' }));
     expect(screen.queryByText(/No H4\/D1 map for this symbol yet/)).not.toBeInTheDocument();
+  });
+});
+
+describe('charts page: the chart read (TAA-L813)', () => {
+  const READ = readFixture.read;
+  const MAP = { server: 'FBS-Demo', symbol: 'EURUSD', at: READ.at, map: null, read: READ };
+
+  beforeEach(() => {
+    drawn.models = [];
+  });
+
+  it('opens with read=1, asks for the shown timeframe and says what the bot reads', async () => {
+    setup({ 'GET /engines/e1/market-map?symbol=EURUSD&read_tf=M15': () => json(MAP) });
+    renderShell('/charts?read=1');
+    const panel = await screen.findByLabelText("The bot's chart read");
+    expect(within(panel).getByText(/H1: downtrend \(lower highs and lower lows\)/)).toBeInTheDocument();
+    expect(within(panel).getByText(/the downtrend ends above/)).toBeInTheDocument();
+    expect(within(panel).getAllByRole('listitem')).toHaveLength(READ.scenarios.length);
+    await waitFor(() => {
+      expect(lastModel().priceLines.some((p) => /^(Support|Resistance|Flipped)/.test(p.title))).toBe(true);
+    });
+    expect(lastModel().priceLines.some((p) => p.title === 'Downtrend ends above')).toBe(true);
+  });
+
+  it('shows the chart as it was at end= and goes back to now', async () => {
+    const end = '2026-09-30T10:45:00Z';
+    setup({
+      [`GET /engines/e1/candles?symbol=EURUSD&timeframe=M15&limit=1000&overlays=ema:20,ema:50,rsi:14&zones=true&end=${encodeURIComponent(end)}`]:
+        () => json(candles()),
+      [`GET /engines/e1/market-map?symbol=EURUSD&read_tf=M15&end=${encodeURIComponent(end)}`]: () =>
+        json(MAP),
+    });
+    renderShell(`/charts?read=1&end=${encodeURIComponent(end)}`);
+    expect(await screen.findByText(/The chart as it was at/)).toBeInTheDocument();
+    expect(await screen.findByLabelText("The bot's chart read")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Back to now' }));
+    expect(screen.queryByText(/The chart as it was at/)).not.toBeInTheDocument();
+  });
+
+  it('says when there is no read', async () => {
+    setup({ 'GET /engines/e1/market-map?symbol=EURUSD&read_tf=M15': () => json({ ...MAP, read: null }) });
+    renderShell('/charts?read=1');
+    expect(await screen.findByText(/No chart read for this symbol and timeframe yet/)).toBeInTheDocument();
   });
 });

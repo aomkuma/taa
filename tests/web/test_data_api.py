@@ -26,6 +26,7 @@ from app.storage.models import (
     EngineHeartbeatRow,
     PaperPositionRow,
     Run,
+    SymbolCatalogRow,
 )
 from app.sync.command_queue import CommandQueue
 from app.sync.events import SPECS_BY_TYPE
@@ -573,3 +574,27 @@ def test_market_map_from_the_uploaded_h4_candles(
     assert client.get(f"/api/v1/engines/{theirs}/market-map?symbol=EURUSD").status_code == 404
     naive = client.get(f"/api/v1/engines/{mine}/market-map?symbol=EURUSD&end=2026-09-30T10:00:00")
     assert naive.status_code == 400
+
+
+def test_market_map_with_the_chart_read_of_a_timeframe(
+    rig: tuple[TestClient, str, str],
+    db: Database,
+) -> None:
+    """TAA-L813 CR-4: ``read_tf`` adds that timeframe's chart read; without the symbol's point it is null."""
+    client, mine, _ = rig
+    SqlHistoryStore(db, mine).save("FBS-Demo", "EURUSD", Timeframe.H4, h4_candles(500))
+    url = f"/api/v1/engines/{mine}/market-map?symbol=EURUSD"
+    assert "read" not in client.get(url).json()  # unchanged without read_tf
+    assert client.get(url + "&read_tf=H4").json()["read"] is None  # no point in the catalog yet
+    with db.session() as sess:  # the rig's catalog row has no point yet
+        row = sess.get(SymbolCatalogRow, (mine, "FBS-Demo", "EURUSD"))
+        assert row is not None
+        row.spec = {**row.spec, "point": 0.00001}
+    body = client.get(url + "&read_tf=H4").json()
+    read = body["read"]
+    assert read["timeframe"] == "H4" and read["at"] == body["map"]["frames"]["H4"]["at"]
+    assert read["structure"] in ("UP", "DOWN", "CONTRACTING", "BROADENING", "FLAT", "NONE")
+    assert read["pivots"] and all(p["kind"] in ("HIGH", "LOW") for p in read["pivots"])
+    assert isinstance(read["text"], str)
+    assert client.get(url + "&read_tf=H1").json()["read"] is None  # no H1 bars
+    assert client.get(url + "&read_tf=X9").status_code == 400

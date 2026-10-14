@@ -28,6 +28,7 @@ from app.config import AppConfig, IndicatorParams
 from app.core.clock import ensure_utc
 from app.core.enums import Timeframe
 from app.core.errors import TaaError
+from app.indicators.chart_read import ChartReadFrame
 from app.indicators.momentum import rsi
 from app.indicators.price_action import find_swings, sr_zones
 from app.indicators.trend import adx, ema
@@ -57,7 +58,7 @@ from app.storage.models import (
     Run,
     SymbolCatalogRow,
 )
-from app.strategy.market_maps import MapBook, candle_frame, map_params
+from app.strategy.market_maps import MapBook, candle_frame, chart_read_params, map_params
 from app.sync.command_queue import public
 from app.sync.events import json_safe
 from app.sync.heartbeat import BULKY
@@ -66,6 +67,7 @@ DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 MAX_CANDLES = 2000
 MAP_BARS = 700  # context bars per timeframe for the market map (timeframes.context_bars)
+READ_BARS = 1500  # bars of the chart read's timeframe: the chart's 1,000 plus the swings' warm-up
 MAX_ZONES = 8
 # the engine's trade lifecycle events on its audit chain (app.engine.trade_audit)
 TRADE_EVENT_TYPES = ("POSITION_OPENED", "STOP_MOVED", "POSITION_CLOSED")
@@ -529,10 +531,19 @@ class ReadModels:
             return AppConfig()
 
     def market_map(
-        self, engine_id: str, *, server: str, symbol: str, end: datetime | None = None
+        self,
+        engine_id: str,
+        *,
+        server: str,
+        symbol: str,
+        end: datetime | None = None,
+        read_tf: Timeframe | None = None,
     ) -> dict[str, Any]:
         """The H4/D1 market map at the newest stored context bar (or at *end*), computed from the engine's
-        uploaded candles with the same functions the engine uses for its ``ctx:`` features."""
+        uploaded candles with the same functions the engine uses for its ``ctx:`` features.
+
+        With *read_tf*, also ``read``: that timeframe's chart read (TAA-L813) at the last bar closed by the
+        map's instant; None without bars, without the symbol's point, or with the read switched off."""
         cfg = self._map_config(engine_id)
         tfs = [Timeframe.H4, Timeframe.D1]
         store = SqlHistoryStore(self.db, engine_id)
@@ -543,12 +554,34 @@ class ReadModels:
                 frames[tf] = candle_frame(stored.tail(MAP_BARS))
         at = end or max((ensure_utc(f.index[-1].to_pydatetime()) for f in frames.values()), default=None)
         found = None if at is None else MapBook(map_params(cfg), tfs).at(symbol, frames, at)
-        return {
+        out: dict[str, Any] = {
             "server": server,
             "symbol": symbol,
             "at": None if at is None else json_safe(at),
             "map": None if found is None else found.to_dict(),
         }
+        if read_tf is not None:
+            out["read"] = self._chart_read(store, cfg, server, symbol, read_tf, end)
+        return out
+
+    @staticmethod
+    def _chart_read(
+        store: SqlHistoryStore,
+        cfg: AppConfig,
+        server: str,
+        symbol: str,
+        tf: Timeframe,
+        end: datetime | None,
+    ) -> dict[str, Any] | None:
+        params = chart_read_params(cfg, tf)
+        spec = store.spec(server, symbol)
+        point = (spec or {}).get("spec", {}).get("point")
+        stored = store.load(server, symbol, tf, None, end)
+        if params is None or not point or stored.empty:
+            return None
+        frame = candle_frame(stored.tail(READ_BARS))
+        read = ChartReadFrame(tf.value, frame, float(point), params).at(len(frame) - 1)
+        return None if read is None else read.to_dict()
 
     # --- candles ----------------------------------------------------------------------------------------
 

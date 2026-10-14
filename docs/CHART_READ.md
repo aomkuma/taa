@@ -380,6 +380,22 @@ missing read holds (condition `chart_read`). Two choices made while building:
   with zod, and its texts go through i18n keys (TH default, EN).
 - **No claims:** no probability or profitability wording (`catalogs.test.ts` checks this).
 
+**Built (CR-4 code, 2026-10-14; the eye check with the owner is pending):**
+- `GET /engines/{id}/market-map?...&read_tf=TF` adds `read`: that timeframe's chart read at the map's instant,
+  from the engine's uploaded bars (the last 1,500) and the symbol's point in its catalog; `null` without bars,
+  without a point, or with `context_map.chart_read.enabled: false` in the engine's config. Without `read_tf`
+  the response is as before.
+- The charts page: a "Chart read" toggle (`read=1` in the URL) draws the confirmed swings with their labels,
+  the trendlines, the levels coloured by role (green support, red resistance, orange flipped) and the
+  invalidation (pink dotted), and a panel states the structure, the invalidation, the depth in the last leg,
+  the events and the two scenarios (TH/EN keys `charts.read.*`; no probability wording). `end=` (any ISO time)
+  shows the chart and the read as they were then, without live refresh.
+- The 20 charts: `research/2026-10-14-chart-read/EYE_CHECK.md`, drawn by `eye_check_sample.py` (seed 20261014;
+  every symbol, M15/H1/H4, about three per group: UP, DOWN, CONTRACTING, BROADENING, a flipped level within
+  1 ATR, SWEEP_RECLAIM, BREAK_HOLD), each with a link that opens the chart at that bar. Before the check the
+  PWA needs the new build and a web restart, and the cloud needs the year's bars of the 8 symbols on M15/H1/H4
+  (`app.cli sync upload-history`).
+
 ## 10. Safety and tests
 
 - **No look-ahead:** for random cut points t, the read on the data cut at t equals the read at t on the full data

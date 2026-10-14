@@ -107,11 +107,102 @@ const TimeframeMapSchema = z.object({
 });
 export type TimeframeMap = z.infer<typeof TimeframeMapSchema>;
 
-/** `GET /engines/{id}/market-map`: the H4/D1 map the engine records on every signal (TAA-L809). */
+export const STRUCTURES = ['UP', 'DOWN', 'CONTRACTING', 'BROADENING', 'FLAT', 'NONE'] as const;
+export const LEVEL_ROLES = ['SUPPORT', 'RESISTANCE', 'FLIPPED', 'SPENT'] as const;
+export const READ_EVENTS = ['BREAK_HOLD', 'SWEEP_RECLAIM', 'RETEST'] as const;
+export const SWING_LABELS = ['HH', 'LH', 'EQH', 'HL', 'LL', 'EQL'] as const;
+export type SwingLabel = (typeof SWING_LABELS)[number];
+const SwingKindSchema = z.enum(['HIGH', 'LOW']);
+
+/** One timeframe's chart read (`ChartRead.to_dict` in app/indicators/chart_read.py, TAA-L813). */
+export const ChartReadSchema = z.object({
+  timeframe: z.string(),
+  at: IsoDateTime,
+  close: z.number(),
+  atr: z.number(),
+  digits: z.number().int(),
+  structure: z.enum(STRUCTURES),
+  invalidation: Value,
+  broken: z.boolean(),
+  age_legs: z.number().int(),
+  retrace_major: Value,
+  tol_atr: z.number(),
+  pivots: z.array(
+    z.object({
+      kind: SwingKindSchema,
+      price: z.number(),
+      at: IsoDateTime,
+      known_at: IsoDateTime,
+      label: z.enum(SWING_LABELS).nullable(),
+    }),
+  ),
+  leg: z
+    .object({
+      direction: z.number().int(),
+      start: z.number(),
+      extreme: z.number(),
+      bars: z.number().int(),
+      leg_atr: z.number(),
+      from_pivot_atr: z.number(),
+      retrace: Value,
+    })
+    .nullable(),
+  levels: z.array(
+    z.object({
+      price: z.number(),
+      role: z.enum(LEVEL_ROLES),
+      above: z.boolean(),
+      touches: z.number().int(),
+      first_at: IsoDateTime,
+      last_at: IsoDateTime,
+      retests: z.number().int(),
+      dist_atr: z.number(),
+    }),
+  ),
+  trendlines: z.array(
+    z.object({
+      kind: SwingKindSchema,
+      a_at: IsoDateTime,
+      a_price: z.number(),
+      b_at: IsoDateTime,
+      b_price: z.number(),
+      value: z.number(),
+      slope_atr: z.number(),
+      dist_atr: z.number(),
+      touches: z.number().int(),
+      broken: z.boolean(),
+      broken_at: IsoDateTime.nullable(),
+    }),
+  ),
+  events: z.array(
+    z.object({
+      kind: z.enum(READ_EVENTS),
+      direction: z.number().int(),
+      price: z.number(),
+      trendline: z.boolean(),
+      at: IsoDateTime,
+      known_at: IsoDateTime,
+    }),
+  ),
+  scenarios: z.array(
+    z.object({
+      kind: z.enum(['BREAK', 'REJECT']),
+      direction: z.number().int(),
+      trigger: z.number(),
+      target: Value,
+    }),
+  ),
+  text: z.string(),
+});
+export type ChartRead = z.infer<typeof ChartReadSchema>;
+
+/** `GET /engines/{id}/market-map`: the H4/D1 map the engine records on every signal (TAA-L809), with
+ * `read_tf` also that timeframe's chart read (TAA-L813). */
 export const MarketMapSchema = z.object({
   server: z.string(),
   symbol: z.string(),
   at: IsoDateTime.nullable(),
+  read: ChartReadSchema.nullable().optional(),
   map: z
     .object({
       near_atr: z.number(),

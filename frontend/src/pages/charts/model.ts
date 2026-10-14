@@ -7,7 +7,16 @@
  * - `instant` stamps (fills, exits) go to the bar that contains them
  * A mark outside the shown bars is left out rather than drawn at the edge.
  */
-import type { Candles, ChartMarker, Evidence, MapZone, MarketMap, SignalSource, Zone } from './schemas';
+import type {
+  Candles,
+  ChartMarker,
+  ChartRead,
+  Evidence,
+  MapZone,
+  MarketMap,
+  SignalSource,
+  Zone,
+} from './schemas';
 
 export const INDICATORS = ['ema', 'bb', 'rsi', 'atr', 'adx'] as const;
 export type Indicator = (typeof INDICATORS)[number];
@@ -91,6 +100,8 @@ export interface ModelOptions {
   timeframeSeconds: number;
   /** The H4/D1 demand/supply zones and range box (TAA-L809). */
   htfMap?: boolean;
+  /** The chart read of the shown timeframe: swings, levels by role, trendlines, invalidation (TAA-L813). */
+  read?: boolean;
 }
 
 export interface ModelInput {
@@ -116,6 +127,12 @@ export interface ModelText {
   mapZone?: (kind: MapZone['kind'], timeframe: string, strength: number) => string;
   /** e.g. "H4 range top" */
   rangeEdge?: (timeframe: string, edge: 'top' | 'bottom') => string;
+  /** A swing label (HH, LH, EQH, HL, LL, EQL). */
+  swingLabel?: (label: string) => string;
+  /** e.g. "Support ×2", "Flipped → resistance ×1" */
+  readLevel?: (role: ChartRead['levels'][number]['role'], above: boolean, touches: number) => string;
+  /** e.g. "Downtrend ends above" */
+  readInvalidation?: (structure: ChartRead['structure']) => string;
 }
 
 export const COLORS = {
@@ -533,6 +550,94 @@ function evidenceDrawing(
   return { lines, markers, priceLines };
 }
 
+export const READ_COLORS = {
+  swing: '#7c3aed',
+  SUPPORT: '#16a34a',
+  RESISTANCE: '#dc2626',
+  FLIPPED: '#d97706',
+  invalidation: '#db2777',
+} as const;
+
+/**
+ * The bot's chart read drawn as a trader would (TAA-L813): the confirmed swings joined and labelled, the
+ * trendlines from their two pivots to the read's bar, the levels coloured by role and the structure's
+ * invalidation. Only pivots the bot knew at the read's bar are drawn (no repainting).
+ */
+export function readDrawing(
+  read: ChartRead | null | undefined,
+  times: readonly number[],
+  timeframeSeconds: number,
+  text: ModelText,
+): { lines: LineModel[]; markers: MarkerModel[]; priceLines: PriceLineModel[] } {
+  const lines: LineModel[] = [];
+  const markers: MarkerModel[] = [];
+  const priceLines: PriceLineModel[] = [];
+  if (!read) return { lines, markers, priceLines };
+  const snap = (iso: string) => snapTime(times, seconds(iso), 'close', timeframeSeconds);
+  const swing: Point[] = [];
+  for (const pivot of read.pivots) {
+    const time = snap(pivot.at);
+    if (time === null) continue;
+    swing.push({ time, value: pivot.price });
+    markers.push({
+      time,
+      position: pivot.kind === 'HIGH' ? 'aboveBar' : 'belowBar',
+      shape: 'circle',
+      color: READ_COLORS.swing,
+      text: pivot.label === null ? '' : (text.swingLabel?.(pivot.label) ?? pivot.label),
+    });
+  }
+  if (swing.length >= 2) {
+    lines.push({
+      id: 'read:swings',
+      pane: 0,
+      color: READ_COLORS.swing,
+      width: 2,
+      style: 'solid',
+      points: ascending(swing),
+    });
+  }
+  const end = snap(read.at);
+  read.trendlines.forEach((line, index) => {
+    const a = snap(line.a_at);
+    const b = snap(line.b_at);
+    if (a === null || b === null) return;
+    const points = [
+      { time: a, value: line.a_price },
+      { time: b, value: line.b_price },
+      ...(end !== null && end > b ? [{ time: end, value: line.value }] : []),
+    ];
+    lines.push({
+      id: `read:trendline:${String(index)}`,
+      pane: 0,
+      color: line.kind === 'HIGH' ? READ_COLORS.RESISTANCE : READ_COLORS.SUPPORT,
+      width: 1,
+      style: line.broken ? 'dotted' : 'dashed',
+      points: ascending(points),
+    });
+  });
+  for (const level of read.levels) {
+    if (level.role === 'SPENT') continue;
+    priceLines.push({
+      price: level.price,
+      color: READ_COLORS[level.role],
+      title: text.readLevel?.(level.role, level.above, level.touches) ?? level.role,
+      style: level.role === 'FLIPPED' ? 'dashed' : 'solid',
+      width: Math.min(3, level.touches),
+    });
+  }
+  if (read.invalidation !== null) {
+    priceLines.push({
+      price: read.invalidation,
+      color: READ_COLORS.invalidation,
+      title: text.readInvalidation?.(read.structure) ?? text.invalidation,
+      style: 'dotted',
+      width: 2,
+    });
+  }
+  return { lines, markers, priceLines };
+}
+
 function signalLines(signal: SignalSource['signal'] | null, text: ModelText): PriceLineModel[] {
   if (signal === null) return [];
   const out: PriceLineModel[] = [];
@@ -557,12 +662,17 @@ export function buildChartModel(input: ModelInput, options: ModelOptions, text: 
   const times = bars.map((b) => b.time);
   const { lines, panes } = indicatorLines(candles, times, options.indicators);
   const evidence = evidenceDrawing(signalEvidence(input.signal), times, options, text);
+  const chartRead = options.read
+    ? readDrawing(input.marketMap?.read, times, options.timeframeSeconds, text)
+    : { lines: [], markers: [], priceLines: [] };
   const highs = candles.bars.map((b) => b[2]);
   const lows = candles.bars.map((b) => b[3]);
   const range = highs.length ? Math.max(...highs) - Math.min(...lows) : 0;
-  const markers = [...tradeMarkers(candles.markers, times, options, text), ...evidence.markers].sort(
-    (a, b) => a.time - b.time,
-  );
+  const markers = [
+    ...tradeMarkers(candles.markers, times, options, text),
+    ...evidence.markers,
+    ...chartRead.markers,
+  ].sort((a, b) => a.time - b.time);
   // the forming bar goes last; indicators and marks stay on the closed bars
   const live = candles.forming;
   const shown =
@@ -571,11 +681,12 @@ export function buildChartModel(input: ModelInput, options: ModelOptions, text: 
       : bars;
   return {
     candles: shown,
-    lines: [...lines, ...evidence.lines],
+    lines: [...lines, ...evidence.lines, ...chartRead.lines],
     markers,
     priceLines: [
       ...(options.zones ? zoneLines(candles.zones ?? [], text) : []),
       ...(options.htfMap ? mapLines(input.marketMap?.map ?? null, text) : []),
+      ...chartRead.priceLines,
       ...positionLines(input.positions, candles.symbol, text),
       ...signalLines(input.signal, text),
       ...mergeLines(evidence.priceLines, range * MERGE_SHARE),

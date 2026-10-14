@@ -16,6 +16,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Query
 from starlette.concurrency import run_in_threadpool
 
+from app.core.enums import Timeframe
 from app.storage.audit import verify_chain
 from app.web.deps import Context, OwnedEngine, WebContext
 from app.web.errors import ApiProblem
@@ -247,16 +248,24 @@ async def market_map(
     symbol: Annotated[str, Query(min_length=1, max_length=32)],
     server: Annotated[str | None, Query(min_length=1, max_length=64)] = None,
     end: datetime | None = None,
+    read_tf: Annotated[str | None, Query(min_length=2, max_length=3)] = None,
 ) -> dict[str, Any]:
     """The H4/D1 market map (trend vs consolidation, demand/supply zones; TAA-L809) at the newest context bar,
-    or at *end*: what the engine records on every signal as ``ctx:`` features."""
+    or at *end*: what the engine records on every signal as ``ctx:`` features. ``read_tf`` adds that
+    timeframe's chart read (swings, levels with roles, trendlines, events, scenarios; TAA-L813)."""
     if end is not None and end.tzinfo is None:
         raise ApiProblem(400, "invalid_query", "end: a timezone-aware time is required")
+    try:
+        tf = None if read_tf is None else Timeframe(read_tf)
+    except ValueError:
+        raise ApiProblem(400, "invalid_query", f"read_tf: unknown timeframe {read_tf}") from None
     rm = models(ctx)
     srv = server or await _run(rm.default_server, engine.engine_id, symbol)
     if srv is None:
         raise ApiProblem(404, "candles_not_found", "No candles for this symbol yet")
-    result: dict[str, Any] = await _run(rm.market_map, engine.engine_id, server=srv, symbol=symbol, end=end)
+    result: dict[str, Any] = await _run(
+        rm.market_map, engine.engine_id, server=srv, symbol=symbol, end=end, read_tf=tf
+    )
     return result
 
 

@@ -9,10 +9,12 @@ import type { SymbolOption } from '@/components/symbolFilter';
 import { useEngine, useEngineStatus } from '@/engine/context';
 import { engineKey } from '@/engine/schemas';
 import { translateCode } from '@/i18n/codes';
+import { useFormat } from '@/i18n/useFormat';
 import { useLiveEvents } from '@/live/context';
 import { backtestKeys, HistorySchema } from '@/pages/backtests/schemas';
 import { PositionsPageSchema } from '@/pages/dashboard/schemas';
 
+import { ChartReadPanel } from './ChartReadPanel';
 import { EvidenceList } from './EvidenceList';
 import {
   buildChartModel,
@@ -29,6 +31,7 @@ import {
   CandlesSchema,
   type MarketMap,
   MarketMapSchema,
+  type SwingLabel,
   SignalSourceSchema,
   SymbolsSchema,
   TIMEFRAME_SECONDS,
@@ -102,6 +105,7 @@ const SELECT =
  */
 export function ChartsPage() {
   const { t, i18n } = useTranslation();
+  const format = useFormat();
   const queryClient = useQueryClient();
   const { engineId } = useEngine();
   const id = engineId ?? '';
@@ -117,6 +121,9 @@ export function ChartsPage() {
   const [indicators, setIndicators] = useState<ReadonlySet<Indicator>>(new Set(DEFAULT_INDICATORS));
   const [zones, setZones] = useState(!fromSignal);
   const [htfMap, setHtfMap] = useState(!fromSignal);
+  // the bot's chart read (TAA-L813); `read=1` opens it, `end=` shows the chart as it was then (the eye check)
+  const [chartRead, setChartRead] = useState(params.get('read') === '1');
+  const end = params.get('end');
   const [allDecisions, setAllDecisions] = useState(false);
   // the owner's evidence choice belongs to one signal; another signal starts focused again
   const [picked, setPicked] = useState<{ key: string; ids: ReadonlySet<string> } | null>(null);
@@ -159,25 +166,32 @@ export function ChartsPage() {
 
   const overlays = overlaysQuery(indicators);
   const candles = useQuery({
-    queryKey: [...engineKey(id), 'candles', symbol, timeframe, overlays, zones],
+    queryKey: [...engineKey(id), 'candles', symbol, timeframe, overlays, zones, end],
     queryFn: ({ signal }) =>
       apiGet(
         `${base}/candles?symbol=${encodeURIComponent(symbol ?? '')}&timeframe=${timeframe}&limit=${String(BARS)}` +
           (overlays ? `&overlays=${overlays}` : '') +
-          (zones ? '&zones=true' : ''),
+          (zones ? '&zones=true' : '') +
+          (end ? `&end=${encodeURIComponent(end)}` : ''),
         CandlesSchema,
         { signal },
       ),
     enabled: symbol !== null,
-    refetchInterval: CANDLE_REFRESH_MS,
+    refetchInterval: end ? false : CANDLE_REFRESH_MS,
     placeholderData: (previous) => previous,
   });
   const marketMap = useQuery({
-    queryKey: [...engineKey(id), 'market-map', symbol],
+    queryKey: [...engineKey(id), 'market-map', symbol, chartRead ? timeframe : null, end],
     queryFn: ({ signal }) =>
-      apiGet(`${base}/market-map?symbol=${encodeURIComponent(symbol ?? '')}`, MarketMapSchema, { signal }),
-    enabled: symbol !== null && htfMap,
-    refetchInterval: MAP_REFRESH_MS,
+      apiGet(
+        `${base}/market-map?symbol=${encodeURIComponent(symbol ?? '')}` +
+          (chartRead ? `&read_tf=${timeframe}` : '') +
+          (end ? `&end=${encodeURIComponent(end)}` : ''),
+        MarketMapSchema,
+        { signal },
+      ),
+    enabled: symbol !== null && (htfMap || chartRead),
+    refetchInterval: end ? false : MAP_REFRESH_MS,
   });
   const positions = useQuery({
     queryKey: [...engineKey(id), 'positions', 'open', 'chart'],
@@ -217,6 +231,13 @@ export function ChartsPage() {
       mapZone: (kind, tf, n) => t('charts.map.zone', { kind: t(`charts.map.kind.${kind}`), tf, n }),
       rangeEdge: (tf, edge) =>
         edge === 'top' ? t('charts.map.rangeTop', { tf }) : t('charts.map.rangeBottom', { tf }),
+      swingLabel: (label) => t(`charts.read.label.${label as SwingLabel}`),
+      readLevel: (role, above, n) =>
+        role === 'FLIPPED'
+          ? t(above ? 'charts.read.level.flippedResistance' : 'charts.read.level.flippedSupport', { n })
+          : t(`charts.read.level.${role}`, { n }),
+      readInvalidation: (structure) =>
+        t(structure === 'DOWN' ? 'charts.read.invalidationDown' : 'charts.read.invalidationUp'),
     }),
     [t, i18n],
   );
@@ -247,6 +268,7 @@ export function ChartsPage() {
         indicators,
         zones,
         htfMap,
+        read: chartRead,
         allDecisions,
         evidence: shownEvidence,
         invalidations,
@@ -260,6 +282,7 @@ export function ChartsPage() {
     signalDoc,
     marketMap.data,
     htfMap,
+    chartRead,
     indicators,
     zones,
     allDecisions,
@@ -332,6 +355,7 @@ export function ChartsPage() {
         ))}
         <Toggle label={t('charts.zones')} checked={zones} onChange={setZones} />
         <Toggle label={t('charts.map.toggle')} checked={htfMap} onChange={setHtfMap} />
+        <Toggle label={t('charts.read.toggle')} checked={chartRead} onChange={setChartRead} />
         <Toggle label={t('charts.allDecisions')} checked={allDecisions} onChange={setAllDecisions} />
       </fieldset>
 
@@ -391,7 +415,22 @@ export function ChartsPage() {
         <p className="text-sm text-slate-500">{t('charts.noCandles')}</p>
       ) : (
         <>
+          {end && (
+            <p className="mb-1 text-xs">
+              {t('charts.read.pastView', { time: format.dateTime(end) })}{' '}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => {
+                  setParam('end', null);
+                }}
+              >
+                {t('charts.read.backToNow')}
+              </button>
+            </p>
+          )}
           {htfMap && <MapStates data={marketMap.data ?? null} failed={marketMap.isError} />}
+          {chartRead && <ChartReadPanel read={marketMap.data?.read} failed={marketMap.isError} />}
           <PriceChart model={model} />
           {zones && <p className="mt-1 text-xs text-slate-500">{t('charts.zoneLegend')}</p>}
           {htfMap && <p className="mt-1 text-xs text-slate-500">{t('charts.map.legend')}</p>}
