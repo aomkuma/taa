@@ -75,7 +75,10 @@ class TestStateAndParameters:
         beat(db, mine, disabled_strategies=[])
         body = get(client, mine, "strategies").json()
         assert body["config_hash"] == "c" * 32 and body["mode"] == "PAPER" and body["remote_known"] is True
-        assert [s["name"] for s in body["strategies"]] == [i["name"] for i in config["strategies"]["items"]]
+        lanes = [i["name"] for lane in config["lanes"] for i in lane["strategies"]["items"]]
+        assert [s["name"] for s in body["strategies"]] == [i["name"] for i in config["strategies"]["items"]] + lanes
+        assert lanes == ["setup_breakout_scalp"]  # S1 on M1 (config lanes, owner 2026-10-15)
+        assert by_name(body)["setup_breakout_scalp"]["known"] is True
         example, setup = by_name(body)[EXAMPLE], by_name(body)[SETUP]
         assert example["state"] == "ENABLED" and example["known"] is True and example["demo_only"] is True
         assert example["overrides"] == [] and example["params"]["expiry_bars"] == 1

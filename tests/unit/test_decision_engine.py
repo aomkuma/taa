@@ -556,3 +556,37 @@ class TestAggressivePreset:
     def test_standard_decisions_have_no_budget_checks(self, db: Database) -> None:
         record = engine(db).decide(request())
         assert not any(ch.name in ("daily_loss_budget", "drawdown_budget") for ch in record.checks)
+
+
+class TestLaneLimits:
+    """A lane's strategy (config lanes, owner 2026-10-15): its own spread-to-SL ratio and symbol cooldown."""
+
+    LANE: ClassVar[dict[str, Any]] = {
+        "lanes": [
+            {
+                "name": "fast",
+                "timeframes": {"entry": "M5", "higher": "H1"},
+                "symbols": ["EURUSD"],
+                "strategies": {"items": [{"name": "setup_breakout_scalp"}], "cooldown_bars": 60},
+                "max_spread_to_sl_ratio": 1.0,
+            }
+        ]
+    }
+
+    def _reasons(
+        self, db: Database, strategy: str, sig: dict[str, Any] | None = None, **kw: Any
+    ) -> tuple[str, ...]:
+        req = request(**signal(strategy=strategy, **(sig or {})), **kw)
+        return engine(db, Setup(config=self.LANE)).decide(req).reason_codes
+
+    def test_the_lane_ratio_applies_to_its_strategy_only(self, db: Database) -> None:
+        tight = {"stop_loss": 1.0995}  # a stop a few spreads wide
+        assert "SPREAD_TO_SL_TOO_HIGH" not in self._reasons(db, "setup_breakout_scalp", sig=tight)
+        assert "SPREAD_TO_SL_TOO_HIGH" in self._reasons(db, "example_trend_pullback", sig=tight)
+
+    def test_the_symbol_cooldown_counts_the_lanes_bars(self, db: Database) -> None:
+        two_hours_ago = BAR - timedelta(hours=2)  # main: 4 x M15 = 1 hour; the lane: 60 x M15 = 15 hours
+        assert "COOLDOWN_ACTIVE" in self._reasons(db, "setup_breakout_scalp", last_entry_at=two_hours_ago)
+        assert "COOLDOWN_ACTIVE" not in self._reasons(
+            db, "example_trend_pullback", last_entry_at=two_hours_ago
+        )

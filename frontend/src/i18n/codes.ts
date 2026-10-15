@@ -295,6 +295,7 @@ export const STRATEGY_NAMES = [
   'setup_elliott_wave',
   'setup_smc_reversal',
   'setup_breakout',
+  'setup_breakout_scalp',
   'setup_candle_reversal',
 ] as const;
 

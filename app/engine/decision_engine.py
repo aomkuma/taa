@@ -250,6 +250,9 @@ class DecisionEngine:
                     "max_sl_atr_multiple": fade.max_sl_atr_multiple,
                 }
             )
+        own_ratio = self.config.spread_ratio_for(signal.strategy)
+        if own_ratio is not None:  # a lane's scalp: its stop is a few spreads wide (config lanes)
+            risk = risk.model_copy(update={"max_spread_to_sl_ratio": own_ratio})
         if isinstance(risk, HighRiskCage) and is_fade:
             # aggressive preset: a fade (win ~+0.44 R, lose -1 R) risks a fraction of the preset (PLAN §A36)
             risk = risk.model_copy(
@@ -709,7 +712,7 @@ class DecisionEngine:
             None
             if req.last_entry_at is None
             else req.last_entry_at
-            + timedelta(seconds=self.config.strategies.cooldown_bars * s.timeframe.seconds)
+            + timedelta(seconds=self.config.cooldown_bars_for(s.strategy) * s.timeframe.seconds)
         )
         in_cooldown = cooldown_until is not None and s.data_timestamp_utc < cooldown_until
         out.append(

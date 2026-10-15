@@ -72,6 +72,7 @@ from app.engine.decision_engine import (
     DecisionStore,
     SystemHealth,
 )
+from app.engine.lanes import MAIN, EntryLane, build_lanes
 from app.engine.magic_registry import MagicRegistry
 from app.engine.manual_links import ManualTradeLinker, link_dict
 from app.engine.order_manager import OrderManager
@@ -281,17 +282,24 @@ class Engine:
         self.strategies = default_registry().from_config(
             cfg.strategies, cfg.timeframes, cfg.evidence.confluence
         )
+        self.arbiter = SignalArbiter(cfg.strategies.cooldown_bars)
+        lane_sets = [
+            default_registry().from_config(lane.strategies, lane.timeframes, cfg.evidence.confluence)
+            for lane in cfg.lanes
+        ]
+        everything = [s for sset in (self.strategies, *lane_sets) for s in sset.strategies]
         # stable per strategy (TAA-L901): enabling, disabling or reordering strategies never re-maps positions
         self.magic = MagicRegistry(self.db, env.MAGIC_NUMBER_BASE, self.clock).ensure(
-            [s.name for s in self.strategies.strategies]
+            [s.name for s in everything]
         )
-        self.arbiter = SignalArbiter(cfg.strategies.cooldown_bars)
-        needs_evidence = any(isinstance(s, EvidenceSetup) for s in self.strategies.strategies)
+        needs_evidence = any(isinstance(s, EvidenceSetup) for s in everything)
         evidence = None
         if needs_evidence or cfg.evidence.default_enabled:
             registry = evidence_registry()
             evidence = EvidenceEngine(registry, registry.plan_from_config(cfg.evidence))
         self.builder = ContextBuilder(self.candles, cfg, self.clock, self.quotes, evidence)
+        # the config's lanes: more entry timeframes, each its own bars, arbiter and context (``lanes``)
+        self.extra_lanes: list[EntryLane] = build_lanes(cfg, self.candles, self.clock, self.quotes, evidence)
         self.sessions = TradingSessions(cfg.sessions, cfg.symbols)
         self.news = NewsFilter(ManualBlackouts(cfg.sessions.news_blackouts))
         self.decisions = DecisionEngine(
@@ -367,7 +375,7 @@ class Engine:
                     self.db, cfg.advisory.calibration, self.clock, server=account.server
                 )
                 self.calibration.load()
-        by_magic = {self.magic[s.name]: s for s in self.strategies.strategies}
+        by_magic = {self.magic[s.name]: s for lane in self.lanes for s in lane.strategies.strategies}
         restored = self._build_backend(account, by_magic)
         self.on_started(restored)
         self.runs.start(self.run_id, self.process, self.settings.mode.value, self.settings.config_hash)
@@ -419,7 +427,7 @@ class Engine:
             EventType.ENGINE_STARTED,
             mode=self.settings.mode.value,
             symbols=sorted(self.symbols),
-            strategies=self.strategies.names,
+            strategies=self.strategy_names,
             restored_positions=restored,
         )
         self.running = True
@@ -447,7 +455,7 @@ class Engine:
             restored = self.paper.restore()
             self.positions = PositionManager(
                 self.paper,
-                cfg.position_management,
+                cfg.management,
                 self.symbols,
                 self.clock,
                 strategies_by_magic=by_magic,
@@ -482,7 +490,7 @@ class Engine:
         )
         self.broker_positions = BrokerPositionManager(
             self.orders,
-            cfg.position_management,
+            cfg.management,
             self.symbols,
             self.clock,
             entry_timeframe=cfg.timeframes.entry,
@@ -620,8 +628,11 @@ class Engine:
           it trips ACCOUNT_CHANGE and raises a CRITICAL event.
         """
         self.state = EngineStateRepository(self.db, self.clock)
-        cooldowns = self.state.load("arbiter_cooldowns") or {}
-        self.arbiter.restore_cooldowns({k: str(v) for k, v in cooldowns.items()})
+        cooldowns: dict[str, object] = {}
+        for lane in self.lanes:
+            saved = self.state.load(lane.state_key) or {}
+            lane.arbiter.restore_cooldowns({k: str(v) for k, v in saved.items()})
+            cooldowns |= {f"{lane.name}:{k}": v for k, v in saved.items()}
         entries = self.state.load("last_entry") or {}
         self._last_entry = {sym: ensure_utc(datetime.fromisoformat(str(at))) for sym, at in entries.items()}
         base = self.settings.env.MAGIC_NUMBER_BASE
@@ -848,7 +859,7 @@ class Engine:
 
     def _cmd_strategy_disable(self, cmd: Command) -> str:
         name = cmd.params.get("strategy")
-        if not isinstance(name, str) or name not in self.strategies.names:
+        if not isinstance(name, str) or name not in self.strategy_names:
             raise CommandFailed(f"unknown strategy {name!r}")
         names = sorted(self.disabled_strategies() | {name})
         EngineStateRepository(self.db, self.clock).save(DISABLED_KEY, {"names": names})
@@ -950,34 +961,53 @@ class Engine:
             log.exception("candle stream failed")
             self.candle_stream.failures += 1
 
-    def _check_new_bar(self, symbol: str) -> None:
-        tf = self.config.timeframes.entry
-        frame = self.candles.closed_candles(symbol, tf, 2)
-        opened = frame.last_open_time
-        if opened is None or not self.watermarks.is_new(symbol, tf, opened):
-            return
-        try:
-            self._evaluate(symbol)
-        finally:
-            # a bar is evaluated at most once, even when the evaluation failed (fail closed: no retry storm)
-            self.watermarks.mark(symbol, tf, opened)
+    @property
+    def lanes(self) -> list[EntryLane]:
+        """The main entry timeframe (the engine's own strategies, arbiter, context), then the extra lanes."""
+        return [
+            EntryLane(MAIN, self.config, self.strategies, self.arbiter, self.builder, None),
+            *self.extra_lanes,
+        ]
 
-    def _evaluate(self, symbol: str) -> None:
+    @property
+    def strategy_names(self) -> list[str]:
+        """Every strategy the engine runs: the main entry timeframe's, then each lane's."""
+        return [n for lane in self.lanes for n in lane.strategies.names]
+
+    def _check_new_bar(self, symbol: str) -> None:
+        for lane in self.lanes:
+            if not lane.trades(symbol):
+                continue
+            tf = lane.entry
+            frame = self.candles.closed_candles(symbol, tf, 2)
+            opened = frame.last_open_time
+            if opened is None or not self.watermarks.is_new(symbol, tf, opened):
+                continue
+            try:
+                self._evaluate(symbol, lane)
+            finally:
+                # a bar is evaluated at most once, even when the evaluation failed (fail closed: no retry
+                # storm)
+                self.watermarks.mark(symbol, tf, opened)
+
+    def _evaluate(self, symbol: str, lane: EntryLane | None = None) -> None:
+        lane = lane or self.lanes[0]
         spec = self.symbols[symbol]
         try:
-            ctx = self.builder.build(symbol, spec)
+            ctx = lane.builder.build(symbol, spec)
         except TaaError as exc:
-            log.warning("no context for %s: %s", symbol, exc)
+            log.warning("no context for %s (%s lane): %s", symbol, lane.name, exc)
             return
-        if ctx.market.atr is not None:
-            self._atr[symbol] = ctx.market.atr
-        self.backend.on_bar(symbol, ctx)
+        if lane.name == MAIN:  # the backend's bar (paper fills, bars held) and the quote ATR: main timeframe
+            if ctx.market.atr is not None:
+                self._atr[symbol] = ctx.market.atr
+            self.backend.on_bar(symbol, ctx)
         disabled = self.disabled_strategies()
         signals = [  # a remotely disabled strategy opens nothing; its close signals still count
-            s for s in self.strategies.evaluate(ctx) if not (s.is_entry and s.strategy in disabled)
+            s for s in lane.strategies.evaluate(ctx) if not (s.is_entry and s.strategy in disabled)
         ]
-        selected = self.arbiter.arbitrate(signals).selected
-        self.on_arbitrated()
+        selected = lane.arbiter.arbitrate(signals).selected
+        self.on_arbitrated(lane)
         if selected is None:
             return
         applied = None if self.risk_limits is None else self.risk_limits.current()
@@ -1019,8 +1049,9 @@ class Engine:
                     paper=self.settings.mode is TradingMode.PAPER,
                 )
 
-    def on_arbitrated(self) -> None:
-        self.state.save("arbiter_cooldowns", self.arbiter.cooldown_state())
+    def on_arbitrated(self, lane: EntryLane | None = None) -> None:
+        lane = lane or self.lanes[0]
+        self.state.save(lane.state_key, lane.arbiter.cooldown_state())
 
     def on_entry(self, symbol: str, at: datetime) -> None:
         self.state.save("last_entry", {sym: t.isoformat() for sym, t in self._last_entry.items()})

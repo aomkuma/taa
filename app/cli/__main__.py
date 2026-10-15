@@ -227,6 +227,12 @@ def cmd_backtest(args: argparse.Namespace) -> int:
 
     settings = _settings(args)
     config = settings.config
+    if args.lane is not None:  # one lane alone: its timeframes, symbols and strategies (config lanes)
+        try:
+            config = config.for_lane(config.lane(args.lane))
+        except ConfigError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
     if args.seed is not None:
         config = config.model_copy(
             update={"backtest": config.backtest.model_copy(update={"seed": args.seed})}
@@ -244,7 +250,8 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     elif args.risk is not None:
         print("error: --risk goes with --preset aggressive", file=sys.stderr)
         return 1
-    run_hash = settings.config_hash if risk_preset is None and args.balance is None else config_hash(config)
+    plain = risk_preset is None and args.balance is None and args.lane is None
+    run_hash = settings.config_hash if plain else config_hash(config)
     server = args.server or settings.env.MT5_SERVER
     if not server:
         print("error: pass --server (the history store is organized by trade server)", file=sys.stderr)
@@ -817,6 +824,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="aggressive: the high-risk cage and its setups only (PLAN §A36)",
     )
     bt.add_argument("--risk", type=float, default=None, help="aggressive: risk per trade, 5-10 (default 7.5)")
+    bt.add_argument("--lane", default=None, help="backtest one lane of config.yaml (lanes: NAME) on its own")
     bt.add_argument(
         "--balance",
         type=float,

@@ -486,8 +486,12 @@ trade in any month.
 - Months: 9 of 12 positive; the losers are November (−0.22, 3 trades), December (−0.60, 6) and July (−0.18, 6).
 - **Gap:** the first half's interval reaches below zero, and 76 trades a year is few for scalping. The rules were
   shaped on the same year's M1 study (`research/2026-10-11-pre-run/m1_scalp_study.py`), so this is in-sample.
-- Nothing changes on the bot: S1 is not in `config.yaml`. Its next lever is the trade count (the owner's
-  portfolio goal), e.g. the swing screens that tripled the trend-aligned bars for D1 (§ D1_NOTES).
+- **On DEMO since 2026-10-15 (owner):** lane `s1` in `config.yaml` (`setup_breakout_scalp`, PLAN §A7 entry
+  lanes), in the aggressive preset's setups (a fade: half the preset risk). Parity: `backtest --lane s1` on
+  March 2026 (`data/backtests/inv/s1lane_2026-03`) reproduces `scalp_s1_2026-03` trade for trade (10 trades,
+  same entries, exits, R, lots and net; +0.397 R/trade).
+- Its next lever is the trade count (the owner's portfolio goal); S1s (swing screens) was tried and not kept
+  (March +0.063, 25 trades).
 
 ## 18. V1 + h4_room_2, the year (2026-10-15)
 

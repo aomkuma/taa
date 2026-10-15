@@ -70,8 +70,16 @@ class PositionManager:
             if pos.request.sl is None:
                 continue
             mark = mark_price(pos.side, bid, ask - bid)
-            view = PositionView(pos.side, pos.entry_price, pos.request.sl, pos.sl, pos.bars_held)
-            cfg = self.config.for_strategy(self._strategy_name(pos.request.magic))
+            name = self._strategy_name(pos.request.magic)
+            own = self.config.by_strategy.get(name or "")
+            # the paper book counts bars of the main entry timeframe; a lane's strategy counts its own
+            bars = (
+                pos.bars_held
+                if own is None or own.timeframe is None
+                else max(0, int((now - pos.entry_time).total_seconds() // own.timeframe.seconds))
+            )
+            view = PositionView(pos.side, pos.entry_price, pos.request.sl, pos.sl, bars)
+            cfg = self.config.for_strategy(name)
             adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=cfg)
             if pos.ticket in to_break_even:
                 plan = plan_break_even(view, mark=mark, point=spec.point, cfg=cfg)

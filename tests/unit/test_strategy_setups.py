@@ -303,7 +303,8 @@ class TestCatalog:
         )
         listed = {item.name: item.enabled for item in settings.config.strategies.items}
         originals = {"example_trend_pullback", *(cls.name for cls in SETUPS)}
-        assert set(listed) == originals
+        in_lanes = {i.name for lane in settings.config.lanes for i in lane.strategies.items}
+        assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
         # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only
         assert {n for n, on in listed.items() if on} == {"setup_harmonic_prz", "setup_breakout"}
@@ -323,7 +324,12 @@ class TestCatalog:
         assert harmonic.params == {
             "phase_gate": "h4_against_or_range",
             "max_rr": 3.0,
-        }  # §15.3, no PRZ confirmation
+            "structure_tf": "H4",
+            "room_min_r": 2.0,
+        }  # §15.3, no PRZ confirmation; h4_room_2 (owner, 2026-10-15; §18)
+        (s1,) = settings.config.lanes  # S1, M1 gold scalping (owner, 2026-10-15; §17)
+        assert (s1.timeframes.entry, s1.symbols) == (Timeframe.M1, ["XAUUSD"])
+        assert [i.name for i in s1.strategies.items] == ["setup_breakout_scalp"]
 
     def test_each_setup_can_be_enabled_alone(self) -> None:
         for cls in SETUPS:

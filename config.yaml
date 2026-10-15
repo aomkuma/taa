@@ -76,13 +76,35 @@ strategies:
     - {name: setup_fib_pullback, enabled: false}
     - name: setup_harmonic_prz         # SETUP_REVIEW §15.3: no break-even (position_management), only while H4 is
       enabled: true                    # against the trade or ranging, targets at most 3R; the PRZ confirmation
-      params: {phase_gate: h4_against_or_range, max_rr: 3.0}   # was tested and rejected
+      params: {phase_gate: h4_against_or_range, max_rr: 3.0, structure_tf: H4, room_min_r: 2.0}   # was tested
+      # and rejected. h4_room_2 (owner, 2026-10-15; SETUP_REVIEW §18): at least 2 R of room to the H4 read's level
     - {name: setup_elliott_wave, enabled: false}
     - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
     - name: setup_breakout             # breakout F1 (SETUP_REVIEW §16): wait for a counter-trend break, then
       enabled: true                    # trade it with the H4 and H1 trend (fades only; risk.fade sets their RR)
       params: {screen_h4: with, screen_h1: with, fade_counter_trend: true, trend_entries: false, friday_cutoff_utc: "16:00"}
     - {name: setup_candle_reversal, enabled: false}
+
+lanes:
+  # More entry timeframes in the same engine (app.config.LaneConfig): one account, one risk budget, one decision
+  # engine; each lane its own bars, symbols, strategies, cooldown and context. The scanner stays on M15.
+  - name: s1                        # S1, M1 gold scalping: the day-trade setup (owner, 2026-10-15; SETUP_REVIEW
+    symbols: [XAUUSD]               # §17): breakout F1's fade on M1, screens H1 (tide) / M15 (wave)
+    timeframes:
+      higher: H1
+      entry: M1
+      warmup_bars: 400
+      context: [M15, M30, H1, H4, D1]   # as backtested (data/research/config_scalp_s1.yaml)
+      context_bars: 700
+    strategies:
+      cooldown_bars: 60             # M1: one hour
+      signal_expiry_bars: 1
+      items:
+        - name: setup_breakout_scalp
+          params: {screen_h4: with, screen_h1: with, screen_tide_tf: H1, screen_wave_tf: M15, fade_counter_trend: true, trend_entries: false, atr_bars: 60, stop_mode: atr, sl_atr_multiple: 2.0, target_mode: rr, rr_target: 0.5, min_rr: 0.5, max_sl_atr: 4.0, skip_window_ny: "08:00-12:00", friday_cutoff_utc: "16:00"}
+    max_spread_to_sl_ratio: 1.0     # a stop of 2 x ATR(60 M1 bars) is a few spreads wide
+    management:
+      setup_breakout_scalp: {break_even: false, trailing: false, time_stop_bars: 60}   # one hour, as backtested
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
@@ -119,18 +141,20 @@ risk:
 # The aggressive Trading-profile preset (PLAN §A36): an opt-in cage for small accounts that accept high risk
 # (5-10 % a trade). Absent: the preset is not available here. It also needs ENABLE_HIGH_RISK_PROFILE=true and
 # HIGH_RISK_CONFIRMATION=I-ACCEPT-HIGH-RISK-<MT5_LOGIN> in .env (docs/RUNBOOK_DEMO.md). PAPER/DEMO only (v1).
-# high_risk:
-#   max_risk_per_trade_percent: 10     # cage ceilings (hard maxima: 10 / 20 / 20 / 35 / 60 / 3 / 200 / 20)
-#   max_total_open_risk_percent: 20
-#   max_daily_loss_percent: 20
-#   max_weekly_loss_percent: 35
-#   max_account_drawdown_percent: 60   # the kill: MAX_DRAWDOWN latches, manual reset only
-#   max_open_positions: 3
-#   max_effective_leverage: 200        # 0.01 lot of gold on a 50 USD account is ~90x
-#   min_lot_max_risk_percent: 15       # the minimum lot above the budget, up to this risk (else no trade)
-#   modes: [PAPER, DEMO]
-#   setups: [setup_harmonic_prz, setup_breakout]   # only proven setups
-#   fade_risk_factor: 0.5              # fades (FADE) risk half the preset
+high_risk:                           # ON for DEMO (owner, 2026-10-14); remove to switch off
+  max_risk_per_trade_percent: 10     # cage ceilings (hard maxima: 10 / 20 / 20 / 35 / 60 / 3 / 200 / 20)
+  max_total_open_risk_percent: 20
+  max_daily_loss_percent: 20
+  max_weekly_loss_percent: 35
+  max_account_drawdown_percent: 60   # the kill: MAX_DRAWDOWN latches, manual reset only
+  max_open_positions: 3
+  max_effective_leverage: 200        # 0.01 lot of gold on a 50 USD account is ~90x
+  min_lot_max_risk_percent: 15       # the minimum lot above the budget, up to this risk (else no trade)
+  modes: [PAPER, DEMO]
+  setups: [setup_harmonic_prz, setup_breakout, setup_breakout_scalp]   # proven setups; S1 (owner, 2026-10-15)
+  fade_risk_factor: 0.5              # fades (FADE) risk half the preset
+  min_margin_level_percent: 150      # owner, 2026-10-15: the full preset risk on tight stops (floor 120;
+  max_margin_utilization_percent: 80 #   FBS calls margin at 40 %, stops out at 20 %; ceiling 90)
 
 sessions:                           # entry windows; local times of `timezone` (DST-aware), days are local weekdays
   default:

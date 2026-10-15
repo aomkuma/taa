@@ -359,6 +359,17 @@ A single indicator never produces a signal unless `allow_single_indicator_signal
     - no new entries from Friday 20:00 UTC
     - 4-bar cooldown; at most 1 position per symbol
   - **Management:** move to break-even at +1R, trail at 2×ATR after +1.5R, and CLOSE if the H1 bias flips.
+- **Entry lanes** (`lanes:`, `app/engine/lanes.py`; owner, 2026-10-15: S1 on M1 next to V1 and F1 on M15):
+  - A lane is one more entry timeframe in the same engine, with its own symbols, timeframes and context,
+    strategies, cooldown and signal expiry. Lane strategy names are unique across the engine, so each keeps its
+    own magic number, decisions and statistics (`setup_breakout_scalp` is `setup_breakout` under a lane name).
+  - Each lane checks its own closed bars (its own watermarks) and arbitrates its own signals. Every selected
+    signal goes through the one decision engine: one account, one risk budget, the same breakers, kill switch
+    and per-symbol position limit (an S1 and a V1 position on gold do not coexist while it is 1).
+  - Per lane: `max_spread_to_sl_ratio` for its strategies, the symbol cooldown in its bars, and `management`
+    (break-even, trailing, `time_stop_bars`, counted in the lane's bars).
+  - The scanner, shadow trades and the paper book's bar clock follow the main entry timeframe;
+    `app.cli backtest --lane NAME` backtests one lane on its own.
 
 ## A8. Decision engine & signal validation
 

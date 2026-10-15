@@ -1,6 +1,7 @@
 """The strategies page's read model (PLAN §A15 "TAA-909 decisions"): state, parameters and performance.
 
-- **Configured strategies** come from the config snapshot of the engine's latest run (``strategies.items``).
+- **Configured strategies** come from the config snapshot of the engine's latest run (``strategies.items``,
+  then each lane's ``lanes[].strategies.items``).
   Parameters are resolved with this release's strategy catalog (``Params`` defaults + the configured
   overrides), the way the engine's registry builds them. A strategy this release does not know, or whose
   overrides it cannot validate, is shown with its configured overrides only (``known: false``).
@@ -209,8 +210,12 @@ def strategy_overview(
 
     config = (snap.payload.get("config") or {}) if snap is not None else {}
     section = config.get("strategies") or {}
-    items = [i for i in section.get("items") or [] if isinstance(i, dict)]
     expiry = int(section.get("signal_expiry_bars") or DEFAULT_EXPIRY_BARS)
+    items = [(i, expiry) for i in section.get("items") or [] if isinstance(i, dict)]
+    for lane in config.get("lanes") or []:  # more entry timeframes (config lanes): their strategies too
+        own = (lane.get("strategies") or {}) if isinstance(lane, dict) else {}
+        lane_expiry = int(own.get("signal_expiry_bars") or DEFAULT_EXPIRY_BARS)
+        items += [(i, lane_expiry) for i in own.get("items") or [] if isinstance(i, dict)]
     payload = {} if beat is None else beat.payload
     listed = payload.get("disabled_strategies")
     remote = {str(n) for n in listed} if isinstance(listed, list) else None
@@ -237,8 +242,8 @@ def strategy_overview(
             last_exit[strategy] = exit_time
 
     strategies = []
-    for item in items:
-        entry = _describe(item, expiry)
+    for item, item_expiry in items:
+        entry = _describe(item, item_expiry)
         name = entry["name"]
         per = counts.get(name, Counter())
         entry |= {

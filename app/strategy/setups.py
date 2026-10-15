@@ -896,6 +896,16 @@ class RangeBreakout(EvidenceSetup):
     Params = BreakoutParams
 
 
+class ScalpBreakout(RangeBreakout):
+    """``setup_breakout`` under its own name for a lane (S1, the M1 gold scalp; owner, 2026-10-15;
+    SETUP_REVIEW §17): its own magic number, decisions and statistics next to breakout F1 on M15. Lane only:
+    the scanner does not offer it (``advised``)."""
+
+    name = "setup_breakout_scalp"
+    description = "Breakout F1's fade on a short entry timeframe (S1: M1 gold scalping). Lane only. Unproven."
+    advised = False
+
+
 class CandleParams(SetupParams):
     target_mode: TargetMode = "level"  # the next level
 
@@ -939,5 +949,6 @@ SETUPS: tuple[type[EvidenceSetup], ...] = (
     ElliottWave,
     SmcReversal,
     RangeBreakout,
+    ScalpBreakout,
     CandleReversal,
 )

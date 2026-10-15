@@ -90,8 +90,10 @@ class BrokerPositionManager:
         return None if strategy is None else strategy.name
 
     def _bars_held(self, position: BrokerPosition) -> int:
+        """Bars since the entry on the owning strategy's timeframe (a lane's own, else the entry one)."""
+        tf = self.config.bar_timeframe(self._strategy_name(position.magic), self.entry_timeframe)
         held = (self.clock.now_utc() - position.time_utc).total_seconds()
-        return max(0, int(held // self.entry_timeframe.seconds))
+        return max(0, int(held // tf.seconds))
 
     # --- every quote ------------------------------------------------------------------------------------
 

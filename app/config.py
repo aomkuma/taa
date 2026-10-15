@@ -491,6 +491,10 @@ class StrategyManagement(StrictModel):
     trailing: bool = True
     break_even_trigger_r: float | None = Field(default=None, gt=0)
     trailing_start_r: float | None = Field(default=None, gt=0)
+    # a time stop of its own, in bars of ``timeframe`` (None: the engine's entry timeframe); a lane's
+    # strategies get their lane's entry timeframe (``AppConfig.management``)
+    time_stop_bars: int | None = Field(default=None, ge=1)
+    timeframe: Timeframe | None = None
 
 
 class PositionManagementConfig(StrictModel):
@@ -515,9 +519,45 @@ class PositionManagementConfig(StrictModel):
             update={
                 "break_even_trigger_r": be if own.break_even else math.inf,
                 "trailing_start_r": trail if own.trailing else math.inf,
+                "time_stop_bars": own.time_stop_bars or self.time_stop_bars,
                 "by_strategy": {},
             }
         )
+
+    def bar_timeframe(self, name: str | None, default: Timeframe) -> Timeframe:
+        """The timeframe one strategy's ``bars_held`` counts in (its lane's entry timeframe, else
+        *default*)."""
+        own = self.by_strategy.get(name or "")
+        return default if own is None or own.timeframe is None else own.timeframe
+
+
+class LaneConfig(StrictModel):
+    """A second entry timeframe in the same engine (owner, 2026-10-15: S1 on M1 next to V1 and F1 on M15).
+
+    The lane has its own timeframes, symbols, strategies (names unique across the engine, so each keeps
+    its own magic number and statistics), cooldown and signal expiry, and may loosen
+    ``risk.max_spread_to_sl_ratio`` for its strategies (a scalp's stop is a few spreads wide). Everything else
+    is shared: one account, one risk budget, one decision engine, the same breakers and kill switch.
+    ``management`` is each strategy's position management (``StrategyManagement``; its bars count on the
+    lane's entry timeframe). The scanner and shadow trades follow the main entry timeframe only.
+    """
+
+    name: str = Field(pattern=r"^[a-z0-9_]{1,32}$")
+    timeframes: TimeframesConfig
+    symbols: list[str] = Field(min_length=1)
+    strategies: StrategiesConfig
+    max_spread_to_sl_ratio: float | None = Field(default=None, gt=0, le=1)
+    management: dict[str, StrategyManagement] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _names(self) -> LaneConfig:
+        names = [i.name for i in self.strategies.items]
+        if len(set(names)) != len(names):
+            raise ValueError(f"lane {self.name}: a strategy is listed twice")
+        unknown = sorted(set(self.management) - set(names))
+        if unknown:
+            raise ValueError(f"lane {self.name}: management names unknown strategies: {unknown}")
+        return self
 
 
 class BreakerConfig(StrictModel):
@@ -1058,10 +1098,33 @@ class AppConfig(StrictModel):
     evidence: EvidenceConfig = Field(default_factory=EvidenceConfig)
     # the aggressive preset's cage (PLAN §A36); None: the preset is not available on this machine
     high_risk: HighRiskConfig | None = None
+    lanes: list[LaneConfig] = Field(
+        default_factory=list
+    )  # more entry timeframes (LaneConfig); none by default
+
+    @model_validator(mode="after")
+    def _lanes_valid(self) -> AppConfig:
+        main = {item.name for item in self.strategies.items}
+        seen: set[str] = set()
+        for lane in self.lanes:
+            if lane.name in seen:
+                raise ValueError(f"lanes: {lane.name!r} is listed twice")
+            seen.add(lane.name)
+            names = {i.name for i in lane.strategies.items}
+            clash = sorted(names & main)
+            if clash:
+                raise ValueError(f"lane {lane.name}: strategies already in strategies.items: {clash}")
+            main |= names
+            extra = sorted(set(lane.symbols) - set(self.symbols.allowed))
+            if extra:
+                raise ValueError(f"lane {lane.name}: symbols not in symbols.allowed: {extra}")
+        return self
 
     @model_validator(mode="after")
     def _management_names_known(self) -> AppConfig:
-        known = {item.name for item in self.strategies.items}
+        known = {item.name for item in self.strategies.items} | {
+            i.name for lane in self.lanes for i in lane.strategies.items
+        }
         unknown = sorted(set(self.position_management.by_strategy) - known)
         if unknown:
             raise ValueError(f"position_management.by_strategy names unknown strategies: {unknown}")
@@ -1070,6 +1133,60 @@ class AppConfig(StrictModel):
             if unknown:
                 raise ValueError(f"high_risk.setups names strategies not in strategies.items: {unknown}")
         return self
+
+    @property
+    def management(self) -> PositionManagementConfig:
+        """``position_management`` with every lane's strategy rules merged in (bars on the lane's entry
+        timeframe): what the position managers apply."""
+        if not self.lanes:
+            return self.position_management
+        by = dict(self.position_management.by_strategy)
+        for lane in self.lanes:
+            for name, own in lane.management.items():
+                by[name] = (
+                    own if own.timeframe else own.model_copy(update={"timeframe": lane.timeframes.entry})
+                )
+        return self.position_management.model_copy(update={"by_strategy": by})
+
+    def lane(self, name: str) -> LaneConfig:
+        for lane in self.lanes:
+            if lane.name == name:
+                return lane
+        raise ConfigError(f"unknown lane {name!r}; configured: {[x.name for x in self.lanes]}")
+
+    def for_lane(self, lane: LaneConfig) -> AppConfig:
+        """The engine's config as the lane sees it: its timeframes, symbols, strategies and spread ratio, the
+        management merged, no further lanes. One lane's backtest runs on this config."""
+        risk = self.risk
+        if lane.max_spread_to_sl_ratio is not None:
+            risk = risk.model_copy(update={"max_spread_to_sl_ratio": lane.max_spread_to_sl_ratio})
+        return self.model_copy(
+            update={
+                "timeframes": lane.timeframes,
+                "symbols": self.symbols.model_copy(update={"allowed": list(lane.symbols)}),
+                "strategies": lane.strategies,
+                "risk": risk,
+                "position_management": self.management,
+                "lanes": [],
+            }
+        )
+
+    def lane_of(self, strategy: str) -> LaneConfig | None:
+        """The lane that runs *strategy*; None: the main entry timeframe."""
+        for lane in self.lanes:
+            if any(i.name == strategy for i in lane.strategies.items):
+                return lane
+        return None
+
+    def spread_ratio_for(self, strategy: str) -> float | None:
+        """A lane's ``max_spread_to_sl_ratio`` for its strategy; None: the risk config's."""
+        lane = self.lane_of(strategy)
+        return None if lane is None else lane.max_spread_to_sl_ratio
+
+    def cooldown_bars_for(self, strategy: str) -> int:
+        """The symbol cooldown after an entry, in bars of the signal's timeframe: the strategy's lane's."""
+        lane = self.lane_of(strategy)
+        return (self.strategies if lane is None else lane.strategies).cooldown_bars
 
     def spread_limit(self, symbol: str) -> float:
         override = self.symbols.overrides.get(symbol)

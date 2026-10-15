@@ -207,6 +207,7 @@
     "setup_elliott_wave": "อาจเป็นจุดเริ่มคลื่น 3 หรือคลื่น 5 ของการนับหลัก (เชิงประมาณ) ยังไม่ได้พิสูจน์",
     "setup_smc_reversal": "Smart money: กวาดสภาพคล่อง + CHoCH + กลับมาทดสอบ FVG; สต็อปเลยจุดสุดของการกวาด ยังไม่ได้พิสูจน์",
     "setup_breakout": "การทะลุช่อง Donchian และกรอบเปิดตลาดเอเชีย / ลอนดอน / นิวยอร์ก ยังไม่ได้พิสูจน์",
+    "setup_breakout_scalp": "การ fade ของ breakout F1 บนไทม์เฟรมสั้น (S1: scalping ทองบน M1) ใช้ใน lane เท่านั้น ยังไม่ได้พิสูจน์",
     "setup_candle_reversal": "แท่งเทียนกลับตัวที่ระดับสำคัญ (แนวรับ/ต้าน, ฟีโบนัชชี, pivot, เส้นแนวโน้ม) ยังไม่ได้พิสูจน์"
   },
   "backtestStatus": {
@@ -257,6 +258,7 @@
     "setup_elliott_wave": "คลื่นเอลเลียต",
     "setup_smc_reversal": "กลับตัวแบบ SMC",
     "setup_breakout": "เบรกกรอบราคา",
+    "setup_breakout_scalp": "เบรกกรอบราคาแบบ scalp (S1)",
     "setup_candle_reversal": "แท่งเทียนกลับตัว"
   },
   "gate": {
