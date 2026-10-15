@@ -208,7 +208,8 @@
     "setup_smc_reversal": "Smart money: liquidity sweep + CHoCH + FVG retest; stop beyond the sweep extreme. Unproven.",
     "setup_breakout": "Donchian channel and Asian / London / New York opening-range breakouts. Unproven.",
     "setup_breakout_scalp": "Breakout F1's fade on a short entry timeframe (S1: M1 gold scalping). Lane only. Unproven.",
-    "setup_candle_reversal": "Reversal candlestick at a level (S/R, Fibonacci, pivots, trendline). Unproven."
+    "setup_candle_reversal": "Reversal candlestick at a level (S/R, Fibonacci, pivots, trendline). Unproven.",
+    "setup_breakout_box": "A box after a run, broken with the run, with the H1 trend; target the next H1 level. Unproven."
   },
   "backtestStatus": {
     "QUEUED": "Queued",
@@ -259,7 +260,8 @@
     "setup_smc_reversal": "SMC reversal",
     "setup_breakout": "Range breakout",
     "setup_breakout_scalp": "Scalp breakout (S1)",
-    "setup_candle_reversal": "Candlestick reversal"
+    "setup_candle_reversal": "Candlestick reversal",
+    "setup_breakout_box": "Box breakout after a run"
   },
   "gate": {
     "G1_TRADABLE": "Tradable",
@@ -410,7 +412,8 @@
       "rectangle": "Rectangle",
       "triangle": "Triangle",
       "triple": "Triple top/bottom",
-      "wedge": "Wedge"
+      "wedge": "Wedge",
+      "box_break": "Box break after a run"
     },
     "elliott": {
       "wave": "Elliott wave count (heuristic)"

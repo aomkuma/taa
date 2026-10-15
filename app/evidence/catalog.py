@@ -19,6 +19,7 @@ from app.evidence.candlesticks import (
     Tweezer,
 )
 from app.evidence.chart_patterns import (
+    BoxBreak,
     CupHandle,
     DoubleTopBottom,
     FlagPennant,
@@ -84,6 +85,7 @@ ALL_DETECTORS: tuple[Detector, ...] = (
     Wedge(),
     Rectangle(),
     FlagPennant(),
+    BoxBreak(),
     CupHandle(),
     # Candlesticks (TAA-2A4)
     Engulfing(),

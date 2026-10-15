@@ -591,6 +591,94 @@ class FlagPennant(Detector):
         )
 
 
+# --- a box after a run, broken with the run ----------------------------------------------------------------
+
+
+class BoxBreakParams(DetectorParams):
+    box_bars: int = Field(default=12, ge=3, le=500)
+    max_box_atr: float = Field(default=3.0, gt=0, le=50)  # box height (high - low) at most this x ATR
+    run_bars: int = Field(default=24, ge=2, le=2000)
+    run_atr: float = Field(default=5.0, gt=0, le=100)  # the close-to-close run into the box, in ATR
+    horizon_bars: int = Field(default=48, ge=1, le=2000)  # bars after the box in which the break must come
+
+
+class BoxBreak(Detector):
+    """A box after a run, broken in the run's direction (owner, 2026-10-15: research/2026-10-15-day-trade/
+    flag_rules.py; a trader's "it ran, it rested, it goes on").
+
+    The box is ``box_bars`` bars whose height is at most ``max_box_atr`` × ATR at its last bar. The run is the
+    close-to-close move over the ``run_bars`` bars before the box: at least ``run_atr`` × ATR. The box drifts
+    with the run (its last close beyond its first). The break is the first close beyond the box edge on the
+    run's side within ``horizon_bars`` bars of the box, with no close beyond the other edge before it; the
+    latest such box counts. Invalidation: the other edge. Target: the box height beyond the break edge.
+    """
+
+    id = "chart.box_break"
+    name = "Box break after a run"
+    family = Family.CHART_PATTERN
+    tier = Tier.T2
+    Params: ClassVar[type[DetectorParams]] = BoxBreakParams
+
+    def scan(self, ctx: EvidenceContext, params: Any) -> list[Evidence]:
+        n, k = ctx.n, params.box_bars
+        atr = ctx.atr_array()
+        h, lo, c = ctx.h, ctx.l, ctx.c
+        top, bot = np.full(n, np.nan), np.full(n, np.nan)
+        if n >= k:
+            top[k - 1 :] = np.lib.stride_tricks.sliding_window_view(h, k).max(axis=1)
+            bot[k - 1 :] = np.lib.stride_tricks.sliding_window_view(lo, k).min(axis=1)
+        boxes: list[tuple[int, int]] = []  # (the box's last bar, the run's sign)
+        for b in range(k + params.run_bars, n):
+            b0 = b - k + 1
+            a = atr[b]
+            if not np.isfinite(a) or a <= 0 or top[b] - bot[b] > params.max_box_atr * a:
+                continue
+            run = (c[b0] - c[b0 - params.run_bars]) / a
+            sign = 1 if run >= params.run_atr else -1 if run <= -params.run_atr else 0
+            if sign and (c[b] - c[b0]) * sign > 0:
+                boxes.append((b, sign))
+        found: dict[
+            int, Evidence
+        ] = {}  # one record per breaking bar; boxes come in order, so the latest wins
+        for b, sign in boxes:
+            for t in range(b + 1, min(n, b + 1 + params.horizon_bars)):
+                if (c[t] - (bot[b] if sign > 0 else top[b])) * sign < 0:
+                    break  # the other edge first: no break with the run
+                if (c[t] - (top[b] if sign > 0 else bot[b])) * sign > 0:
+                    found[t] = self._record(ctx, t, b, sign, top[b], bot[b], float(atr[b]), params)
+                    break
+        return [found[t] for t in sorted(found)]
+
+    def _record(
+        self,
+        ctx: EvidenceContext,
+        t: int,
+        b: int,
+        sign: int,
+        top: float,
+        bot: float,
+        atr: float,
+        params: Any,
+    ) -> Evidence:
+        height = top - bot
+        edge, other = (top, bot) if sign > 0 else (bot, top)
+        tightness = 1.0 - height / (params.max_box_atr * atr)
+        return self.make(
+            ctx,
+            t,
+            Direction.BULL if sign > 0 else Direction.BEAR,
+            pattern_quality(tightness, 1.0, volume_score(ctx, t)),
+            key_levels=[
+                KeyLevel("box_high", float(top), ctx.time_at(b)),
+                KeyLevel("box_low", float(bot), ctx.time_at(b)),
+            ],
+            invalidation=float(other),
+            targets=[float(edge + sign * height)],
+            details={"box_atr": round(height / atr, 3), "box_end": ctx.time_at(b).isoformat()},
+            variant="bull" if sign > 0 else "bear",
+        )
+
+
 # --- cup and handle ---------------------------------------------------------------------------------------
 
 

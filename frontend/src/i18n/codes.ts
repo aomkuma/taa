@@ -296,6 +296,7 @@ export const STRATEGY_NAMES = [
   'setup_smc_reversal',
   'setup_breakout',
   'setup_breakout_scalp',
+  'setup_breakout_box',
   'setup_candle_reversal',
 ] as const;
 

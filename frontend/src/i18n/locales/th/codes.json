@@ -208,7 +208,8 @@
     "setup_smc_reversal": "Smart money: กวาดสภาพคล่อง + CHoCH + กลับมาทดสอบ FVG; สต็อปเลยจุดสุดของการกวาด ยังไม่ได้พิสูจน์",
     "setup_breakout": "การทะลุช่อง Donchian และกรอบเปิดตลาดเอเชีย / ลอนดอน / นิวยอร์ก ยังไม่ได้พิสูจน์",
     "setup_breakout_scalp": "การ fade ของ breakout F1 บนไทม์เฟรมสั้น (S1: scalping ทองบน M1) ใช้ใน lane เท่านั้น ยังไม่ได้พิสูจน์",
-    "setup_candle_reversal": "แท่งเทียนกลับตัวที่ระดับสำคัญ (แนวรับ/ต้าน, ฟีโบนัชชี, pivot, เส้นแนวโน้ม) ยังไม่ได้พิสูจน์"
+    "setup_candle_reversal": "แท่งเทียนกลับตัวที่ระดับสำคัญ (แนวรับ/ต้าน, ฟีโบนัชชี, pivot, เส้นแนวโน้ม) ยังไม่ได้พิสูจน์",
+    "setup_breakout_box": "กรอบหลังวิ่งแรงที่ทะลุไปตามทิศที่วิ่ง เมื่อ H1 ไปทางเดียวกัน เป้าที่แนวถัดไปของ H1 ยังไม่ได้พิสูจน์"
   },
   "backtestStatus": {
     "QUEUED": "รอคิว",
@@ -259,7 +260,8 @@
     "setup_smc_reversal": "กลับตัวแบบ SMC",
     "setup_breakout": "เบรกกรอบราคา",
     "setup_breakout_scalp": "เบรกกรอบราคาแบบ scalp (S1)",
-    "setup_candle_reversal": "แท่งเทียนกลับตัว"
+    "setup_candle_reversal": "แท่งเทียนกลับตัว",
+    "setup_breakout_box": "ทะลุกรอบหลังวิ่งแรง"
   },
   "gate": {
     "G1_TRADABLE": "เทรดได้",
@@ -410,7 +412,8 @@
       "rectangle": "กรอบสี่เหลี่ยม",
       "triangle": "สามเหลี่ยม",
       "triple": "สามยอด/สามก้น",
-      "wedge": "ลิ่ม"
+      "wedge": "ลิ่ม",
+      "box_break": "ทะลุกรอบหลังวิ่งแรง"
     },
     "elliott": {
       "wave": "การนับคลื่น Elliott (ประมาณการ)"

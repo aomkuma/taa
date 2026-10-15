@@ -516,7 +516,7 @@ class DecisionEngine:
         ]
 
     def _geometry(self, req: DecisionRequest, risk: RiskConfig) -> list[Check]:
-        s, spec, atr = req.signal, req.spec, req.market.atr
+        s, spec = req.signal, req.spec
         side = s.side
         entry, sl, tp = s.entry_price, s.stop_loss, s.take_profit
         has_sl = sl is not None and sl > 0
@@ -556,14 +556,8 @@ class DecisionEngine:
                 min_distance,
                 "stops level + spread",
             ),
-            Check(
-                "sl_not_too_far",
-                Reason.SL_TOO_FAR,
-                distance is not None and atr is not None and distance <= risk.max_sl_atr_multiple * atr,
-                HARD,
-                distance,
-                None if atr is None else risk.max_sl_atr_multiple * atr,
-            ),
+            # no "SL too far" here (owner, 2026-10-15): a far stop gets a smaller lot from the sizer, so the
+            # loss at the stop stays within the risk per trade; a lot below the minimum is refused there
             Check(
                 "risk_reward",
                 Reason.RR_TOO_LOW,

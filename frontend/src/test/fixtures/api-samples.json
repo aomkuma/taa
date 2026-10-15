@@ -897,6 +897,65 @@
       },
       {
         "bounds": {
+          "box_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 3,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "horizon_bars": {
+            "max": 2000,
+            "max_exclusive": false,
+            "min": 1,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_age_bars": {
+            "max": 500,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": false,
+            "type": "integer"
+          },
+          "max_box_atr": {
+            "max": 50,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "run_atr": {
+            "max": 100,
+            "max_exclusive": false,
+            "min": 0,
+            "min_exclusive": true,
+            "type": "number"
+          },
+          "run_bars": {
+            "max": 2000,
+            "max_exclusive": false,
+            "min": 2,
+            "min_exclusive": false,
+            "type": "integer"
+          }
+        },
+        "depends_on": [],
+        "family": "CHART_PATTERN",
+        "id": "chart.box_break",
+        "name": "Box break after a run",
+        "params": {
+          "box_bars": 12,
+          "horizon_bars": 48,
+          "max_age_bars": 3,
+          "max_box_atr": 3.0,
+          "run_atr": 5.0,
+          "run_bars": 24
+        },
+        "tier": "T2"
+      },
+      {
+        "bounds": {
           "bottom_band": {
             "max": 0.5,
             "max_exclusive": false,
@@ -11376,7 +11435,7 @@
     },
     "quote_at": "2026-09-30T10:00:30+00:00",
     "regime": "TRENDING",
-    "requirements_version": "cc3f62bf9225ffad",
+    "requirements_version": "8c032340469c09e2",
     "reward_money": 94.51,
     "risk_money": 48.72,
     "rr": 1.9999999999998683,
@@ -11904,7 +11963,7 @@
         },
         "quote_at": "2026-09-30T10:00:30+00:00",
         "regime": "TRENDING",
-        "requirements_version": "cc3f62bf9225ffad",
+        "requirements_version": "8c032340469c09e2",
         "reward_money": 94.51,
         "risk_money": 48.72,
         "rr": 1.9999999999998683,
@@ -11967,7 +12026,7 @@
         },
         "quote_at": "2026-09-30T10:00:30+00:00",
         "regime": "VOLATILE",
-        "requirements_version": "cc3f62bf9225ffad",
+        "requirements_version": "8c032340469c09e2",
         "reward_money": 98.62,
         "risk_money": 49.9,
         "rr": 2.0,

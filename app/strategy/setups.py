@@ -109,7 +109,7 @@ from app.strategy.signal_models import Condition, MarketContext, ReasonCode, Sig
 
 NEW_YORK = ZoneInfo("America/New_York")
 StopMode = Literal["invalidation", "atr", "nearer", "zone"]
-TargetMode = Literal["measured", "level", "rr", "zone"]
+TargetMode = Literal["measured", "level", "rr", "zone", "read_level"]
 ScreenFrame = Literal["M5", "M15", "M30", "H1", "H4", "D1"]
 ScreenGate = Literal["any", "with", "with_or_range", "not_against", "against", "against_or_range"]
 ZoneGate = Literal["none", "clear_to_target"]
@@ -460,6 +460,20 @@ class EvidenceSetup(BaseStrategy):
             if not ahead_zones:
                 return rr_tp, f"{p.rr_target:g}R (no opposing zone ahead)"
             return ahead_zones[0], f"opposing zone {ahead_zones[0]:.5g}"
+        if p.target_mode == "read_level":
+            # the nearest level of the structure_tf chart read ahead (the higher timeframe's ceiling; owner,
+            # 2026-10-15), at most rr_target R away
+            read = _read(market, p.structure_tf)
+            levels = () if read is None else read.levels
+            ahead_levels = sorted(
+                (lv.price for lv in levels if (lv.price - entry) * sign > 0), key=lambda t: abs(t - entry)
+            )
+            if not ahead_levels:
+                return rr_tp, f"{p.rr_target:g}R (no {p.structure_tf} level ahead)"
+            level = ahead_levels[0]
+            if abs(level - entry) / risk > p.rr_target:
+                return rr_tp, f"{p.rr_target:g}R (the {p.structure_tf} level {level:.5g} is farther)"
+            return level, f"the {p.structure_tf} level {level:.5g}"
         if p.target_mode == "measured":
             prices, label = list(ev.targets), "measured target"
         else:
@@ -906,6 +920,23 @@ class ScalpBreakout(RangeBreakout):
     advised = False
 
 
+class BoxBreakout(EvidenceSetup):
+    """A box after a run, broken with the run (``chart.box_break``; owner, 2026-10-15: "it ran, it rested, it
+    goes on", with the higher timeframe's resistance as the ceiling). The breakout setup's missing piece:
+    entries in the break's direction when the H1 trend agrees, the target at the next H1 chart-read level.
+    Lane only."""
+
+    name = "setup_breakout_box"
+    description = (
+        "A box after a run, broken with the run, with the H1 trend; target the next H1 level. Unproven."
+    )
+    setup_code = "RANGE_BREAKOUT"
+    triggers = frozenset({"chart.box_break"})
+    core_families = frozenset({Family.CHART_PATTERN})
+    Params = SetupParams
+    advised = False
+
+
 class CandleParams(SetupParams):
     target_mode: TargetMode = "level"  # the next level
 
@@ -950,5 +981,6 @@ SETUPS: tuple[type[EvidenceSetup], ...] = (
     SmcReversal,
     RangeBreakout,
     ScalpBreakout,
+    BoxBreakout,
     CandleReversal,
 )

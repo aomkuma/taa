@@ -167,14 +167,6 @@ CASES: dict[str, tuple[Setup, dict[str, Any]]] = {
     "TP_MISSING": (Setup(), signal(take_profit=None)),
     "SL_WRONG_SIDE": (Setup(), signal(stop_loss=1.1020)),
     "SL_TOO_CLOSE": (Setup(), spec(stops_level=300)),
-    "SL_TOO_FAR": (
-        Setup(),
-        {
-            "market": make_context(
-                quality_flags=(), states=(state(Timeframe.M15, BAR, atr=0.0005), state(Timeframe.H1, BAR))
-            )
-        },
-    ),
     "RR_TOO_LOW": (Setup(), signal(take_profit=1.1020)),
     "MAX_OPEN_POSITIONS": (
         Setup(config=risk(max_open_positions=1)),
@@ -221,6 +213,8 @@ CASES: dict[str, tuple[Setup, dict[str, Any]]] = {
 }
 M2_ONLY = {"AI_DISAGREES", "AI_LOW_CONFIDENCE", "AI_UNAVAILABLE", "ORDER_CHECK_FAILED"}
 SELECTOR_ONLY = {"HIGH_RISK_MODE_NOT_ALLOWED"}  # reported by the risk-limit selector, not a decision
+# a strategy's own reason only since 2026-10-15 (owner): a far stop gets a smaller lot, never a rejection here
+STRATEGY_ONLY = {"SL_TOO_FAR"}
 
 
 class TestBaseline:
@@ -294,7 +288,24 @@ class TestEveryReasonCode:
 
     def test_every_milestone_1_reason_is_covered(self) -> None:
         covered = {code.split(":")[0] for code in CASES}
-        assert covered == {r.value for r in Reason} - M2_ONLY - SELECTOR_ONLY
+        assert covered == {r.value for r in Reason} - M2_ONLY - SELECTOR_ONLY - STRATEGY_ONLY
+
+    def test_a_far_stop_is_sized_down_not_rejected(self) -> None:
+        def fresh() -> Database:
+            d = Database("sqlite://")
+            d.create_all()
+            return d
+
+        near = engine(fresh()).decide(request())
+        # a stop 20 ATR away (ATR 0.0005, stop 0.0100), the target at the same 2 R
+        tiny_atr = make_context(
+            quality_flags=(), states=(state(Timeframe.M15, BAR, atr=0.0005), state(Timeframe.H1, BAR))
+        )
+        far = engine(fresh()).decide(
+            request(market=tiny_atr, **signal(stop_loss=1.0900, take_profit=1.1200))
+        )
+        assert far.decision is Decision.ACCEPT, far.reason_codes
+        assert far.volume is not None and near.volume is not None and far.volume < near.volume
 
     def test_all_checks_are_evaluated_after_a_failure(self, db: Database) -> None:
         record = engine(db).decide(

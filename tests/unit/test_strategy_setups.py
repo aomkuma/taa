@@ -302,8 +302,9 @@ class TestCatalog:
             env_file=None, config_file="config.yaml", environ={"TRADING_MODE": "BACKTEST"}
         )
         listed = {item.name: item.enabled for item in settings.config.strategies.items}
-        originals = {"example_trend_pullback", *(cls.name for cls in SETUPS)}
         in_lanes = {i.name for lane in settings.config.lanes for i in lane.strategies.items}
+        # every setup is listed, except a lane-only one (not advised) that no lane runs yet (under test)
+        originals = {"example_trend_pullback", *(c.name for c in SETUPS if c.advised or c.name in in_lanes)}
         assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
         # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only

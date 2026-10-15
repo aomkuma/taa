@@ -389,7 +389,7 @@ is a closure) are expected (`app/market_data/quality.py`). Before, every night o
 pause were gaps.
 | Session | SESSION_CLOSED, MARKET_CLOSED, NEWS_BLACKOUT |
 | Costs | SPREAD_TOO_HIGH, SPREAD_TO_SL_TOO_HIGH, EXPECTED_SLIPPAGE_TOO_HIGH |
-| Signal | SL_MISSING, TP_MISSING, SL_WRONG_SIDE, SL_TOO_CLOSE (stops level + buffer), SL_TOO_FAR, RR_TOO_LOW |
+| Signal | SL_MISSING, TP_MISSING, SL_WRONG_SIDE, SL_TOO_CLOSE (stops level + buffer), RR_TOO_LOW. No SL_TOO_FAR here since 2026-10-15 (owner): a far stop gets a smaller lot from the sizer (the loss at the stop stays within the risk per trade); a strategy may still refuse its own far stop (`max_sl_atr`) |
 | AI (M2) | AI_DISAGREES, AI_LOW_CONFIDENCE, AI_UNAVAILABLE; all mean HOLD in veto mode |
 | Portfolio | MAX_OPEN_POSITIONS, MAX_POSITIONS_PER_SYMBOL, CONFLICTING_POSITION, DUPLICATE_SIGNAL, PENDING_INTENT_EXISTS, CORRELATION_LIMIT, CURRENCY_EXPOSURE_LIMIT, MAX_TOTAL_OPEN_RISK, UNKNOWN_POSITION_RISK (an open position without a stop), FOREIGN_POSITIONS (policy `halt`), COOLDOWN_ACTIVE |
 | Account | DAILY_LOSS_LIMIT, WEEKLY_LOSS_LIMIT, MAX_DRAWDOWN, CONSECUTIVE_LOSSES, MARGIN_INSUFFICIENT, MARGIN_LEVEL_TOO_LOW, LEVERAGE_LIMIT |

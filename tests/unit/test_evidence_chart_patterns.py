@@ -12,6 +12,8 @@ import numpy as np
 import pytest
 
 from app.evidence.chart_patterns import (
+    BoxBreak,
+    BoxBreakParams,
     CupHandle,
     DoubleTopBottom,
     FlagPennant,
@@ -24,7 +26,7 @@ from app.evidence.chart_patterns import (
     volume_score,
 )
 from app.evidence.framework import Detector, Direction, Evidence, EvidenceContext
-from tests.evidence_harness import context, scan_one
+from tests.evidence_harness import assert_no_lookahead, context, scan_one
 from tests.evidence_paths import path, path_frame
 
 
@@ -175,6 +177,34 @@ class TestFlag:
     )
     def test_near_misses(self, vertices: Sequence[float], legs: Sequence[int]) -> None:
         assert fire(FlagPennant(), path(vertices, legs)) == []
+
+
+class TestBoxBreak:
+    """A run, a box drifting with it, a close beyond its edge (owner, 2026-10-15)."""
+
+    PARAMS = BoxBreakParams(max_box_atr=4.0, run_atr=5.0)
+    RUN_BOX_BREAK = ([100, 124, 123, 124.5, 127], [24, 6, 6, 3])  # run 24 bars, box 12 bars, break
+
+    def test_bull_golden(self) -> None:
+        ctx = path(*self.RUN_BOX_BREAK)
+        first = scan_one(BoxBreak(), ctx, params=self.PARAMS)[0]
+        assert first.direction is Direction.BULL and first.i18n_key.endswith("box_break.bull")
+        top = next(k.price for k in first.key_levels if k.name == "box_high")
+        assert ctx.c[ctx.pos_of(first.detected_at)] > top  # the breaking close
+        assert ctx.c[ctx.pos_of(first.detected_at) - 1] <= top
+        assert first.invalidation == next(k.price for k in first.key_levels if k.name == "box_low")
+        assert first.targets[0] > top
+
+    def test_bear_mirror(self) -> None:
+        vertices, legs = self.RUN_BOX_BREAK
+        first = scan_one(BoxBreak(), path([250 - v for v in vertices], legs), params=self.PARAMS)[0]
+        assert first.direction is Direction.BEAR and first.i18n_key.endswith("box_break.bear")
+
+    def test_no_run_no_record(self) -> None:
+        assert scan_one(BoxBreak(), path([100, 101, 100, 101.5, 104], [24, 6, 6, 3]), params=self.PARAMS) == []
+
+    def test_no_lookahead(self) -> None:
+        assert assert_no_lookahead(BoxBreak(), params=BoxBreakParams(max_box_atr=4.0, run_atr=2.0))  # not vacuous
 
 
 class TestCupHandle:
