@@ -188,6 +188,14 @@ One `ChartRead` per timeframe at one instant (the last closed bar), attached to 
   backtest passes the change. Eye check against a blind sub-agent on the 20 charts
   (`research/2026-10-14-chart-read/eye_check_score.py`, 2026-10-15): trend 6/20 → 11/20, both levels within
   0.5 ATR 1/20 → 5/20.
+- **Breaks in the read now** (`prov_on_break`, `now_by_break`; the PWA chart, owner's CR-4 by proxy,
+  2026-10-15): the open leg beyond the last swing of its kind is a provisional pivot at once (a new high in
+  progress), and mixed swings (broadening / contracting) read now as the side the close has broken (above the
+  last confirmed high: up; below the last low: down). On the 9 charts where the bot and the blind agent
+  disagreed, Claude judged the plain candles: the bot was wrong on 7 (a pullback LL followed by a break of
+  the last high read as broadening; near-equal swings read as LH/LL), 2 were ambiguous. Trend against that
+  key 12/20 → 17/20 (against the agent alone 11 → 14); a tolerance relative to the leg (`equal_leg`) did not
+  help (≤ 13) and stays 0. In-sample: the same 20 charts chose the levers. Levels stay at 5/20.
 
 - **Retests:** for a FLIPPED level, the bars that touched it from the new side and closed away (`retests`).
 - **Nearest:** the nearest support and resistance below and above (FLIPPED included), with distances in ATR;

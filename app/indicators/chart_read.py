@@ -94,6 +94,9 @@ class ChartReadParams:
     backstep: int = 3
     atr_period: int = 14
     equal_atr: float = 0.1
+    # also "equal" within this share of the leg into the swing (a trader compares a swing with the move, not
+    # with ATR; owner's eye check, 2026-10-15); 0: ATR only (the PWA chart: for_display)
+    equal_leg: float = 0.0
     max_swings: int = 8
     level_lookback: int = 300
     level_tol_atr: float = 0.5
@@ -107,6 +110,12 @@ class ChartReadParams:
     # a smaller ZigZag for the levels near the price; 0: major swings only (the PWA chart: for_display)
     minor_depth: int = 0
     prov_atr: float = 1.0  # the leg's extreme counts as a provisional pivot once price came back this far
+    # ... or at once when the open leg went beyond the last swing of its kind (a new high or low in progress;
+    # owner's eye check, 2026-10-15)
+    prov_on_break: bool = False
+    # mixed swings (broadening / contracting) read "now" as the side the close has broken: above the last
+    # confirmed high up, below the last confirmed low down (break of structure; owner's eye check, 2026-10-15)
+    now_by_break: bool = False
 
     def __post_init__(self) -> None:
         for name in ("depth", "backstep", "atr_period", "max_swings", "level_lookback", "max_levels"):
@@ -120,7 +129,7 @@ class ChartReadParams:
         check_period("minor_depth", self.minor_depth, minimum=0)
         if 0 < self.minor_depth <= 1:
             raise ConfigError("minor_depth must be 0 (off) or >= 2")
-        for name in ("equal_atr", "level_tol_atr", "tol_atr", "prov_atr"):
+        for name in ("equal_atr", "equal_leg", "level_tol_atr", "tol_atr", "prov_atr"):
             v = getattr(self, name)
             if not (math.isfinite(v) and v >= 0):
                 raise ConfigError(f"{name} must be >= 0 (got {v!r})")
@@ -129,7 +138,13 @@ class ChartReadParams:
         """The read drawn on the PWA chart: closer to what a trader draws now (the minor swings' levels, a
         level spent only after ``DISPLAY_SPENT`` crossings). Rules keep these parameters until a backtest
         passes the change (owner, 2026-10-15; research/2026-10-14-chart-read/eye_check_score.py)."""
-        return replace(self, spent_crossings=DISPLAY_SPENT, minor_depth=DISPLAY_MINOR_DEPTH)
+        return replace(
+            self,
+            spent_crossings=DISPLAY_SPENT,
+            minor_depth=DISPLAY_MINOR_DEPTH,
+            prov_on_break=True,
+            now_by_break=True,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -592,12 +607,13 @@ class ChartReadFrame:
     def _label(self) -> list[StructureLabel | None]:
         last: dict[SwingKind, float] = {}
         out: list[StructureLabel | None] = []
-        for s in self.pivots:
+        for i, s in enumerate(self.pivots):
             prev = last.get(s.kind)
             label: StructureLabel | None = None
             if prev is not None:
                 a = self.atr[s.confirm_pos]
-                tol = self.p.equal_atr * float(a) if math.isfinite(a) else 0.0
+                leg = abs(s.price - self.pivots[i - 1].price) if i > 0 else 0.0
+                tol = self._equal_tol(float(a), leg)
                 diff = s.price - prev
                 if s.kind is SwingKind.HIGH:
                     label = (
@@ -614,6 +630,10 @@ class ChartReadFrame:
             out.append(label)
             last[s.kind] = s.price
         return out
+
+    def _equal_tol(self, atr: float, leg: float) -> float:
+        """How close two swings of a kind must be to count as equal (EQH / EQL)."""
+        return max(self.p.equal_atr * atr if math.isfinite(atr) else 0.0, self.p.equal_leg * leg)
 
     def _trends(self) -> tuple[list[Structure], list[int]]:
         """The structure after each pivot, and the pivot at which that value began."""
@@ -701,9 +721,22 @@ class ChartReadFrame:
                 last_label[s.kind] = self.labels[i]
             if len(last_price) == 2:
                 break
+        confirmed = dict(last_price)  # the last confirmed high and low (the provisional pivot replaces one)
         provisional = None
-        if leg is not None and abs(leg.extreme - float(self.c[pos])) >= self.p.prov_atr * a:
-            kind = SwingKind.LOW if leg.direction < 0 else SwingKind.HIGH
+        kind = None if leg is None else (SwingKind.LOW if leg.direction < 0 else SwingKind.HIGH)
+        beyond = (
+            leg is not None
+            and kind in last_price
+            and (leg.extreme - last_price[kind]) * (1 if kind is SwingKind.HIGH else -1) > 0
+        )
+        if (
+            leg is not None
+            and kind is not None
+            and (
+                abs(leg.extreme - float(self.c[pos])) >= self.p.prov_atr * a
+                or (self.p.prov_on_break and beyond)
+            )
+        ):
             start = known[-1].pivot_pos + 1
             seg = (self.lo if kind is SwingKind.LOW else self.h)[start : pos + 1]
             at = start + int(seg.argmin() if kind is SwingKind.LOW else seg.argmax())
@@ -711,7 +744,7 @@ class ChartReadFrame:
             label = None
             if prev is not None:
                 diff = leg.extreme - prev
-                if abs(diff) <= self.p.equal_atr * a:
+                if abs(diff) <= self._equal_tol(a, abs(leg.extreme - known[-1].price)):
                     label = StructureLabel.EQL if kind is SwingKind.LOW else StructureLabel.EQH
                 elif kind is SwingKind.LOW:
                     label = StructureLabel.HL if diff > 0 else StructureLabel.LL
@@ -720,6 +753,13 @@ class ChartReadFrame:
             provisional = Pivot(kind, leg.extreme, self.times[at], self.times[pos], label)
             last_label[kind], last_price[kind] = label, leg.extreme
         now = _structure(last_label[SwingKind.HIGH], last_label[SwingKind.LOW])
+        if self.p.now_by_break and now in (Structure.BROADENING, Structure.CONTRACTING):
+            close = float(self.c[pos])
+            hi, lo = confirmed.get(SwingKind.HIGH), confirmed.get(SwingKind.LOW)
+            if hi is not None and close > hi:
+                now = Structure.UP
+            elif lo is not None and close < lo:
+                now = Structure.DOWN
         want = {Structure.DOWN: SwingKind.HIGH, Structure.UP: SwingKind.LOW}.get(now)
         return provisional, now, None if want is None else last_price.get(want)
 

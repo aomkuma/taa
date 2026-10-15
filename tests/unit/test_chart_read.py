@@ -315,6 +315,23 @@ class TestReadNow:
         assert r.provisional is None
         assert r.structure_now is r.structure
 
+    def test_a_new_high_in_progress_is_a_provisional_pivot_on_break(self) -> None:
+        # an uptrend that pulled back to a confirmed low, then runs through the last high (114.05) at the close
+        pts = [100, 112, 104, 110, 106, 114, 108, 116, 115, 117]
+        assert read_last(path(pts)).provisional is None
+        r = read_last(path(pts), ChartReadParams(prov_on_break=True))
+        assert r.provisional is not None and r.provisional.kind is SwingKind.HIGH
+        assert r.provisional.label is StructureLabel.HH and r.provisional.price == pytest.approx(117 + WICK)
+
+    def test_mixed_swings_read_now_as_the_side_the_close_broke(self) -> None:
+        # a megaphone (HH then LL), then the close runs above the last high: broadening, read now as up
+        pts = [106, 108, 104, 110, 102, 112, 100, 113]
+        plain = read_last(path(pts))
+        assert plain.structure_now is Structure.BROADENING
+        r = read_last(path(pts), ChartReadParams(now_by_break=True))
+        assert r.structure_now is Structure.UP
+        assert r.structure is plain.structure  # the confirmed read is unchanged
+
     def test_the_provisional_pivot_is_off_with_a_large_prov_atr(self) -> None:
         r = read_last(path([*DOWN, 96, 98.5]), ChartReadParams(prov_atr=100.0))
         assert r.provisional is None
