@@ -32,7 +32,26 @@ high (4154); stop to break-even once it runs; close by hand when it stalls.
   stop under the sweep low (4131.4): smaller risk, a planned entry. The chart read already records the event
   (SWEEP_RECLAIM).
 
-Open questions to the owner: (1) do they also sell near the top of the range? (2) how are the range edges
+Owner's answers: **both sides of the range** - sells start above 4151, 0.01 lot at a time; the account is
+**150 USD at 1:2000**.
+
+### Risk on a 150 USD account (gold: 0.01 lot = 1 USD per 1.00 of price)
+
+| | Value | Of the account |
+|---|---|---|
+| The buy set, 0.09 lot, average ~4142.97 | 9 USD per 1.00 | |
+| At the first stop 4128 | about **135 USD** | **about 90 %** |
+| At the break-even stop | about 0 | |
+| Margin at 1:2000 | about 2.1 USD per 0.01 lot, ~19 USD | about 13 % |
+
+The leverage keeps the margin light, so the size is limited only by the stop distance times the lots - and the
+averaging down put about 90 % of the account at risk on one range. **The main weakness.** Rule to test: a fixed
+risk per set (e.g. 10 % = 15 USD; with a 15.00 stop that is 0.01 lot), the number of 0.01 steps derived from it.
+
+Open questions: the sells' stop (how far above the 4161.7 high), the step between adds and the most adds; whether
+sells may open while the buys are still open (both sides at once between 4151 and 4154).
+
+Earlier open questions: (1) do they also sell near the top of the range? (2) how are the range edges
 picked (the run's high and the first bounce?) (3) how long must price range before it counts as a range?
 
 ## How the owner trades (their own words, 2026-10-15)
