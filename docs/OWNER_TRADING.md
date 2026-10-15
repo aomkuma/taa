@@ -124,6 +124,9 @@ the highest prices and averaged down with 0.01 lots.
   lower high 4170.29 (the larger downtrend's last high): structural. Risk 22.17 x 0.02 = 44.34 USD (about 19 % of
   ~231 USD) for ~101.66 USD to 4100: R:R about 2.3 (pays above ~30 % wins). A stop just above the head would give
   R:R 3.8 at ~11 % risk but falls to a head sweep. 19 % a trade is high: three losses in a row take ~47 %.
+- The owner's plan in money (their words): **win 100, lose 40** (round numbers; computed +101.66 / -44.34):
+  R:R 2.5, pays above ~28.6 % wins. The trade was planned in money before the entry - unlike trade 1, whose risk
+  grew with every add. Rule for the setup: fix the money at risk and the target before the first entry.
 - Contrast with trade 1: a planned reversal at resistance with a structural invalidation and R:R near 4, against
   a range buy at R:R under 1 with averaging down. The open question is the missing stop.
 
