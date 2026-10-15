@@ -65,7 +65,7 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 | # | Opened (Thai time) | Symbol | Side | Entry | SL | TP | R:R | Exit | R | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | 2026-10-15 11:55-15:15 | XAUUSD | BUY x7 (0.09 lot) | avg 4142.98 | 4128, then 4143.00 (break-even) | 4153.72-4154.36 | 0.76 at first | 4 TP, 3 by hand | +81.52 USD (+54 % of 150) | range trade; see below |
-| 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | none set | target ~4097-4102 (not set) | ~3.8 with a stop above 4161.7 | open | | head-and-shoulders right shoulder; see below |
+| 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | 4173 (owner's, not set in MT5) | target ~4100 (not set) | 2.3 | open | | head-and-shoulders right shoulder; see below |
 
 ### Trade 1 - context at the entry (bot's reads, data to 14:51)
 
@@ -120,6 +120,10 @@ the highest prices and averaged down with 0.01 lots.
   horizontal 4153.8. The purple target (~4100) is steeper than the channel: it needs the neckline (4131-4136)
   and then the channel's lower line to break; inside the channel the lower line is only ~4115-4120 in 8 hours.
   The idea fails on a close above the channel's upper line and 4154-4155, and is void above the head (4161.7).
+- The owner's stop: **4173** - 11.3 above the head (a false break of the head does not take it) and above the H1
+  lower high 4170.29 (the larger downtrend's last high): structural. Risk 22.17 x 0.02 = 44.34 USD (about 19 % of
+  ~231 USD) for ~101.66 USD to 4100: R:R about 2.3 (pays above ~30 % wins). A stop just above the head would give
+  R:R 3.8 at ~11 % risk but falls to a head sweep. 19 % a trade is high: three losses in a row take ~47 %.
 - Contrast with trade 1: a planned reversal at resistance with a structural invalidation and R:R near 4, against
   a range buy at R:R under 1 with averaging down. The open question is the missing stop.
 
@@ -166,6 +170,8 @@ risk per signal).
 4. Which higher-timeframe states the winners and losers came from (trending vs TRANSITION).
 5. **Scaling in** (several entries, larger adds after the break) against a single entry: the average, the risk
    it adds, and whether the adds at the high pay.
+7. **Risk per trade** on a small account: the owner's trades risked ~19 % (trade 2) and up to ~81-90 % (trade 1's
+   averaging at its first stop); measure the growth and the worst drawdown at 2 %, 5 %, 10 % and 20 % a trade.
 6. **Break-even stop** once price moves: how often a tight break-even stop is taken by noise before the target
    (an M1 bar ~1.4 on gold) against a stop under the last M1 higher low.
 
