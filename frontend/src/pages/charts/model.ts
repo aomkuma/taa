@@ -590,9 +590,9 @@ export function readDrawing(
   }
   const provisional = read.provisional ?? null;
   const provisionalTime = provisional === null ? null : snap(provisional.at);
-  if (provisional !== null && provisionalTime !== null && swing.length > 0) {
+  const last = swing.at(-1);
+  if (provisional !== null && provisionalTime !== null && last !== undefined) {
     // the open leg's extreme, not confirmed yet: dashed, its label marked with "?"
-    const last = swing[swing.length - 1];
     if (provisionalTime > last.time) {
       lines.push({
         id: 'read:provisional',
