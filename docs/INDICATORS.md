@@ -178,7 +178,10 @@ on its side: demand for a BUY), `room_r` (distance to the nearest opposing zone,
 
 One timeframe's chart read the way a trader does (design: `docs/CHART_READ.md` §4; parameters in
 `context_map.chart_read:`). `ChartReadFrame(timeframe, candles, point, params)` computes the swings and ATR(14)
-of a frame once; `.at(pos)` reads one bar (None before the ATR is defined). Closed bars only.
+of a frame once; `.at(pos)` reads one bar (None before the ATR is defined). Closed bars only. The PWA chart
+draws `ChartReadParams().for_display()` (minor-swing levels, a level spent after 4 crossings, the read "now"
+with a break in progress and mixed swings read by the broken side: `docs/CHART_READ.md` §4); rules keep the
+defaults until a backtest passes a change.
 
 **Swings: the MT5 standard ZigZag** (Depth 12, Deviation 5 points, Backstep 3), ported from MetaQuotes'
 `ZigZag.mq5` (full-calculation path):

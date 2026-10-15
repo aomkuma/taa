@@ -24,7 +24,12 @@ Results are backtests (R per trade, net of the modelled costs); they describe th
 | Neckline break | `setup_neckline_break` | Double top/bottom, head and shoulders neckline breaks | M15 | off | not reworked yet | - |
 | SMC reversal | `setup_smc_reversal` | Liquidity sweep + change of character | M15 | off | about 1 signal a year | SETUP_REVIEW §3 |
 
-Tried and not kept: S1s (S1 with swing screens: March +0.063, 25 trades, below S1's +0.397); the inverted copies (`*_inverted`, docs/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
+Tried and not kept (2026-10-15, `research/2026-10-15-day-trade/BREAKOUT_NOTES.md`): breaks *with* the trend -
+the box breakout `setup_breakout_box` (code stays, lane only, off: 8 symbols M5 -0.24 R over 199 trades; Asia-only
+gold +0.46..+1.07 on ~10 trades a year), H4/D1 trend following on 29 markets (-0.06..-0.17), momentum burst
+scalps (M5 -0.34 or worse); F1 on the 21 crosses (March -0.373, 16 trades); F1 + `entry_on: resume` (Elder's
+third screen: March +0.157 on 5 against +0.248 on 12). Under test: S1 + `entry_on: resume` (March), S1 on the 7
+FX majors (August). Earlier: S1s (S1 with swing screens: March +0.063, 25 trades, below S1's +0.397); the inverted copies (`*_inverted`, docs/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
 −0.10); plain session breaks on M5 for day trading (FX lose to the spread, gold flips in the second half;
 D1_NOTES.md). Building blocks used by the variants: the market map (`MarketContext.htf`) and the chart read
 (docs/CHART_READ.md). Planned: `setup_confluence` (docs/CONFLUENCE_DIRECTION.md).

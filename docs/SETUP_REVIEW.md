@@ -533,8 +533,8 @@ the first and second half of each variant's trades; intervals are 90 %.
 - This base (+0.175, 191) is below §15.3's year (+0.211, 181). The runs differ (monthly runs that start fresh,
   breakers off, today's code); which difference moves it is not measured. The base/room comparison is fair
   either way: same runs, one rule apart.
-- Nothing changes on the bot until the owner decides: the gate goes into `config.yaml` (V1's params) only with
-  the owner's go-ahead, because the DEMO bot reads it on restart.
+- **On DEMO since 2026-10-15 11:14 Thai (owner):** `structure_tf: H4, room_min_r: 2.0` in V1's params in
+  `config.yaml` (the research config's values).
 
 ## 10. Still to do
 
