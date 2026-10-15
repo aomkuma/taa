@@ -37,8 +37,27 @@ from MT5 (History, Report), and everything else from the history store.
   4149.85, 4151.8.
 - Notes: the break-even stop is about 2.6 below the price while an M1 bar ranges about 1.4: an ordinary two-bar
   pullback can take it before the target. The two 0.02 adds (40 % of the size) came at the latest high and lifted
-  the average. Open question: were the buys at 4135.83-4141.59 planned (buying the pullback) or added because
-  price fell?
+  the average. The buys at 4135.83-4141.59 were added **because price fell** (owner, 2026-10-15): averaging
+  down, not a plan. It worked here because the M5 higher low (4131.4, on the rising trendline) held.
+- The target ~4153.8-4154.2 sits where the falling trendline from the 4161.7 high crosses: a higher-timeframe
+  resistance confluence just above the target (a strength).
+
+## Findings so far
+
+| | Finding | Why it matters |
+|---|---|---|
+| Strength | Stop beyond the structure (the M15 higher low), not at a round number | The trade survives an M1 trend break |
+| Strength | Moves the stop to break-even once price runs | Protects the capital |
+| Strength | Target just below a higher-timeframe resistance | Takes the move before the likely stall |
+| **Weakness** | **Averages down when price falls (unplanned adds)** | The risk grows exactly when the trade is going wrong; one deeper move (below the higher low) turns small losses into a large one |
+| Weakness | Large adds (0.02) at the latest high | Lifts the average; a pullback hits them first |
+| To check | Break-even stop ~2.6 under the price with M1 bars of ~1.4 | Noise may take it before the target |
+
+Improvement to test: a **planned scale-in** in place of averaging down - the levels decided before the first
+entry (e.g. at the structure: the last higher low / the rising trendline), one shared stop below the structure, the
+total risk of all parts fixed in advance. The PWA's Trading profile already has this ("Splitting an entry: Scale
+in": the first order at the signal, the others as limits toward the stop, one shared stop, the total within the
+risk per signal).
 
 ## Hypotheses to test (with the report and backtests)
 
