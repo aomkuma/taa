@@ -5,6 +5,23 @@ into a setup of their own: what they do, what works, where it is weak, what to i
 note. The bot never reads or touches the real account: the trade history comes from a report the owner exports
 from MT5 (History, Report), and everything else from the history store.
 
+## How this works (owner, 2026-10-15: "this is what a custom setup means")
+
+1. The owner tells each trade: what they saw, the entry price(s), why; the stop and target and why; when they
+   moved the stop or closed by hand and why.
+2. Claude maps it onto what the bot measures (H4/H1/M15 map states, chart-read structure HH/HL, levels,
+   trendlines, EMAs, MACD) and writes the rule it implies.
+3. Claude restates the rule for the owner to confirm before any code.
+4. The confirmed rules become the owner's setup (entries, scale-in, stop, target, management), judged by
+   backtest on the ladder (March, August, the year).
+5. Strengths, weaknesses and improvements go in this file. The real-account report is a supplement.
+
+### Draft rule from trade 1 (to confirm)
+
+Gold in an M5 uptrend pulls back to the rising trendline or EMA and makes a higher low: buy. Stop below the M15
+higher low; target just below the higher-timeframe resistance (the falling trendline from the last high). Stop to
+break-even once price runs; close by hand when it does not run and looks like turning.
+
 ## How the owner trades (their own words, 2026-10-15)
 
 - Manual trades on the real account, gold mostly; reads M1, M5 and H1 charts (EMAs, a trendline, MACD).
