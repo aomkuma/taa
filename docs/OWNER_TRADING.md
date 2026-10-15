@@ -65,7 +65,7 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 | # | Opened (Thai time) | Symbol | Side | Entry | SL | TP | R:R | Exit | R | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | 2026-10-15 11:55-15:15 | XAUUSD | BUY x7 (0.09 lot) | avg 4142.98 | 4128, then 4143.00 (break-even) | 4153.72-4154.36 | 0.76 at first | 4 TP, 3 by hand | +81.52 USD (+54 % of 150) | range trade; see below |
-| 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | 4173 (owner's, not set in MT5) | target ~4100 (not set) | 2.3 | open | | head-and-shoulders right shoulder; see below |
+| 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | 4173 (set in MT5) | target ~4100 (not set) | 2.3 | open | | head-and-shoulders right shoulder; see below |
 
 ### Trade 1 - context at the entry (bot's reads, data to 14:51)
 
@@ -111,7 +111,7 @@ the highest prices and averaged down with 0.01 lots.
   trendline from the head; neckline ~4131-4136 (today's 4131.4 low). The purple target ~4097-4102 is the
   head-to-neckline height (~30) below the neckline, at the 78.1 % retracement.
 - The bot's H1 read agrees: H1 structure down, ending above 4161.69 (the head).
-- Sells 0.01 at 4151.69 and 4149.97 (average 4150.83), price 4153.81: -5.96 USD. **No stop set.**
+- Sells 0.01 at 4151.69 and 4149.97 (average 4150.83), price 4153.81: -5.96 USD. Stop 4173 set in MT5 (the owner set it, then told it).
 - A stop that fits the idea is above the head (4163-4165): about 26 USD at risk (~11 % of ~231 USD) for ~101 USD
   to the target: R:R about 3.8. Between: 4143.19 (50 %), 4139, then the neckline must break for the target.
 - The owner's red trend channel (drawn on the chart): a **falling channel from the head** - the upper line through
