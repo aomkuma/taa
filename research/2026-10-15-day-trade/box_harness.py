@@ -94,8 +94,8 @@ class Market:
         return self._h4[pos]
 
 
-def events(m: Market, atr_kind: str, choice: str) -> list[tuple[int, int, float]]:
-    """(break bar, sign, the box's other edge), in time order."""
+def events(m: Market, atr_kind: str, choice: str) -> list[tuple[int, int, float, float]]:
+    """(break bar, sign, the box's other edge, the broken edge), in time order."""
     a, h, lo, c, n = m.atr[atr_kind], m.h, m.lo, m.c, len(m.c)
     top = np.full(n, np.nan)
     bot = np.full(n, np.nan)
@@ -118,7 +118,7 @@ def events(m: Market, atr_kind: str, choice: str) -> list[tuple[int, int, float]
                 return t
         return None
 
-    found: dict[int, tuple[int, float]] = {}
+    found: dict[int, tuple[int, float, float]] = {}
     b = BOX + RUN_BARS
     while b < n:
         sign = qualifies(b)
@@ -126,24 +126,24 @@ def events(m: Market, atr_kind: str, choice: str) -> list[tuple[int, int, float]
             b += 1
             continue
         t = breaks(b, sign)
-        edge = float(bot[b] if sign > 0 else top[b])
+        other, broken = (float(bot[b]), float(top[b])) if sign > 0 else (float(top[b]), float(bot[b]))
         if choice == "latest":
             if t is not None:
-                found[t] = (sign, edge)  # boxes come in order: a later box on the same breaking bar replaces
+                found[t] = (sign, other, broken)  # boxes come in order: a later box on the same bar replaces
             b += 1
         else:  # "first": the research's greedy boxes; the next box starts after this one
             if t is not None and t not in found:
-                found[t] = (sign, edge)
+                found[t] = (sign, other, broken)
             b += BOX
-    return [(t, s, inv) for t, (s, inv) in sorted(found.items())]
+    return [(t, s, inv, edge) for t, (s, inv, edge) in sorted(found.items())]
 
 
 def simulate(
-    m: Market, evs: list[tuple[int, int, float]], window: Window, h4: bool
+    m: Market, evs: list[tuple[int, int, float, float]], window: Window, h4: bool
 ) -> list[tuple[pd.Timestamp, int, float, str]]:
     out: list[tuple[pd.Timestamp, int, float, str]] = []
     busy, selected = -1, -(10**9)
-    for t, s, inv in evs:
+    for t, s, inv, _ in evs:
         ts = m.times[t]
         if not window(ts):
             continue
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     print("| hours (UTC) | box | ATR | H4 not against | year R/trade | 1st half | 2nd half |")
     print("|---|---|---|---|---|---|---|")
     rows = []
-    cache: dict[tuple[str, str], list[tuple[int, int, float]]] = {}
+    cache: dict[tuple[str, str], list[tuple[int, int, float, float]]] = {}
     for (wname, window), choice, atr_kind, h4 in itertools.product(
         WINDOWS.items(), ("latest", "first"), ("wilder", "mean"), (False, True)
     ):
