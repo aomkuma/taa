@@ -112,6 +112,14 @@ class TestNoLookAhead:
             known = [s for s in full.pivots if s.confirm_pos <= t]
             assert cut.pivots == known, t
 
+    def test_the_display_read_has_no_look_ahead_either(self) -> None:
+        df = random_walk()
+        p = ChartReadParams().for_display()
+        full = ChartReadFrame("H1", df, POINT, p)
+        rng = np.random.default_rng(4)
+        for t in sorted(rng.choice(np.arange(60, len(df)), 30, replace=False)):
+            assert ChartReadFrame("H1", df.iloc[: t + 1], POINT, p).at(int(t)) == full.at(int(t)), t
+
     def test_changing_future_bars_never_changes_a_past_read(self) -> None:
         df = random_walk(seed=11)
         t = 700
@@ -231,6 +239,21 @@ class TestLevels:
         r = read_last(path([*BASE, 95, 103, 102]))
         assert all(lv.price != pytest.approx(100.95) for lv in r.levels)
 
+    def test_the_display_keeps_a_level_crossed_twice_with_its_role_by_side(self) -> None:
+        r = read_last(path([*BASE, 95, 103, 102]), ChartReadParams(spent_crossings=4))
+        level = next(lv for lv in r.levels if lv.price == pytest.approx(100.95))
+        assert level.role is LevelRole.SUPPORT
+        assert not level.above
+
+    def test_minor_swings_add_levels_near_the_price(self) -> None:
+        df = random_walk()
+        rules = read_last(df)
+        shown = read_last(df, ChartReadParams().for_display())
+        assert not any(lv.minor for lv in rules.levels)
+        minor = [lv for lv in shown.levels if lv.minor]
+        assert minor
+        assert min(abs(lv.dist_atr) for lv in shown.levels) <= min(abs(lv.dist_atr) for lv in rules.levels)
+
     def test_levels_keep_max_levels_per_side(self) -> None:
         r = read_last(random_walk(), ChartReadParams(max_levels=2))
         assert sum(lv.above for lv in r.levels) <= 2
@@ -274,6 +297,27 @@ class TestEvents:
         df = append(df, [(100.4, 100.5, 100.2, 100.3)] * 3)
         r = read_last(df)
         assert not [e for e in r.events if e.kind is EventKind.BREAK_HOLD and not e.trendline]
+
+
+class TestReadNow:
+    def test_a_pullback_from_the_leg_extreme_is_a_provisional_pivot(self) -> None:
+        # a staircase down, then a fresh low well below the last one and a bounce of more than prov_atr ATR
+        r = read_last(path([*DOWN, 96, 98.5]))
+        assert r.provisional is not None
+        assert r.provisional.kind is SwingKind.LOW
+        assert r.provisional.label is StructureLabel.LL
+        assert r.provisional.price == pytest.approx(96 - WICK)
+        assert r.structure_now is Structure.DOWN
+        assert r.invalidation_now is not None
+
+    def test_no_provisional_pivot_while_price_sits_at_the_extreme(self) -> None:
+        r = read_last(path([*DOWN, 96]))
+        assert r.provisional is None
+        assert r.structure_now is r.structure
+
+    def test_the_provisional_pivot_is_off_with_a_large_prov_atr(self) -> None:
+        r = read_last(path([*DOWN, 96, 98.5]), ChartReadParams(prov_atr=100.0))
+        assert r.provisional is None
 
 
 class TestScenarios:

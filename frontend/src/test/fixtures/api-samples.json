@@ -10696,13 +10696,52 @@
       "digits": 5,
       "events": [],
       "invalidation": null,
+      "invalidation_now": null,
       "leg": null,
-      "levels": [],
+      "levels": [
+        {
+          "above": true,
+          "dist_atr": 1.0952,
+          "first_at": "2026-09-30T11:45:00+00:00",
+          "last_at": "2026-10-02T11:00:00+00:00",
+          "minor": true,
+          "price": 1.1080000000000003,
+          "retests": 0,
+          "role": "RESISTANCE",
+          "touches": 28
+        },
+        {
+          "above": false,
+          "dist_atr": 1.0952,
+          "first_at": "2026-09-30T12:00:00+00:00",
+          "last_at": "2026-10-02T09:30:00+00:00",
+          "minor": true,
+          "price": 1.0979999999999999,
+          "retests": 0,
+          "role": "SUPPORT",
+          "touches": 27
+        }
+      ],
       "pivots": [],
+      "provisional": null,
       "retrace_major": null,
-      "scenarios": [],
+      "scenarios": [
+        {
+          "direction": -1,
+          "kind": "BREAK",
+          "target": null,
+          "trigger": 1.0979999999999999
+        },
+        {
+          "direction": 1,
+          "kind": "REJECT",
+          "target": 1.1080000000000003,
+          "trigger": 1.0979999999999999
+        }
+      ],
       "structure": "NONE",
-      "text": "",
+      "structure_now": null,
+      "text": "break below 1.09800 that holds -> next support -; rejected at 1.09800 (or a false break that reclaims it) -> resistance 1.10800",
       "timeframe": "M15",
       "tol_atr": 0.25,
       "trendlines": []

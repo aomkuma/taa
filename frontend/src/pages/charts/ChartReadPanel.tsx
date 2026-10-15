@@ -37,6 +37,19 @@ export function ChartReadPanel({ read, failed }: { read: ChartRead | null | unde
         {retrace !== null &&
           ` · ${t('charts.read.retrace', { pct: format.number(retrace * 100, { maximumFractionDigits: 0 }) })}`}
       </p>
+      {read.provisional && read.structure_now && (
+        <p>
+          {t('charts.read.now', {
+            label: read.provisional.label ? t(`charts.read.label.${read.provisional.label}`) : '',
+            price: price(read.provisional.price),
+            structure: t(`charts.read.structures.${read.structure_now}`),
+          })}
+          {read.invalidation_now != null &&
+            ` · ${t(read.structure_now === 'DOWN' ? 'charts.read.endsAbove' : 'charts.read.endsBelow', {
+              price: price(read.invalidation_now),
+            })}`}
+        </p>
+      )}
       {read.scenarios.length > 0 && (
         <ul className="mt-1 list-disc pl-4">
           {read.scenarios.map((s) => (

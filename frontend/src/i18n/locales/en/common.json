@@ -283,6 +283,7 @@
       "endsAbove": "the downtrend ends above {{price}}",
       "endsBelow": "the uptrend ends below {{price}}",
       "broken": "closed beyond that level since the last swing",
+      "now": "Now, counting the unconfirmed swing {{label}} at {{price}}: {{structure}}",
       "retrace": "{{pct}} % back into the last leg",
       "scenario": {
         "BREAK_up": "A break above {{trigger}} that holds → next resistance {{target}}",
@@ -317,7 +318,7 @@
       },
       "invalidationDown": "Downtrend ends above",
       "invalidationUp": "Uptrend ends below",
-      "legend": "Purple: the swings of the MT5 ZigZag 12/5/3 the bot had confirmed at this bar (the last leg is still open, so the bot sees each swing about one leg later than MT5 draws it). Green lines are supports, red resistances, orange a level that was broken and flipped its role; pink dotted is where the trend's structure ends. The bot records this read with every signal; it does not decide entries yet.",
+      "legend": "Purple: the swings of the MT5 ZigZag 12/5/3 the bot had confirmed at this bar (the last leg is still open, so the bot sees each swing about one leg later than MT5 draws it); the dashed purple line with \"?\" is the open leg's extreme, not confirmed yet. Thin lines are levels of the smaller swings near the price. Green lines are supports, red resistances, orange a level that was broken and flipped its role; pink dotted is where the trend's structure ends. The bot records this read with every signal; it does not decide entries yet.",
       "unavailable": "No chart read for this symbol and timeframe yet (not enough bars, or the symbol's specification is not uploaded).",
       "pastView": "The chart as it was at {{time}}.",
       "backToNow": "Back to now"

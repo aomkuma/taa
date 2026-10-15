@@ -561,7 +561,8 @@ export const READ_COLORS = {
 /**
  * The bot's chart read drawn as a trader would (TAA-L813): the confirmed swings joined and labelled, the
  * trendlines from their two pivots to the read's bar, the levels coloured by role and the structure's
- * invalidation. Only pivots the bot knew at the read's bar are drawn (no repainting).
+ * invalidation. Only pivots the bot knew at the read's bar are drawn (no repainting), plus the open leg's
+ * extreme as a dashed, unconfirmed swing ("?") once price came back from it; minor-swing levels are thin.
  */
 export function readDrawing(
   read: ChartRead | null | undefined,
@@ -586,6 +587,31 @@ export function readDrawing(
       color: READ_COLORS.swing,
       text: pivot.label === null ? '' : (text.swingLabel?.(pivot.label) ?? pivot.label),
     });
+  }
+  const provisional = read.provisional ?? null;
+  const provisionalTime = provisional === null ? null : snap(provisional.at);
+  if (provisional !== null && provisionalTime !== null && swing.length > 0) {
+    // the open leg's extreme, not confirmed yet: dashed, its label marked with "?"
+    const last = swing[swing.length - 1];
+    if (provisionalTime > last.time) {
+      lines.push({
+        id: 'read:provisional',
+        pane: 0,
+        color: READ_COLORS.swing,
+        width: 1,
+        style: 'dashed',
+        points: [last, { time: provisionalTime, value: provisional.price }],
+      });
+      const label =
+        provisional.label === null ? '' : (text.swingLabel?.(provisional.label) ?? provisional.label);
+      markers.push({
+        time: provisionalTime,
+        position: provisional.kind === 'HIGH' ? 'aboveBar' : 'belowBar',
+        shape: 'circle',
+        color: READ_COLORS.swing,
+        text: `${label}?`,
+      });
+    }
   }
   if (swing.length >= 2) {
     lines.push({
@@ -623,7 +649,7 @@ export function readDrawing(
       color: READ_COLORS[level.role],
       title: text.readLevel?.(level.role, level.above, level.touches) ?? level.role,
       style: level.role === 'FLIPPED' ? 'dashed' : 'solid',
-      width: Math.min(3, level.touches),
+      width: level.minor ? 1 : Math.min(3, level.touches),
     });
   }
   if (read.invalidation !== null) {

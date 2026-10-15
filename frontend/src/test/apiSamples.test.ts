@@ -83,6 +83,7 @@ const CASES: [string, z.ZodType][] = [
   [`${E}symbols/EURUSD`, SymbolDetailSchema],
   [`${E}candles?symbol=EURUSD&limit=5&overlays=ema:5,rsi:5&zones=true`, CandlesSchema],
   [`${E}market-map?symbol=EURUSD`, MarketMapSchema],
+  [`${E}market-map?symbol=EURUSD&read_tf=M15`, MarketMapSchema],
   [`${E}positions?status=OPEN`, PositionsPageSchema],
   [`${E}decisions?limit=2`, DecisionsPageSchema],
   [`${E}decisions?limit=2`, DecisionRefsSchema],

@@ -83,6 +83,10 @@ class ScenarioKind(StrEnum):
 MIXED = frozenset({Structure.CONTRACTING, Structure.BROADENING, Structure.FLAT})
 
 
+DISPLAY_SPENT = 4
+DISPLAY_MINOR_DEPTH = 5
+
+
 @dataclass(frozen=True, slots=True)
 class ChartReadParams:
     depth: int = 12
@@ -98,6 +102,11 @@ class ChartReadParams:
     event_bars: int = 3
     hold_bars: int = 1
     reclaim_bars: int = 1
+    # closes through, both ways, before a level is dropped as SPENT (the PWA chart: for_display)
+    spent_crossings: int = 2
+    # a smaller ZigZag for the levels near the price; 0: major swings only (the PWA chart: for_display)
+    minor_depth: int = 0
+    prov_atr: float = 1.0  # the leg's extreme counts as a provisional pivot once price came back this far
 
     def __post_init__(self) -> None:
         for name in ("depth", "backstep", "atr_period", "max_swings", "level_lookback", "max_levels"):
@@ -107,10 +116,20 @@ class ChartReadParams:
         check_period("deviation", self.deviation, minimum=0)
         if self.backstep >= self.depth:
             raise ConfigError(f"backstep must be < depth (got {self.backstep} >= {self.depth})")
-        for name in ("equal_atr", "level_tol_atr", "tol_atr"):
+        check_period("spent_crossings", self.spent_crossings, minimum=2)
+        check_period("minor_depth", self.minor_depth, minimum=0)
+        if 0 < self.minor_depth <= 1:
+            raise ConfigError("minor_depth must be 0 (off) or >= 2")
+        for name in ("equal_atr", "level_tol_atr", "tol_atr", "prov_atr"):
             v = getattr(self, name)
             if not (math.isfinite(v) and v >= 0):
                 raise ConfigError(f"{name} must be >= 0 (got {v!r})")
+
+    def for_display(self) -> ChartReadParams:
+        """The read drawn on the PWA chart: closer to what a trader draws now (the minor swings' levels, a
+        level spent only after ``DISPLAY_SPENT`` crossings). Rules keep these parameters until a backtest
+        passes the change (owner, 2026-10-15; research/2026-10-14-chart-read/eye_check_score.py)."""
+        return replace(self, spent_crossings=DISPLAY_SPENT, minor_depth=DISPLAY_MINOR_DEPTH)
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,6 +164,7 @@ class Level:
     last_at: datetime
     retests: int  # FLIPPED: touches from the new side that closed away
     dist_atr: float
+    minor: bool = False  # only minor swings make it (the levels near the price a trader also draws)
 
 
 @dataclass(frozen=True, slots=True)
@@ -199,6 +219,11 @@ class ChartRead:
     scenarios: tuple[Scenario, ...] = ()
     retrace_major: float | None = None  # the close inside the next-higher timeframe's last leg (§4.5)
     tol_atr: float = 0.25  # the read's tolerance (ChartReadParams.tol_atr), for "at a level" tests
+    # the read "now": the leg's extreme as a provisional pivot once price came back ``prov_atr`` ATR from it
+    # (data up to this bar only, but it can still move: the no-repaint read above is what rules use first)
+    provisional: Pivot | None = None
+    structure_now: Structure | None = None
+    invalidation_now: float | None = None
 
     def nearest(self, *, above: bool) -> Level | None:
         side = [lv for lv in self.levels if lv.above is above]
@@ -221,6 +246,9 @@ class ChartRead:
             "age_legs": self.age_legs,
             "retrace_major": self.retrace_major,
             "tol_atr": self.tol_atr,
+            "provisional": None if self.provisional is None else _pivot_dict(self.provisional),
+            "structure_now": None if self.structure_now is None else self.structure_now.value,
+            "invalidation_now": self.invalidation_now,
             "pivots": [
                 {
                     "kind": p.kind.value,
@@ -252,6 +280,7 @@ class ChartRead:
                     "last_at": lv.last_at.isoformat(),
                     "retests": lv.retests,
                     "dist_atr": lv.dist_atr,
+                    "minor": lv.minor,
                 }
                 for lv in self.levels
             ],
@@ -304,6 +333,9 @@ class ChartRead:
             age_legs=int(d["age_legs"]),
             retrace_major=d.get("retrace_major"),
             tol_atr=float(d.get("tol_atr", 0.25)),
+            provisional=None if d.get("provisional") is None else _pivot_from(d["provisional"]),
+            structure_now=None if d.get("structure_now") is None else Structure(d["structure_now"]),
+            invalidation_now=d.get("invalidation_now"),
             pivots=tuple(
                 Pivot(
                     SwingKind(p["kind"]),
@@ -335,6 +367,7 @@ class ChartRead:
                     datetime.fromisoformat(lv["last_at"]),
                     int(lv["retests"]),
                     float(lv["dist_atr"]),
+                    bool(lv.get("minor", False)),
                 )
                 for lv in d["levels"]
             ),
@@ -370,6 +403,26 @@ class ChartRead:
                 for s in d["scenarios"]
             ),
         )
+
+
+def _pivot_dict(p: Pivot) -> dict[str, Any]:
+    return {
+        "kind": p.kind.value,
+        "price": p.price,
+        "at": p.at.isoformat(),
+        "known_at": p.known_at.isoformat(),
+        "label": None if p.label is None else p.label.value,
+    }
+
+
+def _pivot_from(d: Mapping[str, Any]) -> Pivot:
+    return Pivot(
+        SwingKind(d["kind"]),
+        float(d["price"]),
+        datetime.fromisoformat(d["at"]),
+        datetime.fromisoformat(d["known_at"]),
+        None if d["label"] is None else StructureLabel(d["label"]),
+    )
 
 
 # --- the MT5 ZigZag ---------------------------------------------------------------------------------------
@@ -519,6 +572,20 @@ class ChartReadFrame:
             index=self.times,
         )
         self._confirm = [s.confirm_pos for s in self.pivots]
+        self.minor = (
+            zigzag_pivots(
+                self.h,
+                self.lo,
+                self.point,
+                depth=self.p.minor_depth,
+                deviation=self.p.deviation,
+                backstep=min(self.p.backstep, self.p.minor_depth - 1),
+                index=self.times,
+            )
+            if self.p.minor_depth
+            else []
+        )
+        self._minor_confirm = [s.confirm_pos for s in self.minor]
         self.labels = self._label()
         self._trend, self._changed = self._trends()
 
@@ -583,8 +650,16 @@ class ChartReadFrame:
             broken = bool(
                 (seg > invalidation).any() if structure is Structure.DOWN else (seg < invalidation).any()
             )
-        levels = self._levels(known, pos, a)
+        major = {(s.kind, s.pivot_pos) for s in known}  # known at pos only: no look-ahead
+        minor = [
+            s
+            for s in self.minor[: bisect.bisect_right(self._minor_confirm, pos)]
+            if (s.kind, s.pivot_pos) not in major  # a major pivot is not counted twice
+        ]
+        levels = self._levels(known, pos, a, minor)
         lines = self._trendlines(known, structure, pos, a)
+        leg = self._leg(known, pos, a)
+        provisional, structure_now, invalidation_now = self._now(known, k, leg, pos, a)
         read = ChartRead(
             timeframe=self.timeframe,
             at=self.times[pos],
@@ -599,13 +674,54 @@ class ChartReadFrame:
                 Pivot(s.kind, s.price, self.times[s.pivot_pos], self.times[s.confirm_pos], self.labels[i])
                 for i, s in enumerate(known[-self.p.max_swings :], start=max(0, k - self.p.max_swings))
             ),
-            leg=self._leg(known, pos, a),
+            leg=leg,
             levels=tuple(lv for lv, _ in levels),
             trendlines=tuple(tl for tl, _ in lines),
             events=self._events(levels, lines, pos),
             tol_atr=self.p.tol_atr,
+            provisional=provisional,
+            structure_now=structure_now,
+            invalidation_now=invalidation_now,
         )
         return replace(read, scenarios=scenarios(read))
+
+    def _now(
+        self, known: Sequence[Swing], k: int, leg: Leg | None, pos: int, a: float
+    ) -> tuple[Pivot | None, Structure | None, float | None]:
+        """The provisional pivot (the leg's extreme once price came back ``prov_atr`` ATR from it) and the
+        structure and invalidation with it; without one, the confirmed read."""
+        if not known:
+            return None, None, None
+        last_label: dict[SwingKind, StructureLabel | None] = {SwingKind.HIGH: None, SwingKind.LOW: None}
+        last_price: dict[SwingKind, float] = {}
+        for i in range(k - 1, -1, -1):
+            s = self.pivots[i]
+            if s.kind not in last_price:
+                last_price[s.kind] = s.price
+                last_label[s.kind] = self.labels[i]
+            if len(last_price) == 2:
+                break
+        provisional = None
+        if leg is not None and abs(leg.extreme - float(self.c[pos])) >= self.p.prov_atr * a:
+            kind = SwingKind.LOW if leg.direction < 0 else SwingKind.HIGH
+            start = known[-1].pivot_pos + 1
+            seg = (self.lo if kind is SwingKind.LOW else self.h)[start : pos + 1]
+            at = start + int(seg.argmin() if kind is SwingKind.LOW else seg.argmax())
+            prev = last_price.get(kind)
+            label = None
+            if prev is not None:
+                diff = leg.extreme - prev
+                if abs(diff) <= self.p.equal_atr * a:
+                    label = StructureLabel.EQL if kind is SwingKind.LOW else StructureLabel.EQH
+                elif kind is SwingKind.LOW:
+                    label = StructureLabel.HL if diff > 0 else StructureLabel.LL
+                else:
+                    label = StructureLabel.HH if diff > 0 else StructureLabel.LH
+            provisional = Pivot(kind, leg.extreme, self.times[at], self.times[pos], label)
+            last_label[kind], last_price[kind] = label, leg.extreme
+        now = _structure(last_label[SwingKind.HIGH], last_label[SwingKind.LOW])
+        want = {Structure.DOWN: SwingKind.HIGH, Structure.UP: SwingKind.LOW}.get(now)
+        return provisional, now, None if want is None else last_price.get(want)
 
     @staticmethod
     def _invalidation(known: Sequence[Swing], structure: Structure) -> float | None:
@@ -637,24 +753,36 @@ class ChartReadFrame:
 
     # --- levels --------------------------------------------------------------------------------------
 
-    def _levels(self, known: Sequence[Swing], pos: int, a: float) -> list[tuple[Level, int]]:
-        """Non-spent levels at *pos* (highest first) with the position of their first pivot."""
+    def _levels(
+        self, known: Sequence[Swing], pos: int, a: float, minor: Sequence[Swing] = ()
+    ) -> list[tuple[Level, int]]:
+        """Non-spent levels at *pos* (highest first) with the position of their first pivot; the minor
+        swings add levels of their own (``Level.minor`` when no major swing is in the cluster)."""
         start = pos - self.p.level_lookback + 1
-        recent = sorted((s for s in known if s.pivot_pos >= start), key=lambda s: s.price)
+        recent = sorted(
+            [(s, False) for s in known if s.pivot_pos >= start]
+            + [(s, True) for s in minor if s.pivot_pos >= start],
+            key=lambda x: x[0].price,
+        )
         tol = self.p.level_tol_atr * a
         clusters: list[list[Swing]] = []
-        for s in recent:
+        minor_only: list[bool] = []
+        for s, is_minor in recent:
             if clusters and s.price - clusters[-1][0].price <= tol:
                 clusters[-1].append(s)
+                minor_only[-1] = minor_only[-1] and is_minor
             else:
                 clusters.append([s])
+                minor_only.append(is_minor)
         above: list[tuple[Level, int]] = []
         below: list[tuple[Level, int]] = []
         close = float(self.c[pos])
-        for members in clusters:
+        for members, only_minor in zip(clusters, minor_only, strict=True):
             level = self._level(members, pos, a, close)
             if level is None:
                 continue
+            if only_minor:
+                level = (replace(level[0], minor=True), level[1])
             (above if level[0].above else below).append(level)
         above.sort(key=lambda x: x[0].dist_atr)
         below.sort(key=lambda x: x[0].dist_atr)
@@ -668,9 +796,9 @@ class ChartReadFrame:
         last = max(members, key=lambda m: m.pivot_pos)
         side = -1 if first.kind is SwingKind.HIGH else 1  # the closes' side: below a top, above a bottom
         crossings, flip_pos, side = self._crossings(price, first.pivot_pos + 1, pos, side)
-        if crossings >= 2:
-            return None  # SPENT
-        if crossings == 1:
+        if crossings >= self.p.spent_crossings:
+            return None  # SPENT: closed through back and forth too often to hold a role
+        if crossings % 2 == 1:  # on the other side of where it formed: its role flipped
             role = LevelRole.FLIPPED
             retests = self._retests(price, side, flip_pos + 1, pos)
         else:

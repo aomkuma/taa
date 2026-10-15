@@ -580,7 +580,7 @@ class ReadModels:
         if params is None or not point or stored.empty:
             return None
         frame = candle_frame(stored.tail(READ_BARS))
-        read = ChartReadFrame(tf.value, frame, float(point), params).at(len(frame) - 1)
+        read = ChartReadFrame(tf.value, frame, float(point), params.for_display()).at(len(frame) - 1)
         return None if read is None else read.to_dict()
 
     # --- candles ----------------------------------------------------------------------------------------

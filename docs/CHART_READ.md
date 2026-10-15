@@ -174,8 +174,20 @@ One `ChartRead` per timeframe at one instant (the last closed bar), attached to 
   | Role | Meaning |
   |---|---|
   | SUPPORT / RESISTANCE | below / above the close, never closed through |
-  | FLIPPED | closed through once, now on the other side (a broken support is now resistance) |
-  | SPENT | closed through both ways at least twice; dropped from the read |
+  | FLIPPED | closed through an odd number of times, now on the other side (a broken support is now resistance) |
+  | SPENT | closed through `spent_crossings` times (rules: 2; the PWA chart: 4); dropped from the read |
+
+  Fewer crossings than that on the side where it formed keep the level's first role.
+- **Minor swings** (`minor_depth`; rules: 0 = off, the PWA chart: 5): a second ZigZag adds the levels near the
+  price a trader also draws; a cluster made only of minor pivots is `Level.minor` (drawn thin). A minor pivot
+  on a major pivot already known at the bar is not counted twice (no look-ahead).
+- **The read now** (`prov_atr`, 1.0): the open leg's extreme becomes a provisional pivot once price came back
+  `prov_atr` × ATR from it, labelled against the last pivot of its kind; `structure_now` and
+  `invalidation_now` count it. It can still move, so rules use the confirmed read first; the PWA draws it
+  dashed with "?". `ChartReadParams.for_display()` is what the chart draws; rules keep the defaults until a
+  backtest passes the change. Eye check against a blind sub-agent on the 20 charts
+  (`research/2026-10-14-chart-read/eye_check_score.py`, 2026-10-15): trend 6/20 → 11/20, both levels within
+  0.5 ATR 1/20 → 5/20.
 
 - **Retests:** for a FLIPPED level, the bars that touched it from the new side and closed away (`retests`).
 - **Nearest:** the nearest support and resistance below and above (FLIPPED included), with distances in ATR;

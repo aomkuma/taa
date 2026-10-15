@@ -113,6 +113,13 @@ export const READ_EVENTS = ['BREAK_HOLD', 'SWEEP_RECLAIM', 'RETEST'] as const;
 export const SWING_LABELS = ['HH', 'LH', 'EQH', 'HL', 'LL', 'EQL'] as const;
 export type SwingLabel = (typeof SWING_LABELS)[number];
 const SwingKindSchema = z.enum(['HIGH', 'LOW']);
+const PivotSchema = z.object({
+  kind: SwingKindSchema,
+  price: z.number(),
+  at: IsoDateTime,
+  known_at: IsoDateTime,
+  label: z.enum(SWING_LABELS).nullable(),
+});
 
 /** One timeframe's chart read (`ChartRead.to_dict` in app/indicators/chart_read.py, TAA-L813). */
 export const ChartReadSchema = z.object({
@@ -127,15 +134,11 @@ export const ChartReadSchema = z.object({
   age_legs: z.number().int(),
   retrace_major: Value,
   tol_atr: z.number(),
-  pivots: z.array(
-    z.object({
-      kind: SwingKindSchema,
-      price: z.number(),
-      at: IsoDateTime,
-      known_at: IsoDateTime,
-      label: z.enum(SWING_LABELS).nullable(),
-    }),
-  ),
+  pivots: z.array(PivotSchema),
+  /** The read "now": the open leg's extreme as an unconfirmed swing once price came back from it. */
+  provisional: PivotSchema.nullable().optional(),
+  structure_now: z.enum(STRUCTURES).nullable().optional(),
+  invalidation_now: Value.optional(),
   leg: z
     .object({
       direction: z.number().int(),
@@ -157,6 +160,8 @@ export const ChartReadSchema = z.object({
       last_at: IsoDateTime,
       retests: z.number().int(),
       dist_atr: z.number(),
+      /** Made by the minor swings only (the levels near the price). */
+      minor: z.boolean().optional(),
     }),
   ),
   trendlines: z.array(
