@@ -64,7 +64,7 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 
 | # | Opened (Thai time) | Symbol | Side | Entry | SL | TP | R:R | Exit | R | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 2026-10-15 13:00-15:55 | XAUUSD | BUY x7 (0.09 lot) | avg ~4142.97 | 4128, then ~4143.19 (break-even) | 4155, then ~4153.8 | 0.76 at first | open | | scaled in; see below |
+| 1 | 2026-10-15 11:55-15:15 | XAUUSD | BUY x7 (0.09 lot) | avg 4142.98 | 4128, then 4143.00 (break-even) | 4153.72-4154.36 | 0.76 at first | 4 TP, 3 by hand | +81.52 USD (+54 % of 150) | range trade; see below |
 
 ### Trade 1 - context at the entry (bot's reads, data to 14:51)
 
@@ -77,10 +77,35 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
   (4145.3-4145.5, 4147.4, 4150.98, 4152.46) but below the swing high 4159.7-4161.7. R:R 0.76: it needs to win
   more than 57 % of the time to pay.
 
-### Trade 1 - management (chart at ~15:55 Thai)
+### Trade 1 - the fills (the owner's MT5 history; server time + 4 h = Thai time)
 
-- Seven buys (read from the chart labels, some hidden; to confirm): 0.01 at 4135.83, ~4139.44, ~4140.91,
-  ~4141.59, 4144.31; 0.02 at 4145.87 and 4146.47. Average about 4142.97 for 0.09 lot.
+| Opened (Thai) | Lot | Entry | Exit | How | Profit |
+|---|---|---|---|---|---|
+| 11:55 | 0.02 | 4146.47 | 4148.45 | by hand | +3.96 |
+| 12:10 | 0.02 | 4145.87 | 4154.01 | TP | +16.28 |
+| 12:20 | 0.01 | 4144.31 | 4148.54 | by hand | +4.23 |
+| 12:28 | 0.01 | 4141.69 | 4153.84 | TP | +12.15 |
+| 12:54 | 0.01 | 4139.44 | 4153.52 | by hand, under its TP | +14.08 |
+| 13:33 | 0.01 | 4135.83 | 4153.84 | TP | +18.01 |
+| 14:19 | 0.01 | 4140.91 | 4153.72 | TP | +12.81 |
+| **0.09** | | **4142.98** | | | **+81.52** |
+
+Every profit checks against (exit - entry) x lot x 100. **Correction:** the two 0.02 lots were the *first*
+entries (11:55, 12:10), not adds at a later high as written before; the owner started with the largest size at
+the highest prices and averaged down with 0.01 lots.
+
+- Exits: the high was about 4154.0; every TP at 4153.72-4154.01 filled, the ones at 4154.19/4154.36 did not -
+  the falling-trendline confluence held. The two dearest lots were closed by hand at 4148.5 (the stall under
+  4149.5), the cheaper ones held to the target; the 4139.44 lot closed by hand at 4153.52 when price stalled.
+- Drawdown: at the 4131.43 low (13:15) the 0.07 lot then open was down about 90 USD (about 60 % of the account);
+  at the first stop 4128 the set would have lost about 122 USD (about 81 %).
+- A planned reclaim entry (about 4138-4140 after the close back inside the range, stop under 4131.4) risks about
+  8 USD per 0.01 lot: about 14-30 USD at the 4154 target for 0.01-0.02 lot, against 81.52 USD made here with 6-10
+  times the risk. The setup must compare return against risk, not profit alone.
+
+### Trade 1 - management (chart at ~15:55 Thai, before the fills were known)
+
+- Seven buys, average about 4142.97 for 0.09 lot.
 - When price started to move, the stop went to about 4143.19 (the average: break-even); the target to ~4153.8.
 - Price 4145.83, just above the M1 double top 4145.3-4145.5 (broken: high 4146.49). Next resistances 4147.4-4147.9,
   4149.85, 4151.8.
@@ -99,7 +124,9 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 | Strength | Moves the stop to break-even once price runs | Protects the capital |
 | Strength | Target just below a higher-timeframe resistance | Takes the move before the likely stall |
 | **Weakness** | **Averages down when price falls (unplanned adds)** | The risk grows exactly when the trade is going wrong; one deeper move (below the higher low) turns small losses into a large one |
-| Weakness | Large adds (0.02) at the latest high | Lifts the average; a pullback hits them first |
+| Weakness | The largest lots (0.02 x2) first, at the highest prices, then averaging down in 0.01 | An inverted pyramid: the most size at the worst prices; 60 % of the account under water at the low |
+| Strength | Closed the dearest lots by hand at the stall (4148.5), held the cheap ones to the target | Cut the risk where the trade was weakest |
+| Strength | Targets at the confluence (4153.7-4154.0) filled; the high was ~4154.0 | Precise target reading |
 | To check | Break-even stop ~2.6 under the price with M1 bars of ~1.4 | Noise may take it before the target |
 
 Improvement to test: a **planned scale-in** in place of averaging down - the levels decided before the first
