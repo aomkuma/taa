@@ -241,6 +241,14 @@ async def candles(
     return result
 
 
+@router.get("/trends")
+async def trends(engine: OwnedEngine, ctx: Context) -> dict[str, Any]:
+    """Per symbol with uploaded M15/H1/H4/D1 bars: the market-map state of each (UP / DOWN / RANGE /
+    TRANSITION), the states the setups' screens read. The PWA sums them up per the viewer's choice."""
+    result: dict[str, Any] = await _run(models(ctx).trends, engine.engine_id)
+    return result
+
+
 @router.get("/market-map")
 async def market_map(
     engine: OwnedEngine,

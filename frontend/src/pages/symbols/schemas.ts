@@ -95,6 +95,7 @@ export const symbolKeys = {
   detail: (engineId: string, symbol: string) =>
     [...engineKey(engineId), 'symbols', 'detail', symbol] as const,
   quotes: (engineId: string) => [...engineKey(engineId), 'quotes'] as const,
+  trends: (engineId: string) => [...engineKey(engineId), 'symbols', 'trends'] as const,
   latestDecision: (engineId: string, symbol: string) =>
     [...engineKey(engineId), 'decisions', 'latest', symbol] as const,
   decision: (engineId: string, decisionId: string) =>

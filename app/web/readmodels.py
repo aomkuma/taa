@@ -14,6 +14,7 @@ import base64
 import json
 import math
 import re
+import threading
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -67,6 +68,11 @@ DEFAULT_LIMIT = 50
 MAX_LIMIT = 200
 MAX_CANDLES = 2000
 MAP_BARS = 700  # context bars per timeframe for the market map (timeframes.context_bars)
+TREND_TFS = (Timeframe.M15, Timeframe.H1, Timeframe.H4, Timeframe.D1)  # the screens: H4 + H1 (M15 setups),
+# H1 + M15 (the M1 scalp S1), D1 for the day
+# trends per (engine, server, symbol): (the newest bar of each timeframe, the result); recomputed on a new bar
+_TRENDS: dict[tuple[str, str, str], tuple[tuple[str, ...], dict[str, Any]]] = {}
+_TRENDS_LOCK = threading.Lock()
 READ_BARS = 1500  # bars of the chart read's timeframe: the chart's 1,000 plus the swings' warm-up
 MAX_ZONES = 8
 # the engine's trade lifecycle events on its audit chain (app.engine.trade_audit)
@@ -563,6 +569,59 @@ class ReadModels:
         if read_tf is not None:
             out["read"] = self._chart_read(store, cfg, server, symbol, read_tf, end)
         return out
+
+    def trends(self, engine_id: str) -> dict[str, Any]:
+        """The market-map state (UP / DOWN / RANGE / TRANSITION) on M15, H1, H4 and D1 of every symbol the
+        engine uploaded those bars for: the states the setups' screens read (owner, 2026-10-15: the symbols
+        page). Each symbol is recomputed only when one of its timeframes has a new bar."""
+        with self.db.session() as sess:
+            rows = sess.execute(
+                select(
+                    HistoryCandle.server,
+                    HistoryCandle.symbol,
+                    HistoryCandle.timeframe,
+                    func.max(HistoryCandle.open_time),
+                )
+                .where(
+                    HistoryCandle.engine_id == engine_id,
+                    HistoryCandle.timeframe.in_([tf.value for tf in TREND_TFS]),
+                )
+                .group_by(HistoryCandle.server, HistoryCandle.symbol, HistoryCandle.timeframe)
+            ).all()
+        newest: dict[tuple[str, str], dict[str, str]] = {}
+        for server, symbol, tf, last in rows:
+            newest.setdefault((server, symbol), {})[tf] = str(last)
+        cfg = self._map_config(engine_id)
+        book = MapBook(map_params(cfg), list(TREND_TFS), {tf: map_params(cfg, tf) for tf in TREND_TFS})
+        store = SqlHistoryStore(self.db, engine_id)
+        items = []
+        for (server, symbol), lasts in sorted(newest.items(), key=lambda x: x[0][1]):
+            key = (engine_id, server, symbol)
+            stamp = tuple(lasts.get(tf.value, "") for tf in TREND_TFS)
+            with _TRENDS_LOCK:
+                cached = _TRENDS.get(key)
+            if cached is not None and cached[0] == stamp:
+                items.append(cached[1])
+                continue
+            frames: dict[Timeframe, pd.DataFrame] = {}
+            for tf in TREND_TFS:
+                stored = store.load(server, symbol, tf, None, None)
+                if not stored.empty:
+                    frames[tf] = candle_frame(stored.tail(MAP_BARS))
+            at = max((ensure_utc(f.index[-1].to_pydatetime()) for f in frames.values()), default=None)
+            found = None if at is None else book.at(symbol, frames, at)
+            item = {
+                "symbol": symbol,
+                "server": server,
+                "at": None if at is None else json_safe(at),
+                "frames": {}
+                if found is None
+                else {tf: {"state": m.state.value, "at": json_safe(m.at)} for tf, m in found.frames.items()},
+            }
+            with _TRENDS_LOCK:
+                _TRENDS[key] = (stamp, item)
+            items.append(item)
+        return {"items": items}
 
     @staticmethod
     def _chart_read(

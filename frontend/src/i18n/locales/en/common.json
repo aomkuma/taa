@@ -392,6 +392,25 @@
       "catalog": "Catalog",
       "breakers": "Breakers on this symbol",
       "noBreakers": "No breaker tripped."
+    },
+    "trend": {
+      "title": "Trend",
+      "group": "Trend for",
+      "groups": {
+        "m15": "M15 setups (V1/F1)",
+        "m1": "M1 scalp (S1)"
+      },
+      "rule": {
+        "m15": "Trend of the M15 setups: up or down only when H4 and H1 agree (their screens); both ranging is sideways; otherwise unclear.",
+        "m1": "Trend of the M1 scalp: up or down only when H1 and M15 agree (its screens); S1 trades gold only."
+      },
+      "value": {
+        "UP": "Up",
+        "DOWN": "Down",
+        "SIDEWAYS": "Sideways",
+        "UNCLEAR": "Unclear",
+        "NONE": "No data"
+      }
     }
   },
   "trades": {

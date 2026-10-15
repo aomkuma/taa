@@ -8328,7 +8328,7 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "a016ae564c5d5137",
+        "config_hash": "d402840bc598816f",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
         "detectors": [],
         "seed": 42,
@@ -8455,7 +8455,7 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "a016ae564c5d5137",
+          "config_hash": "d402840bc598816f",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "detectors": [],
           "seed": 42,
@@ -8511,7 +8511,7 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "a016ae564c5d5137",
+          "config_hash": "d402840bc598816f",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "detectors": [],
           "seed": 42,
@@ -9146,7 +9146,28 @@
           "symbol_pause_minutes": 60.0,
           "unprotected_grace_seconds": 5.0
         },
-        "high_risk": null,
+        "high_risk": {
+          "fade_risk_factor": 0.5,
+          "max_account_drawdown_percent": 60.0,
+          "max_daily_loss_percent": 20.0,
+          "max_effective_leverage": 200.0,
+          "max_margin_utilization_percent": 80.0,
+          "max_open_positions": 3,
+          "max_risk_per_trade_percent": 10.0,
+          "max_total_open_risk_percent": 20.0,
+          "max_weekly_loss_percent": 35.0,
+          "min_lot_max_risk_percent": 15.0,
+          "min_margin_level_percent": 150.0,
+          "modes": [
+            "PAPER",
+            "DEMO"
+          ],
+          "setups": [
+            "setup_harmonic_prz",
+            "setup_breakout",
+            "setup_breakout_scalp"
+          ]
+        },
         "indicators": {
           "adx_period": 14,
           "atr_percentile_lookback": 100,
@@ -9171,6 +9192,70 @@
           "swing_k": 3,
           "volume_sma_period": 20
         },
+        "lanes": [
+          {
+            "management": {
+              "setup_breakout_scalp": {
+                "break_even": false,
+                "break_even_trigger_r": null,
+                "time_stop_bars": 60,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              }
+            },
+            "max_spread_to_sl_ratio": 1.0,
+            "name": "s1",
+            "strategies": {
+              "allow_single_indicator_signals": false,
+              "cooldown_bars": 60,
+              "items": [
+                {
+                  "enabled": true,
+                  "name": "setup_breakout_scalp",
+                  "params": {
+                    "atr_bars": 60,
+                    "fade_counter_trend": true,
+                    "friday_cutoff_utc": "16:00",
+                    "max_sl_atr": 4.0,
+                    "min_rr": 0.5,
+                    "rr_target": 0.5,
+                    "screen_h1": "with",
+                    "screen_h4": "with",
+                    "screen_tide_tf": "H1",
+                    "screen_wave_tf": "M15",
+                    "skip_window_ny": "08:00-12:00",
+                    "sl_atr_multiple": 2.0,
+                    "stop_mode": "atr",
+                    "target_mode": "rr",
+                    "trend_entries": false
+                  }
+                }
+              ],
+              "signal_expiry_bars": 1
+            },
+            "symbols": [
+              "XAUUSD"
+            ],
+            "timeframes": {
+              "candle_close_grace_seconds": 3.0,
+              "context": [
+                "M15",
+                "M30",
+                "H1",
+                "H4",
+                "D1"
+              ],
+              "context_bars": 700,
+              "entry": "M1",
+              "higher": "H1",
+              "max_gap_bars": 3,
+              "refinement": null,
+              "stale_tick_seconds": 120.0,
+              "warmup_bars": 400
+            }
+          }
+        ],
         "paper": {
           "initial_balance": null,
           "slippage_points": 1.0,
@@ -9183,6 +9268,8 @@
             "setup_harmonic_prz": {
               "break_even": false,
               "break_even_trigger_r": null,
+              "time_stop_bars": null,
+              "timeframe": null,
               "trailing": false,
               "trailing_start_r": null
             }
@@ -9292,7 +9379,9 @@
               "name": "setup_harmonic_prz",
               "params": {
                 "max_rr": 3.0,
-                "phase_gate": "h4_against_or_range"
+                "phase_gate": "h4_against_or_range",
+                "room_min_r": 2.0,
+                "structure_tf": "H4"
               }
             },
             {
@@ -13473,7 +13562,9 @@
         "name": "setup_harmonic_prz",
         "overrides": [
           "max_rr",
-          "phase_gate"
+          "phase_gate",
+          "room_min_r",
+          "structure_tf"
         ],
         "params": {
           "atr_bars": null,
@@ -13493,7 +13584,7 @@
           "quiet_h4_atr_pct": null,
           "quiet_rule": "none",
           "require_htf_alignment": false,
-          "room_min_r": null,
+          "room_min_r": 2.0,
           "rr_target": 2.0,
           "screen_h1": "any",
           "screen_h4": "any",
@@ -13509,7 +13600,7 @@
           "stop_mode": "invalidation",
           "structure_gate": "off",
           "structure_stop": false,
-          "structure_tf": "H1",
+          "structure_tf": "H4",
           "target_mode": "measured",
           "trend_entries": true,
           "trend_entry_window_ny": null,
@@ -13833,6 +13924,96 @@
           "structure_tf": "H1",
           "target_mode": "level",
           "trend_entries": true,
+          "trend_entry_window_ny": null,
+          "trend_stop_scale": 1.0,
+          "trend_structure": "any",
+          "trigger_max_age_bars": 0,
+          "zone_gate": "none",
+          "zone_scope": "H4_D1",
+          "zone_stop_frame": "H1"
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 120
+      },
+      {
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Breakout F1's fade on a short entry timeframe (S1: M1 gold scalping). Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_breakout_scalp",
+        "overrides": [
+          "atr_bars",
+          "fade_counter_trend",
+          "friday_cutoff_utc",
+          "max_sl_atr",
+          "min_rr",
+          "rr_target",
+          "screen_h1",
+          "screen_h4",
+          "screen_tide_tf",
+          "screen_wave_tf",
+          "skip_window_ny",
+          "sl_atr_multiple",
+          "stop_mode",
+          "target_mode",
+          "trend_entries"
+        ],
+        "params": {
+          "atr_bars": 60,
+          "confirm_window_bars": 30,
+          "expiry_bars": 1,
+          "fade_counter_trend": true,
+          "friday_cutoff_utc": "16:00",
+          "level_gate": "off",
+          "max_rr": null,
+          "max_sl_atr": 4.0,
+          "max_spread_to_sl": 0.15,
+          "min_quality": 0.0,
+          "min_rr": 0.5,
+          "mixed_rule": "any",
+          "quiet_h4_atr_pct": null,
+          "quiet_rule": "none",
+          "require_htf_alignment": false,
+          "room_min_r": null,
+          "rr_target": 0.5,
+          "screen_h1": "with",
+          "screen_h4": "with",
+          "screen_source": "map",
+          "screen_tide_tf": "H1",
+          "screen_wave_tf": "M15",
+          "session_end_utc": "20:00",
+          "session_start_utc": "07:00",
+          "skip_broadening": "none",
+          "skip_window_ny": "08:00-12:00",
+          "sl_atr_multiple": 2.0,
+          "stop_buffer_atr": 0.1,
+          "stop_mode": "atr",
+          "structure_gate": "off",
+          "structure_stop": false,
+          "structure_tf": "H1",
+          "target_mode": "rr",
+          "trend_entries": false,
           "trend_entry_window_ny": null,
           "trend_stop_scale": 1.0,
           "trend_structure": "any",
@@ -14164,7 +14345,9 @@
         "name": "setup_harmonic_prz",
         "overrides": [
           "max_rr",
-          "phase_gate"
+          "phase_gate",
+          "room_min_r",
+          "structure_tf"
         ],
         "params": {
           "atr_bars": null,
@@ -14184,7 +14367,7 @@
           "quiet_h4_atr_pct": null,
           "quiet_rule": "none",
           "require_htf_alignment": false,
-          "room_min_r": null,
+          "room_min_r": 2.0,
           "rr_target": 2.0,
           "screen_h1": "any",
           "screen_h4": "any",
@@ -14200,7 +14383,7 @@
           "stop_mode": "invalidation",
           "structure_gate": "off",
           "structure_stop": false,
-          "structure_tf": "H1",
+          "structure_tf": "H4",
           "target_mode": "measured",
           "trend_entries": true,
           "trend_entry_window_ny": null,
@@ -14524,6 +14707,96 @@
           "structure_tf": "H1",
           "target_mode": "level",
           "trend_entries": true,
+          "trend_entry_window_ny": null,
+          "trend_stop_scale": 1.0,
+          "trend_structure": "any",
+          "trigger_max_age_bars": 0,
+          "zone_gate": "none",
+          "zone_scope": "H4_D1",
+          "zone_stop_frame": "H1"
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 120
+      },
+      {
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Breakout F1's fade on a short entry timeframe (S1: M1 gold scalping). Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_breakout_scalp",
+        "overrides": [
+          "atr_bars",
+          "fade_counter_trend",
+          "friday_cutoff_utc",
+          "max_sl_atr",
+          "min_rr",
+          "rr_target",
+          "screen_h1",
+          "screen_h4",
+          "screen_tide_tf",
+          "screen_wave_tf",
+          "skip_window_ny",
+          "sl_atr_multiple",
+          "stop_mode",
+          "target_mode",
+          "trend_entries"
+        ],
+        "params": {
+          "atr_bars": 60,
+          "confirm_window_bars": 30,
+          "expiry_bars": 1,
+          "fade_counter_trend": true,
+          "friday_cutoff_utc": "16:00",
+          "level_gate": "off",
+          "max_rr": null,
+          "max_sl_atr": 4.0,
+          "max_spread_to_sl": 0.15,
+          "min_quality": 0.0,
+          "min_rr": 0.5,
+          "mixed_rule": "any",
+          "quiet_h4_atr_pct": null,
+          "quiet_rule": "none",
+          "require_htf_alignment": false,
+          "room_min_r": null,
+          "rr_target": 0.5,
+          "screen_h1": "with",
+          "screen_h4": "with",
+          "screen_source": "map",
+          "screen_tide_tf": "H1",
+          "screen_wave_tf": "M15",
+          "session_end_utc": "20:00",
+          "session_start_utc": "07:00",
+          "skip_broadening": "none",
+          "skip_window_ny": "08:00-12:00",
+          "sl_atr_multiple": 2.0,
+          "stop_buffer_atr": 0.1,
+          "stop_mode": "atr",
+          "structure_gate": "off",
+          "structure_stop": false,
+          "structure_tf": "H1",
+          "target_mode": "rr",
+          "trend_entries": false,
           "trend_entry_window_ny": null,
           "trend_stop_scale": 1.0,
           "trend_structure": "any",
@@ -14991,6 +15264,25 @@
       }
     ],
     "next_cursor": "WyIyMDI2LTA5LTMwVDExOjMwOjAwKzAwOjAwIiw0XQ"
+  },
+  "engines/ENGINE/trends": {
+    "items": [
+      {
+        "at": "2026-10-02T12:00:00+00:00",
+        "frames": {
+          "H4": {
+            "at": "2026-09-30T10:00:00+00:00",
+            "state": "RANGE"
+          },
+          "M15": {
+            "at": "2026-10-02T12:00:00+00:00",
+            "state": "RANGE"
+          }
+        },
+        "server": "FBS-Demo",
+        "symbol": "EURUSD"
+      }
+    ]
   },
   "me/account-profile": {
     "source": null

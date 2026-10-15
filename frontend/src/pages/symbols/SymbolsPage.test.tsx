@@ -27,6 +27,7 @@ function setup(extra: Record<string, () => Response> = {}) {
   return owner({
     'GET /engines/e1/quotes': () => json(quotes()),
     'GET /engines/e1/symbols': sample('symbols'),
+    'GET /engines/e1/trends': sample('trends'),
     'GET /engines/e1/symbols/EURUSD': sample('symbols/EURUSD'),
     'GET /engines/e1/decisions?symbol=EURUSD&limit=1': sample('decisions?limit=2'),
     'GET /engines/e1/decisions/d1': sample('decisions/d1'),
@@ -58,7 +59,45 @@ function setup(extra: Record<string, () => Response> = {}) {
 
 const card = (name: string) => screen.findByRole('region', { name });
 
+const frame = (state: string) => ({ state, at: QUOTE_AT });
+
 describe('symbols page', () => {
+  it('shows each traded symbol trend for the chosen setup group', async () => {
+    window.localStorage.clear();
+    setup({
+      'GET /engines/e1/trends': () =>
+        json({
+          items: [
+            {
+              symbol: 'XAUUSD',
+              server: 'FBS-Demo',
+              at: QUOTE_AT,
+              frames: { M15: frame('UP'), H1: frame('DOWN'), H4: frame('DOWN'), D1: frame('RANGE') },
+            },
+            {
+              symbol: 'EURUSD',
+              server: 'FBS-Demo',
+              at: QUOTE_AT,
+              frames: { M15: frame('RANGE'), H1: frame('RANGE'), H4: frame('RANGE') },
+            },
+          ],
+        }),
+    });
+    const user = userEvent.setup();
+    renderShell('/symbols');
+    const traded = await card('Symbols the engine trades');
+    const gold = (await within(traded).findByText('XAUUSD')).closest('a') as HTMLElement;
+    const euro = within(traded).getByText('EURUSD').closest('a') as HTMLElement;
+    // M15 setups: H4 and H1 agree
+    expect(await within(gold).findByText('Down')).toBeInTheDocument();
+    expect(within(euro).getByText('Sideways')).toBeInTheDocument();
+    // M1 scalp: H1 down, M15 up disagree
+    await user.click(within(traded).getByRole('button', { name: 'M1 scalp (S1)' }));
+    expect(within(gold).getByText('Unclear')).toBeInTheDocument();
+    expect(window.localStorage.getItem('taa.symbols.trendGroup')).toBe('m1');
+    window.localStorage.clear();
+  });
+
   it('lists the traded symbols with their spread and searches the catalog', async () => {
     setup();
     const user = userEvent.setup();

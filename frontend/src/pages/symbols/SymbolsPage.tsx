@@ -28,6 +28,8 @@ import {
   SymbolDetailSchema,
   symbolKeys,
 } from './schemas';
+import { loadTrendGroup, saveTrendGroup, type TrendGroup, type Trends, TrendsSchema } from './trend';
+import { TrendBadge, TrendGroupSwitch } from './TrendBadge';
 
 /** A quote older than this while the market is open is shown as stale (the engine's stale-data rule is 60 s). */
 const QUOTE_STALE_MS = 60_000;
@@ -346,10 +348,30 @@ function SymbolDetail({
   );
 }
 
+/** The market-map states per symbol (H1/H4/D1); refreshed when the engine records a decision. */
+function useTrends(engineId: string) {
+  return useQuery({
+    queryKey: symbolKeys.trends(engineId),
+    queryFn: ({ signal }) =>
+      apiGet(`/engines/${encodeURIComponent(engineId)}/trends`, TrendsSchema, { signal }),
+    staleTime: 60_000,
+  });
+}
+
+function framesOf(trends: Trends | undefined, symbol: string) {
+  return trends?.items.find((i) => i.symbol === symbol)?.frames;
+}
+
 function SymbolList({ engineId, quotes }: { engineId: string; quotes: Quote[] }) {
   const { t } = useTranslation();
   const format = useFormat();
   const [filter, setFilter] = useState('');
+  const [group, setGroup] = useState<TrendGroup>(loadTrendGroup);
+  const trends = useTrends(engineId);
+  const changeGroup = (next: TrendGroup) => {
+    setGroup(next);
+    saveTrendGroup(next);
+  };
   const catalog = useQuery({
     queryKey: symbolKeys.all(engineId),
     queryFn: ({ signal }) =>
@@ -365,6 +387,10 @@ function SymbolList({ engineId, quotes }: { engineId: string; quotes: Quote[] })
   return (
     <div className="grid gap-4">
       <Card title={t('symbols.traded')}>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <span>{t(`symbols.trend.rule.${group}`)}</span>
+          <TrendGroupSwitch group={group} onChange={changeGroup} />
+        </div>
         {quotes.length === 0 ? (
           <p className="text-sm text-slate-500">{t('symbols.noTraded')}</p>
         ) : (
@@ -385,6 +411,9 @@ function SymbolList({ engineId, quotes }: { engineId: string; quotes: Quote[] })
                     {format.number(q.spread_points, { maximumFractionDigits: 1 })}
                     {q.max_spread_points != null &&
                       ` / ${format.number(q.max_spread_points, { maximumFractionDigits: 1 })}`}
+                  </span>
+                  <span className="mt-1 block">
+                    <TrendBadge frames={framesOf(trends.data, q.symbol)} group={group} detail />
                   </span>
                 </Link>
               </li>
@@ -416,6 +445,7 @@ function SymbolList({ engineId, quotes }: { engineId: string; quotes: Quote[] })
                 <thead>
                   <tr className="text-left text-slate-500">
                     <th className="py-1 pr-3 font-normal">{t('symbols.search')}</th>
+                    <th className="py-1 pr-3 font-normal">{t('symbols.trend.title')}</th>
                     <th className="py-1 pr-3 font-normal">{t('symbols.assetClass')}</th>
                     <th className="py-1 font-normal">{t('symbols.status')}</th>
                   </tr>
@@ -433,6 +463,9 @@ function SymbolList({ engineId, quotes }: { engineId: string; quotes: Quote[] })
                         {s.description && (
                           <span className="ml-2 text-xs text-slate-500">{s.description}</span>
                         )}
+                      </td>
+                      <td className="py-1 pr-3">
+                        <TrendBadge frames={framesOf(trends.data, s.symbol)} group={group} />
                       </td>
                       <td className="py-1 pr-3">{s.asset_class}</td>
                       <td className="py-1">{t(s.enabled ? 'symbols.enabled' : 'symbols.disabled')}</td>

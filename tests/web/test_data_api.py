@@ -576,6 +576,26 @@ def test_market_map_from_the_uploaded_h4_candles(
     assert naive.status_code == 400
 
 
+def test_trends_per_symbol_on_the_screen_timeframes(
+    rig: tuple[TestClient, str, str],
+    db: Database,
+) -> None:
+    client, mine, theirs = rig
+    store = SqlHistoryStore(db, mine)
+    store.save("FBS-Demo", "EURUSD", Timeframe.H4, h4_candles(500))
+    store.save("FBS-Demo", "GBPUSD", Timeframe.M15, candles(300))  # S1's wave
+    store.save("FBS-Demo", "USDJPY", Timeframe.M5, candles(50))  # no screen timeframe: not listed
+    body = client.get(f"/api/v1/engines/{mine}/trends").json()
+    item, gbp = body["items"]
+    assert item["symbol"] == "EURUSD" and item["server"] == "FBS-Demo" and item["at"] is not None
+    assert "H4" in item["frames"] and set(gbp["frames"]) == {"M15"}
+    states = ("UP", "DOWN", "RANGE", "TRANSITION", "UNKNOWN")
+    assert item["frames"]["H4"]["state"] in states and gbp["frames"]["M15"]["state"] in states
+    again = client.get(f"/api/v1/engines/{mine}/trends").json()  # cached until a new bar
+    assert again == body
+    assert client.get(f"/api/v1/engines/{theirs}/trends").status_code == 404
+
+
 def test_market_map_with_the_chart_read_of_a_timeframe(
     rig: tuple[TestClient, str, str],
     db: Database,
