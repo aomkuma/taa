@@ -660,6 +660,10 @@
         "label": "Confirmation window (bars)",
         "hint": "Bars a pattern may take to confirm before it is dropped"
       },
+      "entry_on": {
+        "label": "Entry",
+        "hint": "On the trigger bar, or Elder's resumption: the first bar after the trigger that closes beyond the previous bar's high (buy) / low (sell)"
+      },
       "expiry_bars": {
         "label": "Signal lifetime (bars)",
         "hint": "How many entry-timeframe bars a signal stays valid"
@@ -723,6 +727,10 @@
       "require_htf_alignment": {
         "label": "Require the higher-timeframe trend",
         "hint": "Enter only when the higher-timeframe trend does not oppose"
+      },
+      "resume_bars": {
+        "label": "Wait for the resumption (bars)",
+        "hint": "How many bars after the trigger the resumption may come"
       },
       "room_min_r": {
         "label": "Room to the next level (R)",
@@ -941,6 +949,10 @@
       "level_gate": {
         "off": "no check",
         "at_level": "at a supportive level"
+      },
+      "entry_on": {
+        "trigger": "on the trigger bar",
+        "resume": "on the resumption (Elder)"
       }
     }
   },

@@ -122,6 +122,7 @@ ScreenSource = Literal["map", "swings"]
 StructureGate = Literal["off", "not_against", "with"]
 MixedRule = Literal["any", "surest", "skip"]
 LevelGate = Literal["off", "at_level"]
+EntryOn = Literal["trigger", "resume"]
 
 # the trade-relative map states each screen gate lets through
 _SCREEN_OK: dict[str, frozenset[str]] = {
@@ -173,6 +174,10 @@ class SetupParams(EntryRuleParams):
     level_gate: LevelGate = "off"
     room_min_r: float | None = Field(default=None, gt=0, le=10, description="R to the nearest opposing level")
     structure_stop: bool = False
+    # resume: Elder's third screen (owner, 2026-10-15) - after the trigger, wait up to resume_bars bars for
+    # the first bar that closes beyond the previous bar's extreme in the trade's direction, and enter on it
+    entry_on: EntryOn = "trigger"
+    resume_bars: int = Field(default=4, ge=1, le=20)
 
     @field_validator("trend_entry_window_ny", "skip_window_ny")
     @classmethod
@@ -235,11 +240,12 @@ class EvidenceSetup(BaseStrategy):
         if snapshot is None:
             return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA, explanation="evidence was not computed")
         items = snapshot.items
+        resume = p.entry_on == "resume"
         found = [
             a
             for a in items
             if a.evidence.detector_id in self.triggers
-            and a.age_bars <= p.trigger_max_age_bars
+            and (1 <= a.age_bars <= p.resume_bars if resume else a.age_bars <= p.trigger_max_age_bars)
             and a.evidence.direction is not Direction.NEUTRAL
             and a.evidence.quality >= p.min_quality
             and self.accepts(a.evidence)
@@ -284,6 +290,8 @@ class EvidenceSetup(BaseStrategy):
         risk = abs(entry - stop)
         take_profit, target_note = self._target(ev, market, entry, risk, sign)
         fade = p.fade_counter_trend and _against_both(market, p, buy)
+        if resume:
+            conds.append(_resumed(frame, trigger.age_bars, buy is not fade))
         if not fade and p.trend_stop_scale != 1.0:
             # a trend entry's stop out of the noise band, the target at the same R multiple (SETUP_REVIEW §16)
             stop = entry - sign * risk * p.trend_stop_scale
@@ -559,6 +567,26 @@ def _screen_relative(m: TimeframeMap | None, p: SetupParams, buy: bool) -> str:
     if m is None:
         return "NONE"
     return _swing_relative(m.read, buy) if p.screen_source == "swings" else _relative(m.state, buy)
+
+
+def _resumed(frame: pd.DataFrame, age: int, trade_buy: bool) -> Condition:
+    """``entry_on: resume``: this bar is the first since the trigger (``age`` bars back) to close beyond the
+    previous bar's high (a buy) or low (a sell) - where Elder's buy stop above the previous bar would fill."""
+    hi, lo, c = (frame[k].to_numpy(dtype=float) for k in ("high", "low", "close"))
+    n = len(c)
+    trig = n - 1 - age
+    if trig < 1:
+        return Condition("resumed", False, 1.0, "not enough bars since the trigger")
+
+    def beyond(j: int) -> bool:
+        return bool(c[j] > hi[j - 1]) if trade_buy else bool(c[j] < lo[j - 1])
+
+    earlier = any(beyond(j) for j in range(trig + 1, n - 1))
+    now = beyond(n - 1)
+    edge = "high" if trade_buy else "low"
+    if earlier:
+        return Condition("resumed", False, 1.0, f"resumed earlier, {age} bars after the trigger")
+    return Condition("resumed", now, 1.0, f"close {'beyond' if now else 'inside'} the previous bar's {edge}")
 
 
 def _read(market: MarketContext, tf: str) -> ChartRead | None:

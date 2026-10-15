@@ -781,3 +781,42 @@ class TestScalpingParams:
                 skip_window_ny="08:00-12:00",
             )
             assert (sig.action is Action.SELL) is (at == after), sig.explanation
+
+
+class TestResumeEntry:
+    """``entry_on: resume`` (Elder's third screen; owner, 2026-10-15): enter on the first bar after the trigger
+    that closes beyond the previous bar's extreme in the trade's direction."""
+
+    @staticmethod
+    def frame(closes: list[float]) -> pd.DataFrame:
+        c = np.array(closes, dtype=float)
+        return pd.DataFrame({"high": c + 0.5, "low": c - 0.5, "close": c})
+
+    def test_the_first_close_above_the_previous_high_is_the_resumption(self) -> None:
+        from app.strategy.setups import _resumed
+
+        # trigger 2 bars back (a dip), then a bar inside, then a close above the previous high
+        f = self.frame([100, 99, 98.8, 99.5])
+        assert _resumed(f, 2, True).passed
+
+    def test_a_close_inside_the_previous_bar_is_not_yet(self) -> None:
+        from app.strategy.setups import _resumed
+
+        assert not _resumed(self.frame([100, 99, 98.8, 98.9]), 2, True).passed
+
+    def test_only_the_first_resumption_counts(self) -> None:
+        from app.strategy.setups import _resumed
+
+        f = self.frame([100, 99, 99.8, 100.6])  # 99.8 already closed above 99.5 (the previous high)
+        assert not _resumed(f, 2, True).passed
+
+    def test_a_sell_resumes_below_the_previous_low(self) -> None:
+        from app.strategy.setups import _resumed
+
+        assert _resumed(self.frame([100, 101, 101.2, 100.5]), 2, False).passed
+
+    def test_the_default_enters_on_the_trigger(self) -> None:
+        from app.strategy.setups import SetupParams
+
+        p = SetupParams()
+        assert p.entry_on == "trigger" and p.resume_bars == 4
