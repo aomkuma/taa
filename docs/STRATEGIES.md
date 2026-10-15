@@ -16,7 +16,7 @@ Results are backtests (R per trade, net of the modelled costs); they describe th
 | Breakout (original) | `setup_breakout` | Trades every break in its own direction | M15, 8 | off (replaced by F1) | year −0.154 | SETUP_REVIEW §3-§5 |
 | **S1** (M1 gold scalping; the day-trade setup, owner 2026-10-15) | `setup_breakout` | F1's fade on M1: screens H1 (tide) / M15 (wave), stop 2 × ATR(60 M1 bars), target about 2 × the fade's stop, no entries 08:00-12:00 New York, time stop 60 bars | M1, XAUUSD only | year done: meets 3 of 4 goals | year +0.277, 76 trades, DD 6.2 R; 1st-half CI reaches below 0 | SETUP_REVIEW §17 |
 | **D1a-D1d** (day trade on M5, closed: S1 is the day-trade setup) | `setup_breakout` | S1's logic on M5, flat within the day (entries 07-12 and 16-18:30 UTC, time stop 2 hours); screens D1a H1/M15, D1b H4/M30 (map state), D1c / D1d the same on swings | M5, XAUUSD only | none passes two rungs (owner to choose the next lever) | March a −0.74 (3), b +0.48 (2), c −0.60 (7), d +0.43 (2); August b 0 trades, d −1.02 (3) | `research/2026-10-15-day-trade/D1_NOTES.md` |
-| V1 + h4_room_2 | `setup_harmonic_prz` | V1 plus at least 2 R of room to the nearest opposing level of the H4 chart read (`structure_tf: H4`, `room_min_r: 2`) | M15, 8 | testing (Mar/Jun/Aug) | - | `research/2026-10-14-chart-read/CR3_V1.md` |
+| V1 + h4_room_2 | `setup_harmonic_prz` | V1 plus at least 2 R of room to the nearest opposing level of the H4 chart read (`structure_tf: H4`, `room_min_r: 2`) | M15, 8 | year done: 4 of 5 goals (2nd-half CI below 0); waits for the owner | year +0.226, 173 trades, DD 9.5 R (base same runs +0.175, 191) | SETUP_REVIEW §18 |
 | Pattern breakout | `setup_pattern_breakout` | Chart-pattern breakouts | M15 | off | DEMO 6 trades, all stopped | - |
 | Candle reversal | `setup_candle_reversal` | Reversal candles at levels | M15 | off | losing | - |
 | Fib pullback | `setup_fib_pullback` | Pullbacks to Fibonacci levels | M15 | off | year −0.16 | SETUP_REVIEW §3 |
@@ -24,7 +24,7 @@ Results are backtests (R per trade, net of the modelled costs); they describe th
 | Neckline break | `setup_neckline_break` | Double top/bottom, head and shoulders neckline breaks | M15 | off | not reworked yet | - |
 | SMC reversal | `setup_smc_reversal` | Liquidity sweep + change of character | M15 | off | about 1 signal a year | SETUP_REVIEW §3 |
 
-Tried and not kept: the inverted copies (`*_inverted`, docs/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
+Tried and not kept: S1s (S1 with swing screens: March +0.063, 25 trades, below S1's +0.397); the inverted copies (`*_inverted`, docs/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
 −0.10); plain session breaks on M5 for day trading (FX lose to the spread, gold flips in the second half;
 D1_NOTES.md). Building blocks used by the variants: the market map (`MarketContext.htf`) and the chart read
 (docs/CHART_READ.md). Planned: `setup_confluence` (docs/CONFLUENCE_DIRECTION.md).

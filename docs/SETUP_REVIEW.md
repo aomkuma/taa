@@ -489,6 +489,49 @@ trade in any month.
 - Nothing changes on the bot: S1 is not in `config.yaml`. Its next lever is the trade count (the owner's
   portfolio goal), e.g. the swing screens that tripled the trend-aligned bars for D1 (§ D1_NOTES).
 
+## 18. V1 + h4_room_2, the year (2026-10-15)
+
+h4_room_2 = V1 plus at least 2 R of room between the entry and the nearest opposing level of the H4 chart read
+(`structure_tf: H4`, `room_min_r: 2`; chosen in the walk-forward of `research/2026-10-14-chart-read/CR3_V1.md`).
+Base and room ran with identical configs except those two lines (`data/research/config_h_v1cr_base.yaml` /
+`config_h_v1cr_room.yaml`; drawdown limit 50 %, consecutive-loss breaker off so no breaker shapes the
+comparison), as monthly runs 2025-10 .. 2026-09 (`data/backtests/inv/v1cr_{base,room}_YYYY-MM`). Halves are
+the first and second half of each variant's trades; intervals are 90 %.
+
+| Month | Base | Room | Room − base |
+|---|---|---|---|
+| 2025-10 | −0.390 (16) | −0.390 (16) | 0 |
+| 2025-11 | +0.274 (24) | +0.524 (20) | +0.249 |
+| 2025-12 | −0.081 (16) | −0.127 (14) | −0.046 |
+| 2026-01 | +0.200 (24) | +0.305 (22) | +0.105 |
+| 2026-02 | +1.034 (14) | +1.034 (14) | 0 |
+| 2026-03 | +0.026 (23) | +0.175 (20) | +0.149 |
+| 2026-04 | −0.258 (16) | −0.432 (15) | −0.174 |
+| 2026-05 | +0.585 (9) | +0.585 (9) | 0 |
+| 2026-06 | +0.337 (24) | +0.349 (20) | +0.012 |
+| 2026-07 | +0.594 (10) | +0.873 (8) | +0.278 |
+| 2026-08 | +0.037 (9) | +0.037 (9) | 0 |
+| 2026-09 | −0.173 (6) | −0.173 (6) | 0 |
+
+| Goal | Bar | Base | Room |
+|---|---|---|---|
+| R per trade | ≥ +0.15 | +0.175 (191 trades, +33.4 R) ✓ | **+0.226** (173 trades, +39.2 R) ✓ |
+| 90 % interval of the year | lower bound > 0 | +0.004 .. +0.346 ✓ | +0.044 .. +0.409 ✓ |
+| 1st half | lower bound > 0 | n 95, +0.182, −0.066 .. +0.431 ✗ | n 86, +0.275, +0.009 .. +0.541 ✓ |
+| 2nd half | lower bound > 0 | n 96, +0.167, −0.070 .. +0.404 ✗ | n 87, +0.179, −0.072 .. +0.430 ✗ |
+| Max drawdown | ≤ 15 R | 10.1 R ✓ | 9.5 R ✓ |
+
+- The room gate removed 18 trades (−9 %); it is better in 5 months, equal in 5 and worse in 2 (December,
+  April). Average win and loss barely move (+1.93 / −0.96 R base, +1.95 / −0.97 R room): the gain is fewer
+  losers, not bigger winners.
+- **Gap:** the room's second half reaches below zero. The gate was selected on the first half of this year
+  (CR3_V1), so its first half is partly in-sample; the second half (+0.179) is the out-of-sample read.
+- This base (+0.175, 191) is below §15.3's year (+0.211, 181). The runs differ (monthly runs that start fresh,
+  breakers off, today's code); which difference moves it is not measured. The base/room comparison is fair
+  either way: same runs, one rule apart.
+- Nothing changes on the bot until the owner decides: the gate goes into `config.yaml` (V1's params) only with
+  the owner's go-ahead, because the DEMO bot reads it on restart.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
