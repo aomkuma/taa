@@ -16,11 +16,24 @@ from MT5 (History, Report), and everything else from the history store.
    backtest on the ladder (March, August, the year).
 5. Strengths, weaknesses and improvements go in this file. The real-account report is a supplement.
 
-### Draft rule from trade 1 (to confirm)
+### Draft rule from trade 1 (corrected by the owner: "close; I meant to trade the range 4138-4160")
 
-Gold in an M5 uptrend pulls back to the rising trendline or EMA and makes a higher low: buy. Stop below the M15
-higher low; target just below the higher-timeframe resistance (the falling trendline from the last high). Stop to
-break-even once price runs; close by hand when it does not run and looks like turning.
+**Range trading after a run.** After a strong run (4073 -> 4161.7) price ranges (about 4138-4160): buy in the lower
+part of the range, stop below the range with room for a false break (4128), target near the top but under the
+high (4154); stop to break-even once it runs; close by hand when it stalls.
+
+- Data: since 10:00 Thai the M15 high was 4161.69 and the low 4131.43; 81 % of the M15 closes stayed inside
+  4138-4160 (4 of 21 below). **The bot's market map found no range box** on M15 or H1 (box None at 12:00, 13:00
+  and 15:00): the owner sees a range the bot does not.
+- The adds at 4135.83-4136 were below the range bottom: price swept to 4131.4 and closed back inside - a false
+  break, the side our measurements say pays (F1, S1 fade false breaks). The owner's idea sits on the paying side;
+  the weak part is the entry method (reactive averaging down while price falls through the bottom).
+- Improvement to test: wait for the reclaim (a close back inside the range, above 4138) and enter there, the
+  stop under the sweep low (4131.4): smaller risk, a planned entry. The chart read already records the event
+  (SWEEP_RECLAIM).
+
+Open questions to the owner: (1) do they also sell near the top of the range? (2) how are the range edges
+picked (the run's high and the first bounce?) (3) how long must price range before it counts as a range?
 
 ## How the owner trades (their own words, 2026-10-15)
 
