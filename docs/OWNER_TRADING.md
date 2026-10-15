@@ -65,6 +65,7 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 | # | Opened (Thai time) | Symbol | Side | Entry | SL | TP | R:R | Exit | R | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | 2026-10-15 11:55-15:15 | XAUUSD | BUY x7 (0.09 lot) | avg 4142.98 | 4128, then 4143.00 (break-even) | 4153.72-4154.36 | 0.76 at first | 4 TP, 3 by hand | +81.52 USD (+54 % of 150) | range trade; see below |
+| 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | none set | target ~4097-4102 (not set) | ~3.8 with a stop above 4161.7 | open | | head-and-shoulders right shoulder; see below |
 
 ### Trade 1 - context at the entry (bot's reads, data to 14:51)
 
@@ -102,6 +103,19 @@ the highest prices and averaged down with 0.01 lots.
 - A planned reclaim entry (about 4138-4140 after the close back inside the range, stop under 4131.4) risks about
   8 USD per 0.01 lot: about 14-30 USD at the 4154 target for 0.01-0.02 lot, against 81.52 USD made here with 6-10
   times the risk. The setup must compare return against risk, not profit alone.
+
+### Trade 2 - the right shoulder (M15 chart at ~15:30 Thai)
+
+- The owner's idea (read from the chart, to confirm): a head and shoulders on M15 - left shoulder ~4154 (14 Oct
+  afternoon), head 4161.7 (this morning), right shoulder now ~4154 under the horizontal 4153.8 and the falling
+  trendline from the head; neckline ~4131-4136 (today's 4131.4 low). The purple target ~4097-4102 is the
+  head-to-neckline height (~30) below the neckline, at the 78.1 % retracement.
+- The bot's H1 read agrees: H1 structure down, ending above 4161.69 (the head).
+- Sells 0.01 at 4151.69 and 4149.97 (average 4150.83), price 4153.81: -5.96 USD. **No stop set.**
+- A stop that fits the idea is above the head (4163-4165): about 26 USD at risk (~11 % of ~231 USD) for ~101 USD
+  to the target: R:R about 3.8. Between: 4143.19 (50 %), 4139, then the neckline must break for the target.
+- Contrast with trade 1: a planned reversal at resistance with a structural invalidation and R:R near 4, against
+  a range buy at R:R under 1 with averaging down. The open question is the missing stop.
 
 ### Trade 1 - management (chart at ~15:55 Thai, before the fills were known)
 
