@@ -114,6 +114,12 @@ the highest prices and averaged down with 0.01 lots.
 - Sells 0.01 at 4151.69 and 4149.97 (average 4150.83), price 4153.81: -5.96 USD. **No stop set.**
 - A stop that fits the idea is above the head (4163-4165): about 26 USD at risk (~11 % of ~231 USD) for ~101 USD
   to the target: R:R about 3.8. Between: 4143.19 (50 %), 4139, then the neckline must break for the target.
+- The owner's red trend channel (drawn on the chart): a **falling channel from the head** - the upper line through
+  the head 4161.7 and the right shoulder ~4154, the lower parallel through the 4131.4 low (about 4127-4128 now,
+  falling). The sells sit where three resistances meet: the channel's upper line, the right shoulder and the
+  horizontal 4153.8. The purple target (~4100) is steeper than the channel: it needs the neckline (4131-4136)
+  and then the channel's lower line to break; inside the channel the lower line is only ~4115-4120 in 8 hours.
+  The idea fails on a close above the channel's upper line and 4154-4155, and is void above the head (4161.7).
 - Contrast with trade 1: a planned reversal at resistance with a structural invalidation and R:R near 4, against
   a range buy at R:R under 1 with averaging down. The open question is the missing stop.
 
