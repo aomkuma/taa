@@ -41,7 +41,7 @@ first (the DEMO bot reads config.yaml on restart).
 
 ## Current state (2026-10-16, 10:30 Thai)
 
-### Trading on DEMO (PAUSED by the owner 2026-10-16 ~10:55 Thai; resume with `scripts\demo-tasks.ps1 -Resume`)
+### Trading on DEMO (PAUSED by the owner 2026-10-16 10:51 Thai; resume with `scripts\demo-tasks.ps1 -Resume`)
 
 - **Stack:** `-Mt5 -Demo` from Task Scheduler (`scripts\demo-tasks.ps1 -Pause / -Resume`). Demo account
   ~1,066 USD, no open positions. Last restart 13:28 Thai with the code of 2026-10-15 and a fresh PWA build.
@@ -64,8 +64,8 @@ first (the DEMO bot reads config.yaml on restart).
 | harmonic V1 + room | trading | year +0.226 R/trade (173), DD 9.5 R; 2nd-half CI below 0 (§18) |
 | breakout F1 | trading | year +0.159 (99) (§16) |
 | S1 (M1 gold scalp) | trading (lane s1) | year +0.277 (76), DD 6.2 R; 1st-half CI below 0 (§17) |
-| S1 + `entry_on: resume` (Elder's third screen) | March passed; August running (`s1resume_2026-08`) | March +0.617 (7) against +0.397 (10); August baseline +0.147 (9) (§19) |
-| S1 on the 7 FX majors | August run (~30 % at 10:30 Thai 2026-10-16) | FX M1 history starts 2026-07-08 (no March); **owner: put it on DEMO once it passes** |
+| S1 + `entry_on: resume` (Elder's third screen, `resume_bars: 15`) | March and August passed; **the year running** (`s1resume_YYYY-MM`, 3 queues from 15:00 Thai 2026-10-16) | March +0.617 (7) vs S1 +0.397 (10); August +1.022 (9) vs +0.147 (9) (§19) |
+| S1 on the 7 FX majors | August run (no trade at 58 %, 14:52 Thai) | on M1 the spread is 34-80 % of S1's stop (gold 7 %): its own spread rule passes 0-9 % of bars; not put on DEMO. Owner asked: M5/M15 for FX, or S1 gold only? |
 | F1 + `entry_on: resume` | not kept | March +0.157 (5) against +0.248 (12) |
 | F1 on the 21 crosses | not kept | March −0.373 (16) |
 | box breakout with the trend (`setup_breakout_box`) | **parked for a fresh analysis** (owner, 2026-10-16: needs a long focused session); code stays (lane only, off) | 8 symbols M5 −0.24 (199); Asia-only gold +0.46..+1.07 on ~10/yr |

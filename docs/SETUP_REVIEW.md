@@ -538,20 +538,27 @@ the first and second half of each variant's trades; intervals are 90 %.
 
 ## 19. S1 + `entry_on: resume` (2026-10-16)
 
-S1 with Elder's third screen (owner, 2026-10-15): after the fade's trigger, wait up to 4 M1 bars for the first
-bar that closes beyond the previous bar's extreme in the trade's direction, and enter on it
-(`data/research/config_s1_resume.yaml`; otherwise S1's research config). Runs in `data/backtests/inv/s1resume_*`.
+S1 with Elder's third screen (owner, 2026-10-15): after the fade's trigger, wait up to 15 M1 bars
+(`resume_bars: 15`) for the first bar that closes beyond the previous bar's extreme in the trade's direction,
+and enter on it (`data/research/config_s1_resume.yaml`; otherwise S1's research config). Runs in `data/backtests/inv/s1resume_*`.
 
 | Month | S1 | S1 + resume |
 |---|---|---|
 | 2026-03 | +0.397 (10 trades, +3.97 R, net +168.48) | **+0.617** (7 trades, +4.32 R, net +196.77, DD 1.27 %) |
-| 2026-08 | +0.147 (9) | running |
+| 2026-08 | +0.147 (9 trades, +1.32 R, net +65.78) | **+1.022** (9 trades, +9.20 R, net +456.88, DD 0.73 %) |
+| Both | +0.279 (19, +5.30 R) | **+0.845** (16, +13.52 R) |
 
 - March: 4 targets and 3 stops. Four entries are S1's own, 2-6 minutes later (2 Mar 08:46, 13 Mar 08:43, 19 Mar
   07:11, 26 Mar 09:26 UTC; the 2 Mar one turned S1's target into a stop); five S1 entries never resumed (2 Mar 07:38 and 10:54, 19 Mar 10:09, 23 Mar 07:37,
   26 Mar 18:37: four of S1's stops and one target), and three are new (19 Mar 09:05 and 11:05, 26 Mar
   10:30; the one-hour cooldown starts at a different bar).
-- Seven trades is a small sample; the August run decides whether it goes on to the year.
+- August: 7 targets and 2 stops, all buys, on the same days as S1 (5, 19 and 21 August). Six entries are within
+  1-6 minutes of an S1 entry; three moved more (5 Aug 07:38 and 09:00 against S1's 07:05 and 08:23, 19 Aug
+  17:33 against 17:56; the one-hour cooldown starts elsewhere). On 5 August S1 had four stops that lasted 2-8
+  minutes; resume took four trades that day, three targets and one stop. Average win +1.61 R, loss -1.05 R (S1: +1.62 / -1.03):
+  the gain is the win rate (78 % against 44 %), not the payoff.
+- Both rungs passed; 16 trades is still a small sample. **The year is running** (monthly runs 2025-10 .. 2026-09,
+  as §17; started 2026-10-16 15:00 Thai).
 
 ## 20. V1 and F1 without their own stop cap (2026-10-16)
 

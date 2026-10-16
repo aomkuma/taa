@@ -4,7 +4,7 @@ How strategies are built, configured and explained (PLAN §A7, §A29). Every str
 **demonstration**: none is production-proven, and nothing in this project claims profitability. Leveraged
 FX/CFD trading is high risk.
 
-## Setups and variants at a glance (kept current; last update 2026-10-16 10:40 Thai time)
+## Setups and variants at a glance (kept current; last update 2026-10-16 15:00 Thai time)
 
 The short names used in the setup work. A *variant* is a set of parameters of an existing setup, not new code.
 Results are backtests (R per trade, net of the modelled costs); they describe the past, not the future.
@@ -15,7 +15,7 @@ Results are backtests (R per trade, net of the modelled costs); they describe th
 | **F1** (breakout F1) | `setup_breakout` | Waits for a break *against* the H4 and H1 trend (usually a false break) and trades it the other way, with the big trend (`fade_counter_trend: true`, `trend_entries: false`); own stop cap off (`max_sl_atr: 20`, owner 2026-10-16) | M15, 8 | **ON (DEMO)** | year +0.159, 99 trades | SETUP_REVIEW §16 |
 | Breakout (original) | `setup_breakout` | Trades every break in its own direction | M15, 8 | off (replaced by F1) | year −0.154 | SETUP_REVIEW §3-§5 |
 | **S1** (M1 gold scalping; the day-trade setup, owner 2026-10-15) | `setup_breakout_scalp` (lane `s1`) | F1's fade on M1: screens H1 (tide) / M15 (wave), stop 2 × ATR(60 M1 bars), target about 2 × the fade's stop, no entries 08:00-12:00 New York, time stop 60 bars | M1, XAUUSD only | **ON (DEMO)** as lane `s1`, `setup_breakout_scalp` (owner, 2026-10-15); year meets 3 of 4 goals | year +0.277, 76 trades, DD 6.2 R; 1st-half CI reaches below 0 | SETUP_REVIEW §17 |
-| S1 + resume | `setup_breakout` (research config) | S1 with `entry_on: resume` (Elder's third screen: after the trigger, wait up to 4 M1 bars for the first close beyond the previous bar's extreme in the trade's direction, and enter there) | M1, XAUUSD only | under test: March passed, August running | March +0.617, 7 trades (S1 +0.397, 10); August S1 +0.147 (9) | SETUP_REVIEW §19 |
+| S1 + resume | `setup_breakout` (research config) | S1 with `entry_on: resume` (Elder's third screen: after the trigger, wait up to 15 M1 bars (`resume_bars: 15`) for the first close beyond the previous bar's extreme in the trade's direction, and enter there) | M1, XAUUSD only | under test: March and August passed, the year running | March +0.617 (7; S1 +0.397, 10); August +1.022 (9; S1 +0.147, 9) | SETUP_REVIEW §19 |
 | **D1a-D1d** (day trade on M5, closed: S1 is the day-trade setup) | `setup_breakout` | S1's logic on M5, flat within the day (entries 07-12 and 16-18:30 UTC, time stop 2 hours); screens D1a H1/M15, D1b H4/M30 (map state), D1c / D1d the same on swings | M5, XAUUSD only | none passes two rungs (owner to choose the next lever) | March a −0.74 (3), b +0.48 (2), c −0.60 (7), d +0.43 (2); August b 0 trades, d −1.02 (3) | `research/2026-10-15-day-trade/D1_NOTES.md` |
 | V1 + h4_room_2 | `setup_harmonic_prz` | V1 plus at least 2 R of room to the nearest opposing level of the H4 chart read (`structure_tf: H4`, `room_min_r: 2`) | M15, 8 | **ON (DEMO)** in V1 (owner, 2026-10-15); year 4 of 5 goals (2nd-half CI below 0) | year +0.226, 173 trades, DD 9.5 R (base same runs +0.175, 191) | SETUP_REVIEW §18 |
 | Pattern breakout | `setup_pattern_breakout` | Chart-pattern breakouts | M15 | off | DEMO 6 trades, all stopped | - |
@@ -30,8 +30,8 @@ the box breakout `setup_breakout_box` (code stays, lane only, off: 8 symbols M5 
 gold +0.46..+1.07 on ~10 trades a year; **parked for a fresh analysis**, owner 2026-10-16: it needs a long focused
 session), H4/D1 trend following on 29 markets (-0.06..-0.17), momentum burst
 scalps (M5 -0.34 or worse); F1 on the 21 crosses (March -0.373, 16 trades); F1 + `entry_on: resume` (Elder's
-third screen: March +0.157 on 5 against +0.248 on 12). Under test: S1 + `entry_on: resume` (August), S1 on the 7
-FX majors (August; the owner wants it on DEMO once it passes). Earlier: S1s (S1 with swing screens: March +0.063, 25 trades, below S1's +0.397); the inverted copies (`*_inverted`, docs/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
+third screen: March +0.157 on 5 against +0.248 on 12). Under test: S1 + `entry_on: resume` (the year), S1 on the 7
+FX majors (August: on M1 the spread is 34-80 % of S1's stop, so its own spread rule passes almost no bar). Earlier: S1s (S1 with swing screens: March +0.063, 25 trades, below S1's +0.397); the inverted copies (`*_inverted`, docs/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
 −0.10); plain session breaks on M5 for day trading (FX lose to the spread, gold flips in the second half;
 D1_NOTES.md). Building blocks used by the variants: the market map (`MarketContext.htf`) and the chart read
 (docs/CHART_READ.md). Planned: `setup_confluence` (docs/CONFLUENCE_DIRECTION.md).
