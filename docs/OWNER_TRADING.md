@@ -170,6 +170,9 @@ the highest prices and averaged down with 0.01 lots.
   per 0.01 lot open), then up 17.4 in six minutes to **4180.54 at 10:49**: the first retest of the day's high took
   the stop, 0.82 above the old high. About -6.2 USD per 0.01 lot plus any slippage; the fills to confirm from
   MT5. Whether 4180.54 was a sweep (back inside the box) or a breakout is still open at 10:49 (close 4179.21).
+- **News:** Fed Chair Warsh spoke at the IMF meetings in Bangkok 10:30-11:00 Thai (scheduled a week before; read
+  as neutral, the dollar fell). The run that took the stop (10:43 -> 10:49, +17.4) sat inside that window; the
+  move went on to 4186.33 by 11:30 and 4189.71 at 15:00. The sells were opened just before a scheduled event.
 - Lesson (to test, hypothesis 9): a stop at the range edge is taken by the first retest; a stop with a buffer
   (0.25-0.5 M30 ATR) costs more per lot but survives a sweep. Trade 1's range edge was swept too.
 - Open questions: the total lots and whether more adds are planned (where); which drop is leg A; the plan at
