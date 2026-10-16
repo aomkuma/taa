@@ -536,6 +536,34 @@ the first and second half of each variant's trades; intervals are 90 %.
 - **On DEMO since 2026-10-15 11:14 Thai (owner):** `structure_tf: H4, room_min_r: 2.0` in V1's params in
   `config.yaml` (the research config's values).
 
+## 19. S1 + `entry_on: resume` (2026-10-16)
+
+S1 with Elder's third screen (owner, 2026-10-15): after the fade's trigger, wait up to 4 M1 bars for the first
+bar that closes beyond the previous bar's extreme in the trade's direction, and enter on it
+(`data/research/config_s1_resume.yaml`; otherwise S1's research config). Runs in `data/backtests/inv/s1resume_*`.
+
+| Month | S1 | S1 + resume |
+|---|---|---|
+| 2026-03 | +0.397 (10 trades, +3.97 R, net +168.48) | **+0.617** (7 trades, +4.32 R, net +196.77, DD 1.27 %) |
+| 2026-08 | +0.147 (9) | running |
+
+- March: 4 targets and 3 stops. Four entries are S1's own, 2-6 minutes later (2 Mar 08:46, 13 Mar 08:43, 19 Mar
+  07:11, 26 Mar 09:26 UTC; the 2 Mar one turned S1's target into a stop); five S1 entries never resumed (2 Mar 07:38 and 10:54, 19 Mar 10:09, 23 Mar 07:37,
+  26 Mar 18:37: four of S1's stops and one target), and three are new (19 Mar 09:05 and 11:05, 26 Mar
+  10:30; the one-hour cooldown starts at a different bar).
+- Seven trades is a small sample; the August run decides whether it goes on to the year.
+
+## 20. V1 and F1 without their own stop cap (2026-10-16)
+
+The decision engine no longer refuses a far stop (SL_TOO_FAR, 2026-10-15): the sizer gives it a smaller lot.
+A strategy's own `max_sl_atr` (default 3 ATR) still refused far stops inside V1 and F1. With it at 20 (the rule's
+ceiling, effectively off: `data/research/config_v1_nocap.yaml`, `config_f1_nocap.yaml`), March 2026 traded
+identically to the runs with it (`data/backtests/inv/{v1,f1}nocap_2026-03`).
+
+- **Owner, 2026-10-16: off.** `max_sl_atr: 20.0` in V1's and F1's params in `config.yaml`. S1 keeps its 4.0 (its
+  stop is 2 × ATR by construction).
+- Only March was compared; August and the year were not rerun with it off.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun

@@ -51,9 +51,11 @@ first (the DEMO bot reads config.yaml on restart).
   - **S1**, the M1 gold scalp, as **lane `s1`** (`setup_breakout_scalp`; PLAN §A7 entry lanes; §17; on since
     12:11 Thai). The lane reproduced S1's March backtest trade for trade.
 - **Decision engine:** no `SL_TOO_FAR` any more (owner): a far stop gets a smaller lot, the loss at the stop
-  stays within the risk per trade. A strategy's own `max_sl_atr` still applies (V1/F1/S1 unchanged; with it off,
-  V1 and F1 trade identically in March - the owner has not decided whether to remove it).
-- `config.yaml` (committed, owner): `high_risk:` on, lane `s1`, V1 room gate, S1 in `high_risk.setups`.
+  stays within the risk per trade. **V1's and F1's own `max_sl_atr` is off** (`20.0`, the rule's ceiling; owner,
+  2026-10-16; SETUP_REVIEW §20; March identical, August and the year not rerun). S1 keeps 4.0. The stack was
+  restarted 10:29 Thai on 2026-10-16 to load it.
+- `config.yaml` (owner): `high_risk:` on, lane `s1`, V1 room gate, S1 in `high_risk.setups`, V1/F1
+  `max_sl_atr: 20.0`.
 
 ### Setup round
 
@@ -62,11 +64,11 @@ first (the DEMO bot reads config.yaml on restart).
 | harmonic V1 + room | trading | year +0.226 R/trade (173), DD 9.5 R; 2nd-half CI below 0 (§18) |
 | breakout F1 | trading | year +0.159 (99) (§16) |
 | S1 (M1 gold scalp) | trading (lane s1) | year +0.277 (76), DD 6.2 R; 1st-half CI below 0 (§17) |
-| S1 + `entry_on: resume` (Elder's third screen) | March run (78 % at hand-over, equity +27.80) | baseline March +0.397 (10) |
-| S1 on the 7 FX majors | August run (24 % at hand-over, no trades yet) | FX M1 history starts 2026-07-08 (no March) |
+| S1 + `entry_on: resume` (Elder's third screen) | March passed; August running (`s1resume_2026-08`) | March +0.617 (7) against +0.397 (10); August baseline +0.147 (9) (§19) |
+| S1 on the 7 FX majors | August run (~30 % at 10:30 Thai 2026-10-16) | FX M1 history starts 2026-07-08 (no March); **owner: put it on DEMO once it passes** |
 | F1 + `entry_on: resume` | not kept | March +0.157 (5) against +0.248 (12) |
 | F1 on the 21 crosses | not kept | March −0.373 (16) |
-| box breakout with the trend (`setup_breakout_box`) | not kept, code stays (lane only, off) | 8 symbols M5 −0.24 (199); Asia-only gold +0.46..+1.07 on ~10/yr (owner has not chosen) |
+| box breakout with the trend (`setup_breakout_box`) | **parked for a fresh analysis** (owner, 2026-10-16: needs a long focused session); code stays (lane only, off) | 8 symbols M5 −0.24 (199); Asia-only gold +0.46..+1.07 on ~10/yr |
 | trend following H4/D1, momentum burst scalps | not kept | `research/2026-10-15-day-trade/BREAKOUT_NOTES.md` |
 
 - **Chart read (TAA-L813):** CR-1, 2, 3, 5 done. The PWA chart draws `ChartReadParams.for_display()` (minor
@@ -102,8 +104,9 @@ first (the DEMO bot reads config.yaml on restart).
    reproduce the engine's March trades exactly, then grid with walk-forward), then the backtest ladder.
 3. Chart read CR-4 (prompt, task 3), then CR-6 / CR-7.
 4. Full pytest + vitest with the stack paused.
-5. Owner decisions pending: remove V1/F1's own `max_sl_atr` (no effect in March); the box breakout Asia-only
-   option (needs lane-level sessions); S1's FX expansion after the August result.
+5. Owner decisions (2026-10-16): V1/F1's own `max_sl_atr` off (done); the box breakout parked for a fresh,
+   focused analysis (not now); S1 on the FX majors goes on DEMO once its August run passes (≥ +0.15 R/trade):
+   add the 7 majors to lane `s1`'s symbols, then restart the stack.
 6. Older follow-ups: the aggressive preset (scanner sizing, cloud backtests, margin-level vs utilization), a
    backtester spread floor, the PWA "Pause" button, TAA-L702 open items, TAA-L803.
 7. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
@@ -200,8 +203,8 @@ first (the DEMO bot reads config.yaml on restart).
 ## Decisions the user may want to revisit
 
 - **The aggressive preset at 7.5 %:** 5 % has a much lower chance of the 60 % stop (ruin table, PLAN §A36).
-- **The box breakout** (`setup_breakout_box`) is off; Asia-only gold was the one positive cell (~10 trades a
-  year). **V1/F1's own `max_sl_atr`** stays until the owner decides (no effect in March).
+- **The box breakout** (`setup_breakout_box`) is off and parked for a fresh analysis; Asia-only gold was the one
+  positive cell (~10 trades a year).
 - **Manual trades on the bot's account** count toward the bot's limits (`risk.foreign_positions_policy:
   count`). With a large manual trade the bot opens nothing.
 - **Alert metric** is win probability (needs closed shadow outcomes for calibration); setup strength works from

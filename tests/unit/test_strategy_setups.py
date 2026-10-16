@@ -307,7 +307,7 @@ class TestCatalog:
         originals = {"example_trend_pullback", *(c.name for c in SETUPS if c.advised or c.name in in_lanes)}
         assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
-        # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only
+        # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only; 2026-10-16: its own stop cap off
         assert {n for n, on in listed.items() if on} == {"setup_harmonic_prz", "setup_breakout"}
         breakout = next(i for i in settings.config.strategies.items if i.name == "setup_breakout")
         assert breakout.params == {
@@ -315,6 +315,7 @@ class TestCatalog:
             "screen_h1": "with",
             "fade_counter_trend": True,
             "trend_entries": False,
+            "max_sl_atr": 20.0,
             "friday_cutoff_utc": "16:00",
         }
         assert settings.config.timeframes.context == [Timeframe.H1, Timeframe.H4, Timeframe.D1]
@@ -327,7 +328,8 @@ class TestCatalog:
             "max_rr": 3.0,
             "structure_tf": "H4",
             "room_min_r": 2.0,
-        }  # §15.3, no PRZ confirmation; h4_room_2 (owner, 2026-10-15; §18)
+            "max_sl_atr": 20.0,
+        }  # §15.3, no PRZ confirmation; h4_room_2 (owner, 2026-10-15; §18); own stop cap off (2026-10-16)
         (s1,) = settings.config.lanes  # S1, M1 gold scalping (owner, 2026-10-15; §17)
         assert (s1.timeframes.entry, s1.symbols) == (Timeframe.M1, ["XAUUSD"])
         assert [i.name for i in s1.strategies.items] == ["setup_breakout_scalp"]

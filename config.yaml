@@ -76,13 +76,15 @@ strategies:
     - {name: setup_fib_pullback, enabled: false}
     - name: setup_harmonic_prz         # SETUP_REVIEW §15.3: no break-even (position_management), only while H4 is
       enabled: true                    # against the trade or ranging, targets at most 3R; the PRZ confirmation
-      params: {phase_gate: h4_against_or_range, max_rr: 3.0, structure_tf: H4, room_min_r: 2.0}   # was tested
-      # and rejected. h4_room_2 (owner, 2026-10-15; SETUP_REVIEW §18): at least 2 R of room to the H4 read's level
+      params: {phase_gate: h4_against_or_range, max_rr: 3.0, structure_tf: H4, room_min_r: 2.0, max_sl_atr: 20.0}
+      # was tested and rejected. h4_room_2 (owner, 2026-10-15; SETUP_REVIEW §18): at least 2 R of room to the H4
+      # read's level. max_sl_atr 20 = the rule's ceiling, the own stop cap off (owner, 2026-10-16; the sizer
+      # keeps a far stop's loss within the risk per trade; March identical with it off)
     - {name: setup_elliott_wave, enabled: false}
     - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
     - name: setup_breakout             # breakout F1 (SETUP_REVIEW §16): wait for a counter-trend break, then
       enabled: true                    # trade it with the H4 and H1 trend (fades only; risk.fade sets their RR)
-      params: {screen_h4: with, screen_h1: with, fade_counter_trend: true, trend_entries: false, friday_cutoff_utc: "16:00"}
+      params: {screen_h4: with, screen_h1: with, fade_counter_trend: true, trend_entries: false, max_sl_atr: 20.0, friday_cutoff_utc: "16:00"}   # own stop cap off, as V1
     - {name: setup_candle_reversal, enabled: false}
 
 lanes:
