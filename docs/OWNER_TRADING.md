@@ -65,7 +65,7 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 | # | Opened (Thai time) | Symbol | Side | Entry | SL | TP | R:R | Exit | R | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | 2026-10-15 11:55-15:15 | XAUUSD | BUY x7 (0.09 lot) | avg 4142.98 | 4128, then 4143.00 (break-even) | 4153.72-4154.36 | 0.76 at first | 4 TP, 3 by hand | +81.52 USD (+54 % of 150) | range trade; see below |
-| 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | 4173 (set in MT5) | target ~4100 (not set) | 2.3 | open | | head-and-shoulders right shoulder; see below |
+| 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | 4173 (set in MT5) | target ~4100 (not set) | 2.3 | SL, 2026-10-16 03:00 | about -44.34 USD (computed; to confirm from MT5) | head-and-shoulders right shoulder; see below |
 
 ### Trade 1 - context at the entry (bot's reads, data to 14:51)
 
@@ -127,6 +127,16 @@ the highest prices and averaged down with 0.01 lots.
 - The owner's plan in money (their words): **win 100, lose 40** (round numbers; computed +101.66 / -44.34):
   R:R 2.5, pays above ~28.6 % wins. The trade was planned in money before the entry - unlike trade 1, whose risk
   grew with every add. Rule for the setup: fix the money at risk and the target before the first entry.
+- **Outcome (owner, 2026-10-16: "stopped, price went sideways-up"; M15 data):** 15 Oct 15:00-17:00 up to 4160.43
+  and back to 4150; **19:45 down to 4130.48 - the neckline - with the trade about +40 USD**; 20:30 up through the
+  head (4168.49): the pattern failed; 21:00-01:00 a 4143-4165 range; **16 Oct 03:00 through 4173: stopped** (high
+  4177.30, 4179.72 by 10:00). About -44.34 USD as planned (-40). Day: +81.52 - 44.34 = +37.18 (~187 USD).
+- Lessons: (1) the neckline touch with +40 USD open had no rule - a head and shoulders is confirmed only below
+  the neckline, so a partial close or a break-even stop there would have turned the loss into a gain or a
+  scratch; (2) the sells went against the larger up-structure (higher lows 4073 -> 4131.4, the bot's M15 read
+  "now" UP, the rising channel from 4073 unbroken) - a reversal idea needs the neckline break before it is more
+  than an idea; (3) the falling channel had two anchor points (head, shoulder), weaker than the rising line with
+  several. Good: the stop and the loss were exactly as planned.
 - Contrast with trade 1: a planned reversal at resistance with a structural invalidation and R:R near 4, against
   a range buy at R:R under 1 with averaging down. The open question is the missing stop.
 
@@ -175,6 +185,8 @@ risk per signal).
    it adds, and whether the adds at the high pay.
 7. **Risk per trade** on a small account: the owner's trades risked ~19 % (trade 2) and up to ~81-90 % (trade 1's
    averaging at its first stop); measure the growth and the worst drawdown at 2 %, 5 %, 10 % and 20 % a trade.
+8. **Pattern confirmation:** reversal sells/buys before the neckline break against after it (and a partial or
+   break-even at the neckline when entered early) - trade 2 had +40 USD at the neckline and ended -44.
 6. **Break-even stop** once price moves: how often a tight break-even stop is taken by noise before the target
    (an M1 bar ~1.4 on gold) against a stop under the last M1 higher low.
 
