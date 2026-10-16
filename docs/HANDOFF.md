@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-15 (S1 on DEMO as an M1 lane, V1 + room gate on DEMO, no SL_TOO_FAR, breakouts with the
+Last updated: 2026-10-16 10:30 Thai (S1 on DEMO as an M1 lane, V1 + room gate on DEMO, no SL_TOO_FAR, breakouts with the
 trend measured and not kept, the owner's custom-setup notes). This file holds **state only**: rules and
 conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`,
 progress in `docs/TICKETS.md` / `docs/TICKETS_LEARNING.md`, setup results in `docs/SETUP_REVIEW.md`.
@@ -17,12 +17,14 @@ in English. Follow CLAUDE.md and the memory rules. Report results as tables; rep
 run. Ask me when the meaning is unclear; don't guess. Read docs/HANDOFF.md ("Current state", "Next work" and
 "Gotchas") first.
 
-State at the hand-over (2026-10-15, about 15:30 Thai time):
-- The DEMO stack is PAUSED (I slept the computer). Resume it only when I say so: scripts\demo-tasks.ps1 -Resume.
-- Two backtests were running when the computer slept (they continue after wake): data/backtests/inv/
-  s1resume_2026-03 (S1 with entry_on: resume) and s1fx_2026-08 (S1 on the 7 FX majors). Report both as tables,
+State at the hand-over (2026-10-16, about 10:30 Thai time):
+- The DEMO stack RUNS (resumed 10:10 Thai, no open positions, equity 1,066.21). Remind me to pause it
+  (scripts\demo-tasks.ps1 -Pause) before the computer sleeps.
+- Two backtests were running in the old session and may have stopped with it: data/backtests/inv/
+  s1resume_2026-03 (S1 with entry_on: resume) and s1fx_2026-08 (S1 on the 7 FX majors). If a log has no
+  "expectancy" line, rerun it with the commands in docs/HANDOFF.md "Current state". Report both as tables,
   cross-checked against trades.csv, and decide per the ladder.
-- main has many commits from 2026-10-15, NOT pushed (I push myself).
+- main has many commits from 2026-10-15/16, NOT pushed (I push myself).
 
 Tasks, in this order:
 1. The two backtests above (results, ladder decision, SETUP_REVIEW / STRATEGIES glance table).
@@ -37,9 +39,9 @@ first (the DEMO bot reads config.yaml on restart).
 
 ---
 
-## Current state (2026-10-15, 15:30 Thai)
+## Current state (2026-10-16, 10:30 Thai)
 
-### Trading on DEMO (paused at 15:25 Thai)
+### Trading on DEMO (running; resumed 2026-10-16 10:10 Thai)
 
 - **Stack:** `-Mt5 -Demo` from Task Scheduler (`scripts\demo-tasks.ps1 -Pause / -Resume`). Demo account
   ~1,066 USD, no open positions. Last restart 13:28 Thai with the code of 2026-10-15 and a fresh PWA build.
@@ -60,8 +62,8 @@ first (the DEMO bot reads config.yaml on restart).
 | harmonic V1 + room | trading | year +0.226 R/trade (173), DD 9.5 R; 2nd-half CI below 0 (§18) |
 | breakout F1 | trading | year +0.159 (99) (§16) |
 | S1 (M1 gold scalp) | trading (lane s1) | year +0.277 (76), DD 6.2 R; 1st-half CI below 0 (§17) |
-| S1 + `entry_on: resume` (Elder's third screen) | March running | baseline March +0.397 (10) |
-| S1 on the 7 FX majors | August running | FX M1 history starts 2026-07-08 (no March) |
+| S1 + `entry_on: resume` (Elder's third screen) | March run (78 % at hand-over, equity +27.80) | baseline March +0.397 (10) |
+| S1 on the 7 FX majors | August run (24 % at hand-over, no trades yet) | FX M1 history starts 2026-07-08 (no March) |
 | F1 + `entry_on: resume` | not kept | March +0.157 (5) against +0.248 (12) |
 | F1 on the 21 crosses | not kept | March −0.373 (16) |
 | box breakout with the trend (`setup_breakout_box`) | not kept, code stays (lane only, off) | 8 symbols M5 −0.24 (199); Asia-only gold +0.46..+1.07 on ~10/yr (owner has not chosen) |
@@ -71,8 +73,17 @@ first (the DEMO bot reads config.yaml on restart).
   levels, spent at 4 crossings, the read "now" with breaks); rules keep the defaults. **CR-4 not passed:** trend
   17/20 against Claude's key (in-sample; 14/20 against the blind agent alone), levels 5/20.
 - **The owner's custom setup:** `docs/OWNER_TRADING.md` - trade 1 (range buys, +81.52 USD, averaging down took
-  ~60 % of the 150 USD account under water), trade 2 (head-and-shoulders right-shoulder sells, stop 4173 set,
-  target ~4100, plan +100 / −40 USD; open at the hand-over).
+  ~60 % of the 150 USD account under water), trade 2 (head-and-shoulders right-shoulder sells, plan +100 / −40
+  USD: **stopped at 4173 on 16 Oct 03:00, about −44.34 USD** after +40 open at the neckline; exact fills to
+  confirm from the owner's MT5 table). Day: about +37 USD.
+- **Rerun commands** (if the logs above did not finish; one at a time is fine, each takes 1-3 hours):
+  ```
+  CONFIG_FILE=data/research/config_s1_resume.yaml ENABLE_HIGH_RISK_PROFILE=false MAX_ACCOUNT_DRAWDOWN_PERCENT=50 ALLOWED_SYMBOLS=XAUUSD PYTHONUNBUFFERED=1   .venv/Scripts/python -m app.cli backtest --server FBS-Demo --symbols XAUUSD --start 2026-03-01 --end 2026-04-01   --strategies setup_breakout --out data/backtests/inv/s1resume_2026-03 --progress > data/backtests/inv/s1resume_2026-03.log 2>&1
+
+  CONFIG_FILE=data/research/config_s1_fx.yaml ENABLE_HIGH_RISK_PROFILE=false MAX_ACCOUNT_DRAWDOWN_PERCENT=50 ALLOWED_SYMBOLS=EURUSD,GBPUSD,USDJPY,USDCHF,AUDUSD,USDCAD,NZDUSD PYTHONUNBUFFERED=1   .venv/Scripts/python -m app.cli backtest --server FBS-Demo --symbols EURUSD,GBPUSD,USDJPY,USDCHF,AUDUSD,USDCAD,NZDUSD   --start 2026-08-01 --end 2026-09-01 --strategies setup_breakout --out data/backtests/inv/s1fx_2026-08 --progress > data/backtests/inv/s1fx_2026-08.log 2>&1
+  ```
+  Baselines: S1 March `data/backtests/inv/scalp_s1_2026-03` (10 trades, +0.397). Judge by R per trade (a gold
+  trade at the minimum lot risks ~3x a currency trade, so net can disagree).
 - **PWA:** the Symbols page shows the trend per setup group (M15 setups: H4 + H1; M1 scalp: H1 + M15) from
   `GET /engines/{id}/trends`.
 
