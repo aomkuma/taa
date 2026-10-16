@@ -41,7 +41,7 @@ first (the DEMO bot reads config.yaml on restart).
 
 ## Current state (2026-10-16, 10:30 Thai)
 
-### Trading on DEMO (running; resumed 2026-10-16 10:10 Thai)
+### Trading on DEMO (PAUSED by the owner 2026-10-16 ~10:55 Thai; resume with `scripts\demo-tasks.ps1 -Resume`)
 
 - **Stack:** `-Mt5 -Demo` from Task Scheduler (`scripts\demo-tasks.ps1 -Pause / -Resume`). Demo account
   ~1,066 USD, no open positions. Last restart 13:28 Thai with the code of 2026-10-15 and a fresh PWA build.

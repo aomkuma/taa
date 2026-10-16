@@ -66,6 +66,7 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 |---|---|---|---|---|---|---|---|---|---|---|
 | 1 | 2026-10-15 11:55-15:15 | XAUUSD | BUY x7 (0.09 lot) | avg 4142.98 | 4128, then 4143.00 (break-even) | 4153.72-4154.36 | 0.76 at first | 4 TP, 3 by hand | +81.52 USD (+54 % of 150) | range trade; see below |
 | 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | 4173 (set in MT5) | target ~4100 (not set) | 2.3 | SL, 2026-10-16 03:00 | about -44.34 USD (computed; to confirm from MT5) | head-and-shoulders right shoulder; see below |
+| 3 | 2026-10-16 ~10:00-10:40 | XAUUSD | SELL, 0.01 at a time (total to confirm) | avg 4173.8 | ~4180 (above the day's high 4179.72) | 4124 | 8.0 | SL, 2026-10-16 10:49 | about -6.2 USD per 0.01 lot (lots to confirm) | M30 "sideways up = leg B"; sells at the top of the M30 range; see below |
 
 ### Trade 1 - context at the entry (bot's reads, data to 14:51)
 
@@ -140,6 +141,41 @@ the highest prices and averaged down with 0.01 lots.
 - Contrast with trade 1: a planned reversal at resistance with a structural invalidation and R:R near 4, against
   a range buy at R:R under 1 with averaging down. The open question is the missing stop.
 
+### Trade 3 - sells at the top of the M30 range, "leg B" (2026-10-16 ~10:40 Thai, data to 10:39)
+
+- **The owner's idea (their words):** sells 0.01 lot at a time, average 4173.8; stop above the day's high, about
+  4180; target 4124; on M30 the move since the low looks like a sideways-up range that has made leg B (of an
+  A-B-C: leg C down to come).
+- **The bot's reads (data to 10:30-10:39 Thai):**
+  - M30: map **RANGE**, box **4130.48 - 4179.72** (the owner's range; the bot sees it this time, unlike trade
+    1); chart read FLAT, "now" UP (invalidation 4147.21).
+  - M15: read UP (HL 4143.65, HH 4177.30, then 4179.72 at 09:59), "now" UP above 4147.21; map TRANSITION.
+  - H1: read CONTRACTING (highs 4200.52 -> 4170.29 -> 4161.69, lows 4073.41 -> 4130.48); 4179.72 is above
+    the last two lower highs, so the display read "now" is UP (invalidation 4130.48). Map TRANSITION.
+  - H4: map RANGE, box 4073.41 - 4217.08; read BROADENING.
+- **Leg B, as data:** from the 4073.41 low (14 Oct 23:00) to 4179.72 = 106.3. Against a leg A of 4170.29 ->
+  4073.41 (96.9) B is 110 % of A (B beyond A's start: an expanded flat); against 4200.52 -> 4073.41 (127.1) B is
+  84 %. Which A the owner means is to confirm. The target 4124 sits under the range bottom (4130.48 / 4131.43)
+  and near the 50 % retracement of B (4126.57).
+- **Risk (gold: 0.01 lot = 1 USD per 1.00):** per 0.01 lot about 6.2 USD to the stop and 49.8 USD to the
+  target: R:R about 8.0 (pays above ~11 % wins). Price 4167.0 at 10:39: about +6.8 USD per 0.01 lot open.
+- **The stop is 0.28 above the day's high, about one spread:** a sell's stop fills on the ask (bid + ~0.25-0.30
+  spread), so a bid at about 4179.7 - a plain retest of the high - stops it. In trade 1 the range edge was swept
+  (4131.4 under 4138) before the move; trade 2's stop had 11.3 of room above the head. M30 ATR 8.75, M15 ATR
+  6.09: a buffer of 0.25-0.5 M30 ATR puts the stop near 4182-4184.5 (the display read has a level at 4183.71),
+  about 8-11 USD per 0.01 lot, R:R about 4.7-6.
+- **Against the trade:** the M15 and H1 reads "now" are UP; the sells fade the latest higher high. **For it:** M30
+  and H4 are ranges and the entry is at the M30 box top (the "both sides of the range" rule from trade 1).
+- **Outcome (owner, 2026-10-16 ~10:50 Thai: "stopped"; M1 data):** down to 4163.15 at 10:43 (about +10.65 USD
+  per 0.01 lot open), then up 17.4 in six minutes to **4180.54 at 10:49**: the first retest of the day's high took
+  the stop, 0.82 above the old high. About -6.2 USD per 0.01 lot plus any slippage; the fills to confirm from
+  MT5. Whether 4180.54 was a sweep (back inside the box) or a breakout is still open at 10:49 (close 4179.21).
+- Lesson (to test, hypothesis 9): a stop at the range edge is taken by the first retest; a stop with a buffer
+  (0.25-0.5 M30 ATR) costs more per lot but survives a sweep. Trade 1's range edge was swept too.
+- Open questions: the total lots and whether more adds are planned (where); which drop is leg A; the plan at
+  4147 (the M15 higher low) and at the range bottom 4130.5 (trade 2's lesson: +40 USD at the neckline with no
+  rule); the account (real or demo).
+
 ### Trade 1 - management (chart at ~15:55 Thai, before the fills were known)
 
 - Seven buys, average about 4142.97 for 0.09 lot.
@@ -187,6 +223,9 @@ risk per signal).
    averaging at its first stop); measure the growth and the worst drawdown at 2 %, 5 %, 10 % and 20 % a trade.
 8. **Pattern confirmation:** reversal sells/buys before the neckline break against after it (and a partial or
    break-even at the neckline when entered early) - trade 2 had +40 USD at the neckline and ended -44.
+9. **Stop buffer at a range edge:** a stop just past the edge (trade 3: 0.28 above the high, about one spread)
+   against one 0.25 / 0.5 / 1 ATR past it - how often the edge is swept and price returns inside, and the R it
+   costs.
 6. **Break-even stop** once price moves: how often a tight break-even stop is taken by noise before the target
    (an M1 bar ~1.4 on gold) against a stop under the last M1 higher low.
 
