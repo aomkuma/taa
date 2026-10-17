@@ -845,6 +845,26 @@ of the target, 60 minutes, two a session-day) taken only when the H1 leg is not 
 (`cr_H1_leg_dir >= 0`), H1 is not flat (`|h1_c_e50| >= 0.85`) and price is in the upper half of its 4-hour range
 the trade's way (`pos240 >= 0.5`). Declared variant: W3 (`pos240 >= 0.75`).
 
+**The one test** (`w2_test.py`; the filters applied to the signals before the selection loop; on the design data
+this gives W2 299 trades +0.011 R, W3 198 trades +0.055 R, consistent with the table above):
+
+| 2026-03-01 .. 10-13 | Trades (a day) | Win % | R/trade | USD at 0.01 lot | Months + | Worst | Max DD | Longest losing streak |
+|---|---|---|---|---|---|---|---|---|
+| B0 | 431 (2.66) | 31 | -0.033 | -112.1 | 2/8 | -11.69 | 187.7 | 13 |
+| **W2 (frozen)** | 121 (0.75) | 31 | **-0.002** | **+8.1** | 4/8 | -11.52 | 82.5 | 9 |
+| W3 (declared) | 75 (0.46) | 33 | **+0.030** | **+34.5** | **6/8** | -11.52 | 27.2 | 6 |
+
+W2 by month: +35.7, -27.1, -29.9, +23.5, +16.9, +25.4, -4.1, -32.4 USD; W3: +29.1, +1.8, -8.6, +16.5, +10.5, +3.8,
++3.0, -21.6. By session (W2): Asia 46 trades -0.269 R (-56.0 USD), London 14 -0.315 (-24.3), New York 61 +0.271
+(+88.4). **Stage reached on the test: break even (W2), a small profit (W3)** - the filters taken from the losers held
+on data they were not made from (B0 -112 USD -> W2 +8, W3 +34.5; the drawdown 188 -> 83 / 27 USD).
+Not yet fixed: New York's strength on the test is not in the design data (W2 design: London +0.078, New York +0.014,
+Asia -0.050 R), so it stays a lead, not a rule. Asia has a design-side reason (negative in the last three design
+half-years, -0.05 / -0.64 / -0.39 R; the widest spread, 0.39 USD) and lost again on the test; dropping it (W4, design
++0.023 R) is the next candidate - but the test window has now been seen, so it needs fresh data (2026-10-14 on).
+For the account: the worst trade 11.5 USD and a 6-9 trade losing streak at 0.01 lot - a 50 USD account would take
+about 45-55 USD of drawdown at W2's worst (82.5 USD): **W3 fits a 50-100 USD account (max DD 27 USD), W2 only 100 USD.**
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had
