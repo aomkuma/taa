@@ -41,6 +41,9 @@ outranks earlier targets where they differ. Results never promise profit; they d
 - **Use the machine's edge in time.** The system recomputes every timeframe on every bar, decides without
   hesitation at the bar's close, holds its if-then plans before scheduled releases, and lets the AI analyst
   propose new candidate causes from the runs it could not explain - the data, judged out of sample, decides.
+- **Learn from the losing trades** (owner, 2026-10-17): "learning from losers is the heart of developing a
+  trade; catch the timing and the signals." The real losing trades teach more than one human's opinion; the
+  owner's own habits are hypotheses for the data to test.
 - **Try hard, judge honestly.** A test that finds no edge for one factor alone is not the end: test it jointly
   with location, timing and the flow above (an effect can be zero on average and strong in a context). Rules are
   written down before the data that judges them, and the held-out years stay untouched until then.

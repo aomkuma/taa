@@ -201,6 +201,15 @@ def nearest(pools: list[tuple[float, str]], x: float) -> tuple[tuple[float, str]
 
 
 def main() -> None:
+    global START, END, WARM, OUT
+    args = sys.argv[1:]  # optional: --start YYYY-MM-DD --end YYYY-MM-DD --out PREFIX (another window)
+    if "--start" in args:
+        START = pd.Timestamp(args[args.index("--start") + 1], tz="UTC")
+        WARM = START - pd.Timedelta(days=102)
+    if "--end" in args:
+        END = pd.Timestamp(args[args.index("--end") + 1], tz="UTC")
+    if "--out" in args:
+        OUT = args[args.index("--out") + 1]
     gold.below_normal_priority()
     D = Data()
     cal = gold.releases()

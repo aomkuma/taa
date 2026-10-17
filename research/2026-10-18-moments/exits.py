@@ -28,9 +28,9 @@ QUANTILES = (70, 80, 90)
 
 
 class Path:
-    def __init__(self) -> None:
+    def __init__(self, start: pd.Timestamp = START) -> None:
         m1 = gold.bars("M1")
-        m1 = m1[m1.index >= START - pd.Timedelta(days=3)]
+        m1 = m1[m1.index >= start - pd.Timedelta(days=3)]
         self.ot = m1.index
         self.o, self.h, self.lo, self.c = (m1[k].to_numpy(float) for k in ("open", "high", "low", "close"))
         self.sp = m1["spread"].to_numpy(float) * POINT

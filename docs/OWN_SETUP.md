@@ -200,3 +200,148 @@ are close to a coin flip at a 1.3 : 1 reward-to-risk. The moments do run (the la
 day), but these mechanical entries do not catch the direction. Next levers, not yet tried: the entry trigger itself
 (the size of the first minutes' reaction, displacement candles, tick volume), and the owner's own reading of
 these moments as rules (docs/OWNER_TRADING.md).
+
+### Round 2 - learn from the losers (owner, 2026-10-17)
+
+The owner: "learning from the losing trades is the heart of developing a trade; catch the timing and the
+signals"; "the Asian market, mostly 07-09 Thai, often makes a small fake move before going the big way; New York
+is volatile at the open and 1-2 hours after - check it"; "learn from the real losers rather than one human's
+opinion". Scripts: `owner_habits.py`, `losers.py` (the latest six months, every moment entry of round 1, q70 stop).
+
+**The owner's habits, measured** (2026-04-14 .. 10-14):
+
+- *Asia fakes first:* the first leg of 0.1 / 0.2 / 0.3 x R from the start's open (R = the start's usual 2-hour
+  range, about 30 USD at 07:00 Thai) ends on the other side of the open two hours later in 38-46 % / 34-38 % /
+  23-30 % of the Asian starts (07:00-09:00 Thai), against 42 % / 36 % / 29 % for every half-hour start of the day:
+  **the Asian first leg fakes as often as any other time's, not more.** It varies by month (0.2 R: 26 % in April,
+  45-48 % in July-August). The first 0.1 R comes within 1-2 minutes of 07:00 and 08:00 Thai.
+- *New York is volatile at the open and 1-2 hours after:* **confirmed.** The median 15-minute range is 1.3-2.0x the
+  day's median from 19:15 to 22:15 Thai (08:15-11:15 ET), the peak 15.0 USD (2.0x) at 20:30 Thai, the cash open;
+  Asia 07:00-09:00 Thai is 1.2-1.5x; 03:00-06:00 Thai is the quietest (0.5-0.7x).
+
+**The losers** (1,254 moment entries, 717 losers = 57 %): the median loser is stopped 8 minutes after the
+entry, 41 % within 5 minutes; 26-29 % of the losers were right on direction (the target reached within 60
+minutes of the entry, after the stop). What the losers share at the entry, first three months | last three:
+
+| At the entry | Trades | Win % | R/trade |
+|---|---|---|---|
+| Entered flat (within 0.1 U of the moment's open) | 348 / 341 | 40 / 40 | -0.059 / -0.058 |
+| Already 0.1-0.3 U the trade's way from the moment's open | 71 / 84 | 54 / 54 | **+0.248 / +0.226** |
+| Chased beyond 0.3 U | 104 / 110 | 36 / 39 | -0.125 / -0.100 |
+| London open (14:00 Thai) | 118 / 109 | 31 / 34 | -0.311 / -0.196 |
+| 10 minutes or more after the moment | 100 / 90 | 36 / 37 | -0.144 / -0.141 |
+| With the flow (swing structure) | 407 / 400 | 39 / 41 | -0.069 / -0.034 |
+
+The 0.1-0.3 U band is P1's: break-and-hold at Asia +0.378 (26) / +0.474 (26), at New York +0.291 (23) / +0.418
+(26), win 54-65 %; P2 gains nothing from it. Losers mostly entered flat (no push yet: the moment's whipsaw stops
+them) or chased (the push already spent).
+
+### OWN v2 - written 2026-10-17 before the earlier six months (2025-10-14 .. 2026-04-14) are computed
+
+Both halves of the latest six months shaped v2, so they cannot judge it. The untouched six months before them
+judge it once (a background window, but the only data v2 has not seen).
+
+- **Moments:** Asia (Tokyo 09:00 JST and Shanghai 09:00 CST: 07:00 and 08:00 Thai) and New York (COMEX/data
+  08:20-08:30 ET and the cash open 09:30 ET). Not London.
+- **Entry:** P1 break-and-hold of the nearest pool within 30 minutes of the moment, taken only when the entry
+  price (the fill) lies 0.1-0.3 U beyond the moment's open in the trade's direction.
+- **Exits:** stop 0.38 U from the entry; target at least 5 USD (max(5 USD, 0.5 U)); time stop 60 minutes; in a clear picture
+  the trend hold (lock half the target, trail 0.5 U, 180 minutes). One position at a time.
+- **Gate (as above):** at least +0.15 R a trade (tolerance +0.10), months mostly positive; the trade count is
+  reported against the one-a-day goal.
+
+**Verdict: fails** (`judge_v2.py`). Latest six months (where it was found): 95 trades, +0.398 R (se 0.120), win
+60 %, +254.6 USD at 0.01 lot, 0.73 a day, 6/6 months positive. **Earlier six months (untouched): 70 trades,
++0.035 R (se 0.162), win 41 %, -10.9 USD, 0.54 a day, 2/6 months positive** (Asia +0.064 over 34, New York +0.007
+over 36). The second pattern mined from many cuts that shrank to about zero on new data.
+
+### The three kinds of losers (owner, 2026-10-17; `loser_kinds.py`)
+
+For every trade stopped before its target: **1 wrong way** (less than half the way to the target before the stop,
+no run to the target afterwards); **2 right way, fell short** (at least half the way, then back to the stop, no
+run afterwards); **3 right way, entered too early** (stopped, then the target reached from the original entry
+within 120 minutes of the entry).
+
+| Stopped losers | Trades stopped | 1 wrong way | 2 fell short | 3 too early | Too early: stop that survived | Too early: worst point after |
+|---|---|---|---|---|---|---|
+| Round 1, every moment entry (latest six months) | 710 of 1,254 | 41 % | 14 % (got 0.73 of the target) | 45 % | 1.77x (10.75 vs 5.55 USD) | 17 min |
+| The same minutes with a coin-flip side | 718 of 1,254 | 40 % | 13 % | 47 % | 1.72x | 16 min |
+| Control half hours (1,500 sampled) | 896 of 1,500 | 44 % | 12 % | 44 % | 1.79x | 18 min |
+| OWN v2, latest six months | 35 of 95 | 49 % | 17 % | 34 % | 1.79x | 16 min |
+| OWN v2, earlier six months | 39 of 70 | 33 % | 21 % | 46 % | 1.73x | 14 min |
+
+**The split of our losers equals a coin flip's**: the entries choose the side no better than chance, and "too
+early" (45 %) is what a random path does after a stop of 0.38 U (a 1.8x wider stop was tried in round 1, q90:
+no better). Kind 2 got about 0.6-0.75 of the target before turning.
+
+**Are we on the wrong side of the big players?** The exact opposite of each trade (same minutes, stops and
+targets, scalp exits), R per trade ours / opposite / coin flip:
+
+| Entries | Trades | Ours | Opposite | Coin flip | Ours first / last 3 months | Opposite first / last |
+|---|---|---|---|---|---|---|
+| P1 Asia | 153 | +0.054 | -0.067 | -0.026 | +0.040 / +0.068 | -0.027 / -0.108 |
+| P1 New York | 147 | +0.131 | -0.156 | +0.017 | +0.176 / +0.096 | -0.129 / -0.177 |
+| P2 Asia | 152 | +0.075 | -0.083 | -0.094 | +0.036 / +0.115 | -0.218 / +0.058 |
+| P2 New York | 165 | -0.019 | -0.090 | -0.148 | +0.109 / -0.131 | -0.177 / -0.014 |
+| **P1 London** | 45 | -0.470 | **+0.210** | -0.266 | -0.627 / -0.236 | +0.356 / -0.010 |
+| **P3 London (with the flow)** | 107 | -0.286 | **+0.154** | -0.019 | -0.267 / -0.307 | **+0.119 / +0.192** |
+| P3 Asia / New York | 205 / 205 | -0.155 / -0.024 | -0.082 / -0.069 | | | |
+| Control half hours P1 / P2 / P3 | 600 each | -0.121 / -0.099 / -0.032 | -0.096 / -0.041 / -0.154 | | | |
+
+Not opposite everywhere: at Asia and New York our side beats the opposite. **At the London open we are on the
+wrong side**: going with the H1/M15 flow there and following fresh breaks lose, the opposite pays (with the flow
+the opposite is positive in both halves). London runs the stops behind the Asian move and turns.
+
+### OWN v3 - London against the flow, written 2026-10-17 before the earlier six months are computed
+
+- At 08:00 London (14:00 Thai in summer, 15:00 in winter) on weekdays, a flow defined (H1 swing structure now,
+  else M15): enter at the open of the moment's bar **against** the flow.
+- Stop 0.38 U from the entry; target at least 5 USD (max(5 USD, 0.5 U)); time stop 60 minutes; no trend hold (the
+  clear picture is the flow being faded).
+- Judged once on 2025-10-14 .. 2026-04-14 (untouched) against the gate.
+
+**Verdict: fails** (`judge_v3.py`). Latest six months (where it was found): 107 trades, +0.142 R (se 0.111),
++75.6 USD at 0.01 lot, 0.82 a day, 5/6 months positive. **Earlier six months: 106 trades, +0.039 R (se 0.114),
++66.4 USD, 1/6 months positive** (one month, 2026-03, +102.7 USD; the other five -1.4 to -12.8 USD each). The
+third rule found in the latest six months that faded on the earlier six.
+
+### Smart money's draw on liquidity (written 2026-10-17 before it was computed; `draw_liquidity.py`)
+
+Where yesterday's broker-day high (PDH) and low (PDL) are both untaken and the price lies between them (moments
+and control half hours, both windows), does the rest of the day take the nearer one first more often than chance?
+Baselines: a driftless random walk, p = (price - PDL) / (PDH - PDL), and a placebo: real gold paths of 20 other
+days from the same clock time, scaled to the day's U (the same end-of-day cutoff, levels that mean nothing).
+
+| Hit PDH first, among days with a hit | Earlier: p / placebo / actual | Latest: p / placebo / actual |
+|---|---|---|
+| Price in the lowest quarter (PDL near) | 0.181 / 0.093 / 0.094 (36 days) | 0.163 / 0.113 / 0.045 (50 days) |
+| 0.25-0.5 | 0.380 / 0.283 / 0.352 | 0.369 / 0.299 / 0.255 |
+| 0.5-0.75 | 0.620 / 0.606 / 0.772 | 0.625 / 0.644 / 0.639 |
+| Highest quarter (PDH near) | 0.839 / 0.871 / 0.932 (46 days) | 0.838 / 0.874 / 0.922 (42 days) |
+| All | 0.531 / 0.490 / 0.584 | 0.485 / 0.463 / 0.441 |
+
+The pull to the nearer level that the random walk misses is mostly the placebo's too (the cutoff and gold's
+paths); beyond the placebo only near PDH, +0.05-0.06 in both windows on 42-46 days (weak), and the windows'
+trends (earlier up, latest down) move the middle rows. **No stable draw on yesterday's extremes.**
+
+### H6 - the dollar leads gold (written 2026-10-17 before it is computed)
+
+The big money's flow shows first in the dollar (six USD majors, M1), gold follows. At every moment of both
+windows, the dollar's move over the first k = 1, 2, 3 minutes (each pair's return over its median absolute
+1-minute return of the previous five days x sqrt(k), signed as USD up, averaged) against gold's own first k
+minutes; outcome: gold's move over the next 30 and 60 minutes from the close of minute k, in U. H6 holds if gold
+goes against the dollar's first move (gold up when the dollar falls) more than chance in both windows, and more
+than gold's own first move predicts - most of all when the two disagree (gold has not followed yet).
+
+**Verdict: not supported** (`h6_dollar.py`, 641 / 659 moments). Gold moves with the dollar within the same
+minutes (correlation of the first 2 minutes -0.46 earlier, -0.84 latest), so there is little left to follow; what
+follows flips sign between the windows. Gold's next 60 minutes signed by the dollar's first 2 minutes, strong
+moves only: earlier -0.071 U (hit 0.50, 321), latest +0.121 U (hit 0.54, 330); when gold had not yet followed:
+earlier -0.294 U (hit 0.44, 97), latest +0.274 U (hit 0.65, 71). Gold's own first move: +0.102 / +0.038 U.
+
+### The owner's test of a signal (2026-10-17)
+
+"If the setup is sure of a signal, then once it enters, price must run at least 5 USD, possibly closed within
+seconds or minutes." From now on a signal is judged first by **how often price runs 5 USD its way before the
+stop**, and how fast. Round 1 and 2's entries do that 41-54 % of the time with a stop of about 6.5 USD, as often as
+a coin-flip side at the same minutes.
