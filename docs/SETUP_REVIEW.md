@@ -627,6 +627,38 @@ measurements above, accepted by the owner:
   to 2025-02 / 2025-01, S1 to 2024-12; S1 2025-01 interrupted), year C not started. `oos_queue.sh` and
   `oos_queue_c.sh` resume where they stopped (finished months are skipped).
 
+## 23. S1: the spread ate the stop - found and fixed (2026-10-17)
+
+Owner, 2026-10-17: "the spread should not be what stops a trade; find it and fix it". S1 is priority 1 (§22).
+
+**What was wrong.** `research/2026-10-17-s1/s1_funnel.py` rebuilds S1's event pool (a counter-trend M1 break,
+faded) on three years of gold M1 with the engine's plan and fills (parity: the engine's trades it also takes
+match within 0.01-0.06 R; its trigger is Donchian-20 only, so some entries differ).
+
+- S1's plan scales with A, the mean M1 range of the last hour; the spread is fixed in points. Gold's A was 0.60
+  in 2023-24, 0.90 in 2024-25 and 2.03 in 2025-26, so spread plus slippage was **0.63, 0.38 and 0.19 of A**.
+  Above about 0.35 A the fade loses in every year; under 0.25 A it breaks even or wins.
+- The fade's geometry adds the spread to the stop: the fade risks A + 1.5 spreads for a 2-A target, so its R:R
+  falls from about 1.7 (2025-26) to 1.3 (2024-25) as the spread grows against A.
+- The setup's spread rule then refuses the plan (2023-24: 64 % of the pool), and it judged a fade on the plan's
+  stop instead of the (about half as wide) stop the fade trades.
+
+**The fix** (`min_atr_spreads`, `app/strategy/setups.py`; off by default): the plan's scale is at least N
+spreads, so stop and target widen together when the market is quiet; a fade's spread rule judges the stop it
+trades. Chosen on year A only (round-trip cost floors k 6-16, then the spread-only form the strategy can see):
+
+| S1 in the funnel (cooldown 60, one at a time) | C 2023-24 | A 2024-25 | B 2025-26 | 3 years |
+|---|---|---|---|---|
+| as it is (spread rule refuses) | 29, −0.492 | 104, −0.112 | 99, +0.161 | 232, −0.043 |
+| floor 15 spreads, time stop 240 bars | 58, −0.058 | 95, +0.097 | 99, +0.162 | 252, +0.088 |
+| floor 10 round-trip costs, time stop scaled with the floor | 58, −0.016 | 94, +0.148 | 99, +0.137 | 251, +0.106 |
+
+- A longer hold alone does not help (no floor, time stop 120: C −0.359, A −0.142): the floor is the lever.
+- A scaled time stop needs a per-position time stop (not in the engine yet); the fixed 240-bar time stop is a
+  config value. Engine runs (`research/2026-10-17-s1/s1_floor_queue.sh`, `data/backtests/s1fix/`): the floor on
+  2026-03, 2026-08, 2024-10 .. 12, 2024-03 and 2024-08, S1 as it is on 2024-03 and 2024-08 (frozen code).
+  `config.yaml` stays until they hold and the owner agrees.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
