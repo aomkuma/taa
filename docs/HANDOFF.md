@@ -32,6 +32,11 @@ its backtest. Ask me when the meaning is unclear.
 - **The owner's goals and principles:** `docs/OWNER_GOALS.md` (several were never written down before: session
   opens, ATR low, Bollinger squeeze, quick profit, the review cadence, news). Setup OWN: `docs/OWN_SETUP.md`,
   `docs/OWNER_TRADING.md` "Setup OWN".
+- **Setup OWN round 1 (2026-10-17, latest six months, harness):** no playbook pays at the moments after costs;
+  the context selector, OWN v1 (two pieces mined from the fit months: judged -0.155 R over 141 trades) and H5
+  (the last 20 days pick the playbook: -0.013 R over 266) fail. Details and next levers: `docs/OWN_SETUP.md`
+  "Results". The owner's exits: target at least 5 USD (gold 1 pip = 1 USD), scalp first, hold 2-3 hours when
+  the picture is clear; largest timeframe H1. Nothing is coded in the engine yet.
 - **Every earlier setup stopped** (owner, 2026-10-17): V1, F1 and lane `s1` are `enabled: false` in
   `config.yaml` (parameters kept); no setup trades until OWN passes its gate. `high_risk` (aggressive preset) stays
   on for OWN.
