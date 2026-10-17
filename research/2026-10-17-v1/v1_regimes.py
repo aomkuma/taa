@@ -28,7 +28,11 @@ from app.indicators.market_map import signal_features  # noqa: E402
 from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
 from app.strategy.market_maps import MapBook  # noqa: E402
 
-YEARS = {"A": "data/backtests/oos/v1_20*/trades.csv", "B": "data/backtests/inv/v1cr_room_20*/trades.csv"}
+YEARS = {
+    "A": "data/backtests/oos/v1_20*/trades.csv",
+    "B": "data/backtests/inv/v1cr_room_20*/trades.csv",
+    "C": "data/backtests/oos_c/v1_20*/trades.csv",
+}
 CACHE = Path("data/research/v1_regime_features.parquet")
 CONTEXT = ["H1", "H4", "D1"]
 

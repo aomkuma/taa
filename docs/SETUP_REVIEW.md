@@ -579,6 +579,35 @@ identically to the runs with it (`data/backtests/inv/{v1,f1}nocap_2026-03`).
   `min_lot_max_risk_percent`).
 - Only March was compared; August and the year were not rerun with it off.
 
+## 21. V1 by market condition, and the rules to judge on fresh data (2026-10-17)
+
+Owner, 2026-10-17: every setup profitable in every market condition, one setup at a time; V1 first, because it
+fails the out-of-sample year (docs/OUT_OF_SAMPLE.md). `research/2026-10-17-v1/v1_regimes.py` rebuilds the market
+map at each V1 entry (the engine's `MapBook`, H1/H4/D1, plus each timeframe's ATR percentile) for year A
+(2024-10 .. 2025-02, the five months done) and year B (2025-10 .. 2026-09, in sample).
+
+- **Year A loses in almost every condition:** every symbol but AUDUSD (3 trades), both sides, NY and late
+  sessions, every H4/H1/D1 map state, mid and high volatility. No single regime explains it, so cutting one
+  regime cannot rescue V1 alone.
+- Positive in both years: the London session (A +0.129 on 25, B +0.418 on 49), low H1 volatility (ATR percentile
+  < 25: A +0.309 on 20, B +0.403 on 45), low H4 volatility (+0.042 / +0.280), H1 swings against the trade (the
+  pattern completes against an H1 move: +0.061 / +0.337). Negative in both: USDCHF, USDJPY, a planned R:R of
+  1.5-2.25.
+
+| Rule (taken trades kept) | A n | A R/t | B n | B R/t |
+|---|---|---|---|---|
+| V1 now | 100 | −0.230 | 173 | +0.226 |
+| **R1: London session or low H1 volatility** | 40 | +0.131 | 71 | +0.412 |
+| **R2: H1 swings against the trade** | 36 | +0.061 | 65 | +0.337 |
+| **R3: R1 without USDCHF and USDJPY** | 28 | +0.291 | 53 | +0.613 |
+
+- About a dozen combinations were tried on these two samples, so the numbers above are optimistic. **R1-R3 are
+  written down here before the data that judges them**: year A's remaining months (2025-03 .. 09) and year C
+  (2023-10 .. 2024-09, `data/backtests/oos_c/`). A rule goes to the engine (a V1 parameter, then the backtest
+  ladder) only if it holds there; `config.yaml` stays as it is until then (and the owner's go-ahead).
+- Trade less, not never: R1 keeps about 40 % of V1's trades; the other conditions are not shown to have a
+  "surest" subset yet.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
