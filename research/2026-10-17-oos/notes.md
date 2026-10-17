@@ -9,3 +9,5 @@
 - 2026-10-17 14:30: year C (2023-10 .. 2024-09) downloaded (`download_year_c.py`; history backup before it:
   `D:/taa-history-backup-2026-10-17b`); its queue (`oos_queue_c.sh`, outputs `data/backtests/oos_c/`) starts
   when year A's ends. V1 by market condition, A against B: `research/2026-10-17-v1/v1_regimes.py`.
+- 2026-10-17 14:40: the owner stopped the runs (year A 12/36; S1 2025-01 interrupted, rerun on resume; year C
+  not started).

@@ -608,6 +608,25 @@ map at each V1 entry (the engine's `MapBook`, H1/H4/D1, plus each timeframe's AT
 - Trade less, not never: R1 keeps about 40 % of V1's trades; the other conditions are not shown to have a
   "surest" subset yet.
 
+## 22. Setup priorities (owner, 2026-10-17)
+
+Owner's question: which setups lose so often that developing them is not worth the time? Answer from the
+measurements above, accepted by the owner:
+
+| Setup | Evidence | Decision |
+|---|---|---|
+| S1 (M1 gold fade) | in sample +0.277 (76), out of sample A so far +0.179 (25): positive in both | **priority 1** |
+| V1 (harmonic + room) | in sample +0.226, out of sample A −0.230 (100); the only setup whose traded direction beats the other by +0.22 R (§9) | **priority 2** (rules R1-R3, §21) |
+| F1 (M15 breakout fade) | in sample +0.159, out of sample A −0.012 (45); needs about 69 % wins to pay | **priority 3** |
+| TS (triple screen) | in development by the other session | the other session |
+| Original breakout, pattern breakout, box breakout (breaks traded in their own direction) | −0.154 (3,750 signals), −0.222 (901), −0.24 (199); negative in both halves, the traded direction worse than random (§3, §9) | **parked**: no development; the code stays, the scanner keeps them |
+| Candle reversal, fib pullback, Elliott wave, neckline break, SMC reversal | raw signals −0.098, −0.163, −0.075, +0.003 (89), about 1 a year; never measured with the context screens | low priority |
+
+- One setup at a time, in this order; the out-of-sample years (docs/OUT_OF_SAMPLE.md) judge every change.
+- The out-of-sample runs were stopped by the owner on 2026-10-17 at 14:40 Thai: year A at 12 of 36 runs (V1 and F1
+  to 2025-02 / 2025-01, S1 to 2024-12; S1 2025-01 interrupted), year C not started. `oos_queue.sh` and
+  `oos_queue_c.sh` resume where they stopped (finished months are skipped).
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
