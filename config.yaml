@@ -103,7 +103,8 @@ lanes:
       signal_expiry_bars: 1
       items:
         - name: setup_breakout_scalp
-          params: {screen_h4: with, screen_h1: with, screen_tide_tf: H1, screen_wave_tf: M15, fade_counter_trend: true, trend_entries: false, atr_bars: 60, stop_mode: atr, sl_atr_multiple: 2.0, target_mode: rr, rr_target: 0.5, min_rr: 0.5, max_sl_atr: 4.0, skip_window_ny: "08:00-12:00", friday_cutoff_utc: "16:00"}
+          # max_sl_atr 20: no own stop cap (owner, 2026-10-17: a far stop gets a smaller lot, never SL_TOO_FAR)
+          params: {screen_h4: with, screen_h1: with, screen_tide_tf: H1, screen_wave_tf: M15, fade_counter_trend: true, trend_entries: false, atr_bars: 60, stop_mode: atr, sl_atr_multiple: 2.0, target_mode: rr, rr_target: 0.5, min_rr: 0.5, max_sl_atr: 20.0, skip_window_ny: "08:00-12:00", friday_cutoff_utc: "16:00"}
     max_spread_to_sl_ratio: 1.0     # a stop of 2 x ATR(60 M1 bars) is a few spreads wide
     management:
       setup_breakout_scalp: {break_even: false, trailing: false, time_stop_bars: 60}   # one hour, as backtested

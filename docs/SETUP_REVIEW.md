@@ -570,8 +570,13 @@ A strategy's own `max_sl_atr` (default 3 ATR) still refused far stops inside V1 
 ceiling, effectively off: `data/research/config_v1_nocap.yaml`, `config_f1_nocap.yaml`), March 2026 traded
 identically to the runs with it (`data/backtests/inv/{v1,f1}nocap_2026-03`).
 
-- **Owner, 2026-10-16: off.** `max_sl_atr: 20.0` in V1's and F1's params in `config.yaml`. S1 keeps its 4.0 (its
-  stop is 2 × ATR by construction).
+- **Owner, 2026-10-16: off.** `max_sl_atr: 20.0` in V1's and F1's params in `config.yaml`.
+- **Owner, 2026-10-17: off for S1 too** ("no SL_TOO_FAR: a smaller lot instead; refuse only when the lot cannot
+  be made small enough"): `max_sl_atr: 20.0` in lane `s1`. S1's stop is 2 × its 60-bar ATR plus the spread, so
+  the 4 ATR cap bound only when the spread exceeded about 2 ATR; its March run with the cap off matched the
+  baseline as far as it ran (to 10 March, `s1nocap_2026-03.log`). A stop the minimum lot cannot carry within
+  the risk is refused by the sizer (`RISK_BELOW_MIN_LOT`; the aggressive preset allows the minimum lot up to
+  `min_lot_max_risk_percent`).
 - Only March was compared; August and the year were not rerun with it off.
 
 ## 10. Still to do
