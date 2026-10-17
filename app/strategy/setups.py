@@ -21,7 +21,9 @@ Each setup turns one *trigger* detector's evidence on the entry timeframe into a
     (else the farthest, which then fails the RR check);
   - ``level``: the nearest opposing S/R zone of the context, under the same rule;
   - ``rr``: ``rr_target`` × the risk. Measured or level modes without a usable price fall back to it;
-  - ``zone``: the near edge of the nearest opposing zone (supply for a BUY) on the ``zone_scope`` maps.
+  - ``zone``: the near edge of the nearest opposing zone (supply for a BUY) on the ``zone_scope`` maps;
+  - ``read_level``: the nearest level of the ``structure_tf`` chart read ahead, at most ``rr_target`` R away,
+    ``target_front_atr`` × the read's ATR in front of it (before the level, where price tends to stall).
 - **Triple screen and demand/supply (owner, 2026-10-13; SETUP_REVIEW §16, CONFLUENCE_DIRECTION §3.1):** every
   setup may gate on the higher-timeframe market map (``MarketContext.htf``, ``timeframes.context``). The first
   screen ``screen_h4`` (the tide) and the second ``screen_h1`` (the wave) read the map's state relative to the
@@ -173,6 +175,9 @@ class SetupParams(EntryRuleParams):
     mixed_rule: MixedRule = "any"
     level_gate: LevelGate = "off"
     room_min_r: float | None = Field(default=None, gt=0, le=10, description="R to the nearest opposing level")
+    target_front_atr: float = Field(
+        default=0.0, ge=0, le=2, description="read_level: the target this many read ATR before the level"
+    )
     structure_stop: bool = False
     # resume: Elder's third screen (owner, 2026-10-15) - after the trigger, wait up to resume_bars bars for
     # the first bar that closes beyond the previous bar's extreme in the trade's direction, and enter on it
@@ -476,11 +481,14 @@ class EvidenceSetup(BaseStrategy):
             ahead_levels = sorted(
                 (lv.price for lv in levels if (lv.price - entry) * sign > 0), key=lambda t: abs(t - entry)
             )
-            if not ahead_levels:
+            if read is None or not ahead_levels:
                 return rr_tp, f"{p.rr_target:g}R (no {p.structure_tf} level ahead)"
             level = ahead_levels[0]
-            if abs(level - entry) / risk > p.rr_target:
+            front = level - sign * p.target_front_atr * read.atr
+            if abs(front - entry) / risk > p.rr_target:
                 return rr_tp, f"{p.rr_target:g}R (the {p.structure_tf} level {level:.5g} is farther)"
+            if p.target_front_atr:
+                return front, f"{p.target_front_atr:g} ATR before the {p.structure_tf} level {level:.5g}"
             return level, f"the {p.structure_tf} level {level:.5g}"
         if p.target_mode == "measured":
             prices, label = list(ev.targets), "measured target"
@@ -629,6 +637,32 @@ def _at_level(read: ChartRead, buy: bool, entry: float) -> tuple[bool, str]:
         return False, f"{read.timeframe} no supportive level within {read.tol_atr:g} ATR"
     lv = min(hits, key=lambda x: abs(entry - x.price))
     return True, f"{read.timeframe} {lv.role.value.lower()} {lv.price:.5g}"
+
+
+def _pivot_at_level(
+    market: MarketContext, frames: Sequence[str], pivot: float | None, tol_atr: float | None
+) -> Condition:
+    """The pullback's extreme (*pivot*) within the tolerance (``tol_atr`` × the read's ATR, else the read's
+    own tolerance) of a level of one of the *frames*' chart reads, whatever its role: a pullback that turned
+    at a resistance, at a flipped level, or just beyond a level it swept. A missing read holds."""
+    label = "pivot_at_level"
+    if pivot is None:
+        return Condition(label, False, 1.0, "no pullback extreme")
+    reads = [r for f in frames if (r := _read(market, f)) is not None and r.atr > 0]
+    where = "/".join(frames)
+    if not reads:
+        return Condition(label, False, 1.0, f"no {where} chart read")
+    hits = [
+        (abs(lv.price - pivot) / r.atr, r, lv)
+        for r in reads
+        for lv in r.levels
+        if abs(lv.price - pivot) <= (r.tol_atr if tol_atr is None else tol_atr) * r.atr
+    ]
+    if not hits:
+        return Condition(label, False, 1.0, f"pullback extreme {pivot:.5g} at no {where} level")
+    _, r, lv = min(hits, key=lambda h: h[0])
+    detail = f"pullback extreme {pivot:.5g} at the {r.timeframe} {lv.role.value.lower()} {lv.price:.5g}"
+    return Condition(label, True, 1.0, detail)
 
 
 def _higher_read(market: MarketContext, tf: str) -> ChartRead | None:
@@ -1000,6 +1034,60 @@ class CandleReversal(EvidenceSetup):
         ]
 
 
+class TripleScreenParams(SetupParams):
+    screen_h4: ScreenGate = "with"  # the tide; ``with_or_range`` also trades a ranging H4 (owner, 2026-10-17)
+    structure_tf: ScreenFrame = "H4"  # the H4 swings not against the trade; the target is the next H4 level
+    structure_gate: StructureGate = "not_against"
+    stop_buffer_atr: float = Field(default=0.5, ge=0, le=2)  # OWNER_TRADING hypothesis 9: survive a retest
+    max_sl_atr: float = Field(default=20.0, gt=0, le=20)  # no own stop cap (the sizer bounds the loss)
+    target_mode: TargetMode = "read_level"
+    rr_target: float = Field(default=3.0, gt=0, le=10)
+    target_front_atr: float = Field(default=0.25, ge=0, le=2)
+    pivot_level_tfs: tuple[ScreenFrame, ...] = ("H1", "H4")  # (): no location gate
+    pivot_tol_atr: float | None = Field(default=None, gt=0, le=2, description="None: the read's tolerance")
+
+
+class TripleScreen(EvidenceSetup):
+    """The owner's triple screen (2026-10-17, docs/OWNER_TRADING.md "Setup TS"): with the tide, sell the end
+    of a wave that rallied into a level (buy the mirror), entered when the entry timeframe breaks its
+    structure.
+
+    - **Trigger** (the third screen): ``structure.bos_choch`` in the trade's direction, the first close beyond
+      the last confirmed swing (a SELL: below the last swing low). After a rally into the range top it is a
+      change of character (the owner's case A); after a breakdown and its retest, a break of structure
+      (case B: the broken level now resists).
+    - **Location:** the pullback's extreme (the trigger's invalidation, the last opposite swing) at a level of
+      the H1 or H4 chart read (``pivot_level_tfs``).
+    - **Context:** the H4 map with the trade (``screen_h4: with``; ``with_or_range`` also in a range) and the
+      H4 swings not against it. The second screen (the wave) is read from the location, not the H1 state.
+    - **Plan:** the stop beyond the pullback's extreme by ``stop_buffer_atr`` entry ATR; the target
+      ``target_front_atr`` H4 ATR before the next H4 level, at most ``rr_target`` R, at least ``min_rr``.
+
+    Lane / research only (not advised).
+    """
+
+    name = "setup_triple_screen"
+    description = (
+        "With the H4 trend, a pullback that turned at an H1/H4 level, entered on the structure break. "
+        "Unproven."
+    )
+    setup_code = "TRIPLE_SCREEN_PULLBACK"
+    triggers = frozenset({"structure.bos_choch"})
+    core_families = frozenset({Family.TREND})
+    Params = TripleScreenParams
+    advised = False
+
+    def confirmations(
+        self, trigger: ActiveEvidence, items: Sequence[ActiveEvidence], ctx: StrategyContext
+    ) -> list[Condition]:
+        p: TripleScreenParams = self.params
+        if not p.pivot_level_tfs:
+            return []
+        return [
+            _pivot_at_level(ctx.market, p.pivot_level_tfs, trigger.evidence.invalidation, p.pivot_tol_atr)
+        ]
+
+
 SETUPS: tuple[type[EvidenceSetup], ...] = (
     NecklineBreak,
     PatternBreakout,
@@ -1011,4 +1099,5 @@ SETUPS: tuple[type[EvidenceSetup], ...] = (
     ScalpBreakout,
     BoxBreakout,
     CandleReversal,
+    TripleScreen,
 )

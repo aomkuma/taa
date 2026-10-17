@@ -211,6 +211,48 @@ total risk of all parts fixed in advance. The PWA's Trading profile already has 
 in": the first order at the signal, the others as limits toward the stop, one shared stop, the total within the
 risk per signal).
 
+## Setup TS - the triple screen pullback (owner, 2026-10-17)
+
+**Where it came from.** The owner's plan for the week of 2026-10-19 (XAUUSD, H1 chart at the Friday close
+4,165, OANDA): the H4 still falls (lower highs 4,225 -> 4,215 -> 4,200 under the trendline from 4,400), the H1
+rallied 4,080 -> 4,200 and its MACD just crossed down, M15 "should go on down", support near 4,100.
+- **Case A:** the market opens with a bounce into 4,185-4,200 (the range top and the trendline): sell once M15
+  turns (a lower high, then a close below the last low); stop above 4,215 with a buffer; target 4,100, before the
+  4,075-4,085 double bottom.
+- **Case B:** price breaks 4,150 first: no chase; sell the retest of 4,150 from below when it holds as
+  resistance (an M15 lower high under it); stop above that lower high.
+- **No trade:** an H1/H4 close above 4,215, or chop between 4,150 and 4,185.
+
+**Owner's answers (2026-10-17):** (1) the first screen both ways - H4 DOWN only, and H4 DOWN or RANGE - as two
+variants; (2) the M15 trigger is the close beyond the last swing (Elder's previous-bar close as a later
+variant); (3) both sides (the buy mirror at support in an up trend); (4) XAUUSD on M15 first, then the 8
+symbols, and M5 as an entry timeframe too; (5) build it now as a separate setup that does not touch the others.
+
+**The rule** (`setup_triple_screen`, `app/strategy/setups.py`; lane / research only, not offered by the scanner):
+
+| Owner's idea | Measured rule | Parameter (default) |
+|---|---|---|
+| Screen 1, the tide | The H4 map with the trade; variant: also a ranging H4 | `screen_h4: with` / `with_or_range` |
+| ... a range with lower highs | The H4 swings not against the trade (DOWN or a mixed phase for a sell) | `structure_tf: H4`, `structure_gate: not_against` |
+| Screen 2, the wave | Read from the location below, not from the H1 state | `screen_h1: any` |
+| The range top (A) / the broken level (B) | The pullback's extreme (the last swing before the break) within the read's tolerance of an H1 or H4 chart-read level, any role (resistance, flipped, or one it swept) | `pivot_level_tfs: [H1, H4]`, `pivot_tol_atr` (the read's 0.25 ATR) |
+| Screen 3, M15 turns down | `structure.bos_choch` on the entry timeframe: the first close beyond the last confirmed swing (A: a change of character; B: a break of structure) | trigger |
+| Stop above the lower high, with a buffer | Beyond the pullback's extreme by half an entry ATR (hypothesis 9) | `stop_mode: invalidation`, `stop_buffer_atr: 0.5`, `max_sl_atr: 20` |
+| Target before the support | A quarter of an H4 ATR before the next H4 chart-read level, at least 1.5 R, at most 3 R | `target_mode: read_level`, `target_front_atr: 0.25`, `min_rr: 1.5`, `rr_target: 3` |
+
+Not in version 1: the volume profile (POC 4,150-4,160; the system has none), the trendline as a level, the MACD
+cross. Management: the system default (break-even at +1 R, trailing from +1.5 R) until a backtest says
+otherwise.
+
+**Test plan.** Variants TS-w (H4 `with`) and TS-r (`with_or_range`), each on M15 and M5 (M5: the bar-counted
+settings rescaled, e.g. `cooldown_bars` 12 = 1 hour; `stop_buffer_atr` 0.85 = about half an M15 ATR). The
+ladder: March 2026, then August 2026, then the year; the goal +0.15 R per trade. Backtests run in one account
+with the active setups (owner, 2026-10-17; another session is building that mode), against the same account
+without TS.
+
+**Open points for the owner:** the entry window. The setups trade 07:00-20:00 UTC (14:00-03:00 Thai); the
+Monday Asian bounce of case A (05:00-14:00 Thai) falls outside it.
+
 ## Hypotheses to test (with the report and backtests)
 
 1. **Early manual exit** ("it does not run and looks like turning"): turn it into a measurable rule (not +X R

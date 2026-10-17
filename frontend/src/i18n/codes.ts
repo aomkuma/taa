@@ -298,6 +298,7 @@ export const STRATEGY_NAMES = [
   'setup_breakout_scalp',
   'setup_breakout_box',
   'setup_candle_reversal',
+  'setup_triple_screen',
 ] as const;
 
 // Cloud backtest runs (TAA-910): the statuses in the comment of BacktestRunRow.status.

@@ -209,7 +209,8 @@
     "setup_breakout": "Donchian channel and Asian / London / New York opening-range breakouts. Unproven.",
     "setup_breakout_scalp": "Breakout F1's fade on a short entry timeframe (S1: M1 gold scalping). Lane only. Unproven.",
     "setup_candle_reversal": "Reversal candlestick at a level (S/R, Fibonacci, pivots, trendline). Unproven.",
-    "setup_breakout_box": "A box after a run, broken with the run, with the H1 trend; target the next H1 level. Unproven."
+    "setup_breakout_box": "A box after a run, broken with the run, with the H1 trend; target the next H1 level. Unproven.",
+    "setup_triple_screen": "With the H4 trend, a pullback that turned at an H1/H4 level, entered on the structure break. Unproven."
   },
   "backtestStatus": {
     "QUEUED": "Queued",
@@ -261,7 +262,8 @@
     "setup_breakout": "Range breakout",
     "setup_breakout_scalp": "Scalp breakout (S1)",
     "setup_candle_reversal": "Candlestick reversal",
-    "setup_breakout_box": "Box breakout after a run"
+    "setup_breakout_box": "Box breakout after a run",
+    "setup_triple_screen": "Triple screen pullback (TS)"
   },
   "gate": {
     "G1_TRADABLE": "Tradable",
