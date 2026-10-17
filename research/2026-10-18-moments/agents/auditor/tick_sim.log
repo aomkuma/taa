@@ -1,0 +1,61 @@
+A reproduces ny_lab.M1.trade on 600 random trades
+confluence (r9) done
+triple screen (r5) done
+random rows done
+random rows done
+random rows done
+random rows done
+
+Per sample and tool: win % / USD a trade (R a trade) under A (M1 as used) .. E (ticks, 1 s latency)
+confluence (r9)         8/5.0   n=  425 | A win 30.4% -0.198 (-0.032R) | B win 30.1% -0.239 (-0.040R) | C win 30.4% -0.202 (-0.032R) | D win 31.1% -0.173 (-0.021R) | E win 31.1% -0.158 (-0.022R)
+                       B - A per trade: -0.041 USD (se 0.024)
+                       C - A per trade: -0.004 USD (se 0.039)
+                       D - A per trade: +0.025 USD (se 0.069)
+                       E - A per trade: +0.040 USD (se 0.085)
+                       entry: real spread at fill 0.337 vs M1 column 0.260; price drift in 250 ms +0.016 (p90 +0.21), in 1 s -0.003
+                       both-in-one-bar stops in A: 1 (0.2%); ticks C say: {'win': 1}
+                       D stop fills beyond the stop (gap, USD): mean 0.134 p50 0.07 p90 0.33 p99 0.74; > 0.07 in 49%
+triple screen (r5)     10/8.0   n=  375 | A win 36.0% -0.507 (-0.063R) | B win 36.0% -0.516 (-0.064R) | C win 36.0% -0.516 (-0.064R) | D win 36.5% -0.579 (-0.072R) | E win 36.5% -0.582 (-0.072R)
+                       B - A per trade: -0.009 USD (se 0.002)
+                       C - A per trade: -0.009 USD (se 0.002)
+                       D - A per trade: -0.071 USD (se 0.141)
+                       E - A per trade: -0.074 USD (se 0.155)
+                       entry: real spread at fill 0.329 vs M1 column 0.254; price drift in 250 ms -0.002 (p90 +0.21), in 1 s -0.023
+                       D stop fills beyond the stop (gap, USD): mean 0.404 p50 0.07 p90 0.39 p99 1.83; > 0.07 in 51%
+random rows             5/4.0   n= 2500 | A win 43.1% -0.145 (-0.036R) | B win 42.4% -0.204 (-0.050R) | C win 42.7% -0.178 (-0.044R) | D win 43.4% -0.164 (-0.040R) | E win 43.2% -0.183 (-0.045R)
+                       B - A per trade: -0.058 USD (se 0.014)
+                       C - A per trade: -0.033 USD (se 0.017)
+                       D - A per trade: -0.019 USD (se 0.023)
+                       E - A per trade: -0.038 USD (se 0.031)
+                       entry: real spread at fill 0.345 vs M1 column 0.258; price drift in 250 ms +0.000 (p90 +0.16), in 1 s +0.004
+                       both-in-one-bar stops in A: 16 (0.6%); ticks C say: {'stop': 10, 'win': 6}
+                       D stop fills beyond the stop (gap, USD): mean 0.150 p50 0.07 p90 0.34 p99 1.06; > 0.07 in 50%
+random rows             8/6.0   n= 2500 | A win 31.7% -0.186 (-0.031R) | B win 31.2% -0.263 (-0.043R) | C win 31.0% -0.261 (-0.043R) | D win 31.4% -0.251 (-0.041R) | E win 31.3% -0.230 (-0.038R)
+                       B - A per trade: -0.077 USD (se 0.024)
+                       C - A per trade: -0.075 USD (se 0.026)
+                       D - A per trade: -0.065 USD (se 0.025)
+                       E - A per trade: -0.044 USD (se 0.037)
+                       entry: real spread at fill 0.345 vs M1 column 0.258; price drift in 250 ms +0.000 (p90 +0.16), in 1 s +0.004
+                       both-in-one-bar stops in A: 8 (0.3%); ticks C say: {'be': 4, 'win': 3, 'stop': 1}
+                       D stop fills beyond the stop (gap, USD): mean 0.152 p50 0.07 p90 0.34 p99 1.20; > 0.07 in 50%
+random rows             3/3.0   n= 2500 | A win 45.6% -0.304 (-0.099R) | B win 44.0% -0.396 (-0.129R) | C win 44.8% -0.350 (-0.114R) | D win 46.3% -0.300 (-0.098R) | E win 46.3% -0.301 (-0.098R)
+                       B - A per trade: -0.092 USD (se 0.015)
+                       C - A per trade: -0.046 USD (se 0.018)
+                       D - A per trade: +0.004 USD (se 0.021)
+                       E - A per trade: +0.003 USD (se 0.026)
+                       entry: real spread at fill 0.345 vs M1 column 0.258; price drift in 250 ms +0.000 (p90 +0.16), in 1 s +0.004
+                       both-in-one-bar stops in A: 43 (1.7%); ticks C say: {'stop': 25, 'win': 18}
+                       D stop fills beyond the stop (gap, USD): mean 0.148 p50 0.07 p90 0.32 p99 1.02; > 0.07 in 51%
+random rows            10/8.0   n= 2500 | A win 36.6% -0.178 (-0.022R) | B win 36.0% -0.262 (-0.033R) | C win 36.0% -0.262 (-0.033R) | D win 36.5% -0.243 (-0.030R) | E win 36.7% -0.205 (-0.025R)
+                       B - A per trade: -0.085 USD (se 0.019)
+                       C - A per trade: -0.085 USD (se 0.019)
+                       D - A per trade: -0.065 USD (se 0.027)
+                       E - A per trade: -0.027 USD (se 0.038)
+                       entry: real spread at fill 0.345 vs M1 column 0.258; price drift in 250 ms +0.000 (p90 +0.16), in 1 s +0.004
+                       D stop fills beyond the stop (gap, USD): mean 0.202 p50 0.08 p90 0.44 p99 1.70; > 0.07 in 54%
+
+confluence (r9): 425 trades; totals A -84.1  B -101.5  C -85.6  D -73.6  E -67.1 USD
+   outcome A -> D: {'be': {'be': 77, 'stop': 2, 'time': 0, 'win': 3}, 'stop': {'be': 2, 'stop': 206, 'time': 0, 'win': 0}, 'time': {'be': 0, 'stop': 0, 'time': 3, 'win': 0}, 'win': {'be': 4, 'stop': 2, 'time': 0, 'win': 126}}
+
+triple screen (r5): 375 trades; totals A -190.3  B -193.6  C -193.6  D -217.0  E -218.1 USD
+   outcome A -> D: {'stop': {'stop': 189, 'time': 1, 'win': 0}, 'time': {'stop': 0, 'time': 48, 'win': 0}, 'win': {'stop': 2, 'time': 0, 'win': 135}}

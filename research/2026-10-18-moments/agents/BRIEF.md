@@ -68,6 +68,23 @@ change), not only rules that already pass +0.15 R.
 - Costs are about 0.3-0.4 USD a round trip at 0.01 lot (spread 0.23-0.36 + slippage). USD at 0.01 lot = price move x 1.
 - One position at a time.
 
+### Real costs (the auditor, 2026-10-17; `agents/auditor/notes.md`) - use them in every final test
+
+- The M1 `spread` column is the minute's **minimum** spread: add **+0.08 USD** to it for a market entry (or use the
+  real ask per minute from `agents/auditor/tick_minutes.parquet`, 2025-10+). Real entry spread: Asia 0.39, London /
+  New York 0.29-0.30 (2026-04+), 20-24 UTC 0.37-0.45 USD.
+- Stop fills: slippage **0.15 USD** (New York 0.20), not 0.07. Entry slippage 0.07 is conservative; keep it.
+- Real round trip at 0.01 lot about 0.43 USD on average. The harness is otherwise sound (no look-ahead; ticks vs M1
+  within +-0.01 R).
+- Gold needs 7-15 win-rate points over a coin for +0.15 R (3/3: 14.6, 5/4: 11.5, 8/6: 9.6, 10/8: 9.1, 15/10: 7.8,
+  20/12: 7.0). Report R a trade next to that cost and the edge over the coin in points.
+- FX majors: M1 scalps are not viable at FBS standard costs (spread / median M1 range 0.5-1.2 vs gold's 0.07-0.09):
+  targets of 15-20 pips or more (H1 scale). The real FX spread is unknown (no FX ticks); assume the column + 0.2-0.3 pip.
+- Older half-years cost about twice as much in R with price-scaled tools (gold's spread stayed ~0.20-0.24 USD at
+  half today's price): compare gross R (before costs) across periods.
+- Cheapest loss cuts: bigger targets / fewer trades; avoid Asia and 20-24 UTC; never 21-23 UTC; beware release
+  minute 0 for stops.
+
 ## The learning loop (the owner's): every run's stopped losers in three kinds, always against a coin-flip side
 
 1 wrong way (less than half way to the target before the stop, no run to the target afterwards) -> the direction;

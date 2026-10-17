@@ -1,0 +1,75 @@
+C:\Users\korap\taa\research\2026-10-18-moments\agents\auditor\m1_quality.py:25: Pandas4Warning: Starting with pandas version 4.0 all arguments of max will be keyword-only.
+  bad = (m.high < m[["open", "close"]].max(1)) | (m.low > m[["open", "close"]].min(1)) | (m.high < m.low)
+C:\Users\korap\taa\research\2026-10-18-moments\agents\auditor\m1_quality.py:25: Pandas4Warning: Starting with pandas version 4.0 all arguments of min will be keyword-only.
+  bad = (m.high < m[["open", "close"]].max(1)) | (m.low > m[["open", "close"]].min(1)) | (m.high < m.low)
+bars 1802466  2021-09-01 00:00:00+00:00 .. 2026-10-14 08:18:00+00:00
+duplicate open times: 0
+OHLC inconsistent bars: 0 ; zero-range bars: 1438 (0.08%) ; spread <= 0: 137
+close_time - open_time != 60 s: 0
+old store 2021-09-01 00:00:00+00:00 .. 2023-10-02 23:59:00+00:00, new 2023-09-01 00:00:00+00:00 .. 2026-10-14 08:18:00+00:00; overlap bars 30022
+   overlap open: equal 100.0%  max |diff| 0.00
+   overlap high: equal 100.0%  max |diff| 0.00
+   overlap low: equal 100.0%  max |diff| 0.00
+   overlap close: equal 100.0%  max |diff| 0.00
+   overlap spread: equal 100.0%  max |diff| 0.00
+   shift new by -3 h: return correlation 0.003 (28018)
+   shift new by -2 h: return correlation -0.003 (28378)
+   shift new by -1 h: return correlation 0.005 (28756)
+   shift new by +0 h: return correlation 1.000 (30021)
+   shift new by +1 h: return correlation 0.005 (28636)
+   shift new by +2 h: return correlation -0.002 (28138)
+   shift new by +3 h: return correlation 0.003 (27777)
+
+gaps > 1 min: 1488; at the daily break (~17:00-18:00 ET) 1332; weekends/holidays 267; other 148
+   other gaps by length: {Interval(1.0, 2.0, closed='right'): 65, Interval(2.0, 5.0, closed='right'): 21, Interval(5.0, 15.0, closed='right'): 7, Interval(15.0, 60.0, closed='right'): 7, Interval(60.0, 600.0, closed='right'): 46, Interval(600.0, 1000000000.0, closed='right'): 2}
+   other gaps > 5 min, by year: {2021: 2, 2022: 11, 2023: 25, 2024: 12, 2025: 8, 2026: 4}
+   the 10 longest other gaps:
+      2024-12-24 18:30:00+00:00 -> 2024-12-25 23:05:00+00:00 (1 days 04:35:00)
+      2025-12-24 18:30:00+00:00 -> 2025-12-25 23:05:00+00:00 (1 days 04:35:00)
+      2023-05-29 16:45:00+00:00 -> 2023-05-29 22:00:00+00:00 (0 days 05:15:00)
+      2022-05-30 16:45:00+00:00 -> 2022-05-30 22:00:00+00:00 (0 days 05:15:00)
+      2021-09-06 16:59:00+00:00 -> 2021-09-06 22:00:00+00:00 (0 days 05:01:00)
+      2021-11-25 17:59:00+00:00 -> 2021-11-25 23:00:00+00:00 (0 days 05:01:00)
+      2023-06-19 17:00:00+00:00 -> 2023-06-19 22:00:00+00:00 (0 days 05:00:00)
+      2022-09-05 17:00:00+00:00 -> 2022-09-05 22:00:00+00:00 (0 days 05:00:00)
+      2022-06-20 17:00:00+00:00 -> 2022-06-20 22:00:00+00:00 (0 days 05:00:00)
+      2025-11-27 18:15:00+00:00 -> 2025-11-27 23:05:00+00:00 (0 days 04:50:00)
+
+spike bars (wick > 8x the 4-hour median range beyond both neighbours' closes): 330; by year {2021: 29, 2022: 74, 2023: 76, 2024: 77, 2025: 43, 2026: 31}
+Empty DataFrame
+Columns: [open_time, close_time, time_server, open, high, low, close, tick_volume, spread, real_volume, med]
+Index: []
+      2021-09-03 12:38:00+00:00 o 1821.88 h 1824.19 l 1821.06 c 1822.84 sp 33 med range 0.24
+      2021-09-03 12:41:00+00:00 o 1823.22 h 1823.31 l 1818.46 c 1819.19 sp 32 med range 0.24
+      2021-09-03 12:44:00+00:00 o 1821.71 h 1821.71 l 1819.07 c 1819.32 sp 40 med range 0.25
+      2021-09-14 12:30:00+00:00 o 1783.94 h 1790.77 l 1779.48 c 1787.49 sp 23 med range 0.33
+      2021-09-20 02:24:00+00:00 o 1745.22 h 1745.22 l 1741.89 c 1743.96 sp 15 med range 0.28
+      2021-09-21 12:14:00+00:00 o 1767.44 h 1771.64 l 1767.35 c 1769.04 sp 26 med range 0.34
+      2021-09-22 01:09:00+00:00 o 1775.75 h 1775.87 l 1773.79 c 1775.34 sp 28 med range 0.15
+      2021-09-22 17:59:00+00:00 o 1775.81 h 1776.72 l 1771.37 c 1771.37 sp 44 med range 0.38
+      2021-09-22 18:00:00+00:00 o 1772.12 h 1783.26 l 1768.43 c 1781.11 sp 27 med range 0.38
+      2021-09-22 18:42:00+00:00 o 1771.16 h 1776.39 l 1770.84 c 1775.59 sp 34 med range 0.39
+      2021-09-23 20:24:00+00:00 o 1744.4 h 1744.4 l 1737.43 c 1741.19 sp 13 med range 0.25
+      2021-09-28 07:04:00+00:00 o 1740.21 h 1740.35 l 1736.01 c 1736.29 sp 17 med range 0.27
+
+M1 spread column (points; the minute's MINIMUM spread) by year:
+            mean   25%   50%   75%    max
+open_time                               
+2021       32.6  28.0  33.0  37.0  273.0
+2022       25.8  18.0  23.0  29.0  184.0
+2023       23.0  18.0  23.0  25.0  574.0
+2024       25.2  21.0  24.0  27.0  570.0
+2025       23.1  20.0  20.0  23.0  274.0
+2026       26.8  23.0  23.0  27.0   72.0
+   2021-11: UTC minutes mostly empty (Mon-Thu): 21:55 .. 22:59 (65 min)
+   2023-01: UTC minutes mostly empty (Mon-Thu): 21:55 .. 22:59 (65 min)
+   2023-03: UTC minutes mostly empty (Mon-Thu): 20:55 .. 21:59 (65 min)
+   2023-07: UTC minutes mostly empty (Mon-Thu): 20:55 .. 21:59 (65 min)
+   2023-11: UTC minutes mostly empty (Mon-Thu): 21:55 .. 22:59 (65 min)
+   2025-01: UTC minutes mostly empty (Mon-Thu): 21:55 .. 23:04 (70 min)
+   2025-03: UTC minutes mostly empty (Mon-Thu): 20:55 .. 22:04 (70 min)
+   2025-07: UTC minutes mostly empty (Mon-Thu): 20:55 .. 22:04 (70 min)
+   2025-11: UTC minutes mostly empty (Mon-Thu): 21:55 .. 23:04 (70 min)
+   2026-01: UTC minutes mostly empty (Mon-Thu): 21:55 .. 23:04 (70 min)
+   2026-03: UTC minutes mostly empty (Mon-Thu): 20:55 .. 22:04 (70 min)
+   2026-07: UTC minutes mostly empty (Mon-Thu): 20:55 .. 22:04 (70 min)

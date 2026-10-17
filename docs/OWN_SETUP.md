@@ -737,6 +737,22 @@ Did not hold: the direction after the first minute of the 08:30 releases (follow
 in both periods, at or below chance), round 10b's "FOMC / PCE continue, CPI reverses" (flips on 2021-23), FOMC
 minutes, retail sales, PPI, the statement minute.
 
+**Auditor** (`agents/auditor/`, notes.md). **The harness is not why the setups fail:** the simulator, the stored
+labels (3,000 rows, 0 mismatches), the features and the chart-read levels have no look-ahead and no result-changing
+bug (minor: float touches, a bar opening beyond the stop fills at the stop, the ATR's true range missing |previous
+close - low| - median ratio 1.000, an arbitrary side when both pass in one minute). Simulating the same trades on
+real ticks with realistic fills moves results by -0.07 .. +0.04 USD a trade (about +-0.01 R): confluence test -84.1
+-> -73.6 USD, triple screen -190.3 -> -217.0. **Costs:** the M1 spread column is the minute's minimum (100 % of 359k
+minutes); a market entry pays about +0.08 USD more; real entry spread Asia 0.39, London / New York 0.29-0.30 (since
+2026-04), 20-24 UTC 0.37-0.45; stop fills slip 0.15 on average (New York 0.20); a real round trip about 0.43 USD at
+0.01 lot. **What a setup needs (gold):** 3/3 needs 14.6 win-rate points over a coin for +0.15 R, 5/4 11.5, 8/6 9.6,
+10/8 9.1, 15/10 7.8, 20/12 7.0 (LightGBM's +6 points fell short of all). **FX majors:** the spread is 0.5-1.2 of the
+median M1 range (gold 0.07-0.09) - M1 scalps not viable at FBS standard costs; 10/8 pips needs 12.9 points, 20/15
+9.7. A raw account (if offered: a review quotes gold 0.10 raw vs 0.30 standard, not verified with FBS) saves about
+0.03 R a trade at 8/6 - not enough for a coin-like signal. Data: gold M1 clean (1.80 M bars from 2021-09, old and
+new stores identical where they overlap), DST correct, 330 spike bars are real news moves; ticks 101 M, none out of
+order; FX majors clean.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had
