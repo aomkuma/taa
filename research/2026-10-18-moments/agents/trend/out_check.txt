@@ -1,0 +1,21 @@
+
+2021-10-25 12:30:00+00:00 ET range 2021-10-25 08:30:00-04:00: hi 1804.58 lo 1801.34 rng 3.24 adr 22.02 side 1 delay 2 H1 up True dn False
+  entry bar 2021-10-25 13:32:00+00:00 open 1805.06 spread 0.29; exit trail after 29 min, usd +0.40, R +0.096, risk 4.08
+  breakout bar 2021-10-25 13:31:00+00:00 close 1805.05; previous closes [1803.89 1804.06 1804.07]
+  exit bar 2021-10-25 14:00:00+00:00 o/h/l/c 1807.63/1807.69/1804.95/1805.82; path best high 1809.97 low 1802.52
+  range recomputed hi 1804.58 lo 1801.34 from 60 bars
+  loop simulator: trail +0.40 after 29 min
+
+2024-04-09 12:30:00+00:00 ET range 2024-04-09 08:30:00-04:00: hi 2353.79 lo 2345.88 rng 7.91 adr 33.68 side 1 delay 1 H1 up True dn False
+  entry bar 2024-04-09 13:31:00+00:00 open 2353.82 spread 0.24; exit trail after 67 min, usd +1.77, R +0.213, risk 8.25
+  breakout bar 2024-04-09 13:30:00+00:00 close 2353.81; previous closes [2351.56 2351.58 2352.91]
+  exit bar 2024-04-09 14:37:00+00:00 o/h/l/c 2360.14/2360.14/2355.76/2356.02; path best high 2364.22 low 2353.31
+  range recomputed hi 2353.79 lo 2345.88 from 60 bars
+  loop simulator: trail +1.77 after 67 min
+
+2026-02-26 13:30:00+00:00 ET range 2026-02-26 08:30:00-05:00: hi 5177.27 lo 5160.20 rng 17.07 adr 220.54 side -1 delay 1 H1 up False dn True
+  entry bar 2026-02-26 14:31:00+00:00 open 5145.85 spread 0.23; exit stop after 75 min, usd -31.56, R -1.000, risk 31.49
+  breakout bar 2026-02-26 14:30:00+00:00 close 5145.48; previous closes [5172.09 5171.61 5170.32]
+  exit bar 2026-02-26 15:45:00+00:00 o/h/l/c 5175.86/5180.27/5175.27/5179.42; path best high 5180.27 low 5130.48
+  range recomputed hi 5177.27 lo 5160.20 from 60 bars
+  loop simulator: stop -31.56 after 75 min

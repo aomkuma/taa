@@ -680,6 +680,31 @@ The first thing with a cause that keeps its sign across both periods: **FOMC and
 NFP and PPI flip. The samples are small (14-29 releases each in three years), and these releases come about three
 times a month - a weapon for the news, not a source of three trades a day.
 
+### Research team (owner, 2026-10-17: "open subagents to brainstorm, work until it is profitable, without
+waiting for me"; "cut losses -> break even -> profit -> sustainable profit")
+
+Brief: `research/2026-10-18-moments/agents/BRIEF.md`; each agent's rules, notes and results in its own folder.
+
+**Trend agent** (`agents/trend/`, notes.md, test.py). Foundations on 2021-10 .. 2026-02 (nine half-years): variance
+ratios at 60 / 120 / 240 minutes 0.97-1.20 (a faint trend tilt only at 4 hours), H1 lag-1 autocorrelation -0.05 ..
++0.05, the session's first 15-60 minutes agree with the next 1-3 hours 46-54 % with the sign flipping; 6,720
+opening-range-breakout cells negative without a filter. Best rule (T1, frozen before the test): the New York
+08:30-09:29 ET range, the first M1 close beyond it on a bar opening 09:30-09:59 ET, the H1 trend agreeing, the range
+below 0.35 x the 20-day range; the stop at the range's far side, a 1 R trail from +1 R, 180 minutes, one a day.
+
+| Step | Design R/trade (halves +) | Test trades | Test R/trade | Test USD |
+|---|---|---|---|---|
+| Every breakout, trailing exit | +0.009 (5/9) | 149 | -0.164 | -735 |
+| + H1 trend agrees | +0.086 (7/9) | 79 | -0.132 | -216 |
+| + the breakout by 10:00 ET | +0.124 (8/9) | 62 | -0.072 | -62 |
+| + range < 0.35 x 20-day range (T1) | +0.168 (9/9) | 52 | -0.066 | -39.3 |
+
+Test 2026-03 .. 10 month by month (T1): +97.0, +48.9, -110.0, -14.2, -8.7, -16.3, -34.4, -1.6 USD (2/8 positive,
+0.32 a day). A coin-flip side on the same entries: -0.016 +- 0.135 R; ours beats 36 % of the draws. **Stage: the
+filters cut the loss a trade (-0.164 -> -0.066 R) but by removing bad days, not by choosing the side** (the coin
+improved alike). About 0.12 R of the design result was gold's 2024-26 bull drift. Trades hand-checked against the
+bars (five) and the vectorised simulator against the loop simulator (300 trades).
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had

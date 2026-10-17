@@ -1,0 +1,18 @@
+step table (stop at the range's far side, trail 1R from +1R, 180 min):
+  0 every first close beyond the 08:30-09:30 range (to 11:30) N 1056  R +0.004  win  47%  usd  +0.12  halves+ 5/9  kinds 100/0/0  | -0.05 +0.03 +0.07 -0.01 +0.05 -0.08 -0.05 +0.00 +0.07
+  0b the same, trail 1R from +1R             N 1056  R +0.009  win  50%  usd  +0.07  halves+ 5/9  kinds 98/0/2  | -0.02 +0.05 +0.07 -0.00 +0.04 -0.05 -0.06 +0.01 +0.04
+  1 + the H1 trend agrees                    N  505  R +0.086  win  52%  usd  +0.59  halves+ 7/9  kinds 99/0/1  | -0.04 +0.16 +0.15 +0.11 +0.12 +0.07 -0.01 +0.07 +0.12
+  2 + the breakout by 10:00 ET (delay <= 30) N  389  R +0.124  win  53%  usd  +1.16  halves+ 8/9  kinds 99/0/1  | -0.03 +0.30 +0.17 +0.13 +0.14 +0.09 +0.02 +0.06 +0.22
+  3 + the breakout by 09:45 ET (delay <= 15) N  314  R +0.150  win  54%  usd  +1.35  halves+ 9/9  kinds 99/0/1  | +0.10 +0.22 +0.30 +0.23 +0.18 +0.03 +0.02 +0.05 +0.26
+
+splits of step 3:
+  rel830: False: N 266 R +0.182; True: N 48 R -0.022
+  year: 2021: N 15 R -0.091; 2022: N 68 R +0.340; 2023: N 63 R +0.223; 2024: N 79 R -0.043; 2025: N 74 R +0.141; 2026: N 15 R +0.298
+  slope_adr: (-0.0009394000000000001, 0.0325]: N 105 R +0.124; (0.0325, 0.0725]: N 104 R +0.169; (0.0725, 0.429]: N 105 R +0.159
+  pre_s: (-0.721, 0.0107]: N 105 R +0.156; (0.0107, 0.148]: N 104 R +0.093; (0.148, 1.609]: N 105 R +0.202
+  rng_adr: (0.0406, 0.231]: N 105 R +0.244; (0.231, 0.346]: N 104 R +0.161; (0.346, 1.685]: N 105 R +0.046
+  or_rel: (0.209, 0.69]: N 105 R +0.266; (0.69, 1.127]: N 104 R +0.119; (1.127, 4.049]: N 105 R +0.066
+  delay: (0, 5]: N 185 R +0.134; (5, 10]: N 75 R +0.064; (10, 15]: N 54 R +0.326
+
+exit timing of step 3: exits {'time': 187, 'stop': 72, 'trail': 55}  median minutes 180.0  risk USD median 10.21  risk/ADR median 0.279
+R distribution: [-1.   -0.68  0.08  0.6   2.09]  sd 1.049
