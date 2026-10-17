@@ -684,6 +684,23 @@ previous day's high/low do better (docs/OWNER_TRADING.md "TS: why the losers los
 H1/M15 trend, so 252 of 257 entries are already "with the day" and 237 beyond the previous day's extreme. No
 overlay for S1 from these.
 
+### 23.3 Two more held-out years: S1 is a gold-rally setup (2026-10-17)
+
+Gold 2021-10 .. 2023-09 (years E and D, the TS session's store `data/history_old`; `s1_years_de.py`), the same
+harness, nothing chosen on them. Gold ranged at 1,700-2,000; the spread was 0.40-0.45 of the M1 scale.
+
+| S1 in the funnel | E 2021-22 | D 2022-23 | C 2023-24 | A 2024-25 | B 2025-26 | 5 years |
+|---|---|---|---|---|---|---|
+| as it is (spread rule, time stop 60) | 38, −0.422 | 43, −0.262 | 29, −0.492 | 104, −0.112 | 99, +0.161 | 313, −0.093 |
+| floor 15 spreads, time stop 240 | 66, −0.218 | 49, −0.220 | 58, −0.058 | 95, +0.097 | 99, +0.162 | 367, −0.009 |
+| floor + only while spread <= 0.25 A (fixed before D/E) | 19, −0.358 | 16, −0.462 | 11, +0.414 | 65, +0.277 | 98, +0.145 | 209, +0.108 |
+
+- S1's edge belongs to gold's 2024-26 rally (high volatility against the spread); in the 2021-23 range it loses
+  with or without the floor. The TS session found the same for its M15 structure break (docs/OWNER_TRADING.md).
+- The cost gate failed its test on D/E (what it keeps still loses) but cuts the bad years' trades by about 70 %:
+  five years +0.108 R on 209 trades against −0.009 on 367. Trade less, not never, works here as damage control,
+  not as an edge in the range years.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
