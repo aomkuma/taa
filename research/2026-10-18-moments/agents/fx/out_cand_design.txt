@@ -1,0 +1,12 @@
+  V7b (no JPY, extra 0.5)            n= 279 win  55% net +0.283 pos 4/5 | +0.587 -0.068 +0.188 +0.227 +0.488 | USD +134.5 | worst -3.96 day -13.33 streak 11 maxDD 34.5 6L 8.2
+  V9  + pre-release share <= 0.25    n= 216 win  57% net +0.376 pos 5/5 | +0.630 +0.041 +0.211 +0.334 +0.929 | USD +128.6 | worst -3.96 day -13.33 streak 10 maxDD 22.7 6L 8.2
+  V10 + stop extra 1.0 ATR           n= 216 win  61% net +0.308 pos 5/5 | +0.458 +0.116 +0.202 +0.274 +0.662 | USD +139.4 | worst -4.58 day -15.16 streak 10 maxDD 22.1 6L 9.0
+  V11 + stop <= 4 USD                n= 191 win  62% net +0.323 pos 5/5 | +0.481 +0.112 +0.201 +0.282 +0.741 | USD +119.6 | worst -3.25 day -15.16 streak 7 maxDD 17.3 6L 8.8
+  RF  + max 3 pairs/day (cheapest)   n= 162 win  60% net +0.258 pos 5/5 | +0.358 +0.005 +0.153 +0.415 +0.512 | USD  +83.0 | worst -3.25 day -7.60 streak 10 maxDD 17.7 6L 8.9
+  RF coin side: net -0.033 win 49% USD -13.5; kinds ours  74/ 24/  3 coin  85/ 12/  4
+     EURUSD n= 31 net +0.226 | +0.495 +0.546 -1.000 -0.104 -0.119
+     GBPUSD n= 21 net +0.358 | +1.635 -0.479 +0.210 +0.522 +0.165
+     AUDUSD n= 44 net +0.312 | +0.145 +0.176 +0.612 +0.117 +1.020
+     USDCHF n= 26 net +0.039 | +0.277 -0.080 -0.305 +0.200 -0.259
+     USDCAD n= 28 net +0.437 | +0.115 -0.134 +0.622 +1.611      -
+     NZDUSD n= 12 net +0.022 | -0.273 -0.528 -0.048 +0.168 +0.793

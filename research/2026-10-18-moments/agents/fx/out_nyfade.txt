@@ -1,0 +1,386 @@
+release days (08:30 ET) in the calendar: 254 ['CPI', 'FOMC', 'GDP', 'NFP', 'PCE', 'PPI']
+
+=== A. fade path: mean of -sign(move 08:00->dec) x (price at T - price at dec) in units of H1 ATR, design, all halves pooled; columns = ET hour T ===
+-- decision 9.5 ET
+  EURUSD  +0.026 +0.042 +0.086 +0.079 +0.078 +0.083 +0.034 +0.065
+  GBPUSD  +0.048 +0.094 +0.099 +0.121 +0.127 +0.168 +0.143 +0.161
+  USDJPY  +0.005 -0.050 -0.029 -0.048 -0.071 -0.036 -0.067 -0.056
+  AUDUSD  +0.062 +0.081 +0.097 +0.094 +0.092 +0.085 +0.110 +0.166
+  USDCHF  +0.066 +0.038 +0.039 -0.019 -0.006 +0.010 -0.001 +0.005
+  USDCAD  -0.012 +0.029 +0.014 +0.027 -0.019 -0.015 -0.005 +0.033
+  NZDUSD  +0.074 +0.098 +0.108 +0.110 +0.112 +0.121 +0.138 +0.198
+-- decision 10 ET
+  EURUSD  +0.046 +0.082 +0.087 +0.095 +0.095 +0.101 +0.021 +0.058
+  GBPUSD  -0.020 +0.014 +0.014 +0.031 +0.004 +0.043 +0.011 +0.027
+  USDJPY  +0.003 -0.006 +0.048 +0.003 -0.038 -0.011 -0.035 -0.012
+  AUDUSD  -0.008 +0.005 +0.021 +0.005 -0.000 +0.042 +0.043 +0.104
+  USDCHF  +0.058 +0.032 +0.040 -0.022 -0.008 +0.031 +0.039 +0.040
+  USDCAD  -0.008 +0.055 +0.012 +0.030 +0.040 +0.056 +0.066 +0.078
+  NZDUSD  +0.019 +0.052 +0.044 +0.045 +0.044 +0.061 +0.105 +0.137
+-- decision 10.5 ET
+  EURUSD       - +0.021 +0.047 +0.080 +0.062 +0.068 -0.012 +0.009
+  GBPUSD       - +0.038 +0.034 +0.033 +0.026 +0.064 -0.009 +0.007
+  USDJPY       - -0.007 +0.000 -0.001 -0.018 -0.012 -0.076 -0.055
+  AUDUSD       - +0.013 +0.018 +0.051 +0.040 +0.064 +0.035 +0.085
+  USDCHF       - -0.032 -0.024 -0.018 -0.025 -0.024 -0.013 +0.011
+  USDCAD       - +0.070 +0.025 +0.071 +0.061 +0.069 +0.037 +0.066
+  NZDUSD       - +0.016 +0.000 +0.026 +0.023 +0.070 +0.046 +0.086
+
+=== B. trades: fade at the decision, stop k x ATR, time exit at T ET; gross / net R by half ===
+  EURUSD dec  9.5 exit 12 k2.0 all         n= 599 gross +0.050 [+0.002 +0.168 -0.045 +0.061 +0.066] net -0.016 pos 2/5 win 48%
+  EURUSD dec  9.5 exit 12 k2.0 q>=1        n= 254 gross +0.105 [+0.060 +0.200 -0.036 +0.147 +0.139] net +0.036 pos 3/5 win 51%
+  EURUSD dec  9.5 exit 12 k2.0 q>=1.5      n= 155 gross +0.105 [+0.061 +0.261 +0.014 +0.043 +0.087] net +0.036 pos 3/5 win 50%
+  EURUSD dec  9.5 exit 12 k2.0 rel         n= 111 gross +0.163 [+0.079 +0.250 +0.239 +0.044 +0.205] net +0.097 pos 5/5 win 50%
+  EURUSD dec  9.5 exit 12 k2.0 norel q>=1  n= 186 gross +0.100 [+0.034 +0.232 -0.075 +0.227 +0.045] net +0.025 pos 2/5 win 51%
+  EURUSD dec  9.5 exit 12 k3.0 all         n= 599 gross +0.031 [-0.013 +0.123 -0.036 +0.027 +0.061] net -0.011 pos 2/5 win 49%
+  EURUSD dec  9.5 exit 12 k3.0 q>=1        n= 254 gross +0.069 [+0.013 +0.161 -0.024 +0.081 +0.103] net +0.026 pos 3/5 win 52%
+  EURUSD dec  9.5 exit 12 k3.0 q>=1.5      n= 155 gross +0.064 [+0.019 +0.166 +0.016 +0.025 +0.073] net +0.021 pos 2/5 win 51%
+  EURUSD dec  9.5 exit 12 k3.0 rel         n= 111 gross +0.098 [-0.017 +0.205 +0.135 -0.019 +0.230] net +0.058 pos 3/5 win 52%
+  EURUSD dec  9.5 exit 12 k3.0 norel q>=1  n= 186 gross +0.074 [+0.016 +0.173 -0.036 +0.149 +0.043] net +0.030 pos 2/5 win 53%
+  EURUSD dec   10 exit 12 k2.0 all         n= 599 gross +0.050 [+0.056 +0.176 -0.045 +0.032 +0.016] net -0.017 pos 1/5 win 49%
+  EURUSD dec   10 exit 12 k2.0 q>=1        n= 282 gross +0.094 [+0.101 +0.246 -0.049 +0.024 +0.071] net +0.027 pos 2/5 win 53%
+  EURUSD dec   10 exit 12 k2.0 q>=1.5      n= 181 gross +0.116 [+0.107 +0.251 +0.030 -0.060 +0.204] net +0.048 pos 3/5 win 54%
+  EURUSD dec   10 exit 12 k2.0 rel         n= 111 gross +0.096 [+0.149 +0.047 +0.074 -0.013 +0.324] net +0.033 pos 3/5 win 50%
+  EURUSD dec   10 exit 12 k2.0 norel q>=1  n= 210 gross +0.073 [+0.071 +0.274 -0.083 +0.006 -0.024] net +0.004 pos 1/5 win 54%
+  EURUSD dec   10 exit 12 k3.0 all         n= 599 gross +0.031 [+0.018 +0.109 -0.019 +0.019 +0.023] net -0.012 pos 1/5 win 50%
+  EURUSD dec   10 exit 12 k3.0 q>=1        n= 282 gross +0.056 [+0.047 +0.162 -0.036 +0.011 +0.057] net +0.011 pos 3/5 win 54%
+  EURUSD dec   10 exit 12 k3.0 q>=1.5      n= 181 gross +0.066 [+0.043 +0.162 +0.012 -0.051 +0.142] net +0.020 pos 2/5 win 54%
+  EURUSD dec   10 exit 12 k3.0 rel         n= 111 gross +0.057 [+0.062 +0.038 +0.086 -0.037 +0.190] net +0.011 pos 3/5 win 50%
+  EURUSD dec   10 exit 12 k3.0 norel q>=1  n= 210 gross +0.046 [+0.037 +0.180 -0.064 +0.005 -0.005] net +0.001 pos 1/5 win 54%
+  EURUSD dec   10 exit 14 k2.0 all         n= 601 gross +0.058 [+0.091 +0.196 -0.064 +0.054 -0.019] net -0.015 pos 3/5 win 49%
+  EURUSD dec   10 exit 14 k2.0 q>=1        n= 282 gross +0.102 [+0.150 +0.252 -0.082 +0.027 +0.058] net +0.031 pos 2/5 win 51%
+  EURUSD dec   10 exit 14 k2.0 q>=1.5      n= 181 gross +0.129 [+0.153 +0.215 +0.044 +0.012 +0.161] net +0.054 pos 4/5 win 53%
+  EURUSD dec   10 exit 14 k2.0 rel         n= 112 gross +0.119 [+0.225 +0.024 +0.060 +0.131 +0.190] net +0.053 pos 4/5 win 51%
+  EURUSD dec   10 exit 14 k2.0 norel q>=1  n= 210 gross +0.071 [+0.106 +0.295 -0.096 -0.064 -0.042] net -0.001 pos 2/5 win 51%
+  EURUSD dec   10 exit 14 k3.0 all         n= 601 gross +0.035 [+0.041 +0.112 -0.023 +0.019 +0.017] net -0.009 pos 1/5 win 50%
+  EURUSD dec   10 exit 14 k3.0 q>=1        n= 282 gross +0.061 [+0.087 +0.161 -0.037 -0.004 +0.033] net +0.014 pos 2/5 win 52%
+  EURUSD dec   10 exit 14 k3.0 q>=1.5      n= 181 gross +0.076 [+0.074 +0.131 +0.069 -0.015 +0.101] net +0.026 pos 4/5 win 54%
+  EURUSD dec   10 exit 14 k3.0 rel         n= 112 gross +0.069 [+0.110 +0.009 +0.069 +0.062 +0.122] net +0.021 pos 4/5 win 51%
+  EURUSD dec   10 exit 14 k3.0 norel q>=1  n= 210 gross +0.046 [+0.078 +0.190 -0.048 -0.062 -0.035] net -0.002 pos 2/5 win 51%
+  EURUSD dec  9.5 exit 14 k2.0 all         n= 601 gross +0.053 [+0.045 +0.205 -0.082 +0.080 -0.009] net -0.014 pos 2/5 win 47%
+  EURUSD dec  9.5 exit 14 k2.0 q>=1        n= 255 gross +0.129 [+0.095 +0.257 -0.043 +0.188 +0.088] net +0.060 pos 3/5 win 51%
+  EURUSD dec  9.5 exit 14 k2.0 q>=1.5      n= 156 gross +0.105 [+0.095 +0.284 -0.109 +0.092 +0.047] net +0.042 pos 3/5 win 53%
+  EURUSD dec  9.5 exit 14 k2.0 rel         n= 112 gross +0.175 [+0.089 +0.190 +0.259 +0.174 +0.155] net +0.103 pos 4/5 win 54%
+  EURUSD dec  9.5 exit 14 k2.0 norel q>=1  n= 186 gross +0.121 [+0.055 +0.314 -0.080 +0.248 -0.025] net +0.045 pos 2/5 win 50%
+  EURUSD dec  9.5 exit 14 k3.0 all         n= 601 gross +0.028 [+0.016 +0.132 -0.050 +0.025 +0.006] net -0.013 pos 1/5 win 48%
+  EURUSD dec  9.5 exit 14 k3.0 q>=1        n= 255 gross +0.074 [+0.053 +0.166 -0.022 +0.086 +0.046] net +0.029 pos 2/5 win 53%
+  EURUSD dec  9.5 exit 14 k3.0 q>=1.5      n= 156 gross +0.054 [+0.060 +0.143 -0.038 +0.021 +0.016] net +0.007 pos 1/5 win 56%
+  EURUSD dec  9.5 exit 14 k3.0 rel         n= 112 gross +0.089 [+0.015 +0.120 +0.135 +0.058 +0.136] net +0.052 pos 4/5 win 55%
+  EURUSD dec  9.5 exit 14 k3.0 norel q>=1  n= 186 gross +0.078 [+0.040 +0.206 -0.031 +0.138 -0.032] net +0.030 pos 2/5 win 52%
+  EURUSD dec 10.5 exit 15 k2.0 all         n= 601 gross +0.008 [+0.086 +0.077 -0.048 -0.072 -0.009] net -0.057 pos 1/5 win 48%
+  EURUSD dec 10.5 exit 15 k2.0 q>=1        n= 335 gross +0.045 [+0.163 +0.130 -0.029 -0.198 +0.137] net -0.020 pos 3/5 win 50%
+  EURUSD dec 10.5 exit 15 k2.0 q>=1.5      n= 229 gross +0.036 [+0.134 +0.054 -0.054 -0.169 +0.212] net -0.024 pos 2/5 win 50%
+  EURUSD dec 10.5 exit 15 k2.0 rel         n= 112 gross -0.046 [+0.166 -0.169 -0.186 -0.050 +0.051] net -0.110 pos 1/5 win 41%
+  EURUSD dec 10.5 exit 15 k2.0 norel q>=1  n= 264 gross +0.064 [+0.166 +0.192 -0.005 -0.180 +0.113] net +0.000 pos 3/5 win 51%
+  EURUSD dec 10.5 exit 15 k3.0 all         n= 601 gross +0.008 [+0.051 +0.045 -0.013 -0.046 +0.005] net -0.037 pos 0/5 win 49%
+  EURUSD dec 10.5 exit 15 k3.0 q>=1        n= 335 gross +0.024 [+0.104 +0.062 -0.012 -0.136 +0.091] net -0.025 pos 3/5 win 50%
+  EURUSD dec 10.5 exit 15 k3.0 q>=1.5      n= 229 gross +0.015 [+0.082 +0.001 -0.038 -0.112 +0.143] net -0.039 pos 2/5 win 51%
+  EURUSD dec 10.5 exit 15 k3.0 rel         n= 112 gross -0.024 [+0.083 -0.089 -0.133 -0.011 +0.080] net -0.067 pos 2/5 win 43%
+  EURUSD dec 10.5 exit 15 k3.0 norel q>=1  n= 264 gross +0.040 [+0.111 +0.108 +0.012 -0.129 +0.076] net -0.010 pos 3/5 win 52%
+
+  GBPUSD dec  9.5 exit 12 k2.0 all         n= 601 gross +0.074 [+0.101 +0.209 -0.046 +0.102 -0.045] net +0.018 pos 3/5 win 51%
+  GBPUSD dec  9.5 exit 12 k2.0 q>=1        n= 245 gross +0.087 [+0.000 +0.214 -0.059 +0.188 +0.073] net +0.028 pos 2/5 win 52%
+  GBPUSD dec  9.5 exit 12 k2.0 q>=1.5      n= 143 gross +0.086 [+0.025 +0.220 -0.005 +0.069 +0.113] net +0.028 pos 2/5 win 51%
+  GBPUSD dec  9.5 exit 12 k2.0 rel         n= 112 gross +0.108 [+0.087 +0.250 +0.237 -0.129 +0.023] net +0.064 pos 3/5 win 50%
+  GBPUSD dec  9.5 exit 12 k2.0 norel q>=1  n= 179 gross +0.095 [-0.026 +0.275 -0.118 +0.238 +0.059] net +0.028 pos 2/5 win 54%
+  GBPUSD dec  9.5 exit 12 k3.0 all         n= 601 gross +0.043 [+0.062 +0.151 -0.039 +0.044 -0.032] net +0.009 pos 3/5 win 52%
+  GBPUSD dec  9.5 exit 12 k3.0 q>=1        n= 245 gross +0.062 [-0.018 +0.154 -0.032 +0.129 +0.076] net +0.027 pos 3/5 win 53%
+  GBPUSD dec  9.5 exit 12 k3.0 q>=1.5      n= 143 gross +0.052 [-0.021 +0.152 -0.012 +0.068 +0.084] net +0.019 pos 3/5 win 52%
+  GBPUSD dec  9.5 exit 12 k3.0 rel         n= 112 gross +0.061 [+0.015 +0.156 +0.177 -0.125 +0.058] net +0.028 pos 3/5 win 51%
+  GBPUSD dec  9.5 exit 12 k3.0 norel q>=1  n= 179 gross +0.062 [-0.024 +0.197 -0.103 +0.153 +0.056] net +0.028 pos 3/5 win 54%
+  GBPUSD dec   10 exit 12 k2.0 all         n= 601 gross +0.019 [+0.083 +0.045 -0.033 +0.012 -0.029] net -0.032 pos 1/5 win 49%
+  GBPUSD dec   10 exit 12 k2.0 q>=1        n= 273 gross +0.020 [+0.035 +0.080 -0.138 +0.093 +0.016] net -0.034 pos 2/5 win 51%
+  GBPUSD dec   10 exit 12 k2.0 q>=1.5      n= 167 gross +0.083 [+0.098 +0.091 -0.144 +0.182 +0.178] net +0.026 pos 4/5 win 55%
+  GBPUSD dec   10 exit 12 k2.0 rel         n= 112 gross +0.044 [+0.151 -0.176 +0.170 +0.045 +0.027] net -0.003 pos 2/5 win 53%
+  GBPUSD dec   10 exit 12 k2.0 norel q>=1  n= 200 gross +0.002 [-0.031 +0.179 -0.209 +0.093 -0.028] net -0.052 pos 2/5 win 50%
+  GBPUSD dec   10 exit 12 k3.0 all         n= 601 gross +0.014 [+0.045 +0.050 -0.027 -0.008 +0.009] net -0.021 pos 2/5 win 50%
+  GBPUSD dec   10 exit 12 k3.0 q>=1        n= 273 gross +0.016 [-0.000 +0.069 -0.107 +0.061 +0.071] net -0.019 pos 3/5 win 51%
+  GBPUSD dec   10 exit 12 k3.0 q>=1.5      n= 167 gross +0.061 [+0.042 +0.065 -0.121 +0.147 +0.202] net +0.028 pos 4/5 win 56%
+  GBPUSD dec   10 exit 12 k3.0 rel         n= 112 gross +0.034 [+0.071 -0.092 +0.149 +0.010 +0.034] net +0.004 pos 3/5 win 53%
+  GBPUSD dec   10 exit 12 k3.0 norel q>=1  n= 200 gross +0.003 [-0.043 +0.129 -0.176 +0.064 +0.054] net -0.034 pos 3/5 win 50%
+  GBPUSD dec   10 exit 14 k2.0 all         n= 602 gross +0.027 [+0.133 +0.027 -0.040 +0.024 -0.030] net -0.025 pos 1/5 win 48%
+  GBPUSD dec   10 exit 14 k2.0 q>=1        n= 273 gross +0.060 [+0.136 +0.092 -0.124 +0.127 +0.031] net +0.006 pos 3/5 win 49%
+  GBPUSD dec   10 exit 14 k2.0 q>=1.5      n= 167 gross +0.139 [+0.195 +0.128 -0.058 +0.184 +0.204] net +0.080 pos 4/5 win 53%
+  GBPUSD dec   10 exit 14 k2.0 rel         n= 112 gross +0.110 [+0.283 -0.081 +0.285 +0.045 -0.082] net +0.055 pos 2/5 win 54%
+  GBPUSD dec   10 exit 14 k2.0 norel q>=1  n= 200 gross +0.042 [+0.038 +0.186 -0.176 +0.125 +0.028] net -0.008 pos 2/5 win 48%
+  GBPUSD dec   10 exit 14 k3.0 all         n= 602 gross +0.016 [+0.076 +0.040 -0.052 -0.008 +0.028] net -0.019 pos 1/5 win 49%
+  GBPUSD dec   10 exit 14 k3.0 q>=1        n= 273 gross +0.041 [+0.063 +0.085 -0.123 +0.080 +0.098] net +0.003 pos 4/5 win 52%
+  GBPUSD dec   10 exit 14 k3.0 q>=1.5      n= 167 gross +0.096 [+0.103 +0.088 -0.082 +0.165 +0.218] net +0.063 pos 4/5 win 56%
+  GBPUSD dec   10 exit 14 k3.0 rel         n= 112 gross +0.075 [+0.137 -0.021 +0.195 +0.013 +0.014] net +0.045 pos 2/5 win 56%
+  GBPUSD dec   10 exit 14 k3.0 norel q>=1  n= 200 gross +0.030 [+0.008 +0.132 -0.166 +0.078 +0.107] net -0.010 pos 3/5 win 50%
+  GBPUSD dec  9.5 exit 14 k2.0 all         n= 602 gross +0.098 [+0.154 +0.244 -0.048 +0.123 -0.040] net +0.037 pos 3/5 win 50%
+  GBPUSD dec  9.5 exit 14 k2.0 q>=1        n= 246 gross +0.129 [+0.030 +0.293 -0.040 +0.248 +0.072] net +0.065 pos 2/5 win 52%
+  GBPUSD dec  9.5 exit 14 k2.0 q>=1.5      n= 143 gross +0.148 [+0.106 +0.349 -0.017 +0.099 +0.159] net +0.085 pos 3/5 win 52%
+  GBPUSD dec  9.5 exit 14 k2.0 rel         n= 112 gross +0.142 [+0.213 +0.222 +0.312 -0.147 +0.003] net +0.099 pos 3/5 win 54%
+  GBPUSD dec  9.5 exit 14 k2.0 norel q>=1  n= 180 gross +0.135 [-0.038 +0.364 -0.098 +0.307 +0.076] net +0.061 pos 2/5 win 52%
+  GBPUSD dec  9.5 exit 14 k3.0 all         n= 602 gross +0.056 [+0.123 +0.164 -0.066 +0.052 -0.029] net +0.021 pos 3/5 win 52%
+  GBPUSD dec  9.5 exit 14 k3.0 q>=1        n= 246 gross +0.083 [+0.037 +0.174 -0.062 +0.174 +0.072] net +0.046 pos 3/5 win 54%
+  GBPUSD dec  9.5 exit 14 k3.0 q>=1.5      n= 143 gross +0.078 [+0.050 +0.187 -0.050 +0.108 +0.069] net +0.047 pos 4/5 win 55%
+  GBPUSD dec  9.5 exit 14 k3.0 rel         n= 112 gross +0.072 [+0.136 +0.090 +0.190 -0.123 +0.011] net +0.034 pos 3/5 win 55%
+  GBPUSD dec  9.5 exit 14 k3.0 norel q>=1  n= 180 gross +0.089 [-0.006 +0.241 -0.120 +0.199 +0.094] net +0.055 pos 3/5 win 54%
+  GBPUSD dec 10.5 exit 15 k2.0 all         n= 601 gross +0.023 [+0.136 +0.080 -0.073 -0.090 +0.082] net -0.031 pos 3/5 win 46%
+  GBPUSD dec 10.5 exit 15 k2.0 q>=1        n= 332 gross +0.096 [+0.194 +0.132 -0.040 +0.037 +0.156] net +0.040 pos 3/5 win 51%
+  GBPUSD dec 10.5 exit 15 k2.0 q>=1.5      n= 225 gross +0.090 [+0.155 +0.142 -0.095 +0.020 +0.237] net +0.037 pos 3/5 win 49%
+  GBPUSD dec 10.5 exit 15 k2.0 rel         n= 112 gross +0.035 [+0.173 +0.129 +0.051 -0.182 -0.094] net -0.009 pos 3/5 win 49%
+  GBPUSD dec 10.5 exit 15 k2.0 norel q>=1  n= 252 gross +0.104 [+0.170 +0.134 -0.078 +0.087 +0.204] net +0.045 pos 4/5 win 50%
+  GBPUSD dec 10.5 exit 15 k3.0 all         n= 601 gross +0.001 [+0.088 +0.036 -0.069 -0.080 +0.044] net -0.035 pos 2/5 win 47%
+  GBPUSD dec 10.5 exit 15 k3.0 q>=1        n= 332 gross +0.046 [+0.116 +0.070 -0.051 +0.007 +0.085] net +0.009 pos 3/5 win 51%
+  GBPUSD dec 10.5 exit 15 k3.0 q>=1.5      n= 225 gross +0.033 [+0.075 +0.067 -0.101 -0.008 +0.138] net -0.002 pos 3/5 win 49%
+  GBPUSD dec 10.5 exit 15 k3.0 rel         n= 112 gross +0.004 [+0.137 +0.011 -0.012 -0.106 -0.054] net -0.029 pos 1/5 win 50%
+  GBPUSD dec 10.5 exit 15 k3.0 norel q>=1  n= 252 gross +0.051 [+0.086 +0.092 -0.068 +0.028 +0.114] net +0.015 pos 4/5 win 50%
+
+  USDJPY dec  9.5 exit 12 k2.0 all         n= 598 gross -0.025 [-0.005 -0.042 -0.129 -0.004 +0.093] net -0.059 pos 1/5 win 47%
+  USDJPY dec  9.5 exit 12 k2.0 q>=1        n= 211 gross -0.033 [-0.008 -0.036 +0.071 -0.183 +0.009] net -0.068 pos 1/5 win 47%
+  USDJPY dec  9.5 exit 12 k2.0 q>=1.5      n= 115 gross -0.102 [-0.062 -0.162 +0.188 -0.583 +0.136] net -0.136 pos 2/5 win 46%
+  USDJPY dec  9.5 exit 12 k2.0 rel         n= 112 gross -0.058 [-0.108 -0.017 +0.079 -0.351 +0.192] net -0.084 pos 2/5 win 43%
+  USDJPY dec  9.5 exit 12 k2.0 norel q>=1  n= 145 gross -0.011 [+0.018 -0.049 +0.006 -0.031 +0.019] net -0.050 pos 0/5 win 49%
+  USDJPY dec  9.5 exit 12 k3.0 all         n= 598 gross -0.016 [-0.013 -0.008 -0.079 -0.017 +0.061] net -0.042 pos 1/5 win 48%
+  USDJPY dec  9.5 exit 12 k3.0 q>=1        n= 211 gross -0.004 [+0.003 +0.020 +0.073 -0.137 +0.025] net -0.029 pos 1/5 win 49%
+  USDJPY dec  9.5 exit 12 k3.0 q>=1.5      n= 115 gross -0.048 [-0.015 -0.053 +0.132 -0.437 +0.115] net -0.072 pos 2/5 win 50%
+  USDJPY dec  9.5 exit 12 k3.0 rel         n= 112 gross -0.025 [-0.087 +0.073 +0.067 -0.261 +0.128] net -0.050 pos 3/5 win 46%
+  USDJPY dec  9.5 exit 12 k3.0 norel q>=1  n= 145 gross +0.007 [+0.012 -0.002 +0.034 -0.032 +0.037] net -0.018 pos 2/5 win 50%
+  USDJPY dec   10 exit 12 k2.0 all         n= 601 gross -0.012 [+0.008 +0.038 -0.074 -0.005 -0.035] net -0.047 pos 1/5 win 46%
+  USDJPY dec   10 exit 12 k2.0 q>=1        n= 249 gross -0.059 [+0.019 +0.020 -0.154 -0.162 -0.059] net -0.095 pos 0/5 win 45%
+  USDJPY dec   10 exit 12 k2.0 q>=1.5      n= 150 gross -0.039 [+0.098 +0.079 -0.142 -0.273 -0.067] net -0.076 pos 2/5 win 45%
+  USDJPY dec   10 exit 12 k2.0 rel         n= 112 gross +0.011 [+0.071 +0.285 -0.093 -0.265 +0.014] net -0.026 pos 2/5 win 47%
+  USDJPY dec   10 exit 12 k2.0 norel q>=1  n= 187 gross -0.086 [-0.018 -0.102 -0.138 -0.068 -0.100] net -0.121 pos 0/5 win 43%
+  USDJPY dec   10 exit 12 k3.0 all         n= 601 gross -0.002 [+0.004 +0.019 -0.030 -0.001 -0.006] net -0.028 pos 0/5 win 47%
+  USDJPY dec   10 exit 12 k3.0 q>=1        n= 249 gross -0.029 [+0.003 +0.015 -0.063 -0.098 -0.021] net -0.054 pos 0/5 win 45%
+  USDJPY dec   10 exit 12 k3.0 q>=1.5      n= 150 gross -0.005 [+0.069 +0.041 -0.029 -0.140 -0.022] net -0.030 pos 2/5 win 46%
+  USDJPY dec   10 exit 12 k3.0 rel         n= 112 gross +0.009 [+0.013 +0.203 -0.064 -0.142 +0.009] net -0.013 pos 1/5 win 47%
+  USDJPY dec   10 exit 12 k3.0 norel q>=1  n= 187 gross -0.050 [-0.016 -0.074 -0.058 -0.059 -0.044] net -0.077 pos 0/5 win 44%
+  USDJPY dec   10 exit 14 k2.0 all         n= 602 gross -0.011 [+0.037 +0.014 -0.100 -0.019 +0.026] net -0.047 pos 0/5 win 47%
+  USDJPY dec   10 exit 14 k2.0 q>=1        n= 249 gross -0.050 [+0.019 -0.017 -0.152 -0.117 +0.003] net -0.087 pos 0/5 win 49%
+  USDJPY dec   10 exit 14 k2.0 q>=1.5      n= 150 gross -0.028 [+0.084 +0.064 -0.182 -0.210 +0.038] net -0.067 pos 2/5 win 53%
+  USDJPY dec   10 exit 14 k2.0 rel         n= 112 gross +0.041 [-0.026 +0.244 +0.055 -0.148 +0.058] net +0.000 pos 3/5 win 52%
+  USDJPY dec   10 exit 14 k2.0 norel q>=1  n= 187 gross -0.083 [+0.026 -0.134 -0.186 -0.043 -0.050] net -0.116 pos 0/5 win 47%
+  USDJPY dec   10 exit 14 k3.0 all         n= 602 gross -0.009 [+0.016 -0.003 -0.059 -0.020 +0.037] net -0.034 pos 1/5 win 48%
+  USDJPY dec   10 exit 14 k3.0 q>=1        n= 249 gross -0.029 [-0.000 -0.014 -0.084 -0.074 +0.028] net -0.056 pos 1/5 win 50%
+  USDJPY dec   10 exit 14 k3.0 q>=1.5      n= 150 gross +0.000 [+0.071 +0.026 -0.081 -0.104 +0.064] net -0.024 pos 3/5 win 53%
+  USDJPY dec   10 exit 14 k3.0 rel         n= 112 gross +0.020 [-0.065 +0.177 +0.014 -0.066 +0.033] net -0.001 pos 2/5 win 52%
+  USDJPY dec   10 exit 14 k3.0 norel q>=1  n= 187 gross -0.054 [+0.012 -0.102 -0.110 -0.048 -0.001] net -0.083 pos 0/5 win 47%
+  USDJPY dec  9.5 exit 14 k2.0 all         n= 599 gross -0.015 [-0.002 -0.068 -0.104 +0.020 +0.125] net -0.049 pos 1/5 win 47%
+  USDJPY dec  9.5 exit 14 k2.0 q>=1        n= 211 gross -0.013 [+0.051 -0.046 +0.026 -0.129 +0.051] net -0.048 pos 1/5 win 48%
+  USDJPY dec  9.5 exit 14 k2.0 q>=1.5      n= 115 gross -0.080 [-0.029 -0.166 +0.253 -0.622 +0.211] net -0.117 pos 2/5 win 43%
+  USDJPY dec  9.5 exit 14 k2.0 rel         n= 112 gross -0.024 [-0.147 -0.061 +0.202 -0.282 +0.292] net -0.050 pos 2/5 win 46%
+  USDJPY dec  9.5 exit 14 k2.0 norel q>=1  n= 145 gross +0.003 [+0.122 -0.031 -0.141 +0.045 -0.015] net -0.037 pos 2/5 win 49%
+  USDJPY dec  9.5 exit 14 k3.0 all         n= 599 gross -0.007 [-0.012 -0.027 -0.053 -0.004 +0.098] net -0.032 pos 1/5 win 49%
+  USDJPY dec  9.5 exit 14 k3.0 q>=1        n= 211 gross +0.015 [+0.025 +0.009 +0.066 -0.078 +0.080] net -0.008 pos 2/5 win 50%
+  USDJPY dec  9.5 exit 14 k3.0 q>=1.5      n= 115 gross -0.026 [-0.020 -0.059 +0.218 -0.415 +0.184] net -0.049 pos 2/5 win 46%
+  USDJPY dec  9.5 exit 14 k3.0 rel         n= 112 gross -0.001 [-0.134 +0.027 +0.163 -0.181 +0.201] net -0.025 pos 3/5 win 48%
+  USDJPY dec  9.5 exit 14 k3.0 norel q>=1  n= 145 gross +0.019 [+0.065 +0.000 -0.055 +0.031 +0.049] net -0.005 pos 3/5 win 50%
+  USDJPY dec 10.5 exit 15 k2.0 all         n= 601 gross -0.021 [+0.029 -0.060 +0.013 -0.122 +0.072] net -0.062 pos 1/5 win 47%
+  USDJPY dec 10.5 exit 15 k2.0 q>=1        n= 284 gross -0.021 [+0.047 -0.035 +0.025 -0.166 +0.004] net -0.071 pos 0/5 win 47%
+  USDJPY dec 10.5 exit 15 k2.0 q>=1.5      n= 186 gross -0.015 [+0.138 -0.021 -0.037 -0.239 +0.029] net -0.071 pos 1/5 win 45%
+  USDJPY dec 10.5 exit 15 k2.0 rel         n= 112 gross -0.031 [-0.029 +0.057 +0.065 -0.287 +0.039] net -0.082 pos 3/5 win 46%
+  USDJPY dec 10.5 exit 15 k2.0 norel q>=1  n= 223 gross -0.047 [+0.060 -0.145 +0.014 -0.152 -0.029] net -0.090 pos 0/5 win 46%
+  USDJPY dec 10.5 exit 15 k3.0 all         n= 601 gross -0.019 [+0.006 -0.033 +0.000 -0.091 +0.050] net -0.043 pos 1/5 win 47%
+  USDJPY dec 10.5 exit 15 k3.0 q>=1        n= 284 gross -0.017 [+0.017 -0.009 +0.013 -0.118 +0.001] net -0.041 pos 0/5 win 48%
+  USDJPY dec 10.5 exit 15 k3.0 q>=1.5      n= 186 gross -0.013 [+0.064 -0.002 -0.027 -0.158 +0.029] net -0.038 pos 2/5 win 46%
+  USDJPY dec 10.5 exit 15 k3.0 rel         n= 112 gross -0.029 [-0.080 +0.032 +0.057 -0.185 +0.045] net -0.050 pos 3/5 win 46%
+  USDJPY dec 10.5 exit 15 k3.0 norel q>=1  n= 223 gross -0.032 [+0.046 -0.087 +0.003 -0.115 -0.022] net -0.057 pos 1/5 win 47%
+
+  AUDUSD dec  9.5 exit 12 k2.0 all         n= 597 gross +0.050 [+0.074 +0.045 +0.040 +0.014 +0.091] net -0.034 pos 1/5 win 47%
+  AUDUSD dec  9.5 exit 12 k2.0 q>=1        n= 195 gross +0.070 [+0.035 +0.076 +0.051 +0.083 +0.139] net -0.011 pos 2/5 win 49%
+  AUDUSD dec  9.5 exit 12 k2.0 q>=1.5      n= 107 gross +0.061 [-0.049 +0.090 +0.036 +0.005 +0.373] net -0.020 pos 1/5 win 50%
+  AUDUSD dec  9.5 exit 12 k2.0 rel         n= 112 gross +0.089 [+0.086 -0.159 +0.285 -0.029 +0.409] net +0.019 pos 3/5 win 46%
+  AUDUSD dec  9.5 exit 12 k2.0 norel q>=1  n= 131 gross +0.009 [+0.081 +0.139 -0.131 +0.059 -0.131] net -0.075 pos 1/5 win 48%
+  AUDUSD dec  9.5 exit 12 k3.0 all         n= 597 gross +0.033 [+0.047 +0.033 +0.032 -0.000 +0.066] net -0.024 pos 1/5 win 48%
+  AUDUSD dec  9.5 exit 12 k3.0 q>=1        n= 195 gross +0.047 [+0.019 +0.063 +0.032 +0.038 +0.102] net -0.014 pos 1/5 win 50%
+  AUDUSD dec  9.5 exit 12 k3.0 q>=1.5      n= 107 gross +0.039 [-0.029 +0.066 +0.011 -0.048 +0.301] net -0.027 pos 1/5 win 50%
+  AUDUSD dec  9.5 exit 12 k3.0 rel         n= 112 gross +0.045 [+0.056 -0.109 +0.148 -0.025 +0.247] net -0.015 pos 2/5 win 48%
+  AUDUSD dec  9.5 exit 12 k3.0 norel q>=1  n= 131 gross +0.006 [+0.048 +0.093 -0.079 +0.026 -0.076] net -0.050 pos 1/5 win 48%
+  AUDUSD dec   10 exit 12 k2.0 all         n= 599 gross +0.016 [+0.079 +0.040 +0.001 -0.078 +0.055] net -0.067 pos 0/5 win 46%
+  AUDUSD dec   10 exit 12 k2.0 q>=1        n= 257 gross +0.015 [+0.076 +0.051 +0.028 -0.129 +0.053] net -0.073 pos 0/5 win 49%
+  AUDUSD dec   10 exit 12 k2.0 q>=1.5      n= 144 gross +0.120 [+0.164 +0.072 +0.116 +0.051 +0.190] net +0.030 pos 2/5 win 55%
+  AUDUSD dec   10 exit 12 k2.0 rel         n= 112 gross +0.080 [+0.264 +0.068 -0.021 -0.041 +0.138] net +0.004 pos 2/5 win 49%
+  AUDUSD dec   10 exit 12 k2.0 norel q>=1  n= 185 gross -0.032 [+0.040 +0.053 -0.069 -0.136 -0.080] net -0.123 pos 0/5 win 46%
+  AUDUSD dec   10 exit 12 k3.0 all         n= 599 gross +0.003 [+0.040 +0.020 +0.004 -0.073 +0.039] net -0.054 pos 0/5 win 46%
+  AUDUSD dec   10 exit 12 k3.0 q>=1        n= 257 gross +0.002 [+0.039 +0.031 +0.018 -0.119 +0.062] net -0.055 pos 1/5 win 49%
+  AUDUSD dec   10 exit 12 k3.0 q>=1.5      n= 144 gross +0.076 [+0.115 +0.042 +0.081 -0.007 +0.135] net +0.020 pos 3/5 win 56%
+  AUDUSD dec   10 exit 12 k3.0 rel         n= 112 gross +0.037 [+0.155 +0.039 -0.019 -0.079 +0.098] net -0.015 pos 2/5 win 49%
+  AUDUSD dec   10 exit 12 k3.0 norel q>=1  n= 185 gross -0.024 [+0.023 +0.035 -0.052 -0.108 -0.025] net -0.082 pos 0/5 win 47%
+  AUDUSD dec   10 exit 14 k2.0 all         n= 600 gross +0.032 [+0.080 +0.075 -0.003 -0.052 +0.077] net -0.058 pos 0/5 win 45%
+  AUDUSD dec   10 exit 14 k2.0 q>=1        n= 257 gross +0.017 [+0.019 +0.068 -0.007 -0.038 +0.057] net -0.081 pos 0/5 win 46%
+  AUDUSD dec   10 exit 14 k2.0 q>=1.5      n= 144 gross +0.152 [+0.140 +0.185 +0.112 +0.138 +0.201] net +0.044 pos 4/5 win 51%
+  AUDUSD dec   10 exit 14 k2.0 rel         n= 112 gross +0.140 [+0.272 +0.213 -0.044 +0.025 +0.284] net +0.067 pos 3/5 win 47%
+  AUDUSD dec   10 exit 14 k2.0 norel q>=1  n= 185 gross -0.062 [-0.046 -0.004 -0.132 -0.054 -0.086] net -0.167 pos 0/5 win 44%
+  AUDUSD dec   10 exit 14 k3.0 all         n= 600 gross +0.015 [+0.054 +0.038 +0.001 -0.054 +0.047] net -0.045 pos 0/5 win 46%
+  AUDUSD dec   10 exit 14 k3.0 q>=1        n= 257 gross +0.008 [+0.024 +0.050 -0.002 -0.073 +0.055] net -0.053 pos 1/5 win 47%
+  AUDUSD dec   10 exit 14 k3.0 q>=1.5      n= 144 gross +0.104 [+0.127 +0.102 +0.090 +0.042 +0.155] net +0.046 pos 4/5 win 53%
+  AUDUSD dec   10 exit 14 k3.0 rel         n= 112 gross +0.077 [+0.204 +0.117 -0.049 -0.044 +0.188] net +0.023 pos 3/5 win 47%
+  AUDUSD dec   10 exit 14 k3.0 norel q>=1  n= 185 gross -0.041 [-0.028 +0.013 -0.088 -0.069 -0.034] net -0.103 pos 0/5 win 45%
+  AUDUSD dec  9.5 exit 14 k2.0 all         n= 598 gross +0.039 [+0.069 +0.076 +0.006 +0.017 +0.018] net -0.043 pos 0/5 win 46%
+  AUDUSD dec  9.5 exit 14 k2.0 q>=1        n= 195 gross +0.070 [+0.046 +0.150 -0.043 +0.171 +0.018] net -0.007 pos 2/5 win 51%
+  AUDUSD dec  9.5 exit 14 k2.0 q>=1.5      n= 107 gross +0.115 [+0.005 +0.204 +0.005 +0.154 +0.246] net +0.042 pos 3/5 win 51%
+  AUDUSD dec  9.5 exit 14 k2.0 rel         n= 112 gross +0.100 [+0.125 -0.149 +0.183 +0.031 +0.503] net +0.035 pos 3/5 win 48%
+  AUDUSD dec  9.5 exit 14 k2.0 norel q>=1  n= 131 gross -0.028 [+0.071 +0.222 -0.260 +0.066 -0.289] net -0.108 pos 1/5 win 47%
+  AUDUSD dec  9.5 exit 14 k3.0 all         n= 598 gross +0.030 [+0.040 +0.062 +0.017 +0.001 +0.031] net -0.029 pos 0/5 win 47%
+  AUDUSD dec  9.5 exit 14 k3.0 q>=1        n= 195 gross +0.060 [+0.034 +0.130 +0.002 +0.099 +0.019] net -0.005 pos 2/5 win 52%
+  AUDUSD dec  9.5 exit 14 k3.0 q>=1.5      n= 107 gross +0.094 [+0.028 +0.164 +0.034 +0.051 +0.218] net +0.021 pos 3/5 win 53%
+  AUDUSD dec  9.5 exit 14 k3.0 rel         n= 112 gross +0.060 [+0.104 -0.094 +0.070 +0.032 +0.310] net -0.003 pos 3/5 win 50%
+  AUDUSD dec  9.5 exit 14 k3.0 norel q>=1  n= 131 gross -0.009 [+0.034 +0.155 -0.123 +0.032 -0.185] net -0.066 pos 1/5 win 49%
+  AUDUSD dec 10.5 exit 15 k2.0 all         n= 600 gross +0.035 [+0.045 +0.043 +0.015 -0.058 +0.187] net -0.052 pos 1/5 win 45%
+  AUDUSD dec 10.5 exit 15 k2.0 q>=1        n= 312 gross +0.032 [+0.093 +0.025 +0.029 -0.153 +0.223] net -0.053 pos 2/5 win 47%
+  AUDUSD dec 10.5 exit 15 k2.0 q>=1.5      n= 195 gross +0.065 [+0.076 +0.140 +0.082 -0.261 +0.449] net -0.025 pos 3/5 win 49%
+  AUDUSD dec 10.5 exit 15 k2.0 rel         n= 111 gross -0.023 [-0.019 -0.010 -0.147 -0.123 +0.341] net -0.089 pos 1/5 win 41%
+  AUDUSD dec 10.5 exit 15 k2.0 norel q>=1  n= 240 gross +0.034 [+0.094 -0.011 +0.077 -0.179 +0.228] net -0.056 pos 2/5 win 47%
+  AUDUSD dec 10.5 exit 15 k3.0 all         n= 600 gross +0.018 [+0.027 +0.009 +0.011 -0.046 +0.130] net -0.040 pos 1/5 win 46%
+  AUDUSD dec 10.5 exit 15 k3.0 q>=1        n= 312 gross +0.009 [+0.048 +0.017 +0.004 -0.140 +0.161] net -0.049 pos 1/5 win 48%
+  AUDUSD dec 10.5 exit 15 k3.0 q>=1.5      n= 195 gross +0.030 [+0.022 +0.108 +0.042 -0.209 +0.313] net -0.030 pos 2/5 win 50%
+  AUDUSD dec 10.5 exit 15 k3.0 rel         n= 111 gross -0.031 [-0.031 -0.028 -0.113 -0.112 +0.248] net -0.087 pos 1/5 win 42%
+  AUDUSD dec 10.5 exit 15 k3.0 norel q>=1  n= 240 gross +0.013 [+0.055 -0.006 +0.040 -0.158 +0.166] net -0.046 pos 1/5 win 48%
+
+  USDCHF dec  9.5 exit 12 k2.0 all         n= 601 gross -0.006 [+0.047 +0.053 -0.119 +0.023 -0.053] net -0.077 pos 0/5 win 45%
+  USDCHF dec  9.5 exit 12 k2.0 q>=1        n= 241 gross +0.005 [+0.004 +0.155 -0.160 -0.012 -0.058] net -0.071 pos 1/5 win 46%
+  USDCHF dec  9.5 exit 12 k2.0 q>=1.5      n= 146 gross +0.027 [-0.044 +0.193 +0.046 -0.079 -0.015] net -0.052 pos 1/5 win 47%
+  USDCHF dec  9.5 exit 12 k2.0 rel         n= 112 gross +0.041 [+0.082 +0.159 -0.051 -0.035 +0.024] net -0.018 pos 2/5 win 51%
+  USDCHF dec  9.5 exit 12 k2.0 norel q>=1  n= 176 gross -0.026 [-0.031 +0.169 -0.174 -0.040 -0.137] net -0.109 pos 1/5 win 43%
+  USDCHF dec  9.5 exit 12 k3.0 all         n= 601 gross -0.009 [+0.018 +0.031 -0.076 -0.003 -0.021] net -0.057 pos 0/5 win 45%
+  USDCHF dec  9.5 exit 12 k3.0 q>=1        n= 241 gross -0.005 [-0.026 +0.093 -0.071 -0.038 -0.025] net -0.052 pos 1/5 win 46%
+  USDCHF dec  9.5 exit 12 k3.0 q>=1.5      n= 146 gross +0.009 [-0.064 +0.127 +0.073 -0.103 +0.038] net -0.037 pos 2/5 win 49%
+  USDCHF dec  9.5 exit 12 k3.0 rel         n= 112 gross -0.012 [-0.022 +0.080 -0.039 -0.099 +0.020] net -0.054 pos 1/5 win 51%
+  USDCHF dec  9.5 exit 12 k3.0 norel q>=1  n= 176 gross -0.017 [-0.027 +0.114 -0.088 -0.046 -0.093] net -0.065 pos 1/5 win 44%
+  USDCHF dec   10 exit 12 k2.0 all         n= 597 gross -0.014 [+0.083 +0.083 -0.143 -0.070 -0.033] net -0.089 pos 1/5 win 43%
+  USDCHF dec   10 exit 12 k2.0 q>=1        n= 279 gross -0.018 [+0.078 +0.104 -0.107 -0.101 -0.126] net -0.093 pos 2/5 win 44%
+  USDCHF dec   10 exit 12 k2.0 q>=1.5      n= 160 gross -0.034 [+0.021 +0.065 +0.033 -0.312 +0.022] net -0.108 pos 0/5 win 45%
+  USDCHF dec   10 exit 12 k2.0 rel         n= 112 gross +0.017 [+0.257 +0.007 -0.215 -0.001 +0.037] net -0.044 pos 1/5 win 45%
+  USDCHF dec   10 exit 12 k2.0 norel q>=1  n= 210 gross -0.037 [+0.016 +0.117 -0.087 -0.150 -0.131] net -0.117 pos 1/5 win 44%
+  USDCHF dec   10 exit 12 k3.0 all         n= 597 gross -0.006 [+0.043 +0.060 -0.091 -0.050 +0.017] net -0.059 pos 1/5 win 43%
+  USDCHF dec   10 exit 12 k3.0 q>=1        n= 279 gross -0.001 [+0.035 +0.074 -0.071 -0.057 +0.000] net -0.054 pos 1/5 win 46%
+  USDCHF dec   10 exit 12 k3.0 q>=1.5      n= 160 gross -0.004 [-0.003 +0.056 +0.022 -0.169 +0.127] net -0.061 pos 2/5 win 46%
+  USDCHF dec   10 exit 12 k3.0 rel         n= 112 gross +0.042 [+0.173 +0.034 -0.121 +0.030 +0.133] net -0.008 pos 2/5 win 46%
+  USDCHF dec   10 exit 12 k3.0 norel q>=1  n= 210 gross -0.027 [-0.015 +0.069 -0.067 -0.103 -0.032] net -0.079 pos 1/5 win 44%
+  USDCHF dec   10 exit 14 k2.0 all         n= 598 gross +0.009 [+0.101 +0.080 -0.103 -0.021 -0.028] net -0.062 pos 2/5 win 45%
+  USDCHF dec   10 exit 14 k2.0 q>=1        n= 279 gross -0.050 [+0.093 +0.050 -0.164 -0.151 -0.141] net -0.117 pos 1/5 win 41%
+  USDCHF dec   10 exit 14 k2.0 q>=1.5      n= 160 gross -0.051 [+0.032 -0.029 -0.037 -0.277 +0.066] net -0.117 pos 0/5 win 41%
+  USDCHF dec   10 exit 14 k2.0 rel         n= 112 gross +0.009 [+0.116 -0.021 -0.087 -0.015 +0.079] net -0.047 pos 2/5 win 43%
+  USDCHF dec   10 exit 14 k2.0 norel q>=1  n= 210 gross -0.070 [+0.076 +0.075 -0.156 -0.235 -0.161] net -0.141 pos 1/5 win 41%
+  USDCHF dec   10 exit 14 k3.0 all         n= 598 gross +0.010 [+0.072 +0.065 -0.065 -0.043 +0.023] net -0.044 pos 2/5 win 45%
+  USDCHF dec   10 exit 14 k3.0 q>=1        n= 279 gross -0.020 [+0.064 +0.043 -0.100 -0.122 +0.003] net -0.074 pos 1/5 win 42%
+  USDCHF dec   10 exit 14 k3.0 q>=1.5      n= 160 gross -0.016 [+0.031 -0.007 -0.022 -0.178 +0.137] net -0.076 pos 0/5 win 42%
+  USDCHF dec   10 exit 14 k3.0 rel         n= 112 gross +0.049 [+0.150 +0.015 -0.016 +0.020 +0.093] net +0.000 pos 2/5 win 45%
+  USDCHF dec   10 exit 14 k3.0 norel q>=1  n= 210 gross -0.047 [+0.022 +0.050 -0.111 -0.206 -0.002] net -0.104 pos 0/5 win 42%
+  USDCHF dec  9.5 exit 14 k2.0 all         n= 602 gross +0.015 [+0.070 +0.089 -0.112 +0.061 -0.067] net -0.057 pos 2/5 win 47%
+  USDCHF dec  9.5 exit 14 k2.0 q>=1        n= 241 gross +0.021 [+0.001 +0.200 -0.171 +0.033 -0.062] net -0.058 pos 1/5 win 45%
+  USDCHF dec  9.5 exit 14 k2.0 q>=1.5      n= 146 gross +0.027 [-0.028 +0.190 -0.026 -0.040 -0.008] net -0.052 pos 1/5 win 44%
+  USDCHF dec  9.5 exit 14 k2.0 rel         n= 112 gross +0.038 [+0.107 +0.081 +0.028 -0.039 -0.041] net -0.020 pos 2/5 win 46%
+  USDCHF dec  9.5 exit 14 k2.0 norel q>=1  n= 176 gross -0.003 [-0.052 +0.291 -0.217 +0.027 -0.170] net -0.091 pos 1/5 win 44%
+  USDCHF dec  9.5 exit 14 k3.0 all         n= 602 gross -0.000 [+0.022 +0.049 -0.064 +0.006 -0.027] net -0.047 pos 0/5 win 48%
+  USDCHF dec  9.5 exit 14 k3.0 q>=1        n= 241 gross +0.008 [-0.041 +0.123 -0.024 -0.032 -0.030] net -0.037 pos 1/5 win 48%
+  USDCHF dec  9.5 exit 14 k3.0 q>=1.5      n= 146 gross +0.010 [-0.069 +0.139 +0.077 -0.102 +0.032] net -0.032 pos 2/5 win 47%
+  USDCHF dec  9.5 exit 14 k3.0 rel         n= 112 gross -0.021 [-0.028 +0.029 -0.004 -0.090 -0.027] net -0.061 pos 0/5 win 46%
+  USDCHF dec  9.5 exit 14 k3.0 norel q>=1  n= 176 gross +0.002 [-0.047 +0.195 -0.064 -0.041 -0.105] net -0.044 pos 1/5 win 47%
+  USDCHF dec 10.5 exit 15 k2.0 all         n= 598 gross -0.015 [+0.086 +0.031 -0.030 -0.154 +0.002] net -0.087 pos 1/5 win 44%
+  USDCHF dec 10.5 exit 15 k2.0 q>=1        n= 315 gross +0.013 [+0.094 +0.034 +0.027 -0.171 +0.079] net -0.060 pos 2/5 win 47%
+  USDCHF dec 10.5 exit 15 k2.0 q>=1.5      n= 196 gross +0.003 [+0.132 +0.140 -0.142 -0.293 +0.216] net -0.070 pos 3/5 win 47%
+  USDCHF dec 10.5 exit 15 k2.0 rel         n= 112 gross -0.029 [+0.167 -0.080 -0.209 -0.005 -0.013] net -0.104 pos 1/5 win 43%
+  USDCHF dec 10.5 exit 15 k2.0 norel q>=1  n= 251 gross -0.001 [+0.106 +0.026 +0.009 -0.191 +0.027] net -0.071 pos 1/5 win 47%
+  USDCHF dec 10.5 exit 15 k3.0 all         n= 598 gross -0.009 [+0.043 +0.018 +0.006 -0.115 +0.014] net -0.060 pos 0/5 win 45%
+  USDCHF dec 10.5 exit 15 k3.0 q>=1        n= 315 gross +0.014 [+0.038 +0.023 +0.042 -0.104 +0.080] net -0.037 pos 2/5 win 49%
+  USDCHF dec 10.5 exit 15 k3.0 q>=1.5      n= 196 gross +0.006 [+0.061 +0.100 -0.087 -0.172 +0.168] net -0.047 pos 3/5 win 49%
+  USDCHF dec 10.5 exit 15 k3.0 rel         n= 112 gross -0.013 [+0.060 -0.059 -0.100 +0.014 +0.051] net -0.060 pos 1/5 win 45%
+  USDCHF dec 10.5 exit 15 k3.0 norel q>=1  n= 251 gross +0.008 [+0.062 +0.014 +0.033 -0.123 +0.040] net -0.045 pos 1/5 win 49%
+
+  USDCAD dec  9.5 exit 12 k2.0 all         n= 600 gross -0.003 [-0.137 -0.028 +0.101 +0.046 +0.004] net -0.081 pos 1/5 win 43%
+  USDCAD dec  9.5 exit 12 k2.0 q>=1        n= 239 gross -0.017 [-0.143 +0.049 +0.173 +0.017 -0.151] net -0.094 pos 1/5 win 44%
+  USDCAD dec  9.5 exit 12 k2.0 q>=1.5      n= 145 gross -0.028 [-0.341 +0.128 +0.276 +0.139 -0.213] net -0.096 pos 3/5 win 42%
+  USDCAD dec  9.5 exit 12 k2.0 rel         n= 111 gross +0.013 [-0.280 +0.069 +0.341 -0.076 -0.013] net -0.053 pos 1/5 win 41%
+  USDCAD dec  9.5 exit 12 k2.0 norel q>=1  n= 177 gross -0.047 [-0.084 +0.019 +0.056 -0.017 -0.211] net -0.132 pos 1/5 win 44%
+  USDCAD dec  9.5 exit 12 k3.0 all         n= 600 gross +0.008 [-0.057 -0.038 +0.088 +0.013 +0.050] net -0.045 pos 1/5 win 46%
+  USDCAD dec  9.5 exit 12 k3.0 q>=1        n= 239 gross +0.008 [-0.068 +0.029 +0.177 -0.023 -0.042] net -0.041 pos 1/5 win 48%
+  USDCAD dec  9.5 exit 12 k3.0 q>=1.5      n= 145 gross +0.005 [-0.176 +0.082 +0.220 +0.085 -0.111] net -0.043 pos 3/5 win 47%
+  USDCAD dec  9.5 exit 12 k3.0 rel         n= 111 gross +0.031 [-0.117 +0.032 +0.210 -0.031 +0.072] net -0.012 pos 2/5 win 47%
+  USDCAD dec  9.5 exit 12 k3.0 norel q>=1  n= 177 gross -0.010 [-0.035 +0.004 +0.118 -0.029 -0.103] net -0.061 pos 1/5 win 47%
+  USDCAD dec   10 exit 12 k2.0 all         n= 599 gross +0.012 [-0.054 -0.020 +0.028 +0.098 +0.002] net -0.057 pos 1/5 win 46%
+  USDCAD dec   10 exit 12 k2.0 q>=1        n= 316 gross +0.022 [+0.025 -0.037 +0.021 +0.085 +0.021] net -0.047 pos 1/5 win 46%
+  USDCAD dec   10 exit 12 k2.0 q>=1.5      n= 191 gross -0.015 [-0.037 -0.016 +0.101 -0.149 +0.049] net -0.086 pos 1/5 win 45%
+  USDCAD dec   10 exit 12 k2.0 rel         n= 111 gross +0.109 [-0.075 +0.278 +0.116 +0.125 +0.087] net +0.036 pos 4/5 win 49%
+  USDCAD dec   10 exit 12 k2.0 norel q>=1  n= 250 gross -0.034 [-0.010 -0.157 -0.044 +0.076 -0.010] net -0.102 pos 1/5 win 44%
+  USDCAD dec   10 exit 12 k3.0 all         n= 599 gross +0.010 [-0.027 -0.012 +0.024 +0.058 +0.007] net -0.043 pos 1/5 win 47%
+  USDCAD dec   10 exit 12 k3.0 q>=1        n= 316 gross +0.020 [+0.032 -0.024 +0.025 +0.042 +0.040] net -0.031 pos 0/5 win 47%
+  USDCAD dec   10 exit 12 k3.0 q>=1.5      n= 191 gross -0.014 [-0.023 -0.018 +0.066 -0.125 +0.049] net -0.067 pos 1/5 win 46%
+  USDCAD dec   10 exit 12 k3.0 rel         n= 111 gross +0.082 [-0.041 +0.192 +0.080 +0.076 +0.116] net +0.028 pos 4/5 win 50%
+  USDCAD dec   10 exit 12 k3.0 norel q>=1  n= 250 gross -0.014 [+0.023 -0.101 -0.016 +0.039 -0.002] net -0.066 pos 0/5 win 46%
+  USDCAD dec   10 exit 14 k2.0 all         n= 601 gross +0.015 [-0.045 -0.032 +0.003 +0.147 -0.009] net -0.055 pos 1/5 win 44%
+  USDCAD dec   10 exit 14 k2.0 q>=1        n= 317 gross +0.047 [+0.014 -0.011 +0.031 +0.119 +0.119] net -0.017 pos 2/5 win 44%
+  USDCAD dec   10 exit 14 k2.0 q>=1.5      n= 191 gross +0.013 [+0.023 +0.013 +0.051 -0.154 +0.142] net -0.046 pos 1/5 win 43%
+  USDCAD dec   10 exit 14 k2.0 rel         n= 112 gross +0.182 [-0.016 +0.389 +0.052 +0.377 +0.083] net +0.093 pos 2/5 win 50%
+  USDCAD dec   10 exit 14 k2.0 norel q>=1  n= 250 gross -0.034 [-0.057 -0.192 -0.011 +0.087 +0.058] net -0.094 pos 2/5 win 41%
+  USDCAD dec   10 exit 14 k3.0 all         n= 601 gross +0.018 [-0.011 -0.018 +0.022 +0.098 -0.016] net -0.035 pos 1/5 win 46%
+  USDCAD dec   10 exit 14 k3.0 q>=1        n= 317 gross +0.036 [+0.029 -0.016 +0.035 +0.075 +0.081] net -0.017 pos 2/5 win 46%
+  USDCAD dec   10 exit 14 k3.0 q>=1.5      n= 191 gross +0.013 [+0.033 +0.006 +0.029 -0.112 +0.116] net -0.042 pos 1/5 win 45%
+  USDCAD dec   10 exit 14 k3.0 rel         n= 112 gross +0.128 [+0.005 +0.234 +0.031 +0.263 +0.122] net +0.079 pos 3/5 win 53%
+  USDCAD dec   10 exit 14 k3.0 norel q>=1  n= 250 gross -0.015 [+0.008 -0.135 +0.021 +0.050 +0.007] net -0.068 pos 1/5 win 43%
+  USDCAD dec  9.5 exit 14 k2.0 all         n= 602 gross -0.021 [-0.100 -0.037 +0.006 +0.047 -0.020] net -0.093 pos 0/5 win 42%
+  USDCAD dec  9.5 exit 14 k2.0 q>=1        n= 240 gross -0.014 [-0.045 +0.031 +0.088 -0.011 -0.141] net -0.081 pos 1/5 win 42%
+  USDCAD dec  9.5 exit 14 k2.0 q>=1.5      n= 146 gross -0.008 [-0.212 +0.111 +0.192 +0.230 -0.303] net -0.063 pos 3/5 win 44%
+  USDCAD dec  9.5 exit 14 k2.0 rel         n= 112 gross -0.024 [-0.216 +0.003 +0.211 -0.053 -0.094] net -0.086 pos 1/5 win 40%
+  USDCAD dec  9.5 exit 14 k2.0 norel q>=1  n= 177 gross -0.049 [+0.013 -0.031 +0.002 -0.057 -0.212] net -0.123 pos 0/5 win 40%
+  USDCAD dec  9.5 exit 14 k3.0 all         n= 602 gross -0.002 [-0.013 -0.040 +0.020 +0.012 +0.021] net -0.058 pos 0/5 win 46%
+  USDCAD dec  9.5 exit 14 k3.0 q>=1        n= 240 gross +0.031 [+0.043 +0.032 +0.137 -0.052 -0.008] net -0.022 pos 1/5 win 47%
+  USDCAD dec  9.5 exit 14 k3.0 q>=1.5      n= 146 gross +0.036 [-0.033 +0.081 +0.148 +0.122 -0.135] net -0.015 pos 3/5 win 50%
+  USDCAD dec  9.5 exit 14 k3.0 rel         n= 112 gross +0.010 [-0.068 +0.026 +0.110 -0.024 +0.002] net -0.043 pos 1/5 win 46%
+  USDCAD dec  9.5 exit 14 k3.0 norel q>=1  n= 177 gross +0.006 [+0.082 -0.021 +0.103 -0.068 -0.095] net -0.048 pos 2/5 win 45%
+  USDCAD dec 10.5 exit 15 k2.0 all         n= 600 gross +0.021 [+0.094 -0.056 +0.024 -0.002 +0.060] net -0.052 pos 0/5 win 43%
+  USDCAD dec 10.5 exit 15 k2.0 q>=1        n= 361 gross +0.040 [+0.185 +0.005 -0.008 -0.023 +0.014] net -0.035 pos 1/5 win 44%
+  USDCAD dec 10.5 exit 15 k2.0 q>=1.5      n= 255 gross +0.052 [+0.260 -0.069 +0.064 -0.168 +0.139] net -0.025 pos 3/5 win 44%
+  USDCAD dec 10.5 exit 15 k2.0 rel         n= 112 gross +0.144 [+0.092 +0.296 -0.076 +0.211 +0.251] net +0.079 pos 4/5 win 49%
+  USDCAD dec 10.5 exit 15 k2.0 norel q>=1  n= 288 gross +0.008 [+0.181 -0.131 +0.022 -0.038 -0.013] net -0.069 pos 1/5 win 43%
+  USDCAD dec 10.5 exit 15 k3.0 all         n= 600 gross +0.024 [+0.080 -0.037 +0.028 -0.003 +0.068] net -0.030 pos 2/5 win 45%
+  USDCAD dec 10.5 exit 15 k3.0 q>=1        n= 361 gross +0.036 [+0.129 +0.007 +0.005 -0.015 +0.040] net -0.015 pos 1/5 win 46%
+  USDCAD dec 10.5 exit 15 k3.0 q>=1.5      n= 255 gross +0.046 [+0.191 -0.027 +0.033 -0.106 +0.118] net -0.003 pos 2/5 win 46%
+  USDCAD dec 10.5 exit 15 k3.0 rel         n= 112 gross +0.119 [+0.074 +0.243 -0.025 +0.142 +0.200] net +0.057 pos 4/5 win 52%
+  USDCAD dec 10.5 exit 15 k3.0 norel q>=1  n= 288 gross +0.014 [+0.133 -0.085 +0.024 -0.032 +0.025] net -0.037 pos 1/5 win 45%
+
+  NZDUSD dec  9.5 exit 12 k2.0 all         n= 598 gross +0.055 [+0.062 +0.075 +0.018 -0.005 +0.162] net -0.058 pos 1/5 win 46%
+  NZDUSD dec  9.5 exit 12 k2.0 q>=1        n= 198 gross +0.082 [+0.076 +0.074 +0.018 +0.072 +0.215] net -0.042 pos 1/5 win 47%
+  NZDUSD dec  9.5 exit 12 k2.0 q>=1.5      n= 102 gross +0.039 [+0.004 +0.051 -0.209 +0.015 +0.385] net -0.067 pos 1/5 win 46%
+  NZDUSD dec  9.5 exit 12 k2.0 rel         n= 112 gross +0.141 [+0.070 -0.001 +0.390 +0.030 +0.277] net +0.038 pos 2/5 win 50%
+  NZDUSD dec  9.5 exit 12 k2.0 norel q>=1  n= 131 gross +0.049 [+0.148 +0.095 -0.159 +0.130 +0.048] net -0.090 pos 1/5 win 44%
+  NZDUSD dec  9.5 exit 12 k3.0 all         n= 598 gross +0.037 [+0.032 +0.051 +0.011 -0.015 +0.143] net -0.034 pos 1/5 win 47%
+  NZDUSD dec  9.5 exit 12 k3.0 q>=1        n= 198 gross +0.047 [+0.030 +0.054 +0.014 +0.029 +0.137] net -0.025 pos 1/5 win 49%
+  NZDUSD dec  9.5 exit 12 k3.0 q>=1.5      n= 102 gross +0.007 [-0.022 +0.009 -0.101 -0.028 +0.219] net -0.061 pos 1/5 win 48%
+  NZDUSD dec  9.5 exit 12 k3.0 rel         n= 112 gross +0.084 [+0.043 -0.034 +0.240 -0.007 +0.259] net +0.021 pos 2/5 win 53%
+  NZDUSD dec  9.5 exit 12 k3.0 norel q>=1  n= 131 gross +0.025 [+0.066 +0.078 -0.109 +0.075 +0.023] net -0.051 pos 1/5 win 47%
+  NZDUSD dec   10 exit 12 k2.0 all         n= 601 gross +0.027 [+0.116 +0.079 +0.002 -0.053 -0.026] net -0.076 pos 0/5 win 45%
+  NZDUSD dec   10 exit 12 k2.0 q>=1        n= 231 gross +0.047 [+0.114 +0.108 -0.071 -0.075 +0.184] net -0.053 pos 3/5 win 47%
+  NZDUSD dec   10 exit 12 k2.0 q>=1.5      n= 148 gross +0.098 [+0.143 +0.110 +0.035 -0.020 +0.213] net -0.002 pos 3/5 win 51%
+  NZDUSD dec   10 exit 12 k2.0 rel         n= 112 gross +0.116 [+0.251 +0.075 +0.224 -0.099 +0.080] net +0.021 pos 2/5 win 49%
+  NZDUSD dec   10 exit 12 k2.0 norel q>=1  n= 169 gross +0.022 [+0.114 +0.119 -0.161 -0.047 +0.090] net -0.077 pos 2/5 win 46%
+  NZDUSD dec   10 exit 12 k3.0 all         n= 601 gross +0.012 [+0.070 +0.044 +0.000 -0.047 -0.014] net -0.058 pos 0/5 win 45%
+  NZDUSD dec   10 exit 12 k3.0 q>=1        n= 231 gross +0.018 [+0.044 +0.068 -0.049 -0.072 +0.130] net -0.052 pos 1/5 win 47%
+  NZDUSD dec   10 exit 12 k3.0 q>=1.5      n= 148 gross +0.047 [+0.064 +0.069 +0.013 -0.060 +0.148] net -0.021 pos 1/5 win 51%
+  NZDUSD dec   10 exit 12 k3.0 rel         n= 112 gross +0.075 [+0.142 +0.044 +0.159 -0.097 +0.134] net +0.008 pos 3/5 win 49%
+  NZDUSD dec   10 exit 12 k3.0 norel q>=1  n= 169 gross +0.006 [+0.045 +0.076 -0.109 -0.033 +0.068] net -0.065 pos 1/5 win 46%
+  NZDUSD dec   10 exit 14 k2.0 all         n= 601 gross +0.036 [+0.131 +0.045 -0.026 +0.026 -0.012] net -0.071 pos 1/5 win 44%
+  NZDUSD dec   10 exit 14 k2.0 q>=1        n= 230 gross +0.073 [+0.144 +0.060 -0.098 +0.043 +0.276] net -0.029 pos 2/5 win 49%
+  NZDUSD dec   10 exit 14 k2.0 q>=1.5      n= 148 gross +0.111 [+0.115 +0.067 +0.035 +0.136 +0.296] net +0.010 pos 2/5 win 49%
+  NZDUSD dec   10 exit 14 k2.0 rel         n= 112 gross +0.171 [+0.299 +0.157 +0.229 -0.006 +0.128] net +0.074 pos 4/5 win 53%
+  NZDUSD dec   10 exit 14 k2.0 norel q>=1  n= 168 gross +0.005 [+0.127 +0.006 -0.246 +0.032 +0.150] net -0.095 pos 2/5 win 45%
+  NZDUSD dec   10 exit 14 k3.0 all         n= 601 gross +0.014 [+0.077 +0.024 -0.021 -0.004 -0.015] net -0.055 pos 1/5 win 45%
+  NZDUSD dec   10 exit 14 k3.0 q>=1        n= 230 gross +0.030 [+0.068 +0.033 -0.067 -0.017 +0.178] net -0.039 pos 1/5 win 49%
+  NZDUSD dec   10 exit 14 k3.0 q>=1.5      n= 148 gross +0.063 [+0.054 +0.044 +0.034 +0.043 +0.201] net -0.008 pos 1/5 win 49%
+  NZDUSD dec   10 exit 14 k3.0 rel         n= 112 gross +0.107 [+0.188 +0.086 +0.140 -0.039 +0.172] net +0.043 pos 4/5 win 54%
+  NZDUSD dec   10 exit 14 k3.0 norel q>=1  n= 168 gross -0.012 [+0.050 +0.012 -0.168 -0.012 +0.093] net -0.083 pos 1/5 win 45%
+  NZDUSD dec  9.5 exit 14 k2.0 all         n= 598 gross +0.058 [+0.071 +0.101 -0.022 +0.051 +0.099] net -0.058 pos 0/5 win 46%
+  NZDUSD dec  9.5 exit 14 k2.0 q>=1        n= 198 gross +0.107 [+0.089 +0.108 -0.033 +0.216 +0.215] net -0.025 pos 2/5 win 49%
+  NZDUSD dec  9.5 exit 14 k2.0 q>=1.5      n= 102 gross +0.049 [+0.009 +0.039 -0.284 +0.218 +0.347] net -0.064 pos 2/5 win 47%
+  NZDUSD dec  9.5 exit 14 k2.0 rel         n= 112 gross +0.168 [+0.109 -0.002 +0.310 +0.151 +0.383] net +0.053 pos 3/5 win 51%
+  NZDUSD dec  9.5 exit 14 k2.0 norel q>=1  n= 131 gross +0.049 [+0.167 +0.136 -0.268 +0.239 +0.002] net -0.093 pos 2/5 win 46%
+  NZDUSD dec  9.5 exit 14 k3.0 all         n= 598 gross +0.039 [+0.038 +0.067 -0.005 +0.016 +0.100] net -0.032 pos 1/5 win 48%
+  NZDUSD dec  9.5 exit 14 k3.0 q>=1        n= 198 gross +0.063 [+0.051 +0.067 +0.004 +0.107 +0.115] net -0.010 pos 2/5 win 53%
+  NZDUSD dec  9.5 exit 14 k3.0 q>=1.5      n= 102 gross +0.026 [+0.004 +0.007 -0.075 +0.069 +0.180] net -0.041 pos 2/5 win 51%
+  NZDUSD dec  9.5 exit 14 k3.0 rel         n= 112 gross +0.109 [+0.096 -0.034 +0.199 +0.071 +0.313] net +0.047 pos 4/5 win 55%
+  NZDUSD dec  9.5 exit 14 k3.0 norel q>=1  n= 131 gross +0.014 [+0.077 +0.078 -0.160 +0.123 -0.034] net -0.063 pos 2/5 win 50%
+  NZDUSD dec 10.5 exit 15 k2.0 all         n= 601 gross +0.037 [+0.106 +0.088 -0.035 -0.077 +0.138] net -0.072 pos 1/5 win 44%
+  NZDUSD dec 10.5 exit 15 k2.0 q>=1        n= 286 gross +0.041 [+0.211 +0.000 -0.076 -0.108 +0.157] net -0.062 pos 2/5 win 46%
+  NZDUSD dec 10.5 exit 15 k2.0 q>=1.5      n= 182 gross +0.046 [+0.124 +0.021 +0.046 -0.123 +0.166] net -0.058 pos 2/5 win 46%
+  NZDUSD dec 10.5 exit 15 k2.0 rel         n= 112 gross +0.041 [+0.043 +0.158 +0.012 -0.189 +0.252] net -0.069 pos 1/5 win 44%
+  NZDUSD dec 10.5 exit 15 k2.0 norel q>=1  n= 216 gross +0.032 [+0.236 -0.020 -0.087 -0.121 +0.142] net -0.066 pos 2/5 win 45%
+  NZDUSD dec 10.5 exit 15 k3.0 all         n= 601 gross +0.019 [+0.057 +0.048 -0.022 -0.057 +0.097] net -0.056 pos 1/5 win 45%
+  NZDUSD dec 10.5 exit 15 k3.0 q>=1        n= 286 gross +0.018 [+0.120 -0.017 -0.035 -0.096 +0.118] net -0.061 pos 2/5 win 47%
+  NZDUSD dec 10.5 exit 15 k3.0 q>=1.5      n= 182 gross +0.011 [+0.052 -0.017 +0.028 -0.108 +0.119] net -0.064 pos 1/5 win 47%
+  NZDUSD dec 10.5 exit 15 k3.0 rel         n= 112 gross +0.009 [+0.008 +0.054 +0.008 -0.131 +0.160] net -0.064 pos 1/5 win 45%
+  NZDUSD dec 10.5 exit 15 k3.0 norel q>=1  n= 216 gross +0.021 [+0.145 -0.009 -0.047 -0.098 +0.110] net -0.060 pos 2/5 win 45%
+

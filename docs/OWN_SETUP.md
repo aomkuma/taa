@@ -935,6 +935,25 @@ confirmation; the design's Asia carry did not repeat). **V2 on the full sessions
 toward 3 a day within this family without losing the edge; more trades must come from separate setups with their
 own confirmation.
 
+**FX agent - final** (`agents/fx/notes.md`, `cand.py`, `out_rf_test.txt`). Foundations per pair (2023-11 .. 2026-02):
+hour-to-hour returns near a random walk (EURUSD, GBPUSD, USDCAD revert slightly, lag-1 negative 5/5; USDJPY the only
+trending pair, VR(2 h) > 1 in 4/5, VR(8 h) up to 1.22); drift by hour at most 1-2 pips (USDJPY +2.3 at 07 UTC 5/5);
+session effects that kept their sign are 1-7 pips; seven session families as trades make 0.00-0.07 R before costs
+against costs of 0.08-0.16 R a trade (a round trip of 1.5-1.9 pips vs an H1 ATR of 7-20 pips) - **time of day alone
+cannot pay FX costs.** The one effect with a cause: **on 08:30 ET US release days, fading the 08:00 -> 10:00 ET move**
+gains +0.25 ATR by 14:00 ET (112 days, 4/5 half-years); on other days nothing. Rule RF (frozen before the test):
+release days only, six pairs (not USDJPY), the 08:00-10:00 move >= 1 H1 ATR(24), pulled back > 10 % of the range
+by 10:00, at most 25 % of it before 08:30; enter against it after 10:00 ET; the stop 1 ATR beyond the 08:00-10:00
+extreme (skip if > 4 USD at 0.01 lot); exit at 14:00 ET; at most 3 pairs a day. Design step table: fade every day
+-0.047 R (4,205) -> release days +0.042 -> ... -> RF +0.258 R (162 trades, 60 % win, max DD 17.7 USD). The decision
+minute was a knife edge (09:45 / 10:00 / 10:15 / 10:30 ET: +0.12 / +0.28 / +0.13 / +0.05 R). **Test 2026-03 .. 10: 33
+trades on 16 days, win 58 %, -43.7 pips, -2.84 USD, -0.067 R (before costs -0.009), 3/7 months** - fails; the coin
+-0.121 R, 48 %. Account: worst -3.28 USD, worst day -6.60, streak 6, max DD 8.7 - fits 50 USD. **Why the nine stopped
+losers lost:** 4 - a new USD move started at the 10:00 ET entry (10:00 is itself a release slot: 2026-06-25 PCE day
+three pairs stopped in 5-6 minutes; 2026-03-13 JOLTS at 10:00, USDCAD ran 45 pips); 3 - a steady trend day, not a
+spike (2026-07-15 PPI: a climb 08:30-14:00 the pre-release filter cannot see); 2 - stops too tight on AUD / NZD
+(10 pips, price back at the entry by 13:00). Winners: one spike at 08:30 and a range by 10:00.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had

@@ -1,0 +1,34 @@
+V7 skip no-stall           n= 317 days=97 win 56% (coin 38%) gross +0.390 net +0.265 coin -0.116 | +0.533 -0.032 +0.181 +0.228 +0.358 | USD +148.1 | stop med 19.6p | kinds  88/  9/  3 coin  96/  3/  1
+     worst -3.96 USD, worst day -16.36, streak 9, maxDD 27.1 USD, 6 avg losses 8.7 USD
+     EURUSD n= 51 net +0.300 coin -0.127 | +0.671 +0.112 -0.169 +0.448 -0.037
+     GBPUSD n= 46 net +0.326 coin -0.164 | +0.944 -0.379 +0.098 +0.434 +0.424
+     USDJPY n= 38 net +0.134 coin +0.092 | +0.229 +0.181 +0.108 +0.257 -0.205
+     AUDUSD n= 49 net +0.312 coin -0.305 | +0.383 -0.100 +0.657 +0.001 +1.369
+     USDCHF n= 49 net +0.101 coin +0.047 | +0.604 +0.090 -0.383 +0.104 -0.421
+     USDCAD n= 44 net +0.318 coin -0.127 | +0.512 +0.126 +0.283 +0.395 +0.260
+     NZDUSD n= 40 net +0.364 coin -0.201 | +0.456 -0.401 +0.953 -0.143 +1.577
+V8 wait for 15% pullback   n= 453 days=108 win 52% (coin 40%) gross +0.301 net +0.180 coin -0.100 | +0.404 -0.022 +0.114 +0.041 +0.474 | USD +123.3 | stop med 19.1p | kinds  91/  7/  2 coin  95/  5/  1
+     worst -4.24 USD, worst day -16.36, streak 17, maxDD 40.1 USD, 6 avg losses 8.9 USD
+     EURUSD n= 69 net +0.213 coin -0.181 | +0.367 -0.194 -0.060 +0.375 +0.646
+     GBPUSD n= 70 net +0.140 coin -0.260 | +0.724 -0.308 +0.028 +0.092 +0.017
+     USDJPY n= 58 net +0.062 coin +0.161 | +0.144 +0.244 -0.184 -0.166 +0.103
+     AUDUSD n= 69 net +0.207 coin -0.139 | +0.384 -0.208 +0.564 -0.088 +0.980
+     USDCHF n= 64 net +0.096 coin +0.046 | +0.398 +0.055 -0.344 +0.054 +0.073
+     USDCAD n= 66 net +0.275 coin -0.046 | +0.442 +0.331 +0.210 -0.023 +0.497
+     NZDUSD n= 57 net +0.262 coin -0.249 | +0.363 -0.097 +0.676 -0.087 +1.477
+V8b without USDJPY         n= 395 days=102 win 51% (coin 37%) gross +0.329 net +0.198 coin -0.138 | +0.441 -0.070 +0.156 +0.063 +0.550 | USD +120.0 | stop med 17.4p | kinds  90/  8/  2 coin  95/  5/  1
+     worst -3.96 USD, worst day -13.33, streak 15, maxDD 44.0 USD, 6 avg losses 8.5 USD
+     EURUSD n= 69 net +0.213 coin -0.181 | +0.367 -0.194 -0.060 +0.375 +0.646
+     GBPUSD n= 70 net +0.140 coin -0.260 | +0.724 -0.308 +0.028 +0.092 +0.017
+     AUDUSD n= 69 net +0.207 coin -0.139 | +0.384 -0.208 +0.564 -0.088 +0.980
+     USDCHF n= 64 net +0.096 coin +0.046 | +0.398 +0.055 -0.344 +0.054 +0.073
+     USDCAD n= 66 net +0.275 coin -0.046 | +0.442 +0.331 +0.210 -0.023 +0.497
+     NZDUSD n= 57 net +0.262 coin -0.249 | +0.363 -0.097 +0.676 -0.087 +1.477
+V8c b + max 3 pairs/day    n= 261 days=102 win 50% (coin 38%) gross +0.251 net +0.116 coin -0.177 | +0.375 -0.228 +0.131 +0.019 +0.498 | USD +30.1 | stop med 17.3p | kinds  94/  4/  2 coin  97/  3/  0
+     worst -3.96 USD, worst day -7.85, streak 14, maxDD 42.3 USD, 6 avg losses 9.2 USD
+     EURUSD n= 48 net -0.017 coin -0.144 | +0.082 -0.667 -0.263 +0.342 +0.599
+     GBPUSD n= 50 net -0.010 coin -0.215 | +0.575 -0.389 +0.050 -0.198 +0.153
+     AUDUSD n= 42 net +0.238 coin -0.116 | +0.631 -0.599 +0.999 -0.015 +0.302
+     USDCHF n= 39 net -0.005 coin -0.143 | +0.144 +0.025 -0.179 -0.154 +0.301
+     USDCAD n= 43 net +0.182 coin -0.086 | +0.408 +0.143 -0.158 +0.310 -0.337
+     NZDUSD n= 39 net +0.361 coin -0.369 | +0.386 +0.105 +0.566 -0.088 +1.477

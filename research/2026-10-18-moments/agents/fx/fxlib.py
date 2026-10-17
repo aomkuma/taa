@@ -53,8 +53,9 @@ def half_of(t: pd.Series | pd.DatetimeIndex) -> np.ndarray:
 
 
 class Pair:
-    def __init__(self, sym: str) -> None:
+    def __init__(self, sym: str, costs: bool = True) -> None:
         self.sym = sym
+        self.slip = SLIP if costs else 0.0
         m = pd.read_parquet(f"data/history/FBS-Demo/{sym}/M1.parquet")
         m.index = pd.DatetimeIndex(pd.to_datetime(m.open_time, utc=True))
         m = m[~m.index.duplicated()].sort_index()
@@ -63,7 +64,7 @@ class Pair:
         pip = PIP[sym]
         self.o, self.h, self.lo, self.c = (m[k].to_numpy(float) / pip for k in ("open", "high", "low", "close"))
         self.sp = m["spread"].to_numpy(float) * POINT[sym] / pip
-        self.ask_add = self.sp + EXTRA
+        self.ask_add = self.sp + EXTRA if costs else np.zeros(len(m))
         px = m["close"].to_numpy(float)
         if sym == "USDJPY":
             self.usd_pip = 10.0 / px
@@ -94,7 +95,7 @@ class Pair:
         e = d + 1
         if e + 2 >= self.n or self.tmin[e] - self.tmin[d] != 1:
             return None
-        entry = self.o[e] + (self.ask_add[e] + SLIP if side > 0 else -SLIP)
+        entry = self.o[e] + (self.ask_add[e] + self.slip if side > 0 else -self.slip)
         # the last bar held
         end = e
         t0 = self.tmin[e]
@@ -143,17 +144,17 @@ class Pair:
                         stop_lvl, armed = nl, True
             stop_px = stop_lvl
         if js < n and js <= jt:
-            pnl = stop_px - SLIP
+            pnl = stop_px - self.slip
             exit_, j = ("trail" if armed else "stop"), js
         elif jt < n:
             pnl, exit_, j = tp, "win", jt
         else:
             x = end - 1
-            px = self.c[x] - (SLIP if side > 0 else -(self.ask_add[x] + SLIP))
+            px = self.c[x] - (self.slip if side > 0 else -(self.ask_add[x] + self.slip))
             pnl, exit_, j = (px - entry) * side, "time", n - 1
         kind = ""
         if exit_ == "stop":
-            ref = tp if tp is not None else 2 * sl
+            ref = tp if tp is not None else sl  # no target: the reference is 1R
             kend = int(np.searchsorted(self.tmin, t0 + 120, side="left"))
             later = slice(e + js + 1, kend)
             fl = ((self.h[later] if side > 0 else self.lo[later] + self.ask_add[later]) - entry) * side
@@ -162,7 +163,7 @@ class Pair:
             kind = "3" if hit else ("2" if mfe >= 0.5 * ref else "1")
         mfe_all = float(f[: j + 1].max())
         mae_all = float(a[: j + 1].min())
-        return dict(exit=exit_, pips=pnl, R=pnl / (sl + SLIP), usd=pnl * self.usd_pip[e],
+        return dict(exit=exit_, pips=pnl, R=pnl / (sl + self.slip), usd=pnl * self.usd_pip[e],
                     mins=int(self.tmin[e + j] - self.tmin[e]) + 1, kind=kind, e=e, xi=e + j, entry=entry,
                     mfe=mfe_all, mae=mae_all)
 

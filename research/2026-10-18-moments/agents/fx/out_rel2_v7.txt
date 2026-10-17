@@ -1,0 +1,24 @@
+V7b without USDJPY         n= 279 days=91 win 55% (coin 36%) gross +0.414 net +0.283 coin -0.145 | +0.587 -0.068 +0.188 +0.227 +0.488 | USD +134.5 | stop med 17.9p | kinds  88/  9/  3 coin  96/  4/  1
+     worst -3.96 USD, worst day -13.33, streak 11, maxDD 34.5 USD, 6 avg losses 8.2 USD
+     EURUSD n= 51 net +0.300 coin -0.127 | +0.671 +0.112 -0.169 +0.448 -0.037
+     GBPUSD n= 46 net +0.326 coin -0.164 | +0.944 -0.379 +0.098 +0.434 +0.424
+     AUDUSD n= 49 net +0.312 coin -0.305 | +0.383 -0.100 +0.657 +0.001 +1.369
+     USDCHF n= 49 net +0.101 coin +0.047 | +0.604 +0.090 -0.383 +0.104 -0.421
+     USDCAD n= 44 net +0.318 coin -0.127 | +0.512 +0.126 +0.283 +0.395 +0.260
+     NZDUSD n= 40 net +0.364 coin -0.201 | +0.456 -0.401 +0.953 -0.143 +1.577
+V7c b + max 3/day cheapest n= 210 days=91 win 54% (coin 36%) gross +0.334 net +0.223 coin -0.195 | +0.492 -0.202 +0.125 +0.323 +0.490 | USD +88.1 | stop med 17.6p | kinds  90/  8/  1 coin  96/  4/  0
+     worst -3.96 USD, worst day -6.96, streak 9, maxDD 31.3 USD, 6 avg losses 8.5 USD
+     EURUSD n= 51 net +0.300 coin -0.127 | +0.671 +0.112 -0.169 +0.448 -0.037
+     GBPUSD n= 46 net +0.326 coin -0.164 | +0.944 -0.379 +0.098 +0.434 +0.424
+     AUDUSD n= 49 net +0.312 coin -0.305 | +0.383 -0.100 +0.657 +0.001 +1.369
+     USDCHF n= 28 net -0.123 coin -0.091 | +0.425 -0.122 -0.675 -0.104 -1.000
+     USDCAD n= 27 net +0.123 coin -0.384 | -0.213 -0.300 +0.174 +0.841 +0.327
+     NZDUSD n=  9 net +0.153 coin +0.114 | -0.248 -1.000 +2.070      - +1.528
+V7d b + max 2/day cheapest n= 163 days=91 win 52% (coin 36%) gross +0.254 net +0.153 coin -0.197 | +0.518 -0.157 +0.015 +0.146 +0.241 | USD +59.1 | stop med 18.7p | kinds  92/  7/  2 coin  98/  2/  0
+     worst -3.96 USD, worst day -6.65, streak 7, maxDD 27.5 USD, 6 avg losses 9.1 USD
+     EURUSD n= 51 net +0.300 coin -0.127 | +0.671 +0.112 -0.169 +0.448 -0.037
+     GBPUSD n= 46 net +0.326 coin -0.164 | +0.944 -0.379 +0.098 +0.434 +0.424
+     AUDUSD n= 26 net -0.023 coin -0.238 | -0.142 -0.137 +0.739 -0.428 +1.675
+     USDCHF n= 20 net -0.054 coin -0.253 | +1.072 -0.177 -0.567 -0.121 -1.000
+     USDCAD n= 17 net -0.357 coin -0.544 | -0.286 -0.276 -0.399 -1.000 +0.327
+     NZDUSD n=  3 net +0.826 coin +0.826 | -1.000      - +2.070      - +1.409

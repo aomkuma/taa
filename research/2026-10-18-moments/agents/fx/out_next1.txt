@@ -1,0 +1,3 @@
+  RF (design)                        n= 162 win  60% net +0.258 pos 5/5 | +0.358 +0.005 +0.153 +0.415 +0.512 | USD  +83.0 | worst -3.25 day -7.60 streak 10 maxDD 17.7 6L 8.9
+  RF on JOLTS days: {'size': 0.0, 'mean': nan}  other: {'size': 162.0, 'mean': 0.258}
+  RF2 confirm through 10:15 (design) n= 118 win  61% net +0.234 pos 4/5 | +0.356 -0.214 +0.322 +0.392 +0.382 | USD  +58.2 | worst -3.94 day -9.36 streak 6 maxDD 16.9 6L 9.0
