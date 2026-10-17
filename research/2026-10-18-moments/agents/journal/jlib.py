@@ -144,6 +144,25 @@ def run(sig: pd.DataFrame, P: Instr, tp_u: float, be: float | None, hz: int, uni
     return pd.DataFrame(rows)
 
 
+def account(r: pd.DataFrame, P: Instr) -> str:
+    """The owner's account check at 0.01 lot: worst single loss, longest losing streak, max drawdown, 6 average
+    losses vs a 50 / 100 USD account (gold: P&L in USD = price x 1; a USD major ~0.10 USD a pip)."""
+    # 0.01 lot = 1000 units: EURUSD / GBPUSD 0.10 USD a pip; USDJPY 10 JPY a pip ~ 0.067 USD near 150
+    per_pip = {"EURUSD": 0.10, "GBPUSD": 0.10, "USDJPY": 0.067}.get(P.sym, 1.0)
+    usd = (r.pnl * (1.0 if P.sym == "XAUUSD" else per_pip / P.pip)).to_numpy()
+    eq = np.cumsum(usd)
+    dd = float((np.maximum.accumulate(eq) - eq).max())
+    streak = mx = 0
+    for v in usd:
+        streak = streak + 1 if v < 0 else 0
+        mx = max(mx, streak)
+    st = usd[(r.exit == "stop").to_numpy()]
+    avg_loss = float(-st.mean()) if len(st) else 0.0  # the average full (stopped) loss
+    six = 6 * avg_loss
+    return (f"worst {usd.min():.2f} USD, longest losing streak {mx}, max DD {dd:.1f} USD, avg loss {avg_loss:.2f}"
+            f" -> 6 in a row {six:.1f} USD ({'fits' if six < 50 else 'NOT'} 50, {'fits' if six < 100 else 'NOT'} 100)")
+
+
 def kinds(z: pd.DataFrame) -> str:
     if not len(z):
         return "  -/  -/  -"

@@ -1,0 +1,90 @@
+
+XAUUSD W3 + W3 as is
+  2023-11 .. 2024-04     25 0.19   32%  -0.083R      -0.5 USD  m+ 2/6  kinds  79/  0/ 21 | coin -0.095R win 30%
+  2024-05 .. 2024-10     49 0.37   33%  +0.130R     +16.1 USD  m+ 3/6  kinds  52/  0/ 48 | coin -0.091R win 28%
+  2024-11 .. 2025-04     41 0.32   29%  -0.008R      +4.1 USD  m+ 3/6  kinds  61/  6/ 33 | coin -0.226R win 21%
+  2025-05 .. 2025-08     30 0.34   30%  +0.018R      +4.2 USD  m+ 2/4  kinds  53/  0/ 47 | coin -0.017R win 25%
+  2025-09 .. 2026-02     53 0.41   38%  +0.119R     +17.1 USD  m+ 5/6  kinds  36/  5/ 59 | coin -0.067R win 32%
+  ALL: 198 trades, win 33%, +0.055 R, halves+ 3/5; exits {'stop': 90, 'win': 65, 'be': 32, 'time': 11}
+    account: worst -12.63 USD, longest losing streak 9, max DD 57.5 USD, avg loss 4.06 -> 6 in a row 24.4 USD (fits 50, fits 100)
+
+XAUUSD W3 + X1 k5 g.25
+  2023-11 .. 2024-04     26 0.20   19%  -0.228R      -8.4 USD  m+ 1/6  kinds  86/  0/ 14 | coin -0.027R win 22%
+  2024-05 .. 2024-10     51 0.39   22%  +0.006R      -0.6 USD  m+ 2/6  kinds  46/  0/ 54 | coin -0.098R win 18%
+  2024-11 .. 2025-04     41 0.32   20%  -0.105R     -11.8 USD  m+ 2/6  kinds  67/  0/ 33 | coin -0.154R win 14%
+  2025-05 .. 2025-08     30 0.34   23%  +0.048R      +8.2 USD  m+ 2/4  kinds  38/  0/ 62 | coin -0.002R win 20%
+  2025-09 .. 2026-02     54 0.42   35%  +0.168R     +33.1 USD  m+ 5/6  kinds  40/  7/ 53 | coin -0.058R win 28%
+  ALL: 202 trades, win 25%, +0.003 R, halves+ 3/5; exits {'check': 77, 'stop': 52, 'win': 50, 'be': 22, 'time': 1}
+    account: worst -12.63 USD, longest losing streak 17, max DD 54.0 USD, avg loss 4.27 -> 6 in a row 25.6 USD (fits 50, fits 100)
+
+XAUUSD W3 + X1 k10 g.25
+  2023-11 .. 2024-04     25 0.19   32%  -0.073R      +1.1 USD  m+ 2/6  kinds  75/  0/ 25 | coin -0.088R win 30%
+  2024-05 .. 2024-10     50 0.38   28%  +0.069R      +8.7 USD  m+ 3/6  kinds  47/  0/ 53 | coin -0.122R win 22%
+  2024-11 .. 2025-04     41 0.32   22%  -0.054R      -5.2 USD  m+ 2/6  kinds  69/  0/ 31 | coin -0.168R win 17%
+  2025-05 .. 2025-08     30 0.34   27%  +0.034R      +5.0 USD  m+ 2/4  kinds  45/  0/ 55 | coin +0.004R win 24%
+  2025-09 .. 2026-02     54 0.42   35%  +0.089R      +9.2 USD  m+ 4/6  kinds  38/  5/ 57 | coin -0.092R win 29%
+  ALL: 200 trades, win 29%, +0.026 R, halves+ 3/5; exits {'stop': 74, 'win': 58, 'check': 31, 'be': 29, 'time': 8}
+    account: worst -12.63 USD, longest losing streak 9, max DD 57.5 USD, avg loss 4.19 -> 6 in a row 25.1 USD (fits 50, fits 100)
+
+XAUUSD W3 + X1 k10 g.4
+  2023-11 .. 2024-04     26 0.20   23%  -0.137R      -4.4 USD  m+ 1/6  kinds  73/  0/ 27 | coin -0.115R win 25%
+  2024-05 .. 2024-10     50 0.38   22%  +0.069R      +8.9 USD  m+ 4/6  kinds  50/  0/ 50 | coin -0.103R win 19%
+  2024-11 .. 2025-04     43 0.33   19%  -0.056R      -7.9 USD  m+ 3/6  kinds  67/  0/ 33 | coin -0.177R win 14%
+  2025-05 .. 2025-08     30 0.34   20%  -0.038R      -5.8 USD  m+ 2/4  kinds  45/  0/ 55 | coin -0.076R win 16%
+  2025-09 .. 2026-02     55 0.42   33%  +0.086R      +3.8 USD  m+ 4/6  kinds  38/  5/ 57 | coin -0.046R win 30%
+  ALL: 204 trades, win 24%, +0.005 R, halves+ 2/5; exits {'stop': 69, 'check': 61, 'win': 49, 'be': 20, 'time': 5}
+    account: worst -12.63 USD, longest losing streak 10, max DD 57.5 USD, avg loss 4.26 -> 6 in a row 25.5 USD (fits 50, fits 100)
+
+XAUUSD W3 + X1 k15 g.25
+  2023-11 .. 2024-04     25 0.19   32%  -0.038R      +2.6 USD  m+ 3/6  kinds  75/  0/ 25 | coin -0.077R win 30%
+  2024-05 .. 2024-10     50 0.38   28%  +0.028R      +2.6 USD  m+ 3/6  kinds  50/  0/ 50 | coin -0.099R win 24%
+  2024-11 .. 2025-04     41 0.32   27%  -0.003R      +1.9 USD  m+ 2/6  kinds  67/  0/ 33 | coin -0.138R win 22%
+  2025-05 .. 2025-08     30 0.34   30%  +0.062R      +8.6 USD  m+ 2/4  kinds  46/  0/ 54 | coin -0.012R win 25%
+  2025-09 .. 2026-02     54 0.42   37%  +0.109R     +15.6 USD  m+ 5/6  kinds  36/  5/ 59 | coin -0.071R win 30%
+  ALL: 200 trades, win 31%, +0.040 R, halves+ 3/5; exits {'stop': 82, 'win': 62, 'be': 31, 'check': 16, 'time': 9}
+    account: worst -12.63 USD, longest losing streak 12, max DD 57.5 USD, avg loss 4.17 -> 6 in a row 25.0 USD (fits 50, fits 100)
+
+XAUUSD W3 + X1 k15 g.4
+  2023-11 .. 2024-04     25 0.19   28%  -0.026R      +1.2 USD  m+ 2/6  kinds  73/  0/ 27 | coin -0.092R win 26%
+  2024-05 .. 2024-10     50 0.38   22%  -0.020R      -4.0 USD  m+ 2/6  kinds  53/  0/ 47 | coin -0.130R win 20%
+  2024-11 .. 2025-04     43 0.33   19%  -0.040R      -5.6 USD  m+ 3/6  kinds  64/  0/ 36 | coin -0.173R win 17%
+  2025-05 .. 2025-08     30 0.34   30%  +0.091R     +11.6 USD  m+ 2/4  kinds  46/  0/ 54 | coin -0.013R win 25%
+  2025-09 .. 2026-02     55 0.42   35%  +0.109R     +10.0 USD  m+ 5/6  kinds  36/  5/ 59 | coin -0.015R win 31%
+  ALL: 203 trades, win 27%, +0.027 R, halves+ 2/5; exits {'stop': 77, 'win': 54, 'check': 42, 'be': 24, 'time': 6}
+    account: worst -12.63 USD, longest losing streak 13, max DD 57.5 USD, avg loss 4.24 -> 6 in a row 25.4 USD (fits 50, fits 100)
+
+XAUUSD W3 + X2 limit lvl+.5ATR
+  2023-11 .. 2024-04     19 0.15   21%  -0.319R      -7.0 USD  m+ 1/5  kinds  77/  0/ 23 | coin -0.281R win 17%
+  2024-05 .. 2024-10     30 0.23   20%  +0.014R      -4.6 USD  m+ 1/6  kinds  63/  0/ 37 | coin +0.050R win 26%
+  2024-11 .. 2025-04     25 0.19   16%  -0.262R     -13.4 USD  m+ 2/6  kinds  56/  6/ 38 | coin -0.384R win 17%
+  2025-05 .. 2025-08     23 0.26   22%  -0.089R      +6.0 USD  m+ 2/4  kinds  54/  0/ 46 | coin -0.112R win 22%
+  2025-09 .. 2026-02     40 0.31   32%  +0.213R      +5.9 USD  m+ 3/6  kinds  40/  0/ 60 | coin -0.051R win 25%
+  ALL: 137 trades, win 23%, -0.042 R, halves+ 2/5; exits {'stop': 81, 'win': 32, 'be': 21, 'time': 3}
+    account: worst -12.56 USD, longest losing streak 15, max DD 61.5 USD, avg loss 3.25 -> 6 in a row 19.5 USD (fits 50, fits 100)
+
+XAUUSD W3 + X2 limit lvl+1ATR
+  2023-11 .. 2024-04     21 0.16   29%  -0.074R      -2.2 USD  m+ 2/6  kinds  77/  0/ 23 | coin -0.079R win 28%
+  2024-05 .. 2024-10     37 0.28   19%  -0.091R      -9.4 USD  m+ 3/6  kinds  58/  0/ 42 | coin -0.191R win 23%
+  2024-11 .. 2025-04     30 0.23   20%  -0.062R      -3.9 USD  m+ 2/6  kinds  56/  6/ 38 | coin -0.289R win 17%
+  2025-05 .. 2025-08     26 0.30   27%  +0.008R      +7.6 USD  m+ 2/4  kinds  50/  0/ 50 | coin -0.007R win 25%
+  2025-09 .. 2026-02     46 0.35   37%  +0.208R     +27.5 USD  m+ 5/6  kinds  38/  0/ 62 | coin -0.019R win 32%
+  ALL: 160 trades, win 27%, +0.019 R, halves+ 2/5; exits {'stop': 83, 'win': 43, 'be': 28, 'time': 6}
+    account: worst -12.56 USD, longest losing streak 13, max DD 56.9 USD, avg loss 3.68 -> 6 in a row 22.1 USD (fits 50, fits 100)
+
+XAUUSD W3 + X3 room72 < .5
+  2023-11 .. 2024-04     13 0.10   23%  -0.169R      -4.9 USD  m+ 2/5  kinds  62/  0/ 38 | coin -0.162R win 25%
+  2024-05 .. 2024-10     27 0.20   41%  +0.392R     +25.3 USD  m+ 5/6  kinds  44/  0/ 56 | coin -0.089R win 27%
+  2024-11 .. 2025-04     17 0.13   35%  +0.118R     +14.1 USD  m+ 3/6  kinds  83/ 17/  0 | coin -0.132R win 25%
+  2025-05 .. 2025-08     13 0.15   38%  +0.138R     +11.0 USD  m+ 2/4  kinds  50/  0/ 50 | coin +0.178R win 33%
+  2025-09 .. 2026-02     28 0.22   43%  +0.289R     +31.5 USD  m+ 3/6  kinds  27/  9/ 64 | coin -0.023R win 32%
+  ALL: 98 trades, win 38%, +0.207 R, halves+ 4/5; exits {'stop': 40, 'win': 37, 'be': 19, 'time': 2}
+    account: worst -11.44 USD, longest losing streak 7, max DD 21.3 USD, avg loss 3.82 -> 6 in a row 22.9 USD (fits 50, fits 100)
+
+XAUUSD W3 + X3 + X1 k10 g.25
+  2023-11 .. 2024-04     13 0.10   23%  -0.209R      -5.7 USD  m+ 2/5  kinds  57/  0/ 43 | coin -0.154R win 25%
+  2024-05 .. 2024-10     28 0.21   36%  +0.281R     +18.3 USD  m+ 4/6  kinds  44/  0/ 56 | coin -0.097R win 24%
+  2024-11 .. 2025-04     17 0.13   24%  -0.018R      +5.3 USD  m+ 2/6  kinds 100/  0/  0 | coin -0.052R win 20%
+  2025-05 .. 2025-08     13 0.15   38%  +0.277R     +17.2 USD  m+ 2/4  kinds  33/  0/ 67 | coin +0.231R win 33%
+  2025-09 .. 2026-02     28 0.22   43%  +0.304R     +36.2 USD  m+ 3/6  kinds  30/ 10/ 60 | coin +0.009R win 32%
+  ALL: 99 trades, win 34%, +0.172 R, halves+ 3/5; exits {'stop': 34, 'win': 34, 'be': 16, 'check': 14, 'time': 1}
+    account: worst -11.44 USD, longest losing streak 7, max DD 20.4 USD, avg loss 3.80 -> 6 in a row 22.8 USD (fits 50, fits 100)

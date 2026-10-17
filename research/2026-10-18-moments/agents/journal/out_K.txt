@@ -1,0 +1,26 @@
+
+XAUUSD rule K: tide + M5 with + test of the level, higher low, break of the 10-bar high; stop beyond the test
+  signal rows 1840; tp 8.0 U, be 0.6, hz 60, stop 3.0-10.0 U
+  window                trades /day  win     R/trade   P&L            months+  kinds 1/2/3 | coin: R (sd)  kinds  trades
+  2023-11 .. 2024-04    165 1.27   16%  -0.160R     -73.6 USD  m+ 1/6  kinds  82/  5/ 13 | -0.155 (0.045)  86/  3/ 11 172
+  2024-05 .. 2024-10    192 1.45   17%  -0.213R    -119.9 USD  m+ 1/6  kinds  88/  0/ 12 | -0.171 (0.063)  80/  1/ 19 195
+  2024-11 .. 2025-04    155 1.20   25%  +0.011R     -15.3 USD  m+ 1/6  kinds  84/  0/ 16 | -0.107 (0.070)  86/  3/ 11 160
+  2025-05 .. 2025-08    108 1.24   21%  -0.147R     -93.3 USD  m+ 1/4  kinds  81/  5/ 14 | -0.064 (0.062)  75/  5/ 20 110
+  2025-09 .. 2026-02     88 0.68   31%  +0.088R     +53.0 USD  m+ 3/6  kinds  72/  4/ 24 | +0.027 (0.061)  73/  4/ 23 90
+  ALL design: 708 trades, win 21%, -0.104 R/trade, halves+ 2/5, coin mean -0.094 R; exits {'stop': 267, 'time': 203, 'win': 148, 'be': 90}
+    Asia      406 trades  win  19%  -0.122 R
+    London    118 trades  win  19%  +0.027 R
+    New York  184 trades  win  27%  -0.150 R
+
+XAUUSD rule K2: K + no news + not a flat H1
+  signal rows 1470; tp 8.0 U, be 0.6, hz 60, stop 3.0-10.0 U
+  window                trades /day  win     R/trade   P&L            months+  kinds 1/2/3 | coin: R (sd)  kinds  trades
+  2023-11 .. 2024-04    132 1.02   19%  -0.117R     -52.0 USD  m+ 1/6  kinds  79/  6/ 15 | -0.106 (0.063)  84/  3/ 14 137
+  2024-05 .. 2024-10    153 1.16   19%  -0.229R     -95.5 USD  m+ 0/6  kinds  85/  0/ 15 | -0.166 (0.041)  80/  0/ 20 155
+  2024-11 .. 2025-04    130 1.01   24%  -0.013R     -23.6 USD  m+ 2/6  kinds  84/  0/ 16 | -0.113 (0.072)  87/  1/ 12 134
+  2025-05 .. 2025-08     93 1.07   20%  -0.156R     -87.0 USD  m+ 1/4  kinds  82/  5/ 13 | -0.058 (0.044)  75/  3/ 23 96
+  2025-09 .. 2026-02     69 0.53   30%  +0.098R     +47.6 USD  m+ 5/6  kinds  79/  5/ 16 | -0.047 (0.084)  73/  4/ 23 71
+  ALL design: 577 trades, win 22%, -0.104 R/trade, halves+ 1/5, coin mean -0.098 R; exits {'stop': 218, 'time': 162, 'win': 125, 'be': 72}
+    Asia      316 trades  win  20%  -0.114 R
+    London    106 trades  win  19%  +0.034 R
+    New York  155 trades  win  26%  -0.177 R

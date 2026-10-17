@@ -1,0 +1,14 @@
+
+XAUUSD rule E1: the 72-h extreme setup alone: tide + H1 leg with + not flat + pos240 >= .5 + room72 < .5 tp + M5 with + at a level
+  signal rows 2863; tp 8.0 U, be 0.6, hz 60, stop 3.0-10.0 U
+  window                trades /day  win     R/trade   P&L            months+  kinds 1/2/3 | coin: R (sd)  kinds  trades
+  2023-11 .. 2024-04     67 0.52   39%  +0.085R     +21.5 USD  m+ 4/6  kinds  60/  3/ 37 | -0.057 (0.119)  62/  5/ 33 70
+  2024-05 .. 2024-10     84 0.64   25%  -0.033R     -25.9 USD  m+ 2/6  kinds  42/  7/ 51 | -0.149 (0.079)  54/  4/ 42 87
+  2024-11 .. 2025-04     97 0.75   33%  +0.083R     +23.4 USD  m+ 4/6  kinds  62/  2/ 35 | -0.110 (0.073)  70/  4/ 27 100
+  2025-05 .. 2025-08     47 0.54   34%  +0.138R     +27.3 USD  m+ 3/4  kinds  68/  5/ 26 | -0.024 (0.134)  63/  6/ 31 48
+  2025-09 .. 2026-02     86 0.66   40%  +0.225R     +70.3 USD  m+ 5/6  kinds  48/  2/ 50 | +0.073 (0.077)  49/  6/ 44 90
+  ALL design: 381 trades, win 34%, +0.096 R/trade, halves+ 4/5, coin mean -0.054 R; exits {'stop': 185, 'win': 129, 'be': 48, 'time': 19}
+    account: worst -11.44 USD, longest losing streak 10, max DD 56.3 USD, avg loss 3.69 -> 6 in a row 22.1 USD (fits 50, fits 100)
+    Asia      101 trades  win  37%  +0.293 R
+    London     76 trades  win  28%  +0.072 R
+    New York  204 trades  win  35%  +0.008 R

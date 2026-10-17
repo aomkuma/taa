@@ -890,6 +890,36 @@ were one bet (a failed signal stopped four legs together: a 14-trade losing stre
 (-0.47 R vs -0.16). Next idea (needs unseen data): choose the side by the coupling regime measured on the past 20
 days (weak coupling: bet on the later reversal; strong: follow equities), one pair per signal.
 
+**Journal agent - final** (`agents/journal/`: notes.md, journal.md, about 250 charts of which about 110 read by eye;
+real costs; B0 rebuilt from M1 for any symbol and checked against round 9: 431 test trades -0.033 R vs 425 -0.032).
+Causes of the losers, counted: B0 - dips bought while the M5 was still falling (19 of 34 charted stopped losers, 2
+of 18 winners); stops inside the swept range (kind 3). W3 - the eye's "spike entries" did not survive the count;
+what separates them is the first minutes: kind 3 losers (44 % of full losses) pulled back about 2x the stop before
+the move resumed - they entered at the end of a push with the tightest stops (1.9 vs 2.4 ATR); kind 1 losers (56 %)
+- the push died, more often in a fast tape and far from the 72-hour extreme; being just under the 72-hour extreme
+was a *winner's* mark (28 % of winners, 13 % of losers). V1's losers: the snap-back of a jump in a fast tape;
+buying the 72-hour high after a vertical H1 run with H1 rejection wicks (e.g. `charts/W3/068.png`, checked by the
+lead: a buy at 2684 under the H1 high after a vertical run, stopped at 2681, then 2668). Rejected: early exits at
+minute 5-15, a limit entry at the retest, rule K, H1-structure / news / knife filters.
+
+**V1** = W2 + the 72-hour extreme in front of the trade closer than half the target, or already behind the price
+(the extreme = the highest high for a buy over the 4,320 M1 bars ending 15 minutes before the decision bar;
+`(front - close) x side < 4 U`). **V2** = V1 + not a fast tape (M1 ATR < 2x its day median).
+
+| Gold, real costs | Design trades (a day) | Design R | Coin R | Half-years + | Test trades | Test R | Test USD (0.01 lot) | Months + | Worst / streak / max DD (USD) |
+|---|---|---|---|---|---|---|---|---|---|
+| B0 | 1,150 (2.2) | -0.140 | -0.151 | 0/5 | 431 | -0.033 | -112.1 | 2/8 | -11.7 / 13 / 187.7 |
+| W3 | 198 (0.4) | +0.055 | -0.070 | 3/5 | 75 | +0.030 | +34.5 | 6/8 | -11.5 / 6 / 27.2 |
+| **V1** | 100 (0.17) | **+0.222** | -0.055 | 4/5 | 18 | **+0.294** | **+44.1** | 5/6 | -7.0 / 3 / 16.7 |
+| **V2** | 63 (0.10) | **+0.359** | +0.046 | 5/5 | 15 | **+0.378** | **+42.3** | 4/6 | -5.3 / 3 / 14.2 |
+
+**Stage: profit on the design data and on the test, above the +0.15 R target - but the test window was already seen
+(V1 / V2 derive from W3), the samples are tiny (15-18 test trades, standard error about 0.3 R) and they trade about
+0.1 a day.** Six average losses in a row about 30 USD: fits a 50 and a 100 USD account. V1's seven test losses were all
+wrong way, on three days: 2026-05-07 (the same 72-hour high / round 4750 refused three times after a +200 USD
+vertical H1 run), 2026-08-12 (two trades 30 minutes after the CPI spike in a fast tape), 2026-08-14 (a sell at the end
+of a 30 USD fall into the 72-hour low). FX with this logic (EURUSD, USDJPY, 15-20 pips): no design variant passes.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had

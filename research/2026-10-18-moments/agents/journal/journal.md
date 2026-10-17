@@ -102,3 +102,69 @@ read off the M5 panel.
 5. **The stop beyond the swept extreme**: stop = min(level - 1 ATR, the lowest low of the last 15 min - 0.5 ATR)
    for a buy (mirror for a sell) - still capped at 10 U.
 6. Late in the windows (NY after +150m, Asia after +110m) and the rollover minute looked bad - small samples.
+
+## Round 1 check (numbers, out_J1-6.txt)
+
+Only lesson 1 (M5 with the trade) held on the uncharted half-years (3 of 5 above the coin); the H1 structure, the
+knife / spike filter and the news filter did nothing measurable; the sweep stop cut kind 3 (43% -> 34%) but the coin
+gained as much (a cheaper stop in R, not a better side).
+
+## Round 2 - J7 (B0 + M5 with + stop beyond the 15-min extreme), its 48 trades of 2025-09 .. 2026-02 (charts/J7)
+
+| # | when | side | result | what the chart showed | why |
+|---|---|---|---|---|---|
+| 4 | 09-12 14:05 NY | buy | kind 1 | 8-hour M5 range, buying its top; H1 structure DOWN | range top, no trend |
+| 6 | 09-16 14:15 NY | buy | kind 1 | at the day high = the 72-h H1 high (double top), room 0.5 USD | bought under resistance |
+| 7 | 09-17 00:16 Asia | buy | kind 1 | right under the Asian / 72-h high, room 0.08 | same |
+| 19 | 11-13 01:03 Asia | buy | kind 1 | after a vertical H1 run (close 4 H1 ATR over the EMA50), at round 4200 | late in a stretched H1 leg |
+| 26 | 12-08 00:05 Asia | sell | kind 1 | Monday open, flat H1 (close 0.8 ATR from the EMA50) | chop |
+| 28 | 12-10 13:21 NY | sell | kind 1 | H1 EMAs tangled; range | chop |
+| 29 | 12-11 01:13 Asia | buy | kind 1 | top of a vertical 40 USD H1 run, at the 72-h range top, ATR x2.8 | late, at resistance |
+| 30 | 12-17 14:07 NY | buy | kind 1 | +10 ATR in 60 min into the 72-h high | at resistance after a run |
+| 37 | 01-14 13:25 NY | buy | kind 1 | 5 min before a release (J7 has no news filter) | the release |
+| 39 | 01-15 08:33 London | sell | kind 1 | flat H1, M5 making higher lows | chop |
+| 0 2 15 45 | wins | | | M5 with, H1 clearly trending, quick follow-through | |
+| 21 23 24 | break-even | | | reached 7.3-8.1 of an 8.3 target, then back to the entry | target a hair too far |
+
+By eye: "under the 72-hour high" and "flat H1" were the new losers' marks. (The count in round 3 reversed the first
+one - see below.)
+
+## Round 3 - W3 (the lead's B0 + H1 leg with + not flat + top quarter of the 4-h range): 90 stopped losers and 30
+winners of 2023-11 .. 2026-02 (charts/W3), 25 viewed
+
+| # | when | side | result | what the chart showed |
+|---|---|---|---|---|
+| 1 | 23-11-08 15:25 NY | sell | kind 3 | entered on the bar after a selling climax bar; a 2 USD snap-back took a 2.2 stop, then the target |
+| 2 | 23-11-13 15:01 NY | sell | kind 1 | sold the 72-h low at the end of a long H1 fall; an H1 bullish engulfing had just printed |
+| 3 | 23-11-15 08:25 London | buy | kind 1 | after a jump bar; drifted, stopped at minute 56 by 0.2 |
+| 12 | 24-02-02 08:12 London | buy | kind 1 | at the H1 range top with an old H1 rejection wick; room 0.2 |
+| 15 | 24-03-07 13:31 NY | buy | kind 1 | entry on top of a 1-min spike at the 72-h high |
+| 17 | 24-03-14 13:36 NY | sell | kind 1 | after a big down bar; bounce took the stop in 1 min |
+| 24 | 24-04-26 13:05 NY | buy | kind 1 | round 2350 = the 72-h high with an earlier rejection wick |
+| 29 | 24-05-08 08:00 London | sell | kind 1 | after a 10-ATR waterfall, into the H1 range low |
+| 36 | 24-06-05 14:01 NY | buy | kind 3 | after a sweep bar to 2335.5; the stop at 2340 inside the swept range |
+| 42 | 24-07-03 13:43 NY | buy | kind 3 | after +6 ATR in 15 min; a wiggle took the stop, then the target |
+| 53 | 24-08-02 12:36 NY | buy | kind 1 | 6 min after NFP, ATR x3.8 |
+| 74 | 24-11-04 08:20 London | sell | kind 1 | into the H1 support of a big H1 reversal bar |
+| 7 | 23-12-05 14:55 NY | sell | kind 3 | ATR x2.95; a 6-ATR green spike took the stop, then the target |
+| 23 | 24-04-26 07:26 London | buy | kind 3 | fill after a +7 USD vertical bar, ATR x2.3; snap-back, then the target |
+| 34 | 24-05-23 14:19 NY | sell | kind 3 | in a crash, ATR x3.3; a 4 USD bounce, then the target |
+| 48 | 24-07-24 12:55 NY | buy | kind 3 | after a jump off a base; the dip took the stop, then +10 |
+| 68 | 24-10-16 13:35 NY | buy | kind 1 | at the 72-h high after a vertical H1 run with H1 wicks up |
+| 93 | 25-01-16 00:18 Asia | buy | kind 1 | fill on top of a +5 ATR jump; snap-back to the stop |
+
+### What the count said (causes.py; out_causes_W3.txt / out_causes_V1.txt)
+
+The eye over-weighted spikes: the spike entries were 13% of W3's losers and 17% of its winners. The "under the
+72-h extreme" mark I took for a loser's mark was the opposite: 28% of winners vs 13% of losers, R +0.42 with it. What
+really separates W3's winners from its losers is the first minutes: winners dipped a median 0.31 of the stop before
+the target; kind 3 losers (44% of the full losses) dipped 2.0x the stop (3.5 ATR) before going on - a full pullback
+after entering at the end of a push, with the tightest stops (1.9 ATR, the level 0.7 ATR under the fill) and more
+often in a fast tape. Kind 1 losers (56%): the push died, more often in a fast tape (ATR 1.9x its median) and far
+from the 72-h extreme (room 0.8 of the target).
+
+## Round 4 - V1 (W2 + the 72-h extreme close in front): 40 stopped losers
+
+Kind 3 (15): the snap-back of a jump in a fast tape (#7 #23 #34 #48 #93); kind 1 (21): the 72-h high reached after a
+vertical H1 run with H1 rejection wicks (#68 #2 #12), or price already through the extreme. Fast tape (ATR >= 2x its
+day median): 45% of the stopped losers, 34% of the winners; R -0.014 with vs +0.372 without -> V2.

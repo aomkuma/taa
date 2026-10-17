@@ -1,0 +1,28 @@
+
+XAUUSD rule W2: B0 + H1 leg not against + not a flat H1 + pos240 >= 0.5
+  signal rows 648; tp 8.0 U, be 0.6, hz 60, stop 3.0-10.0 U
+  window                trades /day  win     R/trade   P&L            months+  kinds 1/2/3 | coin: R (sd)  kinds  trades
+  2023-11 .. 2024-04     43 0.33   26%  -0.122R     -12.0 USD  m+ 1/6  kinds  82/  0/ 18 | -0.151 (0.120)  75/  3/ 22 44
+  2024-05 .. 2024-10     73 0.55   29%  +0.064R     +12.0 USD  m+ 3/6  kinds  69/  0/ 31 | -0.125 (0.090)  69/  5/ 26 75
+  2024-11 .. 2025-04     61 0.47   33%  +0.094R     +23.8 USD  m+ 3/6  kinds  56/  4/ 40 | -0.179 (0.067)  64/  5/ 31 63
+  2025-05 .. 2025-08     40 0.46   30%  -0.042R      +4.5 USD  m+ 3/4  kinds  52/  0/ 48 | -0.094 (0.067)  62/  2/ 36 41
+  2025-09 .. 2026-02     82 0.63   33%  -0.003R     -15.8 USD  m+ 4/6  kinds  47/  8/ 45 | -0.031 (0.086)  48/  2/ 50 83
+  ALL design: 299 trades, win 30%, +0.011 R/trade, halves+ 2/5, coin mean -0.116 R; exits {'stop': 141, 'win': 91, 'be': 41, 'time': 26}
+    account: worst -12.63 USD, longest losing streak 11, max DD 66.0 USD, avg loss 3.12 -> 6 in a row 18.7 USD (fits 50, fits 100)
+    Asia       69 trades  win  25%  -0.050 R
+    London     56 trades  win  27%  +0.078 R
+    New York  174 trades  win  34%  +0.014 R
+
+XAUUSD rule W3: B0 + H1 leg not against + not a flat H1 + pos240 >= 0.75
+  signal rows 392; tp 8.0 U, be 0.6, hz 60, stop 3.0-10.0 U
+  window                trades /day  win     R/trade   P&L            months+  kinds 1/2/3 | coin: R (sd)  kinds  trades
+  2023-11 .. 2024-04     25 0.19   32%  -0.083R      -0.5 USD  m+ 2/6  kinds  79/  0/ 21 | -0.098 (0.286)  71/  6/ 23 27
+  2024-05 .. 2024-10     49 0.37   33%  +0.130R     +16.1 USD  m+ 3/6  kinds  52/  0/ 48 | -0.077 (0.082)  67/  4/ 28 52
+  2024-11 .. 2025-04     41 0.32   29%  -0.008R      +4.1 USD  m+ 3/6  kinds  61/  6/ 33 | -0.088 (0.156)  69/  4/ 27 42
+  2025-05 .. 2025-08     30 0.34   30%  +0.018R      +4.2 USD  m+ 2/4  kinds  53/  0/ 47 | -0.062 (0.124)  60/  1/ 38 30
+  2025-09 .. 2026-02     53 0.41   38%  +0.119R     +17.1 USD  m+ 5/6  kinds  36/  5/ 59 | -0.026 (0.120)  44/  1/ 55 54
+  ALL design: 198 trades, win 33%, +0.055 R/trade, halves+ 3/5, coin mean -0.070 R; exits {'stop': 90, 'win': 65, 'be': 32, 'time': 11}
+    account: worst -12.63 USD, longest losing streak 9, max DD 57.5 USD, avg loss 3.02 -> 6 in a row 18.1 USD (fits 50, fits 100)
+    Asia       34 trades  win  29%  +0.139 R
+    London     42 trades  win  29%  +0.087 R
+    New York  122 trades  win  35%  +0.020 R

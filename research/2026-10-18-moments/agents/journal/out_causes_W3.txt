@@ -1,0 +1,16 @@
+trades_all_XAUUSD_W3.parquet: 198 trades, stopped 90, winners 65, R +0.055
+cause: share of stopped losers / winners (all design), then losers/winners by half-year; R with / without
+  C1 spike entry (bar body >= 1.5 ATR or 3-bar move >= 3 ATR with the side)
+      13% /  17%   halves  14/ 25   14/ 19   28/  8    7/ 11    5/ 20   R with +0.107 (n 29)  without +0.046 (n 169)
+  C2 under the 72-h extreme (0 < room < 0.5 target)
+      13% /  28%   halves   7/ 25   10/ 56   11/ 33   13/ 11   23/ 10   R with +0.420 (n 41)  without -0.041 (n 157)
+  C3 stop inside the last 15-min swing
+      92% /  89%   halves 100/ 88   95/ 94   83/ 83   87/ 89   95/ 90   R with +0.041 (n 181)  without +0.207 (n 17)
+  C4 stretched (60-min move >= 8 ATR with the side)
+      17% /  20%   halves  14/ 12   19/ 12   22/  8   13/ 22   14/ 35   R with +0.142 (n 32)  without +0.038 (n 166)
+  C5 US release within 15 min
+       2% /   6%   halves   0/  0    5/ 12    6/  8    0/  0    0/  5   R with +0.412 (n 8)  without +0.040 (n 190)
+  C6 late in the window (NY >= +120m, Asia >= +100m)
+      14% /  15%   halves  21/ 25   14/ 19    6/  0   20/ 11   14/ 20   R with -0.034 (n 35)  without +0.074 (n 163)
+  C7 fast tape (M1 ATR >= 2x its day median)
+      42% /  40%   halves  71/100   48/ 38   39/ 42   47/ 33   18/ 20   R with -0.059 (n 77)  without +0.127 (n 121)

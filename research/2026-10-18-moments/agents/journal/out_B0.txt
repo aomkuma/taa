@@ -1,0 +1,13 @@
+
+XAUUSD rule B0: baseline: confluence.py as tested (H1 tide + level + price action + 2/3 M5), stop 3-10 U
+  signal rows 3478; tp 8.0 U, be 0.6, hz 60, stop 3.0-10.0 U
+  window                trades /day  win     R/trade   P&L            months+  kinds 1/2/3 | coin: R (sd)  kinds  trades
+  2023-11 .. 2024-04    218 1.68   19%  -0.242R    -108.3 USD  m+ 1/6  kinds  78/  2/ 19 | -0.246 (0.052)  73/  2/ 25 219
+  2024-05 .. 2024-10    248 1.88   21%  -0.134R    -112.4 USD  m+ 1/6  kinds  69/  3/ 28 | -0.178 (0.080)  72/  3/ 25 245
+  2024-11 .. 2025-04    227 1.76   27%  -0.030R     -25.4 USD  m+ 3/6  kinds  61/  8/ 31 | -0.116 (0.081)  63/  7/ 30 224
+  2025-05 .. 2025-08    190 2.18   23%  -0.181R     -85.9 USD  m+ 1/4  kinds  61/  4/ 36 | -0.111 (0.067)  60/  7/ 33 187
+  2025-09 .. 2026-02    267 2.05   27%  -0.125R    -234.6 USD  m+ 1/6  kinds  53/  4/ 43 | -0.104 (0.043)  52/  4/ 44 267
+  ALL design: 1150 trades, win 24%, -0.140 R/trade, halves+ 0/5, coin mean -0.151 R; exits {'stop': 627, 'win': 271, 'be': 153, 'time': 99}
+    Asia      419 trades  win  19%  -0.199 R
+    London    193 trades  win  20%  -0.101 R
+    New York  538 trades  win  29%  -0.108 R

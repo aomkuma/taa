@@ -43,7 +43,11 @@ def augment(D: pd.DataFrame, P: jlib.Instr) -> pd.DataFrame:
         lo_, hi_ = win(P.lo, n).min(1)[end - n + 1], win(P.h, n).max(1)[end - n + 1]
         return np.where(side > 0, hi_, lo_)
 
-    return D.assign(m5_c_e20=(c5 - e5) * side / atr, m5_e20_d=(e5 - e5p) * side / atr,
+    # the 72-hour extreme of bars i-4320 .. i-16 for decision bar i (rolling 4305 ending at i-16)
+    hi72 = pd.Series(P.h).rolling(4305).max().to_numpy()
+    lo72 = pd.Series(P.lo).rolling(4305).min().to_numpy()
+    front72 = np.where(side > 0, hi72[p - 16], lo72[p - 16])
+    return D.assign(m5_c_e20=(c5 - e5) * side / atr, m5_e20_d=(e5 - e5p) * side / atr, front72=front72,
                     ext15=ext(15, p), ext30=ext(30, p), ext5=ext(5, p), brk10=brk(10, p - 1), c_dec=P.c[p])
 
 
@@ -92,6 +96,14 @@ def not_flat(D):
     return D.h1_c_e50 >= 0.85
 
 
+def w_mask(D, pos):
+    return (D.cr_H1_leg_dir >= 0) & (D.h1_c_e50.abs() >= 0.85) & (D.pos240 >= pos)
+
+
+def room72_ok(D, k=0.5, tp=8.0):
+    return (D.front72 - D.c_dec) * D.side < k * tp * D.unit
+
+
 B = dict(tp=8.0, be=0.6, hz=60, rmin=3.0, rmax=10.0)
 RULES: dict[str, dict] = {
     "B0": dict(doc="baseline: confluence.py as tested (H1 tide + level + price action + 2/3 M5), stop 3-10 U",
@@ -110,11 +122,32 @@ RULES: dict[str, dict] = {
     "K": dict(doc="tide + M5 with + test of the level, higher low, break of the 10-bar high; stop beyond the test",
               mask=k_mask, stop=k_stop, **B),
     "K2": dict(doc="K + no news + not a flat H1", mask=lambda D: k_mask(D) & no_news(D) & not_flat(D), stop=k_stop, **B),
+    # the lead's round 11 (docs/OWN_SETUP.md): B0's losers were dips bought in weak structure
+    "W2": dict(doc="B0 + H1 leg not against + not a flat H1 + pos240 >= 0.5",
+               mask=lambda D: base_mask(D) & w_mask(D, 0.5), **B),
+    "W3": dict(doc="B0 + H1 leg not against + not a flat H1 + pos240 >= 0.75",
+               mask=lambda D: base_mask(D) & w_mask(D, 0.75), **B),
+    "V1": dict(doc="W2 + the 72-h extreme in front closer than 0.5 target (or behind)",
+               mask=lambda D: base_mask(D) & w_mask(D, 0.5) & room72_ok(D), **B),
+    "V2": dict(doc="V1 + not a fast tape (ATR < 2x day median)",
+               mask=lambda D: base_mask(D) & w_mask(D, 0.5) & room72_ok(D) & (D.atr_ratio < 2), **B),
+    "E1": dict(doc="the 72-h extreme setup alone: tide + H1 leg with + not flat + pos240 >= .5 + room72 < .5 tp + M5 with + at a level",
+               mask=lambda D: D.tide & D.at_level & w_mask(D, 0.5) & room72_ok(D) & m5_with(D), **B),
+    # FX: the same logic in pips (1 U = 1 pip): target 20 (or 15) pips, stop level - 1 ATR within 7.5-25 pips
+    "FB0": dict(doc="B0 in pips: tp 20, stop 7.5-25, BE 0.6, 120 min", mask=base_mask,
+                tp=20.0, be=0.6, hz=120, rmin=7.5, rmax=25.0, upip=True),
+    "FW3": dict(doc="W3 logic in pips: tp 20, stop 7.5-25, BE 0.6, 120 min", mask=lambda D: base_mask(D) & w_mask(D, 0.75),
+                tp=20.0, be=0.6, hz=120, rmin=7.5, rmax=25.0, upip=True),
+    "FW3s": dict(doc="W3 logic in pips: tp 15, stop 6-19, BE 0.6, 120 min", mask=lambda D: base_mask(D) & w_mask(D, 0.75),
+                 tp=15.0, be=0.6, hz=120, rmin=6.0, rmax=19.0, upip=True),
+    "FV1": dict(doc="V1 logic in pips: tp 20, stop 7.5-25, BE 0.6, 120 min",
+                mask=lambda D: base_mask(D) & w_mask(D, 0.5) & room72_ok(D, 0.5, 20.0),
+                tp=20.0, be=0.6, hz=120, rmin=7.5, rmax=25.0, upip=True),
 }
 
 
 def signals(D: pd.DataFrame, rule: dict, P: jlib.Instr) -> pd.DataFrame:
-    u = unit(D, P)
+    u = np.full(len(D), P.pip) if rule.get("upip") else unit(D, P)
     D = augment(D, P).assign(unit=u)
     m = rule["mask"](D).to_numpy(bool)
     D = D[m]

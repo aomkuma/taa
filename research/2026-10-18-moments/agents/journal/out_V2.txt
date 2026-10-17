@@ -1,0 +1,14 @@
+
+XAUUSD rule V2: V1 + not a fast tape (ATR < 2x day median)
+  signal rows 125; tp 8.0 U, be 0.6, hz 60, stop 3.0-10.0 U
+  window                trades /day  win     R/trade   P&L            months+  kinds 1/2/3 | coin: R (sd)  kinds  trades
+  2023-11 .. 2024-04      3 0.02    0%  +0.096R      +0.4 USD  m+ 1/2  kinds 100/  0/  0 | +0.010 (0.498)  60/  0/  0 3
+  2024-05 .. 2024-10     16 0.12   56%  +0.842R     +31.1 USD  m+ 5/6  kinds  50/  0/ 50 | +0.254 (0.343)  79/  1/ 20 17
+  2024-11 .. 2025-04     16 0.12   31%  +0.106R     +11.1 USD  m+ 3/6  kinds  80/ 20/  0 | -0.211 (0.141)  92/  8/  0 16
+  2025-05 .. 2025-08      7 0.08   43%  +0.341R      +8.7 USD  m+ 2/4  kinds  33/  0/ 67 | +0.102 (0.345)  47/  0/ 53 7
+  2025-09 .. 2026-02     21 0.16   38%  +0.228R     +14.8 USD  m+ 3/5  kinds  22/  0/ 78 | +0.075 (0.212)  30/  0/ 70 21
+  ALL design: 63 trades, win 40%, +0.359 R/trade, halves+ 5/5, coin mean +0.046 R; exits {'win': 25, 'stop': 22, 'be': 13, 'time': 3}
+    account: worst -9.96 USD, longest losing streak 7, max DD 21.3 USD, avg loss 4.05 -> 6 in a row 24.3 USD (fits 50, fits 100)
+    Asia       15 trades  win  33%  +0.363 R
+    London     13 trades  win  38%  +0.562 R
+    New York   35 trades  win  43%  +0.282 R

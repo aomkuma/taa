@@ -53,6 +53,7 @@ def main() -> None:
             print(f"  ALL design: {len(allr)} trades, win {100 * (allr.exit == 'win').mean():.0f}%, {allr.R.mean():+.3f} R/trade,"
                   f" halves+ {(allr.groupby('half').R.mean() > 0).sum()}/{allr.half.nunique()}, coin mean {np.nanmean(totc):+.3f} R;"
                   f" exits {allr.exit.value_counts().to_dict()}")
+            print("    account: " + jlib.account(allr, P))
             for s, g in allr.groupby("session"):
                 print(f"    {jlib.SESS[int(s)]:8} {len(g):4} trades  win {100 * (g.exit == 'win').mean():3.0f}%  {g.R.mean():+.3f} R")
         if save and len(allr):
