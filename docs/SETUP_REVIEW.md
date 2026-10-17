@@ -701,6 +701,12 @@ harness, nothing chosen on them. Gold ranged at 1,700-2,000; the spread was 0.40
   five years +0.108 R on 209 trades against −0.009 on 367. Trade less, not never, works here as damage control,
   not as an edge in the range years.
 
+- **A regime measure, tried** (the TS session's suggestion; `s1_regime52.py`): gold's position in its 52-week
+  range at the entry (last closed D1). No threshold holds even inside the choosing years A and B (A: every trade
+  at 0.75 or above, buys +0.06 .. +0.22; B: buys at 0.9 or above −0.386, below 0.75 +0.09 .. +0.63), so none was
+  fixed and none goes to C/D/E. Still open: a regime measure that tells the 2024-26 rally from the 2021-23 range
+  as of the entry (the D1 EMA tide and D1 trend strength of `research/2026-10-17-ts/ts_d1_tide.py` are next).
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
