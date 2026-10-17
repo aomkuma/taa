@@ -1,0 +1,36 @@
+design halves: 23-11 24-05 24-11 25-05 25-11
+s4 4 pairs, 15/10, |eq30|>=2.5
+   n 233 (0.38/day)  win 30% (coin 22%)  R +0.125 (coin -0.137, edge +0.262)  pips/tr +1.28 (gross ~+1.97)  USD +31.1
+   periods: +0.22(43) +0.18(44) +0.04(71) +0.16(43) +0.05(32)
+   exits {'stop': 94, 'time': 70, 'win': 69}  kinds ours  77/ 18/  5% coin  80/ 11/  9%
+   account@0.01: worst -1.34 USD, longest losing streak 12, max DD 10.21 USD, 6 avg losses -5.32 USD, avg risk/trade 1.00 USD
+s6 s4 + the pair not yet moved (own30<=0.5)
+   n 202 (0.33/day)  win 31% (coin 23%)  R +0.165 (coin -0.110, edge +0.275)  pips/tr +1.70 (gross ~+2.39)  USD +36.0
+   periods: +0.26(39) +0.21(38) +0.08(61) +0.15(37) +0.18(27)
+   exits {'stop': 78, 'win': 62, 'time': 62}  kinds ours  74/ 19/  6% coin  80/ 11/  9%
+   account@0.01: worst -1.33 USD, longest losing streak 10, max DD 9.67 USD, 6 avg losses -5.16 USD, avg risk/trade 0.98 USD
+s7 s6 + the pair not stretched (rng60<=1.5 ATR)
+   n 88 (0.14/day)  win 36% (coin 26%)  R +0.325 (coin -0.025, edge +0.350)  pips/tr +3.35 (gross ~+4.03)  USD +29.2
+   periods: +0.46(12) +0.52(13) +0.17(25) +0.28(22) +0.37(16)
+   exits {'win': 32, 'stop': 29, 'time': 27}  kinds ours  83/ 14/  3% coin  83/  9/  8%
+   account@0.01: worst -1.33 USD, longest losing streak 6, max DD 5.58 USD, 6 avg losses -5.40 USD, avg risk/trade 0.99 USD
+s8 s7, EURUSD + GBPUSD only
+   n 39 (0.06/day)  win 54% (coin 36%)  R +0.644 (coin +0.076, edge +0.567)  pips/tr +6.63 (gross ~+7.30)  USD +25.9
+   periods: +1.16(5) +1.46(3) +0.46(12) +0.43(12) +0.60(7)
+   exits {'win': 21, 'stop': 10, 'time': 8}  kinds ours  70/ 20/ 10% coin  83/  6/ 11%
+   account@0.01: worst -1.03 USD, longest losing streak 3, max DD 3.09 USD, 6 avg losses -5.62 USD, avg risk/trade 1.03 USD
+s9 s7 at |eq30|>=2.0
+   n 204 (0.34/day)  win 26% (coin 20%)  R +0.143 (coin -0.115, edge +0.258)  pips/tr +1.47 (gross ~+2.16)  USD +29.0
+   periods: +0.00(35) +0.11(28) +0.16(36) +0.31(65) +0.00(40)
+   exits {'time': 81, 'stop': 70, 'win': 53}  kinds ours  80/ 13/  7% coin  85/  7/  8%
+   account@0.01: worst -1.34 USD, longest losing streak 8, max DD 11.35 USD, 6 avg losses -4.93 USD, avg risk/trade 0.99 USD
+s10 s7 with 20/15
+   n 88 (0.14/day)  win 28% (coin 20%)  R +0.242 (coin -0.034, edge +0.276)  pips/tr +3.71 (gross ~+4.38)  USD +31.6
+   periods: +0.33(12) +0.45(13) +0.00(25) +0.31(22) +0.30(16)
+   exits {'time': 42, 'win': 25, 'stop': 21}  kinds ours  90/  5/  5% coin  94/  3/  2%
+   account@0.01: worst -1.88 USD, longest losing streak 6, max DD 8.05 USD, 6 avg losses -7.13 USD, avg risk/trade 1.48 USD
+s11 s7, all five pairs
+   n 109 (0.18/day)  win 38% (coin 25%)  R +0.309 (coin -0.088, edge +0.398)  pips/tr +3.18 (gross ~+3.87)  USD +32.6
+   periods: +0.45(20) +0.39(16) +0.22(30) +0.28(24) +0.28(19)
+   exits {'win': 41, 'stop': 39, 'time': 29}  kinds ours  77/ 15/  8% coin  80/  9/ 11%
+   account@0.01: worst -1.33 USD, longest losing streak 7, max DD 6.27 USD, 6 avg losses -5.10 USD, avg risk/trade 0.93 USD

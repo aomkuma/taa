@@ -1,0 +1,20 @@
+TEST X7: {'pairs': ['EURUSD', 'GBPUSD', 'USDCHF', 'USDCAD'], 'sig': 'eq30', 'thr': 2.5, 'plan': (15, 10), 'hz': 120, 'usd': 0.0, 'own': 0.5, 'stretch': 1.5}
+   n 36 (0.23/day)  win 11% (coin 28%)  R -0.309 (coin -0.004, edge -0.305)  pips/tr -3.18 (gross ~-2.47)  USD -12.8
+   periods: -0.45(15) -0.27(5) -0.26(4) -1.00(1) +0.72(1) -0.14(3) -0.19(7)    -   
+   exits {'stop': 21, 'time': 11, 'win': 4}  kinds ours  90/ 10/  0% coin  92/  6/  2%
+   account@0.01: worst -1.32 USD, longest losing streak 7, max DD 14.01 USD, 6 avg losses -5.72 USD, avg risk/trade 0.97 USD
+          n    win      R    usd
+m                               
+2026-03  15  0.133 -0.452 -7.600
+2026-04   5  0.200 -0.267 -2.130
+2026-05   4  0.250 -0.256 -1.042
+2026-06   1  0.000 -1.000 -0.727
+2026-07   1  0.000  0.723  0.529
+2026-08   3  0.000 -0.136 -0.134
+2026-09   7  0.000 -0.186 -1.717
+         n      R    usd
+sym                     
+EURUSD   8 -0.396 -3.260
+GBPUSD   7 -0.279 -2.010
+USDCAD  14 -0.034 -0.343
+USDCHF   7 -0.790 -7.209

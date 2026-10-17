@@ -873,6 +873,23 @@ worst -1.19, max DD 1.0-2.6. **At 0.01 lot the risk is tiny against a 50-100 USD
 the caveats stay: no FX ticks (the release-second fill on a real account is unmeasured; on EURUSD the edge is gone at
 about 5-6 pips of extra fill cost), and the seven pairs are one USD bet per release, not seven.
 
+**Cross agent - final** (`agents/cross/notes.md`, `steps.py`, `out_test_*.txt`). The London lead turned into a rule on
+EURUSD, GBPUSD, USDCHF, USDCAD (a weekday M1 close 07:00-11:59 UTC; equity score = the mean of US500 and JP225
+vol-scaled 30-minute moves >= 2.5, silent 60 minutes after; equities up -> the dollar up; target 15 / stop 10
+pips, 120 minutes), filters taken from the design losers: X4 the dollar composite not yet moved the trade's way, X6
++ the pair not yet moved, X7 + the pair not stretched. Design (step table, 2023-11 .. 2026-02): +0.011 R (1,051
+trades) -> X6 +0.165 R (202) -> X7 +0.325 R (88), positive in 5 of 5 half-years. **Test 2026-03 .. 10: X4 132 trades,
+win 12 % (the coin 19 %), -0.329 R, -46.4 USD at 0.01 lot, 2/8 months; X6 -0.332 R; X7 36 trades, -0.309 R.**
+Every pair lost (EURUSD -0.40, GBPUSD -0.38, USDCHF -0.34, USDCAD -0.18 R). Losers 78 % wrong way.
+**Why it lost:** the dollar's coupling with equities changed in 2026 - the same-minute correlation of EURUSD with
+equities in London was 10-27 in the design quarters and about +40 in 2026 Q1-Q2: equity jumps now move the dollar
+at once ("risk-on, dollar down"; test signals had already seen a dollar move of about -2.0 sd against -1.2 in the
+design), and the rule's bet on the dollar's later move the other way met a move that kept going. By quarter the
+sign had already flipped in 2 of 9 design quarters (2024 Q4, 2025 Q3) - the half-year view hid it. The four pairs
+were one bet (a failed signal stopped four legs together: a 14-trade losing streak); equity-up signals the worst
+(-0.47 R vs -0.16). Next idea (needs unseen data): choose the side by the coupling regime measured on the past 20
+days (weak coupling: bet on the later reversal; strong: follow equities), one pair per signal.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had
