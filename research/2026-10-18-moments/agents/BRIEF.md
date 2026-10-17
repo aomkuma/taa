@@ -14,6 +14,15 @@ rounds 1-10) and the owner's goals in `docs/OWNER_GOALS.md`.
 - Principles: no single rule decides direction; a full arsenal of tools, pick the right one for the moment; everything
   relative; live in the present; learn from the losing trades (below).
 
+## The account (owner, 2026-10-17): 50-100 USD at 1:2000, must survive 4-6 losses in a row
+
+At the minimum lot (0.01): gold = 1 USD per 1.00 of price (an 8 USD stop = 8 USD = 8-16 % of the account); a USD
+major = about 0.10 USD a pip (a 20-pip stop = about 2 USD). Six full losses in a row must leave the account
+trading: at 50 USD the loss per trade should stay around 5 USD or less (about 10 USD at 100 USD), **gaps included**.
+For every candidate report: the worst single loss in USD at 0.01 lot (stop gaps), the longest losing streak, the
+maximum drawdown in USD, and whether 6 average losses in a row fit a 50 USD and a 100 USD account. A rule whose
+stop or gaps exceed that at 0.01 lot is not usable on this account, whatever its R.
+
 ## Markets (owner, 2026-10-17): gold and the major currency pairs
 
 Trade gold (XAUUSD) and the majors (EURUSD, GBPUSD, USDJPY, AUDUSD, USDCHF, USDCAD, NZDUSD; M1 in
