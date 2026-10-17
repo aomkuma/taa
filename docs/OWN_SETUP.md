@@ -4,6 +4,23 @@ The owner's goals and principles are in `docs/OWNER_GOALS.md`; the setup's place
 `docs/OWNER_TRADING.md` ("Setup OWN"). This file holds the method, the hypotheses (written down before any outcome
 is computed) and the results, month by month as they finish. Results describe the past, never a promise.
 
+## The learning loop: every run's losers in three kinds (owner, 2026-10-17)
+
+The owner: "learning from the losing trades is the heart of developing a trade"; "combine it with the three
+kinds of losers and write it down as the way we learn". After every run (harness, backtest, DEMO), each trade
+stopped out before its target is put in one kind (`loser_kinds.py`), and each kind points at its own lever:
+
+| Kind | What happened | What it says | The lever to try next |
+|---|---|---|---|
+| 1 Wrong way | less than half the way to the target before the stop, and no run to the target afterwards | the side was wrong | the direction screens: the H1 tide, the pullback depth, the session or hour (skip where kind 1 dominates), the location against support / resistance |
+| 2 Right way, fell short | at least half the way to the target, then back to the stop; no run afterwards | the target was too far for that moment, or the stop stayed too long at risk | the exit: a nearer target (a smaller tool), a partial profit or the stop to break-even at about 0.5-0.6 of the target, a shorter time stop |
+| 3 Right way, entered too early | stopped first, then the target reached from the original entry within 120 minutes | the timing or the stop: the entry's shake-out took the stop | the entry timing (screen 3: wait for the turn, ticks), a better entry price (a pullback limit), or a stop beyond the usual shake-out |
+
+Each kind is always read **against a coin-flip side at the same minutes** (the same stops and targets): a kind is
+a finding only where it differs from the coin's split (round 2: 41 / 14 / 45 % for both - no finding). The next
+change attacks the kind that is largest *above the coin's*, is written down before it is computed, and is judged
+on data it was not found on.
+
 ## Data and window
 
 **The latest six months only (owner, 2026-10-17: "focus on the bot and backtests over the latest 6 months; we
@@ -387,3 +404,93 @@ six months price runs 5 USD one way or the other within 5 minutes 40 % of the ti
 30 minutes 94 % (the daily range's median 82.5 USD). The hard part is the side. A side at random reaches +5 USD
 before a 4 / 6 / 8 USD stop in 39.7 / 49.2 / 55.0 % of the minutes; break-even after the costs needs 44.9 / 54.8 /
 61.7 %. A signal therefore has to pick the side right about 5-7 points more often than a coin.
+
+### Round 4 - the arsenal (owner, 2026-10-17: "a full arsenal, pick the right tool for the moment")
+
+Eleven tools (target / stop USD: 3/3, 3/5, 5/4, 5/6, 5/8, 8/6, 8/8, 10/8, 10/12 within 60 minutes, 15/10 and 20/12
+within 120); a LightGBM model per tool (win / stop / time-out) gives each minute's expected USD per tool; in each
+session the first minute whose best tool clears the session's cut (chosen on validation for about one trade a
+session-day), at most two a session, one at a time. Train 2023-11 .. 2026-02, validation 2026-02-14 .. 04-14, test
+the latest six months (`ml_arsenal.py`).
+
+**Verdict: no edge.** Test: 122 trades (0.93 a day), win 35 %, +0.30 USD a trade, +37.0 USD at 0.01 lot, 4/7 months
+positive (Asia -21.2 over 71, London +40.0 over 2, New York +18.2 over 49); the validation lost (-98.4 USD). The
+model expected +3.5 USD a trade and got +0.3: over-confident, and it picked almost only the large tools (20/12: 85,
+15/10: 30), the 2024-26 rally's drift in its training.
+
+### Gold's ticks (2026-10-17)
+
+`download_ticks.py`, read-only from the FBS demo terminal (owner's go-ahead): 273 weekdays 2025-10-01 ..
+2026-10-16, about 300-400 thousand ticks a day (854 MB, `data/ticks/XAUUSD`); 2026-04-03 (Good Friday) empty.
+`tick_features.py`: at each candidate minute, from the ticks before it: ticks in the last 10 / 60 seconds and
+against the hour's rate, the up/down tick imbalance, mid returns over 5 / 15 / 30 / 60 seconds, the spread and its
+widening, the last tick's age (median 55 ticks in 10 seconds, 331 in a minute; spread median 0.36 USD).
+
+### Round 5 - the triple screen, H1 at most (owner, 2026-10-17: "do you use the triple screen? H1 at most, then
+scalp with that trend; find the entry timing in that trend") - written before it is computed
+
+- **Screen 1 (tide, H1):** the trade's side is H1's trend: the H1 EMA(20) rising over 3 bars and the close above
+  EMA(50) for a buy (mirrored for a sell); variant B adds the close above EMA(20).
+- **Screen 2 (wave against it):** a pullback against the tide: the M15 RSI(14) below 40 / 45 / 50 for a buy (above
+  60 / 55 / 50 for a sell), or the price in the lower 30 % / 50 % of the last 60 minutes' range; or no screen 2.
+- **Screen 3 (entry timing, M1 and ticks):** the pullback turning back the tide's way: the last M1 bar closed the
+  trade's way; or the last 15 seconds' ticks moved the trade's way with more up- than down-ticks in the last
+  minute (mirrored); or the last 3 M1 bars net the trade's way; or none.
+- **Exits:** a tool from 5/4, 5/6, 8/6, 10/8 (target / stop USD).
+- In the active windows (Asia, London, New York), at most two trades a session-day, one at a time.
+- The variant is chosen on the earlier six months (2025-10-14 .. 2026-04-14, total USD with at least one trade a
+  day, its neighbours shown) and **tested once on the latest six months** (the owner: "test only the latest six
+  months").
+
+**Verdict on the chosen variant: fails** (`triple_screen.py`). H1 trend A + M15 RSI below 50 + the ticks turning,
+tool 10/8: earlier six months 354 trades (2.79 a day), +0.27 USD a trade, +94.9 USD, 5/7 months positive; **latest six
+months 375 trades (2.86 a day), win 36 %, -0.51 USD a trade, -190.3 USD, 2/7 months positive** (Asia -85.6, London
+-121.7, New York +17.0). Only 10 of 192 variants were positive on the earlier six months.
+
+**But the deep pullback held in both windows:** every variant with the M15 RSI below 40 among the best:
+
+| Variant (screen 1 / 2 / 3 / tool) | Earlier six months | Latest six months |
+|---|---|---|
+| A / RSI < 40 / ticks / 10-8 | 151 trades, +49.9 USD | 122 trades (0.93 a day), win 39 %, +0.68 USD a trade, +83.1 USD, 5/7 months |
+| A / RSI < 40 / none / 10-8 | 160 trades, +26.4 USD | 132 trades (1.01 a day), win 39 %, +0.54 USD a trade, +70.8 USD, 6/7 months |
+| B / RSI < 40 / bar / 8-6 | 136 trades, +43.2 USD | 87 trades (0.66 a day), win 43 %, +0.60 USD a trade, +52.4 USD, 5/7 months |
+| A / RSI < 40 / bar / 8-6 | 169 trades, +19.6 USD | 142 trades (1.08 a day), +0.13 USD a trade, +18.3 USD, 3/7 months |
+
+Averaged over the variants, RSI < 40 lost least on the earlier six months too (-0.16 USD a trade against -0.28 to
+-0.89 for the other screen-2 choices). The latest six months were seen for this family, so it is judged next on
+older data it has not seen.
+
+### Round 5b - the deep pullback on untouched older data (written before it is computed)
+
+- **Family:** screen 1 A (the H1 EMA(20) rising, the close above EMA(50)), screen 2 the M15 RSI(14) below 40 (above
+  60 for a sell), screen 3 none or the last M1 bar the trade's way; tools 10/8 and 8/6; the active windows, at most
+  two trades a session-day, one at a time.
+- **Judged on 2023-11-01 .. 2025-10-14** (four half-years; gold M1 only, no ticks there), with the tools in fixed USD
+  and scaled by the price (x price / 4,100: 10 USD at 4,100 is about 6 USD at 2,400). The family passes if most
+  half-years are positive with the price-scaled tools.
+- Its losers in three kinds on every window, against the coin.
+
+**Verdict: fails** (`deep_pullback.py`). Screen 3 none, tool 10/8 scaled by the price, by half-year: 2023-11 ..
+2024-04 -27.2 USD (121 trades, -0.055 R); 2024-04 .. 10 -25.5 (131, -0.039 R); 2024-10 .. 2025-04 +51.7 (128,
++0.066 R); 2025-04 .. 10 -31.1 (117, -0.029 R): 1 of 4 positive. The other seven variants (fixed / scaled, 10/8 or
+8/6, bar or none) give the same picture: only 2024-10 .. 2025-04 positive in all eight, -0.13 to +0.11 R a trade
+elsewhere. In the quiet years most trades end at the 60-minute limit (target first 6-31 %).
+The losers in three kinds equal a coin-flip side's in every window (2023-11 .. 2024-04: wrong way 78 / 79 %,
+fell short 9 / 9 %, too early 12 / 12 %; latest six months 60 / 59 %, 16 / 8 %, 25 / 32 %).
+
+### Where five rounds leave Setup OWN (2026-10-17)
+
+| Round | Idea | Where it was found | Untouched data |
+|---|---|---|---|
+| 1 | Three playbooks at the moments, context cells | - | -0.31 R (selector), -0.155 R (v1) |
+| 2 | Losers' traits: P1 after a 0.1-0.3 U push (v2); London against the flow (v3) | +0.40 / +0.14 R | +0.035 / +0.039 R |
+| 2 | Draw to yesterday's high/low; the dollar leads gold | - | no more than a placebo; flips sign |
+| 3 | A learned signal for +5 USD (62 features) | AUC 0.53-0.58 | -0.02 to -0.03 R |
+| 4 | The arsenal (11 tools, the best per minute) | validation -98 USD | +0.30 USD a trade, 4/7 months |
+| 5 | The triple screen, H1 at most, ticks for timing | +94.9 USD | -190.3 USD; the deep pullback +83 / +71 USD, but 1 of 4 older half-years positive |
+
+Every direction signal built from gold's own prices (M1 bars, ticks, H1/M15 trend, levels, the dollar, the
+calendar) picks the side about as well as a coin once it meets data it was not found on; the losers' three kinds
+match the coin's every time. What the data does show: the moments are real (New York 1.3-2.0x the day's
+15-minute range for three hours; 5 USD comes within 15 minutes 79 % of the time), the costs are about 0.3 USD a
+trade (6 % of a 5 USD target), and a learned model sees a little (AUC 0.53-0.58) but not enough to pay the costs.

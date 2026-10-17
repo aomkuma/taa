@@ -41,6 +41,10 @@ outranks earlier targets where they differ. Results never promise profit; they d
 - **Use the machine's edge in time.** The system recomputes every timeframe on every bar, decides without
   hesitation at the bar's close, holds its if-then plans before scheduled releases, and lets the AI analyst
   propose new candidate causes from the runs it could not explain - the data, judged out of sample, decides.
+- **A full arsenal, the right tool for the moment** (owner, 2026-10-17): "you need every weapon - a pistol, a
+  rifle, an M16, an AK, a fruit knife; it is about which one to pick at that moment." The owner's numbers (5 USD,
+  hold times, counts) are guidance, not rules: follow what the real data says. Count goal: about 3 trades a day,
+  one in each market session (Asia, London, New York).
 - **Learn from the losing trades** (owner, 2026-10-17): "learning from losers is the heart of developing a
   trade; catch the timing and the signals." The real losing trades teach more than one human's opinion; the
   owner's own habits are hypotheses for the data to test.
