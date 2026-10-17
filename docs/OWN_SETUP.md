@@ -776,6 +776,33 @@ confirmation idea (the CPI fakes) cannot be designed yet: 8 pre-2026-03 tick rel
 seen; it needs releases from 2026-10 on. **News on gold: about 2.6 trades a month (S2 1.9, P1 0.7); test 19 trades,
 +166.7 USD.** The deciding unknown: the real spread and stop fills at the release second on the owner's account.
 
+**Interim (2026-10-17 21:15 Thai): four agents stopped by the usage limit (resets 00:30 Thai); their notes so far.**
+
+- **Cross** (`agents/cross/notes.md`; clocks checked: the 1-minute cross-correlation peaks at lag 0 for every
+  input). Gold: equities and AUDJPY lead gold the same way (risk-on -> gold up later) but tiny (1-5 % correlation);
+  episodes 0.4-1.5 USD over 60 minutes, hit 52-56 % - below the costs. **The majors: London 07-12 UTC, equities up
+  over the last 30-60 minutes -> the dollar up over the next 30-120 minutes, the same sign in 5 of 5 half-years
+  in five pairs** (EURUSD -1.8 .. -6.3, USDCHF +2.6 .. +6.8, USDCAD, USDJPY, GBPUSD; the same-minute sign is the
+  opposite, so this is a later move, not co-movement); 17-21 UTC the sign flips. Episodes (|equities 30 min| >=
+  2.5 sd, drift-adjusted, before costs): USDCHF +4.0, EURUSD +3.6, GBPUSD +3.7 pips over 60 minutes, one every
+  ~5.5 trading days; costs ~1.3-1.6 pips. Not yet a frozen rule or a test.
+- **Reversion** (`agents/reversion/notes.md`): the stretch-fade with the H1 trend and a limit entry is a coin
+  (edge +0.015 R over it, 3.65 a day); wider geometry (10/10 ATR, 240 min) cuts the loss (-0.108 -> -0.010 R) by
+  costs, not side. Round-number bounces with resting limits are worse than placebo levels (Osler's stop clusters
+  beyond round numbers); the break-through version (4b) was running.
+- **Journal** (`agents/journal/`, journal.md, charts): from charts of the confluence trades (2025-09 .. 2026-02),
+  lessons tried one at a time: only "M5 with the trade" beat the coin in 3 of 5 half-years; combinations J7-J10
+  cut the loss from -0.140 to about -0.02 .. +0.00 R, with an edge over the coin of 0.03-0.10 R carried mostly by
+  one half-year. New losers in the charts: buying under the 72-hour high after a vertical run, a flat H1 (chop), a
+  release 5 minutes ahead; winners: compression on the level then a break, or a higher low after a sweep, then a
+  break - written as rule K (not yet run).
+- **FX longer horizon**: had only run its foundations.
+
+**S2 against the account (50-100 USD, 4-6 losses in a row):** on the test S2's worst trade was -34.9 USD at 0.01 lot
+(a release gap), the maximum drawdown 44.5 USD, the longest losing streak 2: on gold at 0.01 lot one release gap
+can take 35-70 % of a 50-100 USD account. On the USD majors S2's stop is about 9 pips (about 0.9 USD at 0.01 lot):
+the same weapon fits the account there.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had
