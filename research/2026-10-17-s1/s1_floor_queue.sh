@@ -2,13 +2,14 @@
 # S1 with the spread floor (min_atr_spreads 15, time stop 240) against S1 as it is, in the engine, one month a run
 # (owner, 2026-10-17: "the spread must not be what stops the trades; find it and fix it"). The floor runs on the
 # fix's code (worktree s1-cost-floor), the baselines S1 lacks on the frozen code of the out-of-sample runs.
-# One launcher; a run starts only while fewer than 4 backtests run on the machine (both checks).
+# One launcher; a run starts only while fewer than 3 backtests run on the machine (both checks), so one of the
+# HANDOFF limit (4) stays free for the other session.
 MAIN=/c/Users/korap/taa
 OUT=$MAIN/data/backtests/s1fix
 FIX=$MAIN/.claude/worktrees/s1-cost-floor
 FROZEN=$MAIN/.claude/worktrees/oos-runner
 mkdir -p "$OUT"
-JOBS="floor:2026-03 floor:2026-08 floor:2024-10 floor:2024-11 floor:2024-12 base:2024-03 floor:2024-03 base:2024-08 floor:2024-08"
+JOBS="floor:2026-03 floor:2026-08 floor:2024-10 floor:2024-11 base:2024-03 floor:2024-03 base:2024-08 floor:2024-08"
 procs() {
   powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='python.exe'\" | Where-Object { \$_.CommandLine -like '*.venv*app.cli backtest*' } | ForEach-Object { (\$_.CommandLine -split '--out ')[1].Split(' ')[0] }" | tr -d '\r'
 }
@@ -28,7 +29,7 @@ for job in $JOBS; do
   procs | grep -q "${v}_$m\$" && continue
   while true; do
     a=$(procs | grep -c .); sleep 2; b=$(procs | grep -c .)
-    [ "$a" -lt 4 ] && [ "$b" -lt 4 ] && break
+    [ "$a" -lt 3 ] && [ "$b" -lt 3 ] && break
     sleep 30
   done
   echo "$(date +%H:%M) start ${v}_$m"

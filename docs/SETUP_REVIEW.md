@@ -675,6 +675,15 @@ funnel, with the floor:
 - So S1 stays a gold setup with about 0.4 trades a day; the two-a-day goal needs another source of gold trades
   (an independent event) or the other setups.
 
+### 23.2 The TS session's gold habits on S1 (2026-10-17)
+
+The TS session (owner: the two sessions work together) found in three years of gold M15 structure breaks that
+"against the day" loses (a buy in the lower half of the broker day's range so far) and that entries beyond the
+previous day's high/low do better (docs/OWNER_TRADING.md "TS: why the losers lost"). On S1's three-year trades
+(`s1_overlays.py`, the same definitions) they do not split anything: S1 fades a counter-trend break *with* the
+H1/M15 trend, so 252 of 257 entries are already "with the day" and 237 beyond the previous day's extreme. No
+overlay for S1 from these.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
