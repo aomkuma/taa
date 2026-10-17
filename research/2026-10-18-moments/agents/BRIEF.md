@@ -14,6 +14,12 @@ rounds 1-10) and the owner's goals in `docs/OWNER_GOALS.md`.
 - Principles: no single rule decides direction; a full arsenal of tools, pick the right one for the moment; everything
   relative; live in the present; learn from the losing trades (below).
 
+## Progress in stages (owner, 2026-10-17)
+
+Cut losses -> break even -> profit -> sustainable profit; a setup need not be profitable from day one. Keep and
+report every change that clearly cuts the loss or the drawdown (show the step-by-step table: baseline -> each
+change), not only rules that already pass +0.15 R.
+
 ## The test window (the owner stresses this)
 
 - **Test only on 2026-03-01 .. 2026-10-14** (the data ends 2026-10-14 08:18 UTC). Report it month by month.
