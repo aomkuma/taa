@@ -337,6 +337,14 @@ wrong-way trades (28 %); the Asian morning (21-23 New York, 08-11 Thai) is the b
 
 A rule is kept only if year C keeps it positive; none is changed after seeing year C.
 
+**Year C verdict (2023-10 .. 2024-09, 1,549 triggers, `ts_offline_triggers.py`: the detector run on the engine's
+400-bar window at every bar, identical to the engine's triggers in a March 2026 check, 120 of 120):** all five
+rules fail: B1 -0.013, B2 -0.003, B3 -0.052, B4 -0.045, B5 -0.002 (every trigger -0.045). Over the three years
+(4,604 triggers) the M15 structure break of gold reaches 2 R within 12 h about 17 % of the time every year and
+averages +0.008 R a trade: no edge of its own. Gold's habits that held in 5 of 6 half-years are small: beyond the
+previous day's extreme +0.07, 21-23 New York (08-11 Thai) +0.10, against the day (lower half of the day's range
+for a buy) -0.06 (negative in 5 of 6). No new rule is picked from year C (it would no longer be a hold-out).
+
 **The daily goal in numbers:** expected USD a day = trades a day x R a trade x the risk a trade. With B3 (1.24 a
 day, +0.151 R) +15 USD a day needs about 80 USD of risk a trade: 80 % of a 100 USD account; at the owner's 7.5 %
 a trade it needs an account of about 1,000 USD. Averages, not every day.
