@@ -25,7 +25,7 @@ for m in MONTHS:
     t = list(csv.DictReader(open(os.path.join(folder, "trades.csv"), encoding="utf-8")))
     rs = [float(x["r_multiple"]) for x in t]
     net = sum(float(x["net"]) for x in t)
-    assert len(t) == met["trades"] and abs(net - met["net_profit"]) < 0.01, m
+    assert len(t) == met["trades"] and abs(net - met["net_profit"]) < 0.005 * len(t) + 0.01, m  # csv nets are rounded to cents
     key = "OOS 2024-10..2025-09" if m < "2025-10" else "In-sample 2025-10..2026-09"
     allr[key] += rs
     n = len(rs)

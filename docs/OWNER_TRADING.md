@@ -309,6 +309,38 @@ unless stated; "4/4" = positive in all four half-years.
   limits most gold TS trades are refused (`RISK_BELOW_MIN_LOT`, March and August: 0 trades). FX stops cost
   ~1-3 USD per 0.01 lot, so the trade count for this account has to come from more markets.
 
+### TS: why the losers lost, and gold's own behaviour (2026-10-17)
+
+**Losers (TS-h4 study, 355 trades, 128 stopped):** in the 12 h after the stop 53 % never came back to the entry
+(the wrong direction), 36 % came back to the entry only, 11 % reached the original target ("too early"); 41 % of
+the stopped trades never ran even 0.25 R the trade's way. Winners came a median 0.23 R toward the stop first
+(3 % reached 0.8 R). So the losses are mostly direction, not timing: a wider stop or a later entry would save
+little (`ts_losers.py`). Textbook context (H4/H1 map and swing states, sessions) separates the wrong-way trades
+only weakly (wrong-way share 14-28 % across all values).
+
+**Gold's behaviour at the entry** (all 3,055 structure-break triggers of 2024-10 .. 2026-09, the day-trade plan:
+stop 0.25 ATR beyond the pullback extreme, 2 R, at most 12 h; `ts_behaviour.py`): the break works when price is
+already beyond the previous broker day's high (a buy) / low (a sell) (+0.112 R, positive in all four half-years)
+and when volatility expands (ATR >= 1.25 x its 20-day median: +0.12); triggers in the lower half of the day's
+range for a buy (against the day) lose (-0.053); 17-20 New York (the daily close, 04-07 Thai) has the most
+wrong-way trades (28 %); the Asian morning (21-23 New York, 08-11 Thai) is the best hour band (+0.148).
+
+**Rules fixed before year C (2023-10 .. 2024-09) judges them** (`ts_behaviour_rules.py`; two years, R per trade):
+
+| Rule | Per weekday | Win % | R/trade | Four half-years |
+|---|---|---|---|---|
+| B1 beyond the previous day's extreme | 1.67 | 48 | +0.112 | all > 0 |
+| B2 B1 & ATR expanding (>= 1.25 x) | 0.63 | 52 | +0.207 | all > 0 |
+| B3 B1 & the H4 EMA tide | 1.24 | 49 | +0.151 | all > 0 |
+| B4 with the day (upper half for a buy) & ATR expanding | 1.31 | 51 | +0.136 | all > 0 |
+| B5 B1, not 17-20 New York | 1.48 | 48 | +0.120 | all > 0 |
+
+A rule is kept only if year C keeps it positive; none is changed after seeing year C.
+
+**The daily goal in numbers:** expected USD a day = trades a day x R a trade x the risk a trade. With B3 (1.24 a
+day, +0.151 R) +15 USD a day needs about 80 USD of risk a trade: 80 % of a 100 USD account; at the owner's 7.5 %
+a trade it needs an account of about 1,000 USD. Averages, not every day.
+
 ## Hypotheses to test (with the report and backtests)
 
 1. **Early manual exit** ("it does not run and looks like turning"): turn it into a measurable rule (not +X R

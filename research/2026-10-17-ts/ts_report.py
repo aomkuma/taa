@@ -23,7 +23,7 @@ def row(name: str) -> str:
     trades = list(csv.DictReader(open(os.path.join(folder, "trades.csv"), encoding="utf-8")))
     net = sum(float(t["net"]) for t in trades)
     rs = [float(t["r_multiple"]) for t in trades]
-    if len(trades) != m["trades"] or abs(net - m["net_profit"]) > 0.01:
+    if len(trades) != m["trades"] or abs(net - m["net_profit"]) > 0.005 * len(trades) + 0.01:  # csv nets are rounded
         return f"| {name} | MISMATCH csv {len(trades)} / {net:.2f} vs summary {m['trades']} / {m['net_profit']:.2f} |"
     n = len(rs)
     r_avg = sum(rs) / n if n else 0.0
