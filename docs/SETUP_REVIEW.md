@@ -557,8 +557,11 @@ and enter on it (`data/research/config_s1_resume.yaml`; otherwise S1's research 
   17:33 against 17:56; the one-hour cooldown starts elsewhere). On 5 August S1 had four stops that lasted 2-8
   minutes; resume took four trades that day, three targets and one stop. Average win +1.61 R, loss -1.05 R (S1: +1.62 / -1.03):
   the gain is the win rate (78 % against 44 %), not the payoff.
-- Both rungs passed; 16 trades is still a small sample. **The year is running** (monthly runs 2025-10 .. 2026-09,
-  as §17; started 2026-10-16 15:00 Thai).
+- Both rungs passed; 16 trades is still a small sample. The year (monthly runs as §17) was **stopped at 7 of 12
+  months** on 2026-10-17 for the out-of-sample year (owner; docs/OUT_OF_SAMPLE.md): resume +0.270 R/trade on 39
+  trades (2025-10 −1.043 (3), 11 +0.899 (4), 12 +0.003 (5), 2026-01 +0.079 (7), 02 −1.012 (4), 03, 08) against
+  S1's +0.235 on 43 in the same months: not a clear gain. It helps where S1 bought into a falling market
+  (Nov, Dec, Aug) and loses where S1's entries were right (Oct, Feb: every resume entry stopped).
 
 ## 20. V1 and F1 without their own stop cap (2026-10-16)
 
