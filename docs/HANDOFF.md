@@ -1,9 +1,9 @@
 # Session handoff
 
-Last updated: 2026-10-16 10:30 Thai (S1 on DEMO as an M1 lane, V1 + room gate on DEMO, no SL_TOO_FAR, breakouts with the
-trend measured and not kept, the owner's custom-setup notes). This file holds **state only**: rules and
-conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`,
-progress in `docs/TICKETS.md` / `docs/TICKETS_LEARNING.md`, setup results in `docs/SETUP_REVIEW.md`.
+Last updated: 2026-10-17 17:00 Thai (the owner's goals written down; every earlier setup stopped; Setup OWN, the
+owner's own trade, starts). This file holds **state only**: rules and conventions live in `CLAUDE.md` and
+`docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`, progress in `docs/TICKETS.md` /
+`docs/TICKETS_LEARNING.md`, setup results in `docs/SETUP_REVIEW.md`.
 
 ---
 
@@ -13,127 +13,50 @@ Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ````text
 Continue TAA (C:\Users\korap\taa). Chat with me in Thai and give times in Thai time (UTC+7). Docs and code stay
-in English. Follow CLAUDE.md and the memory rules. Report results as tables; report progress while backtests
-run. Ask me when the meaning is unclear; don't guess. Read docs/HANDOFF.md ("Current state", "Next work" and
-"Gotchas") first.
+in English. Follow CLAUDE.md and the memory rules. Read docs/OWNER_GOALS.md first (my goals and principles),
+then docs/OWN_SETUP.md (Setup OWN, my own trade: the moments when gold runs) and docs/HANDOFF.md.
 
-State at the hand-over (2026-10-16, about 10:30 Thai time):
-- The DEMO stack RUNS (resumed 10:10 Thai, no open positions, equity 1,066.21). Remind me to pause it
-  (scripts\demo-tasks.ps1 -Pause) before the computer sleeps.
-- Two backtests were running in the old session and may have stopped with it: data/backtests/inv/
-  s1resume_2026-03 (S1 with entry_on: resume) and s1fx_2026-08 (S1 on the 7 FX majors). If a log has no
-  "expectancy" line, rerun it with the commands in docs/HANDOFF.md "Current state". Report both as tables,
-  cross-checked against trades.csv, and decide per the ladder.
-- main has many commits from 2026-10-15/16, NOT pushed (I push myself).
+State (2026-10-17): every earlier setup (V1, F1, S1) is stopped in config.yaml; the bot starts over with Setup
+OWN in the aggressive preset once it passes its gate. DEMO is paused. main is not pushed (I push myself).
 
-Tasks, in this order:
-1. The two backtests above (results, ladder decision, SETUP_REVIEW / STRATEGIES glance table).
-2. My custom setup (docs/OWNER_TRADING.md): I tell my trades (idea, prices, stop/target, management); you map
-   them to the bot's measurements, restate the rule for me to confirm, then build and backtest it. Never touch my
-   real account; its history only from a report I export.
-3. Chart read CR-4 (docs/CHART_READ.md): trend 17/20 by proxy (in-sample), levels 5/20 - work on the levels,
-   then a fresh blind 20-chart check by a sub agent.
-Before any rule changes trading: a SETUP_REVIEW section, and config.yaml changed only for what passed - ask me
-first (the DEMO bot reads config.yaml on restart).
+Next: the plan in docs/OWN_SETUP.md - the official US release calendar 2021-2026, the five-year moments dataset
+for gold, the hypotheses H1-H4 and the playbook selector judged walk-forward (A and B while developing, E/D/C
+once after freezing), results month by month in docs/OWN_SETUP.md. Ask me when the meaning is unclear.
 ````
 
 ---
 
-## Current state (2026-10-16, 10:30 Thai)
+## Current state (2026-10-17, 17:00 Thai)
 
-### Trading on DEMO (PAUSED by the owner 2026-10-16 10:51 Thai; resume with `scripts\demo-tasks.ps1 -Resume`)
-
-- **Stack:** `-Mt5 -Demo` from Task Scheduler (`scripts\demo-tasks.ps1 -Pause / -Resume`). Demo account
-  ~1,066 USD, no open positions. Last restart 13:28 Thai with the code of 2026-10-15 and a fresh PWA build.
-- **Setups trading** (all in the aggressive preset, 7.5 % a trade, fades half):
-  - harmonic V1 + `h4_room_2` (`structure_tf: H4, room_min_r: 2`; SETUP_REVIEW §18; on since 11:14 Thai);
-  - breakout F1 (fades of counter-trend breaks with the H4 and H1 trend; §16);
-  - **S1**, the M1 gold scalp, as **lane `s1`** (`setup_breakout_scalp`; PLAN §A7 entry lanes; §17; on since
-    12:11 Thai). The lane reproduced S1's March backtest trade for trade.
-- **Decision engine:** no `SL_TOO_FAR` any more (owner): a far stop gets a smaller lot, the loss at the stop
-  stays within the risk per trade. **V1's and F1's own `max_sl_atr` is off** (`20.0`, the rule's ceiling; owner,
-  2026-10-16; SETUP_REVIEW §20; March identical, August and the year not rerun). S1 keeps 4.0. The stack was
-  restarted 10:29 Thai on 2026-10-16 to load it.
-- `config.yaml` (owner): `high_risk:` on, lane `s1`, V1 room gate, S1 in `high_risk.setups`, V1/F1
-  `max_sl_atr: 20.0`.
-
-### Out-of-sample year (owner, 2026-10-17: the current focus)
-
-- **Priorities (owner, 2026-10-17; SETUP_REVIEW §22):** S1, then V1, then F1, one at a time; breakouts traded in
-  their own direction (original, pattern, box) parked. V1's candidate rules R1-R3 (§21) wait for fresh data.
-- **Stopped by the owner at 14:40 Thai:** year A at 12 of 36 runs, year C (2023-10 .. 2024-09, downloaded) not
-  started. Resume: `bash research/2026-10-17-oos/oos_queue.sh`, then `oos_queue_c.sh` (they skip finished
-  months; ≤ 3 backtests machine-wide). Results: `docs/OUT_OF_SAMPLE.md` (`oos_doc.py`).
-
-- V1, F1 and S1 unchanged on 2024-10 .. 2025-09, one run per setup per month (`data/backtests/oos/`), queue
-  `research/2026-10-17-oos/oos_queue.sh` (one launcher, ≤ 3 at once; it skips finished months, so rerun it after
-  a stop). Results: `docs/OUT_OF_SAMPLE.md`, regenerated by `research/2026-10-17-oos/oos_doc.py` after each month
-  (notes in `research/2026-10-17-oos/notes.md`). History for that year was downloaded on 2026-10-17 (backup of
-  the store before it: `D:/taa-history-backup-2026-10-17`).
-- **Portfolio backtest (TAA-507, 2026-10-17):** `app.cli backtest --portfolio` runs the main entry timeframe and
-  every lane of `config.yaml` in one account, as live (owner: "a backtest like the real account"). Not yet run on
-  real data: the owner to say the balance and preset (e.g. `--preset aggressive --risk 7.5 --balance 150`).
-- **No own stop caps any more** (owner, 2026-10-17): V1, F1 and S1 `max_sl_atr: 20`; a far stop gets a smaller
-  lot, the sizer refuses only when the minimum lot is still too risky (`RISK_BELOW_MIN_LOT`).
-- **A second Claude session** works in the main tree (the owner's triple screen, `setup_triple_screen`,
-  `research/2026-10-17-ts/`, backtests in `data/backtests/ts/`): commit by explicit paths; the OOS queue counts its
-  backtests too (≤ 3 at once machine-wide).
-- The owner's method from now on: one run per setup per month, each month summarized in a doc. The risk per
-  trade is the owner's choice (small account); don't raise it as a concern.
-
-### Setup round
-
-| Setup | State | Result |
-|---|---|---|
-| harmonic V1 + room | trading | year +0.226 R/trade (173), DD 9.5 R; 2nd-half CI below 0 (§18) |
-| breakout F1 | trading | year +0.159 (99) (§16) |
-| S1 (M1 gold scalp) | trading (lane s1) | year +0.277 (76), DD 6.2 R; 1st-half CI below 0 (§17) |
-| S1 + `entry_on: resume` (Elder's third screen, `resume_bars: 15`) | March and August passed; year stopped at 7/12 months (owner, for the out-of-sample year) | 7 months +0.270 (39) vs S1 +0.235 (43): no clear gain (§19) |
-| S1 on the 7 FX majors | August run stopped at 84 % with no trade (2026-10-17) | on M1 the spread is 34-80 % of S1's stop (gold 7 %): its own spread rule passes 0-9 % of bars; not put on DEMO. Owner asked: M5/M15 for FX, or S1 gold only? |
-| F1 + `entry_on: resume` | not kept | March +0.157 (5) against +0.248 (12) |
-| F1 on the 21 crosses | not kept | March −0.373 (16) |
-| box breakout with the trend (`setup_breakout_box`) | **parked for a fresh analysis** (owner, 2026-10-16: needs a long focused session); code stays (lane only, off) | 8 symbols M5 −0.24 (199); Asia-only gold +0.46..+1.07 on ~10/yr |
-| trend following H4/D1, momentum burst scalps | not kept | `research/2026-10-15-day-trade/BREAKOUT_NOTES.md` |
-
-- **Chart read (TAA-L813):** CR-1, 2, 3, 5 done. The PWA chart draws `ChartReadParams.for_display()` (minor
-  levels, spent at 4 crossings, the read "now" with breaks); rules keep the defaults. **CR-4 not passed:** trend
-  17/20 against Claude's key (in-sample; 14/20 against the blind agent alone), levels 5/20.
-- **The owner's custom setup:** `docs/OWNER_TRADING.md` - trade 1 (range buys, +81.52 USD, averaging down took
-  ~60 % of the 150 USD account under water), trade 2 (head-and-shoulders right-shoulder sells, plan +100 / −40
-  USD: **stopped at 4173 on 16 Oct 03:00, about −44.34 USD** after +40 open at the neckline; exact fills to
-  confirm from the owner's MT5 table). Day: about +37 USD.
-- **Rerun commands** (if the logs above did not finish; one at a time is fine, each takes 1-3 hours):
-  ```
-  CONFIG_FILE=data/research/config_s1_resume.yaml ENABLE_HIGH_RISK_PROFILE=false MAX_ACCOUNT_DRAWDOWN_PERCENT=50 ALLOWED_SYMBOLS=XAUUSD PYTHONUNBUFFERED=1   .venv/Scripts/python -m app.cli backtest --server FBS-Demo --symbols XAUUSD --start 2026-03-01 --end 2026-04-01   --strategies setup_breakout --out data/backtests/inv/s1resume_2026-03 --progress > data/backtests/inv/s1resume_2026-03.log 2>&1
-
-  CONFIG_FILE=data/research/config_s1_fx.yaml ENABLE_HIGH_RISK_PROFILE=false MAX_ACCOUNT_DRAWDOWN_PERCENT=50 ALLOWED_SYMBOLS=EURUSD,GBPUSD,USDJPY,USDCHF,AUDUSD,USDCAD,NZDUSD PYTHONUNBUFFERED=1   .venv/Scripts/python -m app.cli backtest --server FBS-Demo --symbols EURUSD,GBPUSD,USDJPY,USDCHF,AUDUSD,USDCAD,NZDUSD   --start 2026-08-01 --end 2026-09-01 --strategies setup_breakout --out data/backtests/inv/s1fx_2026-08 --progress > data/backtests/inv/s1fx_2026-08.log 2>&1
-  ```
-  Baselines: S1 March `data/backtests/inv/scalp_s1_2026-03` (10 trades, +0.397). Judge by R per trade (a gold
-  trade at the minimum lot risks ~3x a currency trade, so net can disagree).
-- **PWA:** the Symbols page shows the trend per setup group (M15 setups: H4 + H1; M1 scalp: H1 + M15) from
-  `GET /engines/{id}/trends`.
-
-### Code and checks
-
-- **Git:** `main`; the owner pushes. All of 2026-10-15 is committed and not pushed. Latest migration **0043**.
-- **Checks:** targeted tests, ruff, mypy, bandit, `npm run typecheck` and the affected vitest files ran for every
-  change. The last full pytest + vitest run was 2026-10-06: **due now**, with the stack paused.
+- **The owner's goals and principles:** `docs/OWNER_GOALS.md` (several were never written down before: session
+  opens, ATR low, Bollinger squeeze, quick profit, the review cadence, news). Setup OWN: `docs/OWN_SETUP.md`,
+  `docs/OWNER_TRADING.md` "Setup OWN".
+- **Every earlier setup stopped** (owner, 2026-10-17): V1, F1 and lane `s1` are `enabled: false` in
+  `config.yaml` (parameters kept); no setup trades until OWN passes its gate. `high_risk` (aggressive preset) stays
+  on for OWN.
+- **DEMO:** paused since 2026-10-16 10:51 Thai (`scripts\demo-tasks.ps1 -Resume` to restart; nothing would trade).
+- **Why the change:** S1 (M1 fade) and TS (M15 structure break) pay only in gold's 2024-26 rally (five years of
+  gold: SETUP_REVIEW §23-23.3; docs/OWNER_TRADING.md "Setup TS"). The owner: a setup fitting only some periods is
+  normal; the system must see the present and choose.
+- **Work stopped, results kept:** the out-of-sample runs (`docs/OUT_OF_SAMPLE.md`: year A 12/36; year C not run),
+  the S1 spread-floor engine checks (`data/backtests/s1fix/`, four partial runs, no result), the TS session.
+  The harness results for S1 over five years are the record (SETUP_REVIEW §23).
+- **Unmerged branches** (worktrees under `.claude/worktrees/`): `s1-cost-floor` (`min_atr_spreads`, a fade's
+  spread rule on the stop it trades) and `setup-groups` (gold / currency sub-setups `setup_harmonic_gold`,
+  `setup_breakout_gold`, a `symbols` param); tests green on the branch; the owner decides whether to merge.
+- **Data:** gold 2020-09 .. 2023-10 in `data/history_old/FBS-Demo/XAUUSD` (the TS session's store), 2023-08 ..
+  2026-10 in `data/history`; FX majors M1 2023-09 .. 2026-10; US100/JP225/US30/US500/XAUAUD M1/M15/H1 from
+  2023-08. Backups of `data/history`: `D:/taa-history-backup-2026-10-17`, `-17b`.
+- **Code:** TAA-507 portfolio backtest (`app.cli backtest --portfolio`) merged. Latest migration **0043**. The
+  last full pytest + vitest run was 2026-10-06: due.
 
 ## Next work
 
-1. Finish the two running backtests (prompt, task 1).
-2. The owner's custom setup (prompt, task 2): confirm the range-trading and head-and-shoulders rules; test the
-   hypotheses in `docs/OWNER_TRADING.md` (planned scale-in vs averaging down, risk per trade, break-even stop,
-   early manual exit) with a harness first (`research/2026-10-15-day-trade/box_harness.py` shows the method:
-   reproduce the engine's March trades exactly, then grid with walk-forward), then the backtest ladder.
-3. Chart read CR-4 (prompt, task 3), then CR-6 / CR-7.
-4. Full pytest + vitest with the stack paused.
-5. Owner decisions (2026-10-16): V1/F1's own `max_sl_atr` off (done); the box breakout parked for a fresh,
-   focused analysis (not now); S1 on the FX majors goes on DEMO once its August run passes (≥ +0.15 R/trade):
-   add the 7 majors to lane `s1`'s symbols, then restart the stack.
-6. Older follow-ups: the aggressive preset (scanner sizing, cloud backtests, margin-level vs utilization), a
-   backtester spread floor, the PWA "Pause" button, TAA-L702 open items, TAA-L803.
-7. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
+1. Setup OWN (`docs/OWN_SETUP.md`): the release calendar, the moments dataset, H1-H4 and the selector, the gate.
+2. The weekly market-state report and the monthly re-fit (the owner's review cadence).
+3. Owner decisions pending: merge the two branches or not; the account size for the daily goal (100 or 150 USD).
+4. Full pytest + vitest once (stack paused).
+5. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
    explicit go-ahead. Never enable LIVE on the owner's behalf; the aggressive preset refuses LIVE in code.
 
 ## Local environment

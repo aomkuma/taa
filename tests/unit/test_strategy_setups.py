@@ -307,8 +307,9 @@ class TestCatalog:
         originals = {"example_trend_pullback", *(c.name for c in SETUPS if c.advised or c.name in in_lanes)}
         assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
-        # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only; 2026-10-16: its own stop cap off
-        assert {n for n, on in listed.items() if on} == {"setup_harmonic_prz", "setup_breakout"}
+        # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only; 2026-10-16: its own stop cap off;
+        # 2026-10-17: every earlier setup stopped, the bot starts over with Setup OWN (docs/OWN_SETUP.md)
+        assert not any(listed.values())
         breakout = next(i for i in settings.config.strategies.items if i.name == "setup_breakout")
         assert breakout.params == {
             "screen_h4": "with",
@@ -332,7 +333,7 @@ class TestCatalog:
         }  # §15.3, no PRZ confirmation; h4_room_2 (owner, 2026-10-15; §18); own stop cap off (2026-10-16)
         (s1,) = settings.config.lanes  # S1, M1 gold scalping (owner, 2026-10-15; §17)
         assert (s1.timeframes.entry, s1.symbols) == (Timeframe.M1, ["XAUUSD"])
-        assert [i.name for i in s1.strategies.items] == ["setup_breakout_scalp"]
+        assert [(i.name, i.enabled) for i in s1.strategies.items] == [("setup_breakout_scalp", False)]
 
     def test_each_setup_can_be_enabled_alone(self) -> None:
         for cls in SETUPS:

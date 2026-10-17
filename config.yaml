@@ -70,12 +70,14 @@ strategies:
     # trading; the scanner and shadow keep every setup the users follow (app/advisory/requirements.py). Owner,
     # 2026-10-12: the bot trades setup_harmonic_prz (SETUP_REVIEW §15); 2026-10-14: and breakout F1 (§16). The
     # inverted copies were removed from the code on 2026-10-14 (owner); a counter-trend trigger is faded inside
-    # its setup (fade_counter_trend, §16).
+    # its setup (fade_counter_trend, §16). Owner, 2026-10-17: every earlier setup stopped (V1, F1, S1 off, their
+    # parameters kept for reference); the bot starts over with Setup OWN (docs/OWN_SETUP.md), aggressive preset,
+    # once it passes its gate.
     - {name: setup_neckline_break, enabled: false}
     - {name: setup_pattern_breakout, enabled: false}
     - {name: setup_fib_pullback, enabled: false}
     - name: setup_harmonic_prz         # SETUP_REVIEW §15.3: no break-even (position_management), only while H4 is
-      enabled: true                    # against the trade or ranging, targets at most 3R; the PRZ confirmation
+      enabled: false                   # against the trade or ranging, targets at most 3R; the PRZ confirmation
       params: {phase_gate: h4_against_or_range, max_rr: 3.0, structure_tf: H4, room_min_r: 2.0, max_sl_atr: 20.0}
       # was tested and rejected. h4_room_2 (owner, 2026-10-15; SETUP_REVIEW §18): at least 2 R of room to the H4
       # read's level. max_sl_atr 20 = the rule's ceiling, the own stop cap off (owner, 2026-10-16; the sizer
@@ -83,7 +85,7 @@ strategies:
     - {name: setup_elliott_wave, enabled: false}
     - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
     - name: setup_breakout             # breakout F1 (SETUP_REVIEW §16): wait for a counter-trend break, then
-      enabled: true                    # trade it with the H4 and H1 trend (fades only; risk.fade sets their RR)
+      enabled: false                   # trade it with the H4 and H1 trend (fades only; risk.fade sets their RR)
       params: {screen_h4: with, screen_h1: with, fade_counter_trend: true, trend_entries: false, max_sl_atr: 20.0, friday_cutoff_utc: "16:00"}   # own stop cap off, as V1
     - {name: setup_candle_reversal, enabled: false}
 
@@ -103,6 +105,7 @@ lanes:
       signal_expiry_bars: 1
       items:
         - name: setup_breakout_scalp
+          enabled: false            # stopped 2026-10-17 (owner): the bot starts over with Setup OWN
           # max_sl_atr 20: no own stop cap (owner, 2026-10-17: a far stop gets a smaller lot, never SL_TOO_FAR)
           params: {screen_h4: with, screen_h1: with, screen_tide_tf: H1, screen_wave_tf: M15, fade_counter_trend: true, trend_entries: false, atr_bars: 60, stop_mode: atr, sl_atr_multiple: 2.0, target_mode: rr, rr_target: 0.5, min_rr: 0.5, max_sl_atr: 20.0, skip_window_ny: "08:00-12:00", friday_cutoff_utc: "16:00"}
     max_spread_to_sl_ratio: 1.0     # a stop of 2 x ATR(60 M1 bars) is a few spreads wide

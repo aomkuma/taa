@@ -9270,7 +9270,7 @@
               "cooldown_bars": 60,
               "items": [
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "setup_breakout_scalp",
                   "params": {
                     "atr_bars": 60,
@@ -14038,7 +14038,7 @@
         "warmup_bars": 120
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14124,7 +14124,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
@@ -14850,7 +14850,7 @@
         "warmup_bars": 120
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14936,7 +14936,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [],
         "top_reject_reasons": [],
         "version": "1.0.0",
