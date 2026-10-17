@@ -117,28 +117,34 @@ class Instr:
 def cands(sym: str, part: str) -> pd.DataFrame:
     d = pd.read_parquet(HERE / f"cand_{sym}_{part}.parquet")
     d["t"] = pd.to_datetime(d.t, utc=True)
-    if part == "design":
+    if part.endswith("design"):
         assert d.t.max() < DESIGN_END, "design table holds test rows"
     return d
 
 
 def run(sig: pd.DataFrame, P: Instr, tp_u: float, be: float | None, hz: int, unit: np.ndarray | None = None,
-        coin: np.random.Generator | None = None, per_sess: int = 2) -> pd.DataFrame:
+        coin: np.random.Generator | None = None, per_sess: int = 2, once: bool = False) -> pd.DataFrame:
     """The confluence selection loop. *sig* rows need t, e, side, session, sl (price units); *tp_u* the target in
-    units of *unit* (per row; gold: price / REF USD) - sl is already in price units."""
-    rows, free, count = [], pd.Timestamp(0, tz="UTC"), {}
+    units of *unit* (per row; gold: price / REF USD) - sl is already in price units. *once*: one attempt per 72-h
+    extreme (the signal's side and its front72 price) a day."""
+    rows, free, count, tried = [], pd.Timestamp(0, tz="UTC"), {}, set()
     x = sig.sort_values("t").drop_duplicates("t")
     u = x["unit"].to_numpy() if "unit" in x else np.ones(len(x))
     for i, r in enumerate(x.itertuples()):
         key = (r.t.normalize(), r.session)
         if r.t < free or count.get(key, 0) >= per_sess:
             continue
+        if once:
+            ek = (r.t.normalize(), int(r.side), round(float(r.front72), 2))
+            if ek in tried:
+                continue
+            tried.add(ek)
         s = int(r.side) if coin is None else int(coin.choice([-1, 1]))
         tp = tp_u * u[i]
         ss = P.stop_slip_ny if int(r.session) == 2 else P.stop_slip
         out = P.trade(int(r.e), s, tp, float(r.sl), be, hz, ss)
         out |= {"t": r.t, "session": r.session, "side": s, "sl": float(r.sl), "tp": tp, "e": int(r.e),
-                "R": out["pnl"] / (float(r.sl) + ss), "idx": r.Index}
+                "R": out["pnl"] / (float(r.sl) + ss), "idx": r.Index, "pnl_u": out["pnl"] / u[i]}
         rows.append(out)
         free, count[key] = r.t + pd.Timedelta(minutes=int(out["mins"])), count.get(key, 0) + 1
     return pd.DataFrame(rows)
@@ -159,8 +165,15 @@ def account(r: pd.DataFrame, P: Instr) -> str:
     st = usd[(r.exit == "stop").to_numpy()]
     avg_loss = float(-st.mean()) if len(st) else 0.0  # the average full (stopped) loss
     six = 6 * avg_loss
+    extra = ""
+    if P.sym == "XAUUSD" and "pnl_u" in r:
+        u = r.pnl_u.to_numpy()
+        equ = np.cumsum(u)
+        stu = u[(r.exit == "stop").to_numpy()]
+        extra = (f" | at gold 4100 (U): worst {u.min():.2f}, max DD {float((np.maximum.accumulate(equ) - equ).max()):.1f},"
+                 f" 6 avg losses {6 * float(-stu.mean()) if len(stu) else 0:.1f}")
     return (f"worst {usd.min():.2f} USD, longest losing streak {mx}, max DD {dd:.1f} USD, avg loss {avg_loss:.2f}"
-            f" -> 6 in a row {six:.1f} USD ({'fits' if six < 50 else 'NOT'} 50, {'fits' if six < 100 else 'NOT'} 100)")
+            f" -> 6 in a row {six:.1f} USD ({'fits' if six < 50 else 'NOT'} 50, {'fits' if six < 100 else 'NOT'} 100)" + extra)
 
 
 def kinds(z: pd.DataFrame) -> str:
@@ -170,11 +183,11 @@ def kinds(z: pd.DataFrame) -> str:
     return f"{100 * v['1']:3.0f}/{100 * v['2']:3.0f}/{100 * v['3']:3.0f}"
 
 
-def coin_stats(sig: pd.DataFrame, P: Instr, tp_u: float, be: float | None, hz: int, seeds: int = 20) -> dict:
+def coin_stats(sig: pd.DataFrame, P: Instr, tp_u: float, be: float | None, hz: int, seeds: int = 20, **kw) -> dict:
     """Coin-flip side on the same minutes, averaged over *seeds*."""
     rs, ks, n = [], [], []
     for s in range(seeds):
-        z = run(sig, P, tp_u, be, hz, coin=np.random.default_rng(100 + s))
+        z = run(sig, P, tp_u, be, hz, coin=np.random.default_rng(100 + s), **kw)
         if len(z):
             rs.append(z.R.mean())
             n.append(len(z))

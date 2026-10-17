@@ -104,6 +104,22 @@ def room72_ok(D, k=0.5, tp=8.0):
     return (D.front72 - D.c_dec) * D.side < k * tp * D.unit
 
 
+def protect(D):
+    """V2's protection: H1 leg not against, H1 not flat, pos240 >= .5, the 72-h extreme close in front, no fast tape."""
+    return w_mask(D, 0.5) & room72_ok(D) & (D.atr_ratio < 2)
+
+
+def e_mask(D):
+    return D.tide & D.at_level & m5_with(D) & protect(D)
+
+
+def quality(D):
+    """Round 5: just under the 72-h extreme (not through it), not late in the window, no US release within 15 min."""
+    under = (D.front72 - D.c_dec) * D.side > 0
+    late = ((D.session == 2) & (D.min_in >= 120)) | ((D.session == 0) & (D.min_in >= 100))
+    return under & ~late & no_news(D)
+
+
 B = dict(tp=8.0, be=0.6, hz=60, rmin=3.0, rmax=10.0)
 RULES: dict[str, dict] = {
     "B0": dict(doc="baseline: confluence.py as tested (H1 tide + level + price action + 2/3 M5), stop 3-10 U",
@@ -133,6 +149,16 @@ RULES: dict[str, dict] = {
                mask=lambda D: base_mask(D) & w_mask(D, 0.5) & room72_ok(D) & (D.atr_ratio < 2), **B),
     "E1": dict(doc="the 72-h extreme setup alone: tide + H1 leg with + not flat + pos240 >= .5 + room72 < .5 tp + M5 with + at a level",
                mask=lambda D: D.tide & D.at_level & w_mask(D, 0.5) & room72_ok(D) & m5_with(D), **B),
+    "E2": dict(doc="tide + level + M5 with + V2 protection (no PA / 2-of-3)", mask=lambda D: e_mask(D), **B),
+    "E3": dict(doc="E2 + one attempt per 72-h extreme a day", mask=lambda D: e_mask(D), once=True, **B),
+    "E4": dict(doc="E3 + H1 not stretched (h1_c_e50 <= 4.5)", mask=lambda D: e_mask(D) & (D.h1_c_e50 <= 4.5), once=True, **B),
+    "E4s1": dict(doc="E4, one trade a session", mask=lambda D: e_mask(D) & (D.h1_c_e50 <= 4.5), once=True, per_sess=1, **B),
+    "V3": dict(doc="V2 + once + H1 not stretched",
+               mask=lambda D: base_mask(D) & protect(D) & (D.h1_c_e50 <= 4.5), once=True, **B),
+    "E5": dict(doc="E2 + just under the 72-h extreme + not late + no news", mask=lambda D: e_mask(D) & quality(D), **B),
+    "E5s1": dict(doc="E5, one trade a session", mask=lambda D: e_mask(D) & quality(D), per_sess=1, **B),
+    "V4": dict(doc="V2 + just under the 72-h extreme + not late + no news",
+               mask=lambda D: base_mask(D) & protect(D) & quality(D), **B),
     # FX: the same logic in pips (1 U = 1 pip): target 20 (or 15) pips, stop level - 1 ATR within 7.5-25 pips
     "FB0": dict(doc="B0 in pips: tp 20, stop 7.5-25, BE 0.6, 120 min", mask=base_mask,
                 tp=20.0, be=0.6, hz=120, rmin=7.5, rmax=25.0, upip=True),

@@ -26,6 +26,8 @@ import jlib  # noqa: E402
 from app.indicators.chart_read import ChartReadFrame  # noqa: E402
 
 WINDOWS = [(0, "UTC", "00:00", "02:00"), (1, "Europe/London", "08:00", "09:30"), (2, "America/New_York", "08:15", "11:15")]
+# round 5 (lead, 2026-10-17): the full London (07-12 UTC) and New York (12-17 UTC) sessions; Asia as before
+WIDE = [(0, "UTC", "00:00", "02:00"), (1, "UTC", "07:00", "12:00"), (2, "UTC", "12:00", "17:00")]
 STRUCT = {"UP": 1, "DOWN": -1}
 
 
@@ -109,9 +111,10 @@ def chart_reads(m1: pd.DataFrame, minutes: int, name: str, times: pd.DatetimeInd
 
 
 def main() -> None:
-    sym, part = sys.argv[1], sys.argv[2]
+    sym, part = sys.argv[1], sys.argv[2]  # part: design | test | wdesign | wtest (w = the wide windows)
     jlib.gold.below_normal_priority()
-    lo_t, hi_t = (("2023-11-01", "2026-03-01") if part == "design" else ("2026-03-01", "2026-10-14"))
+    windows = WIDE if part.startswith("w") else WINDOWS
+    lo_t, hi_t = (("2023-11-01", "2026-03-01") if part.endswith("design") else ("2026-03-01", "2026-10-14"))
     P = jlib.Instr(sym)
     m1 = P.m
     ot, o, h, lo, c, sp, v = P.ot, P.o, P.h, P.lo, P.c, P.sp, P.v
@@ -120,7 +123,7 @@ def main() -> None:
     days = [d for d in pd.date_range(lo_t, pd.Timestamp(hi_t) - pd.Timedelta(days=1), freq="D") if d.weekday() < 5]
     cand = []
     for d in days:
-        for sess, zone, a, b in WINDOWS:
+        for sess, zone, a, b in windows:
             z = ZoneInfo(zone)
             t0 = pd.Timestamp(f"{d.date()} {a}").tz_localize(z).tz_convert("UTC")
             t1 = pd.Timestamp(f"{d.date()} {b}").tz_localize(z).tz_convert("UTC")

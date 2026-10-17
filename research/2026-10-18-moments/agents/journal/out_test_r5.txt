@@ -1,0 +1,84 @@
+
+XAUUSD E5 [test] - TEST 2026-03-01 .. 10-14 (window already SEEN in round 11): E2 + just under the 72-h extreme + not late + no news
+  38 trades (0.23/day), win 29%, -0.124 R/trade, -20.4 USD at 0.01 lot, months+ 4/8; exits {'stop': 19, 'win': 11, 'be': 8}
+  account: worst -9.25 USD, longest losing streak 9, max DD 53.1 USD, avg loss 5.99 -> 6 in a row 35.9 USD (fits 50, fits 100) | at gold 4100 (U): worst -8.81, max DD 48.3, 6 avg losses 32.7
+  month     trades  win%   R/trade   P&L
+  2026-03      3     0  -0.673      -9.9
+  2026-04      5    40  +0.146      +5.5
+  2026-05      8    12  -0.611     -24.4
+  2026-06      4    25  -0.323     -15.8
+  2026-07      5    40  +0.327      +7.0
+  2026-08      4    50  +0.176     +10.8
+  2026-09      7    29  -0.112      -1.8
+  2026-10      2    50  +0.612      +8.1
+  Asia      17 trades, win  29%, -0.110 R, -17.3 USD
+  London     7 trades, win  29%, -0.270 R, -0.4 USD
+  New York  14 trades, win  29%, -0.067 R, -2.7 USD
+  losers' kinds ours (1/2/3):  47/ 11/ 42 %  | coin (20 seeds): 50/6/44 %, coin R -0.147, coin win 30%
+
+XAUUSD E5s1 [test] - TEST 2026-03-01 .. 10-14 (window already SEEN in round 11): E5, one trade a session
+  25 trades (0.15/day), win 28%, -0.075 R/trade, -6.7 USD at 0.01 lot, months+ 2/8; exits {'stop': 11, 'be': 7, 'win': 7}
+  account: worst -9.25 USD, longest losing streak 5, max DD 25.9 USD, avg loss 6.13 -> 6 in a row 36.8 USD (fits 50, fits 100) | at gold 4100 (U): worst -8.81, max DD 23.4, 6 avg losses 33.9
+  month     trades  win%   R/trade   P&L
+  2026-03      2     0  -0.509      -4.7
+  2026-04      4    50  +0.433     +10.3
+  2026-05      5    20  -0.378      -7.5
+  2026-06      2    50  +0.353      -0.8
+  2026-07      4    25  -0.019      -0.7
+  2026-08      3    33  -0.064      +2.3
+  2026-09      4    25  -0.274      -5.4
+  2026-10      1     0  -0.025      -0.1
+  Asia      11 trades, win  18%, -0.214 R, -23.8 USD
+  London     5 trades, win  40%, +0.022 R, +9.3 USD
+  New York   9 trades, win  33%, +0.042 R, +7.8 USD
+  losers' kinds ours (1/2/3):  45/ 18/ 36 %  | coin (20 seeds): 49/8/43 %, coin R -0.194, coin win 28%
+
+XAUUSD E5 [wtest] - TEST 2026-03-01 .. 10-14 (window already SEEN in round 11): E2 + just under the 72-h extreme + not late + no news
+  53 trades (0.33/day), win 30%, -0.094 R/trade, -15.8 USD at 0.01 lot, months+ 4/8; exits {'stop': 25, 'win': 16, 'be': 11, 'time': 1}
+  account: worst -9.25 USD, longest losing streak 6, max DD 65.0 USD, avg loss 5.89 -> 6 in a row 35.4 USD (fits 50, fits 100) | at gold 4100 (U): worst -8.81, max DD 58.9, 6 avg losses 32.3
+  month     trades  win%   R/trade   P&L
+  2026-03      5    20  -0.361      -6.7
+  2026-04      6    67  +0.827     +28.5
+  2026-05     10    20  -0.499     -23.6
+  2026-06      6    17  -0.335     -24.0
+  2026-07      7    29  +0.087      +3.6
+  2026-08      6    33  -0.216      +2.3
+  2026-09     11    27  -0.153      -4.0
+  2026-10      2    50  +0.612      +8.1
+  Asia      17 trades, win  29%, -0.110 R, -17.3 USD
+  London    23 trades, win  30%, -0.138 R, -3.3 USD
+  New York  13 trades, win  31%, +0.005 R, +4.8 USD
+  losers' kinds ours (1/2/3):  56/  8/ 36 %  | coin (20 seeds): 53/6/41 %, coin R -0.130, coin win 29%
+
+XAUUSD E5s1 [wtest] - TEST 2026-03-01 .. 10-14 (window already SEEN in round 11): E5, one trade a session
+  37 trades (0.23/day), win 27%, -0.112 R/trade, -19.8 USD at 0.01 lot, months+ 2/8; exits {'stop': 17, 'win': 10, 'be': 9, 'time': 1}
+  account: worst -9.25 USD, longest losing streak 7, max DD 42.6 USD, avg loss 5.90 -> 6 in a row 35.4 USD (fits 50, fits 100) | at gold 4100 (U): worst -8.81, max DD 39.3, 6 avg losses 32.7
+  month     trades  win%   R/trade   P&L
+  2026-03      3     0  -0.673     -10.8
+  2026-04      5    60  +0.828     +19.2
+  2026-05      6    33  -0.164      +1.3
+  2026-06      5    20  -0.202     -15.4
+  2026-07      6    17  -0.183      -4.2
+  2026-08      5    20  -0.439      -6.2
+  2026-09      6    33  -0.161      -3.7
+  2026-10      1     0  -0.025      -0.1
+  Asia      11 trades, win  18%, -0.214 R, -23.8 USD
+  London    16 trades, win  31%, -0.074 R, -0.2 USD
+  New York  10 trades, win  30%, -0.062 R, +4.2 USD
+  losers' kinds ours (1/2/3):  59/ 12/ 29 %  | coin (20 seeds): 51/8/41 %, coin R -0.145, coin win 26%
+
+XAUUSD V2 [wtest] - TEST 2026-03-01 .. 10-14 (window already SEEN in round 11): V1 + not a fast tape (ATR < 2x day median)
+  25 trades (0.15/day), win 44%, +0.170 R/trade, +43.9 USD at 0.01 lot, months+ 5/7; exits {'win': 11, 'stop': 11, 'be': 3}
+  account: worst -6.37 USD, longest losing streak 3, max DD 15.5 USD, avg loss 4.74 -> 6 in a row 28.5 USD (fits 50, fits 100) | at gold 4100 (U): worst -5.88, max DD 14.2, 6 avg losses 26.5
+  month     trades  win%   R/trade   P&L
+  2026-03      3   100  +1.646     +29.5
+  2026-04      1     0  -0.014      -0.1
+  2026-05      6    33  -0.260      +0.0
+  2026-06      4    50  +0.149      +4.5
+  2026-07      6    50  +0.324     +15.3
+  2026-08      2     0  -1.000      -9.7
+  2026-09      3    33  +0.111      +4.5
+  Asia       4 trades, win  50%, +0.141 R, +6.6 USD
+  London    11 trades, win  27%, -0.093 R, +6.8 USD
+  New York  10 trades, win  60%, +0.470 R, +30.5 USD
+  losers' kinds ours (1/2/3): 100/  0/  0 %  | coin (20 seeds): 64/0/36 %, coin R +0.117, coin win 41%

@@ -47,7 +47,28 @@ CAUSES = {
     "C5 US release within 15 min": lambda T: (T.since_rel <= 15) | (T.until_rel <= 15),
     "C6 late in the window (NY >= +120m, Asia >= +100m)": lambda T: ((T.session == 2) & (T.min_in >= 120)) | ((T.session == 0) & (T.min_in >= 100)),
     "C7 fast tape (M1 ATR >= 2x its day median)": lambda T: T.atr_ratio >= 2,
+    "C8 outside the round-9 windows (the added London / NY hours)": lambda T: ~old_window(T),
+    "C9 no B0 price action or < 2 of 3 M5 indicators": lambda T: ~((T.pa_m1 | T.pa_m5 | T.engulf | T.reclaim)
+                                                                  & ((T.rsi_ok.astype(int) + T.macd_ok.astype(int) + T.stoch_ok.astype(int)) >= 2)),
+    "C10 H1 stretched (close > 4.5 H1 ATR beyond the EMA50)": lambda T: T.h1_c_e50 > 4.5,
+    "C11 a repeat attempt at the same 72-h extreme that day": lambda T: repeat(T),
 }
+
+
+def old_window(T: pd.DataFrame) -> np.ndarray:
+    lon = T.t.dt.tz_convert("Europe/London")
+    ny = T.t.dt.tz_convert("America/New_York")
+    lm, nm = lon.dt.hour * 60 + lon.dt.minute, ny.dt.hour * 60 + ny.dt.minute
+    return ((T.session == 0) | ((T.session == 1) & (lm >= 480) & (lm < 570)) | ((T.session == 2) & (nm >= 495) & (nm < 675))).to_numpy()
+
+
+def repeat(T: pd.DataFrame) -> np.ndarray:
+    seen, out = set(), []
+    for r in T.sort_values("t").itertuples():
+        k = (r.t.normalize(), int(r.side), round(float(r.front72), 2))
+        out.append(k in seen)
+        seen.add(k)
+    return pd.Series(out, index=T.sort_values("t").index).reindex(T.index).to_numpy()
 
 
 def main() -> None:

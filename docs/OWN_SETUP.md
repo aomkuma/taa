@@ -920,6 +920,21 @@ wrong way, on three days: 2026-05-07 (the same 72-hour high / round 4750 refused
 vertical H1 run), 2026-08-12 (two trades 30 minutes after the CPI spike in a fast tape), 2026-08-14 (a sell at the end
 of a 30 USD fall into the 72-hour low). FX with this logic (EURUSD, USDJPY, 15-20 pips): no design variant passes.
 
+**Journal agent, round 5 - raising the count** (`agents/journal/notes.md` round 5, `out_r5_*.txt`, `out_test_r5.txt`).
+Full sessions built (London 07-12 UTC, New York 12-17 UTC, Asia 00-02 UTC; nothing 20-23 UTC). Design 2023-11 ..
+2026-02: V2 on the full sessions 102 trades (0.17 a day), +0.208 R, 4/5 half-years, max DD 21-25 USD (at today's
+price); looser entries E2 (no B0 confirmation) +0.009 .. +0.093 R with DD 54-67 USD (96-120 at today's price); E5
+(E2 + just under the 72-hour extreme + not late + no release within 15 min) +0.18 .. +0.20 R, 0.25-0.36 a day.
+Counted causes: the owner-suggested "one attempt per 72-hour extreme" and "H1 not stretched" did not separate losers
+from winners (15 / 18 %, 20 / 19 %); the added hours carried more losers (London 07-10 UTC -0.20 .. -0.27 R); 93 % of
+E2's losers lacked B0's confirmation (the few with it made +0.36 R); price already through the 72-hour extreme
+-0.007 vs just under +0.186 R; late in the window -0.197 vs +0.137 (all 5 half-years); a release within 15 minutes:
+all full losses. **Test (seen): E5 38 trades -0.124 R, E5s1 25 trades -0.075 - fail** (37 of 38 had no B0
+confirmation; the design's Asia carry did not repeat). **V2 on the full sessions: 25 trades (0.15 a day), win 44 %,
++0.170 R, +43.9 USD at 0.01 lot, 5/7 months; worst -6.4, streak 3, max DD 15.5 USD.** The count cannot be raised
+toward 3 a day within this family without losing the edge; more trades must come from separate setups with their
+own confirmation.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had

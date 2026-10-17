@@ -1,0 +1,72 @@
+trades_all_XAUUSD_V2_w.parquet: 102 trades, stopped 40, winners 34, R +0.208
+cause: share of stopped losers / winners (all design), then losers/winners by half-year; R with / without
+  C1 spike entry (bar body >= 1.5 ATR or 3-bar move >= 3 ATR with the side)
+       8% /  12%   halves  50/ 33    0/  9   20/ 20    0/ 25    0/  0   R with +0.396 (n 12)  without +0.183 (n 90)
+  C2 under the 72-h extreme (0 < room < 0.5 target)
+      55% /  53%   halves   0/ 33   60/ 73   50/ 60   67/ 50   58/ 36   R with +0.222 (n 57)  without +0.190 (n 45)
+  C3 stop inside the last 15-min swing
+      88% /  91%   halves 100/100   80/ 82   90/100   83/ 75   92/100   R with +0.225 (n 91)  without +0.066 (n 11)
+  C4 stretched (60-min move >= 8 ATR with the side)
+      18% /  18%   halves  50/  0   10/ 18   20/ 20    0/  0   25/ 27   R with +0.096 (n 17)  without +0.230 (n 85)
+  C5 US release within 15 min
+       0% /   0%   halves   0/  0    0/  0    0/  0    0/  0    0/  0   R with +nan (n 0)  without +0.208 (n 102)
+  C6 late in the window (NY >= +120m, Asia >= +100m)
+      32% /  35%   halves   0/ 33   40/ 18   20/ 40    0/ 25   58/ 55   R with +0.099 (n 34)  without +0.262 (n 68)
+  C7 fast tape (M1 ATR >= 2x its day median)
+       0% /   0%   halves   0/  0    0/  0    0/  0    0/  0    0/  0   R with +nan (n 0)  without +0.208 (n 102)
+  C8 outside the round-9 windows (the added London / NY hours)
+      45% /  32%   halves  50/100   60/ 18   50/ 20   50/ 50   25/ 27   R with +0.037 (n 41)  without +0.322 (n 61)
+  C9 no B0 price action or < 2 of 3 M5 indicators
+       0% /   0%   halves   0/  0    0/  0    0/  0    0/  0    0/  0   R with +nan (n 0)  without +0.208 (n 102)
+  C10 H1 stretched (close > 4.5 H1 ATR beyond the EMA50)
+      20% /  29%   halves  50/  0   20/ 18   20/ 40   17/ 50   17/ 36   R with +0.523 (n 24)  without +0.111 (n 78)
+  C11 a repeat attempt at the same 72-h extreme that day
+       2% /   6%   halves   0/  0    0/  0    0/ 20    0/  0    8/  9   R with +0.628 (n 4)  without +0.191 (n 98)
+trades_all_XAUUSD_E2_w.parquet: 384 trades, stopped 200, winners 103, R +0.009
+cause: share of stopped losers / winners (all design), then losers/winners by half-year; R with / without
+  C1 spike entry (bar body >= 1.5 ATR or 3-bar move >= 3 ATR with the side)
+      21% /  25%   halves  38/ 44   21/ 25   24/ 19   17/ 29    8/ 19   R with +0.054 (n 85)  without -0.004 (n 299)
+  C2 under the 72-h extreme (0 < room < 0.5 target)
+      52% /  59%   halves  32/ 56   69/ 69   49/ 63   62/ 53   52/ 56   R with +0.096 (n 212)  without -0.099 (n 172)
+  C3 stop inside the last 15-min swing
+      86% /  83%   halves  88/ 75   82/ 88   85/ 81   75/ 82   92/ 89   R with -0.020 (n 321)  without +0.155 (n 63)
+  C4 stretched (60-min move >= 8 ATR with the side)
+      29% /  28%   halves  26/ 50   28/ 19   36/ 19   25/ 29   25/ 30   R with -0.032 (n 112)  without +0.026 (n 272)
+  C5 US release within 15 min
+       2% /   0%   halves   0/  0    3/  0    0/  0    0/  0    4/  0   R with -1.000 (n 3)  without +0.017 (n 381)
+  C6 late in the window (NY >= +120m, Asia >= +100m)
+      24% /  24%   halves  24/ 25   15/ 12   24/ 22   17/ 12   33/ 41   R with -0.039 (n 92)  without +0.024 (n 292)
+  C7 fast tape (M1 ATR >= 2x its day median)
+       0% /   0%   halves   0/  0    0/  0    0/  0    0/  0    0/  0   R with +nan (n 0)  without +0.009 (n 384)
+  C8 outside the round-9 windows (the added London / NY hours)
+      36% /  27%   halves  32/ 50   31/ 25   33/ 26   58/ 29   38/ 15   R with -0.121 (n 131)  without +0.076 (n 253)
+  C9 no B0 price action or < 2 of 3 M5 indicators
+      94% /  89%   halves  97/ 94   87/ 75   96/ 89  100/ 94   92/ 93   R with -0.013 (n 353)  without +0.259 (n 31)
+  C10 H1 stretched (close > 4.5 H1 ATR beyond the EMA50)
+      20% /  19%   halves  32/ 25   21/ 19   16/ 22    8/ 12   23/ 19   R with +0.025 (n 77)  without +0.005 (n 307)
+  C11 a repeat attempt at the same 72-h extreme that day
+      15% /  18%   halves  24/ 25   13/ 25   13/ 22   17/  6   12/ 15   R with +0.108 (n 64)  without -0.011 (n 320)
+trades_all_XAUUSD_E2.parquet: 274 trades, stopped 137, winners 83, R +0.093
+cause: share of stopped losers / winners (all design), then losers/winners by half-year; R with / without
+  C1 spike entry (bar body >= 1.5 ATR or 3-bar move >= 3 ATR with the side)
+      16% /  28%   halves  30/ 67   14/ 33   23/ 17   18/ 31    0/ 19   R with +0.300 (n 60)  without +0.035 (n 214)
+  C2 under the 72-h extreme (0 < room < 0.5 target)
+      50% /  57%   halves  26/ 44   76/ 75   44/ 57   45/ 54   51/ 54   R with +0.186 (n 142)  without -0.007 (n 132)
+  C3 stop inside the last 15-min swing
+      84% /  86%   halves  87/ 78   79/ 83   82/ 87   73/ 85   91/ 88   R with +0.088 (n 230)  without +0.120 (n 44)
+  C4 stretched (60-min move >= 8 ATR with the side)
+      28% /  29%   halves  30/ 56   24/ 17   33/ 22   18/ 31   29/ 31   R with +0.075 (n 80)  without +0.100 (n 194)
+  C5 US release within 15 min
+       3% /   0%   halves   0/  0    7/  0    0/  0    0/  0    6/  0   R with -1.000 (n 4)  without +0.109 (n 270)
+  C6 late in the window (NY >= +120m, Asia >= +100m)
+      13% /   6%   halves   9/  0   14/  0   10/  0    9/  8   20/ 15   R with -0.197 (n 36)  without +0.137 (n 238)
+  C7 fast tape (M1 ATR >= 2x its day median)
+       0% /   0%   halves   0/  0    0/  0    0/  0    0/  0    0/  0   R with +nan (n 0)  without +0.093 (n 274)
+  C8 outside the round-9 windows (the added London / NY hours)
+       0% /   0%   halves   0/  0    0/  0    0/  0    0/  0    0/  0   R with +nan (n 0)  without +0.093 (n 274)
+  C9 no B0 price action or < 2 of 3 M5 indicators
+      93% /  88%   halves 100/100   93/ 75   95/ 87   91/ 85   86/ 92   R with +0.066 (n 249)  without +0.362 (n 25)
+  C10 H1 stretched (close > 4.5 H1 ATR beyond the EMA50)
+      23% /  19%   halves  43/ 33    7/ 17   18/ 26    0/  0   34/ 19   R with +0.040 (n 55)  without +0.106 (n 219)
+  C11 a repeat attempt at the same 72-h extreme that day
+      15% /  17%   halves  22/ 22    7/ 25   15/ 17   18/  8   14/ 15   R with +0.182 (n 40)  without +0.078 (n 234)

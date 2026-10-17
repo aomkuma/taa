@@ -19,10 +19,12 @@ from rules import RULES, signals  # noqa: E402
 
 
 def main() -> None:
-    sym, names = sys.argv[1], sys.argv[2:]
+    sym = sys.argv[1]
+    names = [a for a in sys.argv[2:] if not a.startswith("--")]
+    part = next((a.split("=")[1] for a in sys.argv if a.startswith("--part=")), "test")
     jlib.gold.below_normal_priority()
     P = jlib.Instr(sym)
-    D = jlib.cands(sym, "test")
+    D = jlib.cands(sym, part)
     D = D[(D.t >= jlib.TEST_START) & (D.t < jlib.TEST_END)]
     D["e"] = P.e_of(D.t)
     days = pd.bdate_range(jlib.TEST_START, jlib.TEST_END, inclusive="left").size
@@ -31,9 +33,10 @@ def main() -> None:
     for name in names:
         rule = RULES[name]
         sig = signals(D, rule, P)
-        r = jlib.run(sig, P, rule["tp"], rule["be"], rule["hz"])
-        cs = [jlib.run(sig, P, rule["tp"], rule["be"], rule["hz"], coin=np.random.default_rng(500 + s)) for s in range(20)]
-        print(f"\n{sym} {name} - TEST 2026-03-01 .. 10-14 (window already SEEN in round 11): {rule['doc']}")
+        kw = dict(per_sess=rule.get("per_sess", 2), once=rule.get("once", False))
+        r = jlib.run(sig, P, rule["tp"], rule["be"], rule["hz"], **kw)
+        cs = [jlib.run(sig, P, rule["tp"], rule["be"], rule["hz"], coin=np.random.default_rng(500 + s), **kw) for s in range(20)]
+        print(f"\n{sym} {name} [{part}] - TEST 2026-03-01 .. 10-14 (window already SEEN in round 11): {rule['doc']}")
         if not len(r):
             print("  0 trades")
             continue
@@ -56,7 +59,7 @@ def main() -> None:
         for col in extra.columns:
             if col not in r.columns:
                 r[col] = extra[col].to_numpy()
-        r.to_parquet(HERE / f"test_{sym}_{name}.parquet")
+        r.to_parquet(HERE / f"test_{sym}_{name}{'_w' if part.startswith('w') else ''}.parquet")
 
 
 if __name__ == "__main__":

@@ -29,7 +29,9 @@ def main() -> None:
     if "--gross" in sys.argv:
         P.gross()
         print("GROSS (no costs)")
-    D = jlib.cands(sym, "design")
+    part = next((a.split("=")[1] for a in sys.argv if a.startswith("--part=")), "design")
+    D = jlib.cands(sym, part)
+    print(f"candidates: {part}")
     D["e"] = P.e_of(D.t)
     for name in names:
         rule = RULES[name]
@@ -40,8 +42,9 @@ def main() -> None:
         tot, totc = [], []
         for hn, a, b in jlib.HALVES:
             x = sig[(sig.t >= pd.Timestamp(a, tz="UTC")) & (sig.t < pd.Timestamp(b, tz="UTC"))]
-            r = jlib.run(x, P, rule["tp"], rule["be"], rule["hz"], per_sess=rule.get("per_sess", 2))
-            cs = jlib.coin_stats(x, P, rule["tp"], rule["be"], rule["hz"], seeds=10)
+            kw = dict(per_sess=rule.get("per_sess", 2), once=rule.get("once", False))
+            r = jlib.run(x, P, rule["tp"], rule["be"], rule["hz"], **kw)
+            cs = jlib.coin_stats(x, P, rule["tp"], rule["be"], rule["hz"], seeds=10, **kw)
             unit = "USD" if sym == "XAUUSD" else "pips"
             print(jlib.line(hn, r, a, b, P, unit) + f" | {cs['R']:+.3f} ({cs['sd']:.3f}) {cs['kinds']} {cs['n']:.0f}")
             if len(r):
@@ -63,13 +66,13 @@ def main() -> None:
             for col in extra.columns:
                 if col not in last.columns:
                     last[col] = extra[col].to_numpy()
-            last.to_parquet(HERE / f"trades_{sym}_{name}.parquet")
+            last.to_parquet(HERE / f"trades_{sym}_{name}{'_w' if part.startswith('w') else ''}.parquet")
             allx = allr.reset_index(drop=True)
             extra = sig.loc[allx.idx.to_numpy()].reset_index(drop=True)
             for col in extra.columns:
                 if col not in allx.columns:
                     allx[col] = extra[col].to_numpy()
-            allx.to_parquet(HERE / f"trades_all_{sym}_{name}.parquet")
+            allx.to_parquet(HERE / f"trades_all_{sym}_{name}{'_w' if part.startswith('w') else ''}.parquet")
 
 
 if __name__ == "__main__":

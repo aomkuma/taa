@@ -236,3 +236,82 @@ to raise the count toward the owner's 3 a day.
 
 ### E1 probe (design only, not tested; out_E1.txt): 381 trades (0.64/day), win 34%, +0.096 R, 4/5 halves (+0.085,
 -0.033, +0.083, +0.138, +0.225), coin -0.054; worst -11.44, streak 10, max DD 56.3 USD (over a 50 USD account).
+
+## Round 5 (lead, 2026-10-17): raise the count to ~3 a day, keep V2's protection, design max DD ~30 USD at 0.01 lot
+
+Wide windows (build.py part `wdesign` / `wtest`): Asia 00:00-02:00 UTC (as before), London 07:00-12:00 UTC, New
+York 12:00-17:00 UTC (nothing 20-23 UTC). min_in counts from those starts. Account DD is also shown at today's price
+(P&L in U = USD at gold 4100), since the design years' gold was 2000-5300.
+
+Rules (written before running), all with V2's protection (H1 leg not against, |h1_c_e50| >= 0.85, pos240 >= 0.5,
+the 72-h extreme in front < 0.5 target or behind, ATR < 2x its day median) and B0's exits:
+- V2 on the wide windows.
+- E2 = tide + at a level (B0's level test) + M5 with + V2's protection; no price-action / 2-of-3 conditions.
+- E3 = E2 + one attempt per 72-h extreme a day (the side and the extreme's price; the first signal only).
+- E4 = E3 + not stretched: the H1 close <= 4.5 H1 ATR beyond its EMA50 on the side (h1_c_e50 <= 4.5).
+- V3 = V2 + once + not stretched.
+- E4s1 = E4 with one trade per session (the owner's one a session).
+
+### Round 5 results (design; out_r5_wide.txt, out_r5_narrow.txt), gold, real costs. DD also at gold 4100 (U)
+
+| rule | windows | trades | /day | win % | R | coin R | halves + | worst / streak / DD USD | DD at 4100 |
+|---|---|---|---|---|---|---|---|---|---|
+| V2 | narrow | 63 | 0.10 | 40 | +0.359 | +0.046 | 5/5 | -10.0 / 7 / 21.3 | - |
+| V2 | wide | 102 | 0.17 | 33 | +0.208 | -0.136 | 4/5 | -10.0 / 7 / 21.3 | 24.6 |
+| E2 | narrow | 274 | 0.46 | 30 | +0.093 | -0.129 | 3/5 | -9.7 / 14 / 54.3 | 96.1 |
+| E2 | wide | 384 | 0.64 | 27 | +0.009 | -0.144 | 2/5 | -9.7 / 22 / 67.4 | 120.4 |
+| E3 (+once) | narrow / wide | 258 / 355 | | 29 / 26 | +0.045 / -0.016 | | 3/5 / 1/5 | | 140.7 / 158.7 |
+| E4 (+not stretched) | narrow / wide | 208 / 283 | | 29 / 26 | +0.055 / -0.026 | | 2/5 / 1/5 | | 115.8 / 129.5 |
+| E4s1 (1 a session) | narrow / wide | 154 / 209 | | 30 / 27 | +0.093 / +0.021 | | 3/5 / 2/5 | 40.9 / 52.1 | 64.8 / 65.2 |
+| V3 (V2 + once + not stretched) | narrow / wide | 50 / 77 | | 40 / 32 | +0.303 / +0.152 | | 3/4 / 3/5 | 11.4 / 19.1 | 14.5 / 29.0 |
+
+Both new ideas (once, not stretched) made things worse: repeats at the same extreme were 15% of losers and 18% of
+winners (R +0.11 with); stretched H1 20% / 19%. The wider windows add worse trades.
+
+Causes (out_causes_r5.txt), share of stopped losers / winners, consistent by half-year where noted:
+- the added hours (outside the round-9 windows): E2 wide 36% / 27%, R -0.121 vs +0.076, losers higher in 4/5 halves;
+  V2 wide R +0.037 vs +0.322. By hour (E2 wide): London 07-10 UTC -0.20 .. -0.27 R; Asia 00 UTC +0.58.
+- no B0 price action / 2-of-3: 93% / 88% in E2 (E2's trades with them: +0.36 R, n 25) - the confirmation matters.
+- already through the 72-h extreme (room < 0) vs just under it: E2 -0.007 vs +0.186, winners more often under it in
+  4/5 halves (V1 before: -0.043 vs +0.509).
+- late in the window (NY >= +120 m, Asia >= +100 m), E2 narrow: 13% / 6%, R -0.197 vs +0.137, losers higher 5/5.
+- a US release within 15 min: 3-4 trades, all full losses.
+
+### Rules (written before running)
+- E5 = E2 (narrow windows) + just under the 72-h extreme (0 < room < 0.5 target) + not late (NY < +120 m, Asia
+  < +100 m) + no US release within 15 min.
+- V4 = V2 + the same three. E5w / V4w the same on the wide windows.
+- E5s1 = E5 with one trade a session (written before running; a drawdown lever).
+
+### E5 / V4 / E5s1 results (design; out_r5_E5V4.txt, out_r5_E5s1.txt)
+
+| rule | windows | trades | /day | win % | R | coin R | halves + (R by half) | worst / streak / DD USD | DD at 4100 |
+|---|---|---|---|---|---|---|---|---|---|
+| E5 | narrow | 152 | 0.25 | 34 | +0.197 | -0.060 | 5/5 (+.34 +.03 +.30 +.29 +.14) | -10.1 / 9 / 35.4 | 45.3 |
+| E5 | wide | 208 | 0.36 | 31 | +0.184 | -0.126 | 4/5 (+.63 -.04 +.27 +.21 +.01) | -7.4 / 16 / 41.7 | 60.8 |
+| E5s1 | narrow | 113 | 0.19 | 36 | **+0.290** | -0.112 | 5/5 (+.13 +.04 +.48 +.45 +.31) | -7.4 / 7 / 19.3 | 34.3 |
+| E5s1 | wide | 148 | 0.25 | 32 | +0.219 | -0.112 | 3/5 (+.40 -.03 +.42 +.36 -.05) | -7.4 / 11 / 32.2 | 40.7 |
+| V4 | narrow / wide | 30 / 44 | 0.05 / 0.07 | 40 / 32 | +0.374 / +0.293 | | 4/5 / 3/5 | 30.9 / 18.3 | 28.2 / 19.9 |
+
+FROZEN for the one test (written before building the wide test table): E5, E5s1 (narrow), E5 and E5s1 (wide),
+V2 (wide), as defined above. The test window is SEEN (round 11).
+
+### Round 5 test (out_test_r5.txt) - WINDOW SEEN; run once after the freeze above
+
+| rule | windows | trades | /day | win % | R | USD 0.01 | months + | worst / streak / DD USD | coin R | kinds ours / coin |
+|---|---|---|---|---|---|---|---|---|---|---|
+| E5 | narrow | 38 | 0.23 | 29 | -0.124 | -20.4 | 4/8 | -9.3 / 9 / 53.1 | -0.147 | 47/11/42 / 50/6/44 |
+| E5s1 | narrow | 25 | 0.15 | 28 | -0.075 | -6.7 | 2/8 | -9.3 / 5 / 25.9 | -0.194 | 45/18/36 / 49/8/43 |
+| E5 | wide | 53 | 0.33 | 30 | -0.094 | -15.8 | 4/8 | -9.3 / 6 / 65.0 | -0.130 | 56/8/36 / 53/6/41 |
+| E5s1 | wide | 37 | 0.23 | 27 | -0.112 | -19.8 | 2/8 | -9.3 / 7 / 42.6 | -0.145 | 59/12/29 / 51/8/41 |
+| **V2** | **wide** | 25 | 0.15 | 44 | **+0.170** | **+43.9** | 5/7 | -6.4 / 3 / 15.5 | +0.117 | 100/0/0 / 64/0/36 |
+
+Why E5 failed on the test (counted): 37 of its 38 test trades had no B0 confirmation (price action + 2 of 3 M5
+indicators). On design those unconfirmed trades were +0.17 R, carried by Asia (+0.59 R); on the test they were
+-0.10 R and Asia -0.11. Entries after a 15-min push >= 4 ATR: -0.28 R on the test (12 trades). The confirmation is
+part of what made V1/V2 work; removing it to get more trades brought back the B0-like losers (kinds = the coin's).
+V2 on the wide windows held: 25 trades, +0.170 R, +43.9 USD, max DD 15.5 USD, longest streak 3.
+
+Verdict round 5: the count cannot be raised to 3 a day with this family without losing the edge. The best
+protected version is V2 (wide windows): about 0.15 a day (one every 6-7 trading days), positive on design (+0.208)
+and on the seen test (+0.170), drawdown within a 50 USD account.
