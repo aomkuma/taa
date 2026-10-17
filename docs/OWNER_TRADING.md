@@ -253,6 +253,62 @@ without TS.
 **Open points for the owner:** the entry window. The setups trade 07:00-20:00 UTC (14:00-03:00 Thai); the
 Monday Asian bounce of case A (05:00-14:00 Thai) falls outside it.
 
+### TS results, March 2026 (XAUUSD, TS alone; `research/2026-10-17-ts/`, outputs `data/backtests/ts/`)
+
+One month is a screen, not proof. R per trade (net mixes lot sizes: a far stop opens the minimum lot above the
+risk budget).
+
+| Variant | M15: trades, win %, R/trade | M5: trades, win %, R/trade |
+|---|---|---|
+| TS-w (H4 map with the trade) | 1, 0 %, -1.000 | 1, 0 %, -1.000 |
+| TS-r (with or ranging) | 3, 33 %, -0.340 | 3, 33 %, -0.312 |
+| TS-rs (TS-r, the tide from the H4 swings) | 6, 33 %, -0.004 | 17, 24 %, -0.473 |
+| TS-rn (H4 map not against: TRANSITION too) | 6, 33 %, -0.004 | 16, 25 %, -0.440 |
+| TS-rt (TS-r, the level within 0.5 read ATR) | 3, 33 %, -0.340 | 8, 50 %, **+0.119** |
+
+**Funnel of TS-r M15** (121 structure-break triggers in March): the pullback extreme was within 0.25 read ATR of an
+H1/H4 level for 14 % (0.5: 24 %, 1.0: 46 %, 1.5: 63 %); the H4 map was TRANSITION at 79 % of the triggers (with
+9 %, against 7 %, range 5 %); 39 % fell outside 07:00-20:00 UTC; the stop sat a median **3.3 entry ATR** away.
+
+**Diagnosis (2026-10-17):** the structure-break trigger enters late, ~3 ATR after the pullback's extreme, with the
+stop still beyond it: a wide stop and little room to the target. The owner sells *at* the zone once M15 turns,
+with the stop just beyond it. Next: the rejection trigger (the pullback's extreme at a level, then the first
+close beyond the previous bar's extreme; Elder's third screen at the zone; stop ~1.3 ATR in a 3-day sample),
+both triggers recorded over the in-sample year and judged on M1 outcomes in both halves (`ts_study.py`) before
+any rule goes into the setup.
+
+### TS: the two-year study and the day-trade version (2026-10-17)
+
+Every structure-break trigger of gold M15 over two years (in-sample 2025-10 .. 2026-09 and the out-of-sample
+year 2024-10 .. 2025-09; 3,055 triggers), its outcome on M1 bars (`research/2026-10-17-ts/`). R per trade at 3 R
+unless stated; "4/4" = positive in all four half-years.
+
+| Rule | In-sample | Out-of-sample | Verdict |
+|---|---|---|---|
+| Every trigger | +0.090 | +0.092 | a small edge in both years |
+| TS-n3: level <= 0.25 ATR, H4 map not against | +0.438 | +0.069 (2nd half -0.158) | **failed** out of sample |
+| TS-n3c: + stop <= 4 ATR | +0.544 | -0.079 | **failed** |
+| The rejection trigger (sell at the zone on the first close below the previous low) | +0.039 | not run | weaker than the break |
+| D1 EMA tide (close beyond EMA50, EMA sloping the trade's way) | +0.180 over both years, 4/4; against it -0.003 | | the tide matters |
+| D1 tide & level <= 0.5 ATR | +0.322, 4/4 | | |
+| H4 EMA tide & level <= 0.5 ATR | +0.335, 4/4 | | as good as D1 |
+
+- Gold rose ~2,650 -> 5,280 over these years: buys +0.221, sells -0.057 across all triggers. A rule that only
+  buys rides that drift, so the tide must be able to turn (the EMA tide does: D1 was DOWN 68 % of Apr-Sep 2026).
+- The backtest of the D1 version (TS-d1, 13 months run): +0.068 R/trade (135 trades); the losses came from the
+  D1 sideways months (May-Aug 2025, -0.45) and the March 2026 top (D1 still up while gold fell: 11 buys stopped).
+- **The owner's direction (2026-10-17):** day trading on small timeframes, short holds; the goal is at least one
+  trade a day and >= 15 USD a day on a 100 USD account (1:2000). So the tide moves to H4 and trades close within
+  the day. Study, H4 tide & level <= 0.5 ATR, every hour: held at most 12 h, 2 R: +0.195 (4/4, win 50 %); at
+  most 8 h: +0.153 (4/4); closed the same day (entries to 18:00 UTC), 2 R: +0.220 (4/4). About 0.6-0.7 trades a
+  day on gold. **TS-h4** (`config_ts_h4_m15.yaml`): H4 tide, level <= 0.5 ATR, stop 0.25 ATR, 2 R, at most 48 M15
+  bars; being backtested month by month on gold and on the 8 symbols.
+- **Against the daily goal** (gold, 0.01 lot): about +2 USD a day on average and >= 15 USD on about one day in
+  eight; the worst days lose more than 100 USD. On a 100 USD account the 0.01 lot of gold risks ~20 % a trade
+  (median stop ~20 USD); with the cage's 20 % ceiling and the aggressive profile's 2 x 7.5 % open-risk and daily
+  limits most gold TS trades are refused (`RISK_BELOW_MIN_LOT`, March and August: 0 trades). FX stops cost
+  ~1-3 USD per 0.01 lot, so the trade count for this account has to come from more markets.
+
 ## Hypotheses to test (with the report and backtests)
 
 1. **Early manual exit** ("it does not run and looks like turning"): turn it into a measurable rule (not +X R
