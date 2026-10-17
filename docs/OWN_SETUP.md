@@ -494,3 +494,25 @@ calendar) picks the side about as well as a coin once it meets data it was not f
 match the coin's every time. What the data does show: the moments are real (New York 1.3-2.0x the day's
 15-minute range for three hours; 5 USD comes within 15 minutes 79 % of the time), the costs are about 0.3 USD a
 trade (6 % of a 5 USD target), and a learned model sees a little (AUC 0.53-0.58) but not enough to pay the costs.
+
+### Round 6 - an indicator score (owner, 2026-10-17: "bring in MACD, RSI, anything, as weighted scores") - written before it is computed
+
+- **Votes** (+1 the trade's way, -1 against, 0 neutral), on M1, M5, M15 and H1 (closed bars, H1 at most): MACD(12,26,9)
+  histogram sign and its slope; RSI(14) above / below 50 and leaving 30 / 70; Stochastic(14,3) %K above / below 50
+  and %K crossing %D; Bollinger(20,2) %B above / below 0.5 and outside the bands; EMA(20) against EMA(50); the close
+  against EMA(20); ADX(14) above 20 with +DI against -DI; CCI(20) sign; the 10-bar rate of change. 52 votes.
+- **Weights** learned by an L2 logistic regression on the earlier six months' first four months (2025-10-14 ..
+  2026-02-14); the tool (5/4, 5/6, 8/6, 10/8) and the score cut chosen on 2026-02-14 .. 04-14 (at least one trade a
+  day); the equal-weight sum of the votes is reported beside it. **Tested once on the latest six months.**
+- The weights are printed (what the data trusts), and the losers in three kinds against the coin.
+
+**Verdict: fails** (`indicator_score.py`). Chosen on validation: tool 8/6, the top 10 % of scores (validation +46.0
+USD, 201 trades). **Test, latest six months: 631 trades (4.82 a day), win 40 % (the tool's base 38 %), -0.14 USD a
+trade, -89.0 USD at 0.01 lot, 2/7 months positive**; Asia -169.0 (219), London -55.8 (167), New York +135.8 (245,
++0.55 USD a trade, 4/7 months). Equal weights (at least 29 of 52 votes): -153.0 USD, 1/7 months.
+What the weights trust: **for** the M15 CCI (+0.19), M15 MACD histogram (+0.145), the H1 close above EMA(20)
+(+0.145), the H1 rate of change (+0.134); **against** the price above the M15 / H1 middle Bollinger band (-0.219 /
+-0.111) and an RSI turn out of 30 / 70 on M15 / H1 / M5 (-0.17 / -0.10 / -0.10): momentum with the trend while the
+price sits low in its band - the deep pullback's shape again, and again not enough after costs.
+New York is the one session on the plus side in rounds 1, 2 (P1 ours +0.131 against -0.156 for the opposite), 5
+(the chosen triple screen +17.0) and 6 (+135.8); never yet on data it was not found on.
