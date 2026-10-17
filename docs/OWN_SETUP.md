@@ -865,6 +865,14 @@ half-years, -0.05 / -0.64 / -0.39 R; the widest spread, 0.39 USD) and lost again
 For the account: the worst trade 11.5 USD and a 6-9 trade losing streak at 0.01 lot - a 50 USD account would take
 about 45-55 USD of drawdown at W2's worst (82.5 USD): **W3 fits a 50-100 USD account (max DD 27 USD), W2 only 100 USD.**
 
+**S2 on the USD majors against the account** (the news agent's `fx_results.parquet`, M1 with the worst-case fill
+order, costs: the spread column + 0.2 pip a side; USD a pip at 0.01 lot about 0.10, USDJPY 0.067, USDCHF 0.12,
+USDCAD 0.073): 2023-11 .. 2026-02, 54 trades a pair: +31 .. +93 USD a pair, the worst trade -0.67 .. -1.19 USD, the
+maximum drawdown 2.0-3.6 USD, losing streaks at most 3. Test 2026-03 .. 10, 15 trades a pair: +7.8 .. +13.2 USD a pair,
+worst -1.19, max DD 1.0-2.6. **At 0.01 lot the risk is tiny against a 50-100 USD account** (room for a larger lot);
+the caveats stay: no FX ticks (the release-second fill on a real account is unmeasured; on EURUSD the edge is gone at
+about 5-6 pips of extra fill cost), and the seven pairs are one USD bet per release, not seven.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had
