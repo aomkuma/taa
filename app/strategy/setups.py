@@ -1050,6 +1050,9 @@ class TripleScreenParams(SetupParams):
     # over ``tide_slope_bars`` bars; None: off
     tide_ema_tf: ScreenFrame | None = None
     tide_slope_bars: int = Field(default=5, ge=1, le=50)
+    # the same EMA tide read from the market map of each of these context timeframes (all must agree; the
+    # two-year study: D1 and H4 together +0.51 R a trade at 3 R with the level within 0.5 ATR); (): off
+    tide_ema_tfs: tuple[ScreenFrame, ...] = ()
 
 
 def _ema_tide(ctx: StrategyContext, tf: str, bars: int, buy: bool) -> Condition:
@@ -1067,6 +1070,19 @@ def _ema_tide(ctx: StrategyContext, tf: str, bars: int, buy: bool) -> Condition:
     ok = (close - mid[-1]) * sign > 0 and slope * sign > 0
     side = "above" if close > mid[-1] else "below"
     return Condition(label, ok, 1.0, f"{tf} close {side} the EMA, slope {slope:+.5g} over {bars} bars")
+
+
+def _map_tide(market: MarketContext, tf: str, buy: bool) -> Condition:
+    """The *tf* market map's EMA tide with the trade: its close beyond the EMA(ema_mid) and the EMA's change
+    over ``MapParams.ema_slope_bars`` bars the trade's way. A missing map or value holds (fail closed)."""
+    label = f"tide_{tf.lower()}"
+    m = None if market.htf is None else market.htf.frames.get(tf)
+    if m is None or m.ema_mid is None or m.ema_slope is None:
+        return Condition(label, False, 1.0, f"no {tf} map EMA")
+    sign = 1 if buy else -1
+    ok = (m.close - m.ema_mid) * sign > 0 and m.ema_slope * sign > 0
+    side = "above" if m.close > m.ema_mid else "below"
+    return Condition(label, ok, 1.0, f"{tf} close {side} the EMA, slope {m.ema_slope:+.5g}")
 
 
 class TripleScreen(EvidenceSetup):
@@ -1106,9 +1122,10 @@ class TripleScreen(EvidenceSetup):
     ) -> list[Condition]:
         p: TripleScreenParams = self.params
         out = []
+        buy = trigger.evidence.direction is Direction.BULL
         if p.tide_ema_tf is not None:
-            buy = trigger.evidence.direction is Direction.BULL
             out.append(_ema_tide(ctx, p.tide_ema_tf, p.tide_slope_bars, buy))
+        out += [_map_tide(ctx.market, tf, buy) for tf in p.tide_ema_tfs]
         if p.pivot_level_tfs:
             inv = trigger.evidence.invalidation
             out.append(_pivot_at_level(ctx.market, p.pivot_level_tfs, inv, p.pivot_tol_atr))

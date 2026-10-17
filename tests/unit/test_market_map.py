@@ -177,3 +177,22 @@ def test_the_map_round_trips_through_a_dict() -> None:
     zones = (zone(ZoneKind.DEMAND, 1.0990, 1.1005, 4),)
     m = MarketMap({"H4": tf_map(MapState.RANGE, zones, RangeBox(1.12, 1.10, 4.0, 2, 3))}, 0.3, 8.0)
     assert MarketMap.from_dict(m.to_dict()) == m
+
+
+def test_the_map_carries_the_ema_and_its_slope_at_runtime_only() -> None:
+    import numpy as np
+    import pandas as pd
+
+    from app.indicators.market_map import MapParams, MarketMap, state_frame, timeframe_map
+
+    idx = pd.date_range("2026-01-01", periods=120, freq="4h", tz="UTC")
+    close = pd.Series(np.linspace(100.0, 160.0, 120), index=idx)
+    candles = pd.DataFrame({"open": close, "high": close + 0.5, "low": close - 0.5, "close": close})
+    p = MapParams()
+    states = state_frame(candles, p)
+    m = timeframe_map("H4", candles, states, len(candles) - 1, p)
+    assert m.ema_mid is not None and m.ema_mid < m.close  # a steady rise: the close above its EMA
+    expected = states["ema_mid"].iloc[-1] - states["ema_mid"].iloc[-1 - p.ema_slope_bars]
+    assert m.ema_slope is not None and abs(m.ema_slope - expected) < 1e-9 and m.ema_slope > 0
+    stored = MarketMap({"H4": m}).to_dict()["frames"]["H4"]
+    assert "ema_mid" not in stored and "ema_slope" not in stored  # digests and stored maps unchanged

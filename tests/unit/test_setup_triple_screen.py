@@ -184,3 +184,29 @@ class TestTide:
         assert failed(run(TripleScreen, ts_ctx(trigger()), tide_ema_tf="D1")) == ["ema_tide"]
         sig = run(TripleScreen, ts_ctx(trigger()))
         assert sig.action is Action.BUY and "ema_tide" not in [c.name for c in sig.conditions]
+
+
+def with_map_ema(ctx: StrategyContext, tf: str, ema: float | None, slope: float | None) -> StrategyContext:
+    assert ctx.market.htf is not None
+    frames = dict(ctx.market.htf.frames)
+    m = frames.get(tf) or TimeframeMap(tf, T, MapState.UP, MapState.UP, 25.0, 0.4, 0.004, CLOSE, False, None)
+    frames[tf] = dataclasses.replace(m, ema_mid=ema, ema_slope=slope)
+    return dataclasses.replace(ctx, market=dataclasses.replace(ctx.market, htf=MarketMap(frames)))
+
+
+class TestMapTide:
+    def test_every_listed_timeframe_must_agree(self) -> None:
+        both = with_map_ema(
+            with_map_ema(ts_ctx(trigger()), "H4", CLOSE - ATR, 0.0002), "D1", CLOSE - ATR, 0.001
+        )
+        sig = run(TripleScreen, both, tide_ema_tfs=("D1", "H4"))
+        assert sig.action is Action.BUY and {"tide_d1", "tide_h4"} <= {c.name for c in sig.conditions}
+        h4_down = with_map_ema(both, "H4", CLOSE - ATR, -0.0002)
+        assert failed(run(TripleScreen, h4_down, tide_ema_tfs=("D1", "H4"))) == ["tide_h4"]
+        below = with_map_ema(both, "D1", CLOSE + ATR, 0.001)
+        assert failed(run(TripleScreen, below, tide_ema_tfs=("D1", "H4"))) == ["tide_d1"]
+
+    def test_a_sell_is_the_mirror_and_a_missing_value_holds(self) -> None:
+        down = with_map_ema(sell_ctx(), "H4", CLOSE + ATR, -0.0002)
+        assert run(TripleScreen, down, tide_ema_tfs=("H4",)).action is Action.SELL
+        assert failed(run(TripleScreen, sell_ctx(), tide_ema_tfs=("H4",))) == ["tide_h4"]

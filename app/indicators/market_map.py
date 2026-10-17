@@ -100,6 +100,7 @@ class MapParams:
     max_zones: int = 6  # per kind, nearest to the close first
     zone_near_atr: float = 0.25  # "at a zone": within this many ATR of it
     room_cap_r: float = 10.0
+    ema_slope_bars: int = 5  # TimeframeMap.ema_slope: the EMA(ema_mid) change over this many bars
 
 
 @dataclass(frozen=True, slots=True)
@@ -137,6 +138,10 @@ class TimeframeMap:
     zones: tuple[MapZone, ...] = ()
     atr_pct: float | None = None  # ATR percentile over ``MapParams.pct_lookback`` bars, 0..100 (quiet phases)
     read: ChartRead | None = None  # TAA-L813: the chart read at the same bar, when configured
+    # runtime only, not in to_dict (stored maps and decision digests stay as they were): the EMA(ema_mid) at
+    # the bar and its change over ``MapParams.ema_slope_bars`` bars, for an EMA tide (setup_triple_screen)
+    ema_mid: float | None = field(default=None, compare=False)
+    ema_slope: float | None = field(default=None, compare=False)
 
 
 @dataclass(frozen=True, slots=True)
@@ -441,6 +446,12 @@ def timeframe_map(
         box=range_box(candles, states, pos, p) if state is MapState.RANGE else None,
         zones=zones_at(candles, states, pos, p),
         atr_pct=num(row["atr_pct"]),
+        ema_mid=num(row["ema_mid"]),
+        ema_slope=(
+            num(row["ema_mid"] - states["ema_mid"].iloc[pos - p.ema_slope_bars])
+            if pos >= p.ema_slope_bars
+            else None
+        ),
     )
 
 
