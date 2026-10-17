@@ -985,6 +985,19 @@ reach about 3 trades a day; F1 CONF-72 (about 0.2 a day) and S2 on the majors (a
 two weapons with an edge in both periods.** Fresh data from 2026-10-14 on should judge F1 + S2 exactly as frozen
 (choosing them over P-A came after seeing F3 fail).
 
+**FX agent, round 2 - fixing RF's loser groups** (`agents/fx/notes.md` round 2, `cal10.py` -> `cal10.csv`: Census New
+Home Sales 45 dates, Construction Spending 45, Factory Orders 48 at 10:00 ET from census.gov 2023-2026, BLS JOLTS
+61; ISM behind a login, Conference Board / Michigan no official dated archive; the Oct-Dec 2025 shutdown releases
+missing). Each change on design (2023-11 .. 2026-02) moved RF by at most +-0.03 R: skip 10:00-release days +0.246
+R; **decide at 10:15 on those days (RF-C) +0.287 R** (155 trades, max DD 18.5 USD); a spike-share filter +0.223
+(DD 17.7 -> 11.7, streak 10 -> 7); break-even / partial at +1 R +0.252 / +0.225; an AUD/NZD stop floor +0.255;
+dropping AUD/NZD +0.288. The design's largest loser groups: stops after 20+ minutes on spike days (the move resumed)
+and about 30 time exits below zero. On the seen test none turns positive: RF-C 32 trades, win 56 %, -0.027 R, -1.0
+USD (the coin -0.087 R, 41 %); 2026-06-25 alone (three stops 5-6 minutes after the 10:00 entry, no 10:00 release on
+any official calendar sourced) cost -6.6 USD, more than the whole loss. By pair (seen): USDCHF +0.61 R, EURUSD
++0.13, GBPUSD -0.58. Fresh data to judge RF-C: every 08:30 ET release day from 2026-10-14 on; at ~5.8 trades a month
+and an R standard deviation ~1.0, about 12 months (~70 trades) for a standard error of ~0.12 R.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had

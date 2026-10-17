@@ -192,3 +192,81 @@ After the test (a NEW rule, designed after seeing the test; design data only, no
 through 10:15 (skip if 10:00-10:15 makes a new extreme, else enter 10:15): design +0.234 R (4/5 halves) vs RF +0.258
 - no improvement on design, not adopted. RF trades on JOLTS days in design: none (the 03-13 overlap is a
 shutdown-shifted schedule).
+
+# Round 2 (lead, 2026-10-17): fix RF's loser groups. Design 2023-11 .. 2026-02 only; each change = a new rule;
+# the test window is SEEN for RF (its numbers below are marked SEEN, not an independent test).
+
+10:00 ET calendar (`cal10.py` -> `cal10.csv`, official sources only): Census New Residential Sales, Construction
+Spending, M3 full report (census.gov calendar-listview-2023..2026; the Oct-Dec 2025 delayed releases are not listed)
+and BLS JOLTS (news agent's dates). ISM: login wall; Conference Board, Michigan: no official dated archive reached -
+not included, so "no 10:00 release" days can still have ISM/confidence/sentiment at 10:00.
+
+Variants (written before the run, `round2.py`), each on top of RF unless said:
+- C1 skip RF on days with a 10:00 ET release in cal10. C1b on those days decide at 10:15 instead (skip if
+  10:00-10:15 made a new extreme beyond the 08-10 extreme; stop from the 10:15 close).
+- S  spike days only: the share of the 08:00-10:00 move made 08:30 -> 08:45 (close to close) >= 0.5.
+- E1 break-even: at +1R the stop moves to the entry. E2 partial: half closed at +1R, the rest with the stop at
+  the entry after +1R, time exit 14 ET.
+- F  stop floor 1.5 ATR for AUDUSD/NZDUSD (F2: for all pairs); D drop AUDUSD/NZDUSD.
+Chosen cumulatively by the design numbers (net R and halves), the losers' causes counted at every step:
+(a) stopped within 20 minutes of the entry (a new move at the 10:00 slot), (b) stopped later on a grind day (spike
+share < 0.5), (c) stopped later with a stop < 1.5 ATR, (d) other stops; plus time exits below zero.
+
+## Round 2 design results (`round2.py`, `out_round2_design.txt`)
+
+| step | change (on RF) | n | win % | net R | halves + | net by half | USD | worst / worst day | streak | maxDD | 6 avg L | stops: (a) <=20 min / (b) grind / (c) tight / (d) other; time exits < 0 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| RF | - | 162 | 60 | +0.258 | 5/5 | +0.36/+0.01/+0.15/+0.42/+0.51 | +83.0 | -3.25 / -7.60 | 10 | 17.7 | 8.9 | 6 (3 on 10:00 days) / 11 / 3 / 14; 31 |
+| C1 | skip 10:00-release days | 145 | 59 | +0.246 | 4/5 | +0.47/-0.02/+0.02/+0.38/+0.51 | +66.7 | -3.25 / -7.28 | 12 | 28.7 | 8.5 | 3 / 11 / 3 / 13; 30 |
+| C1b | decide at 10:15 on 10:00-release days | 155 | 61 | +0.287 | 4/5 | +0.48/-0.01/+0.17/+0.43/+0.51 | +89.1 | -3.25 / -7.28 | 10 | 18.5 | 8.5 | 3 / 11 / 3 / 13; 30 |
+| S | spike share >= 0.5 | 105 | 60 | +0.223 | 4/5 | +0.40/+0.06/+0.12/-0.03/+0.97 | +50.2 | -3.16 / -7.60 | 7 | 11.7 | 9.0 | 3 / 0 / 3 / 14; 22 |
+| E1 | BE at +1R | 162 | 56 | +0.252 | 4/5 | +0.36/-0.00/+0.12/+0.42/+0.54 | +81.1 | -3.25 / -7.60 | 10 | 17.8 | 8.1 | same stops; 37 |
+| E2 | half at +1R, rest BE | 162 | 61 | +0.225 | 5/5 | +0.29/+0.03/+0.18/+0.31/+0.51 | +76.4 | -3.25 / -7.60 | 10 | 16.6 | 9.1 | same stops; 29 |
+| F | stop floor 1.5 ATR AUD/NZD | 162 | 60 | +0.255 | 5/5 | ~RF | +82.6 | -3.25 / -7.60 | 10 | 17.9 | 9.0 | 6 / 11 / 1 / 16; 31 |
+| F2 | floor 1.5 ATR all pairs | 162 | 60 | +0.246 | 4/5 | ~RF | +82.2 | same | 10 | 18.1 | 9.0 | 6 / 11 / 0 / 17; 31 |
+| D | drop AUD/NZD | 114 | 60 | +0.288 | 4/5 | +0.57/+0.05/-0.06/+0.45/+0.29 | +65.5 | -3.25 / -8.36 | 7 | 16.0 | 10.1 | 5 / 8 / 1 / 11; 21 |
+| K1 | C1b + S | 101 | 61 | +0.256 | 4/5 | +0.52/+0.06/+0.14/-0.07/+0.97 | +55.8 | -3.11 / -7.28 | 7 | 11.7 | 8.5 | 2 / 0 / 3 / 13; 21 |
+| K2 | C1b + E2 | 155 | 63 | +0.253 | 5/5 | +0.41/+0.01/+0.19/+0.31/+0.51 | +82.6 | -3.25 / -7.28 | 10 | 17.6 | 8.7 | 3 / 11 / 3 / 13; 28 |
+| K3 | C1b + S + E2 | 101 | 61 | +0.239 | 4/5 | | +53.0 | -3.11 / -7.28 | 7 | 11.7 | 8.5 | |
+| K4 | K3 + drop AUD/NZD | 68 | 60 | +0.249 | 4/5 | | +37.1 | -3.20 / -8.36 | 4 | 15.1 | 9.9 | |
+
+Reading (design): none of the four fixes moves RF's R by more than +-0.03; in design the 10:00-slot losers are
+only 6 of 34 stops (3 on calendar days), grinds 11, tight stops 3 - the largest design loser groups are "other"
+stops (13-14: a spike day, a normal stop, the move resumed after 20+ minutes) and time exits below zero (~30).
+The tight-stop floor almost never binds (the stop is already the extreme + 1 ATR). What the fixes do: C1b is the
+best R (+0.287); S (spike only) cuts the drawdown 17.7 -> 11.7 USD and the streak 10 -> 7 at a similar R; the
+partial exit E2 gives 5/5 halves but a lower R.
+
+Frozen before the SEEN run (round 2 candidates):
+- **RF-C = C1b** (decide at 10:15 on days with a 10:00 ET release in cal10; otherwise RF).
+- **RF-CS = K1** (C1b + spike share >= 0.5) - the lower-risk version.
+
+## Round 2 on the SEEN window 2026-03-01 .. 10-14 (`out_round2_seen.txt`; NOT an independent test - RF's test
+## was already known when these were designed)
+
+| step | n | win % | net R | pips | USD | worst / day | streak | maxDD | stops (a)/(b)/(c)/(d); time < 0 |
+|---|---|---|---|---|---|---|---|---|---|
+| RF | 33 | 58 | -0.067 | -43.7 | -2.8 | -3.28 / -6.60 | 6 | 8.7 | 3/1/2/3; 5 |
+| C1 skip 10:00 days | 27 | 52 | -0.142 | -65.5 | -6.9 | -2.52 / -6.60 | 6 | 10.2 | 3/1/2/2; 5 |
+| **C1b = RF-C** | 32 | 56 | **-0.027** | -26.2 | -1.0 | -2.92 / -6.60 | 6 | 7.9 | 3/1/2/3; 5 |
+| S spike | 26 | 46 | -0.189 | -79.0 | -7.4 | -3.28 / -6.60 | 6 | 13.2 | 3/0/3/3; 5 |
+| E1 BE +1R | 33 | 58 | -0.067 | -43.7 | -2.8 | same | 6 | 8.7 | |
+| E2 half +1R | 33 | 58 | -0.082 | -53.0 | -3.8 | same | 6 | 9.1 | |
+| F floor AUD/NZD | 33 | 58 | -0.068 | -45.6 | -3.0 | same | 6 | 8.7 | 3/1/0/5; 5 |
+| D drop AUD/NZD | 27 | 59 | -0.032 | -35.5 | -2.4 | -3.28 / -6.60 | 5 | 9.1 | 3/1/1/2; 4 |
+| **K1 = RF-CS** | 26 | 46 | **-0.170** | -64.8 | -6.1 | -2.92 / -6.60 | 6 | 12.9 | 3/0/3/3; 5 |
+
+RF-C by month (SEEN): 03 -0.48 R (-2.87 USD), 04 +0.28 (+0.39), 05 +0.22 (+1.23), 06 -1.00 (-6.60), 07 +0.13
+(+5.75), 08 -0.18 (-1.26), 09 +0.28 (+2.35); coin side on the same days -0.087 R, win 41 % (ours 56 %).
+C1b changed 4 days: 2026-03-13 (JOLTS) USDCAD still stopped (-2.92 instead of -3.28); 2026-04-10 and 2026-07-02
+(M3 days) entries at 10:15 instead of 10:00, slightly better.
+- The 2026-06-25 cluster (3 stops in 5-6 minutes at 10:00) is not on any official 10:00 calendar we have (NHS was
+  06-24): the cause of that 10:00 move is unknown (an unlisted 10:00 release - ISM/Conference Board/Michigan are
+  missing - or news). It alone is -6.6 USD = more than RF-C's whole SEEN loss.
+- The spike filter S removed winners in the SEEN window (-0.19 R): its design benefit was drawdown only.
+- Break-even / partial at +1R: no effect in either window (few trades reach +1R before 14:00 and come back).
+- AUD/NZD floor: almost never binds; dropping AUD/NZD helps a little in both windows (design +0.03, SEEN +0.04)
+  but halves 24H2 negative - not a cause-backed change.
+Verdict round 2: no change rescues RF on the SEEN window; RF-C (C1b) is the least bad (-0.03 R, -1.0 USD over 32
+trades) and the best in design (+0.287). Judge it only on fresh releases (from 2026-10-14 on): design R sd ~1.0 a
+trade, ~5.8 trades a month -> about 12 months (~70 trades) for a standard error of ~0.12 R.

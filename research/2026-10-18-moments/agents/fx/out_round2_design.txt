@@ -1,0 +1,19 @@
+== design (2023-11 .. 2026-02) ==
+  RF                                       n= 162 win  60% net +0.258 pos 5/5 | +0.358 +0.005 +0.153 +0.415 +0.512 | pips  +892.2 USD  +83.0 | worst -3.25 day -7.60 streak 10 maxDD 17.7 6L 8.9
+                                           stops 34: (a) <=20 min 6 [3 on 10:00 days] (b) grind 11 (c) tight 3 (d) other 14 | time/BE exits < 0: 31
+  C1 skip 10:00 days                       n= 145 win  59% net +0.246 pos 4/5 | +0.468 -0.019 +0.023 +0.381 +0.512 | pips  +711.7 USD  +66.7 | worst -3.25 day -7.28 streak 12 maxDD 28.7 6L 8.5
+                                           stops 30: (a) <=20 min 3 [0 on 10:00 days] (b) grind 11 (c) tight 3 (d) other 13 | time/BE exits < 0: 30
+  C1b decide 10:15 on 10:00 days           n= 155 win  61% net +0.287 pos 4/5 | +0.476 -0.008 +0.165 +0.426 +0.512 | pips  +951.0 USD  +89.1 | worst -3.25 day -7.28 streak 10 maxDD 18.5 6L 8.5
+                                           stops 30: (a) <=20 min 3 [0 on 10:00 days] (b) grind 11 (c) tight 3 (d) other 13 | time/BE exits < 0: 30
+  S spike>=0.5                             n= 105 win  60% net +0.223 pos 4/5 | +0.399 +0.062 +0.118 -0.030 +0.973 | pips  +546.4 USD  +50.2 | worst -3.16 day -7.60 streak 7 maxDD 11.7 6L 9.0
+                                           stops 20: (a) <=20 min 3 [1 on 10:00 days] (b) grind 0 (c) tight 3 (d) other 14 | time/BE exits < 0: 22
+  E1 BE at +1R                             n= 162 win  56% net +0.252 pos 4/5 | +0.356 -0.001 +0.119 +0.415 +0.542 | pips  +869.8 USD  +81.1 | worst -3.25 day -7.60 streak 10 maxDD 17.8 6L 8.1
+                                           stops 34: (a) <=20 min 6 [3 on 10:00 days] (b) grind 11 (c) tight 3 (d) other 14 | time/BE exits < 0: 37
+  E2 half at +1R, BE                       n= 162 win  61% net +0.225 pos 5/5 | +0.289 +0.026 +0.183 +0.306 +0.505 | pips  +820.5 USD  +76.4 | worst -3.25 day -7.60 streak 10 maxDD 16.6 6L 9.1
+                                           stops 34: (a) <=20 min 6 [3 on 10:00 days] (b) grind 11 (c) tight 3 (d) other 14 | time/BE exits < 0: 29
+  F floor 1.5 ATR AUD/NZD                  n= 162 win  60% net +0.255 pos 5/5 | +0.358 +0.003 +0.150 +0.412 +0.497 | pips  +888.9 USD  +82.6 | worst -3.25 day -7.60 streak 10 maxDD 17.9 6L 9.0
+                                           stops 34: (a) <=20 min 6 [3 on 10:00 days] (b) grind 11 (c) tight 1 (d) other 16 | time/BE exits < 0: 31
+  F2 floor 1.5 ATR all                     n= 162 win  60% net +0.246 pos 4/5 | +0.350 -0.001 +0.149 +0.386 +0.497 | pips  +885.0 USD  +82.2 | worst -3.25 day -7.60 streak 10 maxDD 18.1 6L 9.0
+                                           stops 34: (a) <=20 min 6 [3 on 10:00 days] (b) grind 11 (c) tight 0 (d) other 17 | time/BE exits < 0: 31
+  D drop AUD/NZD                           n= 114 win  60% net +0.288 pos 4/5 | +0.565 +0.051 -0.057 +0.446 +0.290 | pips  +725.6 USD  +65.5 | worst -3.25 day -8.36 streak 7 maxDD 16.0 6L 10.1
+                                           stops 25: (a) <=20 min 5 [1 on 10:00 days] (b) grind 8 (c) tight 1 (d) other 11 | time/BE exits < 0: 21
