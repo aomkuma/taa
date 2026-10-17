@@ -361,6 +361,15 @@ affected; owner's go-ahead). The habits that held in 5 of 6 half-years, same pla
 A rule counts as a real habit only if it stays positive in both year D and year E. (For S1 these overlays add
 nothing: the S1 session found 252 of 257 S1 trades already with the day and 237 beyond the previous day's extreme.)
 
+**Years D and E verdict (2026-10-17):** every rule A fails. Year E (2021-10 .. 2022-09): A0 -0.056, A1 -0.055,
+A2 -0.122, A3 -0.127, A4 -0.059, A5 +0.028; year D (2022-10 .. 2023-09): A0 -0.074, A1 -0.079, A2 -0.058, A3 -0.073,
+A4 -0.073, A5 -0.081. Over five years (about 7,700 triggers) the M15 structure break of gold loses in the ranging
+years (2021-2023) and is slightly positive only in the strong rally (2024-2026); the habits found came from that
+rally. **TS on this trigger is stopped** (no further variants; the TS-h4 engine runs were cancelled to free the
+machine for S1). Kept: the code (`setup_triple_screen`, off, lane / research only), the tools
+(`research/2026-10-17-ts/`, offline triggers and outcomes for any year) and five years of gold history (2021-10 on)
+for testing other setups.
+
 **The daily goal in numbers:** expected USD a day = trades a day x R a trade x the risk a trade. With B3 (1.24 a
 day, +0.151 R) +15 USD a day needs about 80 USD of risk a trade: 80 % of a 100 USD account; at the owner's 7.5 %
 a trade it needs an account of about 1,000 USD. Averages, not every day.
