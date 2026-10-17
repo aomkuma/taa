@@ -32,6 +32,11 @@ its backtest. Ask me when the meaning is unclear.
 - **The owner's goals and principles:** `docs/OWNER_GOALS.md` (several were never written down before: session
   opens, ATR low, Bollinger squeeze, quick profit, the review cadence, news). Setup OWN: `docs/OWN_SETUP.md`,
   `docs/OWNER_TRADING.md` "Setup OWN".
+- **Setup OWN, rounds 1-10 (2026-10-17, harness):** nothing passes yet; the test window is **2026-03-01 onward**
+  (owner; design only before it). Gold's minute-scale price is close to a random walk; the one causal lead is
+  the news (FOMC / PCE first minute continues, CPI reverses). A research team of four background agents
+  (news, trend, reversion, auditor) works from `research/2026-10-18-moments/agents/BRIEF.md`, each in its own
+  folder there; their results go into `docs/OWN_SETUP.md`. Gold ticks 2025-10 .. 2026-10 in `data/ticks/XAUUSD`.
 - **Setup OWN round 1 (2026-10-17, latest six months, harness):** no playbook pays at the moments after costs;
   the context selector, OWN v1 (two pieces mined from the fit months: judged -0.155 R over 141 trades) and H5
   (the last 20 days pick the playbook: -0.013 R over 266) fail. Details and next levers: `docs/OWN_SETUP.md`
