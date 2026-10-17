@@ -123,4 +123,4 @@ if os.path.exists(NOTES_FILE):
     out += ["## Notes", "", open(NOTES_FILE, encoding="utf-8").read().strip(), ""]
 with open("docs/OUT_OF_SAMPLE.md", "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(out).rstrip() + "\n")
-print("\n".join(summary))
+print("\n".join(summary).encode("ascii", "replace").decode())
