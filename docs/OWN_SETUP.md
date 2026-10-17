@@ -954,6 +954,37 @@ three pairs stopped in 5-6 minutes; 2026-03-13 JOLTS at 10:00, USDCAD ran 45 pip
 spike (2026-07-15 PPI: a climb 08:30-14:00 the pre-release filter cannot see); 2 - stops too tight on AUD / NZD
 (10 pips, price back at the entry by 13:00). Winners: one spike at 08:30 and a range by 10:00.
 
+**Portfolio agent - final** (`agents/portfolio/notes.md`, `out_design.txt`, `out_portfolio_*.txt`). The protective menu
+(C1 H1 leg not against, C2 H1 not flat, C3 pos240 >= 0.5, C4 the 72-hour extreme in front within half the target or
+behind, C5 no fast tape, C6 not late, C7 no release +-15 min, C8 the H1 tide, C9 M5 with) applied by forward
+selection (keep a condition if it adds >= 0.10 R in >= 4/5 half-years) to seven entry families on the full-session
+candidates, design 2023-11 .. 2026-02. **C4 is the one condition that separates in every family that trades toward
+an extreme** (with it, C2 / C3 / C9 are nearly always true). Families: F1 confluence (B0) -0.150 -> +C4 +C5 +0.118 R
+(140 trades, 0.23 a day, 4/5, max DD 30 USD); F3 session-open break-and-hold -0.112 -> +C4 +0.127 (3/5; mostly long
+drift: always-long +0.086); F2 NY range breakout +0.014 (break even); F7 B0's confirmation without the level +0.035
+(0.61 a day, DD 72); F4 sweep-and-reclaim, F5 the S1-style fade, F6 compression breakout fail (why: F4 fades sweeps
+against the structure - the H1 leg against, below EMA50, pos240 0.22-0.32, the 72-hour extreme 6-7 targets away;
+F5 buys the first close under a fresh low in an uptrend and the break keeps going, 14 % wins; F6's breaks fall back
+into the box). Test 2026-03 .. 10 (run once):
+
+| Rule | Seen? | Trades (a day) | Win % | R/trade | USD (0.01 lot) | Months + | Max DD |
+|---|---|---|---|---|---|---|---|
+| **F1 CONF-72** = B0 + C4 + not a fast tape | family seen, combination new | 34 (0.21) | 44 | **+0.183** | **+52.9** | **6/7** | 26.7 (streak 4, worst -8.2) |
+| F3 OPEN-72 | playbook seen | 18 (0.11) | 28 | -0.281 | -36.0 | 2/7 | 42.8 |
+| F2 NY breakout | seen | 40 | 20 | -0.349 | -82.6 | 2/8 | 106 |
+| F7 PULL + C4 | new | 34 | 35 | +0.049 | +15.6 | 2/7 | 28.0 |
+| S2 on EURUSD | seen | 15 | - | +0.85 | +11.9 | 7/8 | 1.1 |
+| P-A (F3 then F1, one gold position) + S2 | mixed | 66 (0.41) | - | - | +29.1 | 4/8 | 42.7 |
+| P-C (adds F2, F7) + S2 | mixed | 127 (0.78) | - | - | -68.3 | 2/8 | 111 |
+
+F1's test losers: three on 2026-05-07 at the same refused 72-hour high near 4750 (Asia, London, New York); three
+after a 60-minute run of 10+ ATR into the extreme; stopped trades had tighter stops than winners (1.6 vs 2.3 M1 ATR -
+seen only on the test, a lead). F3 failed because 16 of its 18 trades entered already through the 72-hour extreme
+and 2026's faster minutes put the 8 U target and stop at only 1.5-2 M1 ATR. **Verdict: the protected setups cannot
+reach about 3 trades a day; F1 CONF-72 (about 0.2 a day) and S2 on the majors (about 0.1 a day at tiny risk) are the
+two weapons with an edge in both periods.** Fresh data from 2026-10-14 on should judge F1 + S2 exactly as frozen
+(choosing them over P-A came after seeing F3 fail).
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had

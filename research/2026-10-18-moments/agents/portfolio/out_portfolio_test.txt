@@ -1,0 +1,57 @@
+== TEST 2026-03-01 .. 10-14, gold, real costs, 0.01 lot (162 weekdays)
+
+F3 (C4 72-h extreme near/behind)
+  rule                                 18 0.11/d win  28% R -0.281  USD   -36.0  worst -10.42 streak  4 DD  42.8 (at 4100:  39.1)  6 losses 41.7
+    months+ 2/7: 04 1 -5.4 05 2 -10.5 06 2 +3.7 07 4 +10.6 08 5 -23.9 09 3 -5.6 10 1 -4.9
+    coin R -0.076 (win 34%), permuted sides -0.335, always long -0.552; longs 56%; kinds ours 27/18/55 / coin 36/13/51; exits {'stop': 11, 'win': 5, 'be': 2}
+    sessions: Asia 9 -0.540 R -31.4 USD, New York 9 -0.023 R -4.6 USD
+
+F1 (C4 72-h extreme near/behind + C5 not a fast tape)
+  rule                                 34 0.21/d win  44% R +0.183  USD   +52.9  worst  -8.18 streak  4 DD  26.7 (at 4100:  23.5)  6 losses 31.0
+    months+ 6/7: 03 3 +29.5 04 4 -20.4 05 6 +0.0 06 4 +4.5 07 6 +15.3 08 5 +7.7 09 6 +16.3
+    coin R +0.088 (win 37%), permuted sides +0.026, always long -0.018; longs 47%; kinds ours 87/0/13 / coin 60/0/40; exits {'win': 15, 'stop': 15, 'be': 4}
+    sessions: Asia 7 +0.188 R +6.9 USD, London 14 +0.092 R +19.1 USD, New York 13 +0.278 R +26.9 USD
+
+F2 (C1 H1 leg not against)  [break-even family, P-C only]
+  rule                                 40 0.25/d win  20% R -0.349  USD   -82.6  worst  -7.86 streak  8 DD 106.1 (at 4100: 100.3)  6 losses 32.7
+    months+ 2/8: 03 4 +23.3 04 2 -3.8 05 5 +0.6 06 7 -22.5 07 7 -4.7 08 9 -39.2 09 5 -30.6 10 1 -5.5
+    coin R -0.033 (win 32%), permuted sides -0.121, always long -0.425; longs 57%; kinds ours 36/0/64 / coin 41/1/57; exits {'stop': 28, 'win': 8, 'be': 4}
+    sessions: New York 40 -0.349 R -82.6 USD
+
+F7 (C4 72-h extreme near/behind)  [break-even family, P-C only]
+  rule                                 34 0.21/d win  35% R +0.049  USD   +15.6  worst -10.52 streak  9 DD  28.0 (at 4100:  24.6)  6 losses 47.5
+    months+ 2/7: 03 2 -0.1 04 1 -0.1 05 5 -2.5 06 6 -15.2 07 2 +7.9 08 9 +26.5 09 9 -1.0
+    coin R -0.086 (win 30%), permuted sides -0.020, always long -0.120; longs 47%; kinds ours 55/0/45 / coin 48/3/49; exits {'win': 12, 'stop': 11, 'be': 10, 'time': 1}
+    sessions: Asia 5 +0.408 R +16.3 USD, London 21 +0.087 R +14.9 USD, New York 8 -0.275 R -15.6 USD
+
+S2 EURUSD (news agent, M1 worst-case order; test T, SEEN by the news agent): 15 trades, +0.85 R, +11.9 USD at 0.01 lot, worst -0.94, max DD 1.1
+
+P-A admitted, one position
+  gold                                 51 0.31/d win  39% R +0.023  USD   +17.2  worst -10.42 streak  6 DD  42.5 (at 4100:  37.1)  6 losses 35.5
+    months+ 4/8: 03 3 +29.5 04 5 -25.8 05 7 -10.3 06 6 +8.2 07 10 +25.9 08 10 -16.2 09 9 +10.7 10 1 -4.9
+    by family: F1 34 +0.183, F3 17 -0.296
+    with S2: 66 trades (0.41/day), +29.1 USD, max DD 42.7, lowest point -13.0 -> a 50 USD account at its lowest 37.0, 100 USD 87.0; months+ (total) 4/8
+    month      26-03   26-04   26-05   26-06   26-07   26-08   26-09   26-10
+    gold       +29.5   -25.8   -10.3    +8.2   +25.9   -16.2   +10.7    -4.9
+    S2 EURUSD   +0.1    +0.9    -1.1    +1.3    +2.6    +2.4    +4.9    +0.7
+    total      +29.7   -24.9   -11.4    +9.5   +28.5   -13.8   +15.7    -4.1
+
+P-B admitted, one a session
+  gold                                 42 0.26/d win  38% R +0.012  USD   +12.0  worst -10.42 streak  4 DD  32.3 (at 4100:  28.7)  6 losses 34.3
+    months+ 3/8: 03 3 +29.5 04 4 -17.6 05 6 +0.0 06 5 -0.3 07 9 +17.8 08 8 -11.4 09 6 -1.2 10 1 -4.9
+    by family: F1 26 +0.175, F3 16 -0.252
+    with S2: 57 trades (0.35/day), +23.9 USD, max DD 32.3, lowest point +0.0 -> a 50 USD account at its lowest 50.0, 100 USD 100.0; months+ (total) 4/8
+    month      26-03   26-04   26-05   26-06   26-07   26-08   26-09   26-10
+    gold       +29.5   -17.6    +0.0    -0.3   +17.8   -11.4    -1.2    -4.9
+    S2 EURUSD   +0.1    +0.9    -1.1    +1.3    +2.6    +2.4    +4.9    +0.7
+    total      +29.7   -16.7    -1.1    +1.0   +20.4    -9.0    +3.8    -4.1
+
+P-C + break-even families
+  gold                                112 0.69/d win  29% R -0.142  USD   -80.2  worst -10.52 streak  9 DD 122.7 (at 4100: 110.9)  6 losses 35.7
+    months+ 2/8: 03 8 +42.6 04 8 -29.8 05 15 -11.0 06 18 -29.3 07 16 +13.0 08 25 -40.2 09 20 -15.2 10 2 -10.3
+    by family: F1 32 +0.188, F2 39 -0.357, F3 13 -0.442, F7 28 -0.082
+    with S2: 127 trades (0.78/day), -68.3 USD, max DD 111.0, lowest point -68.3 -> a 50 USD account at its lowest -18.3, 100 USD 31.7; months+ (total) 2/8
+    month      26-03   26-04   26-05   26-06   26-07   26-08   26-09   26-10
+    gold       +42.6   -29.8   -11.0   -29.3   +13.0   -40.2   -15.2   -10.3
+    S2 EURUSD   +0.1    +0.9    -1.1    +1.3    +2.6    +2.4    +4.9    +0.7
+    total      +42.7   -28.9   -12.1   -28.0   +15.7   -37.8   -10.2    -9.6

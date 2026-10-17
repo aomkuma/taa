@@ -1,0 +1,214 @@
+
+==== F1: 4955 signal rows
+  baseline                           1510 2.48/d win  23% R -0.150  USD  -728.6  worst -12.77 streak 19 DD 736.7 (at 4100: 1032.4)  6 losses 21.5  coin R -0.138 (win 23%)
+  halves+ 0/5: -0.27(283) -0.13(327) -0.08(321) -0.18(226) -0.11(353)  kinds 64/5/31 (coin 65/4/31)
+  step 0: conditions on the current 1510 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            31 /   29  | -0.127 (1063) / -0.204 ( 447) | 4/5 | -
+    C2 H1 not flat                   21 /   18  | -0.139 (1207) / -0.191 ( 303) | 4/5 | -
+    C3 pos240 >= .5                  57 /   50  | -0.108 ( 678) / -0.184 ( 832) | 3/5 | -
+    C4 72-h extreme near/behind      90 /   85  | +0.032 ( 165) / -0.172 (1345) | 5/5 | meets
+    C5 not a fast tape               24 /   28  | -0.142 (1153) / -0.174 ( 357) | 3/5 | -
+    C6 not late                      17 /   19  | -0.158 (1238) / -0.112 ( 272) | 2/5 | -
+    C7 no release +-15m               2 /    2  | -0.149 (1481) / -0.173 (  29) | 2/3 | -
+    C9 M5 with the trade             65 /   56  | -0.077 ( 558) / -0.192 ( 952) | 4/5 | meets
+  step 1: conditions on the current 201 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            34 /   20  | +0.115 ( 147) / -0.276 (  54) | 3/5 | -
+    C2 H1 not flat                    0 /    2  | +0.004 ( 199) / +0.563 (   2) | 0/0 | -
+    C3 pos240 >= .5                   2 /    0  | +0.020 ( 199) / -1.000 (   2) | 0/0 | -
+    C5 not a fast tape               37 /   25  | +0.132 ( 135) / -0.239 (  66) | 5/5 | meets
+    C6 not late                      16 /   28  | -0.038 ( 153) / +0.162 (  48) | 1/5 | -
+    C7 no release +-15m               1 /    2  | +0.009 ( 196) / +0.033 (   5) | 0/0 | -
+    C9 M5 with the trade              4 /    3  | +0.015 ( 192) / -0.103 (   9) | 0/0 | -
+  step 2: conditions on the current 140 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            31 /   22  | +0.194 ( 105) / -0.112 (  35) | 3/4 | -
+    C2 H1 not flat                    0 /    2  | +0.110 ( 139) / +1.223 (   1) | 0/0 | -
+    C3 pos240 >= .5                   3 /    0  | +0.134 ( 138) / -1.000 (   2) | 0/0 | -
+    C6 not late                      15 /   24  | +0.086 ( 108) / +0.225 (  32) | 1/4 | -
+    C7 no release +-15m            (all pass)
+    C9 M5 with the trade              7 /    2  | +0.140 ( 133) / -0.309 (   7) | 0/0 | -
+  losers vs winners (median; asia/ny = share):    stop_atr      ret15      ret60  atr_ratio  room72_tp     pos240   h1_c_e50 cr_H1_leg_dir     min_in       asia         ny
+    winners              n   45               2.45       3.26       4.69       1.49      -0.01       0.96       3.18       1.00     125.00       0.16       0.60
+    kind 1 (wrong way)   n   35               2.66       3.21       4.53       1.25       0.22       0.92       3.08       1.00     131.00       0.20       0.40
+    kind 3 (too early)   n   23               2.63       2.53       5.44       1.36       0.00       0.96       3.08       1.00      80.00       0.09       0.65
+  STEP TABLE:
+  0 baseline                         1510 2.48/d win  23% R -0.150  USD  -728.6  worst -12.77 streak 19 DD 736.7 (at 4100: 1032.4)  6 losses 21.5  halves+ 0/5: -0.27(283) -0.13(327) -0.08(321) -0.18(226) -0.11(353)
+  1 + C4 72-h extreme near/behind     201 0.33/d win  30% R +0.010  USD   +27.3  worst -11.44 streak 11 DD  35.9 (at 4100:  58.2)  6 losses 21.3  halves+ 3/5: -0.15(32) +0.02(54) -0.08(42) +0.10(32) +0.15(41)
+  2 + C5 not a fast tape              140 0.23/d win  32% R +0.118  USD   +58.4  worst  -9.96 streak  7 DD  30.4 (at 4100:  30.5)  6 losses 21.3  halves+ 4/5: +0.11(16) +0.22(35) -0.01(37) +0.11(22) +0.16(30)
+  final F1: coin R -0.106 (win 24%), kinds ours 57/5/38 / coin 67/3/30; sessions Asia 23 +0.082, London 44 +0.019, New York 73 +0.189
+
+==== F2: 216 signal rows
+  baseline                            216 0.36/d win  27% R -0.057  USD    +8.1  worst  -8.60 streak 15 DD  74.2 (at 4100: 111.7)  6 losses 17.2  coin R -0.205 (win 23%)
+  halves+ 2/5: -0.22(49) -0.20(46) +0.10(50) -0.22(26) +0.18(45)  kinds 54/4/42 (coin 57/3/40)
+  step 0: conditions on the current 216 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            41 /   31  | +0.014 ( 133) / -0.169 (  83) | 4/5 | meets
+    C2 H1 not flat                   16 /   15  | -0.061 ( 181) / -0.034 (  35) | 1/4 | -
+    C3 pos240 >= .5                   1 /    3  | -0.071 ( 213) / +0.971 (   3) | 0/0 | -
+    C4 72-h extreme near/behind      58 /   53  | +0.025 (  91) / -0.116 ( 125) | 4/5 | meets
+    C5 not a fast tape               46 /   42  | +0.036 ( 118) / -0.168 (  98) | 3/5 | -
+    C6 not late                    (all pass)
+    C7 no release +-15m            (all pass)
+    C9 M5 with the trade              4 /    2  | -0.046 ( 209) / -0.379 (   7) | 0/0 | -
+  step 1: conditions on the current 133 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C2 H1 not flat                   14 /   15  | -0.006 ( 113) / +0.127 (  20) | 1/2 | -
+    C3 pos240 >= .5                   1 /    2  | +0.004 ( 131) / +0.643 (   2) | 0/0 | -
+    C4 72-h extreme near/behind      56 /   54  | +0.046 (  59) / -0.012 (  74) | 3/4 | -
+    C5 not a fast tape               49 /   39  | +0.187 (  71) / -0.185 (  62) | 2/4 | -
+    C6 not late                    (all pass)
+    C7 no release +-15m            (all pass)
+    C9 M5 with the trade              6 /    0  | +0.046 ( 128) / -0.809 (   5) | 0/0 | -
+  losers vs winners (median; asia/ny = share):    stop_atr      ret15      ret60  atr_ratio  room72_tp     pos240   h1_c_e50 cr_H1_leg_dir     min_in       asia         ny
+    winners              n   41               1.65       3.43       4.84       1.81       0.67       0.98       2.62       1.00     151.00       0.00       1.00
+    kind 1 (wrong way)   n   37               1.71       3.26       5.41       2.04       0.93       0.97       2.16       1.00     101.00       0.00       1.00
+    kind 3 (too early)   n   33               1.67       2.97       4.93       1.85       0.40       0.97       2.59       1.00     151.00       0.00       1.00
+  STEP TABLE:
+  0 baseline                          216 0.36/d win  27% R -0.057  USD    +8.1  worst  -8.60 streak 15 DD  74.2 (at 4100: 111.7)  6 losses 17.2  halves+ 2/5: -0.22(49) -0.20(46) +0.10(50) -0.22(26) +0.18(45)
+  1 + C1 H1 leg not against           133 0.22/d win  31% R +0.014  USD   +59.6  worst  -6.85 streak 10 DD  37.3 (at 4100:  60.4)  6 losses 16.6  halves+ 2/5: -0.12(32) -0.36(25) +0.14(34) -0.08(11) +0.35(31)
+  final F2: coin R -0.253 (win 22%), kinds ours 51/3/46 / coin 58/4/39; sessions New York 133 +0.014
+
+==== F2a: 16 signal rows
+  baseline                             16 0.03/d win   0% R +0.463  USD   +48.3  worst  -6.15 streak  2 DD   7.9 (at 4100:  13.6)  6 losses 32.2  coin R -0.158 (win 0%)
+  halves+ 4/5: +0.48(6) -0.02(3) +0.31(4) +1.29(2) +0.76(1)  kinds 100/0/0 (coin 100/0/0)
+  step 0: conditions on the current 16 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            33 /    0  | +0.343 (   7) / +0.556 (   9) | 0/0 | -
+    C2 H1 not flat                   33 /    0  | +0.611 (  10) / +0.216 (   6) | 0/0 | -
+    C3 pos240 >= .5                  33 /    0  | +0.560 (  15) / -1.000 (   1) | 0/0 | -
+    C4 72-h extreme near/behind      67 /    0  | +0.845 (   6) / +0.233 (  10) | 0/0 | -
+    C5 not a fast tape               33 /    0  | +0.512 (  14) / +0.114 (   2) | 0/0 | -
+    C6 not late                    (all pass)
+    C7 no release +-15m            (all pass)
+    C9 M5 with the trade           (all pass)
+  losers vs winners (median; asia/ny = share):    stop_atr      ret15      ret60  atr_ratio  room72_tp     pos240   h1_c_e50 cr_H1_leg_dir     min_in       asia         ny
+    winners              n    0                nan        nan        nan        nan        nan        nan        nan        nan        nan        nan        nan
+    kind 1 (wrong way)   n    3               5.90       3.58       2.96       1.56       3.63       0.88       3.05       1.00     169.00       0.00       1.00
+    kind 3 (too early)   n    0                nan        nan        nan        nan        nan        nan        nan        nan        nan        nan        nan
+  STEP TABLE:
+  0 baseline                           16 0.03/d win   0% R +0.463  USD   +48.3  worst  -6.15 streak  2 DD   7.9 (at 4100:  13.6)  6 losses 32.2  halves+ 4/5: +0.48(6) -0.02(3) +0.31(4) +1.29(2) +0.76(1)
+
+==== F3: 1291 signal rows
+  baseline                           1276 2.10/d win  23% R -0.112  USD  -227.1  worst -11.68 streak 21 DD 348.7 (at 4100: 553.6)  6 losses 18.1  coin R -0.152 (win 21%)
+  halves+ 2/5: -0.24(278) -0.20(284) +0.02(270) -0.16(191) +0.02(253)  kinds 67/3/30 (coin 67/3/30)
+  step 0: conditions on the current 1276 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            51 /   45  | -0.066 ( 628) / -0.156 ( 648) | 3/5 | -
+    C2 H1 not flat                   30 /   26  | -0.098 ( 909) / -0.145 ( 367) | 2/5 | -
+    C3 pos240 >= .5                  14 /   14  | -0.109 (1088) / -0.124 ( 188) | 3/5 | -
+    C4 72-h extreme near/behind      89 /   81  | +0.134 ( 175) / -0.151 (1101) | 5/5 | meets
+    C5 not a fast tape               19 /   28  | -0.112 (1011) / -0.111 ( 265) | 1/5 | -
+    C6 not late                    (all pass)
+    C7 no release +-15m               2 /    4  | -0.114 (1245) / +0.005 (  31) | 1/4 | -
+    C8 H1 tide with                  49 /   45  | -0.080 ( 648) / -0.145 ( 628) | 3/5 | -
+    C9 M5 with the trade             19 /   20  | -0.106 (1031) / -0.136 ( 245) | 4/5 | -
+  step 1: conditions on the current 176 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            27 /   20  | +0.173 ( 131) / -0.007 (  45) | 3/5 | -
+    C2 H1 not flat                    1 /    0  | +0.134 ( 175) / -1.000 (   1) | 0/0 | -
+    C3 pos240 >= .5                (all pass)
+    C5 not a fast tape               22 /   27  | +0.164 ( 133) / +0.012 (  43) | 3/4 | -
+    C6 not late                    (all pass)
+    C7 no release +-15m               1 /    5  | +0.120 ( 171) / +0.363 (   5) | 0/0 | -
+    C8 H1 tide with                   0 /    2  | +0.121 ( 175) / +1.168 (   1) | 0/0 | -
+    C9 M5 with the trade              3 /    4  | +0.125 ( 168) / +0.181 (   8) | 0/0 | -
+  losers vs winners (median; asia/ny = share):    stop_atr      ret15      ret60  atr_ratio  room72_tp     pos240   h1_c_e50 cr_H1_leg_dir     min_in       asia         ny
+    winners              n   56               2.69       3.25       5.68       1.62      -0.04       0.96       3.39       1.00      77.00       0.34       0.52
+    kind 1 (wrong way)   n   43               2.17       3.53       4.85       1.56      -0.12       0.96       3.46       1.00      66.00       0.37       0.44
+    kind 3 (too early)   n   24               2.43       2.64       4.72       1.63      -0.05       0.95       3.85       1.00      72.00       0.25       0.58
+  STEP TABLE:
+  0 baseline                         1276 2.10/d win  23% R -0.112  USD  -227.1  worst -11.68 streak 21 DD 348.7 (at 4100: 553.6)  6 losses 18.1  halves+ 2/5: -0.24(278) -0.20(284) +0.02(270) -0.16(191) +0.02(253)
+  1 + C4 72-h extreme near/behind     176 0.29/d win  32% R +0.127  USD   +87.8  worst  -7.89 streak 10 DD  47.4 (at 4100:  55.3)  6 losses 19.5  halves+ 3/5: -0.02(36) +0.36(33) +0.25(44) -0.14(30) +0.12(33)
+  final F3: coin R -0.100 (win 25%), kinds ours 58/9/32 / coin 66/5/29; sessions Asia 64 +0.251, London 28 +0.060, New York 84 +0.055
+
+==== F4: 1482 signal rows
+  baseline                           1441 2.37/d win  18% R -0.202  USD  -712.9  worst -10.10 streak 19 DD 720.2 (at 4100: 1045.6)  6 losses 16.7  coin R -0.164 (win 19%)
+  halves+ 0/5: -0.24(308) -0.28(321) -0.21(307) -0.11(222) -0.13(283)  kinds 63/2/35 (coin 65/2/33)
+  step 0: conditions on the current 1441 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            53 /   52  | -0.195 ( 702) / -0.209 ( 739) | 3/5 | -
+    C2 H1 not flat                   28 /   24  | -0.178 (1048) / -0.267 ( 393) | 4/5 | -
+    C3 pos240 >= .5                  78 /   74  | -0.136 ( 333) / -0.222 (1108) | 4/5 | -
+    C4 72-h extreme near/behind      99 /   99  | -0.121 (  10) / -0.203 (1431) | 0/0 | -
+    C5 not a fast tape               19 /   26  | -0.203 (1167) / -0.201 ( 274) | 2/5 | -
+    C6 not late                    (all pass)
+    C7 no release +-15m               2 /    4  | -0.208 (1410) / +0.040 (  31) | 1/4 | -
+    C8 H1 tide with                  65 /   68  | -0.241 ( 507) / -0.181 ( 934) | 2/5 | -
+    C9 M5 with the trade             78 /   76  | -0.193 ( 330) / -0.205 (1111) | 2/5 | -
+  losers vs winners (median; asia/ny = share):    stop_atr      ret15      ret60  atr_ratio  room72_tp     pos240   h1_c_e50 cr_H1_leg_dir     min_in       asia         ny
+    winners              n  256               2.00      -1.58      -2.32       1.51       6.80       0.32      -0.60      -1.00      64.00       0.31       0.54
+    kind 1 (wrong way)   n  556               2.46      -1.54      -2.58       1.24       6.01       0.24      -0.31      -1.00      62.00       0.47       0.34
+    kind 3 (too early)   n  305               1.85      -1.74      -2.62       1.49       7.14       0.22      -0.50      -1.00      67.00       0.35       0.57
+  STEP TABLE:
+  0 baseline                         1441 2.37/d win  18% R -0.202  USD  -712.9  worst -10.10 streak 19 DD 720.2 (at 4100: 1045.6)  6 losses 16.7  halves+ 0/5: -0.24(308) -0.28(321) -0.21(307) -0.11(222) -0.13(283)
+
+==== F5: 6680 signal rows
+  baseline                           2290 3.77/d win  14% R -0.236  USD -1236.4  worst  -8.86 streak 25 DD 1236.4 (at 4100: 1768.1)  6 losses 14.4  coin R -0.211 (win 14%)
+  halves+ 0/5: -0.29(465) -0.32(505) -0.14(460) -0.24(341) -0.19(519)  kinds 71/3/26 (coin 71/3/26)
+  step 0: conditions on the current 2290 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            35 /   30  | -0.217 (1498) / -0.270 ( 792) | 3/5 | -
+    C2 H1 not flat                   19 /   15  | -0.219 (1871) / -0.308 ( 419) | 4/5 | -
+    C3 pos240 >= .5                  33 /   34  | -0.254 (1512) / -0.199 ( 778) | 0/5 | -
+    C4 72-h extreme near/behind      98 /   97  | -0.057 (  66) / -0.241 (2224) | 4/5 | meets
+    C5 not a fast tape                5 /    6  | -0.238 (2187) / -0.174 ( 103) | 3/5 | -
+    C6 not late                      15 /   14  | -0.230 (1938) / -0.267 ( 352) | 2/5 | -
+    C7 no release +-15m            (all pass)
+    C9 M5 with the trade             39 /   37  | -0.234 (1396) / -0.238 ( 894) | 3/5 | -
+  step 1: conditions on the current 105 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            19 /   18  | -0.256 (  83) / -0.281 (  22) | 0/2 | -
+    C2 H1 not flat                 (all pass)
+    C3 pos240 >= .5                   2 /   18  | -0.315 ( 101) / +1.109 (   4) | 0/0 | -
+    C5 not a fast tape                3 /    9  | -0.273 ( 102) / +0.141 (   3) | 0/0 | -
+    C6 not late                      11 /    9  | -0.236 (  97) / -0.567 (   8) | 0/0 | -
+    C7 no release +-15m            (all pass)
+    C9 M5 with the trade              2 /    0  | -0.254 ( 103) / -0.623 (   2) | 0/0 | -
+  losers vs winners (median; asia/ny = share):    stop_atr      ret15      ret60  atr_ratio  room72_tp     pos240   h1_c_e50 cr_H1_leg_dir     min_in       asia         ny
+    winners              n   11               2.40      -1.47       0.70       1.38       0.37       0.66       3.76       1.00      18.00       0.82       0.09
+    kind 1 (wrong way)   n   53               2.85      -2.12       2.96       1.04       0.41       0.80       4.51       1.00     179.00       0.13       0.08
+    kind 3 (too early)   n    9               2.44      -2.11       2.10       1.01       0.41       0.77       4.47       1.00     238.00       0.00       0.22
+  STEP TABLE:
+  0 baseline                         2290 3.77/d win  14% R -0.236  USD -1236.4  worst  -8.86 streak 25 DD 1236.4 (at 4100: 1768.1)  6 losses 14.4  halves+ 0/5: -0.29(465) -0.32(505) -0.14(460) -0.24(341) -0.19(519)
+  1 + C4 72-h extreme near/behind     105 0.17/d win  10% R -0.261  USD   -64.3  worst  -3.61 streak  9 DD  67.0 (at 4100:  93.9)  6 losses 13.3  halves+ 0/5: -0.20(24) -0.32(29) -0.10(30) -0.39(10) -0.55(12)
+  final F5: coin R -0.137 (win 14%), kinds ours 84/2/14 / coin 84/4/12; sessions Asia 25 +0.653, London 71 -0.551, New York 9 -0.514
+
+==== F6: 2424 signal rows
+  baseline                           1601 2.63/d win  22% R -0.153  USD  -761.2  worst -11.96 streak 26 DD 832.5 (at 4100: 1216.3)  6 losses 22.8  coin R -0.135 (win 21%)
+  halves+ 0/5: -0.19(352) -0.24(357) -0.10(344) -0.20(227) -0.05(321)  kinds 76/2/21 (coin 76/3/22)
+  step 0: conditions on the current 1601 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            34 /   36  | -0.169 (1025) / -0.125 ( 576) | 1/5 | -
+    C2 H1 not flat                   19 /   20  | -0.161 (1275) / -0.124 ( 326) | 2/5 | -
+    C3 pos240 >= .5                   6 /    5  | -0.155 (1497) / -0.123 ( 104) | 2/5 | -
+    C4 72-h extreme near/behind      81 /   77  | -0.113 ( 323) / -0.163 (1278) | 2/5 | -
+    C5 not a fast tape                4 /   13  | -0.172 (1488) / +0.091 ( 113) | 0/4 | -
+    C6 not late                      17 /   22  | -0.156 (1277) / -0.142 ( 324) | 2/5 | -
+    C7 no release +-15m               1 /    0  | -0.152 (1590) / -0.283 (  11) | 0/0 | -
+  losers vs winners (median; asia/ny = share):    stop_atr      ret15      ret60  atr_ratio  room72_tp     pos240   h1_c_e50 cr_H1_leg_dir     min_in       asia         ny
+    winners              n  346               3.80       1.82       4.31       1.17       1.73       0.87       2.27       1.00      95.00       0.16       0.49
+    kind 1 (wrong way)   n  602               3.96       1.78       4.05       1.04       1.95       0.86       2.01       1.00     114.00       0.17       0.36
+    kind 3 (too early)   n  168               3.88       1.88       4.09       1.01       1.95       0.89       2.13       1.00      81.00       0.12       0.51
+  STEP TABLE:
+  0 baseline                         1601 2.63/d win  22% R -0.153  USD  -761.2  worst -11.96 streak 26 DD 832.5 (at 4100: 1216.3)  6 losses 22.8  halves+ 0/5: -0.19(352) -0.24(357) -0.10(344) -0.20(227) -0.05(321)
+
+==== F7: 18229 signal rows
+  baseline                           3000 4.93/d win  21% R -0.111  USD  -942.1  worst -12.50 streak 18 DD 965.9 (at 4100: 1528.1)  6 losses 22.1  coin R -0.145 (win 20%)
+  halves+ 0/5: -0.17(646) -0.21(692) -0.08(628) -0.04(434) -0.02(600)  kinds 73/3/24 (coin 74/3/23)
+  step 0: conditions on the current 3000 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            32 /   32  | -0.104 (2024) / -0.125 ( 976) | 4/5 | -
+    C2 H1 not flat                   22 /   21  | -0.108 (2358) / -0.120 ( 642) | 3/5 | -
+    C3 pos240 >= .5                  53 /   45  | -0.088 (1502) / -0.133 (1498) | 3/5 | -
+    C4 72-h extreme near/behind      94 /   90  | +0.054 ( 234) / -0.125 (2766) | 4/5 | meets
+    C5 not a fast tape                7 /   10  | -0.109 (2766) / -0.128 ( 234) | 2/5 | -
+    C6 not late                      11 /   12  | -0.105 (2644) / -0.155 ( 356) | 3/5 | -
+    C7 no release +-15m               1 /    1  | -0.112 (2973) / +0.038 (  27) | 1/3 | -
+    C9 M5 with the trade             62 /   50  | -0.043 (1269) / -0.160 (1731) | 4/5 | meets
+  step 1: conditions on the current 368 trades - fail %: stopped losers / winners | R pass (n) / fail (n) | halves | rule
+    C1 H1 leg not against            21 /   25  | +0.031 ( 277) / +0.049 (  91) | 2/5 | -
+    C2 H1 not flat                 (all pass)
+    C3 pos240 >= .5                   2 /    0  | +0.044 ( 365) / -1.000 (   3) | 0/0 | -
+    C5 not a fast tape                9 /    8  | +0.046 ( 338) / -0.089 (  30) | 2/4 | -
+    C6 not late                      19 /   23  | +0.034 ( 288) / +0.041 (  80) | 3/5 | -
+    C7 no release +-15m               0 /    0  | +0.036 ( 366) / +0.005 (   2) | 0/0 | -
+    C9 M5 with the trade              4 /    3  | +0.033 ( 352) / +0.078 (  16) | 1/2 | -
+  losers vs winners (median; asia/ny = share):    stop_atr      ret15      ret60  atr_ratio  room72_tp     pos240   h1_c_e50 cr_H1_leg_dir     min_in       asia         ny
+    winners              n  100               4.50       2.61       3.94       1.29       0.26       0.92       3.73       1.00      93.50       0.24       0.46
+    kind 1 (wrong way)   n  100               4.52       2.50       4.90       1.18       0.13       0.94       3.67       1.00     111.00       0.15       0.45
+    kind 3 (too early)   n   22               4.03       1.95       4.73       1.25       0.21       0.92       3.63       1.00      79.50       0.14       0.64
+  STEP TABLE:
+  0 baseline                         3000 4.93/d win  21% R -0.111  USD  -942.1  worst -12.50 streak 18 DD 965.9 (at 4100: 1528.1)  6 losses 22.1  halves+ 0/5: -0.17(646) -0.21(692) -0.08(628) -0.04(434) -0.02(600)
+  1 + C4 72-h extreme near/behind     368 0.61/d win  27% R +0.035  USD   +33.2  worst -11.18 streak 10 DD  72.2 (at 4100: 125.0)  6 losses 28.3  halves+ 3/5: +0.09(65) -0.06(87) +0.08(97) -0.13(51) +0.16(68)
+  final F7: coin R -0.123 (win 23%), kinds ours 78/5/17 / coin 79/4/17; sessions Asia 65 +0.341, London 146 +0.012, New York 157 -0.070
+
+kept: [('F1', ['C4 72-h extreme near/behind', 'C5 not a fast tape']), ('F2', ['C1 H1 leg not against']), ('F2a', []), ('F3', ['C4 72-h extreme near/behind']), ('F4', []), ('F5', ['C4 72-h extreme near/behind']), ('F6', []), ('F7', ['C4 72-h extreme near/behind'])]
