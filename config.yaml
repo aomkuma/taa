@@ -152,7 +152,8 @@ high_risk:                           # ON for DEMO (owner, 2026-10-14); remove t
   max_account_drawdown_percent: 60   # the kill: MAX_DRAWDOWN latches, manual reset only
   max_open_positions: 3
   max_effective_leverage: 200        # 0.01 lot of gold on a 50 USD account is ~90x
-  min_lot_max_risk_percent: 15       # the minimum lot above the budget, up to this risk (else no trade)
+  min_lot_max_risk_percent: 20       # the minimum lot above the budget, up to this risk (else no trade); owner,
+                                     #   2026-10-17: the ceiling (20), gold's 0.01 lot on a 100 USD account
   modes: [PAPER, DEMO]
   setups: [setup_harmonic_prz, setup_breakout, setup_breakout_scalp]   # proven setups; S1 (owner, 2026-10-15)
   fade_risk_factor: 0.5              # fades (FADE) risk half the preset
