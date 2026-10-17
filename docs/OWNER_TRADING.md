@@ -345,6 +345,22 @@ averages +0.008 R a trade: no edge of its own. Gold's habits that held in 5 of 6
 previous day's extreme +0.07, 21-23 New York (08-11 Thai) +0.10, against the day (lower half of the day's range
 for a buy) -0.06 (negative in 5 of 6). No new rule is picked from year C (it would no longer be a hold-out).
 
+**Rules A, fixed before years D (2022-10 .. 2023-09) and E (2021-10 .. 2022-09) judge them** (gold bars downloaded
+read-only on 2026-10-17 into a separate store, `data/history_old`, so the main store and the S1 runs are not
+affected; owner's go-ahead). The habits that held in 5 of 6 half-years, same plan (2 R, at most 12 h):
+
+| Rule | Three years: per weekday, R/trade |
+|---|---|
+| A0 every trigger | 5.88, +0.008 |
+| A1 with the day (upper half of the day's range for a buy, lower half for a sell) | 5.09, +0.019 |
+| A2 beyond the previous day's extreme | 1.64, +0.072 |
+| A3 A1 & A2 | 1.61, +0.078 |
+| A4 A1, not 17-20 New York | 4.48, +0.030 |
+| A5 21-23 New York (08-11 Thai) | 0.83, +0.099 |
+
+A rule counts as a real habit only if it stays positive in both year D and year E. (For S1 these overlays add
+nothing: the S1 session found 252 of 257 S1 trades already with the day and 237 beyond the previous day's extreme.)
+
 **The daily goal in numbers:** expected USD a day = trades a day x R a trade x the risk a trade. With B3 (1.24 a
 day, +0.151 R) +15 USD a day needs about 80 USD of risk a trade: 80 % of a 100 USD account; at the owner's 7.5 %
 a trade it needs an account of about 1,000 USD. Averages, not every day.

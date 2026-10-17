@@ -6,6 +6,7 @@ usage: python ts_offline_triggers.py START END OUT_DIR   (writes OUT_DIR/trigger
 chart-read columns)
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -27,7 +28,7 @@ WINDOW = cfg.timeframes.warmup_bars
 reg = default_registry()
 plan = reg.plan_from_config(cfg.evidence, only={"structure.bos_choch"})
 det, params = reg.get("structure.bos_choch"), plan.params["structure.bos_choch"]
-m15 = pd.read_parquet(ROOT / "data/history/FBS-Demo/XAUUSD/M15.parquet").sort_values("close_time").reset_index(drop=True)
+m15 = pd.read_parquet(ROOT / (os.environ.get("TS_HISTORY", "data/history") + "/FBS-Demo/XAUUSD/M15.parquet")).sort_values("close_time").reset_index(drop=True)
 m15["atr"] = atr(m15.high.astype(float), m15.low.astype(float), m15.close.astype(float), cfg.indicators.atr_period)
 ct = m15.close_time
 first = int(ct.searchsorted(start))

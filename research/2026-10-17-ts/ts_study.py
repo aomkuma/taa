@@ -9,6 +9,7 @@ closes at the bar's close. Triggers are independent here (no one-position limit)
 usage: python ts_study.py data/backtests/ts/dataset_m15/triggers.csv [split YYYY-MM-DD]
 """
 
+import os
 import itertools
 import sys
 from pathlib import Path
@@ -22,7 +23,7 @@ GOAL = 0.15
 
 trig = pd.read_csv(sys.argv[1], parse_dates=["time"])
 split = pd.Timestamp(sys.argv[2] if len(sys.argv) > 2 else "2026-04-01", tz="UTC")
-m1 = pd.read_parquet(ROOT / "data/history/FBS-Demo/XAUUSD/M1.parquet", columns=["close_time", "high", "low", "close"])
+m1 = pd.read_parquet(ROOT / (os.environ.get("TS_HISTORY", "data/history") + "/FBS-Demo/XAUUSD/M1.parquet"), columns=["close_time", "high", "low", "close"])
 t1 = m1["close_time"].to_numpy(dtype="datetime64[ns]")
 hi, lo, cl = (m1[c].to_numpy(dtype=float) for c in ("high", "low", "close"))
 

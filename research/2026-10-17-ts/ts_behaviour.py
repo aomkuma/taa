@@ -19,6 +19,7 @@ Writes <first file's folder>/behaviour.csv and prints, per feature bin: n, R/tra
 half-year. usage: python ts_behaviour.py <outcomes.csv> [<outcomes.csv> ...]
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -35,8 +36,8 @@ exec(compile(src.split("def from_study")[0], "losers", "exec"))  # path(), M1 ar
 
 d = pd.concat([pd.read_csv(f, parse_dates=["time"]) for f in files], ignore_index=True).sort_values("time")
 d = d.reset_index(drop=True)
-m15 = pd.read_parquet(ROOT / "data/history/FBS-Demo/XAUUSD/M15.parquet").sort_values("close_time").reset_index(drop=True)
-d1 = pd.read_parquet(ROOT / "data/history/FBS-Demo/XAUUSD/D1.parquet").sort_values("open_time").reset_index(drop=True)
+m15 = pd.read_parquet(ROOT / (os.environ.get("TS_HISTORY", "data/history") + "/FBS-Demo/XAUUSD/M15.parquet")).sort_values("close_time").reset_index(drop=True)
+d1 = pd.read_parquet(ROOT / (os.environ.get("TS_HISTORY", "data/history") + "/FBS-Demo/XAUUSD/D1.parquet")).sort_values("open_time").reset_index(drop=True)
 ct = m15.close_time.to_numpy(dtype="datetime64[ns]")
 H, L, C = (m15[k].to_numpy(dtype=float) for k in ("high", "low", "close"))
 d1_open = d1.open_time.to_numpy(dtype="datetime64[ns]")

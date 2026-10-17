@@ -13,6 +13,7 @@ Trades come from the rule of the two-year study (default: TS-h4, the H4 EMA tide
 usage: python ts_losers.py [--trades <trades.csv> ...]
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -22,7 +23,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[2]
 POINT, K, HOLD_H, AFTER_H = 0.01, 2.0, 12.0, 12.0
 
-m1 = pd.read_parquet(ROOT / "data/history/FBS-Demo/XAUUSD/M1.parquet", columns=["close_time", "high", "low", "spread"])
+m1 = pd.read_parquet(ROOT / (os.environ.get("TS_HISTORY", "data/history") + "/FBS-Demo/XAUUSD/M1.parquet"), columns=["close_time", "high", "low", "spread"])
 t1 = m1["close_time"].to_numpy(dtype="datetime64[ns]")
 hi, lo = m1["high"].to_numpy(dtype=float), m1["low"].to_numpy(dtype=float)
 sp = m1["spread"].to_numpy(dtype=float) * POINT
@@ -66,7 +67,7 @@ def from_study() -> pd.DataFrame:
     d = pd.read_csv(ROOT / "data/backtests/ts/outcomes_two_years_d1.csv", parse_dates=["time"])
     loc = d[["H1_pivot_dist", "H4_pivot_dist"]].min(axis=1)
     buy = d.side == "BUY"
-    f = pd.read_parquet(ROOT / "data/history/FBS-Demo/XAUUSD/H4.parquet").sort_values("close_time")
+    f = pd.read_parquet(ROOT / (os.environ.get("TS_HISTORY", "data/history") + "/FBS-Demo/XAUUSD/H4.parquet")).sort_values("close_time")
     f["e"] = f.close.ewm(span=50, adjust=False).mean()
     f["s"] = f.e - f.e.shift(5)
     x = pd.merge_asof(d[["time"]], f[["close_time", "close", "e", "s"]], left_on="time", right_on="close_time")
