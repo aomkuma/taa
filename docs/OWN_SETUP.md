@@ -16,6 +16,12 @@ stopped out before its target is put in one kind (`loser_kinds.py`), and each ki
 | 2 Right way, fell short | at least half the way to the target, then back to the stop; no run afterwards | the target was too far for that moment, or the stop stayed too long at risk | the exit: a nearer target (a smaller tool), a partial profit or the stop to break-even at about 0.5-0.6 of the target, a shorter time stop |
 | 3 Right way, entered too early | stopped first, then the target reached from the original entry within 120 minutes | the timing or the stop: the entry's shake-out took the stop | the entry timing (screen 3: wait for the turn, ticks), a better entry price (a pullback limit), or a stop beyond the usual shake-out |
 
+**Never conclude "it is a coin flip"** (owner, 2026-10-17: "that is too easy; find why it loses"). The coin-flip side
+is only a yardstick; every report names the concrete reasons its losers lost (from the trades and their charts:
+where in the move, the H1 swing and phase, the session phase, the level's quality, the stop against the normal
+swing, the spread at that hour, news nearby, what came right before the entry), how many losers each reason
+covers, how the winners differed, and the change that attacks the largest reason.
+
 Each kind is always read **against a coin-flip side at the same minutes** (the same stops and targets): a kind is
 a finding only where it differs from the coin's split (round 2: 41 / 14 / 45 % for both - no finding). The next
 change attacks the kind that is largest *above the coin's*, is written down before it is computed, and is judged

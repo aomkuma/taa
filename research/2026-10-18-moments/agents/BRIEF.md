@@ -94,6 +94,15 @@ change), not only rules that already pass +0.15 R.
 - Cheapest loss cuts: bigger targets / fewer trades; avoid Asia and 20-24 UTC; never 21-23 UTC; beware release
   minute 0 for stops.
 
+## Never conclude "it is a coin flip" (owner, 2026-10-17)
+
+"Do not define it as a coin flip - that is too easy; find why it loses rather than interpreting it that way." The
+coin-flip side stays only as a yardstick in the tables. **It is never the explanation and never the verdict.** Every
+report must say *why* its losers lost, concretely, from the trades and their charts: which situations they were in
+(where in the move, the H1 swing and phase, the session phase, the level's quality, the stop against the normal
+swing, the spread at that hour, news nearby, what came right before the entry), how many losers each reason
+covers, how the winners differed, and which change attacks the largest reason - then test that change.
+
 ## The learning loop (the owner's): every run's stopped losers in three kinds, always against a coin-flip side
 
 1 wrong way (less than half way to the target before the stop, no run to the target afterwards) -> the direction;
