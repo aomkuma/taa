@@ -12,7 +12,6 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
 
 sys.path.insert(0, "research/2026-10-18-moments")
 import gold  # noqa: E402
@@ -86,6 +85,8 @@ def summary(r: pd.DataFrame, days: int) -> str:
 
 
 def main() -> None:
+    from sklearn.linear_model import LogisticRegression
+
     warnings.filterwarnings("ignore")
     m1 = gold.bars("M1")
     m1 = m1[(m1.index >= pd.Timestamp("2025-07-01", tz="UTC")) & (m1.index < pd.Timestamp("2026-10-15", tz="UTC"))]

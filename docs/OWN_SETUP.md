@@ -23,7 +23,12 @@ on data it was not found on.
 
 ## Data and window
 
-**The latest six months only (owner, 2026-10-17: "focus on the bot and backtests over the latest 6 months; we
+**The test window is 2026-03-01 onward** (owner, 2026-10-17: "I always stress: test in the latest six months,
+that is from 2026-03-01"): every result from round 8 on is reported on 2026-03-01 .. 2026-10-14 (the data's end),
+month by month; rules, weights and cuts are learned only from data before 2026-03-01. Rounds 1-7 used 2026-04-14
+(six months back from the data's end) and older windows - superseded; their test numbers start six weeks late.
+
+Rounds 1-7 (superseded window): **The latest six months only (owner, 2026-10-17: "focus on the bot and backtests over the latest 6 months; we
 revise the setups every 3-6 months").** Gold (XAUUSD, FBS-Demo) M1 in `data/history` ends 2026-10-14 08:18 UTC,
 so the window is **2026-04-14 .. 2026-10-14**, with 20 trading days before it as warm-up for the measures. It
 copies the revision cycle: the rules are **fitted on the first three months (2026-04-14 .. 07-14)** and
@@ -516,3 +521,172 @@ What the weights trust: **for** the M15 CCI (+0.19), M15 MACD histogram (+0.145)
 price sits low in its band - the deep pullback's shape again, and again not enough after costs.
 New York is the one session on the plus side in rounds 1, 2 (P1 ours +0.131 against -0.156 for the opposite), 5
 (the chosen triple screen +17.0) and 6 (+135.8); never yet on data it was not found on.
+
+### Round 7 - New York, with the H1 trend, on the M15 pullback; adjusted through the losers (owner, 2026-10-17: "adjust it; a setup is never profitable the first time it is written")
+
+- **Development data:** the four older half-years 2023-11 .. 2025-10 (M1; targets and stops scaled by the price /
+  4,100) and the earlier six months 2025-10-14 .. 2026-04-14 (fixed USD, ticks available). **The latest six months
+  test only the final version, once.**
+- **Start (iteration 0):** New York 08:15-11:15 ET; screen 1 the H1 EMA(20) rising and the close above EMA(50)
+  (mirrored); screen 2 the M15 RSI(14) below 45 (above 55); tool 8/6 USD; 60 minutes; at most two trades a
+  session-day, one at a time.
+- **Each iteration** changes one thing, chosen by the losers' kind that stands above a coin-flip side at the same
+  minutes (the learning loop above), written here before it is computed, and kept only if it improves most
+  development half-years.
+
+USD at 0.01 lot (trades, R a trade); kinds = stopped losers' wrong way / fell short / too early, ours and the coin's:
+
+| It. | Change (the kind behind it) | 2023-11 .. 04 | 2024-04 .. 10 | 2024-10 .. 2025-04 | 2025-04 .. 10 | Earlier six | Kept? |
+|---|---|---|---|---|---|---|---|
+| 0 | the start | -38.9 (103, -0.133) | +8.1 (115, +0.023) | -11.7 (110, -0.026) | -90.5 (87, -0.206) | -20.4 (119, -0.028) | kind 2 above the coin in three windows (21/9, 19/13, 12/9 %) |
+| 1 | stop to the entry at 0.6 of the target (kind 2) | -46.1 (103, -0.149) | +29.8 (117, +0.072) | +17.1 (114, +0.035) | -71.1 (88, -0.157) | -7.2 (119, -0.010) | **yes**: 4/5 better |
+| 2 | a nearer target, 6/6 (kind 2) | -46.0 (106, -0.151) | +3.7 (120, +0.009) | +0.7 (116, -0.001) | -92.5 (90, -0.201) | -64.5 (120, -0.089) | no: 4/5 worse |
+
+(Iterations 1 and 2 were fixed in `ny_lab.py` before they ran; their lines here were written after, as the doc edit
+had failed.) After iteration 1 the stopped losers are mostly kind 1: ours / coin 81/72, 49/49, 51/57, 67/76,
+42/30 % - wrong way above the coin in 2023-11 .. 04 and the earlier six months.
+
+- **Iteration 3 (kind 1, the direction):** as 1, with a stronger tide: the H1 EMA(20) slope above the median of
+  the development rows' rising slopes.
+- **Iteration 4 (kind 1, the direction):** as 1, with the pullback turning: the last M1 bar closed the trade's way.
+
+| It. | Change | 2023-11 .. 04 | 2024-04 .. 10 | 2024-10 .. 2025-04 | 2025-04 .. 10 | Earlier six | Kept? |
+|---|---|---|---|---|---|---|---|
+| 3 | stronger tide (H1 slope > 0.3233 ATR) | -38.3 (42, -0.292) | +26.9 (49, +0.156) | +13.1 (44, +0.067) | -22.7 (31, -0.164) | -62.2 (44, -0.233) | no: 2/5 better, 0.34 a day |
+| 4 | the last M1 bar turned | -48.9 (103, -0.160) | +14.8 (118, +0.038) | -0.6 (113, -0.003) | -102.3 (90, -0.218) | +37.0 (119, +0.051) | no: 1/5 better |
+
+The two losing windows stay losing whatever the trigger (wrong way 71-88 % of their stopped losers): a phase that
+does not suit the setup (the owner's principle: in an unsuitable phase a setup trades less).
+
+- **Iteration 5 (kind 1, the phase):** as 1, traded only while the setup's own shadow trades (every iteration-1
+  trade, taken or not) that closed in the previous 28 calendar days sum above zero; the shadow keeps running.
+
+| It. | Change | 2023-11 .. 04 | 2024-04 .. 10 | 2024-10 .. 2025-04 | 2025-04 .. 10 | Earlier six | Kept? |
+|---|---|---|---|---|---|---|---|
+| 5 | trade only while its own last 28 days paid | -20.2 (20, -0.324) | +7.9 (85, +0.027) | -14.7 (52, -0.066) | -38.5 (35, -0.217) | -6.2 (50, -0.020) | no: worse a trade in 4/5 (it loses less only by trading less) |
+
+The exit change helped; the direction changes did not. With entries that pick the side like a coin, no exit
+makes money after costs - the direction must come from somewhere. The only signal found so far is the learned
+model's (round 3, AUC 0.53-0.58).
+
+- **Iteration 6 (kind 1, the direction from the model):** as 1, taken only when a LightGBM model (round 3's
+  features, all sessions, label: tool 8/6 wins) fitted on everything before the window (walk-forward, from
+  2023-11) scores the minute at or above the median score of the rule's own rows in its training data.
+  2023-11 .. 04 has no earlier data and is skipped.
+
+| It. | Change | 2023-11 .. 04 | 2024-04 .. 10 | 2024-10 .. 2025-04 | 2025-04 .. 10 | Earlier six | Kept? |
+|---|---|---|---|---|---|---|---|
+| 6 | the model's score as a direction screen (`ny_ml.py`) | skipped | +29.3 (116, +0.072) | -1.1 (107, -0.005) | -81.9 (86, -0.186) | -7.2 (119, -0.010) | no: it removes almost nothing and changes nothing |
+
+- **Iteration 7 (kind 3 and the owner's "price swings eat the stop before the real run; use price action"):** in
+  New York, with the H1 tide (screen 1 A) and the M15 pullback (RSI < 45): the last three M1 bars took out the
+  lowest low of the 15 bars before them (a stop hunt), and the last bar closed back above that low (reclaimed);
+  mirrored for a sell. Entry at the next bar's open; **the stop beyond the swept extreme plus one M1 ATR(14)**
+  (the noise), the target 1.5 x that risk, the stop to the entry at 0.6 of the target, 60 minutes; the risk kept
+  within 3-12 USD (price-scaled in the older windows).
+
+| It. | Change | 2023-11 .. 04 | 2024-04 .. 10 | 2024-10 .. 2025-04 | 2025-04 .. 10 | Earlier six | Kept? |
+|---|---|---|---|---|---|---|---|
+| 7 | stop hunt + reclaim, stop beyond the sweep + 1 ATR, 1.5 R | -46.6 (80, -0.227) | -56.1 (94, -0.168) | -33.1 (94, -0.113) | -101.8 (67, -0.333) | -116.8 (84, -0.246) | no: worse everywhere; wrong way 50-78 % |
+
+- **Iteration 8 (the owner: "wave ABCDE too; it likes to swing"):** in New York with the H1 tide (screen 1 A): on M5
+  (the bot's chart-read ZigZag, default parameters) the last confirmed swings are a correction against the tide -
+  for a buy a high, A a low, B a lower high, C a low below A (A-B-C down) - and the M5 close has just broken back
+  above B (the correction over, the tide resuming); mirrored for a sell. Entry at the next M1 open; the stop below
+  C minus half an M5 ATR(14); the target 1.5 x the risk; the stop to the entry at 0.6 of the target; 60 minutes; the
+  risk within 3-12 USD (price-scaled in the older windows).
+
+Iteration 8 gave 9 signals in 2.5 years with the bot's ZigZag (depth 12: C is confirmed about an hour late) and 24
+with depth 5 (`ny_abc.py --depth 5`; -2.2 / +9.6 / +14.4 / +4.7 / -10.1 USD on 8 / 4 / 4 / 2 / 2 trades): too few to
+judge; not kept.
+
+- **Iteration 9 (the owner: "avoid the first half hour of the volatility so M1 / M5 show the direction"):** as 1, no
+  entries in the 30 minutes after 08:30 ET and after 09:30 ET (19:30-20:00 and 20:30-21:00 Thai in summer).
+- **Iteration 10 (the owner: "count three after the signal, check it again, then enter"):** as 1, a signal at
+  minute t is entered only if the rule still holds, the same side, at t + 3 minutes; the entry at that minute.
+- **Iteration 11:** 9 and 10 together.
+
+| It. | Change | 2023-11 .. 04 | 2024-04 .. 10 | 2024-10 .. 2025-04 | 2025-04 .. 10 | Earlier six | Kept? |
+|---|---|---|---|---|---|---|---|
+| 9 | no entries 30 min after 08:30 / 09:30 ET | -10.5 (66, -0.058) | +7.0 (81, +0.025) | +1.2 (79, +0.000) | -48.6 (67, -0.144) | -122.9 (98, -0.207) | no: 2/5 better |
+| 10 | count 3, re-check, then enter | -41.7 (74, -0.183) | -46.3 (86, -0.151) | -13.6 (83, -0.045) | +11.8 (59, +0.036) | +8.4 (82, +0.017) | no: 3/5 better but -81.4 USD in all against iteration 1's -77.5 |
+| 11 | 9 + 10 | -6.1 (33, -0.065) | -34.3 (56, -0.175) | -24.7 (51, -0.117) | -2.2 (36, -0.010) | -40.2 (46, -0.144) | no |
+
+Round 7 so far: the exit change (iteration 1, break-even at 0.6 of the target) is the only one kept; the New York
+setup stays about -0.03 R a trade over the development windows (iteration 1: -77.5 USD on 541 trades), and its
+stopped losers split like a coin's.
+
+### Round 9 - confluence at the entry: support / resistance + price action + indicators together (owner, 2026-10-17) - written before it is computed
+
+The owner: "at the entry you must check that support / resistance, price action and the chosen indicators agree;
+what are you entering on now, and why does it lose so much?" Until now the three were tested one at a time, never
+required together; round 7's entry was only the H1 tide + an M15 RSI pullback, taken at the first such minute -
+the side right about as often as a coin. Round 9 requires all of them at the same minute; rules fixed here, no
+fitting; **tested on 2026-03-01 .. 2026-10-14**, all three sessions, month by month, the losers in three kinds.
+
+For a buy (a sell mirrored):
+- **Tide (H1):** the H1 EMA(20) rising over 3 bars and the close above EMA(50).
+- **Support:** the nearest level below the price - today's low, yesterday's low, the Asian low, a round 50, an H1 or
+  M15 chart-read level (the bot's ZigZag) - lies within 3 M1 ATR(14) of the close, and the last 5 M1 bars' low came
+  within 1 ATR of it (price is at the level now).
+- **Price action at the level** (any one): the last M1 or M5 bar a hammer / pin bar (lower wick at least half the
+  bar's range, the close in its upper third); a bullish engulfing on M1 (the close above the previous bar's open,
+  the previous bar bearish); or the last 3 M1 bars' low went below the level and the last close is back above it.
+- **Indicators** (at least two of three): the M5 RSI(14) rising and below 50; the M5 MACD histogram rising; the M5
+  Stochastic %K crossing above %D.
+- **Exit:** target 8 USD, stop beyond the level: the level minus 1 M1 ATR, kept within 3-10 USD; the stop to the
+  entry at 0.6 of the target; 60 minutes; one trade at a time, at most two a session-day.
+
+**Result** (`confluence.py`, 2026-03-01 .. 10-14). Funnel (minute x side rows): 125,576 -> H1 tide 53,998 -> at a
+level 17,498 -> price action 9,929 -> indicators 1,931 -> stop 3-10 USD 1,385. **425 trades (2.61 a day), win 30 %,
+-0.20 USD a trade (-0.032 R), -84.1 USD at 0.01 lot, 2/8 months positive**; Asia -60.4 (194), London -37.4 (68), New
+York +13.7 (163). A coin-flip side on the same signals: -73.3 USD; the losers' kinds 51 / 3 / 46 % against the
+coin's 50 / 4 / 46 %. **Fails: the confluence picks the side like a coin.**
+A first run showed -55.9 USD against the coin's -109.1; checking trades one by one found two faults, fixed
+before the result above: today's and the Asian high / low included the bars just before the entry (a "level"
+that was the last bar's own extreme - price making a new high, not testing a resistance), and float32 distances
+let a rounding difference of 0.01 count as a sweep. Now the day's and the Asian range count only as they stood
+15 minutes before, every price is float64 from the bars, and a sweep must pass the level by 0.1 ATR. Checked trades
+(entry, stop, target against the bars) at the round 50s 4150 and 4600 and an M15 level matched the rule.
+
+### Round 10 - where does gold's own price carry direction at all? (`foundations.py`)
+
+- **Drift by hour (Thai), six half-years 2023-11 .. 2026-10:** no hour keeps its sign in all six (18:00 Thai: -2.7,
+  -0.4, +3.9, -0.2, +4.6, +4.4 bp; t-statistics mostly within +-2).
+- **Continuation or reversal, by session and half-year:** the variance ratio at 5 / 15 / 60 minutes 0.84-1.21,
+  mostly 0.94-1.03 (1.00 = a random walk); the correlation of one k-minute return with the next -0.19 .. +0.12,
+  mostly within +-0.06, with no sign holding everywhere; New York reverses slightly at 5 minutes (VR 0.94 in four
+  of six half-years) - far below the 0.3-0.4 USD a trade the costs take.
+
+**Gold's own minute-scale price is close to a random walk in every session and half-year.** That is why every
+entry built from it - trend, levels, candles, indicators, ticks, learned weights - picks the side like a coin
+once it meets data it was not chosen on.
+
+### Round 10b - the news: does the first minute after a release continue? (`news_follow.py`)
+
+The first minute's move after a US release (the official calendar) is the market's reading of the surprise.
+Big first moves (at least 3x the hour's 1-minute range), signed by their direction, the next 30 minutes:
+
+| Release | 2023-11 .. 2026-02 | Test 2026-03 .. 10 |
+|---|---|---|
+| FOMC (14:00 ET) | 16: continues 62 %, +3.04 USD | 3: 67 %, +27.22 |
+| PCE | 10: 80 %, +2.69 | 4: 100 %, +16.75 |
+| CPI | 24: 42 %, -0.26 | 5: 0 %, -33.58 (all five reversed) |
+| NFP | 21: 38 %, -2.16 | 6: 83 %, +10.67 |
+| PPI | 14: 36 %, -2.76 | 1: 100 %, +18.23 |
+| All big first moves | 85: 48 %, -0.17 | 19: 63 %, +3.31 |
+
+The first thing with a cause that keeps its sign across both periods: **FOMC and PCE continue, CPI reverses**;
+NFP and PPI flip. The samples are small (14-29 releases each in three years), and these releases come about three
+times a month - a weapon for the news, not a source of three trades a day.
+
+### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
+
+What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had
+only the H1/M15 EMAs), the ticks (only the triple screen's timing), and the levels and the session clock (in
+round 3's model, not in the score). Round 8 puts them all into one LightGBM: round 3's 62 features, the 52
+indicator votes of round 6, the ZigZag structure on M5 / M15 / H1 (the bot's chart read: the structure now, the
+open leg's size in ATR and its retrace, the legs since the structure changed; signed by the side) and the tick
+features (from 2025-10 only; missing before). Fitted on 2023-11 .. 2026-02-14; the tool (5/4, 5/6, 8/6, 10/8), the
+score cut and the session filter chosen on 2026-02-14 .. 04-14; **tested once on the latest six months**, with the
+stop to the entry at 0.6 of the target (iteration 1's exit). The losers in three kinds against the coin.
