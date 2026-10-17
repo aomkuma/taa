@@ -19,9 +19,10 @@ then docs/OWN_SETUP.md (Setup OWN, my own trade: the moments when gold runs) and
 State (2026-10-17): every earlier setup (V1, F1, S1) is stopped in config.yaml; the bot starts over with Setup
 OWN in the aggressive preset once it passes its gate. DEMO is paused. main is not pushed (I push myself).
 
-Next: the plan in docs/OWN_SETUP.md - the official US release calendar 2021-2026, the five-year moments dataset
-for gold, the hypotheses H1-H4 and the playbook selector judged walk-forward (A and B while developing, E/D/C
-once after freezing), results month by month in docs/OWN_SETUP.md. Ask me when the meaning is unclear.
+Next: the plan in docs/OWN_SETUP.md - focus on the bot; backtests cover the latest six months only (we revise
+setups every 3-6 months): the moments dataset for gold 2026-04-14 .. 10-14, the hypotheses H1-H4 and the
+playbook selector fitted on the first three months and judged once on the last three, then the engine setup and
+its backtest. Ask me when the meaning is unclear.
 ````
 
 ---
@@ -52,7 +53,8 @@ once after freezing), results month by month in docs/OWN_SETUP.md. Ask me when t
 
 ## Next work
 
-1. Setup OWN (`docs/OWN_SETUP.md`): the release calendar, the moments dataset, H1-H4 and the selector, the gate.
+1. Setup OWN (`docs/OWN_SETUP.md`), latest six months only (fit 2026-04-14 .. 07-14, judge 07-14 .. 10-14):
+   the release calendar (done), the moments dataset, H1-H4 and the selector, the engine setup, the gate.
 2. The weekly market-state report and the monthly re-fit (the owner's review cadence).
 3. Owner decisions pending: merge the two branches or not; the account size for the daily goal (100 or 150 USD).
 4. Full pytest + vitest once (stack paused).

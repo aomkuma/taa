@@ -35,7 +35,9 @@ outranks earlier targets where they differ. Results never promise profit; they d
   psychological weakness. Every decision is logged with its reasons.
 - **Strategies are living.** No setup is written once and used forever: setups, market state, volatility and
   trend are reviewed on a schedule and the strategies re-tuned to the present. Example (2026-10-17): gold runs
-  about 70-100 USD a day now, so intraday trends on small timeframes exist every day.
+  about 70-100 USD a day now, so intraday trends on small timeframes exist every day. **The setups are revised
+  every 3-6 months, so backtests cover the latest six months only** (owner, 2026-10-17); older years are
+  background, not the judge.
 - **Use the machine's edge in time.** The system recomputes every timeframe on every bar, decides without
   hesitation at the bar's close, holds its if-then plans before scheduled releases, and lets the AI analyst
   propose new candidate causes from the runs it could not explain - the data, judged out of sample, decides.
