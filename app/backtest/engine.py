@@ -17,6 +17,15 @@ At each bar close *t* of a symbol:
 After all symbols at *t*: the equity point is recorded, the loss tracker books the new deals and the loss
 breakers are evaluated. Progress events are emitted every ``progress_every`` steps.
 
+**Entry lanes** (TAA-507, PLAN §A7): more entry timeframes in the same run, as the live engine trades them
+(owner, 2026-10-17: one account, every setup). Each lane (:class:`BacktestLane`) has its own config
+view (:meth:`AppConfig.for_lane`), strategies, arbiter, evidence and market maps; the account, risk
+budget, decision engine, loss breakers and per-symbol position limit are shared. The timeline is the union
+of every lane's entry-bar closes. The broker steps each symbol on the finest entry timeframe that trades it
+(fills, stops and targets on M1 when an M1 lane trades the symbol), once per bar, before the lanes evaluate
+in order (the main lane first). Positions are managed by their strategy's lane, with bars held counted on
+that lane's timeframe. Without extra lanes the run is exactly the single-timeframe run above.
+
 A :class:`RiskPreset` (the aggressive Trading-profile preset, PLAN §A36) makes every decision combine its
 profile limits with its cage, as the live engine's risk-limit selector does, and the loss breakers trip on the
 combined limits.
@@ -27,7 +36,7 @@ from __future__ import annotations
 import logging
 import math
 from collections import Counter
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
@@ -59,6 +68,7 @@ from app.risk.limits import ProfileLimits, effective_risk
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.storage.database import Database
 from app.strategy.arbitration import SignalArbiter
+from app.strategy.base_strategy import BaseStrategy
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame, context_at
 from app.strategy.market_maps import MapBook
 from app.strategy.registry import StrategySet
@@ -67,12 +77,44 @@ from app.strategy.signal_models import StrategyContext
 log = logging.getLogger(__name__)
 
 MAGIC_BASE = 7_310_000  # same default as MAGIC_NUMBER_BASE; position i of the strategy list gets base + i
+MAIN = "main"  # the run's own entry timeframe (app.engine.lanes.MAIN)
 
 
 @dataclass(frozen=True)
 class SymbolData:
     spec: SymbolSpec
     frames: Mapping[Timeframe, pd.DataFrame]  # closed candles (``CANDLE_COLUMNS``) per enabled timeframe
+
+
+@dataclass(frozen=True)
+class BacktestLane:
+    """One more entry timeframe in a run (TAA-507): the lane's config view (:meth:`AppConfig.for_lane`), its
+    strategies, the symbols it trades and the evidence its strategies need."""
+
+    name: str
+    config: AppConfig
+    strategies: StrategySet
+    symbols: frozenset[str]
+    evidence: EvidenceEngine | None = None
+
+
+@dataclass
+class _Lane:
+    name: str
+    config: AppConfig
+    strategies: StrategySet
+    symbols: frozenset[str] | None  # None: every symbol of the run
+    evidence: EvidenceEngine | None
+    maps: MapBook | None
+    arbiter: SignalArbiter
+    by_name: dict[str, BaseStrategy]
+
+    @property
+    def entry_tf(self) -> Timeframe:
+        return self.config.timeframes.entry
+
+    def trades(self, symbol: str) -> bool:
+        return self.symbols is None or symbol in self.symbols
 
 
 @dataclass(frozen=True)
@@ -134,16 +176,40 @@ class BacktestEngine:
         config_hash: str = "",
         context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
         risk_preset: RiskPreset | None = None,
+        lanes: Sequence[BacktestLane] = (),
+        main_symbols: Collection[str] | None = None,
     ) -> None:
+        """*lanes*: more entry timeframes sharing the account (TAA-507); *config* then is the full config (its
+        ``lanes`` give each lane strategy its spread ratio, cooldown and management). *main_symbols*: the
+        symbols the main lane trades (None: all of *data*)."""
         self.config = config
         self.risk_preset = risk_preset
         self.data = dict(data)
         # TAA-L809: the higher-timeframe market map (MarketContext.htf), as in live and replay, when the
         # context timeframes' candles are given (app.backtest.runner.load_context)
         self.context = {s: dict(frames) for s, frames in (context or {}).items()}
-        self.maps = MapBook.from_config(config) if self.context else None
         self.strategies = strategies
         self.evidence = evidence
+        main = None if main_symbols is None else frozenset(main_symbols)
+        if lanes and not strategies.strategies:
+            main = frozenset()  # e.g. only a lane's strategies selected: the main lane steps nothing
+        specs = [(MAIN, config, strategies, main, evidence)]
+        specs += [(x.name, x.config, x.strategies, x.symbols, x.evidence) for x in lanes]
+        self.lanes = [
+            _Lane(
+                name,
+                cfg,
+                sset,
+                syms,
+                ev,
+                MapBook.from_config(cfg) if self.context else None,
+                SignalArbiter(cfg.strategies.cooldown_bars),
+                {s.name: s for s in sset.strategies},
+            )
+            for name, cfg, sset, syms, ev in specs
+            if sset.strategies or name == MAIN
+        ]
+        self.maps = self.lanes[0].maps
         self.start, self.end = start, end
         self.on_progress = on_progress
         self.progress_every = max(1, progress_every)
@@ -187,36 +253,54 @@ class BacktestEngine:
             config_hash=config_hash,
             breakers=self.board,
         )
-        self.arbiter = SignalArbiter(config.strategies.cooldown_bars)
-        self._magic = {s.name: MAGIC_BASE + i for i, s in enumerate(strategies.strategies)}
+        self.arbiter = self.lanes[0].arbiter
+        everything = [s for lane in self.lanes for s in lane.strategies.strategies]
+        self._magic = {s.name: MAGIC_BASE + i for i, s in enumerate(everything)}
         self._by_magic = {m: n for n, m in self._magic.items()}
+        self._lane_of = {s: lane.name for lane in self.lanes for s in lane.by_name}
         self._last_entry: dict[str, datetime] = {}
         self._booked_deals = 0
+        self._feed: dict[str, Timeframe] = {}  # per symbol: the timeframe the broker steps it on
 
     # --- preparation --------------------------------------------------------------------------------------
 
-    def _analyze(self) -> dict[str, dict[Timeframe, AnalyzedFrame]]:
-        cfg = self.config
-        out = {}
-        for symbol, d in self.data.items():
-            missing = [tf for tf in cfg.timeframes.enabled if tf not in d.frames]
-            if missing:
-                raise DataQualityError(f"{symbol}: no history for {missing}")
-            out[symbol] = {
-                tf: analyze_frame(d.frames[tf], tf, cfg.indicators, cfg.regime)
-                for tf in cfg.timeframes.enabled
-            }
+    def _analyze(self) -> dict[str, dict[str, dict[Timeframe, AnalyzedFrame]]]:
+        """Per lane, per symbol it trades: its enabled timeframes, each frame analyzed once for the run."""
+        cache: dict[tuple[str, Timeframe], AnalyzedFrame] = {}
+        out: dict[str, dict[str, dict[Timeframe, AnalyzedFrame]]] = {}
+        for lane in self.lanes:
+            cfg = lane.config
+            per: dict[str, dict[Timeframe, AnalyzedFrame]] = {}
+            for symbol, d in self.data.items():
+                if not lane.trades(symbol):
+                    continue
+                missing = [tf for tf in cfg.timeframes.enabled if tf not in d.frames]
+                if missing:
+                    where = "" if lane.name == MAIN else f" (lane {lane.name})"
+                    raise DataQualityError(f"{symbol}: no history for {missing}{where}")
+                for tf in cfg.timeframes.enabled:
+                    if (symbol, tf) not in cache:
+                        cache[symbol, tf] = analyze_frame(d.frames[tf], tf, cfg.indicators, cfg.regime)
+                per[symbol] = {tf: cache[symbol, tf] for tf in cfg.timeframes.enabled}
+            out[lane.name] = per
+        for symbol in self.data:
+            tfs = [lane.entry_tf for lane in self.lanes if symbol in out[lane.name]]
+            if tfs:
+                self._feed[symbol] = min(tfs, key=lambda tf: tf.seconds)
         return out
 
-    def _timeline(self, analyzed: Mapping[str, Mapping[Timeframe, AnalyzedFrame]]) -> list[pd.Timestamp]:
+    def _timeline(
+        self, analyzed: Mapping[str, Mapping[str, Mapping[Timeframe, AnalyzedFrame]]]
+    ) -> list[pd.Timestamp]:
         times: set[pd.Timestamp] = set()
-        for frames in analyzed.values():
-            idx = frames[self.entry_tf].df.index
-            if self.start is not None:
-                idx = idx[idx >= pd.Timestamp(self.start)]
-            if self.end is not None:
-                idx = idx[idx <= pd.Timestamp(self.end)]
-            times.update(idx)
+        for lane in self.lanes:
+            for frames in analyzed[lane.name].values():
+                idx = frames[lane.entry_tf].df.index
+                if self.start is not None:
+                    idx = idx[idx >= pd.Timestamp(self.start)]
+                if self.end is not None:
+                    idx = idx[idx <= pd.Timestamp(self.end)]
+                times.update(idx)
         return sorted(times)
 
     # --- loop ---------------------------------------------------------------------------------------------
@@ -231,11 +315,18 @@ class BacktestEngine:
         for step, ts in enumerate(timeline, start=1):
             t = ts.to_pydatetime()
             self.clock.set(t)
-            for symbol, frames in analyzed.items():
-                index = frames[self.entry_tf].df.index
-                pos = int(index.searchsorted(ts))
-                if pos < len(index) and index[pos] == ts:
-                    self._step_symbol(symbol, frames, pos, t, result)
+            for symbol, feed_tf in self._feed.items():
+                feed = self._frame_at(analyzed, symbol, feed_tf, ts)
+                if feed is not None:
+                    self.broker.on_bar(symbol, self._bar(symbol, feed[0].df.iloc[feed[1]], t))
+                for lane in self.lanes:
+                    frames = analyzed[lane.name].get(symbol)
+                    if frames is None:
+                        continue
+                    index = frames[lane.entry_tf].df.index
+                    pos = int(index.searchsorted(ts))
+                    if pos < len(index) and index[pos] == ts:
+                        self._step_symbol(symbol, frames, pos, t, result, lane)
             self.broker.record_equity(t)
             self._book_losses()
             if self.on_progress is not None and (step % self.progress_every == 0 or step == len(timeline)):
@@ -248,6 +339,25 @@ class BacktestEngine:
         result.equity_curve = list(self.broker.equity_curve)
         return result
 
+    def _frame_at(
+        self,
+        analyzed: Mapping[str, Mapping[str, Mapping[Timeframe, AnalyzedFrame]]],
+        symbol: str,
+        tf: Timeframe,
+        ts: pd.Timestamp,
+    ) -> tuple[AnalyzedFrame, int] | None:
+        """The *tf* frame of *symbol* (the first lane's with it) and the row of its bar closing at *ts*."""
+        for lane in self.lanes:
+            frames = analyzed[lane.name].get(symbol)
+            if frames is not None and tf in frames:
+                index = frames[tf].df.index
+                pos = int(index.searchsorted(ts))
+                return (frames[tf], pos) if pos < len(index) and index[pos] == ts else None
+        return None
+
+    def _bar(self, symbol: str, row: pd.Series, t: datetime) -> Bar:
+        return entry_bar(row, t, self.broker.spread_price(symbol, float_or_none(row["spread"])))
+
     def _step_symbol(
         self,
         symbol: str,
@@ -255,19 +365,18 @@ class BacktestEngine:
         pos: int,
         t: datetime,
         result: BacktestResult,
+        lane: _Lane,
     ) -> None:
-        row = frames[self.entry_tf].df.iloc[pos]
-        spread = self.broker.spread_price(symbol, float_or_none(row["spread"]))
-        bar = entry_bar(row, t, spread)
-        self.broker.on_bar(symbol, bar)
+        """One lane at the close *t* of its entry bar (the broker has already stepped the symbol)."""
+        bar = self._bar(symbol, frames[lane.entry_tf].df.iloc[pos], t)
         try:
-            ctx = self._context(symbol, frames, t, bar)
+            ctx = self._context(symbol, frames, t, bar, lane)
         except (InsufficientDataError, DataQualityError):
             return
-        self._manage(symbol, ctx, bar)
-        signals = self.strategies.evaluate(ctx)
+        self._manage(symbol, ctx, bar, lane, frames[lane.entry_tf], t)
+        signals = lane.strategies.evaluate(ctx)
         result.signals += sum(1 for s in signals if s.is_entry)
-        selected = self.arbiter.arbitrate(signals).selected
+        selected = lane.arbiter.arbitrate(signals).selected
         if selected is None:
             return
         spec = self.broker.spec_at(symbol)
@@ -315,26 +424,33 @@ class BacktestEngine:
             )
 
     def _context(
-        self, symbol: str, frames: Mapping[Timeframe, AnalyzedFrame], t: datetime, bar: Bar
+        self, symbol: str, frames: Mapping[Timeframe, AnalyzedFrame], t: datetime, bar: Bar, lane: _Lane
     ) -> StrategyContext:
         spec = self.broker.spec_at(symbol)
-        htf = None if self.maps is None else self.maps.at(symbol, self.context.get(symbol, {}), t, spec.point)
-        return bar_context(self.config, frames, symbol, t, bar, spec, self.evidence, htf)
+        htf = None if lane.maps is None else lane.maps.at(symbol, self.context.get(symbol, {}), t, spec.point)
+        return bar_context(lane.config, frames, symbol, t, bar, spec, lane.evidence, htf)
 
-    def _manage(self, symbol: str, ctx: StrategyContext, bar: Bar) -> None:
-        cfg = self.config.position_management
-        by_name = {s.name: s for s in self.strategies.strategies}
+    def _manage(
+        self, symbol: str, ctx: StrategyContext, bar: Bar, lane: _Lane, entry: AnalyzedFrame, t: datetime
+    ) -> None:
+        """The positions of *lane*'s strategies on *symbol* (an unknown strategy's: the main lane's)."""
+        cfg = self.config.management
         spec = self.data[symbol].spec
+        own_feed = self._feed.get(symbol) is lane.entry_tf
         for p in [p for p in self.broker.positions.values() if p.symbol == symbol]:
             name = self._by_magic.get(p.request.magic, "")
-            strategy = by_name.get(name)
+            if self._lane_of.get(name, MAIN) != lane.name:
+                continue
+            strategy = lane.by_name.get(name)
             if strategy is not None and strategy.should_close(ctx, p.side):
                 self.broker.request_close(p.ticket, ExitReason.SIGNAL)
                 continue
             if p.request.sl is None or p.sl is None:
                 continue
+            # bars held on the lane's own timeframe (the broker may step the symbol on a finer one)
+            held = p.bars_held if own_feed else entry.count_upto(t) - entry.count_upto(p.entry_time)
             adj = manage(
-                PositionView(p.side, p.entry_price, p.request.sl, p.sl, p.bars_held),
+                PositionView(p.side, p.entry_price, p.request.sl, p.sl, held),
                 mark=mark_price(p.side, bar.close, bar.spread),
                 atr=ctx.market.atr,
                 point=spec.point,

@@ -223,10 +223,14 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     from app.backtest.presets import aggressive_preset
     from app.backtest.runner import load_context, load_history, run_and_write
     from app.config import config_hash
+    from app.core.enums import Timeframe
     from app.market_data.history_store import ParquetHistoryStore
 
     settings = _settings(args)
     config = settings.config
+    if args.lane is not None and args.portfolio:
+        print("error: --lane runs one lane alone, --portfolio all of them: pick one", file=sys.stderr)
+        return 1
     if args.lane is not None:  # one lane alone: its timeframes, symbols and strategies (config lanes)
         try:
             config = config.for_lane(config.lane(args.lane))
@@ -250,7 +254,7 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     elif args.risk is not None:
         print("error: --risk goes with --preset aggressive", file=sys.stderr)
         return 1
-    plain = risk_preset is None and args.balance is None and args.lane is None
+    plain = risk_preset is None and args.balance is None and args.lane is None and not args.portfolio
     run_hash = settings.config_hash if plain else config_hash(config)
     server = args.server or settings.env.MT5_SERVER
     if not server:
@@ -259,11 +263,20 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     symbols = args.symbols.split(",") if args.symbols else config.symbols.allowed
     start, end = _date(args.start), _date(args.end)
     store = ParquetHistoryStore(settings.path(args.data))
+    # --portfolio (TAA-507): every lane next to the main entry timeframe in one account, as the engine trades
+    lanes = list(config.lanes) if args.portfolio else []
+    every = list(dict.fromkeys([*symbols, *(s for lane in lanes for s in lane.symbols)]))
+    tfs: dict[str, list[Timeframe]] = {s: list(config.timeframes.enabled) for s in symbols}
+    ctx_tfs: dict[str, list[Timeframe]] = {s: list(config.timeframes.context) for s in symbols}
+    for lane in lanes:
+        for s in lane.symbols:
+            tfs[s] = list(dict.fromkeys([*tfs.get(s, []), *lane.timeframes.enabled]))
+            ctx_tfs[s] = list(dict.fromkeys([*ctx_tfs.get(s, []), *lane.timeframes.context]))
     loaded = load_history(
         store,
         server,
-        symbols,
-        config.timeframes.enabled,
+        every,
+        tfs if lanes else config.timeframes.enabled,
         account_currency=config.backtest.account_currency,
         start=None,  # warm-up needs the bars before --start; the engine trades only inside the period
         end=end,
@@ -280,6 +293,7 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         else settings.path(
             f"data/backtests/{loaded.digest[:8]}-{run_hash[:8]}-seed{config.backtest.seed}"
             + ("" if risk_preset is None else f"-{risk_preset.name}")
+            + ("-portfolio" if args.portfolio else "")
         )
     )
 
@@ -297,10 +311,12 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         on_progress=progress if args.progress else None,
         detectors=detectors,
         # the H4/D1 market map as live (TAA-L809): strategies that read MarketContext.htf need it
-        context=load_context(store, server, symbols, config.timeframes.context, end=end)
-        if config.timeframes.context
+        context=load_context(store, server, every, ctx_tfs if lanes else config.timeframes.context, end=end)
+        if any(ctx_tfs.values())
         else None,
         risk_preset=risk_preset,
+        portfolio=args.portfolio,
+        main_symbols=symbols if args.portfolio else None,
     )
     m = compute_metrics(result.trades, result.equity_curve, result.initial_balance)
     print(f"backtest {', '.join(symbols)}  {result.start} -> {result.end}")
@@ -315,6 +331,12 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     print(f"  trades {m.trades}  win rate {m.win_rate}  profit factor {m.profit_factor}")
     print(f"  net {m.net_profit:,.2f}")
     print(f"  max drawdown {m.max_drawdown_percent:.2f}%  expectancy {m.expectancy_r} R")
+    if args.portfolio:  # one line per setup of the shared account
+        for name in sorted({t.strategy for t in result.trades}):
+            own = [t for t in result.trades if t.strategy == name]
+            rs = [t.r_multiple for t in own if t.r_multiple is not None]
+            mean = sum(rs) / len(rs) if rs else 0.0
+            print(f"  {name}: {len(own)} trades, {mean:+.3f} R/trade, net {sum(t.net for t in own):,.2f}")
     for name, path in paths.items():
         print(f"  {name}: {path}")
     print("  (a bar-based simulation; past results do not predict future results)")
@@ -825,6 +847,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     bt.add_argument("--risk", type=float, default=None, help="aggressive: risk per trade, 5-10 (default 7.5)")
     bt.add_argument("--lane", default=None, help="backtest one lane of config.yaml (lanes: NAME) on its own")
+    bt.add_argument(
+        "--portfolio",
+        action="store_true",
+        help="every lane of config.yaml next to the main entry timeframe in one account, as live",
+    )
     bt.add_argument(
         "--balance",
         type=float,

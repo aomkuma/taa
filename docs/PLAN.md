@@ -369,7 +369,9 @@ A single indicator never produces a signal unless `allow_single_indicator_signal
   - Per lane: `max_spread_to_sl_ratio` for its strategies, the symbol cooldown in its bars, and `management`
     (break-even, trailing, `time_stop_bars`, counted in the lane's bars).
   - The scanner, shadow trades and the paper book's bar clock follow the main entry timeframe;
-    `app.cli backtest --lane NAME` backtests one lane on its own.
+    `app.cli backtest --lane NAME` backtests one lane on its own, `--portfolio` every lane next to the main
+    entry timeframe in one account (TAA-507), as live: the broker steps a symbol on the finest entry timeframe
+    that trades it.
 
 ## A8. Decision engine & signal validation
 

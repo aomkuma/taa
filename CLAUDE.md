@@ -31,6 +31,7 @@ Read before larger work:
 .venv\Scripts\python -m app.cli config show | kill --reason "..." | audit verify | db upgrade
 .venv\Scripts\python -m app.cli backtest --server FBS-Demo --symbols EURUSD --start 2026-01-01 --end 2026-09-30   # needs data/history
 .venv\Scripts\python -m app.cli backtest --lane s1 --server FBS-Demo --symbols XAUUSD --start 2026-03-01 --end 2026-04-01   # one lane (config lanes)
+.venv\Scripts\python -m app.cli backtest --portfolio --server FBS-Demo --start 2026-03-01 --end 2026-04-01   # every lane, one account (TAA-507)
 .venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
 .venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
 .venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14 | demo-track --proven-only

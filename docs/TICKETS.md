@@ -42,7 +42,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M1 | Phase 2A — Technical evidence engine (rev. 2 follow-ups 5–6) | 10 | 10 | DONE |
 | M1 | Phase 3 — Strategy engine | 7 | 7 | DONE |
 | M1 | Phase 4 — Risk, decision pipeline, breakers | 8 | 8 | DONE |
-| M1 | Phase 5 — Backtesting | 6 | 6 | DONE |
+| M1 | Phase 5 — Backtesting | 7 | 7 | DONE |
 | M1 | Phase 6 — PAPER runtime | 6 | 6 | DONE |
 | M1 | Phase 6A — Symbol universe & suitability ranking (rev. 2, requirement 1) | 5 | 5 | DONE |
 | M1 | Phase 6B — Watchlists, opportunities & alert windows (rev. 2, requirement 2) | 5 | 5 | DONE |
@@ -703,6 +703,21 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 - [x] `app.cli backtest`
 - [x] seed, config and data hashes
 - [x] determinism and golden tests
+
+#### TAA-507 — Portfolio backtest: every entry lane in one account
+
+- **Status:** DONE
+- **Depends on:** 506
+- Owner, 2026-10-17: a backtest should trade like the real account, one account with every setup at once
+  (V1 and F1 on M15, S1 on M1), as the engine does live (PLAN §A7 entry lanes).
+
+- [x] `BacktestEngine(lanes=...)`: one shared account, risk budget, decision engine, loss breakers and per-symbol
+  limit; each lane its own config view, strategies, arbiter, evidence and market maps
+- [x] the broker steps each symbol once per bar on the finest entry timeframe that trades it; positions managed
+  by their strategy's lane, bars held counted on that lane's timeframe
+- [x] runner: per-symbol timeframes and context, lanes built from `config.lanes`, provenance lists the lanes
+- [x] `app.cli backtest --portfolio` (one line per setup in the output); the aggressive preset cages every lane
+- [x] tests: without lanes the plain run; a lane alone its own run; the shared symbol limit; bars held
 
 ### Phase 6 — PAPER runtime
 

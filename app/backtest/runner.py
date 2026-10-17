@@ -20,7 +20,14 @@ import pandas as pd
 
 from app import __version__
 from app.backtest.conversion import SeriesRates, missing_currencies
-from app.backtest.engine import BacktestEngine, BacktestResult, Progress, RiskPreset, SymbolData
+from app.backtest.engine import (
+    BacktestEngine,
+    BacktestLane,
+    BacktestResult,
+    Progress,
+    RiskPreset,
+    SymbolData,
+)
 from app.backtest.report import Provenance, write_reports
 from app.config import AppConfig
 from app.core.enums import Timeframe
@@ -30,6 +37,11 @@ from app.evidence.registry import EvidenceEngine
 from app.market_data.data_models import SymbolSpec
 from app.strategy.catalog import default_registry
 from app.strategy.market_maps import candle_frame
+from app.strategy.registry import StrategySet
+
+Timeframes = (
+    Sequence[Timeframe] | Mapping[str, Sequence[Timeframe]]
+)  # one list for all symbols, or per symbol
 
 HASH_COLUMNS = ("open_time", "open", "high", "low", "close", "spread")
 
@@ -87,11 +99,15 @@ class LoadedData:
     digest: str
 
 
+def _tfs(timeframes: Timeframes, symbol: str) -> Sequence[Timeframe]:
+    return timeframes.get(symbol, ()) if isinstance(timeframes, Mapping) else timeframes
+
+
 def load_context(
     store: HistorySource,
     server: str,
     symbols: Sequence[str],
-    timeframes: Sequence[Timeframe],
+    timeframes: Timeframes,
     *,
     end: datetime | None = None,
 ) -> dict[str, dict[Timeframe, pd.DataFrame]]:
@@ -102,7 +118,7 @@ def load_context(
     out: dict[str, dict[Timeframe, pd.DataFrame]] = {}
     for symbol in symbols:
         frames = {}
-        for tf in timeframes:
+        for tf in _tfs(timeframes, symbol):
             df = store.load(server, symbol, tf, None, end)
             if not df.empty:
                 frames[tf] = candle_frame(df)
@@ -114,7 +130,7 @@ def load_history(
     store: HistorySource,
     server: str,
     symbols: Sequence[str],
-    timeframes: Sequence[Timeframe],
+    timeframes: Timeframes,
     *,
     account_currency: str,
     start: datetime | None = None,
@@ -129,14 +145,15 @@ def load_history(
             )
         spec = SymbolSpec(**meta["spec"])
         frames = {}
-        for tf in timeframes:
+        for tf in _tfs(timeframes, symbol):
             df = store.load(server, symbol, tf, start, end)
             if df.empty:
                 raise DataQualityError(f"{symbol} {tf}: no history between {start} and {end}")
             frames[tf] = df.reset_index(drop=True)
         data[symbol] = SymbolData(spec, frames)
     # conversion series: every other stored symbol with a spec, on the longest timeframe in use
-    conv_tf = max(timeframes, key=lambda t: t.seconds)
+    every = {tf for symbol in symbols for tf in _tfs(timeframes, symbol)}
+    conv_tf = max(every, key=lambda t: t.seconds)
     conversion: dict[str, pd.DataFrame] = {}
     specs: dict[str, SymbolSpec] = {}
     for srv, symbol, tf in store.available():
@@ -168,52 +185,79 @@ def run_backtest(
     detectors: Collection[str] | Literal["all"] | None = None,
     context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
     risk_preset: RiskPreset | None = None,
+    portfolio: bool = False,
+    main_symbols: Collection[str] | None = None,
 ) -> tuple[BacktestResult, Provenance]:
     """*detectors*: the evidence detectors to run. None: those the selected strategies need to fire (the
     pattern setups trigger on evidence; without it they never fire); ``"all"``: every detector
     ``config.evidence`` enables, as the engine runs live (setup strength then matches live, at roughly
-    0.5-1 s per bar); a collection: exactly those (empty: none)."""
-    items = [i for i in config.strategies.items if strategy_names is None or i.name in strategy_names]
-    if strategy_names is not None:
-        unknown = sorted(set(strategy_names) - {i.name for i in items})
-        if unknown:
-            raise DataQualityError(f"strategies not listed in config.yaml: {unknown}")
-        items = [i.model_copy(update={"enabled": True}) for i in items]
-    strategies = default_registry().from_config(
-        config.strategies.model_copy(update={"items": items}), config.timeframes, config.evidence.confluence
-    )
+    0.5-1 s per bar); a collection: exactly those (empty: none).
+
+    *portfolio* (TAA-507): every lane of ``config.lanes`` trades next to the main entry timeframe in the one
+    account, as the engine trades live; *strategy_names* then selects across all lanes. *main_symbols*: the
+    symbols the main entry timeframe trades (None: every loaded symbol)."""
+    lanes = list(config.lanes) if portfolio else []
+    known = {i.name for i in config.strategies.items} | {i.name for x in lanes for i in x.strategies.items}
+    unknown = sorted(set(strategy_names or ()) - known)
+    if unknown:
+        raise DataQualityError(f"strategies not listed in config.yaml: {unknown}")
     registry = evidence_registry()
-    if detectors is None:
-        only: set[str] | None = set(strategies.required_detectors())
-    else:
-        only = None if detectors == "all" else set(detectors)
-    plan = registry.plan_from_config(config.evidence, only=only)
+
+    def evidence_for(strategies: StrategySet) -> EvidenceEngine | None:
+        if detectors is None:
+            only: set[str] | None = set(strategies.required_detectors())
+        else:
+            only = None if detectors == "all" else set(detectors)
+        plan = registry.plan_from_config(config.evidence, only=only)
+        return EvidenceEngine(registry, plan) if plan.order else None
+
+    strategies = _strategy_set(config, strategy_names)
+    evidence = evidence_for(strategies)
+    extra = []
+    for lane in lanes:
+        cfg = config.for_lane(lane)
+        sset = _strategy_set(cfg, strategy_names)
+        extra.append(BacktestLane(lane.name, cfg, sset, frozenset(lane.symbols), evidence_for(sset)))
     engine = BacktestEngine(
         config,
         loaded.data,
         strategies,
         loaded.rates,
-        evidence=EvidenceEngine(registry, plan) if plan.order else None,
+        evidence=evidence,
         start=start,
         end=end,
         on_progress=on_progress,
         config_hash=config_hash,
         context=context,
         risk_preset=risk_preset,
+        lanes=extra,
+        main_symbols=main_symbols,
     )
     result = engine.run()
+    engines = [e for e in (evidence, *(x.evidence for x in extra)) if e is not None]
     provenance = Provenance(
         seed=config.backtest.seed,
         config_hash=config_hash,
         data_hash=loaded.digest,
         code_version=__version__,
         extra={
-            "strategies": strategies.names,
-            "detectors": list(plan.order),
+            "strategies": [n for sset in (strategies, *(x.strategies for x in extra)) for n in sset.names],
+            "detectors": list(dict.fromkeys(d for e in engines for d in e.plan.order)),
+            **({} if not extra else {"lanes": [x.name for x in extra if x.strategies.strategies]}),
             **({} if risk_preset is None else {"risk_preset": risk_preset.name}),
         },
     )
     return result, provenance
+
+
+def _strategy_set(config: AppConfig, names: Sequence[str] | None) -> StrategySet:
+    """The strategies of *config* (a lane's view): the enabled ones, or exactly *names* (enabled anyway)."""
+    items = config.strategies.items
+    if names is not None:
+        items = [i.model_copy(update={"enabled": True}) for i in items if i.name in names]
+    return default_registry().from_config(
+        config.strategies.model_copy(update={"items": items}), config.timeframes, config.evidence.confluence
+    )
 
 
 def run_and_write(
@@ -229,6 +273,8 @@ def run_and_write(
     detectors: Collection[str] | Literal["all"] | None = None,
     context: Mapping[str, Mapping[Timeframe, pd.DataFrame]] | None = None,
     risk_preset: RiskPreset | None = None,
+    portfolio: bool = False,
+    main_symbols: Collection[str] | None = None,
 ) -> tuple[BacktestResult, dict[str, Path]]:
     result, provenance = run_backtest(
         config,
@@ -241,5 +287,7 @@ def run_and_write(
         detectors=detectors,
         context=context,
         risk_preset=risk_preset,
+        portfolio=portfolio,
+        main_symbols=main_symbols,
     )
     return result, write_reports(result, provenance, out_dir)

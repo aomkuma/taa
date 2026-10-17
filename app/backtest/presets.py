@@ -38,6 +38,7 @@ from app.config import (
     HIGH_RISK_CEILING_RISK_PER_TRADE_PCT,
     AppConfig,
     HighRiskConfig,
+    StrategiesConfig,
 )
 from app.core.errors import ConfigError
 from app.risk.limits import aggressive_limits, effective_risk
@@ -194,10 +195,11 @@ PROVEN_SETUPS = ("setup_harmonic_prz", "setup_breakout")
 def aggressive_preset(
     config: AppConfig, risk_percent: float = AGGRESSIVE_DEFAULT_RISK_PCT
 ) -> tuple[AppConfig, RiskPreset]:
-    """The aggressive preset for a local backtest (PLAN §A36): only the cage's setups enabled, the high-risk
-    cage from ``config.yaml`` → ``high_risk`` (or its defaults with :data:`PROVEN_SETUPS`), and the preset's
-    limits for *risk_percent*. The profile's minimum RR is left to ``risk:`` (as the standard backtests run).
-    Raises :class:`ConfigError` for a risk outside 5-10 % or setups that ``config.yaml`` lacks."""
+    """The aggressive preset for a local backtest (PLAN §A36): only the cage's setups enabled (in every
+    lane), the high-risk cage from ``config.yaml`` → ``high_risk`` (or its defaults with
+    :data:`PROVEN_SETUPS`), and the preset's limits for *risk_percent*. The profile's minimum RR is left
+    to ``risk:`` (as the standard backtests run). Raises :class:`ConfigError` for a risk outside 5-10 % or
+    setups that ``config.yaml`` lacks."""
     if not AGGRESSIVE_MIN_RISK_PCT <= risk_percent <= HIGH_RISK_CEILING_RISK_PER_TRADE_PCT:
         raise ConfigError(
             f"the aggressive preset risks {AGGRESSIVE_MIN_RISK_PCT:g}-"
@@ -210,8 +212,13 @@ def aggressive_preset(
         if not setups:
             raise ConfigError(f"config.yaml lists none of the proven setups {list(PROVEN_SETUPS)}")
         section = HighRiskConfig(setups=setups)
-    items = [i.model_copy(update={"enabled": i.name in section.setups}) for i in config.strategies.items]
-    out = config.model_copy(update={"strategies": config.strategies.model_copy(update={"items": items})})
+
+    def caged(strategies: StrategiesConfig) -> StrategiesConfig:
+        items = [i.model_copy(update={"enabled": i.name in section.setups}) for i in strategies.items]
+        return strategies.model_copy(update={"items": items})
+
+    lanes = [lane.model_copy(update={"strategies": caged(lane.strategies)}) for lane in config.lanes]
+    out = config.model_copy(update={"strategies": caged(config.strategies), "lanes": lanes})
     out = AppConfig.model_validate(out.model_dump())
     from app.backtest.engine import RiskPreset  # local: the web imports this module, not the engine
 

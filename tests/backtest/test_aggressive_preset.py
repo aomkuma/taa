@@ -53,6 +53,18 @@ class TestPreset:
         assert {i.name for i in out.strategies.items if i.enabled} == {"setup_breakout"}
         assert preset.effective.max_account_drawdown_percent == 50
 
+    def test_the_cage_holds_in_every_lane(self) -> None:  # TAA-507: a portfolio run trades the lanes too
+        lane = {
+            "name": "s1",
+            "timeframes": {"higher": "H1", "entry": "M1"},
+            "symbols": ["XAUUSD"],
+            "strategies": {"items": [{"name": "setup_breakout_scalp"}, {"name": "setup_breakout_box"}]},
+        }
+        section = {"setups": ["setup_breakout", "setup_breakout_scalp"]}
+        config = AppConfig.model_validate(YAML.model_dump() | {"high_risk": section, "lanes": [lane]})
+        out, _ = aggressive_preset(config, 7.5)
+        assert {i.name for i in out.lanes[0].strategies.items if i.enabled} == {"setup_breakout_scalp"}
+
     @pytest.mark.parametrize("risk", [4.9, 10.1])
     def test_risk_outside_five_to_ten_is_refused(self, risk: float) -> None:
         with pytest.raises(ConfigError, match="5-10"):
