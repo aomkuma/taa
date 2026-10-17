@@ -345,3 +345,45 @@ earlier -0.294 U (hit 0.44, 97), latest +0.274 U (hit 0.65, 71). Gold's own firs
 seconds or minutes." From now on a signal is judged first by **how often price runs 5 USD its way before the
 stop**, and how fast. Round 1 and 2's entries do that 41-54 % of the time with a stop of about 6.5 USD, as often as
 a coin-flip side at the same minutes.
+
+### Round 3 - a learned signal (owner, 2026-10-17: "do whatever you think will make the setup profitable")
+
+Written before any result. Instead of cutting one condition at a time, a gradient-boosted model (LightGBM, a
+separate research venv `data/venv-research`, never imported by the app) learns from every measure together when
+price runs **+5 USD before the stop**.
+
+- **Candidates:** every minute in the active windows (Asia 00:00-02:00 UTC = 07:00-09:00 Thai; London
+  08:00-09:30 London; New York 08:15-11:15 ET, the volatile hours measured above), weekdays, both sides.
+- **Label:** entry at the minute's open (a BUY at the ask), target +5 USD (a limit, no slippage), stop 4, 6 or 8
+  USD (7 points of slippage), 30-minute time limit; both in one bar = the stop.
+- **Features at the previous bar's close only:** gold's returns over 1-60 minutes, ranges, the position in the
+  last hour's / today's range, distances to today's, yesterday's and the Asian high/low and round 50s, the last
+  bar's body and wicks, tick volume against its hour, the spread, the dollar composite's returns (six majors),
+  M15/H1 EMA position and slope, the 20-day range, minutes since the session's start and to / since a release,
+  the weekday; directional ones signed by the side.
+- **Judging:** train on the earlier six months (2025-10-14 .. 2026-04-14), test on the latest six month by month;
+  and a monthly re-fit on the previous six months (the owner's revision cycle). The probability threshold and the
+  stop are chosen inside the training window (its last two months as validation), never on the test. One
+  position at a time. Reported: +5 USD hit rate, R and USD per trade, trades a day, months positive, and the
+  losers' three kinds.
+
+**Results** (`ml_dataset.py`, `ml_train.py`; 100,610 active minutes 2025-10-14 .. 2026-10-14; the long variant
+`--long` 296,554 from 2023-11):
+
+| Model (test: 2026-04-14 .. 10-14) | Stop chosen | Trades | Hit +5 USD | Base hit | Need | R/trade | USD (0.01 lot) | Months + | Test AUC |
+|---|---|---|---|---|---|---|---|---|---|
+| Fixed, fitted on 4 months (2025-10 .. 2026-02) | 8 USD | 711 | 57.2 % | 51 % | 62 % | -0.027 | -152.0 | 3/7 | 0.537 |
+| Monthly re-fit, 4 months | 8 (mostly) | 489 | 57.5 % | 51 % | 62 % | -0.023 | -88.0 | 1/7 | 0.53-0.56 |
+| Fixed, fitted on 2023-11 .. 2026-02 | 6 USD | 304 | 53.6 % | 47 % | 55 % | -0.019 | -35.0 | 4/7 | 0.544 |
+| Monthly re-fit, expanding from 2023-11 | 6-8 | 297 | 58.2 % | | | -0.033 | -67.6 | 3/7 | 0.536-0.578 |
+
+The model reads new data a little better than chance in every month (AUC 0.53-0.58, the latest months the
+highest) and lifts the +5 USD hit rate by about 6 points, short of the 7-11 points the target/stop geometry and the
+costs need. The features it uses most: the 20-day range, minutes into the session, ATR, the H1 EMA position and
+slope, today's range against the 20-day range, the distances to yesterday's high/low and the Asian range.
+
+**Is 5 USD too far?** (owner, 2026-10-17: "gold runs 70-100 USD a day"). No: over the active minutes of the latest
+six months price runs 5 USD one way or the other within 5 minutes 40 % of the time, within 15 minutes 79 %, within
+30 minutes 94 % (the daily range's median 82.5 USD). The hard part is the side. A side at random reaches +5 USD
+before a 4 / 6 / 8 USD stop in 39.7 / 49.2 / 55.0 % of the minutes; break-even after the costs needs 44.9 / 54.8 /
+61.7 %. A signal therefore has to pick the side right about 5-7 points more often than a coin.
