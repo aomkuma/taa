@@ -659,6 +659,22 @@ trades. Chosen on year A only (round-trip cost floors k 6-16, then the spread-on
   2026-03, 2026-08, 2024-10 .. 12, 2024-03 and 2024-08, S1 as it is on 2024-03 and 2024-08 (frozen code).
   `config.yaml` stays until they hold and the owner agrees.
 
+### 23.1 The trade count: about two a day per setup (owner, 2026-10-17)
+
+The owner's count goal is now about two trades a day per setup (first asked: 450 in three years for S1). In the
+funnel, with the floor:
+
+- **More trades from gold alone cost the edge** (`s1_levers.py`, 144 variants: Donchian 10/20, Asia hours,
+  New York skip, cooldown, time stop): the best one with at least 450 trades in three years makes 526 trades at
+  +0.049 R/trade (C −0.085, A +0.079, B +0.097) against 252 at +0.087.
+- **S1 is a gold setup** (`s1_fx.py`, `s1_goldlike.py`, the same rules and floor): the 7 FX majors (M1 history
+  2023-09 .. 2026-10) lose in nearly every pair and year (all 8 markets: about 2 trades a day at −0.03 to −0.06
+  R/trade); so do US100, JP225, US30, US500 and XAUAUD (spread 0.21-0.36 of the M1 range, like gold in 2024-25).
+  The floor removes the cost block; the fade of an M1 counter-trend break simply has no edge there. Currencies
+  and indices need setups of their own (their behaviour measured, other timeframes), not S1's rules.
+- So S1 stays a gold setup with about 0.4 trades a day; the two-a-day goal needs another source of gold trades
+  (an independent event) or the other setups.
+
 ## 10. Still to do
 
 - Heavy family on USDJPY and XAUUSD (`fam_heavy_USDJPY/XAUUSD.db`, replaying since 2026-10-07 19:48 UTC): rerun
