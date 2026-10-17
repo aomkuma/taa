@@ -753,6 +753,29 @@ median M1 range (gold 0.07-0.09) - M1 scalps not viable at FBS standard costs; 1
 new stores identical where they overlap), DST correct, 330 spike bars are real news moves; ticks 101 M, none out of
 order; FX majors clean.
 
+**News agent, round 2 - S2 under bad fills** (`agents/news/` notes "Round 2", `fills.py`, `m1_stress.py`). Fills
+modelled at the first tick L seconds after the trigger, the spread widened to X USD from the release to +5 s
+(decaying by +15 s; a wide quote can fire a stop), 0.07 slippage on top. On the ticks the entry fills a mean 1-2 USD
+(median 0.4-0.7) past the trigger whatever the latency: the first jump sets the cost. R a trade, exit at +60 s:
+
+| D (trigger USD) | Latency | Design 8 releases, X = 0 / 2 / 4 USD | Test 14 releases, X = 0 / 2 / 4 |
+|---|---|---|---|
+| 2 (frozen) | 0 s | +1.17 / +1.19 / -0.17 | +1.23 / +1.21 / +0.65 |
+| 2 | 1.5 s | +1.11 / +1.01 / -0.31 | +0.82 / +0.70 / +0.08 |
+| 3 | 0 s | +1.16 / +1.13 / +1.06 | +1.17 / +1.07 / +0.72 |
+| 3 | 1.5 s | +1.12 / +1.04 / +0.92 | +0.82 / +0.75 / +0.69 |
+
+Gold M1 2021-09 .. 2026-02 (2021-23 / 2023-26), D 3 with X = 4: fill gap 1 USD +0.52 / +0.59 R, 2 USD +0.39 / +0.46,
+3 USD +0.19 / +0.34, 4 USD -0.40 / -0.05. **The frozen S2 (D 2) breaks at a release spread of about 4 USD or a fill
+gap of about 4 USD; D 3 is the robust setting** (chosen on the design rows' robustness; its test numbers were seen in
+the same table: +136 USD, +1.17 R against D 2's +144). Exiting at +300 s is worse than +60 s in every design cell.
+More releases with the same straddle (official calendars added: JOLTS from BLS, weekly claims from the DOL rule
+and OPM holidays; ISM's calendar is behind a login): share of 72 plans positive in both design periods CPI 54 %,
+NFP 38 %, FOMC 7 %, claims / GDP / JOLTS / minutes / PCE / PPI / retail sales 0 % - nothing new frozen. The
+confirmation idea (the CPI fakes) cannot be designed yet: 8 pre-2026-03 tick releases, and the test's fakes were
+seen; it needs releases from 2026-10 on. **News on gold: about 2.6 trades a month (S2 1.9, P1 0.7); test 19 trades,
++166.7 USD.** The deciding unknown: the real spread and stop fills at the release second on the owner's account.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had

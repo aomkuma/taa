@@ -261,3 +261,86 @@ P1 (gold M1, 14:00 .. 17:00 ET):
 - The eye's lesson "follow only when the presser agrees with the statement" is **wrong on the design data**:
   2021-26, agreeing 16 trades +0.56 R, disagreeing 19 +1.74 R (A 0.58 vs 0.99; B 0.54 vs 2.57). Five charts are
   not a sample; the rule stays as frozen.
+
+# Round 2 (lead, 2026-10-17): fill realism, more releases, the confirmation
+
+## 1. S2 under bad fills (`fills.py` ticks, `m1_stress.py` M1 history)
+
+Model (ticks): every order (entry stop, protective stop, exit) fills at the first tick >= LAT s after its trigger
+tick; the spread is widened to X USD from the release second to +5 s, decaying to the feed's own by +15 s (mid
++/- half), so a wide quote can trigger a stop order by itself; +0.07 slippage. M1 history (worst-case order): a
+fill gap GAP past the trigger on entry and on stop exits, the widened spread as a mid trigger at D - X/2 and an
+entry X/2 worse; USD at 4000, scaled by price. The auditor's facts: the feed's spread is capped at 0.39; the
+largest single tick jump in release minute 0 has a median 2.97 USD (max 61); normal stop fills slip 0.15 (p99
+1.0-1.8). Measured here (27 design windows): the entry fill lands a mean 1-2 USD (median 0.4-0.7) past the trigger
+whatever the latency - the first jump, not the latency, sets the cost.
+
+R a trade, exit +60 s, CPI + NFP (design ticks = 8 releases 2025-10 .. 2026-02; test ticks = 14, run once,
+nothing chosen from it):
+
+| D | Latency s | Design X=0 | X=1 | X=2 | X=4 | Test X=0 | X=1 | X=2 | X=4 |
+|---|---|---|---|---|---|---|---|---|---|
+| 2 (frozen) | 0 | 1.17 | 1.15 | 1.19 | **-0.17** | 1.23 | 1.17 | 1.21 | 0.65 |
+| 2 | 0.3 | 1.00 | 0.97 | 0.90 | **-0.30** | 0.78 | 0.76 | 0.76 | 0.51 |
+| 2 | 0.7 | 1.12 | 1.10 | 1.07 | **-0.20** | 1.04 | 1.00 | 0.76 | 0.81 |
+| 2 | 1.5 | 1.11 | 1.08 | 1.01 | **-0.31** | 0.82 | 0.71 | 0.70 | 0.08 |
+| 3 | 0 | 1.16 | 1.13 | 1.13 | 1.06 | 1.17 | 1.09 | 1.07 | 0.72 |
+| 3 | 0.3 | 1.01 | 0.97 | 0.91 | 0.22 | 0.62 | 0.59 | 0.75 | 0.70 |
+| 3 | 0.7 | 1.12 | 1.09 | 1.05 | 0.99 | 1.07 | 1.01 | 0.98 | 0.60 |
+| 3 | 1.5 | 1.12 | 1.08 | 1.04 | 0.92 | 0.82 | 0.79 | 0.75 | 0.69 |
+| 5 | 0 | 1.15 | 1.18 | 1.06 | 0.90 | 0.87 | 0.84 | 0.85 | 0.63 |
+| 5 | 1.5 | 1.05 | 1.03 | 0.93 | 0.98 | 0.79 | 0.77 | 0.80 | 0.61 |
+
+D = 1 dies at X = 2 (design -0.29 .. -0.45). Exit +300 s is below +60 s in design at every cell (D2: 0.46-0.74).
+
+M1 history 2021-09 .. 2026-02 (A / B, exit after 1 minute):
+
+| D | Gap USD | X=0 | X=2 | X=4 |
+|---|---|---|---|---|
+| 2 | 1 | 0.74 / 0.84 | 0.63 / 0.67 | 0.08 / 0.22 |
+| 2 | 2 | 0.59 / 0.71 | 0.48 / 0.55 | -0.07 / 0.10 |
+| 2 | 3 | 0.46 / 0.59 | 0.35 / 0.42 | -0.20 / -0.03 |
+| 2 | 4 | 0.13 / 0.37 | 0.13 / 0.30 | -0.34 / -0.15 |
+| 3 | 1 | 0.68 / 0.74 | 0.64 / 0.74 | 0.52 / 0.59 |
+| 3 | 2 | 0.53 / 0.62 | 0.50 / 0.62 | 0.39 / 0.46 |
+| 3 | 3 | 0.19 / 0.40 | 0.19 / 0.40 | 0.19 / 0.34 |
+| 3 | 4 | -0.40 / -0.05 | same | same |
+
+(D 5 on M1 collapses at gap >= 2: the worst-case order then counts the pre-trigger part of the bar as adverse -
+an artefact of M1, the ticks above show D 5 holding.) Test on M1 (once): D2 gap 3 X 4 +0.07; D3 gap 3 X 4 +1.86.
+
+**Break-even:** the frozen S2 (D = 2) survives any latency to 1.5 s and spreads to 2 USD, and breaks when the quote
+widens to ~4 USD at the release (the wide quote itself fires the stop orders on the wrong side) or the fill gap
+reaches ~4 USD on M1 history. **The most robust variant is D = 3, exit +60 s**: >= +0.6 R in every test cell, >=
++0.9 R in design except one cell (0.22), and positive on M1 history to a 3 USD gap at any spread. The frozen S2
+verdict stands; D = 3 is the version to prefer if real release spreads turn out wider than the feed's 0.39 cap.
+
+## 2. More releases with official dates (same straddle, M1 worst case, 2021-09 .. 2026-02)
+
+Calendars added (`calendar2.py`): JOLTS 10:00 ET (BLS archive, 61 dates; release-bar volume / prior 10 bars median
+1.84) and weekly claims 08:30 ET (DOL rule "Thursday 8:30, moved for a federal holiday" + OPM Thursday holidays incl.
+the 2025-01-09 day of mourning; the 2025 shutdown weeks left out; 261 dates, volume ratio median 2.04). ISM: the
+calendar sits behind a login on ismworld.org - not added. GDP, PCE, retail sales, PPI were already in.
+
+Share of the 72-plan grid (D 2/3/5 x exit 1/5 min x gap 1-4 x spread 0/2/4) positive in both A and B: CPI 54 %,
+NFP 38 %, FOMC 7 %, **claims, GDP, JOLTS, minutes, presser minute, PCE, PPI, retail sales: 0 %**. At D 2/3, gap 1:
+JOLTS +0.18..0.35 in A but -0.08..-0.11 in B; PPI -0.16..0.02; claims -0.01..-0.22 in both; PCE -0.25..-0.40;
+GDP / retail sales negative. Their first minute is too small against a stop that must sit outside the release
+noise. **No new release rule passes the design - nothing frozen, no test spent.**
+
+## 3. The confirmation variant (the CPI fakes)
+
+Pre-2026-03 ticks hold 8 CPI / NFP releases (2 fakes). Descriptively, over all 23 triggered design windows (every
+release type): "the mid still beyond the trigger 2 s after it" separates the S2 trades (held 14: +0.79 R, not held
+9: -0.54 R); cutting at +2 s when not held adds only +0.09 R on the 23 and +0.02 R on the 8 CPI / NFP. **It cannot be
+designed yet** (two fakes to fit on), and the test window is no longer clean for it (its CPI fakes were seen on the
+charts). Revisit when 2026-10+ releases have accumulated as a fresh test.
+
+## Combined news calendar (trades a month)
+
+| Rule | Instrument | Events | Trades a month | Test 2026-03 .. 10-14 |
+|---|---|---|---|---|
+| S2 (D 2, or D 3 if spreads widen) | gold | CPI + NFP 08:30 ET | ~1.9 | 14 trades, +144 USD, +1.23 R (D3: +136 USD, +1.17 R) |
+| S2 | each USD major (one USD bet) | CPI + NFP | ~1.9 per pair | 15 per pair, +0.58..+0.93 R |
+| P1 | gold | FOMC presser, 8 a year | ~0.7 | 5 trades, +22.6 USD, +0.77 R |
+| Gold total | | | **~2.6** | 19 trades, +166.7 USD |

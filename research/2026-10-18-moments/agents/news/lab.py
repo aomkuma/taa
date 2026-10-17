@@ -18,7 +18,7 @@ import gold  # noqa: E402
 SLIP = 0.07
 HERE = Path(__file__).parent
 A0, B0, T0, T1 = (pd.Timestamp(x, tz="UTC") for x in ("2021-09-01", "2023-11-01", "2026-03-01", "2026-10-14 08:18"))
-PRIORITY = ["FOMC", "PC", "MIN", "NFP", "CPI", "PCE", "PPI", "RET", "GDP", "CLM"]
+PRIORITY = ["FOMC", "PC", "MIN", "NFP", "CPI", "PCE", "PPI", "RET", "GDP", "JOL", "CLM"]
 
 
 def period(t: pd.Timestamp) -> str:
