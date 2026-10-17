@@ -9215,7 +9215,7 @@
           "max_risk_per_trade_percent": 10.0,
           "max_total_open_risk_percent": 20.0,
           "max_weekly_loss_percent": 35.0,
-          "min_lot_max_risk_percent": 15.0,
+          "min_lot_max_risk_percent": 20.0,
           "min_margin_level_percent": 150.0,
           "modes": [
             "PAPER",

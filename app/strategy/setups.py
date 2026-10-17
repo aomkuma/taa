@@ -1045,6 +1045,28 @@ class TripleScreenParams(SetupParams):
     target_front_atr: float = Field(default=0.25, ge=0, le=2)
     pivot_level_tfs: tuple[ScreenFrame, ...] = ("H1", "H4")  # (): no location gate
     pivot_tol_atr: float | None = Field(default=None, gt=0, le=2, description="None: the read's tolerance")
+    # the tide one level up (2026-10-17, the two-year study): the last closed bar of this timeframe (an
+    # enabled one, e.g. ``timeframes.higher: D1``) beyond its EMA(ema_mid) and the EMA sloping the trade's way
+    # over ``tide_slope_bars`` bars; None: off
+    tide_ema_tf: ScreenFrame | None = None
+    tide_slope_bars: int = Field(default=5, ge=1, le=50)
+
+
+def _ema_tide(ctx: StrategyContext, tf: str, bars: int, buy: bool) -> Condition:
+    """The *tf* tide with the trade: close beyond ``ema_mid`` and the EMA rising (BUY) / falling (SELL) over
+    *bars* closed bars. A missing frame or column holds (fail closed)."""
+    label = "ema_tide"
+    frame = ctx.frames.get(Timeframe(tf))
+    if frame is None or len(frame) < bars + 1 or not {"close", "ema_mid"} <= set(frame.columns):
+        return Condition(label, False, 1.0, f"no {tf} frame with ema_mid")
+    close, mid = float(frame["close"].iloc[-1]), frame["ema_mid"].to_numpy(dtype=float)
+    slope = mid[-1] - mid[-1 - bars]
+    if not (np.isfinite(close) and np.isfinite(slope)):
+        return Condition(label, False, 1.0, f"{tf} EMA not ready")
+    sign = 1 if buy else -1
+    ok = (close - mid[-1]) * sign > 0 and slope * sign > 0
+    side = "above" if close > mid[-1] else "below"
+    return Condition(label, ok, 1.0, f"{tf} close {side} the EMA, slope {slope:+.5g} over {bars} bars")
 
 
 class TripleScreen(EvidenceSetup):
@@ -1060,6 +1082,8 @@ class TripleScreen(EvidenceSetup):
       the H1 or H4 chart read (``pivot_level_tfs``).
     - **Context:** the H4 map with the trade (``screen_h4: with``; ``with_or_range`` also in a range) and the
       H4 swings not against it. The second screen (the wave) is read from the location, not the H1 state.
+    - **D1 tide** (``tide_ema_tf``, off by default): the higher timeframe's close beyond its EMA(50) with the
+      EMA sloping the trade's way (the two-year study: with it +0.18 R a trade at 3 R, against it about 0).
     - **Plan:** the stop beyond the pullback's extreme by ``stop_buffer_atr`` entry ATR; the target
       ``target_front_atr`` H4 ATR before the next H4 level, at most ``rr_target`` R, at least ``min_rr``.
 
@@ -1081,11 +1105,14 @@ class TripleScreen(EvidenceSetup):
         self, trigger: ActiveEvidence, items: Sequence[ActiveEvidence], ctx: StrategyContext
     ) -> list[Condition]:
         p: TripleScreenParams = self.params
-        if not p.pivot_level_tfs:
-            return []
-        return [
-            _pivot_at_level(ctx.market, p.pivot_level_tfs, trigger.evidence.invalidation, p.pivot_tol_atr)
-        ]
+        out = []
+        if p.tide_ema_tf is not None:
+            buy = trigger.evidence.direction is Direction.BULL
+            out.append(_ema_tide(ctx, p.tide_ema_tf, p.tide_slope_bars, buy))
+        if p.pivot_level_tfs:
+            inv = trigger.evidence.invalidation
+            out.append(_pivot_at_level(ctx.market, p.pivot_level_tfs, inv, p.pivot_tol_atr))
+        return out
 
 
 SETUPS: tuple[type[EvidenceSetup], ...] = (

@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import dataclasses
 
+import numpy as np
+import pandas as pd
 import pytest
 
-from app.core.enums import Action
+from app.core.enums import Action, Timeframe
 from app.evidence.framework import ActiveEvidence, Direction, Family
 from app.indicators.chart_read import Level, LevelRole, Structure
 from app.indicators.market_map import MapState, MarketMap, TimeframeMap
@@ -153,3 +155,32 @@ class TestCatalog:
         assert TripleScreen in SETUPS
         assert TripleScreen.advised is False  # the scanner does not offer it
         assert TripleScreen.name == "setup_triple_screen"
+
+
+def with_d1(ctx: StrategyContext, ema: tuple[float, float], close: float) -> StrategyContext:
+    """A D1 frame (the tide) whose EMA moves linearly from ema[0] to ema[1] over 10 bars."""
+    idx = pd.date_range(end=T, periods=10, freq="1D")
+    frame = pd.DataFrame({"close": np.full(10, close), "ema_mid": np.linspace(*ema, 10)}, index=idx)
+    return dataclasses.replace(ctx, frames={**ctx.frames, Timeframe.D1: frame})
+
+
+class TestTide:
+    def test_a_buy_needs_the_d1_close_above_a_rising_ema(self) -> None:
+        up = with_d1(ts_ctx(trigger()), (1.0950, 1.0990), 1.1000)
+        sig = run(TripleScreen, up, tide_ema_tf="D1")
+        assert sig.action is Action.BUY and "ema_tide" in [c.name for c in sig.conditions]
+        below = with_d1(ts_ctx(trigger()), (1.0950, 1.0990), 1.0980)
+        assert failed(run(TripleScreen, below, tide_ema_tf="D1")) == ["ema_tide"]
+        falling = with_d1(ts_ctx(trigger()), (1.0990, 1.0950), 1.1000)
+        assert failed(run(TripleScreen, falling, tide_ema_tf="D1")) == ["ema_tide"]
+
+    def test_a_sell_is_the_mirror(self) -> None:
+        down = with_d1(sell_ctx(), (1.1060, 1.1020), 1.1000)
+        assert run(TripleScreen, down, tide_ema_tf="D1").action is Action.SELL
+        up = with_d1(sell_ctx(), (1.0950, 1.0990), 1.1000)
+        assert run(TripleScreen, up, tide_ema_tf="D1").action is Action.HOLD
+
+    def test_a_missing_frame_holds_and_the_default_is_off(self) -> None:
+        assert failed(run(TripleScreen, ts_ctx(trigger()), tide_ema_tf="D1")) == ["ema_tide"]
+        sig = run(TripleScreen, ts_ctx(trigger()))
+        assert sig.action is Action.BUY and "ema_tide" not in [c.name for c in sig.conditions]
