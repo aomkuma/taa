@@ -705,6 +705,38 @@ filters cut the loss a trade (-0.164 -> -0.066 R) but by removing bad days, not 
 improved alike). About 0.12 R of the design result was gold's 2024-26 bull drift. Trades hand-checked against the
 bars (five) and the vectorised simulator against the loop simulator (300 trades).
 
+**News agent** (`agents/news/`, notes.md with every rule frozen before its test, a journal and charts).
+
+**S2 - the CPI / NFP release-minute straddle (the first rule to pass its test).** At 08:30:00 ET on CPI and NFP
+days (the last tick before): a buy stop at the ask + 2 x (price / 4,000) USD and a sell stop at the bid - 2 x
+(price / 4,000), one cancels the other, live until 08:30:59; the stop 8 x (price / 4,000) USD from the fill (at
+market, gaps included); no target; exit at market at 08:31:00. The cause: the data reach the FBS feed about 1.2-1.4 s
+after the release and the first impulse peaks at about 50-65 s.
+
+| S2 | Trades | Result |
+|---|---|---|
+| Gold M1 2021-09 .. 2026-02, worst-case fill order | CPI 52, NFP 51 | CPI +0.90 / +0.51 R (2021-23 / 2023-26), NFP +0.38 / +1.15 R; 8 of 10 half-years positive; 36/36 (CPI) and 33/36 (NFP) neighbouring plans positive in both periods |
+| Gold ticks 2025-10 .. 2026-02 (design) | 8 | +1.14 R, +88.9 USD |
+| **Test, gold ticks 2026-03 .. 10-14 (once)** | **14** | **+144.1 USD at 0.01 lot, +10.29 a trade, 64 % positive, +1.23 R, 6 of 8 months**; the opposite side -0.08 R; exit at +300 s (declared variant) +167.8 USD |
+| Test, the seven USD majors (M1, scaled by each pair's daily range) | 15 each | +0.58 .. +0.93 R per pair (one USD bet per release, not seven) |
+
+Month by month (gold): 03 +13.0, 04 +10.7, 05 -8.9, 06 +30.7, 07 +100.8, 08 +11.9, 09 -26.2, 10 +12.0 USD. The lead
+re-checked three releases on the raw ticks: 2026-07-14 CPI BUY filled 4032.92 at +0.44 s, 4087.89 at +60 s, +55.0
+USD; 2026-09-11 CPI stopped at +1.7 s, -34.7; 2026-05-08 NFP -2.2 (the agent's numbers with slippage: +56.2, -34.9,
+-2.3). **Open risk - the fills at the release second:** the tick feed shows a flat 0.37-0.39 spread through every
+release; a real account's spread and stop-order slippage there are likely worse. The edge survives about 2 USD of
+extra cost a fill on gold history, breaks 2021-23 at 3 USD (about -0.2 R a trade for each extra USD a side); stop
+exits gapped up to 4 R. Two trades a month on gold.
+
+**P1 - follow the FOMC press conference:** side = sign(the 14:39 ET close - the 14:30 open), enter at 14:40, the stop
+2 x the mean range of the 14:30-14:39 bars (at least the 13:00-13:59 mean), exit at 16:39. Design: all 108
+neighbouring plans positive in 2021-23 and 2023-26 (16 trades +0.84 R, 19 trades +1.50 R; the coin +0.38 / +0.32).
+Test: 5 trades, +22.6 USD, +0.77 R (2 of 5 positive) - unproven.
+
+Did not hold: the direction after the first minute of the 08:30 releases (follow or fade: 3-14 % of rules positive
+in both periods, at or below chance), round 10b's "FOMC / PCE continue, CPI reverses" (flips on 2021-23), FOMC
+minutes, retail sales, PPI, the statement minute.
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had
