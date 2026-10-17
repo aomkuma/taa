@@ -14,6 +14,19 @@ rounds 1-10) and the owner's goals in `docs/OWNER_GOALS.md`.
 - Principles: no single rule decides direction; a full arsenal of tools, pick the right one for the moment; everything
   relative; live in the present; learn from the losing trades (below).
 
+## Markets (owner, 2026-10-17): gold and the major currency pairs
+
+Trade gold (XAUUSD) and the majors (EURUSD, GBPUSD, USDJPY, AUDUSD, USDCHF, USDCAD, NZDUSD; M1 in
+`data/history/FBS-Demo/<PAIR>/M1.parquet` from 2023-09). Other markets (indices, crosses) may serve as inputs only.
+For a pair, express targets/stops in pips and in that pair's ATR; costs from its own spread column (x the pair's
+point) + about 0.2 pip slippage each way.
+
+## Learn like a trader (owner, 2026-10-17)
+
+"Learn like a trader who keeps trying to learn and improve": look at the charts of real trades (losers and
+winners), keep a journal of why each was taken and what happened, draw lessons, try the next version, repeat.
+The research venv has matplotlib (`data/venv-research/Scripts/python`); you can view a PNG with the Read tool.
+
 ## Progress in stages (owner, 2026-10-17)
 
 Cut losses -> break even -> profit -> sustainable profit; a setup need not be profitable from day one. Keep and
