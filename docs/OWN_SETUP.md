@@ -809,6 +809,42 @@ seen; it needs releases from 2026-10 on. **News on gold: about 2.6 trades a mont
 can take 35-70 % of a 50-100 USD account. On the USD majors S2's stop is about 9 pips (about 0.9 USD at 0.01 lot):
 the same weapon fits the account there.
 
+### Round 11 - why the losers lose (lead, 2026-10-17; `why_losers.py`)
+
+The journal agent's baseline B0 (H1 tide + at a level + price action + two of three M5 indicators; gold; the
+design data 2023-11 .. 2026-02, five half-years, 1,150 trades, -0.140 R), each trade checked against concrete
+situations at the entry: the share of the stopped losers (627) and of the winners (271) in it, and R with / without
+it in every half-year.
+
+| Situation at the entry | Losers in it | Winners in it | R with / without | Worse in |
+|---|---|---|---|---|
+| The H1 leg runs against the trade | 32 % | 27 % | -0.238 / -0.098 | 4 of 5 half-years |
+| A flat H1 (the close within 0.85 ATR of EMA(50)): chop | 21 % | 16 % | -0.240 / -0.114 | 4 of 5 |
+| Asia session | 38 % | 29 % | -0.199 / -0.106 | 3 of 5 |
+| No room (the next level < half the target) | 35 % | 31 % | -0.178 / -0.119 | 2 of 5 |
+| **Price in the upper half of its 4-hour range (with strength)** | 26 % | 35 % | **-0.035 / -0.180** | **better in 5 of 5** |
+| Chasing (1 h run >= 4 ATR, at the 4-h extreme) | 11 % | 16 % | -0.034 / -0.154 | better in 5 of 5 |
+| Falling knife, news within 15 min, a stop inside the swing, a volatility spike, far from the level | - | - | no consistent difference | |
+
+**The losers are mostly dips bought in weak structure**: the H1 leg against the trade, a flat H1, price low in its
+4-hour range; trading with strength (high in the 4-hour range, even after a run) is better in every half-year.
+
+| Step (design data) | Trades | R/trade | Half-years + | By half-year |
+|---|---|---|---|---|
+| B0 | 1,150 (2.2 a day) | -0.140 | 0/5 | -0.242 -0.134 -0.030 -0.181 -0.125 |
+| W1 = no H1 leg against, no flat H1 | 655 (1.3) | -0.062 | 2/5 | -0.287 +0.026 +0.025 -0.153 -0.013 |
+| **W2 = W1 + the upper half of the 4-hour range** | 264 (0.5) | **+0.004** | 3/5 | -0.071 +0.076 +0.042 -0.123 +0.014 |
+| W3 = W1 + the upper quarter | 171 (0.3) | +0.084 | 2/5 | -0.022 +0.245 -0.025 -0.112 +0.167 |
+| W4 = W2 + not Asia | 201 | +0.023 | 3/5 | |
+
+Stage on the design data: break even (W2). The worst single loss 12.63 USD at 0.01 lot.
+
+**Frozen for the one test (2026-03-01 .. 10-13), written before it is run:** W2 = B0 (the journal agent's
+`rules.py` B0, its costs and exits: target 8 U, the stop beyond the level by one M1 ATR, 3-10 U, break-even at 0.6
+of the target, 60 minutes, two a session-day) taken only when the H1 leg is not against the trade
+(`cr_H1_leg_dir >= 0`), H1 is not flat (`|h1_c_e50| >= 0.85`) and price is in the upper half of its 4-hour range
+the trade's way (`pos240 >= 0.5`). Declared variant: W3 (`pos240 >= 0.75`).
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had
