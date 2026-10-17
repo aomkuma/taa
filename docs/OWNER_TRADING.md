@@ -374,6 +374,19 @@ for testing other setups.
 day, +0.151 R) +15 USD a day needs about 80 USD of risk a trade: 80 % of a 100 USD account; at the owner's 7.5 %
 a trade it needs an account of about 1,000 USD. Averages, not every day.
 
+## Setup OWN - the moments when gold runs (owner, 2026-10-17)
+
+The owner's own trade, built from what they described (docs/OWNER_GOALS.md): enter at the moments when price
+runs - the Asia, London and New York opens and the important releases, after a contraction (ATR at its low, a
+Bollinger squeeze), at important support/resistance - in the direction the situation favours (break-and-hold,
+sweep-and-reclaim or with the higher flow, chosen per situation from the recent evidence, or stand aside), and
+take a quick profit sized to the moment's usual run. Every threshold relative; re-tuned monthly; judged on five
+years of gold (2021-10 .. 2026-09) with the 2021-23 years held out until the rules are fixed.
+
+- Why: TS and S1 pay only in gold's 2024-26 rally; the owner: a setup fitting only some periods is normal, the
+  system must see the present without bias and choose accordingly.
+- Method, hypotheses (fixed before testing) and results month by month: `docs/OWN_SETUP.md`.
+
 ## Hypotheses to test (with the report and backtests)
 
 1. **Early manual exit** ("it does not run and looks like turning"): turn it into a measurable rule (not +X R
