@@ -6,3 +6,6 @@
   to be rerun from the frozen code and compared.
 - 2026-10-17 13:10: S1's own stop cap went off in `config.yaml` (owner: no SL_TOO_FAR). The S1 runs here keep
   `config_scalp_s1.yaml` (4.0) like the in-sample year; the cap binds only when the spread exceeds about 2 ATR.
+- 2026-10-17 14:30: year C (2023-10 .. 2024-09) downloaded (`download_year_c.py`; history backup before it:
+  `D:/taa-history-backup-2026-10-17b`); its queue (`oos_queue_c.sh`, outputs `data/backtests/oos_c/`) starts
+  when year A's ends. V1 by market condition, A against B: `research/2026-10-17-v1/v1_regimes.py`.
