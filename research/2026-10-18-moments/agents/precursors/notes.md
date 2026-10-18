@@ -1060,3 +1060,31 @@ the exam -240 USD vs the coin's -142 (learning -39 vs -323).
   above) - better than a coin, not enough to earn;
 - every kind: no target, out after 5-60 minutes - negative after the costs.
 **No variant of the trade earns on the learning half; the exam was run for none of them.**
+
+## Is the picture right, is the reading right? The owner: "something must still be wrong" (2026-10-19 ~03:20 Thai)
+
+**The data under the picture and under the trade (checked):** the pictures (`plib.load`) and the trades
+(`jlib.m1_frame`) read the same store (gold.bars, UTC): equal prices on all 1,128,894 common minutes, no duplicate
+times; for all 723 V2s trades the trade's reference close equals the picture's last M1 close and the entry bar opens
+one minute after the picture's last bar - no offset, no look-ahead; the spread column is in 0.01 USD points (median
+23 = 0.23 USD).
+
+**The readings by eye (`loser_audit.py`, `png/loser_audit/`, eight exam losers of the three kinds, the stored
+readings, what followed, and two of the evidence days):** the M5 / M1 readings are right by their definitions
+(e.g. 2026-07-27 19:30 TH: M5 down, mixed - the last peaks higher, the forming trough lower - the close just above
+its last bottom; M1 LH/LL, the close below its last bottom).
+
+**What was wrong - the evidence, not the chart (`out_evidence_bias.txt`):** the library mixes the snaps (fixed
+times, every outcome kept) with the starts of 10 U runs - picked after the fact, and by the run catalogue's
+definition each one sits at the extreme where a run began (the low before a run up). 38 % (learning) / 48 % (the
+exam) of every trade's evidence days are such starts. A picture that has just fallen therefore looks like "the start
+of a run up" - the library holds many run-up starts that looked like it, but not the many times the same picture
+kept falling (only those that fell at a snap time). **V2s fades the move: 83 % (learning) / 96 % (the exam) of its
+trades go against M1's last leg; 72 % / 86 % buy in the lower 30 % of M1's range or sell in the upper 30 %** - the
+kind 1 and kind 3 losers (buying a fall that keeps falling, or falls further before it turns). In the exam (a
+trending gold) the trades against M5's 120-bar way lost -0.123 R, those with it earned +0.042 R; in the learning half
+the reverse (+0.020 vs -0.100) - the phase decides which way pays.
+
+**Without the bias** (the evidence from snaps only, the result library above): the picks earn about 0 R (-0.002 /
++0.014), no edge and no big loss. The owner's own rule (2026-10-19: "with the larger timeframe's trend; near a major
+support / resistance price may turn") is the opposite of what the biased library did.

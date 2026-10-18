@@ -1,0 +1,14 @@
+
+=== learning: 445 trades, R -0.020
+the evidence days that are run starts (picked after the fact): median 38%, mean 38%
+trades against M1's last leg: 83% (R -0.019) | with it: 17% (R -0.022)
+trades against M5's 120-bar way: 61% (R +0.020) | with it: 32% (R -0.100) | M5 flat: 8%
+buys in the lower 30 % of M1's range or sells in the upper 30 %: 72% (R -0.018)
+the snaps alone (no run starts) lean the trade's way: 84% of trades (R +0.007); against or none: R -0.155
+
+=== exam: 278 trades, R -0.085
+the evidence days that are run starts (picked after the fact): median 48%, mean 48%
+trades against M1's last leg: 96% (R -0.081) | with it: 4% (R -0.176)
+trades against M5's 120-bar way: 59% (R -0.123) | with it: 31% (R +0.042) | M5 flat: 10%
+buys in the lower 30 % of M1's range or sells in the upper 30 %: 86% (R -0.071)
+the snaps alone (no run starts) lean the trade's way: 84% of trades (R -0.148); against or none: R +0.237
