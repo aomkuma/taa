@@ -46,7 +46,7 @@ def window(t0: int, t1: int):
 
 
 def replay(t_dec_open: int, side: int, L: float | None, sl: float, tp: float, valid: int, hold: int,
-           touch: bool = False) -> dict | None:
+           touch: bool = False, stop_slip: float = SLIP) -> dict | None:
     t0 = t_dec_open + NS_MIN  # the decision bar's close
     w = window(t0, t0 + (valid + hold + 2) * NS_MIN)
     if w is None or not len(w[0]):
@@ -73,7 +73,7 @@ def replay(t_dec_open: int, side: int, L: float | None, sl: float, tp: float, va
     js = int(s_hit.argmax()) if s_hit.any() else 10**12
     jg = int(g_hit.argmax()) if g_hit.any() else 10**12
     if js < jg:
-        return dict(filled=True, exit="stop", usd=-sl - SLIP, t_fill=tf)
+        return dict(filled=True, exit="stop", usd=-sl - stop_slip, t_fill=tf)
     if jg < 10**12:
         return dict(filled=True, exit="win", usd=tp, t_fill=tf)
     idx = np.flatnonzero(m)

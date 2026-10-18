@@ -998,6 +998,55 @@ any official calendar sourced) cost -6.6 USD, more than the whole loss. By pair 
 +0.13, GBPUSD -0.58. Fresh data to judge RF-C: every 08:30 ET release day from 2026-10-14 on; at ~5.8 trades a month
 and an R standard deviation ~1.0, about 12 months (~70 trades) for a standard error of ~0.12 R.
 
+### Round 12 - "count three on M1, check again, then enter" (owner, 2026-10-18) - written before it is computed
+
+The owner, on two losers (charts `shadow/f1_2026-04-08.png`, `shadow/s2_2026-08-12.png`, `_ticks.png`): F1
+2026-04-08 07:03 Thai BUY bought the top of a vertical 35 USD push at the Asian open after a vertical H1 run and was
+stopped in one minute (price then fell to 4790); S2 CPI 2026-08-12 bought the first second's spike to 4433, was
+stopped as price fell to 4382 within 8 s, then price climbed back above 4430 within 5 minutes (a fake first
+impulse). "Count three after the signal on M1, check the signal again, then enter."
+
+- **F1-C3a:** F1 CONF-72's signal (the decision at bar e-1's close) is entered only if, after the three M1 bars e,
+  e+1, e+2, the close of e+2 is at or beyond the signal close the trade's way and none of the three bars touched the
+  planned stop; entry at bar e+3's open, the same stop price, the risk recomputed (3-10 U, else skipped), target 8 U,
+  B0's other exits. **F1-C3b:** C3a + the three bars held the level (no low below it for a buy).
+- **S2-C3** (gold M1, CPI and NFP): after the release bar and the next two closed (08:30, 08:31, 08:32 ET), side =
+  the sign of close(08:32) - open(08:30) when its size is at least 3 x (price / 4,000) USD and the 08:32 bar closed
+  the same way; entry at 08:33's open; the stop beyond the three bars' opposite extreme (at least 4, at most 12 x
+  price / 4,000; beyond that, no trade); target 8 x price / 4,000; exit after 15 minutes. **S2-C3x:** no target,
+  exit after 30 minutes.
+- Design: F1 on 2023-11 .. 2026-02 (five half-years), S2 on 2021-09 .. 2026-02 (CPI + NFP, M1, the auditor's costs);
+  then the window 2026-03-01 .. 10-14 (seen for F1 / S2's family) and the fresh days from 2026-10-14.
+
+**Result** (`shadow/count3.py`, `shadow/no_chase.py`):
+
+| F1 variant | Design trades | Design R | Half-years + | Window trades | Window R | Window USD | Max DD |
+|---|---|---|---|---|---|---|---|
+| F1 CONF-72 as frozen | 140 | +0.118 | 4/5 | 34 | +0.183 | +52.9 | 26.7 |
+| F1-C3a (count three, check again) | 77 | -0.039 | 3/5 | 17 | +0.249 | +31.5 | 15.1 |
+| F1-C3b (C3a + the level held) | 71 | -0.046 | 3/5 | 13 | +0.389 | +38.6 | 15.1 |
+| F1 + no run of >= 4 ATR with the trade in the last 15 min | 110 | +0.034 | 3/5 | 24 | +0.141 | +21.1 | 19.7 |
+| **F1 + no run of >= 8 ATR with the trade in the last 60 min (no chase)** | 114 | **+0.180** | **5/5** | 26 | **+0.245** | +41.2 | 32.0 |
+
+**Counting three hurts F1 on the design data** (-0.04 R against +0.12): it skips the immediate stop-outs like
+2026-04-08 but enters the survivors three bars later at a worse price with a wider stop and the same 8 U target;
+on the seen window it raises R a trade but halves the trades. Not kept. **The cause of 2026-04-08 - chasing the end of
+a long run - does hold as a filter: no entry after a run of 8 ATR or more with the trade over the last 60 minutes**
+(design +0.180 R, 5/5 half-years; the window +0.245 R on 26 trades; chosen among four variants on the design data
+alone). S2-C3 (entry at 08:33 ET in the 3-minute direction): only 12 releases in five years qualify - after CPI / NFP
+the three-minute swing is usually wider than 12 x price / 4,000, so the stop does not fit the account (2021-23: 4
+trades -0.523 R; 2023-26: 7 trades -0.004 R; 2026-08-12 itself skipped for that reason) - too few to judge.
+
+**Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
+(H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
+window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks
+turned into winner marks (low half of the 4-hour range, M15 against, London, a flat H1) - gold fell from ~5,000 to
+~4,100 with wide swings and dips bought in an H1 uptrend were mostly the start of the next leg down. **Three loser
+marks kept their sign in both periods: the last bar against the trade by >= 1 ATR, a 15-bar leg against by >= 4 ATR,
+the first fall off a fresh 4-hour extreme**; the 12:00-15:30 ET afternoon was the worst slot. Round numbers: price
+breaks through them more than it bounces (beats placebo levels in 8-9 of 10 comparisons) but too little to pay the
+costs (-0.065 .. -0.15 R gold; FX 30/30 pips about -0.005 R).
+
 ### Round 8 - every measure in one weighted model (owner, 2026-10-17: "zigzag, momentum, which ones are not in the weights yet?") - written before it is computed
 
 What the earlier weights left out: the ZigZag swing structure (the indicator score had none; round 3's model had

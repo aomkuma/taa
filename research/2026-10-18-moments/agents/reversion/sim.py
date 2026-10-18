@@ -72,13 +72,13 @@ def simulate(B: Bars, i: np.ndarray, side: np.ndarray, sl: np.ndarray, tp: np.nd
         fav = np.where(s[:, None] > 0, hi, lo + sp)
         if limit_off is None:
             f = np.zeros(m, np.int64)
-            fill = np.where(s > 0, op[:, 0] + sp[:, 0] + SLIP, op[:, 0] - SLIP)
+            fill = np.where(s > 0, op[:, 0] + sp[:, 0] + COST.get("slip", SLIP), op[:, 0] - COST.get("slip", SLIP))
             filled = np.isfinite(fill)
         elif stop_entry:
             L = np.where(s > 0, B.c[ii] + B.sp[ii] + xsp + limit_off[a:b], B.c[ii] - limit_off[a:b])
             V = valid
             ask_hi = hi[:, :V] + sp[:, :V]
-            hit = np.where(s[:, None] > 0, ask_hi >= (L + 0.01)[:, None], lo[:, :V] <= (L - 0.01)[:, None])
+            hit = np.where(s[:, None] > 0, ask_hi >= (L + COST.get("tick", 0.01))[:, None], lo[:, :V] <= (L - COST.get("tick", 0.01))[:, None])
             hit &= np.isfinite(lo[:, :V]) & (np.arange(V)[None, :] < g0[:, None])
             filled = hit.any(1)
             f = np.where(filled, hit.argmax(1), 0)
@@ -89,7 +89,7 @@ def simulate(B: Bars, i: np.ndarray, side: np.ndarray, sl: np.ndarray, tp: np.nd
             L = np.where(s > 0, B.c[ii] + B.sp[ii] + xsp - limit_off[a:b], B.c[ii] + limit_off[a:b])
             V = valid
             ask_lo = lo[:, :V] + sp[:, :V]
-            hit = np.where(s[:, None] > 0, ask_lo <= (L - 0.01)[:, None], hi[:, :V] >= (L + 0.01)[:, None])
+            hit = np.where(s[:, None] > 0, ask_lo <= (L - COST.get("tick", 0.01))[:, None], hi[:, :V] >= (L + COST.get("tick", 0.01))[:, None])
             hit &= np.isfinite(lo[:, :V]) & (np.arange(V)[None, :] < g0[:, None])
             filled = hit.any(1)
             f = np.where(filled, hit.argmax(1), 0)
@@ -125,7 +125,7 @@ def simulate(B: Bars, i: np.ndarray, side: np.ndarray, sl: np.ndarray, tp: np.nd
         x = np.minimum(x, W - 1)
         sslip = np.where(ny[ii], COST["stop_slip_ny"], COST["stop_slip"])
         px_stop = np.where(is_be, fill, stop) - s * sslip
-        px_time = np.where(s > 0, cl[rows, x] - SLIP, cl[rows, x] + sp[rows, x] + SLIP)
+        px_time = np.where(s > 0, cl[rows, x] - COST.get("slip", SLIP), cl[rows, x] + sp[rows, x] + COST.get("slip", SLIP))
         px = np.where(code == 2, tgt, np.where(code == 4, px_time, px_stop))
         usd = (px - fill) * s
         # losers' kinds (stops only)

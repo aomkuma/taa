@@ -51,6 +51,8 @@ class Lab:
             ok &= side != -tr
         if cfg.get("extra") is not None:
             ok &= cfg["extra"](F, side)
+        if cfg.get("sl_cap"):  # the account: skip a signal whose stop would exceed sl_cap USD at 0.01 lot
+            ok &= cfg["sl"] * F.atr.to_numpy(float) <= cfg["sl_cap"]
         i = np.flatnonzero(ok)
         i = i[i < self.B.n - 400]
         return i, side[i]
