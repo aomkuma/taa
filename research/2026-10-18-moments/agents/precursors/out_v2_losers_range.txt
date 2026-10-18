@@ -1,0 +1,81 @@
+
+-- entry vs the 30 minutes before it --
+                           trades  win %  stop %      R      usd  later other side
+grp                                                                               
+breaks the prior high/low   332.0  0.428   0.358 -0.031  -91.828             0.738
+inside the prior range      880.0  0.428   0.340 -0.012 -102.435             0.724
+   the 30-min range in stops (height / SL):
+             trades  win %      R      usd
+rng                                       
+(0.0, 1.0]     95.0  0.411 -0.165 -140.476
+(1.0, 1.5]    187.0  0.358 -0.125 -190.618
+(1.5, 2.0]    275.0  0.444  0.037   71.555
+(2.0, 3.0]    397.0  0.423 -0.007  -12.912
+(3.0, 99.0]   258.0  0.477  0.044   78.187
+
+-- entry vs the 60 minutes before it --
+                           trades  win %  stop %      R      usd  later other side
+grp                                                                               
+breaks the prior high/low   231.0  0.403   0.394 -0.078 -137.389             0.740
+inside the prior range      981.0  0.434   0.333 -0.003  -56.875             0.725
+   the 60-min range in stops (height / SL):
+             trades  win %      R      usd
+rng                                       
+(0.0, 1.0]     20.0  0.300 -0.380  -69.488
+(1.0, 1.5]     86.0  0.337 -0.257 -187.877
+(1.5, 2.0]    126.0  0.421 -0.011  -25.056
+(2.0, 3.0]    358.0  0.427 -0.021  -60.301
+(3.0, 99.0]   622.0  0.447  0.029  148.459
+
+-- entry vs the 120 minutes before it --
+                           trades  win %  stop %      R      usd  later other side
+grp                                                                               
+breaks the prior high/low   172.0  0.401   0.378 -0.062  -68.710             0.756
+inside the prior range     1040.0  0.433   0.339 -0.009 -125.554             0.723
+   the 120-min range in stops (height / SL):
+             trades  win %      R      usd
+rng                                       
+(0.0, 1.0]      1.0  0.000 -1.000   -4.801
+(1.0, 1.5]     16.0  0.625  0.211   32.631
+(1.5, 2.0]     64.0  0.359 -0.207 -116.759
+(2.0, 3.0]    203.0  0.414 -0.087 -171.713
+(3.0, 99.0]   928.0  0.433  0.009   66.379
+
+R:R of the trades: target / stop median 0.75  share with target < stop 1.0
+break-even win rate at that R:R with costs ~0.43 USD: 0.597  actual win rate 0.428
+
+-- the 3 U start as a share of the entry TF ATR --
+              trades  win %  stop %      R      usd  other side later
+start_vs_atr                                                         
+(0.0, 0.3]      68.0  0.368   0.368 -0.120  -79.054             0.794
+(0.3, 0.4]     266.0  0.414   0.350 -0.059 -137.948             0.759
+(0.4, 0.5]     382.0  0.440   0.335 -0.014  -34.878             0.720
+(0.5, 0.7]     490.0  0.433   0.349  0.012   43.048             0.706
+(0.7, 2.0]       6.0  0.667   0.167  0.456   14.569             0.833
+
+-- the run weight from the library --
+              trades  win %  stop %      R      usd  other side later
+w_form                                                               
+(0.0, 0.55]    205.0  0.444   0.337 -0.000   30.439             0.649
+(0.55, 0.65]   272.0  0.371   0.382 -0.103 -226.962             0.728
+(0.65, 0.75]   263.0  0.430   0.365 -0.033  -87.653             0.700
+(0.75, 0.85]   196.0  0.495   0.276  0.113  146.571             0.770
+(0.85, 2.0]    276.0  0.424   0.344 -0.021  -56.658             0.783
+
+-- matches in the trigger layer --
+                    trades  win %  stop %      R      usd  other side later
+n_trig                                                                     
+(-1.0, 10.0]          74.0  0.392   0.365 -0.070  -41.960             0.770
+(10.0, 30.0]         147.0  0.388   0.435 -0.140 -127.463             0.755
+(30.0, 100.0]        407.0  0.408   0.334 -0.024  -79.833             0.722
+(100.0, 300.0]       495.0  0.457   0.329  0.022   39.756             0.727
+(300.0, 1000000.0]    89.0  0.461   0.315  0.050   15.237             0.674
+
+-- the library side evidence (signed by the trade side) --
+                   trades  win %  stop %      R      usd  other side later
+ev_side                                                                   
+(-1.1, -0.1]         21.0  0.381   0.381 -0.097  -13.058             0.667
+(-0.1, -0.0001]     451.0  0.426   0.353 -0.031 -121.308             0.752
+(-0.0001, 0.0001]   158.0  0.443   0.329  0.013   19.678             0.759
+(0.0001, 0.1]       493.0  0.440   0.323  0.018   23.741             0.692
+(0.1, 1.1]           82.0  0.354   0.439 -0.169  -87.927             0.768

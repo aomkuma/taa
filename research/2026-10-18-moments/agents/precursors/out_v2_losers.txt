@@ -1,0 +1,66 @@
+window B3 trades 1212: wins 519, stops 418, break-even 246, time 29
+
+-- what the bot measured / where it entered: stopped vs won --
+              stopped (median)  won (median)
+w_form                   0.690         0.707
+base                     0.459         0.474
+n_trig                  86.000       103.000
+ev_side                  0.000         0.000
+lead_min                 1.000         0.000
+trig_bar_atr             0.562         0.653
+gap                      0.070         0.070
+sl                       6.793         6.795
+tp                       5.095         5.096
+sl_vs_start              2.064         2.064
+spread                   0.310         0.310
+mins_held                6.000         5.000
+mfe_before               0.239         1.189
+mfe120                   1.115         3.491
+mae120                   2.797         1.019
+pre30_with              -0.103        -0.038
+
+-- traits: share among stopped vs won --
+                                                          stopped    won  n stopped   lift
+stopped within the entry bar                                0.036  0.000       15.0    inf
+stopped within 5 minutes                                    0.447  0.566      187.0  0.790
+the stop nearer than the snap price (SL < entry - start)    0.000  0.000        0.0    NaN
+the trigger bar >= 1 entry-TF ATR (a spike entry)           0.103  0.243       43.0  0.424
+entered >= 15 min after the snap                            0.024  0.017       10.0  1.380
+the evidence's side against the trade                       0.400  0.385      167.0  1.037
+few matches (< 30) in the trigger layer                     0.211  0.160       88.0  1.316
+price then reached the straddle's other side                0.978  0.532      409.0  1.840
+the target came within 120 min of the entry                 0.524  1.000      219.0  0.524
+moved against 30 min before the snap                        0.390  0.364      163.0  1.071
+entry TF M1/M5                                              0.622  0.661      260.0  0.941
+a release snap (NY 08:30)                                   0.089  0.110       37.0  0.806
+
+-- stopped trades by entry TF and snap time --
+         n  stop %      R
+etf                      
+M1    90.0   0.356  0.028
+M15  378.0   0.386 -0.075
+M30   41.0   0.293  0.112
+M5   703.0   0.324  0.001
+                   n  stop %    usd
+name                               
+FR0800          64.0    0.23  80.59
+LO0800          34.0    0.47 -43.73
+LO0900          36.0    0.36 -23.90
+LO1000          21.0    0.43 -17.07
+LO1100          22.0    0.50 -38.42
+LO1200          11.0    0.45 -23.37
+LO1200+NY0800   10.0    0.30   9.71
+NY0800         140.0    0.38 -47.73
+NY0830         127.0    0.29  27.95
+NY0930         145.0    0.35 -30.21
+NY1000         138.0    0.28  48.61
+NY1100         137.0    0.28  31.76
+NY1200          28.0    0.29  12.40
+NY1300          32.0    0.53 -96.92
+NY1400          18.0    0.44 -26.67
+TH0700          38.0    0.45 -22.34
+TH0800         125.0    0.32  94.06
+TH0900          32.0    0.44 -69.43
+TH1000          23.0    0.43 -35.44
+TH1100           5.0    0.20   2.08
+TH1200          26.0    0.46 -26.21

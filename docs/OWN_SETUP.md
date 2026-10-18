@@ -1532,3 +1532,11 @@ notes.md`.
   -0.034 R (2.5 a day), the time weight alone -0.038. Window once: the library cell -0.017 R / -194 USD (7.4 a weekday),
   the time-only cell +0.003 R / -27 USD (3.5 a weekday). Not usable as written; half the window's stopped losers were
   stopped inside the shake-out before the target came.
+- **Why V2's window trades lost (each trade traced to the moment; owner: "analyse to the core what it measured"):**
+  (1) the matcher compared only the right edge of each timeframe, so unlike charts matched (a choppy fall-bounce-fall
+  matched a clean staircase decline at 100 %); the run weight does not rank the trades and where the side evidence agreed
+  the trades lost most (-0.17 R); (2) the target (0.75 ATR) is smaller than the stop (1.0 ATR) on every trade; (3) the fixed
+  3 U start is inside the normal swing when the ATR is large (-0.06 .. -0.12 R under 0.4 ATR) - 98 % of stopped trades
+  later crossed to the other side; (4) a quiet hour before (60-minute range <= 1.5 stops) -0.26 .. -0.38 R; (5) weak
+  trigger bars lose, strong ones win. Next: a matcher on the whole visible formation (checked by eye), the start relative
+  to the ATR, a target >= the stop. Details: `agents/precursors/notes.md`.

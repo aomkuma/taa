@@ -316,3 +316,34 @@ same cell as the comparator** (declared here before either is run).
   design (+0.004 R) and costs on the window (it lets in twice the trades, the extra ones losing). Why the losers lost:
   in the window most stops are kind 3 - the 1-ATR stop of the entry timeframe sits inside the shake-out after the 3 U
   start (the target came after the stop); on design the start faded (kind 1, 58-70 %).
+
+## Why V2's window trades lost - traced to the moment (owner: "analyse to the core what it measured at the real moment"; `v2_losers.py`, `audit.py`, `out_v2_losers*.txt`, `png/audit/`, `png/v2_losers/`)
+
+1,212 B3 window trades: 519 targets, 418 stops, 246 break-even, 29 time exits. Each trade traced: the bot's inputs at
+the snap, the entry in the move, the stop, the 120 minutes after.
+
+1. **The measuring tool compared the wrong pictures.** The core fingerprint reads only the right edge of each timeframe
+   (the last peak / trough, the current leg, where the close is, the indicators' direction now). By eye (`png/audit`):
+   the 2026-08-27 14:00 losing buy (M30 / M15 falling, bouncing and falling again in a choppy swing) matched 2026-03-16
+   17:00 at 100 % - a clean staircase decline. So the evidence averaged unlike charts, and it shows in the trades: the
+   run weight does not rank them (R by weight band -0.10 / -0.03 / +0.11 / -0.02, no order), and where the trigger
+   layer's side evidence agreed with the trade by >= 0.10 the trades lost most (82 trades, -0.169 R). Trades with few
+   matches (<= 30) lost more (-0.07 / -0.14 R) than those with > 100 (+0.02 / +0.05).
+2. **The trade's geometry:** the cell chosen on design has the target at 0.75 and the stop at 1.0 entry-TF ATR - every
+   target is smaller than its stop (median 5.1 vs 6.8 USD); with costs it needs about 60 % wins among decided trades and
+   got 55 %.
+3. **The start is a fixed 3 U, not relative:** when 3 U is under 0.4 of the entry timeframe's ATR the start is inside the
+   normal swing - -0.12 R (<= 0.3 ATR, 68 trades) and -0.06 R (0.3-0.4, 266); 0.5-0.7 ATR +0.01 R. 98 % of the stopped
+   trades later traded through the straddle's other side (the start was one swing of a wider oscillation around the
+   snap price), and half of those then reached the target (kind 3).
+4. **A quiet hour before:** when the 60 minutes before the entry spanned <= 1.5 stops, -0.26 / -0.38 R (106 trades);
+   > 3 stops +0.03 R. Breaking the prior 60-minute high / low did NOT help (-0.08 R vs -0.00 inside the range) - the eye's
+   first reading of the loser charts (entries at the top of a box) was not borne out by the numbers.
+5. **Creeping starts lose, strong starts win:** a trigger bar >= 1 entry-TF ATR in 24 % of the winners, 10 % of the stops.
+6. **Times and entry timeframes:** NY 13:00 ET -97 USD, Asia 09:00 TH -69, NY 08:00 -48, London 08-11 negative; Asia 08:00
+   TH +94, Frankfurt +81, NY 10:00 +49. Entry on M15 -0.075 R (378 trades), M5 +0.00, M1 +0.03, M30 +0.11 (41).
+
+Points 2-6 were read on the window, so any rule built from them is window-informed: it is checked on design first, and
+its window result is not a clean test. Next, in this order: (a) a matcher that compares the whole visible formation (the
+ZigZag line of peaks and troughs across the 120 bars, and the indicators' paths), checked by eye before any trade; (b)
+the start relative to the entry timeframe's ATR; (c) a target at least as large as the stop; (d) skip a quiet hour.

@@ -1,0 +1,45 @@
+
+=== query 0: 2026-08-27 14:00 TH LO0800, BUY -> stop -5.3
+  context: 0 matches on 0 days; their outcomes: {}
+    query  : H4.swings=2 H4.leg=1 H4.peak=0 H4.trough=2 H4.where=0 H4.rsi_up=1 H4.macd=1 H4.ema=0 H4.sr=2 H1.swings=1 H1.leg=0 H1.peak=0 H1.trough=2 H1.where=1 H1.rsi_up=0 H1.macd=2 H1.ema=1 H1.sr=4
+  setup: 194 matches on 132 days; their outcomes: {'ran_up': 0.3, 'fake_up': 0.14, 'ran_dn': 0.14, 'fake_dn': 0.14, 'drift': 0.1, 'flat': 0.08, 'slow_up': 0.05, 'slow_dn': 0.04}
+    query  : M30.swings=2 M30.leg=0 M30.peak=0 M30.trough=0 M30.where=3 M30.rsi_up=0 M30.macd=0 M30.ema=1 M30.sr=4 M15.swings=2 M15.leg=0 M15.peak=2 M15.trough=2 M15.where=1 M15.rsi_up=0 M15.macd=0 M15.ema=1 M15.sr=4
+    match 0: 2023-11-07 02:00 sim 0.94 differs in ['M30.where'] -> drift
+    match 1: 2026-03-16 17:00 sim 1.00 differs in [] -> ran_up
+    match 2: 2025-03-24 22:00 sim 0.89 differs in ['M30.where', 'M15.trough'] -> fake_dn
+  trigger: 221 matches on 179 days; their outcomes: {'ran_up': 0.24, 'fake_dn': 0.21, 'fake_up': 0.15, 'ran_dn': 0.13, 'flat': 0.1, 'slow_up': 0.09, 'drift': 0.05, 'slow_dn': 0.02}
+    query  : M5.swings=2 M5.leg=0 M5.peak=0 M5.trough=2 M5.where=1 M5.rsi_up=0 M5.macd=0 M5.ema=1 M1.swings=1 M1.leg=0 M1.peak=0 M1.trough=0 M1.where=3 M1.rsi_up=1 M1.macd=1 M1.ema=1
+    match 0: 2025-03-12 20:30 sim 0.88 differs in ['M1.peak', 'M1.where'] -> ran_up
+    match 1: 2024-01-04 19:00 sim 0.88 differs in ['M5.peak', 'M1.where'] -> fake_dn
+    match 2: 2024-11-06 19:00 sim 0.88 differs in ['M1.where', 'M1.rsi_up'] -> ran_dn
+
+=== query 1: 2026-07-23 16:00 TH LO1000, BUY -> stop -8.2
+  context: 163 matches on 56 days; their outcomes: {'ran_dn': 0.18, 'fake_dn': 0.17, 'flat': 0.17, 'fake_up': 0.15, 'ran_up': 0.12, 'drift': 0.12, 'slow_up': 0.06, 'slow_dn': 0.04}
+    query  : H4.swings=2 H4.leg=1 H4.peak=0 H4.trough=0 H4.where=2 H4.rsi_up=0 H4.macd=2 H4.ema=0 H4.sr=4 H1.swings=1 H1.leg=0 H1.peak=2 H1.trough=2 H1.where=2 H1.rsi_up=0 H1.macd=0 H1.ema=2 H1.sr=4
+    match 0: 2023-11-20 14:00 sim 0.89 differs in ['H4.swings', 'H1.macd'] -> flat
+    match 1: 2024-05-13 11:00 sim 0.89 differs in ['H4.where', 'H1.swings'] -> drift
+    match 2: 2024-05-13 17:00 sim 0.89 differs in ['H4.where', 'H1.swings'] -> fake_up
+  setup: 78 matches on 58 days; their outcomes: {'ran_dn': 0.35, 'ran_up': 0.29, 'fake_up': 0.1, 'slow_dn': 0.06, 'drift': 0.06, 'fake_dn': 0.06, 'slow_up': 0.04, 'flat': 0.03}
+    query  : M30.swings=1 M30.leg=0 M30.peak=2 M30.trough=2 M30.where=1 M30.rsi_up=0 M30.macd=0 M30.ema=1 M30.sr=4 M15.swings=2 M15.leg=0 M15.peak=0 M15.trough=0 M15.where=1 M15.rsi_up=1 M15.macd=1 M15.ema=1 M15.sr=0
+    match 0: 2025-12-02 18:00 sim 0.89 differs in ['M30.swings', 'M15.sr'] -> ran_up
+    match 1: 2026-06-10 19:30 sim 0.89 differs in ['M15.rsi_up', 'M15.macd'] -> ran_dn
+    match 2: 2026-07-17 01:00 sim 0.94 differs in ['M15.sr'] -> ran_dn
+  trigger: 126 matches on 116 days; their outcomes: {'fake_up': 0.25, 'ran_dn': 0.2, 'ran_up': 0.13, 'fake_dn': 0.12, 'flat': 0.1, 'drift': 0.1, 'slow_up': 0.08, 'slow_dn': 0.02}
+    query  : M5.swings=2 M5.leg=0 M5.peak=0 M5.trough=2 M5.where=1 M5.rsi_up=1 M5.macd=3 M5.ema=1 M1.swings=1 M1.leg=1 M1.peak=0 M1.trough=0 M1.where=2 M1.rsi_up=0 M1.macd=2 M1.ema=2
+    match 0: 2023-11-02 00:00 sim 0.88 differs in ['M5.swings', 'M5.peak'] -> fake_up
+    match 1: 2025-03-07 11:00 sim 0.88 differs in ['M5.where', 'M5.macd'] -> fake_up
+    match 2: 2024-10-25 10:00 sim 0.88 differs in ['M5.trough', 'M5.macd'] -> drift
+
+=== query 2: 2026-03-09 08:00 TH TH0800, SELL -> win +5.2
+  context: 0 matches on 0 days; their outcomes: {}
+    query  : H4.swings=1 H4.leg=1 H4.peak=2 H4.trough=2 H4.where=2 H4.rsi_up=1 H4.macd=3 H4.ema=2 H4.sr=1 H1.swings=2 H1.leg=0 H1.peak=0 H1.trough=0 H1.where=1 H1.rsi_up=0 H1.macd=0 H1.ema=1 H1.sr=4
+  setup: 42 matches on 29 days; their outcomes: {'ran_dn': 0.29, 'fake_up': 0.21, 'ran_up': 0.19, 'drift': 0.1, 'slow_dn': 0.07, 'fake_dn': 0.07, 'slow_up': 0.05, 'flat': 0.02}
+    query  : M30.swings=2 M30.leg=0 M30.peak=2 M30.trough=2 M30.where=1 M30.rsi_up=0 M30.macd=0 M30.ema=1 M30.sr=4 M15.swings=1 M15.leg=0 M15.peak=2 M15.trough=2 M15.where=1 M15.rsi_up=1 M15.macd=1 M15.ema=1 M15.sr=0
+    match 0: 2024-11-14 08:00 sim 0.83 differs in ['M30.macd', 'M15.macd', 'M15.sr'] -> ran_dn
+    match 1: 2024-06-07 17:00 sim 0.83 differs in ['M15.swings', 'M15.trough', 'M15.sr'] -> slow_dn
+    match 2: 2025-02-06 16:00 sim 0.83 differs in ['M30.macd', 'M30.ema', 'M15.peak'] -> fake_up
+  trigger: 40 matches on 39 days; their outcomes: {'fake_dn': 0.25, 'flat': 0.22, 'drift': 0.12, 'ran_up': 0.12, 'ran_dn': 0.12, 'fake_up': 0.1, 'slow_up': 0.02, 'slow_dn': 0.02}
+    query  : M5.swings=2 M5.leg=0 M5.peak=1 M5.trough=0 M5.where=1 M5.rsi_up=1 M5.macd=3 M5.ema=1 M1.swings=1 M1.leg=0 M1.peak=0 M1.trough=0 M1.where=2 M1.rsi_up=1 M1.macd=3 M1.ema=2
+    match 0: 2024-11-25 22:00 sim 0.88 differs in ['M5.trough', 'M5.macd'] -> ran_up
+    match 1: 2024-06-22 01:00 sim 0.81 differs in ['M5.swings', 'M5.trough', 'M1.swings'] -> fake_dn
+    match 2: 2025-04-07 23:00 sim 0.81 differs in ['M5.peak', 'M5.macd', 'M1.leg'] -> ran_up
