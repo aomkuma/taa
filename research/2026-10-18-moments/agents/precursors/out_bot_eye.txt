@@ -1,0 +1,14 @@
+H4 bars 4978 swings 233
+H1 bars 19013 swings 1056
+M30 bars 38003 swings 2097
+M15 bars 75987 swings 4193
+M5 bars 226356 swings 11933
+M1 bars 1131519 swings 62623
+H4 compared
+H1 compared
+M30 compared
+M15 compared
+M5 compared
+M1 compared
+
+1000 moments x 6 timeframes x 13 readings: 0 differences

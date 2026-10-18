@@ -1,0 +1,14 @@
+moments: 127319 (2023-11-01 00:00:00+00:00 .. 2026-10-16 17:55:00+00:00), 922 days
+H4 done
+H1 done
+M30 done
+M15 done
+M5 done
+M1 done
+H4 zoomed 3097
+H1 zoomed 1831
+M30 zoomed 2889
+M15 zoomed 2347
+M5 zoomed 4332
+M1 zoomed 3149
+saved (127319, 101) (127319, 6, 40) | what followed: {'none': 88353, 'ran_dn': 20031, 'ran_up': 18935}

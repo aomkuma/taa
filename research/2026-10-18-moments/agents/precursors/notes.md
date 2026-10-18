@@ -1061,7 +1061,7 @@ the exam -240 USD vs the coin's -142 (learning -39 vs -323).
 - every kind: no target, out after 5-60 minutes - negative after the costs.
 **No variant of the trade earns on the learning half; the exam was run for none of them.**
 
-## Is the picture right, is the reading right? The owner: "something must still be wrong" (2026-10-19 ~03:20 Thai)
+## Is the picture right, is the reading right? The owner: "something must still be wrong" (2026-10-19 ~02:55 Thai)
 
 **The data under the picture and under the trade (checked):** the pictures (`plib.load`) and the trades
 (`jlib.m1_frame`) read the same store (gold.bars, UTC): equal prices on all 1,128,894 common minutes, no duplicate
@@ -1089,7 +1089,7 @@ the reverse (+0.020 vs -0.100) - the phase decides which way pays.
 +0.014), no edge and no big loss. The owner's own rule (2026-10-19: "with the larger timeframe's trend; near a major
 support / resistance price may turn") is the opposite of what the biased library did.
 
-**The owner (2026-10-19, ~03:30 Thai): "the library's pictures must be what the bot sees in the present - many look
+**The owner (2026-10-19, ~03:15 Thai): "the library's pictures must be what the bot sees in the present - many look
 as if price has already broken" (`out_library_present.txt`, `library_present.py`, `png/library_present/`):** every
 run-start picture ends at the run's start bar (13,873 of 13,873) - no bar of the run is in it - but the owner is
 right that they are pictures of a break that has just happened the other way: of the run-up starts 35 % have M1's
@@ -1102,3 +1102,46 @@ through every bottom; the grey bars after it rebound). The same pictures that ke
 **The fix (to build):** the library must be built the way the bot sees the market - moments taken by the clock inside
 the owner's windows (every few minutes), each with what followed, never chosen because of what followed; the bot
 decides at the same moments, so the library and the bot look at the same population.
+
+## The present library - written before it is computed (2026-10-19 ~03:20 Thai; owner: "the library's pictures must be what the bot sees in the present"; "one wrong component breaks everything"; "do it correctly, with care and patience")
+
+Every component passes three checks before it is used: the code (hand-worked tests, planted bugs, an independent
+re-derivation), the data's origin (each entry chosen only by what was known at its time - tested), and only then
+the premise against a no-effect baseline in two halves.
+- **The moments (`present.py`):** every 5-minute clock time t (UTC :00, :05, ...) from 2023-11-01 to the exam's end
+  inside the owner's windows (`plib.window_mask` of t, weekdays), where the M1 bar that closes at t exists (the market
+  is trading) - nothing about what followed decides whether a moment is in. The bot decides at the same moments.
+- **The picture at t:** every timeframe's bars closed by t, as the library's pictures (`picture.features`, the zoom,
+  `snaps.shapes`) - one shared function for the old moments and the new ones, checked to reproduce
+  moments_3y.parquet.
+- **What followed (the labels, known later):** the run - the first 10 U run (the catalogue) whose start bar opens in
+  [t, t + 30 min): ran_up / ran_dn, else none; the trade - V2's buy and sell from t (`trade_labels.trade`): R_buy,
+  R_sell (none when no M1 bar opens within 5 minutes of t).
+- **The evidence at t:** the earlier moments (>= 7 days before) in the same situation (per layer, L3 / L6 as fixed
+  before), grouped by day: each day's mean R_buy / R_sell and run lean over its matching moments, then the mean over
+  the days; the number of days. **The premise:** the better side when >= N_MIN days and its mean R >= THETA, its
+  realized R against a coin's side at the same moments, with the error by day, in both halves (learning 2024-05 ..
+  2026-04-17, the exam 2026-04-18 .. 10-16), and the placebo (the same clock time on the next trading day). Only
+  then any trade backtest.
+
+**Built and checked (2026-10-19 ~03:30-04:10 Thai):**
+- `moments.pictures_at` (one picture function for every library): rebuilt all 29,073 old moments - 84 of 84
+  columns and the outlines equal moments_3y.parquet. `trade_labels.trades_at` (V2's trade for any decision times):
+  the snaps' labels rebuilt equal to the old file, and to V2s's 723 trades.
+- `present.py`: 127,319 moments on 922 days (every 5 minutes inside the windows, the bar closing at t present);
+  what followed: none 88,353, ran_dn 20,031, ran_up 18,935. Tests (`test_present.py`, by hand): the moments of a
+  summer Wednesday around the New York 09:30 window (outside / inside, a missing bar), a Saturday, the end excluded;
+  the run labels (a run on the decision's own bar counts, the horizon's end excluded, two runs on one bar - the up
+  run, none). Two bugs found by the tests and fixed (a lone start equal to the end; no runs at all). Planted bugs 7
+  of 7.
+- **Me as the bot (`bot_eye.py`, the owner: "make yourself the bot"):** the chart read again from the raw M1 bars by
+  code written apart from the bot's (bars, MT5's ATR, the ZigZag, every reading, the zoom): 1,000 random moments x 6
+  timeframes x 13 readings = 78,000 values, **0 different**; planted bugs in my reader show at once (the forming
+  swing ignored 626 differences, the window one bar short 1,767, no zoom 23; an equal high not moving the extreme 0 -
+  too rare to touch a reading).
+- **By eye (`eye_check.py`, six random moments, M5 and M1, clean candles read before the bot's values were shown):**
+  the way, the close against the last top / bottom and the position agree; the structure 10 of 12. Every other
+  difference was my imprecision (the closes at bars 40 / 80, a smaller ATR at the end, a swing I took as confirmed
+  before its 3-ATR return) - the bot followed its rule. One real difference of scale: 2024-01-05 22:15 TH (NFP) on M5,
+  after the spike the ATR jumped and the pullback a trader counts as a higher low is under 3 ATRs - the bot reads
+  "mixed", the eye "up".

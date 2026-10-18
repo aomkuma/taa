@@ -35,20 +35,25 @@ def trade(mk: dict, j0: int, side: int, atrs: dict[str, float]) -> dict:
     return dict(etf=etf, sl=sl, tp=tp, exit=x["exit"], pnl=x["pnl"], R=x["pnl"] / (sl + ss), xj=x["xj"])
 
 
-def main() -> None:
-    import foundation as F  # noqa: PLC0415
+def market() -> tuple[pd.DataFrame, dict]:
+    """The M1 bars the trades walk (jlib's store, the same as the pictures'), as arrays."""
     import jlib  # noqa: PLC0415
     import plib  # noqa: PLC0415
-    from lvl2 import NS_MIN  # noqa: PLC0415
 
-    plib.gold.below_normal_priority()
-    T = pd.read_parquet(HERE / "moments_3y.parquet")
-    snaps = np.nonzero((T.kind == "snap").to_numpy())[0]
     m = jlib.m1_frame("XAUUSD")
     mk = dict(o=m.open.to_numpy(float), h=m.high.to_numpy(float), lo=m.low.to_numpy(float), c=m.close.to_numpy(float),
               sp=m.spread.to_numpy(float) * 0.01 + 0.08, ot_ns=m.index.tz_convert("UTC").as_unit("ns").asi8,
               ny=plib.ny_mask(m.index))
-    s_ns = pd.DatetimeIndex(T.t_dec.to_numpy()[snaps]).as_unit("ns").asi8
+    return m, mk
+
+
+def trades_at(m: pd.DataFrame, mk: dict, s_ns: np.ndarray) -> pd.DataFrame:
+    """V2's buy and sell from every decision time (UTC ns): the entry bar j0 and each side's plan and result (no trade
+    when no M1 bar opens within 5 minutes of the decision)."""
+    import foundation as F  # noqa: PLC0415
+    import plib  # noqa: PLC0415
+    from lvl2 import NS_MIN  # noqa: PLC0415
+
     atr_at = {}
     for tf, rule in (("M1", None), ("M5", "5min"), ("M15", "15min"), ("M30", "30min")):
         if rule is None:
@@ -62,16 +67,28 @@ def main() -> None:
         atr_at[tf] = np.where(k >= 0, a[np.maximum(k, 0)], np.nan)
     j0s = np.searchsorted(mk["ot_ns"], s_ns)
     rows = []
-    for i, e in enumerate(snaps):
+    for i in range(len(s_ns)):
         j0 = int(j0s[i])
-        rec = dict(row=int(e), j0=j0)
+        rec = dict(j0=j0)
         if j0 < len(mk["o"]) and mk["ot_ns"][j0] - s_ns[i] <= 5 * 60 * 10**9:
             atrs = {tf: atr_at[tf][i] for tf in atr_at}
             for side, nm in ((1, "buy"), (-1, "sell")):
                 x = trade(mk, j0, side, atrs)
                 rec |= {f"{nm}_{k}": v for k, v in x.items()}
         rows.append(rec)
-    L = pd.DataFrame(rows)
+    return pd.DataFrame(rows)
+
+
+def main() -> None:
+    import plib  # noqa: PLC0415
+
+    plib.gold.below_normal_priority()
+    T = pd.read_parquet(HERE / "moments_3y.parquet")
+    snaps = np.nonzero((T.kind == "snap").to_numpy())[0]
+    m, mk = market()
+    s_ns = pd.DatetimeIndex(T.t_dec.to_numpy()[snaps]).as_unit("ns").asi8
+    L = trades_at(m, mk, s_ns)
+    L.insert(0, "row", snaps)
     # the same trade as v2s's walk-forward trades (verified independently 723 / 723)
     W = pd.read_parquet(HERE / "v2s_wf_trades.parquet").merge(L, on="row")
     for side, nm in ((1, "buy"), (-1, "sell")):

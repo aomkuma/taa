@@ -69,27 +69,14 @@ def run_starts(C: pd.DataFrame, index: pd.DatetimeIndex, first: pd.Timestamp, en
     return out.reset_index(drop=True)
 
 
-def main() -> None:
+def pictures_at(m: pd.DataFrame, t_ns: np.ndarray, log: bool = True) -> tuple[pd.DataFrame, np.ndarray]:
+    """What the bot sees at each decision time (UTC nanoseconds): per timeframe the picture of the 120 bars closed by
+    then (picture.features, with the zoom) and the 40-point outline (snaps.shapes). One function for every library."""
     from fingerprint import ZZ_K, raw, zigzag  # noqa: PLC0415
-    from library_match import moment_codes  # noqa: PLC0415
     from picture import WIN, features  # noqa: PLC0415
     from snaps import NPTS, shapes  # noqa: PLC0415
 
-    plib.gold.below_normal_priority()
-    m = plib.load()
-    S = pd.read_parquet(HERE / "snaps_3y.parquet")
-    R = run_starts(pd.read_parquet(HERE / "runs_10.parquet"), m.index, FIRST, plib.EXAM_END)
-    print(f"snaps {len(S)}, run starts {len(R)} (up {int((R.side > 0).sum())}, down {int((R.side < 0).sum())})", flush=True)
-    # one table: the decision time, the M1 bar, the kind, what followed
-    snap_bar = m.index[S.idx.to_numpy()]
-    T = pd.concat([pd.DataFrame({"t_dec": S.S, "bar_t": snap_bar, "kind": "snap", "cls": S.cls, "name": S.name}),
-                   pd.DataFrame({"t_dec": R.bar_t + pd.Timedelta(minutes=1), "bar_t": R.bar_t, "kind": "run", "cls": R.cls,
-                                 "name": ""})], ignore_index=True)
-    T = T.sort_values(["t_dec", "kind"], kind="stable").reset_index(drop=True)
-    FM, CM = moment_codes(m, pd.DatetimeIndex(T.bar_t))
-    # the outlines and the pictures at the last bar closed by each decision
-    t_ns = pd.DatetimeIndex(T.t_dec).as_unit("ns").asi8
-    SH = np.zeros((len(T), len(TFS), NPTS), np.float32)
+    SH = np.zeros((len(t_ns), len(TFS), NPTS), np.float32)
     pics, feats = {}, {}
     store = {}  # per timeframe what the zoom needs: bars, swings, completion times, every moment's decision bar
     for k, tf in enumerate(TFS):
@@ -107,7 +94,8 @@ def main() -> None:
         store[tf] = dict(R=Rr, piv=piv, avail=avail, bi=bi)
         if tf == "M1":
             store["M1f"] = dict(R=Rr, piv=zigzag(Rr["h"], Rr["lo"], Rr["atr"], M1F_K), avail=avail, bi=bi)
-        print(tf, "done", flush=True)
+        if log:
+            print(tf, "done", flush=True)
     for tf in TFS:
         big, sm = store[tf], store[SMALLER[tf]]
         # the span's last smaller bar completes with the larger bar (the same last M1 bar): the same close
@@ -117,8 +105,29 @@ def main() -> None:
         for key in feats[tf][0]:
             pics[f"{tf}_{key}"] = [d[key] for d in feats[tf]]
         pics[f"{tf}_zoomed"] = zoomed
-        print(tf, "zoomed", int(zoomed.sum()), flush=True)
-    T = pd.concat([T, FM.reset_index(drop=True), CM.reset_index(drop=True), pd.DataFrame(pics)], axis=1)
+        if log:
+            print(tf, "zoomed", int(zoomed.sum()), flush=True)
+    return pd.DataFrame(pics), SH
+
+
+def main() -> None:
+    from library_match import moment_codes  # noqa: PLC0415
+
+    plib.gold.below_normal_priority()
+    m = plib.load()
+    S = pd.read_parquet(HERE / "snaps_3y.parquet")
+    R = run_starts(pd.read_parquet(HERE / "runs_10.parquet"), m.index, FIRST, plib.EXAM_END)
+    print(f"snaps {len(S)}, run starts {len(R)} (up {int((R.side > 0).sum())}, down {int((R.side < 0).sum())})", flush=True)
+    # one table: the decision time, the M1 bar, the kind, what followed
+    snap_bar = m.index[S.idx.to_numpy()]
+    T = pd.concat([pd.DataFrame({"t_dec": S.S, "bar_t": snap_bar, "kind": "snap", "cls": S.cls, "name": S.name}),
+                   pd.DataFrame({"t_dec": R.bar_t + pd.Timedelta(minutes=1), "bar_t": R.bar_t, "kind": "run", "cls": R.cls,
+                                 "name": ""})], ignore_index=True)
+    T = T.sort_values(["t_dec", "kind"], kind="stable").reset_index(drop=True)
+    FM, CM = moment_codes(m, pd.DatetimeIndex(T.bar_t))
+    # the outlines and the pictures at the last bar closed by each decision
+    pics, SH = pictures_at(m, pd.DatetimeIndex(T.t_dec).as_unit("ns").asi8)
+    T = pd.concat([T, FM.reset_index(drop=True), CM.reset_index(drop=True), pics], axis=1)
     T.to_parquet(HERE / "moments_3y.parquet")
     np.save(HERE / "moment_shapes_3y.npy", SH)
     print("saved", T.shape, SH.shape)
