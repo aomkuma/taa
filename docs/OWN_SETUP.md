@@ -1193,6 +1193,29 @@ run (design | window):
 The owner: "that was only an example - find the other forms that come before price really runs." -> the run
 catalogue (effect to cause), next.
 
+### Round 16 - trading the range (sideways), the owner's trade-1 style (2026-10-18) - written before it is computed
+
+The owner: "can our system trade sideways?" The bot has the pieces (the market map's range box, the chart read's
+sweep-and-reclaim, S1's fade of false breaks) but no setup that trades inside a range as the owner did in trade 1
+(buy the bottom, sell the top; after a false break, enter on the close back inside, the stop beyond the sweep).
+- **The range:** the high / low of the previous 24 or 48 M5 bars (2 or 4 hours) with a height of 10-30 USD (x price /
+  4,100) and at least 2 earlier tests of the edge in play (M5 highs / lows within 15 % of the height from it).
+- **R1 edge fade:** an M1 bar trades within 10 % of the height of an edge (inside the range) and the next M1 close
+  turns back (below the previous bar's low at the top / above its high at the bottom): enter toward the middle;
+  the stop beyond the edge by 0.2 of the height (3-10 USD, else no trade); target 5 USD (x price / 4,100), at most to
+  the range's middle; 60 minutes.
+- **R2 false break (trade 1's improvement):** an M1 bar trades beyond an edge, then within 5 bars an M1 close comes
+  back inside by at least 0.1 of the height: enter back toward the middle; the stop beyond the sweep's extreme plus
+  0.25 M5 ATR (3-10 USD); target 5 USD / the middle as R1.
+- Design 2023-11 .. 2026-02 by half-year, then the window 2026-03 .. 10-16; real costs; one position at a time; the
+  losers' causes.
+
+**First, crude result - parked (owner: "finish the earlier work first, sideways comes next")** (`shadow/range_trade.py`):
+R1 design 6,378 trades -0.107 R, window 1,619 -0.100 R; R2 design 4,345 -0.167 R, window 1,521 -0.151 R; negative in
+every half-year and month. The count (about 12 a day) shows the code takes every overlapping 2-4 hour window as a new
+range - not the owner's one clear range after a run; to be redone properly (one range at a time, defined after a
+run, with the owner's entries) when the owner calls it.
+
 **Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
 (H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
 window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks
