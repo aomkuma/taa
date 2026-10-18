@@ -1,0 +1,8 @@
+snaps 15200, run starts 13873 (up 6879, down 6994)
+H4 done
+H1 done
+M30 done
+M15 done
+M5 done
+M1 done
+saved (29073, 207) (29073, 6, 40)

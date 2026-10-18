@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import sys
 import time
 
 import numpy as np
@@ -24,7 +25,11 @@ SNAPS = ([(TH, h, 0, f"TH{h:02d}00") for h in (7, 8, 9, 10, 11, 12)] + [(FR, 8, 
          + [(LO, h, 0, f"LO{h:02d}00") for h in (8, 9, 10, 11, 12)]
          + [(NY, 8, 0, "NY0800"), (NY, 8, 30, "NY0830"), (NY, 9, 30, "NY0930"), (NY, 10, 0, "NY1000")]
          + [(NY, h, 0, f"NY{h:02d}00") for h in (11, 12, 13, 14)])
-FIRST = plib.LEARN_START  # the library learns from the learning period only (owner, 2026-10-18: 12 months first)
+# the library learns from the learning period only: the latest 12 months first (owner, 2026-10-18); "3y" in argv:
+# from 2023-11 (owner, 2026-10-19: "add the snaps of three years"), written to the *_3y files
+THREE_Y = "3y" in sys.argv[1:]
+FIRST = pd.Timestamp("2023-11-01", tz="UTC") if THREE_Y else plib.LEARN_START
+SUFFIX = "_3y" if THREE_Y else ""
 
 
 def log(msg: str) -> None:
@@ -213,8 +218,8 @@ def main() -> None:
     L = labels(m, S, cats)
     S["atr15_u"] = atr15[dec] / L.u.to_numpy()
     out = pd.concat([S, L, C], axis=1)
-    out.to_parquet(HERE / "snaps.parquet")
-    np.save(HERE / "snap_shapes.npy", SH)
+    out.to_parquet(HERE / f"snaps{SUFFIX}.parquet")
+    np.save(HERE / f"snap_shapes{SUFFIX}.npy", SH)
     log(f"saved {out.shape}, shapes {SH.shape}, state codes {C.shape[1]}")
     d = out[out.half != "W"]
     print("\nclasses (design snaps):")

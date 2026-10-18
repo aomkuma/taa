@@ -1,0 +1,27 @@
+{'variant': 'limit_D3_S5_H15', 'trades': 373, 'per_weekday': np.float64(0.7270955165692008), 'win': np.float64(0.09651474530831099), 'R': np.float64(-0.10236042660742829), 'usd': np.float64(-197.71073170729915), 'worst': np.float64(-5.2), 'streak': 10}
+{'variant': 'limit_D3_S5_H30', 'trades': 263, 'per_weekday': np.float64(0.5126705653021443), 'win': np.float64(0.17490494296577946), 'R': np.float64(-0.025201379311338822), 'usd': np.float64(-34.32504878047543), 'worst': np.float64(-5.2), 'streak': 9}
+{'variant': 'limit_D3_S8_H15', 'trades': 403, 'per_weekday': np.float64(0.7855750487329435), 'win': np.float64(0.13895781637717122), 'R': np.float64(-0.040142632062064865), 'usd': np.float64(-132.10551219510674), 'worst': np.float64(-8.2), 'streak': 10}
+{'variant': 'limit_D3_S8_H30', 'trades': 404, 'per_weekday': np.float64(0.7875243664717348), 'win': np.float64(0.23267326732673269), 'R': np.float64(-0.03783573564616307), 'usd': np.float64(-124.68143902436846), 'worst': np.float64(-8.2), 'streak': 9}
+{'variant': 'limit_D5_S5_H15', 'trades': 316, 'per_weekday': np.float64(0.6159844054580896), 'win': np.float64(0.12025316455696203), 'R': np.float64(-0.14103668134185812), 'usd': np.float64(-231.39665853656533), 'worst': np.float64(-5.2), 'streak': 9}
+{'variant': 'limit_D5_S5_H30', 'trades': 295, 'per_weekday': np.float64(0.5750487329434698), 'win': np.float64(0.20677966101694914), 'R': np.float64(-0.0789226420721344), 'usd': np.float64(-121.09112195120453), 'worst': np.float64(-5.2), 'streak': 13}
+{'variant': 'limit_D5_S8_H15', 'trades': 464, 'per_weekday': np.float64(0.9044834307992202), 'win': np.float64(0.15301724137931033), 'R': np.float64(-0.03853732598195103), 'usd': np.float64(-146.63395121948508), 'worst': np.float64(-8.2), 'streak': 7}
+{'variant': 'limit_D5_S8_H30', 'trades': 504, 'per_weekday': np.float64(0.9824561403508771), 'win': np.float64(0.25396825396825395), 'R': np.float64(-0.04347578568250365), 'usd': np.float64(-179.59268292679872), 'worst': np.float64(-8.2), 'streak': 7}
+{'variant': 'turn_max5_H15', 'trades': 531, 'per_weekday': np.float64(1.0350877192982457), 'win': np.float64(0.03954802259887006), 'R': np.float64(-0.2102844501555993), 'usd': np.float64(-305.5080731708132), 'worst': np.float64(-5.180000000000291), 'streak': 13}
+{'variant': 'turn_max5_H30', 'trades': 451, 'per_weekday': np.float64(0.8791423001949318), 'win': np.float64(0.09312638580931264), 'R': np.float64(-0.20450416106941102), 'usd': np.float64(-234.4723658537297), 'worst': np.float64(-5.169999999999163), 'streak': 14}
+{'variant': 'turn_max8_H15', 'trades': 634, 'per_weekday': np.float64(1.2358674463937622), 'win': np.float64(0.06309148264984227), 'R': np.float64(-0.1604894605754377), 'usd': np.float64(-262.7152682927403), 'worst': np.float64(-8.180000000000291), 'streak': 9}
+{'variant': 'turn_max8_H30', 'trades': 637, 'per_weekday': np.float64(1.2417153996101364), 'win': np.float64(0.12087912087912088), 'R': np.float64(-0.18288636873341915), 'usd': np.float64(-321.4338048781465), 'worst': np.float64(-8.19000000000051), 'streak': 10}
+
+the learning half (2024-05 .. 2026-04-17) only:
+        variant  trades  per_weekday      win         R         usd  worst  streak
+limit_D3_S5_H30     263     0.512671 0.174905 -0.025201  -34.325049  -5.20       9
+limit_D3_S8_H30     404     0.787524 0.232673 -0.037836 -124.681439  -8.20       9
+limit_D5_S8_H15     464     0.904483 0.153017 -0.038537 -146.633951  -8.20       7
+limit_D3_S8_H15     403     0.785575 0.138958 -0.040143 -132.105512  -8.20      10
+limit_D5_S8_H30     504     0.982456 0.253968 -0.043476 -179.592683  -8.20       7
+limit_D5_S5_H30     295     0.575049 0.206780 -0.078923 -121.091122  -5.20      13
+limit_D3_S5_H15     373     0.727096 0.096515 -0.102360 -197.710732  -5.20      10
+limit_D5_S5_H15     316     0.615984 0.120253 -0.141037 -231.396659  -5.20       9
+  turn_max8_H15     634     1.235867 0.063091 -0.160489 -262.715268  -8.18       9
+  turn_max8_H30     637     1.241715 0.120879 -0.182886 -321.433805  -8.19      10
+  turn_max5_H30     451     0.879142 0.093126 -0.204504 -234.472366  -5.17      14
+  turn_max5_H15     531     1.035088 0.039548 -0.210284 -305.508073  -5.18      13

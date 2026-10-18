@@ -1,0 +1,1 @@
+{'layer': 'ctx', 'half': 'learning', 'snaps': 12602, 'with_1': 17, 'with_3': 0, 'with_5': 0, 'patterns': 9114} {'layer': 'ctx', 'half': 'exam', 'snaps': 2598, 'with_1': 3, 'with_3': 0, 'with_5': 0, 'patterns': 9114}

@@ -23,7 +23,7 @@ sys.path.insert(0, str(HERE))
 import plib  # noqa: E402
 from cluster_fp import onehot  # noqa: E402
 from library_match import LAYERS, attrs  # noqa: E402
-from picture import KEYS, FastPictureLibrary, features, same_tf  # noqa: E402
+from picture import EPISODE_DAYS, KEYS, FastPictureLibrary, features, same_tf  # noqa: E402
 from v2b import LAYER_TFS, NPTS, TFS, OutlineLibrary  # noqa: E402
 from wf_library_compare import Charts  # noqa: E402
 
@@ -46,8 +46,11 @@ def snap_features(C: Charts, S: pd.DataFrame) -> list[list[dict]]:
 def fmt(f: dict) -> str:
     way = {1: "up", -1: "down", 0: "flat"}
     st = {1: "HH/HL", -1: "LH/LL", 0: "mixed", 9: "few swings"}
-    return (f"120 bars {way[int(f['net_way'])]}, {st[int(f['struct'])]}, size {f['size']:.0f} ATR, last leg "
-            f"{way.get(int(f['leg_way']), '?')} {f['leg']:.1f} ATR, at {f['pos']:.2f} of the range")
+    bk = {1: "above its last top", -1: "below its last bottom", 0: "between its last top and bottom", 9: "no top / bottom"}
+    thirds = "/".join(way[int(f[f'seg{j}'])] for j in range(3))
+    return (f"120 bars {way[int(f['net_way'])]} (thirds {thirds}), {st[int(f['struct'])]}, {bk[int(f['brk'])]}, size {f['size']:.0f} ATR, "
+            f"deepest pullback {f['retr']:.1f} ATR, smoothness {f['er']:.2f}, last leg {way.get(int(f['leg_way']), '?')} "
+            f"{f['leg']:.1f} ATR, at {f['pos']:.2f} of the range")
 
 
 def main() -> None:
@@ -75,8 +78,8 @@ def main() -> None:
         old_first = {}
         n_new = n_old = 0
         for e in order:
-            k = new.best(int(e), before_day=int(day[e]))
-            ko, so = old.most_similar(V[e], SH[e][idx], before_day=int(day[e]))
+            k = new.best(int(e), before_day=int(day[e]) - EPISODE_DAYS + 1)  # other episodes only (>= 7 days)
+            ko, so = old.most_similar(V[e], SH[e][idx], before_day=int(day[e]) - EPISODE_DAYS + 1)
             if k >= 0:
                 n_new += 1
                 if learn[e]:
@@ -86,7 +89,7 @@ def main() -> None:
                 lead = old_first[ko]
                 if k < 0 and learn[e]:
                     why = [f"{LAYER_TFS[L][j]}: " + "; ".join(w) for j in range(len(idx))
-                           if (w := same_tf(feats[e][idx[j]], feats[lead][idx[j]], float(np.dot(SH[e][idx[j]], SH[lead][idx[j]]))))]
+                           if (w := same_tf(feats[e][idx[j]], feats[lead][idx[j]], SH[e][idx[j]], SH[lead][idx[j]]))]
                     rejected.append((L, int(e), lead, why))
             new.add(int(e), int(day[e]), str(S.cls.iloc[e]))
             pid, is_new = old.add(V[e], SH[e][idx], int(day[e]), str(S.cls.iloc[e]))
@@ -95,7 +98,7 @@ def main() -> None:
         print(f"{layer}: snaps with an earlier-day pattern - old rule (codes) {n_old}, new rule (the same picture) {n_new} "
               f"of {len(S)}; patterns {len(old.patterns)} -> {len(new.patterns)}", flush=True)
     rng = np.random.default_rng(19)
-    out = HERE / "png" / "same_picture"
+    out = HERE / "png" / "same_picture_v3"
     out.mkdir(parents=True, exist_ok=True)
     chosen = [("same", x) for x in [new_pairs[i] for i in rng.choice(len(new_pairs), size=min(8, len(new_pairs)), replace=False)]]
     chosen += [("rejected", x) for x in [rejected[i] for i in rng.choice(len(rejected), size=min(4, len(rejected)), replace=False)]]

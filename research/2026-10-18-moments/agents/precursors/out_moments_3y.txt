@@ -1,0 +1,14 @@
+snaps 15200, run starts 13873 (up 6879, down 6994)
+H4 done
+H1 done
+M30 done
+M15 done
+M5 done
+M1 done
+H4 zoomed 598
+H1 zoomed 430
+M30 zoomed 620
+M15 zoomed 454
+M5 zoomed 1123
+M1 zoomed 708
+saved (29073, 213) (29073, 6, 40)

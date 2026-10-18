@@ -1,0 +1,26 @@
+recount trigger '3 +last top/bottom' learn: 300 of 300 snaps equal
+recount trigger '3 +last top/bottom' exam : 300 of 300 snaps equal
+recount trigger '6 +position' learn: 300 of 300 snaps equal
+recount trigger '6 +position' exam : 300 of 300 snaps equal
+
+trigger '3 +last top/bottom' learn:
+  what followed: n 430, edge +0.179 (se 0.032, by day 0.034, 291 days)
+  placebo: the trading day after: n 334, edge -0.054 (se 0.036, by day 0.037, 227 days)
+  placebo: the trading day before: n 349, edge -0.000 (se 0.033, by day 0.032, 236 days)
+
+trigger '3 +last top/bottom' exam :
+  what followed: n 769, edge +0.119 (se 0.026, by day 0.029, 142 days)
+  placebo: the trading day after: n 612, edge +0.005 (se 0.030, by day 0.028, 112 days)
+  placebo: the trading day before: n 629, edge +0.017 (se 0.029, by day 0.030, 116 days)
+
+trigger '6 +position' learn:
+  what followed: n 627, edge +0.105 (se 0.026, by day 0.027, 360 days)
+  placebo: the trading day after: n 487, edge -0.027 (se 0.029, by day 0.029, 283 days)
+  placebo: the trading day before: n 510, edge +0.023 (se 0.028, by day 0.028, 291 days)
+
+trigger '6 +position' exam :
+  what followed: n 834, edge +0.085 (se 0.026, by day 0.028, 142 days)
+  placebo: the trading day after: n 667, edge +0.018 (se 0.028, by day 0.028, 114 days)
+  placebo: the trading day before: n 669, edge -0.015 (se 0.028, by day 0.027, 116 days)
+
+(the exam's snaps are all of the half; the learning half's are a sample of 3,000; base rates per half) 2026-04-18

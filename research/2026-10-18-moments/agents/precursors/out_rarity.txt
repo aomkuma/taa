@@ -1,0 +1,96 @@
+
+=== context (H4+H1): 800 snaps (2024-05 .. 2026-04-17), earlier moments from other episodes ===
+                   rule  snaps_with_a_match  median_matches  part_alone_passes
+             every part               0.001           0.000                NaN
+          without codes               0.005           0.000              0.008
+        without outline               0.001           0.000              0.032
+    without thirds' way               0.001           0.000              0.006
+without thirds' outline               0.016           0.000              0.001
+  without 120 bars' way               0.001           0.000              0.268
+      without structure               0.001           0.000              0.132
+without last top/bottom               0.001           0.000              0.262
+       without pullback               0.001           0.000              0.317
+     without smoothness               0.004           0.000              0.377
+           without size               0.001           0.000              0.312
+       without last leg               0.001           0.000              0.063
+       without position               0.003           0.000              0.136
+the parts added one by one:
+          added  snaps_with_a_match  median_matches
+     smoothness               1.000        3681.000
+       pullback               1.000        1374.500
+           size               0.999         588.000
+  120 bars' way               0.971         164.000
+last top/bottom               0.922          53.000
+       position               0.825          17.000
+      structure               0.554           2.000
+       last leg               0.343           0.000
+        outline               0.158           0.000
+          codes               0.072           0.000
+    thirds' way               0.016           0.000
+thirds' outline               0.001           0.000
+-- H4 alone (its picture only, no codes): every part 0.207 of snaps, median 0 matches; without one part: outline 0.236, thirds' way 0.299, thirds' outline 0.395, 120 bars' way 0.215, structure 0.251, last top/bottom 0.224, pullback 0.214, smoothness 0.225, size 0.230, last leg 0.273, position 0.235
+-- H1 alone (its picture only, no codes): every part 0.316 of snaps, median 0 matches; without one part: outline 0.357, thirds' way 0.443, thirds' outline 0.626, 120 bars' way 0.328, structure 0.389, last top/bottom 0.340, pullback 0.338, smoothness 0.328, size 0.350, last leg 0.384, position 0.343
+
+=== setup (M30+M15): 800 snaps (2024-05 .. 2026-04-17), earlier moments from other episodes ===
+                   rule  snaps_with_a_match  median_matches  part_alone_passes
+             every part               0.000           0.000                NaN
+          without codes               0.006           0.000              0.007
+        without outline               0.001           0.000              0.045
+    without thirds' way               0.006           0.000              0.007
+without thirds' outline               0.015           0.000              0.001
+  without 120 bars' way               0.000           0.000              0.238
+      without structure               0.000           0.000              0.144
+without last top/bottom               0.000           0.000              0.305
+       without pullback               0.000           0.000              0.355
+     without smoothness               0.000           0.000              0.426
+           without size               0.000           0.000              0.244
+       without last leg               0.000           0.000              0.091
+       without position               0.001           0.000              0.185
+the parts added one by one:
+          added  snaps_with_a_match  median_matches
+     smoothness               1.000        4352.500
+       pullback               1.000        1726.500
+last top/bottom               1.000         361.500
+           size               0.991         144.500
+  120 bars' way               0.973          52.500
+       position               0.945          25.000
+      structure               0.776           5.500
+       last leg               0.574           1.000
+        outline               0.318           0.000
+          codes               0.119           0.000
+    thirds' way               0.015           0.000
+thirds' outline               0.000           0.000
+-- M30 alone (its picture only, no codes): every part 0.331 of snaps, median 0 matches; without one part: outline 0.355, thirds' way 0.477, thirds' outline 0.655, 120 bars' way 0.360, structure 0.429, last top/bottom 0.355, pullback 0.351, smoothness 0.340, size 0.383, last leg 0.409, position 0.359
+-- M15 alone (its picture only, no codes): every part 0.321 of snaps, median 0 matches; without one part: outline 0.366, thirds' way 0.445, thirds' outline 0.645, 120 bars' way 0.341, structure 0.391, last top/bottom 0.343, pullback 0.346, smoothness 0.336, size 0.361, last leg 0.403, position 0.343
+
+=== trigger (M5+M1): 800 snaps (2024-05 .. 2026-04-17), earlier moments from other episodes ===
+                   rule  snaps_with_a_match  median_matches  part_alone_passes
+             every part               0.001           0.000                NaN
+          without codes               0.003           0.000              0.010
+        without outline               0.001           0.000              0.010
+    without thirds' way               0.001           0.000              0.003
+without thirds' outline               0.011           0.000              0.000
+  without 120 bars' way               0.001           0.000              0.194
+      without structure               0.001           0.000              0.114
+without last top/bottom               0.001           0.000              0.251
+       without pullback               0.001           0.000              0.306
+     without smoothness               0.003           0.000              0.500
+           without size               0.001           0.000              0.206
+       without last leg               0.001           0.000              0.061
+       without position               0.001           0.000              0.139
+the parts added one by one:
+          added  snaps_with_a_match  median_matches
+     smoothness               1.000        5233.500
+       pullback               0.998        1660.500
+last top/bottom               0.998         336.000
+           size               0.995         115.000
+  120 bars' way               0.981          35.000
+       position               0.936          14.000
+      structure               0.762           3.000
+       last leg               0.517           1.000
+          codes               0.264           0.000
+        outline               0.087           0.000
+    thirds' way               0.011           0.000
+thirds' outline               0.001           0.000
+-- M5 alone (its picture only, no codes): every part 0.282 of snaps, median 0 matches; without one part: outline 0.349, thirds' way 0.466, thirds' outline 0.651, 120 bars' way 0.309, structure 0.364, last top/bottom 0.302, pullback 0.310, smoothness 0.295, size 0.323, last leg 0.357, position 0.320
+-- M1 alone (its picture only, no codes): every part 0.354 of snaps, median 0 matches; without one part: outline 0.416, thirds' way 0.522, thirds' outline 0.704, 120 bars' way 0.372, structure 0.431, last top/bottom 0.371, pullback 0.374, smoothness 0.362, size 0.403, last leg 0.431, position 0.383

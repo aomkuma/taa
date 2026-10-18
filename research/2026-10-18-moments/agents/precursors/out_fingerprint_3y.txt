@@ -1,0 +1,13 @@
+[     3s] H4: 233 swings in all, 4978 bars
+[     5s] H1: 1056 swings in all, 19013 bars
+[     7s] M30: 2097 swings in all, 38003 bars
+[    10s] M15: 4193 swings in all, 75987 bars
+[    14s] M5: 11933 swings in all, 226356 bars
+[    24s] M1: 62623 swings in all, 1131519 bars
+[    24s] saved (15200, 120)
+H4 swings in the window (code 0: 0-2, 1: 3-5, 2: 6-9, 3: 10+): {0: 0.03, 1: 0.53, 2: 0.43, 3: 0.01}
+H1 swings in the window (code 0: 0-2, 1: 3-5, 2: 6-9, 3: 10+): {0: 0.01, 1: 0.33, 2: 0.6, 3: 0.06}
+M30 swings in the window (code 0: 0-2, 1: 3-5, 2: 6-9, 3: 10+): {0: 0.02, 1: 0.35, 2: 0.56, 3: 0.07}
+M15 swings in the window (code 0: 0-2, 1: 3-5, 2: 6-9, 3: 10+): {0: 0.02, 1: 0.34, 2: 0.59, 3: 0.05}
+M5 swings in the window (code 0: 0-2, 1: 3-5, 2: 6-9, 3: 10+): {0: 0.03, 1: 0.38, 2: 0.56, 3: 0.03}
+M1 swings in the window (code 0: 0-2, 1: 3-5, 2: 6-9, 3: 10+): {0: 0.02, 1: 0.33, 2: 0.58, 3: 0.06}

@@ -6,6 +6,7 @@ swings on the 120 visible bars and 20 attributes of the formation and the indica
 
 from __future__ import annotations
 
+import sys
 import time
 
 import numpy as np
@@ -173,7 +174,8 @@ def fingerprint(R: dict[str, np.ndarray], bi: np.ndarray) -> pd.DataFrame:
 def main() -> None:
     plib.gold.below_normal_priority()
     m = plib.load()
-    S = pd.read_parquet(HERE / "snaps.parquet")
+    sfx = "_3y" if "3y" in sys.argv[1:] else ""
+    S = pd.read_parquet(HERE / f"snaps{sfx}.parquet")
     s_ts = S.S.to_numpy()
     parts = []
     for tf in TFS:
@@ -190,7 +192,7 @@ def main() -> None:
         log(f"{tf}: {len(zigzag(R['h'], R['lo'], R['atr'])[0])} swings in all, {len(b)} bars")
     F = pd.concat(parts, axis=1)
     F.index = S.index
-    F.to_parquet(HERE / "snap_fingerprints.parquet")
+    F.to_parquet(HERE / f"snap_fingerprints{sfx}.parquet")
     log(f"saved {F.shape}")
     d = (S.half != "W").to_numpy()
     for tf in TFS:

@@ -3,7 +3,7 @@
 The owner's goals and principles come first: `docs/OWNER_GOALS.md`. This file holds **the current state** of Setup
 OWN: what trades in the bot, the windows and the method, and the research in progress. Every earlier round (the
 hypotheses written before their outcome, then the results) is kept in `docs/OWN_SETUP_ROUNDS.md`. Results describe
-the past, never a promise. Last update: 2026-10-18 22:45 Thai time.
+the past, never a promise. Last update: 2026-10-19 02:00 Thai time.
 
 ## In the bot (DEMO since 2026-10-18 17:08 Thai; LIVE off)
 
@@ -67,7 +67,30 @@ a finding only where it differs from the coin's split (round 2: 41 / 14 / 45 % f
 change attacks the kind that is largest *above the coin's*, is written down before it is computed, and is judged
 on data it was not found on.
 
-## Research in progress: LV3 - the owner's reading of the chart (2026-10-18)
+## Research in progress: Setup OWN V2 - the library of researched pictures (owner, 2026-10-18 / 19)
+
+As agreed (2026-10-18 17:02 Thai): research the patterns after which price runs to the 5-10 USD target, then let the
+bot match the chart in front of it to any researched result and decide whether to trade.
+
+- **The library:** three years of the owner's snap times plus the start of every 10 U run inside the owner's windows
+  (29,073 moments from 2023-11; `moments.py`), each with what the bot saw per timeframe (the core codes, the 120-bar
+  outline and the picture: size, position, the last leg, the way, the swing structure, the close against the last
+  top / bottom, the deepest pullback, smoothness, the way of each third) and what followed. Evidence only from other
+  episodes (>= 7 days before the decision).
+- **The bot's reading (2026-10-19):** audited by eye on every timeframe; where a timeframe's own swings are too few,
+  it reads them from the next smaller timeframe over the same span (the zoom; unreadable readings 1.5-3.9 % -> 0 %).
+- **V2b** (the same core codes): the matches looked different to the owner's eye; the exam -0.169 R. **The same
+  picture** (every part alike, as the owner reads it): almost never repeats - 0.0-0.1 % of snaps have one earlier
+  episode, none has three; the bot could not trade on it.
+- **V2s** (the same situation on M5 + M1): it repeats, and its lean told the way of the next half hour's 10 U run in
+  both halves (checked four ways: an independent recount, by day, two placebos). Traded at the snap: learning
+  -0.020 R, **the exam -0.085 R** (278 trades, -240 USD at 0.01 lot; checked 723 / 723 trades): when the lean was
+  right the price first dipped a median 5-6 USD and took the stop in half of them. Waiting for the dip (V2e: a limit
+  3 / 5 USD away, or an M1 turn): every variant negative on the learning half; the exam not run.
+- **Status (2026-10-19 02:00 Thai):** to be concluded with the owner - the lean's edge is smaller than what the
+  10 U target, the stop and the costs need. Details: `research/2026-10-18-moments/agents/precursors/notes.md`.
+
+## Stopped: LV3 - the owner's reading of the chart (2026-10-18)
 
 The owner on a losing trade's picture (2026-09-02): with every larger timeframe's trend, wait for price to bounce
 into an earlier level, then enter the trend's way; on the 2026-03-09 sell: "the M1 legs were not complete - at least

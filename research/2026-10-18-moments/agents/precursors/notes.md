@@ -493,6 +493,11 @@ winners never went beyond the level), so the stop sits inside the poke through t
 | 11 | the owner: the M1 legs were not complete; one M1 bar has no weight; 3-5 legs, the last peak lower | LV3: the pause's legs on M1 as the entry | proven on slices (signals and trades 100 %) |
 | 12 | eye check: the legs were counted from before the start's extreme | the exact minute of the extreme | test + checker |
 | 13 | the owner: test the foundations first; the indicators were not MT5's, the library's levels chained, four more bugs (notes "The foundation") | foundation.py; every building block tested with planted bugs; the library rebuilt; learning on the latest 12 months | the walk-forward run next |
+| 14 | LV3's walk-forward lost the exam; each component alone (trend, pullback, levels, the signal) measures at chance against a no-effect baseline | LV3 stops; every component is proven twice (code, premise) before assembly | exam -0.139 R |
+| 15 | F1 CONF-72's components: only C4 (the 72-hour extreme) carries direction, and its sign flips with the market phase; no daily phase measure separates | - | - |
+| 16 | V2b (the library by core codes) proven 408 / 408 but lost; the owner: the matched pictures do not look alike | the same picture redefined with the owner (outline, size, last leg, position, way, structure, break, pullback, smoothness, thirds) | learning -0.021 R, exam -0.169 R |
+| 17 | the same picture rarely repeats within a year; a midnight look-ahead in the evidence (an hour-earlier snap as evidence) | evidence only from episodes >= 7 days before; the library to three years plus every 10 U run start | - |
+| 18 | swings too few on 1.5-3.9 % of readings; the same picture repeats for 0.0-0.1 % of snaps (none three times); the same M5 + M1 situation leans the right way for the next half hour (edge +0.18 / +0.12, checked four ways) but the run starts after a 5-6 USD dip | the zoom; V2s trades the situation's lean; V2e waits for the dip | V2s learning -0.020 R, exam -0.085 R; V2e negative on learning |
 
 ## LV3 - the owner's "legs" as the entry (2026-10-18) - written before it is computed (`lvl3.py`)
 
@@ -851,3 +856,128 @@ only). My own look: the setup and trigger pairs look alike (e.g. 2026-04-15 14:0
 HH/HL, a pullback from the top, sizes 17 / 19 ATR); the rejections are right (an up-trend vs a down-and-sideways
 chart); but some context pairs are the same situation a few hours apart (2026-01-31 00:00 vs 01-30 17:00, H4
 correlation 1.00) - one market moment counted twice, not a repeat.
+- **after the owner's eye on the first pairs (2026-10-19):** picture 2 (the trigger pair 2026-02-02 16:00 / 01-14
+  08:00) - on M5 one close still under its last top (the down-structure intact), the other already above its last
+  top (broken): the close against the last confirmed top and bottom (above / between / below) must now be equal, and
+  the swing still forming counts in the structure (a run above the last top is a higher top at once); picture 4 was
+  one the new rule had already rejected - the owner's eye and the rule agree. My own look added the path's
+  character: the deepest move against the window's way within a factor 1.6 (both under 1 ATR alike) and the
+  smoothness (|net| / path) within 0.1 (a steady staircase is not a fall-and-recover).
+- **the owner (2026-10-19): "if price runs significantly, add it to the library as a new entry"** - the picture just
+  before every 10 U run (the run catalogue, inside the owner's windows) joins the library with the run's way, after
+  the run is over (evidence for later days only).
+- **the thirds (owner, 2026-10-19, on three more pairs: alike at the end, not at the start):** the 120 bars are cut
+  in three; each third must go the same way (up / down / flat within 1 ATR) and its outline correlate >= 0.5 - a
+  steady staircase is not a flat range that breaks out late, a slide is not a spike-and-crash. A repeat within 7
+  days is the same episode (counted once). Tests 14, planted bugs caught 25 of 25 (one equivalent earlier).
+
+## Does the bot read the chart right, and will it find the same picture? (2026-10-19, 00:30-01:45 Thai)
+
+The owner: "look at the pictures - are they alike? If the bot uses this for real, will it catch patterns? Focus on
+whether the bot interprets the trading screen correctly", then on the reading audit's first limit ("ZigZag 3 ATR is
+sometimes too coarse"): "can't you look at a smaller timeframe to see how it shows the swings? M5 should show them".
+
+**The reading audit (`reading_audit.py`, `png/reading_audit/`, eight learning-half snaps, every timeframe drawn with
+what the bot measured):** the readings match their definitions and mostly what a trader sees; the limits - the
+structure is the last two swings (the latest part of the window), and a 3-ATR ZigZag finds too few swings in a
+smooth one-way move (structure unreadable on 1.5-3.9 % of the moments per timeframe, the break test on 0.0-1.1 %).
+
+**The zoom (`moments.small_span`, `moments.zoom_all`, `picture.zoom`):** a structure or break reading of 9 (too few
+swings / no top or bottom yet) is read from the next smaller timeframe's swings over the same span (H4 <- H1 <- M30
+<- M15 <- M5 <- M1; M1 from its own bars with a 1.5-ATR ZigZag), against the larger bar's close. The span: from the
+first smaller bar completing after the bar before the window completed to the last one completing with the window's
+last bar (the same last M1 bar - the same close; asserted on every moment). Tests (`test_moments.py`, by hand): the
+span with a weekend gap and a bar missing its last minute; a hand-made swing set read as HH/HL and "above the last
+top" (a peak confirmed one bar after the span and a later bar's close must not count); untouched rows; only the
+missing reading filled; still 9 when the smaller timeframe has too few swings too. Planted bugs caught 7 of 7 (span
+start / end off by one, a span one larger bar short, the smaller timeframe's latest close, span ends swapped, a wrong
+change flag, the first-bar window). The library rebuilt (29,073 moments): "too few swings" 1.5-3.9 % -> 0 % on every
+timeframe, the break test's 0.0-1.1 % -> 0 %; nothing else changed (every other column and the outlines equal the
+old file; only readings of 9 replaced). By eye (`zoom_audit.py`, `png/zoom_audit/`, eight cases, the stored reading
+asserted equal to the panels'): the smaller timeframe shows what a trader sees there - H4 2025-09-05 a smooth climb
+-> H1 HH/HL; M30 2025-02-03 a new top then below the last trough -> mixed; M5 2024-01-16 a fall and a lower
+drift -> LH/LL. One scale effect to tell the owner: the smaller timeframe's last two swings are the latest part of
+the window - M5 2025-12-16 23:00 is a big climb, but M1's last swings are the pullback from the top -> "down".
+
+**Will the bot find the same picture? (`coverage_3y.py`, the walk-forward library of three years, other episodes
+only - >= 7 days before):** context (H4+H1) - 17 of 12,602 learning snaps find the same picture once, none twice or
+more; the exam 3 of 2,598 (before the zoom: the same 17 / 3). Setup (M30+M15) - 16 of 12,602 and 6 of 2,598, none
+twice. **The same picture, every part on both timeframes of a layer, almost never comes back - the bot could not
+trade on it.**
+
+**What makes it rare (`rarity.py`, tests `test_rarity.py` - the parts together equal `picture.same_mask` on random
+pictures and each part equals the scalar rule's reason; tables by hand; planted bugs 9 of 9):** 800 snaps
+(2024-05 .. 2026-04-17) against every earlier moment of another episode (an upper bound: any moment, not only the
+library's patterns): every part - context 0.1 %, setup 0.0 %, trigger 0.1 % of snaps have one. No single part is to
+blame - without any one part at most 1.6 %. The parts added one by one (the least selective first): smoothness,
+pullback, the break, size, the 120 bars' way, position leave 82-95 % of snaps with matches (median 14-25); + the
+structure 55-78 % (median 2-6); + the last leg 34-57 % (median 0-1); + the outline, the codes, the thirds ~0. One
+timeframe's full picture alone: 21-35 % have one, median 0.
+
+**Which level of sameness tells the way? (`rarity_lean.py`, tests `test_rarity_lean.py` by hand, planted bugs 4 of 4;
+3,000 learning snaps 2024-05 .. 2026-04-17 and all 2,598 exam snaps):** at each level, the matching earlier days
+(one per day), their lean (up - down share), and with >= 5 days and |lean| >= 0.2 how often a 10 U run followed
+within 30 minutes the lean's way vs the other way, minus what the half's rates give with no effect (edge):
+- context: the coarse levels ~0; + the structure +0.067 (se 0.043) learning, +0.076 (0.042) exam - weak;
+- setup: signs flip between the halves - nothing;
+- **trigger (M5+M1): the coarse situation leans right in both halves** - smoothness + pullback + the break:
+  +0.179 (0.032) learning, +0.119 (0.026) exam (the lean's way 33 % vs the other 15 % / 22 %); + the way, size,
+  position: +0.105 (0.026) / +0.085 (0.026); finer levels fewer snaps and noisier;
+- the full picture: too few snaps to say.
+**Checked (`lean_check.py`, `out_lean_check.txt`):** an independent recount from the rule's text (plain pandas, no
+picture.py / rarity.py) equals the per-snap days and lean for 300 of 300 snaps at both levels in both halves; with
+each day's snaps counted as one the error barely grows (0.032 -> 0.034, 0.026 -> 0.029); placebos - the same lean
+against what followed the same snap time on the trading day before / after: -0.054 .. +0.023 (nothing): the
+information is the moment's own, not a trend of several days. Not yet a trade: a run following is not a stop and
+target, and this is the same situation, not the same picture to the eye.
+
+## V2 on the trigger situation - written before it is computed (2026-10-19 01:45 Thai; `v2s.py`, tests `test_v2s.py`)
+
+At every snap: the earlier moments (>= 7 days before; snaps and the starts of 10 U runs) in the same M5 + M1
+situation, one per day, their lean; trade it with >= N_MIN days and |lean| >= THETA. Fixed before the run from the
+learning half: L3 = smoothness + pullback + the break; L6 = L3 + the 120 bars' way, size, position. The trade as
+v2b (entry at the next M1 open within 5 minutes, entry TF by ATR, stop one entry-TF ATR >= 5 USD, target 10 U,
+12 entry-TF bars, the auditor's costs, one position at a time); cells L3 / L6 x N_MIN 5 / 10 x THETA 0.2 / 0.4,
+chosen walk-forward month by month from 2024-05 (lookback 6 months, >= 20 closed trades). Tests: the side by hand;
+the leans from a five-moment library by hand (two timeframes, the 7-day window, L3 vs L6); planted bugs 7 of 7
+(any earlier day, L6 without the way, L3 without the break, strict threshold, strict days, one timeframe only x2).
+The run asserts its leans equal rarity_lean's where both measured. Then `check_v2s.py` re-derives every
+walk-forward trade independently (the lean recounted from the rule's text, own ATR bars, own bar walk). The exam
+(2026-04-18 .. 2026-10-16) is read week by week.
+
+**The result (2026-10-19 ~01:50 Thai; `out_v2s.txt`, `v2s_wf_trades.parquet`, `v2s_wf_months.csv`,
+`v2s_wf_exam_weeks.csv`):** every cell negative on the exam (R -0.016 .. -0.098), the learning half -0.140 ..
++0.006. Walk-forward: learning 445 trades (0.87 a weekday), win 0.380, **R -0.020**, -39 USD; **the exam 278 trades
+(2.14 a weekday), win 0.331, R -0.085, -240 USD**, max DD 298, worst -13.21, longest losing streak 9 (May-June mostly
+up, late August - early September the deepest: -77, -51, -42 USD weeks). **Independent check (`check_v2s.py`): 723
+of 723 trades equal** (the lean recounted from the rule's text, own ATR bars, own bar walk; no trade opens before the
+one before it closed). Why a right lean still lost - the trades by what followed:
+
+| after the entry | learning | the exam |
+|---|---|---|
+| a 10 U run the lean's way | 149 trades, R +0.177, stopped 49 % | 104, R +0.039, stopped 56 % |
+| a 10 U run the other way | 68, R -0.406 | 64, R -0.501 |
+| no 10 U run | 228, R -0.033 | 110, R +0.039 |
+
+When the lean was right the run started a median 6 (learning) / 9 (exam) minutes after the snap from a dip against
+the trade of a median 5.1 / 6.2 USD (75 %: 11.1 / 11.7 USD); the stop (median 6.5 / 6.9 USD) went first in 52 % /
+59 % of them. The lean tells the way of the next half hour, not the entry.
+
+## V2's entry - waiting for the dip (2026-10-19 ~02:00 Thai; `v2e.py`, tests `test_v2e.py`) - the learning half only
+
+Two entries that wait for the dip, with v2s's leans, cells and walk-forward, chosen on the learning half only (the
+exam not run): a limit D = 3 / 5 USD beyond the snap's price the lean's way, valid 30 minutes, the stop S = 5 / 8 USD
+from the fill (a fill bar's stop counts, its target not); or the turn - the first M1 close beyond the extreme bar's
+other end after the dip, the stop 0.3 USD beyond the extreme, capped at 5 / 8 USD; the target 10 U, out after 15 /
+30 minutes. Tests by hand (fills with the spread and on gaps, the window's end, the turn for both sides, an outside
+bar is a new extreme, a wide spread moves a sell's extreme, a limit trade whose fill bar touched the target);
+planted bugs 11 of 11 caught. **Every variant lost on the learning half:** limit R -0.025 .. -0.141, turn -0.160 ..
+-0.210 (the snap entry: -0.020). The turn's stops (median 2.9 USD) go in M1 noise (57 % stopped); the limits fill
+more often when the price keeps going against the lean; time exits are positive on average (+0.4 .. +1.9 USD) - the
+price leans the right way but 10 U in half an hour is too far for most of them.
+
+**The round's conclusion (to be concluded with the owner):** the bot reads the chart as defined (audit + zoom); the
+same picture by eye does not come back (0.0-0.1 % of snaps), so a library of the same picture cannot trade; the
+same situation on M5 + M1 does come back and leans the right way for the next half hour (checked four ways), but
+neither the snap entry nor the dip entries turn it into a positive R - the lean's edge (run the right way 33 % vs the
+other 15-22 %) is smaller than what the 10 U target, the stop and the costs need.
