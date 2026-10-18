@@ -758,3 +758,23 @@ both, and the control (neither); 8 U the side's way first within 60 minutes (no 
 (40-47 %). C4 is real but its sign belongs to the market phase: F1 CONF-72's edge is the trending phase's. Next: a
 phase component, measured in advance, that tells C4's continuation from its reversal in both eras (owner's principle:
 in a phase that does not suit a setup it trades less).
+
+## A phase component for C4 - written before it is computed (2026-10-19 02:25 Thai; `c4_phase.py`)
+
+Candidates, from daily bars on the server day, known at the previous day's close: the 20-day efficiency ratio
+(|net move| / the path; trending near 1), the daily ADX(14) (MT5's), and the distance from the 50-day average in
+20-day ATRs. For every C4 event (near or behind; every 15th minute of F1's windows, both sides) in each era -
+2020-09 .. 2023-10 and 2023-11 .. 2026-04-17 - its way (8 U first, 60 minutes) by the measure's terciles within the
+era. **A phase measure is proven** when the top tercile minus the bottom is positive by >= 2 SE in both eras (a
+trending phase: C4 goes on; a ranging one: C4 turns).
+
+**Result (`out_c4_phase.txt`): no phase measure is proven.** Top tercile minus bottom, 2020-09 .. 2023-10 / 2023-11 ..
+2026-04-17: the 20-day efficiency ratio -1.5 / +3.5 points (-0.4 / +1.2 SE); the daily ADX -8.4 / +3.8 (-2.4 / +1.3 SE;
+in the old era a high ADX went with more reversal); the distance from the 50-day average -2.4 / +5.1 (-0.7 / +1.7 SE).
+C4's sign is a property of the era (gold's multi-year rally vs its 2020-23 range), not of these day-level measures.
+
+**Learning log, round 15:** learned - F1 CONF-72's only informative part is C4, and C4's sign flips with the era; no
+daily phase measure tells which in advance. Changed - nothing in the bot (the owner decides on F1's DEMO run). Result -
+the chart components tested so far (trend, pullback, levels, price action, indicators, the 72-hour extreme) give no
+direction that holds across gold's eras; the leads left are causal (the releases), the library (with a truer
+"same picture"), and the time of day (when runs happen, not their side).
