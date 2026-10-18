@@ -1037,6 +1037,30 @@ alone). S2-C3 (entry at 08:33 ET in the 3-minute direction): only 12 releases in
 the three-minute swing is usually wider than 12 x price / 4,000, so the stop does not fit the account (2021-23: 4
 trades -0.523 R; 2023-26: 7 trades -0.004 R; 2026-08-12 itself skipped for that reason) - too few to judge.
 
+**Correction (2026-10-18):** the no-chase filter above measures the run in M1 ATR, which swells inside a spike; it
+would *not* have blocked 2026-04-08 (that signal: ret60 = 5.7 M1 ATR with an M1 ATR of 6.6 USD - a 38 USD run). What
+the system saw then: the round 4850 reclaimed (sweep + reclaim), MACD and Stochastic agreeing, H1 4.1 ATR above its
+EMA50, the 72-hour high 4828.65 already behind, the fast-tape ratio 1.986 (just under 2.0), 3 minutes into the Asian
+window, the H1 leg against (-1), and an 8 USD stop = 1.2 M1 ATR. Every F1 check measures strength, so in a vertical
+spike all of them light up at its top - a mechanical panic buy (the owner: "it had already run that far - why buy?").
+
+**Round 12b - "already run too far", measured with a yardstick that does not swell (written before it is computed):**
+X1 = F1 + the last 60 minutes' run with the trade (ret60 x M1 ATR, in USD) below 1.5 H1 ATR; X2 = F1 + the close
+within 3 M15 ATR of the M15 EMA(20) the trade's way; X3 = F1 + a stop of at least 1.5 M1 ATR. Design first (five
+half-years), then the seen window.
+
+| F1 variant (`shadow/too_far.py`) | Design trades | Design R | Half-years + | Max DD | Window trades | Window R | Window USD | Blocks 04-08? |
+|---|---|---|---|---|---|---|---|---|
+| F1 as frozen | 140 | +0.118 | 4/5 | 30.4 | 34 | +0.183 | +52.9 | no |
+| X1 60-min run < 1.5 H1 ATR | 119 | +0.147 | 4/5 | 22.3 | 28 | +0.270 | +54.7 | no (that run was 0.98 H1 ATR: the H1 ATR was 38 USD) |
+| **X2 within 3 M15 ATR of the M15 EMA(20)** | 128 | +0.098 | **5/5** | 25.1 | 29 | +0.188 | +48.4 | **yes** (3.72) |
+| X3 stop >= 1.5 M1 ATR | 136 | +0.078 | 3/5 | 26.9 | 31 | +0.285 | +66.4 | yes (1.21) - but worse on design |
+| X1 + X2 | 110 | +0.131 | 4/5 | 26.0 | 24 | +0.241 | +45.2 | yes |
+
+The owner (2026-10-18): "this alone makes no sense - no wonder everything ended in losses." The lesson behind it:
+the rules were assembled from strength signals and statistical filters without a trader's basic no-go checks first
+(do not buy the top of a vertical run; buy value, not extension; no stop inside one bar's normal swing).
+
 **Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
 (H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
 window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks
