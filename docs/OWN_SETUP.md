@@ -1225,6 +1225,14 @@ Widening every stop (same target): design x1.5 +0.086 R (+73.2 USD), x2 +0.068 R
 +0.183 R (+52.9, max DD 26.7); with the account's 10 USD cap x2 turns the window negative (-10.4 USD). A wider stop wins
 more often (44 -> 50 %) but loses more per loss: no help, and it does not fit a 50 USD account.
 
+**A stop floor instead (owner: "do what you said, and widen the SL"; `shadow/stop_floor.py`):** the stop raised to at
+least a share of the M15 ATR(14) only where it was tighter, no account cap. Design (target 8 U): floor 0 -> +0.118 R,
++58.4 USD, max DD 30.4; 0.5 -> +0.111, +57.9, 31.2; **0.75 -> +0.116, +68.6, 21.9**; 1.0 -> +0.094, +67.0, 28.1 (keeping the
+target/stop ratio: 0.75 -> +0.110, 5/5 half-years). Latest six months: floor 0 -> 34 trades +0.183 R, +52.9 USD, DD
+26.7, 6/7 months; **0.5 -> +0.198 R, +50.8, DD 21.4, 5/7**; **0.75 -> +0.212 R, +43.1, DD 26.8, 4/7**; 1.0 -> +0.170, +35.8, DD
+45.1. A floor at 0.5-0.75 M15 ATR keeps the result about where it was (R a trade slightly up, the total about level
+or lower, months less even); 1.0 and more costs money. F1 + a 0.5 M15-ATR stop floor is the widened version kept.
+
 **Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
 (H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
 window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks
