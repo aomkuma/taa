@@ -14,6 +14,12 @@ rounds 1-10) and the owner's goals in `docs/OWNER_GOALS.md`.
 - Principles: no single rule decides direction; a full arsenal of tools, pick the right one for the moment; everything
   relative; live in the present; learn from the losing trades (below).
 
+## The goal is fixed, the method follows the market (owner, 2026-10-18)
+
+"Lock the goal - e.g. a profit of at least 5 USD a trade - but the method must be flexible with the market." The
+target floor stays; the entry timeframe (the smallest whose ATR covers 5 USD; H1 the largest), the stop, the entry
+form, the hold and the setup in use all adapt to the current volatility, session and phase.
+
 ## The account (owner, 2026-10-17): 50-100 USD at 1:2000, must survive 4-6 losses in a row
 
 At the minimum lot (0.01): gold = 1 USD per 1.00 of price (an 8 USD stop = 8 USD = 8-16 % of the account); a USD
