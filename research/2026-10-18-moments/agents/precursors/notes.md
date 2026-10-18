@@ -1088,3 +1088,17 @@ the reverse (+0.020 vs -0.100) - the phase decides which way pays.
 **Without the bias** (the evidence from snaps only, the result library above): the picks earn about 0 R (-0.002 /
 +0.014), no edge and no big loss. The owner's own rule (2026-10-19: "with the larger timeframe's trend; near a major
 support / resistance price may turn") is the opposite of what the biased library did.
+
+**The owner (2026-10-19, ~03:30 Thai): "the library's pictures must be what the bot sees in the present - many look
+as if price has already broken" (`out_library_present.txt`, `library_present.py`, `png/library_present/`):** every
+run-start picture ends at the run's start bar (13,873 of 13,873) - no bar of the run is in it - but the owner is
+right that they are pictures of a break that has just happened the other way: of the run-up starts 35 % have M1's
+close below its last bottom (ordinary snaps 15 %), 73 % a last leg down, M1's close at a median 0.32 of the range
+(snaps 0.54); the run-down starts the mirror (27 % above the last top, 68 % a last leg up). They are the end of a
+sweep or a crash, kept because a rebound followed (e.g. 2026-01-21 22:25 TH: M5 and M1 had just crashed 50 USD
+through every bottom; the grey bars after it rebound). The same pictures that kept falling are not in the library
+(only those at a snap time), so a fresh breakdown reads as "up" to the bot.
+
+**The fix (to build):** the library must be built the way the bot sees the market - moments taken by the clock inside
+the owner's windows (every few minutes), each with what followed, never chosen because of what followed; the bot
+decides at the same moments, so the library and the bot look at the same population.

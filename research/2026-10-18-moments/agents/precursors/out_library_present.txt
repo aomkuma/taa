@@ -1,0 +1,11 @@
+run starts whose picture ends exactly at the start bar: 13873 of 13873
+          group  tf     n  pos_median  above last top  between  below last bottom  last_leg_up
+          snaps  M1 15200        0.54            0.18     0.67               0.15         0.52
+          snaps  M5 15200        0.57            0.20     0.64               0.15         0.53
+          snaps M15 15200        0.58            0.22     0.63               0.15         0.54
+  run-up starts  M1  6879        0.32            0.07     0.58               0.35         0.27
+  run-up starts  M5  6879        0.39            0.13     0.59               0.28         0.40
+  run-up starts M15  6879        0.46            0.16     0.60               0.23         0.44
+run-down starts  M1  6994        0.60            0.27     0.64               0.10         0.68
+run-down starts  M5  6994        0.52            0.23     0.60               0.17         0.54
+run-down starts M15  6994        0.52            0.21     0.60               0.19         0.50
