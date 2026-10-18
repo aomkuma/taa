@@ -20,6 +20,9 @@ rounds 1-10) and the owner's goals in `docs/OWNER_GOALS.md`.
 target floor stays; the entry timeframe (the smallest whose ATR covers 5 USD; H1 the largest), the stop, the entry
 form, the hold and the setup in use all adapt to the current volatility, session and phase.
 
+**Relaxed (owner, 2026-10-18): "if the account blows up, so be it - let's just try first."** The account budget below
+no longer vetoes a rule, a stop size or a trade; keep reporting the worst loss, streak and drawdown in USD.
+
 ## The account (owner, 2026-10-17): 50-100 USD at 1:2000, must survive 4-6 losses in a row
 
 At the minimum lot (0.01): gold = 1 USD per 1.00 of price (an 8 USD stop = 8 USD = 8-16 % of the account); a USD
