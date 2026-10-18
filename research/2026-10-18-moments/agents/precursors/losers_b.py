@@ -5,7 +5,7 @@ look-after window the trade's own 240 minutes):
 1 wrong way - less than half the way to the target before the stop, no run to the target afterwards;
 2 right way, fell short - at least half the way, then back to the stop;
 3 right way, entered too early - stopped, then the target reached from the original entry within 240 minutes;
-against a coin's side (the opposite trade at the same moment, the same stop and target). The winners: how deep they
+against the opposite side (the opposite trade at the same moment, the same stop and target). The winners: how deep they
 went against first (the stop a tighter one would have cost) and how far all trades got (the share of the target).
 
     .venv/Scripts/python research/2026-10-18-moments/agents/precursors/losers_b.py
@@ -68,13 +68,13 @@ def main() -> None:
     T = b_trades(pd.read_parquet(HERE / "combined_trades_floor5.parquet"))
     rows = []
     for r in T.itertuples():
-        for who, side in (("B", int(r.side)), ("a coin's side", -int(r.side))):
+        for who, side in (("B", int(r.side)), ("the opposite side", -int(r.side))):
             x = {k: getattr(r, k) for k in ("exit", "pnl", "xj", "R")} if who == "B" else trade_1atr(mk, int(r.j0), side, float(r.dist))
             rows.append(dict(who=who, part=r.part, R=x["R"], pnl=x["pnl"]) | anatomy(mk, int(r.j0), side, float(r.dist), x))
     K = pd.DataFrame(rows)
     pd.set_option("display.width", 220)
     for part in ("1", "2"):
-        for who in ("B", "a coin's side"):
+        for who in ("B", "the opposite side"):
             P = K[(K.part == part) & (K.who == who)]
             g = P.groupby("kind").agg(trades=("R", "size"), R_sum=("R", "sum"), mfe=("mfe", "median"), mae=("mae", "median"),
                                       survive=("survive", "median"))

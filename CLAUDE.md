@@ -132,6 +132,12 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
   tests, planted bugs the tests must catch, and an independent re-derivation; no learning run before the code is
   proven (short runs to test the code are fine). Research indicators are MetaTrader 5's own formulas
   (`research/2026-10-18-moments/agents/precursors/foundation.py`).
+- **Be an observer - no coin flip in the system (owner, 2026-10-19):** "this game is 50/50 if you look carelessly".
+  The coin / random side / "no better than chance" is removed from the system: no random-side baselines, no
+  "50-50" verdicts, no synonym for it. A result near 50 % means observe closer - split it by what was there
+  (larger timeframes, indicators, place, the move before, session, volatility), find where and why price goes one
+  way, test that (learning parts, then the exam once). Judge each component by its own outcome (win %, R after
+  costs, USD) against the goal and the other components.
 - **Setup work, one setup at a time (owner, 2026-10-13):** backtest a setup, then change its conditions (stop,
   entry, timeframe, filters, exits) and backtest again until it reaches the goal (≥ +0.15 R/trade net). A losing
   result means *change the conditions*, never *drop the setup and move on*. Don't propose switching to another

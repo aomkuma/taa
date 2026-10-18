@@ -1383,7 +1383,7 @@ exam: M and W on H1 23 trades, win 0.73 / 0.75, +176 USD; **M on M15 71 trades, 
   quarter, but the M5 stop (one ATR) was 1.0 USD in 2023-Q4 / 2024-Q1 against about 0.54 USD of costs (the spread
   column + 0.08 + 0.07 slippage + 0.15 stop slippage): **the costs were 55 % of the stop**, 30-35 % in 2024-Q2 .. Q4,
   9-15 % from 2025-Q4 on (stops 4-7 USD). The after-cost win follows that share exactly (0.29 -> 0.46).
-- So: the events alone are a coin before the costs (known), and a one-ATR stop on a small timeframe is too small for
+- So: the events alone win 49-52 % before the costs (known), and a one-ATR stop on a small timeframe is too small for
   gold's costs - the owner's floor (a target and a stop of at least 5 USD; the entry timeframe moves up when ATR falls)
   is needed. Next part: the same table with the stop and the target at least 5 USD, then the larger timeframe's edge
   against the middle (the owner: the weight is the place).
@@ -1476,11 +1476,11 @@ cut would follow noise. The loss steps so far (learning, R a trade): every candi
 floor -0.085 -> the owner's cut -0.068 / -0.082 -> B -0.056 / -0.028 at 2.7 a day.
 
 ### The cut's losers, by the owner's three kinds (05:18 Thai; `losers_b.py`, tests `test_losers_b.py`, `out_losers_b.txt`)
-Variant B against a coin's side at the same moments (the same stop and target), parts 1 / 2: wrong way 28.7 / 23.6 %
-(coin 29.7 / 25.8), fell short 7.2 / 11.7 % (7.9 / 10.9), entered too early 8.4 / 12.2 % (8.9 / 12.8; a stop of
-1.34 / 1.35 times would have survived), won 40.3 / 45.7 % (38.9 / 44.3); R -0.056 / -0.028 against the coin's
--0.090 / -0.054. The losers look like the coin's: the side is chosen about 1.5 points better than chance, the costs
-take the rest. No exit lever fixes a coin-like entry: half the target is reached by 59 / 65 % of the trades, the
+Variant B against the opposite side at the same moments (the same stop and target), parts 1 / 2: wrong way 28.7 / 23.6 %
+(opposite side 29.7 / 25.8), fell short 7.2 / 11.7 % (7.9 / 10.9), entered too early 8.4 / 12.2 % (8.9 / 12.8; a stop of
+1.34 / 1.35 times would have survived), won 40.3 / 45.7 % (38.9 / 44.3); R -0.056 / -0.028 against the opposite side's
+-0.090 / -0.054. The losers look like the opposite side's: the side is chosen about 1.5 points better than 50 %, the costs
+take the rest. No exit lever fixes an entry that picks the side this weakly: half the target is reached by 59 / 65 % of the trades, the
 winners go 0.33 of the stop against them first (median; 29 / 32 % beyond half the stop). The lever is the entry.
 
 ## The patterns gold runs from, on timeframes that agree - written before it is computed (2026-10-19 05:20 Thai; owner: "find the patterns gold most likes to use to run, on the timeframes that agree with each other")
@@ -1510,7 +1510,7 @@ other way was a little more likely.
 3,000 random trades, 0 differences): the "turn at a fresh low" is the catalogue's, not gold's.** The catalogue
 starts no run of a way while the last run of that way is still going, so at a fresh low - inside a fall - a run down
 is hardly ever "starting". From the next M1 open, 5 / 10 U up before down (and the mirror) within 240 minutes:
-at an M1 / M5 / M15 low edge the turn comes first 0.49-0.51 (5 U) in both halves and the exam - a coin. Every
+at an M1 / M5 / M15 low edge the turn comes first 0.49-0.51 (5 U) in both halves and the exam - the 50 % line. Every
 label built on the run catalogue carries this (the run starts of the first library, the present library's class):
 judge with a symmetric first passage, never with "a run starts".
 **On the symmetric yardstick, the timeframes agreeing give a small, steady tilt their way:** the structure (HH/HL)
@@ -1519,3 +1519,71 @@ the way on 3 of the 5: 5 U that way first 0.499 vs 0.466 the other (L1), 0.502 v
 in structure 0.493 / 0.488, 0.518 / 0.478, 0.542 / 0.458 (exam n 419). Two to four points the agreed way in every
 part - the only multi-timeframe pattern that holds, and about the size of the costs at a 5-USD target (about 5
 points needed; about 2.5 at 10 U).
+
+## Be an observer - the coin flip is out of the system (owner, 2026-10-19 ~05:25-05:30 Thai)
+"Stop using the word coin flip." "I did not ask for a replacement word - remove it from the equation of building the
+system." "Learn to be an observer, not give up whenever something is 50/50 - this game is 50/50 if you look
+carelessly." "Do you think the people with the money to move the market toss a coin and then press buy or sell?"
+From here on: no random-side baselines, no "chance / 50-50" verdicts, no synonym for them (also written in CLAUDE.md,
+BRIEF.md and the memory). A result near 50 % means the moments were not yet told apart: split them by what was there
+- who was acting, when, where - and find where and why price goes one way. Each component is judged by its own
+outcome (win %, R after the costs, USD, how far price got) against the goal and the other components.
+
+## Why gold runs the way it does - the components, written before they are computed (05:30 Thai; owner: "dig deeper into why it runs that way - many components, the larger timeframes and the indicators")
+Large money does not guess: it needs the other side of its orders, so it acts at certain times (the London gold
+fixes 10:30 / 15:00 London, the COMEX open 08:20 New York, the US data at 08:30 New York, the session opens, the month
+end) and at certain places (where the resting orders are: the previous day's high / low, today's open, the round
+numbers, the swing levels), and it leaves footprints (the tick volume against the usual for that minute, the size of
+the bar, the dollar moving with it). The components read at every moment of the present library (closed bars only):
+1. each timeframe's indicators as MetaTrader 5 draws them (`indicators.py`: RSI, MACD, Stochastic, ADX / DI,
+   Bollinger, EMA 20 / 50 / 200 and their slopes, ATR against its median) on M5, M15, H1, H4 and D1 (H4 / D1 on the
+   server day), the place in the previous day's range and the distance from today's open;
+2. the footprints: the tick volume of the last bars against the same minutes' median of the last 20 days; the
+   minutes to / since the fixes, the COMEX open, the US data minute; the distance to the previous day's high / low,
+   today's open and the nearest round 10 / 50 (in ATRs);
+3. the existing pictures (structure, break, place, legs on M1 .. H4).
+The outcome: from the next M1 open, 5 and 10 U up before the same down (the yardstick checked on 3,000 trades). One
+part at a time: (a) the readings, their code proven (by hand, planted bugs, a second computation on the bars cut at
+the moment - nothing after it can change a value); (b) each component alone, by bins, in both learning halves - where
+price goes up first more often and where down; (c) the components together, learned on the first half, checked on
+the second, the exam once - and what carries the weight, read as the reason.
+**Part (a), the readings proven (06:00-06:15 Thai).** `indicators.py` (tests `test_indicators.py`: H4 / D1 on the
+server day across the 21:00 UTC boundary, the last bar complete by a moment, a steady rise worked by hand - ATR 1.5,
+RSI 100, MACD 7 / 1.5, its signal difference 0, Stochastic 96.43, +DI 66.7, ADX 100, Bollinger %B and width, the EMA
+warm-up and slope - the differences' signs against foundation's own lines, and every reading recomputed from the M1
+bars cut at 12 random moments: equal; planted bugs 9 of 9, the MACD-signal sign caught only after the sign test was
+added). Two bugs found by the tests before any run: a read-only EMA array, a 5-bar shift on short series.
+`footprints.py` (tests `test_footprints.py`: the volume against the same minutes of earlier days only - today's own
+bar would move the median from 75 to 100 - the fixes / COMEX / US data minute in their zones across summer time, the
+round numbers, the move before from closed M1 bars only - a forming bar planted at 500 must not count - the dollar's
+sign as a whole and pair by pair; planted bugs 6 of 6 after the forming-bar test was made to bite). 127,319 moments x
+82 indicator readings (D1 missing 2 %: the 200-day EMA's warm-up) and 16 footprints, no gaps.
+**Part (b), each component alone (06:16 Thai; `why.py`, tests `test_why.py`; `out_why.txt`, `why_lean.csv`).** Up
+first minus down first, the lowest against the highest quintile of each reading (edges from L1), L1 | L2: no single
+reading moves it by more than about 0.09 (4-5 points each side); the steadiest - the daily ATR against its median
+(calm -> up first: +0.080 / +0.051 at 10 U, busy -> about 0), the place in the M15 / M30 range (high -> up first),
+the place against the round 50 and the previous day's range, a deep H1 pullback (10 U: +0.047 -> +0.122 / +0.009 ->
++0.046), the H4 / D1 trend strength readings. Each alone is a few points; the reason has to be read in their
+combination.
+**Part (c) - written before it is computed (06:17 Thai; `why_model.py`):** every reading together (the indicators,
+the footprints, the pictures, the hour, the weekday), gradient-boosted trees (depth 3, min 300 a leaf) learned on L1
+to predict "up first" among the moments where one side came first, for X = 10 U (and 5 U), checked on L2: the AUC,
+the calibration by decile, and the picks at symmetric thresholds (p >= q a buy, p <= 1 - q a sell). **The
+threshold:** the q of 0.55 / 0.58 / 0.60 / 0.62 / 0.65 whose L2 picks number 2-4 a weekday with the highest win
+rate; the exam once at that q. What carries the weight: the AUC lost on L2 when each reading is shuffled, and the
+direction each top reading pushes - read as the reason.
+**Part (c), the result (06:30 Thai; `why_model.py`, tests `test_why_model.py` - one pick an hour, the sides and wins
+by hand, planted bugs 4 of 4, one wrong expectation of mine in the test corrected; `out_why_model_10.txt`).** X = 10 U,
+learned on L1 (35,713 moments with a side first, up 0.529), on L2 (48,267, up 0.504): AUC 0.503; the picks at q =
+0.55 .. 0.65 are 6-13 a weekday at 0.505-0.519 - no q gives 2-4 a weekday: by the rule the exam is not read.
+**What the model learned, and why it failed on L2 - the observation:** on L1 (2023-08 .. 2024-12) the larger
+timeframes turned back - high in the H4 range, far above the H1 EMA 50, +DI far over -DI on H1 / H4, the H4
+Stochastic high: down first (its predictions 0.40-0.45 at the top quintile). On L2 (2025-01 .. 2026-04, gold 2,600 ->
+5,000) the same readings at the top went up first (0.52-0.535). The larger timeframes' place means a turn in one phase
+of the market and a continuation in another: the components are read wrong unless the phase is read first.
+- A first try at the phase (the D1 ADX terciles, the H4 place turned to the D1 +DI / -DI side) showed a cell that
+  looked steady - a weak D1 trend, price at the low of the H4 range on the D1 side: the D1 way first +0.19 / +0.36 -
+  but by days it is 20 days in L1 and one day (14 moments) in L2. The 5-minute moments cluster: every count must be
+  read by distinct days as well. Not a finding.
+Next: a phase reading known at the moment (trend vs range on D1 / H4: ADX, the efficiency of the last 20 days, the
+EMA slopes, the range width), the components read inside each phase, every cell counted by days, in both halves.

@@ -1,0 +1,1 @@
+127319 moments x 82 indicator readings; missing share by timeframe: {'M5': 0.0, 'M15': 0.0, 'H1': 0.0, 'H4': 0.0, 'D1': 0.0199}

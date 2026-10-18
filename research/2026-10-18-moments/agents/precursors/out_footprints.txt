@@ -1,0 +1,1 @@
+127319 moments x 16 footprints; missing share: {'vol_rel': 0.0, 'move15': 0.0, 'move60': 0.0, 't_fix_am': 0.0, 't_fix_pm': 0.0, 't_comex': 0.0, 't_us_data': 0.0, 't_ny_open': 0.0, 'to_pdh': 0.0, 'to_pdl': 0.0, 'round10': 0.0, 'round50': 0.0, 'usd15': 0.0, 'usd60': 0.0, 'us500_15': 0.0, 'us500_60': 0.0}

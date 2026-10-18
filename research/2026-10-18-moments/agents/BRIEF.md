@@ -96,8 +96,8 @@ change), not only rules that already pass +0.15 R.
 - Stop fills: slippage **0.15 USD** (New York 0.20), not 0.07. Entry slippage 0.07 is conservative; keep it.
 - Real round trip at 0.01 lot about 0.43 USD on average. The harness is otherwise sound (no look-ahead; ticks vs M1
   within +-0.01 R).
-- Gold needs 7-15 win-rate points over a coin for +0.15 R (3/3: 14.6, 5/4: 11.5, 8/6: 9.6, 10/8: 9.1, 15/10: 7.8,
-  20/12: 7.0). Report R a trade next to that cost and the edge over the coin in points.
+- The win rate gold needs for +0.15 R after the costs (stop / target in USD): 3/3 64.6 %, 5/4 67.1 %, 8/6 66.7 %,
+  10/8 64.7 %, 15/10 67.8 %, 20/12 69.5 % (the auditor's figures). Report R a trade next to the costs.
 - FX majors: M1 scalps are not viable at FBS standard costs (spread / median M1 range 0.5-1.2 vs gold's 0.07-0.09):
   targets of 15-20 pips or more (H1 scale). The real FX spread is unknown (no FX ticks); assume the column + 0.2-0.3 pip.
 - Older half-years cost about twice as much in R with price-scaled tools (gold's spread stayed ~0.20-0.24 USD at
@@ -105,26 +105,27 @@ change), not only rules that already pass +0.15 R.
 - Cheapest loss cuts: bigger targets / fewer trades; avoid Asia and 20-24 UTC; never 21-23 UTC; beware release
   minute 0 for stops.
 
-## Never conclude "it is a coin flip" (owner, 2026-10-17)
+## Be an observer - no coin flip in the system (owner, 2026-10-17 / 2026-10-19)
 
-"Do not define it as a coin flip - that is too easy; find why it loses rather than interpreting it that way." The
-coin-flip side stays only as a yardstick in the tables. **It is never the explanation and never the verdict.** Every
+"Do not define it as a coin flip - that is too easy; find why it loses." 2026-10-19: "remove it from the equation of
+building the system"; "learn to be an observer, not give up whenever something is 50/50 - this game is 50/50 if you
+look carelessly." No random-side baselines, no "chance / 50-50" verdicts, no synonym for them. A result near 50 %
+means observe closer: split it by what was there and find where and why price goes one way. Every
 report must say *why* its losers lost, concretely, from the trades and their charts: which situations they were in
 (where in the move, the H1 swing and phase, the session phase, the level's quality, the stop against the normal
 swing, the spread at that hour, news nearby, what came right before the entry), how many losers each reason
 covers, how the winners differed, and which change attacks the largest reason - then test that change.
 
-## The learning loop (the owner's): every run's stopped losers in three kinds, always against a coin-flip side
+## The learning loop (the owner's): every run's stopped losers in three kinds
 
 1 wrong way (less than half way to the target before the stop, no run to the target afterwards) -> the direction;
 2 right way, fell short (half way or more, then back to the stop) -> the exit; 3 right way, entered too early
 (stopped, then the target reached from the original entry within 120 minutes) -> the timing / the stop.
-`loser_kinds.py` / `ny_lab.M1.trade` compute them. A kind is a finding only where it differs from a coin-flip side
-on the same minutes.
+`loser_kinds.py` / `ny_lab.M1.trade` compute them. Each kind points to its lever; test the lever on all trades.
 
 ## What has been tried and failed (do not repeat as-is; build beyond it)
 
-Everything below picked the side about as well as a coin once tested on data it was not chosen on:
+Everything below lost once tested on data it was not chosen on (observe deeper before reusing any of it):
 moments (Asia/London/NY opens, releases) with three playbooks (break-and-hold, sweep-and-reclaim, with the
 flow) and context cells; mined pieces (P1 after a 0.1-0.3 U push; London against the flow); the draw to
 yesterday's high/low (no more than a placebo); the dollar leading gold; LightGBM on 62 features (AUC 0.53-0.58,
@@ -133,7 +134,7 @@ RSI pullback, tick timing); a deep pullback (RSI < 40); a weighted indicator sco
 Bollinger, EMA, ADX, CCI, ROC on M1-H1); New York iterations (break-even at 0.6 of the target was the only kept
 change; stronger tide, bar turn, own-record filter, ML screen, stop-hunt reclaim, A-B-C, skip the first 30 minutes,
 count 3 and re-check: all no); the confluence of H1 tide + support/resistance + price action + two of three M5
-indicators (2026-03..10: 425 trades, -0.032 R; the coin -73 USD vs ours -84).
+indicators (2026-03..10: 425 trades, -0.032 R, -84 USD).
 
 Foundations measured (round 10): gold's minute-scale returns are close to a random walk in every session and
 half-year (variance ratios 0.94-1.03); no hour keeps its drift sign. The one thing with a cause that kept its sign
@@ -153,5 +154,5 @@ in both periods: after a big first minute on a release, FOMC and PCE continue an
   profit beyond the measured past.
 - Keep `notes.md` in your folder: each rule written before its test, then its results.
 - Final answer to the lead: the best candidate(s) with the exact rule, the learning-period results, the one test on
-  2026-04-18 .. 10-14 (week by week, trades a day, win %, USD at 0.01 lot, R a trade, the losers' kinds vs the
-  coin), and your verdict and the next idea if it fails.
+  2026-04-18 .. 10-14 (week by week, trades a day, win %, USD at 0.01 lot, R a trade, the losers' kinds and their
+  reasons), and your verdict and the next idea if it fails.

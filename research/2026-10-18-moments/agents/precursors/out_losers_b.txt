@@ -9,7 +9,7 @@ time exit, loss         114  -39.643  0.474  0.739      NaN  0.082
 time exit, profit       100   31.322  0.740  0.501      NaN  0.072
 won                     558  542.698  1.071  0.335      NaN  0.403
 
-part 1 - a coin's side: 1384 trades, R -0.090
+part 1 - the opposite side: 1384 trades, R -0.090
                      trades    R_sum    mfe    mae  survive  share
 kind                                                              
 1 wrong way             411 -411.000  0.136  1.054      NaN  0.297
@@ -29,7 +29,7 @@ time exit, loss          14   -4.696  0.571  0.881      NaN  0.038
 time exit, profit        11    3.487  0.754  0.545      NaN  0.030
 won                     168  166.007  1.068  0.307      NaN  0.457
 
-part 2 - a coin's side: 368 trades, R -0.054
+part 2 - the opposite side: 368 trades, R -0.054
                      trades    R_sum    mfe    mae  survive  share
 kind                                                              
 1 wrong way              95  -95.000  0.180  1.081      NaN  0.258
