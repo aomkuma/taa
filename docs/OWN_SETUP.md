@@ -1061,6 +1061,68 @@ The owner (2026-10-18): "this alone makes no sense - no wonder everything ended 
 the rules were assembled from strength signals and statistical filters without a trader's basic no-go checks first
 (do not buy the top of a vertical run; buy value, not extension; no stop inside one bar's normal swing).
 
+### Round 13 - the owner's own setup, rebuilt from the owner's words (2026-10-18) - written before it is computed
+
+The owner: "this one trade alone does not match the setup I described"; "you must buy before it breaks, or after it
+spikes, wait for the moment; and if it has run very far, that setup is void - find a new one." (docs/OWNER_TRADING.md:
+buy the pullback to structure in the trend, the stop beyond the structure, the target before the next resistance; no
+chase - sell / buy the retest; in a range, the edges after the reclaim.) Every earlier rule's entries are judged
+against this first; the numbers second.
+
+**OWN-RT, the retest after the break** (a BUY; a SELL mirrored), gold, M1 entries, 00:00-20:00 UTC:
+1. The tide: H1 EMA(20) rising over 3 bars and the H1 close above EMA(50) (the largest timeframe H1).
+2. The break: an M5 close above the highest high of the previous 24 M5 bars (2 hours): the level L = that high.
+3. Void (never enter): price runs more than 2.5 M15 ATR(14) beyond L before it comes back to retest; an M5 close
+   below L - 0.5 M5 ATR (the break failed); no retest within 120 minutes.
+4. The retest: an M1 low within 0.25 M5 ATR of L (or below it, but no M5 close below L - 0.5 M5 ATR).
+5. The trigger: after the retest touch, the first M1 close above the previous M1 bar's high (the dip turns up).
+6. Entry at the next M1 open; the stop below the lowest low since the retest touch minus 0.5 M5 ATR (beyond the
+   structure); the stop must be 3-10 U (U = price / 4,100 USD) or no trade.
+7. The target: the impulse high since the break minus 0.1 M5 ATR (before the resistance); at least 1 R or no trade.
+   The stop to the entry at 0.6 of the target; time exit after 180 minutes. One position at a time; each break used once.
+
+Design 2023-11 .. 2026-02 (five half-years), then 2026-03-01 .. 2026-10-16 (new as a rule), the real costs
+(`agents/journal/jlib.py`), the losers in three kinds against the coin, and charts of the trades checked by eye
+against the owner's description before the numbers are read.
+
+**OWN-RT result** (`shadow/own_retest.py`): design 317 trades, -0.121 R, -101 USD (the coin side -0.051); 2026-03 ..
+10-16 148 trades, -0.164 R, -144 USD. **The charts (`shadow/rt/`) show the code did not do what the owner said, in two
+ways:** (1) it entered on the first M1 close above the previous bar while the pullback was still falling, the stop
+under a low that was not yet a higher low - the dip went on through the stop and then the run resumed (e.g. a BUY
+2026-08-05 19:49 Thai at 4196 stopped at 4188, then 4240); (2) it counted as a "retest" a full reclaim of the level -
+price back inside the old range, a failed break that should be void (a SELL 2026-03-04 13:38 Thai).
+
+**OWN-RT2 (written before it is computed; the window 2026-03 .. 10-16 has now been seen for this family):** as OWN-RT,
+and (a) void the moment an M1 close goes back beyond L by more than 0.25 M5 ATR (the break failed); (b) the owner's
+"count three" in its place: after the retest touch, the pullback's extreme counts as a higher low (a lower high for
+a sell) only once three M1 bars in a row have closed without a new extreme; the entry needs, after that, a close above
+the high of the bar that made the low; the stop below that low minus 0.5 M5 ATR.
+
+**OWN-RT2 result:** design 149 trades, win 23 %, -0.259 R, -109.6 USD (the coin -0.138; every half-year negative);
+2026-03 .. 10-16 (seen) 71 trades, +0.014 R, +24.9 USD (the coin -0.067), max DD 44.5. Most breaks were voided as
+failed (3,328 of 7,267 on the design data): gold's 2-hour breaks fall back more often than they hold.
+
+**Every F1 CONF-72 trade on 2026-03 .. 10-14, its cause, and the other side** (`shadow/f1_losers.py`, the list in
+`shadow/f1_test_losers.csv`; `shadow/f1_logic.py`). The owner: "list every loser and why; would the other side
+scalp at a profit?" and "were the winners guesses, or logical entries with statistical support?"
+- **The 16 full losers by cause:** chasing (the last hour's run >= 1 H1 ATR or the close >= 3 M15 ATR above the M15
+  EMA20) 8 (04-08, 05-07 08:49, 05-29, 06-03, 07-28, 07-30, 08-14, 09-14 16:45); the stop inside the normal swing
+  (< 1.5 M1 ATR) 4 (04-29 19:34, 05-07 15:06, 05-07 19:42, 09-28); the H1 leg against 1 (04-29 19:55); entries that
+  fit the logic 2 (06-18 23:56 late in New York; 08-12 21:19 two hours after CPI in a fast tape). Repeated attempts at
+  the same place: 05-07 three times at the refused 72-hour high, 04-29 twice in 20 minutes, 09-14 again 25 minutes
+  after a win.
+- **The other side does not pay:** reversing every F1 signal, design 2023-11 .. 2026-02: same exits -0.252 R (-130
+  USD), scalp 5 USD / same stop 30 min -0.272, scalp 5 / 5 -0.282, scalp 3 / 3 15 min -0.298; the window -0.04 ..
+  -0.21 R. Most losers went the other way (the mirror would have won 11 of 16), but the winners go strongly our way,
+  so the mirror of all signals loses.
+- **The winners were not "any side wins in a big swing":** in neither period would the other side, with the same
+  target and stop, also have won (design 0 of 45 winners, window 0 of 16). Of the window's 16 winners, 6 fit the
+  owner's logic, 9 were chases, 1 had a stop inside the swing.
+- **Logic against the numbers:** the window - logic-fit entries 9 trades, 67 % win, +0.685 R, +41.2 USD; chases 18,
+  +0.170 R; stops in the swing 5, -0.396 R. The design data - logic-fit 70 trades +0.116 R, chases 52 +0.098 R: on
+  the larger sample the split does not yet show the logic carrying the result. F1's side choice beats shuffled sides
+  on the design data (+0.118 against +0.032 R, the portfolio agent) - modest support.
+
 **Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
 (H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
 window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks

@@ -1,0 +1,35 @@
+result,other_side,logic,time,side,usd,kind,min_to_stop,level,pa,run60_h1,m15_ext,h1_leg,stop_m1atr,atr_ratio,min_in,news,other_way_30m
+win,stop,ok,10/03 15:30,BUY,10.12,,20,M15,reclaim,0.63,1.31,1,2.72,0.78,90,1680,1.2
+win,stop,chase,10/03 20:10,BUY,10.15,,9,H1,reclaim,1.62,0.73,1,1.12,1.37,70,1400,2.0
+win,stop,chase,19/03 14:47,SELL,9.26,,11,round,reclaim,0.93,4.05,1,1.62,1.75,47,827,8.2
+flat,win,ok,01/04 18:40,BUY,-0.15,,7,round,reclaim,0.95,1.92,1,3.25,0.96,280,2930,17.5
+loss,win,chase,08/04 07:03,BUY,-8.14,wrong way,1,round,reclaim,0.98,3.72,-1,1.21,1.99,3,2187,33.1
+loss,stop,stop in noise,29/04 19:34,SELL,-3.9,too early,2,M15,reclaim,0.79,1.06,-1,1.26,1.45,34,326,5.7
+loss,stop,H1 leg against,29/04 19:55,SELL,-8.18,too early,8,round,reclaim,0.92,1.11,-1,2.66,1.49,55,305,8.2
+win,stop,ok,06/05 17:28,BUY,9.18,,14,round,engulf,0.2,1.82,1,3.35,0.99,208,3002,1.7
+loss,win,chase,07/05 08:49,BUY,-5.25,wrong way,7,M15,reclaim,1.51,1.74,1,1.8,1.41,109,2081,16.3
+loss,win,stop in noise,07/05 15:06,BUY,-3.87,wrong way,3,round,reclaim,0.89,2.09,1,1.42,1.29,66,1704,16.9
+loss,win,stop in noise,07/05 19:42,BUY,-5.03,wrong way,14,round,reclaim,0.86,0.43,1,1.49,1.68,42,1428,15.5
+win,stop,ok,15/05 20:38,SELL,8.84,,8,M15,reclaim,0.89,0.57,1,1.87,1.76,98,2948,13.8
+loss,win,chase,29/05 17:38,BUY,-3.82,wrong way,5,M15,reclaim,1.0,1.14,1,1.93,1.02,218,1328,7.0
+loss,win,chase,03/06 15:52,SELL,-6.37,wrong way,12,M15,reclaim,1.16,0.8,1,2.55,1.44,112,3098,15.1
+win,stop,ok,10/06 19:05,SELL,8.09,,8,round,reclaim,0.57,1.8,1,1.72,1.4,5,25,26.7
+win,stop,chase,15/06 20:20,BUY,8.49,,13,round,reclaim,1.5,1.78,1,2.4,1.13,80,3160,1.3
+loss,win,ok,18/06 23:56,SELL,-5.76,wrong way,6,M15,engulf,0.61,1.68,1,2.5,0.88,296,1376,15.8
+win,stop,ok,03/07 07:52,BUY,8.09,,12,M15,reclaim,0.95,1.79,1,2.8,1.16,52,742,2.7
+flat,stop,chase,08/07 17:04,SELL,-0.15,,14,round,hammer,0.24,3.58,1,2.24,1.42,184,8494,9.7
+win,stop,chase,22/07 21:00,BUY,8.11,,5,round,reclaim,2.46,2.96,1,2.75,1.98,120,10170,10.3
+loss,stop,chase,28/07 16:58,SELL,-3.47,wrong way,2,M15,reclaim,2.12,2.05,1,1.58,1.55,178,1922,6.2
+win,stop,ok,28/07 21:20,SELL,7.84,,4,M15,reclaim,0.82,0.57,1,1.65,1.77,140,1660,8.3
+loss,win,chase,30/07 23:25,BUY,-5.16,wrong way,6,M15,reclaim,1.1,1.41,1,2.38,0.93,265,235,12.3
+win,stop,chase,11/08 07:04,BUY,8.59,,21,round,reclaim,0.25,3.15,-1,2.33,1.24,4,2186,0.2
+loss,win,ok,12/08 21:19,BUY,-5.03,wrong way,8,M15,reclaim,0.53,0.85,1,1.88,1.57,139,109,20.7
+loss,win,chase,14/08 08:35,SELL,-4.65,wrong way,2,H1,reclaim,1.74,2.87,1,1.52,1.62,95,785,9.7
+flat,win,H1 leg against,25/08 07:35,BUY,-0.15,,13,M15,hammer,0.79,2.55,-1,3.63,1.2,35,2155,17.8
+win,stop,stop in noise,27/08 16:42,SELL,8.94,,21,M15,reclaim,0.94,0.95,-1,1.3,1.87,162,1272,3.8
+win,stop,chase,01/09 20:02,SELL,8.48,,4,round,reclaim,1.34,2.51,-1,2.58,1.73,62,4288,7.2
+win,stop,chase,02/09 08:36,SELL,8.41,,16,H1,reclaim,1.01,1.23,1,1.74,1.64,96,3534,2.7
+win,stop,chase,14/09 16:20,SELL,8.38,,7,H1,reclaim,1.26,1.72,-1,2.32,1.37,140,3400,0.7
+loss,win,chase,14/09 16:45,SELL,-4.99,wrong way,10,H1,reclaim,2.03,3.58,-1,1.29,1.89,165,3375,8.0
+flat,stop,chase,24/09 15:16,SELL,-0.15,,16,M15,reclaim,1.05,0.76,1,2.64,1.65,76,8894,3.5
+loss,stop,stop in noise,28/09 15:23,SELL,-3.78,wrong way,4,round,reclaim,0.51,2.67,1,1.39,1.32,83,3127,4.5
