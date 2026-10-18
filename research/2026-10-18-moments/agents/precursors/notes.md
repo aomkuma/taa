@@ -475,3 +475,137 @@ trade matched (16 / 15 / 94); 20 tests pass; 9 deliberately broken versions are 
 holds; pictures checked by eye (levels at visible earlier swing zones, entries after a stall bar, stops beyond the level
 by the learned buffer). Seen in the pictures (a matter of design, not a bug): at p70 the learned buffer is tiny (most
 winners never went beyond the level), so the stop sits inside the poke through the level ("shaken out").
+
+## Learning log (owner, 2026-10-18: "tell me how each round of learning changes things")
+
+| Round | Learned (evidence) | Changed | Result after |
+|---|---|---|---|
+| 1 | the time of day decides how often gold runs (NY 09:30 78 % vs Asia 11:00 8 %); single chart states give the side 47-53 % | from predicting to an evidence library (the owner's direction) | - |
+| 2 | six-timeframe pictures at 80 % never repeat (95 % of snaps without a match) | match per layer (H4+H1 / M30+M15 / M5+M1) | evidence for 18-25 % of triggers |
+| 3 | the owner: similar = the same formation; 20 attributes a TF too strict | the core formation, 8 attributes a TF | evidence for 84 % of triggers (M5+M1) |
+| 4 | V2 lost; the loser trace showed the matcher compared only the chart's right edge | stopped V2; LV from the owner's 2026-09-02 reading | - |
+| 5 | LV limit at the level lost every half-year (levels run through); the stall about break-even | the stall form only | - |
+| 6 | the design losers' journal: the entry TF rule missed M30; five more deviations from the owner's rules | M30 back; LV2 (levels from the larger TFs, start on the entry TF, close exit, trend from every larger TF, importance) | - |
+| 7 | the owner: the stop from the data, not fixed | the learned stop (walk-forward percentile of winners' overshoot) | - |
+| 8 | five-layer check: three bugs (microsecond times, chained zones, the start from fractals) | fixed; proven 100 % on three slices | - |
+| 9 | pictures: at p70 the stop sits inside the poke (30 % of winners given up by definition) | the design run chooses p from 70 / 80 / 90 | design: p90 best (-0.032 R; p70 -0.094) |
+| 10 | the four losers against the library: 1 and 3 (the owner would not take them) had evidence against / none | every trade records its library evidence (R13) | - |
+| 11 | the owner: the M1 legs were not complete; one M1 bar has no weight; 3-5 legs, the last peak lower | LV3: the pause's legs on M1 as the entry | proven on slices (signals and trades 100 %) |
+| 12 | eye check: the legs were counted from before the start's extreme | the exact minute of the extreme | test + checker |
+| 13 | the owner: test the foundations first; the indicators were not MT5's, the library's levels chained, four more bugs (notes "The foundation") | foundation.py; every building block tested with planted bugs; the library rebuilt; learning on the latest 12 months | the walk-forward run next |
+
+## LV3 - the owner's "legs" as the entry (2026-10-18) - written before it is computed (`lvl3.py`)
+
+The owner on LV2's losers (2026-03-09 09:29 sell): "the legs are not complete - it saw one long red bar engulf the green
+and sold, but an M1 bar has no weight"; "there must be at least 3-5 legs; I count about 5 peaks on M1 with the 5th
+lower; after price has moved a lot for its own timeframe there is a pause to choose the way; certainly sold too early";
+"I can't say it definitively - you have more data; take my view as guidance and synthesise it into the trade."
+Learning-log round 11. LV3 = LV2's context (the larger timeframes' trend, the entry timeframe, the levels from M15 / M30
+/ H1, the learned stop, the exits on the entry TF) with the stall bar replaced by the pause's legs on M1:
+
+- **The pause's peaks (sells; mirrored):** the M1 ZigZag swings (reversal s x M1 ATR(14), known at the confirming bar)
+  made since the bounce's start T (the entry TF's ZigZag trough).
+- **Entry (sell):** at the M1 close that confirms a new peak, when the pause has >= N peaks, that newest peak is LOWER
+  than the highest peak of the pause, and the highest peak reached the level zone (>= L - k x A). Sell at the next M1 open.
+  A run through every earlier peak makes the newest peak the highest - no entry - so the count restarts by itself.
+  Once per (entry TF, T, L, side), the first qualifying peak.
+- **The data chooses** (design 2023-11 .. 2026-04-17): s in {1.5, 2.0}; N in {3, 4, 5, "adaptive" = 3 when the move into T
+  was < 5 A of the entry TF, else 5}; target T1 / T2; p in {80, 90}; k = 0.5, all levels. Best design R a trade -> the
+  window 2026-04-18 .. 10-16 once. Five-layer proof before the design grid runs (owner: no learning run before the code is
+  proven).
+Clarified in the code review before anything was computed: "a run through every earlier peak restarts the count" is
+implemented as: the pause = the peaks from the latest highest one on (that peak counts as leg 1). On 2026-03-09 the
+peaks 5087.4, 5086.2, 5082.6, 5082.5, 5079.9 (1.5 M1 ATR swings) are a five-leg pause; the 09:14 run to 5095.3 starts a
+new one, so LV2's 09:29 sell is not an LV3 entry.
+
+| R13 | every trade records its library evidence - per layer the earlier snaps >= 80 % alike (days, best similarity) and what followed them (with / against / faked / flat); "no evidence" explicit (owner, 2026-10-18: "so it is not a random entry without a structure matching the library; compare every trade") | `evidence_journal.py` on every LV3 trade | test_evidence_journal |
+
+## LV3 walk-forward - learning and testing in one run (owner, 2026-10-18: "do it") - written before it is computed (`wf.py`)
+
+The owner asked whether to learn then test, or learn and test in the same run. The stop and the pattern library
+already learn walk-forward; now the choice of LV3's settings does too, as the owner's "re-tune every 3-6 months":
+- All 32 cells (s 1.5 / 2.0 x N 3 / 4 / 5 / adaptive x T1 / T2 x p 80 / 90; k 0.5, all levels) are simulated over the
+  whole history, each its own one-position sequence.
+- **At the start of each month** (first 2024-05), the cell with the best mean R a trade over the trades of the previous
+  six months (at least 20 trades; else the previous month's cell stays; none before the first) is chosen for that month.
+- The month's trades are that cell's trades opening in the month; a trade is skipped when the previous trade (of any
+  cell) is still open.
+- Reported: by month (cell, trades, win %, R, USD), and the two parts 2024-05 .. 2026-04-17 and 2026-04-18 .. 10-16 (the
+  six-month exam) - both are out-of-sample for the settings; my own rule-structure decisions used only data before
+  2026-04-18. The per-cell window results are not read; only the walk-forward result is.
+
+## The foundation - every building block tested before any learning run (owner, 2026-10-18)
+
+The owner: "did you test the indicators first? it wastes my time ... once we test, the only thing that may be wrong is
+that the profit is not what we hoped - there should be no bugs left"; "unit test everything related"; "is a price
+mismatch missing data or wrong code - check it well"; "what else in running a setup has not been tested like this?"
+
+**The indicators differed from the charts the owner reads (MT5).** Transcribed from the terminal's own sources
+(MQL5/Indicators/Examples) into `foundation.py`, the single source for the research: EMA seeded with the first price;
+ATR = the simple average of 14 true ranges; RSI Wilder seeded with the average of the first 14 changes; MACD = EMA12 -
+EMA26 drawn as the histogram, its signal an SMA(9) (the research had an EMA signal and called MACD - signal the
+histogram); Stochastic main = 100 x sum(C - LL) / sum(HH - LL) over the slowing (the research averaged the ratios); ADX
+= MT5's ADX.mq5, EMA smoothing from 0 (the research had Wilder's). `test_foundation.py` checks each against a literal
+Python port of the MQL5 loop on random bars (with a flat stretch) and on 720 real M1 bars of 2026-03-09, plus hand
+values; six planted bugs (each one of the old research's or the bot's variants) are caught.
+
+**The data.** Our M5 / M15 / M30 / H1 / H4 bars built from M1 equal every stored FBS bar of 2025-10 .. 2026-10 (open
+time, OHLC, and the tick volume - so no M1 minute is missing against the broker), except one bar the broker saved
+while it was still forming (2026-10-06 16:05 M5 / 2026-10-05 08:00 H1). Bars with fewer than all their minutes are
+missing at the broker too (the daily break, holidays). The learning + exam period's M1: unique, ordered, OHLC
+consistent, a spread on > 99.9 % of the bars.
+
+**Bugs the tests found (all fixed, disclosed):**
+- The snap library's levels chained into wide bands (the LV2 zone bug, in `library.sr_levels` too): now
+  `foundation.merge_levels` (a level is at most the tolerance wide).
+- The RSI divergence attribute read the RSI at the swings' numbers in the swing list, not at their bars
+  (`fingerprint.py`); only in the 20-attribute fingerprint (round 18's first table), not in the 8 core attributes the
+  library and V2 used.
+- An empty run catalogue (no run of a side) crashed the labels (`snaps.labels`, `plib.catalogue`); never met on the
+  real data.
+- The evidence record named the pattern the trade was counted into, not the one its evidence came from (they differ
+  when a like pattern first appeared earlier the same day); the numbers were right, the id (and so the example
+  pictures) could be another pattern's. `evidence_patterns` now records `pid` (the evidence's) and `joined`.
+- The library on disk had been built with the old indicators while a trade's codes were computed with the new ones:
+  trade 1's 102 trigger matches became 16 - neither number meant anything. A test now requires a moment's codes to
+  equal the stored codes of a snap at the same bar (all 20 attributes, six timeframes, and the S/R codes).
+- The evidence word's thresholds compared floats exactly (0.3 - 0.2 < 0.1): now with a 1e-9 tolerance.
+
+**What is tested now (all suites, each with planted bugs it must catch):** `test_foundation` (13), `test_parts` (30:
+bars vs the broker incl. tick volume, M1 cleanliness, fractals, level merging, the library's levels and where price
+sits, the run catalogue incl. a missing minute, the snap labels ran / slow / fake / flat, the ZigZag, the fingerprint by
+hand, similarity and sets, snap times through DST, `raw()` feeding each column its indicator, the core attributes, the
+evidence word, the New York trades, the exit time, the loser pictures = the bars the bot had), `test_lvl` (37),
+`test_lvl2` (21: + R / USD / the New York stop slippage, a full stop = exactly -1 R), `test_lvl3` (7: + one signal per
+setup), `test_pattern_library` (7), `test_wf` (6: + the losing streak, the Thai weeks), `test_evidence_journal` (5: the codes equal the library's, the matches
+re-counted by brute force attribute by attribute, the walk-forward rule, the pattern record). Planted bugs: 6
+(indicators) + 13 (building blocks) + 15 (wiring): 33 caught; the 34th (the H1 picture selected by `last` instead of
+`avail`) gives the same bars whenever the data is complete - equivalent, not a gap.
+
+**The learning period (owner, 2026-10-18): the latest 12 months first** ("to see results quickly; if it works, run the
+three years as before"): `plib.LEARN_START` = 2025-10-18 (the 3-year start kept as `LEARN_START_3Y`, one switch:
+`wf.py 3y`); the exam `EXAM_START` 2026-04-18 .. `EXAM_END` 2026-10-17. The library holds the snaps from 2025-10-18
+(5,115), the learned stop and the cells use only signals from it; older bars are only chart history (indicator
+warm-up).
+
+**LV3 re-proven on the 12-month learning period with the foundation code (2026-10-18 evening; `check_lvl2.py verify3`,
+`out_verify_lvl3_f*.txt`):** the independent re-derivation (its own bars, EMA / ATR, swings, zones, legs and trade
+walk) against `lvl3.signals` + `lvl2.trades` at every decision minute:
+
+| Slice | Signals from | Cell | Signals (independent / lvl3) | Trades checked |
+|---|---|---|---|---|
+| A 2025-10-18 .. 2026-02-15 | 2025-11-01 | s 1.5, adaptive, T2, p80 | 113 / 113, none missed, none extra | 11, 0 mismatches |
+| B 2026-02-01 .. 06-30 | 2026-02-15 | s 2.0, n 5, T1, p90 | 38 / 38 | 0 (fewer than 30 winners: no learned stop yet) |
+| C 2026-06-01 .. 10-17 | 2026-06-15 | s 1.5, n 3, T1, p80 | 193 / 193 | 34, 0 mismatches |
+| B2 2026-02-01 .. 06-30 | 2026-02-15 | s 2.0, n 3, T2, p90 | 95 / 95 | 0 (the same reason) |
+
+The s 2.0 trades are then checked with the learned stop's history lowered to 5 winners on both sides (a code test,
+not a setting; the checker also asserts every trade had that many earlier winners):
+
+| Slice | Signals from | Cell | Signals | Trades checked |
+|---|---|---|---|---|
+| B2 (history 5) | 2026-02-15 | s 2.0, n 3, T2, p90 | 95 / 95 | 64, 0 mismatches |
+| A2 (history 5) 2025-10-18 .. 2026-02-15 | 2025-11-01 | s 2.0, adaptive, T1, p80 | 71 / 71 | 25, 0 mismatches |
+
+In all: six runs, 605 signal checks (510 distinct signals; B2 checked twice) and 134 trades, every one the same. With the tests (126, planted bugs caught) the code is
+proven; the walk-forward run on the latest 12 months is next.

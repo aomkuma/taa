@@ -30,28 +30,21 @@ def log(msg: str) -> None:
 
 # ---------------------------------------------------------------- indicators on a timeframe's bars
 def indicators(b: pd.DataFrame) -> pd.DataFrame:
-    h, lo, c = b.high, b.low, b.close
-    pc = c.shift(1)
-    tr = pd.concat([h - lo, (h - pc).abs(), (lo - pc).abs()], axis=1).max(axis=1)
-    atr = tr.rolling(14).mean()
-    d = c.diff()
-    ag = d.clip(lower=0).ewm(alpha=1 / 14, adjust=False).mean()
-    al = (-d.clip(upper=0)).ewm(alpha=1 / 14, adjust=False).mean()
-    rsi = 100 - 100 / (1 + ag / al.replace(0, np.nan))
-    macd = c.ewm(span=12, adjust=False).mean() - c.ewm(span=26, adjust=False).mean()
-    hist = macd - macd.ewm(span=9, adjust=False).mean()
-    ll, hh = lo.rolling(14).min(), h.rolling(14).max()
-    k = (100 * (c - ll) / (hh - ll).replace(0, np.nan)).rolling(3).mean()
-    dd = k.rolling(3).mean()
-    mid, sd = c.rolling(20).mean(), c.rolling(20).std(ddof=0)
-    up, dn = h.diff(), -lo.diff()
-    pdm = np.where((up > dn) & (up > 0), up, 0.0)
-    ndm = np.where((dn > up) & (dn > 0), dn, 0.0)
-    atrw = tr.ewm(alpha=1 / 14, adjust=False).mean()
-    pdi = 100 * pd.Series(pdm, index=b.index).ewm(alpha=1 / 14, adjust=False).mean() / atrw
-    ndi = 100 * pd.Series(ndm, index=b.index).ewm(alpha=1 / 14, adjust=False).mean() / atrw
-    dx = 100 * (pdi - ndi).abs() / (pdi + ndi).replace(0, np.nan)
-    adx = dx.ewm(alpha=1 / 14, adjust=False).mean()
+    """The state codes of a timeframe's bars from the MT5-exact indicators (foundation.py)."""
+    import foundation as F  # noqa: PLC0415
+
+    hv, lv_, cv = b.high.to_numpy(float), b.low.to_numpy(float), b.close.to_numpy(float)
+    atr = pd.Series(F.atr(hv, lv_, cv, 14), index=b.index)
+    rsi = pd.Series(F.rsi(cv, 14), index=b.index)
+    line, _sig = F.macd(cv)
+    hist = pd.Series(line, index=b.index)  # MT5 draws the MACD line as the histogram
+    k_, d_ = F.stochastic(hv, lv_, cv, 14, 3, 3)
+    k, dd = pd.Series(k_, index=b.index), pd.Series(d_, index=b.index)
+    mid_, up_, _lo = F.bands(cv, 20, 2.0)
+    mid, sd = pd.Series(mid_, index=b.index), pd.Series((up_ - mid_) / 2.0, index=b.index)
+    c = b.close
+    pdi_, ndi_, adx_ = F.adx(hv, lv_, cv, 14)
+    pdi, ndi, adx = (pd.Series(x, index=b.index) for x in (pdi_, ndi_, adx_))
     st = plib.tf_state(b.assign(tv=0), "x")
     codes = pd.DataFrame(index=b.index)
     codes["tide"] = st.x_tide.map({-1: 0, 0: 1, 1: 2}).to_numpy()
@@ -70,27 +63,22 @@ def indicators(b: pd.DataFrame) -> pd.DataFrame:
 
 # ---------------------------------------------------------------- support / resistance of a timeframe
 def sr_levels(b: pd.DataFrame, atr: np.ndarray, nbars: int) -> list[tuple[np.ndarray, np.ndarray]]:
-    """For every bar: the merged levels (prices, importance) of the confirmed swings of the last `nbars` bars."""
+    """For every bar: the levels (prices, swings) of the confirmed 7-bar fractals (3 each side, known 3 bars later) of
+    the last `nbars` bars, merged into levels no wider than SR_MERGE x that bar's ATR (foundation.merge_levels)."""
+    import foundation as F  # noqa: PLC0415
+
     h, lo = b.high.to_numpy(float), b.low.to_numpy(float)
-    ph, pl = plib.pivots(h, lo, 3)
+    ph, pl = F.fractals(h, lo, 3)
     piv = np.r_[ph, pl]
     val = np.r_[h[ph], lo[pl]]
     order = np.argsort(piv + 3, kind="stable")
     known, piv, val = (piv + 3)[order], piv[order], val[order]
     out = []
     for bi in range(len(b)):
-        hi_k = np.searchsorted(known, bi, side="right")
+        hi_k = np.searchsorted(known, bi, side="right")  # swings confirmed by the close of bar bi
         sel = piv[:hi_k] >= bi - nbars
-        v = np.sort(val[:hi_k][sel])
         tol = SR_MERGE * atr[bi] if np.isfinite(atr[bi]) else 0.0
-        if len(v) == 0 or tol <= 0:
-            out.append((np.empty(0), np.empty(0, int)))
-            continue
-        starts = np.r_[True, np.diff(v) > tol]
-        gid = np.cumsum(starts) - 1
-        cnt = np.bincount(gid)
-        lv = np.bincount(gid, weights=v) / cnt
-        out.append((lv, cnt))
+        out.append(F.merge_levels(val[:hi_k][sel], tol))
     return out
 
 

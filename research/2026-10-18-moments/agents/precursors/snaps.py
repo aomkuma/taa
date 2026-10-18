@@ -24,7 +24,7 @@ SNAPS = ([(TH, h, 0, f"TH{h:02d}00") for h in (7, 8, 9, 10, 11, 12)] + [(FR, 8, 
          + [(LO, h, 0, f"LO{h:02d}00") for h in (8, 9, 10, 11, 12)]
          + [(NY, 8, 0, "NY0800"), (NY, 8, 30, "NY0830"), (NY, 9, 30, "NY0930"), (NY, 10, 0, "NY1000")]
          + [(NY, h, 0, f"NY{h:02d}00") for h in (11, 12, 13, 14)])
-FIRST = pd.Timestamp("2023-11-01", tz="UTC")
+FIRST = plib.LEARN_START  # the library learns from the learning period only (owner, 2026-10-18: 12 months first)
 
 
 def log(msg: str) -> None:
@@ -81,6 +81,10 @@ def labels(m: pd.DataFrame, S: pd.DataFrame, cats: dict[int, pd.DataFrame]) -> p
         for side, nm in ((1, "up"), (-1, "dn")):
             Cs = C[C.side == side]
             st = Cs.i.to_numpy()
+            if len(st) == 0:  # no run of this side in the data: no snap is followed by one
+                for col in ("lead", "size", "mae"):
+                    out[f"r{xu}_{nm}_{col}"] = np.full(len(dec), np.nan)
+                continue
             p = np.searchsorted(st, dec + 1, side="left")
             ok = p < len(st)
             pj = np.minimum(p, len(st) - 1)
@@ -189,7 +193,7 @@ def main() -> None:
             codes[f"{tf}_sr_loc"] = loc
             codes[f"{tf}_sr_imp"] = imp
         log(f"{tf} done")
-    design = (S.S < plib.SPLIT).to_numpy()
+    design = (S.S < plib.EXAM_START).to_numpy()  # the height terciles from the learning snaps only
     for tf, hv in heights.items():
         q = np.nanquantile(hv[design], [1 / 3, 2 / 3])
         codes[f"{tf}_height"] = np.digitize(np.nan_to_num(hv, nan=q[0]), q).astype(np.int8)

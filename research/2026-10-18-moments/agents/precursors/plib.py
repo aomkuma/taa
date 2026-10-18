@@ -25,6 +25,12 @@ HALVES = pd.to_datetime(["2023-11-01", "2024-05-01", "2024-11-01", "2025-05-01",
                          "2026-10-17"], utc=True)
 HLAB = ["H1", "H2", "H3", "H4", "H5", "W"]
 TH = "Asia/Bangkok"
+# The learning and the exam (owner, 2026-10-18): the exam = the latest six months from today; the learning runs use the
+# latest 12 months first ("to see results quickly; if it works, run the three years as before": LEARN_START_3Y).
+LEARN_START = pd.Timestamp("2025-10-18", tz="UTC")
+LEARN_START_3Y = pd.Timestamp("2023-08-15", tz="UTC")
+EXAM_START = pd.Timestamp("2026-04-18", tz="UTC")
+EXAM_END = pd.Timestamp("2026-10-17", tz="UTC")
 # focus windows: (name, zone, start minute of the local day, end minute) - [start, end)
 WINDOWS = [
     ("A07", TH, 7 * 60 - 5, 7 * 60 + 30),
@@ -105,11 +111,19 @@ def catalogue(m: pd.DataFrame, xu: float) -> pd.DataFrame:
             rows.append((side, i, tgt[i], int(tmin[tgt[i]] - tmin[i] + 1), lo[i] if side > 0 else h[i], size / (o[i] / REF),
                          int(tmin[xj] - tmin[i] + 1)))
     C = pd.DataFrame(rows, columns=["side", "i", "tgt", "mins_to_x", "start_px", "size_u", "dur"]).sort_values("i")
+    C = C.astype({"side": int, "i": int, "tgt": int, "mins_to_x": int, "start_px": float, "size_u": float, "dur": int})
     C["t"] = ot[C.i.to_numpy()]
     return C.reset_index(drop=True)
 
 
 # ---------------------------------------------------------------- focus windows
+def ny_mask(idx: pd.DatetimeIndex) -> np.ndarray:
+    """The minutes inside the owner's New York windows (19:00 .. 01:00 Thai, DST-aware): a decision there is a New York
+    trade, whose stop pays the New York stop slippage (the auditor measured it by the trade's session)."""
+    W = window_mask(idx)
+    return W[[c for c in W.columns if c.startswith("NY")]].any(axis=1).to_numpy()
+
+
 def window_mask(idx: pd.DatetimeIndex) -> pd.DataFrame:
     out = {}
     for name, zone, a, b in WINDOWS:
@@ -141,13 +155,10 @@ def tf_bars(m: pd.DataFrame, rule: str) -> pd.DataFrame:
 
 
 def pivots(h: np.ndarray, lo: np.ndarray, k: int = 3):
-    """Fractal swings (k bars each side) as (bar, value) known k bars later."""
-    n = len(h)
-    hw = pd.Series(h).rolling(2 * k + 1, center=True).max().to_numpy()
-    lw = pd.Series(lo).rolling(2 * k + 1, center=True).min().to_numpy()
-    ph = np.nonzero((h == hw) & np.isfinite(hw))[0]
-    pl = np.nonzero((lo == lw) & np.isfinite(lw))[0]
-    return ph, pl
+    """Fractal swings (k bars each side), known k bars later: foundation.fractals."""
+    import foundation as F  # noqa: PLC0415
+
+    return F.fractals(h, lo, k)
 
 
 def last_two(piv: np.ndarray, vals: np.ndarray, n: int, k: int):
@@ -174,12 +185,11 @@ def last_two(piv: np.ndarray, vals: np.ndarray, n: int, k: int):
 def tf_state(b: pd.DataFrame, pfx: str) -> pd.DataFrame:
     o, h, lo, c = (b[k].to_numpy(float) for k in ("open", "high", "low", "close"))
     n = len(c)
-    cs = pd.Series(c)
-    pc = cs.shift(1).to_numpy()
-    tr = np.nanmax(np.vstack([h - lo, np.abs(h - pc), np.abs(lo - pc)]), axis=0)
-    atr = pd.Series(tr).rolling(14).mean().to_numpy()
-    e20 = cs.ewm(span=20, adjust=False).mean().to_numpy()
-    e50 = cs.ewm(span=50, adjust=False).mean().to_numpy()
+    import foundation as F  # noqa: PLC0415  (MT5-exact indicators)
+
+    atr = F.atr(h, lo, c, 14)
+    e20 = F.ema(c, 20)
+    e50 = F.ema(c, 50)
     e20_3 = np.r_[np.full(3, np.nan), e20[:-3]]
     tide = np.where((e20 > e20_3) & (c > e50), 1, np.where((e20 < e20_3) & (c < e50), -1, 0))
     k = 3
@@ -202,7 +212,7 @@ def tf_state(b: pd.DataFrame, pfx: str) -> pd.DataFrame:
     up3 = pd.Series(brk_now == 1).rolling(3).max().to_numpy()
     dn3 = pd.Series(brk_now == -1).rolling(3).max().to_numpy()
     brk3 = np.where((up3 > 0) & ~(dn3 > 0), 1, np.where((dn3 > 0) & ~(up3 > 0), -1, 0))
-    sd = cs.rolling(20).std().to_numpy()
+    sd = pd.Series(c).rolling(20).std(ddof=0).to_numpy()  # the Bands deviation (MT5: population); only its rank is used
     atr_pct = pd.Series(atr).rolling(120, min_periods=60).rank(pct=True).to_numpy()
     bbw_pct = pd.Series(sd).rolling(120, min_periods=60).rank(pct=True).to_numpy()
     c3 = np.r_[np.full(3, np.nan), c[:-3]]
@@ -222,9 +232,10 @@ def m1_forms(m: pd.DataFrame, atr15: np.ndarray) -> pd.DataFrame:
     tv = m.tick_volume.to_numpy(float)
     idx = m.index
     H, L, C = pd.Series(h), pd.Series(lo), pd.Series(c)
-    pc = C.shift(1).to_numpy()
-    tr = np.nanmax(np.vstack([h - lo, np.abs(h - pc), np.abs(lo - pc)]), axis=0)
-    atr1 = pd.Series(tr).rolling(14).mean().to_numpy()
+    import foundation as F  # noqa: PLC0415  (MT5-exact indicators)
+
+    tr = F.true_range(h, lo, c)
+    atr1 = F.atr(h, lo, c, 14)
     # the 30-minute box before this bar, and this bar's close against it
     bh = H.shift(1).rolling(30).max().to_numpy()
     bl = L.shift(1).rolling(30).min().to_numpy()

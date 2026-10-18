@@ -1,0 +1,277 @@
+lvl2_window_k0.5_all_T1_p80.parquet: 262 trades, 63 wins, 184 losing (stop 24, break-even 45, time 8)
+
+-- the losers' causes --
+cause
+closed through the level (out at the next open)                 79
+break-even (0.6 of the target, then back)                       45
+closed through the level, then the target came anyway           28
+the level broke (price closed through it, the stop followed)    14
+shaken out (stopped, then the target came)                       8
+time exit at a loss                                              8
+fell short (half way or more, then back to the stop)             2
+
+-- what the bot measured / what followed: losers vs winners (medians) --
+                    losers  winners
+bounce_A             2.184    1.844
+level_from_start_A   2.684    2.665
+entry_to_level_A     0.520    0.563
+stall_reach_A        0.021   -0.052
+A                    6.672    6.773
+sl                  10.197    9.976
+tp                  10.197    9.976
+best_before_exit     0.309    1.064
+best_120             0.662    2.290
+worst_120            1.472    0.511
+
+-- by level kind, side, entry TF, snap time --
+            n   win    usd
+lkind                     
+10sw+H1   7.0  0.14  -6.73
+11sw+H1   3.0  0.33  -2.72
+12sw      1.0  0.00  -0.15
+12sw+H1   3.0  0.00  -3.50
+13sw+H1   4.0  0.25  18.92
+14sw+H1   6.0  0.17 -19.60
+15sw+H1   4.0  0.50  16.94
+16sw+H1   3.0  0.00 -20.19
+18sw+H1   1.0  0.00  -8.14
+19sw+H1   1.0  0.00  -4.00
+1sw      30.0  0.30  28.13
+1sw+H1   21.0  0.29  13.16
+22sw      1.0  0.00  -7.05
+22sw+H1   1.0  0.00  -5.45
+23sw+H1   1.0  0.00 -11.91
+29sw+H1   2.0  0.00  -4.29
+2sw      29.0  0.24 -46.14
+2sw+H1   17.0  0.06 -93.46
+37sw+H1   1.0  1.00  16.74
+38sw+H1   2.0  0.00  -6.18
+3sw      10.0  0.20  -1.70
+3sw+H1   28.0  0.11 -53.78
+41sw+H1   2.0  0.50   7.88
+43sw+H1   1.0  0.00 -12.91
+44sw+H1   1.0  1.00  14.07
+4sw       2.0  0.50  12.10
+4sw+H1    8.0  0.38  -0.73
+51sw+H1   2.0  0.50   5.77
+54sw+H1   1.0  0.00  -0.20
+57sw+H1   1.0  0.00  -0.20
+5sw       3.0  0.67  25.13
+5sw+H1   18.0  0.17 -15.92
+62sw+H1   1.0  0.00 -10.76
+6sw       4.0  0.50   5.78
+6sw+H1   12.0  0.42  16.10
+7sw+H1   10.0  0.30   0.66
+8sw       1.0  0.00  -0.20
+8sw+H1   10.0  0.40  27.42
+9sw       2.0  0.00 -17.25
+9sw+H1    7.0  0.29   0.69
+          n   win    usd
+side                    
+-1    208.0  0.25 -84.30
+ 1     54.0  0.19 -59.39
+         n   win     usd
+etf                     
+M1    42.0  0.21  -19.61
+M15   65.0  0.22 -108.77
+M30    2.0  0.00  -18.43
+M5   153.0  0.26    3.12
+
+-- the journal of every losing trade --
+         when_th  side   lkind etf     A  bounce_A  stall_reach_A    sl    tp  exit    pnl  best_before_exit  level_broke_min  best_120                                                        cause
+2026-04-23 00:29    -1  3sw+H1 M15  8.42      1.33          -0.04  9.00  9.00 close  -2.57              0.14               38      0.54              closed through the level (out at the next open)
+2026-04-23 07:23    -1     2sw  M1  6.43      5.21           0.93  8.00  8.00  stop  -8.15              0.16                1      2.83                   shaken out (stopped, then the target came)
+2026-04-23 07:27    -1 10sw+H1  M1  6.66      6.29           0.59  7.86  7.86 close  -4.37             -0.04                0      3.94        closed through the level, then the target came anyway
+2026-04-23 13:14    -1     1sw M15  7.59      2.53          -0.08 10.16 10.16 close  -3.69              0.29               31      0.83              closed through the level (out at the next open)
+2026-04-23 17:44    -1 16sw+H1  M5  5.76      1.11           0.18 12.59 12.59 close  -8.37              0.07               33      0.07              closed through the level (out at the next open)
+2026-04-24 00:54    -1 16sw+H1  M1  9.26      3.43          -1.26 10.25 10.25 close  -6.70              0.15                0      0.63              closed through the level (out at the next open)
+2026-04-24 06:59    -1  8sw+H1 M15  6.66      1.28          -0.29  6.59  6.59    be  -0.15              0.60                0      0.70                    break-even (0.6 of the target, then back)
+2026-04-24 15:14    -1 14sw+H1 M15  8.13      2.52           0.19 11.77 11.77 close  -8.17              0.17                5      0.66              closed through the level (out at the next open)
+2026-04-28 17:24    -1     1sw  M5  5.81      1.39          -0.30  7.42  7.42 close  -2.53              0.19               -1      7.72        closed through the level, then the target came anyway
+2026-04-29 09:24    -1 10sw+H1  M5  6.21      3.60          -0.12  8.00  8.00    be  -0.15              0.74               51      0.74                    break-even (0.6 of the target, then back)
+2026-04-29 15:59    -1  3sw+H1  M5  5.14      3.10          -0.12  7.63  7.63  stop  -7.78              0.34               18      2.78                   shaken out (stopped, then the target came)
+2026-04-29 17:39    -1  3sw+H1  M5  5.11      3.67           0.32 10.44 10.44    be  -0.15              0.62               -1      1.81                    break-even (0.6 of the target, then back)
+2026-04-30 07:14    -1  2sw+H1 M15  6.46      2.85           0.27 12.66 12.66 close  -9.18              0.12               29      0.12              closed through the level (out at the next open)
+2026-04-30 12:59    -1  2sw+H1 M15  8.07      2.67          -0.14  9.89  9.89 close  -4.11              0.20               19      0.20              closed through the level (out at the next open)
+2026-05-01 17:44    -1  3sw+H1 M15  8.11      1.24           0.69 13.48 13.48 close  -8.48              0.55               70      0.55              closed through the level (out at the next open)
+2026-05-04 17:44    -1  6sw+H1  M5  9.49      3.43          -0.21 12.23 12.23 close  -8.20             -0.00                3      0.55              closed through the level (out at the next open)
+2026-05-04 19:09    -1  6sw+H1  M5  5.33      1.71          -0.23  6.35  6.35 close  -3.60              0.08                2      1.08        closed through the level, then the target came anyway
+2026-05-04 22:29    -1  2sw+H1  M1  8.61      2.69           0.10 10.94 10.94    be  -0.20              0.92               -1      3.36                    break-even (0.6 of the target, then back)
+2026-05-04 23:14    -1  1sw+H1  M1  6.35      1.41          -0.92  6.38  6.38  stop  -6.58              0.11                0      0.31 the level broke (price closed through it, the stop followed)
+2026-05-04 23:17    -1  1sw+H1  M1  6.58      1.89           0.32 11.02 11.02 close  -6.64              0.05                1      0.50              closed through the level (out at the next open)
+2026-05-05 00:14    -1  3sw+H1  M5  8.85      2.44          -0.01 11.85 11.85 close  -7.31              0.03                2      1.02        closed through the level, then the target came anyway
+2026-05-05 08:29    -1  1sw+H1 M15  6.34      3.82           0.41  8.91  8.91 close  -4.24              0.38               62      0.38              closed through the level (out at the next open)
+2026-05-05 14:29    -1  2sw+H1 M15  7.83      1.94           0.22 11.52 11.52 close  -9.93              0.47                6      0.47              closed through the level (out at the next open)
+2026-05-07 20:54     1     3sw  M5  7.56      1.82          -0.29 11.64 11.64    be  -0.20              0.82              111      1.75                    break-even (0.6 of the target, then back)
+2026-05-07 22:34     1     3sw  M5  6.68      2.97          -0.02 11.36 11.36 close  -6.00              0.16               11      0.16              closed through the level (out at the next open)
+2026-05-08 11:29     1     1sw M15 10.01      1.31           0.68 18.57 18.57    be  -0.15              0.71               -1      0.89                    break-even (0.6 of the target, then back)
+2026-05-08 14:19     1 62sw+H1  M5  5.54      3.43           0.50 10.61 10.61  stop -10.76              0.18                2      0.75 the level broke (price closed through it, the stop followed)
+2026-05-12 08:09     1  7sw+H1  M5  7.89      2.63          -0.88  9.51  9.51 close  -6.64              0.02                1      0.02              closed through the level (out at the next open)
+2026-05-15 16:39    -1     2sw  M5  7.06      1.06           0.40 16.11 16.11    be  -0.15              0.90               29      0.90                    break-even (0.6 of the target, then back)
+2026-05-15 17:19    -1     2sw  M5  7.78      3.27           0.09 13.72 13.72  stop -13.87              0.54               31      0.89         fell short (half way or more, then back to the stop)
+2026-05-15 20:51    -1  3sw+H1  M1  5.81      2.99           0.44  8.07  8.07 close  -4.45             -0.04                2      0.42              closed through the level (out at the next open)
+2026-05-15 21:29    -1     6sw  M5 11.25      3.90           0.03 14.09 14.09    be  -0.20              0.65               26      1.84                    break-even (0.6 of the target, then back)
+2026-05-16 00:29    -1 12sw+H1  M5  5.18      5.48           0.03 11.49 11.49  time  -0.86              0.39               -1      0.77                                          time exit at a loss
+2026-05-18 09:09    -1  7sw+H1  M5 12.16      3.98          -0.18 13.93 13.93 close  -8.70              0.03                3      0.21              closed through the level (out at the next open)
+2026-05-18 10:49    -1     1sw  M5  8.41      2.00          -0.57  8.48  8.48 close  -4.00              0.31                0      1.37        closed through the level, then the target came anyway
+2026-05-18 11:59    -1     1sw  M5  6.39      1.66          -0.16  7.97  7.97    be  -0.15              0.94               18      1.35                    break-even (0.6 of the target, then back)
+2026-05-18 13:29    -1     1sw  M5  7.79      1.00          -0.66 12.44 12.44 close  -6.46              0.21               18      0.21              closed through the level (out at the next open)
+2026-05-19 13:24    -1 19sw+H1  M5  7.21      2.23           0.21 10.23 10.23 close  -4.00              0.56               90      0.96              closed through the level (out at the next open)
+2026-05-19 19:19    -1 51sw+H1  M5  5.60      2.22          -0.26  7.41  7.41 close  -4.38             -0.00                4     10.07        closed through the level, then the target came anyway
+2026-05-19 20:35    -1  2sw+H1  M1  7.80      1.26          -1.97 12.51 12.51 close  -7.85              0.12                0      0.34              closed through the level (out at the next open)
+2026-05-19 20:56    -1  2sw+H1  M1  6.61      5.28           1.00 17.94 17.94 close -12.20              0.20               -1      0.83              closed through the level (out at the next open)
+2026-05-19 23:04    -1  3sw+H1  M5  6.50      2.98           0.34 12.81 12.81    be  -0.20              0.71               -1      0.71                    break-even (0.6 of the target, then back)
+2026-05-20 09:19    -1  7sw+H1  M5  9.30      2.30          -0.39 10.06 10.06  stop -10.21              0.05                2      2.33                   shaken out (stopped, then the target came)
+2026-05-20 13:09    -1     1sw  M5  6.14      1.02          -0.61  6.66  6.66 close  -3.02              0.27                5      1.17        closed through the level, then the target came anyway
+2026-05-20 14:19    -1  9sw+H1  M5  6.19      2.81          -0.37  5.80  5.80 close  -1.87              0.36                0      0.58              closed through the level (out at the next open)
+2026-05-20 16:59    -1     2sw  M5  5.15      2.34          -0.57  7.94  7.94 close  -5.28             -0.02                6     -0.02              closed through the level (out at the next open)
+2026-05-21 22:24    -1 14sw+H1  M5  7.20      1.07          -0.38  9.49  9.49 close  -5.36              0.18               12      0.18              closed through the level (out at the next open)
+2026-05-22 22:44    -1  5sw+H1 M15 10.85      2.40          -0.25 10.30 10.30 close  -2.28              0.30               13      0.52              closed through the level (out at the next open)
+2026-05-27 06:59    -1     1sw M15  7.19      3.01           0.26 10.02 10.02    be  -0.15              0.65                1      1.22                    break-even (0.6 of the target, then back)
+2026-05-27 20:33    -1     2sw  M1  5.47      3.42           1.03  9.77  9.77 close  -5.28              0.39               17      0.75              closed through the level (out at the next open)
+2026-05-27 20:43    -1     2sw  M1  5.10      1.24          -0.12 10.79 10.79  stop -10.99              0.15                7      0.15 the level broke (price closed through it, the stop followed)
+2026-05-27 23:59    -1     1sw M15 12.05      1.87           0.32 15.62 15.62 close  -5.24              0.57               -1      0.57              closed through the level (out at the next open)
+2026-05-28 15:14    -1     4sw  M5  5.20      1.98           0.23  7.64  7.64    be  -0.15              0.86               66      0.91                    break-even (0.6 of the target, then back)
+2026-06-01 22:39    -1  1sw+H1  M5  5.97      4.85           0.45 11.24 11.24    be  -0.20              0.68              110      1.18                    break-even (0.6 of the target, then back)
+2026-06-02 00:14    -1  1sw+H1 M15 10.80      1.10          -0.02 10.73 10.73 close  -8.61              0.21               14      0.21              closed through the level (out at the next open)
+2026-06-03 09:44    -1 38sw+H1  M5  5.06      3.05           0.42 13.01 13.01  time  -5.98              0.43               -1      0.59                                          time exit at a loss
+2026-06-03 17:24    -1 12sw+H1  M5  6.58      2.76          -0.51  9.89  9.89 close  -7.77              0.36               37      0.36              closed through the level (out at the next open)
+2026-06-03 20:54    -1  3sw+H1  M1  5.10      3.51           0.21  8.19  8.19 close  -5.55              0.27               11      0.91              closed through the level (out at the next open)
+2026-06-08 07:14    -1     3sw  M5  5.02      5.72           0.15  7.33  7.33 close  -4.55              0.19                4      5.90        closed through the level, then the target came anyway
+2026-06-08 16:54    -1  5sw+H1  M5  7.37      2.81          -0.02 14.54 14.54 close -10.41              0.50               39      0.50              closed through the level (out at the next open)
+2026-06-08 17:39    -1  6sw+H1  M5  8.25      1.67          -0.47  9.20  9.20 close  -5.35              0.03                3      0.30              closed through the level (out at the next open)
+2026-06-09 17:29    -1     1sw M15  8.06      1.21           0.01 10.38 10.38 close  -5.75              0.36               29      0.36              closed through the level (out at the next open)
+2026-06-09 22:04    -1     1sw  M5 11.66      1.27          -0.71 11.15 11.15 close  -3.00              0.27               -1      5.05        closed through the level, then the target came anyway
+2026-06-09 22:36    -1  5sw+H1  M1  5.81      1.06          -1.88  6.68  6.68    be  -0.20              0.95                4      4.91                    break-even (0.6 of the target, then back)
+2026-06-10 00:29    -1  4sw+H1  M5 10.01      2.63           0.39 16.80 16.80 close -10.91              0.40               53      0.59              closed through the level (out at the next open)
+2026-06-10 15:24    -1  5sw+H1  M5  8.34      1.16          -0.23  9.29  9.29 close  -2.45              0.46               11      1.62        closed through the level, then the target came anyway
+2026-06-10 16:39    -1  5sw+H1  M5  7.46      1.08          -0.92  7.15  7.15    be  -0.15              0.60               69      2.59                    break-even (0.6 of the target, then back)
+2026-06-10 17:54    -1  5sw+H1  M5  6.59      2.44          -0.88  7.01  7.01  stop  -7.16             -0.02                1      5.81                   shaken out (stopped, then the target came)
+2026-06-10 22:03    -1     3sw  M1  5.75      1.98          -1.24  7.39  7.39    be  -0.20              0.94               21      2.99                    break-even (0.6 of the target, then back)
+2026-06-10 23:14    -1     3sw  M5 11.21      1.99          -0.13 12.51 12.51 close  -4.23              0.07               -1      2.23        closed through the level, then the target came anyway
+2026-06-11 07:18    -1     2sw  M1  6.84      4.08           1.93 11.30 11.30  time  -0.76              0.53               14      0.53                                          time exit at a loss
+2026-06-11 10:14    -1     2sw  M5  9.48      1.36          -0.77 12.32 12.32    be  -0.15              0.66               38      0.66                    break-even (0.6 of the target, then back)
+2026-06-11 13:29    -1     2sw  M5  7.90      1.30          -0.47  9.82  9.82 close  -6.59              0.33               14      0.33              closed through the level (out at the next open)
+2026-06-11 19:43    -1  6sw+H1  M1  5.11      2.33           1.38  9.04  9.04 close  -6.05              0.31                2      1.80        closed through the level, then the target came anyway
+2026-06-19 00:29    -1  1sw+H1  M5  5.07      2.41          -0.20  6.33  6.33 close  -4.01              0.55               14      3.76        closed through the level, then the target came anyway
+2026-06-23 16:09    -1     2sw  M5  5.87      3.26           0.36 10.26 10.26 close  -6.47              0.06               24      0.06              closed through the level (out at the next open)
+2026-06-23 17:09    -1     2sw  M5  5.01      7.21          -0.32  8.58  8.58 close  -6.15             -0.04                6      1.07        closed through the level, then the target came anyway
+2026-06-23 20:59    -1 15sw+H1  M5  8.26      3.61          -0.11 10.66 10.66 close  -6.70              0.14                9      1.14        closed through the level, then the target came anyway
+2026-06-24 08:08    -1     2sw  M1  5.37      1.95          -3.21  6.73  6.73 close  -4.92              0.45                2      3.95        closed through the level, then the target came anyway
+2026-06-24 08:13    -1  3sw+H1  M1  6.37      3.24           1.21  7.42  7.42    be  -0.15              0.71               11      4.95                    break-even (0.6 of the target, then back)
+2026-06-24 09:59    -1     2sw  M5  7.79      1.18          -0.15 14.25 14.25    be  -0.15              0.74               -1      0.74                    break-even (0.6 of the target, then back)
+2026-06-24 13:19    -1  3sw+H1  M5  7.13      2.22          -0.96  9.99  9.99 close  -5.21              0.35               21      1.38        closed through the level, then the target came anyway
+2026-06-25 07:59    -1     9sw  M5  7.76      1.71          -0.45 13.08 13.08  stop -13.23              0.21                0      2.18                   shaken out (stopped, then the target came)
+2026-06-25 10:59    -1    12sw  M5  8.49      3.43          -0.44  9.61  9.61    be  -0.15              0.76               -1      1.53                    break-even (0.6 of the target, then back)
+2026-06-25 15:09    -1    22sw  M5  7.14      2.32           0.00 11.27 11.27 close  -7.05              0.31                9      0.31              closed through the level (out at the next open)
+2026-06-30 08:10    -1  3sw+H1  M1  8.24      2.31          -0.89 18.37 18.37    be  -0.15              0.62               17      0.62                    break-even (0.6 of the target, then back)
+2026-06-30 08:22    -1  3sw+H1  M1  5.92      3.05           0.22 10.01 10.01 close  -6.26              0.14                5      1.56        closed through the level, then the target came anyway
+2026-06-30 10:09    -1  2sw+H1  M5  7.09      2.13           0.47 11.50 11.50    be  -0.15              0.61               68      0.61                    break-even (0.6 of the target, then back)
+2026-07-01 09:29    -1  1sw+H1  M5  5.29      1.92           0.11  7.43  7.43 close  -3.90              0.16                6      0.79              closed through the level (out at the next open)
+2026-07-01 09:59    -1  1sw+H1 M15  8.54      1.04           0.19 11.64 11.64 close  -4.82              0.02               16      0.54              closed through the level (out at the next open)
+2026-07-01 14:24    -1  8sw+H1  M5  5.04      1.52          -0.04  8.87  8.87    be  -0.15              0.74               30      0.74                    break-even (0.6 of the target, then back)
+2026-07-01 14:49    -1  9sw+H1  M5  5.42      1.83          -0.14  6.40  6.40  stop  -6.55             -0.06                6      0.15 the level broke (price closed through it, the stop followed)
+2026-07-01 15:24    -1  6sw+H1  M5  5.70      3.29           0.06 10.45 10.45    be  -0.15              0.75               97      0.75                    break-even (0.6 of the target, then back)
+2026-07-01 17:14    -1  4sw+H1 M15  7.57      1.73          -0.45  6.72  6.72 close  -3.08              0.42               14      0.42              closed through the level (out at the next open)
+2026-07-06 06:59     1     6sw  M5  5.80      3.16           0.05  7.27  7.27  stop  -7.42              0.27                1      2.69                   shaken out (stopped, then the target came)
+2026-07-06 10:59     1  3sw+H1 M15 11.21      3.33           0.09 14.59 14.59 close  -4.49              0.07               53      0.07              closed through the level (out at the next open)
+2026-07-07 07:29     1  1sw+H1 M30  6.30      1.25           0.27 10.81 10.81  stop -10.96              0.21                7      0.21 the level broke (price closed through it, the stop followed)
+2026-07-10 11:14     1  7sw+H1 M15  8.22      1.62          -0.24 10.10 10.10 close  -4.00             -0.03                6     -0.03              closed through the level (out at the next open)
+2026-07-13 14:14    -1  5sw+H1  M5  5.41      1.20           0.12 11.30 11.30 close  -9.47             -0.03               43     -0.03              closed through the level (out at the next open)
+2026-07-13 18:59    -1  3sw+H1 M15  7.71      1.27           0.48 12.19 12.19 close  -7.01              0.20               43      1.15        closed through the level, then the target came anyway
+2026-07-14 00:14    -1     2sw  M5  5.81      1.94           0.27  7.78  7.78 close  -3.70              0.07               94      1.38        closed through the level, then the target came anyway
+2026-07-14 09:24    -1  3sw+H1  M5  6.21      3.50           0.27 11.07 11.07  time  -1.78              0.47               -1      0.47                                          time exit at a loss
+2026-07-14 19:14    -1  2sw+H1 M15  6.62      1.63           0.84 14.14 14.14  stop -14.34              0.16               15      0.16 the level broke (price closed through it, the stop followed)
+2026-07-15 14:14    -1  3sw+H1 M15  6.88      1.20           0.56 11.78 11.78    be  -0.15              1.00               -1      1.00                    break-even (0.6 of the target, then back)
+2026-07-15 16:14    -1  3sw+H1 M15  7.09      1.83           0.23 11.08 11.08 close  -7.56              0.39               -1      0.39              closed through the level (out at the next open)
+2026-07-16 20:34    -1  1sw+H1  M5 10.42      1.87          -0.21 22.47 22.47  time  -9.89              0.49              110      0.49                                          time exit at a loss
+2026-07-17 07:29    -1  2sw+H1 M30  7.89      1.47          -0.22  7.32  7.32  stop  -7.47              0.51               20      0.72         fell short (half way or more, then back to the stop)
+2026-07-17 16:44    -1     1sw M15  6.85      1.17          -0.43  6.51  6.51 close  -2.65              0.15                8      0.86              closed through the level (out at the next open)
+2026-07-23 00:29     1  2sw+H1 M15  7.38      2.63           0.21 11.70 11.70 close  -6.12              0.08                9      0.08              closed through the level (out at the next open)
+2026-07-27 15:14     1 10sw+H1 M15  6.19      2.33           0.91 12.85 12.85    be  -0.15              0.68               -1      0.68                    break-even (0.6 of the target, then back)
+2026-07-29 07:14    -1  5sw+H1 M15  5.50      0.99           0.03  6.80  6.80  stop  -6.95             -0.06                1      1.46                   shaken out (stopped, then the target came)
+2026-07-29 12:59    -1  9sw+H1 M15  5.38      2.30           0.61 10.06 10.06  stop -10.21             -0.03               24     -0.03 the level broke (price closed through it, the stop followed)
+2026-07-29 21:29    -1 14sw+H1  M5  6.57      1.43           0.48 13.60 13.60  time  -5.62              0.49               98      0.49                                          time exit at a loss
+2026-07-29 22:59    -1  8sw+H1 M15  9.11      1.25           0.14 11.73 11.73 close  -7.18              0.15               25      0.15              closed through the level (out at the next open)
+2026-08-03 22:14    -1  3sw+H1 M15  8.96      1.58           0.13 11.84 11.84 close  -4.10              0.19               36      0.19              closed through the level (out at the next open)
+2026-08-05 00:44     1  2sw+H1 M15  7.72      1.35          -0.01  8.94  8.94  stop  -9.14              0.06                6      0.06 the level broke (price closed through it, the stop followed)
+2026-08-06 08:14     1     1sw  M1  5.57      2.42          -0.33  8.23  8.23 close  -5.56              0.33                5      2.30        closed through the level, then the target came anyway
+2026-08-06 09:44     1     1sw  M5  7.97      2.25          -0.14 11.41 11.41 close  -9.66              0.08                3      0.08              closed through the level (out at the next open)
+2026-08-06 17:59     1  5sw+H1 M15  7.37      1.82           0.33 11.09 11.09 close  -7.04              0.19               21      0.19              closed through the level (out at the next open)
+2026-08-06 18:59     1     1sw M15  7.39      1.27           0.35 17.82 17.82 close -13.88              0.38               56      0.57              closed through the level (out at the next open)
+2026-08-06 22:39     1 11sw+H1  M5  6.84      3.34          -0.26 10.74 10.74  stop -10.94              0.07               12      0.07 the level broke (price closed through it, the stop followed)
+2026-08-07 23:04     1     2sw  M5  6.27      2.38          -0.18  9.50  9.50    be  -0.20              0.64               19      0.64                    break-even (0.6 of the target, then back)
+2026-08-10 19:44     1  3sw+H1 M15  5.77      1.72           0.23  7.04  7.04    be  -0.20              0.87               66      3.18                    break-even (0.6 of the target, then back)
+2026-08-12 11:29     1  4sw+H1 M15  7.35      2.24           0.29 10.75 10.75 close  -6.95              0.50               52      0.50              closed through the level (out at the next open)
+2026-08-12 17:09     1  3sw+H1  M5  5.02      1.14          -0.18  7.04  7.04 close  -4.53              0.37               28      0.37              closed through the level (out at the next open)
+2026-08-12 22:09     1  8sw+H1  M5  7.95      2.23          -0.61  9.52  9.52    be  -0.20              0.84               37      0.84                    break-even (0.6 of the target, then back)
+2026-08-13 09:09     1 41sw+H1  M5  7.36      4.32          -0.30 12.48 12.48 close  -6.93              0.04               20      0.04              closed through the level (out at the next open)
+2026-08-17 16:14     1 22sw+H1 M15  6.48      1.80           0.61 10.56 10.56 close  -5.45              0.03               72      0.58              closed through the level (out at the next open)
+2026-08-18 00:44     1  4sw+H1 M15  7.23      1.53          -0.76  7.57  7.57 close  -4.16              0.37               12      0.37              closed through the level (out at the next open)
+2026-08-18 08:29     1 16sw+H1  M5  5.13      2.09          -0.26  8.47  8.47 close  -5.12              0.09               11      0.09              closed through the level (out at the next open)
+2026-08-20 11:59     1  3sw+H1 M15  6.82      1.79           0.36  9.46  9.46 close  -3.46              0.54               29      0.75              closed through the level (out at the next open)
+2026-08-20 22:24     1  5sw+H1  M1  5.04      2.66           0.05  8.77  8.77    be  -0.20              0.75               13      0.75                    break-even (0.6 of the target, then back)
+2026-08-21 06:59     1  2sw+H1 M15  5.68      1.09           0.34  7.79  7.79  stop  -7.94              0.11                5      2.22                   shaken out (stopped, then the target came)
+2026-08-21 09:09     1  7sw+H1  M5  7.63      2.68          -0.06  8.90  8.90 close  -2.45              0.00                2      2.19        closed through the level, then the target came anyway
+2026-08-21 10:19     1  5sw+H1  M5  5.13      1.90          -0.09  5.41  5.41 close  -3.65              0.30                9      2.74        closed through the level, then the target came anyway
+2026-08-24 14:14     1     2sw  M5  7.32      1.50          -0.54  7.08  7.08 close  -3.04              0.20                1      0.20              closed through the level (out at the next open)
+2026-08-24 14:34     1     2sw  M5  6.61      1.97           0.08 12.00 12.00 close -11.99              0.10                7      0.10              closed through the level (out at the next open)
+2026-08-24 14:54     1 13sw+H1  M5  6.19      3.78           0.19 13.02 13.02    be  -0.15              0.76               -1      0.76                    break-even (0.6 of the target, then back)
+2026-08-24 15:34     1 14sw+H1  M5  6.62      1.76          -0.02 11.59 11.59    be  -0.15              1.00               -1      1.34                    break-even (0.6 of the target, then back)
+2026-08-24 19:09     1 11sw+H1  M5  8.58      1.73          -0.53  8.42  8.42 close  -2.25              0.58               22      3.03        closed through the level, then the target came anyway
+2026-08-25 00:04     1 38sw+H1  M5  6.25      2.55           0.27 11.93 11.93    be  -0.20              0.74               15      0.74                    break-even (0.6 of the target, then back)
+2026-08-25 08:09     1     2sw  M5  8.94      1.95           0.09 17.16 17.16 close -12.26              0.05               13      0.05              closed through the level (out at the next open)
+2026-08-31 21:19    -1     8sw  M5  7.22      1.57           0.44 13.80 13.80    be  -0.20              0.74              116      0.74                    break-even (0.6 of the target, then back)
+2026-08-31 23:39    -1     9sw  M5  5.09      1.64          -0.36  7.15  7.15 close  -4.02              0.05                1      0.78              closed through the level (out at the next open)
+2026-09-01 20:49    -1     2sw  M5  9.66      3.61           0.21 11.96 11.96 close  -4.68              0.34               20      0.63              closed through the level (out at the next open)
+2026-09-01 23:44    -1     1sw  M5  5.23      1.49          -0.46  5.20  5.20 close  -2.71             -0.05                0      5.03        closed through the level, then the target came anyway
+2026-09-02 08:11    -1     1sw  M1  5.73      1.71           0.66  6.71  6.71 close  -4.56              0.08                0      4.03        closed through the level, then the target came anyway
+2026-09-02 08:16    -1 13sw+H1  M1  5.57      3.56           1.45  9.26  9.26    be  -0.15              0.71               -1      4.00                    break-even (0.6 of the target, then back)
+2026-09-02 11:14    -1     1sw  M5  5.81      3.75          -0.35  5.66  5.66 close  -1.46              0.46               17      0.46              closed through the level (out at the next open)
+2026-09-02 12:59    -1  4sw+H1 M15  8.86      4.22           0.20 12.47 12.47 close  -7.10              0.16               13      0.40              closed through the level (out at the next open)
+2026-09-07 14:19    -1     1sw  M5  5.06      2.44           0.13  9.86  9.86 close  -9.21              0.50               35      0.50              closed through the level (out at the next open)
+2026-09-07 19:59    -1  1sw+H1 M15  6.61      2.35           0.11  6.86  6.86  stop  -7.06              0.16                4      0.16 the level broke (price closed through it, the stop followed)
+2026-09-07 22:14    -1 13sw+H1 M15  6.37      2.15           0.45  8.60  8.60    be  -0.20              0.65               -1      0.65                    break-even (0.6 of the target, then back)
+2026-09-08 19:39    -1 54sw+H1  M5  6.15      2.59          -0.15  8.58  8.58    be  -0.20              0.69               17      1.25                    break-even (0.6 of the target, then back)
+2026-09-08 21:09    -1 57sw+H1  M5  7.09      1.21           0.18 11.33 11.33    be  -0.20              0.63               53      1.61                    break-even (0.6 of the target, then back)
+2026-09-09 10:14    -1 14sw+H1 M15  8.80      1.34           0.59 14.41 14.41 close  -8.99              0.55               -1      0.55              closed through the level (out at the next open)
+2026-09-10 19:47    -1  2sw+H1  M1  6.18      2.73          -0.30  5.65  5.65  stop  -5.85              0.40                0      0.74 the level broke (price closed through it, the stop followed)
+2026-09-10 20:39    -1  7sw+H1  M1  5.33      4.63           0.09  6.98  6.98    be  -0.20              0.85                8      2.39                    break-even (0.6 of the target, then back)
+2026-09-11 11:19    -1  6sw+H1  M5  6.14      3.24           0.13  7.68  7.68 close  -6.62             -0.03                1     -0.03              closed through the level (out at the next open)
+2026-09-11 19:34    -1     1sw  M1 11.10      3.10          -1.63 14.62 14.62 close  -6.01              0.19                1      0.19              closed through the level (out at the next open)
+2026-09-11 19:37    -1  8sw+H1  M1 11.96      3.56          -1.01 13.28 13.28 close  -5.47              0.33                1      0.33              closed through the level (out at the next open)
+2026-09-14 13:04    -1     1sw  M5  5.70      1.95          -0.71  5.14  5.14    be  -0.15              0.61               -1      5.10                    break-even (0.6 of the target, then back)
+2026-09-14 20:29    -1     2sw  M5  8.68      2.30           0.06 12.28 12.28    be  -0.20              0.68               17      0.75                    break-even (0.6 of the target, then back)
+2026-09-14 22:04    -1     3sw  M5  7.08      1.24          -0.02 13.19 13.19  stop -13.39             -0.01                1     -0.01 the level broke (price closed through it, the stop followed)
+2026-09-14 22:44    -1  6sw+H1  M5  6.85      4.39           0.04 10.34 10.34    be  -0.20              0.73               37      0.73                    break-even (0.6 of the target, then back)
+2026-09-15 19:59    -1 15sw+H1  M5  5.87      3.23           0.18 11.54 11.54  time  -4.79              0.55               60      1.37                                          time exit at a loss
+2026-09-15 22:29    -1 10sw+H1  M5  5.60      1.73          -0.41  4.86  5.00 close  -1.92              0.40                6      0.40              closed through the level (out at the next open)
+2026-09-16 09:19    -1 29sw+H1  M5  5.11      2.26          -0.47  5.42  5.42 close  -4.55              0.07                2      0.07              closed through the level (out at the next open)
+2026-09-17 06:59    -1 10sw+H1 M15  9.10      1.41           0.48 14.35 14.35  stop -14.50              0.35               11      0.35 the level broke (price closed through it, the stop followed)
+2026-09-17 10:49    -1 10sw+H1  M5  5.30      4.07           0.07  6.14  6.14    be  -0.15              0.80               72      1.59                    break-even (0.6 of the target, then back)
+2026-09-22 15:14    -1  1sw+H1  M5  5.72      0.68          -0.12 12.52 12.52    be  -0.15              0.90               26      0.90                    break-even (0.6 of the target, then back)
+2026-09-23 22:04    -1  5sw+H1  M5  7.87      1.57          -0.36  9.23  9.23 close  -4.47              0.04                5      1.55        closed through the level, then the target came anyway
+2026-09-28 23:34    -1  5sw+H1  M5  6.50      2.97          -0.77 10.13 10.13    be  -0.20              0.93               36      0.93                    break-even (0.6 of the target, then back)
+2026-09-29 00:19    -1  5sw+H1  M5  7.79      1.04          -0.19 12.84 12.84  time  -0.37              0.02               -1      0.22                                          time exit at a loss
+2026-09-29 08:19    -1     5sw  M5  6.78      1.57          -0.02  9.45  9.45 close  -6.68             -0.04                4     -0.04              closed through the level (out at the next open)
+2026-09-29 16:59    -1  3sw+H1 M15  5.77      1.36           0.10  7.95  7.95 close  -3.80              0.28               44      0.28              closed through the level (out at the next open)
+2026-10-01 16:29    -1  3sw+H1 M15  8.41      1.26          -0.03  8.50  8.50 close  -2.26              0.00               50      1.08        closed through the level, then the target came anyway
+2026-10-05 12:59    -1  9sw+H1 M15  7.96      1.25           0.42 10.79 10.79  stop -10.94             -0.01                1     -0.01 the level broke (price closed through it, the stop followed)
+2026-10-06 14:29    -1 23sw+H1 M15  6.56      3.22           0.70 14.40 14.40 close -11.91              0.08               52      0.08              closed through the level (out at the next open)
+2026-10-07 21:04    -1  2sw+H1  M5  7.11      4.12           0.44 14.50 14.50 close  -9.57              0.14               30      0.14              closed through the level (out at the next open)
+2026-10-07 22:49    -1     2sw  M5  5.53      6.98          -0.12  8.61  8.61 close  -4.71              0.32               16      0.32              closed through the level (out at the next open)
+2026-10-07 23:14    -1  2sw+H1  M5  5.23      1.57           0.19  7.56  7.56 close  -3.62              0.01               52      0.32              closed through the level (out at the next open)
+2026-10-08 08:09    -1 43sw+H1  M5  5.77      3.56           0.39 16.07 16.07 close -12.91              0.43               59      0.43              closed through the level (out at the next open)
+2026-10-14 09:04    -1 18sw+H1  M5  6.84      1.36           0.14 11.85 11.85 close  -8.14              0.02                6      0.02              closed through the level (out at the next open)
+Traceback (most recent call last):
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\lvl_losers.py", line 180, in <module>
+    main()
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\lvl_losers.py", line 175, in main
+    trade_picture(m, pd.Series(r._asdict()), out / f"{i:02d}_trade.png")
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\lvl_losers.py", line 124, in trade_picture
+    ent = int(np.searchsorted(done, m.index[int(r.j0)] + pd.Timedelta(minutes=1)))
+                                                ^^^^
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\generic.py", line 6194, in __getattr__
+    return object.__getattribute__(self, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Series' object has no attribute 'j0'

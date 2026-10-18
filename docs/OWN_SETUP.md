@@ -84,10 +84,10 @@ into an earlier level, then enter the trend's way; on the 2026-03-09 sell: "the 
 - **Every trade records its library evidence** (R13): per layer (H4 + H1, M30 + M15, M5 + M1) the pattern of earlier
   days it matches (>= 80 % of the core attributes), how often it occurred and what followed - with, against, faked,
   flat; "none" when nothing matches.
-- **Status (2026-10-18 22:45 Thai):** the research suites pass and every planted bug that changes a result is caught;
-  the independent re-derivation matched every signal and trade on slice A (2025-11 .. 2026-02) and every signal on
-  slice B; slices C and B2 are running. Next, once they match: the walk-forward run on the latest 12 months, reported
-  week by week.
+- **Status (2026-10-18 23:00 Thai):** proven - 126 research tests pass and every planted bug that changes a result is
+  caught; the independent re-derivation matched all 510 distinct signals and all 134 trades in six runs on the
+  12 months (M1 swings of 1.5 and 2.0 ATR). Next: the walk-forward run on the latest 12
+  months, reported week by week.
 - Rules (written before each computation), requirements R1-R13, every result and every bug found:
   `research/2026-10-18-moments/agents/precursors/notes.md`.
 

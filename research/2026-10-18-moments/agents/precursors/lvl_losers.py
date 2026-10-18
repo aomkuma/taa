@@ -12,10 +12,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
@@ -24,7 +20,6 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parents[0] / "journal"))
 import jlib  # noqa: E402
 import plib  # noqa: E402
-import render  # noqa: E402
 
 TH = "Asia/Bangkok"
 pd.set_option("display.width", 250)
@@ -88,26 +83,42 @@ def journal(T: pd.DataFrame, m: pd.DataFrame, sp: np.ndarray) -> pd.DataFrame:
     return J
 
 
+def picture_bars(sl_: pd.DataFrame, t_dec: pd.Timestamp, rule: str | None, back: pd.Timedelta | None,
+                 fwd: pd.Timedelta) -> tuple[pd.DataFrame, pd.Series, pd.DatetimeIndex, np.ndarray]:
+    """The bars one panel draws: H1 (back None) the last 120 bars closed by the decision, as the bot had them; else the
+    bars from `back` before to `fwd` after it. Returns the bars, their open times (Thai), when each was complete, and
+    which are the future (complete after the decision: drawn grey)."""
+    if rule:
+        b = plib.tf_bars(sl_, rule)
+        if back is None:  # H1: the last 120 closed bars, one screen
+            b = b[b["avail"] <= t_dec].tail(120).reset_index(drop=True)
+        else:
+            b = b[(b["last"] >= t_dec - back) & (b["last"] < t_dec + fwd)].reset_index(drop=True)
+        start_t = (b["last"].dt.floor(rule)).dt.tz_convert(TH)
+        done = pd.DatetimeIndex(b["avail"])
+    else:
+        b = sl_[(sl_.index >= t_dec - back) & (sl_.index < t_dec + fwd)]
+        start_t = pd.Series(b.index.tz_convert(TH))
+        done = b.index + pd.Timedelta(minutes=1)
+        b = b.reset_index(drop=True)
+    return b, start_t, done, np.asarray(done > t_dec)
+
+
 def trade_picture(m: pd.DataFrame, r: pd.Series, path: Path) -> None:
+    import matplotlib  # noqa: PLC0415  (drawing only; the bar selection is tested without it)
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt  # noqa: PLC0415
+
     t_dec = r.t + pd.Timedelta(minutes=1)
-    sl_ = m[(m.index >= t_dec - pd.Timedelta(days=4)) & (m.index <= t_dec + pd.Timedelta(hours=3))]
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5), gridspec_kw={"width_ratios": [1, 1.3, 1.5]})
-    for ax, rule, back, fwd, w in ((axes[0], "1h", pd.Timedelta(days=3), pd.Timedelta(0), 2.0),
+    sl_ = m[(m.index >= t_dec - pd.Timedelta(days=14)) & (m.index <= t_dec + pd.Timedelta(hours=3))]
+    fig, axes = plt.subplots(1, 3, figsize=(20, 5.5), gridspec_kw={"width_ratios": [1.5, 1.3, 1.4]})
+    for ax, rule, back, fwd, w in ((axes[0], "1h", None, pd.Timedelta(0), 1.6),
                                    (axes[1], "5min", pd.Timedelta(hours=9), pd.Timedelta(hours=2), 1.6),
                                    (axes[2], None, pd.Timedelta(hours=1.5), pd.Timedelta(hours=2), 1.1)):
-        if rule:
-            b = plib.tf_bars(sl_, rule)
-            b = b[(b["last"] >= t_dec - back) & (b["last"] < t_dec + fwd)].reset_index(drop=True)
-            start_t = (b["last"].dt.floor(rule)).dt.tz_convert(TH)
-            done = pd.DatetimeIndex(b["avail"])
-        else:
-            b = sl_[(sl_.index >= t_dec - back) & (sl_.index < t_dec + fwd)]
-            start_t = pd.Series(b.index.tz_convert(TH))
-            done = b.index + pd.Timedelta(minutes=1)
-            b = b.reset_index(drop=True)
+        b, start_t, done, future = picture_bars(sl_, t_dec, rule, back, fwd)
         x = np.arange(len(b))
         o, h, lo, c = (b[k].to_numpy(float) for k in ("open", "high", "low", "close"))
-        future = np.asarray(done > t_dec)
         up = c >= o
         for msk, col in ((up & ~future, "#1a9b77"), (~up & ~future, "#d6492f"), (future, "#b9b9b9")):
             ax.vlines(x[msk], lo[msk], h[msk], color=col, lw=0.7)
@@ -130,7 +141,7 @@ def trade_picture(m: pd.DataFrame, r: pd.Series, path: Path) -> None:
         ax.set_xticks(ticks)
         ax.set_xticklabels([start_t.iloc[k].strftime("%d %H:%M") for k in ticks], fontsize=6)
         ax.tick_params(labelsize=6)
-        ax.set_title({"1h": "H1 - the trend", "5min": "M5 - start T (blue dotted), level L (red), the stall bar (yellow)",
+        ax.set_title({"1h": "H1 - the trend (the last 120 bars)", "5min": "M5 - start T (blue dotted), level L (red), the stall bar (yellow)",
                       None: "M1 - entry (grey), stop (red dashed), target (green dashed), exit (purple); grey = after"}[rule],
                      fontsize=8, loc="left")
     fig.suptitle(f"{r.when_th} TH  {'SELL' if r.side < 0 else 'BUY'}  level {r.lkind} {r.level:.2f} (start {r.start:.2f}); "
@@ -142,6 +153,8 @@ def trade_picture(m: pd.DataFrame, r: pd.Series, path: Path) -> None:
 
 
 def main() -> None:
+    import render  # noqa: PLC0415
+
     f = sys.argv[1]
     T = pd.read_parquet(HERE / f)
     m = jlib.m1_frame("XAUUSD")

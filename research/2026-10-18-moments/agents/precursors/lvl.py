@@ -46,13 +46,17 @@ class Params:
 
 # ---------------------------------------------------------------- pieces
 def ema(x: np.ndarray, span: int) -> np.ndarray:
-    return pd.Series(x).ewm(span=span, adjust=False).mean().to_numpy()
+    """MT5's EMA (foundation.ema)."""
+    import foundation as F  # noqa: PLC0415
+
+    return F.ema(x, span)
 
 
 def atr14(h: np.ndarray, lo: np.ndarray, c: np.ndarray) -> np.ndarray:
-    pc = np.r_[np.nan, c[:-1]]
-    tr = np.nanmax(np.vstack([h - lo, np.abs(h - pc), np.abs(lo - pc)]), axis=0)
-    return pd.Series(tr).rolling(14).mean().to_numpy()
+    """MT5's ATR(14) (foundation.atr)."""
+    import foundation as F  # noqa: PLC0415
+
+    return F.atr(np.asarray(h, float), np.asarray(lo, float), np.asarray(c, float), 14)
 
 
 def trend_sign(close: np.ndarray) -> np.ndarray:

@@ -20,7 +20,7 @@ import jlib  # noqa: E402
 from fingerprint import zigzag  # noqa: E402
 
 M1 = jlib.m1_frame("XAUUSD")
-if len(sys.argv) > 1 and sys.argv[1] == "verify":  # the same short slice lvl2 is given (identical EMA / ATR history)
+if len(sys.argv) > 1 and sys.argv[1] in ("verify", "verify3"):  # the same short slice lvl2 is given (identical EMA / ATR history)
     M1 = M1[(M1.index >= pd.Timestamp(sys.argv[2], tz="UTC")) & (M1.index < pd.Timestamp(sys.argv[3], tz="UTC"))]
 SP = M1.spread.to_numpy(float) * 0.01 + 0.08
 LAD = ["M1", "M5", "M15", "M30", "H1", "H4"]
@@ -209,11 +209,98 @@ def verify() -> None:
     print(f"trades: {len(T)} checked, {bad} with a mismatch")
 
 
+def verify3() -> None:
+    """LV3 on a slice: the legs entry re-derived independently (own M1 swings at s x ATR, own pause count) at every
+    decision minute, against lvl3.signals; then every trade."""
+    import plib  # noqa: PLC0415
+
+    import lvl2  # noqa: PLC0415
+    import lvl3  # noqa: PLC0415
+
+    sig_from = pd.Timestamp(sys.argv[4], tz="UTC")
+    s_, n_, target, p = float(sys.argv[5]), int(sys.argv[6]), sys.argv[7], float(sys.argv[8])
+    # a code test on a short slice may lower the learned stop's history (both sides alike), so trades exist
+    mh = int(sys.argv[9]) if len(sys.argv) > 9 else 30
+    M = lvl3.Market(M1, SP)
+    win = plib.window_mask(M1.index).any(axis=1).to_numpy()
+    dec = np.nonzero(win & np.asarray(M1.index >= sig_from))[0]
+    S = lvl3.signals(M, dec, lvl3.Params(k=0.5, s=s_, n=n_, min_history=mh))
+    T = lvl2.trades(M, S, lvl3.Params(k=0.5, s=s_, n=n_, target=target, p=p, min_history=mh), np.zeros(len(M1), bool))
+    print(f"lvl3 on the slice: {len(S)} signals, {len(T)} trades; legs {S.legs.value_counts().to_dict() if len(S) else {}}")
+    b = B["M1"]
+    zb, zp, zt, zc = zigzag(b.high.to_numpy(float), b.low.to_numpy(float), b.atr.to_numpy(float), s_)
+    conf = {int(c): i for i, c in enumerate(zc)}
+    used, fired = set(), []
+    for i in dec:
+        if i + 1 >= len(M1) or i not in conf:
+            continue
+        q = conf[i]
+        t = M1.index[i]
+        d = derive(t, 0.5, False)
+        if not d["ok"]:
+            continue
+        zz = ZZ[d["etf"]][ZZ[d["etf"]].known <= t + pd.Timedelta(minutes=1)]
+        t_start = zz.start.iloc[-1]
+        want = 1 if d["side"] < 0 else -1
+        if zt[q] != want:
+            continue
+        key = (d["etf"], t_start, round(d["L"], 2), d["side"])
+        if key in used:
+            continue
+        # the minute of the start's extreme inside its entry-TF bar, found independently from the raw M1
+        seg = M1[(M1.index >= t_start) & (M1.index < t_start + pd.Timedelta(minutes=MINS[d["etf"]]))]
+        col = seg.high if d["side"] > 0 else seg.low
+        t_ext = col.index[np.isclose(col.to_numpy(), d["T"])][0] if np.isclose(col.to_numpy(), d["T"]).any() else t_start
+        px = [zp[j] for j in range(q + 1) if zt[j] == want and b.start.iloc[zb[j]] >= t_ext]
+        if not px:
+            continue
+        ext = max(px) if d["side"] < 0 else min(px)
+        last_ext = max(j for j, v in enumerate(px) if v == ext)
+        legs = px[last_ext:]
+        if n_ > 0:
+            need = n_
+        else:
+            E = ZZ[d["etf"]]
+            k_ = int(E.known.searchsorted(t + pd.Timedelta(minutes=1), side="right")) - 1
+            move = abs(E.px.iloc[k_] - E.px.iloc[k_ - 1]) / d["a"] if k_ >= 1 else 0.0
+            need = 3 if move < 5 else 5
+        near = 0.5 * d["a"]
+        newest = legs[-1]
+        ok = len(legs) >= max(need, 2) and ((newest < ext and ext >= d["L"] - near) if d["side"] < 0
+                                            else (newest > ext and ext <= d["L"] + near))
+        if ok:
+            used.add(key)
+            fired.append(i)
+    mine, theirs = set(fired), set(S.t.astype(int))
+    print(f"signals: independent {len(mine)}, lvl3 {len(theirs)}, only independent {len(mine - theirs)}, only lvl3 {len(theirs - mine)}")
+    for i in sorted(mine ^ theirs)[:10]:
+        print("  differs at", M1.index[i])
+    bad = 0
+    for r in T.itertuples():
+        ex, pnl, xj = walk(int(r.j0), int(r.side), r.entry, r.sl, r.tp, r.level, r.etf, 0.15)
+        s = S[S.j0 == r.j0].iloc[0]
+        earlier = S[(S.resolved <= s.t_ns) & S.won]
+        probs = []
+        if len(earlier) < mh:
+            probs.append(f"traded with {len(earlier)} earlier winners (< {mh})")
+        elif abs(np.percentile(earlier.over_A, p) - r.b) > 1e-9:
+            probs.append("learned buffer")
+        if ex != r.exit or abs(pnl - r.pnl) > 1e-6 or xj != r.xj:
+            probs.append(f"exit {ex} {pnl:.3f} @{xj} vs {r.exit} {r.pnl:.3f} @{r.xj}")
+        if probs:
+            bad += 1
+            print(f"MISMATCH {r.t}: " + "; ".join(probs))
+    print(f"trades: {len(T)} checked, {bad} with a mismatch")
+
+
 def main() -> None:
     if sys.argv[1] == "verify":
         verify()
         return
-    tf_, sf, k, lev, target, p = sys.argv[1], sys.argv[2], float(sys.argv[3]), sys.argv[4], sys.argv[5], float(sys.argv[6])
+    if sys.argv[1] == "verify3":
+        verify3()
+        return
+    tf_, sf, k, lev, _target, p = sys.argv[1], sys.argv[2], float(sys.argv[3]), sys.argv[4], sys.argv[5], float(sys.argv[6])
     T = pd.read_parquet(HERE / tf_)
     S = pd.read_parquet(HERE / sf)
     sample = T.sample(min(40, len(T)), random_state=9).sort_values("t")

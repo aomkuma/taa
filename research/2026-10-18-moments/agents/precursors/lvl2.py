@@ -217,6 +217,12 @@ def setup_at(M: Market, t: int, p: Params):
         return None
     t_px = float(E["zz_p"][last])
     t_start = int(E["start"][E["zz_b"][last]])
+    # the minute the start's extreme happened inside its entry-TF bar (the first M1 bar there reaching it)
+    j_a = int(np.searchsorted(M.ot_ns, t_start))
+    j_b = int(np.searchsorted(M.ot_ns, t_start + MINS[etf] * NS_MIN))
+    seg = M.h[j_a:j_b] if side > 0 else M.lo[j_a:j_b]  # a buy dips from a peak, a sell bounces from a trough
+    hit = np.nonzero(np.isclose(seg, t_px))[0]
+    t_ext = int(M.ot_ns[j_a + hit[0]]) if len(hit) else t_start
     price = M.c[t]
     if (price - t_px) * -side < p.min_bounce * a:
         return None
@@ -239,8 +245,8 @@ def setup_at(M: Market, t: int, p: Params):
     lv = level_in_front(zones, price, side, p.important)
     if lv is None:
         return None
-    return dict(side=side, etf=etf, a=float(a), t_px=t_px, t_start=t_start, level=lv[0], swings=lv[1], has_h1=lv[2],
-                ib=M.last(etf, t_ns), t_ns=t_ns)
+    return dict(side=side, etf=etf, a=float(a), t_px=t_px, t_start=t_start, t_ext=t_ext, level=lv[0], swings=lv[1],
+                has_h1=lv[2], ib=M.last(etf, t_ns), t_ns=t_ns)
 
 
 def signals(M: Market, dec: np.ndarray, p: Params) -> pd.DataFrame:

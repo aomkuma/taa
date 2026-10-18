@@ -233,3 +233,23 @@ def test_the_bounce_start_is_the_entry_timeframes_zigzag_swing(market):
         z = M.tf[r.etf]
         known = z["zz_known"] <= r.t_ns
         assert r.t_px == z["zz_p"][known][-1]  # the latest known ZigZag swing of the entry TF
+
+
+def test_r_and_usd_and_the_new_york_stop_slippage(market):
+    """R = the result / (the stop distance + the stop's slippage); a full stop is exactly -1 R; the slippage is New
+    York's (0.20) for a decision in the New York windows, else 0.15; USD = price units at 0.01 lot (1 oz)."""
+    M = market
+    ny = plib.ny_mask(M.ot)
+    dec = np.nonzero(plib.window_mask(M.ot).any(axis=1).to_numpy() & (M.ot >= pd.Timestamp("2026-07-01", tz="UTC")))[0]
+    S = lvl2.signals(M, dec, lvl2.Params(k=0.5))
+    T = lvl2.trades(M, S, lvl2.Params(k=0.5, target="T1", p=80.0), ny)
+    t_idx = M.ot.get_indexer(T.t)
+    ss = np.where(ny[t_idx], 0.20, 0.15)
+    assert ny[t_idx].any() and (~ny[t_idx]).any()  # both kinds are in the sample
+    np.testing.assert_allclose(T.R, T.pnl / (T.sl + ss), rtol=0, atol=1e-12)
+    stop = (T.exit == "stop").to_numpy()
+    assert stop.any()
+    np.testing.assert_allclose(T.R[stop], -1.0, rtol=0, atol=1e-9)
+    np.testing.assert_allclose(T.pnl[stop], -(T.sl + ss)[stop], rtol=0, atol=1e-9)
+    win = (T.exit == "win").to_numpy()
+    np.testing.assert_allclose(T.pnl[win], T.tp[win], rtol=0, atol=1e-12)  # a target pays exactly the target

@@ -25,31 +25,22 @@ def log(msg: str) -> None:
 
 
 def raw(b: pd.DataFrame) -> dict[str, np.ndarray]:
-    h, lo, c = b.high, b.low, b.close
-    pc = c.shift(1)
-    tr = pd.concat([h - lo, (h - pc).abs(), (lo - pc).abs()], axis=1).max(axis=1)
-    atr = tr.rolling(14).mean()
-    d = c.diff()
-    ag = d.clip(lower=0).ewm(alpha=1 / 14, adjust=False).mean()
-    al = (-d.clip(upper=0)).ewm(alpha=1 / 14, adjust=False).mean()
-    rsi = 100 - 100 / (1 + ag / al.replace(0, np.nan))
-    macd = c.ewm(span=12, adjust=False).mean() - c.ewm(span=26, adjust=False).mean()
-    sig = macd.ewm(span=9, adjust=False).mean()
-    ll, hh = lo.rolling(14).min(), h.rolling(14).max()
-    k = (100 * (c - ll) / (hh - ll).replace(0, np.nan)).rolling(3).mean()
-    dd = k.rolling(3).mean()
-    e20, e50 = c.ewm(span=20, adjust=False).mean(), c.ewm(span=50, adjust=False).mean()
-    mid, sd = c.rolling(20).mean(), c.rolling(20).std(ddof=0)
+    """Prices and the MT5-exact indicators (foundation.py) of a timeframe's bars. MACD: `hist` is the MACD line (what
+    MT5 draws as the histogram), `sig` its SMA(9) signal."""
+    import foundation as F  # noqa: PLC0415
+
+    h, lo, c = (b[k].to_numpy(float) for k in ("high", "low", "close"))
+    atr = F.atr(h, lo, c, 14)
+    rsi = F.rsi(c, 14)
+    line, sig = F.macd(c)
+    k, dd = F.stochastic(h, lo, c, 14, 3, 3)
+    e20, e50 = F.ema(c, 20), F.ema(c, 50)
+    mid, up, _low = F.bands(c, 20, 2.0)
+    sd = (up - mid) / 2.0
     width = sd / mid
-    wpct = width.rolling(120, min_periods=60).rank(pct=True)
-    up, dn = h.diff(), -lo.diff()
-    pdm = pd.Series(np.where((up > dn) & (up > 0), up, 0.0), index=b.index)
-    ndm = pd.Series(np.where((dn > up) & (dn > 0), dn, 0.0), index=b.index)
-    atrw = tr.ewm(alpha=1 / 14, adjust=False).mean()
-    pdi = 100 * pdm.ewm(alpha=1 / 14, adjust=False).mean() / atrw
-    ndi = 100 * ndm.ewm(alpha=1 / 14, adjust=False).mean() / atrw
-    adx = (100 * (pdi - ndi).abs() / (pdi + ndi).replace(0, np.nan)).ewm(alpha=1 / 14, adjust=False).mean()
-    out = dict(h=h, lo=lo, c=c, atr=atr, rsi=rsi, macd=macd, sig=sig, hist=macd - sig, k=k, d=dd, e20=e20, e50=e50,
+    wpct = pd.Series(width).rolling(120, min_periods=60).rank(pct=True).to_numpy()
+    pdi, ndi, adx = F.adx(h, lo, c, 14)
+    out = dict(h=h, lo=lo, c=c, atr=atr, rsi=rsi, macd=line, sig=sig, hist=line, k=k, d=dd, e20=e20, e50=e50,
                mid=mid, sd=sd, width=width, wpct=wpct, pdi=pdi, ndi=ndi, adx=adx)
     return {key: np.asarray(v, dtype=float) for key, v in out.items()}
 
@@ -151,8 +142,9 @@ def fingerprint(R: dict[str, np.ndarray], bi: np.ndarray) -> pd.DataFrame:
         x = rsi[b]
         rows[r, 10] = np.digitize(x if np.isfinite(x) else 50, [30, 45, 55, 70])
         rows[r, 11] = int(b >= 3 and np.isfinite(rsi[b - 3]) and x > rsi[b - 3])
-        bear = len(pk) >= 2 and pkv[-1] > pkv[-2] + tol and rsi[pk[-1]] < rsi[pk[-2]]
-        bull = len(tr) >= 2 and trv[-1] < trv[-2] - tol and rsi[tr[-1]] > rsi[tr[-2]]
+        # RSI at the swings' BARS (pidx), not at their numbers in the swing list (bug to 2026-10-18, test_parts.py)
+        bear = len(pk) >= 2 and pkv[-1] > pkv[-2] + tol and rsi[pidx[pk[-1]]] < rsi[pidx[pk[-2]]]
+        bull = len(tr) >= 2 and trv[-1] < trv[-2] - tol and rsi[pidx[tr[-1]]] > rsi[pidx[tr[-2]]]
         rows[r, 12] = 3 if (bear and bull) else (1 if bear else (2 if bull else 0))
         hist = R["hist"]
         rows[r, 13] = int(hist[b] > 0) * 2 + int(b >= 1 and hist[b] > hist[b - 1])
