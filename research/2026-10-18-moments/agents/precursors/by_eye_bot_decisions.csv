@@ -1,0 +1,161 @@
+n,side,skip,why
+1,-1,1,H1 rebound failed and falling; M5 down - but the close sits at M5's low
+2,-1,1,same context; at M5's low after a drop
+3,-1,1,H1 down; M5/M1 crash then a small bounce
+4,-1,1,H1 range falling to its low; M5 crash
+5,-1,1,H1 down; M5 crash; M1 bouncing without a turn
+6,1,1,H1 strong up; M5/M1 rally with only a small pullback
+7,1,1,H1 uptrend; M5 at its range low 4677-4680 after a gap; M1 still falling
+8,-1,1,H1 short-term down after the gap; M5 down; M1 V-bounce toward 4670 resistance
+9,1,0,H1 up overall; M5 V-recovery from 4650 held; M1 higher lows
+10,-1,1,H1 short-term down from 4770; M5 range breaking down; M1 falling
+11,-1,1,same context later; M5/M1 falling at the low
+12,-1,1,H1 range falling; M5 down at its lows
+13,-1,1,H1 strong down; M5 basing - no pullback
+14,-1,0,H1 strong down; M5 bounced to 4585; M1 turned down from 4588
+15,-1,1,H1 strong down; M5/M1 at new lows
+16,-1,1,H1 strong down; M5 lower lows; M1 small bounce
+17,-1,1,H1 strong down; M5 bouncing from 4540; M1 rising - no turn
+18,-1,1,H1 strong down; M5 strong bounce to 4572; M1 still rising
+19,-1,1,H1 down; M5 crash to 4480 (falling knife)
+20,-1,0,H1 down then basing; M5 spike to 4566 rejected; M1 turning down
+21,-1,1,H1 basing after a fall; M5 at its range low
+22,-1,1,H1 down; M5 lower highs; close at the low
+23,-1,0,H1 drop from 4575; M5 bounced to 4545; M1 turned down
+24,-1,1,same day; M5/M1 at the low
+25,-1,1,H1 drop from 4575; M5 V-recovery to 4526; M1 rising into 4525-4530
+26,-1,1,H1 down; M5 lower highs; close at the low
+27,-1,1,H1 crash; M5 V-bounce; M1 spike 4465 fading
+28,-1,0,H1 crash; M5 bounce rejected; M1 turned down from 4465
+29,-1,0,H1 crash; M5 bounce spike rejected; M1 lower highs
+30,-1,1,H1 strong down; M5/M1 stretched fall
+31,-1,1,same; at the low
+32,-1,1,H1 strong down; M5 rebound to 4393; M1 still rising
+33,-1,1,H1 strong down; M5 basing; M1 rising
+34,1,0,H1 V-rebound up; M5 higher lows; M1 turned up from 4513
+35,1,1,H1 rebound up; M5/M1 stretched spike
+36,1,0,H1 up; M5 pulled back from the 4594 spike; M1 basing 4568-4571
+37,-1,1,H1 short-term crash; M5/M1 basing at the low
+38,-1,0,H1 crash; M5 bounce 4345->4370; M1 turning down
+39,1,1,H1 rebound and gap up; M5 drifting down to 4305 after the gap
+40,-1,1,H1 crash then lower; M5 lower highs; close at the low
+41,-1,0,H1 strong down; M5 spike to 4033 fading; M1 lower highs
+42,-1,1,H1 down; M5/M1 falling to the low
+43,-1,1,H1 down from the rebound; M5 crash
+44,-1,1,same; M5 crash; M1 small bounce
+45,1,1,H1 down but a V-reversal; M5 up and consolidating; unclear
+46,1,1,H1 range; M5/M1 steady rise to the top (stretched)
+47,1,1,H1 range recovering; M5 up; M1 dipping
+48,1,0,H1 up consolidating; M5 bounced from its range low; M1 turned up
+49,1,1,H1 up; M5 pullback; M1 still falling
+50,-1,1,H1 up but turning down; M5 lower highs; mixed
+51,1,1,H1 up over 120 bars but a recent crash; M5 recovering with higher lows; mixed
+52,1,1,H1 short-term down; M5/M1 V-recovery stretched
+53,1,1,H1 range recovering; M5/M1 range
+54,-1,1,H1 down; M5 lower highs after a gap; at the low
+55,1,1,H1 spike up; M5 holding the jump; spiky
+56,-1,1,H1 spike faded; M5 down then flat
+57,-1,1,H1 down-ish range; M5 down then basing
+58,-1,1,H1 down; M5/M1 last-bar spike up - unclear
+59,-1,1,H1 120 bars down; M5 drift down then a spike
+60,1,1,range on every timeframe; M1 rising
+61,1,1,H1 range; M5 rally then pullback; M1 still falling
+62,1,1,H1 rally; M5/M1 stretched up
+63,1,1,H1 up pulling back; M5 at 4088 without a turn
+64,1,1,H1 up but the pullback deepens; M5/M1 falling
+65,-1,1,H1 sharp pullback from 4160; M5 down then basing
+66,-1,1,H1 down to 4020; M5 down; M1 range
+67,-1,0,H1 down; M5 bounce to 4046 rejected; M1 turned down
+68,1,1,H1 V-spike up; M5 up after a deep pullback; M1 drifting at the top
+69,1,1,H1 range rallying; M5 up at the top
+70,1,1,H1 V up; M5 pullback from 4120; M1 not turned yet
+71,-1,1,H1 range; M5 gap faded; M1 flat at the low
+72,-1,1,H1 range; M5/M1 falling to the low
+73,-1,1,H1 range; M5/M1 spike to 4084 fading
+74,1,1,H1 strong rally; M5/M1 stretched
+75,1,1,same; stretched
+76,1,0,H1/M5 strong up; M5 small pullback; M1 basing 4163-4168
+77,1,1,H1 strong rally; M5/M1 stretched near the top
+78,1,1,H1 strong up; M5 deep pullback; M1 still falling
+79,1,1,same later; M1 falling
+80,1,0,H1 strong up; M5 range middle; M1 turning up from 4268
+81,1,1,H1 strong up; M5 rally to the range top; M1 stretched
+82,1,1,H1 up; M5 pullback from a 4450 spike; M1 still falling
+83,1,1,H1 up; M5 lower highs toward 4385 support; M1 falling
+84,1,1,H1 up; M5 rebound; M1 steady rise (stretched)
+85,1,1,H1 up pulling back; M5 higher lows; M1 choppy
+86,1,1,H1 range; M5 range; M1 last-bar spike up
+87,-1,1,H1 range falling; M5 lower highs; at the low
+88,1,1,H1 range; M5 V-recovery; M1 stretched up
+89,1,1,H1 range rebounding; M5 up with a pullback; M1 choppy
+90,1,1,H1 spike up; M5/M1 stretched
+91,1,1,same; stretched
+92,1,1,same; new high; stretched
+93,1,0,H1 jump up then consolidation; M5 dip to 4452 V-recovered; M1 turned up
+94,1,1,H1 strong up; M5/M1 choppy at the top
+95,1,1,H1 strong up; M5 deep pullback; M1 still falling
+96,1,1,H1 up; M5 lower lows (pullback deepening); M1 falling
+97,1,1,H1 up ranging at the top; M5 bounce from 4617; M1 rising
+98,1,1,H1 up after a pullback; M5/M1 at the top after a gap rise
+99,1,1,H1 up; M5 pullback from 4643; M1 still falling
+100,1,1,H1 up ranging; M5 lower highs; mixed
+101,-1,1,H1 decline from 4690; M5 lower highs at the low; M1 falling
+102,-1,1,H1 recent decline; M5 V-bounce into 4600 resistance; M1 still rising
+103,1,1,H1 up over 120 bars; M5 V-recovery; M1 at the top
+104,-1,1,news-like crash spike and bounce; unclear
+105,-1,1,H1 crash; M5/M1 basing - no pullback
+106,-1,1,H1 crash; M5 base; M1 bounce with slightly lower highs
+107,-1,1,H1 strong down; M5 bounce; M1 still rising
+108,1,1,H1 rebound; M5/M1 steady rise (stretched)
+109,-1,1,H1 down; M5/M1 falling to the low
+110,1,1,H1 range; M5/M1 steady rise (stretched)
+111,1,1,H1 range; M5 up then pullback; M1 still falling
+112,1,1,H1 range up slightly; M5 range; M1 dipping
+113,-1,1,H1 down; M5 basing; M1 choppy
+114,-1,0,H1 down; M5 bounce to 4360 fading with lower highs; M1 turned down
+115,-1,1,H1 down after a failed spike; M5 down; M1 range
+116,-1,0,H1 down; M5 basing; M1 rejected 4296 twice
+117,-1,1,H1 down; M5 down; M1 range at the low
+118,-1,1,H1 down but rebounding; M5 stretched up - mixed
+119,-1,1,H1 down; M5 rally with higher lows - mixed
+120,1,1,H1 V-spike back up; M5 strong rise; M1 near the top
+121,1,0,H1 V-recovery up; M5 range high; M1 turned up from 4352
+122,-1,1,H1 decline from 4400; M5 lower highs; M1 at the low
+123,1,1,H1 rally; M5/M1 stretched up
+124,1,1,H1 up; M5 pullback to 4370; M1 still falling
+125,1,1,H1 up ranging at the top; M5 lower highs - mixed
+126,-1,1,H1 decline; M5 down; M1 range at the low
+127,-1,1,H1 decline from 4370; M5 lower highs; M1 at the low
+128,-1,1,H1 down basing; M5 range; M1 dipping
+129,-1,1,H1 down; M5 lower highs; M1 at the low
+130,-1,1,H1 down; M5 range; M1 bounce
+131,-1,1,H1 down; M5/M1 stretched rally - mixed
+132,-1,0,H1 down; M5 rally to 4295 rejected with lower highs; M1 turned down
+133,-1,1,H1 crash; M5/M1 at the low
+134,-1,1,H1 crash; M5/M1 choppy range
+135,-1,0,H1 crash then base; M5 bounce to 4140 resistance; M1 turning down
+136,-1,1,H1 down basing; M5 up - mixed
+137,1,1,H1 steady recovery; M5/M1 up at the top
+138,1,1,H1 recovery; M5 pullback from 4175; M1 still falling
+139,1,1,H1 recovery; M5 pullback from 4187; M1 falling
+140,1,1,H1 range; M5 range; M1 V-up
+141,-1,1,H1 range after a fall; M5/M1 dropping to the low
+142,1,1,H1 range; M5/M1 V-up stretched
+143,-1,1,H1 flat with spikes; M5 range; M1 flat
+144,1,1,H1 range; M5 up with a held pullback; M1 already up
+145,-1,1,H1 range; M5/M1 lower highs falling
+146,-1,1,H1 range falling; M5 steady down at the low
+147,-1,1,H1 down; M5/M1 crash
+148,-1,1,H1 down basing; M5/M1 spike up - unclear
+149,1,1,H1 bounce; M5 up with a pullback; M1 dipping
+150,-1,1,H1 range; M5 lower highs; M1 falling
+151,-1,1,H1 range; M5 spike failed; M1 flat at the low
+152,1,1,H1 range; M5/M1 bounce up
+153,1,1,H1 rally; M5 steady up; M1 pulling back
+154,1,1,H1 rally then pullback; M5 pullback; M1 lower highs
+155,1,1,H1 up; M5 spike to 4215 faded; M1 falling
+156,1,1,H1 up; M5 range at the top; M1 choppy
+157,1,1,H1 up but pulling back; M5 volatile bounce; M1 jump
+158,1,1,H1 up range; M5 range; M1 at the top
+159,-1,1,H1 recent decline; M5/M1 volatile range
+160,-1,0,H1 decline from 4215; M5 bounce to 4152 rejected; M1 spike rejected

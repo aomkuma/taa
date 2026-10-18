@@ -1,0 +1,18 @@
+the bot (its side): 160 trades, win 0.369, R -0.054, USD -69.4
+me (my side, every trade): 160 trades, win 0.356, R -0.060, USD -113.4
+me, only the trades I would take: 21 trades, win 0.381, R -0.024, USD -12.3
+the bot on those same trades: 21 trades, win 0.143, R -0.568, USD -99.0
+a coin's side on the 160: R -0.034
+the same side as the bot on 46% of the trades; where we differ (87): my R -0.071, the bot's -0.060
+me minus the bot, per trade: -0.006 R (se 0.125)
+         trades   my_R  bot_R  my_usd  bot_usd
+month                                         
+2026-05      36  0.054 -0.454  -4.295 -114.852
+2026-06       9 -0.233  0.093 -10.771    4.887
+2026-07      25 -0.215  0.145 -57.835   30.837
+2026-08      36 -0.088  0.136 -11.877   37.255
+2026-09      33 -0.039  0.119 -21.189   14.732
+2026-10      21  0.018 -0.269  -7.424  -42.296
+
+on the 21 trades I would take, the bot took my side on 43%
+New York 09:30 by eye (my own rule with skips, the first 72 of 128 days): 12 trades, win 0.333, R -0.229, USD -13.8

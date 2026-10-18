@@ -1124,7 +1124,7 @@ the premise against a no-effect baseline in two halves.
   2026-04-17, the exam 2026-04-18 .. 10-16), and the placebo (the same clock time on the next trading day). Only
   then any trade backtest.
 
-**Built and checked (2026-10-19 ~03:30-04:10 Thai):**
+**Built and checked (2026-10-19 ~03:20-03:35 Thai):**
 - `moments.pictures_at` (one picture function for every library): rebuilt all 29,073 old moments - 84 of 84
   columns and the outlines equal moments_3y.parquet. `trade_labels.trades_at` (V2's trade for any decision times):
   the snaps' labels rebuilt equal to the old file, and to V2s's 723 trades.
@@ -1145,3 +1145,47 @@ the premise against a no-effect baseline in two halves.
   before its 3-ATR return) - the bot followed its rule. One real difference of scale: 2024-01-05 22:15 TH (NFP) on M5,
   after the spike the ATR jumped and the pullback a trader counts as a higher low is under 3 ATRs - the bot reads
   "mixed", the eye "up".
+
+**The present library's premise (2026-10-19 ~03:45 Thai; `out_present_lean.txt`, `present_premise.csv`; the bot's
+evidence and my plain recount equal on 150 moments in each of the six layer / level sets):** a coin's side earns
+-0.077 R (learning) / -0.073 R (the exam). The picks beat the coin a little in the learning half at the trigger
+layer (L6, N_MIN 10, THETA 0.2: +0.050, se 0.019) but earn -0.030 R, and the exam +0.022 (0.033), -0.062 R; the
+only learning cell with a positive R (context L3, 10, 0.2: +0.017) earns -0.184 in the exam. No cell earns in both
+halves - the premise does not hold. Without the run starts the bot no longer fades the move, but the same situation
+tells the trade's side only a little better than a coin.
+
+## Me trading by eye on the latest six months, against the bot - written before any decision (2026-10-19 ~03:50 Thai; owner: "if you backtest by yourself on the latest six months, would you profit and how many trades? Compare with the bot")
+
+- **The moments:** one a trading day, New York 09:30 (13:30 UTC, summer time all through the exam), 2026-04-18 ..
+  10-16, from the present library (the moments where a trade label exists).
+- **What I see (`by_eye.py`):** H1, M5 and M1 - the 120 bars closed by the decision, candles only, no date, nothing
+  after it - and the library's evidence (the trigger layer L6 and the context layer L3: matching days, mean R of
+  the buy and of the sell).
+- **How I decide (written now):** with the H1 trend when price has pulled back toward support / resistance on M5
+  and M1 is turning the trend's way; against it only after a clear failed break at an obvious H1 level; no trade
+  when H1 is flat and price sits mid-range, after a run already stretched far from where it started, or when M1 is
+  a falling knife / rocket. The library's evidence is a tie-breaker, not the reason.
+- **Every decision is written to `by_eye_decisions.csv` before any outcome is read;** the trade is V2's (the labels):
+  entry at the next M1 open, the stop one entry-TF ATR >= 5 USD, the target 10 U, 12 entry-TF bars.
+- **The bot at the same moments:** the side its evidence picks with the cell chosen walk-forward month by month; and
+  the bot's full six months (every 5 minutes, one position at a time). Reported: trades, win, R, USD, week by week.
+
+**Result (2026-10-19 ~06:00 Thai; `out_present_wf.txt`, `out_by_eye_bot.txt`, `by_eye_bot_decisions.csv`,
+`by_eye_bot_scored.csv`).** The owner changed the test mid-way ("too few trades - the same conditions as the bot, the
+decisions yours"): the bot on the present library (every 5 minutes, one position, the cell walk-forward) traded
+**647 times in the exam (5 a weekday), win 0.338, R -0.084, -460 USD** (learning 736, -0.042 R). For a random 160 of
+its exam trades I chose the side by eye (H1 / M5 / M1 and the library's evidence, no date, nothing after the
+decision; every side written before any outcome was read), and flagged the ones I would not take:
+
+| on the same 160 trades | trades | win | R a trade | USD |
+|---|---|---|---|---|
+| the bot's side | 160 | 0.369 | -0.054 | -69 |
+| my side | 160 | 0.356 | -0.060 | -113 |
+| a coin's side | 160 | | -0.034 | |
+| my side, only the ones I would take (trend + pullback + M1 turning) | 21 | 0.381 | -0.024 | -12 |
+| the bot on those 21 | 21 | 0.143 | -0.568 | -99 |
+
+I took the bot's side on only 46 % of the trades, yet both lose alike (me minus the bot -0.006 R, se 0.125): at
+these moments, with this trade (the 10 U target, the stop one entry-TF ATR, out after 12 entry-TF bars, the costs),
+who picks the side hardly matters. The trades I would take on my own were 13 % of them and close to break-even - too
+few to say more. The earlier New York 09:30 test with my own skips (the first 72 of 128 days): 12 trades, -0.229 R.
