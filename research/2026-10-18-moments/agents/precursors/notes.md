@@ -1190,7 +1190,7 @@ these moments, with this trade (the 10 U target, the stop one entry-TF ATR, out 
 who picks the side hardly matters. The trades I would take on my own were 13 % of them and close to break-even - too
 few to say more. The earlier New York 09:30 test with my own skips (the first 72 of 128 days): 12 trades, -0.229 R.
 
-## The proposed rule as code, 2025-06-01 .. 2025-12-01 (owner, 2026-10-19 ~04:15 Thai: "backtest the method you proposed in 2025-06-01 .. 2025-12-01"; `rule_bt.py`, test `test_rule_bt.py`)
+## The proposed rule as code, 2025-06-01 .. 2025-12-01 (owner, 2026-10-19 ~04:00 Thai: "backtest the method you proposed in 2025-06-01 .. 2025-12-01"; `rule_bt.py`, test `test_rule_bt.py`)
 
 The by-eye "would take" trades as a rule: with the H1 trend (the 120 bars' way and the swing structure agree), M5
 pulled back against it (its last leg against the trend; a buy's close in the lower 60 % of M5's range, a sell's in
