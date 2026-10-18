@@ -88,6 +88,13 @@ into an earlier level, then enter the trend's way; on the 2026-03-09 sell: "the 
   caught; the independent re-derivation matched all 510 distinct signals and all 134 trades in six runs on the
   12 months (M1 swings of 1.5 and 2.0 ATR). Next: the walk-forward run on the latest 12
   months, reported week by week.
+- **First walk-forward (2026-10-18 23:00 Thai), latest 12 months:** learning half +0.013 R (66 trades), the exam
+  -0.139 R, -198 USD at 0.01 lot (95 trades, max drawdown 194 USD); the library evidence at entry did not separate
+  winners from losers. **Why (measured on the data before the exam, each component alone against a no-effect
+  baseline):** the larger timeframes' trend, the pullback, the levels (no kind - yesterday's, the 72-hour, round 50s,
+  the Asian range, swings - turns price beyond chance) and the LV3 signal all measure at 50 %. LV3 stops as a setup.
+- **The method from now on (owner, 2026-10-19):** every component is proven twice - its code, and its premise in the
+  data against a no-effect baseline in two separate parts - before it is assembled into a setup or tuned.
 - Rules (written before each computation), requirements R1-R13, every result and every bug found:
   `research/2026-10-18-moments/agents/precursors/notes.md`.
 

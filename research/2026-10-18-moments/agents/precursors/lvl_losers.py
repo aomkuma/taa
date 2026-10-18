@@ -160,6 +160,10 @@ def main() -> None:
     m = jlib.m1_frame("XAUUSD")
     sp = m.spread.to_numpy(float) * 0.01 + 0.08
     J = journal(T, m, sp)
+    # R13 and the walk-forward: each trade's library evidence at entry and the settings that traded it
+    extra = [c for c in T.columns if c.startswith("ev_") or c in ("cell", "legs")]
+    if extra:
+        J = J.merge(T[["j0", *extra]], on="j0", how="left")
     out = HERE / "png" / "lvl_losers" / f.replace(".parquet", "")
     out.mkdir(parents=True, exist_ok=True)
     J.to_csv(out / "journal.csv", index=False)
@@ -174,12 +178,15 @@ def main() -> None:
     print("\n-- what the bot measured / what followed: losers vs winners (medians) --")
     print(pd.DataFrame({"losers": L[cols].median(), "winners": Wn[cols].median()}).round(3).to_string())
     print("\n-- by level kind, side, entry TF, snap time --")
-    for g in ("lkind", "side", "etf"):
+    for g in [x for x in ("lkind", "side", "etf", "cell", "ev_evidence") if x in J]:
         print(J.groupby(g).apply(lambda x: pd.Series({"n": len(x), "win": (x.exit == "win").mean(), "usd": x.pnl.sum()}),
                                  include_groups=False).round(2).to_string())
     print("\n-- the journal of every losing trade --")
-    print(L[["when_th", "side", "lkind", "etf", "A", "bounce_A", "stall_reach_A", "sl", "tp", "exit", "pnl",
-             "best_before_exit", "level_broke_min", "best_120", "cause"]].round(2).to_string(index=False))
+    show = ["when_th", "side", "lkind", "etf", "A", "bounce_A", "stall_reach_A", "sl", "tp", "exit", "pnl",
+            "best_before_exit", "level_broke_min", "best_120", "cause"]
+    show += [c for c in ("ev_evidence", "ev_ctx_count", "ev_set_count", "ev_trg_count", "ev_trg_with", "ev_trg_against")
+             if c in J]
+    print(L[show].round(2).to_string(index=False))
     if len(sys.argv) > 2 and sys.argv[2] == "nopics":
         return
     mf = plib.load()

@@ -1,0 +1,12 @@
+first passage of 1 A from the decision close (120 minutes): the component's way vs the other; no effect 50 %
+               component                part    n  its_way    se  edge_in_se
+A every larger TF agrees    2023-09..2024-12 8555    0.503 0.005       0.573
+A every larger TF agrees 2025-01..2026-04-17 8075    0.501 0.006       0.211
+     A-H H1 and H4 agree    2023-09..2024-12 8706    0.503 0.005       0.493
+     A-H H1 and H4 agree 2025-01..2026-04-17 9929    0.500 0.005      -0.030
+B A + a bounce of >= 1 A    2023-09..2024-12 3567    0.497 0.008      -0.318
+B A + a bounce of >= 1 A 2025-01..2026-04-17 2991    0.508 0.009       0.896
+        D the LV3 signal    2023-09..2024-12  634    0.473 0.020      -1.352
+        D the LV3 signal 2025-01..2026-04-17  606    0.495 0.020      -0.244
+
+(grid minutes 36500, unresolved or both in one bar 17.6%)

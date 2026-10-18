@@ -196,8 +196,10 @@ class Market:
         return int(np.searchsorted(self.tf[tf]["done"], t_ns, side="right") - 1)
 
 
-def setup_at(M: Market, t: int, p: Params):
-    """What LV2 sees at the close of M1 bar t: None, or the setup (side, etf, A, T, L, zone, the ETF bar index)."""
+def bounce_at(M: Market, t: int, p: Params):
+    """The first part of LV2's setup at the close of M1 bar t, without a level (2026-10-19: so each component can be
+    measured alone): the entry TF, every larger timeframe's trend agreeing, the bounce's start on the entry TF's
+    ZigZag and a bounce of at least min_bounce x A. None, or (side, etf, A, T, its times, the price, the time)."""
     t_ns = int(M.ot_ns[t] + NS_MIN)
     atrs = {tf: M.tf[tf]["atr"][M.last(tf, t_ns)] for tf in ("M1", "M5", "M15", "M30")}
     etf, a = entry_tf(atrs)
@@ -226,6 +228,15 @@ def setup_at(M: Market, t: int, p: Params):
     price = M.c[t]
     if (price - t_px) * -side < p.min_bounce * a:
         return None
+    return dict(side=side, etf=etf, a=float(a), t_px=t_px, t_start=t_start, t_ext=t_ext, price=price, t_ns=t_ns)
+
+
+def setup_at(M: Market, t: int, p: Params):
+    """What LV2 sees at the close of M1 bar t: None, or the setup (side, etf, A, T, L, zone, the ETF bar index)."""
+    b = bounce_at(M, t, p)
+    if b is None:
+        return None
+    side, etf, t_ns, t_start, price = b["side"], b["etf"], b["t_ns"], b["t_start"], b["price"]
     pxs, h1, fine = [], [], []
     lt = level_tfs(etf)
     for tf in lt:
@@ -245,8 +256,8 @@ def setup_at(M: Market, t: int, p: Params):
     lv = level_in_front(zones, price, side, p.important)
     if lv is None:
         return None
-    return dict(side=side, etf=etf, a=float(a), t_px=t_px, t_start=t_start, t_ext=t_ext, level=lv[0], swings=lv[1],
-                has_h1=lv[2], ib=M.last(etf, t_ns), t_ns=t_ns)
+    return dict(side=side, etf=etf, a=b["a"], t_px=b["t_px"], t_start=t_start, t_ext=b["t_ext"], level=lv[0],
+                swings=lv[1], has_h1=lv[2], ib=M.last(etf, t_ns), t_ns=t_ns)
 
 
 def signals(M: Market, dec: np.ndarray, p: Params) -> pd.DataFrame:

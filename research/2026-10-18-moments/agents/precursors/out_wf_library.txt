@@ -1,0 +1,36 @@
+0 / 161
+20 / 161
+40 / 161
+60 / 161
+80 / 161
+100 / 161
+120 / 161
+140 / 161
+160 / 161
+
+per layer: losers vs winners - matched a pattern of earlier days, and what that pattern's days did
+             trades  matched   seen   days  with_  against   fake
+layer loser                                                      
+ctx   False      42    0.595  0.595  1.786  0.188    0.546  0.240
+      True      119    0.571  0.571  1.924  0.430    0.359  0.176
+set   False      42    0.619  0.619  4.548  0.427    0.361  0.198
+      True      119    0.681  0.681  5.429  0.319    0.369  0.234
+trg   False      42    0.810  0.810  8.667  0.316    0.403  0.226
+      True      119    0.849  0.849  8.924  0.356    0.314  0.261
+
+how the pattern's earlier days leaned, per layer (count of trades):
+loser             False  True 
+layer leans                   
+ctx   against        14     24
+      even            8     15
+      no history     17     51
+      with            3     29
+set   against        12     35
+      even            3     17
+      no history     16     38
+      with           11     29
+trg   against        17     37
+      even            4     15
+      no history      8     18
+      with           13     49
+pictures: C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\wf_library\lvl3_wf_trades

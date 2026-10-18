@@ -609,3 +609,108 @@ not a setting; the checker also asserts every trade had that many earlier winner
 
 In all: six runs, 605 signal checks (510 distinct signals; B2 checked twice) and 134 trades, every one the same. With the tests (126, planted bugs caught) the code is
 proven; the walk-forward run on the latest 12 months is next.
+
+## LV3 walk-forward on the latest 12 months - the first result (2026-10-18 23:00 Thai; `out_wf.txt`, `lvl3_wf_months.csv`, `lvl3_wf_weeks.csv`, `out_wf_losers.txt`, `png/lvl_losers/lvl3_wf_trades/`)
+
+- No trade before 2026-02: the walk-forward needs 20 closed trades of a cell and the learned stop 30 earlier
+  winners, both only from 2025-10-18 on.
+- **Learning half (2025-10-18 .. 2026-04-17):** 66 trades (0.51 a weekday), win 18.2 %, **+0.013 R**, +11.2 USD at
+  0.01 lot, max drawdown 80.9 USD, worst trade -21.30, longest losing streak 8.
+- **The exam (2026-04-18 .. 10-16):** 95 trades (0.73 a weekday), win 21.1 %, **-0.139 R**, **-198.3 USD**, max
+  drawdown 194.3 USD, worst trade -26.68, longest losing streak 7. Cross-checks: weekly running total -187.18 =
+  +11.2 - 198.3; February's 21 trades / +42.8 USD equal in the month and week tables.
+- **The library evidence at entry does not separate** (R13): exam R by the evidence word - supports -0.171 (30),
+  mixed -0.180 (22), none -0.146 (24), against -0.036 (19); the learning half the same picture (supports -0.179).
+- **The losers (119 of 161):** a close of the entry TF through the level 67 (+10 where the target came anyway), break-
+  even after 0.6 of the target 23, the level broke and the stop followed 11, a time exit at a loss 6, shaken out 2.
+  Buys lose in both halves (learning -0.131 R over 35, exam -0.260 over 22); sells +0.176 (31) then -0.103 (73).
+  Windows: Thai 07:00 -0.416 R (13), London 08-12 -0.143 (60), Thai 09-12 -0.113 (30), New York 11-14 +0.053 (34).
+  At entry the losers and winners measure alike (bounce 2.3 vs 2.1 A, entry 0.44 vs 0.54 A from the level).
+- Gold by month (close - open): 2025-10 +140, 11 +228, 12 +93, 2026-01 +552, 02 +461, 03 -671, 04 -71, 05 -86,
+  06 -533, 07 +39, 08 +374, 09 -291, 10 +10: the exam is a falling, swinging market after a five-month rally.
+- Two of the worst, by eye: 2026-06-11 07:03 sell (H1 had fallen 300 USD in two days; the M5 bounce from the low
+  paused under the level and then ran through it, 36 USD stop -> -26.68 at the close exit); 2026-05-18 16:41 sell
+  (H1 fell 150 then based for two days; on M5 the "bounce" was a nine-hour rise of 75 USD with higher lows - a turn,
+  not a pullback; it retested the breakdown level and went through, -20.70).
+
+## Which levels hold and which break - written before it is computed (2026-10-18 23:45 Thai; `hold_break.py`)
+
+Found in the exam's losers: the close-through exit is not the fault (holding those 50 trades: 32 to the full stop,
+3 to the target; without the exit the exam is -0.173 R, not -0.139) - the level breaks in about half the trades and
+price goes on. So: what could the bot see at the signal that tells a holding level from a breaking one?
+
+- **Data:** every LV3 signal before the exam (2023-08-15 .. 2026-04-17; the 3-year signal tables of `wf.py 3y`), cell
+  s 1.5 / n 3 (the most signals) and, as a check, s 2.0 / adaptive. The exam is not looked at.
+- **Label** (no stop, from the entry): *held* = back to the bounce's start first; *broke* = an entry-TF close beyond
+  the level first; *neither* within 12 entry-TF bars.
+- **Hypotheses:**
+  - H-a (the owner's 2026-09-02 reading: "the broken 4316 low"): a level price had crossed before the bounce
+    (support broken, now resistance; mirrored for buys) holds more often than one price never crossed.
+  - H-b: a bounce that climbs like a staircase on the entry TF (most bars with a higher low, for a sell) is a turn,
+    not a pullback, and breaks the level more often.
+  - H-c: a sell after the H1 has already fallen more than 3 H1 ATRs in 24 hours (mirrored) breaks more often.
+  - Also shown: the session window, the side, the level's swings.
+- **Decision rule:** the feature with the largest (held - broke) difference that has the same sign and at least 10
+  points in both design halves (2023-08 .. 2024-12 and 2025-01 .. 2026-04-17) becomes a filter; the walk-forward is
+  rerun once on the latest 12 months and reported week by week. If none qualifies, say so.
+
+**Result (`out_hold_break.txt`, `hold_break.parquet`; 2,448 signals before the exam):** a level broke first in 62-65 %
+of the signals and held in 20-21 %, in every part and cell. None of H-a / H-b / H-c moves it by 10 points in both
+halves (H-a: 98 % of the levels had been crossed before - the test does not split them; H-c goes the other way: a
+larger H1 move before the signal breaks a little less). **The levels do not turn price:** a driftless walk from the
+entry, with the level 0.43-0.51 A away and the bounce's start 2.0-2.4 A away, reaches the start first 17.3-20.4 %
+of the time; the levels hold 19.7-21.0 %. LV3 rests on its levels turning price; the swing-cluster levels it picks
+(there is always one near) behave almost like lines drawn anywhere. No filter is added (none qualifies); the next
+question is which kinds of level do turn price.
+
+## Which kinds of level turn price - written before it is computed (2026-10-19 00:20 Thai; `level_power.py`)
+
+Every first touch (none in the 60 minutes before) of a level inside the owner's windows, 2023-09 .. 2026-04-17 (the
+exam not looked at): afterwards, does price come back 1 M15 ATR from the level first (it turned price) or go 1 ATR
+through it? A line with no effect gives 50 %. Kinds: yesterday's high / low, today's high / low so far, the Asian
+session's high / low, the 72-hour high / low (ending an hour before), round 50s, H1 and M15 fractal swings of the last
+120 bars, and the control: a grid of 50s shifted by 13 USD. **A kind turns price** when it is above 50 % by at least
+two standard errors in both parts (2023-09 .. 2024-12, 2025-01 .. 2026-04-17); those kinds become LV3's levels, tested
+by the walk-forward once.
+
+## Each component of LV3 alone - written before it is computed (2026-10-19 01:00 Thai; owner: "focus on the basic correctness of each component before assembling them into a setup or parameters"; `components.py`)
+
+`lvl2.setup_at` was split into `bounce_at` (entry TF, the larger timeframes' trend, the bounce's start, a bounce of
+>= 1 A) and the level step; the split gives the same setup at all 25,023 window minutes of 2026-02-01 .. 03-14, and
+the tests pass. Found on the way: every bounce there had a level in front (3,177 of 3,177) - the level step never
+says no.
+
+The question per component: at the decision (an M1 close), does price go 1 A (the entry TF's ATR) the component's
+way before 1 A the other way, within 120 minutes? From the close, a component with no effect gives 50 %. Data: the
+owner's windows, 2023-09 .. 2026-04-17 (two parts, split at 2025-01-01), every 15th minute (less overlap); the LV3
+signals (3-year table, s 1.5 / n 3) all.
+- **A** every larger timeframe's trend agrees (LV3's own: the timeframes above the entry TF up to H4) -> its way;
+- **A-H** H1 and H4 agree -> their way;
+- **B** A + the bounce from the start (>= 1 A against the trend) -> the trend's way (the pullback resumes);
+- **D** the LV3 signal (B + the level + the M1 legs) -> its way.
+A component carries information when it is off 50 % by at least two standard errors in both parts.
+
+**Result (`out_level_power.txt`, `level_power.parquet`; two look-ahead slips fixed before reading it - the Asian
+range was visible to the 22:00-23:59 UTC bars of the next server day, and swings / ATR could include the touching
+bar; and the first reading compared with 50 % although the touch bar's close often sat beyond the level: each touch
+now has its own no-effect baseline):** no kind of level turns price. Turned minus no-effect, first part / second:
+yesterday's high / low -0.9 / -2.3 points, the 72-hour high / low -2.1 / -1.5, round 50s -1.2 / -2.4, the Asian range
+-1.3 / +0.9, today's high / low so far +0.6 / -1.5 (-3.2 SE, the other sign the first part), H1 swings -0.1 / -0.5,
+M15 swings -0.8 / +0.5; the control grid +3.9 / +2.4 (1.5 SE: the noise). At 1 M15 ATR, gold touching any of these
+levels turns or goes through as a line drawn anywhere would - neither fading levels (LV) nor trading their breaks
+has a premise here.
+
+**Result (`out_components.txt`): no component of LV3 carries direction.** 1 A first, the component's way vs the other
+(no effect 50 %), first part / second: every larger timeframe's trend agreeing 50.3 / 50.1 % (8,555 / 8,075 grid
+minutes); H1 and H4 agreeing 50.3 / 50.0 %; the trend + a bounce of >= 1 A (the pullback to resume) 49.7 / 50.8 %;
+the LV3 signal 47.3 / 49.5 % (634 / 606). With the levels (no kind turns price) every part LV3 is built from measures
+at chance at this scale - which is why it loses its costs whatever its parameters. The one piece measured above
+chance today is the library's lean at the snap times (the setup layer called the side of the next run 57.4 % / 54.8 %
+in the learning half / the exam, walk-forward; too weak to pay a bracket's costs alone).
+
+**Learning log, round 14:** learned - the walk-forward of LV3 lost in the exam (-0.139 R, -198 USD); not the code
+(proven), not the costs (0.04 R), not the close exit (holding is worse), not a stable "wrong side" (the opposite side
+wins the exam, loses the learning half); every component measures at chance (trend, pullback, level, the signal);
+the library's "same picture" is too coarse (pictures, `png/wf_library/`). Changed - the method: each component is
+proven twice (code, and its premise against a no-effect baseline in two parts) before it is assembled (owner).
+Result - LV3 stops as a setup; the components to test next are the ones with a measured or causal lead.
