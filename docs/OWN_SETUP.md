@@ -1448,3 +1448,52 @@ the news blackout not applying to it).
   - A shorter target wins more often (up to 42 %), but not enough to pay for the smaller wins.
   - A wider stop saves few trades and makes each loss larger.
   - BASE's median move in favour (MFE) is 4.7 U; three quarters of its trades reach under 6.7 U.
+
+#### Weapon 4 follow-up: the round number (2026-10-18; `agents/weapon4/notes.md`, rules written before computing)
+
+- **Where the edge sits:** F1's edge is the round 50 (xx00 / xx50) at a fresh extreme.
+  - On design the true grid beats shifted placebo grids by 3-4 SD.
+  - A 24-hour, 5-day or session extreme works as well as the 72-hour one. Yesterday's high / low does not
+    (+0.08 R).
+- **W11** (the round 50 at any of those extremes):
+
+  | | Design | Window |
+  |---|---|---|
+  | All trades | 113 trades (0.19/day), +0.306 R | 77 (0.48/day), +0.149 R, +96 USD, 6/8 months |
+  | Trades beyond F1 | - | 0.37/day, +0.086 R |
+
+- **W11-b1** (W11 with the London session extreme at least 60 minutes old):
+
+  | | Design | Window (the second look at the window) |
+  |---|---|---|
+  | All trades | 100 trades, +0.337 R | 67 (0.41/day), +0.166 R, +89.7 USD, max DD 37.6 USD |
+  | Trades beyond F1 | 73 trades, +0.265 R | 50 (0.31/day), **+0.097 R**, short of +0.15 |
+
+  - Its losers: London 07-12 UTC (-0.29 R), 17-20 UTC (-0.35 R, all the wrong way), April and the calm tape.
+- **Failed:**
+  - A resting limit at the round: -0.16 .. -0.19 R. It fills on the 81-86 % of approaches that go straight
+    through.
+  - USDJPY round numbers: -0.36 R.
+  - Skipping 17-20 UTC, the busy-tape filter and their combinations: none beat W11 on design.
+- **F1 restricted to the round 50 (F1R-b):**
+  - Design v2: +0.864 R on 26 trades. Window v2: +0.600 R, +70.5 USD on 15 trades; the window was seen before,
+    so this is not clean.
+  - Taken into the bot as the half-risk tilt (above).
+
+#### F1's exits checked again (owner, 2026-10-18; `shadow/f1_exit_losses.py`, `f1_scratch_after.py`)
+
+- **The 10-bar scratch** closes a trade at a small loss: on design, 22 trades at an average of -1.27 USD vs
+  -3.69 USD for a full stop.
+  - Without the scratch, 15 more trades end at the full stop and the design total falls from +112.2 to
+    +101.3 USD.
+  - After the scratch, price went on to hit the old stop before the target in 19 of 24 scratched trades
+    (median 17 minutes after the entry). At every check up to 4 hours later the median price was still on the
+    losing side.
+- **The 60-minute exit:**
+  - The trades that reach it are mostly winners: on design, 6 trades at +5.32 USD, 1 losing.
+  - Holding 120 or 240 minutes instead, without the scratch, gives +108.5 and +110.0 USD vs +112.2. Both stay.
+
+#### AI chart reader
+
+Three pilots, about 1.08 USD. The model repeats the trend that F1's rules already read and does not rank F1's
+clear signals (rank correlation +0.01). Stopped; details in `docs/AI_CHART_READER.md`.

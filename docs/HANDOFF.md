@@ -1,7 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-18 (Setup OWN: F1 CONF-72 v2 and S2 in the bot, both disabled; the owner's three: F1, S2,
-RUN-A). This file holds **state only**: rules and conventions live in `CLAUDE.md` and
+Last updated: 2026-10-18 17:30 Thai (Setup OWN: F1 CONF-72 v2 and S2 trade on DEMO since 2026-10-18; commit
+627aa98, not pushed). This file holds **state only**: rules and conventions live in `CLAUDE.md` and
 `docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`, progress in `docs/TICKETS.md` /
 `docs/TICKETS_LEARNING.md`, setup results in `docs/SETUP_REVIEW.md`.
 
@@ -16,13 +16,13 @@ Continue TAA (C:\Users\korap\taa). Chat with me in Thai and give times in Thai t
 in English. Follow CLAUDE.md and the memory rules. Read docs/OWNER_GOALS.md first (my goals and principles),
 then docs/OWN_SETUP.md (Setup OWN, my own trade: the moments when gold runs) and docs/HANDOFF.md.
 
-State (2026-10-17): every earlier setup (V1, F1, S1) is stopped in config.yaml; the bot starts over with Setup
-OWN in the aggressive preset once it passes its gate. DEMO is paused. main is not pushed (I push myself).
+State (2026-10-18): Setup OWN F1 CONF-72 (lane own) and S2 the CPI/NFP straddle (lane news) trade on the DEMO
+stack (aggressive preset); every earlier setup is stopped. LIVE stays off until Phase 14 and my own go-ahead.
+main is not pushed (I push myself).
 
-Next: the plan in docs/OWN_SETUP.md - focus on the bot; backtests cover the latest six months only (we revise
-setups every 3-6 months): the moments dataset for gold 2026-04-14 .. 10-14, the hypotheses H1-H4 and the
-playbook selector fitted on the first three months and judged once on the last three, then the engine setup and
-its backtest. Ask me when the meaning is unclear.
+Next: watch DEMO against the backtest (app.cli demo-track) for about two weeks; more trades a day at >= +0.15 R
+(W11-b1, the round-number lane, misses on the trades it adds: +0.097 R). Backtests are judged from 2026-03-01;
+design before it. Ask me when the meaning is unclear.
 ````
 
 ---
@@ -31,12 +31,18 @@ its backtest. Ask me when the meaning is unclear.
 
 - **The owner's three (2026-10-18):** F1 CONF-72, S2 the CPI / NFP straddle, RUN-A; other news trading last.
   Rounds 11-17 in `docs/OWN_SETUP.md`.
-- **In the bot, disabled** (`config.yaml` lanes `own` and `news`; DEMO only with the owner's go):
+- **In the bot, on DEMO since 2026-10-18 17:08 Thai** (owner: "เปิด DEMO ด้วย F1+S2"; `config.yaml` lanes `own` and
+  `news`, both also in `high_risk.setups`; the applied profile is AGGRESSIVE 7.5 % from the cache; demo equity
+  1,066 USD). The owner asked for LIVE too: refused, Phase 14 is 3/4 and LIVE needs the owner's own `.env`:
   - `setup_own_conf72` (`app/strategy/own_setup.py`): F1 CONF-72 + the 0.5 M15-ATR stop floor; v2 exits
     (`exit_mode: regime`: a runner in a strong-volatility phase, the 10-bar scratch). The v1 engine backtest
     matches the research trade by trade (27/27; the 7 Asia trades were blocked by the 07-20 UTC sessions -
     gold now also 00-02 UTC). New engine pieces: `break_even_target_share`, a lane `min_risk_reward`, the
     strategy hook `manage_position` (backtest, PAPER, DEMO), S/R zones of the backtest from the window only.
+    v2 engine backtest = research 35/35. Half the preset's risk off the round 50 (`off_round: half`,
+    `Signal.risk_scale`). Rejected after measuring: TP at 70 % of the way to the next level with a 10 % wider
+    stop (every form worse on design); the 10-bar scratch and the 60-minute exit stay (scratched trades hit
+    the old stop first 19 of 24 times).
   - `setup_own_s2` (`app/strategy/release_straddle.py`): quote-driven; the calendar `app/news/us_releases.csv`
     (BLS dates to 2027-12); the engine polls quotes every 0.1 s around a release, the entry goes through the
     decision engine, out at the first bar close after the release minute. Tick replay = the research to the cent.
@@ -60,7 +66,13 @@ its backtest. Ask me when the meaning is unclear.
 - **Every earlier setup stopped** (owner, 2026-10-17): V1, F1 and lane `s1` are `enabled: false` in
   `config.yaml` (parameters kept); no setup trades until OWN passes its gate. `high_risk` (aggressive preset) stays
   on for OWN.
-- **DEMO:** paused since 2026-10-16 10:51 Thai (`scripts\demo-tasks.ps1 -Resume` to restart; nothing would trade).
+- **DEMO:** running since 2026-10-18 17:08 Thai with F1 + S2 (`scripts\demo-tasks.ps1 -Pause` to stop). The next
+  S2 release is NFP 2026-11-06 19:30 Thai.
+- **Weapon 4** (`research/2026-10-18-moments/agents/weapon4/`): F1's edge is the round 50 at a fresh extreme.
+  W11-b1 (round 50 at the 72-h / 24-h / 5-day / session extreme) made +0.166 R at 0.41/day on the window, but
+  the trades it adds beyond F1 make only +0.097 R. A limit at the round fails; so does USDJPY. Not in the bot.
+- **AI chart reader** (`docs/AI_CHART_READER.md`): three pilots (Haiku, Opus, Haiku with probabilities), about
+  1.08 of the owner's 5 USD. No information beyond F1's own trend; stopped.
 - **Why the change:** S1 (M1 fade) and TS (M15 structure break) pay only in gold's 2024-26 rally (five years of
   gold: SETUP_REVIEW §23-23.3; docs/OWNER_TRADING.md "Setup TS"). The owner: a setup fitting only some periods is
   normal; the system must see the present and choose.
@@ -73,17 +85,20 @@ its backtest. Ask me when the meaning is unclear.
 - **Data:** gold 2020-09 .. 2023-10 in `data/history_old/FBS-Demo/XAUUSD` (the TS session's store), 2023-08 ..
   2026-10 in `data/history`; FX majors M1 2023-09 .. 2026-10; US100/JP225/US30/US500/XAUAUD M1/M15/H1 from
   2023-08. Backups of `data/history`: `D:/taa-history-backup-2026-10-17`, `-17b`.
-- **Code:** TAA-507 portfolio backtest (`app.cli backtest --portfolio`) merged. Latest migration **0043**. The
-  last full pytest + vitest run was 2026-10-06: due.
+- **Code:** TAA-507 portfolio backtest (`app.cli backtest --portfolio`) merged. Latest migration **0043**. Full
+  pytest 2026-10-18: 3,392 passed after the config-snapshot updates. Vitest: the one failure (six TS parameter
+  texts missing since 10-17) is fixed and its files pass; the full vitest run after the fix is due with the
+  stack paused.
 
 ## Next work
 
-1. Setup OWN (`docs/OWN_SETUP.md`), judged from 2026-03-01 (design before it): the v2 engine backtest against
-   the research (X4 / RM3: +0.219 R, +63 USD), then the owner's go for PAPER / DEMO of `own` and `news`; RUN-A
-   as votes for F1 / S2; fresh releases and bars from 2026-10-14 on as new out-of-sample data.
+1. DEMO of F1 + S2: `app.cli demo-track` against the backtest after about two weeks (with the `-Mt5` env, see
+   RUNBOOK_DEMO). C4 stays 4 U (owner); 6 U / 8 U are measured monthly by backtest.
+   - W11-b1: on design, test whether dropping London 07-12 UTC and calm tape lifts its added trades to +0.15 R.
+   - RUN-A: its robust parts as votes for F1 / S2.
 2. The weekly market-state report and the monthly re-fit (the owner's review cadence).
 3. Owner decisions pending: merge the two branches or not; the account size for the daily goal (100 or 150 USD).
-4. Full pytest + vitest once (stack paused).
+4. Full vitest once with the stack paused.
 5. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
    explicit go-ahead. Never enable LIVE on the owner's behalf; the aggressive preset refuses LIVE in code.
 
