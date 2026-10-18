@@ -1354,3 +1354,88 @@ lump that breaks so you cannot tell what to fix"):
 - Next, one part at a time, each checked before the next: (a) every candidate's own trade result after the costs, its
   base rate by timeframe and kind - no model; (b) the H1 events alone, why they hold (by eye too); (c) the model
   learning the after-cost result - one change from this one; (d) walk-forward month by month for more unseen trades.
+
+### The trades by pattern (04:52 Thai; owner: "how many of each - M, W, hunting?")
+Side-blind p >= 0.52, the trades one at a time (candidates: every event in the part, both entries of a double and both
+readings of a pierce; totals asserted against the run's own file):
+
+| the exam | candidates | picked | trades (turn / neck) | win | R | USD |
+|---|---|---|---|---|---|---|
+| W (buy) | 1,996 | 336 | 237 (163 / 74) | 0.515 | +0.018 | +159 |
+| M (sell) | 2,043 | 444 | 309 (220 / 89) | 0.502 | -0.006 | -57 |
+| a hunt below a low, bought back | 719 | 14 | 13 | 0.538 | +0.066 | +17 |
+| a hunt above a high, sold back | 677 | 3 | 2 | 0.000 | -1.000 | -20 |
+| a high broken, bought on | 677 | 58 | 24 | 0.542 | +0.067 | -2 |
+| a low broken, sold on | 719 | 79 | 44 | 0.455 | -0.101 | -43 |
+| the first touch of an H1 / H4 level | 63 | 0 | 0 | - | - | - |
+
+Held back: W 460 trades R +0.023, M 317 R +0.028, the hunts bought / sold back 26 + 6, the breaks 62 + 25. M and W are
+87 % of the trades; the model almost never takes a hunt's reversal (17 of 1,396 in the exam). By timeframe in the
+exam: M and W on H1 23 trades, win 0.73 / 0.75, +176 USD; **M on M15 71 trades, win 0.408, -150 USD** - the largest hole.
+
+### Part (a): every candidate after the costs, no model (04:56 Thai; `base_after_costs.py`, `out_base_after_costs.txt`)
+42,361 candidates as model_trades.py's trade (its 629 exam trades re-found equal); the learning half only printed.
+- **No pattern on any timeframe earns after the costs in both learning parts** (2023-11 .. 2025-10-15 and the held-back
+  2025-10-16 .. 2026-04-17); part 1 R -0.18 .. -0.28 by pattern, part 2 -0.03 .. -0.13. A few part-2 cells are just
+  above zero (a low hunted and bought back on M15 / M30 +0.006 / +0.024, a high hunted and sold back on M30 +0.066,
+  the H1 breaks +0.02 / +0.03), none in part 1.
+- Why part 1 is so much worse - checked, not a bug: the M5 events' mid-price 1-ATR passage wins 0.49-0.52 in every
+  quarter, but the M5 stop (one ATR) was 1.0 USD in 2023-Q4 / 2024-Q1 against about 0.54 USD of costs (the spread
+  column + 0.08 + 0.07 slippage + 0.15 stop slippage): **the costs were 55 % of the stop**, 30-35 % in 2024-Q2 .. Q4,
+  9-15 % from 2025-Q4 on (stops 4-7 USD). The after-cost win follows that share exactly (0.29 -> 0.46).
+- So: the events alone are a coin before the costs (known), and a one-ATR stop on a small timeframe is too small for
+  gold's costs - the owner's floor (a target and a stop of at least 5 USD; the entry timeframe moves up when ATR falls)
+  is needed. Next part: the same table with the stop and the target at least 5 USD, then the larger timeframe's edge
+  against the middle (the owner: the weight is the place).
+
+### Part (b1): the stop and the target at least 5 / 10 USD (05:00 Thai; owner: "do it - widen the stop, grow the account, whatever it takes - say so"; `base_after_costs.py 5 | 10`, `out_base_floor5.txt`, `out_base_floor10.txt`)
+One change: the stop and the target max(one ATR, FLOOR); the no-floor re-run gives the same tables line for line.
+
+| learning half, every candidate | R a trade | buys | sells | exits stop / win / time |
+|---|---|---|---|---|
+| one ATR (part a) | -0.198 | -0.170 | -0.227 | 0.58 / 0.40 / 0.02 |
+| at least 5 USD | -0.085 | -0.044 | -0.128 | 0.46 / 0.40 / 0.14 |
+| at least 10 USD | -0.047 | -0.008 | -0.087 | 0.31 / 0.29 / 0.40 |
+
+The floor cuts the cost loss by more than half (part 1's small stops); in part 2 (stops already 5-7 USD) it changes
+little. Still no pattern earns in both parts (5 USD: one cell, the H1 breaks bought on, +0.002 / +0.023). Buys lose less
+than sells throughout - gold doubled over the learning half.
+
+### Part (b2): the floor-5 trades by the place on H1 / H4 (05:01 Thai; `place_after_costs.py`, `out_place_floor5.txt`)
+Counts checked: the bins add up to each group; a hunt at its far edge is the same event as a break at its own edge.
+- **Doubles at their own edge lose the most:** a W at / below the low of the H1 range, an M at / above its high:
+  R -0.148 / -0.194 (H1), -0.139 / -0.146 (H4). The textbook "W at support" is buying a range that is breaking down.
+- Doubles at the far edge (a W near the top of the range, an M near its bottom - with the larger timeframe's push)
+  lose the least: -0.012 / -0.068 (H1), -0.011 / -0.127 (H4). The breaks at the far edge of H1 (a high broken near
+  the top of the range, bought on): -0.006 / +0.013.
+- Hunts bought / sold back 0.5-1 H4 ATR from the level they lean on: +0.039 / +0.142 (461 / 108 trades, se 0.042 /
+  0.094) - the only bin above zero in both parts, not yet beyond chance.
+- One layer of place alone gives no after-cost edge; the side with the larger timeframe's push loses least.
+
+### Part (c): the model learns the after-cost result - written before it is computed (05:03 Thai; `model_cost.py`)
+One change from model.py's side-blind model: the label is the floor-5 trade's own result after the costs (R > 0), every
+candidate kept (no "none" rows to drop: every trade ends); the features, the split (fit to 2025-10-15, held back to
+2026-04-17), the trees and their settings stay. The trades are the floor-5 trades, one at a time (model_trades.take).
+**The threshold:** of p >= 0.40, 0.45, 0.50, 0.55, 0.60, the lowest whose held-back trades (one at a time) reach
+R >= +0.05 with at least 150 trades; none -> the exam is not read. The exam: that threshold once, week by week.
+**Part (c), the result (05:02 Thai; `out_model_cost_floor5.txt`):** a profitable floor-5 trade 0.457 fit / 0.465 held
+back; AUC held back 0.522; held-back trades one at a time: p >= 0.40 / 0.45 / 0.50 / 0.55 / 0.60 -> 2,827 / 2,300 /
+971 / 199 / 36 trades at R -0.068 / -0.061 / -0.054 / -0.001 / +0.066. **No threshold reaches +0.05 R with 150
+trades: by the rule the exam is not read.**
+
+### The two shapes that held in the exam, as trades with the costs (05:03 Thai; the learning half only)
+The premise again on these rows (mid-price 1-ATR passage): the sweep double at its turn 0.529 / 0.523, the 0.25-1 ATR
+pierce closed back, followed 0.544 / 0.538 (parts 1 / 2). After the costs, R a trade, parts 1 / 2:
+
+| shape, timeframe | stop 1 ATR | stop >= 5 USD | stop >= 10 USD |
+|---|---|---|---|
+| sweep double, all (1,822 / 472) | -0.199 / -0.037 | -0.075 / -0.023 | -0.050 / -0.001 |
+| pierce followed, all (1,102 / 280) | -0.162 / +0.008 | -0.053 / +0.017 | -0.027 / +0.000 |
+| pierce followed, M15 (270 / 66) | +0.006 / -0.053 | +0.024 / -0.023 | +0.005 / +0.016 |
+| pierce followed, M30 (135 / 24) | +0.093 / -0.006 | +0.056 / -0.006 | -0.012 / -0.005 |
+| pierce followed, H1 (75 / 14) | +0.039 / +0.195 | +0.076 / +0.195 | +0.020 / +0.195 |
+
+The 3-4.5-point edges are about the costs' size: break-even at best, far from +0.15 R. The costs are 1-3 % of an H1 /
+H4 stop (20-40 USD) against 9-55 % of an M5 one, and the strongest lead so far is the model's H1 picks (held back
+R +0.155 on 77, the exam +0.411 on 51). Next: the events on H1 and H4 only (H4 added to explore / combine), more of
+them through walk-forward month by month - the stop 20-40 USD at 0.01 lot.

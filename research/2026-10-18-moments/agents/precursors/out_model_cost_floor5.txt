@@ -1,0 +1,11 @@
+floor 5 USD; rows: fit 28270, held back 7068 (from 2025-10-15), exam 7023; a profitable trade: fit 0.457, held back 0.465; AUC held back 0.522
+
+held back, the picks one at a time:
+  th  picks  trades   win      R       usd
+0.40   6551    2827 0.461 -0.068 -1368.071
+0.45   4648    2300 0.465 -0.061  -960.798
+0.50   1542     971 0.471 -0.054  -278.925
+0.55    312     199 0.492 -0.001    -4.934
+0.60     64      36 0.528  0.066   137.983
+
+no threshold reaches R >= 0.05 with >= 150 trades: the exam is not read
