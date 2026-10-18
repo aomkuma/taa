@@ -1,0 +1,11 @@
+cells: {'L3_n5_th0.2': 2081, 'L3_n5_th0.4': 384, 'L3_n10_th0.2': 1970, 'L3_n10_th0.4': 327, 'L6_n5_th0.2': 2653, 'L6_n5_th0.4': 939, 'L6_n10_th0.2': 1805, 'L6_n10_th0.4': 516}
+  L3_n5_th0.2 learning: 1390 trades, win 0.358, R -0.029, USD -649.0
+  L3_n5_th0.4 learning: 255 trades, win 0.345, R -0.058, USD -242.9
+  L3_n10_th0.2 learning: 1284 trades, win 0.357, R -0.033, USD -685.8
+  L3_n10_th0.4 learning: 201 trades, win 0.333, R -0.079, USD -260.3
+  L6_n5_th0.2 learning: 1895 trades, win 0.361, R -0.028, USD -868.3
+  L6_n5_th0.4 learning: 629 trades, win 0.372, R -0.013, USD -138.5
+  L6_n10_th0.2 learning: 1195 trades, win 0.361, R -0.028, USD -535.8
+  L6_n10_th0.4 learning: 287 trades, win 0.376, R -0.040, USD -188.0
+2024-05 .. 2026-04-17 (learning): 709 trades (1.38 a weekday), win 0.330, R -0.063, USD -727.3, max DD 815.6, worst -21.58, longest losing streak 13
+2026-04-18 .. 2026-10-16 (the exam): not shown (a variant is chosen on the learning half)

@@ -9,7 +9,12 @@ against the last top / bottom; L6 = L3 + the same 120-bar way, sizes within 1.4x
 edge. The trade as v2b (entry TF by ATR, stop one entry-TF ATR >= 5 USD, target 10 U, 12 entry-TF bars, the auditor's
 costs, one position at a time); the cell (level, N_MIN, THETA) chosen walk-forward month by month (wf.walk_forward).
 
-    .venv/Scripts/python research/2026-10-18-moments/agents/precursors/v2s.py
+    .venv/Scripts/python research/2026-10-18-moments/agents/precursors/v2s.py [be=0.5] [stop=12] [exam]
+
+Variants of the trade for the owner's losers: be=X - the stop to break-even once the trade has gone X of the way to
+the target (kind 2, "right way, fell short"); stop=Y - the stop at least Y USD (kind 3, "entered too early"; owner,
+2026-10-19: "take the profitable one, never mind my account's size"). A variant reads the leans of the plain run
+(v2s_leans.parquet) and prints only the learning half unless "exam" is given.
 """
 
 from __future__ import annotations
@@ -66,23 +71,33 @@ def main() -> None:
     from v2b import TFS, plan  # noqa: PLC0415
 
     plib.gold.below_normal_priority()
+    args = sys.argv[1:]
+    be = next((float(a[3:]) for a in args if a.startswith("be=")), 99.0)
+    floor = next((float(a[5:]) for a in args if a.startswith("stop=")), 5.0)
+    tag = ("" if be == 99.0 else f"_be{be:g}") + ("" if floor == 5.0 else f"_stop{floor:g}")
+    show_exam = tag == "" or "exam" in args
     T = pd.read_parquet(HERE / "moments_3y.parquet")
-    SH = np.load(HERE / "moment_shapes_3y.npy").astype(float)
-    day0 = pd.Timestamp("2000-01-01", tz="Asia/Bangkok")
-    day = ((pd.DatetimeIndex(T.t_dec).tz_convert("Asia/Bangkok").normalize() - day0).days).to_numpy()
-    cls = T.cls.to_numpy().astype(str)
     snaps = np.nonzero((T.kind == "snap").to_numpy())[0]
-    lv = situation_leans(T, SH, day, cls, snaps, [TFS.index(tf) for tf in TRG])
-    L = pd.DataFrame({"row": snaps, **{f"{k}_n": v[:, 0] for k, v in lv.items()}, **{f"{k}_lean": v[:, 1] for k, v in lv.items()}})
-    L.to_parquet(HERE / "v2s_leans.parquet")
-    # the same leans as rarity_lean.py's for the snaps it measured (levels 3 and 6 of the trigger layer)
-    D = pd.read_parquet(HERE / "rarity_lean_snaps.parquet")
-    D = D[(D.layer == "trg") & D.level.str.strip().isin(["3 +last top/bottom", "6 +position"])]
-    for lev, name in (("L3", "3 +last top/bottom"), ("L6", "6 +position")):
-        d = D[D.level.str.strip() == name].merge(L, on="row")
-        assert len(d) and (d.n_days == d[f"{lev}_n"]).all(), lev
-        assert np.allclose(d.lean, d[f"{lev}_lean"], equal_nan=True, atol=1e-12), lev
-    print("leans: every snap", len(snaps), "; equal to rarity_lean's where it measured", flush=True)
+    if tag:  # a variant of the trade: the leans as computed and checked by the plain run
+        L = pd.read_parquet(HERE / "v2s_leans.parquet")
+        assert (L.row.to_numpy() == snaps).all()
+        lv = {k: L[[f"{k}_n", f"{k}_lean"]].to_numpy() for k in LEVELS}
+    else:
+        SH = np.load(HERE / "moment_shapes_3y.npy").astype(float)
+        day0 = pd.Timestamp("2000-01-01", tz="Asia/Bangkok")
+        day = ((pd.DatetimeIndex(T.t_dec).tz_convert("Asia/Bangkok").normalize() - day0).days).to_numpy()
+        cls = T.cls.to_numpy().astype(str)
+        lv = situation_leans(T, SH, day, cls, snaps, [TFS.index(tf) for tf in TRG])
+        L = pd.DataFrame({"row": snaps, **{f"{k}_n": v[:, 0] for k, v in lv.items()}, **{f"{k}_lean": v[:, 1] for k, v in lv.items()}})
+        L.to_parquet(HERE / "v2s_leans.parquet")
+        # the same leans as rarity_lean.py's for the snaps it measured (levels 3 and 6 of the trigger layer)
+        D = pd.read_parquet(HERE / "rarity_lean_snaps.parquet")
+        D = D[(D.layer == "trg") & D.level.str.strip().isin(["3 +last top/bottom", "6 +position"])]
+        for lev, name in (("L3", "3 +last top/bottom"), ("L6", "6 +position")):
+            d = D[D.level.str.strip() == name].merge(L, on="row")
+            assert len(d) and (d.n_days == d[f"{lev}_n"]).all(), lev
+            assert np.allclose(d.lean, d[f"{lev}_lean"], equal_nan=True, atol=1e-12), lev
+        print("leans: every snap", len(snaps), "; equal to rarity_lean's where it measured", flush=True)
     m = jlib.m1_frame("XAUUSD")
     o, h, lo, c = (m[k].to_numpy(float) for k in ("open", "high", "low", "close"))
     sp = m.spread.to_numpy(float) * 0.01 + 0.08
@@ -112,10 +127,11 @@ def main() -> None:
             if side == 0 or j0 >= len(o) or j0 <= busy or ot_ns[j0] - s_ns[e] > 5 * 60 * 10**9:
                 continue
             etf, sl, tp = plan({tf: atr_at[tf][e] for tf in atr_at}, c[j0 - 1])
+            sl = max(sl, floor)
             ss = 0.20 if ny[j0] else 0.15
             entry = o[j0] + sp[j0] + 0.07 if side > 0 else o[j0] - 0.07
             t_end = int(ot_ns[j0] + 12 * MINS[etf] * NS_MIN)
-            x_ = manage(o, h, lo, c, sp, ot_ns, j0, side, entry, sl, tp, 0.0, *empty, 99.0, t_end, 0.07, ss)
+            x_ = manage(o, h, lo, c, sp, ot_ns, j0, side, entry, sl, tp, 0.0, *empty, be, t_end, 0.07, ss)
             rows.append(dict(t=m.index[j0 - 1], j0=j0, row=int(e), side=side, etf=etf, sl=sl, tp=tp, exit=x_["exit"],
                              pnl=x_["pnl"], R=x_["pnl"] / (sl + ss), xj=x_["xj"], snap=T.name.iloc[e], n_days=int(n),
                              lean=float(x)))
@@ -127,22 +143,23 @@ def main() -> None:
     pd.set_option("display.width", 250)
     print("cells:", {k: len(v) for k, v in cells.items()})
     for k, v in cells.items():  # every cell over each half, before the walk-forward picks among them
-        for name, part in (("learning", v[v.t < plib.EXAM_START]), ("exam", v[v.t >= plib.EXAM_START])):
+        for name, part in (("learning", v[v.t < plib.EXAM_START]), ("exam", v[v.t >= plib.EXAM_START]))[: 2 if show_exam else 1]:
             print(f"  {k} {name}: {len(part)} trades, win {(part.exit == 'win').mean():.3f}, R {part.R.mean():+.3f}, "
                   f"USD {part.pnl.sum():+.1f}")
     WF, months = wf.walk_forward(cells, "2024-05", "2026-10")
-    WF.to_parquet(HERE / "v2s_wf_trades.parquet")
-    months.to_csv(HERE / "v2s_wf_months.csv", index=False)
-    print(months.to_string(index=False))
-    Wk = wf.weekly(WF[WF.t >= plib.EXAM_START])
-    Wk.to_csv(HERE / "v2s_wf_exam_weeks.csv", index=False)
-    print("\nthe exam week by week (Thai weeks, Monday):")
-    print(Wk.to_string(index=False))
+    WF.to_parquet(HERE / f"v2s{tag}_wf_trades.parquet")
+    months.to_csv(HERE / f"v2s{tag}_wf_months.csv", index=False)
+    if show_exam:
+        print(months.to_string(index=False))
+        Wk = wf.weekly(WF[WF.t >= plib.EXAM_START])
+        Wk.to_csv(HERE / f"v2s{tag}_wf_exam_weeks.csv", index=False)
+        print("\nthe exam week by week (Thai weeks, Monday):")
+        print(Wk.to_string(index=False))
     split, end = plib.EXAM_START, plib.EXAM_END
     for name, part, a, b in (("2024-05 .. 2026-04-17 (learning)", WF[WF.t < split], "2024-05-01", "2026-04-18"),
                              ("2026-04-18 .. 2026-10-16 (the exam)", WF[(WF.t >= split) & (WF.t < end)], "2026-04-18", "2026-10-17")):
-        if part.empty:
-            print(f"{name}: no trades")
+        if part.empty or ("exam" in name and not show_exam):
+            print(f"{name}: no trades" if part.empty else f"{name}: not shown (a variant is chosen on the learning half)")
             continue
         eq = part.pnl.cumsum()
         print(f"{name}: {len(part)} trades ({len(part) / np.busday_count(a, b):.2f} a weekday), win "

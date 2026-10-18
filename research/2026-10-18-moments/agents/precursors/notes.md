@@ -1001,3 +1001,62 @@ the target 5 / 10 U, out after 15 / 30 minutes - **every one of the 16 negative 
 -0.358 R; the S = 3 ones the worst, M1 noise). All 28 entry variants and the snap entry lose on the learning half;
 the exam was not run for any of them. **V2's levers on the entry and the exit are spent** - to be concluded with the
 owner.
+
+## The library learns the trade's result - written before it is computed (2026-10-19 02:30 Thai; owner: "the library learns the real trade result")
+
+The owner chose (2026-10-19, about 02:30 Thai): every library moment keeps the real result of V2's trade - the R of a buy
+and of a sell from it - instead of "did it run", and the bot trades only where the same situation's earlier results
+were positive.
+- **The labels (`trade_labels.py`):** for every snap, a buy and a sell with V2's trade (v2s: entry at the next M1 open
+  within 5 minutes, the entry TF the smallest of M1 / M5 / M15 / M30 whose ATR covers 5 USD, the stop one entry-TF ATR
+  >= 5 USD, the target 10 U, out after 12 entry-TF bars, the auditor's costs): R_buy, R_sell. Known when the trade
+  closes (at most 6 hours), long before the evidence's 7 days.
+- **Evidence from snaps only:** the starts of 10 U runs are successes picked after the fact - a buy from a run-up's
+  start wins by definition, and the look-alikes that did not run are not in the library - so they would make every
+  situation look better than it is; the snaps are the bot's own decision moments, all outcomes kept.
+- **The evidence at a decision:** the earlier snaps (>= 7 days before) in the same situation, one per day (the day's
+  first), their mean R_buy and mean R_sell; trade the better side when >= N_MIN days and its mean R >= THETA.
+- **The situations (fixed now):** each layer (context H4+H1, setup M30+M15, trigger M5+M1) at L3 (smoothness, the
+  deepest pullback, the close against the last top / bottom), L6 (+ the 120 bars' way, size, position) and L7 (+ the
+  swing structure); N_MIN 5 / 10; THETA 0.0 / 0.1 / 0.2.
+- **The premise first (`r_lean.py`), both halves (learning 2024-05 .. 2026-04-17, the exam 2026-04-18 .. 10-16),
+  before any trade backtest:** at the snaps where the evidence picks a side, the realized R of that side, minus the
+  no-effect baseline (the mean of R_buy and R_sell at the same snaps - a coin's side), with the error by day; and
+  the placebo (the same evidence against the next trading day's same-time snap). A premise holds only when the edge
+  is positive beyond its error in both halves; then the walk-forward trades (one position at a time, the cell chosen
+  month by month), the exam week by week.
+
+**The premise's result (`out_r_lean.txt`, `r_lean_premise.csv`; every layer's evidence recounted independently for
+300 snaps, all equal; tests `test_r_lean.py` by hand, planted bugs 9 of 9):** the trade of every snap loses about
+-0.08 R on a coin's side in both halves (learning: buy -0.037, sell -0.114; the exam: buy -0.128, sell -0.030;
+`out_trade_labels.txt`). The library's pick beats the coin most at the trigger layer, L6: e.g. N_MIN 5, THETA 0.2 -
+edge +0.059 (se by day 0.022) learning, +0.083 (0.046) the exam - but **the R actually earned is -0.002 / +0.014**,
+and in the exam the placebo (the same pick against the next day's snap) is +0.070, as large as the edge: part of it
+is a trend of several days, not the moment. No cell earns a clearly positive R in both halves; ctx and set:
+nothing stable. The premise does not hold for a setup (the goal is >= +0.15 R).
+
+## Why V2s's losers lost - the owner's three kinds (2026-10-19 ~02:50 Thai; `v2_loser_kinds.py`, test by hand)
+
+Every walk-forward trade stopped before its target, against a coin's side (the opposite trade from the same snap,
+the same stop and target; `out_v2_loser_kinds.txt`):
+
+| the exam (278 trades) | V2s | a coin's side |
+|---|---|---|
+| 1 wrong way | 85 (31 %), -644 USD, median 0.16 of the target first | 103 (37 %) |
+| 2 right way, fell short | 31 (11 %), -236 USD, median 0.63 of the target first | 28 (10 %) |
+| 3 right way, entered too early | 49 (18 %), -336 USD; a stop of a median 11.5 USD would have survived | 37 (13 %) |
+| a time exit at a loss | 12, -33 USD | 4 |
+| won / a time exit in profit | 101 (36 %), +1,008 USD | 106 (38 %) |
+
+V2s picks the wrong way less often than a coin (85 vs 103; learning 143 vs 154) but enters too early more often;
+the exam -240 USD vs the coin's -142 (learning -39 vs -323).
+
+**Each kind attacked (the learning half only; `out_v2s_*.txt`, `out_v2e_learning.txt`):**
+- kind 3 (too early): a dip limit (8 variants) -0.025 .. -0.141 R; an M1 turn (4) -0.160 .. -0.210; a stop order
+  the lean's way (16) -0.037 .. -0.358; **a wider stop** (owner, 2026-10-19 ~02:45 Thai: "take the profitable one,
+  never mind my account's size"): at least 8 / 12 / 16 USD -0.005 / -0.026 / -0.021 R (the best cell +0.013);
+- kind 2 (fell short): **break-even at half the target** -0.037 R; with the wider stops -0.050 / -0.064 / -0.063;
+- kind 1 (wrong way): the side from the earlier runs' way (V2s) or from the earlier trades' results (the premise
+  above) - better than a coin, not enough to earn;
+- every kind: no target, out after 5-60 minutes - negative after the costs.
+**No variant of the trade earns on the learning half; the exam was run for none of them.**

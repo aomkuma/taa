@@ -1,0 +1,3 @@
+labels: 15200 snaps, 15160 with a trade; equal to v2s's 723 trades
+learning: buy R -0.037 (win 0.372), sell R -0.114 (win 0.345), a coin's side -0.076
+exam: buy R -0.128 (win 0.316), sell R -0.030 (win 0.353), a coin's side -0.079

@@ -3,7 +3,7 @@
 The owner's goals and principles come first: `docs/OWNER_GOALS.md`. This file holds **the current state** of Setup
 OWN: what trades in the bot, the windows and the method, and the research in progress. Every earlier round (the
 hypotheses written before their outcome, then the results) is kept in `docs/OWN_SETUP_ROUNDS.md`. Results describe
-the past, never a promise. Last update: 2026-10-19 02:15 Thai time.
+the past, never a promise. Last update: 2026-10-19 02:12 Thai time.
 
 ## In the bot (DEMO since 2026-10-18 17:08 Thai; LIVE off)
 
@@ -89,7 +89,7 @@ bot match the chart in front of it to any researched result and decide whether t
   3 / 5 USD away, an M1 turn, a stop order the lean's way; 28 variants): every one negative on the learning half;
   the exam not run. The mean move the lean's way, held 5-60 minutes, is about zero - negative after costs at every
   holding time: the situation tells the way of the next big move, not the average move.
-- **Status (2026-10-19 02:15 Thai):** V2's levers on the entry and the exit are spent; to be concluded with the
+- **Status (2026-10-19 02:12 Thai):** V2's levers on the entry and the exit are spent; to be concluded with the
   owner. Details: `research/2026-10-18-moments/agents/precursors/notes.md`.
 
 ## Stopped: LV3 - the owner's reading of the chart (2026-10-18)
