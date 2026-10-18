@@ -1439,3 +1439,38 @@ The 3-4.5-point edges are about the costs' size: break-even at best, far from +0
 H4 stop (20-40 USD) against 9-55 % of an M5 one, and the strongest lead so far is the model's H1 picks (held back
 R +0.155 on 77, the exam +0.411 on 51). Next: the events on H1 and H4 only (H4 added to explore / combine), more of
 them through walk-forward month by month - the stop 20-40 USD at 0.01 lot.
+
+## The owner's cut - two or three trades a day, the heavy and wrong-way losers out (2026-10-19 05:07 Thai; owner: "keep two or three trades a day on average; take out the ones that lose a lot, the wrong-way ones, and run again")
+**Step 1 (`losers.py`, `out_losers_floor5.txt`; the floor-5 trades, learning only).** Buckets below -0.10 R a trade in
+both parts: against the H1 swing structure (-0.112 / -0.116; against H1 and H4 -0.109 / -0.130), the late session
+17-24 UTC = 00-07 Thai (-0.118 / -0.121), the first touches of an H1 / H4 level (-0.206 / -0.128), and M (sells)
+(-0.130 / -0.101). The sells are not cut by side: both learning parts are rising gold (2,000 -> 5,000), the exam
+falls - a side rule would be a bet on the drift; a sell against the structure is cut with the rest.
+**Steps 2-3 (`cut.py`, tests `test_cut.py`: the three buckets by hand, one position and one trade a session, a busy
+position passing the session on, the exit bar still busy; planted bugs 7 of 7 after the fourth test was added - the
+first three tests missed "the exit bar free").** Part 1 / part 2:
+- every candidate one at a time: 13.2 / 22.1 trades a weekday, R -0.092 / -0.082;
+- the cut (15,228 of 28,283 candidates kept): 9.3 / 14.3 a weekday, R -0.068 / -0.082;
+- + one trade a session (the first that qualifies): 2.95 / 2.92 a weekday, **R -0.140 / -0.151** - worse: the
+  first event of a session is its open (London -0.19, New York -0.17).
+- Checked the worst trade (-92.83 USD): an H1 stop of one ATR in the 2026-01-29 .. 02-02 crash (H1 ATR 70-125 USD);
+  every loser is exactly -1 R, none beyond 1.2 R.
+- After the cut by timeframe: M5 -0.075 / -0.079 (the costs), M15 -0.054 / -0.025, M30 -0.050 / -0.022, **H1 -0.013 /
+  +0.033**; the minutes since a session's open show no steady pattern.
+**Step 3 again - written before it is computed:** the cut plus the timeframe floor: (A) M15 and up, (B) M30 and up,
+(C) H1 only, one position at a time; (D) M15 and up with one trade a session. Chosen: the highest of min(R part 1,
+R part 2) among those with at least 1.5 trades a weekday in part 2; the exam is read once if that minimum is above 0.
+**Step 3 again, the result (05:12 Thai; `out_cut_learn.txt`), part 1 / part 2:**
+
+| | trades a weekday | R a trade | USD at 0.01 lot | max DD | longest losing streak |
+|---|---|---|---|---|---|
+| A: M15 and up | 5.1 / 5.6 | -0.059 / -0.049 | -783 / -530 | 841 / 855 | 12 / 9 |
+| **B: M30 and up** | **2.7 / 2.8** | **-0.056 / -0.028** | -488 / -99 | 637 / 379 | 9 / 6 |
+| C: H1 only | 1.1 / 1.0 | -0.072 / +0.016 | -217 / -6 | 385 / 231 | 12 / 7 |
+| D: M15 and up, one a session | 2.6 / 2.5 | -0.065 / -0.026 | -398 / -97 | 476 / 307 | 10 / 6 |
+
+By the rule: B (the highest minimum, -0.056, with 2.8 trades a weekday). **Its minimum is below 0: the exam is not
+read.** Inside B nothing loses in both parts any more - every pattern, session and H1 / H4 flow bucket changes sign
+between the parts (W +0.021 / -0.133, M -0.088 / +0.002, the high hunted and sold back -0.187 / +0.094): a further
+cut would follow noise. The loss steps so far (learning, R a trade): every candidate at one ATR -0.198 -> a 5-USD
+floor -0.085 -> the owner's cut -0.068 / -0.082 -> B -0.056 / -0.028 at 2.7 a day.

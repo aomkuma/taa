@@ -1,0 +1,94 @@
+floor-5 trades, learning; part 1 = 2023-11 .. 2025-10-15, part 2 = 2025-10-16 .. 2026-04-17; way / structure +1 with the trade, -1 against, 0 flat
+
+by dir:
+         n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+dir                                                                  
+buy   14334 -0.036     0.425  3580 -0.072     0.518             False
+sell  13949 -0.138     0.472  3475 -0.086     0.531             False
+
+by H1_way:
+           n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+H1_way                                                                 
+-1      12862 -0.097     0.457  3215 -0.108     0.540             False
+ 0       2624 -0.092     0.428   578 -0.097     0.533             False
+ 1      12797 -0.074     0.444  3262 -0.047     0.507             False
+
+by H4_way:
+           n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+H4_way                                                                 
+-1      12617 -0.095     0.456  3249 -0.065     0.520             False
+ 0       3103 -0.116     0.420   555 -0.051     0.508             False
+ 1      12563 -0.071     0.448  3251 -0.098     0.531             False
+
+by H1+H4 way:
+             n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+H1+H4 way                                                                
+-1 / -1    7996 -0.099     0.464  1749 -0.109     0.541             False
+-1 / 0     1399 -0.106     0.427   256 -0.047     0.508             False
+-1 / 1     3467 -0.090     0.453  1210 -0.121     0.545             False
+0 / -1     1135 -0.045     0.415   257 -0.110     0.545             False
+0 / 0       376 -0.055     0.335    74 -0.022     0.486             False
+0 / 1      1113 -0.152     0.473   247 -0.105     0.534              True
+1 / -1     3486 -0.103     0.452  1243  0.005     0.486             False
+1 / 0      1328 -0.143     0.438   225 -0.065     0.516             False
+1 / 1      7983 -0.051     0.442  1794 -0.081     0.521             False
+
+by H1_struct:
+             n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+H1_struct                                                                
+-1         9382 -0.112     0.463  2356 -0.116     0.542              True
+ 0         9422 -0.090     0.449  2294 -0.070     0.519             False
+ 1         9479 -0.058     0.434  2405 -0.051     0.511             False
+
+by H4_struct:
+             n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+H4_struct                                                                
+-1         9633 -0.101     0.457  2316 -0.076     0.525             False
+ 0         8892 -0.104     0.458  2335 -0.097     0.534             False
+ 1         9758 -0.056     0.432  2404 -0.064     0.515             False
+
+by H1+H4 structure:
+                   n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+H1+H4 structure                                                                
+-1 / -1          4018 -0.109     0.469  1031 -0.130     0.553              True
+-1 / 0           2815 -0.127     0.465   752 -0.177     0.573              True
+-1 / 1           2549 -0.102     0.452   573 -0.011     0.483             False
+0 / -1           3069 -0.118     0.459   742 -0.001     0.487             False
+0 / 0            3226 -0.120     0.472   816 -0.085     0.526             False
+0 / 1            3127 -0.031     0.415   736 -0.124     0.545             False
+1 / -1           2546 -0.069     0.435   543 -0.075     0.523             False
+1 / 0            2851 -0.064     0.436   767 -0.032     0.505             False
+1 / 1            4082 -0.045     0.432  1095 -0.052     0.511             False
+
+by pattern:
+                                  n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+pattern                                                                                       
+M (sell)                        8018 -0.130     0.461  2022 -0.101     0.538              True
+W (buy)                         8489 -0.036     0.417  2146 -0.079     0.516             False
+first touch of an H1/H4 level    362 -0.206     0.558    77 -0.128     0.558              True
+high broken -> buy on           3073 -0.021     0.423   750 -0.086     0.531             False
+hunt above a high -> sell back  3073 -0.156     0.487   750 -0.034     0.501             False
+hunt below a low -> buy back    2634 -0.051     0.451   655 -0.036     0.510             False
+low broken -> sell on           2634 -0.133     0.481   655 -0.090     0.537             False
+
+by tf:
+        n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+tf                                                                  
+H1    1553 -0.036     0.396   347 -0.022     0.429             False
+M15   6199 -0.083     0.456  1407 -0.067     0.520             False
+M30   3026 -0.071     0.450   746 -0.051     0.493             False
+M5   17505 -0.095     0.450  4555 -0.092     0.538             False
+
+by session:
+            n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+session                                                                 
+Asia      9322 -0.074     0.433  2124 -0.042     0.508             False
+London    5955 -0.086     0.484  1343 -0.119     0.549             False
+New York  7743 -0.081     0.496  2050 -0.060     0.520             False
+late      5263 -0.118     0.365  1538 -0.121     0.531              True
+
+by inwin:
+          n1     R1  stopped1    n2     R2  stopped2  both_below_-0.10
+inwin                                                                 
+False  10384 -0.093     0.429  2885 -0.078     0.523             False
+True   17899 -0.082     0.460  4170 -0.080     0.525             False

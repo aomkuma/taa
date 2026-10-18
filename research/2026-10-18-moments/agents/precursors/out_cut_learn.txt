@@ -1,0 +1,22 @@
+
+part 1 (2023-11 .. 2025-10-15)
+  step 0, every candidate one at a time:      6722 trades (13.15 a weekday), win 0.404, R -0.092, USD -3384.0, lowest running total -3433.3, max DD 3454.1, worst -20.83, longest losing streak 14, buys 3277 / sells 3445
+  step 2, the cut (15228 of 28283 candidates): 4772 trades (9.34 a weekday), win 0.431, R -0.068, USD -1659.5, lowest running total -1659.5, max DD 1669.4, worst -21.83, longest losing streak 14, buys 2670 / sells 2102
+  step 3, + one trade a session:             1506 trades (2.95 a weekday), win 0.371, R -0.140, USD -1086.7, lowest running total -1087.0, max DD 1092.2, worst -21.83, longest losing streak 12, buys 836 / sells 670
+    by pattern: {'M (sell)': {'n': 433, 'R': -0.135}, 'W (buy)': {'n': 503, 'R': -0.155}, 'high broken -> buy on': {'n': 133, 'R': -0.15}, 'hunt above a high -> sell back': {'n': 181, 'R': -0.202}, 'hunt below a low -> buy back': {'n': 200, 'R': -0.046}, 'low broken -> sell on': {'n': 56, 'R': -0.151}}
+    by session: {'Asia': {'n': 504, 'R': -0.054}, 'London': {'n': 500, 'R': -0.19}, 'New York': {'n': 502, 'R': -0.176}}
+  step 3A, M15 and up:  2599 trades (5.09 a weekday), win 0.424, R -0.059, USD -783.3, lowest running total -821.5, max DD 841.3, worst -21.83, longest losing streak 12, buys 1434 / sells 1165
+  step 3B, M30 and up:  1384 trades (2.71 a weekday), win 0.403, R -0.056, USD -488.1, lowest running total -631.8, max DD 636.9, worst -21.83, longest losing streak 9, buys 756 / sells 628
+  step 3C, H1 and up:  573 trades (1.12 a weekday), win 0.387, R -0.072, USD -216.9, lowest running total -335.1, max DD 384.9, worst -21.83, longest losing streak 12, buys 321 / sells 252
+  step 3D, M15 and up, one a session:  1309 trades (2.56 a weekday), win 0.413, R -0.065, USD -397.8, lowest running total -465.1, max DD 475.6, worst -21.83, longest losing streak 10, buys 736 / sells 573
+
+part 2 (2025-10-16 .. 2026-04-17)
+  step 0, every candidate one at a time:      2919 trades (22.11 a weekday), win 0.453, R -0.082, USD -1820.4, lowest running total -1937.0, max DD 1941.7, worst -92.83, longest losing streak 12, buys 1430 / sells 1489
+  step 2, the cut (3627 of 7055 candidates): 1886 trades (14.29 a weekday), win 0.459, R -0.082, USD -1336.7, lowest running total -1336.7, max DD 1426.3, worst -92.83, longest losing streak 10, buys 1018 / sells 868
+  step 3, + one trade a session:             385 trades (2.92 a weekday), win 0.421, R -0.151, USD -410.6, lowest running total -412.8, max DD 417.8, worst -54.11, longest losing streak 11, buys 214 / sells 171
+    by pattern: {'M (sell)': {'n': 102, 'R': -0.162}, 'W (buy)': {'n': 143, 'R': -0.222}, 'high broken -> buy on': {'n': 24, 'R': -0.093}, 'hunt above a high -> sell back': {'n': 54, 'R': -0.056}, 'hunt below a low -> buy back': {'n': 47, 'R': 0.051}, 'low broken -> sell on': {'n': 15, 'R': -0.471}}
+    by session: {'Asia': {'n': 128, 'R': -0.09}, 'London': {'n': 128, 'R': -0.189}, 'New York': {'n': 129, 'R': -0.174}}
+  step 3A, M15 and up:  737 trades (5.58 a weekday), win 0.463, R -0.049, USD -530.1, lowest running total -687.2, max DD 855.1, worst -92.83, longest losing streak 9, buys 393 / sells 344
+  step 3B, M30 and up:  368 trades (2.79 a weekday), win 0.457, R -0.028, USD -99.3, lowest running total -295.7, max DD 378.6, worst -92.83, longest losing streak 6, buys 194 / sells 174
+  step 3C, H1 and up:  131 trades (0.99 a weekday), win 0.443, R +0.016, USD -6.0, lowest running total -143.2, max DD 231.1, worst -92.83, longest losing streak 7, buys 69 / sells 62
+  step 3D, M15 and up, one a session:  334 trades (2.53 a weekday), win 0.476, R -0.026, USD -96.6, lowest running total -260.8, max DD 307.2, worst -74.80, longest losing streak 6, buys 182 / sells 152
