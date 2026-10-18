@@ -1233,6 +1233,35 @@ target/stop ratio: 0.75 -> +0.110, 5/5 half-years). Latest six months: floor 0 -
 45.1. A floor at 0.5-0.75 M15 ATR keeps the result about where it was (R a trade slightly up, the total about level
 or lower, months less even); 1.0 and more costs money. F1 + a 0.5 M15-ATR stop floor is the widened version kept.
 
+**Runs agent - the run catalogue, effect to cause** (`agents/runs/notes.md`, `catalogue.py`, `frame_a.py`, `frame_b.py`,
+`rules.py`, `losers.py`, `png/`). A run = at least R within 30 minutes, no pullback beyond 40 % of R, the start never
+broken. Price-scaled runs follow volatility (R15 x price/4100: 1.1 a weekday in 2024-02, 45-49 in 2026-02/03, 8.9 in
+2026-10); **volatility-relative runs are steady every month**: 1.5 x M15 ATR about 22-24 a weekday, 2.5 x M15 ATR 6.7-7.5
+(window 6.7, median 27.7 USD, 19 minutes to R, 49 % up). Busiest 00-01 and 12-13 UTC; runs cluster (35-87 % within 60
+minutes of the previous run's extreme); 1.4-9 % near a US release. The adaptive entry timeframe (the smallest with
+ATR >= 5 USD): mostly M30 in 2023-11 .. 2025-03, M5 in 2026-02/03, M5/M15 in 2026-04..06, M15 in 2026-07..10.
+- **Before a run (5 minutes before its start, against 10 random times of the same half-year, hour and ATR decile):**
+  over-represented in 5 of 5 half-years - price beyond the prior hour's / day's / Asian / yesterday's extreme (lift
+  1.24-1.56), tick volume in the top quintile (1.27-1.30), a wide 30-minute range or M1 ATR above its day mean
+  (1.22-1.36), price stretched from the M15 EMA20 (1.17-1.40); under-represented - quiet tick volume (0.66-0.83), a
+  narrow Bollinger band (0.77-0.84), a narrow 30-minute range (0.72-0.85): **compression comes before runs less
+  often, not more**; the owner's box forms (height, touches, slope) 0.94-1.14 - like random times.
+- **The side:** from a moment a trader can act on, which of +5 / -5 USD comes first: every one of ~100 features
+  43-57 % (base 48.6); the most lopsided stable bin, a sweep and reclaim of the Asian low, then -5 first 55-57 % (the
+  reclaim tends to fail). (Measured from the run's own start the side looks predictable - an artefact: the start is
+  the turning point by definition.)
+- **Rules:** RUN-A, the second leg (after an R15 run's first 40 % pullback, count three and the turn, with the run,
+  H1 tide agreeing, no chase, target 8 U, break-even at 0.6, 120 min) and RUN-B (a new day extreme whose bounce fails).
+  Design every half-year negative; the window: A4 (frozen) 558 trades -0.037 R -85 USD; A6 (the run at most 120 min
+  old) -0.031 R -67; A7 (the stop >= 0.5 trading-timeframe ATR, 3-10 USD; its stop rule came from F1's window - not
+  clean) 517 trades (3.1 a day) -0.001 R +4 USD, 3/8 months; A8 (no 10 USD cap) -0.023 R -192; B2 -0.020 R -51. RUN-A
+  beats the coin in every period by 0.02-0.12 R (before costs +0.04 design, +0.06 window) but the costs take ~0.10 R.
+- **Why RUN-A's losers lost (charts checked by the lead):** the "first leg" was the end of the swing - a V or a double
+  top / bottom, the run's start broken within 120 minutes - in 47 % (design) / 55 % (window) of the stopped losers
+  against 18-19 % of the winners (e.g. sells after a run down on 2026-05-26 and 06-22 into V bottoms that then ran up);
+  stops just inside the swing 27-35 %; stale runs (115-280 min old) -0.23 R. No early mark of the V found (pullback
+  speed, tick volume, bar size).
+
 **Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
 (H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
 window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks

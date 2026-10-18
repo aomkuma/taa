@@ -1,0 +1,4 @@
+== A7 WINDOW 2026-03-01 .. 2026-10-17: signals 654
+  rule: 517 trades (3.13/day), win 32%, R -0.001, +4.0 USD at 0.01 lot; worst -10.11, streak 11, max DD 143.4, 6 avg losses 34.2; stop 5.52 tp 8.77 (stop 0.75 x the trading-TF ATR, TF M5 most); losers 1/2/3 51/6/43%
+     26-03 -0.03(95,-33) 26-04 +0.01(94,-9) 26-05 -0.21(64,-53) 26-06 +0.12(71,+64) 26-07 -0.02(55,+7) 26-08 +0.27(57,+85) 26-09 -0.09(62,-50) 26-10 -0.11(19,-7)
+  coin (10 seeds, same minutes): R -0.118 (sd 0.030), USD -304.7, losers 1/2/3 51/5/44%
