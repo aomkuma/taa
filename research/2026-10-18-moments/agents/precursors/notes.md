@@ -819,3 +819,35 @@ R (20), September +0.751 (7), October -1.0 (2); April - June with codes-only cel
 Pictures of eight decisions (entry / TP / SL drawn): `png/v2b_decisions/` - e.g. 2026-06-13 01:00: codes 15 of 18
 equal but the outlines ran opposite (M30 -0.28, M15 -0.17): sold, stopped; pattern #319 (a steep rally faded) won
 on 2026-01-29 and lost on 2026-06-15 with 15 earlier days 0 % up / 67 % down.
+
+## "The same picture" redefined - written before it is computed (2026-10-19 night; owner: "that is the problem")
+
+The owner on four V2 decision pictures: are they really alike? Mine, honestly: two not at all (opposite or unrelated
+outlines), two only in part (the direction alike, the size not: a vertical 12 % blow-off matched a calm 3 % climb, the
+normalised path removes the scale). The owner: "that is the problem". A layer's two pictures are now the same only
+when, for every timeframe of the layer, all hold (thresholds set here, not tuned):
+- **structure:** the core codes >= 80 % equal (as before);
+- **outline:** the 120-bar close path correlates >= 0.7;
+- **size:** the 120-bar range in that timeframe's ATRs within a factor 1.4;
+- **the last leg:** the same way (from the last confirmed ZigZag swing to the close), its length in ATRs within a
+  factor 1.6;
+- **position:** the close's place in the 120-bar range within 0.2, and at a new 120-bar high (>= 0.95) or low
+  (<= 0.05) on both or neither.
+Order: the code with tests; pairs drawn for the owner's eye (the new rule's matches, and old matches it rejects);
+only after the owner's yes, the lean's accuracy on the learning half; only then trading.
+- **the trend's way (owner, the same night: "some pictures are almost alike but one goes up and one goes down - they
+  must not be the same"):** on every timeframe both the net way of the 120 bars (up / down / flat within 1 ATR) and
+  the swing structure (the last two ZigZag peaks and troughs: higher-higher = up, lower-lower = down, else mixed)
+  must be equal.
+
+**Built and tested (`picture.py`, `test_picture.py`: 9 tests; 12 planted bugs caught; the vectorised library equals the
+one-by-one one on a mixed random sequence):** the snaps' pictures (`snap_pictures.parquet`) and the walk-forward
+library under the new rule (`picture_pairs.py`, `out_picture_pairs.txt`). Snaps that find a pattern of earlier days,
+the old rule (codes) -> the new rule (the same picture), of 5,115: context 2,966 -> 491, setup 3,659 -> 334, trigger
+4,275 -> 211; patterns 736 -> 1,788, 1,131 -> 3,936, 820 -> 4,900. **The same picture rarely comes back within a
+year**; the old rule's many "repeats" were different pictures counted together. Pairs for the owner's eye:
+`png/same_picture/` (eight called the same, four the old rule matched and the new one rejects, the learning half
+only). My own look: the setup and trigger pairs look alike (e.g. 2026-04-15 14:00 vs 01-13 09:00: both rising
+HH/HL, a pullback from the top, sizes 17 / 19 ATR); the rejections are right (an up-trend vs a down-and-sideways
+chart); but some context pairs are the same situation a few hours apart (2026-01-31 00:00 vs 01-30 17:00, H4
+correlation 1.00) - one market moment counted twice, not a repeat.

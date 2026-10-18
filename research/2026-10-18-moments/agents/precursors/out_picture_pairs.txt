@@ -1,0 +1,15 @@
+context (H4+H1): snaps with an earlier-day pattern - old rule (codes) 2966, new rule (the same picture) 491 of 5115; patterns 736 -> 1788
+setup (M30+M15): snaps with an earlier-day pattern - old rule (codes) 3659, new rule (the same picture) 334 of 5115; patterns 1131 -> 3936
+trigger (M5+M1): snaps with an earlier-day pattern - old rule (codes) 4275, new rule (the same picture) 211 of 5115; patterns 820 -> 4900
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\00_same_ctx_20260131_0000.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\01_same_ctx_20260116_1900.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\02_same_set_20260415_1400.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\03_same_ctx_20260129_0000.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\04_same_ctx_20251118_0100.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\05_same_ctx_20260407_0000.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\06_same_ctx_20260128_1200.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\07_same_trg_20260202_1600.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\08_rejected_set_20251213_0100.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\09_rejected_trg_20260218_1600.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\10_rejected_set_20260406_1800.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\same_picture\11_rejected_set_20260212_2000.png
