@@ -1216,6 +1216,15 @@ every half-year and month. The count (about 12 a day) shows the code takes every
 range - not the owner's one clear range after a run; to be redone properly (one range at a time, defined after a
 run, with the owner's entries) when the owner calls it.
 
+**F1: too early? a wider stop? (owner, 2026-10-18; `shadow/too_early.py`, `shadow/wider_stop.py`).** Stopped losers:
+design 61 = wrong way 35, fell short 3, too early 23; the window 15 = 13 / 0 / 2; 47 % of the window's stopped
+within 5 minutes. The stop in M15 ATR(14), the window: < 0.5 -> 12 trades, 17 % win, -0.473 R, -24.9 USD; 0.5-0.75 ->
+12, 58 %, +0.445 R; 0.75-1.0 -> 8, 62 %, +0.671 R (design: < 0.5 -> 20 trades +0.184 R - not confirmed there).
+Widening every stop (same target): design x1.5 +0.086 R (+73.2 USD), x2 +0.068 R (+91.8 USD) against x1 +0.118
+(+58.4); the window x1.5 +0.088 R (+54.0), x2 +0.043 R (+42.8, max DD 39.1, six average losses 37.4 USD) against x1
++0.183 R (+52.9, max DD 26.7); with the account's 10 USD cap x2 turns the window negative (-10.4 USD). A wider stop wins
+more often (44 -> 50 %) but loses more per loss: no help, and it does not fit a 50 USD account.
+
 **Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
 (H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
 window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks
