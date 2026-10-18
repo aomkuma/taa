@@ -1170,7 +1170,7 @@ tells the trade's side only a little better than a coin.
 - **The bot at the same moments:** the side its evidence picks with the cell chosen walk-forward month by month; and
   the bot's full six months (every 5 minutes, one position at a time). Reported: trades, win, R, USD, week by week.
 
-**Result (2026-10-19 ~06:00 Thai; `out_present_wf.txt`, `out_by_eye_bot.txt`, `by_eye_bot_decisions.csv`,
+**Result (2026-10-19 ~04:00 Thai; `out_present_wf.txt`, `out_by_eye_bot.txt`, `by_eye_bot_decisions.csv`,
 `by_eye_bot_scored.csv`).** The owner changed the test mid-way ("too few trades - the same conditions as the bot, the
 decisions yours"): the bot on the present library (every 5 minutes, one position, the cell walk-forward) traded
 **647 times in the exam (5 a weekday), win 0.338, R -0.084, -460 USD** (learning 736, -0.042 R). For a random 160 of
