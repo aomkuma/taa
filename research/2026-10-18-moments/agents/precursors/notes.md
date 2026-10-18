@@ -347,3 +347,103 @@ Points 2-6 were read on the window, so any rule built from them is window-inform
 its window result is not a clean test. Next, in this order: (a) a matcher that compares the whole visible formation (the
 ZigZag line of peaks and troughs across the 120 bars, and the indicators' paths), checked by eye before any trade; (b)
 the start relative to the entry timeframe's ATR; (c) a target at least as large as the stop; (d) skip a quiet hour.
+
+## LV - with the trend of every timeframe, sell the bounce into an earlier level (owner, 2026-10-18) - written before it is computed (`lvl.py`)
+
+The owner's reading of 2026-09-02 (all timeframes falling; the bounces stopped at earlier levels - under the 07:18 /
+07:44 peaks, then at the 07:02 low broken at 08:00 - and the fall resumed): "wait for price to hit a level, then sell
+from there"; "put it into the code so it is used correctly". Mirrored for buys.
+
+- **Moments:** every M1 close inside the owner's focus windows (as `plib.WINDOWS`), weekdays; gold; real costs (`jlib`).
+- **The trend of every timeframe:** H4, H1 and M15 each down = EMA20 below EMA50 and EMA50 lower than three bars earlier
+  (closed bars); all three down -> sells only; all up -> buys only; else nothing.
+- **The entry timeframe** (owner's adaptive rule): the smallest of M1 / M5 / M15 whose ATR(14) >= 5 USD (else M15); its
+  ATR = A.
+- **Swings and levels:** M5 ZigZag (reversal 2 x M5 ATR(14), a swing known at its confirming bar), the last 8 hours.
+  The bounce starts at the latest confirmed trough T (sells); price is in the up-leg from T and at least 1 A above it.
+  The levels: every earlier swing of those 8 hours (a peak - type A - or a trough that price has since broken - type B)
+  that lies above the price; L = the nearest one above. A level is used once.
+- **Entry, two forms measured:** (a) LIMIT - a sell limit at L - k x A (k = 0.25 / 0.5), filled when the bid reaches it;
+  (b) STALL - an entry-timeframe bar whose high came within k x A of L closes down (close < open, close < L): sell at
+  the next M1 open. Void when an M1 close goes above L + 0.25 A first.
+- **Exits on the entry timeframe:** stop L + 0.25 A, at least 3 USD and 0.5 A from the entry; target T1 = 1 x the stop
+  distance, T2 = back to T (the bounce's start), T15 = 1.5 x the stop; each at least 5 USD; break-even at 0.6 of the
+  target; time stop 12 bars of the entry timeframe; one position at a time.
+- **Read on design (2023-11 .. 2026-02) by half-year:** trades a day, win %, R, USD at 0.01 lot, the losers' kinds; how
+  often price turned short of / at / through L; the same entries at a placebo level (L shifted by a random 1-3 A) to see
+  whether the level itself matters. One cell (form, k, target) is chosen on design and run once on the window.
+- Pictures of 12 random design cases (M1 + M5 with T, L, the entry, stop, target) are checked by eye before any result is
+  trusted.
+Clarified before anything was computed (code review, 2026-10-18): "a level is used once" = once per bounce (the pair
+of the bounce's start T and the level); a later bounce from a new start may test the same level again. The limit
+order lives 60 minutes of clock time (not 60 bars).
+
+**The test window moves (owner, 2026-10-18, confirmed): the latest six months from the current day = 2026-04-18 ..
+2026-10-16.** LV's design = 2023-11-01 .. 2026-04-17 (the five half-years + H6 = 2026-03-01 .. 04-17, never read for LV
+before). Selection rule, written before the design grid is read: **the real-level cell (form, k, target) with the best
+design R a trade** runs once on the window; its placebo twin is reported next to it. A placebo bug was found and fixed
+before this run (a new random level every minute broke "once per bounce"; test added, the old code fails it). Every
+losing window trade is then traced with the pictures the bot saw (owner: "analyse every losing trade down to the
+picture the bot really saw, not only the final number").
+
+**A rule deviation found in the code and fixed (2026-10-18, from the design losers' journal):** LV chose the entry
+timeframe from M1 / M5 / M15 only and fell back to M15; the owner's rule is the smallest of M1 / M5 / M15 / M30 whose
+ATR covers 5 USD (H1 the largest). In quiet 2023-24 gold LV entered on M15 with an ATR of 1-2.5 USD while the stop
+floor (3 USD) and the target floor (5 USD) were 2 and 3-5 of that ATR - not "exit on the timeframe you entered". Fixed
+(M30 added; fallback M30), tests updated; every LV number before this line is void.
+
+## LV2 - LV made to match the owner's rules, and a stop learned from the data (2026-10-18) - written before it is computed (`lvl2.py`)
+
+An audit of LV against everything the owner has said found five deviations besides M30 (levels from M5 instead of the
+larger timeframes; the bounce start from M5 whatever the entry timeframe; no exit on an entry-TF close through the
+level; fixed trend timeframes even above an M30 entry; the level's importance unused) and fixed numbers of my own (a
+3 USD stop floor, a 0.25 ATR stop / void buffer). The owner: "the losses from a narrow stop - adjust it from the real
+data; I don't want the numbers too fixed." LV2:
+
+- **Entry timeframe (ETF):** the smallest of M1 / M5 / M15 / M30 whose ATR(14) >= 5 USD, else M30; A = its ATR.
+- **Trend:** every timeframe above the ETF up to H4 (from M5, M15, M30, H1, H4) agrees: EMA20 below EMA50 and EMA50 lower
+  than three bars earlier (sells; mirrored for buys).
+- **The bounce:** the latest confirmed swing of the ETF's own ZigZag (2 x its ATR) is a trough T (sells) and price is at
+  least 1 A above it.
+- **Levels from the larger timeframes:** the ZigZag swings (2 x that timeframe's ATR) of the timeframes above the ETF among
+  M15 / M30 / H1 (ETF M30: H1), each over its last 120 bars (one screen), made before T. Swings within 0.25 of the larger
+  timeframe's ATR merge into one zone (price = their mean; importance = how many swings, + whether an H1 swing is in it).
+  L = the nearest zone above the price. Variant "important": only zones with >= 2 swings or an H1 swing.
+- **Entry:** the stall as before (an ETF bar within k x A of L closes down and below L; k = 0.25 / 0.5), sell at the next
+  M1 open. A pair (T, L) fires at its first stall; if a position is open then, that signal is skipped.
+- **The stop learned from the data (walk-forward):** for every earlier signal whose outcome is already known at the moment
+  (it reached the target, or its time ran out, before this decision), the overshoot = how far price went beyond L, in A,
+  before it reached the target. b = the p-th percentile (p = 70 / 80 / 90) of the overshoot of the earlier signals that
+  reached the target (at least 30 of them, else no trade). Stop = L + b x A, at least 0.5 A from the entry. A close beyond
+  L + b x A before the entry voids the level.
+- **Exits on the ETF:** target T2 (back to T) or T1 (= the stop distance), at least 5 USD; an ETF bar closing beyond L ->
+  out at the next M1 open; break-even at 0.6 of the target; 12 ETF bars.
+- Design 2023-11-01 .. 2026-04-17 chooses (form is stall only now - the limit lost in every half-year; k; target; p;
+  all / important levels) by the best design R a trade; the window 2026-04-18 .. 2026-10-16 once; then every losing window
+  trade traced with the bot's pictures.
+Clarified in the code review before anything was computed: the level timeframes' swings are the swings a trader sees
+on that chart - 5-bar fractals (2 bars each side, known 2 bars later) - not a 2-ATR ZigZag, which on M15 / H1 keeps only
+large swings (on 2026-09-02 it would drop the 07:02 low 4316 and the 07:18 / 07:44 peaks the owner pointed at). The
+bounce start T stays the entry timeframe's 2-ATR ZigZag trough. The outcome that teaches the stop: back to T (T2, at
+least 5 USD) within 12 ETF bars, for every target variant.
+
+## The owner's requirements -> code -> test (the checklist every version is re-checked against; 2026-10-18)
+
+The owner: "analyse and synthesise my requirements into results, re-check that the code works as required, that nothing
+conflicts, and what should fit the facts of the price chart - until all is correct; then run the bot's backtest, look
+at the results and make each entry better, finding the timing inside my windows."
+
+| # | Requirement (owner) | Where in LV2 | Test |
+|---|---|---|---|
+| R1 | gold; the focus windows (07:00, 08:00, 09:00+, 13:00, 14:00+, 19:00, 19:30, 20:30, 21:00, 22:00+ Thai), DST-aware | `plib.WINDOWS` -> decision minutes | test_windows |
+| R2 | entry TF = the smallest of M1 / M5 / M15 / M30 whose ATR >= 5 USD; H1 the largest | `lvl.entry_tf` | TestEntryTimeframe |
+| R3 | target >= 5 USD; exit on the entry TF (target / stop / time / a close against) | `trades`, `manage` | TestManage2, test_plan |
+| R4 | the larger timeframes' trend agrees | `trend_tfs`, `setup_at` | test_trend_tfs, test_setup_* |
+| R5 | levels from the larger TFs (M15 / M30 / H1), as seen on those charts; important levels weigh more | `level_tfs`, fractals, `merge_zones`, `level_in_front` | test_level_tfs, test_zones, test_level_in_front |
+| R6 | wait for price to reach the level, enter the trend's way (limit vs stall measured: stall kept) | `stall` | TestVoidAndStall |
+| R7 | the stop from the real data, not fixed | `outcome`, `learned_buffer` (walk-forward) | test_outcome, test_learned_buffer |
+| R8 | everything relative (only the 5 USD target floor fixed) | Params: ATR multiples, percentiles | review |
+| R9 | learn from the losers: each loser traced with the pictures the bot saw; adapt forward with rules written in advance | `lvl_losers.py` | eye check |
+| R10 | the test window = the latest six months (2026-04-18 ..); design before it | `main` | review |
+| R11 | tests first; prove the tests catch broken code; an independent re-derivation | test_lvl2.py, mutants, check | - |
+| R12 | real costs; one position at a time | `Market` (jlib costs), `trades` busy | TestManage2 |

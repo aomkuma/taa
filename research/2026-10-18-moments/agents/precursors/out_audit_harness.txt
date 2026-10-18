@@ -1,0 +1,17 @@
+gold, 6000 random minutes in the focus windows 2023-11 .. 2026-09; target = stop = 6.0 USD, 120 min
+average real spread 0.318 USD; a round trip costs about 0.54 USD = 0.074 .. 0.099 R
+
+== jlib.Instr.trade (the shared research harness)
+1. random side, no costs (expect ~0)             n  6000  R -0.0096 (se 0.0112)  win 0.343  stop 0.355  time 0.302
+   the mirror of the same trades, no costs       n  6000  R +0.0090 (se 0.0112)  win 0.355  stop 0.343  time 0.302
+3. trade + mirror, no costs: mean R sum -0.0007 (expect ~0; < 0 = a bias)
+2. random side, real costs (expect ~ -costs)     n  6000  R -0.0839 (se 0.0110)  win 0.315  stop 0.384  time 0.302
+   its mirror, real costs                        n  6000  R -0.0621 (se 0.0110)  win 0.332  stop 0.372  time 0.297
+4. oracle side (knows the next 30 min)           n  6000  R +0.3661 (se 0.0098)  win 0.527  stop 0.160  time 0.313
+5. both the trade and its mirror stopped (a bar or path holding both levels): 0.0003 of trades; cost to the mean R about 0.0007 per pair
+
+== lvl.manage (LV's exits)
+1. random side, no costs                         n  6000  R -0.0100 (se 0.0111)  win 0.343  stop 0.355  time 0.302
+3. trade + mirror, no costs: mean R sum -0.0007
+2. random side, real costs                       n  6000  R -0.0844 (se 0.0110)  win 0.314  stop 0.383  time 0.302
+4. oracle side                                   n  6000  R +0.3655 (se 0.0098)  win 0.526  stop 0.160  time 0.314
