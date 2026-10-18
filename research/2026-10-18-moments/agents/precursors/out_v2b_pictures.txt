@@ -1,0 +1,8 @@
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\v2b_decisions\00_20260129_0700_win.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\v2b_decisions\01_20260129_2130_win.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\v2b_decisions\02_20260205_1000_loss.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\v2b_decisions\03_20260323_1900_loss.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\v2b_decisions\04_20260421_0900_win.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\v2b_decisions\05_20260421_2030_win.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\v2b_decisions\06_20260613_0100_loss.png
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\png\v2b_decisions\07_20260615_0700_loss.png

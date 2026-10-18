@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+SIM_TOL = 1e-6  # similarities are shares k / n of equal attributes (n <= 120): far apart; float32 inputs round by ~1e-7
 OUTCOMES = ("ran_up", "slow_up", "ran_dn", "slow_dn", "fake_up", "fake_dn", "flat", "drift")
 
 
@@ -27,14 +28,16 @@ class PatternLibrary:
     def __init__(self, dim: int, thr: float = 0.8, max_examples: int = 5) -> None:
         self.thr, self.max_examples = thr, max_examples
         self.patterns: list[Pattern] = []
-        self._L = np.zeros((0, dim), np.float32)
+        self._L = np.zeros((0, dim))  # float64 (float32 put an exact 80 % at 0.79999999: bug to 2026-10-19)
 
     def most_similar(self, vec: np.ndarray, before_day: int | None = None) -> tuple[int, float]:
         """The most similar pattern (index, similarity) among those created before `before_day` (all when None);
         (-1, nan) when there is none."""
         if not self.patterns:
             return -1, np.nan
-        sims = self._L @ vec
+        # rounded: equal shares k / n came out as floats 2e-16 apart, so ties went to float noise instead of the
+        # earliest pattern (bug to 2026-10-19, found by the independent check of V2)
+        sims = np.round(self._L @ vec, 9)
         if before_day is not None:
             created = np.array([p.created_day for p in self.patterns])
             sims = np.where(created < before_day, sims, -np.inf)
@@ -44,7 +47,7 @@ class PatternLibrary:
     def add(self, vec: np.ndarray, day: int, outcome: str, moment: object = None) -> tuple[int, bool]:
         """Count a moment: a repeat of the most similar pattern (>= thr) or a new pattern. Returns (pid, is_new)."""
         k, sim = self.most_similar(vec)
-        if k >= 0 and sim >= self.thr - 1e-9:
+        if k >= 0 and sim >= self.thr - SIM_TOL:
             p = self.patterns[k]
             if not p.occ_days or p.occ_days[-1] != day:  # once a day at most
                 p.occ_days.append(day)
@@ -55,14 +58,14 @@ class PatternLibrary:
         p = Pattern(pid=len(self.patterns), leader=vec.astype(np.float32), created_day=day, occ_days=[day],
                     occ_outcomes=[outcome], examples=[(day, moment)])
         self.patterns.append(p)
-        self._L = np.vstack([self._L, vec[None, :].astype(np.float32)])
+        self._L = np.vstack([self._L, vec[None, :].astype(float)])
         return p.pid, True
 
     def evidence(self, vec: np.ndarray, day: int, side: int) -> dict:
         """What the library knew before `day` about a moment like vec: its pattern, the times it occurred, and what
         followed - relative to the trade's side (+1 buy / -1 sell)."""
         k, sim = self.most_similar(vec, before_day=day)
-        if k < 0 or sim < self.thr - 1e-9:
+        if k < 0 or sim < self.thr - SIM_TOL:
             return dict(pid=-1, sim=sim, count=0, with_=np.nan, against=np.nan, fake=np.nan, flat=np.nan)
         p = self.patterns[k]
         outs = [o for d, o in zip(p.occ_days, p.occ_outcomes) if d < day]

@@ -70,3 +70,28 @@ def test_a_pattern_born_today_gives_no_evidence_today():
     lib.add(B, 5, "ran_dn")
     assert lib.evidence(B, 5, -1)["pid"] == -1
     assert lib.evidence(B, 6, -1)["count"] == 1
+
+
+def test_an_exact_eighty_percent_counts_as_alike():
+    """2026-10-19: float32 storage put 16 of 20 equal attributes at 0.79999999, below the threshold."""
+    import numpy as np  # noqa: PLC0415
+
+    def bits(b):
+        b = np.asarray(b, float)
+        return (np.r_[b, 1 - b] / np.sqrt(len(b))).astype(np.float32)  # as cluster_fp.onehot: float32
+
+    lib = PatternLibrary(40)
+    lib.add(bits([0] * 20), 1, "ran_up")
+    assert lib.add(bits([1] * 4 + [0] * 16), 2, "ran_dn") == (0, False)  # 16 of 20 equal: a repeat
+
+
+def test_a_tie_goes_to_the_earliest_pattern():
+    import numpy as np  # noqa: PLC0415
+
+    from pattern_library import Pattern  # noqa: PLC0415
+
+    lib = PatternLibrary(1)
+    lib.patterns = [Pattern(0, np.array([0.8333333333333333]), 1, [1], ["ran_up"]),
+                    Pattern(1, np.array([0.8333333333333335]), 1, [1], ["ran_dn"])]
+    lib._L = np.array([[0.8333333333333333], [0.8333333333333335]])
+    assert lib.most_similar(np.array([1.0]))[0] == 0

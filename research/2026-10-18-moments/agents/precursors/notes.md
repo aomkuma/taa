@@ -663,7 +663,7 @@ of the time; the levels hold 19.7-21.0 %. LV3 rests on its levels turning price;
 (there is always one near) behave almost like lines drawn anywhere. No filter is added (none qualifies); the next
 question is which kinds of level do turn price.
 
-## Which kinds of level turn price - written before it is computed (2026-10-19 00:20 Thai; `level_power.py`)
+## Which kinds of level turn price - written before it is computed (2026-10-18 night, Thai time; `level_power.py`)
 
 Every first touch (none in the 60 minutes before) of a level inside the owner's windows, 2023-09 .. 2026-04-17 (the
 exam not looked at): afterwards, does price come back 1 M15 ATR from the level first (it turned price) or go 1 ATR
@@ -673,7 +673,7 @@ session's high / low, the 72-hour high / low (ending an hour before), round 50s,
 two standard errors in both parts (2023-09 .. 2024-12, 2025-01 .. 2026-04-17); those kinds become LV3's levels, tested
 by the walk-forward once.
 
-## Each component of LV3 alone - written before it is computed (2026-10-19 01:00 Thai; owner: "focus on the basic correctness of each component before assembling them into a setup or parameters"; `components.py`)
+## Each component of LV3 alone - written before it is computed (2026-10-18 night, Thai time; owner: "focus on the basic correctness of each component before assembling them into a setup or parameters"; `components.py`)
 
 `lvl2.setup_at` was split into `bounce_at` (entry TF, the larger timeframes' trend, the bounce's start, a bounce of
 >= 1 A) and the level step; the split gives the same setup at all 25,023 window minutes of 2026-02-01 .. 03-14, and
@@ -715,7 +715,7 @@ the library's "same picture" is too coarse (pictures, `png/wf_library/`). Change
 proven twice (code, and its premise against a no-effect baseline in two parts) before it is assembled (owner).
 Result - LV3 stops as a setup; the components to test next are the ones with a measured or causal lead.
 
-## F1 CONF-72's components alone - written before it is computed (2026-10-19 01:40 Thai; `f1_components.py`)
+## F1 CONF-72's components alone - written before it is computed (2026-10-18 night, Thai time; `f1_components.py`)
 
 F1 CONF-72 trades on DEMO; its parts are checked the same way (owner: "do it"). Data: the research's wide candidate
 tables (every minute of UTC 00-02, 07-12, 12-17 x both sides, 2023-11 .. 2026-04-17; the bot's definitions - engine
@@ -732,7 +732,7 @@ of three M5 indicators 49.0 / 50.8; **C4, the 72-hour extreme near (closer than 
 **CONF-72 62.1 / 65.0 % (66 / 80 events, 2.0 / 2.8 SE)**. F1's measured edge comes from C4 - price at or beyond the
 72-hour extreme the trade's way tends to go on - not from the tide, the level, the price action or the indicators.
 
-## C4 taken apart - written before it is computed (2026-10-19 01:55 Thai)
+## C4 taken apart - written before it is computed (2026-10-18 night, Thai time)
 
 Same measurement (8 U, 60 minutes, one row per 15 minutes per side, two parts). C4-behind (price already beyond the
 72-hour extreme the trade's way) and C4-near (not beyond, closer than 4 U); then C4 with each other component added
@@ -745,7 +745,7 @@ C4 (the tide is nearly always on with C4); C4 + level 59.2 / 57.0 % (4.0 / 3.3 S
 55.3 (312 / 369); C4 + C5 53.7 / 54.6. Caveat: C4 was chosen by the portfolio agent on 2023-11 .. 2026-02, the same
 years - not a clean test.
 
-## C4 on the older years - written before it is computed (2026-10-19 02:05 Thai; `c4_old.py`)
+## C4 on the older years - written before it is computed (2026-10-18 night, Thai time; `c4_old.py`)
 
 Gold 2020-09 .. 2023-10, never used to choose C4: every 15th minute of F1's windows, both sides; C4-near, C4-behind,
 both, and the control (neither); 8 U the side's way first within 60 minutes (no effect 50 %); two parts
@@ -759,7 +759,7 @@ both, and the control (neither); 8 U the side's way first within 60 minutes (no 
 phase component, measured in advance, that tells C4's continuation from its reversal in both eras (owner's principle:
 in a phase that does not suit a setup it trades less).
 
-## A phase component for C4 - written before it is computed (2026-10-19 02:25 Thai; `c4_phase.py`)
+## A phase component for C4 - written before it is computed (2026-10-18 night, Thai time; `c4_phase.py`)
 
 Candidates, from daily bars on the server day, known at the previous day's close: the 20-day efficiency ratio
 (|net move| / the path; trending near 1), the daily ADX(14) (MT5's), and the distance from the 50-day average in
@@ -778,3 +778,44 @@ daily phase measure tells which in advance. Changed - nothing in the bot (the ow
 the chart components tested so far (trend, pullback, levels, price action, indicators, the 72-hour extreme) give no
 direction that holds across gold's eras; the leads left are causal (the releases), the library (with a truer
 "same picture"), and the time of day (when runs happen, not their side).
+
+## Setup OWN V2 as agreed - written before it is computed (2026-10-18 night, Thai time; `v2b.py`, tests `test_v2b.py`)
+
+The owner (2026-10-19): "do what we agreed at first - research the patterns before price runs 5-10 USD (done), then
+let the bot catch a chart whose outline matches a researched pattern and decide whether to trade"; "if it sees it
+all there should be a chance: at support / resistance, with the larger timeframes' way trade the trend, near a big
+support / resistance price may turn" (the library's codes hold the larger timeframes' trend and the S/R location);
+"the bot read pictures that do not look alike as alike - that must have added a lot to the losses".
+
+- **When:** the owner's snap times (20 a day), 2025-10-18 .. 2026-10-16 (the library's span).
+- **Match:** per layer (H4 + H1, M30 + M15, M5 + M1) the walk-forward library (`OutlineLibrary`: earlier days only,
+  a pattern counted once a day): >= 80 % of the core attributes equal, and with the outline gate every timeframe's
+  120-bar close path correlating >= 0.6 or >= 0.8 with the pattern's first moment (off = codes only).
+- **Decide:** each chosen layer (setup; trigger; setup + trigger; all three) needs >= N earlier days (3 / 5); the
+  summed lean (up share - down share of those days) >= THETA (0.2 / 0.4) trades that way, else no trade.
+- **Trade:** the next M1 open; the entry timeframe the smallest of M1 / M5 / M15 / M30 whose ATR covers 5 USD (M30 if
+  none); stop one entry-TF ATR (>= 5 USD); target 10 U; out after 12 entry-TF bars; one position; the auditor's
+  costs.
+- **Learning:** 48 cells, the walk-forward chooses each month the best mean R of the previous six months' closed
+  trades (>= 20); reported week by week; the exam 2026-04-18 .. 10-16 once.
+- Bug found by the new tests (fixed in `pattern_library.py` and `v2b.py`, test added): float32 storage put an exact
+  80 % at 0.79999999 - never reached in the real layers (16 / 18 attributes cannot give 80 % exactly), so no result
+  changes.
+
+**Two bugs found before reading V2 (fixed, tests added, the tests catch the old code):** (1) float32 storage put an
+exact 80 % at 0.79999999 (`pattern_library.py`, `v2b.py`; never reached in the real layers); (2) **ties went to float
+noise**: equal similarities (k / n) came out 2e-16 apart, so the library's argmax picked the pattern by rounding,
+not the earliest - found by the independent check (`check_v2b.py`: 47 of 347 trades differed, all from the
+assignment drifting over the months); similarities are now rounded before the choice (`pattern_library.py` too). The
+first V2 run (learning +0.023 R, exam -0.225) is void.
+
+**Result (`out_v2b.txt`, `out_check_v2b.txt`; proven: 8 tests, 10 planted bugs caught, the independent re-derivation
+equal on all 408 trades):** learning half 221 trades (1.70 a weekday), win 37.1 %, **-0.021 R**, +14.1 USD, max DD
+120.2; **the exam 187 trades (1.44 a weekday), win 31.6 %, -0.169 R, -241.2 USD**, max DD 320.2, worst -14.16 USD,
+13 losses in a row. The outline gate on the learning half (cells, mean R): codes only -0.103 (16 cells, 4,051 trades),
+outline >= 0.6 -0.254 (14, 723), >= 0.8 -0.534 (9, 92) - not better there (fewer earlier days per pattern in a
+library six months old). The walk-forward moved to an outline cell (set + trigger, >= 0.6) from July: August +0.292
+R (20), September +0.751 (7), October -1.0 (2); April - June with codes-only cells lost (June -169 USD over 98).
+Pictures of eight decisions (entry / TP / SL drawn): `png/v2b_decisions/` - e.g. 2026-06-13 01:00: codes 15 of 18
+equal but the outlines ran opposite (M30 -0.28, M15 -0.17): sold, stopped; pattern #319 (a steep rally faded) won
+on 2026-01-29 and lost on 2026-06-15 with 15 earlier days 0 % up / 67 % down.
