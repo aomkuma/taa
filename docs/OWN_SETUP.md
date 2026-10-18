@@ -3,7 +3,7 @@
 The owner's goals and principles come first: `docs/OWNER_GOALS.md`. This file holds **the current state** of Setup
 OWN: what trades in the bot, the windows and the method, and the research in progress. Every earlier round (the
 hypotheses written before their outcome, then the results) is kept in `docs/OWN_SETUP_ROUNDS.md`. Results describe
-the past, never a promise. Last update: 2026-10-19 02:00 Thai time.
+the past, never a promise. Last update: 2026-10-19 02:15 Thai time.
 
 ## In the bot (DEMO since 2026-10-18 17:08 Thai; LIVE off)
 
@@ -85,10 +85,12 @@ bot match the chart in front of it to any researched result and decide whether t
 - **V2s** (the same situation on M5 + M1): it repeats, and its lean told the way of the next half hour's 10 U run in
   both halves (checked four ways: an independent recount, by day, two placebos). Traded at the snap: learning
   -0.020 R, **the exam -0.085 R** (278 trades, -240 USD at 0.01 lot; checked 723 / 723 trades): when the lean was
-  right the price first dipped a median 5-6 USD and took the stop in half of them. Waiting for the dip (V2e: a limit
-  3 / 5 USD away, or an M1 turn): every variant negative on the learning half; the exam not run.
-- **Status (2026-10-19 02:00 Thai):** to be concluded with the owner - the lean's edge is smaller than what the
-  10 U target, the stop and the costs need. Details: `research/2026-10-18-moments/agents/precursors/notes.md`.
+  right the price first dipped a median 5-6 USD and took the stop in half of them. Other entries (V2e: a limit
+  3 / 5 USD away, an M1 turn, a stop order the lean's way; 28 variants): every one negative on the learning half;
+  the exam not run. The mean move the lean's way, held 5-60 minutes, is about zero - negative after costs at every
+  holding time: the situation tells the way of the next big move, not the average move.
+- **Status (2026-10-19 02:15 Thai):** V2's levers on the entry and the exit are spent; to be concluded with the
+  owner. Details: `research/2026-10-18-moments/agents/precursors/notes.md`.
 
 ## Stopped: LV3 - the owner's reading of the chart (2026-10-18)
 
