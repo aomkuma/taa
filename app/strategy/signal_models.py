@@ -27,7 +27,17 @@ from typing import Any
 import pandas as pd
 
 from app.core.clock import ensure_utc
-from app.core.enums import Action, EntryType, Regime, Session, Side, Timeframe, Trend, VolatilityState
+from app.core.enums import (
+    Action,
+    EntryType,
+    ExitReason,
+    Regime,
+    Session,
+    Side,
+    Timeframe,
+    Trend,
+    VolatilityState,
+)
 from app.core.errors import TaaError
 from app.core.ids import stable_hash
 from app.evidence.confluence import Relation
@@ -146,6 +156,30 @@ def idempotency_key(
 
 
 @dataclass(frozen=True, slots=True)
+class OpenPosition:
+    """An open position of a strategy, as its own management sees it (``BaseStrategy.manage_position``)."""
+
+    side: Side
+    entry: float
+    initial_sl: float
+    sl: float
+    tp: float | None
+    entry_time: datetime
+    signal_id: str = ""  # "" when the position's signal is not known (a broker position after a restart)
+
+
+@dataclass(frozen=True, slots=True)
+class PositionAdvice:
+    """A strategy's own stop move or close for one of its positions; the managers apply it like their rules
+    (favourable stop moves only, a close wins)."""
+
+    new_sl: float | None = None
+    stop_kind: ExitReason | None = None  # how a later stop-out is labelled
+    close: ExitReason | None = None
+    note: str = ""
+
+
+@dataclass(frozen=True, slots=True)
 class Signal:
     signal_id: str
     strategy: str
@@ -168,6 +202,7 @@ class Signal:
     explanation: str = ""
     bar_times: tuple[tuple[Timeframe, datetime], ...] = ()  # last closed bar used per timeframe
     confluence: tuple[tuple[str, float], ...] = ()  # signed setup-strength points per source (TAA-307)
+    risk_scale: float = 1.0  # (0, 1]: the strategy asks for this share of the preset's risk per trade
 
     def __post_init__(self) -> None:
         for name in ("data_timestamp_utc", "created_at_utc", "expires_at_utc"):
@@ -180,6 +215,8 @@ class Signal:
             raise SignalError("signal must expire after its data timestamp")
         for name in ("entry_price", "stop_loss", "take_profit"):
             _finite(name, getattr(self, name))
+        if not (math.isfinite(self.risk_scale) and 0.0 < self.risk_scale <= 1.0):
+            raise SignalError(f"risk_scale must be in (0, 1] (got {self.risk_scale!r})")
         for name in ("score", "setup_strength"):
             value = getattr(self, name)
             if not (math.isfinite(value) and 0.0 <= value <= 100.0):
@@ -254,6 +291,8 @@ class Signal:
             "explanation": self.explanation,
             "bar_times": {tf.value: t.isoformat() for tf, t in self.bar_times},
             "confluence": [[name, points] for name, points in self.confluence],
+            # only when set, so the JSON of every other signal stays as it was
+            **({} if self.risk_scale == 1.0 else {"risk_scale": self.risk_scale}),
         }
 
     def to_json(self) -> str:
@@ -283,6 +322,7 @@ class Signal:
             explanation=d["explanation"],
             bar_times=tuple((Timeframe(tf), datetime.fromisoformat(t)) for tf, t in d["bar_times"].items()),
             confluence=tuple((str(n), float(p)) for n, p in d.get("confluence", [])),
+            risk_scale=float(d.get("risk_scale", 1.0)),
         )
         if d.get("idempotency_key") not in (None, sig.idempotency_key):
             raise SignalError(

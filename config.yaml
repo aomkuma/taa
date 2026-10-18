@@ -111,6 +111,40 @@ lanes:
     max_spread_to_sl_ratio: 1.0     # a stop of 2 x ATR(60 M1 bars) is a few spreads wide
     management:
       setup_breakout_scalp: {break_even: false, trailing: false, time_stop_bars: 60}   # one hour, as backtested
+  - name: own                       # Setup OWN, F1 CONF-72 v2 on M1 gold: the 0.5 M15-ATR stop floor, a runner in
+    symbols: [XAUUSD]               # a strong phase, the 10-bar scratch (owner, 2026-10-18; docs/OWN_SETUP.md)
+    timeframes:
+      higher: H1                    # the tide (EMA 20 / 50)
+      entry: M1
+      warmup_bars: 4800             # the 72-hour extreme (4,321 M1 bars), 3 days of M15 ATR (4,545)
+      context: [M15, H1]            # the chart-read levels
+      context_bars: 700
+    strategies:
+      cooldown_bars: 0              # as researched: one position at a time is the only spacing
+      signal_expiry_bars: 1
+      items:
+        - name: setup_own_conf72
+          enabled: true             # DEMO from 2026-10-19 (owner, 2026-10-18: "open it for tomorrow's market")
+          params: {exit_mode: regime, scratch_bars: 10, off_round: half}   # v2 + half size off the round 50
+    max_spread_to_sl_ratio: 0.2     # the stop is at least 3 U (about 3.4 USD) against a 0.3-0.45 USD spread
+    min_risk_reward: 0.7            # the 8 U target against a 3-10 U stop widened to 0.5 M15 ATR: RR 0.77-2.4
+    management:                     # break-even at 0.6 of the 8 U target, no trailing; a runner out after 180 bars
+      setup_own_conf72: {break_even_target_share: 0.6, trailing: false, time_stop_bars: 180}   # (v1: 60)
+  - name: news                      # Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes (owner,
+    symbols: [XAUUSD]               # 2026-10-18; app/strategy/release_straddle.py, calendar app/news/us_releases.csv)
+    timeframes:
+      higher: H1
+      entry: M1                     # its bars only close the position after the release minute
+      warmup_bars: 60
+    strategies:
+      cooldown_bars: 0
+      signal_expiry_bars: 1
+      items:
+        - name: setup_own_s2
+          enabled: true             # DEMO from 2026-10-19 (owner, 2026-10-18); next release NFP 2026-11-06
+          params: {}                # D 2 U, stop 8 U (1 U = price / 4000), out after the release minute
+    management:
+      setup_own_s2: {break_even: false, trailing: false}
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
@@ -158,7 +192,8 @@ high_risk:                           # ON for DEMO (owner, 2026-10-14); remove t
   min_lot_max_risk_percent: 20       # the minimum lot above the budget, up to this risk (else no trade); owner,
                                      #   2026-10-17: the ceiling (20), gold's 0.01 lot on a 100 USD account
   modes: [PAPER, DEMO]
-  setups: [setup_harmonic_prz, setup_breakout, setup_breakout_scalp]   # proven setups; S1 (owner, 2026-10-15)
+  setups: [setup_harmonic_prz, setup_breakout, setup_breakout_scalp, setup_own_conf72, setup_own_s2]   # S1 (owner,
+                                     #   2026-10-15); F1 + S2 (owner, 2026-10-18: DEMO)
   fade_risk_factor: 0.5              # fades (FADE) risk half the preset
   min_margin_level_percent: 150      # owner, 2026-10-15: the full preset risk on tight stops (floor 120;
   max_margin_utilization_percent: 80 #   FBS calls margin at 40 %, stops out at 20 %; ceiling 90)
@@ -169,7 +204,10 @@ sessions:                           # entry windows; local times of `timezone` (
       start: "07:00"
       end: "20:00"
       timezone: UTC
-  by_symbol: {}                     # e.g. US30: [{days: [0,1,2,3,4], start: "09:30", end: "16:00", timezone: America/New_York}]
+  by_symbol:                        # e.g. US30: [{days: [0,1,2,3,4], start: "09:30", end: "16:00", timezone: America/New_York}]
+    XAUUSD:                         # gold also in the Asian open (Setup OWN's Asia window 00-02 UTC; owner, 2026-10-18)
+      - {days: [0, 1, 2, 3, 4], start: "00:00", end: "02:00", timezone: UTC}
+      - {days: [0, 1, 2, 3, 4], start: "07:00", end: "20:00", timezone: UTC}
   friday_cutoff_utc: "20:00"
   news_blackouts: []                # e.g. - {start_utc: 2026-10-02T12:15:00Z, end_utc: 2026-10-02T13:00:00Z, currencies: [USD], reason: NFP}
 
@@ -347,7 +385,7 @@ ai:                                 # optional review of entries (AI_PROVIDER / 
   timeout_seconds: 20               # one retry; a late answer is no answer (HOLD in veto mode)
   min_confidence: 60                # veto mode: AGREE below this counts as unsure
   max_calls_per_day: 50             # budgets: when used up, veto mode holds (AI_UNAVAILABLE)
-  max_cost_per_day_usd: 2.0
+  max_cost_per_day_usd: 1.0         # owner, 2026-10-18: at most 1 USD a day
   advisory:                         # AI on advisory (TAA-1305): opinions and TH/EN narratives, written on the
     enabled: false                  # engine with the same provider whatever AI_MODE says; descriptive only
     opinions: true                  # one opinion per new opportunity (verdict, confidence, reasons, narrative)
@@ -359,4 +397,4 @@ ai:                                 # optional review of entries (AI_PROVIDER / 
     analytics_every_hours: 24
     analytics_days: 7
     max_calls_per_day: 100          # its own budget, separate from the entry review's
-    max_cost_per_day_usd: 3.0
+    max_cost_per_day_usd: 0.0       # owner, 2026-10-18: the whole AI spend at most 1 USD a day (the entry review's)

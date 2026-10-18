@@ -1,0 +1,107 @@
+XAUUSD_M1_design_rgrid decision bars 717290
+  check gold o=0: build 76 signals, multi 76, common 76
+  check gold o=25: build 128 signals, multi 128, common 128
+
+== XAUUSD (step 50; 8 U ~ 6.591; spread med 0.23 + 0.08)
+  true grid: 41 (0.07/d) win 51% (coin 29) net +0.536 gross +0.686 coin -0.026 | halves [+0.54(4) +0.71(8) +0.55(7) -0.25(4) +0.63(18)]
+  placebo grids (net / gross / n): 0.2: -0.055 / +0.101 / 60; 0.4: -0.033 / +0.171 / 53; 0.5: -0.257 / -0.177 / 64; 0.6: -0.203 / -0.081 / 59; 0.8: +0.137 / +0.262 / 51 | mean -0.082 / +0.056
+  -> PASS (gross over the placebo +0.630, net +0.536, halves+ 3/3)
+EURUSD_M1_design_rgrid decision bars 721787
+
+== EURUSD (step 0.005; 8 U ~ 0.00061; spread med 8e-05 + 2.5e-05)
+  true grid: 68 (0.11/d) win 29% (coin 29) net -0.209 gross +0.092 coin -0.252 | halves [-0.36(14) -0.41(15) -0.29(15) +0.01(4) +0.06(20)]
+  placebo grids (net / gross / n): 0.2: -0.276 / -0.052 / 72; 0.4: -0.229 / +0.137 / 59; 0.5: -0.395 / -0.043 / 84; 0.6: -0.351 / -0.049 / 71; 0.8: -0.388 / -0.090 / 53 | mean -0.328 / -0.019
+  -> fail (gross over the placebo +0.111, net -0.209, halves+ 1/4)
+GBPUSD_M1_design_rgrid decision bars 721785
+
+== GBPUSD (step 0.005; 8 U ~ 0.0007888; spread med 9e-05 + 2.5e-05)
+  true grid: 88 (0.14/d) win 33% (coin 26) net -0.129 gross +0.084 coin -0.218 | halves [-0.32(17) -0.05(14) +0.04(22) -0.20(16) -0.15(19)]
+  placebo grids (net / gross / n): 0.2: -0.325 / -0.067 / 110; 0.4: -0.415 / -0.178 / 114; 0.5: -0.049 / +0.059 / 108; 0.6: -0.165 / +0.123 / 123; 0.8: -0.266 / -0.075 / 119 | mean -0.244 / -0.028
+  -> fail (gross over the placebo +0.112, net -0.129, halves+ 1/5)
+AUDUSD_M1_design_rgrid decision bars 721466
+
+== AUDUSD (step 0.005; 8 U ~ 0.0005399; spread med 9e-05 + 3.15e-05)
+  true grid: 71 (0.12/d) win 17% (coin 18) net -0.518 gross +0.028 coin -0.482 | halves [-0.43(17) -0.62(18) -0.61(17) -0.39(10) -0.45(9)]
+  placebo grids (net / gross / n): 0.2: -0.419 / -0.120 / 88; 0.4: -0.328 / +0.112 / 83; 0.5: -0.403 / +0.042 / 76; 0.6: -0.487 / -0.127 / 79; 0.8: -0.655 / -0.269 / 81 | mean -0.459 / -0.072
+  -> fail (gross over the placebo +0.100, net -0.518, halves+ 0/5)
+NZDUSD_M1_design_rgrid decision bars 721232
+
+== NZDUSD (step 0.005; 8 U ~ 0.0005013; spread med 0.00012 + 4.2e-05)
+  true grid: 85 (0.14/d) win 11% (coin 9) net -0.678 gross -0.121 coin -0.694 | halves [-0.73(20) -0.68(14) -0.60(25) -0.84(14) -0.56(12)]
+  placebo grids (net / gross / n): 0.2: -0.738 / +0.047 / 87; 0.4: -0.742 / -0.065 / 85; 0.5: -0.699 / +0.050 / 95; 0.6: -0.708 / +0.028 / 85; 0.8: -0.661 / -0.129 / 103 | mean -0.709 / -0.014
+  -> fail (gross over the placebo -0.107, net -0.678, halves+ 0/5)
+USDCAD_M1_design_rgrid decision bars 721422
+
+== USDCAD (step 0.005; 8 U ~ 0.0005749; spread med 0.00011 + 3.85e-05)
+  true grid: 75 (0.12/d) win 12% (coin 17) net -0.501 gross +0.102 coin -0.481 | halves [-0.37(23) -0.65(13) -0.42(19) -0.49(11) -0.79(9)]
+  placebo grids (net / gross / n): 0.2: -0.431 / +0.073 / 89; 0.4: -0.597 / -0.165 / 68; 0.5: -0.340 / +0.221 / 92; 0.6: -0.511 / -0.002 / 89; 0.8: -0.508 / -0.119 / 89 | mean -0.477 / +0.002
+  -> fail (gross over the placebo +0.101, net -0.501, halves+ 0/5)
+USDCHF_M1_design_rgrid decision bars 721332
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+C:\Users\korap\taa\research\2026-10-18-moments\agents\weapon4\w4lib.py:588: RuntimeWarning: divide by zero encountered in divide
+  G["level"], G["level_kind"], G["dist_atr"] = level, 3, dist / atr
+
+== USDCHF (step 0.005; 8 U ~ 0.0005118; spread med 9e-05 + 3.15e-05)
+  true grid: 62 (0.10/d) win 23% (coin 22) net -0.351 gross -0.001 coin -0.381 | halves [-0.17(13) -0.64(16) -0.22(12) -0.65(7) -0.15(14)]
+  placebo grids (net / gross / n): 0.2: -0.459 / -0.059 / 75; 0.4: -0.463 / -0.046 / 73; 0.5: -0.440 / -0.015 / 58; 0.6: -0.558 / -0.123 / 67; 0.8: -0.422 / +0.106 / 56 | mean -0.468 / -0.027
+  -> fail (gross over the placebo +0.026, net -0.351, halves+ 0/5)
+USDJPY_M1_design_rgrid decision bars 721770
+
+== USDJPY (step 0.5; 8 U ~ 0.128; spread med 0.009 + 0.0025)
+  true grid: 129 (0.21/d) win 38% (coin 32) net +0.044 gross +0.208 coin -0.090 | halves [+0.10(15) -0.04(24) +0.09(32) -0.27(32) +0.42(26)]
+  placebo grids (net / gross / n): 0.2: -0.116 / +0.046 / 155; 0.4: -0.234 / -0.033 / 166; 0.5: -0.350 / -0.094 / 172; 0.6: -0.248 / +0.026 / 153; 0.8: -0.315 / -0.099 / 164 | mean -0.253 / -0.031
+  -> fail (gross over the placebo +0.239, net +0.044, halves+ 3/5)
+US500_M1_design_rgrid decision bars 229714
+
+== US500 (step 50; 8 U ~ 4.645; spread med 0.55 + 0.193)
+  true grid: 24 (0.04/d) win 25% (coin 22) net -0.217 gross +0.127 coin -0.322 | halves [-0.55(2) -0.31(3) -0.11(6) -0.27(7) -0.11(6)]
+  placebo grids (net / gross / n): 0.2: -0.506 / -0.037 / 39; 0.4: -0.092 / +0.136 / 29; 0.5: -0.391 / -0.053 / 24; 0.6: -0.090 / +0.073 / 24; 0.8: -0.466 / -0.246 / 35 | mean -0.309 / -0.025
+  -> fail (gross over the placebo +0.152, net -0.217, halves+ 0/3)
+US100_M1_design_rgrid decision bars 229937
+
+== US100 (step 250; 8 U ~ 24.38; spread med 2 + 0.7)
+  true grid: 25 (0.04/d) win 40% (coin 30) net +0.068 gross +0.051 coin -0.145 | halves [+0.03(5) +0.31(8) +0.46(5) +nan(0) -0.46(7)]
+  placebo grids (net / gross / n): 0.2: -0.139 / +0.062 / 26; 0.4: -0.243 / +0.001 / 22; 0.5: +0.021 / +0.362 / 22; 0.6: +0.123 / +0.325 / 27; 0.8: -0.155 / +0.100 / 30 | mean -0.079 / +0.170
+  -> fail (gross over the placebo -0.119, net +0.068, halves+ 3/4)
+US30_M1_design_rgrid decision bars 229909
+
+== US30 (step 250; 8 U ~ 36.11; spread med 3.9 + 1.36)
+  true grid: 21 (0.03/d) win 29% (coin 33) net -0.173 gross -0.003 coin -0.123 | halves [-0.06(3) +0.05(5) -0.81(5) -0.27(3) +0.24(5)]
+  placebo grids (net / gross / n): 0.2: -0.331 / -0.029 / 19; 0.4: -0.073 / +0.151 / 29; 0.5: +0.017 / +0.306 / 19; 0.6: +0.009 / +0.226 / 25; 0.8: -0.025 / +0.093 / 18 | mean -0.080 / +0.149
+  -> fail (gross over the placebo -0.152, net -0.173, halves+ 2/3)
+JP225_M1_design_rgrid decision bars 444715
+
+== JP225 (step 500; 8 U ~ 77.83; spread med 7 + 2.45)
+  true grid: 58 (0.10/d) win 28% (coin 22) net -0.180 gross +0.188 coin -0.295 | halves [-0.20(11) +0.51(9) -0.28(9) -0.51(10) -0.27(19)]
+  placebo grids (net / gross / n): 0.2: -0.183 / -0.004 / 57; 0.4: -0.266 / +0.089 / 59; 0.5: -0.288 / -0.090 / 53; 0.6: -0.377 / -0.042 / 59; 0.8: -0.393 / -0.031 / 65 | mean -0.301 / -0.016
+  -> fail (gross over the placebo +0.204, net -0.180, halves+ 1/5)
+XAUAUD_M1_design_rgrid decision bars 716161
+
+== XAUAUD (step 50; 8 U ~ 8.133; spread med 1.67 + 0.535)
+  true grid: 101 (0.17/d) win 16% (coin 17) net -0.464 gross +0.051 coin -0.481 | halves [-1.00(2) -0.82(14) -0.56(26) -0.21(18) -0.37(41)]
+  placebo grids (net / gross / n): 0.2: -0.423 / +0.174 / 87; 0.4: -0.557 / -0.002 / 114; 0.5: -0.519 / +0.037 / 89; 0.6: -0.483 / +0.087 / 93; 0.8: -0.593 / +0.003 / 98 | mean -0.515 / +0.060
+  -> fail (gross over the placebo -0.009, net -0.464, halves+ 0/4)
+
+== pooled (no gold): 807 trades (1.33/d) net -0.295 [-0.33(142) -0.34(153) -0.29(193) -0.37(132) -0.18(187)]
+  by market: AUDUSD 71 -0.518, EURUSD 68 -0.209, GBPUSD 88 -0.129, JP225 58 -0.180, NZDUSD 85 -0.678, US100 25 +0.068, US30 21 -0.173, US500 24 -0.217, USDCAD 75 -0.501, USDCHF 62 -0.351, USDJPY 129 +0.044, XAUAUD 101 -0.464

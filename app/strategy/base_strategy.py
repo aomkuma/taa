@@ -23,6 +23,8 @@ from app.core.ids import new_id
 from app.evidence.framework import Family
 from app.strategy.signal_models import (
     Condition,
+    OpenPosition,
+    PositionAdvice,
     ReasonCode,
     Signal,
     SignalEvidence,
@@ -76,6 +78,11 @@ class BaseStrategy(ABC):
         """Whether an open position of this strategy should be closed at this bar (default: never)."""
         return False
 
+    def manage_position(self, ctx: StrategyContext, pos: OpenPosition) -> PositionAdvice | None:
+        """The strategy's own management of *pos* at this closed bar, next to the configured rules (default:
+        none). It must hold without its own memory (a restart): *pos* carries the plan's prices."""
+        return None
+
     # signal builders -----------------------------------------------------------------------------------
 
     def _base(self, ctx: StrategyContext, action: Action) -> dict[str, Any]:
@@ -125,6 +132,7 @@ class BaseStrategy(ABC):
         explanation: str = "",
         entry_type: EntryType = EntryType.MARKET,
         evidence: Iterable[SignalEvidence] = (),
+        risk_scale: float = 1.0,
     ) -> Signal:
         if not action.is_entry:
             raise ValueError(f"entry() needs BUY or SELL, not {action}")
@@ -142,4 +150,5 @@ class BaseStrategy(ABC):
             evidence=tuple(evidence),
             reason_codes=tuple(str(r) for r in labels),
             explanation=explanation,
+            risk_scale=risk_scale,
         )

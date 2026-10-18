@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import bisect
 import logging
 import math
 from collections.abc import Mapping, Sequence
@@ -196,13 +197,18 @@ def _state(frame: AnalyzedFrame, pos: int) -> TimeframeState:
 
 
 def _levels(
-    frame: AnalyzedFrame, pos: int, tolerance_atr: float
+    frame: AnalyzedFrame, pos: int, tolerance_atr: float, first: int = 0
 ) -> tuple[tuple[float, ...], tuple[float, ...]]:
+    """S/R zones from the swings inside the window that starts at row *first* (the strategies' window, as
+    live, where the frame holds only the warm-up bars); the swings are in ``confirm_pos`` order."""
     atr_value = _opt(frame.df["atr"].iloc[pos])
     if atr_value is None or atr_value <= 0:
         return (), ()
     close = float(frame.df["close"].iloc[pos])
-    zones = sr_zones(frame.swings, as_of_pos=pos, atr_value=atr_value, tolerance_atr=tolerance_atr)
+    lo = bisect.bisect_left(frame.swings, first, key=lambda s: s.confirm_pos)
+    hi = bisect.bisect_right(frame.swings, pos, key=lambda s: s.confirm_pos)
+    swings = [s for s in frame.swings[lo:hi] if s.pivot_pos >= first]
+    zones = sr_zones(swings, as_of_pos=pos, atr_value=atr_value, tolerance_atr=tolerance_atr)
     support = sorted((z.center for z in zones if z.role(close) == "SUPPORT"), reverse=True)
     resistance = sorted(z.center for z in zones if z.role(close) == "RESISTANCE")
     return tuple(support[:MAX_LEVELS]), tuple(resistance[:MAX_LEVELS])
@@ -250,7 +256,8 @@ def context_at(
         lag = (decision_time - states[-1].bar_close_utc).total_seconds()
         if lag >= 2 * tf.seconds:
             flags.append(f"{tf.value}:ALIGNMENT_LAG:{int(lag // tf.seconds)}")
-    support, resistance = _levels(entry, n_entry - 1, params.sr_tolerance_atr)
+    first = 0 if window is None else max(0, n_entry - window)
+    support, resistance = _levels(entry, n_entry - 1, params.sr_tolerance_atr, first)
     spread = None if quote is None or not quote.valid else quote.spread_points
     market = MarketContext(
         symbol=symbol,

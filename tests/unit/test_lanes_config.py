@@ -89,5 +89,11 @@ class TestDerived:
         c = config(lane())
         assert c.spread_ratio_for(S1) == 1.0
         assert c.spread_ratio_for("setup_breakout") is None
+        assert c.min_rr_for(S1) is None
+        rr = config(lane(min_risk_reward=0.7))
+        assert rr.min_rr_for(S1) == 0.7 and rr.min_rr_for("setup_breakout") is None
+        assert rr.for_lane(rr.lane("s1")).risk.min_risk_reward == 0.7
+        with pytest.raises(ValidationError):
+            config(lane(min_risk_reward=0))
         assert c.cooldown_bars_for(S1) == 60
         assert c.cooldown_bars_for("setup_breakout") == c.strategies.cooldown_bars

@@ -253,10 +253,17 @@ class DecisionEngine:
         own_ratio = self.config.spread_ratio_for(signal.strategy)
         if own_ratio is not None:  # a lane's scalp: its stop is a few spreads wide (config lanes)
             risk = risk.model_copy(update={"max_spread_to_sl_ratio": own_ratio})
+        own_rr = self.config.min_rr_for(signal.strategy)
+        if own_rr is not None and not is_fade:  # a lane's fixed target may sit nearer than its stop
+            risk = risk.model_copy(update={"min_risk_reward": own_rr})
         if isinstance(risk, HighRiskCage) and is_fade:
             # aggressive preset: a fade (win ~+0.44 R, lose -1 R) risks a fraction of the preset (PLAN §A36)
             risk = risk.model_copy(
                 update={"max_risk_per_trade_percent": risk.max_risk_per_trade_percent * risk.fade_risk_factor}
+            )
+        if signal.risk_scale < 1.0:  # the strategy's own smaller size (e.g. F1 off the round 50)
+            risk = risk.model_copy(
+                update={"max_risk_per_trade_percent": risk.max_risk_per_trade_percent * signal.risk_scale}
             )
         checks: list[Check] = []
         checks += self._system(req, profile)

@@ -15,19 +15,19 @@ Stop invariants, enforced here before any change:
 from __future__ import annotations
 
 import logging
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from datetime import datetime
 
 from app.config import PositionManagementConfig
 from app.core.clock import Clock
-from app.core.enums import ExitReason
+from app.core.enums import ExitReason, Side
 from app.engine.paper import PaperExecution
 from app.execution.fill_model import mark_price
-from app.execution.management import PositionView, better_stop, manage, plan_break_even
+from app.execution.management import PositionView, better_stop, from_advice, manage, plan_break_even
 from app.market_data.data_models import SymbolSpec
 from app.monitoring.alerts import EventBus, EventType
 from app.strategy.base_strategy import BaseStrategy
-from app.strategy.signal_models import StrategyContext
+from app.strategy.signal_models import OpenPosition, StrategyContext
 
 log = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ class PositionManager:
                 if own is None or own.timeframe is None
                 else max(0, int((now - pos.entry_time).total_seconds() // own.timeframe.seconds))
             )
-            view = PositionView(pos.side, pos.entry_price, pos.request.sl, pos.sl, bars)
+            view = PositionView(pos.side, pos.entry_price, pos.request.sl, pos.sl, bars, pos.request.tp)
             cfg = self.config.for_strategy(name)
             adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=cfg)
             if pos.ticket in to_break_even:
@@ -123,6 +123,38 @@ class PositionManager:
             if strategy is not None and not pos.close_requested and strategy.should_close(ctx, pos.side):
                 log.info("strategy %s closes #%s on %s", strategy.name, pos.ticket, symbol)
                 self.paper.request_close(pos.ticket, ExitReason.SIGNAL)
+
+    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
+        """A lane's closed entry bar: the own management (``manage_position``) of that lane's strategies."""
+        spec = self.specs[symbol]
+        for pos in [p for p in self.paper.broker.positions.values() if p.symbol == symbol]:
+            strategy = self.strategies_by_magic.get(pos.request.magic)
+            if strategy is None or strategy.name not in strategies or pos.close_requested or pos.sl is None:
+                continue
+            mark = ctx.market.bid if pos.side is Side.BUY else ctx.market.ask
+            if mark is None or pos.request.sl is None:
+                continue
+            view = OpenPosition(
+                pos.side,
+                pos.entry_price,
+                pos.request.sl,
+                pos.sl,
+                pos.request.tp,
+                pos.entry_time,
+                pos.request.signal_id,
+            )
+            adj = from_advice(strategy.manage_position(ctx, view), pos.side, mark=mark, sl=pos.sl)
+            if adj is None:
+                continue
+            if adj.close is not None:
+                log.info("strategy %s closes #%s: %s", strategy.name, pos.ticket, adj.note)
+                self.paper.request_close(pos.ticket, adj.close)
+            elif adj.new_sl is not None:
+                if (mark - adj.new_sl) * pos.side.sign <= (spec.stops_level + spec.freeze_level) * spec.point:
+                    self.paper.request_close(pos.ticket, adj.stop_kind or ExitReason.SIGNAL)
+                    continue
+                self.paper.modify_stop(pos.ticket, adj.new_sl, adj.stop_kind)
+                self._last_modify[pos.ticket] = self.clock.now_utc()
 
     def _missing_stop(self, ticket: int, initial: float | None) -> None:
         if initial is not None:

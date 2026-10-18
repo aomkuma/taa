@@ -8387,7 +8387,7 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "d402840bc598816f",
+        "config_hash": "e351d0ecda03143f",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
         "detectors": [],
         "seed": 42,
@@ -8514,7 +8514,7 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "d402840bc598816f",
+          "config_hash": "e351d0ecda03143f",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "detectors": [],
           "seed": 42,
@@ -8570,7 +8570,7 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "d402840bc598816f",
+          "config_hash": "e351d0ecda03143f",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "detectors": [],
           "seed": 42,
@@ -9075,7 +9075,7 @@
             "enabled": false,
             "max_age_minutes": 10,
             "max_calls_per_day": 100,
-            "max_cost_per_day_usd": 3.0,
+            "max_cost_per_day_usd": 0.0,
             "min_score": 0.0,
             "opinions": true,
             "ranking_every_hours": 24,
@@ -9083,7 +9083,7 @@
           },
           "effort": "low",
           "max_calls_per_day": 50,
-          "max_cost_per_day_usd": 2.0,
+          "max_cost_per_day_usd": 1.0,
           "min_confidence": 60,
           "timeout_seconds": 20.0
         },
@@ -9224,7 +9224,9 @@
           "setups": [
             "setup_harmonic_prz",
             "setup_breakout",
-            "setup_breakout_scalp"
+            "setup_breakout_scalp",
+            "setup_own_conf72",
+            "setup_own_s2"
           ]
         },
         "indicators": {
@@ -9256,6 +9258,7 @@
             "management": {
               "setup_breakout_scalp": {
                 "break_even": false,
+                "break_even_target_share": null,
                 "break_even_trigger_r": null,
                 "time_stop_bars": 60,
                 "timeframe": null,
@@ -9264,6 +9267,7 @@
               }
             },
             "max_spread_to_sl_ratio": 1.0,
+            "min_risk_reward": null,
             "name": "s1",
             "strategies": {
               "allow_single_indicator_signals": false,
@@ -9313,6 +9317,97 @@
               "stale_tick_seconds": 120.0,
               "warmup_bars": 400
             }
+          },
+          {
+            "management": {
+              "setup_own_conf72": {
+                "break_even": true,
+                "break_even_target_share": 0.6,
+                "break_even_trigger_r": null,
+                "time_stop_bars": 180,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              }
+            },
+            "max_spread_to_sl_ratio": 0.2,
+            "min_risk_reward": 0.7,
+            "name": "own",
+            "strategies": {
+              "allow_single_indicator_signals": false,
+              "cooldown_bars": 0,
+              "items": [
+                {
+                  "enabled": true,
+                  "name": "setup_own_conf72",
+                  "params": {
+                    "exit_mode": "regime",
+                    "off_round": "half",
+                    "scratch_bars": 10
+                  }
+                }
+              ],
+              "signal_expiry_bars": 1
+            },
+            "symbols": [
+              "XAUUSD"
+            ],
+            "timeframes": {
+              "candle_close_grace_seconds": 3.0,
+              "context": [
+                "M15",
+                "H1"
+              ],
+              "context_bars": 700,
+              "entry": "M1",
+              "higher": "H1",
+              "max_gap_bars": 3,
+              "refinement": null,
+              "stale_tick_seconds": 120.0,
+              "warmup_bars": 4800
+            }
+          },
+          {
+            "management": {
+              "setup_own_s2": {
+                "break_even": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              }
+            },
+            "max_spread_to_sl_ratio": null,
+            "min_risk_reward": null,
+            "name": "news",
+            "strategies": {
+              "allow_single_indicator_signals": false,
+              "cooldown_bars": 0,
+              "items": [
+                {
+                  "enabled": true,
+                  "name": "setup_own_s2",
+                  "params": {}
+                }
+              ],
+              "signal_expiry_bars": 1
+            },
+            "symbols": [
+              "XAUUSD"
+            ],
+            "timeframes": {
+              "candle_close_grace_seconds": 3.0,
+              "context": [],
+              "context_bars": 700,
+              "entry": "M1",
+              "higher": "H1",
+              "max_gap_bars": 3,
+              "refinement": null,
+              "stale_tick_seconds": 120.0,
+              "warmup_bars": 60
+            }
           }
         ],
         "paper": {
@@ -9322,10 +9417,12 @@
         },
         "position_management": {
           "break_even_buffer_points": 2.0,
+          "break_even_target_share": null,
           "break_even_trigger_r": 1.0,
           "by_strategy": {
             "setup_harmonic_prz": {
               "break_even": false,
+              "break_even_target_share": null,
               "break_even_trigger_r": null,
               "time_stop_bars": null,
               "timeframe": null,
@@ -9391,7 +9488,34 @@
           "tick_value_tolerance": 0.1
         },
         "sessions": {
-          "by_symbol": {},
+          "by_symbol": {
+            "XAUUSD": [
+              {
+                "days": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4
+                ],
+                "end": "02:00",
+                "start": "00:00",
+                "timezone": "UTC"
+              },
+              {
+                "days": [
+                  0,
+                  1,
+                  2,
+                  3,
+                  4
+                ],
+                "end": "20:00",
+                "start": "07:00",
+                "timezone": "UTC"
+              }
+            ]
+          },
           "default": [
             {
               "days": [
@@ -14129,6 +14253,128 @@
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 120
+      },
+      {
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN F1 CONF-72: H1 tide, a level, price action and two of three M5 indicators, near the 72-hour extreme; M1 gold. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_own_conf72",
+        "overrides": [
+          "exit_mode",
+          "off_round",
+          "scratch_bars"
+        ],
+        "params": {
+          "asia_end_hour_utc": 7,
+          "atr_median_bars": 1440,
+          "atr_ratio_max": 2.0,
+          "exit_mode": "regime",
+          "expiry_bars": 1,
+          "fixed_hold_bars": 60,
+          "level_lag_bars": 15,
+          "level_max_atr": 3.0,
+          "min_indicators": 2,
+          "off_round": "half",
+          "reclaim_atr": 0.1,
+          "regime_bars": 288,
+          "regime_ratio": 1.3,
+          "room72_bars": 4305,
+          "room72_lag": 16,
+          "room72_share": 0.5,
+          "round_step": 50.0,
+          "runner_be_share": 0.6,
+          "runner_cap_u": 40.0,
+          "runner_lock_atr": 0.5,
+          "scratch_bars": 10,
+          "scratch_min_u": 2.0,
+          "stop_floor_m15_atr": 0.5,
+          "stop_max_u": 10.0,
+          "stop_min_u": 3.0,
+          "target_u": 8.0,
+          "touch_atr": 1.0,
+          "unit_price": 4100.0,
+          "window_zone": "UTC",
+          "windows": [
+            "00:00-02:00",
+            "07:00-12:00",
+            "12:00-17:00"
+          ]
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [
+          "M1",
+          "H1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 4545
+      },
+      {
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_own_s2",
+        "overrides": [],
+        "params": {
+          "arm_seconds": 30.0,
+          "calendar_file": "app/news/us_releases.csv",
+          "events": [
+            "CPI",
+            "NFP"
+          ],
+          "expiry_bars": 1,
+          "hold_seconds": 60.0,
+          "stop_u": 8.0,
+          "target_cap_u": 30.0,
+          "trigger_u": 2.0,
+          "unit_price": 4000.0,
+          "window_seconds": 60.0
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 50
       }
     ],
     "timeframes": {
@@ -14941,6 +15187,128 @@
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 120
+      },
+      {
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN F1 CONF-72: H1 tide, a level, price action and two of three M5 indicators, near the 72-hour extreme; M1 gold. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_own_conf72",
+        "overrides": [
+          "exit_mode",
+          "off_round",
+          "scratch_bars"
+        ],
+        "params": {
+          "asia_end_hour_utc": 7,
+          "atr_median_bars": 1440,
+          "atr_ratio_max": 2.0,
+          "exit_mode": "regime",
+          "expiry_bars": 1,
+          "fixed_hold_bars": 60,
+          "level_lag_bars": 15,
+          "level_max_atr": 3.0,
+          "min_indicators": 2,
+          "off_round": "half",
+          "reclaim_atr": 0.1,
+          "regime_bars": 288,
+          "regime_ratio": 1.3,
+          "room72_bars": 4305,
+          "room72_lag": 16,
+          "room72_share": 0.5,
+          "round_step": 50.0,
+          "runner_be_share": 0.6,
+          "runner_cap_u": 40.0,
+          "runner_lock_atr": 0.5,
+          "scratch_bars": 10,
+          "scratch_min_u": 2.0,
+          "stop_floor_m15_atr": 0.5,
+          "stop_max_u": 10.0,
+          "stop_min_u": 3.0,
+          "target_u": 8.0,
+          "touch_atr": 1.0,
+          "unit_price": 4100.0,
+          "window_zone": "UTC",
+          "windows": [
+            "00:00-02:00",
+            "07:00-12:00",
+            "12:00-17:00"
+          ]
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [
+          "M1",
+          "H1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 4545
+      },
+      {
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_own_s2",
+        "overrides": [],
+        "params": {
+          "arm_seconds": 30.0,
+          "calendar_file": "app/news/us_releases.csv",
+          "events": [
+            "CPI",
+            "NFP"
+          ],
+          "expiry_bars": 1,
+          "hold_seconds": 60.0,
+          "stop_u": 8.0,
+          "target_cap_u": 30.0,
+          "trigger_u": 2.0,
+          "unit_price": 4000.0,
+          "window_seconds": 60.0
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 50
       }
     ],
     "timeframes": {

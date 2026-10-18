@@ -44,7 +44,7 @@ import pandas as pd
 
 from app.config import AppConfig, RiskConfig
 from app.core.clock import ManualClock
-from app.core.enums import ExitReason, Timeframe, TradingMode
+from app.core.enums import ExitReason, Side, Timeframe, TradingMode
 from app.core.errors import DataQualityError, InsufficientDataError
 from app.engine.decision_engine import (
     AccountState,
@@ -56,7 +56,7 @@ from app.engine.decision_engine import (
 from app.evidence.framework import EvidenceContext
 from app.evidence.registry import EvidenceEngine
 from app.execution.fill_model import Bar, mark_price
-from app.execution.management import PositionView, manage
+from app.execution.management import PositionView, from_advice, manage, with_advice
 from app.execution.simulated_broker import ClosedTrade, EquityPoint, OrderRequest, RateSource, SimulatedBroker
 from app.indicators.market_map import MarketMap
 from app.market_data.data_models import Quote, SymbolSpec
@@ -72,7 +72,7 @@ from app.strategy.base_strategy import BaseStrategy
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame, context_at
 from app.strategy.market_maps import MapBook
 from app.strategy.registry import StrategySet
-from app.strategy.signal_models import StrategyContext
+from app.strategy.signal_models import OpenPosition, StrategyContext
 
 log = logging.getLogger(__name__)
 
@@ -447,15 +447,24 @@ class BacktestEngine:
                 continue
             if p.request.sl is None or p.sl is None:
                 continue
+            mark = mark_price(p.side, bar.close, bar.spread)
+            own = None
+            if strategy is not None:
+                view = OpenPosition(
+                    p.side, p.entry_price, p.request.sl, p.sl, p.request.tp, p.entry_time, p.request.signal_id
+                )
+                own = from_advice(strategy.manage_position(ctx, view), p.side, mark=mark, sl=p.sl)
             # bars held on the lane's own timeframe (the broker may step the symbol on a finer one)
             held = p.bars_held if own_feed else entry.count_upto(t) - entry.count_upto(p.entry_time)
             adj = manage(
-                PositionView(p.side, p.entry_price, p.request.sl, p.sl, held),
-                mark=mark_price(p.side, bar.close, bar.spread),
+                PositionView(p.side, p.entry_price, p.request.sl, p.sl, held, p.request.tp),
+                mark=mark,
                 atr=ctx.market.atr,
                 point=spec.point,
                 cfg=cfg.for_strategy(name),
+                reach=bar.high if p.side is Side.BUY else bar.low + bar.spread,
             )
+            adj = with_advice(p.side, adj, own)
             if adj.close is not None:
                 self.broker.request_close(p.ticket, adj.close)
             elif adj.new_sl is not None:

@@ -18,6 +18,8 @@ import frameworkPy from '../../../app/evidence/framework.py?raw';
 import strategiesPy from '../../../app/web/strategies.py?raw';
 import commandQueuePy from '../../../app/sync/command_queue.py?raw';
 import exampleStrategyPy from '../../../app/strategy/example_strategy.py?raw';
+import ownSetupPy from '../../../app/strategy/own_setup.py?raw';
+import releaseStraddlePy from '../../../app/strategy/release_straddle.py?raw';
 import setupsPy from '../../../app/strategy/setups.py?raw';
 import backtestModelsPy from '../../../app/storage/models/backtests.py?raw';
 import commandsPy from '../../../app/sync/commands.py?raw';
@@ -143,8 +145,8 @@ describe('code lists match the backend enums', () => {
 });
 
 describe('strategy names match the catalog', () => {
-  it('every strategy class of example_strategy.py and setups.py', () => {
-    const names = [exampleStrategyPy, setupsPy].flatMap((source) =>
+  it('every strategy class of example_strategy.py, setups.py, own_setup.py, release_straddle.py', () => {
+    const names = [exampleStrategyPy, setupsPy, ownSetupPy, releaseStraddlePy].flatMap((source) =>
       [...source.matchAll(/^ {4}name = "([a-z0-9_]+)"\r?$/gm)].map((m) => m[1] ?? ''),
     );
     expect(names.length).toBeGreaterThan(5);

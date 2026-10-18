@@ -16,7 +16,7 @@ that carry the bot's magic and belong to a known intent (strays are the reconcil
 from __future__ import annotations
 
 import logging
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping
 from datetime import datetime
 
 from sqlalchemy import select
@@ -28,13 +28,13 @@ from app.core.clock import Clock
 from app.core.enums import ExitReason, Side, Timeframe
 from app.core.errors import SafetyViolation, TaaError
 from app.engine.order_manager import OrderManager
-from app.execution.management import PositionView, better_stop, manage, plan_break_even
+from app.execution.management import PositionView, better_stop, from_advice, manage, plan_break_even
 from app.market_data.data_models import SymbolSpec
 from app.monitoring.alerts import EventBus, EventType
 from app.risk.exposure_manager import MAGIC_RANGE
 from app.storage.models import OrderIntentRow
 from app.strategy.base_strategy import BaseStrategy
-from app.strategy.signal_models import StrategyContext
+from app.strategy.signal_models import OpenPosition, StrategyContext
 
 log = logging.getLogger(__name__)
 
@@ -109,7 +109,8 @@ class BrokerPositionManager:
             if first_sl is None or pos.sl <= 0:
                 continue  # unknown positions and missing stops belong to the reconciler's sweep
             mark = bid if pos.side is Side.BUY else ask
-            view = PositionView(pos.side, pos.price_open, first_sl, pos.sl, self._bars_held(pos))
+            tp = pos.tp if pos.tp > 0 else None
+            view = PositionView(pos.side, pos.price_open, first_sl, pos.sl, self._bars_held(pos), tp)
             cfg = self.config.for_strategy(self._strategy_name(pos.magic))
             adj = manage(view, mark=mark, atr=atr, point=spec.point, cfg=cfg)
             if pos.ticket in to_break_even:
@@ -162,6 +163,31 @@ class BrokerPositionManager:
             strategy = self.strategies_by_magic.get(pos.magic)
             if strategy is not None and strategy.should_close(ctx, pos.side):
                 self.close(pos, spec, ExitReason.SIGNAL)
+
+    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
+        """A lane's closed entry bar: the own management of its strategies. The position's signal is not
+        known here, so the strategy reads its plan from the position (``OpenPosition.signal_id`` empty)."""
+        spec = self.specs.get(symbol)
+        if spec is None:
+            return
+        initial = self.initial_stops()
+        for pos in self.bot_positions(symbol):
+            strategy = self.strategies_by_magic.get(pos.magic)
+            first_sl = initial.get(pos.ticket)
+            if strategy is None or strategy.name not in strategies or first_sl is None or pos.sl <= 0:
+                continue
+            mark = ctx.market.bid if pos.side is Side.BUY else ctx.market.ask
+            if mark is None:
+                continue
+            tp = pos.tp if pos.tp > 0 else None
+            view = OpenPosition(pos.side, pos.price_open, first_sl, pos.sl, tp, pos.time_utc)
+            adj = from_advice(strategy.manage_position(ctx, view), pos.side, mark=mark, sl=pos.sl)
+            if adj is None:
+                continue
+            if adj.close is not None:
+                self.close(pos, spec, adj.close)
+            elif adj.new_sl is not None:
+                self._modify(pos, spec, adj.new_sl, mark, adj.note)
 
     # --- closing ----------------------------------------------------------------------------------------
 

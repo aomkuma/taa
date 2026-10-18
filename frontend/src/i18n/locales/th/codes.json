@@ -210,7 +210,9 @@
     "setup_breakout_scalp": "การ fade ของ breakout F1 บนไทม์เฟรมสั้น (S1: scalping ทองบน M1) ใช้ใน lane เท่านั้น ยังไม่ได้พิสูจน์",
     "setup_candle_reversal": "แท่งเทียนกลับตัวที่ระดับสำคัญ (แนวรับ/ต้าน, ฟีโบนัชชี, pivot, เส้นแนวโน้ม) ยังไม่ได้พิสูจน์",
     "setup_breakout_box": "กรอบหลังวิ่งแรงที่ทะลุไปตามทิศที่วิ่ง เมื่อ H1 ไปทางเดียวกัน เป้าที่แนวถัดไปของ H1 ยังไม่ได้พิสูจน์",
-    "setup_triple_screen": "ตามเทรนด์ H4: ราคาย่อ/เด้งไปกลับตัวที่แนวของ H1/H4 แล้วเข้าเมื่อโครงสร้างราคาหลุด ยังไม่ได้พิสูจน์"
+    "setup_triple_screen": "ตามเทรนด์ H4: ราคาย่อ/เด้งไปกลับตัวที่แนวของ H1/H4 แล้วเข้าเมื่อโครงสร้างราคาหลุด ยังไม่ได้พิสูจน์",
+    "setup_own_conf72": "Setup OWN F1 CONF-72: ตามเทรนด์ H1 ที่แนวรับต้าน มี price action และอินดิเคเตอร์ M5 ยืนยัน 2 ใน 3 ใกล้จุดสูง/ต่ำสุด 72 ชั่วโมง ทองบน M1 ใช้ใน lane เท่านั้น ยังไม่ได้พิสูจน์",
+    "setup_own_s2": "Setup OWN S2: วาง straddle ช่วงนาทีที่ประกาศข่าว CPI / NFP บนทองคำ ทำงานตามราคาแบบเรียลไทม์ ใช้ใน lane เท่านั้น ยังไม่ได้พิสูจน์"
   },
   "backtestStatus": {
     "QUEUED": "รอคิว",
@@ -263,7 +265,9 @@
     "setup_breakout_scalp": "เบรกกรอบราคาแบบ scalp (S1)",
     "setup_candle_reversal": "แท่งเทียนกลับตัว",
     "setup_breakout_box": "ทะลุกรอบหลังวิ่งแรง",
-    "setup_triple_screen": "ย่อตามเทรนด์ triple screen (TS)"
+    "setup_triple_screen": "ย่อตามเทรนด์ triple screen (TS)",
+    "setup_own_conf72": "Setup OWN F1 (CONF-72)",
+    "setup_own_s2": "Setup OWN S2 (straddle ข่าว)"
   },
   "gate": {
     "G1_TRADABLE": "เทรดได้",

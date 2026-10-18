@@ -1282,3 +1282,169 @@ open leg's size in ATR and its retrace, the legs since the structure changed; si
 features (from 2025-10 only; missing before). Fitted on 2023-11 .. 2026-02-14; the tool (5/4, 5/6, 8/6, 10/8), the
 score cut and the session filter chosen on 2026-02-14 .. 04-14; **tested once on the latest six months**, with the
 stop to the entry at 0.6 of the target (iteration 1's exit). The losers in three kinds against the coin.
+
+### Round 17 - the owner's three: F1 CONF-72 into the bot, S2, RUN-A; chart targets (2026-10-18)
+
+The owner's focus (2026-10-18): **F1 CONF-72, S2 the CPI / NFP straddle, RUN-A**; news last otherwise.
+
+**F1 CONF-72 + the 0.5 M15-ATR stop floor in the bot** (`app/strategy/own_setup.py`, `setup_own_conf72`; lane `own`
+in `config.yaml`, M1 gold, **disabled**). The rule as researched (B0 + C4 + C5 + the floor; the docstring lists every
+condition); the reference trades come from `shadow/f1_port_ref.py` (34 trades, +0.198 R, +50.8 USD at the
+research's costs; +53.8 USD at the engine's backtest costs). What the engine needed:
+- the break-even at 0.6 of the target (not an R trigger), on the bar's best price: `break_even_target_share` in the
+  position management (`management: {setup_own_conf72: {break_even_target_share: 0.6, trailing: false,
+  time_stop_bars: 60}}`);
+- a lane RR floor (`lanes[].min_risk_reward: 0.7`): 4 of the 34 trades have the 8 U target nearer than the widened
+  stop (RR 0.77-0.97) and the risk config / profile floor of 1.0 would refuse them;
+- no session cap: the research's "at most two a session-day" never bound on the window (same 34 trades without it);
+- the backtest computed the entry timeframe's S/R zones from every swing since 2023 at every bar (0.6 s an M1 bar);
+  now from the strategies' window only, as live (`context_builder._levels`).
+First engine check (2026-03-09 .. 12): the two 2026-03-10 buys at 08:30 and 13:10, both target, as the research.
+
+**Chart targets on F1** (`shadow/f1_targets.py`, owner: "channel, fibo, zones to measure the target, for the bot"),
+written before computing, design then the window once:
+
+| Target | Design 2023-11 .. 2026-02 | Window 2026-03-01 .. 10-14 |
+|---|---|---|
+| T0 fixed 8 U (as frozen) | 139 trades, +0.111 R, +57.9 USD | 34, +0.198 R, +50.8 USD, DD 21.4 |
+| T1 skip when the level in front is < 5 USD away | 52, +0.135 R | 22, +0.217 R, +38.6 USD, DD 15.7 |
+| T2 the target at that level | 52, +0.118 R | 22, -0.221 R, -18.8 USD |
+| T3 min(8 U, the level) | 44, +0.183 R | 22, +0.207 R, +37.5 USD |
+| T4 a 1.272 extension of the last M15 swing (crude) | 142, +0.081 R | 35, +0.030 R |
+
+The level in front cuts the drawdown but not the profit; a target at the level loses (price turns before it). F1
+keeps the fixed target; T1 stays an option to cut the drawdown.
+
+**RUN-A round 2** (`agents/runs/notes.md` "# Round 2"): no clean rule passes. Window: A9 (strong runs, the stop beyond
+the run's start) -0.058 R, A10 (+ a trailing exit) -0.009 R / -60 USD, D1 (a 61.8 % limit, the 1.618 target)
+-0.097 R; A11 (window-informed, not clean) +0.091 R / +299 USD of which March +310, and at the coin's level on
+2021-10 .. 2023-10. The owner's chart tools against placebo levels at the same places: the Fibonacci grid (last
+swing low to the previous swing high, 23.6-88.1 / 100, ZigZag 12/5/3 on M5 / M15; 45,000 touches) holds like a
+random level (the 100 % level less); a trend line through two higher lows holds like the same line shifted off the
+swings; channel- and zone-held filters no stable gain; the run's extreme / AB=CD / extensions / the next zone as a
+target hit less often than 8 U. Why the losers lost: "the run was the end of the swing" happens as often as a random
+walk predicts from where the entry sits in the run, and no measured sign (range used, wave count, acceleration,
+volume climax, divergence, the H1 EMA distance, the dollar) nor a walk-forward model foresees it; with the pullback
+stop the costs take ~0.10 R, with the stop beyond the start one loss (20-100 USD in the wide months) erases 3-10
+wins. Kept as facts: runs whose extreme broke the 72-hour extreme continue ~5 points more often (design and window);
+RUN-A's side beats its mirror in 7 of 10 half-years (~+0.06 R before costs). Next: use them as context votes for F1 /
+S2, or an H1-scale RUN-A (targets 20-40 USD) if the owner wants RUN-A on its own.
+
+**S2 in the bot** needs what the engine does not have yet: a release calendar, an order placed at a given second
+(08:29:59 ET), pending STOP orders as a one-cancels-the-other pair, and a close 60 seconds after the release - the
+engine trades on closed M1 bars and its only pending orders are the entry plans' limits.
+
+**Where price turns at the level in front** (owner: "real life is not perfect - research what price does where it
+turns"; `shadow/turn_zone.py`, every confluence entry with an opposing level in front: design 4,771, window 2,034).
+The best price before the stop, as a share of the way to the level: under half way 40 % / 42 %; 0.5-0.9 13 % / 10 %;
+0.9-1.1 (a turn at the level) 5 % / 3 %; 1.1-1.3 3 % / 3 %; beyond 1.3 39 % / 42 %. Of the entries that came within
+30 % of the level, 81 % / 86 % went through it; 26-29 % closed beyond and held 15 bars. A turn short of the level came
+~1 M1 ATR (31 % of the way) before it; a wick through it ~2 M1 ATR beyond. So the level in front is not a wall - the
+earlier reading "price turns before the level" was wrong: the trades split into dead (never half way) and runners.
+
+**Exits and filters from it** (`shadow/level_runner.py`, `dead_vs_runner.py`, `f1_improve.py`; F1 + the floor, real
+costs; thresholds written before the window):
+
+| Variant | Design 2023-11 .. 2026-02 | Window 2026-03-01 .. 10-14 |
+|---|---|---|
+| F1 as frozen (8 U, BE 0.6, 60 min) | 141, +0.135 R, +67.1 USD, DD 31.2 | 34, +0.198 R, +50.8 USD, DD 21.4 |
+| E1 runner: no target, a close beyond the level moves the stop behind it, trail 1 M15 ATR | +0.083 R, +93.9 | -0.093 R, +0.8, DD 55 |
+| E2 half 8 U, half runner | +0.095 R, +64.0 | +0.070 R, +28.3 |
+| G1 ret15 >= 1 ATR / G2 ret60 >= -2 ATR (dead vs runner medians) | +0.165 R, +77.1 | unchanged (F1's trades pass) |
+| G3 spread <= 0.2 M1 ATR | 44 trades, +0.303 R | +0.161 R, +42.6 |
+| X1 scratch after 5 bars (best < 1 U, close against) | +0.164 R, +88.2, DD 20.3 | +0.187 R, +46.9, DD 19.0 |
+| X2 scratch after 10 bars (best < 2 U) | +0.137 R, +76.4, DD 27.1 | +0.203 R, +53.6, DD 18.1 |
+| **X3 regime exit: the runner when the M15 ATR >= 1.3 x its 20-day median, else 8 U** | **+0.188 R, +115.2**, 5/5 halves | **+0.244 R, +68.4**, DD 30.6 |
+| X4 = X3 + X2 (combined after seeing the window: not clean) | +0.199 R, +129.7, 5/5, DD 29.2 | +0.242 R, +69.4, DD 27.3, streak 7 |
+
+Dead vs runner at the entry (stable in >= 4/5 halves and the window): the runners had already moved the trade's way
+over the last 15 minutes (ret15 1.28 vs 1.07 ATR), came after a smaller 60-minute fall (-1.85 vs -2.36 ATR), had wider
+stops (5.5 vs 4.6 U) and cheaper spreads (0.15 vs 0.19 ATR) - real but small; as filters they do not change F1's
+window trades. The method that follows the market (X3: let it run only in a strong-volatility phase) is the one lever
+that added in both periods; the window gain is mostly March (+64 vs +29.5), May / June a little worse.
+
+**The bot's engine against the research (v1, `shadow/f1_engine_parity.py`, `data/backtests/own_window`, window
+2026-03-01 .. 10-14):** every engine trade matches a research trade - 27 of 27, same minute, side and exit (TP / SL /
+BE), the result at 0.01 lot within 0.05 USD (median; max 0.36). The 7 research trades the engine lacked were all in
+the Asia window (00-02 UTC): the engine's sessions were 07-20 UTC (`SESSION_CLOSED`). Gold now also trades 00-02 UTC
+(`sessions.by_symbol.XAUUSD`). Engine result without them: 27 trades, +0.188 R, +39.1 USD (research at the engine's
+costs, all 34: +0.217 R, +53.8 USD).
+
+**F1 v2 in the bot** (owner: "put it in"): `exit_mode: regime` + `scratch_bars: 10` (`OwnConfParams`; X4 with the
+bot-readable regime RM3: the M15 ATR >= 1.3 x its median over the last 288 M15 bars - the 20-day median is out of the
+bot's M1 window; on design RM3 +0.194 R / +117 USD (5/5 halves), window +0.219 R / +63.1 USD; the H1-ATR measure was
+worse on design). A runner's take-profit is 40 U past the level in front (or the entry), so the strategy reads its
+plan back from the position alone after a restart (`OwnConf72.manage_position`, a new `BaseStrategy` hook the
+backtester, the PAPER and the DEMO position managers call on each lane bar). The lane's own time stop is 180 bars
+(runners); fixed-target trades leave at 60 bars through the hook.
+
+**S2's planner in the bot** (`app/strategy/release_straddle.py`, the calendar `app/news/releases.py`): replayed on the
+ticks of all 23 CPI / NFP releases with ticks (`shadow/s2_replay.py`), it matches the research's frozen S2 on all 22
+(same side, same USD to the cent; +233.0 USD) and adds the 2026-10-14 CPI (+4.70). Still to build: the engine side
+(quotes every fraction of a second around 08:30 ET, the market order through the risk checks, the close at +60 s,
+the news blackout not applying to it).
+
+**Why so few F1 trades, and can it trade more?** (owner, 2026-10-18; `shadow/f1_funnel.py`, `f1_days.py`,
+`late_or_early.py`, `where_base.py`, `earlier.py`, `c4_distance.py`, `fresh_run.py`, `edge72.py`)
+- The base confluence (H1 tide + level + price action + 2 of 3 M5 + a 3-10 U stop) fires on 159 of 162 window days
+  (Asia 75 %, London 68 %, New York 78 % of days), about 4 episodes a day; C4 keeps 39 of 674 (F1 trades on 28 days).
+  Every group a step removes loses when traded alone (window / design): C4 -0.080 / -0.156 R (640 / 1,606 trades),
+  stops > 10 U -0.169 / -0.103, < 3 U -0.244 / -0.288; C5 +0.211 (6 trades) / -0.194 (70); the indicators and the
+  level about break-even. No subgroup of the C4-rejected signals is profitable (`c4_rejected.py`: the 24-hour
+  extreme, a strong H1, M15 with, pos240, room >= 8 U, by session: 0-2 of 5 halves).
+- Where the base fires: F1's (C4) entries sit at the 72-hour extreme (position 1.00 of the 72-h range), 1 hour
+  after it was made, after +5 .. +6 ATR in the last hour; the rejected ones at 0.73-0.77 of the range, 15-18 hours
+  after the extreme, still falling over the last hour (-2.1 ATR), a +1 ATR bounce in the last 15 minutes. Their
+  stopped losers are 55-67 % wrong way and 29-40 % too early (the target after the stop): the mid-range signal is
+  an early guess that the retracement is over, not a late signal.
+- Earlier entries: in hindsight the run into F1's entries is ~24 USD (window), and entering 3 bars after its low
+  would have made +218 USD instead of +51 - but a tradable early detector (count-three turn 4-20 U from the 72-h
+  extreme) loses -0.13 R (design 0/5 halves, window -355 USD): it sees 71 % of the runs but ~10 false starts per run.
+  C4's distance: design R 2 U +0.177, 4 U +0.111, 6 U +0.122 (3/5), 8 U +0.067, 10 U +0.011, 20 U -0.057, none
+  -0.122 (window 6 U +0.268 R / +81 USD, 8 U +0.188 / +97 - seen, so not a clean choice). A fresh run (the 72-h
+  extreme made within N hours) instead of C4: FRESH(1) design +0.095 (5/5), window +0.033; the trades it adds to F1
+  about break-even; N >= 2 negative. An F1-like rule with a 15-minute-extreme stop instead of the level loses.
+- Overlap (`overlap.py`): F1 35 / S1 58 / S2 15 window trades barely meet (S1 inside an F1 trade once, a release
+  inside an F1 trade once); 59 of 162 weekdays have any. **S1 is not stable** with the auditor's costs
+  (`s1_more.py`): 2024-09..25-02 +0.00 R, 25-03..25-08 +0.15, 25-09..26-02 -0.36 (52 trades), window +0.43; none of
+  24 count levers (Donchian 10/20, Asia, no New York skip, cooldown 15-60) holds +0.10 R in all three design halves.
+  Robust today: F1 (~0.21 a day) + S2 (~0.1 a day). A fourth-weapon search runs in `agents/weapon4/`.
+
+#### F1: the round-50 tilt in the bot, and the owner's 70 % take-profit (2026-10-18)
+
+- **The tilt is in the bot.** `OwnConfParams.off_round` can be `full`, `half` or `skip`; config uses `half`.
+  - Off the round 50, a trade asks for half the preset's risk through the new `Signal.risk_scale`, which
+    `DecisionEngine.decide` applies in the backtest and live.
+  - Evidence: weapon4 Q3, where design v2 gave +0.864 R for the round-50 trades vs +0.188 R for all.
+  - Limit: on a 50-100 USD account the minimum lot is 0.01 either way, so the tilt only bites once the full lot
+    is above 0.02. `skip` is the restriction F1R-b.
+- **The owner's exits:** "TP at 70 % of the way to the next level in front, the stop 10 % wider; if that TP is
+  already narrow, keep the old TP". Script `shadow/tp70.py`. The rule was written before it was computed. Data:
+  design, F1's frozen signals, v1 exits.
+
+  | Variant | Trades | Win | R | USD at 0.01 | DD | Half-years better than BASE |
+  |---|---|---|---|---|---|---|
+  | BASE (8 U) | 139 | 32 % | +0.111 | +57.9 | 31.2 | - |
+  | T70: 5.6 U, stop x 1.1 | 144 | 37 % | -0.006 | -16.2 | 37.2 | 1 |
+  | L70-3: 0.7 x the nearest level, 8 U if under 3 U | 138 | 22 % | +0.056 | +30.7 | 41.3 | 1 |
+  | L70-5: the same, 8 U if under 5 U | 138 | 23 % | +0.086 | +47.7 | 41.3 | 2 |
+  | N70: 0.7 x the next level leaving 3 U | 140 | 14 % | -0.027 | -15.4 | 50.2 | 0 |
+
+  - None of them passes, so there is no window run.
+  - The nearest level in front of an F1 trade is a median 3.1 U from the fill: it is the 72-hour extreme
+    itself, and F1's edge is the break through it. The next level is a median 23 U away.
+  - So "70 % of the way" is either too narrow (it falls back to 8 U on 89 of 138 trades) or too far: 46 trades
+    with a median TP of 23.5 U win only 9 %.
+  - Each part alone also loses:
+
+    | Change alone | USD at 0.01 |
+    |---|---|
+    | TP 5.6 U | -6.2 |
+    | TP 5.6 U, break-even kept at 4.8 U | +14.6 |
+    | TP 5.6 U, no break-even | +2.9 |
+    | TP 7 U | +33.9 |
+    | Stop x 1.1 | +43.1 |
+
+  - A shorter target wins more often (up to 42 %), but not enough to pay for the smaller wins.
+  - A wider stop saves few trades and makes each loss larger.
+  - BASE's median move in favour (MFE) is 4.7 U; three quarters of its trades reach under 6.7 U.

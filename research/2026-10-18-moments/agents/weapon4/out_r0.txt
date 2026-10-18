@@ -1,0 +1,44 @@
+XAUUSD_M1_design_round0 decision bars 717290
+XAUUSD_M1_design_round0 rows (tide + at a level) 24117
+
+== offset 0 (TRUE ROUND), rows 24117
+  C4 4.0                   41 (0.07/d) win  51% net +0.536 gross +0.686 coin -0.026 (win 29%) | net [+0.54 +0.71 +0.55 -0.25 +0.63] gross+>=.10 4/5 | n [4 8 7 4 18]
+    xx00 only              20 (0.03/d) win  65% net +0.765 gross +0.839 coin +0.005 (win 34%) | net [-0.03 +1.73 +0.67 +0.03 +0.81] gross+>=.10 3/5 | n [2 3 3 2 10]
+    xx50 only              21 (0.03/d) win  38% net +0.317 gross +0.539 coin -0.212 (win 18%) | net [+1.11 +0.10 +0.46 -0.53 +0.40] gross+>=.10 4/5 | n [2 5 4 2 8]
+  C4 8.0                   65 (0.11/d) win  42% net +0.291 gross +0.409 coin +0.133 (win 34%) | net [-0.05 +0.63 +0.06 -0.40 +0.48] gross+>=.10 3/5 | n [7 12 14 5 27]
+  C4 None                 397 (0.65/d) win  30% net -0.001 gross +0.116 coin -0.097 (win 28%) | net [-0.17 -0.10 -0.19 +0.15 +0.09] gross+>=.10 3/5 | n [36 45 71 41 204]
+XAUUSD_M1_design_round10 decision bars 717290
+XAUUSD_M1_design_round10 rows (tide + at a level) 29273
+
+== offset 10 (placebo), rows 29273
+  C4 4.0                   60 (0.10/d) win  25% net -0.055 gross +0.101 coin -0.166 (win 24%) | net [-0.44 -0.31 +0.07 -0.60 +0.15] gross+>=.10 3/5 | n [5 5 13 8 29]
+  C4 8.0                   93 (0.15/d) win  23% net -0.125 gross +0.017 coin -0.107 (win 22%) | net [-0.08 -0.34 -0.14 -0.58 +0.06] gross+>=.10 1/5 | n [9 13 22 10 39]
+  C4 None                 518 (0.85/d) win  23% net -0.090 gross +0.022 coin -0.137 (win 23%) | net [-0.24 -0.33 -0.07 +0.00 -0.04] gross+>=.10 1/5 | n [28 72 107 69 242]
+XAUUSD_M1_design_round20 decision bars 717290
+XAUUSD_M1_design_round20 rows (tide + at a level) 29137
+
+== offset 20 (placebo), rows 29137
+  C4 4.0                   53 (0.09/d) win  25% net -0.033 gross +0.171 coin -0.200 (win 23%) | net [+1.41 -0.04 -0.02 +0.07 -0.15] gross+>=.10 4/5 | n [1 12 12 8 20]
+  C4 8.0                   84 (0.14/d) win  32% net +0.116 gross +0.300 coin -0.150 (win 24%) | net [+0.75 -0.05 +0.11 +0.26 +0.10] gross+>=.10 5/5 | n [3 18 19 11 33]
+  C4 None                 509 (0.84/d) win  25% net -0.037 gross +0.079 coin -0.118 (win 24%) | net [-0.03 -0.05 -0.07 +0.01 -0.04] gross+>=.10 1/5 | n [23 67 105 77 237]
+XAUUSD_M1_design_round25 decision bars 717290
+XAUUSD_M1_design_round25 rows (tide + at a level) 32027
+
+== offset 25 (placebo), rows 32027
+  C4 4.0                   64 (0.11/d) win  20% net -0.257 gross -0.177 coin -0.087 (win 23%) | net [-1.00 -0.49 -0.45 -0.63 +0.09] gross+>=.10 1/5 | n [1 15 15 6 27]
+  C4 8.0                   89 (0.15/d) win  25% net -0.203 gross -0.067 coin -0.057 (win 26%) | net [-1.00 -0.48 -0.19 -0.32 +0.06] gross+>=.10 0/5 | n [3 21 24 8 33]
+  C4 None                 550 (0.90/d) win  26% net -0.121 gross +0.030 coin -0.119 (win 25%) | net [-0.39 -0.24 -0.12 -0.25 -0.00] gross+>=.10 0/5 | n [45 67 99 86 253]
+XAUUSD_M1_design_round30 decision bars 717290
+XAUUSD_M1_design_round30 rows (tide + at a level) 32517
+
+== offset 30 (placebo), rows 32517
+  C4 4.0                   59 (0.10/d) win  20% net -0.203 gross -0.081 coin -0.190 (win 22%) | net [+nan -0.77 -0.15 +0.15 -0.20] gross+>=.10 2/5 | n [0 5 14 6 34]
+  C4 8.0                  101 (0.17/d) win  22% net -0.136 gross +0.030 coin -0.185 (win 20%) | net [+1.95 -0.65 -0.12 -0.07 -0.11] gross+>=.10 2/5 | n [2 13 20 12 54]
+  C4 None                 560 (0.92/d) win  23% net -0.106 gross +0.016 coin -0.155 (win 22%) | net [+0.15 -0.50 -0.13 -0.14 -0.06] gross+>=.10 1/5 | n [53 52 100 81 274]
+XAUUSD_M1_design_round40 decision bars 717290
+XAUUSD_M1_design_round40 rows (tide + at a level) 31070
+
+== offset 40 (placebo), rows 31070
+  C4 4.0                   51 (0.08/d) win  35% net +0.137 gross +0.262 coin -0.108 (win 28%) | net [-0.16 -0.31 +0.17 -0.09 +0.36] gross+>=.10 3/5 | n [3 3 19 9 17]
+  C4 8.0                   93 (0.15/d) win  25% net -0.063 gross +0.068 coin -0.161 (win 23%) | net [-0.28 -0.39 +0.12 -0.02 -0.08] gross+>=.10 1/5 | n [9 8 24 16 36]
+  C4 None                 531 (0.87/d) win  26% net -0.119 gross +0.016 coin -0.110 (win 26%) | net [-0.13 -0.38 -0.12 -0.19 -0.03] gross+>=.10 0/5 | n [48 56 99 83 245]

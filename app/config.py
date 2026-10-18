@@ -490,6 +490,9 @@ class StrategyManagement(StrictModel):
     break_even: bool = True
     trailing: bool = True
     break_even_trigger_r: float | None = Field(default=None, gt=0)
+    # the break-even at this share of the way to the take-profit instead of an R trigger (Setup OWN: 0.6 of
+    # a fixed target, docs/OWN_SETUP.md); None: the R trigger
+    break_even_target_share: float | None = Field(default=None, gt=0, lt=1)
     trailing_start_r: float | None = Field(default=None, gt=0)
     # a time stop of its own, in bars of ``timeframe`` (None: the engine's entry timeframe); a lane's
     # strategies get their lane's entry timeframe (``AppConfig.management``)
@@ -499,6 +502,7 @@ class StrategyManagement(StrictModel):
 
 class PositionManagementConfig(StrictModel):
     break_even_trigger_r: float = Field(default=1.0, gt=0)
+    break_even_target_share: float | None = Field(default=None, gt=0, lt=1)  # set per strategy only
     break_even_buffer_points: float = Field(default=2.0, ge=0)
     trailing_start_r: float = Field(default=1.5, gt=0)
     trailing_atr_multiple: float = Field(default=2.0, gt=0)
@@ -515,9 +519,11 @@ class PositionManagementConfig(StrictModel):
             return self
         be = own.break_even_trigger_r or self.break_even_trigger_r
         trail = own.trailing_start_r or self.trailing_start_r
+        share = own.break_even_target_share
         return self.model_copy(
             update={
-                "break_even_trigger_r": be if own.break_even else math.inf,
+                "break_even_trigger_r": be if own.break_even and share is None else math.inf,
+                "break_even_target_share": share if own.break_even else None,
                 "trailing_start_r": trail if own.trailing else math.inf,
                 "time_stop_bars": own.time_stop_bars or self.time_stop_bars,
                 "by_strategy": {},
@@ -547,6 +553,9 @@ class LaneConfig(StrictModel):
     symbols: list[str] = Field(min_length=1)
     strategies: StrategiesConfig
     max_spread_to_sl_ratio: float | None = Field(default=None, gt=0, le=1)
+    # the RR floor of the lane's strategies instead of the risk config's and the profile's: a fixed target
+    # with a structure stop can sit nearer than the stop (Setup OWN: 8 U against a 3-12 U stop; 2026-10-18)
+    min_risk_reward: float | None = Field(default=None, gt=0, le=10)
     management: dict[str, StrategyManagement] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -1160,6 +1169,8 @@ class AppConfig(StrictModel):
         risk = self.risk
         if lane.max_spread_to_sl_ratio is not None:
             risk = risk.model_copy(update={"max_spread_to_sl_ratio": lane.max_spread_to_sl_ratio})
+        if lane.min_risk_reward is not None:
+            risk = risk.model_copy(update={"min_risk_reward": lane.min_risk_reward})
         return self.model_copy(
             update={
                 "timeframes": lane.timeframes,
@@ -1182,6 +1193,11 @@ class AppConfig(StrictModel):
         """A lane's ``max_spread_to_sl_ratio`` for its strategy; None: the risk config's."""
         lane = self.lane_of(strategy)
         return None if lane is None else lane.max_spread_to_sl_ratio
+
+    def min_rr_for(self, strategy: str) -> float | None:
+        """A lane's ``min_risk_reward`` for its strategy; None: the risk config's and the profile's."""
+        lane = self.lane_of(strategy)
+        return None if lane is None else lane.min_risk_reward
 
     def cooldown_bars_for(self, strategy: str) -> int:
         """The symbol cooldown after an entry, in bars of the signal's timeframe: the strategy's lane's."""

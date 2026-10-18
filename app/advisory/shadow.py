@@ -266,8 +266,11 @@ def _manage(
     if management is None:
         return None
     held = int((bar.close_time - state.entry_at).total_seconds() // management.bar_seconds)
-    view = PositionView(state.side, state.entry, state.initial_sl, state.sl, held)
-    adj = manage(view, mark=mark, atr=management.atr, point=management.point, cfg=management.config)
+    view = PositionView(state.side, state.entry, state.initial_sl, state.sl, held, state.tp)
+    reach = bar.high if state.side is Side.BUY else bar.low + bar.spread
+    adj = manage(
+        view, mark=mark, atr=management.atr, point=management.point, cfg=management.config, reach=reach
+    )
     if adj.close is not None:
         return _exit(state, adj.close, mark - state.side.sign * slip, bar.close_time)
     if adj.new_sl is not None and adj.stop_kind is not None:

@@ -1,0 +1,63 @@
+
+== W11
+  W11                             113 (0.19/d) win  40% (coin 30) net +0.306 gross +0.469 USD  +154.6 | D2 PASS
+      net   +0.30(10) +0.37(16) -0.01(20) +0.25(8) +0.41(59)
+      gross +0.58 +0.74 +0.04 +0.93 +0.46   coin +0.22 -0.05 -0.18 -0.32 +0.09
+      beyond F1 (not F1's minutes, not inside an F1 trade): 86 (0.14/d) net +0.235 [+0.13(6) +0.25(9) -0.26(16) +0.40(5) +0.38(50)]; on days without F1 70 (0.12/d) +0.102
+      placebo grids R: -0.10 +0.04 -0.22 -0.04 -0.12 (mean -0.088); kinds 72/10/18; worst -13.34 USD, streak 5, max DD 25.0 USD, avg stop loss 4.70 -> 6 in a row 28.2 (fits 50 / fits 100)
+
+== a
+  a                               101 (0.17/d) win  39% (coin 31) net +0.269 gross +0.444 USD  +123.6 | D2 PASS
+      net   +0.44(9) +0.29(14) -0.01(19) +0.25(8) +0.34(51)
+      gross +0.76 +0.69 +0.04 +0.93 +0.39   coin +0.22 -0.01 -0.05 -0.37 +0.10
+      beyond F1 (not F1's minutes, not inside an F1 trade): 74 (0.12/d) net +0.173 [+0.36(5) +0.05(7) -0.27(15) +0.40(5) +0.30(42)]; on days without F1 60 (0.10/d) +0.035
+      placebo grids R: -0.07 +0.05 -0.22 -0.05 -0.15 (mean -0.089); kinds 73/8/19; worst -11.74 USD, streak 5, max DD 25.0 USD, avg stop loss 4.52 -> 6 in a row 27.1 (fits 50 / fits 100)
+
+== b1
+  b1                              100 (0.16/d) win  42% (coin 31) net +0.337 gross +0.464 USD  +163.8 | D2 PASS
+      net   +0.09(8) +0.50(14) -0.09(19) +0.43(7) +0.47(52)
+      gross +0.14 +0.92 -0.05 +0.81 +0.53   coin +0.38 +0.04 -0.14 +0.00 +0.03
+      beyond F1 (not F1's minutes, not inside an F1 trade): 73 (0.12/d) net +0.265 [-0.36(4) +0.48(7) -0.37(15) +0.75(4) +0.46(43)]; on days without F1 58 (0.10/d) +0.133
+      placebo grids R: -0.12 +0.04 -0.23 -0.03 -0.07 (mean -0.082); kinds 79/12/9; worst -13.34 USD, streak 7, max DD 21.4 USD, avg stop loss 4.49 -> 6 in a row 26.9 (fits 50 / fits 100)
+
+== b2
+  b2                               80 (0.13/d) win  45% (coin 33) net +0.393 gross +0.503 USD  +156.0 | D2 PASS
+      net   +0.25(7) +0.32(12) -0.07(16) +0.22(5) +0.65(40)
+      gross +0.30 +0.79 -0.03 +0.30 +0.69   coin +0.33 +0.16 -0.23 +0.14 +0.09
+      beyond F1 (not F1's minutes, not inside an F1 trade): 53 (0.09/d) net +0.322 [-0.15(3) +0.04(5) -0.41(12) +0.55(2) +0.68(31)]; on days without F1 42 (0.07/d) +0.183
+      placebo grids R: -0.08 +0.02 -0.26 -0.03 -0.04 (mean -0.078); kinds 84/8/8; worst -13.34 USD, streak 8, max DD 20.1 USD, avg stop loss 4.40 -> 6 in a row 26.4 (fits 50 / fits 100)
+
+== a+b1
+  a+b1                             88 (0.14/d) win  41% (coin 31) net +0.298 gross +0.435 USD  +132.8 | D2 PASS
+      net   +0.25(7) +0.42(12) -0.09(18) +0.43(7) +0.41(44)
+      gross +0.30 +0.89 -0.05 +0.81 +0.47   coin +0.33 +0.06 -0.11 +0.23 +0.03
+      beyond F1 (not F1's minutes, not inside an F1 trade): 61 (0.10/d) net +0.195 [-0.15(3) +0.28(5) -0.39(14) +0.75(4) +0.38(35)]; on days without F1 48 (0.08/d) +0.055
+      placebo grids R: -0.09 +0.04 -0.23 -0.04 -0.10 (mean -0.083); kinds 81/10/10; worst -7.23 USD, streak 7, max DD 21.2 USD, avg stop loss 4.26 -> 6 in a row 25.6 (fits 50 / fits 100)
+
+== a+b2
+  a+b2                             70 (0.12/d) win  44% (coin 34) net +0.342 gross +0.458 USD  +132.8 | D2 PASS
+      net   +0.25(7) +0.20(10) -0.08(15) +0.22(5) +0.61(33)
+      gross +0.30 +0.73 -0.03 +0.30 +0.65   coin +0.33 +0.09 -0.01 -0.49 +0.12
+      beyond F1 (not F1's minutes, not inside an F1 trade): 43 (0.07/d) net +0.224 [-0.15(3) -0.57(3) -0.45(11) +0.55(2) +0.65(24)]; on days without F1 33 (0.05/d) +0.049
+      placebo grids R: -0.05 +0.03 -0.26 -0.05 -0.08 (mean -0.083); kinds 88/4/8; worst -6.55 USD, streak 8, max DD 19.9 USD, avg stop loss 4.03 -> 6 in a row 24.2 (fits 50 / fits 100)
+
+== c
+  c                                71 (0.12/d) win  39% (coin 32) net +0.241 gross +0.357 USD   +68.0 | D2 PASS
+      net   +0.45(6) +0.46(13) +0.27(14) -0.53(2) +0.16(36)
+      gross +0.52 +0.90 +0.35 -0.50 +0.19   coin +0.44 -0.09 +0.07 -0.39 -0.01
+      beyond F1 (not F1's minutes, not inside an F1 trade): 48 (0.08/d) net +0.072 [-0.15(3) +0.38(6) -0.00(10) -1.00(1) +0.09(28)]; on days without F1 41 (0.07/d) -0.092
+      placebo grids R: -0.18 +0.16 -0.22 -0.10 -0.09 (mean -0.088); kinds 72/4/24; worst -13.34 USD, streak 4, max DD 30.0 USD, avg stop loss 5.12 -> 6 in a row 30.7 (fits 50 / fits 100)
+
+== c+a
+  c+a                              67 (0.11/d) win  40% (coin 33) net +0.250 gross +0.371 USD   +73.5 | D2 PASS
+      net   +0.45(6) +0.50(12) +0.27(14) -0.53(2) +0.16(33)
+      gross +0.52 +0.97 +0.35 -0.50 +0.19   coin +0.44 +0.07 -0.06 -0.25 +0.04
+      beyond F1 (not F1's minutes, not inside an F1 trade): 44 (0.07/d) net +0.070 [-0.15(3) +0.47(5) -0.00(10) -1.00(1) +0.09(25)]; on days without F1 37 (0.06/d) -0.111
+      placebo grids R: -0.16 +0.17 -0.21 -0.13 -0.16 (mean -0.096); kinds 75/0/25; worst -7.23 USD, streak 4, max DD 24.8 USD, avg stop loss 4.77 -> 6 in a row 28.6 (fits 50 / fits 100)
+
+== c+a+b2
+  c+a+b2                           52 (0.09/d) win  44% (coin 33) net +0.339 gross +0.481 USD   +82.5 | D2 PASS
+      net   +0.45(6) +0.33(9) +0.16(12) -0.53(2) +0.48(23)
+      gross +0.52 +0.93 +0.21 -0.50 +0.52   coin +0.44 -0.14 -0.05 -0.22 +0.12
+      beyond F1 (not F1's minutes, not inside an F1 trade): 29 (0.05/d) net +0.136 [-0.15(3) -0.35(2) -0.24(8) -1.00(1) +0.53(15)]; on days without F1 23 (0.04/d) -0.079
+      placebo grids R: -0.14 +0.17 -0.29 -0.17 -0.09 (mean -0.104); kinds 88/0/12; worst -6.55 USD, streak 5, max DD 11.3 USD, avg stop loss 4.40 -> 6 in a row 26.4 (fits 50 / fits 100)

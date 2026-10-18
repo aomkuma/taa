@@ -201,10 +201,14 @@ class TestBoxBreak:
         assert first.direction is Direction.BEAR and first.i18n_key.endswith("box_break.bear")
 
     def test_no_run_no_record(self) -> None:
-        assert scan_one(BoxBreak(), path([100, 101, 100, 101.5, 104], [24, 6, 6, 3]), params=self.PARAMS) == []
+        assert (
+            scan_one(BoxBreak(), path([100, 101, 100, 101.5, 104], [24, 6, 6, 3]), params=self.PARAMS) == []
+        )
 
     def test_no_lookahead(self) -> None:
-        assert assert_no_lookahead(BoxBreak(), params=BoxBreakParams(max_box_atr=4.0, run_atr=2.0))  # not vacuous
+        assert assert_no_lookahead(
+            BoxBreak(), params=BoxBreakParams(max_box_atr=4.0, run_atr=2.0)
+        )  # not vacuous
 
 
 class TestCupHandle:

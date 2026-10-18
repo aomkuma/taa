@@ -1,7 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-17 17:00 Thai (the owner's goals written down; every earlier setup stopped; Setup OWN, the
-owner's own trade, starts). This file holds **state only**: rules and conventions live in `CLAUDE.md` and
+Last updated: 2026-10-18 (Setup OWN: F1 CONF-72 v2 and S2 in the bot, both disabled; the owner's three: F1, S2,
+RUN-A). This file holds **state only**: rules and conventions live in `CLAUDE.md` and
 `docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`, progress in `docs/TICKETS.md` /
 `docs/TICKETS_LEARNING.md`, setup results in `docs/SETUP_REVIEW.md`.
 
@@ -27,7 +27,22 @@ its backtest. Ask me when the meaning is unclear.
 
 ---
 
-## Current state (2026-10-17, 17:00 Thai)
+## Current state (2026-10-18)
+
+- **The owner's three (2026-10-18):** F1 CONF-72, S2 the CPI / NFP straddle, RUN-A; other news trading last.
+  Rounds 11-17 in `docs/OWN_SETUP.md`.
+- **In the bot, disabled** (`config.yaml` lanes `own` and `news`; DEMO only with the owner's go):
+  - `setup_own_conf72` (`app/strategy/own_setup.py`): F1 CONF-72 + the 0.5 M15-ATR stop floor; v2 exits
+    (`exit_mode: regime`: a runner in a strong-volatility phase, the 10-bar scratch). The v1 engine backtest
+    matches the research trade by trade (27/27; the 7 Asia trades were blocked by the 07-20 UTC sessions -
+    gold now also 00-02 UTC). New engine pieces: `break_even_target_share`, a lane `min_risk_reward`, the
+    strategy hook `manage_position` (backtest, PAPER, DEMO), S/R zones of the backtest from the window only.
+  - `setup_own_s2` (`app/strategy/release_straddle.py`): quote-driven; the calendar `app/news/us_releases.csv`
+    (BLS dates to 2027-12); the engine polls quotes every 0.1 s around a release, the entry goes through the
+    decision engine, out at the first bar close after the release minute. Tick replay = the research to the cent.
+    Open: the DEMO pre-send spread check uses the symbol limit (40 points); S2 and F1 share gold's one position.
+- **RUN-A round 2:** no clean pass; Fibonacci, trend lines, channels and zones measured against placebo levels
+  add nothing on gold M1-M30; next: its robust parts as context votes, or an H1-scale RUN-A.
 
 - **The owner's goals and principles:** `docs/OWNER_GOALS.md` (several were never written down before: session
   opens, ATR low, Bollinger squeeze, quick profit, the review cadence, news). Setup OWN: `docs/OWN_SETUP.md`,
@@ -63,8 +78,9 @@ its backtest. Ask me when the meaning is unclear.
 
 ## Next work
 
-1. Setup OWN (`docs/OWN_SETUP.md`), latest six months only (fit 2026-04-14 .. 07-14, judge 07-14 .. 10-14):
-   the release calendar (done), the moments dataset, H1-H4 and the selector, the engine setup, the gate.
+1. Setup OWN (`docs/OWN_SETUP.md`), judged from 2026-03-01 (design before it): the v2 engine backtest against
+   the research (X4 / RM3: +0.219 R, +63 USD), then the owner's go for PAPER / DEMO of `own` and `news`; RUN-A
+   as votes for F1 / S2; fresh releases and bars from 2026-10-14 on as new out-of-sample data.
 2. The weekly market-state report and the monthly re-fit (the owner's review cadence).
 3. Owner decisions pending: merge the two branches or not; the account size for the daily goal (100 or 150 USD).
 4. Full pytest + vitest once (stack paused).

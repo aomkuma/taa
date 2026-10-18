@@ -15,7 +15,8 @@ def test_engine_magic_survives_a_changed_strategy_order(tmp_path: Path) -> None:
     db, clock = fresh_db(), ManualClock(START)
     first = make_engine(tmp_path, db, clock, MemorySink())
     first.start()
-    names = [s.name for s in first.strategies.strategies]
+    names = list(first.magic)  # every lane's strategies, in the order they were registered
+    assert names
     base = first.settings.env.MAGIC_NUMBER_BASE
     assert first.magic == {n: base + i for i, n in enumerate(names)}  # first start: the old numbers
 

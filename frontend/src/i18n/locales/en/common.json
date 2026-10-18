@@ -712,6 +712,14 @@
         "label": "Market phase",
         "hint": "Trade only in this higher-timeframe phase"
       },
+      "pivot_level_tfs": {
+        "label": "Pullback level timeframes",
+        "hint": "The chart reads whose levels the pullback must reach; none: no location check"
+      },
+      "pivot_tol_atr": {
+        "label": "Level tolerance (ATR)",
+        "hint": "How close to the level the pullback must come; empty: the chart read's own tolerance"
+      },
       "pullback_bars": {
         "label": "Pullback bars",
         "hint": "Recent bars searched for the pullback to the EMA"
@@ -804,9 +812,25 @@
         "label": "Swing width (bars)",
         "hint": "Bars on each side that confirm a swing high or low"
       },
+      "target_front_atr": {
+        "label": "Target before the level (ATR)",
+        "hint": "How far before the next level the take-profit sits, in the read's ATR"
+      },
       "target_mode": {
         "label": "Take-profit placement",
         "hint": "Where the signal's take-profit goes"
+      },
+      "tide_ema_tf": {
+        "label": "Tide timeframe",
+        "hint": "The higher timeframe whose EMA and slope must be with the trade; empty: off"
+      },
+      "tide_ema_tfs": {
+        "label": "Tide timeframes (all agree)",
+        "hint": "Each of these timeframes' EMA must be with the trade; empty: off"
+      },
+      "tide_slope_bars": {
+        "label": "Tide slope bars",
+        "hint": "Closed bars over which the tide's EMA must slope the trade's way"
       },
       "trend_entries": {
         "label": "Trend entries",

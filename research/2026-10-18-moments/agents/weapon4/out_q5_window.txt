@@ -1,0 +1,29 @@
+F1 v2 check: csv 35 trades +63.1 USD; this builder 35 trades +63.1 USD; same minutes 35
+others on the window: F1 v2 35, S1 58, S2 15 releases
+
+==== W11-b1 (FROZEN; window seen once for W11): WINDOW 2026-03-01 .. 2026-10-14 (162 weekdays), real costs, 0.01 lot
+  67 trades (0.41/day), win 42%, R +0.166, USD +89.7
+  coin (20 seeds, same minutes): R -0.078 +- 0.107, win 30% -> edge +12.1 pts; kinds ours 59/0/41 / coin 58/0/42; longs 42%
+  worst -8.90 USD, streak 8, max DD 37.6 USD, avg stop loss 5.73 -> 6 in a row 34.4 (fits 50 / fits 100); exits {'win': 28, 'stop': 27, 'be': 11, 'time': 1}
+  months+ 6/8
+    2026-03:   6 trades (0.27/d) win  33% R +0.296 USD   +12.9
+    2026-04:  14 trades (0.64/d) win  21% R -0.301 USD   -16.3
+    2026-05:  13 trades (0.62/d) win  54% R +0.432 USD   +34.9
+    2026-06:  14 trades (0.64/d) win  57% R +0.342 USD   +26.6
+    2026-07:   6 trades (0.26/d) win  67% R +0.826 USD   +26.4
+    2026-08:   5 trades (0.24/d) win  40% R +0.151 USD    +5.5
+    2026-09:   7 trades (0.32/d) win  29% R -0.077 USD    +8.6
+    2026-10:   2 trades (0.22/d) win   0% R -1.000 USD    -8.8
+  overlap: same minute as an F1 v2 trade 17, inside an F1 trade 17, inside an S1 trade 0, within 30 min of a CPI/NFP release 1
+  trades on days without F1 or S2: 39 (0.24/day) R +0.084 USD +30.7; also without S1: 27
+  trades not F1's (not its minute, not inside an F1 trade): 50 (0.31/day) R +0.097 USD +43.2
+  weekdays with any trade: F1 + S2 41 of 162; + this rule 71; with S1 too 81
+  stopped losers 27: kinds 59/0/41; by bucket (n, R, [stops' kinds 1/2/3])
+    level_kind: round 67 +0.17 [59/0/41]
+    c4u: (-1000000000.0, 0.0] 15 +0.41 [75/0/25]; (0.0, 2.0] 6 -0.03 [100/0/0]; (2.0, 4.0] 1 +1.41 [-]
+    hour: (-1.0, 1.99] 11 +0.76 [0/0/100]; (1.99, 6.99] 11 +0.01 [75/0/25]; (6.99, 11.99] 17 -0.29 [70/0/30]; (11.99, 16.99] 21 +0.48 [33/0/67]; (16.99, 20.0] 7 -0.35 [100/0/0]
+    sl_u: (0.0, 4.0] 8 +0.25 [50/0/50]; (4.0, 5.5] 28 +0.02 [67/0/33]; (5.5, 7.5] 16 +0.08 [33/0/67]; (7.5, 20.0] 15 +0.48 [100/0/0]
+    atr_ratio: (0.0, 1.2] 20 -0.11 [70/0/30]; (1.2, 2.0] 47 +0.28 [53/0/47]
+    ret60: (-99, -1] 2 +0.04 [0/0/100]; (1, 3] 16 +0.38 [60/0/40]; (3, 99] 49 +0.10 [62/0/38]
+    hrs_ext: (-1.0, 0.5] 20 +0.34 [80/0/20]; (0.5, 2.0] 1 +1.41 [-]; (2.0, 24.0] 12 +0.14 [60/0/40]; (24.0, 99.0] 34 +0.03 [53/0/47]
+    side: -1 39 +0.07 [44/0/56]; 1 28 +0.30 [82/0/18]

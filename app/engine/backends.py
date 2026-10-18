@@ -13,6 +13,7 @@ The engine talks to either through the same small interface, so the decision pat
 from __future__ import annotations
 
 import logging
+from collections.abc import Collection
 from datetime import datetime, timedelta
 from typing import Protocol
 
@@ -69,6 +70,10 @@ class Backend(Protocol):
     def on_quote(self, symbol: str, bid: float, ask: float, atr: float | None, now: datetime) -> None: ...
 
     def on_bar(self, symbol: str, ctx: StrategyContext) -> None: ...
+
+    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
+        """A lane's closed entry bar: its strategies' own position management (``manage_position``)."""
+        ...
 
     def place(self, record: DecisionRecord, spec: SymbolSpec, magic: int) -> bool: ...
 
@@ -136,6 +141,9 @@ class PaperBackend:
 
     def on_bar(self, symbol: str, ctx: StrategyContext) -> None:
         self.positions.on_bar(symbol, ctx)
+
+    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
+        self.positions.on_lane_bar(symbol, ctx, strategies)
 
     def place(self, record: DecisionRecord, spec: SymbolSpec, magic: int) -> bool:
         return any(not p.duplicate for p in self.paper.place(record, magic))
@@ -216,6 +224,9 @@ class DemoBackend:
 
     def on_bar(self, symbol: str, ctx: StrategyContext) -> None:
         self.positions.on_bar(symbol, ctx)
+
+    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
+        self.positions.on_lane_bar(symbol, ctx, strategies)
 
     def place(self, record: DecisionRecord, spec: SymbolSpec, magic: int) -> bool:
         outcomes = self.orders.execute(record, spec, magic)

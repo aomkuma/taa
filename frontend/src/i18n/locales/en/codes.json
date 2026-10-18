@@ -210,7 +210,9 @@
     "setup_breakout_scalp": "Breakout F1's fade on a short entry timeframe (S1: M1 gold scalping). Lane only. Unproven.",
     "setup_candle_reversal": "Reversal candlestick at a level (S/R, Fibonacci, pivots, trendline). Unproven.",
     "setup_breakout_box": "A box after a run, broken with the run, with the H1 trend; target the next H1 level. Unproven.",
-    "setup_triple_screen": "With the H4 trend, a pullback that turned at an H1/H4 level, entered on the structure break. Unproven."
+    "setup_triple_screen": "With the H4 trend, a pullback that turned at an H1/H4 level, entered on the structure break. Unproven.",
+    "setup_own_conf72": "Setup OWN F1 CONF-72: the H1 trend, a level, price action and two of three M5 indicators, near the 72-hour extreme; M1 gold. Lane only. Unproven.",
+    "setup_own_s2": "Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes. Lane only. Unproven."
   },
   "backtestStatus": {
     "QUEUED": "Queued",
@@ -263,7 +265,9 @@
     "setup_breakout_scalp": "Scalp breakout (S1)",
     "setup_candle_reversal": "Candlestick reversal",
     "setup_breakout_box": "Box breakout after a run",
-    "setup_triple_screen": "Triple screen pullback (TS)"
+    "setup_triple_screen": "Triple screen pullback (TS)",
+    "setup_own_conf72": "Setup OWN F1 (CONF-72)",
+    "setup_own_s2": "Setup OWN S2 (release straddle)"
   },
   "gate": {
     "G1_TRADABLE": "Tradable",

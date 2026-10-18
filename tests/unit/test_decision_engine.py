@@ -301,9 +301,7 @@ class TestEveryReasonCode:
         tiny_atr = make_context(
             quality_flags=(), states=(state(Timeframe.M15, BAR, atr=0.0005), state(Timeframe.H1, BAR))
         )
-        far = engine(fresh()).decide(
-            request(market=tiny_atr, **signal(stop_loss=1.0900, take_profit=1.1200))
-        )
+        far = engine(fresh()).decide(request(market=tiny_atr, **signal(stop_loss=1.0900, take_profit=1.1200)))
         assert far.decision is Decision.ACCEPT, far.reason_codes
         assert far.volume is not None and near.volume is not None and far.volume < near.volume
 
@@ -519,6 +517,12 @@ class TestAggressivePreset:
         assert record.risk_percent == 3.75
         assert record.sizing is not None and float(record.sizing.budget) == 375.0
 
+    def test_a_signal_asks_for_half(self, db: Database) -> None:
+        record = self._decide(db, **signal(reason_codes=("TREND_PULLBACK",), risk_scale=0.5))
+        assert record.decision is Decision.ACCEPT, [c.reason_code for c in record.failed]
+        assert record.risk_percent == 3.75
+        assert record.sizing is not None and float(record.sizing.budget) == 375.0
+
     @pytest.mark.parametrize("r", [5.0, 7.5, 10.0])
     def test_never_above_ten_percent(self, db: Database, r: float) -> None:
         record = self._decide(db, profile_limits=aggressive(r))
@@ -570,7 +574,8 @@ class TestAggressivePreset:
 
 
 class TestLaneLimits:
-    """A lane's strategy (config lanes, owner 2026-10-15): its own spread-to-SL ratio and symbol cooldown."""
+    """A lane's strategy (config lanes, owner 2026-10-15): its own spread-to-SL ratio, RR floor and symbol
+    cooldown."""
 
     LANE: ClassVar[dict[str, Any]] = {
         "lanes": [
@@ -580,6 +585,7 @@ class TestLaneLimits:
                 "symbols": ["EURUSD"],
                 "strategies": {"items": [{"name": "setup_breakout_scalp"}], "cooldown_bars": 60},
                 "max_spread_to_sl_ratio": 1.0,
+                "min_risk_reward": 0.7,
             }
         ]
     }
@@ -594,6 +600,12 @@ class TestLaneLimits:
         tight = {"stop_loss": 1.0995}  # a stop a few spreads wide
         assert "SPREAD_TO_SL_TOO_HIGH" not in self._reasons(db, "setup_breakout_scalp", sig=tight)
         assert "SPREAD_TO_SL_TOO_HIGH" in self._reasons(db, "example_trend_pullback", sig=tight)
+
+    def test_the_lane_rr_floor_applies_to_its_strategy_only(self, db: Database) -> None:
+        near = {"take_profit": 1.1016}  # RR 0.8: a fixed target nearer than the stop (Setup OWN)
+        assert "RR_TOO_LOW" not in self._reasons(db, "setup_breakout_scalp", sig=near)
+        assert "RR_TOO_LOW" in self._reasons(db, "example_trend_pullback", sig=near)
+        assert "RR_TOO_LOW" in self._reasons(db, "setup_breakout_scalp", sig={"take_profit": 1.1012})
 
     def test_the_symbol_cooldown_counts_the_lanes_bars(self, db: Database) -> None:
         two_hours_ago = BAR - timedelta(hours=2)  # main: 4 x M15 = 1 hour; the lane: 60 x M15 = 15 hours

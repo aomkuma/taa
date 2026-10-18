@@ -139,6 +139,14 @@ class TestSignal:
         assert back == sig
         assert back.to_json() == text
 
+    def test_risk_scale_round_trips_and_is_bounded(self) -> None:
+        assert "risk_scale" not in make_signal().to_dict()  # the default leaves the JSON as it was
+        half = make_signal(risk_scale=0.5)
+        assert Signal.from_json(half.to_json()) == half
+        for bad in (0.0, 1.5, float("nan")):
+            with pytest.raises(SignalError):
+                make_signal(risk_scale=bad)
+
     def test_json_is_canonical(self) -> None:
         text = make_signal().to_json()
         assert text == json.dumps(json.loads(text), sort_keys=True, separators=(",", ":"))

@@ -92,6 +92,7 @@ from app.market_data.trading_sessions import TradingSessions
 from app.monitoring.alerts import EventBus, EventType
 from app.monitoring.health_check import write_heartbeat
 from app.news.calendar import ManualBlackouts, NewsFilter
+from app.news.releases import load_releases
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
 from app.risk.exposure_manager import MAGIC_RANGE, Exposure, ExposureManager, PositionRisk
@@ -106,7 +107,9 @@ from app.storage.repositories import EngineStateRepository, RunRepository
 from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
 from app.strategy.context_builder import ContextBuilder
+from app.strategy.release_straddle import OwnS2
 from app.strategy.setups import EvidenceSetup
+from app.strategy.signal_models import Signal, StrategyContext
 from app.sync.candles import CandleStreamer
 from app.sync.commands import Command, CommandFailed, CommandProcessor, CommandType, Handler, drain
 from app.sync.heartbeat import (
@@ -124,6 +127,7 @@ log = logging.getLogger(__name__)
 DISABLED_KEY = "disabled_strategies"
 SNAPSHOT_KEY = "sync_snapshot"  # set once every replicated row has been queued for the cloud
 FAILED_STOP_WINDOW = timedelta(minutes=10)  # a stop this soon after a failed cycle counts as a failure
+QUOTE_POLL_SECONDS = 0.1  # a release straddle reads quotes this often around its release (S2: fills at ~1 s)
 
 
 LIVE_BANNER = """
@@ -300,6 +304,14 @@ class Engine:
         self.builder = ContextBuilder(self.candles, cfg, self.clock, self.quotes, evidence)
         # the config's lanes: more entry timeframes, each its own bars, arbiter and context (``lanes``)
         self.extra_lanes: list[EntryLane] = build_lanes(cfg, self.candles, self.clock, self.quotes, evidence)
+        # quote-driven strategies (Setup OWN S2, the release straddle): the calendar file is read here, once;
+        # a missing or malformed one stops the start (fail closed)
+        self._quote_lanes: list[tuple[EntryLane, OwnS2]] = []
+        for lane in self.extra_lanes:
+            for strategy in lane.strategies.strategies:
+                if isinstance(strategy, OwnS2):
+                    strategy.attach_calendar(load_releases(self.settings.path(strategy.params.calendar_file)))
+                    self._quote_lanes.append((lane, strategy))
         self.sessions = TradingSessions(cfg.sessions, cfg.symbols)
         self.news = NewsFilter(ManualBlackouts(cfg.sessions.news_blackouts))
         self.decisions = DecisionEngine(
@@ -661,15 +673,21 @@ class Engine:
     # --- loop -------------------------------------------------------------------------------------------
 
     def run(self, max_cycles: int | None = None) -> None:
-        interval = self.config.engine.monitor_interval_seconds
         clean = False
         try:
             while self.running and (max_cycles is None or self.cycles < max_cycles):
                 self.cycle()
-                self.sleep(interval)
+                self.sleep(self.interval())
             clean = True
         finally:
             self.shutdown(failed=not clean or self._failed_recently())
+
+    def interval(self) -> float:
+        """Seconds to the next cycle: ``QUOTE_POLL_SECONDS`` while a quote-driven strategy is at a release."""
+        now = self.clock.now_utc()
+        if any(strategy.busy(now) for _, strategy in self._quote_lanes):
+            return min(QUOTE_POLL_SECONDS, self.config.engine.monitor_interval_seconds)
+        return self.config.engine.monitor_interval_seconds
 
     def _failed_recently(self) -> bool:
         """A cycle failed shortly before this stop: the stop most likely followed the failure (2026-10-07: a
@@ -951,6 +969,27 @@ class Engine:
         if quote.valid:
             self._last_quotes[symbol] = quote
             self.backend.on_quote(symbol, quote.bid, quote.ask, atr, now)
+            self._quote_entries(symbol, quote.time_utc, quote.bid, quote.ask)
+
+    def _quote_entries(self, symbol: str, at: datetime, bid: float, ask: float) -> None:
+        """Feed the quote to the quote-driven strategies; an entry they report goes the bar path's way."""
+        disabled = self.disabled_strategies()
+        for lane, strategy in self._quote_lanes:
+            if not lane.trades(symbol) or strategy.name in disabled:
+                continue
+            entry = strategy.on_quote(symbol, at, bid, ask)
+            if entry is None:
+                continue
+            try:
+                ctx = lane.builder.build(symbol, self.symbols[symbol])
+            except TaaError as exc:
+                log.warning(
+                    "no context for %s's %s entry on %s: %s", strategy.name, entry.side.value, symbol, exc
+                )
+                continue
+            signal = strategy.entry_signal(ctx, entry)
+            if signal is not None:
+                self._decide(symbol, lane, ctx, signal)
 
     def _stream_candles(self) -> None:
         if self.candle_stream is None:
@@ -1002,14 +1041,19 @@ class Engine:
             if ctx.market.atr is not None:
                 self._atr[symbol] = ctx.market.atr
             self.backend.on_bar(symbol, ctx)
+        self.backend.on_lane_bar(symbol, ctx, lane.strategies.names)  # each strategy's own management
         disabled = self.disabled_strategies()
         signals = [  # a remotely disabled strategy opens nothing; its close signals still count
             s for s in lane.strategies.evaluate(ctx) if not (s.is_entry and s.strategy in disabled)
         ]
         selected = lane.arbiter.arbitrate(signals).selected
         self.on_arbitrated(lane)
-        if selected is None:
-            return
+        if selected is not None:
+            self._decide(symbol, lane, ctx, selected)
+
+    def _decide(self, symbol: str, lane: EntryLane, ctx: StrategyContext, selected: Signal) -> None:
+        """The decision engine on one selected signal, and the order when it is accepted."""
+        spec = self.symbols[symbol]
         applied = None if self.risk_limits is None else self.risk_limits.current()
         record = self.decisions.decide(
             DecisionRequest(

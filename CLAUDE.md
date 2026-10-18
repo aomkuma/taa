@@ -121,8 +121,9 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
 - **The owner's goals and principles (2026-10-17) come first:** `docs/OWNER_GOALS.md` (consistent profit, a trade
   every day, enter when price is about to run, quick profit; no single rule decides direction; everything
   relative; live in the present). Current focus: Setup OWN (`docs/OWN_SETUP.md`); every earlier setup is stopped.
-  **Backtests cover the latest six months only** (owner, 2026-10-17; setups are revised every 3-6 months): fit on
-  the first three, judge on the last three. This replaces the March / August / full-year ladder below.
+  **Backtests are judged from 2026-03-01 on** (owner, 2026-10-17/18; setups are revised every 3-6 months):
+  design and fit only on data before it (older research is fine), then run each frozen rule once on the window.
+  This replaces the March / August / full-year ladder below.
 - **Setup work, one setup at a time (owner, 2026-10-13):** backtest a setup, then change its conditions (stop,
   entry, timeframe, filters, exits) and backtest again until it reaches the goal (docs/SETUP_REVIEW.md, ≥ +0.15
   R/trade net). A losing result means *change the conditions*, never *drop the setup and move on*. Don't propose

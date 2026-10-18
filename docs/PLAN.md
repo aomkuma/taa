@@ -2833,6 +2833,26 @@ results; the ruin table above uses the full-risk R of the year's trades and is t
 PAPER/DEMO until the owner decides otherwise; LIVE is refused in code. Backtests: `app.cli backtest --preset
 aggressive --risk 7.5` (local CLI only; cloud jobs keep the standard ceiling).
 
+## A37. Setup OWN in the engine: a strategy's own exits and quote-driven entries (2026-10-18)
+
+The owner's Setup OWN (`docs/OWN_SETUP.md`) brought three engine needs; each stays behind the normal risk path:
+
+- **A strategy's own position management.** `BaseStrategy.manage_position(ctx, OpenPosition) -> PositionAdvice`
+  (default none) runs on every closed bar of the strategy's lane, next to the configured rules: the backtester
+  (`_manage`), PAPER (`PositionManager.on_lane_bar`) and DEMO/LIVE (`BrokerPositions.on_lane_bar`) turn it into
+  an `Adjustment` (`from_advice`): favourable stop moves only, a stop already through the price closes at market,
+  a close wins (`with_advice`). It must hold without memory (restarts): the plan is read from the position
+  (F1 v2 encodes a runner's level in its far take-profit). Also `break_even_target_share` (the break-even at a
+  share of the way to the take-profit, on the bar's best price) and a lane `min_risk_reward` (a fixed target may
+  sit nearer than a structure stop).
+- **Quote-driven entries.** A lane strategy may trade on quotes instead of bars (`OwnS2`, the CPI / NFP straddle):
+  the engine reads the release calendar (`app/news/us_releases.csv`) at start (a bad file stops the start),
+  feeds each monitored quote to the strategy, polls every `QUOTE_POLL_SECONDS` (0.1 s) while it is `busy`, and
+  sends its entry through the same decision engine and order path as a bar signal (`Engine._decide`). Its exit
+  is its own `manage_position` at the first bar close after the release minute.
+- **Backtest = live for the entry timeframe's S/R zones:** they come from the swings inside the strategies'
+  window (as live), not from every swing since the start of the history (0.6 s an M1 bar before).
+
 ## A22. Delivery plan
 
 - **Milestone 1** (never sends broker orders): Phases 0–11 plus advisory Phases 6A–6C.
