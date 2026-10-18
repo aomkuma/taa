@@ -1123,6 +1123,44 @@ scalp at a profit?" and "were the winners guesses, or logical entries with stati
   the larger sample the split does not yet show the logic carrying the result. F1's side choice beats shuffled sides
   on the design data (+0.118 against +0.032 R, the portfolio agent) - modest support.
 
+### Round 14 - the chart-state statistics, triple screen + compression (owner, 2026-10-18) - written before it is computed
+
+The owner: "knowing at the entry which trade will go the wrong way is your job: collect the statistics of what the
+chart looks like on every timeframe by the triple screen, and on the trading timeframe whether this form means price
+is about to run - with the compression, a run in the near future." A table of chart states and what followed:
+
+- **Points:** every M5 close 00:00-20:00 UTC, gold, design 2023-11 .. 2026-02, the window 2026-03 .. 10-16.
+- **The state (all from closed bars):** H1 tide (EMA20 rising over 3 bars and the close above EMA50 = up; the mirror
+  = down; else mixed); M15 tide (the same on M15); M5 position against the M15 EMA20 (pullback: the close on the
+  other side of the M15 EMA20 from the H1 tide, within 1 M15 ATR; extended: more than 2 M15 ATR beyond it the tide's
+  way; else neutral); M5 compression (the Bollinger(20) width percentile over the previous 288 M5 bars: <= 20 squeeze,
+  >= 80 wide, else normal); the session (Asia 00-07, London 07-12, New York 12-20 UTC).
+- **What followed (from the M5 close's mid price; 5 USD scaled by price / 4,100):** whether price ran 5 USD either
+  way within 30 minutes ("a run"); which side reached 5 first within 60 minutes; the median move against before +5.
+- **Selection:** a state counts when it has at least 80 design points and its "the H1 tide's side reaches +5 first"
+  (or the other side) is at least 58 % in at least 4 of 5 half-years. The chosen states are then traded (TP 5 / SL 5
+  scaled, entry at the next M1 open, real costs, 60 minutes) on the design data and once on the window.
+
+**Round 14 result** (`shadow/chart_states.py`, `chart_states_trade.py`; 143,483 design points, 38,772 in the window;
+a first run of the table counted the points with no 5 USD run as "the tide's side did not get there first" - fixed
+before the numbers below; and a column named `squeeze` collided with pandas' DataFrame.squeeze in the trade script -
+fixed):
+- **Whether price runs 5 USD is not the problem:** within 60 minutes it does from 67-87 % of the design points and
+  93-98 % of the window's (gold's M15 ATR in 2026: median 8.7 USD).
+- **Compression does not mean a bigger run soon - the opposite:** a 5 USD run within 30 minutes after a squeeze
+  (BB width <= 20th percentile) 43 %, normal 52 %, wide 72 % (design); the median range over 30 / 60 / 120 / 240
+  minutes is smaller after a squeeze than after a normal width in both periods (e.g. 240 min: 20.0 vs 21.0 USD design,
+  33.2 vs 32.7 window - equal). Volatility clusters: wide stays wide.
+- **Which side gets there first: about 50 % whatever the triple-screen state** - the H1 tide's side first (among
+  the points with a run): M15 against / mixed / with 0.519 / 0.514 / 0.488; pullback / neutral / extended 0.504 / 0.502
+  / 0.505; squeeze / normal / wide 0.491 / 0.504 / 0.509; Asia / London / New York 0.506 / 0.497 / 0.504.
+- **Only three states passed the selection** (H1 and M15 disagreeing on a pullback: the M15 side first 58-64 % in 4-5
+  of 5 half-years); traded (TP 5 / SL 5, real costs, 60 min): design 498 trades -0.020 R (-23 USD), the window 178
+  trades -0.077 R (-74.9 USD). Not usable.
+
+The coarse chart state (three timeframes' trend + compression + session) predicts how much price moves, not which
+way it goes first.
+
 **Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
 (H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
 window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks
