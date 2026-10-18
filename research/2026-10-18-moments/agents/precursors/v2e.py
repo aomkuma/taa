@@ -7,8 +7,12 @@ entries that wait for the dip, against the snap entry, with the lean, the cells 
 - turn: after the snap, the running extreme against the lean (a buy: the lowest low); the first M1 close beyond the
   extreme bar's other end (a buy: above that bar's high) enters at the next open, the stop beyond the extreme by
   0.3 USD; skipped when that stop is over MAX_STOP; the signal valid 30 minutes;
-the target 10 U, out after H minutes, the auditor's costs, one position at a time. The variant is chosen on the
-learning half only (`v2e.py`); the exam runs once with the chosen variant (`v2e.py exam NAME`).
+the target 10 U, out after H minutes, the auditor's costs, one position at a time. After both lost on the learning
+half (2026-10-19 02:05 Thai), a third that enters only once price moves the lean's way:
+- stop: a stop order D USD beyond the snap's price the lean's way (a buy stop D above), valid 30 minutes, filled with
+  the slip; the stop S USD from the fill; the target 5 or 10 U;
+The variant is chosen on the learning half only (`v2e.py`); the exam runs once with the chosen variant
+(`v2e.py exam NAME`).
 
     .venv/Scripts/python research/2026-10-18-moments/agents/precursors/v2e.py [exam VARIANT]
 """
@@ -28,8 +32,10 @@ sys.path.insert(0, str(HERE.parents[0] / "journal"))
 NS_MIN = 60 * 10**9
 WAIT = 30  # minutes an order or a turn signal is valid after the snap
 BUF = 0.3  # the turn's stop beyond the extreme, USD
-VARIANTS = {f"limit_D{d}_S{s}_H{hh}": ("limit", d, s, hh) for d in (3, 5) for s in (5, 8) for hh in (15, 30)}
-VARIANTS |= {f"turn_max{s}_H{hh}": ("turn", 0, s, hh) for s in (5, 8) for hh in (15, 30)}
+VARIANTS = {f"limit_D{d}_S{s}_H{hh}": ("limit", d, s, hh, 10) for d in (3, 5) for s in (5, 8) for hh in (15, 30)}
+VARIANTS |= {f"turn_max{s}_H{hh}": ("turn", 0, s, hh, 10) for s in (5, 8) for hh in (15, 30)}
+VARIANTS |= {f"stop_D{d}_S{s}_T{tu}_H{hh}": ("stop", d, s, hh, tu) for d in (1, 3) for s in (3, 5) for tu in (5, 10)
+             for hh in (15, 30)}
 
 
 def limit_fill(o, h, lo, sp, ot_ns, j0: int, side: int, limit: float, t_last: int) -> tuple[int, float]:
@@ -48,6 +54,26 @@ def limit_fill(o, h, lo, sp, ot_ns, j0: int, side: int, limit: float, t_last: in
                 return j, float(o[j])
             if h[j] >= limit:
                 return j, float(limit)
+        j += 1
+    return -1, float("nan")
+
+
+def stop_fill(o, h, lo, sp, ot_ns, j0: int, side: int, level: float, t_last: int, slip: float) -> tuple[int, float]:
+    """A buy stop fills when the ask reaches it (the high + spread >= level), a sell stop when the bid does (the low <=
+    level), on the M1 bars from j0 opening before t_last; a bar opening beyond the level fills at its open (the ask for
+    a buy); the slip against the trade. (-1, nan) when it does not fill."""
+    j = j0
+    while j < len(o) and ot_ns[j] < t_last:
+        if side > 0:
+            if o[j] + sp[j] >= level:
+                return j, float(o[j] + sp[j] + slip)
+            if h[j] + sp[j] >= level:
+                return j, float(level + slip)
+        else:
+            if o[j] <= level:
+                return j, float(o[j] - slip)
+            if lo[j] <= level:
+                return j, float(level - slip)
         j += 1
     return -1, float("nan")
 
@@ -83,7 +109,7 @@ def trades_for(variant: tuple, lv: pd.DataFrame, cell: tuple, mk: dict) -> pd.Da
     from lvl2 import manage  # noqa: PLC0415
     from v2s import side_of  # noqa: PLC0415
 
-    mode, d, s, hh = variant
+    mode, d, s, hh, tgt_u = variant
     level, n_min, theta = cell
     o, h, lo, c, sp, ot_ns, ny = (mk[k] for k in ("o", "h", "lo", "c", "sp", "ot_ns", "ny"))
     empty = (np.array([], np.int64), np.array([], float))
@@ -98,12 +124,15 @@ def trades_for(variant: tuple, lv: pd.DataFrame, cell: tuple, mk: dict) -> pd.Da
         if mode == "limit":
             je, entry = limit_fill(o, h, lo, sp, ot_ns, j0, side, ref - side * d, t_last)
             sl = float(s)
+        elif mode == "stop":  # managed from its fill bar, the stop first (the bar's low may have come before the fill)
+            je, entry = stop_fill(o, h, lo, sp, ot_ns, j0, side, ref + side * d, t_last, 0.07)
+            sl = float(s)
         else:
             je, entry, sl = turn_entry(o, h, lo, c, sp, ot_ns, j0, side, t_last, float(s), 0.07)
         if je < 0:
             free_at = int(np.searchsorted(ot_ns, t_last))  # the attempt ends with its window
             continue
-        tp = 10.0 * ref / 4100.0
+        tp = tgt_u * ref / 4100.0
         ss = 0.20 if ny[je] else 0.15
         t_end = int(ot_ns[je] + hh * NS_MIN)
         if mode == "limit":  # filled inside bar je: its stop counts, its target not (the high may have come first)

@@ -1,0 +1,8 @@
+L3 hold  5 min | learning: n 1607, the move the lean's way -0.04 USD, after costs -0.49 (se by day 0.12) | exam: n 753, the move the lean's way +0.74 USD, after costs +0.27 (se by day 0.25)
+L3 hold 15 min | learning: n 1606, the move the lean's way -0.11 USD, after costs -0.56 (se by day 0.18) | exam: n 753, the move the lean's way +0.33 USD, after costs -0.13 (se by day 0.35)
+L3 hold 30 min | learning: n 1606, the move the lean's way -0.32 USD, after costs -0.77 (se by day 0.29) | exam: n 753, the move the lean's way +0.36 USD, after costs -0.10 (se by day 0.41)
+L3 hold 60 min | learning: n 1606, the move the lean's way -0.09 USD, after costs -0.54 (se by day 0.34) | exam: n 753, the move the lean's way +0.45 USD, after costs -0.01 (se by day 0.56)
+L6 hold  5 min | learning: n 2276, the move the lean's way -0.04 USD, after costs -0.49 (se by day 0.09) | exam: n 820, the move the lean's way +0.23 USD, after costs -0.23 (se by day 0.19)
+L6 hold 15 min | learning: n 2275, the move the lean's way -0.18 USD, after costs -0.63 (se by day 0.14) | exam: n 820, the move the lean's way +0.26 USD, after costs -0.20 (se by day 0.27)
+L6 hold 30 min | learning: n 2274, the move the lean's way -0.30 USD, after costs -0.75 (se by day 0.25) | exam: n 819, the move the lean's way +0.25 USD, after costs -0.21 (se by day 0.35)
+L6 hold 60 min | learning: n 2272, the move the lean's way -0.03 USD, after costs -0.47 (se by day 0.25) | exam: n 819, the move the lean's way +0.18 USD, after costs -0.28 (se by day 0.49)

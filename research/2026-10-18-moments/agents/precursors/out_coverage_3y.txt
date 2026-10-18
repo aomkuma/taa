@@ -1,0 +1,10 @@
+{'layer': 'ctx', 'half': 'learning', 'snaps': 12602, 'with_1': 17, 'with_3': 0, 'with_5': 0, 'patterns': 9119} {'layer': 'ctx', 'half': 'exam', 'snaps': 2598, 'with_1': 3, 'with_3': 0, 'with_5': 0, 'patterns': 9119}
+{'layer': 'set', 'half': 'learning', 'snaps': 12602, 'with_1': 16, 'with_3': 0, 'with_5': 0, 'patterns': 18307} {'layer': 'set', 'half': 'exam', 'snaps': 2598, 'with_1': 6, 'with_3': 0, 'with_5': 0, 'patterns': 18307}
+{'layer': 'trg', 'half': 'learning', 'snaps': 12602, 'with_1': 9, 'with_3': 0, 'with_5': 0, 'patterns': 27874} {'layer': 'trg', 'half': 'exam', 'snaps': 2598, 'with_1': 1, 'with_3': 0, 'with_5': 0, 'patterns': 27874}
+layer     half  snaps  with_1  with_3  with_5  patterns
+  ctx learning  12602      17       0       0      9119
+  ctx     exam   2598       3       0       0      9119
+  set learning  12602      16       0       0     18307
+  set     exam   2598       6       0       0     18307
+  trg learning  12602       9       0       0     27874
+  trg     exam   2598       1       0       0     27874

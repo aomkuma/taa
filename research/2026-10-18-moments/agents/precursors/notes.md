@@ -981,3 +981,23 @@ same picture by eye does not come back (0.0-0.1 % of snaps), so a library of the
 same situation on M5 + M1 does come back and leans the right way for the next half hour (checked four ways), but
 neither the snap entry nor the dip entries turn it into a positive R - the lean's edge (run the right way 33 % vs the
 other 15-22 %) is smaller than what the 10 U target, the stop and the costs need.
+
+**The coverage, every layer (`out_coverage_3y.txt`, the zoomed library):** trigger (M5+M1) - 9 of 12,602 learning
+snaps and 1 of 2,598 exam snaps find the same picture once, none twice; 27,874 of the 29,073 moments are patterns of
+their own.
+
+**The lean's drift (`out_lean_drift.txt`; an upper bound for any exit that holds a fixed time):** the mean move the
+lean's way from the snap's entry, held 5 / 15 / 30 / 60 minutes - learning -0.03 .. -0.32 USD, the exam +0.18 ..
++0.74; after the costs (~0.45 USD a trade) negative everywhere but one cell (the exam, L3, 5 minutes +0.27, se by day
+0.25; the learning half there -0.49). With the evidence from snaps only (no run starts - successes picked after the
+fact; `out_lean_snaps_only.txt`) the run edge stays (L3 +0.125 / +0.314, L6 +0.047 / +0.076) and the drift after
+costs is negative at every holding time in both halves. **The situation tells the way of the next big move, not the
+average move:** when no run comes, price drifts the other way about as much.
+
+**The stop entry (2026-10-19 ~02:10 Thai; `v2e.py` stop variants; tests: fills on the ask / bid, gaps at the open,
+the slip, the window's end, a stop trade by hand, its fill bar's stop first; planted bugs 8 of 8):** a stop order D =
+1 / 3 USD beyond the snap's price the lean's way (it fills only once price moves that way), the stop S = 3 / 5 USD,
+the target 5 / 10 U, out after 15 / 30 minutes - **every one of the 16 negative on the learning half** (-0.037 ..
+-0.358 R; the S = 3 ones the worst, M1 noise). All 28 entry variants and the snap entry lose on the learning half;
+the exam was not run for any of them. **V2's levers on the entry and the exit are spent** - to be concluded with the
+owner.

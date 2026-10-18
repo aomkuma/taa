@@ -1,0 +1,8 @@
+L3 snaps-only evidence | learning: snaps with >= 5 days 0.99, active 315, run edge +0.125 (se 0.037) | exam: snaps with >= 5 days 0.99, active 95, run edge +0.314 (se 0.074)
+   hold 15 min | learning n 315: after costs -0.65 USD (se by day 0.38) | exam n 94: after costs -0.59 USD (se by day 0.89)
+   hold 30 min | learning n 315: after costs -0.69 USD (se by day 0.62) | exam n 94: after costs -0.12 USD (se by day 0.99)
+   hold 60 min | learning n 315: after costs -0.49 USD (se by day 0.72) | exam n 94: after costs -0.30 USD (se by day 1.24)
+L6 snaps-only evidence | learning: snaps with >= 5 days 0.70, active 1371, run edge +0.047 (se 0.017) | exam: snaps with >= 5 days 0.81, active 430, run edge +0.076 (se 0.037)
+   hold 15 min | learning n 1371: after costs -0.36 USD (se by day 0.17) | exam n 424: after costs -0.31 USD (se by day 0.35)
+   hold 30 min | learning n 1371: after costs -0.32 USD (se by day 0.22) | exam n 424: after costs -0.20 USD (se by day 0.43)
+   hold 60 min | learning n 1371: after costs -0.29 USD (se by day 0.30) | exam n 424: after costs -0.72 USD (se by day 0.69)
