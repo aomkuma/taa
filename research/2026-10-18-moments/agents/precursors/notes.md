@@ -1587,3 +1587,36 @@ of the market and a continuation in another: the components are read wrong unles
   read by distinct days as well. Not a finding.
 Next: a phase reading known at the moment (trend vs range on D1 / H4: ADX, the efficiency of the last 20 days, the
 EMA slopes, the range width), the components read inside each phase, every cell counted by days, in both halves.
+
+## The phase first, then the components inside it - written before it is computed (2026-10-19 06:50 Thai; owner: "do it")
+`phase.py` (tests `test_phase.py`: the efficiency of a straight rise / fall = 1, back and forth = 0, a net 2 over a
+path of 4 = 0.5, no move = NaN; the way; the range width in ATRs; a hard fall on the still-forming day must not count;
+planted bugs 5 of 5 after two tests were added - a straight fall and the forming day): D1 over 20 days, H4 over 30
+bars - the efficiency (Kaufman), the way, the range width - at every moment from the bars complete by it.
+The phase: the D1 efficiency in L1's terciles - "D1 running" (top), "between", "D1 back and forth" (bottom) - and the
+D1 way. Inside each phase, every component turned to the D1 way (a place 0..1 becomes 1 - place when D1 falls; a
+signed reading times the way; RSI / Stochastic as (x - 50) x way; Bollinger %B as (x - 0.5) x way), and the outcome
+turned too: the D1 way's X first minus the other way's (X = 10 and 5 U). Read by the component's quintiles (L1's
+edges), **counted by moments and by distinct days (each day's mean once)**. A component counts in a phase when its
+move from the lowest to the highest quintile has the same sign in L1 and L2 by days, with at least 30 days in each
+end bin in both halves. First the phase alone: does the D1 way come first more often when D1 runs?
+**The result (06:50-06:55 Thai; `phase_tables.py`, tests `test_phase_tables.py` - the readings turned to the D1 way, the
+days counted by each day's first moment; `out_phase_tables.txt`, `phase_tables.csv`).**
+- **A bug of mine found before any conclusion:** the first run weighted every day by the mean of its moments in a bin
+  and showed 0.3-0.5 leans everywhere (M15 RSI, M5 / M15 place ...); the moments themselves gave 0.03-0.08. How long a
+  reading stays in a bin depends on what price does next, so a day's mean leaks the future (a brief spike that turns
+  weighs as much as a whole day that runs on). Fixed: each day's FIRST moment in the bin (known when it happens);
+  tested - a day of (-1, +1, +1) counts -1 - and planted (the day mean again, the first not by time): caught.
+- The phase alone (10 U, the D1 way first minus against, moments | first moments by day): D1 running +0.010 | +0.007
+  (L1), +0.043 | +0.057 (L2); D1 back and forth -0.055 | -0.056, -0.065 | -0.081 - when D1 went back and forth over 20
+  days, its 20-day way is the one that does NOT come first, in both halves.
+- Inside "D1 running", the larger timeframes with D1 push its way: H1 swing structure against D1 -> with it -0.241 ->
+  +0.177 (L1, 54 / 79 days), -0.069 -> +0.103 (L2, 58 / 126 days); H1 MACD, H4 EMA 20, H4 Stochastic, H4 DI alike.
+  Per-day first moments are single +-1 values: 40-130 days a bin is +-0.09-0.16 of noise - read the moments with them.
+- One rule from it (learning only): D1 running (20-day efficiency >= 0.264) + the H1 structure with the D1 way + H4
+  +DI / -DI with it -> the D1 way. 10 U: the D1 way first 0.423 vs 0.385 against (L1, 6,182 moments, 71 days), 0.479
+  vs 0.408 (L2, 11,595 moments, 119 days) - as 1:1 trades of 10 U a win share of 0.524 / 0.540, against about 0.527
+  needed to cover the costs and about 0.60 for +0.15 R. The rest of the running phase: 0.374 vs 0.382, 0.448 vs 0.429.
+  The alignment of D1, H4 and H1 is the reason price runs the D1 way more often (two to seven points); it is not yet
+  enough. Next: inside the aligned phase, the entry - where on M15 / M5 the run its way starts (the pullback's depth,
+  the turn, the hour) - read the same way, by moments and first moments, both halves.
