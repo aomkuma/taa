@@ -51,10 +51,24 @@ def test_level_timeframes_are_the_larger_of_m15_m30_h1():
 
 class TestZones:
     def test_swings_within_the_tolerance_merge(self):
+        # sorted 100.0 100.2 | 103.0 103.1(H1) | 103.3 (0.3 from 103.0: a zone is at most 0.25 wide)
         z = lvl2.merge_zones(np.array([103.3, 100.0, 103.0, 100.2, 103.1]), np.array([0, 0, 0, 0, 1], bool), 0.25)
-        assert len(z) == 2
+        assert len(z) == 3
         assert z[0][0] == pytest.approx(100.1) and z[0][1:] == (2, False)
-        assert z[1][0] == pytest.approx(103.1333333) and z[1][1:] == (3, True)
+        assert z[1][0] == pytest.approx(103.05) and z[1][1:] == (2, True)
+        assert z[2][0] == pytest.approx(103.3) and z[2][1:] == (1, False)
+
+    def test_no_chaining_into_a_wide_band(self):
+        # each neighbour is 0.2 apart: chaining would make one 0.6-wide zone; a zone may be at most 0.25 wide
+        z = lvl2.merge_zones(np.array([100.0, 100.2, 100.4, 100.6]), np.zeros(4, bool), 0.25)
+        assert [round(x[0], 3) for x in z] == [100.1, 100.5]
+
+    def test_importance_counts_the_finest_timeframe_once(self):
+        # the same swing seen on M15, M30 and H1 (one event) and a second M15 swing nearby
+        px = np.array([100.0, 100.05, 100.1, 100.2])
+        h1 = np.array([False, False, True, False])
+        finest = np.array([True, False, False, True])  # M15, M30, H1, M15
+        assert lvl2.merge_zones(px, h1, 0.25, finest) == [(pytest.approx(100.0875), 2, True)]
 
     def test_the_tolerance_boundary(self):
         assert len(lvl2.merge_zones(np.array([100.0, 100.25]), np.zeros(2, bool), 0.25)) == 1
@@ -161,9 +175,11 @@ def test_times_are_nanoseconds_and_nothing_is_seen_before_it_happens(market):
         i = M.last(tf, t_ns)
         assert T["done"][i] <= t_ns < (T["done"][i + 1] if i + 1 < len(T["done"]) else np.inf)
         assert T["start"][i] < t_ns  # the bar began before the decision
-        kk = np.searchsorted(T["pknown"], t_ns, side="right")
-        if kk:
-            assert (T["start"][T["pb"][:kk]] < t_ns).all()  # every known swing happened before
+        for b_, k_ in (("zz_b", "zz_known"), ("fr_b", "fr_known")):
+            if k_ in T:
+                kk = np.searchsorted(T[k_], t_ns, side="right")
+                if kk:
+                    assert (T["start"][T[b_][:kk]] < t_ns).all()  # every known swing happened before
 
 
 def test_sept_2_sells_the_w_bounce_into_the_broken_4316_low(market):
@@ -199,3 +215,21 @@ def test_the_trade_uses_the_learned_stop_and_the_owners_floors(market):
             assert r.tp >= 5.0  # the owner's floor
         # one position at a time: a trade starts only after the previous one ended
         assert (T.j0.to_numpy()[1:] > T.xj.to_numpy()[:-1]).all()
+
+
+
+def test_the_bounce_start_is_the_entry_timeframes_zigzag_swing(market):
+    """2026-10-18 (found by the independent check): on an M15 / M30 entry the start came from the level fractals."""
+    from fingerprint import zigzag  # noqa: PLC0415
+
+    M = market
+    for tf in ("M1", "M5", "M15", "M30"):
+        T = M.tf[tf]
+        pb, pp, pt, pc = zigzag(T["h"], T["lo"], T["atr"], 2.0)
+        assert (T["zz_b"] == pb).all() and (T["zz_p"] == pp).all()
+    dec = np.nonzero(plib.window_mask(M.ot).any(axis=1).to_numpy() & (M.ot >= pd.Timestamp("2026-07-01", tz="UTC")))[0]
+    S = lvl2.signals(M, dec, lvl2.Params(k=0.5))
+    for r in S.itertuples():
+        z = M.tf[r.etf]
+        known = z["zz_known"] <= r.t_ns
+        assert r.t_px == z["zz_p"][known][-1]  # the latest known ZigZag swing of the entry TF

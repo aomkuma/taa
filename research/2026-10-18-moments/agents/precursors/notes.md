@@ -447,3 +447,31 @@ at the results and make each entry better, finding the timing inside my windows.
 | R10 | the test window = the latest six months (2026-04-18 ..); design before it | `main` | review |
 | R11 | tests first; prove the tests catch broken code; an independent re-derivation | test_lvl2.py, mutants, check | - |
 | R12 | real costs; one position at a time | `Market` (jlib costs), `trades` busy | TestManage2 |
+
+**LV2 design (2023-11-01 .. 2026-04-17, `out_lvl2_design.txt`):** every cell negative, -0.045 .. -0.100 R, 0.8-1.25 trades
+a weekday. By exit (k 0.5, all levels, T1, p80; 769 trades): target 187 (+0.995 R), a close through the level 302
+(-0.48 R), stop 90, break-even 108, time 82 (+0.20). Only 35 % of the traded signals went back to their start within 12
+bars; 20 % of the close-exits did, and their overshoot (median 1.52 A) passed the learned stop (1.22 A): the close exit
+cuts losses, it does not throw winners away. Price that reaches these levels goes through more often than it turns.
+**Chosen by the rule (best design R): k 0.5, all levels, T1, p 80 (-0.045 R)** - run once on the window.
+
+**A zone bug found in the losers' journal and fixed (2026-10-18), after the one window run of the chosen cell:** swings
+merged by chaining (each within tol of its neighbour), so dense M15 / M30 / H1 swings formed bands tens of USD wide whose
+mean was used as "the level" (zones of 10-57 swings); one swing seen on M15, M30 and H1 was counted three times. Fixed:
+a zone is at most tol wide; importance = the finest level timeframe's swings in it. Tests added (the old code fails
+them). The window result of the buggy version (262 trades, -0.072 R, -143.7 USD) is void; the corrected version is
+re-chosen on design and run on the window - a second look at the window, disclosed, caused by a bug fix, not a tuning.
+
+**Layer 4 (the independent re-derivation) caught a bug (2026-10-18):** 11 of 40 design trades had a different bounce start
+- all on an M15 / M30 entry: those timeframes are both entry and level timeframes, and LV2 kept only their fractals, so
+the bounce start came from a fractal, not from the entry TF's ZigZag as the rule says. Fixed (two swing sets per
+timeframe), test added. The design grid above is void; rerun.
+
+**LV2 proven before the design grid (owner: "if the code is not proven 100 %, don't run the learning period"):**
+the independent re-derivation on three short slices with identical data - 2025-09/10 (all levels, T1, p90),
+2024-05..08 quiet gold (important, T2, p80), 2026-01..04 volatile gold (all, T2, p70); entry TFs M1 / M5 / M15 / M30 and
+both sides covered - every decision minute gave the same signals (119 / 117 / 320, none missed, none extra) and every
+trade matched (16 / 15 / 94); 20 tests pass; 9 deliberately broken versions are all caught; the owner's 2026-09-02 case
+holds; pictures checked by eye (levels at visible earlier swing zones, entries after a stall bar, stops beyond the level
+by the learned buffer). Seen in the pictures (a matter of design, not a bug): at p70 the learned buffer is tiny (most
+winners never went beyond the level), so the stop sits inside the poke through the level ("shaken out").

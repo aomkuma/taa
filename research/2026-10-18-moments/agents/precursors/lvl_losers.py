@@ -33,6 +33,20 @@ pd.set_option("display.width", 250)
 def journal(T: pd.DataFrame, m: pd.DataFrame, sp: np.ndarray) -> pd.DataFrame:
     """One row per trade: what the bot measured and what happened (all prices from the same M1 frame)."""
     o, h, lo, c = (m[k].to_numpy(float) for k in ("open", "high", "low", "close"))
+    T = T.copy()
+    if "lkind" not in T:  # LV2: the zone's swings and whether H1 is in it
+        T["lkind"] = [f"{int(a)}sw{'+H1' if b else ''}" for a, b in zip(T.swings, T.has_h1)]
+    if "kind" not in T:  # the owner's three kinds for stopped trades
+        kinds = []
+        for r in T.itertuples():
+            if r.exit not in ("stop", "close"):
+                kinds.append("")
+                continue
+            s_ = int(r.side)
+            later = range(int(r.xj) + 1, min(int(r.j0) + 120, len(o)))
+            hit = any(((h[q] if s_ > 0 else lo[q] + sp[q]) - r.entry) * s_ >= r.tp for q in later)
+            kinds.append("3" if hit else ("2" if r.mfe >= 0.5 * r.tp else "1"))
+        T["kind"] = kinds
     b5 = plib.tf_bars(m, "5min")
     av5 = pd.DatetimeIndex(b5["avail"])
     rows = []
@@ -50,7 +64,8 @@ def journal(T: pd.DataFrame, m: pd.DataFrame, sp: np.ndarray) -> pd.DataFrame:
         back_to_start = np.nonzero([((lo[q] if s < 0 else h[q]) - r.start) * s <= 0 for q in after])[0]
         held = xj - j0 + 1
         rows.append(dict(
-            t=r.t, when_th=r.t.tz_convert(TH).strftime("%Y-%m-%d %H:%M"), side=s, etf=r.etf, A=a, lkind=r.lkind,
+            t=r.t, j0=j0, xj=xj, when_th=r.t.tz_convert(TH).strftime("%Y-%m-%d %H:%M"), side=s, etf=r.etf, A=a,
+            lkind=r.lkind,
             level=r.level, start=r.start, entry=r.entry, sl=r.sl, tp=r.tp, exit=r.exit, pnl=r.pnl, kind=r.kind,
             bounce_A=(r.entry - r.start) * -s / a, level_from_start_A=(r.level - r.start) * -s / a,
             entry_to_level_A=(r.level - r.entry) * -s / a, stall_reach_A=reach, held_min=held,
@@ -59,13 +74,15 @@ def journal(T: pd.DataFrame, m: pd.DataFrame, sp: np.ndarray) -> pd.DataFrame:
             start_reached_min=int(back_to_start[0]) if len(back_to_start) else -1))
     J = pd.DataFrame(rows)
     J["cause"] = np.select(
-        [J.exit.eq("stop") & (J.level_broke_min >= 0) & (J.level_broke_min <= J.held_min) & (J.kind == "1"),
+        [J.exit.eq("close") & (J.kind == "3"), J.exit.eq("close"),
+         J.exit.eq("stop") & (J.level_broke_min >= 0) & (J.level_broke_min <= J.held_min) & (J.kind == "1"),
          J.exit.eq("stop") & (J.kind == "3"),
          J.exit.eq("stop") & (J.kind == "2"),
          J.exit.eq("stop") & (J.kind == "1"),
          J.exit.eq("time") & (J.pnl < 0),
          J.exit.eq("be")],
-        ["the level broke (price closed through it, the stop followed)", "shaken out (stopped, then the target came)",
+        ["closed through the level, then the target came anyway", "closed through the level (out at the next open)",
+         "the level broke (price closed through it, the stop followed)", "shaken out (stopped, then the target came)",
          "fell short (half way or more, then back to the stop)", "wrong way without a close through the level",
          "time exit at a loss", "break-even (0.6 of the target, then back)"], "won / other")
     return J

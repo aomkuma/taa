@@ -1,0 +1,7 @@
+lvl2 on the slice: 117 signals, 15 trades
+signals: independent 117, lvl2 117, only independent 0, only lvl2 0
+trades: 15 checked, 0 with a mismatch
+===
+lvl2 on the slice: 320 signals, 94 trades
+signals: independent 320, lvl2 320, only independent 0, only lvl2 0
+trades: 94 checked, 0 with a mismatch

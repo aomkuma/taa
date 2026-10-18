@@ -58,21 +58,21 @@ def level_tfs(etf: str) -> tuple[str, ...]:
     return tuple(t for t in LEVEL_TFS if LADDER.index(t) > LADDER.index(etf))
 
 
-def merge_zones(px: np.ndarray, is_h1: np.ndarray, tol: float) -> list[tuple[float, int, bool]]:
-    """Swings within tol of their neighbour (sorted by price) merge into one zone: (mean price, swings, any H1)."""
+def merge_zones(px: np.ndarray, is_h1: np.ndarray, tol: float, finest: np.ndarray | None = None) -> list[tuple[float, int, bool]]:
+    """Swings sorted by price form zones no wider than tol (a swing joins while it is within tol of the zone's first
+    price - no chaining into wide bands): (mean price, importance, any H1 swing). Importance = how many swings of the
+    finest level timeframe are in the zone (one swing on H1 is also one on M30 and M15 - counted once), at least 1."""
     if len(px) == 0:
         return []
+    finest = np.ones(len(px), bool) if finest is None else finest
     order = np.argsort(px, kind="stable")
-    v, h1 = px[order], is_h1[order]
-    zones, cur, cur_h1 = [], [v[0]], [bool(h1[0])]
-    for x, f in zip(v[1:], h1[1:]):
-        if x - cur[-1] <= tol:
-            cur.append(x)
-            cur_h1.append(bool(f))
-        else:
-            zones.append((float(np.mean(cur)), len(cur), any(cur_h1)))
-            cur, cur_h1 = [x], [bool(f)]
-    zones.append((float(np.mean(cur)), len(cur), any(cur_h1)))
+    v, h1, fn = px[order], is_h1[order], finest[order]
+    zones = []
+    a = 0
+    for b in range(1, len(v) + 1):
+        if b == len(v) or v[b] - v[a] > tol:
+            zones.append((float(np.mean(v[a:b])), max(int(fn[a:b].sum()), 1), bool(h1[a:b].any())))
+            a = b
     return zones
 
 
@@ -175,21 +175,22 @@ class Market:
             atr = atr14(h, lo, c)
             done_ns = pd.DatetimeIndex(done).tz_convert("UTC").as_unit("ns").asi8
             assert (np.diff(done_ns) > 0).all(), tf
-            if tf in LEVEL_TFS:
-                # the swings a trader sees on that chart: 5-bar fractals, known 2 bars later
+            entry = dict(o=o, h=h, lo=lo, c=c, done=done_ns, start=pd.DatetimeIndex(start).tz_convert("UTC").as_unit("ns").asi8,
+                         trend=trend_sign(c), atr=atr)
+            if tf in ("M1", "M5", "M15", "M30"):  # an entry timeframe: its 2-ATR ZigZag gives the bounce's start
+                pb, pp, pt, pc = zigzag(h, lo, atr, zz_k)
+                entry.update(zz_b=pb, zz_p=pp, zz_t=pt, zz_known=done_ns[pc] if len(pc) else np.zeros(0, np.int64))
+            if tf in LEVEL_TFS:  # a level timeframe: the swings a trader sees on that chart, 5-bar fractals
                 ph, pl = plib.pivots(h, lo, 2)
                 pb = np.r_[ph, pl]
                 pp = np.r_[h[ph], lo[pl]]
                 pt = np.r_[np.ones(len(ph), int), -np.ones(len(pl), int)]
-                pc = np.minimum(pb + 2, len(h) - 1)
                 ok = pb + 2 < len(h)
-                order = np.argsort(pc[ok], kind="stable")
-                pb, pp, pt, pc = pb[ok][order], pp[ok][order], pt[ok][order], pc[ok][order]
-            else:
-                pb, pp, pt, pc = zigzag(h, lo, atr, zz_k)
-            self.tf[tf] = dict(o=o, h=h, lo=lo, c=c, done=done_ns, start=pd.DatetimeIndex(start).tz_convert("UTC").as_unit("ns").asi8,
-                               trend=trend_sign(c), atr=atr, pb=pb, pp=pp, pt=pt,
-                               pknown=done_ns[pc] if len(pc) else np.zeros(0, np.int64))
+                pb, pp, pt = pb[ok], pp[ok], pt[ok]
+                order = np.argsort(pb + 2, kind="stable")
+                pb, pp, pt = pb[order], pp[order], pt[order]
+                entry.update(fr_b=pb, fr_p=pp, fr_t=pt, fr_known=done_ns[pb + 2])
+            self.tf[tf] = entry
 
     def last(self, tf: str, t_ns: int) -> int:
         return int(np.searchsorted(self.tf[tf]["done"], t_ns, side="right") - 1)
@@ -207,33 +208,34 @@ def setup_at(M: Market, t: int, p: Params):
     if side == 0:
         return None
     E = M.tf[etf]
-    known = np.searchsorted(E["pknown"], t_ns, side="right")  # pivots are in time order
+    known = np.searchsorted(E["zz_known"], t_ns, side="right")  # the entry TF's ZigZag swings, in time order
     if known < 1:
         return None
     last = known - 1
     start_typ = -1 if side < 0 else 1
-    if E["pt"][last] != start_typ:
+    if E["zz_t"][last] != start_typ:
         return None
-    t_px = float(E["pp"][last])
-    t_start = int(E["start"][E["pb"][last]])
+    t_px = float(E["zz_p"][last])
+    t_start = int(E["start"][E["zz_b"][last]])
     price = M.c[t]
     if (price - t_px) * -side < p.min_bounce * a:
         return None
-    pxs, h1 = [], []
+    pxs, h1, fine = [], [], []
     lt = level_tfs(etf)
     for tf in lt:
         L_ = M.tf[tf]
         i = M.last(tf, t_ns)
-        kk = np.searchsorted(L_["pknown"], t_ns, side="right")
+        kk = np.searchsorted(L_["fr_known"], t_ns, side="right")  # the level TF's fractal swings, in time order
         sel = np.arange(kk)
-        sel = sel[(L_["pb"][sel] >= i - p.screen + 1) & (L_["start"][L_["pb"][sel]] < t_start)]
-        pxs.append(L_["pp"][sel])
+        sel = sel[(L_["fr_b"][sel] >= i - p.screen + 1) & (L_["start"][L_["fr_b"][sel]] < t_start)]
+        pxs.append(L_["fr_p"][sel])
         h1.append(np.full(len(sel), tf == "H1"))
+        fine.append(np.full(len(sel), tf == lt[0]))
     if not pxs:
         return None
     big = lt[-1]
     tol = p.zone_tol * M.tf[big]["atr"][M.last(big, t_ns)]
-    zones = merge_zones(np.concatenate(pxs), np.concatenate(h1), tol)
+    zones = merge_zones(np.concatenate(pxs), np.concatenate(h1), tol, np.concatenate(fine))
     lv = level_in_front(zones, price, side, p.important)
     if lv is None:
         return None
@@ -317,12 +319,15 @@ def main() -> None:
     # signals walk the whole history from 2023-08 so the learned stop has its earlier signals; trades are cut per part
     dec = np.nonzero(inwin & np.asarray(M.ot >= pd.Timestamp("2023-08-15", tz="UTC")))[0]
     rows = []
-    for k in (0.25, 0.5):
-        for imp in (False, True):
+    grid = [(k, imp, tg, q) for k in (0.25, 0.5) for imp in (False, True) for tg in ("T2", "T1") for q in (70.0, 80.0, 90.0)]
+    if mode == "window":  # only the cell chosen on design: k, all|important, target, p
+        grid = [(float(sys.argv[2]), sys.argv[3] == "important", sys.argv[4], float(sys.argv[5]))]
+    for k, imp in sorted({(g[0], g[1]) for g in grid}):
+        if True:
             S = signals(M, dec, Params(k=k, important=imp))
             S.to_parquet(HERE / f"lvl2_signals_k{k}_{'imp' if imp else 'all'}.parquet")
-            for tg in ("T2", "T1"):
-                for q in (70.0, 80.0, 90.0):
+            for tg, q in [(g[2], g[3]) for g in grid if (g[0], g[1]) == (k, imp)]:
+                if True:
                     pp = Params(k=k, important=imp, target=tg, p=q)
                     T = trades(M, S, pp, ny)
                     if T.empty:
