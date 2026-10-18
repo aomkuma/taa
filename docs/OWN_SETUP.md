@@ -1521,3 +1521,14 @@ notes.md`.
 - **Larger timeframes:** the H4 / H1 / M15 structure carries no lean by year. A recent break DOWN through an M15 / M30 /
   H1 level comes before more runs and more up-runs (H1: 4 of 4 years); at a level touched 3+ times (H4 / H1 / M15) price
   stalls more (runs 0.20-0.23 vs 0.31, flat 0.22 vs 0.15).
+- **Similarity as the owner means it** (the same formation, not the same candles): a fingerprint per timeframe - swings
+  of a 3-ATR ZigZag on the 120 bars (how many, the current leg, the last peak / trough higher or lower, where the close
+  is), RSI rising / falling, the MACD histogram, the EMA stack, support / resistance. With 8 such attributes a timeframe,
+  a trigger finds >= 5 earlier days of >= 80 % matches for 84 % (M5 + M1), 63 % (M30 + M15) and 57 % (H4 + H1) of snaps.
+  On design the matches tell how often price runs beyond the time of day (H4 + H1: 4 of 14 frequent sets, chance 0) but
+  not which way (leaning sets as many as shuffled outcomes give).
+- **Setup OWN V2 (the bot uses the library walk-forward; a 3 U straddle when the run weight is high; exits on the entry
+  timeframe - the smallest of M1 .. M30 with ATR >= 5 USD - target 0.75 ATR, stop 1 ATR, break-even 0.6, 6 bars):** design
+  -0.034 R (2.5 a day), the time weight alone -0.038. Window once: the library cell -0.017 R / -194 USD (7.4 a weekday),
+  the time-only cell +0.003 R / -27 USD (3.5 a weekday). Not usable as written; half the window's stopped losers were
+  stopped inside the shake-out before the target came.

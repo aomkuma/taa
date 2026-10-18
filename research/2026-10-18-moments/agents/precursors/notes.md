@@ -270,3 +270,49 @@ H4. Same reads.
   0.0; e.g. set 332: a 10 U run 0.39 vs 0.25 expected from its times; set 54: 0.21 vs 0.31); M30 + M15 1 of 31 (set 453:
   0.52 vs 0.35); M5 + M1 0 of 80 for the run, 6 of 80 for the largest 30-minute move (0.9). The context sets gather the
   same weeks (H4 changes six times a day), so part of this is the volatility regime of those weeks.
+
+## Setup OWN V2 - the bot uses the library (owner: "mainly for the bot; the bot and the backtest first") - written before it is computed (`v2.py`)
+
+**The library as the bot sees it (walk-forward):** at each snap, every EARLIER snap on an earlier day is in the library
+with its outcome (the bot adds each snap and fills its outcome after 60 minutes). Matching per layer (core formation,
+H4+H1 / M30+M15 / M5+M1): the earlier snaps with >= 0.80 of the attributes equal (every match, not only set leaders).
+- **Run weight** = the base for this snap time (the share of earlier snaps at the same time followed by a 10 U run
+  within 30 minutes) + for each layer with >= 10 matches, w x (the matches' run share - the base of their own times),
+  w = n / (n + 30).
+- **Side after the start (trigger layer, >= 10 matches):** among the matches, the share whose first 3 U ran on to 10 U up
+  vs down; when they differ by >= 0.10, only that side is taken.
+
+**The trade (gold, real costs `jlib`, one position at a time):** at a snap with run weight >= theta, a buy stop at the
+snap price + 3 U and a sell stop at - 3 U (one cancels the other), live 30 minutes; the side is the one price breaks to.
+A buy fills at the ask (max of the level and the bar's open ask) + 0.07, a sell at the bid - 0.07. **The entry
+timeframe** = the smallest of M1 / M5 / M15 / M30 whose ATR(14) at the snap is >= 5 USD (else M30), and the exit lives on
+it (owner: "exit on the timeframe you entered"): target max(5 USD, k_tp x its ATR), stop max(3 USD, k_sl x its ATR),
+break-even at 0.6 of the target, time stop 6 bars of that timeframe. Stop slippage 0.15 (New York 0.20).
+
+**Variants (design 2023-11 .. 2026-02 chooses; the window 2026-03 .. 10-16 once with the chosen one):**
+- B0: every snap (no weight) - what the straddle does alone;
+- B1: run weight from the time only (no formation) >= theta;
+- B2: run weight with the formation layers >= theta;
+- B3: B2 + the side filter.
+theta in {0.30, 0.40, 0.50}; k_tp in {0.75, 1.0, 1.5}; k_sl in {0.75, 1.0}. Chosen: the best design R a trade among
+B2 / B3 cells with >= 0.5 trades a day, if it beats B1 at the same theta (else the library adds nothing and that is the
+finding). Reported: trades a day by session, win %, R, USD at 0.01 lot, months, worst loss / streak / max DD, the
+losers' kinds, the entry timeframe used by month.
+
+**V2 design result (`out_v2_design.txt`, `v2_design.csv`):** every cell negative. Straddle at every snap (B0) -0.067 ..
+-0.095 R (10-11 a day); the time weight (B1) and the library weight (B2 / B3) cut the loss to -0.034 .. -0.10 R and the
+library adds at most 0.004 R over the time alone (B3 vs B1, theta 0.50, k_tp 0.75, k_sl 1.0: -0.034 vs -0.038 R,
+1,794 vs 1,786 trades, 2.5 a day). Stopped losers 58-80 % kind 1 (the start faded: the wrong way). By the rule
+written above, the chosen cell is **B3 theta 0.50, k_tp 0.75, k_sl 1.0**; it runs once on the window, with **B1 at the
+same cell as the comparator** (declared here before either is run).
+
+**V2 window run (once, 2026-03-01 .. 10-16; `out_v2_window.txt`):**
+- **B3 (the library) theta 0.50, k_tp 0.75, k_sl 1.0:** 1,212 trades (about 7.4 a weekday), win 43.6 %, **-0.017 R, -194.3
+  USD** at 0.01 lot, worst -14.2, max DD 346 USD; months 03 +0.05 | 04 -0.05 | 05 -0.06 | 06 -0.08 | 07 +0.06 | 08 -0.01 |
+  09 -0.06 | 10 +0.04; stopped losers 44 % wrong way, 5 % fell short, **51 % too early** (stopped, then the target came).
+- **B1 (time only), same cell:** 582 trades (3.5 a weekday), win 43.8 %, **+0.003 R, -27.1 USD**, max DD 158; 03 +0.01 | 04
+  +0.01 | 05 +0.01 | 06 -0.18 | 07 +0.09 | 08 +0.06 | 09 +0.05 | 10 -0.06; losers 34 / 4 / 62 %.
+- Verdict: V2 as written does not reach the goal (+0.15 R). The formation library adds nothing over the time of day on
+  design (+0.004 R) and costs on the window (it lets in twice the trades, the extra ones losing). Why the losers lost:
+  in the window most stops are kind 3 - the 1-ATR stop of the entry timeframe sits inside the shake-out after the 3 U
+  start (the target came after the stop); on design the start faded (kind 1, 58-70 %).

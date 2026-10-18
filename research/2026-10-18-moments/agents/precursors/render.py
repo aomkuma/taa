@@ -70,5 +70,5 @@ def draw(m: pd.DataFrame, t_bar: pd.Timestamp, path, title: str) -> None:
         panel(ax, name, b, n_past, n_fut, t_dec)
     fig.suptitle(title, fontsize=9)
     fig.tight_layout()
-    fig.savefig(path, dpi=80)
+    fig.savefig(path, dpi=64)
     plt.close(fig)
