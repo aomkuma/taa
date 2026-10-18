@@ -1189,3 +1189,23 @@ I took the bot's side on only 46 % of the trades, yet both lose alike (me minus 
 these moments, with this trade (the 10 U target, the stop one entry-TF ATR, out after 12 entry-TF bars, the costs),
 who picks the side hardly matters. The trades I would take on my own were 13 % of them and close to break-even - too
 few to say more. The earlier New York 09:30 test with my own skips (the first 72 of 128 days): 12 trades, -0.229 R.
+
+## The proposed rule as code, 2025-06-01 .. 2025-12-01 (owner, 2026-10-19 ~04:15 Thai: "backtest the method you proposed in 2025-06-01 .. 2025-12-01"; `rule_bt.py`, test `test_rule_bt.py`)
+
+The by-eye "would take" trades as a rule: with the H1 trend (the 120 bars' way and the swing structure agree), M5
+pulled back against it (its last leg against the trend; a buy's close in the lower 60 % of M5's range, a sell's in
+the upper 60 %), M1 turned the trend's way (its last leg with it); every 5 minutes inside the windows, one position,
+V2's trade. Tests by hand (both sides, the 60 / 40 % edges, a mixed structure, a flat H1, no pullback, no turn; the
+H4 screen), planted bugs 5 of 5; my plain recount of the trades equal (324 of 324). The manual paper trade begun
+before it (2026-03-23, eight charts in the 5,000 -> 4,100 crash, all skipped) was stopped by the owner's request.
+
+| 2025-06-01 .. 2025-12-01 | trades | a weekday | win | R | USD | max DD | worst | streak |
+|---|---|---|---|---|---|---|---|---|
+| the rule | 324 | 2.49 | 0.321 | -0.085 | -183 | 218 | -13.92 | 13 |
+| the rule + the H4 way agrees | 236 | 1.82 | 0.322 | -0.096 | -150 | 188 | -13.92 | 15 |
+| the bot on the present library (walk-forward) | 206 | | 0.403 | +0.087 | +109 | | | |
+
+A coin's side at the rule's moments -0.072 (-0.065 with H4). The buys about break-even (-0.019; with H4 +0.001), the
+sells lose (-0.208; with H4 -0.388): in a rising year an H1 fall is a pullback of the larger rise. The rule from my
+21 hand-picked trades does not hold as code; the bot had a good half-year here (+0.087 R) that the learning half as a
+whole (-0.042) and the exam (-0.084) do not repeat.
