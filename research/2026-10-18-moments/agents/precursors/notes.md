@@ -714,3 +714,47 @@ wins the exam, loses the learning half); every component measures at chance (tre
 the library's "same picture" is too coarse (pictures, `png/wf_library/`). Changed - the method: each component is
 proven twice (code, and its premise against a no-effect baseline in two parts) before it is assembled (owner).
 Result - LV3 stops as a setup; the components to test next are the ones with a measured or causal lead.
+
+## F1 CONF-72's components alone - written before it is computed (2026-10-19 01:40 Thai; `f1_components.py`)
+
+F1 CONF-72 trades on DEMO; its parts are checked the same way (owner: "do it"). Data: the research's wide candidate
+tables (every minute of UTC 00-02, 07-12, 12-17 x both sides, 2023-11 .. 2026-04-17; the bot's definitions - engine
+= research 35 / 35). Per component (tide, at a level, price action, 2 of 3 M5 indicators, C4 the 72-hour extreme
+near / behind, C5 not a fast tape) and per assembly (tide + level, + price action, B0, CONF-72): does price go 8 U
+the side's way before 8 U the other way within 60 minutes of the decision close (no effect 50 %)? One row per 15
+minutes per side. A component carries information when it is off 50 % by >= 2 standard errors in both parts
+(2023-11 .. 2024-12, 2025-01 .. 2026-04-17).
+
+**Result (`out_f1_components.txt`): one of F1's parts carries direction - C4.** 8 U the side's way first, first part
+/ second (no effect 50 %): tide 51.4 / 50.6 % (2.1 / 1.1 SE); at a level 48.8 / 49.8; price action 49.7 / 49.9; two
+of three M5 indicators 49.0 / 50.8; **C4, the 72-hour extreme near (closer than half the target) or already behind,
+53.6 / 53.8 % (2.3 / 2.8 SE)**; C5 50.0 / 50.0; tide + level 50.5 / 50.1; + price action 49.7 / 50.0; B0 50.5 / 50.4;
+**CONF-72 62.1 / 65.0 % (66 / 80 events, 2.0 / 2.8 SE)**. F1's measured edge comes from C4 - price at or beyond the
+72-hour extreme the trade's way tends to go on - not from the tide, the level, the price action or the indicators.
+
+## C4 taken apart - written before it is computed (2026-10-19 01:55 Thai)
+
+Same measurement (8 U, 60 minutes, one row per 15 minutes per side, two parts). C4-behind (price already beyond the
+72-hour extreme the trade's way) and C4-near (not beyond, closer than 4 U); then C4 with each other component added
+(tide, level, price action, indicators, C5) to see which adds to C4. A piece adds when C4 + it is above C4 alone by
+>= 2 standard errors of the difference in both parts.
+
+**Result (`out_f1_c4.txt`):** C4-near 53.7 / 55.0 % (2.2 / 3.3 SE), C4-behind 52.7 / 51.0 % (1.3 / 0.5); C4 + tide =
+C4 (the tide is nearly always on with C4); C4 + level 59.2 / 57.0 % (4.0 / 3.3 SE; the difference from C4 is +5.6 /
++3.2 points, 2.0 / 1.3 SE - not proven to add by the rule); C4 + price action 52.8 / 53.4; C4 + indicators 55.4 /
+55.3 (312 / 369); C4 + C5 53.7 / 54.6. Caveat: C4 was chosen by the portfolio agent on 2023-11 .. 2026-02, the same
+years - not a clean test.
+
+## C4 on the older years - written before it is computed (2026-10-19 02:05 Thai; `c4_old.py`)
+
+Gold 2020-09 .. 2023-10, never used to choose C4: every 15th minute of F1's windows, both sides; C4-near, C4-behind,
+both, and the control (neither); 8 U the side's way first within 60 minutes (no effect 50 %); two parts
+(2020-09 .. 2022-03, 2022-04 .. 2023-10). C4 is proven when C4-near is above 50 % by >= 2 SE in both parts.
+
+**Result (`out_c4_old.txt`): on the years that chose nothing, C4 goes the other way.** 2020-09 .. 2022-03 /
+2022-04 .. 2023-10: C4-near 39.5 / 47.3 % (-2.8 / -1.3 SE), C4-behind 42.5 / 46.7, C4 either 40.9 / 47.1 (-3.3 /
+-1.8); the control (neither) 50.4 / 50.2 % - the measurement is not biased. In the trending gold of 2023-11 ..
+2026-04 price near the 72-hour extreme went on (54-55 %); in the ranging gold of 2020-09 .. 2023-10 it turned back
+(40-47 %). C4 is real but its sign belongs to the market phase: F1 CONF-72's edge is the trending phase's. Next: a
+phase component, measured in advance, that tells C4's continuation from its reversal in both eras (owner's principle:
+in a phase that does not suit a setup it trades less).

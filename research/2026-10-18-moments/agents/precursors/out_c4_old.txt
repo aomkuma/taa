@@ -1,0 +1,10 @@
+gold 2020-09 .. 2023-10 (never used to choose C4): 8 U the side's way first within 60 minutes; no effect 50 %
+          component             part     n  its_way    se  edge_in_se
+            C4-near 2020-09..2022-03   172    0.395 0.037      -2.807
+            C4-near 2022-04..2023-10   602    0.473 0.020      -1.306
+          C4-behind 2020-09..2022-03   146    0.425 0.041      -1.842
+          C4-behind 2022-04..2023-10   398    0.467 0.025      -1.306
+C4 (near or behind) 2020-09..2022-03   318    0.409 0.028      -3.308
+C4 (near or behind) 2022-04..2023-10  1000    0.471 0.016      -1.837
+  neither (control) 2020-09..2022-03  6502    0.504 0.006       0.719
+  neither (control) 2022-04..2023-10 17892    0.502 0.004       0.434
