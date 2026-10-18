@@ -1161,6 +1161,38 @@ fixed):
 The coarse chart state (three timeframes' trend + compression + session) predicts how much price moves, not which
 way it goes first.
 
+### Round 15 - the owner's chart forms on M1 (2026-10-18) - written before it is computed
+
+The owner's example (MT5 M1, 2026-10-16 22:45-23:50 server time = 19:45-20:50 UTC; our data matches it): price held
+a box of about 4166-4169.5 for an hour, tested its top at least three times, then broke out of the bottom to 4163.
+"There are also sideways-up, sideways-down, and the ones that run 3 ATR out and snap back."
+
+- **Box break:** at each M1 close, the box = the high / low of the previous W bars (W = 30 or 60) when its height is
+  at most 1 M15 ATR(14); a break = the first M1 close beyond an edge by 0.1 of the height (the previous close inside).
+  Touches: M1 swing extremes (the extreme of 5 bars) within 15 % of the height from an edge, at least 5 bars apart.
+  The box's slope: the regression slope of the closes over W, in heights: above +0.5 sideways-up, below -0.5
+  sideways-down, else flat.
+- **3-ATR run:** the first M1 close at least 3 M1 ATR(14) beyond the M1 EMA(20); the side to measure is the snap back.
+- **What followed:** from the next M1 open's mid price, which reached 5 USD (x price / 4,100) first within 60
+  minutes - the break's direction (or the snap back) or the other; by touches, slope, session, H1 tide; by half-year.
+- A form counts when its side reaches 5 first in at least 56 % of the cases in at least 4 of 5 design half-years
+  (n >= 100); those are then traded with real costs (TP 5 / SL 5, and the box's other edge as the stop) on the
+  design data and the window.
+
+**Round 15 result** (`shadow/forms.py`): the break direction / the snap back reached 5 USD first, among cases with a
+run (design | window):
+- Box breaks, all: 49.7 % (6,292) | 49.9 % (2,265). 3+ touches on the broken edge 48.3 % | 49.8 %; 3+ touches on the
+  other edge (the owner's example: tops tested, then the bottom broke) 51.2 % | 53.1 % (by half-year 52.5 / 48.2 /
+  50.7 / 56.9 / 50.0); sideways-down boxes 53.6 % (730) | 53.8 % (353); sideways-up 48.5 | 50.2; with / against the H1
+  tide 50.5 / 49.5 | 48.4 / 51.8.
+- 3-ATR runs (the first M1 close >= 3 M1 ATR from the M1 EMA20), the snap back: 50.3 % (10,318) | 51.0 % (3,302); every
+  half-year 49.1-51.8 %.
+- None reaches the bar (56 % in 4 of 5 half-years). Taken alone, these forms do not tell the side; the leanings
+  (sideways-down boxes, 3+ tests of the other edge) are 1-4 points.
+
+The owner: "that was only an example - find the other forms that come before price really runs." -> the run
+catalogue (effect to cause), next.
+
 **Reversion agent - final** (`agents/reversion/notes.md`). Limit entries and stretch-fades fail: the frozen REV-A
 (H1-trend stretch-fade with a 1-ATR limit, 4/4 ATR, 120 min; design +0.013 R, REV-B +0.171) lost -0.379 R on the
 window (59 trades, -163 USD; the coin -0.147), REV-B -0.332 (29 trades). On the window the design's loser marks
