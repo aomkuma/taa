@@ -1474,3 +1474,48 @@ read.** Inside B nothing loses in both parts any more - every pattern, session a
 between the parts (W +0.021 / -0.133, M -0.088 / +0.002, the high hunted and sold back -0.187 / +0.094): a further
 cut would follow noise. The loss steps so far (learning, R a trade): every candidate at one ATR -0.198 -> a 5-USD
 floor -0.085 -> the owner's cut -0.068 / -0.082 -> B -0.056 / -0.028 at 2.7 a day.
+
+### The cut's losers, by the owner's three kinds (05:18 Thai; `losers_b.py`, tests `test_losers_b.py`, `out_losers_b.txt`)
+Variant B against a coin's side at the same moments (the same stop and target), parts 1 / 2: wrong way 28.7 / 23.6 %
+(coin 29.7 / 25.8), fell short 7.2 / 11.7 % (7.9 / 10.9), entered too early 8.4 / 12.2 % (8.9 / 12.8; a stop of
+1.34 / 1.35 times would have survived), won 40.3 / 45.7 % (38.9 / 44.3); R -0.056 / -0.028 against the coin's
+-0.090 / -0.054. The losers look like the coin's: the side is chosen about 1.5 points better than chance, the costs
+take the rest. No exit lever fixes a coin-like entry: half the target is reached by 59 / 65 % of the trades, the
+winners go 0.33 of the stop against them first (median; 29 / 32 % beyond half the stop). The lever is the entry.
+
+## The patterns gold runs from, on timeframes that agree - written before it is computed (2026-10-19 05:20 Thai; owner: "find the patterns gold most likes to use to run, on the timeframes that agree with each other")
+The data: the present library (`present_3y.parquet`: 127,319 moments, every 5 minutes inside the owner's windows,
+never chosen by what followed; every timeframe's reading at that moment, M1 .. H4, from `moments.pictures_at`,
+checked against an independent reader on 78,000 readings) and what followed: the first 10 U run (10 USD at the
+reference price, within 15 minutes, its start never broken) starting within 30 minutes, up or down.
+For each way (up / down) and each timeframe, the readings turned to the run's side: the swing structure (HH/HL with
+the way, against, mixed), the close beyond the last swing top / bottom (with, against, between), the 120 bars' way,
+the last leg's way, a new high / low at the edge, the last third's way. Measured, never picked:
+- how often each reading is there before a run its way (what gold "uses") and how often it is there anyway;
+- the chance of a run its way with the reading (the lift over the base) and of a run the other way (a reading that
+  only raises both is activity, not a side);
+- the timeframes agreeing: the number of M5 .. H4 with the structure (and the break) the run's way, and the strongest
+  stacks of three.
+Learning in two halves (to 2024-12-31; 2025-01-01 .. 2026-04-17). **A pattern counts when the run its way is at least
+1.2 times the base and above the other way's in both halves, on at least 500 moments each; only those are read in
+the exam, once.**
+**The result (05:20-05:22 Thai; `runpat.py`, tests `test_runpat.py` by hand - the readings turned, the long form both
+ways, the scores, the agreeing timeframes - planted bugs 7 of 7; `out_runpat.txt`, `runpat_learning.csv`).**
+On the catalogue's label, six patterns counted by the rule and held in the exam: a fresh 120-bar low / high on M1, M5,
+M15, M30 and a close below the last swing bottom (above the top) on M1 / M5, each followed by a run the other way
+(lift 1.29-1.56 in the exam; the run its way 0.34 against 0.13-0.16 the other way at the M1 / M5 edge). The
+timeframes agreeing (structure, break, the 120 bars' way on M5 .. H4) raised nothing - with all five the run the
+other way was a little more likely.
+**The check (`runpat_check.py`, `out_runpat_check.txt`; its vectorised first passage equal to mw.first_passage on
+3,000 random trades, 0 differences): the "turn at a fresh low" is the catalogue's, not gold's.** The catalogue
+starts no run of a way while the last run of that way is still going, so at a fresh low - inside a fall - a run down
+is hardly ever "starting". From the next M1 open, 5 / 10 U up before down (and the mirror) within 240 minutes:
+at an M1 / M5 / M15 low edge the turn comes first 0.49-0.51 (5 U) in both halves and the exam - a coin. Every
+label built on the run catalogue carries this (the run starts of the first library, the present library's class):
+judge with a symmetric first passage, never with "a run starts".
+**On the symmetric yardstick, the timeframes agreeing give a small, steady tilt their way:** the structure (HH/HL)
+the way on 3 of the 5: 5 U that way first 0.499 vs 0.466 the other (L1), 0.502 vs 0.486 (L2), **0.509 vs 0.490
+(exam)**; the close beyond the last swing on 3 of the 5: 0.503 / 0.464, 0.512 / 0.481, **0.522 / 0.478**; all five
+in structure 0.493 / 0.488, 0.518 / 0.478, 0.542 / 0.458 (exam n 419). Two to four points the agreed way in every
+part - the only multi-timeframe pattern that holds, and about the size of the costs at a 5-USD target (about 5
+points needed; about 2.5 at 10 U).

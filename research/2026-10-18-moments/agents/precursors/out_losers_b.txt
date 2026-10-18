@@ -1,0 +1,47 @@
+
+part 1 - B: 1384 trades, R -0.056
+                     trades    R_sum    mfe    mae  survive  share
+kind                                                              
+1 wrong way             397 -397.000  0.134  1.060      NaN  0.287
+2 fell short             99  -99.000  0.726  1.067      NaN  0.072
+3 entered too early     116 -116.000  0.204  1.091    1.341  0.084
+time exit, loss         114  -39.643  0.474  0.739      NaN  0.082
+time exit, profit       100   31.322  0.740  0.501      NaN  0.072
+won                     558  542.698  1.071  0.335      NaN  0.403
+
+part 1 - a coin's side: 1384 trades, R -0.090
+                     trades    R_sum    mfe    mae  survive  share
+kind                                                              
+1 wrong way             411 -411.000  0.136  1.054      NaN  0.297
+2 fell short            109 -109.000  0.694  1.074      NaN  0.079
+3 entered too early     123 -123.000  0.213  1.074    1.491  0.089
+time exit, loss         106  -34.563  0.438  0.705      NaN  0.077
+time exit, profit        97   29.022  0.684  0.547      NaN  0.070
+won                     538  523.414  1.072  0.325      NaN  0.389
+
+part 2 - B: 368 trades, R -0.028
+                     trades    R_sum    mfe    mae  survive  share
+kind                                                              
+1 wrong way              87  -87.000  0.174  1.061      NaN  0.236
+2 fell short             43  -43.000  0.722  1.074      NaN  0.117
+3 entered too early      45  -45.000  0.136  1.079    1.352  0.122
+time exit, loss          14   -4.696  0.571  0.881      NaN  0.038
+time exit, profit        11    3.487  0.754  0.545      NaN  0.030
+won                     168  166.007  1.068  0.307      NaN  0.457
+
+part 2 - a coin's side: 368 trades, R -0.054
+                     trades    R_sum    mfe    mae  survive  share
+kind                                                              
+1 wrong way              95  -95.000  0.180  1.081      NaN  0.258
+2 fell short             40  -40.000  0.824  1.092      NaN  0.109
+3 entered too early      47  -47.000  0.178  1.095    1.377  0.128
+time exit, loss          10   -2.908  0.568  0.739      NaN  0.027
+time exit, profit        13    3.952  0.848  0.683      NaN  0.035
+won                     163  161.102  1.067  0.331      NaN  0.443
+
+how far every B trade got its way before its exit (share of the target), parts 1 / 2:
+  reached 0.25: 0.741 / 0.772
+  reached 0.50: 0.588 / 0.652
+  reached 0.75: 0.504 / 0.557
+  reached 1.00: 0.404 / 0.457
+the winners' depth against them first (share of the stop), parts 1 / 2: median 0.33 / 0.31; went past 0.5: 0.294 / 0.321
