@@ -1,0 +1,33 @@
+Traceback (most recent call last):
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\analyze.py", line 172, in <module>
+    main()
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\analyze.py", line 70, in main
+    D = load()
+        ^^^^^^
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\analyze.py", line 25, in load
+    D = D[D.half.isin(DH)].copy()
+        ~^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\frame.py", line 4369, in __getitem__
+    return self._getitem_bool_array(key)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\frame.py", line 4431, in _getitem_bool_array
+    return self.take(indexer, axis=0)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\generic.py", line 4089, in take
+    new_data = self._mgr.take(
+               ^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\internals\managers.py", line 1090, in take
+    return self.reindex_indexer(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\internals\managers.py", line 879, in reindex_indexer
+    blk.take_nd(
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\internals\blocks.py", line 1015, in take_nd
+    new_values = algos.take_nd(
+                 ^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\array_algos\take.py", line 115, in take_nd
+    return _take_nd_ndarray(arr, indexer, axis, fill_value, allow_fill)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\data\venv-research\Lib\site-packages\pandas\core\array_algos\take.py", line 155, in _take_nd_ndarray
+    out = np.empty(out_shape, dtype=dtype)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+numpy._core._exceptions._ArrayMemoryError: Unable to allocate 149. MiB for an array with shape (39, 499814) and data type int64

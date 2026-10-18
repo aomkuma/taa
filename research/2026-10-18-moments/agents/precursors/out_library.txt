@@ -1,0 +1,6 @@
+[     1s] cases 636560
+[     6s] H4 done (4978 bars)
+[    11s] H1 done (19013 bars)
+[    20s] M30 done (38003 bars)
+[    32s] M15 done (75987 bars)
+[    38s] M5 done (226356 bars)

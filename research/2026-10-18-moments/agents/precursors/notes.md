@@ -1,0 +1,223 @@
+# Precursors - the chart before gold really runs, on six timeframes (owner, 2026-10-18)
+
+The owner: "research the runs of the price chart on M1, M5, M15, M30, H1, H4, every timeframe related; collect the
+statistics and the forms of price before a run, keep them as pictures to learn that this chart form has a chance to
+run; then see which structure the larger timeframe has and how the smaller timeframe runs. Filter: M1 runs at least
+5-10 points within 15 minutes, at 07:00, 08:00, 09:00 onward, 13:00, 14:00 onward, 19:00, 19:30, 20:30, 21:00, 22:00
+onward (Thai time)." Then: "when we see a chart that matches the statistics that it will run, we may enter before it
+runs" - this research comes first; Setup OWN V2 (faster entries from the kept forms, "exit on the timeframe you
+entered") is built only from what passes here.
+
+Agreed with the owner (2026-10-18) before anything was computed:
+- Gold (XAUUSD) first; the majors later.
+- A run: at least **10 U** (main) or **5 U** (floor) one way **within 15 minutes**; U = price / 4,100 (1 U = 1 USD at
+  4,100; the owner's pip = 1 USD), so older years keep the same relative size.
+- The times are market events, DST-aware (their Thai clock in summer): Tokyo 09:00 (07:00 TH), China 09:00 (08:00
+  TH), Asia 09:00-12:00 TH, Frankfurt 08:00 Europe/Berlin (13:00 TH summer), London 08:00-12:00 Europe/London (14:00-
+  18:00 TH summer), New York 08:00 / 08:30 / 09:30 / 10:00 ET (19:00 / 19:30 / 20:30 / 21:00 TH summer) and 11:00-14:00
+  ET (22:00-01:00 TH summer). A single time = -5 .. +30 minutes around it.
+
+## Written before it is computed (2026-10-18)
+
+**Data.** Gold M1 (`gold.bars("M1")`). Design 2023-11-01 .. 2026-02-28 in the five half-years of `jlib.HALVES`
+(2023-11, 2024-05, 2024-11, 2025-05 (four months), 2025-09). The window 2026-03-01 .. 2026-10-16 is read once, after
+the kept forms are frozen below this file's "FROZEN" line. The older 2021-10 .. 2023-10 stays untouched as a spare
+holdout.
+
+**Timeframes.** M5, M15, M30, H1 resampled from M1 on UTC boundaries; H4 on the broker's server-day boundaries
+(Europe/Athens, as MT5 draws it). A bar is usable at a decision only once it has closed.
+
+**The run catalogue (effect).** An up-run starts at M1 bar i (s = low[i]) when within 15 minutes (bars opening at most
+14 minutes after bar i) a high reaches s + X and no low goes below s first (the running high starts at bar i's close,
+as the runs agent's catalogue). Down-runs mirrored. Overlapping same-side starts are one run (its start the extreme);
+the run is followed until a pullback of 40 % of the move (floor 40 % of X) or 120 minutes: size, minutes to X,
+duration. X = 10 U and 5 U.
+
+**Decision points (the trader's moment).** Every M1 close inside the focus windows (weekdays). The decision is at the
+bar's close; anything later is the future. Labels from the next bar's open (e):
+- `next_up` / `next_dn`: a catalogued X-run of that side starts within the next 15 minutes (its start bar t+1 .. t+15);
+- `first`: which of e + X / e - X price touches first within 60 minutes (+1 / -1; 0 none; both in one bar dropped);
+- `mae`: for a following run, how far price went against e before the run's start (the stop an early entry needs).
+
+**The chart state at each decision (closed bars only), per timeframe M1 / M5 / M15 / M30 / H1 / H4:**
+- tide: EMA20 above its value three bars back and the close above EMA50 = up (mirror down, else mixed);
+- structure: 7-bar fractal swings (3 each side, known 3 bars later); the last two highs and lows: HH+HL up, LH+LL
+  down, LH+HL contracting, HH+LL broadening;
+- leg: the latest confirmed swing is a low = an up leg (a high = down); with the structure = impulse, against it =
+  correction; the leg's retracement of the previous swing;
+- position: the close in the last 20 bars' range (0 .. 1);
+- volatility: ATR(14) and Bollinger(20) width as percentiles of the last 120 bars;
+- breakout: a close beyond the previous 20 bars' high / low within the last 3 bars;
+- stretch and momentum: (close - EMA20) / ATR, the last 3 bars' move / ATR.
+- M1 / M5 local forms: a 30-minute box (range <= 1 M15 ATR) and its break; a sweep of the last 60 minutes' low / high
+  reclaimed by the close within 15 minutes; a staircase (three rising M1 swing lows / falling highs); a spike bar (range
+  >= 2.5 M1 ATR); tick volume 5 / 60 minutes.
+- levels: beyond today's server-day / the Asian / yesterday's high or low, the 72-hour extreme, the round 50, each in M15
+  ATRs; minutes to / since a US release.
+- across timeframes: the tide sum of H4 + H1 + M30 + M15; the nested state (H4 structure, H1 leg against / with it,
+  M15 leg, M5 turn).
+
+**What is read (design only, by half-year).**
+1. *Does the form come before runs?* P(an X-run starts within 15 minutes | form) / the same probability expected from
+   the same half-year, focus window and M15-ATR decile (the lift).
+2. *Which way?* For a form with a side, the share of `first` going the form's way (and of `next_up` among runs).
+3. *The larger timeframe -> the smaller timeframe's run:* for each H4 / H1 state, the chance of a run, its side
+   against the H4 / H1 trend, size, speed, MAE, second leg.
+4. Combinations (two and three forms across timeframes) searched the same way; the same search on labels shuffled
+   within each half-year gives the number that pass by chance.
+
+**Keep a form when** (all on design): n >= 100; the run lift >= 1.3 in at least 4 of 5 half-years; and, to be used for
+a side, its side first >= 56 % in at least 4 of 5 half-years. The kept list is frozen here before the window is read
+once (month by month). Pictures: for each kept or leading form, multi-timeframe charts (H4 .. M1 in one image, the
+decision marked, the future shaded) of cases that ran AND cases that did not.
+
+## Results so far (design 2023-11 .. 2026-02, X = 10 U; `analyze.py`, `withtrend.py`, out_*.txt)
+
+Data checks: 636,560 decision minutes (499,814 design, 724 days); every timeframe state is older than the decision
+(age >= 0); the windows move with DST (London 14:00 TH in July, 15:00 in January); one run label checked by hand.
+
+- **When:** the window decides most. Share of minutes followed by a 10 U run starting within 15 minutes: NY 09:30
+  ET (20:30 TH) 0.58, NY 08:00 / 08:30 / 10:00 ET 0.38-0.42, Asia 08:00 TH 0.24, Frankfurt 0.14, Tokyo 0.12, NY
+  11-14 ET 0.15, London 08-12 0.10, Asia 09-12 TH 0.08 (H5 2025-09 .. 26-02 about twice the older halves).
+- **Beyond the window and the volatility (M15-ATR decile):** only two single states raise the chance >= 1.3x in 4/5
+  halves - a new low of the server day (lift 1.52) and a down spike bar (1.51); a break up out of a 30-minute box
+  comes before runs LESS often (0.75).
+- **Which way:** no single state sends +10 / -10 first its way >= 56 % in 4/5 halves; the best pooled 0.53 (a new
+  day high/low, a > 2 ATR 60-minute move: continuation by 3 points).
+- **The larger timeframe:** the first run to start goes with the H4 / H1 / M30 / M15 structure 49-51 % (drift
+  0.50). A first count of "runs with the H4 structure 57-66 %" was an artefact (minutes with runs on both sides
+  counted as "with") - corrected in `withtrend.py`. The next run goes AGAINST the M1 / M5 tide 56-61 %: the start
+  must come after the decision, so a run against the last minutes' move is the one that can still start (the
+  turning-point artefact again), not a side a trader can take. The adverse move before a run from an entry 1-15
+  minutes earlier: median 3.4-3.8 U, 75 % 6.3-7.2 U, 90 % 10.6-12.7 U.
+
+## Written before it is computed: once it starts, does it run? (`cont.py`)
+
+From each decision close (ref), the first touch of ref +- K U (K = 3, then 2) within 30 minutes is the start (its side
+given by the move). From the bar after the touch, within 60 minutes: ref + 10 U before back at ref (A), or before
+ref - K (B). Random walk: A = K / 10, B = 2K / (10 + K). Read by window, half-year, the larger timeframes' structure /
+tide relative to the start's side, a box / day-level break / 72-h extreme / sweep before it, the ATR and Bollinger
+percentiles, a release just out. A state counts when it beats the random walk by >= 0.05 in 4/5 halves.
+
+## The owner's method (2026-10-18, replaces the lift / combination reading above)
+
+The owner: "the research is not to predict the result: look at the whole chart with every indicator and keep
+statistical evidence - this form runs, this one fakes. Keep the price sets of each timeframe, looking back as far as
+is sensible, as pictures; when the backtest or live trading runs, compare the price set of that moment with the
+evidence and weigh whether it will run yet, which way and how far." And: "keep every case; cases that repeat with
+more than 80 % similarity count as one set - the more often a set is seen, the more reliable that structure; then
+compare the trigger with the stored data every time."
+
+The combination search (`combo.py`) was stopped unfinished; `cont.py` (start then run or fake) is folded into the
+library's labels below.
+
+## The evidence library - written before it is built (`library.py`, `cluster.py`)
+
+**Cases:** every focus-window decision minute (the windows above). The library is built from design cases only
+(2023-11 .. 2026-02); the window's cases (2026-03 .. 10-16) are stored as queries for the later backtest and never
+join the library before it.
+
+**The price set of a case:** per timeframe the last L closed bars - H4 60, H1 72, M30 64, M15 64, M5 72, M1 90 (the
+picture's panels) - the close path as 24 points (linear interpolation over the bars), z-normalised (the shape).
+
+**Its states (74 categorical features, each counted once):** per timeframe - tide (3), structure (5), leg (3), RSI(14)
+zone (< 30, 30-45, 45-55, 55-70, > 70), MACD(12, 26, 9) histogram sign x rising (4), Stochastic(14, 3, 3) zone (< 20,
+20-80, > 80) x %K above %D (6), Bollinger(20, 2) position (below, lower half, upper half, above; 4), ADX(14) (< 20; >= 20
+with +DI above / below -DI; 3), ATR(14) percentile of the last 120 bars (thirds), the close in the last 20 bars'
+range (thirds), the path's height in that timeframe's ATR (< 3, 3-6, 6-10, > 10); and once - the server day's high /
+low broken, the 72-hour extreme, the Asian range broken, yesterday's range broken (3 each), a 30-minute box (2), a
+sweep of the 60-minute low / high reclaimed (3), within 0.25 M15 ATR of a round 50 (2), a US release within 30 min
+before / after (3).
+
+**Similarity of two cases** = 0.7 x the mean over the six timeframes of the correlation of their shapes + 0.3 x the
+share of the 74 states that are equal (1.0 = identical). **One set** = similarity >= 0.80: cases are taken in time
+order; each joins the most similar set's first case (its leader) when that similarity is >= 0.80, else it starts a
+new set.
+
+**Labels (what followed, from the decision close `ref`):** the first 10 U run (15 minutes, the catalogue) to start
+within 15 minutes - its side, minutes until it starts, size, the move against before it; the same for 5 U; the first
++-3 U move within 30 minutes and then 10 U on that side before back at ref (ran) or back at ref first (faked) within 60
+minutes; the largest move up / down within 15 and 60 minutes. The owner's classes: **ran up / ran down** (a 10 U run
+starts within 15 minutes), else **faked up / faked down** (3 U out, back to ref before 10), **flat** (no 3 U move
+in 30 minutes), **drift** (out 3, neither 10 nor back within 60).
+
+**Counting:** consecutive minutes are almost the same picture, so a set's frequency is counted in **episodes** - its
+cases at least 60 minutes apart - and its outcome shares weight each episode equally. Reliability = episodes (and days).
+
+**Use later (the backtest, not now):** at a trigger, the sets whose leader is >= 0.80 similar to the moment give the
+weights - ran up / down, faked, flat, how far, the move against first - each set weighted by its episodes.
+
+**Support and resistance of the larger timeframes (owner, 2026-10-18: "up or down, look at where the form happens
+against support / resistance - at an important level it weighs more; the levels come from the larger timeframes, e.g.
+trading M1 / M5, look at M15 / M30 / H1"), added to the states before anything is built:** for M15, M30, H1 and H4,
+the confirmed fractal swings (3 bars each side) of the last 384 / 192 / 240 / 180 bars (4 / 4 / 10 / 30 days) are the
+levels; swings within 0.25 of that timeframe's ATR merge into one level whose importance is the number of swings in
+it (1, 2, 3+). Per timeframe, two states: **where** - broke up (a level between that timeframe's close three bars back
+and the price now, the price above it), broke down (mirror), at support (the nearest level below within 0.3 ATR), at
+resistance (the nearest above within 0.3 ATR), between; and **how important** the nearest level within 0.3 ATR is (none,
+1, 2, 3+). 8 more states (82 in all). The library's statistics are also read by these states, so the evidence says
+how much a form at an important level adds.
+
+## Revised by the owner (2026-10-18): the cases are snaps at the owner's times, not every minute
+
+"The points we snap are the times I gave at the start: when it is 07:00 the system snaps the chart of each timeframe
+from 07:00 back to the edge of what is visible, and keeps it." The per-minute library build was stopped unfinished.
+
+**Snaps (written before anything is built; DST-aware, Thai clock in summer):** Tokyo / Asia 07:00, 08:00 and hourly
+09:00 .. 12:00 Asia/Bangkok; Frankfurt 08:00 Europe/Berlin (13:00 TH summer); London 08:00 .. 12:00 Europe/London hourly
+(14:00 .. 18:00 TH); New York 08:00, 08:30, 09:30, 10:00 (19:00, 19:30, 20:30, 21:00 TH) and 11:00 .. 14:00 hourly
+(22:00 .. 01:00 TH) - 20 a day. A snap is the chart at that second: the M1 bar that closes at it (opened one minute
+before) must exist, else the snap is skipped (market closed). Snaps falling on the same minute (DST weeks) are one case
+with both names.
+
+**What a snap keeps:** per timeframe the last **120 closed bars** (about one MT5 screen at the default zoom), the
+close path as 40 points (z-normalised shape), the 82 states above (the path-height state now in design tertiles per
+timeframe, as 120 bars are longer than the earlier lookbacks), and the M1 forms / levels / release state.
+
+**What followed (from the snap's price):** the first catalogued 10 U and 5 U run (15-minute definition) starting
+within 30 minutes after the snap (side, minutes to its start, size, the move against before it); +-10 U and +-5 U
+first within 60 minutes; the largest move up / down within 15, 30 and 60 minutes; the first +-3 U within 30 minutes
+then 10 U before back at the snap price (ran) or back first (faked). Classes: ran up / ran down (a 10 U run starts
+within 30 minutes), slow up / slow down (3 U then 10 U, not inside 15 minutes), faked up / faked down, flat (no 3 U in
+30 minutes), drift.
+
+**Sets:** similarity as written (0.7 shape + 0.3 states, six timeframes); in time order, a snap joins the most similar
+set's leader at >= 0.80, else starts a set. Snaps of the same day can share a set (19:00 and 19:30 see nearly the same
+H4 / H1): a set's reliability is counted in **distinct days** as well as snaps. Design snaps (2023-11 .. 2026-02) only;
+the window's snaps (2026-03 .. 10-16) are kept as queries for the backtest.
+
+## The library - first results (design snaps 2023-11 .. 2026-02; `snaps.py`, `cluster.py`, `evidence.py`, `bigtf.py`)
+
+15,200 snaps (11,937 design on 725 days; 3,263 window kept unread as queries). Classes over all design snaps (30 / 60
+minutes after the snap): faked up 0.17, faked down 0.17, flat 0.15, ran down 0.15, ran up 0.14, drift 0.10, slow up
+0.06, slow down 0.05.
+
+**By the snap time (a 10 U run starting within 30 minutes, up + down):** NY 09:30 (20:30 TH) 0.78; NY 10:00 0.66; NY
+08:00 / 08:30 0.56-0.58; NY 11:00 0.41; China 08:00 TH 0.39; Frankfurt / London 08:00 0.23; Tokyo 07:00 TH 0.21
+(flat 0.31); Asia 11:00 TH 0.08 (flat 0.43). Up and down about equal at every time.
+
+**Sets at >= 0.80 similarity:**
+- All six timeframes together almost never repeat: 10,167 sets from 11,937 snaps; 95 % of the snaps have no earlier
+  snap on another day at >= 0.80 (the nearest earlier snap's similarity: median 0.74, 90th percentile 0.82).
+- By layer (the owner's "larger timeframe -> smaller"): H4 + H1 1,825 sets (most repeat only inside one day - six H4 bars
+  a day), M30 + M15 5,674, M5 + M1 8,090. The evidence a trigger finds (earlier snaps, other days, >= 0.80): H4 + H1 none
+  for 56 % / >= 5 days for 18 %; M30 + M15 53 % / 25 %; M5 + M1 59 % / 20 %.
+- By eye (`png/sets/`): the members of a set do look alike in its layer (setup set 121, 54 days: M30 / M15 a staircase up
+  after one impulse, a pause, then up again at the snap) - and their outcomes differ (faked up 0.41, ran 0.27, flat 0.07).
+- The most frequent sets mostly mirror the base: median |up - down| 0.065 (H4 + H1), 0.08 (M30 + M15), 0.12 (M5 + M1).
+  Among 82 trigger sets seen on >= 10 days, 12 lean by >= 0.30 (about 2-3 expected by chance at their sizes; the sets
+  were picked after the fact). The clearest: **trigger set 125** (62 snaps, 56 days): M5 spikes up from a flat base to a
+  new high and M1 makes its first dip from the top -> ran / slow down 0.32 vs up 0.13, the same lean in 2023, 2024, 2025
+  and Jan-Feb 2026. A candidate, not a rule: the window judges it.
+
+**The larger timeframes (`out_bigtf.txt`):**
+- The H4 / H1 / M15 structure (up, down, contracting, broadening) and their pairs: runs 0.25-0.37, up and down within a
+  few points everywhere, no lean that keeps its sign by year.
+- Support / resistance: **a close back through a level - "broke down" through an M15 / M30 / H1 level within the last 3
+  bars of that timeframe - comes before more runs (0.35-0.38 vs 0.28 between levels) and more UP than down (0.28-0.30 vs
+  0.18-0.19); H1: up - down +0.06 / +0.04 / +0.16 / +0.13 by year (4 of 4).** "Broke up" leans down only weakly (0.16-0.19
+  vs 0.20-0.24, mixed by year): a bull-market asymmetry (dips through levels bought) to be checked on the window, where
+  gold fell.
+- **At an important level price runs LESS within 30 minutes, it stalls:** at an H4 level touched 3+ times runs 0.20-0.23
+  vs 0.31 between levels, flat 0.22 vs 0.15 (H1 3+: 0.23 / 0.23; M15 3+: 0.23 / 0.20). At an important level the form
+  is followed by a pause more often, not by a bigger run.

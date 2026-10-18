@@ -1,0 +1,3 @@
+=== X = 5 U, two-state cells with n >= 300 minutes on >= 30 days: 16066 ===
+real: run lift >= 1.3 in >= 4/5 halves: 5; side >= 56 % in >= 4/5: 45
+null 0: cells 15992; lift passes 0; side passes 43

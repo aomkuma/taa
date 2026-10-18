@@ -1,0 +1,18 @@
+states 82, vector 549 dims; design snaps 11937
+nearest earlier design snap, similarity quantiles: {0.1: 0.646, 0.25: 0.689, 0.5: 0.738, 0.75: 0.785, 0.9: 0.824, 0.99: 0.893}
+random pairs: {0.5: 0.145, 0.9: 0.417, 0.99: 0.604, 0.999: 0.713}
+
+=== threshold 0.8: 10167 sets from 11937 design snaps ===
+set size (snaps) distribution: {1: 8709, 2: 1245, 3: 161, 4: 28, 5: 15, 6: 3, 7: 2, 8: 2, 9: 1, 11: 1}
+sets by distinct days: {Interval(0, 1, closed='right'): 9922, Interval(1, 2, closed='right'): 213, Interval(2, 4, closed='right'): 24, Interval(4, 9, closed='right'): 8, Interval(9, 19, closed='right'): 0, Interval(19, 49, closed='right'): 0, Interval(49, 1000000, closed='right'): 0}
+snaps in sets seen on >= 5 days: 58 (0.5%)
+      snaps  days  ran_up  ran_dn  slow_up  slow_dn  fake_up  fake_dn  flat  drift  mfe_up30  mfe_dn30                                                    names
+set                                                                                                                                                            
+333       9     8    0.00    0.22     0.00      0.0     0.33     0.33  0.11   0.00      2.01      5.13                              LO1100 NY1200 NY1300 NY1400
+1507      8     5    0.00    0.75     0.00      0.0     0.12     0.12  0.00   0.00      5.01      9.04                NY0830 NY0930 NY1000 NY1100 NY1200 TH0900
+3116      5     5    0.20    0.40     0.00      0.0     0.20     0.00  0.00   0.20      6.28      4.84                              NY1100 NY1300 TH0800 TH1200
+3119      5     5    0.40    0.20     0.00      0.2     0.00     0.20  0.00   0.00      1.71      4.86                              FR0800 LO1200 NY0830 TH0800
+5559      5     5    0.60    0.00     0.00      0.0     0.00     0.20  0.00   0.20      5.63      2.95                              FR0800 LO0800 LO1200 NY0930
+6201      8     5    0.00    0.00     0.12      0.0     0.50     0.25  0.00   0.12      3.80      3.06                              LO1100 TH0900 TH1000 TH1100
+8399      7     5    0.00    0.71     0.14      0.0     0.14     0.00  0.00   0.00      4.68      8.19                              FR0800 TH0800 TH1000 TH1200
+8493     11     5    0.18    0.27     0.18      0.0     0.18     0.18  0.00   0.00      6.25      2.20  FR0800 LO0900 LO1000 TH0800 TH0900 TH1000 TH1100 TH1200

@@ -1497,3 +1497,27 @@ the news blackout not applying to it).
 
 Three pilots, about 1.08 USD. The model repeats the trend that F1's rules already read and does not rank F1's
 clear signals (rank correlation +0.01). Stopped; details in `docs/AI_CHART_READER.md`.
+
+### Round 18 - the evidence library: snaps at the owner's times, six timeframes (owner, 2026-10-18)
+
+The owner: "collect the statistics and the forms of price before a run on M1 .. H4, all timeframes related, as
+pictures; at a backtest or live, compare the moment's price set with the evidence and weigh whether it will run yet,
+which way and how far" - research first, then Setup OWN V2 (faster entries from the kept forms; exit on the timeframe
+entered). Details, rules written before computing and every number: `research/2026-10-18-moments/agents/precursors/
+notes.md`.
+
+- **Snaps:** 20 a day at the owner's times (Thai 07:00, 08:00, 09-12 hourly; Frankfurt 08:00; London 08-12 hourly; New
+  York 08:00, 08:30, 09:30, 10:00, 11-14 hourly; DST-aware). Each keeps 120 closed bars of H4, H1, M30, M15, M5, M1 (shapes),
+  82 states (EMA tide, swing structure, leg, RSI, MACD, Stochastic, Bollinger, ADX, ATR percentile, range position,
+  height; support / resistance of M15 .. H4 with the level's touches; day / Asian / yesterday's / 72-h levels, box,
+  sweep, round 50, releases) and what followed (ran up / down = a 10 U run within 30 minutes; slow; faked; flat; drift).
+  Design 2023-11 .. 2026-02: 11,937 snaps on 725 days; the window's 3,263 are kept as queries.
+- **The time decides most:** a 10 U run within 30 minutes after New York 09:30 (20:30 TH) 78 %, 10:00 66 %, 08:00 / 08:30
+  56-58 %, China 08:00 TH 39 %, London / Frankfurt 08:00 23 %, Tokyo 07:00 21 %, Asia 11:00 TH 8 %; up and down equal.
+- **"80 % similar = one set":** the whole six-timeframe picture almost never repeats (95 % of snaps have no earlier
+  match on another day); by layer, a trigger finds >= 5 earlier days of evidence for 18 % (H4 + H1), 25 % (M30 + M15) and
+  20 % (M5 + M1) of snaps. Members of a set look alike; their outcomes mostly mirror the base. Candidate: trigger set 125
+  (M5 spike to a new high from a flat base, M1's first dip) -> down 0.32 vs up 0.13 in every year 2023-26.
+- **Larger timeframes:** the H4 / H1 / M15 structure carries no lean by year. A recent break DOWN through an M15 / M30 /
+  H1 level comes before more runs and more up-runs (H1: 4 of 4 years); at a level touched 3+ times (H4 / H1 / M15) price
+  stalls more (runs 0.20-0.23 vs 0.31, flat 0.22 vs 0.15).

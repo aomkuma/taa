@@ -1,0 +1,50 @@
+=== X = 10 U: the first run's side vs each timeframe's structure / tide (design) ===
+with = share of the runs going the state's way; drift = the same share if runs ignored the state (the half's up-run share applied to the state's mix)
+                               state  runs  with_  drift                   halves  n_ge_056  mae_with  mae_against  lead_with  size_with  size_against
+                           M1 struct 53400  0.454  0.500 0.47 0.45 0.45 0.43 0.46         0     3.247        3.667        6.0     12.397        12.207
+                             M1 tide 73356  0.391  0.500 0.43 0.40 0.40 0.40 0.37         0     3.296        3.685        7.0     12.562        12.104
+                              M1 leg 84887  0.469  0.500 0.48 0.47 0.46 0.46 0.47         0     3.492        3.459        6.0     12.338        12.277
+ M1 correction -> run with structure 27937  0.486  0.501 0.49 0.48 0.48 0.48 0.49         0     3.224        3.682        6.0     12.364        12.232
+                           M5 struct 51346  0.492  0.500 0.52 0.48 0.49 0.49 0.49         0     3.432        3.648        6.0     12.464        12.131
+                             M5 tide 74823  0.435  0.500 0.45 0.45 0.43 0.43 0.43         0     3.190        3.723        6.0     12.487        12.104
+                              M5 leg 85049  0.468  0.500 0.48 0.48 0.47 0.47 0.46         0     3.357        3.582        6.0     12.419        12.239
+ M5 correction -> run with structure 25821  0.524  0.500 0.53 0.50 0.53 0.51 0.53         0     3.693        3.474        6.0     12.562        12.383
+                          M15 struct 51447  0.506  0.500 0.51 0.51 0.50 0.50 0.51         0     3.411        3.488        6.0     12.308        12.419
+                            M15 tide 74106  0.466  0.500 0.47 0.48 0.45 0.47 0.47         0     3.282        3.658        6.0     12.410        12.276
+                             M15 leg 84092  0.485  0.499 0.52 0.46 0.50 0.48 0.48         0     3.458        3.486        6.0     12.329        12.281
+M15 correction -> run with structure 27570  0.518  0.500 0.49 0.54 0.50 0.51 0.53         0     3.441        3.548        6.0     12.249        12.291
+                          M30 struct 51277  0.497  0.500 0.48 0.51 0.48 0.47 0.51         0     3.577        3.515        6.0     12.534        12.382
+                            M30 tide 73838  0.478  0.499 0.48 0.49 0.47 0.47 0.48         0     3.357        3.582        6.0     12.364        12.275
+                             M30 leg 84556  0.489  0.499 0.47 0.48 0.48 0.51 0.49         0     3.471        3.486        6.0     12.397        12.220
+M30 correction -> run with structure 26972  0.500  0.500 0.49 0.54 0.50 0.48 0.50         0     3.606        3.517        6.0     12.388        12.284
+                           H1 struct 51168  0.490  0.499 0.49 0.50 0.48 0.49 0.49         0     3.586        3.445        6.0     12.428        12.263
+                             H1 tide 73494  0.481  0.499 0.48 0.49 0.46 0.46 0.49         0     3.463        3.513        6.0     12.308        12.364
+                              H1 leg 84883  0.500  0.499 0.52 0.49 0.49 0.49 0.51         0     3.545        3.427        6.0     12.254        12.384
+ H1 correction -> run with structure 27884  0.491  0.500 0.47 0.50 0.50 0.54 0.48         0     3.480        3.516        6.0     12.605        12.388
+                           H4 struct 51914  0.494  0.496 0.53 0.51 0.48 0.46 0.50         0     3.774        3.341        6.0     12.390        12.235
+                             H4 tide 76261  0.481  0.498 0.48 0.47 0.46 0.47 0.49         0     3.717        3.281        6.0     12.410        12.186
+                              H4 leg 81504  0.491  0.499 0.47 0.50 0.51 0.48 0.49         0     3.467        3.507        6.0     12.354        12.276
+ H4 correction -> run with structure 25506  0.501  0.496 0.56 0.52 0.48 0.46 0.50         0     3.814        3.195        6.0     12.329        12.140
+
+-- the up-runs vs down-runs per 1,000 decision minutes, by the H4 / H1 structure, and the net drift over the next 60 min (U) --
+H4 up  : minutes 187138  up-runs   89.8  down-runs   96.0  first +X 0.182  first -X 0.195
+H4 down: minutes 108218  up-runs   76.5  down-runs   81.8  first +X 0.166  first -X 0.166
+H1 up  : minutes 166831  up-runs   83.8  down-runs   88.2  first +X 0.178  first -X 0.173
+H1 down: minutes 116547  up-runs   97.7  down-runs   95.1  first +X 0.186  first -X 0.192
+M15 up  : minutes 162820  up-runs   83.8  down-runs   83.4  first +X 0.172  first -X 0.177
+M15 down: minutes 137424  up-runs   86.1  down-runs   90.2  first +X 0.181  first -X 0.174
+
+-- the adverse move before a with-H4 run (U) - what an early entry must survive: quantiles --
+with H4: {0.25: 1.47, 0.5: 3.77, 0.75: 7.17, 0.9: 12.67}  against H4: {0.25: 1.31, 0.5: 3.34, 0.75: 6.3, 0.9: 10.63}
+by window, with-H4 share of the first run:
+win
+A07       0.541
+A08       0.483
+A09       0.496
+FR13      0.470
+LO14      0.459
+NY19      0.466
+NY1930    0.542
+NY2030    0.496
+NY21      0.511
+NY22      0.507
