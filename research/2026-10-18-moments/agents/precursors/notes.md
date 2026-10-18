@@ -1209,3 +1209,58 @@ A coin's side at the rule's moments -0.072 (-0.065 with H4). The buys about brea
 sells lose (-0.208; with H4 -0.388): in a rising year an H1 fall is a pullback of the larger rise. The rule from my
 21 hand-picked trades does not hold as code; the bot had a good half-year here (+0.087 R) that the learning half as a
 whole (-0.042) and the exam (-0.084) do not repeat.
+
+## M and W only - written before it is computed (2026-10-19 ~04:10 Thai; owner: "the problem is not the market but your reading of the price structure - the library holds low-quality data and gives too many wrong signals; the raw material is not good enough; scope it down to M and W only and try")
+
+- **W (a double bottom)** on a timeframe: the last three confirmed swings of the 3-ATR ZigZag (the swings the bot
+  reads, checked on 78,000 readings) are a trough A, a peak B (the neckline), a trough C, the two bottoms alike -
+  |C - A| <= 25 % of the height (B - min(A, C)); the signal is the first close above B after C (no newer swing
+  confirmed): a buy. **M (a double top)** the mirror: peaks A, C alike, the trough B between, the first close below B:
+  a sell. Only closed bars; M5, M15, M30 and H1 each on its own; decisions at the signal bar's close.
+- **Checks before any result:** the detector by hand (made-up swings, both kinds, the tolerance's edge, a second
+  cross that must not count, a newer swing that voids it), planted bugs, a second detector written apart (from the
+  swing list instead of the bars), and the detected patterns drawn for the eye (the owner's too).
+- **The premise (both halves - learning to 2026-04-17, the exam 2026-04-18 .. 10-16):** from the next M1 open, does
+  price reach the measured move (the height, the signal's way) before going the height against - more than half
+  the time (a driftless walk gives 50 %)? Per timeframe, every signal and inside the owner's windows.
+- **Only if it holds:** the trades - the classic (the stop beyond C, the target the height) and V2's - one position
+  at a time, chosen on the learning half, the exam once, week by week.
+- **Stop hunts (added by the owner the same night: "and the stop hunting ones"):** on a timeframe, the first bar
+  whose high goes above the latest confirmed swing peak but closes back below it (the stops above the top taken,
+  price back inside): a sell at its close; the mirror below the latest trough: a buy. Only the first pierce of a
+  level counts (a pierce that closes beyond it is a break, and the level is spent). The premise: from the next M1
+  open, the distance to just beyond the sweep's extreme (+ 0.1 ATR) against the same distance the signal's way -
+  more than half the time? The same checks first (by hand, planted bugs, a second detector, the eye).
+- One planted bug in the M / W detector (marking a pattern fired before adding it) changes nothing - the freshness
+  check already stops a second signal - so it is an equivalent mutant.
+- **The owner, the same night: "don't read them from theory - read them from how the market's price really moves".**
+  So the fixed shapes above (25 % alike, the neckline break, a pierce that closes back) are only the start. The
+  events are collected wide - every pierce of the latest swing top / bottom (its depth in ATRs, whether it closed
+  back inside, the level's age, the timeframe, the hour) and every pair of alike-shaped swings (the second bottom
+  above or below the first and by how much, the bars between, the entry at the second bottom's turn or at the
+  neckline) - and what price really did after each (the furthest the signal's way and against it within 60
+  minutes, in ATRs, and the first passage at fixed distances) decides which shapes count, on the learning half; the
+  exam confirms once. Every event is kept whatever followed (the run-start lesson: never pick events by their
+  outcome).
+
+**What price really did - the learning half (`explore.py`, tests `test_explore.py` by hand + a second count of the
+pierces on random markets, planted bugs 8 of 8; `out_explore_learn.txt`; 8,532 pierces and 24,795 double entries
+2023-11 .. 2026-10, all kept).** The first passage at 1 ATR the event's way before 1 ATR against (0.500 = no edge):
+- **Stop hunts (the reversal after a pierce of the latest top / bottom):** closed back inside after a shallow pierce
+  (< 0.25 ATR) 0.506 (n 1,886); **after a 0.25-1 ATR pierce 0.460 / 0.447 (n 836 / 546) - the pierce goes on more
+  often than it turns**; deeper pierces few and mixed; pierces closing beyond 0.48-0.50. In gold the "stop hunt and
+  turn" is not what the price does more often than chance.
+- **Doubles:** every shape at the neckline entry 0.50-0.51; at the second extreme's turn 0.50-0.53 - **the best: the
+  second bottom (top) a little beyond the first (0-25 % of the height), entered at its turn: 0.528 (n 2,294, se
+  0.011), +0.18 ATR** - a double bottom whose second bottom sweeps just below the first, the two ideas in one.
+**Written now, before the exam is read - the two shapes the data points to, each checked once on the exam:**
+H1 the turn entry of a double whose second extreme goes 0-25 % beyond the first: 1-ATR first passage > 0.5;
+H2 a pierce of 0.25-1 ATR that closes back inside: the continuation (the pierce's way) wins the 1-ATR first passage
+> 0.5. Every timeframe together; the exam 2026-04-18 .. 10-16.
+**The exam, once (`out_explore_exam.txt`):** H1 0.525 (se 0.023, n 471; learning 0.528), 2-ATR 0.539; H2 the
+continuation 0.542 (se 0.029, n 306; learning 0.545), +0.55 ATR furthest-way minus against. Both keep their size in
+the exam; together with the learning half H1 about 2.8 se and H2 about 3.6 se above a coin. Gold's real habit: a
+pierce of 0.25-1 ATR beyond the latest top / bottom that closes back inside goes on through the level more often than
+it turns; a double bottom / top pays a little when its second extreme sweeps just beyond the first and is entered at
+its turn. Small edges (2.5-4.5 points over 50 %) - the costs decide: next, each as a trade with the costs, per
+timeframe, the learning half first.

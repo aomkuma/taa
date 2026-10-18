@@ -1,0 +1,5 @@
+M5 pierces 5768 doubles 11931
+M15 pierces 2064 doubles 4191
+M30 pierces 1004 doubles 2095
+H1 pierces 495 doubles 1054
+saved 8532 24795

@@ -1,0 +1,4 @@
+H1 learning: 2294 entries, win1 0.528 (se 0.011), win2 0.516, edge +0.176 ATR
+H2 learning: 1382 pierces, the continuation's win1 0.545 (se 0.014), edge of the continuation +0.168 ATR
+H1 exam: 471 entries, win1 0.525 (se 0.023), win2 0.539, edge +0.045 ATR
+H2 exam: 306 pierces, the continuation's win1 0.542 (se 0.029), edge of the continuation +0.546 ATR
