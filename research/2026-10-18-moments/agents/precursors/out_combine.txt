@@ -1,0 +1,2 @@
+outcomes done 42361 | the pierces' reversal equal to explore.py's: 8532
+saved 42361 {'double_turn': 17670, 'pierce_reversal': 8532, 'pierce_continuation': 8532, 'double_neck': 7125, 'touch_H1': 388, 'touch_H4': 114}

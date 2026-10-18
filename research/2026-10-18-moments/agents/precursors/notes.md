@@ -1264,3 +1264,93 @@ pierce of 0.25-1 ATR beyond the latest top / bottom that closes back inside goes
 it turns; a double bottom / top pays a little when its second extreme sweeps just beyond the first and is entered at
 its turn. Small edges (2.5-4.5 points over 50 %) - the costs decide: next, each as a trade with the costs, per
 timeframe, the learning half first.
+
+## Where the event happens - the larger timeframe's edge (owner, 2026-10-19 ~04:20 Thai) - written before it is computed
+
+The owner: "everything is 50 %, like a coin - right; what gives it weight is the zone where it happens: at support /
+resistance or in the middle of the price. We do not trade the middle; we trade at the edge of the timeframe larger
+than the one we enter on. Don't think in one layer." Every event above gets, at its decision (closed bars only), its
+place on H1 and on H4: where the price sits in the larger timeframe's 120-bar range (0 the low edge .. 1 the high
+edge), and the distance to that timeframe's nearest confirmed swing bottom below and swing top above (in its ATRs).
+The outcome is read by the place on the event's side: a buy (a W, a turn up after a sweep below a bottom) at the
+larger range's low edge or a swing bottom; a sell the mirror; against the middle of the range. The learning half
+chooses; the shapes it points to are written here before the exam is read once.
+
+## Research outside, put together with the owner's own knowledge and our measurements (2026-10-19 ~04:25 Thai; owner: "go and research more, and put it together with my information")
+
+What the literature and practice say (sources in the chat report):
+- **Levels work, and they work two ways (Osler, NY Fed 2000 / 2002 / 2003, FX order books):** published support /
+  resistance levels predicted intraday trend interruptions, for about five business days after they were given;
+  take-profit orders cluster AT round numbers / levels (price stalls and turns at the first reach) while stop-loss
+  orders cluster just BEYOND them (once crossed, price runs faster: a cascade).
+- **Gold has round-number barriers** (Aggarwal & Lucey 2007; O'Connor & Lucey 2016, intraday 1975-2015): round
+  levels (ending 0 / 00) change the mean and variance of gold's returns near them.
+- **Springs / upthrusts (Wyckoff) are defined by where they happen:** a dip below the support of a mature trading
+  range near its end (an upthrust the mirror) - not any pierce of any swing.
+- **Double bottoms (Bulkowski, "perfect trades", bull markets):** the confirmed ones (after the breakout) are the
+  measured ones; failed ("busted") patterns often run further the other way.
+- **Liquidity sweeps, practitioners:** they reverse in ranges; in strong trends they more often continue; the gold
+  London morning often prints a day's extreme, and New York often reverses London's first push.
+Put together with the owner (OWNER_GOALS: the moments when price runs are the opens, releases, a contraction - "all
+at important support or resistance"; several playbooks - break-and-hold, sweep-and-reclaim, with the higher flow;
+"not in the middle - at the edge of the larger timeframe") and with our measurements (a 0.25-1 ATR pierce that closes
+back inside goes on 54.5 % / 54.2 %: Osler's stop cascade; the textbook stop-hunt reversal and neckline break at
+chance), the hypotheses to test, each a probability by its layers:
+- **E1 the first reach of a larger-timeframe edge** (the H1 / H4 range edge or a swing level up to ~5 days old, a
+  round 50 / 100 nearby), touched from inside without a pierce, M1 / M5 turning: a turn (take-profit clustering).
+- **E2 the cascade:** a pierce of 0.25-1 ATR beyond such a level: the continuation (stop clustering).
+- **E3 the spring / upthrust:** a sweep beyond the edge of a mature range (price inside it for a while) closing back
+  inside: a turn - and in a trend: the continuation.
+- **E4 the double bottom / top at the larger edge,** the second extreme sweeping just beyond the first, entered at
+  its turn.
+Each read by its layers - the place (edge / middle, the level's age, a round number), the larger timeframes' way,
+the session (the opens) - as the probability of the 1-ATR first passage, the learning half choosing and the exam
+reading it once.
+
+## Every layer together - the first probability model (2026-10-19 04:42 Thai; owner: "combine every discipline and look at its probability"; "go on")
+
+`touch.py` (the first reach of an H1 / H4 level from M5 without a pierce; tests by hand + a second count on random
+markets, planted bugs 5 of 5), `combine.py` (42,361 candidate trades: the pierces both ways, the doubles at both
+entries, the touches; the place on H1 / H4, the round 50, the H1 / H4 way and structure from `pictures_at`, the hour,
+the windows, the M5 ATR against its 20-day median; the pierces' reversal outcomes asserted equal to explore.py's,
+8,532 of 8,532 - the check first failed because one level pierced on several timeframes at once matched the wrong
+rows; matched on the timeframe too), `model.py` (gradient-boosted trees, depth 3, learned on the learning half to
+2025-10-16, the rest of it held back to stop the learning and to choose the threshold; the exam read once).
+- With the side as a feature: AUC 0.523 held back, 0.511 exam; p >= 0.54 (the held-back choice: 0.546, 568 picks):
+  **the exam 0.589 (377)**. The picks are 87 % buys, but they are not the drift: all exam buys win 0.491, the
+  picked buys 0.595 (sells: 0.519 all, 0.551 picked); 77 of the 377 are one market moment on several timeframes.
+- **Not told the side (it cannot learn a drift): AUC 0.518 / 0.519; p >= 0.52 (the held-back choice: 0.532, 1,302
+  picks): the exam 0.548 (934, se 0.016).** What carries it: the hour, the distance to the H1 level the trade leans
+  on, the place in the H4 range, the second extreme of a double - the place and the moment, as the owner said.
+**Written before the trades are run:** the side-blind model, p >= 0.52; each pick a trade at the next M1 open (the
+ask for a buy), the stop and the target 1 ATR of the event's timeframe, out after 240 minutes, the auditor's costs,
+one position at a time (repeats of one moment skipped); the exam week by week, once.
+
+### The picks as trades (04:47 Thai; `model_trades.py`, `out_model_trades.txt`)
+`model_trades.trade_1atr` (lvl2.manage with the stop and the target one ATR, no break-even, out after 240 minutes) and
+`take` (one position, at one moment the highest chance first): tests by hand (a buy's target, a sell's stop on the ask
+with the New York slippage, the stop first when one bar reaches both, out after 240 minutes), a second count against a
+plain re-statement on random markets (148 trades of all three exits), planted bugs 7 of 7 caught. The trades agree with
+the mid-price 1-ATR passage on 96-97 % (the rest: the spread).
+- **Side-blind, p >= 0.52 (written down first): the exam 629 trades, win 0.504, R -0.003, USD +54 (0.01 lot), max DD
+  107, longest losing streak 8; held back 896 trades, R +0.031.** Week by week: -116 USD by the end of May, then up.
+- With the side, p >= 0.54: the exam 267 trades, R +0.052, USD +170, September's five weeks -95; held back R +0.002 -
+  the held-back part does not stand behind it.
+
+Where the 1-ATR passage's edge went, one step at a time (owner, 04:48 Thai: "slowly, one part at a time, not one
+lump that breaks so you cannot tell what to fix"):
+
+| side-blind p >= 0.52 | picks | 1. passage win (mid) | 2. after the costs: win, R | trades | 3. one at a time: win, R | the costs in R |
+|---|---|---|---|---|---|---|
+| held back, all | 1,302 | 0.532 | 0.500, -0.006 | 896 | 0.519, +0.031 | 0.069 |
+| the exam, all | 934 | 0.548 | 0.519, +0.028 | 629 | 0.504, -0.003 | 0.075 |
+| held back M5 / M15 / M30 / H1 | 824 / 243 / 158 / 77 | 0.530 / 0.523 / 0.525 / **0.597** | R -0.026 / +0.003 / +0.008 / **+0.155** | 604 / 158 / 89 / 45 | R +0.005 / +0.029 / +0.099 / **+0.245** | 0.090 / 0.050 / 0.039 / 0.024 |
+| the exam M5 / M15 / M30 / H1 | 544 / 227 / 112 / 51 | 0.566 / 0.480 / 0.518 / **0.725** | R +0.038 / -0.075 / +0.009 / **+0.411** | 397 / 143 / 60 / 29 | R +0.001 / -0.099 / +0.047 / **+0.315** | 0.096 / 0.059 / 0.044 / 0.026 |
+
+- The costs take about 3 points of win (0.06-0.07 R) - as much as the model's whole edge on M5 (a 5-USD stop pays
+  0.09 R a trade); one position at a time moves it either way (held back +0.04 R, the exam -0.03 R).
+- Only the H1 events keep their edge after the costs in both parts (0.597 / 0.725 passage, R +0.155 / +0.411), on few
+  trades (77 / 51 picks). M15 does not hold in the exam (0.480).
+- Next, one part at a time, each checked before the next: (a) every candidate's own trade result after the costs, its
+  base rate by timeframe and kind - no model; (b) the H1 events alone, why they hold (by eye too); (c) the model
+  learning the after-cost result - one change from this one; (d) walk-forward month by month for more unseen trades.

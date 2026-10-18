@@ -1,0 +1,40 @@
+exam picks p >= 0.54: 377, win 0.589; buys 328 win 0.595, sells 49 win 0.551
+all exam rows: buys win 0.491 (n 3424), sells win 0.519 (n 3470)
+
+the picks by kind:
+                     size   mean
+kind                            
+double_neck           114  0.614
+double_turn           175  0.594
+pierce_continuation    75  0.560
+pierce_reversal        12  0.500
+touch_H1                1  0.000
+
+by month:
+         size   mean
+t                   
+2026-04     9  0.556
+2026-05    42  0.619
+2026-06   101  0.624
+2026-07    33  0.545
+2026-08   128  0.633
+2026-09    46  0.435
+2026-10    18  0.500
+
+by UTC hour band:
+                size   mean
+hour_utc                   
+00-06 Asia       190  0.611
+06-12 London      50  0.520
+12-17 New York   102  0.578
+17-24 late        35  0.600
+
+by the event timeframe:
+     size   mean
+tf              
+H1     18  0.611
+M15   102  0.520
+M30    56  0.554
+M5    201  0.632
+
+the same market moment counted more than once (same minute, same side): 77 of 377

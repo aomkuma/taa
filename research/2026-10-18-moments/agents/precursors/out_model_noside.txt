@@ -1,0 +1,48 @@
+rows: fit 27783, held-back learning 6946 (from 2025-10-16), exam 6894; base win: fit 0.504, held-back 0.495, exam 0.505
+AUC (0.5 = no skill): held-back learning 0.518, exam 0.519
+
+held-back learning: by predicted probability (deciles)
+          n  predicted  realized
+decile                          
+0       695      0.467     0.478
+1       695      0.489     0.475
+2       694      0.497     0.486
+3       696      0.501     0.499
+4       693      0.505     0.489
+5       697      0.509     0.472
+6       692      0.512     0.503
+7       699      0.517     0.486
+8       691      0.522     0.521
+9       694      0.542     0.546
+
+exam: by predicted probability (deciles)
+          n  predicted  realized
+decile                          
+0       690      0.468     0.458
+1       689      0.488     0.501
+2       689      0.494     0.515
+3       690      0.499     0.516
+4       689      0.504     0.499
+5       689      0.507     0.502
+6       690      0.511     0.506
+7       689      0.515     0.502
+8       691      0.519     0.475
+9       688      0.535     0.578
+picks with p >= 0.52: held-back 1302 win 0.532 | exam 934 win 0.548 (se 0.016)
+picks with p >= 0.54: held-back 254 win 0.516 | exam 157 win 0.650 (se 0.040)
+picks with p >= 0.56: held-back 130 win 0.485 | exam 52 win 0.673 (se 0.069)
+picks with p >= 0.58: held-back 36 win 0.528 | exam 12 win 0.667 (se 0.144)
+
+what carries the weight (held-back AUC lost when the layer is shuffled):
+hour_utc                    0.0108
+H1_lean                     0.0061
+H4_pos_side                 0.0034
+second_share                0.0021
+kind=pierce_reversal        0.0008
+H4_way                      0.0006
+kind=pierce_continuation    0.0005
+inwin                       0.0004
+H4_lean                     0.0003
+gap                         0.0002
+H1_pos_side                 0.0001
+kind=double_turn            0.0000
