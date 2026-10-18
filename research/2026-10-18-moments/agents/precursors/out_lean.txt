@@ -1,0 +1,56 @@
+
+context / first10: the most leaning sets seen on >= 30 days
+       n  days     up   down      z
+set                                
+1    103    41  0.126  0.252 -2.082
+101   70    31  0.114  0.243 -1.800
+78   123    58  0.146  0.236 -1.605
+30   104    37  0.221  0.154  1.121
+54   165    55  0.206  0.158  1.033
+332  126    44  0.238  0.190  0.816
+633   76    30  0.224  0.289 -0.801
+161  126    48  0.262  0.294 -0.478
+
+setup / first10: the most leaning sets seen on >= 30 days
+       n  days     up   down      z
+set                                
+315   41    36  0.073  0.317 -2.500
+453  115    68  0.243  0.357 -1.565
+117   46    39  0.174  0.065  1.508
+126   53    42  0.151  0.057  1.508
+646   32    30  0.188  0.375 -1.414
+372  114    74  0.175  0.254 -1.286
+127   77    58  0.117  0.195 -1.225
+129   76    47  0.211  0.132  1.177
+
+trigger / first10: the most leaning sets seen on >= 30 days
+       n  days     up   down      z
+set                                
+46   207   183  0.111  0.213 -2.566
+58   115   102  0.183  0.348 -2.433
+20    80    72  0.238  0.088  2.353
+240   37    33  0.081  0.324 -2.324
+132   33    33  0.303  0.061  2.309
+8     34    33  0.206  0.029  2.121
+21    33    31  0.273  0.061  2.111
+19   195   165  0.138  0.215 -1.806
+
+all / first10: the most leaning sets seen on >= 30 days
+Empty DataFrame
+Columns: [n, days, up, down, z]
+Index: []
+
+-- leaning sets (|z| >= 3 and >= 2.5) against shuffled outcomes --
+  layer     outcome  sets_30days  z3  z3_chance  z25  z25_chance
+context     first10           14   0        0.0    0         0.1
+context      first5           14   0        0.0    0         0.4
+context 3U then 10U           14   0        0.0    0         0.2
+  setup     first10           31   0        0.0    1         0.3
+  setup      first5           31   0        0.1    0         0.4
+  setup 3U then 10U           31   0        0.0    0         0.2
+trigger     first10           80   0        0.1    1         0.8
+trigger      first5           80   0        0.2    0         0.8
+trigger 3U then 10U           80   0        0.2    5         0.8
+    all     first10            0   0        0.0    0         0.0
+    all      first5            0   0        0.0    0         0.0
+    all 3U then 10U            0   0        0.0    0         0.0

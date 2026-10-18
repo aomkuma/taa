@@ -221,3 +221,52 @@ minutes after the snap): faked up 0.17, faked down 0.17, flat 0.15, ran down 0.1
 - **At an important level price runs LESS within 30 minutes, it stalls:** at an H4 level touched 3+ times runs 0.20-0.23
   vs 0.31 between levels, flat 0.22 vs 0.15 (H1 3+: 0.23 / 0.23; M15 3+: 0.23 / 0.20). At an important level the form
   is followed by a pause more often, not by a bigger run.
+
+## Revised by the owner (2026-10-18): "similar" means the same formation, not the same candles
+
+"Similar does not mean identical down to the candles: it means the formation - how many peaks and troughs and how they
+lie, how the indicators move - that is what being consistent or alike means." The 40-point shape correlation is
+replaced by a **formation fingerprint**, written before it is computed (`fingerprint.py`):
+
+Per timeframe, on its 120 visible bars, swings from an ATR ZigZag (a reversal of 1.5 x that timeframe's ATR(14) from
+the running extreme confirms a peak / trough, known at the confirming bar), and 20 attributes:
+1. how many confirmed swings in the window (0-2, 3-5, 6-9, 10+); 2. the current leg (after a peak = down, after a trough
+= up); 3-4. the last three peaks: the newest vs the one before and that vs the one before it (higher / equal within
+0.25 ATR / lower) - 3 x 3; 5-6. the same for the troughs; 7. the current leg's size against the previous leg (< 0.5,
+0.5-1, > 1); 8. the previous leg against the one before it (same buckets); 9. where the close is: above the last peak,
+below the last trough, else the upper / middle / lower third between them; 10. the net move over the window in ATR
+(< -6, -6..-2, -2..2, 2..6, > 6); 11. RSI(14) zone; 12. RSI rising or falling over 3 bars; 13. divergence at the last two
+peaks (price higher, RSI lower) or troughs (price lower, RSI higher), else none; 14. MACD histogram sign x rising; 15.
+the MACD line above / below zero; 16. a MACD / signal cross in the last 3 bars (up / down / none); 17. Stochastic zone x
+%K above %D; 18. the EMA20 / EMA50 stack (close > EMA20 > EMA50, the reverse, mixed) and the EMA20 slope; 19. Bollinger:
+the position (4) and squeeze (width percentile < 0.2) / expanding (width up 3 bars) / normal; 20. ADX: < 20, >= 20
+rising, >= 20 falling, x the DI that leads.
+Plus, unchanged: support / resistance location and importance of M15 .. H4, and the global states (day / Asian /
+yesterday's / 72-h breaks, box, sweep, round 50, release).
+**Similarity** = the share of all attributes that are equal (each timeframe weighs the same); one set = >= 0.80, as
+before; evidence counted in distinct days; the same reads (sets, evidence a trigger finds, pictures).
+Calibration before any outcome was read: with 1.5 ATR every timeframe had 10+ swings in its 120 bars (H4: a swing every
+~6 bars), not the peaks a trader counts on a screen; the ZigZag reversal is 3.0 x ATR(14) instead.
+
+**Fingerprint result (design, `cluster_fp.py`, `out_cluster_fp.txt`):** with 20 attributes per timeframe (136 in all)
+an 80 % match almost never happens: all six timeframes - 99 % of triggers find no earlier day; by layer 63-76 % none,
+4-5 % >= 5 days; leaning sets (|up - down| >= 0.25, >= 10 days) 0-3 per layer vs 0-2 with shuffled outcomes. Exact
+equality of fine codes (RSI 5 zones, Stochastic 6, Bollinger 12, ADX 5) is too strict for "the same formation".
+
+**The core formation (written before it is computed; `cluster_fp.py core`):** 8 attributes per timeframe - the swing
+count, the current leg, the newest peak against the one before, the newest trough against the one before, where the
+close is (above the last peak, below the last trough, upper or lower half between), RSI rising / falling, the MACD
+histogram sign x rising, the EMA20 / EMA50 stack (bull / bear / mixed) - plus the support / resistance location of M15 ..
+H4. Same reads.
+
+**Core-formation result (design; `out_cluster_core.txt`, `out_lean.txt`, `out_runprob.txt`):**
+- Evidence a trigger finds (earlier snaps on other days at >= 0.80): M5 + M1 (16 attributes) none 4 %, >= 5 days 84 %,
+  >= 20 days 58 %; M30 + M15 (18) 11 % / 63 % / 30 %; H4 + H1 (18) 12 % / 57 % / 20 %; all six together (52) 75 % / 4 % / 0 %.
+  1,355 / 2,394 / 1,545 sets per layer.
+- **Which way, from the snap price (the trader's view):** sets seen on >= 30 days whose +-10 U (or +-5 U) first leans with
+  |z| >= 2.5: context 0 of 14 (chance 0.1-0.4), setup 1 of 31 (0.3-0.4), trigger 1 of 80 (0.8) - as many as shuffled
+  outcomes give. One exception: the side of a start that ran on (3 U then 10 U) leans in 5 trigger sets vs 0.8 by chance.
+- **Will it run, beyond the snap's time (outcomes shuffled within each time):** H4 + H1 sets 4 of 14 with |z| >= 3 (chance
+  0.0; e.g. set 332: a 10 U run 0.39 vs 0.25 expected from its times; set 54: 0.21 vs 0.31); M30 + M15 1 of 31 (set 453:
+  0.52 vs 0.35); M5 + M1 0 of 80 for the run, 6 of 80 for the largest 30-minute move (0.9). The context sets gather the
+  same weeks (H4 changes six times a day), so part of this is the volatility regime of those weeks.
