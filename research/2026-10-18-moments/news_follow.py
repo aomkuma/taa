@@ -1,4 +1,4 @@
-"""Round 10b (docs/OWN_SETUP.md): after a US release (the official calendar), does gold's first one or two minutes'
+"""Round 10b (docs/OWN_SETUP_ROUNDS.md): after a US release (the official calendar), does gold's first one or two minutes'
 move continue over the next 15 / 30 / 60 minutes? The first move is the market's reading of the surprise.
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/news_follow.py

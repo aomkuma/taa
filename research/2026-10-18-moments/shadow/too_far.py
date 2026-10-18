@@ -1,4 +1,4 @@
-"""Round 12b (docs/OWN_SETUP.md): F1 CONF-72 + "already run too far" filters measured with yardsticks that do not
+"""Round 12b (docs/OWN_SETUP_ROUNDS.md): F1 CONF-72 + "already run too far" filters measured with yardsticks that do not
 swell in a spike (H1 ATR, M15 ATR), and a stop no tighter than 1.5 M1 ATR.
 
     data/venv-research/Scripts/python research/2026-10-18-moments/shadow/too_far.py

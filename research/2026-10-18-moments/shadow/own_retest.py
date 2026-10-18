@@ -1,4 +1,4 @@
-"""Round 13 (docs/OWN_SETUP.md): OWN-RT - the owner's own setup, the retest after the break, with the void rule
+"""Round 13 (docs/OWN_SETUP_ROUNDS.md): OWN-RT - the owner's own setup, the retest after the break, with the void rule
 ("if it has run very far, the setup is void - find a new one"). Gold, M1 entries, the journal's real costs.
 
     data/venv-research/Scripts/python research/2026-10-18-moments/shadow/own_retest.py [--charts]

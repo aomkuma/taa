@@ -13,10 +13,10 @@ Distances are in risks ``r`` of the signal's own stop (its fill to the plan's SL
 | ``PULLBACK`` | a limit ``pullback_depth_r`` × r against the signal | the plan's SL |
 | ``PULLBACK_WIDE`` | the same limit | ``pullback_wide_stop_r`` × r from the signal's fill |
 
-The fixed multiples come from the setup review (docs/SETUP_REVIEW.md §8). The design's "learned" depths (the
-winners' MAE quantiles) are not used yet: a winner's MAE is censored at its own stop, so its quantiles can
-never place a stop beyond the plan's. A learned version needs the uncensored excursion (the research harness
-measures it on bars, TAA-L707) and comes with TAA-L706.
+The fixed multiples come from the setup review (docs/archive/SETUP_REVIEW.md §8). The design's
+"learned" depths (the winners' MAE quantiles) are not used yet: a winner's MAE is censored at its
+own stop, so its quantiles can never place a stop beyond the plan's. A learned version needs the
+uncensored excursion (the research harness measures it on bars, TAA-L707) and comes with TAA-L706.
 
 **Waiting entries.** A limit row starts ``PENDING`` with ``entry_price`` = the limit. On closed bars from the
 signal: it fills when the entry-side price reaches the limit (a BUY limit when the ask low ``low + spread`` is

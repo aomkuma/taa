@@ -1,4 +1,4 @@
-"""OWN v1 (docs/OWN_SETUP.md, frozen 2026-10-17): R-a (P2 at the New York cash open) and R-b (P1 through the
+"""OWN v1 (docs/OWN_SETUP_ROUNDS.md, frozen 2026-10-17): R-a (P2 at the New York cash open) and R-b (P1 through the
 previous New York session's high/low at any half hour), q70 stop, one position at a time. Prints the fit months
 and, once, the judged months (2026-07-14 .. 10-14), month by month.
 

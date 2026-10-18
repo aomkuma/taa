@@ -1,4 +1,4 @@
-"""Round 5b (docs/OWN_SETUP.md): the deep pullback in the H1 trend (screen 1 A, M15 RSI below 40, screen 3 none or
+"""Round 5b (docs/OWN_SETUP_ROUNDS.md): the deep pullback in the H1 trend (screen 1 A, M15 RSI below 40, screen 3 none or
 the last bar) on the untouched older data (2023-11 .. 2025-10, by half-year) and the two recent windows, with the
 tools in fixed USD and scaled by the price (x price / 4,100); then its losers in the owner's three kinds.
 

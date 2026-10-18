@@ -1,4 +1,4 @@
-"""Round 3 dataset (docs/OWN_SETUP.md "Round 3"): every minute of the active windows, both sides, features at the
+"""Round 3 dataset (docs/OWN_SETUP_ROUNDS.md "Round 3"): every minute of the active windows, both sides, features at the
 previous bar's close and the +5 USD labels for stops of 4 / 6 / 8 USD.
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/ml_dataset.py

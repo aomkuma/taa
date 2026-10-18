@@ -2,7 +2,7 @@
 
 Record of the design conversation of 2026-10-06 between the owner and Claude Code (in Thai, summarized here in
 English). **Status: proposal; nothing decided or built yet.** Follow-up 2026-10-11:
-`docs/CONFLUENCE_DIRECTION.md` (a deterministic whole-chart direction first, then this analyst on the same
+`docs/archive/CONFLUENCE_DIRECTION.md` (a deterministic whole-chart direction first, then this analyst on the same
 bars). No profitability claims: everything here is about process and measurement, not results.
 
 ---
@@ -175,7 +175,7 @@ armed-plan state machine.
 | Q-A1 AI may propose theses (PLAN revision 7) | **Accepted**: PLAN §A35 |
 | Q-A2 first stage, model, budget | HTF context for the bot first, then Ask AI + shadow theses; Opus 5.5, hybrid: on demand plus a capped schedule |
 | Q-A3 chart images | Numbers first; images later as a shadow A/B. AI-side plotting (code execution) adds nothing the numbers lack and is less reproducible: a later experiment at most (TAA-1610) |
-| Q-A4 order | Phase 16 in docs/TICKETS.md; after the setup review (docs/SETUP_REVIEW.md) the timing and stop work (TAA-L702) comes first, because the review found the losses there |
+| Q-A4 order | Phase 16 in docs/TICKETS.md; after the setup review (docs/archive/SETUP_REVIEW.md) the timing and stop work (TAA-L702) comes first, because the review found the losses there |
 
 ## 7. Open questions (as first asked)
 

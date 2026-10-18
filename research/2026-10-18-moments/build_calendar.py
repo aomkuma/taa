@@ -1,4 +1,4 @@
-"""The official US release calendar, 2021-09 .. 2026-10 (Setup OWN, docs/OWN_SETUP.md).
+"""The official US release calendar, 2021-09 .. 2026-10 (Setup OWN, docs/OWN_SETUP_ROUNDS.md).
 
 Dates read on 2026-10-17 from the publishers' own archives:
 

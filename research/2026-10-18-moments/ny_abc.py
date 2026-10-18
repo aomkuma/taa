@@ -1,4 +1,4 @@
-"""Round 7, iteration 8 (docs/OWN_SETUP.md): New York, with the H1 tide, after an A-B-C correction on M5 (the bot's
+"""Round 7, iteration 8 (docs/OWN_SETUP_ROUNDS.md): New York, with the H1 tide, after an A-B-C correction on M5 (the bot's
 chart-read ZigZag): enter when the M5 close breaks back beyond B; the stop beyond C plus half an M5 ATR.
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/ny_abc.py [--test]

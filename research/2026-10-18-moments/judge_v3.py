@@ -1,4 +1,4 @@
-"""OWN v3 (docs/OWN_SETUP.md, written 2026-10-17): at the London open, enter against the H1/M15 swing-structure
+"""OWN v3 (docs/OWN_SETUP_ROUNDS.md, written 2026-10-17): at the London open, enter against the H1/M15 swing-structure
 flow at the moment bar's open; stop 0.38 U, target max(5 USD, 0.5 U), 60 minutes. Month by month for one window.
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/judge_v3.py PREFIX START END

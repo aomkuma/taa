@@ -1,4 +1,4 @@
-"""Round 7 (docs/OWN_SETUP.md): New York with the H1 trend on the M15 pullback, adjusted iteration by iteration
+"""Round 7 (docs/OWN_SETUP_ROUNDS.md): New York with the H1 trend on the M15 pullback, adjusted iteration by iteration
 through the losers' three kinds. Development: four older half-years (price-scaled tools) and the earlier six
 months; the latest six months only with --test.
 
@@ -25,7 +25,7 @@ DEV = [
 ]
 TEST = [("LATEST SIX MONTHS", "2026-04-14", "2026-10-14", False)]
 
-# iteration -> (row filter, exit plan); each later iteration is written in docs/OWN_SETUP.md before it is run
+# iteration -> (row filter, exit plan); each later iteration is written in docs/OWN_SETUP_ROUNDS.md before it is run
 ITER = {
     "0": dict(rule=lambda d: (d.h1_e20_slope > 0) & (d.h1_c_e50 > 0) & (d.m15_rsi < 45), tp=8, sl=6, be=None, hz=60),
     "1": dict(rule=lambda d: (d.h1_e20_slope > 0) & (d.h1_c_e50 > 0) & (d.m15_rsi < 45), tp=8, sl=6, be=0.6, hz=60),

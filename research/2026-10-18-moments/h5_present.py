@@ -1,4 +1,4 @@
-"""H5 (docs/OWN_SETUP.md): the playbook that paid at a moment group over the previous 20 trading days is traded
+"""H5 (docs/OWN_SETUP_ROUNDS.md): the playbook that paid at a moment group over the previous 20 trading days is traded
 the next day. Walk-forward over 2026-04-14 .. 10-14, each day predicted from earlier days only.
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/h5_present.py

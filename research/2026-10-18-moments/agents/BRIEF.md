@@ -1,7 +1,7 @@
 # Setup OWN research team - shared brief (2026-10-17)
 
 You are one of several research agents working in parallel to make the owner's gold scalping setup (Setup OWN)
-profitable. Read this whole brief first. The full history is in `docs/OWN_SETUP.md` (long; skim "Results" and
+profitable. Read this whole brief first. The full history is in `docs/OWN_SETUP_ROUNDS.md` (long; skim "Results" and
 rounds 1-10) and the owner's goals in `docs/OWNER_GOALS.md`.
 
 ## The owner's goals (guidance, not hard rules - "be flexible with real data")
@@ -51,10 +51,12 @@ Cut losses -> break even -> profit -> sustainable profit; a setup need not be pr
 report every change that clearly cuts the loss or the drawdown (show the step-by-step table: baseline -> each
 change), not only rules that already pass +0.15 R.
 
-## The test window (the owner stresses this)
+## The test window (the owner stresses this; updated 2026-10-18)
 
-- **Test only on 2026-03-01 .. 2026-10-14** (the data ends 2026-10-14 08:18 UTC). Report it month by month.
-- **Design, fit and choose only on data before 2026-03-01.** Write your exact rule in your notes file
+- **Test only on the latest six months from today** (owner, 2026-10-18; on 2026-10-18: 2026-04-18 .. the data end,
+  2026-10-14 08:18 UTC). Report it week by week (Thai weeks).
+- **Learn on the latest 12 months first** (2025-10-18 .., owner 2026-10-18: "to see results quickly; if it works,
+  run the three years"); design, fit and choose only on data before 2026-04-18. Write your exact rule in your notes file
   *before* you compute it on the test window, and run the test once per frozen rule. If you look at the test and
   change the rule, say so plainly and count it as a new rule.
 
@@ -150,6 +152,6 @@ in both periods: after a big first minute on a release, FOMC and PCE continue an
 - Be honest: sanity-check numbers (trades vs days, a few trades by hand), report failures plainly, never claim
   profit beyond the measured past.
 - Keep `notes.md` in your folder: each rule written before its test, then its results.
-- Final answer to the lead: the best candidate(s) with the exact rule, pre-2026-03 results, the one test on
-  2026-03-01 .. 10-14 (month by month, trades a day, win %, USD at 0.01 lot, R a trade, the losers' kinds vs the
+- Final answer to the lead: the best candidate(s) with the exact rule, the learning-period results, the one test on
+  2026-04-18 .. 10-14 (week by week, trades a day, win %, USD at 0.01 lot, R a trade, the losers' kinds vs the
   coin), and your verdict and the next idea if it fails.

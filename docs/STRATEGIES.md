@@ -4,20 +4,29 @@ How strategies are built, configured and explained (PLAN §A7, §A29). Every str
 **demonstration**: none is production-proven, and nothing in this project claims profitability. Leveraged
 FX/CFD trading is high risk.
 
-## Setups and variants at a glance (kept current; last update 2026-10-18 17:30 Thai time)
+## Setups and variants at a glance (kept current; last update 2026-10-18 22:45 Thai time)
 
 The short names used in the setup work. A *variant* is a set of parameters of an existing setup, not new code.
 Results are backtests (R per trade, net of the modelled costs); they describe the past, not the future.
 
 | Name | Code setup | What it does | Entry TF, symbols | State | Result | Details |
 |---|---|---|---|---|---|---|
-| **OWN F1 CONF-72** (Setup OWN, owner 2026-10-18) | `setup_own_conf72` (lane `own`) | The H1 tide, at a level (today / yesterday / Asia / round 50 / M15 / H1 read), price action, 2 of 3 M5 indicators, the 72-hour extreme less than 4 U in front or behind, no fast tape; the stop is 1 M1 ATR beyond the level (3-10 U, floor 0.5 M15 ATR) and the target 8 U. Exits: break-even at 4.8 U, 60 min. v2: a runner in a strong-volatility phase, a 10-bar scratch. Half risk off the round 50 | M1; XAUUSD | **ON (DEMO)** since 2026-10-18 | window (2026-03..10-14) 35 trades, +0.219 R, +63 USD at 0.01 lot; design +0.188; engine = research 35/35 | OWN_SETUP Round 17 |
-| **OWN S2** (CPI / NFP straddle) | `setup_own_s2` (lane `news`) | At 08:30:00 New York: a buy stop 2 U above the ask and a sell stop 2 U below the bid, one cancels the other, live 60 s; the stop 8 U; out at the end of the release minute (quotes, not bars) | quotes; XAUUSD | **ON (DEMO)** since 2026-10-18 | window ticks 14 trades, +1.23 R, +144 USD; the release-second fills are the open risk | OWN_SETUP S2 |
+| **OWN F1 CONF-72** (Setup OWN, owner 2026-10-18) | `setup_own_conf72` (lane `own`) | The H1 tide, at a level (today / yesterday / Asia / round 50 / M15 / H1 read), price action, 2 of 3 M5 indicators, the 72-hour extreme less than 4 U in front or behind, no fast tape; the stop is 1 M1 ATR beyond the level (3-10 U, floor 0.5 M15 ATR) and the target 8 U. Exits: break-even at 4.8 U, 60 min. v2: a runner in a strong-volatility phase, a 10-bar scratch. Half risk off the round 50 | M1; XAUUSD | **ON (DEMO)** since 2026-10-18 | window (2026-03..10-14) 35 trades, +0.219 R, +63 USD at 0.01 lot; design +0.188; engine = research 35/35 | OWN_SETUP_ROUNDS round 17 |
+| **OWN S2** (CPI / NFP straddle) | `setup_own_s2` (lane `news`) | At 08:30:00 New York: a buy stop 2 U above the ask and a sell stop 2 U below the bid, one cancels the other, live 60 s; the stop 8 U; out at the end of the release minute (quotes, not bars) | quotes; XAUUSD | **ON (DEMO)** since 2026-10-18 | window ticks 14 trades, +1.23 R, +144 USD; the release-second fills are the open risk | OWN_SETUP_ROUNDS round 17 (S2) |
 | W11-b1 (round 50 at a fresh extreme; weapon 4) | research only | The round 50 at the 72-h / 24-h / 5-day / session extreme (a London session extreme at least 60 min old), price action, market entry | M1; XAUUSD | research | window +0.166 R at 0.41/day; the trades beyond F1 +0.097 R | agents/weapon4/notes.md |
+| LV3 (with every larger timeframe, sell the bounce into an earlier level; owner 2026-10-18) | research only (`research/2026-10-18-moments/agents/precursors/lvl3.py`) | Every larger timeframe's trend agrees; the entry TF is the smallest of M1 / M5 / M15 / M30 whose ATR covers 5 USD; the level from M15 / M30 / H1 swings; enter after at least N M1 legs of the pause with the newest peak lower (trough higher); the stop beyond the level by a learned buffer (walk-forward percentile of the winners' overshoot), target >= 5 USD; exits on the entry TF | M1-M30; XAUUSD | research; code proven (unit tests with planted bugs, an independent re-derivation) | walk-forward on the latest 12 months pending; LV2 (its parent) design -0.032 R over three years | `agents/precursors/notes.md` |
+
+### Stopped and off (the record; details in `docs/archive/SETUP_REVIEW.md`)
+
+Every setup below stopped on 2026-10-17 (owner: the bot starts over with Setup OWN) or was off before; the code
+and parameters stay.
+
+| Name | Code setup | What it does | Entry TF, symbols | State | Result | Details |
+|---|---|---|---|---|---|---|
 | **V1** (harmonic V1) | `setup_harmonic_prz` | Harmonic patterns (AB=CD, XABCD) entered at the PRZ (point D), only while the H4 map is against the trade or ranging, R:R ≤ 3, no break-even; own stop cap off (`max_sl_atr: 20`, owner 2026-10-16) | M15, 8 | **stopped** (owner, 2026-10-17: the bot starts over with Setup OWN; parameters kept); was priority 2 | year +0.211, 181 trades | SETUP_REVIEW §15.3 |
-| **F1** (breakout F1) | `setup_breakout` | Waits for a break *against* the H4 and H1 trend (usually a false break) and trades it the other way, with the big trend (`fade_counter_trend: true`, `trend_entries: false`); own stop cap off (`max_sl_atr: 20`, owner 2026-10-16) | M15, 8 | **stopped** (owner, 2026-10-17: the bot starts over with Setup OWN; parameters kept); was priority 3 | year +0.159, 99 trades; out of sample (2024-10 .. 2025-01) −0.012 (45) | SETUP_REVIEW §16, docs/OUT_OF_SAMPLE.md |
+| **F1** (breakout F1) | `setup_breakout` | Waits for a break *against* the H4 and H1 trend (usually a false break) and trades it the other way, with the big trend (`fade_counter_trend: true`, `trend_entries: false`); own stop cap off (`max_sl_atr: 20`, owner 2026-10-16) | M15, 8 | **stopped** (owner, 2026-10-17: the bot starts over with Setup OWN; parameters kept); was priority 3 | year +0.159, 99 trades; out of sample (2024-10 .. 2025-01) −0.012 (45) | SETUP_REVIEW §16, docs/archive/OUT_OF_SAMPLE.md |
 | Breakout (original) | `setup_breakout` | Trades every break in its own direction | M15, 8 | off (replaced by F1); **parked** (owner, 2026-10-17: its direction is worse than random, the edge is in fading it - F1, S1) | year −0.154 | SETUP_REVIEW §3-§5, §22 |
-| **S1** (M1 gold scalping; the day-trade setup, owner 2026-10-15) | `setup_breakout_scalp` (lane `s1`) | F1's fade on M1: screens H1 (tide) / M15 (wave), stop 2 × ATR(60 M1 bars), target about 2 × the fade's stop, no entries 08:00-12:00 New York, time stop 60 bars; own stop cap off (owner 2026-10-17) | M1, XAUUSD only | **stopped** (owner, 2026-10-17: the bot starts over with Setup OWN; parameters kept); lane `s1`; year met 3 of 4 goals; unstable with real costs (OWN_SETUP: 2025-09..26-02 -0.36 R) | year +0.277, 76 trades, DD 6.2 R; 1st-half CI reaches below 0; out of sample (2024-10 .. 12) +0.179 (25) | SETUP_REVIEW §17, docs/OUT_OF_SAMPLE.md |
+| **S1** (M1 gold scalping; the day-trade setup, owner 2026-10-15) | `setup_breakout_scalp` (lane `s1`) | F1's fade on M1: screens H1 (tide) / M15 (wave), stop 2 × ATR(60 M1 bars), target about 2 × the fade's stop, no entries 08:00-12:00 New York, time stop 60 bars; own stop cap off (owner 2026-10-17) | M1, XAUUSD only | **stopped** (owner, 2026-10-17: the bot starts over with Setup OWN; parameters kept); lane `s1`; year met 3 of 4 goals; unstable with real costs (OWN_SETUP: 2025-09..26-02 -0.36 R) | year +0.277, 76 trades, DD 6.2 R; 1st-half CI reaches below 0; out of sample (2024-10 .. 12) +0.179 (25) | SETUP_REVIEW §17, docs/archive/OUT_OF_SAMPLE.md |
 | S1 + resume | `setup_breakout` (research config) | S1 with `entry_on: resume` (Elder's third screen: after the trigger, wait up to 15 M1 bars (`resume_bars: 15`) for the first close beyond the previous bar's extreme in the trade's direction, and enter there) | M1, XAUUSD only | not kept: the year stopped at 7 of 12 months (2026-10-17), no clear gain | 7 months +0.270 (39) against S1 +0.235 (43) in the same months | SETUP_REVIEW §19 |
 | **TS** (triple screen pullback; the owner's own setup, 2026-10-17) | `setup_triple_screen` | M15 structure break after a pullback whose extreme sits within 0.5 read ATR of an H1/H4 level, with the EMA tide (`tide_ema_tfs`); TS-h4 = the day-trade version (H4 tide, 2 R, at most 12 h) | M15; XAUUSD | **stopped** (2026-10-17): the trigger has no edge over five years; every rule picked in-sample (TS-n3, B1-B5, A0-A5) failed its hold-out years | TS-h4 study +0.195 (2 years); TS-d1 backtest +0.068 (135) | OWNER_TRADING "TS" sections |
 | **D1a-D1d** (day trade on M5, closed: S1 is the day-trade setup) | `setup_breakout` | S1's logic on M5, flat within the day (entries 07-12 and 16-18:30 UTC, time stop 2 hours); screens D1a H1/M15, D1b H4/M30 (map state), D1c / D1d the same on swings | M5, XAUUSD only | none passes two rungs (owner to choose the next lever) | March a −0.74 (3), b +0.48 (2), c −0.60 (7), d +0.43 (2); August b 0 trades, d −1.02 (3) | `research/2026-10-15-day-trade/D1_NOTES.md` |
@@ -29,7 +38,7 @@ Results are backtests (R per trade, net of the modelled costs); they describe th
 | Neckline break | `setup_neckline_break` | Double top/bottom, head and shoulders neckline breaks | M15 | off | not reworked yet | - |
 | SMC reversal | `setup_smc_reversal` | Liquidity sweep + change of character | M15 | off | about 1 signal a year | SETUP_REVIEW §3 |
 
-**Priorities (owner, 2026-10-17; SETUP_REVIEW §22):** development time goes to S1, then V1, then F1, one setup
+**Priorities (owner, 2026-10-17 morning; superseded the same day when every setup above stopped; SETUP_REVIEW §22):** development time went to S1, then V1, then F1, one setup
 at a time; TS is the other session's. Parked (no development; the code stays and the scanner keeps them):
 the original breakout, pattern breakout and the box breakout - breakouts traded in their own direction, whose
 direction measured worse than random. Low priority: candle reversal, fib pullback, Elliott wave, neckline break,
@@ -40,10 +49,10 @@ the box breakout `setup_breakout_box` (code stays, lane only, off: 8 symbols M5 
 gold +0.46..+1.07 on ~10 trades a year; **parked**, owner 2026-10-16/17: a fresh analysis only if its turn comes), H4/D1 trend following on 29 markets (-0.06..-0.17), momentum burst
 scalps (M5 -0.34 or worse); F1 on the 21 crosses (March -0.373, 16 trades); F1 + `entry_on: resume` (Elder's
 third screen: March +0.157 on 5 against +0.248 on 12). Not kept: S1 + `entry_on: resume` (§19), S1 on the 7
-FX majors (August: on M1 the spread is 34-80 % of S1's stop, so its own spread rule passes almost no bar). Earlier: S1s (S1 with swing screens: March +0.063, 25 trades, below S1's +0.397); the inverted copies (`*_inverted`, docs/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
+FX majors (August: on M1 the spread is 34-80 % of S1's stop, so its own spread rule passes almost no bar). Earlier: S1s (S1 with swing screens: March +0.063, 25 trades, below S1's +0.397); the inverted copies (`*_inverted`, docs/archive/INVERTED_SETUPS.md); V2 (V1 + a PRZ confirmation,
 −0.10); plain session breaks on M5 for day trading (FX lose to the spread, gold flips in the second half;
 D1_NOTES.md). Building blocks used by the variants: the market map (`MarketContext.htf`) and the chart read
-(docs/CHART_READ.md). Planned: `setup_confluence` (docs/CONFLUENCE_DIRECTION.md).
+(docs/CHART_READ.md). Planned: `setup_confluence` (docs/archive/CONFLUENCE_DIRECTION.md).
 
 ## Framework
 
@@ -124,7 +133,7 @@ Every parameter is in `TrendPullbackParams` and can be set under `strategies.ite
 
 `app/strategy/setups.py` (PLAN §A29, use 2). Each setup turns one family of trigger detectors on the entry
 timeframe into an explicit plan. All are listed in `config.yaml`; since 2026-10-09 the bot trades **one setup
-at a time** (the one under study, `setup_harmonic_prz` first; docs/SETUP_REVIEW.md), while the scanner and shadow
+at a time** (the one under study, `setup_harmonic_prz` first; docs/archive/SETUP_REVIEW.md), while the scanner and shadow
 keep every setup the users follow. They need the evidence engine in the context builder. Every entry carries the
 reason codes `<SETUP_CODE>` and `DEMO_UNPROVEN`.
 
@@ -151,7 +160,7 @@ backtests hold.
 signal on the other side, the stop at the original's target). A year of two-world backtests showed no edge on the
 blind inverted side (SETUP_REVIEW §14-§16), so the copies were removed from the code on 2026-10-14 (owner). What
 held is narrower and lives inside the setup: a trigger against both the H4 and the H1 trend is faded
-(`fade_counter_trend`). [docs/INVERTED_SETUPS.md](INVERTED_SETUPS.md) keeps the history.
+(`fade_counter_trend`). [docs/archive/INVERTED_SETUPS.md](archive/INVERTED_SETUPS.md) keeps the history.
 
 **Higher-timeframe market map (TAA-L809).** Every signal of every setup records the H4/D1 map as `ctx:h4_*` /
 `ctx:d1_*` features: trend vs consolidation, range position, compression, whether the entry sits at a demand

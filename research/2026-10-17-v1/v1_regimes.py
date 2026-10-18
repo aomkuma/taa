@@ -1,5 +1,5 @@
 """V1 (harmonic + room) by market condition, two years (owner, 2026-10-17: every setup profitable in every market
-condition, one setup at a time; V1 first, it fails the out-of-sample year, docs/OUT_OF_SAMPLE.md).
+condition, one setup at a time; V1 first, it fails the out-of-sample year, docs/archive/OUT_OF_SAMPLE.md).
 
 Year A: the out-of-sample monthly runs (``data/backtests/oos/v1_YYYY-MM``, 2024-10 ..), year B: the in-sample
 monthly runs with the same rules (``data/backtests/inv/v1cr_room_YYYY-MM``). For each trade the market map at its

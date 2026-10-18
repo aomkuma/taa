@@ -83,7 +83,7 @@ breakout. The best single conditions chosen on Oct-Mar (+0.10 to +0.22 R) all fa
      §L20.2), instead of fading every break.
 3. An AI judge ("is this setup ready to enter?") can only help if it sees information these features do not
    carry (multi-timeframe structure, the significance of the level, news). It must be measured forward in
-   shadow like everything else (docs/AI_ANALYST_DISCUSSION.md stages A-B); on history it cannot be judged
+   shadow like everything else (docs/archive/AI_ANALYST_DISCUSSION.md stages A-B); on history it cannot be judged
    fairly.
 4. Switching setups off is a separate risk decision for the bot; the shadow measurement continues either way.
 
@@ -133,7 +133,7 @@ other), then forward in shadow, then DEMO, then LIVE (PLAN_LEARNING §L13).
 2. **Signal-quality model** (statistical, §L6 meta-labeling): learns from thousands of shadow outcomes whether a
    setup is ready to enter; judged walk-forward. The simple context rules here did not survive walk-forward,
    so it needs the richer evidence features.
-3. **LLM analyst** (docs/AI_ANALYST_DISCUSSION.md): a multi-timeframe thesis per symbol, measured forward in
+3. **LLM analyst** (docs/archive/AI_ANALYST_DISCUSSION.md): a multi-timeframe thesis per symbol, measured forward in
    shadow against the bot; its verdict can later become one input of the signal-quality model.
 4. **Explanation and review** (TAA-1303/1305, built): narratives in Thai and English, and the veto review once
    its calibration is shown.
@@ -279,7 +279,7 @@ same exit prices (SL = the original TP, TP = the original SL). History, re-simul
 +0.036 R, pattern breakout +0.059, fib +0.055, harmonic −0.196 (R of the original risk); none reaches +0.15. The
 nine `*_inverted` strategies trade on DEMO since 2026-10-09 13:45 UTC (first trade: EURUSD BUY, the inverted
 `setup_breakout` SELL on the New York opening-range break). Concept, mechanics and the work that remains:
-docs/INVERTED_SETUPS.md.
+docs/archive/INVERTED_SETUPS.md.
 
 ## 14. Pre-run behaviour and the inverted trades, measured (2026-10-11)
 
@@ -558,7 +558,7 @@ and enter on it (`data/research/config_s1_resume.yaml`; otherwise S1's research 
   minutes; resume took four trades that day, three targets and one stop. Average win +1.61 R, loss -1.05 R (S1: +1.62 / -1.03):
   the gain is the win rate (78 % against 44 %), not the payoff.
 - Both rungs passed; 16 trades is still a small sample. The year (monthly runs as §17) was **stopped at 7 of 12
-  months** on 2026-10-17 for the out-of-sample year (owner; docs/OUT_OF_SAMPLE.md): resume +0.270 R/trade on 39
+  months** on 2026-10-17 for the out-of-sample year (owner; docs/archive/OUT_OF_SAMPLE.md): resume +0.270 R/trade on 39
   trades (2025-10 −1.043 (3), 11 +0.899 (4), 12 +0.003 (5), 2026-01 +0.079 (7), 02 −1.012 (4), 03, 08) against
   S1's +0.235 on 43 in the same months: not a clear gain. It helps where S1 bought into a falling market
   (Nov, Dec, Aug) and loses where S1's entries were right (Oct, Feb: every resume entry stopped).
@@ -582,7 +582,7 @@ identically to the runs with it (`data/backtests/inv/{v1,f1}nocap_2026-03`).
 ## 21. V1 by market condition, and the rules to judge on fresh data (2026-10-17)
 
 Owner, 2026-10-17: every setup profitable in every market condition, one setup at a time; V1 first, because it
-fails the out-of-sample year (docs/OUT_OF_SAMPLE.md). `research/2026-10-17-v1/v1_regimes.py` rebuilds the market
+fails the out-of-sample year (docs/archive/OUT_OF_SAMPLE.md). `research/2026-10-17-v1/v1_regimes.py` rebuilds the market
 map at each V1 entry (the engine's `MapBook`, H1/H4/D1, plus each timeframe's ATR percentile) for year A
 (2024-10 .. 2025-02, the five months done) and year B (2025-10 .. 2026-09, in sample).
 
@@ -622,7 +622,7 @@ measurements above, accepted by the owner:
 | Original breakout, pattern breakout, box breakout (breaks traded in their own direction) | −0.154 (3,750 signals), −0.222 (901), −0.24 (199); negative in both halves, the traded direction worse than random (§3, §9) | **parked**: no development; the code stays, the scanner keeps them |
 | Candle reversal, fib pullback, Elliott wave, neckline break, SMC reversal | raw signals −0.098, −0.163, −0.075, +0.003 (89), about 1 a year; never measured with the context screens | low priority |
 
-- One setup at a time, in this order; the out-of-sample years (docs/OUT_OF_SAMPLE.md) judge every change.
+- One setup at a time, in this order; the out-of-sample years (docs/archive/OUT_OF_SAMPLE.md) judge every change.
 - The out-of-sample runs were stopped by the owner on 2026-10-17 at 14:40 Thai: year A at 12 of 36 runs (V1 and F1
   to 2025-02 / 2025-01, S1 to 2024-12; S1 2025-01 interrupted), year C not started. `oos_queue.sh` and
   `oos_queue_c.sh` resume where they stopped (finished months are skipped).

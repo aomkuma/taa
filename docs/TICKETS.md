@@ -1832,7 +1832,7 @@ positions: the cloud knew only their number (the heartbeat's `open_positions`).
 - **Status:** TODO
 - **Depends on:** 1207 (TAA-1208 is taken by another session's broker-trade work)
 
-Found on the FBS demo account on 2026-10-07 (docs/SETUP_REVIEW.md §6): a 0.5 × ATR spacing on a ~1.5 ATR stop
+Found on the FBS demo account on 2026-10-07 (docs/archive/SETUP_REVIEW.md §6): a 0.5 × ATR spacing on a ~1.5 ATR stop
 puts every limit part into the noise band just above the stop (GBPUSD parts with 7.2, 4.1 and 1.1 pip stops;
 USDJPY: three parts filled within 51 minutes, then all stopped). The replay shows deeper fills win far less.
 
@@ -1962,7 +1962,7 @@ setups, fades at half risk; breakout F1 also in the standard mode.
 
 ### Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35)
 
-Discussion and feasibility: docs/AI_ANALYST_DISCUSSION.md. The AI proposes theses; the engine decides and executes
+Discussion and feasibility: docs/archive/AI_ANALYST_DISCUSSION.md. The AI proposes theses; the engine decides and executes
 only through its own triggers and gates; shadow measures. Opus 5.5, on demand plus a capped schedule; numbers
 first, images later. Needs `AI_PROVIDER`/`AI_API_KEY` (costs money; owner's budget).
 
@@ -1972,7 +1972,7 @@ first, images later. Needs `AI_PROVIDER`/`AI_API_KEY` (costs money; owner's budg
 - **Depends on:** —
 
 - [x] PLAN §A35; R21 and the AI threat row amended
-- [x] Phase 16 tickets; docs/AI_ANALYST_DISCUSSION.md committed with the owner's decisions
+- [x] Phase 16 tickets; docs/archive/AI_ANALYST_DISCUSSION.md committed with the owner's decisions
 - [x] PLAN_LEARNING §L12 pointer to §A35 (the LLM is no longer narrative only)
 
 #### TAA-1602 — Bias timeframe for the bot (H4 context)

@@ -1,4 +1,4 @@
-"""Writes docs/OUT_OF_SAMPLE.md from the monthly runs (owner, 2026-10-17: one run per setup per month).
+"""Writes docs/archive/OUT_OF_SAMPLE.md from the monthly runs (owner, 2026-10-17: one run per setup per month).
 
 PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-17-oos/oos_doc.py
 Every month is cross-checked: trades.csv net and count against summary.json.
@@ -124,7 +124,7 @@ out += [
     "  `download_year_c.py`): H1 of all 29 symbols and M15 of the 8 from 2023-08, H4 from 2023-04, D1 from 2021-09,",
     "  gold M30 from 2023-08 and M1 from 2023-09. Every month complete; median spreads: gold 20 points (2025-26: 23),",
     "  EURUSD 8-9 (8).",
-    "- Judged by R per trade (net mixes lot sizes). Goal ≥ +0.15 R/trade per setup (docs/SETUP_REVIEW.md).",
+    "- Judged by R per trade (net mixes lot sizes). Goal ≥ +0.15 R/trade per setup (docs/archive/SETUP_REVIEW.md).",
     "",
     "## Summary",
     "",
@@ -138,6 +138,6 @@ out += [
 ]
 if os.path.exists(NOTES_FILE):
     out += ["## Notes", "", open(NOTES_FILE, encoding="utf-8").read().strip(), ""]
-with open("docs/OUT_OF_SAMPLE.md", "w", encoding="utf-8", newline="\n") as f:
+with open("docs/archive/OUT_OF_SAMPLE.md", "w", encoding="utf-8", newline="\n") as f:
     f.write("\n".join(out).rstrip() + "\n")
 print("\n".join(summary).encode("ascii", "replace").decode())

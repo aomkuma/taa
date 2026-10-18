@@ -13,7 +13,8 @@ from MT5 (History, Report), and everything else from the history store.
    trendlines, EMAs, MACD) and writes the rule it implies.
 3. Claude restates the rule for the owner to confirm before any code.
 4. The confirmed rules become the owner's setup (entries, scale-in, stop, target, management), judged by
-   backtest on the ladder (March, August, the year).
+   backtest: learned on the latest 12 months, examined once on the latest six months, week by week (owner,
+   2026-10-18; it replaced the March / August / year ladder of 2026-10-14).
 5. Strengths, weaknesses and improvements go in this file. The real-account report is a supplement.
 
 ### Draft rule from trade 1 (corrected by the owner: "close; I meant to trade the range 4138-4160")
@@ -212,6 +213,10 @@ in": the first order at the signal, the others as limits toward the stop, one sh
 risk per signal).
 
 ## Setup TS - the triple screen pullback (owner, 2026-10-17)
+
+> **Stopped 2026-10-17:** the trigger showed no edge over five years and every in-sample rule failed its hold-out
+> years (`docs/STRATEGIES.md`, stopped setups). Kept as the record; the current work is Setup OWN
+> (`docs/OWN_SETUP.md`).
 
 **Where it came from.** The owner's plan for the week of 2026-10-19 (XAUUSD, H1 chart at the Friday close
 4,165, OANDA): the H4 still falls (lower highs 4,225 -> 4,215 -> 4,200 under the trendline from 4,400), the H1

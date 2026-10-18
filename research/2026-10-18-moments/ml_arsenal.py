@@ -1,4 +1,4 @@
-"""Round 4 (docs/OWN_SETUP.md): the arsenal - several tools (target / stop in USD) and, at each active minute, the
+"""Round 4 (docs/OWN_SETUP_ROUNDS.md): the arsenal - several tools (target / stop in USD) and, at each active minute, the
 tool with the best expected USD after costs, per a LightGBM model per tool (win / stop / time-out). One trade at a
 time; in each session the first minute whose best expected USD clears that session's cut (chosen on validation
 for about one trade per session-day). Train 2023-11 .. 2026-02, validation 2026-02-14 .. 04-14, test the latest

@@ -1,5 +1,5 @@
 """Read-only: bring gold's and the USD majors' bar history up to date from the FBS demo terminal (the forward check of
-the frozen Setup OWN rules on data after 2026-10-14; docs/OWN_SETUP.md). Bars are merged into data/history; gold
+the frozen Setup OWN rules on data after 2026-10-14; docs/OWN_SETUP_ROUNDS.md). Bars are merged into data/history; gold
 ticks are fetched with download_ticks.py.
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/shadow/update_history.py [START]

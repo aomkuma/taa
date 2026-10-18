@@ -1,4 +1,4 @@
-"""Round 5 (docs/OWN_SETUP.md): the triple screen with H1 at most. Screen 1 the H1 trend, screen 2 a pullback
+"""Round 5 (docs/OWN_SETUP_ROUNDS.md): the triple screen with H1 at most. Screen 1 the H1 trend, screen 2 a pullback
 against it (M15 RSI or the last hour's range), screen 3 the entry timing (M1 bar or ticks). Variants chosen on
 2025-10-14 .. 2026-04-14, tested once on 2026-04-14 .. 10-14.
 

@@ -1,4 +1,4 @@
-"""Round 7, iteration 6 (docs/OWN_SETUP.md): New York iteration 1 with the direction screened by a LightGBM score,
+"""Round 7, iteration 6 (docs/OWN_SETUP_ROUNDS.md): New York iteration 1 with the direction screened by a LightGBM score,
 fitted walk-forward on everything before each window. Runs in data/venv-research:
 
     data/venv-research/Scripts/python research/2026-10-18-moments/ny_ml.py [--test]

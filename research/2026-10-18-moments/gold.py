@@ -1,4 +1,4 @@
-"""Gold's five-year M1 history for Setup OWN (docs/OWN_SETUP.md): the TS session's store (2020-09 .. 2023-10)
+"""Gold's five-year M1 history for Setup OWN (docs/OWN_SETUP_ROUNDS.md): the TS session's store (2020-09 .. 2023-10)
 joined to the main store (2023-08 .. 2026-10), the main store winning where they overlap. Bars are indexed by
 their open time in UTC (both stores already hold UTC open/close times)."""
 

@@ -1,4 +1,4 @@
-"""Where does gold's own price carry direction at all? (Setup OWN, round 10 diagnostics, docs/OWN_SETUP.md)
+"""Where does gold's own price carry direction at all? (Setup OWN, round 10 diagnostics, docs/OWN_SETUP_ROUNDS.md)
 
 1. Drift by hour: the mean M1 log return per Thai hour, per half-year (bp per hour, t-statistic).
 2. Continuation or reversal: the variance ratio VR(k) = Var(k-minute returns) / (k x Var(1-minute returns)) per

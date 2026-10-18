@@ -1,4 +1,4 @@
-"""Round 16 (docs/OWN_SETUP.md): trading the range like the owner's trade 1 - R1 fade the edge, R2 the false break
+"""Round 16 (docs/OWN_SETUP_ROUNDS.md): trading the range like the owner's trade 1 - R1 fade the edge, R2 the false break
 back inside - on 2-4 hour M5 ranges 10-30 USD tall. Gold, real costs (agents/journal/jlib.py).
 
     data/venv-research/Scripts/python research/2026-10-18-moments/shadow/range_trade.py

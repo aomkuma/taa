@@ -1,4 +1,4 @@
-"""Round 11's one test (docs/OWN_SETUP.md): W2 (and the declared W3) on 2026-03-01 .. 10-13 - the journal agent's B0
+"""Round 11's one test (docs/OWN_SETUP_ROUNDS.md): W2 (and the declared W3) on 2026-03-01 .. 10-13 - the journal agent's B0
 with the losers' filters applied to the signals before the selection loop. Also re-runs them on the design data
 the same way (the check that the filters on signals reproduce the trade-level step table).
 

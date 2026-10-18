@@ -30,8 +30,10 @@ Read before larger work:
 .venv\Scripts\python -m app.cli doctor --fake        # diagnostics against FakeMT5 (drop --fake for the real terminal)
 .venv\Scripts\python -m app.cli config show | kill --reason "..." | audit verify | db upgrade
 .venv\Scripts\python -m app.cli backtest --server FBS-Demo --symbols EURUSD --start 2026-01-01 --end 2026-09-30   # needs data/history
-.venv\Scripts\python -m app.cli backtest --lane s1 --server FBS-Demo --symbols XAUUSD --start 2026-03-01 --end 2026-04-01   # one lane (config lanes)
-.venv\Scripts\python -m app.cli backtest --portfolio --server FBS-Demo --start 2026-03-01 --end 2026-04-01   # every lane, one account (TAA-507)
+.venv\Scripts\python -m app.cli backtest --lane own --server FBS-Demo --symbols XAUUSD --start 2026-04-18 --end 2026-10-17   # one lane (config lanes)
+.venv\Scripts\python -m app.cli backtest --portfolio --server FBS-Demo --start 2026-04-18 --end 2026-10-17   # every lane, one account (TAA-507)
+.venv\Scripts\python -m pytest research/2026-10-18-moments/agents/precursors -q   # the research's own tests (foundation, LV3, evidence)
+.venv\Scripts\python research/2026-10-18-moments/agents/precursors/wf.py [3y]   # LV3 walk-forward: latest 12 months (3y: three years)
 .venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
 .venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
 .venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14 | demo-track --proven-only
@@ -121,17 +123,19 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
 - **The owner's goals and principles (2026-10-17) come first:** `docs/OWNER_GOALS.md` (consistent profit, a trade
   every day, enter when price is about to run, quick profit; no single rule decides direction; everything
   relative; live in the present). Current focus: Setup OWN (`docs/OWN_SETUP.md`); every earlier setup is stopped.
-  **Backtests are judged from 2026-03-01 on** (owner, 2026-10-17/18; setups are revised every 3-6 months):
-  design and fit only on data before it (older research is fine), then run each frozen rule once on the window.
-  This replaces the March / August / full-year ladder below.
+  **The exam is the latest six months counted from today** (owner, 2026-10-18; on 2026-10-18: 2026-04-18 .. the
+  data end): design and fit only on data before it, then run each frozen rule once on it. **Learning runs use the
+  latest 12 months first** (2025-10-18 .., "to see results quickly"; the three-year history only once a setup
+  works there), walk-forward month by month; results are reported **week by week** (Thai weeks). Setups are
+  revised every 3-6 months.
+- **Code correctness before results (owner, 2026-10-18):** every building block of a setup has hand-worked unit
+  tests, planted bugs the tests must catch, and an independent re-derivation; no learning run before the code is
+  proven (short runs to test the code are fine). Research indicators are MetaTrader 5's own formulas
+  (`research/2026-10-18-moments/agents/precursors/foundation.py`).
 - **Setup work, one setup at a time (owner, 2026-10-13):** backtest a setup, then change its conditions (stop,
-  entry, timeframe, filters, exits) and backtest again until it reaches the goal (docs/SETUP_REVIEW.md, ≥ +0.15
-  R/trade net). A losing result means *change the conditions*, never *drop the setup and move on*. Don't propose
-  switching to another setup unless the owner asks; if the levers run out, say so and ask.
-  Backtest ladder (owner, 2026-10-14), until the owner changes it: **March 2026** (2026-03-01 .. 04-01, the
-  year's most volatile month) for every variant; one that passes then runs on **August 2026** (08-01 .. 09-01,
-  the quietest); only after both, the full year. Selection (owner, 2026-10-14): a variant whose first run is
-  negative is dropped; only the profitable ones (or, if none is, the least-losing one) are developed further.
+  entry, timeframe, filters, exits) and backtest again until it reaches the goal (≥ +0.15 R/trade net). A losing
+  result means *change the conditions*, never *drop the setup and move on*. Don't propose switching to another
+  setup unless the owner asks; if the levers run out, say so and ask.
   **System principle (owner, 2026-10-14): when the market phase does not suit a setup, that setup trades less,
   not never:** in an unsuitable phase (measured per setup, e.g. low H4 volatility for breakouts) it takes only
   its surest signals (stricter conditions), and the other setups carry the portfolio.

@@ -1,4 +1,4 @@
-"""Round 14: trade the chosen chart states (docs/OWN_SETUP.md) - the side that reached 5 USD first in >= 4 of 5
+"""Round 14: trade the chosen chart states (docs/OWN_SETUP_ROUNDS.md) - the side that reached 5 USD first in >= 4 of 5
 design half-years (here: the M15 side when H1 and M15 disagree on a pullback), TP 5 / SL 5 (price-scaled), entry at
 the M1 open after the M5 close, real costs, 60 minutes, one position at a time.
 

@@ -41,7 +41,7 @@ the wrap-up of TICKETS.md, except Wave 0.
 | 6 — Squad | L904, L905, L907, L908, L909 | Commander, budgets, lifecycle, squad backtest, Squad page; bots start as SHADOW |
 | 7 — Timing variants & models | L702, L704, L401, L402, L403, L404, L405, L406, L705, L706 | Need enough shadow outcomes from Waves 3–6 to evaluate fairly |
 
-**Reprioritized 2026-10-07 (docs/SETUP_REVIEW.md):** a one-year replay showed that the setups lose mainly on
+**Reprioritized 2026-10-07 (docs/archive/SETUP_REVIEW.md):** a one-year replay showed that the setups lose mainly on
 entry timing and stops inside the noise (55 % of stopped breakout trades reached their target later; a pullback
 entry with a wide stop moved −0.13 R to about 0 R). **L702 (with `PULLBACK_WIDE`) and L707 come first**, ahead of
 the waves above; the replay supplies enough history, so L702 no longer waits for Waves 3–6.
@@ -246,7 +246,7 @@ the first ticket that needs it, on top of this harness (H1 → L802, H2 → L501
 
 ### Phase L4 — Signal-quality model
 
-Note 2026-10-07 (docs/SETUP_REVIEW.md §4): single context rules chosen on one half-year (+0.1 to +0.2 R) fell to
+Note 2026-10-07 (docs/archive/SETUP_REVIEW.md §4): single context rules chosen on one half-year (+0.1 to +0.2 R) fell to
 about 0 R on the other half. The model needs the richer evidence features and purged walk-forward; simple
 filters are not a substitute.
 
@@ -656,7 +656,7 @@ study, shadow keeps recording every setup.
 
 The owner's questions (2026-10-09): what price does before it really runs (sweeps, false breaks, compression;
 by session, pre-New York, pre-news, illiquid mornings), and whether the inverted setups traded on DEMO hold up.
-Results: docs/SETUP_REVIEW.md §14.
+Results: docs/archive/SETUP_REVIEW.md §14.
 
 - [x] part 1: runs and their precursors on 8 symbols (M15, H1) against a shuffled-bar random-walk baseline (`research/2026-10-11-pre-run/pre_run.py`)
 - [x] `research hypotheses --inverted`: the inverted setup's trade (other side of the spread, swapped exits, R of its own risk, costs scaled to the smaller lot)
@@ -671,7 +671,7 @@ Results: docs/SETUP_REVIEW.md §14.
 - **Status:** TODO
 - **Depends on:** L811 (two-world backtests), L809 (market map), TAA-307 (confluence score)
 
-Plan: `docs/CONFLUENCE_DIRECTION.md`. The owner's AI reads S/R, key zones and chart patterns on M15/H1/H4
+Plan: `docs/archive/CONFLUENCE_DIRECTION.md`. The owner's AI reads S/R, key zones and chart patterns on M15/H1/H4
 together before choosing a side; the bot's setups trade one trigger. Path A builds that reading
 deterministically and backtests it; Path B (Phase 16) asks the AI the same question in shadow.
 

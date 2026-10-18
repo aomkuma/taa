@@ -1,4 +1,4 @@
-"""Round 9 (docs/OWN_SETUP.md): the entry needs every group to agree at the same minute - the H1 tide, price at a
+"""Round 9 (docs/OWN_SETUP_ROUNDS.md): the entry needs every group to agree at the same minute - the H1 tide, price at a
 support (a buy) / resistance (a sell), price action at that level, and two of three M5 indicators. Rules fixed in
 the doc, no fitting; tested on 2026-03-01 .. 2026-10-14, all sessions, with the losers in three kinds.
 

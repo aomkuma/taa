@@ -1,4 +1,4 @@
-"""Round 15 (docs/OWN_SETUP.md): the owner's M1 chart forms - box breaks (touches, slope: sideways-up / -down / flat)
+"""Round 15 (docs/OWN_SETUP_ROUNDS.md): the owner's M1 chart forms - box breaks (touches, slope: sideways-up / -down / flat)
 and 3-ATR runs that snap back - and what followed (which side reached 5 USD first within 60 minutes).
 
     data/venv-research/Scripts/python research/2026-10-18-moments/shadow/forms.py

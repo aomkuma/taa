@@ -1,4 +1,4 @@
-"""Setup OWN's moments dataset (docs/OWN_SETUP.md): every moment (and control half hour) in the window with its
+"""Setup OWN's moments dataset (docs/OWN_SETUP_ROUNDS.md): every moment (and control half hour) in the window with its
 relative features as of the moment, and the three playbooks' trades with the standard exits.
 
 Window 2026-04-14 .. 2026-10-14 (the latest six months, owner 2026-10-17), warm-up from 2026-01-02. Largest

@@ -1,5 +1,5 @@
 """The nearest H1 and M15 chart-read levels (the bot's ZigZag) above and below the close at every candidate minute
-of own_ml_long (round 9, docs/OWN_SETUP.md).
+of own_ml_long (round 9, docs/OWN_SETUP_ROUNDS.md).
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/levels_cr.py
 """

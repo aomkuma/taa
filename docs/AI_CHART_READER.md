@@ -33,7 +33,7 @@ This file is the plan for testing whether that works before anything trades. Not
 ## Where to point it first (the cheap, sharp question)
 
 F1's base confluence fires about 4 times a day and loses (-0.08 R) unless price sits at the 72-hour extreme
-(`docs/OWN_SETUP.md`, round 17). **If the AI can pick the winners among those ~4 a day, the "one trade a day" goal
+(`docs/OWN_SETUP_ROUNDS.md`, round 17). **If the AI can pick the winners among those ~4 a day, the "one trade a day" goal
 is met with an edge we already understand.** So the first test asks the AI about those moments (a few thousand),
 not every minute (100,000+).
 

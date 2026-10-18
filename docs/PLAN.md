@@ -1404,7 +1404,7 @@ AI failures never trip trading breakers; they only produce HOLD.
 | AI misuse or prompt injection (M2) | Numeric inputs only, no account data, schema-validated output, veto-only (rev. 7: theses are validated numbers and enums, executed only through the engine's own triggers and gates, §A35), nothing is ever executed from text |
 | Host compromise | Dedicated non-admin Windows user, no inbound ports, Defender, OS and terminal updates, 2FA on the FBS Personal Area, withdrawal restrictions |
 
-**Credential rotation** (`docs/SECURITY.md`):
+**Credential rotation** (operations: `docs/RUNBOOK_LIVE.md`, `docs/SECURITY_REVIEW.md`):
 
 | Credential | Rotation steps |
 |---|---|
@@ -2718,9 +2718,9 @@ them. A link changes labels and statistics only, never trading.
 ## A35. AI analyst and bot executor (rev. 7)
 
 **Why (2026-10-06/07, owner):** the bot executes signals but lacks the wider view an analyst gets from reading a
-chart; the owner wants the AI to judge whether a setup is ready. The setup review (docs/SETUP_REVIEW.md) showed
+chart; the owner wants the AI to judge whether a setup is ready. The setup review (docs/archive/SETUP_REVIEW.md) showed
 where judgement is missing: the entries are mostly mistimed and the stops sit inside the noise, while the
-direction is often right. Discussion and feasibility: docs/AI_ANALYST_DISCUSSION.md.
+direction is often right. Discussion and feasibility: docs/archive/AI_ANALYST_DISCUSSION.md.
 
 **Decision (owner, 2026-10-06):** the AI may **propose**: a thesis per symbol. The engine **decides and executes**
 only through its own deterministic triggers, the risk sizer, the mode gate and every check. Shadow measures

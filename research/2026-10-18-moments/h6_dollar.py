@@ -1,4 +1,4 @@
-"""H6 (docs/OWN_SETUP.md): the dollar leads gold. At every moment of both six-month windows, the dollar's first k
+"""H6 (docs/OWN_SETUP_ROUNDS.md): the dollar leads gold. At every moment of both six-month windows, the dollar's first k
 minutes (six USD majors, normalized) against gold's own first k minutes, and gold's next 30 / 60 minutes.
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/h6_dollar.py

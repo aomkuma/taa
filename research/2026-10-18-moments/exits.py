@@ -1,4 +1,4 @@
-"""Setup OWN's exits on the moments' entries (docs/OWN_SETUP.md "Exits"), with the stop measured from the data.
+"""Setup OWN's exits on the moments' entries (docs/OWN_SETUP_ROUNDS.md "Exits"), with the stop measured from the data.
 
 For every playbook entry of ``moments.py``: the scalp target max(5 USD, 0.5 U), time stop 60 minutes; in a
 clear picture (H1 and M15 swing structure both the trade's way) the target arms a stop that locks half the

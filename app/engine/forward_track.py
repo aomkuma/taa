@@ -7,10 +7,10 @@ backtest expects for the mean of that many trades (mean ± 1.645 × sd / √n, a
 90 % range). A forward mean below the band says the live behaviour differs from the backtest; inside it says
 only that the two do not disagree yet. Nothing here forecasts anything.
 
-The baselines are the backtests that made the setups pass (docs/SETUP_REVIEW.md §15.3, §16), with the trades'
-standard deviation measured from their trade lists (2026-10-14). A baseline holds from the day the owner put
-those parameters on the bot (``since``); a setup's earlier trades ran other parameters and are listed apart as
-"<setup> (before <label>)".
+The baselines are the backtests that made the setups pass (docs/archive/SETUP_REVIEW.md §15.3,
+§16), with the trades' standard deviation measured from their trade lists (2026-10-14). A baseline
+holds from the day the owner put those parameters on the bot (``since``); a setup's earlier trades
+ran other parameters and are listed apart as "<setup> (before <label>)".
 """
 
 from __future__ import annotations

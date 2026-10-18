@@ -1,4 +1,4 @@
-"""Round 6 (docs/OWN_SETUP.md): a weighted indicator score - MACD, RSI, Stochastic, Bollinger, EMA, ADX/DI, CCI,
+"""Round 6 (docs/OWN_SETUP_ROUNDS.md): a weighted indicator score - MACD, RSI, Stochastic, Bollinger, EMA, ADX/DI, CCI,
 ROC votes on M1 / M5 / M15 / H1, weights from an L2 logistic regression fitted on 2025-10-14 .. 2026-02-14, the tool
 and the cut chosen on 2026-02-14 .. 04-14, tested once on 2026-04-14 .. 10-14. Runs in data/venv-research:
 

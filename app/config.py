@@ -740,7 +740,7 @@ class EntryModesConfig(StrictModel):
     """Entry-mode shadow variants beside PLAN/MANAGED (PLAN_LEARNING §L19.3; TAA-L702). Measurement only.
 
     Distances are in risks of the signal's own stop (entry to the plan's SL), from the setup review's
-    evidence (docs/SETUP_REVIEW.md §8); every variant keeps the plan's TP price and the risk percent.
+    evidence (docs/archive/SETUP_REVIEW.md §8); every variant keeps the plan's TP price and the risk percent.
     """
 
     variants: list[Literal["PULLBACK", "WIDE_STOP", "PULLBACK_WIDE"]] = Field(

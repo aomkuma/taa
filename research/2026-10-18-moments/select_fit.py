@@ -1,5 +1,5 @@
 """Setup OWN on the fit months only (2026-04-14 .. 07-14): hypotheses H1-H4 and the playbook selector, each fit
-month predicted from the other two (docs/OWN_SETUP.md "The selector"). The judged months are not read.
+month predicted from the other two (docs/OWN_SETUP_ROUNDS.md "The selector"). The judged months are not read.
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/select_fit.py
 """

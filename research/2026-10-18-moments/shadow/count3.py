@@ -1,4 +1,4 @@
-"""Round 12 (docs/OWN_SETUP.md): "count three on M1, check again, then enter" on F1 CONF-72 and on the CPI / NFP
+"""Round 12 (docs/OWN_SETUP_ROUNDS.md): "count three on M1, check again, then enter" on F1 CONF-72 and on the CPI / NFP
 release (S2-C3). Design first, then the seen window 2026-03-01 .. 10-14, then the fresh days (2026-10-14 ..).
 
     data/venv-research/Scripts/python research/2026-10-18-moments/shadow/count3.py

@@ -1,4 +1,4 @@
-"""OWN v2 (docs/OWN_SETUP.md, written 2026-10-17): P1 break-and-hold at the Asia and New York moments, taken only
+"""OWN v2 (docs/OWN_SETUP_ROUNDS.md, written 2026-10-17): P1 break-and-hold at the Asia and New York moments, taken only
 when the entry lies 0.1-0.3 U beyond the moment's open the trade's way; stop 0.38 U, the exits of exits.py, one
 position at a time. Month by month for one window of ``moments.py``.
 

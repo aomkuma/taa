@@ -138,7 +138,7 @@ RULES: dict[str, dict] = {
     "K": dict(doc="tide + M5 with + test of the level, higher low, break of the 10-bar high; stop beyond the test",
               mask=k_mask, stop=k_stop, **B),
     "K2": dict(doc="K + no news + not a flat H1", mask=lambda D: k_mask(D) & no_news(D) & not_flat(D), stop=k_stop, **B),
-    # the lead's round 11 (docs/OWN_SETUP.md): B0's losers were dips bought in weak structure
+    # the lead's round 11 (docs/OWN_SETUP_ROUNDS.md): B0's losers were dips bought in weak structure
     "W2": dict(doc="B0 + H1 leg not against + not a flat H1 + pos240 >= 0.5",
                mask=lambda D: base_mask(D) & w_mask(D, 0.5), **B),
     "W3": dict(doc="B0 + H1 leg not against + not a flat H1 + pos240 >= 0.75",

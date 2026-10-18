@@ -1,4 +1,4 @@
-"""Round 14 (docs/OWN_SETUP.md): the chart-state statistics - triple screen (H1 tide, M15 tide, M5 position against
+"""Round 14 (docs/OWN_SETUP_ROUNDS.md): the chart-state statistics - triple screen (H1 tide, M15 tide, M5 position against
 the M15 EMA20) + M5 compression + session at every M5 close, and what followed (a 5 USD run within 30 min; which side
 reached 5 first within 60 min; the move against first). Then the states that pass the selection, traded.
 

@@ -1,6 +1,6 @@
 # Inverted setups — why the bot trades the classic setups the other way
 
-> **Removed from the code on 2026-10-14 (owner).** The inverted copies (`<name>_inverted`) no longer exist; a counter-trend trigger is faded inside its setup instead (`fade_counter_trend`, docs/SETUP_REVIEW.md §16). This file is kept as the history of the experiment.
+> **Removed from the code on 2026-10-14 (owner).** The inverted copies (`<name>_inverted`) no longer exist; a counter-trend trigger is faded inside its setup instead (`fade_counter_trend`, docs/archive/SETUP_REVIEW.md §16). This file is kept as the history of the experiment.
 
 Status: **switched off 2026-10-12** (owner; a year of two-world backtests, SETUP_REVIEW §15: the inverted
 harmonic lost on every symbol). Traded on DEMO 2026-10-09 .. 10-12. Read this before changing anything named
@@ -15,7 +15,7 @@ repository was built that way (docs/STRATEGIES.md).
 The inverted setups take exactly those signals and trade the **opposite** side. That contradicts the textbook on
 purpose. The reason is measurement, not theory:
 
-- One year of replay (2025-10-15 .. 2026-10-05, net of costs, docs/SETUP_REVIEW.md §3-§11) showed every setup
+- One year of replay (2025-10-15 .. 2026-10-05, net of costs, docs/archive/SETUP_REVIEW.md §3-§11) showed every setup
   below the owner's target (≥ +0.15 R/trade): `setup_breakout` −0.15 R (3,750 signals, M15), `setup_pattern_breakout`
   −0.23 R, `setup_fib_pullback` −0.16 R, and the breakout direction did **worse than a random direction**.
 - On the eight traded symbols, a break of an S/R zone closed back inside within 12 bars **66-69 %** of the time
@@ -69,7 +69,7 @@ tests and every other deployment are unchanged).
 ## 4. What we expect (honest numbers)
 
 Re-simulated from the same year of replay, exits at the original prices, both spreads and commission included,
-in R of the **original** risk (`docs/SETUP_REVIEW.md` §13 when written):
+in R of the **original** risk (`docs/archive/SETUP_REVIEW.md` §13 when written):
 
 | Setup | Original | Inverted |
 |---|---|---|
@@ -135,4 +135,4 @@ in R of the **original** risk (`docs/SETUP_REVIEW.md` §13 when written):
 | Config | `config.yaml` → `risk.inverted`, `strategies.items` (`*_inverted`) |
 | Not advised | `BaseStrategy.advised`, `app/advisory/requirements.py` (`pattern_setups`) |
 | Tests | `tests/unit/test_strategy_inverted.py`, `tests/unit/test_decision_engine.py::TestInvertedLimits` |
-| Research | `docs/SETUP_REVIEW.md` (§3-§13), `app/learning/research.py`, `data/research/` |
+| Research | `docs/archive/SETUP_REVIEW.md` (§3-§13), `app/learning/research.py`, `data/research/` |

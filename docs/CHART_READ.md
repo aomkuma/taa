@@ -2,9 +2,9 @@
 
 Status: **CR-1 done (2026-10-14): `app/indicators/chart_read.py`, `context_map.chart_read`; the port matches
 the terminal's ZigZag on 15 of 15 exports** (§4.8). CR-2 in work; the rest is a plan (owner, 2026-10-14). Ticket: TAA-L813 in
-`docs/TICKETS_LEARNING.md`. Related: `docs/CONFLUENCE_DIRECTION.md` (TAA-L812, which this read feeds),
+`docs/TICKETS_LEARNING.md`. Related: `docs/archive/CONFLUENCE_DIRECTION.md` (TAA-L812, which this read feeds),
 `docs/STRATEGIES.md` ("A signal alone is not enough"), `docs/PLAN_LEARNING.md` §L20.9 (the market map),
-`docs/SETUP_REVIEW.md` §15-§16. No profitability claims: this is a plan to measure, not a result.
+`docs/archive/SETUP_REVIEW.md` §15-§16. No profitability claims: this is a plan to measure, not a result.
 
 ## 1. The owner's question (2026-10-14, in Thai, summarized)
 

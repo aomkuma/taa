@@ -1,5 +1,5 @@
 """ZigZag structure features (the bot's chart read) on M5 / M15 / H1 at every candidate minute of own_ml_long, and
-the 52 indicator votes of round 6, for round 8's all-in model (docs/OWN_SETUP.md).
+the 52 indicator votes of round 6, for round 8's all-in model (docs/OWN_SETUP_ROUNDS.md).
 
     PYTHONDONTWRITEBYTECODE=1 .venv/Scripts/python research/2026-10-18-moments/zz_features.py
 """

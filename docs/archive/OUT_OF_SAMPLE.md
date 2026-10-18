@@ -26,7 +26,7 @@ the tables by hand; notes come from `research/2026-10-17-oos/notes.md`).
   `download_year_c.py`): H1 of all 29 symbols and M15 of the 8 from 2023-08, H4 from 2023-04, D1 from 2021-09,
   gold M30 from 2023-08 and M1 from 2023-09. Every month complete; median spreads: gold 20 points (2025-26: 23),
   EURUSD 8-9 (8).
-- Judged by R per trade (net mixes lot sizes). Goal ≥ +0.15 R/trade per setup (docs/SETUP_REVIEW.md).
+- Judged by R per trade (net mixes lot sizes). Goal ≥ +0.15 R/trade per setup (docs/archive/SETUP_REVIEW.md).
 
 ## Summary
 

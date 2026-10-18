@@ -1,8 +1,8 @@
 # Confluence direction — reading the whole chart before choosing a side
 
 Status: **plan, nothing built yet** (owner, 2026-10-11). Ticket: TAA-L812 in `docs/TICKETS_LEARNING.md`.
-Related: `docs/AI_ANALYST_DISCUSSION.md` (Phase 16, the AI analyst), `docs/INVERTED_SETUPS.md`,
-`docs/SETUP_REVIEW.md` §14-§15, `docs/CHART_READ.md` (TAA-L813: the deterministic chart read this path
+Related: `docs/archive/AI_ANALYST_DISCUSSION.md` (Phase 16, the AI analyst), `docs/archive/INVERTED_SETUPS.md`,
+`docs/archive/SETUP_REVIEW.md` §14-§15, `docs/CHART_READ.md` (TAA-L813: the deterministic chart read this path
 builds on). No profitability claims: this is a plan to measure, not a result.
 
 ## 1. The owner's observation (2026-10-11, in Thai, summarized)
@@ -23,7 +23,7 @@ builds on). No profitability claims: this is a plan to measure, not a result.
 | Confluence score (noisy-OR per family, conflicts penalized) | `app/evidence/confluence.py` (TAA-307) | used only as the **setup strength** of a signal a setup already raised, in that setup's direction |
 | H4/D1 market map (trend vs range, demand/supply zones, room to the opposing zone) | `app/indicators/market_map.py` (TAA-L809) | recorded as `ctx:h4_*` / `ctx:d1_*` features; no strategy reads it |
 | Two-world backtests (original and inverted, separate accounts) | `app.cli backtest`, `research/2026-10-11-pre-run/two_worlds.py` | the yardstick for every idea here |
-| AI analyst (theses, shadow, arm) | `docs/AI_ANALYST_DISCUSSION.md`, Phase 16 | designed, not built; AI is veto/advisory only today |
+| AI analyst (theses, shadow, arm) | `docs/archive/AI_ANALYST_DISCUSSION.md`, Phase 16 | designed, not built; AI is veto/advisory only today |
 
 The missing piece is a **direction decided by the whole picture**: today the trigger decides the side, and the
 rest of the chart only adds points to it.

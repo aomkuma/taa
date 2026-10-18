@@ -1,9 +1,10 @@
 # Session handoff
 
-Last updated: 2026-10-18 17:30 Thai (Setup OWN: F1 CONF-72 v2 and S2 trade on DEMO since 2026-10-18; commit
-627aa98, not pushed). This file holds **state only**: rules and conventions live in `CLAUDE.md` and
-`docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`, progress in `docs/TICKETS.md` /
-`docs/TICKETS_LEARNING.md`, setup results in `docs/SETUP_REVIEW.md`.
+Last updated: 2026-10-18 22:45 Thai (Setup OWN: F1 CONF-72 v2 and S2 trade on DEMO since 2026-10-18; the LV3
+research's building blocks tested; docs cleaned up; not pushed). This file holds **state only**: rules and
+conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`,
+progress in `docs/TICKETS.md` / `docs/TICKETS_LEARNING.md`, Setup OWN in `docs/OWN_SETUP.md` (its rounds in
+`docs/OWN_SETUP_ROUNDS.md`), the stopped setups' results in `docs/archive/`.
 
 ---
 
@@ -20,17 +21,30 @@ State (2026-10-18): Setup OWN F1 CONF-72 (lane own) and S2 the CPI/NFP straddle 
 stack (aggressive preset); every earlier setup is stopped. LIVE stays off until Phase 14 and my own go-ahead.
 main is not pushed (I push myself).
 
-Next: watch DEMO against the backtest (app.cli demo-track) for about two weeks; more trades a day at >= +0.15 R
-(W11-b1, the round-number lane, misses on the trades it adds: +0.097 R). Backtests are judged from 2026-03-01;
-design before it. Ask me when the meaning is unclear.
+Next: the LV3 walk-forward on the latest 12 months (research/2026-10-18-moments/agents/precursors/wf.py),
+reported week by week, every loser traced to the picture the bot saw; DEMO against the backtest (app.cli
+demo-track). The exam is the latest six months from today (2026-04-18 ..); learning on the latest 12 months
+first. Code is proven (tests, planted bugs, an independent check) before any learning run. Ask me when the
+meaning is unclear.
 ````
 
 ---
 
 ## Current state (2026-10-18)
 
+- **Research now: LV3** (the owner's reading: with every larger timeframe's trend, wait for the bounce into an
+  earlier level, enter after 3-5 M1 legs; `docs/OWN_SETUP.md`, `research/2026-10-18-moments/agents/precursors/
+  notes.md`). 2026-10-18 evening: the research's indicators were not MT5's (MACD signal, Stochastic, ADX) - now
+  `foundation.py`, MT5's own formulas; every building block has hand-worked tests with planted bugs; four more
+  bugs found and fixed (chained levels in the library, RSI divergence bars, the evidence record's pattern id, the
+  stale library); the library rebuilt on 2025-10-18 ..; the walk-forward run is next. **The bot's own
+  `app/indicators` are textbook formulas (Wilder ATR / ADX, an EMA-signal MACD, Stochastic as the mean of ratios),
+  not MT5's: align them before porting LV3.**
+- **Docs cleaned up (owner, 2026-10-18):** stopped setups' docs moved to `docs/archive/` (SETUP_REVIEW,
+  OUT_OF_SAMPLE, INVERTED_SETUPS, CONFLUENCE_DIRECTION, AI_ANALYST_DISCUSSION); `docs/OWN_SETUP.md` is the current
+  state, the rounds are in `docs/OWN_SETUP_ROUNDS.md`; the STRATEGIES table lists stopped setups separately.
 - **The owner's three (2026-10-18):** F1 CONF-72, S2 the CPI / NFP straddle, RUN-A; other news trading last.
-  Rounds 11-17 in `docs/OWN_SETUP.md`.
+  Rounds 11-17 in `docs/OWN_SETUP_ROUNDS.md`.
 - **In the bot, on DEMO since 2026-10-18 17:08 Thai** (owner: "เปิด DEMO ด้วย F1+S2"; `config.yaml` lanes `own` and
   `news`, both also in `high_risk.setups`; the applied profile is AGGRESSIVE 7.5 % from the cache; demo equity
   1,066 USD). The owner asked for LIVE too: refused, Phase 14 is 3/4 and LIVE needs the owner's own `.env`:
@@ -53,14 +67,14 @@ design before it. Ask me when the meaning is unclear.
 - **The owner's goals and principles:** `docs/OWNER_GOALS.md` (several were never written down before: session
   opens, ATR low, Bollinger squeeze, quick profit, the review cadence, news). Setup OWN: `docs/OWN_SETUP.md`,
   `docs/OWNER_TRADING.md` "Setup OWN".
-- **Setup OWN, rounds 1-10 (2026-10-17, harness):** nothing passes yet; the test window is **2026-03-01 onward**
-  (owner; design only before it). Gold's minute-scale price is close to a random walk; the one causal lead is
+- **Setup OWN, rounds 1-10 (2026-10-17, harness):** nothing passes yet; the test window was 2026-03-01 onward then
+  (superseded 2026-10-18: the latest six months). Gold's minute-scale price is close to a random walk; the one causal lead is
   the news (FOMC / PCE first minute continues, CPI reverses). A research team of four background agents
   (news, trend, reversion, auditor) works from `research/2026-10-18-moments/agents/BRIEF.md`, each in its own
-  folder there; their results go into `docs/OWN_SETUP.md`. Gold ticks 2025-10 .. 2026-10 in `data/ticks/XAUUSD`.
+  folder there; their results go into `docs/OWN_SETUP_ROUNDS.md`. Gold ticks 2025-10 .. 2026-10 in `data/ticks/XAUUSD`.
 - **Setup OWN round 1 (2026-10-17, latest six months, harness):** no playbook pays at the moments after costs;
   the context selector, OWN v1 (two pieces mined from the fit months: judged -0.155 R over 141 trades) and H5
-  (the last 20 days pick the playbook: -0.013 R over 266) fail. Details and next levers: `docs/OWN_SETUP.md`
+  (the last 20 days pick the playbook: -0.013 R over 266) fail. Details and next levers: `docs/OWN_SETUP_ROUNDS.md`
   "Results". The owner's exits: target at least 5 USD (gold 1 pip = 1 USD), scalp first, hold 2-3 hours when
   the picture is clear; largest timeframe H1. Nothing is coded in the engine yet.
 - **Every earlier setup stopped** (owner, 2026-10-17): V1, F1 and lane `s1` are `enabled: false` in
@@ -76,7 +90,7 @@ design before it. Ask me when the meaning is unclear.
 - **Why the change:** S1 (M1 fade) and TS (M15 structure break) pay only in gold's 2024-26 rally (five years of
   gold: SETUP_REVIEW §23-23.3; docs/OWNER_TRADING.md "Setup TS"). The owner: a setup fitting only some periods is
   normal; the system must see the present and choose.
-- **Work stopped, results kept:** the out-of-sample runs (`docs/OUT_OF_SAMPLE.md`: year A 12/36; year C not run),
+- **Work stopped, results kept:** the out-of-sample runs (`docs/archive/OUT_OF_SAMPLE.md`: year A 12/36; year C not run),
   the S1 spread-floor engine checks (`data/backtests/s1fix/`, four partial runs, no result), the TS session.
   The harness results for S1 over five years are the record (SETUP_REVIEW §23).
 - **Unmerged branches** (worktrees under `.claude/worktrees/`): `s1-cost-floor` (`min_atr_spreads`, a fade's

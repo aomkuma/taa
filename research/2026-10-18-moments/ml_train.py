@@ -1,4 +1,4 @@
-"""Round 3 (docs/OWN_SETUP.md): LightGBM learns "+5 USD before the stop" from ml_dataset.py's minutes.
+"""Round 3 (docs/OWN_SETUP_ROUNDS.md): LightGBM learns "+5 USD before the stop" from ml_dataset.py's minutes.
 
 A. Fixed: fit on 2025-10-14 .. 2026-02-14, choose the stop and the score cut on 2026-02-14 .. 04-14 (validation),
    test once on 2026-04-14 .. 10-14, month by month.
