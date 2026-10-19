@@ -1,0 +1,19 @@
+the pullback: price under the M5 EMA 50 turned to the D1 way <= -0.439 ATR (L1's 40th percentile inside the phase)
+the D1 way first minus against (tilt: moments; first: each day's first moment); win = the D1 way's share of the moments where one side came first; resolved = the share where one did:
+   run                 group  n_L1  days_L1  tilt_L1  first_L1  win_L1  resolved_L1  n_L2  days_L2  tilt_L2  first_L2  win_L2  resolved_L2
+20U_1d aligned + M5 pullback  2473       67   -0.004    -0.045   0.498        0.957  3616      105    0.075     0.171   0.538        0.993
+20U_1d               aligned  6182       71    0.041    -0.014   0.522        0.947 11595      119    0.165     0.328   0.583        0.988
+20U_1d  running, not aligned 10447      112   -0.032     0.000   0.483        0.943 13412      143    0.123     0.133   0.562        0.992
+20U_1d           all moments 50114      364   -0.025     0.014   0.486        0.918 55517      402    0.027     0.072   0.514        0.980
+30U_1d aligned + M5 pullback  2473       67   -0.125    -0.090   0.424        0.823  3616      105    0.058     0.152   0.533        0.897
+30U_1d               aligned  6182       71   -0.039     0.028   0.476        0.823 11595      119    0.151     0.328   0.583        0.905
+30U_1d  running, not aligned 10447      112    0.012     0.000   0.508        0.735 13412      143    0.151     0.238   0.582        0.913
+30U_1d           all moments 50114      364   -0.024    -0.005   0.483        0.696 55517      402    0.023     0.087   0.513        0.868
+50U_1d aligned + M5 pullback  2473       67   -0.058     0.000   0.430        0.410  3616      105    0.045     0.133   0.544        0.507
+50U_1d               aligned  6182       71   -0.041    -0.028   0.452        0.431 11595      119    0.110     0.218   0.598        0.562
+50U_1d  running, not aligned 10447      112    0.005    -0.018   0.508        0.333 13412      143    0.082     0.119   0.563        0.656
+50U_1d           all moments 50114      364    0.000    -0.014   0.500        0.326 55517      402    0.024     0.067   0.522        0.551
+50U_3d aligned + M5 pullback  2473       67   -0.080    -0.104   0.453        0.863  3616      105    0.167     0.305   0.596        0.874
+50U_3d               aligned  6182       71   -0.077    -0.085   0.456        0.881 11595      119    0.209     0.395   0.619        0.881
+50U_3d  running, not aligned 10447      112    0.101     0.107   0.567        0.761 13412      143    0.211     0.252   0.611        0.947
+50U_3d           all moments 50114      364   -0.012     0.008   0.492        0.783 55517      402    0.058     0.104   0.532        0.897

@@ -1,0 +1,31 @@
+aligned phase, 10 U, L1: 6182 moments, 71 days, tilt +0.038 (first moments +0.127)
+aligned phase, 10 U, L2: 11595 moments, 119 days, tilt +0.071 (first moments +0.109)
+aligned phase, 5 U, L1: 6182 moments, 71 days, tilt +0.020 (first moments +0.239)
+aligned phase, 5 U, L2: 11595 moments, 119 days, tilt +0.040 (first moments -0.034)
+
+X = 10 U: the entry readings that move the same way in both halves by moments and first moments (8 of 42), lowest -> highest quintile (turned to the D1 way):
+     reading  m_lo_L1  m_hi_L1  f_lo_L1  f_hi_L1  days_lo_L1  m_lo_L2  m_hi_L2  f_lo_L2  f_hi_L2  days_lo_L2  days_hi_L2
+M15_macd_sig    0.113   -0.010    0.170   -0.121          53    0.197    0.091    0.216    0.117          88          94
+    M5_ema50    0.061    0.015    0.180   -0.018          61    0.132    0.053    0.204    0.020          93          98
+    M5_ema20    0.019   -0.007    0.111    0.065          63    0.140    0.052    0.154    0.124         104         105
+      M5_leg    0.080    0.022    0.250    0.067          60    0.066    0.040   -0.028   -0.029         106         105
+   M1_struct    0.057    0.010    0.123    0.000          65    0.093    0.068    0.150    0.114         113         114
+      M1_brk    0.049    0.036    0.270    0.155          63    0.080    0.069    0.192    0.076         104         119
+     vol_rel   -0.023    0.006    0.016    0.088          61    0.082    0.093   -0.051    0.211          98          95
+      M1_pos   -0.012   -0.019    0.141    0.000          64    0.086    0.029    0.183    0.027         104         110
+
+X = 5 U: the entry readings that move the same way in both halves by moments and first moments (13 of 42), lowest -> highest quintile (turned to the D1 way):
+     reading  m_lo_L1  m_hi_L1  f_lo_L1  f_hi_L1  days_lo_L1  m_lo_L2  m_hi_L2  f_lo_L2  f_hi_L2  days_lo_L2  days_hi_L2
+     M5_macd    0.074   -0.024    0.105    0.038          57    0.096    0.041    0.172   -0.108          87          93
+    M5_ema50    0.073   -0.017    0.197   -0.055          61    0.070    0.017    0.043   -0.143          93          98
+     M15_leg   -0.002   -0.052    0.229    0.143          48    0.070    0.002    0.086   -0.082          93          85
+M15_macd_sig    0.087   -0.062    0.208   -0.138          53    0.133    0.091    0.102    0.053          88          94
+      M5_rsi    0.057   -0.040    0.230    0.050          61    0.077    0.035    0.108    0.000         102         101
+       usd60   -0.017    0.087    0.121    0.246          66   -0.008    0.018   -0.113    0.019         106         107
+     M15_rsi    0.087   -0.044    0.143   -0.042          56    0.061    0.039    0.088   -0.111          80          81
+     M5_retr    0.042    0.022    0.173    0.167          52    0.091   -0.022    0.067   -0.033          90          92
+  M5_atr_rel   -0.041   -0.022    0.186    0.396          59   -0.026    0.122   -0.113    0.184         106          98
+     M5_seg2    0.059   -0.018    0.231    0.078          65    0.055    0.041    0.160    0.083         106         109
+    M15_macd    0.044   -0.041    0.109   -0.026          46    0.053    0.039   -0.046   -0.099          65          71
+   M15_ema20    0.078   -0.046    0.298   -0.080          57    0.078    0.066    0.100   -0.011          90          90
+   M5_struct    0.013    0.008    0.211   -0.140          57    0.058    0.033    0.060    0.000         100          98

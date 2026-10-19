@@ -1,0 +1,10 @@
+10U_15m L1: 998 trades (3.27 a weekday), win 0.024, R -0.084, USD -501.9 at 0.01 lot, lowest running total -506.6, max DD 512.4, worst -6.98, longest losing streak 10, exits {'time': 900, 'stop': 74, 'win': 24}, buys 998 / sells 0
+10U_15m L2: 1550 trades (4.59 a weekday), win 0.095, R -0.027, USD -337.4 at 0.01 lot, lowest running total -439.2, max DD 445.4, worst -13.63, longest losing streak 12, exits {'time': 1205, 'stop': 197, 'win': 148}, buys 1462 / sells 88
+10U_30m L1: 629 trades (2.06 a weekday), win 0.065, R -0.084, USD -321.3 at 0.01 lot, lowest running total -327.3, max DD 332.1, worst -6.98, longest losing streak 9, exits {'time': 494, 'stop': 94, 'win': 41}, buys 629 / sells 0
+10U_30m L2: 1036 trades (3.07 a weekday), win 0.199, R -0.004, USD +10.1 at 0.01 lot, lowest running total -174.3, max DD 179.5, worst -13.65, longest losing streak 8, exits {'time': 601, 'stop': 229, 'win': 206}, buys 962 / sells 74
+10U_60m L1: 420 trades (1.38 a weekday), win 0.152, R -0.089, USD -227.8 at 0.01 lot, lowest running total -233.6, max DD 240.3, worst -6.98, longest losing streak 10, exits {'time': 245, 'stop': 111, 'win': 64}, buys 420 / sells 0
+10U_60m L2: 781 trades (2.31 a weekday), win 0.327, R +0.028, USD +253.7 at 0.01 lot, lowest running total -64.8, max DD 147.3, worst -13.65, longest losing streak 7, exits {'time': 277, 'win': 255, 'stop': 249}, buys 712 / sells 69
+10U_120m L1: 322 trades (1.06 a weekday), win 0.289, R -0.107, USD -211.5 at 0.01 lot, lowest running total -217.7, max DD 225.3, worst -6.98, longest losing streak 9, exits {'stop': 126, 'time': 103, 'win': 93}, buys 322 / sells 0
+10U_120m L2: 679 trades (2.01 a weekday), win 0.446, R +0.048, USD +322.1 at 0.01 lot, lowest running total -22.3, max DD 167.3, worst -13.65, longest losing streak 7, exits {'win': 303, 'stop': 275, 'time': 101}, buys 614 / sells 65
+
+no size is positive in both learning parts: the exam is not read

@@ -1620,3 +1620,58 @@ days counted by each day's first moment; `out_phase_tables.txt`, `phase_tables.c
   The alignment of D1, H4 and H1 is the reason price runs the D1 way more often (two to seven points); it is not yet
   enough. Next: inside the aligned phase, the entry - where on M15 / M5 the run its way starts (the pullback's depth,
   the turn, the hour) - read the same way, by moments and first moments, both halves.
+
+## The entry inside the aligned phase - written before it is computed (2026-10-19 07:22 Thai; owner: "do it")
+The aligned phase (learning only so far): D1 running (20-day efficiency >= 0.264) + the H1 swing structure with the
+D1 way + H4 +DI / -DI with it. Inside it, every M15 / M5 / M1 reading turned to the D1 way - the pullback (the place in
+the M15 / M5 range, the distance to the M15 / M5 EMA 20 / 50, RSI, Stochastic), the turn (the M5 / M1 last leg's way,
+the M5 / M15 structure and break), the move of the last 15 / 60 minutes, the hour, the volume - by quintile (L1's edges
+inside the phase), the D1 way's X first minus the other's, by moments and by each day's first moment, L1 and L2,
+X = 10 and 5 U (`entry_tables.py`). An entry condition counts when it moves the same way in both halves by moments
+and by first moments, >= 30 days a bin. The best one or two are then put together with the phase as one rule, run as
+trades with the costs (the stop and the target X, model_trades' trade, one position, the learning parts first), and
+the exam is read once for that frozen rule, week by week.
+**The entry readings (07:23 Thai; `entry_tables.py`, tests `test_entry_tables.py` - the aligned flag and the turning by
+hand, planted bugs 3 of 5, the other two equivalent: an unknown structure (9) times the way never equals 1, and a
+missing D1 way is already out through the H1 condition; `out_entry_tables.txt`, `entry_tables.csv`).** Inside the
+aligned phase, the D1 way comes first more often after a pullback against it on M5 / M15, in both halves, by moments
+and by first moments: M15 MACD under its signal (turned) +0.113 / +0.197 at the lowest quintile against -0.010 /
++0.091 at the highest (10 U); price under the M5 EMA 50 +0.061 / +0.132 against +0.015 / +0.053; M5 / M15 RSI low,
+M5 EMA 20 alike. Buy the M5 / M15 dip when D1, H4 and H1 point up (the mirror down).
+
+## Bigger runs - written before it is computed (07:24 Thai; owner: "10 USD is very little - it runs that in 15 minutes; find a way")
+The D1 / H4 / H1 alignment tells the way of a run of hours to days, not of 15 minutes. The same moments, the outcome
+X up before X down (and the mirror) for X = 20, 30, 50 U within one day (1,440 M1 bars) and X = 50 U within three
+days (`runpat_check.passages`, checked on 3,000 trades). Read: the aligned phase, the aligned phase after a pullback
+(price under the M5 EMA 50 turned, L1's lowest two quintiles inside the phase), the rest of the running phase, and all
+moments - the D1 way first minus against, by moments and by first moments, L1 and L2. Then as trades with the costs
+(the stop and the target X), one position, the learning parts; the exam once for the frozen rule, week by week.
+**Bigger runs, the result (07:25 Thai; `big_runs.py`, its passages re-checked on 800 one-day trades: 0 differences;
+`out_big_runs.txt`, `big_runs.csv`) - kept as information only:** 20 / 30 / 50 U within a day and 50 U within three
+days in the aligned phase: the D1 way's share 0.42-0.52 in L1 and 0.53-0.62 in L2 - L2 is gold's 2025 rise, L1 does not
+follow; not steady.
+**The owner, 07:24 Thai: "No - I mean a 10-USD run is very little, M15 does it easily"; "hold short, in fast, out
+fast."** The owner's way: keep the 10-USD target, enter on M15, hold briefly.
+
+## In fast, out fast: 10 U, a short hold - written before it is computed (07:25 Thai; `big_trades.py` with the owner's sizes)
+The aligned phase after an M5 pullback (`big_trades.candidates`, tested by hand), a trade the D1 way at the next M1
+open, the stop and the target 10 U, out at the last close after 15 / 30 / 60 / 120 minutes, the auditor's costs, one
+position at a time. The hold: the highest min(R L1, R L2) of those positive in both learning parts; none -> the exam
+is not read; else the exam once for it, week by week.
+**The result (07:25 Thai; `out_fast_trades_learn.txt`):** 10 U, hold 15 / 30 / 60 / 120 minutes: L1 R -0.084 / -0.084 /
+-0.089 / -0.107 (1.1-3.3 trades a weekday, all buys - every running D1 phase of 2023-24 rose), L2 -0.027 / -0.004 /
++0.028 / +0.048 (2.0-4.6 a weekday). No hold is positive in both parts: the exam is not read. With 15 minutes, 90 %
+(L1) / 78 % (L2) of the trades end on time, short of both the target and the stop.
+**How often does 10 USD come within minutes? (07:27 Thai; every library moment, either way first, from the next M1
+open):**
+
+| part (median price) | 10 USD within 15 / 30 / 60 / 120 minutes | 10 U scaled by price |
+|---|---|---|
+| L1 2023-11 .. 2024-12 (2,345) | 0.01 / 0.03 / 0.08 / 0.18 | 0.05 / 0.13 / 0.26 / 0.46 |
+| L2 2025-01 .. 2026-04 (3,413) | 0.15 / 0.27 / 0.42 / 0.60 | 0.16 / 0.29 / 0.47 / 0.69 |
+| the exam 2026-04 .. 10 (4,335) | 0.19 / 0.37 / 0.62 / 0.85 | 0.16 / 0.33 / 0.58 / 0.82 |
+
+From a moment taken by the clock, 10 USD in 15 minutes happens about one time in five today. Gold does run 10 USD in
+15 minutes easily - from the right moments: the work is to tell those moments (the burst about to start) from the
+rest. Two separate questions: WHEN a 10-USD move is about to start (the volatility, the participation, the clock of
+the big orders - the kind of thing that can be read ahead) and WHICH WAY (the D1 / H4 / H1 alignment, 2-7 points).
