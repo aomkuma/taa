@@ -2216,3 +2216,18 @@ Sent to the developer as checkpoint P2, with its rules to be written before comp
 - the costs: ticks + 0.07, plus 0.5 / 1 / 2 USD at the news;
 - the report: per part, by family / TF / level kind / M5 agreement / crash nights, with the 95 % range of R;
 - the losers by reason, one drawn each.
+**13:24 Thai:**
+- **The pattern look-ahead check re-run:** 2343 of 2343 equal, with power, PASSED.
+- **The developer stopped mid-P2 on an API rate limit**, after it had written the P2 rules in `../dev/DEV_LOG.md`.
+- **The rules, read and accepted as written:**
+  - every catch, one position at a time, the smallest risk first at one moment, no daily cap;
+  - A at the breakout;
+  - B: a pullback of at least 1 x the entry TF's ATR from the post-breakout high, then a close above that frozen high,
+    within 30 bars, with no trade if the pattern's extreme is reached first; stop B1 under the pullback low, B2 the
+    pattern's own;
+  - the exits on the entry TF: the stop on the ticks, the next level when more than 1 risk away, a close past the last
+    confirmed ZigZag swing, 60 bars, before a tick gap of more than 30 minutes;
+  - the costs: ticks + 0.07, plus 0.5 / 1 / 2 at the news;
+  - judged by the smaller R of P1 / P2.
+- **One fix asked:** its header time was ahead of the clock.
+- **The owner:** "let the subagent carry on" - it was resumed.
