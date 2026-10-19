@@ -2285,7 +2285,7 @@ Published with the 9 losers: https://claude.ai/artifact/LLCw1sB92SgZNxVWVPYjhQ.
 
 It also adds a hand test for the M5 time limit.
 
-## Today's market, looked at on the owner's request (2026-10-19 22:10 Thai; owner: "gold tried to test 4200, could not, and has fallen"; "open MT5 and load the data")
+## Today's market, looked at on the owner's request (2026-10-19 22:05 Thai; owner: "gold tried to test 4200, could not, and has fallen"; "open MT5 and load the data")
 - **The data:** read-only from the MT5 terminal (the FBS demo login, no orders), with the same terminal checked by
   `app.cli doctor` (0 failures).
 - **An open item found:** `scripts/download_history.py` (rates_range) stored nothing after Friday 2026-10-17 03:54 Thai
