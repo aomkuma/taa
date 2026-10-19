@@ -2433,3 +2433,29 @@ the consolidation zone, with the SL above 4160." What it teaches:
 **Candidate rule to measure (the developer, after P5):** "all TFs up to H1 in LH / LL (or HH / HL) + a base under
 the falling highs (or over the rising lows) at a level, in the owner's windows -> enter inside the base; the stop past
 the structure that would have to break (the base's top / the last H1 lower high side); the target the next zone".
+
+## Setup OWN V3 - the owner's playbook, handed to a second developer (2026-10-19 23:05 Thai; owner: "from now on, do whatever it takes so that everything learned makes our setup profitable, plus what we learned from reading the chart today")
+**The owner on trade 4:** "the target is 23.6, the SL 4180" - the first stop about 3 USD over the failed retest's high
+4177.06 (about 11 USD of risk from 4169), the target the next Fibonacci zone. The details are in
+`docs/OWNER_TRADING.md`.
+
+**Three agents work in parallel; the measurer checks each:**
+- **The first developer** (`../dev/`): P3 -> P4 (B2 only in the owner's windows) -> P5 items 1-4 (the owner's pattern
+  set on trade-size swings, importing the second developer's swing module).
+- **The second developer** (`../dev2/`, brief `../DEV2_PROMPT.md`) builds the owner's playbook as testable rules:
+  - V3-1: trade-size swings; the structure per TF up to H1; the range box, the trendline, the Fibonacci levels; a shape
+    check on 2026-10-19;
+  - V3-2: the four entries in the owner's windows (break and retest; the aligned consolidation; the fake break at a
+    range edge; the fake first leg at an open), with the stops past the structure and the owner's trailing / next-zone
+    exits;
+  - V3-3: scenario planning;
+  - V3-4: one frozen rule for the single exam read.
+- **The auditor** (`../audit2/`, brief `../AUDIT_PROMPT.md`): the nine shared building blocks, fixes with
+  failing-then-passing tests.
+
+**The evidence the work starts from** (all measured):
+- entries cause about 90 % of the losses;
+- the owner's Asia / London windows +0.087 / +0.161 R under B2, the NY open + 2 h negative;
+- at least 5 legs of 10+ USD on every learning day;
+- the formations live on trade-size swings;
+- turns at a level overshoot by under about 7 USD in 90 %.

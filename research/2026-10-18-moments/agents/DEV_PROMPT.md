@@ -246,6 +246,14 @@ The owner's Thai-clock hour is the one that pays.
 4. **If any rule reaches >= +0.15 R in both parts with trades enough to judge,** freeze it (the exact
    specification) and give the exam command. Do not run it: the measurer reads the exam once.
 
+**The split with the second developer (2026-10-19 23:05 Thai):**
+- A second developer works on the owner's playbook in `agents/dev2/` (`agents/DEV2_PROMPT.md`).
+- Its V3-1 builds the **trade-size swings and the structure per TF**. In P5, import its swing module read-only instead
+  of building your own.
+- Its V3-3 takes the **scenario planning** (P5 item 5).
+- Yours in P5: the pattern set on those swings (items 1-4).
+- Do not edit each other's files; send anything you need through the measurer.
+
 ### Task P5 (after P4, owner 2026-10-19 22:35 Thai) - the owner's whole pattern set, on the right swing scale
 
 The owner marked the formations of 2026-10-19 on M1. The measurer's rough count of the day (Thai time) gave about 11.
