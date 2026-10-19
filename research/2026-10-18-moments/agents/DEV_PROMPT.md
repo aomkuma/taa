@@ -139,9 +139,14 @@ and search it for anything specific.
   - the spread, the hour, the M15 structure and efficiency, the H1 place, the round numbers.
 
 **WHICH WAY - the hard part:**
-- At support with the volume, the clean runs go down 58-61 % (P1) and 53-54 % (P2): gold breaks support more often than
-  it bounces.
-- Fast 10-USD runs go down more often than up in both parts.
+- At support with the volume, counting each clean run once: 56 % went down in P1 (223 of 395 runs, 43 days) and 50 % in
+  P2 (1,139 of 2,268, 56 days). That is a lean in P1 only. In P2 the place and the volume alone do not tell the side:
+  look closer at what was there.
+  - Corrected 2026-10-19 10:47 Thai. The first count took every minute of a run, so one run was counted many times;
+    it read 58-61 % / 53-54 %.
+- Fast 10-USD runs, each counted once, went down 57 % in P1 and 51.5 % in P2.
+- The level-break rule's best setting has a 95 % range of -0.20 .. +0.09 R in P1 and -0.08 .. +0.36 in P2. With about
+  150 trades a part, the results cannot tell 0 from +0.15 R. Expect this resolution with this many trades.
 - At these moments, 5 USD against comes first in 53-70 % of cases within 30 minutes, and 10 our way first in only 15-33
   %. **A 5-USD stop sits inside the noise of a volume moment.**
 - What price does next differs between the two parts: P1 was a steady climb; P2 held the January 2026 crash and wide

@@ -1976,3 +1976,21 @@ minutes 1-15, and mostly comes back through p0. The first minute alone does not 
 first minute comes 3-5 x more often. What tells the fake at the end of the first minute is the next question - handed
 to the trading-system developer (owner, 10:25 Thai: "research, write the findings as a prompt, make another session the
 trading-system expert"; "and your job is to measure the system and the results"): `../DEV_PROMPT.md`.
+
+## How sure is the level-break result? (2026-10-19 10:47 Thai; owner: "how confident are you about the support / resistance break?")
+- **The code / the simulation:** the real ticks, hand tests, planted bugs 11 of 11. But a design flaw: "at most 3 a
+  day" took the first three of the UTC day. In the all-hours settings the day's first signal falls at 07:00 Thai on 98
+  of 154 days (median 07:00), so those settings traded the Asian open, not the moments meant. The cap should pick by
+  quality, not by the clock.
+- **The result's margin:** the best setting has 150 / 153 trades, R SD 0.92 / 1.39, and a 95 % range of -0.20 ..
+  +0.09 (P1) and -0.08 .. +0.36 (P2). The data cannot tell 0 from +0.15 R: "not passed" holds, "it fails" does not.
+- **The finding "gold breaks support more than it bounces" - corrected:** the count took every minute of a run, so one
+  run counted many times.
+  - Each clean run counted once at support with the volume: down 56 % in P1 (223 of 395 runs, 43 days) and 50 % in P2
+    (1,139 of 2,268, 56 days). A lean in P1 only; in P2 the place and the volume alone do not tell the side.
+  - All fast runs, counted once: down 57 % (P1), 51.5 % (P2).
+  - The earlier 58-61 % / 53-54 % overstated it. Corrected in `../DEV_PROMPT.md` too.
+- **What was NOT tested:** the owner's support / resistance - levels price has turned at before (swing levels,
+  touches counted), the break confirmed or the fake break back inside, the stop beyond the level. The "support" here
+  (the 30-hour M15 range's low fifth, near the previous day's low, below the 60-minute low) is mostly made by the move
+  itself. That is Task B of the developer's prompt.
