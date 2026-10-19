@@ -1,0 +1,4 @@
+A: trades 150; equal after the exit was replaced 150 of 150; changed when everything from the entry decision was replaced 150 of 150
+B1: trades 84; equal after the exit was replaced 84 of 84; changed when everything from the entry decision was replaced 84 of 84; B confirmations equal after their close was replaced 84 of 84
+B2: trades 82; equal after the exit was replaced 82 of 82; changed when everything from the entry decision was replaced 82 of 82; B confirmations equal after their close was replaced 82 of 82
+PASSED

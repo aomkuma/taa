@@ -6,7 +6,7 @@ refuses it: `learning_ticks` raises `ExamPeriodError`, the event lists end befor
 reaches it). Every count below counts each release minute once (the coordinator's 03:47 UTC note: count events
 once, not once per minute).
 
-## Checkpoint A1 - the two-way sweep detector (2026-10-19, 03:30 - 04:15 UTC)
+## Checkpoint A1 - the two-way sweep detector (2026-10-19; its times were not read from the clock)
 
 ### Written before computing (pre-registration)
 
@@ -250,7 +250,7 @@ calls continued). Thai time on every axis:
 
 Not started: A2.
 
-### A1 follow-up (2026-10-19 04:20 UTC): the measurer's three missed bugs
+### A1 follow-up (2026-10-19; not read from the clock): the measurer's three missed bugs
 
 The measurer's own planted bugs missed three; tests added (`test_a_tie_takes_the_side_that_reached_leg_first` now
 also has the mirror - 3 down first, then 4 up: the side is down; `test_the_pre_release_range_and_the_sweeps_through_it`
@@ -259,7 +259,7 @@ now has a first leg to exactly the pre-release high and a sweep to exactly the p
 three bugs added to `plant_bugs_a1.py` (a tie always up; swept_pre on touching the high; the third leg = back >= 0.9 x
 the sweep). Results under "Task P" below.
 
-## Task P - the chart pattern at the level (2026-10-19, from 04:20 UTC)
+## Task P - the chart pattern at the level (2026-10-19; finished by 05:49 UTC, the log's file time)
 
 The owner (11:15 Thai): "none of them is a place to enter - the price is very steep, there is no price structure";
 "at least it must show an inverted H&S - something like this around the price level"; "chart patterns of all kinds -
@@ -321,20 +321,20 @@ the owner to confirm.
 
 ### Amendments to the written rules (each found on the drawn catches by their shape, never by an outcome)
 
-- **05:00 UTC - the sell side's names.** The first drawing named the sells by the buy names ("H&S (inverse H&S)",
+- **(1) The sell side's names.** The first drawing named the sells by the buy names ("H&S (inverse H&S)",
   "M (W)"): `unmirror` kept the variant. My own end-to-end M test asserted "W" - the test had the bug in it. Fixed in
   the code and the test (`test_the_sell_side_names`, the M test now expects "M").
-- **05:10 UTC - a height cap, first try (rejected).** Drawn catch #7 (2026-03-03 18:29 Thai) was a "sweep, lower high"
+- **(2) A height cap, first try (rejected).** Drawn catch #7 (2026-03-03 18:29 Thai) was a "sweep, lower high"
   whose only point at the level was the sweep; the trigger was 100 USD below it (risk 114 USD) - a move away from the
   level, not a pattern at it. First cap: height <= 1 x H1 ATR. On the redraw it dropped the owner's own 2026-01-09 W
   (height 15.6, H1 ATR 11.1 before the release) and kept a 60-USD crash pattern (H1 ATR 57.9): it measured the wrong
   scale.
-- **05:20 UTC - the height cap used (`HEIGHT_ATR = 4`).** A pattern's height (extreme to trigger) at most 4 x its own
+- **(3) The height cap used (`HEIGHT_ATR = 4`).** A pattern's height (extreme to trigger) at most 4 x its own
   TF's ATR at the decision = two ZigZag swing sizes; a larger shape is a move, seen on the next TF up. The owner's W:
   15.6 / M1 ATR 4.33 = 3.6 (kept); the inverse H&S #1: 6.93 / 1.82 = 3.8 (kept); the two far-from-the-level crash
   patterns (the "sweep, lower high" decided 2026-03-03 11:29 UTC: 103.41 / 13.95 = 7.41, and 14:32 UTC: 50.24 / 9.61 =
   5.23) dropped. In `patterns_at`, for every family.
-- **05:25 UTC - the picking rule:** a slot may not reuse a decision moment (TF and time) drawn in an earlier slot (the
+- **(4) The picking rule:** a slot may not reuse a decision moment (TF and time) drawn in an earlier slot (the
   inverse H&S of #1 is also a higher-low turn at the same bar; drawing it twice told the owner nothing).
 
 ### P1 - 1. What I did (files in `research/2026-10-18-moments/agents/dev/`)
@@ -566,3 +566,235 @@ next level (green dashed); right: the other TF.
    strict one?
 
 Not started: counting, trades and R (they wait for the owner's confirmation of the catches); Task A2.
+
+## Task P2 - the pattern catches as trades, A (at the breakout) against B (wait for the structure) (2026-10-19; the rules written at 05:49 UTC, the code from 06:24 UTC by `date -u`)
+
+The owner (12:46 Thai): "run the backtest with the pictures you got, and you will know whether it is a quality setup -
+or else wait for the price structure to reveal itself and enter then; see whether that makes a better profit." The
+measurer: this replaces "no counts before the confirmation". P1's measurement: 60 + 9 tests passed, 71 of 71 of my
+bugs and 13 of 13 of the measurer's caught, the entry = the next open on 1,475 of 1,476 M1 catches (the other has no
+next bar before the daily break - dropped here).
+
+### Written before computing (P2): the rules
+
+- **The catches:** every row of `p_catches.parquet` (M1 and M5, at the H1 levels or after a news leg) with a finite
+  entry. P1 and P2 only; ticks of a day after 2026-04-17 are never loaded (a trade cannot reach them: the weekend).
+- **One position at a time per variant**, all catches (both TFs, all families) in one stream by entry time; a catch
+  whose entry comes before the open trade's exit is skipped. Several catches at the same entry time: the one with the
+  smallest risk read at the decision (|the decision close - the stop|). No daily cap.
+- **Entry A, at the breakout:** the first tick at / after the decision (the breakout bar's close).
+- **Entry B, wait for the structure (buy; sells mirrored):** on the entry TF, from the bar after the breakout bar d:
+  1. the post-breakout high = the highest high from bar d on, extended by any bar that makes a new high (a bar that
+     makes a new high does not also count as the pullback);
+  2. the pullback = a bar whose low is at least 1 x the entry TF's ATR (at d) below the post-breakout high; from then
+     the high is frozen and the pullback low is the lowest low since;
+  3. the confirmation = the first close above the frozen post-breakout high after the pullback (a higher low held,
+     then the high broken); the entry at the first tick at / after that bar's close;
+  4. no trade if any bar's low reaches the pattern's extreme first (the structure failed), or if no confirmation
+     within 30 entry-TF bars after the breakout bar.
+  - Stop **B1**: the pullback low - 0.2 x ATR; stop **B2**: the pattern's own stop (A's).
+- **The stop (A):** the pattern's stop (the extreme - 0.2 x ATR at d, from the catch). A trade whose entry fill is
+  already past its stop is not taken.
+- **The exits (the entry TF, the owner's "enter on a TF, exit on that same TF"):** the first of -
+  1. **stop:** the first tick at / beyond the stop (a buy: bid <= stop), filled at that tick (the gap included);
+  2. **target:** the catch's next level, only when it is more than one risk (|entry - stop|) beyond the entry; a limit
+     at the level (a buy: the first bid >= it, filled at it);
+  3. **structure:** at the close of each entry-TF bar that opens at / after the entry, a buy closes below the last
+     trough of the entry TF's ZigZag confirmed by that bar (a sell: above the last confirmed peak) - out at the first
+     tick at / after that close;
+  4. **time:** 60 entry-TF bars after the entry (M1 1 hour, M5 5 hours) - out at the first tick at / after it;
+  5. **break:** before a gap of more than 30 minutes in the ticks (the daily break, the weekend) - out at the last tick
+     before it.
+  - Out at market = the bid (a buy) / the ask (a sell). On one tick: stop before target before structure before time.
+- **Costs:** the spread in the tick bid / ask; entry slippage 0.07 USD (a buy at ask + 0.07, a sell at bid - 0.07). A
+  news trade (entry within 15 minutes after a release minute of the calendar or an 08:30 / 10:00 NY news leg) also
+  pays 0.5 / 1 / 2 USD more at entry - four cost runs: 0 (the main tables) / 0.5 / 1 / 2.
+- **R** = USD / the risk at the fill (|entry fill - stop|); 0.01 lot: 1 USD of price = 1 USD.
+- **Settings:** three - A, B1, B2 (each with the four news costs as cost runs, not settings). Nothing else is varied.
+- **The report, per part, A / B1 / B2 side by side:** trades and trades a weekday (Mon-Fri of the part), win %, R
+  and USD after costs with a 95 % range of R (mean +- 1.96 x sd / sqrt(n)), max drawdown, worst trade, longest losing
+  streak (USD), the exits; split by family, by TF, by level kind, by the other TF agreeing (a same-side pattern / its
+  structure with the trade / against / mixed or none), and big (the pattern's height or the risk above 20 USD) against
+  the rest.
+- **How it is judged:** each variant by the smaller R of P1 / P2 (never one part), against the goal (+0.15 R a trade
+  after costs); A against B by the same.
+- **Losers by reason (what came after x what was there):** after the entry, within the trade's own time limit, on the
+  ticks: **wrong way** (1 risk against before 1 risk our way), **ran later** (1 risk our way first - the trade was out
+  before it paid), **no run** (neither); x the other TF at the decision: **with** (a same-side pattern, or its
+  structure with the trade), **against**, **mixed / none**. One loser drawn per reason (the nearest its reason's median
+  USD), for the variant with the larger smaller-part R.
+
+### P2 - how two phrases of the written rules are coded (written before computing, 06:27 UTC by `date -u`)
+
+- "the smallest risk read at the decision" for a B entry: its decision is the confirmation bar's close, so the risk
+  read there is |the confirming close - the B stop|.
+- "each entry-TF bar that opens at / after the entry" (the structure exit): the entry = the entry decision time (the
+  breakout bar's close for A, the confirming bar's close for B); the fill is the first tick at / after it.
+- The 95 % range of R = mean +- 1.96 x the sample sd / sqrt(n); the longest losing streak = the most consecutive
+  trades with USD < 0 (the larger loss on a tie of length), with its USD.
+
+### P2 - the owner's two added rules (13:37 Thai), applied
+
+- "Beware of interpreting correctly while the metric is wrong": every reported metric is recomputed by a second,
+  separate program (`verify_p2.py`, which imports none of `p2_trades`, `sweep_detector`, `tick_straddle`), 20 trades a
+  variant are re-derived from the raw tick files, and one position at a time is checked - section P2-5.
+- "Never read a loss as like a coin flip": no random-side baseline, no "chance" verdict; the result is split by what
+  was there (section P2-6).
+
+### P2 - 1. What I did (files in `research/2026-10-18-moments/agents/dev/`)
+
+| File | What it is |
+|---|---|
+| `p2_trades.py` | `confirm_b` (entry B), `last_pivot_prices`, `structure_exit_time`, `simulate` (the ticks), `news_times` / `is_news`, `agreement_group`, `candidates` (A / B1 / B2), `Ticks` (a day + the next, never the exam), `one_trade`, `run_stream` (one position at a time), `weekdays`, `stats`, `reason`; `main` writes `p2_trades.parquet`, `p2_metrics.csv` and `out_p2_trades.txt`. |
+| `test_p2_trades.py` | 20 hand-worked tests. |
+| `verify_p2.py` / `test_verify_p2.py` | The second, separate computation of every metric, the raw-tick re-derivation, the one-position check; 7 hand-worked tests. |
+| `losers_p2.py` / `test_losers_p2.py` | The losers joined to their catches, one drawn per reason; 2 tests. |
+| `p2_splits.py` | P1 / P2 side by side for every split (`out_p2_splits.txt`). |
+| `plant_bugs_p2.py`, `plant_bugs_verify_p2.py` | 57 and 17 planted bugs. |
+| `lookahead_p2.py` | The no-look-ahead check of the trades. |
+| `charts/p2_losers_B2.html` (+ `charts/p2_losers_B2/01..09.png`) | One B2 loser per reason. |
+
+### P2 - 2. The tests (run at 06:51 UTC)
+
+- `test_p2_trades.py` **20 passed in 1.57s**; `test_verify_p2.py` **7 passed in 1.55s**; `test_losers_p2.py` **2 passed
+  in 1.65s**; the earlier files again: `test_sweep_detector.py` + `test_patterns.py` **60 passed**, `test_charts_a1.py` +
+  `test_charts_p.py` **9 passed**.
+
+| Test | What it checks | How (the hand-worked numbers) |
+|---|---|---|
+| `test_confirm_b_by_hand` | entry B | bar 1 a new high 106 (not a pullback); bar 2's low 104.8 is 1.2 >= 1 ATR below: the pullback; bar 3 dips to 104.5; bar 4 closes 106.2 > 106: confirmed at 4, pull 104.5 |
+| `test_confirm_b_fails` | no trade | a low at the extreme 100 first; max_wait 3 (the confirmation is the 4th bar); 1.25 ATR -> still bar 4; 1.6 ATR -> no pullback |
+| `test_confirm_b_pullback_threshold_and_new_high_bars` | the edges | a dip of exactly 1.0 ATR is the pullback (pull 105.0); a new-high bar with a deep low is not; bar 5 confirms with pull 105.4 |
+| `test_confirm_b_closes_at_the_high_is_not_above` | strict | a close of exactly 106.0 does not confirm |
+| `test_confirm_b_sell_is_the_mirror` | sells | the negated series: k 4, hi -106, pull -104.5 |
+| `test_last_pivot_prices` | the confirmed pivots per bar | a trough confirmed at bar 3 counts from bar 3 (not its own bar 1), the next from bar 9; the peak from 6 |
+| `test_structure_exit_time` | the structure exit | a close 98.9 below the trough 99 at bar 5 -> out at its close (6 min); a close AT 99 -> no; bar 9 closing at the limit counts, after it not; a sell above the peak 105; a bar opening before the entry not read |
+| `test_simulate_stop_with_its_gap` | stop | in 100.27 (ask 100.2 + 0.07); the bid 97.5 through the stop 98 -> filled 97.5, -2.77 USD, R -2.77 / 2.27; a tick exactly at 98 fills |
+| `test_simulate_target_is_a_limit` | target | filled at 104.0 although the tick was 104.6 |
+| `test_simulate_structure_time_break_and_order` | the other exits | structure at the first tick at / after 15 s (and AT 20 s); time at the first tick >= 25 s; the ticks end: break; a gap of 1801 s: out before it, of exactly 1800 s: not a break; stop before structure on one tick |
+| `test_simulate_sell_costs_and_refusals` | sells, news cost | a sell in at bid - 0.07 - 1.0 = 98.93, its stop read on the ask (102.1); its target on the ask; refused past the stop or without a tick |
+| `test_is_news` | news entries | 1000 s release: 999 no, 1000 / 1900 yes, 1901 no |
+| `test_agreement_group` | with / against / mixed | a same-side pattern; up for a buy, down for a sell; the opposite; mixed / none |
+| `test_candidates_a_and_b` | the candidates | A at the decision with the pattern's stop, risk 4.7; B1 at bar 4 with the stop 104.3, risk 1.9; B2 the pattern's stop; no confirmation -> none; ties by the smaller risk |
+| `test_run_stream_one_at_a_time_target_and_news` | the stream | a target exit at 300 s; an entry at 100 s skipped; an entry AT 300 s taken; a next level within one risk -> no target; a news entry pays 1.0 more; time exits after 60 M1 bars |
+| `test_one_trade_target_needs_more_than_one_risk` | the target rule | binary prices, no slippage: risk exactly 2.0, a level exactly 2.0 away -> none, 2.25 away -> the target |
+| `test_weekdays` | trades a weekday | P1 64, P2 66 weekdays |
+| `test_stats_by_hand` | the metrics | USD 2, -1, -1, 3, -2: R 0.1 with its range, USD 1, drawdown 2 (also when given out of order), worst -2, streak 2 / -2, exits; a first loss of 3 is a drawdown of 3; a flat trade breaks the streak; the streak in time order |
+| `test_reason_by_hand` | the losers' reasons | ran later / wrong way / no run; exactly one risk our way counts; only up to the first tick at / after the limit; a sell read on the ask (the bid 2.13 our way but the ask only 1.93: no run) |
+| `test_ticks_never_load_the_exam` | the tick reader | 2026-04-17's span holds only its own day; 2026-04-18 is not loaded |
+| `test_verify_p2.py` (7) | the second computation | its own weekdays (64 / 66 / a weekend 0); its own metrics on the same hand table and on a sell, a first loss, a flat trade, the streak in time order; the re-derivation of a stop / target / time / structure / break / sell trade and each wrong field found (fill price, stop tick, target first hit, time tick, break of exactly 30 min, USD only); the raw ticks in ns (the 13:30 low bid 4459.03); an exam day refused even with a (fake, temporary) file there; one position at a time |
+| `test_losers_p2.py` (2) | the losers' join and title | only the variant's losers at cost 0 joined on TF / time / family / side; a missing catch raises; the title by hand |
+
+### P2 - 3. The planted bugs
+
+- `plant_bugs_p2.py` (`out_plant_bugs_p2.txt`): controls PASSED (20 / 2 passed), **57 of 57 CAUGHT** - 50 in
+  `p2_trades.py` (entry B's edges and mirror, the pivots by their confirming bar, the structure exit's bar range and
+  strictness, the entry price and slippage and news cost, the stop's gap and edge and the ask for sells, the target as
+  a limit, the order on one tick, the break and time ticks, R from the fill's risk, news windows, agreement, the B
+  stops, ties, the target's one-risk rule, the time limit, the position limit, the drawdown from 0, flat trades in the
+  streak, the 1.96, the time order, the weekdays, the reasons) and 7 in `losers_p2.py`. On the way: one planted bug
+  (removing a `continue` in B's first phase) was equivalent - the high bounds every close there, it changes nothing -
+  and was replaced by "the high not frozen after the pullback" (CAUGHT); seven gaps (exact 1-ATR pullback, a close at
+  the trough, a tick at the stop, a tick at the structure time, an entry at the exit moment, a first-trade drawdown,
+  flat trades / time order in the streak) got tests first.
+- `plant_bugs_verify_p2.py`: control PASSED (7 passed), **17 of 17 CAUGHT** (five gaps closed by tests first: flat
+  trades, the time order, the USD alone, an exam-day file).
+
+### P2 - 4. The no-look-ahead check
+
+`lookahead_p2.py` (`out_lookahead_p2.txt`), 150 seeded catches a variant, on a window of M1 from 7 days before to 2
+days after: **A 150 of 150, B1 84 of 84, B2 82 of 82** trades equal (the entry tick and price, the stop, the risk, the
+exit's reason, tick and price, the USD) when every M1 bar opening after the exit and every tick after it were replaced
+by other prices; **B confirmations 84 of 84 and 82 of 82** equal when every bar from the confirmation's close on was
+replaced. Power: replacing everything from the entry decision on changed the exit of 150 / 84 / 82 of them. PASSED.
+
+### P2 - 5. The numbers checked by a second program (the owner's rule)
+
+`verify_p2.py` (`out_verify_p2.txt`): **384 of 384** metric values agree with `p2_metrics.csv` (24 variant x part x
+news-cost rows x 16 metrics); **60 of 60** trades re-derived from the raw tick files agree (the fill tick and price
+with the 0.07, no tick past the stop between the fill and the exit, the exit tick and price for its reason, the USD
+and R); **0** entries before a previous exit in 12 variant x cost streams (10,129 trades). PASSED. The check found one
+bug - in itself: the tick files hold milliseconds and its first reader treated them as nanoseconds (every fill tick
+"failed"); fixed, and a test now pins the unit on 2026-01-09.
+
+### P2 - 6. The result (news cost 0; `out_p2_trades.txt`, `out_p2_splits.txt`)
+
+Three settings (A, B1, B2), each run with the four news costs. One position at a time, no daily cap.
+
+| | A P1 | A P2 | B1 P1 | B1 P2 | B2 P1 | B2 P2 |
+|---|---|---|---|---|---|---|
+| trades (a weekday) | 522 (8.2) | 565 (8.6) | 382 (6.0) | 364 (5.5) | 352 (5.5) | 348 (5.3) |
+| win % | 35.8 | 35.8 | 34.8 | 32.1 | 38.6 | 38.2 |
+| R a trade | -0.047 | -0.045 | -0.043 | -0.082 | -0.026 | -0.014 |
+| 95 % range of R | -0.141 .. +0.047 | -0.137 .. +0.046 | -0.179 .. +0.092 | -0.220 .. +0.056 | -0.111 .. +0.059 | -0.101 .. +0.073 |
+| USD | -78.92 | -301.83 | -114.84 | -500.35 | -67.91 | +48.08 |
+| max drawdown USD | 393.76 | 512.21 | 263.66 | 593.51 | 313.07 | 454.52 |
+| worst trade USD | -29.66 | -97.41 | -24.85 | -52.73 | -35.60 | -54.21 |
+| longest losing streak | 11 (-65.35) | 16 (-98.67) | 9 (-32.66) | 10 (-103.67) | 9 (-39.21) | 11 (-125.53) |
+| exits stop / target / structure / time / break | 137 / 37 / 242 / 88 / 18 | 138 / 50 / 269 / 84 / 24 | 153 / 21 / 143 / 57 / 8 | 140 / 31 / 136 / 43 / 14 | 29 / 8 / 234 / 71 / 10 | 25 / 19 / 220 / 68 / 16 |
+
+- **The smaller part's R:** A -0.047, B1 -0.082, **B2 -0.026** (with +2 USD news slippage: -0.051 / -0.088 / -0.029). No
+  variant reaches the goal (+0.15 R); none is positive in both parts. Waiting for the structure with the pattern's own
+  stop (B2) is the best of the three by 0.02 - 0.03 R, with fewer trades (5.3 - 5.5 a weekday against 8.2 - 8.6) and
+  far fewer stops (29 / 25 against 137 / 138); the tight stop under the pullback (B1) is the worst (153 / 140 stops).
+- **Risk sizes:** the median risk A 7.7 / 12.5 USD, B2 10.5 / 18.5 (B2 enters farther from the pattern's stop); the
+  largest 189 USD (A P2) - P2's wide days. A P2's worst trade is -97.41 USD = -1.01 R on a 96.75-USD risk (an M5 W 69
+  USD tall, 2026-02-02 21:35 Thai). Because the risk varies, R and USD can differ in sign (B2 P2: R -0.014, USD +48).
+- **The news costs barely move the totals:** 12 - 22 news trades a part.
+
+**Where it pays and where it does not** (`p2_splits.py`: 36 cells a variant, 108 in all; a cell is flagged when it is
+positive in both parts with >= 20 trades in each - with 108 cells looked at, a flag is a lead, not a result):
+
+| | A | B1 | B2 |
+|---|---|---|---|
+| inverse H&S / H&S | -0.107 / +0.249 | **+0.054 / +0.504** (31 / 26) | **+0.047 / +0.149** (29 / 25) |
+| W / M | -0.028 / -0.049 | -0.047 / -0.062 | -0.034 / +0.016 |
+| sweep then the turn | -0.157 / -0.131 | -0.147 / -0.456 | -0.142 / -0.209 |
+| base then the break | -0.029 / -0.069 | +0.001 / -0.217 | +0.081 / -0.110 |
+| M1 entries | -0.022 / -0.087 | -0.037 / -0.165 | -0.046 / -0.048 |
+| M5 entries | -0.141 / +0.117 | -0.074 / +0.250 | **+0.066 / +0.117** (62 / 71) |
+| other TF with / against | -0.064 / +0.056 ; -0.067 / -0.080 | -0.106 / -0.042 ; +0.077 / -0.186 | -0.054 / +0.029 ; +0.026 / -0.069 |
+| big (height or risk > 20 USD) | +0.076 / -0.077 | +0.229 / -0.141 | **+0.075 / +0.024** (56 / 158) |
+
+- **Pays in both parts:** the head-and-shoulders family when entered after the structure confirms (B1, B2; on M1 too:
+  B1 +0.134 / +0.256, B2 +0.063 / +0.061); M5 entries in B2; big patterns in B2; (B1 in the Asia session +0.017 /
+  +0.033). None of them is +0.15 in both parts, and they are 25 - 71 trades a part.
+- **Loses in both parts, in every variant: the sweep then the turn** (-0.13 .. -0.46). W / M, the largest family (70 -
+  73 % of the trades), sits near 0 and decides the total.
+- **The other TF agreeing does not separate them** (with / against change sign between the parts).
+
+**The losers by reason** (B2, the variant with the larger smaller-part R, as written before computing; the share of the
+part's losers): **wrong way 0.44 / 0.46** (one risk against first), **no run 0.49 / 0.42**, **ran later 0.08 / 0.12**;
+across the other TF (with / against / mixed) the shares are alike, so the other TF does not explain them. A's losers:
+wrong way 0.66 / 0.66, ran later 0.16 / 0.15. Winners average +0.77 R (B2) / +1.17 R (A), losers -0.52 / -0.72.
+One drawn per reason: `research/2026-10-18-moments/agents/dev/charts/p2_losers_B2.html` -
+1. wrong way x mixed / none (75): 2026-01-27 00:25 Thai, M1 base break down at x2 5095.67 - out by the structure,
+   -8.18 USD.
+2. no run x mixed / none (71): 2026-03-17 09:03, M1 base break up at x3+ / flip 5020.34 - out at the time, -5.94.
+3. no run x with (70): 2026-02-11 10:30, M5 W at x3+ / flip 5044.49 - out at the time, -5.59.
+4. wrong way x with (68): 2026-01-06 20:46, M1 W at the previous day's high 4455.58 - the stop just under the W's lows
+   was taken (-8.94), then price rose about 15 USD.
+5. no run x against (55): 2026-01-07 15:18, M1 W at x3+ / flip 4460.00 - out by the structure, -3.46.
+6. wrong way x against (51): 2025-12-22 22:13, M1 sweep then lower high at the 5-day high 4427.29 - out by the
+   structure, -8.95.
+7. ran later x with (19): 2025-11-04 17:05, M5 base break down at x3+ / flip 3998.53 - out by the structure, -4.73.
+8. ran later x mixed / none (16): 2025-12-24 20:03, M1 M at x2 4495.23 - out by the structure, -3.81.
+9. ran later x against (6): 2025-11-03 21:28, M1 M at x3+ / flip 4021.64 - out by the structure, -4.66.
+
+### P2 - 7. Questions and what I would do next
+
+1. **B2 as the base?** Waiting for the structure with the pattern's own stop is the best of the three in both parts
+   (still below 0). Keep B2 as the base for the next changes?
+2. **The head-and-shoulders family and M5 entries pay in both parts under B2** (+0.047 / +0.149 and +0.066 / +0.117),
+   chosen after looking at 108 cells. Next I would write ONE rule before computing (e.g. B2, inverse H&S / H&S on M1
+   and M5, plus any family on M5) and test it on P1 / P2 - but it gives about 0.5 - 1.5 trades a weekday, short of 2 -
+   3. Go ahead, or first measure why those families pay (their MFE / MAE paths)?
+3. **The sweep then the turn loses everywhere.** Change its conditions (the owner: never drop - e.g. the turn only with
+   the M5 structure turned too, or the higher low confirmed by the ZigZag) or set it aside for now?
+4. **The exits:** the structure exit takes 63 - 66 % of B2's trades and the next level is rarely more than one risk away
+   (8 / 19 targets). Is "a close past the last confirmed trough of the entry TF" what the owner means by the structure
+   turning against the trade? An exit study (how far the winners ran after the structure exit) would come before any
+   change.
+5. **The trades a weekday:** A makes 8.2 - 8.6, B 5.3 - 6.0, with one position at a time. A daily cap needs a reading
+   known at the decision to choose by; none of the readings measured here separates the losers - so I have not added
+   one.

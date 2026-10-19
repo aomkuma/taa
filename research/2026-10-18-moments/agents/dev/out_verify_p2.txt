@@ -1,0 +1,4 @@
+1. the metrics recomputed: 384 of 384 values agree (24 variant x part x cost rows x 16)
+2. trades re-derived from the raw ticks: 60 of 60 agree (20 a variant)
+3. one position at a time: entries before the previous exit 0 in 12 variant x cost streams (10129 trades)
+PASSED

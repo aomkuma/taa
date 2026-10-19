@@ -2231,3 +2231,45 @@ Sent to the developer as checkpoint P2, with its rules to be written before comp
   - judged by the smaller R of P1 / P2.
 - **One fix asked:** its header time was ahead of the clock.
 - **The owner:** "let the subagent carry on" - it was resumed.
+
+## The developer's P2 - the pattern catches as trades, A against B (measured 2026-10-19 14:05 Thai)
+**Its result (`../dev/p2_trades.py`, `p2_trades.parquet`, `DEV_LOG.md`; ticks, P1 / P2, one at a time, no cap):**
+
+| | A P1 | A P2 | B1 P1 | B1 P2 | B2 P1 | B2 P2 |
+|---|---|---|---|---|---|---|
+| trades (a weekday) | 522 (8.2) | 565 (8.6) | 382 (6.0) | 364 (5.5) | 352 (5.5) | 348 (5.3) |
+| win % | 35.8 | 35.8 | 34.8 | 32.1 | 38.6 | 38.2 |
+| R (95 % range) | -0.047 (-0.14..+0.05) | -0.045 (-0.14..+0.05) | -0.043 (-0.18..+0.09) | -0.082 (-0.22..+0.06) | -0.026 (-0.11..+0.06) | -0.014 (-0.10..+0.07) |
+| USD | -78.9 | -301.8 | -114.8 | -500.4 | -67.9 | +48.1 |
+
+- **The owner's question:** waiting for the structure helps a little. B2 (wait, the pattern's own stop) is best by
+  0.02-0.03 R. Nothing is positive in both parts or near +0.15.
+- **Leads, not results** (picked from 108 cells, checked by my own recomputation):
+  - B2, the H&S family: +0.047 / +0.149 (29 / 25 trades);
+  - B2, the M5 entries: +0.066 / +0.117 (62 / 71);
+  - M1 negative in every variant;
+  - the sweep-then-turn negative everywhere (B2 -0.142 / -0.209);
+  - W / M is 70 % of the trades, at -0.034 / +0.016.
+- **The losers (B2):** wrong way 0.44 / 0.46, no run 0.49 / 0.42, ran later 0.08 / 0.12.
+- **Read on the 9 drawn losers:**
+  - B entries came 9-13 USD past the level (#2, #3);
+  - the structure exit fired on one M1 spike (#8) and gave back a 1-risk gain (#9);
+  - a stop just under the W's lows was swept, then price rose (#4);
+  - a sell against M5's rise at the 5-day high (#6);
+  - an exit before a 50-USD fall (#7).
+
+**Measured:**
+- its tests re-run: 87 + 11 passed;
+- my own 8 planted bugs in `p2_trades.py`: 7 caught. The missed one, the M5 hold as 60 minutes, is a test gap only:
+  every real trade's limit is right (M1 60 minutes, M5 300);
+- **my independent check (`verify_p2.py`, imports nothing of the developer's):**
+  - every metric is equal in all 6 cells;
+  - 0 entries before a previous exit;
+  - 60 of 60 trades re-derived from the raw ticks agree;
+  - the structure exits re-read with `fingerprint.zigzag` agree 1244 of 1244. The first run gave 273 of 1244 - **my
+    own error**: fingerprint's ZZ_K is 3, the developer's rule is 2 x ATR. Fixed, the cause written in the code;
+- the family / TF splits recomputed by me: equal;
+- the tick files' time is `datetime64[ms, UTC]`: my reader converts it. The developer's own checker had first read it
+  as ns, and fixed that.
+
+Published with the 9 losers: https://claude.ai/artifact/LLCw1sB92SgZNxVWVPYjhQ.

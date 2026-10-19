@@ -1,0 +1,20 @@
+verify_p2.py: control (no bug): PASSED - 7 passed in 1.76s
+CAUGHT  #01 weekdays: Saturdays counted  (test_weekdays)
+CAUGHT  #02 metrics: R from the risk without the side  (test_metrics_by_hand)
+CAUGHT  #03 metrics: the population sd  (test_metrics_by_hand)
+CAUGHT  #04 metrics: the drawdown from the first trade, not from 0  (test_metrics_by_hand)
+CAUGHT  #05 metrics: a flat trade in the losing streak  (test_metrics_by_hand)
+CAUGHT  #06 metrics: not in time order  (test_metrics_by_hand)
+CAUGHT  #07 metrics: a flat trade a win  (test_metrics_by_hand)
+CAUGHT  #08 raw_ticks: milliseconds  (test_raw_ticks_in_nanoseconds_and_never_the_exam)
+CAUGHT  #09 raw_ticks: the exam read  (test_raw_ticks_refuses_an_exam_day_even_when_a_file_is_there)
+CAUGHT  #10 rederive: the slippage sign  (test_rederive_a_stop)
+CAUGHT  #11 rederive: the ticks before the exit not checked  (test_rederive_a_stop)
+CAUGHT  #12 rederive: a sell's stop read on the bid  (test_rederive_target_time_structure_break_and_a_sell)
+CAUGHT  #13 rederive: the target's first hit not checked  (test_rederive_target_time_structure_break_and_a_sell)
+CAUGHT  #14 rederive: the time exit tick not checked  (test_rederive_target_time_structure_break_and_a_sell)
+CAUGHT  #15 rederive: a gap of exactly 30 minutes is a break  (test_rederive_target_time_structure_break_and_a_sell)
+CAUGHT  #16 rederive: the USD not checked  (test_rederive_a_stop)
+CAUGHT  #17 one_at_a_time: an entry at the exit counted  (test_one_at_a_time)
+
+17 of 17 planted bugs caught

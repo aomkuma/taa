@@ -88,7 +88,7 @@ def structure_check(T: pd.DataFrame) -> tuple[int, int]:
     """Each structure exit: the entry TF's bar closing at t_struct closed past the last swing fingerprint.zigzag had
     confirmed by then (a buy below the last trough). Returns (agree, checked)."""
     import plib  # noqa: PLC0415
-    from fingerprint import ZZ_K, raw, zigzag  # noqa: PLC0415
+    from fingerprint import raw, zigzag  # noqa: PLC0415
 
     from indicators import bars  # noqa: PLC0415
 
@@ -98,7 +98,7 @@ def structure_check(T: pd.DataFrame) -> tuple[int, int]:
     for tf, G in T[T.exit == "structure"].groupby("tf"):
         b = bars(m, "1min" if tf == "M1" else "5min")
         R = raw(b)
-        pidx, pval, ptyp, pconf = zigzag(R["h"], R["lo"], R["atr"], ZZ_K)
+        pidx, pval, ptyp, pconf = zigzag(R["h"], R["lo"], R["atr"], 2.0)  # the developer's rule: 2 x ATR (fingerprint's own ZZ_K is 3)
         av = pd.DatetimeIndex(b["avail"]).as_unit("ns").asi8
         for r in G.itertuples():
             k = int(np.searchsorted(av, int(r.t_struct), side="left"))
