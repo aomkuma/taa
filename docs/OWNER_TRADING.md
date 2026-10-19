@@ -68,7 +68,7 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 | 1 | 2026-10-15 11:55-15:15 | XAUUSD | BUY x7 (0.09 lot) | avg 4142.98 | 4128, then 4143.00 (break-even) | 4153.72-4154.36 | 0.76 at first | 4 TP, 3 by hand | +81.52 USD (+54 % of 150) | range trade; see below |
 | 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | 4173 (set in MT5) | target ~4100 (not set) | 2.3 | SL, 2026-10-16 03:00 | about -44.34 USD (computed; to confirm from MT5) | head-and-shoulders right shoulder; see below |
 | 3 | 2026-10-16 ~10:00-10:40 | XAUUSD | SELL, 0.01 at a time (total to confirm) | avg 4173.8 | ~4180 (above the day's high 4179.72) | 4124 | 8.0 | SL, 2026-10-16 10:49 | about -6.2 USD per 0.01 lot (lots to confirm) | M30 "sideways up = leg B"; sells at the top of the M30 range; see below |
-| 4 | 2026-10-19 ~18:30-18:55 | XAUUSD | SELL x2 (lots to confirm) | about 4169 | first SL to confirm; moved above 4160 by 22:59 | the Fibo 38.2 / 23.6 zone (to confirm) | - | open at 22:59 (about 4142) | open | after the failed retest of the broken trendline / range bottom; see below |
+| 4 | 2026-10-19 ~18:30-18:55 | XAUUSD | SELL x2 (lots to confirm) | about 4169 | 4180 (about 3 above the retest high 4177.06); moved above 4160 by 22:59 | the Fibo 23.6 of the owner's swing (price to confirm) | about 11 USD risk | open at 22:59 (about 4142) | open | after the failed retest of the broken trendline / range bottom; see below |
 
 ### Trade 1 - context at the entry (bot's reads, data to 14:51)
 
@@ -226,7 +226,12 @@ consolidation zone, with the SL above 4160."
   - "every TF up to H1 agrees -> enter early inside the consolidation, the stop past the structure";
   - a trailing stop past the structure, not a fixed USD.
 
-**To confirm with the owner:** the exact entries and lots, the first stop, the target.
+**The owner, 23:03 Thai:** "the target is 23.6, the SL 4180":
+- the first stop is about 3 USD over the failed retest's high (4177.06), about 11 USD of risk from 4169;
+- the target is the Fibo 23.6 of the owner's swing, below the 50 % (about 4141) and the 38.2 %. Its price is to be
+  confirmed: it is not read off the screenshot.
+
+**Still to confirm:** the exact entries and lots, the 23.6 price.
 
 ## Findings so far
 
