@@ -1230,3 +1230,66 @@ measurer:** the module's path and, per M1 bar, causal swing pivots in the shape 
 bar, price, kind +1 / -1, the bar that confirmed it) - or a function giving the swings known at the close of bar d -
 plus the size value its rule uses (to set the formations' main / EQ / SW).
 Written at 16:06 UTC.
+
+## Checkpoint P5a - the filters on B2's fixed candidate set, a risk cap, a tighter base (the coordinator's answers read at 16:08 UTC; these rules written at the clock time below)
+
+The coordinator (relaying TEAM.md): judge a filter on the same candidates first, the stream only at the end; test a
+risk cap in H1 ATRs whose value is written before computing, from P1's trades' risks only; tighten the base rule before
+drawing and count again; the shape check's match rule stays span + 30 min, near misses listed apart; W / M split only on
+the new swings; wait for dev2's swings before the P5 look-ahead check and the drawings.
+
+### Written before computing (P5a): the rules
+
+- **The fixed candidate set:** B2's 1,042 candidates (`p3_trades.candidates3` with B2's setting, from
+  `p_catches.parquet`), **each traded alone** with B2's exit (`one_trade3`, exit "structure", the 60-s fill rule) - no
+  one-position rule, so every candidate has its own trade whatever the others do. A candidate with no tick within 60 s
+  has no trade (as in the streams). Overlapping candidates (the same moment found by more than one pattern / TF) each
+  count; their trades are not independent, so the 95 % ranges are narrower than they should be - the number of distinct
+  entry times is reported with them.
+- **The filters, as flags on that set** (each from the code that was tested, by membership: a B2 candidate is kept by a
+  filter when the same candidate - t_dec, t_entry, side, tf, family, name, stop - is in `candidates3` with that filter's
+  setting):
+  - **L** (refuse a confirming close at / past one pattern height beyond the trigger), **LEAD** (keep only the H&S family
+    and M5 entries), **ST** (keep a turn only with the M5 agreeing);
+  - **CAP** (new): refuse a candidate whose risk at the decision (`risk_dec` = |the confirming close - the stop|) is
+    above X x H1 ATR, the H1 ATR = the ATR(14) of the last H1 bar complete by the entry decision (`t_entry`).
+    **X = the 95th percentile of risk_dec / H1 ATR over B2's P1 trades** (the P3 stream, news cost 0, 348 trades),
+    rounded up to 0.05 - only their risks are read, no outcome. (Why the 95th: the cap is meant to cut the few
+    outsized risks - B2 had 32 trades of 690 above 50 USD and 6 above 100 - not to reshape the set.) The value is
+    written below before any result.
+- **The judgement on the fixed set**, per part, news cost 0 (and +2 USD on news trades for the smaller part): for each
+  filter the kept and the refused candidates' trades - n, distinct entry times, win %, R with its 95 % range, USD; and the
+  same inside the owner's windows (W, `p4_trades.window_of` on t_entry).
+- **Then as streams** (one position at a time, `run_stream3`): L, LEAD, ST are P3's streams (unchanged, already
+  measured); CAP is run new on all hours, and W + CAP (the P4 core rule with the cap) - news costs 0 / 0.5 / 1 / 2.
+- **A freeze** only for >= +0.15 R in both parts with >= 30 trades in each.
+- **The tighter base (P5, family 7) - B5T:** the longest run ending at d - 1 of **at least 60 M1 bars** (one H1 bar's time:
+  the scale H is the H1 bar's average range, so a base must hold at least one H1 bar) and at most 240, whose range (the
+  highest high - the lowest low) is within one main swing (0.6 x H at d - 1, as before); **at one of the owner's H1
+  levels**: the box overlaps a level's zone at the decision (`zones.levels_at` at t_dec with the breakout close, as Task
+  P; `patterns.at_level`'s base rule: box low <= level + z and box high >= level - z, z = 0.1 x that H1 ATR); the
+  breakout close beyond the box as before. Reported: the catch count on the learning parts (per part, per side, inside
+  the windows, distinct boxes) against the loose rule's 7,862, and the count on 2026-10-19 (shape only). No outcome.
+Written at 16:10 UTC.
+
+**The cap's value (from P1's risks only, read at 16:10 UTC):** risk_dec / H1 ATR over B2's 348 P1 trades - median 0.663,
+75th 1.003, 90th 1.590, **95th 1.863**, 99th 2.823, max 3.735 -> **X = 1.90 H1 ATR**. Written at 16:10 UTC, before any
+result with it.
+
+### P5a - stopped by the coordinator (read at 16:12 UTC = 23:12 Thai)
+
+The owner (23:11 Thai): "should we stop and wait? Otherwise whatever is built and tested will lose anyway" - anything
+built on the old micro-swing structure stands on the foundation the owner considers wrong. Stop P5a, start no new
+B2-based test.
+
+- **Finished:** the P5a rules above (written 16:10 UTC); the cap's value X = 1.90 H1 ATR from P1's 348 B2 risks only
+  (16:10 UTC; risks read, no outcome).
+- **Written but not tested and never run** (the step I was in when the stop came): `p5a_filters.py` (the fixed-set
+  trades, the filter flags by membership, CAP, the CAP / W + CAP streams). It passes `ruff check --select F,E9,B`
+  only; it has no tests, no planted bugs and no second computation, so it is not to be used as it stands.
+- **Left, not started:** the fixed-set judgement of L / LEAD / ST / CAP, the CAP streams, the tighter base rule's code
+  and count (B5T is written above, not coded), all their tests and checks.
+- **Next, after dev2's V3-1 swings and structure reader are measured and shown to the owner:** (1) the P5 pattern set
+  on those swings, with the shape check, the look-ahead check and the drawings; (2) an independent second
+  implementation of the structure reading (HH / HL, LH / LL per TF) to cross-check dev2's.
+Written at 16:12 UTC.
