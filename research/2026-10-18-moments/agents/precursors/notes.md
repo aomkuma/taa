@@ -1839,3 +1839,12 @@ two parts). Read by eye: #1, #2, #12 are sells while the M15 bars beside them cl
 swing reading still said down - the lag the owner named); #25 a buy into an M15 that made lower highs, surrendered just
 before price rose; #38 a buy at the top of a small M1 bounce under a falling M15. The direction must come from the
 timeframe right above the entry (M15) as it stands now, not from H1 / H4 swings confirmed long ago.
+
+## No stop loss - is the account wiped? (2026-10-19 09:52 Thai; owner: "take the SL out, trade without a SL - I want to know whether the account gets wiped"; `no_sl.py`, tests `test_no_sl.py` by hand - a buy 20.37 against then the target, a sell's ask and the data's end, the wipe against the balance at each trade's start; `out_no_sl.txt`)
+The short trade's entries (pullback.py), one at a time, 0.01 lot, no stop / surrender / time limit, out only at +10
+USD, 2023-11 .. 2026-10 (the whole history: a risk question, nothing is chosen on it): **301 trades in 2.3 years (the
+holds run up to 133 days); 40 % went 10 USD or more against before +10, 22 % 22 USD, 12 % 50 USD, 4.7 % 100 USD, the
+worst 1,642 USD** - a buy at 5,585 on 2026-01-29 13:36 Thai, the top before the crash, still -1,421 at the data's end
+(2026-10-16). Starting at 22 or 50 USD: **wiped on the first trade** (2023-11-03, 70 USD against before +10). From 100
+USD up it survived only because 300 winners (+3,000 USD) came before the deep ones; the same trades in another order
+need more than 1,642 USD a 0.01 lot to live through - and the broker stops out before equity reaches 0.

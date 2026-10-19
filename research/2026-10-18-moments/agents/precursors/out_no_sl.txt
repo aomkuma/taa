@@ -1,0 +1,30 @@
+301 trades from 2023-11-03 to 2026-01-29 (one at a time, out only at +10 USD); 1 still open at the data's end
+the deepest floating loss on the way (USD at 0.01 lot): median 8.1, 90 % 55.4, 99 % 266.4, the worst 1642.2
+  trades going  10 USD or more against first: 121 (40.2%)
+  trades going  22 USD or more against first: 67 (22.3%)
+  trades going  50 USD or more against first: 37 (12.3%)
+  trades going 100 USD or more against first: 14 (4.7%)
+  trades going 200 USD or more against first: 5 (1.7%)
+  trades going 500 USD or more against first: 1 (0.3%)
+the longest holds (hours): [3187.1, 2246.7, 2221.8, 1377.2, 1249.6]
+
+the 10 deepest:
+                    t  side   entry     mae   hours
+2026-01-29 13:36 Thai     1 5585.12 1642.17     NaN
+2025-10-21 14:41 Thai     1 4305.28  418.85 1249.55
+2025-04-22 13:30 Thai     1 3488.67  367.97 3187.12
+2025-12-26 22:46 Thai     1 4540.67  266.39  392.38
+2024-10-30 08:53 Thai     1 2781.67  244.84 2221.78
+2024-05-20 13:09 Thai     1 2448.73  162.00 1377.15
+2023-12-04 06:51 Thai     1 2132.66  159.86 2246.68
+2025-04-04 19:17 Thai     1 3097.93  141.43  133.87
+2024-04-19 09:01 Thai     1 2412.57  135.39  690.53
+2025-02-20 15:31 Thai     1 2954.55  121.88  510.22
+
+starting balances (0.01 lot): the first trade whose floating loss reaches the balance
+      22 USD: wiped on trade 1 (2023-11-03 20:08 Thai), after +0 USD from 0 winners; that trade went 70 USD against
+      50 USD: wiped on trade 1 (2023-11-03 20:08 Thai), after +0 USD from 0 winners; that trade went 70 USD against
+     100 USD: never wiped; 301 trades, +1578 USD at the end
+     500 USD: never wiped; 301 trades, +1578 USD at the end
+    1000 USD: never wiped; 301 trades, +1578 USD at the end
+    3000 USD: never wiped; 301 trades, +1578 USD at the end
