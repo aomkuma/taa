@@ -209,6 +209,43 @@ Buying the up-break buys the top of the second leg. Measured on ticks (`agents/p
 
 ## 5. Your tasks, in order
 
+### Task P4 (after P3, owner 2026-10-19 22:18 Thai) - trade only in the owner's windows
+
+**The owner:** "trade only the windows I gave; outside them, the lowest priority - unless the setup is really clean
+and clear."
+
+**The windows, in the owner's words and Thai clock time:**
+- Asia 07:00-09:00 ("mostly 7-9 o'clock Thai, often a small fake move before going the big way");
+- London 13:00-14:00, "plus or minus a little from there if it is running";
+- New York: the open plus 1-2 hours (the cash open 09:30 NY = 20:30 Thai in US summer, 21:30 in winter).
+
+**The measurer's split of your P2 B2 trades** (the windows taken from the owner's words before any result):
+
+| B2 trades | P1 | P2 |
+|---|---|---|
+| Asia 07-09 | +0.092 (40 trades) | +0.203 (35) |
+| London 13-14 | +0.076 (21) | +0.074 (17) |
+| the two together | +0.087 (61, 0.95 a weekday; 95 % range -0.14..+0.32) | +0.161 (52; -0.06..+0.39) |
+| the NY open + 2 h | -0.072 (41) | -0.059 (47) |
+| the same London hour tied to London's clock | -0.158 | -0.058 |
+
+The owner's Thai-clock hour is the one that pays.
+
+**P4:**
+1. **The core rule:** B2 (pattern at the owner's H1 levels, wait for the structure, the pattern's stop, the B2
+   exits), with entries only in the three windows. "A little" around London is not defined by the owner: run 13:00-14:00
+   as the main rule and report a +-30-minute variant separately as your assumption. Outside the windows: no trade, until
+   the owner defines "really clean".
+2. **Per window and together,** per part:
+   - trades a weekday, win %, R with its 95 % range, USD, DD, worst trade, streak, exits;
+   - the second computation, and 20 trades re-derived from the raw ticks;
+   - the losers by reason, one drawn per reason per window.
+3. **The NY open + 1-2 h loses.** Find why, from what was there: the paths (MAE / MFE), the pattern family, the
+   level kind, the M5 / M15 structure, the news minutes inside it. Propose a change to its conditions, never dropping
+   the window (the owner's window). Test the change on P1 / P2.
+4. **If any rule reaches >= +0.15 R in both parts with trades enough to judge,** freeze it (the exact
+   specification) and give the exam command. Do not run it: the measurer reads the exam once.
+
 ### Task P (FIRST, owner 2026-10-19 11:15 Thai) - the chart pattern at the level
 
 Build this before anything else. Every later entry, Task A's included, must pass it.

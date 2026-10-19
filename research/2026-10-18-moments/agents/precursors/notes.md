@@ -2350,3 +2350,11 @@ hour is what pays.
 - The NY open + 2 h still loses.
 - The windows came from the owner's words before any result, so they are not fitted. They are tested here on trades
   the developer made with every hour allowed.
+**The owner, 22:18 Thai:** "that is why I said: trade only the windows I gave; outside them, the lowest priority -
+unless the setup is really clean and clear."
+
+What follows from it (in the memory and in `../DEV_PROMPT.md` as Task P4, after P3):
+- the core rule is B2 only in Asia 07-09 / London 13-14 / the NY open + 1-2 h (Thai clock);
+- outside the windows there is no trade until the owner defines "really clean" on real charts;
+- the NY window's loss is to be explained and its conditions changed, the window kept;
+- a rule that reaches +0.15 in both parts is frozen for the one exam read.
