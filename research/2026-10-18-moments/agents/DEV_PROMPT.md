@@ -246,6 +246,53 @@ The owner's Thai-clock hour is the one that pays.
 4. **If any rule reaches >= +0.15 R in both parts with trades enough to judge,** freeze it (the exact
    specification) and give the exam command. Do not run it: the measurer reads the exam once.
 
+### Task P5 (after P4, owner 2026-10-19 22:35 Thai) - the owner's whole pattern set, on the right swing scale
+
+The owner marked the formations of 2026-10-19 on M1. The measurer's rough count of the day (Thai time) gave about 11.
+The swing points are from a 10-USD ZigZag on the real M1 bars.
+
+| # | Time | Formation | Price | After |
+|---|---|---|---|---|
+| 1 | 06:30-07:05 | M | 4185 / 4187.6 | -22 |
+| 2 | 05:xx-08:26 | a wide W | 4166 / 4165.6 | +19 |
+| 3 | 09:10-09:32 | a small M, then a W | | |
+| 4 | 11:30-12:30 | M at about 4184.7 | | -11 |
+| 5 | 12:29-13:32 | W / higher low | 4174 / 4171 | +19 |
+| 6 | 12:57-14:33 | triple top, the last top sweeping above (4186.2 / 4186.5 / 4190.25) | | -28 |
+| 7 | 14:45-17:20 | descending channel, broken at 17:20 | | |
+| 8 | 17:46-18:16 | V, then a failed retest at 4177 | | -18 |
+| 9 | 19:03-19:09 | a small W, then a lower high | | |
+| 10 | 20:30-20:47 | the NY-open fake leg up to 4167, then the drop to 4143 | | |
+| 11 | 20:47 on | a base / W at the bottom | | |
+
+The owner: "that's it - and there are triple tops and channel breaks too".
+
+The 15 turns of 10+ USD on that day are 06:29 / 07:02 H, 08:26 L, 09:10 H, 09:32 L, 11:57 H, 12:29 L, 12:57 H,
+13:32 L, 14:33 H, 17:46 L, 18:16 H, 19:03 L, 19:09 H, 20:47 L, 21:00 H. Every learning day has at least 5 such legs
+(median 39).
+
+**Why the current detector misses them:** it builds patterns from 2 x M1-ATR swings, which gives about 15 catches a
+day that the owner rejected as unclear. The owner's formations live on swings of about the trade's size: 10+ USD legs,
+or a set share of the H1 ATR.
+
+**P5:**
+1. **Rebuild the swing points** on that scale. Choose the size from a rule written down before computing, e.g. a
+   fixed share of the H1 ATR.
+2. **Detect the owner's whole set on those swings:**
+   - double / triple tops and bottoms (with a sweep of the earlier ones);
+   - H&S / inverse H&S;
+   - channel breaks (two parallel swing lines broken);
+   - break and retest (a broken level tested from the other side, then rejected);
+   - the fake first leg at an open;
+   - a base / range break;
+   - A-B-C-D-E triangles (the owner: "if it makes A-B-C-D-E, it is set to break").
+3. **A shape test:** 2026-10-19 is after the data end and outside every part, so it may serve only as a shape check,
+   never for outcomes or for fitting. Does the detector find the 11 formations above, at about those times?
+   - List the found / missed / extra ones.
+   - Draw the day.
+   - Then draw 12 catches from the learning parts, picked by a written rule, for the owner to confirm.
+4. **Only after the owner's confirmation:** B2 entries in the owner's windows, the full report, the losers by reason.
+
 ### Task P (FIRST, owner 2026-10-19 11:15 Thai) - the chart pattern at the level
 
 Build this before anything else. Every later entry, Task A's included, must pass it.

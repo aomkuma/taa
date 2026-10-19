@@ -2358,3 +2358,26 @@ What follows from it (in the memory and in `../DEV_PROMPT.md` as Task P4, after 
 - outside the windows there is no trade until the owner defines "really clean" on real charts;
 - the NY window's loss is to be explained and its conditions changed, the window kept;
 - a rule that reaches +0.15 in both parts is frozen for the one exam read.
+
+## Today's formations, counted with the owner (2026-10-19 22:3x Thai)
+**The owner, on their M1 chart** with boxes at the 07:00 top, the 12:00 top, the 14:45-17:45 slide and the 17:46-18:16
+V + retest: "how many highs / lows did it make today; if we catch the timing, how many trades; believe me, every day
+has chances like this, sideways or trending".
+
+**Measured** (a fixed 10-USD ZigZag on the real M1 bars; the first counter had a bug - one wide bar's own high and low
+both counted as turns, 472-974 "legs" on crash days - fixed so a turn needs a later bar, and hand-checked):
+- **2026-10-19:** 15 turns, 14 legs of 10+ USD; about 4-5 of them in the owner's windows.
+- **P1 + P2, 127 days:** at least 5 legs a day; the 10 % / median / 90 % are 16 / 39 / 137; the calmest months
+  (Nov-Dec) have a median of 19-23.
+
+**The rough count of formations** (by eye from the owner's chart + the swing points): about 11.
+- tops: M 06:30-07:05, M 11:30-12:30, a triple top with the last top sweeping (12:57-14:33);
+- bottoms: a wide W to 08:26, W / higher low 13:32, V 17:46, a base after 20:47;
+- continuation: a descending channel broken at 17:20, a failed retest at 18:16, the NY-open fake leg then the drop.
+
+About 5-6 of them are in the owner's windows. **The owner:** "that's it - and there are triple tops and channel
+breaks too".
+
+**Consequence:** the detector must work on swings of the trade's size (10+ USD legs), not on 2 x M1-ATR micro-swings,
+and must cover the owner's whole set. That is Task P5 in `../DEV_PROMPT.md`, queued after P3 and P4. The day is a
+shape check only: it lies after the data end and is not used for outcomes.
