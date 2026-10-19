@@ -1,0 +1,35 @@
+bursts: 10 USD within 5 minutes, less than 3 against first
+  older: 1141 (2.0 a weekday), up 460 / down 681
+  latest learning: 7810 (60.1 a weekday), up 3711 / down 4099
+  exam: 2529 (19.5 a weekday), up 1266 / down 1263
+
+the latest learning months, by the Thai hour (bursts a weekday):
+hour_th
+0     2.54
+1     2.11
+2     2.24
+3     2.10
+4     1.07
+5     1.18
+6     2.74
+7     3.05
+8     4.06
+9     2.24
+10    1.43
+11    0.78
+12    1.97
+13    2.26
+14    1.71
+15    2.22
+16    1.83
+17    1.72
+18    1.77
+19    2.38
+20    4.54
+21    6.04
+22    4.90
+23    3.21
+
+just before the bursts vs every minute (latest learning months), median [quartiles]:
+  squeeze30  bursts [1.14, 1.56, 2.22]   every minute [0.97, 1.3, 1.77]
+  vol5       bursts [1.05, 1.33, 1.75]   every minute [0.78, 1.0, 1.27]

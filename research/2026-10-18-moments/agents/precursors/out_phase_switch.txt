@@ -1,0 +1,6 @@
+M15 | P1: 121 trades (1.89 a weekday), win 0.347, R +0.097, USD +117.4, max DD 41.7, worst -10.66, streak 5, exits {'surrender': 52, 'win': 42, 'stop': 20, 'time': 7} | the D1-way trades 93
+M15 | P2: 129 trades (1.95 a weekday), win 0.349, R -0.132, USD -170.7, max DD 198.7, worst -12.43, streak 8, exits {'stop': 52, 'win': 45, 'surrender': 32} | the D1-way trades 63
+M5 | P1: 213 trades (3.33 a weekday), win 0.268, R +0.010, USD +22.1, max DD 106.8, worst -10.80, streak 7, exits {'surrender': 114, 'win': 57, 'stop': 34, 'time': 8} | the D1-way trades 159
+M5 | P2: 259 trades (3.92 a weekday), win 0.367, R -0.090, USD -232.9, max DD 327.9, worst -12.43, streak 10, exits {'stop': 99, 'win': 95, 'surrender': 65} | the D1-way trades 135
+
+neither is positive in both learning parts: the exam is not read

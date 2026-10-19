@@ -1,0 +1,62 @@
+M5 | S1 aligned D1 way | surrender Nonem / None | P1: 105 trades (1.64 a weekday), win 0.448, R -0.014, USD -14.7, max DD 84.9, worst -10.91, streak 7, exits {'stop': 47, 'win': 47, 'time': 11}
+M5 | S1 aligned D1 way | surrender Nonem / None | P2: 116 trades (1.76 a weekday), win 0.457, R -0.099, USD -114.6, max DD 203.8, worst -11.34, streak 7, exits {'stop': 63, 'win': 53}
+M5 | S1 aligned D1 way | surrender 3m / 2.0 | P1: 159 trades (2.48 a weekday), win 0.277, R +0.011, USD +17.7, max DD 77.1, worst -10.80, streak 6, exits {'surrender': 84, 'win': 44, 'stop': 25, 'time': 6}
+M5 | S1 aligned D1 way | surrender 3m / 2.0 | P2: 135 trades (2.05 a weekday), win 0.378, R -0.095, USD -128.4, max DD 206.5, worst -11.34, streak 7, exits {'stop': 55, 'win': 51, 'surrender': 29}
+M5 | S1 aligned D1 way | surrender 3m / 3.0 | P1: 194 trades (3.03 a weekday), win 0.227, R +0.017, USD +33.7, max DD 83.7, worst -10.83, streak 8, exits {'surrender': 123, 'win': 44, 'stop': 22, 'time': 5}
+M5 | S1 aligned D1 way | surrender 3m / 3.0 | P2: 146 trades (2.21 a weekday), win 0.342, R -0.107, USD -156.2, max DD 210.7, worst -11.34, streak 7, exits {'stop': 55, 'win': 50, 'surrender': 41}
+M5 | S1 aligned D1 way | surrender 5m / 2.0 | P1: 132 trades (2.06 a weekday), win 0.311, R -0.015, USD -19.7, max DD 83.4, worst -10.80, streak 11, exits {'surrender': 54, 'win': 41, 'stop': 31, 'time': 6}
+M5 | S1 aligned D1 way | surrender 5m / 2.0 | P2: 124 trades (1.88 a weekday), win 0.403, R -0.108, USD -134.0, max DD 229.4, worst -11.34, streak 7, exits {'stop': 55, 'win': 50, 'surrender': 19}
+M5 | S1 aligned D1 way | surrender 5m / 3.0 | P1: 146 trades (2.28 a weekday), win 0.247, R -0.036, USD -53.2, max DD 92.3, worst -10.74, streak 8, exits {'surrender': 78, 'win': 36, 'stop': 28, 'time': 4}
+M5 | S1 aligned D1 way | surrender 5m / 3.0 | P2: 128 trades (1.94 a weekday), win 0.383, R -0.105, USD -134.2, max DD 216.5, worst -11.34, streak 7, exits {'stop': 52, 'win': 49, 'surrender': 27}
+M5 | S2 fade the M30 edge | surrender Nonem / None | P1: 187 trades (2.92 a weekday), win 0.401, R -0.099, USD -185.4, max DD 241.5, worst -12.12, streak 7, exits {'stop': 96, 'win': 75, 'time': 16}
+M5 | S2 fade the M30 edge | surrender Nonem / None | P2: 298 trades (4.52 a weekday), win 0.497, R -0.008, USD -24.4, max DD 192.6, worst -12.43, streak 8, exits {'win': 148, 'stop': 147, 'time': 3}
+M5 | S2 fade the M30 edge | surrender 3m / 2.0 | P1: 310 trades (4.84 a weekday), win 0.239, R -0.074, USD -229.1, max DD 284.6, worst -12.12, streak 14, exits {'surrender': 163, 'win': 74, 'stop': 62, 'time': 11}
+M5 | S2 fade the M30 edge | surrender 3m / 2.0 | P2: 360 trades (5.45 a weekday), win 0.411, R +0.015, USD +53.5, max DD 175.2, worst -12.43, streak 10, exits {'win': 148, 'stop': 110, 'surrender': 101, 'time': 1}
+M5 | S2 fade the M30 edge | surrender 3m / 3.0 | P1: 354 trades (5.53 a weekday), win 0.189, R -0.079, USD -278.5, max DD 326.1, worst -12.12, streak 12, exits {'surrender': 226, 'win': 67, 'stop': 52, 'time': 9}
+M5 | S2 fade the M30 edge | surrender 3m / 3.0 | P2: 403 trades (6.11 a weekday), win 0.345, R +0.012, USD +48.6, max DD 175.7, worst -12.43, streak 10, exits {'surrender': 168, 'win': 139, 'stop': 95, 'time': 1}
+M5 | S2 fade the M30 edge | surrender 5m / 2.0 | P1: 236 trades (3.69 a weekday), win 0.288, R -0.073, USD -172.8, max DD 205.5, worst -12.12, streak 12, exits {'surrender': 93, 'win': 68, 'stop': 62, 'time': 13}
+M5 | S2 fade the M30 edge | surrender 5m / 2.0 | P2: 326 trades (4.94 a weekday), win 0.429, R -0.015, USD -47.5, max DD 177.0, worst -12.43, streak 10, exits {'win': 140, 'stop': 118, 'surrender': 66, 'time': 2}
+M5 | S2 fade the M30 edge | surrender 5m / 3.0 | P1: 245 trades (3.83 a weekday), win 0.253, R -0.088, USD -215.7, max DD 248.1, worst -12.12, streak 12, exits {'surrender': 116, 'win': 62, 'stop': 58, 'time': 9}
+M5 | S2 fade the M30 edge | surrender 5m / 3.0 | P2: 343 trades (5.20 a weekday), win 0.402, R -0.014, USD -48.4, max DD 178.1, worst -12.43, streak 11, exits {'win': 138, 'stop': 112, 'surrender': 93}
+M5 | S3 D1 way | surrender Nonem / None | P1: 490 trades (7.66 a weekday), win 0.424, R -0.058, USD -285.5, max DD 409.1, worst -12.12, streak 8, exits {'stop': 233, 'win': 208, 'time': 49}
+M5 | S3 D1 way | surrender Nonem / None | P2: 924 trades (14.00 a weekday), win 0.465, R -0.069, USD -636.1, max DD 697.1, worst -13.80, streak 8, exits {'stop': 480, 'win': 430, 'time': 14}
+M5 | S3 D1 way | surrender 3m / 2.0 | P1: 757 trades (11.83 a weekday), win 0.255, R -0.043, USD -324.3, max DD 458.1, worst -12.12, streak 11, exits {'surrender': 386, 'win': 193, 'stop': 150, 'time': 28}
+M5 | S3 D1 way | surrender 3m / 2.0 | P2: 1160 trades (17.58 a weekday), win 0.365, R -0.066, USD -767.2, max DD 819.3, worst -13.80, streak 10, exits {'win': 423, 'stop': 398, 'surrender': 325, 'time': 14}
+M5 | S3 D1 way | surrender 3m / 3.0 | P1: 989 trades (15.45 a weekday), win 0.185, R -0.040, USD -398.3, max DD 481.6, worst -12.12, streak 11, exits {'surrender': 655, 'win': 183, 'stop': 128, 'time': 23}
+M5 | S3 D1 way | surrender 3m / 3.0 | P2: 1322 trades (20.03 a weekday), win 0.314, R -0.065, USD -863.4, max DD 922.9, worst -13.80, streak 10, exits {'surrender': 521, 'win': 415, 'stop': 376, 'time': 10}
+M5 | S3 D1 way | surrender 5m / 2.0 | P1: 627 trades (9.80 a weekday), win 0.298, R -0.045, USD -283.3, max DD 400.9, worst -12.12, streak 11, exits {'surrender': 256, 'win': 187, 'stop': 152, 'time': 32}
+M5 | S3 D1 way | surrender 5m / 2.0 | P2: 1012 trades (15.33 a weekday), win 0.410, R -0.056, USD -565.2, max DD 669.1, worst -13.80, streak 10, exits {'win': 415, 'stop': 403, 'surrender': 183, 'time': 11}
+M5 | S3 D1 way | surrender 5m / 3.0 | P1: 705 trades (11.02 a weekday), win 0.237, R -0.056, USD -396.4, max DD 478.1, worst -12.12, streak 10, exits {'surrender': 383, 'win': 167, 'stop': 132, 'time': 23}
+M5 | S3 D1 way | surrender 5m / 3.0 | P2: 1071 trades (16.23 a weekday), win 0.367, R -0.066, USD -708.3, max DD 752.5, worst -13.80, streak 10, exits {'win': 393, 'stop': 379, 'surrender': 291, 'time': 8}
+M15 | S1 aligned D1 way | surrender Nonem / None | P1: 78 trades (1.22 a weekday), win 0.462, R +0.056, USD +44.0, max DD 58.8, worst -10.66, streak 4, exits {'win': 36, 'stop': 33, 'time': 9}
+M15 | S1 aligned D1 way | surrender Nonem / None | P2: 59 trades (0.89 a weekday), win 0.390, R -0.234, USD -138.0, max DD 177.6, worst -11.34, streak 8, exits {'stop': 36, 'win': 23}
+M15 | S1 aligned D1 way | surrender 3m / 2.0 | P1: 93 trades (1.45 a weekday), win 0.344, R +0.113, USD +105.5, max DD 41.7, worst -10.66, streak 5, exits {'surrender': 42, 'win': 32, 'stop': 13, 'time': 6}
+M15 | S1 aligned D1 way | surrender 3m / 2.0 | P2: 63 trades (0.95 a weekday), win 0.302, R -0.205, USD -128.8, max DD 139.8, worst -11.34, streak 8, exits {'stop': 27, 'win': 19, 'surrender': 17}
+M15 | S1 aligned D1 way | surrender 3m / 3.0 | P1: 96 trades (1.50 a weekday), win 0.302, R +0.116, USD +111.0, max DD 41.7, worst -10.57, streak 5, exits {'surrender': 53, 'win': 29, 'stop': 9, 'time': 5}
+M15 | S1 aligned D1 way | surrender 3m / 3.0 | P2: 64 trades (0.97 a weekday), win 0.281, R -0.202, USD -129.4, max DD 130.3, worst -11.34, streak 8, exits {'stop': 26, 'surrender': 20, 'win': 18}
+M15 | S1 aligned D1 way | surrender 5m / 2.0 | P1: 90 trades (1.41 a weekday), win 0.356, R -0.007, USD -6.2, max DD 69.1, worst -10.66, streak 5, exits {'win': 32, 'surrender': 26, 'stop': 25, 'time': 7}
+M15 | S1 aligned D1 way | surrender 5m / 2.0 | P2: 63 trades (0.95 a weekday), win 0.333, R -0.238, USD -149.8, max DD 178.8, worst -11.34, streak 8, exits {'stop': 31, 'win': 21, 'surrender': 11}
+M15 | S1 aligned D1 way | surrender 5m / 3.0 | P1: 95 trades (1.48 a weekday), win 0.316, R +0.063, USD +59.5, max DD 41.3, worst -10.66, streak 5, exits {'surrender': 43, 'win': 30, 'stop': 16, 'time': 6}
+M15 | S1 aligned D1 way | surrender 5m / 3.0 | P2: 63 trades (0.95 a weekday), win 0.333, R -0.212, USD -133.3, max DD 162.3, worst -11.34, streak 8, exits {'stop': 29, 'win': 21, 'surrender': 13}
+M15 | S2 fade the M30 edge | surrender Nonem / None | P1: 122 trades (1.91 a weekday), win 0.434, R -0.048, USD -59.1, max DD 148.0, worst -12.12, streak 5, exits {'stop': 59, 'win': 53, 'time': 10}
+M15 | S2 fade the M30 edge | surrender Nonem / None | P2: 178 trades (2.70 a weekday), win 0.489, R -0.014, USD -24.1, max DD 160.1, worst -12.43, streak 5, exits {'stop': 88, 'win': 87, 'time': 3}
+M15 | S2 fade the M30 edge | surrender 3m / 2.0 | P1: 145 trades (2.27 a weekday), win 0.303, R -0.072, USD -104.4, max DD 195.2, worst -12.12, streak 11, exits {'surrender': 57, 'win': 44, 'stop': 37, 'time': 7}
+M15 | S2 fade the M30 edge | surrender 3m / 2.0 | P2: 194 trades (2.94 a weekday), win 0.407, R +0.006, USD +11.5, max DD 102.0, worst -12.43, streak 7, exits {'win': 79, 'stop': 62, 'surrender': 52, 'time': 1}
+M15 | S2 fade the M30 edge | surrender 3m / 3.0 | P1: 157 trades (2.45 a weekday), win 0.236, R -0.067, USD -105.0, max DD 174.8, worst -12.12, streak 10, exits {'surrender': 86, 'win': 37, 'stop': 30, 'time': 4}
+M15 | S2 fade the M30 edge | surrender 3m / 3.0 | P2: 201 trades (3.05 a weekday), win 0.358, R -0.004, USD -7.5, max DD 120.5, worst -12.43, streak 7, exits {'surrender': 76, 'win': 72, 'stop': 53}
+M15 | S2 fade the M30 edge | surrender 5m / 2.0 | P1: 141 trades (2.20 a weekday), win 0.333, R -0.057, USD -80.3, max DD 202.0, worst -12.12, streak 11, exits {'win': 47, 'surrender': 45, 'stop': 41, 'time': 8}
+M15 | S2 fade the M30 edge | surrender 5m / 2.0 | P2: 194 trades (2.94 a weekday), win 0.448, R -0.008, USD -14.7, max DD 152.1, worst -12.43, streak 7, exits {'win': 87, 'stop': 77, 'surrender': 28, 'time': 2}
+M15 | S2 fade the M30 edge | surrender 5m / 3.0 | P1: 151 trades (2.36 a weekday), win 0.278, R -0.092, USD -139.0, max DD 230.9, worst -12.12, streak 11, exits {'surrender': 67, 'win': 42, 'stop': 37, 'time': 5}
+M15 | S2 fade the M30 edge | surrender 5m / 3.0 | P2: 197 trades (2.98 a weekday), win 0.421, R -0.002, USD -4.2, max DD 154.2, worst -12.43, streak 8, exits {'win': 83, 'stop': 70, 'surrender': 43, 'time': 1}
+M15 | S3 D1 way | surrender Nonem / None | P1: 358 trades (5.59 a weekday), win 0.444, R +0.007, USD +23.9, max DD 155.7, worst -12.12, streak 9, exits {'win': 159, 'stop': 159, 'time': 40}
+M15 | S3 D1 way | surrender Nonem / None | P2: 535 trades (8.11 a weekday), win 0.456, R -0.082, USD -440.9, max DD 498.1, worst -14.71, streak 8, exits {'stop': 279, 'win': 244, 'time': 12}
+M15 | S3 D1 way | surrender 3m / 2.0 | P1: 428 trades (6.69 a weekday), win 0.297, R -0.011, USD -47.1, max DD 126.3, worst -12.12, streak 7, exits {'surrender': 186, 'win': 127, 'stop': 89, 'time': 26}
+M15 | S3 D1 way | surrender 3m / 2.0 | P2: 586 trades (8.88 a weekday), win 0.375, R -0.054, USD -318.4, max DD 406.0, worst -14.71, streak 9, exits {'win': 220, 'stop': 201, 'surrender': 157, 'time': 8}
+M15 | S3 D1 way | surrender 3m / 3.0 | P1: 480 trades (7.50 a weekday), win 0.231, R -0.000, USD -2.3, max DD 94.8, worst -12.12, streak 7, exits {'surrender': 288, 'win': 111, 'stop': 63, 'time': 18}
+M15 | S3 D1 way | surrender 3m / 3.0 | P2: 612 trades (9.27 a weekday), win 0.322, R -0.066, USD -402.4, max DD 463.2, worst -14.71, streak 9, exits {'surrender': 233, 'win': 197, 'stop': 178, 'time': 4}
+M15 | S3 D1 way | surrender 5m / 2.0 | P1: 410 trades (6.41 a weekday), win 0.346, R -0.022, USD -89.7, max DD 158.9, worst -12.12, streak 10, exits {'win': 142, 'surrender': 124, 'stop': 115, 'time': 29}
+M15 | S3 D1 way | surrender 5m / 2.0 | P2: 573 trades (8.68 a weekday), win 0.414, R -0.052, USD -295.7, max DD 357.8, worst -14.71, streak 8, exits {'win': 237, 'stop': 225, 'surrender': 102, 'time': 9}
+M15 | S3 D1 way | surrender 5m / 3.0 | P1: 449 trades (7.02 a weekday), win 0.281, R -0.019, USD -86.5, max DD 130.9, worst -12.12, streak 12, exits {'surrender': 208, 'win': 126, 'stop': 90, 'time': 25}
+M15 | S3 D1 way | surrender 5m / 3.0 | P2: 599 trades (9.08 a weekday), win 0.371, R -0.062, USD -371.7, max DD 429.2, worst -14.71, streak 10, exits {'win': 222, 'stop': 208, 'surrender': 163, 'time': 6}
+
+nothing is positive in both learning parts: the exam is not read

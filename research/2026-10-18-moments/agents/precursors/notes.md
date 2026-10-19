@@ -1746,3 +1746,55 @@ weekday). None positive in both: the exam is not read. In the active hours the f
 USD before 5 / 10 against only 31-48 % of the time.
 The owner (07:39-07:42 Thai): "count the tops and the lows on the focus timeframe and the larger ones"; "if it makes
 an A-B-C-D-E it is likely to break anyway"; "try other timeframes too, M5, M15"; "then see which kind fits us".
+
+## How do the ones who profit do it? Does gold carry on? - written before it is computed (2026-10-19 07:43 Thai; owner: "not 'that test loses, this one loses' - how do others make a profit? You have to find it")
+Every trade tested this morning had the target equal to the stop and a short clock: it can only profit by choosing the
+side right well over half the time. Traders who profit mostly do not; they cut a loser short and let a winner run
+where the market carries on, and take quick profits where it turns back. So, gold's own character, measured: once
+price has gone X USD from a moment, does it reach 2X (the same way) before coming back to where it started? X = 5,
+10, 20 USD; from every M5 close inside the owner's windows (the present library), the first X within 4 hours, then
+the race within the next 4 hours; by the hour (the active hours or not), the D1 phase, the way against D1 / the
+aligned phase, P1 / P2 (the latest months) and the older halves L1 / L2. Above half: let it run (a trailing or a far
+target pays); below half: take the profit early / trade the turn back.
+**The result (07:44 Thai; `persist.py`, tests `test_persist.py` by hand - on to twice, back to the start, the mirror,
+both ways in one bar / nothing, the touch bar not raced - planted bugs 4 of 4; `out_persist.txt`, `persist.csv`):** once
+price has gone X USD, the share reaching 2X before back at the start, L1 / L2 / P1 / P2: X = 5 in the active hours
+0.516 / 0.523 / 0.538 / 0.534 (the steadiest - above half in all four); quiet hours 0.523 / 0.499 / 0.483 / 0.508;
+X = 10 all 0.517 / 0.510 / 0.494 / 0.480; X = 20 in a D1 back-and-forth phase 0.714 / 0.633 / 0.580 / 0.501. Gold
+carries on a little after the first 5 USD in the active hours; nowhere strongly.
+
+## If it does not run, give up - written before it is computed (2026-10-19 07:45 Thai; owner: "that is why I said timing matters: once in, we do not wait for a price that does not run - if we enter it must run; if it does not run, we surrender")
+On the real ticks (2025-10-18 .. 2026-04-17, P1 / P2; the exam 2026-04-18 .. 10-14): decisions at the M5 and at the M15
+closes in the active hours (within 60 minutes of the NY open / PM fix / US data / COMEX); the side (S1) the D1 way in
+the aligned phase, (S2) the fade of the M30 range edge, (S3) the D1 way; a market entry at the first tick after the
+close (a buy at the ask + 0.07, a sell at the bid - 0.07); **the surrender: unless price has gone Y USD our way within
+K minutes, out at the tick at K** (K = 3 / 5, Y = 2 / 3; and none, for the contrast); once it has run, the target 10
+USD (a limit) and the stop 10 USD (the first tick at / beyond, with its gap), out after 60 minutes; one position at a
+time. Chosen: the highest min(R P1, R P2) of those positive in both; the exam once, week by week.
+**The surrender, the result (07:49 Thai; `surrender.py`, tests `test_surrender.py` tick by tick - it ran then the
+target, no run so out at 3 minutes, the same without the surrender wins, the stop first and a sell on the ask, a late
+run still surrenders; planted bugs 4 of 5, the fifth equivalent - no tick is +10 and -10 at once; `out_surrender.txt`).**
+P1 / P2: the aligned D1 way at M15 closes +0.056 / -0.234 without the surrender, **+0.113 / -0.205 (3 min / 2 USD),
++0.116 / -0.202 (3 / 3)** - the surrender lifts it in P1, P2 breaks it; the M30-edge fade at M5 closes -0.099 / -0.008
+without, -0.074 / +0.015 (3 / 2); the D1 way alone negative everywhere. Nothing positive in both: the exam is not read.
+Each side-rule pays in its own market: the D1 way in P1 (a rising, running D1), the fade in P2 (the crash and the wide
+swings after it).
+**The bursts (07:49 Thai; `burst_scan.py`, tests `test_burst_scan.py` - a clean run and its first minute, against
+first is not clean, one bar reaching both is not clean, consecutive starts are one burst; planted bugs 4 of 4 after
+the fourth test; `out_burst_scan.txt`):** 10 USD within 5 minutes with less than 3 against first: 2.0 a weekday in
+2023-08 .. 2025-10, **60.1 in the latest learning months, 19.5 in the exam** - many times a day, as the owner sees.
+By the Thai hour (latest months): 20:00-22:00 4.5-6.0 an hour, 08:00 4.1, 10:00-11:00 0.8-1.4. Before a burst the
+last 30 minutes were already wide (median 1.56 M15 ATRs against 1.30 for every minute) and the volume up (1.33 against
+1.00): bursts come out of an already busy market, not out of a quiet squeeze.
+
+## The side by the phase - written before it is computed (07:49 Thai; `phase_switch.py`)
+One position, the active hours, on the ticks: D1 running (20-day efficiency >= 0.264) and the aligned phase -> the D1
+way; D1 back and forth (<= 0.116) at the M30 edge -> the fade; otherwise no trade. The surrender 3 minutes / 2 USD,
+then 10 / 10, 60 minutes. Decisions at the M15 closes, and (a second row) at the M5 closes. Chosen: the one with the
+higher min(R P1, R P2) if positive in both; the exam once.
+**The result (07:50 Thai; `phase_switch.py`, test `test_phase_switch.py`; `out_phase_switch.txt`):** M15: P1 121 trades
+(1.89 a weekday) R +0.097, USD +117, max DD 42; P2 129 trades R -0.132, USD -171. M5: +0.010 / -0.090. Not positive
+in both: the exam is not read. Where the losses sit (M15, R by month): the D1 way Nov +2.42, Dec +4.10, **Jan -3.91
+(the blow-off and the crash), Mar -4.94**; the fade Nov +2.22, Feb -1.54, **Mar -4.35**, Apr +1.71. The D1-way trades
+lost in P2 when H1 was busy (the H1 ATR against its median in the top tercile: 40 trades -0.432; P1 the same tercile
++0.154). Few trades a month - the next step reads the January and March losers one by one.
