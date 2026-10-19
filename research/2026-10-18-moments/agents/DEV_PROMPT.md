@@ -286,12 +286,51 @@ Then:
   - write its exact specification (every parameter) in `DEV_LOG.md` under "FROZEN";
   - stop work on that rule and report.
 
-## 6. What to send back (your final message to the measurer)
+## 6. Talk clearly: test what you write, report every time, work in checkpoints (owner, 2026-10-19)
+
+The owner: "talk so that you understand each other; make the dev test what it writes - that it is right - and report
+what it did and that the tests pass, every time."
+
+**Test what you write, every time.**
+- Before you report any step, run the tests of everything you wrote or changed in that step.
+- Paste the pytest summary line, e.g. "9 passed in 1.7s".
+- Run the planted-bug script and paste each bug's CAUGHT / MISSED line. A MISSED bug means you add or fix a test and
+  run again before you report.
+- Run the no-look-ahead check for every new reading.
+- A step with a failing or unrun test is not done. Say so plainly, never "should pass".
+
+**Report every step in the same shape**, in `DEV_LOG.md` and in your message:
+1. What I did (files, one line each).
+2. The tests:
+   - each test's name;
+   - what it checks;
+   - how (the hand-worked numbers);
+   - the pass count.
+3. The planted bugs: each one and whether it was CAUGHT, with the count.
+4. The no-look-ahead check: what was replaced and what stayed equal.
+5. The result (numbers per part) or the charts' path.
+6. Anything you are unsure of, or assumed, stated as a question to the measurer.
+
+**Work in checkpoints.** Stop, and send your report as your final message, at each of these points:
+
+| Checkpoint | What has to be ready |
+|---|---|
+| **A1** | the sweep detector, its tests and the 8-10 drawn catches |
+| **A2** | what tells the fake from the continuation at the decision, per part |
+| **A3** | the trade derived from the paths, its tick backtest in P1 / P2 and the losers by reason |
+| **B1** | the levels and their touch / turn counts, with drawn examples |
+| **B2** | the level trade's backtest and its losers |
+
+The measurer re-runs your tests, measures and shows the owner. It then sends you the measurement and the owner's
+comments, and you continue from there. If something in this prompt is unclear or looks wrong, ask in your report
+instead of guessing. The owner's meaning comes first: when your code and the owner's words differ, the code is wrong.
+
+## 7. What to send back (your final message to the measurer, at each checkpoint: the parts that are ready)
 
 - What you built, as a list of files with one line each.
-- The tests: what each test checks and how, and the planted-bug count.
+- The tests in section 6's shape (each test, what it checks, how, the pass line; the planted bugs CAUGHT / MISSED).
 - The detector charts' page path, with what they show.
-- The results table per part (section 5.4's columns) for every setting tried.
+- The results table per part (section 5, Task A step 4 columns) for every setting tried.
 - The losers by reason, with the chart page path.
 - Any FROZEN rule: its full specification and the command that runs it on the exam. Do not run that command.
 - What you would do next, and why.
