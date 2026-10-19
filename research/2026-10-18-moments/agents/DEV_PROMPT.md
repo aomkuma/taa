@@ -265,9 +265,28 @@ trade on.** The plan agreed with the measurer:
 | The stop | from the structure | beyond the sweep's extreme (bounce) / back inside the zone (break), not a fixed 3 / 5 USD |
 | The target | the next zone of the larger timeframe in the trade's way | about 3-4 M15 bars; surrender if it does not run |
 
-Away from a zone: no trade (except a pullback). The measurer is measuring the touches of these zones (bounce / break /
-fake break, by touches, the M15 direction, the volume, the sweep; the paths' MAE / MFE) and will send the result as
-Task B's input before you start it.
+Away from a zone: no trade (except a pullback).
+
+**The measurer's input for Task B (2026-10-19 11:06 Thai).** The levels are `zones.levels_at`: the four kinds the owner
+picked from drawn charts. The touches are counted in `touches.py` / `touches.parquet`, one row per touch, in the active
+hours. The real candles are at https://claude.ai/artifact/ApKRhFx5KpJxegEEFuRvS8.
+
+| | P1 | P2 |
+|---|---|---|
+| Touches | 404 | 460 |
+| Turned 10 USD back before going 10 past | 0.50 | 0.55 |
+| ... of those, with a wick past the level first | 0.73 | 0.58 |
+| ... how far past, in USD (50 / 90 % of turns) | 1.8 / 7.0 | 0.6 / 6.9 |
+| ... the extreme reached the next level | 0.09 | 0.04 |
+| Went 10 past first, then came 10 back within 60 minutes (a deep sweep) | 21 of 146 | 94 of 201 (median 19 USD past) |
+
+- **The stop:** a turn's stop belongs past the wick, about 7 USD past the level for 90 % of the turns, not at the
+  level. The next level past it is rarely reached.
+- **What a "turn" is:** it is the first 10-USD reaction, not the end of the move. Drawn cases bounced 10 and then broke
+  the level (2025-10-21 18:56 Thai; 2026-01-16 20:23 Thai).
+- **Your job:** whether a touch turns or breaks is not told by the touch alone, nor by the level's kind (not steady
+  across the parts). Find what tells it at the moment of the touch: the approach, the M15 structure as it stands, the
+  volume, a sweep that closes back inside, the session. Build the trade from that.
 
 Build the following:
 - **The levels:** H1 / M15 swing highs / lows, the previous day's high / low, the pre-session range, equal highs /
