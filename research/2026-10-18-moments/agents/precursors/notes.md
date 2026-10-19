@@ -2273,3 +2273,4 @@ Sent to the developer as checkpoint P2, with its rules to be written before comp
   as ns, and fixed that.
 
 Published with the 9 losers: https://claude.ai/artifact/LLCw1sB92SgZNxVWVPYjhQ.
+**The developer's P2 planted bugs re-run (14:00 Thai):** the trade code 57 of 57 caught; its checker 17 of 17.
