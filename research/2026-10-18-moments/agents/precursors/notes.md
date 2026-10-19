@@ -2382,7 +2382,7 @@ breaks too".
 and must cover the owner's whole set. That is Task P5 in `../DEV_PROMPT.md`, queued after P3 and P4. The day is a
 shape check only: it lies after the data end and is not used for outcomes.
 
-## The system audit by a second agent (2026-10-19 22:44 Thai; owner: "try it, nothing to lose; if it works keep it"; "have the agents look and fix together, with care, and with correct test references")
+## The system audit by a second agent (2026-10-19 22:41 Thai; owner: "try it, nothing to lose; if it works keep it"; "have the agents look and fix together, with care, and with correct test references")
 - **The scenario planning** (a picture in formation -> its completions, each with a trigger / stop / target; enter
   when the chart reveals one, in the owner's windows) is added to the developer's P5.
 - **The history download bug, confirmed.** A second read-only run of `download_history.py` stored M1 through
