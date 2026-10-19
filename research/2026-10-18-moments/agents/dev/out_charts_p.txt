@@ -1,0 +1,13 @@
+#1 M1, ihs, P1 buy: #1 2025-12-02 09:45 Thai - P1 - M1 inverse H&S (inverse H&S) at H1 level 4217.43 (x2, swept) - BUY entry 4221.43, stop 4213.96 (risk 7.47 USD), next level 4244.58
+#2 M1, w, P1 buy: #2 2025-12-02 20:24 Thai - P1 - M1 W (W) at H1 level 4205.25 (PDL, swept) - BUY entry 4207.53, stop 4201.49 (risk 6.04 USD), next level 4226.20
+#3 M1, st, P1 buy: #3 2025-12-04 21:33 Thai - P1 - M1 sweep, higher low (sweep, higher low) at H1 level 4205.00 (x3+ / flip, swept) - BUY entry 4211.42, stop 4202.10 (risk 9.32 USD), next level 4214.07
+#4 M1, base, P1 buy: #4 2025-12-02 23:09 Thai - P1 - M1 base, break up (base) at H1 level 4168.42 (x3+ / flip, base) - BUY entry 4174.17, stop 4166.01 (risk 8.16 USD), next level 4201.55
+#5 M1, ihs, P2 sell: #5 2026-03-04 00:04 Thai - P2 - M1 H&S (H&S) at H1 level 5128.87 (x2, at) - SELL entry 5084.69, stop 5136.35 (risk 51.66 USD), next level 5074.30
+#6 M1, w, P2 sell: #6 2026-03-02 16:21 Thai - P2 - M1 M (M) at H1 level 5393.02 (last top, swept) - SELL entry 5388.73, stop 5400.86 (risk 12.13 USD), next level 5340.76
+#7 M1, st, P2 sell: #7 2026-03-03 21:42 Thai - P2 - M1 sweep, lower high (sweep, lower high) at H1 level 5128.87 (x2, swept) - SELL entry 5085.59, stop 5149.65 (risk 64.06 USD), next level 5074.30
+#8 M1, base, P2 sell: #8 2026-03-02 16:46 Thai - P2 - M1 base, break down (base) at H1 level 5393.02 (last top, base) - SELL entry 5392.28, stop 5398.83 (risk 6.55 USD), next level 5340.76
+#9 M5 entry, P1 buy: #9 2025-11-27 22:25 Thai - P1 - M5 W (W) at H1 level 4156.94 (x3+ / flip, swept) - BUY entry 4159.58, stop 4152.33 (risk 7.25 USD), next level 4168.42
+#10 M5 entry, P2 sell: #10 2026-03-05 15:05 Thai - P2 - M5 base, break down (base) at H1 level 5167.80 (x2, base) - SELL entry 5156.16, stop 5169.20 (risk 13.04 USD), next level 5104.52
+#11 after the news first minute, P1: #11 2026-01-09 20:32 Thai - P1 - M1 W (W, the 2nd low swept the 1st) at H1 level 4459.43 (x3+ / flip, at) - BUY entry 4476.89, stop 4458.16 (risk 18.73 USD), next level 4479.41
+#12 after the news first minute, P2: #12 2026-03-02 22:09 Thai - P2 - M1 W (W, the 2nd low swept the 1st) after the 10:00 NY first minute (its extreme 5320.30) - BUY entry 5345.03, stop 5308.90 (risk 36.13 USD), next level 5419.09
+12 drawn -> C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\charts\p_patterns, page C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\charts\p_patterns.html

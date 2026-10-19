@@ -1,0 +1,11 @@
+#1 #1 2026-01-09 20:30 Thai (08:30 NY, NFP) - P1 - FAKED: first leg down 14.1, sweep up 18.6 past p0 at minute 10.4, back 12.9 (came down)  <- the owner's own example (US jobs report)
+#2 #2 2026-01-05 20:30 Thai (08:30 NY) - P1 - FAKED: first leg down 3.5, sweep up 14.6 past p0 at minute 11.0, back 3.2 (did not come down)  <- faked, P1 08:30 NY: the one nearest the median sweep
+#3 #3 2026-01-08 22:00 Thai (10:00 NY) - P1 - FAKED: first leg down 5.1, sweep up 15.9 past p0 at minute 11.9, back 5.3 (did not come down)  <- faked, P1 10:00 NY: the one nearest the median sweep
+#4 #4 2026-01-30 20:30 Thai (08:30 NY, PPI) - P2 - FAKED: first leg down 12.3, sweep up 21.7 past p0 at minute 5.6, back 56.0 (came down, through p0)  <- faked, P2 08:30 NY: the one nearest the median sweep
+#5 #5 2026-01-27 22:00 Thai (10:00 NY) - P2 - FAKED: first leg down 6.5, sweep up 15.5 past p0 at minute 11.5, back 18.4 (came down, through p0)  <- faked, P2 10:00 NY: the one nearest the median sweep
+#6 #6 2025-12-09 22:00 Thai (10:00 NY, JOL) - P1 - CONTINUED: first leg down 6.8, then 8.4 further down within 15 minutes  <- continued, P1, a release minute: nearest the median continuation
+#7 #7 2026-01-29 20:30 Thai (08:30 NY, CLM) - P2 - CONTINUED: first leg down 9.4, then 9.8 further down within 15 minutes  <- continued, P2, a release minute: nearest the median continuation
+#8 #8 2026-03-23 19:30 Thai (08:30 NY) - P2 - FAKED: first leg down 15.6, sweep up 51.9 past p0 at minute 14.7, back 8.3 (did not come down)  <- faked but did not come down (the largest such sweep)
+#9 #9 2026-03-03 22:00 Thai (10:00 NY) - P2 - CONTINUED: first leg up 26.8, then 4.3 further up within 15 minutes  <- the two side rules disagree (the researcher's first 3-USD move reads it: faked)
+#10 #10 2026-03-24 19:30 Thai (08:30 NY) - P2 - FAKED: first leg up 3.9, sweep down 40.2 past p0 at minute 10.2, back 28.4 (came down)  <- the researcher's 'any new extreme' rule calls it continued (the largest such sweep)
+10 cases drawn -> C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\charts\a1_sweeps, page C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\charts\a1_sweeps.html

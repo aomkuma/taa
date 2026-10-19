@@ -1,0 +1,9 @@
+1. M1: the pivots confirmed by d equal the ZigZag on the bars up to d: 150 of 150
+1. M5: the pivots confirmed by d equal the ZigZag on the bars up to d: 150 of 150
+   500 of 2343 checked
+   1000 of 2343 checked
+   1500 of 2343 checked
+   2000 of 2343 checked
+2. the readings at the decision equal after every later M1 bar was replaced: 2343 of 2343
+   power: the structure 10 bars after the decision changed in 2343 of 2343; moving the decision bar's close by 3 ATR changed the patterns found at it in 237 of 479 (decisions with a pattern)
+PASSED

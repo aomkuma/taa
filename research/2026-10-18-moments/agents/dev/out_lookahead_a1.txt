@@ -1,0 +1,5 @@
+events checked: 266 release minutes x 2 side rules x 2 replacements = 1064 comparisons
+1. the decision readings equal after the future was replaced: 1064 of 1064
+2. power: the label changed on 722 of 1064 replacements; moving the last tick before the decision by 5 USD changed the readings on 532 of 532
+3. the label equal after every tick from the release + 30 min was replaced: 532 of 532
+PASSED

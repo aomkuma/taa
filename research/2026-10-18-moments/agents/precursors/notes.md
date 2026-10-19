@@ -2160,3 +2160,44 @@ first minute's.
 |---|---|---|
 | P1 | 3 / 13 / 13 / 33 | 7 / 29 / 11 / 15 |
 | P2 | 10 / 26 / 8 / 21 | 10 / 41 / 6 / 8 |
+
+## The developer's Task P (chart patterns at the level) - measured (2026-10-19 12:08 Thai)
+**What it built:** `../dev/patterns.py`, with rules written in `DEV_LOG.md` before the first run:
+- a causal ATR ZigZag (2 x the TF's ATR);
+- inverse H&S / H&S, W / M (including a second low that sweeps the first), a sweep then a higher low / lower high, and
+  a base then its break;
+- each pattern only at the owner's H1 levels (`zones.levels_at`) or at the news first-minute extreme;
+- M1 / M5 agreement attached as a label;
+- a height cap of 4 x its TF's ATR.
+
+It found 1,893 catches in P1 / P2, with no outcomes computed.
+
+**Measured:**
+- its tests re-run: 60 + 9 passed;
+- my own 13 planted bugs in `patterns.py` were all caught: a flat neckline, the head without its margin, a sweep of any
+  depth, a sweep without the close back, a base broken by a wick, no height cap, the farthest level winning, and
+  others;
+- its 71 planted bugs re-run: running, none missed so far;
+- the catches' times all lie in 2025-10-20 .. 2026-04-17;
+- independently on the M1 bars: the entry equals the next bar's open on 1,475 of 1,476. The other is a decision at 20:55
+  UTC, the last bar before the daily break, with no next bar, so its entry is empty, which is correct;
+- the decision bar's close is beyond the trigger on all of them, and the stop is past the extreme on all of them;
+- none of my files was edited, and nothing was committed by it.
+
+**The 12 catches, read on the real candles (`charts/p_patterns/`, republished for the owner as
+https://claude.ai/artifact/XGjQkQxYpA7vLGgxNZL8aP):**
+- **Recognisable at the level:**
+  - #1, inverse H&S at 4217.43;
+  - #2, W at the previous day's low;
+  - #4, base break up above 4168.42;
+  - #8, base break down at 5393.02;
+  - #9, M5 W at 4156.94;
+  - #11, the owner's NFP case: a W whose second low (the release spike 4459) swept the first.
+- **Doubtful:**
+  - On the crash nights the patterns are huge (#5 H&S, stop 51.66 USD; #7, stop 64.06; #12, 36.13).
+  - In #5 and #7 the breakout is 43-44 USD below the level, which is not "at the level".
+  - #3 and #11 have the next level only about 2.5 USD past the entry.
+
+The owner confirms first. Then come the counts, and the developer's 8 questions (the swing size, the sweep allowance
+against the measured ~7 USD, a base's tightness, M5 against as a filter, the stop when patterns overlap, close next
+levels, the bars' "known" time).
