@@ -1,0 +1,70 @@
+=== FOLLOW 15m, extra cost 0 USD
+   P1 all    n   47  R +0.046 (-0.29..+0.42)  win 0.38  USD    +20.5  median risk 5.8  exits {'time': 29, 'stop': 18}
+   P1 08:30  n   19  R +0.156 (-0.35..+0.80)  win 0.42  USD    +17.2
+   P1 10:00  n   28  R -0.030 (-0.45..+0.41)  win 0.36  USD     +3.4
+   P2 all    n   65  R -0.128 (-0.48..+0.29)  win 0.31  USD    -99.8  median risk 7.2  exits {'stop': 40, 'time': 25}
+   P2 08:30  n   34  R -0.070 (-0.49..+0.41)  win 0.38  USD    -54.5
+   P2 10:00  n   31  R -0.191 (-0.76..+0.61)  win 0.23  USD    -45.3
+=== FOLLOW 15m, extra cost 1 USD
+   P1 all    n   47  R -0.099 (-0.38..+0.22)  win 0.38  USD    -26.5  median risk 6.8  exits {'time': 29, 'stop': 18}
+   P1 08:30  n   19  R +0.005 (-0.42..+0.54)  win 0.42  USD     -1.8
+   P1 10:00  n   28  R -0.169 (-0.53..+0.20)  win 0.36  USD    -24.6
+   P2 all    n   65  R -0.230 (-0.55..+0.15)  win 0.31  USD   -164.8  median risk 8.2  exits {'stop': 40, 'time': 25}
+   P2 08:30  n   34  R -0.184 (-0.55..+0.24)  win 0.38  USD    -88.5
+   P2 10:00  n   31  R -0.280 (-0.79..+0.45)  win 0.23  USD    -76.3
+=== FOLLOW 2R/30m, extra cost 0 USD
+   P1 all    n   47  R +0.010 (-0.35..+0.39)  win 0.38  USD    +18.8  median risk 5.8  exits {'stop': 25, 'target': 12, 'time': 10}
+   P1 08:30  n   19  R +0.036 (-0.48..+0.59)  win 0.37  USD     +5.0
+   P1 10:00  n   28  R -0.007 (-0.48..+0.50)  win 0.39  USD    +13.8
+   P2 all    n   65  R -0.101 (-0.42..+0.23)  win 0.29  USD   -118.4  median risk 7.2  exits {'stop': 41, 'target': 18, 'time': 6}
+   P2 08:30  n   34  R -0.062 (-0.48..+0.39)  win 0.29  USD    -97.7
+   P2 10:00  n   31  R -0.143 (-0.63..+0.34)  win 0.29  USD    -20.7
+=== FOLLOW 2R/30m, extra cost 1 USD
+   P1 all    n   47  R -0.259 (-0.56..+0.07)  win 0.30  USD    -76.2  median risk 6.8  exits {'stop': 26, 'time': 15, 'target': 6}
+   P1 08:30  n   19  R -0.187 (-0.59..+0.26)  win 0.32  USD    -27.1
+   P1 10:00  n   28  R -0.308 (-0.70..+0.15)  win 0.29  USD    -49.0
+   P2 all    n   65  R -0.321 (-0.60..-0.03)  win 0.25  USD   -273.3  median risk 8.2  exits {'stop': 44, 'target': 11, 'time': 10}
+   P2 08:30  n   34  R -0.253 (-0.61..+0.15)  win 0.26  USD   -159.5
+   P2 10:00  n   31  R -0.394 (-0.78..+0.05)  win 0.23  USD   -113.8
+=== FOLLOW 30m, extra cost 0 USD
+   P1 all    n   47  R +0.011 (-0.43..+0.54)  win 0.32  USD     +9.0  median risk 5.8  exits {'stop': 26, 'time': 21}
+   P1 08:30  n   19  R +0.064 (-0.53..+0.82)  win 0.37  USD     +4.6
+   P1 10:00  n   28  R -0.026 (-0.63..+0.67)  win 0.29  USD     +4.4
+   P2 all    n   65  R +0.150 (-0.55..+1.15)  win 0.22  USD    +47.3  median risk 7.2  exits {'stop': 46, 'time': 19}
+   P2 08:30  n   34  R +0.089 (-0.50..+0.80)  win 0.26  USD    -86.8
+   P2 10:00  n   31  R +0.217 (-0.89..+2.15)  win 0.16  USD   +134.1
+=== FOLLOW 30m, extra cost 1 USD
+   P1 all    n   47  R -0.131 (-0.50..+0.31)  win 0.30  USD    -38.0  median risk 6.8  exits {'stop': 26, 'time': 21}
+   P1 08:30  n   19  R -0.074 (-0.58..+0.56)  win 0.32  USD    -14.4
+   P1 10:00  n   28  R -0.169 (-0.68..+0.41)  win 0.29  USD    -23.6
+   P2 all    n   65  R +0.016 (-0.60..+0.93)  win 0.22  USD    -17.7  median risk 8.2  exits {'stop': 46, 'time': 19}
+   P2 08:30  n   34  R -0.066 (-0.56..+0.54)  win 0.26  USD   -120.8
+   P2 10:00  n   31  R +0.107 (-0.90..+1.88)  win 0.16  USD   +103.1
+=== STRADDLE 15m, extra cost 0 USD
+   P1 all    n   94  R +0.205 (+0.01..+0.42)  win 0.56  USD   +153.9  median risk 8.0  exits {'time': 70, 'stop': 24}
+   P1 08:30  n   41  R +0.316 (+0.01..+0.62)  win 0.63  USD   +103.7
+   P1 10:00  n   53  R +0.119 (-0.17..+0.42)  win 0.51  USD    +50.3
+   P2 all    n  122  R -0.057 (-0.34..+0.29)  win 0.33  USD    -56.1  median risk 8.0  exits {'stop': 63, 'time': 59}
+   P2 08:30  n   59  R +0.088 (-0.26..+0.47)  win 0.41  USD    +41.3
+   P2 10:00  n   63  R -0.193 (-0.59..+0.38)  win 0.25  USD    -97.4
+=== STRADDLE 15m, extra cost 1 USD
+   P1 all    n   94  R +0.052 (-0.14..+0.26)  win 0.50  USD    +39.3  median risk 8.0  exits {'time': 64, 'stop': 30}
+   P1 08:30  n   41  R +0.199 (-0.11..+0.50)  win 0.56  USD    +65.4
+   P1 10:00  n   53  R -0.061 (-0.33..+0.20)  win 0.45  USD    -26.0
+   P2 all    n  122  R -0.177 (-0.44..+0.15)  win 0.30  USD   -172.6  median risk 8.0  exits {'stop': 67, 'time': 55}
+   P2 08:30  n   59  R -0.069 (-0.39..+0.29)  win 0.39  USD    -32.7
+   P2 10:00  n   63  R -0.278 (-0.67..+0.28)  win 0.21  USD   -139.9
+=== STRADDLE 30m, extra cost 0 USD
+   P1 all    n   94  R +0.308 (+0.04..+0.60)  win 0.53  USD   +231.7  median risk 8.0  exits {'time': 62, 'stop': 32}
+   P1 08:30  n   41  R +0.459 (+0.07..+0.85)  win 0.61  USD   +150.4
+   P1 10:00  n   53  R +0.192 (-0.21..+0.62)  win 0.47  USD    +81.3
+   P2 all    n  122  R +0.140 (-0.34..+0.90)  win 0.34  USD   +136.8  median risk 8.0  exits {'stop': 75, 'time': 47}
+   P2 08:30  n   59  R +0.114 (-0.23..+0.47)  win 0.47  USD    +53.9
+   P2 10:00  n   63  R +0.164 (-0.66..+1.57)  win 0.22  USD    +82.9
+=== STRADDLE 30m, extra cost 1 USD
+   P1 all    n   94  R +0.127 (-0.13..+0.39)  win 0.48  USD    +95.6  median risk 8.0  exits {'time': 56, 'stop': 38}
+   P1 08:30  n   41  R +0.368 (+0.00..+0.74)  win 0.59  USD   +120.8
+   P1 10:00  n   53  R -0.059 (-0.39..+0.29)  win 0.40  USD    -25.2
+   P2 all    n  122  R +0.037 (-0.43..+0.80)  win 0.30  USD    +35.9  median risk 8.0  exits {'stop': 80, 'time': 42}
+   P2 08:30  n   59  R -0.031 (-0.36..+0.31)  win 0.39  USD    -14.7
+   P2 10:00  n   63  R +0.100 (-0.71..+1.52)  win 0.21  USD    +50.6

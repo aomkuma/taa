@@ -1,0 +1,7 @@
+ORB 13:00 Thai (L15 k2 X60) on the ticks:
+  P1: n   59  R +0.206 (-0.04..+0.47)  win 0.54  USD   +112.6  exits {'time': 37, 'stop': 15, 'target': 7};  the same trades on M1: R +0.205
+  P2: n   60  R +0.120 (-0.14..+0.38)  win 0.53  USD   +187.3  exits {'time': 31, 'stop': 21, 'target': 8};  the same trades on M1: R +0.129
+
+reclaim in the owner's windows (Q7b) on the ticks:
+  P1: n   19  R +0.312 (-0.15..+0.77)  win 0.58  USD    +59.8  exits {'time': 12, 'stop': 4, 'target': 3};  the same trades on M1: R +0.308
+  P2: n   22  R +0.310 (-0.03..+0.70)  win 0.50  USD   +311.5  exits {'time': 17, 'target': 3, 'stop': 2};  the same trades on M1: R +0.311

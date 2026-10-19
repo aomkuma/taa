@@ -1,0 +1,50 @@
+=== B2 (P3)
+  h1      with     P1 n   93  R -0.017 (-0.17..+0.15)  win 0.38  USD    +31.6  |  P2 n   98  R -0.060 (-0.22..+0.10)  win 0.33  USD   -119.1
+  h1      against  P1 n   96  R -0.019 (-0.16..+0.13)  win 0.41  USD    -22.5  |  P2 n  108  R -0.094 (-0.21..+0.03)  win 0.44  USD    -19.4
+  h1      mixed    P1 n  159  R -0.034 (-0.16..+0.10)  win 0.38  USD    -71.1  |  P2 n  136  R +0.097 (-0.07..+0.26)  win 0.40  USD   +234.3
+  m15     with     P1 n  104  R -0.066 (-0.21..+0.10)  win 0.35  USD   -120.7  |  P2 n   92  R +0.018 (-0.13..+0.18)  win 0.45  USD   +317.0
+  m15     against  P1 n  101  R +0.045 (-0.09..+0.19)  win 0.44  USD    +18.0  |  P2 n   96  R -0.026 (-0.18..+0.14)  win 0.42  USD    +24.6
+  m15     mixed    P1 n  143  R -0.045 (-0.18..+0.10)  win 0.38  USD    +40.8  |  P2 n  154  R -0.014 (-0.15..+0.14)  win 0.34  USD   -245.7
+  move4h  with     P1 n  221  R -0.027 (-0.14..+0.09)  win 0.37  USD     +1.7  |  P2 n  224  R -0.025 (-0.12..+0.08)  win 0.38  USD    +82.8
+  move4h  against  P1 n  127  R -0.022 (-0.15..+0.11)  win 0.41  USD    -63.7  |  P2 n  118  R +0.022 (-0.14..+0.19)  win 0.40  USD    +13.1
+  day     with     P1 n  209  R -0.024 (-0.14..+0.09)  win 0.36  USD    -31.9  |  P2 n  205  R -0.008 (-0.11..+0.10)  win 0.39  USD   +156.2
+  day     against  P1 n  139  R -0.027 (-0.14..+0.10)  win 0.42  USD    -30.1  |  P2 n  137  R -0.009 (-0.15..+0.14)  win 0.39  USD    -60.4
+  h4tide  with     P1 n  182  R -0.029 (-0.15..+0.09)  win 0.36  USD   -130.3  |  P2 n  163  R +0.040 (-0.10..+0.18)  win 0.40  USD   +211.0
+  h4tide  against  P1 n  166  R -0.021 (-0.14..+0.10)  win 0.41  USD    +68.3  |  P2 n  179  R -0.053 (-0.16..+0.06)  win 0.37  USD   -115.1
+  H1 & M15 both with           P1 n   32  R -0.042 (-0.28..+0.21)  win 0.44  USD    -10.4  |  P2 n   26  R +0.147 (-0.15..+0.46)  win 0.50  USD   +150.9
+  H1 & M15 both against        P1 n   33  R -0.067 (-0.24..+0.11)  win 0.45  USD    -51.7  |  P2 n   35  R -0.109 (-0.28..+0.07)  win 0.43  USD    -36.3
+  H1 with & move4h with        P1 n   55  R +0.044 (-0.17..+0.26)  win 0.42  USD    +75.7  |  P2 n   66  R -0.010 (-0.21..+0.20)  win 0.36  USD    +47.1
+  H1 against & move4h against  P1 n   38  R +0.228 (-0.02..+0.49)  win 0.58  USD    +90.9  |  P2 n   44  R -0.160 (-0.32..+0.01)  win 0.39  USD    -29.9
+  family shares by H1 relation (both parts):
+h1      against  mixed  with
+family                      
+base         19     38    18
+ihs          19     23    12
+st           23     26    19
+w           143    208   142
+
+=== W (P4)
+  h1      with     P1 n   28  R -0.066 (-0.37..+0.28)  win 0.32  USD     -4.5  |  P2 n   28  R -0.010 (-0.30..+0.30)  win 0.39  USD   -154.9
+  h1      against  P1 n   28  R +0.037 (-0.23..+0.32)  win 0.43  USD    -13.0  |  P2 n   40  R -0.101 (-0.29..+0.10)  win 0.42  USD    +19.7
+  h1      mixed    P1 n   59  R -0.032 (-0.22..+0.19)  win 0.41  USD    -79.8  |  P2 n   41  R +0.202 (-0.06..+0.48)  win 0.41  USD   +221.5
+  m15     with     P1 n   39  R -0.046 (-0.27..+0.21)  win 0.31  USD    -95.9  |  P2 n   27  R +0.074 (-0.21..+0.36)  win 0.44  USD   +130.6
+  m15     against  P1 n   33  R -0.004 (-0.27..+0.26)  win 0.45  USD    +48.4  |  P2 n   34  R +0.031 (-0.20..+0.27)  win 0.53  USD     +5.2
+  m15     mixed    P1 n   43  R -0.018 (-0.27..+0.26)  win 0.42  USD    -49.8  |  P2 n   48  R +0.019 (-0.22..+0.29)  win 0.31  USD    -49.4
+  move4h  with     P1 n   75  R -0.030 (-0.20..+0.16)  win 0.36  USD   -148.1  |  P2 n   71  R +0.035 (-0.15..+0.24)  win 0.38  USD    +30.3
+  move4h  against  P1 n   40  R -0.011 (-0.24..+0.23)  win 0.45  USD    +50.7  |  P2 n   38  R +0.039 (-0.18..+0.26)  win 0.47  USD    +56.1
+  day     with     P1 n   70  R +0.020 (-0.18..+0.23)  win 0.39  USD    -63.3  |  P2 n   66  R +0.063 (-0.13..+0.27)  win 0.42  USD    +42.8
+  day     against  P1 n   45  R -0.092 (-0.28..+0.11)  win 0.40  USD    -34.1  |  P2 n   43  R -0.005 (-0.22..+0.21)  win 0.40  USD    +43.6
+  h4tide  with     P1 n   65  R -0.024 (-0.21..+0.16)  win 0.40  USD    -28.4  |  P2 n   50  R +0.197 (-0.05..+0.45)  win 0.46  USD    +90.1
+  h4tide  against  P1 n   50  R -0.023 (-0.25..+0.22)  win 0.38  USD    -69.0  |  P2 n   59  R -0.100 (-0.26..+0.07)  win 0.37  USD     -3.8
+  H1 & M15 both with           P1 n   12  R -0.174 (-0.49..+0.18)  win 0.33  USD    -30.8  |  P2 n    8  R +0.332 (-0.32..+0.93)  win 0.62  USD    +92.7
+  H1 & M15 both against        P1 n    8  R -0.062 (-0.42..+0.28)  win 0.50  USD     -8.2  |  P2 n   17  R -0.176 (-0.40..+0.04)  win 0.47  USD    -60.9
+  H1 with & move4h with        P1 n   18  R +0.106 (-0.30..+0.56)  win 0.39  USD    +35.6  |  P2 n   20  R +0.051 (-0.31..+0.45)  win 0.45  USD   -124.7
+  H1 against & move4h against  P1 n   12  R +0.304 (-0.11..+0.72)  win 0.67  USD    +72.8  |  P2 n   18  R -0.224 (-0.46..-0.01)  win 0.39  USD    -55.3
+  family shares by H1 relation (both parts):
+h1      against  mixed  with
+family                      
+base          8      9     2
+ihs           6      4     2
+st            6     13     6
+w            48     74    46
+

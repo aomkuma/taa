@@ -1,0 +1,15 @@
+demo M1 spread (USD), median by the owner's windows, P1 | P2:
+  Asia    P1 0.270 (90 % 0.390) | P2 0.360 (90 % 0.390)
+  London  P1 0.250 (90 % 0.390) | P2 0.310 (90 % 0.390)
+  NY      P1 0.230 (90 % 0.250) | P2 0.230 (90 % 0.230)
+  other   P1 0.230 (90 % 0.390) | P2 0.240 (90 % 0.390)
+
+cost in R:
+  W (P4)                 P1: cost / risk median 0.023, mean 0.028; R lost if the real spread were 1.5 / 2 / 3 x: 0.011 / 0.023 / 0.045  (median risk 13.9 USD)
+  W (P4)                 P2: cost / risk median 0.014, mean 0.018; R lost if the real spread were 1.5 / 2 / 3 x: 0.007 / 0.015 / 0.029  (median risk 22.4 USD)
+  B2 (P3)                P1: cost / risk median 0.031, mean 0.036; R lost if the real spread were 1.5 / 2 / 3 x: 0.014 / 0.028 / 0.056  (median risk 10.5 USD)
+  B2 (P3)                P2: cost / risk median 0.019, mean 0.023; R lost if the real spread were 1.5 / 2 / 3 x: 0.009 / 0.018 / 0.037  (median risk 18.4 USD)
+  ORB 13 Thai (at open)  P1: cost / risk median 0.043, mean 0.047; R lost if the real spread were 1.5 / 2 / 3 x: 0.019 / 0.038 / 0.076  (median risk 8.4 USD)
+  ORB 13 Thai (at open)  P2: cost / risk median 0.026, mean 0.031; R lost if the real spread were 1.5 / 2 / 3 x: 0.013 / 0.026 / 0.051  (median risk 14.0 USD)
+  reclaim (Q7b)          P1: cost / risk median 0.017, mean 0.019; R lost if the real spread were 1.5 / 2 / 3 x: 0.007 / 0.015 / 0.029  (median risk 19.3 USD)
+  reclaim (Q7b)          P2: cost / risk median 0.012, mean 0.013; R lost if the real spread were 1.5 / 2 / 3 x: 0.005 / 0.010 / 0.021  (median risk 28.3 USD)

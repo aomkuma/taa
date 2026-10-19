@@ -1,0 +1,21 @@
+events (trades per part): {'O1': 339, 'O2': 312}; median risk / H 1.11, median risk USD 6.5
+O1 all hours   n  339  R -0.170 (-0.27..-0.07)  win 0.38  USD   -284.4  exits {'time': 188, 'stop': 128, 'target': 23}
+O1 in windows  n   96  R -0.160 (-0.34..+0.02)  win 0.39  USD   -111.9
+   O1 Asia    n    7  R -0.203 (-0.74..+0.39)  win 0.57  USD     -2.7
+   O1 London  n   26  R -0.003 (-0.38..+0.40)  win 0.42  USD     -6.2
+   O1 NY      n   63  R -0.221 (-0.43..+0.00)  win 0.35  USD   -103.0
+   O1 other   n  243  R -0.173 (-0.29..-0.06)  win 0.38  USD   -172.5
+   O1 PDH     n   74  R -0.207 (-0.40..-0.01)  win 0.35  USD    -76.4
+   O1 PDL     n   58  R -0.020 (-0.25..+0.22)  win 0.52  USD    -10.5
+   O1 ASH     n  106  R -0.146 (-0.33..+0.05)  win 0.38  USD    -42.5
+   O1 ASL     n  101  R -0.253 (-0.42..-0.08)  win 0.34  USD   -155.0
+O2 all hours   n  312  R -0.187 (-0.29..-0.08)  win 0.38  USD   -496.9  exits {'time': 163, 'stop': 130, 'target': 19}
+O2 in windows  n   97  R -0.242 (-0.41..-0.05)  win 0.34  USD   -218.8
+   O2 Asia    n   32  R -0.174 (-0.48..+0.17)  win 0.38  USD    -69.3
+   O2 London  n   21  R -0.163 (-0.54..+0.24)  win 0.43  USD     -1.9
+   O2 NY      n   44  R -0.330 (-0.58..-0.06)  win 0.27  USD   -147.6
+   O2 other   n  215  R -0.161 (-0.29..-0.03)  win 0.40  USD   -278.1
+   O2 PDH     n   74  R -0.223 (-0.43..-0.01)  win 0.35  USD   -140.8
+   O2 PDL     n   54  R -0.043 (-0.30..+0.22)  win 0.48  USD    -28.3
+   O2 ASH     n  103  R -0.304 (-0.47..-0.13)  win 0.31  USD   -244.3
+   O2 ASL     n   81  R -0.100 (-0.31..+0.10)  win 0.42  USD    -83.6

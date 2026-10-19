@@ -1,0 +1,52 @@
+=== B2 (P3)
+  P1: all  n  348  R -0.025 (-0.11..+0.06)  win 0.39  USD    -61.9  median risk 10.5 USD; corr(risk, R) +0.021; USD if every trade risked the median: -91.8
+     risk   <=10 USD  n  163  R -0.063 (-0.19..+0.07)  win 0.38  USD    -40.8
+     risk  10-20 USD  n  129  R -0.021 (-0.15..+0.11)  win 0.38  USD    -72.9
+     risk  20-35 USD  n   39  R +0.226 (-0.03..+0.52)  win 0.51  USD   +240.3
+     risk  35-60 USD  n   16  R -0.280 (-0.47..-0.09)  win 0.19  USD   -179.2
+     risk    >60 USD  n    1  R -0.144 (+nan..+nan)  win 0.00  USD     -9.3
+     risk < 1/3 q of ATRs   n  115  R +0.013 (-0.15..+0.19)  win 0.45  USD   +176.4   (ATRs 4.0)
+     middle                 n  118  R +0.003 (-0.15..+0.16)  win 0.40  USD    -22.2   (ATRs 5.1)
+     risk > 2/3 q of ATRs   n  115  R -0.092 (-0.21..+0.03)  win 0.30  USD   -216.1   (ATRs 6.8)
+     cap risk <= 20 USD       n  292  R -0.044 (-0.14..+0.05)  win 0.38  USD   -113.7
+     cap risk <= 30 USD       n  322  R -0.013 (-0.10..+0.08)  win 0.40  USD   +124.2
+     cap risk <= 4 entry ATR  n   61  R +0.012 (-0.23..+0.26)  win 0.46  USD   +122.9
+  P2: all  n  342  R -0.009 (-0.09..+0.08)  win 0.39  USD    +95.9  median risk 18.4 USD; corr(risk, R) +0.027; USD if every trade risked the median: -54.2
+     risk   <=10 USD  n   51  R +0.074 (-0.19..+0.39)  win 0.41  USD    +23.7
+     risk  10-20 USD  n  139  R -0.081 (-0.21..+0.06)  win 0.37  USD   -160.3
+     risk  20-35 USD  n   84  R +0.018 (-0.15..+0.20)  win 0.38  USD   +100.2
+     risk  35-60 USD  n   46  R +0.027 (-0.18..+0.25)  win 0.39  USD    +70.5
+     risk    >60 USD  n   22  R +0.080 (-0.16..+0.38)  win 0.45  USD    +61.7
+     risk < 1/3 q of ATRs   n  113  R +0.079 (-0.09..+0.26)  win 0.42  USD   +125.3   (ATRs 3.9)
+     middle                 n  116  R -0.072 (-0.22..+0.08)  win 0.34  USD     +3.0   (ATRs 5.2)
+     risk > 2/3 q of ATRs   n  113  R -0.031 (-0.16..+0.11)  win 0.41  USD    -32.4   (ATRs 7.1)
+     cap risk <= 20 USD       n  190  R -0.039 (-0.16..+0.09)  win 0.38  USD   -136.6
+     cap risk <= 30 USD       n  258  R -0.033 (-0.13..+0.07)  win 0.38  USD   -119.5
+     cap risk <= 4 entry ATR  n   60  R -0.037 (-0.27..+0.25)  win 0.35  USD   -105.6
+
+=== W (P4)
+  P1: all  n  115  R -0.024 (-0.17..+0.13)  win 0.39  USD    -97.4  median risk 13.9 USD; corr(risk, R) -0.054; USD if every trade risked the median: -37.7
+     risk   <=10 USD  n   32  R +0.040 (-0.30..+0.41)  win 0.38  USD     +8.4
+     risk  10-20 USD  n   53  R -0.107 (-0.30..+0.12)  win 0.32  USD   -100.0
+     risk  20-35 USD  n   20  R +0.245 (+0.02..+0.48)  win 0.70  USD   +123.5
+     risk  35-60 USD  n    9  R -0.342 (-0.62..-0.03)  win 0.22  USD   -119.9
+     risk    >60 USD  n    1  R -0.144 (+nan..+nan)  win 0.00  USD     -9.3
+     risk < 1/3 q of ATRs   n   38  R +0.211 (-0.08..+0.51)  win 0.53  USD   +125.1   (ATRs 3.9)
+     middle                 n   39  R -0.157 (-0.39..+0.11)  win 0.28  USD   -119.5   (ATRs 5.0)
+     risk > 2/3 q of ATRs   n   38  R -0.121 (-0.30..+0.06)  win 0.37  USD   -103.0   (ATRs 6.7)
+     cap risk <= 20 USD       n   85  R -0.052 (-0.23..+0.15)  win 0.34  USD    -91.6
+     cap risk <= 30 USD       n  102  R +0.001 (-0.16..+0.17)  win 0.40  USD    +19.2
+     cap risk <= 4 entry ATR  n   25  R +0.032 (-0.26..+0.33)  win 0.48  USD    +42.7
+  P2: all  n  109  R +0.036 (-0.10..+0.18)  win 0.41  USD    +86.4  median risk 22.4 USD; corr(risk, R) -0.015; USD if every trade risked the median: +88.4
+     risk   <=10 USD  n    7  R +0.081 (-0.51..+0.80)  win 0.43  USD     +0.9
+     risk  10-20 USD  n   36  R -0.042 (-0.31..+0.25)  win 0.39  USD    -32.2
+     risk  20-35 USD  n   36  R +0.056 (-0.18..+0.32)  win 0.42  USD   +115.4
+     risk  35-60 USD  n   21  R +0.160 (-0.13..+0.48)  win 0.48  USD   +169.9
+     risk    >60 USD  n    9  R -0.055 (-0.35..+0.36)  win 0.33  USD   -167.6
+     risk < 1/3 q of ATRs   n   36  R +0.095 (-0.16..+0.37)  win 0.47  USD    +91.2   (ATRs 3.9)
+     middle                 n   37  R +0.050 (-0.24..+0.38)  win 0.35  USD   +105.7   (ATRs 5.3)
+     risk > 2/3 q of ATRs   n   36  R -0.037 (-0.21..+0.15)  win 0.42  USD   -110.5   (ATRs 7.8)
+     cap risk <= 20 USD       n   43  R -0.022 (-0.27..+0.24)  win 0.40  USD    -31.3
+     cap risk <= 30 USD       n   70  R -0.071 (-0.24..+0.11)  win 0.37  USD   -113.7
+     cap risk <= 4 entry ATR  n   19  R +0.067 (-0.29..+0.46)  win 0.42  USD     -1.2
+

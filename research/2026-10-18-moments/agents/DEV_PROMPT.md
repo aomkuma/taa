@@ -246,6 +246,40 @@ The owner's Thai-clock hour is the one that pays.
 4. **If any rule reaches >= +0.15 R in both parts with trades enough to judge,** freeze it (the exact
    specification) and give the exam command. Do not run it: the measurer reads the exam once.
 
+### Task D (2026-10-19 23:46 Thai) - the strategist's time-anchored proposals 1 and 6 (they need no swings)
+The strategist's review is `agents/strategist/PROPOSALS.md`. The measurer re-ran `orb_ticks.py` and `retest.py` and
+got the same numbers. These two proposals do not use the old micro-swing structure, so you resume on them while V3-1
+is built.
+
+1. **D1 - the opening-range break at 13:00 Thai** (the owner's London window on the Thai clock):
+   - **The rule:** the range is the M1 high / low of 06:00-06:14 UTC; skip the day if it is wider than 1.5 H1 ATR.
+     The entry is the first M1 close beyond it from 06:15 to 07:15 UTC, the stop at the range's other side, the target
+     2 R, out after 60 minutes. One trade a day; on the ticks.
+   - **The strategist's check:** +0.206 / +0.120 R (59 / 60 trades). Its 18 neighbouring settings: 18 / 18 positive in
+     P1, 17 / 18 in P2.
+   - **Then one change, written now:** no trade when the owner's next H1 level (`zones.levels_at`) in the trade's way
+     is closer than 2 R.
+   - **The older years** (2023-10 .. 2025-10, before the exam; checks only, never to fit) lost: 1 / 18 and 0 / 18
+     settings positive.
+     - Report them too.
+     - Write one season reading before computing (e.g. H1 ATR >= x, or ADR20 >= y, with x / y from P1 only), and
+       report the rule with it.
+2. **D2 - the data-minute straddle in the NY window** (the owner lists important releases among the moments):
+   - **The test:** an S2-style straddle at every 08:30 and 10:00 NY minute, on the ticks. Held 15 / 30 minutes, with
+     slippage 0 / 0.5 / 1 / 2 USD at the release.
+   - **The strategist's check (08:30, 30 minutes):** +0.459 / +0.114 R. With +1 USD it was +0.368 / -0.031.
+   - **Pass:** both parts >= +0.15 at +0.5 USD.
+   - Use your `sweep_detector` event lists.
+
+**Judging for both (added to the owner's bar):**
+- the pooled P1 + P2 mean with its 95 % range;
+- the number of settings tried;
+- whether the neighbouring settings agree;
+- 12 rule-picked trades drawn for the owner's eye (acceptance).
+
+Hand tests, planted bugs, the look-ahead check, a second computation and 20 trades re-derived from the raw ticks, as
+always. Stop and report at D.
+
 **The split with the second developer (2026-10-19 23:05 Thai):**
 - A second developer works on the owner's playbook in `agents/dev2/` (`agents/DEV2_PROMPT.md`).
 - Its V3-1 builds the **trade-size swings and the structure per TF**. In P5, import its swing module read-only instead

@@ -2544,3 +2544,57 @@ component built from the owner's ideas now also gets acceptance checks against t
 
 "Matches the owner" and "tests pass" are reported apart; a component is done only with both. The first developer
 stopped cleanly at P5a: its rules were written, `p5a_filters.py` was untested and left out.
+
+## The strategist's review (2026-10-19 23:43 Thai; `../strategist/PROPOSALS.md`; quick checks on M1 with the team's cost model, the leads re-run on ticks)
+**Why it does not pay yet:**
+- **R1: the M1 / M5 pattern triggers carry no direction, and context filters cannot add it.** Five readings (the H1 /
+  M15 structure, the 4-h move, the day so far, the H4 EMA-50) split B2 / W without a steady sign.
+- **R2: the bar cannot see +0.15 at these counts.** A true +0.15 passes "both parts >= +0.15" only 23-25 % of the
+  time. With about 300 settings, a false pass somewhere is 84-86 % likely. About 110-116 trades a part are needed to
+  exclude 0 at +0.15.
+- **R3: the regimes change.** ADR20 medians: about 30 USD (2023-24), 43 (2024-25), 84 (P1), 172 (P2). The leads of P1
+  / P2 lose in the older years:
+  - the 13:00-Thai opening-range break is positive in 18 / 18 settings (P1) and 17 / 18 (P2), but 1 / 18 and 0 / 18 in
+    the two older years;
+  - the reclaim in the owner's windows is +0.31 / +0.31, but -0.16 / -0.24 in the older years.
+- **R4: break-and-retest on the levels everyone sees starts from -0.221 / -0.390.** The broken level is usually
+  reclaimed.
+- **Cleared:** the costs (1.2-4.7 % of R), R against USD, and the Asia window (both sides pay).
+
+**The proposals, in its rank order:**
+1. the 13:00-Thai opening-range break: ticks +0.206 / +0.120, 59 / 60 trades;
+2. the reclaim of a level everyone sees, in the owner's windows: ticks +0.312 / +0.310, 19 / 22;
+3. measure break-and-retest against its base rate;
+4. a season reading in every frozen rule, plus a monthly walk-forward pick;
+5. the judging: at most 5 pre-written hypotheses a round, the pooled mean with its 95 % range, neighbouring settings
+   that agree, no leads under 40 trades;
+6. the NY window: stand aside, except a data-minute straddle: +0.459 / +0.114, fragile at +1 USD of slippage;
+7. prefer tight patterns: the smallest-risk third beats the largest in all four cells.
+
+**What to stop:** context filters on the M1 / M5 pattern stream, leads from small cells, symmetric "which way first"
+studies, NY-open pattern trades as they are, the 1-minute follow-the-news rule.
+
+**Measured by me so far:** its tests (5 passed); its exam guard (a row filter plus asserts in `slib.py`). Its two key
+scripts (`orb_ticks.py`, `retest.py`) are being re-run.
+
+**Done with its findings:** proposals 2, 3 and the judging went into `../DEV2_PROMPT.md` V3-2.
+
+**Its questions:**
+- the older history 2023-10 .. 2025-10 as a regime check: yes, it is before the exam, for checks only, never to fit;
+- the owner's real spreads and fills: ask the owner;
+- whether 08:30 NY is a window: the owner listed important releases among the moments; to confirm;
+- whether the 13:00-Thai first 15 minutes is the owner's London: ask the owner.
+**The re-run (23:46 Thai), equal to the strategist's numbers:**
+
+| Rule | P1 R (95 %) | P2 R (95 %) | Trades |
+|---|---|---|---|
+| `orb_ticks.py`, the 13:00-Thai opening-range break | +0.206 (-0.04..+0.47) | +0.120 (-0.14..+0.38) | 59 / 60 |
+| the reclaim in the owner's windows | +0.312 | +0.310 | 19 / 22 |
+
+`retest.py` P2, all hours: -0.390 (47 trades).
+
+**The first developer resumed on Task D** (`../DEV_PROMPT.md`; it needs no swings):
+- D1: the 13:00-Thai opening-range break, with one pre-written H1-level change, the older years and a season reading;
+- D2: the NY data-minute straddle, with the slippage sensitivity.
+
+`TEAM.md`: the first developer works on Task D.

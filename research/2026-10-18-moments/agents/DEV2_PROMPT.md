@@ -134,6 +134,22 @@ backtest, draw a rule-picked sample of entries (winners and losers) per entry ty
     trade, streak, exits.
   - **The checks:** a second computation of every metric; 20 trades a variant re-derived from the raw ticks; the
     losers by reason, one drawn per reason.
+  - **From the strategist's review** (`agents/strategist/PROPOSALS.md`, 23:43 Thai; the measurer re-runs its checks):
+    - **Before break-and-retest (entry 1), report its base rate.** On levels everyone sees (the previous day's high /
+      low, the Asian range edges), "break, retest, M5 turn, trade with the break" gave -0.221 / -0.390 R (24 % / 23 %
+      winners, 41 / 47 trades). The broken level was usually reclaimed. Report entry 1 beside that base rate, split by:
+      - every TF up to H1 in LH / LL or not;
+      - a trendline against a horizontal level;
+      - the first lower high or not.
+
+      Pass: the aligned subset >= +0.15 in both parts, and at least 0.3 R above the base rate.
+    - **The fake break at a range edge (entry 3) as a reclaim.** After a break of the previous day's high / low or the
+      Asian range edge: an M5 close back inside by 0.1 H1 ATR within 2 hours, then trade back into the range. The stop
+      goes 0.25 H1 ATR past the break's extreme, the target is 2 R, the hold at most 120 minutes. The strategist's
+      quick check on the ticks, in the owner's windows: +0.312 / +0.310 R (19 / 22 trades). Add your range-box edges
+      and the H1 levels with 2+ touches to raise the count. Pass: >= +0.15 in both parts with >= 30 trades each.
+    - **The judging, added to the owner's bar:** also report the pooled P1 + P2 mean with its 95 % range, and whether
+      the neighbouring settings agree. Report the number of settings tried. No "lead" from a cell under 40 trades.
 - **V3-3. The scenario planning,** built on V3-1: forming pictures, their completions, entries on the reveal. Test it
   against entering after completion.
 - **V3-4. Combine what pays in both parts into one frozen rule** (>= +0.15 R a trade in both, enough trades to judge).

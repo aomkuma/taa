@@ -37,7 +37,7 @@ Owner (2026-10-19, about 23:08 Thai): "divide the duties and talk to each other 
 ## The current checkpoints
 | Role | Working on | Next checkpoint |
 |---|---|---|
-| The first developer | **paused** (owner, 23:11 Thai: no more tests on the old structure) | resumes on dev2's V3-1: P5 on the new swings + an independent cross-check of the structure reader |
+| The first developer | Task D (the strategist's time-anchored proposals 1 and 6; no swings needed) | the D report; then P5 on dev2's V3-1 swings + an independent cross-check of the structure reader |
 | The second developer | V3-1 (the swings, structure, box / trendline / Fibonacci) | the V3-1 report with the 2026-10-19 shape check |
 | The auditor | the data pipeline first (the download that missed Monday), then the other blocks | `audit2/AUDIT.md` |
 | The strategist | the review and the ranked proposals | `strategist/PROPOSALS.md` |
