@@ -1814,3 +1814,28 @@ trades unchanged. M15 closes, the surrender 3 min / 2 USD. If positive in both p
 M15: P1 49 trades (0.77 a weekday) R +0.113, max DD 30; P2 79 trades R -0.084 (13 of them D1-way trades); M5: +0.016 /
 -0.087. Not positive in both: the exam is not read. The pullback-while-calm rule keeps P1's edge with fewer trades and
 removes most P2 D1-way trades; what loses in P2 is now mostly the fade.
+
+## Trade short, turn early, keep the big trend - written before it is computed (2026-10-19 08:55 Thai; owner: "correction: use the short way - find a fast reversal signal, trade the small timeframe, but do not drop the big trend, so the trade can be held far")
+Part 1 (`pullback.py`): on M1 bars, at every M1 close (decisions only from closed bars):
+- the big trend: H1 swing structure up (HH / HL) and the H4 structure not down (the mirror for down) - the faster
+  swing readings, not the 20-day D1 way;
+- the pullback against it: the highest high of the last 30 M1 bars is at least 1.0 M5 ATR above the lowest low of the
+  last 10 M1 bars, and that low came after that high (the mirror for a down trend);
+- the fast turn back: this M1 bar closes above the highest high of the 3 bars before it, and the pullback's low is
+  within the last 10 bars;
+- the trade: in at the next M1 open (a buy at the ask + 0.07), the stop 0.3 USD beyond the pullback's low (the risk R0
+  between 2 and 8 USD, else no trade), the surrender (not +1 R0 within 5 minutes -> out), the target 3 R0, out after
+  4 hours; the costs; one position at a time; on M1 the stop first when a bar reaches both.
+Part 2 the trailing hold (instead of 3 R0); part 3 the ticks. P1 / P2 first; the exam only for a rule positive in both.
+**The result (08:58 Thai; `pullback.py`, tests `test_pullback.py` - the pullback and the turn by hand, no trend / too
+shallow / the down-trend mirror, a dip before the high is not a pullback, the turn must close above the 3 bars before,
+the target, the surrender, the stop with its slippage, a bar reaching both is a stop, the risk range; planted bugs 7 of
+7 after three tests were added; two wrong expectations of mine corrected; `out_pullback.txt`):** P1 1,871 trades (29.2
+a weekday) R -0.099; P2 1,163 (17.6) R -0.032; 78 % surrendered, 4-8 % reached 3 R0. Far too many, not positive.
+**Every loser drawn (09:00 Thai; owner: "capture the price structure with the entry, TP and SL lines for every losing
+trade, the entry timeframe, all of them"; `loser_charts.py`, its levels by hand; `charts/pullback_losers_2026-04-13.html`,
+published as https://claude.ai/artifact/PVhxGVLW2MaMN8ucx1ZSuL):** all 45 losers of 2026-04-13 .. 04-17 (of 1,841 in the
+two parts). Read by eye: #1, #2, #12 are sells while the M15 bars beside them climb in plain HH / HL (the H1 / H4
+swing reading still said down - the lag the owner named); #25 a buy into an M15 that made lower highs, surrendered just
+before price rose; #38 a buy at the top of a small M1 bounce under a falling M15. The direction must come from the
+timeframe right above the entry (M15) as it stands now, not from H1 / H4 swings confirmed long ago.
