@@ -2201,3 +2201,18 @@ https://claude.ai/artifact/XGjQkQxYpA7vLGgxNZL8aP):**
 The owner confirms first. Then come the counts, and the developer's 8 questions (the swing size, the sweep allowance
 against the measured ~7 USD, a base's tightness, M5 against as a filter, the stop when patterns overlap, close next
 levels, the bars' "known" time).
+**The developer's 71 planted bugs re-run (12:46 Thai): 71 of 71 caught.**
+
+**The owner, 12:46 Thai:** "run the backtest with the pictures you got, and you will know whether it is a quality setup
+- or else wait for the price structure to reveal itself and enter then; see whether that makes a better profit."
+
+Sent to the developer as checkpoint P2, with its rules to be written before computing:
+- every catch traded on the ticks, P1 / P2, one position at a time;
+- **A**, entry at the breakout;
+- **B**, wait for the structure to confirm: a higher low above the pattern's extreme after the breakout, then a break
+  of the post-breakout high; mirrored for sells;
+- the exit on the same TF: its structure turning, the next level when more than one risk away, the stop on the ticks,
+  a time limit;
+- the costs: ticks + 0.07, plus 0.5 / 1 / 2 USD at the news;
+- the report: per part, by family / TF / level kind / M5 agreement / crash nights, with the 95 % range of R;
+- the losers by reason, one drawn each.
