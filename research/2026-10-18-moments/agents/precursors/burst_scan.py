@@ -27,6 +27,15 @@ def bursts(o: np.ndarray, h: np.ndarray, lo: np.ndarray, n: int = N_MIN, x: floa
     """Every bar i whose open is followed, within bars i .. i+n-1, by x its way before q against (both judged on the
     running extremes bar by bar: the bar reaching x must come before any bar reaching q against; a bar reaching both:
     not clean). Returns the first bar of each run of consecutive same-way starts."""
+    side = clean_side(o, h, lo, n, x, q)
+    start = (side != 0) & ~((np.r_[0, side[:-1]] == side) & (side != 0))
+    i = np.nonzero(start)[0]
+    return pd.DataFrame({"i": i, "side": side[i]})
+
+
+def clean_side(o: np.ndarray, h: np.ndarray, lo: np.ndarray, n: int = N_MIN, x: float = X_USD, q: float = Q_USD) -> np.ndarray:
+    """Per bar i: +1 / -1 when a clean run (x its way before q against, within bars i .. i+n-1) starts at its open,
+    else 0 - every bar on its own, no merging (the outcome a decision at bar i-1's close can be judged by)."""
     m = len(o)
     side = np.zeros(m, int)
     for way in (1, -1):
@@ -41,9 +50,7 @@ def bursts(o: np.ndarray, h: np.ndarray, lo: np.ndarray, n: int = N_MIN, x: floa
             bad = np.where((bad == n) & ok & (adv >= q), k, bad)
         clean = (hit < n) & (hit < bad)
         side = np.where(clean & (side == 0), way, side)
-    start = (side != 0) & ~((np.r_[0, side[:-1]] == side) & (side != 0))
-    i = np.nonzero(start)[0]
-    return pd.DataFrame({"i": i, "side": side[i]})
+    return side
 
 
 def main() -> None:

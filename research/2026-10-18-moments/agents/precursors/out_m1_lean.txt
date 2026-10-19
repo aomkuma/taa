@@ -1,0 +1,12 @@
+base a minute: P1 up 0.0123 down 0.0202; P2 up 0.0675 down 0.0779
+
+kept (an end quintile >= 1.5 x the base one way in both parts, >= 30 days):
+ reading          kept                    P1_bins_up                    P1_bins_dn                    P2_bins_up                    P2_bins_dn
+    vol1 hi->up hi->dn 0.005 0.010 0.012 0.014 0.021 0.008 0.011 0.019 0.028 0.036 0.019 0.037 0.054 0.082 0.129 0.026 0.043 0.064 0.093 0.145
+    vol3 hi->up hi->dn 0.006 0.009 0.011 0.013 0.023 0.007 0.012 0.018 0.028 0.037 0.019 0.036 0.055 0.081 0.129 0.026 0.043 0.063 0.090 0.147
+ break60        lo->up                   0.027 0.012                   0.056 0.019                   0.133 0.066                   0.109 0.077
+ m15_pos lo->up lo->dn 0.026 0.011 0.011 0.005 0.008 0.039 0.016 0.019 0.016 0.011 0.111 0.067 0.050 0.052 0.063 0.133 0.072 0.065 0.060 0.066
+h1_d_top        hi->up 0.010 0.008 0.013 0.019 0.022 0.019 0.013 0.020 0.024 0.034 0.050 0.043 0.057 0.072 0.104 0.052 0.062 0.072 0.085 0.115
+  to_pdl lo->up lo->dn 0.028 0.012 0.008 0.009 0.004 0.041 0.021 0.018 0.014 0.008 0.115 0.058 0.050 0.058 0.049 0.136 0.068 0.060 0.056 0.060
+
+noise (dropped): speed1, speed3, speed5, speed15, accel, expand, in_a_row, break15, rsi, macd_hist, macd_turn, spread, t_us_data, t_ny_open, t_fix_pm, t_comex, m15_struct, m15_er, hour_utc, h1_pos, h1_d_bot, to_pdh, round10, round50

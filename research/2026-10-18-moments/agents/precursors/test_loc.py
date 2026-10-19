@@ -46,3 +46,18 @@ def test_location_keeps_to_the_window(monkeypatch):
     # the window and 105 is above the price: no bottom below
     L = loc.location(np.array([60]), np.array([103.0]), Y)
     assert math.isnan(L.d_bot.iloc[0]) and math.isclose(L.pos.iloc[0], -2 / 15)
+
+
+def test_the_grouped_location_equals_the_plain_one():
+    from fingerprint import zigzag  # noqa: PLC0415
+
+    from loc import location, location_grouped  # noqa: PLC0415
+
+    rng = np.random.default_rng(12)
+    c = 100 + np.cumsum(rng.normal(size=3000))
+    hh, ll = c + rng.random(3000), c - rng.random(3000)
+    Y = dict(avail=np.arange(1, 3001, dtype=np.int64) * 10, h=hh, lo=ll, atr=np.full(3000, 2.0), piv=zigzag(hh, ll, np.full(3000, 2.0), 3.0))
+    t = np.sort(rng.integers(0, 30100, 4000))
+    px = 100 + rng.normal(0, 15, 4000)
+    a, b = location(t, px, Y), location_grouped(t, px, Y)
+    assert np.allclose(a.to_numpy(), b.to_numpy(), equal_nan=True)

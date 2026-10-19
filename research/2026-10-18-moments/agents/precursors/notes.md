@@ -1868,3 +1868,37 @@ P1 #100 a buy in a choppy M15 of large spikes both ways, stopped after 45 minute
 M15 and just after V turns.
 **The owner, 09:55 Thai: "it looks as if it is not learning at all - or are you learning, in case I misunderstand?"**
 Answered with the running table of this session's rounds (learned -> changed -> result).
+
+## Becoming an observer of the moment before the run - written before it is computed (2026-10-19 10:01 Thai; owner: "you must research and learn until you are an expert at observing price and catching the moment before it runs; bring in momentum or any other indicator if it helps")
+Part 1 (`m1_features.py`): at every M1 close of the latest learning months (P1 / P2), only from closed bars: the speed
+(the close's change over 1 / 3 / 5 / 15 minutes in M5 ATRs), the acceleration (the last 3 minutes' speed against the 3
+before), the bar's range against its last 20, the volume of the last 1 / 3 minutes against the same minutes of the
+previous 20 days, the bars in a row one way, the close beyond the last 15 / 60 minutes' high / low, M1 RSI(14), M1
+MACD(12, 26, 9) histogram (line - signal) in M5 ATRs and its last change, the spread against its median, the
+minutes to / since the US data / the NY open / the PM fix / the COMEX open, the M15 structure and the M15 efficiency.
+The outcome, per bar and free of any catalogue: from the next M1 open, 10 USD up (or down) within 5 minutes with less
+than 3 USD against first (`burst_scan.bursts`' per-bar test, before it merges the starts). Part 2 reads each one alone
+(both parts, by moments and by first moments of the day); part 3 puts them together; part 4 the ticks and the drawings.
+**Part 1 done (10:05 Thai; `m1_features.py`, tests `test_m1_features.py` - speed, bars in a row, breaks from the bars
+before only, the volume against earlier days only (today would move the median 15 -> 20), and every reading unchanged
+when all later bars are replaced by other prices; planted bugs 6 of 6 after the volume test was fixed; `loc.location_grouped`
+equal to `loc.location` on 4,000 random moments; `out_m1_features.txt`):** 350,351 M1 closes (173,030 learning); a clean
+10-USD run starting at the next open: up 0.0406, down 0.0498 a minute. The owner meanwhile: "trade at support /
+resistance, never mid-price except a pullback"; "ignore noise signals"; "select the good signals and the setups with an
+edge" (also in the memory).
+**Part 2 - written before it is computed (`m1_lean.py`):** each reading's quintiles (P1's edges): the chance of a clean
+run up / down next, by moments and by each day's first moment, P1 and P2. **Kept (not noise) only when the top or the
+bottom quintile lifts the run one way to >= 1.5 x its base in both parts, the same way, with >= 30 days a bin.**
+**Part 2, the result (10:06 Thai; `m1_lean.py`, test `test_m1_lean.py`; `out_m1_lean.txt`, `m1_lean.csv`).** Base a
+minute: P1 up 0.012 / down 0.020, P2 0.068 / 0.078. Kept (an end quintile >= 1.5 x one way in both parts): the volume of
+the last 1 / 3 minutes against the same minutes (top fifth: both ways 2-3 x), the place at the M15 range's low and near /
+below the previous day's low (both ways ~2 x), a close below the last 60 minutes' low (a run up next ~2 x), far from
+the H1 swing top above. **Noise, dropped:** speed and acceleration, RSI, MACD and its turn, bars in a row, the bar's
+expansion, the 15-minute break, the spread, the clock, the hour, the M15 structure and efficiency, the H1 place, the
+round numbers. The kept ones tell WHEN (at a level, when the volume comes), not which way.
+**At the levels with the volume - bounce or break? (10:07 Thai; the share of the clean runs that go each way, P1 | P2):**
+at support (the M15 range's low fifth, near / below the previous day's low, or below the 60-minute low) with the top
+fifth of volume, the run goes DOWN 0.58-0.61 | 0.53-0.54 whether or not the last M1 bar turned up - gold breaks the
+support more than it bounces; at resistance with the volume, the turn down 0.77 (44 days) | 0.48 - not steady; mid-price
+with the volume down 0.71 | 0.56. Fast 10-USD runs go down more often than up in both parts (gold climbs and drops
+fast): the side with the edge for a quick run is the sell after a support gives way.
