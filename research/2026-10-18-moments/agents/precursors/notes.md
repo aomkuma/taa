@@ -1994,3 +1994,51 @@ trading-system expert"; "and your job is to measure the system and the results")
   touches counted), the break confirmed or the fake break back inside, the stop beyond the level. The "support" here
   (the 30-hour M15 range's low fifth, near the previous day's low, below the 60-minute low) is mostly made by the move
   itself. That is Task B of the developer's prompt.
+
+## Support / resistance from the larger timeframe - written before it is computed (2026-10-19 10:50 Thai; owner: "so what will you do about my rule - trade at the support / resistance of a timeframe larger than the one you trade on?"; 10:51 Thai: "do not make up numbers or data; answer only from the real candles and the real chart patterns")
+The plan told the owner (a plan, not a finding):
+- the zones come from H1 (main) and M15, plus the previous day's high / low;
+- the direction comes from M15 as it stands;
+- the entry is on M1, only at a zone: the bounce (a sweep through the zone that closes back inside) or the break (a
+  close beyond it that holds);
+- the stop comes from the structure, the target is the next zone of the larger timeframe, and the trade surrenders if
+  it does not run.
+
+The plan was written into `../DEV_PROMPT.md` Task B.
+
+Step 1 (`zones.py`), the zones drawn on the real candles before any count:
+- H1 swings are fractals with k = 2: a bar whose high (low) is the highest (lowest) of the 2 bars each side. Each is
+  known only when the second bar after it closes.
+- The swings of the last 120 H1 bars known at the moment are merged into zones (`foundation.merge_levels`, tol = 0.25 x
+  H1 ATR(14)). Each zone keeps its touches (how many swings it merged) and its kind (tops = resistance, lows = support,
+  both = a level that flipped).
+- The moments come from a fixed rule, not picked by eye: on every 12th weekday of P1 / P2, the first time after the NY
+  open (09:30 NY) that an M1 bar reaches within 0.1 x H1 ATR of a zone.
+- At each moment two panels are drawn: the H1 of the last 5 days with the zones and their touch counts, and the M1 of 30
+  minutes before to 60 minutes after with the zone.
+- The owner confirms whether these are the levels meant. Only then are the touches counted (step 2: bounce / break /
+  sweep back inside, each touch once, both parts).
+**Step 1, drawn (10:53 Thai; `zones.py`, tests `test_zones.py`; `charts/zones_h1.html`, published as
+https://claude.ai/artifact/QXTSqxMcvzBqg47Y4tkTZu).** The tests (5 passed):
+- a swing is known only when the second bar after it closes;
+- the merge keeps the kinds and gives the same levels as `merge_levels` on 60 random prices;
+- the zones at a moment use only the swings known by then, from the 120-bar window, and change one nanosecond later;
+- the first touch is within 0.1 x ATR, and nothing before it is taken;
+- the zones are unchanged when every later bar is replaced.
+
+Planted bugs: 8 of 9 caught. The ninth, keeping swings without 2 bars after them, changes nothing: `fractals` never
+returns them.
+
+The 11 days gave 9 moments; the other 2 had no touch within 3 hours of the open. Read on the real candles:
+- **#3 (2025-11-21 21:30 Thai):** the touch at 4063.8, a zone of 5 swings, both tops and lows. M1 dipped to 4063 and
+  rose to 4075 - it held.
+- **#6 (2026-01-28 22:08 Thai):** a 50-USD M1 drop reached 5238.8 (1 swing) and rebounded to 5287 within the hour.
+- **#1 (2025-10-20 20:30 Thai):** the touch at 4308.6 (1 swing, a low). Price fell through it to 4294 and came back up
+  to 4330: a sweep below and back.
+- **#5 (2026-01-12 21:32 Thai):** the top zone 4600.2 (2 swings). M1 dipped under it to 4586, then broke above to 4620.
+- **#8 (2026-03-03 21:30 Thai, H1 ATR 58):** price fell through 5169.6 (3 swings), 5155.1 (4), 5128.9 (2), 5093.9 and
+  5074.3 down to 5000 - no zone held in that fall.
+
+**The problem seen on the charts:** 14-23 zones in five days, e.g. #3: 14 zones within about 180 USD. Price is near a
+zone almost all the time, so "at a zone" barely selects. Before counting anything, ask the owner which of these are the
+levels meant.

@@ -254,6 +254,21 @@ The news sweep alone gives about one trade a week. The daily trades must come fr
 price has turned at before** (owner: "trade at S/R, never mid-price, except a pullback"). The research's level-break
 rule used levels the move itself made (the 60-minute low, the M15 range's low): that is not what the owner means.
 
+**The owner's rule (2026-10-19 10:50 Thai): the support / resistance comes from a timeframe LARGER than the one you
+trade on.** The plan agreed with the measurer:
+
+| Part | Timeframe | Role |
+|---|---|---|
+| The levels | H1 (main) + M15, and the previous day's high / low | zones price has turned at, with their touches counted |
+| The direction now | M15 as it stands (not the lagging H1 / H4 swings) | which side has the edge |
+| The entry | M1, only when price is at a zone | the bounce (a sweep through the zone that closes back inside) or the break (a close beyond the zone that holds) |
+| The stop | from the structure | beyond the sweep's extreme (bounce) / back inside the zone (break), not a fixed 3 / 5 USD |
+| The target | the next zone of the larger timeframe in the trade's way | about 3-4 M15 bars; surrender if it does not run |
+
+Away from a zone: no trade (except a pullback). The measurer is measuring the touches of these zones (bounce / break /
+fake break, by touches, the M15 direction, the volume, the sweep; the paths' MAE / MFE) and will send the result as
+Task B's input before you start it.
+
 Build the following:
 - **The levels:** H1 / M15 swing highs / lows, the previous day's high / low, the pre-session range, equal highs /
   lows. Count each level's touches and turns: the owner said "count the tops and the lows on the focus timeframe and
@@ -303,6 +318,13 @@ what it did and that the tests pass, every time."
   run again before you report.
 - Run the no-look-ahead check for every new reading.
 - A step with a failing or unrun test is not done. Say so plainly, never "should pass".
+
+**Never make up numbers or data (owner, 2026-10-19 10:51 Thai): "answer only from the real candles and the real chart
+patterns."**
+- Every claim about price comes with the real candles behind it, drawn, with the dates and the Thai times.
+- Every number comes from a run you made, with the script and its output file named.
+- What you have not measured, you say you have not measured.
+- A plan is labelled a plan.
 
 **Report every step in the same shape**, in `DEV_LOG.md` and in your message:
 1. What I did (files, one line each).
