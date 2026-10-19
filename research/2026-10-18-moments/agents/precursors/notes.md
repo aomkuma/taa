@@ -1861,7 +1861,7 @@ of the run drawn (`loser_charts.py`).
 hours in their zones summer and winter, nothing after the moment changes the structure; planted bugs 4 of 4 after the
 last test was added; two wrong expectations of mine corrected; `out_pullback15.txt`):** P1 337 trades (5.27 a weekday)
 R -0.101; P2 161 (2.44) R -0.268; 6 % reached 3 R0, 64 % surrendered. Worse than with H1 / H4. Every loser drawn next.
-**Every loser drawn (10:00 Thai):** P1 209 (https://claude.ai/artifact/XRP7WXNDZ2XdaPxW6sb1Qp), P2 113
+**Every loser drawn (09:57 Thai):** P1 209 (https://claude.ai/artifact/XRP7WXNDZ2XdaPxW6sb1Qp), P2 113
 (https://claude.ai/artifact/Sg6cwAv62hRdhD2wae8mmf). By eye: P2 #10 a buy in a sideways M15 after a spike - no run;
 P2 #60 a sell right after a V-shaped M15 rally (the 3-ATR swings had not yet turned - the lag remains even on M15);
 P1 #100 a buy in a choppy M15 of large spikes both ways, stopped after 45 minutes. The losers sit in sideways / choppy
