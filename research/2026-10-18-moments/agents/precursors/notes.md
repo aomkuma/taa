@@ -2518,3 +2518,13 @@ shape.
 - relayed to dev2: the first developer needs dev2's swing interface;
 - the first developer, while waiting: filters on a fixed candidate set, a pre-registered risk cap in H1 ATRs, a tighter
   base rule (P5a).
+
+**23:11 Thai - the first developer paused** (owner: "should we stop and wait? otherwise whatever is built will be
+tested and lose anyway"). No more tests on the old micro-swing structure (B2 filters, the risk cap, the base rule).
+The second developer's V3-1 (the trade-size swings and the structure on every TF up to H1) is the critical path.
+
+The first developer resumes on it:
+- P5 on the new swings;
+- an independent second implementation of the structure reading, to cross-check V3-1.
+
+The auditor (data, simulators) and the strategist (the review) go on: they do not depend on the structure.
