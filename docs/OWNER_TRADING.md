@@ -68,6 +68,7 @@ picked (the run's high and the first bounce?) (3) how long must price range befo
 | 1 | 2026-10-15 11:55-15:15 | XAUUSD | BUY x7 (0.09 lot) | avg 4142.98 | 4128, then 4143.00 (break-even) | 4153.72-4154.36 | 0.76 at first | 4 TP, 3 by hand | +81.52 USD (+54 % of 150) | range trade; see below |
 | 2 | 2026-10-15 ~15:30 | XAUUSD | SELL x2 (0.02 lot) | avg 4150.83 | 4173 (set in MT5) | target ~4100 (not set) | 2.3 | SL, 2026-10-16 03:00 | about -44.34 USD (computed; to confirm from MT5) | head-and-shoulders right shoulder; see below |
 | 3 | 2026-10-16 ~10:00-10:40 | XAUUSD | SELL, 0.01 at a time (total to confirm) | avg 4173.8 | ~4180 (above the day's high 4179.72) | 4124 | 8.0 | SL, 2026-10-16 10:49 | about -6.2 USD per 0.01 lot (lots to confirm) | M30 "sideways up = leg B"; sells at the top of the M30 range; see below |
+| 4 | 2026-10-19 ~18:30-18:55 | XAUUSD | SELL x2 (lots to confirm) | about 4169 | first SL to confirm; moved above 4160 by 22:59 | the Fibo 38.2 / 23.6 zone (to confirm) | - | open at 22:59 (about 4142) | open | after the failed retest of the broken trendline / range bottom; see below |
 
 ### Trade 1 - context at the entry (bot's reads, data to 14:51)
 
@@ -192,6 +193,40 @@ the highest prices and averaged down with 0.01 lots.
   down, not a plan. It worked here because the M5 higher low (4131.4, on the rising trendline) held.
 - The target ~4153.8-4154.2 sits where the falling trendline from the 4161.7 high crosses: a higher-timeframe
   resistance confluence just above the target (a strength).
+
+### Trade 4 - the sell after the failed retest (2026-10-19, read live with the owner; M1 / M5 bars read-only from MT5)
+
+**The owner** (22:59-23:03 Thai): "I already have two trades of my own around 4169", marking on M5 the bars right
+after the bump to the red trendline. Also: "the shape on every TF up to 1H - I would enter and wait right away, in the
+consolidation zone, with the SL above 4160."
+
+**The picture at the entry** (real bars, Thai time):
+- **The range break:** the day ranged 4165.6-4190.3 (05:05-17:00), on the rising trendline drawn from 15 Oct. The
+  first M5 close under the range's low came at 17:20.
+- **The failed retest:**
+  - 18:15 M5: high 4177.06, back up to the broken trendline from below;
+  - 18:25: close 4172.11, then 18:30 close 4170.00;
+  - 18:35-18:50: a small flag at 4167.6-4170.5. The owner's box is here, the entry about 4169.
+- **After the entry:**
+  - against at most about 1.5 USD (4170.51 at 18:44; a second retest to 4170.00 at 19:05);
+  - 18:55: down to 4161.29;
+  - the NY-open fall 20:35-20:47 to 4143.37;
+  - a base on the Fibo 50 % at 4142-4150, then 4139.58 at 22:55. About 27 USD in the trade's favour at 22:59.
+- **The structure:** LH / LL on M5, M15, M30 and H1 since the 4190.25 top at 14:33 (H1 highs 4190, 4180, 4173, 4172,
+  4177 the retest, 4170, 4167, 4155, 4150).
+
+**What it shows:**
+- **The entry:** a break-and-retest - price comes back to the broken trendline / range bottom from below, fails, and
+  the owner sells the first lower high after it. 18:30 lies outside the owner's stated windows: the "really clean"
+  exception.
+- **The management:** the stop moved above 4160, over the base's highs and at the 61.8 %, once the trade had run.
+  Held through the base rather than taken at the first target.
+- **For the rules:**
+  - the break-and-retest entry (P5 in `research/2026-10-18-moments/agents/DEV_PROMPT.md`);
+  - "every TF up to H1 agrees -> enter early inside the consolidation, the stop past the structure";
+  - a trailing stop past the structure, not a fixed USD.
+
+**To confirm with the owner:** the exact entries and lots, the first stop, the target.
 
 ## Findings so far
 
