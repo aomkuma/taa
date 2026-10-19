@@ -2460,7 +2460,7 @@ the structure that would have to break (the base's top / the last H1 lower high 
 - the formations live on trade-size swings;
 - turns at a level overshoot by under about 7 USD in 90 %.
 
-## The team, and the first developer's P3 / P4 / P5a measured (2026-10-19 23:10 Thai; owner: "add one more agent to consult and find the way to profit"; "divide the duties and talk well")
+## The team, and the first developer's P3 / P4 / P5a measured (2026-10-19 23:08 Thai; owner: "add one more agent to consult and find the way to profit"; "divide the duties and talk well")
 **The team** (`../TEAM.md`):
 - the measurer / coordinator;
 - the first developer (`dev/`, patterns at levels);
