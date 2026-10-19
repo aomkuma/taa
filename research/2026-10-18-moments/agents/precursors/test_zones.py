@@ -14,7 +14,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import foundation as F  # noqa: E402
-from zones import first_touch, merge, swings, zones_at  # noqa: E402
+from zones import first_touch, levels_at, merge, swings, zones_at  # noqa: E402
 
 H = 3600 * 10**9
 
@@ -71,9 +71,10 @@ def test_the_first_touch_and_nothing_before_it():
     S = pd.DataFrame(dict(i=[0], price=[105.0], kind=[1], known=[t[0].value - H]))
     avail = np.array([t[0].value - H])
     atr = np.array([1.0])
-    j, Z, a = first_touch(m, 0, 6, S, avail, atr)
+    fn = lambda t_, p: zones_at(S, avail, atr, t_)  # noqa: E731
+    j, Z, a = first_touch(m, 0, 6, fn)
     assert j == 3  # 104.95 is within 0.1 (0.1 x ATR 1.0) of 105; bar 2's 103 is not
-    assert first_touch(m, 0, 3, S, avail, atr) is None
+    assert first_touch(m, 0, 3, fn) is None
 
 
 def test_the_zones_do_not_change_when_the_future_is_replaced():
@@ -90,3 +91,44 @@ def test_the_zones_do_not_change_when_the_future_is_replaced():
     atr2 = F.atr(b2.high.to_numpy(), b2.low.to_numpy(), b2.high.to_numpy(), 14)
     Z2, _ = zones_at(swings(b2), av, atr2, t)
     assert Z1.equals(Z2) and len(Z1) > 3
+
+
+def test_the_owners_four_kinds_of_levels():
+    S = pd.DataFrame(dict(i=[1, 2, 3, 4, 5, 6, 7, 8], price=[100.0, 120.0, 90.0, 120.5, 90.4, 89.8, 110.0, 95.0],
+                          kind=[1, 1, -1, 1, 1, -1, 1, -1], known=np.array([3, 4, 5, 6, 7, 8, 9, 10]) * H))
+    Y = dict(S=S, avail=np.arange(1, 13) * H, atr=np.full(12, 4.0),
+             h=np.array([100, 101, 125, 99, 121, 98, 97, 111, 100, 106, 130, 130.0]),
+             lo=np.array([95, 96, 99, 85, 97, 89, 88, 100, 94, 100, 70, 70.0]),
+             d_avail=np.array([5, 11]) * H, d_high=np.array([120.6, 150.0]), d_low=np.array([80.0, 60.0]))
+    L, a = levels_at(Y, 10 * H, 105.0)
+    # at 10 h (bars 0..9 complete; the D1 complete at 5 h is the previous day): the zone 89.8 / 90 / 90.4 (3 swings, tops
+    # and lows) and 120 / 120.5 (2 tops) kept; 100 (1 swing, not the latest top) dropped; the five-day 125 / 85; PDH
+    # 120.6 is within 1.0 (0.25 x ATR 4) of the 2-swing zone: dropped; PDL 80; the latest top above 105 is 110 (bar 7),
+    # the latest low below it 95 (bar 8); bars 10-11 (130 / 70) and the next day (150 / 60) are not known yet
+    assert L.kind.tolist() == ["x3+ / flip", "x2", "5d high", "5d low", "PDL", "last top", "last low"]
+    assert L.price.tolist() == pytest.approx([90.0667, 120.25, 125.0, 85.0, 80.0, 110.0, 95.0], abs=1e-3)
+    assert a == 4.0
+
+
+def test_a_two_swing_flip_is_strong_and_the_latest_low_inside_it_is_not_repeated():
+    S = pd.DataFrame(dict(i=[1, 2], price=[100.0, 100.5], kind=[1, -1], known=np.array([3, 4]) * H))
+    Y = dict(S=S, avail=np.arange(1, 13) * H, atr=np.full(12, 4.0), h=np.full(12, 140.0), lo=np.full(12, 60.0),
+             d_avail=np.array([5]) * H, d_high=np.array([150.0]), d_low=np.array([50.0]))
+    L, _ = levels_at(Y, 10 * H, 105.0)
+    # a top and a low within 1.0: a flipped level (strong though only 2 swings); the latest low below 105 is 100.5,
+    # inside it: not repeated; no top above 105
+    assert L.kind.tolist() == ["x3+ / flip", "5d high", "5d low", "PDH", "PDL"]
+    assert L.price.iloc[0] == pytest.approx(100.25)
+
+
+def test_the_levels_are_read_with_the_bars_open_not_its_close():
+    t = pd.date_range("2026-01-05 14:30", periods=3, freq="1min", tz="UTC")
+    m = pd.DataFrame(dict(open=[100.0, 101.0, 102.0], high=[100.5, 101.5, 102.5], low=[99.5, 100.5, 101.5],
+                          close=[100.9, 101.9, 102.9]), index=t)
+    seen = []
+
+    def fn(t_ns, price):
+        seen.append(price)
+        return pd.DataFrame(columns=["price"]), 1.0
+
+    assert first_touch(m, 0, 3, fn) is None and seen == [100.0, 101.0, 102.0]  # the close is not known at the open

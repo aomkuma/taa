@@ -2042,3 +2042,83 @@ The 11 days gave 9 moments; the other 2 had no touch within 3 hours of the open.
 **The problem seen on the charts:** 14-23 zones in five days, e.g. #3: 14 zones within about 180 USD. Price is near a
 zone almost all the time, so "at a zone" barely selects. Before counting anything, ask the owner which of these are the
 levels meant.
+**The owner's pick (10:54 Thai, from the drawn zones):** all four kinds:
+- zones of >= 2 swings, the strongest being >= 3 or flipped (tops and lows);
+- the latest swing high above the price and the latest swing low below it;
+- the previous day's high / low;
+- the five-day high / low.
+
+The zones of one swing that are not the latest swing are dropped.
+
+**Step 1b - written before it is computed:**
+- `zones.levels_at`: from the zones known at the moment, keep the four kinds, each labelled: "x3+ / flip", "x2",
+  "last top" / "last low" (the latest known H1 swing above / below the price), "PDH" / "PDL" (the previous server day),
+  "5d high" / "5d low" (the 120 complete H1 bars).
+- The same 9 moments are redrawn with only these levels. The first touch is now a touch of one of them.
+**Step 1b, drawn (10:58 Thai; tests `test_zones.py`, 8 passed: the four kinds by hand - a one-swing zone that is not the
+latest dropped, a two-swing flip counted strong, a weaker level inside a stronger one's tolerance dropped, the latest
+top / low (not the highest), the previous day from the last complete server day, the five days from complete bars - and
+the levels read with the bar's open, not its close; planted bugs 8 of 8 in the level picker after the last test, 8 of 9
+in the zones as before; republished at the same link).** 9-13 levels a moment, against 14-23 before. On the real candles:
+- **#1 (2025-11-05 21:47 Thai):** M1 fell through 3974.1 (x2) to about 3965, just past the next level 3966.5 (x3+ /
+  flip), turned up to 3983, and never reached 3961.3 (x2) below.
+- **#4 (2026-01-12 21:32 Thai):** price went under 4600.2 (x2) to 4586, then up through it, and stopped at the 5d high
+  4620.2.
+- A range still leaves a cluster: in #4 there are 7 flip zones between 4441 and 4481.
+
+**The owner, 10:57 Thai: "does it usually go past the support / resistance with the wick, make the low / high, but not
+reach the next level, when it reverses?"**
+
+**Step 2 - written before it is computed (`touches.py`):**
+- **The touches:** every touch of the owner's levels in the active hours (60 minutes around the four events), P1 / P2,
+  each counted once. A touch is the first M1 bar within 0.1 x H1 ATR of a level, with price at least 0.5 x H1 ATR away
+  from it in the 60 minutes before. The side is where price came from: from above = a support test, from below = a
+  resistance test.
+- **What follows, within 60 M1 bars of the touch:**
+  - **reversed:** 10 USD back to the approach side first;
+  - **broke:** 10 USD beyond the level first;
+  - **neither**;
+  - a bar reaching both: ambiguous, left out.
+- **For the reversed:** the overshoot (how far the extreme went beyond the level before the reversal, in USD and in H1
+  ATRs; 0 = it turned short of the level), and whether that extreme reached the next owner's level beyond.
+- **The split:** by part and by the level's kind; each day's count of touches shown.
+- **The drawings:** the first two touches of each outcome in each part, drawn - the real candles first, then the counts.
+**Step 2, the result (11:06 Thai; `touches.py`, tests `test_touches.py` - 9 passed, each by hand:
+- a support that holds without a pierce;
+- a wick 4.5 past, then the reversal;
+- a resistance that breaks, and a bar reaching both left out;
+- the touch bar can break but not reverse;
+- neither;
+- the first touch after price was away, the latest bar away counting;
+- the next level past the touch's own place;
+- how far past counts only up to the reversal.
+
+Planted bugs 10 of 10 after two tests were added; one wrong expectation of mine corrected (the next level's gap is the
+touch distance). Outputs: `out_touches.txt`, `touches.parquet`, drawn `charts/touches.html` =
+https://claude.ai/artifact/ApKRhFx5KpJxegEEFuRvS8.)** Each touch counted once, in the active hours:
+
+| | P1 | P2 |
+|---|---|---|
+| touches (days) | 404 (59) | 460 (63) |
+| turned 10 USD back before going 10 past | 0.50 | 0.55 |
+| ... of those, pierced the level first | 0.73 | 0.58 |
+| ... how far past (USD), 50 / 75 / 90 % | 1.8 / 4.3 / 7.0 | 0.6 / 3.5 / 6.9 |
+| ... the extreme reached the next level | 0.09 (the next a median 9.3 USD away) | 0.04 (22.7 away) |
+| went 10 past first | 0.36 | 0.44 |
+| ... then came 10 back within the 60 minutes (a deep sweep) | 21 of 146 (median 13.1 USD past, 90 % 17.8) | 94 of 201 (median 18.9, 90 % 35.1) |
+| neither in 60 minutes | 0.14 | 0.01 |
+
+**The owner's question answered from these counts:** yes. When gold turns at the owner's levels it mostly goes past the
+level with the wick first (73 % / 58 % of the turns): half by under 1.8 / 0.6 USD, 90 % by under 7 USD. Its low / high
+almost never reaches the next level (9 % / 4 %). In P2 many turns came after a deep sweep of 10+ USD (94 touches,
+median 19 USD past).
+
+By the level's kind, nothing is steady across the parts: in P1 the x3+ / flip zones broke less (0.29) than x2 (0.44);
+in P2 both broke 0.42.
+
+**On the drawn candles, a caution:**
+- P1 #5: 2025-10-21 18:56 Thai, 4244.2 x3+ / flip, from above. It bounced to about 4256 (10 back: "reversed"), then
+  crashed through to 4215 at 19:11.
+- P2 #11: 2026-01-16 20:23 Thai, 4592.7 x2, from below. It dipped 10 to about 4582.7, then broke up to 4608.
+
+"Reversed" is the first 10-USD reaction, not the end of the move.

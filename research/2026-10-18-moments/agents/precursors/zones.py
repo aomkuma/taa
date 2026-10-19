@@ -60,13 +60,52 @@ def zones_at(S: pd.DataFrame, avail_ns: np.ndarray, atr: np.ndarray, t_ns: int, 
     return merge(sel.price.to_numpy(), sel.kind.to_numpy(), TOL_ATR * atr[bi]), float(atr[bi])
 
 
-def first_touch(m: pd.DataFrame, a: int, b: int, S: pd.DataFrame, avail_ns: np.ndarray, atr: np.ndarray) -> tuple[int, pd.DataFrame, float] | None:
-    """The first M1 bar j in [a, b) whose range comes within TOUCH_ATR x H1 ATR of a zone known at its open; returns
-    (j, the zones, the ATR) or None."""
-    h, lo = m.high.to_numpy(float), m.low.to_numpy(float)
+ORDER = ("x3+ / flip", "x2", "5d high", "5d low", "PDH", "PDL", "last top", "last low")
+
+
+def levels_at(Y: dict, t_ns: int, price: float, win: int = WIN) -> tuple[pd.DataFrame, float]:
+    """The owner's levels at t_ns (owner, 2026-10-19 - all four kinds picked from the drawn zones): the zones of >= 3
+    swings or flipped (tops and lows), of 2 swings, the five-day high / low (the last `win` complete H1 bars), the
+    previous server day's high / low, the latest known swing top above `price` and low below it. A level within the
+    zone tolerance of a stronger one already kept is dropped (ORDER = strongest first). Y: S, avail, atr, h, lo (H1)
+    and d_avail, d_high, d_low (D1)."""
+    Z, a = zones_at(Y["S"], Y["avail"], Y["atr"], t_ns, win)
+    if not np.isfinite(a):
+        return pd.DataFrame(columns=["price", "kind", "touches"]), a
+    bi = int(np.searchsorted(Y["avail"], t_ns, side="right")) - 1
+    cand = []
+    for z in Z.itertuples():
+        if z.touches >= 3 or (z.tops and z.lows):
+            cand.append((z.price, "x3+ / flip", z.touches))
+        elif z.touches == 2:
+            cand.append((z.price, "x2", 2))
+    a0 = max(bi - win + 1, 0)
+    cand += [(float(Y["h"][a0:bi + 1].max()), "5d high", 0), (float(Y["lo"][a0:bi + 1].min()), "5d low", 0)]
+    kd = int(np.searchsorted(Y["d_avail"], t_ns, side="right")) - 1
+    if kd >= 0:
+        cand += [(float(Y["d_high"][kd]), "PDH", 0), (float(Y["d_low"][kd]), "PDL", 0)]
+    S = Y["S"]
+    known = S[(S.known <= t_ns) & (S.i > bi - win)]
+    tops, lows = known[(known.kind == 1) & (known.price > price)], known[(known.kind == -1) & (known.price < price)]
+    if len(tops):
+        cand.append((float(tops.price.loc[tops.i.idxmax()]), "last top", 1))
+    if len(lows):
+        cand.append((float(lows.price.loc[lows.i.idxmax()]), "last low", 1))
+    cand.sort(key=lambda c: ORDER.index(c[1]))
+    kept: list[tuple] = []
+    for c in cand:
+        if all(abs(c[0] - k[0]) > TOL_ATR * a for k in kept):
+            kept.append(c)
+    return pd.DataFrame(kept, columns=["price", "kind", "touches"]), a
+
+
+def first_touch(m: pd.DataFrame, a: int, b: int, at_fn) -> tuple[int, pd.DataFrame, float] | None:
+    """The first M1 bar j in [a, b) whose range comes within TOUCH_ATR x H1 ATR of a level known at its open
+    (at_fn(t_ns, the bar's open) -> (levels, ATR)); returns (j, the levels, the ATR) or None."""
+    h, lo, o = m.high.to_numpy(float), m.low.to_numpy(float), m.open.to_numpy(float)
     t_ns = m.index.as_unit("ns").asi8
     for j in range(a, b):
-        Z, at = zones_at(S, avail_ns, atr, int(t_ns[j]))
+        Z, at = at_fn(int(t_ns[j]), float(o[j]))
         if Z.empty:
             continue
         d = TOUCH_ATR * at
@@ -75,14 +114,14 @@ def first_touch(m: pd.DataFrame, a: int, b: int, S: pd.DataFrame, avail_ns: np.n
     return None
 
 
-def moments(m: pd.DataFrame, days: pd.DatetimeIndex, S: pd.DataFrame, avail_ns: np.ndarray, atr: np.ndarray) -> list[dict]:
+def moments(m: pd.DataFrame, days: pd.DatetimeIndex, at_fn) -> list[dict]:
     """On each given day: the first touch from the NY open (09:30 NY) to 3 hours after it."""
     out = []
     for d in days:
         ny = pd.Timestamp(year=d.year, month=d.month, day=d.day, hour=9, minute=30, tz="America/New_York").tz_convert("UTC")
         a = int(np.searchsorted(m.index, ny))
         b = int(np.searchsorted(m.index, ny + pd.Timedelta(hours=3)))
-        x = first_touch(m, a, b, S, avail_ns, atr)
+        x = first_touch(m, a, b, at_fn)
         if x is not None:
             out.append(dict(j=x[0], zones=x[1], atr=x[2]))
     return out
@@ -107,23 +146,23 @@ def draw(m: pd.DataFrame, b1: pd.DataFrame, x: dict, title: str, out: Path) -> N
     for z in Z.itertuples():
         if not lo_y - 5 <= z.price <= hi_y + 5:
             continue
-        col = "#7a4fd6" if z.tops and z.lows else "#d6492f" if z.tops else "#1a9b77"
-        ax1.axhline(z.price, color=col, linewidth=0.6 + 0.5 * min(z.touches, 4), alpha=0.75)
-        ax1.text(len(H) + 0.5, z.price, f"{z.price:.1f} x{z.touches}", color=col, fontsize=7, va="center")
+        col, lw, ls = STYLE[z.kind]
+        ax1.axhline(z.price, color=col, linewidth=lw, linestyle=ls, alpha=0.85)
+        ax1.text(len(H) + 0.5, z.price, f"{z.price:.1f} {z.kind}", color=col, fontsize=7, va="center")
     ax1.axhline(m.close.iloc[j], color="#2f6fd6", linewidth=0.8, linestyle=":")
     ticks = list(range(0, len(H), 24))
     ax1.set_xticks(ticks, [pd.Timestamp(H["last"].iloc[k]).tz_convert("Asia/Bangkok").strftime("%d %b %H:00") for k in ticks], fontsize=7)
     ax1.set_xlim(-1, len(H) + 12)
-    ax1.set_title("H1, the last 5 days - the zones known at the touch (red = tops, green = lows, purple = both; x = touches)", fontsize=8)
+    ax1.set_title("H1, the last 5 days - the owner's levels known at the touch", fontsize=8)
     ax1.tick_params(axis="y", labelsize=7)
     a, e = max(j - 30, 0), min(j + 60, len(m) - 1)
     M = m.iloc[a:e + 1]
     candles(ax2, *(M[k].to_numpy(float) for k in ("open", "high", "low", "close")), a)
     near = Z[(Z.price >= M.low.min() - 3) & (Z.price <= M.high.max() + 3)]
     for z in near.itertuples():
-        col = "#7a4fd6" if z.tops and z.lows else "#d6492f" if z.tops else "#1a9b77"
-        ax2.axhline(z.price, color=col, linewidth=1.2, alpha=0.8)
-        ax2.text(e + 0.5, z.price, f"x{z.touches}", color=col, fontsize=7, va="center")
+        col, lw, ls = STYLE[z.kind]
+        ax2.axhline(z.price, color=col, linewidth=max(lw, 1.0), linestyle=ls, alpha=0.9)
+        ax2.text(e + 0.5, z.price, z.kind, color=col, fontsize=7, va="center")
     ax2.axvline(j, color="#2f6fd6", linewidth=0.8, alpha=0.6)
     tk = list(range(a, e + 1, 15))
     ax2.set_xticks(tk, [m.index[k].tz_convert("Asia/Bangkok").strftime("%H:%M") for k in tk], fontsize=7)
@@ -134,6 +173,11 @@ def draw(m: pd.DataFrame, b1: pd.DataFrame, x: dict, title: str, out: Path) -> N
     fig.tight_layout()
     fig.savefig(out, dpi=85)
     plt.close(fig)
+
+
+STYLE = {"x3+ / flip": ("#7a4fd6", 2.4, "-"), "x2": ("#d97a1a", 1.6, "-"), "5d high": ("#555555", 1.2, "--"),
+         "5d low": ("#555555", 1.2, "--"), "PDH": ("#1d2127", 1.2, "-."), "PDL": ("#1d2127", 1.2, "-."),
+         "last top": ("#2f6fd6", 1.0, ":"), "last low": ("#2f6fd6", 1.0, ":")}
 
 
 PAGE = """<title>H1 Zone Touches</title>
@@ -150,12 +194,13 @@ figcaption {{ font-size: 0.85rem; color: #1d2127; font-variant-numeric: tabular-
 img {{ width: 100%; height: auto; display: block; }}
 </style>
 <main>
-<h1>H1 zones at the first touch after the New York open</h1>
+<h1>The owner's H1 levels at the first touch after the New York open</h1>
 <p>{n} real moments, one on every 12th weekday from 2025-10-18 to 2026-04-17 (chosen by that rule, not by eye). Left: the
-last 5 days of H1 with the zones known at the touch - H1 swing highs / lows (2 bars each side, counted only once
-confirmed) merged within a quarter of the H1 ATR; red = made of tops, green = of lows, purple = both (a flipped level);
-x = how many swings the zone holds. Right: M1 around the first bar after 21:30 / 20:30 Thai (09:30 New York) that
-reached a zone. Research charts only - to check that these are the levels meant before anything is counted.</p>
+last 5 days of H1 with the levels known at the touch, the four kinds the owner picked: zones of 3+ H1 swings or flipped
+(purple, thick), of 2 swings (orange), the five-day high / low (grey dashed), the previous day's high / low (black
+dash-dot), the latest swing top above / low below the price (blue dotted). H1 swings: 2 bars each side, counted only
+once confirmed; merged within a quarter of the H1 ATR. Right: M1 around the first bar after 21:30 / 20:30 Thai (09:30
+New York) that reached a level. Research charts only - to check the levels before anything is counted.</p>
 {body}
 </main>
 """
@@ -172,16 +217,18 @@ def main() -> None:
     b1 = bars(m, "1h")
     atr = F.atr(b1.high.to_numpy(), b1.low.to_numpy(), b1.close.to_numpy(), 14)
     avail_ns = pd.DatetimeIndex(b1["avail"]).as_unit("ns").asi8
-    S = swings(b1)
+    d1 = bars(m, "1D")
+    Y = dict(S=swings(b1), avail=avail_ns, atr=atr, h=b1.high.to_numpy(float), lo=b1.low.to_numpy(float),
+             d_avail=pd.DatetimeIndex(d1["avail"]).as_unit("ns").asi8, d_high=d1.high.to_numpy(float), d_low=d1.low.to_numpy(float))
     days = pd.bdate_range(PARTS["P1"][0], PARTS["P2"][1], inclusive="left", tz="UTC")[::EVERY]
-    X = moments(m, days, S, avail_ns, atr)
+    X = moments(m, days, lambda t, p: levels_at(Y, t, p))
     outdir = HERE / "charts" / "zones_h1"
     outdir.mkdir(parents=True, exist_ok=True)
     cards = []
     for k, x in enumerate(X):
         t = m.index[x["j"]].tz_convert("Asia/Bangkok")
         Z = x["zones"]
-        title = f"#{k + 1}  {t:%Y-%m-%d %H:%M} Thai - {len(Z)} zones known, H1 ATR {x['atr']:.1f} USD"
+        title = f"#{k + 1}  {t:%Y-%m-%d %H:%M} Thai - {len(Z)} levels known, H1 ATR {x['atr']:.1f} USD"
         f = outdir / f"{k + 1:02d}.png"
         draw(m, b1, x, title, f)
         cards.append((title, base64.b64encode(f.read_bytes()).decode()))

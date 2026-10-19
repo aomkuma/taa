@@ -1,0 +1,30 @@
+
+P1: 404 touches on 59 days; reversed 201 (0.50), broke 146 (0.36), neither 57 (0.14), ambiguous 0 (0.00)
+  the reversed: turned short of the level (no pierce) 0.27; pierced 0.73; how far past (USD) 25/50/75/90 %: 0.0 / 1.8 / 4.3 / 7.0; in H1 ATRs median 0.12; the extreme reached the next level 0.09 (the next level a median 9.3 USD away)
+  by the level's kind (touches, reversed, broke):
+              n  reversed  broke
+kind                            
+5d high      21      0.52   0.24
+5d low        3      0.33   0.67
+PDH          34      0.56   0.44
+PDL           6      0.67   0.33
+last low     22      0.36   0.50
+last top     31      0.45   0.42
+x2          100      0.47   0.44
+x3+ / flip  187      0.52   0.29
+
+P2: 460 touches on 63 days; reversed 252 (0.55), broke 201 (0.44), neither 5 (0.01), ambiguous 2 (0.00)
+  the reversed: turned short of the level (no pierce) 0.42; pierced 0.58; how far past (USD) 25/50/75/90 %: 0.0 / 0.6 / 3.5 / 6.9; in H1 ATRs median 0.02; the extreme reached the next level 0.04 (the next level a median 22.7 USD away)
+  by the level's kind (touches, reversed, broke):
+              n  reversed  broke
+kind                            
+5d high      16      0.56   0.44
+5d low       13      0.31   0.69
+PDH          17      0.41   0.53
+PDL          31      0.55   0.45
+last low     27      0.52   0.48
+last top     22      0.59   0.41
+x2          178      0.56   0.42
+x3+ / flip  156      0.56   0.42
+
+12 touches drawn -> charts/touches.html
