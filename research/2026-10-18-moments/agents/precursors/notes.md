@@ -1848,3 +1848,23 @@ worst 1,642 USD** - a buy at 5,585 on 2026-01-29 13:36 Thai, the top before the 
 (2026-10-16). Starting at 22 or 50 USD: **wiped on the first trade** (2023-11-03, 70 USD against before +10). From 100
 USD up it survived only because 300 winners (+3,000 USD) came before the deep ones; the same trades in another order
 need more than 1,642 USD a 0.01 lot to live through - and the broker stops out before equity reaches 0.
+
+## The direction from M15 as it stands, the entry on M1, only when gold runs - written before it is computed (2026-10-19 09:53 Thai; owner: "OK, go back to it" - the plan: M15's current structure, the M1 turn after a pullback, only the hours gold runs, every loser drawn)
+`pullback15.py`: the trend = the M15 swing structure at the M1 close (picture.struct_brk on the 3-ATR ZigZag of the
+last 120 M15 bars, the swing still forming counted: +1 HH / HL, -1 LH / LL, else none) - instead of H1 / H4. The
+signal and the trade as pullback.py (the M1 pullback >= 1 M5 ATR, the turn beyond the 3 bars before, the stop 0.3
+beyond the pullback's extreme, the risk 2 .. 8 USD, the surrender at 5 minutes without +1 R0, the target 3 R0, out
+after 4 hours, on M1 the stop first), only when the decision is within 60 minutes of the New York open / the London PM
+fix / the US data / the COMEX open. P1 / P2 (2025-10-18 .. 2026-04-17); if positive in both: the exam once. Every loser
+of the run drawn (`loser_charts.py`).
+**The result (09:56 Thai; `pullback15.py`, tests `test_pullback15.py` - up / down structure on M15 by hand, the active
+hours in their zones summer and winter, nothing after the moment changes the structure; planted bugs 4 of 4 after the
+last test was added; two wrong expectations of mine corrected; `out_pullback15.txt`):** P1 337 trades (5.27 a weekday)
+R -0.101; P2 161 (2.44) R -0.268; 6 % reached 3 R0, 64 % surrendered. Worse than with H1 / H4. Every loser drawn next.
+**Every loser drawn (10:00 Thai):** P1 209 (https://claude.ai/artifact/XRP7WXNDZ2XdaPxW6sb1Qp), P2 113
+(https://claude.ai/artifact/Sg6cwAv62hRdhD2wae8mmf). By eye: P2 #10 a buy in a sideways M15 after a spike - no run;
+P2 #60 a sell right after a V-shaped M15 rally (the 3-ATR swings had not yet turned - the lag remains even on M15);
+P1 #100 a buy in a choppy M15 of large spikes both ways, stopped after 45 minutes. The losers sit in sideways / choppy
+M15 and just after V turns.
+**The owner, 09:55 Thai: "it looks as if it is not learning at all - or are you learning, in case I misunderstand?"**
+Answered with the running table of this session's rounds (learned -> changed -> result).

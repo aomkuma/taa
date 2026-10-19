@@ -1,0 +1,3 @@
+signals 1796; trades 498
+P1: 337 trades (5.27 a weekday), win 0.062, R -0.101, USD -185.5, risk median 5.33, max DD 233.9, worst -8.19, streak 14, exits {'surrender': 235, 'stop': 81, 'win': 21}, buys 192 / sells 145
+P2: 161 trades (2.44 a weekday), win 0.056, R -0.268, USD -245.7, risk median 5.92, max DD 257.3, worst -8.17, streak 8, exits {'surrender': 87, 'stop': 65, 'win': 9}, buys 70 / sells 91
