@@ -2381,3 +2381,23 @@ breaks too".
 **Consequence:** the detector must work on swings of the trade's size (10+ USD legs), not on 2 x M1-ATR micro-swings,
 and must cover the owner's whole set. That is Task P5 in `../DEV_PROMPT.md`, queued after P3 and P4. The day is a
 shape check only: it lies after the data end and is not used for outcomes.
+
+## The system audit by a second agent (2026-10-19 22:44 Thai; owner: "try it, nothing to lose; if it works keep it"; "have the agents look and fix together, with care, and with correct test references")
+- **The scenario planning** (a picture in formation -> its completions, each with a trigger / stop / target; enter
+  when the chart reveals one, in the owner's windows) is added to the developer's P5.
+- **The history download bug, confirmed.** A second read-only run of `download_history.py` stored M1 through
+  2026-10-19 15:40 UTC (22:40 Thai). The first run had stopped at Friday 03:54 Thai, so the bot terminal had not
+  synced Monday's history until `copy_rates_from_pos` was called. The downloader does not check that it reached the
+  latest bar.
+- **The earlier audit already covers some of it** (`../auditor/notes.md`):
+  - the M1 OHLC equals the ticks' bid OHLC in 100 % of 359k minutes;
+  - the "both in one bar = stop" rule moves results within +-0.01 R and changed no verdict;
+  - the costs were checked against the ticks.
+- **My checks today:**
+  - **both ZigZags** handle one wide bar as one turn, confirmed on the next bar;
+  - **the B2 trades** were re-derived from the raw ticks (60 / 60).
+- **The auditor:** a second agent was started with `../AUDIT_PROMPT.md`. It audits the nine shared building blocks
+  (data, larger-TF bars against MT5's own bars, indicators, swings, simulators, costs, parts / windows / DST, metrics,
+  anything untested). Each one gets hand tests, planted bugs, a second source and PASS / FAIL. Fixes come only with a
+  failing-then-passing test. The developer's files are never edited; findings there are relayed. The download bug
+  comes first.

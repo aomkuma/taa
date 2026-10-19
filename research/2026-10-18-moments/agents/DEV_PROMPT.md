@@ -292,6 +292,20 @@ or a set share of the H1 ATR.
    - Draw the day.
    - Then draw 12 catches from the learning parts, picked by a written rule, for the owner to confirm.
 4. **Only after the owner's confirmation:** B2 entries in the owner's windows, the full report, the losers by reason.
+5. **Plan the scenarios from a picture in formation** (owner, 22:37 Thai): "when the chart shows almost the whole
+   picture, we can infer what will form - e.g. a triple top - and plan by what the chart reveals; or, if we think it
+   is a consolidation breakout, we can plan that too". Owner, 22:45 Thai: "try it, nothing to lose; if it works, keep
+   it".
+   - **The detector also reports pictures still in formation,** e.g. two tops at a range top.
+   - **Each one gets its likely completions,** each with the trigger, the stop and the target, at the moment of the
+     decision. The real example of 2026-10-19:
+     - after the 2nd top (4186.51, 13:58 Thai; the low between at 4182.26, 14:03), two scenarios;
+     - **A, a triple top:** sell on a break of 4182.26, the stop above the 3rd top;
+     - **B, a breakout over 4190-4191.4:** buy the hold / retest, the target 4199.6;
+     - A was revealed: the 3rd top 4190.25 at 14:33, the break at 14:40, -28 by 17:46.
+   - **Enter only when the chart reveals one of them,** in the owner's windows.
+   - **Measure on the learning parts** against entering on completed patterns: does planning ahead enter earlier at a
+     better price, and does it pay?
 
 ### Task P (FIRST, owner 2026-10-19 11:15 Thai) - the chart pattern at the level
 
