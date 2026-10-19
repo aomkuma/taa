@@ -1943,4 +1943,36 @@ in 30 minutes) the round-50 effect is gone** (P1 0.21 / 0.15 / 0.10 / 0.17 / 0.1
 0.29 / 0.33 / 0.32): a few hundred trades showed a pattern the minutes do not have - not a rule, the exam not read.
 Learned: at these moments (a level with the volume) 5 USD against comes first 53-70 % of the time within 30 minutes; 10
 our way first 15-33 %. A level made by the move itself (the 60-minute low, the M15 range's low) is not a level price
-has turned at before.
+has turned at before. Drawn: https://claude.ai/artifact/QRAzAdXBdvSiTLHaH5uarK (commit 0bf0861).
+
+## The two-way sweep at the news - written before it is computed (2026-10-19 10:23 Thai; the owner on loser #1 of `charts/sr_break_reasons`, a buy at 21:13 Thai 2026-01-09 after the US jobs report: "to really buy, wait for the fake drop in the first minute - then it sweeps up, and then it comes down"; "that is the case of the fake break upward")
+The owner's sequence: the first minute fakes one way (sweeps the lows), then price sweeps the other way through the
+highs (a fake break up), then it comes down. Our break rule bought the second leg's top. `news_sweep.py`, part 1 the
+description, on the real ticks (the mid price, (bid + ask) / 2, so the release's wide spread does not move it), P1 / P2
+only: at each weekday's 08:30 and 10:00 New York minute, p0 = the last mid before it; the first leg = the side of the
+first 3-USD move from p0 within the first 60 s; then which comes first within 15 minutes of the release: p0 + 10 USD
+the first leg's way (**continued**) or p0 + 10 the other way (**faked**: the sweep), or neither; for a faked one, the
+sweep's extreme in those 15 minutes and how far it comes back in the 15 minutes after that extreme, and whether it
+crosses p0 again (**the third leg**). Split by the release's volume (the news minute's `vol1` >= 2: a release happened;
+below: a quiet minute). Part 2 (only after part 1): the trade the owner described - in after the fake first leg, out at
+the sweep, then the other side.
+**Part 1, the result (10:29 Thai; `news_sweep.py`, tests `test_news_sweep.py` - the owner's case by hand (the fake drop,
+the sweep up, back through p0), faked without the third leg, continued / neither / quiet, the first leg only within
+60 s, p0 the tick before the release, the release minutes in New York time summer and winter, and 2026-01-09's shape:
+a 14-USD first minute then the sweep; planted bugs 11 of 11 after three tests were added; `out_news_sweep.txt`,
+`news_sweep.parquet`).** **Corrected before the result was used:** the first definition raced p0 +- 10 USD from the
+release, so a first minute of more than 10 USD was "continued" - the owner's own 2026-01-09 example came out wrong. Now
+the race starts after the first minute: a new extreme beyond the first minute's (continued) against 10 USD past p0 the
+other way (faked); 2026-01-09 08:30 NY is faked (the sweep 18.6 USD at minute 10.4). The release marker (`vol1` >= 2)
+caught only 5 releases (the same UTC minute is busy on most days) - not used.
+| minute | part | days | first leg | continued | faked | quiet | faked: the sweep / its minute / back / third leg |
+|---|---|---|---|---|---|---|---|
+| 08:30 NY | P1 | 62 | up 17 / down 12 | 0.37 | 0.03 | 0.53 | 15.4 USD / 7.3 / 17.7 / 0.50 |
+| 08:30 NY | P2 | 65 | up 22 / down 22 | 0.49 | 0.17 | 0.32 | 16.4 / 12.3 / 19.7 / 0.64 |
+| 10:00 NY | P1 | 62 | up 17 / down 30 | 0.58 | 0.08 | 0.24 | 10.5 / 9.1 / 15.4 / 0.60 |
+| 10:00 NY | P2 | 65 | up 30 / down 27 | 0.69 | 0.14 | 0.12 | 15.4 / 7.2 / 31.5 / 0.89 |
+The owner's sequence is there (27 days in six months, about one a week): the sweep runs 10-52 USD past p0, peaks at
+minutes 1-15, and mostly comes back through p0. The first minute alone does not mark it - a new extreme after the
+first minute comes 3-5 x more often. What tells the fake at the end of the first minute is the next question - handed
+to the trading-system developer (owner, 10:25 Thai: "research, write the findings as a prompt, make another session the
+trading-system expert"; "and your job is to measure the system and the results"): `../DEV_PROMPT.md`.
