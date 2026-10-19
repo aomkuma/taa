@@ -1,0 +1,19 @@
+catches 12192 on 155 days; inside the owner's windows 2805
+name
+H&S                          215
+base break down             3032
+base break up               4830
+break down, retest           355
+break up, retest             398
+channel break down           672
+channel break up             539
+double bottom                283
+double top                   251
+inverse H&S                  249
+open: fake down, then up      96
+open: fake up, then down      58
+triangle break down           95
+triangle break up            117
+triple bottom                505
+triple top                   497
+pictures in formation 3170 (two tops 1619, two bottoms 1551)

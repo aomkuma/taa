@@ -1,0 +1,16 @@
+p4_trades.py: control (no bug): PASSED - 6 passed in 1.89s
+CAUGHT  #01 Asia's end included  (test_asia_and_london_on_the_thai_clock)
+CAUGHT  #02 Asia's start excluded  (test_asia_and_london_on_the_thai_clock)
+CAUGHT  #03 the Thai clock read as UTC  (test_asia_and_london_on_the_thai_clock)
+CAUGHT  #04 London's pad only on one side  (test_asia_and_london_on_the_thai_clock)
+CAUGHT  #05 London on London's clock  (test_asia_and_london_on_the_thai_clock)
+CAUGHT  #06 New York at a fixed UTC-5 (no summer time)  (test_new_york_follows_new_york_time)
+CAUGHT  #07 New York + 1 hour only  (test_new_york_follows_new_york_time)
+CAUGHT  #08 New York from 09:00  (test_new_york_follows_new_york_time)
+CAUGHT  #09 in_windows keeps every candidate  (test_in_windows_keeps_and_names)
+CAUGHT  #10 WN: the half hour's end included  (test_wn_skips_the_half_hour_after_ten_new_york)
+CAUGHT  #11 WN: from 09:30, not 10:00  (test_wn_skips_the_half_hour_after_ten_new_york)
+CAUGHT  #12 WN filters nothing  (test_wn_skips_the_half_hour_after_ten_new_york)
+CAUGHT  #13 metrics: a window's trades not split  (test_metrics_by_window)
+
+13 of 13 planted bugs caught

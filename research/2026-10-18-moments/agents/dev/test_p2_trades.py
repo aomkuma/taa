@@ -271,6 +271,17 @@ def test_one_trade_target_needs_more_than_one_risk(monkeypatch):
     assert x["target"] == 102.5 and x["exit"] == "target" and x["t_limit"] == 3600 * S
 
 
+def test_an_m5_trade_is_held_60_m5_bars():
+    # the measurer's missed bug ("M5 held 60 minutes, not 60 bars"): an M5 entry's time limit is 60 x 5 min = 300 min;
+    # flat ticks every minute for 6 hours: out at the first tick at / after 300 minutes
+    tf = fake_tf(np.full(100, 101.0), np.full(100, 100.0), np.full(100, 100.5), minutes=5)
+    secs = np.arange(0, 6 * 3600, 60)
+    t, bid = secs.astype(np.int64) * S, np.full(len(secs), 100.0)
+    nan = np.full(100, np.nan)
+    x = T.one_trade(SimpleNamespace(t_entry=0, side=1, stop=98.0, next_level=np.nan), tf, nan, nan, t, bid, bid + 0.2, 0.0)
+    assert x["t_limit"] == 300 * MN and x["exit"] == "time" and x["exit_t"] == 300 * MN
+
+
 # --- statistics and reasons -----------------------------------------------------------------------------------------
 
 

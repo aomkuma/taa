@@ -1,0 +1,6 @@
+L: trades 35; equal after the exit was replaced 35 of 35; changed when everything from the entry decision was replaced 35 of 35
+Xa: trades 50; equal after the exit was replaced 50 of 50; changed when everything from the entry decision was replaced 50 of 50
+Xb: trades 63; equal after the exit was replaced 63 of 63; changed when everything from the entry decision was replaced 63 of 63
+Xab: trades 60; equal after the exit was replaced 60 of 60; changed when everything from the entry decision was replaced 60 of 60
+ST: trades 51; equal after the exit was replaced 51 of 51; changed when everything from the entry decision was replaced 51 of 51
+PASSED

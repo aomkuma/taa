@@ -1,0 +1,31 @@
+
+== by hs (medians; shares of trades)
+part group   n     R  mfe_r  mae_r  mfe_min  mae_min  mfe_1r  mfe_2r  mae_1r  mfe_first  risk  height
+  P1   H&S  29  0.05   0.57   0.55    42.78    32.37    0.24    0.14    0.24       0.45 12.10    6.94
+  P1  rest 323 -0.03   0.65   0.68    32.51    36.16    0.33    0.10    0.29       0.47 10.45    5.56
+  P2   H&S  25  0.15   0.59   0.51    33.37    37.58    0.36    0.12    0.28       0.52 18.09    9.84
+  P2  rest 323 -0.03   0.63   0.69    34.93    34.25    0.33    0.11    0.31       0.48 18.53    9.77
+
+== by tf (medians; shares of trades)
+part group   n     R  mfe_r  mae_r  mfe_min  mae_min  mfe_1r  mfe_2r  mae_1r  mfe_first  risk  height
+  P1    M1 290 -0.05   0.64   0.70    26.64    27.75    0.33    0.10    0.29       0.48  9.46    5.03
+  P1    M5  62  0.07   0.61   0.55   116.45   124.25    0.31    0.13    0.26       0.45 24.53   13.62
+  P2    M1 277 -0.05   0.64   0.69    29.29    30.64    0.32    0.11    0.33       0.49 15.72    8.10
+  P2    M5  71  0.12   0.56   0.58   124.25    98.49    0.34    0.11    0.24       0.45 37.75   19.19
+
+== by family (medians; shares of trades)
+part group   n     R  mfe_r  mae_r  mfe_min  mae_min  mfe_1r  mfe_2r  mae_1r  mfe_first  risk  height
+  P1  base  34  0.08   0.97   0.72    34.60    41.53    0.50    0.18    0.32       0.44  8.90    2.62
+  P1   ihs  29  0.05   0.57   0.55    42.78    32.37    0.24    0.14    0.24       0.45 12.10    6.94
+  P1    st  31 -0.14   0.62   0.74    22.16    44.54    0.23    0.03    0.29       0.61 13.39    7.04
+  P1     w 258 -0.03   0.64   0.63    32.68    33.70    0.32    0.10    0.28       0.46 10.20    5.69
+  P2  base  42 -0.11   0.79   0.73    31.22    30.80    0.48    0.19    0.36       0.52 12.78    5.24
+  P2   ihs  25  0.15   0.59   0.51    33.37    37.58    0.36    0.12    0.28       0.52 18.09    9.84
+  P2    st  38 -0.21   0.32   0.59    26.96    40.48    0.16    0.00    0.32       0.50 27.28   13.47
+  P2     w 243  0.02   0.65   0.68    38.16    33.06    0.33    0.11    0.30       0.47 18.82    9.97
+
+== the MFE by the minutes of the window (median MFE in R reached by minute m, of trades still in their window)
+  P1 M1: median MFE minute 26.6, the MFE's minute as a share of the window 0.45
+  P1 M5: median MFE minute 116.4, the MFE's minute as a share of the window 0.39
+  P2 M1: median MFE minute 29.3, the MFE's minute as a share of the window 0.49
+  P2 M5: median MFE minute 124.3, the MFE's minute as a share of the window 0.44

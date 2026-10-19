@@ -1,0 +1,96 @@
+
+== B2: 36 cells
+        by        group  n_P1   R_P1  n_P2   R_P2  smaller      usd  both
+ side_name          buy   165 -0.088   156 -0.015   -0.088   66.967 False
+ side_name         sell   183  0.032   186 -0.003   -0.003  -33.056 False
+    family         base    34  0.081    41 -0.088   -0.088    2.918 False
+    family          ihs    29  0.047    25  0.149    0.047   48.775  True
+    family           st    31 -0.142    37 -0.205   -0.205 -316.030 False
+    family            w   254 -0.033   239  0.019   -0.033  298.248 False
+        tf           M1   286 -0.045   273 -0.043   -0.045 -276.149 False
+        tf           M5    62  0.066    69  0.128    0.066  310.060  True
+    fam_tf      base M1    29 -0.094    33 -0.070   -0.094  -80.162 False
+    fam_tf      base M5     5  1.092     8 -0.166   -0.166   83.080 False
+    fam_tf       ihs M1    23  0.063    20  0.061    0.061   19.570  True
+    fam_tf       ihs M5     6 -0.012     5  0.500   -0.012   29.205 False
+    fam_tf        st M1    24 -0.150    28 -0.316   -0.316 -311.520 False
+    fam_tf        st M5     7 -0.116     9  0.140   -0.116   -4.510 False
+    fam_tf         w M1   210 -0.038   192 -0.010   -0.038   95.963 False
+    fam_tf         w M5    44 -0.012    47  0.137   -0.012  202.285 False
+level_kind      5d high    27  0.131    24 -0.061   -0.061   55.755 False
+level_kind       5d low     3  0.314     4 -0.029   -0.029   18.220 False
+level_kind          PDH    31 -0.127    10  0.336   -0.127   52.330 False
+level_kind          PDL     6 -0.254     8  0.200   -0.254   33.370 False
+level_kind     last low     7 -0.202     9  0.260   -0.202   43.150 False
+level_kind     last top    11 -0.273    23 -0.216   -0.273 -182.080 False
+level_kind     news leg     1 -0.172     4 -0.341   -0.341  -46.860 False
+level_kind           x2    91 -0.013   133 -0.016   -0.016 -224.058 False
+level_kind   x3+ / flip   171 -0.012   127 -0.001   -0.012  284.084 False
+     agree      against    88  0.037    95 -0.070   -0.070   15.871 False
+     agree mixed / none   121 -0.037   127 -0.014   -0.037  -82.762 False
+     agree         with   139 -0.054   120  0.046   -0.054  100.802 False
+       big        False   292 -0.044   189 -0.041   -0.044 -253.664 False
+       big         True    56  0.075   153  0.031    0.031  287.575  True
+      news        False   336 -0.019   327 -0.009   -0.019   40.891 False
+      news         True    12 -0.205    15 -0.006   -0.205   -6.980 False
+   session         Asia   127 -0.002   111  0.059   -0.002  217.457 False
+   session       London    79 -0.063    67 -0.083   -0.083 -128.997 False
+   session     New York   134 -0.018   148 -0.021   -0.021  -69.192 False
+   session         late     8 -0.141    16 -0.049   -0.141   14.643 False
+   positive in both parts with >= 20 trades in each: family=ihs (+0.047 / +0.149); tf=M5 (+0.066 / +0.128); fam_tf=ihs M1 (+0.063 / +0.061); big=True (+0.075 / +0.031)
+
+== ST: 36 cells
+        by        group  n_P1   R_P1  n_P2   R_P2  smaller      usd  both
+ side_name          buy   164 -0.086   149 -0.031   -0.086    9.687 False
+ side_name         sell   179  0.032   181  0.010    0.010   73.054  True
+    family         base    34  0.081    41 -0.088   -0.088    2.918 False
+    family          ihs    33 -0.006    26  0.104   -0.006   17.045 False
+    family           st    22 -0.110    22 -0.262   -0.262 -229.500 False
+    family            w   254 -0.033   241  0.016   -0.033  292.278 False
+        tf           M1   281 -0.044   262 -0.041   -0.044 -176.679 False
+        tf           M5    62  0.066    68  0.117    0.066  259.420  True
+    fam_tf      base M1    29 -0.094    33 -0.070   -0.094  -80.162 False
+    fam_tf      base M5     5  1.092     8 -0.166   -0.166   83.080 False
+    fam_tf       ihs M1    27 -0.004    21  0.010   -0.004  -12.160 False
+    fam_tf       ihs M5     6 -0.012     5  0.500   -0.012   29.205 False
+    fam_tf        st M1    15 -0.107    14 -0.437   -0.437 -174.350 False
+    fam_tf        st M5     7 -0.116     8  0.043   -0.116  -55.150 False
+    fam_tf         w M1   210 -0.038   194 -0.013   -0.038   89.993 False
+    fam_tf         w M5    44 -0.012    47  0.137   -0.012  202.285 False
+level_kind      5d high    26  0.162    24 -0.061   -0.061   64.705 False
+level_kind       5d low     3  0.314     4 -0.029   -0.029   18.220 False
+level_kind          PDH    30 -0.153    10  0.336   -0.153   42.000 False
+level_kind          PDL     6 -0.254     8  0.200   -0.254   33.370 False
+level_kind     last low     7 -0.202     7  0.379   -0.202   56.320 False
+level_kind     last top    11 -0.273    22 -0.203   -0.273 -168.160 False
+level_kind     news leg     1 -0.172     4 -0.341   -0.341  -46.860 False
+level_kind           x2    90 -0.017   126 -0.030   -0.030 -271.098 False
+level_kind   x3+ / flip   169 -0.007   125  0.007   -0.007  354.244 False
+     agree      against    86  0.038    87 -0.080   -0.080   70.221 False
+     agree mixed / none   118 -0.035   125 -0.008   -0.035  -69.162 False
+     agree         with   139 -0.054   118  0.045   -0.054   81.682 False
+       big        False   287 -0.044   184 -0.052   -0.052 -290.514 False
+       big         True    56  0.075   146  0.047    0.047  373.255  True
+      news        False   332 -0.020   318 -0.003   -0.020  129.901 False
+      news         True    11 -0.163    12 -0.147   -0.163  -47.160 False
+   session         Asia   126  0.002   109  0.046    0.002  195.387  True
+   session       London    78 -0.060    64 -0.061   -0.061 -110.747 False
+   session     New York   132 -0.018   141 -0.022   -0.022  -13.702 False
+   session         late     7 -0.215    16 -0.049   -0.215   11.803 False
+   positive in both parts with >= 20 trades in each: side_name=sell (+0.032 / +0.010); tf=M5 (+0.066 / +0.117); big=True (+0.075 / +0.047); session=Asia (+0.002 / +0.046)
+
+cells looked at in all: 72 (2 variants)
+
+== the losers' reasons: the share of each variant's losers per part
+reason        no run x other TF against  no run x other TF mixed / none  no run x other TF with  ran later x other TF against  ran later x other TF mixed / none  ran later x other TF with  wrong way x other TF against  wrong way x other TF mixed / none  wrong way x other TF with
+variant part                                                                                                                                                                                                                                                                           
+B2      P1                         0.14                            0.18                    0.17                          0.01                               0.03                       0.04                          0.10                               0.16                       0.18
+        P2                         0.11                            0.15                    0.14                          0.02                               0.05                       0.05                          0.14                               0.19                       0.14
+ST      P1                         0.14                            0.18                    0.18                          0.01                               0.03                       0.04                          0.09                               0.16                       0.18
+        P2                         0.11                            0.15                    0.15                          0.02                               0.05                       0.05                          0.13                               0.19                       0.14
+
+== what came after, all trades (not only the losers): the share that went one risk our way first
+  B2 P1: losers that ran our way first (exited too early) 16 of 214; winners 134, their mean R +0.77; losers' mean R -0.52
+  B2 P2: losers that ran our way first (exited too early) 25 of 209; winners 133, their mean R +0.79; losers' mean R -0.52
+  ST P1: losers that ran our way first (exited too early) 16 of 211; winners 132, their mean R +0.78; losers' mean R -0.53
+  ST P2: losers that ran our way first (exited too early) 26 of 201; winners 129, their mean R +0.79; losers' mean R -0.52

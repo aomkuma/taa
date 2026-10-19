@@ -1,0 +1,123 @@
+== the paths by window (medians; shares)
+              n     R  mfe_r  mae_r  mfe1  mae1   risk  height
+part window                                                   
+P1   Asia    41  0.07   0.65   0.71  0.34  0.29  11.65    5.74
+     London  25 -0.05   0.25   0.61  0.20  0.32  11.05    5.95
+     NY      49 -0.09   0.68   0.62  0.31  0.24  17.78   10.17
+P2   Asia    38  0.18   0.61   0.48  0.32  0.16  24.11   12.87
+     London  22  0.01   0.69   0.51  0.36  0.23  14.03    8.00
+     NY      49 -0.07   0.72   0.68  0.37  0.33  26.60   14.02
+
+== NY by family
+              n      R      usd    win
+part family                           
+P1   base     4  0.114   -3.980  0.500
+     st       7 -0.175  -23.620  0.429
+     w       38 -0.096  -36.257  0.395
+P2   base     4 -0.040   -5.130  0.500
+     ihs      1 -0.598   -8.850  0.000
+     st       7 -0.390 -119.390  0.143
+     w       37  0.007   63.147  0.432
+
+== NY by level_kind
+                  n      R      usd    win
+part level_kind                           
+P1   5d high      4 -0.394  -28.350  0.000
+     PDH          7 -0.166  -22.740  0.429
+     PDL          1  0.224    6.380  1.000
+     last top     4 -0.078   -2.370  0.750
+     news leg     1 -0.172   -2.500  0.000
+     x2          11  0.314   59.010  0.727
+     x3+ / flip  21 -0.232  -73.287  0.238
+P2   5d high      2 -0.487  -83.820  0.000
+     PDL          1  0.381    6.220  1.000
+     last low     3  0.326   50.130  0.667
+     last top     3 -0.040  -51.720  0.333
+     news leg     3 -0.270  -24.500  0.333
+     x2          18 -0.237  -75.670  0.278
+     x3+ / flip  19  0.083  109.137  0.474
+
+== NY by m5
+                    n      R      usd    win
+part m5                                     
+P1   against       12  0.065   32.063  0.417
+     mixed / none  18 -0.091  -16.250  0.500
+     with          19 -0.188  -79.670  0.316
+P2   against       13  0.098   86.920  0.462
+     mixed / none  18 -0.238 -118.740  0.333
+     with          18 -0.012  -38.403  0.389
+   (Asia + London by m5)
+                    n      R     usd    win
+part m5                                    
+P1   against       19 -0.098  25.920  0.421
+     mixed / none  17  0.275  12.200  0.412
+     with          30 -0.037 -71.630  0.333
+P2   against       21  0.061  47.180  0.476
+     mixed / none  14  0.162  59.440  0.357
+     with          25  0.146  49.962  0.440
+
+== NY by m15
+                    n      R      usd    win
+part m15                                    
+P1   against       21 -0.090  -28.850  0.429
+     mixed / none  11 -0.147  -14.190  0.455
+     with          17 -0.053  -20.817  0.353
+P2   against        9 -0.516 -160.850  0.111
+     mixed / none  16  0.381  166.527  0.625
+     with          24 -0.195  -75.900  0.333
+   (Asia + London by m15)
+                    n      R     usd    win
+part m15                                   
+P1   against       15 -0.127 -36.670  0.467
+     mixed / none  28 -0.055 -28.840  0.286
+     with          23  0.224  32.000  0.435
+P2   against       24  0.155  78.865  0.458
+     mixed / none  26  0.026   1.080  0.423
+     with          10  0.279  76.637  0.400
+
+== NY by news_before
+                   n      R     usd    win
+part news_before                          
+P1   False        31 -0.047  -7.927  0.484
+     True         18 -0.165 -55.930  0.278
+P2   False        27 -0.063 -67.643  0.370
+     True         22 -0.069  -2.580  0.409
+   (Asia + London by news_before)
+                   n      R      usd    win
+part news_before                           
+P1   False        66  0.026  -33.510  0.379
+P2   False        60  0.120  156.582  0.433
+
+== NY by news_inside
+                   n      R     usd    win
+part news_inside                          
+P1   False        31 -0.131 -65.487  0.355
+     True         18 -0.020   1.630  0.500
+P2   False        29 -0.045 -14.663  0.414
+     True         20 -0.096 -55.560  0.350
+
+== NY by open_bucket
+                   n      R      usd    win
+part open_bucket                           
+P1   0-30 min     20 -0.003   10.493  0.500
+     30-60 min    12 -0.298  -61.630  0.167
+     60-120 min   17 -0.046  -12.720  0.471
+P2   0-30 min     20 -0.197 -123.150  0.300
+     30-60 min    13 -0.208  -40.370  0.385
+     60-120 min   16  0.213   93.297  0.500
+
+== NY by tf
+          n      R      usd    win
+part tf                           
+P1   M1  35 -0.075  -28.077  0.400
+     M5  14 -0.129  -35.780  0.429
+P2   M1  38 -0.205 -201.613  0.316
+     M5  11  0.413  131.390  0.636
+
+== NY by side
+            n      R     usd    win
+part side                          
+P1   -1    27 -0.090 -48.920  0.407
+      1    22 -0.090 -14.937  0.409
+P2   -1    29 -0.026 -87.233  0.448
+      1    20 -0.123  17.010  0.300

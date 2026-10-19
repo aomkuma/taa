@@ -1,0 +1,45 @@
+2026-10-19: 1019 M1 bars 05:05 - 22:03 Thai; H (the day's H1 ATR) from 11.9 to 13.5 USD -> the main swing 7.2 - 8.1
+the inner ZigZag's pivots: 06:00 L 4174.90, 06:04 H 4180.52, 06:14 L 4174.27, 06:31 H 4185.57, 06:39 L 4180.15, 06:48 H 4185.92, 06:54 L 4180.10, 07:02 H 4187.63, 07:49 L 4171.84, 08:00 H 4178.00, 08:02 L 4170.19, 08:03 H 4175.84, 08:07 L 4166.10, 08:09 H 4170.99, 08:10 L 4166.41, 08:18 H 4174.26, 08:26 L 4165.61, 08:33 H 4175.11, 08:34 L 4170.40, 08:36 H 4175.90, 08:42 L 4167.87, 08:45 H 4175.95, 08:50 L 4170.82, 08:54 H 4176.20, 08:59 L 4171.00, 09:10 H 4184.49, 09:32 L 4169.13, 09:41 H 4178.32, 09:51 L 4170.68, 10:23 H 4182.09, 11:26 L 4173.07, 11:35 H 4183.83, 11:45 L 4178.89, 11:57 H 4184.68, 12:04 L 4178.86, 12:10 H 4184.49, 12:29 L 4174.00, 12:31 H 4180.11, 12:35 L 4176.23, 12:52 H 4186.12, 12:55 L 4180.77, 12:57 H 4186.18, 13:14 L 4174.89, 13:21 H 4180.00, 13:32 L 4171.09, 14:00 H 4189.19, 14:03 L 4182.26, 14:09 H 4188.84, 14:15 L 4183.29, 14:23 H 4188.88, 14:28 L 4184.74, 14:33 H 4190.25, 15:00 L 4171.89, 15:05 H 4179.29, 15:10 L 4173.95, 15:14 H 4179.53, 15:37 L 4172.06, 15:41 H 4176.47, 17:26 L 4164.81, 17:39 H 4172.41, 17:42 L 4162.74, 17:43 H 4169.17, 17:46 L 4162.21, 18:16 H 4177.06, 19:03 L 4158.69, 19:09 H 4170.00, 19:20 L 4163.79, 19:22 H 4168.02, 19:34 L 4160.83, 19:44 H 4165.39, 19:52 L 4160.11, 19:53 H 4163.99, 19:57 L 4159.45, 20:10 H 4165.61, 20:21 L 4158.60, 20:32 H 4167.18, 20:43 L 4150.06, 20:44 H 4154.63, 20:47 L 4143.37, 21:00 H 4155.32, 21:04 L 4145.96, 21:08 H 4150.10, 21:14 L 4142.78, 21:20 H 4150.43, 21:22 L 4145.53, 21:27 H 4150.00, 21:48 L 4142.74, 21:52 H 4148.12, 21:54 L 4143.28
+
+the owner's formations:
+  #1  06:30 - 07:05 FOUND  M 4185 / 4187.6 - by double top 07:16 (+2 other catches in the span)
+  #2  05:00 - 08:26 FOUND  a wide W 4166 / 4165.6 - by double bottom 08:34 (+11 other catches in the span)
+  #3  09:10 - 09:32 MISSED a small M, then a W
+  #4  11:30 - 12:30 MISSED M at about 4184.7 (+5 other catches in the span)
+  #5  12:29 - 13:32 MISSED W / higher low 4174 / 4171 (+8 other catches in the span)
+  #6  12:57 - 14:33 MISSED triple top 4186.2 / 4186.5 / 4190.25 (the last swept) (+8 other catches in the span)
+  #7  14:45 - 17:20 FOUND  descending channel, broken at 17:20 - by channel break up 15:12, channel break down 15:51, channel break down 17:42 (+5 other catches in the span)
+  #8  17:46 - 18:30 MISSED V, then a failed retest at 4177 (+7 other catches in the span)
+  #9  19:03 - 19:20 MISSED a small W, then a lower high (+3 other catches in the span)
+  #10 20:30 - 21:30 FOUND  the NY-open fake leg up to 4167, then the drop - by open: fake up, then down 20:35 (+3 other catches in the span)
+  #11 20:47 - 22:00 MISSED a base / W at the bottom
+
+found 4 of 11; catches 55, extra (inside no span) 8:
+  09:05 base break up (20 bars) trigger 4177.85 extreme 4170.82 height 7.0
+  10:06 double bottom (equal) trigger 4178.32 extreme 4169.13 height 9.2
+  10:06 triple bottom (equal) trigger 4178.32 extreme 4169.13 height 15.4
+  10:06 base break up (31 bars) trigger 4178.32 extreme 4170.68 height 7.6
+  10:17 base break up (24 bars) trigger 4180.04 extreme 4172.72 height 7.3
+  10:24 base break up (28 bars) trigger 4181.03 extreme 4173.71 height 7.3
+  11:17 channel break down (ascending) trigger 4177.61 extreme 4182.09 height 8.8
+  11:27 base break down (82 bars) trigger 4174.87 extreme 4182.09 height 7.2
+
+pictures in formation: 18
+  07:04 two tops: tops / bottoms 4185.92 (06:48) and 4187.63 (07:02), between 4180.10; A SELL past 4185.02 stop 4188.35 target 4177.49; B BUY past 4187.63 stop 4184.30 target 4195.16
+  07:21 two bottoms: tops / bottoms 4180.10 (06:54) and 4177.74 (07:19), between 4187.63; A BUY past 4180.45 stop 4177.02 target 4190.34; B SELL past 4177.74 stop 4181.17 target 4167.85
+  08:31 two bottoms: tops / bottoms 4166.41 (08:10) and 4165.61 (08:26), between 4174.26; A BUY past 4171.84 stop 4164.82 target 4180.49; B SELL past 4165.61 stop 4172.63 target 4156.96
+  08:35 two tops: tops / bottoms 4174.26 (08:18) and 4175.11 (08:33), between 4165.61; A SELL past 4170.40 stop 4175.90 target 4160.90; B BUY past 4175.11 stop 4169.61 target 4184.61
+  08:44 two bottoms: tops / bottoms 4170.40 (08:34) and 4167.87 (08:42), between 4175.90; A BUY past 4172.43 stop 4167.08 target 4180.46; B SELL past 4167.87 stop 4173.22 target 4159.84
+  08:47 two tops: tops / bottoms 4175.90 (08:36) and 4175.95 (08:45), between 4167.87; A SELL past 4172.26 stop 4176.74 target 4164.18; B BUY past 4175.95 stop 4171.47 target 4184.03
+  09:34 two bottoms: tops / bottoms 4171.00 (08:59) and 4169.13 (09:32), between 4184.49; A BUY past 4174.04 stop 4168.35 target 4189.40; B SELL past 4169.13 stop 4174.82 target 4153.77
+  09:53 two bottoms: tops / bottoms 4169.13 (09:32) and 4170.68 (09:51), between 4178.32; A BUY past 4175.53 stop 4168.35 target 4184.72; B SELL past 4169.13 stop 4176.31 target 4159.94
+  10:19 two tops: tops / bottoms 4178.32 (09:41) and 4181.03 (10:16), between 4170.68; A SELL past 4178.36 stop 4181.84 target 4168.01; B BUY past 4181.03 stop 4177.55 target 4191.38
+  10:26 two tops: tops / bottoms 4178.32 (09:41) and 4182.09 (10:23), between 4170.68; A SELL past 4178.59 stop 4182.90 target 4167.18; B BUY past 4182.09 stop 4177.78 target 4193.50
+  11:40 two tops: tops / bottoms 4182.09 (10:23) and 4183.83 (11:35), between 4173.07; A SELL past 4180.72 stop 4184.59 target 4169.96; B BUY past 4183.83 stop 4179.96 target 4194.59
+  14:46 two bottoms: tops / bottoms 4184.74 (14:28) and 4181.33 (14:42), between 4190.25; A BUY past 4184.35 stop 4180.56 target 4193.27; B SELL past 4181.33 stop 4185.12 target 4172.41
+  17:44 two bottoms: tops / bottoms 4164.81 (17:26) and 4162.74 (17:42), between 4172.41; A BUY past 4169.17 stop 4162.00 target 4178.84; B SELL past 4162.74 stop 4169.91 target 4153.07
+  18:04 two tops: tops / bottoms 4169.17 (17:43) and 4172.65 (18:01), between 4162.21; A SELL past 4170.14 stop 4173.38 target 4159.70; B BUY past 4172.65 stop 4169.41 target 4183.09
+  19:05 two bottoms: tops / bottoms 4162.21 (17:46) and 4158.69 (19:03), between 4177.06; A BUY past 4163.38 stop 4157.94 target 4181.75; B SELL past 4158.69 stop 4164.13 target 4140.32
+  20:34 two tops: tops / bottoms 4165.61 (20:10) and 4167.18 (20:32), between 4158.60; A SELL past 4162.46 stop 4167.92 target 4153.88; B BUY past 4167.18 stop 4161.72 target 4175.76
+  20:55 two tops: tops / bottoms 4154.63 (20:44) and 4153.71 (20:53), between 4143.37; A SELL past 4150.09 stop 4155.37 target 4138.83; B BUY past 4154.63 stop 4149.35 target 4165.89
+  21:02 two tops: tops / bottoms 4154.63 (20:44) and 4155.32 (21:00), between 4143.37; A SELL past 4150.16 stop 4156.10 target 4138.21; B BUY past 4155.32 stop 4149.38 target 4167.27

@@ -1,0 +1,6 @@
+0. the window of every entry decision, by its own clock: 2776 of 2776 agree
+   WN entries at 10:00 - 10:30 NY by its own clock: 0 (must be 0) of 808
+1. the metrics per window recomputed: 1728 of 1728 values agree
+2. trades re-derived from the raw ticks and its own bars: 60 of 60 agree
+3. one position at a time: entries before the previous exit 0 in 12 streams
+PASSED

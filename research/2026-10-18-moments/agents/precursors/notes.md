@@ -2459,3 +2459,62 @@ the structure that would have to break (the base's top / the last H1 lower high 
 - at least 5 legs of 10+ USD on every learning day;
 - the formations live on trade-size swings;
 - turns at a level overshoot by under about 7 USD in 90 %.
+
+## The team, and the first developer's P3 / P4 / P5a measured (2026-10-19 23:10 Thai; owner: "add one more agent to consult and find the way to profit"; "divide the duties and talk well")
+**The team** (`../TEAM.md`):
+- the measurer / coordinator;
+- the first developer (`dev/`, patterns at levels);
+- the second developer (`dev2/`, the owner's playbook V3 and the shared trade-size swings);
+- the auditor (`audit2/`);
+- the strategist (`strategist/`, `../STRATEGIST_PROMPT.md`: the review, the ranked proposals, what to stop).
+
+Each role writes only in its own folder, every report and request goes through the measurer, and every report has one
+shape.
+
+**The first developer's P3** (B2 with one change at a time; ticks; R P1 / P2):
+
+| Setting | R P1 / P2 |
+|---|---|
+| B2 | -0.025 / -0.009 |
+| L (no late entry) | -0.048 / +0.007 |
+| Xa (the exit on the pattern's invalidation) | -0.037 / -0.033 |
+| Xb (break-even + trail) | -0.037 / -0.035 |
+| Xab | -0.037 / -0.037 |
+| ST (the sweep-turn with M5 turned) | -0.024 / -0.008 |
+| LEAD (H&S / M5 only) | -0.047 / +0.078 |
+
+- None is positive in both parts.
+- Inside B2's own stream the late entries are worse. As a stream, refusing them frees the position for worse
+  replacements: judge filters on a fixed candidate set next.
+- The -271.88 trade follows the rules: the M5 M's breakout came 157 USD past the trigger.
+- Risk > 100 USD: 6-7 trades a setting, -61 .. -345 USD. A risk cap in H1 ATRs is next.
+- Its second program: 1,008 / 1,008 metrics, 140 / 140 trades from the raw ticks, 0 overlaps.
+
+**P4 - B2 in the owner's windows (ticks, the 60-s fill):**
+
+| Window | R P1 / P2 | Trades |
+|---|---|---|
+| all windows (W) | -0.024 / +0.036 | 115 / 109 |
+| Asia | +0.074 / +0.182 | 41 / 38 |
+| London | -0.052 / +0.012 | |
+| NY | -0.090 / -0.066 | |
+| WN (NY without 10:00-10:30, a lead from about 25 cells) | +0.004 / +0.070 | |
+
+- NY 10:00-10:30, right after the 10:00 data minute, is -0.298 / -0.208.
+- My earlier split of P2's all-day stream said London +0.076 / +0.074. With the stream kept to the windows and the
+  60-s fill, London is -0.052 / +0.012. The windows-only stream is the honest figure.
+
+**P5 (items 1-3):** the owner's pattern set coded on 0.3 x H1-ATR swings.
+- 12,192 catches, 64 % of them base breaks: too loose.
+- The shape check on 2026-10-19 found 4 of 11 (the 07:16 M, the wide W, the channel, the NY fake leg).
+- All 7 misses come from the same cause: about 3.7-USD inner swings split the owner's 10-USD legs. That waits for dev2's
+  V3-1 swings.
+
+**Measured by me:**
+- its 11 test files re-run: 136 passed;
+- P4 recomputed by my own code: every number equal, every W / WN entry inside my reading of the windows.
+
+**Next:**
+- relayed to dev2: the first developer needs dev2's swing interface;
+- the first developer, while waiting: filters on a fixed candidate set, a pre-registered risk cap in H1 ATRs, a tighter
+  base rule (P5a).
