@@ -2274,3 +2274,13 @@ Sent to the developer as checkpoint P2, with its rules to be written before comp
 
 Published with the 9 losers: https://claude.ai/artifact/LLCw1sB92SgZNxVWVPYjhQ.
 **The developer's P2 planted bugs re-run (14:00 Thai):** the trade code 57 of 57 caught; its checker 17 of 17.
+
+**The owner, 14:02 Thai: "start" - Task P3 sent to the developer, every change on B2, one at a time:**
+1. refuse a B entry too far past the level, with the yardstick taken from the pattern itself;
+2. the exit on the entry TF, but turned by the pattern's own invalidation, and break-even after +1 risk then trailed
+   by the entry TF's swings - each alone and together;
+3. measure the leads' paths (H&S, M5 entries; MAE / MFE and their minutes) against the rest, then one rule;
+4. the sweep-then-turn with M5 turned too, or an M5 pattern at the same level;
+5. the same report, the second computation, 20 trades a variant from the raw ticks, and the losers by reason.
+
+It also adds a hand test for the M5 time limit.
