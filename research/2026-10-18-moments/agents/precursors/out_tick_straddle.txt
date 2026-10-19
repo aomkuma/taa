@@ -1,0 +1,10 @@
+ticks | b 3, s 5 | P1: 446 trades (6.97 a weekday), win 0.305, R -0.054, USD -121.0 at 0.01 lot, max DD 217.1, worst -6.07, longest losing streak 12, exits {'stop': 297, 'win': 136, 'time': 13}
+ticks | b 3, s 5 | P2: 596 trades (9.03 a weekday), win 0.310, R -0.090, USD -269.6 at 0.01 lot, max DD 313.6, worst -14.14, longest losing streak 17, exits {'stop': 406, 'win': 185, 'time': 5}
+ticks | b 3, s 10 | P1: 337 trades (5.27 a weekday), win 0.421, R -0.029, USD -96.8 at 0.01 lot, max DD 262.4, worst -11.11, longest losing streak 8, exits {'stop': 150, 'win': 142, 'time': 45}
+ticks | b 3, s 10 | P2: 515 trades (7.80 a weekday), win 0.466, R -0.053, USD -274.4 at 0.01 lot, max DD 416.9, worst -17.54, longest losing streak 10, exits {'stop': 261, 'win': 240, 'time': 14}
+ticks | b 5, s 5 | P1: 395 trades (6.17 a weekday), win 0.327, R +0.021, USD +40.7 at 0.01 lot, max DD 166.6, worst -7.20, longest losing streak 10, exits {'stop': 248, 'win': 129, 'time': 18}
+ticks | b 5, s 5 | P2: 565 trades (8.56 a weekday), win 0.315, R -0.083, USD -234.7 at 0.01 lot, max DD 316.0, worst -10.89, longest losing streak 12, exits {'stop': 385, 'win': 178, 'time': 2}
+ticks | b 5, s 10 | P1: 316 trades (4.94 a weekday), win 0.418, R -0.030, USD -94.2 at 0.01 lot, max DD 231.8, worst -13.96, longest losing streak 5, exits {'stop': 140, 'win': 132, 'time': 44}
+ticks | b 5, s 10 | P2: 505 trades (7.65 a weekday), win 0.483, R -0.017, USD -84.8 at 0.01 lot, max DD 267.1, worst -12.03, longest losing streak 8, exits {'stop': 247, 'win': 244, 'time': 14}
+
+no (b, s) is positive in both learning parts on ticks: the exam is not read

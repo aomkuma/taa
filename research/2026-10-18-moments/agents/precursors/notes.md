@@ -1675,3 +1675,74 @@ From a moment taken by the clock, 10 USD in 15 minutes happens about one time in
 15 minutes easily - from the right moments: the work is to tell those moments (the burst about to start) from the
 rest. Two separate questions: WHEN a 10-USD move is about to start (the volatility, the participation, the clock of
 the big orders - the kind of thing that can be read ahead) and WHICH WAY (the D1 / H4 / H1 alignment, 2-7 points).
+
+## The owner's trade: M15, 10 USD, three or four bars - written before it is computed (2026-10-19 07:33 Thai; owner: "I mean one M15 bar running already covers 10 USD - hold three or four bars")
+Decisions at the M15 closes inside the owner's windows (the library's moments at minute 0 / 15 / 30 / 45). The trade:
+the D1 way at the next M1 open, the target 10 USD and the stop 10 USD (fixed - today's gold), out at the last close
+after 3 or 4 M15 bars (45 / 60 minutes), the auditor's costs, one position at a time. Learning on the latest months
+before the exam (the owner's rule: the latest 12 months first): 2025-10-18 .. 2026-01-15 and 2026-01-16 .. 2026-04-17,
+the two parts. Entries read: (A) the aligned phase (D1 running + the H1 structure + H4 DI with the D1 way); (B) A after
+an M5 pullback (price under the M5 EMA 50 turned, at or below the 40th percentile inside the phase, here on these
+months). Chosen: the entry x hold with the highest min(R part 1, R part 2) of those positive in both; none -> the exam
+is not read; else the exam once, week by week (`m15_trades.py`).
+**The result (07:34 Thai; `m15_trades.py`, tests `test_m15_trades.py` - the parts' edges, the M15 closes only, the
+pullback cut by hand; `out_m15_trades.txt`):** (A) the aligned phase: 3 bars R -0.043 / -0.065, 4 bars -0.052 / -0.061
+(4.4-5.5 trades a weekday); (B) + the M5 pullback: 3 bars +0.005 / -0.089, 4 bars -0.008 / -0.085 (1.5-2.5 a weekday).
+None positive in both parts: the exam is not read. P1 (2025-10 .. 2026-01): most trades end on time (184 of 350) - the
+entries are not where a 10-USD move starts; P2 (2026-01 .. 04): more stops than targets (144 / 123), the late-January
+crash inside it. The owner, 07:33 Thai: "keep observing the way you are doing".
+
+## When a 10-USD move is about to start - written before it is computed (07:36 Thai; `burst.py`)
+At the M15 closes inside the owner's windows, P1 / P2 as above: does price move 10 USD (either way) within 1 / 3 M15
+bars (15 / 45 minutes) from the next M1 open? Read by the readings that need no side: the volume against the same
+minutes, the ATR of M5 / M15 / H1 / D1 against its median, the Bollinger width on M5 / M15 / H1, the size of the last
+15 / 60 minutes' move, the minutes to / since the fixes, the COMEX open, the US data and the New York open, the hour,
+the weekday, the D1 / H4 phase - by quintile (P1's edges), by moments and by each day's first moment, P1 and P2.
+Then, among the moments that do move 10 USD, which way - read against the D1 / H4 / H1 alignment and the pullback.
+**The result (07:35 Thai; `burst.py`, `out_burst.txt`, `burst.csv`):** 10 USD either way within 15 minutes of an M15
+close: P1 0.190, P2 0.460; within 45 minutes 0.475 / 0.767. The clock of the big orders and the waking of the
+volatility tell WHEN, the same way in both parts: within ~60 minutes of the New York open / the London PM fix / the US
+data / the COMEX open, 10 USD in 15 minutes 0.35-0.40 (P1) and 0.63-0.70 (P2) against 0.08-0.18 / 0.37-0.47 far from
+them; the M5 ATR against its median in the top quintile 0.36 / 0.68 against 0.11 / 0.30 at the bottom; the volume
+against the same minutes 0.25 / 0.67 against 0.11 / 0.36. WHEN a 10-USD move comes is far easier to read than which
+way.
+**The owner's chart (07:34 Thai, M30, 4,150-4,200 since 16 Oct): "is 10 USD inside this frame?"** At the data's end
+(2026-10-16): M15 ATR 4.9, median bar 6.4, 18 % of M15 bars span 10 USD; M30 ATR 9.1, median bar 9.0, 40 %; H1 ATR
+14.8, 70 %. 10 USD is about one M30 bar - five of them fit in the owner's 50-USD frame.
+**The owner, 07:35 Thai: "if trading with the trend meets obstacles, try the periods when it runs inside a range."**
+
+## Inside a range - written before it is computed (07:36 Thai; `range_trades.py`)
+The range phases: D1 back and forth (the 20-day efficiency <= 0.116, L1's lower tercile) or H4 sideways (the 30-bar
+efficiency <= P1's lower tercile). The edge: the place in the M30 120-bar range (2.5 days - the owner's chart) at an
+M15 close - <= 0.15 a buy, >= 0.85 a sell (back into the range). The trade: 10 USD target and stop, out after 3 / 4
+M15 bars, the costs, one position at a time; also the same edge outside the range phases (the contrast). P1 / P2 as
+before; chosen: the phase x hold with the highest min(R P1, R P2) of those positive in both; the exam once.
+**The result (07:37 Thai; `range_trades.py`, test `test_range_trades.py`; `out_range_trades.txt`):** fading the M30
+edges in a range phase - P1 R -0.046 .. -0.155, P2 -0.013 .. +0.047; outside the ranges -0.033 / -0.008. Not positive
+in both parts: the exam is not read. P1 (Oct 2025 - Jan 2026) rose hard: 108 of 118 D1-back-and-forth edge trades
+were sells into it, half ended on time.
+**Which side, inside and outside the active hours (07:38 Thai; M15 closes, 10 USD within 15 / 45 minutes, the side's
+share where one came first, P1 / P2, near the NY open / PM fix / US data / COMEX and elsewhere):** the D1 way, the
+aligned D1 way, with / against the last 15 / 60 minutes, the M5 leg, the H1 structure, the dollar, the M15 break all
+change sides between the parts; **only the fade of the M30 range edge is above half in all eight cells: 0.524 /
+0.530 / 0.540 / 0.557 (15 min), 0.510 / 0.509 / 0.533 / 0.543 (45 min)** - the owner's range idea, 51-56 %, at the
+costs' line (about 0.527 for a 1:1 10-USD trade). With the D1 way or against it, H4 alike: too few days to tell.
+**The owner's H1 chart (07:36 Thai): "on 1H it almost always runs 10 USD".** 70 % of H1 bars span 10 USD (median 13.1)
+- but a 13-USD bar often goes 8 down before 13 up: with a 10-USD stop the first 10 USD decides.
+
+## Let the market show the side - written before it is computed (07:38 Thai; `straddle.py`)
+At the M15 closes in the active hours (within 60 minutes of the NY open / PM fix / US data / COMEX), no side picked:
+a buy stop b USD above and a sell stop b below the close (b = 3 / 5), the first one hit within 60 minutes is the trade
+(filled at its level, plus the spread for a buy and the slippage), then the target 10 USD and the stop s (s = 5 / 10
+USD) from the fill, out 60 minutes after the fill at the last close; the other order cancelled; the costs; one position
+at a time. P1 / P2; chosen: the (b, s) with the highest min(R P1, R P2) of those positive in both; the exam once.
+**The straddle, the result (07:39-07:42 Thai; `straddle.py` on M1 with both bounds, tests `test_straddle.py`;
+`tick_straddle.py` on the real ticks, tests `test_tick_straddle.py` tick by tick - a dip before the fill does not stop
+the buy, the first trigger wins, the stop fills with its gap, ticks before the moment unused; planted bugs 5 of 5).**
+On M1 the bounds were too far apart to decide (b 5 / s 5: -0.173 / -0.511 from below, +0.048 / +0.074 from above - the
+fill bar's low often came before the fill); the M1 "choice" (b 5, s 5) was not used. On the ticks, P1 / P2: b 3 s 5
+-0.054 / -0.090; b 3 s 10 -0.029 / -0.053; **b 5 s 5 +0.021 / -0.083**; b 5 s 10 -0.030 / -0.017 (5-9 trades a
+weekday). None positive in both: the exam is not read. In the active hours the first 3-5 USD push carries on to 10
+USD before 5 / 10 against only 31-48 % of the time.
+The owner (07:39-07:42 Thai): "count the tops and the lows on the focus timeframe and the larger ones"; "if it makes
+an A-B-C-D-E it is likely to break anyway"; "try other timeframes too, M5, M15"; "then see which kind fits us".

@@ -1,0 +1,10 @@
+A aligned | 3 bars | P1: 350 trades (5.47 a weekday), win 0.214, R -0.043, USD -151.5 at 0.01 lot, lowest running total -151.7, max DD 164.7, worst -10.20, longest losing streak 6, exits {'time': 184, 'stop': 91, 'win': 75}, buys 322 / sells 28
+A aligned | 3 bars | P2: 299 trades (4.53 a weekday), win 0.411, R -0.065, USD -198.8 at 0.01 lot, lowest running total -198.8, max DD 314.4, worst -10.20, longest losing streak 8, exits {'stop': 144, 'win': 123, 'time': 32}, buys 232 / sells 67
+A aligned | 4 bars | P1: 306 trades (4.78 a weekday), win 0.284, R -0.052, USD -160.6 at 0.01 lot, lowest running total -175.0, max DD 196.9, worst -10.20, longest losing streak 6, exits {'time': 119, 'stop': 100, 'win': 87}, buys 281 / sells 25
+A aligned | 4 bars | P2: 290 trades (4.39 a weekday), win 0.438, R -0.061, USD -179.4 at 0.01 lot, lowest running total -179.4, max DD 311.0, worst -10.20, longest losing streak 8, exits {'stop': 144, 'win': 127, 'time': 19}, buys 223 / sells 67
+B aligned + M5 pullback | 3 bars | P1: 159 trades (2.48 a weekday), win 0.245, R +0.005, USD +8.2 at 0.01 lot, lowest running total -48.4, max DD 58.4, worst -10.20, longest losing streak 5, exits {'time': 80, 'stop': 40, 'win': 39}, buys 144 / sells 15
+B aligned + M5 pullback | 3 bars | P2: 98 trades (1.48 a weekday), win 0.439, R -0.089, USD -88.7 at 0.01 lot, lowest running total -128.7, max DD 155.2, worst -10.20, longest losing streak 6, exits {'stop': 52, 'win': 43, 'time': 3}, buys 77 / sells 21
+B aligned + M5 pullback | 4 bars | P1: 147 trades (2.30 a weekday), win 0.320, R -0.008, USD -11.2 at 0.01 lot, lowest running total -62.8, max DD 72.8, worst -10.20, longest losing streak 4, exits {'stop': 50, 'time': 50, 'win': 47}, buys 133 / sells 14
+B aligned + M5 pullback | 4 bars | P2: 98 trades (1.48 a weekday), win 0.449, R -0.085, USD -84.9 at 0.01 lot, lowest running total -124.9, max DD 155.2, worst -10.20, longest losing streak 6, exits {'stop': 52, 'win': 44, 'time': 2}, buys 77 / sells 21
+
+no entry x hold is positive in both learning parts: the exam is not read

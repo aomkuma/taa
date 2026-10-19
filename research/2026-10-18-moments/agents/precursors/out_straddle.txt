@@ -1,0 +1,10 @@
+b 3, s 5 | P1: 445 trades (6.95 a weekday), win 0.279, R -0.144, USD -334.1 at 0.01 lot, lowest running total -346.6, max DD 356.1, worst -5.60, longest losing streak 15, exits {'stop': 300, 'win': 124, 'time': 13, 'both': 8}, buys 224 / sells 213
+b 3, s 5 | P2: 595 trades (9.02 a weekday), win 0.272, R -0.203, USD -627.7 at 0.01 lot, lowest running total -656.9, max DD 671.7, worst -5.74, longest losing streak 17, exits {'stop': 356, 'win': 162, 'both': 72, 'time': 5}, buys 245 / sells 278
+b 3, s 10 | P1: 338 trades (5.28 a weekday), win 0.417, R -0.044, USD -150.5 at 0.01 lot, lowest running total -199.9, max DD 285.8, worst -10.60, longest losing streak 8, exits {'stop': 145, 'win': 141, 'time': 44, 'both': 8}, buys 167 / sells 163
+b 3, s 10 | P2: 518 trades (7.85 a weekday), win 0.458, R -0.078, USD -411.5 at 0.01 lot, lowest running total -420.7, max DD 450.7, worst -10.74, longest losing streak 8, exits {'win': 237, 'stop': 203, 'both': 67, 'time': 11}, buys 213 / sells 238
+b 5, s 5 | P1: 402 trades (6.28 a weekday), win 0.264, R -0.173, USD -362.4 at 0.01 lot, lowest running total -384.7, max DD 384.3, worst -5.60, longest losing streak 16, exits {'stop': 277, 'win': 106, 'time': 17, 'both': 2}, buys 207 / sells 193
+b 5, s 5 | P2: 570 trades (8.64 a weekday), win 0.167, R -0.511, USD -1513.8 at 0.01 lot, lowest running total -1513.8, max DD 1533.8, worst -5.67, longest losing streak 66, exits {'stop': 457, 'win': 95, 'both': 16, 'time': 2}, buys 263 / sells 291
+b 5, s 10 | P1: 321 trades (5.02 a weekday), win 0.424, R -0.020, USD -63.9 at 0.01 lot, lowest running total -123.0, max DD 205.3, worst -10.60, longest losing streak 5, exits {'stop': 139, 'win': 136, 'time': 45, 'both': 1}, buys 170 / sells 150
+b 5, s 10 | P2: 502 trades (7.61 a weekday), win 0.488, R -0.005, USD -27.1 at 0.01 lot, lowest running total -236.1, max DD 297.0, worst -10.67, longest losing streak 8, exits {'win': 245, 'stop': 226, 'both': 16, 'time': 15}, buys 226 / sells 260
+
+no (b, s) is positive in both learning parts: the exam is not read 
