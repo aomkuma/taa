@@ -2308,3 +2308,26 @@ It also adds a hand test for the M5 time limit.
   - These are bars, not ticks (no spread), and one day: a picture, not a result. Today is after the exam window and is
     not used to design anything.
 - **Published:** https://claude.ai/artifact/3QrKA2bdgMYSBMUt1jXTZ4.
+
+## The owner's own narrow windows, and P2 inside them (2026-10-19 22:14 Thai; owner: "that is almost the whole day - I said narrower before")
+**The owner's words, found in the session transcripts:**
+- 2026-10-17 17:01 Thai: "the Asian market, mostly 7-9 o'clock Thai, often makes a small fake move before going the
+  big way; the New York market is usually volatile at the open, plus another 1-2 hours";
+- `docs/OWNER_GOALS.md`: "the Asia, London and New York opens; important releases".
+
+The 20-a-day snap table in `docs/OWN_SETUP.md` is wider than what the owner said.
+
+**P2's trades inside them** (the developer's `p2_trades.parquet`, my split; the windows from the owner's words before
+any result):
+
+| B2 | P1 R (n, win) | P2 R (n, win) |
+|---|---|---|
+| Asia 07-09 Thai | +0.092 (40, 0.45) | +0.203 (35, 0.43) |
+| NY open 09:30 NY + 2 h (20:30-22:30 Thai in summer) | -0.072 (41) | -0.059 (47) |
+| London open, the first hour (the width is MY assumption) | -0.082 (16) | -0.233 (18) |
+| the rest of the day | -0.034 (255) | -0.020 (248) |
+
+- At the breakout (A), Asia gives -0.026 / -0.013. Waiting for the structure is what pays in Asia. That fits the
+  owner's "a small fake move first, then the big way".
+- Asia + B2 is positive in both parts at about 0.6 trades a weekday: a lead on few trades, not a result.
+- NY open + 2 h loses in both parts.
