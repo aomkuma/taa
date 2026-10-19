@@ -2331,3 +2331,22 @@ any result):
   owner's "a small fake move first, then the big way".
 - Asia + B2 is positive in both parts at about 0.6 trades a weekday: a lead on few trades, not a result.
 - NY open + 2 h loses in both parts.
+**The owner, 22:15 Thai: "London is 13:00-14:00, plus or minus a little from there if it is running."** B2 at
+13:00-14:00 Thai: +0.076 / +0.074 (21 / 17 trades); A: +0.042 / +0.219. With 30 minutes either side (my width): B2
+-0.023 / +0.148. The same hour tied to London's clock (07:00-08:00 London): B2 -0.158 / -0.058. The owner's Thai-clock
+hour is what pays.
+
+**B2 in the owner's Asia 07-09 + London 13-14 Thai:**
+
+| | P1 | P2 |
+|---|---|---|
+| trades (a weekday) | 61 (0.95) | 52 (0.79) |
+| win | 0.410 | 0.462 |
+| R (95 % range) | +0.087 (-0.14..+0.32) | +0.161 (-0.06..+0.39) |
+| USD | -2.2 | +306.9 |
+
+- R is positive in both parts. P2 is above the goal, P1 is not.
+- About 1 trade a weekday, against the goal of 2-3.
+- The NY open + 2 h still loses.
+- The windows came from the owner's words before any result, so they are not fitted. They are tested here on trades
+  the developer made with every hour allowed.
