@@ -2528,3 +2528,19 @@ The first developer resumes on it:
 - an independent second implementation of the structure reading, to cross-check V3-1.
 
 The auditor (data, simulators) and the strategist (the review) go on: they do not depend on the structure.
+
+**23:13 Thai - the owner: "focus on whether what was built from the ideas I shared gives the right result - not only
+unit tests showing there are no errors."**
+
+Tests prove the code does what it was written to do; they do not prove it reads the chart as the owner does. Every
+component built from the owner's ideas now also gets acceptance checks against the owner's own cases, written into
+`../DEV2_PROMPT.md` "Acceptance":
+- the structure reader must reproduce the owner's reading of 2026-10-19: the 15 turns, the range, LH / LL from 14:33,
+  the break at 17:20, the retest at 18:15;
+- the entries must find the owner's trade 4 (a sell at about 4169, the stop about 4180, the target the Fibo 23.6), the
+  triple-top sell and the NY fake-leg sell;
+- found / missed / extra are listed with reasons;
+- rule-picked samples are drawn for the owner to accept or reject.
+
+"Matches the owner" and "tests pass" are reported apart; a component is done only with both. The first developer
+stopped cleanly at P5a: its rules were written, `p5a_filters.py` was untested and left out.

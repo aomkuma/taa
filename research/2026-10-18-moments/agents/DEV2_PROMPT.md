@@ -82,6 +82,35 @@ The entries this shows, to build and test:
 a consolidation breakout) and plan by what the chart reveals". Each forming picture gets its completions, each with a
 trigger, a stop and a target. Enter when the chart reveals one.
 
+## Acceptance: the RESULT must match the owner's reading (owner, 2026-10-19 23:13 Thai)
+The owner: "focus on whether what was built from the ideas I shared gives the right result - not only unit tests
+showing there are no errors."
+
+Tests and planted bugs prove the code does what you wrote. These checks prove it does what the owner means. A
+checkpoint is done only when both hold. Report them in separate sections.
+
+**V3-1 must reproduce the owner's reading of 2026-10-19** (the real M1 bars; tolerances written before you look):
+- the 15 turns of 10+ USD:
+  - 07:02 H 4187.63, 08:26 L 4165.61, 09:10 H 4184.49, 09:32 L 4169.13;
+  - 11:57 H 4184.68, 12:29 L 4174.00, 12:57 H 4186.18, 13:32 L 4171.09;
+  - 14:33 H 4190.25, 17:46 L 4162.21, 18:16 H 4177.06, 19:03 L 4158.69;
+  - 19:09 H 4170.00, 20:47 L 4143.37, 21:00 H 4155.32;
+- the range 4165.6-4190.3 (05:05-17:00), with its top tested about 7 times;
+- LH / LL on M5, M15, M30 and H1 from 14:33;
+- the range break at 17:20 (the first M5 close below 4165.6);
+- the failed retest at 18:15 (4177.06), back to the broken rising trendline.
+
+List each item found / missed, with the reason for every miss. Also draw 10 learning days, picked by a written rule,
+with the structure overlay, for the owner's eye.
+
+**V3-2 must find the owner's own trades on 2026-10-19:**
+- trade 4: a sell at about 4169 in 18:30-18:55, the stop at about 4180, the target at the Fibo 23.6;
+- the triple-top sell after 14:33 (the neckline 4182.26 broke at 14:40);
+- the NY-open fake leg then the sell (20:30-20:47).
+
+List what each rule takes on that day against these, with the reason for every miss and every extra trade. In the
+backtest, draw a rule-picked sample of entries (winners and losers) per entry type for the owner to accept or reject.
+
 ## Your tasks (checkpoints; report in DEV_PROMPT section 6's shape at each)
 - **V3-1. The trade-size swings and the structure reading.**
   - A causal swing detector whose size is about the trade's size, chosen by a rule written before computing (e.g. a
