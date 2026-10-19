@@ -2401,3 +2401,35 @@ shape check only: it lies after the data end and is not used for outcomes.
   anything untested). Each one gets hand tests, planted bugs, a second source and PASS / FAIL. Fixes come only with a
   failing-then-passing test. The developer's files are never edited; findings there are relayed. The download bug
   comes first.
+
+## Reading the chart with the owner, live (2026-10-19 22:42-23:00 Thai; owner: "I am inviting you to look at the picture together")
+**The picture** (real M1 bars, read-only from MT5):
+- after the 20:35-20:47 fall to 4143.37, a 2-hour base on the Fibo 50 % (about 4142);
+- the highs fell: 4155.32 (21:00), 4150.43, 4148.12, 4147.98, 4144.69;
+- the floor held at 4142.7-4143.4;
+- the M1 ATR shrank from 3.14 at the fall to 1.48.
+
+What came next:
+- the floor gave way slowly: M1 closes under 4142 from 22:50, a low of 4139.58 at 22:55;
+- by 22:56 price was back at 4142.62, a retest from below, without the drive of 20:35.
+
+**The H1 and M30, measured:** the highs fell since 14:00 (H1: 4190, 4180, 4173, 4172, 4177 the retest, 4170, 4167,
+4155, 4150) and so did the lows (4173 ... 4162, 4159, 4143, 4142). The structure is LH / LL on every TF up to H1.
+
+**The owner's own trade reading (22:59 Thai):** "the shape on every TF up to 1H - I would enter and wait right away, in
+the consolidation zone, with the SL above 4160." What it teaches:
+- **When every TF up to H1 agrees, the owner enters early** - inside the consolidation, before the break. A base
+  under falling highs on all TFs is read as continuation.
+- **The stop goes where the picture would be wrong:**
+  - above 4160, the 61.8 % zone, over the base's highs (4155) and below the H1 lower high 4167;
+  - not a fixed few USD;
+  - about 17-18 USD of risk from about 4142.
+- **The target:** the owner's red box toward Fibo 38.2 / 23.6. Not stated as a price; asked.
+
+**Our tested rules do the opposite on both counts:**
+- B2 waits for a confirmation after the break;
+- the stops sat just past a small pattern (P2: wrong way or no run in about 90 % of the losers).
+
+**Candidate rule to measure (the developer, after P5):** "all TFs up to H1 in LH / LL (or HH / HL) + a base under
+the falling highs (or over the rising lows) at a level, in the owner's windows -> enter inside the base; the stop past
+the structure that would have to break (the base's top / the last H1 lower high side); the target the next zone".
