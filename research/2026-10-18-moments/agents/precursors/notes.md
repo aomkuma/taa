@@ -1798,3 +1798,19 @@ in both: the exam is not read. Where the losses sit (M15, R by month): the D1 wa
 (the blow-off and the crash), Mar -4.94**; the fade Nov +2.22, Feb -1.54, **Mar -4.35**, Apr +1.71. The D1-way trades
 lost in P2 when H1 was busy (the H1 ATR against its median in the top tercile: 40 trades -0.432; P1 the same tercile
 +0.154). Few trades a month - the next step reads the January and March losers one by one.
+
+## The trend readings lag - every turn is a loss (2026-10-19 08:54 Thai; owner: "are you reading signals that come too late? When price turns, by the time you notice you are trading against the trend"; "this way every turn is a guaranteed loss")
+Checked on the phase switch's D1-way trades (M15): in P2 all 63 were entered while the H4 swing structure, and the
+H1 and M15 120-bar ways, all still read "with" (`phase_switch_d1way_trades.parquet`) - the readings confirm the
+trend until long after it has turned. In P1 the best D1-way trades were the ones taken while the last H1 / M15 leg ran
+against the D1 way (a pullback): H1 leg against +0.281 (28 trades) vs with +0.041 (65); M15 leg against +0.185 (52)
+vs +0.023 (41). Everything aligned at once = late. The losing ones came with a busy D1 (the D1 ATR against its median
+>= 1.28: P2 -0.33 .. -0.77; < 1.28: P2 -0.026, P1 +0.143).
+**Written before it is computed (`phase_switch.py` variant 'pull'):** the D1-way trade only on a pullback (the last
+M15 leg against the D1 way) and only while D1 is calm (the D1 ATR against its median < 1.28 - P1 and P2's own lower
+tercile cut from the trades above, so this is fitted on the learning parts and the exam must judge it); the fade
+trades unchanged. M15 closes, the surrender 3 min / 2 USD. If positive in both parts: the exam once.
+**The result (08:54 Thai; `out_phase_switch_pull.txt`; test `test_phase_switch.py` - the pullback variant by hand):**
+M15: P1 49 trades (0.77 a weekday) R +0.113, max DD 30; P2 79 trades R -0.084 (13 of them D1-way trades); M5: +0.016 /
+-0.087. Not positive in both: the exam is not read. The pullback-while-calm rule keeps P1's edge with fewer trades and
+removes most P2 D1-way trades; what loses in P2 is now mostly the fade.

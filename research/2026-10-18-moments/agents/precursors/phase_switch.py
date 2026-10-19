@@ -2,7 +2,7 @@
 forth at the M30 edge -> the fade; else none. The active hours, a market entry, the surrender 3 minutes / 2 USD, then
 10 / 10 for 60 minutes, one position, on the real ticks; decisions at the M15 closes and at the M5 closes.
 
-    .venv/Scripts/python research/2026-10-18-moments/agents/precursors/phase_switch.py [exam]
+    .venv/Scripts/python research/2026-10-18-moments/agents/precursors/phase_switch.py [pull] [exam]
 """
 
 from __future__ import annotations
@@ -21,11 +21,20 @@ from surrender import active, run, summary  # noqa: E402
 RUN_ER, BACK_ER, K, Y = 0.264, 0.116, 3, 2.0
 
 
-def side(X: pd.DataFrame) -> np.ndarray:
+CALM = 1.28  # the D1 ATR against its median: the busy tercile of the learning trades starts here (notes.md)
+
+
+def side(X: pd.DataFrame, pull: bool = False) -> np.ndarray:
+    """The D1 way when D1 runs and the phase is aligned; the M30-edge fade when D1 goes back and forth. pull=True: the
+    D1-way trade only while the last M15 leg runs against the D1 way (a pullback) and D1 is calm (owner, 2026-10-19:
+    "the trend readings lag - every turn is a loss")."""
     way = X.D1_way20.to_numpy()
     fade = np.where(X.M30_pos <= 0.15, 1, np.where(X.M30_pos >= 0.85, -1, 0))
     er = X.D1_er20.to_numpy()
-    return np.where((er >= RUN_ER) & X.aligned.to_numpy(), way, np.where(er <= BACK_ER, fade, 0)).astype(int)
+    trend = (er >= RUN_ER) & X.aligned.to_numpy()
+    if pull:
+        trend &= (X.M15_leg_way.to_numpy() * way == -1) & (X.D1_atr_rel.to_numpy() < CALM)
+    return np.where(trend, way, np.where(er <= BACK_ER, fade, 0)).astype(int)
 
 
 def main() -> None:
@@ -36,7 +45,9 @@ def main() -> None:
     A = aligned_frame()
     A["part"] = part_of(pd.DatetimeIndex(A.t))
     A = A[active(A)].copy()
-    A["side"] = side(A)
+    pull = "pull" in sys.argv[1:]
+    A["side"] = side(A, pull)
+    print("variant:", "pull (the D1 way only on a pullback while D1 is calm)" if pull else "plain")
     res = {}
     for tf in ("M15", "M5"):
         for p in ("P1", "P2"):
@@ -53,7 +64,7 @@ def main() -> None:
         return
     tf = max(good, key=good.get)
     print(f"\nchosen: {tf} (min R {good[tf]:+.3f})")
-    if sys.argv[1:] != ["exam"]:
+    if "exam" not in sys.argv[1:]:
         return
     D = A[(A.part == "exam") & (A.side != 0)]
     if tf == "M15":
