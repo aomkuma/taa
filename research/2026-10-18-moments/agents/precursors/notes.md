@@ -2284,3 +2284,27 @@ Published with the 9 losers: https://claude.ai/artifact/LLCw1sB92SgZNxVWVPYjhQ.
 5. the same report, the second computation, 20 trades a variant from the raw ticks, and the losers by reason.
 
 It also adds a hand test for the M5 time limit.
+
+## Today's market, looked at on the owner's request (2026-10-19 22:10 Thai; owner: "gold tried to test 4200, could not, and has fallen"; "open MT5 and load the data")
+- **The data:** read-only from the MT5 terminal (the FBS demo login, no orders), with the same terminal checked by
+  `app.cli doctor` (0 failures).
+- **An open item found:** `scripts/download_history.py` (rates_range) stored nothing after Friday 2026-10-17 03:54 Thai
+  even with the market open. `rates_from_pos` returned today's bars, so the last 4,000 M1 bars were read that way
+  (server time - 3 h; the offset verified by doctor) into the scratchpad only. The stored history was not changed.
+- **Monday 19 Oct, Thai time:**
+  - the open: 05:05 at 4166.91;
+  - the attempts: highs 4185.92 / 4187.63 (06:00-07:00) and 4186.18 / 4186.51 (12:00-13:00), then **4190.25 at 14:33**,
+    the day's high, 10 USD short of 4200;
+  - then a fall: 4167 (16:00), 4161 (18:00), 4143.37 (20:00), the low 4142.74 at 21:48; 4146.5 at 22:03.
+- **The owner's H1 levels known at 14:33** (`zones.levels_at`, H1 ATR 12.2): 4199.62 x2, 4191.42 x2, 4186.98 x2;
+  4178.35 / 4166.86 / 4161.82 / 4155.17 x3+ / flip; 4174.30 / 4143.99 x2; PDL 4147.21. The high sat in the 4191.42
+  zone.
+- **The developer's detector on today's bars** (`patterns.TF.scan` + `at_level`, not `locate`, which keeps to the
+  learning parts):
+  - **M1 sell at 14:40:** an M whose second high (4190.25) swept the first, at 4191.42. The neckline 4184.74 broke, and
+    the next M1 open was 4183.84. It went 0.51 against at most, +10 by 14:59, +40 by 20:47, +41.10 at 21:48.
+  - **M5 buy at 14:10:** a W whose second low swept the first, at 4174.30, bought at 4186.22 just under the top. At
+    best +4.03, then -43.48.
+  - These are bars, not ticks (no spread), and one day: a picture, not a result. Today is after the exam window and is
+    not used to design anything.
+- **Published:** https://claude.ai/artifact/3QrKA2bdgMYSBMUt1jXTZ4.
