@@ -39,9 +39,21 @@ def levels(side: int, entry: float, r0: float, target_r: float) -> tuple[float, 
     return entry - side * r0, entry + side * target_r * r0
 
 
-def draw(m: pd.DataFrame, sp: np.ndarray, j: int, xj: int, side: int, r0: float, target_r: float, title: str, out: Path) -> None:
+def one_per_reason(L: pd.DataFrame) -> pd.DataFrame:
+    """Owner, 2026-10-19: "draw only the losers whose reasons differ" - per reason the loser nearest the reason's median
+    USD (the earlier one on a tie), with the reason's count; the reasons with the most losers first."""
+    rows = []
+    for why, G in L.groupby("reason", sort=False):
+        k = (G.pnl - G.pnl.median()).abs().to_numpy().argmin()
+        rows.append(G.iloc[[k]].assign(n_reason=len(G)))
+    return pd.concat(rows).sort_values(["n_reason", "reason"], ascending=[False, True]).reset_index(drop=True)
+
+
+def draw(m: pd.DataFrame, sp: np.ndarray, j: int, xj: int, side: int, r0: float, target_r: float, title: str, out: Path,
+         entry: float | None = None) -> None:
     o, h, lo, c = (m[k].to_numpy(float) for k in ("open", "high", "low", "close"))
-    entry = o[j] + sp[j] + 0.07 if side > 0 else o[j] - 0.07
+    if entry is None:
+        entry = o[j] + sp[j] + 0.07 if side > 0 else o[j] - 0.07
     stop, target = levels(side, entry, r0, target_r)
     a, b = max(j - 60, 0), min(xj + 15, len(o) - 1)
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.2), gridspec_kw={"width_ratios": [2.2, 1]})
@@ -76,30 +88,41 @@ def draw(m: pd.DataFrame, sp: np.ndarray, j: int, xj: int, side: int, r0: float,
 def main() -> None:
     import plib  # noqa: PLC0415
 
-    trades, start, end, name = sys.argv[1:5]
-    target_r = float(sys.argv[5]) if len(sys.argv) > 5 else 3.0
+    by_reason = "--by-reason" in sys.argv
+    args = [a for a in sys.argv[1:] if a != "--by-reason"]
+    trades, start, end, name = args[:4]
+    target_r = float(args[4]) if len(args) > 4 else 3.0
     T = pd.read_parquet(HERE / trades)
     m = plib.load()
     sp = m.spread.to_numpy(float) * 0.01 + 0.08
     L = T[(T.pnl < 0) & (T.t >= pd.Timestamp(start, tz="UTC")) & (T.t < pd.Timestamp(end, tz="UTC"))].sort_values("t").reset_index(drop=True)
+    n_losers = len(L)
+    if by_reason:
+        L = one_per_reason(L)
     outdir = HERE / "charts" / name
     outdir.mkdir(parents=True, exist_ok=True)
     cards = []
     for k, r in L.iterrows():
-        j = int(np.searchsorted(m.index, r.t))
-        th = pd.Timestamp(r.t).tz_convert("Asia/Bangkok")
+        t_in = pd.Timestamp(int(r.t0), tz="UTC") if "t0" in L else pd.Timestamp(r.t)  # tick trades: t0 = the entry bar's open (ns)
+        j = int(np.searchsorted(m.index, t_in))
+        xj = int(r.xj) if "xj" in L else int(np.searchsorted(m.index, pd.Timestamp(r.exit_t, tz="UTC"), side="right")) - 1
+        r0 = float(r.r0) if "r0" in L else float(r.pnl / r.R)
+        th = t_in.tz_convert("Asia/Bangkok")
+        why = f"  reason: {r.reason} ({r.n_reason} of {n_losers} losers)" if by_reason else ""
         title = (f"#{k + 1}  {th:%Y-%m-%d %H:%M} Thai  {'BUY' if r.side > 0 else 'SELL'}  exit: {r.exit}  "
-                 f"{r.pnl:+.2f} USD ({r.R:+.2f} R)  risk {r.r0:.2f} USD")
+                 f"{r.pnl:+.2f} USD ({r.R:+.2f} R)  risk {r0:.2f} USD{why}")
         f = outdir / f"{k + 1:03d}.png"
-        draw(m, sp, j, int(r.xj), int(r.side), float(r.r0), target_r, title, f)
+        draw(m, sp, j, xj, int(r.side), r0, target_r, title, f, float(r.entry) if "entry" in L else None)
         cards.append((title, base64.b64encode(f.read_bytes()).decode()))
     html = HERE / "charts" / f"{name}.html"
     body = "\n".join(f'<figure><figcaption>{t}</figcaption><img alt="{t}" src="data:image/png;base64,{b64}"></figure>' for t, b64 in cards)
-    html.write_text(PAGE.format(name=name, n=len(cards), start=start, end=end, body=body), encoding="utf-8")
+    what = (f"{n_losers} losing trades, one drawn for each of their {len(cards)} reasons (the loser nearest the reason's "
+            f"median)" if by_reason else f"{n_losers} losing trades")
+    html.write_text(PAGE.format(title="Losers by Reason" if by_reason else "Losing Trades Gallery", name=name, what=what, start=start, end=end, body=body), encoding="utf-8")
     print(f"{len(cards)} losing trades drawn -> {outdir}, page {html}")
 
 
-PAGE = """<title>Losing Trades Gallery</title>
+PAGE = """<title>{title}</title>
 <style>
 :root {{ --bg: #f6f5f2; --fg: #1d2127; --muted: #5b6270; --card: #ffffff; --line: #dcd9d2; }}
 @media (prefers-color-scheme: dark) {{ :root:not([data-theme="light"]) {{ --bg: #15171b; --fg: #e8e6e1; --muted: #a2a8b3; --card: #f4f2ee; --line: #30343b; color-scheme: dark; }} }}
@@ -114,7 +137,7 @@ img {{ width: 100%; height: auto; display: block; }}
 </style>
 <main>
 <h1>Losing trades - {name}</h1>
-<p>{n} losing trades, {start} to {end} (UTC dates). Each: M1, the entry timeframe, with the entry (blue dashed), the stop
+<p>{what}, {start} to {end} (UTC dates). Each: M1, the entry timeframe, with the entry (blue dashed), the stop
 (red dashed), the target (green dashed), the entry bar (blue line) and the exit bar (grey line); beside it the M15 bars of
 the ten hours before the entry. Times are Thai time. Research charts only.</p>
 {body}

@@ -1902,3 +1902,45 @@ fifth of volume, the run goes DOWN 0.58-0.61 | 0.53-0.54 whether or not the last
 support more than it bounces; at resistance with the volume, the turn down 0.77 (44 days) | 0.48 - not steady; mid-price
 with the volume down 0.71 | 0.56. Fast 10-USD runs go down more often than up in both parts (gold climbs and drops
 fast): the side with the edge for a quick run is the sell after a support gives way.
+
+## At a level with the volume: the break - written before it is computed (2026-10-19 10:11 Thai; owner: "do it"; "trade at support / resistance, never mid-price except a pullback"; "select the good signals and the setups where we have the edge"; 10:10 Thai: "draw only the losers whose reasons differ")
+`sr_break.py`, at each M1 close from `m1_features.parquet` (closed bars only), the edges from P1's quintiles:
+- support = the M15 range's low fifth (`m15_pos`), or the previous day's low near / below (`to_pdl` in its low
+  fifth), or a close below the last 60 minutes' low; resistance = the mirrors (`m15_pos` / `to_pdh` in the top fifth,
+  a close above the 60-minute high); the volume = `vol1` or `vol3` in the top fifth;
+- support + the volume (and not resistance) -> SELL the break; resistance + the volume (and not support) -> BUY.
+The trade on the real ticks (`surrender.trade`): a market entry at the first tick at / after the next M1 open (+0.07
+slippage, the spread in the bid / ask), the target 10 USD, the stop S of {3, 5} USD, the surrender of {none, +2 USD
+within 3 minutes, +3 within 5}, out after 30 minutes; one position at a time; at most 3 trades a UTC day (the first
+three that can be taken); no entry in a UTC day's last 30 minutes (the day's ticks end). The sides {sells, buys,
+both} x the hours {all, the active hours (60 minutes either side of the NY open / the PM fix / the US data / the
+COMEX open)}: 36 settings, R = USD / S. Chosen by the smaller R of P1 / P2; the exam read once, only for the chosen
+one, only if it is positive in both.
+The losers, by reason (decided now): what came in the 60 minutes after the entry - **wrong way** (10 USD against
+before 10 our way), **ran later** (10 our way first, after we were out), **no run** (neither) - x the M15 structure at
+the entry against the side (**against** / **with** / **none**); the count of each reason and one drawn for each (the
+loser nearest its reason's median USD).
+**The result (10:20 Thai; `sr_break.py`, tests `test_sr_break.py` - support / resistance with the volume by hand (each
+level alone, vol1 or vol3, mid-price none, both levels none), P1's edges, what came after (wrong way / ran later / no run,
+a sell judged on the ask, nothing after 60 minutes), the reason, the day's trades (the entry at the next bar's open, one
+at a time, 3 a day, not in the last 30 minutes); planted bugs 11 of 11 after two tests were tightened; `loser_charts`
+one loser per reason by hand, planted bugs 4 of 4 after its test was fixed; `out_sr_break.txt`):** 31,725 signal
+minutes (sell 18,160 / buy 13,565 of 173,030). **No setting is positive in both parts.** The parts disagree: P1 favours
+the buys at all hours (stop 5, no surrender: R +0.116, 2.6 a weekday), P2 both sides in the active hours (stop 5, no
+surrender: R +0.179, 2.3 a weekday) - the same setting is -0.271 / -0.253 in P1. Selling the support break alone: P1
+-0.03 .. -0.32, P2 -0.25 .. +0.125. The best by the smaller part (both / active / stop 5 / surrender 3 min +2): P1 -0.058,
+P2 +0.144. The 58-61 % down share of the clean runs at support did not carry: the clean runs are a small part of the
+signal minutes, and the rest decide the trades.
+**The losers by reason (that setting, 195 of 303 trades; one drawn for each of the 9 reasons, `charts/sr_break_reasons.html`):**
+wrong way 119 (61 %), ran later 54 (28 %), no run 22 (11 %); the M15 structure does not separate them (wrong way R
+-0.83 against / -0.68 with / -0.66 none; ran later is best against it, +1.07). By eye: entries after a 15-30 USD run
+(#1, #2, #4, #7), the surrender cutting a run that came after a first bar against (#3, #5, #8), signals mid-range (#6,
+#9). **Checked by numbers: "late" does not separate** - the winners had run as far before the entry (median 9-14 USD in
+the last 15-60 minutes, P2) as the wrong-way losers. All readings at the entry, the winners against the wrong-way
+losers: the only one apart the same way in both parts was the nearest round 50 (a round 50 ahead our way within 25
+USD: R -0.02 .. -0.33; behind us: +0.065 / +0.486). **On all 31,725 signal minutes (M1, 10 our way before 5 against
+in 30 minutes) the round-50 effect is gone** (P1 0.21 / 0.15 / 0.10 / 0.17 / 0.19 by the distance, P2 0.31 / 0.29 /
+0.29 / 0.33 / 0.32): a few hundred trades showed a pattern the minutes do not have - not a rule, the exam not read.
+Learned: at these moments (a level with the volume) 5 USD against comes first 53-70 % of the time within 30 minutes; 10
+our way first 15-33 %. A level made by the move itself (the 60-minute low, the M15 range's low) is not a level price
+has turned at before.
