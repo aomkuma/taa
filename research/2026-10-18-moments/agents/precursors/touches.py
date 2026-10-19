@@ -159,7 +159,7 @@ def main() -> None:
     page = page.split("<p>")[0] + ("<p>The first two touches of each outcome in each learning part (P1 2025-10-18 .. 2026-01-15, "
                                    "P2 2026-01-16 .. 2026-04-17), in the hours gold runs. Reversed = 10 USD back first; broke = 10 USD "
                                    "past the level first; within 60 minutes. Left: H1 with the levels known at the touch; right: M1 "
-                                   "around it (blue line = the touch bar). Thai time. Research charts only.</p>\n") + body + "\n</main>\n"
+                                   "around it (blue line = the touch bar). Thai time. <strong>Not entry points:</strong> every touch of a level is drawn to count what price does there - the only rule is \"price reached the level after being away from it\"; no entry rule has been applied. Research charts only.</p>\n") + body + "\n</main>\n"
     (HERE / "charts" / "touches.html").write_text(page, encoding="utf-8")
     print(f"\n{len(cards)} touches drawn -> charts/touches.html")
 

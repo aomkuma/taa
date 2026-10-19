@@ -200,7 +200,7 @@ last 5 days of H1 with the levels known at the touch, the four kinds the owner p
 (purple, thick), of 2 swings (orange), the five-day high / low (grey dashed), the previous day's high / low (black
 dash-dot), the latest swing top above / low below the price (blue dotted). H1 swings: 2 bars each side, counted only
 once confirmed; merged within a quarter of the H1 ATR. Right: M1 around the first bar after 21:30 / 20:30 Thai (09:30
-New York) that reached a level. Research charts only - to check the levels before anything is counted.</p>
+New York) that reached a level. <strong>Not entry points:</strong> the first touch after the New York open, drawn to check the levels - no entry rule has been applied. Research charts only.</p>
 {body}
 </main>
 """

@@ -34,6 +34,12 @@ and search it for anything specific.
     held far.** The H1 / H4 swing reading lags: by the time it turns, the loss is already heavy. The direction must
     come from the timeframe right above the entry as it stands now, and turns must be caught early on the small one.
   - **Noise signals: ignore them.** **Select the good signals and the setups where we have the edge.**
+  - **An entry needs a chart pattern at the level (2026-10-19 11:15 Thai).** The owner, on the drawn level touches:
+    "none of them is a place to enter - the price is very steep, there is no price structure". The owner picked every
+    structure offered: a sweep then the small-TF turn, a base at the level, W / M at the level, and "chart patterns of
+    all kinds - at least M1 must show a chart pattern, and so must every TF used to enter". Also: "at least it must
+    show an inverted H&S - something like this around the price level". On timeframes: "look at all TFs together,
+    the smallest is M1 ... enter on a TF, exit on that same TF".
   - **Be an observer.** The coin, the random side and "50-50" verdicts are removed from the system: no random-side
     baselines and no "no better than chance" verdicts. A result near 50 % means split it by what was there and look
     closer.
@@ -202,6 +208,55 @@ Buying the up-break buys the top of the second leg. Measured on ticks (`agents/p
   positive on 2021-2026 M1 and on its test (+1.23 R over 14 trades). Its open risk is execution at the release second.
 
 ## 5. Your tasks, in order
+
+### Task P (FIRST, owner 2026-10-19 11:15 Thai) - the chart pattern at the level
+
+Build this before anything else. Every later entry, Task A's included, must pass it.
+
+1. **A detector of chart patterns** on M1, and on M5 / M15 for agreement. It reads closed bars only and finds:
+   - **inverse head and shoulders** (the owner's first example) and head and shoulders;
+   - **W / M:** a double bottom / top, including a second low that sweeps slightly past the first and closes back;
+   - **a base:** a tight range of several bars at the level, then a break out of it;
+   - **a sweep past the level, then the small TF's turn:** a higher low after the sweep, and a break of the last lower
+     high; mirrored for sells.
+
+   Define each pattern by its swing points: shoulders and head, the neckline, the depth of each swing in the TF's
+   ATR. Write every rule down before computing.
+2. **Where the patterns count:**
+   - at the owner's H1 levels (`precursors/zones.levels_at`: the four kinds the owner picked from the drawn charts),
+     with the pattern's extreme within the level's zone, or past it by a sweep;
+   - after a news first-minute fake (Task A).
+3. **The entry** is the pattern's breakout (its neckline / the base's edge) on the entry TF. The stop goes past the
+   pattern's extreme (the head, the sweep's wick). The exit is read on the same TF (owner): its structure turning
+   against the trade, or the next level.
+4. **Draw 12 catches** chosen by a written rule, not by eye. Show the M1 and the larger TF around each, with the level,
+   the pattern's points, the neckline, the entry, the stop, and the next level. The owner confirms on the real candles
+   that these are the patterns meant. **Counting, backtests and R come only after that confirmation.**
+
+Measurer's answers to your A1 questions (11:16 Thai), for when Task A resumes:
+1. **The side:** keep yours, the first minute's larger move. It is what the M1 candle shows, and chart #9
+   (2026-03-03 22:00 Thai) shows the other rule calling a 26.8-USD continuation a fake.
+2. **"Continued":** keep yours, a new extreme 3 USD past the first minute's.
+3. **The window:** follow the sweep until it stalls, for the description only. A trade's exit comes from the entry
+   TF's structure.
+4. **The third leg:** "came down" = back at least half the sweep is fine.
+5. **The minutes:** use every 08:30 / 10:00 NY minute, with the calendar as a reading. Extend the calendar only from
+   official sources. Low priority.
+6. **The costs at the release:** do not invent a number. Run 0.07 and also 0.5, 1 and 2 USD of slippage at the
+   release minute, and report all four. The owner can tell their account's real news spread later.
+
+The measurer's A1 measurement:
+- your tests re-run: 28 + 4 passed;
+- your 57 planted bugs re-run: 57 of 57 caught;
+- your look-ahead check re-run: 1064 of 1064 equal, with power, PASSED;
+- your numbers re-derived: the 27 faked minutes and all 254 labels under the researcher's rules match
+  `news_sweep.parquet`, and 2026-01-09 is faked in all 4 variants with sweep 18.61 at minute 10.39.
+
+My own 9 planted bugs in `sweep_detector.py` caught 5. One cannot happen (continued and faked on the same tick). These
+3 MISSED; add tests for them:
+- a tie of the two sides where the first 3 USD went down (an "always up on a tie" bug passes);
+- `swept_pre` exactly at the pre-release high on the up side (">=" passes);
+- the third leg with back between 0.9 x and 1.0 x the sweep (a "back >= 0.9 sweep" bug passes).
 
 ### Task A - the owner's two-way sweep, built as a trade
 

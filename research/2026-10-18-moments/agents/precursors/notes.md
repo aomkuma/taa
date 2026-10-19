@@ -2122,3 +2122,41 @@ in P2 both broke 0.42.
 - P2 #11: 2026-01-16 20:23 Thai, 4592.7 x2, from below. It dipped 10 to about 4582.7, then broke up to 4608.
 
 "Reversed" is the first 10-USD reaction, not the end of the move.
+
+## The owner on the drawn touches: not entry points - an entry needs a chart pattern (2026-10-19 11:16 Thai)
+**The owner:** "what I see in the pictures is not a place to enter at all - the price is very steep, there is no price
+structure; I don't know what criterion you used to judge that this is a moment to enter."
+
+**The answer:** the touch charts were measurements, not entries. The only rule was "price reached the level after
+being away"; no entry rule had been applied. Both pages are now labelled "Not entry points", in the code too.
+
+**The owner's entry rule, from the answers:**
+- every structure offered: a sweep then the small-TF turn, a base at the level, W / M at the level;
+- "chart patterns of all kinds - at least M1 must show a chart pattern, and so must every TF used to enter";
+- "at least it must show an inverted H&S - something like this around the price level";
+- "look at all TFs together, the smallest is M1 ... enter on a TF, exit on that same TF".
+
+The rule is in the memory and in `../DEV_PROMPT.md` as Task P, first: a pattern detector on M1 (with M5 / M15
+agreeing) at the owner's H1 levels and after the news fake. The entry is at the neckline / the base's edge, the stop
+past the pattern's extreme, and the exit on the same TF. Twelve catches are drawn by a written rule for the owner's
+confirmation before any count.
+
+**The developer's A1, measured (11:16 Thai):**
+- its tests re-run: 28 + 4 passed;
+- its planted bugs re-run: 57 of 57 caught;
+- its look-ahead check re-run: 1064 of 1064 equal, with power;
+- its numbers re-derived against `news_sweep.parquet`: the same 27 faked minutes and all 254 labels under the
+  researcher's rules; 2026-01-09 is faked in all 4 variants;
+- my own 9 planted bugs: 5 caught, 1 that cannot happen, 3 missed (the tie side, `swept_pre` at equality on the up
+  side, a partial third leg), sent back to it.
+
+**Its two changes are accepted.** The first leg's side is the first minute's larger move: chart #9, 2026-03-03 22:00
+Thai, is a 26.8-USD continuation that the first rule called a fake. "Continued" needs a new extreme 3 USD past the
+first minute's.
+
+**The A1 counts** (faked / continued / neither / quiet, every weekday's minute):
+
+| Part | 08:30 NY | 10:00 NY |
+|---|---|---|
+| P1 | 3 / 13 / 13 / 33 | 7 / 29 / 11 / 15 |
+| P2 | 10 / 26 / 8 / 21 | 10 / 41 / 6 / 8 |
