@@ -1,7 +1,7 @@
 # Session handoff
 
-Last updated: 2026-10-20 12:40 Thai (Setup OWN research: the team of four agents, PLAN-1 frozen for one exam read,
-the agents stopped on the weekly API limit until 2026-10-21 15:00 Thai; DEMO paused; not pushed). This file holds
+Last updated: 2026-10-20 18:27 Thai (the PLAN-1 exam read: +0.129, PARTIAL; SW-20 FAIL; NS-1 the release-day straddle
+OPEN; dev2 V3-2 and the strategist stopped on the session limit until 22:00 Thai; DEMO paused; not pushed). This file holds
 **state only**:
 
 | What | Where |
@@ -60,6 +60,26 @@ State (2026-10-20 12:40 Thai):
 ````
 
 ---
+
+## Update 2026-10-20 18:27 Thai (read this before "Current state" below, which is the 12:40 picture)
+
+- **Measured and committed today:** the auditor's closed-bars downloader (eeca5a9); auditor rounds 2-3 (win = pnl > 0,
+  `plib.load_learning()`, plan1 audited PASS); dev2 V3-1 (4a10c58); the strategist rows 39 / 45 (rows 42-45);
+  dev1's PLAN-1 runner (915e8fe).
+- **The PLAN-1 exam read (row 46, done once):** unweighted +0.129 R on 330 trades (2.54 a weekday), +344.87 USD at
+  0.01 lot, DD 108.12. NY straddle +0.285, Asia B2 +0.105, London ORB +0.023. The state weights lowered it. PARTIAL.
+- **SW-20, the own-result switch (row 47):** FAIL on 2021-09 .. 2023-10; it lowers PLAN-1 in every period.
+- **NS-1 (row 48):** the 08:30-NY straddle on release days only: +0.164 R pooled on 2021-09 .. 2025-10 (M1), positive
+  4 / 4 years, other days about 0 - but M1 flatters release days by +0.193 R against the ticks. **OPEN: needs old ticks
+  (08:25-09:05 NY, about 186 days) from MT5; asked the owner for the go-ahead** (it fills the terminal's Bases on D:).
+- **The owner (2026-10-20):** windows and present-only rules "flexible within reason"; the measurer defines the counts
+  (top test = a visit to the box's top quarter after leaving it by >= S); every TF's structure is read with its own
+  swing size on the M1 path (primary), the candle reading secondary. Trade 4 corrected in `docs/OWNER_TRADING.md`
+  (box 1 = the entry, stop 4180; box 2 = the base on the 50 %, stop above 4160; target Fibo 23.6 about 4102).
+- **Agents:** dev2 V3-2 (stopped mid-build, resume with SendMessage after 22:00 Thai or restart from `DEV2_PROMPT.md` +
+  the end of `dev2/DEV_LOG.md`); the strategist idle; the auditor idle; dev1 paused by the owner.
+- **Credits:** the owner noticed the limit came fast; four agents in parallel cost about 1 M tokens an hour - run at
+  most two at once.
 
 ## Current state (2026-10-20 12:40 Thai)
 
