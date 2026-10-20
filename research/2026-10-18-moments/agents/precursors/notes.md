@@ -2752,3 +2752,17 @@ loaders / ATR / fills; `out_check_plan1.txt`), against `combo_trades_slip0.parqu
   stop price). Mine: P1 +0.467, P2 +0.119. Told dev1: plan1.py re-simulates the straddle from the ticks.
 - Asia B2: 79 trades checked on the ticks (the entry and exit against the ticks, pnl, risk, R, no tick beyond the stop
   or at the target before another exit): 0 faults.
+
+## Three deliverables measured (2026-10-20 13:20-13:40 Thai)
+- **dev2 V3-1** (commit 4a10c58): 26 tests passed; its 46 planted bugs caught; mine 10 / 12 by the unit tests. The two
+  misses are test gaps (`known_at` one bar ahead, `running()` including the pivot bar); the first is caught by its
+  look-ahead run (8148 of 8428 readings equal, FAILED). The auditor's independent audit: PASS. Acceptance on 2026-10-19:
+  15 / 15 turns, the box, LH / LL on M5-M30, the failed retest; missed the top-test count (11 vs about 7), H1 LH / LL
+  (the 18:00 H1 bar holds both the retest high and the new low) and the 17:20 acceptance (17:45). `swings.LIVE` points
+  at an old session's scratchpad: switch it to `data/history` (now updated to 2026-10-20 12:59 Thai).
+- **The auditor, items 1 / 4** (03dd71f): 145 passed + 2 xfailed; mine 4 / 5 (the miss is an equivalent mutant). Only
+  win shares move (205 of 240 cells up, 0 down); no R changes.
+- **The strategist, row 39** (36cceda): rows 42-44. My own tick loop re-derives the RT_25-opp lead 85 / 87 exactly.
+- **dev1** stopped on the session limit at about 13:18 Thai (reset 17:30 Thai) with `plan1.py` + `test_plan1.py` written
+  and the first runs stored; not reported, not measured. Its open question: the CHECKLIST's P1-only weight variant has
+  Asia-trend + NY-sideways for slip 0 by its own rule, the text has them the other way round for +1 USD.

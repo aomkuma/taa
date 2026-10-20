@@ -55,19 +55,22 @@ Sources: `precursors/notes.md`, `DEV_LOG.md`s, `strategist/PROPOSALS.md`, `audit
 
 | 40 | D1: the 13:00-Thai ORB core / + no H1 level within 2 R (D1L) / + the season ADR20 >= 63.3 (S) / D1L+S (dev1; 0.07 slip) | +0.206 / +0.086 / +0.250 / +0.306 | +0.120 / +0.604 / +0.120 / +0.604 | 59-60 / 21-16 / 53-60 / 16-16 | PARTIAL | the core misses only in P2; D1L+S passes on 16 trades a part (too few); older years O1 / O2 core -0.083 / -0.066; sells +0.488 / +0.179 against buys +0.050 / +0.058 (a lead); 3 grid cells >= +0.15 in both, seen after the run (leads) |
 | 41 | D2: the straddle at 08:30 + 10:00 NY, 30 min (+0.5 USD slip) | +0.221 | +0.125 | 94 / 109 | FAIL | P2 rests on one crash trade (2026-01-29 10:00 NY, +27.5 R); without it -0.128. 08:30 alone +0.360 / +0.237, 10:00 alone +0.113 / +0.033. The NY open itself (09:30) loses (-0.208 / -0.289); after the open the first 30 min go against the straddle, the second with it |
+| 42 | The transformations of 11 FAIL families, 264 cells: the opposite side, the stop x1.5 / x2, the target x0.75 / x0.5 / 1 x the stop (strategist, row 39; spread only) | best per family <= +0.012 except #25 | - | 41-1863 a part | FAIL | the opposite side only helps a rule whose entry picks a direction; a wider stop pulls R to 0, a nearer target lifts win % but not R; the straddle reversed loses heavily (-0.317 / -0.530), so the release minute's direction is real |
+| 43 | The break-and-retest traded the other way, back into the range, 1 R target (RT_25 opp; strategist) | +0.261 | +0.255 | 41 / 46 | PARTIAL (lead) | seen after the run; the measurer's tick loop re-derives 85 / 87 trades exactly (+0.260 / +0.240 without the family's break exit); mostly outside the windows (outside +0.397 / +0.294, inside +0.068 / +0.194); 37 of 87 overlap #23; lost in 2023-25 (-0.203 / -0.150) |
+| 44 | State weights per PLAN-1 piece from five more readings (D1 volatility, ADR20, H4 percentile, D1 structure, side vs D1), chosen on P1 | - | P2 +0.130 .. +0.141 vs +0.137 unweighted | 141 / 157 | FAIL | cells of 2-34 trades are too small to choose weights; keep PLAN-1's mechanism weights; the ORB-in-a-trend cut is the only one the older years confirm |
 
 **In progress (OPEN):**
 
 | # | Method | Who | What it adds |
 |---|---|---|---|
-| 29 | V3: the owner's framework - the side from H1 -> D1 structure, the M15-H1 trend, the entry TF M1 / M5 / M15 by volatility, the pullback turn at a level, the stop at the turn, the owner's windows (NY to + 4 h) | dev2 | the owner's own reading, on trade-size swings |
+| 29 | V3 (V3-1 the swings / structure done and measured 2026-10-20; V3-2 next): the owner's framework - the side from H1 -> D1 structure, the M15-H1 trend, the entry TF M1 / M5 / M15 by volatility, the pullback turn at a level, the stop at the turn, the owner's windows (NY to + 4 h) | dev2 | the owner's own reading, on trade-size swings |
 | 30 | The owner's playbook: break and retest (against #25's base rate), the aligned consolidation, the fake break at a range edge (= #23), the fake first leg at an open | dev2 | - |
 | 31 | The opening-range break refined: the H1-level change, a season reading, the older years | dev1 (D1) | done -> row 40 |
 | 32 | The data-minute straddle at 08:30 / 10:00 NY, slippage 0-2 USD, per 30-min bucket | dev1 (D2) | done -> row 41 |
 | 33 | The owner's pattern set on trade-size swings (M / W, triple tops, H&S, channels, A-B-C-D-E, bases), tight patterns | dev1 (P5) | - |
 | 34 | A daily plan combining the PARTIAL pieces in their own windows (Asia B2 / reclaim, London ORB, NY straddle) | the measurer | done -> rows 36-37 |
 | 38 | PLAN-1 frozen for the one exam read (below): needs an exam-capable runner of the three pieces | dev1 (restarted 12:46 Thai), the measurer reads | the measurer's own tick re-derivation `precursors/check_plan1.py` reproduces London 119 / 119 and NY 100 / 100 (4 stale stops in `news_follow_trades.parquet`), B2 79 trades 0 faults |
-| 39 | The transformations of every FAIL (the opposite side, the stop x 1.5 / x 2, a nearer target), and the state weights per piece in more states | the strategist | the owner: "try the opposite side, widen the SL, bring the TP in" |
+| 39 | The transformations of every FAIL, and the state weights per piece in more states | the strategist | done -> rows 42-44 |
 
 ## PLAN-1 - frozen for the one exam read (2026-10-20 12:29 Thai)
 - **Asia:** the first developer's B2 at the owner's H1 levels, entries 07:00-09:00 Thai
