@@ -1,0 +1,1 @@
+400 of 400 rows agree; families {'PB_13': 189, 'A_18': 52, 'B1_18': 39, 'B2_17': 37, 'PB15_14': 27, 'SR16': 15, 'D2_41': 12, 'W_20': 12, 'FOL2R_28': 9, 'RT_25': 4, 'FOL15_28': 4}; exits {'surrender': 172, 'stop': 69, 'time': 67, 'target': 50, 'structure': 38, 'break': 4}

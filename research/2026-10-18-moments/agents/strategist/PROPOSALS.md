@@ -1,3 +1,198 @@
+# Row 39 - written before computing (2026-10-20 12:58 Thai, `date -u` 05:58)
+
+**Part 1, the transformations** (`transform.py`, simulator `tsim.py`; tests `test_tsim.py` 14 hand-worked, planted bugs
+`plant_tsim.py` 12 of 12 caught). Families: #16 SR break (its best setting), #17 B2, #18 A and B1, #20 W, #13 the M1
+pullback, #14 the M15-structure pullback, #25 break and retest, #28 FOLLOW 15m and FOLLOW 2R/30m, #41 D2 (08:30 + 10:00).
+The grid per family: the side {same, opp} x the stop {x1, x1.5, x2} x the target {orig, x0.75, x0.5, 1R0 (a target at 1 x
+the rule's own stop distance)} = 24 cells, 264 in all. Each trade alone from the rule's entries (the one-at-a-time view
+beside it). Costs: the tick spread, slippage 0. A lead = >= +0.15 R in both parts, seen after the run.
+
+**Part 2, the state weights per piece** (`state_weights.py`): the pieces Asia B2 (W, Asia window), London 13:00 ORB, NY
+08:30 straddle 30 min, re-simulated spread-only. The states read from the bars complete before the entry: (a) the D1
+20-day efficiency terciles (0.116 / 0.264, as regime.py); (b) the D1 ATR14 against its 100-day median (>= 1.25 high);
+(c) the ADR20 season: the 20-day mean daily range against its 120-day median, terciles from P1's weekdays; (d) the H4
+volatility: the H4 ATR14's percentile among the last 120 H4 bars (< 33 low, > 67 high); (e) the D1 structure from
+2-bar fractal swings (up = a higher high and a higher low, down = both lower, else mixed), and the trade's side with /
+against it. The rule: per piece and reading, weight 0.5 in a state where the piece's P1 R < 0 on >= 8 trades, else 1;
+judged on P2, and on O1 / O2 where the piece has older trades (the London ORB only: dev/d1_trades.parquet, M1).
+
+# Row 39 - the results (measured 2026-10-20 12:58-13:25 Thai)
+
+**How the numbers were checked:**
+- **`tsim.py`:** 14 hand-worked tests pass (`test_tsim.py`). All 12 planted bugs were caught (`out_plant_tsim.txt`).
+- **Each family's own cell, at its own 0.07 USD slippage, reproduces the stored R:**
+  - SR16 and W_20: exactly.
+  - D2: +0.280 / +0.214, against +0.279 / +0.214 stored.
+  - B2: -0.025 / -0.009, against -0.026 / -0.014. 4 / 6 trades have no tick within 5 minutes.
+- **An independent plain tick loop** (`recheck_transform.py`) agrees with the simulator on the exit kind, the exit time
+  and the pnl:
+  - 400 of 400 sampled rows (`out_recheck_transform.txt`);
+  - 4,524 of 4,524 rows of RT_25 (every cell) and D2.
+- **The lead re-derived on M1** (`rt_old.py`, mlib costs): +0.259 / +0.228. The ticks give +0.262 / +0.227.
+- **No exam data was loaded.** `tsim.day_ticks` refuses 2026-04-18 onward, and `slib.m1` stops before it.
+
+## Part 1 - the transformations
+
+264 cells. Outputs: `out_transform.txt`, `out_lead_checks.txt`.
+
+| Family (row) | The rule, spread only, P1 / P2 (trades) | The best cell, P1 / P2 | The opposite side x1, P1 / P2 | Verdict |
+|---|---|---|---|---|
+| SR16 level break (#16) | -0.049 / +0.144 (150 / 153) | same x1 orig (the rule itself) | -0.061 / -0.109 | no cell is positive in both parts; every transform keeps P1 < 0 |
+| B2 (#17) | -0.018 / -0.004 (348 / 342) | same x1.5 1R0: +0.005 / +0.008 | -0.145 / -0.059 | no direction either way |
+| A (#18) | -0.029 / -0.038 (517 / 559) | same x2 orig: -0.016 / -0.025 | -0.158 / -0.045 | as B2 |
+| B1 (#18) | -0.030 / -0.070 (378 / 359) | same x2 0.5: +0.007 / +0.002 | -0.221 / -0.092 | as B2 |
+| W (#20) | -0.018 / +0.040 (115 / 109) | same x1.5 0.5: +0.012 / +0.028 | -0.084 / -0.152 | as B2 |
+| M1 pullback (#13) | -0.082 / -0.011 (1863 / 1159) | same x2 0.75: -0.044 / -0.004 | -0.110 / -0.151 | all 24 cells < 0 (pooled) |
+| M15 pullback (#14) | -0.091 / -0.263 (337 / 161) | opp x1.5 0.75: -0.026 / +0.072 | -0.046 / +0.045 | the sign flips |
+| Break and retest (#25) | -0.218 / -0.380 (41 / 46) | **opp x1 0.5: +0.261 / +0.255** | **+0.262 / +0.227** | **LEAD** (7 cells) |
+| FOLLOW 15m (#28) | +0.058 / -0.120 (47 / 65) | opp x1 orig: -0.209 / +0.168 | -0.209 / +0.168 | the sign flips in every cell |
+| FOLLOW 2R/30m (#28) | +0.013 / -0.054 | same x1.5 0.75: +0.056 / +0.045 | -0.149 / -0.037 | below the goal |
+| D2, 08:30 + 10:00 (#41) | +0.284 / +0.219 (94 / 109) | the rule itself | **-0.317 / -0.530** | 6 "lead" cells, all resting on one trade |
+
+**What it shows:**
+- **The opposite side rescues only a rule whose entry carries a direction.**
+  - The retest was right 24 % of the time, so its reverse is right 66 % of the time.
+  - The B2 / A / B1 / W micro-pattern streams lose on both sides. There is no direction to reverse: R1 of the review,
+    now measured from the other side.
+  - The data-minute straddle reversed loses -0.317 / -0.530. The release minute's direction is real.
+- **A wider stop pulls R towards 0 but creates no edge:**
+  - B2: -0.018 / -0.004 at x1, -0.004 / -0.005 at x2;
+  - the M1 pullback: -0.082 / -0.011 at x1, -0.042 / -0.008 at x2.
+- **A nearer target raises the win % but hardly moves R.** B2 wins 39 % at the rule's target and 42 % at 1R0, and its R
+  moves by at most 0.03.
+- **D2's "lead" cells are not leads.** Without its one best trade, P2 is -0.035 (x1) and -0.008 (x1.5). That trade is
+  the 2026-01-29 10:00 NY crash sell, +27.6 R.
+
+**The lead: the break-and-retest entries taken back into the range (RT_25 opp).**
+- **The best cell is x0.5 (a 1 R target):**
+  - +0.261 / +0.255 R, 41 / 46 trades, 71 % / 67 % winners;
+  - without the best 3 trades: +0.202 / +0.203;
+  - weeks positive: 9 of 13 / 10 of 13;
+  - pooled: +0.258 (95 % range +0.08..+0.44);
+  - one position at a time: +0.242 / +0.227.
+- **Most of it lies outside the owner's windows:**
+
+  | | P1 R (trades) | P2 R (trades) |
+  |---|---|---|
+  | Outside the owner's windows | +0.397 (24) | +0.294 (28) |
+  | Inside the owner's windows | +0.068 (17) | +0.194 (18) |
+
+- **It is partly #23 again.** 37 of its 87 entries have a reclaim.py trade on the same level within 60 minutes.
+- **It holds in the present only.** `rt_old.py` on M1, with the heavier mlib costs:
+
+  | Side | O1 R (trades) | O2 R (trades) | P1 R (trades) | P2 R (trades) |
+  |---|---|---|---|---|
+  | Opposite, x0.5 | -0.203 (241) | -0.150 (231) | +0.260 (41) | +0.273 (47) |
+  | Same (the retest itself) | +0.027 (241) | +0.007 (231) | -0.308 (41) | -0.294 (47) |
+
+  - The paying side flipped between the periods. This is the same regime story as #22 and #23.
+  - The H1 ATR level does not explain the flip:
+
+    | H1 ATR | O2 R (trades) | P1 R (trades) |
+    |---|---|---|
+    | 10-15 USD | -0.006 (37) | +0.341 (18) |
+    | 15-25 USD | -0.324 (15) | +0.254 (21) |
+
+- **A trailing side switch** (`side_switch.py`, written before it was computed): at each event, take the side whose
+  last N events paid more; 1 R target; M1.
+
+  | N | O1 | O2 | P1 | P2 |
+  |---|---|---|---|---|
+  | 20 | +0.009 | -0.118 | +0.211 | +0.273 |
+  | 40 | +0.010 | -0.042 | +0.162 | +0.273 |
+
+  - The switch took the opposite side in 98-100 % of P1 / P2 and in 3-31 % of O1 / O2.
+  - It keeps most of P1 / P2 and removes most of the old loss.
+
+## Part 2 - the state weights per piece
+
+Script `state_weights.py`; output `out_state_weights.txt`.
+
+**The pieces, spread only:**
+
+| Piece | P1 R (trades) | P2 R (trades) |
+|---|---|---|
+| Asia B2 | +0.081 (41) | +0.186 (38) |
+| London ORB | +0.214 (59) | +0.123 (60) |
+| NY straddle | +0.467 (41) | +0.119 (59) |
+| The plan | +0.249 (141) | +0.137 (157) |
+
+- The pieces never overlap, so "alone" and "one position at a time" give the same numbers.
+- PLAN-1's mechanism weights: +0.338 / +0.188. The measurer's +0.341 / +0.191 agrees.
+- The ORB in the older years (the developer's M1 trades): O1 -0.083 (250 trades), O2 -0.066 (252).
+
+**Weights chosen on P1 only** (0.5 where the piece's P1 R < 0 on >= 8 trades), then read on P2:
+
+| Reading | P1 (in sample) | P2 |
+|---|---|---|
+| none | +0.249 | +0.137 |
+| D1 efficiency (trend) | +0.277 | +0.141 |
+| D1 volatility | +0.268 | +0.132 |
+| ADR20 season | +0.263 | +0.130 |
+| H4 volatility | +0.261 | +0.140 |
+| D1 structure | +0.249 | +0.137 (no P1 cell qualified) |
+| side with / against the D1 structure | +0.307 | +0.135 |
+
+- **No P1-chosen reading moves P2 by more than +0.004.**
+- **The cells are 2-34 trades.** That is far too few to tell a +0.15 difference (`power.py`).
+
+**The mechanism weights, cut by cut:**
+
+| Cut | P1 | P2 | O1 | O2 | What it shows |
+|---|---|---|---|---|---|
+| Asia B2 in a trend | -0.070 (23) | -0.006 (10) | - | - | same sign in both parts |
+| London ORB in a trend | +0.030 | -0.210 | -0.013 | -0.098 | the one cut the older years support: the ORB never pays in a trend |
+| NY straddle in a trend | +0.860 (23) | +0.262 (22) | - | - | same sign in both parts |
+| NY straddle, sideways + mixed | about -0.03 (18) | +0.033 (37) | - | - | same sign in both parts |
+
+**The ORB loses in O1 / O2 in almost every state:**
+- sideways is positive in 3 of 4 periods: +0.243 / +0.464 / -0.087 / +0.124;
+- the low season, where most of O1 / O2 sits: -0.012 / -0.153;
+- no reading turns the older years positive. The ORB's present-only nature is not a state these readings see.
+
+## The ranked proposals after row 39
+
+1. **Keep PLAN-1 as frozen, with the mechanism weights.**
+   - None of the five new readings beats the D1 efficiency on P2.
+   - Each mechanism cut has the same sign in both parts.
+   - The exam judges it. Do not add state readings: the cells are too small to choose them (R2).
+2. **The failed retest traded back into the range (RT_25 opp, 1 R target), merged with #23, the reclaim.**
+   - Who: dev2, entry 3 "the fake break at a range edge".
+   - The test: the union of both event sets (the close back inside; the failed retest turn); dev2's box edges plus the
+     levels everyone sees; a 1 R target; two stop settings (the mirrored distance, and the break's extreme + 0.25 H); on
+     the ticks; the owner's windows reported apart from the other hours.
+   - Pass: >= +0.15 in both parts with >= 30 trades each, in the windows the owner allows (question 1).
+3. **A trailing side switch for the level-break events** (`side_switch.py`): take the side of the last 20-40 events.
+   - The owner's "live in the present" in its plainest form: the side of a broken level flips with the regime, and the
+     trailing result sees the flip without a fixed threshold.
+   - Who: the measurer, as a walk-forward over O1 .. P2, on the ticks where they exist.
+   - Pass: >= 0 in O1 / O2 and >= +0.15 in P1 / P2.
+   - The first check (M1): +0.009 / -0.118 / +0.211 / +0.273 (N 20). It was written before it was computed but after
+     the lead was seen.
+4. **The earlier proposals:**
+   - #3 (the base rate before the break-and-retest), #6 (the 08:30 straddle only) and #7 (tight patterns) stand.
+   - #1, #4 and #5 are taken up in PLAN-1, CHECKLIST rows 40-41 and the judging protocol.
+
+## What to stop doing (row 39)
+
+- **Transforming the micro-pattern streams** (B2, A, B1, W, the pullbacks).
+  - The opposite side is negative in every cell (pooled); the same side lies between -0.06 and +0.05 in every cell.
+  - Done; do not retry with other multipliers.
+- **D2 at 10:00 NY.** Without the one crash trade it is negative in P2. The 08:30 half is already in PLAN-1.
+- **Fading the release** (the straddle reversed): -0.317 / -0.530.
+- **FOLLOW in any form.** It flips in every cell.
+- **More state readings for PLAN-1's weights before the exam read.** There are too few trades per cell.
+
+## Questions to the measurer (row 39)
+
+1. **RT_25 opp pays mostly outside the owner's windows** (+0.397 / +0.294 outside, +0.068 / +0.194 inside). May a
+   reclaim trade be taken outside the windows? If the windows rule stands, the lead is too weak: 35 trades, about +0.13.
+2. **Every lead so far is present-only.** #22, #23 and RT_25 opp lose in O1 / O2, and the absolute volatility does not
+   separate the periods. Is the owner content with a rule judged on the present plus a trailing switch (proposal 3),
+   reviewed every 3-6 months, or must a rule also hold in 2023-25?
+3. **Asia B2 in the older years.** Its older-year check needs the first developer's detector run on 2023-25 (M1 only).
+   Is it worth asking for?
+
 # The strategist's review and proposals (2026-10-19, written 23:30-23:50 Thai by `date -u`)
 
 **Scope.** This is a review only. Nothing here is a frozen rule.
@@ -252,3 +447,7 @@ winners, 6 losers) for the owner to accept or reject before any result counts.
 | Costs | `costs.py` | `out_costs.txt` |
 | The hand trace | | `out_trace.txt` |
 | Trade lists | | `*_trades.parquet` |
+| Row 39: the tick simulator | `tsim.py` + `test_tsim.py` + `plant_tsim.py` | `out_plant_tsim.txt` |
+| Row 39: the transformations | `transform.py`, `lead_checks.py`, `recheck_transform.py` | `out_transform.txt`, `out_lead_checks.txt`, `out_recheck_transform.txt`, `transform_trades.parquet` |
+| Row 39: the lead in the older years, the side switch | `rt_old.py`, `side_switch.py` | `out_rt_old.txt`, `out_side_switch.txt`, `rt_old_trades.parquet` |
+| Row 39: the state weights | `state_weights.py` | `out_state_weights.txt`, `state_weights_trades.parquet` |

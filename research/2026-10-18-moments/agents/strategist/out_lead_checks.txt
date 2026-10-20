@@ -1,0 +1,44 @@
+
+== RT_25 opp x1 orig
+  P1: n 41 R +0.262 | without the best 1 +0.219, best 3 +0.125 | median +0.206 | best trade +2.00 R | weeks positive 8 of 13 | USD +156.2
+      other hours: n 24 R +0.394
+      owner's windows: n 17 R +0.075
+  P2: n 46 R +0.227 | without the best 1 +0.188, best 3 +0.103 | median +0.279 | best trade +2.00 R | weeks positive 8 of 13 | USD +509.8
+      other hours: n 28 R +0.293
+      owner's windows: n 18 R +0.124
+
+== RT_25 opp x1 0.5
+  P1: n 41 R +0.261 | without the best 1 +0.242, best 3 +0.202 | median +0.600 | best trade +1.00 R | weeks positive 9 of 13 | USD +188.3
+      other hours: n 24 R +0.397
+      owner's windows: n 17 R +0.068
+  P2: n 46 R +0.255 | without the best 1 +0.239, best 3 +0.203 | median +0.684 | best trade +1.00 R | weeks positive 10 of 13 | USD +436.4
+      other hours: n 28 R +0.294
+      owner's windows: n 18 R +0.194
+
+== RT_25 opp x1.5 orig
+  P1: n 41 R +0.154 | without the best 1 +0.124, best 3 +0.061 | median +0.137 | best trade +1.33 R | weeks positive 9 of 13 | USD +144.5
+      other hours: n 24 R +0.254
+      owner's windows: n 17 R +0.012
+  P2: n 46 R +0.202 | without the best 1 +0.177, best 3 +0.123 | median +0.257 | best trade +1.33 R | weeks positive 9 of 13 | USD +726.0
+      other hours: n 28 R +0.251
+      owner's windows: n 18 R +0.126
+
+== D2_41 same x1 orig
+  P1: n 94 R +0.284 | without the best 1 +0.233, best 3 +0.153 | median +0.132 | best trade +5.03 R | weeks positive 9 of 13 | USD +232.8
+      other hours: n 94 R +0.284
+  P2: n 109 R +0.219 | without the best 1 -0.035, best 3 -0.136 | median -1.002 | best trade +27.57 R | weeks positive 8 of 14 | USD +253.0
+      other hours: n 109 R +0.219
+
+== D2_41 same x1.5 orig
+  P1: n 94 R +0.159 | without the best 1 +0.124, best 3 +0.070 | median +0.135 | best trade +3.35 R | weeks positive 7 of 13 | USD +195.9
+      other hours: n 94 R +0.159
+  P2: n 109 R +0.161 | without the best 1 -0.008, best 3 -0.075 | median -0.051 | best trade +18.38 R | weeks positive 7 of 14 | USD +279.7
+      other hours: n 109 R +0.161
+
+RT_25 opp x1 orig: 87 trades, of which 37 have a reclaim.py trade on the same level kind within 60 min
+RT_25 opp x1 orig by level kind (P1 / P2):
+   ASH: P1 n 17 R +0.347 | P2 n 19 R +0.275
+   ASL: P1 n 7 R +0.712 | P2 n 7 R -0.057
+   PDH: P1 n 12 R -0.194 | P2 n 12 R +0.223
+   PDL: P1 n 5 R +0.440 | P2 n 8 R +0.369
+exits: {('P1', 'time'): 27, ('P1', 'stop'): 9, ('P1', 'target'): 4, ('P1', 'break'): 1, ('P2', 'time'): 28, ('P2', 'stop'): 12, ('P2', 'target'): 5, ('P2', 'break'): 1}

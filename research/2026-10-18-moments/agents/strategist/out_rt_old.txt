@@ -1,0 +1,18 @@
+opp  orig 2R  O1 n 241 R -0.199 win 0.40 | O2 n 231 R -0.164 win 0.41 | P1 n  41 R +0.259 win 0.66 | P2 n  47 R +0.228 win 0.62
+opp  x0.5 1R  O1 n 241 R -0.203 win 0.43 | O2 n 231 R -0.150 win 0.45 | P1 n  41 R +0.260 win 0.71 | P2 n  47 R +0.273 win 0.68
+same orig 2R  O1 n 241 R +0.026 win 0.47 | O2 n 231 R +0.025 win 0.47 | P1 n  41 R -0.221 win 0.24 | P2 n  47 R -0.390 win 0.23
+same x0.5 1R  O1 n 241 R +0.027 win 0.51 | O2 n 231 R +0.007 win 0.50 | P1 n  41 R -0.308 win 0.27 | P2 n  47 R -0.294 win 0.32
+
+opp x0.5 1R by the owner's windows / other hours:
+  other    O1 n 175 R -0.225 | O2 n 149 R -0.144 | P1 n  24 R +0.399 | P2 n  29 R +0.319
+  windows  O1 n  66 R -0.145 | O2 n  82 R -0.159 | P1 n  17 R +0.064 | P2 n  18 R +0.199
+
+opp x0.5 1R by the H1 ATR at the event (USD; fixed bins, a label written after the lead):
+             mean                        size                  
+part           O1     O2     P1     P2     O1    O2    P1    P2
+Hb                                                             
+(0, 6]     -0.246 -0.236    NaN    NaN  193.0  78.0   NaN   NaN
+(6, 10]    -0.031 -0.122 -0.405 -1.023   46.0  99.0   2.0   1.0
+(10, 15]   -0.008 -0.006  0.341 -0.669    2.0  37.0  18.0   2.0
+(15, 25]      NaN -0.324  0.254  0.285    NaN  15.0  21.0  14.0
+(25, 1000]    NaN  0.524    NaN  0.373    NaN   2.0   NaN  30.0

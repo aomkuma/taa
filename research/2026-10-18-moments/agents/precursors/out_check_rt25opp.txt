@@ -1,0 +1,6 @@
+87 trades; |dR| max 0.6928; > 0.01 in 2; exit kind differs in 2; |entry diff| max 0.000
+  P1: 41 trades, mine R +0.260 (win 0.71), theirs +0.261
+  P2: 46 trades, mine R +0.240 (win 0.65), theirs +0.255
+   part    mine_R  theirs_R mine_exit theirs_exit  d_entry        dR
+22   P1  0.357010  0.402984      time       break      0.0  0.045974
+82   P2 -0.209019  0.483771      time       break      0.0  0.692790

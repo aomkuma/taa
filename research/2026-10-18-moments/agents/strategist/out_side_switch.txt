@@ -1,0 +1,2 @@
+N 20: O1 n 220 R +0.009 (opp picked 0.22) | O2 n 231 R -0.118 (opp picked 0.31) | P1 n 41 R +0.211 (opp picked 0.98) | P2 n 47 R +0.273 (opp picked 1.00)
+N 40: O1 n 200 R +0.010 (opp picked 0.03) | O2 n 231 R -0.042 (opp picked 0.29) | P1 n 41 R +0.162 (opp picked 0.85) | P2 n 47 R +0.273 (opp picked 1.00)

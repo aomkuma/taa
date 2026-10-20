@@ -1,0 +1,14 @@
+CAUGHT  a sell fills at the ask  (3 failed, 11 passed in 1.61s)
+CAUGHT  a sell exits on the bid  (3 failed, 11 passed in 1.68s)
+CAUGHT  the stop needs more than its distance  (2 failed, 12 passed in 1.71s)
+CAUGHT  the structure before the stop on one tick  (1 failed, 13 passed in 2.17s)
+CAUGHT  the surrender sees the tick at K  (1 failed, 13 passed in 1.56s)
+CAUGHT  the structure exit for the other side too  (1 failed, 13 passed in 1.71s)
+CAUGHT  no gap break  (1 failed, 13 passed in 1.81s)
+CAUGHT  the time exit one tick early  (4 failed, 10 passed in 1.74s)
+CAUGHT  R on the rule's risk  (3 failed, 11 passed in 1.62s)
+CAUGHT  1R0 on the variant's risk  (1 failed, 13 passed in 1.78s)
+CAUGHT  the exam guard removed  (1 failed, 13 passed in 1.75s)
+CAUGHT  the slippage default 0.07  (9 failed, 5 passed in 1.92s)
+
+12 of 12 caught
