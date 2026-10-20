@@ -2664,3 +2664,34 @@ My pre-registered "choppy" test (the first 2 h's close-to-close efficiency < 0.3
 
 **Asia 07:00 / London 13:00, the first 60 minutes, the bias's way per 15 minutes:** small (|mean| <= 2.6). The |move|
 median of the first 15 minutes is 3.3 / 6.4 (Asia) and 2.8 / 5.6 (London).
+
+**Step 2 - written before it was computed (12:11 Thai) and run (12:13 Thai; `framework2.py`, tests in
+`test_framework.py` 5 passed - the first passage with a bar reaching both counted against, the sell on the lows, the
+trend sign's warm-up; planted bugs 4 of 4 after one test was added; `out_framework2.txt`, `framework2.parquet`).**
+
+**The question:** at each window's open, with the M15-H1 trend (the proxy: the close against a rising / falling
+EMA50, both agreeing) and three D1 readings (EMA20, the last candle, 3 days), does price go 10 USD the trend's way
+before X against, within the window's span (Asia / London 60 min, NY 240 min)?
+
+**What it shows** (small cells, 6-40 days):
+- **Entering at the open price with a small stop fails.**
+  - With 3 USD: the 10 first in 0.10-0.38, the stop first in 0.50-0.88.
+  - With 5 USD: 0.14-0.60.
+  - Only NY with a 10-USD stop gets the 10 first in about 0.6 (P1 agree 0.65, P2 agree 0.61).
+- **The D1 readings (EMA / candle / 3-day) do not separate** steadily: against-D1 NY in P2 was 0.69 / 0.73.
+- **The sizes:** NY moves big within 4 h (MFE median 22-48 USD, MAE 13-33). Asia / London 60 min: MFE 4-15, MAE
+  3-18.
+
+**Conclusion for the design:**
+- The entry cannot be "at the window's open in the trend's direction". It must be the entry TF's own turn (the end of
+  a pullback / the owner's pattern), with the stop at that turn's extreme.
+- The side needs the structure reader (V3-1), not EMA proxies.
+
+**The owner (12:12 Thai):**
+- "the side: D1 - you can read it, 1H -> 1D already has a trend";
+- "the entry is M1-M15: write down that we enter with these 3 TFs; which one per trade is chosen by the volatility and
+  the opportunity - low volatility M1, higher M15 - so it fits the TP / SL we plan";
+- "what I share is what I see, not guaranteed right; your job is to research the opportunities and the probabilities
+  and turn them into a design for the developer".
+
+Turned into `../DEV2_PROMPT.md` "V3 design".

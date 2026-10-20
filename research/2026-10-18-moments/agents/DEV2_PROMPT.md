@@ -82,6 +82,46 @@ The entries this shows, to build and test:
 a consolidation breakout) and plan by what the chart reveals". Each forming picture gets its completions, each with a
 trigger, a stop and a target. Enter when the chart reveals one.
 
+## V3 design - the owner's framework (2026-10-20 12:14 Thai; the measurer's design from the owner's words and the measurements)
+The owner (12:05-12:12 Thai):
+- "find the trend in M15-1H, then use M1-M5 to find the entry - a big trend or a sideways market does not matter much
+  because we enter and exit on a small TF";
+- "in a real trend day it runs one way, pullbacks / bounces are not far, and our SL is at the small-TF level anyway";
+- "the daily chart tells which side has the edge - 1H -> 1D already has a trend";
+- "an open runs in its first 30-60 minutes; NY can run up to 4 hours after its open, sometimes choppy for 1-2 hours
+  first";
+- "the entry is M1-M15: we enter with these 3 TFs, which one per trade by the volatility and the opportunity - low
+  volatility M1, higher M15 - so it fits the TP / SL we plan";
+- "what I share is what I see, not guaranteed right - research the opportunities and the probabilities".
+
+The design, layer by layer:
+
+| Layer | TF | Rule to build (all causal, on the V3-1 trade-size swings) |
+|---|---|---|
+| **The side** | H1 -> H4 -> D1 | The direction where the D1 and H4 structure agree (HH / HL = buy side, LH / LL = sell side), with H1 not against it. Otherwise no side: stand aside, or only the "really clean" exception. |
+| **The trend** | M15, M30, H1 | The structure on M15-H1 the side's way. When it is against, wait: a pullback is still running. |
+| **The entry TF** | M1 / M5 / M15, one per trade | The smallest TF whose typical swing fits the planned stop and target: e.g. its ATR(14) x k between a set floor and ceiling of the stop. Write k and the bounds before computing, from P1 only. Low volatility uses M1, high uses M15 (the owner). |
+| **The entry** | the entry TF | The end of a pullback against the side: a higher low after a pullback for a buy (lower high for a sell), at a level (S/R, the range box, the trendline, the Fibonacci levels), never mid-price except that pullback. The four playbook entries (break and retest, the aligned consolidation, the fake break at a range edge, the fake first leg at an open) are cases of it. Enter on the entry TF's break of the turn. |
+| **The stop** | the entry TF | A few USD past the turn's extreme, as in trade 4 (4180 over the retest high 4177.06). |
+| **The exit** | the entry TF | The next level / Fibonacci zone, or a trail past the entry TF's confirmed swings; a time limit per window. |
+| **When** | the Thai clock | Asia 07:00 + 30-60 min; London 13:00 + 30-60 min; NY 09:30 NY to + 4 h. Report NY per 30-minute bucket: the first 1-2 h are often choppy, the real run later. |
+
+**What the measurer measured first** (`precursors/framework.py`, `framework2.py`; the notes of 2026-10-20 12:10-12:15
+Thai):
+- **The EMA20 D1 bias does not tell the day's side** (0.48 / 0.54 closed its way).
+- **Entering at a window's open price in the M15-H1 (EMA proxy) direction with a 3-5 USD stop fails:** the 10 USD
+  came first in 0.10-0.38 of the days, the stop in 0.50-0.88.
+- **NY moves big within 4 h** (MFE median 22-48 USD, MAE 13-33). Asia / London's first hour are smaller (MFE 4-15).
+- **So the entry has to be the entry TF's own turn, with the stop at its extreme,** and the side must come from the
+  structure, not from EMA proxies.
+
+**Order:**
+1. V3-1, with the D1 / H4 / H1 structure added to its output, and the side and trend columns.
+2. V3-2, as this design: the entry TF chosen per trade, the pullback-turn entry at a level, the stop at the turn,
+   the exits.
+3. Report per window, per NY bucket, per entry TF and per side source, with the acceptance and the judging rules
+   below.
+
 ## Acceptance: the RESULT must match the owner's reading (owner, 2026-10-19 23:13 Thai)
 The owner: "focus on whether what was built from the ideas I shared gives the right result - not only unit tests
 showing there are no errors."

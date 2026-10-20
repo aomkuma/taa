@@ -1,0 +1,53 @@
+C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\framework2.py:65: RuntimeWarning: invalid value encountered in cast
+  "3day": np.sign(dc - pd.Series(dc).shift(3).to_numpy()).astype(int)}
+
+== the D1 reading 'ema20': the M15-H1 trend days, split by the D1 side agreeing / against / none
+           window part      d1  n +10 before -3 +10 before -5 +10 before -7 +10 before -10 mfe / mae med
+  Asia 07:00 Thai   P1 against 12     0.25/0.67     0.33/0.58     0.42/0.50      0.42/0.33     6.3 / 8.4
+  Asia 07:00 Thai   P1   agree 33     0.18/0.73     0.33/0.48     0.33/0.45      0.36/0.24     5.1 / 4.9
+  Asia 07:00 Thai   P1    none  3     0.33/0.67     0.67/0.00     0.67/0.00      0.67/0.00    13.7 / 4.3
+  Asia 07:00 Thai   P2 against 10     0.50/0.50     0.50/0.50     0.50/0.50      0.60/0.30   15.7 / 12.5
+  Asia 07:00 Thai   P2   agree 29     0.10/0.86     0.14/0.83     0.24/0.72      0.34/0.55    8.9 / 13.5
+  Asia 07:00 Thai   P2    none  6     0.00/1.00     0.17/0.83     0.17/0.83      0.33/0.67    3.9 / 25.7
+London 13:00 Thai   P1 against 18     0.11/0.83     0.11/0.67     0.28/0.39      0.28/0.28     6.9 / 6.0
+London 13:00 Thai   P1   agree 19     0.21/0.53     0.26/0.42     0.26/0.32      0.26/0.21     6.4 / 3.5
+London 13:00 Thai   P1    none  4     0.50/0.50     0.50/0.25     0.50/0.25      0.50/0.00     9.0 / 3.2
+London 13:00 Thai   P2 against 12     0.17/0.83     0.17/0.83     0.33/0.67      0.33/0.67    9.9 / 18.1
+London 13:00 Thai   P2   agree 29     0.21/0.79     0.24/0.72     0.31/0.59      0.38/0.45     9.3 / 9.2
+London 13:00 Thai   P2    none  4     0.25/0.75     0.50/0.50     0.50/0.50      0.50/0.50   14.5 / 16.7
+      NY 09:30 NY   P1 against 12     0.25/0.75     0.33/0.67     0.33/0.67      0.42/0.50   24.7 / 15.1
+      NY 09:30 NY   P1   agree 23     0.26/0.74     0.43/0.57     0.57/0.43      0.65/0.35   24.9 / 19.3
+      NY 09:30 NY   P1    none  2     0.50/0.50     0.50/0.50     0.50/0.50      0.50/0.50   10.8 / 35.3
+      NY 09:30 NY   P2 against 16     0.38/0.62     0.56/0.44     0.62/0.38      0.69/0.31   48.1 / 22.1
+      NY 09:30 NY   P2   agree 23     0.26/0.74     0.43/0.57     0.52/0.48      0.61/0.39   27.8 / 28.3
+      NY 09:30 NY   P2    none  4     0.00/1.00     0.00/1.00     0.00/1.00      0.50/0.50   42.7 / 29.8
+
+== the D1 reading 'candle': the M15-H1 trend days, split by the D1 side agreeing / against / none
+           window part      d1  n +10 before -3 +10 before -5 +10 before -7 +10 before -10 mfe / mae med
+  Asia 07:00 Thai   P1 against 10     0.20/0.70     0.30/0.60     0.30/0.60      0.30/0.30     3.5 / 8.4
+  Asia 07:00 Thai   P1   agree 38     0.21/0.71     0.37/0.45     0.39/0.39      0.42/0.24     6.3 / 5.1
+  Asia 07:00 Thai   P2 against  6     0.17/0.67     0.17/0.67     0.17/0.67      0.33/0.50    9.7 / 12.4
+  Asia 07:00 Thai   P2   agree 39     0.18/0.82     0.23/0.77     0.31/0.69      0.41/0.51    8.6 / 15.2
+London 13:00 Thai   P1 against 13     0.15/0.69     0.15/0.62     0.15/0.62      0.15/0.31     4.7 / 8.1
+London 13:00 Thai   P1   agree 28     0.21/0.64     0.25/0.46     0.36/0.21      0.36/0.18     8.9 / 4.2
+London 13:00 Thai   P2 against 12     0.17/0.83     0.25/0.67     0.33/0.42      0.33/0.42    9.2 / 12.9
+London 13:00 Thai   P2   agree 33     0.21/0.79     0.24/0.76     0.33/0.67      0.39/0.55   10.1 / 13.1
+      NY 09:30 NY   P1 against 14     0.29/0.71     0.36/0.64     0.43/0.57      0.57/0.36   21.5 / 17.0
+      NY 09:30 NY   P1   agree 23     0.26/0.74     0.43/0.57     0.52/0.48      0.57/0.43   26.0 / 23.4
+      NY 09:30 NY   P2 against 15     0.40/0.60     0.60/0.40     0.60/0.40      0.73/0.27   35.4 / 22.4
+      NY 09:30 NY   P2   agree 28     0.21/0.79     0.36/0.64     0.46/0.54      0.57/0.43   36.5 / 28.3
+
+== the D1 reading '3day': the M15-H1 trend days, split by the D1 side agreeing / against / none
+           window part      d1  n +10 before -3 +10 before -5 +10 before -7 +10 before -10 mfe / mae med
+  Asia 07:00 Thai   P1 against  8     0.12/0.88     0.25/0.38     0.25/0.38      0.38/0.12     5.0 / 6.4
+  Asia 07:00 Thai   P1   agree 40     0.23/0.68     0.38/0.50     0.40/0.45      0.40/0.28     6.3 / 5.6
+  Asia 07:00 Thai   P2 against 12     0.25/0.75     0.33/0.67     0.42/0.58      0.50/0.42   10.2 / 14.8
+  Asia 07:00 Thai   P2   agree 33     0.15/0.82     0.18/0.79     0.24/0.73      0.36/0.55    8.2 / 13.5
+London 13:00 Thai   P1 against 12     0.08/0.83     0.08/0.75     0.25/0.42      0.25/0.25     5.8 / 6.2
+London 13:00 Thai   P1   agree 29     0.24/0.59     0.28/0.41     0.31/0.31      0.31/0.21     6.7 / 3.8
+London 13:00 Thai   P2 against 13     0.23/0.77     0.23/0.77     0.31/0.62      0.31/0.62    9.7 / 14.5
+London 13:00 Thai   P2   agree 32     0.19/0.81     0.25/0.72     0.34/0.59      0.41/0.47    9.7 / 11.2
+      NY 09:30 NY   P1 against  9     0.11/0.89     0.44/0.56     0.56/0.44      0.67/0.33   24.9 / 32.8
+      NY 09:30 NY   P1   agree 28     0.32/0.68     0.39/0.61     0.46/0.54      0.54/0.43   23.4 / 15.0
+      NY 09:30 NY   P2 against 14     0.36/0.64     0.43/0.57     0.43/0.57      0.50/0.50   34.1 / 31.2
+      NY 09:30 NY   P2   agree 29     0.24/0.76     0.45/0.55     0.55/0.45      0.69/0.31   37.3 / 12.7

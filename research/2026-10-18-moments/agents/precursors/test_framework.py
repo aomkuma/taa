@@ -33,3 +33,21 @@ def test_the_deepest_pullback_from_the_running_extreme():
 def test_efficiency():
     assert efficiency(np.array([1.0, 2, 3]), 0.0) == pytest.approx(1.0)
     assert efficiency(np.array([2.0, 0, 2]), 0.0) == pytest.approx(2 / 6)
+
+
+def test_the_first_passage_counts_a_bar_with_both_against():
+    from framework2 import first_passage, trend_sign
+    h = np.array([102.0, 106, 111]); lo = np.array([99.0, 98, 104])
+    assert first_passage(100.0, h, lo, 1, 10.0, 3.0) == 1     # 111 (+11) before 97 (-3): the lows 99, 98 stay above 97
+    assert first_passage(100.0, h, lo, 1, 10.0, 2.0) == -1    # 98 is -2: against first
+    assert first_passage(100.0, np.array([112.0]), np.array([95.0]), 1, 10.0, 3.0) == -1  # one bar with both: against
+    assert first_passage(100.0, h, lo, -1, 10.0, 3.0) == -1   # a sell: 102 is +2 against, 106 is +6 -> against at bar 1
+    assert first_passage(100.0, np.array([101.0]), np.array([99.0]), 1, 10.0, 3.0) == 0
+    up = np.arange(1.0, 81.0)
+    assert trend_sign(up)[-1] == 1 and trend_sign(-up)[-1] == -1 and trend_sign(up)[40] == 0  # EMA50 not ready at 40
+
+
+def test_a_sell_reaches_its_target_on_the_lows():
+    from framework2 import first_passage
+    # a sell from 100: lows 95 then 89 (+11 our way), highs never 3 above: the target first
+    assert first_passage(100.0, np.array([101.0, 100.0]), np.array([95.0, 89.0]), -1, 10.0, 3.0) == 1
