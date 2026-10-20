@@ -1,0 +1,8 @@
+CAUGHT  entry = o[i_in] + slip
+CAUGHT  if h[k] >= stop
+CAUGHT  lo[k] <= target
+CAUGHT  stop
+CAUGHT  if lo[k] < stop - 1e9:
+CAUGHT  px = c[last]
+CAUGHT  for k in range(i_in + 1, last + 1):
+CAUGHT  if risk < -1e9:

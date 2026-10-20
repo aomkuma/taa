@@ -1,0 +1,9 @@
+CAUGHT  v = rng[j - recent + 2:j + 2].mean()
+CAUGHT  np.mean(rng[j - hist + 1:j + 1] < v)
+CAUGHT  np.mean(rng[j - base + 1:j + 1])
+CAUGHT  path = np.abs(np.diff(c[j - n + 1:j + 1])).sum()
+CAUGHT  m = (t_break >= t_from) & (t_break <= t)
+CAUGHT  prev = atr
+CAUGHT  return min(cap, (t - avail[k[0]]) / NS_H)
+CAUGHT  m = np.isfinite(R) & (t_exit > 0)
+CAUGHT  return float(R[m][o][:n].mean())

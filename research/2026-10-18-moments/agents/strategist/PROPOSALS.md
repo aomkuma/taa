@@ -1,3 +1,273 @@
+# Row 45 - what was there when the leads paid - written before computing (2026-10-20 17:08 Thai, `date -u` 10:08)
+
+**The question** (owner: "a result that only works in some periods is normal; the system's job is to see which period
+we are in now"): the leads #22 (the 13:00-Thai ORB), #23 (the reclaim) and #43 (RT_25 opp) pay in P1 / P2 and lose
+in O1 / O2. What reading, known before each entry, separates the paying periods from the losing ones?
+
+**The streams** (rules exactly as before; every period O1 2023-10-18 .. 2024-10-17, O2 .. 2025-10-17, P1, P2):
+- **ORB:** PLAN-1's London piece (range 06:00-06:14 UTC, skip if > 1.5 H1 ATR, the first M1 close beyond 06:15-07:14,
+  stop the other side, 2 R, 60 min).
+- **RC_win / RC_all:** `reclaim.py`'s events in the owner's windows (the lead #23) and at all hours (more trades).
+- **RT_opp:** `rt_old.py`'s events, the other way, the stop at the rule's distance, a 1 R target, 120 min.
+- **Costs:** the tick bid / ask for P1 / P2 (`tsim.grid`, slippage 0); the M1 spread (spread x 0.01 + 0.08) for O1 /
+  O2 (`m1sim.py`, slippage a parameter defaulting to 0, stop at its price or the gapped open). The M1 result for P1 /
+  P2 is printed beside the ticks as a check.
+
+**The readings** (all from bars complete before the entry; D1 / H4 are MT5's own bars, available at open + 1 day /
++ 4 h; H1 and the spread from M1):
+
+| # | Reading | Definition |
+|---|---|---|
+| 1 | rng60 | the mean range of the last 5 D1 bars, as a percentile among the last 60 D1 ranges |
+| 2 | season | ADR20 / the median D1 range of the last 120 D1 bars |
+| 3 | eff_d1 | D1 20-bar efficiency: abs(close - close 20 bars back) / the sum of abs(close changes) |
+| 4 | adx_d1 | MT5 ADX(14) on D1 |
+| 5 | eff_h4 | H4 30-bar efficiency |
+| 6 | adx_h4 | MT5 ADX(14) on H4 |
+| 7 | fail20 | the share of the level breaks (reclaim.py's breaks of PDH / PDL / ASH / ASL) of the last 20 server days that failed (an M5 close back inside by 0.1 H within 24 M5 bars), counting only breaks whose outcome was settled before the entry; >= 10 breaks |
+| 8 | sess10 | the M1 range of the 6 h before the entry / the mean range of the same 6-h clock window on the previous 10 weekdays |
+| 9 | spr_atr | the median M1 spread (USD) of the last 60 M1 bars / the H1 ATR(14) |
+| 10 | since_big | hours since the last H1 bar whose range >= 2.5 x the H1 ATR(14) of the bar before it |
+| 11 | used | the server day's range so far / ADR20 |
+| 12 | own20 | the stream's own mean R over its last 20 trades that exited before this entry |
+
+**The split rules:**
+- **Terciles** per stream and reading, cut at the O1 + P1 terciles; trades and R per part in each tercile.
+- **One threshold per stream and reading, chosen on O1 + P1 only:**
+  - the candidates are the 20th, 30th .. 80th percentiles of the reading on that stream's O1 + P1 events, keeping
+    the trades >= or < the cut (14 rules);
+  - a rule is eligible when it keeps >= 30 % of the O1 trades and >= 30 % of the P1 trades;
+  - the score is min(kept R in O1, kept R in P1);
+  - the best is then read once on O2 + P2.
+- **A lead:** the kept trades have P1 and P2 > 0 and O1 and O2 >= 0. The goal stays >= +0.15 in P1 / P2.
+- **Settings tried:** 4 streams x 12 readings x 14 = 672 rules. With that many, a lead from one cell is a hypothesis
+  for the measurer, not a result.
+# Row 45 - the results (measured 2026-10-20 17:11-17:19 Thai)
+
+**How the numbers were checked:**
+- **`m1sim.py`** (the M1 simulator, spread only, slippage a parameter defaulting to 0): 6 hand-worked tests
+  (`test_m1sim.py`); 8 of 8 planted bugs caught (`out_plant_m1sim.txt`).
+- **`readings.py`:** 8 hand-worked tests (`test_readings.py`); 9 of 9 planted bugs caught after two tests were added
+  for the first-round misses (ties in the percentile; the ATR of the bar before; the last big bar)
+  (`out_plant_readings.txt`).
+- **The availability of MT5's D1 bars:** 676 D1 bars against the M1 server days. Their high / low differ by 0.00, and
+  no bar's last M1 minute ends after its availability.
+- **A look-ahead run:** 40 random events had all 12 readings recomputed from data cut at the entry. Result: 0
+  differences.
+  - The first run found 4. `since_big` counted a forming H1 bar when the data ended inside it.
+  - Fixed: an H1 bar now counts from the end of its hour.
+- **The streams reproduce the earlier numbers on the ticks:**
+  - the ORB: +0.214 / +0.123, as row 39;
+  - RT_opp: +0.261 / +0.255, as row 39;
+  - RC_win: +0.311 / +0.313 (+0.312 / +0.310 with 0.07 slippage).
+  - M1 for P1 / P2 sits within 0.001-0.021 of the ticks.
+- **No exam data was loaded.** `slib.m1` and `readings.load_mt5` filter before 2026-04-18, and `tsim` refuses exam
+  days.
+
+## The streams, spread only (P1 / P2 on the ticks, O1 / O2 on M1)
+
+| Stream | O1 R (trades) | O2 | P1 | P2 |
+|---|---|---|---|---|
+| ORB | -0.088 (250) | -0.079 (252) | +0.214 (59) | +0.123 (60) |
+| RC_win (#23) | -0.139 (96) | -0.219 (97) | +0.311 (19) | +0.313 (22) |
+| RC_all | -0.147 (339) | -0.169 (312) | +0.008 (65) | +0.110 (68) |
+| RT_opp (#43) | -0.178 (241) | -0.130 (231) | +0.261 (41) | +0.255 (46) |
+
+With the spread only, the older years stay negative.
+
+## One threshold per reading, chosen on O1 + P1, read once on O2 + P2 (`states.py`, `out_states.txt`)
+
+R (trades) of the kept trades. **No reading is a lead:** none keeps P1 and P2 > 0 with O1 and O2 >= 0. The terciles of
+every reading per part are in `out_states.txt`.
+
+**ORB**
+
+| Reading | Kept (chosen on O1 + P1) | O1 | O2 | P1 | P2 |
+|---|---|---|---|---|---|
+| rng60 | < 0.533 | +0.103 (98) | -0.089 (104) | +0.163 (23) | -0.514 (12) |
+| season | < 1.32 | -0.027 (167) | -0.159 (187) | +0.216 (18) | -1.009 (3) |
+| eff_d1 | >= 0.25 | -0.020 (95) | -0.109 (111) | +0.030 (29) | -0.194 (22) |
+| adx_d1 | < 32.8 | -0.056 (136) | -0.017 (125) | +0.322 (18) | +0.278 (22) |
+| eff_h4 | < 0.24 | +0.023 (148) | -0.070 (145) | +0.248 (37) | +0.007 (39) |
+| adx_h4 | < 25.6 | +0.002 (103) | +0.115 (83) | +0.207 (21) | -0.028 (24) |
+| fail20 | < 0.647 | -0.050 (97) | -0.003 (94) | +0.239 (54) | +0.007 (45) |
+| sess10 | >= 0.913 | -0.031 (123) | -0.102 (127) | +0.230 (32) | +0.048 (25) |
+| spr_atr | < 0.0945 | -0.099 (188) | -0.074 (250) | +0.214 (59) | +0.123 (60) |
+| since_big | >= 39.4 | -0.039 (93) | -0.029 (118) | +0.158 (31) | -0.014 (22) |
+| used | < 0.558 | -0.051 (216) | -0.115 (152) | +0.301 (31) | +0.236 (36) |
+| own20 | < 0.156 | -0.077 (219) | -0.102 (193) | +0.455 (20) | +0.058 (27) |
+
+**RC_win (#23)**
+
+| Reading | Kept | O1 | O2 | P1 | P2 |
+|---|---|---|---|---|---|
+| rng60 | < 0.733 | -0.088 (63) | -0.205 (68) | +0.340 (13) | +0.525 (9) |
+| season | < 1.32 | -0.107 (62) | -0.190 (76) | +0.155 (7) | -0.031 (1) |
+| eff_d1 | < 0.186 | -0.062 (50) | -0.223 (53) | +0.363 (7) | +0.219 (13) |
+| adx_d1 | >= 33.6 | -0.053 (34) | -0.069 (45) | +0.338 (12) | +0.129 (14) |
+| eff_h4 | < 0.132 | -0.094 (50) | -0.346 (30) | +0.299 (7) | +0.258 (10) |
+| adx_h4 | >= 27.7 | -0.114 (49) | -0.169 (62) | +0.053 (9) | +0.272 (13) |
+| fail20 | < 0.63 | +0.047 (29) | -0.211 (23) | +0.232 (16) | +0.398 (14) |
+| sess10 | >= 1.02 | -0.048 (49) | -0.218 (49) | +0.795 (9) | +0.221 (13) |
+| spr_atr | < 0.076 | -0.052 (61) | -0.214 (93) | +0.311 (19) | +0.313 (22) |
+| since_big | >= 18 | -0.019 (34) | -0.195 (62) | +0.269 (12) | +0.376 (8) |
+| used | >= 0.661 | -0.092 (38) | -0.389 (39) | -0.018 (8) | +0.210 (10) |
+| own20 | >= -0.322 | -0.038 (65) | -0.309 (72) | +0.311 (19) | +0.313 (22) |
+
+**RC_all** (the reclaim at all hours; more trades)
+
+| Reading | Kept | O1 | O2 | P1 | P2 |
+|---|---|---|---|---|---|
+| rng60 | < 0.517 | -0.080 (132) | -0.132 (136) | +0.040 (26) | -0.007 (13) |
+| season | >= 1.09 | -0.135 (261) | -0.151 (162) | +0.020 (62) | +0.110 (68) |
+| eff_d1 | >= 0.0582 | -0.098 (270) | -0.178 (252) | -0.012 (53) | +0.017 (56) |
+| adx_d1 | < 34.8 | -0.101 (215) | -0.156 (162) | +0.169 (25) | +0.368 (29) |
+| eff_h4 | < 0.228 | -0.109 (207) | -0.102 (177) | +0.179 (35) | -0.031 (43) |
+| adx_h4 | >= 31.1 | -0.082 (132) | -0.279 (159) | -0.039 (30) | +0.192 (31) |
+| fail20 | < 0.643 | +0.018 (104) | -0.149 (95) | -0.044 (57) | +0.036 (50) |
+| sess10 | >= 1.01 | -0.055 (168) | -0.131 (156) | -0.004 (33) | -0.038 (30) |
+| spr_atr | < 0.0656 | -0.126 (137) | -0.156 (289) | +0.008 (65) | +0.110 (68) |
+| since_big | < 19.5 | -0.101 (177) | -0.146 (115) | +0.090 (25) | -0.013 (34) |
+| used | >= 0.477 | -0.118 (189) | -0.221 (202) | -0.042 (53) | +0.047 (41) |
+| own20 | < -0.0337 | -0.101 (209) | -0.141 (251) | -0.040 (27) | -0.068 (21) |
+
+**RT_opp (#43)**
+
+| Reading | Kept | O1 | O2 | P1 | P2 |
+|---|---|---|---|---|---|
+| rng60 | < 0.467 | -0.035 (89) | -0.075 (86) | +0.408 (20) | -0.079 (5) |
+| season | >= 1.28 | -0.121 (86) | -0.190 (58) | +0.149 (29) | +0.255 (46) |
+| eff_d1 | >= 0.0579 | -0.108 (189) | -0.093 (189) | +0.287 (36) | +0.177 (38) |
+| adx_d1 | < 39.3 | -0.136 (174) | -0.170 (122) | +0.373 (22) | +0.214 (25) |
+| eff_h4 | < 0.199 | -0.117 (122) | -0.098 (105) | +0.289 (19) | +0.436 (25) |
+| adx_h4 | < 28 | -0.118 (124) | -0.142 (82) | +0.219 (17) | +0.441 (24) |
+| fail20 | < 0.657 | -0.138 (96) | -0.127 (95) | +0.291 (40) | +0.328 (35) |
+| sess10 | >= 0.822 | -0.139 (193) | -0.106 (183) | +0.246 (32) | +0.180 (35) |
+| spr_atr | < 0.0656 | +0.030 (100) | -0.131 (212) | +0.261 (41) | +0.255 (46) |
+| since_big | < 25.4 | -0.130 (151) | -0.133 (109) | +0.486 (18) | +0.166 (26) |
+| used | >= 0.469 | -0.110 (139) | -0.114 (155) | +0.337 (30) | +0.265 (34) |
+| own20 | >= -0.324 | -0.222 (176) | -0.113 (203) | +0.261 (41) | +0.255 (46) |
+
+**What the splits show:**
+- **In O1 / O2 almost every state of every reading loses** (`states_count.py`):
+  - 26 of the 287 older-year tercile cells are > 0;
+  - one tercile is > 0 in both O1 and O2: the ORB's sess10 middle tercile, +0.063 / +0.016. It is -0.096 in P1;
+  - no tercile is > 0 in all four parts.
+- **Some readings only tag the period, not a state within it:**
+  - **spr_atr** (the spread / H1 ATR): every P1 / P2 trade sits in the lowest tercile.
+    - Older trades in that same low-cost state still lose: RT_opp O2 -0.150 (169), RC_all O2 -0.171 (231).
+    - So the cost against volatility is not why the older years lose.
+  - **season** (ADR20 / its 120-day median): P2 has no trade in the low tercile.
+  - **fail20** (the trailing failed-break share): P1 has no trade in the high tercile.
+- **fail20 points the counter-intuitive way:**
+  - The two fades of failed breaks (RC, RT_opp) pay in P1 / P2 when *fewer* recent breaks failed (the low tercile:
+    RT_opp +0.385 / +0.328).
+  - In O1 / O2 they lose in every tercile.
+- **Even the best ORB rules are not leads:**
+  - `adx_h4 < 25.6`: O1 +0.002, O2 +0.115, P1 +0.207, but P2 -0.028.
+  - `adx_d1 < 32.8`: P1 +0.322, P2 +0.278, but O1 -0.056, O2 -0.017.
+  - These two are the nearest to a lead. With 672 rules tried, I read them as noise until a new test shows otherwise.
+
+## Quarter by quarter: the paying state is a time block, not a value of any reading (`states_quarters.py`)
+
+The quarter's R (trades); the H1 ATR is the quarter's median in USD.
+
+| Quarter | ORB | RC_all | RT_opp | H1 ATR |
+|---|---|---|---|---|
+| 2023-Q4 | -0.318 (49) | -0.349 (69) | -0.309 (47) | 3.2-3.8 |
+| 2024-Q1 | -0.105 (61) | -0.091 (82) | -0.217 (60) | 3.0-3.5 |
+| 2024-Q2 | -0.109 (64) | -0.084 (88) | -0.080 (54) | 5.4-5.5 |
+| 2024-Q3 | +0.096 (64) | -0.087 (83) | -0.217 (68) | 4.8-5.0 |
+| 2024-Q4 | +0.146 (63) | -0.133 (85) | -0.057 (58) | 5.5-5.8 |
+| 2025-Q1 | -0.394 (62) | -0.172 (74) | -0.164 (70) | 5.9-6.5 |
+| 2025-Q2 | +0.182 (64) | -0.240 (64) | -0.241 (48) | 10.9-11.9 |
+| 2025-Q3 | -0.236 (62) | -0.150 (91) | -0.055 (54) | 7.0-7.6 |
+| **2025-Q4** | **+0.203 (62)** | -0.030 (69) | **+0.276 (50)** | 15.0-15.7 |
+| **2026-Q1** | **+0.125 (58)** | +0.057 (65) | **+0.209 (43)** | 25.8-26.6 |
+
+- **The reclaim and RT_opp paid only from 2025-10 on.** RC_win: +0.199 / +0.186 in 2025-Q4 / 2026-Q1, negative in
+  every earlier quarter.
+- **The ORB is more mixed in the older years:** it paid in 2024-Q3, 2024-Q4 and 2025-Q2.
+- **Across quarters, the quarter's R follows the absolute H1 ATR** (correlation +0.44 ORB, +0.73 RC_all, +0.78
+  RT_opp).
+  - Row 39 showed that the H1 ATR at the trade does not separate within the periods. For example, RT_opp with an
+    H1 ATR of 10-15 USD: O2 -0.006, P1 +0.341.
+  - 2025-Q2 had an H1 ATR of about 11-12 USD (April 2025) and RC / RT lost there.
+  - So it is not "volatility above X". It is what gold has done since about October 2025.
+
+## The plainest present-detector: the stream's own shadow result (`states_switch.py`; written after steps 2-3, a follow-up)
+
+The rule: every event is simulated whether it is traded or not (a shadow trade). The stream is traded only while the
+mean R of its last N shadow trades that exited before the entry is > 0. Every cell is printed and none is chosen.
+
+**The summed R per part** (a stand-aside counts as 0):
+
+| Stream | Always | own20 > 0 | own40 > 0 | own60 > 0 |
+|---|---|---|---|---|
+| ORB | -22.0 / -19.8 / +12.6 / +7.4 | -8.7 / +3.8 / +11.6 / +5.1 | -9.4 / +3.1 / +8.4 / +0.5 | -4.8 / -2.5 / +7.2 / +7.4 |
+| RC_win | -13.4 / -21.2 / +5.9 / +6.9 | -2.9 / -1.0 / +3.7 / +6.9 | -5.1 / -0.7 / +0.8 / +6.9 | -3.3 / -2.9 / 0.0 / +5.7 |
+| RT_opp | -42.9 / -29.9 / +10.7 / +11.7 | -1.2 / -10.2 / +9.7 / +11.7 | +0.7 / +1.6 / +10.3 / +11.7 | 0.0 / -13.6 / +11.3 / +11.7 |
+| **The three together** | **-78.2 / -71.0 / +29.2 / +26.0** | **-12.8 / -7.4 / +25.1 / +23.8** | **-13.7 / +4.0 / +19.5 / +19.1** | **-8.1 / -19.0 / +18.5 / +24.9** |
+
+(each cell: O1 / O2 / P1 / P2)
+
+- **The trades it keeps still lose on average in the older years.**
+  - RT_opp own20: O1 -0.035 (33 trades, 14 % of the events), O2 -0.192 (53, 23 %).
+  - So by the per-trade criterion it is not a lead. Only RT_opp own40 meets it: O1 +0.177 (4), O2 +0.035 (47),
+    P1 +0.323 (32), P2 +0.255 (46). That is 1 of 12 cells, with 4 trades in O1.
+- **At the level of the system, it is the owner's "trade less in an unsuitable phase":**
+  - with all three N, it cuts the older years' summed loss of the three leads from -78 / -71 R to -8 .. -14 / -19 ..
+    +4 R;
+  - it keeps 63-96 % of the P1 / P2 summed R;
+  - it keeps 0-51 % of the older events per stream;
+  - in P1 / P2 it keeps 63-100 % of the ORB and RT_opp events, but less of the reclaim's (RC_win 0-100 %, RC_all
+    22-63 %).
+- **The cost is the lag:** own40 / own60 miss part of P1, where the trailing window still held 2025-Q3's losses.
+
+## The ranked proposals after row 45
+
+1. **The shadow-result switch as the system's present-detector, for every piece.**
+   - Owner's terms: "see which period we are in now". Every piece keeps trading on paper. It trades for real only
+     while its own last N paper trades pay.
+   - Why: no market reading separated the periods (672 rules). The pieces' own results do, with a lag.
+   - Who: the measurer, on PLAN-1's three pieces and the RT_opp / reclaim merge (dev2's V3-2 entry 3), walk-forward
+     over O1 .. P2.
+     - N is fixed before the run: one value, e.g. 20, the fastest. N = 40 was the only cell to meet the per-trade
+       criterion, so it must not be chosen for that reason.
+     - The older years need the Asia B2 detector run on 2023-25 (row 39, question 3).
+   - Pass: the summed R of the older years >= 0, and >= +0.15 per traded trade in P1 / P2.
+2. **Report the summed R per period, not only R per trade, for any rule with a stand-aside.**
+   - A filter that trades 14 % of the old events at -0.035 R is a large gain over trading them all at -0.178. The
+     per-trade criterion hides that.
+3. **Do not add the readings of row 45 to PLAN-1 or to the leads.**
+   - None turns the older years to >= 0.
+   - The nearest (ORB adx_h4 < 25.6; ORB adx_d1 < 32.8) each fail one part. Both were picked from 672 rules.
+
+## What to stop doing (row 45)
+- **Searching single market readings for the leads' season.** Twelve readings (range, season, D1 / H4 efficiency, ADX,
+  failed breaks, the session range, the cost against volatility, the time since a big bar, the day's range used) do not
+  separate the older years. The P1 / P2 edge sits in a time block (2025-10 on), not in a reading's value.
+- **Cost as the explanation for the older years.** Trades with the same low cost against volatility still lose there.
+
+## Questions to the measurer (row 45)
+1. **May the system run every piece on paper and trade only while its own recent result pays** (proposal 1)? It needs
+   no market theory. Its cost is a lag of about N trades at each change of phase.
+2. **Is the target the older years' summed R >= 0** (a stand-aside counts as 0), or R per traded trade >= 0? They give
+   different verdicts on proposal 1.
+3. **Why gold changed in about 2025-10 is not answered here.** The H1 ATR alone does not explain it: 2025-Q2 was
+   volatile and lost. Does the owner have a market reading for it?
+
+## Files (row 45)
+| Topic | Scripts | Outputs |
+|---|---|---|
+| The M1 simulator, spread only | `m1sim.py` + `test_m1sim.py` + `plant_m1sim.py` | `out_plant_m1sim.txt` |
+| The readings | `readings.py` + `test_readings.py` + `plant_readings.py` | `out_plant_readings.txt` |
+| The events and trades | `states_events.py` | `out_states_events.txt`, `states_events.parquet`, `states_breaks.parquet` |
+| The checks, terciles and thresholds | `states.py`, `states_count.py` | `out_states.txt`, `out_states_choice.csv`, `out_states_count.txt`, `states_readings.parquet` |
+| Quarter by quarter | `states_quarters.py` | `out_states_quarters.txt` |
+| The shadow-result switch | `states_switch.py` | `out_states_switch.txt` |
+
+
 # Row 39 - written before computing (2026-10-20 12:58 Thai, `date -u` 05:58)
 
 **Part 1, the transformations** (`transform.py`, simulator `tsim.py`; tests `test_tsim.py` 14 hand-worked, planted bugs

@@ -1,0 +1,5 @@
+breaks 1236 (failed share 0.65)
+ORB     all     O1 n 250 R -0.088 | O2 n 252 R -0.079 | P1 n  59 R +0.214 | P2 n  60 R +0.123   M1 in P1 / P2: +0.218 / +0.137
+RC      all     O1 n 339 R -0.147 | O2 n 312 R -0.169 | P1 n  65 R +0.008 | P2 n  68 R +0.110   M1 in P1 / P2: -0.000 / +0.116
+RC      windows O1 n  96 R -0.139 | O2 n  97 R -0.219 | P1 n  19 R +0.311 | P2 n  22 R +0.313   M1 in P1 / P2: +0.314 / +0.314
+RT_opp  all     O1 n 241 R -0.178 | O2 n 231 R -0.130 | P1 n  41 R +0.261 | P2 n  46 R +0.255   M1 in P1 / P2: +0.269 / +0.276
