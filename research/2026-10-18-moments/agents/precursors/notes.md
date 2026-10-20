@@ -2834,3 +2834,16 @@ its planted bugs 5 / 5; `sw20.py check` reproduced O1 exactly (250 / 339 / 241 e
 - My own switch on its trades equals its `real` column on all 1292.
 - Lesson: the switch only cuts a losing stream's loss; it does not make the leads pay in years where they do not.
   Where the edge comes from in 2025-10 .. now is still open.
+
+## Why does the NY 08:30 straddle hold? - written before computing (2026-10-20 18:13 Thai; owner: "do it")
+The piece (PLAN-1's NY straddle, `dev/plan1.py`, slippage 0) is the only one positive in all three periods
+(+0.467 / +0.119 / +0.285). Its trades: `dev/plan1_every_{learn,exam}_s0_x0.parquet`. The exam was read already, so
+every split below is a description of P1 / P2 / exam, not a test; a split is a lead only if it holds the same sign in
+all three. Splits, fixed now:
+1. **The day:** a scheduled 08:30 release in `app/news/us_releases.csv` (CPI, NFP, PPI, PCE, GDP) / a Thursday without
+   one (the weekly jobless claims, every Thursday 08:30) / any other day.
+2. **The side against gold's D1 direction:** the sign of the last closed D1 close minus the close 20 D1 bars before.
+3. **The weekday.**
+4. **When the gain is made:** each trade's R at +5 / +10 / +15 / +20 / +30 minutes from the fill (the bid for a buy,
+   the ask for a sell, on the ticks), and its best (MFE) and worst (MAE) R within 30 minutes.
+5. **The exit:** time vs stop.
