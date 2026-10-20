@@ -1,0 +1,63 @@
+# The checklist of methods tried (Setup OWN, gold) - kept current
+
+Owner (2026-10-20, about 12:25 Thai): "if the result is a loss and you say it doesn't work, I don't want you to stop -
+keep finding ways; tick the trade that doesn't work as failed in a checklist, find a new way, and keep adding to the
+checklist, to see which kind trades profitably in the long run."
+
+**The goal (fixed):** >= +0.15 R a trade after costs in both learning parts (P1 2025-10-18 .. 2026-01-15, P2 2026-01-16
+.. 2026-04-17), about 2-3 trades a day, then one exam read (2026-04-18 .. 2026-10-17).
+
+**Also reported:** the pooled P1 + P2 mean with its 95 % range.
+
+**Verdicts:**
+
+| Verdict | Meaning |
+|---|---|
+| PASS | the goal is met in both parts with enough trades (>= 30 a part) |
+| PARTIAL | positive in both parts, below the goal or with too few trades - a lead to build on |
+| FAIL | negative, or a sign that flips between the parts - kept with its lesson, never retried as it was |
+| OPEN | being built or measured |
+
+Sources: `precursors/notes.md`, `DEV_LOG.md`s, `strategist/PROPOSALS.md`, `audit2/AUDIT.md`.
+
+| # | Method | P1 R | P2 R | Trades P1 / P2 | Verdict | The lesson |
+|---|---|---|---|---|---|---|
+| 1 | LV3: with every larger TF, sell the bounce into an earlier level (learning 12 months / exam) | +0.013 | exam -0.139 | 66 / 95 | FAIL | its components measured at chance; the exam lost |
+| 2 | V2b: the library of researched pictures, the same core codes | -0.021 | exam -0.169 | 221 / 187 | FAIL | the same full picture almost never repeats |
+| 3 | V2s: the same M5 + M1 situation | -0.020 | exam -0.085 | 445 / 278 | FAIL | a lean in the next half hour, but trades lose after costs |
+| 4 | V2e: 28 entry variants on V2s (a dip limit, an M1 turn, a stop order) | all < 0 | - | - | FAIL | the entry form did not rescue a sideless signal |
+| 5 | The present library (clock-sampled moments) | -0.077 | exam -0.073 | - | FAIL | - |
+| 6 | Every layer together, a probability model | side-blind exam -0.003 | with the side +0.052 | 629 / 267 | FAIL | below the goal; the 82 readings had an AUC of about 0.50 |
+| 7 | The owner's cut: 2-3 a day, the heavy / wrong-way losers out | -0.068 | -0.082 | - | FAIL | cutting losers after the fact does not make an edge |
+| 8 | In fast, out fast: 10 USD, holds of 15-120 min (2023-24 / 2025-26) | -0.084 .. -0.107 | -0.027 .. +0.048 | - | FAIL | - |
+| 9 | M15: 10 USD in 3-4 bars (the aligned phase / + an M5 pullback) | -0.043 / +0.005 | -0.065 / -0.089 | 4.4-5.5 / 1.5-2.5 a day | FAIL | - |
+| 10 | Inside a range: fade its edges | -0.046 .. -0.155 | -0.013 .. +0.047 | - | FAIL | - |
+| 11 | The surrender rule (no run -> out) on aligned M15 entries | +0.116 | < 0 | - | FAIL | it helped P1 only |
+| 12 | The side by the phase (a phase switch) | +0.097 | -0.132 | - | FAIL | the phase's meaning flipped between the parts |
+| 13 | The M1 pullback in the H1 / H4 trend, the fast turn, 3 R | -0.099 | -0.032 | 18-29 a day | FAIL | the H1 / H4 swing reading lags; far too many trades |
+| 14 | The same with the trend from M15's current structure, active hours | -0.101 | -0.268 | 5.3 / 2.4 a day | FAIL | the losers sat in choppy M15 and right after V turns |
+| 15 | No stop loss | - | - | - | FAIL | a 22-50 USD account is wiped on the first trade |
+| 16 | The level break with the volume (sell support / buy resistance), 36 settings | best -0.058 | +0.144 | 150 / 153 | FAIL | the levels were made by the move itself, not real S/R; 61 % of the losers went the wrong way |
+| 17 | B2: chart patterns at the owner's H1 levels, waiting for the structure, all day | -0.026 | -0.014 | 352 / 348 | FAIL | the M1 / M5 micro-swing patterns carry no direction; about 90 % of the losers came from the entry |
+| 18 | The same entered at the breakout (A), or with the pullback stop (B1) | -0.047 / -0.043 | -0.045 / -0.082 | - | FAIL | waiting helps a little; the tight stop is worse |
+| 19 | B2 + the exit changes (the pattern's invalidation, break-even + trail) / no late entry / sweep-turn with M5 | -0.024 .. -0.048 | -0.037 .. +0.078 | - | FAIL | the exits were not the problem |
+| 20 | B2 only in the owner's windows (Asia + London + NY open + 2 h) | -0.024 | +0.036 | 115 / 109 | FAIL | NY lost (-0.090 / -0.066); NY 10:00-10:30 the worst |
+| 21 | B2, Asia 07:00-09:00 Thai only | +0.074 | +0.182 | 41 / 38 | PARTIAL | positive in both, but +0.004 by decision time: fragile |
+| 22 | The 13:00-Thai opening-range break (strategist) | +0.206 | +0.120 | 59 / 60 | PARTIAL | positive in 18 / 18 and 17 / 18 settings in P1 / P2, but lost in 2023-25 (a regime) |
+| 23 | The reclaim of a level everyone sees, in the owner's windows (strategist) | +0.312 | +0.310 | 19 / 22 | PARTIAL | too few trades; lost in 2023-25 |
+| 24 | The NY 08:30 data-minute straddle, 30 min (strategist) | +0.459 | +0.114 | 41 / 59 | PARTIAL | fragile to the release slippage (+1 USD: +0.368 / -0.031) |
+| 25 | Break and retest of a level everyone sees (strategist) | -0.221 | -0.390 | 41 / 47 | FAIL | the broken level is usually reclaimed (-> #23) |
+| 26 | At a window's open in the M15-H1 (EMA proxy) direction, a 3-5 USD stop | 10 first in 0.10-0.38 | - | - | FAIL | the entry must be the entry TF's own turn, with the stop at its extreme |
+| 27 | An EMA20 / last-candle / 3-day D1 bias for the day's side | closed its way 0.48 | 0.54 | 58 / 56 days | FAIL | the side needs real structure (H1 -> D1), not these proxies |
+| 28 | The NY 1-minute follow-the-news rule (strategist) | +0.046 | -0.128 | - | FAIL | - |
+
+**In progress (OPEN):**
+
+| # | Method | Who | What it adds |
+|---|---|---|---|
+| 29 | V3: the owner's framework - the side from H1 -> D1 structure, the M15-H1 trend, the entry TF M1 / M5 / M15 by volatility, the pullback turn at a level, the stop at the turn, the owner's windows (NY to + 4 h) | dev2 | the owner's own reading, on trade-size swings |
+| 30 | The owner's playbook: break and retest (against #25's base rate), the aligned consolidation, the fake break at a range edge (= #23), the fake first leg at an open | dev2 | - |
+| 31 | The opening-range break refined: the H1-level change, a season reading, the older years | dev1 (D1) | from #22 |
+| 32 | The data-minute straddle at 08:30 / 10:00 NY, slippage 0-2 USD, per 30-min bucket | dev1 (D2) | from #24 |
+| 33 | The owner's pattern set on trade-size swings (M / W, triple tops, H&S, channels, A-B-C-D-E, bases), tight patterns | dev1 (P5) | - |
+| 34 | A daily plan combining the PARTIAL pieces in their own windows (Asia B2 / reclaim, London ORB, NY straddle) | the measurer | - |
