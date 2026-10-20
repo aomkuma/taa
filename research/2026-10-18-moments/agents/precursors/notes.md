@@ -2788,3 +2788,25 @@ loaders / ATR / fills; `out_check_plan1.txt`), against `combo_trades_slip0.parqu
 - "To read H1, zoom into the smaller TF when you want to measure": every TF's structure is read with its own swing
   size on the M1 path (primary); the candle-bar reading is the secondary variant. On 10-19 the H1 size on the M1 path
   gives 14:33 H 4190.25, 17:46 L 4162.21, 18:16 H 4177.06 (LH), down from 18:58 Thai. Relayed to dev2 for V3-2.
+
+## The PLAN-1 exam read (2026-10-20 17:35 Thai; once, by the measurer)
+The first attempt (17:08) died with a MemoryError before any output; the second ran with one agent working.
+`dev/out_plan1_exam_s0_x0.txt`: 330 trades (2.54 a weekday), 1 dropped for overlap.
+
+| | P1 | P2 | exam |
+|---|---|---|---|
+| PLAN-1 unweighted | +0.249 | +0.137 | **+0.129** (-0.007..+0.265), +344.87 USD, DD 108.12 |
+| by mechanism | +0.337 | +0.188 | +0.117, +215.52 USD |
+| from P1 | +0.288 | +0.147 | +0.126, +283.47 USD |
+| NY straddle | +0.467 | +0.119 | +0.285 (101) |
+| Asia B2 | +0.081 | +0.186 | +0.105 (108) |
+| London ORB | +0.213 | +0.124 | +0.023 (122) |
+
+- Verdict: PARTIAL (positive in all three periods, below +0.15 in P2 and the exam). Worst week 2026-09-07 (-50.38 USD);
+  weeks with R > 0: 14 of 26.
+- The state weights lowered the exam result: the states' meaning per piece moved (Asia B2 in a trend: P1 -0.070, exam
+  +0.376; NY sideways: P1 < 0, exam -0.098 but NY mixed +0.422).
+- Re-derived by the measurer (`out_check_plan1_exam.txt`): London 122 / 122 and NY 101 / 101 trades with |dR| 0.0000,
+  Asia B2 108 trades with 0 faults on the ticks.
+- Next: the NY straddle is the steady piece; London ORB faded in the exam; the strategist's own-result switch (row 45)
+  is the next candidate for the weights, judged walk-forward with N fixed in advance.

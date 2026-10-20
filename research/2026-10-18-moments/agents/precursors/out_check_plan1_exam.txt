@@ -1,0 +1,5 @@
+mine London ORB: 122 trades, R +0.023
+  London ORB: mine 122, theirs 122, same minute 122, only mine 0, only theirs 0; |dR| max 0.0000, > 0.01 in 0
+mine NY straddle: 101 trades, R +0.285
+  NY straddle: mine 101, theirs 101, same minute 101, only mine 0, only theirs 0; |dR| max 0.0000, > 0.01 in 0
+exam Asia B2: 108 trades on the ticks, faults in 0: []
