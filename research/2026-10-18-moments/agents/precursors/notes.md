@@ -2921,3 +2921,13 @@ on 100 / 100 P1 / P2 trades):** 206 of 208 release days fetched (the 2 missing a
   rule is suspect.
 - **App item:** `ReadOnlyMT5Gateway.ticks_range` fails with "Terminal: Call failed" on every date (2026-10-20), while
   `copy_ticks_range` with datetimes works; to fix in `app/broker/gateway.py` with a test.
+
+## NS-2: the straddle scaled to the present volatility - written before computing (2026-10-20 19:09 Thai; owner: "start")
+Owner's principle: everything relative. NS-1's fixed 2 USD trigger and 8 USD stop fit a gold that runs about 93 USD a
+day; in 2021-25 it ran 22-40. **The rule:** k = the MT5 ATR(14) of the last H1 bar closed by 08:30 NY / 16.33 (P1's
+median H1 ATR, dev2's V3-1 table, a number from the learning part); trigger = 2 k, stop = 8 k; everything else as
+NS-1 / PLAN-1 (the reference tick before 08:30:00, live 60 s, the fill past a gap, out at +30 min, slippage 0,
+R = pnl / stop). Release days only.
+- **The judge:** the old release-day ticks 2021-09 .. 2025-10 (`data/ticks_old`), read once. **Pass:** pooled >= +0.15
+  and > 0 in at least 3 of the 4 years.
+- Beside it, as a description: the release days of P1 / P2 / exam on `data/ticks` (k near 1 there).
