@@ -34,10 +34,14 @@ Owner (2026-10-19, about 23:08 Thai): "divide the duties and talk to each other 
 8. **When unsure, ask in the report.** Do not guess. The owner's meaning comes first: when code and the owner's words
    differ, the code is wrong.
 
-## The current checkpoints
-| Role | Working on | Next checkpoint |
+## The current checkpoints (2026-10-20 12:40 Thai)
+
+All four agents stopped on the weekly API limit at about 12:35 Thai (reset 2026-10-21 15:00 Thai). A new session
+starts each one again from its brief and its own log.
+
+| Role | Next task | Next checkpoint |
 |---|---|---|
-| The first developer | Task D (the strategist's time-anchored proposals 1 and 6; no swings needed) | the D report; then P5 on dev2's V3-1 swings + an independent cross-check of the structure reader |
-| The second developer | V3-1 (the swings, structure, box / trendline / Fibonacci) | the V3-1 report with the 2026-10-19 shape check |
-| The auditor | the data pipeline first (the download that missed Monday), then the other blocks | `audit2/AUDIT.md` |
-| The strategist | the review and the ranked proposals | `strategist/PROPOSALS.md` |
+| The first developer | CHECKLIST row 38: `dev/plan1.py`, the PLAN-1 runner (costs the spread only; slippage a parameter defaulting to 0; with 0.07 it reproduces `precursors/out_combo.txt` / `out_regime.txt`; an exam switch for the measurer only) | the runner report; then P5 on dev2's swings + the structure cross-check |
+| The second developer | finish V3-1: the swings, the structure per TF (D1 / H4 / H1), the side / trend columns, the 2026-10-19 acceptance, written definitions | the V3-1 report; then V3-2 (the "V3 design" in `DEV2_PROMPT.md`) |
+| The auditor | item 1 (wf.weekly win = pnl > 0), item 4 (`plib.load_learning()`); item 3 is in the app files, waiting for the measurer's review | `audit2/AUDIT.md`; then dev2's `swings.py` |
+| The strategist | CHECKLIST row 39: the transformations of the FAIL rows (the opposite side, the stop x 1.5 / x 2, a nearer target), the state weights per piece (chosen on P1, checked on P2 and the older years); spread only | `strategist/PROPOSALS.md` |

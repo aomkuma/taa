@@ -1,10 +1,18 @@
 # Session handoff
 
-Last updated: 2026-10-18 22:45 Thai (Setup OWN: F1 CONF-72 v2 and S2 trade on DEMO since 2026-10-18; the LV3
-research's building blocks tested; docs cleaned up; not pushed). This file holds **state only**: rules and
-conventions live in `CLAUDE.md` and `docs/CODING_STANDARDS.md`, design in `docs/PLAN.md` / `docs/PLAN_LEARNING.md`,
-progress in `docs/TICKETS.md` / `docs/TICKETS_LEARNING.md`, Setup OWN in `docs/OWN_SETUP.md` (its rounds in
-`docs/OWN_SETUP_ROUNDS.md`), the stopped setups' results in `docs/archive/`.
+Last updated: 2026-10-20 12:40 Thai (Setup OWN research: the team of four agents, PLAN-1 frozen for one exam read,
+the agents stopped on the weekly API limit until 2026-10-21 15:00 Thai; DEMO paused; not pushed). This file holds
+**state only**:
+
+| What | Where |
+|---|---|
+| Rules and conventions | `CLAUDE.md`, `docs/CODING_STANDARDS.md` |
+| Design | `docs/PLAN.md`, `docs/PLAN_LEARNING.md` |
+| Progress | `docs/TICKETS.md`, `docs/TICKETS_LEARNING.md` |
+| Setup OWN | `docs/OWN_SETUP.md` (state), `docs/OWN_SETUP_ROUNDS.md` (rounds 1-17) |
+| The research of 2026-10-18 onward | `research/2026-10-18-moments/agents/` (`CHECKLIST.md`, `TEAM.md`, `precursors/notes.md`) |
+| The owner's own trades and readings | `docs/OWNER_TRADING.md` |
+| Stopped setups | `docs/archive/` |
 
 ---
 
@@ -13,114 +21,157 @@ progress in `docs/TICKETS.md` / `docs/TICKETS_LEARNING.md`, Setup OWN in `docs/O
 Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ````text
-Continue TAA (C:\Users\korap\taa). Chat with me in Thai and give times in Thai time (UTC+7). Docs and code stay
-in English. Follow CLAUDE.md and the memory rules. Read docs/OWNER_GOALS.md first (my goals and principles),
-then docs/OWN_SETUP.md (Setup OWN, my own trade: the moments when gold runs) and docs/HANDOFF.md.
+Continue TAA (C:\Users\korap\taa). Chat with me in Thai and give times in Thai time (UTC+7), always taken from
+`date -u` (never write a time ahead of the clock). Docs and code stay in English. Follow CLAUDE.md and the
+memory rules.
 
-State (2026-10-18): Setup OWN F1 CONF-72 (lane own) and S2 the CPI/NFP straddle (lane news) trade on the DEMO
-stack (aggressive preset); every earlier setup is stopped. LIVE stays off until Phase 14 and my own go-ahead.
-main is not pushed (I push myself).
+Read first, in order:
+1. docs/OWNER_GOALS.md
+2. docs/HANDOFF.md
+3. research/2026-10-18-moments/agents/CHECKLIST.md (every method tried, with its verdict and lesson)
+4. research/2026-10-18-moments/agents/TEAM.md (the roles)
+5. the tail of research/2026-10-18-moments/agents/precursors/notes.md
 
-Next: the LV3 walk-forward on the latest 12 months (research/2026-10-18-moments/agents/precursors/wf.py),
-reported week by week, every loser traced to the picture the bot saw; DEMO against the backtest (app.cli
-demo-track). The exam is the latest six months from today (2026-04-18 ..); learning on the latest 12 months
-first. Code is proven (tests, planted bugs, an independent check) before any learning run. Ask me when the
-meaning is unclear.
+Your role: the researcher, measurer and coordinator. You research the opportunities and probabilities, and turn
+them into designs and prompts for the developer agents. You measure everything they deliver:
+- re-run their tests;
+- plant your own bugs;
+- re-derive trades from the raw ticks;
+- check results against my reading of the real candles, not only against unit tests.
+You also commit per step by explicit paths (never push), keep CHECKLIST.md current, and read the exam
+(2026-04-18 .. 2026-10-17) yourself, once per frozen rule. No agent ever loads the exam.
+
+The goal is fixed: at least +0.15 R a trade after costs (spread only; slippage is a parameter defaulting to 0) in
+both learning parts (P1 2025-10-18 .. 2026-01-15, P2 2026-01-16 .. 2026-04-17), about 2-3 trades a day, in my
+windows (Asia 07-09 Thai, London 13-14 Thai, the NY open up to + 4 h). The method is flexible.
+- A loss never stops the work: tick it FAIL with its lesson and add the next method.
+- Before discarding a method, try the opposite side, a wider stop and a nearer target.
+- If a method pays, find the market states where it pays, and cut its weight in the others.
+- Answer only from real candles; never make up numbers. No coin / "50-50" verdicts.
+
+State (2026-10-20 12:40 Thai):
+- PLAN-1 (Asia B2 + the London 13:00 ORB + the NY 08:30 straddle, one position at a time, about 2.3 trades a
+  day) is frozen for the one exam read. Spread only: +0.252 / +0.140 R; weighted by the D1 state +0.341 /
+  +0.191.
+- The four agents stopped on the weekly API limit (reset 2026-10-21 15:00 Thai). Start them again as new agents
+  from their briefs (*_PROMPT.md + their own DEV_LOG / AUDIT / PROPOSALS), one task each as listed in
+  HANDOFF "Next work".
+- DEMO is paused (resume only on my word); LIVE stays off.
 ````
 
 ---
 
-## Current state (2026-10-18)
+## Current state (2026-10-20 12:40 Thai)
 
-- **Research now: LV3** (the owner's reading: with every larger timeframe's trend, wait for the bounce into an
-  earlier level, enter after 3-5 M1 legs; `docs/OWN_SETUP.md`, `research/2026-10-18-moments/agents/precursors/
-  notes.md`). 2026-10-18 evening: the research's indicators were not MT5's (MACD signal, Stochastic, ADX) - now
-  `foundation.py`, MT5's own formulas; every building block has hand-worked tests with planted bugs; four more
-  bugs found and fixed (chained levels in the library, RSI divergence bars, the evidence record's pattern id, the
-  stale library); the library rebuilt on 2025-10-18 ..; the walk-forward run is next. **The bot's own
-  `app/indicators` are textbook formulas (Wilder ATR / ADX, an EMA-signal MACD, Stochastic as the mean of ratios),
-  not MT5's: align them before porting LV3.**
-- **Docs cleaned up (owner, 2026-10-18):** stopped setups' docs moved to `docs/archive/` (SETUP_REVIEW,
-  OUT_OF_SAMPLE, INVERTED_SETUPS, CONFLUENCE_DIRECTION, AI_ANALYST_DISCUSSION); `docs/OWN_SETUP.md` is the current
-  state, the rounds are in `docs/OWN_SETUP_ROUNDS.md`; the STRATEGIES table lists stopped setups separately.
-- **The owner's three (2026-10-18):** F1 CONF-72, S2 the CPI / NFP straddle, RUN-A; other news trading last.
-  Rounds 11-17 in `docs/OWN_SETUP_ROUNDS.md`.
-- **In the bot, on DEMO since 2026-10-18 17:08 Thai** (owner: "เปิด DEMO ด้วย F1+S2"; `config.yaml` lanes `own` and
-  `news`, both also in `high_risk.setups`; the applied profile is AGGRESSIVE 7.5 % from the cache; demo equity
-  1,066 USD). The owner asked for LIVE too: refused, Phase 14 is 3/4 and LIVE needs the owner's own `.env`:
-  - `setup_own_conf72` (`app/strategy/own_setup.py`): F1 CONF-72 + the 0.5 M15-ATR stop floor; v2 exits
-    (`exit_mode: regime`: a runner in a strong-volatility phase, the 10-bar scratch). The v1 engine backtest
-    matches the research trade by trade (27/27; the 7 Asia trades were blocked by the 07-20 UTC sessions -
-    gold now also 00-02 UTC). New engine pieces: `break_even_target_share`, a lane `min_risk_reward`, the
-    strategy hook `manage_position` (backtest, PAPER, DEMO), S/R zones of the backtest from the window only.
-    v2 engine backtest = research 35/35. Half the preset's risk off the round 50 (`off_round: half`,
-    `Signal.risk_scale`). Rejected after measuring: TP at 70 % of the way to the next level with a 10 % wider
-    stop (every form worse on design); the 10-bar scratch and the 60-minute exit stay (scratched trades hit
-    the old stop first 19 of 24 times).
-  - `setup_own_s2` (`app/strategy/release_straddle.py`): quote-driven; the calendar `app/news/us_releases.csv`
-    (BLS dates to 2027-12); the engine polls quotes every 0.1 s around a release, the entry goes through the
-    decision engine, out at the first bar close after the release minute. Tick replay = the research to the cent.
-    Open: the DEMO pre-send spread check uses the symbol limit (40 points); S2 and F1 share gold's one position.
-- **RUN-A round 2:** no clean pass; Fibonacci, trend lines, channels and zones measured against placebo levels
-  add nothing on gold M1-M30; next: its robust parts as context votes, or an H1-scale RUN-A.
+### Setup OWN research: the team (`research/2026-10-18-moments/agents/TEAM.md`)
 
-- **The owner's goals and principles:** `docs/OWNER_GOALS.md` (several were never written down before: session
-  opens, ATR low, Bollinger squeeze, quick profit, the review cadence, news). Setup OWN: `docs/OWN_SETUP.md`,
-  `docs/OWNER_TRADING.md` "Setup OWN".
-- **Setup OWN, rounds 1-10 (2026-10-17, harness):** nothing passes yet; the test window was 2026-03-01 onward then
-  (superseded 2026-10-18: the latest six months). Gold's minute-scale price is close to a random walk; the one causal lead is
-  the news (FOMC / PCE first minute continues, CPI reverses). A research team of four background agents
-  (news, trend, reversion, auditor) works from `research/2026-10-18-moments/agents/BRIEF.md`, each in its own
-  folder there; their results go into `docs/OWN_SETUP_ROUNDS.md`. Gold ticks 2025-10 .. 2026-10 in `data/ticks/XAUUSD`.
-- **Setup OWN round 1 (2026-10-17, latest six months, harness):** no playbook pays at the moments after costs;
-  the context selector, OWN v1 (two pieces mined from the fit months: judged -0.155 R over 141 trades) and H5
-  (the last 20 days pick the playbook: -0.013 R over 266) fail. Details and next levers: `docs/OWN_SETUP_ROUNDS.md`
-  "Results". The owner's exits: target at least 5 USD (gold 1 pip = 1 USD), scalp first, hold 2-3 hours when
-  the picture is clear; largest timeframe H1. Nothing is coded in the engine yet.
-- **Every earlier setup stopped** (owner, 2026-10-17): V1, F1 and lane `s1` are `enabled: false` in
-  `config.yaml` (parameters kept); no setup trades until OWN passes its gate. `high_risk` (aggressive preset) stays
-  on for OWN.
-- **DEMO:** running since 2026-10-18 17:08 Thai with F1 + S2 (`scripts\demo-tasks.ps1 -Pause` to stop). The next
-  S2 release is NFP 2026-11-06 19:30 Thai.
-- **Weapon 4** (`research/2026-10-18-moments/agents/weapon4/`): F1's edge is the round 50 at a fresh extreme.
-  W11-b1 (round 50 at the 72-h / 24-h / 5-day / session extreme) made +0.166 R at 0.41/day on the window, but
-  the trades it adds beyond F1 make only +0.097 R. A limit at the round fails; so does USDJPY. Not in the bot.
-- **AI chart reader** (`docs/AI_CHART_READER.md`): three pilots (Haiku, Opus, Haiku with probabilities), about
-  1.08 of the owner's 5 USD. No information beyond F1's own trend; stopped.
-- **Why the change:** S1 (M1 fade) and TS (M15 structure break) pay only in gold's 2024-26 rally (five years of
-  gold: SETUP_REVIEW §23-23.3; docs/OWNER_TRADING.md "Setup TS"). The owner: a setup fitting only some periods is
-  normal; the system must see the present and choose.
-- **Work stopped, results kept:** the out-of-sample runs (`docs/archive/OUT_OF_SAMPLE.md`: year A 12/36; year C not run),
-  the S1 spread-floor engine checks (`data/backtests/s1fix/`, four partial runs, no result), the TS session.
-  The harness results for S1 over five years are the record (SETUP_REVIEW §23).
-- **Unmerged branches** (worktrees under `.claude/worktrees/`): `s1-cost-floor` (`min_atr_spreads`, a fade's
-  spread rule on the stop it trades) and `setup-groups` (gold / currency sub-setups `setup_harmonic_gold`,
-  `setup_breakout_gold`, a `symbols` param); tests green on the branch; the owner decides whether to merge.
-- **Data:** gold 2020-09 .. 2023-10 in `data/history_old/FBS-Demo/XAUUSD` (the TS session's store), 2023-08 ..
-  2026-10 in `data/history`; FX majors M1 2023-09 .. 2026-10; US100/JP225/US30/US500/XAUAUD M1/M15/H1 from
-  2023-08. Backups of `data/history`: `D:/taa-history-backup-2026-10-17`, `-17b`.
-- **Code:** TAA-507 portfolio backtest (`app.cli backtest --portfolio`) merged. Latest migration **0043**. Full
-  pytest 2026-10-18: 3,392 passed after the config-snapshot updates. Vitest: the one failure (six TS parameter
-  texts missing since 10-17) is fixed and its files pass; the full vitest run after the fix is due with the
-  stack paused.
+The main session is the researcher / measurer / coordinator. Four background agents each write only in their own
+folder, and everything is relayed through the main session.
+
+| Agent | Folder | Brief | Last state |
+|---|---|---|---|
+| The first developer | `dev/` | `DEV_PROMPT.md` | Task D done and measured (CHECKLIST rows 40-41). Assigned next: row 38, the PLAN-1 runner `dev/plan1.py` - not started |
+| The second developer | `dev2/` | `DEV2_PROMPT.md` | V3-1: the trade-size swings found 15 / 15 of the owner's turns on 2026-10-19, plus the 17:20 range break and the 14:30 fake break. **Not reported, not measured, not audited** |
+| The auditor | `audit2/` | `AUDIT_PROMPT.md` | Four faults fixed and committed (f9163e0): the download, the ZigZag start-up, the midnight cut, the drawdown from 0. No learning-part R changed. Item 3 (the downloader stores closed bars only) is **uncommitted** in `app/market_data/history_download.py` + `tests/unit/test_history_download.py`, plus `audit2/out_closed_before.txt` and `out_win_*.txt`: the main session must review it first (tests, ruff, mypy, bandit) |
+| The strategist | `strategist/` | `STRATEGIST_PROMPT.md` | `PROPOSALS.md`. Assigned next: row 39, the transformations of the FAIL rows and the state weights per piece - not started |
+
+All four failed on 2026-10-20 at about 12:35 Thai on the weekly API limit (reset **2026-10-21 15:00 Thai**). Their
+task ids are gone with this session: start them again with the Agent tool, each with its brief and its own log.
+
+### Results (the checklist, `agents/CHECKLIST.md`, 41 rows)
+
+The PARTIAL leads (P1 / P2 R; costs as noted in the row):
+
+| # | Method | P1 R | P2 R |
+|---|---|---|---|
+| 21 | B2 at the owner's H1 levels, Asia 07-09 Thai | +0.074 | +0.182 |
+| 22 / 40 | London 13:00-Thai ORB | +0.206 | +0.120 |
+| 40 | London 13:00-Thai ORB, H1-level + season variant (16 trades a part) | +0.306 | +0.604 |
+| 23 | The reclaim of a common level (19 / 22 trades) | +0.312 | +0.310 |
+| 24 | The NY 08:30 straddle, 30 min | +0.459 | +0.114 |
+| 36-37 | **PLAN-1**, the daily plan (spread only) | +0.252 | +0.140 |
+| 36-37 | **PLAN-1** weighted by the D1 state (spread only) | +0.341 | +0.191 |
+
+Everything else is FAIL, each with its lesson: LV3, V2, the probability model, the level break, B2 all-day,
+break-and-retest, D2, and others.
+
+- **PLAN-1** is frozen in CHECKLIST.md, with two declared weight variants. The exam has not been read yet.
+- **The market state** (`precursors/regime.py`, the D1 20-day efficiency, P1 terciles 0.116 / 0.264):
+  - the range pieces (Asia B2, the London ORB) pay in sideways / mixed states and lose in a trend;
+  - the NY straddle pays in a trend.
+- **Costs: the spread only** (owner, 2026-10-20). Rows marked "0.07 slip" still include the old entry slippage
+  (about +0.01 R at the plan level).
+
+### The owner's framework (2026-10-19 / 20; memory + `DEV2_PROMPT.md` "V3 design")
+
+- **Side:** the D1 side from the H1 -> D1 structure.
+- **Trend:** M15-H1.
+- **Entry TF:** M1 / M5 / M15, chosen by the volatility so the move fits the TP / SL.
+- **The entry:** a chart pattern at a level, at least on M1. Exit on the TF you entered on.
+- **Windows:** opens run 30-60 min; NY up to + 4 h, often choppy for the first 1-2 h.
+- **Trade 4** (the owner's live sell at 4169 on 2026-10-19) is in `docs/OWNER_TRADING.md`. It is the V3 acceptance
+  case.
+
+### The bot and the account
+
+- **DEMO paused** since 2026-10-19 (no open positions). F1 CONF-72 v2 + S2 stay in `config.yaml` (lanes `own`,
+  `news`) but trade only when the owner resumes the stack. LIVE is refused until Phase 14 and the owner's go-ahead.
+- **Data:**
+  - gold M1 (`data/history`) runs to 2026-10-19 22:40 Thai: MT5 was reopened read-only on 2026-10-19 for the live
+    day;
+  - gold ticks (`data/ticks/XAUUSD`, from 2025-10-01) run to 2026-10-16;
+  - the older stores are as listed under "Local environment".
+- **Code:** the last full pytest was 2026-10-18 (3,392 passed). Since then only research files and the auditor's
+  `history_download.py` fixes have changed. Latest migration **0043**.
 
 ## Next work
 
-1. DEMO of F1 + S2: `app.cli demo-track` against the backtest after about two weeks (with the `-Mt5` env, see
-   RUNBOOK_DEMO). C4 stays 4 U (owner); 6 U / 8 U are measured monthly by backtest.
-   - W11-b1: on design, test whether dropping London 07-12 UTC and calm tape lifts its added trades to +0.15 R.
-   - RUN-A: its robust parts as votes for F1 / S2.
-2. The weekly market-state report and the monthly re-fit (the owner's review cadence).
-3. Owner decisions pending: merge the two branches or not; the account size for the daily goal (100 or 150 USD).
-4. Full vitest once with the stack paused.
-5. **Owner, before LIVE:** DEMO soak, the drills on the LIVE machine (TAA-1403), the go-live checklist and the
-   explicit go-ahead. Never enable LIVE on the owner's behalf; the aggressive preset refuses LIVE in code.
+1. **Review and commit the auditor's item-3 change** (the closed-bars-only downloader):
+   - run the targeted tests, ruff, mypy and bandit;
+   - commit by explicit paths.
+2. **After 2026-10-21 15:00 Thai, restart the agents:**
+   - **dev1, row 38: `dev/plan1.py`, the PLAN-1 runner.**
+     - Costs are the spread only; slippage is a parameter defaulting to 0.
+     - With slippage 0.07 it must reproduce `precursors/out_combo.txt` and `out_regime.txt`.
+     - It has an exam switch that only the measurer uses.
+   - **dev2: finish V3-1 and report.**
+     - The swings, the structure per TF (D1 / H4 / H1 included) and the side / trend columns.
+     - The 2026-10-19 acceptance, with written definitions for dev1's cross-check.
+     - Then V3-2 per the "V3 design".
+   - **The strategist, row 39:**
+     - the transformations of the FAIL rows (the opposite side, the stop x 1.5 / x 2, a nearer target);
+     - the state weights per piece, chosen on P1 and checked on P2 and the older years.
+   - **The auditor:**
+     - item 1 (wf.weekly win = pnl > 0);
+     - item 4 (`plib.load_learning()`);
+     - then audit dev2's `swings.py`.
+3. **The PLAN-1 exam read** (once, by the main session) when `plan1.py` is measured. Report both declared weight
+   variants, week by week, with the worst loss, the streak and the drawdown in USD.
+4. **Questions asked, not yet answered by the owner:**
+   - Is "London 13-14" the 15-minute ORB?
+   - What are the real account's spreads?
+   - Is NY 08:30 one of the windows?
+5. **Engine work, only after a rule passes:** port the passing pieces into `app/strategy/`.
+   - The bot's `app/indicators` are textbook formulas, not MT5's: align them first (`foundation.py`).
+   - Run the full pytest / vitest once with the stack paused.
+6. **Older items, still open:**
+   - merge the `s1-cost-floor` / `setup-groups` branches or not;
+   - `demo-track` once DEMO runs again;
+   - **owner, before LIVE:** the DEMO soak, the drills (TAA-1403), the go-live checklist and the explicit go-ahead.
+
+### Background (kept short; details in `docs/OWN_SETUP_ROUNDS.md` and `docs/archive/`)
+
+- **Every setup before Setup OWN stopped** on 2026-10-17 (V1, F1, S1, TS; `enabled: false`, parameters kept).
+- **The unmerged worktree branches** under `.claude/worktrees/`, both green on their branch; the owner decides:
+  - `s1-cost-floor`;
+  - `setup-groups`.
+- **Weapon 4, RUN-A and the AI chart reader:** research only, stopped (see `docs/OWN_SETUP_ROUNDS.md`).
 
 ## Local environment
 
 - **Demo stacks** (`scripts\start-demo.cmd`, details in the script header):
   - Default: FakeMT5 PAPER engine, web `http://127.0.0.1:8000`, `data/taa_cloud.db`, `.env.demo`.
-  - `-Mt5 -Demo` (the one in use): the real MT5 terminal and FBS demo account, DEMO orders
+  - `-Mt5 -Demo` (paused since 2026-10-19; resume only on the owner's word): the real MT5 terminal and FBS demo account, DEMO orders
     (`TRADING_MODE=DEMO`, `ENABLE_DEMO_TRADING=true` set for that process only; `.env` keeps PAPER), web
     `http://localhost:8001` with `data/demo/cloud-mt5.db`, engine db `data/demo/engine-mt5.db`, health
     `http://127.0.0.1:8766/health`, config generated at every start from `config.yaml` into

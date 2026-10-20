@@ -3,9 +3,35 @@
 The owner's goals and principles come first: `docs/OWNER_GOALS.md`. This file holds **the current state** of Setup
 OWN: what trades in the bot, the windows and the method, and the research in progress. Every earlier round (the
 hypotheses written before their outcome, then the results) is kept in `docs/OWN_SETUP_ROUNDS.md`. Results describe
-the past, never a promise. Last update: 2026-10-19 02:12 Thai time.
+the past, never a promise. Last update: 2026-10-20 12:40 Thai time.
 
-## In the bot (DEMO since 2026-10-18 17:08 Thai; LIVE off)
+## Now (2026-10-20): the team's research and PLAN-1
+
+The work moved to a team: the main session researches and measures, and four agents build and review
+(`research/2026-10-18-moments/agents/TEAM.md`). Every method tried is in
+`research/2026-10-18-moments/agents/CHECKLIST.md`, with its verdict and lesson (41 rows).
+
+**PLAN-1** is frozen for the one exam read:
+- Asia B2 at the owner's H1 levels, 07-09 Thai;
+- the London 13:00-Thai opening-range break;
+- the NY 08:30 straddle, held 30 min;
+- one position at a time, about 2.3 trades a day;
+- half weight where a piece is out of its D1 state.
+
+On the learning parts, spread only: +0.252 / +0.140 R, and weighted by the state +0.341 / +0.191. The exam has not
+been read yet.
+
+The owner's framework for V3 (the second developer):
+- the side from the H1 -> D1 structure;
+- the trend on M15-H1;
+- the entry on M1 / M5 / M15 by volatility;
+- a chart pattern at a level;
+- the owner's windows (NY up to + 4 h).
+
+Costs are the spread only (owner, 2026-10-20). The sections below (V2, LV3, the windows) are the earlier state and
+the record.
+
+## In the bot (DEMO 2026-10-18 17:08 .. paused 2026-10-19 by the owner; LIVE off)
 
 | Setup | Code | What it does | Measured |
 |---|---|---|---|

@@ -1,5 +1,10 @@
 # Setup OWN research team - shared brief (2026-10-17)
 
+> **Superseded in part (2026-10-20):** this brief is the 2026-10-17 team's. The current team, roles and rules are
+> in `TEAM.md`, the per-role `*_PROMPT.md` files and `CHECKLIST.md`. Changed since: costs are the spread only (no
+> slippage); the side comes from the H1 -> D1 structure (H1 is no longer the largest TF read); trades only in the
+> owner's windows (Asia 07-09, London 13-14, the NY open to + 4 h, Thai time); an entry needs a chart pattern at a level.
+
 You are one of several research agents working in parallel to make the owner's gold scalping setup (Setup OWN)
 profitable. Read this whole brief first. The full history is in `docs/OWN_SETUP_ROUNDS.md` (long; skim "Results" and
 rounds 1-10) and the owner's goals in `docs/OWNER_GOALS.md`.
