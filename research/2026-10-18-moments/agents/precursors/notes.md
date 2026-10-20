@@ -2962,3 +2962,15 @@ crash; gold.org Weekly Markets Monitor 19 Oct 2026; SSGA Monthly Gold Monitor Oc
 - **The hypothesis to test (strategist):** the leads pay while a persistent speculative flow drives gold (rising
   managed-money positioning / ETF inflow streaks), not merely while it is large. Data: the CFTC Commitments of Traders
   (COMEX gold, managed money, weekly, public) - known with a 3-day lag (Tuesday data, Friday release).
+
+## PLAN-1's losers, one by one (2026-10-20 19:45 Thai; owner: "have we learned from the losing trades?")
+`plan1_losers.py` / `out_plan1_losers.txt`, P1 / P2 only. Losers: Asia B2 44 of 79 (mostly the structure exit, median
+-0.48 R), London ORB 55 of 119 (36 stopped at -1 R), NY straddle 47 of 100 (39 stopped). For each stopped loser, the
+path to the end of its own window without the stop:
+- **NY straddle (39 stopped):** half within 5 minutes of the fill; 12 SWEPT (came back, end +0.87 R median), 13 FAKE (ran
+  on the other way, -2.04), 14 SLOW. A wider stop does not pay overall (x1.5: +0.324 / +0.065; x2: +0.211 / +0.101 vs
+  real +0.467 / +0.119): the stop that saves the swept ones costs more on the fakes.
+- **London ORB (36 stopped):** 23 SLOW (median 29.5 minutes to the stop, the best before it only +0.14 R), 8 FAKE, 5
+  SWEPT. No stop / x1.5 / x2 do not help (+0.177 / +0.092 / +0.097 in P1).
+- **Lesson:** the stops are not the losers' cause; the ORB losers never ran (a break without follow-through), the
+  straddle's are the release whipsaw. The next lever is the entry (which breaks / which releases), not the stop.

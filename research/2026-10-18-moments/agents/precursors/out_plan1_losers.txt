@@ -1,0 +1,22 @@
+
+== London ORB: 36 stopped (of 119 trades)
+   class: {'SLOW': 23, 'FAKE': 8, 'SWEPT': 5}
+   minutes to the stop: median 29.5, <= 5 min 3%
+   best R before the stop: median +0.14, reached +0.5 R first 22%
+   FAKE   8: end_R without the stop median -2.65, MAE median -3.03, parts {'P2': 6, 'P1': 2}
+   SLOW  23: end_R without the stop median -0.98, MAE median -1.36, parts {'P2': 13, 'P1': 10}
+   SWEPT  5: end_R without the stop median +0.08, MAE median -1.14, parts {'P1': 3, 'P2': 2}
+
+== NY straddle: 39 stopped (of 100 trades)
+   class: {'SLOW': 14, 'FAKE': 13, 'SWEPT': 12}
+   minutes to the stop: median 4.1, <= 5 min 51%
+   best R before the stop: median +0.22, reached +0.5 R first 33%
+   FAKE  13: end_R without the stop median -2.04, MAE median -2.92, parts {'P2': 9, 'P1': 4}
+   SLOW  14: end_R without the stop median -0.78, MAE median -1.97, parts {'P2': 10, 'P1': 4}
+   SWEPT 12: end_R without the stop median +0.87, MAE median -1.54, parts {'P2': 10, 'P1': 2}
+
+== every trade, no stop (the window's end) vs the real result, R per trade (P1 / P2)
+   London ORB   P1: real +0.213 | no stop +0.177 | stop x1.5 +0.092 | stop x2 +0.097
+   London ORB   P2: real +0.124 | no stop +0.128 | stop x1.5 +0.133 | stop x2 +0.083
+   NY straddle  P1: real +0.467 | no stop +0.504 | stop x1.5 +0.324 | stop x2 +0.211
+   NY straddle  P2: real +0.119 | no stop +0.094 | stop x1.5 +0.065 | stop x2 +0.101
