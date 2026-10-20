@@ -2866,3 +2866,19 @@ exam -5.5 + 21.9 + 12.3 = 28.7):**
 - **Next, a real out-of-sample test:** the straddle on release days in 2021-09 .. 2025-09 (four years no study of it
   has seen; M1 bars with the M1 spread, since there are no ticks), and a +1 R target variant, both written before the
   run.
+
+## NS-1: the 08:30 straddle on release days, 2021-09 .. 2025-10 on M1 - written before computing (2026-10-20 18:19 Thai)
+No study of the straddle has used these years. There are no ticks before 2025-10, so it runs on MT5's M1 bid bars with
+the ask = bid + the bar's spread x 0.01 + 0.08 (row 45's old-year cost model).
+- **Days:** the 08:30 rows of `app/news/us_releases.csv` (CPI, NFP, PPI, PCE, GDP) from 2021-09-01 to 2025-10-17;
+  beside them every other weekday, for comparison.
+- **The orders:** from the close of the 08:29-NY bar (bid c, ask c + s): a buy stop at the ask + 2, a sell stop at the
+  bid - 2, live in the 08:30 bar only. The fill: the trigger price, or the bar's open if it gapped past it. If the
+  08:30 bar reaches both, the day counts at the worse of the two sides (and the count is reported).
+- **The trade:** stop 8 USD from the fill, checked from the 08:30 bar on (the trigger bar included: conservative); a
+  buy's stop on the bid low, a sell's on the ask high (high + s), at the stop or the bar's open past it. Out at the open
+  of the 09:00 bar (bid for a buy, ask for a sell). R = pnl / 8.
+- **Variant T1:** a +1 R target as a limit; a bar reaching both the stop and the target counts as the stop.
+- **Calibration first:** the same M1 simulation on P1 / P2 release days, compared with the tick trades (`dev/plan1.py`).
+- **Pass (hold 30 min, release days):** R per trade >= +0.15 pooled over the four years, and > 0 in at least 3 of the
+  4 years (Oct .. Sep). Read once.
