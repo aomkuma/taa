@@ -219,7 +219,11 @@ consolidation zone, with the SL above 4160."
 - **The entry:** a break-and-retest - price comes back to the broken trendline / range bottom from below, fails, and
   the owner sells the first lower high after it. 18:30 lies outside the owner's stated windows: the "really clean"
   exception.
-- **The management:** the stop moved above 4160, over the base's highs and at the 61.8 %, once the trade had run.
+- **Two boxes (the owner's M30 chart, 2026-10-20 13:1x Thai):** the owner ENTERED in the first red box (the 4167-4172
+  flag after the failed retest; the stop 4180). The "SL above 4160" belongs to the SECOND red box, the one we read live
+  at 22:42-23:00: the base on the Fibo 50 % at about 4142-4149, where the owner would enter early inside the base with
+  the stop above 4160 (the 61.8 %). It is not a moved stop of the first trade (an earlier version of this note had it
+  wrong).
   Held through the base rather than taken at the first target.
 - **For the rules:**
   - the break-and-retest entry (P5 in `research/2026-10-18-moments/agents/DEV_PROMPT.md`);
@@ -233,18 +237,18 @@ consolidation zone, with the SL above 4160."
 
 **Still to confirm:** the exact entries and lots, the 23.6 price.
 
-**What followed** (read 2026-10-20 13:01 Thai; M1 / M5 / H1 downloaded read-only from MT5, last M1 12:59 Thai):
-- **The stops held:** after 18:50 the highest price was 4170.00 (19:09); 4177.06 and 4180 were never reached. After
-  21:00 the highest was 4155.32, so a stop above 4160 was never touched.
-- **The fall went on, LH / LL on H1:** 4139.58 (22:55), 4136.62 (00:xx), 4129.31 (07:xx), then the Asia low
-  **4115.58 at 08:27** (an M5 run 08:00-08:25 from 4131 to 4115.6). The bounce reached 4147.21 (11:xx), a lower high
-  under 4149.80, then a fall from 12:05 to **4119.14 at 12:59** - back at the Asia low as London opens.
-- **In the trade's favour from 4169:** at most about 53 USD (at 4115.58), about 49 USD at 12:59.
-- **The Fibo of the swing 4073.41 (2026-10-14 23:00) -> 4190.25 (2026-10-19 14:33),** if that is the owner's swing
-  (to confirm): 23.6 % 4162.7, 38.2 % 4145.6, 50 % 4131.8, 61.8 % 4118.0, 76.4 % 4101.0. The Asia low and the price at
-  12:59 sit at its 61.8 %.
-- **The weekly plan (Setup TS notes, 2026-10-17):** case B ("price breaks 4,150 first: sell the retest") is what
-  happened; its target 4,100, before the 4,075-4,085 double bottom, is not reached yet (the low so far 4115.58).
+**What followed** (read 2026-10-20 13:15 Thai; M1 / M5 / H1 downloaded read-only from MT5, last M1 12:59 Thai). The
+owner's Fibonacci, read off their M30 chart: 0.0 about 4067, 23.6 about 4102 (a green 4102 label on the price axis),
+38.2 about 4125, 50 about 4142, 61.8 about 4159, 78.6 about 4186 - a swing of about 150 USD from about 4067.
+- **Box 1, the owner's sell at about 4169-4172, stop 4180:** after 18:50 the highest price was 4170.00 (19:09); 4177.06
+  and 4180 were never reached. Best so far 4115.58 (08:27), about 53-56 USD in favour.
+- **Box 2, the base on the 50 % (4142-4149), stop above 4160:** after 23:00 the highest price was 4149.43 (01:48); the
+  stop was never threatened. The base acted as resistance twice: 4149.43 at 01:48 and 4147.21 at 11:xx, both
+  rejected under 4150. From about 4142 the best so far is about 26 USD.
+- **The levels on the way:** the low under 4139.58 at 23:01; 38.2 % (about 4125) broken at 08:15 (4120 first at 08:15),
+  the low 4115.58 at 08:27, back above 38.2 to the 50 % (4147.21 at 11:xx), then down from 12:05 to 4119.14 at 12:59 -
+  under 38.2 again.
+- **The target, 23.6 at about 4102:** not reached yet; the low so far 4115.58 is about 13.6 USD above it.
 
 ## Findings so far
 
