@@ -1,0 +1,241 @@
+.FF....FF...F.FFFFF.                                                     [100%]
+================================== FAILURES ===================================
+________ TestLazySync.test_stale_range_is_completed_after_the_sync[M1] ________
+
+self = <tests.unit.test_history_download.TestLazySync object at 0x000001FC72828850>
+tf = <Timeframe.M1: 'M1'>, sleeps = [1.0]
+
+    @pytest.mark.parametrize("tf", [Timeframe.M1, Timeframe.H1])
+    def test_stale_range_is_completed_after_the_sync(self, tf: Timeframe, sleeps: list[float]) -> None:
+        fake, gw = lazy()
+        df = download_history(gw, "XAUUSD", tf, MON - timedelta(days=3), MON)
+        want = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=3), MON)
+        # Monday 10:00 UTC is the newest bar but still forming at 10:00:30: the last closed one is M1 09:59 / H1
+        # 09:00 (the stale download ended Friday)
+        last = {Timeframe.M1: "2026-10-05 09:59", Timeframe.H1: "2026-10-05 09:00"}[tf]
+>       assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-05 10:00:00+0000', tz='UTC') == Timestamp('2026-10-05 09:59:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 09:59:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 09:59', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:145: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 1 s
+________ TestLazySync.test_stale_range_is_completed_after_the_sync[H1] ________
+
+self = <tests.unit.test_history_download.TestLazySync object at 0x000001FC72828A90>
+tf = <Timeframe.H1: 'H1'>, sleeps = [1.0]
+
+    @pytest.mark.parametrize("tf", [Timeframe.M1, Timeframe.H1])
+    def test_stale_range_is_completed_after_the_sync(self, tf: Timeframe, sleeps: list[float]) -> None:
+        fake, gw = lazy()
+        df = download_history(gw, "XAUUSD", tf, MON - timedelta(days=3), MON)
+        want = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=3), MON)
+        # Monday 10:00 UTC is the newest bar but still forming at 10:00:30: the last closed one is M1 09:59 / H1
+        # 09:00 (the stale download ended Friday)
+        last = {Timeframe.M1: "2026-10-05 09:59", Timeframe.H1: "2026-10-05 09:00"}[tf]
+>       assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-05 10:00:00+0000', tz='UTC') == Timestamp('2026-10-05 09:00:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 09:00:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 09:00', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:145: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD H1 history ends at 2026-10-02 20:00:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 1 s
+_______________ TestLazySync.test_re_read_covers_only_the_tail ________________
+
+self = <tests.unit.test_history_download.TestLazySync object at 0x000001FC7282ADD0>
+sleeps = [1.0]
+
+    def test_re_read_covers_only_the_tail(self, sleeps: list[float]) -> None:
+        """15 days of M1 take two 13-day chunks; the re-read after the sync is one call from the last bar."""
+        fake, gw = lazy()
+        df = download_history(gw, "XAUUSD", Timeframe.M1, MON - timedelta(days=15), MON)
+        assert fake.calls["copy_rates_range"] == 3
+>       assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-05 09:59", tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-05 10:00:00+0000', tz='UTC') == Timestamp('2026-10-05 09:59:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 09:59:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 09:59', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:182: AssertionError
+------------------------------ Captured log call ------------------------------
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 1 s
+______ TestNoFalseAlarm.test_fresh_terminal_is_unchanged_and_never_waits ______
+
+self = <tests.unit.test_history_download.TestNoFalseAlarm object at 0x000001FC7282AF10>
+sleeps = []
+
+    def test_fresh_terminal_is_unchanged_and_never_waits(self, sleeps: list[float]) -> None:
+        clock = ManualClock(MON)
+        fake = FakeMT5(clock, history_days=20, future_days=5)
+        gw = gateway(fake, clock)
+        df = download_history(gw, "XAUUSD", Timeframe.M1, MON - timedelta(days=3), MON)
+        assert sleeps == []
+        assert fake.calls["copy_rates_range"] == 1  # 3 days fit one M1 chunk (13 days); no re-read
+>       assert df["open_time"].iloc[-1] == pd.Timestamp(
+            "2026-10-05 09:59", tz="UTC"
+        )  # 10:00 is still forming
+E       AssertionError: assert Timestamp('2026-10-05 10:00:00+0000', tz='UTC') == Timestamp('2026-10-05 09:59:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 09:59:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 09:59', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:193: AssertionError
+_____ TestNoFalseAlarm.test_d1_bar_from_the_tick_uses_the_server_midnight _____
+
+self = <tests.unit.test_history_download.TestNoFalseAlarm object at 0x000001FC72830110>
+sleeps = []
+
+    def test_d1_bar_from_the_tick_uses_the_server_midnight(self, sleeps: list[float]) -> None:
+        """D1 opens at server midnight (Monday 00:00 EEST = Sunday 21:00 UTC): the check sees Monday's bar, no false
+        alarm; Monday's D1 is still forming, so the last returned is Friday's (Friday 00:00 EEST = Thursday 21:00 UTC)."""
+        df = download_history(fresh(), "XAUUSD", Timeframe.D1, MON - timedelta(days=10), MON)
+>       assert sleeps == [] and df["open_time"].iloc[-1] == pd.Timestamp("2026-10-01 21:00", tz="UTC")
+E       AssertionError: assert ([] == []
+E         
+E         Use -v to get more diff and Timestamp('2026-10-04 21:00:00+0000', tz='UTC') == Timestamp('2026-10-01 21:00:00+0000', tz='UTC'))
+E        +  where Timestamp('2026-10-01 21:00:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-01 21:00', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:219: AssertionError
+_ TestClosedBarsOnly.test_the_forming_bar_is_not_returned[M1-2026-10-05 09:59] _
+
+self = <tests.unit.test_history_download.TestClosedBarsOnly object at 0x000001FC72831910>
+tf = <Timeframe.M1: 'M1'>, last = '2026-10-05 09:59', sleeps = []
+
+    @pytest.mark.parametrize(
+        ("tf", "last"),
+        [
+            (Timeframe.M1, "2026-10-05 09:59"),  # 10:00 closes at 10:01, after 10:00:30
+            (Timeframe.M15, "2026-10-05 09:45"),  # 10:00 closes at 10:15
+            (Timeframe.H1, "2026-10-05 09:00"),
+            (
+                Timeframe.H4,
+                "2026-10-05 05:00",
+            ),  # server 08:00 .. 12:00 EEST = 05:00 .. 09:00 UTC: closed at 09:00
+            (Timeframe.D1, "2026-10-01 21:00"),  # Monday's server day is forming; Friday's is the last closed
+        ],
+    )
+    def test_the_forming_bar_is_not_returned(self, tf: Timeframe, last: str, sleeps: list[float]) -> None:
+        df = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=10), MON)
+>       assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-05 10:00:00+0000', tz='UTC') == Timestamp('2026-10-05 09:59:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 09:59:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 09:59', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:246: AssertionError
+_ TestClosedBarsOnly.test_the_forming_bar_is_not_returned[M15-2026-10-05 09:45] _
+
+self = <tests.unit.test_history_download.TestClosedBarsOnly object at 0x000001FC72831B50>
+tf = <Timeframe.M15: 'M15'>, last = '2026-10-05 09:45', sleeps = []
+
+    @pytest.mark.parametrize(
+        ("tf", "last"),
+        [
+            (Timeframe.M1, "2026-10-05 09:59"),  # 10:00 closes at 10:01, after 10:00:30
+            (Timeframe.M15, "2026-10-05 09:45"),  # 10:00 closes at 10:15
+            (Timeframe.H1, "2026-10-05 09:00"),
+            (
+                Timeframe.H4,
+                "2026-10-05 05:00",
+            ),  # server 08:00 .. 12:00 EEST = 05:00 .. 09:00 UTC: closed at 09:00
+            (Timeframe.D1, "2026-10-01 21:00"),  # Monday's server day is forming; Friday's is the last closed
+        ],
+    )
+    def test_the_forming_bar_is_not_returned(self, tf: Timeframe, last: str, sleeps: list[float]) -> None:
+        df = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=10), MON)
+>       assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-05 10:00:00+0000', tz='UTC') == Timestamp('2026-10-05 09:45:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 09:45:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 09:45', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:246: AssertionError
+_ TestClosedBarsOnly.test_the_forming_bar_is_not_returned[H1-2026-10-05 09:00] _
+
+self = <tests.unit.test_history_download.TestClosedBarsOnly object at 0x000001FC72831D90>
+tf = <Timeframe.H1: 'H1'>, last = '2026-10-05 09:00', sleeps = []
+
+    @pytest.mark.parametrize(
+        ("tf", "last"),
+        [
+            (Timeframe.M1, "2026-10-05 09:59"),  # 10:00 closes at 10:01, after 10:00:30
+            (Timeframe.M15, "2026-10-05 09:45"),  # 10:00 closes at 10:15
+            (Timeframe.H1, "2026-10-05 09:00"),
+            (
+                Timeframe.H4,
+                "2026-10-05 05:00",
+            ),  # server 08:00 .. 12:00 EEST = 05:00 .. 09:00 UTC: closed at 09:00
+            (Timeframe.D1, "2026-10-01 21:00"),  # Monday's server day is forming; Friday's is the last closed
+        ],
+    )
+    def test_the_forming_bar_is_not_returned(self, tf: Timeframe, last: str, sleeps: list[float]) -> None:
+        df = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=10), MON)
+>       assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-05 10:00:00+0000', tz='UTC') == Timestamp('2026-10-05 09:00:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 09:00:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 09:00', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:246: AssertionError
+_ TestClosedBarsOnly.test_the_forming_bar_is_not_returned[H4-2026-10-05 05:00] _
+
+self = <tests.unit.test_history_download.TestClosedBarsOnly object at 0x000001FC72831FD0>
+tf = <Timeframe.H4: 'H4'>, last = '2026-10-05 05:00', sleeps = []
+
+    @pytest.mark.parametrize(
+        ("tf", "last"),
+        [
+            (Timeframe.M1, "2026-10-05 09:59"),  # 10:00 closes at 10:01, after 10:00:30
+            (Timeframe.M15, "2026-10-05 09:45"),  # 10:00 closes at 10:15
+            (Timeframe.H1, "2026-10-05 09:00"),
+            (
+                Timeframe.H4,
+                "2026-10-05 05:00",
+            ),  # server 08:00 .. 12:00 EEST = 05:00 .. 09:00 UTC: closed at 09:00
+            (Timeframe.D1, "2026-10-01 21:00"),  # Monday's server day is forming; Friday's is the last closed
+        ],
+    )
+    def test_the_forming_bar_is_not_returned(self, tf: Timeframe, last: str, sleeps: list[float]) -> None:
+        df = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=10), MON)
+>       assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-05 09:00:00+0000', tz='UTC') == Timestamp('2026-10-05 05:00:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 05:00:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 05:00', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:246: AssertionError
+_ TestClosedBarsOnly.test_the_forming_bar_is_not_returned[D1-2026-10-01 21:00] _
+
+self = <tests.unit.test_history_download.TestClosedBarsOnly object at 0x000001FC72832210>
+tf = <Timeframe.D1: 'D1'>, last = '2026-10-01 21:00', sleeps = []
+
+    @pytest.mark.parametrize(
+        ("tf", "last"),
+        [
+            (Timeframe.M1, "2026-10-05 09:59"),  # 10:00 closes at 10:01, after 10:00:30
+            (Timeframe.M15, "2026-10-05 09:45"),  # 10:00 closes at 10:15
+            (Timeframe.H1, "2026-10-05 09:00"),
+            (
+                Timeframe.H4,
+                "2026-10-05 05:00",
+            ),  # server 08:00 .. 12:00 EEST = 05:00 .. 09:00 UTC: closed at 09:00
+            (Timeframe.D1, "2026-10-01 21:00"),  # Monday's server day is forming; Friday's is the last closed
+        ],
+    )
+    def test_the_forming_bar_is_not_returned(self, tf: Timeframe, last: str, sleeps: list[float]) -> None:
+        df = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=10), MON)
+>       assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-04 21:00:00+0000', tz='UTC') == Timestamp('2026-10-01 21:00:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-01 21:00:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-01 21:00', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:246: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/unit/test_history_download.py::TestLazySync::test_stale_range_is_completed_after_the_sync[M1]
+FAILED tests/unit/test_history_download.py::TestLazySync::test_stale_range_is_completed_after_the_sync[H1]
+FAILED tests/unit/test_history_download.py::TestLazySync::test_re_read_covers_only_the_tail
+FAILED tests/unit/test_history_download.py::TestNoFalseAlarm::test_fresh_terminal_is_unchanged_and_never_waits
+FAILED tests/unit/test_history_download.py::TestNoFalseAlarm::test_d1_bar_from_the_tick_uses_the_server_midnight
+FAILED tests/unit/test_history_download.py::TestClosedBarsOnly::test_the_forming_bar_is_not_returned[M1-2026-10-05 09:59]
+FAILED tests/unit/test_history_download.py::TestClosedBarsOnly::test_the_forming_bar_is_not_returned[M15-2026-10-05 09:45]
+FAILED tests/unit/test_history_download.py::TestClosedBarsOnly::test_the_forming_bar_is_not_returned[H1-2026-10-05 09:00]
+FAILED tests/unit/test_history_download.py::TestClosedBarsOnly::test_the_forming_bar_is_not_returned[H4-2026-10-05 05:00]
+FAILED tests/unit/test_history_download.py::TestClosedBarsOnly::test_the_forming_bar_is_not_returned[D1-2026-10-01 21:00]
+10 failed, 10 passed in 9.17s

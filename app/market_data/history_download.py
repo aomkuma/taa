@@ -5,6 +5,9 @@ terminal's local history only: on 2026-10-19 (Monday, market open) it returned X
 close, while M5..D1 on the same run and a later ``copy_rates_from_pos`` call had Monday's bars. A download
 whose last bar is older than the newest bar inside its window is read again after a wait, and fails with
 :class:`HistoryIncompleteError` when it stays short, instead of storing stale history silently.
+
+Only closed bars are returned (close_time <= the window's end): the bar still forming at the end is left out,
+so a partial bar is never stored. The completeness check runs before that cut, on the bars as downloaded.
 """
 
 from __future__ import annotations
@@ -87,6 +90,13 @@ def expected_last_open(
     return max(inside) if inside else None
 
 
+def closed_bars(df: pd.DataFrame, end: datetime) -> pd.DataFrame:
+    """The bars closed by ``end``: the one still forming then is dropped (closed candles only)."""
+    if df.empty:
+        return df
+    return df.loc[df["close_time"] <= pd.Timestamp(end)].reset_index(drop=True)
+
+
 def download_history(
     gateway: MarketDataGateway,
     symbol: str,
@@ -96,7 +106,8 @@ def download_history(
     *,
     sleep: Callable[[float], None] | None = None,
 ) -> pd.DataFrame:
-    """Bars with a UTC open in [start, end), checked to reach the newest bar the terminal shows in the window.
+    """Closed bars with a UTC open in [start, end) (close_time <= end), checked to reach the newest bar the
+    terminal shows in the window.
 
     Raises :class:`HistoryIncompleteError` when the download still ends early after ``TAIL_RETRIES`` waits.
     """
@@ -108,7 +119,7 @@ def download_history(
         expected = expected_last_open(gateway, symbol, tf, start, end)
         last = None if df.empty else pd.Timestamp(df["open_time"].iloc[-1])
         if expected is None or (last is not None and last >= expected):
-            return df
+            return closed_bars(df, end)
         if attempt == TAIL_RETRIES:
             break
         log.warning(

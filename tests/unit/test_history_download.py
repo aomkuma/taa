@@ -139,8 +139,10 @@ class TestLazySync:
         fake, gw = lazy()
         df = download_history(gw, "XAUUSD", tf, MON - timedelta(days=3), MON)
         want = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=3), MON)
-        # Monday 10:00 UTC is the newest bar (M1 10:00, H1 10:00); the stale download ended Friday.
-        assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-05 10:00", tz="UTC")
+        # Monday 10:00 UTC is the newest bar but still forming at 10:00:30: the last closed one is M1 09:59 / H1
+        # 09:00 (the stale download ended Friday)
+        last = {Timeframe.M1: "2026-10-05 09:59", Timeframe.H1: "2026-10-05 09:00"}[tf]
+        assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
         pd.testing.assert_frame_equal(df, want)
         assert df["open_time"].is_unique and df["open_time"].is_monotonic_increasing
         assert len(sleeps) == 1  # one wait, then the re-read of the tail succeeded
@@ -177,7 +179,7 @@ class TestLazySync:
         fake, gw = lazy()
         df = download_history(gw, "XAUUSD", Timeframe.M1, MON - timedelta(days=15), MON)
         assert fake.calls["copy_rates_range"] == 3
-        assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-05 10:00", tz="UTC")
+        assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-05 09:59", tz="UTC")
 
 
 class TestNoFalseAlarm:
@@ -188,7 +190,9 @@ class TestNoFalseAlarm:
         df = download_history(gw, "XAUUSD", Timeframe.M1, MON - timedelta(days=3), MON)
         assert sleeps == []
         assert fake.calls["copy_rates_range"] == 1  # 3 days fit one M1 chunk (13 days); no re-read
-        assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-05 10:00", tz="UTC")
+        assert df["open_time"].iloc[-1] == pd.Timestamp(
+            "2026-10-05 09:59", tz="UTC"
+        )  # 10:00 is still forming
 
     def test_window_on_a_minute_boundary(self, sleeps: list[float]) -> None:
         """end = 10:00:00: the 10:00 bar is outside [start, end); the newest bar inside is 09:59."""
@@ -209,12 +213,40 @@ class TestNoFalseAlarm:
         assert sleeps == [] and df["open_time"].iloc[-1] == pd.Timestamp("2026-10-01 11:59", tz="UTC")
 
     def test_d1_bar_from_the_tick_uses_the_server_midnight(self, sleeps: list[float]) -> None:
-        """D1 opens at server midnight (Monday 00:00 EEST = Sunday 21:00 UTC)."""
+        """D1 opens at server midnight (Monday 00:00 EEST = Sunday 21:00 UTC): the check sees Monday's bar, no false
+        alarm; Monday's D1 is still forming, so the last returned is Friday's (Friday 00:00 EEST = Thursday 21:00 UTC)."""
         df = download_history(fresh(), "XAUUSD", Timeframe.D1, MON - timedelta(days=10), MON)
-        assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-04 21:00", tz="UTC")
+        assert sleeps == [] and df["open_time"].iloc[-1] == pd.Timestamp("2026-10-01 21:00", tz="UTC")
 
     def test_window_before_the_newest_bar_with_no_bars(self, sleeps: list[float]) -> None:
         """A weekend window (Saturday 12:00 .. Sunday 12:00): no bar in it, Friday's last bar is before it."""
         now = datetime(2026, 10, 4, 12, 0, tzinfo=UTC)
         df = download_history(fresh(now), "XAUUSD", Timeframe.M1, now - timedelta(days=1), now)
         assert sleeps == [] and df.empty
+
+
+class TestClosedBarsOnly:
+    """CLAUDE.md: closed candles only - a bar still forming at the window's end is never returned (or stored)."""
+
+    @pytest.mark.parametrize(
+        ("tf", "last"),
+        [
+            (Timeframe.M1, "2026-10-05 09:59"),  # 10:00 closes at 10:01, after 10:00:30
+            (Timeframe.M15, "2026-10-05 09:45"),  # 10:00 closes at 10:15
+            (Timeframe.H1, "2026-10-05 09:00"),
+            (
+                Timeframe.H4,
+                "2026-10-05 05:00",
+            ),  # server 08:00 .. 12:00 EEST = 05:00 .. 09:00 UTC: closed at 09:00
+            (Timeframe.D1, "2026-10-01 21:00"),  # Monday's server day is forming; Friday's is the last closed
+        ],
+    )
+    def test_the_forming_bar_is_not_returned(self, tf: Timeframe, last: str, sleeps: list[float]) -> None:
+        df = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=10), MON)
+        assert df["open_time"].iloc[-1] == pd.Timestamp(last, tz="UTC")
+        assert (df["close_time"] <= pd.Timestamp(MON)).all()
+
+    def test_a_bar_closing_exactly_at_the_end_is_kept(self, sleeps: list[float]) -> None:
+        end = datetime(2026, 10, 5, 10, 0, tzinfo=UTC)  # the 09:59 bar closes at 10:00:00 = the end
+        df = download_history(fresh(end), "XAUUSD", Timeframe.M1, end - timedelta(days=1), end)
+        assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-05 09:59", tz="UTC")
