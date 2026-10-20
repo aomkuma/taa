@@ -122,6 +122,32 @@ def test_known_at_and_running(main_m, main_r):
     assert W.running(main_r.piv, h, lo, 2) is None
 
 
+def test_known_at_the_confirming_bar_exactly(main_r):
+    # the measurer's gap (a): the MAIN pivots are confirmed at bars 4, 14, 23, 33, 43, ... At d = 32 the peak@28
+    # (confirmed at 33) is not known yet; reading one bar ahead (d + 1 = 33) would include it. At d = 33 it is known.
+    assert W.known_at(main_r.piv, 32)[0].tolist() == [0, 9, 18]
+    assert W.known_at(main_r.piv, 33)[0].tolist() == [0, 9, 18, 28]
+    assert W.known_at(main_r.piv, 3)[0].tolist() == []  # the first pivot is confirmed at bar 4
+    assert W.known_at(main_r.piv, 4)[0].tolist() == [0]
+
+
+def test_running_leaves_out_the_pivot_bar():
+    # the measurer's gap (b): a pivot bar whose own low (for a peak) is below every later bar's low. The pivots are
+    # given by hand: a trough at bar 0 (confirmed 1), a peak at bar 2 (high 120, low 90; confirmed 3).
+    # bars:     0    1    2    3    4    5
+    h = np.array([100, 110, 120, 108, 106, 109.0])
+    lo = np.array([95, 100, 90, 96, 93, 97.0])
+    piv = (np.array([0, 2]), np.array([95.0, 120.0]), np.array([-1, 1]), np.array([1, 3]))
+    # at d = 5: the running leg after the peak@2 is bars 3..5 -> the lowest low 93 at bar 4 (bar 2's 90 not read)
+    assert W.running(piv, h, lo, 5) == (4, 93.0, -1)
+    # mirrored: a trough bar whose own high is above every later high. A peak at bar 0 (confirmed 1), a trough at
+    # bar 2 (low 80, high 125; confirmed 3); bars 3..5 highs 100, 104, 99 -> the highest 104 at bar 4.
+    h2 = np.array([120, 110, 125, 100, 104, 99.0])
+    lo2 = np.array([110, 95, 80, 90, 92, 91.0])
+    piv2 = (np.array([0, 2]), np.array([120.0, 80.0]), np.array([1, -1]), np.array([1, 3]))
+    assert W.running(piv2, h2, lo2, 5) == (4, 104.0, 1)
+
+
 # ------------------------------------------------------------------ rule 4 + 13: the structure and the bias
 def test_structure_by_hand(main_r):
     s = main_r.struct

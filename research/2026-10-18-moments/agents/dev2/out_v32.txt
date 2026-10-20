@@ -1,0 +1,1067 @@
+R2 terciles (P1, in the windows): q1 14.551, q2 18.449; weekdays P1 64, P2 66; slip 0.0
+simulated e1_M1                a          3801 specs ->  3776 fills (15 s)
+simulated e1_M1                b          3801 specs ->  3776 fills (27 s)
+simulated e2_M1_bias_path      a          8966 specs ->  8867 fills (44 s)
+simulated e2_M1_bias_path      b          8966 specs ->  8867 fills (59 s)
+simulated e4_M1_bias_path      a           181 specs ->   181 fills (69 s)
+simulated e4_M1_bias_path      b           181 specs ->   181 fills (79 s)
+simulated e2_M1_bias_bar       a          6556 specs ->  6500 fills (94 s)
+simulated e2_M1_bias_bar       b          6556 specs ->  6500 fills (107 s)
+simulated e4_M1_bias_bar       a           152 specs ->   152 fills (117 s)
+simulated e4_M1_bias_bar       b           152 specs ->   152 fills (130 s)
+simulated e2_M1_label_path     a          4524 specs ->  4482 fills (146 s)
+simulated e2_M1_label_path     b          4524 specs ->  4482 fills (159 s)
+simulated e4_M1_label_path     a           100 specs ->   100 fills (168 s)
+simulated e4_M1_label_path     b           100 specs ->   100 fills (177 s)
+simulated e2_M1_label_bar      a          3387 specs ->  3356 fills (191 s)
+simulated e2_M1_label_bar      b          3387 specs ->  3356 fills (203 s)
+simulated e4_M1_label_bar      a            84 specs ->    84 fills (210 s)
+simulated e4_M1_label_bar      b            84 specs ->    84 fills (217 s)
+simulated e3_M1                e3_ext     2204 specs ->  2174 fills (229 s)
+simulated e3_M1                e3_mirror  2204 specs ->  2174 fills (242 s)
+simulated e1_M5                a          1980 specs ->  1958 fills (254 s)
+simulated e1_M5                b          1980 specs ->  1958 fills (266 s)
+simulated e2_M5_bias_path      a          1705 specs ->  1692 fills (279 s)
+simulated e2_M5_bias_path      b          1705 specs ->  1692 fills (291 s)
+simulated e4_M5_bias_path      a           157 specs ->   157 fills (301 s)
+simulated e4_M5_bias_path      b           157 specs ->   157 fills (311 s)
+simulated e2_M5_bias_bar       a          1340 specs ->  1331 fills (322 s)
+simulated e2_M5_bias_bar       b          1340 specs ->  1331 fills (333 s)
+simulated e4_M5_bias_bar       a           133 specs ->   133 fills (341 s)
+simulated e4_M5_bias_bar       b           133 specs ->   133 fills (351 s)
+simulated e2_M5_label_path     a           854 specs ->   848 fills (363 s)
+simulated e2_M5_label_path     b           854 specs ->   848 fills (373 s)
+simulated e4_M5_label_path     a            88 specs ->    88 fills (381 s)
+simulated e4_M5_label_path     b            88 specs ->    88 fills (389 s)
+simulated e2_M5_label_bar      a           722 specs ->   716 fills (400 s)
+simulated e2_M5_label_bar      b           722 specs ->   716 fills (410 s)
+simulated e4_M5_label_bar      a            72 specs ->    72 fills (416 s)
+simulated e4_M5_label_bar      b            72 specs ->    72 fills (423 s)
+simulated e3_M5                e3_ext     1492 specs ->  1469 fills (433 s)
+simulated e3_M5                e3_mirror  1492 specs ->  1469 fills (444 s)
+simulated e1_M15               a           831 specs ->   821 fills (454 s)
+simulated e1_M15               b           831 specs ->   821 fills (464 s)
+simulated e2_M15_bias_path     a           569 specs ->   557 fills (475 s)
+simulated e2_M15_bias_path     b           569 specs ->   557 fills (485 s)
+simulated e4_M15_bias_path     a           134 specs ->   134 fills (494 s)
+simulated e4_M15_bias_path     b           134 specs ->   134 fills (502 s)
+simulated e2_M15_bias_bar      a           500 specs ->   491 fills (513 s)
+simulated e2_M15_bias_bar      b           500 specs ->   491 fills (523 s)
+simulated e4_M15_bias_bar      a           111 specs ->   111 fills (531 s)
+simulated e4_M15_bias_bar      b           111 specs ->   111 fills (539 s)
+simulated e2_M15_label_path    a           293 specs ->   289 fills (549 s)
+simulated e2_M15_label_path    b           293 specs ->   289 fills (560 s)
+simulated e4_M15_label_path    a            74 specs ->    74 fills (567 s)
+simulated e4_M15_label_path    b            74 specs ->    74 fills (574 s)
+simulated e2_M15_label_bar     a           286 specs ->   282 fills (584 s)
+simulated e2_M15_label_bar     b           286 specs ->   282 fills (594 s)
+simulated e4_M15_label_bar     a            59 specs ->    59 fills (599 s)
+simulated e4_M15_label_bar     b            59 specs ->    59 fills (605 s)
+simulated e3_M15               e3_ext      928 specs ->   920 fills (615 s)
+simulated e3_M15               e3_mirror   928 specs ->   920 fills (626 s)
+simulated base25               base         88 specs ->    87 fills (634 s)
+
+settings tried: 80 (E1 8, E2 32, E3 8, E4 32) + the base rate
+
+================ E1: every setting, INSIDE the windows (one position at a time) ================
+  tf vol exit a                  P1 n  186 (2.91/wd) win 0.31 R -0.035 [-0.24,+0.18] (norm -0.24,+0.17) USD   -120.8 DD  157.5 worst  -26.2 streak 12 | end:1 stop:152 target:25 time:8  <- main
+  tf vol exit a                  P2 n  125 (1.89/wd) win 0.29 R -0.290 [-0.48,-0.08] (norm -0.49,-0.09) USD   -542.2 DD  617.4 worst  -58.9 streak 19 | break:2 stop:97 target:10 time:16
+  tf vol exit a                  P* n  311 (2.39/wd) win 0.30 R -0.137 [-0.28,+0.01] (norm -0.29,+0.01) USD   -663.0 DD  711.9 worst  -58.9 streak 19 | break:2 end:1 stop:249 target:35 time:24
+  tf vol exit b                  P1 n  173 (2.70/wd) win 0.38 R -0.048 [-0.24,+0.15] (norm -0.24,+0.14) USD   -115.8 DD  139.0 worst  -26.2 streak  8 | end:1 stop:103 target:62 time:7
+  tf vol exit b                  P2 n  131 (1.98/wd) win 0.39 R -0.095 [-0.31,+0.12] (norm -0.31,+0.12) USD    -61.0 DD  392.9 worst  -52.7 streak  8 | break:4 stop:77 target:32 time:18
+  tf vol exit b                  P* n  304 (2.34/wd) win 0.38 R -0.068 [-0.21,+0.08] (norm -0.21,+0.07) USD   -176.8 DD  392.9 worst  -52.7 streak  8 | break:4 end:1 stop:180 target:94 time:25
+  tf M1 exit a                   P1 n  329 (5.14/wd) win 0.30 R +0.002 [-0.15,+0.16] (norm -0.16,+0.16) USD    -53.0 DD  239.5 worst  -18.9 streak 16 | break:2 stop:275 target:49 time:3
+  tf M1 exit a                   P2 n  387 (5.86/wd) win 0.28 R -0.148 [-0.28,-0.01] (norm -0.28,-0.01) USD   -284.7 DD  624.1 worst  -48.6 streak 13 | stop:337 target:49 time:1
+  tf M1 exit a                   P* n  716 (5.51/wd) win 0.29 R -0.079 [-0.18,+0.03] (norm -0.18,+0.02) USD   -337.7 DD  771.8 worst  -48.6 streak 16 | break:2 stop:612 target:98 time:4
+  tf M1 exit b                   P1 n  299 (4.67/wd) win 0.39 R +0.040 [-0.12,+0.21] (norm -0.12,+0.20) USD    +15.4 DD  162.5 worst  -18.9 streak  8 | break:1 stop:180 target:108 time:10
+  tf M1 exit b                   P2 n  383 (5.80/wd) win 0.35 R -0.069 [-0.21,+0.07] (norm -0.21,+0.07) USD   -138.9 DD  500.6 worst  -48.6 streak 12 | break:1 stop:249 target:130 time:3
+  tf M1 exit b                   P* n  682 (5.25/wd) win 0.37 R -0.021 [-0.13,+0.09] (norm -0.13,+0.09) USD   -123.5 DD  640.0 worst  -48.6 streak 12 | break:2 stop:429 target:238 time:13
+  tf M5 exit a                   P1 n  179 (2.80/wd) win 0.37 R +0.169 [-0.05,+0.40] (norm -0.06,+0.40) USD    +68.2 DD  100.2 worst  -23.9 streak  6 | break:2 end:1 stop:137 target:32 time:7
+  tf M5 exit a                   P2 n  219 (3.32/wd) win 0.36 R +0.030 [-0.16,+0.22] (norm -0.16,+0.22) USD   +275.1 DD  365.5 worst  -40.9 streak 14 | break:1 stop:182 target:26 time:10
+  tf M5 exit a                   P* n  398 (3.06/wd) win 0.37 R +0.093 [-0.05,+0.24] (norm -0.05,+0.24) USD   +343.3 DD  365.5 worst  -40.9 streak 14 | break:3 end:1 stop:319 target:58 time:17
+  tf M5 exit b                   P1 n  176 (2.75/wd) win 0.44 R +0.112 [-0.08,+0.30] (norm -0.08,+0.31) USD    +97.6 DD  104.0 worst  -40.3 streak  5 | end:1 stop:92 target:68 time:15
+  tf M5 exit b                   P2 n  223 (3.38/wd) win 0.44 R +0.109 [-0.06,+0.29] (norm -0.07,+0.28) USD   +508.5 DD  330.5 worst  -63.8 streak  9 | break:3 stop:119 target:83 time:18
+  tf M5 exit b                   P* n  399 (3.07/wd) win 0.44 R +0.110 [-0.02,+0.24] (norm -0.02,+0.24) USD   +606.1 DD  330.5 worst  -63.8 streak  9 | break:3 end:1 stop:211 target:151 time:33
+  tf M15 exit a                  P1 n   91 (1.42/wd) win 0.34 R +0.048 [-0.23,+0.36] (norm -0.25,+0.35) USD    -84.9 DD  122.4 worst  -26.2 streak  7 | stop:60 target:16 time:15
+  tf M15 exit a                  P2 n  110 (1.67/wd) win 0.31 R -0.250 [-0.46,-0.02] (norm -0.47,-0.03) USD   -490.0 DD  608.5 worst  -58.9 streak 16 | break:2 stop:78 target:10 time:20
+  tf M15 exit a                  P* n  201 (1.55/wd) win 0.32 R -0.115 [-0.29,+0.08] (norm -0.30,+0.07) USD   -574.9 DD  624.1 worst  -58.9 streak 16 | break:2 stop:138 target:26 time:35
+  tf M15 exit b                  P1 n   92 (1.44/wd) win 0.39 R -0.011 [-0.27,+0.27] (norm -0.28,+0.26) USD   -102.5 DD  117.1 worst  -30.4 streak  6 | stop:51 target:32 time:9
+  tf M15 exit b                  P2 n  113 (1.71/wd) win 0.40 R -0.122 [-0.34,+0.10] (norm -0.34,+0.10) USD    -90.8 DD  387.0 worst  -52.7 streak  8 | break:4 stop:65 target:25 time:19
+  tf M15 exit b                  P* n  205 (1.58/wd) win 0.40 R -0.072 [-0.24,+0.10] (norm -0.24,+0.10) USD   -193.3 DD  387.0 worst  -52.7 streak  8 | break:4 stop:116 target:57 time:28
+
+---- E1: every setting, OUTSIDE the windows (information; one position at a time among them)
+  tf vol exit a                  P1 n  229 (3.58/wd) win 0.31 R -0.129 [-0.31,+0.09] (norm -0.33,+0.07) USD   -196.7 DD  306.8 worst  -23.7 streak 19 | break:11 end:3 stop:165 target:21 time:29
+  tf vol exit a                  P2 n  206 (3.12/wd) win 0.35 R -0.128 [-0.28,+0.03] (norm -0.29,+0.03) USD   -611.2 DD  748.1 worst  -92.1 streak 18 | break:16 end:4 stop:123 target:16 time:47
+  tf vol exit b                  P1 n  236 (3.69/wd) win 0.37 R -0.119 [-0.27,+0.03] (norm -0.27,+0.03) USD   -220.2 DD  287.2 worst  -23.7 streak 16 | break:11 end:3 stop:131 target:62 time:29
+  tf vol exit b                  P2 n  205 (3.11/wd) win 0.40 R -0.100 [-0.25,+0.06] (norm -0.25,+0.05) USD   -578.7 DD  713.0 worst  -92.1 streak 10 | break:10 end:3 stop:103 target:54 time:35
+  tf M1 exit a                   P1 n  284 (4.44/wd) win 0.33 R -0.080 [-0.23,+0.07] (norm -0.23,+0.07) USD    -72.4 DD  184.5 worst  -14.1 streak 13 | break:12 end:5 stop:220 target:38 time:9
+  tf M1 exit a                   P2 n  352 (5.33/wd) win 0.33 R +0.027 [-0.14,+0.21] (norm -0.14,+0.19) USD   +297.3 DD  195.7 worst  -39.8 streak 11 | break:7 end:3 stop:281 target:43 time:18
+  tf M1 exit b                   P1 n  286 (4.47/wd) win 0.37 R -0.081 [-0.23,+0.06] (norm -0.23,+0.06) USD    -93.2 DD  201.2 worst  -15.8 streak 13 | break:7 end:5 stop:171 target:93 time:10
+  tf M1 exit b                   P2 n  348 (5.27/wd) win 0.39 R -0.047 [-0.18,+0.09] (norm -0.18,+0.09) USD    -10.0 DD  275.0 worst  -41.3 streak 10 | break:8 end:2 stop:206 target:116 time:16
+  tf M5 exit a                   P1 n  284 (4.44/wd) win 0.32 R -0.115 [-0.27,+0.07] (norm -0.28,+0.05) USD   -135.2 DD  415.7 worst  -20.3 streak 18 | break:18 end:5 stop:205 target:26 time:30
+  tf M5 exit a                   P2 n  325 (4.92/wd) win 0.35 R -0.045 [-0.18,+0.10] (norm -0.19,+0.10) USD   -408.7 DD  525.0 worst  -46.0 streak  9 | break:16 end:7 stop:232 target:37 time:33
+  tf M5 exit b                   P1 n  284 (4.44/wd) win 0.40 R -0.069 [-0.20,+0.07] (norm -0.21,+0.07) USD   -103.8 DD  281.7 worst  -20.3 streak 10 | break:15 end:4 stop:155 target:81 time:29
+  tf M5 exit b                   P2 n  327 (4.95/wd) win 0.42 R -0.022 [-0.15,+0.11] (norm -0.15,+0.11) USD   -262.9 DD  373.2 worst  -70.9 streak  8 | break:11 end:4 stop:169 target:100 time:43
+  tf M15 exit a                  P1 n  145 (2.27/wd) win 0.34 R -0.106 [-0.30,+0.09] (norm -0.30,+0.09) USD    -77.4 DD  218.9 worst  -23.7 streak  6 | break:5 end:3 stop:85 target:15 time:37
+  tf M15 exit a                  P2 n  178 (2.70/wd) win 0.37 R -0.087 [-0.25,+0.08] (norm -0.26,+0.08) USD   -435.2 DD  697.4 worst  -92.1 streak 18 | break:15 end:4 stop:96 target:12 time:51
+  tf M15 exit b                  P1 n  151 (2.36/wd) win 0.37 R -0.154 [-0.32,+0.01] (norm -0.32,+0.01) USD   -157.7 DD  206.5 worst  -23.7 streak  6 | break:6 end:3 stop:77 target:36 time:29
+  tf M15 exit b                  P2 n  178 (2.70/wd) win 0.43 R -0.043 [-0.20,+0.12] (norm -0.21,+0.12) USD   -396.3 DD  615.2 worst  -92.1 streak  8 | break:9 end:3 stop:83 target:46 time:37
+
+================ E2: every setting, INSIDE the windows (one position at a time) ================
+  tf vol exit a bias path        P1 n  272 (4.25/wd) win 0.37 R -0.028 [-0.11,+0.06] (norm -0.12,+0.06) USD   -299.1 DD  360.7 worst  -39.6 streak 10 | end:1 stop:248 target:6 time:17  <- main
+  tf vol exit a bias path        P2 n   87 (1.32/wd) win 0.36 R +0.000 [-0.15,+0.16] (norm -0.16,+0.16) USD    -99.2 DD  240.6 worst  -88.5 streak  7 | break:1 stop:64 target:3 time:19
+  tf vol exit a bias path        P* n  359 (2.76/wd) win 0.36 R -0.021 [-0.10,+0.05] (norm -0.10,+0.06) USD   -398.2 DD  467.2 worst  -88.5 streak 10 | break:1 end:1 stop:312 target:9 time:36
+  tf vol exit a bias bar         P1 n  199 (3.11/wd) win 0.38 R -0.012 [-0.11,+0.09] (norm -0.12,+0.09) USD   -138.2 DD  219.8 worst  -38.0 streak  9 | break:1 end:1 stop:178 target:4 time:15
+  tf vol exit a bias bar         P2 n   69 (1.05/wd) win 0.39 R +0.055 [-0.09,+0.22] (norm -0.10,+0.22) USD    +22.2 DD  135.9 worst  -77.8 streak  5 | break:1 stop:49 target:2 time:17
+  tf vol exit a bias bar         P* n  268 (2.06/wd) win 0.38 R +0.005 [-0.08,+0.09] (norm -0.08,+0.09) USD   -116.0 DD  264.7 worst  -77.8 streak  9 | break:2 end:1 stop:227 target:6 time:32
+  tf vol exit a label path       P1 n  151 (2.36/wd) win 0.38 R -0.006 [-0.13,+0.12] (norm -0.13,+0.12) USD    -61.7 DD  164.6 worst  -38.0 streak  9 | end:1 stop:140 target:2 time:8
+  tf vol exit a label path       P2 n   41 (0.62/wd) win 0.41 R +0.118 [-0.09,+0.35] (norm -0.11,+0.34) USD    +41.2 DD  140.1 worst  -88.5 streak  6 | stop:26 target:1 time:14
+  tf vol exit a label path       P* n  192 (1.48/wd) win 0.39 R +0.020 [-0.08,+0.13] (norm -0.09,+0.13) USD    -20.5 DD  175.6 worst  -88.5 streak  9 | end:1 stop:166 target:3 time:22
+  tf vol exit a label bar        P1 n   86 (1.34/wd) win 0.45 R +0.114 [-0.07,+0.30] (norm -0.08,+0.30) USD   +125.8 DD   67.2 worst  -16.3 streak  6 | end:1 stop:73 target:2 time:10
+  tf vol exit a label bar        P2 n   37 (0.56/wd) win 0.35 R -0.045 [-0.20,+0.11] (norm -0.20,+0.11) USD    -20.5 DD   90.6 worst  -34.5 streak  5 | stop:27 time:10
+  tf vol exit a label bar        P* n  123 (0.95/wd) win 0.42 R +0.066 [-0.07,+0.21] (norm -0.07,+0.21) USD   +105.3 DD   98.6 worst  -34.5 streak  6 | end:1 stop:100 target:2 time:20
+  tf vol exit b bias path        P1 n  178 (2.78/wd) win 0.47 R -0.017 [-0.14,+0.10] (norm -0.14,+0.10) USD   -119.3 DD  273.2 worst  -60.9 streak  9 | break:4 end:2 stop:46 target:23 time:103
+  tf vol exit b bias path        P2 n   79 (1.20/wd) win 0.46 R +0.013 [-0.18,+0.22] (norm -0.19,+0.22) USD    -60.4 DD  402.9 worst -109.9 streak  5 | break:5 end:2 stop:22 target:10 time:40
+  tf vol exit b bias path        P* n  257 (1.98/wd) win 0.47 R -0.008 [-0.11,+0.10] (norm -0.11,+0.10) USD   -179.7 DD  402.9 worst -109.9 streak  9 | break:9 end:4 stop:68 target:33 time:143
+  tf vol exit b bias bar         P1 n  140 (2.19/wd) win 0.48 R +0.035 [-0.10,+0.18] (norm -0.11,+0.18) USD    -51.5 DD  165.3 worst  -45.2 streak  8 | break:5 end:2 stop:33 target:22 time:78
+  tf vol exit b bias bar         P2 n   65 (0.98/wd) win 0.51 R +0.112 [-0.09,+0.32] (norm -0.10,+0.32) USD   +158.8 DD  147.9 worst  -77.9 streak  5 | break:4 end:2 stop:12 target:8 time:39
+  tf vol exit b bias bar         P* n  205 (1.58/wd) win 0.49 R +0.060 [-0.05,+0.17] (norm -0.06,+0.18) USD   +107.3 DD  165.3 worst  -77.9 streak  8 | break:9 end:4 stop:45 target:30 time:117
+  tf vol exit b label path       P1 n  107 (1.67/wd) win 0.56 R +0.147 [-0.03,+0.31] (norm -0.02,+0.31) USD   +216.3 DD  101.8 worst  -35.6 streak  8 | break:2 end:2 stop:26 target:22 time:55
+  tf vol exit b label path       P2 n   39 (0.59/wd) win 0.56 R +0.243 [-0.04,+0.54] (norm -0.05,+0.53) USD   +182.6 DD  149.3 worst -109.9 streak  4 | break:2 end:2 stop:7 target:8 time:20
+  tf vol exit b label path       P* n  146 (1.12/wd) win 0.56 R +0.172 [+0.02,+0.32] (norm +0.03,+0.32) USD   +398.9 DD  149.3 worst -109.9 streak  8 | break:4 end:4 stop:33 target:30 time:75
+  tf vol exit b label bar        P1 n   64 (1.00/wd) win 0.50 R +0.106 [-0.12,+0.34] (norm -0.13,+0.34) USD   +123.4 DD   83.2 worst  -27.7 streak  6 | break:1 end:1 stop:19 target:13 time:30
+  tf vol exit b label bar        P2 n   35 (0.53/wd) win 0.49 R +0.029 [-0.22,+0.27] (norm -0.22,+0.28) USD    +26.2 DD  187.0 worst  -47.2 streak  5 | break:4 end:1 stop:7 target:4 time:19
+  tf vol exit b label bar        P* n   99 (0.76/wd) win 0.49 R +0.079 [-0.09,+0.26] (norm -0.10,+0.25) USD   +149.5 DD  187.0 worst  -47.2 streak  6 | break:5 end:2 stop:26 target:17 time:49
+  tf M1 exit a bias path         P1 n  546 (8.53/wd) win 0.36 R -0.039 [-0.09,+0.02] (norm -0.10,+0.02) USD   -293.2 DD  561.6 worst  -38.0 streak 14 | end:1 stop:514 target:11 time:20
+  tf M1 exit a bias path         P2 n  563 (8.53/wd) win 0.33 R -0.086 [-0.14,-0.03] (norm -0.14,-0.03) USD  -1112.1 DD 1313.4 worst  -96.7 streak 12 | stop:535 target:12 time:16
+  tf M1 exit a bias path         P* n 1109 (8.53/wd) win 0.34 R -0.063 [-0.10,-0.02] (norm -0.10,-0.02) USD  -1405.2 DD 1538.9 worst  -96.7 streak 14 | end:1 stop:1049 target:23 time:36
+  tf M1 exit a bias bar          P1 n  392 (6.12/wd) win 0.36 R -0.014 [-0.09,+0.06] (norm -0.08,+0.06) USD   -105.3 DD  350.5 worst  -38.0 streak 12 | break:1 end:1 stop:366 target:9 time:15
+  tf M1 exit a bias bar          P2 n  365 (5.53/wd) win 0.34 R -0.052 [-0.12,+0.02] (norm -0.12,+0.02) USD   -366.8 DD  521.0 worst  -96.7 streak 11 | stop:342 target:10 time:13
+  tf M1 exit a bias bar          P* n  757 (5.82/wd) win 0.35 R -0.032 [-0.08,+0.02] (norm -0.08,+0.02) USD   -472.1 DD  597.2 worst  -96.7 streak 12 | break:1 end:1 stop:708 target:19 time:28
+  tf M1 exit a label path        P1 n  298 (4.66/wd) win 0.35 R -0.021 [-0.10,+0.06] (norm -0.10,+0.06) USD    -36.3 DD  309.5 worst  -38.0 streak 10 | end:1 stop:283 target:5 time:9
+  tf M1 exit a label path        P2 n  287 (4.35/wd) win 0.37 R -0.021 [-0.10,+0.06] (norm -0.10,+0.06) USD   -230.5 DD  500.3 worst  -96.7 streak  9 | stop:274 target:6 time:7
+  tf M1 exit a label path        P* n  585 (4.50/wd) win 0.36 R -0.021 [-0.08,+0.04] (norm -0.08,+0.04) USD   -266.8 DD  500.3 worst  -96.7 streak 10 | end:1 stop:557 target:11 time:16
+  tf M1 exit a label bar         P1 n  163 (2.55/wd) win 0.40 R +0.015 [-0.09,+0.13] (norm -0.10,+0.13) USD   +116.0 DD  125.6 worst  -20.2 streak 13 | end:1 stop:151 target:3 time:8
+  tf M1 exit a label bar         P2 n  175 (2.65/wd) win 0.41 R +0.004 [-0.09,+0.11] (norm -0.10,+0.10) USD   +304.6 DD  330.9 worst  -96.7 streak  9 | stop:166 target:2 time:7
+  tf M1 exit a label bar         P* n  338 (2.60/wd) win 0.41 R +0.009 [-0.07,+0.09] (norm -0.07,+0.08) USD   +420.6 DD  330.9 worst  -96.7 streak 13 | end:1 stop:317 target:5 time:15
+  tf M1 exit b bias path         P1 n  265 (4.14/wd) win 0.48 R -0.003 [-0.10,+0.10] (norm -0.11,+0.10) USD   +116.3 DD  275.9 worst  -55.2 streak  7 | end:2 stop:74 target:36 time:153
+  tf M1 exit b bias path         P2 n  283 (4.29/wd) win 0.45 R +0.002 [-0.10,+0.12] (norm -0.11,+0.11) USD   -107.8 DD  915.3 worst -160.5 streak  7 | break:3 stop:82 target:43 time:155
+  tf M1 exit b bias path         P* n  548 (4.22/wd) win 0.46 R +0.000 [-0.08,+0.08] (norm -0.08,+0.08) USD     +8.5 DD  915.3 worst -160.5 streak  7 | break:3 end:2 stop:156 target:79 time:308
+  tf M1 exit b bias bar          P1 n  199 (3.11/wd) win 0.46 R +0.020 [-0.10,+0.13] (norm -0.10,+0.14) USD   +107.5 DD  250.3 worst  -55.2 streak  6 | break:2 end:1 stop:48 target:28 time:120
+  tf M1 exit b bias bar          P2 n  196 (2.97/wd) win 0.44 R +0.012 [-0.12,+0.15] (norm -0.12,+0.15) USD    -57.1 DD  500.1 worst  -91.8 streak  5 | break:3 stop:56 target:27 time:110
+  tf M1 exit b bias bar          P* n  395 (3.04/wd) win 0.45 R +0.016 [-0.07,+0.11] (norm -0.07,+0.11) USD    +50.4 DD  500.1 worst  -91.8 streak  6 | break:5 end:1 stop:104 target:55 time:230
+  tf M1 exit b label path        P1 n  165 (2.58/wd) win 0.53 R +0.112 [-0.03,+0.26] (norm -0.03,+0.25) USD   +433.2 DD  137.1 worst  -35.6 streak  9 | break:1 end:2 stop:45 target:32 time:85
+  tf M1 exit b label path        P2 n  170 (2.58/wd) win 0.45 R +0.003 [-0.14,+0.14] (norm -0.14,+0.15) USD    +28.6 DD  472.8 worst -160.5 streak  5 | break:4 stop:58 target:27 time:81
+  tf M1 exit b label path        P* n  335 (2.58/wd) win 0.49 R +0.057 [-0.04,+0.16] (norm -0.04,+0.16) USD   +461.8 DD  472.8 worst -160.5 streak  9 | break:5 end:2 stop:103 target:59 time:166
+  tf M1 exit b label bar         P1 n   95 (1.48/wd) win 0.49 R +0.085 [-0.10,+0.28] (norm -0.11,+0.28) USD   +306.5 DD  194.2 worst  -28.2 streak 10 | break:2 end:1 stop:30 target:16 time:46
+  tf M1 exit b label bar         P2 n  118 (1.79/wd) win 0.47 R +0.026 [-0.14,+0.20] (norm -0.14,+0.19) USD    -14.2 DD  406.9 worst  -85.4 streak  7 | break:4 stop:33 target:20 time:61
+  tf M1 exit b label bar         P* n  213 (1.64/wd) win 0.48 R +0.052 [-0.07,+0.18] (norm -0.07,+0.18) USD   +292.3 DD  406.9 worst  -85.4 streak 10 | break:6 end:1 stop:63 target:36 time:107
+  tf M5 exit a bias path         P1 n  206 (3.22/wd) win 0.36 R -0.006 [-0.10,+0.10] (norm -0.11,+0.10) USD   -188.0 DD  280.6 worst  -32.0 streak  8 | end:1 stop:175 target:5 time:25
+  tf M5 exit a bias path         P2 n  208 (3.15/wd) win 0.34 R +0.018 [-0.10,+0.14] (norm -0.10,+0.13) USD   -240.4 DD  531.8 worst  -56.1 streak 16 | break:1 stop:181 target:11 time:15
+  tf M5 exit a bias path         P* n  414 (3.18/wd) win 0.35 R +0.006 [-0.07,+0.09] (norm -0.07,+0.08) USD   -428.5 DD  565.9 worst  -56.1 streak 16 | break:1 end:1 stop:356 target:16 time:40
+  tf M5 exit a bias bar          P1 n  155 (2.42/wd) win 0.35 R +0.007 [-0.11,+0.12] (norm -0.11,+0.12) USD   -135.3 DD  222.3 worst  -22.0 streak 12 | break:1 end:1 stop:132 target:3 time:18
+  tf M5 exit a bias bar          P2 n  157 (2.38/wd) win 0.32 R -0.016 [-0.14,+0.12] (norm -0.15,+0.12) USD   -322.4 DD  472.4 worst  -63.7 streak 12 | break:1 stop:134 target:9 time:13
+  tf M5 exit a bias bar          P* n  312 (2.40/wd) win 0.34 R -0.005 [-0.09,+0.08] (norm -0.09,+0.08) USD   -457.7 DD  603.2 worst  -63.7 streak 12 | break:2 end:1 stop:266 target:12 time:31
+  tf M5 exit a label path        P1 n  110 (1.72/wd) win 0.32 R -0.063 [-0.19,+0.07] (norm -0.19,+0.06) USD   -144.2 DD  201.7 worst  -31.9 streak  7 | end:1 stop:99 target:2 time:8
+  tf M5 exit a label path        P2 n  109 (1.65/wd) win 0.34 R +0.052 [-0.11,+0.23] (norm -0.12,+0.22) USD    -33.6 DD  271.1 worst  -45.6 streak  8 | break:1 stop:95 target:6 time:7
+  tf M5 exit a label path        P* n  219 (1.68/wd) win 0.33 R -0.006 [-0.11,+0.11] (norm -0.11,+0.10) USD   -177.8 DD  316.3 worst  -45.6 streak  8 | break:1 end:1 stop:194 target:8 time:15
+  tf M5 exit a label bar         P1 n   65 (1.02/wd) win 0.38 R +0.042 [-0.14,+0.24] (norm -0.16,+0.24) USD    +69.4 DD   71.4 worst  -16.5 streak  7 | end:1 stop:52 target:2 time:10
+  tf M5 exit a label bar         P2 n   84 (1.27/wd) win 0.31 R -0.058 [-0.24,+0.13] (norm -0.25,+0.13) USD   -106.1 DD  465.2 worst  -47.9 streak  9 | stop:73 target:4 time:7
+  tf M5 exit a label bar         P* n  149 (1.15/wd) win 0.34 R -0.015 [-0.14,+0.13] (norm -0.15,+0.12) USD    -36.7 DD  465.2 worst  -47.9 streak  9 | end:1 stop:125 target:6 time:17
+  tf M5 exit b bias path         P1 n  179 (2.80/wd) win 0.46 R -0.035 [-0.16,+0.09] (norm -0.16,+0.09) USD   -240.7 DD  406.1 worst  -61.0 streak 12 | break:3 end:1 stop:48 target:23 time:104
+  tf M5 exit b bias path         P2 n  177 (2.68/wd) win 0.49 R +0.049 [-0.09,+0.19] (norm -0.09,+0.19) USD    +54.1 DD  428.1 worst -105.2 streak  4 | break:3 stop:49 target:30 time:95
+  tf M5 exit b bias path         P* n  356 (2.74/wd) win 0.48 R +0.007 [-0.08,+0.10] (norm -0.09,+0.10) USD   -186.7 DD  428.1 worst -105.2 streak 12 | break:6 end:1 stop:97 target:53 time:199
+  tf M5 exit b bias bar          P1 n  136 (2.12/wd) win 0.43 R -0.066 [-0.19,+0.07] (norm -0.20,+0.07) USD   -242.5 DD  379.9 worst  -45.3 streak 12 | break:2 end:2 stop:35 target:13 time:84
+  tf M5 exit b bias bar          P2 n  133 (2.02/wd) win 0.49 R +0.055 [-0.11,+0.22] (norm -0.11,+0.22) USD   +179.2 DD  267.3 worst  -64.5 streak  4 | break:3 stop:38 target:22 time:70
+  tf M5 exit b bias bar          P* n  269 (2.07/wd) win 0.46 R -0.006 [-0.11,+0.10] (norm -0.11,+0.10) USD    -63.2 DD  379.9 worst  -64.5 streak 12 | break:5 end:2 stop:73 target:35 time:154
+  tf M5 exit b label path        P1 n   99 (1.55/wd) win 0.47 R +0.009 [-0.15,+0.18] (norm -0.15,+0.17) USD    -28.6 DD  221.1 worst  -44.8 streak  7 | break:1 end:2 stop:24 target:14 time:58
+  tf M5 exit b label path        P2 n   95 (1.44/wd) win 0.54 R +0.141 [-0.07,+0.36] (norm -0.07,+0.35) USD   +276.3 DD  181.3 worst  -92.9 streak  4 | break:2 end:1 stop:27 target:19 time:46
+  tf M5 exit b label path        P* n  194 (1.49/wd) win 0.51 R +0.074 [-0.06,+0.21] (norm -0.06,+0.21) USD   +247.7 DD  221.1 worst  -92.9 streak  7 | break:3 end:3 stop:51 target:33 time:104
+  tf M5 exit b label bar         P1 n   64 (1.00/wd) win 0.47 R -0.009 [-0.22,+0.21] (norm -0.23,+0.21) USD    +60.5 DD  129.4 worst  -27.0 streak  8 | break:1 end:1 stop:20 target:9 time:33
+  tf M5 exit b label bar         P2 n   72 (1.09/wd) win 0.44 R -0.021 [-0.24,+0.20] (norm -0.25,+0.20) USD    -94.8 DD  287.4 worst  -64.5 streak  8 | break:2 stop:23 target:11 time:36
+  tf M5 exit b label bar         P* n  136 (1.05/wd) win 0.46 R -0.015 [-0.17,+0.14] (norm -0.17,+0.14) USD    -34.3 DD  287.4 worst  -64.5 streak  8 | break:3 end:1 stop:43 target:20 time:69
+  tf M15 exit a bias path        P1 n   59 (0.92/wd) win 0.29 R -0.042 [-0.23,+0.17] (norm -0.25,+0.17) USD   -160.5 DD  166.1 worst  -39.6 streak  9 | end:1 stop:43 target:1 time:14
+  tf M15 exit a bias path        P2 n   64 (0.97/wd) win 0.34 R -0.008 [-0.17,+0.17] (norm -0.18,+0.16) USD   -154.4 DD  248.4 worst  -88.5 streak  9 | break:2 stop:44 target:2 time:16
+  tf M15 exit a bias path        P* n  123 (0.95/wd) win 0.32 R -0.024 [-0.16,+0.11] (norm -0.16,+0.11) USD   -314.9 DD  376.6 worst  -88.5 streak 16 | break:2 end:1 stop:87 target:3 time:30
+  tf M15 exit a bias bar         P1 n   56 (0.88/wd) win 0.30 R +0.053 [-0.17,+0.29] (norm -0.18,+0.28) USD    -28.7 DD  108.3 worst  -35.4 streak  9 | break:2 end:1 stop:37 target:2 time:14
+  tf M15 exit a bias bar         P2 n   52 (0.79/wd) win 0.35 R -0.006 [-0.17,+0.17] (norm -0.18,+0.16) USD    -77.5 DD  149.4 worst  -77.8 streak  8 | break:2 stop:35 target:1 time:14
+  tf M15 exit a bias bar         P* n  108 (0.83/wd) win 0.32 R +0.024 [-0.11,+0.17] (norm -0.12,+0.17) USD   -106.2 DD  257.7 worst  -77.8 streak 15 | break:4 end:1 stop:72 target:3 time:28
+  tf M15 exit a label path       P1 n   35 (0.55/wd) win 0.40 R +0.119 [-0.11,+0.38] (norm -0.13,+0.37) USD    +48.3 DD   47.6 worst  -18.7 streak  5 | end:1 stop:24 time:10
+  tf M15 exit a label path       P2 n   31 (0.47/wd) win 0.42 R +0.095 [-0.13,+0.35] (norm -0.14,+0.33) USD    +14.8 DD  140.1 worst  -88.5 streak  6 | stop:19 time:12
+  tf M15 exit a label path       P* n   66 (0.51/wd) win 0.41 R +0.108 [-0.05,+0.28] (norm -0.06,+0.28) USD    +63.1 DD  140.1 worst  -88.5 streak 10 | end:1 stop:43 time:22
+  tf M15 exit a label bar        P1 n   29 (0.45/wd) win 0.41 R -0.044 [-0.29,+0.22] (norm -0.31,+0.22) USD     -2.6 DD   80.2 worst  -16.3 streak  4 | end:1 stop:19 time:9
+  tf M15 exit a label bar        P2 n   29 (0.44/wd) win 0.34 R -0.002 [-0.17,+0.17] (norm -0.17,+0.17) USD     -4.3 DD   80.4 worst  -34.5 streak  4 | stop:21 time:8
+  tf M15 exit a label bar        P* n   58 (0.45/wd) win 0.38 R -0.023 [-0.17,+0.14] (norm -0.18,+0.13) USD     -6.9 DD  146.5 worst  -34.5 streak  8 | end:1 stop:40 time:17
+  tf M15 exit b bias path        P1 n   59 (0.92/wd) win 0.47 R +0.013 [-0.18,+0.22] (norm -0.19,+0.22) USD    -54.6 DD  154.1 worst  -60.9 streak  8 | break:3 end:2 stop:14 target:9 time:31
+  tf M15 exit b bias path        P2 n   61 (0.92/wd) win 0.43 R -0.033 [-0.24,+0.19] (norm -0.25,+0.19) USD   -187.8 DD  486.6 worst -109.9 streak  6 | break:5 end:2 stop:17 target:7 time:30
+  tf M15 exit b bias path        P* n  120 (0.92/wd) win 0.45 R -0.010 [-0.16,+0.14] (norm -0.16,+0.14) USD   -242.4 DD  486.6 worst -109.9 streak  8 | break:8 end:4 stop:31 target:16 time:61
+  tf M15 exit b bias bar         P1 n   56 (0.88/wd) win 0.48 R +0.061 [-0.14,+0.27] (norm -0.15,+0.27) USD    +30.1 DD  114.0 worst  -35.4 streak  7 | break:5 end:2 stop:11 target:9 time:29
+  tf M15 exit b bias bar         P2 n   50 (0.76/wd) win 0.42 R -0.041 [-0.26,+0.19] (norm -0.26,+0.18) USD    -48.0 DD  245.6 worst  -77.9 streak  5 | break:5 end:2 stop:11 target:4 time:28
+  tf M15 exit b bias bar         P* n  106 (0.82/wd) win 0.45 R +0.013 [-0.14,+0.17] (norm -0.14,+0.16) USD    -17.8 DD  245.6 worst  -77.9 streak  7 | break:10 end:4 stop:22 target:13 time:57
+  tf M15 exit b label path       P1 n   35 (0.55/wd) win 0.57 R +0.193 [-0.06,+0.44] (norm -0.06,+0.45) USD   +134.4 DD   55.3 worst  -30.9 streak  4 | break:1 end:1 stop:6 target:6 time:21
+  tf M15 exit b label path       P2 n   31 (0.47/wd) win 0.52 R +0.176 [-0.11,+0.50] (norm -0.13,+0.48) USD   +121.9 DD  198.7 worst -109.9 streak  4 | break:2 end:2 stop:5 target:5 time:17
+  tf M15 exit b label path       P* n   66 (0.51/wd) win 0.55 R +0.185 [-0.00,+0.37] (norm -0.01,+0.38) USD   +256.3 DD  198.7 worst -109.9 streak  4 | break:3 end:3 stop:11 target:11 time:38
+  tf M15 exit b label bar        P1 n   29 (0.45/wd) win 0.52 R -0.001 [-0.28,+0.27] (norm -0.28,+0.28) USD    +36.1 DD   83.8 worst  -18.1 streak  4 | break:2 end:1 stop:7 target:4 time:15
+  tf M15 exit b label bar        P2 n   28 (0.42/wd) win 0.43 R -0.010 [-0.26,+0.26] (norm -0.28,+0.26) USD     -7.8 DD  192.7 worst  -47.2 streak  5 | break:4 end:1 stop:5 target:2 time:16
+  tf M15 exit b label bar        P* n   57 (0.44/wd) win 0.47 R -0.005 [-0.20,+0.19] (norm -0.20,+0.19) USD    +28.2 DD  192.7 worst  -47.2 streak  5 | break:6 end:2 stop:12 target:6 time:31
+
+---- E2: every setting, OUTSIDE the windows (information; one position at a time among them)
+  tf vol exit a bias path        P1 n  370 (5.78/wd) win 0.38 R -0.014 [-0.08,+0.06] (norm -0.08,+0.06) USD   -184.9 DD  337.2 worst  -38.3 streak 14 | break:23 end:4 stop:248 target:9 time:86
+  tf vol exit a bias path        P2 n  207 (3.14/wd) win 0.44 R +0.052 [-0.04,+0.16] (norm -0.05,+0.15) USD   +493.7 DD  167.8 worst  -77.1 streak  8 | break:11 end:4 stop:108 target:5 time:79
+  tf vol exit a bias bar         P1 n  303 (4.73/wd) win 0.39 R -0.031 [-0.10,+0.04] (norm -0.10,+0.04) USD   -200.7 DD  296.9 worst  -38.3 streak  8 | break:21 end:4 stop:201 target:5 time:72
+  tf vol exit a bias bar         P2 n  166 (2.52/wd) win 0.40 R +0.008 [-0.09,+0.12] (norm -0.10,+0.12) USD    +44.1 DD  218.5 worst  -93.3 streak  9 | break:11 end:5 stop:87 target:4 time:59
+  tf vol exit a label path       P1 n  202 (3.16/wd) win 0.38 R +0.013 [-0.09,+0.12] (norm -0.09,+0.12) USD     +2.1 DD  105.8 worst  -38.3 streak  6 | break:10 end:2 stop:140 target:6 time:44
+  tf vol exit a label path       P2 n  112 (1.70/wd) win 0.41 R -0.016 [-0.14,+0.11] (norm -0.14,+0.11) USD    +46.9 DD  220.4 worst  -42.1 streak  6 | break:5 end:3 stop:64 target:1 time:39
+  tf vol exit a label bar        P1 n  174 (2.72/wd) win 0.36 R -0.068 [-0.16,+0.03] (norm -0.16,+0.03) USD    -93.8 DD  233.8 worst  -38.3 streak 10 | break:11 end:4 stop:120 target:2 time:37
+  tf vol exit a label bar        P2 n  102 (1.55/wd) win 0.36 R -0.088 [-0.20,+0.03] (norm -0.20,+0.03) USD   -173.9 DD  287.0 worst  -42.1 streak  8 | break:4 end:3 stop:59 time:36
+  tf vol exit b bias path        P1 n  292 (4.56/wd) win 0.52 R +0.001 [-0.08,+0.08] (norm -0.08,+0.08) USD    -61.3 DD  200.5 worst  -38.6 streak  6 | break:22 end:5 stop:48 target:27 time:190
+  tf vol exit b bias path        P2 n  196 (2.97/wd) win 0.51 R +0.049 [-0.05,+0.15] (norm -0.05,+0.15) USD   +515.6 DD  138.4 worst  -59.3 streak  6 | break:14 end:4 stop:35 target:21 time:122
+  tf vol exit b bias bar         P1 n  248 (3.88/wd) win 0.48 R -0.035 [-0.12,+0.05] (norm -0.12,+0.05) USD   -174.8 DD  275.3 worst  -38.6 streak  6 | break:22 end:5 stop:43 target:16 time:162
+  tf vol exit b bias bar         P2 n  159 (2.41/wd) win 0.47 R +0.022 [-0.09,+0.13] (norm -0.09,+0.13) USD    -32.4 DD  348.3 worst -125.5 streak  8 | break:13 end:5 stop:28 target:15 time:98
+  tf vol exit b label path       P1 n  159 (2.48/wd) win 0.52 R -0.003 [-0.12,+0.11] (norm -0.12,+0.12) USD    +27.6 DD  113.7 worst  -38.6 streak  4 | break:11 end:2 stop:35 target:12 time:99
+  tf vol exit b label path       P2 n  107 (1.62/wd) win 0.47 R -0.007 [-0.14,+0.12] (norm -0.14,+0.13) USD   +135.5 DD  169.3 worst  -59.3 streak  6 | break:6 end:3 stop:20 target:6 time:72
+  tf vol exit b label bar        P1 n  142 (2.22/wd) win 0.48 R -0.059 [-0.18,+0.06] (norm -0.18,+0.06) USD    -64.1 DD  194.6 worst  -38.6 streak  5 | break:11 end:4 stop:30 target:8 time:89
+  tf vol exit b label bar        P2 n   99 (1.50/wd) win 0.38 R -0.086 [-0.22,+0.04] (norm -0.22,+0.05) USD   -284.5 DD  411.1 worst -125.5 streak  6 | break:5 end:3 stop:22 target:4 time:65
+  tf M1 exit a bias path         P1 n  620 (9.69/wd) win 0.36 R -0.019 [-0.07,+0.03] (norm -0.07,+0.03) USD   -312.7 DD  453.7 worst  -38.3 streak 12 | break:30 end:6 stop:485 target:13 time:86
+  tf M1 exit a bias path         P2 n  674 (10.21/wd) win 0.39 R +0.020 [-0.03,+0.08] (norm -0.03,+0.08) USD   +322.6 DD  847.8 worst  -71.1 streak 11 | break:33 end:11 stop:553 target:10 time:67
+  tf M1 exit a bias bar          P1 n  489 (7.64/wd) win 0.37 R -0.027 [-0.08,+0.03] (norm -0.08,+0.03) USD   -322.2 DD  454.9 worst  -38.3 streak 11 | break:25 end:5 stop:387 target:8 time:64
+  tf M1 exit a bias bar          P2 n  475 (7.20/wd) win 0.36 R +0.003 [-0.06,+0.07] (norm -0.07,+0.07) USD    -36.1 DD  628.5 worst  -71.1 streak 12 | break:23 end:10 stop:387 target:5 time:50
+  tf M1 exit a label path        P1 n  311 (4.86/wd) win 0.38 R +0.003 [-0.07,+0.08] (norm -0.07,+0.08) USD     -2.8 DD  187.9 worst  -38.3 streak  8 | break:15 end:2 stop:238 target:6 time:50
+  tf M1 exit a label path        P2 n  347 (5.26/wd) win 0.39 R +0.016 [-0.06,+0.10] (norm -0.06,+0.09) USD     +8.3 DD  535.5 worst  -67.6 streak 12 | break:13 end:6 stop:296 target:4 time:28
+  tf M1 exit a label bar         P1 n  261 (4.08/wd) win 0.35 R -0.043 [-0.12,+0.04] (norm -0.12,+0.03) USD   -102.7 DD  264.0 worst  -38.3 streak  7 | break:18 end:4 stop:202 target:2 time:35
+  tf M1 exit a label bar         P2 n  278 (4.21/wd) win 0.36 R -0.002 [-0.08,+0.09] (norm -0.09,+0.09) USD    -38.4 DD  422.9 worst  -67.6 streak 10 | break:10 end:4 stop:236 target:2 time:26
+  tf M1 exit b bias path         P1 n  424 (6.62/wd) win 0.49 R -0.020 [-0.09,+0.05] (norm -0.09,+0.05) USD   -231.7 DD  468.1 worst  -38.6 streak  8 | break:31 end:6 stop:76 target:43 time:268
+  tf M1 exit b bias path         P2 n  435 (6.59/wd) win 0.47 R +0.006 [-0.07,+0.08] (norm -0.07,+0.08) USD   -370.2 DD 1250.4 worst -160.4 streak  6 | break:37 end:12 stop:88 target:52 time:246
+  tf M1 exit b bias bar          P1 n  332 (5.19/wd) win 0.46 R -0.049 [-0.12,+0.03] (norm -0.12,+0.03) USD   -295.9 DD  523.9 worst  -53.7 streak  6 | break:27 end:5 stop:59 target:22 time:219
+  tf M1 exit b bias bar          P2 n  313 (4.74/wd) win 0.43 R -0.009 [-0.10,+0.09] (norm -0.10,+0.08) USD   -417.8 DD  893.8 worst -160.4 streak  5 | break:27 end:11 stop:74 target:38 time:163
+  tf M1 exit b label path        P1 n  230 (3.59/wd) win 0.51 R +0.008 [-0.09,+0.11] (norm -0.09,+0.11) USD   +105.4 DD  227.0 worst  -38.6 streak  4 | break:16 end:2 stop:49 target:23 time:140
+  tf M1 exit b label path        P2 n  237 (3.59/wd) win 0.46 R +0.012 [-0.09,+0.12] (norm -0.09,+0.12) USD    +14.9 DD  539.8 worst -160.4 streak  8 | break:15 end:7 stop:49 target:24 time:142
+  tf M1 exit b label bar         P1 n  192 (3.00/wd) win 0.45 R -0.045 [-0.15,+0.06] (norm -0.15,+0.06) USD    -69.5 DD  332.7 worst  -38.6 streak  7 | break:18 end:4 stop:37 target:14 time:119
+  tf M1 exit b label bar         P2 n  197 (2.98/wd) win 0.46 R -0.024 [-0.13,+0.09] (norm -0.13,+0.09) USD   -239.2 DD  509.6 worst -160.4 streak  6 | break:13 end:5 stop:42 target:20 time:117
+  tf M5 exit a bias path         P1 n  338 (5.28/wd) win 0.37 R +0.005 [-0.07,+0.08] (norm -0.07,+0.08) USD    -71.3 DD  348.8 worst  -41.9 streak 10 | break:22 end:5 stop:222 target:7 time:82
+  tf M5 exit a bias path         P2 n  330 (5.00/wd) win 0.37 R +0.034 [-0.05,+0.13] (norm -0.05,+0.12) USD   -197.3 DD  530.4 worst  -61.2 streak 11 | break:29 end:8 stop:224 target:11 time:58
+  tf M5 exit a bias bar          P1 n  290 (4.53/wd) win 0.37 R -0.016 [-0.09,+0.06] (norm -0.09,+0.06) USD   -168.2 DD  275.5 worst  -29.1 streak  8 | break:20 end:4 stop:194 target:4 time:68
+  tf M5 exit a bias bar          P2 n  265 (4.02/wd) win 0.37 R +0.010 [-0.08,+0.10] (norm -0.08,+0.10) USD    -45.5 DD  293.3 worst  -83.5 streak 11 | break:23 end:9 stop:178 target:7 time:48
+  tf M5 exit a label path        P1 n  168 (2.62/wd) win 0.39 R +0.044 [-0.06,+0.16] (norm -0.06,+0.15) USD   +127.9 DD  116.2 worst  -20.1 streak 11 | break:9 end:1 stop:116 target:4 time:38
+  tf M5 exit a label path        P2 n  170 (2.58/wd) win 0.36 R -0.027 [-0.13,+0.10] (norm -0.14,+0.09) USD   -152.8 DD  424.2 worst  -53.6 streak 13 | break:11 end:4 stop:124 target:2 time:29
+  tf M5 exit a label bar         P1 n  160 (2.50/wd) win 0.37 R -0.042 [-0.13,+0.05] (norm -0.13,+0.05) USD    -61.0 DD  201.9 worst  -20.1 streak 13 | break:11 end:4 stop:111 target:1 time:33
+  tf M5 exit a label bar         P2 n  154 (2.33/wd) win 0.38 R +0.008 [-0.12,+0.15] (norm -0.12,+0.14) USD    -53.7 DD  375.0 worst  -53.6 streak  9 | break:10 end:3 stop:108 target:1 time:32
+  tf M5 exit b bias path         P1 n  288 (4.50/wd) win 0.50 R +0.010 [-0.07,+0.09] (norm -0.07,+0.09) USD     -5.9 DD  203.6 worst  -41.9 streak  7 | break:22 end:3 stop:45 target:30 time:188
+  tf M5 exit b bias path         P2 n  295 (4.47/wd) win 0.51 R -0.008 [-0.09,+0.08] (norm -0.09,+0.08) USD   -499.9 DD  816.9 worst -105.9 streak  7 | break:28 end:8 stop:61 target:33 time:165
+  tf M5 exit b bias bar          P1 n  245 (3.83/wd) win 0.49 R -0.005 [-0.09,+0.08] (norm -0.09,+0.08) USD    -77.5 DD  231.7 worst  -35.4 streak  6 | break:22 end:3 stop:36 target:20 time:164
+  tf M5 exit b bias bar          P2 n  232 (3.52/wd) win 0.49 R -0.010 [-0.10,+0.09] (norm -0.10,+0.09) USD   -202.4 DD  408.4 worst -101.2 streak  7 | break:24 end:9 stop:45 target:25 time:129
+  tf M5 exit b label path        P1 n  150 (2.34/wd) win 0.55 R +0.061 [-0.06,+0.19] (norm -0.07,+0.19) USD   +223.5 DD   84.1 worst  -32.7 streak  5 | break:11 end:1 stop:27 target:16 time:95
+  tf M5 exit b label path        P2 n  154 (2.33/wd) win 0.45 R -0.068 [-0.18,+0.05] (norm -0.18,+0.04) USD   -210.2 DD  324.1 worst -101.2 streak 10 | break:11 end:4 stop:34 target:12 time:93
+  tf M5 exit b label bar         P1 n  144 (2.25/wd) win 0.49 R -0.057 [-0.17,+0.07] (norm -0.18,+0.06) USD    -47.6 DD  153.6 worst  -32.7 streak  5 | break:14 end:4 stop:27 target:9 time:90
+  tf M5 exit b label bar         P2 n  140 (2.12/wd) win 0.47 R -0.036 [-0.15,+0.09] (norm -0.16,+0.09) USD   -169.2 DD  326.0 worst -101.2 streak  4 | break:12 end:4 stop:30 target:13 time:81
+  tf M15 exit a bias path        P1 n  176 (2.75/wd) win 0.40 R -0.031 [-0.13,+0.07] (norm -0.14,+0.07) USD   -170.1 DD  260.0 worst  -26.2 streak  9 | break:13 end:1 stop:85 target:3 time:74
+  tf M15 exit a bias path        P2 n  171 (2.59/wd) win 0.44 R +0.049 [-0.06,+0.17] (norm -0.06,+0.16) USD   +369.5 DD  167.8 worst  -77.1 streak  8 | break:10 end:4 stop:76 target:5 time:76
+  tf M15 exit a bias bar         P1 n  161 (2.52/wd) win 0.40 R -0.013 [-0.11,+0.10] (norm -0.12,+0.10) USD   -160.7 DD  272.7 worst  -26.2 streak  9 | break:14 end:1 stop:74 target:2 time:70
+  tf M15 exit a bias bar         P2 n  143 (2.17/wd) win 0.39 R -0.012 [-0.13,+0.11] (norm -0.13,+0.10) USD    -74.3 DD  233.4 worst  -93.3 streak  9 | break:11 end:5 stop:65 target:4 time:58
+  tf M15 exit a label path       P1 n   92 (1.44/wd) win 0.39 R -0.039 [-0.20,+0.13] (norm -0.20,+0.12) USD   -111.8 DD  210.3 worst  -26.2 streak  8 | break:2 end:1 stop:47 target:2 time:40
+  tf M15 exit a label path       P2 n   90 (1.36/wd) win 0.40 R -0.023 [-0.15,+0.12] (norm -0.15,+0.11) USD     -8.3 DD  194.5 worst  -42.1 streak  6 | break:6 end:3 stop:43 target:1 time:37
+  tf M15 exit a label bar        P1 n   93 (1.45/wd) win 0.34 R -0.079 [-0.22,+0.08] (norm -0.23,+0.07) USD   -154.1 DD  263.2 worst  -26.2 streak 13 | break:6 end:3 stop:49 target:2 time:33
+  tf M15 exit a label bar        P2 n   88 (1.33/wd) win 0.33 R -0.125 [-0.23,-0.01] (norm -0.23,-0.02) USD   -243.1 DD  276.6 worst  -42.1 streak  8 | break:5 end:3 stop:45 time:35
+  tf M15 exit b bias path        P1 n  173 (2.70/wd) win 0.47 R +0.021 [-0.08,+0.12] (norm -0.08,+0.13) USD    -33.9 DD  139.6 worst  -26.2 streak  7 | break:14 end:2 stop:22 target:16 time:119
+  tf M15 exit b bias path        P2 n  170 (2.58/wd) win 0.51 R +0.051 [-0.05,+0.15] (norm -0.06,+0.16) USD   +465.9 DD  153.2 worst  -59.3 streak  6 | break:13 end:4 stop:29 target:16 time:108
+  tf M15 exit b bias bar         P1 n  160 (2.50/wd) win 0.48 R +0.019 [-0.09,+0.12] (norm -0.09,+0.13) USD    -82.5 DD  165.7 worst  -26.2 streak  9 | break:15 end:2 stop:23 target:18 time:102
+  tf M15 exit b bias bar         P2 n  144 (2.18/wd) win 0.47 R +0.014 [-0.10,+0.13] (norm -0.10,+0.13) USD    -66.4 DD  348.3 worst -125.5 streak  8 | break:12 end:5 stop:26 target:12 time:89
+  tf M15 exit b label path       P1 n   90 (1.41/wd) win 0.47 R +0.003 [-0.15,+0.17] (norm -0.15,+0.16) USD     -7.3 DD  157.5 worst  -26.2 streak  6 | break:4 end:1 stop:16 target:5 time:64
+  tf M15 exit b label path       P2 n   90 (1.36/wd) win 0.48 R -0.008 [-0.15,+0.13] (norm -0.14,+0.13) USD    +88.2 DD  136.2 worst  -59.3 streak  6 | break:6 end:3 stop:15 target:3 time:63
+  tf M15 exit b label bar        P1 n   91 (1.42/wd) win 0.41 R -0.041 [-0.18,+0.11] (norm -0.19,+0.11) USD    -81.4 DD  209.9 worst  -26.2 streak  9 | break:5 end:3 stop:16 target:6 time:61
+  tf M15 exit b label bar        P2 n   88 (1.33/wd) win 0.40 R -0.101 [-0.23,+0.03] (norm -0.23,+0.03) USD   -310.5 DD  374.5 worst -125.5 streak  6 | break:5 end:3 stop:18 target:2 time:60
+
+================ E3: every setting, INSIDE the windows (one position at a time) ================
+  tf vol stop ext                P1 n  192 (3.00/wd) win 0.47 R -0.068 [-0.19,+0.05] (norm -0.20,+0.06) USD    -93.9 DD  209.3 worst  -40.4 streak  5 | stop:81 target:67 time:44  <- main
+  tf vol stop ext                P2 n  157 (2.38/wd) win 0.50 R +0.010 [-0.13,+0.14] (norm -0.12,+0.14) USD    +66.8 DD  254.8 worst -182.5 streak  7 | stop:51 target:53 time:53
+  tf vol stop ext                P* n  349 (2.68/wd) win 0.48 R -0.033 [-0.12,+0.06] (norm -0.13,+0.06) USD    -27.1 DD  306.7 worst -182.5 streak  7 | stop:132 target:120 time:97
+  tf vol stop mirror             P1 n  197 (3.08/wd) win 0.47 R -0.021 [-0.15,+0.11] (norm -0.15,+0.11) USD    -68.2 DD  158.1 worst  -39.0 streak  6 | stop:76 target:78 time:43
+  tf vol stop mirror             P2 n  164 (2.48/wd) win 0.46 R -0.023 [-0.15,+0.11] (norm -0.15,+0.11) USD    +74.8 DD  295.9 worst -179.8 streak  6 | break:1 stop:57 target:56 time:50
+  tf vol stop mirror             P* n  361 (2.78/wd) win 0.47 R -0.022 [-0.11,+0.07] (norm -0.11,+0.07) USD     +6.6 DD  296.9 worst -179.8 streak  6 | break:1 stop:133 target:134 time:93
+  tf M1 stop ext                 P1 n  238 (3.72/wd) win 0.51 R -0.001 [-0.12,+0.12] (norm -0.12,+0.12) USD    +72.0 DD  161.0 worst  -30.7 streak  9 | break:1 stop:101 target:101 time:35
+  tf M1 stop ext                 P2 n  265 (4.02/wd) win 0.49 R -0.021 [-0.13,+0.09] (norm -0.13,+0.09) USD   -349.6 DD  445.1 worst -115.1 streak  6 | stop:111 target:107 time:47
+  tf M1 stop ext                 P* n  503 (3.87/wd) win 0.50 R -0.012 [-0.09,+0.07] (norm -0.09,+0.07) USD   -277.5 DD  525.9 worst -115.1 streak 10 | break:1 stop:212 target:208 time:82
+  tf M1 stop mirror              P1 n  260 (4.06/wd) win 0.46 R -0.040 [-0.16,+0.08] (norm -0.16,+0.08) USD     +0.3 DD  198.2 worst  -31.0 streak  6 | break:1 stop:115 target:113 time:31
+  tf M1 stop mirror              P2 n  288 (4.36/wd) win 0.50 R -0.013 [-0.12,+0.10] (norm -0.12,+0.10) USD   -120.1 DD  300.0 worst -153.4 streak  7 | stop:125 target:125 time:38
+  tf M1 stop mirror              P* n  548 (4.22/wd) win 0.48 R -0.026 [-0.11,+0.05] (norm -0.11,+0.05) USD   -119.8 DD  374.2 worst -153.4 streak  7 | break:1 stop:240 target:238 time:69
+  tf M5 stop ext                 P1 n  198 (3.09/wd) win 0.49 R -0.009 [-0.14,+0.11] (norm -0.13,+0.12) USD    +88.1 DD  257.7 worst  -30.7 streak  6 | stop:76 target:74 time:48
+  tf M5 stop ext                 P2 n  206 (3.12/wd) win 0.50 R -0.020 [-0.14,+0.10] (norm -0.14,+0.10) USD    -13.8 DD  405.2 worst -181.1 streak  8 | stop:78 target:73 time:55
+  tf M5 stop ext                 P* n  404 (3.11/wd) win 0.50 R -0.014 [-0.10,+0.07] (norm -0.10,+0.07) USD    +74.4 DD  405.2 worst -181.1 streak  8 | stop:154 target:147 time:103
+  tf M5 stop mirror              P1 n  210 (3.28/wd) win 0.45 R -0.076 [-0.20,+0.05] (norm -0.20,+0.05) USD   -118.1 DD  297.4 worst  -31.0 streak  7 | stop:85 target:76 time:49
+  tf M5 stop mirror              P2 n  224 (3.39/wd) win 0.50 R -0.007 [-0.13,+0.11] (norm -0.13,+0.11) USD    +27.6 DD  295.0 worst -181.1 streak  5 | break:1 stop:88 target:89 time:46
+  tf M5 stop mirror              P* n  434 (3.34/wd) win 0.47 R -0.041 [-0.13,+0.05] (norm -0.13,+0.05) USD    -90.4 DD  460.0 worst -181.1 streak  7 | break:1 stop:173 target:165 time:95
+  tf M15 stop ext                P1 n  141 (2.20/wd) win 0.50 R +0.008 [-0.13,+0.15] (norm -0.13,+0.15) USD    +70.7 DD  135.6 worst  -40.4 streak  6 | stop:46 target:46 time:49
+  tf M15 stop ext                P2 n  153 (2.32/wd) win 0.48 R +0.005 [-0.13,+0.14] (norm -0.13,+0.14) USD    +19.2 DD  254.8 worst -182.5 streak  7 | stop:49 target:51 time:53
+  tf M15 stop ext                P* n  294 (2.26/wd) win 0.49 R +0.006 [-0.09,+0.10] (norm -0.09,+0.10) USD    +89.9 DD  254.8 worst -182.5 streak  7 | stop:95 target:97 time:102
+  tf M15 stop mirror             P1 n  145 (2.27/wd) win 0.48 R -0.007 [-0.15,+0.13] (norm -0.15,+0.13) USD     +6.5 DD  118.7 worst  -39.0 streak  6 | stop:47 target:51 time:47
+  tf M15 stop mirror             P2 n  159 (2.41/wd) win 0.47 R -0.014 [-0.15,+0.12] (norm -0.15,+0.12) USD    +91.0 DD  274.0 worst -179.8 streak  6 | break:1 stop:55 target:56 time:47
+  tf M15 stop mirror             P* n  304 (2.34/wd) win 0.47 R -0.011 [-0.11,+0.09] (norm -0.11,+0.09) USD    +97.5 DD  274.0 worst -179.8 streak  6 | break:1 stop:102 target:107 time:94
+
+---- E3: every setting, OUTSIDE the windows (information; one position at a time among them)
+  tf vol stop ext                P1 n  189 (2.95/wd) win 0.52 R +0.047 [-0.07,+0.17] (norm -0.07,+0.16) USD   -105.5 DD  203.3 worst  -50.6 streak  6 | break:6 end:2 stop:53 target:65 time:63
+  tf vol stop ext                P2 n  195 (2.95/wd) win 0.48 R -0.010 [-0.12,+0.10] (norm -0.12,+0.10) USD   -147.8 DD  224.6 worst  -93.7 streak  4 | break:8 end:3 stop:50 target:56 time:78
+  tf vol stop mirror             P1 n  199 (3.11/wd) win 0.50 R -0.018 [-0.14,+0.10] (norm -0.14,+0.10) USD   -143.0 DD  188.7 worst  -31.1 streak  9 | break:7 end:2 stop:66 target:66 time:58
+  tf vol stop mirror             P2 n  207 (3.14/wd) win 0.51 R -0.005 [-0.12,+0.11] (norm -0.12,+0.11) USD    +41.3 DD  214.1 worst  -93.2 streak  4 | break:9 end:2 stop:64 target:66 time:66
+  tf M1 stop ext                 P1 n  183 (2.86/wd) win 0.50 R -0.035 [-0.16,+0.09] (norm -0.16,+0.09) USD   -162.1 DD  207.2 worst  -29.2 streak  6 | break:5 end:3 stop:65 target:61 time:49
+  tf M1 stop ext                 P2 n  241 (3.65/wd) win 0.44 R -0.130 [-0.24,-0.02] (norm -0.24,-0.02) USD   -829.6 DD  862.5 worst -100.6 streak  6 | break:10 end:1 stop:103 target:74 time:53
+  tf M1 stop mirror              P1 n  203 (3.17/wd) win 0.53 R -0.014 [-0.14,+0.11] (norm -0.14,+0.11) USD    -33.8 DD  149.9 worst  -29.2 streak  4 | break:4 end:3 stop:77 target:76 time:43
+  tf M1 stop mirror              P2 n  280 (4.24/wd) win 0.44 R -0.158 [-0.27,-0.05] (norm -0.27,-0.05) USD   -731.5 DD  773.3 worst  -93.2 streak  7 | break:9 end:2 stop:134 target:92 time:43
+  tf M5 stop ext                 P1 n  187 (2.92/wd) win 0.51 R +0.016 [-0.10,+0.13] (norm -0.10,+0.13) USD   -117.0 DD  195.1 worst  -50.5 streak  7 | break:8 end:3 stop:50 target:58 time:68
+  tf M5 stop ext                 P2 n  235 (3.56/wd) win 0.46 R -0.062 [-0.17,+0.04] (norm -0.17,+0.05) USD   -280.0 DD  434.0 worst  -74.6 streak  7 | break:11 end:2 stop:79 target:72 time:71
+  tf M5 stop mirror              P1 n  199 (3.11/wd) win 0.49 R -0.041 [-0.16,+0.07] (norm -0.16,+0.08) USD   -158.5 DD  214.2 worst  -34.6 streak  9 | break:8 end:3 stop:66 target:64 time:58
+  tf M5 stop mirror              P2 n  264 (4.00/wd) win 0.45 R -0.052 [-0.16,+0.06] (norm -0.16,+0.05) USD   -213.3 DD  387.7 worst  -93.2 streak  8 | break:12 end:1 stop:97 target:89 time:65
+  tf M15 stop ext                P1 n  153 (2.39/wd) win 0.49 R +0.026 [-0.10,+0.15] (norm -0.10,+0.15) USD   -129.5 DD  287.5 worst  -50.6 streak  7 | break:4 end:1 stop:39 target:46 time:63
+  tf M15 stop ext                P2 n  181 (2.74/wd) win 0.50 R +0.016 [-0.09,+0.13] (norm -0.10,+0.13) USD   -127.7 DD  229.9 worst  -93.7 streak  4 | break:8 end:3 stop:40 target:50 time:80
+  tf M15 stop mirror             P1 n  154 (2.41/wd) win 0.49 R -0.030 [-0.16,+0.10] (norm -0.16,+0.10) USD   -119.1 DD  173.1 worst  -31.1 streak  7 | break:6 end:1 stop:50 target:44 time:53
+  tf M15 stop mirror             P2 n  188 (2.85/wd) win 0.52 R -0.010 [-0.12,+0.11] (norm -0.13,+0.11) USD    +25.2 DD  222.1 worst  -93.2 streak  4 | break:9 end:2 stop:55 target:55 time:67
+
+================ E4: every setting, INSIDE the windows (one position at a time) ================
+  tf vol exit a bias path        P1 n   79 (1.23/wd) win 0.41 R +0.041 [-0.18,+0.28] (norm -0.19,+0.27) USD    +45.7 DD   96.0 worst  -16.6 streak  6 | end:1 stop:67 target:1 time:10  <- main
+  tf vol exit a bias path        P2 n   63 (0.95/wd) win 0.30 R -0.052 [-0.36,+0.31] (norm -0.40,+0.29) USD   -330.5 DD  409.1 worst  -74.4 streak  6 | stop:47 target:1 time:15
+  tf vol exit a bias path        P* n  142 (1.09/wd) win 0.36 R -0.000 [-0.20,+0.21] (norm -0.20,+0.20) USD   -284.8 DD  419.9 worst  -74.4 streak  6 | end:1 stop:114 target:2 time:25
+  tf vol exit a bias bar         P1 n   63 (0.98/wd) win 0.37 R -0.099 [-0.32,+0.13] (norm -0.33,+0.13) USD    -23.7 DD  129.5 worst  -23.2 streak  6 | end:1 stop:53 target:1 time:8
+  tf vol exit a bias bar         P2 n   54 (0.82/wd) win 0.28 R -0.020 [-0.39,+0.41] (norm -0.42,+0.38) USD   -266.0 DD  319.5 worst  -74.4 streak  6 | stop:40 target:2 time:12
+  tf vol exit a bias bar         P* n  117 (0.90/wd) win 0.32 R -0.062 [-0.28,+0.17] (norm -0.28,+0.16) USD   -289.7 DD  388.9 worst  -74.4 streak  6 | end:1 stop:93 target:3 time:20
+  tf vol exit a label path       P1 n   44 (0.69/wd) win 0.41 R +0.006 [-0.23,+0.27] (norm -0.25,+0.26) USD    +23.7 DD   56.5 worst  -14.2 streak  6 | end:1 stop:40 time:3
+  tf vol exit a label path       P2 n   34 (0.52/wd) win 0.41 R +0.191 [-0.22,+0.63] (norm -0.25,+0.63) USD    -34.8 DD  181.9 worst  -74.4 streak  4 | stop:21 target:1 time:12
+  tf vol exit a label path       P* n   78 (0.60/wd) win 0.41 R +0.087 [-0.14,+0.33] (norm -0.15,+0.33) USD    -11.0 DD  181.9 worst  -74.4 streak  6 | end:1 stop:61 target:1 time:15
+  tf vol exit a label bar        P1 n   38 (0.59/wd) win 0.42 R +0.012 [-0.26,+0.30] (norm -0.27,+0.30) USD    +83.5 DD   84.0 worst  -13.5 streak  5 | stop:31 time:7
+  tf vol exit a label bar        P2 n   25 (0.38/wd) win 0.32 R +0.036 [-0.43,+0.57] (norm -0.48,+0.55) USD    -61.1 DD  122.3 worst  -60.4 streak  6 | stop:16 time:9
+  tf vol exit a label bar        P* n   63 (0.48/wd) win 0.38 R +0.022 [-0.23,+0.29] (norm -0.24,+0.29) USD    +22.4 DD  122.3 worst  -60.4 streak  6 | stop:47 time:16
+  tf vol exit b bias path        P1 n   76 (1.19/wd) win 0.49 R +0.179 [-0.08,+0.45] (norm -0.09,+0.45) USD   +161.4 DD  111.9 worst  -28.1 streak  6 | break:1 end:1 stop:33 target:30 time:11
+  tf vol exit b bias path        P2 n   63 (0.95/wd) win 0.43 R -0.006 [-0.30,+0.30] (norm -0.31,+0.30) USD   -132.6 DD  188.0 worst  -74.4 streak  4 | stop:34 target:17 time:12
+  tf vol exit b bias path        P* n  139 (1.07/wd) win 0.46 R +0.095 [-0.11,+0.31] (norm -0.11,+0.30) USD    +28.8 DD  242.5 worst  -74.4 streak  6 | break:1 end:1 stop:67 target:47 time:23
+  tf vol exit b bias bar         P1 n   61 (0.95/wd) win 0.43 R +0.006 [-0.28,+0.31] (norm -0.29,+0.31) USD    +21.1 DD  120.5 worst  -28.1 streak  6 | end:1 stop:31 target:18 time:11
+  tf vol exit b bias bar         P2 n   54 (0.82/wd) win 0.41 R -0.030 [-0.36,+0.32] (norm -0.37,+0.31) USD   -146.1 DD  169.6 worst  -74.4 streak  4 | stop:29 target:13 time:12
+  tf vol exit b bias bar         P* n  115 (0.88/wd) win 0.42 R -0.011 [-0.23,+0.21] (norm -0.23,+0.21) USD   -125.0 DD  267.0 worst  -74.4 streak  6 | end:1 stop:60 target:31 time:23
+  tf vol exit b label path       P1 n   41 (0.64/wd) win 0.51 R +0.292 [-0.09,+0.65] (norm -0.08,+0.67) USD   +159.5 DD   65.9 worst  -22.5 streak  5 | break:1 end:1 stop:16 target:17 time:6
+  tf vol exit b label path       P2 n   34 (0.52/wd) win 0.59 R +0.418 [-0.03,+0.85] (norm -0.02,+0.86) USD   +195.7 DD   78.7 worst  -74.4 streak  3 | stop:13 target:15 time:6
+  tf vol exit b label path       P* n   75 (0.58/wd) win 0.55 R +0.349 [+0.08,+0.63] (norm +0.07,+0.63) USD   +355.3 DD   78.7 worst  -74.4 streak  5 | break:1 end:1 stop:29 target:32 time:12
+  tf vol exit b label bar        P1 n   36 (0.56/wd) win 0.53 R +0.240 [-0.15,+0.62] (norm -0.16,+0.64) USD   +158.6 DD   77.0 worst  -22.5 streak  4 | break:1 stop:15 target:14 time:6
+  tf vol exit b label bar        P2 n   25 (0.38/wd) win 0.52 R +0.203 [-0.28,+0.72] (norm -0.29,+0.70) USD   +116.1 DD  108.6 worst  -60.4 streak  3 | stop:11 target:8 time:6
+  tf vol exit b label bar        P* n   61 (0.47/wd) win 0.52 R +0.225 [-0.08,+0.54] (norm -0.08,+0.53) USD   +274.8 DD  108.6 worst  -60.4 streak  4 | break:1 stop:26 target:22 time:12
+  tf M1 exit a bias path         P1 n   90 (1.41/wd) win 0.40 R +0.027 [-0.18,+0.26] (norm -0.20,+0.25) USD    +41.0 DD  114.5 worst  -16.3 streak  6 | stop:83 target:2 time:5
+  tf M1 exit a bias path         P2 n   87 (1.32/wd) win 0.32 R -0.041 [-0.28,+0.25] (norm -0.30,+0.22) USD   -162.9 DD  247.7 worst  -31.3 streak  9 | stop:80 target:4 time:3
+  tf M1 exit a bias path         P* n  177 (1.36/wd) win 0.36 R -0.007 [-0.16,+0.18] (norm -0.18,+0.17) USD   -121.9 DD  247.7 worst  -31.3 streak  9 | stop:163 target:6 time:8
+  tf M1 exit a bias bar          P1 n   71 (1.11/wd) win 0.35 R -0.040 [-0.27,+0.21] (norm -0.28,+0.20) USD    -36.9 DD  104.2 worst  -16.3 streak  8 | stop:67 target:2 time:2
+  tf M1 exit a bias bar          P2 n   76 (1.15/wd) win 0.36 R -0.033 [-0.30,+0.28] (norm -0.32,+0.26) USD   -100.5 DD  163.6 worst  -37.3 streak  8 | stop:71 target:3 time:2
+  tf M1 exit a bias bar          P* n  147 (1.13/wd) win 0.35 R -0.036 [-0.22,+0.16] (norm -0.23,+0.15) USD   -137.4 DD  170.2 worst  -37.3 streak  8 | stop:138 target:5 time:4
+  tf M1 exit a label path        P1 n   51 (0.80/wd) win 0.43 R -0.034 [-0.29,+0.25] (norm -0.31,+0.24) USD    -12.9 DD   81.4 worst  -16.3 streak  7 | stop:50 time:1
+  tf M1 exit a label path        P2 n   46 (0.70/wd) win 0.37 R -0.018 [-0.30,+0.33] (norm -0.34,+0.30) USD    -15.2 DD   72.6 worst  -23.0 streak  6 | stop:42 target:1 time:3
+  tf M1 exit a label path        P* n   97 (0.75/wd) win 0.40 R -0.027 [-0.22,+0.20] (norm -0.23,+0.18) USD    -28.1 DD  104.9 worst  -23.0 streak  7 | stop:92 target:1 time:4
+  tf M1 exit a label bar         P1 n   44 (0.69/wd) win 0.39 R +0.022 [-0.27,+0.36] (norm -0.30,+0.34) USD    +26.2 DD   48.3 worst  -11.7 streak  7 | stop:43 time:1
+  tf M1 exit a label bar         P2 n   39 (0.59/wd) win 0.33 R -0.191 [-0.45,+0.11] (norm -0.48,+0.10) USD    -84.2 DD  127.5 worst  -31.3 streak  9 | stop:37 time:2
+  tf M1 exit a label bar         P* n   83 (0.64/wd) win 0.36 R -0.078 [-0.29,+0.15] (norm -0.30,+0.14) USD    -58.0 DD  127.5 worst  -31.3 streak  9 | stop:80 time:3
+  tf M1 exit b bias path         P1 n   86 (1.34/wd) win 0.49 R +0.205 [-0.06,+0.46] (norm -0.06,+0.47) USD   +223.4 DD   96.9 worst  -22.0 streak  7 | end:1 stop:39 target:35 time:11
+  tf M1 exit b bias path         P2 n   85 (1.29/wd) win 0.38 R -0.130 [-0.38,+0.12] (norm -0.38,+0.12) USD   -230.0 DD  323.9 worst  -75.0 streak  5 | stop:52 target:26 time:7
+  tf M1 exit b bias path         P* n  171 (1.32/wd) win 0.43 R +0.038 [-0.14,+0.22] (norm -0.14,+0.22) USD     -6.6 DD  323.9 worst  -75.0 streak  7 | end:1 stop:91 target:61 time:18
+  tf M1 exit b bias bar          P1 n   67 (1.05/wd) win 0.40 R -0.004 [-0.29,+0.28] (norm -0.30,+0.29) USD     -2.0 DD  106.6 worst  -22.0 streak  8 | end:1 stop:35 target:22 time:9
+  tf M1 exit b bias bar          P2 n   74 (1.12/wd) win 0.35 R -0.223 [-0.47,+0.04] (norm -0.48,+0.03) USD   -282.2 DD  338.0 worst  -75.0 streak 11 | stop:47 target:17 time:10
+  tf M1 exit b bias bar          P* n  141 (1.08/wd) win 0.38 R -0.119 [-0.31,+0.07] (norm -0.31,+0.07) USD   -284.2 DD  388.8 worst  -75.0 streak 11 | end:1 stop:82 target:39 time:19
+  tf M1 exit b label path        P1 n   47 (0.73/wd) win 0.51 R +0.283 [-0.08,+0.63] (norm -0.08,+0.64) USD   +179.7 DD   66.6 worst  -18.1 streak  6 | end:1 stop:21 target:21 time:4
+  tf M1 exit b label path        P2 n   46 (0.70/wd) win 0.41 R -0.028 [-0.37,+0.32] (norm -0.38,+0.33) USD    -23.5 DD  139.5 worst  -75.0 streak  4 | stop:27 target:18 time:1
+  tf M1 exit b label path        P* n   93 (0.72/wd) win 0.46 R +0.129 [-0.12,+0.38] (norm -0.12,+0.38) USD   +156.2 DD  139.5 worst  -75.0 streak  6 | end:1 stop:48 target:39 time:5
+  tf M1 exit b label bar         P1 n   41 (0.64/wd) win 0.54 R +0.314 [-0.06,+0.71] (norm -0.07,+0.70) USD   +167.2 DD   39.6 worst  -15.1 streak  4 | stop:18 target:21 time:2
+  tf M1 exit b label bar         P2 n   39 (0.59/wd) win 0.33 R -0.224 [-0.56,+0.16] (norm -0.59,+0.14) USD    -68.2 DD  202.0 worst  -48.1 streak  9 | stop:26 target:12 time:1
+  tf M1 exit b label bar         P* n   80 (0.62/wd) win 0.44 R +0.052 [-0.21,+0.32] (norm -0.22,+0.32) USD    +99.0 DD  202.0 worst  -48.1 streak  9 | stop:44 target:33 time:3
+  tf M5 exit a bias path         P1 n   76 (1.19/wd) win 0.42 R +0.143 [-0.12,+0.43] (norm -0.14,+0.42) USD   +145.8 DD   77.3 worst  -21.1 streak  8 | end:1 stop:61 target:3 time:11
+  tf M5 exit a bias path         P2 n   74 (1.12/wd) win 0.26 R -0.060 [-0.33,+0.26] (norm -0.36,+0.24) USD   -187.8 DD  246.6 worst  -36.7 streak  8 | stop:63 target:3 time:8
+  tf M5 exit a bias path         P* n  150 (1.15/wd) win 0.34 R +0.043 [-0.16,+0.25] (norm -0.16,+0.25) USD    -42.0 DD  259.4 worst  -36.7 streak  8 | end:1 stop:124 target:6 time:19
+  tf M5 exit a bias bar          P1 n   62 (0.97/wd) win 0.34 R -0.117 [-0.35,+0.12] (norm -0.36,+0.13) USD    -86.7 DD  183.2 worst  -21.1 streak 10 | end:1 stop:54 target:2 time:5
+  tf M5 exit a bias bar          P2 n   65 (0.98/wd) win 0.29 R -0.061 [-0.37,+0.30] (norm -0.40,+0.28) USD   -176.9 DD  211.0 worst  -56.0 streak  7 | stop:55 target:4 time:6
+  tf M5 exit a bias bar          P* n  127 (0.98/wd) win 0.31 R -0.088 [-0.28,+0.12] (norm -0.30,+0.12) USD   -263.6 DD  354.5 worst  -56.0 streak 10 | end:1 stop:109 target:6 time:11
+  tf M5 exit a label path        P1 n   42 (0.66/wd) win 0.38 R +0.092 [-0.25,+0.48] (norm -0.27,+0.46) USD    +80.1 DD   59.8 worst  -20.9 streak  8 | end:1 stop:34 target:1 time:6
+  tf M5 exit a label path        P2 n   41 (0.62/wd) win 0.29 R +0.047 [-0.30,+0.43] (norm -0.33,+0.43) USD     +9.4 DD   99.0 worst  -36.7 streak 11 | stop:34 target:1 time:6
+  tf M5 exit a label path        P* n   83 (0.64/wd) win 0.34 R +0.069 [-0.18,+0.34] (norm -0.19,+0.33) USD    +89.4 DD  115.9 worst  -36.7 streak 11 | end:1 stop:68 target:2 time:12
+  tf M5 exit a label bar         P1 n   38 (0.59/wd) win 0.37 R +0.051 [-0.30,+0.45] (norm -0.33,+0.44) USD    +49.8 DD  110.0 worst  -20.9 streak  8 | stop:32 target:1 time:5
+  tf M5 exit a label bar         P2 n   32 (0.48/wd) win 0.22 R -0.189 [-0.54,+0.21] (norm -0.57,+0.20) USD   -101.3 DD  153.4 worst  -31.9 streak 12 | stop:27 time:5
+  tf M5 exit a label bar         P* n   70 (0.54/wd) win 0.30 R -0.059 [-0.31,+0.23] (norm -0.33,+0.21) USD    -51.5 DD  185.3 worst  -31.9 streak 12 | stop:59 target:1 time:10
+  tf M5 exit b bias path         P1 n   74 (1.16/wd) win 0.49 R +0.162 [-0.12,+0.42] (norm -0.11,+0.44) USD   +184.0 DD  119.5 worst  -22.0 streak  8 | break:1 end:1 stop:33 target:25 time:14
+  tf M5 exit b bias path         P2 n   73 (1.11/wd) win 0.38 R -0.074 [-0.34,+0.21] (norm -0.35,+0.21) USD   -158.5 DD  317.1 worst  -75.0 streak  5 | stop:41 target:19 time:13
+  tf M5 exit b bias path         P* n  147 (1.13/wd) win 0.44 R +0.045 [-0.15,+0.25] (norm -0.15,+0.24) USD    +25.5 DD  342.5 worst  -75.0 streak  8 | break:1 end:1 stop:74 target:44 time:27
+  tf M5 exit b bias bar          P1 n   60 (0.94/wd) win 0.42 R +0.001 [-0.29,+0.32] (norm -0.31,+0.31) USD    +17.4 DD  131.6 worst  -22.0 streak 10 | end:1 stop:32 target:17 time:10
+  tf M5 exit b bias bar          P2 n   65 (0.98/wd) win 0.35 R -0.166 [-0.45,+0.12] (norm -0.45,+0.12) USD   -291.3 DD  328.4 worst  -75.0 streak 12 | stop:38 target:13 time:14
+  tf M5 exit b bias bar          P* n  125 (0.96/wd) win 0.38 R -0.085 [-0.30,+0.13] (norm -0.30,+0.13) USD   -273.9 DD  438.9 worst  -75.0 streak 12 | end:1 stop:70 target:30 time:24
+  tf M5 exit b label path        P1 n   40 (0.62/wd) win 0.50 R +0.219 [-0.15,+0.59] (norm -0.16,+0.60) USD   +162.9 DD   70.2 worst  -20.9 streak  7 | break:1 end:1 stop:17 target:13 time:8
+  tf M5 exit b label path        P2 n   40 (0.61/wd) win 0.45 R +0.144 [-0.24,+0.56] (norm -0.27,+0.55) USD    +79.1 DD   88.2 worst  -75.0 streak  4 | stop:20 target:13 time:7
+  tf M5 exit b label path        P* n   80 (0.62/wd) win 0.47 R +0.181 [-0.09,+0.47] (norm -0.10,+0.46) USD   +242.0 DD  132.8 worst  -75.0 streak  7 | break:1 end:1 stop:37 target:26 time:15
+  tf M5 exit b label bar         P1 n   36 (0.56/wd) win 0.50 R +0.204 [-0.20,+0.61] (norm -0.21,+0.62) USD   +145.4 DD   85.1 worst  -20.9 streak  8 | break:1 stop:17 target:14 time:4
+  tf M5 exit b label bar         P2 n   31 (0.47/wd) win 0.39 R -0.062 [-0.48,+0.36] (norm -0.49,+0.36) USD    +42.7 DD   98.9 worst  -37.7 streak  3 | stop:17 target:7 time:7
+  tf M5 exit b label bar         P* n   67 (0.52/wd) win 0.45 R +0.081 [-0.21,+0.38] (norm -0.22,+0.38) USD   +188.1 DD   98.9 worst  -37.7 streak  8 | break:1 stop:34 target:21 time:11
+  tf M15 exit a bias path        P1 n   63 (0.98/wd) win 0.48 R +0.089 [-0.18,+0.37] (norm -0.18,+0.36) USD    +95.5 DD   79.7 worst  -29.2 streak  6 | end:1 stop:41 target:2 time:19
+  tf M15 exit a bias path        P2 n   60 (0.91/wd) win 0.33 R -0.080 [-0.40,+0.29] (norm -0.43,+0.27) USD   -358.8 DD  431.6 worst  -74.4 streak  5 | stop:43 target:1 time:16
+  tf M15 exit a bias path        P* n  123 (0.95/wd) win 0.41 R +0.006 [-0.21,+0.24] (norm -0.21,+0.23) USD   -263.3 DD  431.6 worst  -74.4 streak  6 | end:1 stop:84 target:3 time:35
+  tf M15 exit a bias bar         P1 n   52 (0.81/wd) win 0.46 R -0.010 [-0.30,+0.28] (norm -0.31,+0.29) USD    +37.6 DD  113.0 worst  -25.3 streak  4 | end:1 stop:34 target:3 time:14
+  tf M15 exit a bias bar         P2 n   51 (0.77/wd) win 0.31 R -0.005 [-0.39,+0.40] (norm -0.41,+0.40) USD   -250.8 DD  303.8 worst  -74.4 streak  6 | stop:36 target:2 time:13
+  tf M15 exit a bias bar         P* n  103 (0.79/wd) win 0.39 R -0.008 [-0.25,+0.24] (norm -0.26,+0.24) USD   -213.2 DD  369.1 worst  -74.4 streak  6 | end:1 stop:70 target:5 time:27
+  tf M15 exit a label path       P1 n   34 (0.53/wd) win 0.56 R +0.240 [-0.12,+0.63] (norm -0.13,+0.61) USD   +161.9 DD   33.0 worst  -17.1 streak  3 | end:1 stop:20 time:13
+  tf M15 exit a label path       P2 n   32 (0.48/wd) win 0.44 R +0.190 [-0.25,+0.67] (norm -0.28,+0.66) USD    -31.0 DD  181.9 worst  -74.4 streak  4 | stop:19 target:1 time:12
+  tf M15 exit a label path       P* n   66 (0.51/wd) win 0.50 R +0.216 [-0.08,+0.52] (norm -0.08,+0.51) USD   +130.9 DD  181.9 worst  -74.4 streak  4 | end:1 stop:39 target:1 time:25
+  tf M15 exit a label bar        P1 n   31 (0.48/wd) win 0.58 R +0.320 [-0.10,+0.76] (norm -0.11,+0.75) USD   +194.9 DD   66.4 worst  -29.2 streak  3 | stop:17 target:1 time:13
+  tf M15 exit a label bar        P2 n   23 (0.35/wd) win 0.35 R +0.019 [-0.49,+0.57] (norm -0.54,+0.57) USD    -57.5 DD  132.6 worst  -60.4 streak  6 | stop:14 time:9
+  tf M15 exit a label bar        P* n   54 (0.42/wd) win 0.48 R +0.192 [-0.13,+0.53] (norm -0.15,+0.53) USD   +137.4 DD  132.6 worst  -60.4 streak  6 | stop:31 target:1 time:22
+  tf M15 exit b bias path        P1 n   63 (0.98/wd) win 0.54 R +0.186 [-0.09,+0.46] (norm -0.09,+0.47) USD   +196.6 DD   86.9 worst  -29.2 streak  4 | end:1 stop:25 target:20 time:17
+  tf M15 exit b bias path        P2 n   60 (0.91/wd) win 0.42 R -0.013 [-0.32,+0.32] (norm -0.33,+0.31) USD   -150.8 DD  191.8 worst  -74.4 streak  4 | stop:33 target:16 time:11
+  tf M15 exit b bias path        P* n  123 (0.95/wd) win 0.48 R +0.089 [-0.12,+0.31] (norm -0.12,+0.30) USD    +45.8 DD  226.4 worst  -74.4 streak  4 | end:1 stop:58 target:36 time:28
+  tf M15 exit b bias bar         P1 n   53 (0.83/wd) win 0.49 R +0.055 [-0.25,+0.36] (norm -0.26,+0.37) USD    +32.9 DD  115.1 worst  -30.4 streak  4 | end:1 stop:25 target:15 time:12
+  tf M15 exit b bias bar         P2 n   51 (0.77/wd) win 0.39 R -0.039 [-0.37,+0.31] (norm -0.39,+0.31) USD   -154.8 DD  169.4 worst  -74.4 streak  4 | stop:28 target:12 time:11
+  tf M15 exit b bias bar         P* n  104 (0.80/wd) win 0.44 R +0.009 [-0.22,+0.25] (norm -0.22,+0.24) USD   -121.8 DD  264.8 worst  -74.4 streak  4 | end:1 stop:53 target:27 time:23
+  tf M15 exit b label path       P1 n   34 (0.53/wd) win 0.59 R +0.256 [-0.10,+0.63] (norm -0.12,+0.63) USD   +162.5 DD   49.5 worst  -23.5 streak  3 | end:1 stop:12 target:11 time:10
+  tf M15 exit b label path       P2 n   32 (0.48/wd) win 0.56 R +0.402 [-0.06,+0.86] (norm -0.07,+0.87) USD   +179.8 DD   78.7 worst  -74.4 streak  3 | stop:13 target:14 time:5
+  tf M15 exit b label path       P* n   66 (0.51/wd) win 0.58 R +0.327 [+0.03,+0.62] (norm +0.03,+0.62) USD   +342.3 DD   78.7 worst  -74.4 streak  3 | end:1 stop:25 target:25 time:15
+  tf M15 exit b label bar        P1 n   31 (0.48/wd) win 0.61 R +0.293 [-0.11,+0.68] (norm -0.11,+0.70) USD   +189.4 DD   65.8 worst  -29.2 streak  3 | stop:12 target:11 time:8
+  tf M15 exit b label bar        P2 n   23 (0.35/wd) win 0.48 R +0.159 [-0.34,+0.67] (norm -0.37,+0.69) USD   +100.1 DD  108.6 worst  -60.4 streak  3 | stop:11 target:7 time:5
+  tf M15 exit b label bar        P* n   54 (0.42/wd) win 0.56 R +0.236 [-0.09,+0.55] (norm -0.09,+0.56) USD   +289.5 DD  108.6 worst  -60.4 streak  3 | stop:23 target:18 time:13
+
+---- E4: every setting, OUTSIDE the windows (information; one position at a time among them)
+  tf vol exit a bias path        P1 n    0
+  tf vol exit a bias path        P2 n    0
+  tf vol exit a bias bar         P1 n    0
+  tf vol exit a bias bar         P2 n    0
+  tf vol exit a label path       P1 n    0
+  tf vol exit a label path       P2 n    0
+  tf vol exit a label bar        P1 n    0
+  tf vol exit a label bar        P2 n    0
+  tf vol exit b bias path        P1 n    0
+  tf vol exit b bias path        P2 n    0
+  tf vol exit b bias bar         P1 n    0
+  tf vol exit b bias bar         P2 n    0
+  tf vol exit b label path       P1 n    0
+  tf vol exit b label path       P2 n    0
+  tf vol exit b label bar        P1 n    0
+  tf vol exit b label bar        P2 n    0
+  tf M1 exit a bias path         P1 n    0
+  tf M1 exit a bias path         P2 n    0
+  tf M1 exit a bias bar          P1 n    0
+  tf M1 exit a bias bar          P2 n    0
+  tf M1 exit a label path        P1 n    0
+  tf M1 exit a label path        P2 n    0
+  tf M1 exit a label bar         P1 n    0
+  tf M1 exit a label bar         P2 n    0
+  tf M1 exit b bias path         P1 n    0
+  tf M1 exit b bias path         P2 n    0
+  tf M1 exit b bias bar          P1 n    0
+  tf M1 exit b bias bar          P2 n    0
+  tf M1 exit b label path        P1 n    0
+  tf M1 exit b label path        P2 n    0
+  tf M1 exit b label bar         P1 n    0
+  tf M1 exit b label bar         P2 n    0
+  tf M5 exit a bias path         P1 n    0
+  tf M5 exit a bias path         P2 n    0
+  tf M5 exit a bias bar          P1 n    0
+  tf M5 exit a bias bar          P2 n    0
+  tf M5 exit a label path        P1 n    0
+  tf M5 exit a label path        P2 n    0
+  tf M5 exit a label bar         P1 n    0
+  tf M5 exit a label bar         P2 n    0
+  tf M5 exit b bias path         P1 n    0
+  tf M5 exit b bias path         P2 n    0
+  tf M5 exit b bias bar          P1 n    0
+  tf M5 exit b bias bar          P2 n    0
+  tf M5 exit b label path        P1 n    0
+  tf M5 exit b label path        P2 n    0
+  tf M5 exit b label bar         P1 n    0
+  tf M5 exit b label bar         P2 n    0
+  tf M15 exit a bias path        P1 n    1 (0.02/wd) win 1.00 R +1.900 [+nan,+nan] (norm +nan,+nan) USD    +22.9 DD    0.0 worst  +22.9 streak  0 | time:1
+  tf M15 exit a bias path        P2 n    0
+  tf M15 exit a bias bar         P1 n    0
+  tf M15 exit a bias bar         P2 n    0
+  tf M15 exit a label path       P1 n    0
+  tf M15 exit a label path       P2 n    0
+  tf M15 exit a label bar        P1 n    0
+  tf M15 exit a label bar        P2 n    0
+  tf M15 exit b bias path        P1 n    1 (0.02/wd) win 1.00 R +2.000 [+nan,+nan] (norm +nan,+nan) USD    +24.1 DD    0.0 worst  +24.1 streak  0 | target:1
+  tf M15 exit b bias path        P2 n    0
+  tf M15 exit b bias bar         P1 n    0
+  tf M15 exit b bias bar         P2 n    0
+  tf M15 exit b label path       P1 n    0
+  tf M15 exit b label path       P2 n    0
+  tf M15 exit b label bar        P1 n    0
+  tf M15 exit b label bar        P2 n    0
+
+================ E1 main (tf vol exit a), inside the windows: the splits ================
+  all                                P1 n  186 (2.91/wd) win 0.31 R -0.035 [-0.24,+0.18] (norm -0.24,+0.17) USD   -120.8 DD  157.5 worst  -26.2 streak 12 | end:1 stop:152 target:25 time:8
+  all                                P2 n  125 (1.89/wd) win 0.29 R -0.290 [-0.48,-0.08] (norm -0.49,-0.09) USD   -542.2 DD  617.4 worst  -58.9 streak 19 | break:2 stop:97 target:10 time:16
+  all                                P* n  311 (2.39/wd) win 0.30 R -0.137 [-0.28,+0.01] (norm -0.29,+0.01) USD   -663.0 DD  711.9 worst  -58.9 streak 19 | break:2 end:1 stop:249 target:35 time:24
+  window Asia                        P1 n   32 (0.50/wd) win 0.41 R +0.231 [-0.27,+0.79] (norm -0.31,+0.77) USD     -3.9 DD   44.6 worst  -22.7 streak  5 | stop:23 target:6 time:3
+  window Asia                        P2 n   34 (0.52/wd) win 0.24 R -0.463 [-0.74,-0.14] (norm -0.76,-0.16) USD   -188.5 DD  264.7 worst  -52.7 streak 11 | stop:26 target:1 time:7
+  window Asia                        P* n   66 (0.51/wd) win 0.32 R -0.126 [-0.42,+0.20] (norm -0.44,+0.19) USD   -192.3 DD  264.7 worst  -52.7 streak 11 | stop:49 target:7 time:10
+  window London                      P1 n   21 (0.33/wd) win 0.19 R -0.432 [-0.87,+0.08] (norm -0.93,+0.06) USD    -35.1 DD   72.6 worst  -22.5 streak  8 | stop:17 target:1 time:3
+  window London                      P2 n   12 (0.18/wd) win 0.17 R -0.541 [-0.93,-0.03] (norm -1.02,-0.06) USD   -116.1 DD  116.1 worst  -58.9 streak  4 | stop:11 time:1
+  window London                      P* n   33 (0.25/wd) win 0.18 R -0.472 [-0.79,-0.10] (norm -0.83,-0.12) USD   -151.2 DD  165.2 worst  -58.9 streak  8 | stop:28 target:1 time:4
+  window NY0830                      P1 n   29 (0.45/wd) win 0.24 R -0.180 [-0.63,+0.33] (norm -0.67,+0.31) USD    -61.3 DD   61.3 worst  -26.2 streak  6 | stop:25 target:4
+  window NY0830                      P2 n   21 (0.32/wd) win 0.29 R -0.217 [-0.74,+0.40] (norm -0.79,+0.36) USD   -133.3 DD  163.1 worst  -32.2 streak  5 | stop:16 target:3 time:2
+  window NY0830                      P* n   50 (0.38/wd) win 0.26 R -0.196 [-0.55,+0.17] (norm -0.56,+0.17) USD   -194.6 DD  224.4 worst  -32.2 streak  8 | stop:41 target:7 time:2
+  window NYopen                      P1 n  104 (1.62/wd) win 0.33 R +0.005 [-0.27,+0.31] (norm -0.28,+0.29) USD    -20.6 DD  111.3 worst  -16.7 streak 11 | end:1 stop:87 target:14 time:2
+  window NYopen                      P2 n   58 (0.88/wd) win 0.34 R -0.163 [-0.47,+0.17] (norm -0.48,+0.16) USD   -104.3 DD  187.0 worst  -32.1 streak  7 | break:2 stop:44 target:6 time:6
+  window NYopen                      P* n  162 (1.25/wd) win 0.33 R -0.056 [-0.26,+0.17] (norm -0.27,+0.16) USD   -124.9 DD  227.6 worst  -32.1 streak 11 | break:2 end:1 stop:131 target:20 time:8
+  NY open bucket 09:30               P1 n   18 (0.28/wd) win 0.22 R -0.291 [-0.78,+0.27] (norm -0.86,+0.28) USD    -35.1 DD   60.4 worst  -16.2 streak  6 | stop:16 target:2
+  NY open bucket 09:30               P2 n    9 (0.14/wd) win 0.11 R -0.629 [-0.90,-0.34] (norm -0.93,-0.33) USD    -54.1 DD   55.8 worst  -13.1 streak  8 | stop:9
+  NY open bucket 09:30               P* n   27 (0.21/wd) win 0.19 R -0.404 [-0.75,+0.02] (norm -0.80,-0.01) USD    -89.1 DD  101.6 worst  -16.2 streak  8 | stop:25 target:2
+  NY open bucket 10:00               P1 n   19 (0.30/wd) win 0.32 R +0.405 [-0.44,+1.44] (norm -0.59,+1.40) USD     +5.5 DD   62.8 worst  -16.7 streak  8 | stop:16 target:3
+  NY open bucket 10:00               P2 n   10 (0.15/wd) win 0.40 R +0.535 [-0.54,+1.66] (norm -0.62,+1.69) USD    +16.9 DD   54.1 worst  -32.1 streak  2 | stop:6 target:4
+  NY open bucket 10:00               P* n   29 (0.22/wd) win 0.34 R +0.450 [-0.21,+1.26] (norm -0.30,+1.20) USD    +22.4 DD   81.3 worst  -32.1 streak 10 | stop:22 target:7
+  NY open bucket 10:30               P1 n   11 (0.17/wd) win 0.45 R -0.283 [-0.65,+0.09] (norm -0.67,+0.10) USD    -22.2 DD   26.7 worst   -8.0 streak  2 | stop:11
+  NY open bucket 10:30               P2 n    7 (0.11/wd) win 0.43 R -0.012 [-0.83,+1.21] (norm -1.19,+1.16) USD    +13.3 DD   34.2 worst  -23.3 streak  2 | stop:5 time:2
+  NY open bucket 10:30               P* n   18 (0.14/wd) win 0.44 R -0.177 [-0.60,+0.34] (norm -0.67,+0.32) USD     -8.9 DD   60.9 worst  -23.3 streak  4 | stop:16 time:2
+  NY open bucket 11:00               P1 n   17 (0.27/wd) win 0.24 R -0.185 [-0.71,+0.39] (norm -0.76,+0.39) USD     +5.8 DD   18.5 worst   -7.0 streak  5 | stop:16 target:1
+  NY open bucket 11:00               P2 n    7 (0.11/wd) win 0.71 R +0.631 [-0.26,+1.59] (norm -0.42,+1.68) USD    +55.6 DD   15.8 worst  -15.8 streak  1 | stop:3 target:2 time:2
+  NY open bucket 11:00               P* n   24 (0.18/wd) win 0.38 R +0.053 [-0.42,+0.59] (norm -0.47,+0.57) USD    +61.4 DD   18.5 worst  -15.8 streak  5 | stop:19 target:3 time:2
+  NY open bucket 11:30               P1 n   13 (0.20/wd) win 0.38 R +0.060 [-0.70,+0.91] (norm -0.79,+0.91) USD     +4.8 DD   15.8 worst   -8.3 streak  3 | stop:10 target:3
+  NY open bucket 11:30               P2 n    8 (0.12/wd) win 0.25 R -0.389 [-0.93,+0.31] (norm -1.07,+0.29) USD    -43.8 DD   57.0 worst  -22.7 streak  3 | stop:7 time:1
+  NY open bucket 11:30               P* n   21 (0.16/wd) win 0.33 R -0.111 [-0.63,+0.49] (norm -0.69,+0.47) USD    -39.0 DD   59.6 worst  -22.7 streak  4 | stop:17 target:3 time:1
+  NY open bucket 12:00               P1 n    7 (0.11/wd) win 0.14 R -0.686 [-1.06,-0.29] (norm -1.09,-0.29) USD    -23.7 DD   24.7 worst   -6.8 streak  6 | stop:7
+  NY open bucket 12:00               P2 n    5 (0.08/wd) win 0.00 R -1.009 [-1.01,-1.00] (norm -1.01,-1.00) USD    -41.0 DD   41.0 worst  -10.7 streak  5 | stop:5
+  NY open bucket 12:00               P* n   12 (0.09/wd) win 0.08 R -0.821 [-1.03,-0.58] (norm -1.06,-0.58) USD    -64.7 DD   65.7 worst  -10.7 streak 11 | stop:12
+  NY open bucket 12:30               P1 n    8 (0.12/wd) win 0.62 R +0.955 [-0.24,+2.14] (norm -0.31,+2.22) USD    +43.7 DD   19.2 worst  -15.4 streak  2 | stop:3 target:3 time:2
+  NY open bucket 12:30               P2 n    9 (0.14/wd) win 0.22 R -0.713 [-1.01,-0.27] (norm -1.10,-0.32) USD    -76.8 DD   80.1 worst  -20.4 streak  6 | stop:8 time:1
+  NY open bucket 12:30               P* n   17 (0.13/wd) win 0.41 R +0.072 [-0.58,+0.81] (norm -0.66,+0.80) USD    -33.1 DD   86.3 worst  -20.4 streak  7 | stop:11 target:3 time:3
+  NY open bucket 13:00               P1 n   11 (0.17/wd) win 0.36 R +0.061 [-0.65,+0.86] (norm -0.76,+0.88) USD     +0.5 DD   22.5 worst  -11.7 streak  4 | end:1 stop:8 target:2
+  NY open bucket 13:00               P2 n    3 (0.05/wd) win 1.00 R +0.360 [+0.02,+0.63] (norm +0.01,+0.71) USD    +25.6 DD    0.0 worst   +0.1 streak  0 | break:2 stop:1
+  NY open bucket 13:00               P* n   14 (0.11/wd) win 0.50 R +0.125 [-0.45,+0.77] (norm -0.52,+0.77) USD    +26.1 DD   22.5 worst  -11.7 streak  4 | break:2 end:1 stop:9 target:2
+  entry TF M1                        P1 n   99 (1.55/wd) win 0.32 R +0.006 [-0.28,+0.32] (norm -0.30,+0.31) USD    -14.8 DD  107.8 worst   -9.1 streak 11 | stop:86 target:11 time:2
+  entry TF M1                        P2 n    8 (0.12/wd) win 0.12 R -0.577 [-0.86,-0.27] (norm -0.89,-0.26) USD    -30.4 DD   30.4 worst  -12.1 streak  6 | stop:8
+  entry TF M1                        P* n  107 (0.82/wd) win 0.31 R -0.038 [-0.31,+0.26] (norm -0.32,+0.24) USD    -45.2 DD  123.7 worst  -12.1 streak 11 | stop:94 target:11 time:2
+  entry TF M5                        P1 n   56 (0.88/wd) win 0.30 R -0.073 [-0.41,+0.28] (norm -0.43,+0.28) USD    -31.2 DD  102.7 worst  -16.7 streak 10 | end:1 stop:45 target:10
+  entry TF M5                        P2 n   21 (0.32/wd) win 0.43 R -0.047 [-0.49,+0.50] (norm -0.56,+0.46) USD     -6.3 DD   36.4 worst  -13.1 streak  5 | break:1 stop:17 target:2 time:1
+  entry TF M5                        P* n   77 (0.59/wd) win 0.34 R -0.066 [-0.35,+0.24] (norm -0.36,+0.22) USD    -37.5 DD  102.7 worst  -16.7 streak 10 | break:1 end:1 stop:62 target:12 time:1
+  entry TF M15                       P1 n   31 (0.48/wd) win 0.29 R -0.093 [-0.55,+0.41] (norm -0.59,+0.40) USD    -74.9 DD   95.3 worst  -26.2 streak  7 | stop:21 target:4 time:6
+  entry TF M15                       P2 n   96 (1.45/wd) win 0.27 R -0.319 [-0.54,-0.08] (norm -0.55,-0.09) USD   -505.4 DD  599.2 worst  -58.9 streak 14 | break:1 stop:72 target:8 time:15
+  entry TF M15                       P* n  127 (0.98/wd) win 0.28 R -0.264 [-0.47,-0.05] (norm -0.48,-0.05) USD   -580.3 DD  600.9 worst  -58.9 streak 14 | break:1 stop:93 target:12 time:21
+  src_side with                      P1 n   24 (0.38/wd) win 0.33 R +0.113 [-0.42,+0.75] (norm -0.50,+0.73) USD    +26.8 DD   27.8 worst  -15.4 streak  5 | stop:18 target:2 time:4
+  src_side with                      P2 n   39 (0.59/wd) win 0.44 R -0.046 [-0.41,+0.36] (norm -0.44,+0.35) USD   -158.2 DD  259.5 worst  -58.9 streak  7 | break:1 stop:28 target:5 time:5
+  src_side with                      P* n   63 (0.48/wd) win 0.40 R +0.015 [-0.30,+0.34] (norm -0.32,+0.35) USD   -131.4 DD  259.5 worst  -58.9 streak  7 | break:1 stop:46 target:7 time:9
+  src_side none                      P1 n  141 (2.20/wd) win 0.30 R -0.061 [-0.30,+0.20] (norm -0.31,+0.18) USD   -142.5 DD  142.5 worst  -26.2 streak 11 | stop:118 target:19 time:4
+  src_side none                      P2 n   75 (1.14/wd) win 0.24 R -0.359 [-0.60,-0.10] (norm -0.61,-0.11) USD   -296.1 DD  349.1 worst  -32.2 streak 18 | break:1 stop:59 target:5 time:10
+  src_side none                      P* n  216 (1.66/wd) win 0.28 R -0.165 [-0.34,+0.02] (norm -0.35,+0.02) USD   -438.6 DD  454.3 worst  -32.2 streak 18 | break:1 stop:177 target:24 time:14
+  src_side against                   P1 n   21 (0.33/wd) win 0.33 R -0.024 [-0.52,+0.50] (norm -0.56,+0.51) USD     -5.0 DD   50.8 worst  -16.2 streak 10 | end:1 stop:16 target:4
+  src_side against                   P2 n   11 (0.17/wd) win 0.09 R -0.685 [-1.02,-0.12] (norm -1.18,-0.19) USD    -87.9 DD   87.9 worst  -31.9 streak  7 | stop:10 time:1
+  src_side against                   P* n   32 (0.25/wd) win 0.25 R -0.251 [-0.64,+0.16] (norm -0.65,+0.15) USD    -92.9 DD   92.9 worst  -31.9 streak 10 | end:1 stop:26 target:4 time:1
+  src_side_bias with                 P1 n   48 (0.75/wd) win 0.23 R -0.193 [-0.53,+0.19] (norm -0.56,+0.18) USD    -62.2 DD   95.6 worst  -22.7 streak  9 | stop:42 target:3 time:3
+  src_side_bias with                 P2 n   58 (0.88/wd) win 0.34 R -0.255 [-0.53,+0.05] (norm -0.55,+0.04) USD   -281.6 DD  343.1 worst  -58.9 streak  6 | break:1 stop:45 target:5 time:7
+  src_side_bias with                 P* n  106 (0.82/wd) win 0.29 R -0.227 [-0.45,+0.01] (norm -0.46,+0.00) USD   -343.8 DD  410.6 worst  -58.9 streak 13 | break:1 stop:87 target:8 time:10
+  src_side_bias none                 P1 n  107 (1.67/wd) win 0.33 R +0.007 [-0.28,+0.31] (norm -0.29,+0.30) USD    -62.9 DD  102.7 worst  -26.2 streak  8 | stop:87 target:15 time:5
+  src_side_bias none                 P2 n   52 (0.79/wd) win 0.25 R -0.268 [-0.56,+0.06] (norm -0.59,+0.05) USD   -113.9 DD  180.3 worst  -31.9 streak 13 | break:1 stop:40 target:4 time:7
+  src_side_bias none                 P* n  159 (1.22/wd) win 0.30 R -0.083 [-0.30,+0.15] (norm -0.31,+0.14) USD   -176.8 DD  232.3 worst  -31.9 streak 13 | break:1 stop:127 target:19 time:12
+  src_side_bias against              P1 n   31 (0.48/wd) win 0.39 R +0.068 [-0.36,+0.52] (norm -0.39,+0.52) USD     +4.3 DD   47.4 worst  -14.2 streak  6 | end:1 stop:23 target:7
+  src_side_bias against              P2 n   15 (0.23/wd) win 0.20 R -0.505 [-0.93,+0.09] (norm -1.05,+0.04) USD   -146.6 DD  148.8 worst  -32.1 streak  6 | stop:12 target:1 time:2
+  src_side_bias against              P* n   46 (0.35/wd) win 0.33 R -0.119 [-0.46,+0.25] (norm -0.48,+0.24) USD   -142.4 DD  148.8 worst  -32.1 streak  6 | end:1 stop:35 target:8 time:2
+  src_side_bar with                  P1 n   15 (0.23/wd) win 0.47 R +0.302 [-0.30,+0.97] (norm -0.36,+0.97) USD    +45.3 DD   23.6 worst  -15.4 streak  3 | stop:11 target:3 time:1
+  src_side_bar with                  P2 n   19 (0.29/wd) win 0.42 R -0.145 [-0.63,+0.40] (norm -0.68,+0.39) USD    -41.3 DD  111.7 worst  -23.9 streak  4 | break:1 stop:16 target:1 time:1
+  src_side_bar with                  P* n   34 (0.26/wd) win 0.44 R +0.052 [-0.35,+0.47] (norm -0.37,+0.47) USD     +4.1 DD  111.7 worst  -23.9 streak  4 | break:1 stop:27 target:4 time:2
+  src_side_bar none                  P1 n  158 (2.47/wd) win 0.32 R -0.011 [-0.24,+0.23] (norm -0.24,+0.22) USD   -109.7 DD  123.2 worst  -26.2 streak 11 | end:1 stop:129 target:21 time:7
+  src_side_bar none                  P2 n  103 (1.56/wd) win 0.27 R -0.308 [-0.53,-0.08] (norm -0.53,-0.09) USD   -486.0 DD  522.9 worst  -58.9 streak 19 | break:1 stop:78 target:9 time:15
+  src_side_bar none                  P* n  261 (2.01/wd) win 0.30 R -0.128 [-0.29,+0.05] (norm -0.29,+0.04) USD   -595.7 DD  630.4 worst  -58.9 streak 19 | break:1 end:1 stop:207 target:30 time:22
+  src_side_bar against               P1 n   13 (0.20/wd) win 0.08 R -0.709 [-1.01,-0.17] (norm -1.20,-0.22) USD    -56.5 DD   62.7 worst   -8.9 streak 12 | stop:12 target:1
+  src_side_bar against               P2 n    3 (0.05/wd) win 0.00 R -0.605 [-1.00,-0.15] (norm -1.09,-0.12) USD    -14.8 DD   14.8 worst   -9.7 streak  3 | stop:3
+  src_side_bar against               P* n   16 (0.12/wd) win 0.06 R -0.689 [-0.97,-0.20] (norm -1.09,-0.29) USD    -71.3 DD   71.3 worst   -9.7 streak 12 | stop:15 target:1
+  src_side_bias_bar with             P1 n   28 (0.44/wd) win 0.21 R -0.344 [-0.80,+0.20] (norm -0.86,+0.17) USD    -31.3 DD   76.7 worst   -9.6 streak 10 | stop:24 target:1 time:3
+  src_side_bias_bar with             P2 n   42 (0.64/wd) win 0.31 R -0.379 [-0.67,-0.04] (norm -0.70,-0.06) USD   -227.8 DD  269.5 worst  -27.9 streak 11 | break:1 stop:36 target:2 time:3
+  src_side_bias_bar with             P* n   70 (0.54/wd) win 0.27 R -0.365 [-0.63,-0.07] (norm -0.64,-0.09) USD   -259.2 DD  321.2 worst  -27.9 streak 11 | break:1 stop:60 target:3 time:6
+  src_side_bias_bar none             P1 n  127 (1.98/wd) win 0.33 R +0.030 [-0.21,+0.29] (norm -0.23,+0.29) USD    -68.4 DD   90.0 worst  -26.2 streak 11 | end:1 stop:104 target:17 time:5
+  src_side_bias_bar none             P2 n   71 (1.08/wd) win 0.28 R -0.298 [-0.55,-0.04] (norm -0.54,-0.05) USD   -330.5 DD  379.9 worst  -58.9 streak 11 | break:1 stop:52 target:6 time:12
+  src_side_bias_bar none             P* n  198 (1.52/wd) win 0.31 R -0.088 [-0.28,+0.11] (norm -0.28,+0.10) USD   -399.0 DD  426.3 worst  -58.9 streak 11 | break:1 end:1 stop:156 target:23 time:17
+  src_side_bias_bar against          P1 n   31 (0.48/wd) win 0.32 R -0.019 [-0.46,+0.46] (norm -0.49,+0.46) USD    -21.1 DD   47.0 worst  -11.7 streak  6 | stop:24 target:7
+  src_side_bias_bar against          P2 n   12 (0.18/wd) win 0.25 R +0.070 [-0.88,+1.09] (norm -0.95,+1.08) USD    +16.2 DD   50.8 worst  -15.0 streak  6 | stop:9 target:2 time:1
+  src_side_bias_bar against          P* n   43 (0.33/wd) win 0.30 R +0.006 [-0.40,+0.46] (norm -0.43,+0.44) USD     -4.8 DD   50.8 worst  -15.0 streak  6 | stop:33 target:9 time:1
+  al_label True                      P1 n   51 (0.80/wd) win 0.27 R -0.031 [-0.47,+0.50] (norm -0.52,+0.46) USD    -62.7 DD   89.3 worst  -16.7 streak 10 | stop:46 target:4 time:1
+  al_label True                      P2 n   36 (0.55/wd) win 0.44 R -0.018 [-0.39,+0.39] (norm -0.41,+0.37) USD    -54.3 DD  149.9 worst  -58.9 streak  7 | break:1 stop:24 target:2 time:9
+  al_label True                      P* n   87 (0.67/wd) win 0.34 R -0.026 [-0.32,+0.32] (norm -0.35,+0.30) USD   -117.1 DD  229.7 worst  -58.9 streak 10 | break:1 stop:70 target:6 time:10
+  al_label False                     P1 n  135 (2.11/wd) win 0.33 R -0.036 [-0.25,+0.20] (norm -0.26,+0.19) USD    -58.1 DD  116.2 worst  -26.2 streak 10 | end:1 stop:106 target:21 time:7
+  al_label False                     P2 n   89 (1.35/wd) win 0.22 R -0.400 [-0.62,-0.16] (norm -0.63,-0.17) USD   -487.8 DD  572.5 worst  -32.1 streak 19 | break:1 stop:73 target:8 time:7
+  al_label False                     P* n  224 (1.72/wd) win 0.29 R -0.181 [-0.34,-0.02] (norm -0.34,-0.02) USD   -545.9 DD  595.5 worst  -32.1 streak 19 | break:1 end:1 stop:179 target:29 time:14
+  al_bias True                       P1 n  101 (1.58/wd) win 0.26 R -0.142 [-0.42,+0.16] (norm -0.44,+0.15) USD   -140.8 DD  184.5 worst  -17.7 streak 12 | stop:91 target:7 time:3
+  al_bias True                       P2 n   74 (1.12/wd) win 0.32 R -0.256 [-0.49,+0.01] (norm -0.51,+0.00) USD   -269.6 DD  305.5 worst  -58.9 streak  8 | break:1 stop:57 target:4 time:12
+  al_bias True                       P* n  175 (1.35/wd) win 0.29 R -0.190 [-0.38,+0.02] (norm -0.39,+0.01) USD   -410.4 DD  485.8 worst  -58.9 streak 12 | break:1 stop:148 target:11 time:15
+  al_bias False                      P1 n   85 (1.33/wd) win 0.38 R +0.093 [-0.19,+0.39] (norm -0.20,+0.39) USD    +19.9 DD   74.6 worst  -26.2 streak  9 | end:1 stop:61 target:18 time:5
+  al_bias False                      P2 n   51 (0.77/wd) win 0.24 R -0.340 [-0.64,-0.01] (norm -0.66,-0.02) USD   -272.6 DD  354.2 worst  -32.1 streak 14 | break:1 stop:40 target:6 time:4
+  al_bias False                      P* n  136 (1.05/wd) win 0.32 R -0.069 [-0.29,+0.15] (norm -0.29,+0.15) USD   -252.6 DD  354.2 worst  -32.1 streak 14 | break:1 end:1 stop:101 target:24 time:9
+  al_label_bar True                  P1 n   26 (0.41/wd) win 0.23 R +0.003 [-0.68,+0.91] (norm -0.80,+0.80) USD    -21.7 DD   44.3 worst  -14.0 streak  9 | stop:23 target:1 time:2
+  al_label_bar True                  P2 n   27 (0.41/wd) win 0.33 R -0.246 [-0.60,+0.15] (norm -0.63,+0.14) USD   -167.3 DD  181.3 worst  -58.9 streak  4 | stop:18 target:2 time:7
+  al_label_bar True                  P* n   53 (0.41/wd) win 0.28 R -0.124 [-0.52,+0.33] (norm -0.56,+0.31) USD   -189.0 DD  223.5 worst  -58.9 streak  9 | stop:41 target:3 time:9
+  al_label_bar False                 P1 n  160 (2.50/wd) win 0.33 R -0.041 [-0.24,+0.17] (norm -0.25,+0.17) USD    -99.1 DD  121.4 worst  -26.2 streak 12 | end:1 stop:129 target:24 time:6
+  al_label_bar False                 P2 n   98 (1.48/wd) win 0.28 R -0.302 [-0.52,-0.06] (norm -0.54,-0.07) USD   -374.9 DD  449.1 worst  -52.7 streak 17 | break:2 stop:79 target:8 time:9
+  al_label_bar False                 P* n  258 (1.98/wd) win 0.31 R -0.140 [-0.30,+0.02] (norm -0.30,+0.02) USD   -474.0 DD  508.6 worst  -52.7 streak 17 | break:2 end:1 stop:208 target:32 time:15
+  al_bias_bar True                   P1 n   77 (1.20/wd) win 0.26 R -0.120 [-0.43,+0.22] (norm -0.44,+0.20) USD   -105.8 DD  111.5 worst  -22.7 streak  6 | stop:65 target:8 time:4
+  al_bias_bar True                   P2 n   62 (0.94/wd) win 0.31 R -0.326 [-0.57,-0.06] (norm -0.58,-0.07) USD   -311.0 DD  365.9 worst  -58.9 streak 10 | break:1 stop:49 target:3 time:9
+  al_bias_bar True                   P* n  139 (1.07/wd) win 0.28 R -0.212 [-0.41,-0.00] (norm -0.42,-0.00) USD   -416.8 DD  477.4 worst  -58.9 streak 10 | break:1 stop:114 target:11 time:13
+  al_bias_bar False                  P1 n  109 (1.70/wd) win 0.35 R +0.026 [-0.24,+0.31] (norm -0.25,+0.30) USD    -15.0 DD   82.0 worst  -26.2 streak 12 | end:1 stop:87 target:17 time:4
+  al_bias_bar False                  P2 n   63 (0.95/wd) win 0.27 R -0.254 [-0.55,+0.06] (norm -0.56,+0.05) USD   -231.2 DD  293.0 worst  -52.7 streak 14 | break:1 stop:48 target:7 time:7
+  al_bias_bar False                  P* n  172 (1.32/wd) win 0.32 R -0.077 [-0.28,+0.14] (norm -0.29,+0.13) USD   -246.2 DD  302.8 worst  -52.7 streak 14 | break:1 end:1 stop:135 target:24 time:11
+  line True                          P1 n  107 (1.67/wd) win 0.35 R +0.038 [-0.21,+0.31] (norm -0.23,+0.30) USD    -22.7 DD   91.2 worst  -22.5 streak 12 | end:1 stop:84 target:19 time:3
+  line True                          P2 n   65 (0.98/wd) win 0.26 R -0.315 [-0.57,-0.04] (norm -0.59,-0.04) USD   -191.2 DD  275.1 worst  -31.9 streak 15 | break:1 stop:51 target:6 time:7
+  line True                          P* n  172 (1.32/wd) win 0.31 R -0.096 [-0.29,+0.10] (norm -0.29,+0.10) USD   -213.9 DD  275.1 worst  -31.9 streak 15 | break:1 end:1 stop:135 target:25 time:10
+  line False                         P1 n   79 (1.23/wd) win 0.27 R -0.133 [-0.44,+0.22] (norm -0.47,+0.21) USD    -98.1 DD   98.1 worst  -26.2 streak  9 | stop:68 target:6 time:5
+  line False                         P2 n   60 (0.91/wd) win 0.32 R -0.263 [-0.55,+0.05] (norm -0.56,+0.04) USD   -350.9 DD  451.0 worst  -58.9 streak  7 | break:1 stop:46 target:4 time:9
+  line False                         P* n  139 (1.07/wd) win 0.29 R -0.189 [-0.40,+0.04] (norm -0.42,+0.04) USD   -449.1 DD  538.6 worst  -58.9 streak  9 | break:1 stop:114 target:10 time:14
+  first True                         P1 n  136 (2.12/wd) win 0.33 R -0.002 [-0.25,+0.25] (norm -0.26,+0.25) USD    -82.3 DD  151.3 worst  -26.2 streak  8 | end:1 stop:110 target:18 time:7
+  first True                         P2 n   94 (1.42/wd) win 0.30 R -0.219 [-0.46,+0.04] (norm -0.47,+0.03) USD   -290.1 DD  398.8 worst  -58.9 streak 17 | break:1 stop:73 target:10 time:10
+  first True                         P* n  230 (1.77/wd) win 0.32 R -0.091 [-0.26,+0.09] (norm -0.27,+0.09) USD   -372.4 DD  480.2 worst  -58.9 streak 17 | break:1 end:1 stop:183 target:28 time:17
+  first False                        P1 n   50 (0.78/wd) win 0.26 R -0.124 [-0.46,+0.23] (norm -0.48,+0.24) USD    -38.5 DD  113.4 worst  -17.7 streak  8 | stop:42 target:7 time:1
+  first False                        P2 n   31 (0.47/wd) win 0.26 R -0.506 [-0.72,-0.27] (norm -0.74,-0.27) USD   -252.0 DD  255.7 worst  -52.7 streak  8 | break:1 stop:24 time:6
+  first False                        P* n   81 (0.62/wd) win 0.26 R -0.270 [-0.50,-0.03] (norm -0.51,-0.03) USD   -290.5 DD  292.0 worst  -52.7 streak  8 | break:1 stop:66 target:7 time:7
+  sell                               P1 n   95 (1.48/wd) win 0.39 R +0.102 [-0.17,+0.39] (norm -0.18,+0.38) USD    +45.4 DD   64.1 worst  -26.2 streak 11 | stop:74 target:17 time:4
+  sell                               P2 n   51 (0.77/wd) win 0.22 R -0.384 [-0.68,-0.05] (norm -0.70,-0.06) USD   -308.1 DD  346.6 worst  -58.9 streak 11 | stop:39 target:4 time:8
+  sell                               P* n  146 (1.12/wd) win 0.33 R -0.068 [-0.28,+0.15] (norm -0.29,+0.15) USD   -262.7 DD  362.3 worst  -58.9 streak 11 | stop:113 target:21 time:12
+  buy                                P1 n   91 (1.42/wd) win 0.23 R -0.177 [-0.47,+0.14] (norm -0.49,+0.13) USD   -166.2 DD  170.8 worst  -22.5 streak 13 | end:1 stop:78 target:8 time:4
+  buy                                P2 n   74 (1.12/wd) win 0.34 R -0.226 [-0.46,+0.04] (norm -0.48,+0.03) USD   -234.1 DD  327.0 worst  -52.7 streak 11 | break:2 stop:58 target:6 time:8
+  buy                                P* n  165 (1.27/wd) win 0.28 R -0.199 [-0.39,+0.02] (norm -0.40,+0.01) USD   -400.3 DD  430.6 worst  -52.7 streak 13 | break:2 end:1 stop:136 target:14 time:12
+  losers by reason: {'wrong way': 121, 'no run': 65, 'ran later': 31} (of 217)
+  week by week (Thai weeks), E1 main:
+            trades   win  R_trade      R    usd  worst  usd_total
+week                                                             
+2025-10-20       8  0.25   -0.161  -1.29  -54.2  -26.2      -54.2
+2025-10-27       8  0.50    0.486   3.89   32.1  -17.7      -22.1
+2025-11-03      14  0.14   -0.453  -6.34  -28.9   -7.0      -51.0
+2025-11-10      10  0.50    1.193  11.93   59.5   -8.1        8.5
+2025-11-17       8  0.25   -0.098  -0.79  -19.2  -22.5      -10.7
+2025-11-24      12  0.42    0.402   4.82    9.2  -15.4       -1.5
+2025-12-01      18  0.39    0.035   0.63   -7.8   -8.1       -9.3
+2025-12-08      19  0.21   -0.476  -9.05  -34.3   -6.8      -43.6
+2025-12-15      24  0.33   -0.114  -2.73  -24.2   -6.2      -67.8
+2025-12-22      16  0.31   -0.032  -0.51    0.2   -8.9      -67.6
+2025-12-29      11  0.45    0.341   3.75   31.8  -16.3      -35.8
+2026-01-05      22  0.23   -0.361  -7.94  -44.7   -9.1      -80.5
+2026-01-12      21  0.24   -0.247  -5.18  -58.3  -16.7     -138.8
+2026-01-19      10  0.50    0.354   3.54   67.4   -9.7      -71.4
+2026-01-26       6  0.17   -0.705  -4.23  -89.5  -32.1     -160.9
+2026-02-02       8  0.25   -0.306  -2.45  -85.2  -58.9     -246.1
+2026-02-09      11  0.09   -0.771  -8.49 -143.4  -27.9     -389.5
+2026-02-16      10  0.40   -0.122  -1.22  -31.0  -23.3     -420.5
+2026-02-23      10  0.20   -0.390  -3.90  -50.8  -14.9     -471.3
+2026-03-02      10  0.40   -0.245  -2.45  -15.1  -17.4     -486.4
+2026-03-09      11  0.36   -0.069  -0.76   27.8  -22.2     -458.6
+2026-03-16      10  0.00   -0.914  -9.14  -75.5  -20.5     -534.1
+2026-03-23       5  0.00   -0.754  -3.77  -84.9  -31.7     -619.0
+2026-03-30       9  0.33   -0.155  -1.39  -24.6  -23.9     -643.6
+2026-04-06       8  0.50    0.128   1.03   -3.2  -31.9     -646.8
+2026-04-13      12  0.42   -0.055  -0.66  -16.1  -12.5     -662.9
+
+================ E2 main (tf vol exit a bias path), inside the windows: the splits ================
+  all                                P1 n  272 (4.25/wd) win 0.37 R -0.028 [-0.11,+0.06] (norm -0.12,+0.06) USD   -299.1 DD  360.7 worst  -39.6 streak 10 | end:1 stop:248 target:6 time:17
+  all                                P2 n   87 (1.32/wd) win 0.36 R +0.000 [-0.15,+0.16] (norm -0.16,+0.16) USD    -99.2 DD  240.6 worst  -88.5 streak  7 | break:1 stop:64 target:3 time:19
+  all                                P* n  359 (2.76/wd) win 0.36 R -0.021 [-0.10,+0.05] (norm -0.10,+0.06) USD   -398.2 DD  467.2 worst  -88.5 streak 10 | break:1 end:1 stop:312 target:9 time:36
+  window Asia                        P1 n   47 (0.73/wd) win 0.43 R -0.010 [-0.20,+0.20] (norm -0.21,+0.19) USD    -43.8 DD   90.3 worst  -35.4 streak  6 | stop:42 target:1 time:4
+  window Asia                        P2 n   18 (0.27/wd) win 0.50 R +0.142 [-0.18,+0.50] (norm -0.21,+0.50) USD    -13.1 DD  134.6 worst  -88.5 streak  3 | stop:11 target:1 time:6
+  window Asia                        P* n   65 (0.50/wd) win 0.45 R +0.032 [-0.12,+0.21] (norm -0.14,+0.20) USD    -56.9 DD  159.0 worst  -88.5 streak  6 | stop:53 target:2 time:10
+  window London                      P1 n   35 (0.55/wd) win 0.43 R +0.045 [-0.20,+0.32] (norm -0.22,+0.30) USD    -26.4 DD  115.8 worst  -30.1 streak  8 | stop:25 target:1 time:9
+  window London                      P2 n   11 (0.17/wd) win 0.27 R -0.087 [-0.34,+0.23] (norm -0.39,+0.21) USD    -17.4 DD   34.6 worst  -17.3 streak  4 | stop:10 time:1
+  window London                      P* n   46 (0.35/wd) win 0.39 R +0.013 [-0.18,+0.23] (norm -0.20,+0.22) USD    -43.7 DD  123.9 worst  -30.1 streak  8 | stop:35 target:1 time:10
+  window NY0830                      P1 n   57 (0.89/wd) win 0.37 R -0.072 [-0.22,+0.09] (norm -0.23,+0.09) USD    -34.9 DD   98.9 worst  -12.8 streak  9 | stop:55 target:1 time:1
+  window NY0830                      P2 n    8 (0.12/wd) win 0.12 R -0.324 [-0.63,+0.05] (norm -0.69,+0.04) USD    -67.8 DD   77.1 worst  -37.7 streak  7 | stop:7 time:1
+  window NY0830                      P* n   65 (0.50/wd) win 0.34 R -0.103 [-0.24,+0.06] (norm -0.25,+0.04) USD   -102.8 DD  112.1 worst  -37.7 streak  9 | stop:62 target:1 time:2
+  window NYopen                      P1 n  133 (2.08/wd) win 0.33 R -0.036 [-0.17,+0.10] (norm -0.17,+0.10) USD   -193.9 DD  230.8 worst  -39.6 streak 10 | end:1 stop:126 target:3 time:3
+  window NYopen                      P2 n   50 (0.76/wd) win 0.36 R +0.020 [-0.19,+0.25] (norm -0.20,+0.24) USD     -0.9 DD  119.0 worst  -77.8 streak  5 | break:1 stop:36 target:2 time:11
+  window NYopen                      P* n  183 (1.41/wd) win 0.34 R -0.020 [-0.14,+0.10] (norm -0.14,+0.10) USD   -194.8 DD  248.1 worst  -77.8 streak 10 | break:1 end:1 stop:162 target:5 time:14
+  NY open bucket 09:30               P1 n   24 (0.38/wd) win 0.46 R +0.274 [-0.05,+0.67] (norm -0.10,+0.64) USD    +66.7 DD   30.8 worst  -15.5 streak  4 | stop:24
+  NY open bucket 09:30               P2 n    5 (0.08/wd) win 0.60 R +0.428 [-0.46,+1.56] (norm -0.75,+1.61) USD    +61.8 DD    5.0 worst   -5.0 streak  1 | stop:4 target:1
+  NY open bucket 09:30               P* n   29 (0.22/wd) win 0.48 R +0.301 [-0.03,+0.68] (norm -0.06,+0.66) USD   +128.4 DD   30.8 worst  -15.5 streak  4 | stop:28 target:1
+  NY open bucket 10:00               P1 n   23 (0.36/wd) win 0.35 R -0.154 [-0.43,+0.14] (norm -0.44,+0.13) USD    -29.8 DD   66.1 worst  -22.0 streak  8 | stop:23
+  NY open bucket 10:00               P2 n    4 (0.06/wd) win 0.25 R +0.130 [-0.74,+1.51] (norm -1.27,+1.53) USD    -31.3 DD   32.7 worst  -21.9 streak  2 | stop:3 target:1
+  NY open bucket 10:00               P* n   27 (0.21/wd) win 0.33 R -0.112 [-0.39,+0.20] (norm -0.42,+0.20) USD    -61.2 DD   91.2 worst  -22.0 streak  8 | stop:26 target:1
+  NY open bucket 10:30               P1 n   16 (0.25/wd) win 0.56 R +0.217 [-0.22,+0.71] (norm -0.27,+0.71) USD    +53.4 DD   27.4 worst  -17.5 streak  3 | end:1 stop:14 time:1
+  NY open bucket 10:30               P2 n    0
+  NY open bucket 10:30               P* n   16 (0.12/wd) win 0.56 R +0.217 [-0.22,+0.71] (norm -0.27,+0.71) USD    +53.4 DD   27.4 worst  -17.5 streak  3 | end:1 stop:14 time:1
+  NY open bucket 11:00               P1 n   14 (0.22/wd) win 0.21 R -0.251 [-0.48,-0.01] (norm -0.49,-0.01) USD    -46.3 DD   48.4 worst  -16.6 streak  6 | stop:14
+  NY open bucket 11:00               P2 n    4 (0.06/wd) win 0.25 R -0.330 [-0.80,+0.08] (norm -0.83,+0.17) USD    -78.8 DD   88.0 worst  -77.8 streak  2 | stop:3 time:1
+  NY open bucket 11:00               P* n   18 (0.14/wd) win 0.22 R -0.268 [-0.48,-0.07] (norm -0.48,-0.06) USD   -125.0 DD  125.9 worst  -77.8 streak  6 | stop:17 time:1
+  NY open bucket 11:30               P1 n   15 (0.23/wd) win 0.13 R -0.121 [-0.45,+0.29] (norm -0.51,+0.27) USD    -61.9 DD   61.9 worst  -18.7 streak 10 | stop:14 target:1
+  NY open bucket 11:30               P2 n    9 (0.14/wd) win 0.33 R -0.230 [-0.55,+0.09] (norm -0.57,+0.11) USD    -30.6 DD   55.2 worst  -30.1 streak  3 | stop:6 time:3
+  NY open bucket 11:30               P* n   24 (0.18/wd) win 0.21 R -0.162 [-0.41,+0.13] (norm -0.43,+0.11) USD    -92.5 DD  109.3 worst  -30.1 streak 10 | stop:20 target:1 time:3
+  NY open bucket 12:00               P1 n   16 (0.25/wd) win 0.44 R +0.021 [-0.40,+0.54] (norm -0.46,+0.50) USD    -37.0 DD   57.4 worst  -39.6 streak  4 | stop:14 target:1 time:1
+  NY open bucket 12:00               P2 n    9 (0.14/wd) win 0.56 R +0.144 [-0.29,+0.64] (norm -0.37,+0.65) USD   +101.8 DD   30.9 worst  -21.6 streak  2 | stop:4 time:5
+  NY open bucket 12:00               P* n   25 (0.19/wd) win 0.48 R +0.065 [-0.26,+0.43] (norm -0.29,+0.42) USD    +64.8 DD   57.4 worst  -39.6 streak  4 | stop:18 target:1 time:6
+  NY open bucket 12:30               P1 n   17 (0.27/wd) win 0.18 R -0.327 [-0.51,-0.16] (norm -0.51,-0.14) USD    -87.0 DD   87.0 worst  -18.7 streak  6 | stop:16 time:1
+  NY open bucket 12:30               P2 n   10 (0.15/wd) win 0.30 R +0.195 [-0.17,+0.69] (norm -0.26,+0.65) USD    +29.8 DD   42.2 worst  -25.2 streak  3 | stop:8 time:2
+  NY open bucket 12:30               P* n   27 (0.21/wd) win 0.22 R -0.134 [-0.34,+0.11] (norm -0.36,+0.09) USD    -57.3 DD  129.3 worst  -25.2 streak  7 | stop:24 time:3
+  NY open bucket 13:00               P1 n    8 (0.12/wd) win 0.12 R -0.084 [-0.55,+0.61] (norm -0.73,+0.56) USD    -52.1 DD   56.6 worst  -11.9 streak  6 | stop:7 target:1
+  NY open bucket 13:00               P2 n    9 (0.14/wd) win 0.22 R -0.167 [-0.46,+0.17] (norm -0.50,+0.17) USD    -53.5 DD   74.2 worst  -27.4 streak  5 | break:1 stop:8
+  NY open bucket 13:00               P* n   17 (0.13/wd) win 0.18 R -0.128 [-0.42,+0.25] (norm -0.47,+0.21) USD   -105.5 DD  126.3 worst  -27.4 streak  6 | break:1 stop:15 target:1
+  entry TF M1                        P1 n  174 (2.72/wd) win 0.37 R -0.031 [-0.13,+0.08] (norm -0.14,+0.07) USD    -78.4 DD  183.8 worst  -38.0 streak  9 | stop:167 target:2 time:5
+  entry TF M1                        P2 n   13 (0.20/wd) win 0.23 R -0.142 [-0.30,+0.03] (norm -0.32,+0.03) USD    -24.5 DD   37.8 worst  -17.4 streak  4 | stop:12 time:1
+  entry TF M1                        P* n  187 (1.44/wd) win 0.36 R -0.039 [-0.13,+0.06] (norm -0.14,+0.06) USD   -102.9 DD  183.8 worst  -38.0 streak  9 | stop:179 target:2 time:6
+  entry TF M5                        P1 n   71 (1.11/wd) win 0.39 R -0.011 [-0.18,+0.17] (norm -0.19,+0.16) USD    -72.1 DD  113.3 worst  -22.0 streak  8 | end:1 stop:61 target:3 time:6
+  entry TF M5                        P2 n   17 (0.26/wd) win 0.41 R +0.151 [-0.32,+0.68] (norm -0.37,+0.67) USD    +65.5 DD   41.2 worst  -14.9 streak  4 | stop:13 target:2 time:2
+  entry TF M5                        P* n   88 (0.68/wd) win 0.40 R +0.021 [-0.14,+0.20] (norm -0.15,+0.19) USD     -6.7 DD  113.3 worst  -22.0 streak  8 | end:1 stop:74 target:5 time:8
+  entry TF M15                       P1 n   27 (0.42/wd) win 0.26 R -0.058 [-0.40,+0.32] (norm -0.43,+0.31) USD   -148.5 DD  157.0 worst  -39.6 streak  9 | stop:20 target:1 time:6
+  entry TF M15                       P2 n   57 (0.86/wd) win 0.37 R -0.012 [-0.18,+0.17] (norm -0.19,+0.16) USD   -140.2 DD  240.6 worst  -88.5 streak  7 | break:1 stop:39 target:1 time:16
+  entry TF M15                       P* n   84 (0.65/wd) win 0.33 R -0.027 [-0.19,+0.14] (norm -0.19,+0.14) USD   -288.7 DD  347.2 worst  -88.5 streak  9 | break:1 stop:59 target:2 time:22
+  src_side with                      P1 n   66 (1.03/wd) win 0.36 R -0.106 [-0.23,+0.02] (norm -0.23,+0.02) USD   -103.2 DD  165.4 worst  -35.4 streak 10 | stop:62 time:4
+  src_side with                      P2 n   32 (0.48/wd) win 0.41 R +0.086 [-0.17,+0.37] (norm -0.19,+0.36) USD    +38.0 DD  140.1 worst  -88.5 streak  4 | stop:24 target:1 time:7
+  src_side with                      P* n   98 (0.75/wd) win 0.38 R -0.043 [-0.16,+0.09] (norm -0.17,+0.08) USD    -65.2 DD  165.4 worst  -88.5 streak 10 | stop:86 target:1 time:11
+  src_side none                      P1 n  195 (3.05/wd) win 0.36 R -0.006 [-0.11,+0.11] (norm -0.12,+0.11) USD   -187.8 DD  208.6 worst  -39.6 streak  8 | end:1 stop:177 target:5 time:12
+  src_side none                      P2 n   44 (0.67/wd) win 0.32 R -0.079 [-0.27,+0.13] (norm -0.28,+0.12) USD   -138.6 DD  180.7 worst  -77.8 streak 11 | break:1 stop:31 target:1 time:11
+  src_side none                      P* n  239 (1.84/wd) win 0.36 R -0.019 [-0.11,+0.08] (norm -0.12,+0.08) USD   -326.5 DD  360.1 worst  -77.8 streak 11 | break:1 end:1 stop:208 target:6 time:23
+  src_side against                   P1 n   11 (0.17/wd) win 0.45 R +0.035 [-0.40,+0.61] (norm -0.50,+0.57) USD     -8.0 DD   34.4 worst  -14.4 streak  2 | stop:9 target:1 time:1
+  src_side against                   P2 n   11 (0.17/wd) win 0.36 R +0.066 [-0.33,+0.58] (norm -0.42,+0.55) USD     +1.5 DD   33.9 worst  -29.5 streak  3 | stop:9 target:1 time:1
+  src_side against                   P* n   22 (0.17/wd) win 0.41 R +0.050 [-0.27,+0.41] (norm -0.30,+0.40) USD     -6.6 DD   34.4 worst  -29.5 streak  3 | stop:18 target:2 time:2
+  src_side_bias with                 P1 n  119 (1.86/wd) win 0.38 R -0.081 [-0.19,+0.03] (norm -0.19,+0.03) USD   -182.1 DD  205.9 worst  -38.0 streak  7 | end:1 stop:112 target:1 time:5
+  src_side_bias with                 P2 n   46 (0.70/wd) win 0.35 R +0.022 [-0.18,+0.24] (norm -0.19,+0.23) USD    -16.0 DD  174.2 worst  -88.5 streak  9 | stop:33 target:1 time:12
+  src_side_bias with                 P* n  165 (1.27/wd) win 0.37 R -0.052 [-0.15,+0.05] (norm -0.15,+0.05) USD   -198.1 DD  259.5 worst  -88.5 streak  9 | end:1 stop:145 target:2 time:17
+  src_side_bias none                 P1 n  153 (2.39/wd) win 0.36 R +0.012 [-0.12,+0.15] (norm -0.12,+0.14) USD   -117.0 DD  188.9 worst  -39.6 streak  7 | stop:136 target:5 time:12
+  src_side_bias none                 P2 n   41 (0.62/wd) win 0.37 R -0.024 [-0.25,+0.22] (norm -0.26,+0.21) USD    -83.2 DD  121.8 worst  -77.8 streak  6 | break:1 stop:31 target:2 time:7
+  src_side_bias none                 P* n  194 (1.49/wd) win 0.36 R +0.005 [-0.11,+0.12] (norm -0.11,+0.12) USD   -200.1 DD  230.4 worst  -77.8 streak  7 | break:1 stop:167 target:7 time:19
+  src_side_bar with                  P1 n   34 (0.53/wd) win 0.38 R -0.161 [-0.35,+0.02] (norm -0.35,+0.02) USD    -88.4 DD  111.6 worst  -38.0 streak  6 | stop:32 time:2
+  src_side_bar with                  P2 n   21 (0.32/wd) win 0.48 R +0.180 [-0.14,+0.53] (norm -0.16,+0.52) USD    +97.2 DD   60.4 worst  -25.2 streak  4 | stop:16 target:1 time:4
+  src_side_bar with                  P* n   55 (0.42/wd) win 0.42 R -0.031 [-0.21,+0.15] (norm -0.21,+0.15) USD     +8.8 DD  111.6 worst  -38.0 streak  6 | stop:48 target:1 time:6
+  src_side_bar none                  P1 n  221 (3.45/wd) win 0.34 R -0.033 [-0.13,+0.07] (norm -0.13,+0.07) USD   -264.3 DD  310.1 worst  -39.6 streak 10 | end:1 stop:202 target:5 time:13
+  src_side_bar none                  P2 n   60 (0.91/wd) win 0.33 R -0.067 [-0.23,+0.11] (norm -0.24,+0.10) USD   -175.9 DD  279.8 worst  -88.5 streak  7 | break:1 stop:43 target:1 time:15
+  src_side_bar none                  P* n  281 (2.16/wd) win 0.34 R -0.040 [-0.12,+0.05] (norm -0.13,+0.05) USD   -440.2 DD  465.8 worst  -88.5 streak 10 | break:1 end:1 stop:245 target:6 time:28
+  src_side_bar against               P1 n   17 (0.27/wd) win 0.65 R +0.294 [-0.07,+0.73] (norm -0.12,+0.71) USD    +53.6 DD   14.4 worst  -14.4 streak  1 | stop:14 target:1 time:2
+  src_side_bar against               P2 n    6 (0.09/wd) win 0.17 R +0.048 [-0.50,+0.96] (norm -0.83,+0.92) USD    -20.5 DD   25.6 worst  -21.9 streak  3 | stop:5 target:1
+  src_side_bar against               P* n   23 (0.18/wd) win 0.52 R +0.230 [-0.10,+0.62] (norm -0.14,+0.60) USD    +33.1 DD   25.7 worst  -21.9 streak  4 | stop:19 target:2 time:2
+  src_side_bias_bar with             P1 n   62 (0.97/wd) win 0.37 R -0.097 [-0.26,+0.07] (norm -0.26,+0.06) USD    -74.4 DD  114.3 worst  -35.4 streak  7 | end:1 stop:55 target:1 time:5
+  src_side_bias_bar with             P2 n   40 (0.61/wd) win 0.40 R +0.073 [-0.16,+0.31] (norm -0.17,+0.32) USD    +57.3 DD   97.5 worst  -34.5 streak  4 | break:1 stop:27 target:2 time:10
+  src_side_bias_bar with             P* n  102 (0.78/wd) win 0.38 R -0.031 [-0.16,+0.11] (norm -0.17,+0.11) USD    -17.2 DD  125.9 worst  -35.4 streak  7 | break:1 end:1 stop:82 target:3 time:15
+  src_side_bias_bar none             P1 n  188 (2.94/wd) win 0.36 R -0.023 [-0.13,+0.09] (norm -0.13,+0.08) USD   -234.2 DD  304.4 worst  -39.6 streak  8 | stop:175 target:3 time:10
+  src_side_bias_bar none             P2 n   39 (0.59/wd) win 0.36 R -0.064 [-0.26,+0.15] (norm -0.27,+0.14) USD   -123.4 DD  195.9 worst  -88.5 streak  4 | stop:30 time:9
+  src_side_bias_bar none             P* n  227 (1.75/wd) win 0.36 R -0.030 [-0.12,+0.07] (norm -0.13,+0.07) USD   -357.6 DD  385.7 worst  -88.5 streak  8 | stop:205 target:3 time:19
+  src_side_bias_bar against          P1 n   22 (0.34/wd) win 0.45 R +0.121 [-0.23,+0.50] (norm -0.25,+0.49) USD     +9.6 DD   54.3 worst  -20.4 streak  5 | stop:18 target:2 time:2
+  src_side_bias_bar against          P2 n    8 (0.12/wd) win 0.12 R -0.052 [-0.51,+0.65] (norm -0.72,+0.61) USD    -33.0 DD   38.1 worst  -21.9 streak  4 | stop:7 target:1
+  src_side_bias_bar against          P* n   30 (0.23/wd) win 0.37 R +0.075 [-0.22,+0.40] (norm -0.24,+0.39) USD    -23.4 DD   54.3 worst  -21.9 streak  5 | stop:25 target:3 time:2
+  base on an H1 Fibonacci level True P1 n  101 (1.58/wd) win 0.34 R +0.014 [-0.16,+0.21] (norm -0.17,+0.19) USD    -99.1 DD  133.7 worst  -39.6 streak  9 | stop:88 target:5 time:8
+  base on an H1 Fibonacci level True P2 n   45 (0.68/wd) win 0.31 R -0.144 [-0.30,+0.03] (norm -0.31,+0.02) USD   -279.8 DD  320.0 worst  -88.5 streak 12 | break:1 stop:36 target:1 time:7
+  base on an H1 Fibonacci level True P* n  146 (1.12/wd) win 0.33 R -0.035 [-0.17,+0.11] (norm -0.17,+0.10) USD   -378.9 DD  410.7 worst  -88.5 streak 12 | break:1 stop:124 target:6 time:15
+  base on an H1 Fibonacci level False P1 n  171 (2.67/wd) win 0.39 R -0.053 [-0.14,+0.04] (norm -0.15,+0.04) USD   -200.0 DD  256.9 worst  -38.0 streak  9 | end:1 stop:160 target:1 time:9
+  base on an H1 Fibonacci level False P2 n   42 (0.64/wd) win 0.40 R +0.155 [-0.09,+0.43] (norm -0.11,+0.42) USD   +180.7 DD  102.3 worst  -77.8 streak  4 | stop:28 target:2 time:12
+  base on an H1 Fibonacci level False P* n  213 (1.64/wd) win 0.39 R -0.012 [-0.10,+0.08] (norm -0.10,+0.08) USD    -19.3 DD  256.9 worst  -77.8 streak  9 | end:1 stop:188 target:3 time:21
+  sell                               P1 n  110 (1.72/wd) win 0.35 R -0.059 [-0.20,+0.09] (norm -0.21,+0.09) USD   -194.2 DD  293.3 worst  -39.6 streak  7 | stop:101 target:5 time:4
+  sell                               P2 n   30 (0.45/wd) win 0.33 R -0.054 [-0.31,+0.23] (norm -0.32,+0.21) USD    -40.1 DD   89.6 worst  -30.1 streak  6 | break:1 stop:24 target:1 time:4
+  sell                               P* n  140 (1.08/wd) win 0.34 R -0.058 [-0.18,+0.08] (norm -0.19,+0.07) USD   -234.3 DD  293.3 worst  -39.6 streak  7 | break:1 stop:125 target:6 time:8
+  buy                                P1 n  162 (2.53/wd) win 0.38 R -0.007 [-0.11,+0.11] (norm -0.12,+0.10) USD   -104.8 DD  174.9 worst  -38.0 streak  6 | end:1 stop:147 target:1 time:13
+  buy                                P2 n   57 (0.86/wd) win 0.37 R +0.029 [-0.15,+0.23] (norm -0.16,+0.22) USD    -59.1 DD  188.9 worst  -88.5 streak  5 | stop:40 target:2 time:15
+  buy                                P* n  219 (1.68/wd) win 0.38 R +0.002 [-0.09,+0.10] (norm -0.09,+0.10) USD   -163.9 DD  267.0 worst  -88.5 streak  6 | end:1 stop:187 target:3 time:28
+  losers by reason: {'wrong way': 199, 'no run': 22, 'ran later': 7} (of 228)
+  week by week (Thai weeks), E2 main:
+            trades   win  R_trade     R    usd  worst  usd_total
+week                                                            
+2025-10-20       6  0.00   -0.421 -2.53  -77.7  -39.6      -77.7
+2025-10-27       9  0.22    0.103  0.93  -10.5  -15.6      -88.2
+2025-11-03      33  0.39   -0.190 -6.27  -89.1  -22.0     -177.3
+2025-11-10      25  0.44    0.374  9.36   81.8  -20.4      -95.5
+2025-11-17       8  0.12   -0.273 -2.18  -72.6  -35.4     -168.1
+2025-11-24      17  0.41   -0.049 -0.83  -10.3  -30.1     -178.4
+2025-12-01      29  0.34   -0.061 -1.77  -46.8  -16.6     -225.2
+2025-12-08      34  0.29   -0.042 -1.41  -20.7  -11.8     -245.9
+2025-12-15      41  0.29   -0.133 -5.44 -114.3  -38.0     -360.2
+2025-12-22      27  0.56    0.069  1.87   44.8  -14.4     -315.4
+2025-12-29      10  0.60    0.185  1.85   32.1  -16.3     -283.3
+2026-01-05      22  0.41   -0.086 -1.89  -17.2  -15.0     -300.5
+2026-01-12      14  0.36   -0.010 -0.14  -15.7  -17.4     -316.2
+2026-01-19      18  0.22   -0.032 -0.58  -39.0  -25.2     -355.2
+2026-01-26       4  0.50    0.407  1.63   72.2  -34.5     -283.0
+2026-02-02       5  0.20   -0.414 -2.07 -151.0  -88.5     -434.0
+2026-02-09       4  0.25   -0.375 -1.50  -30.6  -16.9     -464.6
+2026-02-16       9  0.67    0.338  3.04   91.6   -9.8     -373.0
+2026-02-23       4  0.25   -0.134 -0.53    6.9  -10.2     -366.1
+2026-03-02       6  0.33   -0.097 -0.58  -38.1  -37.7     -404.2
+2026-03-09       4  0.50    0.874  3.50   88.7   -6.4     -315.5
+2026-03-16       4  0.50   -0.110 -0.44    0.8  -22.9     -314.7
+2026-03-23       5  0.20   -0.271 -1.35 -101.5  -77.8     -416.2
+2026-03-30       4  0.75    0.263  1.05   56.8   -7.3     -359.4
+2026-04-06       8  0.38   -0.015 -0.12  -20.3  -29.5     -379.7
+2026-04-13       9  0.22   -0.144 -1.29  -18.8  -14.9     -398.5
+
+================ E3 main (tf vol stop ext), inside the windows: the splits ================
+  all                                P1 n  192 (3.00/wd) win 0.47 R -0.068 [-0.19,+0.05] (norm -0.20,+0.06) USD    -93.9 DD  209.3 worst  -40.4 streak  5 | stop:81 target:67 time:44
+  all                                P2 n  157 (2.38/wd) win 0.50 R +0.010 [-0.13,+0.14] (norm -0.12,+0.14) USD    +66.8 DD  254.8 worst -182.5 streak  7 | stop:51 target:53 time:53
+  all                                P* n  349 (2.68/wd) win 0.48 R -0.033 [-0.12,+0.06] (norm -0.13,+0.06) USD    -27.1 DD  306.7 worst -182.5 streak  7 | stop:132 target:120 time:97
+  window Asia                        P1 n   39 (0.61/wd) win 0.49 R -0.034 [-0.31,+0.23] (norm -0.31,+0.24) USD    +69.3 DD   54.1 worst  -17.3 streak  5 | stop:15 target:12 time:12
+  window Asia                        P2 n   38 (0.58/wd) win 0.50 R -0.010 [-0.26,+0.25] (norm -0.27,+0.25) USD     +9.8 DD  208.9 worst -182.5 streak  4 | stop:13 target:9 time:16
+  window Asia                        P* n   77 (0.59/wd) win 0.49 R -0.022 [-0.21,+0.17] (norm -0.21,+0.17) USD    +79.1 DD  208.9 worst -182.5 streak  6 | stop:28 target:21 time:28
+  window London                      P1 n   20 (0.31/wd) win 0.60 R +0.203 [-0.22,+0.61] (norm -0.22,+0.63) USD     +1.9 DD   51.3 worst  -40.4 streak  2 | stop:7 target:11 time:2
+  window London                      P2 n   21 (0.32/wd) win 0.33 R -0.105 [-0.46,+0.26] (norm -0.48,+0.27) USD    -99.9 DD  113.4 worst  -71.5 streak  4 | stop:8 target:7 time:6
+  window London                      P* n   41 (0.32/wd) win 0.46 R +0.045 [-0.24,+0.33] (norm -0.24,+0.33) USD    -98.0 DD  144.8 worst  -71.5 streak  4 | stop:15 target:18 time:8
+  window NY0830                      P1 n   28 (0.44/wd) win 0.39 R -0.232 [-0.57,+0.12] (norm -0.58,+0.11) USD    -95.1 DD  127.1 worst  -22.9 streak  4 | stop:15 target:9 time:4
+  window NY0830                      P2 n   28 (0.42/wd) win 0.50 R -0.040 [-0.38,+0.31] (norm -0.38,+0.30) USD    -69.7 DD  117.6 worst  -52.8 streak  3 | stop:11 target:11 time:6
+  window NY0830                      P* n   56 (0.43/wd) win 0.45 R -0.136 [-0.37,+0.12] (norm -0.38,+0.11) USD   -164.8 DD  196.8 worst  -52.8 streak  4 | stop:26 target:20 time:10
+  window NYopen                      P1 n  105 (1.64/wd) win 0.47 R -0.088 [-0.26,+0.08] (norm -0.26,+0.08) USD    -69.9 DD   89.7 worst  -39.0 streak  5 | stop:44 target:35 time:26
+  window NYopen                      P2 n   70 (1.06/wd) win 0.54 R +0.075 [-0.12,+0.27] (norm -0.12,+0.27) USD   +226.6 DD   67.4 worst  -41.1 streak  3 | stop:19 target:26 time:25
+  window NYopen                      P* n  175 (1.35/wd) win 0.50 R -0.023 [-0.15,+0.11] (norm -0.15,+0.11) USD   +156.6 DD  108.8 worst  -41.1 streak  5 | stop:63 target:61 time:51
+  NY open bucket 09:30               P1 n   23 (0.36/wd) win 0.35 R -0.356 [-0.71,+0.03] (norm -0.74,+0.03) USD    -89.6 DD  101.3 worst  -17.6 streak  4 | stop:15 target:7 time:1
+  NY open bucket 09:30               P2 n   12 (0.18/wd) win 0.83 R +0.599 [+0.22,+0.94] (norm +0.22,+0.98) USD   +202.7 DD    8.0 worst   -8.0 streak  1 | stop:1 target:8 time:3
+  NY open bucket 09:30               P* n   35 (0.27/wd) win 0.51 R -0.029 [-0.35,+0.29] (norm -0.35,+0.29) USD   +113.0 DD  101.3 worst  -17.6 streak  4 | stop:16 target:15 time:4
+  NY open bucket 10:00               P1 n   20 (0.31/wd) win 0.35 R -0.261 [-0.62,+0.13] (norm -0.66,+0.14) USD    -84.3 DD   84.3 worst  -39.0 streak  2 | stop:10 target:6 time:4
+  NY open bucket 10:00               P2 n   12 (0.18/wd) win 0.58 R +0.239 [-0.34,+0.74] (norm -0.31,+0.79) USD     +8.2 DD   32.8 worst  -31.2 streak  2 | stop:4 target:7 time:1
+  NY open bucket 10:00               P* n   32 (0.25/wd) win 0.44 R -0.074 [-0.39,+0.26] (norm -0.40,+0.26) USD    -76.1 DD   95.3 worst  -39.0 streak  2 | stop:14 target:13 time:5
+  NY open bucket 10:30               P1 n   18 (0.28/wd) win 0.44 R -0.054 [-0.49,+0.39] (norm -0.50,+0.39) USD    +17.5 DD   25.6 worst  -19.7 streak  3 | stop:7 target:7 time:4
+  NY open bucket 10:30               P2 n   13 (0.20/wd) win 0.46 R -0.143 [-0.52,+0.24] (norm -0.54,+0.26) USD    +60.3 DD   62.2 worst  -21.1 streak  6 | stop:4 target:2 time:7
+  NY open bucket 10:30               P* n   31 (0.24/wd) win 0.45 R -0.091 [-0.39,+0.21] (norm -0.40,+0.21) USD    +77.9 DD   62.2 worst  -21.1 streak  6 | stop:11 target:9 time:11
+  NY open bucket 11:00               P1 n   14 (0.22/wd) win 0.57 R -0.012 [-0.49,+0.45] (norm -0.50,+0.48) USD    +32.0 DD   25.1 worst  -12.3 streak  2 | stop:6 target:5 time:3
+  NY open bucket 11:00               P2 n    9 (0.14/wd) win 0.22 R -0.297 [-0.77,+0.24] (norm -0.84,+0.24) USD    -90.9 DD   90.9 worst  -41.1 streak  3 | stop:4 target:2 time:3
+  NY open bucket 11:00               P* n   23 (0.18/wd) win 0.43 R -0.123 [-0.47,+0.23] (norm -0.49,+0.24) USD    -58.8 DD   90.9 worst  -41.1 streak  3 | stop:10 target:7 time:6
+  NY open bucket 11:30               P1 n   12 (0.19/wd) win 0.58 R +0.241 [-0.26,+0.70] (norm -0.26,+0.75) USD    +21.5 DD   37.1 worst  -30.7 streak  2 | stop:3 target:6 time:3
+  NY open bucket 11:30               P2 n    9 (0.14/wd) win 0.56 R -0.076 [-0.49,+0.34] (norm -0.53,+0.37) USD     -1.3 DD   31.0 worst  -23.5 streak  3 | stop:2 target:1 time:6
+  NY open bucket 11:30               P* n   21 (0.16/wd) win 0.57 R +0.105 [-0.23,+0.43] (norm -0.24,+0.45) USD    +20.2 DD   56.4 worst  -30.7 streak  4 | stop:5 target:7 time:9
+  NY open bucket 12:00               P1 n    6 (0.09/wd) win 0.50 R -0.106 [-0.55,+0.29] (norm -0.57,+0.36) USD     +5.0 DD   14.6 worst   -9.2 streak  2 | stop:1 time:5
+  NY open bucket 12:00               P2 n    3 (0.05/wd) win 0.67 R +0.147 [-1.00,+1.00] (norm -1.02,+1.32) USD     +7.5 DD   18.7 worst  -18.7 streak  1 | stop:1 target:1 time:1
+  NY open bucket 12:00               P* n    9 (0.07/wd) win 0.56 R -0.022 [-0.46,+0.41] (norm -0.48,+0.44) USD    +12.5 DD   20.1 worst  -18.7 streak  2 | stop:2 target:1 time:6
+  NY open bucket 12:30               P1 n    7 (0.11/wd) win 0.57 R +0.208 [-0.30,+0.68] (norm -0.34,+0.75) USD    +15.2 DD   14.2 worst  -14.2 streak  1 | stop:1 target:2 time:4
+  NY open bucket 12:30               P2 n    7 (0.11/wd) win 0.71 R +0.426 [-0.15,+1.00] (norm -0.30,+1.15) USD   +117.0 DD   14.6 worst  -14.6 streak  1 | stop:2 target:5
+  NY open bucket 12:30               P* n   14 (0.11/wd) win 0.64 R +0.317 [-0.13,+0.72] (norm -0.12,+0.76) USD   +132.3 DD   14.6 worst  -14.6 streak  1 | stop:3 target:7 time:4
+  NY open bucket 13:00               P1 n    5 (0.08/wd) win 0.80 R +0.323 [-0.35,+0.87] (norm -0.39,+1.04) USD    +12.8 DD   14.9 worst  -14.9 streak  1 | stop:1 target:2 time:2
+  NY open bucket 13:00               P2 n    5 (0.08/wd) win 0.20 R -0.597 [-0.96,-0.23] (norm -1.03,-0.17) USD    -77.0 DD   77.0 worst  -41.1 streak  3 | stop:1 time:4
+  NY open bucket 13:00               P* n   10 (0.08/wd) win 0.50 R -0.137 [-0.61,+0.33] (norm -0.63,+0.36) USD    -64.2 DD   77.9 worst  -41.1 streak  3 | stop:2 target:2 time:6
+  entry TF M1                        P1 n  104 (1.62/wd) win 0.46 R -0.086 [-0.27,+0.09] (norm -0.27,+0.10) USD    -47.4 DD   88.6 worst  -30.7 streak  7 | stop:50 target:40 time:14
+  entry TF M1                        P2 n   47 (0.71/wd) win 0.60 R +0.228 [-0.02,+0.47] (norm -0.02,+0.47) USD   +266.0 DD   60.9 worst  -35.1 streak  2 | stop:12 target:22 time:13
+  entry TF M1                        P* n  151 (1.16/wd) win 0.50 R +0.012 [-0.14,+0.16] (norm -0.14,+0.16) USD   +218.7 DD  113.9 worst  -35.1 streak  7 | stop:62 target:62 time:27
+  entry TF M5                        P1 n   50 (0.78/wd) win 0.46 R -0.087 [-0.32,+0.16] (norm -0.33,+0.16) USD    -89.2 DD  129.9 worst  -20.0 streak  5 | stop:19 target:16 time:15
+  entry TF M5                        P2 n   21 (0.32/wd) win 0.48 R -0.046 [-0.42,+0.33] (norm -0.44,+0.34) USD    +33.0 DD   46.3 worst  -20.1 streak  4 | stop:8 target:7 time:6
+  entry TF M5                        P* n   71 (0.55/wd) win 0.46 R -0.075 [-0.28,+0.13] (norm -0.28,+0.13) USD    -56.2 DD  141.4 worst  -20.1 streak  7 | stop:27 target:23 time:21
+  entry TF M15                       P1 n   38 (0.59/wd) win 0.53 R +0.009 [-0.25,+0.27] (norm -0.26,+0.27) USD    +42.7 DD   96.7 worst  -40.4 streak  3 | stop:12 target:11 time:15
+  entry TF M15                       P2 n   89 (1.35/wd) win 0.45 R -0.092 [-0.26,+0.08] (norm -0.26,+0.08) USD   -232.2 DD  357.7 worst -182.5 streak  9 | stop:31 target:24 time:34
+  entry TF M15                       P* n  127 (0.98/wd) win 0.47 R -0.062 [-0.21,+0.08] (norm -0.21,+0.08) USD   -189.5 DD  357.7 worst -182.5 streak  9 | stop:43 target:35 time:49
+  src_side with                      P1 n   13 (0.20/wd) win 0.62 R +0.194 [-0.31,+0.66] (norm -0.31,+0.70) USD    +25.7 DD   31.0 worst  -22.9 streak  2 | stop:4 target:6 time:3
+  src_side with                      P2 n   10 (0.15/wd) win 0.50 R -0.144 [-0.62,+0.33] (norm -0.66,+0.37) USD    -40.0 DD   80.3 worst  -36.5 streak  4 | stop:4 target:2 time:4
+  src_side with                      P* n   23 (0.18/wd) win 0.57 R +0.047 [-0.32,+0.40] (norm -0.31,+0.41) USD    -14.2 DD   86.4 worst  -36.5 streak  4 | stop:8 target:8 time:7
+  src_side none                      P1 n  139 (2.17/wd) win 0.47 R -0.074 [-0.22,+0.07] (norm -0.22,+0.07) USD   -135.7 DD  218.7 worst  -40.4 streak  4 | stop:57 target:46 time:36
+  src_side none                      P2 n   92 (1.39/wd) win 0.51 R +0.033 [-0.14,+0.20] (norm -0.14,+0.20) USD     -9.3 DD  188.6 worst -182.5 streak  4 | stop:27 target:30 time:35
+  src_side none                      P* n  231 (1.78/wd) win 0.48 R -0.032 [-0.14,+0.08] (norm -0.14,+0.08) USD   -145.0 DD  270.9 worst -182.5 streak  5 | stop:84 target:76 time:71
+  src_side against                   P1 n   40 (0.62/wd) win 0.45 R -0.130 [-0.43,+0.17] (norm -0.43,+0.17) USD    +16.0 DD   69.3 worst  -19.7 streak  5 | stop:20 target:15 time:5
+  src_side against                   P2 n   55 (0.83/wd) win 0.47 R +0.001 [-0.23,+0.24] (norm -0.24,+0.24) USD   +116.1 DD  127.6 worst  -71.5 streak  7 | stop:20 target:21 time:14
+  src_side against                   P* n   95 (0.73/wd) win 0.46 R -0.054 [-0.24,+0.13] (norm -0.24,+0.13) USD   +132.1 DD  162.9 worst  -71.5 streak  7 | stop:40 target:36 time:19
+  src_side_bias with                 P1 n    7 (0.11/wd) win 0.29 R -0.298 [-0.88,+0.42] (norm -1.00,+0.41) USD    -22.4 DD   25.2 worst  -15.9 streak  3 | stop:4 target:2 time:1
+  src_side_bias with                 P2 n   10 (0.15/wd) win 0.60 R +0.231 [-0.25,+0.68] (norm -0.27,+0.73) USD    +36.8 DD   47.0 worst  -36.5 streak  3 | stop:2 target:4 time:4
+  src_side_bias with                 P* n   17 (0.13/wd) win 0.47 R +0.013 [-0.40,+0.41] (norm -0.41,+0.43) USD    +14.4 DD   47.0 worst  -36.5 streak  3 | stop:6 target:6 time:5
+  src_side_bias none                 P1 n  113 (1.77/wd) win 0.51 R -0.001 [-0.17,+0.16] (norm -0.16,+0.16) USD    -59.9 DD  131.5 worst  -40.4 streak  3 | stop:41 target:40 time:32
+  src_side_bias none                 P2 n   63 (0.95/wd) win 0.49 R +0.023 [-0.18,+0.22] (norm -0.18,+0.22) USD    +15.9 DD  209.1 worst  -54.1 streak  4 | stop:18 target:19 time:26
+  src_side_bias none                 P* n  176 (1.35/wd) win 0.51 R +0.007 [-0.11,+0.13] (norm -0.12,+0.13) USD    -44.1 DD  209.1 worst  -54.1 streak  4 | stop:59 target:59 time:58
+  src_side_bias against              P1 n   72 (1.12/wd) win 0.43 R -0.150 [-0.37,+0.07] (norm -0.37,+0.07) USD    -11.5 DD  112.1 worst  -21.9 streak  6 | stop:36 target:25 time:11
+  src_side_bias against              P2 n   84 (1.27/wd) win 0.49 R -0.025 [-0.21,+0.17] (norm -0.22,+0.17) USD    +14.1 DD  254.8 worst -182.5 streak  4 | stop:31 target:30 time:23
+  src_side_bias against              P* n  156 (1.20/wd) win 0.46 R -0.083 [-0.23,+0.06] (norm -0.23,+0.06) USD     +2.6 DD  277.1 worst -182.5 streak  6 | stop:67 target:55 time:34
+  src_side_bar with                  P1 n   14 (0.22/wd) win 0.43 R -0.223 [-0.65,+0.20] (norm -0.68,+0.23) USD    -36.5 DD   55.7 worst  -22.1 streak  3 | stop:7 target:3 time:4
+  src_side_bar with                  P2 n    5 (0.08/wd) win 1.00 R +0.875 [+0.62,+1.00] (norm +0.63,+1.12) USD   +150.6 DD    0.0 worst  +15.4 streak  0 | target:4 time:1
+  src_side_bar with                  P* n   19 (0.15/wd) win 0.58 R +0.066 [-0.33,+0.46] (norm -0.34,+0.47) USD   +114.1 DD   55.7 worst  -22.1 streak  3 | stop:7 target:7 time:5
+  src_side_bar none                  P1 n  159 (2.48/wd) win 0.49 R -0.024 [-0.16,+0.11] (norm -0.16,+0.12) USD    -52.3 DD  173.9 worst  -40.4 streak  5 | stop:62 target:59 time:38
+  src_side_bar none                  P2 n  124 (1.88/wd) win 0.47 R -0.041 [-0.19,+0.11] (norm -0.19,+0.11) USD   -283.9 DD  346.6 worst -182.5 streak  7 | stop:44 target:40 time:40
+  src_side_bar none                  P* n  283 (2.18/wd) win 0.48 R -0.031 [-0.13,+0.07] (norm -0.13,+0.07) USD   -336.3 DD  467.0 worst -182.5 streak  7 | stop:106 target:99 time:78
+  src_side_bar against               P1 n   19 (0.30/wd) win 0.37 R -0.321 [-0.73,+0.11] (norm -0.75,+0.11) USD     -5.1 DD   45.0 worst  -16.4 streak  5 | stop:12 target:5 time:2
+  src_side_bar against               P2 n   28 (0.42/wd) win 0.54 R +0.082 [-0.21,+0.37] (norm -0.22,+0.39) USD   +200.1 DD   38.5 worst  -18.3 streak  2 | stop:7 target:9 time:12
+  src_side_bar against               P* n   47 (0.36/wd) win 0.47 R -0.081 [-0.34,+0.18] (norm -0.34,+0.18) USD   +195.1 DD   45.0 worst  -18.3 streak  5 | stop:19 target:14 time:14
+  src_side_bias_bar with             P1 n   28 (0.44/wd) win 0.36 R -0.299 [-0.62,+0.04] (norm -0.63,+0.03) USD   -100.9 DD  116.7 worst  -22.1 streak  4 | stop:15 target:7 time:6
+  src_side_bias_bar with             P2 n   15 (0.23/wd) win 0.60 R +0.129 [-0.32,+0.57] (norm -0.33,+0.59) USD   +117.0 DD   41.1 worst  -41.1 streak  4 | stop:5 target:6 time:4
+  src_side_bias_bar with             P* n   43 (0.33/wd) win 0.44 R -0.150 [-0.42,+0.12] (norm -0.42,+0.12) USD    +16.1 DD  157.8 worst  -41.1 streak  4 | stop:20 target:13 time:10
+  src_side_bias_bar none             P1 n  121 (1.89/wd) win 0.49 R -0.036 [-0.19,+0.12] (norm -0.19,+0.12) USD    -28.1 DD  168.1 worst  -40.4 streak  4 | stop:46 target:40 time:35
+  src_side_bias_bar none             P2 n   92 (1.39/wd) win 0.47 R +0.010 [-0.16,+0.19] (norm -0.16,+0.18) USD   -262.8 DD  336.7 worst -182.5 streak  7 | stop:29 target:32 time:31
+  src_side_bias_bar none             P* n  213 (1.64/wd) win 0.48 R -0.016 [-0.13,+0.10] (norm -0.13,+0.10) USD   -290.9 DD  445.3 worst -182.5 streak  7 | stop:75 target:72 time:66
+  src_side_bias_bar against          P1 n   43 (0.67/wd) win 0.51 R -0.006 [-0.29,+0.30] (norm -0.30,+0.29) USD    +35.1 DD   38.0 worst  -19.7 streak  3 | stop:20 target:20 time:3
+  src_side_bias_bar against          P2 n   50 (0.76/wd) win 0.52 R -0.024 [-0.26,+0.21] (norm -0.26,+0.21) USD   +212.6 DD   96.5 worst  -35.0 streak  5 | stop:17 target:15 time:18
+  src_side_bias_bar against          P* n   93 (0.72/wd) win 0.52 R -0.016 [-0.20,+0.17] (norm -0.20,+0.17) USD   +247.7 DD   96.5 worst  -35.0 streak  5 | stop:37 target:35 time:21
+  box (i)                            P1 n   71 (1.11/wd) win 0.39 R -0.178 [-0.38,+0.02] (norm -0.38,+0.02) USD   -168.8 DD  168.8 worst  -39.0 streak  8 | stop:31 target:19 time:21
+  box (i)                            P2 n   56 (0.85/wd) win 0.45 R -0.089 [-0.29,+0.12] (norm -0.29,+0.11) USD   -226.9 DD  341.3 worst -182.5 streak  5 | stop:17 target:13 time:26
+  box (i)                            P* n  127 (0.98/wd) win 0.42 R -0.139 [-0.29,+0.01] (norm -0.28,+0.00) USD   -395.7 DD  426.8 worst -182.5 streak  9 | stop:48 target:32 time:47
+  box (ii)                           P1 n   85 (1.33/wd) win 0.51 R -0.033 [-0.23,+0.16] (norm -0.23,+0.17) USD    +64.6 DD   73.7 worst  -40.4 streak  5 | stop:37 target:33 time:15
+  box (ii)                           P2 n   57 (0.86/wd) win 0.49 R -0.036 [-0.26,+0.20] (norm -0.27,+0.20) USD    +46.2 DD  104.0 worst  -71.5 streak  6 | stop:22 target:20 time:15
+  box (ii)                           P* n  142 (1.09/wd) win 0.50 R -0.034 [-0.19,+0.11] (norm -0.19,+0.12) USD   +110.8 DD  108.3 worst  -71.5 streak  6 | stop:59 target:53 time:30
+  everyone (i)                       P1 n   20 (0.31/wd) win 0.60 R +0.172 [-0.20,+0.53] (norm -0.21,+0.55) USD    +19.6 DD   47.9 worst  -30.7 streak  2 | stop:5 target:8 time:7
+  everyone (i)                       P2 n   25 (0.38/wd) win 0.52 R +0.164 [-0.13,+0.45] (norm -0.13,+0.46) USD   +137.9 DD   60.9 worst  -35.1 streak  2 | stop:5 target:8 time:12
+  everyone (i)                       P* n   45 (0.35/wd) win 0.56 R +0.167 [-0.07,+0.40] (norm -0.06,+0.40) USD   +157.4 DD   71.9 worst  -35.1 streak  2 | stop:10 target:16 time:19
+  everyone (ii)                      P1 n   16 (0.25/wd) win 0.50 R -0.063 [-0.56,+0.39] (norm -0.56,+0.43) USD     -9.2 DD   20.3 worst   -9.2 streak  2 | stop:8 target:7 time:1
+  everyone (ii)                      P2 n   19 (0.29/wd) win 0.63 R +0.241 [-0.22,+0.68] (norm -0.22,+0.70) USD   +109.6 DD   39.5 worst  -24.9 streak  2 | stop:7 target:12
+  everyone (ii)                      P* n   35 (0.27/wd) win 0.57 R +0.102 [-0.23,+0.42] (norm -0.23,+0.44) USD   +100.4 DD   39.5 worst  -24.9 streak  2 | stop:15 target:19 time:1
+  OUTSIDE the windows                P1 n  189 (2.95/wd) win 0.52 R +0.047 [-0.07,+0.17] (norm -0.07,+0.16) USD   -105.5 DD  203.3 worst  -50.6 streak  6 | break:6 end:2 stop:53 target:65 time:63
+  OUTSIDE the windows                P2 n  195 (2.95/wd) win 0.48 R -0.010 [-0.12,+0.10] (norm -0.12,+0.10) USD   -147.8 DD  224.6 worst  -93.7 streak  4 | break:8 end:3 stop:50 target:56 time:78
+  OUTSIDE the windows                P* n  384 (2.95/wd) win 0.50 R +0.018 [-0.06,+0.10] (norm -0.06,+0.10) USD   -253.3 DD  411.2 worst  -93.7 streak  6 | break:14 end:5 stop:103 target:121 time:141
+  sell                               P1 n  103 (1.61/wd) win 0.49 R -0.041 [-0.22,+0.15] (norm -0.23,+0.14) USD     +9.3 DD  118.7 worst  -30.7 streak  6 | stop:47 target:43 time:13
+  sell                               P2 n   96 (1.45/wd) win 0.46 R -0.042 [-0.21,+0.13] (norm -0.22,+0.13) USD    +88.0 DD  202.4 worst  -52.8 streak  5 | stop:35 target:34 time:27
+  sell                               P* n  199 (1.53/wd) win 0.47 R -0.042 [-0.17,+0.08] (norm -0.17,+0.09) USD    +97.3 DD  203.1 worst  -52.8 streak  6 | stop:82 target:77 time:40
+  buy                                P1 n   89 (1.39/wd) win 0.46 R -0.098 [-0.27,+0.08] (norm -0.27,+0.08) USD   -103.2 DD  160.2 worst  -40.4 streak  4 | stop:34 target:24 time:31
+  buy                                P2 n   61 (0.92/wd) win 0.56 R +0.093 [-0.11,+0.29] (norm -0.11,+0.30) USD    -21.2 DD  254.8 worst -182.5 streak  3 | stop:16 target:19 time:26
+  buy                                P* n  150 (1.15/wd) win 0.50 R -0.020 [-0.15,+0.11] (norm -0.15,+0.11) USD   -124.4 DD  328.0 worst -182.5 streak  4 | stop:50 target:43 time:57
+  losers by reason: {'wrong way': 129, 'no run': 37, 'ran later': 14} (of 180)
+  week by week (Thai weeks), E3 main:
+            trades   win  R_trade     R    usd  worst  usd_total
+week                                                            
+2025-10-20       7  0.71    0.307  2.15   50.4  -39.0       50.4
+2025-10-27       9  0.44   -0.147 -1.33  -10.5  -17.6       39.9
+2025-11-03      13  0.62    0.226  2.94   33.0  -12.8       72.9
+2025-11-10      12  0.50   -0.095 -1.15   -7.8  -15.2       65.1
+2025-11-17      11  0.45   -0.075 -0.83    6.9  -21.2       72.0
+2025-11-24      14  0.36   -0.296 -4.15  -41.2  -17.5       30.8
+2025-12-01      19  0.58    0.082  1.57   26.7   -6.1       57.5
+2025-12-08      17  0.47   -0.014 -0.24  -13.1  -30.7       44.4
+2025-12-15      20  0.50    0.017  0.34   40.6  -21.9       85.0
+2025-12-22      20  0.40   -0.259 -5.19  -55.4  -22.1       29.6
+2025-12-29      11  0.36   -0.314 -3.46  -65.1  -40.4      -35.5
+2026-01-05      23  0.57    0.116  2.66   30.7  -22.9       -4.8
+2026-01-12      20  0.30   -0.237 -4.74  -78.9  -20.0      -83.7
+2026-01-19       9  0.44   -0.219 -1.98  -55.6  -41.1     -139.3
+2026-01-26      13  0.62    0.154  2.00  202.7  -35.0       63.4
+2026-02-02      13  0.62    0.199  2.58  -23.8 -182.5       39.6
+2026-02-09      11  0.64    0.097  1.07   37.7  -31.2       77.3
+2026-02-16      12  0.58    0.110  1.31   78.1   -9.2      155.4
+2026-02-23      12  0.42   -0.109 -1.31  -12.0  -18.3      143.4
+2026-03-02      14  0.29   -0.115 -1.61 -107.1  -52.8       36.3
+2026-03-09      13  0.46   -0.007 -0.09  -39.5  -35.1       -3.2
+2026-03-16      11  0.55    0.150  1.65   81.3  -10.6       78.1
+2026-03-23       8  0.38   -0.189 -1.51  -92.0  -54.1      -13.9
+2026-03-30      13  0.54    0.124  1.61   48.1  -26.6       34.2
+2026-04-06      12  0.58   -0.029 -0.35  -42.9  -41.1       -8.7
+2026-04-13      12  0.33   -0.280 -3.36  -18.5  -20.1      -27.2
+
+================ E4 main (tf vol exit a bias path), inside the windows: the splits ================
+  all                                P1 n   79 (1.23/wd) win 0.41 R +0.041 [-0.18,+0.28] (norm -0.19,+0.27) USD    +45.7 DD   96.0 worst  -16.6 streak  6 | end:1 stop:67 target:1 time:10
+  all                                P2 n   63 (0.95/wd) win 0.30 R -0.052 [-0.36,+0.31] (norm -0.40,+0.29) USD   -330.5 DD  409.1 worst  -74.4 streak  6 | stop:47 target:1 time:15
+  all                                P* n  142 (1.09/wd) win 0.36 R -0.000 [-0.20,+0.21] (norm -0.20,+0.20) USD   -284.8 DD  419.9 worst  -74.4 streak  6 | end:1 stop:114 target:2 time:25
+  window Asia                        P1 n   15 (0.23/wd) win 0.33 R -0.196 [-0.65,+0.36] (norm -0.72,+0.33) USD    -22.2 DD   67.3 worst  -14.4 streak  5 | stop:13 time:2
+  window Asia                        P2 n   18 (0.27/wd) win 0.28 R +0.072 [-0.67,+1.04] (norm -0.83,+0.98) USD   -158.4 DD  231.5 worst  -74.4 streak  7 | stop:13 time:5
+  window Asia                        P* n   33 (0.25/wd) win 0.30 R -0.050 [-0.53,+0.51] (norm -0.59,+0.49) USD   -180.6 DD  231.5 worst  -74.4 streak  7 | stop:26 time:7
+  window London                      P1 n   13 (0.20/wd) win 0.46 R +0.083 [-0.46,+0.69] (norm -0.52,+0.68) USD     +4.6 DD   41.6 worst  -13.4 streak  3 | stop:7 time:6
+  window London                      P2 n   14 (0.21/wd) win 0.36 R +0.024 [-0.57,+0.70] (norm -0.65,+0.70) USD     +5.6 DD   74.9 worst  -58.9 streak  3 | stop:9 time:5
+  window London                      P* n   27 (0.21/wd) win 0.41 R +0.052 [-0.36,+0.51] (norm -0.39,+0.50) USD    +10.2 DD   96.4 worst  -58.9 streak  4 | stop:16 time:11
+  window NY0830                      P1 n   18 (0.28/wd) win 0.33 R -0.227 [-0.54,+0.10] (norm -0.56,+0.10) USD    -24.2 DD   48.6 worst  -11.9 streak  4 | stop:17 time:1
+  window NY0830                      P2 n   13 (0.20/wd) win 0.31 R -0.141 [-0.69,+0.59] (norm -0.81,+0.53) USD    -88.8 DD   94.1 worst  -60.4 streak  4 | stop:10 target:1 time:2
+  window NY0830                      P* n   31 (0.24/wd) win 0.32 R -0.191 [-0.50,+0.16] (norm -0.53,+0.14) USD   -113.0 DD  142.7 worst  -60.4 streak  4 | stop:27 target:1 time:3
+  window NYopen                      P1 n   33 (0.52/wd) win 0.45 R +0.278 [-0.09,+0.70] (norm -0.13,+0.69) USD    +87.4 DD   48.2 worst  -16.6 streak  4 | end:1 stop:30 target:1 time:1
+  window NYopen                      P2 n   18 (0.27/wd) win 0.28 R -0.173 [-0.55,+0.25] (norm -0.58,+0.24) USD    -88.9 DD  143.4 worst  -37.9 streak  4 | stop:15 time:3
+  window NYopen                      P* n   51 (0.39/wd) win 0.39 R +0.119 [-0.17,+0.43] (norm -0.19,+0.42) USD     -1.4 DD  166.6 worst  -37.9 streak  4 | end:1 stop:45 target:1 time:4
+  NY open bucket 09:30               P1 n   21 (0.33/wd) win 0.43 R +0.190 [-0.21,+0.60] (norm -0.22,+0.60) USD    +43.2 DD   29.0 worst  -16.1 streak  3 | stop:20 target:1
+  NY open bucket 09:30               P2 n   12 (0.18/wd) win 0.25 R -0.164 [-0.65,+0.43] (norm -0.73,+0.41) USD    -69.3 DD  123.8 worst  -37.9 streak  4 | stop:10 time:2
+  NY open bucket 09:30               P* n   33 (0.25/wd) win 0.36 R +0.061 [-0.25,+0.40] (norm -0.27,+0.40) USD    -26.1 DD  127.8 worst  -37.9 streak  4 | stop:30 target:1 time:2
+  NY open bucket 10:00               P1 n    9 (0.14/wd) win 0.44 R +0.463 [-0.35,+1.63] (norm -0.64,+1.56) USD    +21.8 DD   26.0 worst  -16.6 streak  3 | stop:8 time:1
+  NY open bucket 10:00               P2 n    4 (0.06/wd) win 0.25 R -0.231 [-0.83,+0.51] (norm -0.97,+0.51) USD     -8.0 DD   22.9 worst  -20.8 streak  2 | stop:3 time:1
+  NY open bucket 10:00               P* n   13 (0.10/wd) win 0.38 R +0.250 [-0.38,+1.08] (norm -0.55,+1.05) USD    +13.8 DD   29.2 worst  -20.8 streak  3 | stop:11 time:2
+  NY open bucket 10:30               P1 n    3 (0.05/wd) win 0.67 R +0.339 [-1.00,+1.67] (norm -1.18,+1.85) USD    +22.4 DD   14.8 worst  -14.8 streak  1 | end:1 stop:2
+  NY open bucket 10:30               P2 n    2 (0.03/wd) win 0.50 R -0.112 [-0.61,+0.39] (norm -1.09,+0.87) USD    -11.6 DD   23.1 worst  -23.1 streak  1 | stop:2
+  NY open bucket 10:30               P* n    5 (0.04/wd) win 0.60 R +0.159 [-0.65,+0.96] (norm -0.75,+1.07) USD    +10.8 DD   26.3 worst  -23.1 streak  1 | end:1 stop:4
+  entry TF M1                        P1 n   39 (0.61/wd) win 0.44 R +0.179 [-0.14,+0.54] (norm -0.17,+0.53) USD    +51.6 DD   30.1 worst  -10.8 streak  3 | stop:37 time:2
+  entry TF M1                        P2 n    3 (0.05/wd) win 0.33 R -0.185 [-1.03,+0.96] (norm -1.35,+0.98) USD     -4.2 DD   12.7 worst   -7.6 streak  2 | stop:2 time:1
+  entry TF M1                        P* n   42 (0.32/wd) win 0.43 R +0.153 [-0.15,+0.51] (norm -0.18,+0.48) USD    +47.4 DD   30.1 worst  -10.8 streak  3 | stop:39 time:3
+  entry TF M5                        P1 n   21 (0.33/wd) win 0.33 R -0.080 [-0.51,+0.41] (norm -0.56,+0.40) USD     -4.0 DD   44.3 worst  -14.2 streak  6 | end:1 stop:17 target:1 time:2
+  entry TF M5                        P2 n   13 (0.20/wd) win 0.15 R +0.316 [-0.58,+1.58] (norm -0.85,+1.48) USD    +13.3 DD   82.2 worst  -18.5 streak 11 | stop:11 target:1 time:1
+  entry TF M5                        P* n   34 (0.26/wd) win 0.26 R +0.071 [-0.38,+0.67] (norm -0.46,+0.60) USD     +9.3 DD   82.2 worst  -18.5 streak 11 | end:1 stop:28 target:2 time:3
+  entry TF M15                       P1 n   19 (0.30/wd) win 0.42 R -0.109 [-0.49,+0.29] (norm -0.51,+0.29) USD     -2.0 DD   88.7 worst  -16.6 streak  7 | stop:13 time:6
+  entry TF M15                       P2 n   47 (0.71/wd) win 0.34 R -0.146 [-0.45,+0.19] (norm -0.47,+0.18) USD   -339.5 DD  385.1 worst  -74.4 streak  5 | stop:34 time:13
+  entry TF M15                       P* n   66 (0.51/wd) win 0.36 R -0.135 [-0.38,+0.13] (norm -0.39,+0.12) USD   -341.5 DD  450.8 worst  -74.4 streak  7 | stop:47 time:19
+  src_side with                      P1 n   17 (0.27/wd) win 0.35 R -0.061 [-0.51,+0.44] (norm -0.54,+0.42) USD     -6.7 DD   34.3 worst  -12.2 streak  3 | stop:16 time:1
+  src_side with                      P2 n   23 (0.35/wd) win 0.48 R +0.571 [-0.10,+1.38] (norm -0.19,+1.33) USD   +113.9 DD  120.4 worst  -58.9 streak  3 | stop:14 target:1 time:8
+  src_side with                      P* n   40 (0.31/wd) win 0.42 R +0.302 [-0.14,+0.83] (norm -0.19,+0.79) USD   +107.2 DD  120.4 worst  -58.9 streak  3 | stop:30 target:1 time:9
+  src_side none                      P1 n   59 (0.92/wd) win 0.42 R +0.092 [-0.17,+0.39] (norm -0.18,+0.37) USD    +68.8 DD   85.2 worst  -16.6 streak  6 | end:1 stop:49 target:1 time:8
+  src_side none                      P2 n   36 (0.55/wd) win 0.19 R -0.405 [-0.67,-0.08] (norm -0.70,-0.11) USD   -400.2 DD  400.2 worst  -74.4 streak  9 | stop:29 time:7
+  src_side none                      P* n   95 (0.73/wd) win 0.34 R -0.096 [-0.30,+0.12] (norm -0.31,+0.11) USD   -331.3 DD  485.4 worst  -74.4 streak  9 | end:1 stop:78 target:1 time:15
+  src_side against                   P1 n    3 (0.05/wd) win 0.33 R -0.389 [-1.00,+0.83] (norm -1.59,+0.81) USD    -16.4 DD   23.0 worst  -14.8 streak  2 | stop:2 time:1
+  src_side against                   P2 n    4 (0.06/wd) win 0.25 R -0.465 [-0.97,+0.06] (norm -1.10,+0.17) USD    -44.2 DD   55.7 worst  -31.9 streak  3 | stop:4
+  src_side against                   P* n    7 (0.05/wd) win 0.29 R -0.433 [-0.90,+0.12] (norm -1.00,+0.14) USD    -60.7 DD   67.2 worst  -31.9 streak  3 | stop:6 time:1
+  src_side_bias with                 P1 n   33 (0.52/wd) win 0.36 R +0.087 [-0.32,+0.55] (norm -0.35,+0.53) USD    +47.1 DD   38.5 worst  -12.2 streak  5 | end:1 stop:31 time:1
+  src_side_bias with                 P2 n   34 (0.52/wd) win 0.38 R +0.354 [-0.18,+0.97] (norm -0.22,+0.93) USD    +60.0 DD  176.6 worst  -60.4 streak  5 | stop:22 target:1 time:11
+  src_side_bias with                 P* n   67 (0.52/wd) win 0.37 R +0.222 [-0.12,+0.63] (norm -0.14,+0.58) USD   +107.2 DD  176.6 worst  -60.4 streak  5 | end:1 stop:53 target:1 time:12
+  src_side_bias none                 P1 n   46 (0.72/wd) win 0.43 R +0.008 [-0.23,+0.26] (norm -0.24,+0.26) USD     -1.5 DD  115.9 worst  -16.6 streak  5 | stop:36 target:1 time:9
+  src_side_bias none                 P2 n   28 (0.42/wd) win 0.18 R -0.561 [-0.78,-0.32] (norm -0.79,-0.33) USD   -402.1 DD  410.5 worst  -74.4 streak 11 | stop:24 time:4
+  src_side_bias none                 P* n   74 (0.57/wd) win 0.34 R -0.207 [-0.39,-0.01] (norm -0.40,-0.02) USD   -403.5 DD  517.9 worst  -74.4 streak 11 | stop:60 target:1 time:13
+  src_side_bias against              P1 n    0
+  src_side_bias against              P2 n    1 (0.02/wd) win 1.00 R +0.389 [+nan,+nan] (norm +nan,+nan) USD    +11.5 DD    0.0 worst  +11.5 streak  0 | stop:1
+  src_side_bias against              P* n    1 (0.01/wd) win 1.00 R +0.389 [+nan,+nan] (norm +nan,+nan) USD    +11.5 DD    0.0 worst  +11.5 streak  0 | stop:1
+  src_side_bar with                  P1 n    8 (0.12/wd) win 0.12 R -0.461 [-0.85,+0.10] (norm -0.99,+0.07) USD    -46.9 DD   46.9 worst  -12.2 streak  5 | stop:7 time:1
+  src_side_bar with                  P2 n   12 (0.18/wd) win 0.33 R +0.709 [-0.48,+2.15] (norm -0.66,+2.08) USD    +12.1 DD  109.8 worst  -74.4 streak  3 | stop:8 target:1 time:3
+  src_side_bar with                  P* n   20 (0.15/wd) win 0.25 R +0.241 [-0.50,+1.21] (norm -0.63,+1.11) USD    -34.8 DD  109.8 worst  -74.4 streak  5 | stop:15 target:1 time:4
+  src_side_bar none                  P1 n   66 (1.03/wd) win 0.44 R +0.098 [-0.16,+0.38] (norm -0.17,+0.37) USD    +79.6 DD   77.8 worst  -16.6 streak  6 | end:1 stop:57 target:1 time:7
+  src_side_bar none                  P2 n   49 (0.74/wd) win 0.31 R -0.232 [-0.50,+0.06] (norm -0.51,+0.04) USD   -336.2 DD  354.1 worst  -60.4 streak  5 | stop:37 time:12
+  src_side_bar none                  P* n  115 (0.88/wd) win 0.38 R -0.042 [-0.23,+0.16] (norm -0.24,+0.15) USD   -256.6 DD  407.4 worst  -60.4 streak  6 | end:1 stop:94 target:1 time:19
+  src_side_bar against               P1 n    5 (0.08/wd) win 0.40 R +0.090 [-0.42,+0.59] (norm -0.50,+0.68) USD    +12.9 DD   10.8 worst   -8.8 streak  2 | stop:3 time:2
+  src_side_bar against               P2 n    2 (0.03/wd) win 0.00 R -0.230 [-0.30,-0.16] (norm -0.37,-0.09) USD     -6.4 DD    6.4 worst   -3.4 streak  2 | stop:2
+  src_side_bar against               P* n    7 (0.05/wd) win 0.29 R -0.002 [-0.36,+0.38] (norm -0.43,+0.42) USD     +6.5 DD   17.3 worst   -8.8 streak  4 | stop:5 time:2
+  src_side_bias_bar with             P1 n   22 (0.34/wd) win 0.36 R +0.082 [-0.44,+0.70] (norm -0.50,+0.67) USD    +24.2 DD   30.0 worst  -14.2 streak  3 | end:1 stop:20 time:1
+  src_side_bias_bar with             P2 n   22 (0.33/wd) win 0.32 R +0.424 [-0.31,+1.32] (norm -0.42,+1.27) USD     -4.8 DD  143.7 worst  -74.4 streak  5 | stop:15 target:1 time:6
+  src_side_bias_bar with             P* n   44 (0.34/wd) win 0.34 R +0.253 [-0.22,+0.78] (norm -0.26,+0.76) USD    +19.4 DD  143.7 worst  -74.4 streak  5 | end:1 stop:35 target:1 time:7
+  src_side_bias_bar none             P1 n   50 (0.78/wd) win 0.42 R -0.029 [-0.27,+0.22] (norm -0.28,+0.22) USD    -14.7 DD  118.9 worst  -16.6 streak  4 | stop:43 time:7
+  src_side_bias_bar none             P2 n   38 (0.58/wd) win 0.29 R -0.320 [-0.56,-0.05] (norm -0.58,-0.06) USD   -297.3 DD  305.9 worst  -58.9 streak  5 | stop:30 time:8
+  src_side_bias_bar none             P* n   88 (0.68/wd) win 0.36 R -0.155 [-0.34,+0.03] (norm -0.34,+0.03) USD   -312.0 DD  419.2 worst  -58.9 streak  5 | stop:73 time:15
+  src_side_bias_bar against          P1 n    7 (0.11/wd) win 0.43 R +0.413 [-0.21,+1.11] (norm -0.32,+1.14) USD    +36.1 DD   14.0 worst  -12.7 streak  3 | stop:4 target:1 time:2
+  src_side_bias_bar against          P2 n    3 (0.05/wd) win 0.33 R -0.163 [-1.00,+0.67] (norm -1.11,+0.78) USD    -28.4 DD   41.2 worst  -37.9 streak  2 | stop:2 time:1
+  src_side_bias_bar against          P* n   10 (0.08/wd) win 0.40 R +0.240 [-0.29,+0.82] (norm -0.34,+0.82) USD     +7.8 DD   55.2 worst  -37.9 streak  5 | stop:6 target:1 time:3
+  sell                               P1 n   25 (0.39/wd) win 0.28 R -0.182 [-0.49,+0.17] (norm -0.53,+0.16) USD    -47.7 DD   88.5 worst  -14.4 streak  8 | stop:23 target:1 time:1
+  sell                               P2 n   23 (0.35/wd) win 0.30 R -0.293 [-0.63,+0.12] (norm -0.68,+0.09) USD   -236.8 DD  236.8 worst  -60.4 streak  6 | stop:17 time:6
+  sell                               P* n   48 (0.37/wd) win 0.29 R -0.235 [-0.48,+0.03] (norm -0.49,+0.02) USD   -284.5 DD  325.4 worst  -60.4 streak  9 | stop:40 target:1 time:7
+  buy                                P1 n   54 (0.84/wd) win 0.46 R +0.144 [-0.15,+0.45] (norm -0.16,+0.45) USD    +93.3 DD   42.6 worst  -16.6 streak  5 | end:1 stop:44 time:9
+  buy                                P2 n   40 (0.61/wd) win 0.30 R +0.086 [-0.36,+0.62] (norm -0.41,+0.58) USD    -93.7 DD  227.0 worst  -74.4 streak  7 | stop:30 target:1 time:9
+  buy                                P* n   94 (0.72/wd) win 0.39 R +0.119 [-0.13,+0.41] (norm -0.15,+0.39) USD     -0.3 DD  227.0 worst  -74.4 streak  7 | end:1 stop:74 target:1 time:18
+  losers by reason: {'wrong way': 55, 'no run': 27, 'ran later': 9} (of 91)
+  week by week (Thai weeks), E4 main:
+            trades   win  R_trade     R   usd  worst  usd_total
+week                                                           
+2025-10-20       4  0.50   -0.040 -0.16  -0.5  -16.6       -0.5
+2025-10-27       5  0.80    0.820  4.10  85.9   -5.9       85.4
+2025-11-03       9  0.67    0.394  3.55  25.7  -12.2      111.1
+2025-11-10       8  0.38    0.157  1.26  12.1  -11.9      123.2
+2025-11-17       5  0.20   -0.657 -3.28 -36.8  -13.5       86.4
+2025-11-24       5  0.40    0.204  1.02  11.7  -10.8       98.1
+2025-12-01       7  0.43   -0.211 -1.48  -8.2   -7.2       89.9
+2025-12-08       7  0.43    0.601  4.21  32.6   -9.9      122.5
+2025-12-15       7  0.43    0.051  0.35  -0.8   -8.4      121.7
+2025-12-22       5  0.20   -0.173 -0.86 -12.3  -10.6      109.4
+2025-12-29       5  0.20   -0.590 -2.95 -38.9  -14.8       70.5
+2026-01-05       9  0.22   -0.383 -3.45 -31.5  -13.4       39.0
+2026-01-12       3  0.33    0.311  0.93   6.6  -14.2       45.6
+2026-01-19       7  0.43    0.759  5.31  29.8  -21.4       75.4
+2026-01-26       7  0.43    0.161  1.13 -89.4  -74.4      -14.0
+2026-02-02       4  0.25   -0.545 -2.18 -94.6  -58.9     -108.6
+2026-02-09       3  0.33   -0.410 -1.23 -24.8  -37.9     -133.4
+2026-02-16       5  0.40    0.519  2.60  14.8  -19.1     -118.6
+2026-02-23       3  0.00   -0.839 -2.52 -35.7  -14.3     -154.3
+2026-03-02       5  0.40   -0.274 -1.37 -17.5  -20.7     -171.8
+2026-03-09       4  0.25   -0.316 -1.26 -29.8  -18.5     -201.6
+2026-03-16       4  0.25    0.163  0.65   3.0  -60.4     -198.6
+2026-03-23       4  0.25   -0.074 -0.29 -13.7  -34.5     -212.3
+2026-03-30       5  0.40   -0.047 -0.24  -5.4  -33.7     -217.7
+2026-04-06       5  0.20   -0.246 -1.23 -42.4  -31.9     -260.1
+2026-04-13       7  0.14   -0.381 -2.66 -24.7  -10.3     -284.8
+
+================ E1 against the base rate (#25, the levels everyone sees) ================
+  the strategist: -0.221 / -0.390 (M1 + mlib costs, 41 / 47 trades); ticks spread only -0.218 / -0.380 (PROPOSALS row 39)
+  #25 in my simulator, win           P1 n   19 (0.30/wd) win 0.26 R -0.240 [-0.63,+0.17] (norm -0.66,+0.18) USD   -106.6 DD  142.5 worst  -27.9 streak  7 | stop:9 target:1 time:9
+  #25 in my simulator, win           P2 n   25 (0.38/wd) win 0.32 R -0.237 [-0.61,+0.20] (norm -0.65,+0.18) USD   -309.9 DD  359.6 worst -127.5 streak  7 | stop:14 target:3 time:8
+  #25 in my simulator, win           P* n   44 (0.34/wd) win 0.30 R -0.238 [-0.52,+0.06] (norm -0.53,+0.06) USD   -416.4 DD  487.0 worst -127.5 streak  8 | stop:23 target:4 time:17
+  #25 in my simulator, out           P1 n   20 (0.31/wd) win 0.20 R -0.268 [-0.71,+0.23] (norm -0.75,+0.21) USD    -73.7 DD  102.5 worst  -28.5 streak  5 | break:1 stop:11 target:3 time:5
+  #25 in my simulator, out           P2 n   19 (0.29/wd) win 0.16 R -0.514 [-0.81,-0.15] (norm -0.87,-0.16) USD   -264.6 DD  285.5 worst  -51.7 streak 10 | break:1 stop:10 target:1 time:7
+  #25 in my simulator, out           P* n   39 (0.30/wd) win 0.18 R -0.388 [-0.66,-0.07] (norm -0.69,-0.09) USD   -338.3 DD  367.1 worst  -51.7 streak 10 | break:2 stop:21 target:4 time:12
+  #25 in my simulator, all hours, each alone P1 n   41 (0.64/wd) win 0.24 R -0.218 [-0.53,+0.12] (norm -0.54,+0.10) USD   -168.5 DD  242.4 worst  -28.5 streak 11 | break:1 stop:21 target:5 time:14
+  #25 in my simulator, all hours, each alone P2 n   46 (0.70/wd) win 0.24 R -0.380 [-0.64,-0.09] (norm -0.65,-0.11) USD   -679.8 DD  710.1 worst -127.5 streak  9 | break:1 stop:25 target:4 time:16
+  #25 in my simulator, all hours, each alone P* n   87 (0.67/wd) win 0.24 R -0.303 [-0.51,-0.10] (norm -0.51,-0.09) USD   -848.3 DD  931.7 worst -127.5 streak 11 | break:2 stop:46 target:9 time:30
+
+================ the four main variants together, one position at a time, inside the windows ================
+  combined                           P1 n  403 (6.30/wd) win 0.40 R -0.015 [-0.11,+0.08] (norm -0.11,+0.08) USD   -192.5 DD  389.5 worst  -39.6 streak 12 | end:1 stop:306 target:39 time:57
+  combined                           P2 n  262 (3.97/wd) win 0.36 R -0.112 [-0.23,+0.01] (norm -0.24,+0.01) USD   -928.1 DD  964.8 worst -182.5 streak 13 | stop:160 target:38 time:64
+  combined                           P* n  665 (5.12/wd) win 0.38 R -0.053 [-0.13,+0.02] (norm -0.13,+0.02) USD  -1120.6 DD 1304.1 worst -182.5 streak 13 | end:1 stop:466 target:77 time:121
+  combined: of which E1              P1 n   80 (1.25/wd) win 0.39 R +0.118 [-0.19,+0.44] (norm -0.19,+0.42) USD    +43.4 DD   66.8 worst  -22.5 streak  8 | stop:64 target:9 time:7
+  combined: of which E1              P2 n   67 (1.02/wd) win 0.36 R -0.181 [-0.45,+0.11] (norm -0.46,+0.09) USD    -93.3 DD  224.0 worst  -32.1 streak  9 | stop:52 target:5 time:10
+  combined: of which E1              P* n  147 (1.13/wd) win 0.37 R -0.018 [-0.22,+0.20] (norm -0.23,+0.19) USD    -49.9 DD  224.0 worst  -32.1 streak  9 | stop:116 target:14 time:17
+  combined: of which E2              P1 n  184 (2.88/wd) win 0.36 R -0.052 [-0.15,+0.05] (norm -0.15,+0.05) USD   -278.7 DD  352.1 worst  -39.6 streak  7 | stop:168 target:3 time:13
+  combined: of which E2              P2 n   52 (0.79/wd) win 0.23 R -0.184 [-0.36,+0.01] (norm -0.37,-0.00) USD   -398.5 DD  401.4 worst  -88.5 streak 12 | stop:42 target:2 time:8
+  combined: of which E2              P* n  236 (1.82/wd) win 0.33 R -0.081 [-0.17,+0.01] (norm -0.17,+0.01) USD   -677.2 DD  680.1 worst  -88.5 streak 12 | stop:210 target:5 time:21
+  combined: of which E3              P1 n   94 (1.47/wd) win 0.44 R -0.126 [-0.30,+0.04] (norm -0.30,+0.05) USD    -51.3 DD  154.5 worst  -39.0 streak 11 | stop:38 target:27 time:29
+  combined: of which E3              P2 n  102 (1.55/wd) win 0.48 R -0.039 [-0.20,+0.12] (norm -0.20,+0.12) USD   -111.6 DD  270.4 worst -182.5 streak  5 | stop:35 target:30 time:37
+  combined: of which E3              P* n  196 (1.51/wd) win 0.46 R -0.081 [-0.20,+0.04] (norm -0.20,+0.04) USD   -162.9 DD  278.2 worst -182.5 streak 13 | stop:73 target:57 time:66
+  combined: of which E4              P1 n   45 (0.70/wd) win 0.49 R +0.133 [-0.14,+0.42] (norm -0.15,+0.42) USD    +94.2 DD   56.0 worst  -16.6 streak  6 | end:1 stop:36 time:8
+  combined: of which E4              P2 n   41 (0.62/wd) win 0.24 R -0.092 [-0.51,+0.42] (norm -0.56,+0.37) USD   -324.7 DD  408.7 worst  -74.4 streak  8 | stop:31 target:1 time:9
+  combined: of which E4              P* n   86 (0.66/wd) win 0.37 R +0.025 [-0.23,+0.29] (norm -0.24,+0.29) USD   -230.6 DD  408.7 worst  -74.4 streak  8 | end:1 stop:67 target:1 time:17
+            trades   win  R_trade      R    usd  worst  usd_total
+week                                                             
+2025-10-20      16  0.38   -0.168  -2.69  -36.5  -39.6      -36.5
+2025-10-27      21  0.62    0.678  14.24  191.7  -15.6      155.2
+2025-11-03      42  0.36   -0.116  -4.87  -71.9  -18.7       83.3
+2025-11-10      35  0.34   -0.072  -2.53  -25.3  -20.4       58.0
+2025-11-17      18  0.28   -0.219  -3.93  -78.2  -35.4      -20.2
+2025-11-24      23  0.43    0.237   5.46   -0.5  -30.1      -20.7
+2025-12-01      37  0.46    0.022   0.82   -4.2  -16.6      -24.9
+2025-12-08      47  0.30   -0.106  -4.98  -44.3  -30.7      -69.2
+2025-12-15      45  0.44    0.008   0.35  -30.9  -38.0     -100.1
+2025-12-22      37  0.51    0.087   3.22   62.3  -16.4      -37.8
+2025-12-29      21  0.48    0.044   0.92   -2.0  -17.3      -39.8
+2026-01-05      37  0.38   -0.239  -8.82  -73.3  -22.9     -113.1
+2026-01-12      32  0.22   -0.201  -6.43 -112.2  -20.0     -225.3
+2026-01-19      29  0.34    0.166   4.82  -20.6  -21.6     -245.9
+2026-01-26      18  0.50    0.070   1.26   32.4  -74.4     -213.5
+2026-02-02      18  0.44   -0.011  -0.20 -221.6 -182.5     -435.1
+2026-02-09      19  0.37   -0.349  -6.63  -87.0  -31.2     -522.1
+2026-02-16      20  0.40    0.008   0.15   15.6  -23.3     -506.5
+2026-02-23      20  0.30   -0.263  -5.26  -60.8  -18.3     -567.3
+2026-03-02      17  0.41   -0.133  -2.26 -111.1  -52.8     -678.4
+2026-03-09      19  0.37    0.027   0.51  -20.2  -35.1     -698.6
+2026-03-16      18  0.39   -0.162  -2.91    2.4  -60.4     -696.2
+2026-03-23      15  0.20   -0.500  -7.50 -281.5  -77.8     -977.7
+2026-03-30      19  0.42   -0.026  -0.49  -17.6  -33.7     -995.3
+2026-04-06      16  0.44   -0.030  -0.49  -51.9  -31.9    -1047.2
+2026-04-13      26  0.27   -0.277  -7.20  -73.4  -15.6    -1120.6
+
+second computation of n / R / win / DD / streak: 759 of 759 cells equal
+done in 644 s

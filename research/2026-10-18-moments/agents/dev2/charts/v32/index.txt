@@ -1,0 +1,28 @@
+E1 loser 'wrong way': E1_loser_wrong_way_20251022_0800.png
+E1 loser 'ran later': E1_loser_ran_later_20251021_1315.png
+E1 loser 'no run': E1_loser_no_run_20251022_1315.png
+E1 sample P1 first winner: E1_sample_P1_winner_20251022_0815.png
+E1 sample P1 first loser: E1_sample_P1_loser_20251021_1315.png
+E1 sample P2 first winner: E1_sample_P2_winner_20260116_0705.png
+E1 sample P2 first loser: E1_sample_P2_loser_20260116_2031.png
+E2 loser 'wrong way': E2_loser_wrong_way_20251020_2330.png
+E2 loser 'ran later': E2_loser_ran_later_20251030_0025.png
+E2 loser 'no run': E2_loser_no_run_20251023_2300.png
+E2 sample P1 first winner: E2_sample_P1_winner_20251029_1300.png
+E2 sample P1 first loser: E2_sample_P1_loser_20251020_2330.png
+E2 sample P2 first winner: E2_sample_P2_winner_20260116_0840.png
+E2 sample P2 first loser: E2_sample_P2_loser_20260116_2211.png
+E3 loser 'wrong way': E3_loser_wrong_way_20251022_2100.png
+E3 loser 'ran later': E3_loser_ran_later_20251106_2239.png
+E3 loser 'no run': E3_loser_no_run_20251021_1315.png
+E3 sample P1 first winner: E3_sample_P1_winner_20251022_0800.png
+E3 sample P1 first loser: E3_sample_P1_loser_20251021_1315.png
+E3 sample P2 first winner: E3_sample_P2_winner_20260116_2031.png
+E3 sample P2 first loser: E3_sample_P2_loser_20260116_0815.png
+E4 loser 'wrong way': E4_loser_wrong_way_20251023_2045.png
+E4 loser 'ran later': E4_loser_ran_later_20251111_2147.png
+E4 loser 'no run': E4_loser_no_run_20251029_0730.png
+E4 sample P1 first winner: E4_sample_P1_winner_20251020_0745.png
+E4 sample P1 first loser: E4_sample_P1_loser_20251023_2045.png
+E4 sample P2 first winner: E4_sample_P2_winner_20260120_0736.png
+E4 sample P2 first loser: E4_sample_P2_loser_20260119_0730.png

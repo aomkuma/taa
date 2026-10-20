@@ -1,0 +1,11 @@
+cut 2025-11-06 01:10 UTC: 4298 of 4298 entries decided by the cut unchanged
+cut 2025-12-10 15:20 UTC: 12246 of 12246 entries decided by the cut unchanged
+cut 2026-01-08 06:40 UTC: 18904 of 18904 entries decided by the cut unchanged
+cut 2026-02-12 14:50 UTC: 27563 of 27563 entries decided by the cut unchanged
+cut 2026-03-11 00:45 UTC: 33491 of 33491 entries decided by the cut unchanged
+cut 2026-04-08 16:05 UTC: 40071 of 40071 entries decided by the cut unchanged
+ALL: 136573 of 136573 unchanged -> PASSED (1224 s)
+PLANTED cut 2025-11-06 01:10 UTC: 4275 of 4342 entries decided by the cut unchanged
+PLANTED cut 2025-12-10 15:20 UTC: 12404 of 12404 entries decided by the cut unchanged
+PLANTED look-ahead (the structure 15 min ahead): 16679 of 16746 unchanged -> FAILED (caught)
+done in 1396 s

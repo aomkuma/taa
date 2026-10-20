@@ -674,3 +674,392 @@ prices negated. RT = 0.25 x S at the bar. At each TF close c (the bar's high h, 
      answer.
 
 **Checkpoint: V3-1 is reported. V3-2 is not started.**
+
+
+## V3-2 - the four entries in the owner's windows
+
+### First: the measurer's two test gaps and the live path (2026-10-20 10:05-10:12 UTC = 17:05-17:12 Thai, `date -u`)
+- `test_known_at_the_confirming_bar_exactly`: on the MAIN path the peak@28 is confirmed at bar 33; `known_at(piv, 32)`
+  must give [0, 9, 18] and `known_at(piv, 33)` [0, 9, 18, 28]; also bars 3 / 4 around the first pivot.
+- `test_running_leaves_out_the_pivot_bar`: hand-given pivots, a peak bar (high 120, low 90) whose own low is below
+  every later low (96, 93, 97); `running(.., 5)` must be (4, 93, -1); the trough case mirrored ((4, 104, +1)).
+- Both bugs added to `plant_bugs_v31.py` as #47 / #48: **48 of 48 CAUGHT** (`out_plant_bugs_v31.txt`); 28 tests pass.
+- `swings.LIVE` = the repo store `data/history/FBS-Demo/XAUUSD/M1.parquet`, read with `open_time >= 2026-10-18`
+  (it holds 2026-10-18 22:05 .. 2026-10-20 05:59 UTC, 1,845 bars).
+
+### Written before computing (V3-2): the rules (2026-10-20 10:15 UTC = 17:15 Thai, `date -u`)
+
+Nothing below has been run on any bars. The facts used are the brief, the measurer's answers (Q4 / Q6 / Q7 / Q8),
+CHECKLIST rows 23 / 25 / 43, PROPOSALS proposal 2 and V3-1's own report. The open owner questions Q1 / Q2 / Q3 / Q5
+keep V3-1's current rules (marked OPEN in the report).
+
+**R0. Data, parts, costs.**
+- The bars: `swings.load_learning()` (2025-08-01 .. 2026-04-17; August .. mid-October 2025 only warms the swings up),
+  `swings.analyze` on M1, M5, M15, M30, H1, H4, D1 (M15 also with the inner swings, 0.3 x S, for the trail).
+- The trades are counted in P1 (2025-10-18 .. 2026-01-15) and P2 (2026-01-16 .. 2026-04-17) by the decision time.
+- The ticks: `data/ticks/XAUUSD/<UTC day>.parquet`, the day joined to the next; my reader refuses any day from
+  2026-04-18 on. The exam is never loaded.
+- The decision time = the moment the deciding TF bar is complete (`avail`, rule D0). The fill = the first tick at /
+  after it (none within 5 minutes: no trade). A buy fills at the ask + slip, a sell at the bid - slip; **slip = 0** by
+  default (a parameter). Market exits at the bid (buy) / ask (sell). The stop fills at the first tick at / beyond it
+  (the gap included); the target is a limit filled at its price; one tick reaching both: the stop. A gap of more than
+  30 minutes in the ticks: out at the last tick before it ("break"). A fill already past the stop: no trade.
+- R = pnl / the initial risk (|the fill - the initial stop|). 0.01 lot: 1 USD of price = 1 USD.
+- **One position at a time per entry type** (a signal while that type's trade is open is dropped). The four types are
+  also reported together, one position at a time across all of them, in the order of the decision time.
+- S = `swing_size` at the decision (rule D2), H = the H1 ATR14 at the decision (`h1_atr`).
+
+**R1. The windows (by the decision time).**
+- **Asia** 07:00-09:00 Thai (00:00-02:00 UTC). **London** 13:00-14:00 Thai (06:00-07:00 UTC).
+- **NY 08:30**: 08:30-09:30 New York time (America/New_York, so the US summer time is followed).
+- **NY open**: 09:30-13:30 New York time, reported per 30-minute bucket (09:30, 10:00, ... 13:00).
+- **other**: the rest. Not part of any rule; reported apart as information (entry 3 inside / outside separately, as
+  asked).
+
+**R2. The entry TF.** Four settings, all reported:
+- **vol** (the rule): the H1 ATR14 at the decision against P1's terciles. The terciles are computed once from the H1
+  ATR at every P1 M1 bar inside the four windows (P1 only). Low tercile -> M1, middle -> M5, high -> M15 (the owner:
+  "low volatility M1, higher M15"). An event on TF X is taken only when the decision's chosen TF is X.
+- **M1**, **M5**, **M15**: that TF for every decision.
+- The tercile cut points are printed before any trade is simulated.
+
+**R3. The levels and their events** are V3-1's (rules D11-D13) on the entry TF: the reference box's top / bottom
+(`box_top` / `box_bot`) and the newest support / resistance line (`sup` / `res`), with the events break, sweep,
+accepted, retest, retest_fail and reclaim. The levels everyone sees (for entry 3 and for the base rate) are the
+strategist's (`strategist/retest.py`, re-implemented in my code, not imported): the previous server day's high / low
+(PDH / PDL, from the day's start) and the Asian range high / low (00:00-06:00 UTC, from 06:00 UTC), on M5, with H.
+My re-implementation is checked against `strategist/retest_trades.parquet` and `reclaim_trades.parquet` by the entry
+times (the check is reported; their costs are M1 / mlib, mine ticks, so only the times and sides are compared).
+
+**R4. Entry 1 - break and retest.**
+- The event: a `retest_fail` on the entry TF's box edge or line (D11). The trade goes with the break: a bottom /
+  support broken down -> a **sell**; a top / resistance broken up -> a buy.
+- Decision = the event bar's `avail`. Stop = the retest's extreme (the event's price) + 0.25 x S past it (trade 4:
+  4177.06 + 2.5 = 4179.56 against the owner's 4180).
+- The exits (R7), variants (a) and (b).
+- **The splits** (reported, not filters), from the strategist's proposal 3:
+  - aligned: every TF from the entry TF up to H1 (of M1, M5, M15, M30, H1) reads the break's way, by the labels
+    (LH / LL for a sell) - and separately by the biases;
+  - the level: a line or a box edge;
+  - the first `retest_fail` of that level or a later one.
+- **The base rate** beside it: the strategist's #25 on the levels everyone sees (-0.221 / -0.390, M1 + mlib costs;
+  -0.218 / -0.380 on the ticks, spread only, PROPOSALS row 39), and my own re-simulation of the same entries in my
+  simulator (stop = the retest's extreme + 0.25 H, 2 R, 120 min, as retest.py).
+- The pass line (the strategist's): the aligned subset >= +0.15 in both parts and >= 0.3 R above the base rate.
+
+**R5. Entry 2 - the aligned consolidation.** On the entry TF X:
+- aligned: every TF from X up to H1 reads d (d = -1 sell, +1 buy) - by the **biases** (the measurer's Q8 answer:
+  the bias for the trend); the label version is a second setting;
+- the base: the last 6 bars of X (the decision bar included) span at most 2.0 x X's ATR14 (at the bar before the six),
+  every one of the six lies after the last confirmed trade-size peak of X (for a sell; trough for a buy), and the six
+  bars' top is below that peak (bottom above that trough);
+- the trigger: the first bar at which the base holds (it did not hold at the bar before); then no new trigger until the
+  base has failed for at least one bar;
+- the entry: at the trigger's `avail`, a sell inside the base (a buy mirrored);
+- the stop: past the structure that must break, the last confirmed peak of X + 0.25 x S (sell; trough - 0.25 x S buy);
+- the exits (R7); split: the base within 0.25 x S of an H1 Fibonacci level (rule D14) or not.
+
+**R6. Entry 3 - the fake break at a range edge** (#23 merged with #43, PROPOSALS proposal 2). The union of:
+- (i) the close back inside: on the entry TF's box edges, a `sweep` (one close beyond, then a close back inside) or a
+  `reclaim` (two closes back inside after an accepted break); on the levels everyone sees (M5), #23's reclaim (the
+  first M5 close beyond by 0.1 H, then within 24 M5 bars an M5 close back inside by 0.1 H);
+- (ii) the failed retest turn taken back into the range: on the entry TF's box edges, a `retest_fail` traded the
+  other way; on the levels everyone sees, #25's turn (retest.py) traded the other way.
+- The trade goes back into the range: a broken bottom -> a buy; a broken top -> a sell.
+- Two stop settings: **mirror** = the same distance as the same-side rule's stop, measured from the fill (for (i):
+  the distance from the decision bar's close to the break's extreme + 0.25 H; for (ii): the retest's extreme
+  + 0.25 S (box) / 0.25 H (everyone) from the fill, mirrored); **ext** = the break's extreme (the furthest price
+  beyond the level from the break bar to the decision bar) - 0.25 H for a buy (+ for a sell).
+- Target 1 R; at most 120 minutes. The same moment from two sources is one trade (the first source in the order
+  above).
+- Reported inside the windows and outside them, separately; per source (box / everyone) and per kind ((i) / (ii)).
+- The pass line (the strategist's): >= +0.15 in both parts with >= 30 trades each, in the windows.
+
+**R7. The exits for entries 1, 2 and 4.**
+- The target candidates Z (prices on the trade's side of the fill, known at the decision): the H1 and H4 Fibonacci
+  levels (rule D14); the prices of the last 6 confirmed trade-size pivots of M15 and of H1; the entry TF's reference
+  box top / bottom; PDH / PDL and the Asian high / low once known.
+- **(b) the next level:** the target = the nearest Z at least 1 R from the fill; none -> 2 R. The stop stays.
+- **(a) trail + the next zone:** the target = the nearest Z at least 2 R from the fill (none -> no target); the stop
+  trails: every inner swing (0.3 x S, rule D3) pivot of the entry TF against the trade (a peak for a sell) whose bar is
+  at / after the decision bar, confirmed after the decision, moves the stop to its price + 0.25 x S (sell; - for a
+  buy), from the confirming bar's `avail`, only when that is tighter.
+- The time limit: 120 minutes; 240 minutes for an entry in the NY-open window (the owner: NY runs up to 4 h).
+
+**R8. Entry 4 - the fake first leg at an open.** The opens T0: Asia 00:00 UTC, London 06:00 UTC, NY 08:30 and NY 09:30
+New York time; weekdays only.
+- d = the trend at T0 by the biases (`trend_bias`, M15 / M30 / H1 all the same way); 0 / unknown -> no trade. The
+  labels' `trend` is a second setting.
+- p0 = the open of the first M1 bar at / after T0. The fake leg: from T0, price goes at least A = 0.3 x S against d
+  past p0 (a high >= p0 + A for a sell).
+- The entry: after the fake leg reached A, the first close of the entry TF back past p0 the way of d (a close < p0 for a
+  sell), with the decision by T0 + 60 minutes. One per open.
+- The stop: the fake leg's extreme (the highest high from T0 to the decision, for a sell) + 0.25 x S. Exits (R7).
+
+**R9. The report** (DEV_PROMPT section 6 shape): per entry type x window x entry-TF setting x exit: trades, trades a
+weekday, win (pnl > 0), R and its 95 % range (bootstrap 4,000, seed 7) with the normal range as a second computation,
+USD, DD (the deepest fall of the running USD), the worst trade, the longest losing streak, the exits; week by week
+(Thai weeks); the NY open per 30-minute bucket; per side source (the side by the labels and by the biases: with the
+trade / none / against / unknown); the pooled P1 + P2 mean with its 95 % range; the neighbouring settings; the number of
+settings tried. No "lead" from a cell under 40 trades.
+
+**R10. The checks.**
+- Hand-worked tests for: the windows (with the US summer time), the entry-TF choice, each entry's event -> trade
+  translation (stop, side), the target picking, the trail schedule, the tick simulator (stop / target / gap / trail /
+  same-tick / no fill), the metrics.
+- Planted bugs against those tests (CAUGHT / MISSED).
+- The look-ahead check: the bars after a cut replaced by another path; every entry decided by the cut, its side, stop,
+  target and the trail steps known by the cut must be unchanged; a planted look-ahead must fail it.
+- A second computation of every metric; 20 trades per main variant re-derived from the raw ticks by a plain loop.
+- The losers by reason: **wrong way** (the best excursion before the exit < 0.5 R), **ran later** (stopped / timed
+  out, then 1 R our way from the fill within 60 minutes after the exit), **no run** (the rest); one drawn per reason.
+
+**R11. The acceptance on 2026-10-19** (the live bars; shape only: the entries are listed, no outcome is computed;
+the side is not available that day, Q7). Tolerances, written now:
+- **Trade 4:** an entry-1 sell with the decision in 18:25-19:00 Thai, the M1 close at the decision in 4167.0-4172.5,
+  the stop in 4177.06-4182.0. FOUND on any entry-TF setting (each listed).
+- **The base entry:** an entry-2 sell with the decision in 21:15-23:00 Thai, the M1 close at the decision in
+  4142.0-4150.0, the stop in 4155.3-4165.0.
+- **The triple-top sell:** a sell of any entry with the decision in 14:33-15:30 Thai, the close in 4176.0-4186.5.
+- **The NY-open fake leg then the sell:** an entry-4 sell with the decision in 20:30-20:50 Thai, the close >= 4150.0.
+- Every other entry that day is listed as an extra, with its reason.
+
+### Added before computing (2026-10-20 10:31 UTC = 17:31 Thai, `date -u`): the owner's answers relayed by the measurer (17:2x-17:3x Thai)
+
+Nothing of V3-2 had produced a trade yet: the first build (specs only, no ticks) was stopped as too slow and is rebuilt
+under these rules.
+
+18. **The structure is read on the M1 path (the owner: "to read H1, zoom into the smaller TF").** For every TF above
+    M1 (M5, M15, M30, H1, H4, D1) the **primary** structure reading is that TF's swing size applied on the M1 path:
+    - the threshold at an M1 bar d = max(S at d's close, 1.0 x the TF's ATR14 at its last bar complete by d's close)
+      (rule D3 with the TF's ATR read causally; `h1_on_m1.py`'s construction);
+    - the ZigZag (D4) on the M1 highs / lows with that threshold; the latest two highs / lows (D5), HH / LH / HL / LL
+      (D6), the label (D7) and the bias (D8, on the M1 closes) at every M1 close;
+    - a reading at a moment = the last M1 bar complete by it.
+    - `swings.analyze_path(m, tf)` returns it as a `TF` (bars = the M1 bars); `analyze_all(.., path=True)` adds it as
+      `R["<TF>@M1"]`; `readings_at(.., mode="path")` reads it. M1's own reading is the same in both modes.
+    - The candle-bar reading (V3-1's D4-D8 on the TF's own bars) stays as the **secondary** variant, reported beside
+      it ("bar"). The box, the lines and their events (D11-D13) stay on the TF's own bars.
+    - **V3-2 uses the primary (path) reading** for the side, the trend, entry 1's aligned split, entry 2's alignment
+      and entry 4's trend; each is also reported with the bar reading (a setting, counted).
+19. **One test of a box edge (Q1, decided by the measurer for the owner):** a visit to the box's top quarter (a bar
+    whose high >= top - 0.25 x height) counts as a test when price has left the top quarter by at least S since the
+    previous counted test (a low <= top - 0.25 x height - S, S in force at that bar), the first visit counting
+    from the box's first member. Read on the M1 bars, the box's top / height as given. The bottom is mirrored. It
+    replaces V3-1's inner-swing count (rule 12 / D15); the measurer's count on 2026-10-19 (5 tests: 06:29, 09:10,
+    11:53, 12:39, 13:58) is the acceptance line, not tuned to the owner's "about 7".
+20. **Outside the windows (the owner: "flexible within reason"):** an outside entry may count when it is clean. V3-2
+    keeps reporting inside / outside separately for every entry; "clean" is not defined yet, so no outside entry
+    enters a rule's result in this checkpoint.
+21. Q3 (the reclaim after 17:20) stays open: rule D11 is kept.
+
+### Added before computing (2026-10-20 10:35 UTC = 17:35 Thai, `date -u`; specs being built, no trade simulated yet)
+22. **The main variant per entry** (for the drawings, the loser reasons and the combined day), chosen by the rule's
+    text, not by a result: the entry TF "vol"; exit (a) (the owner's management: the trail past the entry TF's swings,
+    the next zone); the biases for the alignment / the trend (Q8); the path reading (rule 18). Entry 3: "vol", the
+    "ext" stop (the proposal's own stop). The other settings are reported beside it and counted.
+23. **One position at a time** is applied separately to the trades inside the windows (the rule) and to the trades
+    outside them (information), so the outside report does not take trades away from the rule.
+24. **The everyone-sees events of entry 3** sit on M5 and are taken in every entry-TF setting (the "vol" choice is
+    applied to the box events only).
+
+### V3-2 - the report (2026-10-20, written 12:3x-12:5x UTC = 19:3x-19:5x Thai, `date -u`)
+
+**In one line:** the four entries are built, tested and run on the ticks (spread only, slip 0). **No main variant reaches
+the goal: E1 -0.035 / -0.290, E2 -0.028 / +0.000, E3 -0.068 / +0.010, E4 +0.041 / -0.052 R (P1 / P2, inside the
+windows); all four together -0.015 / -0.112.** The entries find the owner's four moments of 2026-10-19 by shape, but
+trade 4 only on M5 / M15, not on the TF that the "vol" rule picks that day (M1). The strongest cells, seen after the run
+and judged as below: **E4 (the fake first leg) with the label trend and exit (b): +0.292 / +0.418 (41 / 34 trades)**, and
+E2 with the label alignment and exit (b): +0.147 / +0.243 (107 / 39).
+
+#### 1. What I did (files in `dev2/`)
+- The measurer's two test gaps closed; `swings.LIVE` -> the repo store (section "First" above). 48 / 48 V3-1 bugs caught.
+- Rules R0-R11 and 18-24 written before computing (above). Rule 18 (each TF's structure on the M1 path, the primary
+  reading) and rule 19 (one test of a box edge) added to `swings.py` (`analyze_path`, `path_threshold`,
+  `analyze_all(.., path=True)`, `readings_at(.., mode=)`, `edge_visits`); the structure loop moved into `_structure()`
+  unchanged (V3-1's 28 tests and its bug list still pass / are caught, see 3).
+- `v32.py`: the windows, the entry-TF choice, the levels everyone sees (the strategist's #23 / #25 re-implemented), the
+  four entries, the target candidates and the trail steps. `tsim32.py`: the tick simulator. `v32_build.py` -> the specs
+  (`v32_specs.pkl`, `out_v32_build.txt`). `v32_run.py` -> the simulation and the report (`out_v32.txt`,
+  `v32_trades.parquet`, `v32_base25.parquet`). `shape_v32.py` -> the acceptance (`out_shape_v32.txt`).
+  Checks: `test_v32.py`, `plant_bugs_v32.py`, `lookahead_v32.py`, `recheck_v32.py`, the parity check
+  (`out_parity_v32.txt`), `draw_v32.py` (`charts/v32/`, 28 charts, `index.txt`).
+- R2's terciles from P1 (the H1 ATR at every P1 M1 bar in the windows): **q1 14.551, q2 18.449 USD**.
+- 80 settings tried (E1 8, E2 32, E3 8, E4 32) + the base rate.
+
+#### 2. The tests (`test_v32.py`, 27 pass; every expected number worked by hand in the test comments)
+| Test | What it checks, and how | Pass line |
+|---|---|---|
+| windows_follow_the_us_summer_time | 13 moments on 2025-10-29 (EDT) and 11-05 (EST) -> Asia / London / NY0830 / NYopen / other; the NY bucket labels | each label exact |
+| entry_tf_by_the_terciles | H 10 / 14.5 / 16 / 18.4 / 30 / NaN with q 14.5 / 18.4 | M1, M5, M5, M15, M15, '' |
+| parts | the six boundary minutes of P1 / P2 / the exam | '', P1, P1, P2, P2, '' |
+| entry1_from_the_box_bottom_retest_fail | V3-1's MAIN path: the retest_fail at bar 82 (extreme 98) | a sell at T0+83 min, stop 100.5, first, not a line, not aligned (M1 mixed) |
+| entry2_base_trigger | a 100->120->100 walk then a 1-USD flat; the base first holds at bar 23 (span 4 <= 2 x ATR 2) | one sell trigger at bar 23, peak 120, top 104, bottom 100, stop 122.5 |
+| entry2_needs_alignment | the same bars, alignment False | no trigger |
+| aligned_reads_every_tf_up_to_h1_on_the_path | stub readings: H1@M1 -1, H1 (bars) +1 | path aligned, bar not; M1 label path; buy side not |
+| entry3_box_events | MAIN: sweep@54, retest_fail@82, reclaim@93 on the box bottom, H 8 | buys with ext stops 97 / 88 / 86; mirror distances 4 / 16; mirror_of 100.5 |
+| entry3_dedupe_keeps_the_first_source | four rows, two at the same moment and side | the priority order kept |
+| entry4_fake_leg | Asia open 2025-11-05: p0 100, A 3 (bar 2 high 103), M1 close 99 at bar 6, M5 close 96 | sell at 00:07 (M1) / 00:10 (M5), stop 106.5; the label trend 0 -> none |
+| pick_target | candidates 101 / 103 / 105 / NaN, risk 1 | 103 (2 R), 101 (1 R), 102 (default), NaN, 97 (sell) |
+| trail_steps | MAIN inner peaks after bar 64: 98@81 (conf 83), 110@97 (conf 99) | steps at T0+84 -> 100.5 and T0+100 -> 112.5; one when t_out = T0+90 |
+| candidates_hold_the_box_edges | at T0+61 | 121 and 99 in the list |
+| sim_stop_and_target | a buy at the ask 100.2, stop 99, 2 R | stop at the bid 98.9 (-1.3, R -1.083); target +2.4 (R 2); mfe / mae |
+| sim_sell_uses_the_ask_and_the_time_exit | a sell at the bid 100, t_out 5 min | out at the 5-min tick's ask 99.7, +0.3 |
+| sim_gap_no_fill_and_fill_past_the_stop | a 40-min gap; the first tick 6 min late; a sell with its stop below | "break" at the last tick before the gap; None; None |
+| sim_trail_only_tightens_and_starts_at_its_time | a sell, stop 103, steps 100.5 (tighter) and 104 (looser) at 2 min | stopped at the 3-min ask 100.6; dated at 1 min -> 101.0 |
+| sim_mirror_stop_dist_and_slip | mirror_of 98 for a sell; stop_dist 1.5; slip 0.1 | stop 102.2, risk 2.2, target 97.8; 98.7; fill 100.3 |
+| sim_one_tick_reaching_the_stop_and_the_target_is_a_stop | a trail step above the target, one tick reaches both | "stop" at the market 102.7 |
+| sim_ran_later | stopped at 1 min, the bid 1 R up at 30 min (70 min outside the hour) | after_best 1.2 |
+| ticks_refuse_the_exam | 2026-04-18 | RuntimeError; the cache returns None without reading |
+| ticks_cache_goes_back_in_time | four later days loaded, then 2025-10-20 | the earlier day loads (the KeyError of the first run) |
+| metrics_by_hand / drawdown_from_the_start | equity paths, a zero pnl, fills at the previous exit | DD 3 / 2, streak 3, one-at-a-time keeps 0 / 10 / 25, summ == summ2 |
+| loser_reason | mfe / after_best against the risk | wrong way / ran later / no run |
+| path_reading_h1_on_the_m1_path | MAIN, H1 path: threshold 10 to bar 58, 22 from bar 59 | pivots ..53, 63, 86 confirmed ..58, 74, 97; bar 80 mixed, bias -1 from 73; readings_at path vs bar |
+| edge_visits_by_hand | top 10, bottom 0, S 3, nine bars | tests at bars 1, 6, 8; the bottom mirrored the same |
+
+`test_swings.py`: 28 pass after the refactor.
+
+#### 3. The planted bugs
+- `plant_bugs_v32.py` -> `out_plant_bugs_v32.txt`: **44 of 44 CAUGHT** (windows / DST, the TF choice, each entry's side /
+  stop / trigger, the alignment and the reading mode, the trail, the simulator's fill / stop / both-on-one-tick / trail /
+  gap / lag / mirror / time / cache, the metrics, rules 18 / 19). The first run missed the cache bug (#34); I
+  strengthened its test (four later days first), then it was caught.
+- `plant_bugs_v31.py` re-run on the refactored `swings.py`: **48 of 48 CAUGHT** (`out_plant_bugs_v31.txt`).
+- **A disclosure:** a mistaken shell line started an early copy of `plant_bugs_v32.py` that still held a mutant
+  widening the exam guard of `tsim32.day_ticks` (`d > EXAM_START`). In that mutant's run, `test_ticks_refuse_the_exam`
+  called `day_ticks(2026-04-18)` and so **read one exam-day tick file (2026-04-18) into memory** inside the test; the
+  test failed on it (no error raised), nothing was printed, stored or computed from it. That mutant was removed from the
+  list before the clean run, and no mutant may widen an exam guard again.
+
+#### 4. The look-ahead check (`lookahead_v32.py` -> `out_lookahead_v32.txt`)
+- Six cuts spread over P1 / P2 (2025-11-06 01:10, 12-10 15:20, 2026-01-08 06:40, 02-12 14:50, 03-11 00:45, 04-08
+  16:05 UTC). After each cut the M1 bars are reflected about the last close (two days kept); the swings, the path
+  readings, the everyone-sees levels and every entry are rebuilt from scratch on both copies.
+- Compared for every entry decided by the cut, in every spec file (all TFs, all settings): the decision, the bar, the
+  side, every stop, S, H, the window, the alignment columns (path and bar), the side / trend sources, the target
+  candidates and the trail steps dated by the cut.
+- **136,573 of 136,573 unchanged: PASSED** (1,224 s).
+- **The power:** a planted look-ahead (every structure reading taken 15 minutes after the decision) changes 67 of
+  16,746 entries on the first two cuts: **FAILED, i.e. caught.**
+
+#### 5. The second computations
+- Every metric cell: n / R / win / DD / streak by a plain loop (`summ2`): **759 of 759 cells equal**.
+- 20 trades per setting re-derived from the raw tick files by an independent one-tick-at-a-time loop
+  (`recheck_v32.py`): **1,600 of 1,600 agree** (80 settings x 20; the fill, the exit kind, the exit time, the pnl).
+- My #25 re-run in my simulator, all hours, each alone: **-0.218 / -0.380 (41 / 46)**, exactly the strategist's tick
+  numbers (PROPOSALS row 39).
+- My re-implementation of the levels everyone sees against the strategist's trade lists (`out_parity_v32.txt`): #25
+  88 / 88 entries equal (time and side); #23 130 of 131 equal, one entry a minute apart (2025-11-28 08:15 / 08:16 UTC:
+  their entry is the next M1 bar's open, which is one minute later where an M1 bar is missing).
+
+#### 6. The results (inside the owner's windows, one position at a time, ticks, spread only; `out_v32.txt`)
+**The main variants** (rule 22: entry TF "vol", exit (a), the biases, the path reading; E3 "vol" + the ext stop):
+
+| Entry | Part | Trades (a weekday) | Win | R [95 % boot] | USD | DD | Worst | Streak | Weeks + |
+|---|---|---|---|---|---|---|---|---|---|
+| E1 break and retest | P1 | 186 (2.91) | 0.31 | -0.035 [-0.24, +0.18] | -120.8 | 157.5 | -26.2 | 12 | 5 / 13 |
+| | P2 | 125 (1.89) | 0.29 | -0.290 [-0.48, -0.08] | -542.2 | 617.4 | -58.9 | 19 | 2 / 14 |
+| E2 aligned consolidation | P1 | 272 (4.25) | 0.37 | -0.028 [-0.11, +0.06] | -299.1 | 360.7 | -39.6 | 10 | 5 / 13 |
+| | P2 | 87 (1.32) | 0.36 | +0.000 [-0.15, +0.16] | -99.2 | 240.6 | -88.5 | 7 | 4 / 14 |
+| E3 fake break at an edge | P1 | 192 (3.00) | 0.47 | -0.068 [-0.19, +0.05] | -93.9 | 209.3 | -40.4 | 5 | 5 / 13 |
+| | P2 | 157 (2.38) | 0.50 | +0.010 [-0.13, +0.14] | +66.8 | 254.8 | -182.5 | 7 | 7 / 14 |
+| E4 fake first leg | P1 | 79 (1.23) | 0.41 | +0.041 [-0.18, +0.28] | +45.7 | 96.0 | -16.6 | 6 | 7 / 13 |
+| | P2 | 63 (0.95) | 0.30 | -0.052 [-0.36, +0.31] | -330.5 | 409.1 | -74.4 | 6 | 4 / 13 |
+| The four together | P1 | 403 (6.30) | 0.40 | -0.015 [-0.11, +0.08] | -192.5 | 389.5 | -39.6 | 12 | |
+| | P2 | 262 (3.97) | 0.36 | -0.112 [-0.23, +0.01] | -928.1 | 964.8 | -182.5 | 13 | |
+
+Pooled P1 + P2: E1 -0.137 [-0.28, +0.01] (311), E2 -0.021 [-0.10, +0.05] (359), E3 -0.033 [-0.12, +0.06] (349), E4
+-0.000 [-0.20, +0.21] (142), the four together -0.053 [-0.13, +0.02] (665). The normal ranges (the second computation
+of the range) agree with the bootstrap within 0.04 in these cells. The -182.5 USD trade is E3 on 2026-02-02 07:30 Thai (the crash week, H1 ATR
+124 USD, a 180-USD stop; -1.01 R). The week-by-week tables (Thai weeks) are in `out_v32.txt` for each main variant and
+the combined day.
+
+**E1 against the base rate (#25):** the base rate in my simulator, inside the windows: -0.240 / -0.237 (19 / 25); all
+hours -0.218 / -0.380. E1's splits (inside the windows):
+- aligned by the labels (path): -0.031 / -0.018 (51 / 36); by the biases: -0.142 / -0.256 (101 / 74); by the bar labels
+  +0.003 / -0.246 (26 / 27).
+- a line: +0.038 / -0.315 (107 / 65); a box edge: -0.133 / -0.263 (79 / 60).
+- the first fail of the level: -0.002 / -0.219 (136 / 94); a later one: -0.124 / -0.506 (50 / 31).
+- **The pass line (the aligned subset >= +0.15 in both parts and 0.3 R above the base rate): FAIL** in every split.
+
+**E3 inside / outside the windows (as asked):** inside -0.068 / +0.010 (192 / 157); outside +0.047 / -0.010 (189 / 195).
+Per source inside: box (i) -0.178 / -0.089 (71 / 56), box (ii) -0.033 / -0.036 (85 / 57), everyone (i) = #23 at 1 R
++0.172 / +0.164 (20 / 25), everyone (ii) = #43 inside -0.063 / +0.241 (16 / 19). **Pass line (>= +0.15 with >= 30 a
+part): FAIL**; my box edges dilute the levels everyone sees.
+
+**Per window / bucket / TF / side source** (all in `out_v32.txt`). The notable rows (main variants, P1 / P2):
+- E1 London -0.432 / -0.541 (21 / 12); E1 Asia +0.231 / -0.463.
+- E2 NY bucket 09:30 +0.274 / +0.428 (24 / 5); E2 NY 11:00 -0.251 / -0.330.
+- E4 NYopen +0.278 / -0.173 (33 / 18); E4 buys +0.144 / +0.086 (54 / 40), sells -0.182 / -0.293 (25 / 23).
+- The side source does not separate in a way that holds in both parts (e.g. E1 "side with" by the path labels +0.113 /
+  -0.046 (24 / 39)); the side by the labels is "none" in most trades (E1: 141 / 75 of 186 / 125).
+
+**The losers by reason** (main variants): E1 wrong way 121, no run 65, ran later 31 (of 217); E2 199 / 22 / 7 (of 228);
+E3 129 / 37 / 14 (of 180); E4 55 / 27 / 9 (of 91). The entry, not the exit, is still where most losers come from.
+One loser per reason and a rule-picked sample (the first winner and loser of P1 and P2) per entry are drawn in
+`charts/v32/` (28 charts, listed in `index.txt`).
+
+**The settings positive in both parts** (80 tried; inside the windows; seen after the run; none is a lead under 40
+trades a part):
+
+| Cell | P1 R (n) | P2 R (n) | Pooled [95 %] | Neighbours |
+|---|---|---|---|---|
+| E4 vol, exit (b), the label trend, path | +0.292 (41) | +0.418 (34) | +0.349 [+0.08, +0.63] (75) | label bar +0.240 / +0.203 (36 / 25); M15 +0.256 / +0.402 (34 / 32); M5 +0.219 / +0.144 (40 / 40); exit (a) +0.006 / +0.191; the bias trend +0.179 / -0.006 |
+| E2 vol, exit (b), the label alignment, path | +0.147 (107) | +0.243 (39) | +0.172 [+0.02, +0.32] (146) | label bar +0.106 / +0.029; M15 +0.193 / +0.176 (35 / 31); M5 +0.009 / +0.141; M1 +0.112 / +0.003; the bias alignment -0.017 / +0.013 |
+| E1 M5, exit (b) | +0.112 (176) | +0.109 (223) | +0.110 [-0.02, +0.24] (399) | M5 exit (a) +0.169 / +0.030; vol / M1 / M15 negative in P2 |
+
+- The E4 cell: P2 has 34 trades (under 40), so by the judging rule it is not a lead yet. Without its best 3 trades:
+  +0.157 / +0.223. Weeks positive 10 / 13 and 9 / 12. Per open (P1 / P2): Asia +0.400 / +0.187 (9 / 9), London -0.455 /
+  +0.826 (4 / 9), NY 08:30 +0.537 / +0.598 (12 / 5), NY open +0.235 / +0.192 (16 / 11). Exits: target 17 / 15, stop
+  16 / 13, time 6 / 6. 0.6 trades a weekday.
+- The E2 cell: without its best 3: +0.093 / +0.080. Weeks positive 9 / 13 and 10 / 14. 55 of 107 P1 exits are the time
+  limit.
+- **What the grid shows** (a description of the 80 cells, not a rule change): the labels (HH + HL / LH + LL on every TF)
+  beat the biases for the alignment / trend, and exit (b) (the next level, the stop kept) beats exit (a) (the trail at
+  0.25 S past the 0.3 S swings, the next zone >= 2 R). My main variant (rule 22: the biases, exit (a)) took the weaker
+  of both.
+
+#### 7. The acceptance on 2026-10-19 (`out_shape_v32.txt`; shape only, no outcome computed)
+| The owner's trade | Tolerance (R11) | What the rules take | Verdict |
+|---|---|---|---|
+| Trade 4: the sell after the failed retest | E1 sell 18:25-19:00, close 4167.0-4172.5, stop 4177.06-4182 | E1 on **M5 and M15**: the sell decided 18:30 at 4172.11, stop 4179.56 (the M5 support line's retest_fail, extreme 4177.06; aligned by the path biases). Window "other" (outside the windows). | **FOUND on M5 / M15; MISSED by the "vol" rule**: that day's H1 ATR (12.2, warm-up) is under q1, so "vol" picks M1, where the same line was reclaimed at 15:41 (V3-1) and records nothing. It is also the 5th retest_fail of that line on M5 ("first" False). |
+| The base on the Fibo 50 % | E2 sell 21:15-23:00, close 4142-4150, stop 4155.3-4165 | E2 M1 (bias, path) sells at 21:17 (4144.50), 21:27, 21:30, 22:01, 22:13 ... stop 4157.82 (the 21:00 lower high 4155.32 + 2.5); NY-open window; "vol" = M1 | **FOUND**; but E2 on M1 fires 72 times that day (all hours), far more than the owner's one entry |
+| The triple-top sell after 14:33 | any sell 14:33-15:30, close 4176.0-4186.5 | E3 M1: the box top reclaimed at 14:37 (4185.44, ext stop 4193.44); E3 M5: 14:40 (4183.76) | **FOUND** (outside the windows) |
+| The NY-open fake leg, then the sell | E4 sell 20:30-20:50, close >= 4150 | E4 sell at 20:35 (4160.34), p0 4161.68, the fake high 4167.18, stop 4169.68, on M1 and M5, by the biases and the labels (path); NY-open window | **FOUND** |
+
+- **The extras that day** (all listed in `out_shape_v32.txt`): E1 M5 also sold 12:30, 16:00, 16:10, 16:25, 18:10 (repeat
+  fails of the same support line) and bought 20:15 / 20:30 (a resistance line's retest_fail during the fall); E3 took
+  buys at 17:22 / 17:29 (the range bottom swept and reclaimed - V3-1's Q3 reading), 19:10 / 19:35 (the Asian low
+  reclaimed), 20:42; E4 bought the London open at 13:59. Reasons: E1 / E3 take every fail / reclaim of every level; no
+  limit per window or per level was in the rules.
+- The readings that day: the path H1 reads down from 18:58 (as `h1_on_m1.py`); the path trend (biases) down from 16:00,
+  the labels' trend down from 18:58. **A caveat:** the path D1 / H4 readings on the live day are not meaningful - before
+  a TF's first complete bar its path threshold is S alone (rule 18), and no D1 bar is complete before 22:04. The side
+  stays as Q7 decided (accepted without it).
+- Rule 19 on the day: **5 tests (06:29, 09:10, 11:53, 12:39, 13:58)**, the measurer's count exactly.
+
+#### 8. What this says and what I would change next (for the measurer and the owner; nothing changed yet)
+- The four entries as written lose or sit near 0 in the windows. The base rate of the retest (#25) stays below them,
+  but no E1 split reaches the pass line.
+- Two transformations to test next, written before running (proposed, not run): (1) E4 and E2 with the label trend and
+  exit (b), frozen as they stand, checked on the older years where M1 exists (CHECKLIST rows 45-49: every lead so far
+  pays only since 2025-10); (2) one entry per level per window (the first fail / reclaim only), which removes the
+  repeats seen on 2026-10-19.
+- The "vol" TF rule missed trade 4 (M1 on a calm day). The owner's words ("low volatility M1") and the trade disagree
+  here: the owner read the trade on M5.
+
+#### 9. Questions
+1. **(Owner) Exit (b) and the labels did better than my declared main (exit (a), the biases).** May the next round take
+   E4 / E2 with the labels and exit (b) as the main, judged on the older years (M1, the heavier costs) before any
+   freeze?
+2. **(Owner) The entry TF on a calm day:** trade 4 lived on M5 when "vol" said M1. Is the owner's "low volatility M1"
+   about the H1 ATR, or about the M1 bars' size (a different measure)? Or should the TF be the one where the level's
+   structure lives (the line was an M5 line)?
+3. **E2 fires too often** (72 times on 2026-10-19 on M1, 4.25 a weekday in P1's windows one at a time). Should a base
+   need a level (the Fibo / an H1 level) - the owner's base sat on the Fibo 50 % - or be one per lower high?
+4. **Q3 / Q5 of V3-1 stay OPEN** with the current rules (Q1 is now rule 19, Q2 rule 18, both decided).
+5. The strategist's `idx_of_day` keeps a day only when it has >= 50 M5 bars, counted over the whole day: a day's
+   eligibility uses bars after the decision. I have not measured how often it changes a day (the look-ahead copies keep
+   the same bar count, so the check cannot see it), and in live use it cannot be known; should it be "the previous day had >= 50"?
+
+**Checkpoint: V3-2 is reported. V3-3 is not started.**

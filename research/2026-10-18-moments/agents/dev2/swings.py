@@ -50,7 +50,7 @@ LEARN_FROM = pd.Timestamp("2025-08-01", tz="UTC")
 EXAM_START = pd.Timestamp("2026-04-18", tz="UTC")
 LIVE_FROM = pd.Timestamp("2026-10-18", tz="UTC")
 HIST = ROOT / "data" / "history" / "FBS-Demo" / "XAUUSD" / "M1.parquet"
-LIVE = Path(r"C:\Users\korap\AppData\Local\Temp\claude\c--Users-korap-taa\07b81cb7-c5a7-49f9-8f44-3946d6d64c77\scratchpad\m1_live.parquet")
+LIVE = HIST  # the repo store (the measurer, 2026-10-20); the reader keeps open_time >= LIVE_FROM only
 COLS = ["open", "high", "low", "close"]
 
 
@@ -76,8 +76,8 @@ def load_learning() -> pd.DataFrame:
 
 
 def load_live(path: Path = LIVE) -> pd.DataFrame:
-    """The shape day's bars (the scratchpad file), from 2026-10-18 00:00 UTC only: the earlier rows are the exam's and
-    are filtered by the reader."""
+    """The shape days' bars (the repo store), from 2026-10-18 00:00 UTC only: the earlier rows are the exam's and are
+    filtered by the reader."""
     import pyarrow.dataset as ds  # noqa: PLC0415
 
     d = ds.dataset(str(path)).to_table(filter=ds.field("open_time") >= LIVE_FROM.to_pydatetime(),
@@ -326,19 +326,10 @@ def _box_ok(prices: list[float], kinds: list[int], cap: float) -> bool:
     return all((p >= mid) if k == 1 else (p <= mid) for p, k in zip(prices, kinds))
 
 
-def analyze(m: pd.DataFrame, tf: str, inner: bool = False, s_fn=None) -> TF:
-    """Rules 3-8 and 11-13 on one TF. s_fn: S at moments (default rule 1; tests inject a constant)."""
-    s_fn = s_fn or s_default(m)
-    b = tf_bars(m, tf)
-    h, lo = _hl(b)
-    c = b["close"].to_numpy(float)
-    t_min = _ns(b["t"]) // NS_MIN  # minutes, for the lines
-    thr = tf_threshold(m, b, tf, s_fn)
-    s_bar = s_fn(_ns(b["avail"]))
-    piv, dirs, exts = zigzag(h, lo, thr, state=True)
+def _structure(h: np.ndarray, lo: np.ndarray, c: np.ndarray, piv, dirs: np.ndarray, exts: np.ndarray) -> pd.DataFrame:
+    """Rules 4 + 13 (D5-D8) at every bar of the path h / lo / c, from its pivots and the ZigZag state."""
     pb, pp, pk, pc = piv
-    n = len(b)
-    # ---- rule 4 + 13: the structure and the last break
+    n = len(h)
     st = {k: np.full(n, np.nan) for k in ("highs", "lows", "label", "bias", "bias_bar", "hi_old", "hi_new", "lo_old", "lo_new")}
     peaks: list[int] = []
     troughs: list[int] = []
@@ -372,7 +363,23 @@ def analyze(m: pd.DataFrame, tf: str, inner: bool = False, s_fn=None) -> TF:
         if troughs and not tr_broken and c[j] < pp[troughs[-1]]:
             tr_broken, bias, bias_bar = True, -1.0, j
         st["bias"][j], st["bias_bar"][j] = bias, bias_bar
-    struct = pd.DataFrame(st)
+    return pd.DataFrame(st)
+
+
+def analyze(m: pd.DataFrame, tf: str, inner: bool = False, s_fn=None) -> TF:
+    """Rules 3-8 and 11-13 on one TF. s_fn: S at moments (default rule 1; tests inject a constant)."""
+    s_fn = s_fn or s_default(m)
+    b = tf_bars(m, tf)
+    h, lo = _hl(b)
+    c = b["close"].to_numpy(float)
+    t_min = _ns(b["t"]) // NS_MIN  # minutes, for the lines
+    thr = tf_threshold(m, b, tf, s_fn)
+    s_bar = s_fn(_ns(b["avail"]))
+    piv, dirs, exts = zigzag(h, lo, thr, state=True)
+    pb, pp, pk, pc = piv
+    n = len(b)
+    # ---- rule 4 + 13: the structure and the last break
+    struct = _structure(h, lo, c, piv, dirs, exts)
     struct.insert(0, "avail", b["avail"].to_numpy())
 
     # ---- rules 5-7, 11: the box, the lines, their breaks and retests
@@ -522,14 +529,15 @@ def side_trend(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out, index=df.index)
 
 
-def readings_at(R: dict[str, TF], t_ns, tfs=("D1", "H4", "H1", "M30", "M15")) -> pd.DataFrame:
+def readings_at(R: dict[str, TF], t_ns, tfs=("D1", "H4", "H1", "M30", "M15"), mode: str = "bar") -> pd.DataFrame:
     """Rules 16-17: one row per moment; for each TF its label and bias from its last bar complete by the moment (NaN
     when none), and - when D1, H4, H1, M30 and M15 are all given - the side and the trend columns (rule 17), each as
-    known then."""
+    known then. mode "path" reads rule 18's reading (`R["<TF>@M1"]`, the TF's swing size on the M1 path; M1 itself is
+    the same in both modes), "bar" the TF's own bars."""
     t_ns = np.asarray(t_ns, np.int64)
     out = {}
     for tf in tfs:
-        r = R[tf]
+        r = R[f"{tf}@M1"] if mode == "path" and tf != "M1" else R[tf]
         j = r.at(t_ns)
         for what in ("label", "bias"):
             v = r.struct[what].to_numpy(float)
@@ -540,6 +548,65 @@ def readings_at(R: dict[str, TF], t_ns, tfs=("D1", "H4", "H1", "M30", "M15")) ->
     return df
 
 
-def analyze_all(m: pd.DataFrame, tfs=("M1", "M5", "M15", "M30", "H1", "H4", "D1"), s_fn=None) -> dict[str, TF]:
+def analyze_all(m: pd.DataFrame, tfs=("M1", "M5", "M15", "M30", "H1", "H4", "D1"), s_fn=None,
+                path: bool = False) -> dict[str, TF]:
+    """Every TF on its own bars; with path=True also rule 18's reading of each TF above M1 as `R["<TF>@M1"]`."""
     s_fn = s_fn or s_default(m)
-    return {tf: analyze(m, tf, inner=tf in ("M1", "M5"), s_fn=s_fn) for tf in tfs}
+    R = {tf: analyze(m, tf, inner=tf in ("M1", "M5"), s_fn=s_fn) for tf in tfs}
+    if path:
+        for tf in tfs:
+            if tf != "M1":
+                R[f"{tf}@M1"] = analyze_path(m, tf, s_fn=s_fn)
+    return R
+
+
+# ------------------------------------------------------------------ rule 18: a TF's structure read on the M1 path
+def path_threshold(m: pd.DataFrame, tf: str, s_fn=None) -> np.ndarray:
+    """At every M1 bar d: max(S at d's close, 1.0 x the TF's ATR14 at its last bar complete by d's close); before the
+    TF's first complete bar, S alone."""
+    b1 = tf_bars(m, "M1")
+    t = _ns(b1["avail"])
+    s = (s_fn or s_default(m))(t)
+    b = tf_bars(m, tf)
+    a = atr_warm(*(b[k].to_numpy(float) for k in ("high", "low", "close")))
+    j = np.searchsorted(_ns(b["avail"]), t, side="right") - 1
+    return np.maximum(s, np.where(j >= 0, TF_ATR * a[np.maximum(j, 0)], 0.0))
+
+
+def analyze_path(m: pd.DataFrame, tf: str, s_fn=None) -> TF:
+    """Rule 18: the TF's swing size on the M1 path - the ZigZag on the M1 highs / lows with `path_threshold`, and the
+    structure (D5-D8, the bias on the M1 closes) at every M1 close. Bars = the M1 bars; no box / lines / events."""
+    b1 = tf_bars(m, "M1")
+    h, lo = _hl(b1)
+    c = b1["close"].to_numpy(float)
+    thr = path_threshold(m, tf, s_fn)
+    piv, dirs, exts = zigzag(h, lo, thr, state=True)
+    struct = _structure(h, lo, c, piv, dirs, exts)
+    struct.insert(0, "avail", b1["avail"].to_numpy())
+    s1 = (s_fn or s_default(m))(_ns(b1["avail"]))
+    e = pd.DataFrame()
+    return TF(f"{tf}@M1", b1, thr, s1, piv, struct, e, e, e)
+
+
+# ------------------------------------------------------------------ rule 19: the tests of a box edge on the M1 bars
+def edge_visits(h: np.ndarray, lo: np.ndarray, s: np.ndarray, top: float, bot: float, side: int = 1) -> list[int]:
+    """Rule 19 on the M1 bars given (from the box's first member on): a bar whose high reaches the top quarter
+    (>= top - 0.25 x height) is a test when it is the first such bar or price has left the quarter by at least S since
+    the previous test (a low <= top - 0.25 x height - S at that bar). Returns the bars of the tests. side -1: the
+    bottom, mirrored."""
+    hgt = top - bot
+    if side == 1:
+        q = top - TOP_Q * hgt
+        reach, left = h >= q, lo <= q - s
+    else:
+        q = bot + TOP_Q * hgt
+        reach, left = lo <= q, h >= q + s
+    out: list[int] = []
+    armed = True
+    for i in range(len(h)):
+        if not armed and left[i]:
+            armed = True
+        if armed and reach[i]:
+            out.append(i)
+            armed = False
+    return out

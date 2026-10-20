@@ -1,0 +1,82 @@
+E1 tf M1 exit a                : 20 of 20 re-derived trades agree
+E1 tf M1 exit b                : 20 of 20 re-derived trades agree
+E1 tf M15 exit a               : 20 of 20 re-derived trades agree
+E1 tf M15 exit b               : 20 of 20 re-derived trades agree
+E1 tf M5 exit a                : 20 of 20 re-derived trades agree
+E1 tf M5 exit b                : 20 of 20 re-derived trades agree
+E1 tf vol exit a               : 20 of 20 re-derived trades agree
+E1 tf vol exit b               : 20 of 20 re-derived trades agree
+E2 tf M1 exit a bias bar       : 20 of 20 re-derived trades agree
+E2 tf M1 exit a bias path      : 20 of 20 re-derived trades agree
+E2 tf M1 exit a label bar      : 20 of 20 re-derived trades agree
+E2 tf M1 exit a label path     : 20 of 20 re-derived trades agree
+E2 tf M1 exit b bias bar       : 20 of 20 re-derived trades agree
+E2 tf M1 exit b bias path      : 20 of 20 re-derived trades agree
+E2 tf M1 exit b label bar      : 20 of 20 re-derived trades agree
+E2 tf M1 exit b label path     : 20 of 20 re-derived trades agree
+E2 tf M15 exit a bias bar      : 20 of 20 re-derived trades agree
+E2 tf M15 exit a bias path     : 20 of 20 re-derived trades agree
+E2 tf M15 exit a label bar     : 20 of 20 re-derived trades agree
+E2 tf M15 exit a label path    : 20 of 20 re-derived trades agree
+E2 tf M15 exit b bias bar      : 20 of 20 re-derived trades agree
+E2 tf M15 exit b bias path     : 20 of 20 re-derived trades agree
+E2 tf M15 exit b label bar     : 20 of 20 re-derived trades agree
+E2 tf M15 exit b label path    : 20 of 20 re-derived trades agree
+E2 tf M5 exit a bias bar       : 20 of 20 re-derived trades agree
+E2 tf M5 exit a bias path      : 20 of 20 re-derived trades agree
+E2 tf M5 exit a label bar      : 20 of 20 re-derived trades agree
+E2 tf M5 exit a label path     : 20 of 20 re-derived trades agree
+E2 tf M5 exit b bias bar       : 20 of 20 re-derived trades agree
+E2 tf M5 exit b bias path      : 20 of 20 re-derived trades agree
+E2 tf M5 exit b label bar      : 20 of 20 re-derived trades agree
+E2 tf M5 exit b label path     : 20 of 20 re-derived trades agree
+E2 tf vol exit a bias bar      : 20 of 20 re-derived trades agree
+E2 tf vol exit a bias path     : 20 of 20 re-derived trades agree
+E2 tf vol exit a label bar     : 20 of 20 re-derived trades agree
+E2 tf vol exit a label path    : 20 of 20 re-derived trades agree
+E2 tf vol exit b bias bar      : 20 of 20 re-derived trades agree
+E2 tf vol exit b bias path     : 20 of 20 re-derived trades agree
+E2 tf vol exit b label bar     : 20 of 20 re-derived trades agree
+E2 tf vol exit b label path    : 20 of 20 re-derived trades agree
+E3 tf M1 stop ext              : 20 of 20 re-derived trades agree
+E3 tf M1 stop mirror           : 20 of 20 re-derived trades agree
+E3 tf M15 stop ext             : 20 of 20 re-derived trades agree
+E3 tf M15 stop mirror          : 20 of 20 re-derived trades agree
+E3 tf M5 stop ext              : 20 of 20 re-derived trades agree
+E3 tf M5 stop mirror           : 20 of 20 re-derived trades agree
+E3 tf vol stop ext             : 20 of 20 re-derived trades agree
+E3 tf vol stop mirror          : 20 of 20 re-derived trades agree
+E4 tf M1 exit a bias bar       : 20 of 20 re-derived trades agree
+E4 tf M1 exit a bias path      : 20 of 20 re-derived trades agree
+E4 tf M1 exit a label bar      : 20 of 20 re-derived trades agree
+E4 tf M1 exit a label path     : 20 of 20 re-derived trades agree
+E4 tf M1 exit b bias bar       : 20 of 20 re-derived trades agree
+E4 tf M1 exit b bias path      : 20 of 20 re-derived trades agree
+E4 tf M1 exit b label bar      : 20 of 20 re-derived trades agree
+E4 tf M1 exit b label path     : 20 of 20 re-derived trades agree
+E4 tf M15 exit a bias bar      : 20 of 20 re-derived trades agree
+E4 tf M15 exit a bias path     : 20 of 20 re-derived trades agree
+E4 tf M15 exit a label bar     : 20 of 20 re-derived trades agree
+E4 tf M15 exit a label path    : 20 of 20 re-derived trades agree
+E4 tf M15 exit b bias bar      : 20 of 20 re-derived trades agree
+E4 tf M15 exit b bias path     : 20 of 20 re-derived trades agree
+E4 tf M15 exit b label bar     : 20 of 20 re-derived trades agree
+E4 tf M15 exit b label path    : 20 of 20 re-derived trades agree
+E4 tf M5 exit a bias bar       : 20 of 20 re-derived trades agree
+E4 tf M5 exit a bias path      : 20 of 20 re-derived trades agree
+E4 tf M5 exit a label bar      : 20 of 20 re-derived trades agree
+E4 tf M5 exit a label path     : 20 of 20 re-derived trades agree
+E4 tf M5 exit b bias bar       : 20 of 20 re-derived trades agree
+E4 tf M5 exit b bias path      : 20 of 20 re-derived trades agree
+E4 tf M5 exit b label bar      : 20 of 20 re-derived trades agree
+E4 tf M5 exit b label path     : 20 of 20 re-derived trades agree
+E4 tf vol exit a bias bar      : 20 of 20 re-derived trades agree
+E4 tf vol exit a bias path     : 20 of 20 re-derived trades agree
+E4 tf vol exit a label bar     : 20 of 20 re-derived trades agree
+E4 tf vol exit a label path    : 20 of 20 re-derived trades agree
+E4 tf vol exit b bias bar      : 20 of 20 re-derived trades agree
+E4 tf vol exit b bias path     : 20 of 20 re-derived trades agree
+E4 tf vol exit b label bar     : 20 of 20 re-derived trades agree
+E4 tf vol exit b label path    : 20 of 20 re-derived trades agree
+
+ALL: 1600 of 1600 agree
