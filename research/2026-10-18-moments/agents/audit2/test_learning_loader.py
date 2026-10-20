@@ -139,3 +139,33 @@ def test_the_real_stores_end_before_the_exam() -> None:
     assert len(m) == 954_198
     assert m.index[0] == START and m.index[-1] == pd.Timestamp("2026-04-17 20:54", tz="UTC")
     assert m.index.is_unique and m.index.is_monotonic_increasing
+
+
+# Round 3: the five group-b callers (they cut the bars before the exam right after `load()`) now read through
+# `load_learning()`, so no exam row is ever in their memory. Each keeps its own start date.
+GROUP_B = {
+    "framework.py": 'pd.Timestamp("2025-06-01", tz="UTC")',
+    "framework2.py": 'pd.Timestamp("2025-06-01", tz="UTC")',
+    "level_power.py": "START - pd.Timedelta(days=10)",
+    "regime.py": 'pd.Timestamp("2025-01-01", tz="UTC")',
+    "verify_p2.py": 'pd.Timestamp("2025-09-01", tz="UTC")',
+}
+
+
+def plib_calls(path: Path) -> list[tuple[str, str]]:
+    """Every `plib.<name>(...)` call in a file: (name, the source of its `start=` keyword or '')."""
+    import ast  # noqa: PLC0415
+
+    src = path.read_text(encoding="utf-8")
+    out = []
+    for node in ast.walk(ast.parse(src)):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == "plib" and node.func.attr in ("load", "load_learning")):
+            start = next((ast.get_source_segment(src, k.value) or "" for k in node.keywords if k.arg == "start"), "")
+            out.append((node.func.attr, start))
+    return out
+
+
+@pytest.mark.parametrize("name", sorted(GROUP_B))
+def test_group_b_reads_only_the_learning_bars(name: str) -> None:
+    assert plib_calls(HERE.parent / "precursors" / name) == [("load_learning", GROUP_B[name])]

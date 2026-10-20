@@ -1,0 +1,31 @@
+# round 3, item 1: the group-b callers re-run with plib.load_learning() (2026-10-20 ~10:08-10:12 UTC) against the stored outputs (CR stripped)
+== diff stored/out_framework.txt rerun/out_framework.txt
+IDENTICAL
+== diff stored/out_framework2.txt rerun/out_framework2.txt
+1,2d0
+< C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\framework2.py:65: RuntimeWarning: invalid value encountered in cast
+<   "3day": np.sign(dc - pd.Series(dc).shift(3).to_numpy()).astype(int)}
+== diff stored/out_level_power.txt rerun/out_level_power.txt
+IDENTICAL
+== diff stored/out_regime.txt rerun/out_regime.txt
+0a1
+> trades: combo_trades.parquet
+27a29,31
+> the weights by mechanism (range pieces cut in a trend, the breakout piece cut outside one; chosen after seeing both parts - a hypothesis for the exam): {('Asia B2', 'trend'): 0.5, ('London ORB', 'trend'): 0.5, ('NY straddle', 'sideways'): 0.5, ('NY straddle', 'mixed'): 0.5}
+>   P1: by mechanism: weighted R +0.301, USD +263.5
+>   P2: by mechanism: weighted R +0.130, USD +475.3
+== out_framework2 without the stored file's first 2 lines (a stderr RuntimeWarning captured with stdout; its line number moved 65 -> 64)
+IDENTICAL
+== verify_p2 (no stored file; notes.md 2026-10-19: 6 cells equal, 0 overlaps, 60 of 60, 1244 of 1244)
+1. the metrics recomputed (variant, part):
+   A P1: n 522, per_day 8.156, win 0.358, R -0.047, R_lo -0.141, R_hi 0.047, usd -78.923, dd 393.756, worst -29.660, streak 11
+   A P2: n 565, per_day 8.561, win 0.358, R -0.045, R_lo -0.137, R_hi 0.046, usd -301.832, dd 512.205, worst -97.410, streak 16
+   B1 P1: n 382, per_day 5.969, win 0.348, R -0.043, R_lo -0.179, R_hi 0.092, usd -114.839, dd 263.662, worst -24.850, streak 9
+   B1 P2: n 364, per_day 5.515, win 0.321, R -0.082, R_lo -0.220, R_hi 0.056, usd -500.351, dd 593.508, worst -52.730, streak 10
+   B2 P1: n 352, per_day 5.500, win 0.386, R -0.026, R_lo -0.111, R_hi 0.059, usd -67.907, dd 313.067, worst -35.600, streak 9
+   B2 P2: n 348, per_day 5.273, win 0.382, R -0.014, R_lo -0.101, R_hi 0.073, usd 48.078, dd 454.524, worst -54.210, streak 11
+2. one position at a time: entries before the previous exit = 0
+3. trades re-derived from the raw ticks: 60 of 60 agree
+4. structure exits re-read with fingerprint.zigzag: 1244 of 1244 agree
+== its 6 metric lines against dev/p2_metrics.csv (group all, news_cost 0)
+IDENTICAL

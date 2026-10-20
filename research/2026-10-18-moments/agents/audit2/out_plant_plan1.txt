@@ -1,0 +1,60 @@
+MISSED  main: the exam built by default: 19 passed in 0.99s
+CAUGHT  parse: --exam on by default: 1 failed, 1 passed in 1.01s
+          test_the_switch_and_the_defaults
+MISSED  main: the slippage argument ignored (0.07): 19 passed in 0.78s
+MISSED  main: the release extra ignored: 19 passed in 0.75s
+MISSED  repro: M1 read to the exam's end: 19 passed in 0.91s
+MISSED  build: the ticks read to the exam's end: 19 passed in 0.72s
+MISSED  build: the trade-period guard removed: 19 passed in 0.68s
+MISSED  build: Asia from the learning start in every mode: 19 passed in 0.74s
+MISSED  build: London at slippage 0.07: 19 passed in 0.68s
+MISSED  build: NY without the release extra: 19 passed in 0.73s
+MISSED  build: the state from H4 bars, not D1: 19 passed in 0.69s
+MISSED  asia_b2: B2 at slippage 0.07: 19 passed in 0.70s
+MISSED  asia_b2: locate bounded to the exam's end: 19 passed in 0.68s
+MISSED  asia_b2: entries past the period kept: 19 passed in 0.67s
+MISSED  asia_b2: the fill time = the decision: 19 passed in 0.67s
+MISSED  asia_b2: the scan from the first bar: 19 passed in 0.66s
+CAUGHT  stream: ordered by the exit: 1 failed, 13 passed in 0.93s
+          test_one_position_at_a_time
+CAUGHT  stream: a dropped trade blocks the next: 1 failed, 14 passed in 0.88s
+          test_stream_agrees_with_combo_stream
+3 of 18 caught (plan1)
+CAUGHT  main: the exam built by default: 1 failed, 19 passed in 0.98s
+          test_main_without_the_switch_never_builds_the_exam
+CAUGHT  parse: --exam on by default: 1 failed, 1 passed in 0.86s
+          test_the_switch_and_the_defaults
+CAUGHT  main: the slippage argument ignored (0.07): 1 failed, 19 passed in 0.93s
+          test_main_without_the_switch_never_builds_the_exam
+CAUGHT  main: the release extra ignored: 1 failed, 19 passed in 0.97s
+          test_main_without_the_switch_never_builds_the_exam
+CAUGHT  repro: M1 read to the exam's end: 1 failed, 20 passed in 0.94s
+          test_repro_reads_only_the_learning_m1
+CAUGHT  build: the ticks read to the exam's end: 1 failed, 21 passed in 1.10s
+          test_build_hands_every_piece_the_period_the_tick_end_and_the_slippage
+CAUGHT  build: the trade-period guard removed: 1 failed, 22 passed in 1.16s
+          test_a_trade_outside_the_period_stops_build
+CAUGHT  build: Asia from the learning start in every mode: 1 failed, 21 passed in 1.38s
+          test_build_hands_every_piece_the_period_the_tick_end_and_the_slippage
+CAUGHT  build: London at slippage 0.07: 1 failed, 21 passed in 1.01s
+          test_build_hands_every_piece_the_period_the_tick_end_and_the_slippage
+CAUGHT  build: NY without the release extra: 1 failed, 21 passed in 1.07s
+          test_build_hands_every_piece_the_period_the_tick_end_and_the_slippage
+CAUGHT  build: the state from H4 bars, not D1: 1 failed, 21 passed in 1.07s
+          test_build_hands_every_piece_the_period_the_tick_end_and_the_slippage
+CAUGHT  asia_b2: B2 at slippage 0.07: 1 failed, 23 passed in 1.18s
+          test_asia_b2_runs_b2_with_this_runs_slippage_and_bounds_and_keeps_entries_in_the_period
+CAUGHT  asia_b2: locate bounded to the exam's end: 1 failed, 23 passed in 1.17s
+          test_asia_b2_runs_b2_with_this_runs_slippage_and_bounds_and_keeps_entries_in_the_period
+CAUGHT  asia_b2: entries past the period kept: 1 failed, 23 passed in 1.23s
+          test_asia_b2_runs_b2_with_this_runs_slippage_and_bounds_and_keeps_entries_in_the_period
+CAUGHT  asia_b2: the fill time = the decision: 1 failed, 23 passed in 1.20s
+          test_asia_b2_runs_b2_with_this_runs_slippage_and_bounds_and_keeps_entries_in_the_period
+CAUGHT  asia_b2: the scan from the first bar: 1 failed, 23 passed in 1.16s
+          test_asia_b2_runs_b2_with_this_runs_slippage_and_bounds_and_keeps_entries_in_the_period
+CAUGHT  stream: ordered by the exit: 1 failed, 13 passed in 1.10s
+          test_one_position_at_a_time
+CAUGHT  stream: a dropped trade blocks the next: 1 failed, 14 passed in 0.97s
+          test_stream_agrees_with_combo_stream
+18 of 18 caught (plan1)
+ALL: 21 of 36 caught; unmutated: 25 passed, 1 xfailed in 3.23s

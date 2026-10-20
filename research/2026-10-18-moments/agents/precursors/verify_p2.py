@@ -92,8 +92,7 @@ def structure_check(T: pd.DataFrame) -> tuple[int, int]:
 
     from indicators import bars  # noqa: PLC0415
 
-    m = plib.load()
-    m = m[(m.index >= pd.Timestamp("2025-09-01", tz="UTC")) & (m.index < pd.Timestamp("2026-04-18", tz="UTC"))]
+    m = plib.load_learning(start=pd.Timestamp("2025-09-01", tz="UTC"))  # ends before 2026-04-18; no exam row read
     ok = n = 0
     for tf, G in T[T.exit == "structure"].groupby("tf"):
         b = bars(m, "1min" if tf == "M1" else "5min")

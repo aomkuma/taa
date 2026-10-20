@@ -1,6 +1,8 @@
 # The system audit, second agent (2026-10-19 15:41 UTC = 22:41 Thai .. 2026-10-20 05:12 UTC = 12:12 Thai)
 
 Round 2: 2026-10-20 05:47 .. 06:11 UTC = 12:47 .. 13:11 Thai - items 1 and 4, dev2's swings (sections 10-12).
+Round 3: 2026-10-20 10:05 .. 10:33 UTC = 17:05 .. 17:33 Thai - group b on `load_learning()`, the PLAN-1 runner, dev2's two
+test gaps (sections 13-15).
 
 Brief: `../AUDIT_PROMPT.md`. Every number below comes from a script and output named next to it. Nothing here reads
 the exam period (2026-04-18 .. 2026-10-17): stores are read with pyarrow row filters that keep only the learning
@@ -27,6 +29,9 @@ exam row.
 | 10 | item 1: "win" = pnl > 0 after costs | `wf.weekly`, `wf.walk_forward`'s month row and every precursors win share | 3 new hand-worked tests + a scan test; 14 planted bugs; every stored trade file re-counted on the learning rows, old against new | before 6 failed / 9 passed, after 15 passed; 14 of 14 CAUGHT; 240 learning-part cells: 205 rise, 35 equal, 0 fall (+0.000 .. +0.500, median +0.073); 0 target exits not in profit | **changed** (the measurer's answer) | 24 precursors files; section 10 |
 | 11 | item 4: `plib.load_learning()` | a loader that stops before 2026-04-18 00:00 UTC and never returns an exam row | 14 hand-worked tests + 1 on the real stores; 13 planted bugs; a caller list | before 14 failed / 1 passed, after 15 passed; 13 of 13 CAUGHT; real stores 954,198 bars .. 2026-04-17 20:54 (= out_check_merge.txt) | **added** | `gold.py` (`bars(before=)`), `plib.py`; 54 callers listed (section 11) |
 | 12 | dev2's `swings.py` (read only; sha256 9ebfe2dd5de473b7.., file time 12:26:40 Thai) | the ZigZag rule 2, `tf_bars`, look-ahead of the whole `analyze`, the pivots against their legs, `running()` | 32 hand-worked tests + 2 questions (xfail); 10 planted bugs (in memory); the real learning bars: `tf_bars` against `indicators.bars`, truncation at 3 server-day ends x 7 TFs, two property counts | 32 passed + 2 xfailed; 10 of 10 CAUGHT; `tf_bars` equal on every TF; truncation 21 of 21 equal (with power); pivots not the extreme of their leg 0.1 % (M1) .. 1.0 % (H1); `running()` != the structure's extreme on 0.0-0.2 % of bars | **PASS** (two questions) | questions 6-7; no bug to relay |
+| 13 | round 3, item 1: the group-b callers on `plib.load_learning()` | `framework`, `framework2`, `level_power`, `regime`, `verify_p2` read no exam row and give the same results | one line each (`load()` + the cut -> `load_learning(start=...)`); an AST test of every `plib` call in the five files; each script re-run and diffed against its stored output (parquets compared frame by frame) | the test: HEAD 5 failed / 0 passed -> 5 passed; `out_framework`, `out_level_power` identical; `out_framework2` identical apart from a stderr warning captured in the stored file; `out_regime` every stored line identical (3 new lines from a later print = CHECKLIST row 37's +0.301 / +0.130); `framework2.parquet`, `level_power.parquet` byte-identical; `verify_p2` 6 of 6 cells = `dev/p2_metrics.csv`, 0 overlaps, 60 of 60, 1244 of 1244 (= notes.md) | **switched, identical** | section 13 |
+| 14 | the first developer's PLAN-1 runner `dev/plan1.py` + `test_plan1.py` (read only; sha256 dec3a0a5.. / 71779f40..) | the one-position stream, the D1-state weights from closed D1 bars, the cost (the tick spread; slippage a parameter, default 0), the exam switch's guard | 6 new tests + 1 question (xfail) with stubs (no data read); 18 planted bugs against its tests alone and with mine; the learning trades rebuilt in memory and checked on the raw ticks, MT5's own D1 bars and the measurer's `check_plan1.py` | rebuilt = stored (298 / 298 rows); D1 state 298 of 298 (MT5 D1, my loop) and 298 of 298 (the measurer's regime path); the fills = the tick's ask / bid exactly on 298 of 298, faults 0; London 119 / 119, NY 100 / 100, dR 0.0000; stream: 0 dropped, the next fill 4.0 min after an exit at the closest; weights equal; the 6 printed plan lines recomputed equal; planted: its tests 3 of 18, with mine 18 of 18 | **PASS** (no bug; 15 test gaps closed; one question) | section 14; relay the 6 tests (test gaps) |
+| 15 | round 3, item 3: dev2's two test gaps (`dev2/swings.py`, now sha256 ff1eff81.., file time 17:08:49 Thai) | `known_at` with a pivot confirmed exactly at d + 1; `running()` when the pivot bar's own extreme lies beyond every later bar | 2 hand-worked tests (the second both ways up) in `test_dev2_swings.py`; the measurer's two mutants | 35 passed + 2 xfailed on the current code; the 2 mutants: 2 of 2 caught (by the two tests alone and by the whole file); round 2's 10 mutants on the new version: 10 of 10 | **tests added** | section 15 |
 
 ## 1a. The history download stored nothing after Friday (FAIL, fixed)
 
@@ -691,7 +696,7 @@ mention the exam; nothing was edited):
 | Group | Files | Proposal |
 |---|---|---|
 | a. read the exam on purpose (an exam switch, an exam part / half, or moments to EXAM_END) - 16 | `base_after_costs`, `big_trades`, `burst_scan`, `by_eye`, `combine`, `loser_audit`, `m1_features`, `m15_trades`, `model_trades`, `moments`, `mw`, `present`, `pullback15`, `range_trades`, `v2b_pictures`, `wf` | keep `load()` only in the exam branch (the measurer's read); the learning branch `load_learning()`. `wf.main` also hands `load()` to `evidence_patterns` for every trade, the exam's included |
-| b. cut the bars before the exam right after `load()` - 5 | `framework`, `framework2`, `level_power`, `regime`, `verify_p2` | switch now: the same bars, no exam row in memory (`load_learning(start=...)` for their start dates) |
+| b. cut the bars before the exam right after `load()` - 5 | `framework`, `framework2`, `level_power`, `regime`, `verify_p2` | switch now: the same bars, no exam row in memory (`load_learning(start=...)` for their start dates) - **done in round 3 (section 13)** |
 | c. load everything, then pick learning moments only - 5 | `library_present`, `picture_pairs`, `reading_audit`, `snaps`, `zoom_audit` | switch; the result is the same unless a picked moment's drawn / labelled window runs past 2026-04-18 00:00 (the last days of P2) - check on the switch |
 | d. no exam filter in sight; mostly the older studies (made before the exam rule of 2026-10-18 on data to 2026-10-17) and library builders - 28 | `audit`, `bot_eye`, `build`, `cont`, `explore`, `eye_check`, `fingerprint`, `footprints`, `gallery`, `gallery_sets`, `indicators`, `library`, `library_match`, `loc`, `loser_charts`, `losers_b`, `lvl_losers`, `no_sl`, `paper`, `phase`, `pullback`, `select_sets`, `straddle`, `touches`, `v2`, `v2_losers`, `wf_library_compare`, `zones` | switch at the next re-run; a re-run then stops at the exam, so its stored outputs (some span to 2026-10-17) no longer reproduce; the measurer decides per file |
 
@@ -768,6 +773,123 @@ threshold (look-ahead).
    2,908 H1, 0 of 762 H4 (test `test_running_equals_the_extreme_the_structure_tracks`). Which one is meant, and should
    the public `running()` match it?
 
+## 13. Round 3, item 1: the group-b callers on `plib.load_learning()` (switched, identical)
+
+**The change** (one line each; the cut right after `load()` is now the loader's): `framework.py`, `framework2.py`
+`plib.load_learning(start=2025-06-01)`; `level_power.py` `load_learning(start=START - 10 days)`; `regime.py`
+`load_learning(start=2025-01-01)`; `verify_p2.py` (`structure_check`) `load_learning(start=2025-09-01)`. Each ends before
+2026-04-18 00:00 UTC, as their own cuts did, and no exam row is read into memory any more.
+
+**Test** (`audit2/test_learning_loader.py::test_group_b_reads_only_the_learning_bars`, 5 cases): an AST scan of every
+`plib.load(...)` / `plib.load_learning(...)` call in each file; each must hold exactly one call, `load_learning`, with its
+own start date (the source text of `start=`).
+- Before (the HEAD copies, `out_r3_groupb_before.txt`): `HEAD: 5 failed, 0 passed` (each `[('load', '')]`).
+- After: `test_learning_loader.py` `20 passed in 2.58s`; the callers' own tests (`test_framework`, `test_level_power`,
+  `test_verify_p2`) `12 passed in 1.82s`.
+
+**The re-runs against the stored outputs** (`out_r3_groupb_diff.txt`; CR stripped). Two scripts run in parallel failed
+on the machine's memory (`ArrowMemoryError` / "the paging file is too small"; 879 MB of commit left at the time), not on
+the code; each was then run alone.
+
+| Script | Stored output | Result |
+|---|---|---|
+| `framework.py` | `out_framework.txt` (12:10 Thai) | identical |
+| `framework2.py` | `out_framework2.txt` (12:13) + `framework2.parquet` | identical apart from the stored file's first 2 lines, a numpy RuntimeWarning (stderr) captured with stdout, whose line number moved 65 -> 64 since one line went; the parquet byte-identical (sha256 2537fbf5..) |
+| `level_power.py` | `out_level_power.txt` (2026-10-18 23:50) + `level_power.parquet` | identical; the parquet byte-identical (f0abdfec..) |
+| `regime.py combo_trades.parquet` | `out_regime.txt` (12:28) | all 27 stored lines identical; 4 added lines come from prints added to `regime.py` after that output (the "trades:" line and the by-mechanism weights: P1 +0.301 / USD +263.5, P2 +0.130 / +475.3 = CHECKLIST row 37's "with +1 USD release slippage, by mechanism +0.301 / +0.130"). `combo_trades.parquet` and the default `combo_trades_slip1.parquet` are byte-identical (ced8e2c4..) |
+| `verify_p2.py` | no stored file; notes.md 2026-10-19 | the 6 metric lines equal `dev/p2_metrics.csv` (group all, news cost 0) to every printed digit; one position 0; raw ticks 60 of 60; structure exits 1244 of 1244 - as in the notes |
+
+## 14. The PLAN-1 runner `dev/plan1.py` (read only; PASS, no bug; 15 test gaps closed; one question)
+
+**The version audited:** `dev/plan1.py` sha256 `dec3a0a50677bc548e5f17f9b143cc271c9966e69a1b2f78ff7f9956f752d4ae`, file
+time 2026-10-20 13:14:26 Thai; `dev/test_plan1.py` `71779f404db67b05e1822c391539f59df3460bf86ea4944d43189a849946cd7b`,
+13:09:11 Thai. Snapshot copies in my scratchpad (10:12 UTC = 17:12 Thai); the hashes were the same at 10:31 UTC. Its
+stored learning run (`plan1_every_learn_s0_x0.parquet`, `plan1_trades_learn_s0_x0.parquet`, `out_plan1_learn_s0_x0.txt`,
+13:17 Thai) was written after the last edit. Its exam switch was never run and no exam data was read: every store read
+in my checks has a row filter ending before 2026-04-18, and every tick day read is asserted to be before it.
+
+**Read against the brief:**
+- **The exam switch:** `--exam` (`store_true`, default False) is the only way into the exam. `period(False)` = the
+  learning parts; `check_period` refuses a learning period past 2026-04-18 and an exam period other than 2026-04-18 ..
+  2026-10-18; `load_m1` refuses an end past 2026-04-18 without the switch before reading, reads with a pyarrow row
+  filter and re-checks the rows; `PlanTicks` never opens a tick day at / after the period's end (also when B2 joins
+  the next day); `build` refuses a trade outside the period; `--repro` reads only the learning M1 and refuses `--exam`.
+  No imported module reads data at import (checked: `p3_trades`, `d1_orb`, `p2_trades`, `p4_trades`, `patterns`,
+  `sweep_detector`, `news_follow`, `regime`, `indicators`, `phase`). B2's own period guards read module globals at
+  call time, so `located_in` moves them for the period and restores them.
+- **The cost:** fills at the tick's ask (buy) / bid (sell) + the slippage; market exits at the bid / ask; targets as
+  limits. The slippage is `--slippage` (default 0) on every piece: London and NY take it as an argument, B2 through
+  `entry_slippage` (B2's simulator reads `p2_trades.SLIP` at each fill, checked in `p3_trades.simulate3`); the NY
+  release slippage is `--extra` (default 0). No other cost term (no spread formula, no stop slippage) is used.
+- **The one-position stream:** all three pieces' trades in fill order; a fill strictly before the kept trade's exit is
+  dropped; a fill at the exit is taken (the convention of `combo.stream` and `verify_p2`).
+- **The D1 state:** `indicators.bars(m, "1D")` (server-day bars, `avail` = the last M1 minute + 1; equal to MT5's D1
+  in round 1, 2a), `regime.state_at` at the fill: the last bar with `avail <= t`, the 20-day efficiency, P1's terciles
+  0.116 / 0.264. The M1 starts 2025-09-01, so the first learning trade has more than 20 closed D1 bars (NaN used: 0).
+
+**Tests (`audit2/test_plan1_audit.py`, 6 + 1 question; stubs record the arguments, nothing reads market data):**
+
+| Test | What it checks, by hand |
+|---|---|
+| `test_main_without_the_switch_never_builds_the_exam` | `main([])` -> `build(False, 0.0, 0.0)`; `--slippage 0.07 --extra 1` -> `(False, 0.07, 1.0)`; only `--exam` -> `(True, ...)` (the stub stops the run); `main` never reads M1 itself |
+| `test_repro_reads_only_the_learning_m1` | `main(["--repro"])` -> `load_m1(2026-04-18, False)` once, then `repro` |
+| `test_build_hands_every_piece_the_period_the_tick_end_and_the_slippage` | learning: Asia (2025-10-18, 2026-04-18, ticks end 2026-04-18, slip 0); London 2025-10-20 .. 2026-04-17, 130 days, ticks end 2026-04-18, slip 0; NY the same, slip 0, extra 0; 0.07 / 1.0 reach every piece; the exam (only when asked): Asia / ticks end 2026-10-18, London 2026-04-20 .. 2026-10-16; the state reads server-day D1 bars (30 days of 00:00-09:50 UTC bars -> 30 bars, each complete at 09:51) |
+| `test_a_trade_outside_the_period_stops_build` | a stub Asia trade filled at 2026-04-18 00:00 in a learning run -> `ExamPeriodError` |
+| `test_asia_b2_runs_b2_with_this_runs_slippage_and_bounds_and_keeps_entries_in_the_period` | `locate` runs inside (2025-10-18, 2026-04-18); the scan starts at the first bar complete at / after the start (bar 1); B2's simulator sees `SLIP` 0.0 (and 0.07 when asked), mode "structure", news cost 0; of 3 candidates (Asia 04-17 01:00 UTC, Asia 04-18 01:00, London 04-17 06:30) the stream gets the two Asia ones and the row kept is 04-17's, `t_dec` = the decision, `t_in` = the fill; the globals restored |
+| `test_one_position_at_a_time_by_its_definition` | 200 random sets (1-39 trades, three pieces, shuffled input): kept fills in order, never before the open trade's exit, every dropped trade fills inside a kept trade that filled no later; by hand: a fill at the exit is taken, 1 ns before it is not |
+| `test_the_exam_switch_takes_no_abbreviation` (xfail, question 10) | `parse(["--exa"])` turns the exam on (argparse abbreviations) |
+
+- Run: `test_plan1_audit.py` + the developer's `test_plan1.py`: `25 passed, 1 xfailed in 4.73s`.
+- **Planted (`plant.py mutants_plan1`, `out_plant_plan1.txt`; in memory only): the developer's tests alone 3 of 18
+  caught; with mine 18 of 18 caught.** The 15 its tests miss: `main` builds the exam by default; `main` ignores
+  `--slippage`; `main` ignores `--extra`; `--repro` reads M1 to the exam's end; the ticks read to the exam's end; the
+  trade-period guard removed; Asia from the learning start in the exam; London at 0.07; NY without the extra; the state
+  from H4 bars; B2 at 0.07; `locate` bounded to the exam's end; B2 entries past the period kept; B2's fill time = the
+  decision; the scan from the first bar. Its own 40 planted bugs (`dev/out_plant_bugs_plan1.txt`) are all caught: they
+  mutate the pieces it tests by hand. None of the 15 is in the code; they are gaps a later edit could slip through -
+  **relay: the developer may adopt these tests** (question 11).
+
+**The learning trades on the real data (`check_plan1_audit.py --rebuild`, `out_check_plan1_audit.txt`, 10:23-10:26 UTC):**
+0. `plan1.build(False, 0.0, 0.0)` rebuilt in memory = the stored files: every 298 rows, trades 298 rows, frame-equal.
+1. **The D1 state from a second source:** MT5's own D1 bars (from 2025-01-01), the last bar whose `close_time <=` the
+   fill, the efficiency by my own loop: **298 of 298** labels equal; NaN used 0; the bar read closed 0.08 .. 3.65 days
+   before the fill (none after). The measurer's path (`load_learning(2025-01-01)` -> `bars` -> `regime.state_at`, 8
+   months more history): 298 of 298, |er difference| 0. Trades per part x state: P1 mixed 29 / sideways 37 / trend 75,
+   P2 56 / 48 / 53.
+2. **The stream:** 298 trades, 298 kept, **0 dropped** (the three pieces never overlapped in the learning parts at
+   slippage 0; the closest next fill came 4.0 min after an exit), so only the unit tests exercise the stream (question
+   12). `w_mech` equals the written table; the P1 rule recomputed on these trades = {Asia B2 trend 0.5, NY straddle
+   sideways 0.5} = `W_P1`; `w_p1` equal.
+3. **The cost on the raw ticks:** 298 of 298 fills = the tick's ask / bid exactly (no slippage), exits at the tick or
+   the target, risk / R consistent, no tick beyond the stop before a non-stop exit, London targets at 2 R: faults 0.
+   My first version flagged 1 NY fill (2025-11-07 13:30:56.816 UTC): two ticks share that millisecond (bid 3995.11,
+   then 3995.02 <= the trigger 3995.04) and the runner filled on the second, correctly; the check now accepts any tick
+   of the millisecond (1 such fill). The measurer's independent `check_plan1.london(0.0)` / `ny(0.0)`: **London
+   119 / 119, NY 100 / 100, |dR| max 0.0000.**
+4. **The printed plan lines** (`out_plan1_learn_s0_x0.txt`), recomputed by separate code (n, win, R, USD, max DD from
+   0): **6 of 6 equal** - unweighted P1 141 / 0.532 / +0.249 / +256.18 / 55.82, P2 157 / 0.484 / +0.137 / +507.55 /
+   116.69; by mechanism P1 +0.337 / +293.24 / 34.61, P2 +0.188 / +534.37 / 74.88; from P1: P1 +0.288 / +292.02 / 38.71,
+   P2 +0.147 / +523.41 / 99.61.
+
+## 15. Round 3, item 3: dev2's two test gaps (tests added)
+
+The measurer's planted bugs in `dev2/swings.py` that no unit test caught (`precursors/plant_dev2_v31.py`): `known_at`
+one bar ahead (`searchsorted(piv[3], d + 1, ...)`) and `running()` including the pivot bar (`slice(pb[-1], d + 1)`).
+The file changed since round 2: now sha256 `ff1eff818185fa4b38437b6be49bd6edc6fb91e390da1959fefc9807d32e4245`, file time
+2026-10-20 17:08:49 Thai; the two functions' lines are the ones the mutants name.
+
+| Test (`audit2/test_dev2_swings.py`) | What it checks, by hand |
+|---|---|
+| `test_known_at_leaves_out_a_pivot_confirmed_on_the_next_bar` | h 10, 19, 15, 12 / lo 9, 15, 12, 9, threshold 10: trough 9 @0 confirmed by bar 1, peak 19 @1 confirmed by bar 3; pivots known at d = 0..3: 0, 1, 1, 2 (a pivot confirmed at d + 1 is not known at d) |
+| `test_running_starts_after_the_pivot_bar[False / True]` | h 10, 30, 25, 22, 24 / lo 9, 12, 21, 19.5, 18: trough 9 @0 (by bar 1), peak 30 @1 (by bar 3: 30 - 19.5 = 10.5); the peak bar's own low 12 is below every later low; `running` at bar 3 = (3, 19.5, trough), at bar 4 = (4, 18, trough), at bar 2 (the peak not yet confirmed) = (1, 30, peak); the same upside down |
+
+- My first hand value was wrong (a bar-2 low of 20 already confirms the peak at bar 2: 30 - 20 = 10); the code was
+  right; the series was changed to 21.
+- On the current code: `test_dev2_swings.py` `35 passed, 2 xfailed in 2.56s`.
+- **Planted (`plant.py mutants_dev2_swings_r3`, `out_plant_dev2_swings_r3.txt`): the two tests alone 2 of 2 caught; the
+  whole file 2 of 2 caught.** Round 2's 10 mutants on the new version: `10 of 10 caught; unmutated: 35 passed, 2
+  xfailed`.
+
 ## The files changed by the audit
 
 | File | Change | Its test (fails before, passes after) |
@@ -790,6 +912,17 @@ Round 2 (2026-10-20, not committed):
 
 Nothing in `dev/` or `dev2/` was edited by the audit (dev2's `swings.py` was mutated in memory only). Nothing was
 committed.
+
+Round 3 (2026-10-20, not committed):
+
+| File | Change | Its test (fails before, passes after) |
+|---|---|---|
+| `research/.../precursors/framework.py`, `framework2.py`, `level_power.py`, `regime.py`, `verify_p2.py` | `plib.load()` + the cut -> `plib.load_learning(start=...)` (one line each) | `audit2/test_learning_loader.py::test_group_b_reads_only_the_learning_bars`: HEAD 5 failed / 0 passed -> 5 passed; the outputs identical (section 13) |
+| `audit2/`: `test_plan1_audit.py`, `check_plan1_audit.py`, `mutants_plan1.py`, `mutants_dev2_swings_r3.py` (new); `test_learning_loader.py`, `test_dev2_swings.py` (tests added); outputs `out_r3_groupb_before.txt`, `out_r3_groupb_diff.txt`, `out_check_plan1_audit.txt`, `out_plant_plan1.txt`, `out_plant_dev2_swings_r3.txt` | the audit's own files | - |
+
+Nothing in `dev/` or `dev2/` was edited (`plan1.py` and `swings.py` were mutated in memory only; the plan1 check calls
+`build` in memory and writes nothing there). Re-running `framework2.py` / `level_power.py` rewrote their parquet files
+in `precursors/` with byte-identical content. Nothing was committed.
 
 ## The commands to re-run every check (from the repo root, `.venv`)
 
@@ -816,6 +949,13 @@ for s in mutants_pipeline mutants_bars mutants_foundation mutants_swings mutants
 .venv/Scripts/python -m pytest research/2026-10-18-moments/agents/audit2/test_metrics.py research/2026-10-18-moments/agents/audit2/test_learning_loader.py research/2026-10-18-moments/agents/audit2/test_dev2_swings.py -q
 .venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_win.py         # 10: every win share moved, learning rows only
 .venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_dev2_swings.py # 12: tf_bars, truncation, the two properties
+# round 3 (2026-10-20)
+.venv/Scripts/python -m pytest research/2026-10-18-moments/agents/audit2/test_learning_loader.py research/2026-10-18-moments/agents/audit2/test_dev2_swings.py research/2026-10-18-moments/agents/audit2/test_plan1_audit.py research/2026-10-18-moments/agents/dev/test_plan1.py -q
+for s in mutants_plan1 mutants_dev2_swings_r3; do .venv/Scripts/python research/2026-10-18-moments/agents/audit2/plant.py $s; done
+.venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_plan1_audit.py --rebuild   # about 3 min; learning parts only
+for f in framework framework2 level_power; do .venv/Scripts/python research/2026-10-18-moments/agents/precursors/$f.py; done   # one at a time
+.venv/Scripts/python research/2026-10-18-moments/agents/precursors/regime.py combo_trades.parquet
+.venv/Scripts/python research/2026-10-18-moments/agents/precursors/verify_p2.py
 ```
 The one-off measurements whose code is in this file's history, not in a script: the window split
 (`out_window_split.txt`), the drawdown impact (`out_dd_impact.txt`, `out_dd_printed.txt`), the callers' entry hours
@@ -824,6 +964,20 @@ loaded in place of the module, then the test file run). `check_relay_impact.py` 
 has applied the fix (it needs the old line).
 
 ## Questions for the measurer
+
+Round 3's:
+
+10. **The exam switch takes abbreviations:** argparse accepts `--exa` for `--exam` (`--ex` is refused as ambiguous with
+    `--extra`). Not reachable by default (a person must type it), but `ArgumentParser(..., allow_abbrev=False)` in
+    `dev/plan1.py` would make only the full `--exam` work. The xfail test `test_the_exam_switch_takes_no_abbreviation`
+    waits for the decision.
+11. **The PLAN-1 test gaps:** 15 of my 18 planted bugs in `plan1.py` pass the developer's tests (all are caught by
+    `audit2/test_plan1_audit.py`; none is in the code). Shall the developer adopt these tests into `dev/test_plan1.py`?
+12. **The stream is not exercised by the learning data:** at slippage 0 the three pieces never overlapped (0 dropped of
+    298; the closest fill 4.0 min after an exit). Only the unit tests cover it - noted, since the exam may overlap.
+
+Round 2's questions were answered: 6-7 go to the owner / dev2 (the xfail tests stay); 8 -> all 24 files stay; 9 -> the
+measurer fixes `trade_labels.py`'s wording.
 
 Round 1's questions 1-5 were answered on 2026-10-20 (notes.md): 1 -> section 10, 2 -> the entry time, 3 -> eeca5a9,
 4 -> section 11, 5 -> section 12. Round 2's:

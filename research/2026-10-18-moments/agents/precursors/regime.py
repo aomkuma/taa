@@ -49,8 +49,7 @@ def main() -> None:
 
     from indicators import bars  # noqa: PLC0415
 
-    m = plib.load()
-    m = m[(m.index >= pd.Timestamp("2025-01-01", tz="UTC")) & (m.index < pd.Timestamp("2026-04-18", tz="UTC"))]
+    m = plib.load_learning(start=pd.Timestamp("2025-01-01", tz="UTC"))  # ends before 2026-04-18; no exam row read
     d1 = bars(m, "1D")
     name = sys.argv[1] if len(sys.argv) > 1 else "combo_trades_slip1.parquet"
     print("trades:", name)

@@ -40,8 +40,7 @@ def first_passage(h: np.ndarray, lo: np.ndarray, j: int, up_lv: float, dn_lv: fl
 
 def main() -> None:
     plib.gold.below_normal_priority()
-    m = plib.load()
-    m = m[(m.index >= START - pd.Timedelta(days=10)) & (m.index < plib.EXAM_START)]
+    m = plib.load_learning(start=START - pd.Timedelta(days=10))  # ends before plib.EXAM_START; no exam row read
     t = m.index
     o, h, lo, c = (m[k].to_numpy(float) for k in ("open", "high", "low", "close"))
     # everything a touch at bar j is measured against is known before bar j opens (bars complete by its open)

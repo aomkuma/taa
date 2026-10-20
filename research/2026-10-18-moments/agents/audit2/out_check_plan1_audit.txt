@@ -1,0 +1,21 @@
+Asia B2: 79 trades
+London ORB: 119 trades
+NY straddle: 100 trades
+0. rebuilt in memory = the stored every file (298 rows)
+0. rebuilt in memory = the stored trades file (298 rows)
+1. the D1 state from MT5's own D1 bars (my efficiency loop): 298 of 298 equal; NaN efficiency used 0; the bar read closed 0.08..3.65 days before the fill (none after: True)
+   the measurer's regime path (M1 from 2025-01-01): 298 of 298 equal; |er - mine| max 0.00e+00
+   trades per part x state: {('P1', 'mixed'): 29, ('P1', 'sideways'): 37, ('P1', 'trend'): 75, ('P2', 'mixed'): 56, ('P2', 'sideways'): 48, ('P2', 'trend'): 53}
+2. one position at a time: 298 trades, 298 kept, 0 dropped; fill order True; no fill before the open trade's exit True; every dropped trade inside a kept one True
+   the closest next fill after an exit: 4.0 min
+   weights: w_mech equal True; the P1 rule on these trades {('Asia B2', 'trend'): 0.5, ('NY straddle', 'sideways'): 0.5}; w_p1 equal True
+3. the cost on the raw ticks: 298 trades, 298 with the fill = the tick's ask / bid exactly (no slippage), the exit at the tick (or the target), risk / R consistent; faults 0; fills on a millisecond holding more than one tick 1
+  London ORB: mine 119, theirs 119, same minute 119, only mine 0, only theirs 0; |dR| max 0.0000, > 0.01 in 0
+  NY straddle: mine 100, theirs 100, same minute 100, only mine 0, only theirs 0; |dR| max 0.0000, > 0.01 in 0
+4. unweighted P1: printed {'n': 141, 'win': 0.532, 'R': 0.249, 'usd': 256.18, 'dd': 55.82} | recomputed {'n': 141, 'win': 0.532, 'R': 0.249, 'usd': 256.18, 'dd': np.float64(55.82)} | equal
+4. unweighted P2: printed {'n': 157, 'win': 0.484, 'R': 0.137, 'usd': 507.55, 'dd': 116.69} | recomputed {'n': 157, 'win': 0.484, 'R': 0.137, 'usd': 507.55, 'dd': np.float64(116.69)} | equal
+4. w_mech P1: printed {'n': 141, 'win': 0.532, 'R': 0.337, 'usd': 293.24, 'dd': 34.61} | recomputed {'n': 141, 'win': 0.532, 'R': 0.337, 'usd': 293.24, 'dd': np.float64(34.61)} | equal
+4. w_mech P2: printed {'n': 157, 'win': 0.484, 'R': 0.188, 'usd': 534.37, 'dd': 74.88} | recomputed {'n': 157, 'win': 0.484, 'R': 0.188, 'usd': 534.37, 'dd': np.float64(74.88)} | equal
+4. w_p1 P1: printed {'n': 141, 'win': 0.532, 'R': 0.288, 'usd': 292.02, 'dd': 38.71} | recomputed {'n': 141, 'win': 0.532, 'R': 0.288, 'usd': 292.02, 'dd': np.float64(38.71)} | equal
+4. w_p1 P2: printed {'n': 157, 'win': 0.484, 'R': 0.147, 'usd': 523.41, 'dd': 99.61} | recomputed {'n': 157, 'win': 0.484, 'R': 0.147, 'usd': 523.41, 'dd': np.float64(99.61)} | equal
+   6 of 6 plan lines equal

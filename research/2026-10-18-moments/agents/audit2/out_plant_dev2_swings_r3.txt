@@ -1,0 +1,11 @@
+CAUGHT  running leg includes the pivot bar: 1 failed, 1 passed in 0.85s
+          test_running_starts_after_the_pivot_bar[False]
+CAUGHT  known_at counts pivots confirmed on the next bar: 1 failed in 0.85s
+          test_known_at_leaves_out_a_pivot_confirmed_on_the_next_bar
+2 of 2 caught (swings)
+CAUGHT  running leg includes the pivot bar: 1 failed, 33 passed, 2 xfailed in 0.78s
+          test_running_starts_after_the_pivot_bar[False]
+CAUGHT  known_at counts pivots confirmed on the next bar: 1 failed, 32 passed, 2 xfailed in 0.81s
+          test_known_at_leaves_out_a_pivot_confirmed_on_the_next_bar
+2 of 2 caught (swings)
+ALL: 4 of 4 caught; unmutated: 35 passed, 2 xfailed in 1.83s

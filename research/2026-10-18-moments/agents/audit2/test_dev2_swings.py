@@ -122,3 +122,35 @@ def test_running_equals_the_extreme_the_structure_tracks() -> None:
     piv, dirs, exts = W.zigzag(h, lo, np.array([10, 10, 7, 4.0]), state=True)
     assert piv[0].tolist() == [0, 1] and dirs[3] == -1 and exts[3] == 3  # what the code gives (passes)
     assert W.running(piv, h, lo, 3) == (int(exts[3]), float(lo[exts[3]]), -1)  # (2, 14.0, -1) != (3, 15.0, -1)
+
+
+# ---------------------------------------------------------------- round 3: the measurer's two test gaps (2026-10-20)
+# The measurer's planted bugs `known_at` one bar ahead and `running()` including the pivot bar
+# (precursors/plant_dev2_v31.py) were missed by every unit test; these two catch them (audit2/mutants_dev2_swings_r3.py).
+def _piv(h: list[float], lo: list[float], thr: float = 10.0):
+    return W.zigzag(np.array(h, float), np.array(lo, float), np.full(len(h), thr))
+
+
+def test_known_at_leaves_out_a_pivot_confirmed_on_the_next_bar() -> None:
+    # trough 9 @0 confirmed by bar 1 (19 - 9 = 10); peak 19 @1 confirmed by bar 3 (19 - 9 = 10)
+    piv = _piv([10, 19, 15, 12], [9, 15, 12, 9])
+    assert list(zip(*(a.tolist() for a in piv), strict=True)) == [(0, 9.0, -1, 1), (1, 19.0, 1, 3)]
+    assert [len(W.known_at(piv, d)[0]) for d in range(4)] == [0, 1, 1, 2]  # confirmed at d + 1 -> not known at d
+    assert W.known_at(piv, 2)[3].tolist() == [1]  # bar 2 knows the trough only
+    assert W.known_at(piv, 0)[0].tolist() == []  # bar 0 knows nothing (its trough is confirmed by bar 1)
+
+
+@pytest.mark.parametrize("mirror", [False, True])
+def test_running_starts_after_the_pivot_bar(mirror: bool) -> None:
+    # trough 9 @0 confirmed by bar 1 (30 - 9); peak 30 @1 confirmed by bar 3 (30 - 19.5 = 10.5). The peak bar's own low 12
+    # is below every later low (21, 19.5, 18): the running low after the peak is 18 @4, never 12 @1.
+    h, lo = [10, 30, 25, 22, 24], [9, 12, 21, 19.5, 18]
+    if mirror:  # the same picture upside down: a trough whose own high is above every later high
+        h, lo = [-x for x in lo], [-x for x in h]
+    piv = _piv(h, lo)
+    s = -1 if mirror else 1
+    assert list(zip(*(a.tolist() for a in piv), strict=True)) == [(0, s * 9.0, -s, 1), (1, s * 30.0, s, 3)]
+    assert W.running(piv, np.array(h, float), np.array(lo, float), 3) == (3, s * 19.5, -s)
+    assert W.running(piv, np.array(h, float), np.array(lo, float), 4) == (4, s * 18.0, -s)
+    # before the peak is confirmed (bar 2) the running leg is the one after the trough: its high since bar 1
+    assert W.running(piv, np.array(h, float), np.array(lo, float), 2) == (1, s * 30.0, s)

@@ -51,8 +51,7 @@ def main() -> None:
     from indicators import at, bars  # noqa: PLC0415
     from m15_trades import part_of  # noqa: PLC0415
 
-    m = plib.load()
-    m = m[(m.index >= pd.Timestamp("2025-06-01", tz="UTC")) & (m.index < EXAM_START)]
+    m = plib.load_learning(start=pd.Timestamp("2025-06-01", tz="UTC"))  # ends before EXAM_START; no exam row read
     tf = {}
     for rule in ("15min", "1h", "1D"):
         b = bars(m, rule)

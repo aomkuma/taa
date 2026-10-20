@@ -48,8 +48,7 @@ def main() -> None:
     from indicators import bars  # noqa: PLC0415
     from m15_trades import part_of  # noqa: PLC0415
 
-    m = plib.load()
-    m = m[(m.index >= pd.Timestamp("2025-06-01", tz="UTC")) & (m.index < EXAM_START)]
+    m = plib.load_learning(start=pd.Timestamp("2025-06-01", tz="UTC"))  # ends before EXAM_START; no exam row read
     d1 = bars(m, "1D")
     bias_d = d1_bias(d1.close.to_numpy(float))
     avail = pd.DatetimeIndex(d1["avail"]).as_unit("ns").asi8
