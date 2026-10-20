@@ -1,0 +1,6 @@
+xl/worksheets/sheet2.xml header: ['Date', 'Closing Price', 'Ounces of Gold per Share', 'NAV/Share at 10:30am NYT', 'Indicative Price per Share at 4:15pm NYT', 'Mid point of bid/ask spread at 4:15pm NYT', 'Premium/Discount of GLD Mid Point vs Indicative Value of GLD at 4:15pm NYT', 'Daily Share Volume', 'Total Ounces of Gold in the Trust', 'Tonnes of Gold']
+31-Mar-2026 1047.27999999999997
+16-Oct-2026 1059.039999999999964
+GLDM 31-Mar-2026 199.91
+GLDM 16-Oct-2026 232.69999999999999
+expected GLDM = combined - GLD: 31-Mar 1247.19 - 1047.28 = 199.91; 16-Oct 1291.74 - 1059.04 = 232.70

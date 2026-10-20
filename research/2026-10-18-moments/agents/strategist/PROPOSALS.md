@@ -1,3 +1,149 @@
+# Row 52 - do the leads pay while gold-ETF holdings grow? - written before computing (2026-10-20 19:37 Thai, `date -u` 12:37)
+
+**Data** (public; downloaded read-only into `strategist/etf/` at 19:35-19:38 Thai):
+- the SPDR Gold Shares (GLD) historical archive:
+  `https://api.spdrgoldshares.com/api/v1/historical-archive?product=gld&exchange=NYSE&lang=en`, daily "Tonnes of Gold",
+  2004-11-18 .. 2026-10-19;
+- the SPDR Gold MiniShares (GLDM) archive (`product=gldm`), 2018-06-26 .. 2026-10-19;
+- iShares IAU is not used: its site gives no plain historical file.
+- The venv has no openpyxl, so the .xlsx files are read by a stdlib reader (`xlsx_min.py`, tested).
+
+**The series:** the daily tonnes of GLD + GLDM (the sum on the dates both report). Holdings of day D are taken as
+public only from the **next weekday after D at 16:00 New York**. That is a full day later than the file's date, the
+cautious side. The task's "the next day" is met or exceeded.
+
+**The readings** (each the latest value public before the entry; a "day" is a reporting day of the series):
+
+| # | Reading | Definition |
+|---|---|---|
+| 1 | ch20 | tonnes / tonnes 20 days earlier - 1 |
+| 2 | ch60 | tonnes / tonnes 60 days earlier - 1 |
+| 3 | up20 | the number of days among the last 20 whose tonnes rose from the day before |
+| 4 | vs52 | tonnes / the highest tonnes of the last 260 days (this one included) - 1 |
+
+**Protocol** (as rows 50-51):
+- Every reading is "on" when higher.
+- The forms: monthly (the value known at the start of the month) and rolling (known at the entry).
+- The threshold is chosen on the trades before 2026-01-16 (the summed R of ORB + RC_win + RT_opp,
+  `regime50_trades.parquet`) and read once on P2.
+- Reported: the month table; April-May 2025 against 2025-11 .. 2026-04; the public holdings after 2026-04, described
+  only.
+- Then one combined note (size + ETF + positioning) and a recommended monitor.
+# Row 52 - the results (measured 2026-10-20 19:39-19:40 Thai)
+
+**Sources** (downloaded 19:35-19:38 Thai into `strategist/etf/`):
+- the GLD archive, `https://api.spdrgoldshares.com/api/v1/historical-archive?product=gld&exchange=NYSE&lang=en`, linked
+  as "Historical Archive (XLSX)" on `https://www.spdrgoldshares.com/usa/historical-data/`: 5,512 days,
+  2004-11-18 .. 2026-10-19;
+- the GLDM archive (`product=gldm`): 2018-06-26 .. 2026-10-19;
+- joined from 2019-06: 1,856 days.
+- iShares IAU is not used: no plain historical file was found.
+
+**How it was checked** (`test_etf52.py`, 5 tests; `plant_etf52.py`, 10 of 10 planted bugs caught after one test was
+added for a 19-day shift that a flat series hid; `out_plant_etf52.txt`):
+- the publication time (the next weekday, 16:00 New York, in winter and summer, Friday to Monday);
+- ch20 exactly 20 days back;
+- up20 with a missing first difference;
+- vs52 including the day itself, with a minimum history;
+- the stdlib xlsx reader: shared strings, empty cells, cell positions.
+
+The run asserts that the publication times rise.
+
+## Month by month: GLD + GLDM holdings known at the start of each month (`out_etf52.txt`)
+
+| Month | Tonnes | 20-day change | 60-day change | Up-days of 20 | vs 52-week high | Leads R (trades) |
+|---|---|---|---|---|---|---|
+| 2022-04 / 05 | 1174.5 / 1183.4 | +0.045 / +0.008 | +0.118 / +0.084 | 14 / 9 | -0.001 / -0.009 | -0.093 / -0.105 |
+| 2024-09 .. 11 | 965-1000 | +0.016 .. +0.019 | +0.037 .. +0.053 | 11 | -0.022 .. -0.004 | -0.017 / +0.045 / +0.010 |
+| 2025-03 | 1023.5 | +0.048 | +0.038 | 14 | -0.001 | -0.402 (47) |
+| **2025-04** | 1064.0 | +0.040 | +0.084 | 15 | 0.000 | -0.001 (45) |
+| **2025-05** | 1084.8 | +0.018 | +0.111 | 10 | -0.011 | -0.062 (40) |
+| 2025-07 .. 09 | 1103-1121 | +0.008 .. +0.030 | +0.022 .. +0.041 | 8-13 | -0.002 .. -0.001 | -0.280 / -0.134 / -0.090 |
+| 2025-10 | 1181.3 | +0.044 | +0.078 | 12 | 0.000 | +0.018 (45) |
+| **2025-11** | 1218.0 | +0.026 | +0.104 | 11 | -0.016 | **+0.267 (38)** |
+| **2025-12** | 1222.0 | +0.007 | +0.060 | 12 | -0.013 | **+0.396 (49)** |
+| 2026-01 | 1254.6 | +0.022 | +0.058 | 12 | 0.000 | -0.067 (41) |
+| **2026-02** | 1280.9 | +0.021 | +0.053 | 12 | -0.002 | **+0.220 (38)** |
+| **2026-03** | 1299.6 | +0.012 | +0.064 | 11 | 0.000 | **+0.331 (45)** |
+| **2026-04** | 1246.0 | -0.044 | -0.006 | 4 | -0.044 | **+0.274 (22)** |
+
+- The ETF holdings did grow through the paying stretch: 1120.9 t at the start of 2025-09, 1299.6 t at the start of
+  2026-03 (+16 %).
+- **But the same inflows came before, with losing leads:**
+  - 2022-04 / 05: 60-day change +0.118 / +0.084;
+  - 2025-03 .. 05: 20-day change +0.048 / +0.040, 60-day change up to +0.111, 14-15 up-days of 20.
+- **And April 2026 paid (+0.274) while the holdings fell:** 20-day change -0.044, 4 up-days of 20.
+
+## The switches (on when higher; chosen on 2021-09 .. P1; read once on P2; always on, P2: 128 trades, +0.203, summed +26.0)
+
+| Reading, form | On when | 2021-09 .. 2025-09: on, summed R | Share on 2025-04 / 05 | Share on 2025-10 .. 2026-04 | P2: on, R, summed |
+|---|---|---|---|---|---|
+| ch20, monthly / rolling | > 0.048 / > 0.068 | 0 (never on) | 0 / 0 | all 0 | 0 |
+| **ch60, monthly** | > 0.0497 | 280, -9.0 | **1.00 / 1.00** | 1, 1, 1, 1, 1, 1, 0 | 106, +0.189, +20.0 |
+| ch60, rolling | > 0.0409 | 434, -28.0 | 1.00 / 0.60 | 1, 1, 1, 0.68, 1, 0.24, 0 | 60, +0.166, +10.0 |
+| up20, monthly / rolling | > 15 / > 16 | 0 (never on) | 0 / 0 | all 0 | 0 |
+| vs52, monthly | > -0.0006 | 45, -0.0 | 1.00 / 0 | 1, 0, 0, 1, 0, 1, 0 | 68, +0.171, +11.6 |
+| vs52, rolling | > 0 | 0 (never on) | 0 / 0 | all 0 | 0 |
+
+**The ETF holdings do not separate April-May 2025 from the present.** The one switch that is on in the present (ch60
+monthly) is also on in April-May 2025. It lost -9.0 R on 280 trades in 2021-09 .. 2025-09, and on P2 it does not beat
+always-on.
+
+## The public holdings after the learning data (month ends; described only, no price data of ours)
+
+| Month end | 2026-03 | 2026-04 | 2026-05 | 2026-06 | 2026-07 | 2026-08 | 2026-09 | 2026-10 (to the 19th) |
+|---|---|---|---|---|---|---|---|---|
+| Tonnes | 1247.2 | 1245.1 | 1240.3 | 1215.7 | 1218.4 | 1265.9 | 1284.4 | 1292.4 |
+| 60-day change | -0.000 | -0.027 | -0.033 | -0.028 | -0.020 | +0.024 | +0.059 | +0.059 |
+
+Outflows ran from 2026-03 to 2026-07, and inflows from 2026-08 (back to 0.8 % below the 52-week high).
+
+# The combined note: what the facts say about why the present pays (rows 45-52)
+
+| What was measured | April-May 2025 (leads -0.001 / -0.062) | 2025-11 .. 2026-04 (leads +0.22 .. +0.40, except 2026-01 -0.067) | Separates them? |
+|---|---|---|---|
+| Size: daily range / H1 ATR / NY 30+ share (row 50) | 73.8-75.9 / 12.8-16.3 / 0.36-0.76 | 67-157 / 15-32 / 0.80-1.00 | only by a hair (the fitted lines sit on April-May 2025's values) |
+| Speculative futures length: managed money (row 51) | 175k -> 121k, percentile 0.48 -> 0.02 | 92k-160k and falling, percentile 0.02-0.48 | no (low in both) |
+| ETF holdings: GLD + GLDM (row 52) | strong inflows (60-day +0.084 / +0.111) | inflows to 2026-03, outflows in 2026-04 | no (inflows in both) |
+| The trend efficiency, the release jump (row 50) | - | - | no |
+| The stream's own recent result, SW-20 (rows 45 / 47) | on for 1-42 % of the O1 / O2 events | on for 70-100 % of the P1 / P2 events | yes, after about 20 trades; it failed the 2021-23 test alone (row 47) |
+
+**What the facts say:**
+1. **The present pays in a large gold**, and every paying month was large. But large is not enough: April-May 2025 was
+   as large and did not pay.
+2. **No outside flow reading tells the two apart.**
+   - Speculative length fell in both.
+   - ETF holdings rose in both, and fell in April 2026, which paid.
+   - So the "persistent flow" story, as measured by COT managed money and the two SPDR ETFs, does not explain why the
+     leads pay now.
+3. **The one difference the data shows is persistence:**
+   - in 2025, the size came as one shock: the H1 ATR went 16.3 (April) to 10.0 (June) and 7.1-7.8 by July-August;
+   - from 2025-10 the size held for seven months in a row (H1 ATR 14.8-31.8).
+   - This is an observation after the fact, not a tested reading. A "size held for N months" switch would also turn on
+     late: after the first paying months.
+
+**The recommended monitor** (none of it fitted without P1 in view; the exam months are its first honest read, which is
+the measurer's):
+1. **A size floor** (row 50): the 20-day share of weekdays with a 30+ USD NY move (08:30-12:30 NY) > 0.75, and the
+   20-day median H1 ATR > about 11 USD. Below it the leads stand aside at once.
+2. **SW-20, the stream's own shadow result:** above the floor, trade a lead only while its last 20 paper trades pay.
+   This catches a change of character at the same size, such as April-May 2025.
+3. **Logged as context, not used to gate:**
+   - the ETF 60-day change and managed-money length;
+   - neither separated the paying months, but both are public, cheap, and could show a new kind of market.
+
+**Today, from public figures only:**
+- ETF holdings are rising again (1292.4 t, 60-day change +5.9 %).
+- Managed money is falling (107.1k, percentile 0.46).
+- Neither changes the monitor's verdict, which needs the size readings of the exam months, and I do not load those.
+
+## Files (row 52)
+- `etf52.py` + `test_etf52.py` + `plant_etf52.py`
+- `xlsx_min.py` (the stdlib xlsx reader, tested in `test_etf52.py`)
+- the archives: `etf/gld_archive.xlsx`, `etf/gldm_archive.xlsx`
+- outputs: `out_etf52.txt`, `out_etf52_switch.csv`, `out_etf52_daily.csv`, `out_plant_etf52.txt`,
+  `etf52_trades.parquet`
+
 # Row 51 - do the leads pay while a persistent speculative flow drives gold? - written before computing (2026-10-20 19:30 Thai, `date -u` 12:30)
 
 **Data** (public; downloaded read-only into `strategist/cftc/`):

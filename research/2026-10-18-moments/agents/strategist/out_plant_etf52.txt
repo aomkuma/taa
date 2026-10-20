@@ -1,0 +1,10 @@
+CAUGHT  etf52.py: d = pd.Timestamp(day).normalize()
+CAUGHT  etf52.py:     while False:
+CAUGHT  etf52.py: return (d + pd.Timedelta(hours=0)).tz_localize(NY)
+CAUGHT  etf52.py: .tz_localize("UTC")
+CAUGHT  etf52.py: "ch20": s / s.shift(19) - 1
+CAUGHT  etf52.py: pass
+CAUGHT  etf52.py: s.shift(1).rolling(260, min_periods=200).max()
+CAUGHT  etf52.py: up = (s.diff() >= 0).astype(float)
+CAUGHT  xlsx_min.py: x = v.text
+CAUGHT  xlsx_min.py: vals[len(vals)] = x
