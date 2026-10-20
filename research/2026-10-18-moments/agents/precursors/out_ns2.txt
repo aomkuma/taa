@@ -1,0 +1,8 @@
+2021-22   53 trades, R +0.190, sum  +10.1, median k 0.21 (trigger 0.43, stop 1.72 USD), spread / stop 0.293, win 0.21
+2022-23   51 trades, R -0.170, sum   -8.7, median k 0.21 (trigger 0.43, stop 1.72 USD), spread / stop 0.330, win 0.24
+2023-24   51 trades, R -1.169, sum  -59.6, median k 0.22 (trigger 0.44, stop 1.77 USD), spread / stop 0.381, win 0.14
+2024-25   52 trades, R +0.159, sum   +8.3, median k 0.45 (trigger 0.90, stop 3.61 USD), spread / stop 0.110, win 0.33
+P1         8 trades, R -0.004, sum   -0.0, median k 0.82 (trigger 1.64, stop 6.57 USD), spread / stop 0.059, win 0.50
+P2        13 trades, R +0.060, sum   +0.8, median k 1.16 (trigger 2.31, stop 9.25 USD), spread / stop 0.042, win 0.54
+exam      26 trades, R +0.804, sum  +20.9, median k 1.01 (trigger 2.02, stop 8.08 USD), spread / stop 0.047, win 0.42
+old years pooled: 207 trades, R -0.241 (-0.696..+0.213); pass line: FAIL

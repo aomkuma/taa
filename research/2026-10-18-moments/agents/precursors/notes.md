@@ -2931,3 +2931,16 @@ R = pnl / stop). Release days only.
 - **The judge:** the old release-day ticks 2021-09 .. 2025-10 (`data/ticks_old`), read once. **Pass:** pooled >= +0.15
   and > 0 in at least 3 of the 4 years.
 - Beside it, as a description: the release days of P1 / P2 / exam on `data/ticks` (k near 1 there).
+**NS-2 read (19:10 Thai; `out_ns2.txt`).** A first run at 19:09 was invalid: `gold.bars` keeps microsecond times and
+`k_at` searched them with a nanosecond t0, so every day read the last H1 bar of the store (2026-10-16; a constant k 0.91
+from the future). Kept as `out_ns2_invalid_unit_bug.txt`; a test (`test_ns2.py`) now fails on that bug and passes on the
+fix. The corrected rule, read once:
+
+| Release days | 2021-22 | 2022-23 | 2023-24 | 2024-25 | P1 | P2 | exam |
+|---|---|---|---|---|---|---|---|
+| trades, R | 53, +0.190 | 51, -0.170 | 51, -1.169 | 52, +0.159 | 8, -0.004 | 13, +0.060 | 26, +0.804 |
+| median stop (USD), spread / stop | 1.72, 0.29 | 1.72, 0.33 | 1.77, 0.38 | 3.61, 0.11 | 6.57, 0.06 | 9.25, 0.04 | 8.08, 0.05 |
+
+- **FAIL** (pooled -0.241 on 207). Scaled down, the stop is a few spreads wide and the release jump passes it
+  (2023-24: -1.17 R a trade). The straddle does not scale with volatility; it needs the large moves of the present.
+- With NS-1, the straddle is now known to pay only since 2025-10, at gold's present size.
