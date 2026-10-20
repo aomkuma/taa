@@ -1,0 +1,9 @@
+CAUGHT      if False:
+CAUGHT  day = fri
+CAUGHT  fri = a
+CAUGHT  return (day + pd.Timedelta(hours=0)).tz_localize(NY)
+CAUGHT  .tz_localize("UTC")
+CAUGHT  k = int(np.searchsorted(pub_ns, t_ns, side="right"))
+CAUGHT  k = int(np.searchsorted(pub_ns, t_ns, side="left")) - 1
+CAUGHT  return float(np.mean(w < x[i]))
+CAUGHT  w = x[max(0, i - n + 1):i]

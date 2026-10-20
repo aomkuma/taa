@@ -1,3 +1,146 @@
+# Row 51 - do the leads pay while a persistent speculative flow drives gold? - written before computing (2026-10-20 19:30 Thai, `date -u` 12:30)
+
+**Data** (public; downloaded read-only into `strategist/cftc/`):
+- The CFTC disaggregated futures-only Commitments of Traders, COMEX gold (code 088691), 2020-2026
+  (`https://www.cftc.gov/files/dea/history/fut_disagg_txt_YYYY.zip`). The columns used: managed money long / short,
+  and the open interest.
+- **When each report is known:**
+  - Normally: the Friday of the report's week, 15:30 New York time.
+  - When a US federal holiday falls between the report date and that Friday, or on the Friday: the next Monday,
+    15:30 New York time. The CFTC 2026 schedule shows exactly these Monday releases ("delayed release date due to a
+    federal holiday").
+  - The executive closures of 2024-12-24, 2025-12-24 and 2025-12-26 count as holidays, which is the cautious side.
+  - **The 2025 shutdown:** the reports of 2025-09-30 .. 2026-01-13 use the "new publish date" of CFTC press release
+    9138-25 (`cftc/pr_9138-25.html`). For example, the 2025-09-30 report became known on 2025-11-19, and the
+    2025-12-16 report on 2026-01-06. Where another notice gave an earlier date, the later one is used.
+- Gold's price comes from our M1 / D1 store, 2021-09 .. 2026-04-17 only. The positioning after that is described from
+  the CFTC file alone; our exam-period prices are not loaded.
+
+**The readings** (each the latest value published before the entry):
+
+| # | Reading | Definition |
+|---|---|---|
+| 1 | mm_net | managed money long - short (contracts) |
+| 2 | mm_oi | mm_net / the open interest |
+| 3 | d4 | mm_net minus mm_net 4 reports earlier |
+| 4 | d13 | mm_net minus mm_net 13 reports earlier |
+| 5 | pct52 | mm_net's percentile among the last 52 reports, this one included; >= 26 reports |
+| 6 | dist52 | the last complete D1 close / the highest D1 high of the 260 D1 bars up to it, minus 1 (0 = at the 52-week high) |
+
+**Protocol** (as row 50):
+- Every reading is "on" when higher (> the threshold).
+- **Monthly form:** the value known at the end of the previous calendar month. **Rolling form:** the value known at
+  the entry.
+- The threshold is chosen on the trades before 2026-01-16 to maximise the summed R of the three leads (ORB + RC_win +
+  RT_opp; `regime50_trades.parquet`); a tie goes to the lowest threshold. It is read once on P2.
+- Reported: the month table; whether each switch separates April-May 2025 (off) from 2025-11 .. 2026-04 (on); and the
+  public positioning in 2026-08 .. 10, described only.
+- Caveat: P1 is inside the fit, as in row 50.
+# Row 51 - the results (measured 2026-10-20 19:31-19:33 Thai)
+
+**Sources:**
+- The CFTC historical disaggregated futures files, `https://www.cftc.gov/files/dea/history/fut_disagg_txt_2020.zip`
+  .. `_2026.zip`, downloaded 2026-10-20 19:27-19:29 Thai into `strategist/cftc/`. COMEX gold is code 088691; there are
+  354 weekly reports, 2020-01-07 .. 2026-10-13.
+- CFTC press release 9138-25 (`https://www.cftc.gov/PressRoom/PressReleases/9138-25`, saved as
+  `cftc/pr_9138-25.html`): the post-shutdown publish dates.
+- The CFTC 2026 release schedule (`https://www.cftc.gov/MarketReports/CommitmentsofTraders/ReleaseSchedule/index.htm`):
+  Monday releases in federal-holiday weeks.
+
+**How the alignment was checked** (`test_cot51.py`, 5 hand-worked tests; `plant_cot51.py`, 9 of 9 planted bugs caught,
+`out_plant_cot51.txt`):
+- the Friday 15:30 New York release in summer and in winter time;
+- the holiday weeks moved to Monday (Thanksgiving 2024; Juneteenth 2026, as the CFTC schedule shows);
+- the shutdown table (the 2025-09-30 report known on 2025-11-19, the 2025-12-16 one on 2026-01-06);
+- a value is used only once published (published at exactly t counts; the next one does not);
+- the 52-report percentile.
+
+The bugs caught: the shutdown table ignored; holidays ignored; known on the report's Tuesday; 15:30 dropped; 15:30 read
+as UTC; one report ahead; a report published at t excluded; `<` for `<=`; the current report left out of its own
+percentile.
+
+**The run also checks:**
+- the publication times rise strictly with the report dates;
+- 40 reports were published more than 6 days after their date: the holiday weeks and the 17 shutdown reports.
+
+## Month by month: positioning known at the start of each month (`out_cot51.txt`)
+
+The managed-money net long (contracts) and its 52-report percentile, with the three leads:
+
+| Month | MM net | Net / OI | 4-wk change | 13-wk change | Percentile 52 | Gold vs its 52-wk high | Leads R (trades) |
+|---|---|---|---|---|---|---|---|
+| 2024-09 | 200,291 | 0.384 | +47,927 | +51,463 | 1.00 | -0.004 | -0.017 (53) |
+| 2024-10 | 219,029 | 0.388 | +18,738 | +60,827 | 1.00 | -0.019 | +0.045 (54) |
+| 2025-02 | 210,540 | 0.365 | +44,371 | +15,367 | 0.92 | -0.002 | -0.290 (48) |
+| 2025-03 | 179,812 | 0.351 | -30,728 | +522 | 0.58 | -0.027 | -0.402 (47) |
+| **2025-04** | 174,732 | 0.342 | -5,080 | +9,235 | 0.48 | -0.001 | -0.001 (45) |
+| **2025-05** | 120,902 | 0.260 | -53,830 | -94,967 | 0.02 | -0.060 | -0.062 (40) |
+| 2025-09 | 141,917 | 0.320 | +7,661 | +31,101 | 0.35 | -0.015 | -0.090 (50) |
+| 2025-10 | 160,549 | 0.304 | +18,632 | +35,421 | 0.48 | -0.003 | +0.018 (45) |
+| **2025-11** | 160,549 (the shutdown: no new report known) | 0.304 | +18,632 | +35,421 | 0.48 | -0.081 | **+0.267 (38)** |
+| **2025-12** | 108,310 | 0.223 | -50,661 | -28,417 | 0.10 | -0.036 | **+0.396 (49)** |
+| 2026-01 | 123,548 | 0.286 | +19,461 | -39,971 | 0.29 | -0.046 | -0.067 (41) |
+| **2026-02** | 118,159 | 0.242 | -7,881 | +14,000 | 0.25 | -0.039 | **+0.220 (38)** |
+| **2026-03** | 95,974 | 0.228 | -22,185 | -13,335 | 0.10 | -0.074 | **+0.331 (45)** |
+| **2026-04** | 91,621 | 0.227 | -4,353 | -44,649 | 0.02 | -0.167 | **+0.274 (22)** |
+
+**The finding is the opposite of the hypothesis.** While the leads paid (2025-11 .. 2026-04), managed money was net
+long but **shrinking**:
+- 160.5k (the 2025-09-23 report) fell to 92.2k (2025-10-21), and stayed 90-137k through P2;
+- its 52-report percentile at the start of each paying month was 0.02-0.48;
+- its peaks came in 2024-09 / 10 and 2025-02 (200-219k, percentile 0.92-1.00), when the leads lost or were flat.
+
+Whatever drove gold from 2025-10 is not visible as rising managed-money (speculative futures) length. In the CFTC data,
+the speculators were reducing.
+
+## The switches (protocol of row 50; `out_cot51_switch.csv`)
+
+**As pre-registered (on when higher):**
+- **No positioning reading switches on in any month of 2025-11 .. 2026-04.** P2 has 0 trades on for every reading and
+  form.
+- Fitted on 2021-09 .. P1, the best was mostly "never trade". Only the MM net / net-OI peaks (2024-09 .. 11) gave
+  +2.4 / +4.9 R on 54 / 46 trades.
+- Gold near its 52-week high (dist52) never switches on either.
+
+**Post-hoc, written after the month table: on when LOWER.** This is a description, not a lead:
+
+| Reading, form | Switch on when | 2021-09 .. 2025-09: on, summed R | Share on, 2025-04 / 05 | Share on, 2025-11 .. 2026-04 | P2: on, R, summed |
+|---|---|---|---|---|---|
+| pct52, monthly | < 0.135 | 347, -5.5 | 0 / 1.00 | 0, 1.00, 0, 0, 1.00, 1.00 | 67, +0.312, +20.9 |
+| pct52, rolling | < 0.115 | 291, +3.5 | 0.51 / 1.00 | 0.13, 0.63, 0, 0.71, 0.38, 1.00 | 66, +0.250, +16.5 |
+| dist52, rolling | < -0.159 | 167, +4.7 | 0 / 0 | 0, 0, 0, 0.05, 0.33, 0.23 | 22, +0.530, +11.7 |
+
+Low positioning was also there in May 2025 (percentile 0.02), when the leads lost. So low positioning does not separate
+April-May 2025 from the present any better than size did.
+
+## What it says about now (2026-08 .. 10; public CFTC figures only, no price data of ours)
+
+| Report date (published) | MM net | Net / OI | 4-wk change | Percentile 52 |
+|---|---|---|---|---|
+| 2026-08-04 (08-07) | 130,766 | 0.352 | +14,605 | 0.77 |
+| 2026-08-25 (08-28) | 144,747 | 0.338 | +24,952 | 0.90 |
+| 2026-09-22 (09-25) | 127,389 | 0.309 | -17,358 | 0.75 |
+| 2026-10-13 (10-16) | 107,089 | 0.270 | -26,027 | 0.46 |
+
+- Managed money built length from June to late August 2026 (to 144.7k, the 90th percentile of its year). Since then it
+  has fallen by 37.7k in seven weeks.
+- **By this study, that fall is not a regime-end signal.** The paying months had falling, low positioning. The measured
+  monitors stay the size floor and SW-20 (row 50).
+
+## What it means
+- The hypothesis "the leads pay while a persistent speculative (managed-money) flow drives gold" is **contradicted** by
+  the CFTC data: speculative length fell as the leads began to pay.
+- The outside research names ETF inflows and other buyers. The COT managed-money series cannot stand in for them. If
+  the flow is to be measured, it needs an ETF-holdings series (for example the published daily GLD tonnage), aligned to
+  its own publication time.
+- I have not downloaded that series; it is a question for the measurer.
+
+## Files (row 51)
+- `cot51.py` + `test_cot51.py` + `plant_cot51.py`
+- the CFTC data and the press release: `cftc/`
+- outputs: `out_cot51.txt`, `out_cot51_switch.csv`, `out_cot51_reports.csv`, `out_plant_cot51.txt`,
+  `cot51_trades.parquet`
+
 # Row 50 - the case for "the present regime": what changed in gold around 2025-10 - written before computing (2026-10-20 19:18 Thai, `date -u` 12:18)
 
 Measured only; no rule is built. Data: 2021-09-01 .. 2026-04-17, never later. M1 comes from `gold.bars`, with the

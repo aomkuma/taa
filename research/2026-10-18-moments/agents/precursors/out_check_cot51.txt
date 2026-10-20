@@ -1,0 +1,4 @@
+      date  M_Money_Positions_Long_All  M_Money_Positions_Short_All    net
+2025-10-21                      135503                        43276  92227
+2025-09-23                      198826                        38277 160549
+2026-10-13                      124747                        17658 107089
