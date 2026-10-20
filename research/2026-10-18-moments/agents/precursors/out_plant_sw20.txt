@@ -1,0 +1,8 @@
+CAUGHT side="left" -> side="right"
+CAUGHT r_s\[m - n:m\] -> r_s[:m]
+MISSED m >= n and -> m >= n - 1 and
+MISSED .mean() > 0 -> .mean() >= 0
+CAUGHT np.argsort(te, -> np.argsort(ti,
+1 failed, 4 passed in 0.69s
+CAUGHT (after the zero test) .mean() > 0 -> >= 0
+warm-up m >= n - 1: equivalent mutant (the slice r_s[-1:m] is empty, so it stays out)

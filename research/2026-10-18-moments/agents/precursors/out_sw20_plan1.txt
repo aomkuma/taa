@@ -1,0 +1,16 @@
+Asia B2
+  P1   always  41 R +0.081 sum   +3.3 | SW-20 kept  17 (41%) R -0.135 sum   -2.3
+  P2   always  38 R +0.186 sum   +7.1 | SW-20 kept  32 (84%) R +0.100 sum   +3.2
+  exam always 108 R +0.105 sum  +11.3 | SW-20 kept  71 (66%) R +0.085 sum   +6.0
+London ORB
+  P1   always  59 R +0.213 sum  +12.6 | SW-20 kept  39 (66%) R +0.201 sum   +7.8
+  P2   always  60 R +0.124 sum   +7.4 | SW-20 kept  41 (68%) R +0.077 sum   +3.2
+  exam always 122 R +0.023 sum   +2.8 | SW-20 kept  56 (46%) R -0.075 sum   -4.2
+NY straddle
+  P1   always  41 R +0.467 sum  +19.1 | SW-20 kept  20 (49%) R +0.503 sum  +10.1
+  P2   always  59 R +0.119 sum   +7.0 | SW-20 kept  31 (53%) R +0.176 sum   +5.4
+  exam always 101 R +0.285 sum  +28.7 | SW-20 kept  81 (80%) R +0.234 sum  +19.0
+PLAN-1 (pieces together, no overlap rule)
+  P1   always 141 R +0.249 sum  +35.1 | SW-20 kept  76 (54%) R +0.205 sum  +15.6
+  P2   always 157 R +0.137 sum  +21.5 | SW-20 kept 104 (66%) R +0.114 sum  +11.8
+  exam always 331 R +0.129 sum  +42.8 | SW-20 kept 208 (63%) R +0.100 sum  +20.8
