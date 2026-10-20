@@ -2695,3 +2695,37 @@ before X against, within the window's span (Asia / London 60 min, NY 240 min)?
   and turn them into a design for the developer".
 
 Turned into `../DEV2_PROMPT.md` "V3 design".
+
+## The system audit, measured and committed (2026-10-20 12:21 Thai; `../audit2/AUDIT.md`, commit f9163e0)
+**Nine shared building blocks were audited; four faults were found and fixed,** each with a test that failed before
+and passes after:
+1. **The history download (app):** it stored nothing after Friday on 2026-10-19. It now checks that it reached the
+   terminal's newest bar.
+2. **The ZigZag start-up:** one wide early bar could become two turns. Fixed in `fingerprint.py`. The developer
+   applied the same one-line fix (`hi_i != lo_i`) to `dev/patterns.py`; 0 of its pivots change.
+3. **The midnight cut:** `surrender.run` / `tick_straddle.run` ended a trade open at midnight UTC. 0 current trades
+   change. It was a trap for late-UTC work such as Asia 07:00 Thai = 00:00 UTC.
+4. **The max drawdown** left out the starting balance in 20 summaries. Two drawdowns move, by +0.4 and +1.6 USD.
+
+**No learning-part R or win % changes.**
+
+**PASS:**
+- the OLD / NEW merge;
+- `plib.load`, with a note: it returns the exam rows to every caller;
+- UTC through the DST weeks: 59,363 minutes equal to the ticks;
+- the larger-TF bars against MT5's own H1 / H4 / D1: max difference 0;
+- `avail`;
+- the indicators;
+- the parts / windows / events;
+- the costs: the formula against the first tick, -0.005 USD.
+
+**Measured by me:** its tests (92 passed + 1 xfail, a question); the app unit (14 passed); ruff / mypy / bandit on the
+app file (clean); the precursors suite (339 passed in 5:19, without the matplotlib-only test).
+
+**Its questions, answered:**
+- "win" = pnl > 0 after costs; `wf.weekly` gets changed;
+- a trade's window is judged by its entry time, with the sensitivity reported (B2 Asia P1: +0.092 by entry time,
+  +0.004 by decision time - a fragility);
+- the downloader stores closed bars only (a second app fix);
+- a `plib.load_learning()` that stops at the exam;
+- dev2's `swings.py` audited after V3-1.
