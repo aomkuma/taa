@@ -2906,3 +2906,18 @@ with "Call failed" on every date - an app item to fix). `fetch_release_ticks.py`
 day to `data/ticks_old/XAUUSD` (checked: a fetched 2026-01-09 window equals the stored tick day, 18,869 / 18,869).
 `ns1_ticks.py` runs PLAN-1's straddle rule on them with the measurer's own simulator (`check_plan1.manage`, equal to
 dev1's on 219 / 219 trades). The pass line is NS-1's: pooled >= +0.15 and > 0 in at least 3 of the 4 years. Read once.
+**NS-1 on the old ticks, read once (19:03 Thai; `out_ns1_ticks.txt`; parity: `ns1_ticks.straddle` equals dev1's runner
+on 100 / 100 P1 / P2 trades):** 206 of 208 release days fetched (the 2 missing are Good Fridays, market shut).
+
+| Release days, ticks | 2021-22 | 2022-23 | 2023-24 | 2024-25 | pooled |
+|---|---|---|---|---|---|
+| trades, R | 39, +0.031 | 50, -0.010 | 50, -0.213 | 47, -0.058 | 186, **-0.068** (-0.22..+0.08) |
+| the same days on M1 | +0.185 | +0.248 | +0.128 | +0.095 | +0.164 |
+
+- **FAIL.** On the real ticks the release-day straddle had no edge in 2021-25; the M1 result was the fill the bar
+  cannot see (M1 +0.23 R over the ticks on the same 186 days, the same side on 92 %).
+- So the straddle's edge (P1 +0.467 / P2 +0.119 / exam +0.285) belongs to the present (2025-10 on), like #22 / #23 / #43.
+- **Lesson:** M1 cannot judge a release-minute entry; only ticks can. Every earlier M1 judgement of a release-minute
+  rule is suspect.
+- **App item:** `ReadOnlyMT5Gateway.ticks_range` fails with "Terminal: Call failed" on every date (2026-10-20), while
+  `copy_ticks_range` with datetimes works; to fix in `app/broker/gateway.py` with a test.
