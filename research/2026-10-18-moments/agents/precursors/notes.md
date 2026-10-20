@@ -2899,3 +2899,10 @@ the ask = bid + the bar's spread x 0.01 + 0.08 (row 45's old-year cost model).
   ticks** (MT5 `copy_ticks_range` for 08:25-09:05 NY on about 186 days; it downloads whole months into the terminal's
   Bases, so it needs the owner's go-ahead and the free-disk guard).
 - The +1 R target is worse in every year: let the release run the 30 minutes.
+
+**NS-1 on the old ticks - written before computing (2026-10-20 18:59 Thai; owner's go-ahead 18:33 "do it"):** MT5 holds
+gold ticks back to 2021 (`copy_ticks_from` / `copy_ticks_range` with datetimes; the gateway's `ticks_range` now fails
+with "Call failed" on every date - an app item to fix). `fetch_release_ticks.py` saves 08:20-09:05 NY of each release
+day to `data/ticks_old/XAUUSD` (checked: a fetched 2026-01-09 window equals the stored tick day, 18,869 / 18,869).
+`ns1_ticks.py` runs PLAN-1's straddle rule on them with the measurer's own simulator (`check_plan1.manage`, equal to
+dev1's on 219 / 219 trades). The pass line is NS-1's: pooled >= +0.15 and > 0 in at least 3 of the 4 years. Read once.
