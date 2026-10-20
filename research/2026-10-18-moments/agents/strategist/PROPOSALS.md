@@ -1,3 +1,24 @@
+# SW-20 on the unseen years - how it is built, written before computing (2026-10-20 17:42 Thai, `date -u` 10:42)
+
+The rule and the pass line are the measurer's (`precursors/notes.md`, "SW-20"). They are followed as written.
+
+**A data fact found before computing:** the old store's M1 starts on **2021-09-01**, not 2020-09; its D1 does start in
+2020-09. The overlap with the main store was checked: 30,022 M1 bars in 2023-09-01 .. 2023-10-02, with 0 bars in one
+store only and 0 differences in open / high / low / close / spread.
+- Y1 (2020-10-18 .. 2021-10-18) therefore has M1 for only 2021-09-01 .. 2021-10-17, about 7 weeks.
+- In those weeks the paper record is still warming up. Y1 is reported as it falls out, and is marked as too short to
+  judge.
+- Nothing else replaces M1: M15 would change the rules.
+
+**The build** (`sw20.py`):
+- The streams are built from `gold.bars("M1", before=2023-10-21)`. The event loops are those of `states_events.py`,
+  moved into a function `streams.build(m)` that takes the bars as an argument.
+- Costs: M1 spread x 0.01 + 0.08, slippage 0.
+- **The equivalence check before the run:** `streams.build` on the main store 2023-09 .. 2024-10 must reproduce
+  `states_events.parquet`'s O1 events and their M1 R exactly.
+- **The switch** (`sw20.switch_ok`): a trade is real when at least 20 of the stream's earlier paper trades have exited
+  strictly before its entry and the mean R of the last 20 of them (by exit time) is > 0.
+- Each year is read once.
 # Row 45 - what was there when the leads paid - written before computing (2026-10-20 17:08 Thai, `date -u` 10:08)
 
 **The question** (owner: "a result that only works in some periods is normal; the system's job is to see which period

@@ -2825,3 +2825,12 @@ on M1 (spread x 0.01 + 0.08, as row 45) in Y1 2020-10-18 .. 2021-10-18, Y2 2021-
 
 **PLAN-1's pieces** (Asia B2, NY straddle) have no ticks before 2025-10, so SW-20 on them is reported over P1 .. exam as
 a description only: the exam was already read for PLAN-1 (row 46), so it is not a test there.
+
+## SW-20 read on the unseen years (2026-10-20 18:04 Thai; run by the measurer from the strategist's code)
+The strategist stopped on the session limit (reset 22:00 Thai) with `streams.py` / `sw20.py` written; 7 tests passed,
+its planted bugs 5 / 5; `sw20.py check` reproduced O1 exactly (250 / 339 / 241 events, |dR| 0). Run once:
+- the three together, switched: Y1 0 trades (the M1 store starts 2021-09-01, not 2020-09: Y1 is 1.5 months), Y2 -12.8 R
+  (175 trades, -0.073), Y3 -8.8 R (215, -0.041); always-on Y2 -70.0 / Y3 -48.5 R. **FAIL** (CHECKLIST row 47).
+- My own switch on its trades equals its `real` column on all 1292.
+- Lesson: the switch only cuts a losing stream's loss; it does not make the leads pay in years where they do not.
+  Where the edge comes from in 2025-10 .. now is still open.

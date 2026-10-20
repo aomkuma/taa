@@ -1,0 +1,7 @@
+CAUGHT  k = int(np.searchsorted(te, t, side="right"))
+CAUGHT  if k >= 1:
+CAUGHT  out[i] = rr[:n].mean() > 0
+CAUGHT  out[i] = rr[k - n:k].mean() >= 0
+CAUGHT  o = np.arange(len(te))
+CAUGHT  ok = t_exit > 0
+CAUGHT  out[i] = rr[:k].mean() > 0

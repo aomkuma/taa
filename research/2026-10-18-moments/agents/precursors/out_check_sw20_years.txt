@@ -1,0 +1,3 @@
+ORB: my switch == its 'real' column on 1.0000 of 532; kept by year {'Y1': (0, np.float64(0.0)), 'Y2': (61, np.float64(-10.0)), 'Y3': (67, np.float64(4.3))}
+RC_win: my switch == its 'real' column on 1.0000 of 203; kept by year {'Y1': (0, np.float64(0.0)), 'Y2': (13, np.float64(-4.8)), 'Y3': (34, np.float64(-4.0))}
+RT_opp: my switch == its 'real' column on 1.0000 of 557; kept by year {'Y1': (0, np.float64(0.0)), 'Y2': (101, np.float64(2.0)), 'Y3': (114, np.float64(-9.2))}
