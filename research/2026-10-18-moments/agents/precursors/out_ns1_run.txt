@@ -1,0 +1,32 @@
+
+=== NS-1 hold 30 min: 402 trades; both stops reached in the 08:30 bar: 38
+                 size   mean     sum
+release year                        
+False   2020-21     7 -0.003  -0.022
+        2021-22    33  0.007   0.233
+        2022-23    50 -0.005  -0.270
+        2023-24    57 -0.030  -1.714
+        2024-25    63 -0.002  -0.110
+        2025-26     6 -0.634  -3.804
+True    2021-22    40  0.185   7.399
+        2022-23    50  0.248  12.380
+        2023-24    50  0.128   6.414
+        2024-25    46  0.095   4.347
+  pooled release: 186 trades, R +0.164, win 0.52, exits {'time': 131, 'stop': 55}
+  pooled other: 216 trades, R -0.026, win 0.46, exits {'time': 181, 'stop': 35}
+
+=== NS-1 T1, +1 R target: 402 trades; both stops reached in the 08:30 bar: 38
+                 size   mean    sum
+release year                       
+False   2020-21     7  0.025  0.173
+        2021-22    33  0.017  0.566
+        2022-23    50 -0.028 -1.391
+        2023-24    57 -0.021 -1.194
+        2024-25    63 -0.043 -2.739
+        2025-26     6 -0.545 -3.268
+True    2021-22    40  0.050  2.018
+        2022-23    50  0.055  2.746
+        2023-24    50  0.043  2.169
+        2024-25    46  0.094  4.312
+  pooled release: 186 trades, R +0.060, win 0.55, exits {'time': 74, 'target': 60, 'stop': 52}
+  pooled other: 216 trades, R -0.036, win 0.46, exits {'time': 154, 'stop': 35, 'target': 27}

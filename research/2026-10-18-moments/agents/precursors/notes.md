@@ -2882,3 +2882,20 @@ the ask = bid + the bar's spread x 0.01 + 0.08 (row 45's old-year cost model).
 - **Calibration first:** the same M1 simulation on P1 / P2 release days, compared with the tick trades (`dev/plan1.py`).
 - **Pass (hold 30 min, release days):** R per trade >= +0.15 pooled over the four years, and > 0 in at least 3 of the
   4 years (Oct .. Sep). Read once.
+**NS-1 read once (18:18 Thai; `ns1.py`, tests 10 passed, planted bugs 7 / 7; `out_ns1_run.txt`, `out_ns1_calib.txt`):**
+
+| Release days, hold 30 min (M1) | 2021-22 | 2022-23 | 2023-24 | 2024-25 | pooled |
+|---|---|---|---|---|---|
+| trades, R | 40, +0.185 | 50, +0.248 | 50, +0.128 | 46, +0.095 | 186, **+0.164** |
+| other days | 33, +0.007 | 50, -0.005 | 57, -0.030 | 63, -0.002 | 216, -0.026 |
+| T1 (+1 R target), release days | +0.050 | +0.055 | +0.043 | +0.094 | +0.060 |
+
+- **By the written line it passes** (+0.164 pooled, positive in 4 of 4 years), and the release / other split is clear in
+  every year: the edge is the release, not the clock.
+- **But the calibration says M1 flatters release days:** on the 20 P1 / P2 release days M1 gives +0.341 against the
+  ticks' +0.148 (bias +0.193; the other days -0.027). The fill is the cause: on a release the price jumps several USD in
+  one tick, a stop order fills past the jump, and an M1 bar cannot show it (2026-02-11: M1 +1.97 R, ticks +0.84 R).
+  With that bias the old years would sit near 0. **Verdict: not trusted - OPEN until the old release days are re-run on
+  ticks** (MT5 `copy_ticks_range` for 08:25-09:05 NY on about 186 days; it downloads whole months into the terminal's
+  Bases, so it needs the owner's go-ahead and the free-disk guard).
+- The +1 R target is worse in every year: let the release run the 30 minutes.

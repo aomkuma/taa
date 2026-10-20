@@ -1,0 +1,34 @@
+calibration, P1 + P2 every weekday: M1 99 trades, ticks 100; {'both': 99, 'right_only': 1, 'left_only': 0}
+  same day 99: same side 0.91; R m1 +0.291 vs ticks +0.274; |dR| median 0.022
+  M1 release days: 20 trades, R +0.341
+  M1 other days: 79 trades, R +0.279
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\precursors\ns1.py", line 69, in m1
+    d = gold.bars("M1", before=end)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\research\2026-10-18-moments\gold.py", line 29, in bars
+    new = pd.read_parquet(NEW / f"{tf}.parquet", filters=flt)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pandas\io\parquet.py", line 671, in read_parquet
+    return impl.read(
+           ^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pandas\io\parquet.py", line 253, in read
+    path_or_handle, handles, filesystem = _get_path_or_handle(
+                                          ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pandas\io\parquet.py", line 141, in _get_path_or_handle
+    handles = get_handle(
+              ^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pandas\io\common.py", line 939, in get_handle
+    handle = open(handle, ioargs.mode)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'data\\history\\FBS-Demo\\XAUUSD\\M1.parquet'
+release: 20 same days, same side 0.95, R m1 +0.341 vs ticks +0.148, bias +0.193
+other: 79 same days, same side 0.90, R m1 +0.279 vs ticks +0.306, bias -0.027
+           day  side_m1  side_tick     R_m1   R_tick   both  exit
+4   2025-10-24        1          1  2.28875  1.90750  False  time
+14  2025-11-20        1          1 -1.00000 -1.34125   True  stop
+16  2025-11-25        1          1  0.45125  0.15125  False  time
+27  2025-12-18        1          1  1.59125  0.85000  False  time
+57  2026-02-11       -1         -1  1.97125  0.84125  False  time
+59  2026-02-13        1          1  2.14250  1.61000  False  time
