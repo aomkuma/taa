@@ -2598,3 +2598,69 @@ scripts (`orb_ticks.py`, `retest.py`) are being re-run.
 - D2: the NY data-minute straddle, with the slippage sensitivity.
 
 `TEAM.md`: the first developer works on Task D.
+
+## The owner's framework, measured - written before it is computed (2026-10-20 12:08 Thai)
+**The owner (about 12:05 Thai):**
+- "find the trend in M15-1H, then use M1-M5 to find the entry - so a big trend or a sideways market does not matter
+  much, we enter and exit on the small TF";
+- "in a day, if it is truly a trend, it usually runs one way; pullbacks / bounces are not far, and our SL is at the
+  small-TF level anyway";
+- "the daily chart tells which side has the edge";
+- "an open usually runs in its first 30 minutes to 1 hour; NY tends to run up to 4 hours after its open, sometimes
+  choppy for the first 1-2 hours before the real run";
+- "your interpretation is wrong... be strict about the goal and the rules, flexible in the method".
+
+(The time was first written here as 00:05 Thai without reading the clock; the clock said 12:06.)
+
+**Study 1 (`framework.py`, P1 / P2, the server days):**
+- **The D1 bias at a day's start,** from closed D1 bars only: +1 when the last D1 close is above its EMA20 and the
+  EMA20 rose over 5 days, -1 when mirrored, else none.
+- **Per day with a bias, measured in the bias's direction:**
+  - the day's net move;
+  - its furthest excursion;
+  - the deepest pullback against the bias from the running extreme (bar extremes);
+  - the share of days that close the bias's way.
+- **The same for the days against the bias,** and the pullback depth on the days that ran 20+ USD the bias's way.
+
+**Study 2 (the same script):** the NY open (09:30 NY, DST-aware) to +4 h, in 30-minute buckets:
+- each bucket's move the bias's way;
+- the |move|, the range and the efficiency (|net| / path);
+- the share of days whose first 2 h are choppy (efficiency < 0.3) and whose next 2 h run 10+ USD the bias's way.
+
+The same for the Asia (07:00 Thai) and London (13:00 Thai) first 60 minutes, in 15-minute buckets.
+**The result (12:10 Thai; `framework.py`, tests `test_framework.py` 3 passed - the bias needs the close beyond a rising
+/ falling EMA20, the deepest pullback from the running extreme both ways, the efficiency; planted bugs 5 of 5; one
+wrong expectation of mine corrected - a flat run under the average turns the EMA down, so -1 was right;
+`out_framework.txt`):**
+
+**Study 1, the EMA20 D1 bias (my proxy for "the daily chart tells the side"):**
+
+| | P1 | P2 |
+|---|---|---|
+| days with a bias | 58 (50 buy / 8 sell) | 56 (40 / 16) |
+| closed the bias's way | 0.48 | 0.54 |
+| the day's net the bias's way, median | -3.4 USD | +6.8 |
+| the furthest the bias's way / against, median | 36.3 / 29.4 | 59.6 / 51.0 |
+| the deepest pullback from the running extreme, median (75 %) | 51.3 (77.3) | 100.2 (158.4) |
+
+**This proxy does not tell the day's side, and the whole-day pullbacks are deep.** That is not the owner's "trend day":
+- the proxy may not be what the owner reads on D1;
+- a whole-day pullback mixes trend days with reversal days.
+
+Next: other D1 readings (the last D1 candle, D1 swing structure, the close within the previous day's range), and the
+pullbacks measured after a window opens with the M15-H1 trend agreeing.
+
+**Study 2, the NY open to +4 h, the move the bias's way per 30 minutes (mean):**
+- P1: -0.9, -0.8, +0.0, -0.0, +1.5, -0.1, +0.2, -1.2;
+- P2: -5.4, -7.2, +0.7, +0.3, +2.7, +1.1, -3.7, -1.7.
+
+In P2 the first hour ran against the D1 bias by about 12.6 USD on average, and +1-2.5 h ran a little with it. That
+fits the owner's "choppy / against first, the real run later", but it is small and noisy.
+
+The |move| is largest in the first 30 minutes (median 8.9 / 14.2 USD) and shrinks after.
+
+My pre-registered "choppy" test (the first 2 h's close-to-close efficiency < 0.3) marks 98-100 % of days as choppy.
+**The threshold was wrong for M1 closes; that test says nothing.**
+
+**Asia 07:00 / London 13:00, the first 60 minutes, the bias's way per 15 minutes:** small (|mean| <= 2.6). The |move|
+median of the first 15 minutes is 3.3 / 6.4 (Asia) and 2.8 / 5.6 (London).
