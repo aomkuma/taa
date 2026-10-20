@@ -26,7 +26,8 @@ PLIB = [
     ("END inclusive", "m = m[(m.index >= START) & (m.index < END)]", "m = m[(m.index >= START) & (m.index <= END)]"),
     ("duplicates keep the first", 'm = m[~m.index.duplicated(keep="last")]', 'm = m[~m.index.duplicated(keep="first")]'),
     ("no duplicate removal", '    m = m[~m.index.duplicated(keep="last")]\n', ""),
-    ("the spread column dropped", '"tick_volume", "spread"]].astype(float)', '"tick_volume"]].astype(float)'),
+    ("the spread column dropped", 'm[["open", "high", "low", "close", "tick_volume", "spread"]].astype(float)',
+     'm[["open", "high", "low", "close", "tick_volume"]].astype(float)'),
 ]
 
 TARGETS = [

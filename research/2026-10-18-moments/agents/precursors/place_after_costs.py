@@ -38,7 +38,7 @@ def bins(x: pd.Series, spec: tuple) -> pd.Series:
 
 def table(D: pd.DataFrame, col: str) -> pd.DataFrame:
     g = D.groupby([col, "part"], observed=True)
-    T = pd.DataFrame({"n": g.size(), "win": g.exit.agg(lambda x: (x == "win").mean()), "R": g.R.mean(),
+    T = pd.DataFrame({"n": g.size(), "win": g.R.agg(lambda x: (x > 0).mean()), "R": g.R.mean(),
                       "se": g.R.std() / np.sqrt(g.size())}).unstack("part")
     T.columns = [f"{a}{b[0]}" for a, b in T.columns]
     T["both_plus"] = (T.R1 > 0) & (T.R2 > 0)

@@ -68,7 +68,7 @@ def main() -> None:
     for name, part, a, b in (("2024-05 .. 2026-04-17 (learning)", WF[WF.t < plib.EXAM_START], "2024-05-01", "2026-04-18"),
                              ("2026-04-18 .. 2026-10-16 (the exam)", ex, "2026-04-18", "2026-10-17")):
         eq = part.pnl.cumsum()
-        print(f"{name}: {len(part)} trades ({len(part) / np.busday_count(a, b):.2f} a weekday), win {(part.exit == 'win').mean():.3f}, "
+        print(f"{name}: {len(part)} trades ({len(part) / np.busday_count(a, b):.2f} a weekday), win {(part.pnl > 0).mean():.3f}, "
               f"R {part.R.mean():+.3f}, USD {part.pnl.sum():+.1f}, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, worst "
               f"{part.pnl.min():+.2f}, longest losing streak {wf.longest_run(part.pnl.to_numpy() < 0)}")
 

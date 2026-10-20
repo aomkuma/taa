@@ -100,8 +100,8 @@ def main() -> None:
     t = pd.DatetimeIndex(T.t_dec.to_numpy()[L.row])
     for name, k in (("learning", np.asarray(t < plib.EXAM_START)), ("exam", np.asarray(t >= plib.EXAM_START))):
         P = L[k]
-        print(f"{name}: buy R {P.buy_R.mean():+.3f} (win {(P.buy_exit == 'win').mean():.3f}), sell R {P.sell_R.mean():+.3f} "
-              f"(win {(P.sell_exit == 'win').mean():.3f}), a coin's side {((P.buy_R + P.sell_R) / 2).mean():+.3f}")
+        print(f"{name}: buy R {P.buy_R.mean():+.3f} (win {(P.buy_R > 0).mean():.3f}), sell R {P.sell_R.mean():+.3f} "
+              f"(win {(P.sell_R > 0).mean():.3f}), a coin's side {((P.buy_R + P.sell_R) / 2).mean():+.3f}")
 
 
 if __name__ == "__main__":

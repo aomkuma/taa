@@ -1,0 +1,6 @@
+CAUGHT  wf: weekly: break-even counts as a win  | 1 failed, 70 passed, 1 deselected, 2 xfailed in 2.05s
+CAUGHT  wf: walk_forward: win from R > -0.5  | 1 failed, 71 passed, 1 deselected, 2 xfailed in 2.03s
+MISSED  plib: load_learning keeps the exam's first minute  | 144 passed, 1 deselected, 2 xfailed in 2.32s
+CAUGHT  plib: load_learning reads the stores unfiltered  | 1 failed, 50 passed, 1 deselected, 2 xfailed in 1.33s
+CAUGHT  gold: bars(before=) filters with <=  | 1 failed, 50 passed, 1 deselected, 2 xfailed in 1.34s
+4 / 5 caught

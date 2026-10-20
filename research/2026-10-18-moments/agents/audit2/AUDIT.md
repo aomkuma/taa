@@ -1,5 +1,7 @@
 # The system audit, second agent (2026-10-19 15:41 UTC = 22:41 Thai .. 2026-10-20 05:12 UTC = 12:12 Thai)
 
+Round 2: 2026-10-20 05:47 .. 06:11 UTC = 12:47 .. 13:11 Thai - items 1 and 4, dev2's swings (sections 10-12).
+
 Brief: `../AUDIT_PROMPT.md`. Every number below comes from a script and output named next to it. Nothing here reads
 the exam period (2026-04-18 .. 2026-10-17): stores are read with pyarrow row filters that keep only the learning
 parts / older history, or only the post-exam days (2026-10-17 on) for alignment checks, so no computation sees an
@@ -11,7 +13,7 @@ exam row.
 |---|---|---|---|---|---|---|
 | 1a | `app/market_data/history_download.py` (+ `scripts/download_history.py`, `gateway.rates_range`) | the download reaches the newest bar the terminal holds | the real log of the two 2026-10-19 runs; a FakeMT5 subclass that serves stale local history (`LazySyncFake`); 14 hand-worked tests; 14 planted bugs; one read-only run on the real terminal | before: 7 failed / 7 passed (HEAD module); after: 14 passed; planted 14 of 14 CAUGHT; targeted suites 80 passed; ruff / mypy / bandit clean | **FAIL -> fixed** | see section 1a |
 | 1b | `gold.bars` (the OLD / NEW M1 merge) | the cut at the first NEW bar, no duplicates, no gap at the joint, NEW wins | 4 hand-worked tests on synthetic stores; 5 planted bugs; the real stores (pre-exam) against a set-union second source | 30,022 shared minutes equal (OHLC, volume, spread); 0 OLD-only minutes lost by the cut; joint gap 1 min; 1,628,641 bars = the union; 5 of 5 CAUGHT | **PASS** | - |
-| 1c | `plib.load` | START inclusive, END exclusive, duplicates (keep last), columns | 1 hand-worked test with bars at START-1, START, a duplicate, END-1, END; 5 planted bugs; the real pre-exam stores | first bar 2023-08-01 00:00; 674,443 bars before START dropped; unique, sorted, float64; 5 of 5 CAUGHT | **PASS** (one note) | note: END = 2026-10-17, so `plib.load()` returns the exam rows; only the callers keep them out |
+| 1c | `plib.load` | START inclusive, END exclusive, duplicates (keep last), columns | 1 hand-worked test with bars at START-1, START, a duplicate, END-1, END; 5 planted bugs; the real pre-exam stores | first bar 2023-08-01 00:00; 674,443 bars before START dropped; unique, sorted, float64; 5 of 5 CAUGHT | **PASS** (one note) | note: END = 2026-10-17, so `plib.load()` returns the exam rows; only the callers keep them out -> **item 4: `plib.load_learning()` added** (section 11) |
 | 1d | UTC alignment through the DST changes | the M1 store against the raw ticks on the 9 change weeks; the release minutes (an outside clock) in every regime; the daily break | `check_dst.py`: ticks re-aggregated from the raw files; every release before the exam: where the largest M1 range sits within +-90 min; the raw `time_server`; 1 hand-worked test of `gold.releases()` across both changes + 3 planted bugs | OHLC equal on 100 % of 59,363 minutes (9 weeks, out_check_dst.txt); US-on / EU-off weeks: CPI / NFP / PPI / FOMC peak at 0 in 15 of 21, at +-1 in 1, at +-60 in 0; 08:30 New York: 12:30 UTC 151 of 274 at 0 / 1 at +60, 13:30 UTC 81 of 159 at 0 / 5 at +60; 3 of 3 CAUGHT | **PASS** | - |
 | 2a | `precursors/indicators.py::bars` against MT5's own H1 / H4 / D1 | OHLC, counts, the server-day boundaries through DST | matched to `data/history/.../{H1,H4,D1}.parquet` through MT5's raw `time_server` (not the code under test); 5 hand-worked tests (winter day, both DST nights, a quiet last minute, clock bars) + the 6 earlier ones; 11 planted bugs | H1 16,032 = 16,032, H4 4,706 = 4,706, D1 1,192 = 1,192, OHLC equal on all, max diff 0.00000, 0 bars on one side only; post-exam days H1 15/15, H4 3/3; 11 of 11 CAUGHT | **PASS** | - |
 | 2b | `avail` = the last M1 minute + 1 | how often it is before the bar's end, and why | every bar of the learning parts and of 2021-09 .. 2026-04: is the next M1 bar 30+ min after the last one (market closed) or not (quiet last minutes) | learning parts: M15 / H1 / H4 / D1 0 quiet-minute bars (all 127 early ones are closes); M5 5 bars, 9 minutes in all. 2021-09 .. 2026-04: H1 4 (5 min), M15 14 (38 min), M5 56 (90 min), H4 1 | **PASS** (one note) | note: on those bars the prices at `avail` equal the forming bar's, only the "complete" flag is 1-4 min early |
@@ -20,8 +22,11 @@ exam row.
 | 5 | the simulators: `surrender.trade` / `run`, `tick_straddle.trade` / `run`, `sr_break.take`, `touches.outcome` / `approach`; the developer's `p2_trades.simulate` (read only) | fills, stops on the bid / ask with the gap, the target as a limit, ties on one tick, the daily break, midnight, R over the fill's risk | 10 hand-worked tests + the earlier 26 (`test_surrender`, `test_tick_straddle`, `test_sr_break`, `test_touches`); 6 hand cases on the developer's `simulate`; 19 planted bugs; the callers' learning-part entry hours from their own input frames | **a trade open at midnight UTC was cut at 23:59:59** (`surrender.run`, `tick_straddle.run` read one UTC day's tick file): before 3 failed / 6 passed (HEAD), after 52 passed with the earlier suites; every current caller enters 11:20 .. 16:00 UTC in P1 / P2, so 0 earlier results change; the developer's `simulate` 6 of 6; 19 of 19 CAUGHT | **FAIL -> fixed** (latent) | fix: `precursors/tick_straddle.py` (`span_ticks`: the next day joined, never an exam day), `precursors/surrender.py` (uses it) |
 | 6 | the costs: M1 spread x 0.01 + 0.08, entry slip 0.07, M1 stop slip 0.15 / 0.20 NY | the formula against the raw ticks of the learning parts; the slippage by the earlier audit | `check_costs.py`: 171,127 minutes re-aggregated from the raw tick files: the first tick's spread (what an entry pays) against the formula, overall and in the owner's windows; the earlier audit re-used for the slippage (no code changed since) | overall formula - first-tick spread: mean -0.005, median -0.020 USD; Asia 07-09 Thai +0.013; London 13-14 Thai +0.001; NY open 09:30-11:30 NY -0.036 (median -0.06); M1 column = the minute's min spread 99.9-100 % | **PASS** (one note) | note: in the NY open the formula is 0.036 USD a trade optimistic (about 0.004 R at a 10-USD stop), M1 simulations only |
 | 7 | parts, the owner's windows, event times | the same part dates everywhere; Asia 07-09 / London 13-14 Thai, NY 09:30 NY + 2 h; NY / London events DST-aware | every module's constants read; 23 hand-worked tests across both DST changes (the developer's `window_of` read only, `event_minutes`, `pullback15.active`, `plib.ny_mask`, `part_of`); 12 planted bugs; the measurer's B2 window split re-derived from `dev/p2_trades.parquet` | dates equal in `plib`, `m15_trades`, `dev/p2_trades`, `dev/sweep_detector`, `dev/verify_p2`, `dev2/compare_ref`, `strategist/slib`; 23 passed; 12 of 12 CAUGHT; the notes' B2 numbers reproduced exactly (Asia +0.092 / +0.203, London +0.076 / +0.074, NY -0.072 / -0.059, Asia + London +0.087 / +0.161, USD -2.2 / +306.9) | **PASS** (one note) | note: the windows are keyed by the entry time; keyed by the decision time, Asia P1 is +0.004 (not +0.092) |
-| 8 | the metrics: `wf.weekly` / `longest_run`, the summaries' max DD, win %, a weekday | the drawdown from 0, break-even trades, the streak in time order, weekday counts, the Thai week | 9 hand-worked tests + 1 question (xfail); 8 planted bugs; a scan of all summaries; the measured effect on the developer's 8 cells and on 40 printed learning-part summaries | **max DD ignored the starting balance** in 20 precursors summaries (`(eq.cummax() - eq).max()`): -5, -5, +1 gave 5, not 10; before 4 failed / 5 passed, after 9 passed + 1 xfail; 130 earlier tests of those modules pass; effect: 1 of 40 printed summaries (+0.4 USD), 1 of 8 developer cells (+1.6 USD, out_dd_impact.txt); 8 of 8 CAUGHT | **FAIL -> fixed**; one **question** | fix: the 20 files, `(eq.cummax().clip(lower=0) - eq).max()`; question: what "win" means in `weekly` |
-| 9 | anything else shared and untested | which shared modules the developers and the strategist import, and their tests | an import scan of `dev/`, `dev2/`, `strategist/` | `fingerprint.py` had no test file (its ZigZag is now in `audit2/test_swings.py`); `dev2/swings.py` + `zigzag_ref.py` are new (dev2's V3-1, in progress) | listed | see section 9 |
+| 8 | the metrics: `wf.weekly` / `longest_run`, the summaries' max DD, win %, a weekday | the drawdown from 0, break-even trades, the streak in time order, weekday counts, the Thai week | 9 hand-worked tests + 1 question (xfail); 8 planted bugs; a scan of all summaries; the measured effect on the developer's 8 cells and on 40 printed learning-part summaries | **max DD ignored the starting balance** in 20 precursors summaries (`(eq.cummax() - eq).max()`): -5, -5, +1 gave 5, not 10; before 4 failed / 5 passed, after 9 passed + 1 xfail; 130 earlier tests of those modules pass; effect: 1 of 40 printed summaries (+0.4 USD), 1 of 8 developer cells (+1.6 USD, out_dd_impact.txt); 8 of 8 CAUGHT | **FAIL -> fixed**; the question answered (item 1) | fix: the 20 files, `(eq.cummax().clip(lower=0) - eq).max()`; item 1: "win" = pnl > 0 after costs in `wf.weekly`, `wf.walk_forward` and the win shares of 23 more precursors files (section 10) |
+| 9 | anything else shared and untested | which shared modules the developers and the strategist import, and their tests | an import scan of `dev/`, `dev2/`, `strategist/` | `fingerprint.py` had no test file (its ZigZag is now in `audit2/test_swings.py`); `dev2/swings.py` + `zigzag_ref.py` are new (dev2's V3-1, in progress) | listed | see section 9; dev2's `swings.py` audited in section 12 |
+| 10 | item 1: "win" = pnl > 0 after costs | `wf.weekly`, `wf.walk_forward`'s month row and every precursors win share | 3 new hand-worked tests + a scan test; 14 planted bugs; every stored trade file re-counted on the learning rows, old against new | before 6 failed / 9 passed, after 15 passed; 14 of 14 CAUGHT; 240 learning-part cells: 205 rise, 35 equal, 0 fall (+0.000 .. +0.500, median +0.073); 0 target exits not in profit | **changed** (the measurer's answer) | 24 precursors files; section 10 |
+| 11 | item 4: `plib.load_learning()` | a loader that stops before 2026-04-18 00:00 UTC and never returns an exam row | 14 hand-worked tests + 1 on the real stores; 13 planted bugs; a caller list | before 14 failed / 1 passed, after 15 passed; 13 of 13 CAUGHT; real stores 954,198 bars .. 2026-04-17 20:54 (= out_check_merge.txt) | **added** | `gold.py` (`bars(before=)`), `plib.py`; 54 callers listed (section 11) |
+| 12 | dev2's `swings.py` (read only; sha256 9ebfe2dd5de473b7.., file time 12:26:40 Thai) | the ZigZag rule 2, `tf_bars`, look-ahead of the whole `analyze`, the pivots against their legs, `running()` | 32 hand-worked tests + 2 questions (xfail); 10 planted bugs (in memory); the real learning bars: `tf_bars` against `indicators.bars`, truncation at 3 server-day ends x 7 TFs, two property counts | 32 passed + 2 xfailed; 10 of 10 CAUGHT; `tf_bars` equal on every TF; truncation 21 of 21 equal (with power); pivots not the extreme of their leg 0.1 % (M1) .. 1.0 % (H1); `running()` != the structure's extreme on 0.0-0.2 % of bars | **PASS** (two questions) | questions 6-7; no bug to relay |
 
 ## 1a. The history download stored nothing after Friday (FAIL, fixed)
 
@@ -588,6 +593,181 @@ date.
 unless it finds the old line, and it found it. That edit left `dev/patterns.py` with CRLF line endings (git warns;
 `.gitattributes` normalizes them on commit).
 
+## 10. Item 1: "win" = pnl > 0 after costs (changed)
+
+The measurer's answer (notes.md, 2026-10-20 12:21 Thai): a win is a trade with pnl > 0 after costs, whatever its exit
+is called. Before, `wf.weekly`, `wf.walk_forward`'s month row and the precursors summaries counted `exit == "win"` (the
+target hit), so a profitable time / surrender / structure exit was not a win, and the developer's exit names
+(`target`, `structure`, ...) gave 0 %.
+
+**The change:** `(x == "win").mean()` / `(T.exit == "win").mean()` -> `(pnl > 0).mean()` (or `R > 0` where a frame has no
+pnl: `place_after_costs`, `trade_labels`) in 24 precursors files: `wf` (weekly, walk_forward's month row, the main
+summary), `audit_harness`, `base_after_costs`, `big_trades`, `cut`, `lvl2`, `lvl3`, `lvl_losers`, `model_cost`,
+`model_trades`, `paper`, `place_after_costs`, `present_wf`, `pullback`, `pullback15`, `rule_bt`, `sr_break`,
+`surrender`, `tick_straddle`, `trade_labels`, `v2b`, `v2c`, `v2e`, `v2s`. A break-even trade (pnl 0.0) is not a win
+(and, as before, not a loss in `longest_run`). The exit name still selects trades where a script asks for target
+trades (`lvl_losers`, `v2_losers`, `audit.py`), and the labels' own outcome columns (`fp1`, `out`) are not trades.
+The developer's `dev/d_report.weekly` and `p2_trades.stats` already count `pnl > 0`.
+
+**Tests (`audit2/test_metrics.py`, now 15):**
+
+| Test | What it checks, by hand |
+|---|---|
+| `test_the_weekly_win_share_is_the_trades_that_made_money` | exits `target` +10, `structure` +3, `time` 0.0, `time` -2 in one Thai week: win 0.5 (the break-even is not a win) |
+| `test_the_walk_forward_months_win_share_is_the_trades_that_made_money` | one cell, two December trades as its past; January's 4 trades +10 (win), +0.5 (time), 0.0, -10 (stop): 4 taken, month win 0.5 |
+| `test_a_profitable_time_exit_is_a_win[sr_break / surrender / tick_straddle]` | +10, +0.5, -10, 0.0 -> the printed "win 0.500" |
+| `test_no_summary_counts_a_win_by_the_exit_name` | no precursors file computes a share as `exit == "win"` (the three spellings used) |
+
+- Before (`out_win_before.txt`, the HEAD eeca5a9 precursors files in a scratch copy, the same test file):
+  `6 failed, 9 passed` - `assert [0.0] == [0.5]` (weekly), `assert [0.25] == [0.5]` (the month), `assert 0.25 == 0.5`
+  (each summary), `Left contains 33 more items, first extra item: 'audit_harness.py:54'`.
+- After: `15 passed in 1.83s`.
+- The earlier tests of the 16 changed modules that have test files (`test_big_trades` .. `test_wf`, from the repo
+  root): `93 passed in 43.25s`; the 8 without test files compile (`py_compile`).
+- Planted (`plant.py mutants_metrics`, `out_plant_metrics.txt`): `ALL: 14 of 14 caught; unmutated: 15 passed`. New: the
+  week's win by the exit name again; the week's break-even counted a win; the month's win by the exit name again; the
+  month's break-even counted a win; the summary's win by the exit name again (sr_break); the summary's break-even counted
+  a win (surrender).
+
+**What it moves** (`audit2/check_win.py`, output `out_win_impact.txt`: every stored precursors trade file with t / pnl /
+exit, 136 files, read with a pyarrow filter t < 2026-04-18; `wf` at eeca5a9 against the working copy):
+- No R, USD, drawdown, streak or trade count moves: only the win share. It can only rise: 0 target exits are not in
+  profit, so every old win is a new win. 10 learning trades are exactly 0.0 (neither).
+- **A. Per file and part:** 240 learning-part cells (P1 / P2): 205 rise, 35 equal, 0 fall; the rise min +0.000,
+  median +0.073, max +0.500 (8-trade placebo cell). The largest on real cells: `pullback_trades` P1 0.042 -> 0.384
+  (1,871 trades), P2 0.081 -> 0.403; `pullback15_trades` P1 0.062 -> 0.380; `sr_break_trades` P1 0.133 -> 0.327. Older
+  rows (before 2025-10-18): 94 cells, +0.010 .. +0.222, median +0.098.
+- **B. `wf.weekly`, week by week:** 129 files, 11,218 week rows before the exam, 4,692 rise, 0 fall; every other
+  column (cell, trades, R_trade, R, usd, usd_total, worst) equal in all. The LV3 walk-forward (`lvl3_wf_trades`, the
+  latest 12 months): 10 weeks, 3 move: 2026-02-16 0.000 -> 0.200, 2026-03-16 0.357 -> 0.571, 2026-04-13 0.111 ->
+  0.222. `lvl3_wf_3y_trades`: 119 weeks, 42 move. All rows are in the output.
+- **C. `walk_forward`'s month rows** (re-derived from the stored taken trades): 253, 149 rise. LV3: 2026-02 0.190 ->
+  0.238 (21), 2026-03 0.226 -> 0.323 (31), 2026-04 to 04-17 0.071 -> 0.143 (14).
+- **D. The printed "(learning)" lines** (each file over every row before the exam): 136 files, 132 move. Those printed
+  in `out_*.txt`, old = the printed value in every case: `out_wf.txt` 66 trades 0.182 -> 0.258; `out_wf_3y.txt` 500
+  trades 0.196 -> 0.312; `out_v2s.txt` 445 trades 0.380 -> 0.427; `out_v2b.txt` 221 trades 0.371 -> 0.412;
+  `out_present_wf.txt` 736 trades 0.359 -> 0.424.
+- The printed `out_*.txt` files were not re-run; they keep the old numbers until their scripts run again.
+
+## 11. Item 4: `plib.load_learning()` (added)
+
+**The change:**
+- `gold.bars(tf, before=None)`: with `before` (UTC-aware), both stores are read with the pyarrow row filter
+  `open_time < before`, so no later bar is returned. When every NEW bar is at / after `before`, the OLD cut is
+  `before` itself (all OLD rows read are before it). Without `before`, nothing changes. A naive `before` raises
+  `TypeError` (tz-naive).
+- `plib.load_learning(start=START)`: `load()`'s rules (START inclusive, duplicates keep the last, the six float
+  columns), ending before `EXAM_START` (2026-04-18 00:00 UTC), through `gold.bars(before=EXAM_START)`. `plib.load()` is
+  unchanged (to END = 2026-10-17) for the measurer's one exam read.
+
+**Tests (`audit2/test_learning_loader.py`, 15):**
+
+| Test | What it checks, by hand |
+|---|---|
+| `test_it_ends_before_the_exam_and_keeps_load_s_rules` | OLD 23:58, 23:59 (before START), START; NEW START+1 twice, 2026-04-17 23:59, 2026-04-18 00:00, 00:01, 2026-05-04: index START, START+1, 04-17 23:59; opens 3, 11 (the last copy), 12; six float64 columns, UTC |
+| `test_it_equals_load_cut_at_the_exam` | `load()` still holds 2026-04-18 00:00; `load_learning()` = `load()[< EXAM_START]` frame-equal |
+| `test_a_later_start` | `start=START+1` -> START+1, 04-17 23:59 |
+| `test_no_store_read_returns_an_exam_row` | a spy on `pd.read_parquet`: both store reads (NEW and OLD, which holds a 2026-04-20 row) return only rows before the exam |
+| `test_equals_the_full_merge_cut_at_before[7 cuts]` | `gold.bars(before=b)` = `gold.bars()[< b]` for b before START, at START, inside the duplicates, at / after the exam, after everything |
+| `test_before_the_first_new_bar_keeps_the_old_bars_before_it` | NEW starts after `before`: the OLD bars before it (2 of 4) |
+| `test_without_before_nothing_changes` / `test_a_naive_before_is_refused` | 9 bars to 2026-05-04; `TypeError` "tz-naive" |
+| `test_the_real_stores_end_before_the_exam` | the real stores through the filter: 954,198 bars, 2023-08-01 00:00 .. 2026-04-17 20:54, unique, sorted (= `out_check_merge.txt`, made from a filtered scratch copy) |
+
+- Before (`out_4_loader_before.txt`, HEAD `gold.py` / `plib.py`): `14 failed, 1 passed` (`TypeError: bars() got an
+  unexpected keyword argument 'before'`, `AttributeError: module 'plib' has no attribute 'load_learning'`; the real-store
+  test failed on the missing function, before any read).
+- After: `15 passed in 3.39s`; with `test_pipeline.py` (load and the merge unchanged): `22 passed`.
+- Planted (`plant.py mutants_loader`, `out_plant_loader.txt`; the real-store test left out of the mutant runs, since a
+  mutant without the filter would load exam rows): `ALL: 13 of 13 caught; unmutated: 14 passed, 1 deselected`. gold
+  (5): the filter `<=`; NEW / OLD read without the filter; no fallback when NEW is empty; a naive `before` taken as UTC.
+  plib (8): the stores read to the end and cut after; the learning to EXAM_END; `start` ignored; START exclusive;
+  duplicates keep the first; no duplicate removal; the spread dropped; not float.
+- `mutants_pipeline.py`'s "spread dropped" pattern was made unique (the new function has the same column list):
+  `ALL: 13 of 13 caught; unmutated: 7 passed`.
+
+**The callers** (54 files in `precursors/` call `plib.load()`; found by an AST scan, sorted by reading the lines that
+mention the exam; nothing was edited):
+
+| Group | Files | Proposal |
+|---|---|---|
+| a. read the exam on purpose (an exam switch, an exam part / half, or moments to EXAM_END) - 16 | `base_after_costs`, `big_trades`, `burst_scan`, `by_eye`, `combine`, `loser_audit`, `m1_features`, `m15_trades`, `model_trades`, `moments`, `mw`, `present`, `pullback15`, `range_trades`, `v2b_pictures`, `wf` | keep `load()` only in the exam branch (the measurer's read); the learning branch `load_learning()`. `wf.main` also hands `load()` to `evidence_patterns` for every trade, the exam's included |
+| b. cut the bars before the exam right after `load()` - 5 | `framework`, `framework2`, `level_power`, `regime`, `verify_p2` | switch now: the same bars, no exam row in memory (`load_learning(start=...)` for their start dates) |
+| c. load everything, then pick learning moments only - 5 | `library_present`, `picture_pairs`, `reading_audit`, `snaps`, `zoom_audit` | switch; the result is the same unless a picked moment's drawn / labelled window runs past 2026-04-18 00:00 (the last days of P2) - check on the switch |
+| d. no exam filter in sight; mostly the older studies (made before the exam rule of 2026-10-18 on data to 2026-10-17) and library builders - 28 | `audit`, `bot_eye`, `build`, `cont`, `explore`, `eye_check`, `fingerprint`, `footprints`, `gallery`, `gallery_sets`, `indicators`, `library`, `library_match`, `loc`, `loser_charts`, `losers_b`, `lvl_losers`, `no_sl`, `paper`, `phase`, `pullback`, `select_sets`, `straddle`, `touches`, `v2`, `v2_losers`, `wf_library_compare`, `zones` | switch at the next re-run; a re-run then stops at the exam, so its stored outputs (some span to 2026-10-17) no longer reproduce; the measurer decides per file |
+
+- Outside `precursors/`: `dev/` (`patterns.load_m1`, `verify_d`, `verify_p3`), `dev2/` (`swings.load_learning`) and
+  `strategist/slib` have their own filtered readers - nothing to change (a proposal only, they are not mine). The
+  older folders (`runs/`, `news/`, `trend/`, `reversion/`, `cross/`, `journal/`, `fx/`, `weapon4/`) read `gold.bars` or
+  the stores directly without a filter; `shadow/`, `ai_charts/` and `portfolio/` use `portfolio/plib.py` (another
+  module). Not active in Setup OWN; listed only.
+
+## 12. dev2's `swings.py` (read only; PASS, two questions)
+
+**The version audited:** `dev2/swings.py`, sha256 `9ebfe2dd5de473b7f702afcfa54aecdf323c2acfd9ab9b0c92b7de2a5f6191c7`,
+file time 2026-10-20 12:26:40 Thai (05:26:40 UTC), 545 lines; a snapshot copy in my scratchpad. The hash was the same at
+the end of the audit (06:08 UTC = 13:08 Thai). `zigzag_ref.py` (sha256 11ad7e67..) was not audited: `swings.py` does not
+import it.
+
+**What was checked and how:**
+- **The ZigZag (rule 2)** - `audit2/test_dev2_swings.py`: the hand cases of `audit2/test_swings.py` in dev2's interface
+  (a threshold per bar) and under its written rule 2 (a tie keeps the first bar; fingerprint moves it later):
+  - one wide bar at the start is never two turns; the first turn waits for a bar that takes an extreme out;
+  - an outside bar extends the leg and is one turn (both sides);
+  - a tie keeps the first bar, exactly the threshold confirms, 0.01 under confirms nothing;
+  - the threshold is read at the confirming bar (both ways: a pivot bar with 10 and a confirming bar with 20 confirms
+    nothing; 20 and 10 confirms);
+  - 20 random series with wide bars and a threshold that changes every bar: every pivot confirmed by a later bar, no
+    bar twice, kinds alternate;
+  - no look-ahead: on 5 random series the pivots confirmed by bar d equal those of the series cut at d (17 cuts each).
+  - My first version of the "read at the confirming bar" test had a wrong hand value (I let the trough confirm at a
+    bar whose threshold was 20). The code was right; the test was corrected.
+- **`tf_bars` against `precursors/indicators.bars` on the real learning bars** (249,474 M1 bars 2025-08-01 ..
+  2026-04-17 20:54 from `swings.load_learning()`, whose reader filters the exam out): M5 49,903, M15 16,758, M30 8,380,
+  H1 4,192, H4 1,098, D1 183 bars; open / high / low / close / last / avail equal on every bar of every TF.
+- **Look-ahead of the whole `analyze`** (pivots, structure, bias, box, lines, events, the inner swings): the span
+  2025-11-03 .. 2026-01-30 against the same span cut at three server-day ends (2025-11-17, 2025-12-22, 2026-01-14 21:54
+  UTC); for each of M1 .. D1 every reading known at the cut (the struct rows, the pivots confirmed by then, the events,
+  the boxes and lines born by then) is equal: 21 of 21. Power: in all 21 the full run has more pivots or events after
+  the cut. (My first run reported D1 "different": two empty frames with different dtypes; the comparison was fixed to
+  compare values.)
+- **dev2's own tests, run read only:** `26 passed in 2.34s`.
+- Read against the written rules 1-8 / 13: the S at a moment (the last H1 bar complete by it, `side="right"`), the TF
+  threshold at the bar's close, the structure pairs, the box walk after the last accepted break, the line anchor with
+  the largest / smallest slope (the hull edge), the mirrored `Edge.step` (each comparison checked in the up view) - as
+  written.
+
+**Planted (`plant.py mutants_dev2_swings`, `out_plant_dev2_swings.txt`, the file mutated in memory only):
+`ALL: 10 of 10 caught; unmutated: 32 passed, 2 xfailed`.** The start-up fix removed; the start-up takes the later
+extreme; a tie moves the peak / the trough later; `if` instead of `elif`; strictly above the threshold; the threshold
+read at the pivot bar; the confirming bar recorded as the pivot; the trough tracked from the peak bar; the next bar's
+threshold (look-ahead).
+
+**Two questions (rule-level, not code bugs; xfail tests in `test_dev2_swings.py`, `out_check_dev2_swings.txt`):**
+1. **A pivot is not always the extreme of its leg.** Rule 2 tracks the next extreme from the confirming bar and never
+   revises a confirmed pivot. When the threshold changes between bars (it is max(S, the TF's ATR), so it does), price
+   can (a) undercut a confirmed trough while the peak is tracked and the larger threshold is not reached, or (b) make
+   a lower low before the previous pivot's confirmation. Then the recorded trough is not the lowest low between its two
+   peaks. Hand case `test_a_trough_is_the_lowest_low_between_its_two_peaks`: the trough stays 95 @3 though bar 5 went to
+   90. On the real learning bars (pivots from 2025-10-18, strictly between the neighbouring pivots):
+
+   | TF | pivots | not the leg's extreme | depth USD median / max |
+   |---|---|---|---|
+   | M1 | 3,388 | 3 (0.1 %) | 1.42 / 1.94 |
+   | M5 | 3,134 | 8 (0.3 %) | 3.20 / 20.47 |
+   | M15 | 2,452 | 13 (0.5 %) | 2.76 / 20.12 |
+   | M30 | 1,736 | 15 (0.9 %) | 3.66 / 14.80 |
+   | H1 | 954 | 10 (1.0 %) | 4.02 / 16.72 |
+   | H4 | 256 | 1 (0.4 %) | 6.04 / 6.04 |
+
+   Example (H1): the trough 2025-10-27 20:00 UTC (10-28 03:00 Thai) at 3979.25, while the leg's low is 3973.11 at
+   2025-10-28 00:00 UTC (07:00 Thai). A chart reader would put the swing low there. Is the non-revising rule the
+   owner's meaning, or should a lower low before the next peak's confirmation move the trough (known from that bar on)?
+2. **`running()` and the structure disagree** on rule 4's "running extreme of the leg after the last pivot":
+   `running()` takes the lowest low since the pivot, the structure (`analyze`) the ZigZag's tracked extreme from the
+   confirming bar. They differ on 104 of 173,030 M1 bars, 32 of 34,613 M5, 15 of 11,624 M15, 10 of 5,813 M30, 2 of
+   2,908 H1, 0 of 762 H4 (test `test_running_equals_the_extreme_the_structure_tracks`). Which one is meant, and should
+   the public `running()` match it?
+
 ## The files changed by the audit
 
 | File | Change | Its test (fails before, passes after) |
@@ -598,7 +778,18 @@ unless it finds the old line, and it found it. That edit left `dev/patterns.py` 
 | `research/.../precursors/surrender.py` | `run` and `main` use `span_ticks`; the drawdown from 0 | the same |
 | 18 more precursors files (`big_trades`, `cut`, `lvl`, `lvl2`, `lvl3`, `model_cost`, `model_trades`, `present_wf`, `pullback`, `pullback15`, `rule_bt`, `sr_break`, `v2`, `v2b`, `v2c`, `v2e`, `v2s`, `wf`) | the drawdown from 0 (one expression each) | `audit2/test_metrics.py`: 4 failed / 5 passed -> 9 passed + 1 xfail |
 
-Nothing in `dev/` or `dev2/` was edited by the audit. Nothing was committed.
+Round 2 (2026-10-20, not committed):
+
+| File | Change | Its test (fails before, passes after) |
+|---|---|---|
+| 24 precursors files (section 10: `wf`, `audit_harness`, `base_after_costs`, `big_trades`, `cut`, `lvl2`, `lvl3`, `lvl_losers`, `model_cost`, `model_trades`, `paper`, `place_after_costs`, `present_wf`, `pullback`, `pullback15`, `rule_bt`, `sr_break`, `surrender`, `tick_straddle`, `trade_labels`, `v2b`, `v2c`, `v2e`, `v2s`) | item 1: a win = pnl > 0 (R > 0 where no pnl) | `audit2/test_metrics.py`: 6 failed / 9 passed -> 15 passed |
+| `research/2026-10-18-moments/gold.py` | item 4: `bars(tf, before=None)`, the row filter while reading | `audit2/test_learning_loader.py`: 14 failed / 1 passed -> 15 passed |
+| `research/.../precursors/plib.py` | item 4: `load_learning(start=START)` | the same |
+| `audit2/plant_bugs_1a.py`, `out_plant_bugs_1a.txt` | item 3 (the app fix is in eeca5a9): 4 closed-bar mutants added, 18 of 18 caught | - |
+| `audit2/`: `check_win.py`, `check_dev2_swings.py`, `test_learning_loader.py`, `test_dev2_swings.py`, `mutants_loader.py`, `mutants_dev2_swings.py` (new); `test_metrics.py`, `mutants_metrics.py`, `mutants_pipeline.py` (changed); outputs `out_win_before.txt`, `out_win_impact.txt`, `out_4_loader_before.txt`, `out_check_dev2_swings.txt`, `out_plant_metrics.txt`, `out_plant_loader.txt`, `out_plant_pipeline.txt`, `out_plant_dev2_swings.txt` | the audit's own files | - |
+
+Nothing in `dev/` or `dev2/` was edited by the audit (dev2's `swings.py` was mutated in memory only). Nothing was
+committed.
 
 ## The commands to re-run every check (from the repo root, `.venv`)
 
@@ -614,13 +805,17 @@ Nothing in `dev/` or `dev2/` was edited by the audit. Nothing was committed.
 .venv/Scripts/python -m pytest research/2026-10-18-moments/agents/audit2/test_pipeline.py research/2026-10-18-moments/agents/audit2/test_bars.py research/2026-10-18-moments/agents/audit2/test_foundation_hand.py research/2026-10-18-moments/agents/audit2/test_swings.py research/2026-10-18-moments/agents/audit2/test_simulators.py research/2026-10-18-moments/agents/audit2/test_dev_simulate.py research/2026-10-18-moments/agents/audit2/test_windows.py research/2026-10-18-moments/agents/audit2/test_metrics.py -q
 .venv/Scripts/python -m pytest research/2026-10-18-moments/agents/audit2/test_relay_dev_zigzag.py -q
 # planted bugs (each prints CAUGHT / MISSED and the unmutated run)
-for s in mutants_pipeline mutants_bars mutants_foundation mutants_swings mutants_sims mutants_windows mutants_metrics; do .venv/Scripts/python research/2026-10-18-moments/agents/audit2/plant.py $s; done
+for s in mutants_pipeline mutants_bars mutants_foundation mutants_swings mutants_sims mutants_windows mutants_metrics mutants_loader mutants_dev2_swings; do .venv/Scripts/python research/2026-10-18-moments/agents/audit2/plant.py $s; done
 # the real-data checks (learning parts / older history; post-exam days only for alignment)
 .venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_merge.py      # 1b / 1c
 .venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_dst.py        # 1d
 .venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_bars.py       # 2a / 2b
 .venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_swings.py     # 4 (a few minutes)
 .venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_costs.py      # 6
+# round 2 (2026-10-20)
+.venv/Scripts/python -m pytest research/2026-10-18-moments/agents/audit2/test_metrics.py research/2026-10-18-moments/agents/audit2/test_learning_loader.py research/2026-10-18-moments/agents/audit2/test_dev2_swings.py -q
+.venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_win.py         # 10: every win share moved, learning rows only
+.venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_dev2_swings.py # 12: tf_bars, truncation, the two properties
 ```
 The one-off measurements whose code is in this file's history, not in a script: the window split
 (`out_window_split.txt`), the drawdown impact (`out_dd_impact.txt`, `out_dd_printed.txt`), the callers' entry hours
@@ -629,6 +824,21 @@ loaded in place of the module, then the test file run). `check_relay_impact.py` 
 has applied the fix (it needs the old line).
 
 ## Questions for the measurer
+
+Round 1's questions 1-5 were answered on 2026-10-20 (notes.md): 1 -> section 10, 2 -> the entry time, 3 -> eeca5a9,
+4 -> section 11, 5 -> section 12. Round 2's:
+
+6. **dev2's pivots and the leg's extreme** (section 12, question 1): a confirmed pivot is never revised, so 0.1-1.0 %
+   of pivots are not the extreme of their leg (by up to 20 USD on M5 / M15). Is that the owner's meaning?
+7. **dev2's `running()` against the structure's running extreme** (section 12, question 2): which one does rule 4
+   mean?
+8. **Item 1's scope:** the brief named `wf.weekly`; I changed the win share in every precursors summary (24 files) so
+   that "win" means one thing everywhere. If only `wf.py` should change now, the other 23 files can be committed
+   later or reverted; `test_no_summary_counts_a_win_by_the_exit_name` covers all of them.
+9. **`trade_labels.py` still prints "a coin's side"** (the mean of the buy and sell R), a phrase the owner removed
+   from the system on 2026-10-19. Not mine to change; noted for its owner.
+
+Round 1:
 
 1. **"Win" in `wf.weekly` and the precursors summaries** is the target-hit rate (`exit == "win"`). The developer's
    exits are named `target` / ..., so its weekly table would show 0 % wins, and its own stats use `pnl > 0`. Which

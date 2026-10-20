@@ -55,13 +55,13 @@ def main() -> None:
     days = np.busday_count(start.date(), end.date())
     eq = T.pnl.cumsum()
     print(f"signals: {int((side != 0).sum())} moments of {len(rows)}; the rule's trades {start.date()} .. {end.date()}: {len(T)} "
-          f"({len(T) / days:.2f} a weekday), win {(T.exit == 'win').mean():.3f}, R {T.R.mean():+.3f}, USD {T.pnl.sum():+.1f}, max DD "
+          f"({len(T) / days:.2f} a weekday), win {(T.pnl > 0).mean():.3f}, R {T.R.mean():+.3f}, USD {T.pnl.sum():+.1f}, max DD "
           f"{(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {T.pnl.min():+.2f}, longest losing streak {wf.longest_run(T.pnl.to_numpy() < 0)}; "
           f"a coin's side at the same moments R {T.coin.mean():+.3f}; buys {int((T.side > 0).sum())} R {T.R[T.side > 0].mean():+.3f}, "
           f"sells {int((T.side < 0).sum())} R {T.R[T.side < 0].mean():+.3f}")
     W = pd.read_parquet(HERE / "present_wf_trades.parquet")
     W = W[(W.t >= start) & (W.t < end)]
-    print(f"the bot on the present library, the same months: {len(W)} trades, win {(W.exit == 'win').mean():.3f}, R {W.R.mean():+.3f}, "
+    print(f"the bot on the present library, the same months: {len(W)} trades, win {(W.pnl > 0).mean():.3f}, R {W.R.mean():+.3f}, "
           f"USD {W.pnl.sum():+.1f}")
     print("\nweek by week (Thai weeks, Monday):")
     print(wf.weekly(T).drop(columns=["cell"]).to_string(index=False))

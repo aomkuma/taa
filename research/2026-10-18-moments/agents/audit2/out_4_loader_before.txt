@@ -1,0 +1,242 @@
+FFFFFFFFFFFF.FF                                                          [100%]
+================================== FAILURES ===================================
+____ TestLoadLearning.test_it_ends_before_the_exam_and_keeps_load_s_rules _____
+
+self = <test_learning_loader.TestLoadLearning object at 0x0000024ADBFA39D0>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+
+    def test_it_ends_before_the_exam_and_keeps_load_s_rules(self, around_the_exam: list[pd.Timestamp]) -> None:
+>       m = plib.load_learning()
+            ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'plib' has no attribute 'load_learning'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:63: AttributeError
+____________ TestLoadLearning.test_it_equals_load_cut_at_the_exam _____________
+
+self = <test_learning_loader.TestLoadLearning object at 0x0000024ADBFA3FD0>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+
+    def test_it_equals_load_cut_at_the_exam(self, around_the_exam: list[pd.Timestamp]) -> None:
+        full = plib.load()
+        assert EXAM in full.index  # the measurer's loader still sees the exam
+>       pd.testing.assert_frame_equal(plib.load_learning(), full[full.index < EXAM])
+                                      ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'plib' has no attribute 'load_learning'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:73: AttributeError
+_____________________ TestLoadLearning.test_a_later_start _____________________
+
+self = <test_learning_loader.TestLoadLearning object at 0x0000024ADBFB4650>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+
+    def test_a_later_start(self, around_the_exam: list[pd.Timestamp]) -> None:
+>       assert list(plib.load_learning(start=START + ONE).index) == [START + ONE, EXAM - ONE]
+                    ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'plib' has no attribute 'load_learning'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:76: AttributeError
+___________ TestLoadLearning.test_no_store_read_returns_an_exam_row ___________
+
+self = <test_learning_loader.TestLoadLearning object at 0x0000024ADBFB4410>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000024ADBFDD450>
+
+    def test_no_store_read_returns_an_exam_row(
+        self, around_the_exam: list[pd.Timestamp], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Not only the result: every frame the stores hand back ends before the exam (the rows are filtered while
+        the files are read, not after)."""
+        seen: list[pd.DataFrame] = []
+        real = pd.read_parquet
+    
+        def spy(*a: object, **k: object) -> pd.DataFrame:
+            d = real(*a, **k)
+            seen.append(d)
+            return d
+    
+        monkeypatch.setattr(gold.pd, "read_parquet", spy)
+>       plib.load_learning()
+        ^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'plib' has no attribute 'load_learning'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:92: AttributeError
+_ TestGoldBarsBefore.test_equals_the_full_merge_cut_at_before[2023-07-31 23:59] _
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB5850>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+cut = '2023-07-31 23:59'
+
+    @pytest.mark.parametrize("cut", ["2023-07-31 23:59", "2023-08-01 00:00", "2023-08-01 00:01", "2023-08-01 00:02",
+                                     "2026-04-18 00:00", "2026-04-18 00:01", "2027-01-01 00:00"])
+    def test_equals_the_full_merge_cut_at_before(self, around_the_exam: list[pd.Timestamp], cut: str) -> None:
+        b = pd.Timestamp(cut, tz="UTC")
+        full = gold.bars("M1")
+>       pd.testing.assert_frame_equal(gold.bars("M1", before=b).reset_index(drop=True),
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      full[full.index < b].reset_index(drop=True), check_dtype=False)
+E       TypeError: bars() got an unexpected keyword argument 'before'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:103: TypeError
+_ TestGoldBarsBefore.test_equals_the_full_merge_cut_at_before[2023-08-01 00:00] _
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB5A90>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+cut = '2023-08-01 00:00'
+
+    @pytest.mark.parametrize("cut", ["2023-07-31 23:59", "2023-08-01 00:00", "2023-08-01 00:01", "2023-08-01 00:02",
+                                     "2026-04-18 00:00", "2026-04-18 00:01", "2027-01-01 00:00"])
+    def test_equals_the_full_merge_cut_at_before(self, around_the_exam: list[pd.Timestamp], cut: str) -> None:
+        b = pd.Timestamp(cut, tz="UTC")
+        full = gold.bars("M1")
+>       pd.testing.assert_frame_equal(gold.bars("M1", before=b).reset_index(drop=True),
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      full[full.index < b].reset_index(drop=True), check_dtype=False)
+E       TypeError: bars() got an unexpected keyword argument 'before'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:103: TypeError
+_ TestGoldBarsBefore.test_equals_the_full_merge_cut_at_before[2023-08-01 00:01] _
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB5CD0>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+cut = '2023-08-01 00:01'
+
+    @pytest.mark.parametrize("cut", ["2023-07-31 23:59", "2023-08-01 00:00", "2023-08-01 00:01", "2023-08-01 00:02",
+                                     "2026-04-18 00:00", "2026-04-18 00:01", "2027-01-01 00:00"])
+    def test_equals_the_full_merge_cut_at_before(self, around_the_exam: list[pd.Timestamp], cut: str) -> None:
+        b = pd.Timestamp(cut, tz="UTC")
+        full = gold.bars("M1")
+>       pd.testing.assert_frame_equal(gold.bars("M1", before=b).reset_index(drop=True),
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      full[full.index < b].reset_index(drop=True), check_dtype=False)
+E       TypeError: bars() got an unexpected keyword argument 'before'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:103: TypeError
+_ TestGoldBarsBefore.test_equals_the_full_merge_cut_at_before[2023-08-01 00:02] _
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB5F10>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+cut = '2023-08-01 00:02'
+
+    @pytest.mark.parametrize("cut", ["2023-07-31 23:59", "2023-08-01 00:00", "2023-08-01 00:01", "2023-08-01 00:02",
+                                     "2026-04-18 00:00", "2026-04-18 00:01", "2027-01-01 00:00"])
+    def test_equals_the_full_merge_cut_at_before(self, around_the_exam: list[pd.Timestamp], cut: str) -> None:
+        b = pd.Timestamp(cut, tz="UTC")
+        full = gold.bars("M1")
+>       pd.testing.assert_frame_equal(gold.bars("M1", before=b).reset_index(drop=True),
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      full[full.index < b].reset_index(drop=True), check_dtype=False)
+E       TypeError: bars() got an unexpected keyword argument 'before'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:103: TypeError
+_ TestGoldBarsBefore.test_equals_the_full_merge_cut_at_before[2026-04-18 00:00] _
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB6190>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+cut = '2026-04-18 00:00'
+
+    @pytest.mark.parametrize("cut", ["2023-07-31 23:59", "2023-08-01 00:00", "2023-08-01 00:01", "2023-08-01 00:02",
+                                     "2026-04-18 00:00", "2026-04-18 00:01", "2027-01-01 00:00"])
+    def test_equals_the_full_merge_cut_at_before(self, around_the_exam: list[pd.Timestamp], cut: str) -> None:
+        b = pd.Timestamp(cut, tz="UTC")
+        full = gold.bars("M1")
+>       pd.testing.assert_frame_equal(gold.bars("M1", before=b).reset_index(drop=True),
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      full[full.index < b].reset_index(drop=True), check_dtype=False)
+E       TypeError: bars() got an unexpected keyword argument 'before'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:103: TypeError
+_ TestGoldBarsBefore.test_equals_the_full_merge_cut_at_before[2026-04-18 00:01] _
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB6450>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+cut = '2026-04-18 00:01'
+
+    @pytest.mark.parametrize("cut", ["2023-07-31 23:59", "2023-08-01 00:00", "2023-08-01 00:01", "2023-08-01 00:02",
+                                     "2026-04-18 00:00", "2026-04-18 00:01", "2027-01-01 00:00"])
+    def test_equals_the_full_merge_cut_at_before(self, around_the_exam: list[pd.Timestamp], cut: str) -> None:
+        b = pd.Timestamp(cut, tz="UTC")
+        full = gold.bars("M1")
+>       pd.testing.assert_frame_equal(gold.bars("M1", before=b).reset_index(drop=True),
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      full[full.index < b].reset_index(drop=True), check_dtype=False)
+E       TypeError: bars() got an unexpected keyword argument 'before'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:103: TypeError
+_ TestGoldBarsBefore.test_equals_the_full_merge_cut_at_before[2027-01-01 00:00] _
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB6710>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+cut = '2027-01-01 00:00'
+
+    @pytest.mark.parametrize("cut", ["2023-07-31 23:59", "2023-08-01 00:00", "2023-08-01 00:01", "2023-08-01 00:02",
+                                     "2026-04-18 00:00", "2026-04-18 00:01", "2027-01-01 00:00"])
+    def test_equals_the_full_merge_cut_at_before(self, around_the_exam: list[pd.Timestamp], cut: str) -> None:
+        b = pd.Timestamp(cut, tz="UTC")
+        full = gold.bars("M1")
+>       pd.testing.assert_frame_equal(gold.bars("M1", before=b).reset_index(drop=True),
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+                                      full[full.index < b].reset_index(drop=True), check_dtype=False)
+E       TypeError: bars() got an unexpected keyword argument 'before'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:103: TypeError
+_ TestGoldBarsBefore.test_before_the_first_new_bar_keeps_the_old_bars_before_it _
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB6ED0>
+stores = (WindowsPath('C:/Users/korap/AppData/Local/Temp/pytest-of-korap/pytest-863/test_before_the_first_new_bar_0/old'), WindowsPath('C:/Users/korap/AppData/Local/Temp/pytest-of-korap/pytest-863/test_before_the_first_new_bar_0/new'))
+
+    def test_before_the_first_new_bar_keeps_the_old_bars_before_it(self, stores: tuple[Path, Path]) -> None:
+        """Every NEW bar opens at / after `before`: the NEW part is empty, and every OLD bar before `before` stays
+        (they are all before the first NEW bar)."""
+        old, new = stores
+        t0 = pd.Timestamp("2023-08-31 23:57", tz="UTC")
+        store([t0, t0 + ONE, t0 + 2 * ONE, t0 + 3 * ONE], [1.0, 2.0, 3.0, 4.0], "ms").to_parquet(old / "M1.parquet")
+        store([t0 + 3 * ONE, t0 + 4 * ONE], [100.0, 101.0]).to_parquet(new / "M1.parquet")
+>       d = gold.bars("M1", before=t0 + 2 * ONE)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: bars() got an unexpected keyword argument 'before'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:113: TypeError
+______________ TestGoldBarsBefore.test_a_naive_before_is_refused ______________
+
+self = <test_learning_loader.TestGoldBarsBefore object at 0x0000024ADBFB7CD0>
+around_the_exam = [Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2023-08-01 00:01:00+0000', tz='UTC'), Timestamp('2026-04-...:00+0000', tz='UTC'), Timestamp('2026-04-18 00:01:00+0000', tz='UTC'), Timestamp('2026-05-04 10:00:00+0000', tz='UTC')]
+
+    def test_a_naive_before_is_refused(self, around_the_exam: list[pd.Timestamp]) -> None:
+>       with pytest.raises(TypeError, match="tz-naive"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'tz-naive'
+E         Actual message: "bars() got an unexpected keyword argument 'before'"
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:121: AssertionError
+__________________ test_the_real_stores_end_before_the_exam ___________________
+
+    @pytest.mark.skipif(not (ROOT / "data/history/FBS-Demo/XAUUSD/M1.parquet").exists(), reason="no local history store")
+    def test_the_real_stores_end_before_the_exam() -> None:
+        """The real stores, read through the filter: the numbers of out_check_merge.txt ('plib.load: 954198 bars
+        2023-08-01 00:00 .. 2026-04-17 20:54'), made there from a scratch copy of the pre-exam rows."""
+        import os  # noqa: PLC0415
+    
+        cwd = os.getcwd()
+        os.chdir(ROOT)  # gold's store paths are relative to the repo root
+        try:
+>           m = plib.load_learning()
+                ^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'plib' has no attribute 'load_learning'
+
+research\2026-10-18-moments\agents\audit2\test_learning_loader.py:134: AttributeError
+=========================== short test summary info ===========================
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestLoadLearning::test_it_ends_before_the_exam_and_keeps_load_s_rules
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestLoadLearning::test_it_equals_load_cut_at_the_exam
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestLoadLearning::test_a_later_start
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestLoadLearning::test_no_store_read_returns_an_exam_row
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_equals_the_full_merge_cut_at_before[2023-07-31 23:59]
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_equals_the_full_merge_cut_at_before[2023-08-01 00:00]
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_equals_the_full_merge_cut_at_before[2023-08-01 00:01]
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_equals_the_full_merge_cut_at_before[2023-08-01 00:02]
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_equals_the_full_merge_cut_at_before[2026-04-18 00:00]
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_equals_the_full_merge_cut_at_before[2026-04-18 00:01]
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_equals_the_full_merge_cut_at_before[2027-01-01 00:00]
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_before_the_first_new_bar_keeps_the_old_bars_before_it
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::TestGoldBarsBefore::test_a_naive_before_is_refused
+FAILED research/2026-10-18-moments/agents/audit2/test_learning_loader.py::test_the_real_stores_end_before_the_exam
+14 failed, 1 passed in 2.45s

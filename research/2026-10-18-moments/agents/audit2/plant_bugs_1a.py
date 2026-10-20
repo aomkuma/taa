@@ -49,6 +49,15 @@ MUTANTS = [
         'subset="open_time", keep="first"',
     ),
     ("tail re-read starts at the window start", "max(start, last.to_pydatetime())", "start"),
+    # closed bars only (2026-10-20)
+    ("the forming bar returned again", "            return closed_bars(df, end)\n", "            return df\n"),
+    ("a bar closing exactly at the end dropped", 'df["close_time"] <= pd.Timestamp(end)', 'df["close_time"] < pd.Timestamp(end)'),
+    ("closed by its open, not its close", 'df["close_time"] <= pd.Timestamp(end)', 'df["open_time"] <= pd.Timestamp(end)'),
+    (
+        "the forming bar cut before the completeness check",
+        "    df = _download_range(gateway, symbol, tf, start, end)\n    wait",
+        "    df = closed_bars(_download_range(gateway, symbol, tf, start, end), end)\n    wait",
+    ),
 ]
 
 RUNNER = """

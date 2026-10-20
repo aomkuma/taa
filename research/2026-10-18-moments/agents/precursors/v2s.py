@@ -144,7 +144,7 @@ def main() -> None:
     print("cells:", {k: len(v) for k, v in cells.items()})
     for k, v in cells.items():  # every cell over each half, before the walk-forward picks among them
         for name, part in (("learning", v[v.t < plib.EXAM_START]), ("exam", v[v.t >= plib.EXAM_START]))[: 2 if show_exam else 1]:
-            print(f"  {k} {name}: {len(part)} trades, win {(part.exit == 'win').mean():.3f}, R {part.R.mean():+.3f}, "
+            print(f"  {k} {name}: {len(part)} trades, win {(part.pnl > 0).mean():.3f}, R {part.R.mean():+.3f}, "
                   f"USD {part.pnl.sum():+.1f}")
     WF, months = wf.walk_forward(cells, "2024-05", "2026-10")
     WF.to_parquet(HERE / f"v2s{tag}_wf_trades.parquet")
@@ -163,7 +163,7 @@ def main() -> None:
             continue
         eq = part.pnl.cumsum()
         print(f"{name}: {len(part)} trades ({len(part) / np.busday_count(a, b):.2f} a weekday), win "
-              f"{(part.exit == 'win').mean():.3f}, R {part.R.mean():+.3f}, USD {part.pnl.sum():+.1f}, max DD "
+              f"{(part.pnl > 0).mean():.3f}, R {part.R.mean():+.3f}, USD {part.pnl.sum():+.1f}, max DD "
               f"{(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {part.pnl.min():+.2f}, longest losing streak "
               f"{wf.longest_run(part.pnl.to_numpy() < 0)}")
 

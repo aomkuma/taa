@@ -37,7 +37,7 @@ def pattern(kind: pd.Series, side: pd.Series) -> np.ndarray:
 
 def table(D: pd.DataFrame, by: list[str]) -> pd.DataFrame:
     g = D.groupby(by, sort=False)
-    return pd.DataFrame({"n": g.size(), "win": g.exit.agg(lambda x: (x == "win").mean()), "R": g.R.mean(), "usd": g.pnl.mean(),
+    return pd.DataFrame({"n": g.size(), "win": g.pnl.agg(lambda x: (x > 0).mean()), "R": g.R.mean(), "usd": g.pnl.mean(),
                          "stop_usd": g.dist.median()})
 
 

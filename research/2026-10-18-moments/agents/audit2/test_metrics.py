@@ -77,9 +77,42 @@ def test_the_weekly_table_on_the_thai_week() -> None:
     assert W.worst.tolist() == [-4.0, 2.5] and W.R.tolist() == [0.6, 0.25]
 
 
-@pytest.mark.xfail(strict=True, reason="QUESTION to the measurer: weekly() counts a win as exit == 'win'; the developer's "
-                   "exits are 'target' / 'structure' / ... and its own stats count pnl > 0 - which does the owner mean?")
-def test_the_weekly_win_share_with_the_developers_exit_names() -> None:
-    T = pd.DataFrame({"t": pd.to_datetime(["2026-01-12 02:00", "2026-01-12 05:00"], utc=True), "pnl": [10.0, 3.0],
-                      "R": [1.0, 0.3], "exit": ["target", "structure"], "cell": "x"})
-    assert wf.weekly(T).win.tolist() == [1.0]
+def test_the_weekly_win_share_is_the_trades_that_made_money() -> None:
+    """The measurer's answer (2026-10-20): a win is pnl > 0 after costs, whatever the exit is called."""
+    T = pd.DataFrame({"t": pd.to_datetime(["2026-01-12 02:00", "2026-01-12 05:00", "2026-01-12 06:00", "2026-01-12 07:00"],
+                                          utc=True),
+                      "pnl": [10.0, 3.0, 0.0, -2.0], "R": [1.0, 0.3, 0.0, -0.2], "exit": ["target", "structure", "time", "time"],
+                      "cell": "x"})
+    assert wf.weekly(T).win.tolist() == [0.5]  # 10 and 3 made money; the break-even 0.0 and the -2 did not
+
+
+def test_the_walk_forward_months_win_share_is_the_trades_that_made_money() -> None:
+    # one cell; December 2025 is its past (2 trades, closed before January); January 2026 takes 4 trades in sequence:
+    # +10 (target), +0.5 (time, in profit), 0.0 (break-even), -10 (stop) -> 2 of 4 made money
+    t = pd.to_datetime(["2025-12-03 10:00", "2025-12-04 10:00", "2026-01-05 10:00", "2026-01-06 10:00",
+                        "2026-01-07 10:00", "2026-01-08 10:00"], utc=True)
+    T = pd.DataFrame({"t": t, "x_t": t + pd.Timedelta(minutes=30), "pnl": [1.0, 1.0, 10.0, 0.5, 0.0, -10.0],
+                      "R": [0.1, 0.1, 1.0, 0.05, 0.0, -1.0], "exit": ["win", "win", "win", "time", "time", "stop"]})
+    taken, months = wf.walk_forward({"c": T}, "2026-01", "2026-01", lookback=6, min_trades=2)
+    assert months.trades.tolist() == [4] and len(taken) == 4
+    assert months.win.tolist() == [0.5]
+
+
+def win_share(text: str) -> float:
+    return float(re.search(r"win ([0-9.]+)", text).group(1))
+
+
+@pytest.mark.parametrize("summary", [sr_break.summary, surrender.summary, tick_straddle.summary])
+def test_a_profitable_time_exit_is_a_win(summary) -> None:  # noqa: ANN001
+    # the target (+10), a time exit in profit (+0.5), a stop (-10), a break-even time exit (0.0): 2 of 4 made money
+    T = trades([10.0, 0.5, -10.0, 0.0])
+    assert win_share(summary(T, "2026-01-12", "2026-01-17")) == pytest.approx(0.5)
+
+
+def test_no_summary_counts_a_win_by_the_exit_name() -> None:
+    """Every win share in precursors is pnl > 0 (or R > 0); the exit name may still select trades, and the labels'
+    own outcome columns (fp1, out) are not trades."""
+    pat = re.compile(r"""(\.exit == ['"]win['"]\)\.mean\(\)|\((?:x|e) == ['"]win['"]\)\.mean\(\)|_exit == ['"]win['"]\)\.mean\(\))""")
+    bad = [f"{f.name}:{i}" for f in sorted((AG / "precursors").glob("*.py")) if not f.name.startswith("test_")
+           for i, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1) if pat.search(line)]
+    assert bad == []

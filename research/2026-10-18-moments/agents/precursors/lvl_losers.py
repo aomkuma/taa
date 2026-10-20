@@ -179,7 +179,7 @@ def main() -> None:
     print(pd.DataFrame({"losers": L[cols].median(), "winners": Wn[cols].median()}).round(3).to_string())
     print("\n-- by level kind, side, entry TF, snap time --")
     for g in [x for x in ("lkind", "side", "etf", "cell", "ev_evidence") if x in J]:
-        print(J.groupby(g).apply(lambda x: pd.Series({"n": len(x), "win": (x.exit == "win").mean(), "usd": x.pnl.sum()}),
+        print(J.groupby(g).apply(lambda x: pd.Series({"n": len(x), "win": (x.pnl > 0).mean(), "usd": x.pnl.sum()}),
                                  include_groups=False).round(2).to_string())
     print("\n-- the journal of every losing trade --")
     show = ["when_th", "side", "lkind", "etf", "A", "bounce_A", "stall_reach_A", "sl", "tp", "exit", "pnl",

@@ -1,0 +1,1785 @@
+A. stored trade files: 136; learning-part cells (P1 / P2): 240; changed 205; unchanged 35; every change >= 0: True; target exits not in profit: 0; break-even trades (pnl == 0): 10
+   change in P1 / P2 cells: min +0.000 median +0.073 max +0.500
+   older rows (before 2025-10-18): 94 cells, change min +0.010 median +0.098 max +0.222
+                                     file part  trades  win_old  win_new  target_not_profit  zero_pnl  change
+  lvl_design_stall_0.5_T2_placebo.parquet   P1       8    0.000    0.500                  0         0   0.500
+  lvl_design_stall_0.5_T2_placebo.parquet   P2      14    0.000    0.357                  0         0   0.357
+                  pullback_trades.parquet   P1    1871    0.042    0.384                  0         3   0.343
+                  pullback_trades.parquet   P2    1163    0.081    0.403                  0         2   0.322
+                pullback15_trades.parquet   P1     337    0.062    0.380                  0         0   0.318
+        lvl3_cell_s1.5_nad_T2_p90.parquet   P1       7    0.286    0.571                  0         0   0.286
+ lvl_design_stall_0.25_T2_placebo.parquet   P2       7    0.143    0.429                  0         0   0.286
+  lvl_design_limit_0.5_T2_placebo.parquet   P2     100    0.090    0.370                  0         0   0.280
+ lvl_design_stall_0.25_T2_placebo.parquet   P1       4    0.000    0.250                  0         0   0.250
+  lvl_design_stall_0.5_T1_placebo.parquet   P1       4    0.000    0.250                  0         0   0.250
+                pullback15_trades.parquet   P2     161    0.056    0.298                  0         0   0.242
+         lvl3_cell_s1.5_n3_T2_p90.parquet   P1      24    0.250    0.458                  0         0   0.208
+ lvl_design_stall_0.5_T15_placebo.parquet   P1       5    0.000    0.200                  0         0   0.200
+ lvl_design_limit_0.25_T2_placebo.parquet   P2      93    0.108    0.301                  0         0   0.194
+                  sr_break_trades.parquet   P1     150    0.133    0.327                  0         0   0.193
+  lvl_design_limit_0.5_T2_placebo.parquet   P1     118    0.161    0.347                  0         0   0.186
+         lvl_design_stall_0.25_T2.parquet   P2     105    0.162    0.333                  0         0   0.171
+         lvl3_cell_s1.5_n3_T2_p80.parquet   P1      18    0.222    0.389                  0         0   0.167
+        lvl3_cell_s1.5_nad_T2_p80.parquet   P1       6    0.333    0.500                  0         0   0.167
+      lvl3_cell_3y_s1.5_n3_T2_p80.parquet   P1      80    0.225    0.388                  0         0   0.163
+      lvl3_cell_3y_s1.5_n3_T2_p90.parquet   P1      93    0.237    0.398                  0         0   0.161
+      lvl2_design_k0.5_all_T2_p80.parquet   P1     140    0.186    0.343                  0         0   0.157
+      lvl2_design_k0.5_imp_T2_p80.parquet   P1     122    0.205    0.361                  0         0   0.156
+      lvl2_design_k0.5_all_T2_p70.parquet   P1     110    0.164    0.318                  0         0   0.155
+      lvl2_design_k0.5_imp_T2_p70.parquet   P1     104    0.183    0.337                  0         0   0.154
+      lvl3_cell_3y_s1.5_n4_T2_p80.parquet   P2      52    0.231    0.385                  0         0   0.154
+         lvl3_cell_s1.5_n4_T2_p80.parquet   P2      52    0.231    0.385                  0         0   0.154
+          lvl_design_stall_0.5_T2.parquet   P2     132    0.189    0.341                  0         0   0.152
+          lvl_design_limit_0.5_T2.parquet   P2     119    0.101    0.252                  0         0   0.151
+     lvl3_cell_3y_s1.5_nad_T2_p90.parquet   P1      80    0.212    0.362                  0         0   0.150
+      lvl2_design_k0.5_all_T2_p90.parquet   P1     147    0.204    0.354                  0         0   0.150
+      lvl2_design_k0.5_imp_T2_p90.parquet   P1     128    0.227    0.375                  0         0   0.148
+     lvl3_cell_3y_s1.5_nad_T2_p80.parquet   P1      68    0.221    0.368                  0         0   0.147
+     lvl2_design_k0.25_all_T2_p80.parquet   P1     132    0.174    0.318                  0         0   0.144
+        lvl3_cell_s1.5_nad_T1_p90.parquet   P1       7    0.286    0.429                  0         0   0.143
+lvl_design_stall_0.25_T15_placebo.parquet   P2       7    0.143    0.286                  0         0   0.143
+ lvl_design_stall_0.25_T1_placebo.parquet   P2       7    0.429    0.571                  0         0   0.143
+     lvl2_design_k0.25_all_T2_p90.parquet   P1     137    0.190    0.328                  0         0   0.139
+         lvl3_cell_s1.5_n4_T1_p90.parquet   P2      58    0.190    0.328                  0         0   0.138
+      lvl3_cell_3y_s2.0_n4_T1_p90.parquet   P1      44    0.227    0.364                  0         0   0.136
+     lvl2_design_k0.25_all_T2_p70.parquet   P1     103    0.155    0.291                  0         0   0.136
+      lvl3_cell_3y_s1.5_n4_T1_p90.parquet   P2      59    0.186    0.322                  0         0   0.136
+     lvl2_design_k0.25_imp_T2_p90.parquet   P1     115    0.209    0.339                  0         0   0.130
+          lvl_design_stall_0.5_T2.parquet   P1      54    0.148    0.278                  0         0   0.130
+ lvl_design_limit_0.25_T2_placebo.parquet   P1     116    0.095    0.224                  0         0   0.129
+     lvl2_design_k0.25_imp_T2_p70.parquet   P1      86    0.174    0.302                  0         0   0.128
+     lvl2_design_k0.25_imp_T2_p80.parquet   P1     110    0.191    0.318                  0         0   0.127
+      lvl2_design_k0.5_all_T2_p70.parquet   P2     205    0.205    0.332                  0         0   0.127
+     lvl3_cell_3y_s1.5_nad_T1_p90.parquet   P1      79    0.203    0.329                  0         0   0.127
+         lvl3_cell_s2.0_n3_T1_p80.parquet   P2      32    0.188    0.312                  0         0   0.125
+         lvl3_cell_s1.5_n3_T1_p90.parquet   P1      24    0.208    0.333                  0         0   0.125
+      lvl3_cell_3y_s1.5_n3_T1_p90.parquet   P1      92    0.185    0.304                  0         0   0.120
+      lvl3_cell_3y_s1.5_n5_T2_p80.parquet   P1      42    0.262    0.381                  0         0   0.119
+         lvl3_cell_s1.5_n4_T2_p90.parquet   P2      59    0.220    0.339                  0         0   0.119
+      lvl3_cell_3y_s1.5_n4_T2_p80.parquet   P1      59    0.203    0.322                  0         0   0.119
+                lvl3_wf_3y_trades.parquet   P1      34    0.265    0.382                  0         0   0.118
+      lvl3_cell_3y_s1.5_n4_T2_p90.parquet   P2      60    0.217    0.333                  0         0   0.117
+         lvl3_cell_s2.0_n3_T1_p90.parquet   P2      43    0.233    0.349                  0         0   0.116
+      lvl2_design_k0.5_all_T2_p80.parquet   P2     241    0.212    0.328                  0         0   0.116
+      lvl3_cell_3y_s2.0_n3_T2_p80.parquet   P1      62    0.242    0.355                  0         0   0.113
+      lvl2_design_k0.5_imp_T2_p70.parquet   P2     169    0.213    0.325                  0         0   0.112
+      lvl3_cell_3y_s1.5_n5_T2_p90.parquet   P1      54    0.222    0.333                  0         0   0.111
+      lvl3_cell_3y_s2.0_n4_T2_p80.parquet   P1      36    0.250    0.361                  0         0   0.111
+      lvl2_design_k0.5_imp_T1_p90.parquet   P1     127    0.252    0.362                  0         0   0.110
+     lvl2_design_k0.25_all_T2_p70.parquet   P2     173    0.214    0.324                  0         0   0.110
+                 lvl2_design_feat.parquet   P1     147    0.238    0.347                  0         0   0.109
+      lvl2_design_k0.5_all_T1_p90.parquet   P1     147    0.238    0.347                  0         0   0.109
+      lvl3_cell_3y_s2.0_n4_T2_p90.parquet   P1      46    0.261    0.370                  0         0   0.109
+      lvl2_design_k0.5_all_T2_p90.parquet   P2     277    0.220    0.329                  0         0   0.108
+         lvl_design_limit_0.25_T2.parquet   P2     139    0.094    0.201                  0         0   0.108
+        phase_switch_d1way_trades.parquet   P1      93    0.344    0.452                  0         0   0.108
+          lvl_design_limit_0.5_T2.parquet   P1     168    0.137    0.244                  0         0   0.107
+     lvl3_cell_3y_s1.5_nad_T1_p90.parquet   P2      75    0.173    0.280                  0         0   0.107
+      lvl2_design_k0.5_imp_T2_p80.parquet   P2     199    0.206    0.312                  0         0   0.106
+        lvl3_cell_s2.0_nad_T1_p80.parquet   P2      19    0.211    0.316                  0         0   0.105
+      lvl3_cell_3y_s2.0_n3_T1_p90.parquet   P2      49    0.265    0.367                  0         0   0.102
+      lvl3_cell_3y_s2.0_n3_T2_p90.parquet   P2      49    0.224    0.327                  0         0   0.102
+      lvl2_design_k0.5_imp_T2_p90.parquet   P2     226    0.208    0.310                  0         0   0.102
+      lvl3_cell_3y_s1.5_n4_T2_p90.parquet   P1      71    0.183    0.282                  0         0   0.099
+     lvl3_cell_3y_s2.0_nad_T1_p80.parquet   P2      31    0.258    0.355                  0         0   0.097
+      lvl3_cell_3y_s1.5_n5_T1_p90.parquet   P1      52    0.231    0.327                  0         0   0.096
+      lvl3_cell_3y_s2.0_n3_T1_p80.parquet   P2      42    0.190    0.286                  0         0   0.095
+      lvl3_cell_3y_s2.0_n5_T1_p90.parquet   P1      32    0.344    0.438                  0         0   0.094
+         lvl3_cell_s2.0_n3_T2_p80.parquet   P2      32    0.219    0.312                  0         0   0.094
+         lvl_design_stall_0.25_T2.parquet   P1      43    0.186    0.279                  0         0   0.093
+     lvl3_cell_3y_s2.0_nad_T1_p90.parquet   P2      33    0.273    0.364                  0         0   0.091
+         lvl_design_stall_0.5_T15.parquet   P1      55    0.091    0.182                  0         0   0.091
+ lvl_design_stall_0.5_T15_placebo.parquet   P2      22    0.182    0.273                  0         0   0.091
+                 lvl2_design_feat.parquet   P2     277    0.195    0.285                  0         0   0.090
+      lvl2_design_k0.5_all_T1_p90.parquet   P2     277    0.195    0.285                  0         0   0.090
+     lvl2_design_k0.25_all_T2_p90.parquet   P2     247    0.206    0.296                  0         0   0.089
+     lvl2_design_k0.25_all_T2_p80.parquet   P2     214    0.210    0.299                  0         0   0.089
+      lvl3_cell_3y_s2.0_n3_T1_p90.parquet   P1      68    0.235    0.324                  0         0   0.088
+      lvl3_cell_3y_s2.0_n5_T2_p90.parquet   P1      34    0.294    0.382                  0         0   0.088
+     lvl3_cell_3y_s2.0_nad_T1_p90.parquet   P1      57    0.246    0.333                  0         0   0.088
+     lvl2_design_k0.25_all_T1_p90.parquet   P1     137    0.226    0.314                  0         0   0.088
+              v2s_stop8_wf_trades.parquet   P1      46    0.413    0.500                  0         0   0.087
+      lvl3_cell_3y_s1.5_n3_T2_p80.parquet   P2      81    0.173    0.259                  0         0   0.086
+      lvl3_cell_3y_s2.0_n3_T2_p90.parquet   P1      70    0.271    0.357                  0         0   0.086
+             v2s_stop16_wf_trades.parquet   P2     117    0.504    0.590                  0         0   0.085
+                 lvl2_verify_2026.parquet   P2      94    0.170    0.255                  0         0   0.085
+         lvl_design_limit_0.25_T2.parquet   P1     212    0.170    0.255                  0         0   0.085
+     lvl2_design_k0.25_imp_T2_p70.parquet   P2     145    0.228    0.310                  0         0   0.083
+      lvl3_cell_3y_s1.5_n3_T1_p90.parquet   P2      87    0.184    0.264                  0         0   0.080
+         lvl3_cell_s1.5_n3_T2_p90.parquet   P2      87    0.172    0.253                  0         0   0.080
+        lvl3_cell_s1.5_nad_T2_p90.parquet   P2      75    0.187    0.267                  0         0   0.080
+      lvl3_cell_3y_s1.5_n3_T2_p90.parquet   P2      88    0.170    0.250                  0         0   0.080
+             v2s_stop16_wf_trades.parquet   P1     152    0.454    0.533                  0         0   0.079
+     lvl3_cell_3y_s1.5_nad_T2_p90.parquet   P2      76    0.184    0.263                  0         0   0.079
+         lvl3_cell_s1.5_n3_T2_p80.parquet   P2      76    0.171    0.250                  0         0   0.079
+             v2s_stop12_wf_trades.parquet   P2     117    0.470    0.547                  0         0   0.077
+     lvl2_design_k0.25_imp_T1_p90.parquet   P1     117    0.248    0.325                  0         0   0.077
+         lvl3_cell_s1.5_n5_T1_p90.parquet   P2      39    0.179    0.256                  0         0   0.077
+        lvl3_cell_s2.0_nad_T1_p90.parquet   P2      26    0.192    0.269                  0         0   0.077
+        lvl3_cell_s1.5_nad_T2_p80.parquet   P2      66    0.182    0.258                  0         0   0.076
+                   lvl3_wf_trades.parquet   P2      66    0.182    0.258                  0         0   0.076
+      lvl3_cell_3y_s1.5_n5_T1_p90.parquet   P2      40    0.200    0.275                  0         0   0.075
+      lvl3_cell_3y_s1.5_n3_T1_p80.parquet   P1      81    0.296    0.370                  0         0   0.074
+      lvl3_cell_3y_s2.0_n4_T1_p90.parquet   P2      27    0.259    0.333                  0         0   0.074
+     lvl3_cell_3y_s1.5_nad_T2_p80.parquet   P2      68    0.191    0.265                  0         0   0.074
+      lvl3_cell_3y_s2.0_n3_T2_p80.parquet   P2      41    0.244    0.317                  0         0   0.073
+      lvl3_cell_3y_s1.5_n4_T1_p90.parquet   P1      70    0.186    0.257                  0         0   0.071
+      lvl3_cell_3y_s1.5_n5_T1_p80.parquet   P2      28    0.357    0.429                  0         0   0.071
+      lvl2_design_k0.5_imp_T1_p90.parquet   P2     226    0.190    0.261                  0         0   0.071
+         lvl3_cell_s1.5_n3_T1_p90.parquet   P2      86    0.186    0.256                  0         0   0.070
+         lvl3_cell_s2.0_n3_T2_p90.parquet   P2      43    0.256    0.326                  0         0   0.070
+     lvl2_design_k0.25_imp_T2_p90.parquet   P2     204    0.206    0.275                  0         0   0.069
+     lvl2_design_k0.25_all_T1_p90.parquet   P2     248    0.202    0.270                  0         0   0.069
+     lvl2_design_k0.25_imp_T2_p80.parquet   P2     177    0.209    0.277                  0         0   0.068
+        lvl3_cell_s1.5_nad_T1_p90.parquet   P2      74    0.203    0.270                  0         0   0.068
+      lvl3_cell_3y_s2.0_n4_T1_p80.parquet   P2      15    0.333    0.400                  0         0   0.067
+     lvl3_cell_3y_s2.0_nad_T2_p80.parquet   P2      30    0.267    0.333                  0         0   0.067
+             v2s_stop12_wf_trades.parquet   P1     168    0.405    0.470                  0         0   0.065
+                    v2s_wf_trades.parquet   P1      46    0.370    0.435                  0         0   0.065
+                present_wf_trades.parquet   P1      62    0.355    0.419                  0         0   0.065
+     lvl3_cell_3y_s2.0_nad_T2_p90.parquet   P2      33    0.242    0.303                  0         0   0.061
+         lvl3_cell_s1.5_n5_T1_p80.parquet   P2      33    0.242    0.303                  0         0   0.061
+     lvl3_cell_3y_s1.5_nad_T1_p80.parquet   P2      67    0.239    0.299                  0         0   0.060
+                present_wf_trades.parquet   P2     173    0.335    0.393                  0         0   0.058
+      lvl3_cell_3y_s1.5_n4_T1_p80.parquet   P2      52    0.308    0.365                  0         0   0.058
+        v2s_be0.5_stop8_wf_trades.parquet   P1      70    0.329    0.386                  0         0   0.057
+         lvl3_cell_s1.5_n4_T1_p80.parquet   P2      53    0.302    0.358                  0         0   0.057
+                    v2b_wf_trades.parquet   P1      91    0.374    0.429                  0         0   0.055
+     lvl3_cell_3y_s2.0_nad_T2_p80.parquet   P1      56    0.250    0.304                  0         0   0.054
+     lvl3_cell_3y_s2.0_nad_T1_p80.parquet   P1      57    0.298    0.351                  0         0   0.053
+        lvl3_cell_s2.0_nad_T2_p80.parquet   P2      19    0.211    0.263                  0         0   0.053
+         lvl_design_stall_0.5_T15.parquet   P2     133    0.338    0.391                  0         0   0.053
+         lvl3_cell_s1.5_n5_T2_p90.parquet   P2      39    0.154    0.205                  0         0   0.051
+              v2s_stop8_wf_trades.parquet   P2     118    0.424    0.475                  0         0   0.051
+     lvl3_cell_3y_s2.0_nad_T2_p90.parquet   P1      59    0.288    0.339                  0         0   0.051
+      lvl3_cell_3y_s1.5_n5_T2_p90.parquet   P2      40    0.175    0.225                  0         0   0.050
+      lvl3_cell_3y_s1.5_n4_T1_p80.parquet   P1      60    0.300    0.350                  0         0   0.050
+     lvl2_design_k0.25_imp_T1_p90.parquet   P2     205    0.210    0.259                  0         0   0.049
+                lvl3_wf_3y_trades.parquet   P2      21    0.190    0.238                  0         0   0.048
+  lvl_design_stall_0.5_T1_placebo.parquet   P2      21    0.333    0.381                  0         0   0.048
+        phase_switch_d1way_trades.parquet   P2      63    0.302    0.349                  0         0   0.048
+        lvl_design_stall_0.25_T15.parquet   P2     106    0.311    0.358                  0         0   0.047
+       v2s_be0.5_stop16_wf_trades.parquet   P1     130    0.292    0.338                  0         0   0.046
+                  sr_break_trades.parquet   P2     153    0.340    0.386                  0         0   0.046
+      lvl3_cell_3y_s2.0_n5_T2_p80.parquet   P1      22    0.273    0.318                  0         0   0.045
+        lvl3_cell_s1.5_nad_T1_p80.parquet   P2      66    0.258    0.303                  0         0   0.045
+      lvl2_design_k0.5_all_T1_p80.parquet   P2     246    0.289    0.333                  0         0   0.045
+     lvl3_cell_3y_s1.5_nad_T1_p80.parquet   P1      69    0.319    0.362                  0         0   0.043
+                    v2s_wf_trades.parquet   P2     118    0.415    0.458                  0         0   0.042
+        lvl3_cell_s2.0_nad_T2_p90.parquet   P2      25    0.200    0.240                  0         0   0.040
+      lvl2_design_k0.5_imp_T1_p80.parquet   P2     202    0.282    0.322                  0         0   0.040
+      lvl3_cell_3y_s2.0_n4_T2_p90.parquet   P2      27    0.222    0.259                  0         0   0.037
+      lvl3_cell_3y_s1.5_n5_T2_p80.parquet   P2      28    0.250    0.286                  0         0   0.036
+          combined_trades_floor10.parquet   P1    3358    0.440    0.474                  0         0   0.034
+     lvl2_design_k0.25_imp_T1_p80.parquet   P2     179    0.279    0.313                  0         0   0.034
+     lvl2_design_k0.25_all_T1_p80.parquet   P2     217    0.304    0.336                  0         0   0.032
+      lvl2_design_k0.5_imp_T1_p80.parquet   P1     125    0.232    0.264                  0         0   0.032
+      lvl3_cell_3y_s2.0_n3_T1_p80.parquet   P1      63    0.317    0.349                  0         0   0.032
+                    v2b_wf_trades.parquet   P2     130    0.369    0.400                  0         0   0.031
+         lvl3_cell_s1.5_n5_T2_p80.parquet   P2      33    0.182    0.212                  0         0   0.030
+       v2s_be0.5_stop12_wf_trades.parquet   P1     169    0.302    0.331                  0         0   0.030
+      lvl2_design_k0.5_all_T1_p70.parquet   P2     211    0.355    0.384                  0         0   0.028
+      lvl2_design_k0.5_all_T1_p80.parquet   P1     143    0.231    0.259                  0         0   0.028
+         lvl3_cell_s1.5_n3_T1_p80.parquet   P2      76    0.276    0.303                  0         0   0.026
+       v2s_be0.5_stop12_wf_trades.parquet   P2     117    0.359    0.385                  0         0   0.026
+       v2s_be0.5_stop16_wf_trades.parquet   P2     117    0.368    0.393                  0         0   0.026
+      lvl3_cell_3y_s1.5_n3_T1_p80.parquet   P2      80    0.275    0.300                  0         0   0.025
+      lvl3_cell_3y_s1.5_n5_T1_p80.parquet   P1      42    0.452    0.476                  0         0   0.024
+        lvl_design_stall_0.25_T15.parquet   P1      43    0.093    0.116                  0         0   0.023
+      lvl2_design_k0.5_imp_T1_p70.parquet   P2     173    0.353    0.376                  0         0   0.023
+     lvl2_design_k0.25_imp_T1_p70.parquet   P2     147    0.374    0.395                  0         0   0.020
+     lvl2_design_k0.25_all_T1_p70.parquet   P1     106    0.226    0.245                  0         0   0.019
+          lvl_design_stall_0.5_T1.parquet   P1      55    0.255    0.273                  0         0   0.018
+      lvl2_design_k0.5_all_T1_p70.parquet   P1     113    0.257    0.274                  0         0   0.018
+     lvl2_design_k0.25_all_T1_p70.parquet   P2     176    0.375    0.392                  0         0   0.017
+        v2s_be0.5_stop8_wf_trades.parquet   P2     118    0.339    0.356                  0         0   0.017
+     lvl2_design_k0.25_all_T1_p80.parquet   P1     134    0.246    0.261                  0         0   0.015
+          combined_trades_floor10.parquet   P2    3579    0.462    0.476                  0         0   0.014
+     lvl2_design_k0.25_imp_T1_p70.parquet   P1      89    0.247    0.258                  0         0   0.011
+              v2s_be0.5_wf_trades.parquet   P1     100    0.330    0.340                  0         0   0.010
+           combined_trades_floor5.parquet   P1    3358    0.451    0.461                  0         0   0.010
+           combined_trades_floor5.parquet   P2    3579    0.459    0.469                  0         0   0.009
+         lvl_design_stall_0.25_T1.parquet   P2     106    0.415    0.425                  0         0   0.009
+      lvl2_design_k0.5_imp_T1_p70.parquet   P1     107    0.262    0.271                  0         0   0.009
+                  combined_trades.parquet   P1    3358    0.451    0.460                  0         0   0.009
+                  combined_trades.parquet   P2    3579    0.459    0.467                  0         0   0.009
+     lvl2_design_k0.25_imp_T1_p80.parquet   P1     112    0.250    0.259                  0         0   0.009
+              v2s_be0.5_wf_trades.parquet   P2     118    0.331    0.339                  0         0   0.008
+          lvl_design_stall_0.5_T1.parquet   P2     133    0.414    0.421                  0         0   0.008
+         lvl_design_limit_0.5_T15.parquet   P1     169    0.254    0.260                  0         0   0.006
+      lvl3_cell_3y_s2.0_n4_T1_p80.parquet   P1      36    0.306    0.306                  0         0   0.000
+      lvl3_cell_3y_s2.0_n4_T2_p80.parquet   P2      15    0.333    0.333                  0         0   0.000
+      lvl3_cell_3y_s2.0_n5_T1_p80.parquet   P1      22    0.318    0.318                  0         0   0.000
+      lvl3_cell_3y_s2.0_n5_T1_p80.parquet   P2       8    0.375    0.375                  0         0   0.000
+      lvl3_cell_3y_s2.0_n5_T1_p90.parquet   P2      15    0.200    0.200                  0         0   0.000
+      lvl3_cell_3y_s2.0_n5_T2_p80.parquet   P2       8    0.250    0.250                  0         0   0.000
+      lvl3_cell_3y_s2.0_n5_T2_p90.parquet   P2      15    0.200    0.200                  0         0   0.000
+         lvl3_cell_s1.5_n3_T1_p80.parquet   P1      18    0.278    0.278                  0         0   0.000
+         lvl3_cell_s1.5_n4_T1_p80.parquet   P1       4    0.500    0.500                  0         0   0.000
+         lvl3_cell_s1.5_n4_T1_p90.parquet   P1       5    0.600    0.600                  0         0   0.000
+         lvl3_cell_s1.5_n4_T2_p80.parquet   P1       4    0.250    0.250                  0         0   0.000
+         lvl3_cell_s1.5_n4_T2_p90.parquet   P1       5    0.200    0.200                  0         0   0.000
+        lvl3_cell_s1.5_nad_T1_p80.parquet   P1       6    0.500    0.500                  0         0   0.000
+         lvl3_cell_s2.0_n4_T1_p80.parquet   P2       2    0.000    0.000                  0         0   0.000
+         lvl3_cell_s2.0_n4_T1_p90.parquet   P2       2    0.000    0.000                  0         0   0.000
+         lvl3_cell_s2.0_n4_T2_p80.parquet   P2       2    0.000    0.000                  0         0   0.000
+         lvl3_cell_s2.0_n4_T2_p90.parquet   P2       2    0.000    0.000                  0         0   0.000
+         lvl_design_limit_0.25_T1.parquet   P1     219    0.329    0.329                  0         0   0.000
+         lvl_design_limit_0.25_T1.parquet   P2     142    0.296    0.296                  0         0   0.000
+        lvl_design_limit_0.25_T15.parquet   P1     218    0.312    0.312                  0         0   0.000
+        lvl_design_limit_0.25_T15.parquet   P2     142    0.296    0.296                  0         0   0.000
+lvl_design_limit_0.25_T15_placebo.parquet   P1     129    0.310    0.310                  0         0   0.000
+lvl_design_limit_0.25_T15_placebo.parquet   P2      97    0.485    0.485                  0         0   0.000
+ lvl_design_limit_0.25_T1_placebo.parquet   P1     133    0.361    0.361                  0         0   0.000
+ lvl_design_limit_0.25_T1_placebo.parquet   P2     107    0.495    0.495                  0         0   0.000
+          lvl_design_limit_0.5_T1.parquet   P1     170    0.265    0.265                  0         0   0.000
+          lvl_design_limit_0.5_T1.parquet   P2     123    0.350    0.350                  0         0   0.000
+         lvl_design_limit_0.5_T15.parquet   P2     121    0.264    0.264                  0         0   0.000
+ lvl_design_limit_0.5_T15_placebo.parquet   P1     136    0.412    0.412                  0         0   0.000
+ lvl_design_limit_0.5_T15_placebo.parquet   P2     104    0.385    0.385                  0         0   0.000
+  lvl_design_limit_0.5_T1_placebo.parquet   P1     141    0.333    0.333                  0         0   0.000
+  lvl_design_limit_0.5_T1_placebo.parquet   P2     119    0.445    0.445                  0         0   0.000
+         lvl_design_stall_0.25_T1.parquet   P1      43    0.233    0.233                  0         0   0.000
+lvl_design_stall_0.25_T15_placebo.parquet   P1       4    0.250    0.250                  0         0   0.000
+ lvl_design_stall_0.25_T1_placebo.parquet   P1       4    0.250    0.250                  0         0   0.000
+
+B. wf.weekly (eeca5a9 against the working copy) on every week before the exam: 129 files, 11218 week rows, changed 4692, fallen 0; every other column equal
+                                     file  weeks  changed  rise_max  fall
+                  combined_trades.parquet    129      113     0.031     0
+          combined_trades_floor10.parquet    129      127     0.437     0
+           combined_trades_floor5.parquet    129      122     0.251     0
+                 lvl2_design_feat.parquet    128       76     1.000     0
+     lvl2_design_k0.25_all_T1_p70.parquet    125       22     0.334     0
+     lvl2_design_k0.25_all_T1_p80.parquet    127       34     0.333     0
+     lvl2_design_k0.25_all_T1_p90.parquet    127       64     0.500     0
+     lvl2_design_k0.25_all_T2_p70.parquet    125       63     0.600     0
+     lvl2_design_k0.25_all_T2_p80.parquet    127       66     0.500     0
+     lvl2_design_k0.25_all_T2_p90.parquet    127       69     0.500     0
+     lvl2_design_k0.25_imp_T1_p70.parquet    124       19     0.500     0
+     lvl2_design_k0.25_imp_T1_p80.parquet    126       30     0.500     0
+     lvl2_design_k0.25_imp_T1_p90.parquet    126       58     0.500     0
+     lvl2_design_k0.25_imp_T2_p70.parquet    124       59     0.750     0
+     lvl2_design_k0.25_imp_T2_p80.parquet    126       63     0.600     0
+     lvl2_design_k0.25_imp_T2_p90.parquet    126       65     0.600     0
+      lvl2_design_k0.5_all_T1_p70.parquet    127       30     1.000     0
+      lvl2_design_k0.5_all_T1_p80.parquet    128       49     1.000     0
+      lvl2_design_k0.5_all_T1_p90.parquet    128       76     1.000     0
+      lvl2_design_k0.5_all_T2_p70.parquet    127       68     1.000     0
+      lvl2_design_k0.5_all_T2_p80.parquet    128       73     1.000     0
+      lvl2_design_k0.5_all_T2_p90.parquet    128       77     1.000     0
+      lvl2_design_k0.5_imp_T1_p70.parquet    126       28     1.000     0
+      lvl2_design_k0.5_imp_T1_p80.parquet    127       44     1.000     0
+      lvl2_design_k0.5_imp_T1_p90.parquet    127       73     1.000     0
+      lvl2_design_k0.5_imp_T2_p70.parquet    126       67     1.000     0
+      lvl2_design_k0.5_imp_T2_p80.parquet    127       71     1.000     0
+      lvl2_design_k0.5_imp_T2_p90.parquet    127       74     1.000     0
+                 lvl2_verify_2026.parquet      8        5     0.250     0
+      lvl3_cell_3y_s1.5_n3_T1_p80.parquet    130       42     0.400     0
+      lvl3_cell_3y_s1.5_n3_T1_p90.parquet    131       73     0.667     0
+      lvl3_cell_3y_s1.5_n3_T2_p80.parquet    130       71     0.428     0
+      lvl3_cell_3y_s1.5_n3_T2_p90.parquet    131       78     0.428     0
+      lvl3_cell_3y_s1.5_n4_T1_p80.parquet    130       35     0.500     0
+      lvl3_cell_3y_s1.5_n4_T1_p90.parquet    131       66     1.000     0
+      lvl3_cell_3y_s1.5_n4_T2_p80.parquet    130       66     0.667     0
+      lvl3_cell_3y_s1.5_n4_T2_p90.parquet    131       69     0.600     0
+      lvl3_cell_3y_s1.5_n5_T1_p80.parquet    124       28     0.500     0
+      lvl3_cell_3y_s1.5_n5_T1_p90.parquet    127       53     0.500     0
+      lvl3_cell_3y_s1.5_n5_T2_p80.parquet    124       48     1.000     0
+      lvl3_cell_3y_s1.5_n5_T2_p90.parquet    127       55     1.000     0
+     lvl3_cell_3y_s1.5_nad_T1_p80.parquet    130       40     0.500     0
+     lvl3_cell_3y_s1.5_nad_T1_p90.parquet    131       72     0.667     0
+     lvl3_cell_3y_s1.5_nad_T2_p80.parquet    130       66     0.500     0
+     lvl3_cell_3y_s1.5_nad_T2_p90.parquet    131       75     0.500     0
+      lvl3_cell_3y_s2.0_n3_T1_p80.parquet    126       45     0.500     0
+      lvl3_cell_3y_s2.0_n3_T1_p90.parquet    128       62     0.500     0
+      lvl3_cell_3y_s2.0_n3_T2_p80.parquet    126       61     1.000     0
+      lvl3_cell_3y_s2.0_n3_T2_p90.parquet    128       62     1.000     0
+      lvl3_cell_3y_s2.0_n4_T1_p80.parquet    119       28     1.000     0
+      lvl3_cell_3y_s2.0_n4_T1_p90.parquet    122       51     1.000     0
+      lvl3_cell_3y_s2.0_n4_T2_p80.parquet    119       44     1.000     0
+      lvl3_cell_3y_s2.0_n4_T2_p90.parquet    122       49     1.000     0
+      lvl3_cell_3y_s2.0_n5_T1_p80.parquet    108       22     1.000     0
+      lvl3_cell_3y_s2.0_n5_T1_p90.parquet    112       32     1.000     0
+      lvl3_cell_3y_s2.0_n5_T2_p80.parquet    108       35     1.000     0
+      lvl3_cell_3y_s2.0_n5_T2_p90.parquet    112       38     1.000     0
+     lvl3_cell_3y_s2.0_nad_T1_p80.parquet    125       45     0.500     0
+     lvl3_cell_3y_s2.0_nad_T1_p90.parquet    125       62     0.500     0
+     lvl3_cell_3y_s2.0_nad_T2_p80.parquet    125       58     1.000     0
+     lvl3_cell_3y_s2.0_nad_T2_p90.parquet    125       58     1.000     0
+         lvl3_cell_s1.5_n3_T1_p80.parquet     16        2     0.334     0
+         lvl3_cell_s1.5_n3_T1_p90.parquet     17        7     0.334     0
+         lvl3_cell_s1.5_n3_T2_p80.parquet     16        7     0.334     0
+         lvl3_cell_s1.5_n3_T2_p90.parquet     17        8     0.334     0
+         lvl3_cell_s1.5_n4_T1_p80.parquet     13        3     0.200     0
+         lvl3_cell_s1.5_n4_T1_p90.parquet     14        5     0.667     0
+         lvl3_cell_s1.5_n4_T2_p80.parquet     13        6     0.500     0
+         lvl3_cell_s1.5_n4_T2_p90.parquet     14        5     0.500     0
+         lvl3_cell_s1.5_n5_T1_p80.parquet      9        2     0.500     0
+         lvl3_cell_s1.5_n5_T1_p90.parquet     11        3     0.500     0
+         lvl3_cell_s1.5_n5_T2_p80.parquet      9        1     1.000     0
+         lvl3_cell_s1.5_n5_T2_p90.parquet     11        2     1.000     0
+        lvl3_cell_s1.5_nad_T1_p80.parquet     13        3     0.500     0
+        lvl3_cell_s1.5_nad_T1_p90.parquet     14        5     0.500     0
+        lvl3_cell_s1.5_nad_T2_p80.parquet     13        4     0.500     0
+        lvl3_cell_s1.5_nad_T2_p90.parquet     14        6     0.500     0
+         lvl3_cell_s2.0_n3_T1_p80.parquet     10        3     0.500     0
+         lvl3_cell_s2.0_n3_T1_p90.parquet     10        4     0.500     0
+         lvl3_cell_s2.0_n3_T2_p80.parquet     10        2     0.500     0
+         lvl3_cell_s2.0_n3_T2_p90.parquet     10        2     0.334     0
+         lvl3_cell_s2.0_n4_T1_p80.parquet      1        0     0.000     0
+         lvl3_cell_s2.0_n4_T1_p90.parquet      1        0     0.000     0
+         lvl3_cell_s2.0_n4_T2_p80.parquet      1        0     0.000     0
+         lvl3_cell_s2.0_n4_T2_p90.parquet      1        0     0.000     0
+        lvl3_cell_s2.0_nad_T1_p80.parquet      7        2     0.500     0
+        lvl3_cell_s2.0_nad_T1_p90.parquet      7        2     0.500     0
+        lvl3_cell_s2.0_nad_T2_p80.parquet      7        1     0.250     0
+        lvl3_cell_s2.0_nad_T2_p90.parquet      7        1     0.200     0
+                lvl3_wf_3y_trades.parquet    119       42     1.000     0
+                   lvl3_wf_trades.parquet     10        3     0.214     0
+         lvl_design_limit_0.25_T1.parquet    122       33     0.334     0
+        lvl_design_limit_0.25_T15.parquet    122       33     0.334     0
+lvl_design_limit_0.25_T15_placebo.parquet    121       25     0.500     0
+ lvl_design_limit_0.25_T1_placebo.parquet    121       25     0.500     0
+         lvl_design_limit_0.25_T2.parquet    122       85     0.500     0
+ lvl_design_limit_0.25_T2_placebo.parquet    121       86     1.000     0
+          lvl_design_limit_0.5_T1.parquet    122       31     0.333     0
+         lvl_design_limit_0.5_T15.parquet    122       36     0.333     0
+ lvl_design_limit_0.5_T15_placebo.parquet    121       31     1.000     0
+  lvl_design_limit_0.5_T1_placebo.parquet    121       28     0.500     0
+          lvl_design_limit_0.5_T2.parquet    122       77     0.333     0
+  lvl_design_limit_0.5_T2_placebo.parquet    121       86     0.571     0
+         lvl_design_stall_0.25_T1.parquet    110       13     0.667     0
+        lvl_design_stall_0.25_T15.parquet    110       25     0.667     0
+lvl_design_stall_0.25_T15_placebo.parquet     22        3     1.000     0
+ lvl_design_stall_0.25_T1_placebo.parquet     22        3     1.000     0
+         lvl_design_stall_0.25_T2.parquet    110       36     1.000     0
+ lvl_design_stall_0.25_T2_placebo.parquet     22        5     1.000     0
+          lvl_design_stall_0.5_T1.parquet    116       20     1.000     0
+         lvl_design_stall_0.5_T15.parquet    116       38     1.000     0
+ lvl_design_stall_0.5_T15_placebo.parquet     38        5     1.000     0
+  lvl_design_stall_0.5_T1_placebo.parquet     37        4     1.000     0
+          lvl_design_stall_0.5_T2.parquet    116       45     1.000     0
+  lvl_design_stall_0.5_T2_placebo.parquet     31       10     1.000     0
+        phase_switch_d1way_trades.parquet     11        6     0.375     0
+                present_wf_trades.parquet     74       38     0.667     0
+                pullback15_trades.parquet     26       24     1.000     0
+                  pullback_trades.parquet     26       26     0.488     0
+                  sr_break_trades.parquet     26       16     0.417     0
+                    v2b_wf_trades.parquet     20        6     0.285     0
+       v2s_be0.5_stop12_wf_trades.parquet     96       25     0.500     0
+       v2s_be0.5_stop16_wf_trades.parquet     95       26     0.500     0
+        v2s_be0.5_stop8_wf_trades.parquet     96       17     0.286     0
+              v2s_be0.5_wf_trades.parquet     89        8     0.200     0
+             v2s_stop12_wf_trades.parquet     97       37     0.500     0
+             v2s_stop16_wf_trades.parquet     95       34     0.500     0
+              v2s_stop8_wf_trades.parquet     95       21     0.500     0
+                    v2s_wf_trades.parquet     92       20     0.500     0
+
+   lvl3_wf_3y_trades.parquet, week by week (every week before the exam):
+      week                          cell  trades   win  win_new      R     usd
+2023-10-30                s1.5_n4_T2_p90       1 0.000    1.000  0.060   0.820
+2023-11-06                s1.5_n4_T2_p90       7 0.429    0.714  2.990  17.860
+2023-11-13                s1.5_n4_T2_p90       5 0.000    0.200 -1.240  -9.810
+2023-11-20                s1.5_n4_T2_p90       9 0.111    0.333 -1.350 -13.100
+2023-11-27 s1.5_n4_T2_p90 s1.5_n5_T1_p90      10 0.200    0.300 -0.270   2.950
+2023-12-04                s1.5_n5_T1_p90       1 0.000    0.000 -0.420  -1.330
+2023-12-11                s1.5_n5_T1_p90       5 0.400    0.400  0.070   1.050
+2023-12-18                s1.5_n5_T1_p90      12 0.000    0.250 -2.680 -17.050
+2023-12-25                s1.5_n5_T1_p90       3 0.000    0.000 -1.850  -8.050
+2024-01-01                s2.0_n5_T1_p90       3 0.333    0.333  1.600   4.650
+2024-01-08                s2.0_n5_T1_p90       5 0.200    0.200 -1.920  -8.900
+2024-01-15                s2.0_n5_T1_p90       5 0.000    0.000 -2.990 -17.020
+2024-01-22                s2.0_n5_T1_p90       1 0.000    0.000 -0.310  -1.410
+2024-01-29 s2.0_n5_T1_p90 s2.0_n3_T1_p90       9 0.111    0.111 -3.370 -20.900
+2024-02-05                s2.0_n3_T1_p90       5 0.200    0.200 -0.050  -3.880
+2024-02-12                s2.0_n3_T1_p90       7 0.000    0.000 -3.110 -13.420
+2024-02-19                s2.0_n3_T1_p90       6 0.167    0.167 -0.650  -6.290
+2024-02-26 s2.0_n3_T1_p90 s2.0_n3_T2_p90       8 0.000    0.250 -0.820  -3.360
+2024-03-04                s2.0_n3_T2_p90       8 0.375    0.625  2.550  28.460
+2024-03-11                s2.0_n3_T2_p90       8 0.125    0.125 -2.830 -14.340
+2024-03-25                s2.0_n3_T2_p90       6 0.167    0.333 -0.340  -0.600
+2024-04-01                s2.0_n5_T1_p80       3 0.333    0.333 -0.230  -3.980
+2024-04-08                s2.0_n5_T1_p80       6 0.500    0.500  0.920   7.990
+2024-04-15                s2.0_n5_T1_p80       4 0.250    0.250 -1.230  -8.350
+2024-04-22                s2.0_n5_T1_p80       2 0.500    0.500  0.400   7.050
+2024-04-29                s2.0_n5_T2_p80       1 0.000    0.000 -0.850  -8.330
+2024-05-06                s2.0_n5_T2_p80       2 0.000    0.500  0.010   0.330
+2024-05-13                s2.0_n5_T2_p80       5 0.600    0.600  2.690   9.740
+2024-05-20                s2.0_n5_T2_p80       2 0.000    0.500  0.480   5.430
+2024-05-27                s2.0_n5_T2_p80       2 0.000    0.000 -1.160  -4.700
+2024-06-03                s2.0_n5_T2_p80       5 0.200    0.200 -0.710  -3.270
+2024-06-10                s2.0_n5_T2_p80       2 0.000    0.000 -2.000 -10.320
+2024-06-24                s2.0_n5_T2_p80       3 0.667    1.000  4.800  18.970
+2024-07-01                s2.0_n5_T2_p80       1 1.000    1.000  0.930   5.000
+2024-07-08                s2.0_n5_T2_p80       4 0.000    0.250  0.620  -4.020
+2024-07-15                s2.0_n5_T2_p80       5 0.200    0.400 -0.180   3.520
+2024-07-22                s2.0_n5_T2_p80       2 0.000    0.000 -0.250  -2.640
+2024-07-29 s2.0_n5_T2_p80 s2.0_n5_T1_p80       2 0.000    0.000 -1.020 -10.650
+2024-08-05                s2.0_n5_T1_p80       4 0.000    0.000 -1.770  -8.860
+2024-08-12                s2.0_n5_T1_p80       6 0.167    0.500  0.890  15.150
+2024-08-19                s2.0_n5_T1_p80       5 0.000    0.000 -2.790 -15.440
+2024-08-26                s2.0_n5_T1_p80       5 0.400    0.400  1.300   6.720
+2024-09-02                s2.0_n5_T1_p90       7 0.143    0.286 -0.720  -5.000
+2024-09-09                s2.0_n5_T1_p90       7 0.286    0.429  0.760   3.580
+2024-09-16                s2.0_n5_T1_p90       3 0.000    0.333 -1.090 -10.030
+2024-09-23                s2.0_n5_T1_p90       8 0.125    0.500  1.230  16.100
+2024-09-30                s1.5_n5_T2_p80       5 0.000    0.000 -3.070 -15.790
+2024-10-07                s1.5_n5_T2_p80       4 0.250    0.500  0.750   8.770
+2024-10-14                s1.5_n5_T2_p80       6 0.333    0.333  1.520   8.730
+2024-10-21                s1.5_n5_T2_p80       5 0.400    0.400  0.390  -1.420
+2024-10-28                s1.5_n5_T2_p80       6 0.167    0.167 -0.870   1.300
+2024-11-04                s1.5_n5_T2_p80       1 1.000    1.000  1.600  23.560
+2024-11-11                s1.5_n5_T2_p80       7 0.286    0.429 -0.600  -8.940
+2024-11-18                s1.5_n5_T2_p80       2 0.000    0.000 -1.020  -4.880
+2024-11-25                s1.5_n5_T2_p80       5 0.000    0.000 -1.460  -8.330
+2024-12-02                s1.5_n5_T2_p80      14 0.071    0.143 -4.070 -29.000
+2024-12-09                s1.5_n5_T2_p80       2 0.000    1.000  2.290  17.910
+2024-12-16                s1.5_n5_T2_p80       6 0.333    0.333  0.850  -0.570
+2024-12-23                s1.5_n5_T2_p80       2 0.000    0.000 -0.880  -3.960
+2024-12-30                s1.5_n5_T2_p80       7 0.000    0.143 -1.640  -9.410
+2025-01-06                s1.5_n5_T2_p80       4 0.250    0.500  0.510   4.300
+2025-01-13                s1.5_n5_T2_p80       6 0.000    0.333  1.240  10.550
+2025-01-20                s1.5_n5_T2_p80       7 0.429    0.571  2.310  21.690
+2025-01-27                s1.5_n5_T2_p80       5 0.000    0.000 -4.420 -20.460
+2025-02-03                s1.5_n5_T2_p80       5 0.200    0.200 -0.940 -11.890
+2025-02-10                s1.5_n5_T2_p80       6 0.333    0.333  0.320   2.730
+2025-02-17                s1.5_n5_T2_p80       4 0.500    0.500  1.260   7.270
+2025-02-24                s1.5_n5_T2_p80       6 0.000    0.167 -1.120  -9.850
+2025-03-03                s1.5_n5_T2_p80       6 0.000    0.167 -2.390 -16.650
+2025-03-10                s1.5_n5_T2_p80      10 0.200    0.200 -2.590 -18.250
+2025-03-17                s1.5_n5_T2_p80       9 0.111    0.444  0.730   4.110
+2025-03-31 s1.5_n5_T2_p80 s2.0_n5_T1_p80       6 0.167    0.500  0.390   4.580
+2025-04-14                s2.0_n5_T1_p80       4 0.250    0.250 -0.310  -6.210
+2025-04-28                s2.0_n5_T1_p80       2 0.000    0.000 -1.100 -12.260
+2025-05-05                s2.0_n5_T1_p80       2 0.500    0.500  0.580   6.470
+2025-05-12                s2.0_n5_T1_p80       1 1.000    1.000  0.990  12.200
+2025-05-19                s2.0_n5_T1_p80       1 0.000    0.000 -0.010  -0.150
+2025-05-26                s2.0_n5_T1_p80       2 1.000    1.000  1.970  20.680
+2025-06-02                s2.0_n5_T1_p80       4 0.500    0.500  1.510  14.960
+2025-06-09                s2.0_n5_T1_p80       2 0.000    0.000 -0.830 -11.900
+2025-06-16                s2.0_n5_T1_p80       1 0.000    0.000 -1.000 -10.710
+2025-06-23                s2.0_n5_T1_p80       6 0.167    0.500  0.150   6.500
+2025-06-30                s2.0_n5_T1_p80       5 0.200    0.200 -1.900 -19.830
+2025-07-07                s2.0_n5_T1_p80       3 0.000    0.000 -1.020  -7.230
+2025-07-14                s2.0_n5_T1_p80       3 0.000    0.000 -1.310 -11.720
+2025-07-21                s2.0_n5_T1_p80       2 0.500    0.500 -0.020  -4.980
+2025-07-28                s2.0_n5_T1_p80       8 0.250    0.250 -1.760  -6.370
+2025-08-04                s2.0_n5_T1_p80       4 0.500    0.500  0.870  10.580
+2025-08-11                s2.0_n5_T1_p80       3 0.333    0.333 -0.810  -3.540
+2025-08-18                s2.0_n5_T1_p80       3 0.000    0.000 -1.940 -10.720
+2025-08-25                s2.0_n5_T1_p80       3 0.000    0.000 -1.440  -8.880
+2025-09-01                s2.0_n5_T1_p90       6 0.333    0.500  1.160  17.410
+2025-09-08                s2.0_n5_T1_p90       4 0.250    0.250  0.540  18.730
+2025-09-15                s2.0_n5_T1_p90       2 0.500    0.500  0.980  13.620
+2025-09-22                s2.0_n5_T1_p90       2 0.000    0.500 -0.170  -4.220
+2025-09-29                s2.0_n5_T1_p90       3 0.333    1.000  1.630  31.290
+2025-10-06                s2.0_n5_T1_p90       2 0.500    1.000  1.130  12.930
+2025-10-13                s2.0_n5_T1_p90       1 0.000    1.000  0.110   2.360
+2025-10-20                s2.0_n5_T1_p90       1 0.000    0.000 -0.370  -4.790
+2025-10-27                s2.0_n5_T1_p90       1 1.000    1.000  0.990  20.260
+2025-11-03                s2.0_n5_T2_p90       3 0.333    0.667  1.100  26.870
+2025-11-10                s2.0_n5_T2_p90       2 0.500    0.500  0.240  -5.420
+2025-11-17                s2.0_n5_T2_p90       2 0.500    0.500  0.510   4.360
+2025-11-24                s2.0_n5_T2_p90       8 0.375    0.375  1.160  16.880
+2025-12-01                s2.0_n4_T2_p80       2 0.000    0.000 -1.020 -18.730
+2025-12-08                s2.0_n4_T2_p80       3 0.000    0.000 -1.820 -12.990
+2025-12-15                s2.0_n4_T2_p80       4 0.250    0.500 -0.330  -7.940
+2025-12-22                s2.0_n4_T2_p80       3 0.000    0.333 -1.340 -12.400
+2025-12-29                s2.0_n4_T2_p80       2 0.000    0.000 -0.210  -2.800
+2026-01-05                s2.0_n5_T2_p90       2 0.500    1.000  2.180  29.310
+2026-01-12                s2.0_n5_T2_p90       1 0.000    0.000 -0.150  -1.850
+2026-01-26                s2.0_n5_T2_p90       1 0.000    0.000 -0.490 -10.470
+2026-02-09                s1.5_n5_T2_p80       3 0.333    0.333  0.560  12.670
+2026-02-16                s1.5_n5_T2_p80       1 0.000    1.000  0.860  15.020
+2026-02-23                s1.5_n5_T2_p80       5 0.200    0.200 -0.530  -9.090
+2026-03-09                s1.5_n5_T2_p80       4 0.250    0.250  0.060  -0.170
+2026-03-16                s1.5_n5_T2_p80       3 0.333    0.333 -0.890  -9.870
+2026-03-23                s1.5_n5_T2_p80       1 0.000    0.000 -0.010  -0.200
+2026-04-13                s2.0_n4_T2_p80       3 0.000    0.000 -1.930 -24.320
+
+   lvl3_wf_trades.parquet, week by week (every week before the exam):
+      week            cell  trades   win  win_new      R     usd
+2026-02-02  s1.5_n3_T2_p90       1 1.000    1.000  2.330  32.770
+2026-02-09  s1.5_n3_T2_p90       5 0.000    0.000 -0.850 -12.080
+2026-02-16  s1.5_n3_T2_p90       5 0.000    0.200 -0.370   6.330
+2026-02-23  s1.5_n3_T2_p90      10 0.300    0.300  1.520  15.750
+2026-03-02 s1.5_nad_T2_p90       2 0.000    0.000 -0.020  -0.300
+2026-03-09 s1.5_nad_T2_p90       9 0.111    0.111 -2.460 -44.730
+2026-03-16 s1.5_nad_T2_p90      14 0.357    0.571  4.410  82.670
+2026-03-23 s1.5_nad_T2_p90       6 0.167    0.167  1.210  11.230
+2026-04-06  s1.5_n4_T2_p80       5 0.000    0.000 -3.070 -44.810
+2026-04-13  s1.5_n4_T2_p80       9 0.111    0.222 -1.840 -35.660
+
+   present_wf_trades.parquet, week by week (every week before the exam):
+      week                              cell  trades   win  win_new       R      usd
+2024-06-03                  set_L6_n10_th0.2       6 0.167    0.333  -2.110  -11.600
+2024-06-10                  set_L6_n10_th0.2       5 0.400    0.600   0.680    3.410
+2024-06-17                  set_L6_n10_th0.2      14 0.214    0.286  -5.180  -26.930
+2024-06-24                  set_L6_n10_th0.2       8 0.250    0.250  -3.800  -19.640
+2024-07-01  set_L6_n10_th0.2 ctx_L6_n5_th0.1       6 0.333    0.333  -1.450   -6.000
+2024-07-08                   ctx_L6_n5_th0.1       6 0.500    0.500   0.580    3.070
+2024-07-15                   ctx_L6_n5_th0.1      17 0.471    0.529   1.520    7.010
+2024-07-22                   ctx_L6_n5_th0.1       4 0.250    0.250  -1.870   -9.590
+2024-07-29                   ctx_L6_n5_th0.1       5 0.400    0.600   0.390    2.040
+2024-08-05                  ctx_L6_n10_th0.0       1 1.000    1.000   1.130    5.840
+2024-08-19                  ctx_L6_n10_th0.0       7 0.143    0.286  -2.230   -9.200
+2024-09-02                  ctx_L6_n10_th0.1       1 1.000    1.000   1.170    6.070
+2024-09-16                  ctx_L6_n10_th0.1       6 0.167    0.333  -2.050  -10.580
+2024-09-30                  ctx_L6_n10_th0.1      13 0.308    0.385  -2.760  -16.400
+2024-10-07                  ctx_L6_n10_th0.1       2 0.000    0.000  -2.000  -10.300
+2024-10-14                  ctx_L6_n10_th0.1      14 0.500    0.571   3.690   19.310
+2024-10-21                  ctx_L6_n10_th0.1      14 0.500    0.643   4.520   21.800
+2024-10-28                  ctx_L6_n10_th0.1       7 0.429    0.429  -0.080   -1.930
+2024-11-04                  ctx_L6_n10_th0.1       8 0.125    0.125  -5.700  -29.380
+2024-12-09                  ctx_L6_n10_th0.1      13 0.308    0.308  -4.360  -23.350
+2024-12-16                  ctx_L6_n10_th0.1       2 0.000    0.500  -0.700   -3.600
+2024-12-23                  ctx_L6_n10_th0.1       3 0.000    0.667   1.340    6.950
+2024-12-30 ctx_L6_n10_th0.1 set_L6_n10_th0.2       4 0.250    0.500  -0.410   -2.090
+2025-01-06                  set_L6_n10_th0.2      10 0.200    0.300  -3.710  -21.280
+2025-01-13                  set_L6_n10_th0.2      11 0.364    0.455   0.410    2.870
+2025-01-20                  set_L6_n10_th0.2      20 0.300    0.400  -1.870  -11.250
+2025-01-27                  set_L6_n10_th0.2      17 0.176    0.235  -8.550  -47.330
+2025-02-03                  ctx_L6_n10_th0.2       7 0.571    0.571   2.070   10.100
+2025-02-10                  ctx_L6_n10_th0.2       7 0.429    0.571   1.380    7.320
+2025-02-17                  ctx_L6_n10_th0.2       4 0.500    0.500   0.980    5.030
+2025-02-24                  ctx_L6_n10_th0.2       1 1.000    1.000   1.390    7.170
+2025-03-10                  ctx_L6_n10_th0.2       1 0.000    0.000  -1.000   -5.150
+2025-03-17                  ctx_L6_n10_th0.2       4 0.250    0.250  -1.590   -8.190
+2025-03-24                  ctx_L6_n10_th0.2      14 0.143    0.214  -6.930  -36.710
+2025-03-31                  ctx_L6_n10_th0.2       9 0.444    0.556   2.020   13.810
+2025-04-14                  ctx_L6_n10_th0.2       9 0.333    0.333  -2.050  -11.080
+2025-04-21                  ctx_L6_n10_th0.2      14 0.429    0.429  -1.110    1.210
+2025-04-28  ctx_L6_n10_th0.2 trg_L3_n5_th0.2      10 0.500    0.500   0.340    5.840
+2025-05-05                   trg_L3_n5_th0.2      14 0.500    0.571   3.820   17.190
+2025-05-12                   trg_L3_n5_th0.2      21 0.381    0.381  -3.410  -15.610
+2025-05-19                   trg_L3_n5_th0.2       4 0.500    0.750   2.010   12.860
+2025-05-26                   trg_L3_n5_th0.2      10 0.400    0.400  -1.240   -3.560
+2025-06-02                   trg_L3_n5_th0.2       6 0.500    0.667   2.950   16.730
+2025-06-09                   trg_L3_n5_th0.2       3 0.667    0.667   1.810   10.740
+2025-06-16                   trg_L3_n5_th0.2       7 0.429    0.714   3.430   21.170
+2025-06-23                   trg_L3_n5_th0.2      17 0.353    0.412  -2.540  -13.240
+2025-06-30                   trg_L3_n5_th0.2       4 0.750    0.750   3.620   18.850
+2025-07-07                   trg_L3_n5_th0.2       7 0.429    0.429   0.070    1.340
+2025-07-14                   trg_L3_n5_th0.2       8 0.500    0.625   3.180   16.740
+2025-07-21                   trg_L3_n5_th0.2      11 0.364    0.364  -1.070   -1.070
+2025-07-28                   trg_L3_n5_th0.2      12 0.417    0.500   1.050    9.420
+2025-08-04                   trg_L3_n5_th0.2       5 0.400    0.400   0.160    0.710
+2025-08-11                   trg_L3_n5_th0.2       5 0.200    0.200  -2.580  -19.930
+2025-08-18                   trg_L3_n5_th0.2       4 0.250    0.500   0.200    2.300
+2025-08-25                   trg_L3_n5_th0.2       4 0.000    0.250  -2.480  -12.640
+2025-09-08                  ctx_L3_n10_th0.2      11 0.364    0.364  -1.420   -9.340
+2025-09-15                  ctx_L3_n10_th0.2       6 0.167    0.167  -2.310  -17.240
+2025-09-22                  ctx_L3_n10_th0.2      17 0.647    0.647   9.990   64.540
+2025-09-29                  ctx_L3_n10_th0.2      18 0.389    0.444   0.370   10.170
+2025-10-13                  ctx_L3_n10_th0.2       3 0.667    0.667   1.340   10.950
+2025-10-20                  ctx_L3_n10_th0.2      13 0.462    0.538   2.650   19.600
+2025-11-10                   ctx_L3_n5_th0.2      25 0.280    0.360  -2.380  -28.910
+2025-11-17                   ctx_L3_n5_th0.2      20 0.400    0.450   1.810    8.310
+2025-12-08                   ctx_L3_n5_th0.2       1 0.000    0.000  -0.070   -0.550
+2025-12-15                   ctx_L3_n5_th0.2       2 0.500    0.500   0.860    4.430
+2025-12-29                   ctx_L3_n5_th0.2       1 0.000    0.000  -1.000   -6.400
+2026-01-26                   ctx_L3_n5_th0.2       4 0.500    0.750   4.490   28.950
+2026-02-09                   ctx_L3_n5_th0.2      10 0.600    0.700   6.040   51.920
+2026-03-02                   ctx_L3_n5_th0.2      57 0.298    0.368 -11.070 -107.210
+2026-03-09                   ctx_L3_n5_th0.2       4 0.000    0.000  -4.000  -26.300
+2026-03-16                   ctx_L3_n5_th0.2      55 0.364    0.400  -0.520  -23.600
+2026-03-23                   ctx_L3_n5_th0.2      15 0.267    0.267  -5.500  -43.140
+2026-04-06                   ctx_L3_n5_th0.2       6 0.500    0.500   1.520    8.020
+2026-04-13                   ctx_L3_n5_th0.2      22 0.273    0.364  -3.120  -20.530
+
+   v2b_wf_trades.parquet, week by week (every week before the exam):
+      week                                      cell  trades   win  win_new      R     usd
+2025-12-01                        trg_codes_n5_th0.2      18 0.278    0.278 -6.450 -30.660
+2025-12-08                        trg_codes_n5_th0.2      18 0.389    0.444  0.470  10.770
+2025-12-15                        trg_codes_n5_th0.2      14 0.357    0.429 -0.060  -1.660
+2025-12-22                        trg_codes_n5_th0.2      19 0.368    0.526  4.970  18.640
+2025-12-29 trg_codes_n5_th0.2 set+trg_codes_n5_th0.2      13 0.308    0.308 -4.290 -16.790
+2026-01-05                    set+trg_codes_n5_th0.2       6 0.500    0.500  1.760  18.220
+2026-01-12                    set+trg_codes_n5_th0.2       3 1.000    1.000  4.700  33.770
+2026-01-19                    set+trg_codes_n5_th0.2       7 0.429    0.714  5.000  33.550
+2026-01-26                    set+trg_codes_n5_th0.2       7 0.571    0.571  2.330  18.280
+2026-02-02                    set+trg_codes_n5_th0.4       7 0.143    0.143 -4.960 -49.170
+2026-02-09                    set+trg_codes_n5_th0.4       6 0.500    0.500  1.410   9.840
+2026-02-16                    set+trg_codes_n5_th0.4       7 0.286    0.286 -2.110 -15.170
+2026-02-23                    set+trg_codes_n5_th0.4      11 0.727    0.727  9.130  79.180
+2026-03-02                    set+trg_codes_n5_th0.4       5 0.200    0.200 -2.680 -16.640
+2026-03-09                    set+trg_codes_n5_th0.4      15 0.200    0.267 -4.520 -30.990
+2026-03-16                    set+trg_codes_n5_th0.4       5 0.000    0.000 -4.480 -35.450
+2026-03-23                    set+trg_codes_n5_th0.4      12 0.583    0.583  4.270  34.710
+2026-03-30 set+trg_codes_n5_th0.4 set_codes_n5_th0.2      16 0.375    0.375 -1.660 -16.250
+2026-04-06                        set_codes_n5_th0.2      15 0.400    0.400 -1.850  -3.580
+2026-04-13                        set_codes_n5_th0.2      17 0.235    0.294 -5.540 -26.470
+
+   v2s_be0.5_stop12_wf_trades.parquet, week by week (every week before the exam):
+      week                     cell  trades   win  win_new      R     usd
+2024-04-29             L3_n10_th0.2       4 0.500    0.500 -0.090  -1.110
+2024-05-06             L3_n10_th0.2       9 0.333    0.333 -0.090  -1.060
+2024-05-13             L3_n10_th0.2      15 0.267    0.400  0.670   8.120
+2024-05-20             L3_n10_th0.2      16 0.250    0.250 -0.240  -2.890
+2024-05-27             L3_n10_th0.2      12 0.333    0.417 -1.900 -23.170
+2024-06-03             L3_n10_th0.4       3 0.667    0.667  0.930  11.290
+2024-06-10             L3_n10_th0.4       1 0.000    0.000 -1.000 -12.150
+2024-06-17             L3_n10_th0.4       2 1.000    1.000  0.940  11.470
+2024-06-24             L3_n10_th0.4       1 0.000    0.000 -0.630  -7.690
+2024-07-01             L3_n10_th0.4       1 1.000    1.000  0.470   5.690
+2024-07-15             L3_n10_th0.4       1 1.000    1.000  0.490   5.930
+2024-08-05             L3_n10_th0.4       1 0.000    0.000 -0.020  -0.200
+2024-08-12             L3_n10_th0.4       3 0.667    0.667 -0.010  -0.150
+2024-08-19             L3_n10_th0.4       2 0.000    0.000 -1.010 -12.300
+2024-08-26             L3_n10_th0.4       1 0.000    0.000 -0.010  -0.150
+2024-09-02             L3_n10_th0.4       4 0.250    0.250 -0.740  -9.030
+2024-09-16             L3_n10_th0.4       1 0.000    0.000 -1.000 -12.150
+2024-09-23             L3_n10_th0.4       2 0.500    0.500  0.520   6.310
+2024-09-30             L3_n10_th0.4       3 0.667    0.667  1.040  12.680
+2024-10-14             L3_n10_th0.4       2 0.000    0.500  0.140   1.760
+2024-10-21             L3_n10_th0.4       1 0.000    0.000 -0.020  -0.200
+2024-10-28 L3_n10_th0.4 L6_n5_th0.2       5 0.000    0.000 -2.760 -33.720
+2024-11-04              L6_n5_th0.2      17 0.471    0.529  1.840  22.340
+2024-11-11              L6_n5_th0.2       9 0.111    0.111 -1.000 -12.200
+2024-11-18              L6_n5_th0.2      15 0.533    0.533  0.210   2.550
+2024-11-25              L6_n5_th0.2      11 0.000    0.000 -5.820 -70.720
+2024-12-02              L6_n5_th0.2      17 0.471    0.529  1.810  21.970
+2024-12-09              L6_n5_th0.2      15 0.333    0.400 -0.400  -4.790
+2024-12-16              L6_n5_th0.2      15 0.333    0.400 -1.500 -18.290
+2024-12-23              L6_n5_th0.2      10 0.200    0.200 -2.430 -29.530
+2024-12-30 L6_n5_th0.2 L6_n10_th0.2       8 0.000    0.250 -1.930 -23.510
+2025-01-06             L6_n10_th0.2       9 0.333    0.333 -0.080  -0.960
+2025-01-13             L6_n10_th0.2       7 0.143    0.143 -1.520 -18.570
+2025-01-20             L6_n10_th0.2      13 0.231    0.231 -2.630 -31.960
+2025-01-27             L6_n10_th0.2       9 0.111    0.111 -5.570 -67.730
+2025-02-03              L6_n5_th0.2      16 0.438    0.500 -1.260 -15.220
+2025-02-10              L6_n5_th0.2      17 0.471    0.529  2.910  35.500
+2025-02-17              L6_n5_th0.2      14 0.286    0.357 -0.470  -5.800
+2025-02-24              L6_n5_th0.2      11 0.455    0.545  0.670   8.230
+2025-03-03              L3_n5_th0.2       8 0.250    0.250 -2.870 -34.940
+2025-03-10              L3_n5_th0.2       2 0.000    0.000 -1.010 -12.350
+2025-03-17              L3_n5_th0.2       6 0.667    0.667  0.430   5.240
+2025-03-24              L3_n5_th0.2       9 0.222    0.222  1.140  13.860
+2025-03-31              L3_n5_th0.2      11 0.364    0.364  0.420   5.060
+2025-04-07              L3_n5_th0.2       9 0.222    0.333  0.390   4.720
+2025-04-14              L3_n5_th0.2       8 0.375    0.375 -2.030 -24.730
+2025-04-21              L3_n5_th0.2      12 0.417    0.417 -1.710 -20.760
+2025-04-28  L3_n5_th0.2 L6_n5_th0.4       6 0.500    0.500  0.970  11.770
+2025-05-05              L6_n5_th0.4       7 0.286    0.429  0.720   9.140
+2025-05-12              L6_n5_th0.4       8 0.375    0.375 -0.130  -1.560
+2025-05-26              L6_n5_th0.4       9 0.556    0.667  2.100  25.620
+2025-06-02              L6_n5_th0.4      10 0.400    0.400  0.470   5.610
+2025-06-09              L6_n5_th0.4       6 0.500    0.500 -1.000 -12.170
+2025-06-16              L6_n5_th0.4       3 0.667    0.667  0.350   4.270
+2025-06-23              L6_n5_th0.4      12 0.417    0.417  0.540   6.620
+2025-06-30 L6_n5_th0.4 L6_n10_th0.4       3 0.667    0.667  1.310  15.940
+2025-07-14             L6_n10_th0.4       3 0.667    0.667  1.320  16.060
+2025-07-21             L6_n10_th0.4       6 0.167    0.167 -2.350 -28.580
+2025-07-28             L6_n10_th0.4       2 0.500    0.500 -0.330  -4.110
+2025-08-04             L6_n10_th0.4       4 0.250    0.500  1.010  12.320
+2025-08-11             L6_n10_th0.4       4 0.250    0.250 -0.350  -4.290
+2025-08-18             L6_n10_th0.4       4 0.000    0.000 -3.850 -46.820
+2025-08-25             L6_n10_th0.4       5 0.000    0.200 -1.610 -19.570
+2025-09-01              L3_n5_th0.2      12 0.333    0.333 -1.020 -12.450
+2025-09-08              L3_n5_th0.2       8 0.375    0.375 -0.090  -1.130
+2025-09-15              L3_n5_th0.2      17 0.529    0.529  2.540  30.890
+2025-09-22              L3_n5_th0.2       9 0.333    0.333 -2.160 -26.380
+2025-09-29 L3_n5_th0.2 L6_n10_th0.2      13 0.308    0.308 -3.960 -48.190
+2025-10-06             L6_n10_th0.2      13 0.308    0.308 -2.840 -34.490
+2025-10-13             L6_n10_th0.2      11 0.182    0.182 -2.690 -32.730
+2025-10-20             L6_n10_th0.2      12 0.333    0.333 -0.810  -9.020
+2025-10-27             L6_n10_th0.2      13 0.154    0.154 -4.460 -54.300
+2025-11-03             L3_n10_th0.2      11 0.636    0.636  4.530  55.310
+2025-11-10             L3_n10_th0.2      17 0.176    0.176 -6.870 -83.520
+2025-11-17             L3_n10_th0.2      17 0.353    0.412 -0.950 -11.620
+2025-11-24             L3_n10_th0.2      13 0.308    0.308 -0.770  -9.410
+2025-12-01             L3_n10_th0.2      17 0.588    0.647  7.260  88.500
+2025-12-08             L3_n10_th0.2      19 0.105    0.158 -5.590 -67.900
+2025-12-15             L3_n10_th0.2      17 0.176    0.176 -4.980 -60.550
+2025-12-22             L3_n10_th0.2      15 0.200    0.267 -3.430 -41.690
+2025-12-29 L3_n10_th0.2 L6_n5_th0.4      11 0.182    0.273 -3.080 -37.430
+2026-01-05              L6_n5_th0.4       5 0.600    0.600  0.690   8.470
+2026-01-12              L6_n5_th0.4       4 0.750    0.750  2.750  33.490
+2026-01-19              L6_n5_th0.4       7 0.286    0.286 -1.100 -13.130
+2026-01-26              L6_n5_th0.4      10 0.400    0.500  1.320  22.570
+2026-02-02              L6_n5_th0.4       5 0.400    0.400 -1.140 -23.580
+2026-02-09              L6_n5_th0.4       6 0.333    0.333 -0.020  -4.080
+2026-02-16              L6_n5_th0.4       9 0.444    0.444  3.940  47.980
+2026-02-23              L6_n5_th0.4       8 0.250    0.250 -2.070 -25.140
+2026-03-02              L6_n5_th0.4       8 0.375    0.375  0.110   1.390
+2026-03-09              L6_n5_th0.4      10 0.300    0.300 -0.960 -11.760
+2026-03-16              L6_n5_th0.4      14 0.214    0.214 -6.400 -74.890
+2026-03-23              L6_n5_th0.4      12 0.333    0.417  2.090  25.400
+2026-03-30              L6_n5_th0.4       7 0.571    0.571  0.700   8.630
+2026-04-06              L6_n5_th0.4      12 0.417    0.500  1.900  21.430
+2026-04-13              L6_n5_th0.4       7 0.429    0.429  1.840  22.330
+
+   v2s_be0.5_stop16_wf_trades.parquet, week by week (every week before the exam):
+      week                      cell  trades   win  win_new      R      usd
+2024-05-06              L6_n10_th0.2       5 0.600    0.600  0.840   13.550
+2024-05-13              L6_n10_th0.2       5 0.000    0.000 -2.700  -43.690
+2024-05-20              L6_n10_th0.2       5 0.400    0.400  0.510    8.220
+2024-05-27              L6_n10_th0.2       7 0.429    0.571  0.080    1.350
+2024-06-03              L3_n10_th0.4       3 0.667    0.667  0.700   11.290
+2024-06-10              L3_n10_th0.4       1 0.000    0.000 -0.250   -3.980
+2024-06-17              L3_n10_th0.4       2 1.000    1.000  0.710   11.470
+2024-06-24              L3_n10_th0.4       1 0.000    0.000 -0.470   -7.690
+2024-07-01              L3_n10_th0.4       1 1.000    1.000  0.350    5.690
+2024-07-15              L3_n10_th0.4       1 1.000    1.000  0.370    5.930
+2024-08-05              L3_n10_th0.4       1 0.000    0.000 -0.010   -0.200
+2024-08-12              L3_n10_th0.4       3 0.667    0.667  0.010    0.110
+2024-08-19              L3_n10_th0.4       2 0.000    0.000 -1.010  -16.300
+2024-08-26              L3_n10_th0.4       1 0.000    0.000 -0.010   -0.150
+2024-09-02              L3_n10_th0.4       4 0.250    0.250 -0.810  -13.030
+2024-09-16              L3_n10_th0.4       1 0.000    0.000 -0.650  -10.490
+2024-09-23              L3_n10_th0.4       2 0.500    0.500  0.390    6.310
+2024-09-30              L3_n10_th0.4       3 0.667    0.667  0.780   12.680
+2024-10-14              L3_n10_th0.4       2 0.000    0.500  0.110    1.760
+2024-10-21              L3_n10_th0.4       1 0.000    0.000 -0.010   -0.200
+2024-10-28  L3_n10_th0.4 L6_n5_th0.2       5 0.000    0.000 -2.580  -41.720
+2024-11-04               L6_n5_th0.2      16 0.500    0.562  1.630   26.290
+2024-11-11               L6_n5_th0.2       9 0.111    0.111 -1.000  -16.200
+2024-11-18               L6_n5_th0.2      15 0.533    0.533 -0.830  -13.450
+2024-11-25               L6_n5_th0.2      11 0.000    0.000 -4.600  -74.310
+2024-12-02               L6_n5_th0.2      17 0.471    0.529  1.860   29.970
+2024-12-09               L6_n5_th0.2      14 0.286    0.357 -1.440  -23.310
+2024-12-16               L6_n5_th0.2      13 0.308    0.385 -1.900  -30.780
+2024-12-23               L6_n5_th0.2      11 0.182    0.182 -2.140  -34.540
+2024-12-30               L6_n5_th0.2       8 0.000    0.125 -2.450  -39.620
+2025-01-06               L6_n5_th0.2      11 0.273    0.273 -0.630  -10.160
+2025-01-13               L6_n5_th0.2      15 0.200    0.200 -1.110  -17.980
+2025-01-20               L6_n5_th0.2      15 0.200    0.267 -1.850  -29.840
+2025-01-27               L6_n5_th0.2      12 0.250    0.333 -1.790  -28.940
+2025-02-03               L6_n5_th0.2      16 0.438    0.500 -1.490  -23.990
+2025-02-10               L6_n5_th0.2      16 0.438    0.500  1.250   20.340
+2025-02-17               L6_n5_th0.2      14 0.357    0.429  0.340    5.550
+2025-02-24               L6_n5_th0.2      11 0.455    0.545  0.010    0.230
+2025-03-03               L3_n5_th0.2       8 0.500    0.500 -0.270   -4.400
+2025-03-10               L3_n5_th0.2       2 0.000    0.000 -0.620   -9.970
+2025-03-17               L3_n5_th0.2       6 0.667    0.667  0.870   14.150
+2025-03-24               L3_n5_th0.2       9 0.222    0.222  0.860   13.860
+2025-03-31               L3_n5_th0.2      11 0.364    0.364  0.810   13.060
+2025-04-07               L3_n5_th0.2       9 0.222    0.333  0.040    0.720
+2025-04-14               L3_n5_th0.2       8 0.375    0.375 -2.340  -37.900
+2025-04-21               L3_n5_th0.2      12 0.417    0.417 -2.520  -40.760
+2025-04-28   L3_n5_th0.2 L6_n5_th0.4       6 0.500    0.500  0.960   15.440
+2025-05-05               L6_n5_th0.4       7 0.286    0.429  0.320    5.140
+2025-05-12               L6_n5_th0.4       8 0.375    0.375 -0.590   -9.560
+2025-05-26               L6_n5_th0.4       9 0.556    0.667  1.330   21.620
+2025-06-02               L3_n5_th0.4       2 0.000    0.000 -0.020   -0.350
+2025-06-09               L3_n5_th0.4       2 0.500    0.500 -0.250   -4.060
+2025-06-16               L3_n5_th0.4       3 0.333    0.333 -1.490  -24.040
+2025-06-23               L3_n5_th0.4       3 0.667    0.667  0.980   15.900
+2025-06-30              L6_n10_th0.4       2 0.500    0.500  0.490    7.940
+2025-07-14              L6_n10_th0.4       3 0.667    0.667  0.990   16.060
+2025-07-21              L6_n10_th0.4       6 0.167    0.167 -2.510  -40.580
+2025-07-28              L6_n10_th0.4       2 0.500    0.500 -0.500   -8.110
+2025-08-04              L6_n10_th0.4       4 0.250    0.500  0.760   12.320
+2025-08-11              L6_n10_th0.4       4 0.250    0.250  0.250    4.030
+2025-08-18              L6_n10_th0.4       4 0.000    0.000 -2.660  -43.010
+2025-08-25              L6_n10_th0.4       5 0.000    0.200 -1.460  -23.570
+2025-09-01              L6_n10_th0.4       3 0.667    0.667  0.070    1.130
+2025-09-08              L6_n10_th0.4       6 0.333    0.333  1.040   16.870
+2025-09-15              L6_n10_th0.4       3 0.000    0.000 -0.760  -12.340
+2025-09-22              L6_n10_th0.4       6 0.500    0.500 -0.350   -5.650
+2025-09-29 L6_n10_th0.4 L6_n10_th0.2       7 0.143    0.143 -2.900  -47.010
+2025-10-06              L6_n10_th0.2      11 0.364    0.364 -1.290  -20.790
+2025-10-13              L6_n10_th0.2      11 0.182    0.182 -2.020  -32.730
+2025-10-20              L6_n10_th0.2      12 0.333    0.333 -1.010  -16.290
+2025-10-27              L6_n10_th0.2      13 0.154    0.154 -4.840  -78.300
+2025-11-03               L6_n5_th0.4       6 0.500    0.500  0.710   11.490
+2025-11-10               L6_n5_th0.4       6 0.000    0.000 -1.270  -20.550
+2025-11-17               L6_n5_th0.4       5 0.400    0.600 -0.450   -7.190
+2025-11-24               L6_n5_th0.4       5 0.400    0.400  0.200    3.300
+2025-12-01              L3_n10_th0.2      17 0.588    0.647  5.220   84.500
+2025-12-08              L3_n10_th0.2      17 0.059    0.118 -3.260  -52.610
+2025-12-15              L3_n10_th0.2      16 0.250    0.250 -2.820  -45.690
+2025-12-22              L3_n10_th0.2      15 0.200    0.333 -1.800  -29.040
+2025-12-29  L3_n10_th0.2 L6_n5_th0.4      11 0.182    0.273 -3.100  -50.090
+2026-01-05               L6_n5_th0.4       5 0.600    0.600  0.020    0.470
+2026-01-12               L6_n5_th0.4       4 0.750    0.750  2.070   33.490
+2026-01-19               L6_n5_th0.4       7 0.286    0.286 -1.550  -25.130
+2026-01-26               L6_n5_th0.4      10 0.500    0.600  2.890   48.750
+2026-02-02               L6_n5_th0.4       5 0.400    0.400 -0.600  -15.130
+2026-02-09               L6_n5_th0.4       6 0.333    0.333  0.480    7.830
+2026-02-16               L6_n5_th0.4       9 0.444    0.444  2.970   47.980
+2026-02-23               L6_n5_th0.4       8 0.250    0.250 -1.640  -26.410
+2026-03-02               L6_n5_th0.4       8 0.375    0.375 -0.170   -2.670
+2026-03-09               L6_n5_th0.4      10 0.300    0.300 -1.030  -16.700
+2026-03-16               L6_n5_th0.4      14 0.214    0.214 -6.850 -110.890
+2026-03-23               L6_n5_th0.4      12 0.333    0.417  1.070   17.400
+2026-03-30               L6_n5_th0.4       7 0.571    0.571  0.390    6.400
+2026-04-06               L6_n5_th0.4      12 0.417    0.500  0.970   15.790
+2026-04-13               L6_n5_th0.4       7 0.429    0.429  1.140   18.330
+
+   v2s_be0.5_stop8_wf_trades.parquet, week by week (every week before the exam):
+      week                     cell  trades   win  win_new      R     usd
+2024-04-29             L3_n10_th0.2       5 0.600    0.600  1.030   8.500
+2024-05-06             L3_n10_th0.2       9 0.222    0.222 -2.670 -21.820
+2024-05-13             L3_n10_th0.2      16 0.250    0.375  0.810   6.860
+2024-05-20             L3_n10_th0.2      17 0.235    0.235 -0.380  -3.040
+2024-05-27             L3_n10_th0.2      14 0.286    0.357 -2.210 -18.040
+2024-06-03             L3_n10_th0.4       3 0.667    0.667  1.390  11.290
+2024-06-10             L3_n10_th0.4       2 0.000    0.000 -1.020  -8.300
+2024-06-17             L3_n10_th0.4       2 1.000    1.000  1.400  11.470
+2024-06-24             L3_n10_th0.4       1 0.000    0.000 -1.000  -8.200
+2024-07-01             L3_n10_th0.4       1 1.000    1.000  0.690   5.690
+2024-07-15             L3_n10_th0.4       1 0.000    0.000 -1.000  -8.200
+2024-08-05             L3_n10_th0.4       1 0.000    0.000 -0.020  -0.200
+2024-08-12             L3_n10_th0.4       3 0.667    0.667  0.470   3.850
+2024-08-19             L3_n10_th0.4       2 0.000    0.000 -1.020  -8.300
+2024-08-26             L3_n10_th0.4       1 0.000    0.000 -0.020  -0.150
+2024-09-02             L3_n10_th0.4       4 0.250    0.250 -1.280 -10.420
+2024-09-16             L3_n10_th0.4       1 0.000    0.000 -1.000  -8.150
+2024-09-23             L3_n10_th0.4       2 0.500    0.500  0.770   6.310
+2024-09-30             L3_n10_th0.4       3 0.667    0.667  1.550  12.680
+2024-10-14             L3_n10_th0.4       2 0.000    0.000 -1.020  -8.300
+2024-10-21             L3_n10_th0.4       1 0.000    0.000 -1.000  -8.200
+2024-10-28 L3_n10_th0.4 L6_n5_th0.2       5 0.000    0.000 -3.040 -24.900
+2024-11-04              L6_n5_th0.2      17 0.471    0.529  2.220  18.090
+2024-11-11              L6_n5_th0.2      10 0.100    0.100 -2.370 -19.360
+2024-11-18              L6_n5_th0.2      17 0.529    0.529  3.040  24.760
+2024-11-25              L6_n5_th0.2      11 0.000    0.000 -7.090 -57.850
+2024-12-02              L6_n5_th0.2      18 0.444    0.500  2.280  18.530
+2024-12-09              L6_n5_th0.2      17 0.235    0.294 -2.920 -23.900
+2024-12-16              L6_n5_th0.2      16 0.312    0.375 -2.550 -20.860
+2024-12-23              L6_n5_th0.2      11 0.182    0.182 -3.380 -27.620
+2024-12-30              L6_n5_th0.2      11 0.091    0.273 -3.240 -26.500
+2025-01-06              L6_n5_th0.2      11 0.273    0.273 -1.710 -13.980
+2025-01-13              L6_n5_th0.2      16 0.188    0.250 -1.760 -14.360
+2025-01-20              L6_n5_th0.2      16 0.188    0.250 -2.810 -22.920
+2025-01-27              L6_n5_th0.2      16 0.125    0.125 -8.680 -70.920
+2025-02-03              L6_n5_th0.4       4 0.500    0.500 -0.320  -2.550
+2025-02-10              L6_n5_th0.4       4 0.000    0.000 -1.070  -8.800
+2025-02-17              L6_n5_th0.4       5 0.200    0.200 -0.190  -1.560
+2025-02-24              L6_n5_th0.4       2 0.500    0.500 -0.150  -1.140
+2025-03-03              L3_n5_th0.4       1 1.000    1.000  0.860   7.080
+2025-03-10              L3_n5_th0.4       2 0.000    0.000 -1.700 -13.930
+2025-03-17              L3_n5_th0.4       1 1.000    1.000  0.890   7.330
+2025-03-24              L3_n5_th0.4       1 0.000    0.000 -0.020  -0.150
+2025-03-31              L6_n5_th0.4       5 0.200    0.200 -0.130  -1.030
+2025-04-07              L6_n5_th0.4       9 0.333    0.333  0.680   5.510
+2025-04-14              L6_n5_th0.4       4 0.500    0.500  1.910  15.540
+2025-04-21              L6_n5_th0.4       5 0.600    0.600  0.840   7.930
+2025-04-28              L6_n5_th0.4       6 0.000    0.000 -2.090 -17.100
+2025-05-05              L6_n5_th0.4       7 0.286    0.429  0.270   4.430
+2025-05-12              L6_n5_th0.4       8 0.250    0.250 -1.460  -9.350
+2025-05-26              L6_n5_th0.4      10 0.400    0.400 -0.590  -4.800
+2025-06-02             L6_n10_th0.4       3 0.333    0.333 -0.020  -0.220
+2025-06-09             L6_n10_th0.4       4 0.750    0.750  1.970  16.130
+2025-06-16             L6_n10_th0.4       3 0.667    0.667  1.010   8.270
+2025-06-23             L6_n10_th0.4       8 0.500    0.500  1.920  15.820
+2025-06-30             L6_n10_th0.4       2 0.500    0.500  0.970   7.940
+2025-07-14             L6_n10_th0.4       3 0.667    0.667  1.960  16.060
+2025-07-21             L6_n10_th0.4       6 0.167    0.167 -2.030 -16.580
+2025-07-28             L6_n10_th0.4       2 0.500    0.500 -0.010  -0.110
+2025-08-04             L6_n10_th0.4       4 0.000    0.250 -0.500  -4.020
+2025-08-11             L6_n10_th0.4       4 0.250    0.250 -0.040  -0.290
+2025-08-18             L6_n10_th0.4       5 0.200    0.200 -3.000 -24.580
+2025-08-25             L6_n10_th0.4       6 0.000    0.167 -2.700 -22.110
+2025-09-01             L6_n10_th0.4       3 0.667    0.667  1.130   9.130
+2025-09-08             L6_n10_th0.4       6 0.333    0.333  0.110   0.870
+2025-09-15             L6_n10_th0.4       3 0.000    0.000 -1.040  -8.550
+2025-09-22             L6_n10_th0.4       6 0.500    0.500  0.760   6.150
+2025-09-29             L6_n10_th0.4       4 0.250    0.250 -1.860 -15.280
+2025-10-06             L6_n10_th0.4       6 0.333    0.333 -0.730  -5.430
+2025-10-13             L6_n10_th0.4       3 0.333    0.333  0.210   1.650
+2025-10-20             L6_n10_th0.4       4 0.500    0.500  1.490  11.170
+2025-10-27             L6_n10_th0.4       4 0.000    0.000 -1.060  -8.700
+2025-11-03              L6_n5_th0.4       6 0.333    0.333 -0.640  -5.150
+2025-11-10              L6_n5_th0.4       7 0.143    0.143 -1.830 -15.520
+2025-11-17              L6_n5_th0.4       5 0.400    0.400 -0.720  -4.720
+2025-11-24              L6_n5_th0.4       5 0.400    0.400  0.400   2.480
+2025-12-01              L6_n5_th0.4       9 0.667    0.667  4.560  37.450
+2025-12-08              L6_n5_th0.4       6 0.167    0.333 -0.780  -6.300
+2025-12-15              L6_n5_th0.4       4 0.250    0.250 -0.890  -6.610
+2025-12-22              L6_n5_th0.4       6 0.167    0.333 -1.080  -8.770
+2025-12-29              L6_n5_th0.4       7 0.000    0.286 -2.230 -18.200
+2026-01-05              L6_n5_th0.4       5 0.600    0.600  1.770  16.470
+2026-01-12              L6_n5_th0.4       4 0.750    0.750  4.100  33.490
+2026-01-19              L6_n5_th0.4       7 0.286    0.286 -0.650  -1.130
+2026-01-26              L6_n5_th0.4      10 0.400    0.500  1.700  20.830
+2026-02-02              L6_n5_th0.4       5 0.400    0.400 -0.700 -19.580
+2026-02-09              L6_n5_th0.4       6 0.333    0.333  0.650  -0.520
+2026-02-16              L6_n5_th0.4      10 0.300    0.300  3.030  26.340
+2026-02-23              L6_n5_th0.4       8 0.250    0.250 -1.130 -11.130
+2026-03-02              L6_n5_th0.4       8 0.375    0.375  0.430  -1.800
+2026-03-09              L6_n5_th0.4      10 0.300    0.300  0.450   4.240
+2026-03-16              L6_n5_th0.4      14 0.214    0.214 -6.060 -45.130
+2026-03-23              L6_n5_th0.4      12 0.333    0.333  1.810  17.940
+2026-03-30              L6_n5_th0.4       7 0.571    0.571  2.450  14.960
+2026-04-06              L6_n5_th0.4      12 0.333    0.417  1.870   9.530
+2026-04-13              L6_n5_th0.4       7 0.429    0.429  3.230  24.030
+
+   v2s_be0.5_wf_trades.parquet, week by week (every week before the exam):
+      week                      cell  trades   win  win_new      R     usd
+2024-05-06              L6_n10_th0.2       6 0.333    0.333  0.150   0.230
+2024-05-13              L6_n10_th0.2       7 0.143    0.143 -3.000 -15.260
+2024-05-20              L6_n10_th0.2       5 0.400    0.400  1.060   5.010
+2024-05-27              L6_n10_th0.2       7 0.429    0.571  2.340  12.350
+2024-06-03              L6_n10_th0.2       8 0.375    0.375 -0.820  -3.740
+2024-06-10              L6_n10_th0.2       7 0.143    0.143 -1.340  -7.140
+2024-06-17              L6_n10_th0.2       8 0.125    0.250 -2.820 -14.390
+2024-06-24              L6_n10_th0.2       6 0.167    0.333 -1.840  -9.390
+2024-07-01              L3_n10_th0.4       1 1.000    1.000  1.090   5.690
+2024-07-15              L3_n10_th0.4       1 0.000    0.000 -1.000  -5.200
+2024-08-05              L3_n10_th0.4       1 0.000    0.000 -0.030  -0.200
+2024-08-12              L3_n10_th0.4       3 0.667    0.667  1.320   4.140
+2024-08-19              L3_n10_th0.4       2 0.000    0.000 -1.030  -5.300
+2024-08-26              L3_n10_th0.4       1 0.000    0.000 -0.030  -0.150
+2024-09-02              L3_n10_th0.4       4 0.250    0.250 -0.860  -4.420
+2024-09-16              L3_n10_th0.4       1 0.000    0.000 -1.000  -5.150
+2024-09-23              L3_n10_th0.4       2 0.500    0.500  1.230   6.310
+2024-09-30              L3_n10_th0.4       3 0.667    0.667  2.450  12.680
+2024-10-14              L3_n10_th0.4       2 0.000    0.000 -1.030  -5.300
+2024-10-21              L3_n10_th0.4       1 0.000    0.000 -1.000  -6.520
+2024-10-28              L3_n10_th0.4       1 0.000    0.000 -1.000  -5.500
+2024-11-04              L3_n10_th0.4       2 0.500    0.500 -0.040   0.300
+2024-11-11              L3_n10_th0.4       2 0.000    0.000 -1.030  -5.780
+2024-11-25              L3_n10_th0.4       1 0.000    0.000 -1.000  -6.070
+2024-12-02               L3_n5_th0.4       1 0.000    0.000 -0.030  -0.150
+2024-12-09               L3_n5_th0.4       3 0.000    0.000 -1.070  -5.550
+2024-12-16               L3_n5_th0.4       2 1.000    1.000  2.390  12.850
+2024-12-30               L3_n5_th0.4       1 0.000    0.000 -1.000  -5.200
+2025-01-13               L3_n5_th0.4       1 0.000    0.000 -1.000  -5.150
+2025-01-20               L3_n5_th0.4       2 0.000    0.000 -0.090  -0.440
+2025-01-27               L3_n5_th0.4       2 0.000    0.000 -0.070  -0.350
+2025-02-03               L3_n5_th0.4       4 0.250    0.250 -0.960  -4.060
+2025-03-03               L3_n5_th0.4       1 1.000    1.000  1.310   7.080
+2025-03-10               L3_n5_th0.4       2 0.000    0.000 -2.000 -12.380
+2025-03-17               L3_n5_th0.4       1 0.000    0.000 -1.000  -5.410
+2025-03-24               L3_n5_th0.4       1 0.000    0.000 -0.030  -0.150
+2025-03-31               L6_n5_th0.4       5 0.200    0.200  0.410   0.810
+2025-04-07               L6_n5_th0.4       9 0.333    0.333  1.500   6.580
+2025-04-14               L6_n5_th0.4       4 0.500    0.500  2.410  15.540
+2025-04-21               L6_n5_th0.4       5 0.400    0.400 -1.150  -2.890
+2025-04-28               L6_n5_th0.4       6 0.000    0.000 -2.120 -11.190
+2025-05-05               L6_n5_th0.4       7 0.286    0.286 -1.230  -6.700
+2025-05-12               L6_n5_th0.4       8 0.250    0.250 -1.170  -3.460
+2025-05-26               L6_n5_th0.4      10 0.200    0.200 -3.940 -22.220
+2025-06-02              L6_n10_th0.4       3 0.333    0.333  0.080   2.080
+2025-06-09              L6_n10_th0.4       4 0.500    0.500  0.760   4.780
+2025-06-16              L6_n10_th0.4       3 0.667    0.667  1.490  10.220
+2025-06-23              L6_n10_th0.4       8 0.500    0.500  3.450  19.810
+2025-06-30              L6_n10_th0.4       2 0.500    0.500  1.550   7.940
+2025-07-14              L6_n10_th0.4       3 0.000    0.000 -2.040 -12.200
+2025-07-21              L6_n10_th0.4       6 0.167    0.167 -1.790 -10.320
+2025-07-28              L6_n10_th0.4       2 0.000    0.000 -2.000 -10.720
+2025-08-04              L6_n10_th0.4       5 0.200    0.400  1.270   7.160
+2025-08-11              L6_n10_th0.4       4 0.250    0.250  0.530   2.710
+2025-08-18              L6_n10_th0.4       5 0.200    0.200 -2.420 -12.580
+2025-08-25              L6_n10_th0.4       6 0.000    0.167 -2.620 -13.220
+2025-09-01              L6_n10_th0.2      15 0.267    0.333 -0.660 -14.820
+2025-09-08              L6_n10_th0.2      23 0.304    0.304 -0.770  -1.700
+2025-09-15              L6_n10_th0.2      13 0.231    0.231 -1.950 -15.960
+2025-09-22              L6_n10_th0.2      16 0.312    0.312 -1.600  -9.920
+2025-09-29 L6_n10_th0.2 L6_n10_th0.4       8 0.250    0.250 -3.210 -19.590
+2025-10-06              L6_n10_th0.4       6 0.167    0.167 -2.910 -14.360
+2025-10-13              L6_n10_th0.4       3 0.333    0.333  0.310   3.780
+2025-10-20              L6_n10_th0.4       4 0.500    0.500  1.820  11.170
+2025-10-27              L6_n10_th0.4       4 0.000    0.000 -1.080  -7.850
+2025-11-03              L6_n10_th0.4       2 0.500    0.500  0.360   4.280
+2025-11-10              L6_n10_th0.4       4 0.250    0.250  0.250   1.550
+2025-11-17              L6_n10_th0.4       3 0.333    0.333 -0.480  -3.910
+2025-11-24              L6_n10_th0.4       3 0.000    0.000 -2.030 -12.290
+2025-12-01              L6_n10_th0.2      16 0.562    0.562  8.130  55.470
+2025-12-08              L6_n10_th0.2      14 0.286    0.286 -1.080   3.750
+2025-12-15              L6_n10_th0.2      12 0.417    0.417  1.520  16.660
+2025-12-22              L6_n10_th0.2      17 0.235    0.294 -0.230  -5.450
+2025-12-29  L6_n10_th0.2 L6_n5_th0.4      14 0.071    0.071 -8.590 -63.130
+2026-01-05               L6_n5_th0.4       5 0.600    0.600  2.850  18.150
+2026-01-12               L6_n5_th0.4       4 0.750    0.750  3.750  28.150
+2026-01-19               L6_n5_th0.4       7 0.286    0.286 -0.650   4.960
+2026-01-26               L6_n5_th0.4      10 0.400    0.500  2.080  23.010
+2026-02-02               L6_n5_th0.4       5 0.400    0.400 -0.700 -17.540
+2026-02-09               L6_n5_th0.4       6 0.333    0.333  0.730  -0.520
+2026-02-16               L6_n5_th0.4      10 0.300    0.300  2.140  20.520
+2026-02-23               L6_n5_th0.4       8 0.125    0.125 -4.090 -28.740
+2026-03-02               L6_n5_th0.4       8 0.375    0.375  0.960   0.210
+2026-03-09               L6_n5_th0.4      10 0.300    0.300  0.820  11.760
+2026-03-16               L6_n5_th0.4      14 0.214    0.214 -6.060 -33.730
+2026-03-23               L6_n5_th0.4      12 0.333    0.333  2.260  21.650
+2026-03-30               L6_n5_th0.4       7 0.571    0.571  3.830  16.670
+2026-04-06               L6_n5_th0.4      12 0.333    0.333  0.850  -2.330
+2026-04-13               L6_n5_th0.4       7 0.429    0.429  4.510  24.030
+
+   v2s_stop12_wf_trades.parquet, week by week (every week before the exam):
+      week                     cell  trades   win  win_new      R     usd
+2024-04-29             L3_n10_th0.2       4 0.750    0.750  0.380   4.700
+2024-05-06             L3_n10_th0.2       7 0.571    0.714  0.640   7.790
+2024-05-13             L3_n10_th0.2      15 0.333    0.467 -1.400 -17.090
+2024-05-20             L3_n10_th0.2      13 0.615    0.769  1.830  22.350
+2024-05-27             L3_n10_th0.2      12 0.500    0.667 -0.900 -10.990
+2024-06-03             L3_n10_th0.4       3 0.667    0.667  0.750   9.140
+2024-06-10             L3_n10_th0.4       1 0.000    0.000 -1.000 -12.150
+2024-06-17             L3_n10_th0.4       2 1.000    1.000  0.940  11.470
+2024-06-24             L3_n10_th0.4       1 0.000    0.000 -0.630  -7.690
+2024-07-01             L3_n10_th0.4       1 1.000    1.000  0.470   5.690
+2024-07-15             L3_n10_th0.4       1 1.000    1.000  0.490   5.930
+2024-08-05             L3_n10_th0.4       1 0.000    0.000 -1.000 -12.200
+2024-08-12             L3_n10_th0.4       3 0.667    0.667 -0.010  -0.150
+2024-08-19             L3_n10_th0.4       2 0.500    0.500 -0.500  -6.080
+2024-08-26             L3_n10_th0.4       1 0.000    0.000 -0.390  -4.720
+2024-09-02             L3_n10_th0.4       3 0.000    0.000 -2.230 -27.060
+2024-09-16             L3_n10_th0.4       1 0.000    0.000 -1.000 -12.150
+2024-09-23             L3_n10_th0.4       2 1.000    1.000  1.070  12.970
+2024-09-30 L3_n10_th0.4 L3_n5_th0.4       3 1.000    1.000  1.590  19.390
+2024-10-07              L3_n5_th0.4       1 1.000    1.000  0.530   6.440
+2024-10-14              L3_n5_th0.4       2 0.500    1.000  0.700   8.450
+2024-10-21              L3_n5_th0.4       2 0.500    0.500  0.420   5.160
+2024-10-28              L3_n5_th0.4       1 0.000    0.000 -1.000 -12.200
+2024-11-04              L3_n5_th0.4       2 0.500    0.500 -0.460  -5.620
+2024-11-11              L3_n5_th0.4       3 0.333    0.333 -1.330 -16.270
+2024-11-18              L3_n5_th0.4       1 0.000    0.000 -1.000 -12.150
+2024-11-25              L3_n5_th0.4       1 0.000    0.000 -1.000 -12.200
+2024-12-02             L6_n10_th0.2       6 0.333    0.333  0.140   1.680
+2024-12-09             L6_n10_th0.2       6 0.500    0.667 -0.200  -2.420
+2024-12-16             L6_n10_th0.2       9 0.333    0.556 -1.590 -19.370
+2024-12-23             L6_n10_th0.2       7 0.286    0.286 -0.970 -11.770
+2024-12-30 L6_n10_th0.2 L3_n5_th0.4       5 0.200    0.600 -0.810  -9.890
+2025-01-13              L3_n5_th0.4       1 0.000    0.000 -0.090  -1.120
+2025-01-20              L3_n5_th0.4       2 0.000    0.000 -0.040  -0.520
+2025-01-27              L3_n5_th0.4       2 0.000    0.500 -0.920 -11.200
+2025-02-03              L6_n5_th0.2      16 0.500    0.625 -0.520  -6.240
+2025-02-10              L6_n5_th0.2      16 0.625    0.688  2.810  34.260
+2025-02-17              L6_n5_th0.2      11 0.455    0.455 -1.200 -14.710
+2025-02-24              L6_n5_th0.2      11 0.545    0.636  1.260  15.350
+2025-03-03              L6_n5_th0.4       2 0.500    0.500 -0.420  -5.090
+2025-03-10              L6_n5_th0.4       4 0.750    0.750  0.750   9.160
+2025-03-17              L6_n5_th0.4       2 0.500    1.000  0.630   7.660
+2025-03-24              L6_n5_th0.4       4 0.750    0.750  0.840  10.310
+2025-03-31              L6_n5_th0.4       5 0.400    0.400 -0.140  -1.750
+2025-04-07              L6_n5_th0.4       9 0.444    0.667  1.260  15.260
+2025-04-14              L6_n5_th0.4       4 0.750    0.750  1.570  19.140
+2025-04-21              L6_n5_th0.4       5 0.600    0.600  0.000  -0.070
+2025-04-28              L6_n5_th0.4       6 0.500    0.500 -0.710  -8.700
+2025-05-05              L6_n5_th0.4       7 0.571    0.714  1.120  14.040
+2025-05-12              L6_n5_th0.4       8 0.500    0.500 -1.190 -14.500
+2025-05-26              L6_n5_th0.4       9 0.667    0.778  2.780  33.810
+2025-06-02              L6_n5_th0.4      10 0.500    0.600  1.270  15.400
+2025-06-09              L6_n5_th0.4       6 0.500    0.500 -1.000 -12.170
+2025-06-16              L6_n5_th0.4       3 0.667    0.667  0.350   4.270
+2025-06-23              L6_n5_th0.4      12 0.500    0.500  0.040   0.610
+2025-06-30              L6_n5_th0.4       7 0.429    0.429 -1.140 -13.900
+2025-07-07              L6_n5_th0.4       3 0.667    0.667  0.400   4.870
+2025-07-14              L6_n5_th0.4       8 0.625    0.875  3.470  42.330
+2025-07-21              L6_n5_th0.4       9 0.333    0.333 -3.040 -36.900
+2025-07-28              L6_n5_th0.4       4 0.250    0.250 -1.420 -17.300
+2025-08-04             L6_n10_th0.4       4 0.500    0.750  1.700  20.700
+2025-08-11             L6_n10_th0.4       4 0.500    0.500 -0.650  -7.960
+2025-08-18             L6_n10_th0.4       4 0.000    0.000 -3.850 -46.820
+2025-08-25             L6_n10_th0.4       4 0.250    0.250 -1.580 -19.250
+2025-09-01             L6_n10_th0.4       3 0.667    0.667  0.430   5.130
+2025-09-08             L6_n10_th0.4       6 0.500    0.667  0.740   9.020
+2025-09-15             L6_n10_th0.4       2 0.000    0.500 -0.700  -8.510
+2025-09-22             L6_n10_th0.4       6 0.500    0.500 -0.150  -1.850
+2025-09-29 L6_n10_th0.4 L6_n5_th0.4       7 0.429    0.429 -1.690 -20.540
+2025-10-06              L6_n5_th0.4       7 0.286    0.286 -3.400 -41.390
+2025-10-13              L6_n5_th0.4       3 0.333    0.333 -1.170 -14.350
+2025-10-20              L6_n5_th0.4      10 0.500    0.600  0.670   7.400
+2025-10-27              L6_n5_th0.4       8 0.500    0.500  0.130   1.470
+2025-11-03             L6_n10_th0.2      18 0.556    0.556  2.090  25.510
+2025-11-10             L6_n10_th0.2      14 0.286    0.429 -3.900 -47.410
+2025-11-17             L6_n10_th0.2      18 0.500    0.556  0.270   3.230
+2025-11-24             L6_n10_th0.2      16 0.250    0.312 -3.900 -47.480
+2025-12-01             L3_n10_th0.2      16 0.750    0.812  8.010  97.540
+2025-12-08             L3_n10_th0.2      18 0.278    0.333 -5.380 -65.390
+2025-12-15             L3_n10_th0.2      17 0.176    0.235 -6.890 -83.860
+2025-12-22             L3_n10_th0.2      15 0.267    0.400 -3.350 -40.790
+2025-12-29 L3_n10_th0.2 L6_n5_th0.4      11 0.273    0.364 -2.240 -27.230
+2026-01-05              L6_n5_th0.4       5 0.600    0.600  0.690   8.470
+2026-01-12              L6_n5_th0.4       4 0.750    0.750  2.440  29.690
+2026-01-19              L6_n5_th0.4       7 0.429    0.429 -0.470  -5.500
+2026-01-26              L6_n5_th0.4      10 0.500    0.600  1.410  23.640
+2026-02-02              L6_n5_th0.4       5 0.400    0.400 -1.140 -23.580
+2026-02-09              L6_n5_th0.4       6 0.500    0.500  0.000  -3.830
+2026-02-16              L6_n5_th0.4       9 0.889    0.889  6.970  84.800
+2026-02-23              L6_n5_th0.4       8 0.250    0.250 -3.060 -37.140
+2026-03-02              L6_n5_th0.4       8 0.375    0.625  1.130  13.850
+2026-03-09              L6_n5_th0.4      10 0.400    0.500 -0.770  -9.300
+2026-03-16              L6_n5_th0.4      14 0.286    0.357 -5.320 -61.700
+2026-03-23              L6_n5_th0.4      12 0.500    0.583  1.770  19.840
+2026-03-30              L6_n5_th0.4       7 0.571    0.571  0.700   8.630
+2026-04-06              L6_n5_th0.4      12 0.500    0.583  0.890   9.200
+2026-04-13              L6_n5_th0.4       7 0.571    0.857  3.850  46.830
+
+   v2s_stop16_wf_trades.parquet, week by week (every week before the exam):
+      week                     cell  trades   win  win_new      R     usd
+2024-05-06             L6_n10_th0.2       5 0.800    0.800  1.210  19.530
+2024-05-13             L6_n10_th0.2       5 0.000    0.000 -3.170 -51.310
+2024-05-20             L6_n10_th0.2       5 0.600    0.800  1.050  16.950
+2024-05-27             L6_n10_th0.2       6 0.500    0.667 -0.560  -8.980
+2024-06-03             L3_n10_th0.4       3 0.667    0.667  0.570   9.140
+2024-06-10             L3_n10_th0.4       1 0.000    0.000 -0.250  -3.980
+2024-06-17             L3_n10_th0.4       2 1.000    1.000  0.710  11.470
+2024-06-24             L3_n10_th0.4       1 0.000    0.000 -0.470  -7.690
+2024-07-01             L3_n10_th0.4       1 1.000    1.000  0.350   5.690
+2024-07-15             L3_n10_th0.4       1 1.000    1.000  0.370   5.930
+2024-08-05             L3_n10_th0.4       1 0.000    0.000 -1.000 -16.200
+2024-08-12             L3_n10_th0.4       3 0.667    0.667  0.010   0.110
+2024-08-19             L3_n10_th0.4       2 0.500    0.500 -0.620 -10.080
+2024-08-26             L3_n10_th0.4       1 0.000    0.000 -0.290  -4.720
+2024-09-02              L3_n5_th0.4       3 0.333    0.333 -0.800 -12.850
+2024-09-16              L3_n5_th0.4       2 0.500    0.500 -0.260  -4.250
+2024-09-23              L3_n5_th0.4       2 1.000    1.000  0.800  12.970
+2024-09-30              L3_n5_th0.4       3 1.000    1.000  1.200  19.390
+2024-10-07              L3_n5_th0.4       1 1.000    1.000  0.400   6.440
+2024-10-14              L3_n5_th0.4       2 0.500    1.000  0.520   8.450
+2024-10-21              L3_n5_th0.4       2 0.500    0.500  0.320   5.160
+2024-10-28              L3_n5_th0.4       1 0.000    0.000 -1.000 -16.200
+2024-11-04              L3_n5_th0.4       2 0.500    0.500 -0.590  -9.620
+2024-11-11              L3_n5_th0.4       3 0.333    0.333 -1.250 -20.270
+2024-11-18              L3_n5_th0.4       1 0.000    0.000 -1.000 -16.150
+2024-11-25              L3_n5_th0.4       1 0.000    0.000 -0.520  -8.370
+2024-12-02              L6_n5_th0.2      14 0.643    0.714  2.880  46.500
+2024-12-09              L6_n5_th0.2      13 0.385    0.462 -3.080 -49.790
+2024-12-16              L6_n5_th0.2      13 0.385    0.462 -1.310 -21.220
+2024-12-23              L6_n5_th0.2      10 0.200    0.200 -2.380 -38.440
+2024-12-30  L6_n5_th0.2 L3_n5_th0.4       5 0.000    0.200 -1.060 -17.190
+2025-01-13              L3_n5_th0.4       1 0.000    0.000 -0.070  -1.120
+2025-01-20              L3_n5_th0.4       2 0.000    0.000 -0.030  -0.520
+2025-01-27              L3_n5_th0.4       2 0.000    0.500 -0.690 -11.120
+2025-02-03              L6_n5_th0.2      16 0.500    0.625 -0.930 -15.010
+2025-02-10              L6_n5_th0.2      14 0.571    0.643  0.490   7.990
+2025-02-17              L6_n5_th0.2      11 0.545    0.545 -0.210  -3.350
+2025-02-24              L6_n5_th0.2      11 0.545    0.636  0.450   7.350
+2025-03-03              L6_n5_th0.4       2 0.500    0.500 -0.560  -9.090
+2025-03-10              L6_n5_th0.4       4 0.750    0.750  0.320   5.160
+2025-03-17              L6_n5_th0.4       2 0.500    1.000  0.470   7.660
+2025-03-24              L6_n5_th0.4       4 0.750    0.750  1.080  17.440
+2025-03-31              L6_n5_th0.4       5 0.400    0.400 -0.350  -5.750
+2025-04-07              L6_n5_th0.4       9 0.444    0.667  0.450   7.260
+2025-04-14              L6_n5_th0.4       4 0.750    0.750  1.180  19.140
+2025-04-21              L6_n5_th0.4       5 0.600    0.600 -0.490  -8.070
+2025-04-28              L6_n5_th0.4       6 0.500    0.500 -0.550  -9.030
+2025-05-05              L6_n5_th0.4       7 0.571    0.714  0.370   6.040
+2025-05-12              L6_n5_th0.4       8 0.500    0.500 -1.630 -26.500
+2025-05-26              L6_n5_th0.4       9 0.667    0.778  1.840  29.810
+2025-06-02              L6_n5_th0.4      10 0.500    0.700  1.560  25.280
+2025-06-09              L6_n5_th0.4       5 0.600    0.600 -0.360  -5.800
+2025-06-16              L6_n5_th0.4       3 0.667    0.667  0.020   0.270
+2025-06-23              L6_n5_th0.4      12 0.500    0.500 -0.280  -4.440
+2025-06-30 L6_n5_th0.4 L6_n10_th0.4       3 1.000    1.000  1.500  24.300
+2025-07-14             L6_n10_th0.4       3 1.000    1.000  1.510  24.410
+2025-07-21             L6_n10_th0.4       6 0.333    0.333 -2.980 -48.240
+2025-07-28             L6_n10_th0.4       2 0.500    0.500 -0.500  -8.110
+2025-08-04             L6_n10_th0.4       4 0.500    0.750  1.280  20.700
+2025-08-11             L6_n10_th0.4       4 0.500    0.500 -0.020  -0.330
+2025-08-18             L6_n10_th0.4       4 0.000    0.000 -2.660 -43.010
+2025-08-25             L6_n10_th0.4       4 0.250    0.250 -1.440 -23.250
+2025-09-01             L6_n10_th0.4       3 0.667    0.667  0.070   1.130
+2025-09-08             L6_n10_th0.4       6 0.833    1.000  3.160  51.190
+2025-09-15             L6_n10_th0.4       2 0.000    0.500 -0.770 -12.510
+2025-09-22             L6_n10_th0.4       6 0.500    0.500 -0.350  -5.650
+2025-09-29             L6_n10_th0.4       4 0.250    0.250 -2.430 -39.280
+2025-10-06             L6_n10_th0.4       5 0.200    0.200 -2.400 -38.820
+2025-10-13             L6_n10_th0.4       3 0.333    0.333 -1.380 -22.350
+2025-10-20             L6_n10_th0.4       4 0.500    0.500  0.350   5.610
+2025-10-27             L6_n10_th0.4       4 0.500    0.500  0.150   2.290
+2025-11-03             L6_n10_th0.2      17 0.529    0.529  0.590   9.540
+2025-11-10             L6_n10_th0.2      13 0.385    0.538 -1.640 -26.440
+2025-11-17             L6_n10_th0.2      18 0.611    0.722  2.730  44.090
+2025-11-24             L6_n10_th0.2      16 0.438    0.500  0.470   7.530
+2025-12-01              L3_n5_th0.2      16 0.750    0.812  5.540  89.540
+2025-12-08              L3_n5_th0.2      14 0.286    0.357 -4.160 -67.160
+2025-12-15              L3_n5_th0.2      16 0.250    0.312 -4.470 -72.330
+2025-12-22              L3_n5_th0.2      16 0.312    0.500 -2.290 -37.120
+2025-12-29  L3_n5_th0.2 L6_n5_th0.4      11 0.273    0.364 -2.470 -39.890
+2026-01-05              L6_n5_th0.4       5 0.600    0.600  0.020   0.470
+2026-01-12              L6_n5_th0.4       4 0.750    0.750  1.840  29.690
+2026-01-19              L6_n5_th0.4       7 0.429    0.429 -1.080 -17.500
+2026-01-26              L6_n5_th0.4      10 0.600    0.800  3.900  65.100
+2026-02-02              L6_n5_th0.4       5 0.400    0.400 -0.960 -21.060
+2026-02-09              L6_n5_th0.4       6 0.667    0.667  1.020  16.580
+2026-02-16              L6_n5_th0.4       9 1.000    1.000  6.740 108.990
+2026-02-23              L6_n5_th0.4       8 0.375    0.375 -0.850 -13.650
+2026-03-02              L6_n5_th0.4       8 0.375    0.625  0.600   9.790
+2026-03-09              L6_n5_th0.4      10 0.400    0.500 -0.840 -13.510
+2026-03-16              L6_n5_th0.4      14 0.286    0.357 -6.040 -97.700
+2026-03-23              L6_n5_th0.4      12 0.500    0.583  0.340   5.550
+2026-03-30              L6_n5_th0.4       7 0.571    0.571  0.390   6.400
+2026-04-06              L6_n5_th0.4      12 0.500    0.583 -0.280  -4.430
+2026-04-13              L6_n5_th0.4       7 0.571    0.857  2.650  42.830
+
+   v2s_stop8_wf_trades.parquet, week by week (every week before the exam):
+      week                     cell  trades   win  win_new      R     usd
+2024-04-29             L3_n10_th0.2       5 0.800    0.800  1.740  14.320
+2024-05-06             L3_n10_th0.2       9 0.222    0.222 -4.710 -38.430
+2024-05-13             L3_n10_th0.2      16 0.312    0.438 -1.950 -15.750
+2024-05-20             L3_n10_th0.2      15 0.467    0.600 -0.010  -0.100
+2024-05-27             L3_n10_th0.2      14 0.500    0.643  0.000   0.060
+2024-06-03             L3_n10_th0.4       3 0.667    0.667  1.120   9.140
+2024-06-10             L3_n10_th0.4       2 0.500    0.500 -0.300  -2.470
+2024-06-17             L3_n10_th0.4       2 1.000    1.000  1.400  11.470
+2024-06-24             L3_n10_th0.4       1 0.000    0.000 -1.000  -8.200
+2024-07-01             L3_n10_th0.4       1 1.000    1.000  0.690   5.690
+2024-07-15             L3_n10_th0.4       1 0.000    0.000 -1.000  -8.200
+2024-08-05             L3_n10_th0.4       1 0.000    0.000 -1.000  -8.200
+2024-08-12             L3_n10_th0.4       3 0.667    0.667  0.470   3.850
+2024-08-19             L3_n10_th0.4       2 0.500    0.500 -0.250  -2.080
+2024-08-26             L3_n10_th0.4       1 0.000    0.000 -0.580  -4.720
+2024-09-02              L3_n5_th0.4       5 0.400    0.400 -1.510 -12.350
+2024-09-16              L3_n5_th0.4       2 0.500    0.500 -0.430  -1.910
+2024-09-23              L3_n5_th0.4       2 1.000    1.000  1.590  12.970
+2024-09-30              L3_n5_th0.4       3 1.000    1.000  2.370  19.390
+2024-10-07              L3_n5_th0.4       1 1.000    1.000  0.790   6.440
+2024-10-14              L3_n5_th0.4       2 0.500    0.500 -0.200  -1.610
+2024-10-21              L3_n5_th0.4       2 0.500    0.500 -0.180  -1.530
+2024-10-28              L3_n5_th0.4       1 0.000    0.000 -1.000  -8.200
+2024-11-04              L3_n5_th0.4       2 0.500    0.500 -0.190  -1.620
+2024-11-11              L3_n5_th0.4       3 0.333    0.333 -1.230 -10.130
+2024-11-18              L3_n5_th0.4       1 0.000    0.000 -1.000  -8.150
+2024-11-25              L3_n5_th0.4       1 0.000    0.000 -1.000  -8.200
+2024-12-02              L3_n5_th0.4       1 0.000    0.000 -1.000  -8.150
+2024-12-09              L3_n5_th0.4       3 0.333    0.333 -1.200  -9.830
+2024-12-16              L3_n5_th0.4       2 1.000    1.000  1.570  12.850
+2024-12-30              L3_n5_th0.4       1 0.000    0.000 -1.000  -8.200
+2025-01-13              L3_n5_th0.4       1 0.000    0.000 -0.140  -1.120
+2025-01-20              L3_n5_th0.4       2 0.000    0.000 -0.060  -0.520
+2025-01-27              L3_n5_th0.4       2 0.000    0.500 -0.880  -7.200
+2025-02-03              L6_n5_th0.2      19 0.368    0.474 -3.420 -27.790
+2025-02-10              L6_n5_th0.2      16 0.500    0.562  1.170   9.620
+2025-02-17              L6_n5_th0.2      13 0.385    0.385 -2.710 -22.380
+2025-02-24              L6_n5_th0.2      12 0.500    0.500 -0.830  -6.720
+2025-03-03              L6_n5_th0.4       2 0.500    0.500 -0.130  -1.090
+2025-03-10              L6_n5_th0.4       4 0.750    0.750  1.600  13.160
+2025-03-17              L6_n5_th0.4       2 0.500    1.000  0.930   7.660
+2025-03-24              L6_n5_th0.4       4 0.750    0.750  1.740  14.310
+2025-03-31              L6_n5_th0.4       5 0.400    0.400 -1.130  -9.220
+2025-04-07              L6_n5_th0.4       9 0.444    0.444 -1.330 -13.580
+2025-04-14              L6_n5_th0.4       4 0.750    0.750  2.470  19.140
+2025-04-21              L6_n5_th0.4       5 0.600    0.600  0.840   7.930
+2025-04-28              L6_n5_th0.4       6 0.167    0.167 -4.010 -32.870
+2025-05-05              L6_n5_th0.4       7 0.429    0.571  0.320   4.910
+2025-05-12              L6_n5_th0.4       8 0.375    0.375 -2.430 -17.310
+2025-05-26              L6_n5_th0.4      10 0.500    0.500  0.420   3.390
+2025-06-02             L6_n10_th0.4       3 0.667    0.667  1.000   8.160
+2025-06-09             L6_n10_th0.4       4 0.750    0.750  1.970  16.130
+2025-06-16             L6_n10_th0.4       3 0.667    0.667  1.010   8.270
+2025-06-23             L6_n10_th0.4       8 0.500    0.500  0.660   5.500
+2025-06-30             L6_n10_th0.4       2 1.000    1.000  1.990  16.310
+2025-07-14             L6_n10_th0.4       3 1.000    1.000  2.980  24.410
+2025-07-21             L6_n10_th0.4       6 0.333    0.333 -1.990 -16.240
+2025-07-28             L6_n10_th0.4       2 0.500    0.500 -0.010  -0.110
+2025-08-04             L6_n10_th0.4       4 0.250    0.500  0.530   4.360
+2025-08-11             L6_n10_th0.4       4 0.500    0.500  0.010   0.040
+2025-08-18             L6_n10_th0.4       5 0.200    0.200 -3.000 -24.580
+2025-08-25             L6_n10_th0.4       5 0.200    0.200 -2.990 -24.510
+2025-09-01             L6_n10_th0.4       3 0.667    0.667  1.130   9.130
+2025-09-08             L6_n10_th0.4       6 0.500    0.667  2.080  17.020
+2025-09-15             L6_n10_th0.4       2 0.000    0.500 -0.550  -4.510
+2025-09-22             L6_n10_th0.4       6 0.500    0.500  0.760   6.150
+2025-09-29             L6_n10_th0.4       4 0.250    0.250 -1.860 -15.280
+2025-10-06             L6_n10_th0.4       6 0.333    0.333 -1.700 -13.810
+2025-10-13             L6_n10_th0.4       3 0.333    0.333 -0.770  -6.350
+2025-10-20             L6_n10_th0.4       4 0.500    0.500  0.510   2.310
+2025-10-27             L6_n10_th0.4       4 0.250    0.250 -0.900  -7.360
+2025-11-03             L6_n10_th0.4       2 0.500    0.500  0.190   1.590
+2025-11-10             L6_n10_th0.4       4 0.250    0.500 -0.070   0.670
+2025-11-17             L6_n10_th0.4       3 0.333    0.333 -0.790  -6.450
+2025-11-24             L6_n10_th0.4       3 0.333    0.667  0.540   4.410
+2025-12-01             L6_n10_th0.4       6 0.833    0.833  5.300  43.390
+2025-12-08             L6_n10_th0.4       2 0.000    0.000 -2.000 -16.300
+2025-12-15             L6_n10_th0.4       2 0.500    0.500  0.140   2.320
+2025-12-22             L6_n10_th0.4       3 0.000    0.333 -1.380 -11.250
+2025-12-29 L6_n10_th0.4 L6_n5_th0.4       6 0.167    0.333 -1.380 -11.300
+2026-01-05              L6_n5_th0.4       5 0.600    0.600  1.770  16.470
+2026-01-12              L6_n5_th0.4       4 0.750    0.750  3.120  25.490
+2026-01-19              L6_n5_th0.4       7 0.429    0.429 -0.550   2.370
+2026-01-26              L6_n5_th0.4      10 0.400    0.500  0.720   9.960
+2026-02-02              L6_n5_th0.4       5 0.400    0.400 -0.700 -19.580
+2026-02-09              L6_n5_th0.4       6 0.333    0.333 -1.300 -17.000
+2026-02-16              L6_n5_th0.4      10 0.600    0.600  4.300  39.020
+2026-02-23              L6_n5_th0.4       8 0.250    0.250 -2.110 -20.100
+2026-03-02              L6_n5_th0.4       8 0.375    0.500  1.090   5.850
+2026-03-09              L6_n5_th0.4      10 0.400    0.500  1.240  10.700
+2026-03-16              L6_n5_th0.4      14 0.286    0.357 -4.570 -31.940
+2026-03-23              L6_n5_th0.4      12 0.500    0.500  1.860  13.960
+2026-03-30              L6_n5_th0.4       7 0.571    0.571  2.450  14.960
+2026-04-06              L6_n5_th0.4      12 0.417    0.500  1.040   5.300
+2026-04-13              L6_n5_th0.4       7 0.571    0.714  4.490  34.410
+
+   v2s_wf_trades.parquet, week by week (every week before the exam):
+      week                     cell  trades   win  win_new      R     usd
+2024-05-06             L6_n10_th0.2       6 0.667    0.667  2.320  12.150
+2024-05-13             L6_n10_th0.2       7 0.143    0.286 -3.400 -16.990
+2024-05-20             L6_n10_th0.2       5 0.600    0.800  2.720  13.740
+2024-05-27             L6_n10_th0.2       6 0.500    0.667  1.400   7.490
+2024-06-03             L6_n10_th0.2       8 0.375    0.375 -1.790  -8.740
+2024-06-10             L6_n10_th0.2       7 0.429    0.429 -0.060  -1.300
+2024-06-17             L6_n10_th0.2       8 0.125    0.250 -4.260 -21.890
+2024-06-24             L6_n10_th0.2       6 0.333    0.500 -0.710  -3.540
+2024-07-01             L3_n10_th0.4       1 1.000    1.000  1.090   5.690
+2024-07-15             L3_n10_th0.4       1 0.000    0.000 -1.000  -5.200
+2024-08-05             L3_n10_th0.4       1 0.000    0.000 -1.000  -7.030
+2024-08-12             L3_n10_th0.4       3 0.667    0.667  1.320   4.140
+2024-08-19             L3_n10_th0.4       2 0.500    0.500  0.180   0.920
+2024-08-26             L3_n10_th0.4       1 0.000    0.000 -1.000  -5.150
+2024-09-02              L6_n5_th0.2      17 0.235    0.294 -6.740 -38.490
+2024-09-09              L6_n5_th0.2      14 0.357    0.500  1.740   8.250
+2024-09-16              L6_n5_th0.2      10 0.400    0.500  1.400   1.640
+2024-09-23              L6_n5_th0.2      17 0.294    0.294 -4.960 -28.040
+2024-09-30  L6_n5_th0.2 L3_n5_th0.4       4 0.750    0.750  2.490  13.970
+2024-10-07              L3_n5_th0.4       1 1.000    1.000  1.250   6.440
+2024-10-14              L3_n5_th0.4       2 0.500    0.500  0.270   1.390
+2024-10-21              L3_n5_th0.4       2 0.500    0.500  0.290   0.150
+2024-10-28              L3_n5_th0.4       1 0.000    0.000 -1.000  -5.500
+2024-11-04              L3_n5_th0.4       2 0.500    0.500 -0.040   0.300
+2024-11-11              L3_n5_th0.4       3 0.333    0.333 -0.920  -6.050
+2024-11-18              L3_n5_th0.4       1 0.000    0.000 -1.000  -5.150
+2024-11-25              L3_n5_th0.4       1 0.000    0.000 -1.000  -6.070
+2024-12-02              L3_n5_th0.4       1 0.000    0.000 -1.000  -5.150
+2024-12-09              L3_n5_th0.4       3 0.333    0.333 -0.770  -4.120
+2024-12-16              L3_n5_th0.4       2 1.000    1.000  2.390  12.850
+2024-12-30              L3_n5_th0.4       1 0.000    0.000 -1.000  -5.200
+2025-01-13              L3_n5_th0.4       1 0.000    0.000 -1.000  -5.150
+2025-01-20              L3_n5_th0.4       2 0.000    0.000 -0.100  -0.520
+2025-01-27              L3_n5_th0.4       2 0.000    0.500 -0.820  -4.200
+2025-02-03              L3_n5_th0.4       4 0.250    0.250 -1.930  -9.730
+2025-03-03              L3_n5_th0.4       1 1.000    1.000  1.310   7.080
+2025-03-10              L3_n5_th0.4       2 0.000    0.000 -2.000 -12.380
+2025-03-17              L3_n5_th0.4       1 0.000    0.000 -1.000  -5.410
+2025-03-24              L3_n5_th0.4       1 0.000    0.000 -1.000  -5.150
+2025-03-31              L6_n5_th0.4       5 0.400    0.400 -0.480  -3.970
+2025-04-07              L6_n5_th0.4       9 0.444    0.444 -0.470 -10.630
+2025-04-14              L6_n5_th0.4       4 0.750    0.750  3.180  19.140
+2025-04-21              L6_n5_th0.4       5 0.400    0.400 -1.150  -2.890
+2025-04-28 L6_n5_th0.4 L6_n10_th0.4       6 0.167    0.167 -3.730 -20.310
+2025-05-05             L6_n10_th0.4       5 0.400    0.400 -0.530  -6.300
+2025-05-12             L6_n10_th0.4       4 0.250    0.250 -2.360 -10.880
+2025-05-26             L6_n10_th0.4       3 0.667    0.667  1.840  10.140
+2025-06-02             L6_n10_th0.4       3 0.667    0.667  1.270  10.450
+2025-06-09             L6_n10_th0.4       4 0.500    0.500  0.760   4.780
+2025-06-16             L6_n10_th0.4       3 0.667    0.667  1.490  10.220
+2025-06-23             L6_n10_th0.4       8 0.500    0.500  2.040  12.490
+2025-06-30             L6_n10_th0.4       2 1.000    1.000  2.870  16.310
+2025-07-14             L6_n10_th0.4       3 0.333    0.333 -0.430  -3.860
+2025-07-21             L6_n10_th0.4       6 0.167    0.167 -3.730 -21.940
+2025-07-28             L6_n10_th0.4       2 0.000    0.000 -2.000 -10.720
+2025-08-04             L6_n10_th0.4       5 0.400    0.600  2.890  15.540
+2025-08-11             L6_n10_th0.4       4 0.500    0.500  1.070   5.940
+2025-08-18             L6_n10_th0.4       5 0.200    0.200 -2.420 -12.580
+2025-08-25             L6_n10_th0.4       6 0.167    0.333 -1.950 -10.410
+2025-09-01             L6_n10_th0.4       3 0.667    0.667  2.210  11.720
+2025-09-08             L6_n10_th0.4       6 0.500    0.667  3.540  22.900
+2025-09-15             L6_n10_th0.4       3 0.000    0.000 -3.000 -17.410
+2025-09-22             L6_n10_th0.4       6 0.500    0.500  1.610   8.980
+2025-09-29             L6_n10_th0.4       4 0.250    0.250 -1.600 -11.120
+2025-10-06             L6_n10_th0.4       6 0.167    0.167 -3.880 -22.740
+2025-10-13             L6_n10_th0.4       3 0.333    0.333 -0.660  -2.940
+2025-10-20             L6_n10_th0.4       4 0.500    0.500  0.830   2.310
+2025-10-27             L6_n10_th0.4       4 0.250    0.250 -0.820  -5.540
+2025-11-03             L6_n10_th0.4       2 0.500    0.500  0.360   4.280
+2025-11-10             L6_n10_th0.4       4 0.250    0.500 -0.010   1.620
+2025-11-17             L6_n10_th0.4       3 0.333    0.333 -0.480  -3.910
+2025-11-24             L6_n10_th0.4       3 0.000    0.333 -1.610  -9.420
+2025-12-01             L6_n10_th0.4       6 0.833    0.833  6.590  43.550
+2025-12-08             L6_n10_th0.4       2 0.000    0.000 -2.000 -13.200
+2025-12-15             L6_n10_th0.4       2 0.500    0.500  0.140   4.650
+2025-12-22             L6_n10_th0.4       3 0.000    0.333 -1.040  -7.950
+2025-12-29 L6_n10_th0.4 L6_n5_th0.4       6 0.000    0.000 -6.000 -35.040
+2026-01-05              L6_n5_th0.4       5 0.600    0.600  2.850  18.150
+2026-01-12              L6_n5_th0.4       4 0.750    0.750  3.750  28.150
+2026-01-19              L6_n5_th0.4       7 0.429    0.429 -0.550   8.460
+2026-01-26              L6_n5_th0.4      10 0.400    0.500  1.100  12.140
+2026-02-02              L6_n5_th0.4       5 0.400    0.400 -0.700 -17.540
+2026-02-09              L6_n5_th0.4       6 0.333    0.333 -1.210 -14.380
+2026-02-16              L6_n5_th0.4      10 0.600    0.600  5.600  42.350
+2026-02-23              L6_n5_th0.4       8 0.125    0.125 -5.070 -37.710
+2026-03-02              L6_n5_th0.4       8 0.375    0.500  1.630   7.860
+2026-03-09              L6_n5_th0.4      10 0.400    0.500  1.840  20.010
+2026-03-16              L6_n5_th0.4      14 0.286    0.357 -4.570 -20.540
+2026-03-23              L6_n5_th0.4      12 0.500    0.500  2.440  17.670
+2026-03-30              L6_n5_th0.4       7 0.571    0.571  3.830  16.670
+2026-04-06              L6_n5_th0.4      12 0.417    0.417  1.020   3.970
+2026-04-13              L6_n5_th0.4       7 0.571    0.714  6.260  34.410
+
+C. walk_forward month rows (every month before the exam, the stored taken trades): 253, changed 149
+                              file              month  trades  win_old  win_new
+         lvl3_wf_3y_trades.parquet            2023-11      31    0.194    0.419
+         lvl3_wf_3y_trades.parquet            2023-12      22    0.091    0.227
+         lvl3_wf_3y_trades.parquet            2024-01      19    0.158    0.158
+         lvl3_wf_3y_trades.parquet            2024-02      29    0.069    0.138
+         lvl3_wf_3y_trades.parquet            2024-03      23    0.217    0.348
+         lvl3_wf_3y_trades.parquet            2024-04      15    0.400    0.400
+         lvl3_wf_3y_trades.parquet            2024-05      12    0.250    0.417
+         lvl3_wf_3y_trades.parquet            2024-06      10    0.300    0.400
+         lvl3_wf_3y_trades.parquet            2024-07      13    0.154    0.308
+         lvl3_wf_3y_trades.parquet            2024-08      21    0.143    0.238
+         lvl3_wf_3y_trades.parquet            2024-09      25    0.160    0.400
+         lvl3_wf_3y_trades.parquet            2024-10      26    0.231    0.269
+         lvl3_wf_3y_trades.parquet            2024-11      15    0.200    0.267
+         lvl3_wf_3y_trades.parquet            2024-12      30    0.100    0.233
+         lvl3_wf_3y_trades.parquet            2025-01      23    0.174    0.348
+         lvl3_wf_3y_trades.parquet            2025-02      21    0.238    0.286
+         lvl3_wf_3y_trades.parquet            2025-03      26    0.115    0.308
+         lvl3_wf_3y_trades.parquet            2025-04      10    0.200    0.300
+         lvl3_wf_3y_trades.parquet            2025-05       7    0.571    0.571
+         lvl3_wf_3y_trades.parquet            2025-06      17    0.235    0.353
+         lvl3_wf_3y_trades.parquet            2025-07      15    0.200    0.200
+         lvl3_wf_3y_trades.parquet            2025-08      15    0.200    0.200
+         lvl3_wf_3y_trades.parquet            2025-09      16    0.312    0.500
+         lvl3_wf_3y_trades.parquet            2025-10       6    0.333    0.833
+         lvl3_wf_3y_trades.parquet            2025-11      15    0.400    0.467
+         lvl3_wf_3y_trades.parquet            2025-12      14    0.071    0.214
+         lvl3_wf_3y_trades.parquet            2026-01       4    0.250    0.500
+         lvl3_wf_3y_trades.parquet            2026-02       9    0.222    0.333
+         lvl3_wf_3y_trades.parquet            2026-03       8    0.250    0.250
+         lvl3_wf_3y_trades.parquet 2026-04 (to 04-17)       3    0.000    0.000
+            lvl3_wf_trades.parquet            2026-02      21    0.190    0.238
+            lvl3_wf_trades.parquet            2026-03      31    0.226    0.323
+            lvl3_wf_trades.parquet 2026-04 (to 04-17)      14    0.071    0.143
+         present_wf_trades.parquet            2024-06      34    0.235    0.324
+         present_wf_trades.parquet            2024-07      37    0.432    0.486
+         present_wf_trades.parquet            2024-08       8    0.250    0.375
+         present_wf_trades.parquet            2024-09       7    0.286    0.429
+         present_wf_trades.parquet            2024-10      46    0.413    0.500
+         present_wf_trades.parquet            2024-11      12    0.250    0.250
+         present_wf_trades.parquet            2024-12      19    0.211    0.368
+         present_wf_trades.parquet            2025-01      61    0.262    0.361
+         present_wf_trades.parquet            2025-02      19    0.526    0.579
+         present_wf_trades.parquet            2025-03      19    0.158    0.211
+         present_wf_trades.parquet            2025-04      36    0.417    0.444
+         present_wf_trades.parquet            2025-05      55    0.436    0.473
+         present_wf_trades.parquet            2025-06      33    0.424    0.545
+         present_wf_trades.parquet            2025-07      39    0.410    0.462
+         present_wf_trades.parquet            2025-08      21    0.333    0.429
+         present_wf_trades.parquet            2025-09      41    0.537    0.537
+         present_wf_trades.parquet            2025-10      27    0.333    0.407
+         present_wf_trades.parquet            2025-11      45    0.333    0.400
+         present_wf_trades.parquet            2025-12       4    0.250    0.250
+         present_wf_trades.parquet            2026-01       4    0.500    0.750
+         present_wf_trades.parquet            2026-02      10    0.600    0.700
+         present_wf_trades.parquet            2026-03     131    0.313    0.359
+         present_wf_trades.parquet 2026-04 (to 04-17)      28    0.321    0.393
+             v2b_wf_trades.parquet            2025-12      78    0.359    0.423
+             v2b_wf_trades.parquet            2026-01      27    0.481    0.556
+             v2b_wf_trades.parquet            2026-02      31    0.452    0.452
+             v2b_wf_trades.parquet            2026-03      42    0.262    0.286
+             v2b_wf_trades.parquet 2026-04 (to 04-17)      43    0.372    0.395
+v2s_be0.5_stop12_wf_trades.parquet            2024-05      56    0.304    0.357
+v2s_be0.5_stop12_wf_trades.parquet            2024-06       7    0.571    0.571
+v2s_be0.5_stop12_wf_trades.parquet            2024-07       2    1.000    1.000
+v2s_be0.5_stop12_wf_trades.parquet            2024-08       7    0.286    0.286
+v2s_be0.5_stop12_wf_trades.parquet            2024-09       8    0.375    0.375
+v2s_be0.5_stop12_wf_trades.parquet            2024-10       6    0.167    0.333
+v2s_be0.5_stop12_wf_trades.parquet            2024-11      56    0.304    0.321
+v2s_be0.5_stop12_wf_trades.parquet            2024-12      63    0.317    0.397
+v2s_be0.5_stop12_wf_trades.parquet            2025-01      40    0.200    0.200
+v2s_be0.5_stop12_wf_trades.parquet            2025-02      58    0.414    0.483
+v2s_be0.5_stop12_wf_trades.parquet            2025-03      26    0.308    0.308
+v2s_be0.5_stop12_wf_trades.parquet            2025-04      44    0.386    0.409
+v2s_be0.5_stop12_wf_trades.parquet            2025-05      25    0.400    0.480
+v2s_be0.5_stop12_wf_trades.parquet            2025-06      32    0.469    0.469
+v2s_be0.5_stop12_wf_trades.parquet            2025-07      13    0.385    0.385
+v2s_be0.5_stop12_wf_trades.parquet            2025-08      17    0.118    0.235
+v2s_be0.5_stop12_wf_trades.parquet            2025-09      54    0.426    0.426
+v2s_be0.5_stop12_wf_trades.parquet            2025-10      54    0.222    0.222
+v2s_be0.5_stop12_wf_trades.parquet            2025-11      58    0.345    0.362
+v2s_be0.5_stop12_wf_trades.parquet            2025-12      76    0.263    0.316
+v2s_be0.5_stop12_wf_trades.parquet            2026-01      29    0.414    0.448
+v2s_be0.5_stop12_wf_trades.parquet            2026-02      28    0.357    0.357
+v2s_be0.5_stop12_wf_trades.parquet            2026-03      47    0.319    0.340
+v2s_be0.5_stop12_wf_trades.parquet 2026-04 (to 04-17)      23    0.435    0.478
+v2s_be0.5_stop16_wf_trades.parquet            2024-05      22    0.364    0.409
+v2s_be0.5_stop16_wf_trades.parquet            2024-06       7    0.571    0.571
+v2s_be0.5_stop16_wf_trades.parquet            2024-07       2    1.000    1.000
+v2s_be0.5_stop16_wf_trades.parquet            2024-08       7    0.286    0.286
+v2s_be0.5_stop16_wf_trades.parquet            2024-09       8    0.375    0.375
+v2s_be0.5_stop16_wf_trades.parquet            2024-10       6    0.167    0.333
+v2s_be0.5_stop16_wf_trades.parquet            2024-11      55    0.309    0.327
+v2s_be0.5_stop16_wf_trades.parquet            2024-12      60    0.300    0.367
+v2s_be0.5_stop16_wf_trades.parquet            2025-01      56    0.214    0.250
+v2s_be0.5_stop16_wf_trades.parquet            2025-02      57    0.421    0.491
+v2s_be0.5_stop16_wf_trades.parquet            2025-03      26    0.385    0.385
+v2s_be0.5_stop16_wf_trades.parquet            2025-04      44    0.386    0.409
+v2s_be0.5_stop16_wf_trades.parquet            2025-05      25    0.400    0.480
+v2s_be0.5_stop16_wf_trades.parquet            2025-06      10    0.400    0.400
+v2s_be0.5_stop16_wf_trades.parquet            2025-07      13    0.385    0.385
+v2s_be0.5_stop16_wf_trades.parquet            2025-08      17    0.118    0.235
+v2s_be0.5_stop16_wf_trades.parquet            2025-09      20    0.400    0.400
+v2s_be0.5_stop16_wf_trades.parquet            2025-10      52    0.231    0.231
+v2s_be0.5_stop16_wf_trades.parquet            2025-11      22    0.318    0.364
+v2s_be0.5_stop16_wf_trades.parquet            2025-12      73    0.274    0.342
+v2s_be0.5_stop16_wf_trades.parquet            2026-01      29    0.448    0.483
+v2s_be0.5_stop16_wf_trades.parquet            2026-02      28    0.357    0.357
+v2s_be0.5_stop16_wf_trades.parquet            2026-03      47    0.319    0.340
+v2s_be0.5_stop16_wf_trades.parquet 2026-04 (to 04-17)      23    0.435    0.478
+ v2s_be0.5_stop8_wf_trades.parquet            2024-05      61    0.279    0.328
+ v2s_be0.5_stop8_wf_trades.parquet            2024-06       8    0.500    0.500
+ v2s_be0.5_stop8_wf_trades.parquet            2024-07       2    0.500    0.500
+ v2s_be0.5_stop8_wf_trades.parquet            2024-08       7    0.286    0.286
+ v2s_be0.5_stop8_wf_trades.parquet            2024-09       8    0.375    0.375
+ v2s_be0.5_stop8_wf_trades.parquet            2024-10       6    0.167    0.167
+ v2s_be0.5_stop8_wf_trades.parquet            2024-11      59    0.305    0.322
+ v2s_be0.5_stop8_wf_trades.parquet            2024-12      69    0.290    0.362
+ v2s_be0.5_stop8_wf_trades.parquet            2025-01      63    0.175    0.206
+ v2s_be0.5_stop8_wf_trades.parquet            2025-02      15    0.267    0.267
+ v2s_be0.5_stop8_wf_trades.parquet            2025-03       5    0.400    0.400
+ v2s_be0.5_stop8_wf_trades.parquet            2025-04      28    0.321    0.321
+ v2s_be0.5_stop8_wf_trades.parquet            2025-05      26    0.308    0.346
+ v2s_be0.5_stop8_wf_trades.parquet            2025-06      18    0.556    0.556
+ v2s_be0.5_stop8_wf_trades.parquet            2025-07      13    0.385    0.385
+ v2s_be0.5_stop8_wf_trades.parquet            2025-08      19    0.105    0.211
+ v2s_be0.5_stop8_wf_trades.parquet            2025-09      20    0.400    0.400
+ v2s_be0.5_stop8_wf_trades.parquet            2025-10      19    0.263    0.263
+ v2s_be0.5_stop8_wf_trades.parquet            2025-11      23    0.304    0.304
+ v2s_be0.5_stop8_wf_trades.parquet            2025-12      29    0.310    0.448
+ v2s_be0.5_stop8_wf_trades.parquet            2026-01      29    0.414    0.448
+ v2s_be0.5_stop8_wf_trades.parquet            2026-02      29    0.310    0.310
+ v2s_be0.5_stop8_wf_trades.parquet            2026-03      47    0.319    0.319
+ v2s_be0.5_stop8_wf_trades.parquet 2026-04 (to 04-17)      23    0.391    0.435
+       v2s_be0.5_wf_trades.parquet            2024-05      25    0.320    0.360
+       v2s_be0.5_wf_trades.parquet            2024-06      29    0.207    0.276
+       v2s_be0.5_wf_trades.parquet            2024-07       2    0.500    0.500
+       v2s_be0.5_wf_trades.parquet            2024-08       7    0.286    0.286
+       v2s_be0.5_wf_trades.parquet            2024-09       8    0.375    0.375
+       v2s_be0.5_wf_trades.parquet            2024-10       6    0.167    0.167
+       v2s_be0.5_wf_trades.parquet            2024-11       5    0.200    0.200
+       v2s_be0.5_wf_trades.parquet            2024-12       6    0.333    0.333
+       v2s_be0.5_wf_trades.parquet            2025-01       6    0.000    0.000
+       v2s_be0.5_wf_trades.parquet            2025-02       4    0.250    0.250
+       v2s_be0.5_wf_trades.parquet            2025-03       5    0.200    0.200
+       v2s_be0.5_wf_trades.parquet            2025-04      28    0.286    0.286
+       v2s_be0.5_wf_trades.parquet            2025-05      26    0.231    0.231
+       v2s_be0.5_wf_trades.parquet            2025-06      18    0.500    0.500
+       v2s_be0.5_wf_trades.parquet            2025-07      13    0.154    0.154
+       v2s_be0.5_wf_trades.parquet            2025-08      20    0.150    0.250
+       v2s_be0.5_wf_trades.parquet            2025-09      73    0.288    0.301
+       v2s_be0.5_wf_trades.parquet            2025-10      19    0.211    0.211
+       v2s_be0.5_wf_trades.parquet            2025-11      12    0.250    0.250
+       v2s_be0.5_wf_trades.parquet            2025-12      70    0.329    0.343
+       v2s_be0.5_wf_trades.parquet            2026-01      29    0.414    0.448
+       v2s_be0.5_wf_trades.parquet            2026-02      29    0.276    0.276
+       v2s_be0.5_wf_trades.parquet            2026-03      47    0.319    0.319
+       v2s_be0.5_wf_trades.parquet 2026-04 (to 04-17)      23    0.391    0.391
+      v2s_stop12_wf_trades.parquet            2024-05      51    0.510    0.647
+      v2s_stop12_wf_trades.parquet            2024-06       7    0.571    0.571
+      v2s_stop12_wf_trades.parquet            2024-07       2    1.000    1.000
+      v2s_stop12_wf_trades.parquet            2024-08       7    0.429    0.429
+      v2s_stop12_wf_trades.parquet            2024-09       7    0.429    0.429
+      v2s_stop12_wf_trades.parquet            2024-10       8    0.625    0.750
+      v2s_stop12_wf_trades.parquet            2024-11       7    0.286    0.286
+      v2s_stop12_wf_trades.parquet            2024-12      32    0.344    0.500
+      v2s_stop12_wf_trades.parquet            2025-01       6    0.000    0.167
+      v2s_stop12_wf_trades.parquet            2025-02      54    0.537    0.611
+      v2s_stop12_wf_trades.parquet            2025-03      12    0.667    0.750
+      v2s_stop12_wf_trades.parquet            2025-04      28    0.536    0.607
+      v2s_stop12_wf_trades.parquet            2025-05      25    0.560    0.640
+      v2s_stop12_wf_trades.parquet            2025-06      32    0.531    0.562
+      v2s_stop12_wf_trades.parquet            2025-07      30    0.433    0.500
+      v2s_stop12_wf_trades.parquet            2025-08      16    0.312    0.375
+      v2s_stop12_wf_trades.parquet            2025-09      19    0.474    0.579
+      v2s_stop12_wf_trades.parquet            2025-10      33    0.424    0.455
+      v2s_stop12_wf_trades.parquet            2025-11      66    0.409    0.470
+      v2s_stop12_wf_trades.parquet            2025-12      74    0.351    0.432
+      v2s_stop12_wf_trades.parquet            2026-01      29    0.517    0.552
+      v2s_stop12_wf_trades.parquet            2026-02      28    0.536    0.536
+      v2s_stop12_wf_trades.parquet            2026-03      47    0.404    0.511
+      v2s_stop12_wf_trades.parquet 2026-04 (to 04-17)      23    0.522    0.652
+      v2s_stop16_wf_trades.parquet            2024-05      21    0.476    0.571
+      v2s_stop16_wf_trades.parquet            2024-06       7    0.571    0.571
+      v2s_stop16_wf_trades.parquet            2024-07       2    1.000    1.000
+      v2s_stop16_wf_trades.parquet            2024-08       7    0.429    0.429
+      v2s_stop16_wf_trades.parquet            2024-09       8    0.625    0.625
+      v2s_stop16_wf_trades.parquet            2024-10       8    0.625    0.750
+      v2s_stop16_wf_trades.parquet            2024-11       7    0.286    0.286
+      v2s_stop16_wf_trades.parquet            2024-12      54    0.389    0.463
+      v2s_stop16_wf_trades.parquet            2025-01       6    0.000    0.167
+      v2s_stop16_wf_trades.parquet            2025-02      52    0.538    0.615
+      v2s_stop16_wf_trades.parquet            2025-03      12    0.667    0.750
+      v2s_stop16_wf_trades.parquet            2025-04      28    0.536    0.607
+      v2s_stop16_wf_trades.parquet            2025-05      25    0.560    0.640
+      v2s_stop16_wf_trades.parquet            2025-06      31    0.548    0.613
+      v2s_stop16_wf_trades.parquet            2025-07      13    0.615    0.615
+      v2s_stop16_wf_trades.parquet            2025-08      16    0.312    0.375
+      v2s_stop16_wf_trades.parquet            2025-09      19    0.579    0.684
+      v2s_stop16_wf_trades.parquet            2025-10      18    0.333    0.333
+      v2s_stop16_wf_trades.parquet            2025-11      64    0.500    0.578
+      v2s_stop16_wf_trades.parquet            2025-12      70    0.386    0.486
+      v2s_stop16_wf_trades.parquet            2026-01      29    0.552    0.621
+      v2s_stop16_wf_trades.parquet            2026-02      28    0.643    0.643
+      v2s_stop16_wf_trades.parquet            2026-03      47    0.404    0.511
+      v2s_stop16_wf_trades.parquet 2026-04 (to 04-17)      23    0.522    0.652
+       v2s_stop8_wf_trades.parquet            2024-05      59    0.424    0.525
+       v2s_stop8_wf_trades.parquet            2024-06       8    0.625    0.625
+       v2s_stop8_wf_trades.parquet            2024-07       2    0.500    0.500
+       v2s_stop8_wf_trades.parquet            2024-08       7    0.429    0.429
+       v2s_stop8_wf_trades.parquet            2024-09      10    0.600    0.600
+       v2s_stop8_wf_trades.parquet            2024-10       8    0.625    0.625
+       v2s_stop8_wf_trades.parquet            2024-11       7    0.286    0.286
+       v2s_stop8_wf_trades.parquet            2024-12       6    0.500    0.500
+       v2s_stop8_wf_trades.parquet            2025-01       6    0.000    0.167
+       v2s_stop8_wf_trades.parquet            2025-02      60    0.433    0.483
+       v2s_stop8_wf_trades.parquet            2025-03      12    0.667    0.750
+       v2s_stop8_wf_trades.parquet            2025-04      28    0.464    0.464
+       v2s_stop8_wf_trades.parquet            2025-05      26    0.423    0.462
+       v2s_stop8_wf_trades.parquet            2025-06      18    0.611    0.611
+       v2s_stop8_wf_trades.parquet            2025-07      13    0.615    0.615
+       v2s_stop8_wf_trades.parquet            2025-08      18    0.278    0.333
+       v2s_stop8_wf_trades.parquet            2025-09      19    0.474    0.579
+       v2s_stop8_wf_trades.parquet            2025-10      19    0.316    0.316
+       v2s_stop8_wf_trades.parquet            2025-11      12    0.333    0.500
+       v2s_stop8_wf_trades.parquet            2025-12      16    0.375    0.500
+       v2s_stop8_wf_trades.parquet            2026-01      29    0.483    0.517
+       v2s_stop8_wf_trades.parquet            2026-02      29    0.414    0.414
+       v2s_stop8_wf_trades.parquet            2026-03      47    0.404    0.468
+       v2s_stop8_wf_trades.parquet 2026-04 (to 04-17)      23    0.478    0.565
+             v2s_wf_trades.parquet            2024-05      24    0.458    0.583
+             v2s_wf_trades.parquet            2024-06      29    0.310    0.379
+             v2s_wf_trades.parquet            2024-07       2    0.500    0.500
+             v2s_wf_trades.parquet            2024-08       7    0.429    0.429
+             v2s_wf_trades.parquet            2024-09      60    0.317    0.383
+             v2s_wf_trades.parquet            2024-10       8    0.625    0.625
+             v2s_wf_trades.parquet            2024-11       7    0.286    0.286
+             v2s_wf_trades.parquet            2024-12       6    0.500    0.500
+             v2s_wf_trades.parquet            2025-01       6    0.000    0.167
+             v2s_wf_trades.parquet            2025-02       4    0.250    0.250
+             v2s_wf_trades.parquet            2025-03       5    0.200    0.200
+             v2s_wf_trades.parquet            2025-04      28    0.429    0.429
+             v2s_wf_trades.parquet            2025-05      13    0.385    0.385
+             v2s_wf_trades.parquet            2025-06      18    0.556    0.556
+             v2s_wf_trades.parquet            2025-07      13    0.308    0.308
+             v2s_wf_trades.parquet            2025-08      20    0.300    0.400
+             v2s_wf_trades.parquet            2025-09      20    0.450    0.500
+             v2s_wf_trades.parquet            2025-10      19    0.263    0.263
+             v2s_wf_trades.parquet            2025-11      12    0.250    0.417
+             v2s_wf_trades.parquet            2025-12      16    0.375    0.438
+             v2s_wf_trades.parquet            2026-01      29    0.448    0.483
+             v2s_wf_trades.parquet            2026-02      29    0.379    0.379
+             v2s_wf_trades.parquet            2026-03      47    0.404    0.468
+             v2s_wf_trades.parquet 2026-04 (to 04-17)      23    0.478    0.522
+
+D. each file, every row before the exam (the printed '(learning)' lines): 136 files, changed 132
+                                     file  rows      first  win_old  win_new
+                  combined_trades.parquet 35338 2023-11-01   0.4020   0.4120
+          combined_trades_floor10.parquet 35338 2023-11-01   0.2845   0.4673
+           combined_trades_floor5.parquet 35338 2023-11-01   0.3974   0.4585
+                 lvl2_design_feat.parquet  1144 2023-11-03   0.1897   0.2990
+     lvl2_design_k0.25_all_T1_p70.parquet   768 2023-11-09   0.2669   0.2982
+     lvl2_design_k0.25_all_T1_p80.parquet   951 2023-11-08   0.2461   0.2881
+     lvl2_design_k0.25_all_T1_p90.parquet  1042 2023-11-08   0.1852   0.2745
+     lvl2_design_k0.25_all_T2_p70.parquet   756 2023-11-09   0.1627   0.2817
+     lvl2_design_k0.25_all_T2_p80.parquet   935 2023-11-08   0.1658   0.2749
+     lvl2_design_k0.25_all_T2_p90.parquet  1036 2023-11-08   0.1699   0.2770
+     lvl2_design_k0.25_imp_T1_p70.parquet   691 2023-11-09   0.2735   0.3039
+     lvl2_design_k0.25_imp_T1_p80.parquet   855 2023-11-08   0.2468   0.2865
+     lvl2_design_k0.25_imp_T1_p90.parquet   940 2023-11-08   0.1915   0.2734
+     lvl2_design_k0.25_imp_T2_p70.parquet   680 2023-11-09   0.1721   0.2853
+     lvl2_design_k0.25_imp_T2_p80.parquet   839 2023-11-08   0.1716   0.2741
+     lvl2_design_k0.25_imp_T2_p90.parquet   930 2023-11-08   0.1763   0.2753
+      lvl2_design_k0.5_all_T1_p70.parquet   870 2023-11-03   0.2759   0.3149
+      lvl2_design_k0.5_all_T1_p80.parquet  1047 2023-11-03   0.2483   0.3056
+      lvl2_design_k0.5_all_T1_p90.parquet  1144 2023-11-03   0.1897   0.2990
+      lvl2_design_k0.5_all_T2_p70.parquet   856 2023-11-03   0.1706   0.2944
+      lvl2_design_k0.5_all_T2_p80.parquet  1026 2023-11-03   0.1784   0.2982
+      lvl2_design_k0.5_all_T2_p90.parquet  1141 2023-11-03   0.1832   0.2980
+      lvl2_design_k0.5_imp_T1_p70.parquet   797 2023-11-03   0.2760   0.3149
+      lvl2_design_k0.5_imp_T1_p80.parquet   950 2023-11-03   0.2516   0.3074
+      lvl2_design_k0.5_imp_T1_p90.parquet  1034 2023-11-03   0.1905   0.2969
+      lvl2_design_k0.5_imp_T2_p70.parquet   785 2023-11-03   0.1758   0.2994
+      lvl2_design_k0.5_imp_T2_p80.parquet   931 2023-11-03   0.1815   0.3008
+      lvl2_design_k0.5_imp_T2_p90.parquet  1030 2023-11-03   0.1854   0.2990
+                 lvl2_verify_2026.parquet    94 2026-02-23   0.1702   0.2553
+      lvl2_window_k0.5_all_T1_p80.parquet     0                 NaN      NaN
+      lvl3_cell_3y_s1.5_n3_T1_p80.parquet   965 2023-10-05   0.2456   0.2974
+      lvl3_cell_3y_s1.5_n3_T1_p90.parquet  1079 2023-10-05   0.1789   0.2734
+      lvl3_cell_3y_s1.5_n3_T2_p80.parquet   952 2023-10-05   0.1723   0.2773
+      lvl3_cell_3y_s1.5_n3_T2_p90.parquet  1076 2023-10-05   0.1757   0.2788
+      lvl3_cell_3y_s1.5_n4_T1_p80.parquet   780 2023-10-04   0.2513   0.3051
+      lvl3_cell_3y_s1.5_n4_T1_p90.parquet   886 2023-10-04   0.1716   0.2743
+      lvl3_cell_3y_s1.5_n4_T2_p80.parquet   774 2023-10-04   0.1925   0.2984
+      lvl3_cell_3y_s1.5_n4_T2_p90.parquet   890 2023-10-04   0.1831   0.2820
+      lvl3_cell_3y_s1.5_n5_T1_p80.parquet   586 2023-10-17   0.2833   0.3396
+      lvl3_cell_3y_s1.5_n5_T1_p90.parquet   731 2023-10-17   0.1833   0.2804
+      lvl3_cell_3y_s1.5_n5_T2_p80.parquet   583 2023-10-17   0.2041   0.3105
+      lvl3_cell_3y_s1.5_n5_T2_p90.parquet   734 2023-10-17   0.1880   0.2834
+     lvl3_cell_3y_s1.5_nad_T1_p80.parquet   888 2023-10-03   0.2376   0.2894
+     lvl3_cell_3y_s1.5_nad_T1_p90.parquet  1005 2023-10-03   0.1692   0.2716
+     lvl3_cell_3y_s1.5_nad_T2_p80.parquet   878 2023-10-03   0.1720   0.2722
+     lvl3_cell_3y_s1.5_nad_T2_p90.parquet  1000 2023-10-03   0.1730   0.2720
+      lvl3_cell_3y_s2.0_n3_T1_p80.parquet   727 2023-10-23   0.2311   0.3067
+      lvl3_cell_3y_s2.0_n3_T1_p90.parquet   785 2023-10-20   0.1783   0.2879
+      lvl3_cell_3y_s2.0_n3_T2_p80.parquet   717 2023-10-23   0.1785   0.2901
+      lvl3_cell_3y_s2.0_n3_T2_p90.parquet   787 2023-10-20   0.1766   0.2821
+      lvl3_cell_3y_s2.0_n4_T1_p80.parquet   515 2023-11-09   0.2447   0.3107
+      lvl3_cell_3y_s2.0_n4_T1_p90.parquet   593 2023-11-09   0.1889   0.3002
+      lvl3_cell_3y_s2.0_n4_T2_p80.parquet   512 2023-11-09   0.1816   0.2949
+      lvl3_cell_3y_s2.0_n4_T2_p90.parquet   594 2023-11-09   0.1751   0.2811
+      lvl3_cell_3y_s2.0_n5_T1_p80.parquet   361 2023-11-28   0.2798   0.3546
+      lvl3_cell_3y_s2.0_n5_T1_p90.parquet   435 2023-11-28   0.2069   0.3103
+      lvl3_cell_3y_s2.0_n5_T2_p80.parquet   360 2023-11-28   0.1944   0.3111
+      lvl3_cell_3y_s2.0_n5_T2_p90.parquet   438 2023-11-28   0.1918   0.2945
+     lvl3_cell_3y_s2.0_nad_T1_p80.parquet   649 2023-10-23   0.2203   0.3051
+     lvl3_cell_3y_s2.0_nad_T1_p90.parquet   694 2023-10-23   0.1729   0.2911
+     lvl3_cell_3y_s2.0_nad_T2_p80.parquet   642 2023-10-23   0.1713   0.2819
+     lvl3_cell_3y_s2.0_nad_T2_p90.parquet   695 2023-10-23   0.1712   0.2748
+         lvl3_cell_s1.5_n3_T1_p80.parquet    94 2025-12-19   0.2766   0.2979
+         lvl3_cell_s1.5_n3_T1_p90.parquet   110 2025-12-19   0.1909   0.2727
+         lvl3_cell_s1.5_n3_T2_p80.parquet    94 2025-12-19   0.1809   0.2766
+         lvl3_cell_s1.5_n3_T2_p90.parquet   111 2025-12-19   0.1892   0.2973
+         lvl3_cell_s1.5_n4_T1_p80.parquet    57 2026-01-09   0.3158   0.3684
+         lvl3_cell_s1.5_n4_T1_p90.parquet    63 2026-01-09   0.2222   0.3492
+         lvl3_cell_s1.5_n4_T2_p80.parquet    56 2026-01-09   0.2321   0.3750
+         lvl3_cell_s1.5_n4_T2_p90.parquet    64 2026-01-09   0.2188   0.3281
+         lvl3_cell_s1.5_n5_T1_p80.parquet    33 2026-01-20   0.2424   0.3030
+         lvl3_cell_s1.5_n5_T1_p90.parquet    39 2026-01-20   0.1795   0.2564
+         lvl3_cell_s1.5_n5_T2_p80.parquet    33 2026-01-20   0.1818   0.2121
+         lvl3_cell_s1.5_n5_T2_p90.parquet    39 2026-01-20   0.1538   0.2051
+        lvl3_cell_s1.5_nad_T1_p80.parquet    72 2026-01-09   0.2778   0.3194
+        lvl3_cell_s1.5_nad_T1_p90.parquet    81 2026-01-06   0.2099   0.2840
+        lvl3_cell_s1.5_nad_T2_p80.parquet    72 2026-01-09   0.1944   0.2778
+        lvl3_cell_s1.5_nad_T2_p90.parquet    82 2026-01-06   0.1951   0.2927
+         lvl3_cell_s2.0_n3_T1_p80.parquet    32 2026-01-20   0.1875   0.3125
+         lvl3_cell_s2.0_n3_T1_p90.parquet    43 2026-01-20   0.2326   0.3488
+         lvl3_cell_s2.0_n3_T2_p80.parquet    32 2026-01-20   0.2188   0.3125
+         lvl3_cell_s2.0_n3_T2_p90.parquet    43 2026-01-20   0.2558   0.3256
+         lvl3_cell_s2.0_n4_T1_p80.parquet     2 2026-04-15   0.0000   0.0000
+         lvl3_cell_s2.0_n4_T1_p90.parquet     2 2026-04-15   0.0000   0.0000
+         lvl3_cell_s2.0_n4_T2_p80.parquet     2 2026-04-15   0.0000   0.0000
+         lvl3_cell_s2.0_n4_T2_p90.parquet     2 2026-04-15   0.0000   0.0000
+         lvl3_cell_s2.0_n5_T1_p80.parquet     0                 NaN      NaN
+         lvl3_cell_s2.0_n5_T1_p90.parquet     0                 NaN      NaN
+         lvl3_cell_s2.0_n5_T2_p80.parquet     0                 NaN      NaN
+         lvl3_cell_s2.0_n5_T2_p90.parquet     0                 NaN      NaN
+        lvl3_cell_s2.0_nad_T1_p80.parquet    19 2026-02-12   0.2105   0.3158
+        lvl3_cell_s2.0_nad_T1_p90.parquet    26 2026-02-12   0.1923   0.2692
+        lvl3_cell_s2.0_nad_T2_p80.parquet    19 2026-02-12   0.2105   0.2632
+        lvl3_cell_s2.0_nad_T2_p90.parquet    25 2026-02-12   0.2000   0.2400
+                lvl3_wf_3y_trades.parquet   500 2023-11-03   0.1960   0.3120
+                   lvl3_wf_trades.parquet    66 2026-02-05   0.1818   0.2576
+         lvl_design_limit_0.25_T1.parquet  1874 2023-11-03   0.2705   0.2999
+        lvl_design_limit_0.25_T15.parquet  1873 2023-11-03   0.2680   0.2974
+lvl_design_limit_0.25_T15_placebo.parquet  1010 2023-11-06   0.3139   0.3495
+ lvl_design_limit_0.25_T1_placebo.parquet  1028 2023-11-06   0.3259   0.3609
+         lvl_design_limit_0.25_T2.parquet  1813 2023-11-03   0.1732   0.2565
+ lvl_design_limit_0.25_T2_placebo.parquet   957 2023-11-06   0.1400   0.2915
+          lvl_design_limit_0.5_T1.parquet  1468 2023-11-03   0.2909   0.3202
+         lvl_design_limit_0.5_T15.parquet  1463 2023-11-03   0.2693   0.3021
+ lvl_design_limit_0.5_T15_placebo.parquet  1114 2023-11-06   0.3303   0.3770
+  lvl_design_limit_0.5_T1_placebo.parquet  1169 2023-11-06   0.3473   0.3892
+          lvl_design_limit_0.5_T2.parquet  1431 2023-11-03   0.1852   0.2781
+  lvl_design_limit_0.5_T2_placebo.parquet  1066 2023-11-06   0.1764   0.3480
+         lvl_design_stall_0.25_T1.parquet   390 2023-11-10   0.3308   0.3718
+        lvl_design_stall_0.25_T15.parquet   390 2023-11-10   0.2641   0.3410
+lvl_design_stall_0.25_T15_placebo.parquet    25 2024-02-01   0.1600   0.2800
+ lvl_design_stall_0.25_T1_placebo.parquet    25 2024-02-01   0.2800   0.4000
+         lvl_design_stall_0.25_T2.parquet   389 2023-11-10   0.2211   0.3522
+ lvl_design_stall_0.25_T2_placebo.parquet    25 2024-02-01   0.1200   0.3200
+          lvl_design_stall_0.5_T1.parquet   498 2023-11-06   0.3253   0.3715
+         lvl_design_stall_0.5_T15.parquet   497 2023-11-06   0.2596   0.3521
+ lvl_design_stall_0.5_T15_placebo.parquet    50 2023-11-21   0.1400   0.2400
+  lvl_design_stall_0.5_T1_placebo.parquet    50 2023-11-21   0.2600   0.3400
+          lvl_design_stall_0.5_T2.parquet   496 2023-11-06   0.2198   0.3488
+  lvl_design_stall_0.5_T2_placebo.parquet    44 2024-01-05   0.1591   0.4318
+                     model_trades.parquet     0                 NaN      NaN
+              model_trades_noside.parquet     0                 NaN      NaN
+        phase_switch_d1way_trades.parquet   156 2025-11-18   0.3269   0.4103
+                present_wf_trades.parquet   736 2024-06-03   0.3587   0.4239
+                pullback15_trades.parquet   498 2025-10-20   0.0602   0.3534
+                  pullback_trades.parquet  3034 2025-10-21   0.0567   0.3916
+                  sr_break_trades.parquet   303 2025-10-20   0.2376   0.3564
+                    v2b_wf_trades.parquet   221 2025-12-01   0.3710   0.4118
+       v2s_be0.5_stop12_wf_trades.parquet   829 2024-05-01   0.3341   0.3667
+       v2s_be0.5_stop16_wf_trades.parquet   709 2024-05-06   0.3300   0.3681
+        v2s_be0.5_stop8_wf_trades.parquet   626 2024-05-01   0.3051   0.3371
+              v2s_be0.5_wf_trades.parquet   510 2024-05-06   0.2922   0.3078
+             v2s_stop12_wf_trades.parquet   643 2024-05-01   0.4572   0.5334
+             v2s_stop16_wf_trades.parquet   595 2024-05-06   0.4840   0.5580
+              v2s_stop8_wf_trades.parquet   482 2024-05-01   0.4419   0.4938
+                    v2s_wf_trades.parquet   445 2024-05-06   0.3798   0.4270

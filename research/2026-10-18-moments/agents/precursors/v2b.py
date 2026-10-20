@@ -221,7 +221,7 @@ def main() -> None:
             print(f"{name}: no trades")
             continue
         eq = part.pnl.cumsum()
-        print(f"{name}: {len(part)} trades ({len(part) / wd:.2f} a weekday), win {(part.exit == 'win').mean():.3f}, "
+        print(f"{name}: {len(part)} trades ({len(part) / wd:.2f} a weekday), win {(part.pnl > 0).mean():.3f}, "
               f"R {part.R.mean():+.3f}, USD {part.pnl.sum():+.1f}, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, worst "
               f"{part.pnl.min():+.2f}, longest losing streak {wf.longest_run(part.pnl.to_numpy() < 0)}")
 

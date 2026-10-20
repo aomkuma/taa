@@ -35,7 +35,7 @@ def summary(T: pd.DataFrame, a: str, b: str) -> str:
     import wf  # noqa: PLC0415
 
     eq = T.pnl.cumsum()
-    return (f"{len(T)} trades ({len(T) / np.busday_count(a, b):.2f} a weekday), win {(T.exit == 'win').mean():.3f}, R {T.R.mean():+.3f}, "
+    return (f"{len(T)} trades ({len(T) / np.busday_count(a, b):.2f} a weekday), win {(T.pnl > 0).mean():.3f}, R {T.R.mean():+.3f}, "
             f"USD {T.pnl.sum():+.1f} at 0.01 lot, lowest running total {eq.min():+.1f}, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, "
             f"worst {T.pnl.min():+.2f}, longest losing streak {wf.longest_run(T.pnl.to_numpy() < 0)}")
 
@@ -66,7 +66,7 @@ def main() -> None:
     rows = []
     for th in THRESHOLDS:
         T = take(val, th)
-        rows.append(dict(th=th, picks=int((val.p >= th).sum()), trades=len(T), win=(T.exit == "win").mean() if len(T) else np.nan,
+        rows.append(dict(th=th, picks=int((val.p >= th).sum()), trades=len(T), win=(T.pnl > 0).mean() if len(T) else np.nan,
                          R=T.R.mean() if len(T) else np.nan, usd=T.pnl.sum()))
     print("\nheld back, the picks one at a time:")
     print(pd.DataFrame(rows).round(3).to_string(index=False))

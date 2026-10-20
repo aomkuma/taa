@@ -50,7 +50,7 @@ def walk_forward(cells: dict[str, pd.DataFrame], first_month: str, last_month: s
         got = cur.loc[keep].assign(cell=chosen, month=str(mo))
         taken.append(got)
         rows.append(dict(month=str(mo), cell=chosen, past_R=round(best_r, 3) if best is not None else np.nan,
-                         trades=len(got), win=round((got.exit == "win").mean(), 3) if len(got) else np.nan,
+                         trades=len(got), win=round((got.pnl > 0).mean(), 3) if len(got) else np.nan,
                          R=round(got.R.mean(), 3) if len(got) else np.nan, usd=round(got.pnl.sum(), 1)))
     return (pd.concat(taken) if taken else pd.DataFrame()), pd.DataFrame(rows)
 
@@ -63,7 +63,7 @@ def weekly(T: pd.DataFrame) -> pd.DataFrame:
     wk = (th.normalize() - pd.to_timedelta(th.dayofweek, unit="D")).tz_localize(None)
     g = T.assign(week=wk.date).groupby("week", sort=True)
     W = pd.DataFrame({"cell": g.cell.agg(lambda x: " ".join(dict.fromkeys(x))), "trades": g.size(),
-                      "win": g.exit.agg(lambda x: (x == "win").mean()).round(3), "R_trade": g.R.mean().round(3),
+                      "win": g.pnl.agg(lambda x: (x > 0).mean()).round(3), "R_trade": g.R.mean().round(3),
                       "R": g.R.sum().round(2), "usd": g.pnl.sum().round(2), "worst": g.pnl.min().round(2)})
     W.insert(W.columns.get_loc("worst"), "usd_total", W.usd.cumsum().round(2))
     return W.reset_index()
@@ -134,7 +134,7 @@ def main() -> None:
                            (f"{d1} .. {end - pd.Timedelta(days=1):%Y-%m-%d} (the exam)", WF[(WF.t >= split) & (WF.t < end)],
                             np.busday_count(d1, d2))):
         eq = part.pnl.cumsum()
-        print(f"{name}: {len(part)} trades ({len(part) / wd:.2f} a weekday), win {(part.exit == 'win').mean():.3f}, "
+        print(f"{name}: {len(part)} trades ({len(part) / wd:.2f} a weekday), win {(part.pnl > 0).mean():.3f}, "
               f"R {part.R.mean():+.3f}, USD {part.pnl.sum():+.1f}, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}")
         if len(part):
             print(f"   worst trade {part.pnl.min():+.2f} USD, longest losing streak {longest_run(part.pnl.to_numpy() < 0)} "

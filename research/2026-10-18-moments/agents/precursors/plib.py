@@ -54,6 +54,16 @@ def load() -> pd.DataFrame:
     return m[["open", "high", "low", "close", "tick_volume", "spread"]].astype(float)
 
 
+def load_learning(start: pd.Timestamp = START) -> pd.DataFrame:
+    """`load()` for every caller that must not see the exam: the M1 bars from `start` to EXAM_START (excluded).
+    The stores are read with a row filter (`gold.bars(before=EXAM_START)`), so no bar from the exam's first minute on
+    is returned. `load()` (to END) stays for the measurer's one exam read of a frozen rule."""
+    learn = gold.bars("M1", before=EXAM_START)
+    learn = learn.loc[(learn.index >= start) & (learn.index < EXAM_START)]
+    learn = learn.loc[~learn.index.duplicated(keep="last")]
+    return learn.loc[:, ["open", "high", "low", "close", "tick_volume", "spread"]].astype(float)
+
+
 def minutes(idx: pd.DatetimeIndex) -> np.ndarray:
     return ((idx - idx[0]).total_seconds() // 60).to_numpy().astype(np.int64)
 

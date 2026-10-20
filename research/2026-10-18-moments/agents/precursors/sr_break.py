@@ -87,7 +87,7 @@ def summary(T: pd.DataFrame, a: str, b: str) -> str:
     if T.empty:
         return "no trades"
     eq = T.pnl.cumsum()
-    return (f"{len(T)} trades ({len(T) / np.busday_count(a, b):.2f} a weekday), win {(T.exit == 'win').mean():.3f}, R {T.R.mean():+.3f}, "
+    return (f"{len(T)} trades ({len(T) / np.busday_count(a, b):.2f} a weekday), win {(T.pnl > 0).mean():.3f}, R {T.R.mean():+.3f}, "
             f"USD {T.pnl.sum():+.1f}, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {T.pnl.min():+.2f}, streak "
             f"{wf.longest_run(T.pnl.to_numpy() < 0)}, exits {T.exit.value_counts().to_dict()}")
 
@@ -148,7 +148,7 @@ def main() -> None:
     for p in ("P1", "P2"):
         print(p, Lz[Lz.part == p].reason.value_counts().to_dict())
     print("all trades, by what came after x the M15 structure (count, win, R):")
-    print(T.groupby("reason").agg(n=("R", "size"), win=("exit", lambda e: (e == "win").mean()), R=("R", "mean")).round(3).to_string())
+    print(T.groupby("reason").agg(n=("R", "size"), win=("pnl", lambda e: (e > 0).mean()), R=("R", "mean")).round(3).to_string())
     if score[best] <= 0:
         print("\nnothing is positive in both learning parts: the exam is not read")
         return

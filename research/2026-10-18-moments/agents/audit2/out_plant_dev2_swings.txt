@@ -1,0 +1,22 @@
+CAUGHT  the start-up fix removed (one bar, two turns): 1 failed in 1.15s
+          test_one_wide_bar_at_the_start_is_never_two_turns
+CAUGHT  the start-up takes the later extreme: 1 failed, 1 passed in 1.06s
+          test_after_a_wide_bar_the_first_turn_waits_for_a_bar_that_takes_an_extreme_out
+CAUGHT  a tie moves the peak later: 1 failed, 4 passed in 0.96s
+          test_a_tie_keeps_the_first_bar_and_exactly_the_threshold_confirms
+CAUGHT  a tie moves the trough later: 1 failed, 4 passed in 1.00s
+          test_a_tie_keeps_the_first_bar_and_exactly_the_threshold_confirms
+CAUGHT  the extending bar may also confirm (if, not elif): 1 failed, 2 passed in 0.90s
+          test_an_outside_bar_in_an_up_leg_extends_it_and_is_one_turn
+CAUGHT  strictly above the threshold: 1 failed, 2 passed in 0.84s
+          test_an_outside_bar_in_an_up_leg_extends_it_and_is_one_turn
+CAUGHT  the threshold read at the pivot bar: 1 failed, 6 passed in 0.93s
+          test_the_threshold_is_read_at_the_confirming_bar
+CAUGHT  the confirming bar recorded as the peak's bar: 1 failed, 1 passed in 0.89s
+          test_after_a_wide_bar_the_first_turn_waits_for_a_bar_that_takes_an_extreme_out
+CAUGHT  the trough tracked from the peak bar: 1 failed, 7 passed in 0.86s
+          test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[0]
+CAUGHT  the threshold of the next bar (look-ahead): 1 failed, 27 passed in 0.89s
+          test_no_look_ahead_the_pivots_known_at_d_do_not_depend_on_later_bars[0]
+10 of 10 caught (swings)
+ALL: 10 of 10 caught; unmutated: 32 passed, 2 xfailed in 2.20s

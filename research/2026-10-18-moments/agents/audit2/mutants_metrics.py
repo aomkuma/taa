@@ -17,9 +17,18 @@ WF = [
     ("the running USD not cumulative", "W.usd.cumsum().round(2)", "W.usd.round(2)"),
     ("the worst trade is the best", '"worst": g.pnl.min().round(2)', '"worst": g.pnl.max().round(2)'),
     ("the week's R is the mean", '"R": g.R.sum().round(2)', '"R": g.R.mean().round(2)'),
+    ("the week's win by the exit name again", '"win": g.pnl.agg(lambda x: (x > 0).mean())', '"win": g.exit.agg(lambda x: (x == "win").mean())'),
+    ("the month's win by the exit name again", 'win=round((got.pnl > 0).mean(), 3)', 'win=round((got.exit == "win").mean(), 3)'),
+    ("the month's break-even counted a win", 'win=round((got.pnl > 0).mean(), 3)', 'win=round((got.pnl >= 0).mean(), 3)'),
+    ("the week's break-even counted a win",'"win": g.pnl.agg(lambda x: (x > 0).mean())', '"win": g.pnl.agg(lambda x: (x >= 0).mean())'),
 ]
 SR_BREAK = [
     ("the drawdown without the start again", "(eq.cummax().clip(lower=0) - eq).max()", "(eq.cummax() - eq).max()"),
     ("the drawdown as the lowest running total", "(eq.cummax().clip(lower=0) - eq).max()", "(-eq.min())"),
+    ("the summary's win by the exit name again", "win {(T.pnl > 0).mean():.3f}", "win {(T.exit == 'win').mean():.3f}"),
 ]
-TARGETS = [("wf", PRE / "wf.py", TESTS, WF), ("sr_break", PRE / "sr_break.py", TESTS, SR_BREAK)]
+SURRENDER = [
+    ("the summary's break-even counted a win", "win {(T.pnl > 0).mean():.3f}", "win {(T.pnl >= 0).mean():.3f}"),
+]
+TARGETS = [("wf", PRE / "wf.py", TESTS, WF), ("sr_break", PRE / "sr_break.py", TESTS, SR_BREAK),
+           ("surrender", PRE / "surrender.py", TESTS, SURRENDER)]

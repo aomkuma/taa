@@ -98,7 +98,7 @@ def main() -> None:
     for p in parts:
         D = T[T.part == p]
         eq = D.pnl.cumsum()
-        print(f"{p}: {len(D)} trades ({len(D) / np.busday_count(*PARTS[p]):.2f} a weekday), win {(D.exit == 'win').mean():.3f}, R {D.R.mean():+.3f}, "
+        print(f"{p}: {len(D)} trades ({len(D) / np.busday_count(*PARTS[p]):.2f} a weekday), win {(D.pnl > 0).mean():.3f}, R {D.R.mean():+.3f}, "
               f"USD {D.pnl.sum():+.1f}, risk median {D.r0.median():.2f}, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {D.pnl.min():+.2f}, "
               f"streak {wf.longest_run(D.pnl.to_numpy() < 0)}, exits {D.exit.value_counts().to_dict()}, buys {int((D.side > 0).sum())} / "
               f"sells {int((D.side < 0).sum())}")

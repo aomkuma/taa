@@ -1,29 +1,29 @@
-CAUGHT  the cut keeps the OLD bar at the first NEW minute: 1 failed in 0.94s
+CAUGHT  the cut keeps the OLD bar at the first NEW minute: 1 failed in 1.13s
           test_cut_at_the_first_new_bar_new_wins
-CAUGHT  the cut at the LAST NEW bar: 1 failed in 0.85s
+CAUGHT  the cut at the LAST NEW bar: 1 failed in 0.91s
           test_cut_at_the_first_new_bar_new_wins
-CAUGHT  no sort: 1 failed, 3 passed in 0.84s
+CAUGHT  no sort: 1 failed, 3 passed in 0.95s
           test_unsorted_new_comes_out_sorted
-CAUGHT  indexed by the close time: 1 failed in 0.78s
+CAUGHT  indexed by the close time: 1 failed in 0.91s
           test_cut_at_the_first_new_bar_new_wins
-CAUGHT  the OLD store ignored: 1 failed in 0.83s
+CAUGHT  the OLD store ignored: 1 failed in 1.41s
           test_cut_at_the_first_new_bar_new_wins
-CAUGHT  releases read as UTC: 1 failed, 6 passed in 0.97s
+CAUGHT  releases read as UTC: 1 failed, 6 passed in 1.14s
           test_new_york_time_to_utc_across_both_dst_changes
-CAUGHT  releases at a fixed -5 h: 1 failed, 6 passed in 0.92s
+CAUGHT  releases at a fixed -5 h: 1 failed, 6 passed in 0.98s
           test_new_york_time_to_utc_across_both_dst_changes
-CAUGHT  releases on the server clock: 1 failed, 6 passed in 0.89s
+CAUGHT  releases on the server clock: 1 failed, 6 passed in 0.97s
           test_new_york_time_to_utc_across_both_dst_changes
 8 of 8 caught (gold)
-CAUGHT  START exclusive: 1 failed, 4 passed in 0.85s
+CAUGHT  START exclusive: 1 failed, 4 passed in 1.13s
           test_start_inclusive_end_exclusive_duplicates_keep_last
-CAUGHT  END inclusive: 1 failed, 4 passed in 0.92s
+CAUGHT  END inclusive: 1 failed, 4 passed in 1.08s
           test_start_inclusive_end_exclusive_duplicates_keep_last
-CAUGHT  duplicates keep the first: 1 failed, 4 passed in 0.88s
+CAUGHT  duplicates keep the first: 1 failed, 4 passed in 1.25s
           test_start_inclusive_end_exclusive_duplicates_keep_last
-CAUGHT  no duplicate removal: 1 failed, 4 passed in 0.83s
+CAUGHT  no duplicate removal: 1 failed, 4 passed in 1.18s
           test_start_inclusive_end_exclusive_duplicates_keep_last
-CAUGHT  the spread column dropped: 1 failed, 4 passed in 0.83s
+CAUGHT  the spread column dropped: 1 failed, 4 passed in 1.39s
           test_start_inclusive_end_exclusive_duplicates_keep_last
 5 of 5 caught (plib)
-ALL: 13 of 13 caught; unmutated: 7 passed in 1.63s
+ALL: 13 of 13 caught; unmutated: 7 passed in 2.69s

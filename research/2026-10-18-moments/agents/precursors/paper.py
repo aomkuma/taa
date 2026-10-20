@@ -105,7 +105,7 @@ def score(start: str, end: str) -> None:
                         pnl=P[f"{col[s]}_pnl"].iloc[r], exit=P[f"{col[s]}_exit"].iloc[r]))
         busy = int(P[f"{col[s]}_xj"].iloc[r])
     T = pd.DataFrame(out)
-    print(f"my paper trades {start} .. {end}: {len(T)} trades, win {(T.exit == 'win').mean():.3f}, R {T.R.mean():+.3f}, USD {T.pnl.sum():+.1f}, "
+    print(f"my paper trades {start} .. {end}: {len(T)} trades, win {(T.pnl > 0).mean():.3f}, R {T.R.mean():+.3f}, USD {T.pnl.sum():+.1f}, "
           f"worst {T.pnl.min():+.2f}, longest losing streak {wf.longest_run(T.pnl.to_numpy() < 0)}")
     print(T.to_string(index=False))
     T.to_csv(HERE / f"paper_trades_{start}.csv", index=False)

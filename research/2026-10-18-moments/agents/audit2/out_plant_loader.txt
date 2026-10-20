@@ -1,0 +1,29 @@
+CAUGHT  the filter keeps the bar at `before`: 1 failed, 3 passed, 1 deselected in 1.10s
+          test_no_store_read_returns_an_exam_row
+CAUGHT  NEW read without the filter: 1 failed, 3 passed, 1 deselected in 1.06s
+          test_no_store_read_returns_an_exam_row
+CAUGHT  OLD read without the filter: 1 failed, 3 passed, 1 deselected in 1.03s
+          test_no_store_read_returns_an_exam_row
+CAUGHT  no fallback when NEW is empty: 1 failed, 4 passed, 1 deselected in 1.03s
+          test_equals_the_full_merge_cut_at_before[2023-07-31 23:59]
+CAUGHT  a naive `before` taken as UTC: 1 failed, 13 passed, 1 deselected in 1.68s
+          test_a_naive_before_is_refused
+5 of 5 caught (gold)
+CAUGHT  the stores read to the end (filtered after): 1 failed, 3 passed, 1 deselected in 1.02s
+          test_no_store_read_returns_an_exam_row
+CAUGHT  the learning ends at EXAM_END: 1 failed, 1 deselected in 0.99s
+          test_it_ends_before_the_exam_and_keeps_load_s_rules
+CAUGHT  the start argument ignored: 1 failed, 2 passed, 1 deselected in 1.19s
+          test_a_later_start
+CAUGHT  START exclusive: 1 failed, 1 deselected in 0.87s
+          test_it_ends_before_the_exam_and_keeps_load_s_rules
+CAUGHT  duplicates keep the first: 1 failed, 1 deselected in 0.85s
+          test_it_ends_before_the_exam_and_keeps_load_s_rules
+CAUGHT  no duplicate removal: 1 failed, 1 deselected in 1.05s
+          test_it_ends_before_the_exam_and_keeps_load_s_rules
+CAUGHT  the spread column dropped: 1 failed, 1 deselected in 0.85s
+          test_it_ends_before_the_exam_and_keeps_load_s_rules
+CAUGHT  not converted to float: 1 failed, 1 deselected in 0.92s
+          test_it_ends_before_the_exam_and_keeps_load_s_rules
+8 of 8 caught (plib)
+ALL: 13 of 13 caught; unmutated: 14 passed, 1 deselected in 2.83s

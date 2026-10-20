@@ -177,7 +177,7 @@ def main() -> None:
         WF, months = wf.walk_forward(cells, "2024-05", "2026-10")
         learn = WF[WF.t < plib.EXAM_START]
         res.append(dict(variant=name, trades=len(learn), per_weekday=len(learn) / np.busday_count("2024-05-01", "2026-04-18"),
-                        win=(learn.exit == "win").mean(), R=learn.R.mean(), usd=learn.pnl.sum(),
+                        win=(learn.pnl > 0).mean(), R=learn.R.mean(), usd=learn.pnl.sum(),
                         worst=learn.pnl.min(), streak=wf.longest_run(learn.pnl.to_numpy() < 0)))
         print(res[-1], flush=True)
         if exam:
@@ -188,7 +188,7 @@ def main() -> None:
             print(wf.weekly(ex).to_string(index=False))
             eq = ex.pnl.cumsum()
             print(f"the exam: {len(ex)} trades ({len(ex) / np.busday_count('2026-04-18', '2026-10-17'):.2f} a weekday), win "
-                  f"{(ex.exit == 'win').mean():.3f}, R {ex.R.mean():+.3f}, USD {ex.pnl.sum():+.1f}, max DD "
+                  f"{(ex.pnl > 0).mean():.3f}, R {ex.R.mean():+.3f}, USD {ex.pnl.sum():+.1f}, max DD "
                   f"{(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {ex.pnl.min():+.2f}, longest losing streak "
                   f"{wf.longest_run(ex.pnl.to_numpy() < 0)}")
     if not exam:

@@ -51,7 +51,7 @@ def run_lvl(P: jlib.Instr, es: np.ndarray, sides: np.ndarray, gross: bool) -> pd
 
 def line(name: str, t: pd.DataFrame) -> str:
     se = t.R.std() / np.sqrt(len(t))
-    return (f"{name:48s} n {len(t):5d}  R {t.R.mean():+.4f} (se {se:.4f})  win {(t.exit == 'win').mean():.3f}  "
+    return (f"{name:48s} n {len(t):5d}  R {t.R.mean():+.4f} (se {se:.4f})  win {(t.pnl > 0).mean():.3f}  "
             f"stop {(t.exit == 'stop').mean():.3f}  time {(t.exit == 'time').mean():.3f}")
 
 

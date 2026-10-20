@@ -1,0 +1,45 @@
+dev2/swings.py sha256 9ebfe2dd5de473b7, mtime 2026-10-20 05:26:40.010618687+00:00
+bars 249474 2025-08-01 00:00:00+00:00 .. 2026-04-17 20:54:00+00:00
+A. tf_bars against indicators.bars on the real bars
+   M5: 49903 / 49903 bars, equal: {'open': True, 'high': True, 'low': True, 'close': True, 'last': True, 'avail': True}
+   M15: 16758 / 16758 bars, equal: {'open': True, 'high': True, 'low': True, 'close': True, 'last': True, 'avail': True}
+   M30: 8380 / 8380 bars, equal: {'open': True, 'high': True, 'low': True, 'close': True, 'last': True, 'avail': True}
+   H1: 4192 / 4192 bars, equal: {'open': True, 'high': True, 'low': True, 'close': True, 'last': True, 'avail': True}
+   H4: 1098 / 1098 bars, equal: {'open': True, 'high': True, 'low': True, 'close': True, 'last': True, 'avail': True}
+   D1: 183 / 183 bars, equal: {'open': True, 'high': True, 'low': True, 'close': True, 'last': True, 'avail': True}
+
+B. look-ahead by truncation (span 2025-11-03 .. 2026-01-30; cuts at three server-day ends)
+   cut 2025-11-17 21:54 UTC: M1 equal (15013 bars, the future adds pivots / events); M5 equal (3003 bars, the future adds pivots / events); M15 equal (1008 bars, the future adds pivots / events); M30 equal (504 bars, the future adds pivots / events); H1 equal (252 bars, the future adds pivots / events); H4 equal (66 bars, the future adds pivots / events); D1 equal (11 bars, the future adds pivots / events)
+   cut 2025-12-22 21:54 UTC: M1 equal (48832 bars, the future adds pivots / events); M5 equal (9770 bars, the future adds pivots / events); M15 equal (3281 bars, the future adds pivots / events); M30 equal (1641 bars, the future adds pivots / events); H1 equal (821 bars, the future adds pivots / events); H4 equal (216 bars, the future adds pivots / events); D1 equal (36 bars, the future adds pivots / events)
+   cut 2026-01-14 21:54 UTC: M1 equal (69178 bars, the future adds pivots / events); M5 equal (13840 bars, the future adds pivots / events); M15 equal (4648 bars, the future adds pivots / events); M30 equal (2325 bars, the future adds pivots / events); H1 equal (1163 bars, the future adds pivots / events); H4 equal (306 bars, the future adds pivots / events); D1 equal (51 bars, the future adds pivots / events)
+
+C. is every pivot the extreme of its leg? (the pivots inside the learning parts, from 2025-10-18)
+D. running() against the structure's running extreme (the ZigZag's tracked one), every TF bar after a pivot
+   C M1: pivots 3388, not the extreme of their leg 3 (0.1%); depth USD median 1.42, max 1.94; the lower / higher bar before the previous pivot's confirmation 1; threshold median 12.54
+       e.g. peak 2025-10-20 05:02 UTC at 4266.78; the leg's high 4268.20 at 2025-10-20 04:40 UTC (the previous pivot confirmed 2025-10-20 04:59 UTC)
+       e.g. trough 2026-01-18 23:48 UTC at 4663.01; the leg's low 4661.07 at 2026-01-19 00:19 UTC (the previous pivot confirmed 2026-01-18 23:34 UTC)
+       e.g. trough 2026-01-26 01:51 UTC at 5067.93; the leg's low 5067.01 at 2026-01-26 02:10 UTC (the previous pivot confirmed 2026-01-26 01:51 UTC)
+   D M1: bars 173030, running() != the tracked extreme on 104 (0.1%)
+   C M5: pivots 3134, not the extreme of their leg 8 (0.3%); depth USD median 3.20, max 20.47; the lower / higher bar before the previous pivot's confirmation 1; threshold median 12.59
+       e.g. peak 2025-10-20 05:00 UTC at 4266.78; the leg's high 4268.20 at 2025-10-20 04:40 UTC (the previous pivot confirmed 2025-10-20 04:55 UTC)
+       e.g. peak 2025-12-15 15:10 UTC at 4327.30; the leg's high 4327.63 at 2025-12-15 15:20 UTC (the previous pivot confirmed 2025-12-15 15:05 UTC)
+       e.g. trough 2026-01-09 13:20 UTC at 4461.94; the leg's low 4459.03 at 2026-01-09 13:30 UTC (the previous pivot confirmed 2026-01-09 13:15 UTC)
+   D M5: bars 34613, running() != the tracked extreme on 32 (0.1%)
+   C M15: pivots 2452, not the extreme of their leg 13 (0.5%); depth USD median 2.76, max 20.12; the lower / higher bar before the previous pivot's confirmation 3; threshold median 12.88
+       e.g. peak 2025-10-20 04:45 UTC at 4267.95; the leg's high 4268.20 at 2025-10-20 04:30 UTC (the previous pivot confirmed 2025-10-20 04:45 UTC)
+       e.g. peak 2025-10-29 16:15 UTC at 4001.01; the leg's high 4007.62 at 2025-10-29 18:00 UTC (the previous pivot confirmed 2025-10-29 16:15 UTC)
+       e.g. trough 2025-11-05 23:00 UTC at 3966.38; the leg's low 3964.49 at 2025-11-06 01:00 UTC (the previous pivot confirmed 2025-11-05 21:45 UTC)
+   D M15: bars 11624, running() != the tracked extreme on 15 (0.1%)
+   C M30: pivots 1736, not the extreme of their leg 15 (0.9%); depth USD median 3.66, max 14.80; the lower / higher bar before the previous pivot's confirmation 1; threshold median 14.82
+       e.g. trough 2025-11-05 23:00 UTC at 3966.38; the leg's low 3964.49 at 2025-11-06 01:00 UTC (the previous pivot confirmed 2025-11-05 21:30 UTC)
+       e.g. peak 2025-11-21 04:00 UTC at 4062.33; the leg's high 4064.62 at 2025-11-21 06:00 UTC (the previous pivot confirmed 2025-11-21 04:00 UTC)
+       e.g. trough 2025-11-21 07:00 UTC at 4024.82; the leg's low 4022.37 at 2025-11-21 08:00 UTC (the previous pivot confirmed 2025-11-21 04:30 UTC)
+   D M30: bars 5813, running() != the tracked extreme on 10 (0.2%)
+   C H1: pivots 954, not the extreme of their leg 10 (1.0%); depth USD median 4.02, max 16.72; the lower / higher bar before the previous pivot's confirmation 0; threshold median 20.90
+       e.g. trough 2025-10-27 20:00 UTC at 3979.25; the leg's low 3973.11 at 2025-10-28 00:00 UTC (the previous pivot confirmed 2025-10-27 19:00 UTC)
+       e.g. peak 2025-12-18 07:00 UTC at 4337.74; the leg's high 4342.89 at 2025-12-18 13:00 UTC (the previous pivot confirmed 2025-12-18 05:00 UTC)
+       e.g. trough 2025-12-19 12:00 UTC at 4320.59; the leg's low 4319.92 at 2025-12-19 14:00 UTC (the previous pivot confirmed 2025-12-19 10:00 UTC)
+   D H1: bars 2908, running() != the tracked extreme on 2 (0.1%)
+   C H4: pivots 256, not the extreme of their leg 1 (0.4%); depth USD median 6.04, max 6.04; the lower / higher bar before the previous pivot's confirmation 0; threshold median 44.44
+       e.g. trough 2025-12-08 14:00 UTC at 4176.00; the leg's low 4169.96 at 2025-12-09 06:00 UTC (the previous pivot confirmed 2025-12-08 14:00 UTC)
+   D H4: bars 762, running() != the tracked extreme on 0 (0.0%)
