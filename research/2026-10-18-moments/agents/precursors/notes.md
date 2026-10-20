@@ -2944,3 +2944,21 @@ fix. The corrected rule, read once:
 - **FAIL** (pooled -0.241 on 207). Scaled down, the stop is a few spreads wide and the release jump passes it
   (2023-24: -1.17 R a trade). The straddle does not scale with volatility; it needs the large moves of the present.
 - With NS-1, the straddle is now known to pay only since 2025-10, at gold's present size.
+
+## Why gold changed in 2025-10 - outside research (2026-10-20 19:3x Thai; owner: "research the facts, don't ask me")
+Sources (web, read 2026-10-20): World Bank blog "When uncertainty rises, gold rallies"; WGC gold ETF flows 2025-11;
+ING Gold Monthly; Kitco 2025-07-02 "gold will consolidate H2 2025"; BullionVault / Marex on the January 2026 record and
+crash; gold.org Weekly Markets Monitor 19 Oct 2026; SSGA Monthly Gold Monitor Oct 2026; Reuters "Asia Gold" via Kitco.
+- **April 2025 was one shock:** the US "reciprocal tariff" news drove gold to about 3,500 USD, then it "spent much of
+  the rest of Q2 digesting gains" as ETF inflows slowed and futures positioning declined (ING, Kitco). Size without a
+  lasting flow - the month our leads did not pay.
+- **From 2025-10 a persistent flow:** five months in a row of ETF inflows (8.2 bn USD in 2025-10 alone), the largest
+  quarterly ETF inflow in years, central-bank buying, speculators and Asian flows; record after record (4,300 in
+  2025-10, above 5,000 on 2026-01-26, about 5,595 on 2026-01-31), then a crash on 2026-01-29/30 (the Fed-chair
+  nomination, exchange margins). US data was delayed by the 2025-10/11 government shutdown.
+- **Now (2026-10):** gold about 4,150-4,200, down about 4 % this year; managed-money net longs cut from 151,315
+  (2026-08-25) to 114,820 (2026-10-06); ETF buyers still adding (reported 13 straight weeks), options leaning bearish.
+  The flow regime may be fading - which the forward record must watch.
+- **The hypothesis to test (strategist):** the leads pay while a persistent speculative flow drives gold (rising
+  managed-money positioning / ETF inflow streaks), not merely while it is large. Data: the CFTC Commitments of Traders
+  (COMEX gold, managed money, weekly, public) - known with a 3-day lag (Tuesday data, Friday release).
