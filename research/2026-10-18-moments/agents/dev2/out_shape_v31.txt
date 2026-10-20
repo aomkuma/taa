@@ -1,0 +1,247 @@
+bars: 1019 M1 from 05:05 Thai 2026-10-19 to 22:03 Thai (2026-10-18 22:05:00+00:00 .. 2026-10-19 15:03:00+00:00 UTC); the rows before 2026-10-18 00:00 UTC are filtered by the reader
+S on the day: min 10.00, max 10.00; the H1 ATR behind it: 11.95 .. 13.49 (14 H1 bars exist from 20:00 Thai; before that the warm-up mean)
+
+== 1. The 15 turns (M1 pivots; found = same kind, within 10 minutes and 1.00 USD)
+  FOUND  07:02 H 4187.63: pivot 07:02 4187.63, known (confirmed) at 07:25
+  FOUND  08:26 L 4165.61: pivot 08:26 4165.61, known (confirmed) at 08:36
+  FOUND  09:10 H 4184.49: pivot 09:10 4184.49, known (confirmed) at 09:25
+  FOUND  09:32 L 4169.13: pivot 09:32 4169.13, known (confirmed) at 10:08
+  FOUND  11:57 H 4184.68: pivot 11:57 4184.68, known (confirmed) at 12:29
+  FOUND  12:29 L 4174.00: pivot 12:29 4174.00, known (confirmed) at 12:40
+  FOUND  12:57 H 4186.18: pivot 12:57 4186.18, known (confirmed) at 13:15
+  FOUND  13:32 L 4171.09: pivot 13:32 4171.09, known (confirmed) at 13:55
+  FOUND  14:33 H 4190.25: pivot 14:33 4190.25, known (confirmed) at 14:52
+  FOUND  17:46 L 4162.21: pivot 17:46 4162.21, known (confirmed) at 18:02
+  FOUND  18:16 H 4177.06: pivot 18:16 4177.06, known (confirmed) at 18:56
+  FOUND  19:03 L 4158.69: pivot 19:03 4158.69, known (confirmed) at 19:10
+  FOUND  19:09 H 4170.00: pivot 19:09 4170.00, known (confirmed) at 19:58
+  FOUND  20:47 L 4143.37: pivot 20:47 4143.37, known (confirmed) at 20:54
+  FOUND  21:00 H 4155.32: pivot 21:00 4155.32, known (confirmed) at 21:13
+  found 15 of 15; extra pivots on the day: 1
+  EXTRA  05:05 L 4166.07 (known 05:24)
+  all M1 pivots of the day: 05:05 L 4166.07, 07:02 H 4187.63, 08:26 L 4165.61, 09:10 H 4184.49, 09:32 L 4169.13, 11:57 H 4184.68, 12:29 L 4174.00, 12:57 H 4186.18, 13:32 L 4171.09, 14:33 H 4190.25, 17:46 L 4162.21, 18:16 H 4177.06, 19:03 L 4158.69, 19:09 H 4170.00, 20:47 L 4143.37, 21:00 H 4155.32
+
+== 2. The structure per TF (label: up = HH+HL, down = LH+LL, mixed; bias = the last close beyond the last confirmed pivot)
+  time     M1    M5   M15   M30    H1    H4    D1   (label/bias)
+  13:00    U/U   U/?   U/?   U/?   ?/?   ?/?   ?/?
+  13:15    U/U   U/?   U/?   U/?   ?/?   ?/?   ?/?
+  13:30    U/U   U/?   U/?   U/?   ?/?   ?/?   ?/?
+  13:45    x/D   x/?   x/?   U/?   ?/?   ?/?   ?/?
+  14:00    x/D   x/?   x/?   x/?   ?/?   ?/?   ?/?
+  14:15    x/U   x/U   x/?   x/?   ?/?   ?/?   ?/?
+  14:30    x/U   x/U   x/U   x/U   ?/?   ?/?   ?/?
+  14:45    x/U   x/U   x/U   x/U   ?/?   ?/?   ?/?
+  15:00    x/U   x/U   x/U   x/U   x/?   ?/?   ?/?
+  15:15    x/U   x/U   x/U   x/U   x/?   ?/?   ?/?
+  15:30    x/U   x/U   x/U   x/U   x/?   ?/?   ?/?
+  15:45    x/U   x/U   x/U   x/U   x/?   ?/?   ?/?
+  16:00    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  16:15    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  16:30    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  16:45    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  17:00    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  17:15    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  17:30    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  17:45    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  18:00    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  18:15    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  18:30    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  18:45    x/D   x/D   x/D   x/D   x/?   ?/?   ?/?
+  19:00    D/D   D/D   D/D   D/D   x/D   ?/?   ?/?
+  19:15    D/D   D/D   D/D   D/D   x/D   ?/?   ?/?
+  19:30    D/D   D/D   D/D   D/D   x/D   ?/?   ?/?
+  19:45    D/D   D/D   D/D   D/D   x/D   ?/?   ?/?
+  20:00    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  20:15    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  20:30    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  20:45    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  21:00    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  21:15    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  21:30    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  21:45    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  22:00    D/D   D/D   D/D   D/D   x/D   x/D   ?/?
+  M1: to the minute: label down from 18:56, bias down from 15:51
+  M1: label first down after 14:33 at 19:00 (stays down to 22:00: True); bias first down at 15:55
+  M5: to the minute: label down from 19:00, bias down from 16:00
+  M5: label first down after 14:33 at 19:00 (stays down to 22:00: True); bias first down at 16:00
+  M15: to the minute: label down from 19:00, bias down from 16:00
+  M15: label first down after 14:33 at 19:00 (stays down to 22:00: True); bias first down at 16:00
+  M30: to the minute: label down from 19:00, bias down from 16:00
+  M30: label first down after 14:33 at 19:00 (stays down to 22:00: True); bias first down at 16:00
+  H1: to the minute: label down from -, bias down from 19:00
+  H1: label first down after 14:33 at - (stays down to 22:00: None); bias first down at 19:00
+  H4: to the minute: label down from -, bias down from 20:00
+  H4: label first down after 14:33 at - (stays down to 22:00: None); bias first down at 20:00
+  D1: to the minute: label down from -, bias down from -
+  D1: label first down after 14:33 at - (stays down to 22:00: None); bias first down at -
+  M1 pivots 11:00-23:00: 11:57 H 4184.68 [known 12:29], 12:29 L 4174.00 [known 12:40], 12:57 H 4186.18 [known 13:15], 13:32 L 4171.09 [known 13:55], 14:33 H 4190.25 [known 14:52], 17:46 L 4162.21 [known 18:02], 18:16 H 4177.06 [known 18:56], 19:03 L 4158.69 [known 19:10], 19:09 H 4170.00 [known 19:58], 20:47 L 4143.37 [known 20:54], 21:00 H 4155.32 [known 21:13]
+  M5 pivots 11:00-23:00: 11:57 H 4184.68 [known 12:30], 12:29 L 4174.00 [known 12:40], 12:57 H 4186.18 [known 13:15], 13:32 L 4171.09 [known 13:55], 14:33 H 4190.25 [known 14:55], 17:46 L 4162.21 [known 18:05], 18:16 H 4177.06 [known 19:00], 19:03 L 4158.69 [known 19:10], 19:09 H 4170.00 [known 20:00], 20:47 L 4143.37 [known 20:55], 21:00 H 4155.32 [known 21:15]
+  M15 pivots 11:00-23:00: 11:57 H 4184.68 [known 12:30], 12:29 L 4174.00 [known 12:45], 12:57 H 4186.18 [known 13:15], 13:32 L 4171.09 [known 14:00], 14:33 H 4190.25 [known 15:00], 17:46 L 4162.21 [known 18:15], 18:16 H 4177.06 [known 19:00]
+  M30 pivots 11:00-23:00: 11:57 H 4184.68 [known 12:30], 12:29 L 4174.00 [known 13:00], 12:57 H 4186.18 [known 13:30], 13:32 L 4171.09 [known 14:30], 14:33 H 4190.25 [known 15:30], 17:46 L 4162.21 [known 18:30], 18:16 H 4177.06 [known 19:00]
+  H1 pivots 11:00-23:00: 14:33 H 4190.25 [known 16:00]
+
+== 3. The range box
+  M5 box 0: 4165.61 - 4190.25 (height 24.64), first member 05:05, born (4th pivot known) 09:25, members 10, end 17:50 (broken); top tests 11 [06:30 4185.57, 06:45 4185.92, 07:00 4187.63, 09:10 4184.49, 11:55 4184.68, 12:10 4184.49, 12:55 4186.18, 13:05 4184.62, 14:00 4189.19, 14:20 4188.88, 14:30 4190.25]; bottom tests 11
+      14:30 bar (M5) box_top break level 4187.63 price 4188.11 (known 14:35)
+      14:35 bar (M5) box_top sweep level 4187.63 price 4183.76 (known 14:40)
+      17:20 bar (M5) box_bot break level 4165.61 price 4165.59 (known 17:25)
+      17:25 bar (M5) box_bot sweep level 4165.61 price 4166.82 (known 17:30)
+      17:40 bar (M5) box_bot break level 4165.61 price 4165.22 (known 17:45)
+      17:45 bar (M5) box_bot accepted level 4165.61 price 4163.14 (known 17:50)
+      17:50 bar (M5) box_bot retest level 4165.61 price 4169.93 (known 17:55)
+      17:55 bar (M5) box_bot reclaim level 4165.61 price 4169.61 (known 18:00)
+  M1 box 0: 4165.61 - 4187.63 (height 22.02), first member 05:05, born (4th pivot known) 09:25, members 9, end 14:34 (broken); top tests 16 [06:31 4185.57, 06:48 4185.92, 07:02 4187.63, 09:10 4184.49, 11:35 4183.83, 11:57 4184.68, 12:10 4184.49, 12:40 4185.89, 12:52 4186.12, 12:57 4186.18, 13:05 4184.62, 13:58 4186.51, 14:00 4189.19, 14:09 4188.84, 14:18 4187.86, 14:23 4188.88]; bottom tests 13
+      14:00 bar (M1) box_top break level 4187.63 price 4188.77 (known 14:01)
+      14:01 bar (M1) box_top sweep level 4187.63 price 4184.58 (known 14:02)
+      14:32 bar (M1) box_top break level 4187.63 price 4187.88 (known 14:33)
+      14:33 bar (M1) box_top accepted level 4187.63 price 4189.13 (known 14:34)
+      14:34 bar (M1) box_top retest level 4187.63 price 4187.54 (known 14:35)
+      14:36 bar (M1) box_top reclaim level 4187.63 price 4185.44 (known 14:37)
+      17:20 bar (M1) box_bot break level 4165.61 price 4164.98 (known 17:21)
+      17:21 bar (M1) box_bot sweep level 4165.61 price 4165.83 (known 17:22)
+      17:24 bar (M1) box_bot break level 4165.61 price 4165.59 (known 17:25)
+      17:25 bar (M1) box_bot accepted level 4165.61 price 4165.50 (known 17:26)
+      17:28 bar (M1) box_bot reclaim level 4165.61 price 4166.84 (known 17:29)
+  M1 box 1: 4158.69 - 4177.06 (height 18.37), first member 17:46, born (4th pivot known) 19:58, members 4, end 20:41 (broken); top tests 1 [18:16 4177.06]; bottom tests 9
+      20:39 bar (M1) box_bot break level 4158.69 price 4155.29 (known 20:40)
+      20:40 bar (M1) box_bot accepted level 4158.69 price 4156.71 (known 20:41)
+      20:41 bar (M1) box_bot retest level 4158.69 price 4156.76 (known 20:42)
+      20:41 bar (M1) box_bot retest_fail level 4158.69 price 4156.76 (known 20:42)
+
+== 4. The lines (support = rising lows, resistance = falling highs) and their breaks / retests
+  M1 resistance 0: through 07:02 4187.63 and 09:10 4184.49, -1.47 USD/h, touches 2.0, born 09:25; at 17:20 4172.47, at 18:15 4171.12
+      11:33 bar (M1) break level 4180.98 price 4181.35 (known 11:34)
+      11:34 bar (M1) accepted level 4180.96 price 4183.07 (known 11:35)
+      11:36 bar (M1) retest level 4180.91 price 4181.69 (known 11:37)
+      11:41 bar (M1) reclaim level 4180.79 price 4179.88 (known 11:42)
+  M1 support 1: through 08:26 4165.61 and 09:32 4169.13, +3.20 USD/h, touches 2.0, born 10:08; at 17:20 4194.09, at 18:15 4197.02
+      11:25 bar (M1) break level 4175.16 price 4174.97 (known 11:26)
+      11:26 bar (M1) accepted level 4175.21 price 4174.50 (known 11:27)
+      11:31 bar (M1) reclaim level 4175.48 price 4176.17 (known 11:32)
+  M1 resistance 2: through 07:02 4187.63 and 11:57 4184.68, -0.60 USD/h, touches 3.0, born 12:29; at 17:20 4181.45, at 18:15 4180.90
+      12:41 bar (M1) break level 4184.24 price 4185.03 (known 12:42)
+      12:42 bar (M1) accepted level 4184.23 price 4184.53 (known 12:43)
+      12:54 bar (M1) reclaim level 4184.11 price 4181.16 (known 12:55)
+  M1 support 3: through 08:26 4165.61 and 12:29 4174.00, +2.07 USD/h, touches 3.0, born 12:40; at 17:20 4184.05, at 18:15 4185.95
+      13:27 bar (M1) break level 4176.00 price 4175.80 (known 13:28)
+      13:28 bar (M1) accepted level 4176.04 price 4175.60 (known 13:29)
+      13:33 bar (M1) retest level 4176.21 price 4174.94 (known 13:34)
+      13:42 bar (M1) reclaim level 4176.52 price 4176.66 (known 13:43)
+  M1 resistance 4: through 07:02 4187.63 and 12:57 4186.18, -0.25 USD/h, touches 3.0, born 13:15; at 17:20 4185.11, at 18:15 4184.88
+      14:00 bar (M1) break level 4185.92 price 4188.77 (known 14:01)
+      14:01 bar (M1) sweep level 4185.92 price 4184.58 (known 14:02)
+      14:07 bar (M1) break level 4185.89 price 4187.19 (known 14:08)
+      14:08 bar (M1) accepted level 4185.89 price 4187.13 (known 14:09)
+      14:10 bar (M1) retest level 4185.88 price 4183.95 (known 14:11)
+      14:11 bar (M1) reclaim level 4185.88 price 4184.67 (known 14:12)
+  M1 support 5: through 08:26 4165.61 and 13:32 4171.09, +1.07 USD/h, touches 2.0, born 13:55; at 17:20 4175.17, at 18:15 4176.16
+      15:36 bar (M1) break level 4173.31 price 4173.06 (known 15:37)
+      15:37 bar (M1) accepted level 4173.33 price 4172.75 (known 15:38)
+      15:41 bar (M1) reclaim level 4173.40 price 4175.84 (known 15:42)
+  M1 resistance 6: through 14:33 4190.25 and 18:16 4177.06, -3.55 USD/h, touches 2.0, born 18:56; at 17:20 4180.37, at 18:15 4177.12
+  M5 resistance 0: through 07:00 4187.63 and 09:10 4184.49, -1.45 USD/h, touches 2.0, born 09:25; at 17:20 4172.65, at 18:15 4171.33
+      11:30 bar (M5) break level 4181.11 price 4183.07 (known 11:35)
+      11:35 bar (M5) sweep level 4180.99 price 4180.91 (known 11:40)
+      11:50 bar (M5) break level 4180.63 price 4182.48 (known 11:55)
+      11:55 bar (M5) accepted level 4180.50 price 4183.44 (known 12:00)
+      12:00 bar (M5) retest level 4180.38 price 4178.86 (known 12:05)
+      12:15 bar (M5) reclaim level 4180.02 price 4177.35 (known 12:20)
+  M5 support 1: through 08:25 4165.61 and 09:30 4169.13, +3.25 USD/h, touches 2.0, born 10:10; at 17:20 4194.58, at 18:15 4197.56
+      11:25 bar (M5) break level 4175.36 price 4175.01 (known 11:30)
+      11:30 bar (M5) sweep level 4175.63 price 4183.07 (known 11:35)
+      12:15 bar (M5) break level 4178.07 price 4177.35 (known 12:20)
+      12:20 bar (M5) accepted level 4178.34 price 4176.19 (known 12:25)
+      12:25 bar (M5) retest level 4178.61 price 4177.44 (known 12:30)
+      12:25 bar (M5) retest_fail level 4178.61 price 4177.44 (known 12:30)
+      12:30 bar (M5) retest level 4178.88 price 4180.11 (known 12:35)
+  M5 resistance 2: through 07:00 4187.63 and 11:55 4184.68, -0.60 USD/h, touches 3.0, born 12:30; at 17:20 4181.43, at 18:15 4180.88
+      12:40 bar (M5) break level 4184.23 price 4184.60 (known 12:45)
+      12:45 bar (M5) accepted level 4184.18 price 4184.19 (known 12:50)
+      13:05 bar (M5) reclaim level 4183.98 price 4182.80 (known 13:10)
+  M5 support 3: through 08:25 4165.61 and 12:25 4174.00, +2.10 USD/h, touches 3.0, born 12:40; at 17:20 4184.31, at 18:15 4186.24
+      13:25 bar (M5) break level 4176.10 price 4175.08 (known 13:30)
+      13:30 bar (M5) accepted level 4176.27 price 4174.73 (known 13:35)
+      13:35 bar (M5) retest level 4176.45 price 4176.67 (known 13:40)
+  M5 resistance 4: through 07:00 4187.63 and 12:55 4186.18, -0.25 USD/h, touches 3.0, born 13:15; at 17:20 4185.10, at 18:15 4184.87
+      14:05 bar (M5) break level 4185.89 price 4186.27 (known 14:10)
+      14:10 bar (M5) sweep level 4185.87 price 4183.80 (known 14:15)
+      14:15 bar (M5) break level 4185.85 price 4186.75 (known 14:20)
+      14:20 bar (M5) accepted level 4185.83 price 4187.39 (known 14:25)
+      14:25 bar (M5) retest level 4185.81 price 4184.74 (known 14:30)
+      14:40 bar (M5) reclaim level 4185.75 price 4182.59 (known 14:45)
+  M5 support 5: through 08:25 4165.61 and 13:30 4171.09, +1.08 USD/h, touches 2.0, born 13:55; at 17:20 4175.22, at 18:15 4176.21
+      15:35 bar (M5) break level 4173.34 price 4172.77 (known 15:40)
+      15:40 bar (M5) accepted level 4173.43 price 4172.58 (known 15:45)
+      15:55 bar (M5) retest level 4173.70 price 4172.85 (known 16:00)
+      15:55 bar (M5) retest_fail level 4173.70 price 4172.85 (known 16:00)
+      16:05 bar (M5) retest level 4173.87 price 4172.42 (known 16:10)
+      16:05 bar (M5) retest_fail level 4173.87 price 4172.42 (known 16:10)
+      16:10 bar (M5) retest level 4173.96 price 4172.81 (known 16:15)
+      16:20 bar (M5) retest_fail level 4174.14 price 4172.84 (known 16:25)
+      18:05 bar (M5) retest level 4176.03 price 4173.94 (known 18:10)
+      18:05 bar (M5) retest_fail level 4176.03 price 4173.94 (known 18:10)
+      18:10 bar (M5) retest level 4176.12 price 4175.56 (known 18:15)
+      18:25 bar (M5) retest_fail level 4176.39 price 4177.06 (known 18:30)
+  M5 resistance 6: through 14:30 4190.25 and 18:15 4177.06, -3.52 USD/h, touches 2.0, born 19:00; at 17:20 4180.28, at 18:15 4177.06
+  M5 resistance 7: through 18:15 4177.06 and 19:05 4170.00, -8.47 USD/h, touches 2.0, born 20:00; at 17:20 4184.83, at 18:15 4177.06
+      20:00 bar (M5) break level 4162.23 price 4163.29 (known 20:05)
+      20:05 bar (M5) accepted level 4161.53 price 4164.99 (known 20:10)
+      20:10 bar (M5) retest level 4160.82 price 4163.29 (known 20:15)
+      20:10 bar (M5) retest_fail level 4160.82 price 4163.29 (known 20:15)
+      20:15 bar (M5) retest level 4160.12 price 4159.27 (known 20:20)
+      20:25 bar (M5) retest_fail level 4158.70 price 4158.60 (known 20:30)
+      20:30 bar (M5) retest level 4158.00 price 4159.98 (known 20:35)
+      20:40 bar (M5) reclaim level 4156.59 price 4153.51 (known 20:45)
+  M15 resistance 0: through 07:00 4187.63 and 09:00 4184.49, -1.57 USD/h, touches 2.0, born 09:30; at 17:20 4171.41, at 18:15 4169.97
+      11:45 bar (M15) break level 4180.17 price 4183.44 (known 12:00)
+      12:00 bar (M15) sweep level 4179.78 price 4178.29 (known 12:15)
+  M15 support 1: through 08:15 4165.61 and 09:30 4169.13, +2.82 USD/h, touches 2.0, born 10:15; at 17:20 4191.19, at 18:15 4193.77
+      12:15 bar (M15) break level 4176.87 price 4174.56 (known 12:30)
+  M15 resistance 2: through 07:00 4187.63 and 11:45 4184.68, -0.62 USD/h, touches 3.0, born 12:30; at 17:20 4181.21, at 18:15 4180.64
+      12:30 bar (M15) break level 4184.21 price 4184.60 (known 12:45)
+      12:45 bar (M15) accepted level 4184.06 price 4184.60 (known 13:00)
+  M15 support 3: through 08:15 4165.61 and 12:15 4174.00, +2.10 USD/h, touches 3.0, born 12:45; at 17:20 4184.66, at 18:15 4186.59
+      13:15 bar (M15) break level 4176.10 price 4175.08 (known 13:30)
+      13:30 bar (M15) accepted level 4176.62 price 4175.76 (known 13:45)
+  M15 resistance 4: through 07:00 4187.63 and 12:45 4186.18, -0.25 USD/h, touches 3.0, born 13:15; at 17:20 4185.02, at 18:15 4184.79
+      14:15 bar (M15) break level 4185.80 price 4186.64 (known 14:30)
+      14:30 bar (M15) sweep level 4185.74 price 4182.59 (known 14:45)
+  M15 support 5: through 08:15 4165.61 and 13:30 4171.09, +1.04 USD/h, touches 2.0, born 14:00; at 17:20 4175.09, at 18:15 4176.05
+      15:30 bar (M15) break level 4173.18 price 4172.58 (known 15:45)
+      15:45 bar (M15) accepted level 4173.44 price 4170.50 (known 16:00)
+      16:00 bar (M15) retest level 4173.70 price 4172.81 (known 16:15)
+      16:15 bar (M15) retest_fail level 4173.96 price 4172.84 (known 16:30)
+      18:00 bar (M15) retest level 4175.79 price 4175.56 (known 18:15)
+      18:15 bar (M15) retest_fail level 4176.05 price 4177.06 (known 18:30)
+  M15 resistance 6: through 14:30 4190.25 and 18:15 4177.06, -3.52 USD/h, touches 2.0, born 19:00; at 17:20 4180.28, at 18:15 4177.06
+
+== 5. The Fibonacci of the last big swing (rule 8: the last completed H1 leg; beside it H4)
+  H1 at 14:40: leg 07:00 4187.63 -> 08:00 4165.61: 23.6 % 4170.81, 38.2 % 4174.02, 50.0 % 4176.62, 61.8 % 4179.22
+  H1 at 18:30: leg 08:00 4165.61 -> 14:00 4190.25: 23.6 % 4184.43, 38.2 % 4180.84, 50.0 % 4177.93, 61.8 % 4175.02
+  H1 at 20:47: leg 08:00 4165.61 -> 14:00 4190.25: 23.6 % 4184.43, 38.2 % 4180.84, 50.0 % 4177.93, 61.8 % 4175.02
+  H1 at 22:00: leg 08:00 4165.61 -> 14:00 4190.25: 23.6 % 4184.43, 38.2 % 4180.84, 50.0 % 4177.93, 61.8 % 4175.02
+  H4 at 14:40: no completed leg yet
+  H4 at 18:30: leg 05:05 4187.63 -> 08:00 4165.61: 23.6 % 4170.81, 38.2 % 4174.02, 50.0 % 4176.62, 61.8 % 4179.22
+  H4 at 20:47: leg 08:00 4165.61 -> 12:00 4190.25: 23.6 % 4184.43, 38.2 % 4180.84, 50.0 % 4177.93, 61.8 % 4175.02
+  H4 at 22:00: leg 08:00 4165.61 -> 12:00 4190.25: 23.6 % 4184.43, 38.2 % 4180.84, 50.0 % 4177.93, 61.8 % 4175.02
+
+== 6. The readout (rule 16; label / bias, U up, D down, x mixed, ? unknown)
+  (rule 17: side and trend, each from the labels / from the biases)
+  time      D1    H4    H1   M30   M15    M5    M1   side  trend
+  07:00    ?/?   ?/?   ?/?   ?/?   ?/?   ?/?   ?/?    ?/?   ?/?
+  09:00    ?/?   ?/?   ?/?   ?/?   ?/?   ?/?   ?/?    ?/?   ?/?
+  13:00    ?/?   ?/?   ?/?   U/?   U/?   U/?   U/U    ?/?   ?/?
+  14:33    ?/?   ?/?   ?/?   x/U   x/U   x/U   x/U    ?/?   ?/?
+  15:00    ?/?   ?/?   x/?   x/U   x/U   x/U   x/U    ?/?   x/?
+  16:00    ?/?   ?/?   x/?   x/D   x/D   x/D   x/D    ?/?   x/?
+  17:20    ?/?   ?/?   x/?   x/D   x/D   x/D   x/D    ?/?   x/?
+  18:15    ?/?   ?/?   x/?   x/D   x/D   x/D   x/D    ?/?   x/?
+  18:30    ?/?   ?/?   x/?   x/D   x/D   x/D   x/D    ?/?   x/?
+  18:55    ?/?   ?/?   x/?   x/D   x/D   x/D   x/D    ?/?   x/?
+  19:00    ?/?   ?/?   x/D   D/D   D/D   D/D   D/D    ?/?   x/D
+  20:30    ?/?   x/D   x/D   D/D   D/D   D/D   D/D    ?/?   x/D
+  20:47    ?/?   x/D   x/D   D/D   D/D   D/D   D/D    ?/?   x/D
+  22:00    ?/?   x/D   x/D   D/D   D/D   D/D   D/D    ?/?   x/D
+  D1 bars on the day's data: 1, the first complete at 22:04 Thai 2026-10-19 (after the data end) - so D1 reads unknown all day
+
+structure verdicts (tolerance in DEV_LOG): M1 FOUND, M5 FOUND, M15 FOUND, M30 FOUND, H1 MISSED, H4 MISSED, D1 MISSED

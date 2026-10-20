@@ -1,0 +1,28 @@
+M1 bars 249474 from 2025-08-01 00:00:00+00:00 to 2026-04-17 20:54:00+00:00 (UTC)
+P1: median H1 ATR 16.33 USD; S median 10.00, 10 % 10.00, 90 % 14.48; share of minutes with S = 10 (the floor): 0.526
+P2: median H1 ATR 28.09 USD; S median 16.86, 10 % 10.59, 90 % 35.28; share of minutes with S = 10 (the floor): 0.067
+M1: 249474 bars, 4087 pivots; zigzag_ref 4087 pivots; identical: True
+M1 inner (0.3 x S): 34054 pivots; identical: True
+M1 structure re-derived at 42632 bars: 42632 equal, 0 differ
+M1 label shares: up 0.415, down 0.246, mixed 0.337, unknown 0.002; boxes 615; lines 2644; events 18927
+M5: 49903 bars, 3807 pivots; zigzag_ref 3807 pivots; identical: True
+M5 inner (0.3 x S): 17128 pivots; identical: True
+M5 structure re-derived at 49903 bars: 49903 equal, 0 differ
+M5 label shares: up 0.413, down 0.251, mixed 0.335, unknown 0.002; boxes 560; lines 2635; events 12087
+M15: 16758 bars, 3035 pivots; zigzag_ref 3035 pivots; identical: True
+M15 structure re-derived at 16758 bars: 16758 equal, 0 differ
+M15 label shares: up 0.397, down 0.259, mixed 0.342, unknown 0.002; boxes 447; lines 2189; events 7038
+M30: 8380 bars, 2205 pivots; zigzag_ref 2205 pivots; identical: True
+M30 structure re-derived at 8380 bars: 8380 equal, 0 differ
+M30 label shares: up 0.391, down 0.273, mixed 0.334, unknown 0.002; boxes 283; lines 1654; events 4165
+H1: 4192 bars, 1277 pivots; zigzag_ref 1277 pivots; identical: True
+H1 structure re-derived at 4192 bars: 4192 equal, 0 differ
+H1 label shares: up 0.420, down 0.266, mixed 0.312, unknown 0.002; boxes 96; lines 937; events 2064
+H4: 1098 bars, 352 pivots; zigzag_ref 352 pivots; identical: True
+H4 structure re-derived at 1098 bars: 1098 equal, 0 differ
+H4 label shares: up 0.437, down 0.260, mixed 0.289, unknown 0.015; boxes 3; lines 248; events 370
+D1: 183 bars, 55 pivots; zigzag_ref 55 pivots; identical: True
+D1 structure re-derived at 183 bars: 183 equal, 0 differ
+D1 label shares: up 0.557, down 0.093, mixed 0.246, unknown 0.104; boxes 0; lines 37; events 39
+M1 bars where the M1 ATR term raised the threshold above S: 0.00048
+done in 74 s

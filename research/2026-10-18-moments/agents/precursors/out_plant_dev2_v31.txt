@@ -1,0 +1,13 @@
+CAUGHT  S read 1 bar early (H1 complete by t: right -> left)  | 1 failed, 18 passed in 2.61s
+CAUGHT  S factor 0.6 -> 0.5  | 1 failed, 18 passed in 2.34s
+CAUGHT  first pivot needs > thr  | 1 failed, 3 passed in 2.06s
+CAUGHT  peak reversal: elif -> if (the new-high bar may also reverse)  | 1 failed in 2.60s
+CAUGHT  trough reversal measured from the bar's low  | 1 failed in 2.49s
+MISSED  running leg includes the pivot bar  | 26 passed in 2.04s
+MISSED  known_at counts pivots confirmed on the next bar  | 26 passed in 2.17s
+CAUGHT  side buy allows H1 against  | 1 failed, 10 passed in 1.84s
+CAUGHT  side sell needs H1 down  | 1 failed, 10 passed in 1.83s
+CAUGHT  trend down ignores the third TF  | 1 failed, 10 passed in 1.85s
+CAUGHT  readings take the next bar (look-ahead)  | 1 failed, 9 passed in 2.20s
+CAUGHT  TF threshold ignores the TF ATR  | 1 failed, 21 passed in 2.02s
+10 / 12 caught

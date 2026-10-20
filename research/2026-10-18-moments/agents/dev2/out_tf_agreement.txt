@@ -1,0 +1,8 @@
+P1: share of M1 closes where the TF's label equals M1's: M5 0.948, M15 0.803, M30 0.639, H1 0.448, H4 0.381; every TF M1..H1 down 0.089, up 0.174
+P1: share of M1 closes where the threshold of the TF exceeds S (its ATR term rules): M5 0.006, M15 0.117, M30 0.579, H1 0.951, H4 1.000
+P2: share of M1 closes where the TF's label equals M1's: M5 0.942, M15 0.770, M30 0.572, H1 0.428, H4 0.307; every TF M1..H1 down 0.086, up 0.169
+P2: share of M1 closes where the threshold of the TF exceeds S (its ATR term rules): M5 0.018, M15 0.201, M30 0.748, H1 0.996, H4 1.000
+P1: D1 label up 0.382, down 0.227, mixed 0.390, unknown 0.000; D1 bias up 0.805, down 0.195, unknown 0.000
+P2: D1 label up 0.632, down 0.046, mixed 0.322, unknown 0.000; D1 bias up 0.830, down 0.170, unknown 0.000
+P1: side: +1 0.115, -1 0.054, 0 0.831, NaN 0.000; side_bias: +1 0.264, -1 0.026, 0 0.710, NaN 0.000; trend: +1 0.200, -1 0.115, 0 0.685, NaN 0.000; trend_bias: +1 0.401, -1 0.253, 0 0.345, NaN 0.000
+P2: side: +1 0.205, -1 0.009, 0 0.785, NaN 0.000; side_bias: +1 0.342, -1 0.076, 0 0.582, NaN 0.000; trend: +1 0.198, -1 0.134, 0 0.667, NaN 0.000; trend_bias: +1 0.379, -1 0.222, 0 0.399, NaN 0.000

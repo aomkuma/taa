@@ -1,0 +1,8 @@
+86 decisions: 42 in P1, the rest in P2; first 2025-10-20 14:45:00+00:00, last 2026-04-16 15:10:00+00:00
+the code as it is: 8428 of 8428 readings equal; differing keys: none
+PASSED
+power 1 - S from the H1 bar still forming: 1445 of 1470 readings equal; differing keys: {'S': 17, 'M1.inner': 4, 'M5.events': 2, 'M15.events': 2}
+power 2 - the TF bar after the last complete one: 1085 of 1470 readings equal; differing keys: {'M1.bars': 30, 'M1.piv': 2, 'M1.inner': 5, 'M1.struct': 4, 'M1.lines': 2, 'M5.bars': 30, 'M5.piv': 2, 'M5.struct': 6, 'M5.lines': 2, 'M15.bars': 30, 'M15.piv': 4, 'M15.struct': 9, 'M15.lines': 4, 'M30.bars': 30, 'M30.struct': 11, 'H1.bars': 30, 'H1.struct': 4, 'H1.events': 10, 'H4.bars': 30, 'D1.bars': 30, 'D1.piv': 5, 'D1.struct': 10, 'D1.fib': 5, 'M15.events': 8, 'M30.events': 14, 'D1.events': 8, 'M5.events': 6, 'readout': 5, 'M30.piv': 6, 'M30.lines': 6, 'H4.events': 6, 'D1.lines': 3, 'H4.piv': 4, 'H4.fib': 4, 'M1.events': 2, 'M5.inner': 4, 'H1.piv': 1, 'H1.lines': 1, 'H1.fib': 1, 'H4.struct': 8, 'H4.lines': 3}
+power: planted look-ahead 1 caught: True; planted look-ahead 2 caught: True
+done in 514 s
+exit 0
