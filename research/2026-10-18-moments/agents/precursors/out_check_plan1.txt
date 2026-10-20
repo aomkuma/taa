@@ -1,0 +1,12 @@
+checking combo_trades_slip0.parquet
+  mine London ORB P1: 59 trades, R +0.206, win 0.54
+  mine London ORB P2: 60 trades, R +0.120, win 0.53
+  London ORB: mine 119, theirs 119, same minute 119, only mine 0, only theirs 0; |dR| max 0.0000, > 0.01 in 0
+  mine NY straddle P1: 41 trades, R +0.467, win 0.61
+  mine NY straddle P2: 59 trades, R +0.119, win 0.47
+  NY straddle: mine 100, theirs 100, same minute 100, only mine 0, only theirs 0; |dR| max 0.0562, > 0.01 in 4
+     differs    2026-02-18 13:30 mine -1.012 theirs -1.001
+     differs    2026-03-19 12:30 mine -1.056 theirs -1.000
+     differs    2026-03-20 12:30 mine -1.021 theirs -1.002
+     differs    2026-03-31 12:30 mine -1.020 theirs -1.006
+  Asia B2: 79 trades checked on the ticks, 0 with faults

@@ -147,10 +147,8 @@ break-and-retest, D2, and others.
      - then audit dev2's `swings.py`.
 3. **The PLAN-1 exam read** (once, by the main session) when `plan1.py` is measured. Report both declared weight
    variants, week by week, with the worst loss, the streak and the drawdown in USD.
-4. **Questions asked, not yet answered by the owner:**
-   - Is "London 13-14" the 15-minute ORB?
-   - What are the real account's spreads?
-   - Is NY 08:30 one of the windows?
+4. **The owner's answers (2026-10-20):** London = the 15-minute ORB at 13:00-13:14 Thai; the real account's gold
+   spread is 20-30 points; NY 08:30 is one of the windows.
 5. **Engine work, only after a rule passes:** port the passing pieces into `app/strategy/`.
    - The bot's `app/indicators` are textbook formulas, not MT5's: align them first (`foundation.py`).
    - Run the full pytest / vitest once with the stack paused.

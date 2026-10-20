@@ -66,7 +66,7 @@ Sources: `precursors/notes.md`, `DEV_LOG.md`s, `strategist/PROPOSALS.md`, `audit
 | 32 | The data-minute straddle at 08:30 / 10:00 NY, slippage 0-2 USD, per 30-min bucket | dev1 (D2) | done -> row 41 |
 | 33 | The owner's pattern set on trade-size swings (M / W, triple tops, H&S, channels, A-B-C-D-E, bases), tight patterns | dev1 (P5) | - |
 | 34 | A daily plan combining the PARTIAL pieces in their own windows (Asia B2 / reclaim, London ORB, NY straddle) | the measurer | done -> rows 36-37 |
-| 38 | PLAN-1 frozen for the one exam read (below): needs an exam-capable runner of the three pieces | dev1 after D, the measurer reads | - |
+| 38 | PLAN-1 frozen for the one exam read (below): needs an exam-capable runner of the three pieces | dev1 (restarted 12:46 Thai), the measurer reads | the measurer's own tick re-derivation `precursors/check_plan1.py` reproduces London 119 / 119 and NY 100 / 100 (4 stale stops in `news_follow_trades.parquet`), B2 79 trades 0 faults |
 | 39 | The transformations of every FAIL (the opposite side, the stop x 1.5 / x 2, a nearer target), and the state weights per piece in more states | the strategist | the owner: "try the opposite side, widen the SL, bring the TP in" |
 
 ## PLAN-1 - frozen for the one exam read (2026-10-20 12:29 Thai)

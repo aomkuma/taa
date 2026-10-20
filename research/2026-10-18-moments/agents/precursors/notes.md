@@ -2729,3 +2729,26 @@ app file (clean); the precursors suite (339 passed in 5:19, without the matplotl
 - the downloader stores closed bars only (a second app fix);
 - a `plib.load_learning()` that stops at the exam;
 - dev2's `swings.py` audited after V3-1.
+
+## The owner's answers and the independent PLAN-1 check (2026-10-20 12:52 Thai)
+
+**The owner answered the three open questions (12:5x Thai):**
+- "London 13-14" is the 15-minute opening-range break, 13:00-13:14 Thai (as PLAN-1 has it).
+- The real account's gold spread is 20-30 points (0.20-0.30 USD); the tick spread (0.20-0.27) is the cost as it is.
+- NY 08:30 is one of the owner's windows.
+
+**The agents restarted** at about 12:46 Thai (the owner opened the limit): dev1 row 38, dev2 V3-1, the strategist row 39,
+the auditor items 1 / 4 then dev2's `swings.py`.
+
+**The auditor's item 3 measured and committed** (eeca5a9): the downloader keeps closed bars only. 20 tests passed;
+ruff, mypy, bandit clean; my two planted bugs (`<` for `<=`; the cut skipped) failed 3 and 10 tests.
+
+**My independent re-derivation of PLAN-1 from the raw ticks** (`check_plan1.py`, written from the frozen text, own
+loaders / ATR / fills; `out_check_plan1.txt`), against `combo_trades_slip0.parquet`:
+- London ORB (0.07 slip): 119 / 119 trades in the same minute, |dR| max 0.0000. P1 +0.206, P2 +0.120.
+- NY straddle (slip 0): 100 / 100 trades in the same minute; 4 differ by more than 0.01 R, all stops in P2
+  (2026-02-18, 03-19, 03-20, 03-31): stored -1.000 .. -1.006, mine -1.012 .. -1.056. Re-running the strategist's own
+  `run_trade` on today's ticks gives my numbers, so **`news_follow_trades.parquet` is stale** (its stops booked at the
+  stop price). Mine: P1 +0.467, P2 +0.119. Told dev1: plan1.py re-simulates the straddle from the ticks.
+- Asia B2: 79 trades checked on the ticks (the entry and exit against the ticks, pnl, risk, R, no tick beyond the stop
+  or at the target before another exit): 0 faults.
