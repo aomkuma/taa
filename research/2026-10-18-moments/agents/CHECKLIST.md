@@ -53,14 +53,17 @@ Sources: `precursors/notes.md`, `DEV_LOG.md`s, `strategist/PROPOSALS.md`, `audit
 | 36 | The daily plan: Asia B2 + London 13:00 ORB + NY 08:30 straddle (30 min), one position at a time (`precursors/combo.py`) | +0.241 (+0.06..+0.42) | +0.133 (-0.05..+0.31) | 141 / 157 (2.2-2.4 a day) | PARTIAL | pooled +0.184 (+0.06..+0.31), the first combination whose pooled range excludes 0; with +1 USD release slippage +0.215 / +0.078 |
 | 37 | #36 weighted by the market state (`precursors/regime.py`): the range pieces (Asia B2, London ORB) pay in sideways / mixed D1 states and lose in a trend; the breakout piece (NY straddle) pays in a trend. Half weight where a piece is out of its state | weights from P1: +0.280; by mechanism: +0.329 | +0.143 / +0.184 | same | PARTIAL / PASS by number | the mechanism weights were chosen after seeing both parts, so the exam decides; with +1 USD release slippage, by mechanism +0.301 / +0.130 |
 
+| 40 | D1: the 13:00-Thai ORB core / + no H1 level within 2 R (D1L) / + the season ADR20 >= 63.3 (S) / D1L+S (dev1; 0.07 slip) | +0.206 / +0.086 / +0.250 / +0.306 | +0.120 / +0.604 / +0.120 / +0.604 | 59-60 / 21-16 / 53-60 / 16-16 | PARTIAL | the core misses only in P2; D1L+S passes on 16 trades a part (too few); older years O1 / O2 core -0.083 / -0.066; sells +0.488 / +0.179 against buys +0.050 / +0.058 (a lead); 3 grid cells >= +0.15 in both, seen after the run (leads) |
+| 41 | D2: the straddle at 08:30 + 10:00 NY, 30 min (+0.5 USD slip) | +0.221 | +0.125 | 94 / 109 | FAIL | P2 rests on one crash trade (2026-01-29 10:00 NY, +27.5 R); without it -0.128. 08:30 alone +0.360 / +0.237, 10:00 alone +0.113 / +0.033. The NY open itself (09:30) loses (-0.208 / -0.289); after the open the first 30 min go against the straddle, the second with it |
+
 **In progress (OPEN):**
 
 | # | Method | Who | What it adds |
 |---|---|---|---|
 | 29 | V3: the owner's framework - the side from H1 -> D1 structure, the M15-H1 trend, the entry TF M1 / M5 / M15 by volatility, the pullback turn at a level, the stop at the turn, the owner's windows (NY to + 4 h) | dev2 | the owner's own reading, on trade-size swings |
 | 30 | The owner's playbook: break and retest (against #25's base rate), the aligned consolidation, the fake break at a range edge (= #23), the fake first leg at an open | dev2 | - |
-| 31 | The opening-range break refined: the H1-level change, a season reading, the older years | dev1 (D1) | from #22 |
-| 32 | The data-minute straddle at 08:30 / 10:00 NY, slippage 0-2 USD, per 30-min bucket | dev1 (D2) | from #24 |
+| 31 | The opening-range break refined: the H1-level change, a season reading, the older years | dev1 (D1) | done -> row 40 |
+| 32 | The data-minute straddle at 08:30 / 10:00 NY, slippage 0-2 USD, per 30-min bucket | dev1 (D2) | done -> row 41 |
 | 33 | The owner's pattern set on trade-size swings (M / W, triple tops, H&S, channels, A-B-C-D-E, bases), tight patterns | dev1 (P5) | - |
 | 34 | A daily plan combining the PARTIAL pieces in their own windows (Asia B2 / reclaim, London ORB, NY straddle) | the measurer | done -> rows 36-37 |
 | 38 | PLAN-1 frozen for the one exam read (below): needs an exam-capable runner of the three pieces | dev1 after D, the measurer reads | - |
@@ -79,4 +82,7 @@ Sources: `precursors/notes.md`, `DEV_LOG.md`s, `strategist/PROPOSALS.md`, `audit
   otherwise.
 - **The second variant,** declared now: the weights from P1 only (Asia B2 half in a trend; the NY straddle half in
   sideways / mixed for slippage 0, sideways only with +1 USD).
-- **One position at a time;** the exam is read once, with release slippage 0 and +1 USD reported.
+- **One position at a time;** the exam is read once.
+- **Costs: the spread only** (owner, 2026-10-20 12:30 Thai: slippage dropped as uncontrollable). Spread-only on the
+  learning parts: unweighted +0.252 / +0.140, weighted by the state +0.341 / +0.191 (from the trades' own risk, the
+  0.07 entry slippage added back).

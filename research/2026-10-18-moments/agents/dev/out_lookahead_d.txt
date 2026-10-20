@@ -1,0 +1,6 @@
+D2 1. the side, the fill tick and price equal after every tick after the fill was replaced: 203 of 203
+D2 2. the trade (and the stored one) equal after every tick after its exit was replaced: 203 of 203; power: the ticks after the fill replaced changed 203 of 203
+D1 1. the readings at the decision equal after every later M1 bar was replaced: 190 of 190 days
+   power: the decision bar's close moved inside the range changed the decision in 177 of 177
+D1 2. the trade (and the stored one) equal after every tick after its exit was replaced: 119 of 119; power: the ticks after the fill replaced changed 119 of 119
+PASSED

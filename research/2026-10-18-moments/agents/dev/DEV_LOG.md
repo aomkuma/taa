@@ -1293,3 +1293,211 @@ B2-based test.
   on those swings, with the shape check, the look-ahead check and the drawings; (2) an independent second
   implementation of the structure reading (HH / HL, LH / LL per TF) to cross-check dev2's.
 Written at 16:12 UTC.
+
+## Task D - the strategist's time-anchored proposals 1 and 6 (the coordinator's go-ahead read at 16:45 UTC; these rules written at the clock time below)
+
+DEV_PROMPT section 5 "Task D"; the strategist's review `agents/strategist/PROPOSALS.md` (its `orb_ticks.py`,
+`news_follow.py`). They need no swings. My own code; the strategist's numbers serve as a third source to compare with.
+
+### Written before computing (Task D): the rules
+
+**D1 - the opening-range break at 13:00 Thai (06:00 UTC; Thailand has no summer time).**
+- **Days:** every weekday (UTC date) in P1 (2025-10-18 .. 2026-01-16) and P2 (2026-01-16 .. 2026-04-18) on the ticks;
+  the older years O1 (2023-10-18 .. 2024-10-17) and O2 (2024-10-18 .. 2025-10-17) on M1 bars only (there are no tick
+  files before 2025-10-01) - checks only, nothing chosen from them. A day counts only when its first M1 bar at / after
+  06:00 opens by 06:05.
+- **H** = the ATR(14) of the last H1 bar complete by 06:00 UTC (`patterns.tf_bars(m, 60)`, `patterns.atr14`; the
+  05:00 bar, complete at 06:00, counts).
+- **The range:** the highest high / lowest low of the M1 bars opening 06:00:00 .. 06:14 (by time). Skip the day if
+  high - low > 1.5 H (or no H).
+- **The entry decision:** the first M1 bar opening 06:15 .. 07:14 whose close is above the range high (buy) or below
+  the range low (sell); the decision at its close (open + 60 s). No break: no trade. One trade a day: the first break
+  only, even if it gets no fill.
+- **On the ticks:** the fill at the first tick at / after the decision, within 60 s (else no trade): a buy at the ask
+  + 0.07, a sell at the bid - 0.07. The stop at the range's other side (a buy: the range low, read on the bid; a sell:
+  the range high, on the ask), filled at the first tick at / beyond it, gap included. The target = the fill + 2 x the
+  fill's risk, a limit. Out at the first tick at / after the fill + 60 minutes. (`p3_trades.simulate3`, no trail, no
+  close exit; the target from a first pass, as `one_trade3`.)
+- **On M1 (O1 / O2, and P1 / P2 for a tick-against-M1 comparison):** bars are bid bars; ask = bid + the spread column x
+  0.01. The fill at the open of the bar after the decision bar: a buy at ask + 0.07, a sell at bid - 0.07. From that bar
+  on: a buy's stop when the low <= the stop (filled at the stop, or at the open when the bar opens past it); its
+  target when the high >= the target (a limit); both in one bar: the stop. A sell the same on the ask (bid + spread).
+  Out at the open of the first bar at / after the fill + 60 minutes (a buy at the bid, a sell at the ask); the data's
+  end or a gap of more than 30 minutes before that: out at the last bar's close ("break").
+- **D1L, the one change (written by the coordinator / the strategist; coded here):** no trade when one of the owner's
+  H1 levels (`zones.levels_at` at the decision, with the decision bar's close) lies ahead in the trade's way closer
+  than 2 R: refuse if any level L has 0 < side x (L - close) < 2 x risk_dec, risk_dec = side x (close - stop) at the
+  decision.
+- **D1S, the season reading (one, written now, its value from P1 only):** trade only when ADR20 >= y, ADR20 = the mean
+  high - low of the last 20 complete D1 bars (server day, `indicators.bars(m, "1D")`) at the decision; **y = the 10th
+  percentile of ADR20 at 06:00 UTC over P1's weekdays** (computed before any result and written below). Reported as
+  D1 + S and D1L + S.
+- **The neighbours (the strategist's grid, re-run in my code on the ticks):** the range 10 / 15 / 30 minutes x the
+  target 1.5 / 2 / 3 R x out after 60 / 120 minutes (18 cells; the core is L 15, k 2, X 60; the entry window is always
+  the 60 minutes after the range); also on M1 for O1 / O2.
+- **Settings counted:** D1, D1L, D1 + S, D1L + S, and the 17 other grid cells = 21.
+
+**D2 - the data-minute straddle in the NY window (S2's shape at every 08:30 and 10:00 New York minute).**
+- **Events:** `sweep_detector.fixed_events()` - every weekday's 08:30 and 10:00 NY minute in P1 / P2 (summer / winter
+  time); ticks only (no older years: no ticks).
+- **S2's shape** (`app/strategy/release_straddle.py`): the reference = the last tick before the minute t0, no older
+  than 30 s (else no trade); U = its bid / 4000; a buy stop at ask0 + 2 U and a sell stop at bid0 - 2 U, live 60 s
+  (t0 <= tick < t0 + 60 s); the first tick with ask >= the buy stop (buy) or bid <= the sell stop (sell), the buy
+  checked first on one tick; the fill at that tick: a buy at its ask + 0.07 + extra, a sell at its bid - 0.07 - extra;
+  the stop 8 U from the fill (risk 8 U), on the bid (buy) / ask (sell), at the first tick at / beyond it, gap
+  included; no target; out at the first tick at / after t0 + the hold. A gap of more than 30 minutes in the ticks:
+  out at the last tick before it.
+- **Settings:** the hold 15 / 30 minutes (the core, trigger 2 U, stop 8 U); the release slippage extra = 0 / 0.5 / 1 / 2
+  USD is the cost axis. **Pass: both parts >= +0.15 R at +0.5 USD** (and >= 30 trades in each).
+- **The neighbours:** the trigger 1.5 / 2 / 3 U x the stop 6 / 8 / 10 U x the hold 15 / 30 (18 cells, at +0.5 USD).
+- **Readings (not settings):** per minute (08:30 / 10:00); a calendar release at the minute or not
+  (`sweep_detector.calendar_events`).
+- **Settings counted:** 18 (the 2 core cells among them).
+
+**Judging both (the coordinator's additions):** per part n, a weekday, win %, R with its 95 % range, USD (0.01 lot),
+max DD, worst trade, the longest losing streak, the exits; the pooled P1 + P2 mean with its 95 % range; the settings
+tried; the neighbours (how many cells > 0 per part); the week-by-week table (Thai weeks from Monday 00:00 Thai).
+**12 drawn trades per rule** (D1 core; D2 hold 30 at +0.5 USD): in each part the 3 winners and the 3 losers whose entry
+is nearest the part's middle (P1 2025-12-02 12:00 UTC, P2 2026-03-02 12:00 UTC), one panel each: the ticks' mid / the
+M1 bars from 30 minutes before the decision to 15 minutes after the exit, the range / the triggers, the entry, stop,
+target and exit, in Thai time.
+**Checks:** hand-worked tests, planted bugs, the look-ahead check (the decision and the trade equal when the bars /
+ticks after them are replaced; power checks), a second computation in a separate program importing none of my trade
+code (its own bars, ATR, decisions and tick loop; every metric recomputed; 20 trades a setting re-derived from the raw
+ticks), and the strategist's figures as a third source. **Freeze** only at the owner's bar (>= +0.15 R in both parts,
+>= 30 trades each); none is run on the exam.
+Written at 16:47 UTC.
+
+**D1S's value (from P1 only, read at 16:48 UTC):** ADR20 at 06:00 UTC over P1's 64 weekdays - min 60.1, 5th 61.7,
+**10th 63.3**, median 83.7, max 119.1 USD -> **y = 63.3 USD**. No result read. Written at 16:48 UTC.
+
+### Task D - progress note (2026-10-20 05:07 UTC = 12:07 Thai, the run resumed after a rate limit)
+
+Done before the stop (2026-10-19 16:48 - 17:07 UTC): `d1_orb.py`, `d2_straddle.py` and their tests; `plant_bugs_d.py`;
+both runs; `d_report.py`; `lookahead_d.py` (it FAILED first on D1's trades: the trade file stored the ns times as floats -
+a day without a trade has none, so the column became float64 and rounded them by up to 256 ns; fixed by `with_times`, the
+times as Int64, with a test and a planted bug; then PASSED); `verify_d.py` (PASSED). The P5 waiting stays.
+
+**The auditor's ZigZag start-up case (read 05:07 UTC):** before - `audit2/test_relay_dev_zigzag.py` **2 failed in
+5.48s**; the fix (one line, `patterns.zigzag`: the first pivot waits while one bar holds both the highest high and the
+lowest low - `hi_i != lo_i` in the start-up condition); after - **2 passed in 1.47s**. My own test of the case
+(`test_patterns.py::test_one_wide_bar_at_the_start_is_not_two_turns`) fails without the fix (1 failed, 31 passed) and
+passes with it (32 passed). The production pivots before / after, on the whole M1 from 2025-09-01: M1 25,436 / 25,436,
+M5 4,884 / 4,884, P5's inner 17,610 / 17,610 - **identical**, so no earlier result changes.
+
+### Written before computing: D2 by the clock after the release / the NY open (the owner, 12:05 Thai)
+
+The owner: each open usually runs in its first 30 - 60 minutes; New York can run up to 4 hours after its open, often
+after 1 - 2 choppy hours first. Readings, not settings (nothing is chosen from them now):
+- **The entries:** D2's core entry (trigger 2 U, stop 8 U, +0.5 USD at the fill) at every weekday 08:30 and 10:00 New
+  York minute, and **the same at the NY open (09:30 New York)** - added for the owner's "after the open".
+- **(a) Held longer:** the same entry and stop, out at the minute + 30, 60, ..., 240 minutes (`d2_straddle.straddle` with
+  that hold); per part and per minute: n, win %, R with its 95 % range. Each minute alone (the long holds overlap the
+  next minute's entry; no one-position rule here).
+- **(b) The run per 30-minute bucket:** for each entry, with the mid = the last tick's (bid + ask) / 2 at / before a
+  time: the move in the trade's direction over each bucket b = 1 .. 8 (bucket 1 from the fill tick's mid to the minute +
+  30; bucket b from the minute + 30 (b - 1) to + 30 b), in R (8 U), without a stop; and its size |move| in USD whatever
+  the side. Per part and per minute: the mean, the share in the trade's way, n. A bucket that crosses a gap of more than
+  30 minutes in the ticks, or the data's end, is left out. The buckets are also labelled by the time from the NY open
+  (08:30 = the open - 60 minutes).
+Written at 05:14 UTC.
+
+### Task D - the report
+
+**1. What I did** (all in `dev/`): `d1_orb.py` (decide, tick_trade on `p3_trades.simulate3`, m1_trade, level_in_way,
+Market with H / ADR20 / the owner's levels, with_times; writes `d1_trades.parquet`), `d2_straddle.py` (reference,
+triggered, exit_from, straddle; writes `d2_trades.parquet`), `d2_buckets.py` (ny_minutes, mid_at, crosses_gap,
+bucket_moves; writes `d2_held.parquet`, `d2_buckets.parquet`), `d_report.py` (the tables, `out_d_report.txt`,
+`d_metrics.csv`), `lookahead_d.py`, `verify_d.py` (the second computation), `charts_d.py` (pages `charts/d_d1.html`,
+`charts/d_d2.html`); tests `test_d1_orb.py`, `test_d2_straddle.py`, `test_d2_buckets.py`, `test_verify_d.py`,
+`test_charts_d.py`; planted bugs `plant_bugs_d.py`, `plant_bugs_verify_d.py`, `plant_bugs_charts_d.py`; the auditor's
+ZigZag fix in `patterns.py` with `test_patterns.py::test_one_wide_bar_at_the_start_is_not_two_turns`.
+
+**2. Tests** (05:28 UTC): `test_d1_orb.py` 7 passed in 2.47s; `test_d2_straddle.py` 5 passed in 2.13s;
+`test_d2_buckets.py` 3 passed in 2.32s; `test_verify_d.py` 8 passed in 2.07s; `test_charts_d.py` 2 passed in 2.84s
+(research venv); with `test_patterns.py` and the auditor's relay test: 57 passed in 3.71s.
+
+**3. Planted bugs:** `plant_bugs_d.py` 45 of 45 CAUGHT (d1 23, d2 14, d2_buckets 8; one first bug was equivalent -
+"a late fill taken": simulate3 refuses it itself - and replaced; five gaps closed by tests first: the range's last bar,
+the time from the fill, the buy stop from the ask, the data's end in a bucket, the float times); `plant_bugs_verify_d.py`
+17 of 17 (one equivalent - the target before the stop on one tick - replaced; three gaps closed first);
+`plant_bugs_charts_d.py` 5 of 5.
+
+**4. Look-ahead** (`out_lookahead_d.txt`): D1 - the readings at the decision (status, range, side, stop, decision time,
+H, ADR20, the level ahead) equal after every later M1 bar was replaced: 190 of 190 days (P1 + P2 + 60 older days);
+power 177 of 177; the trades equal after the ticks after the exit were replaced: 119 of 119 (FAILED first: 5 of 119,
+the float-rounded times in the file - fixed, see the progress note); power 119 of 119. D2 - the side, fill tick and price
+equal after the ticks after the fill were replaced: 203 of 203; the trades after the exit: 203 of 203; power 203 of 203.
+D2 by the clock uses the same entry function (the 09:30 entries too); its readings are after the entry by design.
+
+**5. The second computation** (`out_verify_d.txt`, PASSED): the metrics 1,460 of 1,460 values (146 cells); D1 every
+core day 783 of 783 (P1 / P2 ticks and M1, O1 / O2 M1: status, decision, ADR20, the level ahead, the trade); D1 the
+other 17 cells 340 of 340 (20 each, raw ticks); D2 1,944 of 1,944 (every core trade at the four costs + 320 of the other
+cells) and the minutes with a trade agree; D2 by the clock 5,120 of 5,120. **The third source:** the strategist's
+`orb_ticks.py` gave +0.206 / +0.120 on 59 / 60 trades - mine is the same.
+
+**6. The results** (`out_d_report.txt`, `out_d2_buckets.txt`; R with its 95 % range; 0.01 lot USD):
+
+D1 - the 13:00-Thai opening-range break:
+
+| rule | P1 | P2 | pooled P1 + P2 | O1 (M1) | O2 (M1) |
+|---|---|---|---|---|---|
+| D1 core | +0.206 (-0.051..+0.463), 59, win 0.54, +112.58 | +0.120 (-0.146..+0.386), 60, win 0.53, +187.25 | +0.163 (-0.021..+0.347), 119 | -0.083, 250 | -0.066, 252 |
+| D1L (no level ahead within 2 R) | +0.086, 21 | +0.604, 16 | +0.310 (-0.082..+0.701), 37 | -0.157, 63 | +0.010, 75 |
+| D1 + S (ADR20 >= 63.3) | +0.250, 53 | +0.120, 60 | +0.181 (-0.005..+0.368), 113 | none in season | +0.268, 43 |
+| D1L + S | +0.306, 16 | +0.604, 16 | +0.455 (+0.038..+0.872), 32 | none | +0.506, 16 |
+
+- Core: DD 34.33 / 101.45, worst -17.71 / -34.78, streak 3 / 5, exits time / stop / target 37/15/7 and 31/21/8; 0.92 a
+  weekday. M1 on the same days: +0.217 / +0.138 (M1 flatters by 0.01 - 0.02). Sells +0.488 / +0.179 (21 / 31), buys
+  +0.050 / +0.058 (38 / 29) - a reading.
+- **The owner's bar: not met** - the core's P2 is +0.120; D1L and D1L + S have 16 - 21 trades a part (< 30).
+- **The neighbours:** cells > 0 - P1 17 of 18, P2 17 of 18, O1 2 of 18, O2 0 of 18. Three cells are >= +0.15 in both
+  parts (L 10 k 1.5 X 120 +0.258 / +0.164; L 15 k 3 X 60 +0.209 / +0.158; L 15 k 3 X 120 +0.382 / +0.168) - picked
+  after seeing, so leads only.
+- **Settings tried: 21** (the core, D1L, D1 + S, D1L + S, 17 other cells).
+- The older years lose on my M1 costs (the spread column, no stop slippage; the strategist's heavier M1 costs gave
+  -0.145 / -0.107). The season reading leaves O1 entirely out and keeps 43 O2 days (+0.268).
+
+D2 - the data-minute straddle (S2's shape; every weekday 08:30 / 10:00 NY):
+
+| hold | +0 USD P1 / P2 | +0.5 USD P1 / P2 (pooled) | +1 USD | +2 USD |
+|---|---|---|---|---|
+| 15 min | +0.175 / +0.021 | +0.130 / -0.046 (+0.035) | +0.072 / -0.094 | -0.127 / -0.218 |
+| 30 min | +0.279 / +0.214 | **+0.221 / +0.125** (+0.169, -0.154..+0.492; 94 / 109 trades) | +0.175 / +0.090 | -0.092 / -0.004 |
+
+- **The pass (both >= +0.15 at +0.5 USD): not met** (P2 +0.125).
+- **P2 rests on one trade:** 2026-01-29 22:00 Thai (10:00 NY) a sell held 30 minutes made +302.56 USD = +27.5 R (gold
+  fell from 5,496 to 5,227 in those 30 minutes - checked on the M1 bars and the raw ticks). Without it P2 is -0.128;
+  without its top 3, P2 -0.209 and P1 +0.090.
+- **The neighbours at +0.5 USD:** cells > 0 - P1 12 of 18, P2 8 of 18: they do not agree. **Settings tried: 18.**
+- Readings (hold 30, +0.5): 08:30 +0.360 / +0.237 (41 / 49) against 10:00 +0.113 / +0.033 (53 / 60); a calendar
+  release at the minute +0.122 / -0.242 (16 / 28), none +0.241 / +0.252 (78 / 81).
+
+D2 by the clock (the owner, 12:05 Thai; `out_d2_buckets.txt`; +0.5 USD):
+- **(a) Held longer with the 8 U stop** (R P1 / P2): 08:30 - 30 min +0.360 / +0.237, 60 +0.518 / +0.124, 120 +0.907 /
+  -0.190, 240 +0.708 / -0.265; the NY open 09:30 - 30 min -0.208 / -0.289, 60 -0.169 / +0.155, 120 -0.282 / -0.126;
+  10:00 - 30 min +0.113 / +0.033, 90 +0.335 / -0.106, 240 +0.145 / -0.387. P2 is best at 30 - 60 minutes and falls
+  after; P1 keeps rising to 90 - 120 minutes.
+- **(b) The move in the straddle's direction per 30 minutes** (mean R / share in its way / mean size USD): 08:30 bucket
+  1 +0.502 / 0.66 / 9.5 and +0.470 / 0.69 / 13.9 - the clearest, both parts; then it changes sign bucket by bucket. The
+  NY open 09:30: bucket 1 (open .. +30) -0.065 / -0.116, bucket 2 (+30 .. +60) +0.290 / +0.650 - the first half hour
+  against the straddle's side, the second with it, in both parts. **The sizes** (whatever the side): the largest in the
+  first hour after the NY open (P2: the 08:30 entries' buckets 3 - 4 = the open .. +60, 20.9 and 21.8 USD; the 09:30
+  entries' buckets 1 - 2, 19.8 and 19.4), then smaller from +2 h (P2 10 - 12, P1 5 - 7). In these averages the biggest
+  moves come in the first hour after the open, not after 1 - 2 choppy hours; a later run on single days is not excluded
+  by an average - the drawn days are the place to look.
+
+**The 12 drawn trades per rule:** `charts/d_d1.html`, `charts/d_d2.html` (3 winners + 3 losers per part nearest its
+middle; Thai time).
+
+**7. Questions:**
+1. D1's core misses only by P2 (+0.120). Three neighbouring cells pass both parts, and D1 + S holds +0.250 / +0.120.
+   May I test one pre-written change aimed at P2 (e.g. the target 3 R), knowing it is chosen after seeing, or should
+   D1 stay as it is for the owner's look at the 12 trades first?
+2. D1's sells beat its buys in both parts (+0.488 / +0.179 against +0.050 / +0.058). A reading only - test it as a
+   written rule?
+3. D2's P2 is one crash trade. Is the straddle worth more work, or only its 08:30 half (+0.360 / +0.237 at +0.5 USD,
+   41 / 49 trades, chosen after seeing)?
+4. The NY open's second half hour went the straddle's way in both parts (+0.290 / +0.650 R). Should a rule be written
+   for it (enter at the open + 30 the way the open's first 2-U break went)?
+Written at 05:29 UTC.

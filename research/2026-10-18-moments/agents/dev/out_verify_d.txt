@@ -1,0 +1,6 @@
+1. the metrics recomputed: 1460 of 1460 values agree (146 cells)
+3. D2 trades re-derived from the raw ticks (every core trade at the four costs + 320 of the other cells): 1944 of 1944 agree; the minutes with a trade agree: True
+4. D2 by the clock re-derived from the raw ticks (every held trade +30 .. +240 and every bucket move): 5120 of 5120 agree
+2a. D1 core days re-derived (the status, decision, ADR20, the level ahead, the trade): 783 of 783 agree
+2b. D1 other grid cells, 20 trades each from the raw ticks: 340 of 340 agree
+PASSED
