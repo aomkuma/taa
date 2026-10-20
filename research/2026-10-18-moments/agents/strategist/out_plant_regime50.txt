@@ -1,0 +1,9 @@
+CAUGHT  ref = (bid[k] + ask[k]) / 2
+CAUGHT  e = int(np.searchsorted(t, t0 + span_ns, side="right"))
+CAUGHT  return float(np.max((bid[k:e] + ask[k:e]) / 2 - ref))
+CAUGHT  on = ok & ((x < c) if lower else (x >= c))
+CAUGHT  elif False:
+MISSED  ok = np.ones(len(x), bool)
+CAUGHT  k = int(np.searchsorted(dates, day, side="right"))
+CAUGHT  v = v[-n:]
+CAUGHT  if len(v) < 1:

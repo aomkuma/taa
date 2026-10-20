@@ -1,3 +1,162 @@
+# Row 50 - the case for "the present regime": what changed in gold around 2025-10 - written before computing (2026-10-20 19:18 Thai, `date -u` 12:18)
+
+Measured only; no rule is built. Data: 2021-09-01 .. 2026-04-17, never later. M1 comes from `gold.bars`, with the
+index cast to nanoseconds (the NS-2 unit trap). D1 is MT5's own. The release ticks come from `data/ticks_old` (release
+days to 2025-09) and `data/ticks` (from 2025-10).
+
+**The readings** (each computed per calendar month, and as a rolling value known at the start of each day):
+
+| # | Reading | Definition |
+|---|---|---|
+| 1 | dr | the median D1 range (high - low, USD) |
+| 2 | atr | the median MT5 ATR(14) of the H1 bars built from M1 (USD) |
+| 3 | jump | on the 08:30-ET release days: the largest abs(mid - the last mid before 08:30:00) within 08:30:00 .. 08:31:00 (USD) |
+| 4 | spr_atr | the median M1 spread (spread x 0.01 + 0.08) / the H1 ATR(14), over the M1 bars |
+| 5 | ny30 | the share of weekdays whose M1 range from 08:30 to 12:30 New York time is >= 30 USD |
+| 6 | eff | the D1 20-day efficiency (abs(the net change) / the sum of the abs daily changes), the median |
+
+**The leads' result per trade:** ORB + RC_win + RT_opp, summed. The sources:
+- 2021-09 .. 2023-10-17: `sw20_trades.parquet` (M1);
+- 2023-10-18 .. 2025-10-17: `states_events.parquet` (M1);
+- P1 / P2: the same file (ticks).
+
+**The switch rule tried for each reading** ("trade the leads only while X > threshold"; "<" for spr_atr):
+- **Monthly:** X of the previous complete calendar month decides every trade of this month.
+- **Rolling:** X over the last 20 weekdays (the jump: the last 5 release days) up to the day before the entry.
+- **The threshold** is chosen on the trades before 2026-01-16 (2021-09 .. 2025-09 + P1). The candidates are every
+  value the reading took on the fit days. The score is the summed R of the switched-on fit trades. On a tie, the
+  lowest threshold wins (">"), or the highest ("<").
+- **It is read once on P2:** the trades switched on, their R and summed R, against always-on.
+- **"In time":**
+  - the first month from which the monthly switch stays on through P1;
+  - the first day the rolling switch is on in 2025-09 .. 2025-12;
+  - both against the month the leads started paying (2025-10).
+- **Caveat, stated now:** the fit includes P1, the paying months. So the threshold is chosen knowing where the change
+  came. A fit on 2021-09 .. 2025-09 alone sees no paying stretch.
+# Row 50 - the results (measured 2026-10-20 19:20-19:21 Thai)
+
+**How the numbers were checked:**
+- **The helpers in `regime50.py`** (the release jump, the threshold choice, the rolling value strictly before the day):
+  4 hand-worked tests pass (`test_regime50.py`).
+- **Planted bugs** (`out_plant_regime50.txt`): 8 of 9 caught.
+  - The miss is an equivalent mutant: letting NaN candidates into the threshold choice cannot change the choice,
+    because a comparison with NaN is never on.
+- **No exam data was loaded:**
+  - `gold.bars(before=2026-04-18)` is asserted, and the release days at / after 2026-04-18 are skipped.
+  - The M1 index is cast to nanoseconds, so the NS-2 unit trap cannot recur.
+- **The leads' trades are the measured files:** `sw20_trades.parquet` (to 2023-10-17) and `states_events.parquet`
+  (from 2023-10-18). Always on, P2 gives 128 trades at +0.203 R. That equals ORB 60 + RC_win 22 + RT_opp 46 from row 45.
+- **Also measured:** the SW-20 switch's own planted-bug run (`out_plant_sw20.txt`) now catches 7 of 7. Three tests
+  were added after the first round: fewer records than N, a missing result taking a place, and only the last N.
+
+## Month by month (`regime50.py`, `out_regime50.txt`)
+
+Gold's readings, and the three leads together (ORB + RC_win + RT_opp; R per trade, summed R):
+
+| Month | Daily range | H1 ATR | 08:30 jump (days) | Spread / ATR | NY 30+ share | D1 eff20 | Trades | R | Sum |
+|---|---|---|---|---|---|---|---|---|---|
+| 2021-09 .. 2023-12 (28 months) | 13.9-34.5 | 2.7-6.5 | 2.1-11.0 | 0.048-0.131 | 0.00-0.18 | 0.07-0.51 | 37-58 / month | 23 of 28 months < 0 | -170.9 in all |
+| 2024-01 | 19.7 | 4.1 | 7.36 (5) | 0.083 | 0.05 | 0.10 | 51 | -0.081 | -4.1 |
+| 2024-04 | 40.4 | 8.1 | 6.33 (5) | 0.042 | 0.23 | 0.51 | 52 | -0.183 | -9.5 |
+| 2024-08 | 34.2 | 6.3 | 7.41 (4) | 0.054 | 0.27 | 0.17 | 56 | -0.185 | -10.4 |
+| 2025-01 | 29.5 | 5.7 | 6.67 (5) | 0.053 | 0.05 | 0.28 | 55 | -0.148 | -8.2 |
+| 2025-02 | 41.0 | 7.7 | 5.64 (4) | 0.038 | 0.20 | 0.50 | 48 | -0.290 | -13.9 |
+| 2025-03 | 35.3 | 7.2 | 5.61 (4) | 0.039 | 0.19 | 0.22 | 47 | -0.402 | -18.9 |
+| **2025-04** | **73.8** | **16.3** | 5.84 (4) | **0.018** | **0.76** | 0.32 | 45 | -0.001 | -0.0 |
+| 2025-05 | 75.9 | 12.8 | 5.07 (4) | 0.023 | 0.36 | 0.09 | 40 | -0.062 | -2.5 |
+| 2025-06 | 47.3 | 10.0 | 6.55 (4) | 0.027 | 0.43 | 0.09 | 48 | -0.033 | -1.6 |
+| 2025-07 | 45.3 | 7.8 | 3.01 (5) | 0.034 | 0.30 | 0.08 | 50 | -0.280 | -14.0 |
+| 2025-08 | 36.7 | 7.1 | 11.38 (4) | 0.039 | 0.19 | 0.09 | 48 | -0.134 | -6.4 |
+| 2025-09 | 53.2 | 9.6 | 9.86 (4) | 0.031 | 0.50 | 0.63 | 50 | -0.090 | -4.5 |
+| **2025-10** | **100.3** | **19.2** | 31.97 (1) | **0.017** | **0.87** | 0.59 | 45 | +0.018 | +0.8 |
+| 2025-11 | 75.0 | 15.1 | 12.89 (2) | 0.022 | 0.80 | 0.05 | 38 | +0.267 | +10.2 |
+| 2025-12 | 66.7 | 14.8 | 5.85 (3) | 0.024 | 0.91 | 0.38 | 49 | +0.396 | +19.4 |
+| 2026-01 | 92.6 | 18.3 | 12.79 (4) | 0.018 | 0.95 | 0.36 | 41 | -0.067 | -2.8 |
+| 2026-02 | 140.4 | 27.0 | 22.43 (4) | 0.014 | 1.00 | 0.12 | 38 | +0.220 | +8.3 |
+| 2026-03 | 157.1 | 31.8 | 8.58 (4) | 0.011 | 1.00 | 0.15 | 45 | +0.331 | +14.9 |
+| 2026-04 (to 17th) | 105.8 | 23.6 | 4.80 (3) | 0.016 | 1.00 | 0.23 | 22 | +0.274 | +6.0 |
+
+- The first row condenses the full table in `out_regime50.txt`. Its 28-month sum and its count of months below zero
+  were added from that table.
+- The 08:30 jump in 2025-10 / 11 rests on 1 / 2 release days: the US data delays of October-November 2025.
+
+**What changed:**
+- **The size of everything.** From 2025-10:
+  - the daily range is about 67-157 USD (before 2025-04: at most 41);
+  - the H1 ATR is 15-32 USD (at most 8.1);
+  - the spread is 1-2 % of the H1 ATR (3.8-13 %);
+  - on 80-100 % of weekdays the 4 New York hours from 08:30 move 30+ USD. Before 2025-04 that was at most 27 %.
+- **But size alone was there in 2025-04 / 05,** and the leads did not pay then (-0.001 / -0.062):
+  - the daily range was 73.8 / 75.9;
+  - the H1 ATR was 16.3 / 12.8;
+  - the NY 30+ share was 0.76 in April.
+- **Neither the trend efficiency nor the release jump** separates the periods. The jump is noisy, with 1-5 days a
+  month.
+
+## The switch per reading (threshold chosen on 2021-09 .. P1, read once on P2; `out_regime50.txt`, `out_regime50_months.txt`)
+
+Always on: fit 2578 trades, summed R -252.9; P2 128 trades, +0.203, summed +26.0.
+
+| Reading, form | Switch on when | Fit: trades on, summed R | Of which 2021-09 .. 2025-09 | On in 2025-10 / 11 (share of trades) | P2: trades on, R, summed |
+|---|---|---|---|---|---|
+| Daily range, monthly | > 73.8 | 135, +28.0 | 48, -1.6 | 0 / 1.00 | 105, +0.279, +29.3 |
+| Daily range, rolling 20 days | > 61.5 | 184, +35.1 | 68, +3.0 | 0.53 / 1.00 | 128, +0.203, +26.0 |
+| H1 ATR, monthly | > 12.8 | 145, +27.6 | 40, -2.5 | 0 / 1.00 | 128, +0.203, +26.0 |
+| H1 ATR, rolling | > 10.8 | 212, +36.1 | 75, +1.1 | 0.71 / 1.00 | 128, +0.203, +26.0 |
+| 08:30 jump, monthly | > 12.25 | 136, +32.2 | 49, +2.6 | 0 / 1.00 | 83, +0.280, +23.2 |
+| 08:30 jump, rolling 5 days | > 11.2 | 164, +24.4 | 82, -1.1 | 0.18 / 1.00 | 85, +0.143, +12.2 |
+| Spread / ATR, monthly | < 0.0225 | 127, +27.1 | 40, -2.5 | 0 / 1.00 | 105, +0.279, +29.3 |
+| Spread / ATR, rolling | < 0.0271 | 212, +36.1 | 75, +1.1 | 0.71 / 1.00 | 128, +0.203, +26.0 |
+| **NY 30+ share, monthly** | **> 0.762** | **105, +30.1** | **0, 0.0** | **0 / 1.00** | **128, +0.203, +26.0** |
+| **NY 30+ share, rolling 20 days** | **> 0.75** | **116, +32.3** | **0, 0.0** | **0.24 / 1.00** | **128, +0.203, +26.0** |
+| D1 eff20, monthly / rolling | > 0.58 / > 0.64 | 83, +10.9 / 4, +3.3 | 0 / 0 | - | 0 trades |
+
+- **Every size reading switches on in time:** on in 2025-11, the first paying month (+0.267). The rolling forms are
+  partly on in 2025-10, which was flat (+0.018).
+- **On P2 none beats always-on by much.** P2 was all "present", so the switches stay on (summed +26.0 .. +29.3). The
+  monthly range / spread forms skip the second half of January (-0.067) and gain +3.3 R.
+- **The NY 30+ share is the only reading that was never on in 2021-09 .. 2025-09** and on in every month from 2025-11.
+  But its chosen threshold, 0.762, sits exactly at April 2025's 0.76:
+  - the switch is "on" because April 2025 is excluded by a hair;
+  - the range / ATR switches put their lines at April-May 2025 too (> 73.8 = April's range; > 12.8 = May's ATR).
+  - **The threshold choice learned to exclude April-May 2025.** It was not shown a rule that knew it in advance.
+- **This was fitted with P1 in view** (stated beforehand). A fit on 2021-09 .. 2025-09 alone has no paying stretch to
+  find; its best choice is never to trade.
+
+## What it means for a monitoring rule ("when does the present regime end")
+
+1. **Size is necessary, not sufficient, in this sample.** Every paying month had:
+   - a daily range >= 67;
+   - an H1 ATR >= 14.8;
+   - an NY 30+ share >= 0.80;
+   - a spread under 2.4 % of the ATR.
+
+   April-May 2025 had the size without the pay. A size floor can say "not the present". It cannot say "the present".
+2. **Today's distance from the line** (2026-04, the last learning month): daily range 105.8, H1 ATR 23.6, NY 30+ share
+   1.00. These are 1.3-1.8x above the fitted lines (73.8 / 12.8 / 0.76).
+   - The present regime ends, by these readings, when the 20-day NY 30+ share falls below about 0.75, or the 20-day
+     H1 ATR below about 11 USD.
+   - The rolling forms react within days. The monthly forms take up to one month.
+3. **The monitor I would propose** (for the measurer and the owner; not built):
+   - a size floor (the NY 30+ share over 20 days > 0.75, which also needs the rolling H1 ATR > about 11) **and** the
+     SW-20 own result;
+   - the floor stands the leads aside at once when gold shrinks;
+   - SW-20 catches a change of character at the same size, like April-May 2025, after about 20 trades.
+   - Both lines were set with P1 in view, so the exam months (2026-04-18 on) are their first honest read, and that is
+     for the measurer only.
+4. **The cause is not answered by these readings.** Size went up 2-4x, and the leads (fading failed breaks, the 13:00
+   ORB) began to pay only after the size had stayed high for months. The trend efficiency and the release jump do not
+   mark it. A question for the owner, as a hypothesis to test: what did the market do differently after 2025-10 (the
+   participants, the news flow, the central-bank buying)?
+
+## Files (row 50)
+- `regime50.py` + `test_regime50.py` + `plant_regime50.py`
+- `regime50_months.py`
+- outputs: `out_regime50.txt`, `out_regime50_switch.csv`, `out_regime50_months.txt`, `out_plant_regime50.txt`,
+  `regime50_daily.parquet`, `regime50_trades.parquet`
+- SW-20 code (finished and run by the measurer): `streams.py`, `sw20.py`, `test_sw20.py`, `plant_sw20.py`,
+  `out_plant_sw20.txt`
+
 # SW-20 on the unseen years - how it is built, written before computing (2026-10-20 17:42 Thai, `date -u` 10:42)
 
 The rule and the pass line are the measurer's (`precursors/notes.md`, "SW-20"). They are followed as written.

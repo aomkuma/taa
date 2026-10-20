@@ -1,0 +1,8 @@
+2025-02 daily range 43.7 NY 30+ share 0.20
+2025-04 daily range 81.8 NY 30+ share 0.76
+2025-05 daily range 74.9 NY 30+ share 0.36
+2025-10 daily range 110.7 NY 30+ share 0.87
+2025-11 daily range 78.6 NY 30+ share 0.80
+2026-01 daily range 152.0 NY 30+ share 0.95
+2026-03 daily range 180.8 NY 30+ share 1.00
+median: {'2025-02': 41.0, '2025-04': 73.8, '2025-05': 75.9, '2025-10': 100.3, '2026-01': 92.6, '2026-03': 157.1}
