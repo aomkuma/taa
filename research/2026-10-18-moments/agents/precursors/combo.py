@@ -1,129 +1,129 @@
-"""Two-state combinations across timeframes (design only, notes.md item 4): the run lift and the side, with a null
-that keeps the day-level clustering (labels of whole days swapped within the half-year for the lift; a random sign
-per day for the side) to count how many cells pass by chance.
+"""Checklist #34 - a daily plan from the PARTIAL pieces, each in its own window (notes.md, written before it is computed;
+owner, 2026-10-20: "take my input with the research and the results that were profitable, and adjust until it is
+profitable"). Trades already simulated on the ticks by their owners are joined in time order, one position at a time
+(a trade entering before the previous exit is dropped):
+  Asia - the first developer's B2 in the Asia window (p4_trades_W_WL_WN.parquet, variant W, news cost 0);
+  London - the strategist's 13:00-Thai opening-range break (orb_ticks.py's rule, re-simulated here on the ticks, with
+           the entry and exit times kept);
+  NY - the strategist's 08:30-NY straddle held 30 minutes (news_follow_trades.parquet, no extra slippage; and with +1
+       USD as a stress).
+Reported per part: trades, a weekday, win (pnl > 0), R mean with its 95 % range, USD, max DD from 0, the pooled mean.
 
-    PYTHONDONTWRITEBYTECODE=1 data/venv-research/Scripts/python research/2026-10-18-moments/agents/precursors/combo.py [10|5]
+    .venv/Scripts/python research/2026-10-18-moments/agents/precursors/combo.py
 """
 
 from __future__ import annotations
 
-import itertools
 import sys
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from plib import HERE
-
-X = int(sys.argv[1]) if len(sys.argv) > 1 else 10
-P = f"x{X}"
-DH = ["H1", "H2", "H3", "H4", "H5"]
-MIN_N, MIN_DAYS = 300, 30
+HERE = Path(__file__).resolve().parent
+AG = HERE.parents[0]
+sys.path.insert(0, str(AG / "strategist"))
+WEEKDAYS = {"P1": 64, "P2": 66}
 
 
-def prepare() -> tuple[pd.DataFrame, list[str]]:
-    cols = ["half", "win", "atr15_u", f"{P}_next_up", f"{P}_next_dn", f"{P}_first", "box_brk", "box_now", "sweep",
-            "stair", "spike", "day_brk", "yday_brk", "asia_brk", "x72", "M1_atr_pct", "M15_atr_pct", "H1_atr_pct",
-            "M5_bbw_pct", "M15_bbw_pct", "H1_bbw_pct", "M15_pos20", "H1_pos20", "H4_pos20", "tvr", "rng30", "mom15",
-            "mom60", "pos72"]
-    cols += [f"{tf}_{k}" for tf in ("M1", "M5", "M15", "M30", "H1", "H4") for k in ("tide", "struct", "phase", "brk3")]
-    D = pd.read_parquet(HERE / "decisions.parquet", columns=cols)
-    D = D[D.half.isin(DH)].copy()
-    D["run"] = (D[f"{P}_next_up"] | D[f"{P}_next_dn"]).astype(float)
-    f = D[f"{P}_first"]
-    D["first"] = f.where(f != 0)
-    D["day"] = D.index.normalize()
-    D["adec"] = D.groupby("half").atr15_u.transform(lambda s: pd.qcut(s.rank(method="first"), 10, labels=False))
-    feats = ["win"]
-    for tf in ("M1", "M5", "M15", "M30", "H1", "H4"):
-        for k in ("tide", "struct", "phase", "brk3"):
-            D[f"c_{tf}_{k}"] = D[f"{tf}_{k}"].fillna(0).astype(int)
-            feats.append(f"c_{tf}_{k}")
-    for k in ("box_brk", "box_now", "sweep", "stair", "spike", "day_brk", "yday_brk", "asia_brk", "x72"):
-        D[f"c_{k}"] = D[k].fillna(0).astype(int)
-        feats.append(f"c_{k}")
-    for k in ("M1_atr_pct", "M15_atr_pct", "H1_atr_pct", "M5_bbw_pct", "M15_bbw_pct", "H1_bbw_pct", "M15_pos20",
-              "H1_pos20", "H4_pos20", "tvr", "rng30", "mom15", "mom60", "pos72"):
-        q = pd.qcut(D[k].rank(method="first"), 5, labels=False)
-        D[f"q_{k}"] = q.fillna(-1).astype(int)
-        feats.append(f"q_{k}")
-    D["win"] = D["win"].astype("category").cat.codes
-    return D, feats
-
-
-def scan(D: pd.DataFrame, feats: list[str], run: np.ndarray, first: np.ndarray, exp: np.ndarray) -> pd.DataFrame:
-    base = pd.DataFrame({"half": D.half.to_numpy(), "day": D.day.to_numpy(), "run": run, "exp": exp,
-                         "fup": (first > 0).astype(float), "fok": np.isfinite(first).astype(float)})
-    base.loc[base.fok == 0, "fup"] = np.nan
-    out = []
-    for a, b in itertools.combinations(feats, 2):
-        g = base.assign(a=D[a].to_numpy(), b=D[b].to_numpy())
-        tot = g.groupby(["a", "b"]).agg(n=("run", "size"), days=("day", "nunique"), run=("run", "mean"), exp=("exp", "mean"),
-                                        up=("fup", "mean"), nf=("fup", "count"))
-        tot = tot[(tot.n >= MIN_N) & (tot.days >= MIN_DAYS)]
-        if tot.empty:
+def stream(T: pd.DataFrame) -> pd.DataFrame:
+    """One position at a time: time order, a trade entering before the kept trade's exit is dropped."""
+    T = T.sort_values("t_in").reset_index(drop=True)
+    keep, busy = [], pd.Timestamp.min.tz_localize("UTC")
+    for r in T.itertuples():
+        if r.t_in < busy:
             continue
-        ph = g.groupby(["a", "b", "half"]).agg(run=("run", "mean"), exp=("exp", "mean"), up=("fup", "mean"),
-                                               n=("run", "size"))
-        ph = ph[ph.n >= 30]
-        ph["lift"] = ph.run / ph.exp
-        lift_up = (ph.lift >= 1.3).groupby(level=[0, 1]).sum()
-        side_up = (ph.up >= 0.56).groupby(level=[0, 1]).sum()
-        side_dn = (ph.up <= 0.44).groupby(level=[0, 1]).sum()
-        tot = tot.join(lift_up.rename("n_lift")).join(side_up.rename("n_up")).join(side_dn.rename("n_dn"))
-        tot = tot.fillna(0)
-        tot["lift"] = tot.run / tot.exp
-        tot["fa"], tot["fb"] = a, b
-        halves = ph.lift.unstack("half").reindex(columns=DH)
-        uph = ph.up.unstack("half").reindex(columns=DH)
-        tot["lift_h"] = [" ".join(f"{v:.2f}" for v in halves.loc[i]) if i in halves.index else "" for i in tot.index]
-        tot["up_h"] = [" ".join(f"{v:.2f}" for v in uph.loc[i]) if i in uph.index else "" for i in tot.index]
-        out.append(tot.reset_index())
-    return pd.concat(out, ignore_index=True)
+        keep.append(r.Index)
+        busy = r.t_out
+    return T.loc[keep]
 
 
-def null_labels(D: pd.DataFrame, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
-    """Whole days' run labels moved to another day of the same half (same window and minute position); the side
-    flipped by a random sign per day."""
-    pos = D.groupby(["day", "win"]).cumcount().to_numpy()
-    key = pd.DataFrame({"half": D.half.to_numpy(), "day": D.day.to_numpy(), "win": D.win.to_numpy(), "pos": pos,
-                        "run": D.run.to_numpy()})
-    days = key[["half", "day"]].drop_duplicates()
-    src = []
-    for _h, x in days.groupby("half"):
-        src.append(pd.DataFrame({"day": x.day.to_numpy(), "src": rng.permutation(x.day.to_numpy())}))
-    m = key.merge(pd.concat(src), on="day", how="left")
-    lab = key.rename(columns={"day": "src", "run": "run_src"})[["src", "win", "pos", "run_src"]]
-    m = m.merge(lab, on=["src", "win", "pos"], how="left")
-    run = m.run_src.to_numpy()
-    sign = pd.Series(rng.choice([-1.0, 1.0], size=D.day.nunique()), index=D.day.unique())
-    first = D["first"].to_numpy() * sign.reindex(D.day).to_numpy()
-    return run, first
+def stats(T: pd.DataFrame, weekdays: int) -> str:
+    r = T.R.to_numpy(float)
+    eq = np.r_[0.0, np.cumsum(T.sort_values("t_in").pnl.to_numpy(float))]
+    se = r.std(ddof=1) / np.sqrt(len(r)) if len(r) > 1 else np.nan
+    return (f"{len(r)} trades ({len(r) / weekdays:.2f} a weekday), win {np.mean(T.pnl > 0):.2f}, R {r.mean():+.3f} "
+            f"({r.mean() - 1.96 * se:+.2f}..{r.mean() + 1.96 * se:+.2f}), USD {T.pnl.sum():+.1f}, max DD {(np.maximum.accumulate(eq) - eq).max():.1f}")
+
+
+def london_orb() -> pd.DataFrame:
+    """orb_ticks.py's ORB rule, re-simulated on the ticks, with the entry / exit times kept."""
+    import slib  # noqa: PLC0415
+    from news_follow import run_trade  # noqa: PLC0415
+
+    MIN = 60 * 10**9
+    m = slib.m1("2025-10-15")
+    ti, c, h, lo = m.index.asi8, m.close.to_numpy(), m.high.to_numpy(), m.low.to_numpy()
+    O = pd.read_parquet(AG / "strategist" / "opens_trades.parquet")
+    O = O[(O.rule == "ORB15") & (O.open == "London")]
+    days_ok = {pd.Timestamp(d).tz_localize(None).normalize() if pd.Timestamp(d).tzinfo is None else pd.Timestamp(d).tz_convert(None).normalize() for d in O.day}
+    rows = []
+    for day in pd.bdate_range("2025-10-20", "2026-04-17"):
+        if day.normalize() not in days_ok:
+            continue
+        t0 = (day + pd.Timedelta(hours=13)).tz_localize(slib.TH).tz_convert("UTC")
+        i0 = np.searchsorted(ti, t0.value)
+        if i0 >= len(ti) or ti[i0] - t0.value > 5 * MIN:
+            continue
+        i15 = np.searchsorted(ti, t0.value + 15 * MIN)
+        rh, rl = h[i0:i15].max(), lo[i0:i15].min()
+        for k in range(i15, min(i15 + 60, len(c))):
+            side = 1 if c[k] > rh else (-1 if c[k] < rl else 0)
+            if not side:
+                continue
+            t_dec = int(ti[k] + MIN)
+            x = slib.ticks(pd.Timestamp(t_dec, tz="UTC").normalize())
+            if x is None:
+                break
+            t = x.t.dt.as_unit("ns").astype("int64").to_numpy()
+            bid, ask = x.bid.to_numpy(float), x.ask.to_numpy(float)
+            f = np.searchsorted(t, t_dec, side="left")
+            if f >= len(t) or t[f] - t_dec > 5 * MIN:
+                break
+            e = ask[f] + 0.07 if side > 0 else bid[f] - 0.07
+            stop = rl if side > 0 else rh
+            risk = (e - stop) * side
+            if risk <= 0:
+                break
+            r = run_trade(t, bid, ask, f, e, side, stop, e + side * 2.0 * risk, t[f] + 60 * MIN)
+            if r is not None:
+                t_out = pd.Timestamp(int(r[2]), tz="UTC") if len(r) > 2 else pd.Timestamp(int(t[f] + 60 * MIN), tz="UTC")
+                rows.append(dict(piece="London ORB", t_in=pd.Timestamp(int(t[f]), tz="UTC"), t_out=t_out, pnl=r[0], R=r[0] / risk,
+                                 part=slib.part_of(pd.DatetimeIndex([t0]))[0]))
+            break
+    return pd.DataFrame(rows)
 
 
 def main() -> None:
-    D, feats = prepare()
-    exp = D.groupby(["half", "win", "adec"]).run.transform("mean").to_numpy()
-    R = scan(D, feats, D.run.to_numpy(), D["first"].to_numpy(), exp)
-    R.to_parquet(HERE / f"combo_{X}.parquet")
-    print(f"=== X = {X} U, two-state cells with n >= {MIN_N} minutes on >= {MIN_DAYS} days: {len(R)} ===")
-    pl = R[R.n_lift >= 4]
-    ps = R[(R.n_up >= 4) | (R.n_dn >= 4)]
-    print(f"real: run lift >= 1.3 in >= 4/5 halves: {len(pl)}; side >= 56 % in >= 4/5: {len(ps)}")
-    rng = np.random.default_rng(7)
-    for s in range(3):
-        run, first = null_labels(D, rng)
-        ok = np.isfinite(run)
-        Dn = D[ok]
-        expn = pd.Series(run[ok]).groupby([Dn.half.to_numpy(), Dn.win.to_numpy(), Dn.adec.to_numpy()]).transform("mean")
-        N = scan(Dn, feats, run[ok], first[ok], expn.to_numpy())
-        print(f"null {s}: cells {len(N)}; lift passes {int((N.n_lift >= 4).sum())}; side passes "
-              f"{int(((N.n_up >= 4) | (N.n_dn >= 4)).sum())}", flush=True)
-    cols = ["fa", "a", "fb", "b", "n", "days", "run", "lift", "lift_h", "up", "up_h"]
-    print("\n-- real cells passing the run lift (top 40 by lift) --")
-    print(pl.sort_values("lift", ascending=False)[cols].head(40).round(3).to_string(index=False))
-    print("\n-- real cells passing the side (all) --")
-    print(ps.sort_values("up")[cols].round(3).to_string(index=False))
+    P = pd.read_parquet(AG / "dev" / "p4_trades_W_WL_WN.parquet")
+    P = P[(P.variant == "W") & (P.news_cost == 0.0) & (P.window == "Asia")] if "window" in P else P[(P.variant == "W") & (P.news_cost == 0.0)]
+    asia = pd.DataFrame(dict(piece="Asia B2", t_in=pd.to_datetime(P.entry_t, utc=True), t_out=pd.to_datetime(P.exit_t, utc=True),
+                             pnl=P.pnl.to_numpy(), R=P.R.to_numpy(), part=P.part.to_numpy()))
+    london = london_orb()
+    S = pd.read_parquet(AG / "strategist" / "news_follow_trades.parquet")
+    ny = {}
+    for extra in sorted(S.extra.unique()):
+        X = S[(S.rule == "STRADDLE 30m") & (S.hm == "08:30") & (S.extra == extra)]
+        t_in = [pd.Timestamp(year=d.year, month=d.month, day=d.day, hour=8, minute=30, tz="America/New_York").tz_convert("UTC")
+                for d in pd.to_datetime(X.day)]
+        ny[extra] = pd.DataFrame(dict(piece="NY straddle", t_in=t_in, t_out=[t + pd.Timedelta(minutes=30) for t in t_in],
+                                      pnl=X.pnl.to_numpy(), R=X.R.to_numpy(), part=X.part.to_numpy()))
+    print("the pieces alone:")
+    for name, T in (("Asia B2", asia), ("London ORB", london), ("NY straddle +0", ny[0.0]), ("NY straddle +1", ny.get(1.0, ny[0.0]))):
+        for p in ("P1", "P2"):
+            G = T[T.part == p]
+            print(f"  {name:16s} {p}: {stats(G, WEEKDAYS[p])}")
+    for label, extra in (("the plan (NY slippage +0)", 0.0), ("the plan (NY slippage +1 USD)", 1.0)):
+        if extra not in ny:
+            continue
+        A = stream(pd.concat([asia, london, ny[extra]], ignore_index=True))
+        print(f"\n{label}: dropped for overlap {len(asia) + len(london) + len(ny[extra]) - len(A)}")
+        for p in ("P1", "P2"):
+            G = A[A.part == p]
+            print(f"  {p}: {stats(G, WEEKDAYS[p])}  | by piece R: {G.groupby('piece').R.mean().round(3).to_dict()}")
+        L = A[A.part.isin(["P1", "P2"])]
+        print(f"  pooled P1 + P2: {stats(L, WEEKDAYS['P1'] + WEEKDAYS['P2'])}")
+        A.to_parquet(HERE / f"combo_trades_slip{int(extra)}.parquet")
 
 
 if __name__ == "__main__":

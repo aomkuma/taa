@@ -50,6 +50,8 @@ Sources: `precursors/notes.md`, `DEV_LOG.md`s, `strategist/PROPOSALS.md`, `audit
 | 26 | At a window's open in the M15-H1 (EMA proxy) direction, a 3-5 USD stop | 10 first in 0.10-0.38 | - | - | FAIL | the entry must be the entry TF's own turn, with the stop at its extreme |
 | 27 | An EMA20 / last-candle / 3-day D1 bias for the day's side | closed its way 0.48 | 0.54 | 58 / 56 days | FAIL | the side needs real structure (H1 -> D1), not these proxies |
 | 28 | The NY 1-minute follow-the-news rule (strategist) | +0.046 | -0.128 | - | FAIL | - |
+| 36 | The daily plan: Asia B2 + London 13:00 ORB + NY 08:30 straddle (30 min), one position at a time (`precursors/combo.py`) | +0.241 (+0.06..+0.42) | +0.133 (-0.05..+0.31) | 141 / 157 (2.2-2.4 a day) | PARTIAL | pooled +0.184 (+0.06..+0.31), the first combination whose pooled range excludes 0; with +1 USD release slippage +0.215 / +0.078 |
+| 37 | #36 weighted by the market state (`precursors/regime.py`): the range pieces (Asia B2, London ORB) pay in sideways / mixed D1 states and lose in a trend; the breakout piece (NY straddle) pays in a trend. Half weight where a piece is out of its state | weights from P1: +0.280; by mechanism: +0.329 | +0.143 / +0.184 | same | PARTIAL / PASS by number | the mechanism weights were chosen after seeing both parts, so the exam decides; with +1 USD release slippage, by mechanism +0.301 / +0.130 |
 
 **In progress (OPEN):**
 
@@ -60,4 +62,21 @@ Sources: `precursors/notes.md`, `DEV_LOG.md`s, `strategist/PROPOSALS.md`, `audit
 | 31 | The opening-range break refined: the H1-level change, a season reading, the older years | dev1 (D1) | from #22 |
 | 32 | The data-minute straddle at 08:30 / 10:00 NY, slippage 0-2 USD, per 30-min bucket | dev1 (D2) | from #24 |
 | 33 | The owner's pattern set on trade-size swings (M / W, triple tops, H&S, channels, A-B-C-D-E, bases), tight patterns | dev1 (P5) | - |
-| 34 | A daily plan combining the PARTIAL pieces in their own windows (Asia B2 / reclaim, London ORB, NY straddle) | the measurer | - |
+| 34 | A daily plan combining the PARTIAL pieces in their own windows (Asia B2 / reclaim, London ORB, NY straddle) | the measurer | done -> rows 36-37 |
+| 38 | PLAN-1 frozen for the one exam read (below): needs an exam-capable runner of the three pieces | dev1 after D, the measurer reads | - |
+| 39 | The transformations of every FAIL (the opposite side, the stop x 1.5 / x 2, a nearer target), and the state weights per piece in more states | the strategist | the owner: "try the opposite side, widen the SL, bring the TP in" |
+
+## PLAN-1 - frozen for the one exam read (2026-10-20 12:30 Thai)
+- **Asia:** the first developer's B2 at the owner's H1 levels, entries 07:00-09:00 Thai
+  (`dev/p4_trades.py` variant W, the Asia window, by entry time).
+- **London:** the 13:00-Thai opening-range break. The range is 06:00-06:14 UTC, the day is skipped if the range is
+  wider than 1.5 H1 ATR, the entry is the first M1 close beyond it 06:15-07:15 UTC, the stop at the other side, the
+  target 2 R, out after 60 minutes (`strategist/orb_ticks.py`).
+- **NY:** the straddle at 08:30:00 New York - a buy stop at the ask + 2, a sell stop at the bid - 2, held 30 minutes
+  (`strategist/news_follow.py` "STRADDLE 30m").
+- **The weights, by the D1 state before the entry** (the 20-day efficiency with P1's terciles 0.116 / 0.264): half the
+  risk for Asia B2 and London ORB in a "trend" state, half for the NY straddle in a "sideways" / "mixed" state, full
+  otherwise.
+- **The second variant,** declared now: the weights from P1 only (Asia B2 half in a trend; the NY straddle half in
+  sideways / mixed for slippage 0, sideways only with +1 USD).
+- **One position at a time;** the exam is read once, with release slippage 0 and +1 USD reported.

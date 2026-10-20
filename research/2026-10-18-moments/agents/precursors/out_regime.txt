@@ -1,0 +1,29 @@
+
+== R by piece x trend (mean R, trades), per part
+                       mean        size    
+part                     P1     P2   P1  P2
+piece       trend                          
+Asia B2     mixed     0.697  0.313    4  15
+            sideways  0.141  0.177   14  13
+            trend    -0.076 -0.009   23  10
+London ORB  mixed     0.547  0.160   14  21
+            sideways  0.236  0.462   16  18
+            trend     0.025 -0.212   29  21
+NY straddle mixed    -0.054 -0.125   11  20
+            sideways -0.248 -0.016    7  17
+            trend     0.757  0.042   23  22
+
+== R by piece x vol (mean R, trades), per part
+                         mean        size    
+part                       P1     P2   P1  P2
+piece       vol                              
+Asia B2     high vol    0.184  0.141   32  34
+            normal vol -0.319  0.532    9   4
+London ORB  high vol    0.235  0.187   45  50
+            normal vol  0.114 -0.212   14  10
+NY straddle high vol    0.241 -0.104   33  49
+            normal vol  0.892  0.325    8  10
+
+the weights from P1 (0.5 where the piece lost in that trend state): {('Asia B2', 'trend'): 0.5, ('NY straddle', 'mixed'): 0.5, ('NY straddle', 'sideways'): 0.5}
+  P1: unweighted R +0.215 | weighted R per trade (sum R x w / sum w) +0.268 | USD +218.3 -> +260.5
+  P2: unweighted R +0.078 | weighted R per trade (sum R x w / sum w) +0.103 | USD +431.6 -> +461.9
