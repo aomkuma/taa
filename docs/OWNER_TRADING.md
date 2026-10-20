@@ -233,6 +233,19 @@ consolidation zone, with the SL above 4160."
 
 **Still to confirm:** the exact entries and lots, the 23.6 price.
 
+**What followed** (read 2026-10-20 13:01 Thai; M1 / M5 / H1 downloaded read-only from MT5, last M1 12:59 Thai):
+- **The stops held:** after 18:50 the highest price was 4170.00 (19:09); 4177.06 and 4180 were never reached. After
+  21:00 the highest was 4155.32, so a stop above 4160 was never touched.
+- **The fall went on, LH / LL on H1:** 4139.58 (22:55), 4136.62 (00:xx), 4129.31 (07:xx), then the Asia low
+  **4115.58 at 08:27** (an M5 run 08:00-08:25 from 4131 to 4115.6). The bounce reached 4147.21 (11:xx), a lower high
+  under 4149.80, then a fall from 12:05 to **4119.14 at 12:59** - back at the Asia low as London opens.
+- **In the trade's favour from 4169:** at most about 53 USD (at 4115.58), about 49 USD at 12:59.
+- **The Fibo of the swing 4073.41 (2026-10-14 23:00) -> 4190.25 (2026-10-19 14:33),** if that is the owner's swing
+  (to confirm): 23.6 % 4162.7, 38.2 % 4145.6, 50 % 4131.8, 61.8 % 4118.0, 76.4 % 4101.0. The Asia low and the price at
+  12:59 sit at its 61.8 %.
+- **The weekly plan (Setup TS notes, 2026-10-17):** case B ("price breaks 4,150 first: sell the retest") is what
+  happened; its target 4,100, before the 4,075-4,085 double bottom, is not reached yet (the low so far 4115.58).
+
 ## Findings so far
 
 | | Finding | Why it matters |
