@@ -2810,3 +2810,18 @@ The first attempt (17:08) died with a MemoryError before any output; the second 
   Asia B2 108 trades with 0 faults on the ticks.
 - Next: the NY straddle is the steady piece; London ORB faded in the exam; the strategist's own-result switch (row 45)
   is the next candidate for the weights, judged walk-forward with N fixed in advance.
+
+## SW-20, the own-result switch - written before computing (2026-10-20 17:40 Thai; owner: "do it")
+**The rule (fixed now, not tuned):** each piece keeps trading on paper; a trade is taken for real only when at least 20
+of the piece's earlier paper trades have exited before its entry and the mean R of the last 20 of them is > 0. N = 20
+was the strategist's first setting (row 45); 40 / 60 are not used.
+
+**The judge: years no switch study has seen.** The strategist's streams ORB (13:00-Thai), RC_win (#23) and RT_opp (#43)
+on M1 (spread x 0.01 + 0.08, as row 45) in Y1 2020-10-18 .. 2021-10-18, Y2 2021-10-18 .. 2022-10-18 and Y3
+2022-10-18 .. 2023-10-18 (the old store), each read once, with the paper record warmed from the start of the store.
+- **Pass:** the three streams together, switched, summed R >= 0 in each of Y1 / Y2 / Y3, and R per traded trade >= 0
+  pooled over the three years.
+- Reported beside it: always-on R per stream and year, the trades kept, and the share kept.
+
+**PLAN-1's pieces** (Asia B2, NY straddle) have no ticks before 2025-10, so SW-20 on them is reported over P1 .. exam as
+a description only: the exam was already read for PLAN-1 (row 46), so it is not a test there.
