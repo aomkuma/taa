@@ -17,7 +17,7 @@ import pandas as pd
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parents[0] / "journal"))
-from tick_straddle import day_ticks  # noqa: E402
+from tick_straddle import span_ticks  # noqa: E402
 
 TARGET, STOP, SLIP = 10.0, 10.0, 0.07
 NS_MIN = 60 * 10**9
@@ -61,7 +61,7 @@ def trade(t: np.ndarray, bid: np.ndarray, ask: np.ndarray, t0: int, side: int, k
 def run(X: pd.DataFrame, k_min: int | None, y: float | None) -> pd.DataFrame:
     rows, busy = [], -1
     for day, D in X.groupby(pd.DatetimeIndex(X.t).normalize(), sort=True):
-        tk = day_ticks(day)
+        tk = span_ticks(day)  # the next day joined: a trade open at midnight UTC runs on
         if tk is None:
             continue
         t, bid, ask = tk
@@ -95,7 +95,7 @@ def summary(T: pd.DataFrame, a: str, b: str) -> str:
         return "no trades"
     eq = T.pnl.cumsum()
     return (f"{len(T)} trades ({len(T) / np.busday_count(a, b):.2f} a weekday), win {(T.exit == 'win').mean():.3f}, R {T.R.mean():+.3f}, "
-            f"USD {T.pnl.sum():+.1f}, max DD {(eq.cummax() - eq).max():.1f}, worst {T.pnl.min():+.2f}, streak "
+            f"USD {T.pnl.sum():+.1f}, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {T.pnl.min():+.2f}, streak "
             f"{wf.longest_run(T.pnl.to_numpy() < 0)}, exits {T.exit.value_counts().to_dict()}")
 
 
@@ -114,7 +114,7 @@ def main() -> None:
     busy = {c: -1 for c in configs}
     days = pd.DatetimeIndex(X.t).normalize()
     for day in days.unique():  # each day's ticks read once, every setting run on them
-        tk = day_ticks(day)
+        tk = span_ticks(day)  # the next day joined: a trade open at midnight UTC runs on
         if tk is None:
             continue
         t, bid, ask = tk

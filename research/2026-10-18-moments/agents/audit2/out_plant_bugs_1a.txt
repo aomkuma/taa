@@ -1,0 +1,59 @@
+BEFORE (git HEAD module): 7 failed, 7 passed in 3.48s
+          test_stale_range_is_completed_after_the_sync[M1]
+          test_stale_range_is_completed_after_the_sync[H1]
+          test_never_synchronised_fails_loudly
+          test_tick_shows_the_gap_when_newest_bars_are_stale_too
+          test_newest_bars_show_the_gap_without_a_tick
+          test_a_bar_read_again_replaces_its_first_copy
+          test_re_read_covers_only_the_tail
+CAUGHT  no tail check at all: 7 failed, 7 passed in 5.18s
+          test_stale_range_is_completed_after_the_sync[M1]
+          test_stale_range_is_completed_after_the_sync[H1]
+          test_never_synchronised_fails_loudly
+          test_tick_shows_the_gap_when_newest_bars_are_stale_too
+          test_newest_bars_show_the_gap_without_a_tick
+          test_a_bar_read_again_replaces_its_first_copy
+          test_re_read_covers_only_the_tail
+CAUGHT  no tick source: 1 failed, 13 passed in 3.80s
+          test_tick_shows_the_gap_when_newest_bars_are_stale_too
+CAUGHT  no newest-bars source: 1 failed, 13 passed in 3.92s
+          test_newest_bars_show_the_gap_without_a_tick
+CAUGHT  window end not enforced: 2 failed, 12 passed in 4.27s
+          test_window_on_a_minute_boundary
+          test_past_window_is_not_checked_against_newer_bars
+CAUGHT  window start not enforced: 1 failed, 13 passed in 4.17s
+          test_window_before_the_newest_bar_with_no_bars
+CAUGHT  strict comparison (false alarm): 8 failed, 6 passed in 4.92s
+          test_stale_range_is_completed_after_the_sync[M1]
+          test_stale_range_is_completed_after_the_sync[H1]
+          test_a_bar_read_again_replaces_its_first_copy
+          test_re_read_covers_only_the_tail
+          test_fresh_terminal_is_unchanged_and_never_waits
+          test_window_on_a_minute_boundary
+          test_market_closed_saturday
+          test_d1_bar_from_the_tick_uses_the_server_midnight
+CAUGHT  tail not re-read: 4 failed, 10 passed in 4.04s
+          test_stale_range_is_completed_after_the_sync[M1]
+          test_stale_range_is_completed_after_the_sync[H1]
+          test_a_bar_read_again_replaces_its_first_copy
+          test_re_read_covers_only_the_tail
+CAUGHT  no wait before the re-read: 3 failed, 11 passed in 4.22s
+          test_stale_range_is_completed_after_the_sync[M1]
+          test_stale_range_is_completed_after_the_sync[H1]
+          test_never_synchronised_fails_loudly
+CAUGHT  wait not doubled: 1 failed, 13 passed in 4.20s
+          test_never_synchronised_fails_loudly
+CAUGHT  one retry only: 1 failed, 13 passed in 4.70s
+          test_never_synchronised_fails_loudly
+CAUGHT  returns the stale frame instead of raising: 3 failed, 11 passed in 4.47s
+          test_never_synchronised_fails_loudly
+          test_tick_shows_the_gap_when_newest_bars_are_stale_too
+          test_newest_bars_show_the_gap_without_a_tick
+CAUGHT  tick floored in UTC, not server time: 1 failed, 13 passed in 4.47s
+          test_d1_bar_from_the_tick_uses_the_server_midnight
+CAUGHT  re-read keeps the first copy of a bar: 1 failed, 13 passed in 4.19s
+          test_a_bar_read_again_replaces_its_first_copy
+CAUGHT  tail re-read starts at the window start: 1 failed, 13 passed in 4.24s
+          test_re_read_covers_only_the_tail
+14 of 14 caught
+AFTER (the fixed module): 14 passed in 4.95s

@@ -1,0 +1,54 @@
+(a) indicators.bars against MT5's own bars
+  H1 (before the exam) 2023-08-01 00:00:00+00:00 .. 2026-04-17 19:00:00+00:00: ours 16032, MT5 16032, both 16032; equal open 16032 high 16032 low 16032 close 16032; max |diff| 0.00000; ours only 0, MT5 only 0
+  H4 (before the exam) 2023-04-03 00:00:00 .. 2026-04-17 16:00:00: ours 4706, MT5 4706, both 4706; equal open 4706 high 4706 low 4706 close 4706; max |diff| 0.00000; ours only 0, MT5 only 0
+  D1 (before the exam) 2021-09-02 00:00:00 .. 2026-04-16 00:00:00: ours 1192, MT5 1192, both 1192; equal open 1192 high 1192 low 1192 close 1192; max |diff| 0.00000; ours only 0, MT5 only 0
+  D1 around the DST changes (server day | our first M1 bar UTC | MT5 open_time UTC | equal OHLC):
+     Fri 2025-10-24 | 2025-10-23 22:05 | 2025-10-23 21:00 | True
+     Mon 2025-10-27 | 2025-10-26 22:05 | 2025-10-26 22:00 | True
+     Fri 2025-10-31 | 2025-10-30 22:05 | 2025-10-30 22:00 | True
+     Mon 2025-11-03 | 2025-11-02 23:05 | 2025-11-02 22:00 | True
+     Fri 2026-03-06 | 2026-03-05 23:05 | 2026-03-05 22:00 | True
+     Mon 2026-03-09 | 2026-03-08 22:05 | 2026-03-08 22:00 | True
+     Fri 2026-03-27 | 2026-03-26 22:05 | 2026-03-26 22:00 | True
+     Mon 2026-03-30 | 2026-03-29 22:05 | 2026-03-29 21:00 | True
+  H1 (post-exam days) 2026-10-18 23:00:00+00:00 .. 2026-10-19 13:00:00+00:00: ours 15, MT5 15, both 15; equal open 15 high 15 low 15 close 15; max |diff| 0.00000; ours only 0, MT5 only 0
+  H4 (post-exam days) 2026-10-19 04:00:00 .. 2026-10-19 12:00:00: ours 3, MT5 3, both 3; equal open 3 high 3 low 3 close 3; max |diff| 0.00000; ours only 0, MT5 only 0
+
+(b) avail earlier than the bar's end, 2025-10-19 .. 2026-04-18 (173030 M1 bars):
+  M5 : 34613 bars; early 10 = market closed inside 5 + mid-session 5 (0.01 %); mid-session early minutes: total 9, median 1, max 4
+     M5 bar ending 2025-11-10 06:05:00+00:00: last M1 2025-11-10 06:02:00+00:00, avail 2025-11-10 06:03:00+00:00, next M1 2025-11-10 06:05:00+00:00
+     M5 bar ending 2025-11-28 08:10:00+00:00: last M1 2025-11-28 08:08:00+00:00, avail 2025-11-28 08:09:00+00:00, next M1 2025-11-28 08:10:00+00:00
+     M5 bar ending 2025-12-07 23:20:00+00:00: last M1 2025-12-07 23:15:00+00:00, avail 2025-12-07 23:16:00+00:00, next M1 2025-12-07 23:21:00+00:00
+     M5 bar ending 2026-02-09 15:40:00+00:00: last M1 2026-02-09 15:38:00+00:00, avail 2026-02-09 15:39:00+00:00, next M1 2026-02-09 15:40:00+00:00
+     M5 bar ending 2026-03-13 00:20:00+00:00: last M1 2026-03-13 00:18:00+00:00, avail 2026-03-13 00:19:00+00:00, next M1 2026-03-13 00:20:00+00:00
+  M15: 11624 bars; early 127 = market closed inside 127 + mid-session 0 (0.00 %); mid-session early minutes: total 0, median 0, max 0
+  H1 : 2908 bars; early 127 = market closed inside 127 + mid-session 0 (0.00 %); mid-session early minutes: total 0, median 0, max 0
+  H4 : 762 bars; early 127 = market closed inside 127 + mid-session 0 (0.00 %); mid-session early minutes: total 0, median 0, max 0
+  D1 : 127 bars; early 127 = market closed inside 127 + mid-session 0 (0.00 %); mid-session early minutes: total 0, median 0, max 0
+
+(b) avail earlier than the bar's end, 2021-09-01 .. 2026-04-18 (1628641 M1 bars):
+  M5 : 325816 bars; early 95 = market closed inside 39 + mid-session 56 (0.02 %); mid-session early minutes: total 90, median 1, max 4
+     M5 bar ending 2021-09-07 23:40:00+00:00: last M1 2021-09-07 23:38:00+00:00, avail 2021-09-07 23:39:00+00:00, next M1 2021-09-07 23:40:00+00:00
+     M5 bar ending 2021-09-26 22:30:00+00:00: last M1 2021-09-26 22:28:00+00:00, avail 2021-09-26 22:29:00+00:00, next M1 2021-09-26 22:30:00+00:00
+     M5 bar ending 2021-09-27 23:40:00+00:00: last M1 2021-09-27 23:38:00+00:00, avail 2021-09-27 23:39:00+00:00, next M1 2021-09-27 23:40:00+00:00
+     M5 bar ending 2021-09-28 22:40:00+00:00: last M1 2021-09-28 22:38:00+00:00, avail 2021-09-28 22:39:00+00:00, next M1 2021-09-28 22:40:00+00:00
+     M5 bar ending 2021-10-14 22:20:00+00:00: last M1 2021-10-14 22:17:00+00:00, avail 2021-10-14 22:18:00+00:00, next M1 2021-10-14 22:20:00+00:00
+     M5 bar ending 2021-10-19 22:40:00+00:00: last M1 2021-10-19 22:37:00+00:00, avail 2021-10-19 22:38:00+00:00, next M1 2021-10-19 22:40:00+00:00
+     M5 bar ending 2021-11-02 22:05:00+00:00: last M1 2021-11-02 22:03:00+00:00, avail 2021-11-02 22:04:00+00:00, next M1 2021-11-02 22:05:00+00:00
+     M5 bar ending 2021-11-18 23:05:00+00:00: last M1 2021-11-18 23:03:00+00:00, avail 2021-11-18 23:04:00+00:00, next M1 2021-11-18 23:05:00+00:00
+  M15: 109229 bars; early 1211 = market closed inside 1197 + mid-session 14 (0.01 %); mid-session early minutes: total 38, median 1, max 14
+     M15 bar ending 2021-09-26 22:30:00+00:00: last M1 2021-09-26 22:28:00+00:00, avail 2021-09-26 22:29:00+00:00, next M1 2021-09-26 22:30:00+00:00
+     M15 bar ending 2021-12-03 21:45:00+00:00: last M1 2021-12-03 21:43:00+00:00, avail 2021-12-03 21:44:00+00:00, next M1 2021-12-03 21:45:00+00:00
+     M15 bar ending 2022-09-19 20:00:00+00:00: last M1 2022-09-19 19:58:00+00:00, avail 2022-09-19 19:59:00+00:00, next M1 2022-09-19 20:01:00+00:00
+     M15 bar ending 2022-11-07 21:00:00+00:00: last M1 2022-11-07 20:57:00+00:00, avail 2022-11-07 20:58:00+00:00, next M1 2022-11-07 21:07:00+00:00
+     M15 bar ending 2022-11-08 21:00:00+00:00: last M1 2022-11-08 20:58:00+00:00, avail 2022-11-08 20:59:00+00:00, next M1 2022-11-08 21:07:00+00:00
+     M15 bar ending 2023-02-13 23:15:00+00:00: last M1 2023-02-13 23:13:00+00:00, avail 2023-02-13 23:14:00+00:00, next M1 2023-02-13 23:15:00+00:00
+     M15 bar ending 2023-03-02 10:15:00+00:00: last M1 2023-03-02 10:07:00+00:00, avail 2023-03-02 10:08:00+00:00, next M1 2023-03-02 10:16:00+00:00
+     M15 bar ending 2023-04-24 13:00:00+00:00: last M1 2023-04-24 12:58:00+00:00, avail 2023-04-24 12:59:00+00:00, next M1 2023-04-24 13:06:00+00:00
+  H1 : 27342 bars; early 1213 = market closed inside 1209 + mid-session 4 (0.01 %); mid-session early minutes: total 5, median 1, max 2
+     H1 bar ending 2022-09-19 20:00:00+00:00: last M1 2022-09-19 19:58:00+00:00, avail 2022-09-19 19:59:00+00:00, next M1 2022-09-19 20:01:00+00:00
+     H1 bar ending 2022-11-07 21:00:00+00:00: last M1 2022-11-07 20:57:00+00:00, avail 2022-11-07 20:58:00+00:00, next M1 2022-11-07 21:07:00+00:00
+     H1 bar ending 2022-11-08 21:00:00+00:00: last M1 2022-11-08 20:58:00+00:00, avail 2022-11-08 20:59:00+00:00, next M1 2022-11-08 21:07:00+00:00
+     H1 bar ending 2023-04-24 13:00:00+00:00: last M1 2023-04-24 12:58:00+00:00, avail 2023-04-24 12:59:00+00:00, next M1 2023-04-24 13:06:00+00:00
+  H4 : 7158 bars; early 1197 = market closed inside 1196 + mid-session 1 (0.01 %); mid-session early minutes: total 1, median 1, max 1
+  D1 : 1194 bars; early 1194 = market closed inside 1194 + mid-session 0 (0.00 %); mid-session early minutes: total 0, median 0, max 0

@@ -1,0 +1,30 @@
+CAUGHT  Asia's end included: 1 failed, 2 passed in 0.68s
+          test_the_owners_windows[2026-01-14 02:00-None-09:00 Thai: the end is excluded]
+CAUGHT  Thai time as UTC+9: 1 failed in 0.67s
+          test_the_owners_windows[2026-01-14 00:00-Asia-07:00 Thai]
+CAUGHT  London 06:00-07:00 on London's clock (= 13:00 Thai only in winter): 1 failed, 7 passed in 0.67s
+          test_the_owners_windows[2025-10-20 06:00-London-13:00 Thai in London summer time too (07:00 BST)]
+CAUGHT  New York at a fixed UTC-5: 1 failed, 12 passed in 0.70s
+          test_the_owners_windows[2025-10-20 13:30-NY-09:30 EDT]
+CAUGHT  New York's window 1 hour: 1 failed, 10 passed in 0.70s
+          test_the_owners_windows[2026-01-14 16:29-NY-11:29 EST]
+5 of 5 caught (p4_trades)
+CAUGHT  the event clock in UTC: 1 failed, 19 passed in 0.98s
+          test_the_event_minutes_follow_each_zone
+1 of 1 caught (footprints)
+CAUGHT  the fix on GMT all year: 1 failed, 20 passed in 0.94s
+          test_pullback15_active_hours_follow_each_zone
+CAUGHT  the NY open on EST all year: 1 failed, 20 passed in 0.99s
+          test_pullback15_active_hours_follow_each_zone
+CAUGHT  the active edge exclusive: 1 failed, 20 passed in 0.67s
+          test_pullback15_active_hours_follow_each_zone
+3 of 3 caught (pullback15)
+CAUGHT  the windows on the UTC clock: 1 failed, 21 passed in 0.69s
+          test_ny_mask_is_dst_aware
+1 of 1 caught (plib)
+CAUGHT  a part's end included: 1 failed, 22 passed in 0.71s
+          test_the_parts
+CAUGHT  P2 starts a day late: 1 failed, 22 passed in 0.71s
+          test_the_parts
+2 of 2 caught (m15_trades)
+ALL: 12 of 12 caught; unmutated: 23 passed in 1.42s

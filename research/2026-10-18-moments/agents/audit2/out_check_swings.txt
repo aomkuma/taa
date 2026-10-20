@@ -1,0 +1,28 @@
+A. fingerprint.zigzag: git HEAD against the fixed one
+  from 2023-08-01 M1  ATR x 2  : HEAD 110890 pivots (confirmed by their own bar 0, a bar twice 0); fixed 110890; differing 0, the last at None
+  from 2023-08-01 M1  ATR x 3  : HEAD 53141 pivots (confirmed by their own bar 0, a bar twice 0); fixed 53141; differing 0, the last at None
+  from 2023-08-01 M1  10 USD   : HEAD 12545 pivots (confirmed by their own bar 0, a bar twice 0); fixed 12545; differing 0, the last at None
+  from 2023-08-01 M5  ATR x 2  : HEAD 21481 pivots (confirmed by their own bar 0, a bar twice 0); fixed 21481; differing 0, the last at None
+  from 2023-08-01 M5  ATR x 3  : HEAD 10121 pivots (confirmed by their own bar 0, a bar twice 0); fixed 10121; differing 0, the last at None
+  from 2023-08-01 M15 ATR x 2  : HEAD 7569 pivots (confirmed by their own bar 0, a bar twice 0); fixed 7569; differing 0, the last at None
+  from 2023-08-01 M15 ATR x 3  : HEAD 3529 pivots (confirmed by their own bar 0, a bar twice 0); fixed 3529; differing 0, the last at None
+  from 2023-08-01 H1  ATR x 2  : HEAD 1885 pivots (confirmed by their own bar 1, a bar twice 0); fixed 1885; differing 2, the last at 2023-08-01 14:59:00+00:00
+  from 2023-08-01 H1  ATR x 3  : HEAD 908 pivots (confirmed by their own bar 0, a bar twice 0); fixed 908; differing 0, the last at None
+  from 2025-09-01 M1  ATR x 2  : HEAD 25436 pivots (confirmed by their own bar 0, a bar twice 0); fixed 25436; differing 0, the last at None
+  from 2025-09-01 M1  ATR x 3  : HEAD 12162 pivots (confirmed by their own bar 0, a bar twice 0); fixed 12162; differing 0, the last at None
+  from 2025-09-01 M1  10 USD   : HEAD 9505 pivots (confirmed by their own bar 0, a bar twice 0); fixed 9505; differing 0, the last at None
+  from 2025-09-01 M5  ATR x 2  : HEAD 4884 pivots (confirmed by their own bar 0, a bar twice 0); fixed 4884; differing 0, the last at None
+  from 2025-09-01 M5  ATR x 3  : HEAD 2392 pivots (confirmed by their own bar 0, a bar twice 0); fixed 2392; differing 0, the last at None
+  from 2025-09-01 M15 ATR x 2  : HEAD 1762 pivots (confirmed by their own bar 0, a bar twice 0); fixed 1762; differing 0, the last at None
+  from 2025-09-01 M15 ATR x 3  : HEAD 782 pivots (confirmed by their own bar 0, a bar twice 0); fixed 782; differing 0, the last at None
+  from 2025-09-01 H1  ATR x 2  : HEAD 416 pivots (confirmed by their own bar 0, a bar twice 0); fixed 416; differing 0, the last at None
+  from 2025-09-01 H1  ATR x 3  : HEAD 195 pivots (confirmed by their own bar 0, a bar twice 0); fixed 195; differing 0, the last at None
+
+B. Look-ahead: the future replaced by its mirror, the pivots confirmed by the decision bar unchanged
+  M1: 100 decisions; fingerprint same 100, the developer's same 100; the replaced future changed the whole pivot list in 100 of 100 (the check has power)
+  M5: 100 decisions; fingerprint same 100, the developer's same 100; the replaced future changed the whole pivot list in 100 of 100 (the check has power)
+  H1: 100 decisions; fingerprint same 100, the developer's same 100; the replaced future changed the whole pivot list in 100 of 100 (the check has power)
+
+C. zones.py on the real H1 of the learning parts
+  1004 swings: known at the avail of the 2nd bar after it 1004; known after its own bar's avail 1004
+  levels_at at 100 moments: the same with the future mirrored 100; three days later they differ 100 of 100 (the check has power)

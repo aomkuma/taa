@@ -1,0 +1,22 @@
+OLD: 736076 bars 2021-09-01 00:00:00+00:00 .. 2023-10-02 23:59:00+00:00
+NEW (< exam): 922587 bars 2023-09-01 00:00:00+00:00 .. 2026-04-17 20:54:00+00:00
+gold.bars: 1628641 bars 2021-09-01 00:00:00+00:00 .. 2026-04-17 20:54:00+00:00
+  index UTC: True, unique: True, sorted: True
+  bars before the first NEW bar: 706054 (OLD bars before it: 706054)
+  bars from the first NEW bar: 922587 (NEW bars: 922587)
+  NEW part equal to the NEW store, value by value: True
+  OLD part equal to the OLD store before the cut: True
+  the joint: last OLD bar 2023-08-31 23:59:00+00:00, first NEW bar 2023-09-01 00:00:00+00:00, gap 1 min
+overlap 2023-09-01 00:00:00+00:00 .. 2023-10-02 23:59:00+00:00: shared minutes 30022, OHLC equal on 30022, max |diff| 0.00000; tick_volume equal 30022, spread equal 30022
+  OLD-only minutes after the cut (dropped by gold.bars, kept by the union): 0
+  NEW-only minutes inside the overlap: 0
+  gold.bars vs the union: 1628641 vs 1628641 bars
+plib.load: 954198 bars 2023-08-01 00:00:00+00:00 .. 2026-04-17 20:54:00+00:00, columns ['open', 'high', 'low', 'close', 'tick_volume', 'spread']
+  START 2023-08-01 00:00:00+00:00: first bar >= START: True; bars of gold.bars before START: 674443, dropped: True
+  unique True, sorted True, dtypes ['float64']
+learning parts 2025-10-18 .. 2026-04-18: 173030 bars; gaps > 10 min: 126 = weekend 25 + daily break (55-75 min) 96 + other 5
+    other gap from 2025-11-27 18:15:00+00:00 for 0 days 04:50:00
+    other gap from 2025-12-24 18:30:00+00:00 for 1 days 04:35:00
+    other gap from 2025-12-31 21:54:00+00:00 for 1 days 01:11:00
+    other gap from 2026-01-19 19:15:00+00:00 for 0 days 03:50:00
+    other gap from 2026-02-16 19:15:00+00:00 for 0 days 03:50:00

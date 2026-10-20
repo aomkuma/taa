@@ -357,7 +357,7 @@ def main() -> None:
                             else np.busday_count("2026-04-18", "2026-10-17"))
                     rows.append(dict(k=k, levels="important" if imp else "all", target=tg, p=q, trades=len(T),
                                      per_wd=round(len(T) / max(days, 1), 2), win=round((T.exit == "win").mean(), 3),
-                                     R=round(T.R.mean(), 3), usd=round(T.pnl.sum(), 1), maxdd=round((eq.cummax() - eq).max(), 1),
+                                     R=round(T.R.mean(), 3), usd=round(T.pnl.sum(), 1), maxdd=round((eq.cummax().clip(lower=0) - eq).max(), 1),
                                      sl_med=round(T.sl.median(), 2), b_med=round(T.b.median(), 2),
                                      exits=" ".join(f"{e} {v:.0%}" for e, v in T.exit.value_counts(normalize=True).items())))
                     print(rows[-1], flush=True)

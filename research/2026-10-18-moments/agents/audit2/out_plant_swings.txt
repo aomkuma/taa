@@ -1,0 +1,33 @@
+CAUGHT  the start-up fix removed: 1 failed in 0.71s
+          test_one_wide_bar_at_the_start_is_never_two_turns
+CAUGHT  the start-up picks the later extreme: 1 failed, 1 passed in 0.67s
+          test_after_a_wide_bar_the_first_turn_waits_for_a_bar_that_takes_an_extreme_out
+CAUGHT  an equal high does not move the peak: 1 failed, 24 passed in 0.66s
+          test_an_equal_high_moves_the_peak_later_and_exactly_the_threshold_confirms
+CAUGHT  an equal low does not move the trough: 1 failed, 26 passed in 0.72s
+          test_an_equal_low_moves_the_trough_later
+CAUGHT  a new high can also confirm (if, not elif): 1 failed, 2 passed in 0.62s
+          test_an_outside_bar_in_an_up_leg_extends_it_and_is_one_turn
+CAUGHT  strictly above the threshold: 1 failed, 2 passed in 0.63s
+          test_an_outside_bar_in_an_up_leg_extends_it_and_is_one_turn
+CAUGHT  the trough tracked from the peak bar: 1 failed, 4 passed in 0.66s
+          test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[0]
+CAUGHT  the confirming bar recorded as the pivot bar: 1 failed, 3 passed in 0.65s
+          test_an_outside_bar_in_a_down_leg_is_mirrored
+8 of 8 caught (fingerprint)
+CAUGHT  a swing known one bar early: 1 failed in 0.79s
+          test_a_swing_is_known_two_bars_later
+CAUGHT  a swing known at its own bar: 1 failed in 0.77s
+          test_a_swing_is_known_two_bars_later
+CAUGHT  fractals of 3 bars (k = 1): 1 failed in 0.80s
+          test_a_swing_is_known_two_bars_later
+CAUGHT  zones from every swing, known or not: 1 failed, 2 passed in 0.85s
+          test_zones_at_uses_only_the_known_swings_of_the_window
+CAUGHT  the merge tolerance from the next bar's ATR: 1 failed, 4 passed in 0.97s
+          test_the_zones_do_not_change_when_the_future_is_replaced
+CAUGHT  the 5-day high includes the forming bar: 1 failed, 5 passed in 0.88s
+          test_the_owners_four_kinds_of_levels
+CAUGHT  a zone of 2 swings counted as strong: 1 failed, 5 passed in 0.91s
+          test_the_owners_four_kinds_of_levels
+7 of 7 caught (zones)
+ALL: 15 of 15 caught; unmutated: 35 passed in 1.76s

@@ -1,0 +1,32 @@
+..........                                                               [100%]
+=================================== PASSES ====================================
+________ TestLazySync.test_stale_range_is_completed_after_the_sync[M1] ________
+------------------------------ Captured log call ------------------------------
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 1 s
+________ TestLazySync.test_stale_range_is_completed_after_the_sync[H1] ________
+------------------------------ Captured log call ------------------------------
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD H1 history ends at 2026-10-02 20:00:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 1 s
+______________ TestLazySync.test_never_synchronised_fails_loudly ______________
+------------------------------ Captured log call ------------------------------
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 1 s
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 2 s
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 4 s
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 8 s
+_____ TestLazySync.test_tick_shows_the_gap_when_newest_bars_are_stale_too _____
+------------------------------ Captured log call ------------------------------
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 1 s
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 2 s
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 4 s
+WARNING  app.market_data.history_download:history_download.py:114 XAUUSD M1 history ends at 2026-10-02 20:59:00+00:00 but the terminal shows a bar at 2026-10-05 10:00:00+00:00; reading the tail again in 8 s
+=========================== short test summary info ===========================
+PASSED tests/unit/test_history_download.py::TestLazySync::test_fixture_reproduces_the_symptom
+PASSED tests/unit/test_history_download.py::TestLazySync::test_stale_range_is_completed_after_the_sync[M1]
+PASSED tests/unit/test_history_download.py::TestLazySync::test_stale_range_is_completed_after_the_sync[H1]
+PASSED tests/unit/test_history_download.py::TestLazySync::test_never_synchronised_fails_loudly
+PASSED tests/unit/test_history_download.py::TestLazySync::test_tick_shows_the_gap_when_newest_bars_are_stale_too
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_fresh_terminal_is_unchanged_and_never_waits
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_window_on_a_minute_boundary
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_market_closed_saturday
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_past_window_is_not_checked_against_newer_bars
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_d1_bar_from_the_tick_uses_the_server_midnight
+10 passed in 3.14s

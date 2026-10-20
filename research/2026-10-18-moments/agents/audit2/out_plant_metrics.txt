@@ -1,0 +1,19 @@
+CAUGHT  the streak never resets: 1 failed, 5 passed in 0.84s
+          test_the_longest_losing_streak_in_time_order_and_a_break_even_trade
+CAUGHT  the streak is the last run, not the longest: 1 failed, 5 passed in 1.01s
+          test_the_longest_losing_streak_in_time_order_and_a_break_even_trade
+CAUGHT  the week on the UTC clock: 1 failed, 8 passed in 1.09s
+          test_the_weekly_table_on_the_thai_week
+CAUGHT  the running USD not cumulative: 1 failed, 8 passed in 1.24s
+          test_the_weekly_table_on_the_thai_week
+CAUGHT  the worst trade is the best: 1 failed, 8 passed in 1.11s
+          test_the_weekly_table_on_the_thai_week
+CAUGHT  the week's R is the mean: 1 failed, 8 passed in 1.09s
+          test_the_weekly_table_on_the_thai_week
+6 of 6 caught (wf)
+CAUGHT  the drawdown without the start again: 1 failed in 1.10s
+          test_the_drawdown_counts_from_the_starting_balance[summary0]
+CAUGHT  the drawdown as the lowest running total: 1 failed, 4 passed in 0.96s
+          test_the_drawdown_after_a_first_win_is_unchanged
+2 of 2 caught (sr_break)
+ALL: 8 of 8 caught; unmutated: 9 passed, 1 xfailed in 2.29s

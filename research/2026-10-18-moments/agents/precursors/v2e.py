@@ -189,7 +189,7 @@ def main() -> None:
             eq = ex.pnl.cumsum()
             print(f"the exam: {len(ex)} trades ({len(ex) / np.busday_count('2026-04-18', '2026-10-17'):.2f} a weekday), win "
                   f"{(ex.exit == 'win').mean():.3f}, R {ex.R.mean():+.3f}, USD {ex.pnl.sum():+.1f}, max DD "
-                  f"{(eq.cummax() - eq).max():.1f}, worst {ex.pnl.min():+.2f}, longest losing streak "
+                  f"{(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {ex.pnl.min():+.2f}, longest losing streak "
                   f"{wf.longest_run(ex.pnl.to_numpy() < 0)}")
     if not exam:
         print("\nthe learning half (2024-05 .. 2026-04-17) only:")

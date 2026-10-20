@@ -1,0 +1,72 @@
+FFFF.....x                                                               [100%]
+================================== FAILURES ===================================
+________ test_the_drawdown_counts_from_the_starting_balance[summary0] _________
+
+summary = <function summary at 0x00000209FF3E16C0>
+
+    @pytest.mark.parametrize("summary", [sr_break.summary, surrender.summary, tick_straddle.summary])
+    def test_the_drawdown_counts_from_the_starting_balance(summary) -> None:  # noqa: ANN001
+        # -5, -5, +1: the balance goes 0 -> -5 -> -10 -> -9; the deepest fall from a peak (the start, 0) is 10, not 5
+        T = trades([-5.0, -5.0, 1.0])
+        out = summary(T, "2026-01-12", "2026-01-17")
+>       assert max_dd(out) == pytest.approx(10.0)
+E       assert 5.0 == 10.0 ± 1.0e-05
+E         
+E         comparison failed
+E         Obtained: 5.0
+E         Expected: 10.0 ± 1.0e-05
+
+research\2026-10-18-moments\agents\audit2\test_metrics.py:41: AssertionError
+________ test_the_drawdown_counts_from_the_starting_balance[summary1] _________
+
+summary = <function summary at 0x00000209FF3E13A0>
+
+    @pytest.mark.parametrize("summary", [sr_break.summary, surrender.summary, tick_straddle.summary])
+    def test_the_drawdown_counts_from_the_starting_balance(summary) -> None:  # noqa: ANN001
+        # -5, -5, +1: the balance goes 0 -> -5 -> -10 -> -9; the deepest fall from a peak (the start, 0) is 10, not 5
+        T = trades([-5.0, -5.0, 1.0])
+        out = summary(T, "2026-01-12", "2026-01-17")
+>       assert max_dd(out) == pytest.approx(10.0)
+E       assert 5.0 == 10.0 ± 1.0e-05
+E         
+E         comparison failed
+E         Obtained: 5.0
+E         Expected: 10.0 ± 1.0e-05
+
+research\2026-10-18-moments\agents\audit2\test_metrics.py:41: AssertionError
+________ test_the_drawdown_counts_from_the_starting_balance[summary2] _________
+
+summary = <function summary at 0x00000209FF3E1120>
+
+    @pytest.mark.parametrize("summary", [sr_break.summary, surrender.summary, tick_straddle.summary])
+    def test_the_drawdown_counts_from_the_starting_balance(summary) -> None:  # noqa: ANN001
+        # -5, -5, +1: the balance goes 0 -> -5 -> -10 -> -9; the deepest fall from a peak (the start, 0) is 10, not 5
+        T = trades([-5.0, -5.0, 1.0])
+        out = summary(T, "2026-01-12", "2026-01-17")
+>       assert max_dd(out) == pytest.approx(10.0)
+E       assert 5.0 == 10.0 ± 1.0e-05
+E         
+E         comparison failed
+E         Obtained: 5.0
+E         Expected: 10.0 ± 1.0e-05
+
+research\2026-10-18-moments\agents\audit2\test_metrics.py:41: AssertionError
+___________ test_no_summary_measures_the_drawdown_without_the_start ___________
+
+    def test_no_summary_measures_the_drawdown_without_the_start() -> None:
+        """Every precursors summary: (eq.cummax() - eq).max() misses the start at 0 when the first trades lose."""
+        bad = [f.name for f in sorted((AG / "precursors").glob("*.py")) if "(eq.cummax() - eq).max()" in f.read_text(encoding="utf-8")]
+>       assert bad == []
+E       AssertionError: assert ['big_trades....cost.py', ...] == []
+E         
+E         Left contains 20 more items, first extra item: 'big_trades.py'
+E         Use -v to get more diff
+
+research\2026-10-18-moments\agents\audit2\test_metrics.py:47: AssertionError
+=========================== short test summary info ===========================
+FAILED research/2026-10-18-moments/agents/audit2/test_metrics.py::test_the_drawdown_counts_from_the_starting_balance[summary0]
+FAILED research/2026-10-18-moments/agents/audit2/test_metrics.py::test_the_drawdown_counts_from_the_starting_balance[summary1]
+FAILED research/2026-10-18-moments/agents/audit2/test_metrics.py::test_the_drawdown_counts_from_the_starting_balance[summary2]
+FAILED research/2026-10-18-moments/agents/audit2/test_metrics.py::test_no_summary_measures_the_drawdown_without_the_start
+XFAIL research/2026-10-18-moments/agents/audit2/test_metrics.py::test_the_weekly_win_share_with_the_developers_exit_names - QUESTION to the measurer: weekly() counts a win as exit == 'win'; the developer's exits are 'target' / 'structure' / ... and its own stats count pnl > 0 - which does the owner mean?
+4 failed, 5 passed, 1 xfailed in 1.84s

@@ -1,0 +1,472 @@
+FF..FFFFFFFFFFFFFFFFFFFF...                                              [100%]
+================================== FAILURES ===================================
+______________ test_one_wide_bar_at_the_start_is_never_two_turns ______________
+
+    def test_one_wide_bar_at_the_start_is_never_two_turns() -> None:
+        # bar 1 (30 / 0) holds both the highest high and the lowest low; bars 2-3 stay inside it. Which came first in
+        # bar 1 is unknown, so no turn can be confirmed yet. (Before the fix: a peak at bar 1 confirmed BY bar 1 itself,
+        # then a trough at bar 1 confirmed by bar 2 - one bar, two turns.)
+>       assert zz([10, 30, 25, 26], [9, 0, 20, 25]) == []
+E       assert [(1, 30.0, 1,..., 0.0, -1, 2)] == []
+E         
+E         Left contains 2 more items, first extra item: (1, 30.0, 1, 1)
+E         Use -v to get more diff
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:31: AssertionError
+_ test_after_a_wide_bar_the_first_turn_waits_for_a_bar_that_takes_an_extreme_out _
+
+    def test_after_a_wide_bar_the_first_turn_waits_for_a_bar_that_takes_an_extreme_out() -> None:
+        # bar 4 makes a new high (31): bar 1's low (0) is the first turn, a trough confirmed by bar 4; the peak is tracked
+        # from bar 4; bar 5's low 20 is 11 below 31 -> the peak at 4 confirmed by 5
+>       assert zz([10, 30, 25, 26, 31, 24], [9, 0, 20, 25, 28, 20]) == [(1, 0.0, -1, 4), (4, 31.0, 1, 5)]
+E       assert [(1, 30.0, 1,..., 31.0, 1, 5)] == [(1, 0.0, -1,..., 31.0, 1, 5)]
+E         
+E         At index 0 diff: (1, 30.0, 1, 1) != (1, 0.0, -1, 4)
+E         Left contains one more item: (4, 31.0, 1, 5)
+E         Use -v to get more diff
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:37: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[0] ____
+
+seed = 0
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510849350>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510849350> = array([ 14,  15,  54,  67,  84,  91,  97, 116, 126, 136, 152, 162, 180,\n       193, 201, 211, 225, 245, 250, 266, 268, 271, 275, 294, 303, 337,\n       368, 370, 374]) > array([ 14,  14,  53,  61,  79,  84,  96, 115, 121, 130, 144, 161, 174,\n       192, 200, 207, 224, 239, 249, 265, 267, 269, 271, 293, 302, 336,\n       362, 369, 373]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[1] ____
+
+seed = 1
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510849C50>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510849C50> = array([ 14,  15,  25,  34,  41,  53,  65,  78,  81,  91,  96, 120, 122,\n       124, 130, 133, 140, 166, 190, 196, 212, 217, 226, 301, 316, 337,\n       342, 350, 369, 382, 395]) > array([ 14,  14,  23,  27,  35,  52,  54,  77,  80,  83,  95, 100, 120,\n       122, 124, 132, 134, 158, 184, 195, 211, 216, 221, 300, 311, 328,\n       337, 349, 368, 375, 394]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[2] ____
+
+seed = 2
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D51084A2B0>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D51084A2B0> = array([ 14,  15,  22,  32,  34,  43,  59,  63,  67,  71,  80,  84,  99,\n       105, 115, 138, 144, 195, 206, 218, 227, 232, 238, 276, 284, 294,\n       298, 301, 317, 348, 369, 390]) > array([ 14,  14,  21,  31,  33,  42,  58,  62,  64,  67,  79,  83,  92,\n       101, 114, 130, 143, 178, 205, 208, 221, 227, 235, 272, 282, 293,\n       295, 298, 313, 336, 356, 384]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[3] ____
+
+seed = 3
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510803030>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510803030> = array([ 14,  15,  22,  33,  40,  50,  53,  58,  63,  66,  79,  83,  95,\n       109, 116, 127, 130, 136, 139, 165, 184, 202, 207, 220, 231, 234,\n       241, 252, 259, 266, 291, 296, 301, 325, 337, 354, 360, 365]) > array([ 14,  14,  21,  23,  39,  49,  52,  57,  62,  65,  67,  79,  84,\n        96, 111, 126, 129, 135, 138, 158, 183, 201, 206, 219, 224, 233,\n       240, 241, 258, 262, 290, 291, 297, 324, 333, 342, 359, 364]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[4] ____
+
+seed = 4
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510803270>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510803270> = array([ 14,  15,  21,  32,  53,  62,  79,  83,  89, 102, 105, 123, 133,\n       139, 148, 175, 182, 186, 200, 210, 232, 246, 259, 268, 275, 280,\n       303, 343, 364]) > array([ 14,  14,  15,  31,  52,  56,  75,  80,  83,  93, 104, 108, 132,\n       138, 147, 167, 181, 185, 199, 209, 222, 239, 258, 260, 274, 279,\n       302, 342, 355]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[5] ____
+
+seed = 5
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D51084AA90>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D51084AA90> = array([ 14,  15,  18,  26,  34,  50,  56,  60,  63, 107, 126, 130, 131,\n       135, 140, 146, 159, 167, 173, 175, 195, 198, 222, 258, 272, 277,\n       292, 299, 300, 310, 312, 322, 331, 334, 343, 346, 353, 372, 399]) > array([ 14,  14,  17,  25,  27,  49,  55,  56,  62, 106, 125, 129, 130,\n       131, 139, 140, 150, 166, 172, 174, 194, 197, 221, 257, 271, 276,\n       277, 298, 299, 309, 311, 321, 325, 333, 342, 345, 346, 371, 398]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[6] ____
+
+seed = 6
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510849A70>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510849A70> = array([ 14,  15,  25,  32,  34,  45,  55,  63,  69,  80,  96, 114, 128,\n       130, 145, 152, 158, 160, 162, 168, 182,...192, 195, 205, 209,\n       221, 247, 251, 260, 277, 287, 289, 304, 312, 318, 326, 355, 358,\n       365, 371, 386, 395]) > array([ 14,  14,  19,  27,  33,  40,  51,  56,  68,  79,  93, 111, 124,\n       129, 144, 148, 155, 159, 161, 167, 181,...191, 194, 196, 206,\n       220, 241, 250, 259, 263, 280, 288, 300, 311, 316, 318, 354, 357,\n       360, 368, 384, 390]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[7] ____
+
+seed = 7
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510849890>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510849890> = array([ 14,  15,  18,  29,  33,  50,  64,  93,  99, 151, 155, 169, 175,\n       178, 190, 196, 208, 223, 231, 242, 249, 274, 282, 285, 317, 322,\n       335, 339, 341, 357, 366, 385, 398]) > array([ 14,  14,  17,  28,  29,  43,  63,  73,  95, 150, 154, 168, 169,\n       177, 189, 190, 207, 222, 225, 241, 245, 273, 275, 284, 307, 321,\n       331, 335, 340, 356, 362, 384, 388]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[8] ____
+
+seed = 8
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D5108483F0>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D5108483F0> = array([ 14,  15,  28,  36,  39,  45,  52,  57,  92, 112, 121, 160, 175,\n       191, 207, 216, 219, 231, 258, 278, 287, 299, 301, 305, 309, 338,\n       369, 375, 396]) > array([ 14,  14,  17,  31,  36,  44,  47,  53,  88, 111, 120, 148, 174,\n       188, 202, 207, 217, 230, 248, 277, 286, 298, 300, 304, 305, 334,\n       368, 374, 395]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[9] ____
+
+seed = 9
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510803810>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510803810> = array([ 14,  15,  22,  24,  32,  85, 104, 111, 121, 122, 133, 151, 156,\n       166, 171, 199, 201, 222, 228, 236, 253, 258, 268, 279, 292, 320,\n       335, 385, 398]) > array([ 14,  14,  21,  23,  28,  77, 103, 104, 120, 121, 132, 150, 155,\n       161, 170, 190, 200, 207, 224, 235, 252, 257, 267, 278, 281, 312,\n       334, 377, 393]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[10] ___
+
+seed = 10
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D5108031B0>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D5108031B0> = array([ 14,  15,  21,  38,  55,  58,  65,  76,  92, 101, 129, 131, 135,\n       143, 153, 197, 223, 234, 239, 252, 260, 283, 286, 287, 289, 297,\n       307, 312, 341, 350, 358, 373, 376, 391, 394]) > array([ 14,  14,  16,  26,  45,  57,  64,  75,  91,  92, 120, 130, 131,\n       142, 149, 189, 222, 233, 238, 251, 252, 282, 285, 286, 288, 296,\n       303, 308, 325, 346, 357, 359, 373, 386, 391]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[11] ___
+
+seed = 11
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510848870>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510848870> = array([ 14,  15,  24,  42,  46,  53,  57,  75,  76,  90, 105, 112, 131,\n       137, 144, 156, 161, 177, 190, 208, 226, 233, 244, 249, 273, 282,\n       297, 303, 308, 313, 327, 329, 346, 357, 388]) > array([ 14,  14,  19,  41,  42,  46,  56,  74,  75,  89, 104, 109, 117,\n       131, 143, 149, 160, 176, 183, 207, 219, 232, 233, 245, 262, 281,\n       289, 301, 303, 312, 325, 328, 342, 346, 387]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[12] ___
+
+seed = 12
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510849770>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510849770> = array([ 14,  15,  16,  26,  33,  45,  64,  65,  70,  83,  85, 100, 119,\n       122, 131, 153, 166, 167, 176, 177, 181,...208, 230, 238,\n       243, 255, 262, 268, 271, 281, 299, 308, 315, 325, 327, 335, 342,\n       345, 358, 373, 381, 397]) > array([ 14,  14,  15,  25,  28,  37,  63,  64,  66,  72,  84,  99, 118,\n       121, 130, 152, 165, 166, 175, 176, 180,...207, 229, 237,\n       242, 251, 261, 262, 270, 274, 298, 302, 312, 316, 326, 334, 341,\n       344, 357, 366, 376, 391]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[13] ___
+
+seed = 13
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510849D70>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510849D70> = array([ 14,  15,  21,  23,  28,  51,  58,  83,  91, 101, 105, 125, 130,\n       132, 138, 145, 162, 168, 177, 180, 184,...196, 204, 218, 223,\n       238, 265, 273, 295, 299, 303, 306, 322, 326, 329, 333, 338, 340,\n       346, 375, 389, 398]) > array([ 14,  14,  20,  21,  27,  42,  57,  82,  90,  91, 101, 121, 126,\n       130, 137, 139, 159, 167, 176, 177, 182,...191, 203, 217, 218,\n       237, 264, 267, 294, 298, 302, 305, 321, 325, 328, 330, 337, 339,\n       342, 367, 381, 397]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[14] ___
+
+seed = 14
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D51084AF70>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D51084AF70> = array([ 14,  15,  60,  64,  67,  68,  85,  90,  93, 105, 109, 123, 137,\n       159, 161, 171, 179, 194, 205, 212, 219, 234, 270, 278, 304, 324,\n       338, 343, 353, 356, 358, 363, 390]) > array([ 14,  14,  59,  63,  66,  67,  81,  89,  90,  98, 108, 112, 136,\n       158, 160, 170, 172, 193, 202, 207, 218, 219, 269, 273, 303, 323,\n       337, 340, 352, 354, 357, 362, 389]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[15] ___
+
+seed = 15
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510803030>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510803030> = array([ 14,  15,  28,  48,  61,  67,  71,  86, 103, 107, 109, 112, 115,\n       134, 145, 152, 156, 162, 174, 182, 198,...225, 254, 265,\n       275, 277, 280, 284, 291, 298, 306, 310, 317, 320, 332, 335, 350,\n       358, 367, 382, 384, 391]) > array([ 14,  14,  27,  41,  60,  61,  67,  83, 102, 106, 108, 109, 114,\n       133, 144, 147, 152, 161, 168, 181, 197,...224, 253, 264,\n       267, 276, 277, 283, 287, 292, 305, 309, 316, 319, 331, 334, 347,\n       351, 361, 373, 383, 386]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[16] ___
+
+seed = 16
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510803330>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510803330> = array([ 14,  15,  29,  33,  41,  47,  50,  63,  67,  73,  82,  88,  90,\n        93,  97, 116, 118, 132, 135, 144, 150, 162, 181, 182, 186, 194,\n       200, 202, 209, 227, 247, 310, 332, 363, 380, 388]) > array([ 14,  14,  28,  32,  40,  43,  49,  62,  63,  68,  77,  87,  89,\n        90,  93, 102, 117, 129, 133, 143, 149, 159, 180, 181, 185, 193,\n       199, 200, 208, 212, 246, 309, 323, 360, 375, 380]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[17] ___
+
+seed = 17
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D51084B3F0>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D51084B3F0> = array([ 14,  15,  26,  55,  59,  69,  79,  92, 120, 141, 144, 148, 169,\n       179, 196, 227, 260, 266, 275, 303, 306, 354, 377, 385, 391]) > array([ 14,  14,  21,  54,  58,  68,  78,  79, 115, 135, 143, 145, 168,\n       175, 191, 226, 259, 265, 266, 298, 305, 342, 376, 377, 390]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[18] ___
+
+seed = 18
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D510848570>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D510848570> = array([ 14,  15,  40,  50,  59,  91,  96, 115, 120, 122, 136, 167, 178,\n       187, 191, 205, 230, 232, 254, 256, 261, 274, 282, 304, 306, 314,\n       334, 337, 340, 373, 392]) > array([ 14,  14,  39,  49,  55,  90,  91,  96, 115, 121, 122, 159, 171,\n       186, 187, 204, 224, 231, 250, 255, 256, 270, 279, 300, 305, 308,\n       333, 334, 338, 372, 391]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+___ test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[19] ___
+
+seed = 19
+
+    @pytest.mark.parametrize("seed", range(20))
+    def test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice(seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        n = 400
+        c = 100 + np.cumsum(rng.normal(0, 1, n))
+        wide = rng.random(n) < 0.05  # some very wide bars, the first bar after the warm-up among them
+        wide[14] = True
+        span = np.where(wide, 15.0, rng.random(n))
+        h, lo = c + span, c - span
+        atr = np.r_[np.full(14, np.nan), np.full(n - 14, 1.5)]
+        b, _, t, conf = fingerprint.zigzag(h, lo, atr, 3.0)
+>       assert (conf > b).all()
+E       assert np.False_
+E        +  where np.False_ = <built-in method all of numpy.ndarray object at 0x000001D51084B630>()
+E        +    where <built-in method all of numpy.ndarray object at 0x000001D51084B630> = array([ 14,  15,  16,  38,  52,  63,  86,  90,  98, 109, 116, 128, 134,\n       150, 164, 170, 188, 215, 218, 253, 270, 274, 283, 293, 313, 328,\n       338, 344, 369]) > array([ 14,  14,  15,  37,  51,  62,  82,  86,  94, 108, 115, 123, 129,\n       145, 163, 169, 187, 212, 217, 244, 263, 272, 276, 292, 306, 318,\n       336, 338, 368]).all
+
+research\2026-10-18-moments\agents\audit2\test_swings.py:64: AssertionError
+=========================== short test summary info ===========================
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_one_wide_bar_at_the_start_is_never_two_turns
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_after_a_wide_bar_the_first_turn_waits_for_a_bar_that_takes_an_extreme_out
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[0]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[1]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[2]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[3]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[4]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[5]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[6]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[7]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[8]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[9]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[10]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[11]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[12]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[13]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[14]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[15]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[16]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[17]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[18]
+FAILED research/2026-10-18-moments/agents/audit2/test_swings.py::test_every_pivot_is_confirmed_by_a_later_bar_and_no_bar_turns_twice[19]
+22 failed, 5 passed in 0.84s

@@ -75,7 +75,7 @@ def main() -> None:
             print(f"\n{name}, p >= {th}, {part}: {len(S)} picks -> {len(T)} trades one at a time "
                   f"({len(T) / np.busday_count(a, b):.2f} a weekday); win {(T.exit == 'win').mean():.3f} (the 1-ATR passage "
                   f"won {(T.fp1 == 'win').mean():.3f}; the same result {agree:.3f}); R {T.R.mean():+.3f}, USD {T.pnl.sum():+.1f} "
-                  f"(0.01 lot = 1 USD a 1-USD move), max DD {(eq.cummax() - eq).max():.1f}, worst {T.pnl.min():+.2f}, "
+                  f"(0.01 lot = 1 USD a 1-USD move), max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {T.pnl.min():+.2f}, "
                   f"longest losing streak {wf.longest_run(T.pnl.to_numpy() < 0)}")
             print("  exits:", T.exit.value_counts().to_dict(), "| buys", int((T.side > 0).sum()), "sells", int((T.side < 0).sum()))
             # by timeframe: the stop in USD (one ATR), and the spread + slippage paid in and out against it

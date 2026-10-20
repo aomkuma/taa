@@ -1,0 +1,123 @@
+.....FFF.                                                                [100%]
+================================== FAILURES ===================================
+_____ TestAcrossMidnight.test_surrender_run_follows_a_trade_past_midnight _____
+
+self = <test_simulators.TestAcrossMidnight object at 0x000001188E7BF650>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001188C2B7110>
+
+    def test_surrender_run_follows_a_trade_past_midnight(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # a buy at 23:30 UTC, the 60-minute hold ends 00:30: the stop (bid <= 90.37) comes at 00:10 on day 2 at 85,
+        # -15.37. Cut at the UTC day's last tick it would be a 'time' exit at 23:59:59 instead.
+        two_days(monkeypatch, surrender)
+        X = pd.DataFrame({"t": [pd.Timestamp("2026-01-14 23:30", tz="UTC")], "side": [1]})
+        T = surrender.run(X, None, None)
+>       assert T["exit"].tolist() == ["stop"] and T["pnl"].iloc[0] == pytest.approx(85 - 100.37)
+E       AssertionError: assert (['time'] == ['stop']
+E         
+E         At index 0 diff: 'time' != 'stop'
+E         Use -v to get more diff)
+
+research\2026-10-18-moments\agents\audit2\test_simulators.py:93: AssertionError
+___ TestAcrossMidnight.test_tick_straddle_run_follows_a_trade_past_midnight ___
+
+self = <test_simulators.TestAcrossMidnight object at 0x000001188E7BFD50>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001188E7CE010>
+
+    def test_tick_straddle_run_follows_a_trade_past_midnight(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # the straddle from 23:44 (c0 = the last bid before it, 100.0), b 3, s 5, a 60-minute wait: no trigger on day 1;
+        # on day 2 the bid 95.0 at 00:05 is <= 97 -> a sell at 95 - 0.07 = 94.93; the target needs the ask <= 84.93:
+        # 85.3 at 00:10 no, 84.3 at 00:20 yes -> 'win' +10 at 00:20; the stop (ask >= 99.93) never comes.
+        # Cut at the UTC day's end there is no trigger at all and no trade.
+        two_days(monkeypatch, tick_straddle)
+        X = pd.DataFrame({"t": [pd.Timestamp("2026-01-14 23:44", tz="UTC")], "part": ["P1"]})
+        T = tick_straddle.run(X, 3.0, 5.0)
+>       assert T["side"].tolist() == [-1] and T["exit"].tolist() == ["win"]
+               ^^^^^^^^^
+
+research\2026-10-18-moments\agents\audit2\test_simulators.py:104: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\pandas\core\frame.py:4378: in __getitem__
+    indexer = self.columns.get_loc(key)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = RangeIndex(start=0, stop=0, step=1), key = 'side'
+
+    def get_loc(self, key) -> int:
+        """
+        Get integer location for requested label.
+    
+        Parameters
+        ----------
+        key : int or float
+            Label to locate. Integer-like floats (e.g. 3.0) are accepted and
+            treated as the corresponding integer. Non-integer floats and other
+            non-integer labels are not valid and will raise KeyError or
+            InvalidIndexError.
+    
+        Returns
+        -------
+        int
+            Integer location of the label within the RangeIndex.
+    
+        Raises
+        ------
+        KeyError
+            If the label is not present in the RangeIndex or the label is a
+            non-integer value.
+        InvalidIndexError
+            If the label is of an invalid type for the RangeIndex.
+    
+        See Also
+        --------
+        RangeIndex.get_slice_bound : Calculate slice bound that corresponds to
+            given label.
+        RangeIndex.get_indexer : Computes indexer and mask for new index given
+            the current index.
+        RangeIndex.get_non_unique : Returns indexer and masks for new index given
+            the current index.
+        RangeIndex.get_indexer_for : Returns an indexer even when non-unique.
+    
+        Examples
+        --------
+        >>> idx = pd.RangeIndex(5)
+        >>> idx.get_loc(3)
+        3
+    
+        >>> idx = pd.RangeIndex(2, 10, 2)  # values [2, 4, 6, 8]
+        >>> idx.get_loc(6)
+        2
+        """
+        if is_integer(key) or (is_float(key) and key.is_integer()):
+            new_key = int(key)
+            try:
+                return self._range.index(new_key)
+            except ValueError as err:
+                raise KeyError(key) from err
+        if isinstance(key, Hashable):
+>           raise KeyError(key)
+E           KeyError: 'side'
+
+.venv\Lib\site-packages\pandas\core\indexes\range.py:535: KeyError
+_____________ test_a_learning_day_is_never_joined_to_an_exam_day ______________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001188E783B10>
+
+    def test_a_learning_day_is_never_joined_to_an_exam_day(monkeypatch: pytest.MonkeyPatch) -> None:
+        asked: list[str] = []
+    
+        def fake(day: pd.Timestamp):  # noqa: ANN202
+            asked.append(f"{pd.Timestamp(day):%Y-%m-%d}")
+            return np.array([pd.Timestamp(day).value], np.int64), np.array([1.0]), np.array([1.3])
+    
+        monkeypatch.setattr(tick_straddle, "day_ticks", fake)
+>       tick_straddle.span_ticks(pd.Timestamp("2026-04-17", tz="UTC"))
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'tick_straddle' has no attribute 'span_ticks'
+
+research\2026-10-18-moments\agents\audit2\test_simulators.py:117: AttributeError
+=========================== short test summary info ===========================
+FAILED research/2026-10-18-moments/agents/audit2/test_simulators.py::TestAcrossMidnight::test_surrender_run_follows_a_trade_past_midnight
+FAILED research/2026-10-18-moments/agents/audit2/test_simulators.py::TestAcrossMidnight::test_tick_straddle_run_follows_a_trade_past_midnight
+FAILED research/2026-10-18-moments/agents/audit2/test_simulators.py::test_a_learning_day_is_never_joined_to_an_exam_day
+3 failed, 6 passed in 0.90s

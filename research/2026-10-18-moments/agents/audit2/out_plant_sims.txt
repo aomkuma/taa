@@ -1,0 +1,42 @@
+CAUGHT  a buy filled at the bid: 1 failed in 0.97s
+          test_a_buy_stop_is_read_on_the_bid_and_fills_through_its_gap
+CAUGHT  a sell read on the bid: 1 failed, 12 passed in 0.93s
+          test_the_stop_before_the_surrender_and_a_sell_on_the_ask
+CAUGHT  the stop filled at its level (no gap): 1 failed in 0.91s
+          test_a_buy_stop_is_read_on_the_bid_and_fills_through_its_gap
+CAUGHT  the target pays the tick: 1 failed, 1 passed in 0.93s
+          test_the_target_is_a_limit_never_better
+CAUGHT  the surrender before the stop on one tick: 1 failed, 3 passed in 0.94s
+          test_a_stop_and_the_surrender_on_one_tick_is_the_stop
+CAUGHT  the entry at the last tick before the decision: 1 failed, 2 passed in 0.92s
+          test_the_entry_is_the_first_tick_at_or_after_the_decision
+CAUGHT  the time exit at the first tick after the hold: 1 failed, 4 passed in 0.90s
+          test_the_daily_break_inside_the_hold_exits_at_the_last_tick_before_it
+CAUGHT  run cut at the UTC day again: 1 failed, 5 passed in 1.02s
+          test_surrender_run_follows_a_trade_past_midnight
+8 of 8 caught (surrender)
+CAUGHT  no next day joined: 1 failed, 5 passed in 0.96s
+          test_surrender_run_follows_a_trade_past_midnight
+CAUGHT  the exam guard removed: 1 failed, 7 passed in 0.97s
+          test_a_learning_day_is_never_joined_to_an_exam_day
+CAUGHT  the buy stop triggered by the bid: 1 failed, 14 passed in 0.99s
+          test_the_dip_before_the_trigger_does_not_stop_the_buy
+CAUGHT  the straddle's stop without its gap: 1 failed, 15 passed in 1.07s
+          test_the_first_trigger_wins_and_the_stop_takes_the_gap
+CAUGHT  the straddle's R over b, not s: 1 failed, 6 passed in 1.00s
+          test_tick_straddle_run_follows_a_trade_past_midnight
+5 of 5 caught (tick_straddle)
+CAUGHT  the touch bar's back side counts: 1 failed in 0.84s
+          test_a_support_holds_without_a_pierce
+CAUGHT  a bar reaching both is a reversal: 1 failed, 2 passed in 0.76s
+          test_a_resistance_breaks_and_a_bar_reaching_both_is_left_out
+CAUGHT  reversed at x - 1: 1 failed, 17 passed in 0.82s
+          test_touches_outcome_needs_the_full_x_back
+CAUGHT  the approach from the earliest bar away: 1 failed, 8 passed in 0.78s
+          test_the_approach_uses_the_latest_bar_away
+CAUGHT  the approach ignores a touch in between: 1 failed, 5 passed in 0.77s
+          test_the_approach_is_the_first_touch_after_price_was_away
+CAUGHT  the next level on the wrong side: 1 failed, 6 passed in 0.78s
+          test_the_next_level_past_this_one
+6 of 6 caught (touches)
+ALL: 19 of 19 caught; unmutated: 27 passed in 1.92s

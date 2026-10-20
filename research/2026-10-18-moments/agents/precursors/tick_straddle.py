@@ -72,11 +72,30 @@ def day_ticks(day: pd.Timestamp) -> tuple[np.ndarray, np.ndarray, np.ndarray] | 
     return t[o], x.bid.to_numpy(float)[o], x.ask.to_numpy(float)[o]
 
 
+EXAM_START = pd.Timestamp("2026-04-18", tz="UTC")
+
+
+def span_ticks(day: pd.Timestamp) -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
+    """A UTC day's ticks joined to the next day's, so a trade still open at midnight UTC is followed to its exit
+    (one day's file alone cut it at 23:59:59 - audit2/test_simulators.py). A learning day is never joined to an exam
+    day."""
+    a = day_ticks(day)
+    if a is None:
+        return None
+    nxt = pd.Timestamp(day) + pd.Timedelta(days=1)
+    if pd.Timestamp(day) < EXAM_START <= nxt:
+        return a
+    b = day_ticks(nxt)
+    if b is None:
+        return a
+    return np.concatenate([a[0], b[0]]), np.concatenate([a[1], b[1]]), np.concatenate([a[2], b[2]])
+
+
 def run(X: pd.DataFrame, b: float, s: float) -> pd.DataFrame:
     """X: the moments (t, in time order). c0 = the last bid before t."""
     rows, busy = [], -1
     for day, D in X.groupby(pd.DatetimeIndex(X.t).normalize(), sort=True):
-        tk = day_ticks(day)
+        tk = span_ticks(day)
         if tk is None:
             continue
         t, bid, ask = tk
@@ -101,7 +120,7 @@ def summary(T: pd.DataFrame, a: str, b: str) -> str:
 
     eq = T.pnl.cumsum()
     return (f"{len(T)} trades ({len(T) / np.busday_count(a, b):.2f} a weekday), win {(T.exit == 'win').mean():.3f}, R {T.R.mean():+.3f}, "
-            f"USD {T.pnl.sum():+.1f} at 0.01 lot, max DD {(eq.cummax() - eq).max():.1f}, worst {T.pnl.min():+.2f}, "
+            f"USD {T.pnl.sum():+.1f} at 0.01 lot, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {T.pnl.min():+.2f}, "
             f"longest losing streak {wf.longest_run(T.pnl.to_numpy() < 0)}, exits {T.exit.value_counts().to_dict()}")
 
 

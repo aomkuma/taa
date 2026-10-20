@@ -63,7 +63,9 @@ def zigzag(h: np.ndarray, lo: np.ndarray, atr: np.ndarray, k: float = ZZ_K):
                 hi_i = i
             if lo[i] < lo[lo_i]:
                 lo_i = i
-            if h[hi_i] - lo[lo_i] >= thr:
+            # one bar holding both extremes is never two turns (the order inside it is unknown): the first pivot waits
+            # for a later bar that takes one of them out (owner 2026-10-19; audit2/test_swings.py)
+            if hi_i != lo_i and h[hi_i] - lo[lo_i] >= thr:
                 if lo_i < hi_i:
                     piv.append((lo_i, lo[lo_i], -1, i))
                     direction, ext_i = 1, hi_i

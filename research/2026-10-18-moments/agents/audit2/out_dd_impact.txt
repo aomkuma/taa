@@ -1,0 +1,9 @@
+variant part      window  trades  maxDD summaries  maxDD from 0  understated by  lowest running total  first trade
+      A   P1         all     522            393.8         393.8             0.0                -148.6        12.19
+      A   P2         all     565            512.2         512.2             0.0                -458.2        -4.82
+     B1   P1         all     382            263.7         263.7             0.0                -121.8        -8.27
+     B1   P2         all     364            593.5         593.5             0.0                -563.1        -5.90
+     B2   P1         all     352            313.1         313.1             0.0                -145.3        -8.27
+     B2   P2         all     348            454.5         454.5             0.0                -247.7       -14.72
+     B2   P1 Asia+London      61             83.0          84.5             1.6                 -84.5        -8.27
+     B2   P2 Asia+London      52             51.1          51.1             0.0                  13.8        34.31

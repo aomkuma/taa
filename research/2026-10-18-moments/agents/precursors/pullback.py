@@ -139,7 +139,7 @@ def main() -> None:
         D = T[T.part == p]
         eq = D.pnl.cumsum()
         print(f"{p}: {len(D)} trades ({len(D) / np.busday_count(*PARTS[p]):.2f} a weekday), win {(D.exit == 'win').mean():.3f}, R {D.R.mean():+.3f}, "
-              f"USD {D.pnl.sum():+.1f}, risk median {D.r0.median():.2f} USD, max DD {(eq.cummax() - eq).max():.1f}, streak "
+              f"USD {D.pnl.sum():+.1f}, risk median {D.r0.median():.2f} USD, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, streak "
               f"{wf.longest_run(D.pnl.to_numpy() < 0)}, exits {D.exit.value_counts().to_dict()}, buys {int((D.side > 0).sum())} / sells {int((D.side < 0).sum())}")
     T.to_parquet(HERE / "pullback_trades.parquet")
 

@@ -1,0 +1,24 @@
+CAUGHT  TR without the previous close against the low: 1 failed in 0.77s
+          test_true_range_on_gaps_uses_the_previous_close
+CAUGHT  TR without the previous close against the high: 1 failed in 0.79s
+          test_true_range_on_gaps_uses_the_previous_close
+CAUGHT  ATR as Wilder's smoothing: 1 failed in 0.74s
+          test_true_range_on_gaps_uses_the_previous_close
+CAUGHT  ATR over n - 1 bars: 1 failed in 0.75s
+          test_true_range_on_gaps_uses_the_previous_close
+CAUGHT  RSI smoothing by n instead of n - 1: 1 failed, 1 passed in 0.76s
+          test_rsi_with_a_loss_in_the_seed
+CAUGHT  RSI seed over n + 1 changes: 1 failed, 1 passed in 0.73s
+          test_rsi_with_a_loss_in_the_seed
+CAUGHT  RSI 100 on a flat market: 1 failed, 16 passed in 1.32s
+          test_hand_worked_values
+CAUGHT  MACD signal as an EMA: 1 failed, 2 passed in 0.74s
+          test_macd_by_hand
+CAUGHT  MACD line reversed: 1 failed, 2 passed in 0.75s
+          test_macd_by_hand
+CAUGHT  EMA with adjust=True: 1 failed, 2 passed in 0.79s
+          test_macd_by_hand
+CAUGHT  EMA factor 1/n: 1 failed, 2 passed in 0.77s
+          test_macd_by_hand
+11 of 11 caught (foundation)
+ALL: 11 of 11 caught; unmutated: 17 passed in 2.19s

@@ -1,0 +1,6 @@
+learning parts 2025-10-18 .. 2026-04-18: 171127 minutes with ticks and an M1 bar
+window | minutes | first-tick spread median / mean | formula median / mean | formula - first: median / mean / p10 / p90 | formula >= first | M1 column = min spread
+all                      | 171127 | 0.390 / 0.365 | 0.310 / 0.359 | -0.020 / -0.005 / -0.080 / +0.080 | 46.7 % | 100.0 %
+Asia 07-09 Thai          |  15239 | 0.390 / 0.386 | 0.410 / 0.399 | +0.040 / +0.013 / -0.080 / +0.080 | 58.9 % | 100.0 %
+London 13-14 Thai        |   7618 | 0.390 / 0.378 | 0.360 / 0.379 | +0.000 / +0.001 / -0.080 / +0.080 | 52.4 % | 99.9 %
+NY open 09:30-11:30 NY   |  15239 | 0.390 / 0.353 | 0.310 / 0.317 | -0.060 / -0.036 / -0.080 / +0.060 | 25.8 % | 100.0 %

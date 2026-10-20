@@ -1,0 +1,2 @@
+printed learning-part summaries with both numbers: 40; the max DD changes in 1
+  out_straddle.txt: max DD 384.3 -> 384.7 (+0.4)

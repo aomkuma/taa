@@ -88,7 +88,7 @@ def summary(T: pd.DataFrame, a: str, b: str) -> str:
         return "no trades"
     eq = T.pnl.cumsum()
     return (f"{len(T)} trades ({len(T) / np.busday_count(a, b):.2f} a weekday), win {(T.exit == 'win').mean():.3f}, R {T.R.mean():+.3f}, "
-            f"USD {T.pnl.sum():+.1f}, max DD {(eq.cummax() - eq).max():.1f}, worst {T.pnl.min():+.2f}, streak "
+            f"USD {T.pnl.sum():+.1f}, max DD {(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {T.pnl.min():+.2f}, streak "
             f"{wf.longest_run(T.pnl.to_numpy() < 0)}, exits {T.exit.value_counts().to_dict()}")
 
 

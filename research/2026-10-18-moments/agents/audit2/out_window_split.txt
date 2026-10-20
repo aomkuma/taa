@@ -1,0 +1,17 @@
+B2 rows by news_cost and part: {(0.0, 'P1'): 352, (0.0, 'P2'): 348, (0.5, 'P1'): 352, (0.5, 'P2'): 348, (1.0, 'P1'): 352, (1.0, 'P2'): 348, (2.0, 'P1'): 352, (2.0, 'P2'): 348}
+
+news_cost 0.0: overall P1 R -0.026 (352), P2 R -0.014 (348)
+  by w: Asia P1: +0.092 (40, win 0.45); Asia P2: +0.203 (35, win 0.43); London P1: +0.076 (21, win 0.33); London P2: +0.074 (17, win 0.53); NY P1: -0.072 (41, win 0.41); NY P2: -0.059 (47, win 0.40); rest P1: -0.046 (250, win 0.38); rest P2: -0.042 (249, win 0.36) | Asia+London P1: R +0.087 n 61 win 0.410 USD -2.2 P2: R +0.161 n 52 win 0.462 USD +306.9
+  by w_dec: Asia P1: +0.004 (39, win 0.38); Asia P2: +0.178 (36, win 0.39); London P1: +0.144 (20, win 0.40); London P2: +0.188 (14, win 0.57); NY P1: -0.029 (36, win 0.39); NY P2: -0.080 (38, win 0.39); rest P1: -0.044 (257, win 0.39); rest P2: -0.042 (260, win 0.37) | Asia+London P1: R +0.052 n 59 win 0.390 USD -8.5 P2: R +0.181 n 50 win 0.440 USD +291.3
+
+news_cost 0.5: overall P1 R -0.027 (352), P2 R -0.015 (348)
+  by w: Asia P1: +0.092 (40, win 0.45); Asia P2: +0.203 (35, win 0.43); London P1: +0.076 (21, win 0.33); London P2: +0.074 (17, win 0.53); NY P1: -0.074 (41, win 0.41); NY P2: -0.060 (47, win 0.40); rest P1: -0.047 (250, win 0.38); rest P2: -0.043 (249, win 0.36) | Asia+London P1: R +0.087 n 61 win 0.410 USD -2.2 P2: R +0.161 n 52 win 0.462 USD +306.9
+  by w_dec: Asia P1: +0.004 (39, win 0.38); Asia P2: +0.178 (36, win 0.39); London P1: +0.144 (20, win 0.40); London P2: +0.188 (14, win 0.57); NY P1: -0.031 (36, win 0.39); NY P2: -0.082 (38, win 0.39); rest P1: -0.044 (257, win 0.39); rest P2: -0.042 (260, win 0.37) | Asia+London P1: R +0.052 n 59 win 0.390 USD -8.5 P2: R +0.181 n 50 win 0.440 USD +291.3
+
+news_cost 1.0: overall P1 R -0.027 (352), P2 R -0.015 (348)
+  by w: Asia P1: +0.092 (40, win 0.45); Asia P2: +0.203 (35, win 0.43); London P1: +0.076 (21, win 0.33); London P2: +0.074 (17, win 0.53); NY P1: -0.077 (41, win 0.41); NY P2: -0.062 (47, win 0.40); rest P1: -0.047 (250, win 0.38); rest P2: -0.043 (249, win 0.36) | Asia+London P1: R +0.087 n 61 win 0.410 USD -2.2 P2: R +0.161 n 52 win 0.462 USD +306.9
+  by w_dec: Asia P1: +0.004 (39, win 0.38); Asia P2: +0.178 (36, win 0.39); London P1: +0.144 (20, win 0.40); London P2: +0.188 (14, win 0.57); NY P1: -0.034 (36, win 0.39); NY P2: -0.083 (38, win 0.39); rest P1: -0.045 (257, win 0.39); rest P2: -0.043 (260, win 0.37) | Asia+London P1: R +0.052 n 59 win 0.390 USD -8.5 P2: R +0.181 n 50 win 0.440 USD +291.3
+
+news_cost 2.0: overall P1 R -0.029 (352), P2 R -0.017 (348)
+  by w: Asia P1: +0.092 (40, win 0.45); Asia P2: +0.203 (35, win 0.43); London P1: +0.076 (21, win 0.33); London P2: +0.074 (17, win 0.53); NY P1: -0.080 (41, win 0.41); NY P2: -0.065 (47, win 0.40); rest P1: -0.048 (250, win 0.37); rest P2: -0.045 (249, win 0.36) | Asia+London P1: R +0.087 n 61 win 0.410 USD -2.2 P2: R +0.161 n 52 win 0.462 USD +306.9
+  by w_dec: Asia P1: +0.004 (39, win 0.38); Asia P2: +0.178 (36, win 0.39); London P1: +0.144 (20, win 0.40); London P2: +0.188 (14, win 0.57); NY P1: -0.038 (36, win 0.39); NY P2: -0.085 (38, win 0.39); rest P1: -0.046 (257, win 0.38); rest P2: -0.044 (260, win 0.37) | Asia+London P1: R +0.052 n 59 win 0.390 USD -8.5 P2: R +0.181 n 50 win 0.440 USD +291.3

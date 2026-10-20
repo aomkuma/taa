@@ -197,7 +197,7 @@ def summary(t: pd.DataFrame, days: int) -> dict:
     return dict(trades=len(t), per_day=round(len(t) / days, 2), win=round((t.pnl > 0).mean(), 3),
                 R=round(t.R.mean(), 3), usd=round(t.pnl.sum(), 1), halves=" ".join(f"{halves.get(h, np.nan):+.2f}"
                                                                                    for h in ["H1", "H2", "H3", "H4", "H5", "W"] if h in halves.index),
-                worst=round(t.pnl.min(), 1), maxdd=round((eq.cummax() - eq).max(), 1),
+                worst=round(t.pnl.min(), 1), maxdd=round((eq.cummax().clip(lower=0) - eq).max(), 1),
                 kinds="/".join(f"{(t[t.exit == 'stop'].kind == q).mean():.0%}" for q in "123"))
 
 

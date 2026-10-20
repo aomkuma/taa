@@ -1,0 +1,72 @@
+.FFFF.....                                                               [100%]
+================================== FAILURES ===================================
+________ TestLazySync.test_stale_range_is_completed_after_the_sync[M1] ________
+
+self = <tests.unit.test_history_download.TestLazySync object at 0x000002416C84F250>
+tf = <Timeframe.M1: 'M1'>, sleeps = []
+
+    @pytest.mark.parametrize("tf", [Timeframe.M1, Timeframe.H1])
+    def test_stale_range_is_completed_after_the_sync(self, tf: Timeframe, sleeps: list[float]) -> None:
+        fake, gw = lazy()
+        df = download_history(gw, "XAUUSD", tf, MON - timedelta(days=3), MON)
+        want = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=3), MON)
+        # Monday 10:00 UTC is the newest bar (M1 10:00, H1 10:00); the stale download ended Friday.
+>       assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-05 10:00", tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-02 20:59:00+0000', tz='UTC') == Timestamp('2026-10-05 10:00:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 10:00:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 10:00', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:136: AssertionError
+________ TestLazySync.test_stale_range_is_completed_after_the_sync[H1] ________
+
+self = <tests.unit.test_history_download.TestLazySync object at 0x000002416C84F490>
+tf = <Timeframe.H1: 'H1'>, sleeps = []
+
+    @pytest.mark.parametrize("tf", [Timeframe.M1, Timeframe.H1])
+    def test_stale_range_is_completed_after_the_sync(self, tf: Timeframe, sleeps: list[float]) -> None:
+        fake, gw = lazy()
+        df = download_history(gw, "XAUUSD", tf, MON - timedelta(days=3), MON)
+        want = download_history(fresh(), "XAUUSD", tf, MON - timedelta(days=3), MON)
+        # Monday 10:00 UTC is the newest bar (M1 10:00, H1 10:00); the stale download ended Friday.
+>       assert df["open_time"].iloc[-1] == pd.Timestamp("2026-10-05 10:00", tz="UTC")
+E       AssertionError: assert Timestamp('2026-10-02 20:00:00+0000', tz='UTC') == Timestamp('2026-10-05 10:00:00+0000', tz='UTC')
+E        +  where Timestamp('2026-10-05 10:00:00+0000', tz='UTC') = <class 'pandas.Timestamp'>('2026-10-05 10:00', tz='UTC')
+E        +    where <class 'pandas.Timestamp'> = pd.Timestamp
+
+tests\unit\test_history_download.py:136: AssertionError
+______________ TestLazySync.test_never_synchronised_fails_loudly ______________
+
+self = <tests.unit.test_history_download.TestLazySync object at 0x000002416C84F890>
+sleeps = []
+
+    def test_never_synchronised_fails_loudly(self, sleeps: list[float]) -> None:
+        _, gw = lazy(sync_on_from_pos=False)
+>       with pytest.raises(DataQualityError, match="XAUUSD M1"):
+E       Failed: DID NOT RAISE DataQualityError
+
+tests\unit\test_history_download.py:144: Failed
+_____ TestLazySync.test_tick_shows_the_gap_when_newest_bars_are_stale_too _____
+
+self = <tests.unit.test_history_download.TestLazySync object at 0x000002416C84FC90>
+sleeps = []
+
+    def test_tick_shows_the_gap_when_newest_bars_are_stale_too(self, sleeps: list[float]) -> None:
+        """Both bar calls stale: only the latest tick (Monday 10:00:30) shows that Monday's bars are missing."""
+        _, gw = lazy(sync_on_from_pos=False, pos_stale=True)
+>       with pytest.raises(DataQualityError, match="2026-10-05 10:00"):
+E       Failed: DID NOT RAISE DataQualityError
+
+tests\unit\test_history_download.py:151: Failed
+=================================== PASSES ====================================
+=========================== short test summary info ===========================
+PASSED tests/unit/test_history_download.py::TestLazySync::test_fixture_reproduces_the_symptom
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_fresh_terminal_is_unchanged_and_never_waits
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_window_on_a_minute_boundary
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_market_closed_saturday
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_past_window_is_not_checked_against_newer_bars
+PASSED tests/unit/test_history_download.py::TestNoFalseAlarm::test_d1_bar_from_the_tick_uses_the_server_midnight
+FAILED tests/unit/test_history_download.py::TestLazySync::test_stale_range_is_completed_after_the_sync[M1]
+FAILED tests/unit/test_history_download.py::TestLazySync::test_stale_range_is_completed_after_the_sync[H1]
+FAILED tests/unit/test_history_download.py::TestLazySync::test_never_synchronised_fails_loudly
+FAILED tests/unit/test_history_download.py::TestLazySync::test_tick_shows_the_gap_when_newest_bars_are_stale_too
+4 failed, 6 passed in 3.96s

@@ -164,7 +164,7 @@ def main() -> None:
         eq = part.pnl.cumsum()
         print(f"{name}: {len(part)} trades ({len(part) / np.busday_count(a, b):.2f} a weekday), win "
               f"{(part.exit == 'win').mean():.3f}, R {part.R.mean():+.3f}, USD {part.pnl.sum():+.1f}, max DD "
-              f"{(eq.cummax() - eq).max():.1f}, worst {part.pnl.min():+.2f}, longest losing streak "
+              f"{(eq.cummax().clip(lower=0) - eq).max():.1f}, worst {part.pnl.min():+.2f}, longest losing streak "
               f"{wf.longest_run(part.pnl.to_numpy() < 0)}")
 
 

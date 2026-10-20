@@ -344,7 +344,7 @@ def main() -> None:
         eq = t.pnl.cumsum()
         rows.append(dict(form=f, k=k, target=tg, placebo=p.placebo, trades=len(t), per_day=round(len(t) / days, 2),
                          win=round((t.pnl > 0).mean(), 3), R=round(t.R.mean(), 3), usd=round(t.pnl.sum(), 1),
-                         halves=" ".join(f"{v:+.2f}" for v in hr), maxdd=round((eq.cummax() - eq).max(), 1),
+                         halves=" ".join(f"{v:+.2f}" for v in hr), maxdd=round((eq.cummax().clip(lower=0) - eq).max(), 1),
                          kinds="/".join(f"{(t[t.exit == 'stop'].kind == q).mean():.0%}" for q in "123"),
                          typeA=round((t.lkind == "A").mean(), 2)))
         t.to_parquet(HERE / f"lvl_{mode}_{f}_{k}_{tg}{'_placebo' if p.placebo else ''}.parquet")

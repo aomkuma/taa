@@ -1,0 +1,6 @@
+the developer's M1: 220704 bars 2025-09-01 00:00:00+00:00 .. 2026-04-17 20:54:00+00:00
+  TF M1 (ATR x 2)             : current 25436 pivots (confirmed by their own bar 0, a bar twice 0); fixed 25436; differing 0, the last at None
+  TF M5 (ATR x 2)             : current 4884 pivots (confirmed by their own bar 0, a bar twice 0); fixed 4884; differing 0, the last at None
+  TF M15 (ATR x 2)            : current 1762 pivots (confirmed by their own bar 0, a bar twice 0); fixed 1762; differing 0, the last at None
+  P5 M1 (H1 ATR x 0.3, K_IN)  : current 17610 pivots (confirmed by their own bar 0, a bar twice 0); fixed 17610; differing 0, the last at None
+  P5 M1 (H1 ATR x 0.6, K_MAIN): current 4907 pivots (confirmed by their own bar 0, a bar twice 0); fixed 4907; differing 0, the last at None
