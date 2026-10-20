@@ -2778,3 +2778,13 @@ loaders / ATR / fills; `out_check_plan1.txt`), against `combo_trades_slip0.parqu
   sideways - the rule's result; the CHECKLIST text had NY sideways + mixed, which is the +1 USD result) +0.288 / +0.147.
 - **The exam read** (`plan1.py --exam`) failed at 17:08 Thai with a MemoryError while three agents ran (3.4 of 15.8 GB
   free) before any output: no exam number was seen. It is re-run once the agents' runs finish.
+
+## The owner's answers on the structure reading (2026-10-20 17:2x-17:3x Thai)
+- Entries outside the windows and rules that pay mainly in the present: "flexible within reason" (inside / outside the
+  windows reported apart).
+- The owner leaves the counting to the measurer ("you have more data; my job is ideas and confirmation"). Top test =
+  a visit to the box's top quarter after price left it by at least S: 5 on 2026-10-19 (06:29, 09:10, 11:53, 12:39,
+  13:58 Thai).
+- "To read H1, zoom into the smaller TF when you want to measure": every TF's structure is read with its own swing
+  size on the M1 path (primary); the candle-bar reading is the secondary variant. On 10-19 the H1 size on the M1 path
+  gives 14:33 H 4190.25, 17:46 L 4162.21, 18:16 H 4177.06 (LH), down from 18:58 Thai. Relayed to dev2 for V3-2.
