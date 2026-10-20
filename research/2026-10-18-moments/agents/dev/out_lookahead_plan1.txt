@@ -1,0 +1,8 @@
+(a) the D1 state unchanged with every M1 bar from the fill replaced: 298 of 298
+    the D1 bar read ends before the fill, on an earlier server day: 298 of 298
+    power - the bar read changed -> the state changed: 65 of 298
+(b) London: the decision unchanged with every M1 bar from the decision replaced: 119 of 119; power - the range's bars widened by 3 USD -> changed: 119 of 119
+    NY: the side / fill tick / price unchanged with every tick after the fill replaced: 100 of 100; power - the ticks up to the fill moved 5 USD against the side -> changed: 100 of 100
+    London + NY trades re-derived from the raw ticks equal to the stored ones: 219 of 219
+(c) London + NY trades unchanged with every tick after the exit replaced: 219 of 219; power - the ticks between the fill and the exit moved 20 USD against -> changed: 210
+PASSED

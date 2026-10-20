@@ -1,0 +1,75 @@
+PLAN-1 (learning parts), entry slippage 0, release extra 0
+dropped for overlap: 0
+
+the pieces alone (each piece's own trades):
+  Asia B2      P1: 41 trades (0.64 a weekday), win 0.439, R +0.081 (-0.205..+0.367), USD -12.21, max DD 82.36, worst -35.53, streak 4 (-16.54)
+  Asia B2      P2: 38 trades (0.58 a weekday), win 0.421, R +0.186 (-0.078..+0.450), USD +261.72, max DD 49.33, worst -18.90, streak 6 (-49.33)
+  London ORB   P1: 59 trades (0.92 a weekday), win 0.542, R +0.213 (-0.044..+0.471), USD +115.24, max DD 34.12, worst -17.64, streak 3 (-34.12)
+  London ORB   P2: 60 trades (0.91 a weekday), win 0.533, R +0.124 (-0.143..+0.390), USD +189.77, max DD 100.68, worst -34.71, streak 5 (-75.34)
+  NY straddle  P1: 41 trades (0.64 a weekday), win 0.610, R +0.467 (+0.079..+0.855), USD +153.15, max DD 27.95, worst -10.73, streak 3 (-19.17)
+  NY straddle  P2: 59 trades (0.89 a weekday), win 0.475, R +0.119 (-0.237..+0.474), USD +56.06, max DD 87.71, worst -13.93, streak 5 (-40.71)
+
+the plan, unweighted:
+  P1: 141 trades (2.20 a weekday), win 0.532, R +0.249 (+0.071..+0.426), USD +256.18, max DD 55.82, worst -35.53, streak 8 (-27.22) | by piece R {'Asia B2': 0.081, 'London ORB': 0.213, 'NY straddle': 0.467}
+  P2: 157 trades (2.38 a weekday), win 0.484, R +0.137 (-0.042..+0.316), USD +507.55, max DD 116.69, worst -34.71, streak 8 (-99.61) | by piece R {'Asia B2': 0.186, 'London ORB': 0.124, 'NY straddle': 0.119}
+  pooled P1 + P2: 298 trades, win 0.507, R +0.190 (+0.064..+0.316), USD +763.73, max DD 116.69, worst -35.53, streak 8 (-99.61); 2.29 a weekday
+
+the plan, by mechanism:
+  P1: 141 trades (2.20 a weekday), win 0.532, R +0.337 (+0.142..+0.533), USD +293.24, max DD 34.61, worst -17.76, streak 8 (-20.68) | by piece R {'Asia B2': 0.14, 'London ORB': 0.273, 'NY straddle': 0.608}
+  P2: 157 trades (2.38 a weekday), win 0.484, R +0.188 (+0.006..+0.370), USD +534.37, max DD 74.88, worst -29.63, streak 8 (-61.94) | by piece R {'Asia B2': 0.215, 'London ORB': 0.194, 'NY straddle': 0.158}
+  pooled P1 + P2: 298 trades, win 0.507, R +0.257 (+0.124..+0.390), USD +827.61, max DD 74.88, worst -29.63, streak 8 (-61.94); 2.29 a weekday
+
+the plan, from P1:
+  P1: 141 trades (2.20 a weekday), win 0.532, R +0.288 (+0.100..+0.477), USD +292.02, max DD 38.71, worst -17.76, streak 8 (-22.71) | by piece R {'Asia B2': 0.14, 'London ORB': 0.213, 'NY straddle': 0.523}
+  P2: 157 trades (2.38 a weekday), win 0.484, R +0.147 (-0.033..+0.327), USD +523.41, max DD 99.61, worst -34.71, streak 8 (-99.61) | by piece R {'Asia B2': 0.215, 'London ORB': 0.124, 'NY straddle': 0.131}
+  pooled P1 + P2: 298 trades, win 0.507, R +0.213 (+0.083..+0.343), USD +815.42, max DD 99.61, worst -34.71, streak 8 (-99.61); 2.29 a weekday
+
+R by piece x D1 state (mean, trades), per part:
+                       mean        size    
+part                     P1     P2   P1  P2
+piece       trend                          
+Asia B2     mixed     0.717  0.317    4  15
+            sideways  0.147  0.181   14  13
+            trend    -0.070 -0.006   23  10
+London ORB  mixed     0.559  0.164   14  21
+            sideways  0.244  0.466   16  18
+            trend     0.030 -0.210   29  21
+NY straddle mixed     0.025  0.025   11  20
+            sideways -0.131  0.044    7  17
+            trend     0.860  0.262   23  22
+
+the P1 rule on these trades: {('Asia B2', 'trend'): 0.5, ('NY straddle', 'sideways'): 0.5}; fixed table W_P1: {('Asia B2', 'trend'): 0.5, ('NY straddle', 'sideways'): 0.5}
+exits: {('Asia B2', 'stop'): 3, ('Asia B2', 'structure'): 55, ('Asia B2', 'target'): 4, ('Asia B2', 'time'): 17, ('London ORB', 'stop'): 36, ('London ORB', 'target'): 15, ('London ORB', 'time'): 68, ('NY straddle', 'stop'): 39, ('NY straddle', 'time'): 61}
+
+week by week, P1 (Thai weeks; R / USD unweighted, by mechanism, from P1):
+      week  trades  win  R_trade    usd  usd_total  worst  R_mech  usd_mech   R_p1  usd_p1
+2025-10-20      10 0.40    0.484  -4.23      -4.23 -24.78   0.847     29.32  0.584   12.26
+2025-10-27      11 0.64    0.271  41.47      37.24 -17.64   0.339     37.79  0.317   41.00
+2025-11-03      12 0.33    0.117   1.37      38.61 -10.16   0.138      2.84  0.138    2.84
+2025-11-10       9 0.44   -0.061  -2.49      36.12  -8.45  -0.013      1.03 -0.072   -3.00
+2025-11-17      13 0.77    0.504  84.76     120.88 -10.73   0.601     85.16  0.582   85.93
+2025-11-24      12 0.83    0.603  46.39     167.27  -6.62   0.552     33.20  0.568   41.52
+2025-12-01      12 0.33   -0.041  -6.20     161.07  -8.45  -0.050     -4.33 -0.018   -6.19
+2025-12-08      10 0.40   -0.065  -6.41     154.66  -5.46  -0.066     -4.68 -0.054   -4.37
+2025-12-15      12 0.42    0.072   1.90     156.56 -12.08   0.288     14.73  0.119    9.68
+2025-12-22       8 0.62    0.103 -13.81     142.75 -35.53   0.160     -4.43  0.185    0.60
+2025-12-29       9 0.56    0.676  60.68     203.43 -16.58   0.947     63.38  0.741   68.97
+2026-01-05      14 0.50    0.052   3.98     207.41  -8.35   0.071      2.76  0.090    7.29
+2026-01-12       9 0.67    0.582  48.77     256.18  -9.73   0.636     36.48  0.543   35.48
+
+week by week, P2 (Thai weeks; R / USD unweighted, by mechanism, from P1):
+      week  trades  win  R_trade    usd  usd_total  worst  R_mech  usd_mech   R_p1  usd_p1
+2026-01-12       2 0.50    0.274   3.29       3.29  -9.11   0.700      7.84  0.274    3.29
+2026-01-19       9 0.67    0.434  42.87      46.16 -15.79   0.618     37.94  0.332   25.68
+2026-01-26       9 0.22   -0.498 -59.40     -13.24 -29.58  -0.570    -41.41 -0.498  -59.40
+2026-02-02      11 0.55    0.308  74.04      60.80 -31.08   0.519     95.83  0.308   74.04
+2026-02-09      17 0.59    0.161  17.27      78.07 -12.92   0.127     10.15  0.161   17.27
+2026-02-16      14 0.29   -0.149  39.94     118.01  -9.04  -0.009     55.83 -0.046   52.07
+2026-02-23      14 0.71    0.401  79.01     197.02  -9.26   0.427     75.04  0.427   75.04
+2026-03-02      10 0.40   -0.002  24.72     221.74 -13.03   0.020     26.12 -0.095   17.99
+2026-03-09      11 0.55    0.113  11.15     232.89  -9.43   0.290     23.25  0.290   23.25
+2026-03-16       9 0.44    0.116  20.63     253.52 -18.60   0.138     20.01  0.061   15.93
+2026-03-23      13 0.31   -0.001  64.62     318.14 -34.71  -0.097     25.40  0.038   75.41
+2026-03-30      12 0.50    0.323 164.93     483.07 -18.90   0.253    158.58  0.402  178.80
+2026-04-06      12 0.58    0.218  -8.48     474.59 -15.80   0.424     18.13  0.268    2.90
+2026-04-13      14 0.43    0.223  32.96     507.55 -18.19   0.149     21.66  0.126   21.13

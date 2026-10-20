@@ -1,0 +1,8 @@
+CAUGHT  the sell stop checked before the buy stop  | 1 failed, 11 passed in 0.82s
+CAUGHT  the straddle fills at the trigger, never worse on a gap  | 1 failed, 11 passed in 1.08s
+CAUGHT  the straddle reference is the first tick at t0  | 1 failed, 11 passed in 0.93s
+CAUGHT  a trade filled exactly at the exit is dropped  | 1 failed, 13 passed in 1.16s
+CAUGHT  the P1 rule includes P2  | 1 failed, 16 passed in 0.97s
+CAUGHT  the P1 rule halves at <= 0  | 1 failed, 16 passed in 1.09s
+CAUGHT  unknown state weighs 0.5  | 1 failed, 16 passed in 2.21s
+7 / 7 caught

@@ -1,0 +1,9 @@
+  London ORB: mine 119, theirs 119, same minute 119, only mine 0, only theirs 0; |dR| max 0.0000, > 0.01 in 0
+  NY straddle: mine 100, theirs 100, same minute 100, only mine 0, only theirs 0; |dR| max 0.0000, > 0.01 in 0
+  Asia B2: 79 trades on the ticks, faults in 0: []
+  P1 unweighted: 141 trades, R +0.249  (sum w R / sum w)
+  P1 w_mech: 141 trades, R +0.337  (sum w R / sum w)
+  P1 w_p1: 141 trades, R +0.288  (sum w R / sum w)
+  P2 unweighted: 157 trades, R +0.137  (sum w R / sum w)
+  P2 w_mech: 157 trades, R +0.188  (sum w R / sum w)
+  P2 w_p1: 157 trades, R +0.147  (sum w R / sum w)

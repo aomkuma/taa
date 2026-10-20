@@ -1501,3 +1501,293 @@ middle; Thai time).
 4. The NY open's second half hour went the straddle's way in both parts (+0.290 / +0.650 R). Should a rule be written
    for it (enter at the open + 30 the way the open's first 2-U break went)?
 Written at 05:29 UTC.
+
+## Task PLAN-1 runner - CHECKLIST row 38 (restarted after the API limit; the brief read at 05:47 UTC; these rules written at the clock time below)
+
+The measurer's inputs (read at 05:53 UTC): the NY straddle is re-simulated from the ticks (the stored
+`news_follow_trades.parquet` is stale for 4 P2 stops - 2026-02-18, 03-19, 03-20, 03-31 - whose gap fills give
+-1.012 / -1.056 / -1.021 / -1.020 today); the owner: the London window is the 15-minute ORB at 13:00-13:14 Thai, NY 08:30 is
+an owner's window, the tick spread is the cost.
+
+### Written before computing (PLAN-1 runner): the rules
+
+- **`dev/plan1.py`**, one code path for the learning parts and the exam; the period is (2025-10-18, 2026-04-18) by default
+  and (2026-04-18, 2026-10-18) only with `--exam` (the measurer's switch; I never run it). Without `--exam` nothing at /
+  after 2026-04-18 is read: the M1 loader refuses an end past 2026-04-18 before reading, the tick reader returns no ticks
+  for a day at / after the period's end without opening the file. M1 is read from 2025-09-01 (the B2 warm-up) to the
+  period's end.
+- **Asia B2** = `p4_trades.py` W, Asia window: my B2 pipeline re-run on the period (`patterns` TF / scan / locate / agree,
+  `p3_trades.candidates3` B2, `p4_trades.in_windows` pad 0, window "Asia" = entry decision 07:00-09:00 Thai,
+  `p3_trades.run_stream3` exit "structure", news cost 0). The news legs are left out (they only make levels from the
+  release + 1 to + 15 minutes of 08:30 / 10:00 NY, which no Asia entry can reach); checked against `p_catches.parquet` /
+  `p4_trades_W_WL_WN.parquet`.
+- **London ORB** = `strategist/orb_ticks.py`'s rule: the range from the M1 bars 06:00-06:14 UTC (the day counts when its
+  first bar opens by 06:05), skipped when wider than 1.5 x the H1 ATR(14) complete at 06:00 (`d1_orb.decide`, which
+  matched the strategist's days); the first M1 close beyond it 06:15-07:14; the fill at the first tick at / after the
+  close within 5 minutes; the stop at the range's other side; the target 2 x the fill's risk; out at the first tick at /
+  after the fill + 60 minutes; ticks of that UTC day; the strategist's `news_follow.run_trade` decides pnl / exit (my
+  copy only adds the exit tick, checked equal on every trade).
+- **NY straddle** = `strategist/news_follow.py` "STRADDLE 30m" at 08:30 New York on every weekday, re-simulated: the day
+  needs >= 1000 ticks and ticks from 10 minutes before to 30 minutes after; the reference = the last tick before
+  08:30:00; a buy stop at its ask + 2, a sell stop at its bid - 2, live 60 s, the buy checked first on a tick; the fill at
+  max(trigger, ask) + slippage + extra (a sell min(trigger, bid) - ...); the stop 8 USD from the fill; out at the first
+  tick at / after 08:30 + 30 min; R = pnl / 8.
+- **Costs:** the tick bid / ask spread; the entry slippage `--slippage` (default 0; 0.07 for the reproduction) on every
+  piece; `--extra` the release slippage on the straddle (default 0; 1 USD only to reproduce out_combo's stress line).
+- **One position at a time:** the pieces' trades in time order by the fill time; a trade whose fill is before the kept
+  trade's exit is dropped (combo.stream's rule, with the real fill / exit times; combo used 08:30 / + 30 min for NY and
+  the fill + 60 min for London).
+- **The D1 state before the entry:** `regime.state_at` on `indicators.bars(m, "1D")` at the fill time: the last D1 bar
+  with avail <= the fill; the 20-day efficiency < 0.116 sideways, > 0.264 trend, else mixed.
+- **The weights:** unweighted; **by mechanism** (Asia B2 and London ORB 0.5 in "trend", NY straddle 0.5 in "sideways" /
+  "mixed", else 1); **from P1** (0.5 where a piece's mean P1 R in that state is < 0, else 1), computed by the rule on
+  this runner's own P1 trades at the costs of the run, and then written into the code as a fixed table for the exam.
+  Weighted R = sum(R w) / sum(w); USD = sum(pnl w); its 95 % range by the ratio estimator.
+- **Reported:** per part trades, a weekday, win % (pnl > 0), R with its 95 % range, USD (0.01 lot), max DD from 0, worst
+  trade, longest losing streak (count and USD), R per piece; pooled P1 + P2; week by week (Thai weeks from Monday
+  00:00 Thai); for the three weightings.
+- **The reproduction (slippage 0.07):** the pieces alone and the plan in `combo.stats`'s own format, compared line by
+  line with `out_combo.txt`, and trade by trade with `combo_trades_slip0 / slip1.parquet`; the trend table, the P1 weights
+  and the weighted R compared with `out_regime.txt` (NY + 1 USD) and CHECKLIST row 37 (+0.280 / +0.143, +0.329 / +0.184,
+  +1 USD by mechanism +0.301 / +0.130). Expected difference: the 4 stale NY stops in P2.
+Written at 05:53 UTC.
+
+### PLAN-1 runner - the P1 table, read and fixed (06:09 UTC)
+The first slippage-0 run (`out_plan1_learn_s0_x0.txt`, 06:08 UTC): the P1 rule on its own P1 trades gives **Asia B2
+trend (-0.070) and NY straddle sideways (-0.131)**; NY mixed is +0.025 in P1, so it keeps full weight. W_P1 in the code
+(written before the run as the CHECKLIST's text, Asia trend + NY sideways / mixed) is replaced by the rule's result, as
+pre-registered; the run is repeated with it. Note: with NY + 1 USD the same rule gives Asia trend + NY sideways + NY mixed
+(reproduced from out_regime.txt) - the CHECKLIST's PLAN-1 text has the two the other way round (a question below).
+
+### PLAN-1 runner - the report (06:19 UTC = 13:19 Thai)
+
+**1. What I did** (all in `dev/`; I edited nothing in `strategist/` or `precursors/`):
+- `plan1.py` is the runner. One code path serves the learning parts and the exam (`--exam` is for the measurer only).
+  - All three pieces are re-simulated from the ticks:
+    - Asia B2 goes through my B2 pipeline (`patterns`, `p3_trades` and `p4_trades` imported).
+    - London ORB uses `d1_orb.decide` plus the strategist's `news_follow.run_trade`.
+    - NY straddle is `news_follow.py`'s STRADDLE 30m, with `run_trade`.
+  - One position at a time; the D1 state comes from `regime.state_at`; three weightings.
+  - Switches: `--slippage` (default 0), `--extra` (default 0), `--repro` (0.07, checked against `out_combo.txt` /
+    `out_regime.txt`).
+- `test_plan1.py` (19 tests), `plant_bugs_plan1.py` (40 bugs), `lookahead_plan1.py` (the look-ahead check).
+- Outputs:
+  - `out_plan1_learn_s0_x0.txt`, with `plan1_trades_learn_s0_x0.parquet` and `plan1_every_learn_s0_x0.parquet`;
+  - `out_plan1_repro.txt`, with `plan1_repro_*.parquet`;
+  - `out_plant_bugs_plan1.txt`, `out_lookahead_plan1.txt`.
+
+**2. The tests** (`test_plan1.py`, **19 passed in 1.98s**, 06:19 UTC):
+- `test_the_period_is_the_learning_parts_unless_the_switch`
+  - period() is 2025-10-18 .. 2026-04-18; with the switch, 2026-04-18 .. 2026-10-18.
+  - check_period refuses one day into the exam without the switch.
+  - With the switch it refuses any other period (2025-10-18 .. 04-18, 04-18 .. 10-19).
+- `test_the_switch_and_the_defaults`
+  - The defaults: slippage 0, extra 0, no exam, no repro.
+  - `--exam --repro` exits before anything is read.
+- `test_m1_past_the_exam_start_is_refused_before_reading` - with a fake reader that fails if it is called:
+  - an end of 04-18 00:01 or 10-18 without the switch raises ExamPeriodError;
+  - an end of 10-19 with the switch raises ValueError;
+  - the reader is never called.
+- `test_m1_reader_gets_the_period_end_and_a_row_past_it_fails`
+  - The reader gets the filters [>= 2025-09-01, < end].
+  - A duplicate minute is kept once.
+  - A reader that leaks a row at 04-18 00:00 raises.
+- `test_ticks_never_open_a_day_at_or_after_the_end` - with a recording reader:
+  - Friday 04-17 is opened; Saturday 04-18 is not (it comes back empty);
+  - the Friday span is joined to the empty Saturday;
+  - only 04-17 was ever opened.
+- `test_the_guards_are_restored` - `patterns`' bounds and `p2_trades.SLIP` are set inside the contexts and are back
+  at 2025-10-18 / 2026-04-18 / 0.07 after them.
+- `test_parts_and_weekdays`
+  - 01-15 23:59:59 is P1, 01-16 00:00 is P2, 04-17 23:59 is P2, 04-18 is the exam, 2025-10-17 23:59 is none.
+  - 64 / 66 weekdays.
+- `test_asia_window_is_07_to_09_thai_by_the_entry_decision` - of the decisions at 23:59:59 / 00:00 / 01:59:59 / 02:00 /
+  06:30 UTC, only 00:00 and 01:59:59 are kept.
+- `test_exit_tick_by_hand_and_against_the_strategists_run_trade`
+  - By hand:
+    - a buy at 100.2 with the stop at 98 is stopped by the 97.5 bid at tick 2 (-2.7);
+    - the time exit is the first tick at t_out (tick 3);
+    - no exit gives None;
+    - a sell's target at 97.7 fills at tick 2 (+2.3).
+  - Then 300 random paths: equal to `news_follow.run_trade` (pnl, exit), with the stop and the time at the market
+    price.
+- `test_tick_run_raises_when_the_copy_disagrees`
+  - The time exit gives +1.8 at tick 2.
+  - A faked run_trade with another exit raises, and so does one with an exit where the copy has none.
+- `test_orb_trade_by_hand`
+  - The fill is 100.2 at the first tick after the decision, the risk 2.2.
+  - The target 104.6 fills at 104.6 at tick 3 (+4.4, 2 R).
+  - With 0.07: the fill is 100.27, the risk 2.27, the target is reached at tick 4.
+  - A sell fills at 99.93 with a risk of 2.07 and is stopped.
+  - The time exit is at the fill + 3600 s, not the decision + 3600 s.
+  - A first tick 301 s late gives no trade; at 300 s it trades.
+  - A fill past the stop gives no trade; ticks that end before the hour give no trade.
+- `test_straddle_by_hand`
+  - The reference 100.0 / 100.3 gives a buy stop at 102.3 and a sell stop at 98.0.
+  - The ask 102.4 at +5 s buys at 102.4 with the stop at 94.4. The exit is the first tick at + 30 min (99.0 - 102.4).
+  - With 0.07 plus 1 USD extra: 103.47 / 95.47.
+  - A sell fills at 97.9 - 0.07 = 97.83, with the stop at 105.83.
+  - Both triggers on one tick: the buy.
+  - An ask of 102.2 (below 102.3): no trade.
+  - The reference is the tick before 08:30:00; a move at 08:30:00 itself does not count.
+  - At + 60 s: no trade.
+  - The stop fills at the gap tick (94.0).
+  - 999 ticks: no trade; 1000: traded.
+  - Ticks that start less than 10 min before: no trade.
+- `test_ny_t0_summer_and_winter` - 2025-10-20 12:30, 2025-11-03 13:30 and 2026-03-09 12:30 UTC.
+- `test_one_position_at_a_time` - given out of order: A 0-10, B at 5 (dropped), C at 10 (kept: at A's exit), D at 12
+  (inside C), E at 16 (kept) -> A, C, E.
+- `test_stream_agrees_with_combo_stream` - on 300 random trades, the same kept list as `combo.stream`.
+- `test_the_state_reads_only_the_d1_bars_complete_before` - 25 rising closes, then 25 swings:
+  - trend at bar 24's avail and 1 ns before it;
+  - sideways at bar 49;
+  - the bars after it changed to 1000: unchanged;
+  - the 20 days before bar 24 made flat: sideways at its avail, still trend 1 ns before (bar 23: net 22 over a path of
+    40).
+- `test_weights_by_mechanism_and_from_p1`
+  - The two tables, on seven piece x state rows.
+  - The P1 rule on hand-made rows halves Asia trend (mean -0.25) and Asia mixed (-0.2).
+  - It does not halve London trend (P1 0.0; P2's -5 ignored) or NY mixed (0.0).
+- `test_summary_by_hand`
+  - Rows out of time order, R 1 / -1 / 2, w 1 / 0.5 / 1: R 1.0, USD 27.5, DD 2.5, worst -2.5, streak 1, half range 1.96
+    sqrt(3) / 2.5.
+  - Unweighted: the ddof-1 formula, USD 25, DD 5.
+  - A shuffled -3 / -2 / 0 / -1: streak 2 (-5), DD 6 from 0 (a 0 ends a streak).
+- `test_weeks_are_thai_weeks`
+  - Sunday 16:59 UTC (23:59 Thai) falls in the week of 5 Jan; 17:01 UTC in the week of 12 Jan.
+  - The weighted columns, worked by hand.
+
+**3. The planted bugs** (`out_plant_bugs_plan1.txt`): **40 of 40 CAUGHT**; the control PASSED.
+- The first run caught 36 of 39. The 3 MISSED got tests first:
+  - the copy-check of run_trade;
+  - "999 ticks enough";
+  - the summary not sorted by time.
+- One bug was added with the new P1 table.
+- The 40 bugs cover:
+  - the exam guards (6); the restore / slippage / default (3); the parts; the Asia window;
+  - the tick loop (3); the ORB (4); the straddle (8); the stream (3);
+  - the state read one day later; the weights / P1 rule (5); the summary (4); the weeks.
+
+**4. The look-ahead check** (`out_lookahead_plan1.txt`, **PASSED**; every learning trade at slippage 0):
+- (a) The D1 state:
+  - unchanged after every M1 bar from the fill on was replaced (x 1.07) and the D1 bars rebuilt: **298 of 298**;
+  - the D1 bar it reads ends before the fill, on an earlier server day: **298 of 298**;
+  - power: with the read bar's M1 bars reversed, the state changed on 65 of 298.
+- (b) The decisions:
+  - London: the decision (status, side, stop, time, range) is unchanged after every M1 bar from the decision on was
+    replaced: **119 of 119**. Power: with the range widened, 119 of 119 changed.
+  - NY: the side, the fill tick and the price are unchanged after every tick after the fill tick was replaced:
+    **100 of 100** (power 100 of 100).
+  - The first run gave 99 of 100. The check found the fill tick by its time, and on 2025-11-07 two ticks share that
+    time. The check now takes the tick's index.
+- (c) The trades, London + NY:
+  - re-derived from the raw ticks, equal to the stored trades: 219 of 219;
+  - unchanged after every tick after the exit was replaced: **219 of 219** (power: 210 changed).
+  - Asia B2 runs P3's engine, whose check passed in P3. The runner only sets its slippage.
+
+**5. The results.**
+
+*The reproduction at slippage 0.07* (`out_plan1_repro.txt`):
+- **All 19 lines of `out_combo.txt` are identical**: the pieces alone, both plans, the pooled lines.
+- Trade by trade (piece, fill time): **298 of 298** equal to `combo_trades_slip0` and `slip1` (pnl to 1e-9); none on
+  only one side.
+- The D1-state table is **identical** to `out_regime.txt`.
+- The P1 weights and the weighted R are all equal:
+  - NY + 1 USD: from P1 +0.268 / +0.103 (out_regime.txt); by mechanism +0.301 / +0.130;
+  - NY + 0: from P1 +0.280 / +0.143; by mechanism +0.329 / +0.184 (CHECKLIST row 37).
+
+**The four "stale" NY trades are not stale.**
+- At 0.07, re-simulated from today's ticks, they give the stored R: 2026-02-18 -1.0012, 03-19 -1.0000, 03-20 -1.0025,
+  03-31 -1.0063. The tick files are dated 2026-10-17.
+- At slippage 0 they give exactly the measurer's numbers: -1.0125 / -1.0562 / -1.0213 / -1.0200.
+- The cause: the straddle's stop sits 8 USD from the fill, so 0.07 less slippage moves the stop by 0.07 as well, and a
+  different tick stops the trade. On 03-19 the ask 4613.10 at 12:31:30.674 UTC touches the sell's stop at 4613.10; a
+  stop at 4613.17 is not touched there.
+
+*Spread only, slippage 0* (`out_plan1_learn_s0_x0.txt`; R with its 95 % range; USD at 0.01 lot; 0 trades dropped
+for overlap):
+
+| PLAN-1 | P1 (141 trades, 2.20 a weekday) | P2 (157, 2.38) | pooled (298, 2.29) |
+|---|---|---|---|
+| unweighted | +0.249 (+0.071..+0.426), win 53.2 %, +256.18 USD, DD 55.82, worst -35.53, streak 8 (-27.22) | +0.137 (-0.042..+0.316), win 48.4 %, +507.55, DD 116.69, worst -34.71, streak 8 (-99.61) | +0.190 (+0.064..+0.316), +763.73 |
+| by mechanism | +0.337 (+0.142..+0.533), +293.24, DD 34.61, worst -17.76, streak 8 (-20.68) | +0.188 (+0.006..+0.370), +534.37, DD 74.88, worst -29.63, streak 8 (-61.94) | +0.257 (+0.124..+0.390), +827.61 |
+| from P1 (Asia trend, NY sideways) | +0.288 (+0.100..+0.477), +292.02, DD 38.71, worst -17.76, streak 8 (-22.71) | +0.147 (-0.033..+0.327), +523.41, DD 99.61, worst -34.71, streak 8 (-99.61) | +0.213 (+0.083..+0.343), +815.42 |
+
+- **The pieces alone** (P1 / P2, trades):
+  - Asia B2 +0.081 / +0.186 (41 / 38);
+  - London ORB +0.213 / +0.124 (59 / 60);
+  - NY straddle +0.467 / +0.119 (41 / 59).
+- **The exits:**
+  - Asia: structure 55, time 17, target 4, stop 3;
+  - London: time 68, stop 36, target 15;
+  - NY: time 61, stop 39.
+- **R by piece x D1 state** (P1 / P2):
+  - Asia trend -0.070 / -0.006;
+  - London trend +0.030 / -0.210;
+  - NY trend +0.860 / +0.262, NY sideways -0.131 / +0.044, NY mixed +0.025 / +0.025.
+- **The measurer's add-back estimate** (+0.252 / +0.140; weighted +0.341 / +0.191) is 0.003-0.004 above these
+  re-simulated numbers. Re-simulating moves more than the entry price; the stops and targets move with the fill:
+  - the straddle's stop sits 8 from the fill;
+  - the ORB's risk and 2-R target are measured from the fill;
+  - B2's next-level target is taken only when it lies beyond one risk from the fill.
+- **The weights:** the by-mechanism weights were chosen after both parts were seen (CHECKLIST row 37), so their P2 is
+  not an independent check. The from-P1 table was chosen on P1 only.
+- **Week by week** (Thai weeks, by the fill time). The columns are R a trade / USD, unweighted | by mechanism | from
+  P1. The Thai week of 2026-01-12 is split between P1 (9 trades) and P2 (2).
+
+| week | n | win | R | USD | running | worst | R mech | USD mech | R P1 | USD P1 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| P1 2025-10-20 | 10 | 0.40 | +0.484 | -4.23 | -4.23 | -24.78 | +0.847 | +29.32 | +0.584 | +12.26 |
+| 10-27 | 11 | 0.64 | +0.271 | +41.47 | +37.24 | -17.64 | +0.339 | +37.79 | +0.317 | +41.00 |
+| 11-03 | 12 | 0.33 | +0.117 | +1.37 | +38.61 | -10.16 | +0.138 | +2.84 | +0.138 | +2.84 |
+| 11-10 | 9 | 0.44 | -0.061 | -2.49 | +36.12 | -8.45 | -0.013 | +1.03 | -0.072 | -3.00 |
+| 11-17 | 13 | 0.77 | +0.504 | +84.76 | +120.88 | -10.73 | +0.601 | +85.16 | +0.582 | +85.93 |
+| 11-24 | 12 | 0.83 | +0.603 | +46.39 | +167.27 | -6.62 | +0.552 | +33.20 | +0.568 | +41.52 |
+| 12-01 | 12 | 0.33 | -0.041 | -6.20 | +161.07 | -8.45 | -0.050 | -4.33 | -0.018 | -6.19 |
+| 12-08 | 10 | 0.40 | -0.065 | -6.41 | +154.66 | -5.46 | -0.066 | -4.68 | -0.054 | -4.37 |
+| 12-15 | 12 | 0.42 | +0.072 | +1.90 | +156.56 | -12.08 | +0.288 | +14.73 | +0.119 | +9.68 |
+| 12-22 | 8 | 0.62 | +0.103 | -13.81 | +142.75 | -35.53 | +0.160 | -4.43 | +0.185 | +0.60 |
+| 12-29 | 9 | 0.56 | +0.676 | +60.68 | +203.43 | -16.58 | +0.947 | +63.38 | +0.741 | +68.97 |
+| 2026-01-05 | 14 | 0.50 | +0.052 | +3.98 | +207.41 | -8.35 | +0.071 | +2.76 | +0.090 | +7.29 |
+| 01-12 | 9 | 0.67 | +0.582 | +48.77 | +256.18 | -9.73 | +0.636 | +36.48 | +0.543 | +35.48 |
+| P2 2026-01-12 | 2 | 0.50 | +0.274 | +3.29 | +3.29 | -9.11 | +0.700 | +7.84 | +0.274 | +3.29 |
+| 01-19 | 9 | 0.67 | +0.434 | +42.87 | +46.16 | -15.79 | +0.618 | +37.94 | +0.332 | +25.68 |
+| 01-26 | 9 | 0.22 | -0.498 | -59.40 | -13.24 | -29.58 | -0.570 | -41.41 | -0.498 | -59.40 |
+| 02-02 | 11 | 0.55 | +0.308 | +74.04 | +60.80 | -31.08 | +0.519 | +95.83 | +0.308 | +74.04 |
+| 02-09 | 17 | 0.59 | +0.161 | +17.27 | +78.07 | -12.92 | +0.127 | +10.15 | +0.161 | +17.27 |
+| 02-16 | 14 | 0.29 | -0.149 | +39.94 | +118.01 | -9.04 | -0.009 | +55.83 | -0.046 | +52.07 |
+| 02-23 | 14 | 0.71 | +0.401 | +79.01 | +197.02 | -9.26 | +0.427 | +75.04 | +0.427 | +75.04 |
+| 03-02 | 10 | 0.40 | -0.002 | +24.72 | +221.74 | -13.03 | +0.020 | +26.12 | -0.095 | +17.99 |
+| 03-09 | 11 | 0.55 | +0.113 | +11.15 | +232.89 | -9.43 | +0.290 | +23.25 | +0.290 | +23.25 |
+| 03-16 | 9 | 0.44 | +0.116 | +20.63 | +253.52 | -18.60 | +0.138 | +20.01 | +0.061 | +15.93 |
+| 03-23 | 13 | 0.31 | -0.001 | +64.62 | +318.14 | -34.71 | -0.097 | +25.40 | +0.038 | +75.41 |
+| 03-30 | 12 | 0.50 | +0.323 | +164.93 | +483.07 | -18.90 | +0.253 | +158.58 | +0.402 | +178.80 |
+| 04-06 | 12 | 0.58 | +0.218 | -8.48 | +474.59 | -15.80 | +0.424 | +18.13 | +0.268 | +2.90 |
+| 04-13 | 14 | 0.43 | +0.223 | +32.96 | +507.55 | -18.19 | +0.149 | +21.66 | +0.126 | +21.13 |
+
+- USD and R can differ in sign within a week: at a fixed 0.01 lot, a wide-stop trade weighs more in USD.
+- Weeks with R > 0 (unweighted): P1 10 of 13, P2 10 of 14.
+
+**The exam command (for the measurer only; I have not run it):**
+`.venv\Scripts\python research/2026-10-18-moments/agents/dev/plan1.py --exam`
+- It writes `out_plan1_exam_s0_x0.txt`, `plan1_trades_exam_s0_x0.parquet` and `plan1_every_exam_s0_x0.parquet`.
+- It runs the same code as the learning run: the period 2026-04-18 .. 2026-10-17, the fixed tables W_MECH and W_P1,
+  slippage 0.
+- The exam path itself has not been executed (that would read the exam). It differs from the learning run only in the
+  period's two dates, and the guard tests cover those.
+- The tick files end 2026-10-14, so the last exam days have no trades.
+
+**6. Questions:**
+1. **Which P1 weights are the declared variant?** The CHECKLIST's PLAN-1 text says the P1 weights halve "the NY
+   straddle in sideways / mixed for slippage 0, sideways only with +1 USD". The P1 rule gives the opposite:
+   - NY + 0 -> sideways only. NY mixed's P1 R is +0.017 at 0.07 and +0.025 at spread only.
+   - NY + 1 USD -> sideways and mixed (-0.054; out_regime.txt).
+
+   As pre-registered, I used the rule's result at spread only: Asia trend + NY sideways. Is that the declared variant?
+2. **How should a half weight be placed?** The weights mean half the risk, but on a 0.01-lot account half of 0.01 lot
+   cannot be placed. Should the exam read (and later the system) express a 0.5 weight in R, as here, or as a skip or a
+   different lot?
+3. **Nothing changed for the exam:** the by-mechanism weights were seen on both parts, and the from-P1 variant misses
+   +0.15 in P2 (+0.147). I report both; as the CHECKLIST says, the exam decides.
+
+Written at 06:19 UTC.

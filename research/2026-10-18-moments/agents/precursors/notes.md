@@ -2766,3 +2766,15 @@ loaders / ATR / fills; `out_check_plan1.txt`), against `combo_trades_slip0.parqu
 - **dev1** stopped on the session limit at about 13:18 Thai (reset 17:30 Thai) with `plan1.py` + `test_plan1.py` written
   and the first runs stored; not reported, not measured. Its open question: the CHECKLIST's P1-only weight variant has
   Asia-trend + NY-sideways for slip 0 by its own rule, the text has them the other way round for +1 USD.
+
+## dev1's PLAN-1 runner measured (2026-10-20 17:10 Thai)
+- **Correction:** the 4 NY stops I called stale (12:52 Thai) are not stale. I compared my slippage-0 straddle with the
+  stored 0.07-slippage file; the straddle's stop sits 8 USD from the fill, so the 0.07 moves the stop too and another
+  tick stops the trade (dev1: on 03-19 the ask 4613.10 touches a stop at 4613.10, not one at 4613.17).
+- **Measured:** `test_plan1.py` 19 passed; its planted bugs 40 / 40; mine 7 / 7 in memory (`plant_plan1.py`); at
+  slippage 0 its trades equal my independent derivation (`check_plan1_runner.py`): London 119 / 119 and NY 100 / 100
+  with |dR| 0.0000, Asia B2 79 trades with 0 faults on the ticks, the weighted R recomputed the same.
+- **Spread only, slippage 0:** unweighted +0.249 / +0.137; by mechanism +0.337 / +0.188; from P1 (Asia trend, NY
+  sideways - the rule's result; the CHECKLIST text had NY sideways + mixed, which is the +1 USD result) +0.288 / +0.147.
+- **The exam read** (`plan1.py --exam`) failed at 17:08 Thai with a MemoryError while three agents ran (3.4 of 15.8 GB
+  free) before any output: no exam number was seen. It is re-run once the agents' runs finish.

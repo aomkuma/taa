@@ -1,0 +1,34 @@
+Asia B2: 79 trades
+London ORB: 119 trades
+NY straddle: 100 trades
+Asia B2: 79 trades
+London ORB: 119 trades
+NY straddle: 100 trades
+=== out_combo.txt against this runner (slippage 0.07); lines that differ:
+  (19 reference lines, 19 lines here)
+
+=== trade by trade against combo_trades_slip0.parquet (piece, fill time): 298 in both, only in combo 0, only here 0, pnl differs on 0
+
+=== trade by trade against combo_trades_slip1.parquet (piece, fill time): 298 in both, only in combo 0, only here 0, pnl differs on 0
+
+=== the D1 state (regime.py), R by piece x trend (mean, trades), NY + 1 USD (out_regime.txt's file):
+                       mean        size    
+part                     P1     P2   P1  P2
+piece       trend                          
+Asia B2     mixed     0.697  0.313    4  15
+            sideways  0.141  0.177   14  13
+            trend    -0.076 -0.009   23  10
+London ORB  mixed     0.547  0.160   14  21
+            sideways  0.236  0.462   16  18
+            trend     0.025 -0.212   29  21
+NY straddle mixed    -0.054 -0.125   11  20
+            sideways -0.248 -0.016    7  17
+            trend     0.757  0.042   23  22
+
+NY extra +0: the weights from P1: {('Asia B2', 'trend'): 0.5, ('NY straddle', 'sideways'): 0.5}
+  from P1: weighted R P1 +0.280 (USD +247.9 -> +284.8); P2 +0.143 (USD +500.2 -> +516.6); unweighted +0.241 / +0.133
+  by mechanism: weighted R P1 +0.329 (USD +247.9 -> +287.0); P2 +0.184 (USD +500.2 -> +528.4); unweighted +0.241 / +0.133
+
+NY extra +1: the weights from P1: {('Asia B2', 'trend'): 0.5, ('NY straddle', 'mixed'): 0.5, ('NY straddle', 'sideways'): 0.5}
+  from P1: weighted R P1 +0.268 (USD +218.3 -> +260.5); P2 +0.103 (USD +431.6 -> +461.9); unweighted +0.215 / +0.078
+  by mechanism: weighted R P1 +0.301 (USD +218.3 -> +263.5); P2 +0.130 (USD +431.6 -> +475.3); unweighted +0.215 / +0.078
