@@ -66,7 +66,7 @@ Sources: `precursors/notes.md`, `DEV_LOG.md`s, `strategist/PROPOSALS.md`, `audit
 | 38 | PLAN-1 frozen for the one exam read (below): needs an exam-capable runner of the three pieces | dev1 after D, the measurer reads | - |
 | 39 | The transformations of every FAIL (the opposite side, the stop x 1.5 / x 2, a nearer target), and the state weights per piece in more states | the strategist | the owner: "try the opposite side, widen the SL, bring the TP in" |
 
-## PLAN-1 - frozen for the one exam read (2026-10-20 12:30 Thai)
+## PLAN-1 - frozen for the one exam read (2026-10-20 12:29 Thai)
 - **Asia:** the first developer's B2 at the owner's H1 levels, entries 07:00-09:00 Thai
   (`dev/p4_trades.py` variant W, the Asia window, by entry time).
 - **London:** the 13:00-Thai opening-range break. The range is 06:00-06:14 UTC, the day is skipped if the range is
