@@ -2847,3 +2847,22 @@ all three. Splits, fixed now:
 4. **When the gain is made:** each trade's R at +5 / +10 / +15 / +20 / +30 minutes from the fill (the bid for a buy,
    the ask for a sell, on the ticks), and its best (MFE) and worst (MAE) R within 30 minutes.
 5. **The exit:** time vs stop.
+**The result (18:15 Thai; `ny_study.py`, `out_ny_study.txt`; sums checked: P1 13.8 + 1.7 + 3.6 = 19.1 = 41 x 0.467,
+exam -5.5 + 21.9 + 12.3 = 28.7):**
+
+| Split (trades, R) | P1 | P2 | exam |
+|---|---|---|---|
+| release day (CPI / NFP / PPI / PCE / GDP) | 8, +0.219 | 12, +0.101 | 24, +0.913 |
+| Thursday without a release (claims) | 7, +0.517 | 12, -0.452 | 15, +0.820 |
+| any other day | 26, +0.530 | 35, +0.321 | 62, -0.088 |
+| against gold's D1 direction | 23, +0.744 | 34, +0.012 | 51, +0.289 |
+| with it | 18, +0.113 | 25, +0.264 | 50, +0.280 |
+| mean R at +5 / +15 / +30 min | +0.15 / +0.34 / +0.47 | +0.10 / +0.09 / +0.12 | +0.16 / +0.24 / +0.29 |
+
+- **Only the release days keep one sign in all three periods** (+0.219 / +0.101 / +0.913), on few trades in P1 / P2;
+  the plain days paid in P1 / P2 and lost in the exam; Thursday flips. The D1 direction does not separate.
+- **The gain grows with the hold:** R at +30 min is the highest in every period, so an earlier time exit would not
+  help. Half the trades reach +1 R within 30 minutes (median MFE +0.90 .. +1.13 R), 24-49 % are stopped.
+- **Next, a real out-of-sample test:** the straddle on release days in 2021-09 .. 2025-09 (four years no study of it
+  has seen; M1 bars with the M1 spread, since there are no ticks), and a +1 R target variant, both written before the
+  run.

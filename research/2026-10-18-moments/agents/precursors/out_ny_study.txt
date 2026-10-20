@@ -1,0 +1,29 @@
+NY straddle trades: 201; per part {'exam': 101, 'P2': 59, 'P1': 41}
+
+-- by day: trades / R per trade / summed R (P1, P2, exam)
+  other       26 +0.530  +13.8 |  35 +0.321  +11.2 |  62 -0.088   -5.5
+  release      8 +0.219   +1.7 |  12 +0.101   +1.2 |  24 +0.913  +21.9
+  thursday     7 +0.517   +3.6 |  12 -0.452   -5.4 |  15 +0.820  +12.3
+
+-- by vs_d1: trades / R per trade / summed R (P1, P2, exam)
+  against D1  23 +0.744  +17.1 |  34 +0.012   +0.4 |  51 +0.289  +14.7
+  with D1     18 +0.113   +2.0 |  25 +0.264   +6.6 |  50 +0.280  +14.0
+
+-- by weekday: trades / R per trade / summed R (P1, P2, exam)
+  Fri         10 -0.064   -0.6 |  13 +0.399   +5.2 |  19 +0.574  +10.9
+  Mon          6 +1.277   +7.7 |  11 +0.319   +3.5 |  17 +0.080   +1.4
+  Thu          9 +0.348   +3.1 |  13 -0.363   -4.7 |  24 +0.862  +20.7
+  Tue          8 +0.833   +6.7 |  10 +0.115   +1.2 |  18 +0.023   +0.4
+  Wed          8 +0.292   +2.3 |  12 +0.156   +1.9 |  23 -0.200   -4.6
+
+-- by exit: trades / R per trade / summed R (P1, P2, exam)
+  stop        10 -1.073  -10.7 |  29 -1.049  -30.4 |  39 -1.122  -43.8
+  time        31 +0.964  +29.9 |  30 +1.248  +37.4 |  62 +1.170  +72.5
+
+-- the path: mean R at +5 / +10 / +15 / +20 / +30 min, MFE, MAE (P1, P2, exam)
+  P1   R5 +0.152  R10 +0.226  R15 +0.342  R20 +0.370  R30 +0.467  MFE +1.325  MAE -0.633
+  P2   R5 +0.095  R10 +0.078  R15 +0.094  R20 +0.038  R30 +0.119  MFE +1.395  MAE -0.765
+  exam R5 +0.155  R10 +0.223  R15 +0.241  R20 +0.229  R30 +0.285  MFE +1.429  MAE -0.702
+  P1   median MFE +1.132; share with MFE >= 0.5 R 0.73, >= 1 R 0.56; share stopped 0.24
+  P2   median MFE +1.020; share with MFE >= 0.5 R 0.61, >= 1 R 0.53; share stopped 0.49
+  exam median MFE +0.900; share with MFE >= 0.5 R 0.76, >= 1 R 0.43; share stopped 0.39
