@@ -3001,3 +3001,11 @@ rule in it already had its one exam read):
 - **For the method:** fewer variants, each written before it is run; judge on more trades (pooled P1 + P2 with its 95 %
   range, not the best cell); treat any cell picked after the run as a hypothesis for the next fresh data (the forward
   record from 2026-10-17 on), never as a result.
+
+## VOL-16 frozen (2026-10-21 12:05 Thai; owner: "lock it: when the volatility is too high, stop until it returns")
+Preview on the data it was found on (`out_vol16_preview.txt`, a description only): PLAN-1's pieces with H1 ATR < 16
+at the entry: P1 +0.304 (67 trades, 1.05 a day), P2 +0.777 (14, 0.21 a day), exam +0.292 (159, 1.22 a day) against
+unfiltered +0.249 / +0.137 / +0.129. Frozen as a band 12 <= ATR < 16 (ATR < 12 lost in 2021-25), with the variant
+VOL-16b (outside the band only the NY straddle trades), because the band cuts trades to about 1 a day (0.2 in a fast
+month), against the owner's 2-3 a day and the principle "an unsuitable phase trades less, not never". CHECKLIST row 55;
+judged on the forward record (>= 60 trades) and the 5-year ticks.
