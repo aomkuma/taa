@@ -1061,3 +1061,9 @@ The same trades; the 10-USD straddle stop gave the same USD as 8 USD (Thu +2.61 
 Thursday's straddle +4.46 R at 10 USD (+5.57 R at 8) - the same 44.56 USD. The pool rule skipped Friday's ORB (+0.38).
 Eleven weeks: 110 trades +10.09 R (+0.092 a trade; frozen +13.23); 374.20 USD (frozen 435.40). From week 8 on the two
 runs take the same trades; the gap is weeks 1-8's lever choices.
+
+## Exam week 12 (2026-07-06 .. 10) - no change
+
+5 trades **-1.30 R, -10.68 USD** (frozen: 5 trades -1.37 R, -10.68 USD); account **374.20 -> 363.52 USD** (frozen 424.72).
+A quiet week: no Asia B2 trade, the straddle out flat twice on time; the pool rule skipped Mon (+0.22) and Fri (-1.08).
+Twelve weeks: 115 trades +8.79 R (frozen +11.86); 363.52 USD (frozen 424.72).
