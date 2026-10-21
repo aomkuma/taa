@@ -41,9 +41,9 @@ def apply(start: str, end: str) -> pd.DataFrame:
         R2, note = r.R, ""
         if r.piece == "Asia B2":
             if day in first_b2:
-                if r.t_in < week6:
+                if pd.Timestamp("2025-11-10", tz="UTC").value <= r.t_in < week6:
                     R2, note = np.nan, "skipped: second B2 of the morning (weeks 4-5 rule)"
-                elif r.side != first_b2[day]:
+                elif r.t_in >= week6 and r.side != first_b2[day]:
                     R2, note = np.nan, "skipped: a flip against the morning's first B2"
             else:
                 first_b2[day] = r.side
