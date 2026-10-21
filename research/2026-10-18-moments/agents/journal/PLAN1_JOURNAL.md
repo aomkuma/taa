@@ -865,3 +865,21 @@ Not adopted (`b2_target_check.py`).
 
 **The rules that cost this week:** B2 no flip cost 0.83 (Tue); the 1.5 R target paid +1.45 (Fri). The pool rule did not
 act. **The one change for week 28:** none.
+
+## Week 28 - 2026-04-27 .. 05-01 (gold falls 4,700 -> 4,560, then 4,600)
+
+`out_rules_w28.txt`, `out_liq_w28.txt`, `out_acct_w28.txt` (every trade with its lots, risk and the account).
+
+| Piece | Rules trades | Rules R | Notes |
+|---|---|---|---|
+| Asia B2 | 3 (+1 skipped) | -0.85 | the skipped flip (Tue 08:54) made +1.08 |
+| London ORB | 4 (+1 skipped) | +1.20 | Thu at the 1.5 R target (it ran +3.32); the pool rule skipped Fri +0.80 |
+| NY straddle | 5 | +1.37 | Tue's FAKE (-2.81 at worst) stopped at -1.04 |
+
+**The week:** base 14 trades +4.07 R; rules 12 trades **+1.70 R, +12.08 USD**. Account **246.49 -> 258.57 USD**.
+
+**The rules that cost this week:** B2 no flip **cost 1.08** (the second week in a row after 0.83) - weeks 1-28 it is now
+**-0.98 R net: DELETED from week 29**. The pool rule cost 0.80 (weeks 1-28 it still saves 1.93 R - stays). The 1.5 R
+target cost 0.50 (Thu).
+
+**The one change for week 29:** the no-flip rule is deleted (a second B2 of the morning may go either way again).

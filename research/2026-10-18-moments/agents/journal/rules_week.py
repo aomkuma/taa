@@ -1,7 +1,8 @@
 """The journal's rules in force, applied to one week of PLAN-1 trades, trade by trade against the base.
 Rules (each added forward only, journal PLAN1_JOURNAL.md):
 - weeks 4-5 only: Asia B2 takes at most one trade a morning (deleted after week 5: it cost 1.01 R net);
-- from week 6: Asia B2's second trade of a morning only in the first trade's direction (no flip);
+- weeks 6-28: Asia B2's second trade of a morning only in the first trade's direction (no flip) - deleted after week 28
+  (it cost 0.83 + 1.08 in weeks 27-28; weeks 1-28 net -0.98 R);
 - from week 5: the London ORB's target is 1.5 R (re-simulated on the ticks: same entry, stop and 60-minute exit);
 - from week 10: when the H4 ATR contracted over the last 24 h, the London ORB enters only if its 15 minutes before the
   decision broke a pool in its direction (liq_journal's "broke"); otherwise skipped;
@@ -41,6 +42,7 @@ def apply(start: str, end: str) -> pd.DataFrame:
     week10 = pd.Timestamp("2025-12-22", tz="UTC").value
     week16 = pd.Timestamp("2026-02-02", tz="UTC").value
     week17 = pd.Timestamp("2026-02-09", tz="UTC").value
+    week29 = pd.Timestamp("2026-05-04", tz="UTC").value
     week6 = pd.Timestamp("2025-11-24", tz="UTC").value
     for r, j in zip(W.itertuples(), J.itertuples()):
         day = pd.Timestamp(int(r.t_in), tz="UTC").tz_convert(L.TH).date()
@@ -49,7 +51,7 @@ def apply(start: str, end: str) -> pd.DataFrame:
             if day in first_b2:
                 if pd.Timestamp("2025-11-10", tz="UTC").value <= r.t_in < week6:
                     R2, note = np.nan, "skipped: second B2 of the morning (weeks 4-5 rule)"
-                elif r.t_in >= week6 and r.side != first_b2[day]:
+                elif week6 <= r.t_in < week29 and r.side != first_b2[day]:
                     R2, note = np.nan, "skipped: a flip against the morning's first B2"
             else:
                 first_b2[day] = r.side
