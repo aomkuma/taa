@@ -1791,3 +1791,104 @@ for overlap):
    +0.15 in P2 (+0.147). I report both; as the CHECKLIST says, the exam decides.
 
 Written at 06:19 UTC.
+
+
+## Task PLAN-1 forward recorder (2026-10-21, 05:07-05:30 UTC = 12:07-12:30 Thai)
+
+**1. What I did** (all in `dev/`; `plan1.py` unchanged, its functions imported):
+- `plan1_forward.py`: the recorder. PLAN-1's three pieces (plan1.asia_b2 / london_orb / ny_straddle), unweighted,
+  slippage 0, three variants side by side: unfiltered; VOL-16 (MT5 ATR(14) of the last closed H1 bar at the decision
+  t_dec, 12.0 <= ATR < 16.0, NaN outside); VOL-16b (outside the band only the NY straddle). Each variant filters first,
+  then one position at a time (a skipped trade never holds the position). Default: the self-test on the learning
+  parts. `--forward`: the measurer only.
+- `test_plan1_forward.py`: 20 hand-worked tests (fake readers; no forward or exam data is opened).
+- `plant_bugs_plan1_forward.py` -> `out_plant_bugs_plan1_forward.txt`: 41 planted bugs.
+- `lookahead_plan1_forward.py` -> `out_lookahead_plan1_forward.txt`: the H1 ATR's no-look-ahead check.
+- Self-test outputs: `out_plan1_forward_selftest_w14.txt` (+ `_w7`), `out_plan1_forward_dryrun.txt`.
+
+**What the forward run reads** (the guard):
+- M1 bars [2026-10-04 00:00, end). The warm-up is 14 calendar days of the exam period (2026-10-04 .. 10-17), used for:
+  B2's M1 / M5 ZigZag and ATR, its H1 levels over the last 120 H1 bars, the H1 fractals, the previous server day's
+  high / low; the ORB's H1 ATR; the VOL-16 H1 ATR.
+- B2's patterns are located from 2026-10-15 00:00 (a Friday pattern can confirm at Monday's Asia open, up to 30
+  entry-TF bars later); a trade counts only if its entry decision is at / after 2026-10-18.
+- Ticks: only days in [2026-10-18, end); no exam tick day is opened.
+- End: the day after the newest tick file, capped at today's UTC date (a day still being fetched is never read), or
+  `--end`.
+- The run repeats itself with 3 days less warm-up (11 days) on the same read and prints whether the trades are equal.
+
+**2. The tests** (`20 passed in 2.50s`; together with test_plan1.py `39 passed`):
+- `test_band_edges`: 11.999999 out, 12.0 in, 15.999999 in, 16.0 out, NaN out.
+- `test_the_atr_of_the_last_closed_h1_bar_by_hand`: hour i has range i + 1 (TR_i = i + 1 from hour 1; bar 0 has no
+  previous close, MT5). ATR bar 14 = (2 + .. + 15) / 14 = 8.5, bar 16 = 10.5. At 14:59:59.999 NaN (bar 14 not
+  closed), at 15:00 8.5, at 15:30 still 8.5 (the forming bar not read), at 16:00 9.5.
+- `test_the_forming_bar_is_never_read_and_an_hour_closes_on_the_clock`: the bars from 15:00 changed -> 15:59 still
+  8.5; an hour whose M1 bars stop at :30 is still not complete at :31, complete at the next hour.
+- `test_the_atr_against_the_independent_re_derivation_with_a_weekend_gap`: a random walk with 300 missing minutes and a
+  weekend: h1_atr equals atr_winners.py's resample formula at every time (1e-9).
+- `test_tag_reads_the_atr_at_the_decision_not_the_fill`: TR_i = 2i. Decided 15:59 (ATR 15, in), filled 16:00:30 (17):
+  in the band. A straddle at 17: VOL-16b only. 14:30: NaN, out.
+- `test_tag_band_edges_from_the_bars`: constant ranges 12 / 16 give an ATR of exactly 12.0 (taken) / 16.0 (not taken).
+- `test_the_variants_by_hand`: seven trades - the edges, a straddle outside the band, an out-of-band London trade
+  holding the position (so the in-band Asia trade is dropped unfiltered but taken by VOL-16 / VOL-16b), a NaN, a fill
+  at the previous exit. `test_variants_with_an_index_out_of_order`: rows not in time order.
+- `test_forward_end`: newest file 10-21, today 10-21 05:07 -> end 10-21; today 10-25 -> 10-22; `--end` wins; no file
+  or no weekday -> error.
+- `test_read_m1_forward_reads_the_warm_up_and_nothing_earlier`: the filter is [2026-10-04, end); a leaked row before
+  it or at the end raises; a forward start other than 10-18 raises before reading.
+- `test_read_m1_learning_never_reaches_the_exam`.
+- `test_ticks_never_open_a_day_outside_the_period`: 10-17 never opened; the Saturday + Sunday span gives Sunday's tick
+  only; the end never opened.
+- `test_tick_days_from_the_names`.
+- `test_pieces_locate_b2_from_three_days_back_and_keep_decisions_from_the_start`: B2 asked from 10-15; a 10-17
+  decision dropped; the ORB / straddle days 10-19 / 10-20 (end excluded); a trade at the end raises.
+- `test_summary_and_weeks_by_hand`: Sunday 16:59 UTC (23:59 Thai) and 17:01 UTC fall in two Thai weeks; running USD
+  10 / 6; VOL-16 10 / 10 (0 trades the second week); 2 trades over 5 weekdays = 0.4 a day, R 0.25, DD 4.
+- `test_a_zero_trade_is_not_a_win`.
+- `test_trade_table`: a sell's exit = entry - pnl, Thai times, the variants named, a trade no variant takes left out.
+- `test_same_trades`; `test_the_switches`.
+- `test_forward_with_fake_readers`: forward() end to end on fakes - the end, the M1 filter from 10-04, the tick
+  cache's bounds, the warm-up check from 10-07, the files and the tick-file count.
+
+**3. The planted bugs** (`out_plant_bugs_plan1_forward.txt`): **41 of 41 CAUGHT**, the control PASSED. They cover:
+the band (4), the H1 ATR (6), the variants (4), the end (3), the M1 read (5), the ticks (1), the pieces (5),
+forward() (2), the weeks / summary (4), the trade table (4), the comparer (1), the switches (2).
+
+**4. The look-ahead check** (`out_lookahead_plan1_forward.txt`, **PASSED**, the 298 learning trades):
+- with the forming H1 bar and every later M1 bar replaced (x 1.07), the ATR and the band are unchanged: 298 of 298;
+- the read bar closes at / before the decision and the next one closes after it: 298 of 298;
+- power: replacing the read bar's own M1 bars changes the ATR on 298 of 298.
+- The pieces are plan1.py's (their check: `out_lookahead_plan1.txt`).
+
+**5. The self-test** (`out_plan1_forward_selftest_w14.txt`, SELF-TEST PASSED). The learning parts run in seven tiles
+split on Saturdays, each with only 14 days of warm-up (the forward code path):
+- every piece's trades = `plan1_every_learn_s0_x0.parquet`: 298 of 298 equal on all 11 columns; the unfiltered plan =
+  `plan1_trades_learn_s0_x0.parquet`: 298 of 298.
+- the H1 ATR: the tiles' = the full series on 298 / 298, = the independent resample formula on 298 / 298, and =
+  `precursors/atr_winners.parquet`'s atr_H1 on 298 / 298.
+- VOL-16 keeps 57 trades, all in the band, exactly the in-band trades (57 of 57; no overlap drop in the learning
+  parts). VOL-16b: 143 = those 57 + 86 straddles outside the band. Reading the band at the fill instead of the
+  decision changes 0 of 298.
+- With 7 days of warm-up the tiles also reproduce plan1 exactly (`out_plan1_forward_selftest_w7.txt`); I keep 14 for a
+  margin.
+- The dry run of forward() itself on the learning week 2026-03-07 .. 03-13 (`out_plan1_forward_dryrun.txt`): 11
+  trades equal to the tiles', the variants take the same trades, the 11-day warm-up check equal.
+- The variants on the learning parts (SEEN data: the band was chosen after them, so this is not evidence):
+
+| part | unfiltered | VOL-16 | VOL-16b |
+|---|---|---|---|
+| P1 | 141 (2.20 a day), +0.249, +256.18 USD, DD 55.82 | 45 (0.70), +0.309, +102.52, DD 19.52 | 77 (1.20), +0.367, +217.60, DD 22.11 |
+| P2 | 157 (2.38), +0.137, +507.55, DD 116.69 | 12 (0.18), +0.808, +121.87, DD 30.64 | 66 (1.00), +0.138, +117.35, DD 81.22 |
+
+**The forward command (the measurer only; I have not run it and have loaded no forward data):**
+`.venv\Scripts\python research/2026-10-18-moments/agents/dev/plan1_forward.py --forward` (optionally
+`--end YYYY-MM-DD`, exclusive). It writes `out_plan1_forward.txt` and `plan1_forward_trades.parquet`.
+
+**6. Questions to the measurer:**
+1. CHECKLIST row 55 says "seen: P1 +0.304 (67), P2 +0.777 (14)". With the frozen definition I get P1 45 trades,
+   +0.309, and P2 12 trades, +0.808. Your own `atr_winners.parquet` gives the same 45 / 12 (band 12 <= ATR < 16 on
+   PLAN-1's learning trades). Which computation gave 67 / 14?
+2. The warm-up: keep 14 days, or 7 (also exact on the learning tiles, and one week less of the exam period read)?
+3. B2's patterns decided in the last exam days (from 10-15) whose entry decision falls on / after 10-18 are traded, as
+   a running system would trade them. plan1.py's own runs drop such trades at their period start. Is that the
+   intended reading?

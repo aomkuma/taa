@@ -1,0 +1,5 @@
+(a) the ATR and the band unchanged with the forming hour and every later M1 bar replaced: 298 of 298
+(b) the read H1 bar closes at / before the decision and the next one after it: 298 of 298
+(c) power - the read H1 bar's M1 bars replaced changes the ATR: 298 of 298
+
+LOOK-AHEAD CHECK PASSED

@@ -1,0 +1,31 @@
+PLAN-1 forward recorder (plan1_forward_dryrun), 2026-03-07 .. 2026-03-13 (5 weekdays), spread only, slippage 0, unweighted, one position at a time
+tick files for 5 of 5 weekdays
+read: M1 2026-02-22 23:05 .. 2026-03-13 20:54 UTC (asked from 2026-02-21); tick days only in 2026-03-07 .. 2026-03-13
+the warm-up check (11 instead of 14 days): 11 trades equal, 0 differ, 0 / 0 on one side only
+
+the variants (the judge: after >= 60 trades, >= +0.15 R a trade and VOL-16 better than unfiltered on the same days):
+  unfiltered: 11 trades (2.20 a weekday), win 0.545, R +0.113 (-0.559..+0.784), USD +11.15, max DD 28.66, worst -9.43, streak 2 (-17.52)
+              by piece (trades, R): Asia B2 3 +0.024; London ORB 5 +0.839; NY straddle 3 -1.008
+  VOL-16    : n 0
+  VOL-16b   : 3 trades (0.60 a weekday), win 0.000, R -1.008 (-1.013..-1.004), USD -24.20, max DD 24.20, worst -8.09, streak 3 (-24.20)
+              by piece (trades, R): NY straddle 3 -1.008
+
+week by week (Thai weeks, by the fill time; n, win, R a trade, USD, running USD):
+           unfiltered                             VOL-16b                        
+                    n    win      R    usd    run       n  win      R   usd   run
+week                                                                             
+2026-03-09         11  0.545  0.113  11.15  11.15       3  0.0 -1.008 -24.2 -24.2
+
+every trade any variant takes (in / out in Thai time, the decision in UTC; pnl in USD at 0.01 lot):
+      piece     decision_utc        in_thai       out_thai side   entry  exit_px      exit      R   pnl  atr_h1           variants
+ London ORB 2026-03-09 06:38 03-09 13:38:00 03-09 14:38:00 sell 5117.42  5103.22      time  0.859 14.20   39.34         unfiltered
+ London ORB 2026-03-10 06:28 03-10 13:28:00 03-10 14:23:40 sell 5174.08  5160.66    target  2.000 13.42   23.76         unfiltered
+    Asia B2 2026-03-11 00:24 03-11 07:24:00 03-11 08:10:00  buy 5210.98  5213.43 structure  0.099  2.45   24.36         unfiltered
+ London ORB 2026-03-11 06:43 03-11 13:43:00 03-11 14:43:00 sell 5195.93  5191.01      time  0.341  4.92   21.95         unfiltered
+NY straddle 2026-03-11 12:30 03-11 19:30:01 03-11 19:30:44  buy 5194.27  5186.18      stop -1.011 -8.09   18.48 unfiltered,VOL-16b
+    Asia B2 2026-03-12 00:38 03-12 07:38:00 03-12 07:49:00  buy 5160.46  5151.03 structure -0.263 -9.43   21.92         unfiltered
+    Asia B2 2026-03-12 01:43 03-12 08:43:00 03-12 09:28:00  buy 5166.15  5168.99 structure  0.235  2.84   23.22         unfiltered
+ London ORB 2026-03-12 06:18 03-12 13:18:01 03-12 13:25:21 sell 5151.53  5157.48      stop -1.005 -5.95   21.19         unfiltered
+NY straddle 2026-03-12 12:30 03-12 19:30:40 03-12 19:48:02 sell 5170.21  5178.24      stop -1.004 -8.03   21.63 unfiltered,VOL-16b
+ London ORB 2026-03-13 06:16 03-13 13:16:00 03-13 13:38:08 sell 5101.31  5088.41    target  2.000 12.90   19.56         unfiltered
+NY straddle 2026-03-13 12:30 03-13 19:30:17 03-13 19:44:03  buy 5116.27  5108.19      stop -1.010 -8.08   17.48 unfiltered,VOL-16b

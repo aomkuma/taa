@@ -1,0 +1,24 @@
+PLAN-1 forward recorder (plan1_forward), 2026-10-18 .. 2026-10-20 (2 weekdays), spread only, slippage 0, unweighted, one position at a time
+tick files for 2 of 2 weekdays
+read: M1 2026-10-04 22:05 .. 2026-10-20 23:59 UTC (asked from 2026-10-04); tick days only in 2026-10-18 .. 2026-10-20
+the warm-up check (11 instead of 14 days): 3 trades equal, 0 differ, 0 / 0 on one side only
+
+the variants (the judge: after >= 60 trades, >= +0.15 R a trade and VOL-16 better than unfiltered on the same days):
+  unfiltered: 3 trades (1.50 a weekday), win 0.333, R -0.057 (-1.160..+1.046), USD -5.90, max DD 10.85, worst -10.85, streak 1 (-10.85)
+              by piece (trades, R): London ORB 2 -0.038; NY straddle 1 -0.096
+  VOL-16    : 2 trades (1.00 a weekday), win 0.000, R -0.554 (-1.452..+0.343), USD -11.62, max DD 11.62, worst -10.85, streak 2 (-11.62)
+              by piece (trades, R): London ORB 1 -1.012; NY straddle 1 -0.096
+  VOL-16b   : 2 trades (1.00 a weekday), win 0.000, R -0.554 (-1.452..+0.343), USD -11.62, max DD 11.62, worst -10.85, streak 2 (-11.62)
+              by piece (trades, R): London ORB 1 -1.012; NY straddle 1 -0.096
+
+week by week (Thai weeks, by the fill time; n, win, R a trade, USD, running USD):
+           unfiltered                            VOL-16                              VOL-16b                             
+                    n    win         R  usd  run      n  win         R    usd    run       n  win         R    usd    run
+week                                                                                                                     
+2026-10-19          3  0.333 -0.057402 -5.9 -5.9      2  0.0 -0.554188 -11.62 -11.62       2  0.0 -0.554188 -11.62 -11.62
+
+every trade any variant takes (in / out in Thai time, the decision in UTC; pnl in USD at 0.01 lot):
+      piece     decision_utc        in_thai       out_thai side    entry  exit_px exit      R    pnl  atr_h1                  variants
+ London ORB 2026-10-19 06:31 10-19 13:31:00 10-19 13:58:12 sell   4174.3  4185.15 stop -1.012 -10.85   12.56 unfiltered,VOL-16,VOL-16b
+ London ORB 2026-10-20 06:18 10-20 13:18:00 10-20 14:18:00  buy  4125.01  4130.73 time  0.936   5.72    9.61                unfiltered
+NY straddle 2026-10-20 12:30 10-20 19:30:05 10-20 20:00:00  buy  4119.98  4119.21 time -0.096  -0.77   12.31 unfiltered,VOL-16,VOL-16b

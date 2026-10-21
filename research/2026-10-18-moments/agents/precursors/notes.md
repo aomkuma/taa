@@ -3025,3 +3025,11 @@ Parity first: the same code on the P1 / P2 tick days gives London ORB 119 trades
   The pieces only pay at gold's present size; the band's lower edge is what keeps them out of a calm gold.
 - The band is in USD, not relative: if gold's scale changes the band has to be re-measured (the owner's "everything
   relative"); the forward record stays the judge.
+
+## The forward record, first read (2026-10-21 12:30 Thai; `dev/plan1_forward.py --forward`, run by the measurer)
+dev1's recorder measured: 39 tests passed (with plan1's), its 41 planted bugs caught, the self-test reproduces plan1's
+298 learning trades exactly and VOL-16 keeps exactly my 45 + 12 band trades. Row 55's first preview (67 / 14) was ATR < 16
+without the lower edge - corrected. Forward 2026-10-19 .. 10-20 (2 weekdays): unfiltered 3 trades -0.057 R (-5.90 USD);
+VOL-16 / VOL-16b 2 trades -0.554 (-11.62 USD). The London ORB sell of 10-19 (13:31 Thai at 4174.30, stopped 13:58 at
+4185.15, H1 ATR 12.56) matches the real candles: it sold near the 13:32 low of 4171.09 before the run to the 4190.25 top
+at 14:33 (Trade 4's day). Far too few trades to judge; the judge needs >= 60.

@@ -1,0 +1,37 @@
+PLAN-1 forward recorder, the self-test on the learning parts (warm-up 14 days, locate back 3 days, slippage 0)
+  tile 2025-10-18 .. 2025-11-15: M1 from 2025-10-05 22:05, 42 trades
+  tile 2025-11-15 .. 2025-12-13: M1 from 2025-11-02 23:05, 47 trades
+  tile 2025-12-13 .. 2026-01-10: M1 from 2025-11-30 23:05, 43 trades
+  tile 2026-01-10 .. 2026-02-07: M1 from 2025-12-28 23:05, 40 trades
+  tile 2026-02-07 .. 2026-03-07: M1 from 2026-01-25 23:05, 55 trades
+  tile 2026-03-07 .. 2026-04-04: M1 from 2026-02-22 23:05, 45 trades
+  tile 2026-04-04 .. 2026-04-18: M1 from 2026-03-22 22:05, 26 trades
+
+(1) every piece's trades against plan1_every_learn_s0_x0.parquet: 298 equal on ['piece', 't_dec', 't_in', 't_out', 'side', 'entry', 'stop', 'risk', 'pnl', 'R', 'exit'], 0 differ, 0 only here, 0 only in plan1 (298 in plan1)
+(2) the unfiltered plan (one position at a time) against plan1_trades_learn_s0_x0.parquet: 298 equal, 0 differ, 0 only here, 0 only in plan1 (298 in plan1)
+(3) the H1 ATR at the decisions: the tiles' (short warm-up) equal to the full series on 298 of 298; to the re-derivation (resample) on 298 of 298; NaN 0
+(4) VOL-16: 57 trades, all in the band: True; equal to the in-band trades streamed: 57 equal, 0 differ, 0 / 0 on one side only; against the unfiltered plan's in-band trades (57): 57 equal, 0 only in VOL-16, 0 only in the plan
+(5) VOL-16b: 143 trades; outside the band 86, all the NY straddle: True; in the band 57
+(6) the band read at the fill (t_in) instead of the decision differs on 0 of 298 trades (the measurer's atr_winners.py reads at t_in)
+    P1: the unfiltered plan's trades in the band, read at the decision 45, at the fill 45
+    P2: the unfiltered plan's trades in the band, read at the decision 12, at the fill 12
+
+the variants per part (seen data: the band was chosen after these parts; not evidence):
+ P1:
+  unfiltered: 141 trades (2.20 a weekday), win 0.532, R +0.249 (+0.071..+0.426), USD +256.18, max DD 55.82, worst -35.53, streak 8 (-27.22)
+              by piece (trades, R): Asia B2 41 +0.081; London ORB 59 +0.213; NY straddle 41 +0.467
+  VOL-16    : 45 trades (0.70 a weekday), win 0.578, R +0.309 (+0.051..+0.566), USD +102.52, max DD 19.52, worst -8.29, streak 3 (-11.32)
+              by piece (trades, R): Asia B2 14 +0.048; London ORB 22 +0.385; NY straddle 9 +0.529
+  VOL-16b   : 77 trades (1.20 a weekday), win 0.584, R +0.367 (+0.123..+0.612), USD +217.60, max DD 22.11, worst -10.73, streak 6 (-22.11)
+              by piece (trades, R): Asia B2 14 +0.048; London ORB 22 +0.385; NY straddle 41 +0.467
+ P2:
+  unfiltered: 157 trades (2.38 a weekday), win 0.484, R +0.137 (-0.042..+0.316), USD +507.55, max DD 116.69, worst -34.71, streak 8 (-99.61)
+              by piece (trades, R): Asia B2 38 +0.186; London ORB 60 +0.124; NY straddle 59 +0.119
+  VOL-16    : 12 trades (0.18 a weekday), win 0.500, R +0.808 (-0.055..+1.672), USD +121.87, max DD 30.64, worst -18.19, streak 5 (-30.64)
+              by piece (trades, R): Asia B2 2 +1.146; London ORB 5 -0.033; NY straddle 5 +1.514
+  VOL-16b   : 66 trades (1.00 a weekday), win 0.455, R +0.138 (-0.198..+0.475), USD +117.35, max DD 81.22, worst -18.19, streak 6 (-41.22)
+              by piece (trades, R): Asia B2 2 +1.146; London ORB 5 -0.033; NY straddle 59 +0.119
+
+(7) the dry run of forward() on 2026-03-07 .. 2026-03-14 (out_plan1_forward_dryrun.txt): 11 trades equal to the tiles', 0 differ, 0 / 0 on one side only; the variants take the same trades: True
+
+SELF-TEST PASSED
