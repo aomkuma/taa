@@ -1,0 +1,16 @@
+          trades     R    usd     end
+wk                                   
+2026-W17      14 -5.11 -53.51  246.49
+2026-W18      12  1.70  12.08  258.57
+2026-W19      10 -2.33 -36.52  222.05
+start 300.00 USD -> 222.05 USD | worst trade -21.82 | max drawdown -27%
+Mon 04 13:39 London ORB  SELL R -0.08 lots 0.01 (risk 6.0%) -1.30 USD -> 257.27
+Tue 05 19:30 NY straddle SELL R +0.83 lots 0.01 (risk 3.1%) +6.66 USD -> 263.93
+Wed 06 07:59 Asia B2     BUY  R +0.70 lots 0.01 (risk 3.7%) +6.82 USD -> 270.75
+Wed 06 19:30 NY straddle BUY  R -1.00 lots 0.01 (risk 3.0%) -8.03 USD -> 262.72
+Thu 07 07:08 Asia B2     SELL R -1.01 lots 0.01 (risk 3.4%) -8.94 USD -> 253.78
+Thu 07 07:43 Asia B2     SELL R -0.35 lots 0.01 (risk 5.6%) -5.03 USD -> 248.75
+Thu 07 19:30 NY straddle BUY  R +1.19 lots 0.01 (risk 3.2%) +9.52 USD -> 258.27
+Fri 08 08:37 Asia B2     SELL R -0.59 lots 0.01 (risk 4.2%) -6.28 USD -> 251.99
+Fri 08 13:29 London ORB  BUY  R -1.00 lots 0.01 (risk 8.7%) -21.82 USD -> 230.17
+Fri 08 19:30 NY straddle SELL R -1.01 lots 0.01 (risk 3.5%) -8.12 USD -> 222.05

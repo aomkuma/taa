@@ -883,3 +883,13 @@ act. **The one change for week 28:** none.
 target cost 0.50 (Thu).
 
 **The one change for week 29:** the no-flip rule is deleted (a second B2 of the morning may go either way again).
+
+## Week 29 - 2026-05-04 .. 08 (gold 4,540 -> 4,740 -> 4,700)
+
+`out_rules_w29.txt`, `out_liq_w29.txt`, `out_acct_w29.txt`. Rules: base 13 trades -1.43 R; rules 10 trades **-2.33 R,
+-36.52 USD**; account **258.57 -> 222.05 USD** (-26 % from 300). Asia B2 -1.25 (four trades, no flip rule now), the ORB
+-1.08 (Fri: a 21.8-USD stop at the 0.01 lot = 8.7 % of the account), the straddle +0.01.
+
+**The rules that cost this week:** the pool rule skipped three ORBs (-1.00, -0.11, +2.00): cost 0.89; weeks 1-29 it still
+saves 1.04 R. The deletion bar used from here on, the same as for no flip: **a rule goes when its net over all prior
+weeks turns negative.** The 1.5 R target did not act. **The one change for week 30:** none.
