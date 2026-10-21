@@ -432,3 +432,43 @@ pool break. `out_rules_w10.txt`, `out_liq_w10.txt`.
 **Checked after week 10 (weeks 1-10), the refinement:** of the 14 ORB trades the rule skips, the 6 already beyond the Asia
 range on their side made -0.15 R, the 8 inside it -0.94 R. Re-admitting the "beyond" ones gains nothing - **not
 adopted**. The rule as it stands skipped 14 trades for -1.09 R over weeks 1-10 (it saves 1.09 R net) - it stays.
+
+## The account from week 11 (owner 2026-10-21: "start from 100 USD plus the profit we have made")
+
+From now on every week also carries the account: `account.py` replays the rules-in-force trades from week 1 with 100 USD,
+7.5 % of the current equity a trade (the owner's preset), at least 0.01 lot, in 0.01 steps (gold: 0.01 lot = 1 USD per
+1-USD move). Weeks 1-10: 100.00 -> **283.12 USD** (worst trade -35.53, the deepest fall -37 %). At a 100-USD start the
+0.01 minimum lot sets the risk (a 10-USD stop = 10 % of the account), so a week's R and its USD can differ (week 1: +4.84 R
+but -4.23 USD: the losers had the wider stops).
+
+## Week 11 - 2025-12-29 .. 2026-01-02 (gold falls from its record 4,550 to 4,275, then 4,375; Thu 1 Jan closed)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break.
+`out_rules_w11.txt`, `out_liq_w11.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H4 ATR 24 h | Lots | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Mon 07:27 | Asia B2 | SELL | 38.8 | -0.43 | -0.43 | +0.40 / -0.43 | +1% | 0.01 | -16.58 | 266.54 |
+| Mon 13:27 | London ORB | SELL | 12.5 | +2.00 | +1.50 | **+4.19** / -0.12 | +1% | 0.01 | +18.71 | 285.24 |
+| Mon 20:30 | NY straddle | SELL | 8.0 | +3.45 | +3.45 | +5.26 / -0.73 | +15% | 0.02 | +55.22 | 340.46 |
+| Tue 13:16 | London ORB | SELL | 6.0 | +2.00 | +1.50 | +2.17 / -0.30 | +36% | 0.04 | +36.00 | 376.46 |
+| Tue 20:30 | NY straddle | SELL | 8.0 | +0.34 | +0.34 | +1.86 / -0.06 | +24% | 0.03 | +8.10 | 384.56 |
+| Wed 13:19 | London ORB | BUY | 27.5 | +1.03 | +1.03 | +1.11 / -0.16 | +19% | 0.01 | +28.29 | 412.85 |
+| Wed 20:30 | NY straddle | SELL | 8.0 | -1.02 | -1.02 | -0.01 / -2.80 | +20% | 0.03 | -24.48 | 388.37 |
+| Fri 13:17 | London ORB | SELL | 7.2 | -0.25 | skipped (new rule) | +0.15 / -0.93 | -17% | | | |
+| Fri 20:30 | NY straddle | BUY | 8.0 | -1.04 | -1.04 | +0.11 / -1.86 | -17% | 0.03 | -24.87 | 363.50 |
+
+**The week:** base 9 trades +6.08 R; rules 8 trades **+5.33 R, +80.39 USD**. Account **283.12 -> 363.50 USD**. Eleven weeks
+(base) 118 trades +29.09 R; rules +26.78 R.
+
+**What happened:** a year-end sell-off with the H4 ATR expanding (+15 to +36 %) - the ORB and the straddle sold with it.
+The week's best trades broke no pool in their 15 minutes: price was already running away (the week-10 lesson again).
+
+**The rules that cost this week:**
+- The ORB 1.5 R target: cost 1.00 R (Mon ran to +4.19, Tue to +2.17). Since week 5 it is now -0.39 R net. Checked on
+  weeks 1-10 by the H4 ATR: 1.5 R is the best target in both states (contracting: 1.0 +5.88, 1.5 +6.63, 2.0 +7.07,
+  none +6.15; expanding: 1.0 +1.13, **1.5 +2.50**, 2.0 +1.20, none +2.25; all: 1.5 +9.13, none +8.39) - stays; watched.
+- The ORB pool rule (contracting H4): saved 0.25 (Fri). Since week 10: -0.74 R net (cost 0.99, saved 0.25); weeks 1-11
+  net it saves 1.34 - stays one more week.
+
+**The one change for week 12:** none.
