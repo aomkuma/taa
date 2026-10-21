@@ -2984,3 +2984,20 @@ path to the end of its own window without the stop:
   epochs: my comment in `fetch_release_ticks.py` was wrong); fixed with retries (app commit). It found a bug of mine:
   2025-04-30 (GDP + PCE) traded twice in `ns1_ticks` / `ns2`; fixed (`sorted(set(...))`), its failing tests pass, re-run:
   NS-1 ticks 185 trades -0.063 (was -0.068), NS-2 206 trades -0.237 (was -0.241). Verdicts unchanged (FAIL).
+
+## Why P1 / P2 paid and the exam did not - the measurer's diagnosis (2026-10-21 11:55 Thai; `out_exam_months.txt`)
+Gold's size per month beside each method's trades / R, 2025-10 .. 2026-10 (the exam months read for description; every
+rule in it already had its one exam read):
+- **The market did not shrink in the exam:** D1 range median 76-102 USD, H1 ATR 14-21, NY 30+ share 0.77-1.00 in every
+  exam month - the row-50 size floor stays on throughout. So "the regime changed" does not explain the exam.
+- **Selection explains #43:** it was the best of 264 transformation cells, picked after seeing both P1 and P2, on 41 / 46
+  trades (a part's R has a 95 % range of about +-0.25 at that size). The best of many tries looks best on the data it
+  was picked on; out of sample it was -0.120, and in 2023-25 it was negative too.
+- **What held is what was simple and fixed before:** the NY straddle (one rule, set before its P1 / P2 read) has R > 0
+  in 10 of 13 months (exam +0.285). The pieces tuned or chosen after the run (#43, the PLAN-1 state weights, the ORB
+  variants) fell back toward 0.
+- **P1 and P2 are adjacent parts of one market phase,** so "positive in both" was a weaker check than it looked; and
+  40-60 trades a part cannot tell +0.25 from +0.05.
+- **For the method:** fewer variants, each written before it is run; judge on more trades (pooled P1 + P2 with its 95 %
+  range, not the best cell); treat any cell picked after the run as a hypothesis for the next fresh data (the forward
+  record from 2026-10-17 on), never as a result.
