@@ -1054,3 +1054,10 @@ frozen comparator at 300 USD / 3 % is now in `out_frozen_300.txt` (week by week)
 The same trades; the 10-USD straddle stop gave the same USD as 8 USD (Thu +2.61 R = +26.07). B2 at the 0.01 lot carried
 11 % of the account on Monday's +0.93 R (+32.84 USD). Ten weeks: 102 trades +6.08 R (frozen +8.24); 325.88 USD (frozen
 387.07).
+
+## Exam week 11 (2026-06-29 .. 07-03) - no change
+
+8 trades **+4.01 R, +48.33 USD** (frozen: 8 trades +4.99 R, +48.33 USD); account **325.88 -> 374.20 USD** (frozen 435.40).
+Thursday's straddle +4.46 R at 10 USD (+5.57 R at 8) - the same 44.56 USD. The pool rule skipped Friday's ORB (+0.38).
+Eleven weeks: 110 trades +10.09 R (+0.092 a trade; frozen +13.23); 374.20 USD (frozen 435.40). From week 8 on the two
+runs take the same trades; the gap is weeks 1-8's lever choices.
