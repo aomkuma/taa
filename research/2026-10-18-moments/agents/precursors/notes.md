@@ -2974,3 +2974,13 @@ path to the end of its own window without the stop:
   SWEPT. No stop / x1.5 / x2 do not help (+0.177 / +0.092 / +0.097 in P1).
 - **Lesson:** the stops are not the losers' cause; the ORB losers never ran (a break without follow-through), the
   straddle's are the release whipsaw. The next lever is the entry (which breaks / which releases), not the stop.
+
+## 2026-10-21 (11:43-11:55 Thai)
+- **The exam of #43 / #23, read once** (CHECKLIST row 54): #43 RT_opp -0.120 R on 117 trades (-209.47 USD at 0.01 lot,
+  max DD 358.70, streak 8); #23 RC_win +0.065 on 54 (+40.61 USD). My re-derivation from the exam ticks: -0.124 / +0.065,
+  every entry equal. The top-5 standing: only PLAN-1 (+0.129) and its NY straddle (+0.285) stay clearly positive out of
+  sample; none meets +0.15 there.
+- **The auditor's round 4:** the gateway's tick failure was the terminal still downloading old months (not the int
+  epochs: my comment in `fetch_release_ticks.py` was wrong); fixed with retries (app commit). It found a bug of mine:
+  2025-04-30 (GDP + PCE) traded twice in `ns1_ticks` / `ns2`; fixed (`sorted(set(...))`), its failing tests pass, re-run:
+  NS-1 ticks 185 trades -0.063 (was -0.068), NS-2 206 trades -0.237 (was -0.241). Verdicts unchanged (FAIL).

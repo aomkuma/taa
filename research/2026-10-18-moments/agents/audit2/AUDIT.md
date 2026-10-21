@@ -3,6 +3,8 @@
 Round 2: 2026-10-20 05:47 .. 06:11 UTC = 12:47 .. 13:11 Thai - items 1 and 4, dev2's swings (sections 10-12).
 Round 3: 2026-10-20 10:05 .. 10:33 UTC = 17:05 .. 17:33 Thai - group b on `load_learning()`, the PLAN-1 runner, dev2's two
 test gaps (sections 13-15).
+Round 4: 2026-10-20 12:17 .. 12:50 UTC and 2026-10-21 04:43 .. 04:55 UTC (19:17 .. 19:50 and 11:43 .. 11:55 Thai) -
+the gateway's tick calls, the measurer's NS-1 / NS-2 / SW-20 code (sections 16-17).
 
 Brief: `../AUDIT_PROMPT.md`. Every number below comes from a script and output named next to it. Nothing here reads
 the exam period (2026-04-18 .. 2026-10-17): stores are read with pyarrow row filters that keep only the learning
@@ -32,6 +34,8 @@ exam row.
 | 13 | round 3, item 1: the group-b callers on `plib.load_learning()` | `framework`, `framework2`, `level_power`, `regime`, `verify_p2` read no exam row and give the same results | one line each (`load()` + the cut -> `load_learning(start=...)`); an AST test of every `plib` call in the five files; each script re-run and diffed against its stored output (parquets compared frame by frame) | the test: HEAD 5 failed / 0 passed -> 5 passed; `out_framework`, `out_level_power` identical; `out_framework2` identical apart from a stderr warning captured in the stored file; `out_regime` every stored line identical (3 new lines from a later print = CHECKLIST row 37's +0.301 / +0.130); `framework2.parquet`, `level_power.parquet` byte-identical; `verify_p2` 6 of 6 cells = `dev/p2_metrics.csv`, 0 overlaps, 60 of 60, 1244 of 1244 (= notes.md) | **switched, identical** | section 13 |
 | 14 | the first developer's PLAN-1 runner `dev/plan1.py` + `test_plan1.py` (read only; sha256 dec3a0a5.. / 71779f40..) | the one-position stream, the D1-state weights from closed D1 bars, the cost (the tick spread; slippage a parameter, default 0), the exam switch's guard | 6 new tests + 1 question (xfail) with stubs (no data read); 18 planted bugs against its tests alone and with mine; the learning trades rebuilt in memory and checked on the raw ticks, MT5's own D1 bars and the measurer's `check_plan1.py` | rebuilt = stored (298 / 298 rows); D1 state 298 of 298 (MT5 D1, my loop) and 298 of 298 (the measurer's regime path); the fills = the tick's ask / bid exactly on 298 of 298, faults 0; London 119 / 119, NY 100 / 100, dR 0.0000; stream: 0 dropped, the next fill 4.0 min after an exit at the closest; weights equal; the 6 printed plan lines recomputed equal; planted: its tests 3 of 18, with mine 18 of 18 | **PASS** (no bug; 15 test gaps closed; one question) | section 14; relay the 6 tests (test gaps) |
 | 15 | round 3, item 3: dev2's two test gaps (`dev2/swings.py`, now sha256 ff1eff81.., file time 17:08:49 Thai) | `known_at` with a pivot confirmed exactly at d + 1; `running()` when the pivot bar's own extreme lies beyond every later bar | 2 hand-worked tests (the second both ways up) in `test_dev2_swings.py`; the measurer's two mutants | 35 passed + 2 xfailed on the current code; the 2 mutants: 2 of 2 caught (by the two tests alone and by the whole file); round 2's 10 mutants on the new version: 10 of 10 | **tests added** | section 15 |
+| 16 | `ReadOnlyMT5Gateway.ticks_range` / `raw_ticks` (app) | "Terminal: Call failed" on the real terminal | read-only probes on the terminal (int vs datetime, 6-72 h windows, stored vs unstored tick months, the Bases tick files); 7 FakeMT5 tests; an `-m mt5` contract test; 6 planted bugs | the int form = the datetime form on stored ticks; an unstored month: FAIL after 104.8 s, then the same call 13.3 s / 0.3 s; before: ImportError (HEAD raises on the first -1); after 7 passed, targeted 137 passed, mt5 2 passed, ruff / mypy app / bandit clean; 6 of 6 CAUGHT | **FAIL -> fixed** | section 16 |
+| 17 | the measurer's `ns1`, `ns1_ticks`, `ns2`, `sw20_plan1`, `check_plan1`, `fetch_release_ticks` (read only) | one trade per release day; the straddle copies; SW-20; the old ticks' server-time conversion | 5 tests with stubs (no exam read); the 206 old tick files against the M1 store and the release minute | **2025-04-30 traded twice** in `ns1_ticks` and `ns2` (2 failing tests; NS-1 ticks R -0.068 -> -0.063, NS-2 -0.241 -> -0.237, both still FAIL); straddle copies equal on 226 traded series; SW-20 = brute force on 150 sets; ticks = M1 on 8,855 of 8,857 minutes, 0 when shifted +-60 min, release peak at 08:30 on 162 of 206 | **FAIL (relay)**; the rest PASS | section 17 |
 
 ## 1a. The history download stored nothing after Friday (FAIL, fixed)
 
@@ -890,6 +894,116 @@ The file changed since round 2: now sha256 `ff1eff818185fa4b38437b6be49bd6edc6fb
   whole file 2 of 2 caught.** Round 2's 10 mutants on the new version: `10 of 10 caught; unmutated: 35 passed, 2
   xfailed`.
 
+## 16. Round 4, item 1: `ReadOnlyMT5Gateway.ticks_range` "Terminal: Call failed" (app bug; fixed)
+
+**The cause, found read-only on the real terminal** (C:\MT5\taa-bot, history calls only; probes in my scratchpad):
+- **The argument form is not the cause.** On 2025-11-05 and 2026-10-19, `copy_ticks_range` with int epochs and with
+  aware datetimes returned the same counts for every window from 6 h to 72 h (e.g. 2025-11-05, 72 h: 883,994 both). The
+  gateway's own window `[day - 1 d, day + 2 d)` as ints returned 886,160 and 480,639 ticks. After that,
+  `gateway.ticks_range` worked on 2021-03-03, 2021-09-15, 2022-06-08, 2023-11-08, 2025-11-05, 2026-10-19 and 2026-10-20,
+  in 0.2-0.5 s each.
+- **The cause is the terminal's lazy tick download.** A request that reaches a month the terminal has not stored in
+  `Bases/FBS-Demo/ticks/XAUUSD/<yyyymm>.tkc` blocks about 100 s and answers None with (-1, 'Terminal: Call failed'). The
+  terminal keeps downloading, and the same request then succeeds.
+  - Measured on 2021-02-10 (month not stored), the same `gateway.ticks_range` call four times: FAIL after 104.8 s,
+    then 159,639 ticks in 13.3 s, then 0.3 s, then 0.3 s. `202102.tkc` appeared at 19:35:51 Thai.
+  - On 2021-03-03: the 6 h and 12 h windows failed (104.8 s each), the 24 h window succeeded after 97.2 s, and then
+    every window answered in 0.0-0.1 s.
+  - The month files were written backwards (2024-09 at 18:36 Thai .. 2021-03 at 19:32 Thai). That fits the measurer
+    seeing "every date" fail while the download ran, and a later datetime call (the `fetch_release_ticks.ticks()`
+    workaround) succeeding once the months were stored.
+
+**The fix** (`app/broker/gateway.py`): `ticks_range` and `raw_ticks` share `_copy_ticks`.
+- When it gets None with error code -1, it asks again, up to `TICK_SYNC_ATTEMPTS = 3` times, `TICK_SYNC_PAUSE_S = 5.0`
+  apart. The pause is injectable through `ReadOnlyMT5Gateway(..., sleep=...)`, with `time.sleep` as the default.
+- Any other error raises at once, as before.
+- After the last attempt it raises `BrokerError("... the terminal is probably still downloading this tick month;
+  ask again later")`.
+- The int-epoch form is unchanged.
+- Note: a call into an unstored month can now block the caller up to about 3 x 100 s. The engine's shadow tracker
+  asks for recent ticks only (the current month is stored and live).
+
+**Tests:**
+- `tests/unit/test_ticks_sync.py` (FakeMT5, 7 tests):
+  - two "syncing" failures, then ticks: 40 ticks, 3 calls, waits [5.0, 5.0] (both `ticks_range` and `raw_ticks`);
+  - three failures: `BrokerError` "still downloading", 3 calls, 2 waits (both methods);
+  - (-2, "Invalid arguments"): raises at once, 1 call, no wait;
+  - a first answer: 1 call, no wait;
+  - an empty answer (a closed market): an empty frame, 1 call, no wait.
+- Before (HEAD gateway, `audit2/out_r4_ticks_before.txt`): `ImportError: cannot import name 'TICK_SYNC_ATTEMPTS'`; the
+  HEAD code raises on the first -1.
+- After: `7 passed`. Targeted suites (`test_ticks_sync`, `test_multi_asset`, `test_feed_probe`, `test_broker`,
+  `test_market_data`, `test_history_download`, `test_architecture`, `integration/test_shadow_tracker`): `137 passed in
+  45.64s`.
+- ruff format / check clean; `mypy app`: `Success: no issues found in 316 source files`; bandit clean.
+- `-m mt5` contract test (`tests/integration/test_mt5_terminal.py::test_ticks_range_takes_int_epochs_and_aware_datetimes_alike`,
+  `TAA_MT5_TESTS=1`): on stored ticks the int and the aware-datetime calls return the same `time_msc`. Run with the
+  existing ticks test: `2 passed, 6 deselected in 4.09s`. Since the cause is the terminal, not a C-module quirk, this test
+  records that the int form is safe.
+- Planted (`plant.py mutants_gateway_ticks`, `out_plant_gateway_ticks.txt`): `6 of 6 caught; unmutated: 7 passed`. The
+  mutants: one attempt fewer; every error retried; no error retried; no pause; a pause after the last attempt; an empty
+  answer taken as a failure. The last one was MISSED at first and is now caught by the empty-answer test.
+
+## 17. Round 4, item 2: the measurer's NS-1 / NS-2 / SW-20 / check_plan1 / fetch_release_ticks code (one bug)
+
+Files audited read only (sha256 at 2026-10-20 12:43 UTC): `ns1.py` 9fb23c0c.., `ns1_ticks.py` 5304f62b.., `ns2.py`
+a69bb3ee.., `sw20_plan1.py` c52343f6.., `check_plan1.py` ccdf187a.., `fetch_release_ticks.py` 8af8d5d4... I ran
+nothing that reads the exam: `ns2.main` and `sw20_plan1.main` read exam files, so they were tested only with stubs.
+
+**BUG (relay): a release day traded twice.** `app/news/us_releases.csv` holds two 08:30 releases on 2025-04-30 (GDP and
+PCE). `ns1_ticks.main` and `ns2.main` loop over `sorted(cal[...].date)` without removing the repeat, so that day is
+simulated and counted twice. (`ns1.run_days` and `fetch_release_ticks` use a set and are right.)
+- Failing tests, `audit2/test_measurer_r4.py` (`out_test_measurer_r4.txt`):
+  - `test_ns1_ticks_trades_each_release_day_once` and `test_ns2_trades_each_release_day_once`: readers and the
+    simulator are stubbed, ticks are given for 2025-04-30 only, and the saved frame is captured.
+  - Result: `AssertionError: ['2025-04-30', '2025-04-30']` in both; `2 failed, 3 passed`.
+  - The fix (the measurer's): `sorted(set(...))`.
+- What it changes (from the stored parquets, old years only):
+  - NS-1 ticks: 186 -> 185 trades, pooled R -0.068 -> -0.063 (95 % -0.214..+0.087), 2024-25 47 -> 46 trades, R -0.058
+    -> -0.038. The duplicate is a -1.00 stop. The "vs the M1 run, same days 186" line becomes 185.
+  - NS-2: 207 -> 206 trades, pooled R -0.241 -> -0.237, 2024-25 52 -> 51, R +0.159 -> +0.186. The duplicate is a -1.22
+    stop.
+  - Both verdicts stay FAIL.
+
+**PASS: the old ticks' UTC time** (`fetch_release_ticks.py`: `ServerClock.server_epochs_to_utc(msc // 1000)` + ms).
+Checked with `audit2/check_ticks_old.py` (`out_check_ticks_old.txt`) on all 206 files, 2021-10-01 .. 2025-09-26:
+- every file name = the New York date of its first tick, and every file spans 08:20 .. 09:05 NY to within 2 min;
+- the ticks' bid re-aggregated per minute equals the M1 store's OHLC on 8,855 of 8,857 minutes (0.9998); shifted by
+  -60 / +60 min, 0 equal;
+- on the release days the largest one-minute range sits at 08:30 NY on 162 of 206 days (+1 on 7, -1 on 2), a clock from
+  outside the data;
+- the 2 release days without a file (2023-04-07, 2024-03-29) are Good Fridays.
+- The comment in `ticks()` that blames the gateway's int epochs is disproven (section 16); the workaround is harmless.
+
+**PASS: the straddle copies** (`test_the_straddle_copies_agree`):
+- 300 random tick series around 08:30 (226 traded: 132 time, 94 stop); `ns1_ticks.straddle` = `ns2.straddle_k(k = 1)`
+  in side, entry, exit, pnl and R on every series. The measurer's own parity line: `ns1_ticks.straddle` vs dev1's
+  runner 100 / 100.
+- `test_ns2_scales_the_trigger_and_the_stop` (by hand): k 0.5 -> no trade; k 0.4 -> a buy at 101.1, out at the time,
+  R = (99.0 - 101.1) / 3.2.
+- `ns2.k_at` (the last H1 bar closed by t0, any time unit): its own test covers the time-unit fix. The low k of
+  2021-23 (median 0.21, H1 ATR about 3.4 USD) agrees with the store: the median H1 range was 3.19 / 3.87 / 3.34 USD in
+  2021 / 2022 / 2023, with no duplicate bars.
+
+**PASS: `sw20_plan1.switch`** against a brute-force reading of its definition (only trades that exited strictly before
+the entry, the last n by exit time, mean > 0): 150 random sets, n 1..5, equal everywhere
+(`test_sw20_switch_against_its_definition`).
+
+**Read, no bug:**
+- `ns1.straddle_m1`: the ask = bid + spread x 0.01 + 0.08, the trigger from the 08:29 bar's close, the 08:30 bar as
+  the 60 s, both sides reached -> the worse counts, stop before target in one bar, no target in the trigger bar, the
+  time exit at the 09:00 bar's open (a sell at its ask). It reads `gold.bars(before=...)` (no exam).
+  - The trigger bar's whole range is used for the stop, including prices before the fill: conservative, and tested.
+  - The measurer's calibration shows the M1 model is optimistic on release days (bias +0.193 R against the ticks),
+    and the old years agree: M1 +0.164 vs ticks -0.068 on the same days.
+- `check_plan1.py`: own loaders filtered before the exam with asserts; London at slippage 0.07 and NY at 0 in `main`
+  (matching `combo_trades_slip0`'s meaning). `check_plan1_audit.py` (round 3) already re-derived London 119 / 119 and
+  NY 100 / 100 with it at slippage 0.
+- Year labels in `ns1` / `ns1_ticks` / `ns2`: a "year" runs October .. September, so 2021-09 appears as "2020-21" (7
+  trades in `ns1`) and 2025-10 as "2025-26" (6). These are labels only.
+- `out_ns1_calib.txt` ends with a `FileNotFoundError` traceback for `data\history\...\M1.parquet`: `gold.OLD` / `NEW` are
+  relative paths, so `gold.bars` works only from the repo root. This is a stored-output note, not a result bug.
+
 ## The files changed by the audit
 
 | File | Change | Its test (fails before, passes after) |
@@ -924,6 +1038,14 @@ Nothing in `dev/` or `dev2/` was edited (`plan1.py` and `swings.py` were mutated
 `build` in memory and writes nothing there). Re-running `framework2.py` / `level_power.py` rewrote their parquet files
 in `precursors/` with byte-identical content. Nothing was committed.
 
+Round 4 (not committed):
+
+| File | Change | Its test (fails before, passes after) |
+|---|---|---|
+| `app/broker/gateway.py` | `_copy_ticks`: copy_ticks_range asked again (3 attempts, 5 s apart) while the terminal downloads a tick month (-1); `sleep` injectable | `tests/unit/test_ticks_sync.py` (new, 7): HEAD ImportError / raises on the first -1 -> 7 passed |
+| `tests/integration/test_mt5_terminal.py` | `test_ticks_range_takes_int_epochs_and_aware_datetimes_alike` (`-m mt5`) | passes on the real terminal |
+| `audit2/`: `test_measurer_r4.py`, `check_ticks_old.py`, `mutants_gateway_ticks.py` (new); outputs `out_r4_ticks_before.txt`, `out_plant_gateway_ticks.txt`, `out_check_ticks_old.txt`, `out_test_measurer_r4.txt` | the audit's own files (2 tests fail on purpose: the relay) | - |
+
 ## The commands to re-run every check (from the repo root, `.venv`)
 
 ```
@@ -956,6 +1078,12 @@ for s in mutants_plan1 mutants_dev2_swings_r3; do .venv/Scripts/python research/
 for f in framework framework2 level_power; do .venv/Scripts/python research/2026-10-18-moments/agents/precursors/$f.py; done   # one at a time
 .venv/Scripts/python research/2026-10-18-moments/agents/precursors/regime.py combo_trades.parquet
 .venv/Scripts/python research/2026-10-18-moments/agents/precursors/verify_p2.py
+# round 4 (2026-10-20 / 21)
+.venv/Scripts/python -m pytest tests/unit/test_ticks_sync.py -q
+$env:TAA_MT5_TESTS="1"; .venv/Scripts/python -m pytest -m mt5 tests/integration/test_mt5_terminal.py -k ticks -q
+.venv/Scripts/python research/2026-10-18-moments/agents/audit2/plant.py mutants_gateway_ticks
+.venv/Scripts/python -m pytest research/2026-10-18-moments/agents/audit2/test_measurer_r4.py -q   # 2 fail until the relay is fixed
+.venv/Scripts/python research/2026-10-18-moments/agents/audit2/check_ticks_old.py
 ```
 The one-off measurements whose code is in this file's history, not in a script: the window split
 (`out_window_split.txt`), the drawdown impact (`out_dd_impact.txt`, `out_dd_printed.txt`), the callers' entry hours
@@ -964,6 +1092,13 @@ loaded in place of the module, then the test file run). `check_relay_impact.py` 
 has applied the fix (it needs the old line).
 
 ## Questions for the measurer
+
+Round 4's:
+
+13. **The release-day repeat** (section 17): fix `ns1_ticks.main` / `ns2.main` with `sorted(set(...))` and re-run? The
+    numbers move by about 0.005 R and the verdicts stay FAIL.
+14. **The retry in the gateway** may block a caller up to about 3 x 100 s on an unstored tick month. Is that acceptable
+    for every caller, or should the engine path use one attempt? (Today it reads only the current month.)
 
 Round 3's:
 

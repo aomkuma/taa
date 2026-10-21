@@ -1,0 +1,14 @@
+CAUGHT  one attempt fewer: 1 failed in 0.93s
+          test_a_month_still_downloading_is_asked_again[ticks_range]
+CAUGHT  every error retried: 1 failed, 4 passed in 1.48s
+          test_another_error_is_not_retried - Fai...
+CAUGHT  no error retried: 1 failed in 1.00s
+          test_a_month_still_downloading_is_asked_again[ticks_range]
+CAUGHT  no pause between attempts: 1 failed in 0.96s
+          test_a_month_still_downloading_is_asked_again[ticks_range]
+CAUGHT  a pause after the last attempt too: 1 failed, 2 passed in 1.18s
+          test_it_gives_up_after_the_last_attempt_and_says_why[ticks_range]
+CAUGHT  an empty answer taken as a failure: 1 failed, 6 passed in 1.80s
+          test_an_empty_answer_is_an_answer - app...
+6 of 6 caught (app.broker.gateway)
+ALL: 6 of 6 caught; unmutated: 7 passed in 1.79s

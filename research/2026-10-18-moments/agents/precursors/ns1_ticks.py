@@ -57,7 +57,7 @@ def straddle(t, bid, ask, t0: int, slip: float = 0.0) -> dict | None:
 
 def main() -> None:
     cal = pd.read_csv(ROOT / "app/news/us_releases.csv")
-    rel = sorted(cal[(cal.time_et == "08:30") & (cal.date >= "2021-09-01") & (cal.date <= "2025-10-17")].date)
+    rel = sorted(set(cal[(cal.time_et == "08:30") & (cal.date >= "2021-09-01") & (cal.date <= "2025-10-17")].date))
     rows, missing = [], []
     for d in rel:
         x = load(d)

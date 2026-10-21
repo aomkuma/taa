@@ -1,10 +1,10 @@
-release days 209, with ticks 207, trades 186; missing ['2023-04-07', '2024-03-29']
+release days 208, with ticks 206, trades 185; missing ['2023-04-07', '2024-03-29']
          size   mean     sum
 year                        
 2021-22    39  0.031   1.191
 2022-23    50 -0.010  -0.508
 2023-24    50 -0.213 -10.661
-2024-25    47 -0.058  -2.743
-pooled: 186 trades, R -0.068 (95 % -0.219..+0.082), win 0.42, exits {'time': 119, 'stop': 67}
+2024-25    46 -0.038  -1.741
+pooled: 185 trades, R -0.063 (95 % -0.214..+0.087), win 0.43, exits {'time': 119, 'stop': 66}
 pass line (pooled >= +0.15 and > 0 in >= 3 of the 4 full years): FAIL
-vs the M1 run, same days 186: same side 0.92; R ticks -0.068 vs M1 +0.164
+vs the M1 run, same days 185: same side 0.92; R ticks -0.063 vs M1 +0.170

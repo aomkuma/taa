@@ -1,3 +1,23 @@
+# Exam runner for #43 RT_opp and #23 RC_win - built 2026-10-21 11:44-11:48 Thai (`date -u` 04:44-04:48)
+
+`exam43.py` writes the frozen definitions at its top.
+- The default reads the learning parts only. `--exam` (THE MEASURER ONLY) reads 2026-04-18 .. 2026-10-17.
+- I have not run `--exam`, and no exam data was loaded. The guard is tested with fake readers only.
+
+**With the switch off, the learning results reproduce `states_events.parquet` (row 45) trade for trade on the ticks:**
+- RT_opp: 41 / 46 trades, the same entries, max |dR| 0;
+- RC_win: 19 / 22 trades, the same entries, max |dR| 0.
+
+| Stream | Part | Trades | R | Win | USD at 0.01 lot | Worst | Losing streak | Max DD (USD) |
+|---|---|---|---|---|---|---|---|---|
+| RT_opp | P1 | 41 | +0.261 | 0.71 | +188.31 | -18.58 | 2 | 36.85 |
+| RT_opp | P2 | 46 | +0.255 | 0.67 | +436.42 | -92.37 | 3 | 107.34 |
+| RC_win | P1 | 19 | +0.311 | 0.58 | +59.26 | -19.69 | 4 | 66.37 |
+| RC_win | P2 | 22 | +0.313 | 0.50 | +312.91 | -35.13 | 3 | 53.81 |
+
+The week-by-week table is in `out_exam43_learn.txt`. Tests: `test_exam43.py`, 10 pass. Planted bugs:
+`plant_exam43.py`, 13 of 13 caught after one test was added (the exit-order sort).
+
 # Row 52 - do the leads pay while gold-ETF holdings grow? - written before computing (2026-10-20 19:37 Thai, `date -u` 12:37)
 
 **Data** (public; downloaded read-only into `strategist/etf/` at 19:35-19:38 Thai):

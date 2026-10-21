@@ -1,0 +1,3 @@
+files 206 (2021-10-01 .. 2025-09-26); file name = the NY date of its first tick: 206 of 206; span 08:20 .. 09:05 NY (within 2 min): 206 of 206
+1. tick minutes (bid OHLC) = the M1 store: 8855 of 8857 (0.9998); with the ticks shifted -60 min 0, +60 min 0; days under 95 % equal: []
+2. release days 206: the largest one-minute range at (minutes from 08:30 NY): {-1: 2, 0: 162, 1: 7, 2: 5, 3: 6, 4: 4, 5: 3, 8: 1, 9: 1, 11: 1, 12: 1, 14: 1, 16: 2, 20: 1, 21: 1, 24: 1, 30: 4, 31: 1, 32: 2}; at 0: 162

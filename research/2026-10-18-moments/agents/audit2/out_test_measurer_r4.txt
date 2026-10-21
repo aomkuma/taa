@@ -1,0 +1,64 @@
+FF...                                                                    [100%]
+================================== FAILURES ===================================
+_________________ test_ns1_ticks_trades_each_release_day_once _________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001AD0B9FAAD0>
+
+    def test_ns1_ticks_trades_each_release_day_once(monkeypatch) -> None:
+        _calendar_has_the_repeat()
+        saved = _capture(monkeypatch)
+        tk = (np.array([0], np.int64), np.array([1.0]), np.array([1.2]))
+        monkeypatch.setattr(N, "load", lambda d: tk if d in (TWICE, "2025-04-29") else None)
+        monkeypatch.setattr(N, "straddle", lambda *a, **k: {key: v for key, v in _trade().items() if key not in ("k", "spread")})
+        N.main()
+        T = saved[-1]
+>       assert not T.day.duplicated().any(), T.day.tolist()
+E       AssertionError: ['2025-04-30', '2025-04-30']
+E       assert not np.True_
+E        +  where np.True_ = any()
+E        +    where any = 0    False\n1     True\nName: day, dtype: bool.any
+E        +      where 0    False\n1     True\nName: day, dtype: bool = duplicated()
+E        +        where duplicated = 0    2025-04-30\n1    2025-04-30\nName: day, dtype: str.duplicated
+E        +          where 0    2025-04-30\n1    2025-04-30\nName: day, dtype: str =           day     year  side  entry  exit_px  pnl      R  exit\n0  2025-04-30  2024-25     1  100.0    101.0  1.0  0.125  time\n1  2025-04-30  2024-25     1  100.0    101.0  1.0  0.125  time.day
+
+research\2026-10-18-moments\agents\audit2\test_measurer_r4.py:56: AssertionError
+---------------------------- Captured stdout call -----------------------------
+release days 209, with ticks 2, trades 2; missing ['2021-10-01', '2021-10-08', '2021-10-13', '2021-10-14', '2021-10-28', '2021-10-29', '2021-11-05', '2021-11-09', '2021-11-10', '2021-11-24']
+         size   mean   sum
+year                      
+2024-25     2  0.125  0.25
+pooled: 2 trades, R +0.125 (95 % +0.125..+0.125), win 1.00, exits {'time': 2}
+pass line (pooled >= +0.15 and > 0 in >= 3 of the 4 full years): FAIL
+vs the M1 run, same days 2: same side 0.00; R ticks +0.125 vs M1 -1.000
+____________________ test_ns2_trades_each_release_day_once ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x000001AD0BABAE90>
+
+    def test_ns2_trades_each_release_day_once(monkeypatch) -> None:
+        _calendar_has_the_repeat()
+        saved = _capture(monkeypatch)
+        monkeypatch.setattr(C, "EXAM", C.EXAM)  # restored after the test (ns2.main moves it)
+        monkeypatch.setattr(C, "day_ticks", lambda *a, **k: None)  # no day from 2025-10-18 on is read
+        tk = (np.array([0], np.int64), np.array([1.0]), np.array([1.2]))
+        monkeypatch.setattr(N, "load", lambda d: tk if d == TWICE else None)
+        monkeypatch.setattr(ns2, "h1_atr", lambda: pd.Series([16.33], index=pd.DatetimeIndex(["2021-01-01"], tz="UTC")))
+        monkeypatch.setattr(ns2, "straddle_k", _trade)
+        ns2.main()
+        T = saved[-1]
+>       assert not T.day.duplicated().any(), T.day.tolist()
+E       AssertionError: ['2025-04-30', '2025-04-30']
+E       assert not np.True_
+E        +  where np.True_ = any()
+E        +    where any = 0    False\n1     True\nName: day, dtype: bool.any
+E        +      where 0    False\n1     True\nName: day, dtype: bool = duplicated()
+E        +        where duplicated = 0    2025-04-30\n1    2025-04-30\nName: day, dtype: str.duplicated
+E        +          where 0    2025-04-30\n1    2025-04-30\nName: day, dtype: str =           day   period  side    k  entry  exit_px  pnl      R  exit  spread\n0  2025-04-30  2024-25     1  1.0  100.0    101.0  1.0  0.125  time     0.3\n1  2025-04-30  2024-25     1  1.0  100.0    101.0  1.0  0.125  time     0.3.day
+
+research\2026-10-18-moments\agents\audit2\test_measurer_r4.py:70: AssertionError
+---------------------------- Captured stdout call -----------------------------
+2024-25    2 trades, R +0.125, sum   +0.2, median k 1.00 (trigger 2.00, stop 8.00 USD), spread / stop 0.037, win 1.00
+old years pooled: 2 trades, R +0.125 (+0.125..+0.125); pass line: FAIL
+=========================== short test summary info ===========================
+FAILED research/2026-10-18-moments/agents/audit2/test_measurer_r4.py::test_ns1_ticks_trades_each_release_day_once
+FAILED research/2026-10-18-moments/agents/audit2/test_measurer_r4.py::test_ns2_trades_each_release_day_once
+2 failed, 3 passed in 6.31s

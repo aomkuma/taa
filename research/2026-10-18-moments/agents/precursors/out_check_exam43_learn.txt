@@ -1,0 +1,4 @@
+RC_win P1  : 19 trades, entry |diff| max 0.000, same exit 1.00, |dR| max 0.0767 (> 0.01: 2), mine R +0.316 vs +0.311
+RC_win P2  : 22 trades, entry |diff| max 0.000, same exit 1.00, |dR| max 0.0104 (> 0.01: 1), mine R +0.312 vs +0.313
+RT_opp P1  : 41 trades, entry |diff| max 0.000, same exit 0.98, |dR| max 0.0460 (> 0.01: 1), mine R +0.260 vs +0.261
+RT_opp P2  : 46 trades, entry |diff| max 0.000, same exit 0.98, |dR| max 0.6928 (> 0.01: 1), mine R +0.240 vs +0.255

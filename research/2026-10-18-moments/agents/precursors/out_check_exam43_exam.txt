@@ -1,0 +1,2 @@
+RC_win exam: 54 trades, entry |diff| max 0.000, same exit 1.00, |dR| max 0.0153 (> 0.01: 1), mine R +0.065 vs +0.065
+RT_opp exam: 117 trades, entry |diff| max 0.000, same exit 0.97, |dR| max 0.4406 (> 0.01: 6), mine R -0.124 vs -0.120

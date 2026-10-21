@@ -1,0 +1,16 @@
+
+=================================== ERRORS ====================================
+_______________ ERROR collecting tests/unit/test_ticks_sync.py ________________
+ImportError while importing test module 'C:\Users\korap\taa\tests\unit\test_ticks_sync.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+..\AppData\Local\Programs\Python\Python311\Lib\importlib\__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests\unit\test_ticks_sync.py:16: in <module>
+    from app.broker.gateway import TICK_SYNC_ATTEMPTS, ReadOnlyMT5Gateway
+E   ImportError: cannot import name 'TICK_SYNC_ATTEMPTS' from 'app.broker.gateway' (C:\Users\korap\taa\app\broker\gateway.py)
+=========================== short test summary info ===========================
+ERROR tests/unit/test_ticks_sync.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 1.38s

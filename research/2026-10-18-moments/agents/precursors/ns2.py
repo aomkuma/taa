@@ -68,7 +68,7 @@ def straddle_k(t, bid, ask, t0: int, k: float) -> dict | None:
 def main() -> None:
     atr = h1_atr()
     cal = pd.read_csv(ROOT / "app/news/us_releases.csv")
-    rel = sorted(cal[cal.time_et == "08:30"].date)
+    rel = sorted(set(cal[cal.time_et == "08:30"].date))
     rows = []
     C.EXAM = pd.Timestamp("2026-10-18", tz="UTC")  # P1 / P2 / exam days are a description (the exam already read)
     for d in rel:

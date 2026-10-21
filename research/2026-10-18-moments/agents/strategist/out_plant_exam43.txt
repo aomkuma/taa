@@ -1,0 +1,13 @@
+CAUGHT  allow_abbrev=True
+CAUGHT  ap.add_argument("--exam", action="store_false"
+CAUGHT      if False:
+CAUGHT  d = reader(M1_PATH, [("open_time", ">=", start - WARMUP), ("open_time", "<", EXAM_END)])
+CAUGHT      if False:
+CAUGHT      if False:
+CAUGHT      if False:
+CAUGHT  return ["P1", "P2", "exam"]
+CAUGHT  run = run + 1 if p < 0 else 0
+CAUGHT  eq = np.cumsum(pnl)
+CAUGHT  x = T
+CAUGHT  win=float((x.pnl >= 0).mean())
+CAUGHT  .dt.tz_localize(None)
