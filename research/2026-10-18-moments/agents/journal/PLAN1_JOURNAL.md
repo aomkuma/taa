@@ -902,3 +902,11 @@ five (-3.41 R); Asia B2 +0.02; the ORB +0.50.
 
 **The rules that cost this week:** the pool rule skipped two ORB winners (+0.31, +0.62): cost 0.93; weeks 1-30 net
 **+0.11 R** (about even). The 1.5 R target cost 0.50. **The one change for week 31:** none.
+
+## Week 31 - 2026-05-18 .. 22
+
+`out_rules_w31.txt`, `out_liq_w31.txt`, `out_acct_w31.txt`. Base 10 trades -1.95 R; rules 7 trades **+0.02 R, -3.70 USD**;
+account **229.46 -> 225.76 USD**. The straddle +1.31 (Mon +2.32), Asia B2 -1.14, the ORB -0.14.
+
+**The rules that cost this week:** the pool rule saved 1.97 R (skipped -1.01, -1.02, +0.06); weeks 1-31 net +2.08 R.
+**The one change for week 32:** none.
