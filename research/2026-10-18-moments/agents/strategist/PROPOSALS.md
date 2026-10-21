@@ -1,3 +1,125 @@
+# Row 58 - setups for the CALM gold (H1 ATR < 12) - written before computing (2026-10-21 12:46 Thai, `date -u` 05:46)
+
+**The data:**
+- the whole-day ticks `D:/taa-data/ticks/XAUUSD`; M1 via `gold.bars(before=2025-10-01)`;
+- the costs: the tick spread only, slippage 0;
+- **LEARN** 2021-09-01 .. 2023-09-30 and **TEST** 2023-10-01 .. 2025-09-30;
+- only trades whose H1 ATR(14) at the decision is < 12 (vol16_old's ATR: the H1 store, the last closed bar).
+
+**The guard:** `calm58.py learn` builds events only before 2023-10-01, and writes the chosen settings to
+`calm58_frozen.json`. `calm58.py test` refuses to run without that file, and reads TEST once. Every candidate is
+simulated by `tsim.grid` on the ticks. Each trade is taken alone.
+
+**The five candidates:**
+1. **ORB_FADE:**
+   - The events are PLAN-1's London ORB (vol16_old's loop: the range 06:00-06:14 UTC, skip if > 1.5 H, the first M1
+     close beyond it 06:15-07:14).
+   - Taken the OTHER way at the same tick. d = the rule's stop distance from its own fill (to the range's other side).
+   - The settings: (i) stop d, target 1 d; (ii) stop d, target 0.5 d; (iii) stop 1.5 d, target 1 d. All out at 60
+     minutes.
+2. **STR_FADE:**
+   - The events are PLAN-1's NY 08:30 straddle (`ns1_ticks.straddle`'s trigger: the reference tick before 08:30:00,
+     ±2 USD, live 60 s).
+   - Taken the OTHER way at the trigger tick.
+   - The settings: (i) stop 8, no target, out at 08:30 + 30 min (the exact mirror); (ii) stop 8, target 8; (iii)
+     stop 4, target 4.
+3. **ASIA_FADE:**
+   - The Asia range is the M1 high / low of 00:00-07:00 Thai (17:00-24:00 UTC of the day before).
+   - In London's first hour (08:00-09:00 London time), after an M1 bar trades beyond an edge, the first M1 close back
+     inside the range fades it, entered at the next tick.
+   - Stop = the excursion's extreme beyond the edge + b x H, with H = the H1 ATR. Target = the range's middle. Out 60
+     minutes after the entry. One trade a day (the first).
+   - The settings: b = 0.1 / 0.25 / 0.5.
+4. **RC_CALM** (rows 10 / 23):
+   - The events are `streams.py`'s RC: the reclaim of PDH / PDL / ASH / ASL, all hours.
+   - The stop as the rule (0.25 H past the break's extreme); out at 120 minutes.
+   - The settings: the target 2 R (the rule) / 1 R / 0.5 R.
+5. **RT_OPP_CALM** (rows 25 / 43):
+   - The events are `streams.py`'s RT (the break / retest / turn), taken back into the range; all hours, out at 120
+     minutes.
+   - The settings: (i) stop d, target 1 d (#43); (ii) stop d, target 0.5 d; (iii) stop 1.5 d, target 1 d.
+
+**The choice:**
+- Per candidate, the setting with the best LEARN R (calm trades) is frozen; all three are reported.
+- TEST is read once.
+- **Pass:** TEST R >= +0.10 on >= 100 trades, with the 95 % range above 0, and LEARN >= +0.10.
+- **Parity:** the ORB and straddle event loops on their own rule side (setting "same, x1, the rule's target") against
+  `vol16_old.parquet` per year: LEARN years in the learn run, TEST years in the test run.
+- **Settings tried:** 5 x 3 = 15.
+# Row 58 - the results (LEARN 12:47-12:49 Thai, frozen; TEST read once 12:50-12:52 Thai)
+
+**How it was checked:**
+- **The guard** (`test_calm58.py`, 6 tests; `plant_calm58.py`, 8 of 8 planted bugs caught; `out_plant_calm58.txt`):
+  - TEST refuses to run without the frozen file;
+  - no tick day at / after the phase's end is opened (checked before any path is built);
+  - the ASIA_FADE event: the close back inside, the same bar, the excursion's extreme, the hour limit;
+  - the choice uses calm trades only, and the best R.
+- **The parity of the rule side with `vol16_old.parquet`, per year:**
+  - every year has the same trade count;
+  - the ORB R differs by at most 0.002 (tsim against check_plan1.manage); the straddle R is equal.
+- **The order:** LEARN wrote `calm58_frozen.json` before TEST ran. TEST's own run printed only the frozen settings.
+  The other TEST settings in `out_calm58_risk.txt` were computed by the same run and are descriptive only.
+
+## LEARN (2021-09 .. 2023-09, calm trades; `out_calm58_learn.txt`)
+
+| Candidate | Setting | Trades | R (95 % range) | Median risk (USD) |
+|---|---|---|---|---|
+| ORB_FADE | i stop d, target d | 517 | -0.235 (-0.310 .. -0.162) | 2.24 |
+| ORB_FADE | ii stop d, target 0.5 d | 517 | -0.210 | 2.24 |
+| ORB_FADE | **iii stop 1.5 d, target d** | 517 | **-0.125** | 3.36 |
+| (the ORB itself, the rule side) | | 517 | -0.178 | 2.24 |
+| STR_FADE | i stop 8, no target | 181 | -0.175 | 8 |
+| STR_FADE | **ii stop 8, target 8** | 181 | **-0.170** | 8 |
+| STR_FADE | iii stop 4, target 4 | 181 | -0.333 | 4 |
+| (the straddle itself) | | 181 | -0.016 | 8 |
+| ASIA_FADE | b 0.10 / 0.25 / **0.50** | 259 | -0.277 / -0.164 / **-0.106** | 1.83 / 2.37 / 3.20 |
+| RC_CALM | target 2 R / **1 R** / 0.5 R | 723 | -0.047 / **-0.044** / -0.083 | 4.10 |
+| RT_OPP_CALM | i / ii / **iii** | 545 | -0.073 / -0.078 / **-0.038** | 3.63 / 3.63 / 5.45 |
+
+The frozen settings (in bold) were the best LEARN R of each candidate. Every one is already below the LEARN line of
++0.10.
+
+## TEST, read once (2023-10 .. 2025-09, calm trades; `out_calm58_test.txt`)
+
+| Candidate (frozen) | LEARN | TEST trades | TEST R (95 % range) | 2023-24 | 2024-25 | USD at 0.01 lot | Verdict |
+|---|---|---|---|---|---|---|---|
+| ORB_FADE iii | -0.125 (517) | 468 | -0.107 (-0.166 .. -0.050) | -0.165 | -0.043 | -164.2 | FAIL |
+| STR_FADE ii | -0.170 (181) | 191 | -0.101 (-0.209 .. +0.009) | -0.187 | +0.005 | -153.7 | FAIL |
+| ASIA_FADE b 0.50 | -0.106 (259) | 173 | -0.159 (-0.288 .. -0.025) | -0.139 | -0.188 | -112.5 | FAIL |
+| RC_CALM 1 R | -0.044 (723) | 604 | -0.127 (-0.190 .. -0.059) | -0.124 | -0.130 | -436.8 | FAIL |
+| RT_OPP_CALM iii | -0.038 (545) | 442 | -0.120 (-0.184 .. -0.058) | -0.137 | -0.099 | -443.2 | FAIL |
+
+**All five FAIL.**
+
+## What it shows
+- **In calm gold, both sides of the same event lose.**
+  - The 13:00 ORB lost as a break (-0.178 in LEARN) and lost faded (-0.125 .. -0.235).
+  - The straddle lost as itself (-0.016 LEARN, -0.093 TEST) and lost faded (-0.170 / -0.101).
+  - So the opposite side, the wider stop and the nearer target were all tried. They change the size of the loss, not
+    its sign: these events carry no direction in calm gold.
+- **The trades are small against the cost.** The median risk is 1.8-5.4 USD in LEARN against a 0.2-0.3 USD spread.
+  - One round trip costs about 4-17 % of R before any direction.
+  - The widest stops lost least within every candidate (ORB_FADE iii, ASIA_FADE b 0.50, RT_OPP_CALM iii).
+- **The fades of breaks at the levels everyone sees (RC, RT_opp) are the nearest to 0 in LEARN** (-0.044 / -0.038).
+  But they lose -0.12 .. -0.13 in TEST: the same "the present only" story as rows 43-45.
+
+## What to stop, and what is left
+- **Stop:** fading or following these session-open and level events in calm gold with stops of a few USD. Five
+  transformations with three settings each lost in both halves.
+- **What is left for a calm-gold tool** (hypotheses only, not run):
+  - **Larger time frames**, so the trade is many spreads wide. For example, H1 / H4 levels with stops of 10+ USD and
+    holds of hours, where the spread is under 3 % of R.
+  - **Standing aside in calm gold** as the tool itself: the measured fact is that nothing here paid. The system would
+    trade VOL-16's band and the present only, and stay flat otherwise ("trades less, not never" taken to its end).
+- **Question to the measurer and the owner:** is standing aside an acceptable calm-gold "tool", or should the next
+  round try the larger-time-frame idea under the same LEARN / TEST protocol?
+
+## Files (row 58)
+- `calm58.py` + `test_calm58.py` + `plant_calm58.py`
+- `calm58_frozen.json`
+- outputs: `out_calm58_learn.txt`, `out_calm58_test.txt`, `out_calm58_risk.txt`, `out_plant_calm58.txt`,
+  `calm58_learn.parquet`, `calm58_test.parquet`
+
 # Row 57 - the walk-forward of the PROCESS (London 13:00 ORB, NY 08:30 straddle) - written before computing (2026-10-21 12:36 Thai, `date -u` 05:36)
 
 Owner: "backtest, prove, use, and keep learning the market".

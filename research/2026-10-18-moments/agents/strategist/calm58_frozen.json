@@ -1,0 +1,7 @@
+{
+ "ORB_FADE": "iii stop 1.5 d, target d",
+ "STR_FADE": "ii stop 8, target 8",
+ "ASIA_FADE": "b 0.50",
+ "RC_CALM": "target 1 R",
+ "RT_OPP_CALM": "iii stop 1.5 d, target d"
+}

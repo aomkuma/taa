@@ -1,0 +1,19 @@
+=== TEST 2023-10-01 .. 2025-09-30; calm = H1 ATR < 12
+parity London ORB 2023-24: vol16_old 250 R -0.073 | mine 250 R -0.072
+parity London ORB 2024-25: vol16_old 251 R -0.075 | mine 251 R -0.074
+parity NY straddle 2023-24: vol16_old 106 R -0.146 | mine 106 R -0.146
+parity NY straddle 2024-25: vol16_old 109 R -0.009 | mine 109 R -0.009
+
+candidate / setting: calm trades, R (95 % range), win, USD at 0.01 lot | per year
+ORB_FADE     iii stop 1.5 d, target d      468  -0.107 (-0.166 .. -0.050)  win 0.48  USD   -164.2 | 2023-24 247 -0.165 | 2024-25 221 -0.043
+STR_FADE     ii stop 8, target 8           191  -0.101 (-0.209 .. +0.009)  win 0.45  USD   -153.7 | 2023-24 105 -0.187 | 2024-25 86 +0.005
+ASIA_FADE    b 0.50                        173  -0.159 (-0.288 .. -0.025)  win 0.43  USD   -112.5 | 2023-24 103 -0.139 | 2024-25 70 -0.188
+RC_CALM      target 1 R                    604  -0.127 (-0.190 .. -0.059)  win 0.44  USD   -436.8 | 2023-24 335 -0.124 | 2024-25 269 -0.130
+RT_OPP_CALM  iii stop 1.5 d, target d      442  -0.120 (-0.184 .. -0.058)  win 0.48  USD   -443.2 | 2023-24 240 -0.137 | 2024-25 202 -0.099
+
+PASS (TEST R >= +0.10 on >= 100 calm trades, 95 % range above 0, LEARN >= +0.10):
+  ORB_FADE     iii stop 1.5 d, target d     LEARN -0.125 (517) TEST -0.107 (468, low -0.166) -> FAIL
+  STR_FADE     ii stop 8, target 8          LEARN -0.170 (181) TEST -0.101 (191, low -0.209) -> FAIL
+  ASIA_FADE    b 0.50                       LEARN -0.106 (259) TEST -0.159 (173, low -0.288) -> FAIL
+  RC_CALM      target 1 R                   LEARN -0.044 (723) TEST -0.127 (604, low -0.190) -> FAIL
+  RT_OPP_CALM  iii stop 1.5 d, target d     LEARN -0.038 (545) TEST -0.120 (442, low -0.184) -> FAIL

@@ -1,0 +1,26 @@
+['cand', 'setting', 't_in', 'atr', 'entry', 'risk', 'exit', 'pnl', 'R']
+frozen: {'ORB_FADE': 'iii stop 1.5 d, target d', 'STR_FADE': 'ii stop 8, target 8', 'ASIA_FADE': 'b 0.50', 'RC_CALM': 'target 1 R', 'RT_OPP_CALM': 'iii stop 1.5 d, target d'}
+                                         size   mean
+cand        setting                                 
+ASIA_FADE   b 0.10                        179 -0.138
+            b 0.25                        179 -0.155
+            b 0.50                        179 -0.161
+ORB_FADE    i stop d, target d            501 -0.159
+            ii stop d, target 0.5 d       501 -0.128
+            iii stop 1.5 d, target d      501 -0.110
+            rule side                     501 -0.073
+RC_CALM     target 0.5 R                  647 -0.113
+            target 1 R                    647 -0.130
+            target 2 R (rule)             647 -0.147
+RT_OPP_CALM i stop d, target d            467 -0.166
+            ii stop d, target 0.5 d       467 -0.158
+            iii stop 1.5 d, target d      467 -0.118
+STR_FADE    i stop 8, no target, 30 min   215 -0.101
+            ii stop 8, target 8           215 -0.096
+            iii stop 4, target 4          215 -0.255
+            rule side                     215 -0.076
+ORB_FADE     iii stop 1.5 d, target d     calm trades 468 R -0.107
+STR_FADE     ii stop 8, target 8          calm trades 191 R -0.101
+ASIA_FADE    b 0.50                       calm trades 173 R -0.159
+RC_CALM      target 1 R                   calm trades 604 R -0.127
+RT_OPP_CALM  iii stop 1.5 d, target d     calm trades 442 R -0.120

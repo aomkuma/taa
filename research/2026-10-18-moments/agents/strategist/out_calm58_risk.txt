@@ -1,0 +1,40 @@
+learn
+                                           n      R  risk_med
+cand        setting                                          
+ASIA_FADE   b 0.10                       259 -0.277     1.832
+            b 0.25                       259 -0.164     2.365
+            b 0.50                       259 -0.106     3.203
+ORB_FADE    i stop d, target d           517 -0.235     2.240
+            ii stop d, target 0.5 d      517 -0.210     2.240
+            iii stop 1.5 d, target d     517 -0.125     3.360
+            rule side                    517 -0.178     2.240
+RC_CALM     target 0.5 R                 723 -0.083     4.101
+            target 1 R                   723 -0.044     4.101
+            target 2 R (rule)            723 -0.047     4.101
+RT_OPP_CALM i stop d, target d           545 -0.073     3.631
+            ii stop d, target 0.5 d      545 -0.078     3.631
+            iii stop 1.5 d, target d     545 -0.038     5.447
+STR_FADE    i stop 8, no target, 30 min  181 -0.175     8.000
+            ii stop 8, target 8          181 -0.170     8.000
+            iii stop 4, target 4         181 -0.333     4.000
+            rule side                    181 -0.016     8.000
+test
+                                           n      R  risk_med
+cand        setting                                          
+ASIA_FADE   b 0.10                       173 -0.136     2.090
+            b 0.25                       173 -0.154     2.840
+            b 0.50                       173 -0.159     4.091
+ORB_FADE    i stop d, target d           468 -0.160     3.360
+            ii stop d, target 0.5 d      468 -0.129     3.360
+            iii stop 1.5 d, target d     468 -0.107     5.040
+            rule side                    468 -0.088     3.360
+RC_CALM     target 0.5 R                 604 -0.112     6.019
+            target 1 R                   604 -0.127     6.019
+            target 2 R (rule)            604 -0.145     6.019
+RT_OPP_CALM i stop d, target d           442 -0.167     5.261
+            ii stop d, target 0.5 d      442 -0.166     5.261
+            iii stop 1.5 d, target d     442 -0.120     7.892
+STR_FADE    i stop 8, no target, 30 min  191 -0.088     8.000
+            ii stop 8, target 8          191 -0.101     8.000
+            iii stop 4, target 4         191 -0.262     4.000
+            rule side                    191 -0.093     8.000

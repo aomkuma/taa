@@ -1,0 +1,8 @@
+CAUGHT          if False:
+CAUGHT      if day > end:
+CAUGHT  if (side < 0 and cl[k] < ah and k > i0 + 99) or (side > 0 and cl[k] > al):
+CAUGHT  pass
+CAUGHT  return int(o_ns[k]), side, float(ext)
+CAUGHT  i0, i1 = int(np.searchsorted(o_ns, h0)), len(o_ns)
+CAUGHT  x = T[(T.cand == cand) & (T.setting == name)]
+CAUGHT  if best is None or r < best[1] - 1e-12:
