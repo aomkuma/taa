@@ -1,0 +1,3 @@
+the W stream against plan1's Asia trades: 79 equal on ['piece', 't_dec', 't_in', 't_out', 'side', 'entry', 'stop', 'risk', 'pnl', 'R', 'exit'], 0 differ, 0 only here, 0 only in plan1 (79 in plan1)
+by entry TF (learning): M1 61 +0.020; M5 18 +0.508
+SELF-TEST PASSED

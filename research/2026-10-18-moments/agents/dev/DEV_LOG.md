@@ -1892,3 +1892,106 @@ split on Saturdays, each with only 14 days of warm-up (the forward code path):
 3. B2's patterns decided in the last exam days (from 10-15) whose entry decision falls on / after 10-18 are traded, as
    a running system would trade them. plan1.py's own runs drop such trades at their period start. Is that the
    intended reading?
+
+
+## Task B2-TF: Asia B2 by entry TF over 2021-09 .. 2026-04 - written before computing (2026-10-21 05:36 UTC = 12:36 Thai)
+
+**The hypothesis** (the measurer, 12:40 Thai). It was seen after the run, so the learning parts are not evidence: Asia
+B2 entered on M5 gave +0.503 R on 18 learning trades, and on M1 +0.014 on 61. Claim: "B2 in the Asia window pays when
+it enters on M5 only."
+
+**What is run** (nothing changed in B2 itself):
+- PLAN-1's Asia B2: variant W, entry decisions 07:00-09:00 Thai, P3's engine with the structure exit, one position at
+  a time, spread only, slippage 0, news cost 0.
+- The code is plan1.asia_b2's, also keeping each trade's entry TF. The self-test checks that it gives plan1's 79
+  learning Asia trades exactly.
+- M1 comes from `gold.bars("M1", before=2026-04-18)`: the old store, then the main store, which wins on the overlap.
+  The read is cut at 2026-04-18, so nothing from 2026-04-18 .. 2026-10-17 is loaded.
+- Ticks: whole UTC days from `D:/taa-data/ticks/XAUUSD` before 2025-10-01, and from `data/ticks/XAUUSD` from 2025-10-01.
+  A day at / after 2026-04-18 is refused before any file is opened.
+- The periods run in tiles of 4 weeks, split on Saturdays, with plan1_forward's 14-day warm-up and its 3-day locate-back
+  (proven exact on the learning parts).
+- The years, by the fill time:
+  - 2021-22 = 2021-09-01 .. 2022-09-01;
+  - 2022-23 = 2022-09-01 .. 2023-09-01;
+  - 2023-24 = 2023-09-01 .. 2024-09-01;
+  - 2024-25 = 2024-09-01 .. 2025-10-01 (13 months: the D: ticks end on 2025-09-30);
+  - P1 + P2 = 2025-10-18 .. 2026-04-18.
+  - 2025-10-01 .. 10-17 is not run (not asked).
+- Two readings:
+  - (a) the W stream as it is, split by entry TF (the measurer's reading);
+  - (b) "M5 only", the rule as it would trade: only M5 candidates enter the one-position stream, so an M1 trade no
+    longer blocks an M5 one.
+  - Each is shown per year, inside / outside the VOL-16 band (the H1 ATR of the last closed bar at the decision,
+    12.0 <= ATR < 16.0).
+
+**Pass for "M5 only"** (the measurer's), judged on (b), with (a) shown beside it:
+- pooled 2021-09 .. 2026-04: R >= +0.15 on >= 40 trades, with the 95 % range above 0;
+- M5 better than M1 (R a trade) in at least 3 of the 5 years. For M1 that is the M1 split of the W stream, (a).
+
+If (a) and (b) disagree on the verdict, I report both and say so.
+
+
+### Task B2-TF - the result (2026-10-21 05:53 UTC = 12:53 Thai)
+
+**1. What I did** (in `dev/`):
+- `b2_tf_history.py`: the runner.
+  - The tick reader: D: before 2025-10-01, `data/ticks` from 2025-10-01, any day at / after 2026-04-18 refused before
+    a file is looked for.
+  - The M1 loader: gold.bars cut at 2026-04-18.
+  - `asia_b2_tf` = plan1.asia_b2 keeping the entry TF, with `tf_only`.
+  - The tiles, the year cut, the table, the pre-registered pass.
+- `test_b2_tf_history.py`, `plant_bugs_b2_tf_history.py`.
+- Outputs: `out_b2tf.txt`, `b2tf_table.csv`, `b2tf_<year>.parquet`, `b2tf_all.parquet`, `out_b2tf_selftest.txt`.
+
+**2. The tests** (`11 passed in 2.12s`):
+- `test_tick_path_switch_and_the_cut`: 2025-09-30 23:59 -> D:; 2025-10-01 -> data/ticks; a naive 2026-04-17 is UTC;
+  2026-04-18 and 2026-10-19 raise.
+- `test_day_ticks_sorted_and_missing`: two ticks out of order are sorted; a missing file gives None without reading;
+  2026-05-01 raises.
+- `test_load_m1_cut_and_form`: the read is asked with before = 2026-04-18; a duplicate keeps the last; the columns and
+  UTC; a cut past 04-18 is refused before reading; a leaked row at the cut raises.
+- `test_year_cut`: 2021-08-31 23:59 -> none; 2022-09-01 minus 1 ns -> 2021-22; 2022-09-01 -> 2022-23; 2025-10-01 ->
+  none; 2025-10-18 -> P1+P2.
+- `test_tiles`: a Wednesday start cuts on 09-04, 10-02, 10-30; a Saturday start cuts a week later.
+- `test_m5_only_reaches_the_stream_and_the_tf_is_kept` (fakes): with tf_only M5 only the M5 candidate reaches
+  run_stream3; the TF is kept; a decision at / past the end is dropped.
+- `test_run_period_warm_up_locate_back_and_streams`: the M1 from 14 days before each tile; B2 located from the first
+  tile's start, then 3 days back; the tick cache's bounds; W and M5 only; decisions before the tile dropped.
+- `test_stats_by_hand`: R 1 / -1 / 0.5 / 0 -> mean 0.125, win 0.5 (a 0 is not a win), the ddof-1 range.
+- `test_verdict_by_hand`: R 0.15 on 40 trades with the lower end 0.01 passes; 0.149, 39 trades, a lower end of 0, or
+  2 better years (a tie is not better) fail.
+- `test_table_groups_and_bands`; `test_commands`.
+
+**3. The planted bugs** (`out_plant_bugs_b2_tf_history.txt`): **29 of 29 CAUGHT**; the control PASSED.
+
+**4. The self-test / look-ahead** (`out_b2tf_selftest.txt`, PASSED):
+- P1 + P2 through this pipeline (gold's M1, the tick switch, its own tiles) = plan1's 79 learning Asia trades, equal
+  on all 11 columns.
+- By TF: M1 61 trades +0.020, M5 18 +0.508 (the measurer's +0.014 / +0.503 differ in the third decimal; the trades
+  are identical to plan1's).
+- No new reading of price: B2 is plan1's (its look-ahead check passed); the band's H1 ATR is plan1_forward's (its check
+  passed).
+
+**5. The result** (`out_b2tf.txt`; spread only, slippage 0; R a trade, n):
+
+| reading | 2021-22 | 2022-23 | 2023-24 | 2024-25 | P1+P2 | pooled |
+|---|---|---|---|---|---|---|
+| W: M1 | 139 -0.266 | 120 -0.177 | 149 -0.118 | 189 -0.103 | 61 +0.020 | 658 -0.143 (-0.21..-0.08) |
+| W: M5 | 50 -0.097 | 49 -0.053 | 29 -0.182 | 30 +0.069 | 18 +0.508 | 176 -0.008 (-0.14..+0.12) |
+| W: all | 189 -0.221 | 169 -0.141 | 178 -0.129 | 219 -0.080 | 79 +0.131 | 834 -0.115 (-0.17..-0.06) |
+| **M5 only** | 63 -0.059 | 62 -0.065 | 41 -0.257 | 42 -0.007 | 25 +0.285 | **233 -0.049 (-0.16..+0.06)** |
+
+- **The verdict: FAIL.** M5 only pooled -0.049 on 233 trades, the range -0.16..+0.06. It is better than W's M1 in 4 of
+  5 years, but negative in each of the four years before P1. The W stream's M5 split also fails: -0.008.
+- The VOL-16 band holds few B2 trades before 2024: the H1 ATR was mostly below 12 then. In the band, pooled: W 48
+  trades +0.142, M5 only 9 trades +0.227. Outside the band, M5 only: 224 trades, -0.060.
+- What this shows: the M5 entry loses less than the M1 entry in 4 of 5 years, but it does not pay. The +0.5 in P1 + P2
+  is the only positive year. Asia B2 as a whole (W, both TFs) lost in each of 2021-25 (pooled -0.115 on 834 trades,
+  the range below 0). Only the learning half-year was positive (+0.131).
+
+**6. Questions / notes:**
+1. 2025-10-01 .. 10-17 was not run (not asked; it is between the D: ticks and P1).
+2. "M5 better than M1" used W's M1 split, as written before computing. An "M1 only" stream was not run.
+3. Asia B2's whole history is negative. Does PLAN-1's forward record keep B2 as it is? The measurer and the owner
+   decide; I change nothing.
