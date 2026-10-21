@@ -995,3 +995,10 @@ without a target lost Fri's +1.50 (it ended +0.05).
 258.57). The previous week fell, so B2 took only sells: it skipped Mon's buy (-0.44) and Tue's buy (-1.00) and kept Tue's
 sell (+1.08) and Wed's (+0.59). The 6-USD straddle stop: Mon +0.92 (8 USD: +0.69), Wed +2.02 (+1.51), Fri +1.61 (+1.21).
 Two weeks: 26 trades +0.04 R (frozen -3.41 R); 297.35 USD (frozen 258.57).
+
+## Exam week 3 (2026-05-04 .. 08) - learned: the ORB without a target and without the pool rule (+6.16 vs +4.71 over 8 weeks)
+
+12 trades **-1.37 R, -23.48 USD** (frozen: 10 trades -2.33 R, -36.52 USD); account **297.35 -> 273.87 USD** (frozen
+222.05). The pool rule off took Tue (-1.00), Wed (-0.11) and Thu (+2.24 without a target: it ran past 2 R) = +1.13. B2 with
+the previous (falling) week sold three times into this week's rise (-1.95) and skipped Wed's buy (+0.70) - the lever lags
+a turning week. Three weeks: 38 trades -1.33 R (frozen -5.74); 273.87 USD (frozen 222.05).
