@@ -1087,3 +1087,10 @@ trades +28.45 R (+0.211 a trade; frozen +33.98); 573.53 USD (frozen 637.17).
 15 trades **-0.06 R, -11.74 USD** (frozen: 14 trades -0.29 R, -4.71 USD); account **573.53 -> 561.79 USD** (frozen
 632.46). The pool rule off added Tue's ORB (+0.23); no ORB reached 1.5 or 2 R, so the target did not matter. A choppy
 week: the straddle lost three of five. Fifteen weeks: 150 trades +28.39 R (frozen +33.69); 561.79 USD (frozen 632.46).
+
+## Exam week 16 (2026-08-03 .. 07) - no change
+
+17 trades **-1.07 R, -38.22 USD** (frozen: 13 trades -1.91 R, -26.41 USD); account **561.79 -> 523.57 USD** (frozen
+606.05). The pool rule off took Mon's ORB to its 2 R target (+2.00) and Tue's (-0.50); B2 without the no-flip rule took
+two flips (Thu -0.29, Fri -0.36). Better in R, worse in USD: the account was larger, so the week's eleven losers cost more
+per R. Sixteen weeks: 167 trades +27.32 R (frozen +31.78); 523.57 USD (frozen 606.05).
