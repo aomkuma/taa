@@ -813,3 +813,12 @@ profitable" - against that bar the frozen rules' exam (+0.148 on 282, positive) 
 it missed by 0.002. Both are recorded. The old years (2021-09 .. 2025-09) are already known to lose for every piece
 (CHECKLIST 56 / 57 / 59: Asia B2 -0.115 on 834, the ORB / straddle always-on -0.036 on 1,300): the plan pays only in the
 present's large gold. The next work is the switch: how large gold must be (a slow, days-long measure) for the plan to pay.
+
+## The regime switch (frozen 2026-10-21 19:45 Thai; `regime_switch.py`, `out_regime_switch.txt`)
+
+PLAN-1 trades only while **the D1 ATR(20) of the closed D1 bars is >= 60 USD**. Chosen on 2,312 trades of 2021-09 ..
+2026-04 (the old years and the learning parts): by D1 ATR(20) <20 -0.280, 20-30 -0.122, 30-40 -0.139, 40-50 -0.081,
+50-60 +0.013, **60-80 +0.203, >80 +0.136**. Outside the present the only old months at >= 60 (2025-04 .. 06, the tariff
+months) made +0.112 on 98 trades. The learning parts and the exam never fell below 60 (their lowest 60.1 / 75.9 - only
+the D1 size of the exam was read, not its trades), so the switch changes no result so far: it is the safety switch for
+a calmer gold. **On 2026-10-18 the D1 ATR(20) was 75.9 and falling** - watched daily in the forward journal.
