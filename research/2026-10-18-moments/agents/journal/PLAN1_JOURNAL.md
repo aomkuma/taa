@@ -760,17 +760,17 @@ NY straddle is at 19:30 Thai (US summer time). Run one week at a time (out of me
 
 **Weeks 20-26:** base +11.85 R, rules +11.76 R. B2 no flip acted once (week 24, a 0.00 trade).
 
-**What happened:** weeks 20-23 the straddle stopped 11 times in 18 (the market in a range after February's crash); the
-ORB carried them. Weeks 24-26 everything ran: the straddle +12.6 R, the account +891 USD. Week 21 was the pool rule's
-worst (it skipped two ORBs that reached 2 R); weeks 1-26 it still saves +3.79 R (the 31 trades it skips sum -3.79 R).
+**What happened:** weeks 20-23 the straddle stopped 13 times in 17 (the market in a range after February's crash); the
+ORB carried them. Weeks 24-26 everything ran: the straddle +9.12 R, the account +891.60 USD. Week 21 was the pool rule's
+worst (it skipped two ORBs that reached 2 R); weeks 1-26 it still saves +2.73 R (the 24 trades it skips sum -2.73 R).
 No candidate change was found that also held on the prior weeks, so the rules stayed as they were from week 17 on.
 
 ## Twenty-six weeks (learning parts 1 + 2), the result
 
 | | Trades | R | R a trade | Account (100 USD, 7.5 % a trade, min 0.01 lot) |
 |---|---|---|---|---|
-| Base (PLAN-1 as tested) | 288 | +56.54 | +0.196 | - |
-| **Rules in force each week** | 263 | **+56.49** | **+0.215** | **100 -> 1,710.98 USD** (deepest fall -37 %, weeks 1-2; worst trade -121.80 USD) |
+| Base (PLAN-1 as tested) | 298 | +56.54 | +0.190 | - |
+| **Rules in force each week** | 265 | **+56.49** | **+0.213** | **100 -> 1,710.98 USD** (deepest fall -37 %, weeks 1-2; worst trade -121.80 USD) |
 
 ## Frozen for the exam (2026-10-21 19:15 Thai, before any exam reading of these rules)
 
