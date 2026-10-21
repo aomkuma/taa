@@ -1019,3 +1019,9 @@ buys (-0.05, -1.02). Five weeks: 54 trades -4.28 R (frozen -7.61); 249.20 USD (f
 **A lesson about the learner itself:** in five weeks the levers switched 9 times, the straddle on a margin of 0.02 R and
 the ORB's pool rule back and forth every week - chasing noise. **From exam week 6 a lever switches only when the new
 option beats the current one by at least 1.0 R over the 8 weeks** (decided now, applied forward; `wf_learn.py` MARGIN).
+
+## Exam week 6 (2026-05-25 .. 29) - learned (on the 1.0 R margin): the ORB back to 1.5 R with the pool rule (-0.83 vs -3.30 over 8 weeks), the straddle stop 6 USD (+15.05 vs +9.52)
+
+7 trades **+4.33 R, +9.76 USD** (frozen: 8 trades +2.67 R, +6.77 USD); account **249.20 -> 258.96 USD** (frozen 232.53).
+Thursday's straddle made +7.50 R at the 6-USD stop (+45.02 USD; at 8 USD +5.63 R). B2 with the previous (rising) week
+skipped Tue's sell (+0.08). Six weeks: 61 trades +0.05 R (frozen -4.94); 258.96 USD (frozen 232.53).
