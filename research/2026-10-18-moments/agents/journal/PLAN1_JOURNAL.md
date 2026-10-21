@@ -973,3 +973,18 @@ number. **Checked on weeks 1-32:** 89 of 103 B2 trades have their stop in a swee
 
 **The rules that cost this week:** the pool rule saved 1.02 (weeks 1-33 net +4.28 R); the 1.5 R target paid +0.80 (net
 since week 5 +2.96 R). **The one change for week 34:** none.
+
+# Phase 3: the exam weeks with the learning walk-forward (owner 2026-10-21/22: "learning that leaves the numbers equal to the cent is not learning")
+
+Phases 1-2 changed a rule only when it beat the old one over every week since October 2025: the old two-way market kept
+every new idea out, and the exam weeks matched the frozen run to the cent. From here (`wf_learn.py`, `context.py`,
+`variants.parquet`) **every week each lever takes the option that made the most R over the previous 8 weeks** (a tie
+keeps the current one), applied to the next week only: the ORB (target 1.0 / 1.5 / 2.0 R / none x the pool rule on /
+off), the straddle's stop (6 / 8 / 10 / 12 USD), Asia B2 (every trade / only with the previous week's direction / only
+with the D1 trend). Account: 300 USD, 3 % a trade, min 0.01 lot. Restarted at exam week 1; compared with the frozen run.
+
+## Exam week 1 (2026-04-20 .. 24) - learned: the ORB without a target (+12.69 vs +12.26 R over weeks 19-26), the straddle stop 6 USD (+4.96 vs +4.15)
+
+15 trades **-5.30 R, -44.99 USD** (frozen: 14 trades -5.11 R, -53.51 USD); account **300 -> 255.01 USD**. B2 traded both
+ways (the flip on Tue made +0.83); the 6-USD straddle stop turned Wed +0.80 into +1.06 and Thu +0.54 into +0.72; the ORB
+without a target lost Fri's +1.50 (it ended +0.05).
