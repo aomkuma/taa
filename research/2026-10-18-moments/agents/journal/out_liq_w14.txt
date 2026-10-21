@@ -1,0 +1,27 @@
+Mon 19 13:24 London ORB  BUY @4671.98 stop 4666.72 risk 5.3 | H1ATR 26.5 H4ATR 24h +24% | stop R -1.02 | best +1.34R Mon 19 13:58 worst -1.57R
+    broke: - | pools between entry and stop (distance beyond): - | stop in the sweep zone of: round 4670 | FAKE end -1.52R
+    pools: yday_high=4620.6 yday_low=4536.7 asia_high=4690.5 asia_low=4646.3 today_open=4647.9 swing_high=4674.2 swing_low=4663.7
+Tue 20 08:35 Asia B2     BUY @4674.52 stop 4658.72 risk 15.8 | H1ATR 9.1 H4ATR 24h -7% | time R +2.18 | best +2.70R Tue 20 13:07 worst -0.57R
+    broke: swing_high | pools between entry and stop (distance beyond): swing_low(1.2),asia_low(5.5),today_open(10.2),swing_high(14.6) | stop in the sweep zone of: swing_low,round 4660 | 
+    pools: yday_high=4690.5 yday_low=4646.3 asia_high=4680.3 asia_low=4664.2 today_open=4668.9 swing_high=4673.3 swing_low=4659.9
+Tue 20 13:39 London ORB  SELL @4707.20 stop 4717.10 risk 9.9 | H1ATR 11.0 H4ATR 24h -14% | stop R -1.00 | best +0.13R Tue 20 13:40 worst -1.54R
+    broke: - | pools between entry and stop (distance beyond): - | stop in the sweep zone of: - | SLOW end -1.27R
+    pools: yday_high=4690.5 yday_low=4646.3 asia_high=4680.3 asia_low=4664.2 today_open=4668.9 swing_high=4717.1 swing_low=4694.3
+Tue 20 20:30 NY straddle BUY @4721.69 stop 4713.69 risk 8.0 | H1ATR 13.4 H4ATR 24h -9% | time R +1.93 | best +2.08R Tue 20 20:59 worst -0.80R
+    broke: swing_low | pools between entry and stop (distance beyond): - | stop in the sweep zone of: - | 
+    pools: yday_high=4690.5 yday_low=4646.3 asia_high=4680.3 asia_low=4664.2 today_open=4668.9 swing_high=4729.3 swing_low=4724.1
+Wed 21 13:23 London ORB  BUY @4879.97 stop 4864.25 risk 15.7 | H1ATR 22.5 H4ATR 24h +13% | stop R -1.00 | best +0.53R Wed 21 13:27 worst -3.02R
+    broke: swing_high | pools between entry and stop (distance beyond): swing_high(13.9) | stop in the sweep zone of: - | FAKE end -2.56R
+    pools: yday_high=4766.1 yday_low=4659.4 asia_high=4780.9 asia_low=4746.0 today_open=4762.2 swing_low=4864.2 swing_high=4878.2
+Wed 21 20:30 NY straddle BUY @4870.34 stop 4862.34 risk 8.0 | H1ATR 24.9 H4ATR 24h +3% | time R +1.12 | best +1.24R Wed 21 20:55 worst -0.39R
+    broke: - | pools between entry and stop (distance beyond): - | stop in the sweep zone of: - | 
+    pools: yday_high=4766.1 yday_low=4659.4 asia_high=4780.9 asia_low=4746.0 today_open=4762.2 swing_high=4871.4 swing_low=4856.8
+Thu 22 13:23 London ORB  BUY @4826.62 stop 4816.32 risk 10.3 | H1ATR 36.8 H4ATR 24h +37% | time R +0.64 | best +1.04R Thu 22 14:19 worst -0.51R
+    broke: - | pools between entry and stop (distance beyond): - | stop in the sweep zone of: round 4820 | 
+    pools: yday_high=4888.3 yday_low=4755.9 asia_high=4853.8 asia_low=4755.9 today_open=4815.9 swing_high=4801.5 swing_low=4793.7
+Thu 22 20:30 NY straddle SELL @4825.91 stop 4833.91 risk 8.0 | H1ATR 20.2 H4ATR 24h +51% | time R +0.44 | best +1.85R Thu 22 20:46 worst -0.14R
+    broke: - | pools between entry and stop (distance beyond): swing_high(1.4) | stop in the sweep zone of: swing_high,round 4830 | 
+    pools: yday_high=4888.3 yday_low=4755.9 asia_high=4853.8 asia_low=4755.9 today_open=4815.9 swing_low=4815.9 swing_high=4832.5
+Fri 23 20:30 NY straddle BUY @4934.02 stop 4926.02 risk 8.0 | H1ATR 21.2 H4ATR 24h +4% | time R +0.63 | best +0.85R Fri 23 20:54 worst -0.83R
+    broke: - | pools between entry and stop (distance beyond): - | stop in the sweep zone of: round 4930 | 
+    pools: yday_high=4940.6 yday_low=4772.3 asia_high=4960.3 asia_low=4869.7 today_open=4952.2 swing_high=4947.9 swing_low=4918.3

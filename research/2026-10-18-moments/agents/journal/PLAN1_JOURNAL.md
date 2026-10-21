@@ -541,3 +541,35 @@ The ORB was mixed: its losers sold into a market at records (Mon) or broke no po
 - B2 no flip: did not act.
 
 **The one change for week 14:** none.
+
+## Week 14 - 2026-01-19 .. 23 (learning part 2 begins; gold surges 4,670 -> 4,935, the H1 ATR up to 37)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break.
+`out_rules_w14.txt`, `out_liq_w14.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H4 ATR 24 h | Lots | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Mon 13:24 | London ORB | BUY | 5.3 | -1.02 | -1.02 | +1.34 / -1.57 | +24% | 0.08 | -43.12 | 530.95 |
+| Tue 08:35 | Asia B2 | BUY | 15.8 | +2.18 | +2.18 | +2.70 / -0.57 | -7% | 0.02 | +68.76 | 599.71 |
+| Tue 13:39 | London ORB | SELL | 9.9 | -1.00 | skipped (pool rule) | +0.13 / -1.54 | -14% | | | |
+| Tue 20:30 | NY straddle | BUY | 8.0 | +1.93 | +1.93 | +2.08 / -0.80 | -9% | 0.05 | +77.20 | 676.91 |
+| Wed 13:23 | London ORB | BUY | 15.7 | -1.00 | -1.00 | +0.53 / -3.02 | +13% | 0.03 | -47.37 | 629.54 |
+| Wed 20:30 | NY straddle | BUY | 8.0 | +1.12 | +1.12 | +1.24 / -0.39 | +3% | 0.05 | +44.95 | 674.49 |
+| Thu 13:23 | London ORB | BUY | 10.3 | +0.64 | +0.64 | +1.04 / -0.51 | +37% | 0.04 | +26.32 | 700.81 |
+| Thu 20:30 | NY straddle | SELL | 8.0 | +0.44 | +0.44 | +1.85 / -0.14 | +51% | 0.06 | +21.36 | 722.17 |
+| Fri 20:30 | NY straddle | BUY | 8.0 | +0.63 | +0.63 | +0.85 / -0.83 | +4% | 0.06 | +30.12 | 752.29 |
+
+**The week:** base 9 trades +3.91 R; rules 8 trades **+4.91 R, +178.22 USD**. Account **574.07 -> 752.29 USD** (the worst
+trade so far: Wed's ORB, -47.37 USD). Fourteen weeks (base) 152 trades +39.52 R; rules +39.33 R.
+
+**What happened:** the NY straddle won all five (+4.56 R). The ORB's two losers were FAKEs in a violent market (Mon ran
++1.34 R first, Wed fell to -3.02 R) - both with the H4 ATR expanding.
+
+**Checked on weeks 1-13, the ORB stop against the H1 ATR (were the FAKEs too tight?):** stop under 0.3 H1 ATR 5 trades
++5.32 R; 0.3-0.5: 23 trades -3.05; 0.5-0.75: 20 trades +6.47; above: 12 trades +2.86. No order (the tightest paid most) -
+no rule.
+
+**The rules that cost this week:** the ORB pool rule saved 1.00 R (Tue). Since week 10: +1.99 R. The 1.5 R target and
+B2 no flip did not act.
+
+**The one change for week 15:** none.
