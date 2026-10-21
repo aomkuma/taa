@@ -573,3 +573,44 @@ no rule.
 B2 no flip did not act.
 
 **The one change for week 15:** none.
+
+## Week 15 - 2026-01-26 .. 30 (the blow-off: gold 5,080 -> 5,590 on Thursday, then a crash to 5,025 on Friday; the H1 ATR 27 -> 110)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break.
+`out_rules_w15.txt`, `out_liq_w15.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H1 ATR | H4 ATR 24 h | Lots | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Mon 13:38 | London ORB | BUY | 15.4 | +0.54 | +1.50 | +1.84 / -0.58 | 26.6 | -10% | 0.03 | +69.48 | 821.77 |
+| Mon 20:30 | NY straddle | SELL | 8.0 | +0.11 | +0.11 | +1.84 / -0.84 | 27.1 | -9% | 0.07 | +5.88 | 827.65 |
+| Tue 13:25 | London ORB | BUY | 11.1 | -0.04 | -0.04 | +0.63 / -0.80 | 38.5 | +10% | 0.05 | -2.45 | 825.20 |
+| Wed 13:20 | London ORB | BUY | 12.7 | -1.00 | -1.00 | +1.30 / -1.03 | 30.5 | +15% | 0.04 | -50.92 | 774.28 |
+| Wed 20:30 | NY straddle | BUY | 8.0 | -1.01 | -1.01 | +0.16 / -3.42 | 28.0 | +11% | 0.07 | -56.35 | 717.93 |
+| Thu 13:22 | London ORB | BUY | 29.5 | -1.00 | -1.00 | +0.12 / -1.29 | 62.2 | +22% | 0.01 | -29.58 | 688.35 |
+| Thu 20:30 | NY straddle | SELL | 8.0 | -1.02 | -1.02 | +2.09 / -1.72 | 60.7 | +35% | 0.06 | -48.84 | 639.51 |
+| Fri 13:17 | London ORB | SELL | 32.9 | -0.04 | -0.04 | +1.46 / -0.78 | 110.6 | +78% | 0.01 | -1.46 | 638.05 |
+| Fri 20:30 | NY straddle | SELL | 8.0 | -1.01 | -1.01 | **+3.99** / -3.01 | 95.6 | +87% | 0.05 | -40.40 | 597.65 |
+
+**The week:** base 9 trades -4.48 R; rules 9 trades **-3.52 R, -154.64 USD**. Account **752.29 -> 597.65 USD** (-21 %; the
+worst trade so far: Wed's straddle, -56.35 USD). Fifteen weeks (base) 161 trades +35.04 R; rules +35.81 R.
+
+**What happened:** a market three to eight times its usual size. The straddle's fixed 8-USD stop was 0.08-0.3 H1 ATR -
+noise: Thursday's ran +2.09 R first and Friday's +3.99 R, both were swept (SWEPT: back above 0 by the end) and stopped.
+No ORB / straddle stop sat beyond a pool; the stops were simply inside the noise.
+
+**Checked on weeks 1-14, the straddle's stop = max(8 USD, k x H1 ATR) (it changes only the days the ATR is above 32):**
+
+| Stop | Weeks 1-14 (46 trades) | Week 15 |
+|---|---|---|
+| 8 USD (in force) | +24.82 | -2.93 |
+| max(8, 0.25 H1 ATR) | +25.04 | -1.48 |
+| max(8, 0.4 H1 ATR) | +24.60 | -0.54 |
+| max(8, 0.6 H1 ATR) | +19.19 | -0.69 |
+
+0.25 costs nothing on the prior weeks (it touches one trade there) and is the smallest step; 0.4 would suit week 15 best,
+but choosing it from this week alone is fitting to it.
+
+**The rules that cost this week:** the ORB 1.5 R target paid +0.96 (Mon). The pool rule did not act (the H4 expanding).
+
+**The one change for week 16 (from 2026-02-02, decided 2026-10-21 17:15 Thai):** the NY straddle's stop is
+max(8 USD, 0.25 x H1 ATR) from the fill. In `rules_week.py` (R and the account's risk on the new stop).

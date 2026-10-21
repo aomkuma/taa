@@ -4,7 +4,9 @@ Rules (each added forward only, journal PLAN1_JOURNAL.md):
 - from week 6: Asia B2's second trade of a morning only in the first trade's direction (no flip);
 - from week 5: the London ORB's target is 1.5 R (re-simulated on the ticks: same entry, stop and 60-minute exit);
 - from week 10: when the H4 ATR contracted over the last 24 h, the London ORB enters only if its 15 minutes before the
-  decision broke a pool in its direction (liq_journal's "broke"); otherwise skipped.
+  decision broke a pool in its direction (liq_journal's "broke"); otherwise skipped;
+- from week 16: the NY straddle's stop is max(8 USD, 0.25 x H1 ATR) from the fill (re-simulated on the ticks, out at
+  the decision + 30 minutes; R on the new risk).
 The base trades are dev/plan1_trades_learn_s0_x0.parquet (one position at a time already applied).
 
     .venv/Scripts/python research/2026-10-18-moments/agents/journal/rules_week.py 2025-11-17 2025-11-22
@@ -23,6 +25,7 @@ import liq_journal as L  # noqa: E402
 
 C, MIN = L.C, L.MIN
 ORB_TP = 1.5
+NY_STOP, NY_K = 8.0, 0.25
 
 
 def apply(start: str, end: str) -> pd.DataFrame:
@@ -35,10 +38,11 @@ def apply(start: str, end: str) -> pd.DataFrame:
     rows = []
     first_b2: dict = {}
     week10 = pd.Timestamp("2025-12-22", tz="UTC").value
+    week16 = pd.Timestamp("2026-02-02", tz="UTC").value
     week6 = pd.Timestamp("2025-11-24", tz="UTC").value
     for r, j in zip(W.itertuples(), J.itertuples()):
         day = pd.Timestamp(int(r.t_in), tz="UTC").tz_convert(L.TH).date()
-        R2, note = r.R, ""
+        R2, note, rk = r.R, "", r.risk
         if r.piece == "Asia B2":
             if day in first_b2:
                 if pd.Timestamp("2025-11-10", tz="UTC").value <= r.t_in < week6:
@@ -54,7 +58,14 @@ def apply(start: str, end: str) -> pd.DataFrame:
             f = int(np.searchsorted(t, int(r.t_in)))
             px, _, kind = C.manage(t, bid, ask, f, r.entry, r.side, r.stop, r.entry + r.side * ORB_TP * r.risk, int(t[f]) + 60 * MIN)
             R2, note = (px - r.entry) * r.side / r.risk, f"TP {ORB_TP} R: {kind}"
-        rows.append(dict(t=L.th(r.t_in), piece=r.piece, side="BUY" if r.side > 0 else "SELL", base_R=r.R, rules_R=R2, note=note))
+        elif r.piece == "NY straddle" and r.t_in >= week16 and NY_K * j.H1atr > NY_STOP:
+            risk = NY_K * j.H1atr
+            t, bid, ask = C.day_ticks(pd.Timestamp(int(r.t_in), tz="UTC").normalize())
+            f = int(np.searchsorted(t, int(r.t_in)))
+            px, _, kind = C.manage(t, bid, ask, f, r.entry, r.side, r.entry - r.side * risk, None, int(r.t_dec) + 30 * MIN)
+            rk = risk
+            R2, note = (px - r.entry) * r.side / risk, f"stop {risk:.1f} (0.25 x H1 ATR {j.H1atr}): {kind}"
+        rows.append(dict(t=L.th(r.t_in), piece=r.piece, side="BUY" if r.side > 0 else "SELL", base_R=r.R, rules_R=R2, note=note, rules_risk=rk))
     return pd.DataFrame(rows)
 
 
