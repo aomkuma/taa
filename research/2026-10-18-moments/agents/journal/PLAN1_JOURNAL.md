@@ -614,3 +614,34 @@ but choosing it from this week alone is fitting to it.
 
 **The one change for week 16 (from 2026-02-02, decided 2026-10-21 17:15 Thai):** the NY straddle's stop is
 max(8 USD, 0.25 x H1 ATR) from the fill. In `rules_week.py` (R and the account's risk on the new stop).
+
+## Week 16 - 2026-02-02 .. 06 (after the crash: gold 4,500 -> 5,050 -> 4,850; the H1 ATR 37-135)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break, and
+new this week the straddle's stop max(8 USD, 0.25 H1 ATR). `out_rules_w16.txt`, `out_liq_w16.txt`.
+
+| Day, time | Piece | Side | Base risk | Base R | Rules R | Best / worst (base) | H1 ATR | Lots | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Mon 13:21 | London ORB | SELL | 66.1 | -0.47 | **+1.50** | +1.59 / -0.81 | 135.5 | 0.01 | +99.14 | 696.79 |
+| Mon 20:30 | NY straddle | SELL | 8.0 (rules 31.3) | **+3.87** | +0.99 | +8.45 / -0.60 | 125.2 | 0.01 | +30.94 | 727.73 |
+| Tue 13:18 | London ORB | BUY | 36.0 | +0.97 | +0.97 | +1.15 / -0.13 | 72.1 | 0.01 | +34.93 | 762.66 |
+| Tue 20:30 | NY straddle | BUY | 8.0 (14.6) | -1.00 | -1.01 | +1.77 / -1.98 | 58.4 | 0.03 | -44.19 | 718.47 |
+| Wed 07:19 | Asia B2 | BUY | 58.2 | +0.91 | +0.91 | +0.98 / -0.48 | 48.5 | 0.01 | +52.88 | 771.35 |
+| Wed 13:16 | London ORB | SELL | 29.6 | -1.00 | -1.00 | +0.05 / -1.00 | 49.4 | 0.01 | -29.63 | 741.72 |
+| Wed 20:30 | NY straddle | BUY | 8.0 (9.2) | -1.00 | -1.00 | +1.48 / -2.29 | 36.8 | 0.06 | -55.20 | 686.52 |
+| Thu 13:27 | London ORB | BUY | 45.2 | +0.29 | skipped (pool rule) | +0.38 / -0.55 | 68.1 | | | |
+| Thu 20:30 | NY straddle | SELL | 8.0 (15.5) | -1.74 | -1.00 | +3.45 / -2.53 | 62.0 | 0.03 | -46.62 | 639.90 |
+| Fri 13:18 | London ORB | SELL | 39.6 | +0.39 | skipped (pool rule) | +0.94 / -0.14 | 63.6 | | | |
+| Fri 20:30 | NY straddle | BUY | 8.0 (14.2) | +2.18 | +1.23 | +3.30 / -0.06 | 56.8 | 0.03 | +52.38 | 692.28 |
+
+**The week:** base 11 trades +3.39 R; rules 9 trades **+1.58 R, +94.62 USD**. Account **597.65 -> 692.28 USD**. Sixteen
+weeks (base) 172 trades +38.43 R; rules +37.39 R. Mon's ORB: a 66-USD stop at the 0.01 minimum lot = 11 % of the account.
+
+**The rules that cost this week:**
+- **The wider straddle stop (new this week): cost 3.10 R** (the straddles +2.31 base, -0.79 with it). Why: risk is a fixed
+  share of the account, so a wider stop shrinks every winner in R (Mon +3.87 -> +0.99) while the sweeps still reached the
+  wider stops (Tue, Wed, Thu stopped either way). Weeks 1-16 together: +0.22 (1-14) +1.45 (15) -3.10 (16) = **-1.43 R.
+  DELETED** - one week of evidence chose it, the next week undid it.
+- The ORB 1.5 R target: paid +1.97 (Mon). The ORB pool rule: cost 0.68 (Thu +0.29, Fri +0.39). Since week 10: +1.31 R net.
+
+**The one change for week 17:** the straddle's stop goes back to 8 USD (the deletion above); nothing new.

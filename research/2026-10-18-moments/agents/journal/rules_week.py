@@ -5,8 +5,9 @@ Rules (each added forward only, journal PLAN1_JOURNAL.md):
 - from week 5: the London ORB's target is 1.5 R (re-simulated on the ticks: same entry, stop and 60-minute exit);
 - from week 10: when the H4 ATR contracted over the last 24 h, the London ORB enters only if its 15 minutes before the
   decision broke a pool in its direction (liq_journal's "broke"); otherwise skipped;
-- from week 16: the NY straddle's stop is max(8 USD, 0.25 x H1 ATR) from the fill (re-simulated on the ticks, out at
-  the decision + 30 minutes; R on the new risk).
+- week 16 only: the NY straddle's stop was max(8 USD, 0.25 x H1 ATR) from the fill (re-simulated on the ticks, out at
+  the decision + 30 minutes; R on the new risk) - deleted after week 16 (it cost 3.10 R that week, net -1.43 R on weeks
+  1-16).
 The base trades are dev/plan1_trades_learn_s0_x0.parquet (one position at a time already applied).
 
     .venv/Scripts/python research/2026-10-18-moments/agents/journal/rules_week.py 2025-11-17 2025-11-22
@@ -39,6 +40,7 @@ def apply(start: str, end: str) -> pd.DataFrame:
     first_b2: dict = {}
     week10 = pd.Timestamp("2025-12-22", tz="UTC").value
     week16 = pd.Timestamp("2026-02-02", tz="UTC").value
+    week17 = pd.Timestamp("2026-02-09", tz="UTC").value
     week6 = pd.Timestamp("2025-11-24", tz="UTC").value
     for r, j in zip(W.itertuples(), J.itertuples()):
         day = pd.Timestamp(int(r.t_in), tz="UTC").tz_convert(L.TH).date()
@@ -58,7 +60,7 @@ def apply(start: str, end: str) -> pd.DataFrame:
             f = int(np.searchsorted(t, int(r.t_in)))
             px, _, kind = C.manage(t, bid, ask, f, r.entry, r.side, r.stop, r.entry + r.side * ORB_TP * r.risk, int(t[f]) + 60 * MIN)
             R2, note = (px - r.entry) * r.side / r.risk, f"TP {ORB_TP} R: {kind}"
-        elif r.piece == "NY straddle" and r.t_in >= week16 and NY_K * j.H1atr > NY_STOP:
+        elif r.piece == "NY straddle" and week16 <= r.t_in < week17 and NY_K * j.H1atr > NY_STOP:
             risk = NY_K * j.H1atr
             t, bid, ask = C.day_ticks(pd.Timestamp(int(r.t_in), tz="UTC").normalize())
             f = int(np.searchsorted(t, int(r.t_in)))
