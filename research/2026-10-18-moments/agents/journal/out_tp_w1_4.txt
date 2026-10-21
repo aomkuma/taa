@@ -1,0 +1,2 @@
+London ORB 18 trades: {'base': np.float64(3.92), 'TP 1.0 R': np.float64(2.04), 'TP 1.5 R': np.float64(4.67)}
+NY straddle 12 trades: {'base': np.float64(4.37), 'TP 1.0 R': np.float64(0.34), 'TP 1.5 R': np.float64(3.34)}

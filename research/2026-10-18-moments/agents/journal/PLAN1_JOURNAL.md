@@ -162,3 +162,42 @@ an M15 swing).
 
 **The one change for week 4 (decided 2026-10-21 13:12 Thai, checked on weeks 1-3):** Asia B2 takes at most one trade a
 morning. On weeks 1-3 it removes 2 trades and adds +0.76 R; nothing else changes.
+
+## Week 4 - 2025-11-10 .. 14 (gold climbs 4,017 -> 4,233, then drops to 4,058 on Friday)
+
+The rules in force: the base, B2 one trade a morning (it took no second trade this week, so it changed nothing).
+`out_liq_w4.txt`.
+
+| Day, time | Piece | Side | Risk | Exit, R | Best / worst | H1 ATR | What happened |
+|---|---|---|---|---|---|---|---|
+| Mon 07:31 | Asia B2 | BUY | **4.1** | structure -0.82 | -0.06 / -0.82 | 14.3 | a 4-USD stop: never above water |
+| Mon 13:21 | London ORB | BUY | 4.8 | time +0.49 | **+1.47 at 14:15** / -0.43 | 14.9 | gave back 1 R in the last minutes |
+| Tue 08:29 | Asia B2 | BUY | 9.9 | structure -0.19 | +0.38 / -0.19 | 12.0 | |
+| Tue 13:19 | London ORB | BUY | 8.4 | stop -1.01 | +0.32 / -1.06 | **11.5** | SLOW (-0.46 at the window's end) |
+| Wed 13:21 | London ORB | BUY | 7.5 | time +1.61 | **+1.93** / -0.17 | 12.8 | |
+| Thu 13:16 | London ORB | SELL | 7.4 | stop -1.00 | +0.13 / -1.02 | 19.7 | stop 0.4 above yesterday's high = the Asia high (in its sweep zone): SLOW, not swept |
+| Thu 20:30 | NY straddle | SELL | 8.0 | time +0.13 | **+1.59 at 20:35** / -0.06 | 16.9 | the release ran 13 USD in 5 minutes, then came all the way back |
+| Fri 13:17 | London ORB | SELL | 9.0 | time +1.25 | **+1.62** / -0.24 | 19.2 | |
+| Fri 20:30 | NY straddle | BUY | 8.0 | stop -1.01 | +0.68 / -2.15 | 19.1 | SLOW |
+
+**The week:** 9 trades, **-0.55 R** - the first losing week (London ORB 6 trades +1.34, NY straddle 2 trades -0.88, Asia B2
+2 trades -1.01). Four weeks: 42 trades, +8.68 R (+0.21 a trade).
+
+**The weakness that repeats - winners give back from their peak:** Mon ORB +1.47 -> +0.49, Wed ORB +1.93 -> +1.61, Fri
+ORB +1.62 -> +1.25, Thu straddle +1.59 -> +0.13; week 1 #6 +1.59 -> -0.16. The ORB's 2 R target is rarely reached; its
+60-minute exit often hands the run back.
+
+**The check before deciding (`out_tp_w1_4.txt`, weeks 1-4 re-simulated on the ticks):**
+
+| | base | take profit at 1.0 R | at 1.5 R |
+|---|---|---|---|
+| London ORB, 18 trades | +3.92 R | +2.04 | **+4.67** |
+| NY straddle, 12 trades | +4.37 R | +0.34 | +3.34 |
+
+The straddle's runs are worth more than a 1.5 R cap (week 1 had +3.41 / +1.91 / +1.90); the ORB's are not.
+
+**The rules that cost this week:** the ATR floor of 12 would have skipped Tue's ORB (-1.01): it saved +1.01 R (weeks 3-4: net
++0.44 R for the floor). B2's one-a-morning: no effect this week.
+
+**The one change for week 5 (decided 2026-10-21 13:15 Thai, checked on weeks 1-4: +0.75 R):** the London ORB's target is
+1.5 R instead of 2 R (out at the target, the stop or 60 minutes, as before). The straddle keeps no target.
