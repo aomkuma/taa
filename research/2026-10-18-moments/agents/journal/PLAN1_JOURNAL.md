@@ -910,3 +910,12 @@ account **229.46 -> 225.76 USD**. The straddle +1.31 (Mon +2.32), Asia B2 -1.14,
 
 **The rules that cost this week:** the pool rule saved 1.97 R (skipped -1.01, -1.02, +0.06); weeks 1-31 net +2.08 R.
 **The one change for week 32:** none.
+
+## Week 32 - 2026-05-25 .. 29
+
+`out_rules_w32.txt`, `out_liq_w32.txt`, `out_acct_w32.txt`. Base 10 trades +1.48 R; rules 8 trades **+2.67 R, +6.77 USD**;
+account **225.76 -> 232.53 USD** (the straddle's +5.63 on Thu came at 0.01 lot: +45 USD; the losers were the same size).
+The straddle +3.16, the ORB -0.57, Asia B2 +0.08.
+
+**The rules that cost this week:** the pool rule saved 1.18 (weeks 1-32 net +3.26 R). The 1.5 R target paid +0.01.
+**The one change for week 33:** none.
