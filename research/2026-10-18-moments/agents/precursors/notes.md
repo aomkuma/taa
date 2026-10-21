@@ -3041,3 +3041,7 @@ release in `app/news/us_releases.csv`: NFP, CPI, the others (PPI, PCE, GDP), and
 type: trades and R per year, and inside / outside the VOL-16 band. One hypothesis, fixed now: NFP and CPI (the two
 largest scheduled US releases) carry the straddle's edge; the pass for a type: pooled 2021-09 .. 2026-04 R >= +0.15 on
 >= 40 trades with the 95 % range above 0.
+**NS-3 read once (12:40 Thai; `out_ns3.txt`):** no type passes. Pooled 2021-09 .. 2026-04-17: NFP 50 trades +0.120
+(-0.26..+0.50), CPI 52 -0.052, other releases 103 -0.117, no release 297 +0.039. By year NFP and CPI swing sign
+(CPI +0.274 / +0.038 / -0.502 / -0.410 / +0.843); the exam's straddle profit came mostly from 6 NFP days (+3.116 R a
+trade). The release type is not the straddle's edge either; FAIL (CHECKLIST row 56).
