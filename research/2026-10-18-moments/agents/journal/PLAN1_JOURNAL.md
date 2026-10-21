@@ -508,3 +508,36 @@ once, then -2.92 R (FAKE). The B2 buys of Thursday both had their stop in a swee
 - The ORB 1.5 R target: did not act.
 
 **The one change for week 13:** none.
+
+## Week 13 - 2026-01-12 .. 16 (gold to new records 4,560 -> 4,640, then 4,590; the end of learning part 1)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break.
+`out_rules_w13.txt`, `out_liq_w13.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H4 ATR 24 h | Lots | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Mon 07:17 | Asia B2 | BUY | 21.5 | +1.24 | +1.24 | +2.06 / -0.02 | -9% | 0.01 | +26.58 | 421.97 |
+| Mon 13:16 | London ORB | SELL | 9.7 | -1.01 | -1.01 | +0.10 / -1.51 | +4% | 0.03 | -29.19 | 392.78 |
+| Mon 20:30 | NY straddle | BUY | 8.0 | +1.03 | +1.03 | +1.58 / -0.19 | +11% | 0.03 | +24.66 | 417.44 |
+| Tue 13:19 | London ORB | SELL | 4.3 | +2.00 | +1.50 | +3.29 / -0.75 | +1% | 0.07 | +44.73 | 462.17 |
+| Tue 20:30 | NY straddle | BUY | 8.0 | +0.90 | +0.90 | +2.11 / -0.11 | -1% | 0.04 | +28.80 | 490.97 |
+| Wed 13:59 | London ORB | BUY | 18.2 | -0.22 | -0.22 | +0.16 / -0.28 | +10% | 0.02 | -7.84 | 483.13 |
+| Wed 20:30 | NY straddle | SELL | 8.0 | -0.79 | -0.79 | +0.69 / -0.96 | -4% | 0.04 | -25.16 | 457.97 |
+| Thu 13:20 | London ORB | BUY | 15.6 | +0.20 | +0.20 | +0.27 / -0.57 | -14% | 0.02 | +6.26 | 464.23 |
+| Thu 20:30 | NY straddle | SELL | 8.0 | +1.88 | +1.88 | +2.63 / -0.22 | -2% | 0.04 | +60.24 | 524.47 |
+| Fri 13:41 | London ORB | SELL | 9.1 | -1.00 | skipped (pool rule) | +0.95 / -1.01 | -5% | | | |
+| Fri 20:30 | NY straddle | BUY | 8.0 | +1.55 | +1.55 | +1.69 / -0.54 | -8% | 0.04 | +49.60 | 574.07 |
+
+**The week:** base 11 trades +5.79 R; rules 10 trades **+6.29 R, +178.68 USD**. Account **395.39 -> 574.07 USD**.
+Thirteen weeks (base) 143 trades +35.61 R; rules +34.42 R.
+
+**What happened:** the NY straddle won four of five (+4.57 R) - every US open this week ran 1.6-2.6 R within 30 minutes.
+The ORB was mixed: its losers sold into a market at records (Mon) or broke no pool (Fri, skipped).
+
+**The rules that cost this week:**
+- The ORB pool rule: saved 1.00 R (Fri). Since week 10: +0.99 R; weeks 1-13 it saves 3.07 R - stays.
+- The ORB 1.5 R target: cost 0.50 (Tue ran to +3.29). Since week 5 it is -0.89 R. Re-checked on weeks 1-12: 1.0 +10.41,
+  **1.5 +11.48**, 2.0 +11.62, 3.0 +10.89, none +9.84 - 1.5 and 2.0 are equal, both beat no target; stays.
+- B2 no flip: did not act.
+
+**The one change for week 14:** none.
