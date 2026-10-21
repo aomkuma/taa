@@ -936,3 +936,40 @@ become a rule-cost check only. Two ideas from the losers, each checked on weeks 
 target on B2, standing a piece aside after losing weeks - removes more of those runs than it saves on the losers. The
 losing weeks are the price of the runs; the learning so far says: keep the full stop, keep every piece trading, size so
 the account survives the streaks.
+
+## Week 33 - 2026-06-01 .. 05 (gold falls 4,540 -> 4,430; the H1 ATR 12-20) - weekly reports again (owner 2026-10-21)
+
+The rules in force: the ORB target 1.5 R, the ORB pool rule, the D1 ATR(20) >= 60 switch (on). `out_rules_w33.txt`,
+`out_liq_w33.txt`, `out_acct_w33.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | Stop's place | Lots | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Mon 08:01 | Asia B2 | SELL | 6.9 | +1.25 | +1.25 | +1.26 / -0.39 | round 4540 | 0.01 | +8.61 | 241.14 |
+| Mon 08:56 | Asia B2 | SELL | 6.8 | -1.02 | -1.02 | +0.49 / -1.02 | round 4530 | 0.01 | -6.94 | 234.20 |
+| Mon 13:17 | London ORB | SELL | 6.7 | +0.70 | +1.50 | +1.71 / -0.46 | | 0.01 | +9.99 | 244.19 |
+| Mon 19:30 | NY straddle | SELL | 8.0 | +0.06 | +0.06 | +0.68 / -0.92 | round 4510 | 0.01 | +0.46 | 244.65 |
+| Tue 08:47 | Asia B2 | SELL | 12.1 | -0.31 | -0.31 | +1.20 / -0.37 | round 4490 | 0.01 | -3.79 | 240.86 |
+| Tue 13:22 | London ORB | BUY | 11.4 | +0.81 | +0.81 | +1.16 / -0.19 | round 4520 | 0.01 | +9.22 | 250.08 |
+| Tue 19:30 | NY straddle | SELL | 8.0 | +1.54 | +1.54 | +1.70 / -0.83 | | 0.01 | +12.34 | 262.42 |
+| Wed 13:18 | London ORB | BUY | 11.4 | -1.02 | skipped (pool rule) | +0.35 / -1.13 | round 4460 | | | |
+| Wed 19:30 | NY straddle | BUY | 8.0 | +0.64 | +0.64 | +1.52 / -0.86 | round 4450 | 0.01 | +5.16 | 267.58 |
+| Thu 07:23 | Asia B2 | SELL | 16.0 | -0.30 | -0.30 | +0.38 / -0.33 | Asia high, swing high | 0.01 | -4.84 | 262.74 |
+| Thu 13:22 | London ORB | SELL | 9.2 | +0.21 | +0.21 | +0.59 / -0.99 | | 0.01 | +1.97 | 264.71 |
+| Thu 19:30 | NY straddle | BUY | 8.0 | +0.31 | +0.31 | +1.18 / -0.57 | yesterday's high | 0.01 | +2.49 | 267.20 |
+| Fri 07:17 | Asia B2 | SELL | 13.7 | -1.02 | -1.02 | +0.12 / -1.02 | swing low | 0.01 | -13.95 | 253.25 |
+| Fri 08:00 | Asia B2 | SELL | 8.0 | -1.03 | -1.03 | +0.75 / -1.03 | swing high | 0.01 | -8.30 | 244.95 |
+| Fri 13:17 | London ORB | SELL | 10.1 | -1.00 | -1.00 | +0.35 / -3.16 | round 4440 (FAKE) | 0.01 | -10.17 | 234.78 |
+| Fri 19:30 | NY straddle | SELL | 8.0 | **+6.09** | **+6.09** | +6.30 / -0.66 | Asia low, round 4460 | 0.01 | +48.71 | 283.49 |
+
+**The week:** base 16 trades +5.91 R; rules 15 trades **+7.73 R, +50.96 USD**. Account **232.53 -> 283.49 USD**.
+
+**What the winners share:** the straddle won all five (+8.64 R); Friday's ran +6.30 R in 30 minutes. The ORB's winners
+broke the M15 swing in their direction.
+
+**What the losers share:** Asia B2 lost four of six (-2.43 R), every loser with its stop just beyond a pool or a round
+number. **Checked on weeks 1-32:** 89 of 103 B2 trades have their stop in a sweep zone (+0.054 a trade) against 14 without
+(+0.162) - nearly all B2 stops sit there, so it does not separate the losers; skipping them would cut +4.82 R. Not adopted
+(`b2_sweep_check.py`).
+
+**The rules that cost this week:** the pool rule saved 1.02 (weeks 1-33 net +4.28 R); the 1.5 R target paid +0.80 (net
+since week 5 +2.96 R). **The one change for week 34:** none.
