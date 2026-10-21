@@ -1074,3 +1074,10 @@ Twelve weeks: 115 trades +8.79 R (frozen +11.86); 363.52 USD (frozen 424.72).
 530.76). The straddle ran three days in a row (Tue +4.33, Wed +2.52, Thu +2.97 R at 10 USD = +98.28 USD); Thursday's
 Asia B2 sell +2.21 R. Half the exam: 125 trades +19.45 R (+0.156 a trade; frozen +24.98, +0.200); **469.56 USD = +56.5 %
 (frozen 530.76 = +76.9 %)**.
+
+## Exam week 14 (2026-07-20 .. 24) - learned: the straddle stop back to 8 USD (+257.05 vs +245.33 USD over 8 weeks)
+
+10 trades **+9.00 R, +103.97 USD** (frozen: 10 trades +9.00 R, +106.41 USD); account **469.56 -> 573.53 USD** (frozen
+637.17). The same trades as the frozen run (every lever now equals the frozen settings). Tuesday's Asia B2 buy ran
++4.60 R (+40.59 USD); B2 +5.77 R for the week; the pool rule skipped Wed's ORB that reached 2 R. Fourteen weeks: 135
+trades +28.45 R (+0.211 a trade; frozen +33.98); 573.53 USD (frozen 637.17).
