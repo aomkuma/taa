@@ -315,3 +315,44 @@ that skips them would have blocked profit - **not adopted**, watched.
   deletion was right again.
 
 **The one change for week 8:** none - no candidate passed the check on the prior weeks.
+
+## Week 8 - 2025-12-08 .. 12 (gold 4,205 -> 4,340, a quiet start then Friday's rise; the H1 ATR 10-15)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate. `out_rules_w8.txt`, `out_liq_w8.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H1 ATR | What happened |
+|---|---|---|---|---|---|---|---|---|
+| Mon 07:37 | Asia B2 | BUY | 11.6 | -0.47 | -0.47 | +0.24 / -0.47 | 14.0 | broke the Asia high and today's open, no follow-through |
+| Mon 08:16 | Asia B2 | BUY | 6.7 | -0.53 | -0.53 | +0.48 / -0.64 | 14.2 | same break; stop in the sweep zone of today's open and the M15 swing low |
+| Tue 07:59 | Asia B2 | SELL | 4.2 | -1.00 | -1.00 | +0.23 / -1.00 | 11.5 | stop 2.6 beyond today's open (its sweep zone) - SLOW |
+| Tue 13:33 | London ORB | BUY | 10.8 | -0.11 | -0.11 | +0.46 / -0.45 | 10.3 | no pool broken; time exit |
+| Tue 20:30 | NY straddle | SELL | 8.0 | -0.25 | -0.25 | +0.46 / -0.50 | 9.8 | time exit |
+| Wed 13:17 | London ORB | SELL | 3.7 | +0.24 | +0.24 | +1.27 / -0.42 | 9.9 | reached +1.27 R, gave it back to the time exit |
+| Thu 13:27 | London ORB | BUY | 10.5 | -0.22 | -0.22 | +0.06 / -0.40 | 15.2 | no pool broken; time exit |
+| Thu 20:30 | NY straddle | BUY | 8.0 | +0.62 | +0.62 | +0.90 / -0.85 | 11.9 | |
+| Fri 13:29 | London ORB | BUY | 5.2 | +0.74 | +0.74 | +1.38 / -0.47 | 14.1 | reached +1.38 R, half given back |
+| Fri 20:30 | NY straddle | BUY | 8.0 | +0.33 | +0.33 | +0.96 / -0.76 | 11.5 | broke the M15 swing high in Friday's rise |
+
+**The week:** base 10 trades -0.65 R; rules the same (no rule acted). Eight weeks (base) 89 trades +21.31 R (+0.24 R a
+trade): Asia B2 27 trades +4.52 (+0.17), London ORB 37 +9.23 (+0.25), NY straddle 25 +7.56 (+0.30).
+
+**What happened:** a small-move week - only one stop-out (Tue B2); seven of ten trades ended on time with less than 1 R
+either way. The three B2 losses all had their stop just beyond today's open or a round number (the sweep zone).
+
+**Checked on weeks 1-7, the ORB target (same entry, stop, 60-minute exit):**
+
+| Target | Weeks 1-7 (33 trades) | Week 8 |
+|---|---|---|
+| 0.75 R | +6.19 | +1.17 |
+| 1.0 R | +7.82 | +1.67 |
+| 1.25 R | +9.87 | +2.17 |
+| **1.5 R (in force)** | **+9.98** | +0.66 |
+| 2.0 R | +8.58 | +0.66 |
+| none | +9.51 | +0.66 |
+
+1.25 R would have paid +1.51 more this week, but on weeks 1-7 it equals 1.5 R (+9.87 vs +9.98): choosing it from one week
+is fitting to that week - **not changed**. 1.25-1.5 is a flat top, so either is safe; watched.
+
+**The rules that cost this week:** none acted (no B2 flip, no ORB reached 1.5 R; no ATR gate).
+
+**The one change for week 9:** none.

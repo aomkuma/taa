@@ -1,0 +1,11 @@
+Mon 08 07:37 Asia B2     BUY  base -0.47 | rules -0.47 
+Mon 08 08:16 Asia B2     BUY  base -0.53 | rules -0.53 
+Tue 09 07:59 Asia B2     SELL base -1.00 | rules -1.00 
+Tue 09 13:33 London ORB  BUY  base -0.11 | rules -0.11 TP 1.5 R: time
+Tue 09 20:30 NY straddle SELL base -0.25 | rules -0.25 
+Wed 10 13:17 London ORB  SELL base +0.24 | rules +0.24 TP 1.5 R: time
+Thu 11 13:27 London ORB  BUY  base -0.22 | rules -0.22 TP 1.5 R: time
+Thu 11 20:30 NY straddle BUY  base +0.62 | rules +0.62 
+Fri 12 13:29 London ORB  BUY  base +0.74 | rules +0.74 TP 1.5 R: time
+Fri 12 20:30 NY straddle BUY  base +0.33 | rules +0.33 
+week: base 10 trades -0.65 R | rules 10 trades -0.65 R
