@@ -645,3 +645,43 @@ weeks (base) 172 trades +38.43 R; rules +37.39 R. Mon's ORB: a 66-USD stop at th
 - The ORB 1.5 R target: paid +1.97 (Mon). The ORB pool rule: cost 0.68 (Thu +0.29, Fri +0.39). Since week 10: +1.31 R net.
 
 **The one change for week 17:** the straddle's stop goes back to 8 USD (the deletion above); nothing new.
+
+## Week 17 - 2026-02-09 .. 13 (gold settles 4,960-5,075; the H1 ATR 20-45)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break; the
+straddle's stop back at 8 USD. `out_rules_w17.txt`, `out_liq_w17.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H1 ATR | Lots | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Mon 08:36 | Asia B2 | SELL | 35.3 | -0.10 | -0.10 | +0.81 / -0.41 | 33.9 | 0.01 | -3.70 | 688.58 |
+| Mon 13:16 | London ORB | SELL | 14.6 | +1.26 | skipped (pool rule) | +1.50 / -0.62 | 33.7 | | | |
+| Mon 20:30 | NY straddle | BUY | 8.0 | -1.01 | -1.01 | +1.00 / -1.47 | 36.8 | 0.06 | -48.54 | 640.04 |
+| Tue 07:36 | Asia B2 | SELL | 21.2 | +0.10 | +0.10 | +0.91 / -0.29 | 31.6 | 0.02 | +4.24 | 644.28 |
+| Tue 13:18 | London ORB | SELL | 12.2 | +0.19 | skipped (pool rule) | +1.18 / -0.50 | 29.7 | | | |
+| Tue 20:30 | NY straddle | BUY | 8.0 | +1.34 | +1.34 | +2.33 / -0.05 | 28.5 | 0.06 | +64.56 | 708.84 |
+| Wed 07:17 | Asia B2 | SELL | 15.5 | -0.83 | -0.83 | +0.04 / -0.87 | 27.5 | 0.03 | -38.76 | 670.08 |
+| Wed 08:33 | Asia B2 | SELL | 15.1 | -0.51 | -0.51 | -0.02 / -0.55 | 27.4 | 0.03 | -23.22 | 646.86 |
+| Wed 13:17 | London ORB | BUY | 8.8 | +0.67 | +0.67 | +1.28 / -0.70 | 22.8 | 0.05 | +29.35 | 676.21 |
+| Wed 20:30 | NY straddle | SELL | 8.0 | +0.84 | +0.84 | **+6.54** / -0.07 | 25.9 | 0.06 | +40.38 | 716.59 |
+| Thu 07:12 | Asia B2 | SELL | 16.7 | +0.15 | +0.15 | +0.40 / -0.72 | 36.6 | 0.03 | +7.26 | 723.85 |
+| Thu 08:38 | Asia B2 | BUY | 17.4 | -0.33 | skipped (flip) | +0.15 / -0.36 | 36.1 | | | |
+| Thu 13:25 | London ORB | SELL | 14.4 | +0.17 | +0.17 | +0.99 / -0.33 | 24.1 | 0.03 | +7.44 | 731.29 |
+| Thu 20:30 | NY straddle | SELL | 8.0 | -1.00 | -1.00 | -0.05 / -2.90 | 20.0 | 0.06 | -48.24 | 683.05 |
+| Fri 08:49 | Asia B2 | BUY | 23.3 | -0.49 | -0.49 | +0.11 / -0.60 | 42.1 | 0.02 | -23.02 | 660.03 |
+| Fri 13:35 | London ORB | BUY | 16.0 | +0.69 | +0.69 | +0.90 / -0.69 | 45.1 | 0.03 | +33.00 | 693.03 |
+| Fri 20:30 | NY straddle | BUY | 8.0 | +1.61 | +1.61 | +3.28 / -0.47 | 29.1 | 0.06 | +77.28 | 770.31 |
+
+**The week:** base 17 trades +2.73 R; rules 14 trades **+1.61 R, +78.03 USD**. Account **692.28 -> 770.31 USD**.
+Seventeen weeks (base) 189 trades +41.16 R; rules +39.00 R.
+
+**What happened:** Asia B2 lost five of seven small (-2.01 R): in this market its stops (15-35 USD) were inside the
+morning's noise. Wednesday's straddle reached +6.54 R in its first minute and gave most of it back by 09:00 New York.
+
+**The rules that cost this week:**
+- **The ORB pool rule: cost 1.45 R** (Mon +1.26, Tue +0.19), the second week in a row. Since week 10 (in force): -0.14 R.
+  Checked on weeks 1-17: the 23 trades it skips sum -1.94 R (it still saves 1.94); by the H1 ATR: up to 15 -0.84 (10),
+  15-25 -3.23 (9), 25-40 +1.45 (2), above 40 +0.68 (2). The four it cost in the big market are too few for a rule - it
+  stays, watched; if week 18 costs again it goes.
+- B2 no flip: saved 0.33 (Thu). The 1.5 R target: did not act.
+
+**The one change for week 18:** none.
