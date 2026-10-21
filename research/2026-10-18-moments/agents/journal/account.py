@@ -7,6 +7,7 @@ Gold: 0.01 lot = 1 oz, so a 1-USD move is 1 USD; P&L = R x risk (USD per oz) x l
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -18,6 +19,9 @@ import liq_journal as L  # noqa: E402
 import rules_week as RW  # noqa: E402
 
 START, START_EQ, RISK_PCT = "2025-10-20", 100.0, 7.5
+if os.environ.get("PLAN1_ACCOUNT"):  # "start,equity,risk %" - the exam weeks: 2026-04-18,300,3 (owner 2026-10-21)
+    _s, _e, _r = os.environ["PLAN1_ACCOUNT"].split(",")
+    START, START_EQ, RISK_PCT = _s, float(_e), float(_r)
 
 
 def run(end: str) -> pd.DataFrame:

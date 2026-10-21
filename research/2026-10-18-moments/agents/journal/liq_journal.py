@@ -33,6 +33,8 @@ TH = "Asia/Bangkok"
 MIN = 60 * 10**9
 # the trades to read: the learning parts by default; PLAN1_TRADES names another file in dev/ (the exam, read once)
 TRADES = AG / "dev" / os.environ.get("PLAN1_TRADES", "plan1_trades_learn_s0_x0.parquet")
+if "exam" in TRADES.name:  # the exam weeks, journaled after the frozen reading (owner 2026-10-21: keep learning week by week)
+    C.EXAM = pd.Timestamp("2026-10-19", tz="UTC")
 
 
 def th(ns: int) -> str:

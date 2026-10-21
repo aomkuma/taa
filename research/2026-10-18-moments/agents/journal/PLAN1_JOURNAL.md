@@ -822,3 +822,46 @@ PLAN-1 trades only while **the D1 ATR(20) of the closed D1 bars is >= 60 USD**. 
 months) made +0.112 on 98 trades. The learning parts and the exam never fell below 60 (their lowest 60.1 / 75.9 - only
 the D1 size of the exam was read, not its trades), so the switch changes no result so far: it is the safety switch for
 a calmer gold. **On 2026-10-18 the D1 ATR(20) was 75.9 and falling** - watched daily in the forward journal.
+
+# Phase 2: the exam weeks journaled forward (owner 2026-10-21 ~20:30 Thai: "we adapt as we go, even live")
+
+The exam (2026-04-18 .. 10-17) was read once with the rules frozen at week 26 (+0.148). From here its weeks are journaled
+like weeks 1-26: each change is decided on the prior weeks only and applied to the next week. This is LEARNING, not proof
+(the exam's totals are already known); the proof of the adapting process is the DEMO forward. The account from week 27:
+**300 USD, 3 % a trade, at least 0.01 lot** (owner 2026-10-21). Run with `PLAN1_TRADES=plan1_trades_exam_s0_x0.parquet`
+and `PLAN1_ACCOUNT=2026-04-18,300,3`.
+
+## Week 27 - 2026-04-20 .. 24 (gold falls 4,830 -> 4,680; the H1 ATR 12-23)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, the ORB pool rule, the D1 ATR(20) >= 60 switch (on: 76-100).
+
+| Day, time | Piece | Side | Base R | Rules R | Best / worst | Lots | Risk | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|
+| Mon 13:27 | London ORB | SELL | -1.03 | -1.03 | +0.03 / -2.30 | 0.01 | 3.1% | -9.66 | 290.34 |
+| Mon 19:30 | NY straddle | BUY | -1.02 | -1.02 | +0.20 / -1.10 | 0.01 | 2.8% | -8.15 | 282.19 |
+| Tue 07:11 | Asia B2 | BUY | -0.80 | -0.80 | +0.17 / -0.80 | 0.01 | 3.4% | -7.73 | 274.46 |
+| Tue 08:50 | Asia B2 | SELL | +0.83 | skipped (flip) | +1.35 / -0.06 | | | | |
+| Tue 13:52 | London ORB | SELL | -1.01 | -1.01 | +0.14 / -1.15 | 0.01 | 5.6% | -15.64 | 258.82 |
+| Tue 19:30 | NY straddle | SELL | -1.03 | -1.03 | +1.44 / -1.50 | 0.01 | 3.1% | -8.23 | 250.59 |
+| Wed 14:01 | London ORB | BUY | -0.74 | -0.74 | +0.25 / -0.93 | 0.01 | 4.3% | -8.01 | 242.58 |
+| Wed 19:30 | NY straddle | SELL | +0.80 | +0.80 | +0.97 / -0.45 | 0.01 | 3.3% | +6.39 | 248.97 |
+| Thu 07:08 | Asia B2 | SELL | -1.01 | -1.01 | **+2.47** / -1.01 | 0.01 | 4.0% | -10.10 | 238.87 |
+| Thu 08:22 | Asia B2 | SELL | -0.25 | -0.25 | +0.20 / -0.25 | 0.01 | 9.7% | -5.78 | 233.09 |
+| Thu 08:55 | Asia B2 | SELL | +0.56 | +0.56 | +0.86 / -0.12 | 0.01 | 13.2% | +17.30 | 250.39 |
+| Thu 13:16 | London ORB | SELL | -1.02 | -1.02 | +0.33 / -1.41 | 0.01 | 3.1% | -7.98 | 242.41 |
+| Thu 19:30 | NY straddle | BUY | +0.54 | +0.54 | +0.93 / -0.53 | 0.01 | 3.3% | +4.34 | 246.75 |
+| Fri 07:30 | Asia B2 | BUY | -0.61 | -0.61 | +0.25 / -0.75 | 0.01 | 8.1% | -12.21 | 234.54 |
+| Fri 13:16 | London ORB | SELL | +0.05 | +1.50 | +1.62 / -0.21 | 0.01 | 3.4% | +11.95 | 246.49 |
+
+**The week:** base 15 trades -5.72 R; rules 14 trades **-5.11 R, -53.51 USD**. Account **300.00 -> 246.49 USD** (-18 %).
+At 300 USD every trade is at the 0.01 minimum lot: B2's wide stops reached 8-13 % of the account.
+
+**What happened:** a falling week; the ORB's sells were stopped at round numbers / yesterday's low (sweep zones) and the
+moves came after. Thu's first B2 reached +2.47 R and fell back to its stop.
+
+**Checked on weeks 1-26, a B2 target (the same stop, exit at the base exit if not reached):** base +10.38 R; 1.0 R +3.89;
+1.5 R +7.87; 2.0 R +9.68 - every target is worse on the prior weeks (week 27 alone would favour 2.0 R: +1.74 vs -1.27).
+Not adopted (`b2_target_check.py`).
+
+**The rules that cost this week:** B2 no flip cost 0.83 (Tue); the 1.5 R target paid +1.45 (Fri). The pool rule did not
+act. **The one change for week 28:** none.
