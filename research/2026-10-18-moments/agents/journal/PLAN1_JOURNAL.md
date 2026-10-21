@@ -1025,3 +1025,11 @@ option beats the current one by at least 1.0 R over the 8 weeks** (decided now, 
 7 trades **+4.33 R, +9.76 USD** (frozen: 8 trades +2.67 R, +6.77 USD); account **249.20 -> 258.96 USD** (frozen 232.53).
 Thursday's straddle made +7.50 R at the 6-USD stop (+45.02 USD; at 8 USD +5.63 R). B2 with the previous (rising) week
 skipped Tue's sell (+0.08). Six weeks: 61 trades +0.05 R (frozen -4.94); 258.96 USD (frozen 232.53).
+
+## Exam week 7 (2026-06-01 .. 05) - no lever cleared the 1.0 R margin; no change
+
+15 trades **+4.52 R, +14.42 USD** (frozen: 15 trades +7.73 R, +50.96 USD); account **258.96 -> 273.38 USD** (frozen
+283.49 - the frozen account is ahead again). The 6-USD straddle stop cost this week: three trades the 8-USD stop kept
+(Mon +0.06, Tue +1.54, Wed +0.64) were stopped at 6 (-1.00, -1.05, -1.05); Friday's +6.09 became +8.12 R for the same
+48.71 USD. Seven weeks: 76 trades +4.58 R (frozen +2.79); 273.38 USD (frozen 283.49). In R the learner leads, in USD it
+trails: a tighter stop wins R on the winners and loses more often.
