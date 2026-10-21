@@ -1067,3 +1067,10 @@ runs take the same trades; the gap is weeks 1-8's lever choices.
 5 trades **-1.30 R, -10.68 USD** (frozen: 5 trades -1.37 R, -10.68 USD); account **374.20 -> 363.52 USD** (frozen 424.72).
 A quiet week: no Asia B2 trade, the straddle out flat twice on time; the pool rule skipped Mon (+0.22) and Fri (-1.08).
 Twelve weeks: 115 trades +8.79 R (frozen +11.86); 363.52 USD (frozen 424.72).
+
+## Exam week 13 (2026-07-13 .. 17) - no change; the half-way mark
+
+10 trades **+10.66 R, +106.04 USD** (frozen: 10 trades +13.12 R, +106.04 USD); account **363.52 -> 469.56 USD** (frozen
+530.76). The straddle ran three days in a row (Tue +4.33, Wed +2.52, Thu +2.97 R at 10 USD = +98.28 USD); Thursday's
+Asia B2 sell +2.21 R. Half the exam: 125 trades +19.45 R (+0.156 a trade; frozen +24.98, +0.200); **469.56 USD = +56.5 %
+(frozen 530.76 = +76.9 %)**.
