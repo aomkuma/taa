@@ -807,3 +807,9 @@ worst trade -243.04 USD later on); continued from the learning parts' 1,710.98 U
 **What the exam says:** the NY straddle carries the plan in every period (learning +0.262, exam +0.285); Asia B2 is
 small-positive; the London ORB is the piece that did not carry over (learning +0.168, exam +0.020 base, -0.006 with the rules). The old years are the second exam
 (next, through the bot's tick backtest once Asia B2 is in the lane, so one engine reads all of it).
+
+**The owner's bar (2026-10-21 ~19:30 Thai, said after this exam was read):** "0.10-0.15 R a trade is fine, as long as it is
+profitable" - against that bar the frozen rules' exam (+0.148 on 282, positive) passes; against the pre-registered +0.15
+it missed by 0.002. Both are recorded. The old years (2021-09 .. 2025-09) are already known to lose for every piece
+(CHECKLIST 56 / 57 / 59: Asia B2 -0.115 on 834, the ORB / straddle always-on -0.036 on 1,300): the plan pays only in the
+present's large gold. The next work is the switch: how large gold must be (a slow, days-long measure) for the plan to pay.
