@@ -919,3 +919,20 @@ The straddle +3.16, the ORB -0.57, Asia B2 +0.08.
 
 **The rules that cost this week:** the pool rule saved 1.18 (weeks 1-32 net +3.26 R). The 1.5 R target paid +0.01.
 **The one change for week 33:** none.
+
+## The losers of weeks 27-32 studied (owner 2026-10-21 ~21:05 Thai: "if we learn from the journal, the numbers should differ")
+
+Weeks 29-32 equalled the frozen run to the cent: the only change (no flip deleted) never acted, and the weekly reading had
+become a rule-cost check only. Two ideas from the losers, each checked on weeks 1-26 first (`out_be_check.txt`,
+`out_piece_momentum.txt`; base R, before the journal rules):
+
+| Idea (from the losers) | Weeks 1-26 | Weeks 27-32 | Verdict |
+|---|---|---|---|
+| none (base) | +56.54 | -4.01 | |
+| Break-even: the stop to the entry after +0.5 / 0.75 / 1.0 / 1.5 R (many losers first ran +1 R) | +30.44 / +39.00 / +47.58 / +53.16 | -4.84 / -1.85 / -2.81 / -3.10 | worse on 1-26 at every level - not adopted |
+| A piece trades only if its last N weeks summed > 0 (N = 2 / 3 / 4 / 6 / 8) | +42.86 / +42.24 / +43.36 / +47.06 / +43.49 | -2.97 / -6.37 / -7.24 / -2.49 / -0.19 | worse on 1-26 for every N - not adopted |
+
+**The lesson:** the plan's profit comes from the few trades that run far (+3 to +8 R). Every cut tried - a break-even, a
+target on B2, standing a piece aside after losing weeks - removes more of those runs than it saves on the losers. The
+losing weeks are the price of the runs; the learning so far says: keep the full stop, keep every piece trading, size so
+the account survives the streaks.

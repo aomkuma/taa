@@ -1,0 +1,5 @@
+N=2: weeks 1-26 +42.86 (base +56.54) | weeks 27-32 -2.97 (base -4.01) | by piece 1-26 {'Asia B2': 5.32, 'London ORB': 15.06, 'NY straddle': 22.48}
+N=3: weeks 1-26 +42.24 (base +56.54) | weeks 27-32 -6.37 (base -4.01) | by piece 1-26 {'Asia B2': 5.21, 'London ORB': 12.66, 'NY straddle': 24.37}
+N=4: weeks 1-26 +43.36 (base +56.54) | weeks 27-32 -7.24 (base -4.01) | by piece 1-26 {'Asia B2': 5.76, 'London ORB': 15.51, 'NY straddle': 22.1}
+N=6: weeks 1-26 +47.06 (base +56.54) | weeks 27-32 -2.49 (base -4.01) | by piece 1-26 {'Asia B2': 6.07, 'London ORB': 17.24, 'NY straddle': 23.75}
+N=8: weeks 1-26 +43.49 (base +56.54) | weeks 27-32 -0.19 (base -4.01) | by piece 1-26 {'Asia B2': 9.47, 'London ORB': 15.42, 'NY straddle': 18.6}
