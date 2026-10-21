@@ -1040,3 +1040,10 @@ trails: a tighter stop wins R on the winners and loses more often.
 355.33). B2 with the previous (falling) week skipped three buys that won (+0.60, +1.54, +0.32 = +2.46 R missed; the frozen
 B2 made +2.93). Eight weeks: 86 trades +5.69 R (frozen +6.73); **299.96 USD (frozen 355.33)**. The B2 trend filter now
 costs more than it saves since it was chosen in week 2 - the margin keeps it from switching back (it must beat by 10 USD).
+
+## Exam week 9 (2026-06-15 .. 19) - learned: Asia B2 back to every trade (+26.43 vs -1.57 USD over 8 weeks)
+
+8 trades **-3.41 R, -37.37 USD** (frozen: 8 trades -3.14 R, -33.50 USD); account **299.96 -> 262.59 USD** (frozen 321.83).
+The same trades as the frozen run; the 10-USD straddle stop made the two straddle losers 10 USD each (8 at 8 USD). The
+frozen comparator at 300 USD / 3 % is now in `out_frozen_300.txt` (week by week). Nine weeks: 94 trades +2.28 R (frozen
++3.59); 262.59 USD (frozen 321.83).
