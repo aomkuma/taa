@@ -400,3 +400,31 @@ The NY straddle and Asia B2 show no such loss (straddle no pool + contracting 7 
 **The one change for week 10 (from 2025-12-22, decided 2026-10-21 13:55 Thai):** when the H4 ATR contracted over the
 last 24 h (closed H4 bars), the London ORB enters only if its 15 minutes before the decision broke a pool (yesterday's
 high / low, the Asia high / low, today's open, the last M15 swing) in its direction. In `rules_week.py`.
+
+## Week 10 - 2025-12-22 .. 26 (gold breaks to records 4,340 -> 4,525; Thu 25 closed for Christmas)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, and from this week the ORB in a contracting H4 needs a
+pool break. `out_rules_w10.txt`, `out_liq_w10.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H4 ATR 24 h | What happened |
+|---|---|---|---|---|---|---|---|---|
+| Mon 13:17 | London ORB | BUY | 6.6 | +2.00 | skipped (new rule) | +2.27 / -0.83 | -2% | no pool in the last 15 minutes - Asia had already run 50 USD above yesterday's high / the Asia high (4,356) |
+| Tue 13:51 | London ORB | BUY | 9.7 | +0.99 | +0.99 | +1.08 / -0.08 | +1% | |
+| Wed 07:09 | Asia B2 | BUY | 13.5 | +0.01 | +0.01 | +0.41 / -0.37 | +10% | |
+| Wed 08:25 | Asia B2 | BUY | 35.4 | -1.00 | -1.00 | +0.03 / -1.00 | +10% | a 35-USD risk at a record high |
+| Wed 13:18 | London ORB | SELL | 6.9 | -1.01 | -1.01 | 0.00 / -1.77 | +24% | stop in today's open's sweep zone |
+| Fri 07:10 | Asia B2 | BUY | 28.1 | +0.24 | +0.24 | +1.00 / -0.39 | +1% | |
+| Fri 13:17 | London ORB | BUY | 5.7 | -1.01 | skipped (new rule) | +0.90 / -1.12 | -1% | SWEPT at round 4510 |
+| Fri 20:30 | NY straddle | BUY | 8.0 | +0.62 | +0.62 | +1.04 / -0.63 | -3% | |
+
+**The week:** base 8 trades +0.83 R; rules 6 trades -0.16 R. Ten weeks (base) 109 trades +23.01 R (+0.21 a trade).
+
+**The rules that cost this week:**
+- **The new ORB rule (contracting H4 + no pool):** skipped Mon +2.00 and Fri -1.01 - cost 0.99 R in its first week.
+  Monday's lesson: "no pool broken in 15 minutes" also happens when price is ALREADY beyond every pool (a runaway to a
+  record: the Asia session had taken yesterday's high by 50 USD). That is the opposite of a stuck market. Candidate
+  refinement (checked next week on weeks 1-10 before any change): a price beyond the Asia range on the trade's side counts
+  as a broken pool. The rule stays one more week; if it costs again it goes.
+- B2 no flip, the 1.5 R target: did not act.
+
+**The one change for week 11:** none yet (the refinement above is checked first).
