@@ -120,3 +120,45 @@ not the rule: a wider stop costs every winner a third of its R to save the swept
 **The one change for week 3 (decided 2026-10-21 13:10 Thai on weeks 1-2, checked on both before adopting):** none new -
 week 3 runs on the base (the change-1 deletion and the VOL-16 ceiling deletion are the week's changes). Candidate kept:
 ORB break-even at +1 R (week 1: #6 -0.16 -> 0; week 2: no ORB trade went +1 R and then lost - +0.16 R over two weeks).
+
+## Week 3 - 2025-11-03 .. 07 (gold ranges 3,930-4,020; the US shutdown: no 08:30 release all week)
+
+The rules in force: the base PLAN-1 (change 1 deleted), the ATR floor of 12 tracked. `out_liq_w3.txt`. New York is on
+winter time from 2025-11-02, so the straddle is at 20:30 Thai.
+
+| Day, time | Piece | Side | Risk | Exit, R | Best / worst | H1 ATR | Liquidity / what happened |
+|---|---|---|---|---|---|---|---|
+| Mon 07:18 | Asia B2 | SELL | 18.0 | structure -0.56 | +0.04 / -0.58 | 19.3 | sold the break of yesterday's low and the Asia low - never ran |
+| Mon 13:20 | London ORB | BUY | 7.1 | time -0.29 | +0.88 / -0.59 | 20.3 | +0.88 R at 14:04, then gave it back |
+| Tue 07:05 | Asia B2 | SELL | 8.9 | target +1.13 | +1.13 / -0.90 | 15.9 | stop 0.4 beyond the M15 swing high (not taken) |
+| Tue 08:33 | Asia B2 | SELL | 14.3 | structure -0.19 | +0.31 / -0.71 | 15.0 | the morning's second B2 trade |
+| Tue 13:19 | London ORB | BUY | 9.4 | time +1.55 | +1.55 / -0.81 | 15.0 | |
+| Wed 08:05 | Asia B2 | BUY | 15.0 | structure -0.15 | +0.35 / -0.39 | 17.7 | bought the break of today's open |
+| Wed 08:55 | Asia B2 | SELL | 13.3 | structure -0.57 | +0.13 / -0.60 | 17.7 | 50 minutes later the other way: both lost |
+| Wed 13:25 | London ORB | BUY | 8.7 | time -0.61 | +0.35 / -0.77 | 15.7 | |
+| Thu 13:45 | London ORB | SELL | 5.6 | stop -1.06 | +0.28 / **-4.55** | **10.1** | sold the break of the M15 swing low with a 5.6-USD stop: FAKE, ran -3.82 R on |
+| Fri 08:10 | Asia B2 | BUY | 9.8 | time +0.52 | +0.67 / -0.19 | 13.1 | broke the Asia high |
+| Fri 13:23 | London ORB | BUY | 5.3 | target +2.00 | +2.32 / -0.22 | 11.8 | broke the Asia high - ran to the target |
+| Fri 20:30 | NY straddle | SELL | 8.0 | time -0.37 | +0.37 / -0.65 | 11.4 | the only trigger of the week (no release Mon-Thu: the straddle never fired) |
+
+**The week:** 12 trades, +1.40 R (London ORB 5 trades +1.59, Asia B2 6 trades +0.18, NY straddle 1 trade -0.37).
+
+**What the winners share:** the ORB's and B2's winners bought / sold WITH a break of the Asia range in the session's
+direction (Fri: both broke the Asia high and ran; Tue's B2 sold under it). The losers broke smaller things (today's open,
+an M15 swing).
+
+**The weaknesses that repeat:**
+- **Asia B2 trades twice a morning and flips:** Tue's second trade -0.19, Wed's buy then sell -0.15 / -0.57. Weeks 1-3:
+  the second B2 trade of a morning 2 trades, -0.76 R.
+- **The ORB in a calm afternoon (ATR 10) took a 5.6-USD stop under a small swing** - a fake that ran -4.55 R.
+- **No release, no straddle:** the evening piece is idle when the calendar is empty (this week: the shutdown).
+
+**The rules that cost this week:**
+- **The ATR floor of 12:** three trades had an ATR under 12 (Thu ORB -1.06, Fri ORB +2.00, Fri straddle -0.37): the
+  floor would have cost +0.57 R this week. Evidence: one week against it, the calm years (1,379 losing trades) for it - kept,
+  watched.
+- **The ORB's 60-minute exit:** Mon +0.88 R at 14:04 finished -0.29. The break-even candidate (at +1 R) would not have
+  changed it (it never reached +1 R): three weeks, +0.16 R.
+
+**The one change for week 4 (decided 2026-10-21 13:12 Thai, checked on weeks 1-3):** Asia B2 takes at most one trade a
+morning. On weeks 1-3 it removes 2 trades and adds +0.76 R; nothing else changes.
