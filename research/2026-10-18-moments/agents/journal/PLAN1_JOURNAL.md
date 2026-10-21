@@ -1002,3 +1002,10 @@ Two weeks: 26 trades +0.04 R (frozen -3.41 R); 297.35 USD (frozen 258.57).
 222.05). The pool rule off took Tue (-1.00), Wed (-0.11) and Thu (+2.24 without a target: it ran past 2 R) = +1.13. B2 with
 the previous (falling) week sold three times into this week's rise (-1.95) and skipped Wed's buy (+0.70) - the lever lags
 a turning week. Three weeks: 38 trades -1.33 R (frozen -5.74); 273.87 USD (frozen 222.05).
+
+## Exam week 4 (2026-05-11 .. 15) - learned: the ORB pool rule back on (no target; +3.01 vs +2.34), Asia B2 only with the D1 trend (+0.58 vs +0.36)
+
+8 trades **-2.01 R, -14.50 USD** (frozen: 12 trades -1.89 R, +7.40 USD); account **273.87 -> 259.37 USD** (frozen
+229.46). B2 with the D1 trend skipped four sells (Mon -0.53, -0.20; Tue +0.97; Wed +0.63 = +0.87 missed) and took Thu's two
+(-0.85). The straddle lost three of five at the 6-USD stop. Four weeks: 46 trades -3.34 R (frozen -7.63); 259.37 USD
+(frozen 229.46). The levers switch often (B2: all -> previous week -> D1 trend in four weeks): 8 weeks is a short memory.
