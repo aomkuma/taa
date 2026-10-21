@@ -3033,3 +3033,11 @@ without the lower edge - corrected. Forward 2026-10-19 .. 10-20 (2 weekdays): un
 VOL-16 / VOL-16b 2 trades -0.554 (-11.62 USD). The London ORB sell of 10-19 (13:31 Thai at 4174.30, stopped 13:58 at
 4185.15, H1 ATR 12.56) matches the real candles: it sold near the 13:32 low of 4171.09 before the run to the 4190.25 top
 at 14:33 (Trade 4's day). Far too few trades to judge; the judge needs >= 60.
+
+## NS-3: the 08:30 straddle by release type - written before computing (2026-10-21 12:35 Thai)
+The straddle (PLAN-1's rule, ticks, slippage 0) on every 08:30 release day 2021-09 .. 2026-10-16 (D: ticks to 2025-09,
+data/ticks after; the exam-period days are already read for PLAN-1, so 2026-04-18 on is a description), split by the
+release in `app/news/us_releases.csv`: NFP, CPI, the others (PPI, PCE, GDP), and the non-release weekdays. Reported per
+type: trades and R per year, and inside / outside the VOL-16 band. One hypothesis, fixed now: NFP and CPI (the two
+largest scheduled US releases) carry the straddle's edge; the pass for a type: pooled 2021-09 .. 2026-04 R >= +0.15 on
+>= 40 trades with the 95 % range above 0.
