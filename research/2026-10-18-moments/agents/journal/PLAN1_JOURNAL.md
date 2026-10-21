@@ -720,3 +720,24 @@ made +0.37 a trade on days without a release (53 trades) and +0.18 with one (12)
 - The ORB 1.5 R target: cost 0.50 (Thu ran to +5.70). B2 no flip: did not act.
 
 **The one change for week 19:** none.
+
+## Week 19 - 2026-02-23 .. 27 (gold climbs 5,150 -> 5,235; the H1 ATR 15-28)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break.
+`out_rules_w19.txt`, `out_liq_w19.txt` (the full table of trades, lots and the account is in `account.py 2026-02-28 2026-02-23`).
+
+| Piece | Trades (rules) | Rules R | Notes |
+|---|---|---|---|
+| Asia B2 | 5 (+1 skipped) | +1.24 | Fri +1.21 at its target; the skipped flip (Thu) made +0.43 |
+| London ORB | 3 (+1 skipped) | +4.50 | all three at the 1.5 R target; Fri's skipped one was a FAKE (-1.01) |
+| NY straddle | 4 | +0.98 | Tue's FAKE ran to -5.94 R (stopped at -1.08, a gap) |
+
+**The week:** base 14 trades +5.62 R; rules 12 trades **+6.74 R, +333.55 USD**. Account **658.99 -> 992.54 USD** (the worst
+trade so far: Tue's straddle, -60.27 USD). Nineteen weeks (base) 217 trades +44.69 R; rules +44.73 R - the rules now lead.
+
+**The rules that cost this week:**
+- The ORB 1.5 R target: +0.53 (Tue +1.36; Mon -0.50, Thu -0.33).
+- The ORB pool rule: saved 1.01 (Fri). Since week 10: +2.45 R.
+- B2 no flip: cost 0.43 (Thu). Weeks 1-19 net +0.93.
+
+**The one change for week 20:** none.
