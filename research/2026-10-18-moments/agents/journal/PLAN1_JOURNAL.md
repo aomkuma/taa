@@ -1009,3 +1009,13 @@ a turning week. Three weeks: 38 trades -1.33 R (frozen -5.74); 273.87 USD (froze
 229.46). B2 with the D1 trend skipped four sells (Mon -0.53, -0.20; Tue +0.97; Wed +0.63 = +0.87 missed) and took Thu's two
 (-0.85). The straddle lost three of five at the 6-USD stop. Four weeks: 46 trades -3.34 R (frozen -7.63); 259.37 USD
 (frozen 229.46). The levers switch often (B2: all -> previous week -> D1 trend in four weeks): 8 weeks is a short memory.
+
+## Exam week 5 (2026-05-18 .. 22) - learned: the ORB pool rule off again (+2.76 vs +2.50), the straddle stop 10 USD (+7.85 vs +7.83), B2 back to the previous week's direction (+0.36 vs -0.27)
+
+8 trades **-0.94 R, -10.17 USD** (frozen: 7 trades +0.02 R, -3.70 USD); account **259.37 -> 249.20 USD** (frozen 225.76).
+The pool rule off took three ORB losers / flats (-1.01, -1.02, +0.06 = -1.97); B2 with the previous week skipped two
+buys (-0.05, -1.02). Five weeks: 54 trades -4.28 R (frozen -7.61); 249.20 USD (frozen 225.76).
+
+**A lesson about the learner itself:** in five weeks the levers switched 9 times, the straddle on a margin of 0.02 R and
+the ORB's pool rule back and forth every week - chasing noise. **From exam week 6 a lever switches only when the new
+option beats the current one by at least 1.0 R over the 8 weeks** (decided now, applied forward; `wf_learn.py` MARGIN).

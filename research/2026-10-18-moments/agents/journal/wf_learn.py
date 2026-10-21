@@ -22,6 +22,9 @@ ORB = [(t, p) for t in ("orb_1.0", "orb_1.5", "orb_2.0", "orb_none") for p in (T
 NY = ["ny_6", "ny_8", "ny_10", "ny_12"]
 B2 = ["all", "prev_week", "d1_trend"]
 EXAM_W1 = pd.Timestamp("2026-04-20")
+# from exam week 6 (decided after week 5: the levers switched on margins as small as 0.02 R): switch only when the new
+# option beats the current one by at least MARGIN R over the window
+MARGIN, MARGIN_FROM = 1.0, 6
 
 
 def load() -> pd.DataFrame:
@@ -70,7 +73,8 @@ def main(N: int, last: int) -> None:
             P = X[(X.piece == p) & X.wk.isin(window)]
             score = {str(o): float(np.nansum(f(P, o))) for o in opts}
             best = max(opts, key=lambda o: score[str(o)])
-            if score[str(best)] > score[str(cur[p])] + 1e-9:
+            need = MARGIN if i >= MARGIN_FROM else 1e-9
+            if score[str(best)] > score[str(cur[p])] + need:
                 changes.append(f"{p}: {cur[p]} -> {best} ({score[str(cur[p])]:+.2f} -> {score[str(best)]:+.2f} over {N} weeks)")
                 cur[p] = best
         Wk = X[X.wk == w]
