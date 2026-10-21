@@ -41,6 +41,25 @@ breakout's direction within half an hour.
    at 0.01 lot.
 3. **An ATR above about 35-40 turns the 8-USD straddle stop into noise** (#7).
 
-**The one change for week 2 (written before week 2 is opened, 2026-10-21 13:00 Thai):** London ORB - once a trade has
-gone +1 R its way, the stop moves to the entry (break-even). Chosen because it touches the repeat weakness 1 with no new
-parameter beyond a common rule; on this week it would have turned #6 from -0.16 to 0 and left the rest unchanged.
+**The liquidity reading (`liq_journal.py`, `out_liq_w1.txt`; owner: "cut the loss away from the liquidation zone"):**
+the pools everyone sees at each entry (yesterday's high / low, the Asia range 00:00-07:00 Thai, today's open, the last
+M15 swing, the 10-USD round numbers) and where the stop sat against them:
+
+| # | Stop sat just beyond (within 0.25 H1 ATR) | Stopped? | Without the stop, by the window's end |
+|---|---|---|---|
+| 2 | the Asia low 4234.1 (stop 3.1 under it) | yes, 13:28 | **SWEPT: came back to +0.71 R** (best +0.78 R at 14:13) |
+| 4 | the round 4320 | yes, 14:33 | FAKE: ran on to -1.76 R - it bought a bounce on the day gold fell from its record (the Asia high 4381.4 was the record itself) |
+| 6 | the Asia high 4130.9 (3.2) and the round 4130 | no (time) | - |
+| 7 | the M15 swing high 4044.9 (6.2) and the round 4050 | yes, 19:49 | **SWEPT: came back to +1.12 R** (best +2.44 R at 19:56) |
+| 1, 8 | the M15 swing low (1.6) / today's open (1.6) | no | - |
+
+- **Two of the week's three stop-outs were sweeps:** the stop sat a few USD beyond a pool everyone sees, the market
+  took those stops and then went the trade's way (+0.71 R and +1.12 R at the window's end). The third (#4) was a real
+  reversal: a buy against the day's turn from the record.
+- **The losers' cause is the stop's place, not the idea.**
+
+**The one change for week 2 (revised before week 2 is opened, 2026-10-21 13:05 Thai, on week 1 only):** the stop
+leaves the sweep zone. If a pool (yesterday's high / low, the Asia high / low, today's open, the last M15 swing, a 10-USD
+round number) lies between the entry and the stop within 0.25 H1 ATR of the stop, the stop moves to 0.5 H1 ATR beyond
+that pool. The target price stays where it was; R is counted on the new, wider risk (a smaller lot). The break-even
+idea (ORB at +1 R) is kept as the next candidate.
