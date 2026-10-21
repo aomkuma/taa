@@ -1,0 +1,12 @@
+Mon 27 08:37 Asia B2     SELL @4083.74 H1ATR 25.0 | base time      R +0.62 | change 1: R +0.62 | unchanged (B2)
+Mon 27 13:56 London ORB  SELL @4074.52 H1ATR 20.5 | base time      R +0.80 | change 1: R +0.23 | stop 4084.83 -> 4110.24 (out of round 4080, round 4090, round 4100), risk 10.3 -> 35.7, time
+Mon 27 19:30 NY straddle SELL @4032.34 H1ATR 22.6 | base stop      R -1.02 | change 1: R -0.56 | stop 4040.34 -> 4057.01 (out of round 4040, swing_high), risk 8.0 -> 24.7, time
+Tue 28 13:29 London ORB  SELL @3951.62 H1ATR 21.1 | base time      R +1.14 | change 1: R +0.70 | stop 3968.46 -> 3979.00 (out of swing_high), risk 16.8 -> 27.4, time
+Tue 28 19:30 NY straddle SELL @3919.82 H1ATR 25.5 | base time      R +0.80 | change 1: R +0.80 | stop not in a sweep zone: unchanged
+Wed 29 08:34 Asia B2     SELL @3969.96 H1ATR 22.4 | base time      R +1.41 | change 1: R +1.41 | unchanged (B2)
+Wed 29 13:25 London ORB  BUY  @3971.42 H1ATR 19.9 | base target    R +2.00 | change 1: R +0.76 | stop 3959.93 -> 3941.16 (out of round 3960, swing_low), risk 11.5 -> 30.3, target
+Thu 30 13:58 London ORB  BUY  @3973.73 H1ATR 29.1 | base stop      R -1.01 | change 1: R -0.37 | stop 3956.31 -> 3925.43 (out of round 3960, round 3950, round 3940), risk 17.4 -> 48.3, time
+Thu 30 19:30 NY straddle SELL @3968.90 H1ATR 26.0 | base stop      R -1.00 | change 1: R -1.00 | stop not in a sweep zone: unchanged
+Fri 31 13:18 London ORB  BUY  @4014.90 H1ATR 19.1 | base time      R +0.26 | change 1: R +0.11 | stop 4002.12 -> 3984.84 (out of swing_low, asia_low), risk 12.8 -> 30.1, time
+Fri 31 19:30 NY straddle SELL @4017.58 H1ATR 18.7 | base stop      R -1.03 | change 1: R -1.03 | stop not in a sweep zone: unchanged
+week: base 11 trades +2.98 R | with change 1 +1.68 R
