@@ -201,3 +201,43 @@ The straddle's runs are worth more than a 1.5 R cap (week 1 had +3.41 / +1.91 / 
 
 **The one change for week 5 (decided 2026-10-21 13:15 Thai, checked on weeks 1-4: +0.75 R):** the London ORB's target is
 1.5 R instead of 2 R (out at the target, the stop or 60 minutes, as before). The straddle keeps no target.
+
+## Week 5 - 2025-11-17 .. 21 (gold ranges 4,010-4,110)
+
+The rules in force: B2 one trade a morning, the ORB target 1.5 R. `out_rules_w5.txt`, `out_liq_w5.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H1 ATR | What happened |
+|---|---|---|---|---|---|---|---|---|
+| Mon 08:50 | Asia B2 | SELL | 7.3 | +0.32 | +0.32 | +1.42 / -0.45 | 28.3 | stop 0.1 above the M15 swing high (not taken) |
+| Mon 13:33 | London ORB | BUY | 14.6 | +0.68 | +0.68 | +0.73 / -0.31 | 19.3 | |
+| Tue 13:19 | London ORB | SELL | 9.5 | +0.16 | +0.16 | +0.88 / -0.54 | 21.0 | |
+| Tue 20:30 | NY straddle | BUY | 8.0 | +1.74 | +1.74 | +2.36 / -0.42 | 18.3 | broke today's open and the M15 swing high |
+| Wed 13:20 | London ORB | SELL | 6.7 | +0.53 | +0.53 | +1.01 / -0.58 | 15.8 | |
+| Wed 20:30 | NY straddle | BUY | 8.0 | -0.13 | -0.13 | +0.75 / -0.70 | 14.8 | |
+| Thu 07:52 | Asia B2 | SELL | 7.7 | -0.58 | -0.58 | +0.15 / -0.78 | 21.6 | **stop 1.5 above the Asia high: swept** |
+| Thu 08:15 | Asia B2 | SELL | 13.5 | **+1.77** | **skipped** | **+4.21** / -0.13 | 19.8 | the same sell after the sweep: the real move |
+| Thu 13:26 | London ORB | SELL | 14.1 | +0.18 | +0.18 | +0.33 / -0.94 | 22.5 | |
+| Thu 20:30 | NY straddle | BUY | 8.0 | -1.34 | -1.34 | +0.70 / -2.92 | 20.9 | SLOW |
+| Fri 07:35 | Asia B2 | SELL | 16.8 | +1.04 | +1.04 | +1.48 / -0.43 | 21.4 | |
+| Fri 13:16 | London ORB | SELL | 16.5 | +1.01 | +1.01 | +1.40 / -0.19 | 18.6 | |
+| Fri 20:30 | NY straddle | BUY | 8.0 | +1.18 | +1.18 | +1.38 / -0.48 | 19.9 | |
+
+**The week:** base 13 trades **+6.55 R**; with the rules in force 12 trades +4.78 R. Five weeks (base): 55 trades,
++15.23 R (+0.28 a trade).
+
+**What the winners share:** all five ORB trades won (small, by the 60-minute exit: none reached 1.5 R, so the new target
+changed nothing); the straddle won when it broke a pool (Tue) or ran with the week.
+
+**The lesson of Thursday morning:** the first sell's stop sat 1.5 USD above the Asia high - the sweep took it, then the
+same idea ran +4.21 R. A second B2 trade in the SAME direction after a stop-out is a re-entry after the sweep; the losing
+second trades of week 3 were a flip to the OTHER side (Wed: buy, then sell 50 minutes later) or a second same-side add
+(Tue, -0.19).
+
+**The rules that cost this week:**
+- **B2 one trade a morning: cost 1.77 R this week; weeks 4-5 net -1.01 R. DELETED.**
+- The ORB target 1.5 R: no effect this week (no ORB trade reached 1.5 R).
+- The ATR floor of 12: no trade under 12 this week.
+
+**The one change for week 6 (decided 2026-10-21 13:20 Thai, checked on weeks 1-5):** Asia B2's second trade of a morning
+is taken only in the first trade's direction (no flip). On weeks 1-5 it skips one trade (week 3 Wed -0.57) and keeps
+the re-entries: +0.57 R against the base.
