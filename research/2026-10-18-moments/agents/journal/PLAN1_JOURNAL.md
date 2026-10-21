@@ -428,3 +428,7 @@ pool break. `out_rules_w10.txt`, `out_liq_w10.txt`.
 - B2 no flip, the 1.5 R target: did not act.
 
 **The one change for week 11:** none yet (the refinement above is checked first).
+
+**Checked after week 10 (weeks 1-10), the refinement:** of the 14 ORB trades the rule skips, the 6 already beyond the Asia
+range on their side made -0.15 R, the 8 inside it -0.94 R. Re-admitting the "beyond" ones gains nothing - **not
+adopted**. The rule as it stands skipped 14 trades for -1.09 R over weeks 1-10 (it saves 1.09 R net) - it stays.
