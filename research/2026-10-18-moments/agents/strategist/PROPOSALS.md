@@ -1,3 +1,113 @@
+# Row 57 - the walk-forward of the PROCESS (London 13:00 ORB, NY 08:30 straddle) - written before computing (2026-10-21 12:36 Thai, `date -u` 05:36)
+
+Owner: "backtest, prove, use, and keep learning the market".
+
+**The trades:** PLAN-1's rules on the ticks, slippage 0, every weekday 2021-09-01 .. 2026-04-17. Nothing from
+2026-04-18 on is loaded.
+- They are simulated by the measurer's own code: `check_plan1`'s ORB rule as in `vol16_old.py`, and
+  `ns1_ticks.straddle`.
+- The ticks come from `D:/taa-data/ticks/XAUUSD` before 2025-10-01 and from `data/ticks/XAUUSD` after.
+- Each trade is tagged with the ATR(14) of the last closed H1 bar at its decision (vol16_old's ATR).
+- **The parity checks before the folds are read:**
+  - on P1 / P2: the ORB 59 / 60 at +0.214 / +0.123, the straddle 41 / 59 at +0.467 / +0.119;
+  - on 2021-09 .. 2025-09: `vol16_old.parquet`'s yearly numbers.
+
+**The folds:**
+- The trading quarters start 2022-10-01, 2023-01-01, .. 2026-04-01; the last one is cut at 2026-04-17.
+- Each fold chooses on the trades that **exited before** its start and **entered at / after** its start minus 12
+  months, then trades its 3 months.
+- No fold sees its own trading months.
+- Each piece is chosen separately.
+
+**The choices:**
+- **(a) the band:**
+  - The candidates are built from the quartiles q25 / q50 / q75 of the fit trades' ATR: the 4 quartile bands, the 3
+    adjacent pairs, the 2 adjacent triples, and all 4. That is 10 bands.
+  - The outer edges are open: the lowest band has no floor, the highest no ceiling.
+  - The chosen band has the best fit R among the bands with >= 20 fit trades. A tie goes to more trades.
+  - If the best is < +0.10, or no band qualifies, the piece stands aside for that quarter.
+  - The band's edges are frozen as numbers for the quarter.
+- **(b) VOL-16:**
+  - (b1) the fixed band 12 <= ATR < 16, traded only when its fit R is >= +0.10 on >= 20 fit trades, else stand aside;
+  - (b0) the band always, as a reference.
+- **(c) always on.**
+
+**Reported:**
+- each fold's choice, the fit R and trades, and the out-of-sample trades and R per piece;
+- the chained out-of-sample result 2022-10 .. 2026-04-17 (both pieces pooled, and per piece), with the 95 % bootstrap
+  range;
+- per year (Oct .. Sep).
+
+**The pass for the process (a):** chained R >= +0.10, the 95 % range above 0, and no year below -0.10.
+# Row 57 - the results (measured 2026-10-21 12:38-12:41 Thai)
+
+**How it was checked:**
+- **The trades are the measurer's rule code**, built in `wf_process.py build` (`out_wf_build.txt`). Its parity:
+  - with `vol16_old.parquet`: all 10 piece-years (2020-21 .. 2024-25) have the same trades and R to 3 decimals;
+  - on P1 / P2: the ORB 59 / 60 trades at +0.213 / +0.124 against the row-45 ticks' +0.214 / +0.123 (the same
+    counts). The 0.001 differences come from `check_plan1.manage` against `tsim`; I did not chase them;
+  - the straddle 41 / 59 at +0.467 / +0.119, equal.
+- **The fold logic** (`test_wf_process.py`, 9 hand-worked tests; `plant_wf_process.py`, 11 of 11 planted bugs caught
+  after one test was added for the 20-trade minimum; `out_plant_wf_process.txt`). Two of the bugs tested that a fold
+  never sees its own trading months:
+  - a fit trade that is still open at the start is excluded;
+  - a fit window that leaks one day into its trading months is caught.
+- **Nothing from 2026-04-18 on was loaded:** `gold.bars(before=)` is asserted, and the tick reader refuses exam days.
+
+## The chained out-of-sample result, 2022-10 .. 2026-04-17 (`out_wf_process.txt`)
+
+| Process | Pieces | Trades | R (95 % range) | USD at 0.01 lot | 2022-23 | 2023-24 | 2024-25 | 2025-26 (to 04-17) |
+|---|---|---|---|---|---|---|---|---|
+| **(a) the chosen band** | both | 237 | **+0.029 (-0.104 .. +0.167)** | +188.5 | -0.060 (38) | -0.287 (15) | -0.420 (12) | +0.108 (172) |
+| (a) | ORB | 134 | +0.132 (-0.036 .. +0.306) | +274.4 | - | - | -0.364 (11) | +0.176 (123) |
+| (a) | straddle | 103 | -0.104 (-0.314 .. +0.111) | -85.9 | -0.060 (38) | -0.287 (15) | -1.031 (1) | -0.064 (49) |
+| (b1) VOL-16 when its fit qualified | both | 13 | +0.274 (-0.389 .. +1.016) | +14.6 | - | - | - | +0.274 (13) |
+| (b0) VOL-16 always | both | 80 | +0.228 (+0.010 .. +0.442) | +138.4 | - | +0.111 (3) | -0.066 (33) | +0.457 (44) |
+| (c) always on | both | 1300 | -0.036 (-0.092 .. +0.019) | +128.5 | -0.099 (346) | -0.094 (356) | -0.055 (360) | +0.174 (238) |
+
+**The pass for the process (a): FAIL.**
+- The chained R is +0.029 (the line: >= +0.10).
+- The 95 % range starts at -0.104 (the line: above 0).
+- The worst year is 2024-25 at -0.420 on 12 trades (the line: no year below -0.10).
+
+**What the folds show** (each fold, `out_wf_folds.csv`):
+- **The ORB process stood aside correctly for two years.** From 2022-10 to 2024-07 no band reached +0.10 on its past
+  12 months. Always-on was between -0.242 and +0.068 a quarter, and negative in 6 of the 8 quarters.
+- **The ORB's chosen bands then did not carry forward:**
+  - from 2024-10 to 2025-07 they were the low-ATR bands (< 3.5-4.8 USD), and they took 11 trades at -0.364;
+  - from 2025-10 they followed the rising ATR ([9.25, inf), then [13.52, inf)) and paid: +0.201 on 62 and +0.165 on
+    56.
+  - So the process followed the present one quarter late. In this period it paid only once the present had begun.
+- **The straddle process lost:**
+  - its winning band in the past 12 months was a narrow ATR slice of 22-39 trades (e.g. [3.12, 3.68)), and the next
+    quarter did not repeat it (-0.484, -0.407, -0.261);
+  - in 2026-01 it chose [16.07, inf) and lost -0.080 on 47, while always-on made +0.031 and the 12-16 band +0.818
+    on 8.
+- **VOL-16 used as the rule chose itself** (b1) in only 3 piece-quarters (13 trades): its band was nearly empty before
+  2025 (0-3 fit trades a year).
+
+**VOL-16 always (b0)** has +0.228 on 80, the range above 0. That band was frozen with P1 / P2 in view, and 44 of its 80
+trades fall in 2025-10 .. 2026-04 (nearly all P1 / P2), so it is not out of sample here.
+- Before the present it had only 36 trades (2023-25: 3 at +0.111, 33 at -0.066).
+- The exam months (the measurer's row 55) are its honest read.
+
+## What it means
+1. **A 12-month band chosen on the past is not a reliable process for these two pieces.**
+   - It stands aside well when nothing pays, but it picks narrow bands that do not repeat.
+   - It switches on only after the present has shown itself in its own 12-month window.
+2. **For the ORB, (a)'s value was almost all in 2025-10 .. 2026-04** (+0.176 on 123). That is the same present-only
+   edge as before.
+3. **The straddle has no band its past 12 months can find.** Its present edge (+0.209 always-on in 2025-26) is not
+   reached by choosing on ATR.
+4. **A next try, not run:** a process with fewer, wider choices may hold better than narrow slices of 22-39 trades.
+   For example: on, or stand aside, by the piece's own last-12-month R. That is SW-type persistence at the quarter
+   scale, and it should be written before it is computed.
+
+## Files (row 57)
+- `wf_process.py` + `test_wf_process.py` + `plant_wf_process.py`
+- outputs: `out_wf_build.txt`, `out_wf_process.txt`, `out_wf_folds.csv`, `out_plant_wf_process.txt`,
+  `wf_trades.parquet`, `wf_oos.parquet`
+
 # Exam runner for #43 RT_opp and #23 RC_win - built 2026-10-21 11:44-11:48 Thai (`date -u` 04:44-04:48)
 
 `exam43.py` writes the frozen definitions at its top.

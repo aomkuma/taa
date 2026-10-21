@@ -1,0 +1,47 @@
+=== the folds (choice on the previous 12 months; out-of-sample trades and R per process)
+2022-10 ORB: fit 252 | (a) stand aside            fit -0.135 (63) | VOL-16 fit -0.285 (1) off | OOS all  62: a   0 +nan  b1   0 +nan  b0   0 +nan  c  62 +0.007
+2022-10 STR: fit  73 | (a) [3.04, 4.41)           fit +0.161 (36) | VOL-16 fit +nan (0) off | OOS all  22: a  11 -0.261  b1   0 +nan  b0   0 +nan  c  22 -0.102
+2023-01 ORB: fit 251 | (a) stand aside            fit +0.011 (63) | VOL-16 fit -0.285 (1) off | OOS all  60: a   0 +nan  b1   0 +nan  b0   0 +nan  c  60 -0.242
+2023-01 STR: fit  78 | (a) [-inf, 3.93)           fit +0.129 (39) | VOL-16 fit +nan (0) off | OOS all  24: a  10 +0.222  b1   0 +nan  b0   0 +nan  c  24 +0.021
+2023-04 ORB: fit 249 | (a) stand aside            fit +0.046 (62) | VOL-16 fit +nan (0) off | OOS all  60: a   0 +nan  b1   0 +nan  b0   0 +nan  c  60 -0.105
+2023-04 STR: fit  88 | (a) [-inf, 3.29)           fit +0.238 (22) | VOL-16 fit +nan (0) off | OOS all  30: a  13 +0.025  b1   0 +nan  b0   0 +nan  c  30 +0.209
+2023-07 ORB: fit 246 | (a) stand aside            fit +0.017 (62) | VOL-16 fit +nan (0) off | OOS all  64: a   0 +nan  b1   0 +nan  b0   0 +nan  c  64 -0.186
+2023-07 STR: fit  97 | (a) [3.12, 3.68)           fit +0.440 (24) | VOL-16 fit +nan (0) off | OOS all  24: a   4 -0.484  b1   0 +nan  b0   0 +nan  c  24 -0.268
+2023-10 ORB: fit 246 | (a) stand aside            fit -0.052 (62) | VOL-16 fit +nan (0) off | OOS all  61: a   0 +nan  b1   0 +nan  b0   1 +2.000  c  61 -0.202
+2023-10 STR: fit 100 | (a) [2.91, 3.51)           fit +0.105 (25) | VOL-16 fit +nan (0) off | OOS all  24: a   9 -0.407  b1   0 +nan  b0   0 +nan  c  24 -0.275
+2024-01 ORB: fit 245 | (a) stand aside            fit -0.045 (61) | VOL-16 fit +2.000 (1) off | OOS all  61: a   0 +nan  b1   0 +nan  b0   0 +nan  c  61 -0.050
+2024-01 STR: fit 102 | (a) [3.30, 4.05)           fit +0.274 (25) | VOL-16 fit +nan (0) off | OOS all  24: a   6 -0.107  b1   0 +nan  b0   0 +nan  c  24 -0.092
+2024-04 ORB: fit 246 | (a) stand aside            fit +0.075 (61) | VOL-16 fit +2.000 (1) off | OOS all  64: a   0 +nan  b1   0 +nan  b0   0 +nan  c  64 -0.111
+2024-04 STR: fit 102 | (a) stand aside            fit +0.039 (26) | VOL-16 fit +nan (0) off | OOS all  30: a   0 +nan  b1   0 +nan  b0   0 +nan  c  30 -0.168
+2024-07 ORB: fit 250 | (a) stand aside            fit -0.037 (63) | VOL-16 fit +2.000 (1) off | OOS all  64: a   0 +nan  b1   0 +nan  b0   1 -0.666  c  64 +0.068
+2024-07 STR: fit 102 | (a) stand aside            fit -0.142 (25) | VOL-16 fit +nan (0) off | OOS all  28: a   0 +nan  b1   0 +nan  b0   1 -1.002  c  28 -0.056
+2024-10 ORB: fit 250 | (a) [-inf, 3.48)           fit +0.196 (63) | VOL-16 fit +0.667 (2) off | OOS all  63: a   0 +nan  b1   0 +nan  b0   0 +nan  c  63 +0.149
+2024-10 STR: fit 106 | (a) stand aside            fit +0.010 (27) | VOL-16 fit -1.002 (1) off | OOS all  25: a   0 +nan  b1   0 +nan  b0   2 +0.078  c  25 -0.159
+2025-01 ORB: fit 252 | (a) [-inf, 3.91)           fit +0.139 (63) | VOL-16 fit -0.666 (1) off | OOS all  62: a   3 -0.149  b1   0 +nan  b0   0 +nan  c  62 -0.396
+2025-01 STR: fit 107 | (a) [-inf, 3.89)           fit +0.131 (27) | VOL-16 fit -0.282 (3) off | OOS all  19: a   1 -1.031  b1   0 +nan  b0   0 +nan  c  19 -0.399
+2025-04 ORB: fit 253 | (a) [-inf, 4.58)           fit +0.210 (63) | VOL-16 fit -0.666 (1) off | OOS all  64: a   0 +nan  b1   0 +nan  b0  19 +0.041  c  64 +0.176
+2025-04 STR: fit 102 | (a) stand aside            fit -0.052 (26) | VOL-16 fit -0.282 (3) off | OOS all  34: a   0 +nan  b1   0 +nan  b0  10 -0.327  c  34 +0.044
+2025-07 ORB: fit 253 | (a) [-inf, 4.84)           fit +0.232 (63) | VOL-16 fit +0.005 (20) off | OOS all  62: a   8 -0.445  b1   0 +nan  b0   1 +0.017  c  62 -0.239
+2025-07 STR: fit 106 | (a) stand aside            fit -0.023 (27) | VOL-16 fit -0.317 (13) off | OOS all  31: a   0 +nan  b1   0 +nan  b0   1 +0.141  c  31 +0.293
+2025-10 ORB: fit 251 | (a) [9.25, inf)            fit +0.131 (63) | VOL-16 fit +0.040 (20) off | OOS all  62: a  62 +0.201  b1   0 +nan  b0  18 +0.456  c  62 +0.201
+2025-10 STR: fit 109 | (a) [5.83, 8.20)           fit +0.185 (27) | VOL-16 fit -0.229 (13) off | OOS all  38: a   2 +0.325  b1   0 +nan  b0   5 +0.356  c  38 +0.273
+2026-01 ORB: fit 250 | (a) [13.52, inf)           fit +0.186 (63) | VOL-16 fit +0.237 (38) on | OOS all  58: a  56 +0.165  b1   9 +0.186  b0   9 +0.186  c  58 +0.125
+2026-01 STR: fit 122 | (a) [16.07, inf)           fit +0.364 (31) | VOL-16 fit -0.085 (16) off | OOS all  56: a  47 -0.080  b1   0 +nan  b0   8 +0.818  c  56 +0.031
+2026-04 ORB: fit 246 | (a) [13.03, 19.94)         fit +0.263 (61) | VOL-16 fit +0.227 (47) on | OOS all  12: a   5 -0.008  b1   2 -0.543  b0   2 -0.543  c  12 -0.045
+2026-04 STR: fit 159 | (a) [-inf, 10.48)          fit +0.224 (40) | VOL-16 fit +0.216 (24) on | OOS all  12: a   0 +nan  b1   2 +1.491  b0   2 +1.491  c  12 +0.836
+
+=== chained out-of-sample 2022-10 .. 2026-04-17
+(a) the chosen band        both:  237 trades R +0.029 (-0.104 .. +0.167)  USD   +188.5 || 2022-23  38 -0.060 | 2023-24  15 -0.287 | 2024-25  12 -0.420 | 2025-26 172 +0.108
+(a) the chosen band        ORB :  134 trades R +0.132 (-0.036 .. +0.306)  USD   +274.4 || 2024-25  11 -0.364 | 2025-26 123 +0.176
+(a) the chosen band        STR :  103 trades R -0.104 (-0.314 .. +0.111)  USD    -85.9 || 2022-23  38 -0.060 | 2023-24  15 -0.287 | 2024-25   1 -1.031 | 2025-26  49 -0.064
+(b1) VOL-16 when it fit    both:   13 trades R +0.274 (-0.389 .. +1.016)  USD    +14.6 || 2025-26  13 +0.274
+(b1) VOL-16 when it fit    ORB :   11 trades R +0.053 (-0.495 .. +0.686)  USD     -9.3 || 2025-26  11 +0.053
+(b1) VOL-16 when it fit    STR :    2 trades R +1.491 (-0.413 .. +3.395)  USD    +23.9 || 2025-26   2 +1.491
+(b0) VOL-16 always         both:   80 trades R +0.228 (+0.010 .. +0.442)  USD   +138.4 || 2023-24   3 +0.111 | 2024-25  33 -0.066 | 2025-26  44 +0.457
+(b0) VOL-16 always         ORB :   51 trades R +0.214 (-0.037 .. +0.467)  USD    +79.8 || 2023-24   2 +0.667 | 2024-25  20 +0.040 | 2025-26  29 +0.303
+(b0) VOL-16 always         STR :   29 trades R +0.253 (-0.154 .. +0.675)  USD    +58.6 || 2023-24   1 -1.002 | 2024-25  13 -0.229 | 2025-26  15 +0.754
+(c) always on              both: 1300 trades R -0.036 (-0.092 .. +0.019)  USD   +128.5 || 2022-23 346 -0.099 | 2023-24 356 -0.094 | 2024-25 360 -0.055 | 2025-26 238 +0.174
+(c) always on              ORB :  879 trades R -0.057 (-0.125 .. +0.010)  USD    +98.0 || 2022-23 246 -0.131 | 2023-24 250 -0.073 | 2024-25 251 -0.075 | 2025-26 132 +0.145
+(c) always on              STR :  421 trades R +0.009 (-0.086 .. +0.112)  USD    +30.6 || 2022-23 100 -0.019 | 2023-24 106 -0.146 | 2024-25 109 -0.009 | 2025-26 106 +0.209
+
+PASS LINE (a): chained R +0.029 >= +0.10, 95 % low -0.104 > 0, worst year -0.420 >= -0.10 -> FAIL

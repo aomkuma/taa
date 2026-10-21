@@ -1,0 +1,11 @@
+CAUGHT  return ((T.t_in >= fit_start) & (T.t_in < trade_start)).to_numpy()
+CAUGHT  return ((T.t_in >= fit_start) & (T.t_exit < trade_start + pd.Timedelta(days=1))).to_numpy()
+CAUGHT  return (T.t_exit < trade_start).to_numpy()
+CAUGHT  out.append((s - pd.DateOffset(months=fit_months), s, e + pd.DateOffset(months=1)))
+CAUGHT  e = s + pd.DateOffset(months=months)
+CAUGHT  q = np.r_[atr.min(), np.quantile(atr, [0.25, 0.5, 0.75]), atr.max()]
+CAUGHT  if n < 1:
+CAUGHT  if best is None:
+CAUGHT  (abs(r - best[1]) <= 1e-12 and n < best[2])
+CAUGHT  return (atr >= band[0]) & (atr <= band[1])
+CAUGHT  y = t.dt.year

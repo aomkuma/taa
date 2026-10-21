@@ -1,0 +1,14 @@
+parity ORB P1: 59 trades R +0.213
+parity ORB P2: 60 trades R +0.124
+parity STR P1: 41 trades R +0.467
+parity STR P2: 59 trades R +0.119
+parity vol16_old London ORB 2020-21: theirs 21 R -0.494 | mine 21 R -0.494
+parity vol16_old London ORB 2021-22: theirs 252 R -0.203 | mine 252 R -0.203
+parity vol16_old London ORB 2022-23: theirs 246 R -0.131 | mine 246 R -0.131
+parity vol16_old London ORB 2023-24: theirs 250 R -0.073 | mine 250 R -0.073
+parity vol16_old London ORB 2024-25: theirs 251 R -0.075 | mine 251 R -0.075
+parity vol16_old NY straddle 2020-21: theirs 8 R -0.180 | mine 8 R -0.180
+parity vol16_old NY straddle 2021-22: theirs 73 R +0.006 | mine 73 R +0.006
+parity vol16_old NY straddle 2022-23: theirs 100 R -0.019 | mine 100 R -0.019
+parity vol16_old NY straddle 2023-24: theirs 106 R -0.146 | mine 106 R -0.146
+parity vol16_old NY straddle 2024-25: theirs 109 R -0.009 | mine 109 R -0.009
