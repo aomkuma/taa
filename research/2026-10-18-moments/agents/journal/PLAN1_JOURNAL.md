@@ -988,3 +988,10 @@ with the D1 trend). Account: 300 USD, 3 % a trade, min 0.01 lot. Restarted at ex
 15 trades **-5.30 R, -44.99 USD** (frozen: 14 trades -5.11 R, -53.51 USD); account **300 -> 255.01 USD**. B2 traded both
 ways (the flip on Tue made +0.83); the 6-USD straddle stop turned Wed +0.80 into +1.06 and Thu +0.54 into +0.72; the ORB
 without a target lost Fri's +1.50 (it ended +0.05).
+
+## Exam week 2 (2026-04-27 .. 05-01) - learned: the ORB back to 1.5 R (+5.46 vs +5.05 over 8 weeks), Asia B2 only with the previous week's direction (+0.71 vs -0.43)
+
+11 trades **+5.34 R, +42.34 USD** (frozen: 12 trades +1.70 R, +12.08 USD); account **255.01 -> 297.35 USD** (frozen
+258.57). The previous week fell, so B2 took only sells: it skipped Mon's buy (-0.44) and Tue's buy (-1.00) and kept Tue's
+sell (+1.08) and Wed's (+0.59). The 6-USD straddle stop: Mon +0.92 (8 USD: +0.69), Wed +2.02 (+1.51), Fri +1.61 (+1.21).
+Two weeks: 26 trades +0.04 R (frozen -3.41 R); 297.35 USD (frozen 258.57).

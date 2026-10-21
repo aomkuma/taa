@@ -1,0 +1,4 @@
+ week      start  trades     R    usd  equity                                     settings                                                                                                                                      changes
+    1 2026-04-20      15 -5.30 -44.99  255.01      ORB ('orb_none', True), NY ny_6, B2 all London ORB: ('orb_1.5', True) -> ('orb_none', True) (+12.26 -> +12.69 over 8 weeks); NY straddle: ny_8 -> ny_6 (+4.15 -> +4.96 over 8 weeks)
+    2 2026-04-27      11  5.34  42.34  297.35 ORB ('orb_1.5', True), NY ny_6, B2 prev_week   London ORB: ('orb_none', True) -> ('orb_1.5', True) (+5.05 -> +5.46 over 8 weeks); Asia B2: all -> prev_week (-0.43 -> +0.71 over 8 weeks)
+total: 26 trades +0.04 R (+0.002 a trade); 300 -> 297.35 USD
