@@ -356,3 +356,47 @@ is fitting to that week - **not changed**. 1.25-1.5 is a flat top, so either is 
 **The rules that cost this week:** none acted (no B2 flip, no ORB reached 1.5 R; no ATR gate).
 
 **The one change for week 9:** none.
+
+## Week 9 - 2025-12-15 .. 19 (gold 4,300-4,375 sideways after the previous Friday's rise; the H4 ATR contracting all week)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate. New journal field from this week: the H4 ATR's change
+over the last 24 h (owner 2026-10-21: "is it the larger timeframe's ATR falling?"). `out_rules_w9.txt`, `out_liq_w9.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H4 ATR 24 h | What happened |
+|---|---|---|---|---|---|---|---|---|
+| Mon 13:47 | London ORB | BUY | 7.4 | -1.01 | -1.01 | +0.02 / -1.83 | +28% | bought the top of Asia's gap-up; stop in the M15 swing low's sweep zone |
+| Tue 13:22 | London ORB | BUY | 6.1 | -0.41 | -0.41 | +0.57 / -0.85 | -4% | no pool broken; stop 2.7 beyond yesterday's low |
+| Tue 20:30 | NY straddle | BUY | 8.0 | +1.11 | +1.11 | +1.13 / -0.55 | -3% | |
+| Wed 08:35 | Asia B2 | BUY | 11.4 | -0.29 | -0.29 | +0.47 / -0.34 | -4% | |
+| Wed 13:23 | London ORB | SELL | 6.3 | +1.54 | +1.50 | +1.66 / -0.38 | -11% | sold back under yesterday's high (a failed break) |
+| Wed 20:30 | NY straddle | BUY | 8.0 | +1.48 | +1.48 | +1.74 / -0.06 | -9% | broke the M15 swing high |
+| Thu 13:34 | London ORB | BUY | 5.3 | -1.02 | -1.02 | +0.32 / -1.14 | -4% | no pool broken - SWEPT (back to +0.04 at the end) |
+| Thu 20:30 | NY straddle | BUY | 8.0 | +0.85 | +0.85 | +1.65 / -0.61 | -5% | |
+| Fri 07:11 | Asia B2 | SELL | 6.2 | +1.41 | +1.41 | +1.59 / -0.31 | -7% | broke today's open and the swing low |
+| Fri 08:17 | Asia B2 | BUY | 8.6 | -1.04 | skipped (flip) | -0.01 / -1.04 | -7% | the flip: stop in the Asia low's sweep zone |
+| Fri 08:29 | Asia B2 | SELL | 16.6 | -0.73 | -0.73 | +0.14 / -0.97 | -7% | |
+| Fri 13:16 | London ORB | BUY | 4.3 | -1.03 | -1.03 | +0.19 / -1.62 | -1% | no pool broken |
+
+**The week:** base 12 trades +0.87 R; rules 11 trades **+1.88 R**. Nine weeks (base) 101 trades +22.18 R (+0.22 a trade).
+
+**What happened:** the NY straddle won all three; the ORB lost four of five - three of them broke no pool while the H4 ATR
+was contracting.
+
+**Checked on weeks 1-9, the ORB by the pool break and the H4 ATR (the owner's question):**
+
+| ORB | H4 ATR contracting | H4 ATR expanding |
+|---|---|---|
+| a pool broken | 12 trades **+8.17** (+0.68) | 8 trades -0.36 |
+| no pool broken | 12 trades **-2.08** (-0.17) | 10 trades +1.58 |
+
+The NY straddle and Asia B2 show no such loss (straddle no pool + contracting 7 trades +0.35; B2 no pool + contracting
++1.87). Skipping the ORB without a pool break in a contracting H4: weeks 1-6 it would have cost 0.68, weeks 7-9 saved 2.76
+- net +2.08 R on weeks 1-9. It follows the owner's principle (an unsuitable phase = only the surest signals, not none).
+
+**The rules that cost this week:**
+- B2 no flip: saved 1.04 R (Fri). Weeks 1-9 net +1.14 - stays.
+- The ORB 1.5 R target: cost 0.04 (Wed). Weeks 5-9 still ahead.
+
+**The one change for week 10 (from 2025-12-22, decided 2026-10-21 13:55 Thai):** when the H4 ATR contracted over the
+last 24 h (closed H4 bars), the London ORB enters only if its 15 minutes before the decision broke a pool (yesterday's
+high / low, the Asia high / low, today's open, the last M15 swing) in its direction. In `rules_week.py`.

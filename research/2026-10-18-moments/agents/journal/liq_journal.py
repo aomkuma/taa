@@ -7,6 +7,7 @@ For each trade of the asked week, from the M1 bars and ticks known at the entry 
 - the entry's place: which pool it broke within the last 15 minutes (a pool break) or none;
 - the stop's place: the nearest pool between the entry and the stop, and whether the stop sits within 0.25 H1 ATR beyond
   a pool (IN THE SWEEP ZONE: the stops of everyone who used that pool sit there too);
+- the H4 ATR's change over the last 24 hours (contracting / expanding, a journal field);
 - the path: best / worst R and when; if stopped, the R at the end of the trade's window without the stop (SWEPT = it
   came back and finished > 0, FAKE = it ran on the other way past -1.5 R, SLOW); for a winner, how far it went beyond.
 
@@ -75,11 +76,16 @@ def journal(start: str, end: str) -> pd.DataFrame:
     h = gold.bars("H1", before=pd.Timestamp(end, tz="UTC") + pd.Timedelta(days=2))
     pc = h.close.shift(1)
     atr = pd.concat([h.high - h.low, (h.high - pc).abs(), (h.low - pc).abs()], axis=1).max(axis=1).rolling(14).mean()
+    h4 = gold.bars("H4", before=pd.Timestamp(end, tz="UTC") + pd.Timedelta(days=2))
+    pc4 = h4.close.shift(1)
+    atr4 = pd.concat([h4.high - h4.low, (h4.high - pc4).abs(), (h4.low - pc4).abs()], axis=1).max(axis=1).rolling(14).mean()
     rows = []
     for r in W.itertuples():
         t_dec = pd.Timestamp(int(r.t_dec), tz="UTC")
         H = float(atr[atr.index + pd.Timedelta(hours=1) <= t_dec].iloc[-1])
         P = pools(m1, H, t_dec)
+        k4 = atr4[atr4.index + pd.Timedelta(hours=4) <= t_dec]  # the H4 ATR's change over the last 24 h (closed bars)
+        h4chg = float(k4.iloc[-1] / k4.iloc[-7] - 1)
         rn = [np.floor(r.entry / 10) * 10 + k * 10 for k in (-2, -1, 0, 1, 2)]
         # the entry: a pool broken in the 15 minutes before the decision, in the trade's direction
         pre = m1[(m1.index >= t_dec - pd.Timedelta(minutes=15)) & (m1.index + pd.Timedelta(minutes=1) <= t_dec)]
@@ -103,7 +109,7 @@ def journal(start: str, end: str) -> pd.DataFrame:
         end_R = float(Rp[-1]) if len(Rp) else np.nan
         cls = "" if r.exit != "stop" else ("SWEPT" if end_R > 0 else "FAKE" if end_R <= -1.5 else "SLOW")
         rows.append(dict(piece=r.piece, side="BUY" if r.side > 0 else "SELL", t_in=th(r.t_in), entry=r.entry, stop=r.stop,
-                         risk=r.risk, H1atr=round(H, 1), exit=r.exit, R=round(r.R, 2),
+                         risk=r.risk, H1atr=round(H, 1), H4chg=round(100 * h4chg), exit=r.exit, R=round(r.R, 2),
                          best=f"{Rp.max():+.2f}R {th(t[f + int(np.argmax(Rp))])}", worst=f"{Rp.min():+.2f}R",
                          broke=",".join(broke) or "-", stop_beyond=",".join(f"{k}({v:.1f})" for k, v in sorted(near.items(), key=lambda x: x[1])) or "-",
                          sweep_zone=",".join(sweep_zone + [f"round {x:.0f}" for x in rn_between]) or "-",
@@ -116,6 +122,6 @@ if __name__ == "__main__":
     pd.set_option("display.width", 250, "display.max_colwidth", 80)
     J = journal(sys.argv[1], sys.argv[2])
     for r in J.itertuples():
-        print(f"{r.t_in} {r.piece:11s} {r.side} @{r.entry:.2f} stop {r.stop:.2f} risk {r.risk:.1f} | H1ATR {r.H1atr} | {r.exit} R {r.R:+.2f}"
+        print(f"{r.t_in} {r.piece:11s} {r.side} @{r.entry:.2f} stop {r.stop:.2f} risk {r.risk:.1f} | H1ATR {r.H1atr} H4ATR 24h {r.H4chg:+d}% | {r.exit} R {r.R:+.2f}"
               f" | best {r.best} worst {r.worst}\n    broke: {r.broke} | pools between entry and stop (distance beyond): "
               f"{r.stop_beyond} | stop in the sweep zone of: {r.sweep_zone} | {r.stopped_then}\n    pools: {r.pools}")
