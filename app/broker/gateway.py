@@ -6,6 +6,8 @@ separate ``ExecutionGateway`` (Milestone 2), so a PAPER-mode engine has no code 
 
 from __future__ import annotations
 
+import time
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from typing import Any, Protocol
 
@@ -22,6 +24,13 @@ from app.market_data.data_models import SymbolSpec, Tick
 
 RAW_RATE_COLUMNS = ["time", "open", "high", "low", "close", "tick_volume", "spread", "real_volume"]
 _HISTORY_MARGIN = timedelta(days=1)
+# copy_ticks_range on a tick month the terminal has not stored yet blocks about 100 s and answers None
+# with (-1, "Terminal: Call failed") while the terminal keeps downloading; the same request succeeds once
+# the month is in Bases/<server>/ticks (FBS demo, 2026-10-20: 104.8 s failed, then 13.3 s, then 0.3 s).
+# The gateway asks again after a pause (tests/unit/test_ticks_sync.py).
+TICK_SYNC_ATTEMPTS = 3
+TICK_SYNC_PAUSE_S = 5.0
+_TICKS_SYNCING = -1
 
 
 class MarketDataGateway(Protocol):
@@ -105,9 +114,12 @@ def rates_to_frame(raw: Any) -> pd.DataFrame:
 class ReadOnlyMT5Gateway:
     """MarketDataGateway backed by the MetaTrader5 module (or FakeMT5) through :class:`MT5Client`."""
 
-    def __init__(self, client: MT5Client, server_clock: ServerClock) -> None:
+    def __init__(
+        self, client: MT5Client, server_clock: ServerClock, sleep: Callable[[float], None] | None = None
+    ) -> None:
         self.client = client
         self.server_clock = server_clock
+        self._sleep = sleep if sleep is not None else time.sleep
 
     # ---------------------------------------------------------------- account/terminal
     def terminal(self) -> TerminalSnapshot:
@@ -144,18 +156,37 @@ class ReadOnlyMT5Gateway:
                 continue  # incomplete entries are skipped; they cannot be validated or traded
         return out
 
+    def _copy_ticks(self, symbol: str, start_utc: datetime, end_utc: datetime) -> Any:
+        """copy_ticks_range over [start_utc, end_utc) widened by the history margin.
+
+        While the terminal is still downloading a tick month (None with error code -1) the request is
+        repeated up to TICK_SYNC_ATTEMPTS times, TICK_SYNC_PAUSE_S apart; any other error raises at once.
+        """
+        lo = ensure_utc(start_utc) - _HISTORY_MARGIN
+        hi = ensure_utc(end_utc) + _HISTORY_MARGIN
+        flags = getattr(self.client.mt5, "COPY_TICKS_ALL", c.COPY_TICKS_ALL)
+        for attempt in range(1, TICK_SYNC_ATTEMPTS + 1):
+            raw = self.client.call(
+                "copy_ticks_range", symbol, int(lo.timestamp()), int(hi.timestamp()), flags
+            )
+            if raw is not None:
+                return raw
+            err = self.client.last_error()
+            if err[0] != _TICKS_SYNCING:
+                raise BrokerError(f"copy_ticks_range({symbol}) failed: {err}")
+            if attempt < TICK_SYNC_ATTEMPTS:
+                self._sleep(TICK_SYNC_PAUSE_S)
+        raise BrokerError(
+            f"copy_ticks_range({symbol}) failed {TICK_SYNC_ATTEMPTS} times with {err}: the terminal is "
+            "probably still downloading this tick month; ask again later"
+        )
+
     def ticks_range(self, symbol: str, start_utc: datetime, end_utc: datetime) -> pd.DataFrame:
         """Ticks with real UTC times in [start_utc, end_utc): columns time_utc, bid, ask.
 
         Like :meth:`rates_range`, the query window is widened and filtered after converting server time.
         """
-        lo = ensure_utc(start_utc) - _HISTORY_MARGIN
-        hi = ensure_utc(end_utc) + _HISTORY_MARGIN
-        flags = getattr(self.client.mt5, "COPY_TICKS_ALL", c.COPY_TICKS_ALL)
-        raw = self.client.call("copy_ticks_range", symbol, int(lo.timestamp()), int(hi.timestamp()), flags)
-        if raw is None:
-            raise BrokerError(f"copy_ticks_range({symbol}) failed: {self.client.last_error()}")
-        arr = np.asarray(raw)
+        arr = np.asarray(self._copy_ticks(symbol, start_utc, end_utc))
         if len(arr) == 0:
             return pd.DataFrame(columns=["time_utc", "bid", "ask"])
         msc = arr["time_msc"].astype("int64")
@@ -171,13 +202,7 @@ class ReadOnlyMT5Gateway:
     def raw_ticks(self, symbol: str, start_utc: datetime, end_utc: datetime) -> pd.DataFrame:
         """Like :meth:`ticks_range`, with every field the broker sends: time_utc, bid, ask, last, volume,
         flags (feed probe, TAA-L001; not part of :class:`MarketDataGateway`)."""
-        lo = ensure_utc(start_utc) - _HISTORY_MARGIN
-        hi = ensure_utc(end_utc) + _HISTORY_MARGIN
-        flags = getattr(self.client.mt5, "COPY_TICKS_ALL", c.COPY_TICKS_ALL)
-        raw = self.client.call("copy_ticks_range", symbol, int(lo.timestamp()), int(hi.timestamp()), flags)
-        if raw is None:
-            raise BrokerError(f"copy_ticks_range({symbol}) failed: {self.client.last_error()}")
-        arr = np.asarray(raw)
+        arr = np.asarray(self._copy_ticks(symbol, start_utc, end_utc))
         columns = ["time_utc", "bid", "ask", "last", "volume", "flags"]
         if len(arr) == 0:
             return pd.DataFrame(columns=columns)

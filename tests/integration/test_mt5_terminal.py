@@ -92,6 +92,22 @@ def test_symbol_catalog_and_ticks(bundle) -> None:  # type: ignore[no-untyped-de
     assert list(ticks.columns) == ["time_utc", "bid", "ask"]
 
 
+def test_ticks_range_takes_int_epochs_and_aware_datetimes_alike(bundle) -> None:  # type: ignore[no-untyped-def]
+    """The gateway passes int epochs. On 2026-10-20 a failing copy_ticks_range ("Terminal: Call failed") was first
+    blamed on that form; it was the terminal downloading an unstored tick month (tests/unit/test_ticks_sync.py).
+    On stored ticks both forms return the same ticks."""
+    settings, b = bundle
+    sym = settings.config.symbols.reference_symbol
+    end = b.client.clock.now_utc() - timedelta(days=1)
+    start = end - timedelta(days=2)
+    flags = b.client.mt5.COPY_TICKS_ALL
+    as_int = b.client.call("copy_ticks_range", sym, int(start.timestamp()), int(end.timestamp()), flags)
+    as_dt = b.client.call("copy_ticks_range", sym, start, end, flags)
+    assert as_int is not None and as_dt is not None, b.client.last_error()
+    assert len(as_int) == len(as_dt) > 0
+    assert (as_int["time_msc"] == as_dt["time_msc"]).all()
+
+
 @pytest.mark.skipif(
     os.environ.get("TAA_MT5_TRADING_TESTS") != "1",
     reason="set TAA_MT5_TRADING_TESTS=1 (a DEMO account with its master password) to run",
