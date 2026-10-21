@@ -1101,3 +1101,16 @@ per R. Sixteen weeks: 167 trades +27.32 R (frozen +31.78); 523.57 USD (frozen 60
 609.45). The pool rule off added three ORBs (+0.76, +1.47, -1.11 = +1.12 R). Positive in R, slightly negative in USD:
 the straddle's losers ran at 0.02 lot (8 USD stop, -16 to -17.50 USD each) while B2's winners ran at 0.01 lot (wide
 stops). Seventeen weeks: 182 trades +28.68 R (frozen +32.01); 522.34 USD (frozen 609.45).
+
+## Exam weeks 18-26 and the verdict on weekly learning (run together, 2026-10-22 01:15 Thai, `out_wf_learn.txt`)
+
+| | Trades | R | R a trade | 300 USD at 3 % |
+|---|---|---|---|---|
+| The frozen rules (week 26) | 282 | +41.83 | **+0.148** | **708.31** |
+| The learning walk-forward (8-week window, from week 6 a margin, from week 8 scored in USD) | 301 | +37.36 | +0.124 | 576.71 |
+
+**Weekly lever learning lost to the frozen rules** (-4.47 R, -131.60 USD). In the learning parts the journal's changes
+also summed to about zero (+56.49 against the base +56.54): the profit is the plan's, not the weekly changes'. With
+about 5 trades a piece a week, 8 weeks cannot tell options apart; the learner chased what had just paid.
+**Decision (owner, 2026-10-22 ~01:10 Thai): DEMO runs the frozen rules + the D1 ATR(20) >= 60 switch; the weekly
+journal records and learns, rules change only on long evidence (a quarterly review, 12-26 weeks).**
