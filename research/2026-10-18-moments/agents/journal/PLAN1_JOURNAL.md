@@ -1094,3 +1094,10 @@ week: the straddle lost three of five. Fifteen weeks: 150 trades +28.39 R (froze
 606.05). The pool rule off took Mon's ORB to its 2 R target (+2.00) and Tue's (-0.50); B2 without the no-flip rule took
 two flips (Thu -0.29, Fri -0.36). Better in R, worse in USD: the account was larger, so the week's eleven losers cost more
 per R. Sixteen weeks: 167 trades +27.32 R (frozen +31.78); 523.57 USD (frozen 606.05).
+
+## Exam week 17 (2026-08-10 .. 14) - no change
+
+15 trades **+1.35 R, -1.23 USD** (frozen: 12 trades +0.23 R, +3.40 USD); account **523.57 -> 522.34 USD** (frozen
+609.45). The pool rule off added three ORBs (+0.76, +1.47, -1.11 = +1.12 R). Positive in R, slightly negative in USD:
+the straddle's losers ran at 0.02 lot (8 USD stop, -16 to -17.50 USD each) while B2's winners ran at 0.01 lot (wide
+stops). Seventeen weeks: 182 trades +28.68 R (frozen +32.01); 522.34 USD (frozen 609.45).
