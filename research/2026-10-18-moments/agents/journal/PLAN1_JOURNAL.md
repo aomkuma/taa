@@ -1081,3 +1081,9 @@ Asia B2 sell +2.21 R. Half the exam: 125 trades +19.45 R (+0.156 a trade; frozen
 637.17). The same trades as the frozen run (every lever now equals the frozen settings). Tuesday's Asia B2 buy ran
 +4.60 R (+40.59 USD); B2 +5.77 R for the week; the pool rule skipped Wed's ORB that reached 2 R. Fourteen weeks: 135
 trades +28.45 R (+0.211 a trade; frozen +33.98); 573.53 USD (frozen 637.17).
+
+## Exam week 15 (2026-07-27 .. 31) - learned: the ORB at 2.0 R without the pool rule (+37.84 vs +27.18 USD over 8 weeks)
+
+15 trades **-0.06 R, -11.74 USD** (frozen: 14 trades -0.29 R, -4.71 USD); account **573.53 -> 561.79 USD** (frozen
+632.46). The pool rule off added Tue's ORB (+0.23); no ORB reached 1.5 or 2 R, so the target did not matter. A choppy
+week: the straddle lost three of five. Fifteen weeks: 150 trades +28.39 R (frozen +33.69); 561.79 USD (frozen 632.46).
