@@ -1047,3 +1047,10 @@ costs more than it saves since it was chosen in week 2 - the margin keeps it fro
 The same trades as the frozen run; the 10-USD straddle stop made the two straddle losers 10 USD each (8 at 8 USD). The
 frozen comparator at 300 USD / 3 % is now in `out_frozen_300.txt` (week by week). Nine weeks: 94 trades +2.28 R (frozen
 +3.59); 262.59 USD (frozen 321.83).
+
+## Exam week 10 (2026-06-22 .. 26) - no change
+
+8 trades **+3.81 R, +63.29 USD** (frozen: 8 trades +4.65 R, +65.24 USD); account **262.59 -> 325.88 USD** (frozen 387.07).
+The same trades; the 10-USD straddle stop gave the same USD as 8 USD (Thu +2.61 R = +26.07). B2 at the 0.01 lot carried
+11 % of the account on Monday's +0.93 R (+32.84 USD). Ten weeks: 102 trades +6.08 R (frozen +8.24); 325.88 USD (frozen
+387.07).
