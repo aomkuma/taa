@@ -1,0 +1,15 @@
+Mon 11 07:14 Asia B2     SELL base -0.53 | rules -0.53 
+Mon 11 08:51 Asia B2     SELL base -0.20 | rules -0.20 
+Mon 11 13:16 London ORB  BUY  base +0.31 | rules +nan skipped: H4 ATR contracting (-16%) and no pool broken
+Tue 12 08:30 Asia B2     SELL base +0.97 | rules +0.97 
+Tue 12 19:30 NY straddle BUY  base -1.02 | rules -1.02 
+Wed 13 07:50 Asia B2     SELL base +0.63 | rules +0.63 
+Wed 13 13:16 London ORB  BUY  base -1.00 | rules -1.00 TP 1.5 R: stop
+Wed 13 19:30 NY straddle BUY  base -1.22 | rules -1.22 
+Thu 14 07:41 Asia B2     SELL base -0.89 | rules -0.89 
+Thu 14 08:06 Asia B2     SELL base +0.04 | rules +0.04 
+Thu 14 13:43 London ORB  BUY  base +2.00 | rules +1.50 TP 1.5 R: target
+Thu 14 19:30 NY straddle SELL base -1.01 | rules -1.01 
+Fri 15 13:16 London ORB  BUY  base +0.62 | rules +nan skipped: H4 ATR contracting (-10%) and no pool broken
+Fri 15 19:30 NY straddle SELL base +0.84 | rules +0.84 
+week: base 14 trades -0.46 R | rules 12 trades -1.89 R

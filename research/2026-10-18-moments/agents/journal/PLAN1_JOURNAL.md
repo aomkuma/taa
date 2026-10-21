@@ -893,3 +893,12 @@ target cost 0.50 (Thu).
 **The rules that cost this week:** the pool rule skipped three ORBs (-1.00, -0.11, +2.00): cost 0.89; weeks 1-29 it still
 saves 1.04 R. The deletion bar used from here on, the same as for no flip: **a rule goes when its net over all prior
 weeks turns negative.** The 1.5 R target did not act. **The one change for week 30:** none.
+
+## Week 30 - 2026-05-11 .. 15
+
+`out_rules_w30.txt`, `out_liq_w30.txt`, `out_acct_w30.txt`. Base 14 trades -0.46 R; rules 12 trades **-1.89 R, +7.40 USD**
+(a B2 winner at the 0.01 lot carried 18.9 % of the account); account **222.05 -> 229.46 USD**. The straddle lost four of
+five (-3.41 R); Asia B2 +0.02; the ORB +0.50.
+
+**The rules that cost this week:** the pool rule skipped two ORB winners (+0.31, +0.62): cost 0.93; weeks 1-30 net
+**+0.11 R** (about even). The 1.5 R target cost 0.50. **The one change for week 31:** none.
