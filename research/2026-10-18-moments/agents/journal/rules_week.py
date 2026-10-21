@@ -30,7 +30,7 @@ NY_STOP, NY_K = 8.0, 0.25
 
 
 def apply(start: str, end: str) -> pd.DataFrame:
-    A = pd.read_parquet(L.AG / "dev" / "plan1_trades_learn_s0_x0.parquet")
+    A = pd.read_parquet(L.TRADES)
     for c in ("t_in", "t_out", "t_dec"):
         if not np.issubdtype(A[c].dtype, np.integer):
             A[c] = pd.to_datetime(A[c], utc=True).astype("int64")

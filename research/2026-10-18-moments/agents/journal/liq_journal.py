@@ -16,6 +16,7 @@ For each trade of the asked week, from the M1 bars and ticks known at the entry 
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -30,6 +31,8 @@ import gold  # noqa: E402
 
 TH = "Asia/Bangkok"
 MIN = 60 * 10**9
+# the trades to read: the learning parts by default; PLAN1_TRADES names another file in dev/ (the exam, read once)
+TRADES = AG / "dev" / os.environ.get("PLAN1_TRADES", "plan1_trades_learn_s0_x0.parquet")
 
 
 def th(ns: int) -> str:
@@ -66,7 +69,7 @@ def pools(m1: pd.DataFrame, h1atr: float, t: pd.Timestamp) -> dict[str, float]:
 
 
 def journal(start: str, end: str) -> pd.DataFrame:
-    A = pd.read_parquet(AG / "dev" / "plan1_trades_learn_s0_x0.parquet")
+    A = pd.read_parquet(TRADES)
     for c in ("t_in", "t_out", "t_dec"):
         if not np.issubdtype(A[c].dtype, np.integer):
             A[c] = pd.to_datetime(A[c], utc=True).astype("int64")

@@ -22,7 +22,7 @@ START, START_EQ, RISK_PCT = "2025-10-20", 100.0, 7.5
 
 def run(end: str) -> pd.DataFrame:
     D = RW.apply(START, end)
-    A = pd.read_parquet(L.AG / "dev" / "plan1_trades_learn_s0_x0.parquet")
+    A = pd.read_parquet(L.TRADES)
     A["t"] = pd.to_datetime(A.t_in, utc=True)
     W = A[(A.t >= pd.Timestamp(START, tz="UTC")) & (A.t < pd.Timestamp(end, tz="UTC"))].sort_values("t").reset_index(drop=True)
     D["risk"], D["t_utc"] = D.rules_risk.values, W.t.values  # the rules' risk (week 16: the straddle's wider stop)

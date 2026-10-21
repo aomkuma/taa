@@ -784,3 +784,26 @@ The rules that go to the exam (2026-04-18 .. 2026-10-17, read once) and to the o
 5. The account: 100 USD, 7.5 % of the equity a trade, at least 0.01 lot.
 The reading: week by week as here, the total R a trade against the goal (+0.15), and the account. Pass = the exam's
 rules R a trade >= +0.15. A fail is not fixed on the exam: any change is learned forward (from 2026-10-19).
+
+## The exam of the frozen rules (read once, 2026-10-21 19:00 Thai; `exam_frozen.py --exam`, `out_exam_frozen.txt`)
+
+| | Trades | R | R a trade |
+|---|---|---|---|
+| Base (PLAN-1 as tested) | 330 | +42.48 | +0.129 |
+| **The frozen rules** | 282 | **+41.83** | **+0.148** |
+| - Asia B2 | 97 | +13.58 | +0.140 |
+| - London ORB | 84 | -0.49 | -0.006 |
+| - NY straddle | 101 | +28.74 | +0.285 |
+
+**Verdict: FAIL by 0.002** against the pre-registered +0.15 (the journal's rules lifted the plan from +0.129 to +0.148).
+Each rule on the exam: B2 no flip **+2.24 R** (held), the ORB 1.5 R target **+1.66 R** (held), the ORB pool rule
+**-4.55 R** on 37 trades (did not hold - on the exam the ORB days it skipped won). Not fixed on the exam: any change is
+learned forward.
+
+**The account (7.5 % a trade, min 0.01 lot):** from 100 USD -> 792.10 USD, but it fell to 22.05 USD in week 3 (-97 %; the
+worst trade -243.04 USD later on); continued from the learning parts' 1,710.98 USD -> 11,548.03 USD (deepest fall -55 %).
+26 weeks: 15 up, 11 down.
+
+**What the exam says:** the NY straddle carries the plan in every period (learning +0.30, exam +0.285); Asia B2 is
+small-positive; the London ORB is the weak piece (+0.02 base, -0.006 with the rules). The old years are the second exam
+(next, through the bot's tick backtest once Asia B2 is in the lane, so one engine reads all of it).
