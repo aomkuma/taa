@@ -277,3 +277,41 @@ WITH the week's rise after breaking yesterday's high (Fri) paid the most.
 - The ORB 1.5 R target: +1.15 R this week (Fri); weeks 5-6 +1.15.
 
 **The one change for week 7:** the ATR floor is deleted (above); nothing new is added this week.
+
+## Week 7 - 2025-12-01 .. 05 (gold 4,220 -> 4,236 in a 4,180-4,265 range; the H1 ATR falls from 18 to 8)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate. `out_rules_w7.txt`, `out_liq_w7.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H1 ATR | What happened |
+|---|---|---|---|---|---|---|---|---|
+| Mon 07:24 | Asia B2 | SELL | 6.6 | -0.97 | -0.97 | +0.02 / -0.97 | 16.3 | sold right after price broke yesterday's high; stop 0.3 above the M15 swing high (sweep zone) |
+| Mon 07:55 | Asia B2 | BUY | 15.0 | -0.56 | skipped (flip) | +0.05 / -0.59 | 16.3 | the flip, with the break |
+| Mon 08:28 | Asia B2 | BUY | 16.2 | +0.92 | skipped (flip) | +1.30 / -0.02 | 16.9 | the re-entry with the break paid |
+| Mon 13:24 | London ORB | SELL | 7.2 | -1.01 | -1.01 | -0.02 / -1.97 | 18.1 | sold back into the Asia range; stop at round 4230 - SLOW |
+| Mon 20:30 | NY straddle | BUY | 8.0 | -1.00 | -1.00 | +0.63 / -1.54 | 16.9 | broke the M15 swing high, ran +0.63, then a FAKE |
+| Tue 13:16 | London ORB | SELL | 2.9 | +2.00 | +1.50 | **+6.76** / -0.30 | 13.5 | broke the Asia low and ran 6.8 R - the target cut it |
+| Wed 13:24 | London ORB | BUY | 4.8 | -1.01 | -1.01 | +0.15 / -1.26 | 15.6 | no pool broken; stop at round 4210 - SLOW |
+| Wed 20:30 | NY straddle | BUY | 8.0 | +1.79 | +1.79 | +1.96 / -0.75 | 10.5 | broke the Asia high and the swing high |
+| Thu 13:35 | London ORB | BUY | 7.5 | +0.63 | +0.63 | +1.10 / -0.37 | 14.1 | broke the M15 swing high |
+| Thu 20:30 | NY straddle | SELL | 8.0 | -0.90 | -0.90 | +0.45 / -0.92 | 11.7 | no pool broken; time exit |
+| Fri 13:25 | London ORB | BUY | 10.9 | -0.19 | -0.19 | +0.10 / -0.53 | **9.3** | no pool broken; time exit |
+| Fri 20:30 | NY straddle | BUY | 8.0 | -0.20 | -0.20 | +0.36 / -0.77 | **8.2** | time exit |
+
+**The week:** base 12 trades -0.50 R; rules 10 trades -1.35 R. Seven weeks (base) 79 trades +21.96 R (+0.28 R a trade).
+
+**What the winners share:** each broke a pool in its direction (Tue the Asia low, Wed NY the Asia high, Thu the M15 swing
+high, Mon 08:28 yesterday's high). The losers mostly broke none (Wed / Fri ORB, Thu NY) or faded a fresh break (Mon 07:24
+sold just after yesterday's high was taken, Mon 13:24 sold back into the Asia range).
+
+**Checked on weeks 1-7, the ORB by its entry's place:** a pool broken in the 15 minutes before: 17 trades +7.04 R (+0.41 a
+trade); none broken: 16 trades +1.55 R (+0.10). On weeks 1-6 alone the no-pool ORBs made +2.75 R on 14 trades, so a filter
+that skips them would have blocked profit - **not adopted**, watched.
+
+**The rules that cost this week:**
+- The ORB 1.5 R target: cost 0.50 R (Tue ran to +6.76 R). Weeks 5-7: +5.31 against +4.66 - it still pays (+0.65), stays.
+- B2 no flip: cost 0.36 R (Mon: the first B2 faded the break, the flips went with it). Weeks 1-7 net +0.10 - stays, watched;
+  if it costs again next week it goes.
+- No ATR gate: the trades under 12 (Wed NY +1.79, Thu NY -0.90, Fri ORB -0.19, Fri NY -0.20) net +0.50 - the floor's
+  deletion was right again.
+
+**The one change for week 8:** none - no candidate passed the check on the prior weeks.
