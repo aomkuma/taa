@@ -741,3 +741,46 @@ trade so far: Tue's straddle, -60.27 USD). Nineteen weeks (base) 217 trades +44.
 - B2 no flip: cost 0.43 (Thu). Weeks 1-19 net +0.93.
 
 **The one change for week 20:** none.
+
+## Weeks 20-26 - 2026-03-02 .. 04-17 (the end of learning part 2)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break. Each
+week's trades are in `out_rules_w20.txt` .. `out_rules_w26.txt` and `out_liq_w20.txt` .. `out_liq_w26.txt`. From week 21 the
+NY straddle is at 19:30 Thai (US summer time). Run one week at a time (out of memory beside dev1's parity runs, retried).
+
+| Week | Dates | Base trades | Base R | Rules trades | Rules R | USD | Account | Pool rule | 1.5 R target |
+|---|---|---|---|---|---|---|---|---|---|
+| 20 | 03-02 .. 06 | 10 | -0.02 | 9 | +0.49 | -12.91 | 979.63 | saved 1.00 | -0.50 |
+| 21 | 03-09 .. 13 | 11 | +1.24 | 7 | -1.45 | -113.04 | 866.59 | **cost 3.33** | +0.64 |
+| 22 | 03-16 .. 20 | 9 | +1.04 | 9 | +0.54 | -2.83 | 863.75 | - | -0.50 |
+| 23 | 03-23 .. 27 | 13 | -0.02 | 12 | +0.48 | -44.38 | 819.38 | saved 1.00 | -0.50 |
+| 24 | 03-30 .. 04-03 | 12 | +3.87 | 9 | +3.91 | +253.71 | 1,073.09 | saved 0.54 | -0.50 |
+| 25 | 04-06 .. 10 | 12 | +2.62 | 12 | +2.62 | +196.48 | 1,269.57 | - | - |
+| 26 | 04-13 .. 17 | 14 | +3.12 | 12 | +5.17 | +441.41 | 1,710.98 | saved 1.06 | +0.99 |
+
+**Weeks 20-26:** base +11.85 R, rules +11.76 R. B2 no flip acted once (week 24, a 0.00 trade).
+
+**What happened:** weeks 20-23 the straddle stopped 11 times in 18 (the market in a range after February's crash); the
+ORB carried them. Weeks 24-26 everything ran: the straddle +12.6 R, the account +891 USD. Week 21 was the pool rule's
+worst (it skipped two ORBs that reached 2 R); weeks 1-26 it still saves +3.79 R (the 31 trades it skips sum -3.79 R).
+No candidate change was found that also held on the prior weeks, so the rules stayed as they were from week 17 on.
+
+## Twenty-six weeks (learning parts 1 + 2), the result
+
+| | Trades | R | R a trade | Account (100 USD, 7.5 % a trade, min 0.01 lot) |
+|---|---|---|---|---|
+| Base (PLAN-1 as tested) | 288 | +56.54 | +0.196 | - |
+| **Rules in force each week** | 263 | **+56.49** | **+0.215** | **100 -> 1,710.98 USD** (deepest fall -37 %, weeks 1-2; worst trade -121.80 USD) |
+
+## Frozen for the exam (2026-10-21 19:15 Thai, before any exam reading of these rules)
+
+The rules that go to the exam (2026-04-18 .. 2026-10-17, read once) and to the old years (2021-09 .. 2025-09, read once):
+1. Asia B2 07-09 Thai at the owner's H1 levels as PLAN-1; its second trade of a morning only in the first's direction.
+2. London ORB 13:00 Thai, 15-minute range on M1, stop at the range's other side, **target 1.5 R**, out after 60 minutes;
+   **when the H4 ATR(14) changed by < +0.5 % over the last 6 closed H4 bars, it enters only if the 15 minutes before the
+   decision broke a pool** (yesterday's high / low, the Asia high / low, today's open, the last M15 swing) in its direction.
+3. NY 08:30 straddle every weekday: ±2 USD, stop 8 USD, out at 08:30 + 30 minutes, no target.
+4. No ATR gate. One position at a time. Costs: the tick spread; slippage 0.
+5. The account: 100 USD, 7.5 % of the equity a trade, at least 0.01 lot.
+The reading: week by week as here, the total R a trade against the goal (+0.15), and the account. Pass = the exam's
+rules R a trade >= +0.15. A fail is not fixed on the exam: any change is learned forward (from 2026-10-19).

@@ -1,0 +1,10 @@
+Mon 16 13:16 London ORB  BUY  base -1.00 | rules -1.00 TP 1.5 R: stop
+Mon 16 19:30 NY straddle SELL base +0.04 | rules +0.04 
+Wed 18 13:17 London ORB  BUY  base -0.08 | rules -0.08 TP 1.5 R: time
+Wed 18 19:30 NY straddle SELL base +2.19 | rules +2.19 
+Thu 19 07:05 Asia B2     BUY  base +0.16 | rules +0.16 
+Thu 19 13:19 London ORB  SELL base +2.00 | rules +1.50 TP 1.5 R: target
+Thu 19 19:30 NY straddle SELL base -1.06 | rules -1.06 
+Fri 20 13:28 London ORB  SELL base -0.19 | rules -0.19 TP 1.5 R: time
+Fri 20 19:30 NY straddle BUY  base -1.02 | rules -1.02 
+week: base 9 trades +1.04 R | rules 9 trades +0.54 R
