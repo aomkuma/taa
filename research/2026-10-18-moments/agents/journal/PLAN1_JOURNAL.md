@@ -804,6 +804,6 @@ learned forward.
 worst trade -243.04 USD later on); continued from the learning parts' 1,710.98 USD -> 11,548.03 USD (deepest fall -55 %).
 26 weeks: 15 up, 11 down.
 
-**What the exam says:** the NY straddle carries the plan in every period (learning +0.30, exam +0.285); Asia B2 is
-small-positive; the London ORB is the weak piece (+0.02 base, -0.006 with the rules). The old years are the second exam
+**What the exam says:** the NY straddle carries the plan in every period (learning +0.262, exam +0.285); Asia B2 is
+small-positive; the London ORB is the piece that did not carry over (learning +0.168, exam +0.020 base, -0.006 with the rules). The old years are the second exam
 (next, through the bot's tick backtest once Asia B2 is in the lane, so one engine reads all of it).
