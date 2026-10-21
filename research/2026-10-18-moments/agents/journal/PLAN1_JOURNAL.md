@@ -241,3 +241,39 @@ second trades of week 3 were a flip to the OTHER side (Wed: buy, then sell 50 mi
 **The one change for week 6 (decided 2026-10-21 13:20 Thai, checked on weeks 1-5):** Asia B2's second trade of a morning
 is taken only in the first trade's direction (no flip). On weeks 1-5 it skips one trade (week 3 Wed -0.57) and keeps
 the re-entries: +0.57 R against the base.
+
+## Week 6 - 2025-11-24 .. 28 (gold rises 4,055 -> 4,185; the H1 ATR falls from 22 to 8)
+
+The rules in force: the ORB target 1.5 R, B2 no flip. `out_rules_w6.txt`, `out_liq_w6.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H1 ATR | What happened |
+|---|---|---|---|---|---|---|---|---|
+| Mon 07:34 | Asia B2 | BUY | 7.6 | -0.87 | -0.87 | +0.99 / -0.88 | 21.7 | stop 0.3 under the M15 swing low + round 4060 |
+| Mon 08:10 | Asia B2 | SELL | 22.5 | +0.11 | skipped (flip) | +0.68 / -0.09 | 21.4 | the flip: this time it won a little |
+| Mon 13:26 | London ORB | BUY | 10.2 | -0.25 | -0.25 | +0.24 / -0.41 | 19.0 | |
+| Tue 07:36 | Asia B2 | SELL | 12.3 | +0.27 | +0.27 | +0.77 / -0.41 | 14.8 | |
+| Tue 13:23 | London ORB | SELL | 6.4 | +0.56 | +0.56 | +0.98 / -0.12 | 15.3 | |
+| Tue 20:30 | NY straddle | BUY | 8.0 | +0.15 | +0.15 | +0.51 / -0.57 | 16.2 | broke yesterday's high and the Asia high - did not run |
+| Wed 13:16 | London ORB | SELL | 6.8 | +0.36 | +0.36 | +1.34 / -0.67 | 13.0 | |
+| Wed 20:30 | NY straddle | SELL | 8.0 | +1.21 | +1.21 | +1.76 / -0.16 | 12.9 | sold back under yesterday's / the Asia high (a failed break above) |
+| Thu 08:05 | Asia B2 | SELL | 6.9 | +1.41 | +1.41 | +2.80 / -0.06 | 12.1 | |
+| Thu 13:22 | London ORB | BUY | 8.8 | +0.66 | +0.66 | +0.76 / -0.35 | **10.2** | |
+| Fri 07:29 | Asia B2 | BUY | 5.0 | **+3.28** | **+3.28** | +4.00 / -0.17 | **7.9** | broke yesterday's high in a quiet Asia |
+| Fri 13:22 | London ORB | BUY | 2.6 | +0.35 | **+1.50** | +1.63 / -0.23 | **10.7** | the 1.5 R target took it |
+
+**The week:** base 12 trades +7.23 R; rules 11 trades **+8.27 R**. Six weeks (base) 67 trades +22.46 R; the rules in force
+since week 4 add +0.14 (w4) -1.77 (w5) +1.04 (w6).
+
+**What the winners share:** 10 of 12 trades finished above 0; the ORB's 1.5 R target paid on Friday; the B2 buys / sells
+WITH the week's rise after breaking yesterday's high (Fri) paid the most.
+
+**The rules that cost this week:**
+- **The ATR floor of 12:** three trades had an ATR under 12 (Thu ORB 10.2 +0.66, Fri B2 7.9 +3.28, Fri ORB 10.7 +1.50 with
+  the rules): the floor would have skipped **+5.44 R**. Weeks 3-6: it cost +0.57, saved +1.01, 0, cost +5.44 - **net -5.00 R.
+  DELETED** (owner: a rule that blocks profit goes). The counter-evidence is the calm years 2021-25 (ORB / straddle lost
+  on 1,379 trades with an ATR under 12) - those were a different, smaller gold (the daily range 20-40 USD, not 70-150):
+  in the present a low-ATR hour is a pause inside a large market, not a calm gold. Watched in the journal.
+- B2 no flip: skipped Mon's +0.11 (week 6 cost 0.11; weeks 1-6 net +0.46).
+- The ORB 1.5 R target: +1.15 R this week (Fri); weeks 5-6 +1.15.
+
+**The one change for week 7:** the ATR floor is deleted (above); nothing new is added this week.
