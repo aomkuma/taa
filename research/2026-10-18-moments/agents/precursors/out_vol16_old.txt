@@ -1,0 +1,16 @@
+
+London ORB
+  2020-21: all  21 R -0.494 | H1 ATR median   2.7 | in band   0 R +nan
+  2021-22: all 252 R -0.203 | H1 ATR median   3.5 | in band   1 R -0.285
+  2022-23: all 246 R -0.131 | H1 ATR median   3.4 | in band   0 R +nan
+  2023-24: all 250 R -0.073 | H1 ATR median   4.2 | in band   2 R +0.667
+  2024-25: all 251 R -0.075 | H1 ATR median   7.0 | in band  20 R +0.040
+  pooled: all 1020 R -0.128 | in band 23 R +0.080
+
+NY straddle
+  2020-21: all   8 R -0.180 | H1 ATR median   3.6 | in band   0 R +nan
+  2021-22: all  73 R +0.006 | H1 ATR median   3.5 | in band   0 R +nan
+  2022-23: all 100 R -0.019 | H1 ATR median   3.5 | in band   0 R +nan
+  2023-24: all 106 R -0.146 | H1 ATR median   4.2 | in band   1 R -1.002
+  2024-25: all 109 R -0.009 | H1 ATR median   8.2 | in band  13 R -0.229
+  pooled: all 396 R -0.049 | in band 14 R -0.284

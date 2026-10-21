@@ -3009,3 +3009,19 @@ unfiltered +0.249 / +0.137 / +0.129. Frozen as a band 12 <= ATR < 16 (ATR < 12 l
 VOL-16b (outside the band only the NY straddle trades), because the band cuts trades to about 1 a day (0.2 in a fast
 month), against the owner's 2-3 a day and the principle "an unsuitable phase trades less, not never". CHECKLIST row 55;
 judged on the forward record (>= 60 trades) and the 5-year ticks.
+
+## VOL-16's secondary check on the 2021-09 .. 2025-09 ticks (2026-10-21 12:17 Thai; `vol16_old.py`, read once)
+Parity first: the same code on the P1 / P2 tick days gives London ORB 119 trades +0.168 and the NY straddle 100 trades
++0.262, equal to dev1's runner pooled. The old years:
+
+| | 2021-22 | 2022-23 | 2023-24 | 2024-25 | pooled | in the 12-16 band |
+|---|---|---|---|---|---|---|
+| H1 ATR median at the ORB | 3.5 | 3.4 | 4.2 | 7.0 | | |
+| London ORB, all | 252, -0.203 | 246, -0.131 | 250, -0.073 | 251, -0.075 | 1020, -0.128 | 23, +0.080 |
+| NY straddle, all | 73, +0.006 | 100, -0.019 | 106, -0.146 | 109, -0.009 | 396, -0.049 | 14, -0.284 |
+
+- In those years gold was almost never in the band (37 of 1,416 trades), so the band says little about itself there.
+- **Its floor did the work:** VOL-16 would have stood aside from 1,379 trades that lost (-0.128 / -0.049 R a trade).
+  The pieces only pay at gold's present size; the band's lower edge is what keeps them out of a calm gold.
+- The band is in USD, not relative: if gold's scale changes the band has to be re-measured (the owner's "everything
+  relative"); the forward record stays the judge.
