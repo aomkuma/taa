@@ -7,7 +7,8 @@ weaknesses - that should make profit. Summing results once over three or five ye
 - Every PLAN-1 trade in time order, from the first learning week (2025-10-20) on: why it entered, the market around
   it (H1 ATR, the D1 20-day direction, yesterday's high / low), how far it went for and against (best / worst R and
   when), the result and a one-line lesson.
-- At each week's end: what the winners share, the weaknesses that repeat, and **one** change, written before the next
+- At each week's end: what the winners share, the weaknesses that repeat, **the rules that cost this week** (owner,
+  2026-10-21: "a rule that blocks profit gets deleted - the facts decide"), and **one** change, written before the next
   week is opened.
 - The change applies from the next week on and is never applied back. Each week is read with only the weeks before it,
   so the journal is a walk-forward at the scale of a week.
@@ -57,6 +58,13 @@ M15 swing, the 10-USD round numbers) and where the stop sat against them:
   took those stops and then went the trade's way (+0.71 R and +1.12 R at the window's end). The third (#4) was a real
   reversal: a buy against the day's turn from the record.
 - **The losers' cause is the stop's place, not the idea.**
+
+**The rules that cost this week:**
+- **VOL-16 (trade only while the H1 ATR is 12-16):** every trade this week had an H1 ATR of 20-42, so VOL-16 would have
+  taken none of them - the week made +4.85 R (the straddle +7.86 R). Cost this week: +4.85 R. Evidence so far: one week.
+- **The ORB's 60-minute time exit:** #6 was +1.59 R at 13:55 and was closed at 14:23 at -0.16. Cost: up to +1.75 R.
+- **The B2 stop at the pattern's far side (38-41 USD):** cost nothing this week beyond its two small losses, but it
+  makes a B2 loser the size of a week.
 
 **The one change for week 2 (revised before week 2 is opened, 2026-10-21 13:05 Thai, on week 1 only):** the stop
 leaves the sweep zone. If a pool (yesterday's high / low, the Asia high / low, today's open, the last M15 swing, a 10-USD
