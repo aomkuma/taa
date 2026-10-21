@@ -1033,3 +1033,10 @@ skipped Tue's sell (+0.08). Six weeks: 61 trades +0.05 R (frozen -4.94); 258.96 
 (Mon +0.06, Tue +1.54, Wed +0.64) were stopped at 6 (-1.00, -1.05, -1.05); Friday's +6.09 became +8.12 R for the same
 48.71 USD. Seven weeks: 76 trades +4.58 R (frozen +2.79); 273.38 USD (frozen 283.49). In R the learner leads, in USD it
 trails: a tighter stop wins R on the winners and loses more often.
+
+## Exam week 8 (2026-06-08 .. 12) - the learner now scores in USD at one 0.01 lot (decided after week 7); learned: the straddle stop 10 USD (+138.99 vs +98.27 USD over 8 weeks)
+
+10 trades **+1.11 R, +26.58 USD** (frozen: 13 trades +3.94 R, +71.84 USD); account **273.38 -> 299.96 USD** (frozen
+355.33). B2 with the previous (falling) week skipped three buys that won (+0.60, +1.54, +0.32 = +2.46 R missed; the frozen
+B2 made +2.93). Eight weeks: 86 trades +5.69 R (frozen +6.73); **299.96 USD (frozen 355.33)**. The B2 trend filter now
+costs more than it saves since it was chosen in week 2 - the margin keeps it from switching back (it must beat by 10 USD).

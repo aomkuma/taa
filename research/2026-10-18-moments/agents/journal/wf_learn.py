@@ -25,6 +25,9 @@ EXAM_W1 = pd.Timestamp("2026-04-20")
 # from exam week 6 (decided after week 5: the levers switched on margins as small as 0.02 R): switch only when the new
 # option beats the current one by at least MARGIN R over the window
 MARGIN, MARGIN_FROM = 1.0, 6
+# from exam week 8 (decided after week 7: the 6-USD straddle stop led in R and trailed in USD): options are scored in
+# USD at one 0.01 lot (R x the option's risk), the switch margin 10 USD
+USD_FROM, USD_MARGIN = 8, 10.0
 
 
 def load() -> pd.DataFrame:
@@ -71,11 +74,15 @@ def main(N: int, last: int) -> None:
         changes = []
         for p, (opts, f, _) in LEVERS.items():
             P = X[(X.piece == p) & X.wk.isin(window)]
-            score = {str(o): float(np.nansum(f(P, o))) for o in opts}
+            if i >= USD_FROM:
+                risk = (lambda o: float(o[3:])) if p == "NY straddle" else (lambda o: P.risk)
+                score = {str(o): float(np.nansum(f(P, o) * risk(o))) for o in opts}
+            else:
+                score = {str(o): float(np.nansum(f(P, o))) for o in opts}
             best = max(opts, key=lambda o: score[str(o)])
-            need = MARGIN if i >= MARGIN_FROM else 1e-9
+            need = USD_MARGIN if i >= USD_FROM else MARGIN if i >= MARGIN_FROM else 1e-9
             if score[str(best)] > score[str(cur[p])] + need:
-                changes.append(f"{p}: {cur[p]} -> {best} ({score[str(cur[p])]:+.2f} -> {score[str(best)]:+.2f} over {N} weeks)")
+                changes.append(f"{p}: {cur[p]} -> {best} ({score[str(cur[p])]:+.2f} -> {score[str(best)]:+.2f} over {N} weeks{', USD at 0.01 lot' if i >= USD_FROM else ''})")
                 cur[p] = best
         Wk = X[X.wk == w]
         wk_R, wk_usd, n = 0.0, 0.0, 0
