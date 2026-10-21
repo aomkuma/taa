@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 TICKETS = Path(__file__).resolve().parent.parent / "docs" / "TICKETS.md"
-HEAD_RE = re.compile(r"^#### (TAA-[0-9A-Z]+) — ")
+HEAD_RE = re.compile(r"^#### (TAA-[0-9A-Z]+(?:-[0-9A-Z]+)*) — ")  # e.g. TAA-1602, TAA-OWN-P1
 ITEM_RE = re.compile(r"^- \[( |x)\] ")
 STATUS_RE = re.compile(r"^- \*\*Status:\*\* (\S+(?: \S+)?)$")
 PHASE_RE = re.compile(r"^### (Phase .+)$")

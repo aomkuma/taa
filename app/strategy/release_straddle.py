@@ -13,6 +13,7 @@ crossed, the close at ``close_at``) belongs to the engine.
 
 from __future__ import annotations
 
+from bisect import bisect_left, bisect_right
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -74,6 +75,10 @@ class ReleaseStraddle:
     def __post_init__(self) -> None:
         self.releases = of_events(self.releases, self.params.events)
 
+    def unit(self, bid: float) -> float:
+        """1 U in price units: the bid / ``unit_price``."""
+        return bid / self.params.unit_price
+
     def upcoming(self, at: datetime) -> Release | None:
         """The release whose arm-to-window span contains *at*."""
         p, at = self.params, ensure_utc(at)
@@ -103,7 +108,7 @@ class ReleaseStraddle:
             armed.done = True  # no quote before the release: no reference, no trade (fail closed)
             return None
         p = self.params
-        unit = armed.bid / p.unit_price
+        unit = self.unit(armed.bid)
         up, down = armed.ask + p.trigger_u * unit, armed.bid - p.trigger_u * unit
         side = Side.BUY if ask >= up else Side.SELL if bid <= down else None
         if side is None:
@@ -134,11 +139,13 @@ class OwnS2(BaseStrategy):
     def __init__(self, params: StrategyParams | None = None) -> None:
         super().__init__(params)
         self._releases: tuple[Release, ...] = ()
+        self._times: list[datetime] = []
         self._planners: dict[str, ReleaseStraddle] = {}
 
     def attach_calendar(self, releases: Sequence[Release]) -> None:
         p: StraddleParams = self.params
-        self._releases = of_events(releases, p.events)
+        self._releases = tuple(sorted(of_events(releases, p.events), key=lambda r: r.at))
+        self._times = [r.at for r in self._releases]
         self._planners.clear()
 
     @property
@@ -158,17 +165,33 @@ class OwnS2(BaseStrategy):
 
     def busy(self, at: datetime) -> bool:
         """A release is being armed or traded: the engine polls quotes faster."""
-        p: StraddleParams = self.params
         at = ensure_utc(at)
-        return any(
-            r.at - timedelta(seconds=p.arm_seconds + 5) <= at < r.at + timedelta(seconds=p.window_seconds)
-            for r in self._releases
-        )
+        return self.busy_between(at, at + timedelta(microseconds=1))
+
+    def busy_between(self, start: datetime, end: datetime) -> bool:
+        """A release's arm-to-window span overlaps [start, end) (a backtest replays those quotes)."""
+        start, end = ensure_utc(start), ensure_utc(end)
+        return any(a < end and b > start for a, b in self.spans(start, end))
+
+    def spans(self, start: datetime, end: datetime) -> list[tuple[datetime, datetime]]:
+        """The [arm - 5 s, window end) spans of the releases near [start, end)."""
+        p: StraddleParams = self.params
+        arm, window = timedelta(seconds=p.arm_seconds + 5), timedelta(seconds=p.window_seconds)
+        lo, hi = bisect_left(self._times, start - window), bisect_right(self._times, end + arm)
+        return [(r.at - arm, r.at + window) for r in self._releases[lo:hi]]
+
+    def unit(self, bid: float) -> float:
+        """1 U in price units."""
+        p: StraddleParams = self.params
+        return bid / p.unit_price
+
+    def new_planner(self) -> ReleaseStraddle:
+        return ReleaseStraddle(self.params, self._releases)
 
     def on_quote(self, symbol: str, at: datetime, bid: float, ask: float) -> StraddleEntry | None:
         planner = self._planners.get(symbol)
         if planner is None:
-            planner = self._planners[symbol] = ReleaseStraddle(self.params, self._releases)
+            planner = self._planners[symbol] = self.new_planner()
         return planner.on_quote(at, bid, ask)
 
     def entry_signal(self, ctx: StrategyContext, entry: StraddleEntry) -> Signal | None:
@@ -180,7 +203,7 @@ class OwnS2(BaseStrategy):
         buy = entry.side is Side.BUY
         sign = 1 if buy else -1
         price = market.ask if buy else market.bid
-        cap = p.target_cap_u * market.bid / p.unit_price
+        cap = p.target_cap_u * self.unit(market.bid)
         conds = [
             Condition("release", True, 1.0, f"{entry.release.event} {entry.release.at:%Y-%m-%d %H:%M} UTC"),
             Condition(

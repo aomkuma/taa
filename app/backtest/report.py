@@ -110,7 +110,8 @@ def summary(result: BacktestResult, provenance: Provenance) -> dict[str, Any]:
 
 
 def write_reports(result: BacktestResult, provenance: Provenance, out_dir: Path) -> dict[str, Path]:
-    """Write ``summary.json``, ``trades.csv`` and ``equity.csv`` into *out_dir*; return their paths."""
+    """Write ``summary.json``, ``trades.csv``, ``equity.csv`` (and ``journal.jsonl`` when entries carry a
+    record) into *out_dir*; return their paths."""
     out_dir.mkdir(parents=True, exist_ok=True)
     paths = {
         "summary": out_dir / "summary.json",
@@ -123,6 +124,13 @@ def write_reports(result: BacktestResult, provenance: Provenance, out_dir: Path)
     write_trades_csv(result.trades, paths["trades"])
     frame = equity_frame(result.equity_curve)
     frame.reset_index().to_csv(paths["equity"], index=False, date_format="%Y-%m-%dT%H:%M:%S%z")
+    if result.journal:  # each accepted entry's journal record (its checklist), one JSON line per signal
+        paths["journal"] = out_dir / "journal.jsonl"
+        with paths["journal"].open("w", encoding="utf-8", newline="\n") as fh:
+            for signal_id, record in result.journal.items():
+                fh.write(
+                    json.dumps({"signal_id": signal_id, **record}, sort_keys=True, allow_nan=False) + "\n"
+                )
     return paths
 
 

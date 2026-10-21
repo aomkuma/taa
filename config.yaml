@@ -145,6 +145,28 @@ lanes:
           params: {}                # D 2 U, stop 8 U (1 U = price / 4000), out after the release minute
     management:
       setup_own_s2: {break_even: false, trailing: false}
+  - name: plan1                     # Setup OWN PLAN-1 (docs/PLAN1_LANE.md; research dev/plan1.py + the journal's rules
+    symbols: [XAUUSD]               # in force, journal/PLAN1_JOURNAL.md): the London 13:00-Thai ORB on closed M1 bars,
+    timeframes:                     # the NY 08:30 straddle every weekday on quotes; Asia B2 comes in checkpoint B
+      higher: H4                    # the H4 ATR change (journal week 10); the H1 ATR is built from M1
+      entry: M1
+      warmup_bars: 3000             # 15 H1 bars for the H1 ATR, yesterday's server day across a weekend (pools)
+    strategies:
+      cooldown_bars: 0              # one position at a time is the only spacing (risk.max_positions_per_symbol)
+      signal_expiry_bars: 1
+      items:                        # each journal rule is a parameter here (target_r, atr_floor, hold, ...)
+        - name: setup_plan1_orb
+          enabled: false            # PAPER only once the measurer turns it on; journal week 5: target 1.5 R
+          params: {target_r: 1.5, atr_floor: null, pool_break_when_h4_contracting: true}   # week 6: no ATR
+          # floor (the H1 ATR stays in the journal); week 10: in a contracting H4 ATR (24 h) only after a pool break
+        - name: setup_plan1_ny
+          enabled: false            # every weekday 08:30 New York; 2 / 8 USD, out after 30 minutes, no target
+          params: {trigger_u: 2.0, stop_u: 8.0, hold_seconds: 1800, target_cap_u: 100.0, atr_floor: null}
+    max_spread_to_sl_ratio: 0.5     # the research has no spread rule; a 4-USD range stop against a 0.4 spread passes
+    max_spread_points: 60           # above the widest 08:29-08:31 NY spread on P1 / P2 ticks (53; fills <= 39)
+    management:
+      setup_plan1_orb: {break_even: false, trailing: false}
+      setup_plan1_ny: {break_even: false, trailing: false}
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
@@ -207,7 +229,7 @@ sessions:                           # entry windows; local times of `timezone` (
   by_symbol:                        # e.g. US30: [{days: [0,1,2,3,4], start: "09:30", end: "16:00", timezone: America/New_York}]
     XAUUSD:                         # gold also in the Asian open (Setup OWN's Asia window 00-02 UTC; owner, 2026-10-18)
       - {days: [0, 1, 2, 3, 4], start: "00:00", end: "02:00", timezone: UTC}
-      - {days: [0, 1, 2, 3, 4], start: "07:00", end: "20:00", timezone: UTC}
+      - {days: [0, 1, 2, 3, 4], start: "06:00", end: "20:00", timezone: UTC}   # 06:00: PLAN-1's 13:00-Thai ORB
   friday_cutoff_utc: "20:00"
   news_blackouts: []                # e.g. - {start_utc: 2026-10-02T12:15:00Z, end_utc: 2026-10-02T13:00:00Z, currencies: [USD], reason: NFP}
 

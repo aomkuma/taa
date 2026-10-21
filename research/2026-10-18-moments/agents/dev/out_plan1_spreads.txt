@@ -1,0 +1,28 @@
+London ORB: 119 fills
+  fill     max   39.0  p99   39.0  p95   39.0  median   39.0 points
+  trigger  max   39.0  p99   39.0  p95   39.0  median   39.0 points
+  max30    max   39.0  p99   39.0  p95   39.0  median   39.0 points
+    widest: 2025-10-29 13:25:00 Thai fill 39 trigger 39 max30 39
+    widest: 2025-10-28 13:29:00 Thai fill 39 trigger 39 max30 39
+    widest: 2025-10-27 13:56:00 Thai fill 39 trigger 36 max30 39
+    widest: 2025-10-30 13:58:00 Thai fill 39 trigger 39 max30 39
+    widest: 2025-11-04 13:19:00 Thai fill 39 trigger 39 max30 39
+NY straddle: 100 fills
+  fill     max   39.0  p99   39.0  p95   39.0  median   39.0 points
+  trigger  max   39.0  p99   39.0  p95   39.0  median   39.0 points
+  max30    max   39.0  p99   39.0  p95   39.0  median   39.0 points
+    widest: 2025-10-23 19:30:22 Thai fill 38 trigger 39 max30 39
+    widest: 2025-10-22 19:30:10 Thai fill 39 trigger 35 max30 39
+    widest: 2025-10-27 19:30:27 Thai fill 39 trigger 39 max30 39
+    widest: 2025-10-24 19:30:01 Thai fill 39 trigger 23 max30 39
+    widest: 2025-12-04 20:30:00 Thai fill 39 trigger 39 max30 39
+fills over 40 points (the XAUUSD cap now): 0 straddle, 0 ORB
+all tick days to 2026-04-17: 143
+  daily max spread (points): max 163.0 median 42.0
+  08:29-08:31 New York, every weekday: max 53.0 p99 39.0 p95 39.0 median 39.0
+       day   max   p99  max_0829_0831_ny
+2025-11-28 163.0 163.0              53.0
+2025-11-03  42.0  42.0              39.0
+2025-11-05  42.0  42.0              39.0
+2025-11-06  42.0  42.0              39.0
+2025-10-23  42.0  42.0              39.0

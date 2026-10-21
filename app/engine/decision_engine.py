@@ -486,7 +486,7 @@ class DecisionEngine:
         spread_points = (
             req.quote.spread_points if req.quote is not None and req.quote.valid else req.market.spread_points
         )
-        limit = self.config.spread_limit(symbol)
+        limit = self.config.spread_limit_for(symbol, req.signal.strategy)
         sl_distance = req.signal.risk_distance
         spread_price = None if spread_points is None or req.spec is None else spread_points * req.spec.point
         ratio = None if spread_price is None or not sl_distance else spread_price / sl_distance

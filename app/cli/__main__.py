@@ -225,6 +225,7 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     from app.config import config_hash
     from app.core.enums import Timeframe
     from app.market_data.history_store import ParquetHistoryStore
+    from app.news.releases import Release, load_releases
 
     settings = _settings(args)
     config = settings.config
@@ -300,6 +301,15 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     def progress(p: Progress) -> None:
         print(f"  {p.fraction:6.1%}  {p.at:%Y-%m-%d %H:%M}  equity {p.equity:,.2f}", flush=True)
 
+    quotes = None
+    if args.ticks is not None:  # quote strategies and tick-level fills (Setup OWN S2 / PLAN-1)
+        from app.market_data.tick_store import TickStore
+
+        quotes = TickStore(settings.path(args.ticks), end=end)
+
+    def calendar(name: str) -> tuple[Release, ...]:
+        return load_releases(settings.path(name))
+
     result, paths = run_and_write(
         config,
         loaded,
@@ -317,6 +327,8 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         risk_preset=risk_preset,
         portfolio=args.portfolio,
         main_symbols=symbols if args.portfolio else None,
+        quotes=quotes,
+        calendar=calendar,
     )
     m = compute_metrics(result.trades, result.equity_curve, result.initial_balance)
     print(f"backtest {', '.join(symbols)}  {result.start} -> {result.end}")
@@ -339,6 +351,8 @@ def cmd_backtest(args: argparse.Namespace) -> int:
             print(f"  {name}: {len(own)} trades, {mean:+.3f} R/trade, net {sum(t.net for t in own):,.2f}")
     for name, path in paths.items():
         print(f"  {name}: {path}")
+    if quotes is not None:
+        print(f"  minutes stepped on ticks: {result.tick_minutes}")
     print("  (a bar-based simulation; past results do not predict future results)")
     return 0
 
@@ -847,6 +861,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     bt.add_argument("--risk", type=float, default=None, help="aggressive: risk per trade, 5-10 (default 7.5)")
     bt.add_argument("--lane", default=None, help="backtest one lane of config.yaml (lanes: NAME) on its own")
+    bt.add_argument(
+        "--ticks",
+        default=None,
+        help="stored ticks (e.g. data/ticks): quote strategies trade and open positions fill on ticks",
+    )
     bt.add_argument(
         "--portfolio",
         action="store_true",

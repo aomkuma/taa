@@ -26,6 +26,17 @@ of every lane's entry-bar closes. The broker steps each symbol on the finest ent
 in order (the main lane first). Positions are managed by their strategy's lane, with bars held counted on
 that lane's timeframe. Without extra lanes the run is exactly the single-timeframe run above.
 
+**Quotes** (Setup OWN S2 / PLAN-1): with a :class:`QuoteSource` (stored ticks) the broker steps a symbol
+on its ticks instead of the bar in every minute where a quote-driven strategy (:class:`OwnS2`) arms or
+trades, or a position or order is open on the symbol: fills at the first tick after the order, stops at
+the tick that crosses them (gaps included), targets at their price, closes at the first tick after the
+request - the research's tick simulation. A bar-close decision then reads the bar's last tick as its quote
+(as live), not the bar's close and spread. Quote strategies get each tick; an entry they report is decided
+on the context of the last closed bar with the tick as its quote (the clock at the tick). Minutes without
+ticks fall back to the bar.
+
+Every accepted entry's checklist (the strategy's journal record) is kept in :attr:`BacktestResult.journal`.
+
 A :class:`RiskPreset` (the aggressive Trading-profile preset, PLAN §A36) makes every decision combine its
 profile limits with its cage, as the live engine's risk-limit selector does, and the loss breakers trip on the
 combined limits.
@@ -39,7 +50,9 @@ from collections import Counter
 from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any, Protocol
 
+import numpy as np
 import pandas as pd
 
 from app.config import AppConfig, RiskConfig
@@ -62,6 +75,7 @@ from app.indicators.market_map import MarketMap
 from app.market_data.data_models import Quote, SymbolSpec
 from app.market_data.trading_sessions import TradingSessions
 from app.news.calendar import ManualBlackouts, NewsFilter
+from app.news.releases import Release
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
 from app.risk.limits import ProfileLimits, effective_risk
@@ -72,12 +86,21 @@ from app.strategy.base_strategy import BaseStrategy
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame, context_at
 from app.strategy.market_maps import MapBook
 from app.strategy.registry import StrategySet
-from app.strategy.signal_models import OpenPosition, StrategyContext
+from app.strategy.release_straddle import OwnS2, StraddleEntry
+from app.strategy.signal_models import OpenPosition, Signal, StrategyContext
 
 log = logging.getLogger(__name__)
 
 MAGIC_BASE = 7_310_000  # same default as MAGIC_NUMBER_BASE; position i of the strategy list gets base + i
 MAIN = "main"  # the run's own entry timeframe (app.engine.lanes.MAIN)
+
+
+class QuoteSource(Protocol):
+    """Stored ticks (``app.market_data.tick_store.TickStore``): UTC epoch ns, bid, ask in [start, end)."""
+
+    def between(
+        self, symbol: str, start: datetime, end: datetime
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]: ...
 
 
 @dataclass(frozen=True)
@@ -108,6 +131,7 @@ class _Lane:
     maps: MapBook | None
     arbiter: SignalArbiter
     by_name: dict[str, BaseStrategy]
+    quoted: list[OwnS2] = field(default_factory=list)  # the quote-driven strategies
 
     @property
     def entry_tf(self) -> Timeframe:
@@ -154,6 +178,8 @@ class BacktestResult:
     signals: int = 0
     decisions: Counter[str] = field(default_factory=Counter)
     rejections: Counter[str] = field(default_factory=Counter)
+    journal: dict[str, dict[str, Any]] = field(default_factory=dict)  # signal id -> the entry's record
+    tick_minutes: int = 0  # broker minutes stepped on ticks
 
     @property
     def final_equity(self) -> float:
@@ -178,10 +204,15 @@ class BacktestEngine:
         risk_preset: RiskPreset | None = None,
         lanes: Sequence[BacktestLane] = (),
         main_symbols: Collection[str] | None = None,
+        quotes: QuoteSource | None = None,
+        calendar: Callable[[str], Sequence[Release]] | None = None,
     ) -> None:
         """*lanes*: more entry timeframes sharing the account (TAA-507); *config* then is the full config (its
         ``lanes`` give each lane strategy its spread ratio, cooldown and management). *main_symbols*: the
-        symbols the main lane trades (None: all of *data*)."""
+        symbols the main lane trades (None: all of *data*). *quotes*: stored ticks for the quote-driven
+        strategies and tick-level fills; *calendar*: a release calendar file -> releases (S2's
+        ``calendar_file``)."""
+        self.quotes = quotes
         self.config = config
         self.risk_preset = risk_preset
         self.data = dict(data)
@@ -209,6 +240,10 @@ class BacktestEngine:
             for name, cfg, sset, syms, ev in specs
             if sset.strategies or name == MAIN
         ]
+        for lane in self.lanes:
+            lane.quoted = [s for s in lane.strategies.strategies if isinstance(s, OwnS2)]
+            for s in lane.quoted:
+                s.attach_calendar(() if calendar is None else calendar(s.params.calendar_file))
         self.maps = self.lanes[0].maps
         self.start, self.end = start, end
         self.on_progress = on_progress
@@ -318,7 +353,10 @@ class BacktestEngine:
             for symbol, feed_tf in self._feed.items():
                 feed = self._frame_at(analyzed, symbol, feed_tf, ts)
                 if feed is not None:
-                    self.broker.on_bar(symbol, self._bar(symbol, feed[0].df.iloc[feed[1]], t))
+                    bar = self._bar(symbol, feed[0].df.iloc[feed[1]], t)
+                    if not self._tick_step(symbol, bar, analyzed, result):
+                        self.broker.on_bar(symbol, bar)
+                    self.clock.set(t)
                 for lane in self.lanes:
                     frames = analyzed[lane.name].get(symbol)
                     if frames is None:
@@ -369,8 +407,9 @@ class BacktestEngine:
     ) -> None:
         """One lane at the close *t* of its entry bar (the broker has already stepped the symbol)."""
         bar = self._bar(symbol, frames[lane.entry_tf].df.iloc[pos], t)
+        quote = self._decision_quote(symbol, bar, t)
         try:
-            ctx = self._context(symbol, frames, t, bar, lane)
+            ctx = self._context(symbol, frames, t, bar, lane, quote)
         except (InsufficientDataError, DataQualityError):
             return
         self._manage(symbol, ctx, bar, lane, frames[lane.entry_tf], t)
@@ -379,8 +418,32 @@ class BacktestEngine:
         selected = lane.arbiter.arbitrate(signals).selected
         if selected is None:
             return
+        self._submit(symbol, ctx, selected, quote, t, result)
+
+    def _decision_quote(self, symbol: str, bar: Bar, t: datetime) -> Quote:
+        """The quote a bar-close decision sees: with stored ticks the last tick of the bar (as live, where the
+        decision reads the current quote), else the bar's close and spread."""
         spec = self.broker.spec_at(symbol)
-        quote = bar_quote(symbol, bar, spec, t)
+        if self.quotes is not None:
+            t_ns, bids, asks = self.quotes.between(symbol, bar.open_time, t)
+            if len(t_ns):
+                at = pd.Timestamp(int(t_ns[-1]), tz="UTC").to_pydatetime()
+                bid, ask = float(bids[-1]), float(asks[-1])
+                age = (t - at).total_seconds()
+                return Quote(symbol, bid, ask, (ask - bid) / spec.point, at, age, True)
+        return bar_quote(symbol, bar, spec, t)
+
+    def _submit(
+        self,
+        symbol: str,
+        ctx: StrategyContext,
+        selected: Signal,
+        quote: Quote,
+        t: datetime,
+        result: BacktestResult,
+    ) -> None:
+        """The decision engine on one selected signal; an accepted plan becomes orders."""
+        spec = self.broker.spec_at(symbol)
         account = AccountState(self.broker.funds(), self.broker.broker_positions(), self._loss_status())
         record = self.decisions.decide(
             DecisionRequest(
@@ -403,6 +466,15 @@ class BacktestEngine:
         if record.decision is not Decision.ACCEPT or record.sizing is None:
             return
         self._last_entry[symbol] = t
+        result.journal[selected.signal_id] = {
+            "strategy": selected.strategy,
+            "decided_at": t.isoformat(),
+            "action": selected.action.value,
+            "entry_price": selected.entry_price,
+            "stop_loss": selected.stop_loss,
+            "take_profit": selected.take_profit,
+            "conditions": {c.name: c.detail for c in selected.conditions},
+        }
         side = selected.side
         if side is None:
             return
@@ -423,12 +495,89 @@ class BacktestEngine:
                 t,
             )
 
+    # --- quotes -------------------------------------------------------------------------------------------
+
+    def _tick_step(
+        self,
+        symbol: str,
+        bar: Bar,
+        analyzed: Mapping[str, Mapping[str, Mapping[Timeframe, AnalyzedFrame]]],
+        result: BacktestResult,
+    ) -> bool:
+        """Step the broker through the bar's minute on ticks when a quote strategy arms or trades in it or a
+        position / order is open on *symbol*; False: no ticks wanted or none stored (the bar steps it)."""
+        if self.quotes is None:
+            return False
+        quoted = [(lane, s) for lane in self.lanes if lane.trades(symbol) for s in lane.quoted]
+        start, end = bar.open_time, bar.close_time
+        busy = any(s.busy_between(start, end) for _, s in quoted)
+        held = any(p.symbol == symbol for p in self.broker.positions.values()) or any(
+            p.request.symbol == symbol for p in self.broker.pending.values()
+        )
+        if not (busy or held):
+            return False
+        t_ns, bids, asks = self.quotes.between(symbol, start, end)
+        if not len(t_ns):
+            return False
+        result.tick_minutes += 1
+        for ns, bid, ask in zip(t_ns.tolist(), bids.tolist(), asks.tolist(), strict=True):
+            at = pd.Timestamp(ns, tz="UTC").to_pydatetime()
+            self.clock.set(at)
+            self.broker.on_quote(symbol, bid, ask, at)
+            if not busy:
+                continue
+            for lane, strategy in quoted:
+                entry = strategy.on_quote(symbol, at, bid, ask)
+                if entry is not None:
+                    self._quote_entry(symbol, lane, strategy, entry, (at, bid, ask), analyzed, result)
+        return True
+
+    def _quote_entry(
+        self,
+        symbol: str,
+        lane: _Lane,
+        strategy: OwnS2,
+        entry: StraddleEntry,
+        tick: tuple[datetime, float, float],
+        analyzed: Mapping[str, Mapping[str, Mapping[Timeframe, AnalyzedFrame]]],
+        result: BacktestResult,
+    ) -> None:
+        """A quote strategy's entry: decided on the lane's last closed bar with the tick as the quote."""
+        at, bid, ask = tick
+        frames = analyzed[lane.name].get(symbol)
+        if frames is None:
+            return
+        entry_frame = frames[lane.entry_tf]
+        n = entry_frame.count_upto(at)
+        if n == 0:
+            return
+        row = entry_frame.df.iloc[n - 1]
+        closed = pd.Timestamp(entry_frame.df.index[n - 1]).to_pydatetime()
+        spec = self.broker.spec_at(symbol)
+        quote = Quote(symbol, bid, ask, (ask - bid) / spec.point, at, 0.0, True)
+        bar = self._bar(symbol, row, closed)
+        try:
+            ctx = bar_context(lane.config, frames, symbol, closed, bar, spec, lane.evidence, quote=quote)
+        except (InsufficientDataError, DataQualityError):
+            return
+        signal = strategy.entry_signal(ctx, entry)
+        if signal is None:
+            return
+        result.signals += 1
+        self._submit(symbol, ctx, signal, quote, at, result)
+
     def _context(
-        self, symbol: str, frames: Mapping[Timeframe, AnalyzedFrame], t: datetime, bar: Bar, lane: _Lane
+        self,
+        symbol: str,
+        frames: Mapping[Timeframe, AnalyzedFrame],
+        t: datetime,
+        bar: Bar,
+        lane: _Lane,
+        quote: Quote | None = None,
     ) -> StrategyContext:
         spec = self.broker.spec_at(symbol)
         htf = None if lane.maps is None else lane.maps.at(symbol, self.context.get(symbol, {}), t, spec.point)
-        return bar_context(lane.config, frames, symbol, t, bar, spec, lane.evidence, htf)
+        return bar_context(lane.config, frames, symbol, t, bar, spec, lane.evidence, htf, quote)
 
     def _manage(
         self, symbol: str, ctx: StrategyContext, bar: Bar, lane: _Lane, entry: AnalyzedFrame, t: datetime
@@ -495,8 +644,10 @@ def bar_context(
     spec: SymbolSpec,
     evidence_engine: EvidenceEngine | None,
     htf: MarketMap | None = None,
+    quote: Quote | None = None,
 ) -> StrategyContext:
-    """The strategy context at the close *t* of *bar* from frames analyzed once (shared with replay)."""
+    """The strategy context at the close *t* of *bar* from frames analyzed once (shared with replay); *quote*:
+    a tick's quote instead of the bar close's (a quote strategy's entry)."""
     evidence = None
     if evidence_engine is not None:
         evidence = {}
@@ -515,7 +666,7 @@ def bar_context(
         decision_time=t,
         now_utc=t,
         params=config.indicators,
-        quote=bar_quote(symbol, bar, spec, t),
+        quote=bar_quote(symbol, bar, spec, t) if quote is None else quote,
         spec=spec,
         evidence=evidence,
         window=config.timeframes.warmup_bars,

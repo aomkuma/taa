@@ -556,6 +556,9 @@ class LaneConfig(StrictModel):
     # the RR floor of the lane's strategies instead of the risk config's and the profile's: a fixed target
     # with a structure stop can sit nearer than the stop (Setup OWN: 8 U against a 3-12 U stop; 2026-10-18)
     min_risk_reward: float | None = Field(default=None, gt=0, le=10)
+    # the spread cap (points) of the lane's strategies instead of the symbol's / the risk config's: a lane
+    # trading the release minute meets wider spreads than the symbol cap (PLAN-1's straddle, 2026-10-21)
+    max_spread_points: float | None = Field(default=None, gt=0, le=1000)
     management: dict[str, StrategyManagement] = Field(default_factory=dict)
 
     @model_validator(mode="after")
@@ -1171,10 +1174,17 @@ class AppConfig(StrictModel):
             risk = risk.model_copy(update={"max_spread_to_sl_ratio": lane.max_spread_to_sl_ratio})
         if lane.min_risk_reward is not None:
             risk = risk.model_copy(update={"min_risk_reward": lane.min_risk_reward})
+        symbols = self.symbols.model_copy(update={"allowed": list(lane.symbols)})
+        if lane.max_spread_points is not None:  # the lane's cap wins over the symbol overrides
+            risk = risk.model_copy(update={"max_spread_points": lane.max_spread_points})
+            overrides = {
+                s: o.model_copy(update={"max_spread_points": None}) for s, o in self.symbols.overrides.items()
+            }
+            symbols = symbols.model_copy(update={"overrides": overrides})
         return self.model_copy(
             update={
                 "timeframes": lane.timeframes,
-                "symbols": self.symbols.model_copy(update={"allowed": list(lane.symbols)}),
+                "symbols": symbols,
                 "strategies": lane.strategies,
                 "risk": risk,
                 "position_management": self.management,
@@ -1209,6 +1219,14 @@ class AppConfig(StrictModel):
         if override and override.max_spread_points is not None:
             return override.max_spread_points
         return self.risk.max_spread_points
+
+    def spread_limit_for(self, symbol: str, strategy: str) -> float:
+        """The spread cap of *strategy*'s entries on *symbol*: its lane's ``max_spread_points``, else the
+        symbol's."""
+        lane = self.lane_of(strategy)
+        if lane is not None and lane.max_spread_points is not None:
+            return lane.max_spread_points
+        return self.spread_limit(symbol)
 
     def lot_limit(self, symbol: str) -> float:
         override = self.symbols.overrides.get(symbol)

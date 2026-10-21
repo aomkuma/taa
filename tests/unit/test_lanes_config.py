@@ -85,6 +85,20 @@ class TestDerived:
         assert m.bar_timeframe("setup_harmonic_prz", Timeframe.M15) is Timeframe.M15
         assert m.for_strategy("setup_harmonic_prz").time_stop_bars is None
 
+    def test_a_lanes_spread_cap(self) -> None:
+        """The lane's ``max_spread_points`` wins over the symbol override (40) for the lane's strategies only,
+        and in the lane's own view (a lane backtest)."""
+        c = config(lane(max_spread_points=60), symbols={"overrides": {"XAUUSD": {"max_spread_points": 40}}})
+        assert c.spread_limit_for("XAUUSD", S1) == 60
+        assert c.spread_limit_for("XAUUSD", "setup_breakout") == 40 == c.spread_limit("XAUUSD")
+        view = c.for_lane(c.lane("s1"))
+        assert view.spread_limit("XAUUSD") == 60
+        plain = config(lane(), symbols={"overrides": {"XAUUSD": {"max_spread_points": 40}}})
+        assert plain.spread_limit_for("XAUUSD", S1) == 40
+        assert plain.for_lane(plain.lane("s1")).spread_limit("XAUUSD") == 40
+        with pytest.raises(ValidationError):
+            config(lane(max_spread_points=0))
+
     def test_per_strategy_lookups(self) -> None:
         c = config(lane())
         assert c.spread_ratio_for(S1) == 1.0

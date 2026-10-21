@@ -58,6 +58,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 14 — LIVE readiness | 4 | 3 | IN PROGRESS |
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 | M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
+| M2 | Phase 17 — Setup OWN lanes (PLAN-1) | 1 | 0 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -2050,6 +2051,27 @@ first, images later. Needs `AI_PROVIDER`/`AI_API_KEY` (costs money; owner's budg
 - **Depends on:** 1605
 
 - [ ] the analyst may run its own calculations on the chart pack (server-side code execution) as a shadow variant against the numbers-only prompt
+
+### Phase 17 — Setup OWN lanes (PLAN-1)
+
+The research's daily plan in the bot, piece by piece, each journal rule a parameter of the lane (docs/PLAN1_LANE.md;
+research/2026-10-18-moments/agents/journal/PLAN1_JOURNAL.md). PAPER only; both items `enabled: false` until the owner says.
+
+#### TAA-OWN-P1 — PLAN-1 lane `plan1` (PAPER)
+
+- **Status:** IN PROGRESS
+- **Depends on:** —
+
+- [x] design note docs/PLAN1_LANE.md (pieces, rules as parameters, the journal record, B2 porting needs)
+- [x] London ORB on closed M1 bars (`setup_plan1_orb`) with the journal record; target 1.5 R; `atr_floor` off
+- [x] week-10 rule: in a contracting H4 ATR (< +0.5 % over 24 h) the ORB needs a pool break (parameter, default on)
+- [x] NY 08:30 straddle every weekday on S2's quote machinery (`setup_plan1_ny`), USD triggers, out at 08:30 + 30 min
+- [x] backtest quote path (`--ticks`): quote strategies, tick-level fills, the decision quote, `journal.jsonl`; the lane's own spread cap
+- [x] parity with the research trades on P1 / P2 (ORB at 1.5 R, straddle), every difference explained
+- [x] hand-worked unit tests, planted bugs, frontend strategy names (TH / EN)
+- [ ] Asia B2: ZigZag, H1 levels, patterns, M1 / M5 agreement, structure exit, the Asia window, the week-6 rule
+- [ ] parity of B2 and of the whole lane (one position at a time) against `plan1_trades_learn_s0_x0.parquet`
+- [ ] PAPER run on the real FBS demo terminal (read-only quotes), the journal read back from the decision log
 
 ### Phase 15 — Product-scale backlog (deferred)
 

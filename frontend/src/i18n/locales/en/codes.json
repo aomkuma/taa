@@ -212,7 +212,9 @@
     "setup_breakout_box": "A box after a run, broken with the run, with the H1 trend; target the next H1 level. Unproven.",
     "setup_triple_screen": "With the H4 trend, a pullback that turned at an H1/H4 level, entered on the structure break. Unproven.",
     "setup_own_conf72": "Setup OWN F1 CONF-72: the H1 trend, a level, price action and two of three M5 indicators, near the 72-hour extreme; M1 gold. Lane only. Unproven.",
-    "setup_own_s2": "Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes. Lane only. Unproven."
+    "setup_own_s2": "Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes. Lane only. Unproven.",
+    "setup_plan1_orb": "Setup OWN PLAN-1, London ORB: the first M1 close beyond the 13:00-Thai 15-minute range, the stop at its other side, 1.5 R, out after 60 minutes; M1 gold. Lane only. Unproven.",
+    "setup_plan1_ny": "Setup OWN PLAN-1, NY straddle: at 08:30 New York every weekday a buy stop 2 USD above the ask and a sell stop 2 USD below the bid, the stop 8 USD, out after 30 minutes; gold, on quotes. Lane only. Unproven."
   },
   "backtestStatus": {
     "QUEUED": "Queued",
@@ -267,7 +269,9 @@
     "setup_breakout_box": "Box breakout after a run",
     "setup_triple_screen": "Triple screen pullback (TS)",
     "setup_own_conf72": "Setup OWN F1 (CONF-72)",
-    "setup_own_s2": "Setup OWN S2 (release straddle)"
+    "setup_own_s2": "Setup OWN S2 (release straddle)",
+    "setup_plan1_orb": "PLAN-1 London ORB",
+    "setup_plan1_ny": "PLAN-1 NY straddle"
   },
   "gate": {
     "G1_TRADABLE": "Tradable",

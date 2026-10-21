@@ -80,7 +80,13 @@ class TestStateAndParameters:
             i["name"] for i in config["strategies"]["items"]
         ] + lanes
         # S1 on M1 (config lanes, owner 2026-10-15); Setup OWN F1 and S2 (lanes own and news, 2026-10-18)
-        assert lanes == ["setup_breakout_scalp", "setup_own_conf72", "setup_own_s2"]
+        assert lanes == [
+            "setup_breakout_scalp",
+            "setup_own_conf72",
+            "setup_own_s2",
+            "setup_plan1_orb",
+            "setup_plan1_ny",
+        ]
         assert by_name(body)["setup_breakout_scalp"]["known"] is True
         example, setup = by_name(body)[EXAMPLE], by_name(body)[SETUP]
         assert example["state"] == "ENABLED" and example["known"] is True and example["demo_only"] is True

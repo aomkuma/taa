@@ -9266,6 +9266,7 @@
                 "trailing_start_r": null
               }
             },
+            "max_spread_points": null,
             "max_spread_to_sl_ratio": 1.0,
             "min_risk_reward": null,
             "name": "s1",
@@ -9330,6 +9331,7 @@
                 "trailing_start_r": null
               }
             },
+            "max_spread_points": null,
             "max_spread_to_sl_ratio": 0.2,
             "min_risk_reward": 0.7,
             "name": "own",
@@ -9379,6 +9381,7 @@
                 "trailing_start_r": null
               }
             },
+            "max_spread_points": null,
             "max_spread_to_sl_ratio": null,
             "min_risk_reward": null,
             "name": "news",
@@ -9407,6 +9410,73 @@
               "refinement": null,
               "stale_tick_seconds": 120.0,
               "warmup_bars": 60
+            }
+          },
+          {
+            "management": {
+              "setup_plan1_ny": {
+                "break_even": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              },
+              "setup_plan1_orb": {
+                "break_even": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              }
+            },
+            "max_spread_points": 60.0,
+            "max_spread_to_sl_ratio": 0.5,
+            "min_risk_reward": null,
+            "name": "plan1",
+            "strategies": {
+              "allow_single_indicator_signals": false,
+              "cooldown_bars": 0,
+              "items": [
+                {
+                  "enabled": false,
+                  "name": "setup_plan1_orb",
+                  "params": {
+                    "atr_floor": null,
+                    "pool_break_when_h4_contracting": true,
+                    "target_r": 1.5
+                  }
+                },
+                {
+                  "enabled": false,
+                  "name": "setup_plan1_ny",
+                  "params": {
+                    "atr_floor": null,
+                    "hold_seconds": 1800,
+                    "stop_u": 8.0,
+                    "target_cap_u": 100.0,
+                    "trigger_u": 2.0
+                  }
+                }
+              ],
+              "signal_expiry_bars": 1
+            },
+            "symbols": [
+              "XAUUSD"
+            ],
+            "timeframes": {
+              "candle_close_grace_seconds": 3.0,
+              "context": [],
+              "context_bars": 700,
+              "entry": "M1",
+              "higher": "H4",
+              "max_gap_bars": 3,
+              "refinement": null,
+              "stale_tick_seconds": 120.0,
+              "warmup_bars": 3000
             }
           }
         ],
@@ -9511,7 +9581,7 @@
                   4
                 ],
                 "end": "20:00",
-                "start": "07:00",
+                "start": "06:00",
                 "timezone": "UTC"
               }
             ]
@@ -14375,6 +14445,120 @@
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 50
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN PLAN-1, London ORB: the first M1 close beyond the 13:00-Thai 15-minute range, the stop at its other side, 1.5 R, out after 60 minutes; M1 gold. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_plan1_orb",
+        "overrides": [
+          "atr_floor",
+          "pool_break_when_h4_contracting",
+          "target_r"
+        ],
+        "params": {
+          "atr_floor": null,
+          "entry_minutes": 60,
+          "expiry_bars": 1,
+          "h4_change_bars": 6,
+          "h4_contracting_max_pct": 0.5,
+          "hold_minutes": 60,
+          "late_open_minutes": 5,
+          "orb_open": "13:00",
+          "orb_zone": "Asia/Bangkok",
+          "pool_break_minutes": 15,
+          "pool_break_when_h4_contracting": true,
+          "range_minutes": 15,
+          "target_r": 1.5,
+          "wide_atr": 1.5
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1",
+          "H4"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 3000
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN PLAN-1, NY straddle: at 08:30 New York every weekday a buy stop 2 USD above the ask and a sell stop 2 USD below the bid, the stop 8 USD, out after 30 minutes; gold, on quotes. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_plan1_ny",
+        "overrides": [
+          "atr_floor",
+          "hold_seconds",
+          "stop_u",
+          "target_cap_u",
+          "trigger_u"
+        ],
+        "params": {
+          "arm_seconds": 30.0,
+          "atr_floor": null,
+          "calendar_file": "app/news/us_releases.csv",
+          "events": [
+            "CPI",
+            "NFP",
+            "PPI",
+            "PCE",
+            "GDP"
+          ],
+          "expiry_bars": 1,
+          "hold_seconds": 1800.0,
+          "ny_open": "08:30",
+          "ny_zone": "America/New_York",
+          "stop_u": 8.0,
+          "target_cap_u": 100.0,
+          "trigger_u": 2.0,
+          "unit_price": 4000.0,
+          "window_seconds": 60.0
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 3000
       }
     ],
     "timeframes": {
@@ -15309,6 +15493,120 @@
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 50
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN PLAN-1, London ORB: the first M1 close beyond the 13:00-Thai 15-minute range, the stop at its other side, 1.5 R, out after 60 minutes; M1 gold. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_plan1_orb",
+        "overrides": [
+          "atr_floor",
+          "pool_break_when_h4_contracting",
+          "target_r"
+        ],
+        "params": {
+          "atr_floor": null,
+          "entry_minutes": 60,
+          "expiry_bars": 1,
+          "h4_change_bars": 6,
+          "h4_contracting_max_pct": 0.5,
+          "hold_minutes": 60,
+          "late_open_minutes": 5,
+          "orb_open": "13:00",
+          "orb_zone": "Asia/Bangkok",
+          "pool_break_minutes": 15,
+          "pool_break_when_h4_contracting": true,
+          "range_minutes": 15,
+          "target_r": 1.5,
+          "wide_atr": 1.5
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1",
+          "H4"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 3000
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN PLAN-1, NY straddle: at 08:30 New York every weekday a buy stop 2 USD above the ask and a sell stop 2 USD below the bid, the stop 8 USD, out after 30 minutes; gold, on quotes. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_plan1_ny",
+        "overrides": [
+          "atr_floor",
+          "hold_seconds",
+          "stop_u",
+          "target_cap_u",
+          "trigger_u"
+        ],
+        "params": {
+          "arm_seconds": 30.0,
+          "atr_floor": null,
+          "calendar_file": "app/news/us_releases.csv",
+          "events": [
+            "CPI",
+            "NFP",
+            "PPI",
+            "PCE",
+            "GDP"
+          ],
+          "expiry_bars": 1,
+          "hold_seconds": 1800.0,
+          "ny_open": "08:30",
+          "ny_zone": "America/New_York",
+          "stop_u": 8.0,
+          "target_cap_u": 100.0,
+          "trigger_u": 2.0,
+          "unit_price": 4000.0,
+          "window_seconds": 60.0
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 3000
       }
     ],
     "timeframes": {

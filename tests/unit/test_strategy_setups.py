@@ -295,8 +295,9 @@ class TestCatalog:
             assert cls.demo_only
             assert "Unproven" in cls.description
             assert cls.triggers <= set(evidence_registry().ids), cls.name
-        # the inverted copies were removed (2026-10-14); Setup OWN F1 and S2 live in their own modules (2026-10-18)
-        assert len(STRATEGIES) == 1 + len(SETUPS) + 2
+        # the inverted copies were removed (2026-10-14); Setup OWN F1 and S2 live in their own modules (2026-10-18),
+        # PLAN-1's London ORB and NY straddle in app/strategy/plan1.py (2026-10-21)
+        assert len(STRATEGIES) == 1 + len(SETUPS) + 4
 
     def test_config_yaml_trades_harmonic_on_its_normal_side_only(self) -> None:
         settings = load_settings(
@@ -307,6 +308,7 @@ class TestCatalog:
         # every setup is listed, except a lane-only one (not advised) that no lane runs yet (under test)
         originals = {"example_trend_pullback", *(c.name for c in SETUPS if c.advised or c.name in in_lanes)}
         originals |= {"setup_own_conf72", "setup_own_s2"}  # Setup OWN's lanes own and news (2026-10-18)
+        originals |= {"setup_plan1_orb", "setup_plan1_ny"}  # lane plan1 (2026-10-21, docs/PLAN1_LANE.md)
         assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
         # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only; 2026-10-16: its own stop cap off;
@@ -334,11 +336,22 @@ class TestCatalog:
             "max_sl_atr": 20.0,
         }  # §15.3, no PRZ confirmation; h4_room_2 (owner, 2026-10-15; §18); own stop cap off (2026-10-16)
         # S1, M1 gold scalping (owner, 2026-10-15; §17); Setup OWN F1 and S2 (2026-10-18), all off until the owner
-        s1, own, news = settings.config.lanes
+        s1, own, news, plan1 = settings.config.lanes
         assert (s1.timeframes.entry, s1.symbols) == (Timeframe.M1, ["XAUUSD"])
         assert [(i.name, i.enabled) for i in s1.strategies.items] == [("setup_breakout_scalp", False)]
         assert [(i.name, i.enabled) for i in own.strategies.items] == [("setup_own_conf72", True)]
         assert [(i.name, i.enabled) for i in news.strategies.items] == [("setup_own_s2", True)]
+        # PLAN-1 (2026-10-21, docs/PLAN1_LANE.md): both pieces off until the measurer turns them on (PAPER)
+        assert [(i.name, i.enabled) for i in plan1.strategies.items] == [
+            ("setup_plan1_orb", False),
+            ("setup_plan1_ny", False),
+        ]
+        orb = plan1.strategies.items[0].params
+        assert (
+            orb["target_r"] == 1.5
+            and orb["atr_floor"] is None
+            and orb["pool_break_when_h4_contracting"] is True
+        )
 
     def test_each_setup_can_be_enabled_alone(self) -> None:
         for cls in SETUPS:

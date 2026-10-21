@@ -25,6 +25,7 @@ from app.backtest.engine import (
     BacktestLane,
     BacktestResult,
     Progress,
+    QuoteSource,
     RiskPreset,
     SymbolData,
 )
@@ -35,6 +36,7 @@ from app.core.errors import DataQualityError
 from app.evidence.catalog import default_registry as evidence_registry
 from app.evidence.registry import EvidenceEngine
 from app.market_data.data_models import SymbolSpec
+from app.news.releases import Release
 from app.strategy.catalog import default_registry
 from app.strategy.market_maps import candle_frame
 from app.strategy.registry import StrategySet
@@ -187,6 +189,8 @@ def run_backtest(
     risk_preset: RiskPreset | None = None,
     portfolio: bool = False,
     main_symbols: Collection[str] | None = None,
+    quotes: QuoteSource | None = None,
+    calendar: Callable[[str], Sequence[Release]] | None = None,
 ) -> tuple[BacktestResult, Provenance]:
     """*detectors*: the evidence detectors to run. None: those the selected strategies need to fire (the
     pattern setups trigger on evidence; without it they never fire); ``"all"``: every detector
@@ -195,7 +199,8 @@ def run_backtest(
 
     *portfolio* (TAA-507): every lane of ``config.lanes`` trades next to the main entry timeframe in the one
     account, as the engine trades live; *strategy_names* then selects across all lanes. *main_symbols*: the
-    symbols the main entry timeframe trades (None: every loaded symbol)."""
+    symbols the main entry timeframe trades (None: every loaded symbol). *quotes* / *calendar*: stored ticks
+    and the release calendar for the quote-driven strategies (``BacktestEngine``)."""
     lanes = list(config.lanes) if portfolio else []
     known = {i.name for i in config.strategies.items} | {i.name for x in lanes for i in x.strategies.items}
     unknown = sorted(set(strategy_names or ()) - known)
@@ -232,6 +237,8 @@ def run_backtest(
         risk_preset=risk_preset,
         lanes=extra,
         main_symbols=main_symbols,
+        quotes=quotes,
+        calendar=calendar,
     )
     result = engine.run()
     engines = [e for e in (evidence, *(x.evidence for x in extra)) if e is not None]
@@ -245,6 +252,7 @@ def run_backtest(
             "detectors": list(dict.fromkeys(d for e in engines for d in e.plan.order)),
             **({} if not extra else {"lanes": [x.name for x in extra if x.strategies.strategies]}),
             **({} if risk_preset is None else {"risk_preset": risk_preset.name}),
+            **({} if quotes is None else {"tick_minutes": result.tick_minutes}),
         },
     )
     return result, provenance
@@ -275,6 +283,8 @@ def run_and_write(
     risk_preset: RiskPreset | None = None,
     portfolio: bool = False,
     main_symbols: Collection[str] | None = None,
+    quotes: QuoteSource | None = None,
+    calendar: Callable[[str], Sequence[Release]] | None = None,
 ) -> tuple[BacktestResult, dict[str, Path]]:
     result, provenance = run_backtest(
         config,
@@ -289,5 +299,7 @@ def run_and_write(
         risk_preset=risk_preset,
         portfolio=portfolio,
         main_symbols=main_symbols,
+        quotes=quotes,
+        calendar=calendar,
     )
     return result, write_reports(result, provenance, out_dir)

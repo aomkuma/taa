@@ -1,0 +1,40 @@
+app run: 219 trades, decisions {'ACCEPT': 219}, rejections {}, tick minutes 7615, data hash 0577735e842f050d0eb6833817b55503
+=== parity table (research = dev/plan1_trades_learn_s0_x0.parquet, ORB at 1.5 R; app = lane plan1 backtest)
+piece        part res n app n  both side= exit= |d in| s |d out| s |dR|<0.05    res R    app R  res R/t  app R/t
+London ORB   P1      59    59    59    59    58     0.00      0.00        56   +11.96   +12.99   +0.203   +0.220
+London ORB   P2      60    60    60    60    59     0.00      0.00        56    +9.01    +9.46   +0.150   +0.158
+NY straddle  P1      41    41    41    41    41     0.08      0.00        30   +19.14   +18.25   +0.467   +0.445
+NY straddle  P2      59    59    59    59    59     0.08      0.00        50    +7.01    +5.92   +0.119   +0.100
+
+=== days in one only
+
+=== trades in both that differ (side, exit kind, or |dR| >= 0.05)
+  NY straddle 2025-10-21 Tue 19:30:00 Thai | research SELL 4226.41 stop 4234.41 out 20:00:00 time R +1.874 | app SELL 4226.55 in 19:30:00 stop 4234.41 out 20:00:00 TIME R +1.925 | dR +0.051
+  NY straddle 2025-10-24 Fri 19:30:01 Thai | research BUY 4066.75 stop 4058.75 out 20:00:00 time R +1.908 | app BUY 4070.31 in 19:30:01 stop 4058.75 out 20:00:00 TIME R +1.012 | dR -0.895
+  London ORB  2025-11-07 Fri 13:23:00 Thai | research BUY 3997.53 stop 3992.25 out 13:50:40 target R +1.500 | app BUY 3997.53 in 13:23:00 stop 3992.25 out 13:50:24 TP R +1.429 | dR -0.071
+  London ORB  2025-11-10 Mon 13:21:00 Thai | research BUY 4071.85 stop 4067.02 out 14:21:01 time R +0.489 | app BUY 4071.85 in 13:21:00 stop 4067.02 out 14:15:15 TP R +1.469 | dR +0.980
+  NY straddle 2025-11-20 Thu 20:30:00 Thai | research BUY 4090.46 stop 4082.46 out 20:30:01 stop R -1.341 | app BUY 4087.46 in 20:30:01 stop 4082.46 out 20:30:01 SL R -1.546 | dR -0.205
+  NY straddle 2025-11-25 Tue 20:30:02 Thai | research BUY 4146.60 stop 4138.60 out 21:00:00 time R +0.151 | app BUY 4145.67 in 20:30:02 stop 4138.60 out 21:00:00 TIME R +0.303 | dR +0.151
+  NY straddle 2025-12-11 Thu 20:30:30 Thai | research BUY 4216.06 stop 4208.06 out 21:00:00 time R +0.616 | app BUY 4216.34 in 20:30:31 stop 4208.06 out 21:00:00 TIME R +0.562 | dR -0.055
+  NY straddle 2025-12-16 Tue 20:30:00 Thai | research BUY 4304.06 stop 4296.06 out 21:00:00 time R +1.111 | app BUY 4302.85 in 20:30:01 stop 4296.06 out 21:00:00 TIME R +1.487 | dR +0.376
+  NY straddle 2025-12-18 Thu 20:30:01 Thai | research BUY 4329.67 stop 4321.67 out 21:00:00 time R +0.850 | app BUY 4331.69 in 20:30:02 stop 4321.67 out 21:00:00 TIME R +0.477 | dR -0.373
+  London ORB  2025-12-22 Mon 13:17:00 Thai | research BUY 4405.27 stop 4398.67 out 13:55:00 target R +1.500 | app BUY 4405.27 in 13:17:00 stop 4398.67 out 13:55:03 TP R +1.553 | dR +0.053
+  NY straddle 2025-12-29 Mon 20:30:08 Thai | research SELL 4449.30 stop 4457.30 out 21:00:00 time R +3.451 | app SELL 4449.18 in 20:30:08 stop 4457.30 out 21:00:00 TIME R +3.385 | dR -0.066
+  NY straddle 2026-01-07 Wed 20:30:20 Thai | research BUY 4444.67 stop 4436.67 out 21:00:00 time R +1.023 | app BUY 4444.93 in 20:30:21 stop 4436.67 out 21:00:00 TIME R +0.959 | dR -0.064
+  NY straddle 2026-01-13 Tue 20:30:01 Thai | research BUY 4604.08 stop 4596.08 out 21:00:00 time R +0.900 | app BUY 4603.58 in 20:30:01 stop 4596.08 out 21:00:00 TIME R +1.027 | dR +0.127
+  NY straddle 2026-01-15 Thu 20:30:00 Thai | research SELL 4603.52 stop 4611.52 out 21:00:00 time R +1.883 | app SELL 4603.91 in 20:30:00 stop 4611.52 out 21:00:00 TIME R +2.030 | dR +0.148
+  NY straddle 2026-01-16 Fri 20:30:03 Thai | research BUY 4589.51 stop 4581.51 out 21:00:00 time R +1.550 | app BUY 4589.99 in 20:30:03 stop 4581.51 out 21:00:00 TIME R +1.406 | dR -0.144
+  London ORB  2026-02-09 Mon 13:16:00 Thai | research SELL 5030.98 stop 5045.62 out 14:16:00 time R +1.258 | app SELL 5030.98 in 13:16:00 stop 5045.62 out 14:14:06 TP R +1.473 | dR +0.215
+  NY straddle 2026-02-11 Wed 20:30:01 Thai | research SELL 5072.85 stop 5080.85 out 21:00:00 time R +0.841 | app SELL 5067.36 in 20:30:01 stop 5080.85 out 21:00:00 TIME R +0.092 | dR -0.749
+  NY straddle 2026-02-13 Fri 20:30:01 Thai | research BUY 4974.10 stop 4966.10 out 21:00:00 time R +1.610 | app BUY 4973.30 in 20:30:01 stop 4966.10 out 21:00:00 TIME R +1.900 | dR +0.290
+  London ORB  2026-02-19 Thu 13:20:00 Thai | research BUY 5000.34 stop 4996.57 out 13:33:58 target R +1.500 | app BUY 5000.34 in 13:20:00 stop 4996.57 out 13:33:58 TP R +1.440 | dR -0.060
+  NY straddle 2026-02-26 Thu 20:30:08 Thai | research SELL 5172.66 stop 5180.66 out 21:00:00 time R +0.804 | app SELL 5172.30 in 20:30:08 stop 5180.66 out 21:00:00 TIME R +0.726 | dR -0.078
+  London ORB  2026-02-26 Thu 13:50:00 Thai | research SELL 5193.35 stop 5199.58 out 14:09:12 target R +1.500 | app SELL 5193.35 in 13:50:00 stop 5199.58 out 14:23:43 TP R +1.717 | dR +0.217
+  NY straddle 2026-02-27 Fri 20:30:01 Thai | research SELL 5232.28 stop 5240.28 out 21:00:00 time R +1.110 | app SELL 5232.69 in 20:30:01 stop 5240.28 out 21:00:00 TIME R +1.224 | dR +0.114
+  NY straddle 2026-03-04 Wed 20:30:31 Thai | research SELL 5190.22 stop 5198.22 out 21:00:00 time R +2.740 | app SELL 5190.40 in 20:30:31 stop 5198.22 out 21:00:00 TIME R +2.826 | dR +0.086
+  London ORB  2026-03-10 Tue 13:28:00 Thai | research SELL 5174.08 stop 5180.79 out 14:22:19 target R +1.500 | app SELL 5174.08 in 13:28:00 stop 5180.79 out 14:22:19 TP R +1.582 | dR +0.082
+  NY straddle 2026-03-24 Tue 19:30:07 Thai | research SELL 4399.46 stop 4407.46 out 20:00:00 time R +2.504 | app SELL 4399.34 in 19:30:07 stop 4407.46 out 20:00:00 TIME R +2.452 | dR -0.052
+  NY straddle 2026-04-02 Thu 19:30:02 Thai | research SELL 4623.62 stop 4631.62 out 20:00:00 time R +2.665 | app SELL 4624.56 in 19:30:02 stop 4631.62 out 20:00:00 TIME R +3.153 | dR +0.488
+  NY straddle 2026-04-10 Fri 19:30:01 Thai | research BUY 4765.37 stop 4757.37 out 20:00:00 time R +0.804 | app BUY 4773.95 in 19:30:01 stop 4757.37 out 20:00:00 TIME R -0.130 | dR -0.933
+
+=== in both: 219; median |d entry price| 0.000, max 8.580; mean dR -0.0023; trades with |dR| < 0.05: 192

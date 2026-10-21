@@ -286,6 +286,22 @@ class TestEveryReasonCode:
         assert record.decision is Decision.REJECT
         assert code in record.reason_codes, record.reason_codes
 
+    def test_a_lane_strategy_uses_its_lanes_spread_cap(self, db: Database) -> None:
+        # the symbol cap is 30 points (risk default); the plan1 lane allows 50: a 40-point spread passes there only
+        lane = {
+            "name": "plan1",
+            "timeframes": {"entry": "M15", "higher": "H1"},
+            "symbols": ["EURUSD"],
+            "strategies": {"items": [{"name": "setup_plan1_ny"}]},
+            "max_spread_points": 50,
+        }
+        eng = engine(db, Setup(config={"lanes": [lane]}))
+        wide = quote(spread_points=40.0)
+        own = eng.decide(request(quote=wide, signal=make_signal(evidence=(), strategy="setup_plan1_ny")))
+        assert "SPREAD_TOO_HIGH" not in own.reason_codes
+        other = eng.decide(request(quote=wide, signal=make_signal(evidence=(), signal_id="sig-2")))
+        assert "SPREAD_TOO_HIGH" in other.reason_codes
+
     def test_every_milestone_1_reason_is_covered(self) -> None:
         covered = {code.split(":")[0] for code in CASES}
         assert covered == {r.value for r in Reason} - M2_ONLY - SELECTOR_ONLY - STRATEGY_ONLY
