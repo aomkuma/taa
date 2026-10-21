@@ -1,0 +1,11 @@
+CAUGHT  e = bid[f]
+CAUGHT  px = bid[f + 1:end + 1]
+CAUGHT  end = int(np.searchsorted(t, t_out, side="left"))
+CAUGHT  cand.append((int(i_s[0]), 0, "stop", -d))
+CAUGHT  cand.append((int(i_t[0]), 1, "target", float(fav[i_t[0]])))
+CAUGHT  return pnl, pnl / d, why, int(t[f + i])
+CAUGHT  if f >= len(t) or not d > 0:
+CAUGHT  return int(np.sign(close[j] - close[j - n + 1]))
+CAUGHT  return nxt
+CAUGHT      if day > end:
+CAUGHT          if False:

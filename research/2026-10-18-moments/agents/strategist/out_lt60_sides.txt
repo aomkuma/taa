@@ -1,0 +1,6 @@
+learn PDB    target 1.5 R   sell 123 -0.214 | buy 125 -0.111
+learn H4PB   time only      sell 122 -0.072 | buy 132 -0.173
+learn DON20  target 2.0 R   sell 56 -0.086 | buy 61 -0.172
+test  PDB    target 1.5 R   sell 36 -0.353 | buy 168 +0.153
+test  H4PB   time only      sell 50 -0.063 | buy 150 +0.374
+test  DON20  target 2.0 R   sell 12 -0.001 | buy 83 +0.262

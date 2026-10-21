@@ -1,0 +1,16 @@
+['cand', 'setting', 't_in', 'atr', 'd', 'pnl', 'R', 'exit', 't_exit']
+{'PDB': 'target 1.5 R', 'H4PB': 'time only', 'DON20': 'target 2.0 R'}
+                    size   mean
+cand  setting                  
+DON20 target 1.0 R   107  0.223
+      target 2.0 R   107  0.209
+      time only      107  0.207
+H4PB  target 1.5 R   215  0.109
+      target 2.0 R   215  0.189
+      time only      215  0.306
+PDB   target 1.5 R   220  0.046
+      target 2.0 R   220  0.084
+      time only      220  0.178
+PDB target 1.5 R 204 0.064
+H4PB time only 200 0.265
+DON20 target 2.0 R 95 0.228

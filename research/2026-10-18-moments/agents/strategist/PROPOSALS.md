@@ -1,3 +1,110 @@
+# Row 60 - larger-time-frame trades for the CALM gold - written before computing (2026-10-21 12:54 Thai, `date -u` 05:54)
+
+**The protocol is row 58's:**
+- LEARN 2021-09-01 .. 2023-09-30 freezes the settings into `lt60_frozen.json`; TEST 2023-10-01 .. 2025-09-30 is read
+  once;
+- calm trades only (vol16_old's H1 ATR < 12 at the decision);
+- the ticks from `D:/taa-data`; the spread only, slippage 0;
+- the bars are MT5's own D1 / H4 / H1 (`gold.bars`), each used only from the next bar's open;
+- **the pass:** TEST >= +0.10 on >= 60 trades with the 95 % range above 0, and LEARN >= +0.10;
+- 3 candidates x 3 settings = 9.
+
+**The trade:**
+- The entry is at the first tick at / after the deciding bar's close (within 5 minutes).
+- **A new simulator, `lsim`,** holds through the daily break and the weekend (tsim exits at a 30-minute gap):
+  - the stop at the first tick at / beyond it, filled at that tick (gaps included);
+  - the target as a limit at its level;
+  - the time exit at the last tick before the time limit;
+  - R = pnl / the stop distance.
+- **The D1 trend** = the sign of (the last complete D1 close - the D1 close 20 bars before it).
+- One trade per candidate per server day: the first signal. Each trade is taken alone.
+
+**The candidates:**
+1. **PDB, the previous day's break held:**
+   - On server day d, the first H1 close above the previous server day's high (in an up trend), or below its low (in
+     a down trend).
+   - Stop distance = max(the entry - the H1 bar's low, 10 USD) for a buy; mirrored for a sell.
+   - Time limit: the end of the next trading day (the next day's close).
+   - Settings: target 1.5 R / 2 R / none.
+2. **H4PB, the H4 pullback to a level everyone sees, in the D1 trend:**
+   - The levels: PDH, PDL and the week's open (the first H1 open of the server week).
+   - In an up trend, an H4 bar that opens above a level, trades down to it and closes back above it -> buy. Mirrored
+     in a down trend.
+   - Stop distance = max(the entry - the H4 bar's low, 10 USD).
+   - Time limit: 48 hours.
+   - Settings: target 1.5 R / 2 R / none.
+3. **DON20, the 20-day high / low break:**
+   - The first H1 close above the highest high (or below the lowest low) of the last 20 complete D1 bars.
+   - Stop distance = max(1.0 x the D1 ATR(14), 10 USD).
+   - Time limit: 48 hours.
+   - Settings: target 1 R / 2 R / none.
+# Row 60 - the results (LEARN 12:55-12:56 Thai, frozen; TEST read once 12:57-12:59 Thai)
+
+**How it was checked:**
+- **`lsim`** (the long-hold tick simulator) and the guard: `test_lt60.py`, 10 hand-worked tests.
+  - The checks: the buy target and stop; the sell priced on the ask; the time exit at the last tick before the limit;
+    no exit at a weekend gap, and a gap filled at the gapped price; a late fill refused; the trend exactly 20 D1 bars
+    back; a bar complete at min(the next open, its open + its period); TEST needs the frozen file; no tick day at /
+    after the phase end; the choice uses calm trades.
+- **Planted bugs:** 11 of 11 caught (`out_plant_lt60.txt`), after three tests were added for the first-round misses:
+  the late-fill check, the trend's bar count, and the end-day refusal.
+- **The order:** LEARN wrote `lt60_frozen.json` before TEST ran. TEST printed only the frozen cells.
+- Nothing from 2026-04-18 on was read: TEST ends 2025-09-30.
+
+## LEARN (2021-09 .. 2023-09, calm trades; `out_lt60_learn.txt`)
+
+| Candidate | Trades | Target 1.5 R (1 R for DON20) | Target 2 R | Time only | Median stop (USD) |
+|---|---|---|---|---|---|
+| PDB | 248 | **-0.162** | -0.184 | -0.222 | 10.0 |
+| H4PB | 254 | -0.163 | -0.165 | **-0.124** | 10.0 |
+| DON20 | 117 | -0.140 | **-0.131** | -0.150 | 23.5 |
+
+Every cell is negative. The frozen cells are in bold.
+
+## TEST, read once (2023-10 .. 2025-09; `out_lt60_test.txt`)
+
+| Frozen cell | LEARN | TEST trades | TEST R (95 % range) | 2023-24 | 2024-25 | USD at 0.01 lot | Verdict |
+|---|---|---|---|---|---|---|---|
+| PDB, target 1.5 R | -0.162 | 204 | +0.064 (-0.100 .. +0.224) | +0.024 | +0.103 | +197.7 | FAIL |
+| H4PB, time only | -0.124 | 200 | **+0.265 (+0.012 .. +0.526)** | +0.150 | +0.405 | +661.0 | FAIL (LEARN < +0.10) |
+| DON20, target 2 R | -0.131 | 95 | **+0.228 (+0.071 .. +0.394)** | +0.246 | +0.213 | +622.5 | FAIL (LEARN < +0.10) |
+
+**By the pass line, all three FAIL:** LEARN is negative for each. H4PB and DON20 pass every TEST condition.
+
+## Why the sign flipped: the side (`lt60_sides.py`, descriptive, after the TEST read; `out_lt60_sides.txt`)
+
+| Cell | LEARN buys | LEARN sells | TEST buys | TEST sells |
+|---|---|---|---|---|
+| PDB | 125, -0.111 | 123, -0.214 | 168, +0.153 | 36, -0.353 |
+| H4PB | 132, -0.173 | 122, -0.072 | 150, +0.374 | 50, -0.063 |
+| DON20 | 61, -0.172 | 56, -0.086 | 83, +0.262 | 12, -0.001 |
+
+- **The TEST profit is the buys of 2023-25.** The D1 trend was mostly up then, so most signals were buys: 168 of
+  PDB's 204, 150 of H4PB's 200, 83 of DON20's 95.
+- **The sells lost or were flat in both halves.**
+- **In LEARN (2021-23), with buys and sells near even, both sides lost.**
+- These larger-time-frame trend trades are therefore not a calm-gold tool. They are a **trending-gold** tool. They paid
+  when the D1 trend persisted, whatever the H1 ATR, and lost when the trend kept turning.
+
+## What it means
+- **"Calm" (H1 ATR < 12) is the wrong split for these trades.** The state that matters is the D1 trend's persistence.
+  It was absent in 2021-23 and present in 2023-25.
+- **A candidate for the next round** (a hypothesis, not run; it would need the protocol again with a new split): gate
+  DON20 / H4PB by a D1 persistence reading known at the time. For example, the 20-day efficiency or the share of the
+  last 60 D1 closes above their 50-day mean.
+  - LEARN on 2021-23 would have to show the gate standing aside there. A gate fitted after seeing this table needs a
+    period neither half has seen. Today, that is only the exam months, which is the measurer's read.
+- **For the owner, in his terms:** in quiet gold, these short trades lose both ways because the spread eats them. The
+  longer trades follow the big trend, and paid only when gold trended for months (2023-25).
+- **The honest summary of rows 58 and 60:** no rule found here earns in quiet, sideways gold.
+
+## Files (row 60)
+- `lt60.py` + `test_lt60.py` + `plant_lt60.py`
+- `lt60_sides.py`
+- `lt60_frozen.json`
+- outputs: `out_lt60_learn.txt`, `out_lt60_test.txt`, `out_lt60_sides.txt`, `out_plant_lt60.txt`, `lt60_learn.parquet`,
+  `lt60_test.parquet`
+
 # Row 58 - setups for the CALM gold (H1 ATR < 12) - written before computing (2026-10-21 12:46 Thai, `date -u` 05:46)
 
 **The data:**
