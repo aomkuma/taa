@@ -472,3 +472,39 @@ The week's best trades broke no pool in their 15 minutes: price was already runn
   net it saves 1.34 - stays one more week.
 
 **The one change for week 12:** none.
+
+## Week 12 - 2026-01-05 .. 09 (gold 4,400 -> 4,470, a range week; the H4 ATR contracting mid-week)
+
+The rules in force: the ORB target 1.5 R, B2 no flip, no ATR gate, the ORB in a contracting H4 needs a pool break.
+`out_rules_w12.txt`, `out_liq_w12.txt`.
+
+| Day, time | Piece | Side | Risk | Base R | Rules R | Best / worst | H4 ATR 24 h | Lots | USD | Account |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Mon 13:26 | London ORB | BUY | 14.4 | -0.43 | -0.43 | +0.04 / -0.65 | +8% | 0.01 | -6.25 | 357.25 |
+| Mon 20:30 | NY straddle | BUY | 8.0 | +1.79 | +1.79 | +1.83 / -0.81 | +7% | 0.03 | +42.96 | 400.21 |
+| Tue 13:26 | London ORB | BUY | 8.7 | +0.27 | skipped (pool rule) | +1.16 / -0.28 | -20% | | | |
+| Wed 13:18 | London ORB | BUY | 7.1 | -1.00 | skipped (pool rule) | +0.04 / -2.62 | -8% | | | |
+| Wed 20:30 | NY straddle | BUY | 8.0 | +1.02 | +1.02 | +1.05 / -0.81 | -17% | 0.03 | +24.54 | 424.75 |
+| Thu 07:16 | Asia B2 | BUY | 6.9 | -0.68 | -0.68 | +0.01 / -0.68 | -12% | 0.04 | -18.72 | 406.03 |
+| Thu 08:06 | Asia B2 | BUY | 11.8 | -0.29 | -0.29 | +0.38 / -0.44 | -12% | 0.02 | -6.92 | 399.11 |
+| Thu 08:41 | Asia B2 | SELL | 10.8 | +0.11 | skipped (flip) | +0.71 / -0.08 | -12% | | | |
+| Thu 13:32 | London ORB | BUY | 15.2 | +0.10 | +0.10 | +0.56 / -0.08 | -9% | 0.01 | +1.48 | 400.59 |
+| Thu 20:30 | NY straddle | SELL | 8.0 | +0.99 | +0.99 | +1.25 / -0.51 | 0% | 0.03 | +23.85 | 424.44 |
+| Fri 07:21 | Asia B2 | SELL | 7.2 | +0.70 | +0.70 | +1.31 / -0.18 | +5% | 0.04 | +20.08 | 444.52 |
+| Fri 08:06 | Asia B2 | SELL | 10.8 | -0.43 | -0.43 | +0.38 / -0.51 | +5% | 0.03 | -13.98 | 430.54 |
+| Fri 13:27 | London ORB | BUY | 5.5 | -0.37 | -0.37 | +1.06 / -0.51 | +3% | 0.05 | -10.10 | 420.44 |
+| Fri 20:30 | NY straddle | SELL | 8.0 | -1.04 | -1.04 | +1.17 / -2.92 | -1% | 0.03 | -25.05 | 395.39 |
+
+**The week:** base 14 trades +0.73 R; rules 11 trades **+1.35 R, +31.89 USD**. Account **363.50 -> 395.39 USD**. Twelve
+weeks (base) 132 trades +29.82 R; rules +28.13 R.
+
+**What happened:** the NY straddle carried the week (+2.76 R on four); Friday's (the US jobs report) whipsawed: +1.17 R at
+once, then -2.92 R (FAKE). The B2 buys of Thursday both had their stop in a sweep zone (today's open; the Asia low).
+
+**The rules that cost this week:**
+- The ORB pool rule: saved 0.73 R (skipped Tue +0.27, Wed -1.00). Since week 10: -0.01 R net (about even); weeks 1-12 it
+  saves 2.07 R - stays.
+- B2 no flip: cost 0.11 R (Thu). Weeks 1-12 net +1.03 - stays.
+- The ORB 1.5 R target: did not act.
+
+**The one change for week 13:** none.
