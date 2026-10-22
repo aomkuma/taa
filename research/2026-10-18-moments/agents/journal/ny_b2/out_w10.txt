@@ -1,0 +1,16 @@
+Mon 22 22:13 M1 SELL R -0.67 SIGNAL best +0.31R worst -0.68R | sweep, lower high | level 4427.29 5d high (swept) | M5 structure up | stop 13.30 | grid line 0.0 USD away
+      context: level touched 1x in 5 days, bounces [14.5] USD, H1 LH/LL | deeper touches 0 | SCORE -3 (D1- H4- H1+ M15- fresh+1 mom+0) | band-target -1.02 R
+      base -0.67 R: 100 -8.89 -> 220.84, 300 -8.89 -> 421.83 | real -1.02 R: 100 -13.63 -> 209.03, 300 -13.63 -> 423.15
+Tue 23 21:05 M5 SELL R -0.15 SIGNAL best +1.52R worst -0.17R | M, the 2nd high swept the 1st | level 4497.75 5d high (at) | M1 structure down | stop 26.91 | grid line 17.6 USD away
+      context: level touched 2x in 5 days, bounces [28.3, 24.5] USD, H1 HH/HL | deeper touches 0 | SCORE -8 (D1- H4- H1- M15- fresh+1 mom-1) | band-target +1.00 R
+      base -0.15 R: 100 -3.99 -> 216.84, 300 -3.99 -> 417.84 | real +1.00 R: 100 +26.92 -> 235.95, 300 +26.92 -> 450.07
+Wed 24 20:39 M1 BUY  R -0.45 SIGNAL best +0.37R worst -0.48R | W | level 4478.17 x2 (swept) | M5 structure mixed | stop 11.38 | grid line 29.4 USD away
+      context: level touched 3x in 5 days, bounces [19.6, 41.0, 21.7] USD, H1 LH/LL | deeper touches 0 | SCORE +2 (D1+ H4+ H1- M150 fresh+0 mom-1) | band-target -1.00 R
+      base -0.45 R: 100 -5.13 -> 211.71, 300 -5.13 -> 412.71 | real -1.00 R: 100 -11.41 -> 224.54, 300 -11.41 -> 438.66
+Fri 26 21:34 M1 BUY  R -0.79 SIGNAL best +0.31R worst -0.83R | W | level 4524.68 x2 (swept) | M5 structure up | stop 8.69 | grid line 8.1 USD away
+      context: level touched 3x in 5 days, bounces [1.1, 6.8, -1.1] USD, H1 mixed | deeper touches 0 | SCORE +3 (D1+ H40 H10 M15+ fresh+0 mom-1) | band-target -1.00 R
+      base -0.79 R: 100 -6.83 -> 204.89, 300 -6.83 -> 405.88 | real -1.00 R: 100 -8.66 -> 215.88, 300 -8.66 -> 430.00
+candidate (target 0.1 step before the line): week -2.03 R | weeks so far +5.18
+candidate (no break-even on the rest): week -2.03 R | weeks so far: base +1.71, real +4.57, no-BE +3.48
+real: -2.03 R | 100: -6.78 -> 215.88 | 300: -6.78 -> 430.00
+week: 4 trades -2.06 R | 100 USD at 7.5 %: -24.84 USD -> 204.89 | 300 USD at 3 %: -24.84 USD -> 405.88
