@@ -1147,3 +1147,19 @@ exam's R a trade >= +0.10 (the owner's bar). A pass goes to the bot as a fourth 
 trade on 111 (win 27 %), negative in five of seven months (May -0.700, June -0.438). FAIL - dropped.** The US equity
 open moves gold, but which way it runs in the first hour is not caught by a +-2 USD straddle; P2's +0.78 was that
 quarter only. The 08:30 straddle keeps its 30 minutes.
+
+## Do the extra trades hurt? The ORB at full / half / no risk (owner 2026-10-22; `orb_weight.py`, `out_orb_weight.txt`)
+
+The frozen rules' trades re-sized (equity sizing, min 0.01 lot):
+
+| | ORB full | ORB half | no ORB |
+|---|---|---|---|
+| Learning, 1,066 USD at 7.5 % | +2,705 % (deepest fall -34 %) | +1,203 % (-45 %) | +492 % (**-62 %**) |
+| Learning, 1,000 USD at 3 % | +308 % (-14 %) | +213 % (-18 %) | +123 % (-30 %) |
+| Exam, 1,066 USD at 7.5 % | +542 % (-52 %) | +686 % (-51 %) | +694 % (-52 %) |
+| Exam, 1,000 USD at 3 % | +190 % (-23 %) | +176 % (-22 %) | +184 % (-22 %) |
+
+The ORB's trades were not a drag: in the learning weeks they made a third of the profit and **halved the deepest fall**
+(a third piece on other hours smooths the account); on the exam they were about even. Fewer trades did not mean
+fewer losses here. Not a rule, not a principle (owner: try first): kept as an observation for the quarterly review
+with the DEMO's own ORB trades.
