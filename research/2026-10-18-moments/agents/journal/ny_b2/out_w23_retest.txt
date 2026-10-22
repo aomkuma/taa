@@ -1,0 +1,7 @@
+Mon 23 07:00 re-test SELL entry 4464.69 stop 78.91 | +1.75 R | 100 +138.09 -> 298.00, 300 +138.09 -> 512.12
+Tue 24 20:30 B2      SELL entry 4356.68 stop 88.33 | skipped | 100 +0.00 -> 298.00, 300 +0.00 -> 512.12
+Thu 26 20:55 B2      BUY  entry 4456.68 stop 42.30 | skipped | 100 +0.00 -> 298.00, 300 +0.00 -> 512.12
+Fri 27 21:05 B2      BUY  entry 4458.10 stop 55.36 | skipped | 100 +0.00 -> 298.00, 300 +0.00 -> 512.12
+  re-test detail: strong day 2026-03-20 body 1.10 ATR, its extreme 4477.45, first exit target
+re-test so far: 1 trades +1.75 R
+week (B2 real + re-test): +1.75 R | 100: +138.09 -> 298.00 | 300: +138.09 -> 512.12

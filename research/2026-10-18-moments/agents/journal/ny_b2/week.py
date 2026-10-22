@@ -221,9 +221,10 @@ def accounts(X: pd.DataFrame, col: str = "r_multiple", tag: str = "") -> pd.Data
     return X
 
 
-if __name__ == "__main__":
+def build(end: pd.Timestamp) -> pd.DataFrame:
+    """Every trade before `end` with the base R and the realistic R under the rules in force at its date."""
     X = load()
-    X = X[X.t < pd.Timestamp(sys.argv[2], tz="UTC")]  # nothing after the week is read
+    X = X[X.t < end].copy()  # nothing after the week is read
     X["r_real"] = realistic(X)
     gg = Z.daily_grid(Z.bars("D1"))
     kk = gg.index.searchsorted(X.t, side="right") - 1
@@ -246,6 +247,11 @@ if __name__ == "__main__":
         X.loc[sc.index[(sc > SCORE_MAX) & ~run], "r_real"] = np.nan
         X.loc[sc.index[(sc <= SCORE_MAX) & run], "r_real"] = np.nan
         X.loc[sc.index, "run3"] = run
+    return X
+
+
+if __name__ == "__main__":
+    X = build(pd.Timestamp(sys.argv[2], tz="UTC"))
     X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
     X["r_real_band"] = realistic(X, band=0.1)  # candidate from week 5 (owner: a line is a band): aim 0.1 step before it
     X = accounts(accounts(X), "r_real", "r")
