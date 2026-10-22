@@ -73,7 +73,20 @@ NEWS_FROM = pd.Timestamp("2026-03-02", tz="UTC")
 # from week 21 (the observation ledger after week 20, synth.py: the multi-TF score <= -1 +11.67 R on 36 (69 %), above it
 # -7.24 on 42; both halves): B2 is a turn and pays before the big frames have turned - the realistic variant enters only
 # when the score is <= -1. M5-only and 0.1-0.25 step from a line are journaled as candidates (dropped.py)
-SCORE_FROM, SCORE_MAX = pd.Timestamp("2026-03-09", tz="UTC"), -1  # the realistic variant aims 0.1 step before the line from week 8
+SCORE_FROM, SCORE_MAX = pd.Timestamp("2026-03-09", tz="UTC"), -1
+# from week 23, the score rule made phase-aware (week 21's steady fall, week 22's buys into a fall; phase.py over weeks
+# 2-22: score <= -1 is +10.16 on 39, but -3.86 on 10 (30 %) when the last 3 closed days all closed the same way, where
+# the trades with the structure made +1.58 on 9; the phase-aware form +15.60 on 38, every period better): in a 3-day
+# one-way run enter only with the structure (score > -1), otherwise only against it (score <= -1)
+PHASE_FROM = pd.Timestamp("2026-03-23", tz="UTC")
+
+
+def run3(t: pd.Timestamp) -> bool:
+    """The last 3 closed D1 bars all closed the same way."""
+    c = Z.bars("D1") if "D1" not in TFS else TFS["D1"]
+    c = c[c.index + pd.Timedelta(days=1) <= t].close
+    s = np.sign(c.diff().iloc[-3:].values)
+    return bool((s == s[-1]).all())  # the realistic variant aims 0.1 step before the line from week 8
 
 
 def context(X: pd.DataFrame) -> pd.DataFrame:
@@ -229,7 +242,10 @@ if __name__ == "__main__":
     late = X.t >= SCORE_FROM
     if late.any():
         sc = context(X[late]).score
-        X.loc[sc.index[sc > SCORE_MAX], "r_real"] = np.nan
+        run = pd.Series([X.t[i] >= PHASE_FROM and run3(X.t[i]) for i in sc.index], index=sc.index)
+        X.loc[sc.index[(sc > SCORE_MAX) & ~run], "r_real"] = np.nan
+        X.loc[sc.index[(sc <= SCORE_MAX) & run], "r_real"] = np.nan
+        X.loc[sc.index, "run3"] = run
     X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
     X["r_real_band"] = realistic(X, band=0.1)  # candidate from week 5 (owner: a line is a band): aim 0.1 step before it
     X = accounts(accounts(X), "r_real", "r")
@@ -244,6 +260,7 @@ if __name__ == "__main__":
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
               f"| grid line {r.zone_line_dist:.1f} USD away\n"
               f"      zone-grid trend {r.grid_trend} -> {'WITH' if r.with_trend else 'AGAINST'} | "
+              f"3-day one-way run: {getattr(r, 'run3', '-')} | "
               f"{r.min_to_10et:+d} min from 10:00 New York | {min(r.zone_pos, 1 - r.zone_pos):.2f} step from a line | momentum: H1 vol {r.vol:.2f}x usual, 3-day push {r.push3d:+.2f} D1 ATR in the trade's way | "
               f"day so far: run {r.day_run:+.2f} ATR in the trade's way, range {r.day_rng:.2f} ATR | "
               f"context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | deeper touches {r.worn} | SCORE {r.score:+.0f} ({r.score_parts}) | band-target {r.r_real_band:+.2f} R\n"

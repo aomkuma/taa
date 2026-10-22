@@ -1,0 +1,32 @@
+
+er5 x score <= -1
+                        n  real    win
+er5         low_score                 
+(-inf, 0.3] False      13 -1.40  53.85
+            True       10  7.59  90.00
+(0.3, 0.6]  False      16  2.79  68.75
+            True       15  1.06  53.33
+(0.6, inf]  False      16 -5.69  43.75
+            True       14  1.51  64.29
+
+same x score <= -1
+                        n  real    win
+same        low_score                 
+(-inf, 1.5] False       8 -3.09  37.50
+            True        9  6.26  77.78
+(1.5, 2.5]  False      28 -2.78  57.14
+            True       20  7.77  80.00
+(2.5, inf]  False       9  1.58  66.67
+            True       10 -3.86  30.00
+
+since_shift x score <= -1
+                        n  real     win
+since_shift low_score                  
+(-inf, 3.0] False       8 -4.58   25.00
+            True        4  3.13  100.00
+(3.0, 10.0] False      13  3.47   84.62
+            True       16  9.59   75.00
+(10.0, inf] False      24 -3.19   50.00
+            True       19 -2.56   52.63
+
+all: 84 trades real unfiltered +5.86; score <= -1 +10.16 on 39
