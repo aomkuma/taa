@@ -1172,3 +1172,32 @@ trade** (P1 54 +0.010, P2 44 +0.006; win 42 %, profit factor 1.12). By timeframe
 by hour: 20:xx +0.024, 21:xx +0.064, 22:xx -0.140. Positive in both halves but far below the bar (+0.10): not adopted
 as it stands. Next forms (not chosen from this run's best cell): the owner's zone grid as the levels in this hour
 (research/2026-10-22-zones), which is what the owner reads at that time.
+
+### The NY-B2 journal's observation ledger, after week 20 (owner 2026-10-22: "do you turn the weekly observations into anything?"; `ny_b2/synth.py`, `out_synth_w20.txt`)
+
+Weeks 2-20, 78 trades: base -1.21 R, realistic variant unfiltered +4.44 (with its rules in force: the 100 USD account
+171.92, the 300 USD 386.04). Every observation, what became of it:
+
+| Week | Observation | Measured (realistic R, weeks 2-20 unless noted) | Status |
+|---|---|---|---|
+| 2 | the structure exit cuts winners in the NY chop | the realistic exit (half at +1 R, the rest at break-even to the zone line, 120 min) +4.44 vs base -1.21 | **the variant** |
+| 4 | the rest without break-even | +1.58 vs +5.42 with it | dropped |
+| 5 | a line is a band: aim 0.1 step before it | in force from week 8 | **rule** |
+| 11 | trade only with the zone-grid trend | the skipped buys made +2.10 in week 12; against-trend +1.20 net | deleted after week 12 |
+| 13 | entries within 10 USD of a zone line | before -1.93 on 17, after (wk 14-20) -2.00 on 2 | **rule** (week 14) |
+| 15 | H1 ATR above 1.1x its 20-day median | before -3.78 on 12, after -1.02 on 4 | **rule** (week 16) |
+| 18-19 | entries 10:00-10:30 New York | before -4.02 on 12, after -0.07 on 2 | **rule** (week 20) |
+| 19 | stops over 40 USD (-209.80 USD at 0.01 lot) | 5 of 7 are high-vol / news entries | covered by the rules above |
+| 20 | high-vol trades with vs against the day | -2.07 on 10 vs -2.73 on 6 | no split: stand aside stays |
+| 9-20 | the multi-TF structure score (D1x3 H4x2 H1x2 M15, + fresh + momentum) | **<= -1: +11.67 on 36 (69 %); 0..3: -2.32 on 34; >= 4: -4.92 on 8 (38 %)**; both halves (wk 2-10 +5.24 on 23, wk 11-20 +6.43 on 13) | **inverted**: B2 pays against the structure |
+| 15-16 | the 3-day push into the entry (D1 ATR, the trade's way) | **-1..0 (a modest move against us): +9.78 on 17 (88 %)**; < -1 (a runaway): -2.41 on 13; 0..1: -3.21 on 31 | candidate |
+| 15 | the day's range before the entry | over 1 D1 ATR: -3.83 on 13 (38 %), mostly the vol days | covered by the vol rule |
+| 10-20 | level touches, deeper touches (worn) | no clear split (touches <= 2 +2.77, 5+ +1.77; worn 2+ +3.19) | journaled, no rule |
+
+**Synthesis.** The entries are the same in both variants; the edge so far comes from (1) the exit and (2) standing
+aside when the market is not in its usual state (too volatile, the 10:00 New York data, right on a line). The two
+fields that do split the trades say the same thing: B2 is a turn pattern, and it pays when it turns a **modest** move
+into a level - the structure still against the trade (score <= -1) and the last 3 days moved against it by less than
+one D1 ATR (both: +8.55 on 10, 90 %; neither: -8.46 on 35, 46 %). It loses when the move is a runaway (> 1 D1 ATR)
+or when every timeframe already points the trade's way (the turn is late). Candidate next rule (one at a time, forward
+only): the turn of a modest move - to be decided with the owner.

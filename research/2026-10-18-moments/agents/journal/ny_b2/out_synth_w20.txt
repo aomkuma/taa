@@ -1,0 +1,51 @@
+
+score
+               n  base   real    win
+score                               
+(-inf, -0.5]  36  4.61  11.67  69.44
+(-0.5, 3.5]   34 -3.12  -2.32  55.88
+(3.5, inf]     8 -2.70  -4.92  37.50
+
+touches
+              n  base  real    win
+touches                           
+(-inf, 2.5]  30  3.36  2.77  60.00
+(2.5, 4.5]   27 -1.24 -0.10  59.26
+(4.5, inf]   21 -3.33  1.77  61.90
+
+worn
+              n  base  real    win
+worn                              
+(-inf, 0.5]  28 -0.98 -0.47  57.14
+(0.5, 1.5]   28  0.52  1.71  60.71
+(1.5, inf]   22 -0.75  3.19  63.64
+
+day_run
+                n  base  real    win
+day_run                             
+(-inf, -0.25]  16  2.12  3.46  62.50
+(-0.25, 0.25]  42 -3.62  0.97  59.52
+(0.25, 0.75]   14 -0.75  1.96  71.43
+(0.75, inf]     6  1.03 -1.96  33.33
+
+day_rng
+              n  base  real    win
+day_rng                           
+(-inf, 0.5]  32 -3.71  3.79  62.50
+(0.5, 1.0]   33  3.16  4.48  66.67
+(1.0, inf]   13 -0.66 -3.83  38.46
+
+push3d
+               n  base  real    win
+push3d                             
+(-inf, -1.0]  13 -2.05 -2.41  38.46
+(-1.0, 0.0]   17  2.49  9.78  88.24
+(0.0, 1.0]    31 -2.58 -3.21  51.61
+(1.0, inf]    17  0.93  0.28  64.71
+
+rule: the skipped trades' realistic R before / after the rule took effect (negative = the rule saved it)
+  near line < 10 USD: before -1.93 on 17 | after -2.00 on 2
+  H1 vol > 1.1x: before -3.78 on 12 | after -1.02 on 4
+  10:00-10:30 New York: before -4.02 on 12 | after -0.07 on 2
+
+all: 78 trades base -1.21 real unfiltered +4.44
