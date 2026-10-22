@@ -1,0 +1,5 @@
+Tue 31 21:01 B2      BUY  entry 4616.90 stop 32.68 | skipped | 100 +0.00 -> 298.00, 300 +0.00 -> 512.12
+Wed 01 21:01 B2      SELL entry 4729.35 stop 21.35 | skipped | 100 +0.00 -> 298.00, 300 +0.00 -> 512.12
+Thu 02 20:47 B2      BUY  entry 4613.68 stop 34.10 | skipped | 100 +0.00 -> 298.00, 300 +0.00 -> 512.12
+re-test so far: 1 trades +1.75 R
+week (B2 real + re-test): +0.00 R | 100: +0.00 -> 298.00 | 300: +0.00 -> 512.12
