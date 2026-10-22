@@ -1,0 +1,25 @@
+1. NY-B2 trades: the last 30 min's tick volume vs usual, by volatility (realistic, unfiltered)
+                      n  base   real    win
+hv       cv                                
+vol<=1.1 volume<1    39  2.74  12.16  74.36
+         1-1.5       29 -1.51  -1.49  55.17
+vol>1.1  volume<1     4 -0.40  -0.55  50.00
+         1-1.5       11 -1.17  -3.37  36.36
+         volume>1.5   1 -0.58  -0.88   0.00
+
+2. H1 rejections of a zone-grid line (wick >= half the bar, close back), 2023-08 .. END: the next 3 / 6 H1 closes in the turn's direction (D1 ATR) and how often they turned
+                         n  next3   turn3  next6   turn6
+hv         tv                                           
+(0.0, 0.9] volume<1    296 -0.020  47.973 -0.024  45.608
+           1-1.5       119  0.035  54.622  0.058  58.824
+           volume>1.5    7 -0.052  28.571  0.108  71.429
+(0.9, 1.1] volume<1    188 -0.003  53.723  0.020  55.851
+           1-1.5       127 -0.002  51.969 -0.004  49.606
+           volume>1.5   23 -0.017  52.174  0.002  52.174
+(1.1, 1.4] volume<1    107  0.012  50.467  0.031  54.206
+           1-1.5       130  0.023  54.615  0.039  56.154
+           volume>1.5   41  0.029  58.537  0.067  51.220
+(1.4, inf] volume<1     38  0.005  52.632 -0.037  50.000
+           1-1.5       103 -0.016  49.515  0.004  52.427
+           volume>1.5  104  0.041  49.038 -0.018  47.115
+all 1283: next3 +0.004 (51 %), next6 +0.009 (52 %)
