@@ -53,7 +53,10 @@ def structure(b: pd.DataFrame, t: pd.Timestamp, tf: str) -> int:
     if len(fh) < 2 or len(fl) < 2:
         return 0
     return 1 if fh[1] > fh[0] and fl[1] > fl[0] else -1 if fh[1] < fh[0] and fl[1] < fl[0] else 0
-BAND_FROM = pd.Timestamp("2025-12-08", tz="UTC")  # the realistic variant aims 0.1 step before the line from week 8
+BAND_FROM = pd.Timestamp("2025-12-08", tz="UTC")
+# from week 11 (owner 2026-10-22 "why trade against the big trend?"; weeks 2-10: with the zone grid's last shift +5.48 R
+# on 22, against -0.90 on 20): the realistic variant trades only in the direction of the last zone shift
+TREND_FROM = pd.Timestamp("2025-12-29", tz="UTC")  # the realistic variant aims 0.1 step before the line from week 8
 
 
 def context(X: pd.DataFrame) -> pd.DataFrame:
@@ -148,7 +151,12 @@ def accounts(X: pd.DataFrame, col: str = "r_multiple", tag: str = "") -> pd.Data
         for r in X.itertuples():
             risk = abs(r.entry_price - r.sl_initial)
             lots = max(0.01, np.floor(eq * pct / 100 / (risk * 100) * 100) / 100)
-            u = getattr(r, col) * risk * lots * 100
+            rr = getattr(r, col)
+            if not np.isfinite(rr):  # skipped by a rule: no trade, the balance carries
+                usd.append(0.0)
+                bal.append(eq)
+                continue
+            u = rr * risk * lots * 100
             eq += u
             usd.append(u)
             bal.append(eq)
@@ -160,6 +168,14 @@ if __name__ == "__main__":
     X = load()
     X = X[X.t < pd.Timestamp(sys.argv[2], tz="UTC")]  # nothing after the week is read
     X["r_real"] = realistic(X)
+    gg = Z.daily_grid(Z.bars("D1"))
+    kk = gg.index.searchsorted(X.t, side="right") - 1
+    sh = gg["shift"].values
+    last = [next((sh[j] for j in range(i, -1, -1) if sh[j]), "") for i in kk]
+    X["grid_trend"] = ["up" if v == "up" else "down" for v in last]
+    X["with_trend"] = [(v == "up") == (sd == "BUY") for v, sd in zip(X.grid_trend, X.side)]
+    X["r_real_all"] = X.r_real
+    X.loc[(X.t >= TREND_FROM) & ~X.with_trend, "r_real"] = np.nan
     X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
     X["r_real_band"] = realistic(X, band=0.1)  # candidate from week 5 (owner: a line is a band): aim 0.1 step before it
     X = accounts(accounts(X), "r_real", "r")
@@ -173,11 +189,13 @@ if __name__ == "__main__":
         print(f"{r.t.tz_convert('Asia/Bangkok'):%a %d %H:%M} {tf} {r.side:4s} R {r.r_multiple:+.2f} {r.exit_reason:6s} "
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
               f"| grid line {r.zone_line_dist:.1f} USD away\n"
-              f"      context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | deeper touches {r.worn} | SCORE {r.score:+.0f} ({r.score_parts}) | band-target {r.r_real_band:+.2f} R\n"
+              f"      zone-grid trend {r.grid_trend} -> {'WITH' if r.with_trend else 'AGAINST'} | "
+              f"context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | deeper touches {r.worn} | SCORE {r.score:+.0f} ({r.score_parts}) | band-target {r.r_real_band:+.2f} R\n"
               f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"
-              f" | real {r.r_real:+.2f} R: 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
+              f" | real {'skipped (against the trend)' if not np.isfinite(r.r_real) else f'{r.r_real:+.2f} R'} (unfiltered {r.r_real_all:+.2f}) | 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
     if len(W):
         print(f"candidate (target 0.1 step before the line): week {W.r_real_band.sum():+.2f} R | weeks so far {X.r_real_band.sum():+.2f}")
         print(f"candidate (no break-even on the rest): week {W.r_real_nobe.sum():+.2f} R | weeks so far: base {X.r_multiple.sum():+.2f}, real {X.r_real.sum():+.2f}, no-BE {X.r_real_nobe.sum():+.2f}")
-        print(f"real: {W.r_real.sum():+.2f} R | 100: {W.usdr_100.sum():+.2f} -> {W.balr_100.iloc[-1]:.2f} | 300: {W.usdr_300.sum():+.2f} -> {W.balr_300.iloc[-1]:.2f}")
+        print(f"real unfiltered: week {W.r_real_all.sum():+.2f} R")
+        print(f"real: {np.nansum(W.r_real):+.2f} R | 100: {W.usdr_100.sum():+.2f} -> {W.balr_100.iloc[-1]:.2f} | 300: {W.usdr_300.sum():+.2f} -> {W.balr_300.iloc[-1]:.2f}")
     print(f"week: {len(W)} trades {W.r_multiple.sum():+.2f} R | 100 USD at 7.5 %: {W.usd_100.sum():+.2f} USD -> {W.bal_100.iloc[-1] if len(W) else float('nan'):.2f} | 300 USD at 3 %: {W.usd_300.sum():+.2f} USD -> {W.bal_300.iloc[-1] if len(W) else float('nan'):.2f}")
