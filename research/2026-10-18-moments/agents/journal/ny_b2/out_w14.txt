@@ -1,0 +1,8 @@
+Thu 22 22:30 M5 BUY  R +1.59 TIME   best +1.65R worst -0.02R | W, the 2nd low swept the 1st | level 4814.04 last low (swept) | M1 structure down | stop 44.99 | grid line 45.7 USD away
+      zone-grid trend down -> AGAINST | context: level touched 3x in 5 days, bounces [74.2, 54.6, 24.9] USD, H1 LH/LL | deeper touches 1 | SCORE +1 (D1+ H40 H1- M15+ fresh+0 mom-1) | band-target +0.80 R
+      base +1.59 R: 100 +71.30 -> 237.75, 300 +71.30 -> 438.75 | real +0.80 R (unfiltered +0.80) | 100 +35.83 -> 277.66, 300 +35.83 -> 491.78
+candidate (target 0.1 step before the line): week +0.80 R | weeks so far +9.93
+candidate (no break-even on the rest): week +0.80 R | weeks so far: base +1.45, real +7.22, no-BE +7.89
+real unfiltered: week +0.80 R
+real: +0.80 R | 100: +35.83 -> 277.66 | 300: +35.83 -> 491.78
+week: 1 trades +1.59 R | 100 USD at 7.5 %: +71.30 USD -> 237.75 | 300 USD at 3 %: +71.30 USD -> 438.75
