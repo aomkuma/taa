@@ -39,9 +39,45 @@ import check_plan1 as C  # noqa: E402
 
 MIN = 60 * 10**9
 ACCOUNTS = ((100.0, 7.5), (300.0, 3.0))
+H1 = None
 
 
-def realistic(X: pd.DataFrame, be: bool = True) -> pd.Series:
+def context(X: pd.DataFrame) -> pd.DataFrame:
+    """Owner 2026-10-22: reaching a level is not a reason to trade - per entry, from closed H1 bars of the last 5 days:
+    how many times price touched the B2 level's band (+-0.1 D1 ATR; a touch = a run of bars inside it, 3 bars apart),
+    the bounce of each touch (the best move away from the level in the trade's direction within 6 bars, USD), and the
+    H1 structure (the last two 3-bar fractal highs and lows: HH/HL, LH/LL or mixed)."""
+    global H1
+    if H1 is None:
+        H1 = Z.bars("H1")
+    g = Z.daily_grid(Z.bars("D1"))
+    out = []
+    for r in X.itertuples():
+        side = 1 if r.side == "BUY" else -1
+        lv = float(re.match(r"\s*([0-9.]+)", str(r.level)).group(1))
+        k = g.index.searchsorted(r.t, side="right") - 1
+        band = 0.1 * g.step.values[k]
+        h = H1[(H1.index + pd.Timedelta(hours=1) <= r.t) & (H1.index >= r.t - pd.Timedelta(days=5))]
+        inside = ((h.low <= lv + band) & (h.high >= lv - band)).values
+        touches, bounces, last = 0, [], -10
+        for i in np.flatnonzero(inside):
+            if i - last > 3:
+                touches += 1
+                after = h.iloc[i : i + 7]
+                b = (after.high.max() - lv) if side > 0 else (lv - after.low.min())
+                bounces.append(round(float(b), 1))
+            last = i
+        hi, lo = h.high.values, h.low.values
+        fh = [hi[i] for i in range(1, len(h) - 1) if hi[i] > hi[i - 1] and hi[i] > hi[i + 1]][-2:]
+        fl = [lo[i] for i in range(1, len(h) - 1) if lo[i] < lo[i - 1] and lo[i] < lo[i + 1]][-2:]
+        st = "?"
+        if len(fh) == 2 and len(fl) == 2:
+            st = "HH/HL" if fh[1] > fh[0] and fl[1] > fl[0] else "LH/LL" if fh[1] < fh[0] and fl[1] < fl[0] else "mixed"
+        out.append(dict(touches=touches, bounces=bounces[-4:], h1_structure=st))
+    return pd.DataFrame(out, index=X.index)
+
+
+def realistic(X: pd.DataFrame, be: bool = True, band: float = 0.0) -> pd.Series:
     """The 'closer to real trading' variant (owner 2026-10-22, from week 2): the same entry and stop; half off at +1 R
     with the stop of the rest moved to the entry; the rest aims at the owner's next zone-grid line beyond the entry
     (at least a quarter step away), out 120 minutes after the entry at the latest. Ticks, spread only."""
@@ -58,7 +94,7 @@ def realistic(X: pd.DataFrame, be: bool = True) -> pd.Series:
         j = np.floor((r.entry_price - anc) / stp)
         lines = anc + (j + np.arange(-3, 5)) * stp
         ahead = lines[(lines - r.entry_price) * side >= 0.25 * stp]
-        tgt = float(ahead.min() if side > 0 else ahead.max())
+        tgt = float(ahead.min() if side > 0 else ahead.max()) - side * band * stp  # band: aim before the line
         t_end = tn + 120 * MIN
         px1, tx1, k1 = C.manage(t, bid, ask, f, r.entry_price, side, r.sl_initial, r.entry_price + side * risk, t_end)
         if k1 != "target":
@@ -94,8 +130,10 @@ if __name__ == "__main__":
     X = X[X.t < pd.Timestamp(sys.argv[2], tz="UTC")]  # nothing after the week is read
     X["r_real"] = realistic(X)
     X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
+    X["r_real_band"] = realistic(X, band=0.1)  # candidate from week 5 (owner: a line is a band): aim 0.1 step before it
     X = accounts(accounts(X), "r_real", "r")
     W = X[(X.t >= pd.Timestamp(sys.argv[1], tz="UTC")) & (X.t < pd.Timestamp(sys.argv[2], tz="UTC"))]
+    W = W.join(context(W))
     for r in W.itertuples():
         tf = "M5" if r.strategy.endswith("m5") else "M1"
         how = re.sub(r",.*", "", str(r.level))
@@ -104,9 +142,11 @@ if __name__ == "__main__":
         print(f"{r.t.tz_convert('Asia/Bangkok'):%a %d %H:%M} {tf} {r.side:4s} R {r.r_multiple:+.2f} {r.exit_reason:6s} "
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
               f"| grid line {r.zone_line_dist:.1f} USD away\n"
+              f"      context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | band-target {r.r_real_band:+.2f} R\n"
               f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"
               f" | real {r.r_real:+.2f} R: 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
     if len(W):
+        print(f"candidate (target 0.1 step before the line): week {W.r_real_band.sum():+.2f} R | weeks so far {X.r_real_band.sum():+.2f}")
         print(f"candidate (no break-even on the rest): week {W.r_real_nobe.sum():+.2f} R | weeks so far: base {X.r_multiple.sum():+.2f}, real {X.r_real.sum():+.2f}, no-BE {X.r_real_nobe.sum():+.2f}")
         print(f"real: {W.r_real.sum():+.2f} R | 100: {W.usdr_100.sum():+.2f} -> {W.balr_100.iloc[-1]:.2f} | 300: {W.usdr_300.sum():+.2f} -> {W.balr_300.iloc[-1]:.2f}")
     print(f"week: {len(W)} trades {W.r_multiple.sum():+.2f} R | 100 USD at 7.5 %: {W.usd_100.sum():+.2f} USD -> {W.bal_100.iloc[-1] if len(W) else float('nan'):.2f} | 300 USD at 3 %: {W.usd_300.sum():+.2f} USD -> {W.bal_300.iloc[-1] if len(W) else float('nan'):.2f}")

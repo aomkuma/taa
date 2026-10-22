@@ -1,0 +1,19 @@
+Mon 24 20:38 M1 BUY  R -0.80 SIGNAL best +0.04R worst -0.81R | W | level 4079.88 x3+ / flip (swept) | M5 structure mixed | stop 9.88 | grid line 7.3 USD away
+      context: level touched 3x in 5 days, bounces [28.3, 21.3, 4.1] USD, H1 HH/HL | band-target -1.00 R
+      base -0.80 R: 100 -7.92 -> 211.38, 300 -7.92 -> 411.38 | real -1.00 R: 100 -19.80 -> 253.85, 300 -9.90 -> 463.75
+Wed 26 20:48 M1 SELL R +0.11 SIGNAL best +0.83R worst -0.32R | H&S | level 4159.21 PDH (swept) | M5 structure down | stop 14.56 | grid line 30.8 USD away
+      context: level touched 4x in 5 days, bounces [49.8, 48.3, 31.7, 20.7] USD, H1 mixed | band-target +0.50 R
+      base +0.11 R: 100 +1.63 -> 213.01, 300 +1.63 -> 413.01 | real +0.50 R: 100 +7.20 -> 261.04, 300 +7.20 -> 470.94
+Thu 27 20:35 M1 BUY  R +0.21 TIME   best +0.47R worst -0.48R | W | level 4151.45 x3+ / flip (swept) | M5 structure mixed | stop 8.06 | grid line 33.5 USD away
+      context: level touched 4x in 5 days, bounces [4.4, 7.8, 17.8, 13.7] USD, H1 mixed | band-target +0.29 R
+      base +0.21 R: 100 +1.67 -> 214.68, 300 +1.67 -> 414.68 | real +0.29 R: 100 +4.66 -> 265.70, 300 +2.33 -> 473.27
+Thu 27 22:18 M1 BUY  R -0.15 SIGNAL best +0.41R worst -0.16R | W | level 4156.94 x3+ / flip (swept) | M5 structure down | stop 6.50 | grid line 31.3 USD away
+      context: level touched 3x in 5 days, bounces [-1.1, 2.3, 12.3] USD, H1 mixed | band-target -1.01 R
+      base -0.15 R: 100 -1.99 -> 212.70, 300 -0.99 -> 413.69 | real -1.01 R: 100 -19.65 -> 246.05, 300 -13.10 -> 460.17
+Fri 28 21:40 M5 BUY  R +0.56 TIME   best +0.63R worst -0.49R | W | level 4168.42 x3+ / flip (at) | M1 structure up | stop 36.47 | grid line 4.4 USD away
+      context: level touched 4x in 5 days, bounces [0.9, -1.3, 24.6, 20.3] USD, H1 mixed | band-target +0.07 R
+      base +0.56 R: 100 +20.29 -> 232.98, 300 +20.29 -> 433.98 | real +0.07 R: 100 +2.42 -> 248.47, 300 +2.42 -> 462.59
+candidate (target 0.1 step before the line): week -1.15 R | weeks so far +8.86
+candidate (no break-even on the rest): week -1.59 R | weeks so far: base +4.52, real +8.86, no-BE +7.55
+real: -1.15 R | 100: -25.18 -> 248.47 | 300: -11.06 -> 462.59
+week: 5 trades -0.08 R | 100 USD at 7.5 %: +13.69 USD -> 232.98 | 300 USD at 3 %: +14.68 USD -> 433.98
