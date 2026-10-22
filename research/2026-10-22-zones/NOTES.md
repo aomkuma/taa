@@ -9,6 +9,11 @@
   zone (the target) and the usual run (about half a zone); the entry comes from timing - a pattern, a sweep and
   reclaim, confirmation on the entry timeframe.
 
+- **Reaching a zone is not a reason to trade.** Read the whole chart: how many times price has hit the level, and the
+  trend and momentum at each touch up to now. With LL / LH and repeated hits on a support, it is not a buy (the level is
+  being worn down and is more likely to break); the mirror at a resistance. The journal records, at every entry, the
+  touch count of its band, the structure (HH/HL or LH/LL) and the momentum of each touch, before any of it becomes a rule.
+
 ## The zone grid (owner 2026-10-22, H4 XAUUSD Aug-Oct 2026)
 
 - Gold ran in zones of about 70-90 USD (one D1 ATR(20)); inside them about half a zone.
