@@ -69,7 +69,11 @@ VOL_FROM, VOL_MAX = pd.Timestamp("2026-02-02", tz="UTC"), 1.1
 # from week 20 (my observation in weeks 18-19, observe.py over weeks 2-19: entries in the first 30 minutes after the
 # 10:00 New York data hour -4.02 R on 12, 42 % won, base -2.47; weeks 2-17 alone -0.96 on 9): the realistic variant
 # does not enter from 10:00 to 10:30 New York time (22:00-22:30 Thai in winter, 21:00-21:30 in summer)
-NEWS_FROM = pd.Timestamp("2026-03-02", tz="UTC")  # the realistic variant aims 0.1 step before the line from week 8
+NEWS_FROM = pd.Timestamp("2026-03-02", tz="UTC")
+# from week 21 (the observation ledger after week 20, synth.py: the multi-TF score <= -1 +11.67 R on 36 (69 %), above it
+# -7.24 on 42; both halves): B2 is a turn and pays before the big frames have turned - the realistic variant enters only
+# when the score is <= -1. M5-only and 0.1-0.25 step from a line are journaled as candidates (dropped.py)
+SCORE_FROM, SCORE_MAX = pd.Timestamp("2026-03-09", tz="UTC"), -1  # the realistic variant aims 0.1 step before the line from week 8
 
 
 def context(X: pd.DataFrame) -> pd.DataFrame:
@@ -222,6 +226,10 @@ if __name__ == "__main__":
     ny = X.t.dt.tz_convert("America/New_York")
     X["min_to_10et"] = ny.dt.hour * 60 + ny.dt.minute - 600
     X.loc[(X.t >= NEWS_FROM) & (X.min_to_10et > 0) & (X.min_to_10et <= 30), "r_real"] = np.nan
+    late = X.t >= SCORE_FROM
+    if late.any():
+        sc = context(X[late]).score
+        X.loc[sc.index[sc > SCORE_MAX], "r_real"] = np.nan
     X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
     X["r_real_band"] = realistic(X, band=0.1)  # candidate from week 5 (owner: a line is a band): aim 0.1 step before it
     X = accounts(accounts(X), "r_real", "r")
@@ -236,7 +244,7 @@ if __name__ == "__main__":
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
               f"| grid line {r.zone_line_dist:.1f} USD away\n"
               f"      zone-grid trend {r.grid_trend} -> {'WITH' if r.with_trend else 'AGAINST'} | "
-              f"{r.min_to_10et:+d} min from 10:00 New York | momentum: H1 vol {r.vol:.2f}x usual, 3-day push {r.push3d:+.2f} D1 ATR in the trade's way | "
+              f"{r.min_to_10et:+d} min from 10:00 New York | {min(r.zone_pos, 1 - r.zone_pos):.2f} step from a line | momentum: H1 vol {r.vol:.2f}x usual, 3-day push {r.push3d:+.2f} D1 ATR in the trade's way | "
               f"day so far: run {r.day_run:+.2f} ATR in the trade's way, range {r.day_rng:.2f} ATR | "
               f"context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | deeper touches {r.worn} | SCORE {r.score:+.0f} ({r.score_parts}) | band-target {r.r_real_band:+.2f} R\n"
               f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"
