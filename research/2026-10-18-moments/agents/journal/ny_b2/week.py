@@ -40,6 +40,7 @@ import check_plan1 as C  # noqa: E402
 MIN = 60 * 10**9
 ACCOUNTS = ((100.0, 7.5), (300.0, 3.0))
 H1 = None
+BAND_FROM = pd.Timestamp("2025-12-08", tz="UTC")  # the realistic variant aims 0.1 step before the line from week 8
 
 
 def context(X: pd.DataFrame) -> pd.DataFrame:
@@ -94,7 +95,8 @@ def realistic(X: pd.DataFrame, be: bool = True, band: float = 0.0) -> pd.Series:
         j = np.floor((r.entry_price - anc) / stp)
         lines = anc + (j + np.arange(-3, 5)) * stp
         ahead = lines[(lines - r.entry_price) * side >= 0.25 * stp]
-        tgt = float(ahead.min() if side > 0 else ahead.max()) - side * band * stp  # band: aim before the line
+        b = band if band else (0.1 if r.t >= BAND_FROM else 0.0)  # adopted from week 8: weeks 2-7 +10.27 vs +9.66
+        tgt = float(ahead.min() if side > 0 else ahead.max()) - side * b * stp  # a line is a band: aim before it
         t_end = tn + 120 * MIN
         px1, tx1, k1 = C.manage(t, bid, ask, f, r.entry_price, side, r.sl_initial, r.entry_price + side * risk, t_end)
         if k1 != "target":
