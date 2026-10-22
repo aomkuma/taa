@@ -1201,3 +1201,17 @@ into a level - the structure still against the trade (score <= -1) and the last 
 one D1 ATR (both: +8.55 on 10, 90 %; neither: -8.46 on 35, 46 %). It loses when the move is a runaway (> 1 D1 ATR)
 or when every timeframe already points the trade's way (the turn is late). Candidate next rule (one at a time, forward
 only): the turn of a modest move - to be decided with the owner.
+
+**What had been left out** (owner 2026-10-22: "is anything we thought of or saw still left out?"; `ny_b2/dropped.py`,
+`out_dropped_w20.txt`, weeks 2-20, realistic unfiltered):
+
+| Raised | Measured | Reading |
+|---|---|---|
+| the aggregate run: M1 -0.118 vs M5 +0.399 a trade (never carried into the journal) | M5 **+6.37 on 18 (72 %)**, M1 -1.93 on 60 | candidate |
+| which part drives the inverted score | H4 with the trade -5.83 on 25, against/flat +10.26 on 53; D1 against +7.26 on 27, with -2.39 on 17; H1 with -2.61 on 24 | the big frames: the turn pays before D1/H4 have turned |
+| the Thai hour (aggregate: 22:xx -0.140) | 20:xx +3.42, 21:xx +4.59, 22:xx -3.57 on 19 | the 10:00 New York rule covers half of 22:xx |
+| owner: "the big-TF ATR falling" = unfavourable | H4 ATR over 6 bars: falling > 15 % +0.95, rising > 15 % +0.20 (base +5.57) | no split for the realistic variant |
+| how long the market stays wild after a big day (week 16) | 4 trades within 5 days of a day over 2 D1 ATR | too few; the vol rule handles it |
+| where in the zone (owner: about a third of a step catches most turns) | < 0.1 step from a line -2.38 on 23; **0.1-0.25 step +7.30 on 20 (70 %)**; 0.25-0.4 +0.57; mid-zone -1.05 on 9 | candidate (the near-line rule covers the first row) |
+| week 18: exit at 60 min in calm hours | hold 60 / 90 / 120: -1.15 / +2.90 / **+4.44**; calm hours -1.66 / +0.56 / +3.83 | dropped: 120 min stays |
+| week 18: close before the 10:00 New York data | the 57 entries before it: held +6.04, closed at 10:00 +1.26 | dropped: hold through |

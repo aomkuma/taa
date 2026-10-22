@@ -149,10 +149,11 @@ def pressure(X: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(out, index=X.index)
 
 
-def realistic(X: pd.DataFrame, be: bool = True, band: float = 0.0) -> pd.Series:
+def realistic(X: pd.DataFrame, be: bool = True, band: float = 0.0, hold=120) -> pd.Series:
     """The 'closer to real trading' variant (owner 2026-10-22, from week 2): the same entry and stop; half off at +1 R
     with the stop of the rest moved to the entry; the rest aims at the owner's next zone-grid line beyond the entry
-    (at least a quarter step away), out 120 minutes after the entry at the latest. Ticks, spread only."""
+    (at least a quarter step away), out 120 minutes after the entry at the latest (`hold`: minutes, or a Series of
+    minutes per trade). Ticks, spread only."""
     g = Z.daily_grid(Z.bars("D1"))
     out = []
     for r in X.itertuples():
@@ -168,7 +169,7 @@ def realistic(X: pd.DataFrame, be: bool = True, band: float = 0.0) -> pd.Series:
         ahead = lines[(lines - r.entry_price) * side >= 0.25 * stp]
         b = band if band else (0.1 if r.t >= BAND_FROM else 0.0)  # adopted from week 8: weeks 2-7 +10.27 vs +9.66
         tgt = float(ahead.min() if side > 0 else ahead.max()) - side * b * stp  # a line is a band: aim before it
-        t_end = tn + 120 * MIN
+        t_end = tn + int((hold[r.Index] if isinstance(hold, pd.Series) else hold) * MIN)
         px1, tx1, k1 = C.manage(t, bid, ask, f, r.entry_price, side, r.sl_initial, r.entry_price + side * risk, t_end)
         if k1 != "target":
             out.append((px1 - r.entry_price) * side / risk)
