@@ -1114,3 +1114,13 @@ also summed to about zero (+56.49 against the base +56.54): the profit is the pl
 about 5 trades a piece a week, 8 weeks cannot tell options apart; the learner chased what had just paid.
 **Decision (owner, 2026-10-22 ~01:10 Thai): DEMO runs the frozen rules + the D1 ATR(20) >= 60 switch; the weekly
 journal records and learns, rules change only on long evidence (a quarterly review, 12-26 weeks).**
+
+# Forward
+
+## 2026-10-19 .. 21 (before DEMO started), the bot's own backtest with the ticks (`forward/bot_2026-10-19_21_*`)
+
+`app.cli backtest --lane plan1 --start 2026-10-19 --end 2026-10-22 --ticks data/ticks` (857fd20, the frozen rules, the
+D1 ATR(20) switch on: about 76). 4 trades, all small losers: **-1.95 R** (Tue 20 19:30 straddle BUY -0.11 on time;
+Wed 21 08:06 B2 SELL -0.72 on its structure exit; Wed 13:24 ORB SELL -1.03 at the stop; Wed 19:30 straddle SELL -0.09 on
+time). Monday 19: no trade. At the DEMO's 7.5 % on 1,066 USD that is about -156 USD. (The main config's 4-loss breaker
+tripped after the fourth loss; the DEMO worktree allows 12.)
