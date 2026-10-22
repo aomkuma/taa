@@ -56,7 +56,9 @@ def structure(b: pd.DataFrame, t: pd.Timestamp, tf: str) -> int:
 BAND_FROM = pd.Timestamp("2025-12-08", tz="UTC")
 # from week 11 (owner 2026-10-22 "why trade against the big trend?"; weeks 2-10: with the zone grid's last shift +5.48 R
 # on 22, against -0.90 on 20): the realistic variant trades only in the direction of the last zone shift
-TREND_FROM = pd.Timestamp("2025-12-29", tz="UTC")  # the realistic variant aims 0.1 step before the line from week 8
+TREND_FROM = pd.Timestamp("2025-12-29", tz="UTC")
+# deleted after week 12: the skipped against-trend trades made +2.10 R that week; weeks 2-12 against-trend +1.20 net
+TREND_UNTIL = pd.Timestamp("2026-01-12", tz="UTC")  # the realistic variant aims 0.1 step before the line from week 8
 
 
 def context(X: pd.DataFrame) -> pd.DataFrame:
@@ -175,7 +177,7 @@ if __name__ == "__main__":
     X["grid_trend"] = ["up" if v == "up" else "down" for v in last]
     X["with_trend"] = [(v == "up") == (sd == "BUY") for v, sd in zip(X.grid_trend, X.side)]
     X["r_real_all"] = X.r_real
-    X.loc[(X.t >= TREND_FROM) & ~X.with_trend, "r_real"] = np.nan
+    X.loc[(X.t >= TREND_FROM) & (X.t < TREND_UNTIL) & ~X.with_trend, "r_real"] = np.nan
     X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
     X["r_real_band"] = realistic(X, band=0.1)  # candidate from week 5 (owner: a line is a band): aim 0.1 step before it
     X = accounts(accounts(X), "r_real", "r")
