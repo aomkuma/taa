@@ -298,3 +298,17 @@ break-and-retest, D2, and others.
 - Phase 11 (Railway) only with an explicit go-ahead; subscriptions only after legal review
   (`docs/COMPLIANCE.md`).
 - `VAPID_SUBJECT` in `.env` is a placeholder; the owner's account profile on `/account` lets alerts carry money.
+
+## Update 2026-10-22 07:45 Thai: PLAN-1 on DEMO
+
+- **Running since 2026-10-22 00:43 UTC (07:43 Thai)**: lane plan1 (setup_plan1_orb, setup_plan1_b2, setup_plan1_b2m5,
+  setup_plan1_ny) on the FBS demo account (balance 1,066.21 USD), DEMO mode, the owner's AGGRESSIVE 7.5 % profile
+  (from the cache). F1 / S2 off. Frozen rules + the D1 ATR(20) >= 60 regime switch (journal/PLAN1_JOURNAL.md,
+  CHECKLIST 61-63).
+- **It runs from a separate worktree `C:\Users\korap\taa-demo` at 857fd20** (main keeps changing under the agents).
+  `.venv`, `data` and `logs` are junctions to the main repo; `.env` / `.env.demo-mt5` are copies. Worktree-only edits
+  (uncommitted): `config.yaml` high_risk.setups + the 4 plan1 strategies, max_consecutive_losses 12, probation_trades 0,
+  max_account_drawdown_percent 40; `.env` MAX_ACCOUNT_DRAWDOWN_PERCENT=40.
+- Started with `scripts\start-demo.ps1 -Role engine -Mt5 -Demo` in its own window (web / worker on :8001 from the same
+  worktree). The Task Scheduler tasks still point at the main repo and stay paused (`data/demo/paused.json`): do not
+  `-Resume` them while the worktree runs. Health: http://127.0.0.1:8766/health.
