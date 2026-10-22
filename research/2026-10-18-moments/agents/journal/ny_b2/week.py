@@ -79,6 +79,9 @@ SCORE_FROM, SCORE_MAX = pd.Timestamp("2026-03-09", tz="UTC"), -1
 # the trades with the structure made +1.58 on 9; the phase-aware form +15.60 on 38, every period better): in a 3-day
 # one-way run enter only with the structure (score > -1), otherwise only against it (score <= -1)
 PHASE_FROM = pd.Timestamp("2026-03-23", tz="UTC")
+# deleted after week 25: forward (weeks 21-25, the only weeks it was not fitted on) the trades it skipped made +4.24 R
+# (week 25 alone +1.44 on 5); its "net over all weeks" was positive only through the weeks it was found on
+SCORE_UNTIL = pd.Timestamp("2026-04-13", tz="UTC")
 
 
 def run3(t: pd.Timestamp) -> bool:
@@ -240,7 +243,7 @@ def build(end: pd.Timestamp) -> pd.DataFrame:
     ny = X.t.dt.tz_convert("America/New_York")
     X["min_to_10et"] = ny.dt.hour * 60 + ny.dt.minute - 600
     X.loc[(X.t >= NEWS_FROM) & (X.min_to_10et > 0) & (X.min_to_10et <= 30), "r_real"] = np.nan
-    late = X.t >= SCORE_FROM
+    late = (X.t >= SCORE_FROM) & (X.t < SCORE_UNTIL)
     if late.any():
         sc = context(X[late]).score
         run = pd.Series([X.t[i] >= PHASE_FROM and run3(X.t[i]) for i in sc.index], index=sc.index)

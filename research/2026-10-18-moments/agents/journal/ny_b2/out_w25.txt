@@ -1,0 +1,20 @@
+Mon 06 20:40 M1 BUY  R -0.67 SIGNAL best +0.33R worst -0.83R | W, the 2nd low swept the 1st | level 4664.27 x2 (swept) | M5 structure mixed | stop 14.98 | grid line 31.4 USD away
+      zone-grid trend down -> AGAINST | 3-day one-way run: False | -20 min from 10:00 New York | 0.18 step from a line | momentum: H1 vol 0.86x usual, 3-day push +0.82 D1 ATR in the trade's way | day so far: run +0.21 ATR in the trade's way, range 0.59 ATR | context: level touched 2x in 5 days, bounces [121.8, 35.2] USD, H1 HH/HL | deeper touches 1 | SCORE +1 (D10 H40 H1+ M15- fresh+1 mom-1) | band-target +0.47 R
+      base -0.67 R: 100 -10.08 -> 96.04, 300 -10.08 -> 297.03 | real skipped (unfiltered +0.47) | 100 +0.00 -> 159.91, 300 +0.00 -> 374.03
+Mon 06 20:57 M1 BUY  R -0.20 SIGNAL best +0.76R worst -0.98R | W | level 4664.27 x2 (swept) | M5 structure mixed | stop 21.45 | grid line 38.5 USD away
+      zone-grid trend down -> AGAINST | 3-day one-way run: False | -3 min from 10:00 New York | 0.22 step from a line | momentum: H1 vol 0.86x usual, 3-day push +0.85 D1 ATR in the trade's way | day so far: run +0.25 ATR in the trade's way, range 0.59 ATR | context: level touched 2x in 5 days, bounces [121.8, 35.2] USD, H1 HH/HL | deeper touches 1 | SCORE +2 (D10 H40 H1+ M150 fresh+1 mom-1) | band-target -1.03 R
+      base -0.20 R: 100 -4.19 -> 91.84, 300 -4.19 -> 292.84 | real skipped (unfiltered -1.03) | 100 +0.00 -> 159.91, 300 +0.00 -> 374.03
+Tue 07 20:42 M1 SELL R +0.31 SIGNAL best +1.19R worst -0.64R | M, the 2nd high swept the 1st | level 4662.42 x3+ / flip (at) | M5 structure down | stop 25.78 | grid line 5.8 USD away
+      zone-grid trend down -> WITH | 3-day one-way run: False | -18 min from 10:00 New York | 0.03 step from a line | momentum: H1 vol 0.91x usual, 3-day push +0.13 D1 ATR in the trade's way | day so far: run +0.13 ATR in the trade's way, range 0.44 ATR | context: level touched 2x in 5 days, bounces [30.7, 16.6] USD, H1 mixed | deeper touches 0 | SCORE +0 (D1- H4+ H10 M15+ fresh+1 mom-1) | band-target +0.49 R
+      base +0.31 R: 100 +8.01 -> 99.85, 300 +8.01 -> 300.84 | real skipped (unfiltered +0.49) | 100 +0.00 -> 159.91, 300 +0.00 -> 374.03
+Wed 08 20:34 M1 SELL R -0.44 SIGNAL best +0.24R worst -0.46R | M, the 2nd high swept the 1st | level 4790.40 x3+ / flip (swept) | M5 structure mixed | stop 20.85 | grid line 49.8 USD away
+      zone-grid trend down -> WITH | 3-day one-way run: False | -26 min from 10:00 New York | 0.28 step from a line | momentum: H1 vol 0.94x usual, 3-day push -0.10 D1 ATR in the trade's way | day so far: run -0.20 ATR in the trade's way, range 0.82 ATR | context: level touched 1x in 5 days, bounces [77.2] USD, H1 LH/LL | deeper touches 0 | SCORE +3 (D1- H4+ H1+ M15+ fresh+1 mom+0) | band-target +1.09 R
+      base -0.44 R: 100 -9.29 -> 90.56, 300 -9.29 -> 291.56 | real skipped (unfiltered +1.09) | 100 +0.00 -> 159.91, 300 +0.00 -> 374.03
+Wed 08 21:30 M5 SELL R +1.42 TIME   best +1.64R worst -0.07R | M, the 2nd high swept the 1st | level 4790.40 x3+ / flip (swept) | M1 structure mixed | stop 41.43 | grid line 61.3 USD away
+      zone-grid trend down -> WITH | 3-day one-way run: False | +30 min from 10:00 New York | 0.35 step from a line | momentum: H1 vol 0.95x usual, 3-day push -0.05 D1 ATR in the trade's way | day so far: run -0.14 ATR in the trade's way, range 0.82 ATR | context: level touched 1x in 5 days, bounces [77.2] USD, H1 LH/LL | deeper touches 0 | SCORE +3 (D1- H4+ H1+ M15+ fresh+1 mom+0) | band-target +0.42 R
+      base +1.42 R: 100 +58.66 -> 149.22, 300 +58.66 -> 350.22 | real skipped (unfiltered +0.42) | 100 +0.00 -> 159.91, 300 +0.00 -> 374.03
+candidate (target 0.1 step before the line): week +1.44 R | weeks so far +8.03
+candidate (no break-even on the rest): week +0.90 R | weeks so far: base -0.83, real +4.91, no-BE +3.93
+real unfiltered: week +1.44 R
+real: +0.00 R | 100: +0.00 -> 159.91 | 300: +0.00 -> 374.03
+week: 5 trades +0.42 R | 100 USD at 7.5 %: +43.11 USD -> 149.22 | 300 USD at 3 %: +43.11 USD -> 350.22
