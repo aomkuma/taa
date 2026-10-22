@@ -3,9 +3,19 @@
 The owner's goals and principles come first: `docs/OWNER_GOALS.md`. This file holds **the current state** of Setup
 OWN: what trades in the bot, the windows and the method, and the research in progress. Every earlier round (the
 hypotheses written before their outcome, then the results) is kept in `docs/OWN_SETUP_ROUNDS.md`. Results describe
-the past, never a promise. Last update: 2026-10-20 12:40 Thai time.
+the past, never a promise. Last update: 2026-10-22 08:00 Thai time.
 
-## Now (2026-10-20): the team's research and PLAN-1
+## Now (2026-10-22): PLAN-1 on DEMO
+
+PLAN-1 runs on the FBS demo account since 2026-10-22 07:43 Thai (lane `plan1`, all three pieces, the owner's AGGRESSIVE
+7.5 % profile; F1 and S2 off; `docs/HANDOFF.md`). Its rules came from a week-by-week trade journal over the 26 learning
+weeks (`research/2026-10-18-moments/agents/journal/PLAN1_JOURNAL.md`): the ORB target 1.5 R, the ORB pool rule in a
+contracting H4, a second B2 only the first's way, no ATR gate, plus the regime switch (D1 ATR(20) >= 60 USD; every
+piece loses in the calm gold of 2021-24). Read once on the exam: +0.148 R a trade on 282 (the owner's bar 0.10-0.15;
+the pre-registered +0.15 missed by 0.002). Weekly lever learning on the exam weeks lost to the frozen rules (+0.124),
+so rules now change only on long evidence (a quarterly review); the weekly journal records and learns.
+
+## 2026-10-20: the team's research and PLAN-1
 
 The work moved to a team: the main session researches and measures, and four agents build and review
 (`research/2026-10-18-moments/agents/TEAM.md`). Every method tried is in

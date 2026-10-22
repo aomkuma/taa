@@ -3045,3 +3045,21 @@ largest scheduled US releases) carry the straddle's edge; the pass for a type: p
 (-0.26..+0.50), CPI 52 -0.052, other releases 103 -0.117, no release 297 +0.039. By year NFP and CPI swing sign
 (CPI +0.274 / +0.038 / -0.502 / -0.410 / +0.843); the exam's straddle profit came mostly from 6 NFP days (+3.116 R a
 trade). The release type is not the straddle's edge either; FAIL (CHECKLIST row 56).
+
+## 2026-10-21 .. 22: the PLAN-1 trade journal, the exam, the regime switch, DEMO (summary; details in journal/PLAN1_JOURNAL.md)
+
+- **The journal (owner 2026-10-21: learn trade by trade):** 26 learning weeks, each with a liquidity reading (pools,
+  sweep zones, SWEPT / FAKE / SLOW), the rules that cost and one change checked on the prior weeks. Kept: the ORB target
+  1.5 R, a second B2 only the first's way, the ORB pool rule in a contracting H4 (the owner's question about the larger
+  timeframe's ATR); deleted: one B2 a morning, the stop out of the sweep zone, VOL-16's ceiling and floor, the
+  ATR-scaled straddle stop. 26 weeks: rules +0.213 on 265 (base +0.190 on 298) - the weekly changes summed about zero.
+- **The exam, read once (frozen rules):** +0.148 on 282 (base +0.129): FAIL by 0.002 against +0.15, within the owner's
+  later bar 0.10-0.15 (CHECKLIST 61). No flip +2.24 and the 1.5 R target +1.66 held; the pool rule -4.55 did not.
+- **The regime switch (CHECKLIST 62):** by D1 ATR(20) every piece loses below 50 USD (2021-24) and pays from 60 (+0.20 /
+  +0.14; 2025-04..06 out of sample +0.112 on 98). Frozen at >= 60.
+- **Weekly lever learning on the exam weeks (CHECKLIST 63):** +0.124 against the frozen +0.148 - 8 weeks of ~5 trades a
+  piece cannot separate options. Rules change only on long evidence.
+- **Sizing (journal/sizing.py):** at 100 USD / 7.5 % the exam fell to 3.4 USD before ending at 792; at 1,000 / 3 % the
+  deepest fall was 23 %. The 0.01 minimum lot sets the risk on small accounts.
+- **DEMO:** lane plan1 (checkpoints A 7ac86b9 and B 857fd20, measured: parity 253/253, planted bugs 79/79 + 22/22 of
+  the measurer's, trades re-derived from ticks) on the FBS demo from 2026-10-22 07:43 Thai, AGGRESSIVE 7.5 %.
