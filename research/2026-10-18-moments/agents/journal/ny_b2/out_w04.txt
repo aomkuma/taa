@@ -1,0 +1,12 @@
+Mon 10 20:47 M1 SELL R +0.93 TIME   best +1.95R worst -0.26R | M | level 4099.93 5d high (swept) | M5 structure mixed | stop 10.72 | grid line 32.0 USD away
+      base +0.93 R: 100 +9.93 -> 169.84, 300 +9.93 -> 369.84 | real +1.06 R: 100 +11.39 -> 271.84, 300 +11.39 -> 471.84
+Mon 10 22:48 M1 SELL R -0.61 SIGNAL best +0.22R worst -0.62R | M, the 2nd high swept the 1st | level 4086.29 last top (swept) | M5 structure down | stop 13.75 | grid line 46.4 USD away
+      base -0.61 R: 100 -8.24 -> 161.60, 300 -8.24 -> 361.60 | real -1.00 R: 100 -13.52 -> 258.32, 300 -13.52 -> 458.32
+Tue 11 21:50 M5 SELL R +0.08 SIGNAL best +0.84R worst -0.33R | M, the 2nd high swept the 1st | level 4145.84 last top (at) | M1 structure mixed | stop 26.78 | grid line 6.7 USD away
+      base +0.08 R: 100 +2.10 -> 163.71, 300 +2.10 -> 363.71 | real +0.19 R: 100 +5.20 -> 263.52, 300 +5.20 -> 463.52
+Thu 13 21:10 M5 SELL R +2.05 TIME   best +2.37R worst -0.19R | H&S | level 4245.05 5d high (at) | M1 structure up | stop 29.93 | grid line 25.4 USD away
+      base +2.05 R: 100 +61.14 -> 224.85, 300 +61.14 -> 424.85 | real +0.64 R: 100 +19.11 -> 282.62, 300 +19.11 -> 482.62
+Fri 14 22:51 M1 BUY  R +0.50 TIME   best +0.68R worst -0.59R | W, the 2nd low swept the 1st | level 4072.92 x2 (at) | M5 structure down | stop 23.75 | grid line 35.4 USD away
+      base +0.50 R: 100 +11.94 -> 236.79, 300 +11.94 -> 436.79 | real +0.08 R: 100 +2.02 -> 284.64, 300 +2.02 -> 484.64
+real: +0.98 R | 100: +24.19 -> 284.64 | 300: +24.19 -> 484.64
+week: 5 trades +2.94 R | 100 USD at 7.5 %: +76.88 USD -> 236.79 | 300 USD at 3 %: +76.88 USD -> 436.79

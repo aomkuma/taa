@@ -41,7 +41,7 @@ MIN = 60 * 10**9
 ACCOUNTS = ((100.0, 7.5), (300.0, 3.0))
 
 
-def realistic(X: pd.DataFrame) -> pd.Series:
+def realistic(X: pd.DataFrame, be: bool = True) -> pd.Series:
     """The 'closer to real trading' variant (owner 2026-10-22, from week 2): the same entry and stop; half off at +1 R
     with the stop of the rest moved to the entry; the rest aims at the owner's next zone-grid line beyond the entry
     (at least a quarter step away), out 120 minutes after the entry at the latest. Ticks, spread only."""
@@ -68,7 +68,7 @@ def realistic(X: pd.DataFrame) -> pd.Series:
         if (tgt - r.entry_price) * side <= risk:  # the zone line is not beyond 1 R: the whole position was out at 1 R
             out.append(1.0)
             continue
-        px2, _, _ = C.manage(t, bid, ask, f2, r.entry_price, side, r.entry_price, tgt, t_end)
+        px2, _, _ = C.manage(t, bid, ask, f2, r.entry_price, side, r.entry_price if be else r.sl_initial, tgt, t_end)
         out.append(0.5 + 0.5 * (px2 - r.entry_price) * side / risk)
     return pd.Series(out, index=X.index)  # owner 2026-10-22: every learning journal carries 100 and 300 USD
 
@@ -93,6 +93,7 @@ if __name__ == "__main__":
     X = load()
     X = X[X.t < pd.Timestamp(sys.argv[2], tz="UTC")]  # nothing after the week is read
     X["r_real"] = realistic(X)
+    X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
     X = accounts(accounts(X), "r_real", "r")
     W = X[(X.t >= pd.Timestamp(sys.argv[1], tz="UTC")) & (X.t < pd.Timestamp(sys.argv[2], tz="UTC"))]
     for r in W.itertuples():
@@ -106,5 +107,6 @@ if __name__ == "__main__":
               f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"
               f" | real {r.r_real:+.2f} R: 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
     if len(W):
+        print(f"candidate (no break-even on the rest): week {W.r_real_nobe.sum():+.2f} R | weeks so far: base {X.r_multiple.sum():+.2f}, real {X.r_real.sum():+.2f}, no-BE {X.r_real_nobe.sum():+.2f}")
         print(f"real: {W.r_real.sum():+.2f} R | 100: {W.usdr_100.sum():+.2f} -> {W.balr_100.iloc[-1]:.2f} | 300: {W.usdr_300.sum():+.2f} -> {W.balr_300.iloc[-1]:.2f}")
     print(f"week: {len(W)} trades {W.r_multiple.sum():+.2f} R | 100 USD at 7.5 %: {W.usd_100.sum():+.2f} USD -> {W.bal_100.iloc[-1] if len(W) else float('nan'):.2f} | 300 USD at 3 %: {W.usd_300.sum():+.2f} USD -> {W.bal_300.iloc[-1] if len(W) else float('nan'):.2f}")
