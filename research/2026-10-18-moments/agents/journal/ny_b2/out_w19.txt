@@ -1,0 +1,14 @@
+Thu 26 20:45 M1 SELL R -0.35 SIGNAL best +0.32R worst -0.50R | base | level 5172.46 x2 (base) | M5 structure mixed | stop 13.61 | grid line 48.5 USD away
+      zone-grid trend down -> WITH | momentum: H1 vol 0.64x usual, 3-day push -0.44 D1 ATR in the trade's way | day so far: run +0.05 ATR in the trade's way, range 0.22 ATR | context: level touched 2x in 5 days, bounces [55.0, 27.3] USD, H1 LH/LL | deeper touches 1 | SCORE +0 (D1- H4+ H1+ M15- fresh+1 mom-1) | band-target +0.50 R
+      base -0.35 R: 100 -4.88 -> 84.19, 300 -4.88 -> 285.19 | real +0.50 R (unfiltered +0.50) | 100 +6.82 -> 209.12, 300 +6.82 -> 423.24
+Thu 26 22:28 M1 SELL R -0.71 SIGNAL best +0.05R worst -0.72R | sweep, lower high | level 5172.46 x2 (swept) | M5 structure mixed | stop 44.24 | grid line 80.6 USD away
+      zone-grid trend down -> WITH | momentum: H1 vol 0.64x usual, 3-day push -0.21 D1 ATR in the trade's way | day so far: run +0.19 ATR in the trade's way, range 0.29 ATR | context: level touched 2x in 5 days, bounces [55.0, 27.3] USD, H1 LH/LL | deeper touches 1 | SCORE +2 (D1- H4+ H1+ M15+ fresh+1 mom-1) | band-target -1.00 R
+      base -0.71 R: 100 -31.40 -> 52.80, 300 -31.40 -> 253.79 | real -1.00 R (unfiltered -1.00) | 100 -44.31 -> 164.81, 300 -44.31 -> 378.93
+Fri 27 22:12 M1 BUY  R -0.85 SIGNAL best +0.12R worst -0.91R | sweep, higher low | level 5218.30 x2 (swept) | M5 structure mixed | stop 22.27 | grid line 2.9 USD away
+      zone-grid trend down -> AGAINST | momentum: H1 vol 0.61x usual, 3-day push +0.07 D1 ATR in the trade's way | day so far: run +0.27 ATR in the trade's way, range 0.36 ATR | context: level touched 7x in 5 days, bounces [-12.8, -17.4, -17.8, 22.2] USD, H1 mixed | deeper touches 2 | SCORE +1 (D1+ H4- H10 M150 fresh-1 mom+1) | band-target -1.00 R
+      base -0.85 R: 100 -18.91 -> 33.89, 300 -18.91 -> 234.88 | real skipped (unfiltered -1.00) | 100 +0.00 -> 164.81, 300 +0.00 -> 378.93
+candidate (target 0.1 step before the line): week -1.51 R | weeks so far +3.97
+candidate (no break-even on the rest): week -1.91 R | weeks so far: base -2.97, real +5.28, no-BE +0.50
+real unfiltered: week -1.51 R
+real: -0.51 R | 100: -37.49 -> 164.81 | 300: -37.49 -> 378.93
+week: 3 trades -1.91 R | 100 USD at 7.5 %: -55.18 USD -> 33.89 | 300 USD at 3 %: -55.18 USD -> 234.88
