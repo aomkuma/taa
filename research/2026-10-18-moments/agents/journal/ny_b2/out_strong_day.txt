@@ -1,0 +1,52 @@
+every day (baseline)                                       n  661 | next day +0.05 ATR, same way  49 % | NY 20-23 +0.011 ATR (+0.1 USD), same way  52 %, best 13.9 / worst 13.9 USD
+
+-- strong down days --
+strong                                                     n   34 | next day +0.12 ATR, same way  47 % | NY 20-23 +0.169 ATR (+7.8 USD), same way  59 %, best 20.4 / worst 14.0 USD
+strong, with volume                                        n   18 | next day +0.29 ATR, same way  56 % | NY 20-23 +0.268 ATR (+16.1 USD), same way  61 %, best 25.8 / worst 10.3 USD
+strong, without volume                                     n   16 | next day -0.07 ATR, same way  38 % | NY 20-23 +0.057 ATR (-1.6 USD), same way  56 %, best 14.3 / worst 18.1 USD
+strong + next day already running its way before NY        n   12 | next day +0.84 ATR, same way 100 % | NY 20-23 +0.314 ATR (+16.6 USD), same way  67 %, best 30.9 / worst 16.9 USD
+  ... and the pre-NY tick volume >= 1.2x usual             n    8 | next day +1.09 ATR, same way 100 % | NY 20-23 +0.453 ATR (+24.8 USD), same way  75 %, best 40.9 / worst 14.2 USD
+  ... with volume on both days                             n    7 | next day +1.06 ATR, same way 100 % | NY 20-23 +0.542 ATR (+31.5 USD), same way  86 %, best 36.5 / worst 5.5 USD
+strong + next day running back before NY                   n   14 | next day -0.48 ATR, same way  14 % | NY 20-23 +0.017 ATR (+1.0 USD), same way  57 %, best 13.0 / worst 13.4 USD
+strong + next day flat before NY                           n    8 | next day +0.10 ATR, same way  25 % | NY 20-23 +0.218 ATR (+6.4 USD), same way  50 %, best 17.5 / worst 10.7 USD
+
+-- strong up days --
+strong                                                     n   56 | next day +0.09 ATR, same way  61 % | NY 20-23 -0.144 ATR (-12.2 USD), same way  50 %, best 13.2 / worst 29.0 USD
+strong, with volume                                        n   20 | next day +0.30 ATR, same way  60 % | NY 20-23 -0.163 ATR (-17.1 USD), same way  45 %, best 17.8 / worst 35.8 USD
+strong, without volume                                     n   36 | next day -0.03 ATR, same way  61 % | NY 20-23 -0.134 ATR (-9.5 USD), same way  53 %, best 10.7 / worst 25.2 USD
+strong + next day already running its way before NY        n   30 | next day +0.43 ATR, same way  80 % | NY 20-23 -0.186 ATR (-17.7 USD), same way  47 %, best 13.4 / worst 35.2 USD
+  ... and the pre-NY tick volume >= 1.2x usual             n   18 | next day +0.39 ATR, same way  67 % | NY 20-23 -0.236 ATR (-21.2 USD), same way  44 %, best 16.8 / worst 41.5 USD
+  ... with volume on both days                             n   12 | next day +0.49 ATR, same way  67 % | NY 20-23 -0.199 ATR (-26.8 USD), same way  50 %, best 20.8 / worst 50.7 USD
+strong + next day running back before NY                   n   16 | next day -0.72 ATR, same way  12 % | NY 20-23 -0.310 ATR (-15.6 USD), same way  38 %, best 10.5 / worst 30.6 USD
+strong + next day flat before NY                           n   10 | next day +0.38 ATR, same way  80 % | NY 20-23 +0.245 ATR (+9.8 USD), same way  80 %, best 17.0 / worst 7.6 USD
+
+-- strong both days --
+strong                                                     n   90 | next day +0.10 ATR, same way  56 % | NY 20-23 -0.026 ATR (-4.7 USD), same way  53 %, best 15.9 / worst 23.3 USD
+strong, with volume                                        n   38 | next day +0.30 ATR, same way  58 % | NY 20-23 +0.041 ATR (-1.4 USD), same way  53 %, best 21.6 / worst 23.7 USD
+strong, without volume                                     n   52 | next day -0.04 ATR, same way  54 % | NY 20-23 -0.075 ATR (-7.1 USD), same way  54 %, best 11.8 / worst 23.0 USD
+strong + next day already running its way before NY        n   42 | next day +0.55 ATR, same way  86 % | NY 20-23 -0.043 ATR (-7.9 USD), same way  52 %, best 18.4 / worst 30.0 USD
+  ... and the pre-NY tick volume >= 1.2x usual             n   26 | next day +0.61 ATR, same way  77 % | NY 20-23 -0.024 ATR (-7.0 USD), same way  54 %, best 24.2 / worst 33.1 USD
+  ... with volume on both days                             n   19 | next day +0.70 ATR, same way  79 % | NY 20-23 +0.074 ATR (-5.3 USD), same way  63 %, best 26.6 / worst 34.1 USD
+strong + next day running back before NY                   n   30 | next day -0.61 ATR, same way  13 % | NY 20-23 -0.157 ATR (-7.9 USD), same way  47 %, best 11.7 / worst 22.6 USD
+strong + next day flat before NY                           n   18 | next day +0.26 ATR, same way  56 % | NY 20-23 +0.233 ATR (+8.3 USD), same way  67 %, best 17.2 / worst 9.0 USD
+
+the strong down days with volume:
+              t  body  next_day  pre_run  pre_vol    ny  ny_usd
+21   2023-09-26  1.07      1.81     0.61     1.44  0.74   10.29
+22   2023-09-27  1.85      0.76     0.23     1.48  0.56    7.63
+24   2023-09-29  1.05      1.31     0.76     1.44  0.24    3.68
+25   2023-10-02  1.25      0.30     0.20     1.59 -0.00   -0.01
+70   2023-12-04  2.04      0.48     0.23     1.28  0.38    8.50
+99   2024-01-16  1.17      0.94    -0.03     1.19  0.85   19.58
+139  2024-03-12  1.02     -0.70    -0.22     1.19 -0.36   -8.16
+189  2024-05-22  1.25      1.49     0.51     1.35  0.48   16.62
+190  2024-05-23  1.44     -0.12    -0.28     0.88  0.13    4.70
+235  2024-07-25  1.03     -0.73    -0.40     1.08 -0.24   -7.67
+309  2024-11-06  2.85     -1.58    -0.41     1.30 -0.85  -25.01
+379  2025-02-14  1.24     -0.11    -0.11     0.76 -0.04   -1.58
+414  2025-04-04  1.92      1.10    -0.08     2.13  1.08   43.61
+504  2025-08-11  1.30     -0.10    -0.13     1.05 -0.00   -0.05
+547  2025-10-09  1.10     -0.73    -0.14     1.47 -0.22  -12.14
+603  2025-12-29  3.22      0.03    -0.93     1.23  0.55   36.25
+626  2026-01-30  4.27      1.30     0.27     1.70  1.38  173.91
+648  2026-03-03  1.64     -0.21    -0.39     1.38  0.13   19.77
