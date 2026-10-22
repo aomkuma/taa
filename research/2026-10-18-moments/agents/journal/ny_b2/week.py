@@ -40,6 +40,19 @@ import check_plan1 as C  # noqa: E402
 MIN = 60 * 10**9
 ACCOUNTS = ((100.0, 7.5), (300.0, 3.0))
 H1 = None
+TFS: dict = {}
+TF_HOURS = {"D1": 24, "H4": 4, "H1": 1, "M15": 0.25}
+
+
+def structure(b: pd.DataFrame, t: pd.Timestamp, tf: str) -> int:
+    """+1 HH/HL, -1 LH/LL, 0 mixed: the last two confirmed 3-bar fractal highs and lows of the closed bars before t."""
+    c = b[b.index + pd.Timedelta(hours=TF_HOURS[tf]) <= t].iloc[-200:]
+    hi, lo = c.high.values, c.low.values
+    fh = [hi[i] for i in range(1, len(c) - 1) if hi[i] > hi[i - 1] and hi[i] > hi[i + 1]][-2:]
+    fl = [lo[i] for i in range(1, len(c) - 1) if lo[i] < lo[i - 1] and lo[i] < lo[i + 1]][-2:]
+    if len(fh) < 2 or len(fl) < 2:
+        return 0
+    return 1 if fh[1] > fh[0] and fl[1] > fl[0] else -1 if fh[1] < fh[0] and fl[1] < fl[0] else 0
 BAND_FROM = pd.Timestamp("2025-12-08", tz="UTC")  # the realistic variant aims 0.1 step before the line from week 8
 
 
@@ -51,6 +64,8 @@ def context(X: pd.DataFrame) -> pd.DataFrame:
     global H1
     if H1 is None:
         H1 = Z.bars("H1")
+        for tf in ("D1", "H4", "H1", "M15"):
+            TFS[tf] = Z.bars(tf)
     g = Z.daily_grid(Z.bars("D1"))
     out = []
     for r in X.itertuples():
@@ -60,21 +75,35 @@ def context(X: pd.DataFrame) -> pd.DataFrame:
         band = 0.1 * g.step.values[k]
         h = H1[(H1.index + pd.Timedelta(hours=1) <= r.t) & (H1.index >= r.t - pd.Timedelta(days=5))]
         inside = ((h.low <= lv + band) & (h.high >= lv - band)).values
-        touches, bounces, last = 0, [], -10
+        touches, bounces, last, ext = 0, [], -10, []
         for i in np.flatnonzero(inside):
             if i - last > 3:
                 touches += 1
                 after = h.iloc[i : i + 7]
                 b = (after.high.max() - lv) if side > 0 else (lv - after.low.min())
                 bounces.append(round(float(b), 1))
+                ext.append(float(h.low.values[i]) if side > 0 else float(h.high.values[i]))
+            else:
+                ext[-1] = min(ext[-1], float(h.low.values[i])) if side > 0 else max(ext[-1], float(h.high.values[i]))
             last = i
+        # owner: each touch making a lower low into a support (a higher high into a resistance) wears the level down
+        worn = sum(1 for a, b in zip(ext, ext[1:]) if (b < a if side > 0 else b > a))
         hi, lo = h.high.values, h.low.values
         fh = [hi[i] for i in range(1, len(h) - 1) if hi[i] > hi[i - 1] and hi[i] > hi[i + 1]][-2:]
         fl = [lo[i] for i in range(1, len(h) - 1) if lo[i] < lo[i - 1] and lo[i] < lo[i + 1]][-2:]
         st = "?"
         if len(fh) == 2 and len(fl) == 2:
             st = "HH/HL" if fh[1] > fh[0] and fl[1] > fl[0] else "LH/LL" if fh[1] < fh[0] and fl[1] < fl[0] else "mixed"
-        out.append(dict(touches=touches, bounces=bounces[-4:], h1_structure=st))
+        sc, parts = 0.0, []
+        for tf, w in (("D1", 3), ("H4", 2), ("H1", 2), ("M15", 1)):
+            v = structure(TFS[tf], r.t, tf) * side
+            sc += w * v
+            parts.append(f"{tf}{'+' if v > 0 else '-' if v < 0 else '0'}")
+        fresh = 1 if touches <= 2 else -1 if touches >= 5 else 0
+        mom = 0 if len(bounces) < 2 else (1 if bounces[-1] > bounces[-2] else -1)
+        sc += fresh + mom
+        out.append(dict(touches=touches, bounces=bounces[-4:], h1_structure=st, score=sc,
+                        score_parts=" ".join(parts) + f" fresh{fresh:+d} mom{mom:+d}", worn=worn))
     return pd.DataFrame(out, index=X.index)
 
 
@@ -144,7 +173,7 @@ if __name__ == "__main__":
         print(f"{r.t.tz_convert('Asia/Bangkok'):%a %d %H:%M} {tf} {r.side:4s} R {r.r_multiple:+.2f} {r.exit_reason:6s} "
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
               f"| grid line {r.zone_line_dist:.1f} USD away\n"
-              f"      context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | band-target {r.r_real_band:+.2f} R\n"
+              f"      context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | deeper touches {r.worn} | SCORE {r.score:+.0f} ({r.score_parts}) | band-target {r.r_real_band:+.2f} R\n"
               f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"
               f" | real {r.r_real:+.2f} R: 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
     if len(W):
