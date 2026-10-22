@@ -61,7 +61,11 @@ TREND_FROM = pd.Timestamp("2025-12-29", tz="UTC")
 TREND_UNTIL = pd.Timestamp("2026-01-12", tz="UTC")
 # from week 14 (owner: a line is a band; weeks 2-13: entries < 10 USD from a zone line -1.93 R on 17, farther +10.46 on
 # 38): the realistic variant skips an entry within 10 USD of a zone line
-NEAR_FROM, NEAR_USD = pd.Timestamp("2026-01-19", tz="UTC"), 10.0  # the realistic variant aims 0.1 step before the line from week 8
+NEAR_FROM, NEAR_USD = pd.Timestamp("2026-01-19", tz="UTC"), 10.0
+# from week 16 (owner after week 15: "you cannot read the momentum - and the high volatility"; momentum.py, weeks 2-15:
+# entries with H1 ATR(14) above 1.1 x its 20-day median -3.78 R on 12, the rest +9.80 on 48): the realistic variant
+# stands aside when the hour is that volatile. The fade of a big 3-day push (push3d) is journaled, not a rule yet.
+VOL_FROM, VOL_MAX = pd.Timestamp("2026-02-02", tz="UTC"), 1.1  # the realistic variant aims 0.1 step before the line from week 8
 
 
 def context(X: pd.DataFrame) -> pd.DataFrame:
@@ -118,6 +122,26 @@ def context(X: pd.DataFrame) -> pd.DataFrame:
         day_rng = float((dd.high.max() - dd.low.min()) / a) if len(dd) else np.nan
         out.append(dict(touches=touches, bounces=bounces[-4:], h1_structure=st, score=sc, day_run=day_run, day_rng=day_rng,
                         score_parts=" ".join(parts) + f" fresh{fresh:+d} mom{mom:+d}", worn=worn))
+    return pd.DataFrame(out, index=X.index)
+
+
+def _atr14(b: pd.DataFrame) -> pd.Series:
+    pc = b.close.shift(1)
+    return pd.concat([b.high - b.low, (b.high - pc).abs(), (b.low - pc).abs()], axis=1).max(axis=1).rolling(14).mean()
+
+
+def pressure(X: pd.DataFrame) -> pd.DataFrame:
+    """Per entry, closed bars only: vol = H1 ATR(14) over its median of the previous 20 days; push3d = the move from the
+    D1 close 3 days ago to the entry in the trade's direction, in D1 ATR(14) (negative = fading a push)."""
+    h1, d1 = Z.bars("H1"), Z.bars("D1")
+    h1a, d1a = _atr14(h1), _atr14(d1)
+    h1med = h1a.rolling(20 * 24, min_periods=100).median()
+    out = []
+    for r in X.itertuples():
+        side = 1 if r.side == "BUY" else -1
+        i = h1a.index[h1a.index + pd.Timedelta(hours=1) <= r.t][-1]
+        cd = d1[d1.index + pd.Timedelta(days=1) <= r.t]
+        out.append(dict(vol=float(h1a[i] / h1med[i]), push3d=float((r.entry_price - cd.close.iloc[-4]) * side / d1a[cd.index[-1]])))
     return pd.DataFrame(out, index=X.index)
 
 
@@ -188,6 +212,8 @@ if __name__ == "__main__":
     X["r_real_all"] = X.r_real
     X.loc[(X.t >= TREND_FROM) & (X.t < TREND_UNTIL) & ~X.with_trend, "r_real"] = np.nan
     X.loc[(X.t >= NEAR_FROM) & (X.zone_line_dist < NEAR_USD), "r_real"] = np.nan
+    X = X.join(pressure(X))
+    X.loc[(X.t >= VOL_FROM) & (X.vol > VOL_MAX), "r_real"] = np.nan
     X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
     X["r_real_band"] = realistic(X, band=0.1)  # candidate from week 5 (owner: a line is a band): aim 0.1 step before it
     X = accounts(accounts(X), "r_real", "r")
@@ -202,6 +228,7 @@ if __name__ == "__main__":
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
               f"| grid line {r.zone_line_dist:.1f} USD away\n"
               f"      zone-grid trend {r.grid_trend} -> {'WITH' if r.with_trend else 'AGAINST'} | "
+              f"momentum: H1 vol {r.vol:.2f}x usual, 3-day push {r.push3d:+.2f} D1 ATR in the trade's way | "
               f"day so far: run {r.day_run:+.2f} ATR in the trade's way, range {r.day_rng:.2f} ATR | "
               f"context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | deeper touches {r.worn} | SCORE {r.score:+.0f} ({r.score_parts}) | band-target {r.r_real_band:+.2f} R\n"
               f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"

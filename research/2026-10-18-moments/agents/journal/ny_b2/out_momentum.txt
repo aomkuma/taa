@@ -1,0 +1,132 @@
+25-10-27 Mon 21:05 SELL base +0.26 real +0.51 | push30 +0.99 push60 +1.66 3d +0.94 24h +0.58 D1ATR | push4h +1.32 H1 with 3/4 M15 with 4/4 rng60 1.83 vol 1.27 (H1 ATR 22.1)
+25-10-29 Wed 22:46 SELL base +0.19 real +1.01 | push30 +0.43 push60 +0.46 3d +0.90 24h -0.47 D1ATR | push4h +1.19 H1 with 3/4 M15 with 3/4 rng60 0.70 vol 0.96 (H1 ATR 18.2)
+25-10-30 Thu 20:52 BUY  base +1.17 real +0.98 | push30 +0.41 push60 +0.66 3d -0.97 24h -0.30 D1ATR | push4h +0.30 H1 with 1/4 M15 with 2/4 rng60 0.83 vol 1.28 (H1 ATR 25.5)
+25-10-31 Fri 20:44 SELL base -0.58 real -0.48 | push30 +0.88 push60 +0.70 3d -0.24 24h -0.11 D1ATR | push4h -0.16 H1 with 2/4 M15 with 2/4 rng60 1.08 vol 0.90 (H1 ATR 18.4)
+25-10-31 Fri 21:46 SELL base -0.72 real +1.45 | push30 +0.39 push60 +0.18 3d -0.24 24h -0.13 D1ATR | push4h -0.22 H1 with 2/4 M15 with 1/4 rng60 0.92 vol 0.90 (H1 ATR 18.5)
+25-10-31 Fri 22:10 SELL base +0.58 real +1.04 | push30 +0.16 push60 +0.45 3d -0.24 24h -0.13 D1ATR | push4h -0.29 H1 with 1/4 M15 with 1/4 rng60 0.86 vol 0.91 (H1 ATR 18.8)
+25-11-03 Mon 21:28 SELL base -0.50 real +0.50 | push30 +0.26 push60 +0.22 3d -0.47 24h +0.03 D1ATR | push4h -0.69 H1 with 1/4 M15 with 2/4 rng60 0.60 vol 0.83 (H1 ATR 17.2)
+25-11-03 Mon 22:28 SELL base -0.25 real +0.20 | push30 +0.74 push60 +0.27 3d -0.46 24h +0.04 D1ATR | push4h -0.76 H1 with 0/4 M15 with 1/4 rng60 1.69 vol 0.82 (H1 ATR 17.1)
+25-11-04 Tue 20:30 SELL base +1.92 real +1.47 | push30 +0.10 push60 +0.48 3d -0.40 24h +0.13 D1ATR | push4h +0.90 H1 with 2/4 M15 with 2/4 rng60 0.91 vol 0.69 (H1 ATR 14.4)
+25-11-05 Wed 20:54 BUY  base -0.00 real +0.16 | push30 +0.79 push60 +1.06 3d -0.35 24h -0.10 D1ATR | push4h -0.13 H1 with 2/4 M15 with 3/4 rng60 1.01 vol 0.66 (H1 ATR 13.7)
+25-11-06 Thu 21:11 SELL base +2.04 real +1.55 | push30 +0.73 push60 +0.40 3d -0.03 24h -0.24 D1ATR | push4h +0.44 H1 with 2/4 M15 with 1/4 rng60 0.90 vol 0.50 (H1 ATR 10.4)
+25-11-06 Thu 22:34 SELL base -0.44 real +0.89 | push30 +1.02 push60 +0.90 3d +0.17 24h -0.04 D1ATR | push4h +2.31 H1 with 2/4 M15 with 2/4 rng60 2.12 vol 0.56 (H1 ATR 11.8)
+25-11-07 Fri 22:02 BUY  base -0.82 real +0.80 | push30 -0.16 push60 +0.07 3d -0.03 24h -0.12 D1ATR | push4h -0.77 H1 with 1/4 M15 with 2/4 rng60 1.89 vol 0.58 (H1 ATR 12.1)
+25-11-10 Mon 20:47 SELL base +0.93 real +1.06 | push30 +0.57 push60 -0.08 3d -1.49 24h -0.82 D1ATR | push4h -1.05 H1 with 1/4 M15 with 2/4 rng60 0.97 vol 0.64 (H1 ATR 12.8)
+25-11-10 Mon 22:48 SELL base -0.61 real -1.00 | push30 +0.45 push60 +0.01 3d -1.36 24h -0.77 D1ATR | push4h -0.02 H1 with 2/4 M15 with 1/4 rng60 1.17 vol 0.68 (H1 ATR 13.7)
+25-11-11 Tue 21:50 SELL base +0.08 real +0.19 | push30 +1.51 push60 +2.24 3d -1.47 24h -0.30 D1ATR | push4h +1.97 H1 with 2/4 M15 with 2/4 rng60 2.27 vol 0.56 (H1 ATR 11.0)
+25-11-13 Thu 21:10 SELL base +2.05 real +0.64 | push30 +0.45 push60 +0.80 3d -2.38 24h -0.99 D1ATR | push4h +0.98 H1 with 2/4 M15 with 2/4 rng60 1.38 vol 0.90 (H1 ATR 17.1)
+25-11-14 Fri 22:51 BUY  base +0.50 real +0.08 | push30 +0.54 push60 +1.18 3d -0.23 24h -1.51 D1ATR | push4h -2.75 H1 with 1/4 M15 with 2/4 rng60 1.09 vol 1.34 (H1 ATR 26.5)
+25-11-18 Tue 21:53 SELL base +0.07 real +0.50 | push30 +0.70 push60 +0.10 3d +1.43 24h -0.02 D1ATR | push4h -1.39 H1 with 2/4 M15 with 1/4 rng60 0.97 vol 0.98 (H1 ATR 19.1)
+25-11-20 Thu 21:45 BUY  base -0.29 real +0.49 | push30 +0.51 push60 +0.42 3d +0.05 24h -0.25 D1ATR | push4h +1.21 H1 with 2/4 M15 with 2/4 rng60 0.93 vol 1.10 (H1 ATR 20.8)
+25-11-21 Fri 20:45 BUY  base -0.46 real -1.00 | push30 +0.52 push60 +0.54 3d +0.32 24h +0.10 D1ATR | push4h +1.58 H1 with 2/4 M15 with 3/4 rng60 0.66 vol 1.06 (H1 ATR 19.9)
+25-11-21 Fri 21:55 BUY  base -0.53 real -1.04 | push30 +0.40 push60 -0.17 3d +0.34 24h -0.07 D1ATR | push4h +1.18 H1 with 2/4 M15 with 1/4 rng60 1.09 vol 1.09 (H1 ATR 20.4)
+25-11-24 Mon 20:38 BUY  base -0.80 real -1.00 | push30 +0.37 push60 +0.74 3d +0.21 24h +0.40 D1ATR | push4h +1.52 H1 with 3/4 M15 with 3/4 rng60 0.81 vol 0.77 (H1 ATR 14.4)
+25-11-26 Wed 20:48 SELL base +0.11 real +0.50 | push30 +0.54 push60 +0.45 3d -0.85 24h -0.28 D1ATR | push4h +0.66 H1 with 2/4 M15 with 2/4 rng60 1.39 vol 0.73 (H1 ATR 12.9)
+25-11-27 Thu 20:35 BUY  base +0.21 real +0.29 | push30 +0.50 push60 -0.04 3d +1.05 24h -0.07 D1ATR | push4h -0.93 H1 with 1/4 M15 with 1/4 rng60 0.99 vol 0.56 (H1 ATR 9.5)
+25-11-27 Thu 22:18 BUY  base -0.15 real -1.01 | push30 +0.20 push60 +0.07 3d +1.08 24h +0.07 D1ATR | push4h +0.27 H1 with 2/4 M15 with 2/4 rng60 0.79 vol 0.58 (H1 ATR 9.8)
+25-11-28 Fri 21:40 BUY  base +0.56 real +0.07 | push30 +1.10 push60 +1.76 3d +0.77 24h +0.57 D1ATR | push4h +2.30 H1 with 3/4 M15 with 4/4 rng60 1.93 vol 0.99 (H1 ATR 16.1)
+25-12-02 Tue 21:08 BUY  base -0.44 real -1.00 | push30 +1.07 push60 +0.56 3d +0.67 24h -0.34 D1ATR | push4h +1.93 H1 with 3/4 M15 with 2/4 rng60 1.10 vol 0.90 (H1 ATR 14.3)
+25-12-03 Wed 21:45 SELL base +0.68 real +0.50 | push30 -0.02 push60 -0.28 3d -0.88 24h -0.18 D1ATR | push4h -2.14 H1 with 1/4 M15 with 2/4 rng60 2.01 vol 0.72 (H1 ATR 11.5)
+25-12-04 Thu 21:16 BUY  base -0.09 real +0.25 | push30 +1.24 push60 +1.58 3d -0.20 24h -0.40 D1ATR | push4h +0.56 H1 with 2/4 M15 with 3/4 rng60 1.70 vol 0.77 (H1 ATR 12.1)
+25-12-05 Fri 20:30 BUY  base -0.50 real +1.06 | push30 +0.57 push60 +1.08 3d +0.00 24h +0.50 D1ATR | push4h +1.57 H1 with 3/4 M15 with 3/4 rng60 1.64 vol 0.52 (H1 ATR 8.2)
+25-12-08 Mon 21:14 BUY  base -0.28 real -1.01 | push30 +0.51 push60 +0.13 3d +0.04 24h -0.40 D1ATR | push4h +0.10 H1 with 2/4 M15 with 0/4 rng60 1.28 vol 0.69 (H1 ATR 10.9)
+25-12-09 Tue 20:31 SELL base +0.24 real -1.01 | push30 +0.67 push60 +0.46 3d +0.10 24h +0.17 D1ATR | push4h -0.61 H1 with 1/4 M15 with 2/4 rng60 1.00 vol 0.62 (H1 ATR 9.8)
+25-12-11 Thu 21:10 BUY  base +2.05 real +1.20 | push30 +0.64 push60 +1.02 3d +0.49 24h +0.41 D1ATR | push4h +0.48 H1 with 2/4 M15 with 3/4 rng60 1.67 vol 0.79 (H1 ATR 12.5)
+25-12-12 Fri 21:39 SELL base -0.69 real -1.02 | push30 +0.73 push60 +0.59 3d -2.48 24h -1.94 D1ATR | push4h -1.29 H1 with 1/4 M15 with 1/4 rng60 1.08 vol 0.80 (H1 ATR 12.4)
+25-12-17 Wed 20:35 BUY  base -0.53 real +0.81 | push30 +0.99 push60 +1.19 3d +0.84 24h +0.86 D1ATR | push4h +1.20 H1 with 2/4 M15 with 2/4 rng60 1.84 vol 0.78 (H1 ATR 11.4)
+25-12-18 Thu 20:42 BUY  base -0.18 real -1.02 | push30 +2.44 push60 +1.83 3d +0.59 24h +0.32 D1ATR | push4h +1.37 H1 with 2/4 M15 with 2/4 rng60 2.92 vol 0.53 (H1 ATR 7.6)
+25-12-19 Fri 21:40 BUY  base -1.00 real -1.00 | push30 +0.53 push60 +0.31 3d +0.51 24h -0.01 D1ATR | push4h +0.67 H1 with 1/4 M15 with 0/4 rng60 1.25 vol 0.69 (H1 ATR 9.7)
+25-12-22 Mon 22:13 SELL base -0.67 real -1.02 | push30 +0.06 push60 +0.61 3d -1.88 24h -1.45 D1ATR | push4h -0.65 H1 with 1/4 M15 with 2/4 rng60 1.21 vol 0.89 (H1 ATR 12.0)
+25-12-23 Tue 21:05 SELL base -0.15 real +1.00 | push30 +1.56 push60 +1.64 3d -2.09 24h -0.76 D1ATR | push4h +0.68 H1 with 2/4 M15 with 2/4 rng60 2.00 vol 0.99 (H1 ATR 13.0)
+25-12-24 Wed 20:39 BUY  base -0.45 real -1.00 | push30 -0.42 push60 -0.37 3d +2.35 24h +0.07 D1ATR | push4h +0.17 H1 with 2/4 M15 with 1/4 rng60 1.08 vol 1.33 (H1 ATR 17.5)
+25-12-26 Fri 21:34 BUY  base -0.79 real -1.00 | push30 +0.36 push60 +0.86 3d +2.85 24h +0.63 D1ATR | push4h +1.19 H1 with 2/4 M15 with 4/4 rng60 0.98 vol 1.13 (H1 ATR 14.9)
+25-12-30 Tue 21:39 SELL base +0.17 real +0.49 | push30 +0.42 push60 +0.47 3d +1.37 24h +0.57 D1ATR | push4h -0.15 H1 with 2/4 M15 with 2/4 rng60 0.82 vol 1.38 (H1 ATR 19.5)
+26-01-02 Fri 21:35 SELL base -0.34 real +1.50 | push30 +1.18 push60 +1.25 3d +2.03 24h -0.11 D1ATR | push4h +2.17 H1 with 2/4 M15 with 3/4 rng60 1.65 vol 0.98 (H1 ATR 13.9)
+26-01-06 Tue 20:46 BUY  base -1.04 real -1.04 | push30 -0.12 push60 +0.10 3d +1.40 24h +0.32 D1ATR | push4h -0.29 H1 with 3/4 M15 with 3/4 rng60 0.93 vol 1.11 (H1 ATR 16.2)
+26-01-06 Tue 21:35 BUY  base +0.10 real +0.21 | push30 +0.76 push60 +1.34 3d +1.57 24h +0.70 D1ATR | push4h +2.11 H1 with 4/4 M15 with 3/4 rng60 1.59 vol 1.07 (H1 ATR 15.7)
+26-01-07 Wed 21:37 SELL base -0.71 real +0.50 | push30 +0.59 push60 +0.06 3d -1.39 24h +0.29 D1ATR | push4h +1.19 H1 with 2/4 M15 with 2/4 rng60 0.91 vol 1.19 (H1 ATR 17.8)
+26-01-08 Thu 21:33 BUY  base +1.44 real +1.46 | push30 +0.57 push60 -0.12 3d +1.09 24h -0.23 D1ATR | push4h -0.02 H1 with 2/4 M15 with 1/4 rng60 1.08 vol 1.00 (H1 ATR 15.1)
+26-01-09 Fri 20:38 BUY  base -0.18 real +0.72 | push30 +1.77 push60 +2.21 3d +0.44 24h +0.61 D1ATR | push4h +1.88 H1 with 3/4 M15 with 2/4 rng60 2.64 vol 0.72 (H1 ATR 11.1)
+26-01-09 Fri 21:38 BUY  base -0.88 real +0.75 | push30 +0.92 push60 +0.80 3d +0.53 24h +0.79 D1ATR | push4h +2.02 H1 with 3/4 M15 with 3/4 rng60 1.36 vol 0.84 (H1 ATR 12.9)
+26-01-12 Mon 22:07 BUY  base +0.51 real +0.06 | push30 +0.97 push60 +0.85 3d +1.29 24h +1.43 D1ATR | push4h +1.20 H1 with 2/4 M15 with 1/4 rng60 1.63 vol 1.10 (H1 ATR 17.2)
+26-01-13 Tue 20:36 BUY  base +0.11 real +0.50 | push30 +1.48 push60 +2.49 3d +1.63 24h +0.26 D1ATR | push4h +1.58 H1 with 3/4 M15 with 3/4 rng60 2.48 vol 0.88 (H1 ATR 13.9)
+26-01-14 Wed 22:05 SELL base -0.59 real -0.29 | push30 +1.66 push60 +2.09 3d -1.35 24h +0.06 D1ATR | push4h +1.89 H1 with 3/4 M15 with 3/4 rng60 2.39 vol 0.92 (H1 ATR 14.6)
+26-01-15 Thu 21:31 BUY  base +0.23 real +0.10 | push30 +1.33 push60 +0.26 3d +1.07 24h -0.28 D1ATR | push4h -0.16 H1 with 1/4 M15 with 2/4 rng60 1.51 vol 1.02 (H1 ATR 16.3)
+26-01-16 Fri 21:48 BUY  base -0.65 real -1.02 | push30 +0.49 push60 +1.06 3d +0.24 24h +0.28 D1ATR | push4h +0.97 H1 with 1/4 M15 with 3/4 rng60 1.12 vol 0.86 (H1 ATR 13.8)
+26-01-22 Thu 22:30 BUY  base +1.59 real +0.80 | push30 +1.03 push60 +1.34 3d +3.01 24h -0.29 D1ATR | push4h +1.36 H1 with 3/4 M15 with 3/4 rng60 1.58 vol 1.10 (H1 ATR 18.7)
+26-01-26 Mon 20:35 SELL base -0.63 real -0.43 | push30 +0.41 push60 +0.87 3d -3.38 24h -1.63 D1ATR | push4h +0.74 H1 with 2/4 M15 with 3/4 rng60 1.30 vol 1.52 (H1 ATR 27.1)
+26-01-26 Mon 22:35 SELL base -0.56 real -1.00 | push30 +0.54 push60 +0.28 3d -3.55 24h -1.56 D1ATR | push4h +0.52 H1 with 3/4 M15 with 2/4 rng60 0.75 vol 1.49 (H1 ATR 26.5)
+26-01-27 Tue 21:15 SELL base -0.58 real -0.88 | push30 +0.55 push60 +1.23 3d -2.48 24h +0.09 D1ATR | push4h +1.57 H1 with 3/4 M15 with 3/4 rng60 1.52 vol 1.35 (H1 ATR 24.7)
+26-01-30 Fri 20:48 SELL base -0.51 real -1.00 | push30 +0.72 push60 +1.12 3d +0.04 24h +3.52 D1ATR | push4h +1.16 H1 with 2/4 M15 with 2/4 rng60 1.09 vol 5.10 (H1 ATR 95.6)
+
+push30
+              n  base  real    win
+push30                            
+(-0.5, 0.0]   4 -1.63 -0.75  50.00
+(0.0, 0.5]   17  0.24  0.35  52.94
+(0.5, inf]   39  0.55  6.42  69.23
+
+push60
+              n  base  real    win
+push60                            
+(-0.5, 0.0]   6  2.26  1.26  66.67
+(0.0, 0.5]   21 -1.38  3.53  66.67
+(0.5, inf]   33 -1.72  1.23  60.61
+
+push3d
+               n  base  real    win
+push3d                             
+(-inf, -1.0]  12 -2.15 -2.24  41.67
+(-1.0, 0.0]   14  4.05  9.00  92.86
+(0.0, 1.0]    20 -4.38 -2.60  50.00
+(1.0, inf]    14  1.64  1.87  71.43
+
+push24h
+               n  base  real    win
+push24h                            
+(-inf, -0.5]   9  0.16 -1.68  44.44
+(-0.5, 0.0]   24  2.84  9.93  79.17
+(0.0, 0.5]    16 -2.04 -4.91  37.50
+(0.5, inf]    11 -1.80  2.68  81.82
+
+push240
+               n  base  real     win
+push240                             
+(-inf, -1.5]   2  1.18  0.58  100.00
+(-1.5, -0.5]   9 -1.49  0.29   66.67
+(-0.5, 0.5]   15  3.85  2.90   60.00
+(0.5, inf]    34 -4.38  2.25   61.76
+
+h1_with
+              n  base  real     win
+h1_with                            
+(-inf, 0.5]   1 -0.25  0.20  100.00
+(0.5, 1.5]   14  0.21  0.27   64.29
+(1.5, 2.5]   30  1.99  5.14   63.33
+(2.5, inf]   15 -2.78  0.42   60.00
+
+m15_with
+              n  base  real    win
+m15_with                          
+(-inf, 0.5]   2 -1.28 -2.01   0.00
+(0.5, 1.5]   12  1.59  2.49  66.67
+(1.5, 2.5]   26  1.36  4.18  69.23
+(2.5, inf]   20 -2.51  1.37  60.00
+
+rng60
+               n  base  real    win
+rng60                              
+(-inf, 0.75]   3 -0.77  0.51  66.67
+(0.75, 1.25]  30 -1.94 -4.12  46.67
+(1.25, 2.0]   19  2.54  7.15  84.21
+(2.0, inf]     8 -0.67  2.48  75.00
+
+vol
+              n  base  real    win
+vol                               
+(-inf, 0.9]  31  0.59  3.44  64.52
+(0.9, 1.1]   17  1.75  6.37  76.47
+(1.1, 1.4]    9 -1.47 -1.35  55.56
+(1.4, inf]    3 -1.71 -2.43   0.00
+
+all: 60 trades base -0.84 real +6.02
