@@ -1,0 +1,16 @@
+Mon 08 21:14 M1 BUY  R -0.28 SIGNAL best +0.21R worst -0.32R | W, the 2nd low swept the 1st | level 4199.20 x3+ / flip (swept) | M5 structure mixed | stop 12.25 | grid line 8.2 USD away
+      context: level touched 2x in 5 days, bounces [30.1, 46.4] USD, H1 LH/LL | band-target -1.01 R
+      base -0.28 R: 100 -3.45 -> 223.74, 300 -3.45 -> 424.73 | real -1.01 R: 100 -12.45 -> 245.66, 300 -12.45 -> 459.78
+Tue 09 20:31 M1 SELL R +0.24 TIME   best +0.76R worst -0.57R | M | level 4203.34 x2 (swept) | M5 structure mixed | stop 10.37 | grid line 10.5 USD away
+      context: level touched 4x in 5 days, bounces [12.0, 11.4, 33.4, 12.5] USD, H1 mixed | band-target -1.01 R
+      base +0.24 R: 100 +2.46 -> 226.20, 300 +2.46 -> 427.19 | real -1.01 R: 100 -10.54 -> 235.12, 300 -10.54 -> 449.24
+Thu 11 21:10 M5 BUY  R +2.05 TIME   best +3.03R worst -0.06R | W, the 2nd low swept the 1st | level 4206.71 x2 (swept) | M1 structure up | stop 20.18 | grid line 10.7 USD away
+      context: level touched 3x in 5 days, bounces [10.4, 9.6, 18.1] USD, H1 mixed | band-target +1.20 R
+      base +2.05 R: 100 +41.60 -> 267.79, 300 +41.60 -> 468.79 | real +1.20 R: 100 +24.33 -> 259.45, 300 +24.33 -> 473.57
+Fri 12 21:39 M1 SELL R -0.69 SIGNAL best +0.05R worst -0.72R | M | level 4346.00 5d high (at) | M5 structure mixed | stop 11.87 | grid line 22.1 USD away
+      context: level touched 1x in 5 days, bounces [24.6] USD, H1 HH/HL | band-target -1.02 R
+      base -0.69 R: 100 -8.26 -> 259.53, 300 -8.26 -> 460.53 | real -1.02 R: 100 -12.08 -> 247.37, 300 -12.08 -> 461.49
+candidate (target 0.1 step before the line): week -1.84 R | weeks so far +8.43
+candidate (no break-even on the rest): week -1.84 R | weeks so far: base +5.47, real +7.82, no-BE +6.73
+real: -1.84 R | 100: -10.74 -> 247.37 | 300: -10.74 -> 461.49
+week: 4 trades +1.31 R | 100 USD at 7.5 %: +32.35 USD -> 259.53 | 300 USD at 3 %: +32.35 USD -> 460.53
