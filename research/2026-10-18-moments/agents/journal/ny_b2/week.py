@@ -34,8 +34,27 @@ def load() -> pd.DataFrame:
     return X
 
 
+ACCOUNTS = ((100.0, 7.5), (300.0, 3.0))  # owner 2026-10-22: every learning journal carries 100 and 300 USD
+
+
+def accounts(X: pd.DataFrame) -> pd.DataFrame:
+    """Both accounts trade by trade from the journal's first trade (equity sizing, at least 0.01 lot)."""
+    X = X.sort_values("t").copy()
+    for eq0, pct in ACCOUNTS:
+        eq, usd, bal = eq0, [], []
+        for r in X.itertuples():
+            risk = abs(r.entry_price - r.sl_initial)
+            lots = max(0.01, np.floor(eq * pct / 100 / (risk * 100) * 100) / 100)
+            u = r.r_multiple * risk * lots * 100
+            eq += u
+            usd.append(u)
+            bal.append(eq)
+        X[f"usd_{eq0:.0f}"], X[f"bal_{eq0:.0f}"] = usd, bal
+    return X
+
+
 if __name__ == "__main__":
-    X = load()
+    X = accounts(load())
     W = X[(X.t >= pd.Timestamp(sys.argv[1], tz="UTC")) & (X.t < pd.Timestamp(sys.argv[2], tz="UTC"))]
     for r in W.itertuples():
         tf = "M5" if r.strategy.endswith("m5") else "M1"
@@ -44,5 +63,5 @@ if __name__ == "__main__":
         risk = abs(r.entry_price - r.sl_initial)
         print(f"{r.t.tz_convert('Asia/Bangkok'):%a %d %H:%M} {tf} {r.side:4s} R {r.r_multiple:+.2f} {r.exit_reason:6s} "
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
-              f"| grid line {r.zone_line_dist:.1f} USD away")
-    print(f"week: {len(W)} trades {W.r_multiple.sum():+.2f} R")
+              f"| grid line {r.zone_line_dist:.1f} USD away | 100: {r.usd_100:+.2f} -> {r.bal_100:.2f} | 300: {r.usd_300:+.2f} -> {r.bal_300:.2f}")
+    print(f"week: {len(W)} trades {W.r_multiple.sum():+.2f} R | 100 USD at 7.5 %: {W.usd_100.sum():+.2f} USD -> {W.bal_100.iloc[-1] if len(W) else float('nan'):.2f} | 300 USD at 3 %: {W.usd_300.sum():+.2f} USD -> {W.bal_300.iloc[-1] if len(W) else float('nan'):.2f}")
