@@ -1,0 +1,16 @@
+Mon 03 21:28 M1 SELL R -0.50 SIGNAL best +1.11R worst -0.50R | M | level 4021.64 x3+ / flip (at) | M5 structure up | stop 9.19 | grid line 12.5 USD away
+      base -0.50 R: 100 -4.60 -> 127.03, 300 -4.60 -> 327.03 | real +0.50 R: 100 +4.59 -> 192.65, 300 +4.59 -> 392.65
+Mon 03 22:28 M1 SELL R -0.25 SIGNAL best +0.33R worst -0.26R | base | level 4028.25 x3+ / flip (base) | M5 structure mixed | stop 17.67 | grid line 11.8 USD away
+      base -0.25 R: 100 -4.40 -> 122.63, 300 -4.40 -> 322.63 | real +0.20 R: 100 +3.48 -> 196.13, 300 +3.48 -> 396.13
+Tue 04 20:30 M5 SELL R +1.92 TIME   best +3.11R worst -0.31R | M, the 2nd high swept the 1st | level 3999.04 x3+ / flip (at) | M1 structure mixed | stop 16.68 | grid line 19.4 USD away
+      base +1.92 R: 100 +33.39 -> 156.02, 300 +33.39 -> 356.02 | real +1.47 R: 100 +25.60 -> 221.73, 300 +25.60 -> 421.73
+Wed 05 20:54 M1 BUY  R -0.00 SIGNAL best +0.55R worst -0.32R | W, the 2nd low swept the 1st | level 3966.49 x3+ / flip (swept) | M5 structure up | stop 13.77 | grid line 20.5 USD away
+      base -0.00 R: 100 -0.03 -> 155.99, 300 -0.03 -> 355.99 | real +0.16 R: 100 +2.20 -> 223.93, 300 +2.20 -> 423.93
+Thu 06 21:11 M1 SELL R +2.04 TIME   best +2.77R worst -0.23R | M | level 4015.47 x3+ / flip (at) | M5 structure down | stop 9.99 | grid line 5.7 USD away
+      base +2.04 R: 100 +20.41 -> 176.40, 300 +20.41 -> 376.40 | real +1.55 R: 100 +15.53 -> 239.46, 300 +15.53 -> 439.46
+Thu 06 22:34 M1 SELL R -0.44 SIGNAL best +0.56R worst -0.45R | base | level 3991.16 x3+ / flip (base) | M5 structure down | stop 10.32 | grid line 19.5 USD away
+      base -0.44 R: 100 -4.55 -> 171.85, 300 -4.55 -> 371.85 | real +0.89 R: 100 +9.29 -> 248.75, 300 +9.29 -> 448.75
+Fri 07 22:02 M1 BUY  R -0.82 SIGNAL best +0.05R worst -0.85R | sweep, higher low | level 3986.23 x3+ / flip (swept) | M5 structure mixed | stop 14.66 | grid line 11.0 USD away
+      base -0.82 R: 100 -11.94 -> 159.91, 300 -11.94 -> 359.91 | real +0.80 R: 100 +11.70 -> 260.45, 300 +11.70 -> 460.45
+real: +5.57 R | 100: +72.38 -> 260.45 | 300: +72.38 -> 460.45
+week: 7 trades +1.96 R | 100 USD at 7.5 %: +28.28 USD -> 159.91 | 300 USD at 3 %: +28.28 USD -> 359.91

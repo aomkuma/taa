@@ -34,10 +34,46 @@ def load() -> pd.DataFrame:
     return X
 
 
-ACCOUNTS = ((100.0, 7.5), (300.0, 3.0))  # owner 2026-10-22: every learning journal carries 100 and 300 USD
+sys.path.insert(0, str(HERE.parents[1] / "precursors"))
+import check_plan1 as C  # noqa: E402
+
+MIN = 60 * 10**9
+ACCOUNTS = ((100.0, 7.5), (300.0, 3.0))
 
 
-def accounts(X: pd.DataFrame) -> pd.DataFrame:
+def realistic(X: pd.DataFrame) -> pd.Series:
+    """The 'closer to real trading' variant (owner 2026-10-22, from week 2): the same entry and stop; half off at +1 R
+    with the stop of the rest moved to the entry; the rest aims at the owner's next zone-grid line beyond the entry
+    (at least a quarter step away), out 120 minutes after the entry at the latest. Ticks, spread only."""
+    g = Z.daily_grid(Z.bars("D1"))
+    out = []
+    for r in X.itertuples():
+        side = 1 if r.side == "BUY" else -1
+        risk = abs(r.entry_price - r.sl_initial)
+        t, bid, ask = C.day_ticks(r.t.normalize())
+        tn = r.t.value
+        f = int(np.searchsorted(t, tn))
+        k = g.index.searchsorted(r.t, side="right") - 1
+        anc, stp = g.anchor.values[k], g.step.values[k]
+        j = np.floor((r.entry_price - anc) / stp)
+        lines = anc + (j + np.arange(-3, 5)) * stp
+        ahead = lines[(lines - r.entry_price) * side >= 0.25 * stp]
+        tgt = float(ahead.min() if side > 0 else ahead.max())
+        t_end = tn + 120 * MIN
+        px1, tx1, k1 = C.manage(t, bid, ask, f, r.entry_price, side, r.sl_initial, r.entry_price + side * risk, t_end)
+        if k1 != "target":
+            out.append((px1 - r.entry_price) * side / risk)
+            continue
+        f2 = int(np.searchsorted(t, tx1))
+        if (tgt - r.entry_price) * side <= risk:  # the zone line is not beyond 1 R: the whole position was out at 1 R
+            out.append(1.0)
+            continue
+        px2, _, _ = C.manage(t, bid, ask, f2, r.entry_price, side, r.entry_price, tgt, t_end)
+        out.append(0.5 + 0.5 * (px2 - r.entry_price) * side / risk)
+    return pd.Series(out, index=X.index)  # owner 2026-10-22: every learning journal carries 100 and 300 USD
+
+
+def accounts(X: pd.DataFrame, col: str = "r_multiple", tag: str = "") -> pd.DataFrame:
     """Both accounts trade by trade from the journal's first trade (equity sizing, at least 0.01 lot)."""
     X = X.sort_values("t").copy()
     for eq0, pct in ACCOUNTS:
@@ -45,16 +81,19 @@ def accounts(X: pd.DataFrame) -> pd.DataFrame:
         for r in X.itertuples():
             risk = abs(r.entry_price - r.sl_initial)
             lots = max(0.01, np.floor(eq * pct / 100 / (risk * 100) * 100) / 100)
-            u = r.r_multiple * risk * lots * 100
+            u = getattr(r, col) * risk * lots * 100
             eq += u
             usd.append(u)
             bal.append(eq)
-        X[f"usd_{eq0:.0f}"], X[f"bal_{eq0:.0f}"] = usd, bal
+        X[f"usd{tag}_{eq0:.0f}"], X[f"bal{tag}_{eq0:.0f}"] = usd, bal
     return X
 
 
 if __name__ == "__main__":
-    X = accounts(load())
+    X = load()
+    X = X[X.t < pd.Timestamp(sys.argv[2], tz="UTC")]  # nothing after the week is read
+    X["r_real"] = realistic(X)
+    X = accounts(accounts(X), "r_real", "r")
     W = X[(X.t >= pd.Timestamp(sys.argv[1], tz="UTC")) & (X.t < pd.Timestamp(sys.argv[2], tz="UTC"))]
     for r in W.itertuples():
         tf = "M5" if r.strategy.endswith("m5") else "M1"
@@ -63,5 +102,9 @@ if __name__ == "__main__":
         risk = abs(r.entry_price - r.sl_initial)
         print(f"{r.t.tz_convert('Asia/Bangkok'):%a %d %H:%M} {tf} {r.side:4s} R {r.r_multiple:+.2f} {r.exit_reason:6s} "
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
-              f"| grid line {r.zone_line_dist:.1f} USD away | 100: {r.usd_100:+.2f} -> {r.bal_100:.2f} | 300: {r.usd_300:+.2f} -> {r.bal_300:.2f}")
+              f"| grid line {r.zone_line_dist:.1f} USD away\n"
+              f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"
+              f" | real {r.r_real:+.2f} R: 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
+    if len(W):
+        print(f"real: {W.r_real.sum():+.2f} R | 100: {W.usdr_100.sum():+.2f} -> {W.balr_100.iloc[-1]:.2f} | 300: {W.usdr_300.sum():+.2f} -> {W.balr_300.iloc[-1]:.2f}")
     print(f"week: {len(W)} trades {W.r_multiple.sum():+.2f} R | 100 USD at 7.5 %: {W.usd_100.sum():+.2f} USD -> {W.bal_100.iloc[-1] if len(W) else float('nan'):.2f} | 300 USD at 3 %: {W.usd_300.sum():+.2f} USD -> {W.bal_300.iloc[-1] if len(W) else float('nan'):.2f}")
