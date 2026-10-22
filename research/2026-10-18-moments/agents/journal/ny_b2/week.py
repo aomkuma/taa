@@ -58,7 +58,10 @@ BAND_FROM = pd.Timestamp("2025-12-08", tz="UTC")
 # on 22, against -0.90 on 20): the realistic variant trades only in the direction of the last zone shift
 TREND_FROM = pd.Timestamp("2025-12-29", tz="UTC")
 # deleted after week 12: the skipped against-trend trades made +2.10 R that week; weeks 2-12 against-trend +1.20 net
-TREND_UNTIL = pd.Timestamp("2026-01-12", tz="UTC")  # the realistic variant aims 0.1 step before the line from week 8
+TREND_UNTIL = pd.Timestamp("2026-01-12", tz="UTC")
+# from week 14 (owner: a line is a band; weeks 2-13: entries < 10 USD from a zone line -1.93 R on 17, farther +10.46 on
+# 38): the realistic variant skips an entry within 10 USD of a zone line
+NEAR_FROM, NEAR_USD = pd.Timestamp("2026-01-19", tz="UTC"), 10.0  # the realistic variant aims 0.1 step before the line from week 8
 
 
 def context(X: pd.DataFrame) -> pd.DataFrame:
@@ -178,6 +181,7 @@ if __name__ == "__main__":
     X["with_trend"] = [(v == "up") == (sd == "BUY") for v, sd in zip(X.grid_trend, X.side)]
     X["r_real_all"] = X.r_real
     X.loc[(X.t >= TREND_FROM) & (X.t < TREND_UNTIL) & ~X.with_trend, "r_real"] = np.nan
+    X.loc[(X.t >= NEAR_FROM) & (X.zone_line_dist < NEAR_USD), "r_real"] = np.nan
     X["r_real_nobe"] = realistic(X, be=False)  # candidate from week 4: the rest keeps the original stop
     X["r_real_band"] = realistic(X, band=0.1)  # candidate from week 5 (owner: a line is a band): aim 0.1 step before it
     X = accounts(accounts(X), "r_real", "r")
@@ -194,7 +198,7 @@ if __name__ == "__main__":
               f"      zone-grid trend {r.grid_trend} -> {'WITH' if r.with_trend else 'AGAINST'} | "
               f"context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | deeper touches {r.worn} | SCORE {r.score:+.0f} ({r.score_parts}) | band-target {r.r_real_band:+.2f} R\n"
               f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"
-              f" | real {'skipped (against the trend)' if not np.isfinite(r.r_real) else f'{r.r_real:+.2f} R'} (unfiltered {r.r_real_all:+.2f}) | 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
+              f" | real {'skipped' if not np.isfinite(r.r_real) else f'{r.r_real:+.2f} R'} (unfiltered {r.r_real_all:+.2f}) | 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
     if len(W):
         print(f"candidate (target 0.1 step before the line): week {W.r_real_band.sum():+.2f} R | weeks so far {X.r_real_band.sum():+.2f}")
         print(f"candidate (no break-even on the rest): week {W.r_real_nobe.sum():+.2f} R | weeks so far: base {X.r_multiple.sum():+.2f}, real {X.r_real.sum():+.2f}, no-BE {X.r_real_nobe.sum():+.2f}")
