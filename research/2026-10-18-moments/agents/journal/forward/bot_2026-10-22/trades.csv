@@ -1,0 +1,2 @@
+ticket,symbol,side,volume,entry_time,entry_price,exit_time,exit_price,exit_reason,sl_initial,tp_initial,profit,commission,swap,net,risk_money,r_multiple,mae,mfe,strategy,signal_id
+2,XAUUSD,BUY,0.22,2026-10-22T06:19:00.087000+00:00,4100.280000000001,2026-10-22T07:19:00.042000+00:00,4099.11,TIME,4087.05,4120.549999999999,-25.74,-0.0,0.0,-25.74,295.9,-0.087,12.930000000000746,2.4899999999997817,setup_plan1_orb,01a16376-1fb9-702c-bf74-dc9474af1e3e
