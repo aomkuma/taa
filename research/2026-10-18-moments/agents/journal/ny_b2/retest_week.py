@@ -31,6 +31,12 @@ def ticks(day: pd.Timestamp):
     return tuple(np.concatenate([p[i] for p in parts]) for i in range(3))
 
 
+def _manage(tt, bid, ask, f, entry, side, stop, target, t_end):
+    """C.manage, or the last tick when the stored ticks end first (the data's end): (exit px, exit ns, kind)."""
+    out = W.C.manage(tt, bid, ask, f, entry, side, stop, target, t_end)
+    return out if out is not None else ((bid[-1] if side > 0 else ask[-1]), tt[-1], "data end")
+
+
 def trades(start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
     d1 = W.Z.bars("D1")
     d1 = d1[d1.index < end]
@@ -76,12 +82,12 @@ def trades(start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
             if risk < 1.0:
                 continue
             t_end = cutoff.value
-            px1, tx1, k1 = W.C.manage(tt, bid, ask, f, entry, side, stop, entry + side * risk, t_end)
+            px1, tx1, k1 = _manage(tt, bid, ask, f, entry, side, stop, entry + side * risk, t_end)
             if k1 != "target":
                 r = (px1 - entry) * side / risk
             else:
                 f2 = int(np.searchsorted(tt, tx1))
-                px2, _, _ = W.C.manage(tt, bid, ask, f2, entry, side, entry, entry + side * 2.5 * risk, t_end)
+                px2, _, _ = _manage(tt, bid, ask, f2, entry, side, entry, entry + side * 2.5 * risk, t_end)
                 r = 0.5 + 0.5 * (px2 - entry) * side / risk
             out.append(dict(t=pd.Timestamp(tt[f], tz="UTC"), side="BUY" if side > 0 else "SELL", entry_price=entry, sl_initial=stop,
                             r_real=r, strong_day=d1.index[i].tz_convert("Europe/Athens").date(), body=body, ext=ext, exit1=k1))

@@ -1,0 +1,11 @@
+backtest XAUUSD  2026-04-19 22:06:00+00:00 -> 2026-10-22 00:00:00+00:00
+  data hash afc75334a8bd4819aea694a75009f758  config hash 2fa3072eca8df373  seed 42
+  trades 92  win rate 27.17391304347826  profit factor 0.3513106951739451
+  net -526.10
+  max drawdown 5.28%  expectancy -0.275877949417507 R
+  summary: C:\Users\korap\taa\research\2026-10-18-moments\agents\journal\ny_b2\exam\summary.json
+  trades: C:\Users\korap\taa\research\2026-10-18-moments\agents\journal\ny_b2\exam\trades.csv
+  equity: C:\Users\korap\taa\research\2026-10-18-moments\agents\journal\ny_b2\exam\equity.csv
+  journal: C:\Users\korap\taa\research\2026-10-18-moments\agents\journal\ny_b2\exam\journal.jsonl
+  minutes stepped on ticks: 6178
+  (a bar-based simulation; past results do not predict future results)

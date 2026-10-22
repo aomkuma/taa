@@ -1240,3 +1240,12 @@ the weekly reports were partly wrong (the 10:00 New York rule was reported as sa
 skip counted, it cost 0.75). From here: rules mined from past trades are only candidates until they hold for several
 weeks forward on a journal of their own (shadow), never applied straight away. And per the owner (week 22): the
 missing trades are with-the-move pieces (the re-test after a strong day), not more filters on the turn piece.
+
+### The frozen exam of the NY-B2 journal (2026-04-20 .. 10-21, read once 2026-10-22 19:45 Thai; `ny_b2/exam.py`, `out_exam.txt`)
+
+The bot's B2 in the NY window, same config (hash 2fa3072eca8df373) and code as the learning run, on ticks: **92 trades
+-0.276 R a trade** (win 27 %, average best +0.55 R against +0.78 in learning). Realistic exit -0.186; exit + vol
+stand-aside -0.187 on 67; as it stood at week 26 -0.222 on 47. The re-test piece: 10 trades -0.220 (2 closed at the
+stored ticks' end - to check). Accounts (proposal = exit + vol + re-test): 100 USD wiped by week 5, 300 USD down to
+5 USD; base 100 wiped, 300 wiped. Weeks won 6 / 9 / 10 of 26. **FAIL** (CHECKLIST row 65): the exit was a real
+improvement (+0.09 R a trade in every variant) but around an entry that had no edge (+0.008 in learning).
