@@ -127,6 +127,8 @@ log = logging.getLogger(__name__)
 DISABLED_KEY = "disabled_strategies"
 SNAPSHOT_KEY = "sync_snapshot"  # set once every replicated row has been queued for the cloud
 FAILED_STOP_WINDOW = timedelta(minutes=10)  # a stop this soon after a failed cycle counts as a failure
+# the accepted entries a strategy's entry_group reads (PLAN-1 B2's morning)
+ENTRY_LOOKBACK = timedelta(days=1)
 QUOTE_POLL_SECONDS = 0.1  # a release straddle reads quotes this often around its release (S2: fills at ~1 s)
 
 
@@ -314,6 +316,7 @@ class Engine:
                     self._quote_lanes.append((lane, strategy))
         self.sessions = TradingSessions(cfg.sessions, cfg.symbols)
         self.news = NewsFilter(ManualBlackouts(cfg.sessions.news_blackouts))
+        self.decision_store = DecisionStore(self.db)
         self.decisions = DecisionEngine(
             cfg,
             self.settings.mode,
@@ -324,7 +327,7 @@ class Engine:
             magic_base=env.MAGIC_NUMBER_BASE,
             config_hash=self.settings.config_hash,
             breakers=self.board,
-            store=DecisionStore(self.db),
+            store=self.decision_store,
             spec_lookup=self.gateway.symbol_spec,  # positions on symbols the bot does not trade (manual)
         )
         self.ai = self._ai_gate()
@@ -1042,6 +1045,7 @@ class Engine:
                 self._atr[symbol] = ctx.market.atr
             self.backend.on_bar(symbol, ctx)
         self.backend.on_lane_bar(symbol, ctx, lane.strategies.names)  # each strategy's own management
+        self._attach_entries(symbol, lane)
         disabled = self.disabled_strategies()
         signals = [  # a remotely disabled strategy opens nothing; its close signals still count
             s for s in lane.strategies.evaluate(ctx) if not (s.is_entry and s.strategy in disabled)
@@ -1050,6 +1054,16 @@ class Engine:
         self.on_arbitrated(lane)
         if selected is not None:
             self._decide(symbol, lane, ctx, selected)
+
+    def _attach_entries(self, symbol: str, lane: EntryLane) -> None:
+        """Strategies with an ``entry_group`` read the group's accepted entries of the last day from the
+        decision store (not from memory: the rule holds across a restart)."""
+        since = self.clock.now_utc() - ENTRY_LOOKBACK
+        for strategy in lane.strategies.strategies:
+            if strategy.entry_group:
+                strategy.attach_entries(
+                    symbol, self.decision_store.accepted_entries(strategy.entry_group, symbol, since)
+                )
 
     def _decide(self, symbol: str, lane: EntryLane, ctx: StrategyContext, selected: Signal) -> None:
         """The decision engine on one selected signal, and the order when it is accepted."""

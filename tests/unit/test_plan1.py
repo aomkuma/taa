@@ -55,6 +55,27 @@ def frame(
     return df
 
 
+def h1_days(ranges: list[float], first: str = "2026-09-01", close: float = 4000.0) -> pd.DataFrame:
+    """H1 bars of consecutive server days (Athens midnight to midnight, 24 bars each): day k trades close +- ranges[k]
+    / 2 and closes at *close*, so its true range is ranges[k]."""
+    rows = []
+    for k, r in enumerate(ranges):
+        start = pd.Timestamp(first, tz="Europe/Athens") + pd.Timedelta(days=k)
+        for hr in range(24):
+            t = (start + pd.Timedelta(hours=hr)).tz_convert("UTC")
+            rows.append((t, close, close + r / 2, close - r / 2, close))
+    df = pd.DataFrame(rows, columns=["open_time", "open", "high", "low", "close"])
+    df.index = df.open_time + pd.Timedelta(hours=1)
+    return df
+
+
+def wide_h1(at: datetime | pd.Timestamp) -> pd.DataFrame:
+    """30 days of 100-USD days before *at*: the D1 ATR(20) is 100 (the regime switch is on)."""
+    day = pd.Timestamp(at).tz_convert("Europe/Athens").normalize() - pd.Timedelta(days=31)
+    df = h1_days([100.0] * 31, f"{day:%Y-%m-%d}")
+    return df[df.index <= pd.Timestamp(at)]
+
+
 def arrays(df: pd.DataFrame) -> tuple[pd.DatetimeIndex, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     return plan1._m1_arrays(df)
 
@@ -257,6 +278,22 @@ class TestPools:
         assert not plan1.is_contracting(0.006, 0.5) and not plan1.is_contracting(0.004, 0.0)
         assert plan1.is_contracting(-0.2, 0.5) and plan1.is_contracting(float("nan"), 0.5)
 
+    def test_h4_bars_on_the_server_day_from_m1(self) -> None:
+        """Wednesday 2026-09-30, EEST (UTC+3): the server's H4 bars open at 00:00 / 04:00 / 08:00 / 12:00 Athens =
+        21:00 / 01:00 / 05:00 / 09:00 UTC. M1 bars 00:00-09:59 UTC at 4000 +- 1, a high of 4010 at 02:30 UTC: at
+        10:00 UTC the bars closing 01:00 (partial: from 00:00 UTC), 05:00 (high 4010) and 09:00 are complete, the
+        09:00-13:00 UTC one is running."""
+        df = frame(
+            "2026-09-30 00:00",
+            "2026-09-30 09:59",
+            half=1.0,
+            special={"2026-09-30 02:30": (4000, 4010, 3999, 4000)},
+        )
+        opens, _, h, lo, c = arrays(df)
+        h4 = plan1.h4_bars(opens, h, lo, c, utc("2026-09-30 10:00"))
+        assert list(h4.index) == [utc("2026-09-30 01:00"), utc("2026-09-30 05:00"), utc("2026-09-30 09:00")]
+        assert list(h4["high"]) == [4001.0, 4010.0, 4001.0] and list(h4["low"]) == [3999.0] * 3
+
     def test_h4_atr_change(self) -> None:
         """21 H4 bars of range 2 (closes flat), then the last 6 of range 4: ATR now (8 x 2 + 6 x 4) / 14,
         6 bars earlier 2: change 40 / 28 - 1."""
@@ -312,7 +349,7 @@ def orb_ctx(
         spread_points=ask_over / XAUUSD_SPEC.point,
     )
     frames = {Timeframe.M1: df, Timeframe.H4: h4_frame(expanding)} if h4 else {Timeframe.M1: df}
-    return StrategyContext(market, frames, at, XAUUSD_SPEC)
+    return StrategyContext(market, {**frames, Timeframe.H1: wide_h1(at)}, at, XAUUSD_SPEC)
 
 
 def upto(df: pd.DataFrame, close: str) -> pd.DataFrame:
@@ -320,6 +357,62 @@ def upto(df: pd.DataFrame, close: str) -> pd.DataFrame:
 
 
 BREAK = {"t06_16": (4004.0, 4004.8, 4003.9, 4004.5)}
+
+
+class TestRegimeSwitch:
+    """The regime switch (journal, CHECKLIST row 62): new entries only while the D1 ATR(20) >= 60 USD; server days
+    built from H1 bars; a day is known from its server midnight + 24 h."""
+
+    END = pd.Timestamp("2026-09-21", tz="Europe/Athens").tz_convert(
+        "UTC"
+    )  # the midnight after day 20 (09-01 + 19)
+
+    def test_the_mean_of_20_true_ranges_known_by_then(self) -> None:
+        # 20 days of 59.99 then 60.00 USD: ATR 59.99 / 60.00
+        assert plan1.d1_atr20(h1_days([59.99] * 20), self.END) == pytest.approx(59.99)
+        assert plan1.d1_atr20(h1_days([60.0] * 20), self.END) == pytest.approx(60.0)
+        # 21 days, the first 200 wide: only the last 20 count (the first one drops out)
+        assert plan1.d1_atr20(
+            h1_days([200.0] + [60.0] * 20), self.END + pd.Timedelta(days=1)
+        ) == pytest.approx(60.0)
+        # the forming day (day 21, 1000 wide) is not known before its own midnight + 24 h
+        forming = h1_days([60.0] * 20 + [1000.0])
+        assert plan1.d1_atr20(
+            forming[forming.index <= self.END + pd.Timedelta(hours=5)], self.END + pd.Timedelta(hours=5)
+        ) == pytest.approx(60.0)
+        # a minute before day 20 is known: only 19 days, too few
+        assert np.isnan(plan1.d1_atr20(h1_days([60.0] * 20), self.END - pd.Timedelta(minutes=1)))
+        assert np.isnan(plan1.d1_atr20(h1_days([60.0] * 19), self.END)) and np.isnan(
+            plan1.d1_atr20(None, self.END)
+        )
+
+    def test_a_gap_day_uses_the_previous_close(self) -> None:
+        # day 20 opens 50 above day 19's close and trades 4050 +- 5: its true range is 4055 - 4000 = 55, not 10
+        d = h1_days([60.0] * 19)
+        last = h1_days([10.0], "2026-09-20", close=4050.0)
+        assert plan1.d1_atr20(pd.concat([d, last]), self.END) == pytest.approx((19 * 60 + 55) / 20)
+
+    def test_holds_below_60_and_trades_at_60(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(plan1, "pools", lambda *a: {})
+        df = upto(orb_bars(**BREAK), "2026-09-30 06:17")
+        at = pd.Timestamp(df.index[-1])
+        day0 = (at.tz_convert("Europe/Athens").normalize() - pd.Timedelta(days=20)).strftime("%Y-%m-%d")
+        for rng, action in ((59.99, Action.HOLD), (60.0, Action.BUY)):
+            base = orb_ctx(df)
+            ctx = StrategyContext(
+                base.market, {**base.frames, Timeframe.H1: h1_days([rng] * 20, day0)}, base.now_utc, base.spec
+            )
+            sig = Plan1Orb().evaluate(ctx)
+            assert sig.action is action
+            reg = {c.name: c for c in sig.conditions}["regime"]
+            assert reg.passed is (action is Action.BUY) and reg.detail.startswith(f"D1 ATR(20) {rng:.2f}")
+        base = orb_ctx(df)
+        few = StrategyContext(
+            base.market, {**base.frames, Timeframe.H1: h1_days([100.0] * 5, day0)}, base.now_utc, base.spec
+        )
+        assert Plan1Orb().evaluate(few).action is Action.HOLD  # too few days: no trade
+        off = Plan1Orb(Plan1OrbParams(d1_atr20_min_usd=None))
+        assert off.evaluate(few).action is Action.BUY
 
 
 class TestPlan1Orb:
@@ -334,6 +427,7 @@ class TestPlan1Orb:
         assert names == [
             "rule",
             "h1_atr",
+            "regime",
             "opening_range",
             "pools",
             "h4_atr_change",
@@ -367,7 +461,7 @@ class TestPlan1Orb:
         off = Plan1Orb(Plan1OrbParams(pool_break_when_h4_contracting=False))
         assert off.evaluate(orb_ctx(df, expanding=False)).action is Action.BUY
         assert off.required_timeframes() == (Timeframe.M1,)
-        assert Plan1Orb().required_timeframes() == (Timeframe.M1, Timeframe.H4)
+        assert Plan1Orb().required_timeframes() == (Timeframe.M1,)
 
     def test_an_unchanged_or_unknown_h4_atr_counts_as_contracting(
         self, monkeypatch: pytest.MonkeyPatch
@@ -483,7 +577,7 @@ def ny_ctx(close_at: datetime, bid: float, ask: float) -> StrategyContext:
         spread_points=(ask - bid) / XAUUSD_SPEC.point,
         quote_time_utc=at(1),
     )
-    return StrategyContext(market, {Timeframe.M1: df}, close_at, XAUUSD_SPEC)
+    return StrategyContext(market, {Timeframe.M1: df, Timeframe.H1: wide_h1(close_at)}, close_at, XAUUSD_SPEC)
 
 
 class TestPlan1Straddle:
@@ -501,13 +595,27 @@ class TestPlan1Straddle:
             pytest.approx(4102.5),
         )
         detail = {c.name: c.detail for c in sig.conditions}
-        assert list(detail) == ["rule", "h1_atr", "release", "pools", "stop_distance", "spread"]
+        assert list(detail) == ["rule", "h1_atr", "regime", "release", "pools", "stop_distance", "spread"]
         assert detail["spread"] == "0.40 (40 points) at the decision quote"  # bid 4002.1, ask 4002.5
         assert detail["release"].endswith("CPI") and "4002.40" in detail["rule"]
         # the next weekday trades too, with no release on the calendar there
         nxt = NY + timedelta(days=1)
         s.on_quote("XAUUSD", nxt - timedelta(seconds=1), 4000.0, 4000.4)
         assert s.on_quote("XAUUSD", nxt + timedelta(seconds=1), 3997.9, 3998.3) is not None
+
+    def test_the_regime_switch_refuses_the_straddle(self) -> None:
+        s = Plan1Straddle()
+        s.on_quote("XAUUSD", at(-1), 4000.0, 4000.4)
+        e = s.on_quote("XAUUSD", at(1), 4002.1, 4002.5)
+        base = ny_ctx(NY, 4002.1, 4002.5)
+        for rng, ok in ((59.99, False), (60.0, True)):
+            ctx = StrategyContext(
+                base.market,
+                {**base.frames, Timeframe.H1: h1_days([rng] * 20, "2026-09-10")},
+                base.now_utc,
+                base.spec,
+            )
+            assert e is not None and (s.entry_signal(ctx, e) is not None) is ok
 
     def test_atr_floor_refuses_the_entry(self) -> None:
         s = Plan1Straddle(Plan1StraddleParams(atr_floor=12.0))  # the flat frame's H1 ATR is 10

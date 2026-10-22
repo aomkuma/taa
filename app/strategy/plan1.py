@@ -177,6 +177,70 @@ def is_contracting(change: float, max_pct: float) -> bool:
     return not math.isfinite(change) or 100.0 * change <= max_pct
 
 
+def h4_bars(
+    opens: pd.DatetimeIndex, h: FloatArray, lo: FloatArray, c: FloatArray, t: pd.Timestamp
+) -> pd.DataFrame:
+    """The broker's H4 bars (on the server day: 00:00, 04:00 .. Athens time) built from M1 bars, only those
+    whose four hours are over by *t*, indexed by their close (UTC). A lane needs no H4 frame of its own: an H4
+    frame's last bar is two days old on a Monday morning, which the decision engine refuses as stale."""
+    local = opens.tz_convert(ATHENS).tz_localize(None).floor("4h")
+    df = pd.DataFrame({"high": h, "low": lo, "close": c}, index=opens)
+    g = df.groupby(local.as_unit("ns").to_numpy(dtype="datetime64[ns]"), sort=True)
+    out = pd.DataFrame({"high": g.high.max(), "low": g.low.min(), "close": g.close.last()})
+    closes = (pd.DatetimeIndex(out.index) + pd.Timedelta(hours=4)).tz_localize(ATHENS).tz_convert("UTC")
+    out.index = closes
+    return out[out.index <= t]
+
+
+def d1_atr20(h1: pd.DataFrame | None, t: pd.Timestamp, n: int = 20) -> float:
+    """MT5 ATR(n) of the broker's D1 bars (the server day, built from the H1 frame) known by *t*: a day is
+    known from its server midnight (UTC) + 24 h on (journal/regime_switch.py); NaN with fewer than n days."""
+    if h1 is None or not len(h1):
+        return math.nan
+    opens = pd.DatetimeIndex(pd.to_datetime(h1["open_time"], utc=True))
+    day = opens.tz_convert(ATHENS).tz_localize(None).normalize()
+    df = pd.DataFrame(
+        {"h": h1["high"].to_numpy(float), "lo": h1["low"].to_numpy(float), "c": h1["close"].to_numpy(float)}
+    )
+    g = df.groupby(day.as_unit("ns").to_numpy(dtype="datetime64[ns]"), sort=True)
+    d = pd.DataFrame({"h": g.h.max(), "lo": g.lo.min(), "c": g.c.last()})
+    known = pd.DatetimeIndex(d.index).tz_localize(ATHENS).tz_convert("UTC") + pd.Timedelta(days=1)
+    d = d[np.asarray(known <= t)]
+    if len(d) < n:
+        return math.nan
+    hh, ll, cc = d.h.to_numpy(float), d.lo.to_numpy(float), d.c.to_numpy(float)
+    pc = cc[-n - 1 : -1] if len(cc) > n else np.r_[np.nan, cc[-n:-1]]
+    tr = np.fmax(hh[-n:], pc) - np.fmin(ll[-n:], pc)  # the first day without a previous close: high - low
+    return float(tr.mean())
+
+
+def regime(ctx: StrategyContext, t: pd.Timestamp, min_usd: float | None) -> Condition:
+    """The regime switch (journal, CHECKLIST row 62): new entries only while the D1 ATR(20) >= *min_usd*; None
+    = off. Unknown (too few closed days) = off for trading (fail closed)."""
+    atr = d1_atr20(ctx.frames.get(Timeframe.H1), t)
+    if min_usd is None:
+        return Condition("regime", True, 1.0, f"D1 ATR(20) {atr:.2f}; the switch is off")
+    ok = math.isfinite(atr) and atr >= min_usd
+    return Condition(
+        "regime",
+        ok,
+        1.0,
+        f"D1 ATR(20) {atr:.2f} {'>=' if ok else '<'} {min_usd:g}: {'trade' if ok else 'no new entry'}",
+    )
+
+
+def h4_change_at(ctx: StrategyContext, t: pd.Timestamp, bars: int = 6) -> float:
+    """The H4 ATR change at *t*: from the context's H4 frame when the lane has one, else from its M1 bars."""
+    h4 = ctx.frames.get(Timeframe.H4)
+    if h4 is None:
+        m1 = ctx.frames.get(Timeframe.M1)
+        if m1 is None or not len(m1):
+            return math.nan
+        opens, _, h, lo, c = _m1_arrays(m1)
+        h4 = h4_bars(opens, h, lo, c, t)
+    return h4_atr_change(h4, t, bars)
+
+
 def h4_atr_change(h4: pd.DataFrame, t: pd.Timestamp, bars: int = 6) -> float:
     """The H4 ATR's change over the last ``bars`` H4 bars (6 = 24 h): MT5 ATR(14) of the H4 bars closed by
     *t* (the frame's index is the close time), the latest / the one ``bars`` earlier - 1; NaN when unknown."""
@@ -217,6 +281,9 @@ class Plan1OrbParams(StrategyParams):
     target_r: float = Field(default=1.5, gt=0, le=20)  # journal week 5 (was 2 R)
     hold_minutes: int = Field(default=60, ge=1, le=1440)
     atr_floor: float | None = Field(default=None, gt=0, le=1000)  # journal week 6: no floor
+    d1_atr20_min_usd: float | None = Field(
+        default=60.0, gt=0, le=1000
+    )  # the regime switch (row 62); None = off
     # journal week 10: when the H4 ATR(14) did not grow over the last ``h4_change_bars`` H4 bars (latest <=
     # that many bars earlier), enter only after the ``pool_break_minutes`` before the decision broke a pool in
     # the trade's direction
@@ -288,11 +355,25 @@ class Plan1Orb(BaseStrategy):
     advised = False
 
     def required_timeframes(self) -> tuple[Timeframe, ...]:
-        p: Plan1OrbParams = self.params
-        return (Timeframe.M1, Timeframe.H4) if p.pool_break_when_h4_contracting else (Timeframe.M1,)
+        return (Timeframe.M1,)  # the H1 / H4 readings are built from M1
 
     def warmup_bars(self) -> int:
         return 3000  # 15 complete H1 bars and yesterday's server day across a weekend
+
+    def window(self, at: pd.Timestamp) -> tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp]:
+        """The day's open and the first / last decision times (bar closes)."""
+        p: Plan1OrbParams = self.params
+        t0 = local_instant(at.tz_convert(p.orb_zone).date(), p.orb_open, p.orb_zone)
+        return (
+            t0,
+            t0 + pd.Timedelta(minutes=p.range_minutes + 1),
+            t0 + pd.Timedelta(minutes=p.range_minutes + p.entry_minutes),
+        )
+
+    def wants_bar(self, at: datetime) -> bool:
+        t = pd.Timestamp(at)
+        _, first, last = self.window(t)
+        return first <= t <= last and t.weekday() <= 4
 
     def evaluate(self, ctx: StrategyContext) -> Signal:
         p: Plan1OrbParams = self.params
@@ -300,9 +381,7 @@ class Plan1Orb(BaseStrategy):
         at = pd.Timestamp(market.decision_time_utc)
         if market.entry_timeframe is not Timeframe.M1:
             return self.hold(ctx, ReasonCode.DATA_QUALITY, explanation="the ORB runs on an M1 lane")
-        t0 = local_instant(at.tz_convert(p.orb_zone).date(), p.orb_open, p.orb_zone)
-        first = t0 + pd.Timedelta(minutes=p.range_minutes + 1)  # the first bar after the range closes here
-        last = t0 + pd.Timedelta(minutes=p.range_minutes + p.entry_minutes)
+        t0, first, last = self.window(at)  # the first bar after the range closes at first
         if not first <= at <= last or at.weekday() > 4:
             return self.hold(ctx, ReasonCode.OUTSIDE_SESSION, explanation=f"{at:%a %H:%M} UTC")
         m1 = ctx.frame(Timeframe.M1)
@@ -329,8 +408,7 @@ class Plan1Orb(BaseStrategy):
         floor_ok = p.atr_floor is None or (math.isfinite(atr) and atr >= p.atr_floor)
         found = pools(opens, o, h, lo, at)
         broke = broken_pools(opens, o, h, lo, at, d.side, found, p.pool_break_minutes)
-        h4 = ctx.frames.get(Timeframe.H4)
-        change = math.nan if h4 is None else h4_atr_change(h4, at, p.h4_change_bars)
+        change = h4_change_at(ctx, at, p.h4_change_bars)
         contracting = is_contracting(change, p.h4_contracting_max_pct)
         pool_ok = not p.pool_break_when_h4_contracting or not contracting or bool(broke)
         h4_text = "unknown" if not math.isfinite(change) else f"{100 * change:+.1f} %"
@@ -343,6 +421,7 @@ class Plan1Orb(BaseStrategy):
                 f"(bar {opens[d.k]:%H:%M} UTC)",
             ),
             Condition("h1_atr", floor_ok, 1.0, atr_detail(atr, p.atr_floor)),
+            regime(ctx, at, p.d1_atr20_min_usd),
             Condition(
                 "opening_range",
                 True,
@@ -373,7 +452,7 @@ class Plan1Orb(BaseStrategy):
             ),
             Condition("spread", True, 1.0, spread_detail(market.bid, market.ask, ctx)),
         ]
-        if not (floor_ok and pool_ok):
+        if not (floor_ok and pool_ok and conds[2].passed):
             return self.hold(ctx, ReasonCode.NO_SETUP, conditions=conds, explanation=explain(conds))
         return self.entry(
             ctx,
@@ -422,6 +501,9 @@ class Plan1StraddleParams(StraddleParams):
     hold_seconds: float = Field(default=1800.0, gt=0, le=14_400)  # 30 minutes after 08:30
     target_cap_u: float = Field(default=100.0, gt=0, le=200)  # no target in the research: a far cap only
     atr_floor: float | None = Field(default=None, gt=0, le=1000)
+    d1_atr20_min_usd: float | None = Field(
+        default=60.0, gt=0, le=1000
+    )  # the regime switch (row 62); None = off
 
     @field_validator("ny_zone")
     @classmethod
@@ -503,6 +585,9 @@ class Plan1Straddle(OwnS2):
     def unit(self, bid: float) -> float:
         return 1.0
 
+    def wants_bar(self, at: datetime) -> bool:
+        return False  # it enters on quotes; its bars only manage its position
+
     def new_planner(self) -> ReleaseStraddle:
         return DailyStraddle(self.params, ())
 
@@ -558,6 +643,7 @@ class Plan1Straddle(OwnS2):
                 f"({p.trigger_u:g} USD past the reference) at {at:%H:%M:%S} UTC",
             ),
             Condition("h1_atr", floor_ok, 1.0, atr_detail(atr, p.atr_floor)),
+            regime(ctx, at, p.d1_atr20_min_usd),
             Condition(
                 "release",
                 True,
@@ -568,7 +654,7 @@ class Plan1Straddle(OwnS2):
             Condition("stop_distance", True, 1.0, f"{entry.stop_distance:.2f} from the fill; no target"),
             Condition("spread", True, 1.0, spread_detail(ctx.market.bid, ctx.market.ask, ctx)),
         ]
-        return conds, floor_ok
+        return conds, floor_ok and conds[2].passed
 
     def manage_position(self, ctx: StrategyContext, pos: OpenPosition) -> PositionAdvice | None:
         """Out at the first bar close at / after 08:30 New York of the entry's day + ``hold_seconds``."""

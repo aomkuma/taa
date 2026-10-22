@@ -85,6 +85,8 @@ class TestStateAndParameters:
             "setup_own_conf72",
             "setup_own_s2",
             "setup_plan1_orb",
+            "setup_plan1_b2",
+            "setup_plan1_b2m5",
             "setup_plan1_ny",
         ]
         assert by_name(body)["setup_breakout_scalp"]["known"] is True

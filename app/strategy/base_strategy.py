@@ -12,8 +12,9 @@ nothing here claims profitability.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
-from datetime import timedelta
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -33,6 +34,17 @@ from app.strategy.signal_models import (
 )
 
 
+@dataclass(frozen=True, slots=True)
+class PastEntry:
+    """An entry the engine accepted earlier (from its stored decisions): what a strategy with an
+    ``entry_group`` reads before deciding (e.g. PLAN-1 B2's "second trade of the morning only on the first's
+    side"), so the rule survives a restart."""
+
+    at: datetime
+    side: Side
+    strategy: str
+
+
 class StrategyParams(BaseModel):
     """Base parameter model; strategies subclass it with bounded fields."""
 
@@ -50,6 +62,8 @@ class BaseStrategy(ABC):
     Params: ClassVar[type[StrategyParams]] = StrategyParams
     # evidence families the checklist already measures: they add no confluence support (TAA-307)
     core_families: ClassVar[frozenset[Family]] = frozenset()
+    # the strategies whose accepted entries (the last day's) the engine hands over before each evaluation
+    entry_group: ClassVar[tuple[str, ...]] = ()
 
     def __init__(self, params: StrategyParams | None = None) -> None:
         self.params: Any = params if params is not None else self.Params()
@@ -73,6 +87,17 @@ class BaseStrategy(ABC):
     @abstractmethod
     def evaluate(self, ctx: StrategyContext) -> Signal:
         """One signal for ``ctx.symbol`` at ``ctx.decision_time_utc``."""
+
+    def attach_entries(self, symbol: str, entries: Sequence[PastEntry]) -> None:
+        """The ``entry_group``'s accepted entries on *symbol* (the engine reads them from its decision store
+        before each evaluation; default: not used)."""
+        return None
+
+    def wants_bar(self, at: datetime) -> bool:
+        """Whether :meth:`evaluate` can enter at the bar closing at *at* (default: always). A backtest skips
+        building the context of a bar no strategy of its lane wants while the lane holds no position or order
+        (the result is the same HOLD, faster)."""
+        return True
 
     def should_close(self, ctx: StrategyContext, side: Side) -> bool:
         """Whether an open position of this strategy should be closed at this bar (default: never)."""

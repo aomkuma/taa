@@ -6,6 +6,7 @@ and time below is worked by hand."""
 from __future__ import annotations
 
 import dataclasses
+from collections.abc import Sequence
 from datetime import UTC, datetime
 
 import numpy as np
@@ -14,9 +15,12 @@ import pytest
 
 from app.backtest.engine import BacktestEngine, BacktestResult, SymbolData
 from app.config import AppConfig, StrategiesConfig, StrategyEntry
-from app.core.enums import ExitReason, Side, Timeframe
+from app.core.enums import Action, ExitReason, Side, Timeframe
 from app.execution.simulated_broker import AccountCurrencyOnly
+from app.strategy.base_strategy import BaseStrategy, PastEntry
 from app.strategy.catalog import default_registry
+from app.strategy.registry import StrategySet
+from app.strategy.signal_models import Signal, StrategyContext
 from tests.risk_data import XAUUSD_SPEC
 
 SPEC = dataclasses.replace(XAUUSD_SPEC, currency_margin="USD", currency_base="USD")
@@ -92,7 +96,8 @@ def run(ticks: Ticks) -> BacktestResult:
         }
     )
     strategies = default_registry().from_config(
-        StrategiesConfig(items=[StrategyEntry(name="setup_plan1_ny")]), config.timeframes
+        StrategiesConfig(items=[StrategyEntry(name="setup_plan1_ny", params={"d1_atr20_min_usd": None})]),
+        config.timeframes,
     )
     bars = m1("2026-09-27 00:00", "2026-09-30 13:30")
     engine = BacktestEngine(
@@ -168,3 +173,63 @@ def test_a_bar_close_decision_reads_the_bars_last_tick() -> None:
     later = datetime(2026, 9, 30, 10, 2, tzinfo=UTC)
     q2 = engine._decision_quote("XAUUSD", engine._bar("XAUUSD", bars.iloc[61], later), later)
     assert (q2.bid, q2.ask) == (4000.0, pytest.approx(4000.3))  # no tick in 10:01: the bar close + 30 points
+
+
+class _Grouped(BaseStrategy):
+    """Buys at every 10th minute; records the accepted entries the engine hands over before each evaluation."""
+
+    name = "test_grouped"
+    entry_group = ("test_grouped",)
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.seen: dict[datetime, list[PastEntry]] = {}
+        self._now: list[PastEntry] = []
+
+    def required_timeframes(self) -> tuple[Timeframe, ...]:
+        return (Timeframe.M1,)
+
+    def warmup_bars(self) -> int:
+        return 50
+
+    def attach_entries(self, symbol: str, entries: Sequence[PastEntry]) -> None:
+        self._now = list(entries)
+
+    def evaluate(self, ctx: StrategyContext) -> Signal:
+        self.seen[ctx.decision_time_utc] = self._now
+        if ctx.decision_time_utc.minute % 10 or ctx.market.ask is None:
+            return self.hold(ctx)
+        ask = ctx.market.ask
+        return self.entry(
+            ctx, Action.BUY, entry_price=ask, stop_loss=ask - 5, take_profit=ask + 10, conditions=(), score=50
+        )
+
+
+def test_the_backtest_hands_the_accepted_entries_to_an_entry_group() -> None:
+    """The run's accepted entries are its decision store: a strategy with an ``entry_group`` sees the earlier
+    accepted ones (the 10:00 buy), not the refused ones (10:10 on: one position per symbol)."""
+    config = AppConfig.model_validate(
+        {
+            "symbols": {"allowed": ["XAUUSD"]},
+            "timeframes": {"higher": "H1", "entry": "M1", "warmup_bars": 100},
+            "backtest": {"slippage_model": "none"},
+            "risk": {"correlation_groups": {}, "max_spread_points": 100},
+            "position_management": {"break_even_trigger_r": 50.0, "trailing_start_r": 50.0},
+        }
+    )
+    s = _Grouped()
+    bars = m1("2026-09-30 06:00", "2026-09-30 10:45")
+    engine = BacktestEngine(
+        config,
+        {"XAUUSD": SymbolData(SPEC, {Timeframe.M1: bars, Timeframe.H1: h1(bars)})},
+        StrategySet((s,)),
+        AccountCurrencyOnly("USD"),
+        start=datetime(2026, 9, 30, 10, 0, tzinfo=UTC),
+        end=datetime(2026, 9, 30, 10, 45, tzinfo=UTC),
+    )
+    result = engine.run()
+    first = datetime(2026, 9, 30, 10, 0, tzinfo=UTC)
+    assert result.decisions["ACCEPT"] == 1
+    assert s.seen[first] == []
+    later = s.seen[datetime(2026, 9, 30, 10, 30, tzinfo=UTC)]
+    assert later == [PastEntry(first, Side.BUY, "test_grouped")]

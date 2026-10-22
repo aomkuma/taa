@@ -17,8 +17,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[4]
 PLAN1, ENGINE = ROOT / "app/strategy/plan1.py", ROOT / "app/backtest/engine.py"
 CONFIG, DECISION = ROOT / "app/config.py", ROOT / "app/engine/decision_engine.py"
+B2, ORCH = ROOT / "app/strategy/plan1_b2.py", ROOT / "app/engine/orchestrator.py"
 TESTS = ["tests/unit/test_plan1.py", "tests/backtest/test_engine_ticks.py", "tests/unit/test_lanes_config.py",
-         "tests/unit/test_decision_engine.py"]
+         "tests/unit/test_decision_engine.py", "tests/unit/test_plan1_b2.py",
+         "tests/integration/test_engine_release_straddle.py"]
 
 BUGS: list[tuple[str, Path, str, str]] = [
     ("ORB: a close AT the range high counts as a break", PLAN1, "side = 1 if c[k] > rh else", "side = 1 if c[k] >= rh else"),
@@ -75,6 +77,64 @@ BUGS: list[tuple[str, Path, str, str]] = [
     ("engine: decisions keep the bar quote despite ticks", ENGINE,
      "        if self.quotes is not None:\n            t_ns, bids, asks = self.quotes.between(symbol, bar.open_time, t)",
      "        if False:\n            t_ns, bids, asks = self.quotes.between(symbol, bar.open_time, t)"),
+    # --- checkpoint B: Asia B2 (app/strategy/plan1_b2.py) and the entries handed over from storage
+    ("B2 ZigZag: an equal high does not extend the peak", B2, "            if h[i] >= h[ext]:", "            if h[i] > h[ext]:"),
+    ("B2 ZigZag: a swing of 2.5 ATR, not 2", B2, "ZZ_K = 2.0", "ZZ_K = 2.5"),
+    ("B2 structure: the provisional trough is the highest low", B2,
+     "j = last_b + 1 + int(np.argmin(lo[last_b + 1 : d + 1]))", "j = last_b + 1 + int(np.argmax(lo[last_b + 1 : d + 1]))"),
+    ("B2 first close above: a close at the trigger refuses it", B2, "np.all(c[a:d] <= line[:-1])", "np.all(c[a:d] < line[:-1])"),
+    ("B2 W: the extreme is the higher low", B2, "extreme=min(t2[1], t3[1]),", "extreme=max(t2[1], t3[1]),"),
+    ("B2 sweep-turn: any higher low", B2, "t3[1] > t2[1] + eq:", "t3[1] > t2[1]:"),
+    ("B2 H&S: no head depth", B2, "t2[1] < min(t1[1], t3[1]) - HEAD_ATR * atr", "t2[1] < min(t1[1], t3[1]) + 99 * atr"),
+    ("B2 W: 60 bars allowed", B2, 'SPAN = {"ihs": 60, "w": 40, "st": 40}', 'SPAN = {"ihs": 60, "w": 60, "st": 40}'),
+    ("B2 base: starts a bar late", B2, "            start=d - n,", "            start=d - n + 1,"),
+    ("B2 stop: 0.25 ATR past the extreme", B2, "STOP_ATR = 0.2", "STOP_ATR = 0.25"),
+    ("B2 no height cap", B2, 'out = [p for p in out if p["height"] <= HEIGHT_ATR * atr[d]]', 'out = [p for p in out if p["height"] >= 0]'),
+    ("B2 confirmation: touching the extreme is allowed", B2, "        if lo[k] <= extreme:", "        if lo[k] < extreme:"),
+    ("B2 at_level: a sweep without the close back", B2, "elif 0 < past <= sweep and s * (close - (lv - s * z)) > 0:",
+     "elif 0 < past <= sweep:"),
+    ("B2 at_level: the sweep-turn without its own checks", B2,
+     'if p["family"] == "st" and (how != "swept" or s * (p["higher_low"] - (lv - s * z)) < 0):', 'if False:'),
+    ("B2 next level: inside the zone counts", B2, "(side * (levels - entry) > z)", "(side * (levels - entry) > 0)"),
+    ("B2 levels: a level exactly one tolerance away kept", B2, "if all(abs(cnd[0] - k[0]) > TOL_ATR * a for k in kept):",
+     "if all(abs(cnd[0] - k[0]) >= TOL_ATR * a for k in kept):"),
+    ("B2 levels: the oldest top, not the latest", B2, 'cand.append((float(sp[tops][int(np.argmax(si[tops]))]), "last top"))',
+     'cand.append((float(sp[tops][int(np.argmin(si[tops]))]), "last top"))'),
+    ("B2 levels: swings before they are known", B2, "sel = (y.s_known <= t_ns) & (y.s_i > bi - win)", "sel = y.s_i > bi - win"),
+    ("B2 level inputs: the running hour counted", B2, "    h1 = h1[end <= tn]", "    h1 = h1[end <= tn + 60 * NS_MIN]"),
+    ("B2 TF bars: the running bar counted", B2, "    keep = avail <= pd.Timestamp(t).as_unit(\"ns\").value",
+     "    keep = avail <= pd.Timestamp(t).as_unit(\"ns\").value + NS_MIN"),
+    ("B2 window: 09:00 Thai included", B2, "return s.hour * 60 + s.minute <= m < e.hour * 60 + e.minute",
+     "return s.hour * 60 + s.minute <= m <= e.hour * 60 + e.minute"),
+    ("B2 target: any level beyond the entry", B2, "q.side * (q.next_level - price) > risk", "q.side * (q.next_level - price) > 0"),
+    ("B2 week 6: a flip allowed, the same side refused", B2, "same = (first.side is Side.BUY) == (side > 0)",
+     "same = (first.side is Side.BUY) != (side > 0)"),
+    ("B2 exit: a close AT the swing low exits", B2, "(close < swing if buy else close > swing)", "(close <= swing if buy else close >= swing)"),
+    ("B2 exit: the time stop one bar late", B2, "if at.value >= t_entry + p.hold_bars * step:", "if at.value > t_entry + p.hold_bars * step:"),
+    ("B2 exit: bars before the entry read", B2, "        if f.bars.t_open[bk] < t_entry:\n            return None\n", ""),
+    ("B2 M5: its exits counted in M1 bars", B2, "        step = self.minutes * NS_MIN\n", "        step = NS_MIN\n"),
+    ("H4 from M1: on the UTC clock, not the server day", PLAN1, "local = opens.tz_convert(ATHENS).tz_localize(None).floor(\"4h\")",
+     "local = opens.tz_convert(\"UTC\").tz_localize(None).floor(\"4h\")"),
+    ("B2 no target: the cap in USD (150), not in R", B2, "price + q.side * p.target_cap_r * risk", "price + q.side * 150.0"),
+    ("regime: 60.00 refused (> instead of >=)", PLAN1, "ok = math.isfinite(atr) and atr >= min_usd", "ok = math.isfinite(atr) and atr > min_usd"),
+    ("regime: the forming day read", PLAN1, 'tz_convert("UTC") + pd.Timedelta(days=1)', 'tz_convert("UTC") + pd.Timedelta(days=0)'),
+    ("regime: too few days trade (fail open)", PLAN1, "    ok = math.isfinite(atr) and atr >= min_usd", "    ok = not math.isfinite(atr) or atr >= min_usd"),
+    ("regime: the ORB ignores the switch", PLAN1, "        if not (floor_ok and pool_ok and conds[2].passed):", "        if not (floor_ok and pool_ok):"),
+    ("regime: the straddle ignores the switch", PLAN1, "        return conds, floor_ok and conds[2].passed", "        return conds, floor_ok"),
+    ("regime: B2 ignores the switch", B2, "        return conds, floor_ok and side_ok and conds[2].passed", "        return conds, floor_ok and side_ok"),
+    ("backtest: a flat-lane skip ignores open positions", ENGINE, "and not self._lane_busy(symbol, lane):", ":"),
+    ("ORB: the window's last bar not wanted", PLAN1, "return first <= t <= last and t.weekday() <= 4", "return first <= t < last and t.weekday() <= 4"),
+    ("B2: wants every minute (M5 too)", B2, "and not t.value % (self.minutes * NS_MIN)", "and True"),
+    # the measurer's four (2026-10-22 02:45 Thai), missed at first
+    ("B2 a close AT the trigger line breaks", B2, "return bool(c[d] > line[-1] and", "return bool(c[d] >= line[-1] and"),
+    ("B2 levels: two touches on one side a flip zone", B2, "if touches >= 3 or (tops and lows):", "if touches >= 2 or (tops and lows):"),
+    ("B2 base: a close AT the high breaks", B2, "side = 1 if c[d] > hi else -1 if c[d] < low else 0", "side = 1 if c[d] >= hi else -1 if c[d] <= low else 0"),
+    ("B2 at_level: the farthest level wins", B2, 'if best is None or dist < best["dist"]:', 'if best is None or dist > best["dist"]:'),
+    ("store: rejected decisions read as entries", DECISION,
+     "                    DecisionRecordRow.decision == Decision.ACCEPT.value,\n                    DecisionRecordRow.profile == Profile.EXECUTION.value,\n                    DecisionRecordRow.created_at >= since,",
+     "                    DecisionRecordRow.profile == Profile.EXECUTION.value,\n                    DecisionRecordRow.created_at >= since,"),
+    ("backtest: accepted entries not kept", ENGINE, "            self._accepted.append((symbol, PastEntry(t, selected.side, selected.strategy)))", "            pass"),
+    ("engine: entries from the last hour only", ORCH, "ENTRY_LOOKBACK = timedelta(days=1)", "ENTRY_LOOKBACK = timedelta(hours=1)"),
 ]
 
 

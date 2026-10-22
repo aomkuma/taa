@@ -124,7 +124,7 @@ lanes:
       signal_expiry_bars: 1
       items:
         - name: setup_own_conf72
-          enabled: true             # DEMO from 2026-10-19 (owner, 2026-10-18: "open it for tomorrow's market")
+          enabled: false            # off for the plan1 DEMO (owner, 2026-10-21: plan1 is the only enabled lane)
           params: {exit_mode: regime, scratch_bars: 10, off_round: half}   # v2 + half size off the round 50
     max_spread_to_sl_ratio: 0.2     # the stop is at least 3 U (about 3.4 USD) against a 0.3-0.45 USD spread
     min_risk_reward: 0.7            # the 8 U target against a 3-10 U stop widened to 0.5 M15 ATR: RR 0.77-2.4
@@ -141,32 +141,41 @@ lanes:
       signal_expiry_bars: 1
       items:
         - name: setup_own_s2
-          enabled: true             # DEMO from 2026-10-19 (owner, 2026-10-18); next release NFP 2026-11-06
+          enabled: false            # off for the plan1 DEMO (owner, 2026-10-21: plan1 is the only enabled lane)
           params: {}                # D 2 U, stop 8 U (1 U = price / 4000), out after the release minute
     management:
       setup_own_s2: {break_even: false, trailing: false}
   - name: plan1                     # Setup OWN PLAN-1 (docs/PLAN1_LANE.md; research dev/plan1.py + the journal's rules
     symbols: [XAUUSD]               # in force, journal/PLAN1_JOURNAL.md): the London 13:00-Thai ORB on closed M1 bars,
-    timeframes:                     # the NY 08:30 straddle every weekday on quotes; Asia B2 comes in checkpoint B
-      higher: H4                    # the H4 ATR change (journal week 10); the H1 ATR is built from M1
+    timeframes:                     # the NY 08:30 straddle every weekday on quotes; Asia B2 on closed M1 / M5 bars
+      higher: H1                    # the H1 / H4 ATRs are built from M1 (an H4 frame is stale on Monday mornings)
       entry: M1
-      warmup_bars: 3000             # 15 H1 bars for the H1 ATR, yesterday's server day across a weekend (pools)
+      warmup_bars: 10000            # B2's owner levels: 125 complete H1 bars across a weekend (the ORB needs 3000)
     strategies:
       cooldown_bars: 0              # one position at a time is the only spacing (risk.max_positions_per_symbol)
       signal_expiry_bars: 1
-      items:                        # each journal rule is a parameter here (target_r, atr_floor, hold, ...)
+      items:                        # each journal rule is a parameter here (target_r, atr_floor, hold, ...); row 62's
+                                    # regime switch: no new entry while the D1 ATR(20) < d1_atr20_min_usd (null = off)
         - name: setup_plan1_orb
-          enabled: false            # PAPER only once the measurer turns it on; journal week 5: target 1.5 R
-          params: {target_r: 1.5, atr_floor: null, pool_break_when_h4_contracting: true}   # week 6: no ATR
+          enabled: true             # DEMO (owner, 2026-10-21: plan1 the only lane); journal week 5: target 1.5 R
+          params: {target_r: 1.5, atr_floor: null, pool_break_when_h4_contracting: true, d1_atr20_min_usd: 60.0}   # week 6: no ATR
           # floor (the H1 ATR stays in the journal); week 10: in a contracting H4 ATR (24 h) only after a pool break
+        - name: setup_plan1_b2         # Asia B2 on M1 patterns (checkpoint B): 07:00-09:00 Thai; second_same_side:
+          enabled: true             # the week-6 rule, on in the frozen rules (read from the decision store)
+          params: {second_same_side: true, atr_floor: null, d1_atr20_min_usd: 60.0}
+        - name: setup_plan1_b2m5       # Asia B2 on M5 patterns (its own name: a position's TF after a restart)
+          enabled: true
+          params: {second_same_side: true, atr_floor: null, d1_atr20_min_usd: 60.0}
         - name: setup_plan1_ny
-          enabled: false            # every weekday 08:30 New York; 2 / 8 USD, out after 30 minutes, no target
-          params: {trigger_u: 2.0, stop_u: 8.0, hold_seconds: 1800, target_cap_u: 100.0, atr_floor: null}
+          enabled: true             # every weekday 08:30 New York; 2 / 8 USD, out after 30 minutes, no target
+          params: {trigger_u: 2.0, stop_u: 8.0, hold_seconds: 1800, target_cap_u: 100.0, atr_floor: null, d1_atr20_min_usd: 60.0}
     max_spread_to_sl_ratio: 0.5     # the research has no spread rule; a 4-USD range stop against a 0.4 spread passes
     max_spread_points: 60           # above the widest 08:29-08:31 NY spread on P1 / P2 ticks (53; fills <= 39)
     management:
       setup_plan1_orb: {break_even: false, trailing: false}
       setup_plan1_ny: {break_even: false, trailing: false}
+      setup_plan1_b2: {break_even: false, trailing: false}
+      setup_plan1_b2m5: {break_even: false, trailing: false}
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the

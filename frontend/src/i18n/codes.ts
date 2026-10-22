@@ -283,7 +283,7 @@ export const ORDER_STATES = [
 
 // The strategies page (TAA-909): StrategyState (app/web/strategies.py), QueueStatus (app/sync/command_queue.py)
 // and the strategy catalog (app/strategy/catalog.py: example_strategy.py, setups.py, own_setup.py,
-// release_straddle.py, plan1.py), whose text is the strategy's description.
+// release_straddle.py, plan1.py, plan1_b2.py), whose text is the strategy's description.
 export const STRATEGY_STATES = ['ENABLED', 'DISABLED_REMOTE', 'DISABLED_CONFIG', 'UNKNOWN'] as const;
 export const COMMAND_STATUSES = ['QUEUED', 'DELIVERED', 'EXECUTED', 'REJECTED', 'FAILED', 'EXPIRED'] as const;
 export const STRATEGY_NAMES = [
@@ -303,6 +303,8 @@ export const STRATEGY_NAMES = [
   'setup_own_s2',
   'setup_plan1_orb',
   'setup_plan1_ny',
+  'setup_plan1_b2',
+  'setup_plan1_b2m5',
 ] as const;
 
 // Cloud backtest runs (TAA-910): the statuses in the comment of BacktestRunRow.status.

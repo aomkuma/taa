@@ -214,7 +214,9 @@
     "setup_own_conf72": "Setup OWN F1 CONF-72: the H1 trend, a level, price action and two of three M5 indicators, near the 72-hour extreme; M1 gold. Lane only. Unproven.",
     "setup_own_s2": "Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes. Lane only. Unproven.",
     "setup_plan1_orb": "Setup OWN PLAN-1, London ORB: the first M1 close beyond the 13:00-Thai 15-minute range, the stop at its other side, 1.5 R, out after 60 minutes; M1 gold. Lane only. Unproven.",
-    "setup_plan1_ny": "Setup OWN PLAN-1, NY straddle: at 08:30 New York every weekday a buy stop 2 USD above the ask and a sell stop 2 USD below the bid, the stop 8 USD, out after 30 minutes; gold, on quotes. Lane only. Unproven."
+    "setup_plan1_ny": "Setup OWN PLAN-1, NY straddle: at 08:30 New York every weekday a buy stop 2 USD above the ask and a sell stop 2 USD below the bid, the stop 8 USD, out after 30 minutes; gold, on quotes. Lane only. Unproven.",
+    "setup_plan1_b2": "Setup OWN PLAN-1, Asia B2 on M1: a chart pattern at the owner's H1 level, a pullback and a new close, 07:00-09:00 Thai; the structure exit; M1 gold. Lane only. Unproven.",
+    "setup_plan1_b2m5": "Setup OWN PLAN-1, Asia B2 on M5: a chart pattern at the owner's H1 level, a pullback and a new close, 07:00-09:00 Thai; the structure exit; gold. Lane only. Unproven."
   },
   "backtestStatus": {
     "QUEUED": "Queued",
@@ -271,7 +273,9 @@
     "setup_own_conf72": "Setup OWN F1 (CONF-72)",
     "setup_own_s2": "Setup OWN S2 (release straddle)",
     "setup_plan1_orb": "PLAN-1 London ORB",
-    "setup_plan1_ny": "PLAN-1 NY straddle"
+    "setup_plan1_ny": "PLAN-1 NY straddle",
+    "setup_plan1_b2": "PLAN-1 Asia B2 (M1)",
+    "setup_plan1_b2m5": "PLAN-1 Asia B2 (M5)"
   },
   "gate": {
     "G1_TRADABLE": "Tradable",

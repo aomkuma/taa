@@ -73,3 +73,30 @@ def test_a_release_entry_trades_under_its_own_magic_and_leaves_after_the_minute(
     assert not d.engine.gateway.positions()
     assert d.engine.interval() == d.engine.config.engine.monitor_interval_seconds
     d.engine.shutdown()
+
+
+def test_an_entry_group_reads_its_entries_from_the_decision_store(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Before a lane evaluates, a strategy with an ``entry_group`` gets the group's accepted entries of the last day
+    from the engine's decision store (PLAN-1 B2's week-6 rule survives a restart)."""
+    from app.core.enums import Side
+    from app.strategy.base_strategy import PastEntry
+
+    d, s2 = s2_demo(tmp_path, monkeypatch)
+    calls: list[tuple[tuple[str, ...], str, object]] = []
+    stored = [PastEntry(d.clock.now_utc() - timedelta(hours=2), Side.SELL, S2)]
+
+    def fake(strategies, symbol, since):  # type: ignore[no-untyped-def]
+        calls.append((tuple(strategies), symbol, since))
+        return stored
+
+    got: list[object] = []
+    monkeypatch.setattr(d.engine.decision_store, "accepted_entries", fake)
+    monkeypatch.setattr(OwnS2, "entry_group", (S2,))
+    monkeypatch.setattr(s2, "attach_entries", lambda symbol, entries: got.append((symbol, list(entries))))
+    lane = next(lane for lane in d.engine.extra_lanes if lane.name == "news")
+    d.engine._attach_entries("EURUSD", lane)
+    assert calls == [((S2,), "EURUSD", d.clock.now_utc() - timedelta(days=1))]
+    assert got == [("EURUSD", stored)]
+    d.engine.shutdown()

@@ -302,6 +302,24 @@ class TestEveryReasonCode:
         other = eng.decide(request(quote=wide, signal=make_signal(evidence=(), signal_id="sig-2")))
         assert "SPREAD_TOO_HIGH" in other.reason_codes
 
+    def test_accepted_entries_come_back_from_the_store(self, db: Database) -> None:
+        """PLAN-1 B2's week-6 rule reads the morning's accepted entries from storage (restart-safe): the accepted
+        ones of the named strategies on the symbol since the given time, oldest first; a rejection is no entry."""
+        eng = engine(db)
+        first = eng.decide(request())  # example_trend_pullback, BUY: accepted
+        rejected = eng.decide(
+            request(signal=make_signal(evidence=(), signal_id="sig-x"), quote=quote(spread_points=40.0))
+        )
+        assert first.decision is Decision.ACCEPT and rejected.decision is Decision.REJECT
+        store = DecisionStore(db)
+        got = store.accepted_entries(["example_trend_pullback"], "EURUSD", NOW - timedelta(hours=1))
+        assert [(e.side, e.strategy) for e in got] == [(Side.BUY, "example_trend_pullback")]
+        assert got[0].at == first.created_at
+        assert store.accepted_entries(["example_trend_pullback"], "GBPUSD", NOW - timedelta(hours=1)) == []
+        assert store.accepted_entries(["other"], "EURUSD", NOW - timedelta(hours=1)) == []
+        assert store.accepted_entries(["example_trend_pullback"], "EURUSD", NOW + timedelta(hours=1)) == []
+        assert store.accepted_entries([], "EURUSD", NOW - timedelta(hours=1)) == []
+
     def test_every_milestone_1_reason_is_covered(self) -> None:
         covered = {code.split(":")[0] for code in CASES}
         assert covered == {r.value for r in Reason} - M2_ONLY - SELECTOR_ONLY - STRATEGY_ONLY

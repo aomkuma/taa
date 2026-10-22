@@ -2069,8 +2069,8 @@ research/2026-10-18-moments/agents/journal/PLAN1_JOURNAL.md). PAPER only; both i
 - [x] backtest quote path (`--ticks`): quote strategies, tick-level fills, the decision quote, `journal.jsonl`; the lane's own spread cap
 - [x] parity with the research trades on P1 / P2 (ORB at 1.5 R, straddle), every difference explained
 - [x] hand-worked unit tests, planted bugs, frontend strategy names (TH / EN)
-- [ ] Asia B2: ZigZag, H1 levels, patterns, M1 / M5 agreement, structure exit, the Asia window, the week-6 rule
-- [ ] parity of B2 and of the whole lane (one position at a time) against `plan1_trades_learn_s0_x0.parquet`
+- [x] Asia B2: ZigZag, H1 levels, patterns, M1 / M5 agreement, structure exit, the Asia window, the week-6 rule
+- [x] parity of B2 and of the whole lane (one position at a time) against `plan1_trades_learn_s0_x0.parquet`
 - [ ] PAPER run on the real FBS demo terminal (read-only quotes), the journal read back from the decision log
 
 ### Phase 15 — Product-scale backlog (deferred)

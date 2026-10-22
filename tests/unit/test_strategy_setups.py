@@ -297,7 +297,7 @@ class TestCatalog:
             assert cls.triggers <= set(evidence_registry().ids), cls.name
         # the inverted copies were removed (2026-10-14); Setup OWN F1 and S2 live in their own modules (2026-10-18),
         # PLAN-1's London ORB and NY straddle in app/strategy/plan1.py (2026-10-21)
-        assert len(STRATEGIES) == 1 + len(SETUPS) + 4
+        assert len(STRATEGIES) == 1 + len(SETUPS) + 6  # + PLAN-1's Asia B2 on M1 and M5 (plan1_b2.py)
 
     def test_config_yaml_trades_harmonic_on_its_normal_side_only(self) -> None:
         settings = load_settings(
@@ -308,7 +308,12 @@ class TestCatalog:
         # every setup is listed, except a lane-only one (not advised) that no lane runs yet (under test)
         originals = {"example_trend_pullback", *(c.name for c in SETUPS if c.advised or c.name in in_lanes)}
         originals |= {"setup_own_conf72", "setup_own_s2"}  # Setup OWN's lanes own and news (2026-10-18)
-        originals |= {"setup_plan1_orb", "setup_plan1_ny"}  # lane plan1 (2026-10-21, docs/PLAN1_LANE.md)
+        originals |= {
+            "setup_plan1_orb",
+            "setup_plan1_ny",
+            "setup_plan1_b2",
+            "setup_plan1_b2m5",
+        }  # lane plan1 (2026-10-21, docs/PLAN1_LANE.md)
         assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
         # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only; 2026-10-16: its own stop cap off;
@@ -339,19 +344,24 @@ class TestCatalog:
         s1, own, news, plan1 = settings.config.lanes
         assert (s1.timeframes.entry, s1.symbols) == (Timeframe.M1, ["XAUUSD"])
         assert [(i.name, i.enabled) for i in s1.strategies.items] == [("setup_breakout_scalp", False)]
-        assert [(i.name, i.enabled) for i in own.strategies.items] == [("setup_own_conf72", True)]
-        assert [(i.name, i.enabled) for i in news.strategies.items] == [("setup_own_s2", True)]
-        # PLAN-1 (2026-10-21, docs/PLAN1_LANE.md): both pieces off until the measurer turns them on (PAPER)
+        # owner, 2026-10-21: lane plan1 is the only enabled lane for the DEMO (F1 and S2 off)
+        assert [(i.name, i.enabled) for i in own.strategies.items] == [("setup_own_conf72", False)]
+        assert [(i.name, i.enabled) for i in news.strategies.items] == [("setup_own_s2", False)]
         assert [(i.name, i.enabled) for i in plan1.strategies.items] == [
-            ("setup_plan1_orb", False),
-            ("setup_plan1_ny", False),
+            ("setup_plan1_orb", True),
+            ("setup_plan1_b2", True),
+            ("setup_plan1_b2m5", True),
+            ("setup_plan1_ny", True),
         ]
-        orb = plan1.strategies.items[0].params
+        orb, b2 = plan1.strategies.items[0].params, plan1.strategies.items[1].params
         assert (
             orb["target_r"] == 1.5
             and orb["atr_floor"] is None
             and orb["pool_break_when_h4_contracting"] is True
+            and orb["d1_atr20_min_usd"] == 60.0
         )
+        assert b2["second_same_side"] is True  # the frozen rules (CHECKLIST 61-63): the week-6 rule on
+        assert plan1.timeframes.higher is Timeframe.H1 and plan1.max_spread_points == 60
 
     def test_each_setup_can_be_enabled_alone(self) -> None:
         for cls in SETUPS:

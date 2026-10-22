@@ -70,6 +70,7 @@ from app.risk.position_sizer import (
 from app.risk.reasons import Reason
 from app.storage.database import Database
 from app.storage.models import DecisionCheckRow, DecisionRecordRow
+from app.strategy.base_strategy import PastEntry
 from app.strategy.signal_models import MarketContext, ReasonCode, Signal
 
 log = logging.getLogger(__name__)
@@ -888,6 +889,25 @@ class DecisionStore:
                         detail=ch.detail,
                     )
                 )
+
+    def accepted_entries(self, strategies: Sequence[str], symbol: str, since: datetime) -> list[PastEntry]:
+        """The accepted EXECUTION entries of *strategies* on *symbol* decided at / after *since*, oldest first
+        (a strategy's ``entry_group``: rules that depend on the day's earlier trades survive a restart)."""
+        if not strategies:
+            return []
+        with self.db.session() as sess:
+            rows = sess.execute(
+                select(DecisionRecordRow.created_at, DecisionRecordRow.action, DecisionRecordRow.strategy)
+                .where(
+                    DecisionRecordRow.strategy.in_(list(strategies)),
+                    DecisionRecordRow.symbol == symbol,
+                    DecisionRecordRow.decision == Decision.ACCEPT.value,
+                    DecisionRecordRow.profile == Profile.EXECUTION.value,
+                    DecisionRecordRow.created_at >= since,
+                )
+                .order_by(DecisionRecordRow.created_at)
+            ).all()
+        return [PastEntry(at, Side.BUY if action == "BUY" else Side.SELL, name) for at, action, name in rows]
 
     def accepted_exists(self, idempotency_key: str) -> bool:
         with self.db.session() as sess:

@@ -1,0 +1,35 @@
+app run lane: 253 trades, decisions {'ACCEPT': 253, 'REJECT': 15}, rejections {'MAX_POSITIONS_PER_SYMBOL': 15}, tick minutes 11647, data hash 0577735e842f050d0eb6833817b55503
+=== the whole lane, the rules in force from the start
+piece        part res n app n  both side= exit= |dR|<0.05    res R    app R  res R/t  app R/t
+Asia B2      P1      35    35    35    35    35        35    +4.36    +4.36   +0.125   +0.124
+Asia B2      P2      35    35    35    35    35        35    +6.96    +6.96   +0.199   +0.199
+London ORB   P1      42    42    42    42    42        42   +13.43   +13.54   +0.320   +0.322
+London ORB   P2      41    41    41    41    41        40   +12.75   +13.02   +0.311   +0.318
+NY straddle  P1      41    41    41    41    41        30   +19.14   +18.25   +0.467   +0.445
+NY straddle  P2      59    59    59    59    59        50    +7.01    +5.92   +0.119   +0.100
+
+--- in the research only
+--- in the bot only
+--- in both, differing (side, exit kind or |dR| >= 0.05)
+  NY straddle 2025-10-21 Tue 19:30:00 | research 4226.41 stop 4234.41 out 20:00:00 time R +1.874 | bot 4226.55 stop 4234.41 out 20:00:00 time R +1.925 | dR +0.051
+  NY straddle 2025-10-24 Fri 19:30:01 | research 4066.75 stop 4058.75 out 20:00:00 time R +1.908 | bot 4070.31 stop 4058.75 out 20:00:00 time R +1.012 | dR -0.895
+  NY straddle 2025-11-20 Thu 20:30:00 | research 4090.46 stop 4082.46 out 20:30:01 stop R -1.341 | bot 4087.46 stop 4082.46 out 20:30:01 stop R -1.546 | dR -0.205
+  NY straddle 2025-11-25 Tue 20:30:02 | research 4146.60 stop 4138.60 out 21:00:00 time R +0.151 | bot 4145.67 stop 4138.60 out 21:00:00 time R +0.303 | dR +0.151
+  NY straddle 2025-12-11 Thu 20:30:30 | research 4216.06 stop 4208.06 out 21:00:00 time R +0.616 | bot 4216.34 stop 4208.06 out 21:00:00 time R +0.562 | dR -0.055
+  NY straddle 2025-12-16 Tue 20:30:00 | research 4304.06 stop 4296.06 out 21:00:00 time R +1.111 | bot 4302.85 stop 4296.06 out 21:00:00 time R +1.487 | dR +0.376
+  NY straddle 2025-12-18 Thu 20:30:01 | research 4329.67 stop 4321.67 out 21:00:00 time R +0.850 | bot 4331.69 stop 4321.67 out 21:00:00 time R +0.477 | dR -0.373
+  NY straddle 2025-12-29 Mon 20:30:08 | research 4449.30 stop 4457.30 out 21:00:00 time R +3.451 | bot 4449.18 stop 4457.30 out 21:00:00 time R +3.385 | dR -0.066
+  NY straddle 2026-01-07 Wed 20:30:20 | research 4444.67 stop 4436.67 out 21:00:00 time R +1.023 | bot 4444.93 stop 4436.67 out 21:00:00 time R +0.959 | dR -0.064
+  NY straddle 2026-01-13 Tue 20:30:01 | research 4604.08 stop 4596.08 out 21:00:00 time R +0.900 | bot 4603.58 stop 4596.08 out 21:00:00 time R +1.027 | dR +0.127
+  NY straddle 2026-01-15 Thu 20:30:00 | research 4603.52 stop 4611.52 out 21:00:00 time R +1.883 | bot 4603.91 stop 4611.52 out 21:00:00 time R +2.030 | dR +0.148
+  NY straddle 2026-01-16 Fri 20:30:03 | research 4589.51 stop 4581.51 out 21:00:00 time R +1.550 | bot 4589.99 stop 4581.51 out 21:00:00 time R +1.406 | dR -0.144
+  NY straddle 2026-02-11 Wed 20:30:01 | research 5072.85 stop 5080.85 out 21:00:00 time R +0.841 | bot 5067.36 stop 5080.85 out 21:00:00 time R +0.092 | dR -0.749
+  NY straddle 2026-02-13 Fri 20:30:01 | research 4974.10 stop 4966.10 out 21:00:00 time R +1.610 | bot 4973.30 stop 4966.10 out 21:00:00 time R +1.900 | dR +0.290
+  London ORB  2026-02-26 Thu 13:50:00 | research 5193.35 stop 5199.58 out 14:09:12 target R +1.500 | bot 5193.35 stop 5199.58 out 14:23:43 target R +1.717 | dR +0.217
+  NY straddle 2026-02-26 Thu 20:30:08 | research 5172.66 stop 5180.66 out 21:00:00 time R +0.804 | bot 5172.30 stop 5180.66 out 21:00:00 time R +0.726 | dR -0.078
+  NY straddle 2026-02-27 Fri 20:30:01 | research 5232.28 stop 5240.28 out 21:00:00 time R +1.110 | bot 5232.69 stop 5240.28 out 21:00:00 time R +1.224 | dR +0.114
+  NY straddle 2026-03-04 Wed 20:30:31 | research 5190.22 stop 5198.22 out 21:00:00 time R +2.740 | bot 5190.40 stop 5198.22 out 21:00:00 time R +2.826 | dR +0.086
+  NY straddle 2026-03-24 Tue 19:30:07 | research 4399.46 stop 4407.46 out 20:00:00 time R +2.504 | bot 4399.34 stop 4407.46 out 20:00:00 time R +2.452 | dR -0.052
+  NY straddle 2026-04-02 Thu 19:30:02 | research 4623.62 stop 4631.62 out 20:00:00 time R +2.665 | bot 4624.56 stop 4631.62 out 20:00:00 time R +3.153 | dR +0.488
+  NY straddle 2026-04-10 Fri 19:30:01 | research 4765.37 stop 4757.37 out 20:00:00 time R +0.804 | bot 4773.95 stop 4757.37 out 20:00:00 time R -0.130 | dR -0.933
+in both: 253; |dR| < 0.05: 232; mean dR -0.0063

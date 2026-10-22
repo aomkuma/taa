@@ -9340,7 +9340,7 @@
               "cooldown_bars": 0,
               "items": [
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "setup_own_conf72",
                   "params": {
                     "exit_mode": "regime",
@@ -9390,7 +9390,7 @@
               "cooldown_bars": 0,
               "items": [
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "setup_own_s2",
                   "params": {}
                 }
@@ -9414,6 +9414,24 @@
           },
           {
             "management": {
+              "setup_plan1_b2": {
+                "break_even": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              },
+              "setup_plan1_b2m5": {
+                "break_even": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              },
               "setup_plan1_ny": {
                 "break_even": false,
                 "break_even_target_share": null,
@@ -9442,19 +9460,39 @@
               "cooldown_bars": 0,
               "items": [
                 {
-                  "enabled": false,
+                  "enabled": true,
                   "name": "setup_plan1_orb",
                   "params": {
                     "atr_floor": null,
+                    "d1_atr20_min_usd": 60.0,
                     "pool_break_when_h4_contracting": true,
                     "target_r": 1.5
                   }
                 },
                 {
-                  "enabled": false,
+                  "enabled": true,
+                  "name": "setup_plan1_b2",
+                  "params": {
+                    "atr_floor": null,
+                    "d1_atr20_min_usd": 60.0,
+                    "second_same_side": true
+                  }
+                },
+                {
+                  "enabled": true,
+                  "name": "setup_plan1_b2m5",
+                  "params": {
+                    "atr_floor": null,
+                    "d1_atr20_min_usd": 60.0,
+                    "second_same_side": true
+                  }
+                },
+                {
+                  "enabled": true,
                   "name": "setup_plan1_ny",
                   "params": {
                     "atr_floor": null,
+                    "d1_atr20_min_usd": 60.0,
                     "hold_seconds": 1800,
                     "stop_u": 8.0,
                     "target_cap_u": 100.0,
@@ -9472,11 +9510,11 @@
               "context": [],
               "context_bars": 700,
               "entry": "M1",
-              "higher": "H4",
+              "higher": "H1",
               "max_gap_bars": 3,
               "refinement": null,
               "stale_tick_seconds": 120.0,
-              "warmup_bars": 3000
+              "warmup_bars": 10000
             }
           }
         ],
@@ -14325,7 +14363,7 @@
         "warmup_bars": 120
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14389,7 +14427,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1",
           "H1"
@@ -14399,7 +14437,7 @@
         "warmup_bars": 4545
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14438,7 +14476,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -14447,7 +14485,7 @@
         "warmup_bars": 50
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14460,11 +14498,13 @@
         "name": "setup_plan1_orb",
         "overrides": [
           "atr_floor",
+          "d1_atr20_min_usd",
           "pool_break_when_h4_contracting",
           "target_r"
         ],
         "params": {
           "atr_floor": null,
+          "d1_atr20_min_usd": 60.0,
           "entry_minutes": 60,
           "expiry_bars": 1,
           "h4_change_bars": 6,
@@ -14491,17 +14531,114 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
-          "M1",
-          "H4"
+          "M1"
         ],
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 3000
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN PLAN-1, Asia B2 on M1: a chart pattern at the owner's H1 level, a pullback and a new close, 07:00-09:00 Thai; the structure exit; M1 gold. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_plan1_b2",
+        "overrides": [
+          "atr_floor",
+          "d1_atr20_min_usd",
+          "second_same_side"
+        ],
+        "params": {
+          "atr_floor": null,
+          "d1_atr20_min_usd": 60.0,
+          "expiry_bars": 1,
+          "hold_bars": 60,
+          "max_wait_bars": 30,
+          "pullback_atr": 1.0,
+          "second_same_side": true,
+          "target_cap_r": 10.0,
+          "window": "07:00-09:00",
+          "window_zone": "Asia/Bangkok"
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 10000
+      },
+      {
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN PLAN-1, Asia B2 on M5: a chart pattern at the owner's H1 level, a pullback and a new close, 07:00-09:00 Thai; the structure exit; gold. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_plan1_b2m5",
+        "overrides": [
+          "atr_floor",
+          "d1_atr20_min_usd",
+          "second_same_side"
+        ],
+        "params": {
+          "atr_floor": null,
+          "d1_atr20_min_usd": 60.0,
+          "expiry_bars": 1,
+          "hold_bars": 60,
+          "max_wait_bars": 30,
+          "pullback_atr": 1.0,
+          "second_same_side": true,
+          "target_cap_r": 10.0,
+          "window": "07:00-09:00",
+          "window_zone": "Asia/Bangkok"
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 10000
+      },
+      {
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14514,6 +14651,7 @@
         "name": "setup_plan1_ny",
         "overrides": [
           "atr_floor",
+          "d1_atr20_min_usd",
           "hold_seconds",
           "stop_u",
           "target_cap_u",
@@ -14523,6 +14661,7 @@
           "arm_seconds": 30.0,
           "atr_floor": null,
           "calendar_file": "app/news/us_releases.csv",
+          "d1_atr20_min_usd": 60.0,
           "events": [
             "CPI",
             "NFP",
@@ -14552,7 +14691,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
           "M1"
         ],
@@ -15373,7 +15512,7 @@
         "warmup_bars": 120
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -15437,7 +15576,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1",
           "H1"
@@ -15447,7 +15586,7 @@
         "warmup_bars": 4545
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -15486,7 +15625,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -15495,7 +15634,7 @@
         "warmup_bars": 50
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -15508,11 +15647,13 @@
         "name": "setup_plan1_orb",
         "overrides": [
           "atr_floor",
+          "d1_atr20_min_usd",
           "pool_break_when_h4_contracting",
           "target_r"
         ],
         "params": {
           "atr_floor": null,
+          "d1_atr20_min_usd": 60.0,
           "entry_minutes": 60,
           "expiry_bars": 1,
           "h4_change_bars": 6,
@@ -15539,17 +15680,114 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
-          "M1",
-          "H4"
+          "M1"
         ],
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 3000
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN PLAN-1, Asia B2 on M1: a chart pattern at the owner's H1 level, a pullback and a new close, 07:00-09:00 Thai; the structure exit; M1 gold. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_plan1_b2",
+        "overrides": [
+          "atr_floor",
+          "d1_atr20_min_usd",
+          "second_same_side"
+        ],
+        "params": {
+          "atr_floor": null,
+          "d1_atr20_min_usd": 60.0,
+          "expiry_bars": 1,
+          "hold_bars": 60,
+          "max_wait_bars": 30,
+          "pullback_atr": 1.0,
+          "second_same_side": true,
+          "target_cap_r": 10.0,
+          "window": "07:00-09:00",
+          "window_zone": "Asia/Bangkok"
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 10000
+      },
+      {
+        "configured_enabled": true,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "Setup OWN PLAN-1, Asia B2 on M5: a chart pattern at the owner's H1 level, a pullback and a new close, 07:00-09:00 Thai; the structure exit; gold. Lane only. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "setup_plan1_b2m5",
+        "overrides": [
+          "atr_floor",
+          "d1_atr20_min_usd",
+          "second_same_side"
+        ],
+        "params": {
+          "atr_floor": null,
+          "d1_atr20_min_usd": 60.0,
+          "expiry_bars": 1,
+          "hold_bars": 60,
+          "max_wait_bars": 30,
+          "pullback_atr": 1.0,
+          "second_same_side": true,
+          "target_cap_r": 10.0,
+          "window": "07:00-09:00",
+          "window_zone": "Asia/Bangkok"
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "ENABLED",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 10000
+      },
+      {
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -15562,6 +15800,7 @@
         "name": "setup_plan1_ny",
         "overrides": [
           "atr_floor",
+          "d1_atr20_min_usd",
           "hold_seconds",
           "stop_u",
           "target_cap_u",
@@ -15571,6 +15810,7 @@
           "arm_seconds": 30.0,
           "atr_floor": null,
           "calendar_file": "app/news/us_releases.csv",
+          "d1_atr20_min_usd": 60.0,
           "events": [
             "CPI",
             "NFP",
@@ -15600,7 +15840,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
           "M1"
         ],

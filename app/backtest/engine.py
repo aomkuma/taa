@@ -49,7 +49,7 @@ import math
 from collections import Counter
 from collections.abc import Callable, Collection, Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any, Protocol
 
 import numpy as np
@@ -82,7 +82,7 @@ from app.risk.limits import ProfileLimits, effective_risk
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.storage.database import Database
 from app.strategy.arbitration import SignalArbiter
-from app.strategy.base_strategy import BaseStrategy
+from app.strategy.base_strategy import BaseStrategy, PastEntry
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame, context_at
 from app.strategy.market_maps import MapBook
 from app.strategy.registry import StrategySet
@@ -294,6 +294,7 @@ class BacktestEngine:
         self._by_magic = {m: n for n, m in self._magic.items()}
         self._lane_of = {s: lane.name for lane in self.lanes for s in lane.by_name}
         self._last_entry: dict[str, datetime] = {}
+        self._accepted: list[tuple[str, PastEntry]] = []  # (symbol, entry): the run's decision store
         self._booked_deals = 0
         self._feed: dict[str, Timeframe] = {}  # per symbol: the timeframe the broker steps it on
 
@@ -405,7 +406,11 @@ class BacktestEngine:
         result: BacktestResult,
         lane: _Lane,
     ) -> None:
-        """One lane at the close *t* of its entry bar (the broker has already stepped the symbol)."""
+        """One lane at the close *t* of its entry bar (the broker has already stepped the symbol). A bar no
+        strategy of the lane wants (``wants_bar``) is skipped while the lane holds no position or order there:
+        its strategies would only hold."""
+        if not any(s.wants_bar(t) for s in lane.strategies.strategies) and not self._lane_busy(symbol, lane):
+            return
         bar = self._bar(symbol, frames[lane.entry_tf].df.iloc[pos], t)
         quote = self._decision_quote(symbol, bar, t)
         try:
@@ -413,12 +418,36 @@ class BacktestEngine:
         except (InsufficientDataError, DataQualityError):
             return
         self._manage(symbol, ctx, bar, lane, frames[lane.entry_tf], t)
+        for strategy in lane.strategies.strategies:
+            if strategy.entry_group:  # the day's accepted entries, as the live engine reads them from storage
+                since = t - timedelta(days=1)
+                strategy.attach_entries(
+                    symbol,
+                    [
+                        e
+                        for s, e in self._accepted
+                        if s == symbol and e.strategy in strategy.entry_group and e.at >= since
+                    ],
+                )
         signals = lane.strategies.evaluate(ctx)
         result.signals += sum(1 for s in signals if s.is_entry)
         selected = lane.arbiter.arbitrate(signals).selected
         if selected is None:
             return
         self._submit(symbol, ctx, selected, quote, t, result)
+
+    def _lane_busy(self, symbol: str, lane: _Lane) -> bool:
+        """A position or order of the lane's strategies on *symbol* (an unknown strategy's: the main lane)."""
+        for p in self.broker.positions.values():
+            if (
+                p.symbol == symbol
+                and self._lane_of.get(self._by_magic.get(p.request.magic, ""), MAIN) == lane.name
+            ):
+                return True
+        return any(
+            q.request.symbol == symbol and self._lane_of.get(q.request.strategy, MAIN) == lane.name
+            for q in self.broker.pending.values()
+        )
 
     def _decision_quote(self, symbol: str, bar: Bar, t: datetime) -> Quote:
         """The quote a bar-close decision sees: with stored ticks the last tick of the bar (as live, where the
@@ -466,6 +495,8 @@ class BacktestEngine:
         if record.decision is not Decision.ACCEPT or record.sizing is None:
             return
         self._last_entry[symbol] = t
+        if selected.side is not None:
+            self._accepted.append((symbol, PastEntry(t, selected.side, selected.strategy)))
         result.journal[selected.signal_id] = {
             "strategy": selected.strategy,
             "decided_at": t.isoformat(),
