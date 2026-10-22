@@ -1124,3 +1124,21 @@ D1 ATR(20) switch on: about 76). 4 trades, all small losers: **-1.95 R** (Tue 20
 Wed 21 08:06 B2 SELL -0.72 on its structure exit; Wed 13:24 ORB SELL -1.03 at the stop; Wed 19:30 straddle SELL -0.09 on
 time). Monday 19: no trade. At the DEMO's 7.5 % on 1,066 USD that is about -156 USD. (The main config's 4-loss breaker
 tripped after the fourth loss; the DEMO worktree allows 12.)
+
+## The NY hold and the US-open straddle (owner 2026-10-22: "Tuesday's H1 ran at 21:00-22:00 Thai"; `ny_hold.py`, `out_ny_hold.txt`)
+
+Tue 2026-10-20: the straddle bought at 19:30 Thai (4,120.08) and left at 20:00 on time (-0.11 R); the 21:00 H1 bar ran
+34.7 USD to 4,155.5 (+15.5 close-open), then fell back at 22:00. Checked on the learning weeks (every weekday, ticks):
+
+| Straddle | P1 (n) | P2 (n) | all |
+|---|---|---|---|
+| 08:30 NY, held 30 min (in force) | +0.364 (47) | +0.043 (59) | +0.185 |
+| 08:30 NY, held 60 / 90 / 120 / 180 min | +0.537 / +0.701 / +0.887 / +0.586 | -0.045 / -0.295 / -0.406 / -0.461 | +0.213 / +0.147 / +0.167 / +0.003 |
+| 09:30 NY (the US equity open), held 30 / 60 / 120 min | -0.127 / -0.001 / -0.127 | +0.029 / +0.780 / +0.456 | -0.044 / +0.412 / +0.181 |
+
+Holding the 08:30 straddle longer paid in P1 and lost in P2 - not a rule. The 09:30 straddle held 60 minutes made +0.412
+on 121, all of it in P2 (P1 -0.001): a candidate only.
+
+**Frozen for one exam read (2026-10-22 08:40 Thai, before reading):** a second straddle at 09:30 New York every weekday,
++-2 USD from the mid at 09:30:00, live 60 s, filled on the next tick, stop 8 USD, out at 10:30 NY, no target. Pass: the
+exam's R a trade >= +0.10 (the owner's bar). A pass goes to the bot as a fourth piece; a fail is recorded and dropped.
