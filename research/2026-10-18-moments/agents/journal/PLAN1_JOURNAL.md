@@ -1142,3 +1142,8 @@ on 121, all of it in P2 (P1 -0.001): a candidate only.
 **Frozen for one exam read (2026-10-22 08:40 Thai, before reading):** a second straddle at 09:30 New York every weekday,
 +-2 USD from the mid at 09:30:00, live 60 s, filled on the next tick, stop 8 USD, out at 10:30 NY, no target. Pass: the
 exam's R a trade >= +0.10 (the owner's bar). A pass goes to the bot as a fourth piece; a fail is recorded and dropped.
+
+**The exam, read once (2026-10-22 08:45 Thai, `out_ny0930_exam.txt`): the 09:30-NY straddle held 60 min made -0.207 R a
+trade on 111 (win 27 %), negative in five of seven months (May -0.700, June -0.438). FAIL - dropped.** The US equity
+open moves gold, but which way it runs in the first hour is not caught by a +-2 USD straddle; P2's +0.78 was that
+quarter only. The 08:30 straddle keeps its 30 minutes.
