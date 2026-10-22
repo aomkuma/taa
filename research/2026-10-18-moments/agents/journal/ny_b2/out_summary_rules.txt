@@ -1,0 +1,10 @@
+  wk = X.t.dt.tz_convert("Asia/Bangkok").dt.to_period("W-SUN")
+rule: the skipped trades' realistic R after the rule took effect (negative = it saved), and before (where found)
+  zone-grid trend (wk 11-12)           after  +2.10 on  5 | before  -0.90 on 20
+  near a zone line < 10 USD (wk 14-)   after  +1.86 on  6 | before  -1.93 on 17
+  H1 vol > 1.1x (wk 16-)               after  -1.05 on  8 | before  -3.78 on 12
+  10:00-10:30 New York (wk 20-)        after  +0.75 on  8 | before  -4.02 on 12
+  multi-TF score (wk 21-25)            after  +3.61 on 12 | before  -7.23 on 42
+
+weeks 2-26: base +0.80 R on 98, realistic with its rules +4.24 on 69, realistic exit only +7.58; re-test (wk 23-26) +1.75 on 1
+weeks won: base 11/25, realistic 11/25, exit only 14/25

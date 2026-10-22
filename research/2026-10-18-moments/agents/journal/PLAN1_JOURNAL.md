@@ -1215,3 +1215,28 @@ only): the turn of a modest move - to be decided with the owner.
 | where in the zone (owner: about a third of a step catches most turns) | < 0.1 step from a line -2.38 on 23; **0.1-0.25 step +7.30 on 20 (70 %)**; 0.25-0.4 +0.57; mid-zone -1.05 on 9 | candidate (the near-line rule covers the first row) |
 | week 18: exit at 60 min in calm hours | hold 60 / 90 / 120: -1.15 / +2.90 / **+4.44**; calm hours -1.66 / +0.56 / +3.83 | dropped: 120 min stays |
 | week 18: close before the 10:00 New York data | the 57 entries before it: held +6.04, closed at 10:00 +1.26 | dropped: hold through |
+
+### The NY-B2 journal's end, weeks 2-26 (2026-04-17; `ny_b2/summary_rules.py`, `out_summary_rules.txt`)
+
+98 B2 trades. Base (the bot as it is, the structure exit) +0.80 R; the realistic exit alone (half at +1 R, the rest
+at break-even to 0.1 step before the next zone line, 120 min) **+7.58 R**; the realistic variant with its skip rules
++4.24 R on 69 (weeks won: 11 / 14 / 11 of 25). The re-test piece (weeks 23-26) one trade +1.75 R.
+
+Each skip rule judged only on the weeks after it took effect (the weeks it was found on are not evidence; a trade
+counts under every rule that would skip it; negative = the rule saved R):
+
+| Rule | Found on (before) | After it took effect | Verdict |
+|---|---|---|---|
+| zone-grid trend (wk 11-12) | -0.90 on 20 | +2.10 on 5 | deleted (week 12) |
+| near a zone line < 10 USD (wk 14-) | -1.93 on 17 | +1.86 on 6 | **cost forward** |
+| H1 vol > 1.1x its 20-day median (wk 16-) | -3.78 on 12 | **-1.05 on 8** | **the only skip rule that held** |
+| 10:00-10:30 New York (wk 20-) | -4.02 on 12 | +0.75 on 8 | **cost forward** |
+| multi-TF score (wk 21-25) | -7.23 on 42 | +3.61 on 12 | deleted (week 25) |
+
+**What the journal taught.** The learning that held up forward is the exit (base +0.80 -> +7.58) and standing aside
+in high volatility (the owner's own principle before the journal, VOL-16). Every skip rule mined from the journal's
+own past weeks reversed once it traded forward; my weekly "before" checks were in-sample and my running tallies in
+the weekly reports were partly wrong (the 10:00 New York rule was reported as saving ~1 R; with every trade it would
+skip counted, it cost 0.75). From here: rules mined from past trades are only candidates until they hold for several
+weeks forward on a journal of their own (shadow), never applied straight away. And per the owner (week 22): the
+missing trades are with-the-move pieces (the re-test after a strong day), not more filters on the turn piece.
