@@ -1,0 +1,17 @@
+Mon 26 20:35 M5 SELL R -0.63 SIGNAL best +0.13R worst -0.65R | M | level 5095.67 x2 (at) | M1 structure mixed | stop 34.76 | grid line 42.6 USD away
+      zone-grid trend down -> WITH | day so far: run -0.51 ATR in the trade's way, range 1.11 ATR | context: level touched 1x in 5 days, bounces [43.5] USD, H1 mixed | deeper touches 0 | SCORE -4 (D1- H4- H10 M150 fresh+1 mom+0) | band-target -0.43 R
+      base -0.63 R: 100 -22.09 -> 215.66, 300 -22.09 -> 416.66 | real -0.43 R (unfiltered -0.43) | 100 -14.81 -> 262.85, 300 -14.81 -> 476.97
+Mon 26 22:35 M1 SELL R -0.56 SIGNAL best +0.17R worst -0.63R | M | level 5095.67 x2 (at) | M5 structure mixed | stop 20.20 | grid line 40.6 USD away
+      zone-grid trend down -> WITH | day so far: run -0.66 ATR in the trade's way, range 1.11 ATR | context: level touched 1x in 5 days, bounces [43.5] USD, H1 LH/LL | deeper touches 0 | SCORE -3 (D1- H4- H1+ M15- fresh+1 mom+0) | band-target -1.00 R
+      base -0.56 R: 100 -11.34 -> 204.32, 300 -11.34 -> 405.31 | real -1.00 R (unfiltered -1.00) | 100 -20.19 -> 242.66, 300 -20.19 -> 456.78
+Tue 27 21:15 M5 SELL R -0.58 SIGNAL best +0.32R worst -0.67R | M, the 2nd high swept the 1st | level 5097.35 x3+ / flip (at) | M1 structure down | stop 40.27 | grid line 25.4 USD away
+      zone-grid trend down -> WITH | day so far: run -0.26 ATR in the trade's way, range 0.87 ATR | context: level touched 2x in 5 days, bounces [45.1, 30.4] USD, H1 LH/LL | deeper touches 0 | SCORE +1 (D1- H4+ H1+ M150 fresh+1 mom-1) | band-target -0.88 R
+      base -0.58 R: 100 -23.63 -> 180.69, 300 -23.63 -> 381.68 | real -0.88 R (unfiltered -0.88) | 100 -35.37 -> 207.29, 300 -35.37 -> 421.41
+Fri 30 20:48 M1 SELL R -0.51 SIGNAL best +0.15R worst -0.53R | sweep, lower high | level 5083.02 x3+ / flip (swept) | M5 structure up | stop 95.22 | grid line 5.2 USD away
+      zone-grid trend up -> AGAINST | day so far: run +3.28 ATR in the trade's way, range 4.05 ATR | context: level touched 3x in 5 days, bounces [54.1, 64.2, 141.3] USD, H1 LH/LL | deeper touches 1 | SCORE +1 (D1- H4+ H1+ M15- fresh+0 mom+1) | band-target -1.00 R
+      base -0.51 R: 100 -48.86 -> 131.83, 300 -48.86 -> 332.83 | real skipped (unfiltered -1.00) | 100 +0.00 -> 207.29, 300 +0.00 -> 421.41
+candidate (target 0.1 step before the line): week -3.30 R | weeks so far +6.63
+candidate (no break-even on the rest): week -3.30 R | weeks so far: base -0.84, real +4.92, no-BE +4.58
+real unfiltered: week -3.30 R
+real: -2.30 R | 100: -70.37 -> 207.29 | 300: -70.37 -> 421.41
+week: 4 trades -2.29 R | 100 USD at 7.5 %: -105.92 USD -> 131.83 | 300 USD at 3 %: -105.92 USD -> 332.83

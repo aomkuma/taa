@@ -110,7 +110,13 @@ def context(X: pd.DataFrame) -> pd.DataFrame:
         fresh = 1 if touches <= 2 else -1 if touches >= 5 else 0
         mom = 0 if len(bounces) < 2 else (1 if bounces[-1] > bounces[-2] else -1)
         sc += fresh + mom
-        out.append(dict(touches=touches, bounces=bounces[-4:], h1_structure=st, score=sc,
+        # the day before the entry (owner: observe more; is this a one-way day?): the server day's run so far and its
+        # range so far, in D1 ATR, from the M1-built H1 bars of today
+        dd = H1[(H1.index.tz_convert("Europe/Athens").normalize() == r.t.tz_convert("Europe/Athens").normalize()) & (H1.index + pd.Timedelta(hours=1) <= r.t)]
+        a = g.step.values[k]
+        day_run = float((r.entry_price - dd.open.iloc[0]) * side / a) if len(dd) else np.nan
+        day_rng = float((dd.high.max() - dd.low.min()) / a) if len(dd) else np.nan
+        out.append(dict(touches=touches, bounces=bounces[-4:], h1_structure=st, score=sc, day_run=day_run, day_rng=day_rng,
                         score_parts=" ".join(parts) + f" fresh{fresh:+d} mom{mom:+d}", worn=worn))
     return pd.DataFrame(out, index=X.index)
 
@@ -196,6 +202,7 @@ if __name__ == "__main__":
               f"best {r.mfe / risk:+.2f}R worst {-r.mae / risk:+.2f}R | {pat} | level {how} | {r.agreement} | stop {str(r.stop_distance).split(' to')[0]} "
               f"| grid line {r.zone_line_dist:.1f} USD away\n"
               f"      zone-grid trend {r.grid_trend} -> {'WITH' if r.with_trend else 'AGAINST'} | "
+              f"day so far: run {r.day_run:+.2f} ATR in the trade's way, range {r.day_rng:.2f} ATR | "
               f"context: level touched {r.touches}x in 5 days, bounces {r.bounces} USD, H1 {r.h1_structure} | deeper touches {r.worn} | SCORE {r.score:+.0f} ({r.score_parts}) | band-target {r.r_real_band:+.2f} R\n"
               f"      base {r.r_multiple:+.2f} R: 100 {r.usd_100:+.2f} -> {r.bal_100:.2f}, 300 {r.usd_300:+.2f} -> {r.bal_300:.2f}"
               f" | real {'skipped' if not np.isfinite(r.r_real) else f'{r.r_real:+.2f} R'} (unfiltered {r.r_real_all:+.2f}) | 100 {r.usdr_100:+.2f} -> {r.balr_100:.2f}, 300 {r.usdr_300:+.2f} -> {r.balr_300:.2f}")
