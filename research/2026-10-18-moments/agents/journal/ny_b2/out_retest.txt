@@ -1,0 +1,29 @@
+after strong DOWN days: sell the re-test: 35 strong days, broke 23, traded 22 | +6.23 R, +0.283 a trade, won 68 %, +211.4 USD at 0.01
+   the journal's 12 months: 4 trades +1.73 R | before: 18 trades +4.49 R
+          size   sum
+hour                
+(-1, 6]      4  1.68
+(6, 12]     10  1.23
+(12, 18]     2  2.21
+(18, 24]     6  1.10
+after strong UP days: buy the re-test: 57 strong days, broke 50, traded 45 | +20.38 R, +0.453 a trade, won 64 %, +218.7 USD at 0.01
+   the journal's 12 months: 7 trades +5.61 R | before: 38 trades +14.77 R
+          size   sum
+hour                
+(-1, 6]     18  5.88
+(6, 12]     19  8.07
+(12, 18]     6  3.62
+(18, 24]     2  2.81
+the journal's period (2025-10 ..):
+           day  side entry_th  stop_usd     r  usd001
+79  2025-10-22  SELL    07:30     22.49 -1.01  -22.67
+80  2025-12-23   BUY    06:15     12.56  1.74   21.80
+82  2026-01-06   BUY    09:00     35.28  1.00   35.41
+83  2026-01-21   BUY    06:45     21.44  1.74   37.35
+84  2026-01-23   BUY    06:45     32.63 -1.01  -32.81
+85  2026-01-28   BUY    08:15     29.98  1.74   52.29
+86  2026-01-29   BUY    04:15    314.96 -0.10  -32.24
+87  2026-02-02  SELL    10:30    125.91  0.50   62.78
+88  2026-02-04   BUY    07:45     55.78  0.50   27.72
+89  2026-02-06  SELL    06:30     40.72  0.50   20.18
+91  2026-03-19  SELL    13:30     87.31  1.75  152.61
