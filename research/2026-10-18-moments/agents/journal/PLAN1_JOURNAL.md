@@ -1163,3 +1163,12 @@ The ORB's trades were not a drag: in the learning weeks they made a third of the
 (a third piece on other hours smooths the account); on the exam they were about even. Fewer trades did not mean
 fewer losses here. Not a rule, not a principle (owner: try first): kept as an observation for the quarterly review
 with the DEMO's own ORB trades.
+
+## Asia B2 in the NY window (owner 2026-10-22: "support and resistance are clear in that hour"; `ny_b2/`)
+
+The bot's own B2 (patterns at the owner's H1 levels, the same rules) with its window moved to 20:30-23:00 Thai, the
+learning weeks on ticks (risk 0.25 %, breakers out of the way; `ny_b2/config_b2_ny.yaml`): **98 trades +0.008 R a
+trade** (P1 54 +0.010, P2 44 +0.006; win 42 %, profit factor 1.12). By timeframe: M1 74 trades -0.118, M5 24 +0.399;
+by hour: 20:xx +0.024, 21:xx +0.064, 22:xx -0.140. Positive in both halves but far below the bar (+0.10): not adopted
+as it stands. Next forms (not chosen from this run's best cell): the owner's zone grid as the levels in this hour
+(research/2026-10-22-zones), which is what the owner reads at that time.

@@ -1,0 +1,431 @@
+# TAA non-secret configuration. Environment variables override the matching risk values.
+# Unknown keys are rejected at startup (typos are errors, not silently ignored).
+# Risk values are PERCENT of equity (0.5 = 0.5%). Hard ceilings: 3% per trade, 10% daily, 50% drawdown.
+
+symbols:
+  allowed: [EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD, XAUUSD]   # the forex majors + gold (owner, 2026-10-09)
+  reference_symbol: EURUSD          # liquid symbol used to verify broker server time
+  clock_fallback_symbols: [BTCUSD, ETHUSD]   # 24/7 crypto: verifies server time on weekends
+  overrides:
+    XAUUSD:
+      max_spread_points: 40         # measure on your account and adjust
+      max_lot: 0.5
+      daily_breaks_utc: ["21:00-22:05"]
+
+timeframes:
+  higher: H1                        # bias / regime
+  entry: M15                        # setups
+  refinement: null                  # optional, e.g. M5
+  warmup_bars: 400
+  candle_close_grace_seconds: 3
+  stale_tick_seconds: 120
+  max_gap_bars: 3                   # longest hole (bars) in trading hours before DATA_GAPS; holidays and the
+                                    # symbol's own closed hours do not count (app/market_data/quality.py)
+  context: [H1, H4, D1]             # TAA-L809: higher-timeframe market map (trend/consolidation + demand/supply
+                                    # zones) on every signal as ctx: features; breakout F1 screens H4 and H1 on it
+  context_bars: 700                 # closed bars per context timeframe (EMA200 + a 400-bar zone lookback)
+
+indicators:
+  ema_fast: 20
+  ema_mid: 50
+  ema_slow: 200
+  rsi_period: 14
+  atr_period: 14
+  adx_period: 14
+  swing_k: 3
+  sr_tolerance_atr: 0.5
+
+regime:                             # PLAN §A7: ADX >= 20 trending, < 18 ranging; ATR percentile > 90 volatile
+  trend_adx: 20
+  range_adx: 18
+  volatile_atr_percentile: 90
+  low_atr_percentile: 25            # volatility state bands (ATR percentile over indicators.atr_percentile_lookback)
+  high_atr_percentile: 75
+  extreme_atr_percentile: 90
+
+context_map:                        # TAA-L809, app/indicators/market_map.py (docs/PLAN_LEARNING.md §L20.9)
+  er_bars: 20                       # efficiency ratio window: |net move| / path length
+  er_trend: 0.3                     # UP/DOWN need ADX >= regime.trend_adx and ER >= this (plus EMA and swing structure)
+  er_range: 0.25                    # RANGE: ADX < regime.range_adx and ER < this
+  switch_bars: 2                    # hysteresis: closed bars agreeing before the state changes
+  range_bars: 30                    # the range box
+  compression_pct: 20               # ATR percentile and Bollinger width both in their lowest 20 %
+  zone_lookback_bars: 400           # zones from the last 400 context bars (H4 ~ 3 months, D1 ~ 1.5 years)
+  zone_tolerance_atr: 0.5
+  min_touches: 2                    # swing zones need two touches
+  displacement_atr: 2.0             # base zones: the leg away moves >= 2 ATR
+  max_tests: 3                      # a base zone traded into more often than this is spent
+  max_zones: 6                      # per kind, nearest first
+  zone_near_atr: 0.25               # "at a zone": within 0.25 ATR of it
+
+strategies:
+  cooldown_bars: 4
+  signal_expiry_bars: 1
+  allow_single_indicator_signals: false
+  items:
+    - name: example_trend_pullback  # DEMONSTRATION ONLY - not production-proven
+      enabled: false
+      params: {}
+    # Pattern-based setups (PLAN §A29, docs/STRATEGIES.md): unproven. `enabled: false` stops only the bot's
+    # trading; the scanner and shadow keep every setup the users follow (app/advisory/requirements.py). Owner,
+    # 2026-10-12: the bot trades setup_harmonic_prz (SETUP_REVIEW §15); 2026-10-14: and breakout F1 (§16). The
+    # inverted copies were removed from the code on 2026-10-14 (owner); a counter-trend trigger is faded inside
+    # its setup (fade_counter_trend, §16). Owner, 2026-10-17: every earlier setup stopped (V1, F1, S1 off, their
+    # parameters kept for reference); the bot starts over with Setup OWN (docs/OWN_SETUP.md), aggressive preset,
+    # once it passes its gate.
+    - {name: setup_neckline_break, enabled: false}
+    - {name: setup_pattern_breakout, enabled: false}
+    - {name: setup_fib_pullback, enabled: false}
+    - name: setup_harmonic_prz         # SETUP_REVIEW §15.3: no break-even (position_management), only while H4 is
+      enabled: false                   # against the trade or ranging, targets at most 3R; the PRZ confirmation
+      params: {phase_gate: h4_against_or_range, max_rr: 3.0, structure_tf: H4, room_min_r: 2.0, max_sl_atr: 20.0}
+      # was tested and rejected. h4_room_2 (owner, 2026-10-15; SETUP_REVIEW §18): at least 2 R of room to the H4
+      # read's level. max_sl_atr 20 = the rule's ceiling, the own stop cap off (owner, 2026-10-16; the sizer
+      # keeps a far stop's loss within the risk per trade; March identical with it off)
+    - {name: setup_elliott_wave, enabled: false}
+    - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
+    - name: setup_breakout             # breakout F1 (SETUP_REVIEW §16): wait for a counter-trend break, then
+      enabled: false                   # trade it with the H4 and H1 trend (fades only; risk.fade sets their RR)
+      params: {screen_h4: with, screen_h1: with, fade_counter_trend: true, trend_entries: false, max_sl_atr: 20.0, friday_cutoff_utc: "16:00"}   # own stop cap off, as V1
+    - {name: setup_candle_reversal, enabled: false}
+
+lanes:
+  # More entry timeframes in the same engine (app.config.LaneConfig): one account, one risk budget, one decision
+  # engine; each lane its own bars, symbols, strategies, cooldown and context. The scanner stays on M15.
+  - name: s1                        # S1, M1 gold scalping: the day-trade setup (owner, 2026-10-15; SETUP_REVIEW
+    symbols: [XAUUSD]               # §17): breakout F1's fade on M1, screens H1 (tide) / M15 (wave)
+    timeframes:
+      higher: H1
+      entry: M1
+      warmup_bars: 400
+      context: [M15, M30, H1, H4, D1]   # as backtested (data/research/config_scalp_s1.yaml)
+      context_bars: 700
+    strategies:
+      cooldown_bars: 60             # M1: one hour
+      signal_expiry_bars: 1
+      items:
+        - name: setup_breakout_scalp
+          enabled: false            # stopped 2026-10-17 (owner): the bot starts over with Setup OWN
+          # max_sl_atr 20: no own stop cap (owner, 2026-10-17: a far stop gets a smaller lot, never SL_TOO_FAR)
+          params: {screen_h4: with, screen_h1: with, screen_tide_tf: H1, screen_wave_tf: M15, fade_counter_trend: true, trend_entries: false, atr_bars: 60, stop_mode: atr, sl_atr_multiple: 2.0, target_mode: rr, rr_target: 0.5, min_rr: 0.5, max_sl_atr: 20.0, skip_window_ny: "08:00-12:00", friday_cutoff_utc: "16:00"}
+    max_spread_to_sl_ratio: 1.0     # a stop of 2 x ATR(60 M1 bars) is a few spreads wide
+    management:
+      setup_breakout_scalp: {break_even: false, trailing: false, time_stop_bars: 60}   # one hour, as backtested
+  - name: own                       # Setup OWN, F1 CONF-72 v2 on M1 gold: the 0.5 M15-ATR stop floor, a runner in
+    symbols: [XAUUSD]               # a strong phase, the 10-bar scratch (owner, 2026-10-18; docs/OWN_SETUP.md)
+    timeframes:
+      higher: H1                    # the tide (EMA 20 / 50)
+      entry: M1
+      warmup_bars: 4800             # the 72-hour extreme (4,321 M1 bars), 3 days of M15 ATR (4,545)
+      context: [M15, H1]            # the chart-read levels
+      context_bars: 700
+    strategies:
+      cooldown_bars: 0              # as researched: one position at a time is the only spacing
+      signal_expiry_bars: 1
+      items:
+        - name: setup_own_conf72
+          enabled: false            # off for the plan1 DEMO (owner, 2026-10-21: plan1 is the only enabled lane)
+          params: {exit_mode: regime, scratch_bars: 10, off_round: half}   # v2 + half size off the round 50
+    max_spread_to_sl_ratio: 0.2     # the stop is at least 3 U (about 3.4 USD) against a 0.3-0.45 USD spread
+    min_risk_reward: 0.7            # the 8 U target against a 3-10 U stop widened to 0.5 M15 ATR: RR 0.77-2.4
+    management:                     # break-even at 0.6 of the 8 U target, no trailing; a runner out after 180 bars
+      setup_own_conf72: {break_even_target_share: 0.6, trailing: false, time_stop_bars: 180}   # (v1: 60)
+  - name: news                      # Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes (owner,
+    symbols: [XAUUSD]               # 2026-10-18; app/strategy/release_straddle.py, calendar app/news/us_releases.csv)
+    timeframes:
+      higher: H1
+      entry: M1                     # its bars only close the position after the release minute
+      warmup_bars: 60
+    strategies:
+      cooldown_bars: 0
+      signal_expiry_bars: 1
+      items:
+        - name: setup_own_s2
+          enabled: false            # off for the plan1 DEMO (owner, 2026-10-21: plan1 is the only enabled lane)
+          params: {}                # D 2 U, stop 8 U (1 U = price / 4000), out after the release minute
+    management:
+      setup_own_s2: {break_even: false, trailing: false}
+  - name: plan1                     # Setup OWN PLAN-1 (docs/PLAN1_LANE.md; research dev/plan1.py + the journal's rules
+    symbols: [XAUUSD]               # in force, journal/PLAN1_JOURNAL.md): the London 13:00-Thai ORB on closed M1 bars,
+    timeframes:                     # the NY 08:30 straddle every weekday on quotes; Asia B2 on closed M1 / M5 bars
+      higher: H1                    # the H1 / H4 ATRs are built from M1 (an H4 frame is stale on Monday mornings)
+      entry: M1
+      warmup_bars: 10000            # B2's owner levels: 125 complete H1 bars across a weekend (the ORB needs 3000)
+    strategies:
+      cooldown_bars: 0              # one position at a time is the only spacing (risk.max_positions_per_symbol)
+      signal_expiry_bars: 1
+      items:                        # each journal rule is a parameter here (target_r, atr_floor, hold, ...); row 62's
+                                    # regime switch: no new entry while the D1 ATR(20) < d1_atr20_min_usd (null = off)
+        - name: setup_plan1_orb
+          enabled: false            # DEMO (owner, 2026-10-21: plan1 the only lane); journal week 5: target 1.5 R
+          params: {target_r: 1.5, atr_floor: null, pool_break_when_h4_contracting: true, d1_atr20_min_usd: 60.0}   # week 6: no ATR
+          # floor (the H1 ATR stays in the journal); week 10: in a contracting H4 ATR (24 h) only after a pool break
+        - name: setup_plan1_b2         # Asia B2 on M1 patterns (checkpoint B): 07:00-09:00 Thai; second_same_side:
+          enabled: true             # the week-6 rule, on in the frozen rules (read from the decision store)
+          params: {second_same_side: true, atr_floor: null, d1_atr20_min_usd: 60.0, window: "20:30-23:00"}
+        - name: setup_plan1_b2m5       # Asia B2 on M5 patterns (its own name: a position's TF after a restart)
+          enabled: true
+          params: {second_same_side: true, atr_floor: null, d1_atr20_min_usd: 60.0, window: "20:30-23:00"}
+        - name: setup_plan1_ny
+          enabled: false            # every weekday 08:30 New York; 2 / 8 USD, out after 30 minutes, no target
+          params: {trigger_u: 2.0, stop_u: 8.0, hold_seconds: 1800, target_cap_u: 100.0, atr_floor: null, d1_atr20_min_usd: 60.0}
+    max_spread_to_sl_ratio: 0.5     # the research has no spread rule; a 4-USD range stop against a 0.4 spread passes
+    max_spread_points: 60           # above the widest 08:29-08:31 NY spread on P1 / P2 ticks (53; fills <= 39)
+    management:
+      setup_plan1_orb: {break_even: false, trailing: false}
+      setup_plan1_ny: {break_even: false, trailing: false}
+      setup_plan1_b2: {break_even: false, trailing: false}
+      setup_plan1_b2m5: {break_even: false, trailing: false}
+
+risk:
+  # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
+  # engine actually uses; these five are only the hard ceiling it can never exceed, set to the app's own
+  # ceilings so they do not bind in normal use (2026-10-06, user decision: the UI decides, not this file).
+  max_risk_per_trade_percent: 0.25
+  max_open_positions: 20
+  max_positions_per_symbol: 1
+  max_total_open_risk_percent: 10.0
+  max_daily_loss_percent: 10.0
+  max_weekly_loss_percent: 20.0
+  max_account_drawdown_percent: 10.0
+  max_consecutive_losses: 50
+  consecutive_loss_pause_hours: 24
+  max_spread_points: 30
+  max_spread_to_sl_ratio: 0.15
+  max_slippage_points: 10
+  min_risk_reward: 1.0                # the profile's minimum RR applies (it is never below 1.0)
+  fade:                             # counter-trend fades only (FADE, SETUP_REVIEW §16): R:R is the plan's inverse
+    min_risk_reward: 0.2            # and the stop sits at the plan's target; every other risk rule is unchanged
+    max_sl_atr_multiple: 12
+  max_lot: 1.0
+  min_margin_level_percent: 500
+  max_margin_utilization_percent: 30
+  max_effective_leverage: null      # no notional cap: margin decides (the two lines above)
+  min_lot_fallback: true            # the profile may open the minimum lot above its budget when margin allows
+  require_take_profit: true
+  correlation_groups:
+    EUR_GBP: [EURUSD, GBPUSD]
+  probation_trades: 0
+  probation_multiplier: 0.25
+  foreign_positions_policy: count   # count | halt
+
+# The aggressive Trading-profile preset (PLAN §A36): an opt-in cage for small accounts that accept high risk
+# (5-10 % a trade). Absent: the preset is not available here. It also needs ENABLE_HIGH_RISK_PROFILE=true and
+# HIGH_RISK_CONFIRMATION=I-ACCEPT-HIGH-RISK-<MT5_LOGIN> in .env (docs/RUNBOOK_DEMO.md). PAPER/DEMO only (v1).
+high_risk:                           # ON for DEMO (owner, 2026-10-14); remove to switch off
+  max_risk_per_trade_percent: 10     # cage ceilings (hard maxima: 10 / 20 / 20 / 35 / 60 / 3 / 200 / 20)
+  max_total_open_risk_percent: 20
+  max_daily_loss_percent: 20
+  max_weekly_loss_percent: 35
+  max_account_drawdown_percent: 60   # the kill: MAX_DRAWDOWN latches, manual reset only
+  max_open_positions: 3
+  max_effective_leverage: 200        # 0.01 lot of gold on a 50 USD account is ~90x
+  min_lot_max_risk_percent: 20       # the minimum lot above the budget, up to this risk (else no trade); owner,
+                                     #   2026-10-17: the ceiling (20), gold's 0.01 lot on a 100 USD account
+  modes: [PAPER, DEMO]
+  setups: [setup_harmonic_prz, setup_breakout, setup_breakout_scalp, setup_own_conf72, setup_own_s2]   # S1 (owner,
+                                     #   2026-10-15); F1 + S2 (owner, 2026-10-18: DEMO)
+  fade_risk_factor: 0.5              # fades (FADE) risk half the preset
+  min_margin_level_percent: 150      # owner, 2026-10-15: the full preset risk on tight stops (floor 120;
+  max_margin_utilization_percent: 80 #   FBS calls margin at 40 %, stops out at 20 %; ceiling 90)
+
+sessions:                           # entry windows; local times of `timezone` (DST-aware), days are local weekdays
+  default:
+    - days: [0, 1, 2, 3, 4]         # Monday..Friday
+      start: "07:00"
+      end: "20:00"
+      timezone: UTC
+  by_symbol:                        # e.g. US30: [{days: [0,1,2,3,4], start: "09:30", end: "16:00", timezone: America/New_York}]
+    XAUUSD:                         # gold also in the Asian open (Setup OWN's Asia window 00-02 UTC; owner, 2026-10-18)
+      - {days: [0, 1, 2, 3, 4], start: "00:00", end: "02:00", timezone: UTC}
+      - {days: [0, 1, 2, 3, 4], start: "06:00", end: "20:00", timezone: UTC}   # 06:00: PLAN-1's 13:00-Thai ORB
+  friday_cutoff_utc: "20:00"
+  news_blackouts: []                # e.g. - {start_utc: 2026-10-02T12:15:00Z, end_utc: 2026-10-02T13:00:00Z, currencies: [USD], reason: NFP}
+
+position_management:
+  break_even_trigger_r: 1.0
+  trailing_start_r: 1.5
+  trailing_atr_multiple: 2.0
+  time_stop_bars: null
+  by_strategy:                      # per strategy (PLAN §A11); harmonic without break-even/trailing: +0.05 R a
+    setup_harmonic_prz: {break_even: false, trailing: false}   # trade over a year (SETUP_REVIEW §15.1)
+
+backtest:
+  initial_balance: 10000
+  account_currency: USD
+  commission_per_lot: 0             # FBS Standard: spread-only
+  spread_model: bar
+  slippage_model: fixed
+  slippage_points: 1
+  leverage: 100                     # simulated margin only; sizing is risk-based
+  seed: 42
+
+paper:                              # PAPER mode: simulated fills on live quotes, never a broker order
+  initial_balance: null             # null: the real account's equity at the first PAPER start
+  slippage_points: 1
+  swap_enabled: true
+
+execution:                          # broker orders: DEMO account only (Phase 12); LIVE stays disabled
+  deviation_points: null            # null: risk.max_slippage_points
+  max_send_attempts: 2              # one retry after a requote, if the signal is still valid
+  reconcile_after_seconds: 30       # an UNKNOWN order not found by then is NOT_EXECUTED
+  reconcile_window_hours: 24        # history searches are widened by this much (broker time quirks)
+  realized_risk_tolerance: 0.2      # fill risk more than 20 % above plan: reduce or close
+  excess_risk_policy: reduce
+  unprotected_grace_seconds: 5      # a position without SL: re-attach within this, else close
+  symbol_pause_minutes: 60          # after a "symbol restricted" retcode
+  entry_plans: false                # owner 2026-10-08: single entry until a wide-stop variant wins in shadow (SETUP_REVIEW §8); true follows the Trading profile split (TAA-1207)
+  limit_lifetime_bars: 16           # unfilled limit parts are cancelled after 16 entry bars (4 h on M15)
+
+advisory:                           # PLAN §A25-A27: ranking and alerts; never changes what the bot trades
+  universe:
+    include: ["*"]                  # MT5 group patterns (wildcards)
+    exclude: []                     # e.g. ["*.m", "*_raw"]
+    classes:                        # exotics are opt-in; unclassified (OTHER) are scanned too
+      FOREX_MAJOR: true
+      FOREX_MINOR: true
+      FOREX_EXOTIC: false
+      METAL: true
+      INDEX: true
+      ENERGY: true
+      CRYPTO: true
+      STOCK: true
+      OTHER: true
+    symbols: {}                     # per-symbol overrides, e.g. {USDZAR: true, AAPL: false}
+    auto_top_n: 30
+    monitored_cap: 60
+    refresh_hours: 24
+  sessions:
+    overrides: {}                   # e.g. {XAUUSD: [LONDON, NEW_YORK]}; names: SYDNEY TOKYO LONDON NEW_YORK EUROPE_EQUITIES US_EQUITIES CRYPTO
+  suitability:                      # hard gates G1-G6 (PLAN A25)
+    sl_atr_multiple: 1.5            # typical SL = k x ATR(atr_timeframe) + median spread
+    atr_timeframe: H1
+    atr_period: 14
+    margin_buffer: 2.0              # G3: margin x buffer for temporary margin hikes
+    stops_level_max_fraction: 0.5   # G5: broker stop distance < this x typical SL
+    min_candles: 200                # G6
+    max_quote_age_seconds: 300      # G6, checked only while the symbol's market is open
+  scoring:                          # soft scores S1-S9 (PLAN A25); Overall = S1 S2 S3 S8 S9, Now = all
+    weights: {S1: 1.0, S2: 1.0, S3: 1.0, S4: 1.0, S5: 0.5, S6: 0.5, S7: 1.0, S8: 1.0, S9: 0.5}
+    preferred_regimes: [TRENDING, RANGING]
+    edge_min_trades: 30             # S8 stays neutral (50) with fewer shadow/replay outcomes
+    edge_prior_trades: 20
+    edge_full_scale_r: 0.5
+    swap_max_fraction: 0.05         # S9 is 0 when a night's swap costs 5% of the typical stop
+    correlation_bars: 500
+    correlation_min_overlap: 100
+  ranking:                          # runs inside the engine; never affects trading
+    enabled: true
+    structural_hours: 6             # refresh every symbol's metrics, or when equity moves by
+    equity_change_percent: 5
+    dynamic_minutes: 60             # per-symbol refresh, round-robin
+    batch_size: 20                  # symbols refreshed per tick (bounded terminal load) ...
+    max_refresh_seconds: 2.0        # ... and at most this long, so the engine loop is never held up
+    now_seconds: 60                 # Now score cadence from cached metrics
+    retention_days: 90              # suitability_snapshots history
+  scanner:                          # market opportunities on every new entry-TF bar (PLAN A26)
+    enabled: true
+    budget_seconds: 3.0             # per engine cycle; pending symbols wait for the next cycle
+  shadow:                           # hypothetical PLAN/MANAGED trades for every opportunity (PLAN A27)
+    enabled: true
+    slippage_points: 1.0            # adverse, on the entry and on stop exits
+    time_stop_hours: 72
+    commission_per_lot: 0.0         # round turn; symbols.overrides.<SYM>.commission_per_lot wins
+    tick_tiebreak: true             # copy_ticks_range decides an M1 bar that touches both SL and TP
+    poll_seconds: 60                # M1 resolution cadence
+    budget_seconds: 2.0             # per engine cycle
+    entry_modes:                    # TAA-L702: the same signals entered another way, measured forward (shadow only)
+      variants: [PULLBACK, WIDE_STOP, PULLBACK_WIDE]
+      pullback_depth_r: 0.5         # limit 0.5 x the signal's risk against it (docs/archive/SETUP_REVIEW.md section 8)
+      wide_stop_mult: 2.0           # WIDE_STOP: twice the plan's stop, same TP price, same money at risk
+      pullback_wide_stop_r: 2.0     # PULLBACK_WIDE: stop 2 risks from the signal's entry
+      entry_window_bars: 4          # an unfilled limit is MISSED after 4 entry bars
+  calibration:                      # win probability + evidence model from shadow trades (PLAN A27, A29)
+    enabled: true
+    nightly_hour_utc: 23            # rebuilt once a day after this hour (and on demand: app.cli advisory calibrate)
+    kappa: 20                       # empirical-Bayes pseudo-count per hierarchy level
+    min_trades: 30                  # fewer outcomes in strategy x asset class x RR band: "insufficient data"
+    replay_cap: 50                  # REPLAY outcomes count as at most 50 pseudo-trades per cell
+    replay_weight: 0.5              # REPLAY rows' weight in the evidence model
+    folds: 5                        # walk-forward folds for model selection
+    l2: 1.0
+    min_group: 200                  # outcomes for a strategy x asset-class evidence model (else pooled)
+    min_brier_improvement: 0.005    # the evidence model must beat the bucket model's Brier by 0.5% out of sample
+    reliability_bins: 10
+    keep_versions: 30
+  preferences:                      # one user's advisory preferences when no cloud is configured (PLAN A26/A30/A31)
+    watchlists:
+      - {name: Favourites, kind: FAVOURITES, symbols: [EURUSD, XAUUSD]}
+      - {name: Top 30, kind: AUTO_TOP_N, top_n: 30}
+    alerts:
+      metric: WIN_PROBABILITY       # or SETUP_STRENGTH; default x: 55% / 75%
+      signal_lifetime_bars: 2
+      respect_market_sessions: true
+      timezone: Asia/Bangkok
+      windows: []                   # e.g. [{days: [0, 1, 2, 3, 4], start: "14:00", end: "23:30"}]; empty: any time
+      rate_limits: {max_alerts_per_hour: 6, symbol_cooldown_minutes: 30}
+      expiry_updates: true
+      when_risk_full: PAUSE         # over the heat or position budget: PAUSE (no push, shown in app) or WARN
+      language: th
+    theories:
+      preset: ALL                   # ALL CLASSIC_TA PRICE_ACTION FIB_HARMONICS TREND_FOLLOWING
+      min_supporting_families: 2
+      conflict_policy: PENALIZE     # IGNORE PENALIZE BLOCK
+    trading_profile:
+      style: 50                     # 0 very defensive .. 100 very offensive; overrides: {...} pins single fields
+      holding_style: DAY            # SCALP DAY SWING
+    entry_plan:
+      mode: SINGLE                  # SINGLE SAME_PRICE SCALE_IN
+      parts: 1
+
+engine:
+  monitor_interval_seconds: 1.0
+  health_port: 8765
+
+sync:
+  enabled: false                    # true once the Railway web service is paired
+  batch_size: 500                   # events per signed, gzipped POST /api/v1/ingest/batch
+  max_batch_bytes: 4000000         # uncompressed payload per batch (the ingest API takes up to 32 MB)
+  flush_interval_seconds: 1         # the live candle and quotes reach the PWA within ~1-2 s
+  heartbeat_seconds: 1              # liveness + quotes + forming bars (coalesced: a backlog keeps the newest)
+  advisory_config_seconds: 300      # pull the users' compute requirements (ETag; cached locally)
+  risk_profile_seconds: 60          # pull the owner's trading-profile limits (can only lower `risk`)
+  request_timeout_seconds: 15
+  max_backlog_events: 200000        # beyond: the oldest unsent quotes/snapshots are dropped (never audit/trades)
+  backoff_initial_seconds: 2        # failed sends back off exponentially (with jitter) up to
+  backoff_max_seconds: 300
+  max_attempts: 20                  # an event the cloud keeps rejecting is parked as DEAD (logged)
+  sent_retention_hours: 24
+  chart_timeframes: [M1, M5, M15, M30, H1, H4, D1]  # closed bars streamed for the charts (plus the strategy's)
+
+evidence:                           # technical evidence engine (PLAN §A29, docs/PATTERNS.md)
+  default_enabled: true             # detectors not listed below follow this
+  atr_period: 14
+  zigzag_degrees:                   # reversal threshold in ATR multiples per pivot degree
+    minor: 1.5
+    intermediate: 3.0
+    major: 6.0
+  session_timezone: Europe/Athens   # trading-day boundary for daily/weekly levels (FBS server time)
+  detectors: {}                     # e.g. fib.golden_zone: {enabled: true, params: {max_age_bars: 3}}
+  confluence:                       # setup-strength points (docs/PATTERNS.md "Confluence score"); not a probability
+    core_weight: 40                 # a fully passed strategy checklist
+    conflict_penalty: 0.75          # family_weights / tier_weights: built-in defaults unless overridden here
+
+ai:                                 # optional review of entries (AI_PROVIDER / AI_MODEL / AI_MODE in .env)
+  effort: low                       # low medium high: the cost lever
+  timeout_seconds: 20               # one retry; a late answer is no answer (HOLD in veto mode)
+  min_confidence: 60                # veto mode: AGREE below this counts as unsure
+  max_calls_per_day: 50             # budgets: when used up, veto mode holds (AI_UNAVAILABLE)
+  max_cost_per_day_usd: 1.0         # owner, 2026-10-18: at most 1 USD a day
+  advisory:                         # AI on advisory (TAA-1305): opinions and TH/EN narratives, written on the
+    enabled: false                  # engine with the same provider whatever AI_MODE says; descriptive only
+    opinions: true                  # one opinion per new opportunity (verdict, confidence, reasons, narrative)
+    ranking_narrative: true         # the latest ranking snapshot, at most every ranking_every_hours
+    analytics_narrative: true       # the last analytics_days of closed shadow trades, every analytics_every_hours
+    min_score: 0                    # opportunities scoring below this get no opinion
+    max_age_minutes: 10             # older opportunities get no opinion
+    ranking_every_hours: 24
+    analytics_every_hours: 24
+    analytics_days: 7
+    max_calls_per_day: 100          # its own budget, separate from the entry review's
+    max_cost_per_day_usd: 0.0       # owner, 2026-10-18: the whole AI spend at most 1 USD a day (the entry review's)
