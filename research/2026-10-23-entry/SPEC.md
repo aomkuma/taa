@@ -92,3 +92,15 @@ one weight per component; the number of fitted values stays small next to the nu
 | `app/strategy/zone_retest.py` | T1 the re-test of a broken zone line | 10 | 12 / 12 | a separate state-machine version equal on all 1,223 M15 events of 2025 (it found an off-by-one in the first version); acceptance: the owner's 4,141 sell re-tests on H4 / H1 with the stop 4,159.3 above the swept 4,155.5 |
 | `app/strategy/zone_reject.py` | T2 the rejection at a zone line (arrivals shared with T4) | 8 | 10 / 10 | a plain re-derivation equal on all 656 M15 events 2023-08 .. 2026-10; raw: -0.024 R a trade (won 37 %), swept -0.089 on 139 (negative in 3 of 4 years), not swept -0.007 on 517 |
 | `app/strategy/context_read.py` | C6 vol ratio, C7 minutes from / windows, C8 relative volume, C9 the last D1 bar + the day so far | 14 | 14 / 14 | vol and day-so-far equal on 98 / 98 trades; strong days 166 / 166 against retest_week.py's rule (2021-2026) |
+
+## The first assessment runs (2026-10-23)
+
+5,229 candidates (candidates.py; M15, 2023-09 .. 2026-10). Raw: T1 -0.074 R on 3,620 (won 33 %, a win 1.40 R, a loss
+1.05 R), T2 -0.024 on 656, T4 bounce -0.092 on 474, T4 through +0.083 on 469 (won 52 %, a win 0.88 R).
+- v1 (assess.py; fixed directions, kept when positive in both FIT halves): 2 of 20 kept (volatility, the owner's
+  windows); judge 2025-04 .. 09: -0.157 taken vs -0.111 all. FAIL.
+- v2 (assess_v2.py; directions set by FIT, same sign in both halves): 4 kept (against the H1 structure, room < 2 R,
+  in the windows, against yesterday's bar); judge 2025-10 .. 2026-04-17: +0.001 taken vs +0.012 all. FAIL.
+- Several effects were stable in both FIT halves against my prior: trades against the H1 structure, against
+  yesterday's D1 bar, after the day already ran the trade's way did better - and 5+ touches of a level helped a
+  break (+0.44 / +0.39, too few cases on the other side to keep).

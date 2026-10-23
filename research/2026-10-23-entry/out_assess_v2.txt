@@ -1,0 +1,11 @@
+kept (direction set by FIT):
+  - c2 H1 structure with the trade
+  - c5b room to the first strong level >= 2 R
+  + c7 inside the owner's windows (Asia 7-9, London 13-15, NY 19-23 Thai)
+  - c9 yesterday's D1 bar with the trade
+
+period                                all R      n  taken R      n   won  by trigger (taken R / n)
+FIT 2023-09 .. 2025-03               -0.106   2483   -0.028    997   41%  T1: -0.026/602  T2: -0.025/176  T4 bounce: -0.096/140  T4 through: +0.064/79
+v1 judge 2025-04 .. 09 (spent)       -0.111    889   -0.104    339   33%  T1: -0.090/218  T2: -0.265/56  T4 bounce: -0.018/43  T4 through: -0.003/22
+JUDGE v2 2025-10 .. 2026-04-17       +0.012   1032   +0.001    405   39%  T1: +0.004/273  T2: -0.090/55  T4 bounce: +0.100/49  T4 through: -0.027/28
+2026-04-18 .. 10-16 (seen)           +0.097    758   +0.170    357   43%  T1: +0.220/224  T2: +0.342/50  T4 bounce: +0.014/55  T4 through: -0.229/28

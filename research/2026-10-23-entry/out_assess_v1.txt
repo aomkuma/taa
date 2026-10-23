@@ -1,0 +1,31 @@
+FIT 2483 candidates (1206 / 1277); all triggers raw in FIT -0.106 R
+
+component                                                                  half 1   half 2  kept
+c1 stop outside the pools                                                  +0.010   -0.122    (n 118/1088, 118/1159)
+c1 entry not late (< 0.15 step from the line)                              -0.094   +0.086    (n 511/695, 549/728)
+c2 H1 structure with the trade                                             -0.078   -0.071    (n 426/287, 471/316)
+c2 H1 picture clear                                                        +0.027   +0.079    (n 20/1186, 21/1256)
+c3 trend M15+H1+H4+D1 with the trade                                       -0.173   +0.037    (n 540/374, 606/385)
+c3 D1 trend with the trade                                                 -0.238   +0.065    (n 379/385, 444/378)
+c3 a 3-day run with the trade                                              -0.055   +0.301    (n 190/152, 155/118)
+c4 level worn: helps a break, hurts a bounce                               -0.357   -0.007    (n 56/8, 77/19)
+c4 many touches (5+): helps a break, hurts a bounce                        +0.442   +0.394    (n 51/12, 90/19)
+c4 a fast approach (> 2 ATR): hurts a bounce                                 +nan     +nan    (n 0/105, 0/119)
+c4 a long time at the line (8+ M15 bars): helps a break                    +0.128   -0.165    (n 51/23, 60/29)
+c5b room to the first strong level >= 2 R                                  -0.064   -0.127    (n 330/876, 384/893)
+c5b a strong line (5+ swing touches): helps a bounce, hurts a break        -0.043   +0.319    (n 102/267, 87/224)
+c6 volatility normal (H1 ATR <= 1.1 x median)                              +0.022   +0.095  KEPT  (n 578/628, 736/541)
+c7 not 0-30 min after 10:00 New York                                       -0.411   +0.150    (n 1159/47, 1242/35)
+c7 inside the owner's windows (Asia 7-9, London 13-15, NY 19-23 Thai)      +0.112   +0.086  KEPT  (n 530/676, 588/689)
+c8 volume >= 1.2 x usual on the entry bar                                  +0.084   -0.070    (n 518/211, 465/214)
+c9 yesterday's D1 bar with the trade                                       -0.064   -0.061    (n 708/498, 740/537)
+c9 yesterday strong and with the trade                                     +0.785   -0.184    (n 128/85, 124/84)
+c9 the day not already run > 1 step the trade's way                        -0.093   -0.159    (n 1181/25, 1242/35)
+
+kept 2 of 20 components; trade when the sum > 0
+
+period                              all R      n  taken R      n   won  by trigger (taken R / n)
+FIT 2023-09 .. 2025-03             -0.106   2483   -0.030    673   38%  T1: -0.040/474  T2: +0.007/91  T4 bounce: -0.206/57  T4 through: +0.197/51
+JUDGE 2025-04 .. 09                -0.111    889   -0.157    203   31%  T1: -0.189/150  T2: -0.355/25  T4 bounce: -0.092/18  T4 through: +0.711/10
+2025-10 .. 2026-04-17              +0.012   1032   -0.267    162   32%  T1: -0.306/127  T2: -0.423/13  T4 bounce: +0.164/11  T4 through: -0.066/11
+2026-04-18 .. 10-16 (seen)         +0.097    758   +0.174    223   39%  T1: +0.179/152  T2: +0.517/31  T4 bounce: -0.239/18  T4 through: -0.011/22
