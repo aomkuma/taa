@@ -1,0 +1,156 @@
+# The knowledge base (generated from kb.yaml by kb.py render - do not edit here)
+
+Precedence at a decision: principle > rule > weapon > shadow (shown, never applied) > finding > failed (never retried as it was) > lesson > open. `when` = the readings an entry applies to (none = always).
+
+
+## Principles (23)
+
+| id | stage | items | when | says | evidence | source |
+|---|---|---|---|---|---|---|
+| P01 | method |  |  | The goal is fixed, the method is flexible: >= +0.15 R a trade after the spread for every weapon, judged forward; about 3 trades a day, one a session (Asia, London, New York); consistent profit over many trades. | owner 2026-10-13 / 10-17 | docs/OWNER_GOALS.md; memory taa-goal-vs-method |
+| P02 | weapon | A8 |  | No single rule decides direction. Several playbooks (follow the run, fade the false break, with the higher frames' flow); pick per situation or stand aside. |  | docs/OWNER_GOALS.md (2026-10-17) |
+| P03 | entry | C1, C2, C3, C4 |  | One trade = all the evidence, weighted: zone plan, structure and its clarity, trend and phase, momentum at the level, entry precision, volatility, timing, volume, D1 context. Never one or a few parameters. Weights from the data, the owner's order as the prior (C1 > C2 > ... > C9). |  | docs/OWNER_GOALS.md; SPEC.md section 3 (owner 2026-10-23) |
+| P04 | entry | C3, C4, B1 |  | The entry decides - three conditions before any exit or filter is tuned: (1) a precise entry where the turn or run starts, the stop beyond the structure and outside every liquidation pool; (2) a clear enough structure on the entry frame, agreeing with the one above; (3) trend and momentum known - a turn against a strong run needs the run spent. | B2 entered 1.7-1.8 pattern heights past the extreme; median best after entry 0.4-0.6 R (F04) | docs/OWNER_GOALS.md (owner, written 2026-10-23) |
+| P05 | plan | A2 |  | Gold runs in zones of about 70-90 USD: step = D1 ATR(20) recomputed daily, anchored at the base a strong D1 move left (a body >= 1.5 ATR re-anchors), half lines between. A line is a band (+-0.15 step). The zone is the plan (where price sits, the target, the room); the edge is the entry and its timing; reaching a line is not by itself a reason to trade. | the grid fits the owner's lines within 0.5-4.5 USD at the capture time (F28) | research/2026-10-22-zones/NOTES.md; app/strategy/zone_grid.py |
+| P06 | forest | A1, A3 |  | See far: read hundreds of bars (H4 about four months, D1 about a year) for the trend and for the strong levels price may reach next - they set the targets, the room and where a stop must not sit. |  | owner 2026-10-23; app/strategy/big_trend.py, strong_levels.py |
+| P07 | forest | A4 |  | No fixed timeframe: every condition is a principle on frames named by their place to the entry frame E (E+1 agrees, trend frames, zone frame); thresholds in that frame's bars / ATR / steps. Gold intraday start: D1 = the side, M15-H1 = the trend, M1-M5 = entry / exit / stop. Look at every TF for which one has a rhythm now. |  | SPEC.md section 0; memory taa-owner-tf-framework; owner 2026-10-23 |
+| P08 | animal | A8 |  | The market is a forest, the strategies are weapons, the situations are animals and the clock says when each comes out. Recognise the animal first, then take the weapon measured for it - or step back. Each weapon is judged only on its own animals. |  | docs/OWNER_GOALS.md (owner 2026-10-23) |
+| P09 | target | C1, C5, C6 |  | Scalp first: with the M15 rhythm and the big frames, entry on M1 / M5, the target >= 5 USD or the next swing, before the line's band; take the profit and leave; when the market grows unsure, wait. |  | owner 2026-10-17 / 10-23; memory user-gold-pip-usd |
+| P10 | picture | B4 |  | At a zone, wait for price to consolidate, then trade; if price breaks straight through, wait until it comes back near the zone. | measured: the consolidation breaks THROUGH (F01) | owner 2026-10-23; zone_wait.py |
+| P11 | clock | A6 | {'session': 'none'} | Trade in the owner's windows (Thai time): Asia 07-09, London 13-14 (+- a little), the New York open + 1-2 h. Outside them is the lowest priority unless the picture is really clean. |  | memory taa-owner-time-windows |
+| P12 | after | D1, D2 |  | The market is always right: learn from what price did; the owner's views and mine are prompts to observe and measure, rules only if the market's record supports them. |  | memory taa-market-is-always-right |
+| P13 | after | C8 |  | No look-back trades: a missed trade is a lesson, never a trade. Every reading is written before the outcome is known. |  | owner 2026-10-23; replay/2024-01-02.md (the withdrawn 09:15 scalp) |
+| P14 | method |  |  | Live in the present: setups are revised every 3-6 months; the latest data judges; older years are background. A setup that works only in some periods is normal - see which period we are in now. |  | docs/OWNER_GOALS.md |
+| P15 | size | C7 |  | Size by the account's risk percent; the 0.01-lot minimum is recorded, never a veto. Costs are the tick spread only (slippage 0). |  | memory taa-small-account-streak, taa-costs-spread-only |
+| P16 | stop | C4 |  | The stop sits beyond the structure that proves the trade wrong AND outside every pool (swings, equal lows / highs, round numbers, yesterday's high / low, swept wicks) - the first stop and every trailed stop. |  | owner 2026-10-19 / 10-23 |
+| P17 | picture | B1, B2, B3 |  | An entry needs a chart pattern at the level on the entry frame (inverse H&S, W / M, a base, a sweep + higher low) and every entry frame agreeing; enter and exit on the same frame; no entries in steep moves; trade at support / resistance, never mid-price except a pullback; surrender if it does not run. |  | memory taa-entry-needs-chart-pattern, taa-signal-plus-context |
+| P18 | picture | B3 |  | A reversal on any frame = a level + price action + volume + high volatility together. |  | owner 2026-10-22 |
+| P19 | weapon | A7 | {'yesterday': ['strong_up', 'strong_down']} | After a strong one-way day the obvious trade is with the move: the re-test, then the sell (buy) with it. The market ran three days and we lost every day - that should not happen. |  | owner 2026-10-22; memory taa-learning-adds-tools |
+| P20 | method | D2 |  | A loss never stops the work: record FAIL with its lesson, transform before discarding (the other side, a wider stop, a nearer target), and when a method repeats the same result change its details toward how a trader trades. |  | memory taa-never-stop-checklist, taa-transform-before-discard, taa-same-result-change-method |
+| P21 | method |  |  | No coin flip in the system: a result near 50 % means observe closer - split it by what was there (frames, place, the move before, session, volatility). |  | memory taa-no-coin-flip-verdict |
+| P22 | observer | E1, E2, E3, E4, E5, E6, E7 |  | Always observe, always remember: the readers at every look (never by eye), the market diary hourly, scenarios written before and scored after, every miss the owner sees turned into a checklist item + an acceptance case + a memory. |  | owner 2026-10-23; DECISION_CHECKLIST.md section E; observe.py |
+| P23 | animal | A5 |  | When the market phase does not suit a weapon it trades less (its surest signals only), not never - except above the volatility band, where it stands aside (R01). |  | memory taa-regime-fit-principle, taa-stand-aside-high-volatility |
+
+## Rules (7)
+
+| id | stage | items | when | says | evidence | source |
+|---|---|---|---|---|---|---|
+| R01 | pressure | A5 | {'h1_vol': '> 1.1'} | Stand aside while the H1 ATR(14) is above 1.1 x its 20-day median. | the only skip rule that held forward: NY-B2 -1.05 R on 8 after it took effect; the solo exam saved 5.44 R on 25 skipped | PLAN1_JOURNAL.md (NY-B2 end, solo exam); context_read.vol_ratio |
+| R02 | pressure | A5 | {'d1_atr20': '< 60'} | Regime switch: PLAN-1's pieces trade only while the D1 ATR(20) of the closed D1 bars is >= 60 USD; below it gold is the calm gold where every piece lost. | by D1 ATR(20): < 20 -0.280, 20-30 -0.122, 30-40 -0.139, 40-50 -0.081, 50-60 +0.013, 60-80 +0.203, > 80 +0.136 (2,312 trades 2021-09 .. 2026-04) | CHECKLIST row 62 (frozen 2026-10-21) |
+| R03 | exit | C6 |  | For turn weapons (B2): half at +1 R, the rest to break-even and on to 0.1 step before the next zone line, out after 120 minutes. | +0.09 R a trade in every NY-B2 exam variant; learning base +0.80 -> +7.58 R | PLAN1_JOURNAL.md (NY-B2 end and exam) |
+| R04 | entry | C2 |  | B2: no flip to the other side after a stop-out (a same-side re-entry after a sweep is allowed). | exam +2.24 R; week 5: the swept same-side idea ran +4.21 R, the flips lost | CHECKLIST row 61; PLAN1_JOURNAL.md week 5 |
+| R05 | after | D2 |  | Stop a piece only when it is below -3 R after at least 4 weeks AND 10 trades (not on one week). | the solo exam: the 1-week stop was right in direction on thin evidence; the slower rule would have stopped B2 after week 6 (-3.05 on 12) | PLAN1_JOURNAL.md (solo exam reconciliation) |
+| R06 | after | D2 |  | Rules change only on long evidence: a rule mined from past trades starts as a shadow and applies only after >= 4 weeks forward on its own journal; costly rules are deleted; weekly lever-switching is not learning. | every NY-B2 skip rule but the vol one reversed forward; the weekly learner +0.124 vs frozen +0.148 (row 63) | PLAN1_JOURNAL.md; CHECKLIST row 63; memory taa-delete-rules-that-block-profit |
+| R07 | weapon | A6 | {'release_min': '<= 60'} | A scheduled US release within 60 minutes makes it a tiger: only the news weapon (the 08:30 New York straddle); the release minute is judged on ticks only. | M1 hides the fill past the release jump: NS-1 +0.164 on M1 vs -0.068 on ticks (row 48) | routine_read.py (draft animals); CHECKLIST row 48 |
+
+## Weapons (10)
+
+| id | stage | items | when | says | evidence | source |
+|---|---|---|---|---|---|---|
+| W01 | weapon | A8, C1 |  | The NY straddle: at 08:30:00 New York a buy stop at the ask + 2 and a sell stop at the bid - 2, the stop 8 USD, out after 30 minutes. [status: real; animal: tiger / every weekday 08:30 New York] | exam +0.285 (holds: +0.467 / +0.119 / +0.285 on P1 / P2 / exam); reversed it loses heavily, so the release minute's direction is real; only at gold's present size (scaled down -0.241, row 49) | CHECKLIST rows 24, 41, 42, 46, 49, 56 |
+| W02 | weapon | A8, C1 |  | Asia B2: the M1 / M5 chart pattern at the owner's H1 levels, entries 07:00-09:00 Thai. [status: real; animal: rabbit / any - Asia 07:00-09:00 Thai] | exam +0.140 frozen (+0.105 in PLAN-1); lost in every year 2021-25 (-0.115 on 834) - pays only in the present; its entry is late (F04) | CHECKLIST rows 21, 46, 59, 61 |
+| W03 | weapon | A8, C1 |  | The London ORB: the 13:00-13:15 Thai range, the first M1 close beyond it 13:15-14:15, the stop at the other side, the target 2 R (1.5 R in the frozen rules), out after 60 minutes; skipped when the range > 1.5 H1 ATR. [status: real (fading); animal: any - London 13:00 Thai] | +0.213 / +0.124 / exam +0.023 (frozen rules -0.006): fading; lost in 2023-25; halves the account's deepest fall (F19) | CHECKLIST rows 22, 40, 46, 61 |
+| W04 | weapon | B4 |  | T4: an arrival at a line, 8+ bars in a box <= 0.3 step tall over the band, the first close out of the box - traded THROUGH the line. [status: shadow; animal: deer - price consolidating at a zone line] | raw +0.087 R (zone_wait, M15 2023-09 .. 2026-10), positive in all four years; +0.083 on 469 in the candidates (won 52 %) | SPEC.md; app/strategy/zone_break.py |
+| W05 | weapon | B5 |  | T1: the re-test of a broken zone line (an H1 close beyond, the return to the band, an entry-frame close back on the break side). [status: shadow; animal: boar - a one-way market] | raw -0.074 on 3,620 (won 33 %); acceptance: it finds the owner's 4,141 sell re-tests with the stop 4,159.3 | SPEC.md; app/strategy/zone_retest.py |
+| W06 | weapon | B3 |  | T2: a rejection at a zone line (an entry-frame bar closes back out with a wick through the band). [status: shadow; animal: rabbit - a quiet range] | raw -0.024 on 656 (won 37 %); swept -0.089 on 139, not swept -0.007 on 517 - bounces lost in every form | SPEC.md; app/strategy/zone_reject.py |
+| W07 | weapon | B3 |  | The reclaim (#23): price breaks a level everyone sees and closes back - traded back into the range. [status: partial; animal: a false break of a level everyone sees, in the owner's windows] | +0.312 / +0.310 on 19 / 22; exam +0.065 on 54 (PARTIAL); lost in 2023-25 | CHECKLIST rows 23, 54 |
+| W08 | weapon | A4, C1 |  | The M15 rhythm: a confirmed M15 pullback high (1.5 ATR ZigZag) with H1 and H4 down -> sell at the close, the stop 0.1 ATR over it, the target the last swing low, out after 16 bars (mirror for buys). [status: shadow; animal: the M15 rhythm with H1 and H4 trend the same way] | one week only (2026-10-19 .. 23): 6 taken +1.39 R, 73 waited - a journal, not evidence yet | rhythm_sell.py; out_rhythm_week_2026-10-19.txt |
+| W09 | weapon | B1, B3 |  | The structure turn: after a test (or a sweep with volume) of a buy zone, the first M5 higher low + higher high is the entry; the stop under the sweep / last higher low, outside its pool (mirror for sells). [status: shadow; animal: deer / rabbit - a test or sweep of a zone with the big trend behind it] | one replay case (2024-01-02 21:45 Thai) - to be journaled | replay/2024-01-02.md (owner's read 22:00) |
+| W10 | weapon | A5 |  | Stand aside - the weapon for the elephant (R01). [status: real; animal: elephant - extreme volatility] |  | routine_read.py WEAPONS |
+
+## Shadows (8)
+
+| id | stage | items | when | says | evidence | source |
+|---|---|---|---|---|---|---|
+| S01 | weapon | C2, B5 | {'yesterday': ['strong_up', 'strong_down']} | No bounce weapon on a boar day while the level under it has just been pierced. | 23 Oct B2 buy -0.89 R; NY-B2 fading a push > 1 D1 ATR -2.41 R on 13 | live/2026-10-23_journal.md |
+| S02 | stop | C4 |  | Every weapon's stop beyond the pool (here under the round number and the base low) - or the trade is skipped. | both 23 Oct stops sat inside pools; PLAN-1's stops are set 0.2 ATR past a pattern / the range, not by the pools | live/2026-10-23_journal.md |
+| S03 | target | C3, C5 |  | A breakout weapon needs room: the next strong level / range edge at least 1.5 R away. | 23 Oct ORB sell: room 1.0 R, went nowhere (-0.04 R) | live/2026-10-23_journal.md |
+| S04 | target | C3 |  | With the big trend behind it and price consolidating under (over) a line, the room counts to the NEXT line beyond - the line is being worn. | 2024-01-02: the 15:30 scalp skipped for 2.1 USD of room would have reached +5 at 16:35 | replay/2024-01-02.md |
+| S05 | exit | C4, C6 |  | A trailed stop also goes beyond the pool, never on it. | 2024-01-02: the trail under the M5 lows 2,073.45 / 2,073.53 was wicked by 0.33 and lost a +1.6 R stretch | replay/2024-01-02.md |
+| S06 | exit | C6 |  | A failed break: three entry-frame (M5) closes back inside the range -> out. | 2024-01-02 16:30 range break fell back; closed -0.29 R | replay/2024-01-02.md |
+| S07 | entry | C3, C4 |  | B2 / turn weapons pay turning a MODEST move: the structure still against the trade and the last 3 days moved against it by less than one D1 ATR; they lose on a runaway (> 1 D1 ATR) or when every frame already points the trade's way (late). | NY-B2 weeks 2-20: both +8.55 on 10 (90 %), neither -8.46 on 35 (46 %); runaway -2.41 on 13 | PLAN1_JOURNAL.md (observation ledger) |
+| S08 | entry | A2 |  | Turn entries 0.1-0.25 step from a line, not on it (< 0.1 step lost). | NY-B2: < 0.1 step -2.38 on 23; 0.1-0.25 step +7.30 on 20 (70 %); but the near-line < 10 USD rule cost forward | PLAN1_JOURNAL.md (what had been left out) |
+
+## Findings (17)
+
+| id | stage | items | when | says | evidence | source |
+|---|---|---|---|---|---|---|
+| F01 | picture | B4 |  | A consolidation at a zone line tends to break THROUGH it (+0.087, all four years); back the way price came after consolidating -0.089 (all four negative); the bounce at the arrival -0.028; a straight break then the return +0.046 (mixed by year). |  | zone_wait.py, out_zone_wait.txt (M15 2023-09 .. 2026-10) |
+| F02 | plan | A2 |  | H4 turns sit anywhere in the zone: about 20 % within +-0.10 step of a line, 40 % within +-0.20, median a quarter step; a band of about a third of a step catches about 70 %. The line alone is not an entry. |  | research/2026-10-22-zones/NOTES.md (364 turns, 2025-10 .. 2026-04) |
+| F04 | entry | C3 |  | B2 entered late: a median 1.7-1.8 pattern heights past the extreme (the measured move ends at 2), the stop 1.8 heights away; after the entry the median best move was 0.4-0.6 R. |  | ny_b2/late_entry.py; docs/OWNER_GOALS.md |
+| F05 | trend | A1, C2 |  | B2 against the big frames: the 23 Oct B2 bought into an H1 / H4 / D1 downtrend; overall B2 against the H4 trend -0.029, with it +0.085, neutral -0.159 - so no blind trend filter for B2. In the NY window the opposite: H4 with the trade -5.83 on 25, against / flat +10.26 on 53. |  | 2026-10-23 big-trend check; PLAN1_JOURNAL.md (what had been left out) |
+| F06 | entry | A4 |  | B2 on M5 beat M1 in the present (NY window M5 +0.399 on 24 vs M1 -0.118 on 74) but not in the old years (M5 only -0.049 on 233). |  | PLAN1_JOURNAL.md; CHECKLIST row 59 |
+| F07 | forest | A5 |  | Gold's present size: since 2025-10 the daily range median 67-157 USD, the H1 ATR 15-32, the NY 08:30-12:30 range >= 30 USD on 80-100 % of days (before 2025-04: <= 41, <= 8, <= 27 %). Size is a floor, not a detector (April-May 2025 had the size without the pay). |  | CHECKLIST row 50 |
+| F08 | forest | A5 | {'d1_atr20': '< 50'} | In calm gold (H1 ATR < 12, D1 ATR < 50) both sides of the same event lose: trades a few USD wide pay 4-17 % of R in spread; the widest stop lost least - a hint toward larger frames. |  | CHECKLIST rows 58, 62 |
+| F09 | weapon | A8 |  | The straddle's direction is real (reversed: -0.317 / -0.530). The opposite side only helps a rule whose entry picks a direction; a wider stop pulls R toward 0; a nearer target lifts the win rate, not R. |  | CHECKLIST row 42 |
+| F10 | clock | A6 |  | The NY open itself (09:30 New York) loses for the straddle (-0.208 / -0.289): the first 30 minutes after it go against it, the second with it; a 09:30 straddle held 60 min lost in the exam (-0.207 on 111). No release type carries the edge across the years (NFP +0.120, CPI -0.052, other -0.117). |  | CHECKLIST rows 41, 56, 64 |
+| F11 | exit | C6 |  | The profit comes from the few trades that run far (+3 to +8 R); every cut tried (break-even at 0.5-1.5 R, a target on B2, standing a piece aside after losing weeks) removed more runs than it saved. |  | PLAN1_JOURNAL.md (losers of weeks 27-32) |
+| F12 | size | C7 |  | A third piece on other hours smooths the account: the London ORB halved the deepest fall in learning (-34 % vs -62 % without it at 7.5 %); about even in the exam. |  | PLAN1_JOURNAL.md (orb_weight) |
+| F13 | entry | C2, C3, A7 |  | Stable in both fit halves against my prior: trades against the H1 structure, against yesterday's D1 bar, and after the day already ran the trade's way did better; 5+ touches of a level helped a break. |  | SPEC.md (assessment v1 / v2) |
+| F14 | clock | A6 |  | The NY open has the day's largest 30-minute range in every year, then London, then Asia; breaks fail less at the NY open (65 % back inside vs about 74 % at other times); the spread 0.20-0.27 USD in every year. |  | docs/OWNER_GOALS.md (facts) |
+| F15 | method |  |  | No outside reading (size, CFTC positioning, ETF flows) separates the paying present from April-May 2025; what differs is persistence (2025's size faded in two months; from 2025-10 it held seven). |  | CHECKLIST rows 50-52 |
+| F16 | method |  |  | State weights chosen on one or two parts do not carry (Asia B2 in a trend +0.376 in the exam, negative in P1); cells of 2-34 trades are too small to choose weights. |  | CHECKLIST rows 44, 46 |
+| F17 | plan | A2 |  | The grid against the owner's lines at the capture time: 4,142.3 / 4,068.2 / 3,994.1 vs 4,141.83 / 4,066.41 / 3,989.57 (0.5-4.5 USD); the owner's lines breathe too, so the daily step stays. |  | research/2026-10-22-zones/NOTES.md |
+| F18 | weapon | B3 |  | A broken level everyone sees is usually reclaimed (break-and-retest -0.221 / -0.390); levels made by the move itself are not real support / resistance (level break with volume, 61 % of losers went the wrong way). |  | CHECKLIST rows 16, 25 |
+
+## Faileds (25)
+
+| id | stage | items | when | says | evidence | source |
+|---|---|---|---|---|---|---|
+| X01 | method |  |  | LV3 - with every larger TF, sell the bounce into an earlier level: +0.013 / exam -0.139. | its components measured flat; the exam lost | CHECKLIST row 1 |
+| X02 | method |  |  | Picture libraries (V2b researched pictures, V2s M5 + M1 situation, V2e 28 entry variants, the clock-sampled present library): all negative. | the same full picture almost never repeats; the entry form did not rescue a sideless signal | CHECKLIST rows 2-5 |
+| X03 | method |  |  | Every layer in one probability model: side-blind exam -0.003, with the side +0.052; the 82 readings had an AUC of about 0.50. |  | CHECKLIST row 6 |
+| X04 | method |  |  | Cutting the heavy / wrong-way losers after the fact (-0.068 / -0.082). | cutting losers after the fact does not make an edge | CHECKLIST row 7 |
+| X05 | method |  |  | In fast, out fast for 10 USD (holds 15-120 min) and M15 10 USD in 3-4 bars: negative in most parts. |  | CHECKLIST rows 8, 9 |
+| X06 | method |  |  | Fading the edges of a range: -0.046 .. -0.155 / -0.013 .. +0.047. |  | CHECKLIST row 10 |
+| X07 | method |  |  | The surrender rule (no run -> out) on aligned M15 entries (+0.116 P1, < 0 P2); the side by the phase switch (+0.097 / -0.132, the phase's meaning flipped). |  | CHECKLIST rows 11, 12 |
+| X08 | method |  |  | The M1 pullback in the H1 / H4 trend (fast turn, 3 R): -0.099 / -0.032 at 18-29 trades a day; with the M15 structure's trend -0.101 / -0.268. | the H1 / H4 swing reading lags; losers sat in choppy M15 and right after V turns | CHECKLIST rows 13, 14 |
+| X09 | stop |  |  | No stop loss: a 22-50 USD account is wiped on the first trade. |  | CHECKLIST row 15 |
+| X10 | method |  |  | B2 all day at the owner's H1 levels (-0.026 / -0.014 on 352 / 348); entered at the breakout or with the pullback stop; with exit changes; only in the owner's windows (NY lost). | the micro-swing patterns carry no direction; about 90 % of the losers came from the entry; the exits were not the problem | CHECKLIST rows 17-20 |
+| X11 | method |  |  | Break and retest of a level everyone sees (-0.221 / -0.390); traded the other way (#43 RT_opp) it met the goal in learning (+0.261 / +0.255) and lost the exam (-0.120 on 117). | a lead found after the run did not carry | CHECKLIST rows 25, 43, 54 |
+| X12 | method |  |  | A window open in the M15-H1 EMA direction with a 3-5 USD stop; an EMA20 / last-candle / 3-day D1 bias for the day's side (closed its way 0.48 / 0.54). | the entry must be the entry frame's own turn; the side needs real structure, not proxies | CHECKLIST rows 26, 27 |
+| X13 | method |  |  | The NY 1-minute follow-the-news rule (+0.046 / -0.128); the 08:30 + 10:00 straddle (P2 rests on one crash trade). |  | CHECKLIST rows 28, 41 |
+| X14 | method |  |  | When-the-leads-pay readings (12 readings, 672 rules), the own-result switch SW-20, the quarterly walk-forward of bands: none separated the paying periods. | the leads pay as a block of time from about 2025-10 | CHECKLIST rows 45, 47, 57 |
+| X15 | method |  |  | The release-day straddle on old years (M1 +0.164, ticks -0.068) and scaled to the volatility (-0.241). | only ticks judge a release-minute rule; the straddle pays at gold's present size only | CHECKLIST rows 48, 49 |
+| X16 | method |  |  | Calm-gold setups (ORB / straddle / Asia-range faded, reclaim and retest-opposite all hours): TEST -0.101 .. -0.159; larger-frame trades (PDB, H4PB, DON20): LEARN -0.124 .. -0.162. | the TEST profit of the larger frames was the buys of the 2023-25 up-trend - trend tools, not calm-gold tools | CHECKLIST rows 58, 60 |
+| X17 | method |  |  | PLAN-1 frozen rules on the exam: +0.148 on 282 - below +0.15 by 0.002 (the pool rule -4.55 R did not hold; no flip +2.24 and the 1.5 R target +1.66 did). |  | CHECKLIST row 61 |
+| X18 | method |  |  | Weekly lever learning on the exam weeks: +0.124 vs frozen +0.148 (the learner chased recent luck). |  | CHECKLIST row 63 |
+| X19 | method |  |  | The NY straddle held 60-180 min (flips by half); a second straddle at the 09:30 equity open held 60 min (exam -0.207). |  | CHECKLIST row 64 |
+| X20 | method |  |  | NY-B2 (Asia B2 at 20:30-23:00 Thai): learning +0.008, exam -0.276 on 92; the solo exam -9.68 R on 20 realized. | 26 learning weeks at break-even were never an edge to build on - the journal tuned exits and filters around an entry with no edge | CHECKLIST row 65; PLAN1_JOURNAL.md |
+| X21 | method |  |  | V3-2, the owner's four entries on V3-1 (break and retest, aligned consolidation, fake break at a range edge, fake first leg at an open): -0.015 / -0.112 (parked). | leads seen after the run: E4 + exit (b) +0.292 / +0.418, E2 + exit (b) +0.147 / +0.243 | CHECKLIST row 53 |
+| X22 | method |  |  | The entry assessment v1 (fixed directions, 2 of 20 kept: judge -0.157 vs -0.111 all) and v2 (directions from the fit, 4 kept: +0.001 vs +0.012). |  | SPEC.md |
+| X23 | method |  |  | The re-test after a strong D1 day (+0.28 / +0.45 in learning, exam -0.220 on 10); London resumes yesterday's strong day (solo exam -1.38 R on 10). |  | CHECKLIST row 65; PLAN1_JOURNAL.md (solo exam) |
+| X41 | entry |  |  | NY-B2 skip rules mined in-sample that reversed forward: the near-line < 10 USD (+1.86 on 6 after), 10:00-10:30 New York (+0.75 on 8), the multi-TF score (+3.61 on 12), the zone-grid trend (+2.10 on 5). |  | PLAN1_JOURNAL.md (NY-B2 end) |
+| X42 | method |  |  | VOL-16's band (H1 ATR 12-16): the 16 ceiling cut +35.7 R of profit and the 12 floor cost 5.00 R net in the present - both deleted. |  | CHECKLIST rows 55, 55b, 55c |
+
+## Lessons (12)
+
+| id | stage | items | when | says | evidence | source |
+|---|---|---|---|---|---|---|
+| L01 | trend | A1 |  | 23 Oct: B2 bought into a big downtrend - H1 / H4 / D1 down on hundreds of bars. Read the big trend from hundreds of bars before any trade. |  | owner 2026-10-23; big_trend.py |
+| L02 | stop | C4 |  | 23 Oct: both stops of the day sat inside liquidation pools (B2 -0.89 R; ORB -0.04 R with 1.0 R of room). |  | live/2026-10-23_journal.md |
+| L03 | target | C5 |  | 2024-01-02: a +5 target set beyond the main line 2,070.5 stalled exactly at the line - the target goes before the band. |  | replay/2024-01-02.md |
+| L04 | target | C3 |  | Before writing a trigger into the plan, check the room from its entry to the first target against its stop. |  | replay/2024-01-02.md |
+| L05 | picture | B1, B2, B3 |  | 2024-01-02 21:40: three bottoms (2,064.57 / 2,064.64 / 2,064.35), a sweep to 2,061.87 on the hour's biggest volume, closed back, then M5 higher lows AND higher highs - the trade of the hour, missed. My turn rule (a close over the bar before's high) was too slow; read the structure, not one bar. Acceptance case for picture_read.py. |  | replay/2024-01-02.md; picture_read.py |
+| L06 | plan | A2 |  | 2024-01-02: I drew a zone as a sharp box (2,062-2,064); three lows 0.6-0.8 over it were IN the owner's band. |  | replay/2024-01-02.md |
+| L07 | after | C8 |  | 2024-01-02: I counted a missed 09:15 scalp as a trade from 10:00 after seeing the bars - hindsight; withdrawn. |  | replay/2024-01-02.md |
+| L08 | forest | A5 | {'d1_atr20': '< 50'} | 2024-01-02: the knowledge already said stand aside (D1 ATR 24 < 50: R02, F08) while I traded the replay - the knowledge base must be read at the decision. |  | replay/2024-01-02.md; CHECKLIST rows 58, 62 |
+| L09 | entry | C4 |  | Week 5: a sell's stop 1.5 USD above the Asia high was swept, then the same idea ran +4.21 R - the same-side re-entry after a sweep is the trade, the flip is not. |  | PLAN1_JOURNAL.md week 5 |
+| L10 | picture | B3 |  | Week 10: 'no pool broken in 15 minutes' also happens when price is already beyond every pool (a runaway to a record) - the opposite of a stuck market. |  | PLAN1_JOURNAL.md week 10 |
+| L11 | picture | B2, C4, C5 |  | 23 Oct 16:30: the owner's M5 W sell (about 4,026.5, TP 4,010, SL 4,045) - checklist notes: the SL on the strong level 4,045.4 (a pool: 4,048-4,050 or over the day's high 4,034 are outside), the TP on the M5 base pool 4,009.5-4,010.5 (4,011-4,012 is before it). |  | live/2026-10-23_journal.md |
+| L12 | method |  |  | Aggregate backtests found nothing the owner could watch; every idea now runs as a week-by-week journal or step-by-step replay shown to the owner. |  | memory taa-journal-not-aggregate-backtest |
+
+## Opens (10)
+
+| id | stage | items | when | says | evidence | source |
+|---|---|---|---|---|---|---|
+| O01 | animal | A8 | [{'h1_vol': '> 1.4'}, {'day_range_step': '> 2'}] | Draft animal ELEPHANT: extreme volatility (H1 vol > 1.4 x usual, or today's range > 2 steps) -> step back. (Definitions to be confirmed by the owner.) |  | routine_read.py |
+| O02 | animal | A8 | {'release_min': '<= 60'} | Draft animal TIGER: a scheduled US release within 60 minutes -> only the news weapon. |  | routine_read.py |
+| O03 | animal | A8 | [{'phase': ['up', 'down']}, {'yesterday': ['strong_up', 'strong_down']}] | Draft animal BOAR: a one-way market (the last 3 D1 closes the same way, or yesterday a strong D1 bar). |  | routine_read.py |
+| O04 | animal | A8 | {'h1_vol': '< 0.9', 'phase': 'none'} | Draft animal RABBIT: a quiet range (vol < 0.9, no one-way run). |  | routine_read.py |
+| O05 | clock | A6 |  | The release calendar lacks FOMC / PCE / GDP / PPI after 2026-10-15 - the tiger is blind on those days. |  | routine_read.py |
+| O06 | trend | B1 |  | The structure clarity rule (legs >= 2 ATR, four alternating swings) is too strict - it reads 'not clear' almost everywhere. |  | structure_read.py; live reads 2026-10-23 |
+| O07 | weapon | A8 |  | A T5 weapon is missing: sell the rally in a downtrend (and the mirror) - the obvious trade of a boar market. |  | 2026-10-23 review |
+| O08 | plan | A2 |  | After the February 2026 crash the step (D1 ATR 20) rose to 220-240 USD, far over the owner's 70-90 - do H4 turns keep the 70-90 spacing when the ATR is high? |  | research/2026-10-22-zones/NOTES.md |
+| O09 | pressure | A5 | {'h1_atr': '> 35'} | Above an H1 ATR of 35 the straddle (-0.341 on 14) and B2 (-0.146 on 10) lost - watched in the journal, not a rule. |  | CHECKLIST row 55b |
+| O10 | weapon | B3 |  | T2's arrival distance (0.5 step) missed a 36.5-USD approach to a main line - to check across all arrivals. |  | live/2026-10-23_journal.md |

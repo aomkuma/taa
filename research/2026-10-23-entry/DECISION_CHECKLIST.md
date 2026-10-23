@@ -8,6 +8,9 @@ once (with its date and source).
 
 Tools at every step: `rhythm_scan.py` (every TF), `picture_read.py` (M5 / M15 patterns), `routine_read.py` (the zone
 plan, strong levels, D1 context, volatility, the clock).
+`knowledge/kb.py now` - what the knowledge base (`knowledge/kb.yaml`, the one source of truth: principles, rules,
+weapons, shadows, findings, failed methods, lessons, open points) says applies at this moment; every new lesson is
+added there as well, with its `when`.
 
 ## A. The forest (read first)
 

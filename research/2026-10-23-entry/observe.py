@@ -7,7 +7,8 @@ Run every hour of the trading day by Windows Task Scheduler (scripts/observe.cmd
 2. score the previous observation against what price did since (how far with / against the M15 rhythm in USD,
    which half line was reached first) and flag SURPRISES - what no reading prepared for - into diary/TO_STUDY.md;
 3. read the market now with the bot's own readers (rhythm_scan, picture_read, routine_read; bars closed by AS_OF)
-   and record the observation (the reading BEFORE the next hour is known);
+   and record the observation (the reading BEFORE the next hour is known), with what the knowledge base says now
+   (knowledge/kb.py: the rules, shadows and drafts whose readings hold);
 4. append a digest to diary/<Thai date>.md and the record to diary/observations.jsonl; the full reads go to
    diary/raw/.
 
@@ -30,6 +31,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE / "knowledge"))
+import kb  # noqa: E402
 import rhythm_scan as RS  # noqa: E402
 import zone_wait as ZW  # noqa: E402
 from candidates import frame  # noqa: E402
@@ -136,6 +139,8 @@ def main() -> None:
         return
     rec = observe(as_of, m1)
     rec["fetch_problem"] = problem
+    f = kb.features(as_of)
+    rec["features"] = {k: (None if isinstance(v, float) and math.isnan(v) else v) for k, v in f.items()}
     if rows:
         rec["score"] = score(rows[-1], m1, as_of)
     th = as_of.tz_convert(TH)
@@ -161,6 +166,9 @@ def main() -> None:
                f"(step {rec['step']:.1f}); H1 ATR {rec['H1_atr']:.2f}")
     out.append("- what the readers saw:")
     out += [f"    {ln.strip()}" for ln in text.splitlines() if KEYS.search(ln) and not ln.startswith("#")]
+    out.append(f"- the knowledge base now (knowledge/kb.yaml; session {f['session']}, H1 vol {f['h1_vol']:.2f}, "
+               f"D1 ATR(20) {f['d1_atr20']:.1f}, yesterday {f['yesterday']}):")
+    out += [f"    {x}" for x in kb.brief(kb.load(), f)]
     out.append(f"- scorecard: {scorecard([*rows, rec])}")
     day = DIARY / f"{th:%Y-%m-%d}.md"
     head = "" if day.exists() else (f"# Market diary - {th:%a %d %b %Y} (Thai time; written by observe.py, the reading "

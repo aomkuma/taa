@@ -1,0 +1,24 @@
+kb.py: control (no bug): PASSED - 46 passed in 0.61s
+   1. '>' read as '>=': CAUGHT by test_one_condition[1.1->
+   2. '<' read as '<=': CAUGHT by test_one_condition[60.0-<
+   3. a negative threshold not parsed: CAUGHT by test_one_condition[-0.5->
+   4. an unknown reading holds: CAUGHT by test_one_condition[None->
+   5. a map needs any condition, not all: CAUGHT by test_a_map_needs_every_condition
+   6. a list needs every alternative: CAUGHT by test_a_list_needs_any_alternative
+   7. no when never applies: CAUGHT by test_no_when_always_applies
+   8. Asia to 10:00 Thai: CAUGHT by test_the_owners_windows[2026-10-23T02:00-none]
+   9. London from 12:00 Thai: CAUGHT by test_the_owners_windows[2026-10-23T05:59-none]
+  10. the NY window in Thai time: CAUGHT by test_the_owners_windows[2026-10-23T02:00-none]
+  11. the NY window ends at 12:00: CAUGHT by test_the_owners_windows[2026-10-23T15:30-none]
+  12. duplicate ids not reported: CAUGHT by test_each_problem_is_named[bad0-R01:
+  13. the kind letter not checked: CAUGHT by test_each_problem_is_named[bad1-R01:
+  14. unknown checklist items pass: CAUGHT by test_each_problem_is_named[bad3-R01:
+  15. unknown conflicts pass: CAUGHT by test_each_problem_is_named[bad4-R01:
+  16. a weapon needs only a status: CAUGHT by test_each_problem_is_named[bad5-W01:
+  17. a numeric reading takes a bare number: CAUGHT by test_each_problem_is_named[bad7-R01:
+  18. a word reading takes any word: CAUGHT by test_each_problem_is_named[bad8-R01:
+  19. the brief shows non-matching entries: CAUGHT by test_the_brief_lists_what_holds_now_and_the_ids_always_on
+  20. the brief's always-on line takes shadows: CAUGHT by test_the_brief_lists_what_holds_now_and_the_ids_always_on
+  21. the brief drops the action: CAUGHT by test_the_brief_lists_what_holds_now_and_the_ids_always_on
+  22. render keeps the pipes: CAUGHT by test_render_has_every_entry_and_escapes_pipes
+caught 22 / 22

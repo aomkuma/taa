@@ -131,8 +131,8 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
 - **The observer's habits - start of every session and every look at price (owner, 2026-10-23: "always remember,
   always observe"):** before any trading talk, read `research/2026-10-23-entry/DECISION_CHECKLIST.md`, the market
   diary (`research/2026-10-23-entry/diary/`: the latest day, `TO_STUDY.md`, the scorecard) and the latest journal /
-  replay. Never read price tables by eye: run `rhythm_scan.py`, `picture_read.py` and `routine_read.py` at every
-  look. Write the expected scenarios before each step, score them after. Every point the owner sees that I missed
+  replay, and `knowledge/kb.py now` (the knowledge base, `knowledge/kb.yaml`: what applies at this moment). Never
+  read price tables by eye: run `rhythm_scan.py`, `picture_read.py` and `routine_read.py` at every look. Write the expected scenarios before each step, score them after. Every point the owner sees that I missed
   becomes, in the same change, a checklist item, a permanent acceptance case and a memory. The hourly observer
   (`scripts/observe-task.ps1`, read-only) writes the diary even when no one is trading.
 - **Code correctness before results (owner, 2026-10-18):** every building block of a setup has hand-worked unit
