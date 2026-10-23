@@ -21,7 +21,7 @@ BUGS = [
     ("the box does not grow", [("            box_h, box_l = max(box_h, float(h[q])), min(box_l, float(lo[q]))\n", "")]),
     ("the stop inside the box", [("stop = box_l - PAD * s if side > 0 else box_h + PAD * s", "stop = box_l + PAD * s if side > 0 else box_h - PAD * s")]),
     ("through = the bounce", [("return ZoneBreak(i, line, came, q, side, side != came,", "return ZoneBreak(i, line, came, q, side, side == came,")]),
-    ("came from the arrival bar's close", [("came = 1 if c[i - 1] > line else -1", "came = 1 if c[i] > line else -1")]),
+    ("came from the arrival bar's close", [("out.append((i, line, 1 if c[i - 1] > line else -1, s))", "out.append((i, line, 1 if c[i] > line else -1, s))")]),
     ("a break on the box edge counts", [("if c[q] > box_h or c[q] < box_l:", "if c[q] >= box_h or c[q] <= box_l:")]),
 ]
 

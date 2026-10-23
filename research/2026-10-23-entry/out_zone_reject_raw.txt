@@ -1,0 +1,13 @@
+re-derivation: app 656, plain 656, equal True
+
+T2 raw R a trade by year (n):
+              n            R       
+swept     False True   False  True 
+year                               
+23-24       164    43  0.025 -0.180
+24-25       166    35 -0.067 -0.267
+25-26       104    48  0.037 -0.006
+26 (seen)    77    13  0.055  0.383
+
+all: 656 trades, -0.024 R a trade, won 37 %; swept -0.089 on 139, not swept -0.007 on 517
+RE-DERIVATION OK

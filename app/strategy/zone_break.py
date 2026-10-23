@@ -50,8 +50,20 @@ def zone_breaks(
     h: FloatArray, lo: FloatArray, c: FloatArray, anchor: FloatArray, step: FloatArray, start: int = LOOK
 ) -> list[ZoneBreak]:
     """Every T4 event whose entry bar exists in the given closed bars (bars ``start`` .. on as arrivals)."""
-    n = len(c)
     out: list[ZoneBreak] = []
+    for i, line, came, s in arrivals(h, lo, c, anchor, step, start):
+        event = _box(h, lo, c, i, line, came, s)
+        if event is not None:
+            out.append(event)
+    return out
+
+
+def arrivals(
+    h: FloatArray, lo: FloatArray, c: FloatArray, anchor: FloatArray, step: FloatArray, start: int = LOOK
+) -> list[tuple[int, float, int, float]]:
+    """Every arrival at a line: (bar, line, +1 came from above / -1 from below, the step at the bar)."""
+    n = len(c)
+    out: list[tuple[int, float, int, float]] = []
     last_arrival: dict[float, int] = {}
     for i in range(max(start, LOOK), n):
         a, s = float(anchor[i]), float(step[i])
@@ -71,10 +83,7 @@ def zone_breaks(
             if not far or near_before or (key in last_arrival and i - last_arrival[key] < LOOK):
                 continue
             last_arrival[key] = i
-            came = 1 if c[i - 1] > line else -1
-            event = _box(h, lo, c, i, line, came, s)
-            if event is not None:
-                out.append(event)
+            out.append((i, line, 1 if c[i - 1] > line else -1, s))
     return out
 
 
