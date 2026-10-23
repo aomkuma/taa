@@ -54,11 +54,21 @@ SYSTEM_PROMPT = (
 )
 
 
-def cost_usd(model: str | None, input_tokens: int, output_tokens: int) -> float:
+def cost_usd(
+    model: str | None, input_tokens: int, output_tokens: int, cache_write: int = 0, cache_read: int = 0
+) -> float:
+    """The call's price: fresh input and output at the model's rates, a one-hour cache write at twice the
+    input rate, a cache read at a tenth of it (TAA-1804)."""
     price = PRICES.get(model or "")
     if price is None:
         return 0.0
-    return round(input_tokens * price[0] / 1_000_000 + output_tokens * price[1] / 1_000_000, 6)
+    cost = (
+        input_tokens * price[0]
+        + output_tokens * price[1]
+        + cache_write * price[0] * 2
+        + cache_read * price[0] * 0.1
+    )
+    return round(cost / 1_000_000, 6)
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,6 +85,8 @@ class Answer:
     latency_ms: float | None = None
     detail: str = ""
     created_at: datetime | None = None
+    cache_write_tokens: int = 0
+    cache_read_tokens: int = 0
 
 
 class AIProvider(Protocol):
@@ -82,7 +94,17 @@ class AIProvider(Protocol):
 
     def assess(self, request: AssessmentInput) -> Assessment: ...
 
-    def ask(self, key: str, system: str, content: str, output_format: type[BaseModel]) -> Answer: ...
+    def ask(
+        self,
+        key: str,
+        system: str,
+        content: str,
+        output_format: type[BaseModel],
+        *,
+        model: str | None = None,
+        effort: str | None = None,
+        cache_system: bool = False,
+    ) -> Answer: ...
 
 
 class NullProvider:
@@ -96,7 +118,17 @@ class NullProvider:
             Status.SKIPPED, request.signal_key, created_at=self.clock.now_utc(), detail="AI is off"
         )
 
-    def ask(self, key: str, system: str, content: str, output_format: type[BaseModel]) -> Answer:
+    def ask(
+        self,
+        key: str,
+        system: str,
+        content: str,
+        output_format: type[BaseModel],
+        *,
+        model: str | None = None,
+        effort: str | None = None,
+        cache_system: bool = False,
+    ) -> Answer:
         return Answer(Status.SKIPPED, created_at=self.clock.now_utc(), detail="AI is off")
 
 
@@ -150,7 +182,20 @@ class AnthropicProvider:
             **spend,
         )
 
-    def ask(self, key: str, system: str, content: str, output_format: type[BaseModel]) -> Answer:
+    def ask(
+        self,
+        key: str,
+        system: str,
+        content: str,
+        output_format: type[BaseModel],
+        *,
+        model: str | None = None,
+        effort: str | None = None,
+        cache_system: bool = False,
+    ) -> Answer:
+        """One structured call. ``model`` / ``effort`` override the provider's for this call (TAA-1804);
+        ``cache_system`` caches the system prompt for an hour (a prompt that repeats, like the AI trader's
+        character from the knowledge base): a read costs a tenth of the input rate, the first write twice."""
         started = time.perf_counter()
         now = self.clock.now_utc()
 
@@ -176,13 +221,18 @@ class AnthropicProvider:
         except ImportError:  # pragma: no cover - the engine requirements pin it
             return done(Status.ERROR, "the anthropic package is not installed")
         try:
+            system_arg: Any = system
+            if cache_system:
+                system_arg = [
+                    {"type": "text", "text": system, "cache_control": {"type": "ephemeral", "ttl": "1h"}}
+                ]
             response = self.client.beta.messages.parse(
-                model=self.model,
+                model=model or self.model,
                 max_tokens=MAX_TOKENS,
-                system=system,
+                system=system_arg,
                 messages=[{"role": "user", "content": content}],
                 output_format=output_format,
-                output_config=cast(Any, {"effort": self.effort}),
+                output_config=cast(Any, {"effort": effort or self.effort}),
                 betas=[FALLBACK_BETA],
                 fallbacks="default",
             )
@@ -193,12 +243,16 @@ class AnthropicProvider:
         usage = getattr(response, "usage", None)
         tokens_in = int(getattr(usage, "input_tokens", 0) or 0)
         tokens_out = int(getattr(usage, "output_tokens", 0) or 0)
-        model = str(getattr(response, "model", self.model))
+        write = int(getattr(usage, "cache_creation_input_tokens", 0) or 0)
+        read = int(getattr(usage, "cache_read_input_tokens", 0) or 0)
+        used = str(getattr(response, "model", model or self.model))
         spend: dict[str, Any] = {
-            "model": model,
+            "model": used,
             "input_tokens": tokens_in,
             "output_tokens": tokens_out,
-            "cost_usd": cost_usd(model, tokens_in, tokens_out),
+            "cache_write_tokens": write,
+            "cache_read_tokens": read,
+            "cost_usd": cost_usd(used, tokens_in, tokens_out, write, read),
         }
         stop = getattr(response, "stop_reason", None)
         if stop == "refusal":

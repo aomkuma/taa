@@ -1,0 +1,15 @@
+trader.py: control (no bug): PASSED - 6 passed in 0.59s
+   1. the tail cut not at a heading: CAUGHT by test_tail_keeps_short_text_and_cuts_at_a_heading
+   2. the tail keeps the start: CAUGHT by test_tail_keeps_short_text_and_cuts_at_a_heading
+   3. a suspension never expires: CAUGHT by test_suspended_keeps_only_unexpired_rules
+   4. a suspension expires a minute late: CAUGHT by test_suspended_keeps_only_unexpired_rules
+   5. the brakes ignore suspensions: CAUGHT by test_brakes_veto_a_new_trade_unless_suspended
+   6. the brakes veto HOLD too: CAUGHT by test_brakes_veto_a_new_trade_unless_suspended
+   7. no prompt cache: CAUGHT by test_decide_calls_with_the_cached_character_and_applies_the_brakes
+   8. the effort low: CAUGHT by test_decide_calls_with_the_cached_character_and_applies_the_brakes
+   9. the model ignored: CAUGHT by test_decide_calls_with_the_cached_character_and_applies_the_brakes
+  10. the system and user files swapped: CAUGHT by test_decide_calls_with_the_cached_character_and_applies_the_brakes
+  11. the source fixed: CAUGHT by test_decide_calls_with_the_cached_character_and_applies_the_brakes
+  12. the held list empty: CAUGHT by test_decide_with_a_suspension_marks_the_trade
+  13. cache reads not recorded: CAUGHT by test_decide_calls_with_the_cached_character_and_applies_the_brakes
+caught 13 / 13

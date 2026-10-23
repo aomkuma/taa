@@ -135,3 +135,43 @@ class TestAnthropicProvider:
         assert p.assess(request()).status is Status.TIMEOUT
         p, _ = provider(anthropic.APIConnectionError(request=req))
         assert p.assess(request()).status is Status.ERROR
+
+
+class TestCachedCalls:
+    """TAA-1804: per-call model / effort and a cached system prompt (the AI trader's character)."""
+
+    def test_defaults_are_unchanged(self) -> None:
+        p, fake = provider(Response(parsed_output=answer()))
+        p.ask("k", "SYS", "{}", AssessmentV1)
+        [call] = fake.calls
+        assert call["system"] == "SYS"
+        assert call["model"] == "claude-opus-5-5"
+        assert call["output_config"] == {"effort": "low"}
+
+    def test_model_effort_and_the_cached_system_prompt(self) -> None:
+        @dataclass
+        class CachedUsage:
+            input_tokens: int = 4080
+            output_tokens: int = 361
+            cache_creation_input_tokens: int = 0
+            cache_read_input_tokens: int = 6830
+
+        p, fake = provider(Response(parsed_output=answer(), model="claude-sonnet-5-5", usage=CachedUsage()))  # type: ignore[arg-type]
+        got = p.ask(
+            "k", "SYS", "{}", AssessmentV1, model="claude-sonnet-5-5", effort="medium", cache_system=True
+        )
+        [call] = fake.calls
+        assert call["model"] == "claude-sonnet-5-5"
+        assert call["output_config"] == {"effort": "medium"}
+        assert call["system"] == [
+            {"type": "text", "text": "SYS", "cache_control": {"type": "ephemeral", "ttl": "1h"}}
+        ]
+        # Sonnet 5.5 at 2 / 10 USD per million: 4,080 x 2 + 361 x 10 + 6,830 x 0.2 = 8,160 + 3,610 + 1,366 = 13,136
+        assert got.cost_usd == 0.013136
+        assert (got.cache_read_tokens, got.cache_write_tokens) == (6830, 0)
+
+    def test_a_cache_write_costs_twice_the_input_rate(self) -> None:
+        # 4,080 x 2 + 357 x 10 + 6,830 x 4 = 8,160 + 3,570 + 27,320 = 39,050 -> 0.03905 USD (measured 2026-10-23)
+        assert cost_usd("claude-sonnet-5-5", 4080, 357, cache_write=6830) == 0.03905
+        assert cost_usd("claude-sonnet-5-5", 4080, 361, cache_read=6830) == 0.013136
+        assert cost_usd("unknown-model", 1, 1, 1, 1) == 0.0

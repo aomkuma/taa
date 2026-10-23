@@ -59,7 +59,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 | M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
 | M2 | Phase 17 — Setup OWN lanes (PLAN-1) | 1 | 0 | IN PROGRESS |
-| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 8 | 3 | IN PROGRESS |
+| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 8 | 4 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -2108,12 +2108,12 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 
 #### TAA-1804 — The AI trader in `app/ai/trader.py`
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1803
 
-- [ ] the prompt built from the knowledge base, the readings, the day's levels, the readers' lines and the journal tail; `StepDecision`
-- [ ] the provider: a cached system prompt, per-call model / effort, the cost with cache reads and writes; fake-client tests (OK, refusal, timeout, invalid)
-- [ ] the brakes and owner suspensions; every prompt and answer stored
+- [x] the prompt built from the knowledge base, the readings, the day's levels, the readers' lines and the journal tail; `StepDecision`
+- [x] the provider: a cached system prompt, per-call model / effort, the cost with cache reads and writes; fake-client tests (OK, refusal, timeout, invalid)
+- [x] the brakes and owner suspensions; every prompt and answer stored
 
 #### TAA-1805 — The watcher in the engine
 

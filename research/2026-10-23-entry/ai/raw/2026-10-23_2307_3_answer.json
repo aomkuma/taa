@@ -1,0 +1,47 @@
+{
+ "as_of": "2026-10-23T16:07:00+00:00",
+ "source": "watcher",
+ "status": "OK",
+ "model": "claude-sonnet-5-5",
+ "cost_usd": 0.01653,
+ "tokens": {
+  "input": 5352,
+  "cache_write": 0,
+  "cache_read": 6830,
+  "output": 446
+ },
+ "latency_ms": 7041.5,
+ "detail": "end_turn",
+ "decision": {
+  "decision": "WAIT",
+  "setup": "Pullback sell under 4,005 equal tops; wait for an M5 rejection or a break of 3,993 with a failed re-test",
+  "entry": null,
+  "stop": null,
+  "target": null,
+  "trigger": "Sell on an M5 close back under 4,004 after a failed push at 4,005.3-4,006 (lower high), stop over 4,008, target before 3,977. Or an M5 close under 3,992.9 and a failed re-test. An M5 close over 4,006 cancels the sell idea.",
+  "size": "none",
+  "kb_ids": [
+   "P19",
+   "P10",
+   "P17",
+   "P16",
+   "O15",
+   "S03",
+   "S01"
+  ],
+  "reasons": [
+   "R01 is suspended, so it is not the reason: H1/H4/D1 down and yesterday strong down mean sells only",
+   "Price 4,003.96 sits under the equal tops 4,005.26 (x3) in a squeeze mid-range, so there is no precise entry yet",
+   "Room to the 3,975.6 pool is about 28 USD, but a stop over 4,008 gives only about 1.5-2 R from here, thin once the 3,993 floor is counted",
+   "Late Friday outside the windows, volume 0.4 x the mean, M15 leg up against the trend: P11 and P17 say wait"
+  ],
+  "confidence": 66,
+  "watch_above": 4006.0,
+  "watch_below": 3992.9
+ },
+ "final_size": "none",
+ "vetoed_by": [],
+ "suspended_applying": [
+  "R01"
+ ]
+}

@@ -69,7 +69,17 @@ class FakeProvider:
     def assess(self, request: Any) -> Any:  # pragma: no cover - not used by the notes
         raise AssertionError
 
-    def ask(self, key: str, system: str, content: str, output_format: type[BaseModel]) -> Answer:
+    def ask(
+        self,
+        key: str,
+        system: str,
+        content: str,
+        output_format: type[BaseModel],
+        *,
+        model: str | None = None,
+        effort: str | None = None,
+        cache_system: bool = False,
+    ) -> Answer:
         payload = json.loads(content)
         self.calls.append((key, system, payload))
         parsed = self.reply(payload["subject"], output_format)
