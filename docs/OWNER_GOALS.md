@@ -62,6 +62,14 @@ outranks earlier targets where they differ. Results never promise profit; they d
   they set the targets and the room a trade has, and where a stop must not sit. Open point: the code sets the step to the D1 ATR(20), which
   sat in 70-90 most of the time but rose to 220-240 after the February 2026 crash - to be measured against the
   owner's 70-90 on the old years.
+- **The market is a forest, the strategies are weapons (owner, 2026-10-23).** "Would you go hunting with one
+  weapon? Take rope, a knife, a pistol, a rifle, a bow - a rabbit calls for the pistol, a wild boar for the rifle."
+  The animals are the market's situations (a CPI release, a one-way day, a consolidation at a line, a quiet
+  range, an extreme day); the timeframe and the clock tell when each animal comes out. The system first
+  recognises which animal is in front of it, then picks the weapon measured for that animal - or steps back -
+  and each weapon is judged only on the animals it is meant for. Building order: the situation reader, the
+  map of when each situation appears, the situation -> weapon table from the evidence, then the journal records
+  per day which animal, which weapon, the outcome and what a hunter would have picked.
 - **The entry decides (owner, repeated many times; written down 2026-10-23).** Three conditions for every entry,
   checked before any exit or filter is tuned:
   1. **A precise entry, and a stop that is not in a liquidation zone.** Enter at the level where the turn or the
