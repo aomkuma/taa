@@ -52,3 +52,15 @@ plan, strong levels, D1 context, volatility, the clock).
 | D1 | Journal every trade AND every skipped signal (what it would have made), what the market did / what we did / what a hunter would have done |
 | D2 | A lesson becomes a shadow rule; it applies only after its forward record holds (>= 4 weeks); costly rules are deleted |
 | D3 | Add the lesson to this checklist at once |
+
+## E. The observer's habits (owner 2026-10-23: "always remember, always observe price")
+
+| # | Habit | How it is done |
+|---|---|---|
+| E1 | Observe even when not trading | `observe.py` every hour of the trading day (Task Scheduler, `scripts/observe-task.ps1`, read-only): the readers' picture into `diary/<date>.md` |
+| E2 | Remember | the diary + `diary/observations.jsonl` (every reading, written BEFORE the hour it is scored on) + this checklist + the journals |
+| E3 | Know how good the eye is | each reading is scored on the next hour (with / against the M15 rhythm in USD, the half line reached first); the scorecard in every entry |
+| E4 | Curious | a move no reading prepared for (>= 1 H1 ATR against the rhythm read; >= 1.5 ATR with no rhythm read; an hour's range >= 2 ATR) goes to `diary/TO_STUDY.md` - studied, never ignored |
+| E5 | Before deciding, the scenarios in writing | A / B / C with trigger, stop, target - then scored against what price did |
+| E6 | A miss the owner sees | in the same change: an item here, a permanent acceptance case (the owner's chart), a memory |
+| E7 | Start of every session | read this checklist, the diary (latest day, TO_STUDY, scorecard) and the latest journal before any trading talk |

@@ -46,6 +46,21 @@ def load(tf: str, as_of: pd.Timestamp) -> Bars:
                 d.close.to_numpy(float))
 
 
+def rhythm(x: Bars, t: int) -> tuple[int, float, list, int, "bt.BigTrend"]:
+    """The rhythm of one frame (bars closed by ``t`` already): (sign +1 / -1 / 0 - the last two rhythm highs AND lows
+    the same way AND the big trend agreeing, ATR(14), the rhythm swings, their running leg, the big trend)."""
+    h, lo, c = x.h[-300:], x.lo[-300:], x.c[-300:]
+    atr = float(mt5_atr(h, lo, c, 14)[-1])
+    big = bt.big_trend(x, t)
+    pts, leg, _ = bt.zigzag(h, lo, 2.0 * atr)
+    highs = [p for _, k, p in pts if k == 1][-3:]
+    lows = [p for _, k, p in pts if k == -1][-3:]
+    down = len(highs) >= 2 and len(lows) >= 2 and highs[-1] < highs[-2] and lows[-1] < lows[-2]
+    up = len(highs) >= 2 and len(lows) >= 2 and highs[-1] > highs[-2] and lows[-1] > lows[-2]
+    sign = -1 if down and big.sign < 0 else 1 if up and big.sign > 0 else 0
+    return sign, atr, pts, leg, big
+
+
 def main() -> None:
     as_of = pd.Timestamp(sys.argv[1], tz="UTC") if len(sys.argv) > 1 else pd.Timestamp(ZW.load("M1").index[-1], tz="UTC")
     bars = {tf: load(tf, as_of) for tf in TFS}
@@ -53,35 +68,32 @@ def main() -> None:
     print(f"# Every timeframe at {as_of.tz_convert(TH):%a %d %b %H:%M} Thai\n")
     for tf, b in bars.items():
         x = closed(b, t)
-        h, lo, c = x.h[-300:], x.lo[-300:], x.c[-300:]
-        atr = float(mt5_atr(h, lo, c, 14)[-1])
-        big = bt.big_trend(x, t)
-        pts, leg, ext = bt.zigzag(h, lo, 2.0 * atr)
+        sign, atr, pts, _, big = rhythm(x, t)
         highs = [p for _, k, p in pts if k == 1][-3:]
         lows = [p for _, k, p in pts if k == -1][-3:]
         down = len(highs) >= 2 and len(lows) >= 2 and highs[-1] < highs[-2] and lows[-1] < lows[-2]
         up = len(highs) >= 2 and len(lows) >= 2 and highs[-1] > highs[-2] and lows[-1] > lows[-2]
-        rhythm = "DOWN" if down and big.sign < 0 else "UP" if up and big.sign > 0 else "down (big trend not)" if down else \
+        name = "DOWN" if sign < 0 else "UP" if sign > 0 else "down (big trend not)" if down else \
             "up (big trend not)" if up else "none"
-        price = float(c[-1])
+        price = float(x.c[-1])
         last = pts[-1] if pts else None
         line = f"{tf:3s} ATR {atr:6.2f} | big trend {'DOWN' if big.sign < 0 else 'UP' if big.sign > 0 else 'none'} " \
-               f"(LH {big.lower_highs}, LL {big.lower_lows}, HH {big.higher_highs}, HL {big.higher_lows}) | rhythm {rhythm}"
+               f"(LH {big.lower_highs}, LL {big.lower_lows}, HH {big.higher_highs}, HL {big.higher_lows}) | rhythm {name}"
         print(line)
         if pts:
             legs = [(pts[k][2], pts[k + 1][2], pts[k + 1][0] - pts[k][0]) for k in range(max(0, len(pts) - 4), len(pts) - 1)]
             seq = ", ".join(f"{'H' if kk == 1 else 'L'} {p:.1f}" for _, kk, p in pts[-5:])
             print(f"    swings: {seq}; legs {', '.join(f'{abs(b2 - a2) / atr:.1f} ATR / {n} bars' for a2, b2, n in legs)}")
         if last is not None and len(pts) >= 2:
-            j, k, p = last
+            _, k, p = last
             prev = pts[-2][2]
             push = abs(p - prev)
             now = (price - p) * (-k)  # how far the running leg has come from the last swing, toward the opposite side
             back = now / push if push else np.nan
             heading = "down" if k == 1 else "up"
-            with_rhythm = (rhythm.startswith("DOWN") and k == 1) or (rhythm.startswith("UP") and k == -1)
+            with_rhythm = (sign < 0 and k == 1) or (sign > 0 and k == -1)
             print(f"    now {price:.2f}: running {heading} from {p:.1f} for {now:.1f} ({now / atr:.1f} ATR, {back * 100:.0f} % of the last "
-                  f"leg) - {'WITH the rhythm (a push)' if with_rhythm else 'AGAINST the rhythm (a pullback)' if rhythm in ('DOWN', 'UP') else 'no rhythm'}")
+                  f"leg) - {'WITH the rhythm (a push)' if with_rhythm else 'AGAINST the rhythm (a pullback)' if sign else 'no rhythm'}")
 
 
 if __name__ == "__main__":

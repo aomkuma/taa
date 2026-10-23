@@ -1,0 +1,14 @@
+observe.py: control (no bug): PASSED - 9 passed in 0.41s
+   1. the hour includes the bar at as_of (look-ahead): CAUGHT by test_bars_at_or_after_as_of_are_not_scored
+   2. the hour starts after the reading's bar: CAUGHT by test_down_rhythm_held_with_and_against_in_usd
+   3. with / against swapped for a down rhythm: CAUGHT by test_down_rhythm_held_with_and_against_in_usd
+   4. held on a tie or worse: CAUGHT by test_a_tie_or_a_little_more_against_is_not_held
+   5. against strictly beyond 1 ATR: CAUGHT by test_against_the_rhythm_by_one_atr_is_a_surprise
+   6. the against surprise from the move with: CAUGHT by test_against_the_rhythm_by_one_atr_is_a_surprise
+   7. the no-rhythm run at 1.0 ATR: CAUGHT by test_a_no_rhythm_move_under_one_and_a_half_atr_is_not_a_surprise
+   8. the big hour at 3 ATR: CAUGHT by test_a_run_with_no_rhythm_and_a_big_hour
+   9. the first line from the last bar, not the first: CAUGHT by test_first_line_is_the_earliest_bar_and_both_in_one_bar
+  10. the line above needs a close beyond: CAUGHT by test_a_run_with_no_rhythm_and_a_big_hour
+  11. the scorecard counts hours without a rhythm: CAUGHT by test_scorecard_counts_only_hours_with_a_rhythm
+  12. the scorecard's means over all 20 slots: CAUGHT by test_scorecard_counts_only_hours_with_a_rhythm
+caught 12 / 12

@@ -18,6 +18,7 @@ Draft situation names (the owner's hunting picture, docs/OWNER_GOALS.md) - defin
 """
 
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -81,7 +82,6 @@ def main() -> None:
     say(f"- M15 gaps over 90 min in the last 7 days (weekends aside): {len(big)}"
         + (f" - at {', '.join(f'{x:%d %H:%M}' for x in big.index[:3])} UTC" if len(big) else ""))
     rel = load_releases(ROOT / "app/news/us_releases.csv")
-    today = as_of.tz_convert("America/New_York").date()
     today_rel = [r for r in rel if r.at.astimezone(pd.Timestamp(0).tz_localize("UTC").tzinfo).date() == as_of.date()]
     upcoming = [r for r in rel if r.at >= as_of.to_pydatetime()][:3]
     say(f"- US releases today on the bot's calendar: {', '.join(f'{r.event} {pd.Timestamp(r.at).tz_convert(TH):%H:%M} Thai' for r in today_rel) or 'none'}"
@@ -170,6 +170,9 @@ def main() -> None:
     for wpn, animal, status, when in WEAPONS:
         say(f"| {wpn} | {animal} | {status} | {when} |")
     text = "\n".join(out) + "\n"
+    if os.environ.get("TAA_OBSERVER"):  # the hourly observer keeps its own diary (observe.py)
+        print(text)
+        return
     live = HERE / "live"
     live.mkdir(exist_ok=True)
     path = live / f"{as_of.tz_convert(TH):%Y-%m-%d_%H%M}_read.md"
