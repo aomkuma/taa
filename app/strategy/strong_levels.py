@@ -11,6 +11,8 @@ price may reach"; "the stop must not sit in a liquidation zone".
   ``LOOKBACK_FAR`` of the far frame (gold intraday: H4 and D1), merged when within ``MERGE_STEP`` x the zone
   step of the cluster's mean; a level is strong with 2+ touches or a turn of at least ``MAJOR_STEP`` steps.
   The anchors of past zone shifts and the lookback's highest high / lowest low are strong too.
+- **Zone lines** (the owner's drawing, 2026-10-23): the grid's main lines and the half lines, ranked by the
+  swings that turned near them - the swing clusters rank the lines instead of being lines of their own.
 - **Pools** (C1): where the obvious stops sit - the recent swings of the entry timeframe and H1, the previous
   server day's high / low, the round numbers (every ``ROUND_USD``). A stop within ``POOL_BAND_STEP`` x step
   (at least ``POOL_BAND_MIN`` USD) beyond a pool sits in the liquidation zone.
@@ -32,6 +34,7 @@ TURN_BARS = 12
 LOOKBACK_NEAR = 500
 LOOKBACK_FAR = 250
 MERGE_STEP = 0.15
+LINE_BAND_STEP = 0.15
 MAJOR_STEP = 1.0
 POOL_BAND_STEP = 0.05
 POOL_BAND_MIN = 1.0
@@ -124,6 +127,34 @@ def strong_levels(
             Level(float(x.lo[span].min()), 1, math.nan, -1, "extreme"),
         ]
     return sorted(out, key=lambda lv: lv.price)
+
+
+def zone_lines(
+    near: Bars, far: Bars, t: int, anchor: float, step: float, lo: float, hi: float
+) -> list[Level]:
+    """The owner's zone lines between ``lo`` and ``hi`` (owner 2026-10-23: the main lines one step apart, the
+    sub-lines at the halves; source "zone" / "half"), each with its strength: the swings of the near / far
+    lookbacks that turned within ``LINE_BAND_STEP`` x step of it (touches, their largest turn, their
+    kinds)."""
+    if not (math.isfinite(anchor) and math.isfinite(step) and step > 0):
+        return []
+    found = swings(near, t, last=LOOKBACK_NEAR) + swings(far, t, last=LOOKBACK_FAR)
+    half = step / 2
+    out: list[Level] = []
+    for k in range(math.ceil((lo - anchor) / half), math.floor((hi - anchor) / half) + 1):
+        y = anchor + k * half
+        hits = [s for s in found if abs(s.price - y) <= LINE_BAND_STEP * step]
+        kinds = {s.kind for s in hits}
+        out.append(
+            Level(
+                y,
+                len(hits),
+                max((s.turn for s in hits), default=math.nan),
+                kinds.pop() if len(kinds) == 1 else 0,
+                "zone" if k % 2 == 0 else "half",
+            )
+        )
+    return out
 
 
 def room(levels: Sequence[Level], side: int, entry: float, stop: float, band: float) -> float:

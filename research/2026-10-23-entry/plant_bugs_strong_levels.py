@@ -24,6 +24,13 @@ BUGS = [
     ("pools past the stop missed (the bug the tests caught)", [("lo, hi = (stop - band, entry) if side > 0 else (entry, stop + band)", "lo, hi = (stop, entry) if side > 0 else (entry, stop + band)")]),
     ("round numbers every 5", [("ROUND_USD = 10.0", "ROUND_USD = 5.0")]),
     ("the margin from the farthest pool", [("margin = min((p - stop) * side for p in inside) if inside else math.nan", "margin = max((p - stop) * side for p in inside) if inside else math.nan")]),
+    ("zone lines: no halves", [("half = step / 2\n    out", "half = step\n    out")]),
+    ("zone lines: halves and mains swapped", [('"zone" if k % 2 == 0 else "half"', '"half" if k % 2 == 0 else "zone"')]),
+    ("zone lines: band 0.3 step", [("LINE_BAND_STEP = 0.15", "LINE_BAND_STEP = 0.3")]),
+    ("zone lines: band strictly inside", [("abs(s.price - y) <= LINE_BAND_STEP * step", "abs(s.price - y) < LINE_BAND_STEP * step")]),
+    ("zone lines: the top line dropped", [("math.floor((hi - anchor) / half) + 1)", "math.floor((hi - anchor) / half))")]),
+    # last=0 would mean "no limit", so the bug removes the far frame's swings outright
+    ("zone lines: far frame ignored", [(" + swings(far, t, last=LOOKBACK_FAR)\n    half = step / 2", "\n    half = step / 2")]),
 ]
 
 if __name__ == "__main__":

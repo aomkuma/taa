@@ -1,0 +1,8 @@
+      snap  anchor   step  turns_after  near_line
+2025-02-03 2652.43 29.434           13      0.308
+2025-04-01 2652.43 36.064           16      0.625
+2025-06-02 3210.99 78.502           17      0.647
+2025-08-01 3210.99 43.282           19      0.684
+2025-10-01 3416.53 52.400           14      0.429
+2025-12-01 4356.35 78.704           20      0.500
+note: lines every half step with a band of 0.15 step cover 60 % of prices, so 60 % is what any price would show

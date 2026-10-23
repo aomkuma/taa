@@ -1,2 +1,1 @@
-strong_levels.py: control (no bug): PASSED - 19 passed in 0.42s
-caught 16 / 16
+caught 22 / 22

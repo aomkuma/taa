@@ -109,6 +109,34 @@ class TestStrong:
         assert sl.strong_levels(b, b, int(b.avail[-1]), math.nan) == []
 
 
+class TestZoneLines:
+    def test_main_and_half_lines(self) -> None:
+        b = bars(H, L)
+        got = sl.zone_lines(b, b, int(b.avail[-1]), 100.0, 10.0, 85.0, 116.0)
+        assert [lv.price for lv in got] == [85.0, 90.0, 95.0, 100.0, 105.0, 110.0, 115.0]
+        assert [lv.source for lv in got] == ["half", "zone", "half", "zone", "half", "zone", "half"]
+
+    def test_strength_counts_the_swings_near_a_line(self) -> None:
+        # the same bars as both frames: the peak 110 (turn 20) and the trough 90 (turn 10) each found twice;
+        # band 0.15 x 10 = 1.5
+        b = bars(H, L)
+        got = {lv.price: lv for lv in sl.zone_lines(b, b, int(b.avail[-1]), 100.0, 10.0, 85.0, 116.0)}
+        assert (got[110.0].touches, got[110.0].turn, got[110.0].kinds) == (2, 20.0, 1)
+        assert (got[90.0].touches, got[90.0].turn, got[90.0].kinds) == (2, 10.0, -1)
+        assert got[100.0].touches == 0
+        assert math.isnan(got[100.0].turn)
+
+    def test_the_band_edge(self) -> None:
+        # a line 1.5 from the peak counts it (band 1.5), a line 1.6 away does not
+        b = bars(H, L)
+        assert sl.zone_lines(b, b, int(b.avail[-1]), 108.5, 10.0, 108.0, 109.0)[0].touches == 2
+        assert sl.zone_lines(b, b, int(b.avail[-1]), 108.4, 10.0, 108.0, 109.0)[0].touches == 0
+
+    def test_no_grid(self) -> None:
+        b = bars(H, L)
+        assert sl.zone_lines(b, b, int(b.avail[-1]), math.nan, 10.0, 85.0, 116.0) == []
+
+
 class TestRoom:
     levels: ClassVar[list[sl.Level]] = [
         sl.Level(80.0, 2, 5.0, -1, "swings"),
