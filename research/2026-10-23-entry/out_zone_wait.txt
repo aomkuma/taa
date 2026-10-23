@@ -1,0 +1,23 @@
+R a trade by period (after the 0.35 USD spread):
+period                       2023-09 .. 2024-08  2024-09 .. 2025-08  2025-09 .. 2026-04-17  2026-04-18 .. 10-16 (seen)
+kind                                                                                                                  
+A at once (bounce)                       -0.050              -0.030                 -0.045                       0.039
+B consolidate, then bounce               -0.074              -0.128                 -0.028                      -0.079
+B consolidate, then through               0.071               0.064                  0.128                       0.144
+C broken, back, then trade                0.113              -0.075                 -0.078                       0.656
+
+trades by period:
+period                       2023-09 .. 2024-08  2024-09 .. 2025-08  2025-09 .. 2026-04-17  2026-04-18 .. 10-16 (seen)
+kind                                                                                                                  
+A at once (bounce)                          510                 486                    385                         227
+B consolidate, then bounce                  143                 140                     92                          91
+B consolidate, then through                 140                 151                     99                          75
+C broken, back, then trade                  130                 106                    124                          34
+
+all periods:
+                                n  R_per_trade     win
+kind                                                  
+A at once (bounce)           1631       -0.028  47.210
+B consolidate, then bounce    473       -0.089  44.820
+B consolidate, then through   469        0.087  51.812
+C broken, back, then trade    399        0.046  33.083
