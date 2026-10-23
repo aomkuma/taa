@@ -123,7 +123,7 @@ Precedence at a decision: principle > rule > weapon > shadow (shown, never appli
 | X41 | entry |  |  | NY-B2 skip rules mined in-sample that reversed forward: the near-line < 10 USD (+1.86 on 6 after), 10:00-10:30 New York (+0.75 on 8), the multi-TF score (+3.61 on 12), the zone-grid trend (+2.10 on 5). |  | PLAN1_JOURNAL.md (NY-B2 end) |
 | X42 | method |  |  | VOL-16's band (H1 ATR 12-16): the 16 ceiling cut +35.7 R of profit and the 12 floor cost 5.00 R net in the present - both deleted. |  | CHECKLIST rows 55, 55b, 55c |
 
-## Lessons (13)
+## Lessons (14)
 
 | id | stage | items | when | says | evidence | source |
 |---|---|---|---|---|---|---|
@@ -139,6 +139,7 @@ Precedence at a decision: principle > rule > weapon > shadow (shown, never appli
 | L10 | picture | B3 |  | Week 10: 'no pool broken in 15 minutes' also happens when price is already beyond every pool (a runaway to a record) - the opposite of a stuck market. |  | PLAN1_JOURNAL.md week 10 |
 | L11 | picture | B2, C4, C5 |  | 23 Oct 16:30: the owner's M5 W sell (about 4,026.5, TP 4,010, SL 4,045) - checklist notes: the SL on the strong level 4,045.4 (a pool: 4,048-4,050 or over the day's high 4,034 are outside), the TP on the M5 base pool 4,009.5-4,010.5 (4,011-4,012 is before it). |  | live/2026-10-23_journal.md |
 | L13 | entry | B1, B2, C1 |  | 23 Oct: the owner sold the M5 W at 16:30 (4,026.49, TP 4,010, SL 4,045) and was right - TP at 21:10:53 Thai, worst 4,034.46, about +0.89 R over 4 h 40 min. My plan waited for the structure to break (an M5 close under 4,021.0, which came only at 21:00) - entered 21:05 at 4,018.59, out at 4,012 for about +0.46 R. Same side; the owner's earlier entry at the top of the W paid twice as much. |  | live/2026-10-23_journal.md; ticks 2026-10-23 (fetch_day.py) |
+| L14 | picture | B3, A3 |  | 23 Oct 21:30: the NY drop swept the day's low 3,986.62 (09:00) and the main line 3,994.1 to 3,975.58 on the heaviest volume and closed back over the line 9 minutes later - the 12-hour structure (3,986.6 -> 4,034.2) fully unwound (the owner: 'it has run its full course; wait and see the structure'). picture_read missed it: its pools are equal lows inside 72 M5 bars; the day's high / low, yesterday's and the zone lines are pools too. |  | live/2026-10-23_night.md (owner 22:00 Thai) |
 | L12 | method |  |  | Aggregate backtests found nothing the owner could watch; every idea now runs as a week-by-week journal or step-by-step replay shown to the owner. |  | memory taa-journal-not-aggregate-backtest |
 
 ## Opens (22)

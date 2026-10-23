@@ -808,6 +808,13 @@
   says: "23 Oct: the owner sold the M5 W at 16:30 (4,026.49, TP 4,010, SL 4,045) and was right - TP at 21:10:53 Thai, worst 4,034.46, about +0.89 R over 4 h 40 min. My plan waited for the structure to break (an M5 close under 4,021.0, which came only at 21:00) - entered 21:05 at 4,018.59, out at 4,012 for about +0.46 R. Same side; the owner's earlier entry at the top of the W paid twice as much."
   source: "live/2026-10-23_journal.md; ticks 2026-10-23 (fetch_day.py)"
 
+- id: L14
+  kind: lesson
+  stage: picture
+  items: [B3, A3]
+  says: "23 Oct 21:30: the NY drop swept the day's low 3,986.62 (09:00) and the main line 3,994.1 to 3,975.58 on the heaviest volume and closed back over the line 9 minutes later - the 12-hour structure (3,986.6 -> 4,034.2) fully unwound (the owner: 'it has run its full course; wait and see the structure'). picture_read missed it: its pools are equal lows inside 72 M5 bars; the day's high / low, yesterday's and the zone lines are pools too."
+  source: "live/2026-10-23_night.md (owner 22:00 Thai)"
+
 - id: L12
   kind: lesson
   stage: method
