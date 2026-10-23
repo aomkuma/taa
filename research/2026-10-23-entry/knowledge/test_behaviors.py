@@ -160,3 +160,66 @@ def test_day_levels_a_falling_run_has_one_swing_low():
     d1 = pd.DataFrame({"high": [120.0], "low": [80.0]}, index=pd.DatetimeIndex([pd.Timestamp("2026-10-21 21:00", tz="UTC")]))
     out = bh.day_levels(m15, d1, pd.Timestamp("2026-10-23 06:15", tz="Asia/Bangkok"))
     assert [x for x in out if x.startswith("M15 swing low")] == ["M15 swing low 96.00 at 05:30"]  # not 98 (still falling)
+
+
+def _arr(*x):
+    return np.array(x, dtype=float)
+
+
+def test_level_sweep_tonight_like_case():
+    # before the window close 4,013.6; the window dips to 3,975.6 (under 3,986.6 and 3,994.1) and closes 3,994.9:
+    # back over the line 3,994.1 -> a sweep low (the day's low 3,986.6 is reclaimed too); ATR 9 -> 0.9 beyond needed
+    c = _arr(4013.6, 4008.1, 3994.2, 3992.2, 3977.8, 3984.2, 3994.9)
+    lo = _arr(4010.0, 4007.3, 3993.7, 3989.5, 3977.1, 3975.6, 3982.4)
+    h = c + 2
+    assert bh.level_sweep(h, lo, c, [3994.09, 3986.62], atr=9.0, recent=6) == "low"
+
+
+def test_level_sweep_needs_the_reclaim_and_the_depth():
+    c = _arr(4013.6, 4008.1, 3994.2, 3992.2, 3977.8, 3984.2, 3990.0)  # still under 3,994.1: no reclaim yet
+    lo = _arr(4010.0, 4007.3, 3993.7, 3989.5, 3977.1, 3975.6, 3982.4)
+    assert bh.level_sweep(c + 2, lo, c, [3994.09], atr=9.0, recent=6) == "none"
+    # only 0.5 under the level (0.1 ATR = 0.9 needed): a touch, not a sweep
+    c2 = _arr(4000.0, 3999.0, 3998.0, 3997.0, 3996.0, 3995.0, 3996.0)
+    lo2 = _arr(3999.0, 3998.0, 3997.0, 3996.0, 3995.0, 3993.6, 3995.0)
+    assert bh.level_sweep(c2 + 1, lo2, c2, [3994.09], atr=9.0, recent=6) == "none"
+    # the close before the window already under the level: not a sweep of it (price came from below)
+    c3 = _arr(3990.0, 3992.0, 3993.0, 3990.0, 3985.0, 3990.0, 3996.0)
+    lo3 = c3 - 2
+    assert bh.level_sweep(c3 + 2, lo3, c3, [3994.09], atr=9.0, recent=6) == "none"
+
+
+def test_level_sweep_high():
+    # before 100 (under 103.5); the window's high 104.5 is 1.0 over 103.5 (>= 0.1 ATR); the last close 99.5 under it
+    c = _arr(100.0, 101, 102, 103, 102, 101, 99.5)
+    h = _arr(100.5, 101.5, 102.5, 104.5, 102.5, 101.5, 100.0)
+    assert bh.level_sweep(h, c - 0.5, c, [103.5], atr=1.0, recent=6) == "high"
+
+
+def test_level_sweep_both_sides_takes_the_later_extreme():
+    # before 101 between the levels 100 and 102; the last close 101 back between them; both were swept
+    c = _arr(101.0, 100.5, 101.0, 101.2, 101.5, 101.0, 101.0)
+    lo = _arr(100.8, 99.5, 100.8, 101.0, 101.2, 100.8, 100.9)    # the low 99.5 in the window's 2nd bar
+    h = _arr(101.2, 100.9, 101.3, 101.5, 102.5, 101.3, 101.2)    # the high 102.5 in its 5th bar - later
+    assert bh.level_sweep(h, lo, c, [100.0, 102.0], atr=1.0, recent=6) == "high"
+    lo2, h2 = lo.copy(), h.copy()
+    lo2[1], lo2[5] = 100.8, 99.5      # the low moved to the 6th bar - now the later one
+    assert bh.level_sweep(h2, lo2, c, [100.0, 102.0], atr=1.0, recent=6) == "low"
+
+
+def test_level_prices_known_before_the_window():
+    m15 = _m15("2026-10-23 05:00", [100.0, 98, 99, 90], [104.0, 106, 103, 110])
+    d1 = pd.DataFrame({"high": [120.0], "low": [80.0]}, index=pd.DatetimeIndex([pd.Timestamp("2026-10-21 21:00", tz="UTC")]))
+    # at 05:59 Thai the 05:45 bar is still forming: swing low 98 / high 106 at 05:15, the day's 98 / 106, yesterday
+    got = bh.level_prices(m15, d1, pd.Timestamp("2026-10-23 05:59", tz="Asia/Bangkok"))
+    assert got == [98.0, 106.0, 98.0, 106.0, 80.0, 120.0]
+    # at 06:00 it has closed (90 / 110): the day's extremes move; it is the last bar, so not a swing itself
+    got = bh.level_prices(m15, d1, pd.Timestamp("2026-10-23 06:00", tz="Asia/Bangkok"))
+    assert got == [98.0, 106.0, 90.0, 110.0, 80.0, 120.0]
+
+
+def test_level_sweep_when_the_first_window_bar_breaks_the_level():
+    # the close before the window 4,000 (over 3,994.1); the window's first bar already closes under it (3,990)
+    c = _arr(4000.0, 3990.0, 3988.0, 3989.0, 3991.0, 3993.0, 3996.0)
+    lo = c - 2
+    assert bh.level_sweep(c + 2, lo, c, [3994.09], atr=9.0, recent=6) == "low"

@@ -191,6 +191,12 @@ def features(as_of: pd.Timestamp) -> dict[str, Any]:
     h5, lo5, c5, v5 = (d5[k].to_numpy(float) for k in ("high", "low", "close", "tick_volume"))
     atr5 = float(mt5_atr(h5, lo5, c5, 14)[-1])
     f["sweep"] = bh.recent_sweep(h5[-pr.N:], lo5[-pr.N:], c5[-pr.N:], v5[-pr.N:], atr5, 6)
+    if f["sweep"] == "none":  # L14: the day's own levels and the zone lines are pools too
+        before = d5.index[-6]  # the window's first bar opens here: levels known before it
+        k0 = math.floor((price - st.anchor) / half)
+        lines = [st.anchor + k * half for k in range(k0 - 2, k0 + 4)]
+        levels = bh.level_prices(fr["M15"][0], fr["D1"][0], before) + lines
+        f["sweep"] = bh.level_sweep(h5, lo5, c5, levels, atr5, 6)
     return f
 
 

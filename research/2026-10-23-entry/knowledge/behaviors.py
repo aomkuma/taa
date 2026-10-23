@@ -106,6 +106,37 @@ def day_levels(m15: pd.DataFrame, d1: pd.DataFrame, as_of: pd.Timestamp) -> list
     return out
 
 
+def level_prices(m15: pd.DataFrame, d1: pd.DataFrame, before: pd.Timestamp) -> list[float]:
+    """The prices of the day's own levels known BEFORE ``before`` (bars closed by it): the M15 swing lows / highs since
+    05:00 Thai, the day's high / low so far, yesterday's D1 high / low (L14: the pools a sweep takes, beyond the
+    equal-low clusters)."""
+    x = m15[(m15.index >= day_start(before)) & (m15.index + pd.Timedelta(minutes=15) <= before)]
+    lo, hi = x.low.to_numpy(float), x.high.to_numpy(float)
+    out = [float(lo[i]) for i in range(1, len(x) - 1) if lo[i] < lo[i - 1] and lo[i] < lo[i + 1]]
+    out += [float(hi[i]) for i in range(1, len(x) - 1) if hi[i] > hi[i - 1] and hi[i] > hi[i + 1]]
+    if len(x):
+        out += [float(lo.min()), float(hi.max())]
+    y = d1[d1.index + pd.Timedelta(days=1) <= before]
+    if len(y):
+        out += [float(y.low.iloc[-1]), float(y.high.iloc[-1])]
+    return out
+
+
+def level_sweep(h: np.ndarray, lo: np.ndarray, c: np.ndarray, levels: list[float], atr: float, recent: int = 6) -> str:
+    """'low' / 'high' / 'none': within the last ``recent`` bars price went 0.1 ATR beyond a level it was on the near
+    side of before them (the close before the window), and the last close is back on the near side - a sweep and
+    reclaim that may take several bars (2026-10-23 21:30: under the day's low 3,986.62 and the line 3,994.09 to
+    3,975.58, back over the line two bars later). When both sides qualify, the side whose extreme came later."""
+    if len(c) < recent + 1:
+        return "none"
+    w_lo, w_hi, before, last = lo[-recent:], h[-recent:], c[-recent - 1], c[-1]
+    low = any(before > lv and w_lo.min() < lv - 0.1 * atr and last > lv for lv in levels)
+    high = any(before < lv and w_hi.max() > lv + 0.1 * atr and last < lv for lv in levels)
+    if low and high:
+        return "low" if int(np.argmin(w_lo)) > int(np.argmax(w_hi)) else "high"
+    return "low" if low else "high" if high else "none"
+
+
 def recent_sweep(h: np.ndarray, lo: np.ndarray, c: np.ndarray, v: np.ndarray, atr: float, recent: int = 6) -> str:
     """'low' (a pool under price swept and closed back - the buy picture) / 'high' / 'none', the latest one within
     the last ``recent`` bars."""

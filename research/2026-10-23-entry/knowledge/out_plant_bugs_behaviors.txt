@@ -1,4 +1,4 @@
-behaviors.py: control (no bug): PASSED - 32 passed in 0.46s
+behaviors.py: control (no bug): PASSED - 38 passed in 0.48s
    1. efficiency over n moves read n - 1: CAUGHT by test_efficiency_one_way_and_back_and_forth
    2. efficiency keeps the sign: CAUGHT by test_efficiency_one_way_and_back_and_forth
    3. efficiency path from the net: CAUGHT by test_efficiency_one_way_and_back_and_forth
@@ -24,4 +24,12 @@ behaviors.py: control (no bug): PASSED - 32 passed in 0.46s
   23. a swing low needs only the bar before: CAUGHT by test_day_levels_a_falling_run_has_one_swing_low
   24. swing highs read from the lows: CAUGHT by test_day_levels_swings_extremes_and_yesterday
   25. yesterday = the forming D1 bar: CAUGHT by test_day_levels_swings_extremes_and_yesterday
-caught 25 / 25
+  26. level prices read the forming M15 bar: CAUGHT by test_level_prices_known_before_the_window
+  27. level prices without yesterday: CAUGHT by test_level_prices_known_before_the_window
+  28. a level sweep without the depth: CAUGHT by test_level_sweep_needs_the_reclaim_and_the_depth
+  29. a level sweep without the reclaim: CAUGHT by test_level_sweep_needs_the_reclaim_and_the_depth
+  30. a level sweep from the wrong side: CAUGHT by test_level_sweep_needs_the_reclaim_and_the_depth
+  31. a level sweep high from the lows: CAUGHT by test_level_sweep_high
+  32. both sides: always low: CAUGHT by test_level_sweep_both_sides_takes_the_later_extreme
+  33. the before close inside the window: CAUGHT by test_level_sweep_when_the_first_window_bar_breaks_the_level
+caught 33 / 33
