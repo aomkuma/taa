@@ -1,0 +1,2 @@
+research B events 942, app events 942, matched 942, only research 0, only app 0, stop max diff 0.00e+00
+PARITY OK

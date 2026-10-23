@@ -33,6 +33,12 @@ M1 / M15 by the adaptive rule). Triggers are only the ways a candidate appears; 
   band (+-0.15 step) and an entry-TF bar closes back on the break side.
 - **T2 rejection at a zone line** (the turn): price reaches a line's band after a move toward it, and an entry-TF bar
   closes back out with a wick through the band.
+- **T4 consolidation at a zone line, then the break** (owner 2026-10-23: wait for price to consolidate at the zone,
+  then trade): an arrival at a line (main or half), 8+ bars in a box at most 0.3 step tall overlapping the band,
+  the first close out of the box -> that way. Measured (zone_wait.py, M15 2023-09 .. 2026-10): THROUGH the line
+  +0.087 R, positive in all four years; back the way price came (bounce) -0.089, negative in all four; the bounce at
+  the arrival -0.028. So a bounce at a line needs strong evidence from the other components; a straight break then
+  the return (+0.046, mixed by year) stays a candidate. Code: `app/strategy/zone_break.py`.
 - **T3 the B2 patterns** (W / M / H&S / sweep at the owner's H1 levels) - kept as a trigger, entered at the second
   extreme (see C1), not after the neckline break.
 
@@ -81,3 +87,5 @@ one weight per component; the number of fitted values stays small next to the nu
 | `app/strategy/zone_grid.py` | C5 grid | 18 | 13 / 13 | parity with the research grid, 1,327 D1 bars |
 | `app/strategy/strong_levels.py` | C1 pools, C5b strong levels, zone lines + halves | 23 | 22 / 22 | plain-loop re-derivation 120 / 120; 2025 snapshots drawn for the owner (accepted 2026-10-23: "OK, overlap is normal") |
 | `app/strategy/structure_read.py` | C2 structure + clarity, C3 trend + phase | 19 | 12 / 12 | parity with the research structure / run3 at 300 times on D1 / H4 / H1 / M15 |
+| `app/strategy/zone_break.py` | T4 consolidation at a line, then the break | 15 | 13 / 13 | parity with zone_wait.py: 942 / 942 events (arrival, entry bar, side, stop) |
+| `app/strategy/level_momentum.py` | C4 touches, bounces, worn, approach, bars at the line | 14 | 12 / 12 | parity with the journal's context: 98 / 98 trades |
