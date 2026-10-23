@@ -57,7 +57,9 @@ outranks earlier targets where they differ. Results never promise profit; they d
   (76 USD steps); a 3-week range spanned two zones with lower highs; after the break of 4,141 three weaker re-tests
   of it from below (to 4,155.5, 4,141.9, 4,142.2) gave the sell, the stop above the already-swept 4,155.5, the
   target the next line - the 2026-10-22 NY break of 4,066 ran one zone to 3,990. Details, the grid's code and the
-  measurements: `research/2026-10-22-zones/NOTES.md`. Open point: the code sets the step to the D1 ATR(20), which
+  measurements: `research/2026-10-22-zones/NOTES.md`. **See far enough** (owner 2026-10-23): read several hundred
+  bars (H4 about four months, D1 about a year) to see the strong levels further away that price may reach next -
+  they set the targets and the room a trade has, and where a stop must not sit. Open point: the code sets the step to the D1 ATR(20), which
   sat in 70-90 most of the time but rose to 220-240 after the February 2026 crash - to be measured against the
   owner's 70-90 on the old years.
 - **The entry decides (owner, repeated many times; written down 2026-10-23).** Three conditions for every entry,

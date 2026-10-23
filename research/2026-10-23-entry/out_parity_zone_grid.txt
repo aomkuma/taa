@@ -1,0 +1,3 @@
+D1 bars 1327 (2021-09-01 .. 2026-10-21); shifts 45
+known times equal: True | step max diff from bar 20: 0.00e+00 | shifts equal: True | anchor max diff: 0.00e+00, NaN pattern equal: True
+PARITY OK
