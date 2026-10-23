@@ -300,31 +300,63 @@ date,time_et,event,note
 2026-10-02,08:30,NFP,
 2026-10-14,08:30,CPI,
 2026-10-15,08:30,PPI,
+2026-10-28,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23)
+2026-10-29,08:30,GDP,BEA schedule (fetched 2026-10-23)
+2026-10-29,08:30,PCE,BEA schedule (fetched 2026-10-23)
 2026-11-06,08:30,NFP,BLS schedule (fetched 2026-10-18)
+2026-11-06,10:00,UMICH,University of Michigan (fetched 2026-10-23)
 2026-11-10,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2026-11-13,08:30,PPI,BLS schedule (fetched 2026-10-23)
+2026-11-25,08:30,GDP,BEA schedule (fetched 2026-10-23)
+2026-11-25,08:30,PCE,BEA schedule (fetched 2026-10-23)
+2026-12-01,10:00,JOLTS,BLS schedule (fetched 2026-10-23)
 2026-12-04,08:30,NFP,BLS schedule (fetched 2026-10-18)
+2026-12-09,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23)
 2026-12-10,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2026-12-15,08:30,PPI,BLS schedule (fetched 2026-10-23)
+2026-12-23,08:30,GDP,BEA schedule (fetched 2026-10-23)
+2026-12-23,08:30,PCE,BEA schedule (fetched 2026-10-23)
 2027-01-08,08:30,NFP,BLS schedule (fetched 2026-10-18)
 2027-01-13,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-01-14,08:30,PPI,BLS schedule (fetched 2026-10-23)
+2027-01-27,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23); 2027 tentative until confirmed
 2027-02-05,08:30,NFP,BLS schedule (fetched 2026-10-18)
 2027-02-11,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-02-12,08:30,PPI,BLS schedule (fetched 2026-10-23)
 2027-03-05,08:30,NFP,BLS schedule (fetched 2026-10-18)
 2027-03-10,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-03-12,08:30,PPI,BLS schedule (fetched 2026-10-23)
+2027-03-17,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23); 2027 tentative until confirmed
 2027-04-02,08:30,NFP,BLS schedule (fetched 2026-10-18)
 2027-04-13,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-04-14,08:30,PPI,BLS schedule (fetched 2026-10-23)
+2027-04-28,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23); 2027 tentative until confirmed
 2027-05-07,08:30,NFP,BLS schedule (fetched 2026-10-18)
 2027-05-12,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-05-13,08:30,PPI,BLS schedule (fetched 2026-10-23)
 2027-06-04,08:30,NFP,BLS schedule (fetched 2026-10-18)
+2027-06-09,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23); 2027 tentative until confirmed
 2027-06-10,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-06-11,08:30,PPI,BLS schedule (fetched 2026-10-23)
 2027-07-02,08:30,NFP,BLS schedule (fetched 2026-10-18)
 2027-07-14,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-07-15,08:30,PPI,BLS schedule (fetched 2026-10-23)
+2027-07-28,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23); 2027 tentative until confirmed
 2027-08-06,08:30,NFP,BLS schedule (fetched 2026-10-18)
+2027-08-10,08:30,PPI,BLS schedule (fetched 2026-10-23)
 2027-08-11,08:30,CPI,BLS schedule (fetched 2026-10-18)
 2027-09-03,08:30,NFP,BLS schedule (fetched 2026-10-18)
+2027-09-10,08:30,PPI,BLS schedule (fetched 2026-10-23)
 2027-09-14,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-09-15,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23); 2027 tentative until confirmed
 2027-10-08,08:30,NFP,BLS schedule (fetched 2026-10-18)
 2027-10-14,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-10-15,08:30,PPI,BLS schedule (fetched 2026-10-23)
+2027-10-27,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23); 2027 tentative until confirmed
 2027-11-05,08:30,NFP,BLS schedule (fetched 2026-10-18)
 2027-11-10,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-11-12,08:30,PPI,BLS schedule (fetched 2026-10-23)
 2027-12-03,08:30,NFP,BLS schedule (fetched 2026-10-18)
+2027-12-08,14:00,FOMC,Federal Reserve FOMC calendar (fetched 2026-10-23); 2027 tentative until confirmed
 2027-12-10,08:30,CPI,BLS schedule (fetched 2026-10-18)
+2027-12-15,08:30,PPI,BLS schedule (fetched 2026-10-23)

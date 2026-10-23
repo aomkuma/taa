@@ -86,7 +86,7 @@ def main() -> None:
     upcoming = [r for r in rel if r.at >= as_of.to_pydatetime()][:3]
     say(f"- US releases today on the bot's calendar: {', '.join(f'{r.event} {pd.Timestamp(r.at).tz_convert(TH):%H:%M} Thai' for r in today_rel) or 'none'}"
         f"; next: {', '.join(f'{r.event} {pd.Timestamp(r.at).tz_convert(TH):%d %b %H:%M}' for r in upcoming)}")
-    say("- calendar coverage: CPI / NFP fetched to Dec 2026; FOMC / PCE / GDP / PPI after 2026-10-15 are NOT in the file (a gap to fix)")
+    say("- calendar coverage: CPI / NFP / PPI / FOMC to 2027-12, PCE / GDP to 2026-12; most 10:00 New York releases are NOT in the file (a gap)")
 
     say("\n## 2. The plan - the zone grid and the far view")
     shifts = np.flatnonzero(G.shift[: st.row + 1])
