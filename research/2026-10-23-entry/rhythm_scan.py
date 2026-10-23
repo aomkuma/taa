@@ -32,17 +32,23 @@ TFS = {"M1": 1, "M5": 5, "M15": 15, "H1": 60, "H4": 240, "D1": 1440}
 TH = "Asia/Bangkok"
 
 
-def load(tf: str) -> Bars:
-    d = ZW.load(tf)
-    d = d[d.index >= d.index[-1] - pd.Timedelta(minutes=TFS[tf] * 1200)]
+def load(tf: str, as_of: pd.Timestamp) -> Bars:
+    """The frame's last 1,300 bars closed by ``as_of``; M5 is built from M1 (the stored M5 starts 2025-10)."""
+    if tf == "M5":
+        m1 = ZW.load("M1")
+        m1 = m1[(m1.index >= as_of - pd.Timedelta(minutes=5 * 1400)) & (m1.index < as_of)]
+        d = m1.resample("5min").agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
+    else:
+        d = ZW.load(tf)
+        d = d[(d.index >= as_of - pd.Timedelta(minutes=TFS[tf] * 2600)) & (d.index < as_of)]
     t = d.index.as_unit("ns").asi8
     return Bars(t, t + TFS[tf] * 60 * 10**9, d.open.to_numpy(float), d.high.to_numpy(float), d.low.to_numpy(float),
                 d.close.to_numpy(float))
 
 
 def main() -> None:
-    bars = {tf: load(tf) for tf in TFS}
-    as_of = pd.Timestamp(sys.argv[1], tz="UTC") if len(sys.argv) > 1 else pd.Timestamp(int(bars["M1"].avail[-1]), tz="UTC")
+    as_of = pd.Timestamp(sys.argv[1], tz="UTC") if len(sys.argv) > 1 else pd.Timestamp(ZW.load("M1").index[-1], tz="UTC")
+    bars = {tf: load(tf, as_of) for tf in TFS}
     t = as_of.value
     print(f"# Every timeframe at {as_of.tz_convert(TH):%a %d %b %H:%M} Thai\n")
     for tf, b in bars.items():
