@@ -52,6 +52,8 @@ class StepDecision(BaseModel):
     kb_ids: list[str] = Field(description="knowledge-base ids the decision rests on")
     reasons: list[str] = Field(description="at most six short reasons citing the readings")
     confidence: int = Field(description="0-100")
+    watch_above: float | None = Field(description="wake me again when an M1 bar closes above this price (or null)")
+    watch_below: float | None = Field(description="wake me again when an M1 bar closes below this price (or null)")
 
 
 def system_prompt(entries: list[dict]) -> str:
@@ -87,7 +89,7 @@ def system_prompt(entries: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def content(as_of: pd.Timestamp, journal: str, f: dict, brief: list[str], reads: str, last: float) -> str:
+def content(as_of: pd.Timestamp, journal: str, f: dict, brief: list[str], reads: str, last: float, levels: str) -> str:
     th = as_of.tz_convert(TH)
     clean = {k: (None if isinstance(v, float) and math.isnan(v) else (round(v, 3) if isinstance(v, float) else v))
              for k, v in f.items()}
@@ -96,6 +98,7 @@ def content(as_of: pd.Timestamp, journal: str, f: dict, brief: list[str], reads:
         f"{last:.2f} (the readings' 'price' is the last closed M15 bar's close).",
         "READINGS (knowledge base features):\n" + json.dumps(clean),
         "WHAT THE KNOWLEDGE BASE SAYS APPLIES NOW:\n" + "\n".join(brief),
+        "THE DAY'S OWN LEVELS (M15 swings of the Thai day, the day's and yesterday's high / low):\n" + levels,
         "THE READERS' OUTPUT:\n" + reads,
         "THE SESSION'S JOURNAL SO FAR (earlier steps, including any open trade):\n" + (journal or "(empty)"),
     ])
@@ -110,23 +113,24 @@ def brakes(entries: list[dict], f: dict, d: StepDecision) -> tuple[str, list[str
     return d.size, []
 
 
-def main() -> None:
-    as_of = pd.Timestamp(sys.argv[1], tz="UTC")
-    journal = Path(sys.argv[2]).read_text(encoding="utf-8") if len(sys.argv) > 2 else ""
+def decide(as_of: pd.Timestamp, journal: str) -> dict:
+    """One AI decision at ``as_of`` with the code's brakes; the raw prompt and answer are kept in ai/raw/."""
+    import behaviors as bh
+    import zone_wait as zw
+
     entries = kb.load()
     f = kb.features(as_of)
     brief = kb.brief(entries, f)
     reads = read_all(as_of)
-    import zone_wait as zw
-
     m1 = zw.load("M1")
-    last = float(m1[m1.index < as_of - pd.Timedelta(minutes=1)].close.iloc[-1])  # the M1 bar closed by as_of
+    last = float(m1[m1.index <= as_of - pd.Timedelta(minutes=1)].close.iloc[-1])  # the M1 bar closed by as_of
+    levels = "\n".join(bh.day_levels(zw.load("M15"), zw.load("D1"), as_of))
     env = load_settings(env_file=str(ROOT / ".env")).env
     if env.AI_API_KEY is None:
         raise SystemExit("AI_API_KEY is not set")
     ai = AnthropicProvider(env.AI_API_KEY.get_secret_value(), SystemClock(), model=env.AI_MODEL, effort="medium",
                            timeout_seconds=180)
-    system, user = system_prompt(entries), content(as_of, journal, f, brief, reads, last)
+    system, user = system_prompt(entries), content(as_of, journal, f, brief, reads, last, levels)
     raw = HERE / "ai" / "raw"
     raw.mkdir(parents=True, exist_ok=True)
     stem = f"{as_of.tz_convert(TH):%Y-%m-%d_%H%M}"
@@ -143,7 +147,13 @@ def main() -> None:
     OUT.parent.mkdir(exist_ok=True)
     with OUT.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(rec) + "\n")
-    print(json.dumps(rec, indent=1, ensure_ascii=False))
+    return rec
+
+
+def main() -> None:
+    as_of = pd.Timestamp(sys.argv[1], tz="UTC")
+    journal = Path(sys.argv[2]).read_text(encoding="utf-8") if len(sys.argv) > 2 else ""
+    print(json.dumps(decide(as_of, journal), indent=1, ensure_ascii=False))
 
 
 if __name__ == "__main__":

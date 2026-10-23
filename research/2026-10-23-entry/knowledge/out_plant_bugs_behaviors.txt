@@ -1,4 +1,4 @@
-behaviors.py: control (no bug): PASSED - 28 passed in 0.45s
+behaviors.py: control (no bug): PASSED - 32 passed in 0.46s
    1. efficiency over n moves read n - 1: CAUGHT by test_efficiency_one_way_and_back_and_forth
    2. efficiency keeps the sign: CAUGHT by test_efficiency_one_way_and_back_and_forth
    3. efficiency path from the net: CAUGHT by test_efficiency_one_way_and_back_and_forth
@@ -18,4 +18,10 @@ behaviors.py: control (no bug): PASSED - 28 passed in 0.45s
   17. Asia break: both read as up: CAUGHT by test_asia_break_after_london_opens
   18. the sweep window off by one: CAUGHT by test_recent_sweep_only_inside_the_recent_bars
   19. the sweep sides swapped: CAUGHT by test_recent_sweep_finds_the_pool_swept_and_closed_back
-caught 19 / 19
+  20. the day from 00:00 Thai: CAUGHT by test_day_start_is_0500_thai
+  21. the day's start never rolls back: CAUGHT by test_day_start_is_0500_thai
+  22. the forming M15 bar read: CAUGHT by test_day_levels_read_only_closed_bars
+  23. a swing low needs only the bar before: CAUGHT by test_day_levels_a_falling_run_has_one_swing_low
+  24. swing highs read from the lows: CAUGHT by test_day_levels_swings_extremes_and_yesterday
+  25. yesterday = the forming D1 bar: CAUGHT by test_day_levels_swings_extremes_and_yesterday
+caught 25 / 25

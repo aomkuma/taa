@@ -78,6 +78,34 @@ def asia_break(t_open: pd.DatetimeIndex, h: np.ndarray, lo: np.ndarray, as_of: p
     return "both" if up and down else "up" if up else "down" if down else "none"
 
 
+def day_start(as_of: pd.Timestamp) -> pd.Timestamp:
+    """05:00 Thai of the trading day ``as_of`` belongs to (before 05:00 Thai: the day before)."""
+    th = as_of.tz_convert(TH)
+    start = th.normalize() + pd.Timedelta(hours=5)
+    return (start if th >= start else start - pd.Timedelta(days=1)).tz_convert("UTC")
+
+
+def day_levels(m15: pd.DataFrame, d1: pd.DataFrame, as_of: pd.Timestamp) -> list[str]:
+    """The day's own levels (owner 2026-10-23, L15: "the support of the middle of today"): the M15 swing lows / highs
+    since 05:00 Thai (a bar's low under both neighbours', a high over both), the day's high and low, and yesterday's
+    D1 high and low - bars closed by ``as_of`` only (an M15 bar at open + 15 min, a D1 bar at open + 1 day)."""
+    x = m15[(m15.index >= day_start(as_of)) & (m15.index + pd.Timedelta(minutes=15) <= as_of)]
+    out = []
+    lo, hi = x.low.to_numpy(float), x.high.to_numpy(float)
+    t = [i.tz_convert(TH).strftime("%H:%M") for i in x.index]
+    for i in range(1, len(x) - 1):
+        if lo[i] < lo[i - 1] and lo[i] < lo[i + 1]:
+            out.append(f"M15 swing low {lo[i]:.2f} at {t[i]}")
+        if hi[i] > hi[i - 1] and hi[i] > hi[i + 1]:
+            out.append(f"M15 swing high {hi[i]:.2f} at {t[i]}")
+    if len(x):
+        out.append(f"the day's high {hi.max():.2f} at {t[int(hi.argmax())]}, low {lo.min():.2f} at {t[int(lo.argmin())]}")
+    y = d1[d1.index + pd.Timedelta(days=1) <= as_of]
+    if len(y):
+        out.append(f"yesterday's D1 high {y.high.iloc[-1]:.2f}, low {y.low.iloc[-1]:.2f}")
+    return out
+
+
 def recent_sweep(h: np.ndarray, lo: np.ndarray, c: np.ndarray, v: np.ndarray, atr: float, recent: int = 6) -> str:
     """'low' (a pool under price swept and closed back - the buy picture) / 'high' / 'none', the latest one within
     the last ``recent`` bars."""

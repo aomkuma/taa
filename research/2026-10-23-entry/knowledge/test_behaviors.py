@@ -121,3 +121,42 @@ def test_no_sweep_when_the_bar_closes_under_the_pool():
     h, lo, c, v = _pool_bars()
     c[10] = 99.5  # went under and stayed under: a break, not a sweep
     assert bh.recent_sweep(h, lo, c, v, atr=1.0, recent=6) == "none"
+
+
+def _m15(thai_start, lows, highs):
+    idx = pd.date_range(pd.Timestamp(thai_start, tz="Asia/Bangkok"), periods=len(lows), freq="15min").tz_convert("UTC")
+    return pd.DataFrame({"low": lows, "high": highs}, index=idx)
+
+
+def test_day_start_is_0500_thai():
+    assert bh.day_start(pd.Timestamp("2026-10-23 22:00", tz="Asia/Bangkok")) == pd.Timestamp("2026-10-22 22:00", tz="UTC")
+    assert bh.day_start(pd.Timestamp("2026-10-24 03:00", tz="Asia/Bangkok")) == pd.Timestamp("2026-10-22 22:00", tz="UTC")
+    assert bh.day_start(pd.Timestamp("2026-10-23 05:00", tz="Asia/Bangkok")) == pd.Timestamp("2026-10-22 22:00", tz="UTC")
+
+
+def test_day_levels_swings_extremes_and_yesterday():
+    # 04:45 (before the day), then 05:00 .. 06:00 Thai; the 06:00 bar closes at 06:15
+    m15 = _m15("2026-10-23 04:45", [90.0, 100, 98, 99, 97, 101], [130.0, 104, 106, 103, 105, 104])
+    d1 = pd.DataFrame({"high": [120.0, 125.0], "low": [80.0, 85.0]},
+                      index=pd.DatetimeIndex([pd.Timestamp("2026-10-21 21:00", tz="UTC"), pd.Timestamp("2026-10-22 21:00", tz="UTC")]))
+    out = bh.day_levels(m15, d1, pd.Timestamp("2026-10-23 06:15", tz="Asia/Bangkok"))
+    # bars 05:00 .. 06:00: lows 100 98 99 97 101, highs 104 106 103 105 104; 04:45 is outside the day
+    assert out == ["M15 swing low 98.00 at 05:15", "M15 swing high 106.00 at 05:15",
+                   "M15 swing low 97.00 at 05:45", "M15 swing high 105.00 at 05:45",
+                   "the day's high 106.00 at 05:15, low 97.00 at 05:45",
+                   "yesterday's D1 high 120.00, low 80.00"]  # the D1 bar of 22 Oct 21:00 UTC is still forming
+
+
+def test_day_levels_read_only_closed_bars():
+    m15 = _m15("2026-10-23 05:00", [100.0, 98, 99, 90], [104.0, 106, 103, 110])
+    d1 = pd.DataFrame({"high": [120.0], "low": [80.0]}, index=pd.DatetimeIndex([pd.Timestamp("2026-10-21 21:00", tz="UTC")]))
+    out = bh.day_levels(m15, d1, pd.Timestamp("2026-10-23 05:59", tz="Asia/Bangkok"))  # the 05:45 bar is not closed
+    assert out == ["M15 swing low 98.00 at 05:15", "M15 swing high 106.00 at 05:15",
+                   "the day's high 106.00 at 05:15, low 98.00 at 05:15", "yesterday's D1 high 120.00, low 80.00"]
+
+
+def test_day_levels_a_falling_run_has_one_swing_low():
+    m15 = _m15("2026-10-23 05:00", [100.0, 98, 96, 99, 100], [104.0, 103, 102, 101, 103])
+    d1 = pd.DataFrame({"high": [120.0], "low": [80.0]}, index=pd.DatetimeIndex([pd.Timestamp("2026-10-21 21:00", tz="UTC")]))
+    out = bh.day_levels(m15, d1, pd.Timestamp("2026-10-23 06:15", tz="Asia/Bangkok"))
+    assert [x for x in out if x.startswith("M15 swing low")] == ["M15 swing low 96.00 at 05:30"]  # not 98 (still falling)

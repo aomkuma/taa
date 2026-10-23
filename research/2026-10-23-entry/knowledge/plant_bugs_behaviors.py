@@ -34,6 +34,12 @@ BUGS = [
     ("Asia break: both read as up", [('return "both" if up and down else', 'return')]),
     ("the sweep window off by one", [('if s["i"] >= len(c) - recent and', 'if s["i"] >= len(c) - recent - 1 and')]),
     ("the sweep sides swapped", [('"low" if pool["name"] == "bottoms" else "high"', '"high" if pool["name"] == "bottoms" else "low"')]),
+    ("the day from 00:00 Thai", [("start = th.normalize() + pd.Timedelta(hours=5)", "start = th.normalize()")]),
+    ("the day's start never rolls back", [("return (start if th >= start else start - pd.Timedelta(days=1)).tz_convert(\"UTC\")", "return start.tz_convert(\"UTC\")")]),
+    ("the forming M15 bar read", [("(m15.index + pd.Timedelta(minutes=15) <= as_of)", "(m15.index <= as_of)")]),
+    ("a swing low needs only the bar before", [("if lo[i] < lo[i - 1] and lo[i] < lo[i + 1]:", "if lo[i] < lo[i - 1]:")]),
+    ("swing highs read from the lows", [("if hi[i] > hi[i - 1] and hi[i] > hi[i + 1]:", "if lo[i] > lo[i - 1] and lo[i] > lo[i + 1]:")]),
+    ("yesterday = the forming D1 bar", [("y = d1[d1.index + pd.Timedelta(days=1) <= as_of]", "y = d1[d1.index <= as_of]")]),
 ]
 
 if __name__ == "__main__":
