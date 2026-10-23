@@ -124,13 +124,20 @@ def main() -> None:
         raise SystemExit("AI_API_KEY is not set")
     ai = AnthropicProvider(env.AI_API_KEY.get_secret_value(), SystemClock(), model=env.AI_MODEL, effort="medium",
                            timeout_seconds=180)
-    ans = ai.ask(f"step-{as_of:%Y%m%d%H%M}", system_prompt(entries), content(as_of, journal, f, brief, reads, last), StepDecision)
+    system, user = system_prompt(entries), content(as_of, journal, f, brief, reads, last)
+    raw = HERE / "ai" / "raw"
+    raw.mkdir(parents=True, exist_ok=True)
+    stem = f"{as_of.tz_convert(TH):%Y-%m-%d_%H%M}"
+    (raw / f"{stem}_1_system.txt").write_text(system, encoding="utf-8")  # the owner sees exactly what was asked
+    (raw / f"{stem}_2_user.txt").write_text(user, encoding="utf-8")
+    ans = ai.ask(f"step-{as_of:%Y%m%d%H%M}", system, user, StepDecision)
     rec = {"as_of": as_of.isoformat(), "status": ans.status.value, "model": ans.model, "cost_usd": ans.cost_usd,
            "tokens": [ans.input_tokens, ans.output_tokens], "latency_ms": ans.latency_ms, "detail": ans.detail}
     if ans.status is Status.OK:
         d: StepDecision = ans.parsed
         size, vetoes = brakes(entries, f, d)
         rec.update(decision=d.model_dump(), final_size=size, vetoed_by=vetoes)
+    (raw / f"{stem}_3_answer.json").write_text(json.dumps(rec, indent=1, ensure_ascii=False), encoding="utf-8")
     OUT.parent.mkdir(exist_ok=True)
     with OUT.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(rec) + "\n")

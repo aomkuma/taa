@@ -1,0 +1,44 @@
+{
+ "as_of": "2026-10-23T15:16:00+00:00",
+ "status": "OK",
+ "model": "claude-opus-5-5",
+ "cost_usd": 0.070872,
+ "tokens": [
+  15028,
+  538
+ ],
+ "latency_ms": 8097.9,
+ "detail": "",
+ "decision": {
+  "decision": "WAIT",
+  "setup": "Stand aside (R01 elephant); watch for a new M5 lower high under 4005.6-4012 to sell, or a base over 3994 with HL+HH",
+  "entry": null,
+  "stop": null,
+  "target": null,
+  "trigger": "R01 lifts (H1 vol <= 1.1 x median) AND a fresh M5 structure: a lower high under 4005.6-4012 rolling over (sell, stop over 4013, target before 3976, >= 1.5 R), or a close under 3983 then its re-test from below toward 3957; buys only from a clear HL+HH base over 3994, lowest priority",
+  "size": "none",
+  "kb_ids": [
+   "R01",
+   "W10",
+   "P24",
+   "P13",
+   "P17",
+   "S08",
+   "P19",
+   "S01",
+   "P16",
+   "L14"
+  ],
+  "reasons": [
+   "R01: H1 vol 1.297 > 1.1 - elephant, stand aside (W10)",
+   "Price 3995.64 sits on the 3994.09 main line (0.02 step), mid-band 3983-4005: no entry on the line (S08, P17)",
+   "The 22:05 structure-break sell already triggered at 3993.56 and was skipped; re-entering now is chasing (P13, P24)",
+   "M1 bouncing from 3992.9 toward 3997.6 - the sell trigger's move has not run, but no new lower high has formed yet",
+   "Down trend on D1/H4/H1/M15 and a strong down yesterday (P19) favour sells; buys are against every frame (S01)",
+   "Climax bottom flagged at 3975.6 sweep (L14): a turn is possible - another reason not to sell into the line"
+  ],
+  "confidence": 82
+ },
+ "final_size": "none",
+ "vetoed_by": []
+}
