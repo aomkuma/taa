@@ -79,6 +79,15 @@ outranks earlier targets where they differ. Results never promise profit; they d
   far price had already moved from the level when we entered, the stop in units of that move and against the
   nearby pools, and the median best / worst after the entry; a piece whose median best is under about 1 R gets a
   new entry, not more rules.
+- **One trade = all the evidence, weighted (owner, 2026-10-23).** No entry rests on one parameter or a few: every
+  decision puts together everything learned since the work began, each part weighted by how much it matters - the
+  zone plan (where price sits in the 70-90 USD grid, room to the next line), the structure and how clear it is (HH/HL
+  vs LH/LL, the pattern on the entry TF and the one above), trend across D1 / H4 / H1 / M15 and the phase (one-way run
+  vs swing), momentum at the level (how price arrived, the touches and their bounces), the entry's precision (how far
+  price already moved, the stop against the pools and swept wicks), volatility (the stand-aside band), timing (the
+  session windows, the data minutes), volume, and the D1 context (yesterday's strong day, the re-test). The weights
+  are measured from the data (old years to set them, unseen weeks to judge them), with the owner's ordering as the
+  prior; the record of every trade keeps each part's reading.
 - **Try hard, judge honestly.** A test that finds no edge for one factor alone is not the end: test it jointly
   with location, timing and the flow above (an effect can be zero on average and strong in a context). Rules are
   written down before the data that judges them, and the held-out years stay untouched until then.
