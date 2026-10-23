@@ -29,16 +29,14 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE / "knowledge"))
 import kb  # noqa: E402
-from observe import read_all  # noqa: E402
+from observe import KEYS, read_all  # noqa: E402
 
-from app.ai.providers import AnthropicProvider  # noqa: E402
-from app.ai.schema import Status  # noqa: E402
 from app.config import load_settings  # noqa: E402
-from app.core.clock import SystemClock  # noqa: E402
 
 OUT = HERE / "ai" / "decisions.jsonl"
 TH = "Asia/Bangkok"
 STAND_ASIDE = {"stand_aside", "stand_aside_plan1"}
+JOURNAL_CHARS = 5000  # the end of the session journal sent with each call (the cost grows with it)
 
 
 class StepDecision(BaseModel):
@@ -50,7 +48,7 @@ class StepDecision(BaseModel):
     trigger: str = Field(description="what must happen to enter (or to change the decision)")
     size: Literal["none", "half", "full"]
     kb_ids: list[str] = Field(description="knowledge-base ids the decision rests on")
-    reasons: list[str] = Field(description="at most six short reasons citing the readings")
+    reasons: list[str] = Field(description="at most four one-line reasons citing the readings")
     confidence: int = Field(description="0-100")
     watch_above: float | None = Field(description="wake me again when an M1 bar closes above this price (or null)")
     watch_below: float | None = Field(description="wake me again when an M1 bar closes below this price (or null)")
@@ -67,7 +65,7 @@ def system_prompt(entries: list[dict]) -> str:
         "ran, not mid-range), the stop beyond the structure AND outside every liquidity pool, a target before the "
         "next zone line's band, enough room (state the R multiple). Read hundreds of bars of trend, not the last few. "
         "Respect a setup's life cycle: a setup whose move already played out is over. Give prices to two decimals. "
-        "Cite the knowledge-base ids you used. You never size beyond 'full'; the code may veto you. "
+        "Keep it short: at most four reasons of one line each. Cite the knowledge-base ids you used. You never size beyond 'full'; the code may veto you. "
         "The owner's own trades in the journal are the owner's (ideas and context, not yours to manage); HOLD / EXIT "
         "apply only to the system's own open trades, and the system's position is what the journal records as ours.",
         "",
@@ -104,6 +102,53 @@ def content(as_of: pd.Timestamp, journal: str, f: dict, brief: list[str], reads:
     ])
 
 
+def tail(text: str, chars: int) -> str:
+    """The end of ``text``, at most ``chars`` long, cut at the start of a heading (## / ###) when one is inside."""
+    if len(text) <= chars:
+        return text
+    cut = text[-chars:]
+    k = cut.find("\n#")
+    return ("(earlier steps left out)\n" + cut[k + 1:]) if k >= 0 else "(earlier steps left out)\n" + cut
+
+
+def trim_reads(text: str) -> str:
+    """Only the readers' lines that carry a reading (observe.KEYS), as the hourly diary keeps them."""
+    return "\n".join(ln.strip() for ln in text.splitlines() if KEYS.search(ln) and not ln.startswith("#"))
+
+
+def ask_cached(api_key: str, model: str, system: str, user: str) -> dict:
+    """One structured call with the system prompt cached for an hour (it only changes when kb.yaml does): cache
+    reads cost a tenth of the input price, the first write twice. Returns status, the parsed decision and the spend."""
+    import time
+
+    import anthropic
+
+    from app.ai.providers import FALLBACK_BETA, MAX_TOKENS, PRICES
+
+    started = time.perf_counter()
+    client = anthropic.Anthropic(api_key=api_key, timeout=180, max_retries=1)
+    try:
+        r = client.beta.messages.parse(
+            model=model, max_tokens=MAX_TOKENS,
+            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral", "ttl": "1h"}}],
+            messages=[{"role": "user", "content": user}], output_format=StepDecision,
+            output_config={"effort": "medium"}, betas=[FALLBACK_BETA], fallbacks="default")
+    except anthropic.APIError as exc:
+        return {"status": "ERROR", "detail": f"{type(exc).__name__}: {exc}"[:500], "cost_usd": 0.0}
+    u = r.usage
+    fresh, write = int(u.input_tokens or 0), int(getattr(u, "cache_creation_input_tokens", 0) or 0)
+    read, out = int(getattr(u, "cache_read_input_tokens", 0) or 0), int(u.output_tokens or 0)
+    pin, pout = PRICES.get(str(r.model), (0.0, 0.0))
+    cost = (fresh * pin + write * pin * 2 + read * pin * 0.1 + out * pout) / 1_000_000
+    rec = {"status": "OK" if r.parsed_output is not None and r.stop_reason not in ("refusal", "max_tokens") else "INVALID",
+           "model": str(r.model), "cost_usd": round(cost, 6), "tokens": {"input": fresh, "cache_write": write,
+           "cache_read": read, "output": out}, "latency_ms": round((time.perf_counter() - started) * 1000, 1),
+           "detail": str(r.stop_reason)}
+    if rec["status"] == "OK":
+        rec["parsed"] = r.parsed_output
+    return rec
+
+
 def brakes(entries: list[dict], f: dict, d: StepDecision) -> tuple[str, list[str]]:
     """The code's veto: a rule in force with a stand-aside action -> no new trade."""
     vetoes = [e["id"] for e in entries if e["kind"] == "rule" and e.get("action") in STAND_ASIDE and e.get("when")
@@ -113,7 +158,7 @@ def brakes(entries: list[dict], f: dict, d: StepDecision) -> tuple[str, list[str
     return d.size, []
 
 
-def decide(as_of: pd.Timestamp, journal: str) -> dict:
+def decide(as_of: pd.Timestamp, journal: str, model: str | None = None) -> dict:
     """One AI decision at ``as_of`` with the code's brakes; the raw prompt and answer are kept in ai/raw/."""
     import behaviors as bh
     import zone_wait as zw
@@ -121,26 +166,24 @@ def decide(as_of: pd.Timestamp, journal: str) -> dict:
     entries = kb.load()
     f = kb.features(as_of)
     brief = kb.brief(entries, f)
-    reads = read_all(as_of)
+    reads = trim_reads(read_all(as_of))
     m1 = zw.load("M1")
     last = float(m1[m1.index <= as_of - pd.Timedelta(minutes=1)].close.iloc[-1])  # the M1 bar closed by as_of
     levels = "\n".join(bh.day_levels(zw.load("M15"), zw.load("D1"), as_of))
     env = load_settings(env_file=str(ROOT / ".env")).env
     if env.AI_API_KEY is None:
         raise SystemExit("AI_API_KEY is not set")
-    ai = AnthropicProvider(env.AI_API_KEY.get_secret_value(), SystemClock(), model=env.AI_MODEL, effort="medium",
-                           timeout_seconds=180)
-    system, user = system_prompt(entries), content(as_of, journal, f, brief, reads, last, levels)
+    system, user = system_prompt(entries), content(as_of, tail(journal, JOURNAL_CHARS), f, brief, reads, last, levels)
     raw = HERE / "ai" / "raw"
     raw.mkdir(parents=True, exist_ok=True)
     stem = f"{as_of.tz_convert(TH):%Y-%m-%d_%H%M}"
     (raw / f"{stem}_1_system.txt").write_text(system, encoding="utf-8")  # the owner sees exactly what was asked
     (raw / f"{stem}_2_user.txt").write_text(user, encoding="utf-8")
-    ans = ai.ask(f"step-{as_of:%Y%m%d%H%M}", system, user, StepDecision)
-    rec = {"as_of": as_of.isoformat(), "status": ans.status.value, "model": ans.model, "cost_usd": ans.cost_usd,
-           "tokens": [ans.input_tokens, ans.output_tokens], "latency_ms": ans.latency_ms, "detail": ans.detail}
-    if ans.status is Status.OK:
-        d: StepDecision = ans.parsed
+    ans = ask_cached(env.AI_API_KEY.get_secret_value(), model or env.AI_MODEL, system, user)
+    parsed = ans.pop("parsed", None)
+    rec = {"as_of": as_of.isoformat(), **ans}
+    if parsed is not None:
+        d: StepDecision = parsed
         size, vetoes = brakes(entries, f, d)
         rec.update(decision=d.model_dump(), final_size=size, vetoed_by=vetoes)
     (raw / f"{stem}_3_answer.json").write_text(json.dumps(rec, indent=1, ensure_ascii=False), encoding="utf-8")

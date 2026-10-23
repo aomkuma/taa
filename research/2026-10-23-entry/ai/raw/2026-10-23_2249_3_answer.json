@@ -1,0 +1,42 @@
+{
+ "as_of": "2026-10-23T15:49:00+00:00",
+ "status": "OK",
+ "model": "claude-sonnet-5-5",
+ "cost_usd": 0.013136,
+ "tokens": {
+  "input": 4080,
+  "cache_write": 0,
+  "cache_read": 6830,
+  "output": 361
+ },
+ "latency_ms": 3998.1,
+ "detail": "end_turn",
+ "decision": {
+  "decision": "WAIT",
+  "setup": "M5 range 3992.9-4005.6 on the 3994 line; waiting for a break and re-test, with H1 volatility too high (R01)",
+  "entry": null,
+  "stop": null,
+  "target": null,
+  "trigger": "M5 close under 3992.90 then a re-test from below with a lower high (sell, stop over 4005.60); a close over 4005.60 cancels the down idea",
+  "size": "none",
+  "kb_ids": [
+   "R01",
+   "P10",
+   "P11",
+   "P24",
+   "S03",
+   "O03"
+  ],
+  "reasons": [
+   "H1 ATR 1.30x the usual, above the 1.1 limit, so R01 says stand aside",
+   "Price is mid-range at 3999.15 after a climax-bottom bounce, with no clean entry",
+   "Room to the 3975.58 pool is only about 17 USD against a 6.5 USD stop, thin at about 1R",
+   "Out of the owner's windows (22:49 Thai), so priority is low; the 3-day run with the bounce spent is not yet re-tested"
+  ],
+  "confidence": 62,
+  "watch_above": 4005.7,
+  "watch_below": 3992.8
+ },
+ "final_size": "none",
+ "vetoed_by": []
+}

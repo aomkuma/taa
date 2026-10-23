@@ -31,14 +31,17 @@ sys.path.insert(0, str(HERE / "knowledge"))
 
 STATE = HERE / "ai" / "watch_state.json"
 TH = "Asia/Bangkok"
-HEARTBEAT, COOLDOWN, STOP_IDLE = 15, 4, 60  # minutes
+HEARTBEAT, COOLDOWN, STOP_IDLE = 30, 15, 60  # minutes (the 30-minute check also keeps the 1-hour prompt cache warm)
 MOVING = {"sweep", "break", "climax", "runaway", "handover"}
+MODEL = "claude-sonnet-5-5"  # the owner's budget (2026-10-23: 10-15 baht a day) - about 0.01 USD a call with the cache
+DAILY_CAP_USD = 0.40  # about 14 baht: no call once a Thai day's AI spend reaches it
 
 
 def wake_reasons(now: pd.Timestamp, last_call: pd.Timestamp | None, above: float | None, below: float | None,
-                 closes: list[float], new_behaviours: set[str]) -> list[str]:
+                 closes: list[float], new_behaviours: set[str], in_window: bool) -> list[str]:
     """Why the AI should be woken now (empty = let it sleep). ``closes`` = the M1 closes since the last check,
-    ``new_behaviours`` = the behaviours present now and not at the AI's last call."""
+    ``new_behaviours`` = the behaviours present now and not at the AI's last call, ``in_window`` = inside the
+    owner's windows (the hourly check runs only there)."""
     if last_call is None:
         return ["the first call"]
     out = []
@@ -50,9 +53,15 @@ def wake_reasons(now: pd.Timestamp, last_call: pd.Timestamp | None, above: float
     moving = sorted(new_behaviours & MOVING)
     if moving and minutes >= COOLDOWN:
         out.append("new: " + ", ".join(moving))
-    if minutes >= HEARTBEAT:
+    if in_window and minutes >= HEARTBEAT:
         out.append(f"{HEARTBEAT}-minute check")
     return out
+
+
+def spent_today(rows: list[dict], now: pd.Timestamp) -> float:
+    """The AI's spend (USD) on the Thai day of ``now``, from ai/decisions.jsonl rows."""
+    day = now.tz_convert(TH).date()
+    return sum(float(r.get("cost_usd") or 0) for r in rows if pd.Timestamp(r["as_of"]).tz_convert(TH).date() == day)
 
 
 def refresh(frames: str) -> None:
@@ -87,13 +96,21 @@ def main() -> None:
             behaviours = set(kb.behaviors_now(kb.load(), kb.features(now)))
         last_call = pd.Timestamp(state["last_call"]) if state.get("last_call") else None
         new = behaviours - set(state.get("behaviours_at_call", []))
-        reasons = wake_reasons(now, last_call, state.get("watch_above"), state.get("watch_below"), closes, new)
+        reasons = wake_reasons(now, last_call, state.get("watch_above"), state.get("watch_below"), closes, new,
+                               kb.session(now) != "none")
+        log = ai_trader.OUT
+        spent = spent_today([json.loads(x) for x in log.read_text(encoding="utf-8").splitlines()] if log.exists() else [], now)
+        if reasons and spent >= DAILY_CAP_USD:
+            print(f"{now.tz_convert(TH):%H:%M} woken by {'; '.join(reasons)} - skipped: today's AI spend {spent:.3f} USD "
+                  f"reached the cap {DAILY_CAP_USD}", flush=True)
+            reasons = []
         if reasons:
             subprocess.run([sys.executable, str(HERE / "fetch_day.py"), f"{now:%Y-%m-%d}"], cwd=ROOT,  # noqa: S603
                            capture_output=True, check=False, timeout=600)
             session = HERE / "ai" / f"session_{now.tz_convert(TH):%Y-%m-%d}.md"
-            text = journal.read_text(encoding="utf-8") + "\n\n" + (session.read_text(encoding="utf-8") if session.exists() else "")
-            rec = ai_trader.decide(now, text)
+            text = (ai_trader.tail(journal.read_text(encoding="utf-8"), 3500) + "\n\nTHE AI'S OWN EARLIER CALLS:\n"
+                    + (ai_trader.tail(session.read_text(encoding="utf-8"), 1500) if session.exists() else "(none)"))
+            rec = ai_trader.decide(now, text, MODEL)
             d = rec.get("decision") or {}
             state = {"last_call": now.isoformat(), "watch_above": d.get("watch_above"), "watch_below": d.get("watch_below"),
                      "behaviours_at_call": sorted(behaviours), "behaviours": sorted(behaviours)}
