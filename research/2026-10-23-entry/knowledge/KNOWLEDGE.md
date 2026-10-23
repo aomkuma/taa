@@ -3,7 +3,7 @@
 Precedence at a decision: principle > rule > weapon > shadow (shown, never applied) > finding > failed (never retried as it was) > lesson > open. `when` = the readings an entry applies to (none = always).
 
 
-## Principles (23)
+## Principles (24)
 
 | id | stage | items | when | says | evidence | source |
 |---|---|---|---|---|---|---|
@@ -30,6 +30,7 @@ Precedence at a decision: principle > rule > weapon > shadow (shown, never appli
 | P21 | method |  |  | No coin flip in the system: a result near 50 % means observe closer - split it by what was there (frames, place, the move before, session, volatility). |  | memory taa-no-coin-flip-verdict |
 | P22 | observer | E1, E2, E3, E4, E5, E6, E7 |  | Always observe, always remember: the readers at every look (never by eye), the market diary hourly, scenarios written before and scored after, every miss the owner sees turned into a checklist item + an acceptance case + a memory. |  | owner 2026-10-23; DECISION_CHECKLIST.md section E; observe.py |
 | P23 | animal | A5 |  | When the market phase does not suit a weapon it trades less (its surest signals only), not never - except above the volatility band, where it stands aside (R01). |  | memory taa-regime-fit-principle, taa-stand-aside-high-volatility |
+| P24 | weapon | A8, C1, C6 |  | A setup has a life cycle: once the structure it was built on has run its course (the target reached, the move done), its idea is over - no re-entries or re-tests of the finished cycle (chasing). Wait for a new structure to form and judge its setup from scratch. | 23 Oct: the owner's W sell 4,026.5 -> 4,010 played out at 21:10 and ran on to 3,975.6; my 'sell the re-test' candidate belonged to the finished cycle | owner 2026-10-23 22:05 Thai; live/2026-10-23_night.md |
 
 ## Rules (7)
 

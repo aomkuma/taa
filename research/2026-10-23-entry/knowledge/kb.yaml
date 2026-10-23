@@ -191,6 +191,14 @@
   says: "When the market phase does not suit a weapon it trades less (its surest signals only), not never - except above the volatility band, where it stands aside (R01)."
   source: "memory taa-regime-fit-principle, taa-stand-aside-high-volatility"
 
+- id: P24
+  kind: principle
+  stage: weapon
+  items: [A8, C1, C6]
+  says: "A setup has a life cycle: once the structure it was built on has run its course (the target reached, the move done), its idea is over - no re-entries or re-tests of the finished cycle (chasing). Wait for a new structure to form and judge its setup from scratch."
+  evidence: "23 Oct: the owner's W sell 4,026.5 -> 4,010 played out at 21:10 and ran on to 3,975.6; my 'sell the re-test' candidate belonged to the finished cycle"
+  source: "owner 2026-10-23 22:05 Thai; live/2026-10-23_night.md"
+
 # ---------------------------------------------------------------- rules in force
 - id: R01
   kind: rule

@@ -47,6 +47,7 @@ added there as well, with its `when`.
 | C6 | Exits: half at +1 R, the rest to the entry; a failed break (3 M5 closes back inside the range) -> out; "when the market grows unsure, take the profit and leave" | owner 10-23 |
 | C7 | Size by the account's percent; the 0.01-lot minimum recorded, never a veto | owner 10-18 |
 | C8 | No look-back trades: a missed trade is a lesson, never a trade | 10-23 |
+| C9 | The setup's cycle: has the structure this setup is built on already run its course (target reached, move done)? Then its idea is over - wait for a new structure (P24) | owner 10-23 22:05 |
 
 ## D. After
 
