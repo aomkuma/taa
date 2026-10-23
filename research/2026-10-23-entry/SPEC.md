@@ -89,3 +89,4 @@ one weight per component; the number of fitted values stays small next to the nu
 | `app/strategy/structure_read.py` | C2 structure + clarity, C3 trend + phase | 19 | 12 / 12 | parity with the research structure / run3 at 300 times on D1 / H4 / H1 / M15 |
 | `app/strategy/zone_break.py` | T4 consolidation at a line, then the break | 15 | 13 / 13 | parity with zone_wait.py: 942 / 942 events (arrival, entry bar, side, stop) |
 | `app/strategy/level_momentum.py` | C4 touches, bounces, worn, approach, bars at the line | 14 | 12 / 12 | parity with the journal's context: 98 / 98 trades |
+| `app/strategy/context_read.py` | C6 vol ratio, C7 minutes from / windows, C8 relative volume, C9 the last D1 bar + the day so far | 14 | 14 / 14 | vol and day-so-far equal on 98 / 98 trades; strong days 166 / 166 against retest_week.py's rule (2021-2026) |

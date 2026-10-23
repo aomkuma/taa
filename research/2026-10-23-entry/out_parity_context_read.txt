@@ -1,0 +1,3 @@
+vol ratio equal on 98 / 98 trades; day so far equal on 98 / 98
+strong days: research 166, app 166, different 0 (in the first 40 bars, the ATR warm-up: 0)
+PARITY OK
