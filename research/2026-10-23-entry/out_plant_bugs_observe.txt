@@ -1,4 +1,4 @@
-observe.py: control (no bug): PASSED - 9 passed in 0.41s
+observe.py: control (no bug): PASSED - 17 passed in 0.42s
    1. the hour includes the bar at as_of (look-ahead): CAUGHT by test_bars_at_or_after_as_of_are_not_scored
    2. the hour starts after the reading's bar: CAUGHT by test_down_rhythm_held_with_and_against_in_usd
    3. with / against swapped for a down rhythm: CAUGHT by test_down_rhythm_held_with_and_against_in_usd
@@ -11,4 +11,15 @@ observe.py: control (no bug): PASSED - 9 passed in 0.41s
   10. the line above needs a close beyond: CAUGHT by test_a_run_with_no_rhythm_and_a_big_hour
   11. the scorecard counts hours without a rhythm: CAUGHT by test_scorecard_counts_only_hours_with_a_rhythm
   12. the scorecard's means over all 20 slots: CAUGHT by test_scorecard_counts_only_hours_with_a_rhythm
-caught 12 / 12
+  13. the table pairs a reading with its own score: CAUGHT by test_behavior_table_pairs_each_reading_with_the_next_hour
+  14. the table keeps hours without bars: CAUGHT by test_behavior_table_pairs_each_reading_with_the_next_hour
+  15. the table in USD, not ATR: CAUGHT by test_behavior_table_pairs_each_reading_with_the_next_hour
+  16. the table's hours in UTC: CAUGHT by test_behavior_table_pairs_each_reading_with_the_next_hour
+  17. the table's net up counts flat: CAUGHT by test_behavior_table_a_flat_hour_is_not_net_up
+  18. the table least seen first: CAUGHT by test_behavior_table_pairs_each_reading_with_the_next_hour
+  19. back-fill up to now itself: CAUGHT by test_no_missed_hours_on_schedule
+  20. back-fill skips the 30-minute guard: CAUGHT by test_missed_hours_after_the_pc_slept
+  21. back-fill a closed market: CAUGHT by test_a_closed_market_hour_is_not_back_filled
+  22. back-fill without a cap: CAUGHT by test_missed_hours_are_capped
+  23. back-fill on the hour, not hh:05: CAUGHT by test_missed_hours_after_the_pc_slept
+caught 23 / 23

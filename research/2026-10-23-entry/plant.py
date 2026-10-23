@@ -65,7 +65,9 @@ def main(name: str, test: Path, bugs: list[tuple[str, list[tuple[str, str]]]]) -
 
 
 SCRIPT_PLUGIN = '''import importlib.util, sys
+sys.path.insert(0, r"{parent}")
 sys.path.insert(0, r"{here}")
+{extra}
 spec = importlib.util.spec_from_file_location("{name}", r"{path}")
 mod = importlib.util.module_from_spec(spec)
 sys.modules["{name}"] = mod
@@ -73,12 +75,14 @@ spec.loader.exec_module(mod)
 '''
 
 
-def run_script(name: str, here: Path, src: str, test: Path) -> tuple[bool, str]:
+def run_script(name: str, here: Path, src: str, test: Path, paths: tuple[Path, ...] = ()) -> tuple[bool, str]:
     """As run(), for a research module outside a package: the edited copy is registered as ``name``."""
     with tempfile.TemporaryDirectory() as tmp:
         d = Path(tmp)
         (d / f"{name}_planted.py").write_text(src, encoding="utf-8")
-        (d / "plant_plugin.py").write_text(SCRIPT_PLUGIN.format(here=here, name=name, path=d / f"{name}_planted.py"), encoding="utf-8")
+        extra = "\n".join(f'sys.path.insert(0, r"{x}")' for x in paths)
+        plugin = SCRIPT_PLUGIN.format(here=here, parent=here.parent, extra=extra, name=name, path=d / f"{name}_planted.py")
+        (d / "plant_plugin.py").write_text(plugin, encoding="utf-8")
         env = {**__import__("os").environ, "PYTHONPATH": f"{d};{ROOT}"}
         r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", "-p", "plant_plugin", str(test)],
                            cwd=ROOT, capture_output=True, text=True, check=False, env=env)
@@ -87,16 +91,16 @@ def run_script(name: str, here: Path, src: str, test: Path) -> tuple[bool, str]:
         return r.returncode == 0, failed[0] if failed else last
 
 
-def main_script(path: Path, test: Path, bugs: list[tuple[str, list[tuple[str, str]]]]) -> None:
+def main_script(path: Path, test: Path, bugs: list[tuple[str, list[tuple[str, str]]]], paths: tuple[Path, ...] = ()) -> None:
     """main() for a research module outside a package (observe.py, knowledge/kb.py)."""
     name, src = path.stem, path.read_text(encoding="utf-8")
-    ok, line = run_script(name, path.parent, src, test)
+    ok, line = run_script(name, path.parent, src, test, paths)
     print(f"{path.name}: control (no bug): {'PASSED' if ok else 'FAILED'} - {line}", flush=True)
     if not ok:
         raise SystemExit("the unedited source must pass first")
     caught = 0
     for k, (label, edits) in enumerate(bugs, 1):
-        ok, line = run_script(name, path.parent, mutate(src, edits), test)
+        ok, line = run_script(name, path.parent, mutate(src, edits), test, paths)
         if any(x in line for x in ("SyntaxError", "IndentationError", "source_to_code")):
             print(f"  {k:2d}. {label}: INVALID EDIT (the bug does not compile - not a catch)", flush=True)
             continue

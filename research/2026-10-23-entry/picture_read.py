@@ -63,36 +63,60 @@ def read(minutes: int, as_of: pd.Timestamp) -> list[str]:
     hh = sum(h[i] > h[i - 1] for i in range(len(h) - last + 1, len(h)))
     out.append(f"  the last {last} bars: {hl}/{last - 1} higher lows, {hh}/{last - 1} higher highs "
                f"({'UP steps' if hl >= last - 2 and hh >= last - 2 else 'DOWN steps' if hl <= 1 and hh <= 1 else 'mixed'})")
-    lows = [(j, p) for j, k, p in pts if k == -1]
-    highs = [(j, p) for j, k, p in pts if k == 1]
+    for pool in pools(h, lo, c, atr):
+        name = pool["name"]
+        out.append(f"  equal {name} x{len(pool['touches'])} at {pool['mean']:.2f} "
+                   f"({', '.join(f'{p:.2f} @{tt[j]}' for j, p in pool['touches'])})")
+        for s in sweeps(pool, h, lo, c, v, atr):
+            out.append(f"    SWEEP {'under' if name == 'bottoms' else 'over'} it at {tt[s['i']]}: "
+                       f"{'low' if name == 'bottoms' else 'high'} {s['extreme']:.2f}, "
+                       f"closed back {s['close']:.2f}, volume {s['volume']:.1f} x the mean; since then "
+                       f"{s['after']} bars: {s['up']} higher-low-and-higher-high, {s['down']} lower-low-and-lower-high")
+    rng = squeeze_range(h, lo, atr)
+    out.append(f"  the last 12 bars' range {rng:.1f} ATR{' (a squeeze)' if rng < 3 else ''}; last volume {v[-1] / v.mean():.1f} x the mean")
+    return out
+
+
+def pools(h: np.ndarray, lo: np.ndarray, c: np.ndarray, atr: float) -> list[dict]:
+    """Equal bottoms / tops near price: bar lows (highs) lower (higher) than both neighbours, clustered within
+    ``EQ_ATR`` x ATR; kept when within 2.5 ATR of the last close, touched in the last 36 bars, the touches 3+ bars
+    apart. ``level`` = the cluster's extreme (the pool's edge)."""
     # bars' own lows also count as touches of a floor (a swing ZigZag can merge close bottoms)
     bar_lows = [(i, lo[i]) for i in range(1, len(lo) - 1) if lo[i] <= lo[i - 1] and lo[i] <= lo[i + 1]]
     bar_highs = [(i, h[i]) for i in range(1, len(h) - 1) if h[i] >= h[i - 1] and h[i] >= h[i + 1]]
     price = float(c[-1])
+    out = []
     for name, pp in (("bottoms", bar_lows), ("tops", bar_highs)):
         for cl in clusters(pp, EQ_ATR * atr):
             cl = sorted(cl)
             mean = float(np.mean([p for _, p in cl]))
-            # only floors / ceilings near price now, touched in the last 36 bars, the touches 3+ bars apart
             if abs(mean - price) > 2.5 * atr or cl[-1][0] < len(c) - 36 or cl[-1][0] - cl[0][0] < 3:
                 continue
-            out.append(f"  equal {name} x{len(cl)} at {mean:.2f} ({', '.join(f'{p:.2f} @{tt[j]}' for j, p in cl)})")
             level = min(p for _, p in cl) if name == "bottoms" else max(p for _, p in cl)
-            for i in range(cl[-1][0] + 1, len(c)):
-                came = c[i - 1] > level if name == "bottoms" else c[i - 1] < level
-                swept = lo[i] < level - 0.1 * atr and c[i] > level if name == "bottoms" else h[i] > level + 0.1 * atr and c[i] < level
-                if came and swept:
-                    after = range(i + 1, len(c))
-                    up = sum(lo[k] > lo[k - 1] and h[k] > h[k - 1] for k in after)
-                    down = sum(lo[k] < lo[k - 1] and h[k] < h[k - 1] for k in after)
-                    out.append(f"    SWEEP {'under' if name == 'bottoms' else 'over'} it at {tt[i]}: "
-                               f"{'low' if name == 'bottoms' else 'high'} {lo[i] if name == 'bottoms' else h[i]:.2f}, "
-                               f"closed back {c[i]:.2f}, volume {v[i] / v.mean():.1f} x the mean; since then "
-                               f"{len(after)} bars: {up} higher-low-and-higher-high, {down} lower-low-and-lower-high")
-    rng = (h[-12:].max() - lo[-12:].min()) / atr
-    out.append(f"  the last 12 bars' range {rng:.1f} ATR{' (a squeeze)' if rng < 3 else ''}; last volume {v[-1] / v.mean():.1f} x the mean")
-    _ = lows, highs
+            out.append({"name": name, "mean": mean, "touches": cl, "level": float(level)})
     return out
+
+
+def sweeps(pool: dict, h: np.ndarray, lo: np.ndarray, c: np.ndarray, v: np.ndarray, atr: float) -> list[dict]:
+    """The bars after the pool's last touch that came from inside it, went 0.1 ATR beyond its edge and closed back;
+    with the bar's volume over the frame's mean and the bar-by-bar structure since."""
+    level, bottoms = pool["level"], pool["name"] == "bottoms"
+    out = []
+    for i in range(pool["touches"][-1][0] + 1, len(c)):
+        came = c[i - 1] > level if bottoms else c[i - 1] < level
+        swept = lo[i] < level - 0.1 * atr and c[i] > level if bottoms else h[i] > level + 0.1 * atr and c[i] < level
+        if came and swept:
+            after = range(i + 1, len(c))
+            out.append({"i": i, "extreme": float(lo[i] if bottoms else h[i]), "close": float(c[i]),
+                        "volume": float(v[i] / v.mean()), "after": len(after),
+                        "up": sum(lo[k] > lo[k - 1] and h[k] > h[k - 1] for k in after),
+                        "down": sum(lo[k] < lo[k - 1] and h[k] < h[k - 1] for k in after)})
+    return out
+
+
+def squeeze_range(h: np.ndarray, lo: np.ndarray, atr: float, n: int = 12) -> float:
+    """The last ``n`` bars' high-low range in ATR (under 3 = a squeeze)."""
+    return float((h[-n:].max() - lo[-n:].min()) / atr)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,21 @@
+behaviors.py: control (no bug): PASSED - 28 passed in 0.45s
+   1. efficiency over n moves read n - 1: CAUGHT by test_efficiency_one_way_and_back_and_forth
+   2. efficiency keeps the sign: CAUGHT by test_efficiency_one_way_and_back_and_forth
+   3. efficiency path from the net: CAUGHT by test_efficiency_one_way_and_back_and_forth
+   4. efficiency without the length guard: CAUGHT by test_efficiency_reads_only_the_last_n_moves_and_needs_them
+   5. line break against the bar before, not k bars: CAUGHT by test_line_break_compares_the_cell_now_with_k_bars_ago[closes0-up]
+   6. line break by rounding, not the cell: CAUGHT by test_line_break_compares_the_cell_now_with_k_bars_ago[closes0-up]
+   7. line break sides swapped: CAUGHT by test_line_break_compares_the_cell_now_with_k_bars_ago[closes0-up]
+   8. climax range strictly over 2 ATR: CAUGHT by test_climax_needs_width_volume_and_a_wick[bar5-top]
+   9. climax volume not needed: CAUGHT by test_climax_needs_width_volume_and_a_wick[bar3-none]
+  10. climax wick from the close: CAUGHT by test_climax_needs_width_volume_and_a_wick[bar7-none]
+  11. climax wick at a third: CAUGHT by test_climax_needs_width_volume_and_a_wick[bar8-none]
+  12. runaway without yesterday's extreme: CAUGHT by test_runaway_needs_the_run_and_yesterdays_extreme[1999.0-1.5-none]
+  13. runaway at half a step: CAUGHT by test_runaway_needs_the_run_and_yesterdays_extreme[2010.0-0.99-none]
+  14. runaway down checks the high: CAUGHT by test_runaway_needs_the_run_and_yesterdays_extreme[1985.0--1.2-none]
+  15. Asia from 06:00 Thai: CAUGHT by test_asia_break_after_london_opens
+  16. Asia break read before London: CAUGHT by test_asia_break_before_1300_thai_is_none
+  17. Asia break: both read as up: CAUGHT by test_asia_break_after_london_opens
+  18. the sweep window off by one: CAUGHT by test_recent_sweep_only_inside_the_recent_bars
+  19. the sweep sides swapped: CAUGHT by test_recent_sweep_finds_the_pool_swept_and_closed_back
+caught 19 / 19

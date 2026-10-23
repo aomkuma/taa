@@ -49,9 +49,8 @@ KEYS = re.compile(r"\| rhythm|^\s+now |equal (bottoms|tops)|SWEEP|squeeze|steps|
 
 
 def fetch() -> str:
-    """Refresh the bars read-only; returns '' when fine, else the reason it failed."""
-    cmd = [sys.executable, str(ROOT / "scripts/download_history.py"), "--symbols", "XAUUSD",
-           "--timeframes", "M1,M5,M15,H1,H4,D1", "--days", "3"]
+    """Refresh the bars and today's ticks read-only (fetch_day.py); returns '' when fine, else the reason it failed."""
+    cmd = [sys.executable, str(HERE / "fetch_day.py"), f"{pd.Timestamp.now(tz='UTC'):%Y-%m-%d}"]
     try:
         r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=600, check=False)  # noqa: S603
     except subprocess.TimeoutExpired:
@@ -114,6 +113,32 @@ def read_all(as_of: pd.Timestamp) -> str:
     return "\n".join(parts)
 
 
+def behavior_table(rows: list[dict]) -> str:
+    """Each behaviour seen at a reading, and what price did until the next reading (its score): how often, at
+    which Thai hours, the next hour's reach up / down and net move in the reading's H1 ATR."""
+    seen: dict[str, list[tuple[int, float, float, float]]] = {}
+    for prev, nxt in zip(rows, rows[1:], strict=False):
+        sc = nxt.get("score") or {}
+        if not sc.get("bars") or not prev.get("H1_atr"):
+            continue
+        p, atr = prev["price"], prev["H1_atr"]
+        hour = pd.Timestamp(prev["as_of"]).tz_convert(TH).hour
+        for b in prev.get("behaviors") or []:
+            seen.setdefault(b, []).append((hour, (sc["high"] - p) / atr, (p - sc["low"]) / atr, (sc["last"] - p) / atr))
+    out = ["# Price behaviours - when they showed and what the next hour did (observe.py; H1 ATR units)\n",
+           "| behaviour | seen | Thai hours (most often) | next hour: up reach | down reach | net | net up |",
+           "|---|---|---|---|---|---|---|"]
+    for b, xs in sorted(seen.items(), key=lambda kv: -len(kv[1])):
+        hours = pd.Series([x[0] for x in xs]).value_counts().head(3)
+        n = len(xs)
+        out.append(f"| {b} | {n} | {', '.join(f'{h:02d}h x{k}' for h, k in hours.items())} | "
+                   f"{sum(x[1] for x in xs) / n:.2f} | {sum(x[2] for x in xs) / n:.2f} | {sum(x[3] for x in xs) / n:+.2f} | "
+                   f"{sum(x[3] > 0 for x in xs)} / {n} |")
+    if not seen:
+        out.append("| (none scored yet) | | | | | | |")
+    return "\n".join(out) + "\n"
+
+
 def scorecard(rows: list[dict]) -> str:
     scored = [r["score"] for r in rows if r.get("score", {}).get("rhythm_held") is not None][-20:]
     if not scored:
@@ -125,29 +150,57 @@ def scorecard(rows: list[dict]) -> str:
             f"against it {a:.1f} USD")
 
 
+def missed_hours(last: pd.Timestamp | None, now: pd.Timestamp, bar_times: pd.DatetimeIndex) -> list[pd.Timestamp]:
+    """The hourly marks (hh:05) the observer missed between its last reading and now (the PC slept or was off), each
+    kept only when M1 bars traded in the hour before it (a closed market is not back-filled); at most 72."""
+    if last is None:
+        return []
+    mark = last.floor("h") + pd.Timedelta(minutes=5)
+    if mark <= last + pd.Timedelta(minutes=30):
+        mark += pd.Timedelta(hours=1)
+    out = []
+    while mark < now - pd.Timedelta(minutes=10) and len(out) < 72:
+        i, j = bar_times.searchsorted(mark - pd.Timedelta(hours=1)), bar_times.searchsorted(mark)
+        if j > i:
+            out.append(mark)
+        mark += pd.Timedelta(hours=1)
+    return out
+
+
 def main() -> None:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     problem = "" if "--no-fetch" in sys.argv else fetch()
-    m1 = ZW.load("M1")
-    as_of = pd.Timestamp(args[0], tz="UTC") if args else m1.index[-1] + pd.Timedelta(minutes=1)
-    m1 = m1[m1.index < as_of]
+    m1_all = ZW.load("M1")
+    now = pd.Timestamp(args[0], tz="UTC") if args else m1_all.index[-1] + pd.Timedelta(minutes=1)
     DIARY.mkdir(exist_ok=True)
     (DIARY / "raw").mkdir(exist_ok=True)
     rows = [json.loads(x) for x in LOG.read_text(encoding="utf-8").splitlines()] if LOG.exists() else []
-    if rows and pd.Timestamp(rows[-1]["as_of"]) >= as_of:
+    if rows and pd.Timestamp(rows[-1]["as_of"]) >= now:
         print(f"no new bars since {rows[-1]['as_of']} (market closed or the refresh brought nothing){': ' + problem if problem else ''}")
         return
+    last = pd.Timestamp(rows[-1]["as_of"]) if rows else None
+    for at in missed_hours(last, now, m1_all.index):  # owner 2026-10-23: when the PC slept, run the hours back
+        rows.append(record(at, rows, problem, m1_all, "back-filled after the observer missed this hour"))
+    record(now, rows, problem, m1_all, "")
+
+
+def record(as_of: pd.Timestamp, rows: list[dict], problem: str, m1_all: pd.DataFrame, note: str) -> dict:
+    """One reading at ``as_of`` (bars closed by it), scored against the last row; written to the diary."""
+    m1 = m1_all[m1_all.index < as_of]
     rec = observe(as_of, m1)
+    rec["note"] = note
     rec["fetch_problem"] = problem
     f = kb.features(as_of)
     rec["features"] = {k: (None if isinstance(v, float) and math.isnan(v) else v) for k, v in f.items()}
+    entries = kb.load()
+    rec["behaviors"] = kb.behaviors_now(entries, f)
     if rows:
         rec["score"] = score(rows[-1], m1, as_of)
     th = as_of.tz_convert(TH)
     text = read_all(as_of)
     (DIARY / "raw" / f"{th:%Y-%m-%d_%H%M}.txt").write_text(text, encoding="utf-8")
 
-    out = [f"\n## {th:%H:%M} Thai - price {rec['price']:.2f}\n"]
+    out = [f"\n## {th:%H:%M} Thai - price {rec['price']:.2f}{' (' + note + ')' if note else ''}\n"]
     if problem:
         out.append(f"- DATA: {problem} - the stored bars were read")
     sc = rec.get("score")
@@ -168,21 +221,24 @@ def main() -> None:
     out += [f"    {ln.strip()}" for ln in text.splitlines() if KEYS.search(ln) and not ln.startswith("#")]
     out.append(f"- the knowledge base now (knowledge/kb.yaml; session {f['session']}, H1 vol {f['h1_vol']:.2f}, "
                f"D1 ATR(20) {f['d1_atr20']:.1f}, yesterday {f['yesterday']}):")
-    out += [f"    {x}" for x in kb.brief(kb.load(), f)]
+    out += [f"    {x}" for x in kb.brief(entries, f)]
+    out.append(f"- behaviours now: {', '.join(rec['behaviors']) or 'none of the drafts'}")
     out.append(f"- scorecard: {scorecard([*rows, rec])}")
     day = DIARY / f"{th:%Y-%m-%d}.md"
     head = "" if day.exists() else (f"# Market diary - {th:%a %d %b %Y} (Thai time; written by observe.py, the reading "
                                     "before the hour it is scored on)\n")
-    with day.open("a", encoding="utf-8") as f:
-        f.write(head + "\n".join(out) + "\n")
+    with day.open("a", encoding="utf-8") as fh:
+        fh.write(head + "\n".join(out) + "\n")
     if sc and sc.get("surprises"):
         study = DIARY / "TO_STUDY.md"
         new = "" if study.exists() else "# Surprises to study - what no reading prepared for (observe.py)\n\n"
-        with study.open("a", encoding="utf-8") as f:
-            f.write(new + "".join(f"- [ ] {th:%Y-%m-%d %H:%M} Thai: {x} (raw/{th:%Y-%m-%d_%H%M}.txt)\n" for x in sc["surprises"]))
-    with LOG.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(rec, default=lambda v: None if isinstance(v, float) and math.isnan(v) else v) + "\n")
+        with study.open("a", encoding="utf-8") as fh:
+            fh.write(new + "".join(f"- [ ] {th:%Y-%m-%d %H:%M} Thai: {x} (raw/{th:%Y-%m-%d_%H%M}.txt)\n" for x in sc["surprises"]))
+    with LOG.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(rec, default=lambda v: None if isinstance(v, float) and math.isnan(v) else v) + "\n")
+    (DIARY / "BEHAVIORS.md").write_text(behavior_table([*rows, rec]), encoding="utf-8")
     print("\n".join(out))
+    return rec
 
 
 if __name__ == "__main__":

@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 import yaml
 
@@ -30,11 +31,15 @@ KINDS = {"P": "principle", "R": "rule", "W": "weapon", "S": "shadow", "F": "find
          "O": "open"}
 STAGES = {"forest", "plan", "trend", "pressure", "clock", "animal", "weapon", "picture", "entry", "stop", "target",
           "exit", "size", "after", "method", "observer"}
-NUMERIC = {"h1_vol", "d1_atr20", "h1_atr", "release_min", "day_range_step"}
+NUMERIC = {"h1_vol", "d1_atr20", "h1_atr", "release_min", "day_range_step", "bars_at_line", "m15_range12_atr",
+           "line_dist_step", "line_touches", "h1_eff12", "m15_relvol"}
 WORDS = {"session": {"asia", "london", "ny", "none"}, "phase": {"up", "down", "none"},
          "yesterday": {"strong_up", "strong_down", "none"},
          **{f"{tf}_rhythm": {"up", "down", "none"} for tf in ("m15", "h1", "h4", "d1")},
-         **{f"{tf}_big": {"up", "down", "none"} for tf in ("h1", "h4", "d1")}}
+         **{f"{tf}_big": {"up", "down", "none"} for tf in ("h1", "h4", "d1")},
+         "m15_leg": {"up", "down", "none"}, "line_worn": {"yes", "no"}, "line_break": {"up", "down", "none"},
+         "climax": {"top", "bottom", "none"}, "runaway": {"up", "down", "none"},
+         "asia_break": {"up", "down", "both", "none"}, "sweep": {"low", "high", "none"}}
 FEATURES = NUMERIC | set(WORDS)
 OPS = re.compile(r"^(>=|<=|>|<)\s*(-?\d+(?:\.\d+)?)$")
 TH, NY = "Asia/Bangkok", "America/New_York"
@@ -60,6 +65,8 @@ def validate(entries: list[dict[str, Any]], items: set[str]) -> list[str]:
     out: list[str] = []
     ids = [e.get("id", "?") for e in entries]
     out += [f"{i}: the id is used {ids.count(i)} times" for i in sorted(set(ids)) if ids.count(i) > 1]
+    names = [e["behavior"] for e in entries if "behavior" in e]
+    out += [f"the behavior '{b}' is named {names.count(b)} times" for b in sorted(set(names)) if names.count(b) > 1]
     known = set(ids)
     for e in entries:
         i = e.get("id", "?")
@@ -72,6 +79,8 @@ def validate(entries: list[dict[str, Any]], items: set[str]) -> list[str]:
         out += [f"{i}: conflicts with an unknown id {x}" for x in e.get("conflicts") or [] if x not in known]
         if e.get("kind") == "weapon" and not (e.get("status") and e.get("animal")):
             out.append(f"{i}: a weapon needs its status and its animal")
+        if "behavior" in e and not (re.fullmatch(r"[a-z]+", str(e["behavior"])) and e.get("when")):
+            out.append(f"{i}: a behavior needs a one-word lowercase name and its readings (when)")
         for alt in _maps(e.get("when")):
             for k, v in alt.items():
                 if k not in FEATURES:
@@ -113,39 +122,81 @@ def features(as_of: pd.Timestamp) -> dict[str, Any]:
     """The readings at ``as_of`` (bars closed by it), from the bot's modules."""
     sys.path.insert(0, str(ROOT))
     sys.path.insert(0, str(ENTRY))
+    sys.path.insert(0, str(HERE))
+    import behaviors as bh
+    import picture_read as pr
     import rhythm_scan as rs
     from candidates import FRAMES, frame, window
 
     from app.news.releases import load_releases
     from app.strategy import context_read as cr
+    from app.strategy import level_momentum as lm
     from app.strategy import structure_read as sr
     from app.strategy import zone_grid as zg
+    from app.strategy.plan1_b2 import mt5_atr
     from app.strategy.strong_levels import closed
 
-    t = as_of.value
-    data = {tf: frame(tf)[1] for tf in FRAMES}
+    t, day_ns = as_of.value, 24 * 3600 * 10**9
+    fr = {tf: frame(tf) for tf in FRAMES}
+    data = {tf: fr[tf][1] for tf in FRAMES}
     w = {tf: window(data[tf], t, 700) for tf in FRAMES}
     d1 = data["D1"]
     st = zg.grid_at(zg.grid_rows(d1.t_open, d1.o, d1.h, d1.lo, d1.c), t)
     price = float(closed(w["M15"], t).c[-1])
     day = cr.last_day(w["D1"], t)
     ph = sr.phase(w["D1"], t)
-    _, rng = cr.day_so_far(w["H1"], t, price, 1, st.step)
+    run, rng = cr.day_so_far(w["H1"], t, price, 1, st.step)
     word = {1: "up", -1: "down", 0: "none"}
     f: dict[str, Any] = {"price": price, "h1_vol": cr.vol_ratio(w["H1"], t), "d1_atr20": st.step,
                          "day_range_step": rng, "session": session(as_of), "phase": word[int(ph)],
                          "yesterday": ("strong_up" if day.direction > 0 else "strong_down") if day.strong else "none"}
     for tf in ("M15", "H1", "H4", "D1"):
-        sign, atr, _, _, big = rs.rhythm(closed(rs.load(tf, as_of), t), t)
+        sign, atr, _, leg, big = rs.rhythm(closed(rs.load(tf, as_of), t), t)
         f[f"{tf.lower()}_rhythm"] = word[sign]
         if tf != "M15":
             f[f"{tf.lower()}_big"] = word[int(big.sign)]
         if tf == "H1":
             f["h1_atr"] = atr
+        if tf == "M15":
+            f["m15_leg"], m15_atr = word[int(np.sign(leg))], atr
     rel = load_releases(ROOT / "app/news/us_releases.csv")
     gaps = [abs((pd.Timestamp(r.at) - as_of).total_seconds()) / 60 for r in rel]
     f["release_min"] = min(gaps) if gaps else math.nan
+
+    # the behaviours' readings (behaviors.py; the drafts O11-O22)
+    half = st.step / 2
+    near = st.anchor + round((price - st.anchor) / half) * half  # the nearest line, main or half
+    f["line_dist_step"] = abs(price - near) / st.step
+    main_line, _, _ = zg.nearest_line(st, price)  # the deer as routine_read reads it: M15 bars at the main line
+    f["bars_at_line"] = lm.level_momentum(w["M15"], t, main_line, 0.15 * st.step, 1, t - day_ns).bars_at_line
+    mo = lm.level_momentum(w["H1"], t, near, 0.15 * st.step, 1 if near < price else -1, t - 5 * day_ns)
+    f["line_touches"], f["line_worn"] = mo.touches, "yes" if mo.worn else "no"
+    xm, xh = closed(w["M15"], t), closed(w["H1"], t)
+    f["m15_range12_atr"] = pr.squeeze_range(xm.h, xm.lo, m15_atr)
+    f["h1_eff12"] = bh.efficiency(xh.c, 12)
+    f["line_break"] = bh.line_break(xm.c, st.anchor, half, 4)
+    yd = closed(w["D1"], t)
+    f["runaway"] = bh.runaway(price, float(yd.h[-1]), float(yd.lo[-1]), run)
+    h1df = fr["H1"][0]
+    h1df = h1df[h1df.index + pd.Timedelta(hours=1) <= as_of].iloc[-101:]
+    b = h1df.iloc[-1]
+    f["climax"] = bh.climax(b.open, b.high, b.low, b.close, b.tick_volume, f["h1_atr"],
+                            float(h1df.tick_volume.iloc[:-1].mean()))
+    m15df = fr["M15"][0]
+    m15df = m15df[m15df.index + pd.Timedelta(minutes=15) <= as_of].iloc[-200:]
+    f["asia_break"] = bh.asia_break(m15df.index, m15df.high.to_numpy(float), m15df.low.to_numpy(float), as_of)
+    f["m15_relvol"] = cr.rel_volume(fr["M15"][0].index.as_unit("ns").asi8, fr["M15"][0].tick_volume.to_numpy(float),
+                                    int(np.searchsorted(fr["M15"][0].index.as_unit("ns").asi8, m15df.index[-1].value)))
+    d5 = pr.frame(5, as_of)
+    h5, lo5, c5, v5 = (d5[k].to_numpy(float) for k in ("high", "low", "close", "tick_volume"))
+    atr5 = float(mt5_atr(h5, lo5, c5, 14)[-1])
+    f["sweep"] = bh.recent_sweep(h5[-pr.N:], lo5[-pr.N:], c5[-pr.N:], v5[-pr.N:], atr5, 6)
     return f
+
+
+def behaviors_now(entries: list[dict[str, Any]], f: dict[str, Any]) -> list[str]:
+    """The price behaviours (animals) whose readings hold now, in the base's order."""
+    return [e["behavior"] for e in entries if "behavior" in e and applies(e, f)]
 
 
 def brief(entries: list[dict[str, Any]], f: dict[str, Any]) -> list[str]:

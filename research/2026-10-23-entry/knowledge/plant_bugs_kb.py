@@ -35,6 +35,11 @@ BUGS = [
     ("the brief's always-on line takes shadows", [('e["kind"] in ("principle", "rule")]', 'e["kind"] in ("principle", "rule", "shadow", "finding")]')]),
     ("the brief drops the action", [("act = f\" -> {e['action']}\" if e.get(\"action\") else \"\"", 'act = ""')]),
     ("render keeps the pipes", [('.replace("|", "/")', "")]),
+    ("behaviours now ignore the readings", [('return [e["behavior"] for e in entries if "behavior" in e and applies(e, f)]', 'return [e["behavior"] for e in entries if "behavior" in e]')]),
+    ("behaviours now include rules", [('return [e["behavior"] for e in entries if "behavior" in e and applies(e, f)]', 'return [e.get("behavior", e["id"]) for e in entries if applies(e, f) and e.get("when")]')]),
+    ("a behaviour name with spaces passes", [('re.fullmatch(r"[a-z]+", str(e["behavior"]))', 're.fullmatch(r"[a-z ]+", str(e["behavior"].lower()))')]),
+    ("a behaviour without readings passes", [('str(e["behavior"])) and e.get("when"))', 'str(e["behavior"])))')]),
+    ("a behaviour named twice passes", [("if names.count(b) > 1]", "if names.count(b) > 2]")]),
 ]
 
 if __name__ == "__main__":

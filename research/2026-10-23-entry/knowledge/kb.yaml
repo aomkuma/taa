@@ -3,6 +3,8 @@
 # research/2026-10-23-entry/{SPEC.md, DECISION_CHECKLIST.md, live/, replay/}, research/2026-10-18-moments/agents/CHECKLIST.md
 # (rows 1-65) and journal/PLAN1_JOURNAL.md. KNOWLEDGE.md is generated from this file (kb.py render) - edit here only.
 #
+# behavior: a price behaviour (an animal) the observer counts - when it shows and what price did in the next hour
+#   (observe.py, diary/BEHAVIORS.md); the readings behind O11-O22 come from behaviors.py.
 # kind (the id prefix) and precedence when entries meet at a decision:
 #   P principle  the owner's - always applies
 #   R rule       in force: applied (held forward, or a frozen safety switch)
@@ -799,6 +801,13 @@
   says: "23 Oct 16:30: the owner's M5 W sell (about 4,026.5, TP 4,010, SL 4,045) - checklist notes: the SL on the strong level 4,045.4 (a pool: 4,048-4,050 or over the day's high 4,034 are outside), the TP on the M5 base pool 4,009.5-4,010.5 (4,011-4,012 is before it)."
   source: "live/2026-10-23_journal.md"
 
+- id: L13
+  kind: lesson
+  stage: entry
+  items: [B1, B2, C1]
+  says: "23 Oct: the owner sold the M5 W at 16:30 (4,026.49, TP 4,010, SL 4,045) and was right - TP at 21:10:53 Thai, worst 4,034.46, about +0.89 R over 4 h 40 min. My plan waited for the structure to break (an M5 close under 4,021.0, which came only at 21:00) - entered 21:05 at 4,018.59, out at 4,012 for about +0.46 R. Same side; the owner's earlier entry at the top of the W paid twice as much."
+  source: "live/2026-10-23_journal.md; ticks 2026-10-23 (fetch_day.py)"
+
 - id: L12
   kind: lesson
   stage: method
@@ -810,6 +819,7 @@
 - id: O01
   kind: open
   stage: animal
+  behavior: elephant
   items: [A8]
   when: [{h1_vol: "> 1.4"}, {day_range_step: "> 2"}]
   says: "Draft animal ELEPHANT: extreme volatility (H1 vol > 1.4 x usual, or today's range > 2 steps) -> step back. (Definitions to be confirmed by the owner.)"
@@ -818,6 +828,7 @@
 - id: O02
   kind: open
   stage: animal
+  behavior: tiger
   items: [A8]
   when: {release_min: "<= 60"}
   says: "Draft animal TIGER: a scheduled US release within 60 minutes -> only the news weapon."
@@ -826,6 +837,7 @@
 - id: O03
   kind: open
   stage: animal
+  behavior: boar
   items: [A8]
   when: [{phase: [up, down]}, {yesterday: [strong_up, strong_down]}]
   says: "Draft animal BOAR: a one-way market (the last 3 D1 closes the same way, or yesterday a strong D1 bar)."
@@ -834,6 +846,7 @@
 - id: O04
   kind: open
   stage: animal
+  behavior: rabbit
   items: [A8]
   when: {h1_vol: "< 0.9", phase: none}
   says: "Draft animal RABBIT: a quiet range (vol < 0.9, no one-way run)."
@@ -844,7 +857,8 @@
   stage: clock
   items: [A6]
   says: "The release calendar lacks FOMC / PCE / GDP / PPI after 2026-10-15 - the tiger is blind on those days."
-  source: "routine_read.py"
+  evidence: "2026-10-23 21:05-21:29 Thai (10:00-10:29 New York): gold fell 4,018.6 -> 3,980.5 (38 USD in 24 minutes) with no release on the bot's calendar"
+  source: "routine_read.py; diary 2026-10-23"
 
 - id: O06
   kind: open
@@ -881,3 +895,121 @@
   items: [B3]
   says: "T2's arrival distance (0.5 step) missed a 36.5-USD approach to a main line - to check across all arrivals."
   source: "live/2026-10-23_journal.md"
+
+# ---------------------------------------------------------------- the price behaviours (owner 2026-10-23: "which
+# behaviours are still missing?") - drafts, counted by the observer before any of them becomes a rule
+- id: O11
+  kind: open
+  stage: animal
+  behavior: deer
+  items: [B4]
+  when: {bars_at_line: ">= 8"}
+  says: "Draft animal DEER: price sitting at a zone line (8+ M15 bars in its band in the last day). Its weapon T4 breaks THROUGH (+0.087, all four years)."
+  source: "routine_read.py; zone_wait.py (left out of v1 by mistake, added 2026-10-23)"
+
+- id: O12
+  kind: open
+  stage: animal
+  behavior: squeeze
+  items: [B4, A5]
+  when: {m15_range12_atr: "< 3", line_dist_step: "<= 0.25"}
+  says: "Draft SQUEEZE: the last 12 M15 bars span under 3 ATR, within a quarter step of a zone line - coiling before a run (owner's goal 4: ATR at its low, a Bollinger squeeze at an important level)."
+  source: "docs/OWNER_GOALS.md goal 4; picture_read.squeeze_range"
+
+- id: O13
+  kind: open
+  stage: animal
+  behavior: sweep
+  items: [B2, B3]
+  when: {sweep: [low, high]}
+  says: "Draft SWEEP AND RECLAIM: in the last 30 minutes an M5 bar went under equal lows (over equal highs) near price and closed back. Low = the buy picture, high = the sell picture."
+  evidence: "2026-10-23 15:35 Thai: under 4,014.7 to 4,012.27, closed 4,015.15, then up to 4,030.9; 2024-01-02 21:40; reclaim #23 exam +0.065; T2 swept -0.089 (the entry form, not the picture)"
+  source: "picture_read.pools / sweeps; behaviors.recent_sweep"
+
+- id: O14
+  kind: open
+  stage: animal
+  behavior: break
+  items: [B5]
+  when: {line_break: [up, down]}
+  says: "Draft BREAK: the last M15 close sits beyond a zone line (main or half) it was not beyond an hour ago. The next hour tells a RUN (it went on) from a FALSE break (back inside)."
+  evidence: "2026-10-22 NY: the H4 20:00 bar broke 4,066 on the chart's highest volume and ran one zone to 3,990; breaks fail less at the NY open (65 % back inside vs about 74 %)"
+  source: "behaviors.line_break; docs/OWNER_GOALS.md facts"
+
+- id: O15
+  kind: open
+  stage: animal
+  behavior: pullback
+  items: [A1, A4]
+  when: [{h1_big: down, h4_big: down, m15_leg: up, line_dist_step: "<= 0.25"}, {h1_big: up, h4_big: up, m15_leg: down, line_dist_step: "<= 0.25"}]
+  says: "Draft PULLBACK IN A TREND: H1 and H4 trend the same way (500 bars), the M15 leg runs against them, price within a quarter step of a line - the re-test moment inside a boar market (the missing T5 weapon, O07)."
+  evidence: "the owner's 4,141: three weaker re-tests from below (to 4,155.5, 4,141.9, 4,142.2), then one zone down"
+  source: "research/2026-10-22-zones/NOTES.md; behaviours draft 2026-10-23"
+
+- id: O16
+  kind: open
+  stage: animal
+  behavior: worn
+  items: [A2, C4]
+  when: {line_touches: ">= 3", line_worn: "yes"}
+  says: "Draft WORN LEVEL: the nearest line visited 3+ times in 5 days on H1 with shrinking bounces - more likely to break than to hold."
+  evidence: "the owner's principle (LL / LH into a support again and again is not a buy); 5+ touches helped a break (+0.44 / +0.39, few cases); the half line 4,031 touched 10 times on 2026-10-23"
+  source: "research/2026-10-22-zones/NOTES.md; level_momentum"
+
+- id: O17
+  kind: open
+  stage: animal
+  behavior: climax
+  items: [B3]
+  when: {climax: [top, bottom]}
+  says: "Draft CLIMAX: the last H1 bar spans >= 2 ATR on >= 2 x the volume with a wick of half its range - the turn picture (level + price action + volume + volatility, P18). About 80 such bars since 2023-10 (2 a month)."
+  evidence: "2026-01-29 / 30: 5,080 -> 5,590 then a crash to 5,025 (H1 ATR 27 -> 110)"
+  source: "behaviors.climax"
+
+- id: O18
+  kind: open
+  stage: animal
+  behavior: runaway
+  items: [A7, B3]
+  when: {runaway: [up, down]}
+  says: "Draft RUNAWAY: the day ran >= 1 step one way and price is past yesterday's extreme - beyond every pool; nothing to sweep, turns against it lose."
+  evidence: "week 10 (record run, Asia 50 USD over yesterday's high); B2 against a push > 1 D1 ATR -2.41 R on 13"
+  source: "PLAN1_JOURNAL.md weeks 10, NY-B2 ledger"
+
+- id: O19
+  kind: open
+  stage: animal
+  behavior: grind
+  items: [A4, A5]
+  when: {h1_vol: "< 0.9", h1_eff12: ">= 0.5"}
+  says: "Draft GRIND: a quiet but one-way market (H1 vol under 0.9, the last 12 H1 closes at least half efficient) - looks like a rabbit, but fading its edges loses."
+  source: "behaviours draft 2026-10-23; CHECKLIST row 10 (range fades lost)"
+
+- id: O20
+  kind: open
+  stage: animal
+  behavior: chop
+  items: [A5]
+  when: {h1_vol: ">= 1.0", h1_eff12: "< 0.2"}
+  says: "Draft CHOP: a busy market with no direction (H1 vol >= 1.0, the last 12 H1 closes under 0.2 efficient) - stops taken on both sides; the owner: NY is often choppy for its first 1-2 hours."
+  evidence: "the first 30 min after the NY open go against the straddle, the second with it (F10)"
+  source: "memory taa-owner-tf-framework; CHECKLIST row 41"
+
+- id: O21
+  kind: open
+  stage: animal
+  behavior: handover
+  items: [A6]
+  when: {asia_break: [up, down, both]}
+  says: "Draft SESSION HANDOVER: after 13:00 Thai price has taken the 07:00-13:00 Thai range on one side (London / NY carry it) or both (a false first move, then the other way)."
+  evidence: "the London ORB plays this moment: +0.213 / +0.124 / exam +0.023 (fading)"
+  source: "behaviors.asia_break; CHECKLIST rows 22, 46"
+
+- id: O22
+  kind: open
+  stage: animal
+  behavior: thin
+  items: [A6]
+  when: {m15_relvol: "< 0.4"}
+  says: "Draft THIN MARKET: the last M15 bar's volume under 0.4 of the same time's 20-day mean (holidays, the week's open) - wicks there mean little."
+  source: "behaviours draft 2026-10-23; PLAN1_JOURNAL.md week 10 (Christmas)"

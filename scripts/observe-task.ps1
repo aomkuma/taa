@@ -35,7 +35,8 @@ if ($Run) {
     $script = Join-Path $Root "research\2026-10-23-entry\observe.py"
     Add-Content -Path $LogFile -Value "--- $((Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')) observe" -Encoding utf8
     $env:PYTHONIOENCODING = "utf-8"
-    & $python $script *>> $LogFile
+    # cmd appends the bytes as they are (PowerShell 5.1's *>> would write UTF-16)
+    cmd /c "`"$python`" `"$script`" >> `"$LogFile`" 2>&1"
     Add-Content -Path $LogFile -Value "--- exit $LASTEXITCODE" -Encoding utf8
     exit $LASTEXITCODE
 }

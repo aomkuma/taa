@@ -116,3 +116,24 @@ def test_render_has_every_entry_and_escapes_pipes():
     assert "[status: shadow; animal: deer]" in text
     assert "## Rules (1)" in text
     assert "## Weapons (1)" in text
+
+
+def test_behaviors_now_lists_the_animals_whose_readings_hold():
+    entries = [entry(id="O01", kind="open", behavior="elephant", when={"h1_vol": "> 1.4"}),
+               entry(id="O02", kind="open", behavior="sweep", when={"sweep": ["low", "high"]}),
+               entry(id="O03", kind="open", behavior="thin", when={"m15_relvol": "< 0.4"}),
+               entry(id="R01", when={"h1_vol": "> 1.1"})]
+    assert kb.behaviors_now(entries, {"h1_vol": 1.5, "sweep": "low", "m15_relvol": 0.5}) == ["elephant", "sweep"]
+    assert kb.behaviors_now(entries, {"h1_vol": 1.2, "sweep": "none"}) == []
+
+
+@pytest.mark.parametrize(("bad", "message"), [
+    ([entry(id="O01", kind="open", behavior="Big Cat", when={"h1_vol": "> 1"})],
+     "O01: a behavior needs a one-word lowercase name and its readings (when)"),
+    ([entry(id="O01", kind="open", behavior="cat")], "O01: a behavior needs a one-word lowercase name and its readings (when)"),
+    ([entry(id="O01", kind="open", behavior="cat", when={"h1_vol": "> 1"}),
+      entry(id="O02", kind="open", behavior="cat", when={"h1_vol": "> 2"})], "the behavior 'cat' is named 2 times"),
+    ([entry(when={"sweep": "left"})], "R01: 'sweep' takes ['high', 'low', 'none'], not 'left'"),
+])
+def test_behavior_problems_are_named(bad, message):
+    assert message in kb.validate(bad, ITEMS)

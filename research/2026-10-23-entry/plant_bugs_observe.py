@@ -25,7 +25,19 @@ BUGS = [
     ("the line above needs a close beyond", [('a, b = bar.high >= prev["line_above"]', 'a, b = bar.close >= prev["line_above"]')]),
     ("the scorecard counts hours without a rhythm", [('if r.get("score", {}).get("rhythm_held") is not None', 'if "with" in r.get("score", {}) or r.get("score")')]),
     ("the scorecard's means over all 20 slots", [('/ len(scored)\n    a = ', '/ 20\n    a = ')]),
+    ("the table pairs a reading with its own score", [("for prev, nxt in zip(rows, rows[1:], strict=False):", "for prev, nxt in zip(rows, rows, strict=False):")]),
+    ("the table keeps hours without bars", [('if not sc.get("bars") or not prev.get("H1_atr"):', 'if not prev.get("H1_atr"):')]),
+    ("the table in USD, not ATR", [("seen.setdefault(b, []).append((hour, (sc[\"high\"] - p) / atr, (p - sc[\"low\"]) / atr, (sc[\"last\"] - p) / atr))",
+                                     "seen.setdefault(b, []).append((hour, (sc[\"high\"] - p), (p - sc[\"low\"]), (sc[\"last\"] - p)))")]),
+    ("the table's hours in UTC", [('hour = pd.Timestamp(prev["as_of"]).tz_convert(TH).hour', 'hour = pd.Timestamp(prev["as_of"]).hour')]),
+    ("the table's net up counts flat", [("{sum(x[3] > 0 for x in xs)} / {n}", "{sum(x[3] >= 0 for x in xs)} / {n}")]),
+    ("the table least seen first", [("key=lambda kv: -len(kv[1])", "key=lambda kv: len(kv[1])")]),
+    ("back-fill up to now itself", [("    while mark < now - pd.Timedelta(minutes=10) and len(out) < 72:", "    while mark <= now and len(out) < 72:")]),
+    ("back-fill skips the 30-minute guard", [("    if mark <= last + pd.Timedelta(minutes=30):\n        mark += pd.Timedelta(hours=1)\n", "")]),
+    ("back-fill a closed market", [("        if j > i:\n            out.append(mark)", "        if j >= i:\n            out.append(mark)")]),
+    ("back-fill without a cap", [("and len(out) < 72:", "and len(out) < 720:")]),
+    ("back-fill on the hour, not hh:05", [('mark = last.floor("h") + pd.Timedelta(minutes=5)', 'mark = last.floor("h")')]),
 ]
 
 if __name__ == "__main__":
-    main_script(HERE / "observe.py", HERE / "test_observe.py", BUGS)
+    main_script(HERE / "observe.py", HERE / "test_observe.py", BUGS, (HERE / "knowledge",))
