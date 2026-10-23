@@ -1,0 +1,81 @@
+Mon 19 05:15 buy  signal - wait: H1 -1 / H4 +0
+Mon 19 07:30 sell signal - wait: H1 -1 / H4 +0
+Mon 19 08:45 buy  signal - wait: H1 -1 / H4 +0
+Mon 19 09:15 buy  signal - wait: H1 -1 / H4 +0
+Mon 19 09:30 sell signal - wait: H1 -1 / H4 +0
+Mon 19 10:30 buy  signal - wait: H1 -1 / H4 +0
+Mon 19 12:30 sell signal - wait: H1 -1 / H4 +0
+Mon 19 12:45 buy  signal - wait: H1 -1 / H4 +0
+Mon 19 13:15 sell signal - wait: H1 -1 / H4 +0
+Mon 19 14:00 buy  signal - wait: H1 +1 / H4 +0
+Mon 19 15:00 sell signal - wait: H1 -1 / H4 +0
+Mon 19 18:15 buy  signal - wait: H1 +1 / H4 +0
+Mon 19 18:45 sell signal - wait: H1 +1 / H4 +0
+Mon 19 19:30 buy  signal - wait: H1 -1 / H4 +0
+Mon 19 20:30 sell signal - wait: H1 +1 / H4 +1
+Tue 20 00:45 buy  signal - wait: H1 +0 / H4 +1
+Tue 20 02:15 sell signal - wait: H1 +0 / H4 +1
+Tue 20 05:15 buy  signal - wait: H1 -1 / H4 +1
+Tue 20 05:45 sell signal - wait: H1 -1 / H4 +1
+Tue 20 08:45 buy  signal - wait: H1 -1 / H4 +1
+Tue 20 12:15 sell signal - wait: H1 -1 / H4 +0
+Tue 20 13:45 buy  signal - wait: H1 -1 / H4 +0
+Tue 20 14:45 sell signal - wait: H1 -1 / H4 +0
+Tue 20 17:00 sell signal - wait: H1 +0 / H4 +0
+Tue 20 18:00 buy  signal - wait: H1 +0 / H4 +0
+Tue 20 19:15 sell signal - wait: H1 +0 / H4 +0
+Tue 20 19:30 buy  signal - wait: H1 +0 / H4 +0
+Tue 20 19:45 sell signal - wait: H1 +0 / H4 +0
+Tue 20 20:00 buy  signal - wait: H1 -1 / H4 +0
+Tue 20 20:15 sell signal - wait: H1 -1 / H4 +0
+Tue 20 20:45 buy  signal - wait: H1 -1 / H4 +0
+Tue 20 22:00 sell signal - wait: H1 -1 / H4 +0
+Tue 20 22:15 sell signal - wait: H1 -1 / H4 +0
+Wed 21 01:15 buy  signal - wait: H1 -1 / H4 +0
+Wed 21 02:30 sell signal - wait: H1 -1 / H4 +0
+Wed 21 03:15 buy  signal - wait: H1 +0 / H4 +0
+Wed 21 05:45 sell signal - wait: H1 +0 / H4 +0
+Wed 21 07:30 buy  signal - wait: H1 +0 / H4 +0
+Wed 21 08:15 sell signal - wait: H1 -1 / H4 +0
+Wed 21 08:30 buy  signal - wait: H1 -1 / H4 +0
+Wed 21 09:00 sell signal - wait: H1 -1 / H4 +0
+Wed 21 10:45 buy  signal - wait: H1 -1 / H4 +0
+Wed 21 11:45 sell signal - wait: H1 -1 / H4 +0
+Wed 21 12:30 buy  signal - wait: H1 -1 / H4 +0
+Wed 21 13:00 sell signal - wait: H1 +0 / H4 +0
+Wed 21 14:30 buy  signal - wait: H1 +0 / H4 +0
+Wed 21 17:00 sell signal - wait: H1 +0 / H4 +0
+Wed 21 17:45 buy  signal - wait: H1 +0 / H4 +0
+Wed 21 19:30 sell signal - wait: H1 -1 / H4 +0
+Wed 21 20:15 buy  signal - wait: H1 -1 / H4 +0
+Wed 21 21:00 sell signal - wait: H1 -1 / H4 +0
+Wed 21 21:30 buy  signal - wait: H1 -1 / H4 +0
+Wed 21 23:15 sell signal - wait: H1 -1 / H4 +0
+Thu 22 00:45 buy  signal - wait: H1 -1 / H4 +0
+Thu 22 02:00 sell signal - wait: H1 -1 / H4 +0
+Thu 22 02:30 buy  signal - wait: H1 -1 / H4 +0
+Thu 22 06:00 sell signal - wait: H1 -1 / H4 +0
+Thu 22 08:45 buy  signal - wait: H1 -1 / H4 +0
+Thu 22 09:15 sell signal - wait: H1 -1 / H4 +0
+Thu 22 09:30 buy  signal - wait: H1 -1 / H4 +0
+Thu 22 10:00 sell signal - wait: H1 -1 / H4 +0
+Thu 22 13:15 buy  signal - wait: H1 -1 / H4 +0
+Thu 22 13:45 sell signal - wait: H1 -1 / H4 +0
+Thu 22 14:15 buy  signal - wait: H1 -1 / H4 +0
+Thu 22 15:00 sell signal - wait: H1 -1 / H4 +0
+Thu 22 17:30 buy  signal - wait: H1 -1 / H4 -1
+Thu 22 18:00 SELL 4080.14 stop 4093.27 target 4079.82 -> target 4079.82: +0.01 R (+0.15 USD a 1-oz unit)  [H1 -1 / H4 -1]
+Thu 22 19:15 buy  signal - wait: H1 -1 / H4 -1
+Thu 22 20:30 SELL 4076.93 stop 4092.67 target 4057.39 -> target 4057.39: +1.23 R (+19.36 USD a 1-oz unit)  [H1 -1 / H4 -1]
+Thu 22 22:00 buy  signal - wait: H1 -1 / H4 -1
+Fri 23 00:30 buy  signal - wait: H1 -1 / H4 -1
+Fri 23 01:15 SELL 4036.23 stop 4049.10 target 4034.37 -> target 4034.37: +0.13 R (+1.68 USD a 1-oz unit)  [H1 -1 / H4 -1]
+Fri 23 05:30 buy  signal - wait: H1 -1 / H4 -1
+Fri 23 06:15 SELL 4026.03 stop 4033.04 target 4021.16 -> target 4021.16: +0.67 R (+4.69 USD a 1-oz unit)  [H1 -1 / H4 -1]
+Fri 23 08:00 buy  signal - wait: H1 -1 / H4 -1
+Fri 23 08:15 sell signal - no room to the last swing
+Fri 23 09:30 buy  signal - wait: H1 -1 / H4 -1
+Fri 23 11:30 SELL 4006.21 stop 4025.43 target 3986.62 -> stop 4025.43: -1.01 R (-19.40 USD a 1-oz unit)  [H1 -1 / H4 -1]
+Fri 23 13:15 SELL 4019.07 stop 4029.18 target 4002.02 -> time 4015.24: +0.36 R (+3.65 USD a 1-oz unit)  [H1 -1 / H4 -1]
+
+taken 6: +1.39 R, +0.232 a trade, won 83 %; waited 73
