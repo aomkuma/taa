@@ -4,6 +4,7 @@ paper."""
 from __future__ import annotations
 
 import math
+from typing import ClassVar
 
 import numpy as np
 import pytest
@@ -109,7 +110,7 @@ class TestStrong:
 
 
 class TestRoom:
-    levels = [
+    levels: ClassVar[list[sl.Level]] = [
         sl.Level(80.0, 2, 5.0, -1, "swings"),
         sl.Level(99.0, 2, 5.0, -1, "swings"),
         sl.Level(120.0, 2, 5.0, 1, "swings"),

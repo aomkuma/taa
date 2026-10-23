@@ -1,15 +1,16 @@
-"""Strong levels ahead and the liquidity pools around a stop (research/2026-10-23-entry/SPEC.md C1 and C5b).
+"""Strong levels ahead and the liquidity pools around a stop (research/2026-10-23-entry/SPEC.md C1 and
+C5b).
 
-Owner 2026-10-23: "look at several hundred bars to see the farther overall picture - the next strong levels price
-may reach"; "the stop must not sit in a liquidation zone".
+Owner 2026-10-23: "look at several hundred bars to see the farther overall picture - the next strong levels
+price may reach"; "the stop must not sit in a liquidation zone".
 
-- **Swings:** fractal highs / lows of order ``k`` (higher / lower than the ``k`` bars on each side, ties none),
-  known only once the ``k`` bars after them have closed. A swing's turn = how far price went away from it over
-  the ``TURN_BARS`` bars after it (only bars closed by the decision count).
+- **Swings:** fractal highs / lows of order ``k`` (higher / lower than the ``k`` bars on each side, ties
+  none), known only once the ``k`` bars after them have closed. A swing's turn = how far price went away from
+  it over the ``TURN_BARS`` bars after it (only bars closed by the decision count).
 - **Strong levels** (C5b): the swings of the last ``LOOKBACK_H4`` H4 and ``LOOKBACK_D1`` D1 bars, merged when
-  within ``MERGE_STEP`` x the zone step of the cluster's mean; a level is strong with 2+ touches or a turn of at
-  least ``MAJOR_STEP`` steps. The anchors of past zone shifts and the lookback's highest high / lowest low are
-  strong too.
+  within ``MERGE_STEP`` x the zone step of the cluster's mean; a level is strong with 2+ touches or a turn of
+  at least ``MAJOR_STEP`` steps. The anchors of past zone shifts and the lookback's highest high / lowest low
+  are strong too.
 - **Pools** (C1): where the obvious stops sit - the recent swings of the entry timeframe and H1, the previous
   server day's high / low, the round numbers (every ``ROUND_USD``). A stop within ``POOL_BAND_STEP`` x step
   (at least ``POOL_BAND_MIN`` USD) beyond a pool sits in the liquidation zone.
@@ -125,8 +126,8 @@ def strong_levels(
 
 
 def room(levels: Sequence[Level], side: int, entry: float, stop: float, band: float) -> float:
-    """C5b: the room in R from ``entry`` to the near edge of the first strong level beyond it on the target side
-    (``side`` +1 a buy); ``inf`` when none."""
+    """C5b: the room in R from ``entry`` to the near edge of the first strong level beyond it on the target
+    side (``side`` +1 a buy); ``inf`` when none."""
     risk = abs(entry - stop)
     if risk <= 0:
         return math.nan
@@ -148,9 +149,10 @@ def pool_band(step: float) -> float:
 def stop_check(
     pools: Sequence[float], side: int, entry: float, stop: float, band: float
 ) -> tuple[bool, float]:
-    """C1: (the stop sits in a liquidation zone, the stop's distance beyond the last pool between the entry and
-    the stop - the one nearest the stop - in USD; NaN when no pool lies there). The round numbers between the entry and the stop count
-    as pools. A stop within ``band`` beyond a pool, or within ``band`` short of one, is in the zone."""
+    """C1: (the stop sits in a liquidation zone, the stop's distance beyond the last pool between the entry
+    and the stop - the one nearest the stop - in USD; NaN when no pool lies there). The round numbers between
+    the entry and the stop count as pools. A stop within ``band`` beyond a pool, or within ``band`` short of
+    one, is in the zone."""
     # from the entry to a band past the stop, on the stop's side
     lo, hi = (stop - band, entry) if side > 0 else (entry, stop + band)
     found = [p for p in pools if lo <= p <= hi and p != entry]
