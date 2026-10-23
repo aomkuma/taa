@@ -1,1 +1,1 @@
-{"last_call": "2026-10-23T15:45:00+00:00", "watch_above": 4006.0, "watch_below": 3992.5, "behaviours_at_call": ["boar", "climax", "handover", "pullback"], "behaviours": ["boar", "climax", "handover", "pullback"]}
+{"last_call": null, "watch_above": 4006.0, "watch_below": 3992.9, "behaviours_at_call": ["boar", "chop", "handover", "pullback", "sweep"], "behaviours": ["boar", "chop", "handover", "pullback", "sweep"]}

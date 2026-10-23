@@ -37,6 +37,7 @@ OUT = HERE / "ai" / "decisions.jsonl"
 TH = "Asia/Bangkok"
 STAND_ASIDE = {"stand_aside", "stand_aside_plan1"}
 JOURNAL_CHARS = 5000  # the end of the session journal sent with each call (the cost grows with it)
+SUSPENDED = HERE / "ai" / "suspended.json"  # rules the owner suspends for a while: {"R01": "2026-10-23T22:00:00+00:00"}
 
 
 class StepDecision(BaseModel):
@@ -149,10 +150,19 @@ def ask_cached(api_key: str, model: str, system: str, user: str) -> dict:
     return rec
 
 
-def brakes(entries: list[dict], f: dict, d: StepDecision) -> tuple[str, list[str]]:
-    """The code's veto: a rule in force with a stand-aside action -> no new trade."""
+def suspended(now: pd.Timestamp, path: Path = SUSPENDED) -> dict[str, str]:
+    """The rules the owner suspended for a while: {id: until (ISO UTC)} from ai/suspended.json, only those not yet
+    expired at ``now``."""
+    if not path.exists():
+        return {}
+    rows = json.loads(path.read_text(encoding="utf-8"))
+    return {k: v for k, v in rows.items() if pd.Timestamp(v) > now}
+
+
+def brakes(entries: list[dict], f: dict, d: StepDecision, off: frozenset[str] = frozenset()) -> tuple[str, list[str]]:
+    """The code's veto: a rule in force with a stand-aside action -> no new trade (rules in ``off`` are suspended)."""
     vetoes = [e["id"] for e in entries if e["kind"] == "rule" and e.get("action") in STAND_ASIDE and e.get("when")
-              and kb.applies(e, f)]
+              and e["id"] not in off and kb.applies(e, f)]
     if d.decision in ("SELL", "BUY") and vetoes:
         return "none", vetoes
     return d.size, []
@@ -166,6 +176,11 @@ def decide(as_of: pd.Timestamp, journal: str, model: str | None = None, source: 
     entries = kb.load()
     f = kb.features(as_of)
     brief = kb.brief(entries, f)
+    off = suspended(as_of)
+    if off:  # the AI is told plainly, and the trades taken meanwhile carry the mark (the rule's cost is measured)
+        brief.append("SUSPENDED BY THE OWNER FOR NOW (do NOT stand aside because of these; trades are recorded as taken "
+                     "while suspended): " + ", ".join(f"{k} until {pd.Timestamp(v).tz_convert(TH):%a %H:%M} Thai"
+                                                      for k, v in off.items()))
     reads = trim_reads(read_all(as_of))
     m1 = zw.load("M1")
     last = float(m1[m1.index <= as_of - pd.Timedelta(minutes=1)].close.iloc[-1])  # the M1 bar closed by as_of
@@ -184,8 +199,9 @@ def decide(as_of: pd.Timestamp, journal: str, model: str | None = None, source: 
     rec = {"as_of": as_of.isoformat(), "source": source, **ans}
     if parsed is not None:
         d: StepDecision = parsed
-        size, vetoes = brakes(entries, f, d)
-        rec.update(decision=d.model_dump(), final_size=size, vetoed_by=vetoes)
+        size, vetoes = brakes(entries, f, d, frozenset(off))
+        held = [k for k in off if any(e["id"] == k and kb.applies(e, f) for e in entries)]
+        rec.update(decision=d.model_dump(), final_size=size, vetoed_by=vetoes, suspended_applying=held)
     (raw / f"{stem}_3_answer.json").write_text(json.dumps(rec, indent=1, ensure_ascii=False), encoding="utf-8")
     OUT.parent.mkdir(exist_ok=True)
     with OUT.open("a", encoding="utf-8") as fh:
