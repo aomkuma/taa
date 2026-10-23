@@ -89,4 +89,5 @@ one weight per component; the number of fitted values stays small next to the nu
 | `app/strategy/structure_read.py` | C2 structure + clarity, C3 trend + phase | 19 | 12 / 12 | parity with the research structure / run3 at 300 times on D1 / H4 / H1 / M15 |
 | `app/strategy/zone_break.py` | T4 consolidation at a line, then the break | 15 | 13 / 13 | parity with zone_wait.py: 942 / 942 events (arrival, entry bar, side, stop) |
 | `app/strategy/level_momentum.py` | C4 touches, bounces, worn, approach, bars at the line | 14 | 12 / 12 | parity with the journal's context: 98 / 98 trades |
+| `app/strategy/zone_retest.py` | T1 the re-test of a broken zone line | 10 | 12 / 12 | a separate state-machine version equal on all 1,223 M15 events of 2025 (it found an off-by-one in the first version); acceptance: the owner's 4,141 sell re-tests on H4 / H1 with the stop 4,159.3 above the swept 4,155.5 |
 | `app/strategy/context_read.py` | C6 vol ratio, C7 minutes from / windows, C8 relative volume, C9 the last D1 bar + the day so far | 14 | 14 / 14 | vol and day-so-far equal on 98 / 98 trades; strong days 166 / 166 against retest_week.py's rule (2021-2026) |

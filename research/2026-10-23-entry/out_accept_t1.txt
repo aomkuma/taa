@@ -1,0 +1,38 @@
+2026-10-16 grid: anchor 4293.03 step 77.01 -> lines 4293.0, 4216.0, 4139.0, 4062.0
+2026-10-17 grid: anchor 4293.03 step 76.33 -> lines 4293.0, 4216.7, 4140.4, 4064.0
+2026-10-18 grid: anchor 4293.03 step 76.33 -> lines 4293.0, 4216.7, 4140.4, 4064.0
+2026-10-19 grid: anchor 4293.03 step 76.33 -> lines 4293.0, 4216.7, 4140.4, 4064.0
+2026-10-20 grid: anchor 4293.03 step 75.98 -> lines 4293.0, 4217.1, 4141.1, 4065.1
+2026-10-21 grid: anchor 4293.03 step 73.94 -> lines 4293.0, 4219.1, 4145.1, 4071.2
+2026-10-22 grid: anchor 4293.03 step 71.09 -> lines 4293.0, 4221.9, 4150.8, 4079.8
+2026-10-23 grid: anchor 4142.26 step 74.08 -> lines 4142.3, 4068.2, 3994.1, 3920.0
+owner's lines: 4369.19, 4293.24, 4217.25, 4141.83, 4066.41, 3989.57
+
+H4: re-tests from 2026-10-19 (Thai time = the bar's close):
+  Mon 19 16:00  SELL line 4202.4 broke Sat 03 00:00, entry 4170.5, stop 4221.6 (extreme 4217.1), risk 51.1
+  Wed 21 12:00  BUY line 4094.7 broke Thu 15 08:00, entry 4114.6, stop 4102.2 (extreme 4106.1), risk 12.5
+  Thu 22 04:00  BUY line 4094.7 broke Thu 15 08:00, entry 4139.1, stop 4101.0 (extreme 4104.9), risk 38.2
+  Tue 20 00:00  BUY line 4134.4 broke Thu 15 16:00, entry 4140.9, stop 4126.5 (extreme 4130.5), risk 14.4
+  Wed 21 00:00  SELL line 4141.1 broke Tue 20 16:00, entry 4121.1, stop 4159.3 (extreme 4155.5), risk 38.3
+  Wed 21 08:00  SELL line 4141.1 broke Tue 20 16:00, entry 4116.9, stop 4159.3 (extreme 4155.5), risk 42.4
+  Wed 21 20:00  SELL line 4141.1 broke Tue 20 16:00, entry 4129.7, stop 4159.3 (extreme 4155.5), risk 29.6
+H1: re-tests from 2026-10-19 (Thai time = the bar's close):
+  Wed 21 09:00  BUY line 4094.7 broke Thu 15 07:00, entry 4119.0, stop 4102.2 (extreme 4106.1), risk 16.9
+  Mon 19 21:00  BUY line 4134.4 broke Thu 15 10:00, entry 4154.6, stop 4126.5 (extreme 4130.5), risk 28.1
+  Tue 20 21:00  SELL line 4141.1 broke Tue 20 13:00, entry 4127.6, stop 4140.4 (extreme 4136.6), risk 12.8
+  Wed 21 06:00  SELL line 4141.1 broke Tue 20 13:00, entry 4120.1, stop 4159.3 (extreme 4155.5), risk 39.2
+  Wed 21 19:00  SELL line 4141.1 broke Tue 20 13:00, entry 4139.8, stop 4159.3 (extreme 4155.5), risk 19.5
+  Thu 22 07:00  BUY line 4115.3 broke Thu 22 04:00, entry 4125.3, stop 4118.6 (extreme 4122.1), risk 6.7
+M15: re-tests from 2026-10-19 (Thai time = the bar's close):
+  Mon 19 20:45  SELL line 4177.5 broke Fri 16 23:30, entry 4153.5, stop 4194.1 (extreme 4190.2), risk 40.6
+  Tue 20 09:00  SELL line 4141.1 broke Tue 20 08:15, entry 4130.7, stop 4134.9 (extreme 4131.1), risk 4.2
+  Tue 20 13:30  SELL line 4141.1 broke Tue 20 08:15, entry 4130.6, stop 4151.0 (extreme 4147.2), risk 20.4
+  Tue 20 20:45  SELL line 4141.1 broke Tue 20 08:15, entry 4129.6, stop 4151.0 (extreme 4147.2), risk 21.4
+  Wed 21 05:30  SELL line 4141.1 broke Tue 20 23:15, entry 4130.4, stop 4135.6 (extreme 4131.8), risk 5.2
+  Wed 21 18:15  SELL line 4141.1 broke Tue 20 23:15, entry 4128.9, stop 4135.6 (extreme 4131.8), risk 6.7
+  Wed 21 21:30  SELL line 4141.1 broke Tue 20 23:15, entry 4133.4, stop 4145.7 (extreme 4141.9), risk 12.3
+  Thu 22 06:15  BUY line 4115.3 broke Thu 22 04:00, entry 4127.9, stop 4121.7 (extreme 4125.3), risk 6.2
+  Thu 22 13:45  BUY line 4079.8 broke Thu 22 13:15, entry 4090.0, stop 4083.8 (extreme 4087.3), risk 6.2
+  Thu 22 14:45  BUY line 4079.8 broke Thu 22 13:15, entry 4090.4, stop 4083.8 (extreme 4087.3), risk 6.6
+  Thu 22 19:00  SELL line 4079.8 broke Thu 22 18:30, entry 4059.5, stop 4072.9 (extreme 4069.3), risk 13.4
+  Fri 23 09:45  SELL line 4031.1 broke Fri 23 07:30, entry 4019.2, stop 4035.9 (extreme 4032.2), risk 16.7
