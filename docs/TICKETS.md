@@ -59,7 +59,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 | M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
 | M2 | Phase 17 — Setup OWN lanes (PLAN-1) | 1 | 0 | IN PROGRESS |
-| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 8 | 2 | IN PROGRESS |
+| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 8 | 3 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -2099,12 +2099,12 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 
 #### TAA-1803 — The knowledge base in `app/strategy/knowledge`
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1802
 
-- [ ] `kb.yaml` moved; pure `validate` / `applies` / `brief` / `behaviors_now` / `render`
-- [ ] `features(...)` from bars handed in (no file reads), equal to the research readings at many times
-- [ ] research `knowledge/kb.py` a thin wrapper (the parquet loader only); tests and planted bugs
+- [x] `kb.yaml` moved; pure `validate` / `applies` / `brief` / `behaviors_now` / `render`
+- [x] `features(...)` from bars handed in (no file reads), equal to the research readings at many times
+- [x] research `knowledge/kb.py` a thin wrapper (the parquet loader only); tests and planted bugs
 
 #### TAA-1804 — The AI trader in `app/ai/trader.py`
 

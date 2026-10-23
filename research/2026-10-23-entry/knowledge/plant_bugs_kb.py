@@ -1,4 +1,4 @@
-"""Planted bugs for kb.py against test_kb.py (plant.main_script).
+"""Planted bugs for app/strategy/knowledge.py against tests/unit/test_strategy_knowledge.py (plant.main; TAA-1803).
 
     .venv/Scripts/python research/2026-10-23-entry/knowledge/plant_bugs_kb.py
 """
@@ -10,7 +10,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-from plant import main_script  # noqa: E402
+from plant import ROOT, main  # noqa: E402
 
 BUGS = [
     ("'>' read as '>='", [('return v > x if op == ">" else', 'return v >= x if op == ">" else')]),
@@ -39,8 +39,12 @@ BUGS = [
     ("behaviours now include rules", [('return [e["behavior"] for e in entries if "behavior" in e and applies(e, f)]', 'return [e.get("behavior", e["id"]) for e in entries if applies(e, f) and e.get("when")]')]),
     ("a behaviour name with spaces passes", [('re.fullmatch(r"[a-z]+", str(e["behavior"]))', 're.fullmatch(r"[a-z ]+", str(e["behavior"].lower()))')]),
     ("a behaviour without readings passes", [('str(e["behavior"])) and e.get("when"))', 'str(e["behavior"])))')]),
-    ("a behaviour named twice passes", [("if names.count(b) > 1]", "if names.count(b) > 2]")]),
+    ("a behaviour named twice passes", [("        if names.count(b) > 1\n", "        if names.count(b) > 2\n")]),
+    ("the M5 frame reads the forming M1 bar", [("& (m1.index < as_of)]", "& (m1.index <= as_of)]")]),
+    ("the M5 volume averaged", [('"close": "last", "tick_volume": "sum"}', '"close": "last", "tick_volume": "mean"}')]),
+    ("the window takes the forming bar", [('j = int(np.searchsorted(b.avail, t, side="right"))', 'j = int(np.searchsorted(b.avail, t, side="right")) + 1')]),
+    ("the bars close at the open", [("        t + minutes * 60 * 10**9,", "        t,")]),
 ]
 
 if __name__ == "__main__":
-    main_script(HERE / "kb.py", HERE / "test_kb.py", BUGS)
+    main("app.strategy.knowledge", ROOT / "tests/unit/test_strategy_knowledge.py", BUGS)

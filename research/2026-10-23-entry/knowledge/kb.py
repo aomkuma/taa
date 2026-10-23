@@ -1,8 +1,5 @@
-"""The knowledge base at the moment of a decision (owner 2026-10-23: "has everything we discussed been recorded and
-used in the decisions?" - "the bot and you must always remember and observe").
-
-kb.yaml is the one source of truth; this module checks it, reads the market's state at a time (bars closed by
-AS_OF only, the bot's own code) and says which entries apply now, and renders KNOWLEDGE.md from it.
+"""The research's door to the knowledge base (TAA-1803): the logic lives in app/strategy/knowledge.py (one code
+path, PLAN §A37); this wrapper only loads the frames from the stored history and the checklist's item ids.
 
     .venv/Scripts/python research/2026-10-23-entry/knowledge/kb.py check
     .venv/Scripts/python research/2026-10-23-entry/knowledge/kb.py now [AS_OF_UTC]
@@ -11,232 +8,45 @@ AS_OF only, the bot's own code) and says which entries apply now, and renders KN
 
 from __future__ import annotations
 
-import math
 import re
 import sys
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
-import yaml
 
 HERE = Path(__file__).resolve().parent
 ENTRY = HERE.parent
 ROOT = ENTRY.parents[1]
-KB = HERE / "kb.yaml"
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ENTRY))
+
+from app.strategy import knowledge as K  # noqa: E402
+from app.strategy.knowledge import (  # noqa: E402,F401  (the research's callers use these names)
+    FEATURES, KB, KINDS, NUMERIC, OPS, STAGES, TH, WORDS, applies, behaviors_now, brief, holds, load, render,
+    session, validate,
+)
+
 CHECKLIST = ENTRY / "DECISION_CHECKLIST.md"
-
-KINDS = {"P": "principle", "R": "rule", "W": "weapon", "S": "shadow", "F": "finding", "X": "failed", "L": "lesson",
-         "O": "open"}
-STAGES = {"forest", "plan", "trend", "pressure", "clock", "animal", "weapon", "picture", "entry", "stop", "target",
-          "exit", "size", "after", "method", "observer"}
-NUMERIC = {"h1_vol", "d1_atr20", "h1_atr", "release_min", "day_range_step", "bars_at_line", "m15_range12_atr",
-           "line_dist_step", "line_touches", "h1_eff12", "m15_relvol"}
-WORDS = {"session": {"asia", "london", "ny", "none"}, "phase": {"up", "down", "none"},
-         "yesterday": {"strong_up", "strong_down", "none"},
-         **{f"{tf}_rhythm": {"up", "down", "none"} for tf in ("m15", "h1", "h4", "d1")},
-         **{f"{tf}_big": {"up", "down", "none"} for tf in ("h1", "h4", "d1")},
-         "m15_leg": {"up", "down", "none"}, "line_worn": {"yes", "no"}, "line_break": {"up", "down", "none"},
-         "climax": {"top", "bottom", "none"}, "runaway": {"up", "down", "none"},
-         "asia_break": {"up", "down", "both", "none"}, "sweep": {"low", "high", "none"}}
-FEATURES = NUMERIC | set(WORDS)
-OPS = re.compile(r"^(>=|<=|>|<)\s*(-?\d+(?:\.\d+)?)$")
-TH, NY = "Asia/Bangkok", "America/New_York"
-
-
-def load(path: Path = KB) -> list[dict[str, Any]]:
-    return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
 def checklist_items(path: Path = CHECKLIST) -> set[str]:
     return set(re.findall(r"^\| ([A-E]\d+) \|", path.read_text(encoding="utf-8"), flags=re.M))
 
 
-def _maps(when: Any) -> list[dict[str, Any]]:
-    """``when`` as a list of alternatives (each a map whose conditions must all hold); [] = always."""
-    if when is None:
-        return []
-    return [when] if isinstance(when, dict) else list(when)
+def frames() -> K.Frames:
+    """The stored XAUUSD history (data/history) and the release calendar, as the app's reader takes them."""
+    import zone_wait as zw
 
+    from app.news.releases import load_releases
 
-def validate(entries: list[dict[str, Any]], items: set[str]) -> list[str]:
-    """Every problem found (empty = the base is sound)."""
-    out: list[str] = []
-    ids = [e.get("id", "?") for e in entries]
-    out += [f"{i}: the id is used {ids.count(i)} times" for i in sorted(set(ids)) if ids.count(i) > 1]
-    names = [e["behavior"] for e in entries if "behavior" in e]
-    out += [f"the behavior '{b}' is named {names.count(b)} times" for b in sorted(set(names)) if names.count(b) > 1]
-    known = set(ids)
-    for e in entries:
-        i = e.get("id", "?")
-        out += [f"{i}: '{k}' is missing" for k in ("id", "kind", "stage", "says", "source") if not e.get(k)]
-        if KINDS.get(str(i)[:1]) != e.get("kind"):
-            out.append(f"{i}: the kind '{e.get('kind')}' does not match the id's letter")
-        if e.get("stage") not in STAGES:
-            out.append(f"{i}: unknown stage '{e.get('stage')}'")
-        out += [f"{i}: unknown checklist item {x}" for x in e.get("items") or [] if x not in items]
-        out += [f"{i}: conflicts with an unknown id {x}" for x in e.get("conflicts") or [] if x not in known]
-        if e.get("kind") == "weapon" and not (e.get("status") and e.get("animal")):
-            out.append(f"{i}: a weapon needs its status and its animal")
-        if "behavior" in e and not (re.fullmatch(r"[a-z]+", str(e["behavior"])) and e.get("when")):
-            out.append(f"{i}: a behavior needs a one-word lowercase name and its readings (when)")
-        for alt in _maps(e.get("when")):
-            for k, v in alt.items():
-                if k not in FEATURES:
-                    out.append(f"{i}: unknown reading '{k}'")
-                elif k in NUMERIC and not (isinstance(v, str) and OPS.match(v)):
-                    out.append(f"{i}: '{k}' needs a comparison like '> 1.1', not {v!r}")
-                elif k in WORDS and not set(v if isinstance(v, list) else [v]) <= WORDS[k]:
-                    out.append(f"{i}: '{k}' takes {sorted(WORDS[k])}, not {v!r}")
-    return out
-
-
-def holds(value: Any, spec: Any) -> bool:
-    """One condition; an unknown reading (None / NaN) never holds - NaN fails every comparison by itself."""
-    if value is None:
-        return False
-    if isinstance(spec, list):
-        return value in spec
-    m = OPS.match(spec) if isinstance(spec, str) else None
-    if m:
-        op, x = m.group(1), float(m.group(2))
-        v = float(value)
-        return v > x if op == ">" else v >= x if op == ">=" else v < x if op == "<" else v <= x
-    return value == spec
-
-
-def applies(entry: dict[str, Any], f: dict[str, Any]) -> bool:
-    alts = _maps(entry.get("when"))
-    return not alts or any(all(holds(f.get(k), v) for k, v in alt.items()) for alt in alts)
-
-
-def session(at: pd.Timestamp) -> str:
-    """The owner's windows: Asia 07:00-09:00 Thai, London 13:00-15:00 Thai, New York 08:00-11:30 New York time."""
-    th, ny = at.tz_convert(TH), at.tz_convert(NY)
-    h, m = th.hour + th.minute / 60, ny.hour + ny.minute / 60
-    return "asia" if 7 <= h < 9 else "london" if 13 <= h < 15 else "ny" if 8 <= m < 11.5 else "none"
+    return K.Frames(zw.load("M1"), zw.load("M15"), zw.load("H1"), zw.load("H4"), zw.load("D1"),
+                    load_releases(ROOT / "app/news/us_releases.csv"))
 
 
 def features(as_of: pd.Timestamp) -> dict[str, Any]:
-    """The readings at ``as_of`` (bars closed by it), from the bot's modules."""
-    sys.path.insert(0, str(ROOT))
-    sys.path.insert(0, str(ENTRY))
-    sys.path.insert(0, str(HERE))
-    from app.strategy import behaviors as bh
-    import picture_read as pr
-    import rhythm_scan as rs
-    from candidates import FRAMES, frame, window
-
-    from app.news.releases import load_releases
-    from app.strategy import context_read as cr
-    from app.strategy import level_momentum as lm
-    from app.strategy import structure_read as sr
-    from app.strategy import zone_grid as zg
-    from app.strategy.plan1_b2 import mt5_atr
-    from app.strategy.strong_levels import closed
-
-    t, day_ns = as_of.value, 24 * 3600 * 10**9
-    fr = {tf: frame(tf) for tf in FRAMES}
-    data = {tf: fr[tf][1] for tf in FRAMES}
-    w = {tf: window(data[tf], t, 700) for tf in FRAMES}
-    d1 = data["D1"]
-    st = zg.grid_at(zg.grid_rows(d1.t_open, d1.o, d1.h, d1.lo, d1.c), t)
-    price = float(closed(w["M15"], t).c[-1])
-    day = cr.last_day(w["D1"], t)
-    ph = sr.phase(w["D1"], t)
-    run, rng = cr.day_so_far(w["H1"], t, price, 1, st.step)
-    word = {1: "up", -1: "down", 0: "none"}
-    f: dict[str, Any] = {"price": price, "h1_vol": cr.vol_ratio(w["H1"], t), "d1_atr20": st.step,
-                         "day_range_step": rng, "session": session(as_of), "phase": word[int(ph)],
-                         "yesterday": ("strong_up" if day.direction > 0 else "strong_down") if day.strong else "none"}
-    for tf in ("M15", "H1", "H4", "D1"):
-        r = rs.rhythm(closed(rs.load(tf, as_of), t), t)
-        sign, atr, leg, big = r.sign, r.atr, r.leg, r.big
-        f[f"{tf.lower()}_rhythm"] = word[sign]
-        if tf != "M15":
-            f[f"{tf.lower()}_big"] = word[int(big.sign)]
-        if tf == "H1":
-            f["h1_atr"] = atr
-        if tf == "M15":
-            f["m15_leg"], m15_atr = word[int(np.sign(leg))], atr
-    rel = load_releases(ROOT / "app/news/us_releases.csv")
-    gaps = [abs((pd.Timestamp(r.at) - as_of).total_seconds()) / 60 for r in rel]
-    f["release_min"] = min(gaps) if gaps else math.nan
-
-    # the behaviours' readings (behaviors.py; the drafts O11-O22)
-    half = st.step / 2
-    near = st.anchor + round((price - st.anchor) / half) * half  # the nearest line, main or half
-    f["line_dist_step"] = abs(price - near) / st.step
-    main_line, _, _ = zg.nearest_line(st, price)  # the deer as routine_read reads it: M15 bars at the main line
-    f["bars_at_line"] = lm.level_momentum(w["M15"], t, main_line, 0.15 * st.step, 1, t - day_ns).bars_at_line
-    mo = lm.level_momentum(w["H1"], t, near, 0.15 * st.step, 1 if near < price else -1, t - 5 * day_ns)
-    f["line_touches"], f["line_worn"] = mo.touches, "yes" if mo.worn else "no"
-    xm, xh = closed(w["M15"], t), closed(w["H1"], t)
-    f["m15_range12_atr"] = pr.squeeze_range(xm.h, xm.lo, m15_atr)
-    f["h1_eff12"] = bh.efficiency(xh.c, 12)
-    f["line_break"] = bh.line_break(xm.c, st.anchor, half, 4)
-    yd = closed(w["D1"], t)
-    f["runaway"] = bh.runaway(price, float(yd.h[-1]), float(yd.lo[-1]), run)
-    h1df = fr["H1"][0]
-    h1df = h1df[h1df.index + pd.Timedelta(hours=1) <= as_of].iloc[-101:]
-    b = h1df.iloc[-1]
-    f["climax"] = bh.climax(b.open, b.high, b.low, b.close, b.tick_volume, f["h1_atr"],
-                            float(h1df.tick_volume.iloc[:-1].mean()))
-    m15df = fr["M15"][0]
-    m15df = m15df[m15df.index + pd.Timedelta(minutes=15) <= as_of].iloc[-200:]
-    f["asia_break"] = bh.asia_break(m15df.index, m15df.high.to_numpy(float), m15df.low.to_numpy(float), as_of)
-    f["m15_relvol"] = cr.rel_volume(fr["M15"][0].index.as_unit("ns").asi8, fr["M15"][0].tick_volume.to_numpy(float),
-                                    int(np.searchsorted(fr["M15"][0].index.as_unit("ns").asi8, m15df.index[-1].value)))
-    d5 = pr.frame(5, as_of)
-    h5, lo5, c5, v5 = (d5[k].to_numpy(float) for k in ("high", "low", "close", "tick_volume"))
-    atr5 = float(mt5_atr(h5, lo5, c5, 14)[-1])
-    f["sweep"] = bh.recent_sweep(h5[-pr.N:], lo5[-pr.N:], c5[-pr.N:], v5[-pr.N:], atr5, 6)
-    if f["sweep"] == "none":  # L14: the day's own levels and the zone lines are pools too
-        before = d5.index[-6]  # the window's first bar opens here: levels known before it
-        k0 = math.floor((price - st.anchor) / half)
-        lines = [st.anchor + k * half for k in range(k0 - 2, k0 + 4)]
-        levels = bh.level_prices(fr["M15"][0], fr["D1"][0], before) + lines
-        f["sweep"] = bh.level_sweep(h5, lo5, c5, levels, atr5, 6)
-    return f
-
-
-def behaviors_now(entries: list[dict[str, Any]], f: dict[str, Any]) -> list[str]:
-    """The price behaviours (animals) whose readings hold now, in the base's order."""
-    return [e["behavior"] for e in entries if "behavior" in e and applies(e, f)]
-
-
-def brief(entries: list[dict[str, Any]], f: dict[str, Any]) -> list[str]:
-    """What the base says now: the conditional entries whose readings hold (rules first), then the ids always on."""
-    order = list(KINDS.values())
-    hits = sorted((e for e in entries if e.get("when") and applies(e, f)), key=lambda e: (order.index(e["kind"]), e["id"]))
-    out = []
-    for e in hits:
-        act = f" -> {e['action']}" if e.get("action") else ""
-        out.append(f"{e['id']} {e['kind'].upper()}{act}: {e['says']}")
-    always = [e["id"] for e in entries if not e.get("when") and e["kind"] in ("principle", "rule")]
-    out.append(f"always on: {', '.join(always)}")
-    return out
-
-
-def render(entries: list[dict[str, Any]]) -> str:
-    def cell(x: Any) -> str:
-        return str(x).replace("|", "/").replace("\n", " ") if x not in (None, [], "") else ""
-
-    out = ["# The knowledge base (generated from kb.yaml by kb.py render - do not edit here)\n",
-           "Precedence at a decision: principle > rule > weapon > shadow (shown, never applied) > finding > failed "
-           "(never retried as it was) > lesson > open. `when` = the readings an entry applies to (none = always).\n"]
-    for kind in KINDS.values():
-        rows = [e for e in entries if e["kind"] == kind]
-        if not rows:
-            continue
-        out.append(f"\n## {kind.capitalize()}s ({len(rows)})\n")
-        out.append("| id | stage | items | when | says | evidence | source |\n|---|---|---|---|---|---|---|")
-        for e in rows:
-            says = e["says"] + (f" [status: {e['status']}; animal: {e['animal']}]" if kind == "weapon" else "")
-            out.append(f"| {e['id']} | {e['stage']} | {cell(', '.join(e.get('items') or []))} | {cell(e.get('when'))} | "
-                       f"{cell(says)} | {cell(e.get('evidence'))} | {cell(e.get('source'))} |")
-    return "\n".join(out) + "\n"
+    """The readings at ``as_of`` - app/strategy/knowledge.features on the stored history."""
+    return K.features(frames(), as_of)
 
 
 def main() -> None:
@@ -251,7 +61,6 @@ def main() -> None:
         (HERE / "KNOWLEDGE.md").write_text(render(entries), encoding="utf-8")
         print(f"KNOWLEDGE.md written ({len(entries)} entries)")
     elif cmd == "now":
-        sys.path.insert(0, str(ENTRY))
         import zone_wait as zw
 
         as_of = (pd.Timestamp(sys.argv[2], tz="UTC") if len(sys.argv) > 2

@@ -1,4 +1,4 @@
-kb.py: control (no bug): PASSED - 51 passed in 0.65s
+knowledge.py: control (no bug): PASSED - 53 passed in 1.07s
    1. '>' read as '>=': CAUGHT by test_one_condition[1.1->
    2. '<' read as '<=': CAUGHT by test_one_condition[60.0-<
    3. a negative threshold not parsed: CAUGHT by test_one_condition[-0.5->
@@ -26,4 +26,8 @@ kb.py: control (no bug): PASSED - 51 passed in 0.65s
   25. a behaviour name with spaces passes: CAUGHT by test_behavior_problems_are_named[bad0-O01:
   26. a behaviour without readings passes: CAUGHT by test_behavior_problems_are_named[bad1-O01:
   27. a behaviour named twice passes: CAUGHT by test_behavior_problems_are_named[bad2-the
-caught 27 / 27
+  28. the M5 frame reads the forming M1 bar: CAUGHT by test_m5_frame_from_the_closed_m1_bars
+  29. the M5 volume averaged: CAUGHT by test_m5_frame_from_the_closed_m1_bars
+  30. the window takes the forming bar: CAUGHT by test_bars_of_and_the_window_read_closed_bars_only
+  31. the bars close at the open: CAUGHT by test_bars_of_and_the_window_read_closed_bars_only
+caught 31 / 31
