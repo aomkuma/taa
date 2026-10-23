@@ -46,3 +46,6 @@
 - Open point: the code's step = D1 ATR(20); after the February 2026 crash it rose to 220-240 USD, far above the
   owner's 70-90 (journal week 17: targets out of reach). To measure on the old years: do H4 turns keep ~70-90 USD
   spacing when the ATR is high, or widen with it?
+- Resolved (owner 2026-10-23): "my lines are the picture at the moment of the capture" - the owner's lines breathe
+  too; compare the grid at the capture time only. On 2026-10-23 the grid (anchor 4,142.26, step 74.08) gives
+  4,142.3 / 4,068.2 / 3,994.1 against the owner's 4,141.83 / 4,066.41 / 3,989.57 (0.5-4.5 USD): the daily step stays.
