@@ -1,0 +1,3 @@
+structure mismatches per frame (of 300): {'D1': 0, 'H4': 0, 'H1': 0, 'M15': 0}
+phase vs run3 mismatches (of 300): 0
+PARITY OK

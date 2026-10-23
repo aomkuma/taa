@@ -41,7 +41,7 @@ M1 / M15 by the adaptive rule). Triggers are only the ways a candidate appears; 
 | # | Component | Definition (inputs at the decision time) | Reading |
 |---|---|---|---|
 | C1 | Entry precision | `late` = distance from the move's start (the level / the pattern extreme) to the entry, in zone steps; `stop_pool` = the stop's distance beyond the nearest pool (swing high/low, round 10 USD, the previous day's high/low, a swept wick) in D1 ATR - negative = the stop sits inside the pool | late small, stop beyond the pool: + |
-| C2 | Structure and clarity | the last two confirmed 3-bar fractal highs and lows on the entry TF and the one above: HH/HL = +1, LH/LL = -1, mixed = 0, times the side; clarity = the pattern's swings each >= 0.25 step and the entry-TF ATR below its 20-day median x 1.5 | agrees and clear: + |
+| C2 | Structure and clarity | the last two confirmed 3-bar fractal highs and lows on the entry TF and the one above: HH/HL = +1, LH/LL = -1, mixed = 0, times the side; clarity = the last four swings alternate high / low and every leg >= 2 x the frame's ATR(14) (code: `structure_read.py`) | agrees and clear: + |
 | C3 | Trend and phase | the structure sign on D1, H4, H1, M15 times the side; phase = the last 3 closed D1 bars closed the same way (one-way run) or not | per the measured interaction (a turn against a one-way run: -) |
 | C4 | Momentum at the level | the approach: the move into the level over the last 10 entry-TF bars in D1 ATR; touches of the level's band in 5 days; the bounce of each touch (shrinking = worn) | a spent approach and fresh level for a turn: + |
 | C5 | Zone plan | where the entry sits in the 70-90 USD grid (share of a step to the nearest line); the room to the next line beyond the target side in R | room >= 2 R: + |
@@ -73,3 +73,11 @@ one weight per component; the number of fitted values stays small next to the nu
    target 4,066) and C1-C9 must read it as the chart does; plus a losing B2 case read as late (C1).
 6. **Parity**: the bot's backtest on ticks and the research run produce the same candidates and readings on the same
    days.
+
+## Progress (code that passed sections 4.2-4.4)
+
+| Module | Components | Hand-worked tests | Planted bugs | Independent check |
+|---|---|---|---|---|
+| `app/strategy/zone_grid.py` | C5 grid | 18 | 13 / 13 | parity with the research grid, 1,327 D1 bars |
+| `app/strategy/strong_levels.py` | C1 pools, C5b strong levels, zone lines + halves | 23 | 22 / 22 | plain-loop re-derivation 120 / 120; 2025 snapshots drawn for the owner (accepted 2026-10-23: "OK, overlap is normal") |
+| `app/strategy/structure_read.py` | C2 structure + clarity, C3 trend + phase | 19 | 12 / 12 | parity with the research structure / run3 at 300 times on D1 / H4 / H1 / M15 |
