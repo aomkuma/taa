@@ -1,0 +1,25 @@
+{
+ "exit": "hold90",
+ "rules": {
+  "vol": 1,
+  "news": 1
+ },
+ "shadows": {},
+ "pieces": {
+  "lonresume": 10
+ },
+ "stopped": {
+  "B2": 2,
+  "retest": 9
+ },
+ "deleted": {
+  "near": 19
+ },
+ "log": [
+  "after week 1: piece=B2:stop",
+  "after week 8: piece=retest:stop",
+  "after week 9: piece=lonresume:start",
+  "after week 11: exit=hold90",
+  "after week 18: delete=near"
+ ]
+}
