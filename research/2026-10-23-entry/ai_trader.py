@@ -158,7 +158,7 @@ def brakes(entries: list[dict], f: dict, d: StepDecision) -> tuple[str, list[str
     return d.size, []
 
 
-def decide(as_of: pd.Timestamp, journal: str, model: str | None = None) -> dict:
+def decide(as_of: pd.Timestamp, journal: str, model: str | None = None, source: str = "manual") -> dict:
     """One AI decision at ``as_of`` with the code's brakes; the raw prompt and answer are kept in ai/raw/."""
     import behaviors as bh
     import zone_wait as zw
@@ -181,7 +181,7 @@ def decide(as_of: pd.Timestamp, journal: str, model: str | None = None) -> dict:
     (raw / f"{stem}_2_user.txt").write_text(user, encoding="utf-8")
     ans = ask_cached(env.AI_API_KEY.get_secret_value(), model or env.AI_MODEL, system, user)
     parsed = ans.pop("parsed", None)
-    rec = {"as_of": as_of.isoformat(), **ans}
+    rec = {"as_of": as_of.isoformat(), "source": source, **ans}
     if parsed is not None:
         d: StepDecision = parsed
         size, vetoes = brakes(entries, f, d)

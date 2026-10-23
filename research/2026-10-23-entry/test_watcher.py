@@ -49,10 +49,12 @@ def test_the_30_minute_check_only_in_the_owners_windows():
 
 
 def test_spent_today_counts_the_thai_day():
-    rows = [{"as_of": "2026-10-23T16:59:00+00:00", "cost_usd": 0.01},   # 23:59 Thai, 23 Oct
-            {"as_of": "2026-10-23T17:00:00+00:00", "cost_usd": 0.02},   # 00:00 Thai, 24 Oct
-            {"as_of": "2026-10-24T01:00:00+00:00", "cost_usd": 0.03},   # 08:00 Thai, 24 Oct
-            {"as_of": "2026-10-24T02:00:00+00:00"}]                     # an error: no cost
+    rows = [{"as_of": "2026-10-23T16:59:00+00:00", "cost_usd": 0.01, "source": "watcher"},  # 23:59 Thai, 23 Oct
+            {"as_of": "2026-10-23T17:00:00+00:00", "cost_usd": 0.02, "source": "watcher"},  # 00:00 Thai, 24 Oct
+            {"as_of": "2026-10-24T01:00:00+00:00", "cost_usd": 0.03, "source": "watcher"},  # 08:00 Thai, 24 Oct
+            {"as_of": "2026-10-24T01:30:00+00:00", "cost_usd": 0.50, "source": "manual"},   # a test call: not counted
+            {"as_of": "2026-10-24T01:40:00+00:00", "cost_usd": 0.50},                       # an old row: not counted
+            {"as_of": "2026-10-24T02:00:00+00:00", "source": "watcher"}]                    # an error: no cost
     assert w.spent_today(rows, pd.Timestamp("2026-10-24T02:30", tz="UTC")) == pytest.approx(0.05)
     assert w.spent_today(rows, pd.Timestamp("2026-10-23T10:00", tz="UTC")) == pytest.approx(0.01)
     # 01:00 Thai on 24 Oct is still 23 Oct in UTC: the Thai day counts

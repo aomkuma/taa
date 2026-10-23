@@ -59,9 +59,11 @@ def wake_reasons(now: pd.Timestamp, last_call: pd.Timestamp | None, above: float
 
 
 def spent_today(rows: list[dict], now: pd.Timestamp) -> float:
-    """The AI's spend (USD) on the Thai day of ``now``, from ai/decisions.jsonl rows."""
+    """The watcher's AI spend (USD) on the Thai day of ``now``, from ai/decisions.jsonl rows (manual and test calls,
+    source != 'watcher', are not counted - owner 2026-10-23: the day's building cost is outside the budget)."""
     day = now.tz_convert(TH).date()
-    return sum(float(r.get("cost_usd") or 0) for r in rows if pd.Timestamp(r["as_of"]).tz_convert(TH).date() == day)
+    return sum(float(r.get("cost_usd") or 0) for r in rows
+               if r.get("source") == "watcher" and pd.Timestamp(r["as_of"]).tz_convert(TH).date() == day)
 
 
 def refresh(frames: str) -> None:
@@ -110,7 +112,7 @@ def main() -> None:
             session = HERE / "ai" / f"session_{now.tz_convert(TH):%Y-%m-%d}.md"
             text = (ai_trader.tail(journal.read_text(encoding="utf-8"), 3500) + "\n\nTHE AI'S OWN EARLIER CALLS:\n"
                     + (ai_trader.tail(session.read_text(encoding="utf-8"), 1500) if session.exists() else "(none)"))
-            rec = ai_trader.decide(now, text, MODEL)
+            rec = ai_trader.decide(now, text, MODEL, source="watcher")
             d = rec.get("decision") or {}
             state = {"last_call": now.isoformat(), "watch_above": d.get("watch_above"), "watch_below": d.get("watch_below"),
                      "behaviours_at_call": sorted(behaviours), "behaviours": sorted(behaviours)}

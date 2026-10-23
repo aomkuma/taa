@@ -21,7 +21,8 @@ BUGS = [
     ("the heartbeat at 45 minutes", [("HEARTBEAT, COOLDOWN, STOP_IDLE = 30, 15, 60", "HEARTBEAT, COOLDOWN, STOP_IDLE = 45, 15, 60")]),
     ("the cooldown at 5 minutes", [("HEARTBEAT, COOLDOWN, STOP_IDLE = 30, 15, 60", "HEARTBEAT, COOLDOWN, STOP_IDLE = 30, 5, 60")]),
     ("the heartbeat outside the windows too", [("    if in_window and minutes >= HEARTBEAT:", "    if minutes >= HEARTBEAT:")]),
-    ("the spend of every day", [("for r in rows if pd.Timestamp(r[\"as_of\"]).tz_convert(TH).date() == day)", "for r in rows)")]),
+    ("the spend of every day", [("if r.get(\"source\") == \"watcher\" and pd.Timestamp(r[\"as_of\"]).tz_convert(TH).date() == day)", "if r.get(\"source\") == \"watcher\")")]),
+    ("manual calls counted too", [("if r.get(\"source\") == \"watcher\" and pd.Timestamp", "if pd.Timestamp")]),
     ("the spend's day in UTC", [("day = now.tz_convert(TH).date()", "day = now.date()")]),
     ("the heartbeat strictly after", [("and minutes >= HEARTBEAT:", "and minutes > HEARTBEAT:")]),
 ]
