@@ -48,6 +48,25 @@ outranks earlier targets where they differ. Results never promise profit; they d
 - **Learn from the losing trades** (owner, 2026-10-17): "learning from losers is the heart of developing a
   trade; catch the timing and the signals." The real losing trades teach more than one human's opinion; the
   owner's own habits are hypotheses for the data to test.
+- **The entry decides (owner, repeated many times; written down 2026-10-23).** Three conditions for every entry,
+  checked before any exit or filter is tuned:
+  1. **A precise entry, and a stop that is not in a liquidation zone.** Enter at the level where the turn or the
+     run starts, not after the move has happened; the stop sits beyond the structure that would prove the trade
+     wrong, never where the obvious stops of everyone else sit (just past the swing, the round number, the
+     pool) - those get swept.
+  2. **Enter when the price structure shows a clear enough picture.** The pattern / structure must be readable on
+     the entry timeframe (and agree with the next one up); no entry on a half-formed or noisy picture.
+  3. **Trend and momentum.** Know the trend of the larger frames and the momentum at the level (how price arrived,
+     how hard, how many touches) before taking the trade; a turn against a strong run needs the run to be spent.
+
+  **Why this is written down:** the NY-B2 journal (26 learning weeks) tuned exits and filters around an entry
+  that broke rule 1 - the bot's B2 entered a median 1.7-1.8 pattern heights past the pattern's extreme (the classic
+  measured move ends at 2) with a stop 1.8 heights away, so after the entry the median best move was 0.4-0.6 R. It
+  looked break-even while learning and lost in both exams (research journal, PLAN1_JOURNAL.md, "late entry";
+  `ny_b2/late_entry.py`). **How to apply:** for every piece, measure the entry geometry on every trade first - how
+  far price had already moved from the level when we entered, the stop in units of that move and against the
+  nearby pools, and the median best / worst after the entry; a piece whose median best is under about 1 R gets a
+  new entry, not more rules.
 - **Try hard, judge honestly.** A test that finds no edge for one factor alone is not the end: test it jointly
   with location, timing and the flow above (an effect can be zero on average and strong in a context). Rules are
   written down before the data that judges them, and the held-out years stay untouched until then.
