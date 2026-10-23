@@ -8,7 +8,7 @@ from __future__ import annotations
 from plant import ROOT, main
 
 BUGS = [
-    ("look-ahead: a D1 row known at its open", [("np.asarray(t_open, dtype=np.int64) + NS_DAY", "np.asarray(t_open, dtype=np.int64)")]),
+    ("look-ahead: a D1 row known at its open", [("np.asarray(t_open, dtype=np.int64) + bar_ns", "np.asarray(t_open, dtype=np.int64)")]),
     ("look-ahead: a row known 23 h after its open", [("NS_DAY = 24 * 60 * 60 * 10**9", "NS_DAY = 23 * 60 * 60 * 10**9")]),
     ("the base includes the impulse bar", [("top = np.maximum(o[i - BASE_N : i], c[i - BASE_N : i])", "top = np.maximum(o[i - BASE_N + 1 : i + 1], c[i - BASE_N + 1 : i + 1])"),
                                           ("bottom = np.minimum(o[i - BASE_N : i], c[i - BASE_N : i])", "bottom = np.minimum(o[i - BASE_N + 1 : i + 1], c[i - BASE_N + 1 : i + 1])")]),

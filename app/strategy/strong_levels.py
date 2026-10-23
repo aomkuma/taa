@@ -7,10 +7,10 @@ price may reach"; "the stop must not sit in a liquidation zone".
 - **Swings:** fractal highs / lows of order ``k`` (higher / lower than the ``k`` bars on each side, ties
   none), known only once the ``k`` bars after them have closed. A swing's turn = how far price went away from
   it over the ``TURN_BARS`` bars after it (only bars closed by the decision count).
-- **Strong levels** (C5b): the swings of the last ``LOOKBACK_H4`` H4 and ``LOOKBACK_D1`` D1 bars, merged when
-  within ``MERGE_STEP`` x the zone step of the cluster's mean; a level is strong with 2+ touches or a turn of
-  at least ``MAJOR_STEP`` steps. The anchors of past zone shifts and the lookback's highest high / lowest low
-  are strong too.
+- **Strong levels** (C5b): the swings of the last ``LOOKBACK_NEAR`` bars of the near frame and
+  ``LOOKBACK_FAR`` of the far frame (gold intraday: H4 and D1), merged when within ``MERGE_STEP`` x the zone
+  step of the cluster's mean; a level is strong with 2+ touches or a turn of at least ``MAJOR_STEP`` steps.
+  The anchors of past zone shifts and the lookback's highest high / lowest low are strong too.
 - **Pools** (C1): where the obvious stops sit - the recent swings of the entry timeframe and H1, the previous
   server day's high / low, the round numbers (every ``ROUND_USD``). A stop within ``POOL_BAND_STEP`` x step
   (at least ``POOL_BAND_MIN`` USD) beyond a pool sits in the liquidation zone.
@@ -29,8 +29,8 @@ from app.strategy.plan1_b2 import Bars
 FloatArray = np.ndarray
 FRACTAL_K = 2
 TURN_BARS = 12
-LOOKBACK_H4 = 500
-LOOKBACK_D1 = 250
+LOOKBACK_NEAR = 500
+LOOKBACK_FAR = 250
 MERGE_STEP = 0.15
 MAJOR_STEP = 1.0
 POOL_BAND_STEP = 0.05
@@ -107,17 +107,18 @@ def merge(items: Sequence[Swing], tol: float) -> list[Level]:
 
 
 def strong_levels(
-    h4: Bars, d1: Bars, t: int, step: float, shift_anchors: Sequence[float] = ()
+    near: Bars, far: Bars, t: int, step: float, shift_anchors: Sequence[float] = ()
 ) -> list[Level]:
-    """The strong levels known at ``t``, sorted by price (``step`` = the zone step in force)."""
+    """The strong levels known at ``t``, sorted by price. ``near`` / ``far``: two frames above the entry
+    timeframe (gold intraday: H4 / D1; no timeframe is fixed, owner 2026-10-23); ``step``: the zone step."""
     if not (math.isfinite(step) and step > 0):
         return []
-    found = swings(h4, t, last=LOOKBACK_H4) + swings(d1, t, last=LOOKBACK_D1)
+    found = swings(near, t, last=LOOKBACK_NEAR) + swings(far, t, last=LOOKBACK_FAR)
     out = [lv for lv in merge(found, MERGE_STEP * step) if lv.touches >= 2 or lv.turn >= MAJOR_STEP * step]
     out += [Level(float(a), 1, math.nan, 0, "shift") for a in shift_anchors if math.isfinite(a)]
-    x = closed(h4, t)
+    x = closed(near, t)
     if len(x.c):
-        span = slice(max(0, len(x.c) - LOOKBACK_H4), None)
+        span = slice(max(0, len(x.c) - LOOKBACK_NEAR), None)
         out += [
             Level(float(x.h[span].max()), 1, math.nan, 1, "extreme"),
             Level(float(x.lo[span].min()), 1, math.nan, -1, "extreme"),

@@ -81,6 +81,12 @@ outranks earlier targets where they differ. Results never promise profit; they d
   far price had already moved from the level when we entered, the stop in units of that move and against the
   nearby pools, and the median best / worst after the entry; a piece whose median best is under about 1 R gets a
   new entry, not more rules.
+- **No fixed timeframe - principles that work on every TF (owner, 2026-10-23).** Every condition (zones, strong
+  levels, structure, trend, momentum, entry precision, pools) is a principle applied to frames named by their
+  place relative to the entry timeframe (the entry frame, the one above, the trend frames, the zone frame),
+  with every threshold in that frame's bars / ATR / zone steps; the same system then runs on any entry
+  timeframe. The mapping for gold intraday (M5 entry, D1 zones, H4 / D1 far view) is a starting point,
+  measured, not fixed.
 - **One trade = all the evidence, weighted (owner, 2026-10-23).** No entry rests on one parameter or a few: every
   decision puts together everything learned since the work began, each part weighted by how much it matters - the
   zone plan (where price sits in the 70-90 USD grid, room to the next line), the structure and how clear it is (HH/HL

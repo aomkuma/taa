@@ -49,8 +49,12 @@ class GridState:
     row: int  # the D1 row in force (-1: none known yet)
 
 
-def grid_rows(t_open: np.ndarray, o: FloatArray, h: FloatArray, lo: FloatArray, c: FloatArray) -> GridRows:
-    """The grid of every D1 bar (``t_open`` int64 ns, ascending)."""
+def grid_rows(
+    t_open: np.ndarray, o: FloatArray, h: FloatArray, lo: FloatArray, c: FloatArray, bar_ns: int = NS_DAY
+) -> GridRows:
+    """The grid of every bar of the zone timeframe (``t_open`` int64 ns ascending, ``bar_ns`` its length; D1
+    by default). Owner 2026-10-23: no timeframe is fixed - the same grid applies to the frame the trade's
+    scale calls for."""
     atr = mt5_atr(h, lo, c, ATR_N)
     n = len(c)
     anchor = np.full(n, np.nan)
@@ -64,7 +68,7 @@ def grid_rows(t_open: np.ndarray, o: FloatArray, h: FloatArray, lo: FloatArray, 
             current = float(top.max() if body < 0 else bottom.min())
             shift[i] = -1 if body < 0 else 1
         anchor[i] = current
-    return GridRows(np.asarray(t_open, dtype=np.int64) + NS_DAY, anchor, atr, shift)
+    return GridRows(np.asarray(t_open, dtype=np.int64) + bar_ns, anchor, atr, shift)
 
 
 def grid_at(rows: GridRows, t: int) -> GridState:

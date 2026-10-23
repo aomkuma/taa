@@ -8,6 +8,22 @@ This file is the contract the code is written and tested against. Every definiti
 that contains the decision time is never read), times in UTC internally (Thai time only in reports), prices in USD,
 distances also in D1 ATR(20) and in zone steps. Indicators use MT5's formulas (`precursors/foundation.py`).
 
+## 0. No fixed timeframe (owner 2026-10-23)
+
+"Do not fix the timeframe - treat every condition as a principle that applies the same idea and system to every
+TF." Every component is written for frames named by their place relative to the entry timeframe E on the ladder
+M1 - M5 - M15 - M30 - H1 - H4 - D1 - W1 - MN, never by a fixed name:
+
+- **E** the entry / exit / stop frame; **E+1** the frame that must agree with the picture (C2);
+- **trend frames** E+1 .. E+4 (C3); **zone frame** Z (the grid's step = Z's ATR(20)); **near / far frames** for the
+  strong levels (C5b, several hundred bars each);
+- every threshold in bars of its own frame, in its ATR or in zone steps - never in minutes, hours or USD (the only
+  USD numbers: the round-number spacing and the band floor, both instrument facts).
+
+Gold intraday (the owner's framework: M1-M5 entry, M15-H1 trend, D1 side) maps to E = M5, Z = D1, near / far =
+H4 / D1; the offsets for other E are measured, not assumed. The code takes the frames as inputs
+(`zone_grid.grid_rows(..., bar_ns)`, `strong_levels.strong_levels(near, far, ...)`).
+
 ## 1. Candidate (what is assessed)
 
 A candidate = (time, side, entry price, stop, target) produced by a trigger on the entry timeframe (M5 by default,

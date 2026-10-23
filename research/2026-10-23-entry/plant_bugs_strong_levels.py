@@ -17,7 +17,7 @@ BUGS = [
     ("strong with one touch", [("if lv.touches >= 2 or lv.turn >= MAJOR_STEP * step", "if lv.touches >= 1 or lv.turn >= MAJOR_STEP * step")]),
     ("a major turn strictly above", [("lv.turn >= MAJOR_STEP * step", "lv.turn > MAJOR_STEP * step")]),
     ("shift anchors dropped", [('out += [Level(float(a), 1, math.nan, 0, "shift") for a in shift_anchors if math.isfinite(a)]', "out += []")]),
-    ("room aims at the level, not its band", [("ahead = [lv.price - band for lv in levels if lv.price - band > entry] if side > 0 else [", "ahead = [lv.price for lv in levels if lv.price > entry] if side > 0 else [")]),
+    ("room aims at the level, not its band", [("[lv.price - band for lv in levels if lv.price - band > entry]", "[lv.price for lv in levels if lv.price > entry]")]),
     ("room takes the farthest level", [("edge = min(ahead) if side > 0 else max(ahead)", "edge = max(ahead) if side > 0 else min(ahead)")]),
     ("pool band floor 0.5", [("POOL_BAND_MIN = 1.0", "POOL_BAND_MIN = 0.5")]),
     ("pool band 0.1 step", [("POOL_BAND_STEP = 0.05", "POOL_BAND_STEP = 0.1")]),
