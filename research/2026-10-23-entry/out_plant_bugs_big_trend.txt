@@ -1,0 +1,2 @@
+   3. the running leg ignored: CAUGHT by test_the_running_leg_makes_the_lower_low
+caught 9 / 9

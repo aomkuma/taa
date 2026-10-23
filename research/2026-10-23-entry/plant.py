@@ -56,6 +56,9 @@ def main(name: str, test: Path, bugs: list[tuple[str, list[tuple[str, str]]]]) -
     caught = 0
     for k, (label, edits) in enumerate(bugs, 1):
         ok, line = run(name, mutate(src, edits), test)
+        if any(x in line for x in ("SyntaxError", "IndentationError", "source_to_code")):
+            print(f"  {k:2d}. {label}: INVALID EDIT (the bug does not compile - not a catch)", flush=True)
+            continue
         caught += not ok
         print(f"  {k:2d}. {label}: {'CAUGHT by ' + line if not ok else 'MISSED'}", flush=True)
     print(f"caught {caught} / {len(bugs)}")
