@@ -2073,6 +2073,81 @@ research/2026-10-18-moments/agents/journal/PLAN1_JOURNAL.md). PAPER only; both i
 - [x] parity of B2 and of the whole lane (one position at a time) against `plan1_trades_learn_s0_x0.parquet`
 - [ ] PAPER run on the real FBS demo terminal (read-only quotes), the journal read back from the decision log
 
+### Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37)
+
+The owner (2026-10-23): the AI chooses the trade like the research's shadow trader, and the engine runs exactly the
+code that was tested. Supersedes §A35's "propose only" for this path; Phase 16's provider work (1604's per-call
+overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai_trader.py, knowledge/).
+
+#### TAA-1801 — PLAN revision 9 and tickets
+
+- **Status:** DONE
+- **Depends on:** —
+
+- [x] PLAN §A37 (roles, the owner's decision, the rules kept)
+- [x] Phase 18 tickets
+
+#### TAA-1802 — The readers in `app/strategy` (rhythm, picture, behaviours, day levels)
+
+- **Status:** TODO
+- **Depends on:** 1801
+
+- [ ] `app/strategy/rhythm.py` (rhythm_scan's rhythm), `picture.py` (pools, sweeps, squeeze range), `behaviors.py` (efficiency, line break, climax, runaway, Asia handover, recent / level sweep, day levels / prices)
+- [ ] the research scripts import them (no second copy); their printed output unchanged on the same times
+- [ ] hand-worked tests and planted bugs moved with them; ruff, mypy, bandit, the architecture test
+
+#### TAA-1803 — The knowledge base in `app/strategy/knowledge`
+
+- **Status:** TODO
+- **Depends on:** 1802
+
+- [ ] `kb.yaml` moved; pure `validate` / `applies` / `brief` / `behaviors_now` / `render`
+- [ ] `features(...)` from bars handed in (no file reads), equal to the research readings at many times
+- [ ] research `knowledge/kb.py` a thin wrapper (the parquet loader only); tests and planted bugs
+
+#### TAA-1804 — The AI trader in `app/ai/trader.py`
+
+- **Status:** TODO
+- **Depends on:** 1803
+
+- [ ] the prompt built from the knowledge base, the readings, the day's levels, the readers' lines and the journal tail; `StepDecision`
+- [ ] the provider: a cached system prompt, per-call model / effort, the cost with cache reads and writes; fake-client tests (OK, refusal, timeout, invalid)
+- [ ] the brakes and owner suspensions; every prompt and answer stored
+
+#### TAA-1805 — The watcher in the engine
+
+- **Status:** TODO
+- **Depends on:** 1804
+
+- [ ] `app/ai/watcher.py`: wake rules, the daily budget (the watcher's calls), state persisted
+- [ ] the engine loop calls it on every closed M1 bar (an `ai_trader` lane, `enabled: false`)
+- [ ] tests (wake rules, budget, the lane off by default)
+
+#### TAA-1806 — AI decisions through the decision engine
+
+- **Status:** TODO
+- **Depends on:** 1805
+
+- [ ] SELL / BUY -> an ordinary signal (entry, stop, target; conviction half / full -> the risk factor) through the sizer, the mode gate and every check
+- [ ] market now or a pending order with an expiry; HOLD / EXIT for the lane's own open positions; the broker-side SL / TP
+- [ ] PAPER fills; tests
+
+#### TAA-1807 — Replays through the same entry point
+
+- **Status:** TODO
+- **Depends on:** 1806
+
+- [ ] a replay of past days: a manual clock, tick fills, the AI's answers stored by input hash (repeatable, cost bounded)
+- [ ] a parity check: the live shadow's decisions of 2026-10-23 re-created from the stored answers
+
+#### TAA-1808 — PAPER on the real terminal, then DEMO on the owner's word
+
+- **Status:** TODO
+- **Depends on:** 1807
+
+- [ ] PAPER run with read-only quotes; the journal and the decisions read back
+- [ ] DEMO only when the owner says so; LIVE never before Phase 14 and the owner's go-ahead
+
 ### Phase 15 — Product-scale backlog (deferred)
 
 Work that only pays off once other users are served. Moved here on 2026-10-04 so the phases that matter for the

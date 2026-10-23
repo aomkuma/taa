@@ -2744,6 +2744,32 @@ correct side, stop distance, RR after spread, expiry cap); the AI never sizes, w
 position or bypasses a check; evaluation is forward only (a model may have seen historical prices). Tickets:
 Phase 16 in docs/TICKETS.md.
 
+## A37. The AI trader in the engine - one code path for test and live (rev. 9)
+
+**Why (2026-10-23, owner):** "we trade like real trading: watch the price behaviour and pick the setup with the most
+edge" and "it must be the same principle as what we do - testing one way and using another, what use is that?". The
+research built an AI trader that night (research/2026-10-23-entry: the knowledge base, the behaviour readers, the
+watcher that wakes the AI, the AI's decision, the code's brakes); the engine's AI (§A35, R21) can only veto a code
+signal. Rule-by-rule setups had failed their exams (research/2026-10-18-moments/agents/CHECKLIST.md rows 1-65).
+
+**Decision (owner, 2026-10-23), superseding §A35's "the AI only proposes":** the AI **chooses** the trade (or to
+wait) from the same readings, knowledge base and journal the research uses; the engine runs **the very modules the
+research and the replays run** - no parallel copy.
+
+| Role | Who | Does |
+|---|---|---|
+| Eyes | code (`app/strategy`: rhythm, picture, behaviours, levels) | reads every closed bar; pure functions on bars |
+| Memory | `app/strategy/knowledge/kb.yaml` + pure matching | the owner's principles, rules, weapons, shadows, findings, failed methods, lessons |
+| Watcher | code (`app/ai/watcher.py`) | every M1 bar; wakes the AI on its own watch prices, a new moving behaviour, a 30-minute check in the owner's windows; a daily budget cap |
+| Judgment | the AI (`app/ai/trader.py`, Sonnet 5.5, cached prompt) | one decision: WAIT / SELL / BUY / HOLD / EXIT with entry, stop, target, conviction, watch prices |
+| Brakes | code | rules in force with a stand-aside action veto a new trade (owner-suspendable for a while, recorded) |
+| Executor | engine | an AI SELL / BUY becomes an ordinary signal: the risk sizer (the owner's profile; conviction 'half' halves it), the mode gate and every check; market now, or a pending order with an expiry |
+
+**Rules kept from §A35 / R21:** the AI never sizes beyond the profile, never widens a stop, never bypasses a check;
+an AI failure is HOLD; every prompt and answer is stored; PAPER first, DEMO only on the owner's word, LIVE never
+before Phase 14 and the owner's go-ahead. Replays of past days go through the same entry point (a manual clock,
+tick fills, the AI's answers stored by input hash so a replay is repeatable and its cost bounded). Tickets: Phase 18.
+
 ## A36. Aggressive Trading-profile preset for small accounts (rev. 8)
 
 **Why (2026-10-14, owner):** a second, **aggressive** risk profile for small accounts that accept high risk:
