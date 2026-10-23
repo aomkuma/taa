@@ -1249,3 +1249,20 @@ stand-aside -0.187 on 67; as it stood at week 26 -0.222 on 47. The re-test piece
 stored ticks' end - to check). Accounts (proposal = exit + vol + re-test): 100 USD wiped by week 5, 300 USD down to
 5 USD; base 100 wiped, 300 wiped. Weeks won 6 / 9 / 10 of 26. **FAIL** (CHECKLIST row 65): the exit was a real
 improvement (+0.09 R a trade in every variant) but around an entry that had no edge (+0.008 in learning).
+
+### The solo exam (a fresh agent, 2026-10-23; `ny_b2/solo_agent/`) and its reconciliation
+
+A fresh agent ran the 26 exam weeks alone from an isolated worktree at a9dd8ce (the journal's end), with the protocol
+written before week 1. Realized -9.68 R on 20 trades (5 won), no-learning (the start state unchanged) -13.15 on 59,
+base -26.95 on 93 (week 25 added after the bar hole 2026-10-05..12 was refilled and the bot re-run, `exam_w25/`;
+`solo_agent/reconcile.py`, `out_reconcile.txt`). Accounts: the 100 USD account blown in week 3 (no-learning week 5),
+the 300 USD account 71.99 (no-learning 61.56). Decisions: B2 stopped after week 1 (the protocol's -3 R rule), the
+re-test stopped after week 8, one new piece (London resumes yesterday's strong day) from week 10: -1.38 R on 10;
+the exit to a 90-min hold after week 11; the near-line rule deleted after week 18; 17 candidate pieces gated, 1 passed.
+
+Had B2 not been stopped (each signal under the exit and rules in force that week): B2 -11.69 R on 52 more, the
+realized line -16.89 on 67, the 300 USD account blown in week 25 - stopping was right in direction, but on one week's
+evidence. A slower stop (below -3 R after at least 4 weeks and 10 trades) would have stopped B2 after week 6 (-3.05 on
+12): **the stop rule for the next solo exams.** The vol stand-aside held again (-5.44 R on 25 skipped).
+Exposure noted: the agent saw this file's PLAN-1 exam headings (coarse gold prices of exam weeks 1-7) and one
+coordinator message (keep a no-learning line); both disclosed in its report.

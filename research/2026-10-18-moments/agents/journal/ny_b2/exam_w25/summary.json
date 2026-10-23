@@ -1,0 +1,61 @@
+{
+  "decisions": {
+    "ACCEPT": 5
+  },
+  "limitations": [
+    "bar-based approximation: the order of prices inside a bar is unknown (SL assumed first)",
+    "spread from the bar field or a fixed model, not tick-accurate",
+    "no requotes, partial fills or rejections other than margin",
+    "news gaps and weekend gaps are only seen at the next bar's open",
+    "past results do not predict future results"
+  ],
+  "metrics": {
+    "avg_loss_r": -0.7877290249718735,
+    "avg_mae_r": 0.7055464288114994,
+    "avg_mfe_r": 0.3146179608529597,
+    "avg_win_r": 0.39818548387094943,
+    "cagr_percent": -27.2667818710432,
+    "calmar": -49.49197729714545,
+    "commission": 0.0,
+    "expectancy_money": -8.612000000000808,
+    "expectancy_r": -0.5505461232033089,
+    "exposure_percent": 1.809954751131222,
+    "final_equity": 9956.939999999995,
+    "gross_loss": 50.960000000003674,
+    "gross_profit": 7.899999999999636,
+    "initial_equity": 10000.0,
+    "longest_drawdown_days": 3.265972222222222,
+    "losses": 4,
+    "max_drawdown": 55.16000000000349,
+    "max_drawdown_percent": 0.5509333706215829,
+    "net_profit": -43.06000000000404,
+    "profit_factor": 0.1550235478806724,
+    "sharpe": -10.438871476735747,
+    "sortino": -9.740327882687104,
+    "swap": 0.0,
+    "trades": 5,
+    "win_rate": 20.0,
+    "wins": 1
+  },
+  "period": {
+    "end": "2026-10-09T20:55:00+00:00",
+    "start": "2026-10-04T22:06:00+00:00"
+  },
+  "provenance": {
+    "code_version": "0.1.0",
+    "config_hash": "2fa3072eca8df373",
+    "data_hash": "b0c6e7ee07f352b8a27ee261995a9693",
+    "detectors": [],
+    "seed": 42,
+    "strategies": [
+      "setup_plan1_b2",
+      "setup_plan1_b2m5"
+    ],
+    "tick_minutes": 129
+  },
+  "rejections": {},
+  "signals": 5,
+  "symbols": [
+    "XAUUSD"
+  ]
+}
