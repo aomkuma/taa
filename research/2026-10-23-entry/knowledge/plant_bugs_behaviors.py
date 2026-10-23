@@ -1,4 +1,4 @@
-"""Planted bugs for behaviors.py against test_behaviors.py (plant.main_script).
+"""Planted bugs for app/strategy/behaviors.py against tests/unit/test_strategy_behaviors.py (plant.main; TAA-1802).
 
     .venv/Scripts/python research/2026-10-23-entry/knowledge/plant_bugs_behaviors.py
 """
@@ -10,10 +10,10 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-from plant import main_script  # noqa: E402
+from plant import ROOT, main  # noqa: E402
 
 BUGS = [
-    ("efficiency over n moves read n - 1", [("x = np.asarray(c[-(n + 1):], dtype=float)", "x = np.asarray(c[-n:], dtype=float)")]),
+    ("efficiency over n moves read n - 1", [("x = np.asarray(c[-(n + 1) :], dtype=float)", "x = np.asarray(c[-n:], dtype=float)")]),
     ("efficiency keeps the sign", [("return abs(float(x[-1] - x[0])) / path", "return float(x[-1] - x[0]) / path")]),
     ("efficiency path from the net", [("path = float(np.abs(np.diff(x)).sum())", "path = float(np.abs(x[-1] - x[0]))")]),
     ("efficiency without the length guard", [("    if len(x) < n + 1:\n        return math.nan\n", "")]),
@@ -51,4 +51,4 @@ BUGS = [
 ]
 
 if __name__ == "__main__":
-    main_script(HERE / "behaviors.py", HERE / "test_behaviors.py", BUGS)
+    main("app.strategy.behaviors", ROOT / "tests/unit/test_strategy_behaviors.py", BUGS)

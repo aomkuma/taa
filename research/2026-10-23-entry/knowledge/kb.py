@@ -123,7 +123,7 @@ def features(as_of: pd.Timestamp) -> dict[str, Any]:
     sys.path.insert(0, str(ROOT))
     sys.path.insert(0, str(ENTRY))
     sys.path.insert(0, str(HERE))
-    import behaviors as bh
+    from app.strategy import behaviors as bh
     import picture_read as pr
     import rhythm_scan as rs
     from candidates import FRAMES, frame, window
@@ -151,7 +151,8 @@ def features(as_of: pd.Timestamp) -> dict[str, Any]:
                          "day_range_step": rng, "session": session(as_of), "phase": word[int(ph)],
                          "yesterday": ("strong_up" if day.direction > 0 else "strong_down") if day.strong else "none"}
     for tf in ("M15", "H1", "H4", "D1"):
-        sign, atr, _, leg, big = rs.rhythm(closed(rs.load(tf, as_of), t), t)
+        r = rs.rhythm(closed(rs.load(tf, as_of), t), t)
+        sign, atr, leg, big = r.sign, r.atr, r.leg, r.big
         f[f"{tf.lower()}_rhythm"] = word[sign]
         if tf != "M15":
             f[f"{tf.lower()}_big"] = word[int(big.sign)]

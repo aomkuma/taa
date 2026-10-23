@@ -170,7 +170,7 @@ def brakes(entries: list[dict], f: dict, d: StepDecision, off: frozenset[str] = 
 
 def decide(as_of: pd.Timestamp, journal: str, model: str | None = None, source: str = "manual") -> dict:
     """One AI decision at ``as_of`` with the code's brakes; the raw prompt and answer are kept in ai/raw/."""
-    import behaviors as bh
+    from app.strategy import behaviors as bh
     import zone_wait as zw
 
     entries = kb.load()

@@ -63,7 +63,8 @@ def observe(as_of: pd.Timestamp, m1: pd.DataFrame) -> dict:
     t = as_of.value
     rec: dict = {"as_of": as_of.isoformat(), "price": float(m1.close.iloc[-1])}
     for tf in ("M15", "H1", "H4", "D1"):
-        sign, atr, _, _, big = RS.rhythm(closed(RS.load(tf, as_of), t), t)
+        r = RS.rhythm(closed(RS.load(tf, as_of), t), t)
+        sign, atr, big = r.sign, r.atr, r.big
         rec[f"{tf}_rhythm"], rec[f"{tf}_atr"], rec[f"{tf}_big"] = sign, atr, big.sign
     D1 = frame("D1")[1]
     st = zg.grid_at(zg.grid_rows(D1.t_open, D1.o, D1.h, D1.lo, D1.c), t)

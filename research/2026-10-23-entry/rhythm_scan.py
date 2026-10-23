@@ -24,8 +24,8 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
 import zone_wait as ZW  # noqa: E402
 
-from app.strategy import big_trend as bt  # noqa: E402
-from app.strategy.plan1_b2 import Bars, mt5_atr  # noqa: E402
+from app.strategy.plan1_b2 import Bars  # noqa: E402
+from app.strategy.rhythm import rhythm  # noqa: E402  (TAA-1802: the app's copy is the only one)
 from app.strategy.strong_levels import closed  # noqa: E402
 
 TFS = {"M1": 1, "M5": 5, "M15": 15, "H1": 60, "H4": 240, "D1": 1440}
@@ -46,21 +46,6 @@ def load(tf: str, as_of: pd.Timestamp) -> Bars:
                 d.close.to_numpy(float))
 
 
-def rhythm(x: Bars, t: int) -> tuple[int, float, list, int, "bt.BigTrend"]:
-    """The rhythm of one frame (bars closed by ``t`` already): (sign +1 / -1 / 0 - the last two rhythm highs AND lows
-    the same way AND the big trend agreeing, ATR(14), the rhythm swings, their running leg, the big trend)."""
-    h, lo, c = x.h[-300:], x.lo[-300:], x.c[-300:]
-    atr = float(mt5_atr(h, lo, c, 14)[-1])
-    big = bt.big_trend(x, t)
-    pts, leg, _ = bt.zigzag(h, lo, 2.0 * atr)
-    highs = [p for _, k, p in pts if k == 1][-3:]
-    lows = [p for _, k, p in pts if k == -1][-3:]
-    down = len(highs) >= 2 and len(lows) >= 2 and highs[-1] < highs[-2] and lows[-1] < lows[-2]
-    up = len(highs) >= 2 and len(lows) >= 2 and highs[-1] > highs[-2] and lows[-1] > lows[-2]
-    sign = -1 if down and big.sign < 0 else 1 if up and big.sign > 0 else 0
-    return sign, atr, pts, leg, big
-
-
 def main() -> None:
     as_of = pd.Timestamp(sys.argv[1], tz="UTC") if len(sys.argv) > 1 else pd.Timestamp(ZW.load("M1").index[-1], tz="UTC")
     bars = {tf: load(tf, as_of) for tf in TFS}
@@ -68,7 +53,8 @@ def main() -> None:
     print(f"# Every timeframe at {as_of.tz_convert(TH):%a %d %b %H:%M} Thai\n")
     for tf, b in bars.items():
         x = closed(b, t)
-        sign, atr, pts, _, big = rhythm(x, t)
+        r = rhythm(x, t)
+        sign, atr, pts, big = r.sign, r.atr, r.swings, r.big
         highs = [p for _, k, p in pts if k == 1][-3:]
         lows = [p for _, k, p in pts if k == -1][-3:]
         down = len(highs) >= 2 and len(lows) >= 2 and highs[-1] < highs[-2] and lows[-1] < lows[-2]

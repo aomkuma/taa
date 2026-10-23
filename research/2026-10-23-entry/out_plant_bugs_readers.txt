@@ -1,0 +1,19 @@
+rhythm.py: control (no bug): PASSED - 6 passed in 0.53s
+   1. down needs only lower highs: CAUGHT by test_classify_needs_both_highs_and_lows_and_the_big_trend
+   2. the big trend ignored: CAUGHT by test_classify_needs_both_highs_and_lows_and_the_big_trend
+   3. up and down swapped: CAUGHT by test_falling_highs_and_lows_with_a_falling_big_trend_is_down
+   4. one high is a sequence: CAUGHT by test_classify_needs_both_highs_and_lows_and_the_big_trend
+   5. the first two swings, not the last: CAUGHT by test_classify_needs_both_highs_and_lows_and_the_big_trend
+   6. the ATR from the first bar: CAUGHT by test_the_atr_is_the_last_bars
+caught 6 / 6
+picture.py: control (no bug): PASSED - 9 passed in 0.42s
+   1. clusters of one kept: CAUGHT by test_clusters_group_by_price_and_keep_pairs
+   2. clusters by the first point, not the mean: CAUGHT by test_clusters_group_by_price_and_keep_pairs
+   3. pools far from price kept: CAUGHT by test_pools_far_from_price_or_old_are_dropped
+   4. the pool's edge is its mean: CAUGHT by test_pools_find_the_equal_bottoms_and_their_edge
+   5. a sweep without depth: CAUGHT by test_a_sweep_on_the_last_bar_needs_0_1_atr_depth
+   6. a sweep without the close back: CAUGHT by test_no_sweep_when_it_closes_under_or_does_not_reach_0_1_atr
+   7. a sweep from anywhere: CAUGHT by test_a_sweep_must_come_from_inside_the_pool
+   8. the structure since counts highs only: CAUGHT by test_the_structure_after_a_sweep_needs_higher_lows_and_highs
+   9. the squeeze from the closes: CAUGHT by test_squeeze_range
+caught 9 / 9

@@ -59,6 +59,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 | M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
 | M2 | Phase 17 — Setup OWN lanes (PLAN-1) | 1 | 0 | IN PROGRESS |
+| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 8 | 2 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -2089,12 +2090,12 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 
 #### TAA-1802 — The readers in `app/strategy` (rhythm, picture, behaviours, day levels)
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1801
 
-- [ ] `app/strategy/rhythm.py` (rhythm_scan's rhythm), `picture.py` (pools, sweeps, squeeze range), `behaviors.py` (efficiency, line break, climax, runaway, Asia handover, recent / level sweep, day levels / prices)
-- [ ] the research scripts import them (no second copy); their printed output unchanged on the same times
-- [ ] hand-worked tests and planted bugs moved with them; ruff, mypy, bandit, the architecture test
+- [x] `app/strategy/rhythm.py` (rhythm_scan's rhythm), `picture.py` (pools, sweeps, squeeze range), `behaviors.py` (efficiency, line break, climax, runaway, Asia handover, recent / level sweep, day levels / prices)
+- [x] the research scripts import them (no second copy); their printed output unchanged on the same times
+- [x] hand-worked tests and planted bugs moved with them; ruff, mypy, bandit, the architecture test
 
 #### TAA-1803 — The knowledge base in `app/strategy/knowledge`
 

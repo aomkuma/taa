@@ -1,32 +1,31 @@
-"""The price behaviours (the forest's animals beyond the first drafts; owner 2026-10-23: "which price behaviours are
-still missing?"). Pure functions on closed bars - kb.features() feeds them; the drafts in kb.yaml (O11-O22) combine
-these readings with the ones kb already has. Definitions are drafts to be measured, not rules.
+"""The price behaviours (the forest's animals beyond the first drafts; owner 2026-10-23: "which price
+behaviours are still missing?"; PLAN §A37, TAA-1802). Pure functions on closed bars; the knowledge base's
+drafts (O11-O22) combine these readings with the others. Definitions are drafts to be measured, not rules.
+Moved from research/2026-10-23-entry/knowledge/behaviors.py.
 
-- efficiency    |net move| / the sum of the bar-to-bar moves over the last n closes (1 = one way, 0 = back and forth)
-- line_break    the last close sits beyond a grid line it was not beyond k bars ago (a fresh break, held to now)
-- climax        the last bar: range >= 2 ATR, volume >= 2 x the mean, a wick of half its range (the turn picture)
+- efficiency    |net move| / the sum of the bar-to-bar moves over the last n closes (1 = one way)
+- line_break    the last close sits beyond a grid line it was not beyond k bars ago (a fresh break)
+- climax        the last bar: range >= 2 ATR, volume >= 2 x the mean, a wick of half its range
 - runaway       the day ran >= 1 step one way and price is beyond yesterday's extreme on that side
 - asia_break    after 13:00 Thai: which side of the 07:00-13:00 Thai range today's bars have taken
-- recent_sweep  a sweep of an equal-lows / -highs pool (picture_read) in the last bars
+- recent_sweep  a sweep of an equal-lows / -highs pool (app/strategy/picture.py) in the last bars
+- day_levels / level_prices / level_sweep   the day's own levels and their sweeps (L14, L15)
 """
 
 from __future__ import annotations
 
 import math
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import picture_read as pr  # noqa: E402
+from app.strategy import picture as pr
 
 TH = "Asia/Bangkok"
 
 
 def efficiency(c: np.ndarray, n: int = 12) -> float:
-    x = np.asarray(c[-(n + 1):], dtype=float)
+    x = np.asarray(c[-(n + 1) :], dtype=float)
     if len(x) < n + 1:
         return math.nan
     path = float(np.abs(np.diff(x)).sum())
@@ -34,8 +33,8 @@ def efficiency(c: np.ndarray, n: int = 12) -> float:
 
 
 def line_break(c: np.ndarray, anchor: float, unit: float, k: int = 4) -> str:
-    """'up' / 'down' when the last close is in a higher / lower grid cell (lines every ``unit`` from ``anchor``)
-    than the close ``k`` bars before it, else 'none'."""
+    """'up' / 'down' when the last close is in a higher / lower grid cell (lines every ``unit`` from
+    ``anchor``) than the close ``k`` bars before it, else 'none'."""
     if len(c) < k + 1 or not (unit > 0 and math.isfinite(anchor)):
         return "none"
     now, before = math.floor((c[-1] - anchor) / unit), math.floor((c[-1 - k] - anchor) / unit)
@@ -63,8 +62,8 @@ def runaway(price: float, y_high: float, y_low: float, run_step: float) -> str:
 
 
 def asia_break(t_open: pd.DatetimeIndex, h: np.ndarray, lo: np.ndarray, as_of: pd.Timestamp) -> str:
-    """Bars closed by ``as_of`` (UTC opens); the Thai day of ``as_of``; 'none' before 13:00 Thai or without an Asia
-    range."""
+    """Bars closed by ``as_of`` (UTC opens); the Thai day of ``as_of``; 'none' before 13:00 Thai or without an
+    Asia range."""
     th = as_of.tz_convert(TH)
     day = th.normalize()
     asia0, london0 = day + pd.Timedelta(hours=7), day + pd.Timedelta(hours=13)
@@ -86,9 +85,10 @@ def day_start(as_of: pd.Timestamp) -> pd.Timestamp:
 
 
 def day_levels(m15: pd.DataFrame, d1: pd.DataFrame, as_of: pd.Timestamp) -> list[str]:
-    """The day's own levels (owner 2026-10-23, L15: "the support of the middle of today"): the M15 swing lows / highs
-    since 05:00 Thai (a bar's low under both neighbours', a high over both), the day's high and low, and yesterday's
-    D1 high and low - bars closed by ``as_of`` only (an M15 bar at open + 15 min, a D1 bar at open + 1 day)."""
+    """The day's own levels (owner 2026-10-23, L15: "the support of the middle of today"): the M15 swing lows
+    / highs since 05:00 Thai (a bar's low under both neighbours', a high over both), the day's high and low,
+    and yesterday's D1 high and low - bars closed by ``as_of`` only (an M15 bar at open + 15 min, a D1 bar at
+    open + 1 day)."""
     x = m15[(m15.index >= day_start(as_of)) & (m15.index + pd.Timedelta(minutes=15) <= as_of)]
     out = []
     lo, hi = x.low.to_numpy(float), x.high.to_numpy(float)
@@ -99,7 +99,8 @@ def day_levels(m15: pd.DataFrame, d1: pd.DataFrame, as_of: pd.Timestamp) -> list
         if hi[i] > hi[i - 1] and hi[i] > hi[i + 1]:
             out.append(f"M15 swing high {hi[i]:.2f} at {t[i]}")
     if len(x):
-        out.append(f"the day's high {hi.max():.2f} at {t[int(hi.argmax())]}, low {lo.min():.2f} at {t[int(lo.argmin())]}")
+        top, bottom = int(hi.argmax()), int(lo.argmin())
+        out.append(f"the day's high {hi[top]:.2f} at {t[top]}, low {lo[bottom]:.2f} at {t[bottom]}")
     y = d1[d1.index + pd.Timedelta(days=1) <= as_of]
     if len(y):
         out.append(f"yesterday's D1 high {y.high.iloc[-1]:.2f}, low {y.low.iloc[-1]:.2f}")
@@ -107,9 +108,9 @@ def day_levels(m15: pd.DataFrame, d1: pd.DataFrame, as_of: pd.Timestamp) -> list
 
 
 def level_prices(m15: pd.DataFrame, d1: pd.DataFrame, before: pd.Timestamp) -> list[float]:
-    """The prices of the day's own levels known BEFORE ``before`` (bars closed by it): the M15 swing lows / highs since
-    05:00 Thai, the day's high / low so far, yesterday's D1 high / low (L14: the pools a sweep takes, beyond the
-    equal-low clusters)."""
+    """The prices of the day's own levels known BEFORE ``before`` (bars closed by it): the M15 swing lows /
+    highs since 05:00 Thai, the day's high / low so far, yesterday's D1 high / low (L14: the pools a sweep
+    takes, beyond the equal-low clusters)."""
     x = m15[(m15.index >= day_start(before)) & (m15.index + pd.Timedelta(minutes=15) <= before)]
     lo, hi = x.low.to_numpy(float), x.high.to_numpy(float)
     out = [float(lo[i]) for i in range(1, len(x) - 1) if lo[i] < lo[i - 1] and lo[i] < lo[i + 1]]
@@ -122,11 +123,14 @@ def level_prices(m15: pd.DataFrame, d1: pd.DataFrame, before: pd.Timestamp) -> l
     return out
 
 
-def level_sweep(h: np.ndarray, lo: np.ndarray, c: np.ndarray, levels: list[float], atr: float, recent: int = 6) -> str:
-    """'low' / 'high' / 'none': within the last ``recent`` bars price went 0.1 ATR beyond a level it was on the near
-    side of before them (the close before the window), and the last close is back on the near side - a sweep and
-    reclaim that may take several bars (2026-10-23 21:30: under the day's low 3,986.62 and the line 3,994.09 to
-    3,975.58, back over the line two bars later). When both sides qualify, the side whose extreme came later."""
+def level_sweep(
+    h: np.ndarray, lo: np.ndarray, c: np.ndarray, levels: list[float], atr: float, recent: int = 6
+) -> str:
+    """'low' / 'high' / 'none': within the last ``recent`` bars price went 0.1 ATR beyond a level it was on
+    the near side of before them (the close before the window), and the last close is back on the near side -
+    a sweep and reclaim that may take several bars (2026-10-23 21:30: under the day's low 3,986.62 and the
+    line 3,994.09 to 3,975.58, back over the line two bars later). When both sides qualify, the side whose
+    extreme came later."""
     if len(c) < recent + 1:
         return "none"
     w_lo, w_hi, before, last = lo[-recent:], h[-recent:], c[-recent - 1], c[-1]
@@ -137,9 +141,11 @@ def level_sweep(h: np.ndarray, lo: np.ndarray, c: np.ndarray, levels: list[float
     return "low" if low else "high" if high else "none"
 
 
-def recent_sweep(h: np.ndarray, lo: np.ndarray, c: np.ndarray, v: np.ndarray, atr: float, recent: int = 6) -> str:
-    """'low' (a pool under price swept and closed back - the buy picture) / 'high' / 'none', the latest one within
-    the last ``recent`` bars."""
+def recent_sweep(
+    h: np.ndarray, lo: np.ndarray, c: np.ndarray, v: np.ndarray, atr: float, recent: int = 6
+) -> str:
+    """'low' (a pool under price swept and closed back - the buy picture) / 'high' / 'none', the latest one
+    within the last ``recent`` bars."""
     best, side = -1, "none"
     for pool in pr.pools(h, lo, c, atr):
         for s in pr.sweeps(pool, h, lo, c, v, atr):
