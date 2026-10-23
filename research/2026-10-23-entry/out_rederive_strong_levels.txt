@@ -1,0 +1,35 @@
+re-derivation: 120 / 120 decision times equal
+
+2026-10-21 18:00 Thai: step 73.9; strong levels between 3,900 and 4,450 (owner's lines 4,369 / 4,293 / 4,217 / 4,141 / 4,066 / 3,990):
+    3928.8  touches 1  turn  316.3  kinds -1  swings
+    3942.9  touches 2  turn  260.0  kinds -1  swings
+    3942.9  touches 1  turn    nan  kinds -1  extreme
+    3961.6  touches 5  turn  243.7  kinds -1  swings
+    3983.1  touches 2  turn  120.4  kinds -1  swings
+    3997.0  touches 4  turn  453.6  kinds -1  swings
+    4020.0  touches 13  turn  504.8  kinds +0  swings
+    4045.5  touches 6  turn  121.6  kinds +0  swings
+    4051.5  touches 1  turn    nan  kinds +0  shift
+    4071.9  touches 7  turn  150.7  kinds +0  swings
+    4092.6  touches 5  turn  758.2  kinds +0  swings
+    4115.3  touches 16  turn  137.2  kinds +0  swings
+    4135.4  touches 8  turn  118.6  kinds +0  swings
+    4161.9  touches 12  turn  379.8  kinds +0  swings
+    4194.7  touches 10  turn  243.3  kinds +1  swings
+    4216.9  touches 5  turn  148.5  kinds +0  swings
+    4231.8  touches 4  turn  164.6  kinds +0  swings
+    4247.6  touches 3  turn  247.1  kinds +0  swings
+    4261.7  touches 3  turn  107.0  kinds +0  swings
+    4279.7  touches 3  turn  416.2  kinds -1  swings
+    4291.6  touches 2  turn  110.7  kinds -1  swings
+    4293.0  touches 1  turn    nan  kinds +0  shift
+    4311.5  touches 8  turn  385.7  kinds +0  swings
+    4326.5  touches 4  turn  372.1  kinds -1  swings
+    4328.9  touches 1  turn    nan  kinds +0  shift
+    4334.3  touches 1  turn    nan  kinds +0  shift
+    4341.9  touches 2  turn   93.5  kinds -1  swings
+    4367.4  touches 12  turn  228.8  kinds +0  swings
+    4381.6  touches 3  turn  439.4  kinds +0  swings
+    4401.5  touches 8  turn  717.1  kinds +0  swings
+    4416.0  touches 2  turn   91.8  kinds +0  swings
+    4436.6  touches 5  turn  143.0  kinds +1  swings
