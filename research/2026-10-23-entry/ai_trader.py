@@ -65,7 +65,9 @@ def system_prompt(entries: list[dict]) -> str:
         "ran, not mid-range), the stop beyond the structure AND outside every liquidity pool, a target before the "
         "next zone line's band, enough room (state the R multiple). Read hundreds of bars of trend, not the last few. "
         "Respect a setup's life cycle: a setup whose move already played out is over. Give prices to two decimals. "
-        "Cite the knowledge-base ids you used. You never size beyond 'full'; the code may veto you.",
+        "Cite the knowledge-base ids you used. You never size beyond 'full'; the code may veto you. "
+        "The owner's own trades in the journal are the owner's (ideas and context, not yours to manage); HOLD / EXIT "
+        "apply only to the system's own open trades, and the system's position is what the journal records as ours.",
         "",
         "THE OWNER'S PRINCIPLES (always) AND THE RULES IN FORCE:",
     ]
