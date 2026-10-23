@@ -33,3 +33,16 @@
 - **Journal (Asia B2 in the NY window, `../2026-10-18-moments/agents/journal/ny_b2/`):** entries right on a line lost
   (2025-11-21: 2.4 and 0.3 USD from a line, both stopped); targets at the next zone line with half off at +1 R led the
   base by +5.4 R over weeks 2-5.
+
+## The owner's example chart (2026-10-23, H4 2026-09-16 .. 10-23) and an open point
+
+- Every leg ran line to line: 4,369 / 4,293 / 4,217 / 4,141 / 4,066 / 3,990 (76 USD steps; the grid re-anchored at
+  the 2026-10-22 close: 4,142.26, step 74.08 -> lines 4,142 / 4,068 / 3,994, within 0-4 USD of the owner's).
+- A 3-week range spanned two zones (4,066-4,217) with lower highs 4,220 -> 4,215 -> 4,198.7; Monday 19 Oct 20:00 Thai
+  broke 4,141 on volume; three weaker re-tests from below (Tue 20:00 to 4,155.5, Wed to 4,141.9 / 4,141.2, Thu 00:00
+  to 4,142.2) all closed back under it. The precise sell: the re-test, the stop above the already-swept 4,155.5
+  (~25 USD), the target the next line 4,066 (~70 USD, ~3 R). Thursday 12:00 touched 4,066.7, 16:00 swept 4,057 and
+  closed 4,088; the 20:00 NY bar broke 4,066 on the chart's highest volume (81k) and ran one zone to 3,990.
+- Open point: the code's step = D1 ATR(20); after the February 2026 crash it rose to 220-240 USD, far above the
+  owner's 70-90 (journal week 17: targets out of reach). To measure on the old years: do H4 turns keep ~70-90 USD
+  spacing when the ATR is high, or widen with it?

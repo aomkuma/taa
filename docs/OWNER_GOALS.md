@@ -48,6 +48,18 @@ outranks earlier targets where they differ. Results never promise profit; they d
 - **Learn from the losing trades** (owner, 2026-10-17): "learning from losers is the heart of developing a
   trade; catch the timing and the signals." The real losing trades teach more than one human's opinion; the
   owner's own habits are hypotheses for the data to test.
+- **Gold runs in zones of about 70-90 USD (owner, repeated; written here 2026-10-23).** After a strong move the
+  zone size is carried along in equal steps from the base the move left; a new strong move shifts (re-anchors) the
+  grid; inside a zone the usual run is about half a zone. A zone line is a band, not a sharp line (price stops short
+  or overshoots). **The zone is the plan** (where price sits, the next line as the target, how much room a trade
+  has); **the edge is the entry and its timing**; reaching a line is not by itself a reason to trade. Example
+  (owner's H4 chart, 2026-09-16 .. 10-23): every leg ran line to line 4,369 / 4,293 / 4,217 / 4,141 / 4,066 / 3,990
+  (76 USD steps); a 3-week range spanned two zones with lower highs; after the break of 4,141 three weaker re-tests
+  of it from below (to 4,155.5, 4,141.9, 4,142.2) gave the sell, the stop above the already-swept 4,155.5, the
+  target the next line - the 2026-10-22 NY break of 4,066 ran one zone to 3,990. Details, the grid's code and the
+  measurements: `research/2026-10-22-zones/NOTES.md`. Open point: the code sets the step to the D1 ATR(20), which
+  sat in 70-90 most of the time but rose to 220-240 after the February 2026 crash - to be measured against the
+  owner's 70-90 on the old years.
 - **The entry decides (owner, repeated many times; written down 2026-10-23).** Three conditions for every entry,
   checked before any exit or filter is tuned:
   1. **A precise entry, and a stop that is not in a liquidation zone.** Enter at the level where the turn or the
