@@ -1,0 +1,140 @@
+NOW: Sat 24 Oct 2026 00:41 Thai time (17:41 UTC). Bars closed by this time only. The last M1 close: 3991.03 (the readings' 'price' is the last closed M15 bar's close).
+
+READINGS (knowledge base features):
+{"price": 3993.7, "h1_vol": 1.015, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_rhythm": "none", "m15_leg": "up", "h1_rhythm": "down", "h1_big": "down", "h1_atr": 14.554, "h4_rhythm": "none", "h4_big": "down", "d1_rhythm": "down", "d1_big": "down", "release_min": 7219.0, "line_dist_step": 0.005, "bars_at_line": 13, "line_touches": 2, "line_worn": "no", "m15_range12_atr": 2.825, "h1_eff12": 0.049, "line_break": "down", "runaway": "none", "climax": "none", "asia_break": "none", "m15_relvol": 1.024, "sweep": "none"}
+
+WHAT THE KNOWLEDGE BASE SAYS APPLIES NOW:
+P11 PRINCIPLE: Trade in the owner's windows (Thai time): Asia 07-09, London 13-14 (+- a little), the New York open + 1-2 h. Outside them is the lowest priority unless the picture is really clean.
+P19 PRINCIPLE: After a strong one-way day the obvious trade is with the move: the re-test, then the sell (buy) with it. The market ran three days and we lost every day - that should not happen.
+S01 SHADOW: No bounce weapon on a boar day while the level under it has just been pierced.
+O03 OPEN: Draft animal BOAR: a one-way market (the last 3 D1 closes the same way, or yesterday a strong D1 bar).
+O11 OPEN: Draft animal DEER: price sitting at a zone line (8+ M15 bars in its band in the last day). Its weapon T4 breaks THROUGH (+0.087, all four years).
+O12 OPEN: Draft SQUEEZE: the last 12 M15 bars span under 3 ATR, within a quarter step of a zone line - coiling before a run (owner's goal 4: ATR at its low, a Bollinger squeeze at an important level).
+O14 OPEN: Draft BREAK: the last M15 close sits beyond a zone line (main or half) it was not beyond an hour ago. The next hour tells a RUN (it went on) from a FALSE break (back inside).
+O15 OPEN: Draft PULLBACK IN A TREND: H1 and H4 trend the same way (500 bars), the M15 leg runs against them, price within a quarter step of a line - the re-test moment inside a boar market (the missing T5 weapon, O07).
+O20 OPEN: Draft CHOP: a busy market with no direction (H1 vol >= 1.0, the last 12 H1 closes under 0.2 efficient) - stops taken on both sides; the owner: NY is often choppy for its first 1-2 hours.
+always on: P01, P02, P03, P04, P05, P06, P07, P08, P09, P10, P12, P13, P14, P15, P16, P17, P18, P20, P21, P22, P23, P24, R03, R04, R05, R06
+SUSPENDED BY THE OWNER FOR NOW (do NOT stand aside because of these; trades are recorded as taken while suspended): R01 until Sat 05:00 Thai
+
+THE DAY'S OWN LEVELS (M15 swings of the Thai day, the day's and yesterday's high / low):
+M15 swing high 4032.54 at 05:30
+M15 swing low 4023.73 at 06:00
+M15 swing high 4029.09 at 06:15
+M15 swing high 4027.73 at 07:00
+M15 swing low 4016.77 at 07:30
+M15 swing high 4032.20 at 07:45
+M15 swing low 3986.62 at 09:00
+M15 swing high 4024.34 at 09:45
+M15 swing low 4012.17 at 10:15
+M15 swing high 4019.89 at 10:30
+M15 swing low 4002.02 at 11:45
+M15 swing high 4028.44 at 12:30
+M15 swing high 4022.67 at 13:15
+M15 swing high 4017.40 at 13:45
+M15 swing low 4011.57 at 14:15
+M15 swing high 4021.91 at 14:30
+M15 swing low 4009.46 at 15:00
+M15 swing low 4012.27 at 15:30
+M15 swing high 4030.91 at 16:15
+M15 swing low 4020.58 at 17:00
+M15 swing high 4025.78 at 17:15
+M15 swing low 4020.02 at 17:45
+M15 swing high 4031.08 at 18:15
+M15 swing low 4021.44 at 19:00
+M15 swing high 4030.37 at 19:15
+M15 swing low 4024.49 at 20:00
+M15 swing high 4034.23 at 20:15
+M15 swing low 3975.58 at 21:30
+M15 swing high 4005.59 at 21:45
+M15 swing low 3992.93 at 22:00
+M15 swing high 4004.47 at 22:15
+M15 swing low 3993.33 at 22:30
+M15 swing high 4006.02 at 23:00
+M15 swing low 3998.70 at 23:30
+M15 swing high 4006.45 at 23:45
+the day's high 4034.23 at 20:15, low 3975.58 at 21:30
+yesterday's D1 high 4140.15, low 4021.15
+
+THE READERS' OUTPUT:
+M1  ATR   1.31 | big trend DOWN (LH 1, LL 3, HH 0, HL 0) | rhythm DOWN
+now 3991.03: running down from 3996.9 for 5.9 (4.5 ATR, 122 % of the last leg) - WITH the rhythm (a push)
+M5  ATR   3.28 | big trend none (LH 0, LL 1, HH 1, HL 0) | rhythm up (big trend not)
+now 3992.82: running down from 4006.4 for 13.6 (4.2 ATR, 176 % of the last leg) - no rhythm
+M15 ATR  10.93 | big trend DOWN (LH 3, LL 7, HH 0, HL 0) | rhythm none
+now 3993.70: running up from 3975.6 for 18.1 (1.7 ATR, 31 % of the last leg) - no rhythm
+H1  ATR  14.55 | big trend DOWN (LH 4, LL 2, HH 0, HL 0) | rhythm DOWN
+now 4000.69: running up from 3975.6 for 25.1 (1.7 ATR, 43 % of the last leg) - AGAINST the rhythm (a pullback)
+H4  ATR  32.66 | big trend DOWN (LH 3, LL 1, HH 0, HL 0) | rhythm none
+now 4000.69: running down from 4198.7 for 198.0 (6.1 ATR, 158 % of the last leg) - no rhythm
+D1  ATR  67.53 | big trend DOWN (LH 1, LL 1, HH 0, HL 0) | rhythm DOWN
+now 4023.48: running down from 4217.1 for 193.6 (2.9 ATR, 129 % of the last leg) - WITH the rhythm (a push)
+equal bottoms x3 at 3992.78 (3992.93 @22:05, 3993.33 @22:35, 3992.07 @00:25)
+equal bottoms x2 at 3998.89 (3998.70 @23:35, 3999.07 @23:50)
+equal bottoms x2 at 4000.36 (4002.02 @11:45, 3998.70 @23:30)
+equal tops x4 at 4005.63 (4005.59 @21:45, 4004.47 @22:15, 4006.02 @23:00, 4006.45 @23:45)
+the last 12 bars' range 1.5 ATR (a squeeze); last volume 0.6 x the mean
+- price 3993.70: nearest line 3994.09 (0.4 USD, 0.01 step)
+- strong levels above: 4020.0 (swings, 13), 4045.4 (swings, 5), 4051.5 (shift, 1)
+- strong levels below: 3993.0 (swings, 6), 3961.6 (swings, 5), 3959.6 (extreme, 1)
+- phase (the last 3 D1 closes): not one-way
+- D1 structure: mixed, picture not clear
+- H4 structure: mixed, picture not clear
+- H1 structure: mixed, picture not clear
+- M15 structure: up (HH/HL), picture not clear
+- H1 volatility 1.02 x usual; today so far: -0.47 step from the open (up = +), range 0.79 step
+- BOAR (yesterday strong down); DEER (price 13 M15 bars at the line 3994.1)
+- 09:45 T1 re-test SELL 4019.16, stop 4035.90 (risk 16.7)
+- 11:45 T1 re-test BUY 4003.80, stop 3999.93 (risk 3.9)
+- 12:45 T1 re-test SELL 4023.29, stop 4035.90 (risk 12.6)
+- 14:45 T1 re-test SELL 4019.37, stop 4035.90 (risk 16.5)
+- 15:45 T1 re-test SELL 4022.51, stop 4035.90 (risk 13.4)
+- 20:15 T4 bounce BUY 4032.30, stop 3998.32 (risk 34.0)
+- 20:15 T4 through BUY 4032.30, stop 4005.76 (risk 26.5)
+- 20:30 T1 re-test SELL 4025.62, stop 4037.78 (risk 12.2)
+
+THE SESSION'S JOURNAL SO FAR (earlier steps, including any open trade):
+(earlier steps left out)
+## 22:32 Thai (M5 closed to 22:25) - the owner: "I may hold over the weekend - worth it for me; you trade our way and
+take what I say as ideas"
+
+**AI (asked first, 15:31 UTC; 0.089 USD, 18 s): HOLD, half, confidence 60** - it managed the owner's sells as if they were
+the system's: exit on an M5 close over 4,012.30 (the broken floor reclaimed), part profit at the 3,975.58 pool and before
+the 3,957-3,963 band; no new entry while R01 holds. Its reasoning matches the picture, but the position is the owner's,
+not ours - the prompt now says so (the owner's trades are ideas and context; the AI manages only the system's trades).
+
+**Mine: WAIT, no position of our own** (the 22:05 sell was skipped by R01). M5: a range 3,992.9-4,005.6 for 40 minutes on
+the 3,994 line - lower highs 4,005.59 (21:45) -> 4,004.47 (22:20), lows 3,992.93 / 3,995.25 / 3,994.15; H1 vol 1.30
+(R01). The down structure holds (with the owner's idea); the next trade of ours: a close under the range's floor
+3,992.9 with a re-test (the stop over 4,005.6, the target before 3,975.6 - about 1 R, thin) or, better, a run down to the
+D1 floor and its picture there. As an observer of the owner's idea: its structure fails on an M5 close over 4,005.6
+(the bounce's high), earlier than the AI's 4,012.3.
+
+## 23:04 Thai - "no trade yet?" (the owner)
+
+No system trade tonight: R01 (H1 vol 1.14 -> 1.30) stood aside all evening. The one signal it skipped - the 22:05
+structure-break sell at 3,993.56 (stop 4,008, target 3,978) - is at the ticks' end (23:04:16) **-10.73 USD, -0.74 R
+open** (never under 3,993.50; back up to 4,005.94): so far R01 saved this one. Price is back at the bounce's high
+(ask 4,004.29): the owner's sells (4,005.57 / 4,005.28) are about +1.3 / +1.0 open, after a brief 0.4 against.
+Note for the review (not a change tonight): R01's forward record comes from the NY-B2 turn weapon; VOL-16's ceiling
+for PLAN-1's break / straddle pieces cost +35.7 R (X42) - whether R01 should bind with-trend break entries is a
+question for the journal, measured per weapon.
+
+## 23:08 Thai - R01 suspended by the owner until the close
+
+**The owner:** "can this rule be taken out for now?" R01 (stand aside over 1.1 x the usual H1 volatility) is suspended
+until 05:00 Thai Saturday (`ai/suspended.json`): the code's brakes skip it and the AI is told so; every decision
+taken meanwhile carries `suspended_applying: ["R01"]`, so its trades measure what R01 costs or saves. Paper only - no
+orders. The AI is woken now.
+
+
+THE AI'S OWN EARLIER CALLS:
+(earlier steps left out)
+### 00:39 Thai - the AI woken by: new: break
+- **WAIT** (size none; confidence 60): Squeeze at the 3994 line in a down trend; waiting for a break below 3992.07 and a failed re-test
+- entry None, stop None, target None; watch above 4006.5 / below 3991.9
+- trigger: M5 close under 3992.07 (the equal-bottoms floor) then a failed re-test from below, stop over 4006.5, target before 3975.58; or an M1 close over 4006.5 to reassess
+- Price 3993.53 sits on the 3994.09 line, at the floor of the 3992-4006 range: no entry level, not mid-trade chasing
+- H1/H4/D1 are down but the M15 leg is up from the 3975.58 sweep; the structure is unclear
+- Room below is about 17 USD to the 3975.58 pool against a 13 USD stop, about 1.3 R, thin (S03)
+- 00:39 Thai is outside the windows, volume is 0.5x and the weekend is near, so the picture is not clean
+- cost 0.015358 USD, 11762.5 ms

@@ -1,0 +1,45 @@
+{
+ "as_of": "2026-10-23T17:41:00+00:00",
+ "source": "watcher",
+ "status": "OK",
+ "model": "claude-sonnet-5-5",
+ "cost_usd": 0.015236,
+ "tokens": {
+  "input": 4915,
+  "cache_write": 0,
+  "cache_read": 6830,
+  "output": 404
+ },
+ "latency_ms": 4966.9,
+ "detail": "",
+ "decision": {
+  "decision": "WAIT",
+  "setup": "Break below the 3992-3994 floor; waiting for an M5 close under 3992.07 and a failed re-test",
+  "entry": null,
+  "stop": null,
+  "target": null,
+  "trigger": "M5 close under 3992.07 then a failed re-test from below (stop over 4006.5, target before 3975.58 with at least 1.5 R); or an M1 close over 4006.5 to reassess",
+  "size": "none",
+  "kb_ids": [
+   "P04",
+   "P10",
+   "P11",
+   "P19",
+   "S03",
+   "S08",
+   "O14"
+  ],
+  "reasons": [
+   "M1 close 3991.03 is under the equal-bottoms floor 3992.07-3992.78, but the M5 close is not yet confirmed and a re-test has not formed",
+   "Trend is down on H1, H4 and D1 (boar), but the M15 leg is up from the 3975.58 sweep and the structure is unclear",
+   "Room to the 3975.58 pool is about 15 USD against a 13 USD stop, about 1.2 R, which is thin (S03)",
+   "00:41 Thai is outside the windows, volume is 0.6x and the weekend is near, so the picture is not clean"
+  ],
+  "confidence": 60,
+  "watch_above": 4006.5,
+  "watch_below": 3988.0
+ },
+ "final_size": "none",
+ "vetoed_by": [],
+ "suspended_applying": []
+}

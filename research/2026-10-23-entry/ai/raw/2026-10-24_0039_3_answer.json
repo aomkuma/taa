@@ -1,0 +1,45 @@
+{
+ "as_of": "2026-10-23T17:39:00+00:00",
+ "source": "watcher",
+ "status": "OK",
+ "model": "claude-sonnet-5-5",
+ "cost_usd": 0.015358,
+ "tokens": {
+  "input": 5046,
+  "cache_write": 0,
+  "cache_read": 6830,
+  "output": 390
+ },
+ "latency_ms": 11762.5,
+ "detail": "",
+ "decision": {
+  "decision": "WAIT",
+  "setup": "Squeeze at the 3994 line in a down trend; waiting for a break below 3992.07 and a failed re-test",
+  "entry": null,
+  "stop": null,
+  "target": null,
+  "trigger": "M5 close under 3992.07 (the equal-bottoms floor) then a failed re-test from below, stop over 4006.5, target before 3975.58; or an M1 close over 4006.5 to reassess",
+  "size": "none",
+  "kb_ids": [
+   "P04",
+   "P10",
+   "P11",
+   "P17",
+   "S03",
+   "O12",
+   "O03"
+  ],
+  "reasons": [
+   "Price 3993.53 sits on the 3994.09 line, at the floor of the 3992-4006 range: no entry level, not mid-trade chasing",
+   "H1/H4/D1 are down but the M15 leg is up from the 3975.58 sweep; the structure is unclear",
+   "Room below is about 17 USD to the 3975.58 pool against a 13 USD stop, about 1.3 R, thin (S03)",
+   "00:39 Thai is outside the windows, volume is 0.5x and the weekend is near, so the picture is not clean"
+  ],
+  "confidence": 60,
+  "watch_above": 4006.5,
+  "watch_below": 3991.9
+ },
+ "final_size": "none",
+ "vetoed_by": [],
+ "suspended_applying": []
+}
