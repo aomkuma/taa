@@ -297,7 +297,8 @@ class TestCatalog:
             assert cls.triggers <= set(evidence_registry().ids), cls.name
         # the inverted copies were removed (2026-10-14); Setup OWN F1 and S2 live in their own modules (2026-10-18),
         # PLAN-1's London ORB and NY straddle in app/strategy/plan1.py (2026-10-21)
-        assert len(STRATEGIES) == 1 + len(SETUPS) + 6  # + PLAN-1's Asia B2 on M1 and M5 (plan1_b2.py)
+        # + PLAN-1's Asia B2 on M1 and M5 (plan1_b2.py) + the AI trader (ai_lane.py, 2026-10-24)
+        assert len(STRATEGIES) == 1 + len(SETUPS) + 7
 
     def test_config_yaml_trades_harmonic_on_its_normal_side_only(self) -> None:
         settings = load_settings(
@@ -314,6 +315,7 @@ class TestCatalog:
             "setup_plan1_b2",
             "setup_plan1_b2m5",
         }  # lane plan1 (2026-10-21, docs/PLAN1_LANE.md)
+        originals |= {"ai_trader"}  # lane ai (2026-10-24, PLAN §A37)
         assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
         # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only; 2026-10-16: its own stop cap off;
@@ -341,7 +343,12 @@ class TestCatalog:
             "max_sl_atr": 20.0,
         }  # §15.3, no PRZ confirmation; h4_room_2 (owner, 2026-10-15; §18); own stop cap off (2026-10-16)
         # S1, M1 gold scalping (owner, 2026-10-15; §17); Setup OWN F1 and S2 (2026-10-18), all off until the owner
-        s1, own, news, plan1 = settings.config.lanes
+        s1, own, news, plan1, ai = settings.config.lanes
+        # lane ai (2026-10-24, PLAN §A37): the AI trader on gold M1, off until the owner says so
+        assert (ai.symbols, [(i.name, i.enabled) for i in ai.strategies.items]) == (
+            ["XAUUSD"],
+            [("ai_trader", False)],
+        )
         assert (s1.timeframes.entry, s1.symbols) == (Timeframe.M1, ["XAUUSD"])
         assert [(i.name, i.enabled) for i in s1.strategies.items] == [("setup_breakout_scalp", False)]
         # owner, 2026-10-21: lane plan1 is the only enabled lane for the DEMO (F1 and S2 off)

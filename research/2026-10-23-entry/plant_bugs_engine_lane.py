@@ -18,6 +18,14 @@ BUGS = [
     ("a smaller M1 count", [("COUNTS = {Timeframe.M1: 7200,", "COUNTS = {Timeframe.M1: 720,")]),
     ("the journal from elsewhere", [('return self.journal_path.read_text(encoding="utf-8") if self.journal_path.exists() else ""', 'return ""')]),
     ("suspensions ignored", [('path = self.store / "suspended.json"', 'path = self.store / "none.json"')]),
+    # TAA-1806: the AI's decision as an order for the ai_trader strategy
+    ("a vetoed entry still ordered", [('size not in ("half", "full")', 'size not in ("half", "full", "none")')]),
+    ("half and full swapped", [('risk_scale=0.5 if size == "half" else 1.0,', 'risk_scale=1.0 if size == "half" else 0.5,')]),
+    ("the order never expires", [("valid_until=at + timedelta(minutes=pending_minutes),", "valid_until=at + timedelta(days=pending_minutes),")]),
+    ("a missing stop ordered", [('if d.get("entry") is None or d.get("stop") is None:', 'if d.get("entry") is None:')]),
+    ("a wait leaves the order waiting", [('if d.get("decision") in ("WAIT", "SELL", "BUY"):', 'if d.get("decision") in ("SELL", "BUY"):')]),
+    ("the watch prices swapped", [('watch_above=None if d.get("watch_above") is None else float(d["watch_above"]),', 'watch_above=None if d.get("watch_below") is None else float(d["watch_below"]),')]),
+    ("an exit not passed on", [('    if d.get("decision") == "EXIT":\n        strategy.request_exit(symbol)\n        return "exit"\n', "")]),
 ]
 
 if __name__ == "__main__":

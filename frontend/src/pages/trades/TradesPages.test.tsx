@@ -397,6 +397,58 @@ describe('history page', () => {
     );
   });
 
+  it("shows the AI trader's reasons and knowledge in the signal step", async () => {
+    const base = sample('trades/1') as { decision: Record<string, unknown> };
+    const signal = base.decision.signal as Record<string, unknown>;
+    const ai = {
+      ...base,
+      decision: {
+        ...base.decision,
+        strategy: 'ai_trader',
+        signal: {
+          ...signal,
+          explanation: 'every frame down | the bounce stalled',
+          conditions: [
+            { name: 'ai_decision', passed: true, detail: 'a lower high (confidence 66)' },
+            { name: 'ai_knowledge', passed: true, detail: 'P19, L15' },
+            { name: 'ai_watch', passed: true, detail: 'above 4013.0 / below 3990.0' },
+            { name: 'no_detail', passed: true, detail: '' },
+          ],
+        },
+      },
+    };
+    setup({ 'GET /engines/e1/trades/1': () => json(ai) });
+    renderShell('/history?trade=1');
+    const drawer = await screen.findByRole('dialog', { name: '#1 EURUSD BUY' });
+    expect(await within(drawer).findByTestId('signal-explanation')).toHaveTextContent(
+      'Why: every frame down | the bounce stalled',
+    );
+    // labelled through the translation keys; a condition without a detail is not shown
+    expect(
+      within(drawer)
+        .getAllByTestId('signal-condition')
+        .map((c) => c.textContent),
+    ).toEqual([
+      'AI setup: a lower high (confidence 66)',
+      'Knowledge used: P19, L15',
+      'Watching prices: above 4013.0 / below 3990.0',
+    ]);
+  });
+
+  it('shows a strategy condition without a translation under its own name', async () => {
+    setup();
+    renderShell('/history?trade=1');
+    const drawer = await screen.findByRole('dialog', { name: '#1 EURUSD BUY' });
+    expect(await within(drawer).findByTestId('signal-explanation')).toHaveTextContent(
+      'Why: H1 bullish bias; M15 pullback to EMA20',
+    );
+    expect(
+      within(drawer)
+        .getAllByTestId('signal-condition')
+        .map((c) => c.textContent),
+    ).toEqual(['htf_bias: close > EMA200']);
+  });
+
   it('closes the drawer with Escape', async () => {
     setup();
     const user = userEvent.setup();

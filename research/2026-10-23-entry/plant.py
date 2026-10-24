@@ -12,6 +12,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+HANG_SECONDS = 120
 
 PLUGIN = '''import importlib, importlib.util, sys
 importlib.import_module("{package}")
@@ -39,8 +40,11 @@ def run(name: str, src: str, test: Path) -> tuple[bool, str]:
         (d / f"{short}_planted.py").write_text(src, encoding="utf-8")
         (d / "plant_plugin.py").write_text(PLUGIN.format(package=package, name=name, short=short, path=d / f"{short}_planted.py"), encoding="utf-8")
         env = {**__import__("os").environ, "PYTHONPATH": f"{d};{ROOT}"}
-        r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", "-p", "plant_plugin", str(test)],
-                           cwd=ROOT, capture_output=True, text=True, check=False, env=env)
+        try:
+            r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", "-p", "plant_plugin", str(test)],
+                               cwd=ROOT, capture_output=True, text=True, check=False, env=env, timeout=HANG_SECONDS)
+        except subprocess.TimeoutExpired:  # a bug that makes a test wait forever is caught too
+            return False, f"the tests hung (> {HANG_SECONDS} s)"
         failed = re.findall(r"FAILED \S+::(\S+)", r.stdout)
         last = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr.strip()[-300:]
         return r.returncode == 0, failed[0] if failed else last
@@ -84,8 +88,11 @@ def run_script(name: str, here: Path, src: str, test: Path, paths: tuple[Path, .
         plugin = SCRIPT_PLUGIN.format(here=here, parent=here.parent, extra=extra, name=name, path=d / f"{name}_planted.py")
         (d / "plant_plugin.py").write_text(plugin, encoding="utf-8")
         env = {**__import__("os").environ, "PYTHONPATH": f"{d};{ROOT}"}
-        r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", "-p", "plant_plugin", str(test)],
-                           cwd=ROOT, capture_output=True, text=True, check=False, env=env)
+        try:
+            r = subprocess.run([sys.executable, "-m", "pytest", "-q", "-x", "-p", "no:cacheprovider", "-p", "plant_plugin", str(test)],
+                               cwd=ROOT, capture_output=True, text=True, check=False, env=env, timeout=HANG_SECONDS)
+        except subprocess.TimeoutExpired:  # a bug that makes a test wait forever is caught too
+            return False, f"the tests hung (> {HANG_SECONDS} s)"
         failed = re.findall(r"FAILED \S+::(\S+)", r.stdout)
         last = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else r.stderr.strip()[-300:]
         return r.returncode == 0, failed[0] if failed else last

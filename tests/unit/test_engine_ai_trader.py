@@ -125,3 +125,68 @@ def test_suspensions_and_the_journal_are_read_from_the_store(tmp_path: Path):
     (tmp_path / "journal.md").write_text("## notes", encoding="utf-8")
     assert ln._suspensions() == {"R01": "2026-10-23T22:00:00+00:00"}
     assert ln._journal() == "## notes"
+
+
+def ai_rec(decision: str = "SELL", size: str = "half", **over: object) -> dict[str, Any]:
+    d: dict[str, Any] = {
+        "decision": decision,
+        "setup": "a lower high",
+        "entry": 4005.0,
+        "stop": 4013.0,
+        "target": 3977.0,
+        "reasons": ["every frame down"],
+        "kb_ids": ["P19"],
+        "confidence": 66,
+        "watch_above": 4013.0,
+        "watch_below": None,
+    }
+    d.update(over)
+    return {"as_of": "2026-10-23T14:48:00+00:00", "final_size": size, "decision": d}
+
+
+def test_order_from_a_sell_the_brakes_left():
+    o = at.order_from(ai_rec(), 30)
+    assert o is not None
+    assert (o.side.value, o.entry, o.stop, o.target, o.risk_scale) == ("SELL", 4005.0, 4013.0, 3977.0, 0.5)
+    assert o.decided_at == datetime(2026, 10, 23, 14, 48, tzinfo=UTC)
+    assert o.valid_until == datetime(2026, 10, 23, 15, 18, tzinfo=UTC)
+    assert o.key == "step-202610231448"
+    assert (o.reasons, o.kb_ids, o.confidence) == (("every frame down",), ("P19",), 66)
+    assert (o.watch_above, o.watch_below) == (4013.0, None)
+    assert at.order_from(ai_rec(size="full"), 30).risk_scale == 1.0  # type: ignore[union-attr]
+    assert at.order_from(ai_rec(target=None), 30).target is None  # type: ignore[union-attr]
+
+
+def test_no_order_from_a_veto_a_wait_or_a_missing_price():
+    assert at.order_from(ai_rec(size="none"), 30) is None  # the brakes vetoed it
+    assert at.order_from(ai_rec("WAIT"), 30) is None
+    assert at.order_from(ai_rec(entry=None), 30) is None
+    assert at.order_from(ai_rec(stop=None), 30) is None
+    assert at.order_from({"as_of": "2026-10-23T14:48:00+00:00", "status": "TIMEOUT"}, 30) is None
+
+
+def test_hand_over_orders_exits_and_cancels():
+    from app.strategy.ai_lane import AITrader
+
+    s = AITrader()
+    assert at.hand_over(s, "XAUUSD", ai_rec(), 30) == "order"
+    assert s.pending("XAUUSD") is not None
+    assert at.hand_over(s, "XAUUSD", ai_rec("WAIT"), 30) == "cancel"  # a wait withdraws the waiting order
+    assert s.pending("XAUUSD") is None
+    at.hand_over(s, "XAUUSD", ai_rec(), 30)
+    assert at.hand_over(s, "XAUUSD", ai_rec(size="none"), 30) == "cancel"  # a vetoed entry withdraws it too
+    assert s.pending("XAUUSD") is None
+    assert at.hand_over(s, "XAUUSD", ai_rec("EXIT"), 30) == "exit"
+    assert "XAUUSD" in s._exits
+    assert at.hand_over(s, "XAUUSD", ai_rec("HOLD"), 30) == "none"
+    assert (
+        at.hand_over(s, "XAUUSD", {"as_of": "2026-10-23T14:48:00+00:00", "status": "TIMEOUT"}, 30) == "none"
+    )
+
+
+def test_take_decision_hands_a_finished_decision_over_once(tmp_path: Path):
+    ln, _ = lane(tmp_path, rows("2026-10-23T15:00", [10.0]))
+    ln.watcher.on_bar = lambda now, closes: ai_rec()  # type: ignore[method-assign]
+    ln.tick()
+    assert ln.take_decision() == ai_rec()
+    assert ln.take_decision() is None

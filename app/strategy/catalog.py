@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.strategy.ai_lane import AITrader
 from app.strategy.base_strategy import BaseStrategy
 from app.strategy.example_strategy import TrendPullback
 from app.strategy.own_setup import OwnConf72
@@ -22,6 +23,7 @@ STRATEGIES: tuple[type[BaseStrategy], ...] = (
     Plan1Straddle,
     Plan1B2,
     Plan1B2M5,
+    AITrader,
 )
 
 

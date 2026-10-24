@@ -492,7 +492,13 @@
       "stopMovedKind": "Stop moved: {{kind}}",
       "stopBody": "{{old}} → {{new}}",
       "exit": "Closed: {{reason}}",
-      "exitBody": "Price {{price}} · net {{net}} · {{r}}R"
+      "exitBody": "Price {{price}} · net {{net}} · {{r}}R",
+      "why": "Why:",
+      "condition": {
+        "ai_decision": "AI setup",
+        "ai_knowledge": "Knowledge used",
+        "ai_watch": "Watching prices"
+      }
     },
     "manual": {
       "title": "Manual positions on the MT5 account",

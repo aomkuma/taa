@@ -1,0 +1,21 @@
+ai_lane.py: control (no bug): PASSED - 8 passed in 0.40s
+   1. a sell fills below the tolerance: CAUGHT by test_a_sell_waits_until_the_bid_reaches_the_entry
+   2. a sell fills at the ask: CAUGHT by test_a_sell_waits_until_the_bid_reaches_the_entry
+   3. a buy fills above the tolerance: CAUGHT by test_a_buy_waits_until_the_ask_reaches_the_entry
+   4. the sell's stop checked on the bid: CAUGHT by test_the_stop_first_drops_the_order
+   5. the buy's stop never drops it: CAUGHT by test_the_stop_first_drops_the_order
+   6. no expiry: CAUGHT by test_the_order_expires_and_a_new_one_replaces_it
+   7. a filled order stays waiting: CAUGHT by test_a_sell_waits_until_the_bid_reaches_the_entry
+   8. a new order does not replace the waiting one: CAUGHT by test_the_order_expires_and_a_new_one_replaces_it
+   9. cancel does nothing: CAUGHT by test_the_order_expires_and_a_new_one_replaces_it
+  10. busy always false: CAUGHT by test_a_sell_waits_until_the_bid_reaches_the_entry
+  11. the sell's geometry upside down: CAUGHT by test_no_signal_when_the_geometry_broke_or_there_is_no_quote
+  12. the buy's stop side unchecked: CAUGHT by test_geometry_for_both_sides
+  13. the signal at the decided entry, not the quote: CAUGHT by test_the_signal_carries_the_ais_stop_target_risk_and_reasons
+  14. the AI's half size dropped: CAUGHT by test_the_signal_carries_the_ais_stop_target_risk_and_reasons
+  15. the reasons lost: CAUGHT by test_the_signal_carries_the_ais_stop_target_risk_and_reasons
+  16. the knowledge ids lost: CAUGHT by test_the_signal_carries_the_ais_stop_target_risk_and_reasons
+  17. the watch prices lost: CAUGHT by test_the_signal_carries_the_ais_stop_target_risk_and_reasons
+  18. the exit applied forever: CAUGHT by test_an_exit_closes_the_lanes_position_once
+  19. the exit never applied: CAUGHT by test_an_exit_closes_the_lanes_position_once
+caught 19 / 19

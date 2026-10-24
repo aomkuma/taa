@@ -492,7 +492,13 @@
       "stopMovedKind": "เลื่อน Stop: {{kind}}",
       "stopBody": "{{old}} → {{new}}",
       "exit": "ปิดสถานะ: {{reason}}",
-      "exitBody": "ราคา {{price}} · สุทธิ {{net}} · {{r}}R"
+      "exitBody": "ราคา {{price}} · สุทธิ {{net}} · {{r}}R",
+      "why": "เหตุผล:",
+      "condition": {
+        "ai_decision": "หน้าเทรดของ AI",
+        "ai_knowledge": "ความรู้ที่ใช้",
+        "ai_watch": "ราคาที่เฝ้า"
+      }
     },
     "manual": {
       "title": "ออเดอร์ที่เปิดมือในบัญชี MT5",

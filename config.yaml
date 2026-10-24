@@ -176,6 +176,21 @@ lanes:
       setup_plan1_ny: {break_even: false, trailing: false}
       setup_plan1_b2: {break_even: false, trailing: false}
       setup_plan1_b2m5: {break_even: false, trailing: false}
+  - name: ai                        # the AI trader (PLAN §A37, TAA-1806): the engine hands it the AI's decisions
+    symbols: [XAUUSD]               # (ai.trader below); an order waits for its price on quotes, then goes through
+    timeframes:                     # every check like any signal. On only with ai.trader.enabled AND this item.
+      higher: H1
+      entry: M1
+      warmup_bars: 60
+    strategies:
+      cooldown_bars: 0
+      signal_expiry_bars: 2         # a fill in the first seconds of a minute (the 3 s close grace) stays valid
+      items:
+        - name: ai_trader
+          enabled: false
+          params: {pending_minutes: 30, market_tolerance: 1.0}   # 1 USD: this close to the AI's entry fills now
+    management:
+      ai_trader: {break_even: false, trailing: false}   # the AI's own stop and target; its EXIT closes
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the

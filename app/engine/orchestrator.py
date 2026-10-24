@@ -61,7 +61,7 @@ from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
 from app.core.enums import ExitReason, Side, TradingMode
 from app.core.errors import BrokerError, SafetyViolation, SymbolUnavailable, TaaError
 from app.core.ids import new_id, stable_hash
-from app.engine.ai_trader import AITraderLane
+from app.engine.ai_trader import AITraderLane, hand_over
 from app.engine.backends import Backend, DemoBackend, PaperBackend
 from app.engine.broker_positions import BrokerPositionManager
 from app.engine.broker_trades import BrokerTradeBook
@@ -105,10 +105,11 @@ from app.storage.audit import AuditLog
 from app.storage.database import Database
 from app.storage.models import ManualTradeLinkRow, RiskDeal
 from app.storage.repositories import EngineStateRepository, RunRepository
+from app.strategy.ai_lane import AIEntry, AITrader, AITraderParams
 from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
 from app.strategy.context_builder import ContextBuilder
-from app.strategy.release_straddle import OwnS2
+from app.strategy.release_straddle import OwnS2, StraddleEntry
 from app.strategy.setups import EvidenceSetup
 from app.strategy.signal_models import Signal, StrategyContext
 from app.sync.candles import CandleStreamer
@@ -310,11 +311,13 @@ class Engine:
         self.extra_lanes: list[EntryLane] = build_lanes(cfg, self.candles, self.clock, self.quotes, evidence)
         # quote-driven strategies (Setup OWN S2, the release straddle): the calendar file is read here, once;
         # a missing or malformed one stops the start (fail closed)
-        self._quote_lanes: list[tuple[EntryLane, OwnS2]] = []
+        self._quote_lanes: list[tuple[EntryLane, OwnS2 | AITrader]] = []
         for lane in self.extra_lanes:
             for strategy in lane.strategies.strategies:
                 if isinstance(strategy, OwnS2):
                     strategy.attach_calendar(load_releases(self.settings.path(strategy.params.calendar_file)))
+                    self._quote_lanes.append((lane, strategy))
+                elif isinstance(strategy, AITrader):  # the AI trader's orders wait for their price on quotes
                     self._quote_lanes.append((lane, strategy))
         self.sessions = TradingSessions(cfg.sessions, cfg.symbols)
         self.news = NewsFilter(ManualBlackouts(cfg.sessions.news_blackouts))
@@ -772,8 +775,24 @@ class Engine:
     def _ai_trader_tick(self, lane: AITraderLane) -> None:
         try:
             lane.tick()  # one watcher cycle per new closed M1 bar, on its own thread
+            rec = lane.take_decision()  # a finished decision, handed over here on the engine loop
+            if rec is not None:
+                self._ai_hand_over(lane, rec)
         except Exception:  # its own boundary: the AI trader failing never stops the engine's loop
             log.exception("AI trader lane failed")
+
+    def _ai_hand_over(self, lane: AITraderLane, rec: dict[str, Any]) -> None:
+        """The AI's decision to the ``ai_trader`` strategy of a configured lane (TAA-1806): an order waits for
+        its price on quotes, then goes through the decision engine like any signal."""
+        symbol = lane.cfg.symbol
+        strategy = next(
+            (s for ln, s in self._quote_lanes if isinstance(s, AITrader) and ln.trades(symbol)), None
+        )
+        if strategy is None:
+            log.warning("AI decision for %s with no lane running the ai_trader strategy: not traded", symbol)
+            return
+        p: AITraderParams = strategy.params
+        hand_over(strategy, symbol, rec, p.pending_minutes)
 
     def _scan(self, scanner: OpportunityScanner) -> None:
         try:
@@ -1004,6 +1023,15 @@ class Engine:
             self.backend.on_quote(symbol, quote.bid, quote.ask, atr, now)
             self._quote_entries(symbol, quote.time_utc, quote.bid, quote.ask)
 
+    @staticmethod
+    def _quote_signal(
+        strategy: OwnS2 | AITrader, ctx: StrategyContext, entry: StraddleEntry | AIEntry
+    ) -> Signal | None:
+        """The quote strategy's own signal for its own entry (each returns only its own kind)."""
+        if isinstance(strategy, AITrader):
+            return strategy.entry_signal(ctx, entry) if isinstance(entry, AIEntry) else None
+        return strategy.entry_signal(ctx, entry) if isinstance(entry, StraddleEntry) else None
+
     def _quote_entries(self, symbol: str, at: datetime, bid: float, ask: float) -> None:
         """Feed the quote to the quote-driven strategies; an entry they report goes the bar path's way."""
         disabled = self.disabled_strategies()
@@ -1020,7 +1048,7 @@ class Engine:
                     "no context for %s's %s entry on %s: %s", strategy.name, entry.side.value, symbol, exc
                 )
                 continue
-            signal = strategy.entry_signal(ctx, entry)
+            signal = self._quote_signal(strategy, ctx, entry)
             if signal is not None:
                 self._decide(symbol, lane, ctx, signal)
 

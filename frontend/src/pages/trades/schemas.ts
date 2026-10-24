@@ -129,6 +129,10 @@ export const TradeDetailSchema = z.object({
         score: z.number(),
         reason_codes: z.array(z.string()),
         explanation: z.string().optional(),
+        // the strategy's checklist with each item's measured detail (the AI trader's setup and knowledge ids)
+        conditions: z
+          .array(z.looseObject({ name: z.string(), passed: z.boolean(), detail: z.string().optional() }))
+          .optional(),
       }),
       checks: z.array(CheckSchema),
     })

@@ -9525,6 +9525,52 @@
               "stale_tick_seconds": 120.0,
               "warmup_bars": 10000
             }
+          },
+          {
+            "management": {
+              "ai_trader": {
+                "break_even": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              }
+            },
+            "max_spread_points": null,
+            "max_spread_to_sl_ratio": null,
+            "min_risk_reward": null,
+            "name": "ai",
+            "strategies": {
+              "allow_single_indicator_signals": false,
+              "cooldown_bars": 0,
+              "items": [
+                {
+                  "enabled": false,
+                  "name": "ai_trader",
+                  "params": {
+                    "market_tolerance": 1.0,
+                    "pending_minutes": 30
+                  }
+                }
+              ],
+              "signal_expiry_bars": 2
+            },
+            "symbols": [
+              "XAUUSD"
+            ],
+            "timeframes": {
+              "candle_close_grace_seconds": 3.0,
+              "context": [],
+              "context_bars": 700,
+              "entry": "M1",
+              "higher": "H1",
+              "max_gap_bars": 3,
+              "refinement": null,
+              "stale_tick_seconds": 120.0,
+              "warmup_bars": 60
+            }
           }
         ],
         "paper": {
@@ -14707,6 +14753,47 @@
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 3000
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "The AI trader (PLAN §A37): the engine hands it the AI's decisions; it enters on quotes. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "ai_trader",
+        "overrides": [
+          "market_tolerance",
+          "pending_minutes"
+        ],
+        "params": {
+          "expiry_bars": 2,
+          "market_tolerance": 1.0,
+          "pending_minutes": 30
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 50
       }
     ],
     "timeframes": {
@@ -15856,6 +15943,47 @@
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 3000
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "The AI trader (PLAN §A37): the engine hands it the AI's decisions; it enters on quotes. Unproven.",
+        "known": true,
+        "last_command": null,
+        "name": "ai_trader",
+        "overrides": [
+          "market_tolerance",
+          "pending_minutes"
+        ],
+        "params": {
+          "expiry_bars": 2,
+          "market_tolerance": 1.0,
+          "pending_minutes": 30
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 50
       }
     ],
     "timeframes": {

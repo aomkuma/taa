@@ -1,11 +1,18 @@
-ai_trader.py: control (no bug): PASSED - 6 passed in 0.87s
+ai_trader.py: control (no bug): PASSED - 10 passed in 0.75s
    1. the first copy of a bar kept: CAUGHT by test_to_frame_indexes_by_the_open_and_keeps_the_last_copy
    2. the frame not sorted: CAUGHT by test_to_frame_indexes_by_the_open_and_keeps_the_last_copy
    3. now = the bar's open (reads a forming bar): CAUGHT by test_one_cycle_per_new_closed_bar_with_the_closes_since_the_last
    4. the same bar twice: CAUGHT by test_one_cycle_per_new_closed_bar_with_the_closes_since_the_last
    5. the closes after the last check, not from it: CAUGHT by test_one_cycle_per_new_closed_bar_with_the_closes_since_the_last
-   6. a call running is ignored: CAUGHT by test_nothing_starts_while_a_call_runs_and_its_closes_wait
+   6. a call running is ignored: CAUGHT by the tests hung (> 120 s)
    7. a smaller M1 count: CAUGHT by test_the_frames_ask_every_frame_once_with_its_count
    8. the journal from elsewhere: CAUGHT by test_suspensions_and_the_journal_are_read_from_the_store
    9. suspensions ignored: CAUGHT by test_suspensions_and_the_journal_are_read_from_the_store
-caught 9 / 9
+  10. a vetoed entry still ordered: CAUGHT by test_no_order_from_a_veto_a_wait_or_a_missing_price
+  11. half and full swapped: CAUGHT by test_order_from_a_sell_the_brakes_left
+  12. the order never expires: CAUGHT by test_order_from_a_sell_the_brakes_left
+  13. a missing stop ordered: CAUGHT by test_no_order_from_a_veto_a_wait_or_a_missing_price
+  14. a wait leaves the order waiting: CAUGHT by test_hand_over_orders_exits_and_cancels
+  15. the watch prices swapped: CAUGHT by test_order_from_a_sell_the_brakes_left
+  16. an exit not passed on: CAUGHT by test_hand_over_orders_exits_and_cancels
+caught 16 / 16

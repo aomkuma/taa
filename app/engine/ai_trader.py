@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import logging
 from concurrent.futures import Future, ThreadPoolExecutor
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -22,10 +23,11 @@ from app.ai import trader
 from app.ai.providers import AIProvider
 from app.ai.watcher import AIWatcher
 from app.config import AITraderConfig
-from app.core.enums import Timeframe
+from app.core.enums import Side, Timeframe
 from app.market_data.data_models import CandleFrame
 from app.news.releases import Release
 from app.strategy import knowledge as kn
+from app.strategy.ai_lane import AIOrder, AITrader
 
 log = logging.getLogger(__name__)
 
@@ -71,6 +73,7 @@ class AITraderLane:
         )
         self._running: Future[dict[str, Any] | None] | None = None
         self.cycles = 0
+        self._decision: dict[str, Any] | None = None  # the last finished decision, not yet handed over
         self.watcher = AIWatcher(
             store,
             frames=self._current_frames,
@@ -88,6 +91,7 @@ class AITraderLane:
         if self._running is not None:
             if not self._running.done():
                 return False
+            self._decision = self._running.result() or self._decision  # the watcher never raises
             self._running = None
         m1 = self.candles.closed_candles(self.cfg.symbol, Timeframe.M1, 2)
         if m1.last_open_time is None:
@@ -103,10 +107,15 @@ class AITraderLane:
         self._last_open, self._checked = opened, now
         self.cycles += 1
         if self._executor is None:
-            self.watcher.on_bar(now, closes)
+            self._decision = self.watcher.on_bar(now, closes) or self._decision
         else:
             self._running = self._executor.submit(self.watcher.on_bar, now, closes)
         return True
+
+    def take_decision(self) -> dict[str, Any] | None:
+        """The AI's last finished decision, once (on the engine loop)."""
+        rec, self._decision = self._decision, None
+        return rec
 
     def frames(self) -> kn.Frames:
         """The closed bars of every frame the readers need, from the engine's candle service."""
@@ -142,3 +151,48 @@ class AITraderLane:
             self.provider, kn.load(), self._current_frames(), as_of, text,
             model=model, suspensions=self._suspensions(), store=self.store, source="watcher",
         )  # fmt: skip
+
+
+def order_from(rec: dict[str, Any], pending_minutes: int) -> AIOrder | None:
+    """An AI decision record as an order for the ``ai_trader`` strategy: a SELL / BUY with a size the brakes
+    left ('half' / 'full') and its entry and stop; else None."""
+    d = rec.get("decision") or {}
+    size = rec.get("final_size")
+    if d.get("decision") not in ("SELL", "BUY") or size not in ("half", "full"):
+        return None
+    if d.get("entry") is None or d.get("stop") is None:
+        return None
+    at = pd.Timestamp(rec["as_of"]).to_pydatetime()
+    return AIOrder(
+        side=Side.SELL if d["decision"] == "SELL" else Side.BUY,
+        entry=float(d["entry"]),
+        stop=float(d["stop"]),
+        target=None if d.get("target") is None else float(d["target"]),
+        risk_scale=0.5 if size == "half" else 1.0,
+        setup=str(d.get("setup", "")),
+        reasons=tuple(str(x) for x in d.get("reasons", [])),
+        kb_ids=tuple(str(x) for x in d.get("kb_ids", [])),
+        confidence=int(d.get("confidence") or 0),
+        decided_at=at,
+        valid_until=at + timedelta(minutes=pending_minutes),
+        key=f"step-{pd.Timestamp(rec['as_of']):%Y%m%d%H%M}",
+        watch_above=None if d.get("watch_above") is None else float(d["watch_above"]),
+        watch_below=None if d.get("watch_below") is None else float(d["watch_below"]),
+    )
+
+
+def hand_over(strategy: AITrader, symbol: str, rec: dict[str, Any], pending_minutes: int) -> str:
+    """What the strategy does with the AI's decision: a new order (it replaces a waiting one), an exit of the
+    lane's open position, or a WAIT that withdraws a waiting order. Returns what was done."""
+    d = rec.get("decision") or {}
+    order = order_from(rec, pending_minutes)
+    if order is not None:
+        strategy.accept(symbol, order)
+        return "order"
+    if d.get("decision") == "EXIT":
+        strategy.request_exit(symbol)
+        return "exit"
+    if d.get("decision") in ("WAIT", "SELL", "BUY"):  # a wait, or an entry the brakes vetoed
+        strategy.cancel(symbol)
+        return "cancel"
+    return "none"

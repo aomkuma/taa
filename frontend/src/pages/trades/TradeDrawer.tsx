@@ -48,6 +48,18 @@ function useSteps(detail: TradeDetail | undefined): Step[] {
               {decision.signal.reason_codes.map((c) => translateCode(i18n, 'reason', c)).join(' · ')}
             </span>
           )}
+          {decision.signal.explanation && (
+            <span className="mt-1 block text-xs" data-testid="signal-explanation">
+              {t('trades.timeline.why')} {decision.signal.explanation}
+            </span>
+          )}
+          {(decision.signal.conditions ?? [])
+            .filter((c) => c.detail)
+            .map((c) => (
+              <span key={c.name} className="block text-xs text-slate-500" data-testid="signal-condition">
+                {t(`trades.timeline.condition.${c.name}`, { defaultValue: c.name })}: {c.detail}
+              </span>
+            ))}
         </>
       ),
     });

@@ -59,7 +59,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 | M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
 | M2 | Phase 17 — Setup OWN lanes (PLAN-1) | 1 | 0 | IN PROGRESS |
-| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 9 | 5 | IN PROGRESS |
+| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 9 | 6 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -2126,13 +2126,13 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 
 #### TAA-1806 — AI decisions through the decision engine
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1805
 
-- [ ] SELL / BUY -> an ordinary signal (entry, stop, target; conviction half / full -> the risk factor) through the sizer, the mode gate and every check
-- [ ] market now or a pending order with an expiry; HOLD / EXIT for the lane's own open positions; the broker-side SL / TP
-- [ ] the AI's reasons ride with the trade (setup, reasons, knowledge ids, watch prices) and show in the Trade history detail (owner 2026-10-24)
-- [ ] PAPER fills; tests
+- [x] SELL / BUY -> an ordinary signal (entry, stop, target; conviction half / full -> the risk factor) through the sizer, the mode gate and every check
+- [x] market now or a pending order with an expiry; HOLD / EXIT for the lane's own open positions; the broker-side SL / TP
+- [x] the AI's reasons ride with the trade (setup, reasons, knowledge ids, watch prices) and show in the Trade history detail (owner 2026-10-24)
+- [x] PAPER fills; tests
 
 #### TAA-1807 — Replays through the same entry point
 
