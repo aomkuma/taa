@@ -963,6 +963,24 @@ class AIConfig(StrictModel):
     max_calls_per_day: int = Field(default=50, ge=0, le=10_000)
     max_cost_per_day_usd: float = Field(default=2.0, ge=0, le=1_000)
     advisory: AIAdvisoryConfig = Field(default_factory=lambda: AIAdvisoryConfig())
+    trader: AITraderConfig = Field(default_factory=lambda: AITraderConfig())
+
+
+class AITraderConfig(StrictModel):
+    """The AI trader in the engine (PLAN §A37, TAA-1805): the watcher wakes the AI on closed M1 bars of one
+    symbol and the AI chooses the trade or waits, with the provider of ``AI_PROVIDER`` + key. Off by default;
+    in TAA-1805 its decisions are recorded only (orders come with TAA-1806). The daily cap counts the
+    watcher's own calls."""
+
+    enabled: bool = False
+    symbol: str = "XAUUSD"
+    store: str = "data/ai_trader"  # decisions.jsonl, raw/, session notes, watch_state.json, suspended.json
+    journal: str | None = None  # a markdown journal the AI reads the end of (None: the store's journal.md)
+    model: str = "claude-sonnet-5-5"
+    daily_cap_usd: float = Field(
+        default=0.40, ge=0, le=20, description="the owner's budget: 10-15 baht a day"
+    )
+    calendar_file: str = "app/news/us_releases.csv"
 
 
 class AIAdvisoryConfig(StrictModel):

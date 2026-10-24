@@ -429,3 +429,9 @@ ai:                                 # optional review of entries (AI_PROVIDER / 
     analytics_days: 7
     max_calls_per_day: 100          # its own budget, separate from the entry review's
     max_cost_per_day_usd: 0.0       # owner, 2026-10-18: the whole AI spend at most 1 USD a day (the entry review's)
+  trader:                           # the AI trader (PLAN §A37, TAA-1805): the watcher wakes the AI on closed M1
+    enabled: false                  # bars; decisions recorded only until TAA-1806 (signals through every check)
+    symbol: XAUUSD
+    store: data/ai_trader           # decisions.jsonl, raw/ prompts and answers, session notes, suspended.json
+    model: claude-sonnet-5-5        # owner, 2026-10-23: 10-15 baht a day
+    daily_cap_usd: 0.40             # the watcher's own calls on a Thai day

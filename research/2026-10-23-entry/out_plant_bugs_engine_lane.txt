@@ -1,0 +1,11 @@
+ai_trader.py: control (no bug): PASSED - 6 passed in 0.87s
+   1. the first copy of a bar kept: CAUGHT by test_to_frame_indexes_by_the_open_and_keeps_the_last_copy
+   2. the frame not sorted: CAUGHT by test_to_frame_indexes_by_the_open_and_keeps_the_last_copy
+   3. now = the bar's open (reads a forming bar): CAUGHT by test_one_cycle_per_new_closed_bar_with_the_closes_since_the_last
+   4. the same bar twice: CAUGHT by test_one_cycle_per_new_closed_bar_with_the_closes_since_the_last
+   5. the closes after the last check, not from it: CAUGHT by test_one_cycle_per_new_closed_bar_with_the_closes_since_the_last
+   6. a call running is ignored: CAUGHT by test_nothing_starts_while_a_call_runs_and_its_closes_wait
+   7. a smaller M1 count: CAUGHT by test_the_frames_ask_every_frame_once_with_its_count
+   8. the journal from elsewhere: CAUGHT by test_suspensions_and_the_journal_are_read_from_the_store
+   9. suspensions ignored: CAUGHT by test_suspensions_and_the_journal_are_read_from_the_store
+caught 9 / 9

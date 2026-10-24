@@ -61,6 +61,7 @@ from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
 from app.core.enums import ExitReason, Side, TradingMode
 from app.core.errors import BrokerError, SafetyViolation, SymbolUnavailable, TaaError
 from app.core.ids import new_id, stable_hash
+from app.engine.ai_trader import AITraderLane
 from app.engine.backends import Backend, DemoBackend, PaperBackend
 from app.engine.broker_positions import BrokerPositionManager
 from app.engine.broker_trades import BrokerTradeBook
@@ -208,6 +209,7 @@ class Engine:
         self.ranking: RankingService | None = None
         self.scanner: OpportunityScanner | None = None
         self.ai_notes: AINotes | None = None
+        self.ai_trader: AITraderLane | None = None
         self.lifecycle: OpportunityLifecycle | None = None
         self.shadow: ShadowTracker | None = None
         self.calibration: CalibrationService | None = None
@@ -332,6 +334,7 @@ class Engine:
         )
         self.ai = self._ai_gate()
         self.ai_notes = self._ai_notes()
+        self.ai_trader = self._ai_trader()
         if self.ai.active:
             self.decisions.reviewer = self.ai.review
             log.info("AI review on: %s, mode %s", env.AI_MODEL, env.AI_MODE)
@@ -568,6 +571,25 @@ class Engine:
         notes = AINotes(self.db, self._ai_provider(), self.config.ai.advisory, self.clock)
         return notes if notes.active else None
 
+    def _ai_trader(self) -> AITraderLane | None:
+        """The AI trader lane (PLAN §A37, TAA-1805): ``ai.trader.enabled`` and a real provider, else none."""
+        cfg = self.config.ai.trader
+        if not cfg.enabled:
+            return None
+        provider = self._ai_provider()
+        if isinstance(provider, NullProvider):
+            log.warning(
+                "ai.trader is enabled but there is no AI provider (AI_PROVIDER / AI_API_KEY): lane off"
+            )
+            return None
+        store = self.settings.path(cfg.store)
+        journal = self.settings.path(cfg.journal) if cfg.journal else store / "journal.md"
+        releases = load_releases(self.settings.path(cfg.calendar_file))
+        log.info(
+            "AI trader lane on: %s, model %s, cap %.2f USD a day", cfg.symbol, cfg.model, cfg.daily_cap_usd
+        )
+        return AITraderLane(cfg, self.candles, provider, releases, store, journal)
+
     def _ai_gate(self) -> AIGate:
         """The optional AI review (TAA-1303): Claude with ``AI_PROVIDER=anthropic`` and a key, else none."""
         env = self.settings.env
@@ -726,6 +748,8 @@ class Engine:
                 self._cloud_heartbeat(self.clock.monotonic())  # rate-limited by sync.heartbeat_seconds
             if connected and self.scanner is not None:
                 self._scan(self.scanner)
+            if connected and self.ai_trader is not None:
+                self._ai_trader_tick(self.ai_trader)
         except Exception as exc:  # process boundary: keep monitoring, block entries, tell the operator
             log.exception("engine cycle %s failed", self.cycles)
             self._error_at = self.clock.now_utc()
@@ -744,6 +768,12 @@ class Engine:
             log.exception("advisory ranking failed")
             ranking.stats.failures += 1
             ranking.stats.last_error = f"{type(exc).__name__}: {exc}"
+
+    def _ai_trader_tick(self, lane: AITraderLane) -> None:
+        try:
+            lane.tick()  # one watcher cycle per new closed M1 bar, on its own thread
+        except Exception:  # its own boundary: the AI trader failing never stops the engine's loop
+            log.exception("AI trader lane failed")
 
     def _scan(self, scanner: OpportunityScanner) -> None:
         try:
@@ -1493,6 +1523,8 @@ class Engine:
                 self.calibration.shutdown()
             if self.ai_notes is not None:
                 self.ai_notes.close()
+            if self.ai_trader is not None:
+                self.ai_trader.close()
             if self.sync is not None:
                 self._final_cloud_heartbeat()
                 self.sync.stop(final_flush=True)  # a deliberate stop reaches the cloud at once

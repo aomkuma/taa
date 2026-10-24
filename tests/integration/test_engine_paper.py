@@ -229,3 +229,59 @@ def test_main_refuses_a_mode_mismatch(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     assert main(["--mode", "live", "--env-file", str(env)]) == 2
+
+
+class TestAITraderLane:
+    """TAA-1805: off by default; on with a provider it ticks on the engine loop, and its failures never stop the
+    engine (FakeMT5's short history makes the readers fail: the watcher records the failure and carries on)."""
+
+    def test_off_by_default(self, tmp_path: Path) -> None:
+        h = harness(tmp_path)
+        h.engine.start()
+        assert h.engine.ai_trader is None
+
+    def test_enabled_without_a_provider_stays_off(self, tmp_path: Path) -> None:
+        s = settings(tmp_path)
+        ai = s.config.ai.model_copy(
+            update={"trader": s.config.ai.trader.model_copy(update={"enabled": True})}
+        )
+        h = harness(tmp_path, ai=ai)
+        h.engine.start()
+        assert h.engine.ai_trader is None  # AI_PROVIDER is not set in the test env
+
+    def test_enabled_it_ticks_and_never_stops_the_engine(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from app.ai.providers import Answer
+        from app.ai.schema import Status
+
+        class Provider:
+            name = "fake"
+
+            def ask(self, *args: object, **kwargs: object) -> Answer:
+                return Answer(Status.TIMEOUT, detail="no network in tests")
+
+        s = settings(tmp_path)
+        trader = s.config.ai.trader.model_copy(
+            update={"enabled": True, "symbol": "EURUSD", "store": str(tmp_path / "ai_trader")}
+        )
+        h = harness(tmp_path, ai=s.config.ai.model_copy(update={"trader": trader}))
+        monkeypatch.setattr(Engine, "_ai_provider", lambda self: Provider())
+        h.engine.start()
+        assert h.engine.ai_trader is not None
+        h.engine.ai_trader._executor = None  # run the watcher's cycle inline, so the test sees it
+        h.engine.run(max_cycles=6)
+        assert h.engine.last_error == ""
+        assert h.engine.ai_trader.cycles >= 1
+        store = tmp_path / "ai_trader"
+        alerts = (
+            (store / "watch_alerts.log").read_text(encoding="utf-8")
+            if (store / "watch_alerts.log").exists()
+            else ""
+        )
+        decisions = (
+            (store / "decisions.jsonl").read_text(encoding="utf-8")
+            if (store / "decisions.jsonl").exists()
+            else ""
+        )
+        assert "FAILED" in alerts or '"status": "TIMEOUT"' in decisions  # the cycle left its trace either way

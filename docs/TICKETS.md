@@ -59,7 +59,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 | M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
 | M2 | Phase 17 — Setup OWN lanes (PLAN-1) | 1 | 0 | IN PROGRESS |
-| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 8 | 4 | IN PROGRESS |
+| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 9 | 5 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -2117,12 +2117,12 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 
 #### TAA-1805 — The watcher in the engine
 
-- **Status:** TODO
+- **Status:** DONE
 - **Depends on:** 1804
 
-- [ ] `app/ai/watcher.py`: wake rules, the daily budget (the watcher's calls), state persisted
-- [ ] the engine loop calls it on every closed M1 bar (an `ai_trader` lane, `enabled: false`)
-- [ ] tests (wake rules, budget, the lane off by default)
+- [x] `app/ai/watcher.py`: wake rules, the daily budget (the watcher's calls), state persisted
+- [x] the engine loop calls it on every closed M1 bar (an `ai_trader` lane, `enabled: false`)
+- [x] tests (wake rules, budget, the lane off by default)
 
 #### TAA-1806 — AI decisions through the decision engine
 
@@ -2131,6 +2131,7 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 
 - [ ] SELL / BUY -> an ordinary signal (entry, stop, target; conviction half / full -> the risk factor) through the sizer, the mode gate and every check
 - [ ] market now or a pending order with an expiry; HOLD / EXIT for the lane's own open positions; the broker-side SL / TP
+- [ ] the AI's reasons ride with the trade (setup, reasons, knowledge ids, watch prices) and show in the Trade history detail (owner 2026-10-24)
 - [ ] PAPER fills; tests
 
 #### TAA-1807 — Replays through the same entry point
@@ -2148,6 +2149,18 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 
 - [ ] PAPER run with read-only quotes; the journal and the decisions read back
 - [ ] DEMO only when the owner says so; LIVE never before Phase 14 and the owner's go-ahead
+
+#### TAA-1809 — The trade journal in the PWA
+
+- **Status:** TODO
+- **Depends on:** 1806
+
+The owner (2026-10-24): "I want to read the trade journal too" - every AI decision, including the waits, the
+session notes and the day's journal, readable in the app next to the trades.
+
+- [ ] the AI's decisions (with WAIT) and session notes stored by the engine (a table, replicated through the outbox) instead of files only
+- [ ] `GET /engines/{id}/ai-journal` (by day, cursor) and the API samples
+- [ ] PWA: an AI journal page (days, each decision with its reasons, the trade it opened linked to Trade history); i18n TH / EN and parity tests
 
 ### Phase 15 — Product-scale backlog (deferred)
 
