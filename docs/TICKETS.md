@@ -2136,10 +2136,10 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 
 #### TAA-1807 — Replays through the same entry point
 
-- **Status:** TODO
+- **Status:** IN PROGRESS
 - **Depends on:** 1806
 
-- [ ] a replay of past days: a manual clock, tick fills, the AI's answers stored by input hash (repeatable, cost bounded)
+- [x] a replay of past days: a manual clock, tick fills, the AI's answers stored by input hash (repeatable, cost bounded)
 - [ ] a parity check: the live shadow's decisions of 2026-10-23 re-created from the stored answers
 
 #### TAA-1808 — PAPER on the real terminal, then DEMO on the owner's word
@@ -2158,9 +2158,14 @@ overrides) is shared. Research source: research/2026-10-23-entry (watcher.py, ai
 The owner (2026-10-24): "I want to read the trade journal too" - every AI decision, including the waits, the
 session notes and the day's journal, readable in the app next to the trades.
 
+The owner (2026-10-25): "when the system runs for real I must see the plan of each day and the readiness checklist".
+
 - [ ] the AI's decisions (with WAIT) and session notes stored by the engine (a table, replicated through the outbox) instead of files only
-- [ ] `GET /engines/{id}/ai-journal` (by day, cursor) and the API samples
-- [ ] PWA: an AI journal page (days, each decision with its reasons, the trade it opened linked to Trade history); i18n TH / EN and parity tests
+- [ ] the day plans (app/ai/plan.py: the morning plan, the London / New York updates - levels on the big frames AND the M15 / M5 levels, scenarios, the side with the edge, the Thai summary) and their readiness check (A1-A8 + the code's facts) stored and replicated the same way
+- [ ] each new trade's decision-checklist answers (A1-C9, the failed / missing HARD items, what the code stopped) stored with the decision
+- [ ] `GET /engines/{id}/ai-journal` (by day, cursor: decisions, plans, checklists) and the API samples
+- [ ] PWA: an AI journal page (days; the day's plans first - the Thai summary, levels, scenarios, readiness; then each decision with its reasons and checklist, the trade it opened linked to Trade history); i18n TH / EN and parity tests
+- [ ] a Web Push alert when the morning plan is written (the Thai summary)
 
 ### Phase 15 — Product-scale backlog (deferred)
 

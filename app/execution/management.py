@@ -2,7 +2,8 @@
 
 Evaluated on closed bars only; a change applies from the next bar on.
 
-- **Break-even:** once the position is ``break_even_trigger_r`` R in profit, the stop moves to the entry plus
+- **Break-even:** once the position is ``break_even_trigger_r`` R in profit (with ``break_even_on_touch``:
+  once the best price since the last call reached it), the stop moves to the entry plus
   ``break_even_buffer_points`` (costs), on the profitable side. With ``break_even_target_share`` the trigger
   is instead that share of the way to the take-profit, reached by the best price since the last call (Setup
   OWN: 0.6 of a fixed target, whatever the stop; docs/OWN_SETUP.md).
@@ -109,6 +110,9 @@ def manage(
     if risk <= 0:
         return Adjustment()
     gain_r = (mark - pos.entry) * sign / risk
+    touch_r = (
+        ((mark if reach is None else reach) - pos.entry) * sign / risk
+    )  # the best price since the last call
     best, kind, note = pos.sl, None, ""
     to_target = None if pos.tp is None else (pos.tp - pos.entry) * sign
     share = cfg.break_even_target_share
@@ -118,10 +122,11 @@ def manage(
         and to_target > 0
         and ((mark if reach is None else reach) - pos.entry) * sign >= share * to_target
     )
-    if gain_r >= cfg.break_even_trigger_r or by_target:
+    trigger_r = touch_r if cfg.break_even_on_touch else gain_r
+    if trigger_r >= cfg.break_even_trigger_r or by_target:
         be = pos.entry + sign * cfg.break_even_buffer_points * point
         if (be - best) * sign > 0:
-            why = f"{share:g} of the target" if by_target else f"+{gain_r:.2f}R"
+            why = f"{share:g} of the target" if by_target else f"+{trigger_r:.2f}R"
             best, kind, note = be, ExitReason.BREAK_EVEN, f"break-even at {why}"
     if gain_r >= cfg.trailing_start_r and atr is not None and atr > 0:
         trail = mark - sign * cfg.trailing_atr_multiple * atr

@@ -10,6 +10,7 @@ Moved from research/2026-10-23-entry/knowledge/behaviors.py.
 - asia_break    after 13:00 Thai: which side of the 07:00-13:00 Thai range today's bars have taken
 - recent_sweep  a sweep of an equal-lows / -highs pool (app/strategy/picture.py) in the last bars
 - day_levels / level_prices / level_sweep   the day's own levels and their sweeps (L14, L15)
+- seen_levels   the levels everyone sees (the day's, yesterday's and Asia's high / low, round 50s, main lines)
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ import pandas as pd
 from app.strategy import picture as pr
 
 TH = "Asia/Bangkok"
+ROUND = 50.0  # the round numbers everyone sees on gold (seen_levels)
 
 
 def efficiency(c: np.ndarray, n: int = 12) -> float:
@@ -123,19 +125,64 @@ def level_prices(m15: pd.DataFrame, d1: pd.DataFrame, before: pd.Timestamp) -> l
     return out
 
 
+def seen_levels(
+    m15: pd.DataFrame, d1: pd.DataFrame, before: pd.Timestamp, anchor: float, step: float, price: float
+) -> list[float]:
+    """The levels everyone sees, known BEFORE ``before`` (owner 2026-10-25, checklist B3 / W07): the
+    day's high and low so far (from 05:00 Thai), yesterday's D1 high and low, the Asia range (07:00-13:00
+    Thai, once it is over), the round 50s and the main zone lines within three steps of ``price``."""
+    x = m15[(m15.index >= day_start(before)) & (m15.index + pd.Timedelta(minutes=15) <= before)]
+    out: list[float] = []
+    if len(x):
+        out += [float(x.high.max()), float(x.low.min())]
+    y = d1[d1.index + pd.Timedelta(days=1) <= before]
+    if len(y):
+        out += [float(y.high.iloc[-1]), float(y.low.iloc[-1])]
+    th = before.tz_convert(TH)
+    asia0, london0 = th.normalize() + pd.Timedelta(hours=7), th.normalize() + pd.Timedelta(hours=13)
+    if th >= london0:
+        loc = pd.DatetimeIndex(x.index).tz_convert(TH)
+        a = x[(loc >= asia0) & (loc < london0)]
+        if len(a):
+            out += [float(a.high.max()), float(a.low.min())]
+    reach = 3 * step
+    base = math.floor(price / ROUND) * ROUND
+    out += [base + k * ROUND for k in range(-6, 8) if abs(base + k * ROUND - price) <= reach]
+    if step > 0:
+        k0 = math.floor((price - anchor) / step)
+        out += [anchor + k * step for k in range(k0 - 3, k0 + 4) if abs(anchor + k * step - price) <= reach]
+    return out
+
+
 def level_sweep(
-    h: np.ndarray, lo: np.ndarray, c: np.ndarray, levels: list[float], atr: float, recent: int = 6
+    h: np.ndarray,
+    lo: np.ndarray,
+    c: np.ndarray,
+    levels: list[float],
+    atr: float,
+    recent: int = 6,
+    v: np.ndarray | None = None,
+    min_vol: float = 0.0,
 ) -> str:
     """'low' / 'high' / 'none': within the last ``recent`` bars price went 0.1 ATR beyond a level it was on
     the near side of before them (the close before the window), and the last close is back on the near side -
     a sweep and reclaim that may take several bars (2026-10-23 21:30: under the day's low 3,986.62 and the
     line 3,994.09 to 3,975.58, back over the line two bars later). When both sides qualify, the side whose
-    extreme came later."""
+    extreme came later. With ``v``: the sweep's extreme bar needs a tick volume over ``min_vol`` x the mean of
+    ``v`` (owner 2026-10-25, B3: over 1.0 x)."""
     if len(c) < recent + 1:
         return "none"
     w_lo, w_hi, before, last = lo[-recent:], h[-recent:], c[-recent - 1], c[-1]
-    low = any(before > lv and w_lo.min() < lv - 0.1 * atr and last > lv for lv in levels)
-    high = any(before < lv and w_hi.max() > lv + 0.1 * atr and last < lv for lv in levels)
+
+    def loud(i: int) -> bool:  # the extreme bar's volume (index within the window)
+        return v is None or float(v[-recent:][i]) > min_vol * float(np.mean(v))
+
+    low = loud(int(np.argmin(w_lo))) and any(
+        before > lv and w_lo.min() < lv - 0.1 * atr and last > lv for lv in levels
+    )
+    high = loud(int(np.argmax(w_hi))) and any(
+        before < lv and w_hi.max() > lv + 0.1 * atr and last < lv for lv in levels
+    )
     if low and high:
         return "low" if int(np.argmin(w_lo)) > int(np.argmax(w_hi)) else "high"
     return "low" if low else "high" if high else "none"

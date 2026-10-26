@@ -30,16 +30,18 @@ def test_sleeps_when_nothing_happens():
     )  # at, not beyond
 
 
-def test_a_close_beyond_a_watched_price_wakes_at_once():
-    assert w.wake_reasons(at(1), T, 4005.6, 3992.9, [3999.0, 4005.61], set(), True) == [
+def test_a_close_beyond_a_watched_price_wakes_after_the_cooldown():
+    # owner 2026-10-25: 07-06 woke at 07:00 and again at 07:02 - a watched price waits 5 minutes after a call
+    assert w.wake_reasons(at(4), T, 4005.6, 3992.9, [3999.0, 4005.61], set(), True) == []
+    assert w.wake_reasons(at(5), T, 4005.6, 3992.9, [3999.0, 4005.61], set(), True) == [
         "an M1 close over 4005.60"
     ]
-    assert w.wake_reasons(at(1), T, 4005.6, 3992.9, [3992.89], set(), True) == ["an M1 close under 3992.90"]
-    assert w.wake_reasons(at(1), T, None, None, [5000.0, 1.0], set(), True) == []  # nothing watched
+    assert w.wake_reasons(at(5), T, 4005.6, 3992.9, [3992.89], set(), True) == ["an M1 close under 3992.90"]
+    assert w.wake_reasons(at(5), T, None, None, [5000.0, 1.0], set(), True) == []  # nothing watched
 
 
 def test_a_close_beyond_that_came_back_still_wakes():
-    assert w.wake_reasons(at(2), T, None, 3992.9, [3992.0, 3995.0], set(), True) == [
+    assert w.wake_reasons(at(6), T, None, 3992.9, [3992.0, 3995.0], set(), True) == [
         "an M1 close under 3992.90"
     ]
 
@@ -59,7 +61,21 @@ def test_the_30_minute_check_only_in_the_owners_windows():
         "new: climax",
         "30-minute check",
     ]
-    assert w.wake_reasons(at(60), T, 4005.0, None, [4006.0], set(), False) == ["an M1 close over 4005.00"]
+    # outside the windows it sleeps (R09 stops new trades there) unless a position or an order is held
+    assert w.wake_reasons(at(60), T, 4005.0, None, [4006.0], {"climax"}, False) == []
+    assert w.wake_reasons(at(60), T, 4005.0, None, [4006.0], set(), False, holding=True) == [
+        "an M1 close over 4005.00"
+    ]
+
+
+def test_arriving_at_a_plan_level_wakes_it_once():
+    # the plan's scenario entry 4160: a close within 1.0 USD wakes it, arriving there - not every bar it stays
+    assert w.wake_reasons(at(5), T, None, None, [4157.0, 4159.2], set(), True, (4160.0,), 4156.0) == [
+        "at the plan's level 4160.00"
+    ]
+    assert w.wake_reasons(at(6), T, None, None, [4159.5], set(), True, (4160.0,), 4159.2) == []  # still there
+    assert w.wake_reasons(at(6), T, None, None, [4158.5], set(), True, (4160.0,), 4156.0) == []  # 1.5 away
+    assert w.wake_reasons(at(3), T, None, None, [4160.9], set(), False, (4160.0,), 4156.0) == []  # outside
 
 
 def test_spent_today_counts_the_watchers_calls_of_the_thai_day():
@@ -116,6 +132,7 @@ class Rig:
 
     def __init__(self, store: Path, answer: dict[str, Any] | Exception | None = None) -> None:
         self.calls: list[tuple[pd.Timestamp, str, str | None]] = []
+        self.efforts: list[str] = []
         self.answer = answer
         self.behaviours: set[str] = set()
         self.watcher = w.AIWatcher(
@@ -127,7 +144,10 @@ class Rig:
         )
         self.watcher._behaviours = lambda now: set(self.behaviours)  # type: ignore[method-assign]
 
-    def decide(self, as_of: pd.Timestamp, text: str, model: str | None) -> dict[str, Any]:
+    def decide(
+        self, as_of: pd.Timestamp, text: str, model: str | None, effort: str = "medium"
+    ) -> dict[str, Any]:
+        self.efforts.append(effort)
         self.calls.append((as_of, text, model))
         if isinstance(self.answer, Exception):
             raise self.answer
@@ -156,7 +176,7 @@ def test_quiet_bars_let_it_sleep_and_a_watched_price_wakes_it(tmp_path: Path):
     rig = Rig(tmp_path)
     rig.watcher.on_bar(T, [])
     assert rig.watcher.on_bar(at(1), [3999.0, 4005.9]) is None
-    assert rig.watcher.on_bar(at(2), [4006.1]) is not None
+    assert rig.watcher.on_bar(at(5), [4006.1]) is not None
     assert len(rig.calls) == 2
     _, text, _ = rig.calls[1]
     assert "THE AI'S OWN EARLIER CALLS:\n\n### 22:00 Thai" in text  # it reads its own earlier call
@@ -174,7 +194,7 @@ def test_the_state_survives_a_restart(tmp_path: Path):
     Rig(tmp_path).watcher.on_bar(T, [])
     again = Rig(tmp_path)
     assert again.watcher.on_bar(at(1), []) is None  # the last call is remembered: no 'first call' again
-    assert again.watcher.on_bar(at(2), [3992.0]) is not None  # and so are the watch prices
+    assert again.watcher.on_bar(at(6), [3992.0]) is not None  # and so are the watch prices
 
 
 def test_the_daily_cap_stops_the_calls(tmp_path: Path):
@@ -196,3 +216,47 @@ def test_a_failed_cycle_is_told_counted_and_survived(tmp_path: Path):
     assert alert == f"{T.isoformat()} FAILED (1): FileNotFoundError: kb.yaml\n"
     rig.answer = None
     assert rig.watcher.on_bar(at(1), []) is not None  # the next bar works: the first call is retried
+
+
+def test_session_entry_names_the_weapon():
+    rec = {
+        "status": "OK",
+        "final_size": "half",
+        "decision": {"decision": "BUY", "weapon": "W07", "confidence": 70},
+    }
+    entry = w.session_entry(pd.Timestamp("2026-07-06T00:20", tz="UTC"), ["the first call"], rec)
+    assert "- **BUY** W07 (size half; confidence 70)" in entry
+
+
+def test_a_plan_level_waits_for_the_cooldown_after_a_call():
+    # 07-06 07:09-07:11: price swinging around a plan level woke it every minute
+    assert w.wake_reasons(at(2), T, None, None, [4159.2], set(), True, (4160.0,), 4156.0) == []
+    assert w.wake_reasons(at(5), T, None, None, [4159.2], set(), True, (4160.0,), 4156.0) == [
+        "at the plan's level 4160.00"
+    ]
+
+
+def test_the_position_note_is_always_last_and_never_cut(tmp_path: Path):
+    # ISSUES 11: a long journal and the plan's orders pushed the position note out of the prompt
+    note = "THE SYSTEM'S POSITION NOW (from the broker; HOLD / EXIT only for these):\n- open BUY from 4177.50"
+    rig = Rig(tmp_path)
+    rig.watcher.journal = lambda: "## the journal\n" + "x" * 9000 + "\n\n" + note
+    rig.watcher.state.plan_orders = [
+        "A SELL (turn): entry 4197.5, stop 4204.5, take-profit 4185.0 - trigger: t"
+    ]
+    rig.watcher.on_bar(T, [])
+    _, text, _ = rig.calls[0]
+    assert text.endswith(note)
+    from app.ai.trader import JOURNAL_CHARS, tail
+
+    assert tail(text, JOURNAL_CHARS).endswith(note)  # the AI module's own cut keeps it too
+
+
+def test_the_regular_check_thinks_less(tmp_path: Path):
+    # owner 2026-10-25 (the quota): a wake for the 30-minute check only uses the low effort
+    rig = Rig(tmp_path)
+    t0 = T - pd.Timedelta(hours=2)  # 09:00 New York: the window runs to 11:30
+    rig.watcher.on_bar(t0, [])  # the first call
+    rig.watcher.on_bar(t0 + pd.Timedelta(minutes=30), [])  # the 30-minute check only
+    rig.watcher.on_bar(t0 + pd.Timedelta(minutes=36), [4006.5])  # a watched price
+    assert rig.efforts == ["medium", "low", "medium"]

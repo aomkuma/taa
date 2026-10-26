@@ -120,11 +120,11 @@ def test_no_bars_no_cycle(tmp_path: Path):
 def test_suspensions_and_the_journal_are_read_from_the_store(tmp_path: Path):
     ln, _ = lane(tmp_path, rows("2026-10-23T15:00", [10.0]))
     assert ln._suspensions() == {}
-    assert ln._journal() == ""
+    assert ln._journal().endswith("- none: no open position and no waiting order")
     (tmp_path / "suspended.json").write_text('{"R01": "2026-10-23T22:00:00+00:00"}', encoding="utf-8")
     (tmp_path / "journal.md").write_text("## notes", encoding="utf-8")
     assert ln._suspensions() == {"R01": "2026-10-23T22:00:00+00:00"}
-    assert ln._journal() == "## notes"
+    assert ln._journal().startswith("## notes\n\nTHE SYSTEM'S POSITION NOW")
 
 
 def ai_rec(decision: str = "SELL", size: str = "half", **over: object) -> dict[str, Any]:
@@ -171,7 +171,9 @@ def test_hand_over_orders_exits_and_cancels():
     s = AITrader()
     assert at.hand_over(s, "XAUUSD", ai_rec(), 30) == "order"
     assert s.pending("XAUUSD") is not None
-    assert at.hand_over(s, "XAUUSD", ai_rec("WAIT"), 30) == "cancel"  # a wait withdraws the waiting order
+    assert at.hand_over(s, "XAUUSD", ai_rec("WAIT"), 30) == "none"  # a wait keeps the waiting order (10-25)
+    assert s.pending("XAUUSD") is not None
+    s.cancel("XAUUSD")
     assert s.pending("XAUUSD") is None
     at.hand_over(s, "XAUUSD", ai_rec(), 30)
     assert at.hand_over(s, "XAUUSD", ai_rec(size="none"), 30) == "cancel"  # a vetoed entry withdraws it too
@@ -190,3 +192,68 @@ def test_take_decision_hands_a_finished_decision_over_once(tmp_path: Path):
     ln.tick()
     assert ln.take_decision() == ai_rec()
     assert ln.take_decision() is None
+
+
+def test_the_position_note_tells_the_ai_what_is_held():
+    from app.core.enums import Side
+
+    assert at.position_note([], None).endswith("- none: no open position and no waiting order")
+    opened = datetime(2026, 7, 7, 9, 36, tzinfo=UTC)  # 16:36 Thai
+    note = at.position_note([(Side.SELL, 4131.18, 4135.2, 4122.3, opened)], at.order_from(ai_rec(), 30))
+    assert note.splitlines() == [
+        "THE SYSTEM'S POSITION NOW (from the broker; HOLD / EXIT only for these):",
+        "- open SELL from 4131.18, stop 4135.2, target 4122.3, opened 16:36 Thai",
+        "- waiting order SELL at 4005.00, stop 4013.0, target 3977.0, until 22:18 Thai",
+    ]
+
+
+def test_the_journal_handed_to_the_watcher_ends_with_the_position(tmp_path: Path):
+    ln, _ = lane(tmp_path, rows("2026-10-23T15:00", [10.0]))
+    (tmp_path / "journal.md").write_text("## notes", encoding="utf-8")
+    ln.position = "THE SYSTEM'S POSITION NOW: x"
+    assert ln._journal() == "## notes\n\nTHE SYSTEM'S POSITION NOW: x"
+
+
+def test_a_decision_s_side_vetoes_withdraw_that_side_of_the_plan():
+    # ISSUES 17: R01 (volatility) and the like stop a side at the fill too, not only when the plan was written
+    from datetime import timedelta
+
+    from app.core.enums import Side
+    from app.strategy.ai_lane import AIOrder, AITrader
+
+    s = AITrader()
+    t0 = datetime(2026, 7, 6, 0, 0, tzinfo=UTC)
+    mk = lambda side, key: AIOrder(  # noqa: E731
+        side=side, entry=4000.0, stop=4010.0 if side is Side.SELL else 3990.0, target=None, risk_scale=0.5,
+        setup="", reasons=(), kb_ids=(), confidence=0, decided_at=t0, valid_until=t0 + timedelta(hours=2), key=key,
+    )  # fmt: skip
+    s.set_plan_orders("XAUUSD", [mk(Side.SELL, "A"), mk(Side.BUY, "B")])
+    rec = {
+        "as_of": t0.isoformat(),
+        "decision": {"decision": "WAIT"},
+        "side_vetoes": {"BUY": ["R01"], "SELL": []},
+    }
+    assert at.hand_over(s, "XAUUSD", rec, 30) == "none"
+    assert [o.key for o in s.plan_orders("XAUUSD")] == ["A"]
+
+
+def test_hand_over_rechecks_the_plan_s_stops_with_each_decision():
+    # ISSUES 33 (07-08 13:16): the map's stops of each decision move a plan order's short stop out (C4 at the
+    # fill); a WAIT keeps the orders
+    from app.core.enums import Side
+    from app.strategy.ai_lane import AIOrder, AITrader
+
+    s = AITrader(AITrader.Params(min_take_profit=5.0))
+    t0 = datetime(2026, 10, 23, 14, 48, tzinfo=UTC)
+    plan = AIOrder(
+        side=Side.SELL, entry=4005.0, stop=4013.0, target=3977.0, risk_scale=0.5, setup="plan", reasons=(),
+        kb_ids=(), confidence=60, decided_at=t0, valid_until=t0.replace(hour=16), key="plan-A",
+    )  # fmt: skip
+    s.set_plan_orders("XAUUSD", [plan])
+    rec = ai_rec("WAIT", "none") | {"map_stops_now": {"SELL": 4021.5, "BUY": 3950.0}}
+    assert at.hand_over(s, "XAUUSD", rec, 30) == "none"
+    assert [o.stop for o in s.plan_orders("XAUUSD")] == [4021.5]
+    # the exit level the AI names travels with its order
+    o = at.order_from(ai_rec(exit_level=4010.0), 30)
+    assert o is not None and o.exit_level == 4010.0
+    assert at.order_from(ai_rec(), 30).exit_level is None  # type: ignore[union-attr]

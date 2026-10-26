@@ -493,6 +493,10 @@ class StrategyManagement(StrictModel):
     # the break-even at this share of the way to the take-profit instead of an R trigger (Setup OWN: 0.6 of
     # a fixed target, docs/OWN_SETUP.md); None: the R trigger
     break_even_target_share: float | None = Field(default=None, gt=0, lt=1)
+    # the R trigger on the best price since the last check (a touch: a bar's high / ask low) instead of
+    # the mark - what the live managers do on every quote (owner 2026-10-25: the AI trader's break-even
+    # on a touch)
+    break_even_on_touch: bool = False
     trailing_start_r: float | None = Field(default=None, gt=0)
     # a time stop of its own, in bars of ``timeframe`` (None: the engine's entry timeframe); a lane's
     # strategies get their lane's entry timeframe (``AppConfig.management``)
@@ -503,6 +507,7 @@ class StrategyManagement(StrictModel):
 class PositionManagementConfig(StrictModel):
     break_even_trigger_r: float = Field(default=1.0, gt=0)
     break_even_target_share: float | None = Field(default=None, gt=0, lt=1)  # set per strategy only
+    break_even_on_touch: bool = False  # set per strategy only
     break_even_buffer_points: float = Field(default=2.0, ge=0)
     trailing_start_r: float = Field(default=1.5, gt=0)
     trailing_atr_multiple: float = Field(default=2.0, gt=0)
@@ -524,6 +529,7 @@ class PositionManagementConfig(StrictModel):
             update={
                 "break_even_trigger_r": be if own.break_even and share is None else math.inf,
                 "break_even_target_share": share if own.break_even else None,
+                "break_even_on_touch": own.break_even_on_touch,
                 "trailing_start_r": trail if own.trailing else math.inf,
                 "time_stop_bars": own.time_stop_bars or self.time_stop_bars,
                 "by_strategy": {},
@@ -1289,9 +1295,11 @@ class EnvSettings(BaseSettings):
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
     LOG_DIR: str = "logs"
 
-    AI_PROVIDER: Literal["none", "anthropic"] = "none"
+    # codex: the Codex CLI on the owner's ChatGPT plan (owner 2026-10-26: "change everything" to GPT-6-Luna)
+    AI_PROVIDER: Literal["none", "anthropic", "codex"] = "none"
     AI_API_KEY: SecretStr | None = None
     AI_MODEL: str = "claude-opus-5-5"
+    AI_CLI_PATH: str | None = None  # codex.exe (None: the newest one of the VS Code ChatGPT extension)
     AI_MODE: Literal["off", "advisory", "veto"] = "veto"
 
     CLOUD_BASE_URL: str | None = None
@@ -1592,7 +1600,7 @@ def _require_mode_fields(env: EnvSettings, config: AppConfig) -> None:
         for key in ("MT5_LOGIN", "MT5_PASSWORD", "MT5_SERVER", "MT5_TERMINAL_PATH"):
             if getattr(env, key) in (None, ""):
                 missing.append(key)
-    if env.AI_PROVIDER != "none" and env.AI_API_KEY is None:
+    if env.AI_PROVIDER == "anthropic" and env.AI_API_KEY is None:
         missing.append("AI_API_KEY (required when AI_PROVIDER is set)")
     if config.sync.enabled:
         for key in ("CLOUD_BASE_URL", "ENGINE_ID", "ENGINE_HMAC_SECRET"):

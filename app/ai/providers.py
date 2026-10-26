@@ -158,29 +158,7 @@ class AnthropicProvider:
         self.client = client_factory(api_key=api_key, timeout=timeout_seconds, max_retries=1)
 
     def assess(self, request: AssessmentInput) -> Assessment:
-        answer = self.ask(request.signal_key, SYSTEM_PROMPT, request.to_json(), AssessmentV1)
-        spend: dict[str, Any] = {
-            "model": answer.model,
-            "input_tokens": answer.input_tokens,
-            "output_tokens": answer.output_tokens,
-            "cost_usd": answer.cost_usd,
-            "latency_ms": answer.latency_ms,
-            "created_at": answer.created_at,
-        }
-        if answer.status is not Status.OK:
-            return Assessment(answer.status, request.signal_key, detail=answer.detail, **spend)
-        try:
-            checked = validate(answer.parsed, request)
-        except ValueError as exc:
-            return Assessment(Status.INVALID, request.signal_key, detail=str(exc)[:500], **spend)
-        return Assessment(
-            Status.OK,
-            request.signal_key,
-            verdict=checked.verdict,
-            confidence=checked.confidence,
-            reasons=tuple(checked.reasons),
-            **spend,
-        )
+        return assess_with(self, request)
 
     def ask(
         self,
@@ -265,3 +243,31 @@ class AnthropicProvider:
         if parsed is None:
             return done(Status.INVALID, "no parsed answer", **spend)
         return done(Status.OK, parsed=parsed, **spend)
+
+
+def assess_with(provider: AIProvider, request: AssessmentInput) -> Assessment:
+    """The entry review through any provider's structured call (the Anthropic API, the Codex CLI): the
+    answer checked against the request (:func:`validate`)."""
+    answer = provider.ask(request.signal_key, SYSTEM_PROMPT, request.to_json(), AssessmentV1)
+    spend: dict[str, Any] = {
+        "model": answer.model,
+        "input_tokens": answer.input_tokens,
+        "output_tokens": answer.output_tokens,
+        "cost_usd": answer.cost_usd,
+        "latency_ms": answer.latency_ms,
+        "created_at": answer.created_at,
+    }
+    if answer.status is not Status.OK:
+        return Assessment(answer.status, request.signal_key, detail=answer.detail, **spend)
+    try:
+        checked = validate(answer.parsed, request)
+    except ValueError as exc:
+        return Assessment(Status.INVALID, request.signal_key, detail=str(exc)[:500], **spend)
+    return Assessment(
+        Status.OK,
+        request.signal_key,
+        verdict=checked.verdict,
+        confidence=checked.confidence,
+        reasons=tuple(checked.reasons),
+        **spend,
+    )

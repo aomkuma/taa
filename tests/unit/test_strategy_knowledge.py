@@ -6,6 +6,7 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -244,3 +245,50 @@ def test_bars_of_and_the_window_read_closed_bars_only():
     w = kb._window(b, t, 700)
     assert w.c.tolist() == [1.5, 2.5]
     assert kb._window(b, pd.Timestamp("2026-10-23T14:00", tz="UTC").value, 2).c.tolist() == [3.5, 4.5]
+
+
+class TestD1Regime:
+    """F20 / R08: the D1 close vs its 50-day mean, and that mean vs the one 20 days earlier (worked by hand)."""
+
+    def test_a_steady_rise_is_up_and_a_steady_fall_down(self) -> None:
+        rise = [100.0 + i for i in range(70)]  # mean of the last 50 = 144.5 < 169; 20 days earlier 124.5
+        assert kb.d1_regime(np.array(rise)) == "up"
+        assert kb.d1_regime(np.array(rise[::-1])) == "down"
+
+    def test_a_close_back_under_a_rising_mean_is_none(self) -> None:
+        closes = [100.0 + i for i in range(69)] + [140.0]  # the mean 144.4 rises, but 140 is under it
+        assert kb.d1_regime(np.array(closes)) == "none"
+
+    def test_any_rise_of_the_mean_counts_and_a_level_market_is_none(self) -> None:
+        flat = [100.0] * 69 + [105.0]  # over the mean, and the mean rose a little (100.1 vs 100.0): up
+        assert kb.d1_regime(np.array(flat)) == "up"
+        level = [100.0] * 70  # nothing over and nothing rising
+        assert kb.d1_regime(np.array(level)) == "none"
+
+    def test_a_jump_over_a_falling_mean_is_none(self) -> None:
+        closes = [169.0 - i for i in range(69)] + [
+            160.0
+        ]  # 160 over the mean 125.7, but 20 days ago it was 144.5
+        assert kb.d1_regime(np.array(closes)) == "none"
+
+    def test_the_earlier_mean_is_the_50_days_ending_20_days_ago(self) -> None:
+        # 20 x 100, 30 x 50, 20 x 101: the mean now (30 x 50 + 20 x 101) / 50 = 70.4 vs 20 days ago
+        # (20 x 100 + 30 x 50) / 50 = 70.0 -> rising; the 70-day mean (75.7) would call it falling
+        closes = [100.0] * 20 + [50.0] * 30 + [101.0] * 20
+        assert kb.d1_regime(np.array(closes)) == "up"
+
+    def test_too_few_closes_is_unknown(self) -> None:
+        assert kb.d1_regime(np.array([100.0 + i for i in range(69)])) is None
+
+    def test_it_is_a_reading_the_rules_may_name(self) -> None:
+        assert kb.WORDS["d1_regime"] == {"up", "down", "none"}
+
+
+def test_the_app_checklist_equals_the_document():
+    # app/strategy/checklist.py mirrors DECISION_CHECKLIST.md's items A-C word for word
+    import re
+
+    from app.strategy.checklist import ITEMS as APP_ITEMS
+
+    rows = dict(re.findall(r"^\| ([ABC]\d+) \| (.+?) \|", CHECKLIST.read_text(encoding="utf-8"), flags=re.M))
+    assert rows == APP_ITEMS and len(APP_ITEMS) == 22

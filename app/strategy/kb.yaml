@@ -50,7 +50,7 @@
   kind: principle
   stage: entry
   items: [C3, C4, B1]
-  says: "The entry decides - three conditions before any exit or filter is tuned: (1) a precise entry where the turn or run starts, the stop beyond the structure and outside every liquidation pool; (2) a clear enough structure on the entry frame, agreeing with the one above; (3) trend and momentum known - a turn against a strong run needs the run spent."
+  says: "The entry decides - three conditions before any exit or filter is tuned: (1) a precise entry where the turn or run starts, the stop beyond the structure and past every liquidate zone; (2) a clear enough structure on the entry frame, agreeing with the one above; (3) trend and momentum known - a turn against a strong run needs the run spent."
   evidence: "B2 entered 1.7-1.8 pattern heights past the extreme; median best after entry 0.4-0.6 R (F04)"
   source: "docs/OWNER_GOALS.md (owner, written 2026-10-23)"
 
@@ -103,7 +103,7 @@
   stage: clock
   items: [A6]
   when: {session: none}
-  says: "Trade in the owner's windows (Thai time): Asia 07-09, London 13-14 (+- a little), the New York open + 1-2 h. Outside them is the lowest priority unless the picture is really clean."
+  says: "Trade in the owner's windows (Thai time): Asia 07-09, London 13-15, New York 08:00-11:30 New York time (19:00-22:30 Thai in the US summer: the 08:30 releases and the open + 2 h). Outside them is the lowest priority unless the picture is really clean."
   source: "memory taa-owner-time-windows"
 
 - id: P12
@@ -138,7 +138,7 @@
   kind: principle
   stage: stop
   items: [C4]
-  says: "The stop sits beyond the structure that proves the trade wrong AND outside every pool (swings, equal lows / highs, round numbers, yesterday's high / low, swept wicks) - the first stop and every trailed stop."
+  says: "The stop sits beyond the structure that proves the trade wrong AND past every liquidate zone (swings, equal lows / highs, round numbers, yesterday's high / low, swept wicks) - the first stop and every trailed stop."
   source: "owner 2026-10-19 / 10-23"
 
 - id: P17
@@ -199,6 +199,31 @@
   evidence: "23 Oct: the owner's W sell 4,026.5 -> 4,010 played out at 21:10 and ran on to 3,975.6; my 'sell the re-test' candidate belonged to the finished cycle"
   source: "owner 2026-10-23 22:05 Thai; live/2026-10-23_night.md"
 
+- id: P25
+  kind: principle
+  stage: method
+  items: []
+  says: "One loop for every idea, in order, so the knowledge stays in one place: (1) read this knowledge base first for the stage the idea touches (kb.py; what is already measured, failed or open); (2) state the question at ONE stage (forest, trend, animal, weapon, entry, stop, target, exit, size); (3) measure on the design data with the fixed split - side x the big regime (D1 vs its 50-day mean) x the owner's session windows - so every table compares with the others; (4) write the result here (F finding, X failed, S shadow, O open) the same day, AS THE EDGE BY MARKET CONDITION: in which conditions a method has the edge and in which it is at a disadvantage, with its R there (readings the system sees now), never 'it won in X / lost in Y' - the periods are only the evidence; when one condition label gives different results in two periods, the label is not the whole condition: look for what else differed; (5) only then propose the change to the system to the owner; (6) then rerun the journal. No chain of one-off scripts and verdicts in the chat."
+  evidence: "25 Oct: four measurements in a row (sweep sides, reclaim 2025, by regime, follow the break) each split differently, none written here; W07 already said 'lost in 2023-25' before I re-measured it"
+  source: "owner 2026-10-25: 'organise the system of thinking first, or the data you have is scattered, before doing other parts'; 'instead of saying when it lost or won, record which market condition it suits'; 'say in which market condition it has the edge or the disadvantage'"
+
+- id: P27
+  kind: principle
+  stage: method
+  items: []
+  says: "All knowledge is useful; the market's condition decides which pieces lead the decision at this moment, and the rest is background - how many is not fixed (the owner's '5-10 of 100' was an example): as many as carry a measured edge in this condition, synthesised by me. The condition is read first (the D1 side, trend or range, the ATR's level and direction over the leg, the session, the phase), then the pieces with the measured edge in that condition are taken as the lead. 2025-04 .. 2026-04 ZigZag legs: with the ATR falling over the leg (M5-M30) a leg is undone 51-54 % of the time against 68-73 % with it flat - a trend: pullbacks ending 50-78.6 % went on 79-87 %; with the ATR high the pullbacks are shallower (median 69-82 % against 96-109 %) and a pullback past 61.8 % on H1 / H4 turned 81-88 %; with the ATR low or flat the legs are undone most - a range, the edges get swept. A pullback that takes out the leg's start (over 100 %) is the real turn; until then even 78.6-100 % went on 57-70 %."
+  evidence: "research/2026-10-24-replay/out_retrace_depth.txt, out_retrace_atr.txt (MetaTrader 5's ZigZag 12/5/3, 2025-04-18 .. 2026-04-17)"
+  source: "owner 2026-10-26: 'every piece of information is useful; the condition decides which to take as the lead - of 100 pieces of knowledge, a given trade may use 5-10 to decide'; '5-10 is an example - it may be more or fewer; synthesising what to do is your job'; 'ATR is needed with everything else: strong ATR fakes far, ATR falling while price keeps going may be a real trend'"
+  since: 2026-10-26
+
+- id: P26
+  kind: principle
+  stage: plan
+  items: [A1, A2, A3, A7]
+  says: "Before trading each day, the morning plan, written and summarised to the owner first: the market's condition (the D1 side, the H4 / H1 trend, volatility, the phase), yesterday's support / resistance and key levels (its high / low, swings, round numbers, zone lines and their bands, strong levels, volume nodes), the likely trend today, the opportunities, the side with the edge, the points where price may turn or go on (each as a scenario with its trigger, stop and take-profit point) and today's releases and windows. The trading day starts only after it."
+  source: "owner 2026-10-25: 'before testing a trading day, start the day by looking at the market ... then summarise it to me; do this every time before trading; write it down as a rule'"
+  since: 2026-10-25
+
 # ---------------------------------------------------------------- rules in force
 - id: R01
   kind: rule
@@ -217,7 +242,7 @@
   items: [A5]
   when: {d1_atr20: "< 60"}
   action: stand_aside_plan1
-  says: "Regime switch: PLAN-1's pieces trade only while the D1 ATR(20) of the closed D1 bars is >= 60 USD; below it gold is the calm gold where every piece lost."
+  says: "Regime switch: PLAN-1's pieces trade only while the D1 ATR(20) of the closed D1 bars is >= 60 USD; below it gold is the calm gold where every piece lost. PLAN-1's switch only - not a brake on the AI trader (owner 2026-10-25)."
   evidence: "by D1 ATR(20): < 20 -0.280, 20-30 -0.122, 30-40 -0.139, 40-50 -0.081, 50-60 +0.013, 60-80 +0.203, > 80 +0.136 (2,312 trades 2021-09 .. 2026-04)"
   source: "CHECKLIST row 62 (frozen 2026-10-21)"
   since: 2026-10-21
@@ -269,8 +294,21 @@
   source: "routine_read.py (draft animals); CHECKLIST row 48"
   since: 2026-10-23
 
+- id: R09
+  kind: rule
+  stage: clock
+  items: [A6]
+  when: {session: none}
+  action: stand_aside
+  unless_confidence: 70
+  says: "No new trade outside the owner's windows (Asia 07-09, London 13-15 Thai, the New York open 08:00-11:30 New York) unless the AI rates it at least 70 confident - only a really clean picture (P11)."
+  evidence: "2026-07-08 18:44 Thai sell (07:44 New York, -0.97 R) was outside the windows (L19); the 2026-07-07 shadow tally: 16:19 +1.70, 16:36 -1.02, 22:53 -0.97 R"
+  source: "owner 2026-10-24 ('the system should filter before the AI'); confirmed as a filter 2026-10-25"
+  since: 2026-10-25
+
 # ---------------------------------------------------------------- the weapons
 - id: W01
+  when: {session: ny}
   kind: weapon
   stage: weapon
   items: [A8, C1]
@@ -281,6 +319,7 @@
   source: "CHECKLIST rows 24, 41, 42, 46, 49, 56"
 
 - id: W02
+  when: {session: asia}
   kind: weapon
   stage: weapon
   items: [A8, C1]
@@ -291,6 +330,7 @@
   source: "CHECKLIST rows 21, 46, 59, 61"
 
 - id: W03
+  when: {session: london}
   kind: weapon
   stage: weapon
   items: [A8, C1]
@@ -301,6 +341,7 @@
   source: "CHECKLIST rows 22, 40, 46, 61"
 
 - id: W04
+  when: {bars_at_line: ">= 8", line_dist_step: "<= 0.3"}
   kind: weapon
   stage: weapon
   items: [B4]
@@ -311,6 +352,7 @@
   source: "SPEC.md; app/strategy/zone_break.py"
 
 - id: W05
+  when: {line_break: [up, down]}
   kind: weapon
   stage: weapon
   items: [B5]
@@ -321,6 +363,7 @@
   source: "SPEC.md; app/strategy/zone_retest.py"
 
 - id: W06
+  when: {line_dist_step: "<= 0.15"}
   kind: weapon
   stage: weapon
   items: [B3]
@@ -331,16 +374,18 @@
   source: "SPEC.md; app/strategy/zone_reject.py"
 
 - id: W07
+  when: {sweep: [high, low]}
   kind: weapon
   stage: weapon
   items: [B3]
   status: partial
   animal: "a false break of a level everyone sees, in the owner's windows"
   says: "The reclaim (#23): price breaks a level everyone sees and closes back - traded back into the range."
-  evidence: "+0.312 / +0.310 on 19 / 22; exam +0.065 on 54 (PARTIAL); lost in 2023-25"
-  source: "CHECKLIST rows 23, 54"
+  evidence: "+0.312 / +0.310 on 19 / 22; exam +0.065 on 54 (PARTIAL); lost in 2023-25. Conditions (F20, X43): the SELL side (a swept high closed back) is at a disadvantage in a bull regime and when the smaller frames (M5 / M15 / H1 rhythm) run up into the high (L17); the BUY side (a swept low closed back) is at less of a disadvantage because lows are swept falsely more often, and needs more context to have the edge. Bare, either side: -0.08 to -0.04 R after the spread"
+  source: "CHECKLIST rows 23, 54; research/2026-10-24-replay/reclaim_2025.py"
 
 - id: W08
+  when: [{m15_rhythm: up, h1_rhythm: up, h4_rhythm: up}, {m15_rhythm: down, h1_rhythm: down, h4_rhythm: down}]
   kind: weapon
   stage: weapon
   items: [A4, C1]
@@ -351,16 +396,18 @@
   source: "rhythm_sell.py; out_rhythm_week_2026-10-19.txt"
 
 - id: W09
+  when: [{sweep: [high, low]}, {climax: [top, bottom]}]
   kind: weapon
   stage: weapon
   items: [B1, B3]
   status: shadow
   animal: "deer / rabbit - a test or sweep of a zone with the big trend behind it"
-  says: "The structure turn: after a test (or a sweep with volume) of a buy zone, the first M5 higher low + higher high is the entry; the stop under the sweep / last higher low, outside its pool (mirror for sells)."
+  says: "The structure turn: after a test (or a sweep with volume) of a buy zone, the entry is a pending order at the zone, or at market when the sweep closes back or its first M5 higher low prints - not after a higher high too (L20, owner 2026-10-25); the stop under the sweep / last higher low, past its liquidate zone (mirror for sells)."
   evidence: "one replay case (2024-01-02 21:45 Thai) - to be journaled"
   source: "replay/2024-01-02.md (owner's read 22:00)"
 
 - id: W10
+  when: {h1_vol: "> 1.1"}
   kind: weapon
   stage: weapon
   items: [A5]
@@ -370,6 +417,38 @@
   source: "routine_read.py WEAPONS"
 
 # ---------------------------------------------------------------- shadows (shown, not applied)
+- id: S09
+  kind: shadow
+  stage: clock
+  items: [A6]
+  says: "Became the rule R09 on 2026-10-25 (owner). Was: no new trade outside the owner's windows, recorded as a shadow."
+  evidence: "2026-07-07 replay: it would have stopped 16:19 (+1.70 R), 16:36 (-1.02) and 22:53 (-0.97): +0.29 R on one day"
+  source: "owner 2026-10-24 (the system should filter before the AI)"
+  since: 2026-10-24
+
+- id: S10
+  kind: shadow
+  stage: trend
+  items: [C2]
+  action: stand_aside_against
+  trend: [h1_rhythm, h4_rhythm]
+  says: "No new trade against both the H1 and the H4 rhythm. Shadow: recorded with every decision as the trade it would have stopped."
+  evidence: "2026-07-07 replay: no trade of the day was against both"
+  source: "owner 2026-10-24 (the system should filter before the AI)"
+  since: 2026-10-24
+
+- id: S11
+  kind: shadow
+  stage: forest
+  items: [C2]
+  when: {d1_regime: up}
+  action: stand_aside
+  side: SELL
+  says: "SHADOW (recorded with every decision as the trade it would have stopped, not applied - it came from whole-period tables of a bare M5 trigger, which judge the test, not the market: L18; the journal judges it). No new SELL in a bull regime (D1 over a rising 50-day mean: the reading d1_regime up): on M5 every sell measured there was at a disadvantage (F20). Buys and the bear regime are untouched (the mirror is unmeasured)."
+  evidence: "F20: 2024 and 2025 bull days, every sell cell -0.05 to -0.14 R after the spread. F21: no exception found - with H4 and H1 clearly down too, the sells were at their WORST (-0.18 R on M5, -0.21 on M1); on M1 every sell cell lost (-0.14 to -0.22) and was below the buys of the same cell"
+  source: "owner 2026-10-25: confirmed the draft O23 ('except the surest': none measured - F21); asked 'trading M1, no sell when H1 or H4 is clearly down?' (F21)"
+  since: 2026-10-25 (a rule until the same day's L18)
+
 - id: S01
   kind: shadow
   stage: weapon
@@ -384,8 +463,8 @@
   kind: shadow
   stage: stop
   items: [C4]
-  says: "Every weapon's stop beyond the pool (here under the round number and the base low) - or the trade is skipped."
-  evidence: "both 23 Oct stops sat inside pools; PLAN-1's stops are set 0.2 ATR past a pattern / the range, not by the pools"
+  says: "Every weapon's stop beyond the liquidate zone (here under the round number and the base low) - or the trade is skipped."
+  evidence: "both 23 Oct stops sat inside liquidate zones; PLAN-1's stops are set 0.2 ATR past a pattern / the range, not by the zones"
   source: "live/2026-10-23_journal.md"
   since: 2026-10-23
 
@@ -411,7 +490,7 @@
   kind: shadow
   stage: exit
   items: [C4, C6]
-  says: "A trailed stop also goes beyond the pool, never on it."
+  says: "A trailed stop also goes beyond the liquidate zone, never in it."
   evidence: "2024-01-02: the trail under the M5 lows 2,073.45 / 2,073.53 was wicked by 0.33 and lost a +1.6 R stretch"
   source: "replay/2024-01-02.md"
   since: 2026-10-23
@@ -565,6 +644,22 @@
   says: "A broken level everyone sees is usually reclaimed (break-and-retest -0.221 / -0.390); levels made by the move itself are not real support / resistance (level break with volume, 61 % of losers went the wrong way)."
   source: "CHECKLIST rows 16, 25"
 
+- id: F19
+  kind: finding
+  stage: stop
+  items: [B3, C4]
+  says: "Fake break or real: of 6,352 breaks of M5 swing levels (2025-10-06 .. 2026-04-17 - the stored M5 starts 2025-10-05, so six months, not the twelve the script names; O25 re-measures from M1), 79 % closed back within 30 minutes (fake: median 0.39 M5 ATR past the level, 75 % within 0.86, 90 % within 1.53). Once price is 1.0 M5 ATR past, 56 % were real (0.5 ATR 39 %, 1.5 ATR 69 %, 2.0 ATR 78 %, 3.0 ATR 86 %). So a stop goes 1 M5 ATR past the liquidation zone (the code's stops in the liquidity map), and a break already 1.5-2 ATR past a level is not faded."
+  evidence: "the same shape on the replay months 2026-07 .. (79 % fake; 1.0 ATR past 59 % real) - in USD smaller there (M5 ATR 3.94 vs 5.08), so the measure is ATR, not dollars"
+  source: "research/2026-10-24-replay/sweep_depth.py, out_sweep_depth.txt (owner 2026-10-24: measure the sweep past the liquidation zone; fake break vs real)"
+
+- id: F20
+  kind: finding
+  stage: forest
+  items: [A2, A8]
+  says: "The edge of each side by market condition on M5 (by readings, not dates). BULL REGIME (D1 over a rising 50-day mean): M5 SELLS ARE AT A DISADVANTAGE - every sell tested lost there (fading a swept high -0.05 to -0.14 R, following a low's break -0.06 to -0.12); buys are at a smaller disadvantage, no edge alone (following a high's break -0.10 to +0.03, the reclaim of a swept low -0.03 to -0.08) - the same bull label gave buys +0.03 in one year and -0.09 in another, so a second condition (to find: O24) decides when bull-regime buys pay. ANY REGIME: a swept LOW is more often a fake and sweeps deeper than a swept HIGH (real 16-20 % vs 25-26 %; 90 % of fakes within 1.65-2.04 vs 1.21-1.31 M5 ATR; 1 ATR past: real 45 % vs 66-71 %) - so fading a break up already 1 ATR past a high is at a disadvantage, while a break down 1 ATR past a low still often comes back (the fade of a low keeps more of its edge). The 24-hour state (trend / sideways) changed the fake / real split little. BEAR and MIXED regimes: too few days in the design years to say (42 bear days); the replay months (mostly bear days) showed sells near 0 and buys -0.02 to -0.07 - information only. [LABEL: whole-period tables of a bare M5 trigger on every swing, a fixed 0.7 R target - a measure of that test, not a verdict on a method or a market condition (L18); the journal judges.]"
+  evidence: "the evidence periods: 2024 (gold +27 %, 205 bull days) and 2025 (+65 %, 269 bull days), both before the exam; sweeps Oct 2025 - Apr 2026; R after the spread, stop 1.0 / 1.8 M5 ATR, target 0.7 / 1.0 R, two hours at most, every level on its own (a measure of the method, not an account)"
+  source: "research/2026-10-24-replay/{sweep_sides, reclaim_2025, reclaim_regime, follow_regime}.py and their out_*.txt (owner 2026-10-25: 'try the same method on 2025 - it was a bull market')"
+
 # ---------------------------------------------------------------- failed methods (never retried as they were)
 - id: X01
   kind: failed
@@ -675,7 +770,7 @@
 - id: X17
   kind: failed
   stage: method
-  says: "PLAN-1 frozen rules on the exam: +0.148 on 282 - below +0.15 by 0.002 (the pool rule -4.55 R did not hold; no flip +2.24 and the 1.5 R target +1.66 did)."
+  says: "PLAN-1 frozen rules on the exam: +0.148 on 282 - below +0.15 by 0.002 (the liquidate-zone stop rule -4.55 R did not hold; no flip +2.24 and the 1.5 R target +1.66 did)."
   source: "CHECKLIST row 61"
 
 - id: X18
@@ -729,6 +824,21 @@
   says: "VOL-16's band (H1 ATR 12-16): the 16 ceiling cut +35.7 R of profit and the 12 floor cost 5.00 R net in the present - both deleted."
   source: "CHECKLIST rows 55, 55b, 55c"
 
+- id: F21
+  kind: finding
+  stage: trend
+  items: [A3, A8]
+  says: "The edge inside a bull regime (D1 over a rising 50-day mean) by the H4 / H1 trend (the same mean-and-slope test on each frame). H4 AND H1 DOWN = the PULLBACK of the bull market: a sell is at its greatest disadvantage there (M5 -0.18 R, M1 -0.21), and buying a swept low that closes back has the best edge of every cell on M5 (+0.044 R, 60 % win; following a high's break +0.019, 60 %) - it is the moment to prepare a BUY at the pullback's bottom, not to sell. No H4 / H1 combination gives a bull-regime sell the edge in both methods (two single cells +0.002 and +0.053, the other method losing there). On M1 every bare trigger loses in every cell (-0.06 to -0.22: the stops are small, the spread is a larger part of the risk), the buys always above the sells of the same cell. [LABEL: whole-period tables of a bare M5 trigger on every swing, a fixed 0.7 R target - a measure of that test, not a verdict on a method or a market condition (L18); the journal judges.]"
+  evidence: "2024 + 2025, bull days only (474); M5: reclaim 14,238 and follow 7,338 trades; M1: 67,111 and 37,853; stop 1.0 M5 / M1 ATR, target 0.7 R; candidates in the owner's windows on 82-83 % of bull days (M5 5.5 a day, M1 21.5)"
+  source: "research/2026-10-24-replay/bull_sells_lower.py, out_bull_sells_lower.txt, out_bull_sells_lower_m1.txt (owner 2026-10-25). With the system's own readings (broker-day D1, broker H4 / H1 bars) on ALL the design data (2023-09 .. 2026-04-17: app/strategy/edge_table.json, which the AI reads) the pullback cell reads buys -0.081 / -0.038 R (650 / 347), sells -0.100 / -0.099 (669 / 309): the sells stay behind, but the buys' edge of 2024-25 does not hold over the longer data - the pullback is not an edge for a bare M5 trigger; bare triggers lose in nearly every cell, the buys ahead of the sells in most (the 2023-26 rally's drift is part of that)"
+
+- id: X43
+  kind: failed
+  stage: entry
+  says: "A bare M5 trigger at a swing level - the reclaim (swept, closed back within 30 min) or following the break (closed 0.5-1 ATR past) - has the edge in no market condition on its own: in every regime and 24-hour state measured it lies between -0.46 and +0.09 R a trade after the spread, whatever the stop (0.5-1.8 ATR past) or the target (0.5-1 R). It only times an entry the context has already chosen (P03, F20). [LABEL: whole-period tables of a bare M5 trigger on every swing, a fixed 0.7 R target - a measure of that test, not a verdict on a method or a market condition (L18); the journal judges.]"
+  evidence: "2024, 2025 and Jul-Oct 2026"
+  source: "research/2026-10-24-replay/reclaim_2025.py, reclaim_regime.py, follow_regime.py (25 Oct)"
+
 # ---------------------------------------------------------------- lessons (single cases)
 - id: L01
   kind: lesson
@@ -741,7 +851,7 @@
   kind: lesson
   stage: stop
   items: [C4]
-  says: "23 Oct: both stops of the day sat inside liquidation pools (B2 -0.89 R; ORB -0.04 R with 1.0 R of room)."
+  says: "23 Oct: both stops of the day sat inside liquidate zones (B2 -0.89 R; ORB -0.04 R with 1.0 R of room)."
   source: "live/2026-10-23_journal.md"
 
 - id: L03
@@ -799,14 +909,14 @@
   kind: lesson
   stage: picture
   items: [B3]
-  says: "Week 10: 'no pool broken in 15 minutes' also happens when price is already beyond every pool (a runaway to a record) - the opposite of a stuck market."
+  says: "Week 10: 'no liquidate zone broken in 15 minutes' also happens when price is already beyond every liquidate zone (a runaway to a record) - the opposite of a stuck market."
   source: "PLAN1_JOURNAL.md week 10"
 
 - id: L11
   kind: lesson
   stage: picture
   items: [B2, C4, C5]
-  says: "23 Oct 16:30: the owner's M5 W sell (about 4,026.5, TP 4,010, SL 4,045) - checklist notes: the SL on the strong level 4,045.4 (a pool: 4,048-4,050 or over the day's high 4,034 are outside), the TP on the M5 base pool 4,009.5-4,010.5 (4,011-4,012 is before it)."
+  says: "23 Oct 16:30: the owner's M5 W sell (about 4,026.5, TP 4,010, SL 4,045) - checklist notes: the SL on the strong level 4,045.4 (a liquidate zone: 4,048-4,050 or over the day's high 4,034 are outside), the TP before the M5 base's liquidate zone 4,009.5-4,010.5 (4,011-4,012 is before it)."
   source: "live/2026-10-23_journal.md"
 
 - id: L13
@@ -820,7 +930,7 @@
   kind: lesson
   stage: picture
   items: [B3, A3]
-  says: "23 Oct 21:30: the NY drop swept the day's low 3,986.62 (09:00) and the main line 3,994.1 to 3,975.58 on the heaviest volume and closed back over the line 9 minutes later - the 12-hour structure (3,986.6 -> 4,034.2) fully unwound (the owner: 'it has run its full course; wait and see the structure'). picture_read missed it: its pools are equal lows inside 72 M5 bars; the day's high / low, yesterday's and the zone lines are pools too."
+  says: "23 Oct 21:30: the NY drop swept the day's low 3,986.62 (09:00) and the main line 3,994.1 to 3,975.58 on the heaviest volume and closed back over the line 9 minutes later - the 12-hour structure (3,986.6 -> 4,034.2) fully unwound (the owner: 'it has run its full course; wait and see the structure'). picture_read missed it: its liquidate zones are equal lows inside 72 M5 bars; the day's high / low, yesterday's and the zone lines are liquidate zones too."
   source: "live/2026-10-23_night.md (owner 22:00 Thai)"
 
 - id: L15
@@ -829,6 +939,77 @@
   items: [A3, B5, C1]
   says: "23 Oct 21:48: the owner sold the bounce at the midday support (the M15 low 4,002.02 at 11:45 Thai), broken by the NY drop - the bounce stopped 3.6 over it (4,005.59) and the owner's fills 4,005.57 / 4,005.28 were within 0.3 of the top. I had named the higher floor 4,009-4,012 and missed it. The day's own swing lows / highs are levels; a broken one is re-tested from the other side."
   source: "live/2026-10-23_night.md (owner 22:30 Thai)"
+
+- id: L16
+  kind: lesson
+  stage: stop
+  items: [C4]
+  says: "2026-07-08 14:05 Thai (replay): I sold the break of the 4,121 floor with the stop 4,126.10 IN the nearest liquidate zone (the equal tops 4,125.8-4,126); the ask swept it by 0.3 at 14:32 and price then fell 48 USD within the hour (4,052.09 by 15:58). The structure's top was the failed sweep at 4,133.60 (13:24): price never came back to it (4,127.22 at most). A stop beyond the structure (4,134.10) made it +0.51 R at my target, +1.51 R at 4,100. The stop goes BEYOND THE STRUCTURE that proves the idea wrong (the top of the peak for a sell, the bottom of the dip for a buy) - never in the nearest liquidate zone to keep it small; the size shrinks with it."
+  evidence: "the M1 history of 2026-07-08; research/2026-10-24-replay/day_2026-07-08.md"
+  source: "owner 2026-10-24: 'beyond the structure' (checklist C4)"
+
+- id: L17
+  kind: lesson
+  stage: weapon
+  items: [A8, B3]
+  says: "Condition: D1 down, but the M5, M15 and H1 rhythm running UP into the swept highs. Five W07 reclaim sells there (replay of 2026-07-09: 07:10, 07:40, 14:56, 19:42, 21:10 Thai) - one won (+0.68 R), four lost (-0.59 to -1.02 R); the one buy that followed London's break up won +0.45 R. Fading a swept high is at a disadvantage when the smaller frames run up into it, even with D1 down: the break is more often real (F20, X43)."
+  evidence: "research/2026-10-24-replay/day_2026-07-09.md (6 trades, -2.36 R)"
+  source: "the replay of 9 Jul 2026, run 25 Oct"
+
+- id: L18
+  kind: lesson
+  stage: method
+  items: []
+  says: "25 Oct: asked whether the side changes in a bull market, I ran whole-period tables of a bare M5 trigger on every swing (tens of thousands of trades, a fixed 0.7 R target, no level choice, no window, no picture) - all lost, and that verdict was about my test, not the market (the simulation itself checked out: 0.2 % of bars touched both stop and target; the M1 walk gave the same R). A method is judged in the daily journal of the system as built and summed week by week (owner, repeated); a whole-period run only checks code parity or reads a frozen exam."
+  evidence: "research/2026-10-24-replay/audit_sim.py, out_audit_sim.txt"
+  source: "owner 2026-10-25: 'if everything you tested loses, the problem is your design'; 'test as the journal, weekly summary or daily as we do now'"
+
+- id: L19
+  kind: lesson
+  stage: target
+  items: [C4, C5, B3]
+  says: "Where the journal thinks opposite to the market (owner 25 Oct: 'find whether the error is our understanding or its translation into code'), the 12 trades of 7-9 Jul against the M1 candles: 2 won at their target; in 9 of the other 10 the price reached the AI's stop before its target (the mirrored trade would have won). Three kinds: (a) RIGHT SIDE, TARGET TOO FAR - 5 trades ran +0.67 to +1.26 R (wick) toward the target set at 0.8-1.9 R, then came back (07-07 07:15, 20:58; 07-09 13:26, 19:42, 21:10): the 'second pool when the first is under half the stop' target, my translation of 'fit both sides', against the owner's quick profit (P01, scalp first); (b) RIGHT SIDE, STOP SWEPT - 2 trades were stopped and price then reached the target (07-08 14:05 +12 R after, L16; 07-09 07:10 in 44 min); (c) WRONG SIDE - 2-3 trades never moved for us (07-08 18:44 +0.05 R best; 07-09 14:56 +0.41), the reclaim sells into M5 / M15 rhythm up (L17). The code did what it was told: break-even needs an M1 close at +1 R and the best closes were 0.96 / 0.93 R. So the error is in our understanding as written into the rules and the prompt (the target rule, W07's loose 'sweep'), not a bug."
+  evidence: "research/2026-10-24-replay/audit_trades.py, out_audit_trades.txt; 12 trades is small - O26 runs forward in the journal"
+  source: "owner 2026-10-25"
+
+- id: L20
+  kind: lesson
+  stage: entry
+  items: [B2, C3, C8]
+  says: "2026-07-06 (replay): the AI's own morning plan named both turns and both printed, yet it took neither. A: the sweep under 4,177 to 4,170.39 (07:01), a higher low 4,170.89 (07:27), then up to 4,200.46 by 08:43. C: the sweep of 4,201.72 to 4,202.96 (08:48) closed back to 4,194.55 on 1.3x volume (08:50), then 4,185 within 9 minutes and 4,128.49 by 21:44, never above 4,195.16 again. It waited for a higher high as well ('already ran') or for 'more R'. When a scenario of the day's plan prints its trigger and no HARD item fails, it is the trade. A turn's entry is the sweep closed back or its first higher low / lower high; B1's higher high is weighted, not a gate."
+  evidence: "the M1 candles of 2026-07-06; research/2026-10-24-replay/day_2026-07-06.md (0 trades, 66 calls)"
+  source: "the replay of 6 Jul 2026, run 25 Oct"
+
+- id: L21
+  kind: lesson
+  stage: forest
+  items: [A1, A4]
+  says: "2026-07-06 (replay): the plan named BUY the side with the edge because H4 / H1 were up, while D1 was down after a three-day bounce. On the owner's frames, D1 names the side; H4 / H1 against it is the pullback, and its end at resistance (Friday's high, the round 4,200, the line band) is the trade with the edge. That was the SELL at 08:50 (-74 USD by 21:44). A buy inside the pullback is a scalp only."
+  evidence: "the M1 candles of 2026-07-06"
+  source: "memory taa-owner-tf-framework (owner 10-20: D1 = the side with the edge, M15-H1 = the trend); the replay of 6 Jul"
+
+- id: L22
+  kind: lesson
+  stage: entry
+  items: [B2, C3]
+  says: "Never enter at the first moment price reaches the level: wait for the signal at the level (owner 2026-10-26). The code arms an order at its touch and fills it only after one: on M5 (owner: 'enter on M5 instead of M1'), read bar after bar until the structure is complete - a sweep past the level on volume and a close back, an M / W with its neckline broken, or for a stop order an M5 close through the level (a retest is not waited for: it missed 2 of 5 winners, L23); on M15-H1 a candlestick pattern at the level - a pin bar or an engulfing bar. It never chases past half the stop distance. 2026-07-08 (replay): the 07:25 sell filled on the touch of 4,105.84 while the M1 push still ran and was stopped at 4,112.48 (price went on to 4,126.69); the 13:15 sell at a top swept four times and closed back paid +1.14 R."
+  evidence: "the M1 candles of 2026-07-08; research/2026-10-24-replay/day_2026-07-08.md"
+  source: "owner 2026-10-26: 'wait for the chart to confirm'; 'candlestick patterns on 15 minutes to 1 hour; the price structure on M1 until it matches the pattern'; app/strategy/confirm.py"
+
+- id: L23
+  kind: lesson
+  stage: forest
+  items: [A1, A4]
+  says: "Which order fits which market (owner 2026-10-26: 'sideways gives the fades many trades; a trend needs stop orders'). The 27 plan scenarios of 06-08 Jul, D1 down all three days: the sell stops (with D1) filled 5 of 5 and all reached their take-profit (+2.34 R at the touch, +1.53 R at an M5 close through; the retest filled only 3); the sell limits with D1 3 TP / 3 SL (+1.42 R); the counter-D1 orders 2 TP / 5 SL (-3.8 R). The confirmation signal changed no limit order's outcome, only its price. So the plan places no order against the D1 regime, and a stop order fills at an M5 close through its level."
+  evidence: "research/2026-10-24-replay/out_regime_orders.txt (regime_orders.py on plans.jsonl and the M1 bars)"
+  source: "owner 2026-10-26; L21; the journal days 06-08 Jul (3 days - to be judged on the days after)"
+
+- id: O28
+  kind: open
+  stage: entry
+  items: [B2, C3]
+  says: "To measure on the journal days: the orders armed, how many a signal confirmed (by kind: M5 sweep / double / break, M15-H1 pin / engulfing), the R of the confirmed fills, and what the unconfirmed touches would have made - L22 judged on the days after 8 Jul."
+  source: "L22 (26 Oct)"
 
 - id: L12
   kind: lesson
@@ -994,7 +1175,7 @@
   behavior: runaway
   items: [A7, B3]
   when: {runaway: [up, down]}
-  says: "Draft RUNAWAY: the day ran >= 1 step one way and price is past yesterday's extreme - beyond every pool; nothing to sweep, turns against it lose."
+  says: "Draft RUNAWAY: the day ran >= 1 step one way and price is past yesterday's extreme - beyond every liquidate zone; nothing to sweep, turns against it lose."
   evidence: "week 10 (record run, Asia 50 USD over yesterday's high); B2 against a push > 1 D1 ATR -2.41 R on 13"
   source: "PLAN1_JOURNAL.md weeks 10, NY-B2 ledger"
 
@@ -1035,3 +1216,38 @@
   when: {m15_relvol: "< 0.4"}
   says: "Draft THIN MARKET: the last M15 bar's volume under 0.4 of the same time's 20-day mean (holidays, the week's open) - wicks there mean little."
   source: "behaviours draft 2026-10-23; PLAN1_JOURNAL.md week 10 (Christmas)"
+
+- id: O27
+  kind: open
+  stage: weapon
+  items: [A8, C8]
+  says: "To measure forward from 7 Jul (the journal): how often a scenario of the day's plan prints its trigger, how often the AI takes it, and the R of the taken and the skipped ones - L20 / L21 judged on the days after, not on 6 Jul."
+  source: "L20, L21 (25 Oct)"
+
+- id: O26
+  kind: open
+  stage: target
+  items: [C5, B3]
+  says: "DONE 2026-10-25 (owner): the take-profit point per P09 / checklist C5 (the next swing, >= 5 USD, short of the next main band; the TP trim never under 5 USD) and the sweep only at levels everyone sees with the bar's volume over the mean (checklist B3). Was: Where the journal's losses came from (L19) and the two changes it points to, to run forward in the journal (shadow first, judged on the days after): (1) the TARGET back to the owner's quick profit - the nearest pool / about +0.6-0.8 R, a part-profit or break-even at the first push - instead of the second pool at 1.5-1.9 R (my translation of 'make both sides fit', approved 10-24); (2) W07's sweep only at levels everyone sees (the day's / Asia's / yesterday's high and low, round numbers) and not when the M5 / M15 rhythm runs into the level - the code's 'sweep' fires on any day M15 swing or M5 equal-tops pool swept by 0.1 ATR."
+  source: "L19 (25 Oct)"
+
+- id: O23
+  kind: open
+  stage: forest
+  items: [A2]
+  says: "Became R08 (owner confirmed 2026-10-25), then the shadow S11 the same day (L18). Was the draft brake: condition bull regime (D1 over a rising 50-day mean) -> no M5 sell, except the surest (F20); the mirror (bear regime -> no buys) is unmeasured: too few bear days in the design years."
+  source: "F20 (25 Oct)"
+
+- id: O24
+  kind: open
+  stage: entry
+  items: [C1, C6]
+  says: "Which second condition gives a bull-regime buy the edge (+0.15 R): the bull label alone gave +0.03 and -0.09 (F20). Candidates to measure with P25's split: volatility (h1_vol), the trend's strength (distance over the 50-day mean, its slope), the owner's windows, the pullback's depth, the place in the day's range."
+  source: "F20, X43 (25 Oct)"
+
+- id: O25
+  kind: open
+  stage: stop
+  items: [B3, C4]
+  says: "Re-measure F19 and the side split on twelve design months (2025-04-18 .. 2026-04-17) with M5 built from M1; BUFFER_ATR 1.0 (the liquidity map) rests on the six months measured so far."
+  source: "F19 correction (25 Oct)"

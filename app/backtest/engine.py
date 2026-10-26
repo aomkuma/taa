@@ -81,6 +81,7 @@ from app.risk.circuit_breaker import BreakerBoard, default_specs
 from app.risk.limits import ProfileLimits, effective_risk
 from app.risk.loss_tracker import LossStatus, LossTracker
 from app.storage.database import Database
+from app.strategy.ai_lane import AIEntry, AITrader
 from app.strategy.arbitration import SignalArbiter
 from app.strategy.base_strategy import BaseStrategy, PastEntry
 from app.strategy.context_builder import AnalyzedFrame, analyze_frame, context_at
@@ -93,6 +94,22 @@ log = logging.getLogger(__name__)
 
 MAGIC_BASE = 7_310_000  # same default as MAGIC_NUMBER_BASE; position i of the strategy list gets base + i
 MAIN = "main"  # the run's own entry timeframe (app.engine.lanes.MAIN)
+
+
+class AIHook(Protocol):
+    """The AI trader lane in a replay (``app.engine.ai_replay.AIReplay``, TAA-1807): stepped at each M1 close
+    of its symbol after the broker and the lanes; hands a new decision to the lane's ai_trader strategy."""
+
+    @property
+    def symbol(self) -> str: ...
+
+    def step(
+        self,
+        at: datetime,
+        strategy: AITrader | None,
+        positions: list[tuple[Side, float, float | None, float | None, datetime]],
+        closed: list[ClosedTrade] | None = None,
+    ) -> str | None: ...
 
 
 class QuoteSource(Protocol):
@@ -131,7 +148,7 @@ class _Lane:
     maps: MapBook | None
     arbiter: SignalArbiter
     by_name: dict[str, BaseStrategy]
-    quoted: list[OwnS2] = field(default_factory=list)  # the quote-driven strategies
+    quoted: list[OwnS2 | AITrader] = field(default_factory=list)  # the quote-driven strategies
 
     @property
     def entry_tf(self) -> Timeframe:
@@ -206,13 +223,15 @@ class BacktestEngine:
         main_symbols: Collection[str] | None = None,
         quotes: QuoteSource | None = None,
         calendar: Callable[[str], Sequence[Release]] | None = None,
+        ai: AIHook | None = None,
     ) -> None:
         """*lanes*: more entry timeframes sharing the account (TAA-507); *config* then is the full config (its
         ``lanes`` give each lane strategy its spread ratio, cooldown and management). *main_symbols*: the
         symbols the main lane trades (None: all of *data*). *quotes*: stored ticks for the quote-driven
         strategies and tick-level fills; *calendar*: a release calendar file -> releases (S2's
-        ``calendar_file``)."""
+        ``calendar_file``); *ai*: the AI trader lane of a replay (TAA-1807)."""
         self.quotes = quotes
+        self.ai = ai
         self.config = config
         self.risk_preset = risk_preset
         self.data = dict(data)
@@ -241,9 +260,13 @@ class BacktestEngine:
             if sset.strategies or name == MAIN
         ]
         for lane in self.lanes:
-            lane.quoted = [s for s in lane.strategies.strategies if isinstance(s, OwnS2)]
+            lane.quoted = [s for s in lane.strategies.strategies if isinstance(s, OwnS2 | AITrader)]
             for s in lane.quoted:
-                s.attach_calendar(() if calendar is None else calendar(s.params.calendar_file))
+                if isinstance(s, OwnS2):
+                    s.attach_calendar(() if calendar is None else calendar(s.params.calendar_file))
+        self._ai_strategy = next(
+            (s for lane in self.lanes for s in lane.quoted if isinstance(s, AITrader)), None
+        )
         self.maps = self.lanes[0].maps
         self.start, self.end = start, end
         self.on_progress = on_progress
@@ -256,6 +279,7 @@ class BacktestEngine:
             for sym, o in config.symbols.overrides.items()
             if o.commission_per_lot is not None
         }
+        self._ai_seen = 0  # the broker's closed trades already handed to the AI hook
         self.broker = SimulatedBroker(
             {s: d.spec for s, d in self.data.items()},
             bt,
@@ -366,6 +390,17 @@ class BacktestEngine:
                     pos = int(index.searchsorted(ts))
                     if pos < len(index) and index[pos] == ts:
                         self._step_symbol(symbol, frames, pos, t, result, lane)
+                at_end = self.end is not None and t >= pd.Timestamp(self.end)  # the next period's first bar
+                if self.ai is not None and symbol == self.ai.symbol and feed is not None and not at_end:
+                    held = [
+                        (p.side, p.entry_price, p.sl, p.tp, p.entry_time)
+                        for p in self.broker.positions.values()
+                        if p.symbol == symbol and p.request.strategy == AITrader.name
+                    ]
+                    new = self.broker.trades[self._ai_seen :]  # the AI's trades closed since its last step
+                    self._ai_seen = len(self.broker.trades)
+                    closed = [x for x in new if x.strategy == AITrader.name]
+                    self.ai.step(t, self._ai_strategy, held, closed)
             self.broker.record_equity(t)
             self._book_losses()
             if self.on_progress is not None and (step % self.progress_every == 0 or step == len(timeline)):
@@ -505,6 +540,7 @@ class BacktestEngine:
             "stop_loss": selected.stop_loss,
             "take_profit": selected.take_profit,
             "conditions": {c.name: c.detail for c in selected.conditions},
+            "explanation": selected.explanation,
         }
         side = selected.side
         if side is None:
@@ -567,8 +603,8 @@ class BacktestEngine:
         self,
         symbol: str,
         lane: _Lane,
-        strategy: OwnS2,
-        entry: StraddleEntry,
+        strategy: OwnS2 | AITrader,
+        entry: StraddleEntry | AIEntry,
         tick: tuple[datetime, float, float],
         analyzed: Mapping[str, Mapping[str, Mapping[Timeframe, AnalyzedFrame]]],
         result: BacktestResult,
@@ -591,7 +627,12 @@ class BacktestEngine:
             ctx = bar_context(lane.config, frames, symbol, closed, bar, spec, lane.evidence, quote=quote)
         except (InsufficientDataError, DataQualityError):
             return
-        signal = strategy.entry_signal(ctx, entry)
+        if isinstance(
+            strategy, AITrader
+        ):  # each returns only its own kind (as the live engine's _quote_signal)
+            signal = strategy.entry_signal(ctx, entry) if isinstance(entry, AIEntry) else None
+        else:
+            signal = strategy.entry_signal(ctx, entry) if isinstance(entry, StraddleEntry) else None
         if signal is None:
             return
         result.signals += 1

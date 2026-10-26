@@ -33,6 +33,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from sqlalchemy import func, select
@@ -53,6 +54,7 @@ from app.advisory.universe import SymbolCatalog
 from app.ai.gate import AIGate
 from app.ai.notes import AINotes
 from app.ai.providers import AIProvider, AnthropicProvider, NullProvider
+from app.ai.replay import CodexCLIProvider, find_codex
 from app.broker.execution import ExecutionGateway
 from app.broker.factory import BrokerBundle
 from app.broker.models import BrokerOrder, BrokerPosition
@@ -61,7 +63,7 @@ from app.core.clock import Clock, ClockStatus, ClockVerification, ensure_utc
 from app.core.enums import ExitReason, Side, TradingMode
 from app.core.errors import BrokerError, SafetyViolation, SymbolUnavailable, TaaError
 from app.core.ids import new_id, stable_hash
-from app.engine.ai_trader import AITraderLane, hand_over
+from app.engine.ai_trader import AITraderLane, hand_over, position_note
 from app.engine.backends import Backend, DemoBackend, PaperBackend
 from app.engine.broker_positions import BrokerPositionManager
 from app.engine.broker_trades import BrokerTradeBook
@@ -105,7 +107,7 @@ from app.storage.audit import AuditLog
 from app.storage.database import Database
 from app.storage.models import ManualTradeLinkRow, RiskDeal
 from app.storage.repositories import EngineStateRepository, RunRepository
-from app.strategy.ai_lane import AIEntry, AITrader, AITraderParams
+from app.strategy.ai_lane import AIEntry, AITrader, AITraderParams, Held
 from app.strategy.arbitration import SignalArbiter
 from app.strategy.catalog import default_registry
 from app.strategy.context_builder import ContextBuilder
@@ -557,6 +559,12 @@ class Engine:
 
     def _ai_provider(self) -> AIProvider:
         env = self.settings.env
+        if env.AI_PROVIDER == "codex":
+            exe = Path(env.AI_CLI_PATH) if env.AI_CLI_PATH else find_codex()
+            if exe is None or not exe.exists():
+                log.warning("AI_PROVIDER=codex but no codex.exe was found (AI_CLI_PATH): AI off")
+                return NullProvider(self.clock)
+            return CodexCLIProvider(exe, self.clock, model=env.AI_MODEL, effort=self.config.ai.effort)
         if env.AI_PROVIDER == "anthropic" and env.AI_API_KEY is not None:
             return AnthropicProvider(
                 env.AI_API_KEY.get_secret_value(),
@@ -774,20 +782,46 @@ class Engine:
 
     def _ai_trader_tick(self, lane: AITraderLane) -> None:
         try:
+            lane.position = self._ai_position(lane.cfg.symbol)  # what the system holds, told to the AI
             lane.tick()  # one watcher cycle per new closed M1 bar, on its own thread
+            orders = lane.take_plan_orders()  # the day plan's orders, placed in advance (owner 2026-10-25)
+            strategy = self._ai_strategy(lane.cfg.symbol)
+            if strategy is not None:  # C9: a position gone at its take-profit blocks its side for a while
+                strategy.note_positions(lane.cfg.symbol, self._ai_held(lane.cfg.symbol), lane.m1)
+                strategy.confirm_orders(lane.cfg.symbol, lane.m1, self.clock.now_utc())
+            if orders is not None and strategy is not None:
+                strategy.set_plan_orders(lane.cfg.symbol, orders)
             rec = lane.take_decision()  # a finished decision, handed over here on the engine loop
             if rec is not None:
                 self._ai_hand_over(lane, rec)
         except Exception:  # its own boundary: the AI trader failing never stops the engine's loop
             log.exception("AI trader lane failed")
 
+    def _ai_strategy(self, symbol: str) -> AITrader | None:
+        return next((s for ln, s in self._quote_lanes if isinstance(s, AITrader) and ln.trades(symbol)), None)
+
+    def _ai_position(self, symbol: str) -> str:
+        """The ai_trader strategy's open positions on ``symbol`` (by its magic) and its waiting order."""
+        strategy = self._ai_strategy(symbol)
+        if strategy is None:  # no lane trades the AI's decisions: it holds nothing
+            return position_note([], None)
+        return position_note(self._ai_held(symbol), strategy.pending(symbol, self.clock.now_utc()))
+
+    def _ai_held(self, symbol: str) -> list[Held]:
+        """The ai_trader strategy's open positions on ``symbol`` (by its magic): side, entry, stop, target,
+        opened."""
+        magic = self.magic[AITrader.name]
+        return [
+            (p.side, p.price_open, p.sl or None, p.tp or None, p.time_utc)
+            for p in self.backend.book()
+            if p.symbol == symbol and p.magic == magic
+        ]
+
     def _ai_hand_over(self, lane: AITraderLane, rec: dict[str, Any]) -> None:
         """The AI's decision to the ``ai_trader`` strategy of a configured lane (TAA-1806): an order waits for
         its price on quotes, then goes through the decision engine like any signal."""
         symbol = lane.cfg.symbol
-        strategy = next(
-            (s for ln, s in self._quote_lanes if isinstance(s, AITrader) and ln.trades(symbol)), None
-        )
+        strategy = self._ai_strategy(symbol)
         if strategy is None:
             log.warning("AI decision for %s with no lane running the ai_trader strategy: not traded", symbol)
             return

@@ -64,6 +64,9 @@ WORDS: dict[str, set[str]] = {
     "runaway": _UPDOWN,
     "asia_break": {"up", "down", "both", "none"},
     "sweep": {"low", "high", "none"},
+    "d1_regime": _UPDOWN,
+    "h4_trend": _UPDOWN,
+    "h1_trend": _UPDOWN,
 }
 FEATURES = NUMERIC | set(WORDS)
 OPS = re.compile(r"^(>=|<=|>|<)\s*(-?\d+(?:\.\d+)?)$")
@@ -71,7 +74,11 @@ TH, NY = "Asia/Bangkok", "America/New_York"
 MINUTES = {"M15": 15, "H1": 60, "H4": 240, "D1": 1440}
 WINDOW = 700  # bars of each frame handed to the readers (the big trend needs 500)
 PICTURE_BARS = 72  # the M5 bars the pool reader reads (research picture_read.N)
+SWEEP_VOLUME = (
+    1.0  # B3: the sweep bar's tick volume over this x the mean of the PICTURE_BARS (owner 2026-10-25)
+)
 DAY_NS = 24 * 3600 * 10**9
+REGIME_MEAN, REGIME_SLOPE = 50, 20  # F20: the close vs its 50-bar mean, the mean vs 20 bars earlier
 
 
 def load(path: Path = KB) -> list[dict[str, Any]]:
@@ -178,6 +185,23 @@ def bars_of(df: pd.DataFrame, minutes: int) -> Bars:
     )
 
 
+def d1_regime(closes: np.ndarray) -> str | None:
+    """The trend of a frame from its closed closes (F20, F21; on D1 the big regime, read also on H4 and H1):
+    ``up`` (bull) when the last close is over its 50-bar mean and that mean is higher than 20 bars earlier,
+    ``down`` the mirror, else ``none``; None with fewer than 70 closes."""
+    n = REGIME_MEAN + REGIME_SLOPE
+    if len(closes) < n:
+        return None
+    mean = float(np.mean(closes[-REGIME_MEAN:]))
+    before = float(np.mean(closes[-n:-REGIME_SLOPE]))
+    last = float(closes[-1])
+    if last > mean > before:
+        return "up"
+    if last < mean < before:
+        return "down"
+    return "none"
+
+
 def _window(b: Bars, t: int, n: int) -> Bars:
     j = int(np.searchsorted(b.avail, t, side="right"))
     s = slice(max(0, j - n), j)
@@ -234,6 +258,9 @@ def features(fr: Frames, as_of: pd.Timestamp) -> dict[str, Any]:
     f["h1_eff12"] = bh.efficiency(xh.c, 12)
     f["line_break"] = bh.line_break(xm.c, st.anchor, half, 4)
     yd = closed(w["D1"], t)
+    f["d1_regime"] = d1_regime(yd.c)
+    f["h4_trend"] = d1_regime(closed(w["H4"], t).c)  # F21: the same test on H4 and H1
+    f["h1_trend"] = d1_regime(closed(w["H1"], t).c)
     f["runaway"] = bh.runaway(price, float(yd.h[-1]), float(yd.lo[-1]), run)
     h1df = fr.h1[fr.h1.index + pd.Timedelta(hours=1) <= as_of].iloc[-101:]
     b = h1df.iloc[-1]
@@ -249,13 +276,11 @@ def features(fr: Frames, as_of: pd.Timestamp) -> dict[str, Any]:
     h5, lo5, c5, v5 = (d5[k].to_numpy(float) for k in ("high", "low", "close", "tick_volume"))
     atr5 = float(mt5_atr(h5, lo5, c5, 14)[-1])
     n = PICTURE_BARS
-    f["sweep"] = bh.recent_sweep(h5[-n:], lo5[-n:], c5[-n:], v5[-n:], atr5, 6)
-    if f["sweep"] == "none":  # L14: the day's own levels and the zone lines are pools too
-        before = d5.index[-6]  # the window's first bar opens here: levels known before it
-        k0 = math.floor((price - st.anchor) / half)
-        lines = [st.anchor + k * half for k in range(k0 - 2, k0 + 4)]
-        levels = bh.level_prices(fr.m15, fr.d1, before) + lines
-        f["sweep"] = bh.level_sweep(h5, lo5, c5, levels, atr5, 6)
+    # B3 / W07 (owner 2026-10-25): a sweep of a level everyone sees, closed back, the bar's volume over the
+    # mean
+    before = d5.index[-6]  # the window's first bar opens here: levels known before it
+    levels = bh.seen_levels(fr.m15, fr.d1, before, st.anchor, st.step, price)
+    f["sweep"] = bh.level_sweep(h5[-n:], lo5[-n:], c5[-n:], levels, atr5, 6, v=v5[-n:], min_vol=SWEEP_VOLUME)
     return f
 
 

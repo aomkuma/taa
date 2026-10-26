@@ -8387,7 +8387,7 @@
       "preset": "standard",
       "provenance": {
         "code_version": "0.1.0",
-        "config_hash": "c0a895c89e8b44c5",
+        "config_hash": "669992da4b9216a0",
         "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
         "detectors": [],
         "seed": 42,
@@ -8514,7 +8514,7 @@
         "preset": "standard",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "c0a895c89e8b44c5",
+          "config_hash": "669992da4b9216a0",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "detectors": [],
           "seed": 42,
@@ -8570,7 +8570,7 @@
         "preset": "high_costs",
         "provenance": {
           "code_version": "0.1.0",
-          "config_hash": "c0a895c89e8b44c5",
+          "config_hash": "669992da4b9216a0",
           "data_hash": "b105ee49b0ca6f5ea6824daf25c3c4ab",
           "detectors": [],
           "seed": 42,
@@ -9091,7 +9091,7 @@
             "daily_cap_usd": 0.4,
             "enabled": false,
             "journal": null,
-            "model": "claude-sonnet-5-5",
+            "model": "gpt-6-luna",
             "store": "data/ai_trader",
             "symbol": "XAUUSD"
           }
@@ -9235,7 +9235,8 @@
             "setup_breakout",
             "setup_breakout_scalp",
             "setup_own_conf72",
-            "setup_own_s2"
+            "setup_own_s2",
+            "ai_trader"
           ]
         },
         "indicators": {
@@ -9267,6 +9268,7 @@
             "management": {
               "setup_breakout_scalp": {
                 "break_even": false,
+                "break_even_on_touch": false,
                 "break_even_target_share": null,
                 "break_even_trigger_r": null,
                 "time_stop_bars": 60,
@@ -9332,6 +9334,7 @@
             "management": {
               "setup_own_conf72": {
                 "break_even": true,
+                "break_even_on_touch": false,
                 "break_even_target_share": 0.6,
                 "break_even_trigger_r": null,
                 "time_stop_bars": 180,
@@ -9382,6 +9385,7 @@
             "management": {
               "setup_own_s2": {
                 "break_even": false,
+                "break_even_on_touch": false,
                 "break_even_target_share": null,
                 "break_even_trigger_r": null,
                 "time_stop_bars": null,
@@ -9425,6 +9429,7 @@
             "management": {
               "setup_plan1_b2": {
                 "break_even": false,
+                "break_even_on_touch": false,
                 "break_even_target_share": null,
                 "break_even_trigger_r": null,
                 "time_stop_bars": null,
@@ -9434,6 +9439,7 @@
               },
               "setup_plan1_b2m5": {
                 "break_even": false,
+                "break_even_on_touch": false,
                 "break_even_target_share": null,
                 "break_even_trigger_r": null,
                 "time_stop_bars": null,
@@ -9443,6 +9449,7 @@
               },
               "setup_plan1_ny": {
                 "break_even": false,
+                "break_even_on_touch": false,
                 "break_even_target_share": null,
                 "break_even_trigger_r": null,
                 "time_stop_bars": null,
@@ -9452,6 +9459,7 @@
               },
               "setup_plan1_orb": {
                 "break_even": false,
+                "break_even_on_touch": false,
                 "break_even_target_share": null,
                 "break_even_trigger_r": null,
                 "time_stop_bars": null,
@@ -9529,9 +9537,10 @@
           {
             "management": {
               "ai_trader": {
-                "break_even": false,
+                "break_even": true,
+                "break_even_on_touch": true,
                 "break_even_target_share": null,
-                "break_even_trigger_r": null,
+                "break_even_trigger_r": 1.0,
                 "time_stop_bars": null,
                 "timeframe": null,
                 "trailing": false,
@@ -9540,7 +9549,7 @@
             },
             "max_spread_points": null,
             "max_spread_to_sl_ratio": null,
-            "min_risk_reward": null,
+            "min_risk_reward": 0.2,
             "name": "ai",
             "strategies": {
               "allow_single_indicator_signals": false,
@@ -9551,7 +9560,9 @@
                   "name": "ai_trader",
                   "params": {
                     "market_tolerance": 1.0,
-                    "pending_minutes": 30
+                    "min_take_profit": 5.0,
+                    "pending_minutes": 30,
+                    "target_trim": 0.1
                   }
                 }
               ],
@@ -9580,11 +9591,13 @@
         },
         "position_management": {
           "break_even_buffer_points": 2.0,
+          "break_even_on_touch": false,
           "break_even_target_share": null,
           "break_even_trigger_r": 1.0,
           "by_strategy": {
             "setup_harmonic_prz": {
               "break_even": false,
+              "break_even_on_touch": false,
               "break_even_target_share": null,
               "break_even_trigger_r": null,
               "time_stop_bars": null,
@@ -9832,6 +9845,7 @@
       "config_hash": "cccccccccccccccccccccccccccccccc",
       "env": {
         "AI_API_KEY": null,
+        "AI_CLI_PATH": null,
         "AI_MODE": "veto",
         "AI_MODEL": "claude-opus-5-5",
         "AI_PROVIDER": "none",
@@ -14768,12 +14782,22 @@
         "name": "ai_trader",
         "overrides": [
           "market_tolerance",
-          "pending_minutes"
+          "min_take_profit",
+          "pending_minutes",
+          "target_trim"
         ],
         "params": {
+          "chase_share": 0.5,
+          "confirm_entries": true,
+          "exit_m5_closes": 3,
+          "exit_minutes": 60,
           "expiry_bars": 2,
           "market_tolerance": 1.0,
-          "pending_minutes": 30
+          "min_take_profit": 5.0,
+          "pending_minutes": 30,
+          "plan_min_rr": 0.2,
+          "target_trim": 0.1,
+          "tp_block_minutes": 30
         },
         "performance": {
           "avg_r": null,
@@ -15958,12 +15982,22 @@
         "name": "ai_trader",
         "overrides": [
           "market_tolerance",
-          "pending_minutes"
+          "min_take_profit",
+          "pending_minutes",
+          "target_trim"
         ],
         "params": {
+          "chase_share": 0.5,
+          "confirm_entries": true,
+          "exit_m5_closes": 3,
+          "exit_minutes": 60,
           "expiry_bars": 2,
           "market_tolerance": 1.0,
-          "pending_minutes": 30
+          "min_take_profit": 5.0,
+          "pending_minutes": 30,
+          "plan_min_rr": 0.2,
+          "target_trim": 0.1,
+          "tp_block_minutes": 30
         },
         "performance": {
           "avg_r": null,

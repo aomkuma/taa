@@ -188,9 +188,12 @@ lanes:
       items:
         - name: ai_trader
           enabled: false
-          params: {pending_minutes: 30, market_tolerance: 1.0}   # 1 USD: this close to the AI's entry fills now
-    management:
-      ai_trader: {break_even: false, trailing: false}   # the AI's own stop and target; its EXIT closes
+          # 1 USD: this close to the AI's entry fills now; the take-profit 10 % short of the AI's target but never
+          # nearer than 5 USD to the entry (P09, checklist C5)
+          params: {pending_minutes: 30, market_tolerance: 1.0, target_trim: 0.10, min_take_profit: 5.0}
+    min_risk_reward: 0.2            # owner 2026-10-25: a quick take-profit (P09) against a stop past the liquidate zone
+    management:                     # the stop to break-even when price touches +1 R (owner 2026-10-25, checklist C6;
+      ai_trader: {break_even: true, break_even_trigger_r: 1.0, break_even_on_touch: true, trailing: false}  # R03)
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
@@ -238,8 +241,9 @@ high_risk:                           # ON for DEMO (owner, 2026-10-14); remove t
   min_lot_max_risk_percent: 20       # the minimum lot above the budget, up to this risk (else no trade); owner,
                                      #   2026-10-17: the ceiling (20), gold's 0.01 lot on a 100 USD account
   modes: [PAPER, DEMO]
-  setups: [setup_harmonic_prz, setup_breakout, setup_breakout_scalp, setup_own_conf72, setup_own_s2]   # S1 (owner,
-                                     #   2026-10-15); F1 + S2 (owner, 2026-10-18: DEMO)
+  setups: [setup_harmonic_prz, setup_breakout, setup_breakout_scalp, setup_own_conf72, setup_own_s2, ai_trader]
+                                     #   S1 (owner, 2026-10-15); F1 + S2 (owner, 2026-10-18: DEMO); the AI trader at
+                                     #   6 % a trade (owner, 2026-10-25: the stop past the liquidation zone needs it)
   fade_risk_factor: 0.5              # fades (FADE) risk half the preset
   min_margin_level_percent: 150      # owner, 2026-10-15: the full preset risk on tight stops (floor 120;
   max_margin_utilization_percent: 80 #   FBS calls margin at 40 %, stops out at 20 %; ceiling 90)
@@ -448,5 +452,5 @@ ai:                                 # optional review of entries (AI_PROVIDER / 
     enabled: false                  # bars; decisions recorded only until TAA-1806 (signals through every check)
     symbol: XAUUSD
     store: data/ai_trader           # decisions.jsonl, raw/ prompts and answers, session notes, suspended.json
-    model: claude-sonnet-5-5        # owner, 2026-10-23: 10-15 baht a day
+    model: gpt-6-luna               # owner 2026-10-26: Codex (the ChatGPT plan) in place of Sonnet
     daily_cap_usd: 0.40             # the watcher's own calls on a Thai day

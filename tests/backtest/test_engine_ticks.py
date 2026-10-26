@@ -233,3 +233,137 @@ def test_the_backtest_hands_the_accepted_entries_to_an_entry_group() -> None:
     assert s.seen[first] == []
     later = s.seen[datetime(2026, 9, 30, 10, 30, tzinfo=UTC)]
     assert later == [PastEntry(first, Side.BUY, "test_grouped")]
+
+
+class AIHookStub:
+    """The AI lane of a replay (TAA-1807): at the 12:30 bar close it hands the ai_trader strategy a sell."""
+
+    symbol = "XAUUSD"
+
+    def __init__(self, rec: dict[str, object]) -> None:
+        self.rec = rec
+        self.steps: list[datetime] = []
+        self.held: dict[datetime, list[tuple[object, ...]]] = {}
+
+    def step(
+        self,
+        at: datetime,
+        strategy: object,
+        positions: Sequence[tuple[object, ...]] = (),
+        closed: object = None,
+    ) -> str | None:
+        from app.engine.ai_trader import hand_over
+        from app.strategy.ai_lane import AITrader
+
+        self.steps.append(at)
+        self.held[at] = list(positions)
+        if at != datetime(2026, 9, 30, 12, 30, tzinfo=UTC):
+            return None
+        assert isinstance(strategy, AITrader)
+        return hand_over(strategy, "XAUUSD", self.rec, 30)
+
+
+def run_ai(ticks: Ticks, hook: AIHookStub) -> BacktestResult:
+    config = AppConfig.model_validate(
+        {
+            "symbols": {"allowed": ["XAUUSD"]},
+            "timeframes": {"higher": "H1", "entry": "M1", "warmup_bars": 3000},
+            "backtest": {"slippage_model": "none"},
+            "risk": {"correlation_groups": {}, "max_spread_points": 100},
+            "position_management": {"break_even_trigger_r": 50.0, "trailing_start_r": 50.0},
+        }
+    )
+    # the touch / fill mechanics on ticks; the signal at the level is read by AIReplay (tests/unit/test_ai_replay)
+    strategies = default_registry().from_config(
+        StrategiesConfig(
+            items=[
+                StrategyEntry(name="ai_trader", params={"market_tolerance": 0.5, "confirm_entries": False})
+            ]
+        ),
+        config.timeframes,
+    )
+    bars = m1("2026-09-27 00:00", "2026-09-30 13:30")
+    engine = BacktestEngine(
+        config,
+        {"XAUUSD": SymbolData(SPEC, {Timeframe.M1: bars, Timeframe.H1: h1(bars)})},
+        strategies,
+        AccountCurrencyOnly("USD"),
+        start=datetime(2026, 9, 30, 12, 0, tzinfo=UTC),
+        end=datetime(2026, 9, 30, 13, 30, tzinfo=UTC),
+        quotes=ticks,
+        ai=hook,
+    )
+    return engine.run()
+
+
+AI_SELL = {
+    "as_of": "2026-09-30T12:30:00+00:00",
+    "final_size": "half",
+    "decision": {
+        "decision": "SELL",
+        "setup": "a lower high",
+        "entry": 4003.0,
+        "stop": 4011.0,
+        "target": 3987.0,
+        "reasons": ["every frame down"],
+        "kb_ids": ["P19"],
+        "confidence": 66,
+    },
+}
+
+
+def test_an_ai_replay_decision_waits_for_its_price_on_ticks_and_hits_its_target() -> None:
+    ticks = Ticks(
+        [
+            ("2026-09-30 12:30:10", 4001.0, 4001.4),  # bid 2.0 under the 4,003.0 entry: a sell limit, waits
+            ("2026-09-30 12:31:04", 4002.6, 4003.0),  # within the tolerance is not at the limit (ISSUES 14)
+            (
+                "2026-09-30 12:31:05",
+                4003.0,
+                4003.4,
+            ),  # bid 4003.0 >= the 4,003.0 limit: the SELL, decided here
+            ("2026-09-30 12:31:06", 4002.8, 4003.2),  # the market order fills here, at the bid 4002.8
+            ("2026-09-30 12:40:00", 3995.0, 3995.4),
+            ("2026-09-30 12:50:00", 3986.8, 3987.2),  # the ask 3987.2 is not yet at the target 3987.0
+            ("2026-09-30 12:50:01", 3986.5, 3986.9),  # the ask crosses 3987.0: closed at the target
+        ]
+    )
+    hook = AIHookStub(AI_SELL)
+    result = run_ai(ticks, hook)
+    assert datetime(2026, 9, 30, 12, 30, tzinfo=UTC) in hook.steps  # stepped at every M1 close of the symbol
+    assert len(result.trades) == 1
+    t = result.trades[0]
+    assert t.side is Side.SELL and t.entry_price == pytest.approx(4002.8)
+    assert t.entry_time == datetime(2026, 9, 30, 12, 31, 6, tzinfo=UTC)
+    assert t.sl_initial == pytest.approx(4011.0)  # the AI's stop
+    # the take-profit 10 % short of the AI's 3,987.00 from the decision tick's bid 4,003.00: 3,988.60
+    assert t.exit_reason is ExitReason.TAKE_PROFIT and t.exit_price == pytest.approx(3988.6)
+    record = result.journal[t.signal_id]
+    assert record["strategy"] == "ai_trader"
+    assert record["explanation"] == "every frame down"
+    # the AI is told what it holds: nothing at 12:31, the sell from 12:31:06 at the 12:45 close, nothing at 13:00
+    assert hook.held[datetime(2026, 9, 30, 12, 31, tzinfo=UTC)] == []
+    ((side, entry, sl, tp, opened),) = hook.held[datetime(2026, 9, 30, 12, 45, tzinfo=UTC)]
+    assert (side, entry, sl, tp) == (Side.SELL, pytest.approx(4002.8), 4011.0, pytest.approx(3988.6))
+    assert opened == datetime(2026, 9, 30, 12, 31, 6, tzinfo=UTC)
+    assert hook.held[datetime(2026, 9, 30, 13, 0, tzinfo=UTC)] == []
+
+
+def test_an_ai_replay_order_is_dropped_when_its_stop_comes_first() -> None:
+    ticks = Ticks(
+        [
+            ("2026-09-30 12:30:10", 4001.0, 4001.4),
+            ("2026-09-30 12:35:00", 4010.7, 4011.1),  # the ask 4011.1 >= the stop 4011.0 before any fill
+            ("2026-09-30 12:36:00", 4003.0, 4003.4),  # back at the entry: the order is gone
+        ]
+    )
+    result = run_ai(ticks, AIHookStub(AI_SELL))
+    assert result.trades == []
+
+
+def test_the_ai_is_not_stepped_at_the_period_s_end_bar() -> None:
+    # ISSUES 23: a day run (end = 07:00 Thai of the next day) stepped the AI at that bar and wrote the next
+    # day's morning plan before the day's lessons
+    hook = AIHookStub(AI_SELL)
+    run_ai(Ticks([("2026-09-30 12:30:10", 4001.0, 4001.4)]), hook)
+    assert max(hook.steps) == datetime(2026, 9, 30, 13, 29, tzinfo=UTC)  # the end is 13:30

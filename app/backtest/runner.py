@@ -21,6 +21,7 @@ import pandas as pd
 from app import __version__
 from app.backtest.conversion import SeriesRates, missing_currencies
 from app.backtest.engine import (
+    AIHook,
     BacktestEngine,
     BacktestLane,
     BacktestResult,
@@ -191,6 +192,7 @@ def run_backtest(
     main_symbols: Collection[str] | None = None,
     quotes: QuoteSource | None = None,
     calendar: Callable[[str], Sequence[Release]] | None = None,
+    ai: AIHook | None = None,
 ) -> tuple[BacktestResult, Provenance]:
     """*detectors*: the evidence detectors to run. None: those the selected strategies need to fire (the
     pattern setups trigger on evidence; without it they never fire); ``"all"``: every detector
@@ -200,7 +202,8 @@ def run_backtest(
     *portfolio* (TAA-507): every lane of ``config.lanes`` trades next to the main entry timeframe in the one
     account, as the engine trades live; *strategy_names* then selects across all lanes. *main_symbols*: the
     symbols the main entry timeframe trades (None: every loaded symbol). *quotes* / *calendar*: stored ticks
-    and the release calendar for the quote-driven strategies (``BacktestEngine``)."""
+    and the release calendar for the quote-driven strategies (``BacktestEngine``); *ai*: the AI trader lane of
+    a replay (TAA-1807)."""
     lanes = list(config.lanes) if portfolio else []
     known = {i.name for i in config.strategies.items} | {i.name for x in lanes for i in x.strategies.items}
     unknown = sorted(set(strategy_names or ()) - known)
@@ -239,6 +242,7 @@ def run_backtest(
         main_symbols=main_symbols,
         quotes=quotes,
         calendar=calendar,
+        ai=ai,
     )
     result = engine.run()
     engines = [e for e in (evidence, *(x.evidence for x in extra)) if e is not None]
@@ -285,6 +289,7 @@ def run_and_write(
     main_symbols: Collection[str] | None = None,
     quotes: QuoteSource | None = None,
     calendar: Callable[[str], Sequence[Release]] | None = None,
+    ai: AIHook | None = None,
 ) -> tuple[BacktestResult, dict[str, Path]]:
     result, provenance = run_backtest(
         config,
@@ -301,5 +306,6 @@ def run_and_write(
         main_symbols=main_symbols,
         quotes=quotes,
         calendar=calendar,
+        ai=ai,
     )
     return result, write_reports(result, provenance, out_dir)

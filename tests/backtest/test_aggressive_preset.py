@@ -202,6 +202,42 @@ class TestCli:
         assert "12 trades" in out and "10 fades" in out
         assert sum(line.strip().startswith(("5.00", "10.00")) for line in out.splitlines()) == 2
 
+    def test_the_preset_then_one_lane_for_the_ai_replay(self) -> None:
+        # TAA-1807: `backtest --lane ai --preset aggressive` caged a lane's view, whose management still named
+        # the other lanes' strategies: the cage's re-validation failed. The CLI cages the full config first.
+        from app.backtest.presets import aggressive_preset
+        from app.config import load_settings
+        from app.core.errors import ConfigError
+
+        full = load_settings(
+            env_file=None, config_file="config.yaml", environ={"TRADING_MODE": "BACKTEST"}
+        ).config
+        caged, preset = aggressive_preset(full, 6.0)
+        lane = caged.for_lane(caged.lane("ai"))
+        assert [(i.name, i.enabled) for i in lane.strategies.items] == [("ai_trader", True)]
+        assert preset.effective.max_risk_per_trade_percent == 6.0
+        with pytest.raises((ConfigError, ValueError)):  # the old order
+            aggressive_preset(full.for_lane(full.lane("ai")), 6.0)
+
+    def test_the_cage_takes_the_lanes_rr_floor(self) -> None:
+        # TAA-1807 day 4: the cage built on the full config kept risk.min_risk_reward 1.0, so the AI lane's
+        # 0.5 floor never applied and four orders at R 0.64-0.8 were refused RR_TOO_LOW
+        from app.cli.__main__ import lane_cage
+        from app.config import HighRiskCage, load_settings
+
+        full = load_settings(
+            env_file=None, config_file="config.yaml", environ={"TRADING_MODE": "BACKTEST"}
+        ).config
+        caged, preset = aggressive_preset(full, 6.0)
+        assert preset.cage.min_risk_reward == 1.0  # the bug's starting point
+        lane = caged.for_lane(caged.lane("ai"))
+        out = lane_cage(preset, lane.risk)
+        assert isinstance(out.cage, HighRiskCage)
+        lane_floor = lane.risk.min_risk_reward  # config.yaml lane ai (0.2 since 2026-10-25)
+        assert lane_floor < 1.0 and out.cage.min_risk_reward == lane_floor == out.effective.min_risk_reward
+        assert out.cage.max_spread_to_sl_ratio == lane.risk.max_spread_to_sl_ratio
+        assert out.effective.max_risk_per_trade_percent == 6.0 and out.cage.setups == preset.cage.setups
+
     def test_plain_backtest_still_parses(self) -> None:
         args = build_parser().parse_args(
             ["backtest", "--preset", "aggressive", "--risk", "7.5", "--balance", "1000"]

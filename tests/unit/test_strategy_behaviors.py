@@ -296,3 +296,38 @@ def test_level_sweep_when_the_first_window_bar_breaks_the_level():
     c = _arr(4000.0, 3990.0, 3988.0, 3989.0, 3991.0, 3993.0, 3996.0)
     lo = c - 2
     assert bh.level_sweep(c + 2, lo, c, [3994.09], atr=9.0, recent=6) == "low"
+
+
+def test_level_sweep_needs_the_volume_when_given():
+    # the tonight-like sweep (the extreme 3,975.6 on the window's 5th bar); the 7 bars' mean volume 100
+    c = _arr(4013.6, 4008.1, 3994.2, 3992.2, 3977.8, 3984.2, 3994.9)
+    lo = _arr(4010.0, 4007.3, 3993.7, 3989.5, 3977.1, 3975.6, 3982.4)
+    loud = _arr(100, 100, 100, 100, 50, 150, 100)  # the extreme bar 150 > 1.0 x mean 100
+    quiet = _arr(100, 100, 100, 100, 150, 50, 150)  # the extreme bar 50 < 1.0 x mean 100
+    assert bh.level_sweep(c + 2, lo, c, [3994.09], 9.0, 6, v=loud, min_vol=1.0) == "low"
+    assert bh.level_sweep(c + 2, lo, c, [3994.09], 9.0, 6, v=quiet, min_vol=1.0) == "none"
+    assert bh.level_sweep(c + 2, lo, c, [3994.09], 9.0, 6) == "low"  # no volume given: as before
+
+
+def test_seen_levels_are_the_levels_everyone_sees():
+    # Thai day Wed 2026-07-08: M15 bars from 05:00 Thai (22:00 UTC the day before); asked at 14:00 Thai (07:00 UTC)
+    idx = pd.date_range("2026-07-07 22:00", "2026-07-08 06:45", freq="15min", tz="UTC")
+    m15 = pd.DataFrame({"high": 4100.0, "low": 4090.0}, index=idx)
+    m15.loc[pd.Timestamp("2026-07-08 01:00", tz="UTC"), ["high", "low"]] = (
+        4112.0,
+        4095.0,
+    )  # 08:00 Thai (Asia)
+    m15.loc[pd.Timestamp("2026-07-07 23:00", tz="UTC"), ["high", "low"]] = (
+        4101.0,
+        4081.0,
+    )  # 06:00 Thai (pre-Asia)
+    d1 = pd.DataFrame({"high": [4130.0], "low": [4060.0]}, index=pd.DatetimeIndex(["2026-07-07"], tz="UTC"))
+    before = pd.Timestamp("2026-07-08 07:00", tz="UTC")
+    got = bh.seen_levels(m15, d1, before, anchor=4000.0, step=80.0, price=4096.0)
+    # the day 4112 / 4081; yesterday 4130 / 4060; Asia (07-13 Thai) 4112 / 4090; round 50s within 240 of 4096:
+    # 3900 .. 4300 (3850 and 4350 are 246 / 254 away); main lines 4000 + 80k within 240: 3920 .. 4320
+    assert got[:6] == [4112.0, 4081.0, 4130.0, 4060.0, 4112.0, 4090.0]
+    assert got[6:15] == [3900.0, 3950.0, 4000.0, 4050.0, 4100.0, 4150.0, 4200.0, 4250.0, 4300.0]
+    assert got[15:] == [3920.0, 4000.0, 4080.0, 4160.0, 4240.0, 4320.0]
+    early = bh.seen_levels(m15, d1, pd.Timestamp("2026-07-08 04:00", tz="UTC"), 4000.0, 80.0, 4096.0)
+    assert len(early) == 4 + 9 + 6  # 11:00 Thai: the Asia range is not over, so it is not a level yet

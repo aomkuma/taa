@@ -15,7 +15,27 @@ from app.config import REPO_ROOT, Settings, load_settings
 from app.core.errors import ConfigError, TaaError
 
 if TYPE_CHECKING:
+    from app.backtest.engine import RiskPreset
+    from app.config import RiskConfig
     from app.risk.circuit_breaker import BreakerBoard
+
+
+# the risk fields a lane overrides (AppConfig.for_lane): a preset's cage built on the full config takes them
+LANE_RISK_FIELDS = ("min_risk_reward", "max_spread_to_sl_ratio", "max_spread_points")
+
+
+def lane_cage(preset: RiskPreset, risk: RiskConfig) -> RiskPreset:
+    """*preset* with its cage taking the lane's :data:`LANE_RISK_FIELDS` from *risk* (TAA-1807: the AI
+    lane's RR floor 0.5 never reached the cage built on the full config's 1.0, so 0.6-0.8 R orders were
+    refused)."""
+    import dataclasses
+
+    from app.config import HighRiskCage
+
+    lane_risk = {k: getattr(risk, k) for k in LANE_RISK_FIELDS}
+    return dataclasses.replace(
+        preset, cage=HighRiskCage.model_validate({**preset.cage.model_dump(), **lane_risk})
+    )
 
 
 def _settings(args: argparse.Namespace) -> Settings:
@@ -215,6 +235,37 @@ def cmd_ticks_probe(args: argparse.Namespace) -> int:
     return 0
 
 
+def _ai_replay(
+    args: argparse.Namespace, settings: Any, config: Any, store: Any, server: str, end: Any
+) -> Any:
+    """The AI trader lane for a replay (TAA-1807): every frame the readers need from the history store, the
+    answers by input hash, a miss answered by the Claude CLI when one is given."""
+    from app.ai.replay import ClaudeCLIProvider, CodexCLIProvider
+    from app.core.clock import SystemClock
+    from app.engine.ai_replay import build_replay
+    from app.engine.ai_trader import COUNTS
+    from app.news.releases import load_releases
+
+    cfg = config.ai.trader
+    frames = {}
+    for tf in COUNTS:
+        df = store.load(server, cfg.symbol, tf, None, end)
+        if df.empty:
+            print(f"error: no stored {cfg.symbol} {tf} bars for the AI replay", file=sys.stderr)
+            return None
+        frames[tf] = df
+    answers = settings.path(args.ai_answers)
+    ai_store = settings.path(args.ai_store) if args.ai_store else answers.parent / "store"
+    inner: ClaudeCLIProvider | CodexCLIProvider | None = None
+    if args.ai_cli is not None and Path(args.ai_cli).stem.lower().startswith("codex"):
+        inner = CodexCLIProvider(Path(args.ai_cli), SystemClock(), model=args.ai_model or "gpt-6-luna")
+    elif args.ai_cli is not None:
+        inner = ClaudeCLIProvider(Path(args.ai_cli), SystemClock(), model=args.ai_model or cfg.model)
+    journal = settings.path(cfg.journal) if cfg.journal else None
+    releases = load_releases(settings.path(cfg.calendar_file))
+    return build_replay(cfg, frames, releases, ai_store, answers, inner, journal)
+
+
 def cmd_backtest(args: argparse.Namespace) -> int:
     from pathlib import Path
 
@@ -232,12 +283,22 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     if args.lane is not None and args.portfolio:
         print("error: --lane runs one lane alone, --portfolio all of them: pick one", file=sys.stderr)
         return 1
+    risk_preset = None
+    if args.preset == "aggressive":  # PLAN §A36: the high-risk cage, only its setups (in every lane)
+        # on the full config, before a lane is cut out: the cage re-validates the config, and a lane's view
+        # alone no longer lists the other lanes' strategies its management names (TAA-1807, the AI replay)
+        config, risk_preset = aggressive_preset(config, 7.5 if args.risk is None else args.risk)
+    elif args.risk is not None:
+        print("error: --risk goes with --preset aggressive", file=sys.stderr)
+        return 1
     if args.lane is not None:  # one lane alone: its timeframes, symbols and strategies (config lanes)
         try:
             config = config.for_lane(config.lane(args.lane))
         except ConfigError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
+        if risk_preset is not None:  # the cage was built on the full config's risk: give it the lane's
+            risk_preset = lane_cage(risk_preset, config.risk)
     if args.seed is not None:
         config = config.model_copy(
             update={"backtest": config.backtest.model_copy(update={"seed": args.seed})}
@@ -249,12 +310,6 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         config = config.model_copy(
             update={"backtest": config.backtest.model_copy(update={"initial_balance": args.balance})}
         )
-    risk_preset = None
-    if args.preset == "aggressive":  # PLAN §A36: the high-risk cage, only its setups
-        config, risk_preset = aggressive_preset(config, 7.5 if args.risk is None else args.risk)
-    elif args.risk is not None:
-        print("error: --risk goes with --preset aggressive", file=sys.stderr)
-        return 1
     plain = risk_preset is None and args.balance is None and args.lane is None and not args.portfolio
     run_hash = settings.config_hash if plain else config_hash(config)
     server = args.server or settings.env.MT5_SERVER
@@ -310,6 +365,12 @@ def cmd_backtest(args: argparse.Namespace) -> int:
     def calendar(name: str) -> tuple[Release, ...]:
         return load_releases(settings.path(name))
 
+    ai = None
+    if args.ai_answers is not None:  # a replay of the AI trader lane (TAA-1807)
+        ai = _ai_replay(args, settings, config, store, server, end)
+        if ai is None:
+            return 1
+
     result, paths = run_and_write(
         config,
         loaded,
@@ -329,6 +390,7 @@ def cmd_backtest(args: argparse.Namespace) -> int:
         main_symbols=symbols if args.portfolio else None,
         quotes=quotes,
         calendar=calendar,
+        ai=ai,
     )
     m = compute_metrics(result.trades, result.equity_curve, result.initial_balance)
     print(f"backtest {', '.join(symbols)}  {result.start} -> {result.end}")
@@ -865,6 +927,27 @@ def build_parser() -> argparse.ArgumentParser:
         "--ticks",
         default=None,
         help="stored ticks (e.g. data/ticks): quote strategies trade and open positions fill on ticks",
+    )
+    bt.add_argument(
+        "--ai-answers",
+        default=None,
+        help="replay the AI trader lane (TAA-1807): its answers stored by input hash in this folder",
+    )
+    bt.add_argument(
+        "--ai-store",
+        default=None,
+        help="the replay's watcher files (decisions, prompts, journal.md; default: next to answers)",
+    )
+    bt.add_argument(
+        "--ai-cli",
+        default=None,
+        help="the CLI that answers a prompt not stored yet: claude.exe (Claude Code) or codex.exe (Codex); "
+        "without it: SKIPPED",
+    )
+    bt.add_argument(
+        "--ai-model",
+        default=None,
+        help="the answering model (default: config ai.trader.model for Claude, gpt-6-luna for Codex)",
     )
     bt.add_argument(
         "--portfolio",
