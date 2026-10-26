@@ -1,0 +1,30 @@
+gold 2024: 2063 -> 2624 (+27%)
+gold 2025: 2624 -> 4317 (+65%)
+gold 2026-07 ..: 4035 -> 3998 (-1%)
+
+== 2024 (before the exam): 9458 reclaims; days by regime {'bull': 205, 'mixed': 75, 'bear': 33} ==
+regime | side | trades | buffer 1.0 / 0.7 R: win %, avg R | buffer 1.8 / 0.7 R: win %, avg R
+bull   | SELL |   3101 |  49%, -0.141           |  50%, -0.102
+bull   | BUY  |   3111 |  53%, -0.082           |  54%, -0.049
+mixed  | SELL |   1182 |  47%, -0.192           |  48%, -0.146
+mixed  | BUY  |   1051 |  57%, -0.021           |  56%, -0.025
+bear   | SELL |    521 |  52%, -0.085           |  53%, -0.056
+bear   | BUY  |    492 |  58%, -0.001           |  56%, -0.010
+
+== 2025 (before the exam): 9372 reclaims; days by regime {'bull': 269, 'mixed': 34, 'bear': 9} ==
+regime | side | trades | buffer 1.0 / 0.7 R: win %, avg R | buffer 1.8 / 0.7 R: win %, avg R
+bull   | SELL |   3901 |  54%, -0.075           |  53%, -0.052
+bull   | BUY  |   4124 |  55%, -0.046           |  55%, -0.031
+mixed  | SELL |    548 |  54%, -0.075           |  52%, -0.070
+mixed  | BUY  |    519 |  60%, +0.039           |  61%, +0.087
+bear   | SELL |    137 |  50%, -0.156           |  51%, -0.111
+bear   | BUY  |    143 |  53%, -0.061           |  55%, +0.011
+
+== 2026-07-01 .. (replay months, information only): 3012 reclaims; days by regime {'bear': 41, 'mixed': 33, 'bull': 26} ==
+regime | side | trades | buffer 1.0 / 0.7 R: win %, avg R | buffer 1.8 / 0.7 R: win %, avg R
+bull   | SELL |    352 |  59%, +0.043           |  56%, -0.002
+bull   | BUY  |    398 |  51%, -0.135           |  48%, -0.141
+mixed  | SELL |    498 |  55%, -0.043           |  53%, -0.072
+mixed  | BUY  |    504 |  52%, -0.072           |  50%, -0.081
+bear   | SELL |    636 |  58%, -0.004           |  57%, +0.014
+bear   | BUY  |    624 |  57%, -0.015           |  55%, -0.025

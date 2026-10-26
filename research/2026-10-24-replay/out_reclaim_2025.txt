@@ -1,0 +1,90 @@
+
+== 2025-01-01 .. 2025-12-31 (before the exam): 9333 reclaims (sweep + M5 close back within 30 min) ==
+side            | buffer ATR | target R | trades | win % | avg R net | sum R
+SELL (high swept) |        0.5 |      0.5 |   4567 |   58% |    -0.122 |  -555.8
+SELL (high swept) |        0.5 |      0.7 |   4567 |   51% |    -0.119 |  -541.5
+SELL (high swept) |        0.5 |      1.0 |   4567 |   44% |    -0.114 |  -521.9
+SELL (high swept) |        1.0 |      0.5 |   4567 |   60% |    -0.086 |  -394.1
+SELL (high swept) |        1.0 |      0.7 |   4567 |   54% |    -0.077 |  -352.6
+SELL (high swept) |        1.0 |      1.0 |   4567 |   46% |    -0.068 |  -312.6
+SELL (high swept) |        1.3 |      0.5 |   4567 |   61% |    -0.070 |  -320.5
+SELL (high swept) |        1.3 |      0.7 |   4567 |   54% |    -0.062 |  -284.1
+SELL (high swept) |        1.3 |      1.0 |   4567 |   47% |    -0.057 |  -260.0
+SELL (high swept) |        1.8 |      0.5 |   4567 |   60% |    -0.059 |  -270.9
+SELL (high swept) |        1.8 |      0.7 |   4567 |   53% |    -0.056 |  -253.7
+SELL (high swept) |        1.8 |      1.0 |   4567 |   47% |    -0.047 |  -216.4
+BUY (low swept)   |        0.5 |      0.5 |   4766 |   61% |    -0.079 |  -377.8
+BUY (low swept)   |        0.5 |      0.7 |   4766 |   54% |    -0.077 |  -365.6
+BUY (low swept)   |        0.5 |      1.0 |   4766 |   47% |    -0.062 |  -295.9
+BUY (low swept)   |        1.0 |      0.5 |   4766 |   63% |    -0.038 |  -181.3
+BUY (low swept)   |        1.0 |      0.7 |   4766 |   56% |    -0.039 |  -183.6
+BUY (low swept)   |        1.0 |      1.0 |   4766 |   49% |    -0.026 |  -125.8
+BUY (low swept)   |        1.3 |      0.5 |   4766 |   63% |    -0.026 |  -123.0
+BUY (low swept)   |        1.3 |      0.7 |   4766 |   56% |    -0.022 |  -105.0
+BUY (low swept)   |        1.3 |      1.0 |   4766 |   50% |    -0.018 |   -86.7
+BUY (low swept)   |        1.8 |      0.5 |   4766 |   63% |    -0.019 |   -91.9
+BUY (low swept)   |        1.8 |      0.7 |   4766 |   56% |    -0.018 |   -83.7
+BUY (low swept)   |        1.8 |      1.0 |   4766 |   51% |    -0.009 |   -42.8
+
+-- 2025-01-01 .. 2025-12-31 (before the exam): buffer 1.0 ATR, target 0.7 R, by state and by month --
+state      | side | trades | win % | avg R net
+trend up   | SELL |   1555 |   52% | -0.104
+trend up   | BUY  |   1281 |   60% | +0.035
+trend down | SELL |    488 |   54% | -0.065
+trend down | BUY  |    757 |   52% | -0.088
+sideways   | SELL |   2524 |   55% | -0.063
+sideways   | BUY  |   2728 |   54% | -0.059
+month   | SELL trades / avg R | BUY trades / avg R
+2025-01 |   411 / -0.177      |   403 / +0.055
+2025-02 |   360 / -0.126      |   369 / -0.132
+2025-03 |   382 / -0.166      |   380 / +0.007
+2025-04 |   354 / -0.019      |   363 / -0.030
+2025-05 |   402 / -0.059      |   406 / -0.083
+2025-06 |   335 / -0.098      |   420 / -0.146
+2025-07 |   389 / -0.103      |   429 / -0.052
+2025-08 |   394 / -0.021      |   389 / -0.059
+2025-09 |   394 / +0.020      |   378 / -0.011
+2025-10 |   372 / -0.084      |   401 / -0.022
+2025-11 |   365 / -0.038      |   365 / -0.006
+2025-12 |   409 / -0.052      |   463 / +0.015
+
+== the replay months 2026-07-01 .. (information only): 2988 reclaims (sweep + M5 close back within 30 min) ==
+side            | buffer ATR | target R | trades | win % | avg R net | sum R
+SELL (high swept) |        0.5 |      0.5 |   1475 |   62% |    -0.061 |   -89.5
+SELL (high swept) |        0.5 |      0.7 |   1475 |   55% |    -0.050 |   -73.9
+SELL (high swept) |        0.5 |      1.0 |   1475 |   48% |    -0.043 |   -63.2
+SELL (high swept) |        1.0 |      0.5 |   1475 |   65% |    -0.006 |    -8.5
+SELL (high swept) |        1.0 |      0.7 |   1475 |   57% |    -0.007 |    -9.6
+SELL (high swept) |        1.0 |      1.0 |   1475 |   50% |    +0.006 |    +8.2
+SELL (high swept) |        1.3 |      0.5 |   1475 |   64% |    -0.013 |   -18.8
+SELL (high swept) |        1.3 |      0.7 |   1475 |   56% |    -0.012 |   -18.1
+SELL (high swept) |        1.3 |      1.0 |   1475 |   50% |    -0.002 |    -3.0
+SELL (high swept) |        1.8 |      0.5 |   1475 |   62% |    -0.020 |   -28.8
+SELL (high swept) |        1.8 |      0.7 |   1475 |   55% |    -0.019 |   -28.8
+SELL (high swept) |        1.8 |      1.0 |   1475 |   51% |    +0.008 |   +12.2
+BUY (low swept)   |        0.5 |      0.5 |   1513 |   60% |    -0.090 |  -135.5
+BUY (low swept)   |        0.5 |      0.7 |   1513 |   54% |    -0.069 |  -105.0
+BUY (low swept)   |        0.5 |      1.0 |   1513 |   46% |    -0.066 |   -99.3
+BUY (low swept)   |        1.0 |      0.5 |   1513 |   61% |    -0.063 |   -95.4
+BUY (low swept)   |        1.0 |      0.7 |   1513 |   54% |    -0.063 |   -94.9
+BUY (low swept)   |        1.0 |      1.0 |   1513 |   44% |    -0.091 |  -137.7
+BUY (low swept)   |        1.3 |      0.5 |   1513 |   61% |    -0.061 |   -91.7
+BUY (low swept)   |        1.3 |      0.7 |   1513 |   53% |    -0.075 |  -113.1
+BUY (low swept)   |        1.3 |      1.0 |   1513 |   44% |    -0.098 |  -148.3
+BUY (low swept)   |        1.8 |      0.5 |   1513 |   60% |    -0.052 |   -78.7
+BUY (low swept)   |        1.8 |      0.7 |   1513 |   51% |    -0.072 |  -109.4
+BUY (low swept)   |        1.8 |      1.0 |   1513 |   45% |    -0.085 |  -128.8
+
+-- the replay months 2026-07-01 .. (information only): buffer 1.0 ATR, target 0.7 R, by state and by month --
+state      | side | trades | win % | avg R net
+trend up   | SELL |    364 |   58% | -0.001
+trend up   | BUY  |    284 |   55% | -0.030
+trend down | SELL |    269 |   57% | +0.002
+trend down | BUY  |    367 |   59% | +0.039
+sideways   | SELL |    842 |   57% | -0.012
+sideways   | BUY  |    862 |   51% | -0.117
+month   | SELL trades / avg R | BUY trades / avg R
+2026-07 |   428 / -0.059      |   411 / -0.028
+2026-08 |   368 / -0.060      |   382 / -0.073
+2026-09 |   362 / +0.050      |   410 / -0.087
+2026-10 |   317 / +0.062      |   310 / -0.063

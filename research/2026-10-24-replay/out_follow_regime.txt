@@ -1,0 +1,45 @@
+
+== 2024 (before the exam) ==
+past ATR | regime | side           | trades | 0.7 R: win %, avg R | 1.0 R: win %, avg R
+     0.5 | bull   | BUY (high brk) |   2335 |  53%, -0.097       |  46%, -0.090
+     0.5 | bull   | SELL (low brk) |   2232 |  52%, -0.101       |  44%, -0.120
+     0.5 | mixed  | BUY (high brk) |    895 |  51%, -0.113       |  45%, -0.085
+     0.5 | mixed  | SELL (low brk) |    696 |  49%, -0.150       |  42%, -0.149
+     0.5 | bear   | BUY (high brk) |    368 |  51%, -0.114       |  47%, -0.064
+     0.5 | bear   | SELL (low brk) |    340 |  44%, -0.248       |  36%, -0.273
+     1.0 | bull   | BUY (high brk) |   1604 |  53%, -0.085       |  46%, -0.102
+     1.0 | bull   | SELL (low brk) |   1596 |  53%, -0.072       |  46%, -0.089
+     1.0 | mixed  | BUY (high brk) |    618 |  54%, -0.036       |  48%, -0.031
+     1.0 | mixed  | SELL (low brk) |    485 |  50%, -0.132       |  42%, -0.156
+     1.0 | bear   | BUY (high brk) |    249 |  57%, -0.012       |  52%, +0.014
+     1.0 | bear   | SELL (low brk) |    220 |  44%, -0.224       |  35%, -0.281
+
+== 2025 (before the exam) ==
+past ATR | regime | side           | trades | 0.7 R: win %, avg R | 1.0 R: win %, avg R
+     0.5 | bull   | BUY (high brk) |   3128 |  59%, +0.005       |  51%, +0.020
+     0.5 | bull   | SELL (low brk) |   2827 |  53%, -0.081       |  44%, -0.101
+     0.5 | mixed  | BUY (high brk) |    330 |  49%, -0.148       |  43%, -0.144
+     0.5 | mixed  | SELL (low brk) |    326 |  43%, -0.260       |  36%, -0.277
+     0.5 | bear   | BUY (high brk) |    109 |  58%, +0.014       |  49%, +0.007
+     0.5 | bear   | SELL (low brk) |     76 |  38%, -0.338       |  32%, -0.380
+     1.0 | bull   | BUY (high brk) |   2185 |  58%, +0.004       |  52%, +0.033
+     1.0 | bull   | SELL (low brk) |   1953 |  54%, -0.064       |  46%, -0.065
+     1.0 | mixed  | BUY (high brk) |    224 |  47%, -0.147       |  42%, -0.154
+     1.0 | mixed  | SELL (low brk) |    219 |  47%, -0.187       |  43%, -0.136
+     1.0 | bear   | BUY (high brk) |     83 |  57%, +0.009       |  48%, +0.006
+     1.0 | bear   | SELL (low brk) |     45 |  38%, -0.356       |  29%, -0.459
+
+== 2026-07-01 .. (replay months, information only) ==
+past ATR | regime | side           | trades | 0.7 R: win %, avg R | 1.0 R: win %, avg R
+     0.5 | bull   | BUY (high brk) |    272 |  51%, -0.112       |  47%, -0.066
+     0.5 | bull   | SELL (low brk) |    283 |  54%, -0.058       |  45%, -0.091
+     0.5 | mixed  | BUY (high brk) |    378 |  56%, -0.034       |  51%, +0.016
+     0.5 | mixed  | SELL (low brk) |    384 |  54%, -0.073       |  48%, -0.040
+     0.5 | bear   | BUY (high brk) |    472 |  51%, -0.102       |  44%, -0.086
+     0.5 | bear   | SELL (low brk) |    426 |  55%, -0.061       |  48%, -0.038
+     1.0 | bull   | BUY (high brk) |    199 |  50%, -0.102       |  45%, -0.076
+     1.0 | bull   | SELL (low brk) |    197 |  56%, -0.011       |  49%, -0.007
+     1.0 | mixed  | BUY (high brk) |    271 |  56%, -0.041       |  52%, +0.019
+     1.0 | mixed  | SELL (low brk) |    272 |  55%, -0.036       |  49%, -0.012
+     1.0 | bear   | BUY (high brk) |    317 |  52%, -0.060       |  47%, -0.036
+     1.0 | bear   | SELL (low brk) |    315 |  51%, -0.105       |  44%, -0.099

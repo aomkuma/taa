@@ -1,0 +1,30 @@
+
+== design: 2026-03-02 .. 2026-04-17 (before the exam): 440 moments in the owner's windows ==
+stop distance past the liquidation zone (USD, 25 / 50 / 75 / 90 %): [19.25, 29.93, 47.03, 72.21]; median M5 ATR 8.09
+  100 USD account at 0.01 lot: risk % per trade [19.2, 29.9, 47.0, 72.2] (25 / 50 / 75 / 90 % of the moments)
+  300 USD account at 0.01 lot: risk % per trade [6.4, 10.0, 15.7, 24.1] (25 / 50 / 75 / 90 % of the moments)
+target at the first pool: USD (25 / 50 / 75 %) [6.8, 11.03, 17.9]; R = room / stop (25 / 50 / 75 / 90 %) [0.2, 0.35, 0.64, 1.01]
+    R >= 0.5: 36% of the moments
+    R >= 0.8: 17% of the moments
+    R >= 1.0: 10% of the moments
+    R >= 1.5: 4% of the moments
+target at the second pool: USD (25 / 50 / 75 %) [9.77, 16.78, 28.93]; R = room / stop (25 / 50 / 75 / 90 %) [0.3, 0.58, 1.0, 1.72]
+    R >= 0.5: 56% of the moments
+    R >= 0.8: 34% of the moments
+    R >= 1.0: 25% of the moments
+    R >= 1.5: 13% of the moments
+
+== the replay month 2026-07-06 .. 07-31: 507 moments in the owner's windows ==
+stop distance past the liquidation zone (USD, 25 / 50 / 75 / 90 %): [12.05, 17.74, 27.46, 38.63]; median M5 ATR 4.89
+  100 USD account at 0.01 lot: risk % per trade [12.0, 17.7, 27.5, 38.6] (25 / 50 / 75 / 90 % of the moments)
+  300 USD account at 0.01 lot: risk % per trade [4.0, 5.9, 9.2, 12.9] (25 / 50 / 75 / 90 % of the moments)
+target at the first pool: USD (25 / 50 / 75 %) [4.36, 7.2, 11.43]; R = room / stop (25 / 50 / 75 / 90 %) [0.22, 0.4, 0.73, 1.2]
+    R >= 0.5: 40% of the moments
+    R >= 0.8: 21% of the moments
+    R >= 1.0: 14% of the moments
+    R >= 1.5: 5% of the moments
+target at the second pool: USD (25 / 50 / 75 %) [6.61, 10.82, 18.86]; R = room / stop (25 / 50 / 75 / 90 %) [0.34, 0.63, 1.13, 1.83]
+    R >= 0.5: 59% of the moments
+    R >= 0.8: 41% of the moments
+    R >= 1.0: 30% of the moments
+    R >= 1.5: 15% of the moments

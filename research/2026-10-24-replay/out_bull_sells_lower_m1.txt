@@ -1,0 +1,27 @@
+2024 + 2025 (before the exam), entry frame M1; R after the spread
+
+-- the reclaim (fade a sweep): bull days only --
+H4    | H1    | SELL trades, win %, avg R | BUY trades, win %, avg R
+down  | down  |  2049,  45%, -0.215       |  1916,  53%, -0.089
+down  | mixed |  1724,  45%, -0.221       |  1704,  49%, -0.133
+down  | up    |   598,  45%, -0.212       |   707,  48%, -0.166
+mixed | down  |  3850,  49%, -0.150       |  3859,  50%, -0.138
+mixed | mixed |  2447,  46%, -0.200       |  2470,  47%, -0.179
+mixed | up    |  2801,  46%, -0.207       |  2961,  50%, -0.125
+up    | down  |  2044,  47%, -0.197       |  2148,  50%, -0.133
+up    | mixed |  5161,  47%, -0.188       |  5143,  49%, -0.152
+up    | up    | 12607,  46%, -0.203       | 12922,  50%, -0.135
+trade days: a BUY candidate in the owner's windows on 395 of 474 bull days (83%), 21.5 a day
+
+-- following the break (1 ATR past): bull days only --
+H4    | H1    | SELL trades, win %, avg R | BUY trades, win %, avg R
+down  | down  |  1022,  46%, -0.214       |  1234,  54%, -0.058
+down  | mixed |   915,  49%, -0.155       |   957,  47%, -0.180
+down  | up    |   353,  46%, -0.182       |   371,  51%, -0.064
+mixed | down  |  2283,  49%, -0.151       |  2204,  50%, -0.116
+mixed | mixed |  1457,  49%, -0.144       |  1414,  49%, -0.144
+mixed | up    |  1632,  48%, -0.172       |  1633,  49%, -0.131
+up    | down  |  1097,  46%, -0.197       |  1172,  51%, -0.117
+up    | mixed |  2881,  48%, -0.174       |  2838,  49%, -0.124
+up    | up    |  7081,  46%, -0.193       |  7309,  52%, -0.087
+trade days: a BUY candidate in the owner's windows on 395 of 474 bull days (83%), 11.8 a day

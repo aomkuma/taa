@@ -1,0 +1,14 @@
+| opened (Thai) | side | entry | its stop | old code stop (dist) | new code stop (dist) | new zone | its stop past the new? | worst against, fill to close | result | app = rederived |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 07-06 13:26 | SELL | 4155.07 | 4172.00 | 4168.27 (13.20) | 4168.27 (13.20) | 4163.42 | yes | 4159.47 (held the new stop) | SIGNAL +0.10 R | yes |
+| 07-06 19:03 | SELL | 4158.27 | 4164.00 | 4163.75 (5.48) | 4163.75 (5.48) | 4160.42 | yes | 4158.42 (held the new stop) | TP +1.14 R | yes |
+| 07-07 07:00 | SELL | 4154.94 | 4170.44 | 4170.44 (15.50) | 4170.44 (15.50) | 4168.25 | yes | 4162.67 (held the new stop) | SIGNAL -0.43 R | yes |
+| 07-07 07:40 | BUY | 4150.43 | 4141.40 | 4141.16 (9.27) | 4141.16 (9.27) | 4145.00 | no (0.24 short) | 4140.66 (reached the new stop) | SL -1.02 R | yes |
+| 07-07 19:09 | SELL | 4166.48 | 4175.30 | 4170.23 (3.75) | 4170.23 (3.75) | 4165.62 | yes | 4174.95 (reached the new stop) | SIGNAL -0.58 R | yes |
+| 07-07 19:51 | SELL | 4169.78 | 4181.30 | 4182.69 (12.91) | 4182.69 (12.91) | 4176.42 | no (1.39 short) | 4179.80 (held the new stop) | SIGNAL -0.43 R | yes |
+| 07-08 07:25 | SELL | 4105.84 | 4111.95 | 4154.41 (48.57) | 4112.20 (6.36) | 4107.79 | no (0.25 short) | 4113.75 (reached the new stop) | SL -1.00 R | yes |
+| 07-08 08:11 | BUY | 4105.28 | 4085.25 | 4085.25 (20.03) | 4085.25 (20.03) | 4092.20 | yes | 4104.70 (held the new stop) | TP +0.30 R | yes |
+| 07-08 08:16 | BUY | 4106.57 | 4085.07 | 4085.07 (21.50) | 4085.07 (21.50) | 4092.20 | yes | 4097.28 (held the new stop) | SIGNAL -0.36 R | yes |
+| 07-08 13:16 | SELL | 4131.80 | 4138.50 | 4138.71 (6.91) | 4138.71 (6.91) | 4133.94 | no (0.21 short) | 4133.60 (held the new stop) | TP +0.98 R | yes |
+| 07-08 14:08 | SELL | 4119.87 | 4137.90 | 4137.82 (17.95) | 4137.82 (17.95) | 4133.94 | yes | 4127.22 (held the new stop) | SIGNAL -0.33 R | yes |
+| 07-08 19:18 | SELL | 4075.17 | 4081.00 | 4099.18 (24.01) | 4081.38 (6.21) | 4074.40 | no (0.38 short) | 4077.78 (held the new stop) | BE -0.06 R | yes |

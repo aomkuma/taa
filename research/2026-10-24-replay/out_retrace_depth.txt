@@ -1,0 +1,100 @@
+
+== M5: 70042 bars, 3989 legs judged; median leg 18.0 USD; median pullback depth 97.0 % ==
+| pullback depth (of the leg before) | legs | went on | turned | turned % |
+|---|---|---|---|---|
+| 0-23.6 % | 53 | 51 | 2 | 4% |
+| 23.6-38.2 % | 242 | 225 | 17 | 7% |
+| 38.2-50 % | 311 | 259 | 52 | 17% |
+| 50-61.8 % | 342 | 271 | 71 | 21% |
+| 61.8-78.6 % | 527 | 394 | 133 | 25% |
+| 78.6-100 % | 601 | 398 | 203 | 34% |
+| over 100 % | 1913 | 3 | 1910 | 100% |
+| reached at least | legs | turned % |
+|---|---|---|
+| 23.6 % | 3936 | 61% |
+| 38.2 % | 3694 | 64% |
+| 50 % | 3383 | 68% |
+| 61.8 % | 3041 | 74% |
+| 78.6 % | 2514 | 84% |
+| 100 % | 1913 | 100% |
+- turns outnumber continuations from the band: none below 100 %
+
+== M15: 23521 bars, 1326 legs judged; median leg 33.2 USD; median pullback depth 98.9 % ==
+| pullback depth (of the leg before) | legs | went on | turned | turned % |
+|---|---|---|---|---|
+| 0-23.6 % | 27 | 25 | 2 | 7% |
+| 23.6-38.2 % | 84 | 79 | 5 | 6% |
+| 38.2-50 % | 89 | 80 | 9 | 10% |
+| 50-61.8 % | 142 | 113 | 29 | 20% |
+| 61.8-78.6 % | 141 | 101 | 40 | 28% |
+| 78.6-100 % | 189 | 132 | 57 | 30% |
+| over 100 % | 654 | 1 | 653 | 100% |
+| reached at least | legs | turned % |
+|---|---|---|
+| 23.6 % | 1299 | 61% |
+| 38.2 % | 1215 | 65% |
+| 50 % | 1126 | 69% |
+| 61.8 % | 984 | 76% |
+| 78.6 % | 843 | 84% |
+| 100 % | 654 | 100% |
+- turns outnumber continuations from the band: none below 100 %
+
+== M30: 11762 bars, 671 legs judged; median leg 48.4 USD; median pullback depth 95.5 % ==
+| pullback depth (of the leg before) | legs | went on | turned | turned % |
+|---|---|---|---|---|
+| 0-23.6 % | 8 | 8 | 0 | 0% |
+| 23.6-38.2 % | 47 | 42 | 5 | 11% |
+| 38.2-50 % | 51 | 43 | 8 | 16% |
+| 50-61.8 % | 67 | 58 | 9 | 13% |
+| 61.8-78.6 % | 93 | 72 | 21 | 23% |
+| 78.6-100 % | 88 | 59 | 29 | 33% |
+| over 100 % | 317 | 0 | 317 | 100% |
+| reached at least | legs | turned % |
+|---|---|---|
+| 23.6 % | 663 | 59% |
+| 38.2 % | 616 | 62% |
+| 50 % | 565 | 67% |
+| 61.8 % | 498 | 74% |
+| 78.6 % | 405 | 85% |
+| 100 % | 317 | 100% |
+- turns outnumber continuations from the band: none below 100 %
+
+== H1: 5884 bars, 309 legs judged; median leg 68.2 USD; median pullback depth 91.3 % ==
+| pullback depth (of the leg before) | legs | went on | turned | turned % |
+|---|---|---|---|---|
+| 0-23.6 % | 5 | 5 | 0 | 0% |
+| 23.6-38.2 % | 19 | 18 | 1 | 5% |
+| 38.2-50 % | 24 | 23 | 1 | 4% |
+| 50-61.8 % | 32 | 27 | 5 | 16% |
+| 61.8-78.6 % | 45 | 33 | 12 | 27% |
+| 78.6-100 % | 47 | 27 | 20 | 43% |
+| over 100 % | 137 | 0 | 137 | 100% |
+| reached at least | legs | turned % |
+|---|---|---|
+| 23.6 % | 304 | 58% |
+| 38.2 % | 285 | 61% |
+| 50 % | 261 | 67% |
+| 61.8 % | 229 | 74% |
+| 78.6 % | 184 | 85% |
+| 100 % | 137 | 100% |
+- turns outnumber continuations from the band: none below 100 %
+
+== H4: 1540 bars, 69 legs judged; median leg 137.3 USD; median pullback depth 82.0 % ==
+| pullback depth (of the leg before) | legs | went on | turned | turned % |
+|---|---|---|---|---|
+| 0-23.6 % | 1 | 1 | 0 | 0% |
+| 23.6-38.2 % | 3 | 2 | 1 | 33% |
+| 38.2-50 % | 9 | 9 | 0 | 0% |
+| 50-61.8 % | 8 | 7 | 1 | 12% |
+| 61.8-78.6 % | 12 | 8 | 4 | 33% |
+| 78.6-100 % | 5 | 3 | 2 | 40% |
+| over 100 % | 31 | 0 | 31 | 100% |
+| reached at least | legs | turned % |
+|---|---|---|
+| 23.6 % | 68 | 57% |
+| 38.2 % | 65 | 58% |
+| 50 % | 56 | 68% |
+| 61.8 % | 48 | 77% |
+| 78.6 % | 36 | 92% |
+| 100 % | 31 | 100% |
+- turns outnumber continuations from the band: none below 100 %

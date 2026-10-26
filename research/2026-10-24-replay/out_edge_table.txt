@@ -1,0 +1,31 @@
+check d1: 300/300 equal to the app's reading
+check h4: 300/300 equal to the app's reading
+check h1: 300/300 equal to the app's reading
+37108 trades in 27 cells -> C:\Users\korap\taa\app\strategy\edge_table.json
+down/down/down  B-rec +0.050/181  B-fol -0.258/77  S-rec -0.057/190  S-fol -0.142/101
+down/down/none  B-rec -0.070/34  B-fol -0.045/25  S-rec -0.267/48  S-fol -0.263/29
+down/down/up    B-rec -0.175/15  B-fol -0.329/11  S-rec -0.150/6  S-fol -0.029/7
+down/none/down  B-rec -0.220/84  B-fol -0.140/38  S-rec -0.229/84  S-fol -0.197/56
+down/none/none  B-rec +0.268/41  B-fol -0.448/20  S-rec -0.081/37  S-fol -0.244/9
+down/none/up    B-rec -0.156/145  B-fol -0.196/65  S-rec -0.191/141  S-fol -0.364/56
+down/up/down    B-rec +0.047/47  B-fol +0.015/35  S-rec -0.344/59  S-fol -0.391/17
+down/up/none    B-rec -0.197/115  B-fol -0.063/47  S-rec -0.038/91  S-fol -0.085/66
+down/up/up      B-rec -0.216/86  B-fol +0.020/51  S-rec -0.074/115  S-fol +0.000/38
+none/down/down  B-rec -0.046/438  B-fol -0.039/211  S-rec -0.153/488  S-fol -0.214/231
+none/down/none  B-rec +0.005/233  B-fol +0.058/179  S-rec -0.153/301  S-fol -0.087/110
+none/down/up    B-rec -0.084/147  B-fol -0.184/68  S-rec -0.099/156  S-fol -0.131/88
+none/none/down  B-rec +0.028/285  B-fol -0.006/139  S-rec -0.117/296  S-fol -0.243/97
+none/none/none  B-rec -0.090/125  B-fol +0.152/90  S-rec -0.224/138  S-fol +0.029/71
+none/none/up    B-rec +0.010/315  B-fol +0.091/173  S-rec -0.142/310  S-fol -0.161/136
+none/up/down    B-rec -0.052/118  B-fol -0.317/63  S-rec -0.069/120  S-fol -0.402/57
+none/up/none    B-rec -0.004/223  B-fol +0.039/125  S-rec -0.296/228  S-fol -0.159/88
+none/up/up      B-rec -0.005/436  B-fol -0.228/237  S-rec -0.184/459  S-fol -0.145/215
+up/down/down    B-rec -0.081/650  B-fol -0.038/347  S-rec -0.100/669  S-fol -0.099/309
+up/down/none    B-rec -0.120/503  B-fol -0.080/257  S-rec -0.054/505  S-fol -0.033/242
+up/down/up      B-rec -0.126/208  B-fol -0.281/108  S-rec -0.104/224  S-fol -0.168/92
+up/none/down    B-rec -0.082/1038  B-fol -0.020/536  S-rec -0.102/1021  S-fol -0.033/550
+up/none/none    B-rec -0.068/695  B-fol -0.167/360  S-rec -0.007/693  S-fol -0.163/314
+up/none/up      B-rec -0.084/923  B-fol -0.046/496  S-rec -0.069/925  S-fol -0.067/443
+up/up/down      B-rec -0.071/552  B-fol -0.081/280  S-rec -0.166/513  S-fol -0.119/291
+up/up/none      B-rec -0.069/1330  B-fol -0.056/571  S-rec -0.062/1160  S-fol +0.024/637
+up/up/up        B-rec -0.046/3400  B-fol -0.009/1902  S-rec -0.117/3255  S-fol -0.089/1648

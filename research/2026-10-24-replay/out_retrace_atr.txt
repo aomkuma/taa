@@ -1,0 +1,60 @@
+
+== M5: 3983 legs ==
+| ATR level at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| HIGH | 1080 | 55% | 82 | 59% (982) | 71% (743) | 84% (580) | 74% (291) |
+| NORMAL | 1937 | 61% | 99 | 65% (1819) | 74% (1536) | 83% (1277) | 76% (402) |
+| LOW | 966 | 62% | 109 | 68% (887) | 77% (758) | 86% (653) | 82% (175) |
+| ATR slope at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| FALLING | 1433 | 54% | 88 | 60% (1289) | 70% (1028) | 82% (828) | 79% (326) |
+| FLAT | 1094 | 68% | 115 | 71% (1048) | 78% (922) | 86% (805) | 80% (187) |
+| RISING | 1456 | 59% | 92 | 63% (1351) | 74% (1087) | 84% (877) | 72% (355) |
+
+== M15: 1322 legs ==
+| ATR level at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| HIGH | 315 | 52% | 73 | 60% (272) | 74% (193) | 85% (152) | 69% (87) |
+| NORMAL | 712 | 63% | 108 | 67% (669) | 77% (562) | 85% (491) | 79% (141) |
+| LOW | 295 | 60% | 104 | 65% (270) | 77% (226) | 82% (197) | 76% (55) |
+| ATR slope at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| FALLING | 446 | 51% | 89 | 57% (396) | 71% (312) | 79% (262) | 80% (97) |
+| FLAT | 335 | 73% | 122 | 75% (321) | 82% (284) | 87% (256) | 67% (52) |
+| RISING | 541 | 60% | 95 | 65% (494) | 77% (385) | 87% (322) | 75% (134) |
+
+== M30: 667 legs ==
+| ATR level at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| HIGH | 142 | 50% | 69 | 56% (125) | 68% (93) | 89% (64) | 77% (47) |
+| NORMAL | 383 | 60% | 96 | 64% (357) | 75% (291) | 84% (242) | 79% (86) |
+| LOW | 142 | 60% | 108 | 64% (130) | 74% (111) | 85% (96) | 96% (27) |
+| ATR slope at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| FALLING | 232 | 52% | 91 | 55% (213) | 69% (162) | 82% (131) | 87% (62) |
+| FLAT | 163 | 68% | 122 | 71% (154) | 78% (139) | 88% (118) | 83% (30) |
+| RISING | 272 | 57% | 90 | 62% (245) | 75% (194) | 86% (153) | 75% (68) |
+
+== H1: 303 legs ==
+| ATR level at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| HIGH | 64 | 56% | 86 | 58% (62) | 81% (43) | 91% (34) | 72% (18) |
+| NORMAL | 178 | 53% | 87 | 59% (159) | 68% (132) | 82% (103) | 79% (43) |
+| LOW | 61 | 70% | 133 | 74% (58) | 84% (50) | 91% (44) | 79% (14) |
+| ATR slope at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| FALLING | 112 | 57% | 92 | 61% (105) | 71% (86) | 83% (69) | 80% (30) |
+| FLAT | 66 | 59% | 89 | 66% (58) | 76% (49) | 85% (40) | 71% (14) |
+| RISING | 125 | 57% | 91 | 61% (116) | 77% (90) | 89% (72) | 77% (31) |
+
+== H4: 67 legs ==
+| ATR level at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| HIGH | 16 | 56% | 60 | 57% (14) | 88% (8) | 100% (7) | 80% (5) |
+| NORMAL | 38 | 53% | 89 | 56% (36) | 74% (27) | 86% (21) | 75% (8) |
+| LOW | 13 | 62% | 106 | 62% (13) | 73% (11) | 100% (7) | 83% (6) |
+| ATR slope at the leg | legs | legs undone % | median pullback % | reached 38.2 -> turned | reached 61.8 -> turned | reached 78.6 -> turned | ended 50-78.6 % -> went on |
+|---|---|---|---|---|---|---|---|
+| FALLING | 27 | 48% | 73 | 46% (26) | 67% (18) | 83% (12) | 78% (9) |
+| FLAT | 17 | 65% | 184 | 65% (17) | 73% (15) | 92% (12) | 100% (3) |
+| RISING | 23 | 57% | 73 | 65% (20) | 92% (13) | 100% (11) | 71% (7) |

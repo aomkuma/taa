@@ -1,0 +1,8 @@
+| in (Thai) | side | entry / stop / tp | out | R | run into the entry (60 min) | M15 leg / rhythm, H1, D1 | MFE / MAE before the exit (R) | after the exit (same day) |
+|---|---|---|---|---|---|---|---|---|
+| 07-07 07:00 | SELL | 4154.94 / 4170.44 / 4150.00 | SIGNAL 07:31 | -0.43 | -1.9 USD toward the stop (-0.15 H1 ATR, -0.1x the stop distance) | down / up, H1 none, D1 down | +0.20 / -0.50 | TP reached 07:40; best +62.7 USD from the entry |
+| 07-07 07:40 | BUY | 4150.43 / 4141.40 / 4157.61 | SL 08:00 | -1.02 | +13.3 USD toward the stop (1.08 H1 ATR, 1.5x the stop distance) | down / up, H1 none, D1 down | +0.37 / -1.08 | TP reached 18:59; best +30.0 USD from the entry |
+| 07-07 19:09 | SELL | 4166.48 / 4175.30 / 4153.43 | SIGNAL 19:18 | -0.58 | +34.6 USD toward the stop (2.44 H1 ATR, 3.9x the stop distance) | up / none, H1 none, D1 down | +0.45 / -0.96 | TP reached 21:04; best +74.3 USD from the entry |
+| 07-07 19:51 | SELL | 4169.78 / 4181.30 / 4159.19 | SIGNAL 20:38 | -0.43 | +22.6 USD toward the stop (1.60 H1 ATR, 2.0x the stop distance) | up / none, H1 none, D1 down | +0.84 / -0.87 | TP reached 20:57; best +77.6 USD from the entry |
+| 07-08 07:27 | SELL | 4106.48 / 4112.20 / 4098.39 | SL 07:37 | -1.05 | +10.8 USD toward the stop (0.63 H1 ATR, 1.9x the stop distance) | down / down, H1 none, D1 down | +0.48 / -1.27 | TP reached 08:06; best +84.8 USD from the entry |
+| 07-08 14:15 | SELL | 4118.59 / 4137.82 / 4113.60 | SIGNAL 14:47 | -0.38 | +2.2 USD toward the stop (0.14 H1 ATR, 0.1x the stop distance) | down / up, H1 none, D1 down | +0.21 / -0.45 | TP reached 15:16; best +97.0 USD from the entry |

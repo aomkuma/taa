@@ -1,0 +1,46 @@
+caught  the edge jump has no distance limit
+caught  the edge jump excludes exactly 1 ATR
+caught  the zone has no cap
+caught  the cap is 3 ATR
+caught  the zone end includes the buffer
+caught  the forming bar is left out
+caught  the forming bar starts a bar late
+caught  C6 ignores the level
+caught  the filled order's level is not kept
+caught  a plan fill keeps no level
+caught  the plan's stop is not moved out
+caught  the plan's R floor is not checked
+caught  the plan's 5-USD floor is not checked
+caught  a stop before the target still blocks
+caught  the block starts at the bar's open
+caught  a blocked side still fills
+caught  C4 always moves the stop out
+caught  C4 R floor strict
+caught  C4 never moves the stop
+caught  the hand-over skips the plan recheck
+caught  the order loses its exit level
+caught  the replay does not note positions
+caught  the first touch fills
+caught  a confirmed order chases
+caught  a confirmed fill skips the TP check
+caught  a wait order may be market
+caught  the replay does not read the signal
+caught  a sweep needs no volume
+caught  a sweep needs no close back
+caught  the M's second push may be higher
+caught  the M needs no half-way push
+caught  the M needs no neckline break
+caught  a break needs no close through
+caught  a plan order may go against D1
+caught  a pin needs no wick
+caught  a pin may close up
+caught  an engulfing need not cover
+caught  a forming bar counts
+caught  candles read on M5
+caught  zigzag: a lower low does not move the point
+caught  zigzag: a repeated low is a new candidate
+caught  zigzag: the forming point counts as confirmed
+caught  zigzag: the window is one bar short
+caught  the structure read on M1
+caught  a buy is not mirrored
+45/45 caught

@@ -1,0 +1,18 @@
+
+== design: 2025-04-18 .. 2026-04-17 (before the exam): 6312 breaks ==
+state      | break of | breaks | real % | fake depth ATR med/75/90 | real 2h run ATR med | real % once >= 1 ATR past
+trend up   | high     |   1020 |   26%  | [0.31, 0.69, 1.21]       |  4.37               | 71% of 368
+trend up   | low      |    828 |   17%  | [0.51, 1.04, 1.95]       |  5.62               | 45% of 320
+trend down | high     |    364 |   25%  | [0.31, 0.69, 1.31]       |  3.41               | 69% of 129
+trend down | low      |    515 |   20%  | [0.47, 1.11, 2.04]       |  6.04               | 45% of 227
+sideways   | high     |   1804 |   25%  | [0.36, 0.77, 1.26]       |  4.34               | 66% of 641
+sideways   | low      |   1781 |   16%  | [0.44, 0.94, 1.65]       |  4.15               | 45% of 631
+
+== the replay months 2026-07-01 .. (information only): 3775 breaks ==
+state      | break of | breaks | real % | fake depth ATR med/75/90 | real 2h run ATR med | real % once >= 1 ATR past
+trend up   | high     |    470 |   23%  | [0.36, 0.73, 1.47]       |  4.47               | 62% of 162
+trend up   | low      |    338 |   16%  | [0.36, 0.88, 1.47]       |  3.60               | 46% of 115
+trend down | high     |    342 |   21%  | [0.22, 0.57, 1.07]       |  3.93               | 70% of 104
+trend down | low      |    444 |   17%  | [0.37, 0.83, 1.52]       |  3.66               | 52% of 142
+sideways   | high     |   1093 |   23%  | [0.34, 0.75, 1.45]       |  5.01               | 62% of 399
+sideways   | low      |   1088 |   21%  | [0.35, 0.78, 1.44]       |  4.63               | 58% of 378

@@ -1,0 +1,13 @@
+2025 reclaims, buffer 1.0 ATR, target 0.7 R: 9372 trades
+the M5 walk ended on a bar touching BOTH stop and target: 0.2% (23)
+on M1 a bar still touching both: 0.0%
+SELL: M5 walk -0.077 R (win 54%) | M1 walk -0.075 R (win 54%)
+BUY: M5 walk -0.037 R (win 56%) | M1 walk -0.037 R (win 56%)
+the both-touching trades: M5 -1.000 R, on M1 -0.778 R (M1 won 13% of them)
+
+samples (Thai time) to check by hand:
+  2025-03-14 01:55 SELL: M5 -1.00 R, M1 -1.00 R
+  2025-05-28 05:05 SELL: M5 -1.00 R, M1 +0.70 R
+  2025-05-30 18:25 BUY: M5 -1.00 R, M1 -1.00 R
+  2025-05-30 18:25 BUY: M5 -1.00 R, M1 -1.00 R
+  2025-05-30 18:50 BUY: M5 -1.00 R, M1 -1.00 R
