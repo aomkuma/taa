@@ -37,10 +37,13 @@ caught  a pin may close up
 caught  an engulfing need not cover
 caught  a forming bar counts
 caught  candles read on M5
+caught  a fill into a running push
+caught  the run measured from the high
+caught  the run window ignores its length
 caught  zigzag: a lower low does not move the point
 caught  zigzag: a repeated low is a new candidate
 caught  zigzag: the forming point counts as confirmed
 caught  zigzag: the window is one bar short
 caught  the structure read on M1
 caught  a buy is not mirrored
-45/45 caught
+48/48 caught

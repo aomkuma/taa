@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+BACKUP = Path(__file__).resolve().parent / ".plant_backup"  # survives a kill: see restore_any()
 TESTS = [
     "tests/unit/test_strategy_liquidity.py",
     "tests/unit/test_strategy_ai_lane.py",
@@ -84,6 +85,10 @@ BUGS: list[tuple[str, str, str, str]] = [
     ("an engulfing need not cover", CF, "covers = o[i] >= c[i - 1] and c[i] <= o[i - 1]", "covers = True"),
     ("a forming bar counts", CF, "return bars[bars.index + pd.Timedelta(minutes=minutes) <= at]", "return bars"),
     ("candles read on M5", CF, "CANDLE_FRAMES = (15, 30, 60)", "CANDLE_FRAMES = (5, 15, 30, 60)"),
+    ("a fill into a running push", LANE, "if reached and self.running_into(symbol, order, price, at):", "if False:"),
+    ("the run measured from the high", LANE, 'return price - float(x["low"].min()) if side is Side.SELL else', 'return price - float(x["high"].max()) if side is Side.SELL else'),
+    ("the run window ignores its length", LANE, "x = m1[(m1.index >= since) & (m1.index + pd.Timedelta(minutes=1) <= pd.Timestamp(at))]",
+     "x = m1[m1.index + pd.Timedelta(minutes=1) <= pd.Timestamp(at)]"),
     # MetaTrader 5's ZigZag (owner 2026-10-26)
     ("zigzag: a lower low does not move the point", ZZ, "if low_map[shift] != 0 and low_map[shift] < ll and high_map[shift] == 0:",
      "if False:"),
@@ -97,6 +102,26 @@ BUGS: list[tuple[str, str, str, str]] = [
 ]  # fmt: skip
 
 
+def restore_any() -> None:
+    """Put back any file a killed run left with a bug in it. ``finally`` does not run when the process is
+    killed (2026-10-27: an interrupted run left app/strategy/confirm.py with the sweep's close-back check
+    deleted, and the tests only caught it two hours later), so each file is copied here before it is changed
+    and the copy is removed once it is back."""
+    for f in sorted(BACKUP.glob("*.bak")) if BACKUP.exists() else []:
+        target = ROOT / f.read_text(encoding="utf-8").split("\n", 1)[0]
+        target.write_text(f.read_text(encoding="utf-8").split("\n", 1)[1], encoding="utf-8")
+        print(f"restored {target.relative_to(ROOT)} from an interrupted run")
+        f.unlink()
+
+
+def keep(path: str, src: str) -> Path:
+    """Park ``src`` where an interrupted run can be undone from; the first line names the file."""
+    BACKUP.mkdir(exist_ok=True)
+    f = BACKUP / (path.replace("/", "_") + ".bak")
+    f.write_text(path + "\n" + src, encoding="utf-8")
+    return f
+
+
 def run() -> bool:
     """True when the targeted tests pass."""
     out = subprocess.run(  # nosec B603 - fixed argv
@@ -107,17 +132,20 @@ def run() -> bool:
 
 
 def main() -> int:
+    restore_any()
     assert run(), "the tests must pass on the clean source first"
     missed = 0
     for name, path, old, new in BUGS:
         f = ROOT / path
         src = f.read_text(encoding="utf-8")
         assert src.count(old) == 1, f"{name}: the text to change is not unique in {path}"
+        parked = keep(path, src)
         try:
             f.write_text(src.replace(old, new), encoding="utf-8")
             caught = not run()
         finally:
             f.write_text(src, encoding="utf-8")
+            parked.unlink(missing_ok=True)
         missed += not caught
         print(f"{'caught' if caught else 'MISSED'}  {name}")
     print(f"{len(BUGS) - missed}/{len(BUGS)} caught")

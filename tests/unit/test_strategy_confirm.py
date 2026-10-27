@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import numpy as np
 import pandas as pd
 
 from app.core.enums import Side
@@ -194,3 +195,40 @@ def test_a_confirmed_fill_keeps_the_5_usd_take_profit_and_the_r_floor():
     assert s.on_quote("XAUUSD", T + timedelta(minutes=10, seconds=1), 4103.8, 4104.1) is None  # 4.8 to target
     e = s.on_quote("XAUUSD", T + timedelta(minutes=10, seconds=2), 4104.4, 4104.7)
     assert e is not None and e.price == 4104.4
+
+
+def m1_rising(start: datetime, lows: list[float]) -> pd.DataFrame:
+    """M1 bars from ``start`` with the given lows (highs 1 over, closes at the high)."""
+    idx = pd.date_range(start, periods=len(lows), freq="1min")
+    lo = np.array(lows, float)
+    return pd.DataFrame(
+        {"open": lo, "high": lo + 1, "low": lo, "close": lo + 1, "tick_volume": 10.0}, index=idx
+    )
+
+
+def test_no_fill_into_a_push_still_running_toward_the_stop():
+    # owner 2026-10-26: every trade of 06-09 Jul entered after a run toward its stop of 1.3x the stop distance
+    # or more lost. A sell at 4105 with its stop at 4112 (7): the hour before ran up from 4095 - 10 USD, 1.43x
+    # the 7 - so it waits; from 4097.5 (7.5, 1.07x) it fills
+    s = AITrader(AITrader.Params(confirm_entries=False))
+    s.accept("XAUUSD", order(key="w", entry=4105.0, stop=4112.0, direct=True))
+    s.confirm_orders("XAUUSD", m1_rising(T - timedelta(minutes=60), [4095.0] + [4100.0] * 59), T)
+    assert s.run_toward_stop("XAUUSD", Side.SELL, 4105.0, T) == 10.0
+    assert s.on_quote("XAUUSD", T, 4105.0, 4105.3) is None and s.pending("XAUUSD") is not None
+    # an hour later: the frame still holds the 4,090 bars, but they are older than run_minutes, so only the
+    # last 60 count - the lowest there is 4,097.5, and 7.5 <= 1.2 x 7 = 8.4, so it fills
+    later = T + timedelta(minutes=30)
+    s.confirm_orders(
+        "XAUUSD", m1_rising(later - timedelta(minutes=120), [4090.0] * 60 + [4097.5] * 60), later
+    )
+    assert s.run_toward_stop("XAUUSD", Side.SELL, 4105.0, later) == 7.5
+    e = s.on_quote("XAUUSD", later, 4105.0, 4105.3)
+    assert e is not None and e.price == 4105.0
+    # a buy mirrors it: highs over the price; run_share 0 turns the check off
+    b = AITrader(AITrader.Params(confirm_entries=False, run_share=0))
+    b.accept("XAUUSD", order(key="b", entry=4105.0, stop=4112.0, direct=True))
+    b.confirm_orders("XAUUSD", m1_rising(T - timedelta(minutes=60), [4095.0] * 60), T)
+    assert b.on_quote("XAUUSD", T, 4105.0, 4105.3) is not None
+    up = AITrader(AITrader.Params(confirm_entries=False))
+    up.confirm_orders("XAUUSD", m1_rising(T - timedelta(minutes=60), [4114.0] * 60), T)  # highs 4115
+    assert up.run_toward_stop("XAUUSD", Side.BUY, 4104.0, T) == 11.0

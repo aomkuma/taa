@@ -106,6 +106,12 @@ class AITraderParams(StrategyParams):
     # stop distance past the entry
     confirm_entries: bool = True
     chase_share: float = Field(default=0.5, gt=0, le=2)
+    # no fill into a push still running toward the stop (owner 2026-10-26: "you analysed it so long - why not
+    # fix it"): when price ran toward the stop by more than run_share x the stop distance in the last
+    # run_minutes, the order waits until that is no longer so. 06-09 Jul: every trade entered after a run of
+    # 1.3x or more lost (7 of 7), the winners came after 1.2x or less (losers.py); 0 turns it off
+    run_share: float = Field(default=1.2, ge=0, le=10)
+    run_minutes: int = Field(default=60, ge=5, le=240)
 
 
 def m5_closes(m1: pd.DataFrame | None, count: int) -> list[float]:
@@ -159,6 +165,9 @@ class AITrader(BaseStrategy):
         self._held: dict[str, list[Held]] = {}  # the positions seen at the last note_positions
         self._touched: dict[str, datetime] = {}  # an order's price first reached (by its key): armed
         self._confirmed: dict[str, str] = {}  # armed orders a signal at the level confirmed (key: signal)
+        self._m1: dict[
+            str, pd.DataFrame
+        ] = {}  # the closed M1 bars of the last confirm_orders (the run check)
         self._exits: set[str] = set()
 
     def required_timeframes(self) -> tuple[Timeframe, ...]:
@@ -296,6 +305,7 @@ class AITrader(BaseStrategy):
         for the orders confirmed now."""
         if m1 is None or not len(m1):
             return []
+        self._m1[symbol] = m1
         mine = ([self._orders[symbol]] if symbol in self._orders else []) + self._plan.get(symbol, [])
         out = []
         for o in mine:
@@ -330,6 +340,8 @@ class AITrader(BaseStrategy):
             reached = price <= order.entry if sell else price >= order.entry
         else:
             reached = price >= order.entry - tol if sell else price <= order.entry + tol
+        if reached and self.running_into(symbol, order, price, at):
+            return "keep"  # the push toward the stop is still running: wait for it to stall
         if kind == "market" or not p.confirm_entries:
             return "fill" if reached else "keep"
         if order.key in self._confirmed:  # confirmed by a signal: fill, never chasing far past the entry
@@ -346,6 +358,27 @@ class AITrader(BaseStrategy):
         if reached:
             self._touched.setdefault(order.key, at)  # armed: the first touch is not the entry
         return "keep"
+
+    def run_toward_stop(self, symbol: str, side: Side, price: float, at: datetime) -> float | None:
+        """How far price ran toward a ``side`` trade's stop in the last ``run_minutes`` of closed M1 bars,
+        up to ``price`` (a sell: ``price`` over the lowest low), or None without bars."""
+        m1 = self._m1.get(symbol)
+        if m1 is None or not len(m1):
+            return None
+        at = ensure_utc(at)
+        since = pd.Timestamp(at) - pd.Timedelta(minutes=self.params.run_minutes)
+        x = m1[(m1.index >= since) & (m1.index + pd.Timedelta(minutes=1) <= pd.Timestamp(at))]
+        if not len(x):
+            return None
+        return price - float(x["low"].min()) if side is Side.SELL else float(x["high"].max()) - price
+
+    def running_into(self, symbol: str, order: AIOrder, price: float, at: datetime) -> bool:
+        """The push toward the order's stop ran more than ``run_share`` x the stop distance (the param)."""
+        p: AITraderParams = self.params
+        run = self.run_toward_stop(symbol, order.side, price, at)
+        if not p.run_share or run is None:
+            return False
+        return run > p.run_share * abs(order.stop - price)
 
     def on_quote(self, symbol: str, at: datetime, bid: float, ask: float) -> AIEntry | None:
         at = ensure_utc(at)
