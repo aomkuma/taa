@@ -1,4 +1,9 @@
-# Rules locked before the forward test — 2026-10-27, 17:5x Thai
+> **WITHDRAWN THE SAME EVENING — 2026-10-27, 19:xx Thai. Read the second section first.**
+> Everything in the first section was measured with the wrong parameter set (`bots.P()` defaults instead
+> of the shipped `bots.SHIPPED`) and with a one-hour lookahead in the frame readings. It is kept, not
+> deleted, so the record shows what I got wrong and how it was caught.
+
+# Rule set 1 (WITHDRAWN) — locked 2026-10-27, 17:5x Thai
 
 Written **before** any day after 2026-10-27 has been traded or replayed. Everything below was chosen on
 2023-09 .. 2026-10-24 and is now frozen. The point of writing it down is that from tomorrow the data has
@@ -60,3 +65,81 @@ measured for picking the best of 88 variants — but it is not zero.
 Day by day, week by week, in `JOURNAL.md`, three bots in one account, at most two open at once, each in
 its own market condition — the owner's measure, not a per-rule trade count. Reported: the week's trades,
 R, USD, the account, and every entry the rules refused with what it would have done.
+
+
+---
+
+# Rule set 2 — locked 2026-10-27, 19:xx Thai
+
+## Why set 1 was withdrawn, within two hours of writing it
+
+Two independent faults, both found by the developer session reviewing my code:
+
+1. **The wrong parameters.** Every measurement ran `bots.P()` — the dataclass defaults — instead of the
+   configuration the app ships. They differ in every bot, and for the range bot they differ in *kind*:
+   `P()` defaults to `range_mode="fade"` (sell a sweep that closed back inside the box) while the shipped
+   strategy is `"break"` (an M5 close out of the box). So rule B, "the range bot does not break
+   downward", was derived from a setup we do not run. On the shipped bot, range sells are not the
+   disaster that rule was built on.
+2. **A one-hour lookahead.** `to_frame` indexes a bar by its OPEN; I shifted the index back an hour as
+   if it were a close, so every H1/H4/D1 reading became available an hour before its bar closed, and the
+   H4 and D1 buckets sat an hour out. Rule A's apparent strength was partly that lookahead.
+
+Both are now impossible to repeat: `bots.run` refuses the bare defaults (`test_bots.py`), and a
+hand-worked point-in-time test pins the open/close convention.
+
+## The single rule
+
+**The larger timeframe must lean the way the trade is going.**
+
+H4 momentum = (H4 close − its 50-bar mean) ÷ its 14-bar ATR, from the app's own ATR, read from the last
+H4 bar **closed** before the decision, signed so positive means it leans the trade's way.
+**Take the trade only when that number is at least 0.**
+
+This is the owner's own rule of 2026-10-27 — *"every trade takes only the side with the edge on a
+timeframe larger than the entry timeframe"* — with the frame the measurement chose. The entry is M5; H4
+is larger. The threshold is zero, not a fitted number.
+
+## What it does, on the shipped bots over 2023-09 .. 2026-10-24
+
+| | trades | win | R a trade | total R | fitted / never seen |
+|---|---|---|---|---|---|
+| the bots as shipped | 239 | 37 % | +0.102 | +24.3 | +0.226 (95) / +0.020 (144) |
+| **H4 momentum behind ≥ 0** | **199** | **40 %** | **+0.210** | **+41.8** | **+0.214 (81) / +0.207 (118)** |
+| and range buys only | 162 | 43 % | +0.223 | +36.1 | +0.307 (60) / +0.173 (102) |
+| rule set 1's rule A alone (H1 ≥ −1) | 192 | 35 % | +0.123 | +23.6 | +0.216 (72) / +0.067 (120) |
+
+The two halves give +0.214 and +0.207 — the closest agreement anything has shown in this work, and the
+reason this rule is taken and the H1 one is not.
+
+## The frame ordering, corrected
+
+Correlation of "momentum behind the trade" with the trade's R, after the lookahead was removed:
+
+| frame | correlation with R |
+|---|---|
+| **H4** | **+0.156** |
+| H1 | +0.048 |
+| D1 | +0.030 |
+
+Before the fix I reported H1 strongest at +0.148. That was the lookahead. The owner proposed the order
+H1 → H4 → D1 with D1 strongest; the measurement puts **H4 strongest and D1 weakest**, so the middle
+frame carries it — nearer than D1, slower than the hour.
+
+## What is left out, and why
+
+- **Range buys only.** It adds +0.013 R overall and is better inside the fitted window (+0.307) than
+  outside it (+0.173) — the opposite of what a durable rule looks like. The sell cells are now 15 and 14
+  trades. Not taken; measured again when there are more.
+- **The D1 side gate.** Aligning the side with the D1 regime is worth +0.122 against +0.041, about
+  0.08 R — real but small, and the H4 rule already carries most of it.
+- **Anything about stop width.** Widening the down bot's stop on the real path: x1.0 −0.031, x1.5 −0.092,
+  x2.0 −0.080. The stop is not the problem; a winner's median adverse excursion is 0.29–0.41 R while a
+  loser's is 1.04–1.09 R.
+
+## The honest weakness, again
+
+This rule was chosen after seeing both halves, like the last one. What is different: it is **one** rule
+with a threshold of zero rather than a fitted number, it comes from the frame the owner named, and its
+two halves agree to within 0.007 R. The clean test is still the forward one, and the forward test has not
+started yet — the previous attempt to start it was withdrawn before a single day was run.

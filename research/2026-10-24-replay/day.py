@@ -63,7 +63,28 @@ def balances(day: date) -> dict[str, float]:
     return out
 
 
+def check_watcher_is_not_ahead(day: date) -> None:
+    """Refuse a day that sits BEFORE the watcher's last call, instead of failing silently.
+
+    The watcher's state carries from day to day, and every wake condition is ``minutes >= cooldown``
+    counted from ``last_call``. Replaying an earlier date makes that difference negative, so NOTHING
+    wakes the AI and the journal reads "0 trades" as if it had looked and declined. 2025-02-25 was
+    replayed against a state left at 2026-07-09 and produced exactly that (2026-10-27).
+    """
+    state = RUN / "store/watch_state.json"
+    if not state.exists():
+        return
+    last = json.loads(state.read_text(encoding="utf-8")).get("last_call")
+    if last and pd.Timestamp(last).date() > day:
+        raise SystemExit(
+            f"the watcher's last call is {pd.Timestamp(last):%Y-%m-%d %H:%M}, AFTER {day}: every wake "
+            "condition counts minutes from it and would go negative, so the AI would never be woken. "
+            f"Replay forwards, or clear last_call in {state} first (keep a copy)."
+        )
+
+
 def replay(day: date, bal300: float) -> None:
+    check_watcher_is_not_ahead(day)
     out = RUN / "days" / day.isoformat()
     cmd = [
         sys.executable, "-m", "app.cli", "backtest", "--lane", "ai", "--strategies", "ai_trader",

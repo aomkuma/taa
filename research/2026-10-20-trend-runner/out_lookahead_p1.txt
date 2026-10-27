@@ -1,0 +1,11 @@
+TR1 real-data no-look-ahead truncation - P1 only
+
+2025-11-17 12:34:00+00:00: bar/ATR rows 97428, confirmed pivots 43506, impulse/candidate cells 558 - PASS
+2025-12-15 07:47:00+00:00: bar/ATR rows 131693, confirmed pivots 58998, impulse/candidate cells 1089 - PASS
+2026-01-12 15:23:00+00:00: bar/ATR rows 163680, confirmed pivots 73328, impulse/candidate cells 1638 - PASS
+
+total bar/ATR row comparisons: 392801
+total confirmed-pivot comparisons: 175832
+total impulse/candidate cell comparisons: 3285
+Appending later P1 bars did not change any value available at a cut.
+No P2 or exam data was opened.

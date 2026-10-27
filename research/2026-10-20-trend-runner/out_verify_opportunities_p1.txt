@@ -1,0 +1,10 @@
+TR1 independent opportunity replay - P1 only
+rows replayed: 364
+candidate field checks: 4732
+entry/stop field checks: 2912
+raw-tick path field checks: 8372
+physical tick files opened: 61
+latest tick day opened: 2026-01-15
+result: PASS
+Producer opportunity/simulation modules were not imported.
+No P2 or exam data was opened.

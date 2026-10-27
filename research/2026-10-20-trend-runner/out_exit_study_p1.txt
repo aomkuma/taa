@@ -1,0 +1,46 @@
+TR1 exit-family study - fixed P1 entries only
+selected entries: 138; rows: 552
+latest tick day opened: 2026-01-15
+
+family complete censored mean_R CI95 median_R win total_R USD_001 med_hold maxDD_R worst_R loss_streak runner partial graduated mean_R_no_best1 mean_R_no_best3
+FAST  138   0 +0.011 [-0.220,+0.238] -1.003 0.362 +1.56 +4.32 17.6 16.21 -1.27 9 0.000 0.000 0.000 -0.003 -0.033
+  reasons: STOP=85, TARGET=42, TIME=11
+  weeks: 6/13 positive; worst=-5.68; best=+4.97
+  window ASIA: n=51, mean_R=+0.089
+  window LONDON: n=46, mean_R=+0.147
+  window NY0830: n=41, mean_R=-0.238
+  side SELL: n=58, mean_R=+0.045
+  side BUY: n=80, mean_R=-0.013
+SWING 138   0 +0.386 [-0.146,+1.034] -1.002 0.246 +53.23 +281.55 23.6 19.19 -1.27 14 1.000 0.000 0.225 +0.212 -0.027
+  reasons: STOP=135, TIME=3
+  weeks: 8/13 positive; worst=-9.92; best=+22.08
+  window ASIA: n=51, mean_R=+0.003
+  window LONDON: n=46, mean_R=+1.102
+  window NY0830: n=41, mean_R=+0.058
+  side SELL: n=58, mean_R=+0.429
+  side BUY: n=80, mean_R=+0.354
+SPLIT 138   0 +0.265 [-0.112,+0.703] -0.392 0.319 +36.52 +192.92 23.6 13.16 -1.27 10 1.000 0.507 0.225 +0.147 -0.017
+  reasons: STOP=135, TIME=3
+  weeks: 9/13 positive; worst=-6.34; best=+14.80
+  window ASIA: n=51, mean_R=+0.002
+  window LONDON: n=46, mean_R=+0.723
+  window NY0830: n=41, mean_R=+0.077
+  side SELL: n=58, mean_R=+0.320
+  side BUY: n=80, mean_R=+0.225
+STATE 138   0 -0.032 [-0.299,+0.256] -1.002 0.297 -4.45 -15.10 17.8 18.47 -1.27 10 0.275 0.000 0.087 -0.101 -0.186
+  reasons: STOP=115, TARGET=22, TIME=1
+  weeks: 5/13 positive; worst=-4.98; best=+9.47
+  window ASIA: n=51, mean_R=-0.047
+  window LONDON: n=46, mean_R=+0.154
+  window NY0830: n=41, mean_R=-0.223
+  side SELL: n=58, mean_R=+0.118
+  side BUY: n=80, mean_R=-0.141
+
+common complete entries across all exits: 138
+  FAST: mean_R=+0.011, total_R=+1.56
+  SWING: mean_R=+0.386, total_R=+53.23
+  SPLIT: mean_R=+0.265, total_R=+36.52
+  STATE: mean_R=-0.032, total_R=-4.45
+
+USD uses the repository convention for XAUUSD: 0.01 lot = 1 USD per 1.00 price move.
+No P2 or exam data was enabled. No exit has been selected in this report.

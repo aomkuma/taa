@@ -1,0 +1,2526 @@
+Reading additional input from stdin...
+OpenAI Codex v0.164.0-alpha.11.1
+--------
+workdir: C:\Users\korap\taa
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 01a17d90-909f-75d1-b77e-4bceeb1ce435
+--------
+user
+Read research/2026-10-26-three-bots/REVIEW_BRIEF_3.md and carry out the review. Read-only: verify and report, change no code. Print the full report to stdout.
+codex
+I’ll read the review brief and the referenced workspace files, then verify its claims without modifying anything and print the complete report.
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -Raw research/2026-10-26-three-bots/REVIEW_BRIEF_3.md' in C:\Users\korap\taa
+ succeeded in 431ms:
+# Review: the H4 edge-side gate, now live on a DEMO account (2026-10-27, evening)
+
+You built `edge_side.py` from DEV_SPEC_3 as a **D1 regime label**. That spec was written from measurements
+that turned out to be wrong - you found the cause yourself: the research scripts ran `bots.P()` instead of
+the shipped parameters, and had a one-hour lookahead. Corrected, the measurement says **H4 is the frame
+that carries the edge** (correlation with the trade's R: H4 +0.156, H1 +0.048, D1 +0.030), and the rule is
+a **quantity**, not a label.
+
+So I rewrote your module and rewired both strategies. **This is running on the owner's DEMO account right
+now**, so a mistake here places real orders on a real (demo) broker. Review it as such.
+
+Read-only. Write only `research/2026-10-26-three-bots/REVIEW_FINDINGS_3.md`. Use `.venv\Scripts\python.exe`.
+
+## What changed
+
+- `app/strategy/edge_side.py` - rewritten: `resample_from_h1`, `edge_lean` (signed, frame-parameterised,
+  default H4), `behind`, and `edge_side` kept as a thin shortcut.
+- `app/strategy/trend_box.py` and `range_break.py` - the `require_edge_side` gate now tests
+  `behind(edge_lean(...), own_side) >= 0` instead of comparing a `Side`.
+- `tests/unit/test_strategy_edge_side.py` - rewritten (11 cases). Your trend/range gate tests were
+  repointed at `edge_lean`.
+- `config.yaml` - `require_edge_side: true` on all three bots of the `three_bots` lane. **Live.**
+
+## What to check, hardest first
+
+1. **The open/close convention.** App frames are stamped at the bar's CLOSE; the research history is
+   stamped at the OPEN. `resample_from_h1` shifts back one hour before resampling. Prove it is right in
+   the APP's direction - an hour of lookahead here would make every number since meaningless, and that is
+   exactly the bug you caught this afternoon in the other direction. Check `(index + hours) <= at` too.
+2. **Does the gate ever let a trade through when it should not?** `edge_lean` returns `None` for an
+   unreadable frame and both strategies treat that as refusal. Find any path where `None`, `NaN`, a zero
+   ATR, a short frame, or a missing H1 frame could end as a trade rather than a hold.
+3. **Is the ATR the same ruler the app trades with?** I call `app.indicators.volatility.atr`. Check the
+   seeding and that 64 closed H4 bars (50 mean + 14 ATR) is actually enough for a non-NaN answer, and
+   that `warmup_bars` supplies them in every lane that can switch this on.
+4. **Do my tests bite?** For each of the 11 cases, break the one production line it covers, run that case,
+   confirm it fails, restore. Report each. **Look especially for my own worst habit:** a test helper that
+   re-implements production logic instead of calling it. `expected_lean` in the test file reuses
+   `resample_from_h1` - judge whether that makes the test circular, and say so plainly if it does.
+5. **Anything else that would hurt on a live account.** Gate ordering, a strategy that reads the frame
+   before checking it is long enough, an exception that could escape into the engine loop.
+
+## How to answer
+
+One section per item: what you checked, how, the verdict. For anything wrong: the exact line, the proof,
+and what it would cost on the live account. Say plainly where you found nothing. End with the single
+change you would most want made, and whether you would leave the gate switched on tonight.
+
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content app/strategy/edge_side.py; Get-Content app/strategy/trend_box.py; Get-Content app/strategy/range_break.py; Get-Content tests/unit/test_strategy_edge_side.py; Get-Content app/indicators/volatility.py; Get-Content config.yaml' in C:\Users\korap\taa
+ succeeded in 772ms:
+"""Which side has the edge on a timeframe LARGER than the one the trade is entered on.
+
+The owner's rule, 2026-10-27: *"every trade takes only the side with the edge on a timeframe larger than
+the entry timeframe"*, and their correction the same day: *"D1 should not be that rigid - it is a
+quantity, not a gate; the more momentum there is, the further that side runs."*
+
+So the frame's lean is read as a **number**, not a label: the close's distance from its own 50-bar mean,
+in that frame's own 14-bar ATR, signed (positive = leaning up). A trade is allowed when the lean is on
+its side; the threshold is zero, not a fitted number.
+
+**The frame is H4, measured** (`research/2026-10-26-three-bots/RULES_LOCKED.md`, rule set 2; 239 trades,
+2023-09 .. 2026-10-24). Correlation of "lean behind the trade" with the trade's R: H4 +0.156, H1 +0.048,
+D1 +0.030 - the middle frame carries it, nearer than the day and slower than the hour. Requiring the H4
+lean to be on the trade's side moves the three bots from +0.102 to +0.210 R a trade, and the two halves
+of the history agree to 0.007 R (+0.214 fitted, +0.207 never seen) - the reason this rule was taken and
+an H1 one was not.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+
+import pandas as pd
+
+from app.core.enums import Side, Timeframe
+from app.indicators.volatility import atr
+
+MEAN_BARS = 50
+ATR_BARS = 14
+HOURS = {Timeframe.H1: 1, Timeframe.H4: 4, Timeframe.D1: 24}
+
+
+def resample_from_h1(h1: pd.DataFrame, hours: int) -> pd.DataFrame:
+    """Bars of ``hours`` from the lane's H1 frame, indexed by each bar's OPEN.
+
+    App frames are stamped at the bar's CLOSE, so the index is shifted back one hour first; the research
+    harness reads history stamped at the open and shifts nothing. Getting this backwards costs an hour of
+    lookahead, which is how a day of conclusions went wrong on 2026-10-27.
+    """
+    opens = h1.copy()
+    opens.index = pd.DatetimeIndex(opens.index) - pd.Timedelta(hours=1)
+    rule = f"{hours}h" if hours < 24 else "1D"
+    return opens.resample(rule).agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
+
+
+def edge_lean(
+    frames: Mapping[Timeframe, pd.DataFrame],
+    at: pd.Timestamp,
+    entry: Timeframe,
+    *,
+    frame: Timeframe = Timeframe.H4,
+) -> float | None:
+    """The signed lean of ``frame``, or ``None`` when it cannot be read from a closed bar.
+
+    ``None`` never means "allowed": a caller that cannot read the frame above its entry has no edge side
+    and does not trade. ``entry`` must be smaller than ``frame`` - the rule is meaningless otherwise, and
+    a ``ValueError`` here stops it being read from the entry frame by accident.
+    """
+    if entry.seconds >= frame.seconds:
+        raise ValueError(f"the entry frame {entry.value} must be smaller than {frame.value}")
+    hours = HOURS.get(frame)
+    if hours is None:
+        raise ValueError(f"{frame.value} is not read from the H1 frame")
+
+    h1 = frames.get(Timeframe.H1)
+    if h1 is None or "close" not in h1:
+        return None
+    bars = resample_from_h1(h1, hours)
+    closed = bars[(bars.index + pd.Timedelta(hours=hours)) <= pd.Timestamp(at)]
+    if len(closed) < MEAN_BARS + ATR_BARS:
+        return None
+    mean = float(closed.close.rolling(MEAN_BARS).mean().iloc[-1])
+    width = float(atr(closed.high, closed.low, closed.close, ATR_BARS).iloc[-1])
+    if not width > 0 or pd.isna(mean):
+        return None
+    return (float(closed.close.iloc[-1]) - mean) / width
+
+
+def behind(lean: float | None, side: Side) -> float | None:
+    """``lean`` seen from a trade's own side: positive means the frame leans the trade's way."""
+    if lean is None:
+        return None
+    return lean if side is Side.BUY else -lean
+
+
+def edge_side(
+    frames: Mapping[Timeframe, pd.DataFrame],
+    at: pd.Timestamp,
+    entry: Timeframe,
+    *,
+    frame: Timeframe = Timeframe.H4,
+) -> Side | None:
+    """The side ``frame`` leans towards, for callers that want one answer rather than the number.
+
+    A lean of exactly zero is on neither side and returns ``None``; the measured rule is "at least 0 on
+    the trade's own side", so a strategy that cares about that boundary uses :func:`behind` instead.
+    """
+    lean = edge_lean(frames, at, entry, frame=frame)
+    if lean is None or lean == 0:
+        return None
+    return Side.BUY if lean > 0 else Side.SELL
+"""Confirmed-swing trend pullbacks with a closed M5 range break."""
+
+from __future__ import annotations
+
+from datetime import time
+from zoneinfo import ZoneInfo
+
+import pandas as pd
+from pydantic import Field
+
+from app.core.enums import Action, ExitReason, Side, Timeframe
+from app.indicators.volatility import atr
+from app.strategy.base_strategy import BaseStrategy, StrategyParams
+from app.strategy.edge_side import behind, edge_lean
+from app.strategy.signal_models import (
+    Condition,
+    OpenPosition,
+    PositionAdvice,
+    ReasonCode,
+    Signal,
+    StrategyContext,
+)
+from app.strategy.zigzag import Swing, zigzag
+
+BANGKOK = ZoneInfo("Asia/Bangkok")
+NEW_YORK = ZoneInfo("America/New_York")
+
+
+class TrendBoxParams(StrategyParams):
+    """Measured constants shared by the two trend directions."""
+
+    buffer: float = Field(default=0.20, ge=0, le=2)
+    min_r: float = Field(default=1.2, gt=0, le=10)
+    # Owner 2026-10-27: "you can take the 5 USD out". Measured first (research/.../gate_bite.py): the
+    # 5.00 USD floor rejected 1 of 496 complete signals, because every target here is a swing or half an
+    # H4 box. The gate stays so a lane can set one; 0.0 is off.
+    min_take_profit: float = Field(default=0.0, ge=0)
+    # The measured default differs per direction, so each subclass sets its own; a lever either way
+    # (journal 2026-10-27: a down trade reached +1.40 R and still stopped out at -1.01 R).
+    break_even: bool = False
+    require_big_tf: bool = False
+    require_edge_side: bool = False
+    min_stop_atr: float = Field(default=0.0, ge=0)
+
+
+class TrendBoxDownParams(TrendBoxParams):
+    box: float = Field(default=0.20, gt=0, le=1)
+
+
+class TrendBoxUpParams(TrendBoxParams):
+    box: float = Field(default=0.33, gt=0, le=1)
+    break_even: bool = True
+
+
+def in_window(at: pd.Timestamp) -> bool:
+    """Research windows use a start-exclusive, end-inclusive close timestamp."""
+    utc = at.tz_convert("UTC")
+    bangkok = utc.tz_convert(BANGKOK)
+    new_york = utc.tz_convert(NEW_YORK)
+    bt, nt = bangkok.time(), new_york.time()
+    return (time(7) < bt <= time(9)) or (time(13) < bt <= time(15)) or (time(8) < nt <= time(11, 30))
+
+
+def stepped(swings: list[Swing]) -> str:
+    highs = [s.price for s in swings if s.kind == 1]
+    lows = [s.price for s in swings if s.kind == -1]
+    if len(highs) < 2 or len(lows) < 2:
+        return "FLAT"
+    if highs[-1] < highs[-2] and lows[-1] < lows[-2]:
+        return "DOWN"
+    if highs[-1] > highs[-2] and lows[-1] > lows[-2]:
+        return "UP"
+    return "FLAT"
+
+
+def running_push_exceeded(run: float, risk: float) -> bool:
+    """Apply the measured strict 1.2 R cutoff to the preceding M1 run."""
+    return run > 1.2 * risk
+
+
+def break_even_advice(ctx: StrategyContext, pos: OpenPosition) -> PositionAdvice | None:
+    """Replay closed M1 bars so a stop crossed before a threshold touch keeps precedence."""
+    if (pos.side is Side.BUY and pos.sl >= pos.entry) or (pos.side is Side.SELL and pos.sl <= pos.entry):
+        return None
+    m1 = ctx.frame(Timeframe.M1)
+    bars = m1[(m1.index >= pd.Timestamp(pos.entry_time)) & (m1.index <= pd.Timestamp(ctx.decision_time_utc))]
+    risk = abs(pos.initial_sl - pos.entry)
+    if risk <= 0 or bars.empty:
+        return None
+    sell = pos.side is Side.SELL
+    stop = pos.sl
+    moved = False
+    highs = bars["high"].to_numpy(dtype=float)
+    lows = bars["low"].to_numpy(dtype=float)
+    for high, low in zip(highs, lows, strict=True):
+        if (high >= stop) if sell else (low <= stop):
+            return None
+        if pos.tp is not None and ((low <= pos.tp) if sell else (high >= pos.tp)):
+            return None
+        ahead = pos.entry - low if sell else high - pos.entry
+        if ahead >= 0.5 * risk:
+            stop = pos.entry
+            moved = True
+    if not moved:
+        return None
+    return PositionAdvice(new_sl=pos.entry, stop_kind=ExitReason.BREAK_EVEN, note="+0.5 R touched")
+
+
+class TrendBox(BaseStrategy):
+    """Shared confirmed H1 swing, M5 box and running-push gates."""
+
+    Params = TrendBoxParams
+    direction: str
+
+    def required_timeframes(self) -> tuple[Timeframe, ...]:
+        return Timeframe.M1, Timeframe.M5, Timeframe.H1
+
+    def warmup_bars(self) -> int:
+        return 1200 if self.params.require_big_tf or self.params.require_edge_side else 400
+
+    def evaluate(self, ctx: StrategyContext) -> Signal:
+        at = pd.Timestamp(ctx.decision_time_utc)
+        if self.params.require_edge_side:
+            if not in_window(at):
+                return self.hold(ctx, ReasonCode.OUTSIDE_SESSION)
+            own = Side.SELL if self.direction == "DOWN" else Side.BUY
+            lean = behind(edge_lean(ctx.frames, at, ctx.market.entry_timeframe), own)
+            if lean is None or lean < 0:  # unreadable is not permission: no edge side, no trade
+                return self.hold(ctx, "AGAINST_EDGE_SIDE")
+
+        h1_frame = ctx.frame(Timeframe.H1)
+        h1 = h1_frame.iloc[-400:]
+        m5 = ctx.frame(Timeframe.M5)
+        m1 = ctx.frame(Timeframe.M1)
+        if len(h1) < 400 or len(m5) < 25 or not len(m1):
+            return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+        if not self.params.require_edge_side and not in_window(at):
+            return self.hold(ctx, ReasonCode.OUTSIDE_SESSION)
+        swings, _forming = zigzag(h1.high.to_numpy(float), h1.low.to_numpy(float))
+        highs = [s for s in swings if s.kind == 1]
+        lows = [s for s in swings if s.kind == -1]
+        down = self.direction == "DOWN"
+        stepping = (
+            len(highs) >= 2
+            and len(lows) >= 2
+            and (
+                (highs[-1].price < highs[-2].price and lows[-1].price < lows[-2].price)
+                if down
+                else (highs[-1].price > highs[-2].price and lows[-1].price > lows[-2].price)
+            )
+        )
+        if not stepping or len(swings) < 2:
+            return self.hold(ctx, "TREND_STEPPING")
+        if self.params.require_big_tf:
+            # Imported at use time because range_break reuses the trend box helpers above.
+            from app.strategy.range_break import RangeBreak
+
+            h4 = RangeBreak._h4_from_h1(h1_frame)
+            h4 = h4[(h4.index + pd.Timedelta(hours=4)) <= at].iloc[-300:]
+            if len(h4) < 300:
+                return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+            h4_swings, _h4_forming = zigzag(h4.high.to_numpy(float), h4.low.to_numpy(float))
+            h4_direction = stepped(h4_swings)
+            if (down and h4_direction == "UP") or (not down and h4_direction == "DOWN"):
+                return self.hold(ctx, "H4_AGAINST")
+        a, b = swings[-2:]
+        if (a.kind, b.kind) != ((1, -1) if down else (-1, 1)):
+            return self.hold(ctx, "LEG_ORDER")
+        leg = abs(a.price - b.price)
+        if leg <= 0:
+            return self.hold(ctx, "ZERO_LEG")
+        decision = m5.iloc[-1]
+        price = float(decision.close)
+        selected: tuple[int, float, float] | None = None
+        for n in range(24, 5, -1):
+            if len(m5) < n + 1:
+                continue
+            box = m5.iloc[-n - 1 : -1]
+            top, floor = float(box.high.max()), float(box.low.min())
+            if top - floor <= self.params.box * leg:
+                selected = n, top, floor
+                break
+        if selected is None:
+            return self.hold(ctx, "NO_BOX")
+        _n, top, floor = selected
+        mid = (top + floor) / 2
+        retr = (mid - b.price) / leg if down else (b.price - mid) / leg
+        if not 0.382 <= retr <= 0.786:
+            return self.hold(ctx, "RETRACE")
+        if (down and price >= floor) or (not down and price <= top):
+            return self.hold(ctx, "NO_CLOSE_BREAK")
+        stop = (
+            top + self.params.buffer * (top - floor) if down else floor - self.params.buffer * (top - floor)
+        )
+        stop_floor = 0.0
+        stop_widened = False
+        if self.params.min_stop_atr > 0:
+            closed_h1 = h1_frame[h1_frame.index <= at]
+            atr_values = atr(closed_h1.high, closed_h1.low, closed_h1.close, 14)
+            atr_value = float(atr_values.iloc[-1]) if len(atr_values) else float("nan")
+            if pd.isna(atr_value):
+                return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+            stop_floor = self.params.min_stop_atr * atr_value
+            if abs(stop - price) < stop_floor:
+                stop = price + stop_floor if down else price - stop_floor
+                stop_widened = True
+        target = b.price
+        risk, reward = abs(stop - price), abs(target - price)
+        if reward < self.params.min_take_profit or reward < self.params.min_r * risk:
+            return self.hold(ctx, ReasonCode.RR_TOO_LOW)
+        if (down and target >= price) or (not down and target <= price) or risk <= 0:
+            return self.hold(ctx, "INVALID_GEOMETRY")
+        run_frame = m1[(m1.index >= at - pd.Timedelta(minutes=60)) & (m1.index < at)]
+        if run_frame.empty:
+            return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+        run = price - float(run_frame.low.min()) if down else float(run_frame.high.max()) - price
+        if running_push_exceeded(run, risk):
+            return self.hold(ctx, "RUNNING_PUSH")
+        action = Action.SELL if down else Action.BUY
+        conditions = [
+            Condition("stepping", True),
+            Condition("box", True, detail=f"{_n} bars"),
+            Condition("retrace", True, detail=f"{retr:.3f}"),
+            Condition("trigger", True),
+            Condition("run_gate", True, detail=f"{run:.2f} <= {1.2 * risk:.2f}"),
+        ]
+        if stop_widened:
+            conditions.append(Condition("stop_floor", True, detail=f"{stop_floor:.2f}"))
+        return self.entry(
+            ctx,
+            action,
+            entry_price=price,
+            stop_loss=stop,
+            take_profit=target,
+            conditions=conditions,
+            score=80,
+            explanation=f"{self.direction.lower()} confirmed-swing box break",
+        )
+
+    def should_close(self, ctx: StrategyContext, side: Side) -> bool:
+        at = pd.Timestamp(ctx.decision_time_utc).tz_convert(BANGKOK)
+        return at.time() == time(7)
+
+    def manage_position(self, ctx: StrategyContext, pos: OpenPosition) -> PositionAdvice | None:
+        if not self.params.break_even:
+            return None
+        return break_even_advice(ctx, pos)
+
+
+class TrendBoxDown(TrendBox):
+    name = "trend_box_down"
+    Params = TrendBoxDownParams
+    direction = "DOWN"
+
+
+class TrendBoxUp(TrendBox):
+    name = "trend_box_up"
+    Params = TrendBoxUpParams
+    direction = "UP"
+"""H4 confirmed-swing range breaks on M5 closes."""
+
+from __future__ import annotations
+
+from datetime import time
+from zoneinfo import ZoneInfo
+
+import pandas as pd
+from pydantic import Field
+
+from app.core.enums import Action, Side, Timeframe
+from app.strategy.base_strategy import BaseStrategy, StrategyParams
+from app.strategy.edge_side import behind, edge_lean
+from app.strategy.signal_models import (
+    Condition,
+    OpenPosition,
+    PositionAdvice,
+    ReasonCode,
+    Signal,
+    StrategyContext,
+)
+from app.strategy.trend_box import break_even_advice, in_window, running_push_exceeded, stepped
+from app.strategy.zigzag import zigzag
+
+BANGKOK = ZoneInfo("Asia/Bangkok")
+
+
+class RangeBreakParams(StrategyParams):
+    """Measured breakout plan constants."""
+
+    buffer: float = Field(default=0.3, ge=0, le=2)
+    tp_range: float = Field(default=0.5, gt=0, le=5)
+    min_r: float = Field(default=0.8, gt=0, le=10)
+    # Owner 2026-10-27: "you can take the 5 USD out". Measured first (research/.../gate_bite.py): the
+    # 5.00 USD floor rejected 1 of 496 complete signals, because every target here is a swing or half an
+    # H4 box. The gate stays so a lane can set one; 0.0 is off.
+    min_take_profit: float = Field(default=0.0, ge=0)
+    require_edge_side: bool = False
+
+
+class RangeBreak(BaseStrategy):
+    name = "range_break"
+    Params = RangeBreakParams
+
+    def required_timeframes(self) -> tuple[Timeframe, ...]:
+        return Timeframe.M1, Timeframe.M5, Timeframe.H1
+
+    def warmup_bars(self) -> int:
+        # H1 bars, not H4: the 300 H4 bars the box is read from are resampled from 1,200 closed H1 bars.
+        # Declaring 300 here would let a lane configure 300 H1 bars, give the ZigZag 75 H4 bars instead of
+        # 300, and change the box silently (found in review, 2026-10-27).
+        return 1200
+
+    @staticmethod
+    def _h4_from_h1(h1: pd.DataFrame) -> pd.DataFrame:
+        # App frames are indexed by H1 close; the research resamples bars indexed by H1 open.
+        opens = h1.copy()
+        opens.index = pd.DatetimeIndex(opens.index) - pd.Timedelta(hours=1)
+        return (
+            opens.resample("4h").agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
+        )
+
+    def evaluate(self, ctx: StrategyContext) -> Signal:
+        at = pd.Timestamp(ctx.decision_time_utc)
+        m5, m1 = ctx.frame(Timeframe.M5), ctx.frame(Timeframe.M1)
+        h1 = ctx.frame(Timeframe.H1).iloc[-1200:]
+        h4 = self._h4_from_h1(h1)
+        h4 = h4[(h4.index + pd.Timedelta(hours=4)) <= at].iloc[-300:]
+        if len(h4) < 300 or len(m5) < 2 or not len(m1):
+            return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+        if not in_window(at):
+            return self.hold(ctx, ReasonCode.OUTSIDE_SESSION)
+        swings, _forming = zigzag(h4.high.to_numpy(float), h4.low.to_numpy(float))
+        highs = [s.price for s in swings if s.kind == 1]
+        lows = [s.price for s in swings if s.kind == -1]
+        if stepped(swings) != "FLAT" or not highs or not lows:
+            return self.hold(ctx, "H4_STEPPING")
+        hh, ll = highs[-1], lows[-1]
+        if hh <= ll:
+            return self.hold(ctx, "INVALID_H4_BOX")
+        prev, price = float(m5.close.iloc[-2]), float(m5.close.iloc[-1])
+        rng = hh - ll
+        if price > hh >= prev:
+            side, stop, target = (
+                Side.BUY,
+                hh - self.params.buffer * rng * 0.25,
+                price + self.params.tp_range * rng,
+            )
+        elif price < ll <= prev:
+            side, stop, target = (
+                Side.SELL,
+                ll + self.params.buffer * rng * 0.25,
+                price - self.params.tp_range * rng,
+            )
+        else:
+            return self.hold(ctx, "NO_CLOSE_BREAK")
+        if self.params.require_edge_side:
+            lean = behind(edge_lean(ctx.frames, at, ctx.market.entry_timeframe), side)
+            if lean is None or lean < 0:  # unreadable is not permission: no edge side, no trade
+                return self.hold(ctx, "AGAINST_EDGE_SIDE")
+        risk, reward = abs(stop - price), abs(target - price)
+        if risk <= 0 or reward < self.params.min_take_profit or reward < self.params.min_r * risk:
+            return self.hold(ctx, ReasonCode.RR_TOO_LOW)
+        run_frame = m1[(m1.index >= at - pd.Timedelta(minutes=60)) & (m1.index < at)]
+        if run_frame.empty:
+            return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+        run = float(run_frame.high.max()) - price if side is Side.BUY else price - float(run_frame.low.min())
+        if running_push_exceeded(run, risk):
+            return self.hold(ctx, "RUNNING_PUSH")
+        return self.entry(
+            ctx,
+            Action.BUY if side is Side.BUY else Action.SELL,
+            entry_price=price,
+            stop_loss=stop,
+            take_profit=target,
+            conditions=(
+                Condition("h4_flat", True),
+                Condition("range_break", True),
+                Condition("run_gate", True),
+            ),
+            score=80,
+            explanation="confirmed H4 range break",
+        )
+
+    def should_close(self, ctx: StrategyContext, side: Side) -> bool:
+        return pd.Timestamp(ctx.decision_time_utc).tz_convert(BANGKOK).time() == time(7)
+
+    def manage_position(self, ctx: StrategyContext, pos: OpenPosition) -> PositionAdvice | None:
+        return break_even_advice(ctx, pos)
+"""Hand-worked H4 lean cases, from close-stamped H1 candles.
+
+The rule measured and frozen on 2026-10-27 (`research/2026-10-26-three-bots/RULES_LOCKED.md`, rule set 2)
+is a QUANTITY on the H4 frame, not a D1 label: the close's distance from its own 50-bar mean in its own
+14-bar ATR, signed. An earlier version of this module read a D1 regime label; the measurement put D1
+last of the three frames (+0.030 against H4's +0.156 correlation with the trade's R).
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+
+import pandas as pd
+import pytest
+
+from app.core.enums import Side, Timeframe
+from app.indicators.volatility import atr
+from app.strategy.edge_side import ATR_BARS, MEAN_BARS, behind, edge_lean, edge_side, resample_from_h1
+
+NEEDED = MEAN_BARS + ATR_BARS  # 64 closed H4 bars
+
+
+def h1_frame(h4_closes: list[float], *, spread: float = 1.0, forming: float | None = None):
+    """H1 candles, CLOSE-stamped as the app's frames are, that resample into the given H4 closes.
+
+    Each H4 bar is four H1 bars: the first three sit at the previous close so the H4 close is the value
+    asked for, and every bar spans ``spread`` so the ATR is predictable.
+    """
+    closes: list[float] = []
+    for i, value in enumerate(h4_closes):
+        previous = h4_closes[i - 1] if i else value
+        closes += [previous, previous, previous, value]
+    if forming is not None:
+        closes += [forming]  # one extra H1 bar: the H4 bar it belongs to has not closed
+    # the first H1 bar CLOSES at 01:00, so it opens at 00:00 and its H4 bar opens at 00:00 too
+    index = pd.date_range(datetime(2026, 1, 1, 1, tzinfo=UTC), periods=len(closes), freq="1h")
+    frame = pd.DataFrame(
+        {
+            "open": closes,
+            "high": [c + spread / 2 for c in closes],
+            "low": [c - spread / 2 for c in closes],
+            "close": closes,
+        },
+        index=index,
+    )
+    return {Timeframe.H1: frame}, pd.Timestamp(frame.index[-1])
+
+
+def expected_lean(frames, at) -> float:
+    """The same number worked out from the resampled frame, independently of the function under test."""
+    bars = resample_from_h1(frames[Timeframe.H1], 4)
+    closed = bars[(bars.index + pd.Timedelta(hours=4)) <= at]
+    mean = closed.close.rolling(MEAN_BARS).mean().iloc[-1]
+    width = atr(closed.high, closed.low, closed.close, ATR_BARS).iloc[-1]
+    return float((closed.close.iloc[-1] - mean) / width)
+
+
+class TestTheLean:
+    def test_a_rising_frame_leans_up_and_a_falling_one_leans_down(self):
+        up, at_up = h1_frame([100.0 + i for i in range(NEEDED)])
+        down, at_down = h1_frame([100.0 - i for i in range(NEEDED)])
+        assert edge_lean(up, at_up, Timeframe.M5) > 0
+        assert edge_lean(down, at_down, Timeframe.M5) < 0
+
+    def test_a_flat_frame_leans_neither_way(self):
+        frames, at = h1_frame([100.0] * NEEDED)
+        assert edge_lean(frames, at, Timeframe.M5) == pytest.approx(0.0)
+        assert edge_side(frames, at, Timeframe.M5) is None  # exactly zero is on neither side
+
+    def test_the_number_is_the_distance_from_the_mean_in_atrs(self):
+        frames, at = h1_frame([100.0 + i for i in range(NEEDED)])
+        assert edge_lean(frames, at, Timeframe.M5) == pytest.approx(expected_lean(frames, at))
+
+    def test_a_bar_that_has_not_closed_is_not_read(self):
+        # the forming H4 bar carries a huge close; reading it would swamp a flat 64-bar history
+        flat, at = h1_frame([100.0] * NEEDED)
+        with_forming, at_forming = h1_frame([100.0] * NEEDED, forming=10_000.0)
+        assert edge_lean(with_forming, at_forming, Timeframe.M5) == pytest.approx(
+            edge_lean(flat, at, Timeframe.M5)
+        )
+
+    def test_too_little_history_is_no_answer_rather_than_a_guess(self):
+        frames, at = h1_frame([100.0 + i for i in range(NEEDED - 1)])
+        assert edge_lean(frames, at, Timeframe.M5) is None
+        assert edge_side(frames, at, Timeframe.M5) is None
+
+    def test_a_missing_h1_frame_is_no_answer(self):
+        assert edge_lean({}, pd.Timestamp("2026-01-01", tz="UTC"), Timeframe.M5) is None
+
+
+class TestTheGuardrails:
+    def test_the_frame_read_must_be_larger_than_the_entry_frame(self):
+        frames, at = h1_frame([100.0] * NEEDED)
+        with pytest.raises(ValueError, match="must be smaller"):
+            edge_lean(frames, at, Timeframe.H4)  # the rule is meaningless read on the entry frame
+        with pytest.raises(ValueError, match="must be smaller"):
+            edge_lean(frames, at, Timeframe.D1, frame=Timeframe.H4)
+
+    def test_h1_and_d1_can_be_read_too_so_the_frame_can_be_re_measured(self):
+        frames, at = h1_frame([100.0 + i for i in range(NEEDED * 7)])
+        assert edge_lean(frames, at, Timeframe.M5, frame=Timeframe.H1) is not None
+        assert edge_lean(frames, at, Timeframe.M5, frame=Timeframe.D1) is not None
+
+
+class TestBehind:
+    def test_a_buy_wants_the_lean_up_and_a_sell_wants_it_down(self):
+        assert behind(1.5, Side.BUY) == 1.5
+        assert behind(1.5, Side.SELL) == -1.5
+        assert behind(-1.5, Side.SELL) == 1.5
+
+    def test_no_lean_stays_no_lean(self):
+        assert behind(None, Side.BUY) is None
+
+
+class TestTheSideShortcut:
+    def test_it_follows_the_sign_of_the_lean(self):
+        up, at_up = h1_frame([100.0 + i for i in range(NEEDED)])
+        down, at_down = h1_frame([100.0 - i for i in range(NEEDED)])
+        assert edge_side(up, at_up, Timeframe.M5) is Side.BUY
+        assert edge_side(down, at_down, Timeframe.M5) is Side.SELL
+"""Volatility indicators: ATR, Bollinger Bands, historical volatility and ATR percentile (PLAN Â§A6)."""
+
+from __future__ import annotations
+
+import math
+
+import numpy as np
+import pandas as pd
+from numpy.lib.stride_tricks import sliding_window_view
+
+from app.core.errors import ConfigError
+from app.indicators.common import (
+    as_float,
+    check_aligned,
+    check_period,
+    rolling_mean,
+    to_series,
+    true_range_values,
+    wilder_values,
+)
+
+
+def true_range(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
+    """``max(H - L, |H - C[t-1]|, |L - C[t-1]|)``; position 0 has no previous close and is NaN."""
+    check_aligned(high, low, close)
+    return to_series(true_range_values(as_float(high), as_float(low), as_float(close)), close, "true_range")
+
+
+def atr(high: pd.Series, low: pd.Series, close: pd.Series, n: int = 14) -> pd.Series:
+    """Wilder-smoothed true range, in price units; first defined at position *n*."""
+    check_period("n", n)
+    check_aligned(high, low, close)
+    tr = true_range_values(as_float(high), as_float(low), as_float(close))
+    return to_series(wilder_values(tr, n), close, f"atr_{n}")
+
+
+def bollinger(close: pd.Series, n: int = 20, k: float = 2.0) -> pd.DataFrame:
+    """Columns ``mid`` (SMA), ``upper``/``lower`` (mid Â± kÂ·Ïƒ, population Ïƒ), ``width`` and ``percent_b``.
+
+    ``width = (upper - lower) / mid``; ``percent_b = (C - lower) / (upper - lower)``, NaN for a flat window.
+    All columns are first defined at ``n - 1``.
+    """
+    check_period("n", n, minimum=2)
+    if not (math.isfinite(k) and k > 0):
+        raise ConfigError(f"Bollinger k must be > 0 (got {k!r})")
+    c = as_float(close)
+    mid = rolling_mean(c, n)
+    sigma = np.full(c.shape, np.nan, dtype=np.float64)
+    flat = np.zeros(c.shape, dtype=bool)
+    if len(c) >= n:
+        windows = sliding_window_view(c, n)
+        sigma[n - 1 :] = windows.std(axis=1, ddof=0)
+        # exact flatness test: rolling float sums leave rounding noise where Ïƒ should be 0
+        flat[n - 1 :] = np.ptp(windows, axis=1) == 0
+    sigma[flat] = 0.0
+    upper, lower = mid + k * sigma, mid - k * sigma
+    band = upper - lower
+    with np.errstate(divide="ignore", invalid="ignore"):
+        width = np.where(mid > 0, band / mid, np.nan)
+        percent_b = np.where(band > 0, (c - lower) / band, np.nan)
+    return pd.DataFrame(
+        {"mid": mid, "upper": upper, "lower": lower, "width": width, "percent_b": percent_b},
+        index=close.index,
+    )
+
+
+def historical_volatility(close: pd.Series, n: int = 20, *, bars_per_year: float) -> pd.Series:
+    """Annualized volatility: sample stdev (ddof=1) of the last *n* log returns Ã— âˆšbars_per_year.
+
+    *bars_per_year* depends on the timeframe and the market's trading hours (``Timeframe.bars_per_year``
+    assumes a 24x5 market; crypto trades 24x7). A decimal fraction (0.12 = 12 %); first defined at
+    position *n*. Non-positive prices are NaN.
+    """
+    check_period("n", n, minimum=2)
+    if not (math.isfinite(bars_per_year) and bars_per_year > 0):
+        raise ConfigError(f"bars_per_year must be > 0 (got {bars_per_year!r})")
+    c = as_float(close)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        log_c = np.where(c > 0, np.log(c), np.nan)
+    returns = np.diff(log_c, prepend=np.nan)
+    std = pd.Series(returns).rolling(n, min_periods=n).std(ddof=1).to_numpy(dtype=np.float64)
+    return to_series(std * math.sqrt(bars_per_year), close, f"hv_{n}")
+
+
+def atr_percentile(atr_values: pd.Series, lookback: int = 100) -> pd.Series:
+    """Where the current ATR sits among the previous ``lookback - 1`` values, in [0, 100].
+
+    ``100 Â· count(prev â‰¤ current) / (lookback - 1)`` over the window ending at *t*: 100 means the highest
+    ATR of the window, 0 the lowest. Defined once *lookback* consecutive finite ATR values exist
+    (for ATR(n): at position ``n + lookback - 1``).
+    """
+    check_period("lookback", lookback, minimum=2)
+    a = as_float(atr_values)
+    out = np.full(a.shape, np.nan, dtype=np.float64)
+    if len(a) >= lookback:
+        windows = sliding_window_view(a, lookback)
+        current = windows[:, -1]
+        counts = (windows[:, :-1] <= current[:, None]).sum(axis=1)
+        pct = 100.0 * counts / (lookback - 1)
+        complete = np.isfinite(windows).all(axis=1)
+        out[lookback - 1 :] = np.where(complete, pct, np.nan)
+    return to_series(out, atr_values, f"atr_pct_{lookback}")
+# TAA non-secret configuration. Environment variables override the matching risk values.
+# Unknown keys are rejected at startup (typos are errors, not silently ignored).
+# Risk values are PERCENT of equity (0.5 = 0.5%). Hard ceilings: 3% per trade, 10% daily, 50% drawdown.
+
+symbols:
+  allowed: [EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD, NZDUSD, XAUUSD]   # the forex majors + gold (owner, 2026-10-09)
+  reference_symbol: EURUSD          # liquid symbol used to verify broker server time
+  clock_fallback_symbols: [BTCUSD, ETHUSD]   # 24/7 crypto: verifies server time on weekends
+  overrides:
+    XAUUSD:
+      max_spread_points: 40         # measure on your account and adjust
+      max_lot: 0.5
+      daily_breaks_utc: ["21:00-22:05"]
+
+timeframes:
+  higher: H1                        # bias / regime
+  entry: M15                        # setups
+  refinement: null                  # optional, e.g. M5
+  warmup_bars: 400
+  candle_close_grace_seconds: 3
+  stale_tick_seconds: 120
+  max_gap_bars: 3                   # longest hole (bars) in trading hours before DATA_GAPS; holidays and the
+                                    # symbol's own closed hours do not count (app/market_data/quality.py)
+  context: [H1, H4, D1]             # TAA-L809: higher-timeframe market map (trend/consolidation + demand/supply
+                                    # zones) on every signal as ctx: features; breakout F1 screens H4 and H1 on it
+  context_bars: 700                 # closed bars per context timeframe (EMA200 + a 400-bar zone lookback)
+
+indicators:
+  ema_fast: 20
+  ema_mid: 50
+  ema_slow: 200
+  rsi_period: 14
+  atr_period: 14
+  adx_period: 14
+  swing_k: 3
+  sr_tolerance_atr: 0.5
+
+regime:                             # PLAN Â§A7: ADX >= 20 trending, < 18 ranging; ATR percentile > 90 volatile
+  trend_adx: 20
+  range_adx: 18
+  volatile_atr_percentile: 90
+  low_atr_percentile: 25            # volatility state bands (ATR percentile over indicators.atr_percentile_lookback)
+  high_atr_percentile: 75
+  extreme_atr_percentile: 90
+
+context_map:                        # TAA-L809, app/indicators/market_map.py (docs/PLAN_LEARNING.md Â§L20.9)
+  er_bars: 20                       # efficiency ratio window: |net move| / path length
+  er_trend: 0.3                     # UP/DOWN need ADX >= regime.trend_adx and ER >= this (plus EMA and swing structure)
+  er_range: 0.25                    # RANGE: ADX < regime.range_adx and ER < this
+  switch_bars: 2                    # hysteresis: closed bars agreeing before the state changes
+  range_bars: 30                    # the range box
+  compression_pct: 20               # ATR percentile and Bollinger width both in their lowest 20 %
+  zone_lookback_bars: 400           # zones from the last 400 context bars (H4 ~ 3 months, D1 ~ 1.5 years)
+  zone_tolerance_atr: 0.5
+  min_touches: 2                    # swing zones need two touches
+  displacement_atr: 2.0             # base zones: the leg away moves >= 2 ATR
+  max_tests: 3                      # a base zone traded into more often than this is spent
+  max_zones: 6                      # per kind, nearest first
+  zone_near_atr: 0.25               # "at a zone": within 0.25 ATR of it
+
+strategies:
+  cooldown_bars: 4
+  signal_expiry_bars: 1
+  allow_single_indicator_signals: false
+  items:
+    - name: example_trend_pullback  # DEMONSTRATION ONLY - not production-proven
+      enabled: false
+      params: {}
+    # Pattern-based setups (PLAN Â§A29, docs/STRATEGIES.md): unproven. `enabled: false` stops only the bot's
+    # trading; the scanner and shadow keep every setup the users follow (app/advisory/requirements.py). Owner,
+    # 2026-10-12: the bot trades setup_harmonic_prz (SETUP_REVIEW Â§15); 2026-10-14: and breakout F1 (Â§16). The
+    # inverted copies were removed from the code on 2026-10-14 (owner); a counter-trend trigger is faded inside
+    # its setup (fade_counter_trend, Â§16). Owner, 2026-10-17: every earlier setup stopped (V1, F1, S1 off, their
+    # parameters kept for reference); the bot starts over with Setup OWN (docs/OWN_SETUP.md), aggressive preset,
+    # once it passes its gate.
+    - {name: setup_neckline_break, enabled: false}
+    - {name: setup_pattern_breakout, enabled: false}
+    - {name: setup_fib_pullback, enabled: false}
+    - name: setup_harmonic_prz         # SETUP_REVIEW Â§15.3: no break-even (position_management), only while H4 is
+      enabled: false                   # against the trade or ranging, targets at most 3R; the PRZ confirmation
+      params: {phase_gate: h4_against_or_range, max_rr: 3.0, structure_tf: H4, room_min_r: 2.0, max_sl_atr: 20.0}
+      # was tested and rejected. h4_room_2 (owner, 2026-10-15; SETUP_REVIEW Â§18): at least 2 R of room to the H4
+      # read's level. max_sl_atr 20 = the rule's ceiling, the own stop cap off (owner, 2026-10-16; the sizer
+      # keeps a far stop's loss within the risk per trade; March identical with it off)
+    - {name: setup_elliott_wave, enabled: false}
+    - {name: setup_smc_reversal, enabled: false}   # needs max_age_bars >= confirm_window for sweep/CHoCH
+    - name: setup_breakout             # breakout F1 (SETUP_REVIEW Â§16): wait for a counter-trend break, then
+      enabled: false                   # trade it with the H4 and H1 trend (fades only; risk.fade sets their RR)
+      params: {screen_h4: with, screen_h1: with, fade_counter_trend: true, trend_entries: false, max_sl_atr: 20.0, friday_cutoff_utc: "16:00"}   # own stop cap off, as V1
+    - {name: setup_candle_reversal, enabled: false}
+
+lanes:
+  # More entry timeframes in the same engine (app.config.LaneConfig): one account, one risk budget, one decision
+  # engine; each lane its own bars, symbols, strategies, cooldown and context. The scanner stays on M15.
+  - name: s1                        # S1, M1 gold scalping: the day-trade setup (owner, 2026-10-15; SETUP_REVIEW
+    symbols: [XAUUSD]               # Â§17): breakout F1's fade on M1, screens H1 (tide) / M15 (wave)
+    timeframes:
+      higher: H1
+      entry: M1
+      warmup_bars: 400
+      context: [M15, M30, H1, H4, D1]   # as backtested (data/research/config_scalp_s1.yaml)
+      context_bars: 700
+    strategies:
+      cooldown_bars: 60             # M1: one hour
+      signal_expiry_bars: 1
+      items:
+        - name: setup_breakout_scalp
+          enabled: false            # stopped 2026-10-17 (owner): the bot starts over with Setup OWN
+          # max_sl_atr 20: no own stop cap (owner, 2026-10-17: a far stop gets a smaller lot, never SL_TOO_FAR)
+          params: {screen_h4: with, screen_h1: with, screen_tide_tf: H1, screen_wave_tf: M15, fade_counter_trend: true, trend_entries: false, atr_bars: 60, stop_mode: atr, sl_atr_multiple: 2.0, target_mode: rr, rr_target: 0.5, min_rr: 0.5, max_sl_atr: 20.0, skip_window_ny: "08:00-12:00", friday_cutoff_utc: "16:00"}
+    max_spread_to_sl_ratio: 1.0     # a stop of 2 x ATR(60 M1 bars) is a few spreads wide
+    management:
+      setup_breakout_scalp: {break_even: false, trailing: false, time_stop_bars: 60}   # one hour, as backtested
+  - name: own                       # Setup OWN, F1 CONF-72 v2 on M1 gold: the 0.5 M15-ATR stop floor, a runner in
+    symbols: [XAUUSD]               # a strong phase, the 10-bar scratch (owner, 2026-10-18; docs/OWN_SETUP.md)
+    timeframes:
+      higher: H1                    # the tide (EMA 20 / 50)
+      entry: M1
+      warmup_bars: 4800             # the 72-hour extreme (4,321 M1 bars), 3 days of M15 ATR (4,545)
+      context: [M15, H1]            # the chart-read levels
+      context_bars: 700
+    strategies:
+      cooldown_bars: 0              # as researched: one position at a time is the only spacing
+      signal_expiry_bars: 1
+      items:
+        - name: setup_own_conf72
+          enabled: false            # off for the plan1 DEMO (owner, 2026-10-21: plan1 is the only enabled lane)
+          params: {exit_mode: regime, scratch_bars: 10, off_round: half}   # v2 + half size off the round 50
+    max_spread_to_sl_ratio: 0.2     # the stop is at least 3 U (about 3.4 USD) against a 0.3-0.45 USD spread
+    min_risk_reward: 0.7            # the 8 U target against a 3-10 U stop widened to 0.5 M15 ATR: RR 0.77-2.4
+    management:                     # break-even at 0.6 of the 8 U target, no trailing; a runner out after 180 bars
+      setup_own_conf72: {break_even_target_share: 0.6, trailing: false, time_stop_bars: 180}   # (v1: 60)
+  - name: news                      # Setup OWN S2: the CPI / NFP release-minute straddle on gold, on quotes (owner,
+    symbols: [XAUUSD]               # 2026-10-18; app/strategy/release_straddle.py, calendar app/news/us_releases.csv)
+    timeframes:
+      higher: H1
+      entry: M1                     # its bars only close the position after the release minute
+      warmup_bars: 60
+    strategies:
+      cooldown_bars: 0
+      signal_expiry_bars: 1
+      items:
+        - name: setup_own_s2
+          enabled: false            # off for the plan1 DEMO (owner, 2026-10-21: plan1 is the only enabled lane)
+          params: {}                # D 2 U, stop 8 U (1 U = price / 4000), out after the release minute
+    management:
+      setup_own_s2: {break_even: false, trailing: false}
+  - name: plan1                     # Setup OWN PLAN-1 (docs/PLAN1_LANE.md; research dev/plan1.py + the journal's rules
+    symbols: [XAUUSD]               # in force, journal/PLAN1_JOURNAL.md): the London 13:00-Thai ORB on closed M1 bars,
+    timeframes:                     # the NY 08:30 straddle every weekday on quotes; Asia B2 on closed M1 / M5 bars
+      higher: H1                    # the H1 / H4 ATRs are built from M1 (an H4 frame is stale on Monday mornings)
+      entry: M1
+      warmup_bars: 10000            # B2's owner levels: 125 complete H1 bars across a weekend (the ORB needs 3000)
+    strategies:
+      cooldown_bars: 0              # one position at a time is the only spacing (risk.max_positions_per_symbol)
+      signal_expiry_bars: 1
+      items:                        # each journal rule is a parameter here (target_r, atr_floor, hold, ...); row 62's
+                                    # regime switch: no new entry while the D1 ATR(20) < d1_atr20_min_usd (null = off)
+        - name: setup_plan1_orb
+          enabled: true             # DEMO (owner, 2026-10-21: plan1 the only lane); journal week 5: target 1.5 R
+          params: {target_r: 1.5, atr_floor: null, pool_break_when_h4_contracting: true, d1_atr20_min_usd: 60.0}   # week 6: no ATR
+          # floor (the H1 ATR stays in the journal); week 10: in a contracting H4 ATR (24 h) only after a pool break
+        - name: setup_plan1_b2         # Asia B2 on M1 patterns (checkpoint B): 07:00-09:00 Thai; second_same_side:
+          enabled: true             # the week-6 rule, on in the frozen rules (read from the decision store)
+          params: {second_same_side: true, atr_floor: null, d1_atr20_min_usd: 60.0}
+        - name: setup_plan1_b2m5       # Asia B2 on M5 patterns (its own name: a position's TF after a restart)
+          enabled: true
+          params: {second_same_side: true, atr_floor: null, d1_atr20_min_usd: 60.0}
+        - name: setup_plan1_ny
+          enabled: true             # every weekday 08:30 New York; 2 / 8 USD, out after 30 minutes, no target
+          params: {trigger_u: 2.0, stop_u: 8.0, hold_seconds: 1800, target_cap_u: 100.0, atr_floor: null, d1_atr20_min_usd: 60.0}
+    max_spread_to_sl_ratio: 0.5     # the research has no spread rule; a 4-USD range stop against a 0.4 spread passes
+    max_spread_points: 60           # above the widest 08:29-08:31 NY spread on P1 / P2 ticks (53; fills <= 39)
+    management:
+      setup_plan1_orb: {break_even: false, trailing: false}
+      setup_plan1_ny: {break_even: false, trailing: false}
+      setup_plan1_b2: {break_even: false, trailing: false}
+      setup_plan1_b2m5: {break_even: false, trailing: false}
+  - name: ai                        # the AI trader (PLAN Â§A37, TAA-1806): the engine hands it the AI's decisions
+    symbols: [XAUUSD]               # (ai.trader below); an order waits for its price on quotes, then goes through
+    timeframes:                     # every check like any signal. On only with ai.trader.enabled AND this item.
+      higher: H1
+      entry: M1
+      warmup_bars: 60
+    strategies:
+      cooldown_bars: 0
+      signal_expiry_bars: 2         # a fill in the first seconds of a minute (the 3 s close grace) stays valid
+      items:
+        - name: ai_trader
+          enabled: false
+          # 1 USD: this close to the AI's entry fills now; the take-profit 10 % short of the AI's target.
+          # The 5 USD floor (C5) is off since 2026-10-27 - it rejected 1 signal in 496 (owner's call).
+          params: {pending_minutes: 30, market_tolerance: 1.0, target_trim: 0.10, min_take_profit: 0.0}
+    min_risk_reward: 0.2            # owner 2026-10-25: a quick take-profit (P09) against a stop past the liquidate zone
+    management:                     # the stop to break-even when price touches +1 R (owner 2026-10-25, checklist C6;
+      ai_trader: {break_even: true, break_even_trigger_r: 1.0, break_even_on_touch: true, trailing: false}  # R03)
+
+  - name: three_bots
+    symbols: [XAUUSD]
+    timeframes:
+      higher: H1
+      entry: M5
+      refinement: M1
+      context: []
+      # 1,200 closed H1 bars provide the 300 H4 bars used by range_break.
+      warmup_bars: 1200
+    strategies:
+      cooldown_bars: 0
+      signal_expiry_bars: 1
+      items:
+        - name: trend_box_down
+          enabled: true
+          # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
+          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+          params: {require_edge_side: true}
+        - name: trend_box_up
+          enabled: true
+          # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
+          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+          params: {require_edge_side: true}
+        - name: range_break
+          enabled: true
+          # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
+          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+          params: {require_edge_side: true}
+    min_risk_reward: 0.8
+    management:
+      trend_box_down: {break_even: false, trailing: false}
+      trend_box_up: {break_even: false, trailing: false}
+      range_break: {break_even: false, trailing: false}
+
+risk:
+  # The outer cage of this machine (PLAN Â§A33). The owner's Trading profile in the PWA sets the values the
+  # engine actually uses; these five are only the hard ceiling it can never exceed, set to the app's own
+  # ceilings so they do not bind in normal use (2026-10-06, user decision: the UI decides, not this file).
+  max_risk_per_trade_percent: 3.0
+  max_open_positions: 20
+  max_positions_per_symbol: 1
+  max_total_open_risk_percent: 10.0
+  # The loss breakers are DEACTIVATED (owner, 2026-10-27: "take the breakers out - or deactivate them,
+  # because every trade already has its stop loss"). The code and the checks stay; these four are set to the
+  # ceilings the app allows, so they do not stop the system after a losing run. What still bounds a loss: the
+  # stop on every trade, the risk per trade, max_open_positions, max_total_open_risk_percent and the kill
+  # switch. Put 10.0 / 20.0 / 10.0 / 4 back to switch them on again.
+  max_daily_loss_percent: 10.0        # the app's ceiling (CEILING_DAILY_LOSS_PCT)
+  max_weekly_loss_percent: 20.0       # the app's ceiling (CEILING_WEEKLY_LOSS_PCT)
+  max_account_drawdown_percent: 50.0  # was 10.0; the app's ceiling (CEILING_DRAWDOWN_PCT)
+  max_consecutive_losses: 50          # was 4; the field's maximum - the range bot wins 22 % of its trades
+  consecutive_loss_pause_hours: 0     # was 24: no pause even if the streak limit is somehow reached
+  max_spread_points: 30
+  max_spread_to_sl_ratio: 0.15
+  max_slippage_points: 10
+  min_risk_reward: 0.5                # owner 2026-10-27: the 1.0 floor removed; the setup's own min R decides
+  fade:                             # counter-trend fades only (FADE, SETUP_REVIEW Â§16): R:R is the plan's inverse
+    min_risk_reward: 0.2            # and the stop sits at the plan's target; every other risk rule is unchanged
+    max_sl_atr_multiple: 12
+  max_lot: 1.0
+  min_margin_level_percent: 500
+  max_margin_utilization_percent: 30
+  max_effective_leverage: null      # no notional cap: margin decides (the two lines above)
+  min_lot_fallback: true            # the profile may open the minimum lot above its budget when margin allows
+  require_take_profit: true
+  correlation_groups:
+    EUR_GBP: [EURUSD, GBPUSD]
+  probation_trades: 20
+  probation_multiplier: 0.25
+  foreign_positions_policy: count   # count | halt
+
+# The aggressive Trading-profile preset (PLAN Â§A36): an opt-in cage for small accounts that accept high risk
+# (5-10 % a trade). Absent: the preset is not available here. It also needs ENABLE_HIGH_RISK_PROFILE=true and
+# HIGH_RISK_CONFIRMATION=I-ACCEPT-HIGH-RISK-<MT5_LOGIN> in .env (docs/RUNBOOK_DEMO.md). PAPER/DEMO only (v1).
+high_risk:                           # ON for DEMO (owner, 2026-10-14); remove to switch off
+  max_risk_per_trade_percent: 10     # cage ceilings (hard maxima: 10 / 20 / 20 / 35 / 60 / 3 / 200 / 20)
+  max_total_open_risk_percent: 20
+  max_daily_loss_percent: 20
+  max_weekly_loss_percent: 35
+  max_account_drawdown_percent: 60   # the kill: MAX_DRAWDOWN latches, manual reset only
+  max_open_positions: 3
+  max_effective_leverage: 200        # 0.01 lot of gold on a 50 USD account is ~90x
+  min_lot_max_risk_percent: 20       # the minimum lot above the budget, up to this risk (else no trade); owner,
+                                     #   2026-10-17: the ceiling (20), gold's 0.01 lot on a 100 USD account
+  modes: [PAPER, DEMO]
+  setups: [setup_harmonic_prz, setup_breakout, setup_breakout_scalp, setup_own_conf72, setup_own_s2, ai_trader]
+                                     #   S1 (owner, 2026-10-15); F1 + S2 (owner, 2026-10-18: DEMO); the AI trader at
+                                     #   6 % a trade (owner, 2026-10-25: the stop past the liquidation zone needs it)
+  fade_risk_factor: 0.5              # fades (FADE) risk half the preset
+  min_margin_level_percent: 150      # owner, 2026-10-15: the full preset risk on tight stops (floor 120;
+  max_margin_utilization_percent: 80 #   FBS calls margin at 40 %, stops out at 20 %; ceiling 90)
+
+sessions:                           # entry windows; local times of `timezone` (DST-aware), days are local weekdays
+  default:
+    - days: [0, 1, 2, 3, 4]         # Monday..Friday
+      start: "07:00"
+      end: "20:00"
+      timezone: UTC
+  by_symbol:                        # e.g. US30: [{days: [0,1,2,3,4], start: "09:30", end: "16:00", timezone: America/New_York}]
+    XAUUSD:                         # gold also in the Asian open (Setup OWN's Asia window 00-02 UTC; owner, 2026-10-18)
+      - {days: [0, 1, 2, 3, 4], start: "00:00", end: "02:00", timezone: UTC}
+      - {days: [0, 1, 2, 3, 4], start: "06:00", end: "20:00", timezone: UTC}   # 06:00: PLAN-1's 13:00-Thai ORB
+  friday_cutoff_utc: "20:00"
+  news_blackouts: []                # e.g. - {start_utc: 2026-10-02T12:15:00Z, end_utc: 2026-10-02T13:00:00Z, currencies: [USD], reason: NFP}
+
+position_management:
+  break_even_trigger_r: 1.0
+  trailing_start_r: 1.5
+  trailing_atr_multiple: 2.0
+  time_stop_bars: null
+  by_strategy:                      # per strategy (PLAN Â§A11); harmonic without break-even/trailing: +0.05 R a
+    setup_harmonic_prz: {break_even: false, trailing: false}   # trade over a year (SETUP_REVIEW Â§15.1)
+
+backtest:
+  initial_balance: 10000
+  account_currency: USD
+  commission_per_lot: 0             # FBS Standard: spread-only
+  spread_model: bar
+  slippage_model: fixed
+  slippage_points: 1
+  leverage: 100                     # simulated margin only; sizing is risk-based
+  seed: 42
+
+paper:                              # PAPER mode: simulated fills on live quotes, never a broker order
+  initial_balance: null             # null: the real account's equity at the first PAPER start
+  slippage_points: 1
+  swap_enabled: true
+
+execution:                          # broker orders: DEMO account only (Phase 12); LIVE stays disabled
+  deviation_points: null            # null: risk.max_slippage_points
+  max_send_attempts: 2              # one retry after a requote, if the signal is still valid
+  reconcile_after_seconds: 30       # an UNKNOWN order not found by then is NOT_EXECUTED
+  reconcile_window_hours: 24        # history searches are widened by this much (broker time quirks)
+  realized_risk_tolerance: 0.2      # fill risk more than 20 % above plan: reduce or close
+  excess_risk_policy: reduce
+  unprotected_grace_seconds: 5      # a position without SL: re-attach within this, else close
+  symbol_pause_minutes: 60          # after a "symbol restricted" retcode
+  entry_plans: false                # owner 2026-10-08: single entry until a wide-stop variant wins in shadow (SETUP_REVIEW Â§8); true follows the Trading profile split (TAA-1207)
+  limit_lifetime_bars: 16           # unfilled limit parts are cancelled after 16 entry bars (4 h on M15)
+
+advisory:                           # PLAN Â§A25-A27: ranking and alerts; never changes what the bot trades
+  universe:
+    include: ["*"]                  # MT5 group patterns (wildcards)
+    exclude: []                     # e.g. ["*.m", "*_raw"]
+    classes:                        # exotics are opt-in; unclassified (OTHER) are scanned too
+      FOREX_MAJOR: true
+      FOREX_MINOR: true
+      FOREX_EXOTIC: false
+      METAL: true
+      INDEX: true
+      ENERGY: true
+      CRYPTO: true
+      STOCK: true
+      OTHER: true
+    symbols: {}                     # per-symbol overrides, e.g. {USDZAR: true, AAPL: false}
+    auto_top_n: 30
+    monitored_cap: 60
+    refresh_hours: 24
+  sessions:
+    overrides: {}                   # e.g. {XAUUSD: [LONDON, NEW_YORK]}; names: SYDNEY TOKYO LONDON NEW_YORK EUROPE_EQUITIES US_EQUITIES CRYPTO
+  suitability:                      # hard gates G1-G6 (PLAN A25)
+    sl_atr_multiple: 1.5            # typical SL = k x ATR(atr_timeframe) + median spread
+    atr_timeframe: H1
+    atr_period: 14
+    margin_buffer: 2.0              # G3: margin x buffer for temporary margin hikes
+    stops_level_max_fraction: 0.5   # G5: broker stop distance < this x typical SL
+    min_candles: 200                # G6
+    max_quote_age_seconds: 300      # G6, checked only while the symbol's market is open
+  scoring:                          # soft scores S1-S9 (PLAN A25); Overall = S1 S2 S3 S8 S9, Now = all
+    weights: {S1: 1.0, S2: 1.0, S3: 1.0, S4: 1.0, S5: 0.5, S6: 0.5, S7: 1.0, S8: 1.0, S9: 0.5}
+    preferred_regimes: [TRENDING, RANGING]
+    edge_min_trades: 30             # S8 stays neutral (50) with fewer shadow/replay outcomes
+    edge_prior_trades: 20
+    edge_full_scale_r: 0.5
+    swap_max_fraction: 0.05         # S9 is 0 when a night's swap costs 5% of the typical stop
+    correlation_bars: 500
+    correlation_min_overlap: 100
+  ranking:                          # runs inside the engine; never affects trading
+    enabled: true
+    structural_hours: 6             # refresh every symbol's metrics, or when equity moves by
+    equity_change_percent: 5
+    dynamic_minutes: 60             # per-symbol refresh, round-robin
+    batch_size: 20                  # symbols refreshed per tick (bounded terminal load) ...
+    max_refresh_seconds: 2.0        # ... and at most this long, so the engine loop is never held up
+    now_seconds: 60                 # Now score cadence from cached metrics
+    retention_days: 90              # suitability_snapshots history
+  scanner:                          # market opportunities on every new entry-TF bar (PLAN A26)
+    enabled: true
+    budget_seconds: 3.0             # per engine cycle; pending symbols wait for the next cycle
+  shadow:                           # hypothetical PLAN/MANAGED trades for every opportunity (PLAN A27)
+    enabled: true
+    slippage_points: 1.0            # adverse, on the entry and on stop exits
+    time_stop_hours: 72
+    commission_per_lot: 0.0         # round turn; symbols.overrides.<SYM>.commission_per_lot wins
+    tick_tiebreak: true             # copy_ticks_range decides an M1 bar that touches both SL and TP
+    poll_seconds: 60                # M1 resolution cadence
+    budget_seconds: 2.0             # per engine cycle
+    entry_modes:                    # TAA-L702: the same signals entered another way, measured forward (shadow only)
+      variants: [PULLBACK, WIDE_STOP, PULLBACK_WIDE]
+      pullback_depth_r: 0.5         # limit 0.5 x the signal's risk against it (docs/archive/SETUP_REVIEW.md section 8)
+      wide_stop_mult: 2.0           # WIDE_STOP: twice the plan's stop, same TP price, same money at risk
+      pullback_wide_stop_r: 2.0     # PULLBACK_WIDE: stop 2 risks from the signal's entry
+      entry_window_bars: 4          # an unfilled limit is MISSED after 4 entry bars
+  calibration:                      # win probability + evidence model from shadow trades (PLAN A27, A29)
+    enabled: true
+    nightly_hour_utc: 23            # rebuilt once a day after this hour (and on demand: app.cli advisory calibrate)
+    kappa: 20                       # empirical-Bayes pseudo-count per hierarchy level
+    min_trades: 30                  # fewer outcomes in strategy x asset class x RR band: "insufficient data"
+    replay_cap: 50                  # REPLAY outcomes count as at most 50 pseudo-trades per cell
+    replay_weight: 0.5              # REPLAY rows' weight in the evidence model
+    folds: 5                        # walk-forward folds for model selection
+    l2: 1.0
+    min_group: 200                  # outcomes for a strategy x asset-class evidence model (else pooled)
+    min_brier_improvement: 0.005    # the evidence model must beat the bucket model's Brier by 0.5% out of sample
+    reliability_bins: 10
+    keep_versions: 30
+  preferences:                      # one user's advisory preferences when no cloud is configured (PLAN A26/A30/A31)
+    watchlists:
+      - {name: Favourites, kind: FAVOURITES, symbols: [EURUSD, XAUUSD]}
+      - {name: Top 30, kind: AUTO_TOP_N, top_n: 30}
+    alerts:
+      metric: WIN_PROBABILITY       # or SETUP_STRENGTH; default x: 55% / 75%
+      signal_lifetime_bars: 2
+      respect_market_sessions: true
+      timezone: Asia/Bangkok
+      windows: []                   # e.g. [{days: [0, 1, 2, 3, 4], start: "14:00", end: "23:30"}]; empty: any time
+      rate_limits: {max_alerts_per_hour: 6, symbol_cooldown_minutes: 30}
+      expiry_updates: true
+      when_risk_full: PAUSE         # over the heat or position budget: PAUSE (no push, shown in app) or WARN
+      language: th
+    theories:
+      preset: ALL                   # ALL CLASSIC_TA PRICE_ACTION FIB_HARMONICS TREND_FOLLOWING
+      min_supporting_families: 2
+      conflict_policy: PENALIZE     # IGNORE PENALIZE BLOCK
+    trading_profile:
+      # A MIRROR of the owner's PWA profile (Aggressive, 7.5 %), kept here only because the engine cannot
+      # reach the web service: the risk-profile pull returns HTTP 401 (the running web was started with a
+      # different Python before the engine key was rotated, so it cannot decrypt the engine secret).
+      # The cloud profile wins whenever the pull works, so fixing the pairing removes this duplication.
+      # Until then these two must be changed together (2026-10-27).
+      style: 50                     # 0 very defensive .. 100 very offensive; overrides: {...} pins single fields
+      holding_style: DAY            # SCALP DAY SWING
+      overrides:
+        # the slider's 1.5 would refuse almost every signal of the three bots (their own minimum R is
+        # 0.8 for range_break and 1.2 for the trend bots). 1.0 is the lowest the model allows.
+        min_rr: 0.8
+      risk_mode: AGGRESSIVE
+      aggressive_risk_percent: 7.5
+      min_lot_fallback: true        # the owner, repeatedly: the account's size never vetoes a rule
+    entry_plan:
+      mode: SINGLE                  # SINGLE SAME_PRICE SCALE_IN
+      parts: 1
+
+engine:
+  monitor_interval_seconds: 1.0
+  health_port: 8765
+
+sync:
+  enabled: false                    # the repository default; a paired machine sets SYNC_ENABLED=true in
+                                    # its own .env (env overrides yaml), as this one does since 2026-10-27
+  batch_size: 500                   # events per signed, gzipped POST /api/v1/ingest/batch
+  max_batch_bytes: 4000000         # uncompressed payload per batch (the ingest API takes up to 32 MB)
+  flush_interval_seconds: 1         # the live candle and quotes reach the PWA within ~1-2 s
+  heartbeat_seconds: 1              # liveness + quotes + forming bars (coalesced: a backlog keeps the newest)
+  advisory_config_seconds: 300      # pull the users' compute requirements (ETag; cached locally)
+  risk_profile_seconds: 60          # pull the owner's trading-profile limits (can only lower `risk`)
+  request_timeout_seconds: 15
+  max_backlog_events: 200000        # beyond: the oldest unsent quotes/snapshots are dropped (never audit/trades)
+  backoff_initial_seconds: 2        # failed sends back off exponentially (with jitter) up to
+  backoff_max_seconds: 300
+  max_attempts: 20                  # an event the cloud keeps rejecting is parked as DEAD (logged)
+  sent_retention_hours: 24
+  chart_timeframes: [M1, M5, M15, M30, H1, H4, D1]  # closed bars streamed for the charts (plus the strategy's)
+
+evidence:                           # technical evidence engine (PLAN Â§A29, docs/PATTERNS.md)
+  default_enabled: true             # detectors not listed below follow this
+  atr_period: 14
+  zigzag_degrees:                   # reversal threshold in ATR multiples per pivot degree
+    minor: 1.5
+    intermediate: 3.0
+    major: 6.0
+  session_timezone: Europe/Athens   # trading-day boundary for daily/weekly levels (FBS server time)
+  detectors: {}                     # e.g. fib.golden_zone: {enabled: true, params: {max_age_bars: 3}}
+  confluence:                       # setup-strength points (docs/PATTERNS.md "Confluence score"); not a probability
+    core_weight: 40                 # a fully passed strategy checklist
+    conflict_penalty: 0.75          # family_weights / tier_weights: built-in defaults unless overridden here
+
+ai:                                 # optional review of entries (AI_PROVIDER / AI_MODEL / AI_MODE in .env)
+  effort: low                       # low medium high: the cost lever
+  timeout_seconds: 20               # one retry; a late answer is no answer (HOLD in veto mode)
+  min_confidence: 60                # veto mode: AGREE below this counts as unsure
+  max_calls_per_day: 50             # budgets: when used up, veto mode holds (AI_UNAVAILABLE)
+  max_cost_per_day_usd: 1.0         # owner, 2026-10-18: at most 1 USD a day
+  advisory:                         # AI on advisory (TAA-1305): opinions and TH/EN narratives, written on the
+    enabled: false                  # engine with the same provider whatever AI_MODE says; descriptive only
+    opinions: true                  # one opinion per new opportunity (verdict, confidence, reasons, narrative)
+    ranking_narrative: true         # the latest ranking snapshot, at most every ranking_every_hours
+    analytics_narrative: true       # the last analytics_days of closed shadow trades, every analytics_every_hours
+    min_score: 0                    # opportunities scoring below this get no opinion
+    max_age_minutes: 10             # older opportunities get no opinion
+    ranking_every_hours: 24
+    analytics_every_hours: 24
+    analytics_days: 7
+    max_calls_per_day: 100          # its own budget, separate from the entry review's
+    max_cost_per_day_usd: 0.0       # owner, 2026-10-18: the whole AI spend at most 1 USD a day (the entry review's)
+  trader:                           # the AI trader (PLAN Â§A37, TAA-1805): the watcher wakes the AI on closed M1
+    enabled: false                  # bars; decisions recorded only until TAA-1806 (signals through every check)
+    symbol: XAUUSD
+    store: data/ai_trader           # decisions.jsonl, raw/ prompts and answers, session notes, suspended.json
+    model: gpt-6-luna               # owner 2026-10-26: Codex (the ChatGPT plan) in place of Sonnet
+    daily_cap_usd: 0.40             # the watcher's own calls on a Thai day
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content tests/unit/test_strategy_edge_side.py; Get-Content app/indicators/volatility.py; rg -n "warmup_bars|require_edge_side|def evaluate|def edge_lean|def resample_from_h1|expected_lean" app/strategy tests/unit/test_strategy_edge_side.py config.yaml; rg -n "three_bots|timeframes:|warmup_bars" config.yaml' in C:\Users\korap\taa
+ exited 1 in 1012ms:
+"""Hand-worked H4 lean cases, from close-stamped H1 candles.
+
+The rule measured and frozen on 2026-10-27 (`research/2026-10-26-three-bots/RULES_LOCKED.md`, rule set 2)
+is a QUANTITY on the H4 frame, not a D1 label: the close's distance from its own 50-bar mean in its own
+14-bar ATR, signed. An earlier version of this module read a D1 regime label; the measurement put D1
+last of the three frames (+0.030 against H4's +0.156 correlation with the trade's R).
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+
+import pandas as pd
+import pytest
+
+from app.core.enums import Side, Timeframe
+from app.indicators.volatility import atr
+from app.strategy.edge_side import ATR_BARS, MEAN_BARS, behind, edge_lean, edge_side, resample_from_h1
+
+NEEDED = MEAN_BARS + ATR_BARS  # 64 closed H4 bars
+
+
+def h1_frame(h4_closes: list[float], *, spread: float = 1.0, forming: float | None = None):
+    """H1 candles, CLOSE-stamped as the app's frames are, that resample into the given H4 closes.
+
+    Each H4 bar is four H1 bars: the first three sit at the previous close so the H4 close is the value
+    asked for, and every bar spans ``spread`` so the ATR is predictable.
+    """
+    closes: list[float] = []
+    for i, value in enumerate(h4_closes):
+        previous = h4_closes[i - 1] if i else value
+        closes += [previous, previous, previous, value]
+    if forming is not None:
+        closes += [forming]  # one extra H1 bar: the H4 bar it belongs to has not closed
+    # the first H1 bar CLOSES at 01:00, so it opens at 00:00 and its H4 bar opens at 00:00 too
+    index = pd.date_range(datetime(2026, 1, 1, 1, tzinfo=UTC), periods=len(closes), freq="1h")
+    frame = pd.DataFrame(
+        {
+            "open": closes,
+            "high": [c + spread / 2 for c in closes],
+            "low": [c - spread / 2 for c in closes],
+            "close": closes,
+        },
+        index=index,
+    )
+    return {Timeframe.H1: frame}, pd.Timestamp(frame.index[-1])
+
+
+def expected_lean(frames, at) -> float:
+    """The same number worked out from the resampled frame, independently of the function under test."""
+    bars = resample_from_h1(frames[Timeframe.H1], 4)
+    closed = bars[(bars.index + pd.Timedelta(hours=4)) <= at]
+    mean = closed.close.rolling(MEAN_BARS).mean().iloc[-1]
+    width = atr(closed.high, closed.low, closed.close, ATR_BARS).iloc[-1]
+    return float((closed.close.iloc[-1] - mean) / width)
+
+
+class TestTheLean:
+    def test_a_rising_frame_leans_up_and_a_falling_one_leans_down(self):
+        up, at_up = h1_frame([100.0 + i for i in range(NEEDED)])
+        down, at_down = h1_frame([100.0 - i for i in range(NEEDED)])
+        assert edge_lean(up, at_up, Timeframe.M5) > 0
+        assert edge_lean(down, at_down, Timeframe.M5) < 0
+
+    def test_a_flat_frame_leans_neither_way(self):
+        frames, at = h1_frame([100.0] * NEEDED)
+        assert edge_lean(frames, at, Timeframe.M5) == pytest.approx(0.0)
+        assert edge_side(frames, at, Timeframe.M5) is None  # exactly zero is on neither side
+
+    def test_the_number_is_the_distance_from_the_mean_in_atrs(self):
+        frames, at = h1_frame([100.0 + i for i in range(NEEDED)])
+        assert edge_lean(frames, at, Timeframe.M5) == pytest.approx(expected_lean(frames, at))
+
+    def test_a_bar_that_has_not_closed_is_not_read(self):
+        # the forming H4 bar carries a huge close; reading it would swamp a flat 64-bar history
+        flat, at = h1_frame([100.0] * NEEDED)
+        with_forming, at_forming = h1_frame([100.0] * NEEDED, forming=10_000.0)
+        assert edge_lean(with_forming, at_forming, Timeframe.M5) == pytest.approx(
+            edge_lean(flat, at, Timeframe.M5)
+        )
+
+    def test_too_little_history_is_no_answer_rather_than_a_guess(self):
+        frames, at = h1_frame([100.0 + i for i in range(NEEDED - 1)])
+        assert edge_lean(frames, at, Timeframe.M5) is None
+        assert edge_side(frames, at, Timeframe.M5) is None
+
+    def test_a_missing_h1_frame_is_no_answer(self):
+        assert edge_lean({}, pd.Timestamp("2026-01-01", tz="UTC"), Timeframe.M5) is None
+
+
+class TestTheGuardrails:
+    def test_the_frame_read_must_be_larger_than_the_entry_frame(self):
+        frames, at = h1_frame([100.0] * NEEDED)
+        with pytest.raises(ValueError, match="must be smaller"):
+            edge_lean(frames, at, Timeframe.H4)  # the rule is meaningless read on the entry frame
+        with pytest.raises(ValueError, match="must be smaller"):
+            edge_lean(frames, at, Timeframe.D1, frame=Timeframe.H4)
+
+    def test_h1_and_d1_can_be_read_too_so_the_frame_can_be_re_measured(self):
+        frames, at = h1_frame([100.0 + i for i in range(NEEDED * 7)])
+        assert edge_lean(frames, at, Timeframe.M5, frame=Timeframe.H1) is not None
+        assert edge_lean(frames, at, Timeframe.M5, frame=Timeframe.D1) is not None
+
+
+class TestBehind:
+    def test_a_buy_wants_the_lean_up_and_a_sell_wants_it_down(self):
+        assert behind(1.5, Side.BUY) == 1.5
+        assert behind(1.5, Side.SELL) == -1.5
+        assert behind(-1.5, Side.SELL) == 1.5
+
+    def test_no_lean_stays_no_lean(self):
+        assert behind(None, Side.BUY) is None
+
+
+class TestTheSideShortcut:
+    def test_it_follows_the_sign_of_the_lean(self):
+        up, at_up = h1_frame([100.0 + i for i in range(NEEDED)])
+        down, at_down = h1_frame([100.0 - i for i in range(NEEDED)])
+        assert edge_side(up, at_up, Timeframe.M5) is Side.BUY
+        assert edge_side(down, at_down, Timeframe.M5) is Side.SELL
+"""Volatility indicators: ATR, Bollinger Bands, historical volatility and ATR percentile (PLAN Â§A6)."""
+
+from __future__ import annotations
+
+import math
+
+import numpy as np
+import pandas as pd
+from numpy.lib.stride_tricks import sliding_window_view
+
+from app.core.errors import ConfigError
+from app.indicators.common import (
+    as_float,
+    check_aligned,
+    check_period,
+    rolling_mean,
+    to_series,
+    true_range_values,
+    wilder_values,
+)
+
+
+def true_range(high: pd.Series, low: pd.Series, close: pd.Series) -> pd.Series:
+    """``max(H - L, |H - C[t-1]|, |L - C[t-1]|)``; position 0 has no previous close and is NaN."""
+    check_aligned(high, low, close)
+    return to_series(true_range_values(as_float(high), as_float(low), as_float(close)), close, "true_range")
+
+
+def atr(high: pd.Series, low: pd.Series, close: pd.Series, n: int = 14) -> pd.Series:
+    """Wilder-smoothed true range, in price units; first defined at position *n*."""
+    check_period("n", n)
+    check_aligned(high, low, close)
+    tr = true_range_values(as_float(high), as_float(low), as_float(close))
+    return to_series(wilder_values(tr, n), close, f"atr_{n}")
+
+
+def bollinger(close: pd.Series, n: int = 20, k: float = 2.0) -> pd.DataFrame:
+    """Columns ``mid`` (SMA), ``upper``/``lower`` (mid Â± kÂ·Ïƒ, population Ïƒ), ``width`` and ``percent_b``.
+
+    ``width = (upper - lower) / mid``; ``percent_b = (C - lower) / (upper - lower)``, NaN for a flat window.
+    All columns are first defined at ``n - 1``.
+    """
+    check_period("n", n, minimum=2)
+    if not (math.isfinite(k) and k > 0):
+        raise ConfigError(f"Bollinger k must be > 0 (got {k!r})")
+    c = as_float(close)
+    mid = rolling_mean(c, n)
+    sigma = np.full(c.shape, np.nan, dtype=np.float64)
+    flat = np.zeros(c.shape, dtype=bool)
+    if len(c) >= n:
+        windows = sliding_window_view(c, n)
+        sigma[n - 1 :] = windows.std(axis=1, ddof=0)
+        # exact flatness test: rolling float sums leave rounding noise where Ïƒ should be 0
+        flat[n - 1 :] = np.ptp(windows, axis=1) == 0
+    sigma[flat] = 0.0
+    upper, lower = mid + k * sigma, mid - k * sigma
+    band = upper - lower
+    with np.errstate(divide="ignore", invalid="ignore"):
+        width = np.where(mid > 0, band / mid, np.nan)
+        percent_b = np.where(band > 0, (c - lower) / band, np.nan)
+    return pd.DataFrame(
+        {"mid": mid, "upper": upper, "lower": lower, "width": width, "percent_b": percent_b},
+        index=close.index,
+    )
+
+
+def historical_volatility(close: pd.Series, n: int = 20, *, bars_per_year: float) -> pd.Series:
+    """Annualized volatility: sample stdev (ddof=1) of the last *n* log returns Ã— âˆšbars_per_year.
+
+    *bars_per_year* depends on the timeframe and the market's trading hours (``Timeframe.bars_per_year``
+    assumes a 24x5 market; crypto trades 24x7). A decimal fraction (0.12 = 12 %); first defined at
+    position *n*. Non-positive prices are NaN.
+    """
+    check_period("n", n, minimum=2)
+    if not (math.isfinite(bars_per_year) and bars_per_year > 0):
+        raise ConfigError(f"bars_per_year must be > 0 (got {bars_per_year!r})")
+    c = as_float(close)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        log_c = np.where(c > 0, np.log(c), np.nan)
+    returns = np.diff(log_c, prepend=np.nan)
+    std = pd.Series(returns).rolling(n, min_periods=n).std(ddof=1).to_numpy(dtype=np.float64)
+    return to_series(std * math.sqrt(bars_per_year), close, f"hv_{n}")
+
+
+def atr_percentile(atr_values: pd.Series, lookback: int = 100) -> pd.Series:
+    """Where the current ATR sits among the previous ``lookback - 1`` values, in [0, 100].
+
+    ``100 Â· count(prev â‰¤ current) / (lookback - 1)`` over the window ending at *t*: 100 means the highest
+    ATR of the window, 0 the lowest. Defined once *lookback* consecutive finite ATR values exist
+    (for ATR(n): at position ``n + lookback - 1``).
+    """
+    check_period("lookback", lookback, minimum=2)
+    a = as_float(atr_values)
+    out = np.full(a.shape, np.nan, dtype=np.float64)
+    if len(a) >= lookback:
+        windows = sliding_window_view(a, lookback)
+        current = windows[:, -1]
+        counts = (windows[:, :-1] <= current[:, None]).sum(axis=1)
+        pct = 100.0 * counts / (lookback - 1)
+        complete = np.isfinite(windows).all(axis=1)
+        out[lookback - 1 :] = np.where(complete, pct, np.nan)
+    return to_series(out, atr_values, f"atr_pct_{lookback}")
+rg : The term 'rg' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the 
+spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:2 char:94
++ ... gy_edge_side.py; Get-Content app/indicators/volatility.py; rg -n "war ...
++                                                                ~~
+    + CategoryInfo          : ObjectNotFound: (rg:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+rg : The term 'rg' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the 
+spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:2 char:258
++ ... trategy tests/unit/test_strategy_edge_side.py config.yaml; rg -n "thr ...
++                                                                ~~
+    + CategoryInfo          : ObjectNotFound: (rg:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+
+codex
+The resampling boundary looks consistent with close-stamped H1 data: shifting each timestamp back one hour puts the candle into its opening bucket, and the `bucket open + duration <= decision time` filter excludes the still-forming H4 bar. I’m checking malformed/NaN inputs, ATR warmup, and strategy call ordering next.
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command "Select-String -Path app/indicators/common.py -Pattern \"def wilder_values|def true_range_values\" -Context 0,45; Select-String -Path app/strategy/*.py,config.yaml -Pattern \"require_edge_side|warmup_bars|class StrategyContext|def frame\\(\" -Context 1,3; Get-Content app/strategy/signal_models.py | Select-Object -First 180; Get-Content app/core/enums.py | Select-String -Pattern \"class Timeframe\" -Context 0,50" in C:\Users\korap\taa
+ succeeded in 847ms:
+
+> app\indicators\common.py:82:def wilder_values(values: FloatArray, n: int) -> FloatArray:
+  app\indicators\common.py:83:    return recursive_smooth(values, n, 1.0 / n)
+  app\indicators\common.py:84:
+  app\indicators\common.py:85:
+> app\indicators\common.py:86:def true_range_values(high: FloatArray, low: FloatArray, close: FloatArray) -> 
+FloatArray:
+  app\indicators\common.py:87:    """``max(H - L, |H - C[t-1]|, |L - C[t-1]|)``. Position 0 has no previous close and 
+is NaN."""
+  app\indicators\common.py:88:    prev_close = np.concatenate(([np.nan], close[:-1]))
+  app\indicators\common.py:89:    # np.maximum (unlike np.fmax) propagates NaN, so a broken bar never yields a 
+plausible-looking range
+  app\indicators\common.py:90:    tr = np.maximum.reduce([high - low, np.abs(high - prev_close), np.abs(low - 
+prev_close)])
+  app\indicators\common.py:91:    return tr.astype(np.float64)
+  app\strategy\ai_lane.py:175:
+> app\strategy\ai_lane.py:176:    def warmup_bars(self) -> int:
+  app\strategy\ai_lane.py:177:        return 50
+  app\strategy\ai_lane.py:178:
+  app\strategy\ai_lane.py:179:    def evaluate(self, ctx: StrategyContext) -> Signal:
+  app\strategy\base_strategy.py:83:    @abstractmethod
+> app\strategy\base_strategy.py:84:    def warmup_bars(self) -> int:
+  app\strategy\base_strategy.py:85:        """Closed bars needed per timeframe before the first non-HOLD signal is 
+possible."""
+  app\strategy\base_strategy.py:86:
+  app\strategy\base_strategy.py:87:    @abstractmethod
+  app\strategy\context_builder.py:302:        for tf in tfs.enabled:
+> app\strategy\context_builder.py:303:            frame = self.candles.closed_candles(symbol, tf, tfs.warmup_bars)
+  app\strategy\context_builder.py:304:            if frame.df.empty:
+  app\strategy\context_builder.py:305:                raise InsufficientDataError(f"no closed {tf} bars for {symbol}")
+  app\strategy\context_builder.py:306:            out[tf] = analyze_frame(
+  app\strategy\example_strategy.py:78:
+> app\strategy\example_strategy.py:79:    def warmup_bars(self) -> int:
+  app\strategy\example_strategy.py:80:        return 250  # EMA(200) plus the ATR-percentile window behind the regime
+  app\strategy\example_strategy.py:81:
+  app\strategy\example_strategy.py:82:    def bias(self, ctx: StrategyContext) -> Trend:
+  app\strategy\own_setup.py:314:
+> app\strategy\own_setup.py:315:    def warmup_bars(self) -> int:
+  app\strategy\own_setup.py:316:        p: OwnConfParams = self.params
+  app\strategy\own_setup.py:317:        need = max(p.room72_bars + p.room72_lag, p.atr_median_bars + ATR_BARS) + 1
+  app\strategy\own_setup.py:318:        if p.exit_mode == "regime":
+  app\strategy\own_setup.py:330:        m1 = ctx.frame(Timeframe.M1)
+> app\strategy\own_setup.py:331:        if len(m1) < self.warmup_bars():
+  app\strategy\own_setup.py:332:            return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA, 
+explanation=f"{len(m1)} M1 bars")
+  app\strategy\own_setup.py:333:        o, h, lo, c = (m1[k].to_numpy(dtype=float) for k in ("open", "high", "low", 
+"close"))
+  app\strategy\own_setup.py:334:        atr = m1_atr(h, lo, c)
+  app\strategy\plan1.py:359:
+> app\strategy\plan1.py:360:    def warmup_bars(self) -> int:
+  app\strategy\plan1.py:361:        return 3000  # 15 complete H1 bars and yesterday's server day across a weekend
+  app\strategy\plan1.py:362:
+  app\strategy\plan1.py:363:    def window(self, at: pd.Timestamp) -> tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp]:
+  app\strategy\plan1.py:568:
+> app\strategy\plan1.py:569:    def warmup_bars(self) -> int:
+  app\strategy\plan1.py:570:        return 3000
+  app\strategy\plan1.py:571:
+  app\strategy\plan1.py:572:    def spans(self, start: datetime, end: datetime) -> list[tuple[datetime, datetime]]:
+  app\strategy\plan1_b2.py:700:
+> app\strategy\plan1_b2.py:701:    def warmup_bars(self) -> int:
+  app\strategy\plan1_b2.py:702:        return (
+  app\strategy\plan1_b2.py:703:            10_000  # 125 complete H1 bars (the levels' 120) across a weekend; the 
+ZigZag settles well within
+  app\strategy\plan1_b2.py:704:        )
+  app\strategy\range_break.py:37:    min_take_profit: float = Field(default=0.0, ge=0)
+> app\strategy\range_break.py:38:    require_edge_side: bool = False
+  app\strategy\range_break.py:39:
+  app\strategy\range_break.py:40:
+  app\strategy\range_break.py:41:class RangeBreak(BaseStrategy):
+  app\strategy\range_break.py:47:
+> app\strategy\range_break.py:48:    def warmup_bars(self) -> int:
+  app\strategy\range_break.py:49:        # H1 bars, not H4: the 300 H4 bars the box is read from are resampled from 
+1,200 closed H1 bars.
+  app\strategy\range_break.py:50:        # Declaring 300 here would let a lane configure 300 H1 bars, give the ZigZag 
+75 H4 bars instead of
+  app\strategy\range_break.py:51:        # 300, and change the box silently (found in review, 2026-10-27).
+  app\strategy\range_break.py:96:            return self.hold(ctx, "NO_CLOSE_BREAK")
+> app\strategy\range_break.py:97:        if self.params.require_edge_side:
+  app\strategy\range_break.py:98:            lean = behind(edge_lean(ctx.frames, at, ctx.market.entry_timeframe), side)
+  app\strategy\range_break.py:99:            if lean is None or lean < 0:  # unreadable is not permission: no edge 
+side, no trade
+  app\strategy\range_break.py:100:                return self.hold(ctx, "AGAINST_EDGE_SIDE")
+  app\strategy\registry.py:4:  them; an unknown name, a duplicate entry, invalid params, a timeframe that is not 
+enabled or a warm-up
+> app\strategy\registry.py:5:  longer than ``timeframes.warmup_bars`` is a :class:`ConfigError` at startup.
+  app\strategy\registry.py:6:- :meth:`StrategySet.evaluate` attaches the context's evidence to every signal (TAA-307). 
+It is also the
+  app\strategy\registry.py:7:  plugin boundary: an exception inside a strategy, or a signal that does not belong to 
+the context it was
+  app\strategy\registry.py:8:  given, becomes HOLD (``STRATEGY_ERROR``) and is logged with its traceback. One faulty 
+strategy never
+  app\strategy\registry.py:70:                raise ConfigError(f"strategy {item.name} needs timeframes {missing} that 
+are not enabled")
+> app\strategy\registry.py:71:            if strategy.warmup_bars() > timeframes.warmup_bars:
+  app\strategy\registry.py:72:                raise ConfigError(
+> app\strategy\registry.py:73:                    f"strategy {item.name} needs {strategy.warmup_bars()} warm-up bars; "
+> app\strategy\registry.py:74:                    f"timeframes.warmup_bars is {timeframes.warmup_bars}"
+  app\strategy\registry.py:75:                )
+  app\strategy\registry.py:76:            if item.enabled:
+  app\strategy\registry.py:77:                built.append(strategy)
+  app\strategy\release_straddle.py:157:
+> app\strategy\release_straddle.py:158:    def warmup_bars(self) -> int:
+  app\strategy\release_straddle.py:159:        return 50
+  app\strategy\release_straddle.py:160:
+  app\strategy\release_straddle.py:161:    def evaluate(self, ctx: StrategyContext) -> Signal:
+  app\strategy\setups.py:221:
+> app\strategy\setups.py:222:    def warmup_bars(self) -> int:
+  app\strategy\setups.py:223:        return 120  # zigzag pivots and the evidence detectors' own windows
+  app\strategy\setups.py:224:
+  app\strategy\setups.py:225:    # hooks 
+---------------------------------------------------------------------------------------------
+  app\strategy\signal_models.py:536:@dataclass(frozen=True, eq=False)
+> app\strategy\signal_models.py:537:class StrategyContext:
+  app\strategy\signal_models.py:538:    """Everything a strategy may read. Pure data: no gateway, no database, no 
+secrets.
+  app\strategy\signal_models.py:539:
+  app\strategy\signal_models.py:540:    ``frames[tf]`` holds closed candles indexed by bar close time (UTC) up to the 
+decision time, with the
+  app\strategy\signal_models.py:566:
+> app\strategy\signal_models.py:567:    def frame(self, tf: Timeframe) -> pd.DataFrame:
+  app\strategy\signal_models.py:568:        try:
+  app\strategy\signal_models.py:569:            return self.frames[tf]
+  app\strategy\signal_models.py:570:        except KeyError:
+  app\strategy\trend_box.py:41:    require_big_tf: bool = False
+> app\strategy\trend_box.py:42:    require_edge_side: bool = False
+  app\strategy\trend_box.py:43:    min_stop_atr: float = Field(default=0.0, ge=0)
+  app\strategy\trend_box.py:44:
+  app\strategy\trend_box.py:45:
+  app\strategy\trend_box.py:117:
+> app\strategy\trend_box.py:118:    def warmup_bars(self) -> int:
+> app\strategy\trend_box.py:119:        return 1200 if self.params.require_big_tf or self.params.require_edge_side 
+else 400
+  app\strategy\trend_box.py:120:
+  app\strategy\trend_box.py:121:    def evaluate(self, ctx: StrategyContext) -> Signal:
+  app\strategy\trend_box.py:122:        at = pd.Timestamp(ctx.decision_time_utc)
+> app\strategy\trend_box.py:123:        if self.params.require_edge_side:
+  app\strategy\trend_box.py:124:            if not in_window(at):
+  app\strategy\trend_box.py:125:                return self.hold(ctx, ReasonCode.OUTSIDE_SESSION)
+  app\strategy\trend_box.py:126:            own = Side.SELL if self.direction == "DOWN" else Side.BUY
+  app\strategy\trend_box.py:136:            return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+> app\strategy\trend_box.py:137:        if not self.params.require_edge_side and not in_window(at):
+  app\strategy\trend_box.py:138:            return self.hold(ctx, ReasonCode.OUTSIDE_SESSION)
+  app\strategy\trend_box.py:139:        swings, _forming = zigzag(h1.high.to_numpy(float), h1.low.to_numpy(float))
+  app\strategy\trend_box.py:140:        highs = [s for s in swings if s.kind == 1]
+  config.yaml:18:  refinement: null                  # optional, e.g. M5
+> config.yaml:19:  warmup_bars: 400
+  config.yaml:20:  candle_close_grace_seconds: 3
+  config.yaml:21:  stale_tick_seconds: 120
+  config.yaml:22:  max_gap_bars: 3                   # longest hole (bars) in trading hours before DATA_GAPS; holidays 
+and the
+  config.yaml:99:      entry: M1
+> config.yaml:100:      warmup_bars: 400
+  config.yaml:101:      context: [M15, M30, H1, H4, D1]   # as backtested (data/research/config_scalp_s1.yaml)
+  config.yaml:102:      context_bars: 700
+  config.yaml:103:    strategies:
+  config.yaml:118:      entry: M1
+> config.yaml:119:      warmup_bars: 4800             # the 72-hour extreme (4,321 M1 bars), 3 days of M15 ATR (4,545)
+  config.yaml:120:      context: [M15, H1]            # the chart-read levels
+  config.yaml:121:      context_bars: 700
+  config.yaml:122:    strategies:
+  config.yaml:137:      entry: M1                     # its bars only close the position after the release minute
+> config.yaml:138:      warmup_bars: 60
+  config.yaml:139:    strategies:
+  config.yaml:140:      cooldown_bars: 0
+  config.yaml:141:      signal_expiry_bars: 1
+  config.yaml:152:      entry: M1
+> config.yaml:153:      warmup_bars: 10000            # B2's owner levels: 125 complete H1 bars across a weekend (the 
+ORB needs 3000)
+  config.yaml:154:    strategies:
+  config.yaml:155:      cooldown_bars: 0              # one position at a time is the only spacing 
+(risk.max_positions_per_symbol)
+  config.yaml:156:      signal_expiry_bars: 1
+  config.yaml:183:      entry: M1
+> config.yaml:184:      warmup_bars: 60
+  config.yaml:185:    strategies:
+  config.yaml:186:      cooldown_bars: 0
+  config.yaml:187:      signal_expiry_bars: 2         # a fill in the first seconds of a minute (the 3 s close grace) 
+stays valid
+  config.yaml:205:      # 1,200 closed H1 bars provide the 300 H4 bars used by range_break.
+> config.yaml:206:      warmup_bars: 1200
+  config.yaml:207:    strategies:
+  config.yaml:208:      cooldown_bars: 0
+  config.yaml:209:      signal_expiry_bars: 1
+  config.yaml:214:          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+> config.yaml:215:          params: {require_edge_side: true}
+  config.yaml:216:        - name: trend_box_up
+  config.yaml:217:          enabled: true
+  config.yaml:218:          # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
+  config.yaml:219:          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+> config.yaml:220:          params: {require_edge_side: true}
+  config.yaml:221:        - name: range_break
+  config.yaml:222:          enabled: true
+  config.yaml:223:          # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
+  config.yaml:224:          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+> config.yaml:225:          params: {require_edge_side: true}
+  config.yaml:226:    min_risk_reward: 0.8
+  config.yaml:227:    management:
+  config.yaml:228:      trend_box_down: {break_even: false, trailing: false}
+"""Signal and context models of the strategy layer (PLAN Â§A5, Â§A7, Â§A26, Â§A29).
+
+- :class:`Signal` is what a strategy emits for one symbol at one closed entry-timeframe bar. It carries
+  the condition checklist behind it (``conditions`` â†’ ``setup_strength``) and the technical evidence that
+  supports or contradicts it. ``score`` is a documented heuristic for ranking, **not a probability**.
+- :class:`MarketContext` is the serializable summary of the market at the decision bar (per-timeframe
+  state, the bar times used, quote, session, quality flags). It is persisted with every decision.
+- :class:`StrategyContext` is what :meth:`BaseStrategy.evaluate` receives: the market context plus
+  read-only candle frames with indicator columns. It holds no broker handle and no credentials.
+
+Geometry problems (missing SL, SL on the wrong side, low RR) are *not* rejected here: the decision engine
+reports them with exact reason codes (Â§A8). The models only reject malformed values (naive datetimes, NaN
+prices, scores out of range), because those are bugs rather than market outcomes.
+"""
+
+from __future__ import annotations
+
+import json
+import math
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import StrEnum
+from types import MappingProxyType
+from typing import Any
+
+import pandas as pd
+
+from app.core.clock import ensure_utc
+from app.core.enums import (
+    Action,
+    EntryType,
+    ExitReason,
+    Regime,
+    Session,
+    Side,
+    Timeframe,
+    Trend,
+    VolatilityState,
+)
+from app.core.errors import TaaError
+from app.core.ids import stable_hash
+from app.evidence.confluence import Relation
+from app.evidence.framework import ActiveEvidence, EvidenceSnapshot
+from app.indicators.market_map import MarketMap
+from app.market_data.data_models import SymbolSpec
+
+
+class SignalError(TaaError):
+    """A signal or context record is malformed (a programming error, never a market condition)."""
+
+
+class ReasonCode(StrEnum):
+    """Why a strategy holds, or the main facts behind an entry. PWA text uses ``reason.<code>``."""
+
+    INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
+    FADE = "FADE"  # a counter-trend trigger traded with the trend, exits swapped (SETUP_REVIEW Â§16)
+    NO_TARGET = "NO_TARGET"  # the plan has no TP, so a fade of it has no stop
+    DATA_QUALITY = "DATA_QUALITY"
+    NO_SETUP = "NO_SETUP"
+    NO_BIAS = "NO_BIAS"
+    REGIME_NOT_TRENDING = "REGIME_NOT_TRENDING"
+    OUTSIDE_SESSION = "OUTSIDE_SESSION"
+    FRIDAY_CUTOFF = "FRIDAY_CUTOFF"
+    NEAR_OPPOSING_LEVEL = "NEAR_OPPOSING_LEVEL"
+    SL_TOO_FAR = "SL_TOO_FAR"
+    RR_TOO_LOW = "RR_TOO_LOW"
+    SPREAD_TOO_HIGH = "SPREAD_TOO_HIGH"
+    CONFLICT = "CONFLICT"
+    COOLDOWN_ACTIVE = "COOLDOWN_ACTIVE"
+    DUPLICATE_SIGNAL = "DUPLICATE_SIGNAL"
+    LOWER_RANK = "LOWER_RANK"
+    STRATEGY_ERROR = "STRATEGY_ERROR"
+    DEMO_UNPROVEN = "DEMO_UNPROVEN"  # label on every entry of a demonstration strategy
+
+
+def _finite(name: str, value: float | None) -> None:
+    if value is not None and not math.isfinite(value):
+        raise SignalError(f"{name} must be finite (got {value!r})")
+
+
+def _opt_float(value: Any) -> float | None:
+    return None if value is None else float(value)
+
+
+def _opt_dt(value: str | None) -> datetime | None:
+    return None if value is None else datetime.fromisoformat(value)
+
+
+def canonical_json(payload: Mapping[str, Any]) -> str:
+    """Sorted keys, no whitespace, no NaN: equal records serialize to equal bytes."""
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False)
+
+
+# --- signal parts -----------------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True, slots=True)
+class Condition:
+    """One item of a strategy's checklist. ``weight`` is its share of the setup strength."""
+
+    name: str  # stable code, e.g. "htf_bias"; the PWA label is ``condition.<name>``
+    passed: bool
+    weight: float = 1.0
+    detail: str = ""  # the measured value against its threshold, e.g. "ADX 23.4 >= 20"
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            raise SignalError("condition needs a name")
+        if not (math.isfinite(self.weight) and self.weight > 0):
+            raise SignalError(f"condition {self.name}: weight must be > 0 (got {self.weight!r})")
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"name": self.name, "passed": self.passed, "weight": self.weight, "detail": self.detail}
+
+    @classmethod
+    def from_dict(cls, d: Mapping[str, Any]) -> Condition:
+        return cls(str(d["name"]), bool(d["passed"]), float(d["weight"]), str(d["detail"]))
+
+
+def condition_strength(conditions: Iterable[Condition]) -> float:
+    """Weighted share of passed conditions, 0â€“100 (Â§A26 setup strength before confluence enrichment)."""
+    items = list(conditions)
+    total = sum(c.weight for c in items)
+    if total <= 0:
+        return 0.0
+    return 100.0 * sum(c.weight for c in items if c.passed) / total
+
+
+@dataclass(frozen=True, slots=True)
+class SignalEvidence:
+    """An active evidence item attached to a signal, classified against the signal's direction."""
+
+    item: ActiveEvidence
+    relation: Relation
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"item": self.item.to_dict(), "relation": self.relation.value}
+
+    @classmethod
+    def from_dict(cls, d: Mapping[str, Any]) -> SignalEvidence:
+        return cls(ActiveEvidence.from_dict(d["item"]), Relation(d["relation"]))
+
+
+# --- signal -----------------------------------------------------------------------------------------------
+
+
+def idempotency_key(
+    strategy: str, symbol: str, timeframe: Timeframe, bar_close: datetime, action: Action
+) -> str:
+    """``sha256(strategy|symbol|tf|bar_close_utc|action)`` (Â§A7).
+
+    At most one signal per strategy, symbol, bar and action.
+    """
+    return stable_hash(strategy, symbol, timeframe.value, ensure_utc(bar_close).isoformat(), action.value)
+
+
+@dataclass(frozen=True, slots=True)
+class OpenPosition:
+    """An open position of a strategy, as its own management sees it (``BaseStrategy.manage_position``)."""
+
+    side: Side
+    entry: float
+    initial_sl: float
+    sl: float
+    tp: float | None
+    entry_time: datetime
+    signal_id: str = ""  # "" when the position's signal is not known (a broker position after a restart)
+
+
+@dataclass(frozen=True, slots=True)
+class PositionAdvice:
+    """A strategy's own stop move or close for one of its positions; the managers apply it like their rules
+    (favourable stop moves only, a close wins)."""
+
+    new_sl: float | None = None
+    stop_kind: ExitReason | None = None  # how a later stop-out is labelled
+    close: ExitReason | None = None
+    note: str = ""
+
+> class Timeframe(StrEnum):
+      """Supported bar timeframes. Values match MetaTrader 5 naming."""
+  
+      M1 = "M1"
+      M5 = "M5"
+      M15 = "M15"
+      M30 = "M30"
+      H1 = "H1"
+      H4 = "H4"
+      D1 = "D1"
+  
+      @property
+      def seconds(self) -> int:
+          return _TF_SECONDS[self]
+  
+      @property
+      def minutes(self) -> int:
+          return self.seconds // 60
+  
+      @property
+      def bars_per_year(self) -> float:
+          """Approximate bars per year for a 24x5 market (260 trading days)."""
+          return 260 * 86_400 / self.seconds
+  
+  
+  _TF_SECONDS: dict[Timeframe, int] = {
+      Timeframe.M1: 60,
+      Timeframe.M5: 300,
+      Timeframe.M15: 900,
+      Timeframe.M30: 1800,
+      Timeframe.H1: 3600,
+      Timeframe.H4: 14_400,
+      Timeframe.D1: 86_400,
+  }
+  
+  
+  class ExitReason(StrEnum):
+      TAKE_PROFIT = "TP"
+      STOP_LOSS = "SL"
+      BREAK_EVEN = "BE"
+      TRAILING_STOP = "TRAIL"
+      TIME_STOP = "TIME"
+      SIGNAL = "SIGNAL"
+      KILL_SWITCH = "KILL_SWITCH"
+      MANUAL = "MANUAL"
+      STOP_OUT = "STOP_OUT"
+      END_OF_DATA = "END_OF_DATA"
+  
+  
+  class Session(StrEnum):
+      ASIA = "ASIA"
+
+
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command ".venv\\Scripts\\python.exe -m pytest tests/unit/test_strategy_edge_side.py -q" in C:\Users\korap\taa
+ exited 1 in 3428ms:
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pytest\__main__.py", line 9, in <module>
+    raise SystemExit(_console_main())
+                     ^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\config\__init__.py", line 253, in _console_main
+    code = _main(prog=_get_prog_name(sys.argv))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\config\__init__.py", line 223, in _main
+    config = _prepareconfig(new_args, plugins, prog=prog)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\config\__init__.py", line 410, in _prepareconfig
+    config: Config = pluginmanager.hook.pytest_cmdline_parse(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_callers.py", line 167, in _multicall
+    raise exception
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\helpconfig.py", line 124, in pytest_cmdline_parse
+    config = yield
+             ^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\config\__init__.py", line 1232, in pytest_cmdline_parse
+    self.parse(args)
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\config\__init__.py", line 1605, in parse
+    self.hook.pytest_load_initial_conftests(
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_callers.py", line 167, in _multicall
+    raise exception
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_callers.py", line 139, in _multicall
+    teardown.throw(exception)
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\warnings.py", line 129, in pytest_load_initial_conftests
+    return (yield)
+            ^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pluggy\_callers.py", line 116, in _multicall
+    next(function_gen)  # first yield
+    ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\capture.py", line 170, in pytest_load_initial_conftests
+    capman.start_global_capturing()
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\capture.py", line 773, in start_global_capturing
+    self._global_capturing = _get_multicapture(self._method)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\capture.py", line 714, in _get_multicapture
+    return MultiCapture(in_=FDCapture(0), out=FDCapture(1), err=FDCapture(2))
+                                              ^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\capture.py", line 493, in __init__
+    TemporaryFile(buffering=0),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\AppData\Local\Programs\Python\Python311\Lib\tempfile.py", line 562, in NamedTemporaryFile
+    prefix, suffix, dir, output_type = _sanitize_params(prefix, suffix, dir)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\AppData\Local\Programs\Python\Python311\Lib\tempfile.py", line 127, in _sanitize_params
+    dir = gettempdir()
+          ^^^^^^^^^^^^
+  File "C:\Users\korap\AppData\Local\Programs\Python\Python311\Lib\tempfile.py", line 316, in gettempdir
+    return _os.fsdecode(_gettempdir())
+                        ^^^^^^^^^^^^^
+  File "C:\Users\korap\AppData\Local\Programs\Python\Python311\Lib\tempfile.py", line 309, in _gettempdir
+    tempdir = _get_default_tempdir()
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\AppData\Local\Programs\Python\Python311\Lib\tempfile.py", line 224, in _get_default_tempdir
+    raise FileNotFoundError(_errno.ENOENT,
+FileNotFoundError: [Errno 2] No usable temporary directory found in ['C:\\Users\\korap\\AppData\\Local\\Temp', 'C:\\Users\\korap\\AppData\\Local\\Temp', 'C:\\Users\\korap\\AppData\\Local\\Temp', 'C:\\Windows\\Temp', 'c:\\temp', 'c:\\tmp', '\\temp', '\\tmp', 'C:\\Users\\korap\\taa']
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command ".venv\\Scripts\\python.exe -m pytest tests/unit/test_strategy_edge_side.py -q -s" in C:\Users\korap\taa
+ succeeded in 10301ms:
+...........
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\cacheprovider.py:469
+  C:\Users\korap\taa\.venv\Lib\site-packages\_pytest\cacheprovider.py:469: PytestCacheWarning: cache could not write path C:\Users\korap\taa\.pytest_cache\v\cache\nodeids: [Errno 13] Permission denied: 'C:\\Users\\korap\\taa\\.pytest_cache\\v\\cache\\nodeids'
+    config.cache.set("cache/nodeids", sorted(self.cached_nodeids))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+11 passed, 1 warning in 1.16s
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Select-String -Path app/indicators/common.py -Pattern "def recursive_smooth" -Context 0,40; Get-Content app/strategy/registry.py | Select-Object -Skip 45 -First 85; Get-Content app/strategy/signal_models.py | Select-Object -Skip 537 -First 45; Get-Content app/strategy/range_break.py | Select-Object -First 115' in C:\Users\korap\taa
+ succeeded in 1209ms:
+
+> app\indicators\common.py:60:def recursive_smooth(values: FloatArray, n: int, alpha: float) -> FloatArray:
+  app\indicators\common.py:61:    """``y[t] = alpha * x[t] + (1 - alpha) * y[t-1]``, seeded with the mean of the first 
+full window.
+  app\indicators\common.py:62:
+  app\indicators\common.py:63:    ``alpha = 2 / (n + 1)`` gives the EMA, ``alpha = 1 / n`` gives Wilder's smoothing 
+(RMA).
+  app\indicators\common.py:64:    """
+  app\indicators\common.py:65:    out = np.full(values.shape, np.nan, dtype=np.float64)
+  app\indicators\common.py:66:    seed_at = first_full_window(values, n)
+  app\indicators\common.py:67:    if seed_at is None:
+  app\indicators\common.py:68:        return out
+  app\indicators\common.py:69:    prev = float(np.mean(values[seed_at - n + 1 : seed_at + 1]))
+  app\indicators\common.py:70:    out[seed_at] = prev
+  app\indicators\common.py:71:    keep = 1.0 - alpha
+  app\indicators\common.py:72:    for i in range(seed_at + 1, len(values)):
+  app\indicators\common.py:73:        prev = alpha * float(values[i]) + keep * prev
+  app\indicators\common.py:74:        out[i] = prev
+  app\indicators\common.py:75:    return out
+  app\indicators\common.py:76:
+  app\indicators\common.py:77:
+  app\indicators\common.py:78:def ema_values(values: FloatArray, n: int) -> FloatArray:
+  app\indicators\common.py:79:    return recursive_smooth(values, n, 2.0 / (n + 1))
+  app\indicators\common.py:80:
+  app\indicators\common.py:81:
+  app\indicators\common.py:82:def wilder_values(values: FloatArray, n: int) -> FloatArray:
+  app\indicators\common.py:83:    return recursive_smooth(values, n, 1.0 / n)
+  app\indicators\common.py:84:
+  app\indicators\common.py:85:
+  app\indicators\common.py:86:def true_range_values(high: FloatArray, low: FloatArray, close: FloatArray) -> 
+FloatArray:
+  app\indicators\common.py:87:    """``max(H - L, |H - C[t-1]|, |L - C[t-1]|)``. Position 0 has no previous close and 
+is NaN."""
+  app\indicators\common.py:88:    prev_close = np.concatenate(([np.nan], close[:-1]))
+  app\indicators\common.py:89:    # np.maximum (unlike np.fmax) propagates NaN, so a broken bar never yields a 
+plausible-looking range
+  app\indicators\common.py:90:    tr = np.maximum.reduce([high - low, np.abs(high - prev_close), np.abs(low - 
+prev_close)])
+  app\indicators\common.py:91:    return tr.astype(np.float64)
+
+    def create(self, name: str, raw_params: dict[str, object], expiry_bars: int) -> BaseStrategy:
+        cls = self.get(name)
+        try:
+            params = cls.Params.model_validate({"expiry_bars": expiry_bars, **raw_params})
+        except ValidationError as exc:
+            raise ConfigError(f"invalid params for strategy {name}: {exc}") from exc
+        return cls(params)
+
+    def from_config(
+        self,
+        strategies: StrategiesConfig,
+        timeframes: TimeframesConfig,
+        confluence: ConfluenceConfig | None = None,
+    ) -> StrategySet:
+        seen: set[str] = set()
+        built: list[BaseStrategy] = []
+        for item in strategies.items:
+            if item.name in seen:
+                raise ConfigError(f"strategy {item.name!r} is listed twice")
+            seen.add(item.name)
+            strategy = self.create(item.name, item.params, strategies.signal_expiry_bars)
+            missing = [tf for tf in strategy.required_timeframes() if tf not in timeframes.enabled]
+            if missing:
+                raise ConfigError(f"strategy {item.name} needs timeframes {missing} that are not enabled")
+            if strategy.warmup_bars() > timeframes.warmup_bars:
+                raise ConfigError(
+                    f"strategy {item.name} needs {strategy.warmup_bars()} warm-up bars; "
+                    f"timeframes.warmup_bars is {timeframes.warmup_bars}"
+                )
+            if item.enabled:
+                built.append(strategy)
+        return StrategySet(tuple(built), confluence or ConfluenceConfig())
+
+
+@dataclass(frozen=True)
+class StrategySet:
+    strategies: Sequence[BaseStrategy]
+    confluence: ConfluenceConfig = field(default_factory=ConfluenceConfig)
+
+    @property
+    def names(self) -> list[str]:
+        return [s.name for s in self.strategies]
+
+    def required_detectors(self) -> frozenset[str]:
+        return frozenset().union(*(s.required_detectors() for s in self.strategies))
+
+    def evaluate(self, ctx: StrategyContext) -> list[Signal]:
+        """One signal per strategy, enriched with the context's evidence (confluence setup strength)."""
+        return [
+            enrich(self._evaluate_one(s, ctx), ctx, self.confluence, s.core_families) for s in self.strategies
+        ]
+
+    @staticmethod
+    def _evaluate_one(strategy: BaseStrategy, ctx: StrategyContext) -> Signal:
+        try:
+            signal = strategy.evaluate(ctx)
+        except Exception:  # plugin boundary: a strategy bug must fail closed, not stop the loop
+            log.exception("strategy %s failed on %s at %s", strategy.name, ctx.symbol, ctx.decision_time_utc)
+            return strategy.hold(ctx, ReasonCode.STRATEGY_ERROR, explanation="strategy raised an exception")
+        problem = _mismatch(strategy, ctx, signal)
+        if problem:
+            log.error("strategy %s returned an invalid signal: %s", strategy.name, problem)
+            return strategy.hold(ctx, ReasonCode.STRATEGY_ERROR, explanation=problem)
+        return signal
+
+
+def _mismatch(strategy: BaseStrategy, ctx: StrategyContext, signal: object) -> str:
+    if not isinstance(signal, Signal):
+        return f"expected a Signal, got {type(signal).__name__}"
+    if signal.strategy != strategy.name:
+        return f"signal is labelled {signal.strategy!r}"
+    if signal.symbol != ctx.symbol:
+        return f"signal is for {signal.symbol}, context is {ctx.symbol}"
+    if signal.data_timestamp_utc != ctx.decision_time_utc:
+        return "signal timestamp differs from the decision bar"
+    if signal.timeframe is not ctx.market.entry_timeframe:
+        return f"signal timeframe {signal.timeframe} is not the entry timeframe"
+    return ""
+    """Everything a strategy may read. Pure data: no gateway, no database, no secrets.
+
+    ``frames[tf]`` holds closed candles indexed by bar close time (UTC) up to the decision time, with the
+    indicator columns the context builder computed (see ``FRAME_COLUMNS`` in ``context_builder``). Strategies
+    must treat them as read-only; the builder hands every strategy its own copy.
+    """
+
+    market: MarketContext
+    frames: Mapping[Timeframe, pd.DataFrame]
+    now_utc: datetime  # wall-clock time of the evaluation (signal ``created_at``)
+    spec: SymbolSpec | None = None  # broker spec snapshot (data only)
+    evidence: Mapping[Timeframe, EvidenceSnapshot] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "now_utc", ensure_utc(self.now_utc))
+        object.__setattr__(self, "frames", MappingProxyType(dict(self.frames)))
+        object.__setattr__(self, "evidence", MappingProxyType(dict(self.evidence)))
+        for tf, frame in self.frames.items():
+            if len(frame) and pd.Timestamp(frame.index[-1]) > pd.Timestamp(self.market.decision_time_utc):
+                raise SignalError(f"{tf} frame extends past the decision time (look-ahead)")
+
+    @property
+    def symbol(self) -> str:
+        return self.market.symbol
+
+    @property
+    def decision_time_utc(self) -> datetime:
+        return self.market.decision_time_utc
+
+    def frame(self, tf: Timeframe) -> pd.DataFrame:
+        try:
+            return self.frames[tf]
+        except KeyError:
+            raise SignalError(f"strategy context has no {tf} frame") from None
+
+    def all_evidence(self) -> list[ActiveEvidence]:
+        """Active evidence of every timeframe, longest timeframe first."""
+        out: list[ActiveEvidence] = []
+        for tf in sorted(self.evidence, key=lambda t: -t.seconds):
+            out.extend(self.evidence[tf].items)
+        return out
+"""H4 confirmed-swing range breaks on M5 closes."""
+
+from __future__ import annotations
+
+from datetime import time
+from zoneinfo import ZoneInfo
+
+import pandas as pd
+from pydantic import Field
+
+from app.core.enums import Action, Side, Timeframe
+from app.strategy.base_strategy import BaseStrategy, StrategyParams
+from app.strategy.edge_side import behind, edge_lean
+from app.strategy.signal_models import (
+    Condition,
+    OpenPosition,
+    PositionAdvice,
+    ReasonCode,
+    Signal,
+    StrategyContext,
+)
+from app.strategy.trend_box import break_even_advice, in_window, running_push_exceeded, stepped
+from app.strategy.zigzag import zigzag
+
+BANGKOK = ZoneInfo("Asia/Bangkok")
+
+
+class RangeBreakParams(StrategyParams):
+    """Measured breakout plan constants."""
+
+    buffer: float = Field(default=0.3, ge=0, le=2)
+    tp_range: float = Field(default=0.5, gt=0, le=5)
+    min_r: float = Field(default=0.8, gt=0, le=10)
+    # Owner 2026-10-27: "you can take the 5 USD out". Measured first (research/.../gate_bite.py): the
+    # 5.00 USD floor rejected 1 of 496 complete signals, because every target here is a swing or half an
+    # H4 box. The gate stays so a lane can set one; 0.0 is off.
+    min_take_profit: float = Field(default=0.0, ge=0)
+    require_edge_side: bool = False
+
+
+class RangeBreak(BaseStrategy):
+    name = "range_break"
+    Params = RangeBreakParams
+
+    def required_timeframes(self) -> tuple[Timeframe, ...]:
+        return Timeframe.M1, Timeframe.M5, Timeframe.H1
+
+    def warmup_bars(self) -> int:
+        # H1 bars, not H4: the 300 H4 bars the box is read from are resampled from 1,200 closed H1 bars.
+        # Declaring 300 here would let a lane configure 300 H1 bars, give the ZigZag 75 H4 bars instead of
+        # 300, and change the box silently (found in review, 2026-10-27).
+        return 1200
+
+    @staticmethod
+    def _h4_from_h1(h1: pd.DataFrame) -> pd.DataFrame:
+        # App frames are indexed by H1 close; the research resamples bars indexed by H1 open.
+        opens = h1.copy()
+        opens.index = pd.DatetimeIndex(opens.index) - pd.Timedelta(hours=1)
+        return (
+            opens.resample("4h").agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
+        )
+
+    def evaluate(self, ctx: StrategyContext) -> Signal:
+        at = pd.Timestamp(ctx.decision_time_utc)
+        m5, m1 = ctx.frame(Timeframe.M5), ctx.frame(Timeframe.M1)
+        h1 = ctx.frame(Timeframe.H1).iloc[-1200:]
+        h4 = self._h4_from_h1(h1)
+        h4 = h4[(h4.index + pd.Timedelta(hours=4)) <= at].iloc[-300:]
+        if len(h4) < 300 or len(m5) < 2 or not len(m1):
+            return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+        if not in_window(at):
+            return self.hold(ctx, ReasonCode.OUTSIDE_SESSION)
+        swings, _forming = zigzag(h4.high.to_numpy(float), h4.low.to_numpy(float))
+        highs = [s.price for s in swings if s.kind == 1]
+        lows = [s.price for s in swings if s.kind == -1]
+        if stepped(swings) != "FLAT" or not highs or not lows:
+            return self.hold(ctx, "H4_STEPPING")
+        hh, ll = highs[-1], lows[-1]
+        if hh <= ll:
+            return self.hold(ctx, "INVALID_H4_BOX")
+        prev, price = float(m5.close.iloc[-2]), float(m5.close.iloc[-1])
+        rng = hh - ll
+        if price > hh >= prev:
+            side, stop, target = (
+                Side.BUY,
+                hh - self.params.buffer * rng * 0.25,
+                price + self.params.tp_range * rng,
+            )
+        elif price < ll <= prev:
+            side, stop, target = (
+                Side.SELL,
+                ll + self.params.buffer * rng * 0.25,
+                price - self.params.tp_range * rng,
+            )
+        else:
+            return self.hold(ctx, "NO_CLOSE_BREAK")
+        if self.params.require_edge_side:
+            lean = behind(edge_lean(ctx.frames, at, ctx.market.entry_timeframe), side)
+            if lean is None or lean < 0:  # unreadable is not permission: no edge side, no trade
+                return self.hold(ctx, "AGAINST_EDGE_SIDE")
+        risk, reward = abs(stop - price), abs(target - price)
+        if risk <= 0 or reward < self.params.min_take_profit or reward < self.params.min_r * risk:
+            return self.hold(ctx, ReasonCode.RR_TOO_LOW)
+        run_frame = m1[(m1.index >= at - pd.Timedelta(minutes=60)) & (m1.index < at)]
+        if run_frame.empty:
+            return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+        run = float(run_frame.high.max()) - price if side is Side.BUY else price - float(run_frame.low.min())
+        if running_push_exceeded(run, risk):
+            return self.hold(ctx, "RUNNING_PUSH")
+        return self.entry(
+            ctx,
+            Action.BUY if side is Side.BUY else Action.SELL,
+            entry_price=price,
+            stop_loss=stop,
+            take_profit=target,
+
+
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command "Select-String -Path app/strategy/edge_side.py -Pattern \"def resample_from_h1|opens.index|def edge_lean|if entry.seconds|h1 = frames|closed = bars|len\\(closed\\)|if not width|return \\(float\"; Select-String -Path app/strategy/trend_box.py -Pattern \"def warmup_bars|def evaluate|require_edge_side|lean is None|h1_frame =\"; Select-String -Path app/strategy/range_break.py -Pattern \"def warmup_bars|def evaluate|h1 = ctx.frame|h4 = h4\\[|if self.params.require_edge_side|lean is None\"; Select-String -Path tests/unit/test_strategy_edge_side.py -Pattern \"def test_|def expected_lean|resample_from_h1\"; Select-String -Path app/strategy/registry.py -Pattern \"def _evaluate_one|except Exception|STRATEGY_ERROR\"; Select-String -Path config.yaml -Pattern \"warmup_bars: 1200|require_edge_side: true\"" in C:\Users\korap\taa
+ succeeded in 809ms:
+
+app\strategy\edge_side.py:33:def resample_from_h1(h1: pd.DataFrame, hours: int) -> pd.DataFrame:
+app\strategy\edge_side.py:41:    opens.index = pd.DatetimeIndex(opens.index) - pd.Timedelta(hours=1)
+app\strategy\edge_side.py:46:def edge_lean(
+app\strategy\edge_side.py:59:    if entry.seconds >= frame.seconds:
+app\strategy\edge_side.py:65:    h1 = frames.get(Timeframe.H1)
+app\strategy\edge_side.py:69:    closed = bars[(bars.index + pd.Timedelta(hours=hours)) <= pd.Timestamp(at)]
+app\strategy\edge_side.py:70:    if len(closed) < MEAN_BARS + ATR_BARS:
+app\strategy\edge_side.py:74:    if not width > 0 or pd.isna(mean):
+app\strategy\edge_side.py:76:    return (float(closed.close.iloc[-1]) - mean) / width
+app\strategy\trend_box.py:42:    require_edge_side: bool = False
+app\strategy\trend_box.py:118:    def warmup_bars(self) -> int:
+app\strategy\trend_box.py:119:        return 1200 if self.params.require_big_tf or self.params.require_edge_side else 
+400
+app\strategy\trend_box.py:121:    def evaluate(self, ctx: StrategyContext) -> Signal:
+app\strategy\trend_box.py:123:        if self.params.require_edge_side:
+app\strategy\trend_box.py:128:            if lean is None or lean < 0:  # unreadable is not permission: no edge side, 
+no trade
+app\strategy\trend_box.py:131:        h1_frame = ctx.frame(Timeframe.H1)
+app\strategy\trend_box.py:137:        if not self.params.require_edge_side and not in_window(at):
+app\strategy\range_break.py:48:    def warmup_bars(self) -> int:
+app\strategy\range_break.py:63:    def evaluate(self, ctx: StrategyContext) -> Signal:
+app\strategy\range_break.py:66:        h1 = ctx.frame(Timeframe.H1).iloc[-1200:]
+app\strategy\range_break.py:68:        h4 = h4[(h4.index + pd.Timedelta(hours=4)) <= at].iloc[-300:]
+app\strategy\range_break.py:97:        if self.params.require_edge_side:
+app\strategy\range_break.py:99:            if lean is None or lean < 0:  # unreadable is not permission: no edge side, 
+no trade
+tests\unit\test_strategy_edge_side.py:18:from app.strategy.edge_side import ATR_BARS, MEAN_BARS, behind, edge_lean, 
+edge_side, resample_from_h1
+tests\unit\test_strategy_edge_side.py:49:def expected_lean(frames, at) -> float:
+tests\unit\test_strategy_edge_side.py:51:    bars = resample_from_h1(frames[Timeframe.H1], 4)
+tests\unit\test_strategy_edge_side.py:59:    def test_a_rising_frame_leans_up_and_a_falling_one_leans_down(self):
+tests\unit\test_strategy_edge_side.py:65:    def test_a_flat_frame_leans_neither_way(self):
+tests\unit\test_strategy_edge_side.py:70:    def test_the_number_is_the_distance_from_the_mean_in_atrs(self):
+tests\unit\test_strategy_edge_side.py:74:    def test_a_bar_that_has_not_closed_is_not_read(self):
+tests\unit\test_strategy_edge_side.py:82:    def test_too_little_history_is_no_answer_rather_than_a_guess(self):
+tests\unit\test_strategy_edge_side.py:87:    def test_a_missing_h1_frame_is_no_answer(self):
+tests\unit\test_strategy_edge_side.py:92:    def test_the_frame_read_must_be_larger_than_the_entry_frame(self):
+tests\unit\test_strategy_edge_side.py:99:    def test_h1_and_d1_can_be_read_too_so_the_frame_can_be_re_measured(self):
+tests\unit\test_strategy_edge_side.py:106:    def test_a_buy_wants_the_lean_up_and_a_sell_wants_it_down(self):
+tests\unit\test_strategy_edge_side.py:111:    def test_no_lean_stays_no_lean(self):
+tests\unit\test_strategy_edge_side.py:116:    def test_it_follows_the_sign_of_the_lean(self):
+app\strategy\registry.py:8:  given, becomes HOLD (``STRATEGY_ERROR``) and is logged with its traceback. One faulty 
+strategy never
+app\strategy\registry.py:100:    def _evaluate_one(strategy: BaseStrategy, ctx: StrategyContext) -> Signal:
+app\strategy\registry.py:103:        except Exception:  # plugin boundary: a strategy bug must fail closed, not stop 
+the loop
+app\strategy\registry.py:105:            return strategy.hold(ctx, ReasonCode.STRATEGY_ERROR, explanation="strategy 
+raised an exception")
+app\strategy\registry.py:109:            return strategy.hold(ctx, ReasonCode.STRATEGY_ERROR, explanation=problem)
+config.yaml:206:      warmup_bars: 1200
+config.yaml:215:          params: {require_edge_side: true}
+config.yaml:220:          params: {require_edge_side: true}
+config.yaml:225:          params: {require_edge_side: true}
+
+
+
+codex
+# Review: H4 edge-side gate
+
+**Scope:** Read the brief and reviewed `edge_side.py`, both strategy call paths, ATR implementation, the 11 unit tests, registry error handling, and lane warmup configuration. No files were changed. The report is printed here as requested.
+
+## 1. Open/close convention
+
+**Checked:** `resample_from_h1` in [edge_side.py](C:/Users/korap/taa/app/strategy/edge_side.py:33) and the app’s close-stamped frame contract in `StrategyContext`.
+
+**How:** App H1 candles are stamped at close. Shifting each timestamp back one hour assigns the candle to its opening hour. For a four-hour bucket opening at 00:00, the H1 candles closing at 01:00 through 04:00 are assigned to opens 00:00 through 03:00. The filter `(bucket open + 4 hours) <= at` includes that bar only at or after 04:00. It excludes the forming H4 bar.
+
+**Verdict:** The convention and closure boundary are correct for UTC close-stamped H1 frames. I found no one-hour lookahead in this path.
+
+## 2. Fail-closed behavior
+
+**Checked:** Missing and short input handling in `edge_lean`, and the `behind` gate conditions in both strategies.
+
+**How:** Missing H1 or missing `close` returns `None`; fewer than 64 closed resampled bars returns `None`; zero or NaN ATR width fails `not width > 0`; a NaN rolling mean is rejected. `behind(None, side)` remains `None`. Both strategies hold when the result is `None` or negative. The trend strategy evaluates the edge gate before reading the H1 frame for its setup; the range strategy reads its required frames first, but checks the gate before producing an entry.
+
+**Finding:** The returned lean is not checked for finiteness. If malformed input contains infinities, the calculation can produce a NaN lean: the mean and width checks do not reject infinity, and `(inf - inf) / inf` is NaN. Then `lean < 0` is false, so both gates can pass. This requires non-finite candle data, but it is a fail-open path if such data reaches these functions. A bad frame shape or resampling error can also raise; the strategy registry catches strategy exceptions and returns `STRATEGY_ERROR` HOLD, so those exceptions do not escape the engine loop.
+
+**Verdict:** Missing, short, and zero-width cases fail closed. Non-finite results do not reliably fail closed. The direct risk is allowing an entry when the edge value is invalid, if corrupted non-finite H1 data reaches a strategy.
+
+## 3. ATR ruler and warmup
+
+**Checked:** `app.indicators.volatility.atr`, its Wilder seeding, edge-side bar requirement, and configured warmup.
+
+**How:** ATR uses true range and Wilder smoothing, seeded with the first full 14-value window. The first true range is NaN because there is no prior close; the first ATR is therefore defined at position 14. At 64 closed H4 bars, the final 50-bar mean is defined and ATR is defined. The H4 bars are resampled from H1, so 64 H4 bars require up to 256 H1 bars; the configured 1,200 H1 bars exceed that requirement.
+
+**Verdict:** The app ATR ruler is being used, and 64 bars suffice for a non-NaN result. The `three_bots` lane has `warmup_bars: 1200`; trend strategies also declare 1,200 when this gate is enabled, and `range_break` declares 1,200. I found no other configured lane enabling `require_edge_side`.
+
+## 4. Test bite
+
+**Checked:** All 11 cases in `tests/unit/test_strategy_edge_side.py`.
+
+**How:** Ran `.venv\Scripts\python.exe -m pytest tests/unit/test_strategy_edge_side.py -q -s`: **11 passed**. The initial default-capture invocation could not create a temporary file under the read-only environment; `-s` ran the tests successfully. Pytest also reported it could not write its cache, as expected in this environment.
+
+The cases cover rising/falling signs, flat/zero behavior, distance in ATRs, forming-bar exclusion, too-short history, missing H1, entry/frame ordering, alternate H1/D1 frames, `behind` direction, `behind(None)`, and the side shortcut.
+
+I did **not** break production lines and restore them. The request to mutate and restore code conflicts with your read-only instruction, so I cannot claim mutation-confirmed sensitivity for each case. Static coverage suggests:
+
+- Rising/falling, flat, `behind`, and side-shortcut cases exercise the corresponding outputs.
+- Too-short and missing-H1 cases exercise refusal paths.
+- Frame-ordering cases exercise the `ValueError`.
+- Alternate-frame case exercises H1/D1 parameterization.
+- Forming-bar case exercises exclusion of an incomplete bucket.
+- Distance-in-ATRs checks the numeric result, but its expected value is **partly circular**: `expected_lean` calls production `resample_from_h1` and duplicates the closure filter. It cannot independently establish that the open/close timestamp shift or resampling buckets are correct. The hand-built fixture helps, but the expected result still shares the production resampler.
+
+**Verdict:** Existing tests pass, but the brief’s requested per-case mutation proof was not performed because it would modify code. The resampling convention is not independently verified by `expected_lean`; that is circular for the resampling logic.
+
+## 5. Other live-account concerns
+
+**Checked:** Gate ordering, strategy frame access, warmup validation, and exception handling.
+
+**How:** `range_break.evaluate` reads H1 and builds H4 before checking the resampled history length. For a present but short frame, it checks `len(h4) < 300` before using the data to form a trade. If a required frame is absent, `ctx.frame` raises; `StrategySet._evaluate_one` catches strategy exceptions and returns HOLD with `STRATEGY_ERROR`. Registry startup also verifies required timeframes and that the configured lane warmup meets each strategy’s declared warmup.
+
+**Verdict:** I found no path from a short or missing required frame to an entry, and no strategy exception path that escapes the registry into the engine loop. The non-finite lean issue in item 2 is the live-account concern I found.
+
+## Recommendation
+
+The single change I would most want is to reject any non-finite lean before it reaches the gate (or make the gate reject non-finite values). I would **not leave the gate switched on tonight** until that fail-open case is closed and covered by a test.
+tokens used
+41,037
+# Review: H4 edge-side gate
+
+**Scope:** Read the brief and reviewed `edge_side.py`, both strategy call paths, ATR implementation, the 11 unit tests, registry error handling, and lane warmup configuration. No files were changed. The report is printed here as requested.
+
+## 1. Open/close convention
+
+**Checked:** `resample_from_h1` in [edge_side.py](C:/Users/korap/taa/app/strategy/edge_side.py:33) and the app’s close-stamped frame contract in `StrategyContext`.
+
+**How:** App H1 candles are stamped at close. Shifting each timestamp back one hour assigns the candle to its opening hour. For a four-hour bucket opening at 00:00, the H1 candles closing at 01:00 through 04:00 are assigned to opens 00:00 through 03:00. The filter `(bucket open + 4 hours) <= at` includes that bar only at or after 04:00. It excludes the forming H4 bar.
+
+**Verdict:** The convention and closure boundary are correct for UTC close-stamped H1 frames. I found no one-hour lookahead in this path.
+
+## 2. Fail-closed behavior
+
+**Checked:** Missing and short input handling in `edge_lean`, and the `behind` gate conditions in both strategies.
+
+**How:** Missing H1 or missing `close` returns `None`; fewer than 64 closed resampled bars returns `None`; zero or NaN ATR width fails `not width > 0`; a NaN rolling mean is rejected. `behind(None, side)` remains `None`. Both strategies hold when the result is `None` or negative. The trend strategy evaluates the edge gate before reading the H1 frame for its setup; the range strategy reads its required frames first, but checks the gate before producing an entry.
+
+**Finding:** The returned lean is not checked for finiteness. If malformed input contains infinities, the calculation can produce a NaN lean: the mean and width checks do not reject infinity, and `(inf - inf) / inf` is NaN. Then `lean < 0` is false, so both gates can pass. This requires non-finite candle data, but it is a fail-open path if such data reaches these functions. A bad frame shape or resampling error can also raise; the strategy registry catches strategy exceptions and returns `STRATEGY_ERROR` HOLD, so those exceptions do not escape the engine loop.
+
+**Verdict:** Missing, short, and zero-width cases fail closed. Non-finite results do not reliably fail closed. The direct risk is allowing an entry when the edge value is invalid, if corrupted non-finite H1 data reaches a strategy.
+
+## 3. ATR ruler and warmup
+
+**Checked:** `app.indicators.volatility.atr`, its Wilder seeding, edge-side bar requirement, and configured warmup.
+
+**How:** ATR uses true range and Wilder smoothing, seeded with the first full 14-value window. The first true range is NaN because there is no prior close; the first ATR is therefore defined at position 14. At 64 closed H4 bars, the final 50-bar mean is defined and ATR is defined. The H4 bars are resampled from H1, so 64 H4 bars require up to 256 H1 bars; the configured 1,200 H1 bars exceed that requirement.
+
+**Verdict:** The app ATR ruler is being used, and 64 bars suffice for a non-NaN result. The `three_bots` lane has `warmup_bars: 1200`; trend strategies also declare 1,200 when this gate is enabled, and `range_break` declares 1,200. I found no other configured lane enabling `require_edge_side`.
+
+## 4. Test bite
+
+**Checked:** All 11 cases in `tests/unit/test_strategy_edge_side.py`.
+
+**How:** Ran `.venv\Scripts\python.exe -m pytest tests/unit/test_strategy_edge_side.py -q -s`: **11 passed**. The initial default-capture invocation could not create a temporary file under the read-only environment; `-s` ran the tests successfully. Pytest also reported it could not write its cache, as expected in this environment.
+
+The cases cover rising/falling signs, flat/zero behavior, distance in ATRs, forming-bar exclusion, too-short history, missing H1, entry/frame ordering, alternate H1/D1 frames, `behind` direction, `behind(None)`, and the side shortcut.
+
+I did **not** break production lines and restore them. The request to mutate and restore code conflicts with your read-only instruction, so I cannot claim mutation-confirmed sensitivity for each case. Static coverage suggests:
+
+- Rising/falling, flat, `behind`, and side-shortcut cases exercise the corresponding outputs.
+- Too-short and missing-H1 cases exercise refusal paths.
+- Frame-ordering cases exercise the `ValueError`.
+- Alternate-frame case exercises H1/D1 parameterization.
+- Forming-bar case exercises exclusion of an incomplete bucket.
+- Distance-in-ATRs checks the numeric result, but its expected value is **partly circular**: `expected_lean` calls production `resample_from_h1` and duplicates the closure filter. It cannot independently establish that the open/close timestamp shift or resampling buckets are correct. The hand-built fixture helps, but the expected result still shares the production resampler.
+
+**Verdict:** Existing tests pass, but the brief’s requested per-case mutation proof was not performed because it would modify code. The resampling convention is not independently verified by `expected_lean`; that is circular for the resampling logic.
+
+## 5. Other live-account concerns
+
+**Checked:** Gate ordering, strategy frame access, warmup validation, and exception handling.
+
+**How:** `range_break.evaluate` reads H1 and builds H4 before checking the resampled history length. For a present but short frame, it checks `len(h4) < 300` before using the data to form a trade. If a required frame is absent, `ctx.frame` raises; `StrategySet._evaluate_one` catches strategy exceptions and returns HOLD with `STRATEGY_ERROR`. Registry startup also verifies required timeframes and that the configured lane warmup meets each strategy’s declared warmup.
+
+**Verdict:** I found no path from a short or missing required frame to an entry, and no strategy exception path that escapes the registry into the engine loop. The non-finite lean issue in item 2 is the live-account concern I found.
+
+## Recommendation
+
+The single change I would most want is to reject any non-finite lean before it reaches the gate (or make the gate reject non-finite values). I would **not leave the gate switched on tonight** until that fail-open case is closed and covered by a test.

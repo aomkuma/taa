@@ -1,0 +1,9 @@
+TR1 independent frozen P2 replay
+entries replayed: 142
+entry field checks: 2272
+exit rows replayed: 568
+exit field checks: 5680
+latest tick day opened: 2026-04-17
+result: PASS
+Producer opportunity/exit/structure modules were not imported by the verifier logic.
+The exam period was not opened.

@@ -1,0 +1,9 @@
+TR1 independent exit replay - P1 only
+entries replayed: 138
+exit-family rows replayed: 552
+field checks: 5520
+physical tick files opened: 62
+latest tick day opened: 2026-01-15
+result: PASS
+Producer exit/structure modules were not imported.
+No P2 or exam data was opened.

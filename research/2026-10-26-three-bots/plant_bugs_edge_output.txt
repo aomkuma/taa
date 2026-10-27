@@ -1,0 +1,18 @@
+caught  the close-to-open shift is dropped (an hour of lookahead)
+caught  the shift goes the wrong way
+caught  a bar that has not closed is read
+caught  too short a history is answered with a guess instead of None
+caught  the lean is not divided by the frame's own volatility
+caught  the sign of the lean is inverted
+MISSED  a non-finite lean is handed back (nan < 0 is False: the gate opens)
+caught  a non-finite width passes the guard
+caught  a zero-width frame divides by zero instead of refusing
+caught  a sell is judged by the lean as it stands, not from its own side
+caught  the rule can be read from the entry frame itself
+caught  an unreadable frame becomes permission to trade (trend)
+caught  an unreadable frame becomes permission to trade (range)
+caught  the trend gate judges the wrong direction
+caught  the range gate judges the wrong side
+
+14/15 caught
+  MISSED: a non-finite lean is handed back (nan < 0 is False: the gate opens)

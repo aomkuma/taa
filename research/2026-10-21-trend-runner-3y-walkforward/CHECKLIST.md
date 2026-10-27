@@ -1,0 +1,22 @@
+# Checklist
+
+- [x] Confirm available M1/tick date bounds and preserve the locked historical exam.
+- [x] Freeze the scope, strategy parameters, evaluation boundary, M1-only execution approximation, and caveats in `PLAN.md` before measurement.
+- [x] Create an isolated data loader that fails closed on the exam interval and post-shadow boundary.
+- [x] Generate frozen TR1 opportunities chronologically from causal M1/H1 data.
+- [x] Build a conservative M1 OHLC execution replay for FAST and SPLIT/RUNNER, with intrabar ambiguity resolved against the trade.
+- [x] Audit the M1 approximation against frozen tick entries/outcomes on P1/P2 without tuning to their returns.
+- [x] Build the frozen 11-feature panel with no future price/outcome leakage.
+- [x] Run the frozen TR3 monthly 60/90/120-day ensemble walk-forward; do not use the locked exam.
+- [x] Verify each month's training timestamps/outcome availability and scored-row separation.
+- [x] Report baseline, selector, year/chronological cuts, concentration, drawdown, and uncertainty.
+- [x] Run unit and boundary/causality checks; compile all scripts.
+- [ ] Resolve Ruff style findings (44 findings; primarily line length, intentional CLI prints/asserts, and minor cleanup).
+- [x] Record limits and the next valid evidence step; keep strategies/order paths unchanged.
+- [x] Create a Canvas summary. The Canvas host's TypeScript diagnostic is not exposed through the available file-edit tool; see handoff note.
+- [x] Build a separate scored-trade path journal with per-trade MFE/MAE, threshold timing, exit reason, and after-exit excursion.
+- [x] Summarize winner/loss path differences, selector-selected/skipped cohorts, and preserve OHLC ambiguity labels.
+- [x] Test trade-journal path and boundary logic; compile scripts.
+- [x] Create a standalone Canvas for journal findings (host type diagnostic unavailable through this file-edit tool).
+- [x] Build a reproducible UTC week-by-week review over every historical journal row; export per-trade review flags and validate that weekly aggregation preserves all 1,231 rows and 313 selected RUNNER trades.
+- [x] Add tests for weekly grouping, review flags, duplicate-key protection, and empty-selected-week rendering.

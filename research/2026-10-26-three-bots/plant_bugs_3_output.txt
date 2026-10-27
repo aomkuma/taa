@@ -1,0 +1,28 @@
+CAUGHT | test_strategy_edge_side.py::test_rising_daily_mean_with_close_above_it_is_buy | classify a rising close above its mean as mixed
+CAUGHT | test_strategy_edge_side.py::test_falling_daily_mean_with_close_below_it_is_sell | classify a falling close below its mean as mixed
+CAUGHT | test_strategy_edge_side.py::test_close_above_a_falling_mean_is_mixed | ignore the mean slope when close is above it
+CAUGHT | test_strategy_edge_side.py::test_close_below_a_rising_mean_is_mixed | ignore the mean slope when close is below it
+CAUGHT | test_strategy_edge_side.py::test_exactly_fifty_closed_daily_bars_do_not_guess_the_mean_slope | guess a BUY with exactly one 50-day mean sample
+CAUGHT | test_strategy_edge_side.py::test_forty_nine_closed_daily_bars_return_no_side | allow 49 daily bars to pass the history guard
+CAUGHT | test_strategy_edge_side.py::test_unclosed_daily_bar_does_not_change_the_edge_side | include a forming D1 bar in the regime
+CAUGHT | test_strategy_edge_side.py::test_entry_at_or_above_daily_raises_value_error | permit D1 as the entry timeframe
+CAUGHT | test_strategy_edge_side.py::test_short_h1_history_returns_no_side | accept fewer than 1,200 H1 bars
+CAUGHT | test_strategy_weighing.py::test_all_readings_agree | invert agreement for boolean true readings
+CAUGHT | test_strategy_weighing.py::test_all_readings_disagree | award full weight to disagreeing booleans
+CAUGHT | test_strategy_weighing.py::test_mixed_readings_use_weighted_contributions | use the raw numeric value instead of its contribution
+CAUGHT | test_strategy_weighing.py::test_missing_reading_is_removed_from_the_denominator | count a missing weight in the denominator
+CAUGHT | test_strategy_weighing.py::test_low_numeric_reading_scores_the_complement | score wants-low as wants-high
+CAUGHT | test_strategy_weighing.py::test_empty_scale_scores_zero_and_has_no_readings | give an empty scale a positive score
+CAUGHT | test_strategy_weighing.py::test_zero_weight_is_readable_but_cannot_create_a_score | let zero total weight pass a zero threshold
+CAUGHT | test_strategy_weighing.py::test_threshold_is_met_at_equality | make the threshold comparison strict
+CAUGHT | test_strategy_weighing.py::test_none_is_reported_as_missing | treat None as a numeric reading
+CAUGHT | test_strategy_trend_box.py::test_edge_side_parameters_default_off | enable trend edge filtering by default
+CAUGHT | test_strategy_trend_box.py::test_edge_side_blocks_down_bot_unless_daily_edge_is_sell | skip the trend bot's direction check
+CAUGHT | test_strategy_trend_box.py::test_edge_side_none_blocks_before_trend_data_is_read | allow an unknown edge side through the trend bot
+CAUGHT | test_strategy_trend_box.py::test_edge_side_warmup_is_1200_only_when_enabled | leave trend warmup short when edge filtering is enabled
+CAUGHT | test_strategy_trend_box.py::test_edge_side_parameters_default_off | enable range edge filtering by default
+CAUGHT | test_strategy_range_break.py::test_edge_side_allows_a_range_break_that_matches_the_daily_edge | block a range break that matches the edge
+CAUGHT | test_strategy_range_break.py::test_edge_side_blocks_a_range_break_against_the_daily_edge | allow a range break against the edge
+CAUGHT | test_strategy_trend_box.py::test_edge_side_blocks_up_bot_unless_daily_edge_is_buy | make the up trend bot expect the wrong edge side
+CAUGHT | test_strategy_range_break.py::test_no_daily_edge_blocks_a_range_break | let a range break through when the edge side is missing
+27/27 caught

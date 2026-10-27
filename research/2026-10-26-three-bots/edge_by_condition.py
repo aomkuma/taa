@@ -43,16 +43,21 @@ MEAN_DAYS = 50
 
 
 def regimes(h1: pd.DataFrame) -> pd.DataFrame:
-    """One row per CLOSED D1 bar: its close, the 50-day mean, and the regime label."""
-    opens = h1.copy()
-    opens.index = pd.DatetimeIndex(opens.index) - pd.Timedelta(hours=1)  # frames are close-stamped
-    d1 = opens.resample("1D").agg({"high": "max", "low": "min", "close": "last"}).dropna()
+    """One row per CLOSED D1 bar: its close, the 50-day mean, and the regime label.
+
+    ``to_frame`` indexes a bar by its OPEN, so nothing is shifted here; an earlier version subtracted an
+    hour as if the frames were close-stamped and put the day buckets an hour out. ``bear`` is strictly
+    under a strictly falling mean - "not rising" swept a flat mean and an exact touch into bear instead
+    of mixed (both found by the developer session, 2026-10-27).
+    """
+    d1 = h1.resample("1D").agg({"high": "max", "low": "min", "close": "last"}).dropna()
     d1["mean50"] = d1.close.rolling(MEAN_DAYS).mean()
-    d1["rising"] = d1.mean50.diff() > 0
+    slope = d1.mean50.diff()
+    d1["rising"] = slope > 0
     over = d1.close > d1.mean50
     d1["regime"] = "mixed"
     d1.loc[over & d1.rising, "regime"] = "bull"
-    d1.loc[~over & ~d1.rising, "regime"] = "bear"
+    d1.loc[(d1.close < d1.mean50) & (slope < 0), "regime"] = "bear"
     d1.loc[d1.mean50.isna(), "regime"] = "unknown"
     d1["closed_at"] = d1.index + pd.Timedelta(days=1)  # the bar is readable only after it closes
     return d1
@@ -84,7 +89,11 @@ def cells(df: pd.DataFrame, by: list[str], title: str, least: int = 8) -> None:
             continue
         keys = key if isinstance(key, tuple) else (key,)
         fit, uns = g[g.fitted], g[~g.fitted]
-        both = f"{fit.r.mean():+.3f} / {uns.r.mean():+.3f}" if len(fit) and len(uns) else "-"
+        both = (
+            f"{fit.r.mean():+.3f} ({len(fit)}) / {uns.r.mean():+.3f} ({len(uns)})"
+            if len(fit) and len(uns)
+            else "-"
+        )
         print(
             f"| {' | '.join(str(k) for k in keys)} | {len(g)} | {(g.r > 0).mean():.0%} | "
             f"{g.r.mean():+.3f} | {g.r.sum():+.1f} | {both} |"

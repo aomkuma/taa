@@ -1,0 +1,10 @@
+TR1 frozen round - P1
+entries: 138; exit rows: 552
+physical tick files opened: 124; latest: 2026-01-15
+family complete mean_R total_R USD_001 win
+FAST  138 +0.011 +1.56 +4.32 0.362
+SWING 138 +0.386 +53.23 +281.55 0.246
+SPLIT 138 +0.265 +36.52 +192.92 0.319
+STATE 138 -0.032 -4.45 -15.10 0.297
+P1 common-runner parity with opportunity/exit study: PASS
+Exam data is unsupported and was not opened.

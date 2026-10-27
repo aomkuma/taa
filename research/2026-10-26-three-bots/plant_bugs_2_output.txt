@@ -1,0 +1,13 @@
+CAUGHT | test_big_tf_off_keeps_an_opposing_h4_out_of_the_decision | enable the big time frame lever by default
+CAUGHT | test_big_tf_down_blocks_up_h4_but_flat_and_down_keep_the_entry | let an up H4 trend pass a down box
+CAUGHT | test_big_tf_up_blocks_down_h4 | let a down H4 trend pass an up box
+CAUGHT | test_big_tf_down_blocks_up_h4_but_flat_and_down_keep_the_entry | leave the H1 warmup too short to build 300 H4 bars
+CAUGHT | test_big_tf_requires_300_closed_h4_bars | accept only 299 closed H4 bars
+CAUGHT | test_big_tf_does_not_send_a_forming_h4_bar_to_zigzag | allow a still-forming H4 bar into ZigZag
+CAUGHT | test_min_stop_atr_does_not_widen_a_stop_exactly_at_the_floor | widen a stop whose distance equals the ATR floor
+CAUGHT | test_min_stop_atr_off_leaves_a_tiny_box_stop_unchanged | turn on the ATR floor by default
+CAUGHT | test_min_stop_atr_mirrors_the_buy_stop_direction | move a BUY stop away from the entry in the wrong direction
+CAUGHT | test_min_stop_atr_widens_only_narrow_stops_and_reports_floor | halve the configured ATR stop floor
+CAUGHT | test_min_stop_atr_widens_only_narrow_stops_and_reports_floor | omit the stop floor condition from widened entries
+CAUGHT | test_min_stop_atr_widening_is_included_in_the_min_r_gate | run the reward-risk check against box width instead of widened risk
+12/12 caught

@@ -31,7 +31,7 @@ a trend bot and the range bot can overlap, the two trend bots cannot (their cond
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import pandas as pd
@@ -84,6 +84,30 @@ class Trade:
     r: float = 0.0
     out: str = ""
     extra: dict = field(default_factory=dict)
+
+
+# The configuration the app actually ships (app/strategy/trend_box.py, range_break.py and the three_bots
+# lane of config.yaml). It is a dict because the three bots do NOT share one P: RANGE differs from the
+# others in KIND - "break" is an M5 close out of the box, while P()'s default "fade" sells a sweep that
+# closed back inside, a different setup entirely.
+#
+# On 2026-10-27 a research script measured P() instead of this and produced an afternoon of conclusions
+# about a setup we do not run (the shipped bots are +0.102 R a trade; the defaults are -0.106). `run`
+# now refuses the bare defaults so that cannot happen silently again.
+SHIPPED: dict[str, "P"] = {}  # filled below, once P exists
+
+
+def _shipped() -> dict[str, "P"]:
+    return {
+        "DOWN": replace(P(), bots=("DOWN",), box=0.2, buffer=0.2, min_r=1.2),
+        "UP": replace(P(), bots=("UP",), box=0.33, buffer=0.2, min_r=1.2),
+        "RANGE": replace(
+            P(), bots=("RANGE",), range_tf="H4", range_mode="break", tp_range=0.5, buffer=0.3, min_r=0.8
+        ),  # fmt: skip
+    }
+
+
+SHIPPED.update(_shipped())
 
 
 def windows(day: pd.Timestamp) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
@@ -159,6 +183,20 @@ def run(
 ) -> list[Trade]:
     """Every bot of ``params`` (one P for all its bots, or one P per bot) side by side, each with its own
     position, so a trend trade and a range trade can be open at once."""
+    if isinstance(params, dict):
+        bare = [b for b, v in params.items() if v == P()]
+        if bare:
+            raise ValueError(
+                f"run() was given the bare P() defaults for {bare}. Pass bots.SHIPPED, or "
+                "replace(P(), ...) when the variation is deliberate."
+            )
+    if isinstance(params, P) and params == P():
+        raise ValueError(
+            "run() was given the bare P() defaults. Those are not the configuration we ship - RANGE's "
+            "default range_mode is 'fade', while the shipped bot is 'break'. Pass bots.SHIPPED (a dict, "
+            "one P per bot), or replace(P(), ...) when you mean to vary something deliberately. "
+            "(The trap that cost 2026-10-27's afternoon.)"
+        )
     per: dict[str, P] = params if isinstance(params, dict) else {b: params for b in params.bots}
     m1, h1 = f[Timeframe.M1], f[Timeframe.H1]
     h4 = h1.resample("4h").agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
@@ -347,7 +385,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
     hs = ParquetHistoryStore(ROOT / "data/history")
     f = {t: to_frame(hs.load("FBS-Demo", "XAUUSD", t, None, None)) for t in (Timeframe.M1, Timeframe.H1)}
-    report(run(f, P()), "three bots side by side, defaults, 2025-10-20 .. 2026-10-23")
+    report(run(f, SHIPPED), "the three bots as shipped, 2025-10-20 .. 2026-10-23")
 
 
 if __name__ == "__main__":

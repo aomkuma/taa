@@ -39,6 +39,7 @@ sys.path.insert(0, str(ROOT))
 
 from app.core.enums import Timeframe  # noqa: E402
 from app.engine.ai_trader import to_frame  # noqa: E402
+from app.indicators.volatility import atr as app_atr  # noqa: E402
 from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
 
 MEAN_BARS, ATR_BARS = 50, 14
@@ -46,20 +47,25 @@ FRAMES = {"H1": 1, "H4": 4, "D1": 24}  # hours a bar covers
 
 
 def atr(frame: pd.DataFrame, n: int = ATR_BARS) -> pd.Series:
-    """Wilder's ATR, MetaTrader 5's own formula."""
-    prev = frame.close.shift(1)
-    tr = pd.concat([frame.high - frame.low, (frame.high - prev).abs(), (frame.low - prev).abs()], axis=1).max(
-        axis=1
-    )
-    return tr.ewm(alpha=1 / n, adjust=False, min_periods=n).mean()
+    """The app's own ATR, so research and production measure with one ruler.
+
+    An earlier version used ``ewm(adjust=False)``, which seeds from the first true range, while the app's
+    ``recursive_smooth`` seeds from the mean of the first full window - the two drift apart near the
+    warmup (found by the developer session, 2026-10-27).
+    """
+    return app_atr(frame.high, frame.low, frame.close, n)
 
 
 def momentum(h1: pd.DataFrame, hours: int) -> pd.DataFrame:
-    """One row per CLOSED bar of the frame: its momentum, and the time it became readable."""
-    opens = h1.copy()
-    opens.index = pd.DatetimeIndex(opens.index) - pd.Timedelta(hours=1)  # frames are close-stamped
+    """One row per CLOSED bar of the frame: its momentum, and the time it became readable.
+
+    ``to_frame`` indexes a bar by its OPEN (see its docstring), so a bucket opening at ``t`` closes at
+    ``t + hours`` and is readable only then. An earlier version shifted the index back an hour as if the
+    frames were close-stamped - a double shift that made every bar readable an hour before it closed and
+    put the H4 and D1 buckets an hour out (found by the developer session, 2026-10-27).
+    """
     rule = f"{hours}h" if hours < 24 else "1D"
-    f = opens.resample(rule).agg({"high": "max", "low": "min", "close": "last"}).dropna()
+    f = h1.resample(rule).agg({"high": "max", "low": "min", "close": "last"}).dropna()
     out = pd.DataFrame(index=f.index)
     out["mom"] = (f.close - f.close.rolling(MEAN_BARS).mean()) / atr(f)
     out["readable"] = f.index + pd.Timedelta(hours=hours)
@@ -91,7 +97,11 @@ def bins(df: pd.DataFrame, col: str, name: str) -> None:
         if len(g) < 8:
             continue
         fit, uns = g[g.fitted], g[~g.fitted]
-        both = f"{fit.r.mean():+.2f} / {uns.r.mean():+.2f}" if len(fit) and len(uns) else "-"
+        both = (
+            f"{fit.r.mean():+.2f} ({len(fit)}) / {uns.r.mean():+.2f} ({len(uns)})"
+            if len(fit) and len(uns)
+            else "-"
+        )
         print(
             f"| {lab} | {len(g)} | {(g.r > 0).mean():.0%} | {g.r.mean():+.3f} | "
             f"**{g.mfe_r.median():.2f}** | {both} |"

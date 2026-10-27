@@ -1,0 +1,59 @@
+CAUGHT  candidate.py       complete bar dropped at data end
+CAUGHT  candidate.py       forming bar used as a signal
+CAUGHT  candidate.py       ATR without previous close and with bar 0
+CAUGHT  candidate.py       SELL bars not lifted by spread
+CAUGHT  candidate.py       reclaim on the bar closing at the stop
+CAUGHT  candidate.py       reclaim window end exclusive
+CAUGHT  candidate.py       SELL reclaim direction flipped
+CAUGHT  candidate.py       retest window seven bars
+CAUGHT  candidate.py       retest close need not hold
+CAUGHT  candidate.py       buffer min instead of max
+CAUGHT  candidate.py       stop from retest close
+CAUGHT  candidate.py       invalidation ignored
+CAUGHT  candidate.py       continuation not strict
+CAUGHT  candidate.py       confirmation window three bars
+CAUGHT  candidate.py       B3: retest expires 8 h after the stop
+CAUGHT  candidate.py       B6: BUY entry at the bid
+CAUGHT  candidate.py       entry on the last quote of the minute
+CAUGHT  candidate.py       slippage favourable
+CAUGHT  candidate.py       entry through stop accepted
+CAUGHT  candidate.py       B6: stop booked at the stop price
+CAUGHT  candidate.py       BUY marked on the ask
+CAUGHT  candidate.py       time before stop on the same quote
+CAUGHT  candidate.py       time exit only after the deadline
+CAUGHT  candidate.py       pivot applied before confirmation
+CAUGHT  candidate.py       stop may loosen
+CAUGHT  candidate.py       pre-entry pivot trails
+CAUGHT  candidate.py       pivot buffer without entry spread
+CAUGHT  candidate.py       trail guessed past the supplied bars
+CAUGHT  ticks.py           exam guard off by a day
+CAUGHT  ticks.py           tick day read without the guard
+CAUGHT  ticks.py           tick day sorted by price
+CAUGHT  source_ticks.py    stop after the +1R partial counted as eligible
+CAUGHT  source_ticks.py    time exit counted as stop
+CAUGHT  source_ticks.py    long slices allowed
+CAUGHT  source_adapter.py  B10: equal-time quotes refused
+CAUGHT  journal_fields.py  Thai time zone wrong
+CAUGHT  journal_fields.py  ATR from the forming bar
+CAUGHT  journal_fields.py  week from the UTC date
+CAUGHT  journal_fields.py  SELL excursions on the bid
+CAUGHT  opportunity.py     B1: later pullback substituted
+CAUGHT  opportunity.py     TR1 depth band narrowed
+CAUGHT  detector.py        S1: shadow later pullback substituted
+CAUGHT  detector.py        shadow ATR window 13
+CAUGHT  detector.py        shadow impulse 0.30 H
+CAUGHT  detector.py        shadow depth band narrowed
+CAUGHT  detector.py        shadow BUY fills at the bid
+CAUGHT  detector.py        shadow buffer min
+CAUGHT  detector.py        shadow risk band widened
+CAUGHT  adapter.py         S2: adapter ticks reordered
+CAUGHT  outcome_adapter.py S2: outcome ticks reordered
+CAUGHT  outcomes.py        shadow stop booked at the stop price
+CAUGHT  outcomes.py        shadow partial one half
+CAUGHT  outcomes.py        shadow graduation at 2R
+CAUGHT  outcomes.py        shadow M5 trail kept after graduation
+CAUGHT  outcomes.py        shadow stop may loosen
+CAUGHT  outcomes.py        shadow time exit after the deadline
+CAUGHT  outcomes.py        shadow target at the gap price
+
+57 of 57 planted bugs caught

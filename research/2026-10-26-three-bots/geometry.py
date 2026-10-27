@@ -28,6 +28,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import audit  # noqa: E402
 import bots  # noqa: E402
 from app.core.enums import Timeframe  # noqa: E402
 from app.engine.ai_trader import to_frame  # noqa: E402
@@ -100,15 +101,17 @@ def main() -> None:
     hs = ParquetHistoryStore(ROOT / "data/history")
     f = {t: to_frame(hs.load("FBS-Demo", "XAUUSD", t, None, None)) for t in (Timeframe.M1, Timeframe.H1)}
     m1 = f[Timeframe.M1]
-    # exit_mode "tp" for every bot: the stop and the target alone, so the entry is measured without any
-    # exit rule layered on top (the configured UP and RANGE bots move to break-even; that is a separate
-    # question, and the week-1 journal showed it is the entry that needs answering first).
-    p = replace(bots.P(), exit_mode="tp")
+    # The CHOSEN parameters, one set per bot (audit.BEST) - not bots.P(). They differ in every bot, and
+    # for RANGE they differ in kind: P() defaults to range_mode "fade" (sell a sweep that closed back
+    # inside the box) while the shipped strategy is "break" (an M5 close out of the box). Measuring the
+    # defaults measures a setup we do not run - found by the developer session, 2026-10-27.
+    # exit_mode "tp" everywhere so the entry is read without an exit rule on top of it.
+    per = {b: replace(v, exit_mode="tp") for b, v in audit.BEST.items()}
     start, end = pd.Timestamp("2023-09-05", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC")
-    trades = bots.run(f, p, start, end)
+    trades = bots.run(f, per, start, end)
     rows = []
     for t in trades:
-        st = path_stats(m1, t, p)
+        st = path_stats(m1, t, per[t.bot])
         if not st:
             continue
         # a stop at x1.0 is the trade run() already settled: if the two disagree this harness is wrong

@@ -7,3 +7,4 @@
 - [ ] 2026-10-26 21:05 Thai: went 28.1 USD (2.3 H1 ATR) AGAINST the M15 rhythm (up) read at 4016.85 (raw/2026-10-26_2105.txt)
 - [ ] 2026-10-26 21:05 Thai: a big hour: range 29.2 USD = 2.4 H1 ATR (raw/2026-10-26_2105.txt)
 - [ ] 2026-10-26 22:05 Thai: a big hour: range 29.9 USD = 2.2 H1 ATR (raw/2026-10-26_2205.txt)
+- [ ] 2026-10-27 18:05 Thai: ran up 21.2 USD (1.8 H1 ATR) with NO M15 rhythm read beforehand (raw/2026-10-27_1805.txt)
