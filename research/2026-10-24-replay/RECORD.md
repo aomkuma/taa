@@ -46,6 +46,21 @@ four empty placeholders are deleted. The mapping to the old `.log` names is in t
 **The habit this cost:** a run's report belongs in this folder under the name a reader looks for, in the same
 change as the run. An empty file is worse than a missing one - it answers the question wrongly.
 
+## The re-run of 2026-10-28: one code version, one day at a time
+
+Commit `d00c658`, from an empty store and an empty answers cache (the owner: "wipe the result memory, then
+start again"). Day by day, each day reported before the next runs. The journal, with the measurer's own
+reading of every decision, is `rerun_2026-10-28/JOURNAL.md`; the generated reports are beside it.
+
+| Thai day | wakes | trades | R | 300 USD account | 100 USD account | AI cost |
+|---|---:|---:|---:|---|---|---:|
+| 2026-07-06 | 27 | **0** | +0.00 | 300.00 -> 300.00 | 100.00 -> 100.00 | 0 USD |
+
+Day 1 took no trade in a 74.47 USD day. Four causes were found and recorded as ISSUES 37-40, three of them
+inputs the AI was never given: R10's H4 lean (the real value was +3.515 all morning, behind a BUY, while the
+AI used R10 to refuse buys), the London ORB range, and a morning plan that priced nothing. The fourth is
+ISSUES 2 and 29 recurring - its own plan's trigger fired on 1.8x volume and the entry was watched past.
+
 ## The next measurement that would settle anything
 
 All four days on **one** code version, today's, in order, with day 4 run to the end. Until then there is no

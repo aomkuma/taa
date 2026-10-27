@@ -71,6 +71,9 @@ rest (P03). **Code** items are decided by the code; the AI copies the verdict.
 | D2 | A lesson becomes a shadow rule; it applies only after its forward record holds (>= 4 weeks); costly rules are deleted |
 | D3 | Add the lesson to this checklist at once |
 | D4 | A method is judged only in the daily journal of the system as built, summed week by week - never by whole-period tables of a bare trigger (those check code parity or read a frozen exam) (L18) |
+| D6 | A rule is only in force when its own reading is in the readings block the decider receives. Before calling a rule in force, name its reading and find it in the prompt; a rule whose input is missing does not filter - it licenses a guess. Same for a weapon: no reading, no weapon, and it comes off the active list until it has one (2026-07-06 re-run: R10's H4 lean was absent while the real lean sat at +3.515 behind a BUY all morning, and the AI used R10 to refuse buys; the London ORB range was absent and cost five wakes; ISSUES 37-38) |
+| D7 | A plan that prices nothing arms nothing. A scenario with no entry, stop or take-profit must not be counted later as a reason to wait, and a WAIT that names a level places its order (2026-07-06: both scenarios null, three wakes cited the emptiness as grounds to wait, `wait_order` used 0 of 27; ISSUES 39) |
+| D8 | "The cycle is spent" (P24) never retires a setup that was never entered. The 08:00 sweep closed back on 1.8x volume at the plan's own named level and was answered "no completed pattern", then "already run" (ISSUES 40, and ISSUES 2 / 29 before it) |
 | D5 | An owner word that is new or ambiguous is restated and confirmed before it becomes a rule ("แอ่ง" was the stop's liquidate zone, read as a take-profit: L19) |
 
 ## E. The observer's habits (owner 2026-10-23: "always remember, always observe price")

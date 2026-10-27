@@ -441,3 +441,60 @@ the lane's `warmup_bars` must be raised in the same change.
 - A stopped background task can leave a live child process still writing state files; check a file's
   mtime before trusting a reset. `taskkill /PID` does not work in Git Bash - use `os.kill` from the venv.
 - Running the full suite beside anything heavy produces memory errors that look like test failures.
+
+---
+
+## The current state, 2026-10-28 03:xx Thai (this supersedes the section above)
+
+### The AI trader is being measured, one day at a time
+
+The owner, 2026-10-28: make the AI trader help or decide **for real**. The work started by making its
+failures visible, then by measuring what it actually does on one code version.
+
+| | state |
+|---|---|
+| engine, web, agents | all stopped; DEMO still paused |
+| the replay run | day 1 of 4 done, at commit `d00c658`, from a wiped store and answers cache |
+| day 1 (2026-07-06) | 27 wakes, **27 WAIT, 0 trades** in a 74.47 USD day; the first build traded 3 times for +0.21 R |
+| the four causes | ISSUES 37-40, three of them inputs the AI was never given |
+| code changes pending | none applied yet - the owner asked for the record first |
+
+**Read in this order:** `research/2026-10-24-replay/README.md` (the single door to the replays),
+`RECORD.md` (every day ever traded, with its code version), `rerun_2026-10-28/JOURNAL.md` (day 1 in full,
+with the measurer's own reading), `ISSUES.md` rows 37-40.
+
+### What day 1 found
+
+- **R10, the locked H4 rule, has no input.** It is in force with `when: None`, defined on the H4 lean, and
+  `features()` never computes it - the number is absent from the whole prompt. The AI guessed from
+  `h4_rhythm` / `h4_big` / `h4_trend` and used R10 to refuse buys all morning. The real lean was **+3.515,
+  behind a BUY**, through the hours that held the day's one good entry.
+- **W03, the London ORB, cannot fire**: no reading carries the 13:00-13:15 range. Five wakes said so.
+- **The morning plan priced neither scenario**, so nothing was armed, and three later wakes cited that
+  emptiness as a reason to wait. `wait_order` was used 0 times in 27.
+- **ISSUES 2 and 29 recurred**: the plan's own trigger fired (an M5 sweep to 4172.48 closing back to 4177.21
+  on 1.8x volume, under the named 4177.16) and was answered "no completed pattern", then "already run".
+  Entry at the 08:01 close 4180.46 with the stop at 4171.50 reaches +1.2 R in two minutes.
+
+### Done on 2026-10-28
+
+- `d00c658` - a lost AI wake is now a record in `decisions.jsonl` and the session notes with its own FAILED
+  status, not a line in a log nobody opens (1,365 of them had gone unread). 6/6 planted bugs caught.
+- `3cab846` - day 3's four reports recovered from `data/replay/ai/*.log` into `day3_variants/`, the four
+  0-byte placeholders deleted, `RECORD.md` written, ISSUES 35 verified as fixed in code.
+- `586b54d` - `docs/TRADING_FLOW.md` (the whole day end to end, agreed with the owner from the diagram) and
+  the four required parts of a day report in `docs/TRADER_ROUTINE.md`.
+- `CODING_STANDARDS.md` section 11, `DECISION_CHECKLIST` D6-D8, the replay commands in `CLAUDE.md`, and
+  `research/2026-10-24-replay/README.md` as the one entry point.
+
+### The next step, in order
+
+1. The H4 lean into `features()` so R10 filters instead of inviting a guess (on day 1 that one change covers
+   the whole morning).
+2. The ORB range into the readings, or W03 off the active list.
+3. A plan that cannot be priced must not count as a reason to wait; make the `wait_order` path reachable.
+4. Re-run 2026-07-06 from a clean store and append the row to `JOURNAL.md` - never over the row above.
+   Then day 2.
+
+Nothing is pushed. Still needing the owner: whether to restore the loss breakers, DEMO, and LIVE (Phase 14).
+
