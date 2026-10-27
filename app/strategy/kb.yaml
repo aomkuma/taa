@@ -87,8 +87,8 @@
   kind: principle
   stage: target
   items: [C1, C5, C6]
-  says: "Scalp first: with the M15 rhythm and the big frames, entry on M1 / M5, the target >= 5 USD or the next swing, before the line's band; take the profit and leave; when the market grows unsure, wait."
-  source: "owner 2026-10-17 / 10-23; memory user-gold-pip-usd"
+  says: "Scalp first: with the M15 rhythm and the big frames, entry on M1 / M5, the target at the next swing, before the line's band; take the profit and leave; when the market grows unsure, wait. The 5 USD floor that used to sit on the target is OFF since 2026-10-27 (owner): measured, it rejected 1 of 496 complete signals over 2023-2026 and 0 of 17 entry decisions in the Jul 2026 replay - it never bound. The target's size is set by the swing and the band, not by a fixed amount of dollars on a price that doubled."
+  source: "owner 2026-10-17 / 10-23; the floor removed 2026-10-27; memory user-gold-pip-usd"
 
 - id: P10
   kind: principle

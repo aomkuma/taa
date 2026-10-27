@@ -315,8 +315,14 @@ def test_hard_checklist_items_the_take_profit_floor_and_shadow_weapons():
     assert T.brakes([], {}, step(checklist=fail)) == ("none", ["checklist C4"])  # A1 is WEIGHTED
     some = [{"item": k, "verdict": "pass", "note": "x"} for k in T.ITEMS if k != "C9"]
     assert T.brakes([], {}, step(checklist=some)) == ("none", ["checklist C9"])  # unanswered = failed
-    # C5: the take-profit point under 5 USD from the entry (4004.00 -> 3999.10 is 4.90)
-    assert T.brakes([], {}, step(target=3999.1)) == ("none", ["C5 under 5 USD"])
+    # C5's fixed take-profit floor is OFF (owner 2026-10-27: it rejected 1 of 496 signals over 2023-2026 and
+    # 0 of 17 entry decisions in the Jul 2026 replay), so a 4.90 USD target passes
+    assert T.MIN_TAKE_PROFIT == 0.0
+    assert T.brakes([], {}, step(target=3999.1)) == ("half", [])
+    # the brake itself still works when a floor is set
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(T, "MIN_TAKE_PROFIT", 5.0)
+        assert T.brakes([], {}, step(target=3999.1)) == ("none", ["C5 under 5 USD"])
     assert T.brakes([], {}, step(target=3999.0)) == ("half", [])  # exactly 5.00
     # a weapon still in shadow status: full becomes half; a real one keeps full
     weapons = [

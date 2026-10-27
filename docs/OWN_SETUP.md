@@ -3,11 +3,29 @@
 The owner's goals and principles come first: `docs/OWNER_GOALS.md`. This file holds **the current state** of Setup
 OWN: what trades in the bot, the windows and the method, and the research in progress. Every earlier round (the
 hypotheses written before their outcome, then the results) is kept in `docs/OWN_SETUP_ROUNDS.md`. Results describe
-the past, never a promise. Last update: 2026-10-22 08:00 Thai time.
+the past, never a promise. Last update: 2026-10-27 11:30 Thai time.
 
-## Now (2026-10-22): PLAN-1 on DEMO
+## Now (2026-10-27): the AI trader in replay, and three bots split by market
 
-PLAN-1 runs on the FBS demo account since 2026-10-22 07:43 Thai (lane `plan1`, all three pieces, the owner's AGGRESSIVE
+**DEMO is paused** (owner, 2026-10-23); nothing trades a broker account. Two lines of work run instead, both
+described in `docs/HANDOFF.md` (last section) and in the glance table of `docs/STRATEGIES.md`:
+
+1. **The AI trader** (`ai_trader`, PLAN §A37): the watcher wakes the AI on closed M1 bars, the AI answers one
+   step, the code's brakes and the decision engine do the rest. Replayed day by day over 06-09 Jul 2026
+   (`research/2026-10-24-replay/`): days 1-3 gave +0.21 R, -2.43 R, -1.82 R on a 300 USD account. The answerer
+   is the Codex CLI with `gpt-6-luna` (owner, 2026-10-26).
+2. **Three bots by market** (`research/2026-10-26-three-bots/`, ticket TAA-1810): a down-trend bot, an
+   up-trend bot and a sideways bot, each testing its own structure, all on one account. Measured over the 12
+   months to 2026-10-23: +0.331 R a trade on 102 trades. The engine's breakers trip inside that year, so the
+   figure is not reachable as the account is configured today - open.
+
+The owner's rule from 2026-10-26 governs both: **make it profitable first**, on any data, no before / after
+the exam split; and a setup that only pays when held 4-8 hours is fine - the 60-minute scalp was a method,
+not the goal.
+
+## Earlier (2026-10-22): PLAN-1 on DEMO
+
+PLAN-1 ran on the FBS demo account from 2026-10-22 07:43 Thai (lane `plan1`, all three pieces, the owner's AGGRESSIVE
 7.5 % profile; F1 and S2 off; `docs/HANDOFF.md`). Its rules came from a week-by-week trade journal over the 26 learning
 weeks (`research/2026-10-18-moments/agents/journal/PLAN1_JOURNAL.md`): the ORB target 1.5 R, the ORB pool rule in a
 contracting H4, a second B2 only the first's way, no ATR gate, plus the regime switch (D1 ATR(20) >= 60 USD; every

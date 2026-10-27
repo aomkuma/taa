@@ -1,8 +1,8 @@
 # Session handoff
 
-Last updated: 2026-10-20 18:27 Thai (the PLAN-1 exam read: +0.129, PARTIAL; SW-20 FAIL; NS-1 the release-day straddle
-OPEN; dev2 V3-2 and the strategist stopped on the session limit until 22:00 Thai; DEMO paused; not pushed). This file holds
-**state only**:
+Last updated: 2026-10-27 11:30 Thai. Read the **last section first** - it is the current state (the AI trader
+replays, the three bots, the open breaker question). The sections before it are the record of earlier days and
+are kept for their detail, not as the present picture. This file holds **state only**:
 
 | What | Where |
 |---|---|
@@ -312,3 +312,58 @@ break-and-retest, D2, and others.
 - Started with `scripts\start-demo.ps1 -Role engine -Mt5 -Demo` in its own window (web / worker on :8001 from the same
   worktree). The Task Scheduler tasks still point at the main repo and stay paused (`data/demo/paused.json`): do not
   `-Resume` them while the worktree runs. Health: http://127.0.0.1:8766/health.
+
+---
+
+## Update 2026-10-27 11:30 Thai: the AI trader replays, and three bots split by market
+
+State only; the reasoning is in the memory rules and `app/strategy/kb.yaml`.
+
+### What changed since 2026-10-22
+
+- **DEMO is paused** (owner, 2026-10-23). The `taa-demo` worktree is not running. Past ticks are replayed
+  instead, day by day as a journal.
+- **The AI trader is built and runs through the engine's own path** (TAA-1804 .. 1807, `app/ai/`,
+  `app/engine/ai_trader.py`, `app/engine/ai_replay.py`): the watcher wakes the AI on closed M1 bars, the AI
+  answers one step decision, the brakes (`app/ai/trader.py`) veto or halve it, the `ai_trader` strategy turns
+  it into an order, and the order goes through the decision engine like any signal. One code path for the
+  replay and for PAPER / DEMO (PLAN §A37).
+- **The answerer is now the Codex CLI with `gpt-6-luna`** (owner, 2026-10-26), for the replays and for the
+  engine: `AI_PROVIDER=codex`, `AI_MODEL=gpt-6-luna`, `AI_MODE=advisory`, no API key. The Claude CLI path is
+  still there (`ClaudeCLIProvider`); `--ai-cli` picks by the executable's name.
+- **The replay journal of 06-09 Jul 2026** is in `research/2026-10-24-replay/` (`ledger.csv`, `day_*.md`,
+  `ISSUES.md` 1-38). Accounts 300 and 100 USD. Days 1-3: +0.21 R, -2.43 R, -1.82 R; the 300 account 300 ->
+  247.64. Day 4 was stopped part-way. The side was right on nearly every trade; the losses came from entering
+  into a push still running toward the stop, which is now a code gate (`run_share` 1.2 over 60 minutes).
+- **Rules added to the code from the owner's corrections** (each with hand-worked tests and planted bugs; 48
+  of 48 caught): the stop past the liquidate zone is bounded (`app/strategy/liquidity.py`), C4 moves a short
+  stop out or vetoes, C6 counts M5 closes back across the trade's own level, C9 blocks a side after its
+  take-profit, and **no entry on the first touch** - an armed order waits for a signal at the level, read on
+  M5 structure or an M15-H1 candle (`app/strategy/confirm.py`).
+
+### The three bots (research, 2026-10-26/27)
+
+`research/2026-10-26-three-bots/` - the owner's design: three bots, one account, each trading its own setup at
+the same time; at most two can be in the market, since the two trend bots are each other's opposite.
+
+| bot | what it trades | 12 months to 2026-10-23 |
+|---|---|---|
+| DOWN | an H1 down leg, price back 38-79 %, a quiet M5 box, an M5 close out of it | 38 trades, +0.280 R |
+| RANGE | a flat H4 box (ZigZag on H4), an M5 close out of the box | 41 trades, +0.488 R |
+| UP | the mirror of DOWN | 23 trades, +0.133 R |
+| all three | one account, per-bot exits | 102 trades, **+0.331 R**, worst drawdown -9.4 R |
+
+Known weaknesses, measured: dropping the best 5 trades of 102 leaves +0.092 R; the parameters were chosen on
+the same 12 months; 8.5 trades a month against the goal of a trade most days. **And the engine's own breakers
+(`max_drawdown` 10 %, `max_consecutive_losses` 4) trip during the year** - the research harness has no
+breakers, so +0.331 R is not reachable as the account is configured today. Not yet resolved.
+
+`DEV_SPEC.md` in that folder is the spec a developer session (Codex) is porting into `app/strategy/` as
+`trend_box_down`, `trend_box_up` and `range_break` (ticket TAA-1810), with a parity script against the
+research harness. Research checks the result independently before it counts as done.
+
+### Open items needing the user
+
+- The breakers stop the three-bot system inside the measured year. Lower the risk per trade, change the
+  system so it loses less in a row, or raise the breaker limits - the last one is the owner's call.
+- DEMO stays paused until the owner says otherwise. LIVE still needs Phase 14 and an explicit go-ahead.

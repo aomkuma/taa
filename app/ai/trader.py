@@ -39,7 +39,11 @@ QUIET_EFFORT = "low"  # a wake for the regular check only: nothing new to judge 
 NOT_FOR_THE_TRADE = frozenset({"P20", "P21", "P22", "P25"})
 LESSON_CHARS = 260  # a lesson / shadow in the prompt: its first sentence
 NEWS_WEAPON = "W01"  # the NY straddle, the only weapon while R07 holds
-MIN_TAKE_PROFIT = 5.0  # USD: the take-profit point at least this far from the entry (P09, checklist C5)
+# The 5 USD take-profit floor is OFF (owner 2026-10-27: "you can take the 5 USD out"). Measured first: it
+# rejected 1 of 496 complete signals across 2023-2026 in the three-bot research, and 0 of 17 entry decisions
+# in the Jul 2026 replay - a number that never bound while making the rule read as if it did. Put 5.0 back to
+# switch it on again.
+MIN_TAKE_PROFIT = 0.0
 MIN_RISK_REWARD = 0.2  # the ai lane's min_risk_reward (config.yaml): a C4-widened stop keeps it
 
 
@@ -110,7 +114,7 @@ CHARACTER = (
     "THE STRUCTURE that proves the idea wrong AND past the liquidate zone beyond it (the liquidity map "
     "gives the code's stop for each side) - past the top of the peak for a sell, the bottom of the dip for "
     "a buy - never inside a liquidate zone to keep it small; the take-profit point quick (P09, C5): the "
-    "next swing, at least 5 USD from the entry and short of the next main line's band - take the profit "
+    "next swing, short of the next main line's band - take the profit "
     "and leave (state the R multiple). Liquidate zones are for the stop, never a take-profit point. D1 "
     "(d1_big) names the side with the edge; H4 / H1 against it is a pullback, and its end at a level is the "
     "trade (L21). If you would wait for a confirmation, place the order instead (owner 2026-10-25): a LIMIT "
@@ -122,7 +126,7 @@ CHARACTER = (
     "is live at this moment: the rejection or the sweep closed back, or the break, is printing now and price "
     "is still within C3's distance. Never WAIT only to see one more bar of a setup that is live or a zone "
     "you are at - that is how 06 and 07 Jul missed every planned trade (L20). The risk checks accept R from "
-    "0.2: a quick take-profit (5 USD or more) against a stop past the liquidate zone is the design (P09 + "
+    "0.2: a quick take-profit against a stop past the liquidate zone is the design (P09 + "
     "P16), so 'no room' is no reason to refuse when R is 0.2 or more. A WAIT that names an entry zone is "
     "answered with the pending order at that zone instead (limit or stop, with valid_minutes to the "
     "window's end): set wait_order to its side and fill entry, stop and target. An EXIT before the stop or "
@@ -270,7 +274,8 @@ def brakes(
     bull regime). A rule's ``unless_confidence`` lets a trade the AI rates at least that sure pass (R09:
     outside the owner's windows only a really clean picture). Rules in ``off`` are suspended. Also stopped: a
     release within the hour unless the weapon is W01 (R07), a HARD checklist item failed or unanswered, a
-    take-profit point under 5 USD from the entry (C5); a weapon in shadow status trades at half size (A8)."""
+    take-profit point under ``MIN_TAKE_PROFIT`` (C5, off since 2026-10-27); a weapon in shadow status trades
+    at half size (A8)."""
     if d.decision not in ("SELL", "BUY"):
         return d.size, []
     passes = {e["id"] for e in entries if d.confidence >= e.get("unless_confidence", 101)}
@@ -287,7 +292,7 @@ def brakes(
     gaps = checklist_gaps(d)  # a HARD item failed or unanswered (owner 2026-10-25)
     vetoes += [f"checklist {k}" for k in HARD if k in gaps["failed"] or k in gaps["missing"]]
     if d.entry is not None and d.target is not None and abs(d.target - d.entry) < MIN_TAKE_PROFIT:
-        vetoes.append("C5 under 5 USD")
+        vetoes.append(f"C5 under {MIN_TAKE_PROFIT:g} USD")
     if vetoes:
         return "none", vetoes
     status = {e["id"]: e.get("status") for e in entries if e["kind"] == "weapon"}

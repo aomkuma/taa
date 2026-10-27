@@ -180,21 +180,23 @@ def test_the_plan_s_scenarios_become_checked_orders():
         },
     }  # fmt: skip
     orders = P.plan_orders(rec)
-    assert [o.key for o in orders] == ["plan-morning-202607060000-A", "plan-morning-202607060000-B"]
-    a, b = orders
+    # C's 4.00 take-profit used to be refused by the 5 USD floor; that floor is off since 2026-10-27
+    assert P.MIN_TAKE_PROFIT == 0.0
+    assert [o.key[-1] for o in orders] == ["A", "B", "C"]
+    a, b, _c = orders
     assert a.stop == 4206.0  # out to the map's stop past the liquidate zone (C4)
     assert b.stop == 4165.0 and b.risk_scale == 0.5 and b.kb_ids == ("P26",)
     assert a.valid_until == datetime(2026, 7, 6, 2, 0, tzinfo=UTC)  # 09:00 Thai: the Asia window's end
-    # C: a 4.00 take-profit is under the 5 USD floor (C5); D: no entry
+    # D is left out: it has no entry price
     rec["vetoes"] = {"BUY": ["R01"], "SELL": []}
-    assert [o.key[-1] for o in P.plan_orders(rec)] == ["A"]  # a rule in force stops the buys now
+    assert [o.key[-1] for o in P.plan_orders(rec)] == ["A", "C"]  # a rule in force stops the buys now
     assert P.plan_orders({"as_of": rec["as_of"], "kind": "morning"}) == []  # a failed plan: no orders
     # owner 2026-10-26 (a trend needs the orders with it): with D1 down, the buy B is not placed; with D1 up,
     # the sell A is not; with no D1 regime both are
     rec["vetoes"] = {"BUY": [], "SELL": []}
-    assert [o.key[-1] for o in P.plan_orders(rec | {"d1_side": "down"})] == ["A"]
+    assert [o.key[-1] for o in P.plan_orders(rec | {"d1_side": "down"})] == ["A", "C"]  # A and C sell
     assert [o.key[-1] for o in P.plan_orders(rec | {"d1_side": "up"})] == ["B"]
-    assert [o.key[-1] for o in P.plan_orders(rec | {"d1_side": "none"})] == ["A", "B"]
+    assert [o.key[-1] for o in P.plan_orders(rec | {"d1_side": "none"})] == ["A", "B", "C"]
 
 
 def test_window_ends():
