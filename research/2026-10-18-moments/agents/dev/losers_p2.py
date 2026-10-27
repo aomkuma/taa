@@ -36,6 +36,7 @@ def losers_with_patterns(A: pd.DataFrame, C: pd.DataFrame, variant: str) -> pd.D
     keep = ["start_t", "pts_t", "pts_p", "pts_lab", "neck_t", "neck_p", "box_t", "box_p", "level", "zone", "trigger",
             "variant", "other_pattern", "other_structure", "part"]
     cat = C[KEY + keep].rename(columns={"variant": "pattern_variant", "part": "catch_part"})
+    L = L.drop(columns=[c for c in cat.columns if c in L.columns and c not in KEY])  # P3 trades carry level / trigger
     out = L.merge(cat, on=KEY, how="left", validate="many_to_one")
     if out.level.isna().any():
         raise ValueError("a loser without its catch")
@@ -104,13 +105,18 @@ def main() -> None:
     from loser_charts import one_per_reason  # noqa: PLC0415
 
     variant = sys.argv[1] if len(sys.argv) > 1 else "B2"
-    A = pd.read_parquet(HERE / "p2_trades.parquet")
+    src = sys.argv[2] if len(sys.argv) > 2 else "p2_trades.parquet"  # P3: p3_trades_all.parquet
+    window = sys.argv[3] if len(sys.argv) > 3 else None  # P4: one window's losers
+    prefix = src[:2] + (f"_{window}" if window else "")
+    A = pd.read_parquet(HERE / src)
+    if window:
+        A = A[A.window == window]
     C = pd.read_parquet(HERE / "p_catches.parquet")
     L = losers_with_patterns(A, C, variant).sort_values("entry_t").reset_index(drop=True)
     picks = one_per_reason(L)
     m = P.load_m1()
     tfs = {"M1": P.TF(m, 1), "M5": P.TF(m, 5)}
-    outdir = HERE / "charts" / f"p2_losers_{variant}"
+    outdir = HERE / "charts" / f"{prefix}_losers_{variant}"
     outdir.mkdir(parents=True, exist_ok=True)
     cards = []
     for k, r in picks.iterrows():
@@ -122,9 +128,9 @@ def main() -> None:
     rows = "\n".join(f"<tr><td>{html.escape(r.reason)}</td><td>{r.n_reason}</td></tr>" for r in picks.itertuples())
     body = "\n".join(f'<figure><figcaption>{html.escape(t)}</figcaption><img alt="{html.escape(t)}" '
                      f'src="data:image/png;base64,{b}"></figure>' for t, b in cards)
-    (HERE / "charts" / f"p2_losers_{variant}.html").write_text(
+    (HERE / "charts" / f"{prefix}_losers_{variant}.html").write_text(
         PAGE.format(variant=variant, n=len(L), k=len(cards), rows=rows, body=body), encoding="utf-8")
-    print(f"{len(cards)} drawn -> charts/p2_losers_{variant}.html")
+    print(f"{len(cards)} drawn -> charts/{prefix}_losers_{variant}.html")
 
 
 PAGE = """<!doctype html>

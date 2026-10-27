@@ -1,0 +1,9 @@
+old sample 2021-10-01 .. 2023-11-01: R15 runs 2203, turn signals 1913, weekdays 543
+  A9: 203 trades (0.37/day), R -0.073, -58.8 USD at 0.01 lot, before costs -0.013; coin -0.045 (sd 0.032); worst -15.48, max DD 77.0; stop median 7.76
+     21-10 -0.07(59) 22-05 -0.00(47) 22-11 -0.12(51) 23-05 -0.10(46)
+  A10: 194 trades (0.36/day), R -0.092, -123.9 USD at 0.01 lot, before costs -0.033; coin -0.029 (sd 0.041); worst -15.79, max DD 180.3; stop median 7.74
+     21-10 +0.04(59) 22-05 -0.18(43) 22-11 -0.11(46) 23-05 -0.16(46)
+  A11: 296 trades (0.55/day), R -0.032, -77.2 USD at 0.01 lot, before costs +0.041; coin -0.033 (sd 0.055); worst -15.79, max DD 171.0; stop median 6.72
+     21-10 +0.02(94) 22-05 +0.05(69) 22-11 -0.12(70) 23-05 -0.10(63)
+  D1: 360 trades (0.66/day), R -0.130, -191.5 USD at 0.01 lot, before costs -0.092; coin -0.067 (sd 0.053); worst -9.19, max DD 216.1; stop median 4.06
+     21-10 -0.02(113) 22-05 -0.15(89) 22-11 -0.37(81) 23-05 -0.01(77)

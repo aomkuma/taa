@@ -1,0 +1,13 @@
+### tdl4 (TEST, real costs)
+baseline                                 n   549 (2.82/d) R -0.089 | -0.089 | +0/1 | win 0.44 USD    -348 worst -10.2 avg loss -7.1 streak 7 maxDD 423
+no London                                n   272 (1.39/d) R -0.185 | -0.185 | +0/1 | win 0.39 USD    -358 worst -10.2 avg loss -7.1 streak 8 maxDD 405
+no London + M15 not against              n   148 (0.76/d) R -0.241 | -0.241 | +0/1 | win 0.36 USD    -259 worst -10.1 avg loss -7.1 streak 11 maxDD 294
+no London + M15 + upper half 4h          n    78 (0.40/d) R -0.380 | -0.380 | +0/1 | win 0.29 USD    -214 worst -10.1 avg loss -7.0 streak 9 maxDD 214
+W = no London + M15 + upper half 4h      n    78 (0.40/d) R -0.380 | -0.380 | +0/1 | win 0.29 USD    -214 worst -10.1 avg loss -7.0 streak 9 maxDD 214
+W + not off a fresh 4h extreme           n    46 (0.24/d) R -0.393 | -0.393 | +0/1 | win 0.26 USD    -135 worst -10.1 avg loss -6.9 streak 6 maxDD 140
+W + 15-bar move < 4 ATR                  n    63 (0.32/d) R -0.351 | -0.351 | +0/1 | win 0.30 USD    -152 worst -10.1 avg loss -6.8 streak 8 maxDD 161
+W + H1 not flat                          n    59 (0.30/d) R -0.379 | -0.379 | +0/1 | win 0.29 USD    -163 worst -10.1 avg loss -6.9 streak 6 maxDD 165
+W + not off 4h extreme + 15-bar          n    39 (0.20/d) R -0.369 | -0.369 | +0/1 | win 0.28 USD    -102 worst -10.1 avg loss -6.7 streak 6 maxDD 107
+W + all three                            n    29 (0.15/d) R -0.332 | -0.332 | +0/1 | win 0.31 USD     -73 worst -10.1 avg loss -6.8 streak 5 maxDD 78
+no London + M15 + not off 4h extreme     n   101 (0.52/d) R -0.297 | -0.297 | +0/1 | win 0.33 USD    -222 worst -10.1 avg loss -6.9 streak 7 maxDD 235
+no London + M15 + not off + 15-bar       n    80 (0.41/d) R -0.226 | -0.226 | +0/1 | win 0.36 USD    -122 worst -10.1 avg loss -6.6 streak 7 maxDD 142

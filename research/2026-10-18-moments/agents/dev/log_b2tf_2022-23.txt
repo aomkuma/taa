@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\b2_tf_history.py", line 270, in <module>
+    main()
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\b2_tf_history.py", line 260, in main
+    run(a[1:])
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\b2_tf_history.py", line 204, in run
+    m_all = load_m1()
+            ^^^^^^^^^
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\b2_tf_history.py", line 85, in load_m1
+    d = bars("M1", before=before)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\research\2026-10-18-moments\agents\dev\b2_tf_history.py", line 81, in bars
+    return gold.bars(tf, before=before)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\research\2026-10-18-moments\gold.py", line 33, in bars
+    first_new = pd.to_datetime(new["open_time"], utc=True).min()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pandas\core\tools\datetimes.py", line 1041, in to_datetime
+    result = arg._constructor(values, index=arg.index, name=arg.name)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pandas\core\series.py", line 402, in __init__
+    data = data.copy()
+           ^^^^^^^^^^^
+  File "C:\Users\korap\taa\.venv\Lib\site-packages\pandas\core\arrays\datetimelike.py", line 2534, in copy
+    new_obj = super().copy(order=order)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pandas/_libs/arrays.pyx", line 156, in pandas._libs.arrays.NDArrayBacked.copy
+numpy._core._exceptions._ArrayMemoryError: Unable to allocate 7.04 MiB for an array with shape (922587,) and data type datetime64[us]

@@ -1,5 +1,5 @@
 
-p2_trades.py: control (no bug): PASSED - 20 passed in 2.12s
+p2_trades.py: control (no bug): PASSED - 21 passed in 2.08s
 CAUGHT  #01 p2_trades: B: the extreme touched does not cancel  (test_confirm_b_fails)
 CAUGHT  #02 p2_trades: B: a new-high bar is also checked as the pullback  (test_confirm_b_pullback_threshold_and_new_high_bars)
 CAUGHT  #03 p2_trades: B: the pullback needs more than 1 ATR  (test_confirm_b_pullback_threshold_and_new_high_bars)
@@ -38,26 +38,27 @@ CAUGHT  #35 p2_trades: candidates: B1 uses the pattern's stop  (test_candidates_
 CAUGHT  #36 p2_trades: candidates: B enters at the breakout  (test_candidates_a_and_b)
 CAUGHT  #37 p2_trades: candidates: ties by the larger risk  (test_candidates_a_and_b)
 CAUGHT  #38 p2_trades: one_trade: a target within one risk  (test_one_trade_target_needs_more_than_one_risk)
-CAUGHT  #39 p2_trades: one_trade: the time limit 61 bars  (test_run_stream_one_at_a_time_target_and_news)
-CAUGHT  #40 p2_trades: run_stream: an entry at the exit moment skipped  (test_run_stream_one_at_a_time_target_and_news)
-CAUGHT  #41 p2_trades: run_stream: no position limit  (test_run_stream_one_at_a_time_target_and_news)
-CAUGHT  #42 p2_trades: stats: the drawdown from the first trade  (test_stats_by_hand)
-CAUGHT  #43 p2_trades: stats: a flat trade counts as a loss  (test_stats_by_hand)
-CAUGHT  #44 p2_trades: stats: the R range without the 1.96  (test_stats_by_hand)
-CAUGHT  #45 p2_trades: stats: not in time order  (test_stats_by_hand)
-CAUGHT  #46 p2_trades: weekdays: the part's end day counted  (test_weekdays)
-CAUGHT  #47 p2_trades: reason: a sell read on the bid  (test_reason_by_hand)
-CAUGHT  #48 p2_trades: reason: the tick at the limit left out  (test_reason_by_hand)
-CAUGHT  #49 p2_trades: reason: ran later needs more than one risk  (test_reason_by_hand)
-CAUGHT  #50 p2_trades: Ticks: the exam day loaded  (test_ticks_never_load_the_exam)
+CAUGHT  #39 p2_trades: one_trade: M5 held 60 minutes, not 60 bars (the measurer's)  (test_an_m5_trade_is_held_60_m5_bars)
+CAUGHT  #40 p2_trades: one_trade: the time limit 61 bars  (test_run_stream_one_at_a_time_target_and_news)
+CAUGHT  #41 p2_trades: run_stream: an entry at the exit moment skipped  (test_run_stream_one_at_a_time_target_and_news)
+CAUGHT  #42 p2_trades: run_stream: no position limit  (test_run_stream_one_at_a_time_target_and_news)
+CAUGHT  #43 p2_trades: stats: the drawdown from the first trade  (test_stats_by_hand)
+CAUGHT  #44 p2_trades: stats: a flat trade counts as a loss  (test_stats_by_hand)
+CAUGHT  #45 p2_trades: stats: the R range without the 1.96  (test_stats_by_hand)
+CAUGHT  #46 p2_trades: stats: not in time order  (test_stats_by_hand)
+CAUGHT  #47 p2_trades: weekdays: the part's end day counted  (test_weekdays)
+CAUGHT  #48 p2_trades: reason: a sell read on the bid  (test_reason_by_hand)
+CAUGHT  #49 p2_trades: reason: the tick at the limit left out  (test_reason_by_hand)
+CAUGHT  #50 p2_trades: reason: ran later needs more than one risk  (test_reason_by_hand)
+CAUGHT  #51 p2_trades: Ticks: the exam day loaded  (test_ticks_never_load_the_exam)
 
-losers_p2.py: control (no bug): PASSED - 2 passed in 1.79s
-CAUGHT  #51 losers_p2: losers: every variant  (test_losers_joined_to_their_catches)
-CAUGHT  #52 losers_p2: losers: every cost run  (test_losers_joined_to_their_catches)
-CAUGHT  #53 losers_p2: losers: winners too  (test_losers_joined_to_their_catches)
-CAUGHT  #54 losers_p2: losers: joined without the side  (test_losers_joined_to_their_catches)
-CAUGHT  #55 losers_p2: losers: a missing catch passes  (test_losers_joined_to_their_catches)
-CAUGHT  #56 losers_p2: title: UTC, not Thai time  (test_title)
-CAUGHT  #57 losers_p2: title: the stop shown as the exit  (test_title)
+losers_p2.py: control (no bug): PASSED - 2 passed in 1.94s
+CAUGHT  #52 losers_p2: losers: every variant  (test_losers_joined_to_their_catches)
+CAUGHT  #53 losers_p2: losers: every cost run  (test_losers_joined_to_their_catches)
+CAUGHT  #54 losers_p2: losers: winners too  (test_losers_joined_to_their_catches)
+CAUGHT  #55 losers_p2: losers: joined without the side  (test_losers_joined_to_their_catches)
+CAUGHT  #56 losers_p2: losers: a missing catch passes  (test_losers_joined_to_their_catches)
+CAUGHT  #57 losers_p2: title: UTC, not Thai time  (test_title)
+CAUGHT  #58 losers_p2: title: the stop shown as the exit  (test_title)
 
-57 of 57 planted bugs caught
+58 of 58 planted bugs caught

@@ -1,0 +1,3 @@
+lvl3 on the slice: 132 signals, 38 trades; legs {3: 74, 5: 19, 4: 15, 6: 9, 7: 4, 21: 2, 14: 2, 15: 2, 12: 1, 9: 1, 16: 1, 18: 1, 8: 1}
+signals: independent 132, lvl3 132, only independent 0, only lvl3 0
+trades: 38 checked, 0 with a mismatch

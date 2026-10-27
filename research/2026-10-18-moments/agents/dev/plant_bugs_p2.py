@@ -57,6 +57,7 @@ BUGS: list[tuple[str, list[tuple[str, str]]]] = [
     ("candidates: B enters at the breakout", [('t_entry, close = int(tf.avail[conf["k"]]), float(tf.c[conf["k"]])', "t_entry, close = int(r.t_dec), float(r.close)")]),
     ("candidates: ties by the larger risk", [('.sort_values(["t_entry", "risk_dec"], kind="stable")', '.sort_values(["t_entry", "risk_dec"], ascending=[True, False], kind="stable")')]),
     ("one_trade: a target within one risk", [('r.side * (r.next_level - x["entry"]) > x["risk"]', 'r.side * (r.next_level - x["entry"]) >= x["risk"]')]),
+    ("one_trade: M5 held 60 minutes, not 60 bars (the measurer's)", [("t_limit = int(r.t_entry + HOLD * tf.minutes * NS_MIN)", "t_limit = int(r.t_entry + HOLD * NS_MIN)")]),
     ("one_trade: the time limit 61 bars", [("t_limit = int(r.t_entry + HOLD * tf.minutes * NS_MIN)", "t_limit = int(r.t_entry + (HOLD + 1) * tf.minutes * NS_MIN)")]),
     ("run_stream: an entry at the exit moment skipped", [("if r.t_entry < busy:", "if r.t_entry <= busy:")]),
     ("run_stream: no position limit", [("        busy = x[\"exit_t\"]\n", "")]),

@@ -1,0 +1,30 @@
+Mon 15 13:42 London ORB  SELL @4301.82 stop 4313.36 risk 11.5 | H1ATR 24.3 H4ATR 24h -4% | stop R -1.01 | best +0.05R Mon 15 13:42 worst -1.50R
+    broke: - | pools between entry and stop (distance beyond): asia_high(4.4) | stop in the sweep zone of: asia_high,round 4310 | SLOW end -1.21R
+    pools: yday_high=4246.2 yday_low=4170.1 asia_high=4308.9 asia_low=4280.3 today_open=4299.4 swing_high=4332.9 swing_low=4323.9
+Mon 15 19:30 NY straddle SELL @4335.25 stop 4343.25 risk 8.0 | H1ATR 21.9 H4ATR 24h -5% | stop R -1.01 | best -0.03R Mon 15 19:30 worst -1.80R
+    broke: - | pools between entry and stop (distance beyond): swing_high(4.5),swing_low(7.2) | stop in the sweep zone of: swing_high,round 4340 | FAKE end -1.76R
+    pools: yday_high=4246.2 yday_low=4170.1 asia_high=4308.9 asia_low=4280.3 today_open=4299.4 swing_high=4338.7 swing_low=4336.1
+Tue 16 08:54 Asia B2     SELL @4312.78 stop 4324.44 risk 11.7 | H1ATR 15.0 H4ATR 24h -14% | structure R -0.02 | best +0.42R Tue 16 09:06 worst -0.18R
+    broke: today_open | pools between entry and stop (distance beyond): today_open(11.3) | stop in the sweep zone of: - | 
+    pools: yday_high=4369.5 yday_low=4280.3 asia_high=4339.2 asia_low=4305.7 today_open=4313.2 swing_high=4325.8 swing_low=4306.8
+Tue 16 13:38 London ORB  BUY @4320.22 stop 4313.52 risk 6.7 | H1ATR 13.8 H4ATR 24h -27% | time R +0.92 | best +1.85R Tue 16 14:31 worst -0.70R
+    broke: - | pools between entry and stop (distance beyond): - | stop in the sweep zone of: - | 
+    pools: yday_high=4369.5 yday_low=4280.3 asia_high=4339.2 asia_low=4305.7 today_open=4313.2 swing_low=4313.5 swing_high=4330.9
+Wed 17 08:05 Asia B2     BUY @4342.16 stop 4328.02 risk 14.1 | H1ATR 13.6 H4ATR 24h -33% | structure R -0.52 | best +0.53R Wed 17 08:07 worst -0.74R
+    broke: asia_high,swing_high | pools between entry and stop (distance beyond): today_open(2.8),swing_low(4.2),swing_high(13.5) | stop in the sweep zone of: today_open,round 4330 | 
+    pools: yday_high=4354.9 yday_low=4305.7 asia_high=4342.9 asia_low=4325.2 today_open=4330.8 swing_low=4332.2 swing_high=4341.6
+Wed 17 13:20 London ORB  SELL @4323.73 stop 4329.96 risk 6.2 | H1ATR 12.1 H4ATR 24h -19% | stop R -1.01 | best +0.50R Wed 17 13:22 worst -1.52R
+    broke: asia_low,swing_low | pools between entry and stop (distance beyond): asia_low(4.7),swing_low(5.6) | stop in the sweep zone of: - | SLOW end -0.64R
+    pools: yday_high=4354.9 yday_low=4305.7 asia_high=4342.9 asia_low=4325.2 today_open=4330.8 swing_high=4334.2 swing_low=4324.3
+Wed 17 19:30 NY straddle BUY @4327.23 stop 4319.23 risk 8.0 | H1ATR 11.4 H4ATR 24h -31% | time R +0.80 | best +1.01R Wed 17 19:51 worst -0.12R
+    broke: asia_low | pools between entry and stop (distance beyond): swing_low(0.7),asia_low(6.0) | stop in the sweep zone of: swing_low,round 4320 | 
+    pools: yday_high=4354.9 yday_low=4305.7 asia_high=4342.9 asia_low=4325.2 today_open=4330.8 swing_low=4319.9 swing_high=4335.1
+Thu 18 19:30 NY straddle SELL @4252.09 stop 4260.09 risk 8.0 | H1ATR 19.7 H4ATR 24h +40% | time R +0.65 | best +1.34R Thu 18 19:54 worst -0.85R
+    broke: - | pools between entry and stop (distance beyond): today_open(1.8) | stop in the sweep zone of: today_open,round 4260 | 
+    pools: yday_high=4382.3 yday_low=4219.0 asia_high=4382.3 asia_low=4219.0 today_open=4258.3 swing_low=4239.9 swing_high=4250.1
+Fri 19 13:38 London ORB  SELL @4133.37 stop 4148.16 risk 14.8 | H1ATR 18.4 H4ATR 24h +25% | stop R -1.02 | best +0.02R Fri 19 13:38 worst -1.83R
+    broke: - | pools between entry and stop (distance beyond): - | stop in the sweep zone of: - | FAKE end -1.61R
+    pools: yday_high=4329.9 yday_low=4201.4 asia_high=4233.1 asia_low=4186.8 today_open=4205.5 swing_high=4148.2 swing_low=4121.9
+Fri 19 19:30 NY straddle SELL @4149.64 stop 4157.64 risk 8.0 | H1ATR 17.4 H4ATR 24h +23% | stop R -1.02 | best +0.25R Fri 19 19:48 worst -3.83R
+    broke: - | pools between entry and stop (distance beyond): - | stop in the sweep zone of: - | FAKE end -3.71R
+    pools: yday_high=4329.9 yday_low=4201.4 asia_high=4233.1 asia_low=4186.8 today_open=4205.5 swing_high=4160.3 swing_low=4141.9

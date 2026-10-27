@@ -493,3 +493,12 @@ def test_agree_with_the_other_tf():
     # B row 0 counts (same side, 0.1 apart <= 0.2, 10 minutes before); row 1 is 31 minutes before; row 2 the other
     # side; row 3 is 0.5 apart
     assert r.other_pattern == "M" and r.other_structure == "down"
+
+
+def test_one_wide_bar_at_the_start_is_not_two_turns():
+    # the auditor's hand case (audit2/test_relay_dev_zigzag.py): ATR 5, k 2 -> threshold 10; bar 1 (30 / 0) holds both
+    # extremes and bars 2 - 3 stay inside it: no pivot yet (before the fix: a peak and a trough both at bar 1)
+    b, _, _, c = P.zigzag(np.array([10.0, 30, 25, 26]), np.array([9.0, 0, 20, 25]), np.full(4, 5.0), 2.0)
+    assert b.tolist() == [] and c.tolist() == []
+    b, p, k, c = P.zigzag(np.array([10.0, 30, 25, 26, 5]), np.array([9.0, 0, 20, 25, -5]), np.full(5, 5.0), 2.0)
+    assert (b.tolist(), k.tolist(), c.tolist()) == ([1], [1], [4])  # bar 4 a new low: the high at bar 1 is the first turn

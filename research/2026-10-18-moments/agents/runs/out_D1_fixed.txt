@@ -1,0 +1,10 @@
+== D1 DESIGN 2023-11-01 .. 2026-03-01: signals 509
+  rule: 453 trades (0.75/day), win 8%, R +0.086, +362.1 USD at 0.01 lot; worst -102.36, streak 10, max DD 180.3, 6 avg losses 51.1; stop 6.80 tp 21.38 (stop 1.38 x the trading-TF ATR); losers 1/2/3 92/2/6%; exits {'time': np.int64(204), 'stop': np.int64(200), 'win': np.int64(37), 'be': np.int64(12)}
+     23-11 +0.09(86,+2) 24-05 +0.15(102,+92) 24-11 -0.14(92,-97) 25-05 +0.16(60,+91) 25-09 +0.17(113,+273)
+  before costs: R +0.141, +507.6 USD
+  coin (10 seeds, same minutes): R -0.013 (sd 0.053), USD +15.2, losers 1/2/3 93/2/5%
+== D1 WINDOW 2026-03-01 .. 2026-10-17: signals 199
+  rule: 184 trades (1.12/day), win 5%, R -0.097, -169.5 USD at 0.01 lot; worst -52.08, streak 10, max DD 375.1, 6 avg losses 81.7; stop 12.93 tp 40.78 (stop 1.88 x the trading-TF ATR); losers 1/2/3 94/2/4%; exits {'stop': np.int64(93), 'time': np.int64(75), 'win': np.int64(10), 'be': np.int64(6)}
+     26-03 +0.20(19,+33) 26-04 -0.26(22,-83) 26-05 -0.18(15,-51) 26-06 -0.13(29,-30) 26-07 +0.24(25,+102) 26-08 -0.45(26,-138) 26-09 +0.11(30,+56) 26-10 -0.37(18,-58)
+  before costs: R -0.089, -140.5 USD
+  coin (10 seeds, same minutes): R -0.099 (sd 0.072), USD -262.6, losers 1/2/3 95/1/4%

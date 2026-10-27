@@ -39,6 +39,9 @@ def test_losers_joined_to_their_catches():
     L = LP.losers_with_patterns(trades(), catches(), "B2")
     assert len(L) == 2 and L.level.tolist() == [4000.0, 4100.0] and L.pattern_variant.tolist() == ["W", "W"]
     assert (L.pnl < 0).all() and (L.variant == "B2").all()
+    # P3's trades already carry a level and a trigger: the catch's are used, no duplicate columns
+    L3 = LP.losers_with_patterns(trades().assign(level=1.0, trigger=2.0), catches(), "B2")
+    assert L3.level.tolist() == [4000.0, 4100.0] and "level_x" not in L3
     with pytest.raises(ValueError, match="without its catch"):
         LP.losers_with_patterns(trades(), catches().iloc[[1, 2]], "B2")
 

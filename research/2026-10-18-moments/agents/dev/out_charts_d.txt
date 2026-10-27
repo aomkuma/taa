@@ -1,0 +1,24 @@
+D1 #1 #1 D1 2025-12-02 13:16 Thai - P1 - SELL - target - R +2.00 (+5.90 USD at 0.01 lot). ADR20 78.1
+D1 #2 #2 D1 2025-12-04 13:35 Thai - P1 - BUY - time - R +0.61 (+4.63 USD at 0.01 lot). ADR20 77.2; a level ahead at 4194.20 (D1L refuses)
+D1 #3 #3 D1 2025-11-28 13:22 Thai - P1 - BUY - time - R +0.31 (+0.85 USD at 0.01 lot). ADR20 78.6
+D1 #4 #4 D1 2025-12-03 13:24 Thai - P1 - BUY - stop - R -1.01 (-4.92 USD at 0.01 lot). ADR20 77.9
+D1 #5 #5 D1 2025-12-01 13:24 Thai - P1 - SELL - stop - R -1.01 (-7.37 USD at 0.01 lot). ADR20 78.6; a level ahead at 4221.78 (D1L refuses)
+D1 #6 #6 D1 2025-12-05 13:25 Thai - P1 - BUY - time - R -0.19 (-2.11 USD at 0.01 lot). ADR20 76.7; a level ahead at 4229.68 (D1L refuses)
+D1 #7 #7 D1 2026-03-02 13:30 Thai - P2 - BUY - target - R +2.00 (+34.94 USD at 0.01 lot). ADR20 170.9; a level ahead at 5393.02 (D1L refuses)
+D1 #8 #8 D1 2026-03-04 14:00 Thai - P2 - BUY - time - R +0.20 (+7.77 USD at 0.01 lot). ADR20 159.0; a level ahead at 5162.07 (D1L refuses)
+D1 #9 #9 D1 2026-03-05 13:47 Thai - P2 - BUY - time - R +0.23 (+8.08 USD at 0.01 lot). ADR20 151.9; a level ahead at 5167.80 (D1L refuses)
+D1 #10 #10 D1 2026-02-27 13:16 Thai - P2 - BUY - stop - R -1.01 (-6.04 USD at 0.01 lot). ADR20 203.6; a level ahead at 5199.64 (D1L refuses)
+D1 #11 #11 D1 2026-03-06 13:24 Thai - P2 - BUY - stop - R -1.00 (-13.10 USD at 0.01 lot). ADR20 145.8; a level ahead at 5146.30 (D1L refuses)
+D1 #12 #12 D1 2026-03-12 13:18 Thai - P2 - SELL - stop - R -1.01 (-6.02 USD at 0.01 lot). ADR20 137.5; a level ahead at 5149.33 (D1L refuses)
+D2 #1 #1 D2 2025-12-02 22:00 Thai - P1 - SELL - time - R +3.30 (+27.81 USD at 0.01 lot).
+D2 #2 #2 D2 2025-12-03 20:30 Thai - P1 - BUY - time - R +1.63 (+13.74 USD at 0.01 lot).
+D2 #3 #3 D2 2025-11-26 20:30 Thai - P1 - SELL - time - R +1.09 (+9.10 USD at 0.01 lot). CLM
+D2 #4 #4 D2 2025-12-01 22:00 Thai - P1 - BUY - stop - R -1.00 (-8.48 USD at 0.01 lot).
+D2 #5 #5 D2 2025-12-01 20:30 Thai - P1 - BUY - stop - R -1.00 (-8.53 USD at 0.01 lot).
+D2 #6 #6 D2 2025-12-03 22:00 Thai - P1 - SELL - stop - R -1.00 (-8.43 USD at 0.01 lot).
+D2 #7 #7 D2 2026-03-04 20:30 Thai - P2 - SELL - time - R +1.99 (+20.68 USD at 0.01 lot).
+D2 #8 #8 D2 2026-02-27 20:30 Thai - P2 - SELL - time - R +0.79 (+8.31 USD at 0.01 lot). PPI
+D2 #9 #9 D2 2026-02-26 20:30 Thai - P2 - SELL - time - R +0.51 (+5.30 USD at 0.01 lot). CLM
+D2 #10 #10 D2 2026-03-02 20:30 Thai - P2 - BUY - stop - R -1.01 (-10.88 USD at 0.01 lot).
+D2 #11 #11 D2 2026-03-02 22:00 Thai - P2 - SELL - stop - R -1.00 (-10.68 USD at 0.01 lot).
+D2 #12 #12 D2 2026-03-03 20:30 Thai - P2 - SELL - stop - R -1.09 (-11.29 USD at 0.01 lot).

@@ -1,0 +1,13 @@
+liquidity.py: control (no bug): PASSED - 14 passed in 0.47s
+   1. the true range without the gaps: CAUGHT by test_atr_is_the_mean_true_range
+   2. a forming bar counted as closed: CAUGHT by test_off_the_bar_marks_a_forming_bar_is_left_out
+   3. taken counted a bar late: CAUGHT by test_a_swing_is_taken_by_the_first_bar_that_trades_through_it
+   4. a taken pool still moves the stop: CAUGHT by test_at_the_edge_the_stop_goes_past_the_next_untaken_pool
+   5. a band only to its near edge: CAUGHT by test_the_map_reads_like_the_ai_gets_it
+   6. no edge rule: CAUGHT by test_at_the_edge_the_stop_goes_past_the_next_untaken_pool
+   7. the buffer on the wrong side: CAUGHT by test_a_stop_goes_past_the_structure_and_a_pool_just_beyond_it
+   8. one hour of structure: CAUGHT by test_structure_is_two_hours_of_m5
+   9. the volume of a bar on its low step only: CAUGHT by test_volume_nodes_spread_each_bar_over_its_steps
+  10. round numbers off by a step: CAUGHT by test_round_numbers_around_the_price
+  11. yesterday's bar not yet closed used: CAUGHT by test_yesterday_is_the_last_closed_d1_bar_not_todays
+caught 11 / 11

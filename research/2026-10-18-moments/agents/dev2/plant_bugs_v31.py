@@ -68,7 +68,9 @@ BUGS: list[tuple[str, list[tuple[str, str]]]] = [
     ("trend: H1 left out", [("        up = (a == 1) & (b == 1) & (c == 1)", "        up = (a == 1) & (b == 1)")]),
     ("trend: the bias reading takes the labels", [('    for what, sfx in (("label", ""), ("bias", "_bias")):', '    for what, sfx in (("label", ""), ("label", "_bias")):')]),
     ("at: the bar complete at the moment left out", [('return np.searchsorted(_ns(self.bars["avail"]), np.asarray(t_ns, np.int64), side="right") - 1',
-                                                     'return np.searchsorted(_ns(self.bars["avail"]), np.asarray(t_ns, np.int64), side="left") - 1')]),
+                                                     'return np.searchsorted(_ns(self.bars["avail"]), np.asarray(t_ns, np.int64), side="left") - 1')]),    # the measurer's two (2026-10-20), closed by test_known_at_the_confirming_bar_exactly / test_running_leaves_out_the_pivot_bar
+    ("known_at: one bar ahead", [('    n = int(np.searchsorted(piv[3], d, side="right"))', '    n = int(np.searchsorted(piv[3], d + 1, side="right"))')]),
+    ("running: the pivot bar included", [("    s = slice(int(pb[-1]) + 1, d + 1)", "    s = slice(int(pb[-1]), d + 1)")]),
 ]
 
 # the temporary copy keeps the real folders for its imports and data

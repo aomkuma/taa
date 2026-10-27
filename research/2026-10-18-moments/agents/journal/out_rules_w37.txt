@@ -1,0 +1,10 @@
+Mon 29 13:49 London ORB  BUY  base -0.10 | rules -0.10 TP 1.5 R: time
+Tue 30 13:23 London ORB  BUY  base +2.00 | rules +1.50 TP 1.5 R: target
+Wed 01 07:42 Asia B2     SELL base -0.15 | rules -0.15 
+Wed 01 13:18 London ORB  SELL base -0.05 | rules -0.05 TP 1.5 R: time
+Wed 01 19:30 NY straddle BUY  base -0.65 | rules -0.65 
+Thu 02 07:11 Asia B2     BUY  base -0.11 | rules -0.11 
+Thu 02 13:22 London ORB  BUY  base -1.02 | rules -1.02 TP 1.5 R: stop
+Thu 02 19:30 NY straddle BUY  base +5.57 | rules +5.57 
+Fri 03 13:37 London ORB  BUY  base +0.38 | rules +nan skipped: H4 ATR contracting (-2%) and no pool broken
+week: base 9 trades +5.87 R | rules 8 trades +4.99 R

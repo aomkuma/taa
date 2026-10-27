@@ -1,0 +1,10 @@
+verify_p4.py: control (no bug): PASSED - 3 passed in 1.62s
+CAUGHT  #01 summer time from the first Sunday of March  (test_us_summer_time_rule)
+CAUGHT  #02 summer time to the end of November's first Sunday  (test_us_summer_time_rule)
+CAUGHT  #03 Thai = UTC + 8  (test_its_windows)
+CAUGHT  #04 Asia's end included  (test_its_windows)
+CAUGHT  #05 London's pad on one side  (test_its_windows)
+CAUGHT  #06 New York always UTC - 5  (test_its_windows)
+CAUGHT  #07 New York's window to 11:00  (test_its_windows)
+
+7 of 7 planted bugs caught

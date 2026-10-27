@@ -1,0 +1,2 @@
+R15: signals design 3850, window 2298; labels continued 60% ended 22% neither 18%; trade R -0.099 (n 2465), mirror -0.121
+A25: signals design 3604, window 947; labels continued 55% ended 25% neither 20%; trade R -0.097 (n 1551), mirror -0.131

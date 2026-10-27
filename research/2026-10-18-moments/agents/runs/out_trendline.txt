@@ -1,0 +1,15 @@
+
+== M5
+  all touches                        line n  2873 held 0.493 | placebo n  2188 held 0.487 | diff +0.006, halves + 4/5
+  with a fib level within 0.25 ATR   line n  1079 held 0.502 | placebo n   875 held 0.491 | diff +0.011, halves + 3/5
+  without                            line n  1794 held 0.488 | placebo n  1313 held 0.484 | diff +0.003, halves + 3/5
+
+== M15
+  all touches                        line n   915 held 0.513 | placebo n   713 held 0.522 | diff -0.009, halves + 3/5
+  with a fib level within 0.25 ATR   line n   336 held 0.545 | placebo n   256 held 0.551 | diff -0.006, halves + 3/5
+  without                            line n   579 held 0.494 | placebo n   457 held 0.505 | diff -0.012, halves + 3/5
+
+== M30
+  all touches                        line n   460 held 0.530 | placebo n   382 held 0.542 | diff -0.011, halves + 2/5
+  with a fib level within 0.25 ATR   line n   148 held 0.541 | placebo n   133 held 0.571 | diff -0.031, halves + 2/5
+  without                            line n   312 held 0.526 | placebo n   249 held 0.526 | diff -0.000, halves + 2/5

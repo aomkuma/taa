@@ -1,0 +1,16 @@
+EURUSD through 20/30 480m D20: R +0.115 -0.072 -0.019 +0.047 -0.149 | mean -0.016 placebo -0.111 beats 8/10 | n 911 (1.52/d) pips +24
+EURUSD through 30/30 480m D20: R +0.076 -0.005 +0.009 +0.050 -0.154 | mean -0.005 placebo -0.077 beats 8/10 | n 825 (1.38/d) pips +291
+EURUSD through 20/40 600m D20: R +0.085 -0.122 -0.061 +0.009 -0.123 | mean -0.042 placebo -0.110 beats 8/10 | n 877 (1.46/d) pips -566
+EURUSD through 30/30 480m D10: R +0.091 -0.002 +0.027 +0.030 -0.121 | mean +0.005 placebo -0.080 beats 8/10 | n 824 (1.37/d) pips +492
+GBPUSD through 20/30 480m D20: R -0.111 -0.104 -0.116 -0.010 -0.128 | mean -0.094 placebo -0.112 beats 6/10 | n 1232 (2.05/d) pips -2247
+GBPUSD through 30/30 480m D20: R -0.110 -0.090 -0.101 -0.010 -0.112 | mean -0.084 placebo -0.075 beats 5/10 | n 1100 (1.83/d) pips -2712
+GBPUSD through 20/40 600m D20: R -0.122 -0.066 -0.094 -0.032 -0.086 | mean -0.080 placebo -0.121 beats 7/10 | n 1170 (1.95/d) pips -1897
+GBPUSD through 30/30 480m D10: R -0.104 -0.077 -0.050 -0.006 -0.071 | mean -0.061 placebo -0.081 beats 6/10 | n 1092 (1.82/d) pips -1949
+USDJPY through 20/30 480m D20: R -0.057 -0.058 -0.089 -0.051 -0.064 | mean -0.064 placebo -0.126 beats 9/10 | n 1897 (3.16/d) pips -2504
+USDJPY through 30/30 480m D20: R +0.015 -0.024 -0.054 +0.021 +0.034 | mean -0.001 placebo -0.081 beats 9/10 | n 1681 (2.80/d) pips -529
+USDJPY through 20/40 600m D20: R -0.134 -0.018 -0.098 -0.034 -0.152 | mean -0.087 placebo -0.113 beats 7/10 | n 1793 (2.99/d) pips -2770
+USDJPY through 30/30 480m D10: R -0.016 -0.034 -0.062 -0.042 +0.011 | mean -0.029 placebo -0.082 beats 7/10 | n 1645 (2.74/d) pips -1767
+USDCHF through 20/30 480m D20: R -0.196 -0.051 -0.046 -0.031 -0.056 | mean -0.076 placebo -0.082 beats 6/10 | n 741 (1.24/d) pips -1210
+USDCHF through 30/30 480m D20: R -0.076 -0.080 -0.037 +0.020 -0.077 | mean -0.050 placebo -0.049 beats 5/10 | n 687 (1.15/d) pips -1015
+USDCHF through 20/40 600m D20: R -0.215 +0.044 +0.002 -0.044 -0.019 | mean -0.047 placebo -0.095 beats 8/10 | n 713 (1.19/d) pips -763
+USDCHF through 30/30 480m D10: R -0.077 -0.027 -0.055 +0.038 -0.078 | mean -0.040 placebo -0.044 beats 6/10 | n 689 (1.15/d) pips -848

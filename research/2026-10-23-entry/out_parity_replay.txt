@@ -1,0 +1,48 @@
+10-23 22:16 Thai  WAIT   sections DIFFER: NOW:, READINGS, WHAT THE KNOWLEDGE BASE, THE DAY'S OWN LEVELS, THE READERS' OUTPUT  brakes none [] (same)
+    NOW: replay: NOW: Fri 23 Oct 2026 22:16 Thai time (15:16 UTC). Bars closed by this time only. The last M1 close: 3997.57 (the readings' 'price' is the last closed 
+           live: NOW: Fri 23 Oct 2026 22:16 Thai time (15:16 UTC). Bars closed by this time only. The last M1 close: 3995.64 (the readings' 'price' is the last closed 
+    READINGS replay: {"price": 3995.64, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "ny", "phase": "none", "yesterday": "strong_down", "m15_rh
+               live: {"price": 3995.64, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "ny", "phase": "none", "yesterday": "strong_down", "m15_rh
+    WHAT THE KNOWLEDGE BASE replay: O13 OPEN: Draft SWEEP AND RECLAIM: in the last 30 minutes an M5 bar went under equal lows (over equal highs) near price and closed back. Low = the buy
+                              live: O15 OPEN: Draft PULLBACK IN A TREND: H1 and H4 trend the same way (500 bars), the M15 leg runs against them, price within a quarter step of a line - t
+    THE DAY'S OWN LEVELS: 32 lines replayed, 0 live
+    THE READERS' OUTPUT replay: M1  ATR   3.00 | big trend none (LH 0, LL 3, HH 1, HL 0) | rhythm up (big trend not)
+                          live: # Every timeframe at Fri 23 Oct 22:16 Thai
+10-23 22:31 Thai  HOLD   sections DIFFER: NOW:, READINGS, WHAT THE KNOWLEDGE BASE, THE DAY'S OWN LEVELS, THE READERS' OUTPUT  brakes half [] (same)
+    NOW: replay: NOW: Fri 23 Oct 2026 22:31 Thai time (15:31 UTC). Bars closed by this time only. The last M1 close: 3997.74 (the readings' 'price' is the last closed 
+           live: NOW: Fri 23 Oct 2026 22:31 Thai time (15:31 UTC). Bars closed by this time only. The last M1 close: 3997.11 (the readings' 'price' is the last closed 
+    READINGS replay: {"price": 3997.11, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_
+               live: {"price": 3997.11, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_
+    WHAT THE KNOWLEDGE BASE replay: O13 OPEN: Draft SWEEP AND RECLAIM: in the last 30 minutes an M5 bar went under equal lows (over equal highs) near price and closed back. Low = the buy
+                              live: O14 OPEN: Draft BREAK: the last M15 close sits beyond a zone line (main or half) it was not beyond an hour ago. The next hour tells a RUN (it went on)
+    THE DAY'S OWN LEVELS: 33 lines replayed, 0 live
+    THE READERS' OUTPUT replay: M1  ATR   3.07 | big trend none (LH 1, LL 0, HH 0, HL 1) | rhythm none
+                          live: # Every timeframe at Fri 23 Oct 22:31 Thai
+10-23 22:41 Thai  WAIT   sections DIFFER: READINGS, WHAT THE KNOWLEDGE BASE, THE READERS' OUTPUT  brakes none [] (same)
+    READINGS replay: {"price": 3997.11, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_
+               live: {"price": 3997.11, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_
+    WHAT THE KNOWLEDGE BASE replay: O13 OPEN: Draft SWEEP AND RECLAIM: in the last 30 minutes an M5 bar went under equal lows (over equal highs) near price and closed back. Low = the buy
+                              live: O14 OPEN: Draft BREAK: the last M15 close sits beyond a zone line (main or half) it was not beyond an hour ago. The next hour tells a RUN (it went on)
+    THE READERS' OUTPUT replay: M1  ATR   2.15 | big trend none (LH 1, LL 0, HH 0, HL 2) | rhythm down (big trend not)
+                          live: # Every timeframe at Fri 23 Oct 22:41 Thai
+10-23 22:45 Thai  WAIT   sections DIFFER: READINGS, WHAT THE KNOWLEDGE BASE, THE READERS' OUTPUT  brakes none [] (same)
+    READINGS replay: {"price": 3996.36, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_
+               live: {"price": 3996.36, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_
+    WHAT THE KNOWLEDGE BASE replay: O13 OPEN: Draft SWEEP AND RECLAIM: in the last 30 minutes an M5 bar went under equal lows (over equal highs) near price and closed back. Low = the buy
+                              live: O15 OPEN: Draft PULLBACK IN A TREND: H1 and H4 trend the same way (500 bars), the M15 leg runs against them, price within a quarter step of a line - t
+    THE READERS' OUTPUT replay: M1  ATR   1.93 | big trend DOWN (LH 1, LL 1, HH 0, HL 0) | rhythm DOWN
+                          live: # Every timeframe at Fri 23 Oct 22:45 Thai
+10-23 22:49 Thai  WAIT   sections DIFFER: READINGS, WHAT THE KNOWLEDGE BASE  brakes none [] (same)
+    READINGS replay: {"price": 3996.36, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_
+               live: {"price": 3996.36, "h1_vol": 1.297, "d1_atr20": 74.084, "day_range_step": 0.792, "session": "none", "phase": "none", "yesterday": "strong_down", "m15_
+    WHAT THE KNOWLEDGE BASE replay: O13 OPEN: Draft SWEEP AND RECLAIM: in the last 30 minutes an M5 bar went under equal lows (over equal highs) near price and closed back. Low = the buy
+                              live: O15 OPEN: Draft PULLBACK IN A TREND: H1 and H4 trend the same way (500 bars), the M15 leg runs against them, price within a quarter step of a line - t
+10-23 23:05 Thai  WAIT   sections DIFFER: WHAT THE KNOWLEDGE BASE  brakes none [] (same)
+    WHAT THE KNOWLEDGE BASE: 12 lines replayed, 11 live
+10-23 23:07 Thai  WAIT   sections EQUAL  brakes none [] (same)
+10-24 00:17 Thai  WAIT   sections EQUAL  brakes none [] (same)
+10-24 00:24 Thai  WAIT   sections EQUAL  brakes none [] (same)
+10-24 00:39 Thai  WAIT   sections EQUAL  brakes none [] (same)
+10-24 00:41 Thai  WAIT   sections EQUAL  brakes none [] (same)
+10-24 00:56 Thai  WAIT   sections EQUAL  brakes none [] (same)
+12 calls: sections equal 6 / 12; brakes equal 12 / 12

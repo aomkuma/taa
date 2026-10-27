@@ -1,0 +1,9 @@
+=== TEST 2023-10-01 .. 2025-09-30; calm (H1 ATR < 12); events {'H4PB': 261, 'PDB': 227, 'DON20': 112}
+PDB    target 1.5 R    204  R +0.064 (-0.100 .. +0.224)  win 0.44  median stop  10.0  USD   +197.7  exits {'stop': 112, 'target': 83, 'time': 9} | 2023 101 +0.024 | 2024 103 +0.103
+H4PB   time only       200  R +0.265 (+0.012 .. +0.526)  win 0.41  median stop  10.0  USD   +661.0  exits {'stop': 112, 'time': 88} | 2023 110 +0.150 | 2024 90 +0.405
+DON20  target 2.0 R     95  R +0.228 (+0.071 .. +0.394)  win 0.61  median stop  31.8  USD   +622.5  exits {'time': 75, 'stop': 16, 'target': 4} | 2023 44 +0.246 | 2024 51 +0.213
+
+PASS (TEST >= +0.10 on >= 60 calm trades, 95 % low > 0, LEARN >= +0.10):
+  PDB    target 1.5 R   LEARN -0.162 (248) TEST +0.064 (204, low -0.100) -> FAIL
+  H4PB   time only      LEARN -0.124 (254) TEST +0.265 (200, low +0.012) -> FAIL
+  DON20  target 2.0 R   LEARN -0.131 (117) TEST +0.228 (95, low +0.071) -> FAIL

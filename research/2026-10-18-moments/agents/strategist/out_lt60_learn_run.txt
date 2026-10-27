@@ -1,0 +1,12 @@
+=== LEARN 2021-09-01 .. 2023-09-30; calm (H1 ATR < 12); events {'H4PB': 296, 'PDB': 251, 'DON20': 119}
+PDB    target 1.5 R    248  R -0.162 (-0.297 .. -0.029)  win 0.36  median stop  10.0  USD   -424.2  exits {'stop': 141, 'target': 60, 'time': 47} | 2020 8 -0.584 | 2021 116 -0.185 | 2022 124 -0.114
+PDB    target 2.0 R    248  R -0.184 (-0.329 .. -0.040)  win 0.33  median stop  10.0  USD   -479.9  exits {'stop': 147, 'time': 62, 'target': 39} | 2020 8 -0.598 | 2021 116 -0.199 | 2022 124 -0.144
+PDB    time only       248  R -0.222 (-0.376 .. -0.067)  win 0.30  median stop  10.0  USD   -616.4  exits {'stop': 151, 'time': 97} | 2020 8 -0.598 | 2021 116 -0.299 | 2022 124 -0.126
+H4PB   target 1.5 R    254  R -0.163 (-0.298 .. -0.029)  win 0.37  median stop  10.0  USD   -431.8  exits {'stop': 139, 'target': 64, 'time': 51} | 2020 8 +0.055 | 2021 125 -0.279 | 2022 121 -0.057
+H4PB   target 2.0 R    254  R -0.165 (-0.313 .. -0.013)  win 0.33  median stop  10.0  USD   -427.5  exits {'stop': 147, 'time': 60, 'target': 47} | 2020 8 +0.243 | 2021 125 -0.292 | 2022 121 -0.061
+H4PB   time only       254  R -0.124 (-0.294 .. +0.060)  win 0.32  median stop  10.0  USD   -332.6  exits {'stop': 149, 'time': 105} | 2020 8 +0.297 | 2021 125 -0.248 | 2022 121 -0.024
+DON20  target 1.0 R    117  R -0.140 (-0.276 .. -0.007)  win 0.43  median stop  23.5  USD   -415.8  exits {'time': 60, 'stop': 37, 'target': 20} | 2020 4 +0.149 | 2021 54 -0.185 | 2022 59 -0.119
+DON20  target 2.0 R    117  R -0.131 (-0.278 .. +0.019)  win 0.41  median stop  23.5  USD   -411.0  exits {'time': 75, 'stop': 38, 'target': 4} | 2020 4 +0.097 | 2021 54 -0.219 | 2022 59 -0.066
+DON20  time only       117  R -0.150 (-0.295 .. +0.001)  win 0.40  median stop  23.5  USD   -479.0  exits {'time': 78, 'stop': 39} | 2020 4 +0.097 | 2021 54 -0.283 | 2022 59 -0.045
+
+FROZEN (best LEARN R): {'PDB': 'target 1.5 R', 'H4PB': 'time only', 'DON20': 'target 2.0 R'}

@@ -1,0 +1,12 @@
+
+== R15: 3162 decided signals, 42 features
+  train H1..H2 -> test H3 (n 533): AUC geometry 0.768, model 0.731; within p_geo quintiles 0.567; model-over-geometry top 20 %: continued 0.673 vs expected 0.709, bottom 20 %: 0.561 vs 0.639
+  train H1..H3 -> test H4 (n 304): AUC geometry 0.783, model 0.768; within p_geo quintiles 0.526; model-over-geometry top 20 %: continued 0.672 vs expected 0.708, bottom 20 %: 0.525 vs 0.637
+  train H1..H4 -> test H5 (n 1639): AUC geometry 0.803, model 0.782; within p_geo quintiles 0.576; model-over-geometry top 20 %: continued 0.643 vs expected 0.677, bottom 20 %: 0.604 vs 0.675
+  top features (last fold): pgeo 366, macd15_runmax 192, lvl_yday 181, vol_climax 177, last3 165, depth 165, speed 162, rsi15_runmax 160, lvl_h1sw 156, macd5_runmax 142
+
+== A25: 2871 decided signals, 42 features
+  train H1..H2 -> test H3 (n 603): AUC geometry 0.763, model 0.723; within p_geo quintiles 0.571; model-over-geometry top 20 %: continued 0.678 vs expected 0.664, bottom 20 %: 0.579 vs 0.622
+  train H1..H3 -> test H4 (n 357): AUC geometry 0.729, model 0.709; within p_geo quintiles 0.562; model-over-geometry top 20 %: continued 0.681 vs expected 0.630, bottom 20 %: 0.556 vs 0.608
+  train H1..H4 -> test H5 (n 564): AUC geometry 0.777, model 0.748; within p_geo quintiles 0.578; model-over-geometry top 20 %: continued 0.611 vs expected 0.656, bottom 20 %: 0.628 vs 0.657
+  top features (last fold): pgeo 414, macd5_runmax 202, lvl_yday 191, lvl_h72 169, macd15_runmax 167, speed 161, last3 158, usd_fit_z 151, swing_adr 149, rsi5_runmax 147

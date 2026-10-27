@@ -1,0 +1,95 @@
+learning 2024-05 .. 2026-04-17: 3000 snaps, ran_up 0.178, ran_dn 0.173
+exam 2026-04-18 .. 2026-10-16: 2598 snaps, ran_up 0.251, ran_dn 0.264
+
+=== context (H4+H1): snaps with >= 5 matching earlier days and |lean| >= 0.2: a 10 U run the lean's way / the other way within 30 minutes, edge over no effect (+- se) ===
+ half                 level  with_5_days  median_days  trades    way  other   edge     se
+learn         1 +smoothness       +0.999     +215.000       7 +0.286 +0.429 -0.142 +0.341
+learn               2 +size       +0.995      +98.500      40 +0.225 +0.200 +0.027 +0.104
+learn           3 +pullback       +0.986      +63.000     100 +0.180 +0.210 -0.028 +0.063
+learn      4 +120 bars' way       +0.897      +22.000     308 +0.175 +0.211 -0.034 +0.035
+learn    5 +last top/bottom       +0.693       +8.000     453 +0.152 +0.174 -0.021 +0.027
+learn           6 +position       +0.469       +4.000     437 +0.169 +0.183 -0.013 +0.028
+learn          7 +structure       +0.170       +1.000     196 +0.214 +0.148 +0.067 +0.043
+learn           8 +last leg       +0.053       +0.000      65 +0.262 +0.169 +0.093 +0.081
+learn            9 +outline       +0.018       +0.000      30 +0.167 +0.200 -0.034 +0.112
+learn             10 +codes       +0.003       +0.000       6 +0.500 +0.167 +0.330 +0.333
+learn       11 +thirds' way       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+learn   12 +thirds' outline       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+learn H4 full picture alone       +0.038       +0.000      48 +0.333 +0.188 +0.146 +0.103
+learn H1 full picture alone       +0.068       +0.000      85 +0.235 +0.224 +0.013 +0.074
+exam          1 +smoothness       +1.000     +526.000       0    NaN    NaN    NaN    NaN
+exam            2 +pullback       +1.000     +329.000       0    NaN    NaN    NaN    NaN
+exam                3 +size       +1.000     +201.000      18 +0.278 +0.278 -0.002 +0.180
+exam     4 +last top/bottom       +0.974      +56.000     226 +0.305 +0.296 +0.012 +0.052
+exam       5 +120 bars' way       +0.904      +17.000     562 +0.270 +0.292 -0.019 +0.032
+exam            6 +position       +0.743       +9.000     533 +0.255 +0.248 +0.009 +0.031
+exam           7 +structure       +0.226       +2.000     281 +0.285 +0.210 +0.076 +0.042
+exam            8 +last leg       +0.090       +1.000     113 +0.221 +0.257 -0.036 +0.065
+exam             9 +outline       +0.045       +0.000      34 +0.265 +0.235 +0.026 +0.123
+exam              10 +codes       +0.011       +0.000      19 +0.316 +0.474 -0.167 +0.206
+exam        11 +thirds' way       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+exam    12 +thirds' outline       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+exam  H4 full picture alone       +0.028       +0.000      30 +0.167 +0.233 -0.069 +0.117
+exam  H1 full picture alone       +0.067       +0.000      90 +0.311 +0.178 +0.131 +0.073
+
+=== setup (M30+M15): snaps with >= 5 matching earlier days and |lean| >= 0.2: a 10 U run the lean's way / the other way within 30 minutes, edge over no effect (+- se) ===
+ half                  level  with_5_days  median_days  trades    way  other   edge     se
+learn          1 +smoothness       +1.000     +316.000       6 +0.500 +0.167 +0.339 +0.333
+learn            2 +pullback       +1.000     +227.000      19 +0.105 +0.053 +0.053 +0.093
+learn     3 +last top/bottom       +0.987      +93.000     223 +0.184 +0.193 -0.010 +0.041
+learn                4 +size       +0.953      +48.000     310 +0.187 +0.187 -0.002 +0.035
+learn       5 +120 bars' way       +0.853      +19.000     472 +0.184 +0.242 -0.059 +0.030
+learn            6 +position       +0.747      +11.000     535 +0.193 +0.185 +0.007 +0.027
+learn           7 +structure       +0.380       +3.000     394 +0.216 +0.226 -0.011 +0.034
+learn            8 +last leg       +0.156       +1.000     229 +0.227 +0.175 +0.052 +0.042
+learn             9 +outline       +0.060       +0.000     105 +0.162 +0.190 -0.029 +0.058
+learn              10 +codes       +0.009       +0.000      16 +0.062 +0.250 -0.186 +0.137
+learn        11 +thirds' way       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+learn    12 +thirds' outline       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+learn M30 full picture alone       +0.043       +0.000      61 +0.230 +0.246 -0.016 +0.089
+learn M15 full picture alone       +0.050       +0.000      74 +0.243 +0.149 +0.095 +0.073
+exam           1 +smoothness       +1.000     +666.000       1 +0.000 +0.000 -0.014    NaN
+exam             2 +pullback       +1.000     +511.000       5 +0.000 +0.600 -0.603 +0.246
+exam      3 +last top/bottom       +0.996     +188.000     256 +0.258 +0.297 -0.037 +0.047
+exam                 4 +size       +0.988     +102.000     291 +0.344 +0.275 +0.072 +0.046
+exam        5 +120 bars' way       +0.941      +37.000     470 +0.298 +0.266 +0.037 +0.035
+exam             6 +position       +0.886      +23.000     520 +0.319 +0.240 +0.081 +0.033
+exam            7 +structure       +0.566       +6.000     552 +0.272 +0.275 -0.002 +0.031
+exam             8 +last leg       +0.280       +2.000     332 +0.298 +0.244 +0.057 +0.040
+exam              9 +outline       +0.084       +0.000     110 +0.273 +0.245 +0.030 +0.069
+exam               10 +codes       +0.013       +0.000      18 +0.167 +0.278 -0.114 +0.158
+exam         11 +thirds' way       +0.000       +0.000       1 +0.000 +1.000 -0.986    NaN
+exam     12 +thirds' outline       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+exam  M30 full picture alone       +0.087       +0.000      82 +0.244 +0.305 -0.057 +0.082
+exam  M15 full picture alone       +0.103       +0.000     143 +0.210 +0.336 -0.124 +0.061
+
+=== trigger (M5+M1): snaps with >= 5 matching earlier days and |lean| >= 0.2: a 10 U run the lean's way / the other way within 30 minutes, edge over no effect (+- se) ===
+ half                 level  with_5_days  median_days  trades    way  other   edge     se
+learn         1 +smoothness       +1.000     +410.000       3 +0.000 +0.667 -0.665 +0.335
+learn           2 +pullback       +0.999     +338.000      11 +0.273 +0.182 +0.090 +0.212
+learn    3 +last top/bottom       +0.995     +165.000     430 +0.330 +0.151 +0.179 +0.032
+learn      4 +120 bars' way       +0.972      +66.000     592 +0.291 +0.145 +0.146 +0.026
+learn               5 +size       +0.895      +27.000     662 +0.267 +0.165 +0.103 +0.025
+learn           6 +position       +0.743      +12.000     627 +0.263 +0.158 +0.105 +0.026
+learn          7 +structure       +0.336       +3.000     442 +0.253 +0.190 +0.063 +0.032
+learn           8 +last leg       +0.133       +1.000     213 +0.300 +0.216 +0.084 +0.049
+learn            9 +outline       +0.022       +0.000      37 +0.216 +0.297 -0.081 +0.119
+learn             10 +codes       +0.004       +0.000       5 +0.200 +0.200 -0.003 +0.316
+learn       11 +thirds' way       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+learn   12 +thirds' outline       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+learn M5 full picture alone       +0.051       +0.000      59 +0.169 +0.237 -0.068 +0.083
+learn M1 full picture alone       +0.074       +0.000     124 +0.282 +0.169 +0.113 +0.060
+exam          1 +smoothness       +1.000     +788.000       1 +0.000 +1.000 -1.014    NaN
+exam            2 +pullback       +0.999     +713.000       6 +0.167 +0.667 -0.491 +0.343
+exam     3 +last top/bottom       +0.995     +355.000     769 +0.334 +0.216 +0.119 +0.026
+exam                4 +size       +0.985     +168.000     794 +0.315 +0.228 +0.087 +0.026
+exam       5 +120 bars' way       +0.953      +67.000     827 +0.326 +0.221 +0.105 +0.025
+exam            6 +position       +0.874      +30.000     834 +0.324 +0.239 +0.085 +0.026
+exam           7 +structure       +0.568       +6.000     747 +0.312 +0.261 +0.051 +0.028
+exam            8 +last leg       +0.288       +2.000     457 +0.328 +0.256 +0.073 +0.036
+exam             9 +outline       +0.045       +0.000      76 +0.342 +0.197 +0.145 +0.083
+exam              10 +codes       +0.013       +0.000      23 +0.304 +0.261 +0.049 +0.160
+exam        11 +thirds' way       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+exam    12 +thirds' outline       +0.000       +0.000       0    NaN    NaN    NaN    NaN
+exam  M5 full picture alone       +0.107       +0.000     147 +0.299 +0.252 +0.048 +0.061
+exam  M1 full picture alone       +0.176       +0.000     284 +0.299 +0.197 +0.103 +0.041

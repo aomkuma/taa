@@ -1,0 +1,20 @@
+verify_d.py: control (no bug): PASSED - 8 passed in 2.08s
+CAUGHT  #01 metrics: R from the pnl alone  (test_its_metrics)
+CAUGHT  #02 metrics: a zero pnl wins  (test_its_metrics)
+CAUGHT  #03 metrics: the drawdown from zero  (test_its_metrics)
+CAUGHT  #04 walk: no gap rule  (test_its_walk)
+CAUGHT  #05 walk: the time before the stop  (test_its_walk)
+CAUGHT  #06 walk: a sell on the bid  (test_its_walk)
+CAUGHT  #07 decision: a late open accepted  (test_its_decision)
+CAUGHT  #08 decision: wide at 2 H  (test_its_decision)
+CAUGHT  #09 decision: a close at the high breaks  (test_its_decision)
+CAUGHT  #10 m1: no spread on a buy  (test_its_m1_trade)
+CAUGHT  #11 straddle: the reference 60 s old allowed  (test_its_straddle)
+CAUGHT  #12 straddle: no extra slippage  (test_its_straddle)
+CAUGHT  #13 events: New York without summer time  (1 error in 1.52s)
+CAUGHT  #14 select: D1L keeps the level days  (test_its_cell_selection)
+CAUGHT  #15 mid: a tick at the time left out  (test_its_mid_and_gap)
+CAUGHT  #16 gap: 40 minutes allowed  (test_its_mid_and_gap)
+CAUGHT  #17 select: the season at > 63.3  (test_its_cell_selection)
+
+17 of 17 planted bugs caught

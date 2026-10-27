@@ -41,10 +41,13 @@ def splits(D: pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> None:
-    A = pd.read_parquet(HERE / "p2_trades.parquet")
+    src = sys.argv[1] if len(sys.argv) > 1 else "p2_trades.parquet"  # P3: p3_trades_all.parquet B2 ST ...
+    variants = sys.argv[2:] or ["A", "B1", "B2"]
+    A = pd.read_parquet(HERE / src)
+    A = A[A.variant.isin(variants)]
     pd.set_option("display.width", 220)
     total = 0
-    for v in ("A", "B1", "B2"):
+    for v in variants:
         S = splits(A[(A.variant == v) & (A.news_cost == 0.0)])
         total += len(S)
         print(f"\n== {v}: {len(S)} cells")
@@ -52,7 +55,7 @@ def main() -> None:
         F = S[S.both]
         print(f"   positive in both parts with >= {MIN_N} trades in each: "
               + ("; ".join(f"{r.by}={r.group} ({r.R_P1:+.3f} / {r.R_P2:+.3f})" for r in F.itertuples()) or "none"))
-    print(f"\ncells looked at in all: {total} (3 variants)")
+    print(f"\ncells looked at in all: {total} ({len(variants)} variants)")
     L = A[(A.news_cost == 0.0) & (A.pnl < 0)]
     print("\n== the losers' reasons: the share of each variant's losers per part")
     R = L.groupby(["variant", "part"]).reason.value_counts(normalize=True).unstack().round(2)

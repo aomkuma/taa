@@ -1,0 +1,15 @@
+verify_p3.py: control (no bug): PASSED - 4 passed in 1.57s
+CAUGHT  #01 metrics: the trail exits not counted  (test_metrics_counts_the_new_exits)
+CAUGHT  #02 the break-even tick looked for after the exit too  (test_rederive_a_trailing_stop)
+CAUGHT  #03 the steps before break-even counted  (test_rederive_a_trailing_stop)
+CAUGHT  #04 the stop level never moved  (test_rederive_a_trailing_stop)
+CAUGHT  #05 the ticks before the exit not checked  (test_rederive_a_trailing_stop)
+CAUGHT  #06 the trail / stop name not checked  (test_rederive_a_trailing_stop)
+CAUGHT  #07 a stale fill passes  (test_rederive_a_stale_fill_and_a_close_exit)
+CAUGHT  #08 the close exit's tick not checked  (test_rederive_a_stale_fill_and_a_close_exit)
+CAUGHT  #09 the invalidation price not checked  (test_the_bar_readings)
+CAUGHT  #10 first_close: the bar before the entry read  (test_the_bar_readings)
+CAUGHT  #11 first_close: the bar closing at the limit left out  (test_the_bar_readings)
+CAUGHT  #12 the trailing values without the buffer  (test_the_bar_readings)
+
+12 of 12 planted bugs caught
