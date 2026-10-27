@@ -33,6 +33,9 @@ class TrendBoxParams(StrategyParams):
     # 5.00 USD floor rejected 1 of 496 complete signals, because every target here is a swing or half an
     # H4 box. The gate stays so a lane can set one; 0.0 is off.
     min_take_profit: float = Field(default=0.0, ge=0)
+    # The measured default differs per direction, so each subclass sets its own; a lever either way
+    # (journal 2026-10-27: a down trade reached +1.40 R and still stopped out at -1.01 R).
+    break_even: bool = False
 
 
 class TrendBoxDownParams(TrendBoxParams):
@@ -41,6 +44,7 @@ class TrendBoxDownParams(TrendBoxParams):
 
 class TrendBoxUpParams(TrendBoxParams):
     box: float = Field(default=0.33, gt=0, le=1)
+    break_even: bool = True
 
 
 def in_window(at: pd.Timestamp) -> bool:
@@ -102,7 +106,6 @@ class TrendBox(BaseStrategy):
 
     Params = TrendBoxParams
     direction: str
-    use_break_even: bool
 
     def required_timeframes(self) -> tuple[Timeframe, ...]:
         return Timeframe.M1, Timeframe.M5, Timeframe.H1
@@ -198,7 +201,7 @@ class TrendBox(BaseStrategy):
         return at.time() == time(7)
 
     def manage_position(self, ctx: StrategyContext, pos: OpenPosition) -> PositionAdvice | None:
-        if not self.use_break_even:
+        if not self.params.break_even:
             return None
         return break_even_advice(ctx, pos)
 
@@ -207,11 +210,9 @@ class TrendBoxDown(TrendBox):
     name = "trend_box_down"
     Params = TrendBoxDownParams
     direction = "DOWN"
-    use_break_even = False
 
 
 class TrendBoxUp(TrendBox):
     name = "trend_box_up"
     Params = TrendBoxUpParams
     direction = "UP"
-    use_break_even = True
