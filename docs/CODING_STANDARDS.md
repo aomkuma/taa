@@ -173,3 +173,23 @@ an allow-list is a design decision: change the test and this section together, a
 - When ticket items are completed, tick them with `scripts/tickets.py` and run `sync`. Never edit the progress
   table by hand.
 - Keep `docs/HANDOFF.md` current at the end of a work session (state, next step, open items).
+
+## 11. Research and replay runs
+
+A run that produces a number is part of the record, so it is treated like code, not like scratch output.
+
+- **The report goes into the run's research folder, in the same change as the run**, under the name a reader
+  would look for (`day_<date>.md`, `out_<script>.txt`). `data/` is gitignored: a report left there exists on
+  one machine only.
+- **Never leave an empty file where a report belongs.** An empty file answers the reader's question wrongly.
+  On 2026-10-26/27 four replay reports went to `data/replay/ai/*.log` while four 0-byte `.md` files held
+  their names in the research folder; a third of the AI trader's whole record was lost until 2026-10-28
+  (`research/2026-10-24-replay/RECORD.md`).
+- **Say which code version produced it.** Commit the code first, then run, and name the commit in the
+  report or the record. Runs that span several processes (one per day) pick up any edit made while they
+  run, so `app/` is not edited while such a run is in flight - otherwise the days are not one version.
+- **A run that changes decisions is measured, not assumed.** A fix to what is *recorded* cannot change a
+  result and must not be reported as if it might.
+- **Restore files with `write_bytes`.** `Path.write_text` rewrites a whole file as CRLF on this machine;
+  that is how 66 of `app/`'s Python files became CRLF, which breaks the vitest tests that parse Python
+  sources.

@@ -34,6 +34,15 @@ Read before larger work:
 .venv\Scripts\python -m app.cli backtest --portfolio --server FBS-Demo --start 2026-04-18 --end 2026-10-17   # every lane, one account (TAA-507)
 .venv\Scripts\python -m pytest research/2026-10-18-moments/agents/precursors -q   # the research's own tests (foundation, LV3, evidence)
 .venv\Scripts\python research/2026-10-18-moments/agents/precursors/wf.py [3y]   # LV3 walk-forward: latest 12 months (3y: three years)
+.venv\Scripts\python research/2026-10-24-replay/rollback.py 2026-07-06   # AI-trader replay: undo that day and later first
+.venv\Scripts\python research/2026-10-24-replay/day.py 2026-07-06 > research\2026-10-24-replay\<folder>\day_2026-07-06.md
+                                            # one Thai day through the engine's own AI path; add --report to re-report only.
+                                            # Days must run in order (state and balance carry over). The report goes to a
+                                            # file in the research folder in the SAME change, under the name a reader looks
+                                            # for: on 10-26/27 four runs went to data/replay/ai/*.log (data/ is gitignored)
+                                            # while four 0-byte .md files held their names - a third of the record was lost
+                                            # until 10-28 (research/2026-10-24-replay/RECORD.md).
+.venv\Scripts\python research/2026-10-24-replay/plant_bugs_swallowed.py   # planted bugs: every one must make a test fail
 .venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
 .venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
 .venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14 | demo-track --proven-only
