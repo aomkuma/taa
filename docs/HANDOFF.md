@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-27 21:30 Thai. Read the **last section first** - it is the current state (the AI trader
+Last updated: 2026-10-28 00:35 Thai. Read the **last section first** - it is the current state (the AI trader
 replays, the three bots, the open breaker question). The sections before it are the record of earlier days and
 are kept for their detail, not as the present picture. This file holds **state only**:
 
@@ -21,42 +21,43 @@ are kept for their detail, not as the present picture. This file holds **state o
 Paste this into a new Claude Code session opened in `C:\Users\korap\taa`:
 
 ````text
-Continue TAA (C:\Users\korap\taa). Chat with me in Thai and give times in Thai time (UTC+7), always taken from
-`date -u` (never write a time ahead of the clock). Docs and code stay in English. Follow CLAUDE.md and the
-memory rules.
+Continue TAA (C:\Users\korap\taa). Chat with me in Thai; give times in Thai time (UTC+7) read with
+PowerShell `Get-Date` (Git Bash `date` is wrong on this machine). Docs, code and comments in English.
+Follow CLAUDE.md and the memory rules.
 
 Read first, in order:
 1. docs/OWNER_GOALS.md
-2. docs/HANDOFF.md
-3. research/2026-10-18-moments/agents/CHECKLIST.md (every method tried, with its verdict and lesson)
-4. research/2026-10-18-moments/agents/TEAM.md (the roles)
-5. the tail of research/2026-10-18-moments/agents/precursors/notes.md
+2. docs/HANDOFF.md - its LAST section is the current state
+3. research/2026-10-26-three-bots/RULES_LOCKED.md - the frozen rules and the standard of evidence
+4. research/2026-10-26-three-bots/WEIGHTS.md and AUDIT_FINDINGS.md - what was measured, and what was not
+5. research/2026-10-23-entry/DECISION_CHECKLIST.md and the market diary, before any trading talk
 
-Your role: the researcher, measurer and coordinator. You research the opportunities and probabilities, and turn
-them into designs and prompts for the developer agents. You measure everything they deliver:
-- re-run their tests;
-- plant your own bugs;
-- re-derive trades from the raw ticks;
-- check results against my reading of the real candles, not only against unit tests.
-You also commit per step by explicit paths (never push), keep CHECKLIST.md current, and read the exam
-(2026-04-18 .. 2026-10-17) yourself, once per frozen rule. No agent ever loads the exam.
+BEFORE THE DAY TRADES: write the day's plan. It is a gate now, not a note - `data/plans/<date>.md`, and
+without it the engine sends no order. The day runs 07:00 Thai to 07:00 Thai, so write it AT or AFTER
+07:00 (a plan written at 06:45 is filed under yesterday). It must name the condition, the levels, the
+side with the edge, and the scenarios, or the gate says which part is missing and refuses. Take every
+reading from the readers (`routine_read.py`, `rhythm_scan.py`, `picture_read.py`, and
+`app.strategy.edge_side.edge_lean` for the side), never by eye, and summarise it to me first.
 
-The goal is fixed: at least +0.15 R a trade after costs (spread only; slippage is a parameter defaulting to 0) in
-both learning parts (P1 2025-10-18 .. 2026-01-15, P2 2026-01-16 .. 2026-04-17), about 2-3 trades a day, in my
-windows (Asia 07-09 Thai, London 13-14 Thai, the NY open up to + 4 h). The method is flexible.
-- A loss never stops the work: tick it FAIL with its lesson and add the next method.
-- Before discarding a method, try the opposite side, a wider stop and a nearer target.
-- If a method pays, find the market states where it pays, and cut its weight in the others.
-- Answer only from real candles; never make up numbers. No coin / "50-50" verdicts.
+Your role: research, measure, and coordinate the developer sessions. You write their briefs, then you
+check what they deliver - re-run their tests, plant your own bugs, re-derive from the raw data. The
+Codex CLI is the developer session (`codex exec -m gpt-6-luna -s workspace-write`; its full path is in
+research/2026-10-24-replay/day.py) and has its own quota, while Claude subagents share this session's.
+A brief that says "read-only" must not also say "prove each test bites by breaking a line": that
+contradiction wasted three review rounds on 2026-10-27.
 
-State (2026-10-20 12:40 Thai):
-- PLAN-1 (Asia B2 + the London 13:00 ORB + the NY 08:30 straddle, one position at a time, about 2.3 trades a
-  day) is frozen for the one exam read. Spread only: +0.252 / +0.140 R; weighted by the D1 state +0.341 /
-  +0.191.
-- The four agents stopped on the weekly API limit (reset 2026-10-21 15:00 Thai). Start them again as new agents
-  from their briefs (*_PROMPT.md + their own DEV_LOG / AUDIT / PROPOSALS), one task each as listed in
-  HANDOFF "Next work".
-- DEMO is paused (resume only on my word); LIVE stays off.
+The goal is fixed: at least +0.15 R a trade after costs (spread only). The method is flexible.
+- A loss never stops the work: record it with its lesson and start the next method.
+- Before discarding a method, try the opposite side, a wider stop, a nearer target.
+- Answer only from real candles. Never invent a number. No coin / "50-50" verdicts.
+- Reproduce any decision-bearing research number through `app.cli backtest` before reporting it: the
+  harness can be fed the wrong parameters silently; the engine reads config.yaml and cannot.
+- An abnormal count - a zero, a rate that will not move, a window that does not match what was asked -
+  stops the report until it is explained. Three failures on 2026-10-27 announced themselves that way
+  and were talked past.
+
+Ask me before: git push, any deploy, starting DEMO or LIVE, anything touching my accounts, and any
+change to risk. Committing per step by explicit paths is fine without asking.
 ````
 
 ---
@@ -370,56 +371,73 @@ research harness. Research checks the result independently before it counts as d
 
 ---
 
-## The current state, 2026-10-27 21:30 Thai (read this first)
+## The current state, 2026-10-28 00:35 Thai (this supersedes the section above)
 
-### The engine is LIVE on the DEMO account
+### Everything is stopped, everything new is switched off
 
-`TRADING_MODE=DEMO`, `ENABLE_DEMO_TRADING=true`, account 106732769 FBS-Demo, started 20:59. The owner's
-decision that evening: *"go to DEMO, on the real trade account, so we know whether it works."* Seven
-strategies load: the four PLAN-1 setups and the three new bots. `ENABLE_LIVE_TRADING` stays false.
+The engine, the web service and all the agents are down. `git status` is clean at **e511d6d**, nothing is
+pushed. **Every gate added on 2026-10-27 defaults to off**, so starting the engine as it stands behaves
+exactly as it did before that day, with one exception: the day's plan gate, which is always on.
 
-- **Risk**: AGGRESSIVE 7.5 % a trade, open risk 15 %, **max 2 positions**, daily loss 15 %, min RR 0.8.
-- **The loss breakers are deactivated** (the owner, 2026-10-27: *"every trade already has its stop loss;
-  those systems are for human traders"*). What is left is each trade's stop and the kill switch
-  (`python -m app.cli kill --reason "..."`).
-- **Stop the engine with care**: a forced kill leaves the MT5 Python pipe stuck for about a minute
-  ("IPC send failed"); wait and re-run `doctor` before starting again.
+| | state |
+|---|---|
+| DEMO engine | stopped (the owner's call, 2026-10-27 22:20, so the audit's findings could be fixed) |
+| web service (8001) | stopped; restart with `.venv\Scripts\python -m app.web --port 8001` **from the venv**, or the engine cannot decrypt its key |
+| three bots | `enabled: true` in the `three_bots` lane, `require_edge_side: true` |
+| PLAN-1 four setups | enabled; `require_edge_side` **off** (see "before switching it on") |
+| the day's plan gate (P26) | **always on** - no plan, no broker order |
+| breakers | deactivated by the owner, 2026-10-27; each trade's stop and the kill switch are what is left |
+| risk | AGGRESSIVE 7.5 % a trade, 2 positions, 15 % open risk, min RR 0.8 (lane), mirrored in config.yaml |
+| LIVE | off, and stays off until Phase 14 and an explicit word |
 
-### Four things had to be fixed before the PWA could drive it
+### To start trading again
 
-The owner had set Aggressive 7.5 % in the PWA long ago and the engine never saw it. Four layers:
-`sync.enabled` was false; `CLOUD_BASE_URL` was empty; `ENGINE_ID` did not match the registered engine;
-and the web had been started with the system Python, so it could not decrypt the rotated engine secret.
-All four are fixed. `sync.enabled` stays **false in `config.yaml`** (a fresh checkout and CI must not
-need `CLOUD_*`); this machine turns it on with **`SYNC_ENABLED=true` in `.env`** - a new env override.
+1. **Write the day's plan first** - `data/plans/<Thai date>.md`, at or after 07:00 Thai, naming the
+   condition, the levels, the side with the edge and the scenarios. Without it the gate refuses, and it
+   says which part is missing.
+2. **Press Algo Trading in the bot terminal.** It was reset when the terminal restarted on 2026-10-27
+   and the engine sat disconnected for minutes before anyone noticed.
+3. `.venv\Scripts\python -m app.cli doctor` - 0 failures.
+4. `.venv\Scripts\python -m app.main --mode demo`, then check `http://127.0.0.1:8765/health` says
+   `connected: true`.
 
-The trading profile is also **mirrored** in `advisory.preferences.trading_profile` so the engine has the
-right numbers even when the pull fails. Those two must be changed together until the pairing is trusted.
+**Never force-kill the engine.** It leaves the MT5 pipe stuck for about a minute ("IPC send failed" /
+"No IPC connection"); wait, re-run `doctor`, then start.
 
-### TOTP is off on this machine
+### Before switching `require_edge_side` on for PLAN-1
 
-`WEB_REQUIRE_TOTP=false` (the owner: *"I am the only user"*). `WebSettings` refuses it when
-`WEB_ENV=production`. The sign-in page and the step-up dialog both read `GET /api/v1/auth/options` and
-hide the code field when the server says it is not needed; control actions still need the deliberate
-step-up confirmation, just without a code.
+The strategies will then declare 15,360 warm-up bars (64 closed H4 bars) while the `plan1` lane supplies
+10,000. The registry raises `ConfigError` at startup rather than reading short - loud, as intended - so
+the lane's `warmup_bars` must be raised in the same change.
 
-### The three bots and the H4 gate
+### What the night's reviews concluded, and what is still open
 
-`trend_box_down`, `trend_box_up`, `range_break` are enabled in the `three_bots` lane with
-`require_edge_side: true`. **The engine has not been restarted since the gate was switched on**, so the
-running process is still trading without it. Before restarting, finish the engine-verified backtest.
+- **The locked H4 rule is weaker than it first read.** `WEIGHTS.md`: the H4 lean does not separate
+  winners inside the fitted half at all (AUC 0.465); the two halves agree in **mean R only**. And the
+  "never seen" half is **earlier** than the fitted window, so it is not a forward test. No reading earns
+  a positive weight yet; `app/strategy/weighing.py` stays inert.
+- **The one measurement that would settle it** (from `WEIGHTS.md`): log every eligible entry decision
+  from 2026-10-28 onward with its point-in-time readings, **including the entries the H4 rule refuses**,
+  then compare. Logging only what the rule allows can never show what it costs.
+- **Five `except` handlers in `app/ai/` are silent** (`SWALLOWED.md`). The suspension failure was not
+  silent after all - it is in `watch_alerts.log`, 1,365 lines of it - but it is absent from the journal a
+  reader actually reads. The suggested change: write a `FAILED` record with `as_of` and the detail into
+  the same journal as successful wakes, before returning None. Not done.
+- **The R01 experiment never ran.** A prose note was put where an ISO timestamp belongs, so nothing was
+  suspended and the two runs were identical. `suspended()` now says what the value should have been.
+  Re-run it with `{"R01": "2026-12-31T00:00:00+00:00"}` and a cleared `watch_state.json`.
+- **The engine-verified backtest of the H4 gate was never finished.** Until it is, the +0.210 R figure
+  is a research number, not an engine number.
+- **`on_bar` still asks a strategy from another lane to close**, using the main lane's context
+  (`REVIEW_FINDINGS.md`). Harmless for these strategies, recorded rather than fixed.
 
-The rule (`research/2026-10-26-three-bots/RULES_LOCKED.md`, set 2): the H4 lean must be on the trade's
-side. +0.102 -> +0.210 R a trade on 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+### Traps this machine has, learned the hard way on 2026-10-27
 
-### What is open
-
-- The engine-verified backtest of the gate (the research number is not to be quoted until it agrees).
-- `on_bar` still asks a strategy from another lane to close, using the main lane's context
-  (`REVIEW_FINDINGS.md`); harmless for these three bots, recorded not fixed.
-- The outbox parks signed events as `AUDIT_CONFLICT: seq N` - the cloud holds a chain from a 5 Oct run.
-  Heartbeats and quotes reach the PWA; decisions and trades do not. Clearing the cloud's old chain is a
-  deletion, so it waits for the owner.
-- **P26, the morning plan, is still only a note.** The engine traded the evening of 27 Oct without one.
-  It must become a gate - no new entry for a day until that day's plan is recorded - not a reminder.
-- `edge_side.py`'s final `isfinite` guard is reachable: a finite ATR of 1e-320 can overflow the division to infinity, and a test now covers it.
+- `Path.write_text` rewrites a whole file as CRLF and breaks the vitest tests that parse Python sources.
+  **Use `write_bytes`**, and normalise before editing.
+- A developer's `.env` reached the test suite and started cloud-pull threads until Python died with a
+  Windows access violation about 1 % in; two sessions called it flakiness. `tests/conftest.py` now clears
+  the machine-only variables, and nothing machine-specific may be relied on inside a test again.
+- A stopped background task can leave a live child process still writing state files; check a file's
+  mtime before trusting a reset. `taskkill /PID` does not work in Git Bash - use `os.kill` from the venv.
+- Running the full suite beside anything heavy produces memory errors that look like test failures.
