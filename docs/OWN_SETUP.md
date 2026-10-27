@@ -3,25 +3,30 @@
 The owner's goals and principles come first: `docs/OWNER_GOALS.md`. This file holds **the current state** of Setup
 OWN: what trades in the bot, the windows and the method, and the research in progress. Every earlier round (the
 hypotheses written before their outcome, then the results) is kept in `docs/OWN_SETUP_ROUNDS.md`. Results describe
-the past, never a promise. Last update: 2026-10-27 11:30 Thai time.
+the past, never a promise. Last update: 2026-10-27 night Thai time.
 
-## Now (2026-10-27): the AI trader in replay, and three bots split by market
+## Now (2026-10-27): DEMO, the daily plan gate and the H4 edge gate
 
-**DEMO is paused** (owner, 2026-10-23); nothing trades a broker account. Two lines of work run instead, both
-described in `docs/HANDOFF.md` (last section) and in the glance table of `docs/STRATEGIES.md`:
+The engine is on the FBS DEMO account (started 20:59 Thai on 2026-10-27); seven strategies are configured,
+including PLAN-1 and the three measured M5 bots. LIVE stays off. The terminal's Algo Trading switch was reset
+after a terminal restart, leaving the engine disconnected until it was noticed; check it again after every
+restart.
 
-1. **The AI trader** (`ai_trader`, PLAN §A37): the watcher wakes the AI on closed M1 bars, the AI answers one
-   step, the code's brakes and the decision engine do the rest. Replayed day by day over 06-09 Jul 2026
-   (`research/2026-10-24-replay/`): days 1-3 gave +0.21 R, -2.43 R, -1.82 R on a 300 USD account. The answerer
-   is the Codex CLI with `gpt-6-luna` (owner, 2026-10-26).
-2. **Three bots by market** (`research/2026-10-26-three-bots/`, ticket TAA-1810): a down-trend bot, an
-   up-trend bot and a sideways bot, each testing its own structure, all on one account. Measured over the 12
-   months to 2026-10-23: +0.331 R a trade on 102 trades. The engine's breakers trip inside that year, so the
-   figure is not reachable as the account is configured today - open.
+**Every trading day needs a plan before a new order can be sent.** The updated engine enforces P26: a missing
+or incomplete plan blocks new orders while open positions remain managed. The day runs 07:00 Thai to 07:00 Thai;
+the plan is `data/plans/<date>.md`. This file gate applies across the engine, including PLAN-1. Restart the
+running engine to load the gate; the process had not restarted after the change landed.
 
-The owner's rule from 2026-10-26 governs both: **make it profitable first**, on any data, no before / after
-the exam split; and a setup that only pays when held 4-8 hours is fine - the 60-minute scalp was a method,
-not the goal.
+**The three bots** (`trend_box_down`, `trend_box_up`, `range_break`; TAA-1810) each need their own-side H4 lean
+to be at least 0 on the last closed H4 bar. The source code and config have the gate; restart the engine before
+relying on it. Rule set 2 reports 239 shipped-bot trades at +0.102 R a trade, and 199 with H4 momentum behind
+at +0.210 R a trade (+0.214 fitted / +0.207 never seen). These are historical measurements, not a claim about
+future results. The same edge gate is not configured for the four PLAN-1 strategies.
+
+The loss breakers are deactivated by the owner's decision. The global `min_risk_reward` cage remains 1.0; the
+`three_bots` lane sets 0.8. The 5 USD take-profit floor is off. The AI trader remains a replay path using the
+Codex CLI with `gpt-6-luna` (owner, 2026-10-26); its 06-09 Jul 2026 replay journal is in
+`research/2026-10-24-replay/`.
 
 ## Earlier (2026-10-22): PLAN-1 on DEMO
 

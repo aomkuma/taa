@@ -48,7 +48,7 @@ def demo_settings(tmp_path: Path, **env: str) -> Settings:
     base.update(env)
     plan = DayPlan(tmp_path / "plans")  # a restart builds the settings twice; a day keeps its plan
     if not plan.exists(START):
-        plan.write(START, "the harness's plan for its own trading day (P26)")
+        plan.write(START, "condition; levels; the side with the edge; scenarios (P26 test plan)")
     s = load_settings(env_file=None, config_file="config.yaml", environ=base)
     cfg = s.config.model_copy(
         update={
@@ -234,7 +234,7 @@ def test_the_day_plan_gate_lets_the_same_setup_through_once_the_plan_is_back(tmp
         d.engine.cycle()
         d.clock.advance(30)
     assert d.engine.bundle.fake is not None and d.engine.bundle.fake.calls["order_send"] == 0
-    plan.write_bytes(b"the plan, written late")
+    plan.write_bytes(b"condition; levels; the side with the edge; scenarios (written late)")
     for _ in range(120):  # long enough for fresh entry bars after the refusal
         d.engine.cycle()
         d.clock.advance(30)

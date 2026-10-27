@@ -103,6 +103,7 @@ def test_the_plan_goes_to_the_journal_and_the_store(tmp_path: Path, monkeypatch:
     text = journal.read_text(encoding="utf-8")
     assert "## Mon 06 Jul 2026 - the morning plan (07:01 Thai, written by the AI, P26)" in text
     assert "- intraday levels (M15 / M5): 4177.30 M5 support (equal lows x2)" in text
+    assert "- scenarios:" in text
     assert "- A (SELL, turn): an M5 close back under 4,195; stop 4203.0, take-profit 4178.0" in text
     assert "- readiness (A1-A8): failed none; bars current: yes" in text
     [row] = [json.loads(x) for x in (tmp_path / "plans.jsonl").read_text(encoding="utf-8").splitlines()]

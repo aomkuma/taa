@@ -422,5 +422,4 @@ side. +0.102 -> +0.210 R a trade on 2023-09..2026-10, +0.214 fitted / +0.207 nev
   deletion, so it waits for the owner.
 - **P26, the morning plan, is still only a note.** The engine traded the evening of 27 Oct without one.
   It must become a gate - no new entry for a day until that day's plan is recorded - not a reminder.
-- `edge_side.py` keeps a final `isfinite` guard that no input can reach; `plant_bugs_edge.py` records
-  that miss deliberately rather than faking a test for it.
+- `edge_side.py`'s final `isfinite` guard is reachable: a finite ATR of 1e-320 can overflow the division to infinity, and a test now covers it.

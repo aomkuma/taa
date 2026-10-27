@@ -13,16 +13,27 @@ the live gate, off by default: see [RUNBOOK_LIVE.md](RUNBOOK_LIVE.md) before eve
    - `ENABLE_DEMO_TRADING=true`
    - the demo login with its **master** password (the investor password cannot trade)
    - `KILL_SWITCH_FLATTEN_ALLOWED=true` only if you want the FLATTEN drill (step 5)
-3. In the bot terminal (`C:\MT5\taa-bot`): press **Algo Trading** (it must be on) and check Tools → Options
+3. In the bot terminal (`C:\MT5\taa-bot`): press **Algo Trading** (it must be on). **After every terminal restart, press it again**; it was reset on 2026-10-27 and the engine sat disconnected for minutes before anyone noticed. Also check Tools → Options
    → Expert Advisors → "Disable automatic trading via external Python API" is **off**.
-4. `python -m app.cli doctor` must report 0 failures. It confirms the account is DEMO; DEMO mode refuses any
-   other account. Then run the real-terminal contract tests (`$env:TAA_MT5_TESTS="1"; $env:TAA_MT5_TRADING_TESTS="1"; .venv\Scripts\python -m pytest -m mt5 tests/integration/test_mt5_terminal.py`):
+4. `.venv\Scripts\python.exe -m app.cli doctor` must report 0 failures. It confirms the account is DEMO;
+   DEMO mode refuses any other account. Then run the real-terminal contract tests (`$env:TAA_MT5_TESTS="1"; $env:TAA_MT5_TRADING_TESTS="1"; .venv\Scripts\python -m pytest -m mt5 tests/integration/test_mt5_terminal.py`):
    their trading part sends `order_check` only and shows broker-module problems FakeMT5 cannot.
 5. Start small: keep one or two symbols in `config.yaml` → `symbols.allowed`, and set the risk in the PWA →
    Trading profile (risk per signal 0.25–0.5 % to begin). `config.yaml` → `risk` is only the machine's hard
    ceiling (PLAN §A33, 2026-10-06).
 
 ## 2. Start, watch, stop
+
+Restart the engine to load the plan and H4 edge gates. Before each trading day, write the required plan to
+`data/plans/<date>.md` (Thai trading date, 07:00 to 07:00). The plan gate blocks new broker orders when today's
+plan is missing or incomplete; open positions remain managed. No plan means no new trades. Include the condition,
+levels, side with the edge and scenarios.
+
+If the engine was force-killed, the MT5 pipe can remain stuck for about a minute and log `IPC send failed` or
+`No IPC connection`. Wait about a minute, then run `doctor` again before restarting the engine.
+
+On this machine, web sign-in TOTP is off (`WEB_REQUIRE_TOTP=false`); the development web refuses this setting in
+production.
 
 | Action | Command |
 |---|---|

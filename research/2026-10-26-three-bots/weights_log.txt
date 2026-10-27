@@ -1,0 +1,2093 @@
+Reading additional input from stdin...
+OpenAI Codex v0.164.0-alpha.11.1
+--------
+workdir: C:\Users\korap\taa
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: high
+reasoning summaries: none
+session id: 01a17e18-cb87-70f1-b1b3-3b3c2806348b
+--------
+user
+Read research/2026-10-26-three-bots/WEIGHTS_BRIEF.md and carry it out in full. Work in C:\Users\korap\taa with .venv\Scripts\python.exe. Write ONLY weights.py and WEIGHTS.md in research/2026-10-26-three-bots/. Never commit, never push, never touch .env or config.yaml, stay out of app/ and docs/.
+codex
+I’ll read the brief and the surrounding research files, then implement only the two requested files using the workspace’s `.venv` Python. I’ll avoid `app/`, `docs/`, `.env`, and `config.yaml`, and won’t commit or push.
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content research/2026-10-26-three-bots/WEIGHTS_BRIEF.md; Get-ChildItem research/2026-10-26-three-bots' in C:\Users\korap\taa
+ succeeded in 523ms:
+# Measure what each reading is worth (2026-10-27, night)
+
+Write ONLY `research/2026-10-26-three-bots/weights.py` and `WEIGHTS.md`. Nothing else: another session
+is in `app/` and `docs/` right now. No commit, no push, no `.env`, no `config.yaml`.
+Use `.venv\Scripts\python.exe`.
+
+## Why
+
+The three gold bots decide with 6, 6 and 3 pass/fail gates out of ~132 measures the system can compute,
+and weigh none of them. The owner's standing rule (2026-10-23): *"no entry on one or a few parameters;
+combine every component learned, weighted."* The vessel exists and is unused - read
+`app/strategy/weighing.py` (Weight / Scale / score). Your job is the CONTENTS: which readings carry
+anything, and how much. Not the wiring.
+
+## The data, already produced - do not regenerate
+
+`research/2026-10-26-three-bots/momentum_trades.csv` - 239 trades of the SHIPPED bots, 2023-09..2026-10-24.
+Columns: bot, side, at, r, out, mae_r, mfe_r, risk, fitted, regime, window, mom_H1, mom_H4, mom_D1.
+`fitted` True = inside the window the parameters were fitted on (2025-10-20..2026-10-24), False = never seen.
+
+Read first: `RULES_LOCKED.md` (rule set 2 - the frozen rule and the standard of evidence expected), then
+`momentum.py` and `geometry.py` to see how readings are taken point-in-time.
+
+## Deliver
+
+1. `weights.py` - for every candidate reading available AT THE DECISION BAR: how well it separates
+   winners from losers, AND its effect on mean R, reported separately for the fitted and never-seen
+   halves with each half's n.
+2. `WEIGHTS.md` - the table and a proposed set of weights.
+
+## The rules this is judged on
+
+- **Point-in-time only.** Every reading from a bar CLOSED before that trade's `at`. The stored history is
+  stamped by each bar's OPEN (`app/engine/ai_trader.to_frame`); the app's live frames by the CLOSE.
+  Getting this backwards cost a whole afternoon on 2026-10-27 - a one-hour lookahead inverted which
+  timeframe appeared to matter. Any reading you add that is not already in the CSV must have its timing
+  proven by a hand-worked case in the file.
+- Never an aggregate without both halves beside it, each with its n.
+- A reading whose sign FLIPS between the halves is not a candidate, however good its average. Say so for
+  each one you test.
+- Separating winners from losers is NOT predicting net R. Report both; prefer R.
+- Say which candidates overlap (correlate) - related readings double-count the same evidence.
+- You are choosing among many candidates on data you can see. Estimate what best-of-N selection is worth
+  by itself if you can.
+- If a number is odd - a count that cannot be right, a rate that does not move - STOP and explain it
+  rather than writing a story around it. Three separate failures that day announced themselves that way
+  and were talked past.
+
+End with: the weights you propose, what you would NOT take and why, and the one thing to measure next.
+
+
+    Directory: C:\Users\korap\taa\research\2026-10-26-three-bots
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d-----        10/27/2026   2:46 PM                .my_bugs_backup                                                      
+d-----        10/27/2026   3:17 PM                .review_bugs_backup                                                  
+d-----        10/27/2026   6:19 PM                __pycache__                                                          
+-a----        10/27/2026   7:34 PM           3942 audit.py                                                             
+-a----        10/27/2026  10:11 PM           2878 AUDIT_BRIEF.md                                                       
+-a----        10/27/2026  10:18 PM           7894 AUDIT_FINDINGS.md                                                    
+-a----        10/27/2026  10:17 PM         454908 AUDIT_FINDINGS_raw.txt                                               
+-a----        10/27/2026   7:34 PM          19032 bots.py                                                              
+-a----        10/27/2026   5:25 PM           3364 CONSULT.md                                                           
+-a----        10/27/2026   5:26 PM          96025 CONSULT_REPLY_raw.txt                                                
+-a----        10/27/2026   5:33 PM           3076 CONSULT_SELLS.md                                                     
+-a----        10/27/2026   5:21 PM        1759268 dev2_log.txt                                                         
+-a----        10/27/2026   6:24 PM        1556583 dev3_log.txt                                                         
+-a----        10/27/2026  10:21 PM             39 dev4_log.txt                                                         
+-a----        10/27/2026   2:09 PM           4046 DEV_NOTES.md                                                         
+-a----        10/27/2026   5:21 PM           4515 DEV_NOTES_2.md                                                       
+-a----        10/27/2026   6:24 PM           7367 DEV_NOTES_3.md                                                       
+-a----        10/27/2026  10:06 AM          12631 DEV_SPEC.md                                                          
+-a----        10/27/2026   4:25 PM           6080 DEV_SPEC_2.md                                                        
+-a----        10/27/2026   5:23 PM           8613 DEV_SPEC_3.md                                                        
+-a----        10/27/2026  10:21 PM           3929 DEV_SPEC_4.md                                                        
+-a----        10/27/2026   7:34 PM           5819 edge_by_condition.py                                                 
+-a----        10/27/2026   6:20 PM          59427 edge_trades.csv                                                      
+-a----        10/27/2026   1:05 PM           3937 gate_bite.py                                                         
+-a----        10/27/2026   7:34 PM           6610 geometry.py                                                          
+-a----        10/27/2026   5:51 PM          56213 geometry_trades.csv                                                  
+-a----        10/27/2026   2:09 PM           4914 HYPOTHESIS.md                                                        
+-a----        10/27/2026   3:51 PM           3538 JOURNAL.md                                                           
+-a----        10/27/2026   7:34 PM           6664 momentum.py                                                          
+-a----        10/27/2026   2:40 PM           4987 momentum_depth.py                                                    
+-a----        10/27/2026   6:20 PM          73217 momentum_trades.csv                                                  
+-a----        10/27/2026   2:45 PM           4765 my_bugs.py                                                           
+-a----        10/27/2026   2:46 PM            944 out_my_bugs.txt                                                      
+-a----        10/26/2026   1:47 PM           3814 out_round1.txt                                                       
+-a----        10/26/2026   1:52 PM           2383 out_round2.txt                                                       
+-a----        10/27/2026  12:04 PM            830 out_round7.txt                                                       
+-a----        10/27/2026  12:08 PM           9247 parity.py                                                            
+-a----        10/27/2026   1:13 PM          30174 parity_output.txt                                                    
+-a----        10/27/2026  12:30 PM           7646 plant_bugs.py                                                        
+-a----        10/27/2026   4:53 PM           6190 plant_bugs_2.py                                                      
+-a----        10/27/2026   4:56 PM           1340 plant_bugs_2_output.txt                                              
+-a----        10/27/2026   6:22 PM          12301 plant_bugs_3.py                                                      
+-a----        10/27/2026   6:23 PM           3498 plant_bugs_3_output.txt                                              
+-a----        10/27/2026  10:51 PM           6488 plant_bugs_4.py                                                      
+-a----        10/27/2026  10:52 PM           1445 plant_bugs_4_output.txt                                              
+-a----        10/27/2026   9:33 PM           5605 plant_bugs_edge.py                                                   
+-a----        10/27/2026   8:44 PM            963 plant_bugs_edge_output.txt                                           
+-a----        10/27/2026   1:19 PM            991 plant_bugs_output.txt                                                
+-a----        10/27/2026  12:40 PM           3349 PREDICTION.md                                                        
+-a----        10/27/2026   2:40 PM           7812 relative.py                                                          
+-a----        10/27/2026   3:08 PM           3567 REVIEW_BRIEF.md                                                      
+-a----        10/27/2026   6:12 PM           4256 REVIEW_BRIEF_2.md                                                    
+-a----        10/27/2026   8:33 PM           3361 REVIEW_BRIEF_3.md                                                    
+-a----        10/27/2026   9:24 PM           3658 REVIEW_BRIEF_4.md                                                    
+-a----        10/27/2026   9:43 PM           3773 REVIEW_BRIEF_5.md                                                    
+-a----        10/27/2026   3:29 PM           9998 REVIEW_FINDINGS.md                                                   
+-a----        10/27/2026   6:15 PM         520484 REVIEW_FINDINGS_2_raw.txt                                            
+-a----        10/27/2026   8:35 PM         140080 REVIEW_FINDINGS_3_raw.txt                                            
+-a----        10/27/2026   9:31 PM          10072 REVIEW_FINDINGS_4.md                                                 
+-a----        10/27/2026   9:31 PM         291326 REVIEW_FINDINGS_4_raw.txt                                            
+-a----        10/27/2026   9:51 PM           6773 REVIEW_FINDINGS_5.md                                                 
+-a----        10/27/2026   9:51 PM         200282 REVIEW_FINDINGS_5_raw.txt                                            
+-a----        10/27/2026   3:17 PM         355215 review_log.txt                                                       
+-a----        10/27/2026   3:16 PM           4923 review_plant_bugs.py                                                 
+-a----        10/27/2026   3:17 PM            427 review_plant_bugs_output.txt                                         
+-a----        10/27/2026   2:40 PM           2518 robust.py                                                            
+-a----        10/27/2026   2:40 PM           4803 round3.py                                                            
+-a----        10/27/2026   2:40 PM           2146 round4.py                                                            
+-a----        10/27/2026   2:40 PM           3093 round5.py                                                            
+-a----        10/27/2026   2:40 PM           2678 round6.py                                                            
+-a----        10/27/2026  11:56 AM           2042 round7.py                                                            
+-a----        10/27/2026   7:34 PM           8176 RULES_LOCKED.md                                                      
+-a----        10/27/2026   2:40 PM           4883 selection_bias.py                                                    
+-a----        10/27/2026   5:45 PM        3336871 SELLS_REPLY_raw.txt                                                  
+-a----        10/27/2026   2:40 PM           4162 sweep.py                                                             
+-a----        10/27/2026   6:19 PM           5753 test_bots.py                                                         
+-a----        10/27/2026   2:40 PM           6359 together.py                                                          
+-a----        10/27/2026   2:40 PM           2503 unseen.py                                                            
+-a----        10/27/2026  11:01 PM           2891 WEIGHTS_BRIEF.md                                                     
+-a----        10/27/2026  11:01 PM              0 weights_log.txt                                                      
+
+
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content research/2026-10-26-three-bots/RULES_LOCKED.md; Get-Content research/2026-10-26-three-bots/momentum.py; Get-Content research/2026-10-26-three-bots/geometry.py; Get-Content app/strategy/weighing.py; Get-Content research/2026-10-26-three-bots/momentum_trades.csv -TotalCount 8' in C:\Users\korap\taa
+ succeeded in 562ms:
+> **WITHDRAWN THE SAME EVENING â€” 2026-10-27, 19:xx Thai. Read the second section first.**
+> Everything in the first section was measured with the wrong parameter set (`bots.P()` defaults instead
+> of the shipped `bots.SHIPPED`) and with a one-hour lookahead in the frame readings. It is kept, not
+> deleted, so the record shows what I got wrong and how it was caught.
+
+# Rule set 1 (WITHDRAWN) â€” locked 2026-10-27, 17:5x Thai
+
+Written **before** any day after 2026-10-27 has been traded or replayed. Everything below was chosen on
+2023-09 .. 2026-10-24 and is now frozen. The point of writing it down is that from tomorrow the data has
+not happened yet, so no choice made later can quietly improve these numbers.
+
+Anything changed after today is a **new** rule set with its own section and its own start date. The rows
+above it are never rewritten.
+
+## The two rules
+
+**A â€” do not enter against the hour's own momentum.**
+Momentum of H1 = (H1 close âˆ’ its 50-bar mean) Ã· its 14-bar Wilder ATR, read from the last H1 bar closed
+before the decision, signed so that positive means the frame leans the way this trade is going.
+**Refuse the entry when that number is below âˆ’1.0.**
+
+**B â€” the range bot does not break downward.** `range_break` takes the upward break only.
+
+## Why each, in one line of evidence
+
+| rule | evidence | holds its sign in both halves? |
+|---|---|---|
+| A | six bands of H1 momentum run âˆ’0.612 â†’ +0.328 R a trade, monotonic | yes at both extremes (âˆ’0.63/âˆ’0.60 and +0.70/+0.26) |
+| B | a downward range break gives âˆ’0.810 R in bull and âˆ’0.817 R in bear â€” independent of the regime | yes |
+
+## What the rules did on the history they were chosen on
+
+| | trades | win | R a trade | total R | fitted / never seen |
+|---|---|---|---|---|---|
+| the bots as they are | 248 | 33 % | âˆ’0.106 | âˆ’26.2 | âˆ’0.005 / âˆ’0.158 |
+| A | 189 | 38 % | +0.026 | +5.0 | +0.216 / âˆ’0.058 |
+| **A + B** | **171** | **39 %** | **+0.101** | **+17.2** | **+0.260 / +0.023** |
+
+## What was considered and left out, and why
+
+- **C â€” refuse when D1 momentum is stretched past +2 ATR our way** (+0.131 R, +0.191/+0.102). Left out as
+  a veto because it drops 39 % of the trades for a gain that the thinner sample cannot carry. Kept as a
+  candidate for *reducing size* rather than refusing, to be measured separately.
+- **The owner's hard D1 side rule as a binary gate.** Measured and rejected on the evidence: aligning the
+  side with the D1 regime is worth 0.06 R (âˆ’0.112 aligned against âˆ’0.173 counter over 220 trades), while
+  the regime itself is worth 0.38 R regardless of side. The owner's own correction the same day â€” *"D1
+  should not be that rigid; it is a quantity, not a gate"* â€” is what rule A implements, with the ordering
+  the measurement found (H1 strongest at +0.148 correlation with R, then H4 +0.111, then D1 +0.047)
+  rather than the ordering first proposed.
+- **Session cells** (UP in Asia 07-09, DOWN in London 13-15 both held their sign). Left out of this lock:
+  they are cells of 30 and 17 trades, and session is already half-encoded in the entry windows.
+
+## The honest weakness of this lock
+
+These two rules were chosen after seeing both halves of the history. The split into fitted and unseen
+years limits the damage but does not remove it: the choice itself saw everything. The number of candidate
+rules considered was small (five, listed above), so the selection premium should be far below the +0.45 R
+measured for picking the best of 88 variants â€” but it is not zero.
+
+**That is exactly why this file exists and is dated.** The clean test is the forward one: from
+2026-10-28, every day is data that had not happened when these rules were written.
+
+## How it will be judged
+
+Day by day, week by week, in `JOURNAL.md`, three bots in one account, at most two open at once, each in
+its own market condition â€” the owner's measure, not a per-rule trade count. Reported: the week's trades,
+R, USD, the account, and every entry the rules refused with what it would have done.
+
+
+---
+
+# Rule set 2 â€” locked 2026-10-27, 19:xx Thai
+
+## Why set 1 was withdrawn, within two hours of writing it
+
+Two independent faults, both found by the developer session reviewing my code:
+
+1. **The wrong parameters.** Every measurement ran `bots.P()` â€” the dataclass defaults â€” instead of the
+   configuration the app ships. They differ in every bot, and for the range bot they differ in *kind*:
+   `P()` defaults to `range_mode="fade"` (sell a sweep that closed back inside the box) while the shipped
+   strategy is `"break"` (an M5 close out of the box). So rule B, "the range bot does not break
+   downward", was derived from a setup we do not run. On the shipped bot, range sells are not the
+   disaster that rule was built on.
+2. **A one-hour lookahead.** `to_frame` indexes a bar by its OPEN; I shifted the index back an hour as
+   if it were a close, so every H1/H4/D1 reading became available an hour before its bar closed, and the
+   H4 and D1 buckets sat an hour out. Rule A's apparent strength was partly that lookahead.
+
+Both are now impossible to repeat: `bots.run` refuses the bare defaults (`test_bots.py`), and a
+hand-worked point-in-time test pins the open/close convention.
+
+## The single rule
+
+**The larger timeframe must lean the way the trade is going.**
+
+H4 momentum = (H4 close âˆ’ its 50-bar mean) Ã· its 14-bar ATR, from the app's own ATR, read from the last
+H4 bar **closed** before the decision, signed so positive means it leans the trade's way.
+**Take the trade only when that number is at least 0.**
+
+This is the owner's own rule of 2026-10-27 â€” *"every trade takes only the side with the edge on a
+timeframe larger than the entry timeframe"* â€” with the frame the measurement chose. The entry is M5; H4
+is larger. The threshold is zero, not a fitted number.
+
+## What it does, on the shipped bots over 2023-09 .. 2026-10-24
+
+| | trades | win | R a trade | total R | fitted / never seen |
+|---|---|---|---|---|---|
+| the bots as shipped | 239 | 37 % | +0.102 | +24.3 | +0.226 (95) / +0.020 (144) |
+| **H4 momentum behind â‰¥ 0** | **199** | **40 %** | **+0.210** | **+41.8** | **+0.214 (81) / +0.207 (118)** |
+| and range buys only | 162 | 43 % | +0.223 | +36.1 | +0.307 (60) / +0.173 (102) |
+| rule set 1's rule A alone (H1 â‰¥ âˆ’1) | 192 | 35 % | +0.123 | +23.6 | +0.216 (72) / +0.067 (120) |
+
+The two halves give +0.214 and +0.207 â€” the closest agreement anything has shown in this work, and the
+reason this rule is taken and the H1 one is not.
+
+## The frame ordering, corrected
+
+Correlation of "momentum behind the trade" with the trade's R, after the lookahead was removed:
+
+| frame | correlation with R |
+|---|---|
+| **H4** | **+0.156** |
+| H1 | +0.048 |
+| D1 | +0.030 |
+
+Before the fix I reported H1 strongest at +0.148. That was the lookahead. The owner proposed the order
+H1 â†’ H4 â†’ D1 with D1 strongest; the measurement puts **H4 strongest and D1 weakest**, so the middle
+frame carries it â€” nearer than D1, slower than the hour.
+
+## What is left out, and why
+
+- **Range buys only.** It adds +0.013 R overall and is better inside the fitted window (+0.307) than
+  outside it (+0.173) â€” the opposite of what a durable rule looks like. The sell cells are now 15 and 14
+  trades. Not taken; measured again when there are more.
+- **The D1 side gate.** Aligning the side with the D1 regime is worth +0.122 against +0.041, about
+  0.08 R â€” real but small, and the H4 rule already carries most of it.
+- **Anything about stop width.** Widening the down bot's stop on the real path: x1.0 âˆ’0.031, x1.5 âˆ’0.092,
+  x2.0 âˆ’0.080. The stop is not the problem; a winner's median adverse excursion is 0.29â€“0.41 R while a
+  loser's is 1.04â€“1.09 R.
+
+## The honest weakness, again
+
+This rule was chosen after seeing both halves, like the last one. What is different: it is **one** rule
+with a threshold of zero rather than a fitted number, it comes from the frame the owner named, and its
+two halves agree to within 0.007 R. The clean test is still the forward one, and the forward test has not
+started yet â€” the previous attempt to start it was withdrawn before a single day was run.
+"""The owner's hypothesis, 2026-10-27, measured rather than argued.
+
+    "D1 should not be that rigid. The order of hardness is H1, H4, D1 - meaning the more momentum D1
+    has, the more force that side has and the further it runs. Or not?"
+
+Two claims live in that sentence, and they are measured separately:
+
+A. **Direction is not a gate, it is a quantity.** A binary "the side must agree with the D1 regime" was
+   already tested and is nearly worthless: aligned -0.112 R against counter -0.173 R over 220 trades.
+   So the question is whether momentum *as a number* carries what the label does not.
+
+B. **The further claim: more momentum on a side -> the trade on that side runs further.** The thing that
+   "runs further" is the favourable excursion, so the test is MFE in R against momentum - not the win
+   rate and not the final R, both of which the stop and the target cut off.
+
+And the ordering H1 -> H4 -> D1: if the owner is right that D1 is the strongest, D1 momentum should
+separate the outcomes more than H4's, and H4's more than H1's. That ordering is a prediction, so it can
+fail: it is written here before the numbers are read.
+
+Momentum of a frame, defined here (mine to define, the owner's idea): the close's distance from its own
+50-bar mean, measured in that frame's own 14-bar Wilder ATR, signed - positive is up. Distance over a
+mean says where price is; dividing by that frame's ATR makes H1, H4 and D1 comparable, which a raw USD
+distance never is.
+
+    .venv\\Scripts\\python research/2026-10-26-three-bots/momentum.py
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
+sys.path.insert(0, str(ROOT))
+
+from app.core.enums import Timeframe  # noqa: E402
+from app.engine.ai_trader import to_frame  # noqa: E402
+from app.indicators.volatility import atr as app_atr  # noqa: E402
+from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
+
+MEAN_BARS, ATR_BARS = 50, 14
+FRAMES = {"H1": 1, "H4": 4, "D1": 24}  # hours a bar covers
+
+
+def atr(frame: pd.DataFrame, n: int = ATR_BARS) -> pd.Series:
+    """The app's own ATR, so research and production measure with one ruler.
+
+    An earlier version used ``ewm(adjust=False)``, which seeds from the first true range, while the app's
+    ``recursive_smooth`` seeds from the mean of the first full window - the two drift apart near the
+    warmup (found by the developer session, 2026-10-27).
+    """
+    return app_atr(frame.high, frame.low, frame.close, n)
+
+
+def momentum(h1: pd.DataFrame, hours: int) -> pd.DataFrame:
+    """One row per CLOSED bar of the frame: its momentum, and the time it became readable.
+
+    ``to_frame`` indexes a bar by its OPEN (see its docstring), so a bucket opening at ``t`` closes at
+    ``t + hours`` and is readable only then. An earlier version shifted the index back an hour as if the
+    frames were close-stamped - a double shift that made every bar readable an hour before it closed and
+    put the H4 and D1 buckets an hour out (found by the developer session, 2026-10-27).
+    """
+    rule = f"{hours}h" if hours < 24 else "1D"
+    f = h1.resample(rule).agg({"high": "max", "low": "min", "close": "last"}).dropna()
+    out = pd.DataFrame(index=f.index)
+    out["mom"] = (f.close - f.close.rolling(MEAN_BARS).mean()) / atr(f)
+    out["readable"] = f.index + pd.Timedelta(hours=hours)
+    return out.dropna()
+
+
+def read_at(table: pd.DataFrame, at: pd.Timestamp) -> float:
+    usable = table[table.readable <= at]
+    return float(usable.mom.iloc[-1]) if len(usable) else float("nan")
+
+
+def bins(df: pd.DataFrame, col: str, name: str) -> None:
+    """Outcomes by how much momentum there was ON THE TRADE'S OWN SIDE."""
+    x = df.dropna(subset=[col])
+    if x.empty:
+        print(f"\n{name}: no data")
+        return
+    # signed momentum turned into "momentum behind this trade": +ve means the frame leans our way
+    behind = np.where(x.side == "BUY", x[col], -x[col])
+    x = x.assign(behind=behind)
+    edges = [-np.inf, -2, -1, 0, 1, 2, np.inf]
+    labels = ["<-2", "-2..-1", "-1..0", "0..1", "1..2", ">2"]
+    x = x.assign(band=pd.cut(x.behind, edges, labels=labels))
+    print(f"\n### {name}\n")
+    print("| momentum behind the trade | trades | win | R a trade | **median MFE (R)** | fit / unseen R |")
+    print("|---|---|---|---|---|---|")
+    for lab in labels:
+        g = x[x.band == lab]
+        if len(g) < 8:
+            continue
+        fit, uns = g[g.fitted], g[~g.fitted]
+        both = (
+            f"{fit.r.mean():+.2f} ({len(fit)}) / {uns.r.mean():+.2f} ({len(uns)})"
+            if len(fit) and len(uns)
+            else "-"
+        )
+        print(
+            f"| {lab} | {len(g)} | {(g.r > 0).mean():.0%} | {g.r.mean():+.3f} | "
+            f"**{g.mfe_r.median():.2f}** | {both} |"
+        )
+    c = x[["behind", "mfe_r"]].corr().iloc[0, 1]
+    cr = x[["behind", "r"]].corr().iloc[0, 1]
+    print(f"\ncorrelation with MFE **{c:+.3f}**, with the final R {cr:+.3f}  ({len(x)} trades)")
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+    d = pd.read_csv(HERE / "edge_trades.csv")
+    d["at"] = pd.to_datetime(d["at"], utc=True)
+    hs = ParquetHistoryStore(ROOT / "data/history")
+    h1 = to_frame(hs.load("FBS-Demo", "XAUUSD", Timeframe.H1, None, None))
+    for name, hours in FRAMES.items():
+        table = momentum(h1, hours)
+        d[f"mom_{name}"] = [read_at(table, t) for t in d["at"]]
+    print("# The owner's momentum hypothesis (2026-10-27)\n")
+    print(
+        "Momentum = the close's distance from its own 50-bar mean in that frame's own 14-bar ATR, signed,\n"
+        "read from the last bar of the frame CLOSED before the entry. 'Behind the trade' flips the sign\n"
+        "for a sell, so a positive number always means the frame leans the way the trade is going.\n"
+    )
+    print(
+        f"{len(d)} trades, 2023-09 .. 2026-10. The prediction written first: D1 separates most, then H4, then H1."
+    )
+    for name in FRAMES:
+        bins(d, f"mom_{name}", f"{name} momentum behind the trade")
+    print("\n## The ordering, in one line each\n")
+    print("| frame | correlation with MFE | correlation with R |")
+    print("|---|---|---|")
+    for name in FRAMES:
+        x = d.dropna(subset=[f"mom_{name}"])
+        behind = np.where(x.side == "BUY", x[f"mom_{name}"], -x[f"mom_{name}"])
+        print(
+            f"| {name} | {np.corrcoef(behind, x.mfe_r)[0, 1]:+.3f} | {np.corrcoef(behind, x.r)[0, 1]:+.3f} |"
+        )
+    d.to_csv(HERE / "momentum_trades.csv", index=False)
+
+
+if __name__ == "__main__":
+    main()
+"""Where the trend bots' entries actually sit, measured on the price path (journal week 1, 2026-10-27).
+
+The journal's week 1 found the two winning down trades went 0.81 R and 0.38 R *against* the entry before
+they ran, which is why a break-even stop destroyed them. That is a statement about the entry, not about
+the exit, so this measures the entry itself over the whole history rather than one week:
+
+1. the adverse excursion before a trade works, separately for winners and losers - if winners routinely
+   dip most of the way to the stop, the stop is too tight for where the entry is placed;
+2. the favourable excursion of the losers - if losers never go anywhere, they are simply wrong and no
+   stop width will save them;
+3. the counterfactual: the same entry and the same target with a stop k times wider, settled on the real
+   M1 path. This answers "widen the stop" with one number per k instead of a parameter sweep.
+
+Every number is split by the window the parameters were fitted on (2025-10-20 .. 2026-10-24) and the
+years before it, because a lesson that only holds inside the fit is not a lesson.
+
+    .venv\\Scripts\\python research/2026-10-26-three-bots/geometry.py
+"""
+
+from __future__ import annotations
+
+import sys
+from dataclasses import replace
+from pathlib import Path
+
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import audit  # noqa: E402
+import bots  # noqa: E402
+from app.core.enums import Timeframe  # noqa: E402
+from app.engine.ai_trader import to_frame  # noqa: E402
+from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[2]
+FIT = (pd.Timestamp("2025-10-20", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC"))
+WIDE = [1.0, 1.25, 1.5, 2.0, 3.0]
+
+
+def day_end(at: pd.Timestamp) -> pd.Timestamp:
+    """``run``'s own deadline for a trade opened at ``at``: 07:00 Bangkok the next morning."""
+    th = at.tz_convert(bots.TH)
+    return (pd.Timestamp(th.date(), tz=bots.TH) + pd.Timedelta(days=1, hours=7)).tz_convert("UTC")
+
+
+def path_stats(m1: pd.DataFrame, t: bots.Trade, p: bots.P) -> dict:
+    """Walk the real M1 path once and read off everything the entry's geometry needs.
+
+    The counterfactual stops get the SAME DEADLINE the original trade had (07:00 Bangkok the next day,
+    and ``max_hours``), not the moment the original happened to exit: the original exited early *because*
+    it was stopped, so cutting the wider stop off there would answer the question with itself. The first
+    version of this file did exactly that and gave a win rate that did not move with the stop width -
+    which is impossible, and is what exposed the mistake.
+    """
+    x = m1[(m1.index >= t.at) & (m1.index <= t.extra["closed"])]
+    if x.empty:
+        return {}
+    sell = t.side == "SELL"
+    risk = abs(t.stop - t.entry)
+    hi, lo = x.high.to_numpy(float), x.low.to_numpy(float)
+    adverse = (hi.max() - t.entry) if sell else (t.entry - lo.min())
+    favour = (t.entry - lo.min()) if sell else (hi.max() - t.entry)
+    out = {"mae_r": adverse / risk, "mfe_r": favour / risk, "risk": risk}
+    until = day_end(t.at)
+    for k in WIDE:
+        wider = bots.Trade(
+            t.bot, t.side, t.at, t.entry, t.entry + k * risk if sell else t.entry - k * risk, t.tp
+        )
+        got = bots.settle(m1, wider, until, p)
+        out[f"r_x{k}"] = got.r * k  # back into R of the ORIGINAL risk, so the k columns are comparable
+        out[f"out_x{k}"] = got.out
+    return out
+
+
+def table(df: pd.DataFrame, title: str) -> None:
+    print(f"\n### {title}  ({len(df)} trades)\n")
+    if df.empty:
+        print("no trades")
+        return
+    win, lose = df[df.r > 0], df[df.r <= 0]
+    print("| group | trades | median MAE (R) | 75th MAE | median MFE (R) | mean R |")
+    print("|---|---|---|---|---|---|")
+    for name, g in (("winners", win), ("losers", lose), ("all", df)):
+        if g.empty:
+            continue
+        print(
+            f"| {name} | {len(g)} | {g.mae_r.median():.2f} | {g.mae_r.quantile(0.75):.2f} | "
+            f"{g.mfe_r.median():.2f} | {g.r.mean():+.3f} |"
+        )
+    print("\n| stop width | mean R a trade | win rate | trades stopped out |")
+    print("|---|---|---|---|")
+    for k in WIDE:
+        col = df[f"r_x{k}"]
+        print(f"| x{k} | {col.mean():+.3f} | {(col > 0).mean():.0%} | {(col <= -0.9 * k).sum()} |")
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+    hs = ParquetHistoryStore(ROOT / "data/history")
+    f = {t: to_frame(hs.load("FBS-Demo", "XAUUSD", t, None, None)) for t in (Timeframe.M1, Timeframe.H1)}
+    m1 = f[Timeframe.M1]
+    # The CHOSEN parameters, one set per bot (audit.BEST) - not bots.P(). They differ in every bot, and
+    # for RANGE they differ in kind: P() defaults to range_mode "fade" (sell a sweep that closed back
+    # inside the box) while the shipped strategy is "break" (an M5 close out of the box). Measuring the
+    # defaults measures a setup we do not run - found by the developer session, 2026-10-27.
+    # exit_mode "tp" everywhere so the entry is read without an exit rule on top of it.
+    per = {b: replace(v, exit_mode="tp") for b, v in audit.BEST.items()}
+    start, end = pd.Timestamp("2023-09-05", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC")
+    trades = bots.run(f, per, start, end)
+    rows = []
+    for t in trades:
+        st = path_stats(m1, t, per[t.bot])
+        if not st:
+            continue
+        # a stop at x1.0 is the trade run() already settled: if the two disagree this harness is wrong
+        if abs(st["r_x1.0"] - t.r) > 1e-6:
+            raise SystemExit(
+                f"harness disagrees with bots.run on {t.bot} {t.at}: {st['r_x1.0']:+.4f} vs {t.r:+.4f}"
+            )
+        rows.append({"bot": t.bot, "side": t.side, "at": t.at, "r": t.r, "out": t.out, **st})
+    df = pd.DataFrame(rows)
+    df["fitted"] = (df["at"] >= FIT[0]) & (df["at"] < FIT[1])  # df.at is pandas own indexer
+    print(f"# The entry's geometry, {start.date()} .. {end.date()}\n")
+    print(
+        f"{len(df)} trades: {int(df.fitted.sum())} inside the fit window, {int((~df.fitted).sum())} outside"
+    )
+    for bot in ("DOWN", "UP", "RANGE"):
+        g = df[df.bot == bot]
+        if g.empty:
+            continue
+        print(f"\n## {bot}")
+        table(g[~g.fitted], f"{bot} - never seen")
+        table(g[g.fitted], f"{bot} - inside the fit window")
+    df.to_csv(Path(__file__).resolve().parent / "geometry_trades.csv", index=False)
+
+
+if __name__ == "__main__":
+    main()
+"""A validated, inert vessel for research-supplied weighted trade readings."""
+
+from __future__ import annotations
+
+import math
+from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import Literal
+
+Wants = Literal["high", "low", "true", "false"]
+
+
+@dataclass(frozen=True)
+class Weight:
+    """A reading and the nonnegative amount it contributes to a weighted decision."""
+
+    name: str
+    weight: float
+    wants: Wants
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            raise ValueError("weight name must not be empty")
+        if not math.isfinite(self.weight) or self.weight < 0:
+            raise ValueError("weight must be finite and >= 0")
+        if self.wants not in ("high", "low", "true", "false"):
+            raise ValueError(f"unsupported wants value: {self.wants!r}")
+
+
+@dataclass(frozen=True)
+class Scale:
+    """The readings and minimum normalized score required to qualify."""
+
+    weights: tuple[Weight, ...]
+    threshold: float
+
+    def __post_init__(self) -> None:
+        if not math.isfinite(self.threshold) or not 0 <= self.threshold <= 1:
+            raise ValueError("threshold must be finite and in [0, 1]")
+        names = [reading.name for reading in self.weights]
+        if len(names) != len(set(names)):
+            raise ValueError("weight names must be unique")
+
+
+@dataclass(frozen=True)
+class ScoreResult:
+    """Normalized score, per-reading classifications, and threshold outcome."""
+
+    score: float
+    supported: list[str]
+    opposed: list[str]
+    missing: list[str]
+    meets_threshold: bool
+
+
+def score(readings: Mapping[str, float | bool | None], scale: Scale) -> ScoreResult:
+    """Score available readings over their readable weight only.
+
+    Numeric values must already be normalized to ``[0, 1]`` by the caller. ``high`` earns
+    ``weight * value`` and ``low`` earns ``weight * (1 - value)``; a numeric reading supports when
+    its contribution is at least half its weight, otherwise it opposes. Boolean readings earn full
+    weight only when their value matches ``true`` or ``false``. Missing values are excluded from
+    both numerator and denominator. The threshold is met at ``score >= threshold``; an empty or
+    zero-readable-weight scale cannot meet it.
+    """
+    numerator = 0.0
+    denominator = 0.0
+    supported: list[str] = []
+    opposed: list[str] = []
+    missing: list[str] = []
+
+    for item in scale.weights:
+        value = readings.get(item.name)
+        if value is None:
+            missing.append(item.name)
+            continue
+
+        if isinstance(value, bool):
+            if item.wants not in ("true", "false"):
+                raise ValueError(f"{item.name}: boolean reading requires wants='true' or 'false'")
+            agrees = value is (item.wants == "true")
+            contribution = item.weight if agrees else 0.0
+            if agrees:
+                supported.append(item.name)
+            else:
+                opposed.append(item.name)
+        else:
+            if item.wants not in ("high", "low"):
+                raise ValueError(f"{item.name}: numeric reading requires wants='high' or 'low'")
+            numeric = float(value)
+            if not math.isfinite(numeric) or not 0 <= numeric <= 1:
+                raise ValueError(f"{item.name}: numeric reading must be finite and in [0, 1]")
+            fraction = numeric if item.wants == "high" else 1.0 - numeric
+            contribution = item.weight * fraction
+            (supported if fraction >= 0.5 else opposed).append(item.name)
+        numerator += contribution
+        denominator += item.weight
+
+    total = numerator / denominator if denominator > 0 else 0.0
+    meets = denominator > 0 and total >= scale.threshold
+    return ScoreResult(total, supported, opposed, missing, meets)
+bot,side,at,r,out,mae_r,mfe_r,risk,r_x1.0,out_x1.0,r_x1.25,out_x1.25,r_x1.5,out_x1.5,r_x2.0,out_x2.0,r_x3.0,out_x3.0,fitted,regime,window,mom_H1,mom_H4,mom_D1
+UP,BUY,2023-09-12 01:15:00+00:00,-1.1294219154443494,SL,1.0526315789473013,0.133735979292569,2.317999999999984,-1.1294219154443494,SL,-1.3794219154443468,SL,-1.6294219154443454,SL,-2.129421915444349,SL,-3.129421915444349,SL,False,unknown,Asia 07-09,-0.7341347261078184,-1.784132855737198,
+RANGE,SELL,2023-09-27 00:50:00+00:00,6.257082394702604,TP,0.8956242746945521,6.370400709945903,3.6622500000000855,6.257082394702604,TP,6.257082394702525,TP,6.257082394702733,TP,6.257082394702604,TP,6.257082394702604,TP,False,unknown,Asia 07-09,-5.464439450831285,-4.458276827358965,
+DOWN,SELL,2023-10-05 06:05:00+00:00,1.9146963375058004,TP,0.0278164116828671,2.821047751506688,4.314000000000078,1.9146963375058004,TP,1.91469633750578,TP,1.9146963375057664,TP,1.9146963375058004,TP,1.9146963375058004,TP,False,bear,London 13-15,0.8548017949128098,-4.8017935736216195,-5.351429073404594
+DOWN,SELL,2023-10-06 06:25:00+00:00,-1.074037512339587,SL,1.0636722606120543,0.3899308983218634,4.051999999999907,-1.074037512339587,SL,1.7077986179665017,TP,1.7077986179664502,TP,1.707798617966482,TP,1.707798617966482,TP,False,bear,London 13-15,-0.21841216231003002,-4.050453206073849,-5.289218798239237
+UP,BUY,2023-10-13 00:20:00+00:00,4.099041533546515,TP,0.5495207667731924,4.198083067092842,3.1299999999998818,4.099041533546515,TP,4.099041533546456,TP,4.099041533546615,TP,4.099041533546515,TP,4.099041533546515,TP,False,bear,Asia 07-09,-0.21122227846729447,3.9299373273151703,-1.6676679164725547
+RANGE,BUY,2023-10-18 12:05:00+00:00,0.1937697638431038,eod,0.909641391374544,1.2864159321805977,11.147249999999984,0.1937697638431038,eod,0.1937697638431038,eod,0.1937697638431038,eod,0.1937697638431038,eod,0.1937697638431038,eod,False,bull,NY open,5.030379798985599,6.954671668701386,1.2052684177574036
+RANGE,BUY,2023-10-19 06:25:00+00:00,2.764478398063994,eod,0.1954969275664835,3.275048043844429,10.537250000000084,2.764478398063994,eod,2.7644783980639827,eod,2.7644783980639747,eod,2.764478398063994,eod,2.764478398063994,eod,False,bull,London 13-15,2.3838208773099288,5.398401130434584,2.326460142686294
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content research/2026-10-26-three-bots/bots.py -TotalCount 270; Get-Content research/2026-10-26-three-bots/AUDIT_FINDINGS.md -TotalCount 160; Get-Content research/2026-10-26-three-bots/DEV_SPEC_4.md' in C:\Users\korap\taa
+ succeeded in 299ms:
+"""One trader, three bots (owner 2026-10-26: "the bots are like three traders, each trading its own setup at the
+same time, one account - at one decision point they cannot all enter: at most two, a trend one way and sideways";
+"make it profitable first - no before / after the exam").
+
+Plain code, no AI, so it can be tuned fast. Each bot watches for its OWN structure at every M5 close inside the
+owner's windows (Asia 07:00-09:00, London 13:00-15:00 Thai, New York 08:00-11:30 NY) and holds its own position;
+a trend bot and the range bot can overlap, the two trend bots cannot (their conditions are opposites).
+
+- DOWN: MetaTrader 5's ZigZag (12, 5, 3) on the H1 bars closed by then shows a lower high AND a lower low; its
+  last leg A (high) -> B (low); price pulled back RETRACE of it; an M5 box (6-24 bars, at most BOX of the leg
+  tall) - the quiet; an M5 close under the box = SELL; stop over the box by BUFFER of the box height;
+  take-profit at B, at least MIN_TP USD and MIN_R x the risk. UP: the mirror;
+- RANGE: the box comes from the BIG picture (owner 2026-10-26: "sideways has to be measured on H1-H4"):
+  ``range_tf`` names the frame whose ZigZag gives the box - H4, H1, or 'both' (the H4 box, and the H1 swings
+  must sit inside it). That frame must not be stepping (no lower-high-and-lower-low, no higher pair), and price
+  must be inside the box. Then an M5 bar over the box top closing back under it = SELL (a sweep closed back),
+  stop over that bar's high + BUFFER x its range, take-profit TP_RANGE of the way to the box low; the mirror at
+  the bottom. ``range_mode`` 'opposite' takes the other side, 'break' trades an M5 close out of the box;
+- shared by the account: no entry into a push still running toward the stop (the 60 minutes before ran more than
+  RUN x the stop distance), and the windows;
+- the exit, ``exit_mode``: 'tp' the stop and take-profit alone; 'be' the stop to break-even once the trade is
+  BE_AT x risk ahead; 'trail' the same, then the stop follows the extreme of the last TRAIL_MIN minutes of M1
+  bars; 'struct' out when STRUCT_BARS M5 bars close back across the entry. 'tp' leans on where the test stops
+  (the Thai day's end carried 29-48 % of each bot's gross R), so it is a baseline, not a design;
+- SL / TP on the M1 bars (bid), the spread SPREAD USD off every trade; a trade still open at the Thai day's end
+  is closed there.
+
+    .venv/Scripts/python research/2026-10-26-three-bots/bots.py
+"""
+
+from __future__ import annotations
+
+import sys
+from dataclasses import dataclass, field, replace
+from pathlib import Path
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+from app.core.enums import Timeframe  # noqa: E402
+from app.engine.ai_trader import to_frame  # noqa: E402
+from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
+from app.strategy.zigzag import zigzag  # noqa: E402
+
+TH, NY = "Asia/Bangkok", "America/New_York"
+START, END = pd.Timestamp("2025-10-20", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC")
+
+
+@dataclass
+class P:
+    retrace: tuple[float, float] = (0.382, 0.786)
+    box: float = 0.25  # the box at most this share of the H1 leg tall
+    buffer: float = 0.2  # the stop past the box by this share of the box height
+    min_tp: float = 0.0  # the 5 USD floor, off since 2026-10-27 (it rejected 1 of 496 signals)
+    min_r: float = 1.0
+    tp_range: float = 0.5
+    run: float = 1.2
+    spread: float = 0.30
+    exit_mode: str = "tp"  # tp | be | trail | struct (see the module docstring)
+    be_at: float = 1.0  # the trade must be this many R ahead before the stop moves
+    trail_min: int = 30  # 'trail': the stop follows the extreme of the last this many minutes of M1 bars
+    struct_bars: int = 3  # 'struct': this many M5 closes back across the entry end the trade
+    max_hours: float = (
+        0  # the trade is closed at this bar's close after this many hours (0: at the day's end)
+    )
+    bots: tuple[str, ...] = ("DOWN", "UP", "RANGE")
+    d1: bool = False  # the trend bots only with the D1 regime (the close against its 50-day mean)
+    range_mode: str = "fade"  # fade: sell a sweep closed back; opposite: the same trigger, the other side;
+    # break: an M5 close out of the box, traded with the break
+    range_tf: str = "H4"  # where the box comes from: "H4", "H1" or "both" (the H4 box with H1 inside it)
+    range_flat: bool = True  # the box frame must not be stepping up or down
+
+
+@dataclass
+class Trade:
+    bot: str
+    side: str
+    at: pd.Timestamp
+    entry: float
+    stop: float
+    tp: float
+    r: float = 0.0
+    out: str = ""
+    extra: dict = field(default_factory=dict)
+
+
+# The configuration the app actually ships (app/strategy/trend_box.py, range_break.py and the three_bots
+# lane of config.yaml). It is a dict because the three bots do NOT share one P: RANGE differs from the
+# others in KIND - "break" is an M5 close out of the box, while P()'s default "fade" sells a sweep that
+# closed back inside, a different setup entirely.
+#
+# On 2026-10-27 a research script measured P() instead of this and produced an afternoon of conclusions
+# about a setup we do not run (the shipped bots are +0.102 R a trade; the defaults are -0.106). `run`
+# now refuses the bare defaults so that cannot happen silently again.
+SHIPPED: dict[str, "P"] = {}  # filled below, once P exists
+
+
+def _shipped() -> dict[str, "P"]:
+    return {
+        "DOWN": replace(P(), bots=("DOWN",), box=0.2, buffer=0.2, min_r=1.2),
+        "UP": replace(P(), bots=("UP",), box=0.33, buffer=0.2, min_r=1.2),
+        "RANGE": replace(
+            P(), bots=("RANGE",), range_tf="H4", range_mode="break", tp_range=0.5, buffer=0.3, min_r=0.8
+        ),  # fmt: skip
+    }
+
+
+SHIPPED.update(_shipped())
+
+
+def windows(day: pd.Timestamp) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
+    th, ny = pd.Timestamp(day.date(), tz=TH), pd.Timestamp(day.date(), tz=NY)
+    return [
+        ((th + pd.Timedelta(hours=7)).tz_convert("UTC"), (th + pd.Timedelta(hours=9)).tz_convert("UTC")),
+        ((th + pd.Timedelta(hours=13)).tz_convert("UTC"), (th + pd.Timedelta(hours=15)).tz_convert("UTC")),
+        (
+            (ny + pd.Timedelta(hours=8)).tz_convert("UTC"),
+            (ny + pd.Timedelta(hours=11, minutes=30)).tz_convert("UTC"),
+        ),
+    ]
+
+
+def market(h1: pd.DataFrame) -> tuple[str, list]:  # the census only: the bots no longer switch on it
+    sw, _ = zigzag(h1.high.to_numpy(float), h1.low.to_numpy(float))
+    highs = [s for s in sw if s.kind == 1]
+    lows = [s for s in sw if s.kind == -1]
+    if len(highs) < 2 or len(lows) < 2:
+        return "NONE", sw
+    if highs[-1].price < highs[-2].price and lows[-1].price < lows[-2].price:
+        return "DOWN", sw
+    if highs[-1].price > highs[-2].price and lows[-1].price > lows[-2].price:
+        return "UP", sw
+    return "RANGE", sw
+
+
+def settle(m1: pd.DataFrame, t: Trade, until: pd.Timestamp, p: P) -> Trade:
+    """Walk the M1 bars from the entry to ``until``: the stop (moved by ``exit_mode``) and the take-profit, the
+    worse of the two first when a bar holds both; else the last close. The spread is taken off once."""
+    if p.max_hours:
+        until = min(until, t.at + pd.Timedelta(hours=p.max_hours))
+    x = m1[(m1.index >= t.at) & (m1.index < until)]
+    sell = t.side == "SELL"
+    risk = abs(t.stop - t.entry)
+    hi = x.high.to_numpy()
+    lo = x.low.to_numpy()
+    cl = x.close.to_numpy()
+    ix = x.index
+    stop, best = t.stop, t.entry  # best: the furthest price reached in the trade's favour
+    exit_px, out, when = None, ("time" if p.max_hours else "eod"), until
+    back = 0  # 'struct': M5 closes in a row back across the entry
+    for i in range(len(x)):
+        if (hi[i] >= stop) if sell else (lo[i] <= stop):
+            exit_px, out, when = stop, ("SL" if stop == t.stop else "trail"), ix[i]
+            break
+        if (lo[i] <= t.tp) if sell else (hi[i] >= t.tp):
+            exit_px, out, when = t.tp, "TP", ix[i]
+            break
+        best = min(best, lo[i]) if sell else max(best, hi[i])
+        ahead = (t.entry - best) if sell else (best - t.entry)
+        if p.exit_mode in ("be", "trail") and ahead >= p.be_at * risk:
+            moved = t.entry
+            if p.exit_mode == "trail" and i >= 1:
+                j = max(0, i - p.trail_min + 1)
+                moved = float(hi[j : i + 1].max()) if sell else float(lo[j : i + 1].min())
+            stop = min(stop, max(moved, t.entry)) if sell else max(stop, min(moved, t.entry))
+        if p.exit_mode == "struct" and (i + 1) % 5 == 0:
+            back = back + 1 if ((cl[i] > t.entry) if sell else (cl[i] < t.entry)) else 0
+            if back >= p.struct_bars:
+                exit_px, out, when = float(cl[i]), "struct", ix[i]
+                break
+    if exit_px is None:
+        exit_px = float(cl[-1]) if len(x) else t.entry
+    gain = (t.entry - exit_px) if sell else (exit_px - t.entry)
+    t.r, t.out = (gain - p.spread) / risk, out
+    t.extra["closed"] = when
+    return t
+
+
+def run(
+    f: dict, params: P | dict[str, P], start: pd.Timestamp = START, end: pd.Timestamp = END
+) -> list[Trade]:
+    """Every bot of ``params`` (one P for all its bots, or one P per bot) side by side, each with its own
+    position, so a trend trade and a range trade can be open at once."""
+    if isinstance(params, dict):
+        bare = [b for b, v in params.items() if v == P()]
+        if bare:
+            raise ValueError(
+                f"run() was given the bare P() defaults for {bare}. Pass bots.SHIPPED, or "
+                "replace(P(), ...) when the variation is deliberate."
+            )
+    if isinstance(params, P) and params == P():
+        raise ValueError(
+            "run() was given the bare P() defaults. Those are not the configuration we ship - RANGE's "
+            "default range_mode is 'fade', while the shipped bot is 'break'. Pass bots.SHIPPED (a dict, "
+            "one P per bot), or replace(P(), ...) when you mean to vary something deliberately. "
+            "(The trap that cost 2026-10-27's afternoon.)"
+        )
+    per: dict[str, P] = params if isinstance(params, dict) else {b: params for b in params.bots}
+    m1, h1 = f[Timeframe.M1], f[Timeframe.H1]
+    h4 = h1.resample("4h").agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
+    m1 = m1[(m1.index >= start - pd.Timedelta(days=3)) & (m1.index < end + pd.Timedelta(days=2))]
+    m5 = m1.resample("5min").agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
+    trades: list[Trade] = []
+    busy = dict.fromkeys(per, start)  # each bot's own position: free again from this time
+    for day in pd.date_range(start, end, freq="D"):
+        if day.weekday() >= 5:
+            continue
+        day_end = (pd.Timestamp(day.date(), tz=TH) + pd.Timedelta(days=1, hours=7)).tz_convert("UTC")
+        for w0, w1 in windows(day):
+            bars = m5[(m5.index >= w0 - pd.Timedelta(hours=2)) & (m5.index < w1)]
+            seen, sw, sw4 = None, [], []
+            for i in range(len(bars)):
+                t_close = bars.index[i] + pd.Timedelta(minutes=5)
+                if t_close <= w0 or t_close > w1:
+                    continue
+                hx = h1[h1.index + pd.Timedelta(hours=1) <= t_close].iloc[-400:]
+                if seen != len(hx):
+                    seen = len(hx)
+                    sw, _ = zigzag(hx.high.to_numpy(float), hx.low.to_numpy(float))
+                    h4x = h4[h4.index + pd.Timedelta(hours=4) <= t_close].iloc[-300:]
+                    sw4, _ = zigzag(h4x.high.to_numpy(float), h4x.low.to_numpy(float))
+                if len(sw) < 3:
+                    continue
+                past = bars.iloc[: i + 1]
+                for bot, p in per.items():
+                    if t_close < busy[bot]:
+                        continue  # this bot's own trade is still open
+                    tr = signal(bot, sw, sw4, past, p, t_close)
+                    if tr is None:
+                        continue
+                    before = m1[(m1.index >= t_close - pd.Timedelta(minutes=60)) & (m1.index < t_close)]
+                    runup = (
+                        (tr.entry - before.low.min()) if tr.side == "SELL" else (before.high.max() - tr.entry)
+                    )
+                    if p.run and runup > p.run * abs(tr.stop - tr.entry):
+                        continue
+                    tr = settle(m1, tr, day_end, p)
+                    trades.append(tr)
+                    busy[bot] = tr.extra["closed"]
+    return sorted(trades, key=lambda x: x.at)
+
+
+def stepping(sws: list) -> str:
+    """'DOWN' (lower high and lower low), 'UP', or 'FLAT' - from the last two confirmed swings of each kind."""
+    highs = [s for s in sws if s.kind == 1]
+    lows = [s for s in sws if s.kind == -1]
+    if len(highs) < 2 or len(lows) < 2:
+        return "FLAT"
+    if highs[-1].price < highs[-2].price and lows[-1].price < lows[-2].price:
+        return "DOWN"
+    if highs[-1].price > highs[-2].price and lows[-1].price > lows[-2].price:
+        return "UP"
+    return "FLAT"
+
+
+def range_box(sw: list, sw4: list, p: P) -> tuple[float, float] | None:
+    """(top, bottom) of the big-picture box, or None when that frame is not sideways."""
+    big = sw4 if p.range_tf in ("H4", "both") else sw
+    if len(big) < 2:
+        return None
+    if p.range_flat and stepping(big) != "FLAT":
+        return None
+    highs = [s.price for s in big if s.kind == 1]
+    lows = [s.price for s in big if s.kind == -1]
+    if not highs or not lows:
+        return None
+    top, floor = highs[-1], lows[-1]
+    if top <= floor:
+# Audit report: 02cbebf and 82d3f1f
+
+**Verdict: the code adds a fail-closed plan gate and an H4 edge gate for the three bots, but the running DEMO engine has not loaded those changes. The edge rule also does not cover the enabled PLAN-1 strategies.** The requested test suite could not start in this read-only environment, so the code is not fully verified.
+
+## 1. Do the commit messages tell the truth?
+
+**02cbebf:** Its code claims check out against the diff: `DayPlan` treats missing, empty, unreadable, or invalid UTF-8 files as unplanned; the mode gate blocks new orders; and the H4 rule rejects unreadable or negative leans for the three bot strategies. The recorded `+0.102 â†’ +0.210 R` and `+0.214 / +0.207` figures match the new rule setâ€™s tables. I did not independently reproduce those figures from the historical data.
+
+The RR scope claim also checks out: the global `risk.min_risk_reward` remains **1.0** in [config.yaml](/C:/Users/korap/taa/config.yaml:253); the **0.8** value is on the `three_bots` lane at [config.yaml](/C:/Users/korap/taa/config.yaml:226). The profileâ€™s lower RR is combined conservatively with the local cage in [limits.py](/C:/Users/korap/taa/app/risk/limits.py:267), then the laneâ€™s own value is applied in [decision_engine.py](/C:/Users/korap/taa/app/engine/decision_engine.py:257). I found no global RR cage reduction or plan1 RR loosening in the diff.
+
+**82d3f1f:** The replay guard exists in `day.py`, and review rounds 2â€“5 are present. But the statement in `RULES_LOCKED.md` that the earlier mistakes are â€œnow impossible to repeatâ€ overstates the guard: [test_bots.py](/C:/Users/korap/taa/research/2026-10-26-three-bots/test_bots.py:30) explicitly allows deliberate parameter variations. The tests protect against bare defaults and compare the shipped values to app defaults; they cannot prevent a future script from supplying a different, incorrect configuration.
+
+There is also a stale statement in [HANDOFF.md](/C:/Users/korap/taa/docs/HANDOFF.md:425) claiming the final `isfinite` guard is unreachable. The code and a dedicated test show otherwise: a finite ATR of `1e-320` can overflow the division, and the guard refuses it at [edge_side.py](/C:/Users/korap/taa/app/strategy/edge_side.py:81) and [test_strategy_edge_side.py](/C:/Users/korap/taa/tests/unit/test_strategy_edge_side.py:176).
+
+## 2. Standing rules against the finished code
+
+**P26, the morning plan:** The implementation is a real pre-send gate. [orchestrator.py](/C:/Users/korap/taa/app/engine/orchestrator.py:654) reevaluates it before orders, and the DEMO integration tests cover zero `order_send` calls without a plan and orders flowing after a plan is restored. Missing, unreadable, or invalid text fails closed.
+
+There is a completeness gap: [day_plan.py](/C:/Users/korap/taa/app/risk/day_plan.py:51) accepts any non-whitespace UTF-8 text as a plan. It does not check for the dayâ€™s condition, levels, trend, edge side, or scenarios. The gate therefore refuses an empty file, but a one-character file opens it.
+
+More urgently, [HANDOFF.md](/C:/Users/korap/taa/docs/HANDOFF.md:408) says the DEMO process was not restarted after the H4 gate was switched on, and lines 423â€“424 say P26 was still only a note. The running process therefore does not have the new gates, regardless of the current source code.
+
+**Larger-timeframe edge, unreadable means refuse:** `trend_box` and `range_break` refuse when the H4 lean is unavailable or against the trade, when `require_edge_side` is enabled. But that setting is enabled only for the three new bots in [config.yaml](/C:/Users/korap/taa/config.yaml:211). The four enabled PLAN-1 strategies at [config.yaml](/C:/Users/korap/taa/config.yaml:159) do not apply an edge-side gate. Since the standing rule says â€œevery trade,â€ this is a rule violation: PLAN-1 entries can still trade without a larger-timeframe edge reading. The AI strategy is disabled in this config.
+
+**Stops and kill switch:** I found no diff change that weakens the trade stop or kill switch. `min_stop_atr` is new but defaults to zero and is not enabled in the shipped config. The loss breakers are already deactivated in the baseline, consistent with the ownerâ€™s decision. That leaves the documented DEMO exposureâ€”7.5% risk per trade, up to two positions, about 15% combined open riskâ€”with stops and the kill switch as protection. A missing gate can allow an entry the ownerâ€™s edge rule would reject; if it loses, the stop can lose up to the tradeâ€™s risk budget, and two positions can put roughly 15% of equity at risk before gaps or execution effects. There is no active loss breaker to stop a sequence of such losses.
+
+**Frozen rule set 2:** The diff appends rule set 2 and preserves rule set 1 marked withdrawn. I found no subsequent movement of set 2â€™s threshold or reported figures in the supplied diff. The H4 threshold is still zero. The document itself acknowledges the figures were selected after seeing both historical halves, so the forward test remains necessary.
+
+## 3. Changes with broader impact than their purpose
+
+The earlier global `min_risk_reward` cage reduction is **not present**. The global value remains 1.0; 0.8 is scoped to the `three_bots` lane, and the profile combination remains conservative for lanes without their own override.
+
+The config does enable all three bot strategies where they were disabled. That is within the stated purpose of running the three-bot system, but it is a consequential change: it adds active strategies on the DEMO account, and the handoff says the running process has not loaded the new edge gate.
+
+I found no unintended change to stop placement or kill-switch behavior. The profile schema now accepts RR values below 1.0, but the effective local cage still prevents that value from lowering the global floor for lanes without an explicit lane RR. Plan1 remains at the 1.0 cage.
+
+## 4. Dead code, reachability, and comments
+
+The handoffâ€™s â€œunreachableâ€ `isfinite` statement is contradicted by live code and the overflow test described above.
+
+`app/strategy/weighing.py` is an inert helper with no production call site in the diff. It has no live trading effect. The new `edge_side()` convenience function also has no production caller; production strategy checks use `edge_lean()` and `behind()` directly. Neither appears to cause an order-safety defect.
+
+The P26 tests that normally create a plan in their fixtures would not alone prove refusal, but the added dedicated DEMO tests explicitly delete the plan and assert zero broker sends, then restore it and assert orders flow. That contract is covered in source.
+
+## 5. Requested checks
+
+- `.venv\Scripts\python.exe -m pytest -q`: **could not collect or run tests**. Pytest exited before collection because it could not find a writable temporary directory. No suite pass/fail count is available; this was not a green run.
+- `ruff check app tests`: **passed** (â€œAll checks passed!â€).
+- `mypy app`: **did not complete**. Mypy 2.4.0 exited with an internal error; with `--no-incremental --show-traceback`, the cause was `sqlite3.OperationalError: unable to open database file`, consistent with the read-only environment.
+- `bandit -q -r app -c pyproject.toml`: **passed**, exit code 0. It emitted warnings about words in comments being interpreted as test names.
+
+## Fix before the next trading day
+
+The most urgent issue is operational: the current DEMO process is trading without the code changesâ€™ P26 and H4 gates. Stop relying on that process until the engine-verified backtest is complete and the updated engine has been restarted with a valid day plan. Before treating the edge rule as satisfied, extend the larger-timeframe edge check to the enabled PLAN-1 strategies too.
+
+**The engine should not keep running overnight as it is.** The report is based on the committed diff and handoff; I made no file changes.
+# DEV_SPEC 4 â€” close the two gaps your own audit found (2026-10-27, night)
+
+Your audit of commits 02cbebf and 82d3f1f (`AUDIT_FINDINGS.md`) named two gaps between the code and the
+owner's rules. **The engine is STOPPED** â€” the owner shut it down so these could be fixed properly, so
+you are not working under a live account tonight. Still: **no commit, no push, no `.env`.**
+
+Two other sessions are editing `research/2026-10-26-three-bots/weights*` and `docs/`. Stay out of those.
+
+## Gap 1 â€” the edge rule covers three strategies, the owner said every trade
+
+Your words: *"that setting is enabled only for the three new bots"*. The owner's rule, 2026-10-27:
+**"every trade takes only the side with the edge on a timeframe larger than the entry timeframe."**
+Four PLAN-1 strategies trade on the same DEMO account with no such check.
+
+Add the same gate to them. `app/strategy/plan1.py` and `app/strategy/plan1_b2.py` hold
+`setup_plan1_orb`, `setup_plan1_ny`, `setup_plan1_b2`, `setup_plan1_b2m5`.
+
+- Reuse `app/strategy/edge_side.py` - `edge_lean()` and `behind()`. Do not write a second copy of either.
+- Each gets `require_edge_side: bool = False` on its params, **default off**, exactly as the three bots
+  have it. Defaults must stay byte-identical: this round changes mechanism, not behaviour.
+- The test is the measured one: refuse when `behind(edge_lean(...), own_side)` is `None` or below 0.
+  Unreadable is a refusal, never permission.
+- Their entry frames differ from M5 - read each strategy's own entry timeframe from the context, and
+  remember `edge_lean` raises if the frame read is not larger than the entry frame. If any of these
+  strategies enters on a frame at or above H4, say so in your notes and do NOT force it.
+- `warmup_bars()` must cover 64 closed H4 bars (about 256 H1) when the gate is on, as the trend bots do.
+- Do **not** change `config.yaml`. The owner decides when to switch it on.
+
+## Gap 2 â€” a one-character file opens the day
+
+Your words: *"the gate refuses an empty file, but a one-character file opens it"*. P26 asks for the day's
+condition, its levels, the trend, the side with the edge and the turn/go-on scenarios.
+
+Make `app/risk/day_plan.py` check that a plan is a plan, not that it is long:
+
+- the file must contain, in any order and case-insensitively, a marker for each of: **condition**,
+  **levels**, **the side with the edge**, and **scenarios**. Pick the markers from how
+  `data/plans/2026-10-27.md` is actually written (read it) and from `app/ai/plan.py`'s own plan fields,
+  so a plan this system writes passes without being reshaped.
+- a file that is present but incomplete must refuse **and say which part is missing** - the gate's
+  detail string already flows into the refusal, so use it. A plan that fails silently is the failure
+  mode this whole gate exists to stop.
+- keep every existing refusal: missing, empty, whitespace-only, a directory, unreadable, not UTF-8, and
+  the bounded read.
+
+## The absolute rules
+
+1. Defaults OFF and byte-identical behaviour; prove it with the full suite and unchanged parity numbers.
+2. Never re-implement production logic inside a test; every test calls the real function.
+3. Prove each new test bites: break the one line it covers, run that test, confirm it fails, restore.
+   Report every one. **You may edit to plant bugs and must restore every one.**
+4. At least 8 new planted bugs for this round in `plant_bugs_4.py`, crash-safe, output committed to
+   `plant_bugs_4_output.txt`, caught and MISSED both reported honestly.
+5. `ruff format`, `ruff check app tests`, `mypy app`, `bandit`, full `pytest` green before you stop.
+6. If anything here contradicts anything else, stop and write it in `DEV_NOTES_4.md` rather than guess.
+
+Write `research/2026-10-26-three-bots/DEV_NOTES_4.md`: each gap, the tests x the mutation proving each
+bites, the planted-bug table, proof the defaults are unchanged, and what you did not do.
+
+codex
+Rule set 2 supersedes the withdrawn measurements, and the brief’s data is explicitly the shipped-bot replay. I’m treating `bot`, `side`, `window`, `regime`, `risk`, and the three stored momentum readings as decision-time candidates; `r`, excursions, and exit fields are outcomes only. I’ll document the timestamp convention and keep any momentum “behind the trade” value as a sign transform of the stored reading plus the known side.
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command ".venv\\Scripts\\python.exe -c \"import pandas as pd; d=pd.read_csv('research/2026-10-26-three-bots/momentum_trades.csv'); print(d.shape); print(d.isna().sum().to_string()); print('levels'); [print(c, d[c].value_counts(dropna=False).to_dict()) for c in ['bot','side','regime','window','fitted']]; print(d.groupby('fitted').r.agg(['count','mean'])); print(d[['risk','mom_H1','mom_H4','mom_D1']].describe().to_string())\"" in C:\Users\korap\taa
+ succeeded in 2284ms:
+(239, 24)
+bot          0
+side         0
+at           0
+r            0
+out          0
+mae_r        0
+mfe_r        0
+risk         0
+r_x1.0       0
+out_x1.0     0
+r_x1.25      0
+out_x1.25    0
+r_x1.5       0
+out_x1.5     0
+r_x2.0       0
+out_x2.0     0
+r_x3.0       0
+out_x3.0     0
+fitted       0
+regime       0
+window       0
+mom_H1       0
+mom_H4       0
+mom_D1       2
+levels
+bot {'DOWN': 84, 'RANGE': 78, 'UP': 77}
+side {'SELL': 122, 'BUY': 117}
+regime {'bull': 151, 'bear': 53, 'mixed': 33, 'unknown': 2}
+window {'NY open': 115, 'Asia 07-09': 75, 'London 13-15': 49}
+fitted {False: 144, True: 95}
+        count      mean
+fitted                 
+False     144  0.019917
+True       95  0.225976
+             risk      mom_H1      mom_H4      mom_D1
+count  239.000000  239.000000  239.000000  237.000000
+mean    15.553002   -0.035876    0.111694    1.186100
+std     14.405673    1.848832    2.156494    2.639455
+min      1.378000   -5.464439   -5.390900   -5.351429
+25%      6.263000   -0.879898   -1.250863   -0.668928
+50%     10.537250   -0.058651    0.244511    1.112359
+75%     20.909000    0.821126    1.534141    2.982171
+max    111.910000    5.261884    6.954672    7.395567
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command ".venv\\Scripts\\python.exe -c \"import pandas as pd,numpy as np; d=pd.read_csv('research/2026-10-26-three-bots/momentum_trades.csv'); d['mom_D1']=pd.to_numeric(d.mom_D1,errors='coerce'); d['fitted']=d.fitted.astype(bool); d['win']=(d.r>0); d['mom_H1']=np.where(d.side.eq('BUY'),d.mom_H1,-d.mom_H1); d['mom_H4']=np.where(d.side.eq('BUY'),d.mom_H4,-d.mom_H4); d['mom_D1']=np.where(d.side.eq('BUY'),d.mom_D1,-d.mom_D1); auc=lambda x,y: ((x[y].to_numpy()[:,None]>x[~y].to_numpy()[None,:]).sum()+.5*(x[y].to_numpy()[:,None]==x[~y].to_numpy()[None,:]).sum())/(y.sum()*(~y).sum());
+for c in ['mom_H1','mom_H4','mom_D1','risk']:
+ print('NUM',c)
+ for f,g in [('fit',d[d.fitted]),('unseen',d[~d.fitted])]:
+  x=g.dropna(subset=[c]); med=x[c].median(); hi=x[x[c]>med]; lo=x[x[c]<=med]; print(f,len(x),'auc',round(auc(x[c].to_numpy(),x.win.to_numpy()),3),'corrR',round(x[[c,'r']].corr().iloc[0,1],3),'med',round(med,3),'hi-lo',len(hi),len(lo),round(hi.r.mean()-lo.r.mean(),3),'means',round(hi.r.mean(),3),round(lo.r.mean(),3),'winDelta',round(hi.win.mean()-lo.win.mean(),3));
+for c in ['bot','regime','window','side']:
+ print('CAT',c)
+ for lev in d[c].unique():
+  print(lev,end=' ')
+  for f,g in [('F',d[d.fitted]),('U',d[~d.fitted])]:
+   x=g; a=x[x[c].eq(lev)]; b=x[~x[c].eq(lev)]; print(f'{f}:{len(a)}/{len(b)} winΔ{a.win.mean()-b.win.mean():+.3f} RΔ{a.r.mean()-b.r.mean():+.3f}',end=' ')
+  print()\"" in C:\Users\korap\taa
+ exited 1 in 2120ms:
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+  File "<string>", line 1, in <lambda>
+AttributeError: 'numpy.ndarray' object has no attribute 'to_numpy'
+NUM mom_H1
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command ".venv\\Scripts\\python.exe -c \"import pandas as pd,numpy as np; d=pd.read_csv('research/2026-10-26-three-bots/momentum_trades.csv'); d['mom_D1']=pd.to_numeric(d.mom_D1,errors='coerce'); d['fitted']=d.fitted.astype(bool); d['win']=(d.r>0); d['mom_H1']=np.where(d.side.eq('BUY'),d.mom_H1,-d.mom_H1); d['mom_H4']=np.where(d.side.eq('BUY'),d.mom_H4,-d.mom_H4); d['mom_D1']=np.where(d.side.eq('BUY'),d.mom_D1,-d.mom_D1); auc=lambda x,y: ((x[y][:,None]>x[~y][None,:]).sum()+.5*(x[y][:,None]==x[~y][None,:]).sum())/(y.sum()*(~y).sum());
+for c in ['mom_H1','mom_H4','mom_D1','risk']:
+ print('NUM',c)
+ for f,g in [('fit',d[d.fitted]),('unseen',d[~d.fitted])]:
+  x=g.dropna(subset=[c]); med=x[c].median(); hi=x[x[c]>med]; lo=x[x[c]<=med]; print(f,len(x),'auc',round(auc(x[c].to_numpy(),x.win.to_numpy()),3),'corrR',round(x[[c,'r']].corr().iloc[0,1],3),'med',round(med,3),'hi-lo',len(hi),len(lo),round(hi.r.mean()-lo.r.mean(),3),'means',round(hi.r.mean(),3),round(lo.r.mean(),3),'winDelta',round(hi.win.mean()-lo.win.mean(),3));
+for c in ['bot','regime','window','side']:
+ print('CAT',c)
+ for lev in d[c].unique():
+  print(lev,end=' ')
+  for f,g in [('F',d[d.fitted]),('U',d[~d.fitted])]:
+   x=g; a=x[x[c].eq(lev)]; b=x[~x[c].eq(lev)]; print(f'{f}:{len(a)}/{len(b)} winΔ{a.win.mean()-b.win.mean():+.3f} RΔ{a.r.mean()-b.r.mean():+.3f}',end=' ')
+  print()\"" in C:\Users\korap\taa
+ exited 1 in 1616ms:
+Traceback (most recent call last):
+  File "<string>", line 11, in <module>
+  File "C:\Users\korap\AppData\Local\Programs\Python\Python311\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u0394' in position 11: character maps to <undefined>
+NUM mom_H1
+fit 95 auc 0.331 corrR -0.08 med 0.243 hi-lo 47 48 -0.301 means 0.074 0.375 winDelta -0.244
+unseen 144 auc 0.534 corrR 0.146 med 0.163 hi-lo 72 72 0.151 means 0.095 -0.056 winDelta -0.014
+NUM mom_H4
+fit 95 auc 0.465 corrR 0.036 med 1.24 hi-lo 47 48 -0.025 means 0.213 0.238 winDelta -0.076
+unseen 144 auc 0.629 corrR 0.227 med 1.378 hi-lo 72 72 0.348 means 0.194 -0.154 winDelta 0.097
+NUM mom_D1
+fit 95 auc 0.499 corrR 0.065 med 1.267 hi-lo 47 48 0.069 means 0.261 0.192 winDelta 0.008
+unseen 142 auc 0.504 corrR 0.011 med 0.805 hi-lo 71 71 -0.021 means -0.027 -0.005 winDelta 0.056
+NUM risk
+fit 95 auc 0.626 corrR 0.002 med 21.719 hi-lo 47 48 -0.029 means 0.211 0.24 winDelta 0.219
+unseen 144 auc 0.526 corrR -0.104 med 7.029 hi-lo 72 72 -0.472 means -0.216 0.256 winDelta 0.042
+CAT bot
+UP 
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$env:PYTHONIOENCODING='"'utf-8'; .venv\\Scripts\\python.exe -c \"import pandas as pd,numpy as np; d=pd.read_csv('research/2026-10-26-three-bots/momentum_trades.csv'); d['mom_D1']=pd.to_numeric(d.mom_D1,errors='coerce'); d['fitted']=d.fitted.astype(bool); d['win']=(d.r>0); [d.__setitem__(c,np.where(d.side.eq('BUY'),d[c],-d[c])) for c in ['mom_H1','mom_H4','mom_D1']]; auc=lambda x,y: ((x[y][:,None]>x[~y][None,:]).sum()+.5*(x[y][:,None]==x[~y][None,:]).sum())/(y.sum()*(~y).sum());
+for c in ['mom_H1','mom_H4','mom_D1','risk']:
+ print('NUM',c)
+ for f,g in [('fit',d[d.fitted]),('unseen',d[~d.fitted])]:
+  x=g.dropna(subset=[c]); med=x[c].median(); hi=x[x[c]>med]; lo=x[x[c]<=med]; pos=x[x[c]>=0]; neg=x[x[c]<0]; print(f,len(x),'auc',round(auc(x[c].to_numpy(),x.win.to_numpy()),3),'corrR',round(x[[c,'r']].corr().iloc[0,1],3),'median split Rdiff',round(hi.r.mean()-lo.r.mean(),3),'signsplit',len(pos),round(pos.r.mean(),3),len(neg),round(neg.r.mean(),3),'dR',round(pos.r.mean()-neg.r.mean(),3));
+for c in ['bot','regime','window','side']:
+ print('CAT',c)
+ for lev in d[c].unique():
+  print(lev,end=' ')
+  for f,g in [('F',d[d.fitted]),('U',d[~d.fitted])]:
+   a=g[g[c].eq(lev)]; b=g[~g[c].eq(lev)]; print(f'{f}:{len(a)}/{len(b)} winDiff{a.win.mean()-b.win.mean():+.3f} Rdiff{a.r.mean()-b.r.mean():+.3f}',end=' ')
+  print()\"" in C:\Users\korap\taa
+ succeeded in 1700ms:
+<string>:1: ChainedAssignmentError: A value is being set on a copy of a DataFrame or Series through chained assignment.
+Such chained assignment never works to update the original DataFrame or Series, because the intermediate object on which we are setting values always behaves as a copy (due to Copy-on-Write).
+
+Try using '.loc[row_indexer, col_indexer] = value' instead, to perform the assignment in a single step.
+
+See the documentation for a more detailed explanation: https://pandas.pydata.org/pandas-docs/stable/user_guide/copy_on_write.html#chained-assignment
+NUM mom_H1
+fit 95 auc 0.331 corrR -0.08 median split Rdiff -0.301 signsplit 50 0.062 45 0.408 dR -0.347
+unseen 144 auc 0.534 corrR 0.146 median split Rdiff 0.151 signsplit 79 -0.007 65 0.052 dR -0.059
+NUM mom_H4
+fit 95 auc 0.465 corrR 0.036 median split Rdiff -0.025 signsplit 81 0.214 14 0.294 dR -0.08
+unseen 144 auc 0.629 corrR 0.227 median split Rdiff 0.348 signsplit 118 0.207 26 -0.829 dR 1.037
+NUM mom_D1
+fit 95 auc 0.499 corrR 0.065 median split Rdiff 0.069 signsplit 63 0.297 32 0.087 dR 0.21
+unseen 142 auc 0.504 corrR 0.011 median split Rdiff -0.021 signsplit 88 0.056 54 -0.133 dR 0.189
+NUM risk
+fit 95 auc 0.626 corrR 0.002 median split Rdiff -0.029 signsplit 95 0.226 0 nan dR nan
+unseen 144 auc 0.526 corrR -0.104 median split Rdiff -0.472 signsplit 144 0.02 0 nan dR nan
+CAT bot
+UP F:23/72 winDiff-0.011 Rdiff-0.212 U:54/90 winDiff-0.004 Rdiff-0.191 
+RANGE F:34/61 winDiff-0.165 Rdiff+0.074 U:44/100 winDiff+0.079 Rdiff+0.676 
+DOWN F:38/57 winDiff+0.167 Rdiff+0.091 U:46/98 winDiff-0.073 Rdiff-0.454 
+CAT regime
+unknown F:0/95 winDiff+nan Rdiff+nan U:2/142 winDiff+0.148 Rdiff+2.580 
+bear F:38/57 winDiff-0.053 Rdiff-0.045 U:15/129 winDiff+0.051 Rdiff+0.197 
+bull F:46/49 winDiff+0.025 Rdiff+0.038 U:105/39 winDiff+0.064 Rdiff-0.181 
+mixed F:11/84 winDiff+0.062 Rdiff+0.014 U:22/122 winDiff-0.150 Rdiff-0.139 
+CAT window
+Asia 07-09 F:31/64 winDiff-0.019 Rdiff+0.140 U:44/100 winDiff-0.117 Rdiff+0.087 
+London 13-15 F:19/76 winDiff-0.105 Rdiff-0.259 U:30/114 winDiff+0.016 Rdiff+0.245 
+NY open F:45/50 winDiff+0.084 Rdiff+0.042 U:70/74 winDiff+0.089 Rdiff-0.236 
+CAT side
+BUY F:36/59 winDiff+0.027 Rdiff+0.168 U:81/63 winDiff+0.065 Rdiff+0.250 
+SELL F:59/36 winDiff-0.027 Rdiff-0.168 U:63/81 winDiff-0.065 Rdiff-0.250 
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$env:PYTHONIOENCODING='"'utf-8'; .venv\\Scripts\\python.exe -c \"import pandas as pd,numpy as np; d=pd.read_csv('research/2026-10-26-three-bots/momentum_trades.csv'); d['fitted']=d.fitted.astype(bool); [d.__setitem__(c,np.where(d.side.eq('BUY'),d[c],-d[c])) for c in ['mom_H1','mom_H4','mom_D1']];
+for f,g in [('fit',d[d.fitted]),('unseen',d[~d.fitted]),('all',d)]:
+ print(f); 
+ for c in ['mom_H1','mom_H4','mom_D1']:
+  x=g.dropna(subset=[c]); hi=x[x[c]>=0]; lo=x[x[c]<0]; print(c,'zero',len(hi),round(hi.r.mean(),3) if len(hi) else None,len(lo),round(lo.r.mean(),3) if len(lo) else None,'diff',round(hi.r.mean()-lo.r.mean(),3) if len(lo) and len(hi) else None,'win',round(hi.r.gt(0).mean(),3) if len(hi) else None,round(lo.r.gt(0).mean(),3) if len(lo) else None)
+ print('corr',g[['mom_H1','mom_H4','mom_D1']].corr().round(3).to_string())\"" in C:\Users\korap\taa
+ succeeded in 1582ms:
+<string>:1: ChainedAssignmentError: A value is being set on a copy of a DataFrame or Series through chained assignment.
+Such chained assignment never works to update the original DataFrame or Series, because the intermediate object on which we are setting values always behaves as a copy (due to Copy-on-Write).
+
+Try using '.loc[row_indexer, col_indexer] = value' instead, to perform the assignment in a single step.
+
+See the documentation for a more detailed explanation: https://pandas.pydata.org/pandas-docs/stable/user_guide/copy_on_write.html#chained-assignment
+fit
+mom_H1 zero 50 0.062 45 0.408 diff -0.347 win 0.28 0.533
+mom_H4 zero 81 0.214 14 0.294 diff -0.08 win 0.383 0.5
+mom_D1 zero 63 0.297 32 0.087 diff 0.21 win 0.381 0.438
+corr         mom_H1  mom_H4  mom_D1
+mom_H1   1.000   0.327   0.216
+mom_H4   0.327   1.000   0.618
+mom_D1   0.216   0.618   1.000
+unseen
+mom_H1 zero 79 -0.007 65 0.052 diff -0.059 win 0.316 0.4
+mom_H4 zero 118 0.207 26 -0.829 diff 1.037 win 0.407 0.115
+mom_D1 zero 88 0.056 54 -0.133 diff 0.189 win 0.375 0.315
+corr         mom_H1  mom_H4  mom_D1
+mom_H1   1.000   0.267  -0.071
+mom_H4   0.267   1.000   0.411
+mom_D1  -0.071   0.411   1.000
+all
+mom_H1 zero 129 0.02 110 0.198 diff -0.178 win 0.302 0.455
+mom_H4 zero 199 0.21 40 -0.436 diff 0.646 win 0.397 0.25
+mom_D1 zero 151 0.156 86 -0.051 diff 0.208 win 0.377 0.36
+corr         mom_H1  mom_H4  mom_D1
+mom_H1   1.000   0.289   0.026
+mom_H4   0.289   1.000   0.469
+mom_D1   0.026   0.469   1.000
+
+apply patch
+patch: completed
+C:\Users\korap\taa\research\2026-10-26-three-bots\weights.py
+diff --git a/research/2026-10-26-three-bots/weights.py b/research/2026-10-26-three-bots/weights.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..75bfb070a77d3901eb472f718df79f99468c941f
+--- /dev/null
++++ b/research/2026-10-26-three-bots/weights.py
+@@ -0,0 +1,190 @@
++"""Measure decision-time readings against shipped-bot trade outcomes.
++
++Run from the repository root with ``.venv\\Scripts\\python.exe
++research/2026-10-26-three-bots/weights.py``. This reads the frozen trade CSV and
++prints summaries; it does not regenerate the trade history or write any files.
++
++Only columns known at entry are treated as candidate readings. ``r``, exit
++labels, excursions, and counterfactual stops are outcomes and never predictors.
++The momentum columns are changed to "behind the trade" by multiplying the
++stored signed value by +1 for BUY and -1 for SELL; side is known at entry.
++The momentum producer's read_at() accepts a frame bar only when its readable
++time (bar open + frame duration) is <= the decision time. In particular, for
++a trade at 2026-10-27 10:00 UTC, an H4 bar opened at 08:00 closes at 12:00 and
++is not readable; the preceding H4 bar opened at 04:00 closes at 08:00 and is
++readable. The history index is the bar OPEN. The app frames are close-stamped;
++momentum.py explicitly uses the history convention and does not shift the
++decision timestamp. This hand-worked boundary case is the point-in-time check.
++
++No indicators beyond the CSV are introduced here, so there are no additional
++bar joins or timing assumptions.
++"""
++
++from __future__ import annotations
++
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++HERE = Path(__file__).resolve().parent
++CSV = HERE / "momentum_trades.csv"
++NUMERIC = ("mom_H1", "mom_H4", "mom_D1", "risk")
++CATEGORICAL = ("bot", "side", "regime", "window")
++SEED = 20261027
++PERMUTATIONS = 5000
++
++
++def auc_higher_is_better(values: np.ndarray, wins: np.ndarray) -> float:
++    """Pairwise win/loss AUC; 0.5 is chance, >0.5 favors larger readings."""
++    positive, negative = values[wins], values[~wins]
++    if not len(positive) or not len(negative):
++        return float("nan")
++    pair = positive[:, None] - negative[None, :]
++    return float(((pair > 0).sum() + 0.5 * (pair == 0).sum()) / pair.size)
++
++
++def halves(df: pd.DataFrame):
++    yield "fit", df[df.fitted]
++    yield "unseen", df[~df.fitted]
++
++
++def numeric_summary(df: pd.DataFrame, col: str) -> dict:
++    x = df[[col, "r", "win"]].dropna()
++    med = x[col].median()
++    high, low = x[x[col] > med], x[x[col] <= med]
++    positive, negative = x[x[col] >= 0], x[x[col] < 0]
++    return {
++        "n": len(x),
++        "wins": int(x.win.sum()),
++        "auc": auc_higher_is_better(x[col].to_numpy(), x.win.to_numpy(bool)),
++        "corr_r": x[col].corr(x.r),
++        "median": med,
++        "hi_n": len(high),
++        "hi_win": high.win.mean(),
++        "hi_r": high.r.mean(),
++        "lo_n": len(low),
++        "lo_win": low.win.mean(),
++        "lo_r": low.r.mean(),
++        "median_win_delta": high.win.mean() - low.win.mean(),
++        "median_r_delta": high.r.mean() - low.r.mean(),
++        "pos_n": len(positive),
++        "pos_win": positive.win.mean(),
++        "pos_r": positive.r.mean(),
++        "neg_n": len(negative),
++        "neg_win": negative.win.mean(),
++        "neg_r": negative.r.mean(),
++        "zero_r_delta": positive.r.mean() - negative.r.mean(),
++    }
++
++
++def categorical_summary(df: pd.DataFrame, col: str, level: str) -> dict:
++    inside = df[col].eq(level)
++    a, b = df[inside], df[~inside]
++    return {
++        "level_n": len(a),
++        "other_n": len(b),
++        "level_win": a.win.mean() if len(a) else float("nan"),
++        "other_win": b.win.mean() if len(b) else float("nan"),
++        "win_delta": a.win.mean() - b.win.mean() if len(a) and len(b) else float("nan"),
++        "level_r": a.r.mean() if len(a) else float("nan"),
++        "other_r": b.r.mean() if len(b) else float("nan"),
++        "r_delta": a.r.mean() - b.r.mean() if len(a) and len(b) else float("nan"),
++    }
++
++
++def candidate_matrix(df: pd.DataFrame) -> pd.DataFrame:
++    """16 predeclared linear candidates for the best-of-N null calculation."""
++    out = df[list(NUMERIC)].copy()
++    for col in NUMERIC:
++        out[col] = out[col].fillna(out[col].median())
++    for col in CATEGORICAL:
++        dummies = pd.get_dummies(df[col], prefix=col, dtype=float)
++        out = pd.concat([out, dummies], axis=1)
++    return out
++
++
++def best_of_n_null(df: pd.DataFrame) -> tuple[int, float, float]:
++    """Permutation null for max absolute feature/R correlation over 16 candidates."""
++    x = candidate_matrix(df).to_numpy(float)
++    y = df.r.to_numpy(float)
++    x = (x - x.mean(axis=0)) / x.std(axis=0)
++    x = x[:, np.isfinite(x.std(axis=0))] if False else x
++    # Candidate columns are nonconstant in this dataset. Centering y after each
++    # shuffle preserves its observed distribution while breaking all alignment.
++    x = x[:, np.std(x, axis=0) > 0]
++    x = x / np.sqrt((x * x).sum(axis=0))
++    y = y - y.mean()
++    observed = float(np.max(np.abs(x.T @ y) / np.sqrt((y * y).sum())))
++    rng = np.random.default_rng(SEED)
++    maxima = np.empty(PERMUTATIONS)
++    for i in range(PERMUTATIONS):
++        yp = rng.permutation(y)
++        maxima[i] = np.max(np.abs(x.T @ yp) / np.sqrt((yp * yp).sum()))
++    return x.shape[1], observed, float(np.quantile(maxima, 0.95))
++
++
++def fmt(value: float, digits: int = 3) -> str:
++    return "—" if pd.isna(value) else f"{value:+.{digits}f}"
++
++
++def main() -> None:
++    d = pd.read_csv(CSV)
++    d["at"] = pd.to_datetime(d["at"], utc=True)
++    d["fitted"] = d["fitted"].astype(bool)
++    d["mom_D1"] = pd.to_numeric(d["mom_D1"], errors="coerce")
++    d["win"] = d.r > 0
++    for col in ("mom_H1", "mom_H4", "mom_D1"):
++        d[col] = d[col] * np.where(d.side.eq("BUY"), 1.0, -1.0)
++
++    print(f"Trades: {len(d)}; fit={int(d.fitted.sum())}; unseen={int((~d.fitted).sum())}")
++    print("\nNUMERIC (AUC: larger reading ranks winners; median/zero splits are descriptive)")
++    for col in NUMERIC:
++        print(f"\n{col}")
++        for name, frame in halves(d):
++            s = numeric_summary(frame, col)
++            print(
++                f" {name:6s} n={s['n']:3d} wins={s['wins']:3d} auc={s['auc']:.3f} "
++                f"corrR={fmt(s['corr_r'])} med={s['median']:.3f}; "
++                f"above-median {s['hi_n']} win={s['hi_win']:.3f} R={fmt(s['hi_r'])}, "
++                f"at/below {s['lo_n']} win={s['lo_win']:.3f} R={fmt(s['lo_r'])}; "
++                f"deltaR={fmt(s['median_r_delta'])}; "
++                f">=0 {s['pos_n']} R={fmt(s['pos_r'])}, <0 {s['neg_n']} R={fmt(s['neg_r'])}, "
++                f"deltaR={fmt(s['zero_r_delta'])}"
++            )
++
++    print("\nCATEGORICAL (each level versus all other levels; winDelta and RDelta)")
++    for col in CATEGORICAL:
++        print(f"\n{col}")
++        for level in sorted(d[col].dropna().unique()):
++            cells = []
++            for name, frame in halves(d):
++                s = categorical_summary(frame, col, level)
++                cells.append(
++                    f"{name} {s['level_n']}/{s['other_n']} "
++                    f"win={fmt(s['level_win'])}/{fmt(s['other_win'])} "
++                    f"dWin={fmt(s['win_delta'])} R={fmt(s['level_r'])}/{fmt(s['other_r'])} "
++                    f"dR={fmt(s['r_delta'])}"
++                )
++            print(f" {level}: " + " | ".join(cells))
++
++    print("\nMOMENTUM OVERLAP: Pearson correlations of behind-trade values")
++    for name, frame in halves(d):
++        print(f"\n{name}\n{frame[['mom_H1', 'mom_H4', 'mom_D1']].corr().round(3)}")
++    print("\nBOT x SIDE counts")
++    print(pd.crosstab(d.bot, d.side).to_string())
++    print("\nBOT x REGIME counts")
++    print(pd.crosstab(d.bot, d.regime).to_string())
++    k, obs, null95 = best_of_n_null(d)
++    print(
++        f"\nBest-of-N null: {k} predeclared numeric/one-hot columns; observed max |corr(R)|="
++        f"{obs:.3f}; 95th percentile after {PERMUTATIONS} R permutations={null95:.3f}"
++    )
++    print("\nHALF BASELINES")
++    for name, frame in halves(d):
++        print(f"{name}: n={len(frame)} win={frame.win.mean():.3f} meanR={frame.r.mean():+.3f}")
++    print(f"D1 missing: {int(d.mom_D1.isna().sum())} trades")
++
++
++if __name__ == "__main__":
++    main()
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$env:PYTHONIOENCODING='"'utf-8'; .venv\\Scripts\\python.exe research/2026-10-26-three-bots/weights.py" in C:\Users\korap\taa
+ succeeded in 2177ms:
+Trades: 239; fit=95; unseen=144
+
+NUMERIC (AUC: larger reading ranks winners; median/zero splits are descriptive)
+
+mom_H1
+ fit    n= 95 wins= 38 auc=0.331 corrR=-0.080 med=0.243; above-median 47 win=0.277 R=+0.074, at/below 48 win=0.521 R=+0.375; deltaR=-0.301; >=0 50 R=+0.062, <0 45 R=+0.408, deltaR=-0.347
+ unseen n=144 wins= 51 auc=0.534 corrR=+0.146 med=0.163; above-median 72 win=0.347 R=+0.095, at/below 72 win=0.361 R=-0.056; deltaR=+0.151; >=0 79 R=-0.007, <0 65 R=+0.052, deltaR=-0.059
+
+mom_H4
+ fit    n= 95 wins= 38 auc=0.465 corrR=+0.036 med=1.240; above-median 47 win=0.362 R=+0.213, at/below 48 win=0.438 R=+0.238; deltaR=-0.025; >=0 81 R=+0.214, <0 14 R=+0.294, deltaR=-0.080
+ unseen n=144 wins= 51 auc=0.629 corrR=+0.227 med=1.378; above-median 72 win=0.403 R=+0.194, at/below 72 win=0.306 R=-0.154; deltaR=+0.348; >=0 118 R=+0.207, <0 26 R=-0.829, deltaR=+1.037
+
+mom_D1
+ fit    n= 95 wins= 38 auc=0.499 corrR=+0.065 med=1.267; above-median 47 win=0.404 R=+0.261, at/below 48 win=0.396 R=+0.192; deltaR=+0.069; >=0 63 R=+0.297, <0 32 R=+0.087, deltaR=+0.210
+ unseen n=142 wins= 50 auc=0.504 corrR=+0.011 med=0.805; above-median 71 win=0.380 R=-0.027, at/below 71 win=0.324 R=-0.005; deltaR=-0.021; >=0 88 R=+0.056, <0 54 R=-0.133, deltaR=+0.189
+
+risk
+ fit    n= 95 wins= 38 auc=0.626 corrR=+0.002 med=21.719; above-median 47 win=0.511 R=+0.211, at/below 48 win=0.292 R=+0.240; deltaR=-0.029; >=0 95 R=+0.226, <0 0 R=—, deltaR=—
+ unseen n=144 wins= 51 auc=0.526 corrR=-0.104 med=7.029; above-median 72 win=0.375 R=-0.216, at/below 72 win=0.333 R=+0.256; deltaR=-0.472; >=0 144 R=+0.020, <0 0 R=—, deltaR=—
+
+CATEGORICAL (each level versus all other levels; winDelta and RDelta)
+
+bot
+ DOWN: fit 38/57 win=+0.500/+0.333 dWin=+0.167 R=+0.280/+0.190 dR=+0.091 | unseen 46/98 win=+0.304/+0.378 dWin=-0.073 R=-0.289/+0.165 dR=-0.454
+ RANGE: fit 34/61 win=+0.294/+0.459 dWin=-0.165 R=+0.274/+0.199 dR=+0.074 | unseen 44/100 win=+0.409/+0.330 dWin=+0.079 R=+0.489/-0.187 dR=+0.676
+ UP: fit 23/72 win=+0.391/+0.403 dWin=-0.011 R=+0.066/+0.277 dR=-0.212 | unseen 54/90 win=+0.352/+0.356 dWin=-0.004 R=-0.099/+0.091 dR=-0.191
+
+side
+ BUY: fit 36/59 win=+0.417/+0.390 dWin=+0.027 R=+0.330/+0.162 dR=+0.168 | unseen 81/63 win=+0.383/+0.317 dWin=+0.065 R=+0.129/-0.121 dR=+0.250
+ SELL: fit 59/36 win=+0.390/+0.417 dWin=-0.027 R=+0.162/+0.330 dR=-0.168 | unseen 63/81 win=+0.317/+0.383 dWin=-0.065 R=-0.121/+0.129 dR=-0.250
+
+regime
+ bear: fit 38/57 win=+0.368/+0.421 dWin=-0.053 R=+0.199/+0.244 dR=-0.045 | unseen 15/129 win=+0.400/+0.349 dWin=+0.051 R=+0.197/-0.001 dR=+0.197
+ bull: fit 46/49 win=+0.413/+0.388 dWin=+0.025 R=+0.245/+0.208 dR=+0.038 | unseen 105/39 win=+0.371/+0.308 dWin=+0.064 R=-0.029/+0.152 dR=-0.181
+ mixed: fit 11/84 win=+0.455/+0.393 dWin=+0.062 R=+0.238/+0.224 dR=+0.014 | unseen 22/122 win=+0.227/+0.377 dWin=-0.150 R=-0.098/+0.041 dR=-0.139
+ unknown: fit 0/95 win=—/+0.400 dWin=— R=—/+0.226 dR=— | unseen 2/142 win=+0.500/+0.352 dWin=+0.148 R=+2.564/-0.016 dR=+2.580
+
+window
+ Asia 07-09: fit 31/64 win=+0.387/+0.406 dWin=-0.019 R=+0.321/+0.180 dR=+0.140 | unseen 44/100 win=+0.273/+0.390 dWin=-0.117 R=+0.080/-0.007 dR=+0.087
+ London 13-15: fit 19/76 win=+0.316/+0.421 dWin=-0.105 R=+0.019/+0.278 dR=-0.259 | unseen 30/114 win=+0.367/+0.351 dWin=+0.016 R=+0.214/-0.031 dR=+0.245
+ NY open: fit 45/50 win=+0.444/+0.360 dWin=+0.084 R=+0.248/+0.206 dR=+0.042 | unseen 70/74 win=+0.400/+0.311 dWin=+0.089 R=-0.101/+0.134 dR=-0.236
+
+MOMENTUM OVERLAP: Pearson correlations of behind-trade values
+
+fit
+        mom_H1  mom_H4  mom_D1
+mom_H1   1.000   0.327   0.216
+mom_H4   0.327   1.000   0.618
+mom_D1   0.216   0.618   1.000
+
+unseen
+        mom_H1  mom_H4  mom_D1
+mom_H1   1.000   0.267  -0.071
+mom_H4   0.267   1.000   0.411
+mom_D1  -0.071   0.411   1.000
+
+BOT x SIDE counts
+side   BUY  SELL
+bot             
+DOWN     0    84
+RANGE   40    38
+UP      77     0
+
+BOT x REGIME counts
+regime  bear  bull  mixed  unknown
+bot                               
+DOWN      24    48     12        0
+RANGE     20    42     15        1
+UP         9    61      6        1
+
+Best-of-N null: 16 predeclared numeric/one-hot columns; observed max |corr(R)|=0.156; 95th percentile after 5000 R permutations=0.187
+
+HALF BASELINES
+fit: n=95 win=0.400 meanR=+0.226
+unseen: n=144 win=0.354 meanR=+0.020
+D1 missing: 2 trades
+
+codex
+The split results have a key caveat: H4 momentum is useful outside the fit window, but its win-ranking and mean-R contrasts are weak or reversed inside the fit window. The “H4 ≥ 0” accepted-trade means are positive in both halves, yet the comparison to rejected H4<0 trades changes sign. I’m carrying that through explicitly; I won’t turn a positive subgroup average into a stable weight when the measured effect flips.
+apply patch
+patch: completed
+C:\Users\korap\taa\research\2026-10-26-three-bots\weights.py
+diff --git a/research/2026-10-26-three-bots/weights.py b/research/2026-10-26-three-bots/weights.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..8ebcb909c9c69ef3c01f38753337d030b657ff7f
+--- /dev/null
++++ b/research/2026-10-26-three-bots/weights.py
+@@ -0,0 +1,189 @@
++"""Measure decision-time readings against shipped-bot trade outcomes.
++
++Run from the repository root with ``.venv\\Scripts\\python.exe
++research/2026-10-26-three-bots/weights.py``. This reads the frozen trade CSV and
++prints summaries; it does not regenerate the trade history or write any files.
++
++Only columns known at entry are treated as candidate readings. ``r``, exit
++labels, excursions, and counterfactual stops are outcomes and never predictors.
++The momentum columns are changed to "behind the trade" by multiplying the
++stored signed value by +1 for BUY and -1 for SELL; side is known at entry.
++The momentum producer's read_at() accepts a frame bar only when its readable
++time (bar open + frame duration) is <= the decision time. In particular, for
++a trade at 2026-10-27 10:00 UTC, an H4 bar opened at 08:00 closes at 12:00 and
++is not readable; the preceding H4 bar opened at 04:00 closes at 08:00 and is
++readable. The history index is the bar OPEN. The app frames are close-stamped;
++momentum.py explicitly uses the history convention and does not shift the
++decision timestamp. This hand-worked boundary case is the point-in-time check.
++
++No indicators beyond the CSV are introduced here, so there are no additional
++bar joins or timing assumptions.
++"""
++
++from __future__ import annotations
++
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++HERE = Path(__file__).resolve().parent
++CSV = HERE / "momentum_trades.csv"
++NUMERIC = ("mom_H1", "mom_H4", "mom_D1", "risk")
++CATEGORICAL = ("bot", "side", "regime", "window")
++SEED = 20261027
++PERMUTATIONS = 5000
++
++
++def auc_higher_is_better(values: np.ndarray, wins: np.ndarray) -> float:
++    """Pairwise win/loss AUC; 0.5 is chance, >0.5 favors larger readings."""
++    positive, negative = values[wins], values[~wins]
++    if not len(positive) or not len(negative):
++        return float("nan")
++    pair = positive[:, None] - negative[None, :]
++    return float(((pair > 0).sum() + 0.5 * (pair == 0).sum()) / pair.size)
++
++
++def halves(df: pd.DataFrame):
++    yield "fit", df[df.fitted]
++    yield "unseen", df[~df.fitted]
++
++
++def numeric_summary(df: pd.DataFrame, col: str) -> dict:
++    x = df[[col, "r", "win"]].dropna()
++    med = x[col].median()
++    high, low = x[x[col] > med], x[x[col] <= med]
++    positive, negative = x[x[col] >= 0], x[x[col] < 0]
++    return {
++        "n": len(x),
++        "wins": int(x.win.sum()),
++        "auc": auc_higher_is_better(x[col].to_numpy(), x.win.to_numpy(bool)),
++        "corr_r": x[col].corr(x.r),
++        "median": med,
++        "hi_n": len(high),
++        "hi_win": high.win.mean(),
++        "hi_r": high.r.mean(),
++        "lo_n": len(low),
++        "lo_win": low.win.mean(),
++        "lo_r": low.r.mean(),
++        "median_win_delta": high.win.mean() - low.win.mean(),
++        "median_r_delta": high.r.mean() - low.r.mean(),
++        "pos_n": len(positive),
++        "pos_win": positive.win.mean(),
++        "pos_r": positive.r.mean(),
++        "neg_n": len(negative),
++        "neg_win": negative.win.mean(),
++        "neg_r": negative.r.mean(),
++        "zero_r_delta": positive.r.mean() - negative.r.mean(),
++    }
++
++
++def categorical_summary(df: pd.DataFrame, col: str, level: str) -> dict:
++    inside = df[col].eq(level)
++    a, b = df[inside], df[~inside]
++    return {
++        "level_n": len(a),
++        "other_n": len(b),
++        "level_win": a.win.mean() if len(a) else float("nan"),
++        "other_win": b.win.mean() if len(b) else float("nan"),
++        "win_delta": a.win.mean() - b.win.mean() if len(a) and len(b) else float("nan"),
++        "level_r": a.r.mean() if len(a) else float("nan"),
++        "other_r": b.r.mean() if len(b) else float("nan"),
++        "r_delta": a.r.mean() - b.r.mean() if len(a) and len(b) else float("nan"),
++    }
++
++
++def candidate_matrix(df: pd.DataFrame) -> pd.DataFrame:
++    """16 predeclared linear candidates for the best-of-N null calculation."""
++    out = df[list(NUMERIC)].copy()
++    for col in NUMERIC:
++        out[col] = out[col].fillna(out[col].median())
++    for col in CATEGORICAL:
++        dummies = pd.get_dummies(df[col], prefix=col, dtype=float)
++        out = pd.concat([out, dummies], axis=1)
++    return out
++
++
++def best_of_n_null(df: pd.DataFrame) -> tuple[int, float, float]:
++    """Permutation null for max absolute feature/R correlation over 16 candidates."""
++    x = candidate_matrix(df).to_numpy(float)
++    y = df.r.to_numpy(float)
++    x = (x - x.mean(axis=0)) / x.std(axis=0)
++    # Candidate columns are nonconstant in this dataset. Centering y after each
++    # shuffle preserves its observed distribution while breaking all alignment.
++    x = x[:, np.std(x, axis=0) > 0]
++    x = x / np.sqrt((x * x).sum(axis=0))
++    y = y - y.mean()
++    observed = float(np.max(np.abs(x.T @ y) / np.sqrt((y * y).sum())))
++    rng = np.random.default_rng(SEED)
++    maxima = np.empty(PERMUTATIONS)
++    for i in range(PERMUTATIONS):
++        yp = rng.permutation(y)
++        maxima[i] = np.max(np.abs(x.T @ yp) / np.sqrt((yp * yp).sum()))
++    return x.shape[1], observed, float(np.quantile(maxima, 0.95))
++
++
++def fmt(value: float, digits: int = 3) -> str:
++    return "—" if pd.isna(value) else f"{value:+.{digits}f}"
++
++
++def main() -> None:
++    d = pd.read_csv(CSV)
++    d["at"] = pd.to_datetime(d["at"], utc=True)
++    d["fitted"] = d["fitted"].astype(bool)
++    d["mom_D1"] = pd.to_numeric(d["mom_D1"], errors="coerce")
++    d["win"] = d.r > 0
++    for col in ("mom_H1", "mom_H4", "mom_D1"):
++        d[col] = d[col] * np.where(d.side.eq("BUY"), 1.0, -1.0)
++
++    print(f"Trades: {len(d)}; fit={int(d.fitted.sum())}; unseen={int((~d.fitted).sum())}")
++    print("\nNUMERIC (AUC: larger reading ranks winners; median/zero splits are descriptive)")
++    for col in NUMERIC:
++        print(f"\n{col}")
++        for name, frame in halves(d):
++            s = numeric_summary(frame, col)
++            print(
++                f" {name:6s} n={s['n']:3d} wins={s['wins']:3d} auc={s['auc']:.3f} "
++                f"corrR={fmt(s['corr_r'])} med={s['median']:.3f}; "
++                f"above-median {s['hi_n']} win={s['hi_win']:.3f} R={fmt(s['hi_r'])}, "
++                f"at/below {s['lo_n']} win={s['lo_win']:.3f} R={fmt(s['lo_r'])}; "
++                f"deltaR={fmt(s['median_r_delta'])}; "
++                f">=0 {s['pos_n']} R={fmt(s['pos_r'])}, <0 {s['neg_n']} R={fmt(s['neg_r'])}, "
++                f"deltaR={fmt(s['zero_r_delta'])}"
++            )
++
++    print("\nCATEGORICAL (each level versus all other levels; winDelta and RDelta)")
++    for col in CATEGORICAL:
++        print(f"\n{col}")
++        for level in sorted(d[col].dropna().unique()):
++            cells = []
++            for name, frame in halves(d):
++                s = categorical_summary(frame, col, level)
++                cells.append(
++                    f"{name} {s['level_n']}/{s['other_n']} "
++                    f"win={fmt(s['level_win'])}/{fmt(s['other_win'])} "
++                    f"dWin={fmt(s['win_delta'])} R={fmt(s['level_r'])}/{fmt(s['other_r'])} "
++                    f"dR={fmt(s['r_delta'])}"
++                )
++            print(f" {level}: " + " | ".join(cells))
++
++    print("\nMOMENTUM OVERLAP: Pearson correlations of behind-trade values")
++    for name, frame in halves(d):
++        print(f"\n{name}\n{frame[['mom_H1', 'mom_H4', 'mom_D1']].corr().round(3)}")
++    print("\nBOT x SIDE counts")
++    print(pd.crosstab(d.bot, d.side).to_string())
++    print("\nBOT x REGIME counts")
++    print(pd.crosstab(d.bot, d.regime).to_string())
++    k, obs, null95 = best_of_n_null(d)
++    print(
++        f"\nBest-of-N null: {k} predeclared numeric/one-hot columns; observed max |corr(R)|="
++        f"{obs:.3f}; 95th percentile after {PERMUTATIONS} R permutations={null95:.3f}"
++    )
++    print("\nHALF BASELINES")
++    for name, frame in halves(d):
++        print(f"{name}: n={len(frame)} win={frame.win.mean():.3f} meanR={frame.r.mean():+.3f}")
++    print(f"D1 missing: {int(d.mom_D1.isna().sum())} trades")
++
++
++if __name__ == "__main__":
++    main()
+
+apply patch
+patch: completed
+C:\Users\korap\taa\research\2026-10-26-three-bots\WEIGHTS.md
+diff --git a/research/2026-10-26-three-bots/WEIGHTS.md b/research/2026-10-26-three-bots/WEIGHTS.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..d963fe0186fc68c0854d23dc07906ad4fc7a234d
+--- /dev/null
++++ b/research/2026-10-26-three-bots/WEIGHTS.md
+@@ -0,0 +1,85 @@
++# Reading weights: evidence, not yet a usable scale
++
++**Result:** I do not recommend assigning a positive trading weight to any reading from this sample. H4 momentum is the strongest lead, but the required direction is not stable across the two supplied halves. The proposed scale therefore has zero weight on every tested reading until forward evidence resolves the split. This is a measurement result, not a change to the frozen rule set 2.
++
++Run the reproducible analysis with:
++
++```powershell
++.venv\Scripts\python.exe research/2026-10-26-three-bots/weights.py
++```
++
++The script reads `momentum_trades.csv`, prints the statistics below, and writes no files. It does not regenerate trades. “Fit” means the saved `fitted=True` period (n=95); “never seen” means `False` (n=144). They are the requested partitions, not a clean future test: the never-seen rows are older than the fit window. The all-trade baseline is +0.226 R / 40.0% wins in fit and +0.020 R / 35.4% wins in never-seen.
++
++## Timing and eligible readings
++
++I used only decision-time CSV columns: `bot`, `side`, `window`, `regime`, `risk`, and `mom_H1`, `mom_H4`, `mom_D1`. Outcomes (`r`, `out`, MAE/MFE and counterfactual stops) were not predictors. “Momentum behind” is the stored signed momentum multiplied by +1 for BUY and -1 for SELL; the side is already known at the entry decision. `risk` is the entry stop distance.
++
++The producer `momentum.py` forms each frame from history whose index is the bar **open**, then sets `readable = open + frame duration`; `read_at` takes only `readable <= at`. The app live frame is close-stamped, so applying an extra index shift would be wrong. Hand check at a decision `at=2026-10-27 10:00 UTC`: the H4 bucket opened at 08:00 closes at 12:00 and must be excluded; the prior H4 bucket opened at 04:00 closes at 08:00 and may be used. This is the history convention actually used by the CSV producer. No extra indicator or bar join was added here.
++
++## Numeric readings
++
++AUC measures whether a larger reading ranks a winner above a loser (0.50 is chance). “Median ΔR” is the mean R above the half-specific median minus the mean R at/below it. It is descriptive, not a fitted threshold. “Zero ΔR” is the mean R for momentum ≥0 minus the mean R below 0; for risk, zero is not a useful split and is omitted. AUC and mean R answer different questions.
++
++| Reading (behind trade) | Fit n; AUC; corr with R | Fit median ΔR | Never-seen n; AUC; corr with R | Never-seen median ΔR | Decision |
++|---|---:|---:|---:|---:|---|
++| H1 momentum | 95; 0.331; −0.080 | −0.301 | 144; 0.534; +0.146 | +0.151 | **Reject:** win ranking and R contrast both reverse. |
++| H4 momentum | 95; 0.465; +0.036 | −0.025 | 144; 0.629; +0.227 | +0.348 | **Not yet:** useful out of fit, but no fit-half separation and R effect reverses. |
++| D1 momentum | 95; 0.499; +0.065 | +0.069 | 142; 0.504; +0.011 | −0.021 | **Reject:** chance-level win separation; median R effect changes sign. Two D1 values are missing. |
++| Stop distance (`risk`) | 95; 0.626; +0.002 | −0.029 | 144; 0.526; −0.104 | −0.472 | **Reject:** apparent fit win separation carries no mean-R lift and is absent outside fit. |
++
++The win AUC for H1 actually changes direction (0.331 to 0.534). H4’s AUC crosses 0.50 (0.465 to 0.629), as does the median-split R contrast. D1’s median-split mean-R contrast changes sign. Risk’s median-split R contrast is negative in both halves, with no useful stable R benefit. These failures are not hidden by pooling the halves.
++
++### The locked H4 ≥ 0 reading
++
++The lock reports the mean R among trades passing H4 ≥0. Recomputing from this CSV reproduces those accepted-group means, but the accepted group average alone does not show the reading’s incremental effect:
++
++| Half | H4 ≥0: n, win, mean R | H4 <0: n, win, mean R | Mean-R contrast ≥0 minus <0 |
++|---|---:|---:|---:|
++| Fit | 81; 38.3%; +0.214 | 14; 50.0%; +0.294 | **−0.080** |
++| Never-seen | 118; 40.7%; +0.207 | 26; 11.5%; −0.829 | **+1.037** |
++
++The accepted means are close (+0.214 and +0.207), exactly as Rule set 2 records. But the reading’s within-half contrast flips sign. The fit-side rejected group is only 14 trades, so this is noisy; the rule in the brief still says a sign-flipping reading is not a weight candidate. The evidence supports continuing to measure H4, not turning its accepted-group average into a positive weight now.
++
++## Categorical readings
++
++Each level is compared with every other level in the same half. Cells show `level n / other n; Δ win rate; Δ mean R` (level minus other). Small or empty levels are shown to expose thin evidence, not treated as candidates.
++
++| Reading level | Fit | Never-seen | Assessment |
++|---|---:|---:|---|
++| Bot = DOWN | 38/57; +16.7 pp; +0.091 R | 46/98; −7.3 pp; −0.454 R | **Reject:** both effects reverse. |
++| Bot = RANGE | 34/61; −16.5 pp; +0.074 R | 44/100; +7.9 pp; +0.676 R | **Reject:** win effect reverses; R estimate swings widely. |
++| Bot = UP | 23/72; −1.1 pp; −0.212 R | 54/90; −0.4 pp; −0.191 R | Stable weak negative result, not a positive reading to weight. |
++| Side = BUY | 36/59; +2.7 pp; +0.168 R | 81/63; +6.5 pp; +0.250 R | **Not independent:** BUY/SELL is determined by bot for both trend bots. A mild same-sign descriptive effect does not establish a portable side weight. |
++| Regime = bear | 38/57; −5.3 pp; −0.045 R | 15/129; +5.1 pp; +0.197 R | **Reject:** both signs reverse; unseen cell is small. |
++| Regime = bull | 46/49; +2.5 pp; +0.038 R | 105/39; +6.4 pp; −0.181 R | **Reject:** win and R effects disagree; mean-R sign reverses. |
++| Regime = mixed | 11/84; +6.2 pp; +0.014 R | 22/122; −15.0 pp; −0.139 R | **Reject:** win effect reverses. |
++| Regime = unknown | 0/95; undefined | 2/142; +14.8 pp; +2.580 R | **No evidence:** two trades, none in fit; the striking mean is a tiny-cell artifact. |
++| Window = Asia | 31/64; −1.9 pp; +0.140 R | 44/100; −11.7 pp; +0.087 R | No win-rate edge; R effect small and not enough to warrant a weight. |
++| Window = London | 19/76; −10.5 pp; −0.259 R | 30/114; +1.6 pp; +0.245 R | **Reject:** win and R effects reverse. |
++| Window = NY open | 45/50; +8.4 pp; +0.042 R | 70/74; +8.9 pp; −0.236 R | **Reject:** R effect reverses despite the win-rate pattern. |
++
++Regime `unknown` is produced by two earliest unseen records, and D1 momentum is missing on two records because the rolling 50-bar D1 measure is not yet available. Neither small count supports inference. `risk` is always nonnegative, so its zero split has no comparison group.
++
++## Overlap and selection premium
++
++Momentum readings overlap. Correlations of momentum-behind values are H1/H4 **0.327 fit, 0.267 unseen**; H4/D1 **0.618, 0.411**; H1/D1 **0.216, −0.071**. H4 and D1 especially can double-count similar directional context. The categorical readings overlap too: all 84 DOWN trades are SELL and all 77 UP trades are BUY; only RANGE has both sides (40 BUY, 38 SELL). Bot, side, and regime should not be assigned independent full-strength weights from these marginal tables.
++
++The script estimates best-of-N optimism with 5,000 permutations of R against the same 16 predeclared numeric/one-hot columns (four numeric columns plus categorical levels). The observed maximum absolute feature/R correlation is **0.156**; the 95th percentile of the null maximum is **0.187**. Thus a best-looking marginal correlation this large is not surprising under a no-association model after searching those 16 columns. This estimate is only for linear correlation in this small sample; it does not account for all possible cutoffs or analyst choices, so it is not a correction that makes a candidate significant.
++
++## Proposed weights and next measurement
++
++For the inert `Weight` / `Scale` vessel, the proposed evidence-based weights from this study are:
++
++| Reading | Weight | Direction | Why |
++|---|---:|---|---|
++| H1 momentum behind | 0.00 | high | Win and mean-R effects reverse between halves. |
++| H4 momentum behind | 0.00 | high | Best lead, but both win ranking and mean-R contrast fail the stable-sign requirement. Keep measuring; do not encode the lock’s subgroup mean as a weight. |
++| D1 momentum behind | 0.00 | high | AUC is chance in both halves; median-split R effect reverses. |
++| Risk / stop distance | 0.00 | — | Win ranking does not translate to R, especially outside fit. |
++| Bot, side, regime, session window | 0.00 | — | Marginal effects flip, overlap structurally, or rely on thin groups. |
++
++This is an explicit **no-positive-weight** proposal, rather than a qualified production score: the current readings do not pass the locked sign rule. No threshold is proposed. Rule set 2 remains a separately frozen historical rule and should be judged on its forward journal; this file does not revise it.
++
++**Would not take:** H1, D1, risk, bot, regime, session-window, or side weights from these marginal results. I would also not count H4 and D1 as independent evidence if later data supports both; they correlate substantially.
++
++**Measure next:** prospectively log every eligible entry decision from 2026-10-28 onward with its point-in-time readings, including H4 values for entries accepted and refused by the locked H4 ≥0 rule, then compare realized mean R and win separation on untouched forward data. That supplies the missing comparator and avoids selecting only the trades the current rule allowed.
+diff --git a/research/2026-10-26-three-bots/weights.py b/research/2026-10-26-three-bots/weights.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..8ebcb909c9c69ef3c01f38753337d030b657ff7f
+--- /dev/null
++++ b/research/2026-10-26-three-bots/weights.py
+@@ -0,0 +1,189 @@
++"""Measure decision-time readings against shipped-bot trade outcomes.
++
++Run from the repository root with ``.venv\\Scripts\\python.exe
++research/2026-10-26-three-bots/weights.py``. This reads the frozen trade CSV and
++prints summaries; it does not regenerate the trade history or write any files.
++
++Only columns known at entry are treated as candidate readings. ``r``, exit
++labels, excursions, and counterfactual stops are outcomes and never predictors.
++The momentum columns are changed to "behind the trade" by multiplying the
++stored signed value by +1 for BUY and -1 for SELL; side is known at entry.
++The momentum producer's read_at() accepts a frame bar only when its readable
++time (bar open + frame duration) is <= the decision time. In particular, for
++a trade at 2026-10-27 10:00 UTC, an H4 bar opened at 08:00 closes at 12:00 and
++is not readable; the preceding H4 bar opened at 04:00 closes at 08:00 and is
++readable. The history index is the bar OPEN. The app frames are close-stamped;
++momentum.py explicitly uses the history convention and does not shift the
++decision timestamp. This hand-worked boundary case is the point-in-time check.
++
++No indicators beyond the CSV are introduced here, so there are no additional
++bar joins or timing assumptions.
++"""
++
++from __future__ import annotations
++
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++HERE = Path(__file__).resolve().parent
++CSV = HERE / "momentum_trades.csv"
++NUMERIC = ("mom_H1", "mom_H4", "mom_D1", "risk")
++CATEGORICAL = ("bot", "side", "regime", "window")
++SEED = 20261027
++PERMUTATIONS = 5000
++
++
++def auc_higher_is_better(values: np.ndarray, wins: np.ndarray) -> float:
++    """Pairwise win/loss AUC; 0.5 is chance, >0.5 favors larger readings."""
++    positive, negative = values[wins], values[~wins]
++    if not len(positive) or not len(negative):
++        return float("nan")
++    pair = positive[:, None] - negative[None, :]
++    return float(((pair > 0).sum() + 0.5 * (pair == 0).sum()) / pair.size)
++
++
++def halves(df: pd.DataFrame):
++    yield "fit", df[df.fitted]
++    yield "unseen", df[~df.fitted]
++
++
++def numeric_summary(df: pd.DataFrame, col: str) -> dict:
++    x = df[[col, "r", "win"]].dropna()
++    med = x[col].median()
++    high, low = x[x[col] > med], x[x[col] <= med]
++    positive, negative = x[x[col] >= 0], x[x[col] < 0]
++    return {
++        "n": len(x),
++        "wins": int(x.win.sum()),
++        "auc": auc_higher_is_better(x[col].to_numpy(), x.win.to_numpy(bool)),
++        "corr_r": x[col].corr(x.r),
++        "median": med,
++        "hi_n": len(high),
++        "hi_win": high.win.mean(),
++        "hi_r": high.r.mean(),
++        "lo_n": len(low),
++        "lo_win": low.win.mean(),
++        "lo_r": low.r.mean(),
++        "median_win_delta": high.win.mean() - low.win.mean(),
++        "median_r_delta": high.r.mean() - low.r.mean(),
++        "pos_n": len(positive),
++        "pos_win": positive.win.mean(),
++        "pos_r": positive.r.mean(),
++        "neg_n": len(negative),
++        "neg_win": negative.win.mean(),
++        "neg_r": negative.r.mean(),
++        "zero_r_delta": positive.r.mean() - negative.r.mean(),
++    }
++
++
++def categorical_summary(df: pd.DataFrame, col: str, level: str) -> dict:
++    inside = df[col].eq(level)
++    a, b = df[inside], df[~inside]
++    return {
++        "level_n": len(a),
++        "other_n": len(b),
++        "level_win": a.win.mean() if len(a) else float("nan"),
++        "other_win": b.win.mean() if len(b) else float("nan"),
++        "win_delta": a.win.mean() - b.win.mean() if len(a) and len(b) else float("nan"),
++        "level_r": a.r.mean() if len(a) else float("nan"),
++        "other_r": b.r.mean() if len(b) else float("nan"),
++        "r_delta": a.r.mean() - b.r.mean() if len(a) and len(b) else float("nan"),
++    }
++
++
++def candidate_matrix(df: pd.DataFrame) -> pd.DataFrame:
++    """16 predeclared linear candidates for the best-of-N null calculation."""
++    out = df[list(NUMERIC)].copy()
++    for col in NUMERIC:
++        out[col] = out[col].fillna(out[col].median())
++    for col in CATEGORICAL:
++        dummies = pd.get_dummies(df[col], prefix=col, dtype=float)
++        out = pd.concat([out, dummies], axis=1)
++    return out
++
++
++def best_of_n_null(df: pd.DataFrame) -> tuple[int, float, float]:
++    """Permutation null for max absolute feature/R correlation over 16 candidates."""
++    x = candidate_matrix(df).to_numpy(float)
++    y = df.r.to_numpy(float)
++    x = (x - x.mean(axis=0)) / x.std(axis=0)
++    # Candidate columns are nonconstant in this dataset. Centering y after each
++    # shuffle preserves its observed distribution while breaking all alignment.
++    x = x[:, np.std(x, axis=0) > 0]
++    x = x / np.sqrt((x * x).sum(axis=0))
++    y = y - y.mean()
++    observed = float(np.max(np.abs(x.T @ y) / np.sqrt((y * y).sum())))
++    rng = np.random.default_rng(SEED)
++    maxima = np.empty(PERMUTATIONS)
++    for i in range(PERMUTATIONS):
++        yp = rng.permutation(y)
++        maxima[i] = np.max(np.abs(x.T @ yp) / np.sqrt((yp * yp).sum()))
++    return x.shape[1], observed, float(np.quantile(maxima, 0.95))
++
++
++def fmt(value: float, digits: int = 3) -> str:
++    return "—" if pd.isna(value) else f"{value:+.{digits}f}"
++
++
++def main() -> None:
++    d = pd.read_csv(CSV)
++    d["at"] = pd.to_datetime(d["at"], utc=True)
++    d["fitted"] = d["fitted"].astype(bool)
++    d["mom_D1"] = pd.to_numeric(d["mom_D1"], errors="coerce")
++    d["win"] = d.r > 0
++    for col in ("mom_H1", "mom_H4", "mom_D1"):
++        d[col] = d[col] * np.where(d.side.eq("BUY"), 1.0, -1.0)
++
++    print(f"Trades: {len(d)}; fit={int(d.fitted.sum())}; unseen={int((~d.fitted).sum())}")
++    print("\nNUMERIC (AUC: larger reading ranks winners; median/zero splits are descriptive)")
++    for col in NUMERIC:
++        print(f"\n{col}")
++        for name, frame in halves(d):
++            s = numeric_summary(frame, col)
++            print(
++                f" {name:6s} n={s['n']:3d} wins={s['wins']:3d} auc={s['auc']:.3f} "
++                f"corrR={fmt(s['corr_r'])} med={s['median']:.3f}; "
++                f"above-median {s['hi_n']} win={s['hi_win']:.3f} R={fmt(s['hi_r'])}, "
++                f"at/below {s['lo_n']} win={s['lo_win']:.3f} R={fmt(s['lo_r'])}; "
++                f"deltaR={fmt(s['median_r_delta'])}; "
++                f">=0 {s['pos_n']} R={fmt(s['pos_r'])}, <0 {s['neg_n']} R={fmt(s['neg_r'])}, "
++                f"deltaR={fmt(s['zero_r_delta'])}"
++            )
++
++    print("\nCATEGORICAL (each level versus all other levels; winDelta and RDelta)")
++    for col in CATEGORICAL:
++        print(f"\n{col}")
++        for level in sorted(d[col].dropna().unique()):
++            cells = []
++            for name, frame in halves(d):
++                s = categorical_summary(frame, col, level)
++                cells.append(
++                    f"{name} {s['level_n']}/{s['other_n']} "
++                    f"win={fmt(s['level_win'])}/{fmt(s['other_win'])} "
++                    f"dWin={fmt(s['win_delta'])} R={fmt(s['level_r'])}/{fmt(s['other_r'])} "
++                    f"dR={fmt(s['r_delta'])}"
++                )
++            print(f" {level}: " + " | ".join(cells))
++
++    print("\nMOMENTUM OVERLAP: Pearson correlations of behind-trade values")
++    for name, frame in halves(d):
++        print(f"\n{name}\n{frame[['mom_H1', 'mom_H4', 'mom_D1']].corr().round(3)}")
++    print("\nBOT x SIDE counts")
++    print(pd.crosstab(d.bot, d.side).to_string())
++    print("\nBOT x REGIME counts")
++    print(pd.crosstab(d.bot, d.regime).to_string())
++    k, obs, null95 = best_of_n_null(d)
++    print(
++        f"\nBest-of-N null: {k} predeclared numeric/one-hot columns; observed max |corr(R)|="
++        f"{obs:.3f}; 95th percentile after {PERMUTATIONS} R permutations={null95:.3f}"
++    )
++    print("\nHALF BASELINES")
++    for name, frame in halves(d):
++        print(f"{name}: n={len(frame)} win={frame.win.mean():.3f} meanR={frame.r.mean():+.3f}")
++    print(f"D1 missing: {int(d.mom_D1.isna().sum())} trades")
++
++
++if __name__ == "__main__":
++    main()
+
+codex
+The analysis and proposed write-up are in place. I’ve kept the recommendation conservative because the brief disqualifies sign-flipping candidates; I’m doing a final read-only check that the script runs and the target-file diff is clean.
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command '$env:PYTHONIOENCODING='"'utf-8'; .venv\\Scripts\\python.exe research/2026-10-26-three-bots/weights.py | Select-Object -Last 14; git diff --check -- research/2026-10-26-three-bots/weights.py research/2026-10-26-three-bots/WEIGHTS.md; git status --short -- research/2026-10-26-three-bots/weights.py research/2026-10-26-three-bots/WEIGHTS.md" in C:\Users\korap\taa
+ exited 1 in 2285ms:
+
+BOT x REGIME counts
+regime  bear  bull  mixed  unknown
+bot                               
+DOWN      24    48     12        0
+RANGE     20    42     15        1
+UP         9    61      6        1
+
+Best-of-N null: 16 predeclared numeric/one-hot columns; observed max |corr(R)|=0.156; 95th percentile after 5000 R permutations=0.187
+
+HALF BASELINES
+fit: n=95 win=0.400 meanR=+0.226
+unseen: n=144 win=0.354 meanR=+0.020
+D1 missing: 2 trades
+warning: in the working copy of 'research/2026-10-26-three-bots/weights.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'research/2026-10-26-three-bots/WEIGHTS.md', LF will be replaced by CRLF the next time Git touches it
+fatal: detected dubious ownership in repository at 'C:/Users/korap/taa'
+'C:/Users/korap/taa' is owned by:
+	'S-1-5-21-2242836692-4230212894-2550676392-1001'
+but the current user is:
+	'S-1-5-21-2242836692-4230212894-2550676392-1004'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory C:/Users/korap/taa
+
+codex
+Wrote [weights.py](/C:/Users/korap/taa/research/2026-10-26-three-bots/weights.py) and [WEIGHTS.md](/C:/Users/korap/taa/research/2026-10-26-three-bots/WEIGHTS.md). The script runs on the supplied CSV and prints split win-separation, mean-R effects, overlap, and a best-of-N estimate.
+
+The proposed weights are all zero for now: H4 is the strongest lead, but its mean-R contrast changes sign between halves. I did not commit or push. The script ran successfully; `git status` could not run because Git flagged the repository’s ownership, and I left that configuration untouched.
+tokens used
+76,777
+Wrote [weights.py](/C:/Users/korap/taa/research/2026-10-26-three-bots/weights.py) and [WEIGHTS.md](/C:/Users/korap/taa/research/2026-10-26-three-bots/WEIGHTS.md). The script runs on the supplied CSV and prints split win-separation, mean-R effects, overlap, and a best-of-N estimate.
+
+The proposed weights are all zero for now: H4 is the strongest lead, but its mean-R contrast changes sign between halves. I did not commit or push. The script ran successfully; `git status` could not run because Git flagged the repository’s ownership, and I left that configuration untouched.

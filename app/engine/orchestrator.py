@@ -634,6 +634,7 @@ class Engine:
             account, terminal = None, None
         latched = [s.name.value for s in self.board.statuses() if s.latched]
         now = self.clock.now_utc()
+        day_plan_ok, day_plan_detail = self.day_plan.check(now)
         return evaluate_gate(
             self.settings.mode,
             self.settings.env,
@@ -642,8 +643,8 @@ class Engine:
             risk_config_ok=self._risk_config_ok(),
             kill_switch_active=self.kill_switch.is_active(),
             latched_breakers=latched,
-            day_plan_ok=self.day_plan.exists(now),
-            day_plan_detail=f"no plan for the Thai trading day at {self.day_plan.path(now)} (P26)",
+            day_plan_ok=day_plan_ok,
+            day_plan_detail=day_plan_detail,
         )
 
     def _risk_config_ok(self) -> bool:

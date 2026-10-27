@@ -18,6 +18,7 @@ on Tuesday morning still covers Wednesday 02:00 Thai, in the middle of the New Y
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -40,7 +41,7 @@ def trading_date(now: datetime) -> str:
 
 
 class DayPlan:
-    """Is today's plan written? Presence of the file is the whole answer."""
+    """Is today's complete plan written?"""
 
     def __init__(self, directory: Path | str = DEFAULT_DIR) -> None:
         self.directory = Path(directory)
@@ -49,24 +50,39 @@ class DayPlan:
         return self.directory / f"{trading_date(now)}.md"
 
     def exists(self, now: datetime) -> bool:
-        """True when the day's plan file is there and not empty.
+        """True when the day's plan contains its condition, levels, edge side and scenarios."""
+        return self.check(now)[0]
 
-        An empty file is not a plan: a shell redirect that failed halfway would otherwise open the gate,
-        and nor is one holding only whitespace (developer session, 2026-10-27).
-        """
+    def check(self, now: datetime) -> tuple[bool, str]:
+        """Check the bounded plan text and name every required section that is missing."""
         p = self.path(now)
         try:
             if not p.is_file():
-                return False
-            with p.open("rb") as fh:  # bounded: a plan is prose, and a huge file must not be inhaled
+                return False, f"the day's plan is missing or is not a file: {p} (P26)"
+            with p.open("rb") as fh:
                 head = fh.read(READ_LIMIT)
-            return bool(head.decode("utf-8").strip())
+            text = head.decode("utf-8")
         except (OSError, UnicodeDecodeError):
-            # Anything unreadable - a vanished mount, no permission, bytes that are not text - is the
-            # same as no plan. A decode error used to escape as an exception rather than a DAY_PLAN
-            # refusal (developer session, 2026-10-27): the gate must say why it refused, not crash.
             log.warning("cannot read the day plan at %s; treating the day as unplanned", p)
-            return False
+            return False, f"the day's plan is unreadable or not UTF-8: {p} (P26)"
+
+        if not text.strip():
+            return False, f"the day's plan is empty or whitespace-only: {p} (P26)"
+
+        lowered = text.casefold()
+        missing = [
+            name
+            for name, markers in (
+                ("condition", (r"\bcondition\b",)),
+                ("levels", (r"\blevels\b",)),
+                ("side with the edge", (r"\bside with the edge\b", r"\bedge_side\b")),
+                ("scenarios", (r"\bscenarios\b",)),
+            )
+            if not any(re.search(marker, lowered) for marker in markers)
+        ]
+        if missing:
+            return False, "the day's plan is incomplete; missing: " + ", ".join(missing) + f" ({p}, P26)"
+        return True, f"the day's plan has condition, levels, side with the edge and scenarios ({p})"
 
     def write(self, now: datetime, text: str) -> Path:
         """Record the day's plan. Refuses to overwrite one: a day has one plan, added to, not replaced."""

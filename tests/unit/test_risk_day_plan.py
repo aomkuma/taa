@@ -8,6 +8,7 @@ session without one. These cases exist because a note cannot refuse anything and
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from io import BytesIO
 from pathlib import Path
 
 import pytest
@@ -42,7 +43,7 @@ class TestThePlanFile:
 
     def test_a_written_plan_opens_the_day(self, tmp_path: Path) -> None:
         plan = DayPlan(tmp_path)
-        plan.write(at(6, 30), "the condition, the levels, the scenarios")
+        plan.write(at(6, 30), "the condition, the levels, the side with the edge, the scenarios")
         assert plan.exists(at(6, 30)) is True
 
     def test_an_empty_file_is_not_a_plan(self, tmp_path: Path) -> None:
@@ -54,29 +55,29 @@ class TestThePlanFile:
 
     def test_yesterdays_plan_does_not_cover_today(self, tmp_path: Path) -> None:
         plan = DayPlan(tmp_path)
-        plan.write(at(9, day=26), "yesterday's plan")
+        plan.write(at(9, day=26), "condition levels side with the edge scenarios")
         assert plan.exists(at(9, day=26)) is True
         assert plan.exists(at(9, day=27)) is False
 
     def test_a_plan_written_in_the_morning_still_covers_the_new_york_hours(self, tmp_path: Path) -> None:
         plan = DayPlan(tmp_path)
-        plan.write(at(7, 15), "written as the Asia window opens")
+        plan.write(at(7, 15), "condition levels side with the edge scenarios")
         assert plan.exists(at(2, 0, day=28)) is True  # 02:00 Thai the next morning, mid New York
 
     def test_a_plan_written_before_seven_is_filed_under_the_day_before(self, tmp_path: Path) -> None:
         """A trap worth a test: 06:45 Thai is still yesterday's trading day, so a plan written then
         does NOT open the day that is about to start. Write it at or after 07:00."""
         plan = DayPlan(tmp_path)
-        plan.write(at(6, 45), "too early")
+        plan.write(at(6, 45), "condition levels side with the edge scenarios")
         assert plan.path(at(6, 45)).name == "2026-10-26.md"
         assert plan.exists(at(9)) is False  # 09:00 Thai on the 27th is still unplanned
 
     def test_a_day_is_not_replanned_over_the_top_of_itself(self, tmp_path: Path) -> None:
         plan = DayPlan(tmp_path)
-        plan.write(at(7), "the first plan")
+        plan.write(at(7), "condition levels side with the edge scenarios")
         with pytest.raises(FileExistsError):
             plan.write(at(20), "a second, convenient one")
-        assert plan.path(at(7)).read_text(encoding="utf-8") == "the first plan"
+        assert plan.path(at(7)).read_text(encoding="utf-8") == "condition levels side with the edge scenarios"
 
 
 class TestTheGapsTheReviewFound:
@@ -104,12 +105,12 @@ class TestTheGapsTheReviewFound:
 
     def test_writing_creates_the_folder_and_hands_back_where_it_went(self, tmp_path: Path) -> None:
         plan = DayPlan(tmp_path / "nested" / "plans")
-        written = plan.write(at(8), "the plan")
+        written = plan.write(at(8), "condition levels side with the edge scenarios")
         assert written == plan.path(at(8)) and written.is_file()
 
     def test_an_unreadable_path_counts_as_unplanned(self, tmp_path: Path, monkeypatch) -> None:  # type: ignore[no-untyped-def]
         plan = DayPlan(tmp_path)
-        plan.write(at(8), "the plan")
+        plan.write(at(8), "condition levels side with the edge scenarios")
 
         def boom(*_a: object, **_k: object) -> object:
             raise OSError("the mount went away")
@@ -141,4 +142,72 @@ def test_a_very_large_plan_is_not_read_whole(tmp_path: Path) -> None:
     plan = DayPlan(tmp_path)
     plan.path(at(9)).parent.mkdir(parents=True, exist_ok=True)
     plan.path(at(9)).write_bytes(b"x" * (READ_LIMIT * 4))
-    assert plan.exists(at(9)) is True  # still a plan, but only the head was read
+    assert plan.exists(at(9)) is False  # only the bounded head is considered; it has no required markers
+
+
+@pytest.mark.parametrize(
+    ("text", "missing"),
+    [
+        ("levels side with the edge scenarios", "condition"),
+        ("condition side with the edge scenarios", "levels"),
+        ("condition levels scenarios", "side with the edge"),
+        ("condition levels side with the edge", "scenarios"),
+    ],
+)
+def test_a_partial_plan_names_the_missing_part(tmp_path: Path, text: str, missing: str) -> None:
+    plan = DayPlan(tmp_path)
+    plan.path(at(9)).parent.mkdir(parents=True, exist_ok=True)
+    plan.path(at(9)).write_text(text, encoding="utf-8")
+    ok, detail = plan.check(at(9))
+    assert not ok
+    assert missing in detail
+
+
+def test_a_one_character_plan_is_incomplete(tmp_path: Path) -> None:
+    plan = DayPlan(tmp_path)
+    plan.path(at(9)).parent.mkdir(parents=True, exist_ok=True)
+    plan.path(at(9)).write_text("x", encoding="utf-8")
+    ok, detail = plan.check(at(9))
+    assert not ok
+    assert (
+        "condition" in detail
+        and "levels" in detail
+        and "side with the edge" in detail
+        and "scenarios" in detail
+    )
+
+
+def test_marker_words_do_not_match_plural_substrings(tmp_path: Path) -> None:
+    plan = DayPlan(tmp_path)
+    plan.path(at(9)).parent.mkdir(parents=True, exist_ok=True)
+    plan.path(at(9)).write_text("conditions levels side with the edge scenarios", encoding="utf-8")
+    ok, detail = plan.check(at(9))
+    assert not ok and "condition" in detail
+
+
+def test_plan_markers_are_case_insensitive_and_order_independent(tmp_path: Path) -> None:
+    plan = DayPlan(tmp_path)
+    plan.path(at(9)).parent.mkdir(parents=True, exist_ok=True)
+    plan.path(at(9)).write_text("SCENARIOS; SIDE WITH THE EDGE; LEVELS; CONDITION", encoding="utf-8")
+    assert plan.exists(at(9))
+
+
+def test_plan_check_reads_no_more_than_the_bound(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.risk.day_plan import READ_LIMIT
+
+    plan = DayPlan(tmp_path)
+    path = plan.path(at(9))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("condition levels side with the edge scenarios", encoding="utf-8")
+    calls: list[int] = []
+
+    class TrackingReader(BytesIO):
+        def read(self, size: int = -1) -> bytes:
+            calls.append(size)
+            return super().read(size)
+
+    monkeypatch.setattr(
+        Path, "open", lambda _self, _mode: TrackingReader(b"condition levels side with the edge scenarios")
+    )
+    assert plan.exists(at(9))
+    assert calls == [READ_LIMIT]

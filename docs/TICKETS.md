@@ -59,7 +59,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 | M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
 | M2 | Phase 17 — Setup OWN lanes (PLAN-1) | 1 | 0 | IN PROGRESS |
-| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 10 | 7 | IN PROGRESS |
+| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 11 | 7 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -2166,6 +2166,22 @@ The owner (2026-10-25): "when the system runs for real I must see the plan of ea
 - [ ] `GET /engines/{id}/ai-journal` (by day, cursor: decisions, plans, checklists) and the API samples
 - [ ] PWA: an AI journal page (days; the day's plans first - the Thai summary, levels, scenarios, readiness; then each decision with its reasons and checklist, the trade it opened linked to Trade history); i18n TH / EN and parity tests
 - [ ] a Web Push alert when the morning plan is written (the Thai summary)
+
+#### TAA-1811 — Trading-day plan and H4 edge gates
+
+- **Status:** IN PROGRESS
+- **Depends on:** 1810
+
+- [x] P26 plan gate: required condition, levels, side with the edge and scenarios; trading date is 07:00 Thai to 07:00 Thai; plans live in `data/plans/<date>.md`; open positions remain managed
+- [x] H4 own-side lean gate on the three bots, using the last closed H4 bar; reject unavailable or negative lean
+- [x] finite-lean overflow case covered for a finite ATR of `1e-320`
+- [x] the 5 USD take-profit floor is off; the owner's loss-breaker decision is reflected
+- [x] RR schema permits the requested lane value while the global cage remains 1.0 and `three_bots` uses 0.8
+- [x] `WEB_REQUIRE_TOTP` can be off in development and is refused in production; auth tests cover both
+- [x] `SYNC_ENABLED` provides the machine-only environment override
+- [x] Ruff and Bandit reported green in `research/2026-10-26-three-bots/AUDIT_FINDINGS.md`
+- [ ] full pytest green (audit could not start the suite)
+- [ ] mypy green (audit reports an internal error before completion)
 
 #### TAA-1810 — Three measured M5 strategies
 

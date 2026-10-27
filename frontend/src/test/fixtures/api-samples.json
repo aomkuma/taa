@@ -9633,17 +9633,23 @@
                 {
                   "enabled": true,
                   "name": "trend_box_down",
-                  "params": {}
+                  "params": {
+                    "require_edge_side": true
+                  }
                 },
                 {
                   "enabled": true,
                   "name": "trend_box_up",
-                  "params": {}
+                  "params": {
+                    "require_edge_side": true
+                  }
                 },
                 {
                   "enabled": true,
                   "name": "range_break",
-                  "params": {}
+                  "params": {
+                    "require_edge_side": true
+                  }
                 }
               ],
               "signal_expiry_bars": 1
@@ -9734,7 +9740,7 @@
           "min_lot_fallback": true,
           "min_lot_max_risk_percent": null,
           "min_margin_level_percent": 500.0,
-          "min_risk_reward": 0.5,
+          "min_risk_reward": 1.0,
           "price_drift_atr": 0.5,
           "probation_multiplier": 0.25,
           "probation_trades": 20,
@@ -9934,6 +9940,7 @@
         "CLOUD_BASE_URL": null,
         "CONFIG_FILE": "config.yaml",
         "CONTROL_TOTP_SECRET": "***",
+        "DAY_PLAN_DIR": "data/plans",
         "ENABLE_DEMO_TRADING": false,
         "ENABLE_HIGH_RISK_PROFILE": false,
         "ENABLE_LIVE_TRADING": false,
@@ -14666,6 +14673,7 @@
           "pool_break_minutes": 15,
           "pool_break_when_h4_contracting": true,
           "range_minutes": 15,
+          "require_edge_side": false,
           "target_r": 1.5,
           "wide_atr": 1.5
         },
@@ -14713,6 +14721,7 @@
           "hold_bars": 60,
           "max_wait_bars": 30,
           "pullback_atr": 1.0,
+          "require_edge_side": false,
           "second_same_side": true,
           "target_cap_r": 10.0,
           "window": "07:00-09:00",
@@ -14762,6 +14771,7 @@
           "hold_bars": 60,
           "max_wait_bars": 30,
           "pullback_atr": 1.0,
+          "require_edge_side": false,
           "second_same_side": true,
           "target_cap_r": 10.0,
           "window": "07:00-09:00",
@@ -14823,6 +14833,7 @@
           "hold_seconds": 1800.0,
           "ny_open": "08:30",
           "ny_zone": "America/New_York",
+          "require_edge_side": false,
           "stop_u": 8.0,
           "target_cap_u": 100.0,
           "trigger_u": 2.0,
@@ -14914,7 +14925,9 @@
         "known": true,
         "last_command": null,
         "name": "trend_box_down",
-        "overrides": [],
+        "overrides": [
+          "require_edge_side"
+        ],
         "params": {
           "box": 0.2,
           "break_even": false,
@@ -14924,7 +14937,7 @@
           "min_stop_atr": 0.0,
           "min_take_profit": 0.0,
           "require_big_tf": false,
-          "require_edge_side": false
+          "require_edge_side": true
         },
         "performance": {
           "avg_r": null,
@@ -14946,7 +14959,7 @@
         ],
         "top_reject_reasons": [],
         "version": "1.0.0",
-        "warmup_bars": 400
+        "warmup_bars": 1200
       },
       {
         "configured_enabled": true,
@@ -14960,7 +14973,9 @@
         "known": true,
         "last_command": null,
         "name": "trend_box_up",
-        "overrides": [],
+        "overrides": [
+          "require_edge_side"
+        ],
         "params": {
           "box": 0.33,
           "break_even": true,
@@ -14970,7 +14985,7 @@
           "min_stop_atr": 0.0,
           "min_take_profit": 0.0,
           "require_big_tf": false,
-          "require_edge_side": false
+          "require_edge_side": true
         },
         "performance": {
           "avg_r": null,
@@ -14992,7 +15007,7 @@
         ],
         "top_reject_reasons": [],
         "version": "1.0.0",
-        "warmup_bars": 400
+        "warmup_bars": 1200
       },
       {
         "configured_enabled": true,
@@ -15006,13 +15021,15 @@
         "known": true,
         "last_command": null,
         "name": "range_break",
-        "overrides": [],
+        "overrides": [
+          "require_edge_side"
+        ],
         "params": {
           "buffer": 0.3,
           "expiry_bars": 1,
           "min_r": 0.8,
           "min_take_profit": 0.0,
-          "require_edge_side": false,
+          "require_edge_side": true,
           "tp_range": 0.5
         },
         "performance": {
@@ -16003,6 +16020,7 @@
           "pool_break_minutes": 15,
           "pool_break_when_h4_contracting": true,
           "range_minutes": 15,
+          "require_edge_side": false,
           "target_r": 1.5,
           "wide_atr": 1.5
         },
@@ -16050,6 +16068,7 @@
           "hold_bars": 60,
           "max_wait_bars": 30,
           "pullback_atr": 1.0,
+          "require_edge_side": false,
           "second_same_side": true,
           "target_cap_r": 10.0,
           "window": "07:00-09:00",
@@ -16099,6 +16118,7 @@
           "hold_bars": 60,
           "max_wait_bars": 30,
           "pullback_atr": 1.0,
+          "require_edge_side": false,
           "second_same_side": true,
           "target_cap_r": 10.0,
           "window": "07:00-09:00",
@@ -16160,6 +16180,7 @@
           "hold_seconds": 1800.0,
           "ny_open": "08:30",
           "ny_zone": "America/New_York",
+          "require_edge_side": false,
           "stop_u": 8.0,
           "target_cap_u": 100.0,
           "trigger_u": 2.0,
@@ -16251,7 +16272,9 @@
         "known": true,
         "last_command": null,
         "name": "trend_box_down",
-        "overrides": [],
+        "overrides": [
+          "require_edge_side"
+        ],
         "params": {
           "box": 0.2,
           "break_even": false,
@@ -16261,7 +16284,7 @@
           "min_stop_atr": 0.0,
           "min_take_profit": 0.0,
           "require_big_tf": false,
-          "require_edge_side": false
+          "require_edge_side": true
         },
         "performance": {
           "avg_r": null,
@@ -16283,7 +16306,7 @@
         ],
         "top_reject_reasons": [],
         "version": "1.0.0",
-        "warmup_bars": 400
+        "warmup_bars": 1200
       },
       {
         "configured_enabled": true,
@@ -16297,7 +16320,9 @@
         "known": true,
         "last_command": null,
         "name": "trend_box_up",
-        "overrides": [],
+        "overrides": [
+          "require_edge_side"
+        ],
         "params": {
           "box": 0.33,
           "break_even": true,
@@ -16307,7 +16332,7 @@
           "min_stop_atr": 0.0,
           "min_take_profit": 0.0,
           "require_big_tf": false,
-          "require_edge_side": false
+          "require_edge_side": true
         },
         "performance": {
           "avg_r": null,
@@ -16329,7 +16354,7 @@
         ],
         "top_reject_reasons": [],
         "version": "1.0.0",
-        "warmup_bars": 400
+        "warmup_bars": 1200
       },
       {
         "configured_enabled": true,
@@ -16343,13 +16368,15 @@
         "known": true,
         "last_command": null,
         "name": "range_break",
-        "overrides": [],
+        "overrides": [
+          "require_edge_side"
+        ],
         "params": {
           "buffer": 0.3,
           "expiry_bars": 1,
           "min_r": 0.8,
           "min_take_profit": 0.0,
-          "require_edge_side": false,
+          "require_edge_side": true,
           "tp_range": 0.5
         },
         "performance": {

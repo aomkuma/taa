@@ -46,6 +46,7 @@ from app.core.clock import ensure_utc
 from app.core.enums import Action, ExitReason, Side, Timeframe
 from app.news.releases import Release, of_events
 from app.strategy.base_strategy import BaseStrategy, StrategyParams
+from app.strategy.edge_side import behind, edge_lean
 from app.strategy.release_straddle import OwnS2, ReleaseStraddle, StraddleEntry, StraddleParams
 from app.strategy.rules import explain, hhmm
 from app.strategy.signal_models import (
@@ -272,6 +273,7 @@ def _m1_arrays(m1: pd.DataFrame) -> tuple[pd.DatetimeIndex, FloatArray, FloatArr
 
 
 class Plan1OrbParams(StrategyParams):
+    require_edge_side: bool = False
     orb_open: str = "13:00"  # London 13:00 Thai = 06:00 UTC (Thailand keeps no summer time)
     orb_zone: str = "Asia/Bangkok"
     range_minutes: int = Field(default=15, ge=1, le=120)
@@ -358,7 +360,8 @@ class Plan1Orb(BaseStrategy):
         return (Timeframe.M1,)  # the H1 / H4 readings are built from M1
 
     def warmup_bars(self) -> int:
-        return 3000  # 15 complete H1 bars and yesterday's server day across a weekend
+        base = 3000  # 15 complete H1 bars and yesterday's server day across a weekend
+        return max(base, 64 * 4 * 60) if self.params.require_edge_side else base
 
     def window(self, at: pd.Timestamp) -> tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp]:
         """The day's open and the first / last decision times (bar closes)."""
@@ -404,6 +407,23 @@ class Plan1Orb(BaseStrategy):
         risk = (price - stop) * d.side
         if not risk > 0:
             return self.hold(ctx, ReasonCode.NO_SETUP, explanation=f"the price {price:.2f} is past the stop")
+        edge_ok = True
+        edge_condition = None
+        if p.require_edge_side:
+            own_side = Side.BUY if buy else Side.SELL
+            try:
+                lean = behind(edge_lean(ctx.frames, at, market.entry_timeframe), own_side)
+            except ValueError:
+                lean = None
+            edge_ok = lean is not None and lean >= 0
+            edge_condition = Condition(
+                "edge_side",
+                edge_ok,
+                1.0,
+                "unreadable H4 lean; refusing"
+                if lean is None
+                else f"H4 lean behind this side {lean:+.3f} ATR",
+            )
         atr = h1_atr_at(opens, h, lo, c, at)
         floor_ok = p.atr_floor is None or (math.isfinite(atr) and atr >= p.atr_floor)
         found = pools(opens, o, h, lo, at)
@@ -452,7 +472,9 @@ class Plan1Orb(BaseStrategy):
             ),
             Condition("spread", True, 1.0, spread_detail(market.bid, market.ask, ctx)),
         ]
-        if not (floor_ok and pool_ok and conds[2].passed):
+        if edge_condition is not None:
+            conds.append(edge_condition)
+        if not (floor_ok and pool_ok and conds[2].passed and edge_ok):
             return self.hold(ctx, ReasonCode.NO_SETUP, conditions=conds, explanation=explain(conds))
         return self.entry(
             ctx,
@@ -504,6 +526,7 @@ class Plan1StraddleParams(StraddleParams):
     d1_atr20_min_usd: float | None = Field(
         default=60.0, gt=0, le=1000
     )  # the regime switch (row 62); None = off
+    require_edge_side: bool = False
 
     @field_validator("ny_zone")
     @classmethod
@@ -567,7 +590,7 @@ class Plan1Straddle(OwnS2):
         self._planners.clear()
 
     def warmup_bars(self) -> int:
-        return 3000
+        return max(3000, 64 * 4 * 60) if self.params.require_edge_side else 3000
 
     def spans(self, start: datetime, end: datetime) -> list[tuple[datetime, datetime]]:
         p: Plan1StraddleParams = self.params
@@ -606,8 +629,8 @@ class Plan1Straddle(OwnS2):
         record = self.journal(ctx, entry, at)
         if record is None:
             return None
-        conds, floor_ok = record
-        if not floor_ok:
+        conds, entry_ok = record
+        if not entry_ok:
             return None
         buy = entry.side is Side.BUY
         sign = 1 if buy else -1
@@ -634,6 +657,24 @@ class Plan1Straddle(OwnS2):
         atr = h1_atr_at(opens, h, lo, c, at)
         floor_ok = p.atr_floor is None or (math.isfinite(atr) and atr >= p.atr_floor)
         buy = entry.side is Side.BUY
+        if p.require_edge_side:
+            own_side = Side.BUY if buy else Side.SELL
+            try:
+                lean = behind(edge_lean(ctx.frames, at, ctx.market.entry_timeframe), own_side)
+            except ValueError:
+                lean = None
+            edge_ok = lean is not None and lean >= 0
+            conds_edge = Condition(
+                "edge_side",
+                edge_ok,
+                1.0,
+                "unreadable H4 lean; refusing"
+                if lean is None
+                else f"H4 lean behind this side {lean:+.3f} ATR",
+            )
+        else:
+            edge_ok = True
+            conds_edge = None
         conds = [
             Condition(
                 "rule",
@@ -654,7 +695,9 @@ class Plan1Straddle(OwnS2):
             Condition("stop_distance", True, 1.0, f"{entry.stop_distance:.2f} from the fill; no target"),
             Condition("spread", True, 1.0, spread_detail(ctx.market.bid, ctx.market.ask, ctx)),
         ]
-        return conds, floor_ok and conds[2].passed
+        if conds_edge is not None:
+            conds.append(conds_edge)
+        return conds, floor_ok and conds[2].passed and edge_ok
 
     def manage_position(self, ctx: StrategyContext, pos: OpenPosition) -> PositionAdvice | None:
         """Out at the first bar close at / after 08:30 New York of the entry's day + ``hold_seconds``."""

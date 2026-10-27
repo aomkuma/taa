@@ -187,6 +187,7 @@ def plan_markdown(plan: DayPlan, as_of: pd.Timestamp, kind: Kind, facts: list[st
         "- intraday levels (M15 / M5): " + "; ".join(lv(x) for x in plan.intraday_levels),
         f"- the trend today: {plan.trend_today}",
         f"- the side with the edge: {plan.edge_side} - {plan.edge_why}",
+        "- scenarios:",
     ]
     for s in plan.scenarios:
         lines.append(

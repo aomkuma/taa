@@ -42,11 +42,20 @@ from app.strategy.plan1_b2 import (
 from app.strategy.signal_models import MarketContext, OpenPosition, ReasonCode, StrategyContext
 from tests.risk_data import XAUUSD_SPEC
 from tests.unit.test_plan1 import h1_days, wide_h1
+from tests.unit.test_strategy_edge_side import NEEDED as EDGE_BARS
+from tests.unit.test_strategy_edge_side import h1_frame as edge_h1_frame
 from tests.unit.test_strategy_models import state
 
 
 def utc(text: str) -> pd.Timestamp:
     return pd.Timestamp(text, tz="UTC")
+
+
+def edge_frames(values: list[float]) -> dict[Timeframe, pd.DataFrame]:
+    frames, _ = edge_h1_frame(values)
+    h1 = frames[Timeframe.H1].copy()
+    h1.insert(0, "open_time", h1.index - pd.Timedelta(hours=1))
+    return {Timeframe.H1: h1}
 
 
 # --- ATR, ZigZag, structure ---------------------------------------------------------------------------------
@@ -493,6 +502,24 @@ def test_the_entry_its_target_and_journal(monkeypatch: pytest.MonkeyPatch) -> No
     # a next level only 5 away (< 1 risk): no target, the far cap 10 R: 4000.3 + 10 x 10.3
     monkeypatch.setattr(Plan1B2, "candidates", lambda self, f, y=None: [cand(nl=4005.0)])
     assert s.evaluate(ctx_at(m1_frame("2026-09-30 01:09"))).take_profit == pytest.approx(4103.3)
+
+
+@pytest.mark.parametrize(("strategy", "entry_tf"), [(Plan1B2, Timeframe.M1), (Plan1B2M5, Timeframe.M5)])
+def test_optional_edge_gate_uses_the_context_entry_frame_and_fails_closed(
+    monkeypatch: pytest.MonkeyPatch, strategy, entry_tf: Timeframe
+) -> None:
+    monkeypatch.setattr(Plan1B2, "candidates", lambda self, f, y=None: [cand()])
+    assert strategy.minutes == (1 if entry_tf is Timeframe.M1 else 5)
+    strategy_instance = strategy(Plan1B2Params(require_edge_side=True, d1_atr20_min_usd=None))
+    base = ctx_at(m1_frame("2026-09-30 01:09"))
+    market = base.market
+    down = edge_frames([100.0 - i for i in range(EDGE_BARS)])
+    ctx = StrategyContext(market, {**base.frames, **down}, base.now_utc, base.spec)
+    sig = strategy_instance.evaluate(ctx)
+    assert sig.action is Action.HOLD
+    assert not next(c for c in sig.conditions if c.name == "edge_side").passed
+    assert Plan1B2Params().require_edge_side is False
+    assert strategy_instance.warmup_bars() >= 64 * 4 * 60
 
 
 def test_holds_outside_the_window_off_its_bar_and_on_a_flip(monkeypatch: pytest.MonkeyPatch) -> None:

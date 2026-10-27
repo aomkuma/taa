@@ -29,6 +29,8 @@ from app.strategy.plan1 import (
 )
 from app.strategy.signal_models import MarketContext, OpenPosition, ReasonCode, StrategyContext
 from tests.risk_data import XAUUSD_SPEC
+from tests.unit.test_strategy_edge_side import NEEDED as EDGE_BARS
+from tests.unit.test_strategy_edge_side import h1_frame as edge_h1_frame
 from tests.unit.test_strategy_models import state
 
 T0 = pd.Timestamp("2026-09-30 06:00", tz="UTC")  # Wednesday, 13:00 Thai: the London ORB's open
@@ -78,6 +80,13 @@ def wide_h1(at: datetime | pd.Timestamp) -> pd.DataFrame:
 
 def arrays(df: pd.DataFrame) -> tuple[pd.DatetimeIndex, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     return plan1._m1_arrays(df)
+
+
+def edge_frames(values: list[float]) -> dict[Timeframe, pd.DataFrame]:
+    frames, _ = edge_h1_frame(values)
+    h1 = frames[Timeframe.H1].copy()
+    h1.insert(0, "open_time", h1.index - pd.Timedelta(hours=1))
+    return {Timeframe.H1: h1}
 
 
 # --- the H1 ATR ---------------------------------------------------------------------------------------------
@@ -416,6 +425,41 @@ class TestRegimeSwitch:
 
 
 class TestPlan1Orb:
+    def test_the_optional_edge_gate_refuses_an_opposing_or_unreadable_h4(self) -> None:
+        base = orb_ctx(upto(orb_bars(**BREAK), "2026-09-30 06:17"))
+        down_frames = edge_frames([100.0 - i for i in range(EDGE_BARS)])
+        ctx = StrategyContext(base.market, {**base.frames, **down_frames}, base.now_utc, base.spec)
+        p = Plan1OrbParams(
+            require_edge_side=True,
+            d1_atr20_min_usd=None,
+            pool_break_when_h4_contracting=False,
+        )
+        held = Plan1Orb(p).evaluate(ctx)
+        edge = next(c for c in held.conditions if c.name == "edge_side")
+        assert held.action is Action.HOLD and not edge.passed and "-" in edge.detail
+
+        missing_frames = {tf: bars for tf, bars in base.frames.items() if tf is not Timeframe.H1}
+        missing = StrategyContext(base.market, missing_frames, base.now_utc, base.spec)
+        unreadable = Plan1Orb(p).evaluate(missing)
+        assert unreadable.action is Action.HOLD
+        assert "unreadable" in next(c.detail for c in unreadable.conditions if c.name == "edge_side")
+
+        flat_ctx = StrategyContext(
+            base.market,
+            {**base.frames, **edge_frames([100.0] * EDGE_BARS)},
+            base.now_utc,
+            base.spec,
+        )
+        flat = Plan1Orb(p).evaluate(flat_ctx)
+        assert flat.action is Action.BUY
+        assert next(c.passed for c in flat.conditions if c.name == "edge_side")
+
+    def test_edge_defaults_stay_off_and_warmup_grows_only_when_enabled(self) -> None:
+        off, on = Plan1Orb(), Plan1Orb(Plan1OrbParams(require_edge_side=True))
+        assert Plan1OrbParams().require_edge_side is False
+        assert off.warmup_bars() == 3000
+        assert on.warmup_bars() >= 64 * 4 * 60
+
     def test_the_entry_and_its_journal_record(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(plan1, "pools", lambda *a: {})
         sig = Plan1Orb().evaluate(orb_ctx(upto(orb_bars(**BREAK), "2026-09-30 06:17")))
@@ -581,6 +625,18 @@ def ny_ctx(close_at: datetime, bid: float, ask: float) -> StrategyContext:
 
 
 class TestPlan1Straddle:
+    def test_the_optional_edge_gate_refuses_a_buy_against_h4_and_reads_context_timeframe(self) -> None:
+        s = Plan1Straddle(Plan1StraddleParams(require_edge_side=True, d1_atr20_min_usd=None))
+        s.on_quote("XAUUSD", at(-1), 4000.0, 4000.4)
+        entry = s.on_quote("XAUUSD", at(1), 4002.1, 4002.5)
+        assert entry is not None
+        base = ny_ctx(NY, 4002.1, 4002.5)
+        down = edge_frames([100.0 - i for i in range(EDGE_BARS)])
+        ctx = StrategyContext(base.market, {**base.frames, **down}, base.now_utc, base.spec)
+        assert s.entry_signal(ctx, entry) is None
+        assert Plan1StraddleParams().require_edge_side is False
+        assert s.warmup_bars() >= 64 * 4 * 60
+
     def test_the_entry_with_its_journal_record(self) -> None:
         s = Plan1Straddle()
         s.attach_calendar((Release(NY, "CPI"), Release(NY + timedelta(days=1), "PPI")))

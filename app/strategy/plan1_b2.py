@@ -44,6 +44,7 @@ from pydantic import Field, field_validator
 
 from app.core.enums import Action, ExitReason, Side, Timeframe
 from app.strategy.base_strategy import BaseStrategy, PastEntry, StrategyParams
+from app.strategy.edge_side import behind, edge_lean
 from app.strategy.plan1 import (
     atr_detail,
     h1_atr_at,
@@ -632,6 +633,7 @@ class _Frame:
 
 
 class Plan1B2Params(StrategyParams):
+    require_edge_side: bool = False
     window: str = "07:00-09:00"  # entry (confirmation) times, [start, end)
     window_zone: str = "Asia/Bangkok"
     max_wait_bars: int = Field(
@@ -699,9 +701,10 @@ class Plan1B2(BaseStrategy):
         return (Timeframe.M1,)
 
     def warmup_bars(self) -> int:
-        return (
+        base = (
             10_000  # 125 complete H1 bars (the levels' 120) across a weekend; the ZigZag settles well within
         )
+        return max(base, 64 * 4 * 60) if self.params.require_edge_side else base
 
     def wants_bar(self, at: datetime) -> bool:
         p: Plan1B2Params = self.params
@@ -842,6 +845,23 @@ class Plan1B2(BaseStrategy):
         floor_ok = p.atr_floor is None or (math.isfinite(h1) and h1 >= p.atr_floor)
         change = h4_change_at(ctx, at)
         side_ok, side_text = self.second_trade(ctx.symbol, at, q.side)
+        edge_ok = True
+        edge_condition = None
+        if p.require_edge_side:
+            own_side = Side.BUY if q.side > 0 else Side.SELL
+            try:
+                lean = behind(edge_lean(ctx.frames, at, ctx.market.entry_timeframe), own_side)
+            except ValueError:
+                lean = None
+            edge_ok = lean is not None and lean >= 0
+            edge_condition = Condition(
+                "edge_side",
+                edge_ok,
+                1.0,
+                "unreadable H4 lean; refusing"
+                if lean is None
+                else f"H4 lean behind this side {lean:+.3f} ATR",
+            )
         pts = ", ".join(
             f"{lab} {px:.2f} @{pd.Timestamp(int(b.t_open[i]), tz='UTC'):%H:%M}"
             for i, px, lab in pat["points"]
@@ -898,7 +918,9 @@ class Plan1B2(BaseStrategy):
             ),
             Condition("spread", True, 1.0, spread_detail(ctx.market.bid, ctx.market.ask, ctx)),
         ]
-        return conds, floor_ok and side_ok and conds[2].passed
+        if edge_condition is not None:
+            conds.append(edge_condition)
+        return conds, floor_ok and side_ok and conds[2].passed and edge_ok
 
     def _m1_piv(self, x: dict[str, Any], at: pd.Timestamp) -> tuple[Pivots, int]:
         b1 = tf_bars(x["opens"], x["o"], x["h"], x["lo"], x["c"], 1, at)
