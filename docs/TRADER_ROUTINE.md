@@ -54,6 +54,30 @@ Tool today: `research/2026-10-23-entry/routine_read.py [AS_OF]` writes `live/<ti
   its forward record holds (at least 4 weeks), and deleted when it costs.
 - Weekly to the owner, then wait for "continue".
 
+### The day report of a replay or live day (owner, 2026-10-28)
+
+One day at a time, and each day reported in full before the next is read. The owner asked for exactly four
+things, so the report has four parts and no padding:
+
+1. **Every decision where the measurer disagrees with the AI.** The measurer reads each wake themselves -
+   the readings, the picture, the checklist - and states their own call before looking at what followed.
+   Only the disagreements are listed: a WAIT the measurer would also have waited through is left out
+   (owner 2026-10-26). Each disagreement names the time, what the AI decided, what the measurer would have
+   done, and which checklist item or knowledge-base entry divides them. `code sees / same?` in the
+   generated report is the code's weapon reading against the AI's: a machine against a machine, not this.
+2. **Every trade in detail:** in and out in Thai time, side, entry, stop, exit, why it left, R, and the USD
+   of both accounts with the lot size.
+3. **Profit and loss:** R a trade and R summed, net USD, and both accounts' balance at the day's end.
+4. **The day's close:** what the market did, what the system did, what a good hunter would have picked, and
+   the one lesson - which goes to the knowledge base as a shadow, never straight to a rule.
+
+`research/2026-10-24-replay/day.py <date>` produces parts 2-4 and the table of every wake. Part 1 is the
+measurer's own work and is written on top of it.
+
+**During a measurement run the code does not change** (`docs/CODING_STANDARDS.md` section 11): a run whose
+days sit on different code versions is not a record of one system, which is the fault that cost the AI
+trader's first record. Lessons from day 1 are applied after the last day, as the next run.
+
 ## Bias guards
 
 - The read is written and committed before the session; the review never edits it.

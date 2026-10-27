@@ -14,6 +14,9 @@ Read before larger work:
 - `docs/TICKETS.md`: tickets, checklists, progress table and execution order.
 - `docs/HANDOFF.md`: current state and open items.
 - `docs/CODING_STANDARDS.md`: detailed coding conventions. **Follow them.**
+- `docs/TRADING_FLOW.md`: the trading day end to end - data, the engine's cycle, the gate ladder, the journal
+  after each trade - and the six practical consequences, two of which are open faults.
+- `docs/TRADER_ROUTINE.md`: the trader's routine, and the four parts of a replay / live **day report**.
 
 ## Commands (Windows, run from the repo root; always use the venv)
 
