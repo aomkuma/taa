@@ -9,7 +9,9 @@ import pandas as pd
 from pydantic import Field
 
 from app.core.enums import Action, ExitReason, Side, Timeframe
+from app.indicators.volatility import atr
 from app.strategy.base_strategy import BaseStrategy, StrategyParams
+from app.strategy.edge_side import behind, edge_lean
 from app.strategy.signal_models import (
     Condition,
     OpenPosition,
@@ -36,6 +38,9 @@ class TrendBoxParams(StrategyParams):
     # The measured default differs per direction, so each subclass sets its own; a lever either way
     # (journal 2026-10-27: a down trade reached +1.40 R and still stopped out at -1.01 R).
     break_even: bool = False
+    require_big_tf: bool = False
+    require_edge_side: bool = False
+    min_stop_atr: float = Field(default=0.0, ge=0)
 
 
 class TrendBoxDownParams(TrendBoxParams):
@@ -111,16 +116,25 @@ class TrendBox(BaseStrategy):
         return Timeframe.M1, Timeframe.M5, Timeframe.H1
 
     def warmup_bars(self) -> int:
-        return 400
+        return 1200 if self.params.require_big_tf or self.params.require_edge_side else 400
 
     def evaluate(self, ctx: StrategyContext) -> Signal:
         at = pd.Timestamp(ctx.decision_time_utc)
-        h1 = ctx.frame(Timeframe.H1).iloc[-400:]
+        if self.params.require_edge_side:
+            if not in_window(at):
+                return self.hold(ctx, ReasonCode.OUTSIDE_SESSION)
+            own = Side.SELL if self.direction == "DOWN" else Side.BUY
+            lean = behind(edge_lean(ctx.frames, at, ctx.market.entry_timeframe), own)
+            if lean is None or lean < 0:  # unreadable is not permission: no edge side, no trade
+                return self.hold(ctx, "AGAINST_EDGE_SIDE")
+
+        h1_frame = ctx.frame(Timeframe.H1)
+        h1 = h1_frame.iloc[-400:]
         m5 = ctx.frame(Timeframe.M5)
         m1 = ctx.frame(Timeframe.M1)
         if len(h1) < 400 or len(m5) < 25 or not len(m1):
             return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
-        if not in_window(at):
+        if not self.params.require_edge_side and not in_window(at):
             return self.hold(ctx, ReasonCode.OUTSIDE_SESSION)
         swings, _forming = zigzag(h1.high.to_numpy(float), h1.low.to_numpy(float))
         highs = [s for s in swings if s.kind == 1]
@@ -137,6 +151,18 @@ class TrendBox(BaseStrategy):
         )
         if not stepping or len(swings) < 2:
             return self.hold(ctx, "TREND_STEPPING")
+        if self.params.require_big_tf:
+            # Imported at use time because range_break reuses the trend box helpers above.
+            from app.strategy.range_break import RangeBreak
+
+            h4 = RangeBreak._h4_from_h1(h1_frame)
+            h4 = h4[(h4.index + pd.Timedelta(hours=4)) <= at].iloc[-300:]
+            if len(h4) < 300:
+                return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+            h4_swings, _h4_forming = zigzag(h4.high.to_numpy(float), h4.low.to_numpy(float))
+            h4_direction = stepped(h4_swings)
+            if (down and h4_direction == "UP") or (not down and h4_direction == "DOWN"):
+                return self.hold(ctx, "H4_AGAINST")
         a, b = swings[-2:]
         if (a.kind, b.kind) != ((1, -1) if down else (-1, 1)):
             return self.hold(ctx, "LEG_ORDER")
@@ -166,6 +192,18 @@ class TrendBox(BaseStrategy):
         stop = (
             top + self.params.buffer * (top - floor) if down else floor - self.params.buffer * (top - floor)
         )
+        stop_floor = 0.0
+        stop_widened = False
+        if self.params.min_stop_atr > 0:
+            closed_h1 = h1_frame[h1_frame.index <= at]
+            atr_values = atr(closed_h1.high, closed_h1.low, closed_h1.close, 14)
+            atr_value = float(atr_values.iloc[-1]) if len(atr_values) else float("nan")
+            if pd.isna(atr_value):
+                return self.hold(ctx, ReasonCode.INSUFFICIENT_DATA)
+            stop_floor = self.params.min_stop_atr * atr_value
+            if abs(stop - price) < stop_floor:
+                stop = price + stop_floor if down else price - stop_floor
+                stop_widened = True
         target = b.price
         risk, reward = abs(stop - price), abs(target - price)
         if reward < self.params.min_take_profit or reward < self.params.min_r * risk:
@@ -179,19 +217,22 @@ class TrendBox(BaseStrategy):
         if running_push_exceeded(run, risk):
             return self.hold(ctx, "RUNNING_PUSH")
         action = Action.SELL if down else Action.BUY
+        conditions = [
+            Condition("stepping", True),
+            Condition("box", True, detail=f"{_n} bars"),
+            Condition("retrace", True, detail=f"{retr:.3f}"),
+            Condition("trigger", True),
+            Condition("run_gate", True, detail=f"{run:.2f} <= {1.2 * risk:.2f}"),
+        ]
+        if stop_widened:
+            conditions.append(Condition("stop_floor", True, detail=f"{stop_floor:.2f}"))
         return self.entry(
             ctx,
             action,
             entry_price=price,
             stop_loss=stop,
             take_profit=target,
-            conditions=(
-                Condition("stepping", True),
-                Condition("box", True, detail=f"{_n} bars"),
-                Condition("retrace", True, detail=f"{retr:.3f}"),
-                Condition("trigger", True),
-                Condition("run_gate", True, detail=f"{run:.2f} <= {1.2 * risk:.2f}"),
-            ),
+            conditions=conditions,
             score=80,
             explanation=f"{self.direction.lower()} confirmed-swing box break",
         )

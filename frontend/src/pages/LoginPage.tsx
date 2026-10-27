@@ -5,6 +5,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 
 import { ApiError, ApiSchemaError } from '@/api/client';
 import { useAuthState } from '@/auth/hooks';
+import { useTotpRequired } from '@/auth/options';
 import { AUTH_QUERY_KEY, type AuthState, login, safeReturnPath, signedIn } from '@/auth/session';
 
 const INPUT =
@@ -27,6 +28,8 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const { from, reason } = readLocationState(location.state);
+
+  const totpRequired = useTotpRequired();
 
   const mutation = useMutation({
     mutationFn: login,
@@ -100,27 +103,29 @@ export function LoginPage() {
             }}
           />
         </div>
-        <div>
-          <label htmlFor={ids.code}>{t('auth.code')}</label>
-          <input
-            id={ids.code}
-            className={INPUT}
-            name="code"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="[0-9]{6}"
-            required
-            maxLength={6}
-            aria-describedby={ids.codeHint}
-            value={code}
-            onChange={(e) => {
-              setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
-            }}
-          />
-          <p id={ids.codeHint} className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {t('auth.codeHint')}
-          </p>
-        </div>
+        {totpRequired ? (
+          <div>
+            <label htmlFor={ids.code}>{t('auth.code')}</label>
+            <input
+              id={ids.code}
+              className={INPUT}
+              name="code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
+              required
+              maxLength={6}
+              aria-describedby={ids.codeHint}
+              value={code}
+              onChange={(e) => {
+                setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
+              }}
+            />
+            <p id={ids.codeHint} className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              {t('auth.codeHint')}
+            </p>
+          </div>
+        ) : null}
         <button
           type="submit"
           disabled={mutation.isPending}

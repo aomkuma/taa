@@ -172,7 +172,8 @@ class RiskProfileDoc(BaseModel):
     total_open_risk_percent: float = Field(gt=0, le=HIGH_RISK_CEILING_TOTAL_OPEN_RISK_PCT)
     max_open_positions: int = Field(ge=1, le=20)
     max_daily_loss_percent: float = Field(gt=0, le=HIGH_RISK_CEILING_DAILY_LOSS_PCT)
-    min_risk_reward: float = Field(ge=1.0, le=10)
+    # owner 2026-10-27: the 1.0 floor removed here too, or a cloud profile could not carry 0.8
+    min_risk_reward: float = Field(gt=0, le=10)
     min_lot_fallback: bool = False
     entry_plan: EntryPlanDoc | None = None
     risk_mode: RiskMode | None = None  # None: STANDARD

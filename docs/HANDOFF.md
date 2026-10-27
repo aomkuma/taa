@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated: 2026-10-27 11:30 Thai. Read the **last section first** - it is the current state (the AI trader
+Last updated: 2026-10-27 21:30 Thai. Read the **last section first** - it is the current state (the AI trader
 replays, the three bots, the open breaker question). The sections before it are the record of earlier days and
 are kept for their detail, not as the present picture. This file holds **state only**:
 
@@ -367,3 +367,60 @@ research harness. Research checks the result independently before it counts as d
 - The breakers stop the three-bot system inside the measured year. Lower the risk per trade, change the
   system so it loses less in a row, or raise the breaker limits - the last one is the owner's call.
 - DEMO stays paused until the owner says otherwise. LIVE still needs Phase 14 and an explicit go-ahead.
+
+---
+
+## The current state, 2026-10-27 21:30 Thai (read this first)
+
+### The engine is LIVE on the DEMO account
+
+`TRADING_MODE=DEMO`, `ENABLE_DEMO_TRADING=true`, account 106732769 FBS-Demo, started 20:59. The owner's
+decision that evening: *"go to DEMO, on the real trade account, so we know whether it works."* Seven
+strategies load: the four PLAN-1 setups and the three new bots. `ENABLE_LIVE_TRADING` stays false.
+
+- **Risk**: AGGRESSIVE 7.5 % a trade, open risk 15 %, **max 2 positions**, daily loss 15 %, min RR 0.8.
+- **The loss breakers are deactivated** (the owner, 2026-10-27: *"every trade already has its stop loss;
+  those systems are for human traders"*). What is left is each trade's stop and the kill switch
+  (`python -m app.cli kill --reason "..."`).
+- **Stop the engine with care**: a forced kill leaves the MT5 Python pipe stuck for about a minute
+  ("IPC send failed"); wait and re-run `doctor` before starting again.
+
+### Four things had to be fixed before the PWA could drive it
+
+The owner had set Aggressive 7.5 % in the PWA long ago and the engine never saw it. Four layers:
+`sync.enabled` was false; `CLOUD_BASE_URL` was empty; `ENGINE_ID` did not match the registered engine;
+and the web had been started with the system Python, so it could not decrypt the rotated engine secret.
+All four are fixed. `sync.enabled` stays **false in `config.yaml`** (a fresh checkout and CI must not
+need `CLOUD_*`); this machine turns it on with **`SYNC_ENABLED=true` in `.env`** - a new env override.
+
+The trading profile is also **mirrored** in `advisory.preferences.trading_profile` so the engine has the
+right numbers even when the pull fails. Those two must be changed together until the pairing is trusted.
+
+### TOTP is off on this machine
+
+`WEB_REQUIRE_TOTP=false` (the owner: *"I am the only user"*). `WebSettings` refuses it when
+`WEB_ENV=production`. The sign-in page and the step-up dialog both read `GET /api/v1/auth/options` and
+hide the code field when the server says it is not needed; control actions still need the deliberate
+step-up confirmation, just without a code.
+
+### The three bots and the H4 gate
+
+`trend_box_down`, `trend_box_up`, `range_break` are enabled in the `three_bots` lane with
+`require_edge_side: true`. **The engine has not been restarted since the gate was switched on**, so the
+running process is still trading without it. Before restarting, finish the engine-verified backtest.
+
+The rule (`research/2026-10-26-three-bots/RULES_LOCKED.md`, set 2): the H4 lean must be on the trade's
+side. +0.102 -> +0.210 R a trade on 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+
+### What is open
+
+- The engine-verified backtest of the gate (the research number is not to be quoted until it agrees).
+- `on_bar` still asks a strategy from another lane to close, using the main lane's context
+  (`REVIEW_FINDINGS.md`); harmless for these three bots, recorded not fixed.
+- The outbox parks signed events as `AUDIT_CONFLICT: seq N` - the cloud holds a chain from a 5 Oct run.
+  Heartbeats and quotes reach the PWA; decisions and trades do not. Clearing the cloud's old chain is a
+  deletion, so it waits for the owner.
+- **P26, the morning plan, is still only a note.** The engine traded the evening of 27 Oct without one.
+  It must become a gate - no new entry for a day until that day's plan is recorded - not a reminder.
+- `edge_side.py` keeps a final `isfinite` guard that no input can reach; `plant_bugs_edge.py` records
+  that miss deliberately rather than faking a test for it.

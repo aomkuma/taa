@@ -132,11 +132,22 @@ def lock_duration(failures: int, threshold: int) -> timedelta | None:
 
 
 class AuthService:
-    def __init__(self, db: Database, clock: Clock, audit: AuditLog, keys: AuthKeys) -> None:
+    def __init__(
+        self,
+        db: Database,
+        clock: Clock,
+        audit: AuditLog,
+        keys: AuthKeys,
+        *,
+        require_totp: bool = True,
+    ) -> None:
         self.db = db
         self.clock = clock
         self.audit = audit
         self.keys = keys
+        # False only on a development service (app/config.py refuses it in production): the code is then
+        # not asked for at login or at a step-up, and whatever is sent is ignored.
+        self.require_totp = require_totp
 
     # ------------------------------------------------------------------------------------------ users
     def create_user(self, username: str, password: str, totp_secret: str, *, role: str = "OWNER") -> UserRow:
@@ -483,6 +494,8 @@ class AuthService:
 
     def _consume_code(self, user: UserRow, code: str, now: datetime) -> bool:
         """Verify *code* and claim its time step atomically, so the same code cannot be used twice."""
+        if not self.require_totp:
+            return True
         secret = self.keys.totp.decrypt(user.totp_secret_enc)
         step = web_totp.verify_totp(secret, code, at=now, after_step=user.totp_last_step)
         if step is None:

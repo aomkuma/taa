@@ -182,3 +182,39 @@ def test_the_newest_closed_h4_bar_does_reach_the_zigzag(monkeypatch: pytest.Monk
     seen = h4_highs_seen(monkeypatch, datetime(2026, 10, 27, 0, 5, tzinfo=UTC), [100.0] * 1196 + [500.0] * 4)
     assert len(seen) == 300
     assert seen[-1] == 500.0
+
+
+def test_edge_side_blocks_a_range_break_against_the_h4_lean(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (flat_swings(), None))
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: -1.0)  # H4 leans down
+    got = RangeBreak(RangeBreak.Params(require_edge_side=True)).evaluate(context())
+    assert got.action is Action.HOLD
+    assert "AGAINST_EDGE_SIDE" in got.reason_codes
+
+
+def test_edge_side_allows_a_range_break_that_matches_the_h4_lean(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (flat_swings(), None))
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: +1.0)  # H4 leans up
+    got = RangeBreak(RangeBreak.Params(require_edge_side=True)).evaluate(context())
+    assert got.action is Action.BUY
+
+
+def test_no_h4_lean_blocks_a_range_break(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (flat_swings(), None))
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: None)  # H4 unreadable
+    got = RangeBreak(RangeBreak.Params(require_edge_side=True)).evaluate(context())
+    assert got.action is Action.HOLD and "AGAINST_EDGE_SIDE" in got.reason_codes
+
+
+def test_the_gate_judges_a_sell_break_from_its_own_side(monkeypatch: pytest.MonkeyPatch):
+    """Found by planting bugs, 2026-10-27: every gate test above breaks UPWARD, so hard-coding the gate
+    to judge Side.BUY passed them all. A downward break has to be judged downward."""
+    down = [Swing(1, 95, 1), Swing(2, 65, -1), Swing(3, 90, 1), Swing(4, 78, -1)]
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (down, None))
+    bars = context(prev=78, price=77, high=78, low=76)  # an M5 close through the box floor: a SELL
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: -1.0)  # H4 leans down, with the trade
+    allowed = RangeBreak(RangeBreak.Params(require_edge_side=True)).evaluate(bars)
+    assert allowed.action is Action.SELL
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: +1.0)  # H4 leans up, against the trade
+    refused = RangeBreak(RangeBreak.Params(require_edge_side=True)).evaluate(bars)
+    assert refused.action is Action.HOLD and "AGAINST_EDGE_SIDE" in refused.reason_codes

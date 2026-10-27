@@ -18,7 +18,9 @@ from app.engine.broker_trades import BOOK_SECONDS
 from app.engine.orchestrator import Engine
 from app.monitoring.alerts import EventBus, EventType, MemorySink
 from app.risk.circuit_breaker import BreakerName
+from app.risk.day_plan import DayPlan, trading_date
 from app.risk.kill_switch import KillMode
+from app.risk.mode_gates import GateCondition
 from app.storage.database import Database
 from app.storage.models import BrokerTradeRow, OrderIntentRow
 from app.strategy.registry import StrategySet
@@ -38,8 +40,15 @@ def demo_settings(tmp_path: Path, **env: str) -> Settings:
         "MT5_TERMINAL_PATH": "x",
         "KILL_SWITCH_FILE": str(tmp_path / "KILL_SWITCH"),
         "KILL_SWITCH_FLATTEN_ALLOWED": "true",
+        # P26: the gate wants the trading day's plan. The harness gets its OWN folder with a plan
+        # written for the clock it runs on, so the suite never depends on a file for today's real
+        # date (the developer session asked for this, 2026-10-27).
+        "DAY_PLAN_DIR": str(tmp_path / "plans"),
     }
     base.update(env)
+    plan = DayPlan(tmp_path / "plans")  # a restart builds the settings twice; a day keeps its plan
+    if not plan.exists(START):
+        plan.write(START, "the harness's plan for its own trading day (P26)")
     s = load_settings(env_file=None, config_file="config.yaml", environ=base)
     cfg = s.config.model_copy(
         update={
@@ -191,6 +200,45 @@ def test_no_entries_while_the_kill_switch_halts(tmp_path: Path) -> None:
         d.clock.advance(30)
     assert d.engine.gateway.positions() == []
     assert d.engine.bundle.fake is not None and d.engine.bundle.fake.calls["order_send"] == 0
+    d.engine.shutdown()
+
+
+def test_no_entries_while_the_day_has_no_plan(tmp_path: Path) -> None:
+    """P26 end to end: the owner's rule is that a trading day starts with its plan, and from 2026-10-27
+    it is a gate rather than a note. The engine opened a DEMO session without one that evening, which is
+    why this exists. The other DEMO cases all hand the harness a plan, so without this one nothing would
+    prove the gate ever refuses (the developer session called it the key hole, 2026-10-27).
+    """
+    d = demo(tmp_path)
+    start_buyer(d)
+    (tmp_path / "plans" / f"{trading_date(START)}.md").unlink()  # the day loses its plan
+    for _ in range(40):
+        d.engine.cycle()
+        d.clock.advance(30)
+    assert d.engine.gateway.positions() == []
+    assert d.engine.bundle.fake is not None and d.engine.bundle.fake.calls["order_send"] == 0
+    gate = d.engine.gate()
+    assert gate is not None and not gate.passed
+    assert GateCondition.DAY_PLAN in gate.failed_conditions
+    d.engine.shutdown()
+
+
+def test_the_day_plan_gate_lets_the_same_setup_through_once_the_plan_is_back(tmp_path: Path) -> None:
+    """The other half: the refusal must be the missing plan and nothing else, or the test above would
+    pass for the wrong reason."""
+    d = demo(tmp_path)
+    start_buyer(d)
+    plan = tmp_path / "plans" / f"{trading_date(START)}.md"
+    plan.unlink()
+    for _ in range(6):
+        d.engine.cycle()
+        d.clock.advance(30)
+    assert d.engine.bundle.fake is not None and d.engine.bundle.fake.calls["order_send"] == 0
+    plan.write_bytes(b"the plan, written late")
+    for _ in range(120):  # long enough for fresh entry bars after the refusal
+        d.engine.cycle()
+        d.clock.advance(30)
+    assert d.engine.bundle.fake.calls["order_send"] >= 1
     d.engine.shutdown()
 
 

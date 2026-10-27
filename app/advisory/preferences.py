@@ -317,7 +317,9 @@ class ProfileOverrides(StrictModel):
     portfolio_heat_percent: float | None = Field(default=None, gt=0, le=CEILING_TOTAL_OPEN_RISK_PCT)
     max_positions: int | None = Field(default=None, ge=1, le=20)
     max_daily_loss_percent: float | None = Field(default=None, gt=0, le=CEILING_DAILY_LOSS_PCT)
-    min_rr: float | None = Field(default=None, ge=1.0, le=10)
+    # owner 2026-10-27 ("take the rule out"): no blanket 1.0 floor - a setup's own minimum R decides,
+    # and range_break's is 0.8. The cage in config.yaml -> risk.min_risk_reward still applies.
+    min_rr: float | None = Field(default=None, gt=0, le=10)
     min_win_probability: float | None = Field(default=None, ge=0, le=100)
     min_supporting_families: int | None = Field(default=None, ge=1, le=len(Family))
     conflict_policy: ConflictPolicy | None = None

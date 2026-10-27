@@ -316,6 +316,14 @@
   since: 2026-10-25
 
 # ---------------------------------------------------------------- the weapons
+- id: R10
+  kind: rule
+  stage: entry
+  items: [A2]
+  says: "One rule frozen on 2026-10-27 before any later day was replayed (research/2026-10-26-three-bots/RULES_LOCKED.md, rule set 2): take the trade only when H4 momentum behind it is at least 0 (F23). On the shipped bots over 2023-09 .. 2026-10-24 it moves them from +0.102 to +0.210 R a trade, +0.214 inside the fitted window and +0.207 outside it. It is the owner's own rule of that day - only the side with the edge on a timeframe LARGER than the entry frame - with the frame the measurement chose and a threshold of zero rather than a fitted number. Rule set 1 (an H1 threshold and a range-sell ban) was withdrawn the same evening: it was measured on the wrong parameters and with a one-hour lookahead."
+  evidence: "239 shipped trades, 2023-09 .. 2026-10-24; 199 survive the rule"
+  source: "research/2026-10-26-three-bots/RULES_LOCKED.md rule set 2 (2026-10-27)"
+
 - id: W01
   when: {session: ny}
   kind: weapon
@@ -669,6 +677,30 @@
   evidence: "the evidence periods: 2024 (gold +27 %, 205 bull days) and 2025 (+65 %, 269 bull days), both before the exam; sweeps Oct 2025 - Apr 2026; R after the spread, stop 1.0 / 1.8 M5 ATR, target 0.7 / 1.0 R, two hours at most, every level on its own (a measure of the method, not an account)"
   source: "research/2026-10-24-replay/{sweep_sides, reclaim_2025, reclaim_regime, follow_regime}.py and their out_*.txt (owner 2026-10-25: 'try the same method on 2025 - it was a bull market')"
 
+- id: F22
+  kind: finding
+  stage: entry
+  items: [A2]
+  says: "Where the three bots' entries sit, measured on the real price path with the exits stripped to stop-and-target so the entry is read alone. A WINNER BARELY DIPS and a LOSER WALKS INTO THE STOP: the median adverse excursion is 0.29-0.41 R for winners against 1.04-1.09 R for losers, in every bot and in both halves of the history. The losers still reach 0.26-0.81 R our way, so they are poorly chosen rather than merely stopped out early - but not 'they never move', which overstated it (the developer session's correction). WIDENING THE STOP DOES NOT FIX IT: the same entry and target with a stop k times wider, settled on the real M1 path with the same deadline, gives the down bot -0.031 at x1.0, -0.092 at x1.5 and -0.080 at x2.0. The lever is which trades are taken."
+  evidence: "239 trades of the SHIPPED configuration (bots.SHIPPED), 2023-09 .. 2026-10-24, XAUUSD; 95 inside the window the parameters were fitted on, 144 outside it"
+  source: "research/2026-10-26-three-bots/geometry.py (2026-10-27; first measured on bots.P() defaults, which is a setup we do not ship - corrected the same evening)"
+
+- id: F23
+  kind: finding
+  stage: trend
+  items: [A1, A2]
+  says: "A frame's momentum is a QUANTITY, not a side label, and the MIDDLE frame carries it (owner 2026-10-27: 'D1 should not be that rigid; the more momentum there is, the further that side runs - or not?'). Momentum = the close's distance from its own 50-bar mean in that frame's own 14-bar ATR (the app's ATR), read from the last bar of that frame CLOSED before the decision, signed so positive leans the trade's way. H4 MOMENTUM BEHIND THE TRADE IS THE ONE THAT HOLDS: at or above 0 it gives +0.210 R a trade and the two halves agree to 0.007 R (+0.214 fitted, +0.207 never seen); below -1 it gives -0.660. The ordering by correlation with R is H4 +0.156, H1 +0.048, D1 +0.030 - so NOT D1 strongest as first proposed, and not H1 either: an earlier reading that made H1 strongest came from a one-hour lookahead. The further claim, that more D1 momentum makes a side run further, is not supported (D1 against MFE -0.063)."
+  evidence: "239 trades of the shipped configuration, 2023-09 .. 2026-10-24, XAUUSD; the H4 rule keeps 199 of them"
+  source: "research/2026-10-26-three-bots/momentum.py (owner's hypothesis 2026-10-27; the first run had the wrong parameters and a one-hour lookahead, both found by the developer session and fixed the same evening)"
+
+- id: F24
+  kind: finding
+  stage: weapon
+  items: [A2]
+  says: "On the SHIPPED range bot (an M5 close out of the H4 box) the sell side is weak but not broken: -0.154 R in bear (15 trades) and +0.071 in bull (14), against buys at +0.578 (5), +0.639 (28) and +0.781 in mixed (7). An earlier entry here claimed -0.81 R in both regimes and that was a different setup entirely - the research default range_mode is 'fade' (sell a sweep that closed back inside the box), not the 'break' the app ships. A 'range buys only' rule is therefore NOT taken: it adds 0.013 R overall and is better inside the fitted window (+0.307) than outside it (+0.173), the wrong way round for a durable rule."
+  evidence: "62 range trades of 239, 2023-09 .. 2026-10-24, XAUUSD; the sell cells are 15 and 14 trades and carry little weight"
+  source: "research/2026-10-26-three-bots/edge_by_condition.py (2026-10-27; corrected the same evening after the developer session found the parameter mismatch)"
+
 # ---------------------------------------------------------------- failed methods (never retried as they were)
 - id: X01
   kind: failed
@@ -848,6 +880,20 @@
   evidence: "2024, 2025 and Jul-Oct 2026"
   source: "research/2026-10-24-replay/reclaim_2025.py, reclaim_regime.py, follow_regime.py (25 Oct)"
 
+- id: X44
+  kind: failed
+  stage: forest
+  says: "The D1 regime as a BINARY SIDE GATE - 'bull means buy only, bear means sell only' - carries far less than the frame's momentum does. On the shipped bots, trades whose side agreed with the regime gave +0.122 R and those against it +0.041, a difference of about 0.08 R over 204 trades; the H4 momentum rule (F23) gives +0.21 R and holds in both halves. The regime also says something the side pairing does not: bear +0.198 against bull +0.055 regardless of side. So D1 is kept as a QUANTITY and as the market condition, not as a gate. (An earlier version of this entry put the gate's worth at 0.06 R and called it worthless; that was measured on the wrong parameter set.)"
+  evidence: "204 of 239 shipped trades (mixed regimes excluded), 2023-09 .. 2026-10-24, XAUUSD"
+  source: "research/2026-10-26-three-bots/edge_by_condition.py (2026-10-27, corrected the same evening)"
+
+- id: X45
+  kind: failed
+  stage: exit
+  says: "Break-even at +0.5 R on the down trend bot, tested through the engine on week 1 of the journal (19-27 Oct 2026, real ticks): +5.73 R becomes +2.48 R. It saves one loser (-1.01 to -0.01) and destroys two winners (+2.53 and +1.67 to about zero), because those winners went 0.81 R and 0.38 R against the entry before they ran. MAE and MFE alone cannot settle this - they do not say which came first - so the question has to go through the path, not through arithmetic. The parameter stays (TrendBoxParams.break_even) so it can be re-tested on another window; the default is unchanged."
+  evidence: "6 trades, 19-27 Oct 2026, XAUUSD, one account, real stored ticks - a small sample, consistent with F22's wider measurement that the stop is not what is wrong"
+  source: "research/2026-10-26-three-bots/JOURNAL.md week 1 (2026-10-27)"
+
 # ---------------------------------------------------------------- lessons (single cases)
 - id: L01
   kind: lesson
@@ -1012,6 +1058,22 @@
   says: "Which order fits which market (owner 2026-10-26: 'sideways gives the fades many trades; a trend needs stop orders'). The 27 plan scenarios of 06-08 Jul, D1 down all three days: the sell stops (with D1) filled 5 of 5 and all reached their take-profit (+2.34 R at the touch, +1.53 R at an M5 close through; the retest filled only 3); the sell limits with D1 3 TP / 3 SL (+1.42 R); the counter-D1 orders 2 TP / 5 SL (-3.8 R). The confirmation signal changed no limit order's outcome, only its price. So the plan places no order against the D1 regime, and a stop order fills at an M5 close through its level."
   evidence: "research/2026-10-24-replay/out_regime_orders.txt (regime_orders.py on plans.jsonl and the M1 bars)"
   source: "owner 2026-10-26; L21; the journal days 06-08 Jul (3 days - to be judged on the days after)"
+
+- id: L24
+  kind: lesson
+  stage: forest
+  items: [A1]
+  says: "The three bots were verified in every detail and never in their shape. Each gate got hand-worked tests, 14 planted bugs and 93 % parity with the engine - and the decision itself used 6 of the 132 measures the system can compute, weighted none of them, and left out the one reading that would have refused week 1's three losers (the D1 regime, already recorded as F20 and the brake R08/S11). Two standing instructions of the owner's were in memory and not applied: 'no entry on one or a few parameters - combine every component, weighted' (2026-10-23) and 'record the edge by market condition' (2026-10-25). The cause was copying the research harness's pass/fail shape into the production spec without asking whether the shape was right, and avoiding weights because weights must be fitted - while every gate threshold (0.382, 0.786, 1.2, 0.2) is a fitted number too, only hidden. So: before writing a spec, list the owner's standing instructions that touch it and say what each one forces the design to be, in the spec itself (P27, and the memory of the same name)."
+  evidence: "the three bots as delivered 2026-10-26/27 against week 1 of the journal"
+  source: "owner 2026-10-27: 'we should have known long ago that we must pick the trades well' and 'why did you not do it in the first place?'"
+
+- id: L25
+  kind: lesson
+  stage: forest
+  items: [A1]
+  says: "A measurement can fail silently in three ways that all look like a clean answer, and all three happened on 2026-10-27. (1) THE WRONG PARAMETERS: a research script ran the dataclass defaults instead of the shipped set; for the range bot the default is a different SETUP (fade against the shipped break), so an afternoon of conclusions described something we do not run - the shipped bots were +0.102 R a trade, not -0.106. (2) THE WRONG CLOCK: history stamped at the bar's OPEN was shifted as if stamped at its CLOSE, giving an hour of lookahead and inverting which frame carried the edge. (3) A STATE LEFT AHEAD IN TIME: a replay of 2025-02-25 ran against a watcher whose last call was 2026-07-09, so every wake condition (minutes >= cooldown) went negative and the AI was never asked - the journal read '0 trades' as if it had looked and declined. The signal in all three was a COUNT that could not be right: a win rate that did not move with the stop width, 'AI woken 0 times' beside three written plans, 83 trades over a window that held three years. Stop at the count; do not write the sentence that fits what you expected."
+  evidence: "2026-10-27: geometry.py / momentum.py / edge_by_condition.py, and research/2026-10-24-replay/day.py on 2025-02-25"
+  source: "owner 2026-10-27 ('even with no trade there must be a call'); guards now in bots.run, test_bots.py and day.check_watcher_is_not_ahead"
 
 - id: O28
   kind: open

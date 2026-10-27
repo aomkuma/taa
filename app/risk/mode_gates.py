@@ -42,6 +42,10 @@ class GateCondition(StrEnum):
     TERMINAL_PERMISSIONS = "TERMINAL_PERMISSIONS"
     RISK_CONFIG = "RISK_CONFIG"
     KILL_SWITCH = "KILL_SWITCH"
+    # P26, the owner's rule since 2026-10-25: the trading day starts with its plan. It was a note in
+    # three places and the engine still opened a DEMO session without one on 2026-10-27, so it is a
+    # gate condition now. Open positions are still managed; only new broker orders are refused.
+    DAY_PLAN = "DAY_PLAN"
     BREAKERS = "BREAKERS"
 
 
@@ -80,6 +84,8 @@ def evaluate_gate(
     risk_config_ok: bool,
     kill_switch_active: bool,
     latched_breakers: Sequence[str] = (),
+    day_plan_ok: bool,  # P26: deliberately NO default - a forgotten argument must be a TypeError,
+    day_plan_detail: str = "",  # not silent permission (developer session, 2026-10-27)
 ) -> GateResult:
     if not mode.may_send_broker_orders:
         return GateResult(mode, ((GateCondition.MODE, f"{mode.value} never sends broker orders"),))
@@ -103,6 +109,7 @@ def evaluate_gate(
         )
     else:
         need(GateCondition.ENABLE_FLAG, env.ENABLE_DEMO_TRADING, "ENABLE_DEMO_TRADING is not true")
+    need(GateCondition.DAY_PLAN, day_plan_ok, day_plan_detail or "the day's plan is not written (P26)")
     if account is None or terminal is None:
         failures.append((GateCondition.ACCOUNT_VERIFIED, "no account or terminal snapshot"))
     else:

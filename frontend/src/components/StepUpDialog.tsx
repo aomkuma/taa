@@ -2,6 +2,7 @@ import { type ReactNode, type SubmitEvent, useEffect, useId, useRef, useState } 
 import { useTranslation } from 'react-i18next';
 
 import { ApiError } from '@/api/client';
+import { useTotpRequired } from '@/auth/options';
 import { useStepUp } from '@/auth/stepUp';
 import { translateCode } from '@/i18n/codes';
 
@@ -44,11 +45,16 @@ export function StepUpDialog({
   const first = useRef<HTMLInputElement>(null);
   const cancel = useRef<HTMLButtonElement>(null);
   const { active, verify, expire } = useStepUp();
+  // With the code switched off server-side a step-up is still a deliberate confirmation, but the
+  // dialog must not demand six digits that no longer exist - that locked the owner out of the kill
+  // switch when the code was turned off (self-review, 2026-10-27).
+  const totpRequired = useTotpRequired();
   const [askCode, setAskCode] = useState(!active);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const needCode = askCode || !active;
+  const needCode = totpRequired && (askCode || !active);
+  const needConfirm = askCode || !active; // the step-up call itself, with or without a code
 
   useEffect(() => {
     (first.current ?? cancel.current)?.focus();
@@ -82,7 +88,7 @@ export function StepUpDialog({
     setBusy(true);
     setError(null);
     try {
-      if (needCode) {
+      if (needConfirm) {
         try {
           await verify(code);
         } catch (err) {

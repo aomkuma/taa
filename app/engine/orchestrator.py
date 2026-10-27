@@ -98,6 +98,7 @@ from app.news.calendar import ManualBlackouts, NewsFilter
 from app.news.releases import load_releases
 from app.risk.breaker_monitor import BreakerMonitor
 from app.risk.circuit_breaker import BreakerBoard, default_specs
+from app.risk.day_plan import DayPlan
 from app.risk.exposure_manager import MAGIC_RANGE, Exposure, ExposureManager, PositionRisk
 from app.risk.kill_switch import KillMode, KillSwitch
 from app.risk.limits import ProfileLimits
@@ -286,6 +287,8 @@ class Engine:
             self.clock,
             flatten_allowed=env.KILL_SWITCH_FLATTEN_ALLOWED,
         )
+        # P26: the trading day's plan, as a gate rather than a reminder (see app/risk/day_plan.py)
+        self.day_plan = DayPlan(self.settings.path(env.DAY_PLAN_DIR))
         self.losses = LossTracker(self.db, self.risk_key, env.BROKER_TIMEZONE, self.clock)
         self.watermarks = CandleWatermarks(self.db, self.clock)
         self.candles = CandleService(self.gateway, cfg.timeframes, self.clock)
@@ -630,6 +633,7 @@ class Engine:
         except TaaError:
             account, terminal = None, None
         latched = [s.name.value for s in self.board.statuses() if s.latched]
+        now = self.clock.now_utc()
         return evaluate_gate(
             self.settings.mode,
             self.settings.env,
@@ -638,6 +642,8 @@ class Engine:
             risk_config_ok=self._risk_config_ok(),
             kill_switch_active=self.kill_switch.is_active(),
             latched_breakers=latched,
+            day_plan_ok=self.day_plan.exists(now),
+            day_plan_detail=f"no plan for the Thai trading day at {self.day_plan.path(now)} (P26)",
         )
 
     def _risk_config_ok(self) -> bool:

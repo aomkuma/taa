@@ -238,7 +238,21 @@ def tail(text: str, chars: int) -> str:
 
 def suspended(rows: dict[str, str], now: pd.Timestamp) -> dict[str, str]:
     """The owner's suspensions ``{rule id: until (ISO UTC)}`` still running at ``now``."""
-    return {k: v for k, v in rows.items() if pd.Timestamp(v) > now}
+    live: dict[str, str] = {}
+    for rule, until in rows.items():
+        try:
+            when = pd.Timestamp(until)
+        except (ValueError, TypeError) as exc:
+            # A suspension that silently does not suspend is worse than none: on 2026-10-27 a prose
+            # note was written here, every rule stayed in force, and the experiment it was meant to
+            # run looked as if it had worked and changed nothing.
+            raise ValueError(
+                f"the suspension of {rule} is {until!r}; it must be the ISO UTC time to suspend "
+                "UNTIL, for example '2026-12-31T00:00:00+00:00'"
+            ) from exc
+        if when > now:
+            live[rule] = until
+    return live
 
 
 def rule_vetoes(

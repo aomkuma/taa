@@ -1289,6 +1289,8 @@ class EnvSettings(BaseSettings):
 
     KILL_SWITCH_FILE: str = "data/KILL_SWITCH"
     KILL_SWITCH_FLATTEN_ALLOWED: bool = False
+    # P26: the folder holding one plan a trading day; its presence is the gate (app/risk/day_plan.py)
+    DAY_PLAN_DIR: str = "data/plans"
 
     ENGINE_DB_URL: str = "sqlite:///data/taa_engine.db"
     CONFIG_FILE: str = "config.yaml"
@@ -1314,6 +1316,10 @@ class EnvSettings(BaseSettings):
     MAX_ACCOUNT_DRAWDOWN_PERCENT: float | None = None
     MAX_OPEN_POSITIONS: int | None = None
     MAX_SPREAD_POINTS: float | None = None
+    # The cloud pairing is a property of THIS machine, not of the repository: a fresh checkout and CI
+    # keep config.yaml's sync.enabled (false), and the paired engine turns it on in its own .env
+    # (2026-10-27 - turning it on in config.yaml made 31 test fixtures demand CLOUD_* keys).
+    SYNC_ENABLED: bool | None = None
 
     @field_validator("CLOUD_BASE_URL")
     @classmethod
@@ -1333,6 +1339,7 @@ ENV_OVERRIDES: dict[str, tuple[str, str]] = {
     "MAX_ACCOUNT_DRAWDOWN_PERCENT": ("risk", "max_account_drawdown_percent"),
     "MAX_OPEN_POSITIONS": ("risk", "max_open_positions"),
     "MAX_SPREAD_POINTS": ("risk", "max_spread_points"),
+    "SYNC_ENABLED": ("sync", "enabled"),
 }
 
 WEB_SECRET_MIN_LENGTH = 32
@@ -1363,6 +1370,10 @@ class WebSettings(BaseSettings):
     )
 
     WEB_ENV: Literal["development", "production"] = "production"
+    # The owner, 2026-10-27: "can the authenticator code go? I am the only user." Their machine, their
+    # call - but only off a development service: a production one is reachable, and a password alone is
+    # then the only thing between the internet and a trading account (the validator below refuses it).
+    WEB_REQUIRE_TOTP: bool = True
     DATABASE_URL: str = "sqlite:///data/taa_cloud.db"
     WEB_PUBLIC_ORIGIN: str | None = None
     WEB_STATIC_DIR: str = "frontend/dist"
@@ -1404,6 +1415,8 @@ class WebSettings(BaseSettings):
             self.WEB_PUBLIC_ORIGIN is None or not self.WEB_PUBLIC_ORIGIN.startswith("https://")
         ):
             raise ValueError("WEB_PUBLIC_ORIGIN (https://...) is required when WEB_ENV=production")
+        if self.is_production and not self.WEB_REQUIRE_TOTP:
+            raise ValueError("WEB_REQUIRE_TOTP=false is only allowed when WEB_ENV=development")
         return self
 
     @model_validator(mode="after")

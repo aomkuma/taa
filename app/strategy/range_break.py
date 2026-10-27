@@ -10,6 +10,7 @@ from pydantic import Field
 
 from app.core.enums import Action, Side, Timeframe
 from app.strategy.base_strategy import BaseStrategy, StrategyParams
+from app.strategy.edge_side import behind, edge_lean
 from app.strategy.signal_models import (
     Condition,
     OpenPosition,
@@ -34,6 +35,7 @@ class RangeBreakParams(StrategyParams):
     # 5.00 USD floor rejected 1 of 496 complete signals, because every target here is a swing or half an
     # H4 box. The gate stays so a lane can set one; 0.0 is off.
     min_take_profit: float = Field(default=0.0, ge=0)
+    require_edge_side: bool = False
 
 
 class RangeBreak(BaseStrategy):
@@ -92,6 +94,10 @@ class RangeBreak(BaseStrategy):
             )
         else:
             return self.hold(ctx, "NO_CLOSE_BREAK")
+        if self.params.require_edge_side:
+            lean = behind(edge_lean(ctx.frames, at, ctx.market.entry_timeframe), side)
+            if lean is None or lean < 0:  # unreadable is not permission: no edge side, no trade
+                return self.hold(ctx, "AGAINST_EDGE_SIDE")
         risk, reward = abs(stop - price), abs(target - price)
         if risk <= 0 or reward < self.params.min_take_profit or reward < self.params.min_r * risk:
             return self.hold(ctx, ReasonCode.RR_TOO_LOW)

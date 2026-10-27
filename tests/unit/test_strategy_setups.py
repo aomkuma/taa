@@ -374,10 +374,12 @@ class TestCatalog:
         three_bots = lanes["three_bots"]
         assert three_bots.timeframes.enabled == [Timeframe.H1, Timeframe.M5, Timeframe.M1]
         assert three_bots.timeframes.context == [] and three_bots.timeframes.warmup_bars == 1200
+        # live on the DEMO account since 2026-10-27 (the owner: "go to DEMO, on the real trade account,
+        # so we know whether it works"); they stay off in PAPER only by not running the lane
         assert [(item.name, item.enabled) for item in three_bots.strategies.items] == [
-            ("trend_box_down", False),
-            ("trend_box_up", False),
-            ("range_break", False),
+            ("trend_box_down", True),
+            ("trend_box_up", True),
+            ("range_break", True),
         ]
 
     def test_each_setup_can_be_enabled_alone(self) -> None:

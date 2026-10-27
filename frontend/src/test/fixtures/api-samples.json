@@ -8957,7 +8957,13 @@
               "preset": "ALL"
             },
             "trading_profile": {
+              "aggressive_risk_percent": 7.5,
               "holding_style": "DAY",
+              "min_lot_fallback": true,
+              "overrides": {
+                "min_rr": 0.8
+              },
+              "risk_mode": "AGGRESSIVE",
               "style": 50
             },
             "watchlists": [
@@ -9625,17 +9631,17 @@
               "cooldown_bars": 0,
               "items": [
                 {
-                  "enabled": false,
+                  "enabled": true,
                   "name": "trend_box_down",
                   "params": {}
                 },
                 {
-                  "enabled": false,
+                  "enabled": true,
                   "name": "trend_box_up",
                   "params": {}
                 },
                 {
-                  "enabled": false,
+                  "enabled": true,
                   "name": "range_break",
                   "params": {}
                 }
@@ -9728,7 +9734,7 @@
           "min_lot_fallback": true,
           "min_lot_max_risk_percent": null,
           "min_margin_level_percent": 500.0,
-          "min_risk_reward": 1.0,
+          "min_risk_reward": 0.5,
           "price_drift_atr": 0.5,
           "probation_multiplier": 0.25,
           "probation_trades": 20,
@@ -9953,6 +9959,7 @@
         "MT5_TERMINAL_PATH": "C:/MT5/taa-bot/terminal64.exe",
         "MT5_TIMEOUT_MS": 60000,
         "PAPER_ALLOW_MASTER_PASSWORD": "***",
+        "SYNC_ENABLED": null,
         "TRADING_MODE": "PAPER"
       }
     },
@@ -14896,7 +14903,7 @@
         "warmup_bars": 50
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14910,10 +14917,14 @@
         "overrides": [],
         "params": {
           "box": 0.2,
+          "break_even": false,
           "buffer": 0.2,
           "expiry_bars": 1,
           "min_r": 1.2,
-          "min_take_profit": 0.0
+          "min_stop_atr": 0.0,
+          "min_take_profit": 0.0,
+          "require_big_tf": false,
+          "require_edge_side": false
         },
         "performance": {
           "avg_r": null,
@@ -14927,7 +14938,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
           "M1",
           "M5",
@@ -14938,7 +14949,7 @@
         "warmup_bars": 400
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14952,10 +14963,14 @@
         "overrides": [],
         "params": {
           "box": 0.33,
+          "break_even": true,
           "buffer": 0.2,
           "expiry_bars": 1,
           "min_r": 1.2,
-          "min_take_profit": 0.0
+          "min_stop_atr": 0.0,
+          "min_take_profit": 0.0,
+          "require_big_tf": false,
+          "require_edge_side": false
         },
         "performance": {
           "avg_r": null,
@@ -14969,7 +14984,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
           "M1",
           "M5",
@@ -14980,7 +14995,7 @@
         "warmup_bars": 400
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14997,6 +15012,7 @@
           "expiry_bars": 1,
           "min_r": 0.8,
           "min_take_profit": 0.0,
+          "require_edge_side": false,
           "tp_range": 0.5
         },
         "performance": {
@@ -15011,7 +15027,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
           "M1",
           "M5",
@@ -16224,7 +16240,7 @@
         "warmup_bars": 50
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16238,10 +16254,14 @@
         "overrides": [],
         "params": {
           "box": 0.2,
+          "break_even": false,
           "buffer": 0.2,
           "expiry_bars": 1,
           "min_r": 1.2,
-          "min_take_profit": 0.0
+          "min_stop_atr": 0.0,
+          "min_take_profit": 0.0,
+          "require_big_tf": false,
+          "require_edge_side": false
         },
         "performance": {
           "avg_r": null,
@@ -16255,7 +16275,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
           "M1",
           "M5",
@@ -16266,7 +16286,7 @@
         "warmup_bars": 400
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16280,10 +16300,14 @@
         "overrides": [],
         "params": {
           "box": 0.33,
+          "break_even": true,
           "buffer": 0.2,
           "expiry_bars": 1,
           "min_r": 1.2,
-          "min_take_profit": 0.0
+          "min_stop_atr": 0.0,
+          "min_take_profit": 0.0,
+          "require_big_tf": false,
+          "require_edge_side": false
         },
         "performance": {
           "avg_r": null,
@@ -16297,7 +16321,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
           "M1",
           "M5",
@@ -16308,7 +16332,7 @@
         "warmup_bars": 400
       },
       {
-        "configured_enabled": false,
+        "configured_enabled": true,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16325,6 +16349,7 @@
           "expiry_bars": 1,
           "min_r": 0.8,
           "min_take_profit": 0.0,
+          "require_edge_side": false,
           "tp_range": 0.5
         },
         "performance": {
@@ -16339,7 +16364,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "DISABLED_CONFIG",
+        "state": "ENABLED",
         "timeframes": [
           "M1",
           "M5",

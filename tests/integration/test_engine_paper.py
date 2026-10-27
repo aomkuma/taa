@@ -62,6 +62,10 @@ def settings(tmp_path: Path, **config: object) -> Settings:
         "MT5_SERVER": "FBS-Demo",
         "MT5_TERMINAL_PATH": "x",
         "KILL_SWITCH_FILE": str(tmp_path / "KILL_SWITCH"),
+        # P26: the gate wants the trading day's plan. The harness gets its OWN folder with a plan
+        # written for the clock it runs on, so the suite never depends on a file for today's real
+        # date (the developer session asked for this, 2026-10-27).
+        "DAY_PLAN_DIR": str(tmp_path / "plans"),
     }
     s = load_settings(env_file=None, config_file="config.yaml", environ=env)
     cfg = s.config.model_copy(

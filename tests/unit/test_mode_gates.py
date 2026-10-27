@@ -97,6 +97,9 @@ def run(mode: TradingMode, broken: set[GateCondition]):  # type: ignore[no-untyp
             term = dataclasses.replace(TERMINAL, **value)  # type: ignore[arg-type]
         else:
             kw[where] = value
+    # P26 has no default on purpose, so every gate built here states it; a truth-table case that
+    # means to test the plan passes day_plan_ok explicitly through **kw
+    kw.setdefault("day_plan_ok", True)
     return evaluate_gate(mode, env(mode, **env_kw), account=account(mode, **acct_kw), terminal=term, **kw)  # type: ignore[arg-type]
 
 
@@ -128,6 +131,7 @@ class TestGateTruthTable:
             terminal=TERMINAL,
             risk_config_ok=True,
             kill_switch_active=False,
+            day_plan_ok=True,
         )
         assert not result.passed
         assert result.reason is Reason.ORDERS_NOT_ALLOWED_IN_MODE
@@ -147,6 +151,7 @@ class TestGateTruthTable:
             terminal=TERMINAL,
             risk_config_ok=True,
             kill_switch_active=False,
+            day_plan_ok=True,
         )
         assert moved.failed_conditions == {G.CONFIRMATION}
 
@@ -162,6 +167,7 @@ class TestGateTruthTable:
             terminal=None,
             risk_config_ok=True,
             kill_switch_active=False,
+            day_plan_ok=True,
         )
         assert result.failed_conditions == {G.ACCOUNT_VERIFIED}
 
@@ -177,6 +183,7 @@ class TestGateTruthTable:
             terminal=TERMINAL,
             risk_config_ok=True,
             kill_switch_active=False,
+            day_plan_ok=True,
         )
         assert G.MODE in result.failed_conditions
 

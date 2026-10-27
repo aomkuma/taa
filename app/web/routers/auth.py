@@ -44,13 +44,13 @@ class LoginBody(BaseModel):
 
     username: str = Field(min_length=1, max_length=64)
     password: str = Field(min_length=1, max_length=MAX_LENGTH)
-    code: str = Field(min_length=6, max_length=8)
+    code: str = Field(default="", max_length=8)  # empty when WEB_REQUIRE_TOTP=false
 
 
 class CodeBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    code: str = Field(min_length=6, max_length=8)
+    code: str = Field(default="", max_length=8)  # empty when WEB_REQUIRE_TOTP=false
 
 
 class PasswordBody(BaseModel):
@@ -125,6 +125,13 @@ def login(body: LoginBody, request: Request, response: Response, ctx: Context) -
         samesite="strict",
     )
     return session_payload(ctx.auth, session)
+
+
+@router.get("/options")
+def get_options(ctx: Context) -> dict[str, bool]:
+    """What the sign-in page must ask for. Unauthenticated on purpose: it is read before a session
+    exists, and it reveals nothing the form itself does not already show."""
+    return {"totp_required": ctx.auth.require_totp}
 
 
 @router.get("/session")

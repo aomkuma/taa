@@ -114,7 +114,7 @@ def create_app(
         db=database,
         clock=clock,
         audit=audit,
-        auth=AuthService(database, clock, audit, keys),
+        auth=AuthService(database, clock, audit, keys, require_totp=settings.WEB_REQUIRE_TOTP),
         engine=engine_link(settings, database, clock, audit),
     )
     check_engine_env(settings, ctx.engine.registry)

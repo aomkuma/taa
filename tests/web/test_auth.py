@@ -9,6 +9,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 
+from app.config import WebSettings
 from app.core.clock import ManualClock
 from app.security import web_totp
 from app.storage.audit import verify_chain
@@ -24,6 +25,7 @@ from app.web.auth import (
     AuthService,
 )
 from tests.web.conftest import (
+    DEV_ENV,
     DEV_ORIGIN,
     PASSWORD,
     PROD_ENV,
@@ -482,3 +484,38 @@ def test_audit_chain_stays_valid(client: TestClient, clock: ManualClock, db: Dat
         e.event_type for e in audit_events(db, "user.created")
     }
     assert types == {"auth.login", "user.created"}
+
+
+class TestTotpCanBeTurnedOff:
+    """The owner, 2026-10-27: "can the authenticator code go? I am the only user." Their machine, their
+    call - but only on a development service; WebSettings refuses WEB_REQUIRE_TOTP=false in production."""
+
+    def client_without_totp(self, db: Database, clock: ManualClock, static_dir: Path) -> TestClient:
+        env = {**DEV_ENV, "WEB_REQUIRE_TOTP": "false"}
+        return TestClient(make_app(db, clock, static_dir, env), base_url="https://testserver")
+
+    def test_login_without_a_code(self, db: Database, clock: ManualClock, static_dir: Path) -> None:
+        with self.client_without_totp(db, clock, static_dir) as c:
+            response = c.post(
+                "/api/v1/auth/login",
+                json={"username": "owner", "password": PASSWORD},
+                headers={"Origin": DEV_ORIGIN},
+            )
+        assert response.status_code == 200, response.text
+        assert response.json()["user"]["username"] == "owner"
+
+    def test_a_wrong_code_is_ignored(self, db: Database, clock: ManualClock, static_dir: Path) -> None:
+        with self.client_without_totp(db, clock, static_dir) as c:
+            assert login(c, clock, code="000000").status_code == 200
+
+    def test_the_password_is_still_required(self, db: Database, clock: ManualClock, static_dir: Path) -> None:
+        with self.client_without_totp(db, clock, static_dir) as c:
+            assert login(c, clock, password="wrong", code="000000").status_code == 401
+
+    def test_the_code_is_still_demanded_by_default(self, client: TestClient, clock: ManualClock) -> None:
+        # the default build is unchanged: a wrong code is still a failed login
+        assert login(client, clock, code="000000").status_code == 401
+
+    def test_production_refuses_to_turn_it_off(self) -> None:
+        with pytest.raises(ValueError, match="WEB_REQUIRE_TOTP"):
+            WebSettings.model_validate({**PROD_ENV, "WEB_REQUIRE_TOTP": "false"})

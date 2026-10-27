@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pandas as pd
@@ -297,3 +298,250 @@ def test_a_box_taller_than_the_cap_is_not_a_box(monkeypatch: pytest.MonkeyPatch)
     got = TrendBoxDown(TrendBoxDown.Params(box=0.3)).evaluate(wide)
     assert (got.action, got.entry_price, got.take_profit) == (Action.SELL, 96.0, 70.0)
     assert got.stop_loss == pytest.approx(110 + 0.2 * 13)
+
+
+def test_edge_side_blocks_down_bot_unless_h4_lean_is_sell(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (down_swings(), None))
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: +1.0)  # H4 leans up
+    opposed = TrendBoxDown(TrendBoxDown.Params(require_edge_side=True)).evaluate(context())
+    assert opposed.action is Action.HOLD
+    assert "AGAINST_EDGE_SIDE" in opposed.reason_codes
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: -1.0)  # H4 leans down
+    aligned = TrendBoxDown(TrendBoxDown.Params(require_edge_side=True)).evaluate(context())
+    assert aligned.action is Action.SELL
+
+
+def test_edge_side_blocks_up_bot_unless_h4_lean_is_buy(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (up_swings(), None))
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: -1.0)  # H4 leans down
+    opposed = TrendBoxUp(TrendBoxUp.Params(require_edge_side=True)).evaluate(up_context())
+    assert opposed.action is Action.HOLD
+    assert "AGAINST_EDGE_SIDE" in opposed.reason_codes
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: +1.0)  # H4 leans up
+    aligned = TrendBoxUp(TrendBoxUp.Params(require_edge_side=True)).evaluate(up_context())
+    assert aligned.action is Action.BUY
+
+
+def test_edge_side_none_blocks_before_trend_data_is_read(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "edge_lean", lambda *_a, **_k: None)  # H4 unreadable
+    ctx = context()
+    incomplete = StrategyContext(ctx.market, {}, ctx.now_utc)
+    got = TrendBoxDown(TrendBoxDown.Params(require_edge_side=True)).evaluate(incomplete)
+    assert got.action is Action.HOLD and "AGAINST_EDGE_SIDE" in got.reason_codes
+
+
+def test_edge_side_warmup_is_1200_only_when_enabled():
+    assert TrendBoxDown().warmup_bars() == 400
+    assert TrendBoxDown(TrendBoxDown.Params(require_edge_side=True)).warmup_bars() == 1200
+
+
+def test_edge_side_parameters_default_off():
+    from app.strategy.range_break import RangeBreak
+
+    assert TrendBoxDown.Params().require_edge_side is False
+    assert TrendBoxUp.Params().require_edge_side is False
+    assert RangeBreak.Params().require_edge_side is False
+
+
+def _with_h1(ctx: StrategyContext, *, bars: int = 1200, end: datetime = AT, high: float = 101.0):
+    idx = pd.date_range(end=end.replace(minute=0), periods=bars, freq="1h")
+    h1 = pd.DataFrame({"open": 100.0, "high": high, "low": 99.0, "close": 100.0}, index=idx)
+    return StrategyContext(ctx.market, {**ctx.frames, Timeframe.H1: h1}, ctx.now_utc)
+
+
+def test_big_tf_off_keeps_an_opposing_h4_out_of_the_decision(monkeypatch: pytest.MonkeyPatch):
+    calls = 0
+
+    def conflicting(_high, _low):
+        nonlocal calls
+        calls += 1
+        if calls > 1:
+            return [Swing(1, 90, 1), Swing(2, 70, -1), Swing(3, 100, 1), Swing(4, 80, -1)], None
+        return down_swings(), None
+
+    monkeypatch.setattr(module, "zigzag", conflicting)
+    ctx = _with_h1(context())
+    got = TrendBoxDown().evaluate(ctx)
+    assert TrendBoxDown().warmup_bars() == 400
+    assert got.action is Action.SELL
+    assert "H4_AGAINST" not in got.reason_codes
+
+
+def test_big_tf_down_blocks_up_h4_but_flat_and_down_keep_the_entry(monkeypatch: pytest.MonkeyPatch):
+    ctx = _with_h1(context())
+    h4_up_swings = [Swing(1, 90, 1), Swing(2, 70, -1), Swing(3, 100, 1), Swing(4, 80, -1)]
+    calls = 0
+
+    def h4_up(_high, _low):
+        nonlocal calls
+        calls += 1
+        return (h4_up_swings if calls > 1 else down_swings(), None)
+
+    monkeypatch.setattr(module, "zigzag", h4_up)
+    strategy = TrendBoxDown(TrendBoxDown.Params(require_big_tf=True))
+    assert strategy.warmup_bars() == 1200
+    blocked = strategy.evaluate(ctx)
+    assert blocked.action is Action.HOLD and blocked.reason_codes == ("H4_AGAINST",)
+
+    for h4_swings in (
+        [Swing(1, 105, 1), Swing(2, 75, -1), Swing(3, 100, 1), Swing(4, 80, -1)],
+        down_swings(),
+    ):
+        calls = 0
+
+        def matching(_high, _low, selected=h4_swings):
+            nonlocal calls
+            calls += 1
+            return (selected if calls > 1 else down_swings(), None)
+
+        monkeypatch.setattr(module, "zigzag", matching)
+        assert strategy.evaluate(ctx).action is Action.SELL
+
+
+def test_big_tf_up_blocks_down_h4(monkeypatch: pytest.MonkeyPatch):
+    ctx = _with_h1(up_context())
+    h4_down = [Swing(1, 140, 1), Swing(2, 90, -1), Swing(3, 130, 1), Swing(4, 70, -1)]
+    calls = 0
+
+    def opposing(_high, _low):
+        nonlocal calls
+        calls += 1
+        return (h4_down if calls > 1 else up_swings(), None)
+
+    monkeypatch.setattr(module, "zigzag", opposing)
+    strategy = TrendBoxUp(TrendBoxUp.Params(require_big_tf=True))
+    got = strategy.evaluate(ctx)
+    assert got.action is Action.HOLD and got.reason_codes == ("H4_AGAINST",)
+
+    for h4_swings in (
+        [Swing(1, 105, 1), Swing(2, 75, -1), Swing(3, 100, 1), Swing(4, 80, -1)],
+        up_swings(),
+    ):
+        calls = 0
+
+        def matching(_high, _low, selected=h4_swings):
+            nonlocal calls
+            calls += 1
+            return (selected if calls > 1 else up_swings(), None)
+
+        monkeypatch.setattr(module, "zigzag", matching)
+        assert strategy.evaluate(ctx).action is Action.BUY
+
+
+def test_big_tf_requires_300_closed_h4_bars(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (down_swings(), None))
+    ctx = _with_h1(context(), bars=1196)
+    got = TrendBoxDown(TrendBoxDown.Params(require_big_tf=True)).evaluate(ctx)
+    assert got.action is Action.HOLD
+    assert got.reason_codes == ("INSUFFICIENT_DATA",)
+
+
+def test_big_tf_does_not_send_a_forming_h4_bar_to_zigzag(monkeypatch: pytest.MonkeyPatch):
+    at = datetime(2026, 10, 27, 1, 5, tzinfo=UTC)  # 08:05 Bangkok
+    ctx = context()
+    later = StrategyContext(replace(ctx.market, decision_time_utc=at), ctx.frames, at + timedelta(seconds=3))
+    h1 = _with_h1(later, end=at, high=101.0).frame(Timeframe.H1).copy()
+    h1.iloc[-1, h1.columns.get_loc("high")] = 999.0
+    m5, m1 = ctx.frame(Timeframe.M5).copy(), ctx.frame(Timeframe.M1).copy()
+    m5.index = pd.date_range(end=at, periods=len(m5), freq="5min")
+    m1.index = pd.date_range(end=at, periods=len(m1), freq="1min")
+    changed = StrategyContext(
+        replace(ctx.market, decision_time_utc=at),
+        {**ctx.frames, Timeframe.H1: h1, Timeframe.M5: m5, Timeframe.M1: m1},
+        at + timedelta(seconds=3),
+    )
+    seen_h4: list[float] = []
+
+    calls = 0
+
+    def capture(high, _low):
+        nonlocal calls
+        calls += 1
+        if calls > 1:
+            seen_h4.extend(float(value) for value in high)
+        return down_swings(), None
+
+    monkeypatch.setattr(module, "zigzag", capture)
+    TrendBoxDown(TrendBoxDown.Params(require_big_tf=True)).evaluate(changed)
+    assert len(seen_h4) == 300
+    assert 999.0 not in seen_h4
+
+
+def _tiny_box_context() -> StrategyContext:
+    ctx = context()
+    m5 = ctx.frame(Timeframe.M5).copy()
+    m5.iloc[:-1, m5.columns.get_loc("high")] = 100.0
+    m5.iloc[:-1, m5.columns.get_loc("low")] = 99.5
+    m5.iloc[-1, m5.columns.get_loc("close")] = 99.49
+    m1 = ctx.frame(Timeframe.M1).copy()
+    m1["low"] = 99.49
+    return StrategyContext(ctx.market, {**ctx.frames, Timeframe.M5: m5, Timeframe.M1: m1}, ctx.now_utc)
+
+
+def test_min_stop_atr_off_leaves_a_tiny_box_stop_unchanged(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (down_swings(), None))
+    got = TrendBoxDown().evaluate(_tiny_box_context())
+    assert got.action is Action.SELL and got.stop_loss == pytest.approx(100.1)
+    assert not any(condition.name == "stop_floor" for condition in got.conditions)
+
+
+def test_min_stop_atr_widens_only_narrow_stops_and_reports_floor(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (down_swings(), None))
+    ctx = _with_h1(_tiny_box_context(), high=101.0)
+    params = TrendBoxDown.Params(min_stop_atr=1.0)
+    got = TrendBoxDown(params).evaluate(ctx)
+    # Constant H=101, L=99, C=100 yields a 2.00 Wilder ATR; the stop must sit 2.00 above 99.49.
+    assert got.action is Action.SELL and got.stop_loss == pytest.approx(101.49)
+    assert next(condition.detail for condition in got.conditions if condition.name == "stop_floor") == "2.00"
+
+    wide_ctx = context()
+    wide = TrendBoxDown(params).evaluate(_with_h1(wide_ctx, high=101.0))
+    assert wide.action is Action.SELL and wide.stop_loss == pytest.approx(112.0)
+    assert not any(condition.name == "stop_floor" for condition in wide.conditions)
+
+
+def test_min_stop_atr_mirrors_the_buy_stop_direction(monkeypatch: pytest.MonkeyPatch):
+    up = [Swing(1, 100, -1), Swing(2, 110, 1), Swing(3, 101, -1), Swing(4, 120, 1)]
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (up, None))
+    ctx = context()
+    m5 = ctx.frame(Timeframe.M5).copy()
+    m5.iloc[:-1, m5.columns.get_loc("high")] = 108.0
+    m5.iloc[:-1, m5.columns.get_loc("low")] = 107.0
+    m5.iloc[-1, m5.columns.get_loc("close")] = 108.1
+    m1 = ctx.frame(Timeframe.M1).copy()
+    m1["high"] = 108.1
+    ctx = StrategyContext(ctx.market, {**ctx.frames, Timeframe.M5: m5, Timeframe.M1: m1}, ctx.now_utc)
+    ctx = _with_h1(ctx, high=101.0)
+    got = TrendBoxUp(TrendBoxUp.Params(min_stop_atr=1.5)).evaluate(ctx)
+    # ATR=2.00, so this BUY's 3.00 floor moves the stop to 108.10 - 3.00.
+    assert got.action is Action.BUY and got.stop_loss == pytest.approx(105.1)
+    assert next(condition.detail for condition in got.conditions if condition.name == "stop_floor") == "3.00"
+
+
+def test_min_stop_atr_does_not_widen_a_stop_exactly_at_the_floor(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (down_swings(), None))
+    ctx = _tiny_box_context()
+    m5 = ctx.frame(Timeframe.M5).copy()
+    m5.iloc[-1, m5.columns.get_loc("close")] = 98.1
+    m1 = ctx.frame(Timeframe.M1).copy()
+    m1["low"] = 98.1
+    ctx = StrategyContext(ctx.market, {**ctx.frames, Timeframe.M5: m5, Timeframe.M1: m1}, ctx.now_utc)
+    got = TrendBoxDown(TrendBoxDown.Params(min_stop_atr=1.0)).evaluate(_with_h1(ctx, high=101.0))
+    assert got.action is Action.SELL and got.stop_loss == pytest.approx(100.1)
+    assert not any(condition.name == "stop_floor" for condition in got.conditions)
+
+
+def test_min_stop_atr_widening_is_included_in_the_min_r_gate(monkeypatch: pytest.MonkeyPatch):
+    swings = [Swing(1, 75.0, 1), Swing(2, 72.0, -1), Swing(3, 74.0, 1), Swing(4, 70.0, -1)]
+    monkeypatch.setattr(module, "zigzag", lambda *_args: (swings, None))
+    ctx = context()
+    m5 = ctx.frame(Timeframe.M5).copy()
+    m5.iloc[:-1, m5.columns.get_loc("high")] = 72.0
+    m5.iloc[:-1, m5.columns.get_loc("low")] = 71.5
+    m5.iloc[-1, m5.columns.get_loc("close")] = 71.49
+    m1 = ctx.frame(Timeframe.M1).copy()
+    m1["low"] = 71.49
+    ctx = StrategyContext(ctx.market, {**ctx.frames, Timeframe.M5: m5, Timeframe.M1: m1}, ctx.now_utc)
+    got = TrendBoxDown(TrendBoxDown.Params(min_stop_atr=1.0, min_r=1.0)).evaluate(_with_h1(ctx, high=101.0))
+    assert got.action is Action.HOLD
+    assert "RR_TOO_LOW" in got.reason_codes

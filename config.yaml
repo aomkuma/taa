@@ -209,11 +209,20 @@ lanes:
       signal_expiry_bars: 1
       items:
         - name: trend_box_down
-          enabled: false
+          enabled: true
+          # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
+          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+          params: {require_edge_side: true}
         - name: trend_box_up
-          enabled: false
+          enabled: true
+          # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
+          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+          params: {require_edge_side: true}
         - name: range_break
-          enabled: false
+          enabled: true
+          # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
+          # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
+          params: {require_edge_side: true}
     min_risk_reward: 0.8
     management:
       trend_box_down: {break_even: false, trailing: false}
@@ -241,7 +250,11 @@ risk:
   max_spread_points: 30
   max_spread_to_sl_ratio: 0.15
   max_slippage_points: 10
-  min_risk_reward: 1.0                # the profile's minimum RR applies (it is never below 1.0)
+  min_risk_reward: 1.0                # the OUTER cage for lanes that set none of their own. The owner's
+                                      # 2026-10-27 "take the rule out" is served by the lane's own value
+                                      # (three_bots: 0.8) and by the profile override, which a lane
+                                      # replaces outright - lowering this would only loosen plan1 and the
+                                      # main lane, which was never asked for (self-review, same evening).
   fade:                             # counter-trend fades only (FADE, SETUP_REVIEW §16): R:R is the plan's inverse
     min_risk_reward: 0.2            # and the stop sits at the plan's target; every other risk rule is unchanged
     max_sl_atr_multiple: 12
@@ -421,8 +434,20 @@ advisory:                           # PLAN §A25-A27: ranking and alerts; never 
       min_supporting_families: 2
       conflict_policy: PENALIZE     # IGNORE PENALIZE BLOCK
     trading_profile:
+      # A MIRROR of the owner's PWA profile (Aggressive, 7.5 %), kept here only because the engine cannot
+      # reach the web service: the risk-profile pull returns HTTP 401 (the running web was started with a
+      # different Python before the engine key was rotated, so it cannot decrypt the engine secret).
+      # The cloud profile wins whenever the pull works, so fixing the pairing removes this duplication.
+      # Until then these two must be changed together (2026-10-27).
       style: 50                     # 0 very defensive .. 100 very offensive; overrides: {...} pins single fields
       holding_style: DAY            # SCALP DAY SWING
+      overrides:
+        # the slider's 1.5 would refuse almost every signal of the three bots (their own minimum R is
+        # 0.8 for range_break and 1.2 for the trend bots). 1.0 is the lowest the model allows.
+        min_rr: 0.8
+      risk_mode: AGGRESSIVE
+      aggressive_risk_percent: 7.5
+      min_lot_fallback: true        # the owner, repeatedly: the account's size never vetoes a rule
     entry_plan:
       mode: SINGLE                  # SINGLE SAME_PRICE SCALE_IN
       parts: 1
@@ -432,7 +457,8 @@ engine:
   health_port: 8765
 
 sync:
-  enabled: false                    # true once the Railway web service is paired
+  enabled: false                    # the repository default; a paired machine sets SYNC_ENABLED=true in
+                                    # its own .env (env overrides yaml), as this one does since 2026-10-27
   batch_size: 500                   # events per signed, gzipped POST /api/v1/ingest/batch
   max_batch_bytes: 4000000         # uncompressed payload per batch (the ingest API takes up to 32 MB)
   flush_interval_seconds: 1         # the live candle and quotes reach the PWA within ~1-2 s
