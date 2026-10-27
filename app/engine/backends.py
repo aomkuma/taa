@@ -71,8 +71,16 @@ class Backend(Protocol):
 
     def on_bar(self, symbol: str, ctx: StrategyContext) -> None: ...
 
-    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
-        """A lane's closed entry bar: its strategies' own position management (``manage_position``)."""
+    def on_lane_bar(
+        self,
+        symbol: str,
+        ctx: StrategyContext,
+        strategies: Collection[str],
+        close_check: bool = False,
+    ) -> None:
+        """A lane's closed entry bar: its strategies' own position management (``manage_position``),
+        and with ``close_check`` their ``should_close`` as well - an extra lane's bars never reach
+        :meth:`on_bar`, which is where the main lane asks that question."""
         ...
 
     def place(self, record: DecisionRecord, spec: SymbolSpec, magic: int) -> bool: ...
@@ -142,8 +150,14 @@ class PaperBackend:
     def on_bar(self, symbol: str, ctx: StrategyContext) -> None:
         self.positions.on_bar(symbol, ctx)
 
-    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
-        self.positions.on_lane_bar(symbol, ctx, strategies)
+    def on_lane_bar(
+        self,
+        symbol: str,
+        ctx: StrategyContext,
+        strategies: Collection[str],
+        close_check: bool = False,
+    ) -> None:
+        self.positions.on_lane_bar(symbol, ctx, strategies, close_check)
 
     def place(self, record: DecisionRecord, spec: SymbolSpec, magic: int) -> bool:
         return any(not p.duplicate for p in self.paper.place(record, magic))
@@ -225,8 +239,14 @@ class DemoBackend:
     def on_bar(self, symbol: str, ctx: StrategyContext) -> None:
         self.positions.on_bar(symbol, ctx)
 
-    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
-        self.positions.on_lane_bar(symbol, ctx, strategies)
+    def on_lane_bar(
+        self,
+        symbol: str,
+        ctx: StrategyContext,
+        strategies: Collection[str],
+        close_check: bool = False,
+    ) -> None:
+        self.positions.on_lane_bar(symbol, ctx, strategies, close_check)
 
     def place(self, record: DecisionRecord, spec: SymbolSpec, magic: int) -> bool:
         outcomes = self.orders.execute(record, spec, magic)

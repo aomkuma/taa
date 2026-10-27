@@ -118,6 +118,30 @@ class TestRules:
         trade = p.on_quote("EURUSD", 1.1001, 1.10018, clock.now_utc())[0].trade
         assert trade is not None and trade.exit_reason is ExitReason.TIME_STOP
 
+    def test_an_extra_lane_asks_its_own_strategy_to_close(self, db: Database, record: DecisionRecord) -> None:
+        # Found in review 2026-10-27: should_close lives in on_bar, which the orchestrator calls only for
+        # the main lane, so an extra lane's daily flatten never fired. on_lane_bar now asks as well - but
+        # only when the caller says so, or the main lane would ask twice and close twice.
+        clock, p, pm, _ = setup(db, record)
+        pm.strategies_by_magic = {MAGIC: Closer()}
+        ctx = StrategyContext(make_context(), {}, NOW)
+        pm.on_lane_bar("EURUSD", ctx, ["closer"])  # the main lane: on_bar has already asked
+        assert not position(p).close_requested
+        pm.on_lane_bar("EURUSD", ctx, ["closer"], close_check=True)
+        assert position(p).close_requested
+        clock.advance(1)
+        trade = p.on_quote("EURUSD", 1.1001, 1.10018, clock.now_utc())[0].trade
+        assert trade is not None and trade.exit_reason is ExitReason.SIGNAL
+
+    def test_a_lane_never_closes_a_position_of_another_lane(
+        self, db: Database, record: DecisionRecord
+    ) -> None:
+        _clock, p, pm, _ = setup(db, record)
+        pm.strategies_by_magic = {MAGIC: Closer()}
+        ctx = StrategyContext(make_context(), {}, NOW)
+        pm.on_lane_bar("EURUSD", ctx, ["someone_else"], close_check=True)
+        assert not position(p).close_requested
+
     def test_strategy_close_signal(self, db: Database, record: DecisionRecord) -> None:
         clock, p, pm, _ = setup(db, record)
         pm.strategies_by_magic = {MAGIC: Closer()}

@@ -129,6 +129,22 @@ class TestClosing:
         )
         assert rig.bundle.gateway.positions() == []
 
+    def test_an_extra_lane_asks_its_own_strategy_to_close(self, rig: Rig) -> None:
+        # The broker-side half of the same review finding (2026-10-27).
+        opened(rig)
+        ctx = StrategyContext(make_context(), {}, WED)
+        mgr = manager(rig, strategies_by_magic={MAGIC: Closer()})
+        mgr.on_lane_bar("EURUSD", ctx, ["closer"])  # the main lane: on_bar has already asked
+        assert rig.bundle.gateway.positions() != []
+        mgr.on_lane_bar("EURUSD", ctx, ["closer"], close_check=True)
+        assert rig.bundle.gateway.positions() == []
+
+    def test_a_lane_never_closes_a_position_of_another_lane(self, rig: Rig) -> None:
+        opened(rig)
+        mgr = manager(rig, strategies_by_magic={MAGIC: Closer()})
+        mgr.on_lane_bar("EURUSD", StrategyContext(make_context(), {}, WED), ["other"], close_check=True)
+        assert rig.bundle.gateway.positions() != []
+
     def test_flatten(self, rig: Rig) -> None:
         execute(rig, record(rig, key_bar=0))
         execute(rig, record(rig, key_bar=1))

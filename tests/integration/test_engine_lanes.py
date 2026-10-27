@@ -38,11 +38,13 @@ def lane_config(time_stop_bars: int = 3) -> LaneConfig:
     )
 
 
-def lane_demo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Demo:
+def lane_demo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, time_stop_bars: int = 3) -> Demo:
     import tests.integration.test_engine_demo as m
 
     base = demo_settings(tmp_path)
-    with_lane = dataclasses.replace(base, config=base.config.model_copy(update={"lanes": [lane_config()]}))
+    with_lane = dataclasses.replace(
+        base, config=base.config.model_copy(update={"lanes": [lane_config(time_stop_bars)]})
+    )
     monkeypatch.setattr(m, "demo_settings", lambda tmp, **env: with_lane)
     d = demo(tmp_path)
     d.engine.start()
@@ -82,4 +84,38 @@ def test_the_lane_time_stop_counts_the_lanes_bars(tmp_path: Path, monkeypatch: p
     assert d.engine.gateway.positions() == []
     closed = [e for e in d.sink.events if e.type is EventType.POSITION_CLOSED]
     assert [e.params.get("reason") for e in closed] == ["TIME"]  # within 30 minutes: 3 M15 bars would take 45
+    d.engine.shutdown()
+
+
+class CloseEveryM5Bar(BuyEveryM5Bar):
+    """Opens nothing and asks to close on a bar of its OWN lane only. The main lane's on_bar asks every
+    position's strategy, this lane's included, so a strategy that always says yes would be closed by the
+    main lane and prove nothing. M5 is this lane's entry frame; the main lane runs on M15."""
+
+    def evaluate(self, ctx):  # type: ignore[no-untyped-def]
+        return self.hold(ctx)
+
+    def should_close(self, ctx, side) -> bool:  # type: ignore[no-untyped-def]
+        return ctx.market.entry_timeframe is Timeframe.M5
+
+
+def test_a_lane_strategy_closes_its_own_position(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Found in review 2026-10-27: ``should_close`` is asked in ``on_bar``, which the engine calls only for
+    the main lane, so a lane strategy's own exit (the three bots' daily flatten) never fired live although
+    the backtest engine honoured it. The time stop is set far out of reach, so only the strategy's own
+    exit can close this position, and the reason must be SIGNAL."""
+    d = lane_demo(tmp_path, monkeypatch, time_stop_bars=999)
+    run_until(d, EventType.POSITION_OPENED)
+    closer = CloseEveryM5Bar(CloseEveryM5Bar.Params())
+    d.engine.extra_lanes[0].strategies = StrategySet((closer,))
+    # the position manager keeps its own magic -> strategy snapshot from start-up
+    d.engine.broker_positions.strategies_by_magic[d.engine.magic[LANE]] = closer
+    for _ in range(60):  # the time stop test needs 60 cycles for three M5 bars
+        d.engine.cycle()
+        d.clock.advance(30)
+        if not d.engine.gateway.positions():
+            break
+    assert d.engine.gateway.positions() == []
+    closed = [e for e in d.sink.events if e.type is EventType.POSITION_CLOSED]
+    assert [e.params.get("reason") for e in closed] == ["SIGNAL"]
     d.engine.shutdown()

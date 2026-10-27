@@ -124,12 +124,26 @@ class PositionManager:
                 log.info("strategy %s closes #%s on %s", strategy.name, pos.ticket, symbol)
                 self.paper.request_close(pos.ticket, ExitReason.SIGNAL)
 
-    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
-        """A lane's closed entry bar: the own management (``manage_position``) of that lane's strategies."""
+    def on_lane_bar(
+        self,
+        symbol: str,
+        ctx: StrategyContext,
+        strategies: Collection[str],
+        close_check: bool = False,
+    ) -> None:
+        """A lane's closed entry bar: the own management (``manage_position``) of that lane's strategies,
+        and with ``close_check`` their ``should_close`` too. Only the main lane reaches :meth:`on_bar`,
+        so without this an extra lane's strategy is never asked to close (found in review 2026-10-27)."""
         spec = self.specs[symbol]
         for pos in [p for p in self.paper.broker.positions.values() if p.symbol == symbol]:
             strategy = self.strategies_by_magic.get(pos.request.magic)
-            if strategy is None or strategy.name not in strategies or pos.close_requested or pos.sl is None:
+            if strategy is None or strategy.name not in strategies or pos.close_requested:
+                continue
+            if close_check and strategy.should_close(ctx, pos.side):
+                log.info("strategy %s closes #%s on %s (lane bar)", strategy.name, pos.ticket, symbol)
+                self.paper.request_close(pos.ticket, ExitReason.SIGNAL)
+                continue
+            if pos.sl is None:
                 continue
             mark = ctx.market.bid if pos.side is Side.BUY else ctx.market.ask
             if mark is None or pos.request.sl is None:

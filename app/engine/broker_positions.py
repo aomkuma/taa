@@ -164,17 +164,30 @@ class BrokerPositionManager:
             if strategy is not None and strategy.should_close(ctx, pos.side):
                 self.close(pos, spec, ExitReason.SIGNAL)
 
-    def on_lane_bar(self, symbol: str, ctx: StrategyContext, strategies: Collection[str]) -> None:
+    def on_lane_bar(
+        self,
+        symbol: str,
+        ctx: StrategyContext,
+        strategies: Collection[str],
+        close_check: bool = False,
+    ) -> None:
         """A lane's closed entry bar: the own management of its strategies. The position's signal is not
-        known here, so the strategy reads its plan from the position (``OpenPosition.signal_id`` empty)."""
+        known here, so the strategy reads its plan from the position (``OpenPosition.signal_id`` empty).
+        With ``close_check`` the strategy is also asked to close: an extra lane never reaches
+        :meth:`on_bar`, so its daily flatten would otherwise never fire (review 2026-10-27)."""
         spec = self.specs.get(symbol)
         if spec is None:
             return
         initial = self.initial_stops()
         for pos in self.bot_positions(symbol):
             strategy = self.strategies_by_magic.get(pos.magic)
+            if strategy is None or strategy.name not in strategies:
+                continue
+            if close_check and strategy.should_close(ctx, pos.side):
+                self.close(pos, spec, ExitReason.SIGNAL)
+                continue
             first_sl = initial.get(pos.ticket)
-            if strategy is None or strategy.name not in strategies or first_sl is None or pos.sl <= 0:
+            if first_sl is None or pos.sl <= 0:
                 continue
             mark = ctx.market.bid if pos.side is Side.BUY else ctx.market.ask
             if mark is None:

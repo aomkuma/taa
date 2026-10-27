@@ -1136,7 +1136,9 @@ class Engine:
             if ctx.market.atr is not None:
                 self._atr[symbol] = ctx.market.atr
             self.backend.on_bar(symbol, ctx)
-        self.backend.on_lane_bar(symbol, ctx, lane.strategies.names)  # each strategy's own management
+        # each strategy's own management; outside the main lane also its should_close, which the
+        # on_bar above only asks for the main lane (a bar of an extra lane never reaches it)
+        self.backend.on_lane_bar(symbol, ctx, lane.strategies.names, lane.name != MAIN)
         self._attach_entries(symbol, lane)
         disabled = self.disabled_strategies()
         signals = [  # a remotely disabled strategy opens nothing; its close signals still count
