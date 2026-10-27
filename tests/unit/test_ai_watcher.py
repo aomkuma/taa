@@ -218,6 +218,39 @@ def test_a_failed_cycle_is_told_counted_and_survived(tmp_path: Path):
     assert rig.watcher.on_bar(at(1), []) is not None  # the next bar works: the first call is retried
 
 
+def test_a_failed_cycle_is_a_record_in_the_journal_a_reader_opens(tmp_path: Path):
+    """The alert log is not enough: 1,365 FAILED lines went unread there (SWALLOWED.md)."""
+    rig = Rig(tmp_path, answer=FileNotFoundError("kb.yaml"))
+    assert rig.watcher.on_bar(T, []) is None
+
+    rows = [json.loads(x) for x in (tmp_path / "decisions.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert len(rows) == 1
+    assert rows[0]["as_of"] == T.isoformat()
+    assert rows[0]["status"] == "FAILED"  # its own value: never asked, not answered with an error
+    assert rows[0]["source"] == "watcher"
+    assert rows[0]["cost_usd"] is None  # a lost wake costs nothing and must not eat the day's cap
+    assert "FileNotFoundError: kb.yaml" in rows[0]["detail"]
+
+    notes = (tmp_path / f"session_{T.tz_convert(w.TH):%Y-%m-%d}.md").read_text(encoding="utf-8")
+    assert "**FAILED**" in notes
+    assert "a failed cycle (the AI was never asked)" in notes
+    assert "FileNotFoundError: kb.yaml" in notes
+
+    # the day's cap counts the record at zero, so a run of failures never silences the AI
+    assert w.spent_today(rows, T) == 0.0
+
+
+def test_a_failed_cycle_still_returns_when_the_store_cannot_be_written(tmp_path: Path):
+    """Reporting the failure must not replace the failure: the cycle still survives."""
+    rig = Rig(tmp_path, answer=FileNotFoundError("kb.yaml"))
+    rig.watcher.store = (
+        tmp_path / "decisions.jsonl"
+    )  # a FILE where the store folder should be: every write fails
+    rig.watcher.store.write_text("not a folder", encoding="utf-8")
+    assert rig.watcher.on_bar(T, []) is None
+    assert rig.watcher.failures == 1
+
+
 def test_session_entry_names_the_weapon():
     rec = {
         "status": "OK",

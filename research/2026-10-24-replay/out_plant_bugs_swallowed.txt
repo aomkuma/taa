@@ -1,0 +1,7 @@
+caught  the lost wake goes to a file of its own again
+caught  a lost wake is recorded as the provider's ERROR
+caught  a lost wake claims it cost nothing rather than never happening
+caught  the session notes get no entry
+caught  the error detail is dropped
+caught  reporting the failure may raise over the failure
+6/6 caught

@@ -18,6 +18,7 @@ is refused (:data:`CLAIMS`), like the UI catalogs (no profitability claims anywh
 from __future__ import annotations
 
 import json
+import logging
 import math
 import re
 from collections.abc import Iterable, Sequence
@@ -31,6 +32,8 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from app.ai.schema import MAX_REASON_CHARS, MAX_REASONS, SCHEMA_VERSION, Verdict
 from app.core.clock import ensure_utc
 from app.storage.models import OpportunityRow, ShadowTradeRow, SuitabilitySnapshotRow
+
+log = logging.getLogger(__name__)
 
 MAX_NARRATIVE_CHARS = 700
 MAX_SUMMARY_CHARS = 1400
@@ -139,6 +142,9 @@ def _num(value: Any, digits: int = 6) -> float | None:
     try:
         f = float(value)
     except (TypeError, ValueError):
+        # Not silently: a value that cannot be a number is a defect upstream, and as a bare None it reads
+        # downstream like ordinary missing data (SWALLOWED.md, 2026-10-27).
+        log.warning("cannot read %r as a number; recorded as missing", value)
         return None
     return round(f, digits) if math.isfinite(f) else None
 

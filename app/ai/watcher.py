@@ -38,6 +38,8 @@ MOVING = {"sweep", "break", "climax", "runaway", "handover"}
 MODEL = "claude-sonnet-5-5"  # the owner's budget - about 0.01 USD a call with the cache
 DAILY_CAP_USD = 0.40  # about 14 baht: no call once a Thai day's watcher spend reaches it
 SOURCE = "watcher"
+FAILED = "FAILED"  # a lost wake: the cycle never reached an answer - not the provider's own ERROR
+FAILED_REASON = "a failed cycle (the AI was never asked)"
 
 
 def wake_reasons(
@@ -142,6 +144,25 @@ def session_entry(now: pd.Timestamp, reasons: list[str], rec: dict[str, Any]) ->
     )
 
 
+def failed_record(now: pd.Timestamp, exc: BaseException, count: int) -> dict[str, Any]:
+    """A lost wake in the shape of a decision record, so the journals a reader opens show it.
+
+    A cycle that raises never reaches :func:`app.ai.trader.decide`, which is what writes a record, so the
+    wake used to leave a trace in ``watch_alerts.log`` alone - where 1,365 of them sat unread until a
+    review went looking (``research/2026-10-24-replay/SWALLOWED.md``, 2026-10-27). The status is its own
+    value because "the AI answered with an error" and "the AI was never asked" are different failures.
+    """
+    return {
+        "as_of": now.isoformat(),
+        "source": SOURCE,
+        "status": FAILED,
+        "model": None,
+        "cost_usd": None,
+        "latency_ms": None,
+        "detail": f"the watcher cycle failed ({count}): {type(exc).__name__}: {exc}",
+    }
+
+
 def tail(text: str, chars: int) -> str:
     from app.ai.trader import tail as _tail
 
@@ -226,10 +247,30 @@ class AIWatcher:
         except Exception as exc:  # a failed cycle must not stop the watcher; it is told, counted and written
             self.failures += 1
             log.exception("AI watcher cycle at %s failed (%d so far)", now, self.failures)
-            self.store.mkdir(parents=True, exist_ok=True)
-            with (self.store / "watch_alerts.log").open("a", encoding="utf-8") as fh:
-                fh.write(f"{now.isoformat()} FAILED ({self.failures}): {type(exc).__name__}: {exc}\n")
+            self._record_failure(now, exc)
             return None
+
+    def _record_failure(self, now: pd.Timestamp, exc: BaseException) -> None:
+        """Write the lost wake everywhere a wake is read: the alert log, ``decisions.jsonl`` and the day's
+        session notes.
+
+        Each write is guarded on its own. This is the last line of defence, so a failure to report must
+        never replace the failure being reported.
+        """
+        rec = failed_record(now, exc, self.failures)
+        session = self.store / f"session_{now.tz_convert(TH):%Y-%m-%d}.md"
+        alert = f"{now.isoformat()} {FAILED} ({self.failures}): {type(exc).__name__}: {exc}\n"
+        for path, text in (
+            (self.store / "watch_alerts.log", alert),
+            (self.store / "decisions.jsonl", json.dumps(rec) + "\n"),
+            (session, session_entry(now, [FAILED_REASON], rec)),
+        ):
+            try:
+                self.store.mkdir(parents=True, exist_ok=True)
+                with path.open("a", encoding="utf-8") as fh:
+                    fh.write(text)
+            except OSError:
+                log.exception("cannot record the failed watcher cycle in %s", path)
 
     def _cycle(self, now: pd.Timestamp, closes: list[float]) -> dict[str, Any] | None:
         self.store.mkdir(parents=True, exist_ok=True)

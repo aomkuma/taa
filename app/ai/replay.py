@@ -382,6 +382,9 @@ def parse_codex(
         try:
             ev = json.loads(line)
         except json.JSONDecodeError:
+            # A dropped event line can hide a tool call this function exists to refuse, so say so rather
+            # than skip in silence (SWALLOWED.md, 2026-10-27).
+            log.warning("the answerer's event stream had an unreadable line; skipped: %.200r", line)
             continue
         item = ev.get("item") or {}
         kind = str(item.get("type") or item.get("item_type") or "")
