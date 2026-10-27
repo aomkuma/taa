@@ -331,3 +331,86 @@ def test_seen_levels_are_the_levels_everyone_sees():
     assert got[15:] == [3920.0, 4000.0, 4080.0, 4160.0, 4240.0, 4320.0]
     early = bh.seen_levels(m15, d1, pd.Timestamp("2026-07-08 04:00", tz="UTC"), 4000.0, 80.0, 4096.0)
     assert len(early) == 4 + 9 + 6  # 11:00 Thai: the Asia range is not over, so it is not a level yet
+
+
+# the London ORB's own reading (W03; ISSUES 38) -------------------------------------------------------------
+
+
+def _m1(rows: list[tuple[str, float, float, float]]) -> pd.DataFrame:
+    """M1 bars from (Thai open time, high, low, close); the open is irrelevant to the reading."""
+    idx = pd.DatetimeIndex([pd.Timestamp(f"2026-07-06 {t}", tz="Asia/Bangkok") for t, *_ in rows])
+    return pd.DataFrame(
+        {
+            "open": [c for *_, c in rows],
+            "high": [h for _, h, _, _ in rows],
+            "low": [lo for _, _, lo, _ in rows],
+            "close": [c for *_, c in rows],
+            "tick_volume": [1.0] * len(rows),
+        },
+        index=idx.tz_convert("UTC"),
+    )
+
+
+def _at(thai: str) -> pd.Timestamp:
+    return pd.Timestamp(f"2026-07-06 {thai}", tz="Asia/Bangkok").tz_convert("UTC")
+
+
+RANGE = [  # 13:00-13:14 Thai: high 4110, low 4090
+    # before the window and on its closing edge: neither may widen the range. 13:15 is the first bar of
+    # the break window, not the last of the range, and 12:30 belongs to no ORB at all.
+    ("12:30", 4200.0, 4000.0, 4100.0),
+    ("13:00", 4100.0, 4095.0, 4098.0),
+    ("13:05", 4110.0, 4099.0, 4105.0),
+    ("13:10", 4106.0, 4090.0, 4092.0),
+    ("13:15", 4150.0, 4050.0, 4100.0),  # wicks both ways, closes inside: no break either
+]
+
+
+def test_the_orb_range_is_the_1300_to_1315_thai_bars():
+    bars = _m1([*RANGE, ("13:20", 4108.0, 4100.0, 4104.0)])
+    high, low, broke = bh.opening_range(bars, _at("13:25"))
+    assert (high, low) == (4110.0, 4090.0)  # the 13:20 bar is after the range and does not widen it
+    assert broke == "none"  # 4104 closed inside 4090-4110
+
+
+def test_before_1315_thai_the_range_is_not_read_at_all():
+    bars = _m1(RANGE)
+    high, low, broke = bh.opening_range(bars, _at("13:14"))
+    assert math.isnan(high) and math.isnan(low) and broke == "none"
+
+
+def test_the_first_close_beyond_the_range_decides_the_side():
+    up = _m1([*RANGE, ("13:20", 4112.0, 4104.0, 4111.0)])  # closed above 4110
+    assert bh.opening_range(up, _at("13:25"))[2] == "up"
+    down = _m1([*RANGE, ("13:20", 4096.0, 4088.0, 4089.0)])  # closed below 4090
+    assert bh.opening_range(down, _at("13:25"))[2] == "down"
+
+
+def test_a_wick_through_the_range_is_not_a_break():
+    bars = _m1([*RANGE, ("13:20", 4115.0, 4104.0, 4109.0)])  # the high pierced 4110, the close did not
+    assert bh.opening_range(bars, _at("13:25"))[2] == "none"
+
+
+def test_the_first_break_wins_and_holds_for_the_rest_of_the_day():
+    bars = _m1(
+        [
+            *RANGE,
+            ("13:20", 4096.0, 4088.0, 4089.0),  # down first
+            ("13:30", 4113.0, 4100.0, 4112.0),  # then up: the first one still stands
+        ]
+    )
+    assert bh.opening_range(bars, _at("15:00"))[2] == "down"
+
+
+def test_only_bars_closed_by_as_of_are_read():
+    bars = _m1([*RANGE, ("13:20", 4112.0, 4104.0, 4111.0)])
+    # at 13:20 the 13:20 bar has opened but not closed: no break yet
+    assert bh.opening_range(bars, _at("13:20"))[2] == "none"
+    assert bh.opening_range(bars, _at("13:21"))[2] == "up"
+
+
+def test_another_thai_day_has_its_own_range():
+    bars = _m1(RANGE)
+    next_day = pd.Timestamp("2026-07-07 13:25", tz="Asia/Bangkok").tz_convert("UTC")
+    high, low, broke = bh.opening_range(bars, next_day)
+    assert math.isnan(high) and math.isnan(low) and broke == "none"

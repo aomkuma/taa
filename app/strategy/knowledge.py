@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from app.core.enums import Timeframe
 from app.news.releases import Release
 from app.strategy import behaviors as bh
 from app.strategy import context_read as cr
@@ -27,6 +28,7 @@ from app.strategy import level_momentum as lm
 from app.strategy import picture as pc
 from app.strategy import structure_read as sr
 from app.strategy import zone_grid as zg
+from app.strategy.edge_side import edge_lean
 from app.strategy.plan1_b2 import Bars, mt5_atr
 from app.strategy.rhythm import rhythm
 from app.strategy.strong_levels import closed
@@ -49,6 +51,10 @@ STAGES = {
 NUMERIC = {
     "h1_vol", "d1_atr20", "h1_atr", "release_min", "day_range_step", "bars_at_line",
     "m15_range12_atr", "line_dist_step", "line_touches", "h1_eff12", "m15_relvol",
+    # R10's own number. It was locked as a rule on 2026-10-27 and left out of the readings, so on the
+    # 2026-07-06 replay the answerer had to guess it from h4_rhythm / h4_big / h4_trend: it refused buys
+    # all morning while the real lean sat at +3.515, behind a BUY (ISSUES 37, DECISION_CHECKLIST D6).
+    "h4_lean", "orb_high", "orb_low",
 }  # fmt: skip
 _UPDOWN = {"up", "down", "none"}
 WORDS: dict[str, set[str]] = {
@@ -67,6 +73,7 @@ WORDS: dict[str, set[str]] = {
     "d1_regime": _UPDOWN,
     "h4_trend": _UPDOWN,
     "h1_trend": _UPDOWN,
+    "orb_break": _UPDOWN,
 }
 FEATURES = NUMERIC | set(WORDS)
 OPS = re.compile(r"^(>=|<=|>|<)\s*(-?\d+(?:\.\d+)?)$")
@@ -281,7 +288,31 @@ def features(fr: Frames, as_of: pd.Timestamp) -> dict[str, Any]:
     before = d5.index[-6]  # the window's first bar opens here: levels known before it
     levels = bh.seen_levels(fr.m15, fr.d1, before, st.anchor, st.step, price)
     f["sweep"] = bh.level_sweep(h5[-n:], lo5[-n:], c5[-n:], levels, atr5, 6, v=v5[-n:], min_vol=SWEEP_VOLUME)
+
+    f["h4_lean"] = h4_lean(fr.h1, as_of)
+
+    # W03's own numbers (the London ORB). The weapon needs the 13:00-13:15 Thai range and the first M1
+    # close beyond it, and no reading carried either: on 2026-07-06 the answerer said so five times in a
+    # row and the weapon could never fire (ISSUES 38).
+    f["orb_high"], f["orb_low"], f["orb_break"] = bh.opening_range(fr.m1, as_of)
     return f
+
+
+def h4_lean(h1: pd.DataFrame, as_of: pd.Timestamp) -> float:
+    """R10's own number at ``as_of``, from an **open-stamped** H1 frame; ``nan`` when it cannot be read.
+
+    :func:`app.strategy.edge_side.edge_lean` takes CLOSE-stamped frames and shifts the index back itself,
+    while :class:`Frames` is stamped at each bar's open, so the frame is handed over shifted forward.
+    Getting that backwards is an hour of lookahead - which is how a day of conclusions went wrong on
+    2026-10-27.
+
+    The entry frame argument only refuses reading the lean from the frame a trade is entered on; M5 stands
+    for the AI's usual entry frame, and any frame below H4 gives the same number.
+    """
+    closes = h1.copy()
+    closes.index = pd.DatetimeIndex(closes.index) + pd.Timedelta(hours=1)
+    lean = edge_lean({Timeframe.H1: closes}, as_of, Timeframe.M5)
+    return math.nan if lean is None else lean
 
 
 def m5_frame(m1: pd.DataFrame, as_of: pd.Timestamp, bars: int = PICTURE_BARS + 40) -> pd.DataFrame:

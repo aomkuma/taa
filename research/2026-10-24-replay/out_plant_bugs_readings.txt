@@ -1,0 +1,13 @@
+caught  the lean is read from open-stamped bars: an hour of lookahead
+caught  the lean is shifted the wrong way: two hours out
+caught  an unreadable lean becomes 0, which passes a 'lean >= 0' gate
+caught  the lean's sign is flipped
+caught  the reading is not declared, so no rule may name it
+caught  orb_break is not declared as a word reading
+caught  the ORB range is read before 13:15, while it is still forming
+caught  the range window runs to 13:15 inclusive, taking one bar too many
+caught  the range starts an hour early
+caught  a wick through the range counts as a break
+caught  the LAST break wins instead of the first
+caught  bars that have not closed are read
+12/12 caught

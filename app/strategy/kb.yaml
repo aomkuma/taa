@@ -22,7 +22,10 @@
 #   session (asia / london / ny / none, the owner's windows in Thai time), phase (up / down / none, the last 3 D1
 #   closes), yesterday (strong_up / strong_down / none), m15_rhythm h1_rhythm h4_rhythm d1_rhythm (up / down / none),
 #   h1_big h4_big d1_big (up / down / none, 500 bars), release_min (minutes to the nearest US release, either way),
-#   day_range_step (today's range in zone steps). Values: "> 1.1", ">= 60", "< 60", "<= 60", a word, or a list (any).
+#   day_range_step (today's range in zone steps), h4_lean (R10's number: the H4 close less its 50-bar mean,
+#   in H4 ATR(14); positive = leaning up, so behind a BUY is +h4_lean and behind a SELL is -h4_lean),
+#   orb_high orb_low orb_break (W03's London ORB: the 13:00-13:15 Thai range, nan / none before 13:15).
+#   Values: "> 1.1", ">= 60", "< 60", "<= 60", a word, or a list (any).
 
 - id: P01
   kind: principle
@@ -320,7 +323,7 @@
   kind: rule
   stage: entry
   items: [A2]
-  says: "One rule frozen on 2026-10-27 before any later day was replayed (research/2026-10-26-three-bots/RULES_LOCKED.md, rule set 2): take the trade only when H4 momentum behind it is at least 0 (F23). On the shipped bots over 2023-09 .. 2026-10-24 it moves them from +0.102 to +0.210 R a trade, +0.214 inside the fitted window and +0.207 outside it. It is the owner's own rule of that day - only the side with the edge on a timeframe LARGER than the entry frame - with the frame the measurement chose and a threshold of zero rather than a fitted number. Rule set 1 (an H1 threshold and a range-sell ban) was withdrawn the same evening: it was measured on the wrong parameters and with a one-hour lookahead."
+  says: "One rule frozen on 2026-10-27 before any later day was replayed (research/2026-10-26-three-bots/RULES_LOCKED.md, rule set 2): take the trade only when H4 momentum behind it is at least 0 (F23). On the shipped bots over 2023-09 .. 2026-10-24 it moves them from +0.102 to +0.210 R a trade, +0.214 inside the fitted window and +0.207 outside it. The reading is `h4_lean` (positive = leaning up): behind the trade is +h4_lean for a BUY and -h4_lean for a SELL, and the trade is allowed when that is at least 0. Read the number, never infer it from h4_rhythm, h4_big or h4_trend - on the 2026-07-06 replay the number was absent from the readings and the inference ran the wrong way all morning while the real lean was +3.515, behind a BUY (ISSUES 37). It is the owner's own rule of that day - only the side with the edge on a timeframe LARGER than the entry frame - with the frame the measurement chose and a threshold of zero rather than a fitted number. Rule set 1 (an H1 threshold and a range-sell ban) was withdrawn the same evening: it was measured on the wrong parameters and with a one-hour lookahead."
   evidence: "239 shipped trades, 2023-09 .. 2026-10-24; 199 survive the rule"
   source: "research/2026-10-26-three-bots/RULES_LOCKED.md rule set 2 (2026-10-27)"
 

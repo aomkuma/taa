@@ -8,6 +8,7 @@ Moved from research/2026-10-23-entry/knowledge/behaviors.py.
 - climax        the last bar: range >= 2 ATR, volume >= 2 x the mean, a wick of half its range
 - runaway       the day ran >= 1 step one way and price is beyond yesterday's extreme on that side
 - asia_break    after 13:00 Thai: which side of the 07:00-13:00 Thai range today's bars have taken
+- opening_range W03's London ORB: the 13:00-13:15 Thai range and the first M1 close beyond it
 - recent_sweep  a sweep of an equal-lows / -highs pool (app/strategy/picture.py) in the last bars
 - day_levels / level_prices / level_sweep   the day's own levels and their sweeps (L14, L15)
 - seen_levels   the levels everyone sees (the day's, yesterday's and Asia's high / low, round 50s, main lines)
@@ -77,6 +78,39 @@ def asia_break(t_open: pd.DatetimeIndex, h: np.ndarray, lo: np.ndarray, as_of: p
         return "none"
     up, down = h[b].max() > h[a].max(), lo[b].min() < lo[a].min()
     return "both" if up and down else "up" if up else "down" if down else "none"
+
+
+def opening_range(m1: pd.DataFrame, as_of: pd.Timestamp) -> tuple[float, float, str]:
+    """W03's own reading: the 13:00-13:15 Thai range and the first M1 close beyond it.
+
+    Returns ``(high, low, break)``. The range is the M1 bars that OPENED in 13:00-13:15 Thai of ``as_of``'s
+    Thai day, so it is complete only once 13:15 has passed; before that the range is ``nan`` and the break
+    is "none" - the weapon has nothing to act on yet, which is itself the answer. ``break`` is "up" or
+    "down" for the first M1 bar closed by ``as_of`` whose close sits beyond the range, whichever came first,
+    and stays that way for the rest of the day.
+
+    It exists because W03 is in the weapon catalog as tradable while no reading carried its range: on the
+    2026-07-06 replay the answerer reported "the ORB range is not provided" at 13:00, 13:15, 13:30, 14:00
+    and 14:30 and could never fire it (ISSUES 38, DECISION_CHECKLIST D6).
+    """
+    th = as_of.tz_convert(TH)
+    day = th.normalize()
+    start, end = day + pd.Timedelta(hours=13), day + pd.Timedelta(hours=13, minutes=15)
+    if th < end:  # the range is still forming: W03's first-break window has not opened
+        return math.nan, math.nan, "none"
+    opens = pd.DatetimeIndex(m1.index).tz_convert(TH)
+    closed_by = opens + pd.Timedelta(minutes=1) <= th
+    in_range = (opens >= start) & (opens < end) & closed_by
+    if not in_range.any():
+        return math.nan, math.nan, "none"
+    high = float(m1.high.to_numpy(float)[in_range].max())
+    low = float(m1.low.to_numpy(float)[in_range].min())
+    after = (opens >= end) & closed_by
+    c = m1.close.to_numpy(float)[after]
+    beyond = np.flatnonzero((c > high) | (c < low))
+    if not beyond.size:
+        return high, low, "none"
+    return high, low, "up" if c[beyond[0]] > high else "down"
 
 
 def day_start(as_of: pd.Timestamp) -> pd.Timestamp:

@@ -292,3 +292,65 @@ def test_the_app_checklist_equals_the_document():
 
     rows = dict(re.findall(r"^\| ([ABC]\d+) \| (.+?) \|", CHECKLIST.read_text(encoding="utf-8"), flags=re.M))
     assert rows == APP_ITEMS and len(APP_ITEMS) == 22
+
+
+# R10's own number in the readings (ISSUES 37, DECISION_CHECKLIST D6) ---------------------------------------
+
+
+def _h1_opens(closes: list[float], start: str = "2026-07-01 00:00") -> pd.DataFrame:
+    """An OPEN-stamped H1 frame, the shape of Frames.h1: bar i opens at start + i hours."""
+    idx = pd.date_range(pd.Timestamp(start, tz="UTC"), periods=len(closes), freq="1h")
+    c = np.asarray(closes, dtype=float)
+    return pd.DataFrame(
+        {"open": c, "high": c + 1.0, "low": c - 1.0, "close": c, "tick_volume": np.ones(len(c))}, index=idx
+    )
+
+
+def test_every_new_reading_is_declared():
+    for name in ("h4_lean", "orb_high", "orb_low"):
+        assert name in kb.NUMERIC and name in kb.FEATURES
+    assert kb.WORDS["orb_break"] == {"up", "down", "none"}
+    assert "orb_break" in kb.FEATURES
+
+
+def test_the_h4_lean_is_positive_going_up_and_negative_going_down():
+    up = _h1_opens([4000.0 + i for i in range(400)])
+    at = up.index[-1] + pd.Timedelta(hours=1)  # the last bar has closed
+    assert kb.h4_lean(up, at) > 0
+    down = _h1_opens([4000.0 - i for i in range(400)])
+    assert kb.h4_lean(down, at) < 0
+
+
+def test_the_lean_reads_no_bar_that_has_not_closed():
+    """The whole frame at ``as_of`` must give what the frame truncated at ``as_of`` gives."""
+    closes = [4000.0 + i for i in range(400)]
+    full = _h1_opens(closes)
+    at = full.index[300]  # the bar opening here has NOT closed; the one before it has
+    truncated = full[full.index < at]
+    assert kb.h4_lean(full, at) == pytest.approx(kb.h4_lean(truncated, at))
+
+
+def test_the_bar_that_closes_exactly_at_as_of_is_included():
+    closes = [4000.0 + i for i in range(400)]
+    full = _h1_opens(closes)
+    opened = full.index[299]  # opens 299h in, closes an hour later
+    at = opened + pd.Timedelta(hours=1)
+    without = full[full.index < opened]
+    assert kb.h4_lean(full, at) != pytest.approx(kb.h4_lean(without, at))
+
+
+def test_too_short_a_history_is_nan_not_a_number():
+    short = _h1_opens([4000.0 + i for i in range(120)])  # 30 H4 bars: under the 50 + 14 needed
+    assert math.isnan(kb.h4_lean(short, short.index[-1] + pd.Timedelta(hours=1)))
+
+
+def test_the_lean_matches_edge_side_on_close_stamped_bars():
+    """The readings' number is the same one app/strategy/edge_side.py gives the strategies."""
+    from app.core.enums import Timeframe
+    from app.strategy.edge_side import edge_lean
+
+    opens = _h1_opens([4000.0 + (i % 37) * 2.0 for i in range(400)])
+    at = opens.index[-1] + pd.Timedelta(hours=1)
+    stamped = opens.copy()
+    stamped.index = opens.index + pd.Timedelta(hours=1)
+    assert kb.h4_lean(opens, at) == pytest.approx(edge_lean({Timeframe.H1: stamped}, at, Timeframe.M5))
