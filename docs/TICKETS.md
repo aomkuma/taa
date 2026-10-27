@@ -59,7 +59,7 @@ first, then the order continues with 6A → 6B → … → 11. LIVE stays disabl
 | M2 | Phase 15 — Product-scale backlog (deferred) | 1 | 0 | TODO |
 | M2 | Phase 16 — AI analyst and bot executor (rev. 7, PLAN §A35) | 10 | 1 | IN PROGRESS |
 | M2 | Phase 17 — Setup OWN lanes (PLAN-1) | 1 | 0 | IN PROGRESS |
-| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 9 | 6 | IN PROGRESS |
+| M2 | Phase 18 — The AI trader in the engine, one code path (rev. 9, PLAN §A37) | 10 | 7 | IN PROGRESS |
 
 ## Milestone 1 — everything that never sends a broker order
 
@@ -2166,6 +2166,17 @@ The owner (2026-10-25): "when the system runs for real I must see the plan of ea
 - [ ] `GET /engines/{id}/ai-journal` (by day, cursor: decisions, plans, checklists) and the API samples
 - [ ] PWA: an AI journal page (days; the day's plans first - the Thai summary, levels, scenarios, readiness; then each decision with its reasons and checklist, the trade it opened linked to Trade history); i18n TH / EN and parity tests
 - [ ] a Web Push alert when the morning plan is written (the Thai summary)
+
+#### TAA-1810 — Three measured M5 strategies
+
+- **Status:** DONE
+- **Depends on:** 1806
+
+- [x] `trend_box_down`, `trend_box_up` and `range_break` in `app/strategy/`, registered and off by default in an M5 lane
+- [x] hand-worked tests cover each measured rule, gate, stop plan and break-even ordering
+- [x] planted-bug script catches at least 15 deliberate errors; commit its output
+- [x] parity script runs through the backtest engine and reports every unmatched decision and R statistics
+- [x] full pytest, ruff, mypy, bandit and unchanged architecture test pass
 
 ### Phase 15 — Product-scale backlog (deferred)
 

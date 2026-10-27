@@ -44,9 +44,21 @@ path, with the same decisions as the research harness. **No new behaviour, no ne
 
 ### 2.2 Frames each strategy needs
 
-`ctx.frames` must carry M1, M5, H1 and H4. The decision is taken at the close of an **M5** bar. Only bars
-closed by `ctx.market.decision_time_utc` may be read — the context builder already enforces this; never widen
-a window yourself.
+`ctx.frames` must carry **M1, M5 and H1 — those three only**. H4 is **not** a framework frame here: build it
+inside the strategy by resampling H1 (`h1.resample("4h").agg({"open":"first","high":"max","low":"min",
+"close":"last"}).dropna()`), exactly as the research harness does in `bots.run()`. That is what keeps parity:
+a framework-analyzed H4 frame would not have the same bar boundaries.
+
+So the lane's `timeframes` block is `higher: H1`, `entry: M5`, `refinement: M1`, and **`context` stays
+empty**. `warmup_bars` must cover 400 closed H1 bars (the H4 resample needs 1,200 H1 bars for its 300 — set
+`warmup_bars` accordingly and say so in the lane's comment).
+
+**Do not change `app/config.py`, `TimeframesConfig`, the context builder or anything else shared.** If a frame
+seems unreachable, that is a sign to re-read this section, not to widen `TimeframesConfig.enabled` — doing so
+adds every lane's `context` frames to every strategy's `ctx.frames` and changes existing backtests.
+
+The decision is taken at the close of an **M5** bar. Only bars closed by `ctx.market.decision_time_utc` may be
+read — the context builder already enforces this; never widen a window yourself.
 
 ## 3. The rules, exactly
 

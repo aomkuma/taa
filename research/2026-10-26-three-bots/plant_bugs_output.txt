@@ -1,0 +1,22 @@
+Planted bugs: 21
+CAUGHT | include the repainting ZigZag endpoint
+CAUGHT | include the decision bar in the consolidation box
+CAUGHT | search boxes shortest first
+CAUGHT | exclude the inclusive lower retrace boundary
+CAUGHT | exclude the inclusive upper retrace boundary
+CAUGHT | let a wick count as a close break
+CAUGHT | add extra stop buffer
+CAUGHT | demand twenty extra dollars of R reward
+CAUGHT | aim for the start of the leg instead of its end
+CAUGHT | measure sell run from M1 highs
+CAUGHT | reject an exactly 1.2 R run
+CAUGHT | exclude the M1 bar exactly sixty minutes old
+CAUGHT | wait until 0.6 R for break-even
+CAUGHT | move the stop before testing the old stop
+CAUGHT | replace a more favorable stop with break-even
+CAUGHT | flatten at 08:00 Bangkok
+CAUGHT | retain empty H4 bins
+CAUGHT | allow an H4 stepping trend
+CAUGHT | ignore the previous M5 close at breakout
+CAUGHT | double the range breakout stop offset
+CAUGHT | remove the five dollar target floor

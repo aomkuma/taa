@@ -52,7 +52,9 @@ def variants() -> list[tuple[str, bots.P]]:
                 for u in (0.2, 0.5):
                     for m in (0.8, 1.2):
                         name = f"{bot} box {b} retr {r[0]}-{r[1]} buf {u} minR {m}"
-                        out.append((name, replace(bots.P(), bots=(bot,), box=b, retrace=r, buffer=u, min_r=m)))
+                        out.append(
+                            (name, replace(bots.P(), bots=(bot,), box=b, retrace=r, buffer=u, min_r=m))
+                        )
     for mode in ("fade", "break"):
         for tf in ("H4", "H1"):
             for tp in (0.3, 0.5, 0.8):
@@ -89,9 +91,13 @@ def main() -> None:
           f"unseen mean {d.unseen.mean():+.3f} (sd {d.unseen.std():.3f})")  # fmt: skip
     best = d.loc[d.fitted.idxmax()]
     print(f"\n- best on the FITTED year: {best.variant}")
-    print(f"  fitted {best.fitted:+.3f} ({int(best.n_fit)} trades) -> unseen **{best.unseen:+.3f}** ({int(best.n_unseen)} trades)")
+    print(
+        f"  fitted {best.fitted:+.3f} ({int(best.n_fit)} trades) -> unseen **{best.unseen:+.3f}** ({int(best.n_unseen)} trades)"
+    )
     top5 = d.nlargest(5, "fitted")
-    print(f"- the top 5 by fitted score averaged {top5.fitted.mean():+.3f} fitted -> {top5.unseen.mean():+.3f} unseen")
+    print(
+        f"- the top 5 by fitted score averaged {top5.fitted.mean():+.3f} fitted -> {top5.unseen.mean():+.3f} unseen"
+    )
     bu = d.loc[d.unseen.idxmax()]
     print(f"\n- best on the UNSEEN years: {bu.variant}")
     print(f"  unseen {bu.unseen:+.3f} -> fitted {bu.fitted:+.3f} (the same test the other way round)")

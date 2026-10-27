@@ -41,7 +41,9 @@ def show(df: pd.DataFrame, title: str) -> None:
     eq = df.sort_values("at").r.cumsum()
     dd = (eq - eq.cummax()).min()
     for bot, g in df.groupby("bot"):
-        print(f"| {title} | {bot} | {len(g)} | {(g.r > 0).mean():.0%} | {g.r.mean():+.3f} | {g.r.sum():+.1f} |")
+        print(
+            f"| {title} | {bot} | {len(g)} | {(g.r > 0).mean():.0%} | {g.r.mean():+.3f} | {g.r.sum():+.1f} |"
+        )
     print(f"| {title} | **ALL** | {len(df)} | {(df.r > 0).mean():.0%} | **{df.r.mean():+.3f}** | "
           f"{df.r.sum():+.1f} (worst drawdown {dd:.1f} R) |")  # fmt: skip
 

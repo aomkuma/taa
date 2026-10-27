@@ -119,7 +119,9 @@ def run(f: dict, p: R, start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
                     if tr is None:
                         continue
                     before = m1[(m1.index >= t - pd.Timedelta(minutes=60)) & (m1.index < t)]
-                    up = (tr.entry - before.low.min()) if tr.side == "SELL" else (before.high.max() - tr.entry)
+                    up = (
+                        (tr.entry - before.low.min()) if tr.side == "SELL" else (before.high.max() - tr.entry)
+                    )
                     if p.run and up > p.run * abs(tr.stop - tr.entry):
                         continue
                     own = replace(step, exit_mode="tp" if bot == "DOWN" else "be", be_at=p.be_at)
@@ -160,7 +162,10 @@ def main() -> None:
         ("UP only", {"bots": ("UP",)}),
     ]:
         p = replace(base, **over)
-        per = {n: run(f, p, pd.Timestamp(s, tz="UTC"), pd.Timestamp(e, tz="UTC")) for n, (s, e) in PERIODS.items()}
+        per = {
+            n: run(f, p, pd.Timestamp(s, tz="UTC"), pd.Timestamp(e, tz="UTC"))
+            for n, (s, e) in PERIODS.items()
+        }
         show(label, per)
 
 

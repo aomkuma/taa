@@ -188,12 +188,37 @@ lanes:
       items:
         - name: ai_trader
           enabled: false
-          # 1 USD: this close to the AI's entry fills now; the take-profit 10 % short of the AI's target but never
-          # nearer than 5 USD to the entry (P09, checklist C5)
-          params: {pending_minutes: 30, market_tolerance: 1.0, target_trim: 0.10, min_take_profit: 5.0}
+          # 1 USD: this close to the AI's entry fills now; the take-profit 10 % short of the AI's target.
+          # The 5 USD floor (C5) is off since 2026-10-27 - it rejected 1 signal in 496 (owner's call).
+          params: {pending_minutes: 30, market_tolerance: 1.0, target_trim: 0.10, min_take_profit: 0.0}
     min_risk_reward: 0.2            # owner 2026-10-25: a quick take-profit (P09) against a stop past the liquidate zone
     management:                     # the stop to break-even when price touches +1 R (owner 2026-10-25, checklist C6;
       ai_trader: {break_even: true, break_even_trigger_r: 1.0, break_even_on_touch: true, trailing: false}  # R03)
+
+  - name: three_bots
+    symbols: [XAUUSD]
+    timeframes:
+      higher: H1
+      entry: M5
+      refinement: M1
+      context: []
+      # 1,200 closed H1 bars provide the 300 H4 bars used by range_break.
+      warmup_bars: 1200
+    strategies:
+      cooldown_bars: 0
+      signal_expiry_bars: 1
+      items:
+        - name: trend_box_down
+          enabled: false
+        - name: trend_box_up
+          enabled: false
+        - name: range_break
+          enabled: false
+    min_risk_reward: 0.8
+    management:
+      trend_box_down: {break_even: false, trailing: false}
+      trend_box_up: {break_even: false, trailing: false}
+      range_break: {break_even: false, trailing: false}
 
 risk:
   # The outer cage of this machine (PLAN §A33). The owner's Trading profile in the PWA sets the values the
@@ -203,11 +228,16 @@ risk:
   max_open_positions: 20
   max_positions_per_symbol: 1
   max_total_open_risk_percent: 10.0
-  max_daily_loss_percent: 10.0
-  max_weekly_loss_percent: 20.0
-  max_account_drawdown_percent: 10.0
-  max_consecutive_losses: 4
-  consecutive_loss_pause_hours: 24
+  # The loss breakers are DEACTIVATED (owner, 2026-10-27: "take the breakers out - or deactivate them,
+  # because every trade already has its stop loss"). The code and the checks stay; these four are set to the
+  # ceilings the app allows, so they do not stop the system after a losing run. What still bounds a loss: the
+  # stop on every trade, the risk per trade, max_open_positions, max_total_open_risk_percent and the kill
+  # switch. Put 10.0 / 20.0 / 10.0 / 4 back to switch them on again.
+  max_daily_loss_percent: 10.0        # the app's ceiling (CEILING_DAILY_LOSS_PCT)
+  max_weekly_loss_percent: 20.0       # the app's ceiling (CEILING_WEEKLY_LOSS_PCT)
+  max_account_drawdown_percent: 50.0  # was 10.0; the app's ceiling (CEILING_DRAWDOWN_PCT)
+  max_consecutive_losses: 50          # was 4; the field's maximum - the range bot wins 22 % of its trades
+  consecutive_loss_pause_hours: 0     # was 24: no pause even if the streak limit is somehow reached
   max_spread_points: 30
   max_spread_to_sl_ratio: 0.15
   max_slippage_points: 10

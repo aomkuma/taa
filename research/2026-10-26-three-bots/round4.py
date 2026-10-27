@@ -43,8 +43,10 @@ def main() -> None:
         d = pd.DataFrame(rows)
         d["h"] = (pd.to_datetime(d["closed"]) - pd.to_datetime(d["at"])).dt.total_seconds() / 3600
         eod = d[d.out == "eod"].r.sum()
-        print(f"| {label} | {len(d)} | {(d.r > 0).mean():.0%} | {d.r.mean():+.3f} | {d.r.sum():+.1f} | "
-              f"{d.h.median():.1f} h | {eod:+.1f} |")
+        print(
+            f"| {label} | {len(d)} | {(d.r > 0).mean():.0%} | {d.r.mean():+.3f} | {d.r.sum():+.1f} | "
+            f"{d.h.median():.1f} h | {eod:+.1f} |"
+        )
 
 
 if __name__ == "__main__":

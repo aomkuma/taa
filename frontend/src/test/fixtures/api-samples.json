@@ -9560,7 +9560,7 @@
                   "name": "ai_trader",
                   "params": {
                     "market_tolerance": 1.0,
-                    "min_take_profit": 5.0,
+                    "min_take_profit": 0.0,
                     "pending_minutes": 30,
                     "target_trim": 0.1
                   }
@@ -9581,6 +9581,80 @@
               "refinement": null,
               "stale_tick_seconds": 120.0,
               "warmup_bars": 60
+            }
+          },
+          {
+            "management": {
+              "range_break": {
+                "break_even": false,
+                "break_even_on_touch": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              },
+              "trend_box_down": {
+                "break_even": false,
+                "break_even_on_touch": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              },
+              "trend_box_up": {
+                "break_even": false,
+                "break_even_on_touch": false,
+                "break_even_target_share": null,
+                "break_even_trigger_r": null,
+                "time_stop_bars": null,
+                "timeframe": null,
+                "trailing": false,
+                "trailing_start_r": null
+              }
+            },
+            "max_spread_points": null,
+            "max_spread_to_sl_ratio": null,
+            "min_risk_reward": 0.8,
+            "name": "three_bots",
+            "strategies": {
+              "allow_single_indicator_signals": false,
+              "cooldown_bars": 0,
+              "items": [
+                {
+                  "enabled": false,
+                  "name": "trend_box_down",
+                  "params": {}
+                },
+                {
+                  "enabled": false,
+                  "name": "trend_box_up",
+                  "params": {}
+                },
+                {
+                  "enabled": false,
+                  "name": "range_break",
+                  "params": {}
+                }
+              ],
+              "signal_expiry_bars": 1
+            },
+            "symbols": [
+              "XAUUSD"
+            ],
+            "timeframes": {
+              "candle_close_grace_seconds": 3.0,
+              "context": [],
+              "context_bars": 700,
+              "entry": "M5",
+              "higher": "H1",
+              "max_gap_bars": 3,
+              "refinement": "M1",
+              "stale_tick_seconds": 120.0,
+              "warmup_bars": 1200
             }
           }
         ],
@@ -9621,7 +9695,7 @@
           "volatile_atr_percentile": 90.0
         },
         "risk": {
-          "consecutive_loss_pause_hours": 24.0,
+          "consecutive_loss_pause_hours": 0.0,
           "correlation_groups": {
             "EUR_GBP": [
               "EURUSD",
@@ -9633,8 +9707,8 @@
             "min_risk_reward": 0.2
           },
           "foreign_positions_policy": "count",
-          "max_account_drawdown_percent": 10.0,
-          "max_consecutive_losses": 4,
+          "max_account_drawdown_percent": 50.0,
+          "max_consecutive_losses": 50,
           "max_daily_loss_percent": 2.0,
           "max_effective_leverage": null,
           "max_lot": 1.0,
@@ -14793,7 +14867,7 @@
           "exit_minutes": 60,
           "expiry_bars": 2,
           "market_tolerance": 1.0,
-          "min_take_profit": 5.0,
+          "min_take_profit": 0.0,
           "pending_minutes": 30,
           "plan_min_rr": 0.2,
           "run_minutes": 60,
@@ -14820,6 +14894,132 @@
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 50
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "",
+        "known": true,
+        "last_command": null,
+        "name": "trend_box_down",
+        "overrides": [],
+        "params": {
+          "box": 0.2,
+          "buffer": 0.2,
+          "expiry_bars": 1,
+          "min_r": 1.2,
+          "min_take_profit": 0.0
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1",
+          "M5",
+          "H1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 400
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "",
+        "known": true,
+        "last_command": null,
+        "name": "trend_box_up",
+        "overrides": [],
+        "params": {
+          "box": 0.33,
+          "buffer": 0.2,
+          "expiry_bars": 1,
+          "min_r": 1.2,
+          "min_take_profit": 0.0
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1",
+          "M5",
+          "H1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 400
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "",
+        "known": true,
+        "last_command": null,
+        "name": "range_break",
+        "overrides": [],
+        "params": {
+          "buffer": 0.3,
+          "expiry_bars": 1,
+          "min_r": 0.8,
+          "min_take_profit": 0.0,
+          "tp_range": 0.5
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1",
+          "M5",
+          "H1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 1200
       }
     ],
     "timeframes": {
@@ -15995,7 +16195,7 @@
           "exit_minutes": 60,
           "expiry_bars": 2,
           "market_tolerance": 1.0,
-          "min_take_profit": 5.0,
+          "min_take_profit": 0.0,
           "pending_minutes": 30,
           "plan_min_rr": 0.2,
           "run_minutes": 60,
@@ -16022,6 +16222,132 @@
         "top_reject_reasons": [],
         "version": "1.0.0",
         "warmup_bars": 50
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "",
+        "known": true,
+        "last_command": null,
+        "name": "trend_box_down",
+        "overrides": [],
+        "params": {
+          "box": 0.2,
+          "buffer": 0.2,
+          "expiry_bars": 1,
+          "min_r": 1.2,
+          "min_take_profit": 0.0
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1",
+          "M5",
+          "H1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 400
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "",
+        "known": true,
+        "last_command": null,
+        "name": "trend_box_up",
+        "overrides": [],
+        "params": {
+          "box": 0.33,
+          "buffer": 0.2,
+          "expiry_bars": 1,
+          "min_r": 1.2,
+          "min_take_profit": 0.0
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1",
+          "M5",
+          "H1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 400
+      },
+      {
+        "configured_enabled": false,
+        "decisions": {
+          "ACCEPT": 0,
+          "HOLD": 0,
+          "REJECT": 0
+        },
+        "demo_only": true,
+        "description": "",
+        "known": true,
+        "last_command": null,
+        "name": "range_break",
+        "overrides": [],
+        "params": {
+          "buffer": 0.3,
+          "expiry_bars": 1,
+          "min_r": 0.8,
+          "min_take_profit": 0.0,
+          "tp_range": 0.5
+        },
+        "performance": {
+          "avg_r": null,
+          "last_exit_at": null,
+          "losses": 0,
+          "net": null,
+          "open": 0,
+          "profit_factor": null,
+          "r_trades": 0,
+          "trades": 0,
+          "win_rate": null,
+          "wins": 0
+        },
+        "state": "DISABLED_CONFIG",
+        "timeframes": [
+          "M1",
+          "M5",
+          "H1"
+        ],
+        "top_reject_reasons": [],
+        "version": "1.0.0",
+        "warmup_bars": 1200
       }
     ],
     "timeframes": {

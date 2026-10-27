@@ -53,7 +53,7 @@ class P:
     retrace: tuple[float, float] = (0.382, 0.786)
     box: float = 0.25  # the box at most this share of the H1 leg tall
     buffer: float = 0.2  # the stop past the box by this share of the box height
-    min_tp: float = 5.0
+    min_tp: float = 0.0  # the 5 USD floor, off since 2026-10-27 (it rejected 1 of 496 signals)
     min_r: float = 1.0
     tp_range: float = 0.5
     run: float = 1.2
@@ -62,7 +62,9 @@ class P:
     be_at: float = 1.0  # the trade must be this many R ahead before the stop moves
     trail_min: int = 30  # 'trail': the stop follows the extreme of the last this many minutes of M1 bars
     struct_bars: int = 3  # 'struct': this many M5 closes back across the entry end the trade
-    max_hours: float = 0  # the trade is closed at this bar's close after this many hours (0: at the day's end)
+    max_hours: float = (
+        0  # the trade is closed at this bar's close after this many hours (0: at the day's end)
+    )
     bots: tuple[str, ...] = ("DOWN", "UP", "RANGE")
     d1: bool = False  # the trend bots only with the D1 regime (the close against its 50-day mean)
     range_mode: str = "fade"  # fade: sell a sweep closed back; opposite: the same trigger, the other side;
@@ -89,7 +91,10 @@ def windows(day: pd.Timestamp) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
     return [
         ((th + pd.Timedelta(hours=7)).tz_convert("UTC"), (th + pd.Timedelta(hours=9)).tz_convert("UTC")),
         ((th + pd.Timedelta(hours=13)).tz_convert("UTC"), (th + pd.Timedelta(hours=15)).tz_convert("UTC")),
-        ((ny + pd.Timedelta(hours=8)).tz_convert("UTC"), (ny + pd.Timedelta(hours=11, minutes=30)).tz_convert("UTC")),
+        (
+            (ny + pd.Timedelta(hours=8)).tz_convert("UTC"),
+            (ny + pd.Timedelta(hours=11, minutes=30)).tz_convert("UTC"),
+        ),
     ]
 
 
@@ -149,7 +154,9 @@ def settle(m1: pd.DataFrame, t: Trade, until: pd.Timestamp, p: P) -> Trade:
     return t
 
 
-def run(f: dict, params: P | dict[str, P], start: pd.Timestamp = START, end: pd.Timestamp = END) -> list[Trade]:
+def run(
+    f: dict, params: P | dict[str, P], start: pd.Timestamp = START, end: pd.Timestamp = END
+) -> list[Trade]:
     """Every bot of ``params`` (one P for all its bots, or one P per bot) side by side, each with its own
     position, so a trend trade and a range trade can be open at once."""
     per: dict[str, P] = params if isinstance(params, dict) else {b: params for b in params.bots}
@@ -186,7 +193,9 @@ def run(f: dict, params: P | dict[str, P], start: pd.Timestamp = START, end: pd.
                     if tr is None:
                         continue
                     before = m1[(m1.index >= t_close - pd.Timedelta(minutes=60)) & (m1.index < t_close)]
-                    runup = (tr.entry - before.low.min()) if tr.side == "SELL" else (before.high.max() - tr.entry)
+                    runup = (
+                        (tr.entry - before.low.min()) if tr.side == "SELL" else (before.high.max() - tr.entry)
+                    )
                     if p.run and runup > p.run * abs(tr.stop - tr.entry):
                         continue
                     tr = settle(m1, tr, day_end, p)
@@ -328,8 +337,10 @@ def report(trades: list[Trade], title: str) -> None:
         for r in g.r:
             cur = cur + 1 if r < 0 else 0
             streak = max(streak, cur)
-        print(f"| {bot} | {len(g)} | {(g.r > 0).mean():.0%} | {g.r.mean():+.3f} | {g.r.sum():+.1f} | "
-              f"{(wk > 0).sum()} / {(wk <= 0).sum()} | {streak} |")
+        print(
+            f"| {bot} | {len(g)} | {(g.r > 0).mean():.0%} | {g.r.mean():+.3f} | {g.r.sum():+.1f} | "
+            f"{(wk > 0).sum()} / {(wk <= 0).sum()} | {streak} |"
+        )
 
 
 def main() -> None:

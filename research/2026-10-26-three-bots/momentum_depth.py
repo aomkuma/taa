@@ -41,7 +41,9 @@ START, END = pd.Timestamp("2025-10-20", tz="UTC"), pd.Timestamp("2026-10-24", tz
 def atr(h: np.ndarray, lo: np.ndarray, c: np.ndarray, i: int, n: int = 14) -> float:
     s = max(0, i - n + 1)
     prev = np.concatenate([[c[s]], c[s:i]])
-    tr = np.maximum(h[s : i + 1] - lo[s : i + 1], np.maximum(abs(h[s : i + 1] - prev), abs(lo[s : i + 1] - prev)))
+    tr = np.maximum(
+        h[s : i + 1] - lo[s : i + 1], np.maximum(abs(h[s : i + 1] - prev), abs(lo[s : i + 1] - prev))
+    )
     return float(tr.mean()) if len(tr) else 0.0
 
 
@@ -77,7 +79,7 @@ def main() -> None:
             if len(h4h) == 2 and len(h4l) == 2:
                 down4 = h4h[1] < h4h[0] and h4l[1] < h4l[0]
                 up4 = h4h[1] > h4h[0] and h4l[1] > h4l[0]
-                agree = (down4 if b.kind == -1 else up4)
+                agree = down4 if b.kind == -1 else up4
         if t < START:
             continue
         rows.append({"depth": abs(c.price - b.price) / leg * 100, "straight": straight,
@@ -93,13 +95,17 @@ def main() -> None:
             g = d[d[name + "_b"] == lab]
             if not len(g):
                 continue
-            print(f"| {lab} | {len(g)} | {g.depth.median():.0f} | {(g.depth < 50).mean():.0%} | "
-                  f"{(g.depth > 78.6).mean():.0%} | {(g.depth > 100).mean():.0%} |")
+            print(
+                f"| {lab} | {len(g)} | {g.depth.median():.0f} | {(g.depth < 50).mean():.0%} | "
+                f"{(g.depth > 78.6).mean():.0%} | {(g.depth > 100).mean():.0%} |"
+            )
     print("\n| H4 steps the leg's way | legs | median pullback % | under 50 % | over 78.6 % | over 100 % |")
     print("|---|---|---|---|---|---|")
     for lab, g in d.groupby("agree"):
-        print(f"| {'yes' if lab else 'no'} | {len(g)} | {g.depth.median():.0f} | {(g.depth < 50).mean():.0%} | "
-              f"{(g.depth > 78.6).mean():.0%} | {(g.depth > 100).mean():.0%} |")
+        print(
+            f"| {'yes' if lab else 'no'} | {len(g)} | {g.depth.median():.0f} | {(g.depth < 50).mean():.0%} | "
+            f"{(g.depth > 78.6).mean():.0%} | {(g.depth > 100).mean():.0%} |"
+        )
 
 
 if __name__ == "__main__":

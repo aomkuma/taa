@@ -28,8 +28,9 @@ from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
 BEST = {
     "DOWN": replace(bots.P(), bots=("DOWN",), box=0.2, buffer=0.2, min_r=1.2),
     "UP": replace(bots.P(), bots=("UP",), box=0.33, buffer=0.2, min_r=1.2),
-    "RANGE": replace(bots.P(), bots=("RANGE",), range_tf="H4", range_mode="break",
-                     tp_range=0.5, buffer=0.3, min_r=0.8),  # fmt: skip
+    "RANGE": replace(
+        bots.P(), bots=("RANGE",), range_tf="H4", range_mode="break", tp_range=0.5, buffer=0.3, min_r=0.8
+    ),  # fmt: skip
 }
 
 
@@ -38,7 +39,9 @@ def load() -> dict:
     f = {}
     for tf in (Timeframe.M1, Timeframe.H1):
         x = to_frame(hs.load("FBS-Demo", "XAUUSD", tf, None, None))
-        f[tf] = x[(x.index >= bots.START - pd.Timedelta(days=60)) & (x.index < bots.END + pd.Timedelta(days=3))]
+        f[tf] = x[
+            (x.index >= bots.START - pd.Timedelta(days=60)) & (x.index < bots.END + pd.Timedelta(days=3))
+        ]
     return f
 
 

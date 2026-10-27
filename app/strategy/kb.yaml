@@ -207,6 +207,15 @@
   evidence: "25 Oct: four measurements in a row (sweep sides, reclaim 2025, by regime, follow the break) each split differently, none written here; W07 already said 'lost in 2023-25' before I re-measured it"
   source: "owner 2026-10-25: 'organise the system of thinking first, or the data you have is scattered, before doing other parts'; 'instead of saying when it lost or won, record which market condition it suits'; 'say in which market condition it has the edge or the disadvantage'"
 
+- id: P28
+  kind: principle
+  stage: method
+  items: []
+  says: "A measurement on one period may reject a specific number; it may not overrule the owner's structural reading of the market. Measured 2026-10-27 on 88 variants over three years (research/2026-10-26-three-bots/selection_bias.py): choosing the best variant on one year is worth +0.454 R a trade over the average by selection alone, the top five by fitted score fall from +0.291 to +0.064 on unseen data, and the fitted-to-unseen correlation is only +0.35. The owner's deeper retrace band (0.5-0.886) scored lower than mine on the fitted year (+0.245 against +0.280) and far higher on unseen data (+0.023 against -0.289). So: judge a rule by whether it keeps its sign in EVERY period available, never by the best average; and when a fitted number disagrees with the owner''s reading of how price moves, the number has to win in every period before it is believed."
+  evidence: "selection_bias.py, unseen.py and HYPOTHESIS.md in research/2026-10-26-three-bots (2023-09 .. 2026-10)"
+  source: "owner 2026-10-27: 'you read the market well and predict it fairly accurately - why does it fall apart once it becomes code; which step is the problem'; memory taa-dont-overrule-owner-with-one-period"
+  since: 2026-10-27
+
 - id: P27
   kind: principle
   stage: method

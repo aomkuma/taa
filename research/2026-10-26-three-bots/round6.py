@@ -27,7 +27,7 @@ EXITS = {"tp": {"exit_mode": "tp"}, "be0.5": {"exit_mode": "be", "be_at": 0.5},
 def stats(d: pd.DataFrame) -> str:
     eq = d.sort_values("at").r.cumsum()
     dd = (eq - eq.cummax()).min()
-    return (f"{len(d)} | {(d.r > 0).mean():.0%} | {d.r.mean():+.3f} | {d.r.sum():+.1f} | {dd:.1f}")
+    return f"{len(d)} | {(d.r > 0).mean():.0%} | {d.r.mean():+.3f} | {d.r.sum():+.1f} | {dd:.1f}"
 
 
 def main() -> None:
@@ -56,7 +56,8 @@ def main() -> None:
         print(f"| {bot} | {stats(g)} |")
     print(f"| ALL | {stats(d)} |")
     mo = d.groupby(pd.to_datetime(d["at"]).dt.tz_convert(bots.TH).dt.tz_localize(None).dt.to_period("M")).agg(
-        n=("r", "size"), r=("r", "sum"))
+        n=("r", "size"), r=("r", "sum")
+    )
     print("\n| month | trades | R |")
     print("|---|---|---|")
     for m, row in mo.iterrows():

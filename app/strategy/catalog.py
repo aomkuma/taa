@@ -8,9 +8,11 @@ from app.strategy.example_strategy import TrendPullback
 from app.strategy.own_setup import OwnConf72
 from app.strategy.plan1 import Plan1Orb, Plan1Straddle
 from app.strategy.plan1_b2 import Plan1B2, Plan1B2M5
+from app.strategy.range_break import RangeBreak
 from app.strategy.registry import StrategyRegistry
 from app.strategy.release_straddle import OwnS2
 from app.strategy.setups import SETUPS
+from app.strategy.trend_box import TrendBoxDown, TrendBoxUp
 
 # the inverted copies (``<name>_inverted``, 2026-10-09) were removed on 2026-10-14 (owner): a counter-trend
 # trigger is faded inside its own setup instead (``fade_counter_trend``, SETUP_REVIEW §16)
@@ -24,6 +26,9 @@ STRATEGIES: tuple[type[BaseStrategy], ...] = (
     Plan1B2,
     Plan1B2M5,
     AITrader,
+    TrendBoxDown,
+    TrendBoxUp,
+    RangeBreak,
 )
 
 

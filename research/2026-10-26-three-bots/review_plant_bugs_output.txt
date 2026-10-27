@@ -1,0 +1,9 @@
+CAUGHT | invert the trend box height cap comparison
+CAUGHT | add box share to leg instead of multiplying the cap
+CAUGHT | label H4 bins by their close instead of their open
+CAUGHT | use first H1 high instead of the H4 maximum
+MISSED | discard the latest H4 bar that has already closed
+CAUGHT | divide by leg instead of multiplying the trend box cap
+CAUGHT | divide reward by the disabled take-profit floor
+
+6/7 caught

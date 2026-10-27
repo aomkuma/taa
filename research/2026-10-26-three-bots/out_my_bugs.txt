@@ -1,0 +1,16 @@
+caught  3.1.1 the New York window is fixed to a clock hour instead of New York local time
+caught  3.1.3 the run is measured over 30 minutes, not 60
+caught  3.1.3 the run gate is ten times looser than the measured 1.2 R
+caught  3.2.3 the box may be as tall as the whole leg
+caught  3.2.4 the retrace is measured from A, not from B
+caught  3.2.6 the take-profit is the leg's start, not the swing it runs to
+caught  3.2.6 the stop sits on the box edge with no buffer
+caught  3.3.1 a trending H4 also qualifies as a range
+caught  3.3.3 the break is taken without the previous close being inside
+caught  3.3.4 a BUY's take-profit is the whole box, not tp_range of it
+caught  3.4 break-even moves the stop even before +0.5 R
+caught  H4 is resampled without the close-to-open shift
+caught  H4 uses bars that have not closed yet
+caught  the ZigZag's forming point is used as a confirmed swing
+
+14/14 caught by the developer's own tests

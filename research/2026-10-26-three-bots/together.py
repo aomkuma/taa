@@ -83,8 +83,10 @@ def show(df: pd.DataFrame, title: str) -> None:
         print(f"\n== {title}: no trades ==")
         return
     wk = df.groupby(df["at"].dt.tz_convert(bots.TH).dt.tz_localize(None).dt.to_period("W")).r.sum()
-    print(f"\n== {title}: {len(df)} trades, {df.r.sum():+.1f} R, {df.r.mean():+.3f} R / trade, "
-          f"weeks {int((wk > 0).sum())} + / {int((wk <= 0).sum())} - ==")
+    print(
+        f"\n== {title}: {len(df)} trades, {df.r.sum():+.1f} R, {df.r.mean():+.3f} R / trade, "
+        f"weeks {int((wk > 0).sum())} + / {int((wk <= 0).sum())} - =="
+    )
     print("| bot | trades | win % | R / trade | total R |")
     print("|---|---|---|---|---|")
     for bot, g in df.groupby("bot"):
@@ -118,8 +120,12 @@ def range_losers(f: dict, trades: list) -> None:
                 break
         opposite_win += res > 0
         gone.append(res)
-    print(f"- the take-profit was reached later the same day in {reached} of {len(bad)}: the level was right, the stop was hit first")
-    print(f"- the same moment traded the OTHER way: {opposite_win} of {len(bad)} would have won, {sum(gone) / max(len(gone), 1):+.2f} R each")
+    print(
+        f"- the take-profit was reached later the same day in {reached} of {len(bad)}: the level was right, the stop was hit first"
+    )
+    print(
+        f"- the same moment traded the OTHER way: {opposite_win} of {len(bad)} would have won, {sum(gone) / max(len(gone), 1):+.2f} R each"
+    )
 
 
 def main() -> None:
@@ -128,7 +134,9 @@ def main() -> None:
     f = {}
     for tf in (Timeframe.M1, Timeframe.H1):
         x = to_frame(hs.load("FBS-Demo", "XAUUSD", tf, None, None))
-        f[tf] = x[(x.index >= bots.START - pd.Timedelta(days=40)) & (x.index < bots.END + pd.Timedelta(days=3))]
+        f[tf] = x[
+            (x.index >= bots.START - pd.Timedelta(days=40)) & (x.index < bots.END + pd.Timedelta(days=3))
+        ]
     census(f)
     all_trades: list = []
     for name, p in BEST.items():

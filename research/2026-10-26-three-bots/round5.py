@@ -35,15 +35,19 @@ def run_all(f: dict, over: dict) -> pd.DataFrame:
 def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
     f = load()
-    print("| hold cap (break-even at +0.5 R) | trades | win % | R / trade | total R | median hold | R from the cap |")
+    print(
+        "| hold cap (break-even at +0.5 R) | trades | win % | R / trade | total R | median hold | R from the cap |"
+    )
     print("|---|---|---|---|---|---|---|")
     best = None
     for cap in (3, 4, 6, 8, 12, 0):
         d = run_all(f, {"exit_mode": "be", "be_at": 0.5, "max_hours": cap})
         label = f"{cap} h" if cap else "none (to the day's end)"
         timed = d[d.out.isin(["time", "eod"])].r.sum()
-        print(f"| {label} | {len(d)} | {(d.r > 0).mean():.0%} | {d.r.mean():+.3f} | {d.r.sum():+.1f} | "
-              f"{d.h.median():.1f} h | {timed:+.1f} |")
+        print(
+            f"| {label} | {len(d)} | {(d.r > 0).mean():.0%} | {d.r.mean():+.3f} | {d.r.sum():+.1f} | "
+            f"{d.h.median():.1f} h | {timed:+.1f} |"
+        )
         if best is None or d.r.mean() > best[1]:
             best = (cap, d.r.mean(), d)
     cap, _, d = best

@@ -54,8 +54,10 @@ def main() -> None:
     print(f"\n== the account ==")
     print(f"- worst drawdown {dd:.1f} R over the year; total {d.r.sum():+.1f} R from {len(d)} trades")
     for risk in (2.0, 6.0):
-        print(f"- at {risk:.0f} % risk a trade: the drawdown is about {dd * risk:.0f} % of the account, "
-              f"the year about {d.r.sum() * risk:+.0f} % (simple, not compounded)")
+        print(
+            f"- at {risk:.0f} % risk a trade: the drawdown is about {dd * risk:.0f} % of the account, "
+            f"the year about {d.r.sum() * risk:+.0f} % (simple, not compounded)"
+        )
     print(f"- trades a month {len(d) / 12:.1f}; the owner's goal is a trade most days")
 
 
