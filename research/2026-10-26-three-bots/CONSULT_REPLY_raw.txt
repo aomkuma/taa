@@ -1,0 +1,1632 @@
+Reading additional input from stdin...
+OpenAI Codex v0.164.0-alpha.11.1
+--------
+workdir: C:\Users\korap\taa
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 01a17ce4-54cf-7af0-82ed-72988630b57c
+--------
+user
+Read research/2026-10-26-three-bots/CONSULT.md and answer it. You are in read-only mode on purpose: analyse, verify my numbers against the CSVs if you want, and reply with your own view. Print your full reply to stdout - I will save it.
+codex
+I’ll read the consultation and inspect the referenced CSVs so I can answer from the data where useful. I’ll keep the workspace unchanged and print the full response here.
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -Raw research/2026-10-26-three-bots/CONSULT.md; Get-ChildItem -Recurse -File research/2026-10-26-three-bots | Select-Object -ExpandProperty FullName' in C:\Users\korap\taa
+ succeeded in 398ms:
+# A question put to the developer session, not a task (2026-10-27)
+
+The owner asked the two of us to **talk this through together** and find the design that makes all three
+bots work as well as they can. This is not a spec. Read `DEV_SPEC_3.md` first - it carries today's
+findings in full - then answer with your own view. **Disagreeing with me is the useful outcome here.**
+Write nothing but `research/2026-10-26-three-bots/CONSULT_REPLY.md`; change no code.
+
+## Where we are
+
+- 248 trades, 2023-09 .. 2026-10. 163 of them in a D1 bull regime, and **every bot loses in bull**
+  (DOWN -0.111, UP -0.118, RANGE -0.639 R a trade).
+- Losers never move in our favour at all (median MFE 0.17-0.68 R), so this is selection, not exits.
+- The owner's new rule: **every trade takes only the side with the edge on a timeframe larger than the
+  entry timeframe.** Entries are M5, so the D1 regime decides the side.
+- The cells that keep their sign in both the fitted window and the unseen years: UP in Asia 07-09
+  (+0.91 / +0.18), DOWN in London 13-15 (+0.13 / +0.48), RANGE in bear (+0.10 / +0.03). Negative in both:
+  RANGE in bull (-0.72 / -0.62), UP in bull (-0.03 / -0.15).
+- My plan: a hard side filter from D1, then a weighted score over the readings that are measurable at the
+  decision bar, weights from their measured separation of winners and losers, kept only where the sign
+  holds in both periods.
+
+## The four questions
+
+1. **Does the hard D1 side filter actually leave a workable system?** In a bull regime only the UP bot and
+   a RANGE break upward may trade - and UP in bull measures -0.118 R. The filter removes the DOWN bot for
+   roughly two thirds of the history. Does that leave enough trades to be a system at all, and is there a
+   better way to honour the owner's rule than a binary regime label?
+
+2. **Is "three bots split by direction" still the right shape once D1 decides the direction?** DOWN and UP
+   are the same method mirrored. If D1 picks the side, are they one method with a direction input, and is
+   the real split method-based (trend-pullback vs range-break) rather than direction-based? Say plainly if
+   you think the three-bot shape should change - the owner's picture is three traders in one account, at
+   most two open at once, and any answer has to keep that true.
+
+3. **What is wrong with my weighted-score plan?** Be specific. I am aware of two risks: the weights are
+   fitted on the same 248 trades that produced the findings, and a weighted score can quietly let a trade
+   through on many weak agreements where a gate would have refused it. What else? And what would you
+   measure to know whether the score is better than the gates, rather than just different?
+
+4. **Where is the biggest gain for the least risk of fooling ourselves?** If you had to pick ONE change
+   for the three bots, which, and what number would tell us within one week whether it worked?
+
+## How to answer
+
+Short and concrete. Where you disagree, say what you would do instead and what you would measure to
+settle it. If you think a piece of my reasoning is wrong, say which sentence and why. You have the whole
+repository: check anything you want to check rather than taking my numbers on trust - `geometry.py`,
+`edge_by_condition.py` and their CSVs are there, and `geometry_trades.csv` / `edge_trades.csv` hold every
+trade with its readings.
+
+C:\Users\korap\taa\research\2026-10-26-three-bots\audit.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\bots.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\CONSULT.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\CONSULT_REPLY_raw.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\dev2_log.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\dev3_log.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_NOTES.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_NOTES_2.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_SPEC.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_SPEC_2.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_SPEC_3.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\edge_by_condition.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\edge_trades.csv
+C:\Users\korap\taa\research\2026-10-26-three-bots\gate_bite.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\geometry.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\geometry_trades.csv
+C:\Users\korap\taa\research\2026-10-26-three-bots\HYPOTHESIS.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\JOURNAL.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\momentum_depth.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\my_bugs.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\out_my_bugs.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\out_round1.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\out_round2.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\out_round7.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\parity.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\parity_output.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\plant_bugs.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\plant_bugs_2.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\plant_bugs_2_output.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\plant_bugs_output.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\PREDICTION.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\relative.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\REVIEW_BRIEF.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\REVIEW_FINDINGS.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\review_log.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\review_plant_bugs.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\review_plant_bugs_output.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\robust.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round3.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round4.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round5.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round6.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round7.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\selection_bias.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\sweep.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\together.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\unseen.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\__pycache__\audit.cpython-311.pyc
+C:\Users\korap\taa\research\2026-10-26-three-bots\__pycache__\bots.cpython-311.pyc
+C:\Users\korap\taa\research\2026-10-26-three-bots\__pycache__\relative.cpython-311.pyc
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -Raw research/2026-10-26-three-bots/DEV_SPEC_3.md; Get-Content -Raw research/2026-10-26-three-bots/geometry.py; Get-Content -Raw research/2026-10-26-three-bots/edge_by_condition.py' in C:\Users\korap\taa
+ succeeded in 261ms:
+# DEV_SPEC 3 â€” the decision becomes a weighted score behind one hard rule (2026-10-27)
+
+The owner asked for this round to be shared work: *"share what we discussed with Codex and work together
+to make the system actually usable."* So this spec starts with the whole picture, not just the task.
+
+## What we found today, in numbers
+
+**1. The entry, not the exit, is where it breaks.** Over 248 trades, 2023-09 .. 2026-10, with the exits
+stripped to stop-and-target so the entry is measured alone (`geometry.py`):
+
+| bot / period | winners' median MAE | losers' median MAE | **losers' median MFE** |
+|---|---|---|---|
+| DOWN never seen | 0.36 R | 1.08 R | **0.37 R** |
+| DOWN in the fit window | 0.27 R | 1.04 R | **0.17 R** |
+| UP never seen | 0.36 R | 1.05 R | **0.48 R** |
+| UP in the fit window | 0.32 R | 1.09 R | **0.32 R** |
+| RANGE never seen | 0.50 R | 1.08 R | **0.52 R** |
+| RANGE in the fit window | 0.39 R | 1.06 R | **0.68 R** |
+
+A winner barely dips; a loser walks straight into the stop and **never goes anywhere in our favour**. So
+the stop is not too tight, and widening it does not help - the counterfactual on the real M1 path, same
+entry, same target, stop k times wider, confirms it (DOWN never seen: x1.0 -0.267, x1.5 -0.228, x2.0
+-0.296; UP and RANGE get monotonically worse). **The losers are not stopped out early - they are wrong
+from the first minute.** That makes this a selection problem.
+
+**2. The selection problem has a name, and it was already measured.** On the knowledge base's own split
+(`edge_by_condition.py`, P25: side x the D1 regime x the owner's windows):
+
+| bot | D1 regime | trades | R a trade | in fit / never seen |
+|---|---|---|---|---|
+| DOWN | bear | 24 | +0.164 | +0.240 / -0.020 |
+| DOWN | **bull** | 49 | **-0.111** | +0.140 / **-0.244** |
+| UP | bear | 11 | +0.224 | -0.013 / +0.422 |
+| UP | **bull** | 76 | **-0.118** | -0.029 / -0.150 |
+| RANGE | bear | 22 | +0.069 | +0.099 / +0.032 |
+| RANGE | **bull** | 38 | **-0.639** | **-0.723 / -0.616** |
+
+163 of the 248 trades happened in a bull regime, and every bot loses there. That is the whole story of
+the negative results. The knowledge base already held this as **F20** and the brake **R08 / S11** -
+"bull regime (D1 over a rising 50-day mean) â†’ no M5 sell" - and the bots never used it.
+
+**3. The bots decide on 4.5 % of what the system can measure, and weigh none of it.**
+
+| decision path | measures used | of 132 available |
+|---|---|---|
+| `trend_box_down` / `trend_box_up` | 6 | 4.5 % |
+| `range_break` | 3 | 2.3 % |
+| `ai_trader` | 18 | 13.6 % |
+
+Every one is a pass/fail gate. Nothing counts how many readings agree. Week 1's three losers passed all
+six gates; the reading that would have stopped them (the D1 regime) was not among the six.
+
+## The owner's rule for this round
+
+> **Every trade takes only the side that has the edge on a timeframe LARGER than the entry timeframe.**
+> (owner, 2026-10-27, for the whole system - the rule bots and the AI alike)
+
+Our entries are M5. So the side is decided above M5, and the measurement above says the D1 regime decides
+it. This is a **hard filter, not a weight**: a bot whose direction disagrees with the larger timeframe's
+edge side does not trade, however good its own trigger looks.
+
+## The division of work
+
+- **The research session (not you):** which of the 132 measures can actually be read at the decision bar,
+  each one's measured power to separate winners from losers on the 248 trades, split fitted / never seen,
+  and the weights that come out of it. **You do not choose, tune or judge any weight.**
+- **You:** the mechanism that carries them. Build the vessel; the research session fills it. Everything
+  you add must be inert until weights are supplied, and `config.yaml` stays untouched.
+
+## Task A â€” one place that answers "which side has the edge above this frame"
+
+New module `app/strategy/edge_side.py`.
+
+```python
+def edge_side(frames: Mapping[Timeframe, pd.DataFrame], at: pd.Timestamp, entry: Timeframe) -> Side | None
+```
+
+- Reads the **D1 regime** from the lane's H1 frame: shift the close-stamped index back one hour, resample
+  to `1D`, take only bars closed at `at`, a 50-day rolling mean of the close.
+  - `BUY` when the close is over a mean that is rising (bull),
+  - `SELL` when the close is under a mean that is falling (bear),
+  - `None` when neither (mixed, or fewer than 50 closed D1 bars).
+- `entry` is the entry timeframe and must be **smaller than D1**; raise `ValueError` if it is not, so the
+  rule can never be read from a frame at or below the entry frame.
+- Needs 50 closed D1 bars, so about 1,200 closed H1 bars. If the frame is shorter, return `None` - never
+  guess from a short mean.
+- Pure function, no I/O, no clock reads.
+
+Hand-worked tests: bull, bear, both mixed cases, exactly 50 bars, 49 bars, a D1 bar that has not closed
+yet (the same shape as `test_an_unclosed_h4_bar_never_reaches_the_zigzag`), and the `ValueError`.
+
+## Task B â€” the trend and range bots obey it, behind one parameter
+
+Add `require_edge_side: bool = False` to `TrendBoxParams` and `RangeBreakParams`.
+
+When `True`, as the **first** gate after `in_window` (before any other work):
+
+- `side = edge_side(ctx.frames, at, ctx.market.entry_timeframe)`
+- `trend_box_down` holds with reason `"AGAINST_EDGE_SIDE"` unless `side is Side.SELL`.
+- `trend_box_up` holds unless `side is Side.BUY`.
+- `range_break` computes its break first, then holds unless the break's side equals `side`.
+- `side is None` **blocks every bot**: no clear edge side above the entry frame, no trade. Write this in
+  the docstring - it is the owner's rule, not a default worth softening.
+
+## Task C â€” the vessel for the weighted decision
+
+New module `app/strategy/weighing.py`. No strategy calls it yet; this round only builds and tests it.
+
+```python
+@dataclass(frozen=True)
+class Weight:
+    name: str          # the reading's name
+    weight: float      # how much it counts, >= 0
+    wants: str         # "high" | "low" | "true" | "false": which direction supports the trade
+
+@dataclass(frozen=True)
+class Scale:
+    weights: tuple[Weight, ...]
+    threshold: float   # the score needed to trade, 0..1
+
+def score(readings: Mapping[str, float | bool | None], scale: Scale) -> ScoreResult
+```
+
+`ScoreResult` carries: the total score **normalised to 0..1 over the weights that could be read**, the
+list of readings that supported the trade, the list that opposed it, and the list that was missing. A
+reading absent or `None` is **left out of both the numerator and the denominator** - never counted as
+agreement. An empty scale, or one where nothing could be read, scores `0.0` and supports nothing.
+
+Boolean readings: `wants="true"` scores its full weight when the value is `True`, zero when `False`.
+Numeric readings: the caller passes values already normalised to 0..1, and `wants="low"` scores
+`weight * (1 - value)`. Document that normalisation is the caller's job - do not invent one.
+
+Hand-worked tests, every number worked out by hand in the test: all agree, all disagree, a mix, a missing
+reading changing the denominator, `wants="low"`, an empty scale, a zero weight, and a threshold exactly
+met (document and test whether `>=` or `>` - pick `>=` and say so).
+
+## The absolute rules (unchanged from DEV_SPEC 2, they worked)
+
+1. Everything defaults OFF/inert; defaults must be byte-identical to today. Prove it: the full suite and
+   the parity numbers unchanged.
+2. Never re-implement production logic inside a test.
+3. Every new test proven to bite: break the one line it covers, run that test, confirm it fails, restore.
+   Report each one.
+4. At least 10 new planted bugs for this round in `plant_bugs_3.py`, crash-safe, output committed, caught
+   and MISSED both reported honestly.
+5. No `.env`, no `TRADING_MODE`, no DEMO/LIVE, no credentials, no commit, no push, no deploy.
+6. `ruff format`, `ruff check app tests`, `mypy app`, `bandit`, full `pytest` all green before you stop.
+7. Do not change any default or `config.yaml`. Do not touch `geometry*.py`, `edge_by_condition.py`,
+   `JOURNAL.md`, or anything under `research/2026-10-26-three-bots/weights*` - the research session is in
+   those right now.
+8. **If anything here contradicts anything else, stop and write it in `DEV_NOTES_3.md` instead of
+   guessing.** Last round you found the spec clear; say so again if it is, and say where it is not.
+
+## What to write when done
+
+`DEV_NOTES_3.md`: each task, the tests x the mutation proving each bites, the planted-bug table, the
+proof defaults are unchanged (suite counts, parity numbers), anything unclear, and what you did not do.
+
+"""Where the trend bots' entries actually sit, measured on the price path (journal week 1, 2026-10-27).
+
+The journal's week 1 found the two winning down trades went 0.81 R and 0.38 R *against* the entry before
+they ran, which is why a break-even stop destroyed them. That is a statement about the entry, not about
+the exit, so this measures the entry itself over the whole history rather than one week:
+
+1. the adverse excursion before a trade works, separately for winners and losers - if winners routinely
+   dip most of the way to the stop, the stop is too tight for where the entry is placed;
+2. the favourable excursion of the losers - if losers never go anywhere, they are simply wrong and no
+   stop width will save them;
+3. the counterfactual: the same entry and the same target with a stop k times wider, settled on the real
+   M1 path. This answers "widen the stop" with one number per k instead of a parameter sweep.
+
+Every number is split by the window the parameters were fitted on (2025-10-20 .. 2026-10-24) and the
+years before it, because a lesson that only holds inside the fit is not a lesson.
+
+    .venv\\Scripts\\python research/2026-10-26-three-bots/geometry.py
+"""
+
+from __future__ import annotations
+
+import sys
+from dataclasses import replace
+from pathlib import Path
+
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import bots  # noqa: E402
+from app.core.enums import Timeframe  # noqa: E402
+from app.engine.ai_trader import to_frame  # noqa: E402
+from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[2]
+FIT = (pd.Timestamp("2025-10-20", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC"))
+WIDE = [1.0, 1.25, 1.5, 2.0, 3.0]
+
+
+def day_end(at: pd.Timestamp) -> pd.Timestamp:
+    """``run``'s own deadline for a trade opened at ``at``: 07:00 Bangkok the next morning."""
+    th = at.tz_convert(bots.TH)
+    return (pd.Timestamp(th.date(), tz=bots.TH) + pd.Timedelta(days=1, hours=7)).tz_convert("UTC")
+
+
+def path_stats(m1: pd.DataFrame, t: bots.Trade, p: bots.P) -> dict:
+    """Walk the real M1 path once and read off everything the entry's geometry needs.
+
+    The counterfactual stops get the SAME DEADLINE the original trade had (07:00 Bangkok the next day,
+    and ``max_hours``), not the moment the original happened to exit: the original exited early *because*
+    it was stopped, so cutting the wider stop off there would answer the question with itself. The first
+    version of this file did exactly that and gave a win rate that did not move with the stop width -
+    which is impossible, and is what exposed the mistake.
+    """
+    x = m1[(m1.index >= t.at) & (m1.index <= t.extra["closed"])]
+    if x.empty:
+        return {}
+    sell = t.side == "SELL"
+    risk = abs(t.stop - t.entry)
+    hi, lo = x.high.to_numpy(float), x.low.to_numpy(float)
+    adverse = (hi.max() - t.entry) if sell else (t.entry - lo.min())
+    favour = (t.entry - lo.min()) if sell else (hi.max() - t.entry)
+    out = {"mae_r": adverse / risk, "mfe_r": favour / risk, "risk": risk}
+    until = day_end(t.at)
+    for k in WIDE:
+        wider = bots.Trade(
+            t.bot, t.side, t.at, t.entry, t.entry + k * risk if sell else t.entry - k * risk, t.tp
+        )
+        got = bots.settle(m1, wider, until, p)
+        out[f"r_x{k}"] = got.r * k  # back into R of the ORIGINAL risk, so the k columns are comparable
+        out[f"out_x{k}"] = got.out
+    return out
+
+
+def table(df: pd.DataFrame, title: str) -> None:
+    print(f"\n### {title}  ({len(df)} trades)\n")
+    if df.empty:
+        print("no trades")
+        return
+    win, lose = df[df.r > 0], df[df.r <= 0]
+    print("| group | trades | median MAE (R) | 75th MAE | median MFE (R) | mean R |")
+    print("|---|---|---|---|---|---|")
+    for name, g in (("winners", win), ("losers", lose), ("all", df)):
+        if g.empty:
+            continue
+        print(
+            f"| {name} | {len(g)} | {g.mae_r.median():.2f} | {g.mae_r.quantile(0.75):.2f} | "
+            f"{g.mfe_r.median():.2f} | {g.r.mean():+.3f} |"
+        )
+    print("\n| stop width | mean R a trade | win rate | trades stopped out |")
+    print("|---|---|---|---|")
+    for k in WIDE:
+        col = df[f"r_x{k}"]
+        print(f"| x{k} | {col.mean():+.3f} | {(col > 0).mean():.0%} | {(col <= -0.9 * k).sum()} |")
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+    hs = ParquetHistoryStore(ROOT / "data/history")
+    f = {t: to_frame(hs.load("FBS-Demo", "XAUUSD", t, None, None)) for t in (Timeframe.M1, Timeframe.H1)}
+    m1 = f[Timeframe.M1]
+    # exit_mode "tp" for every bot: the stop and the target alone, so the entry is measured without any
+    # exit rule layered on top (the configured UP and RANGE bots move to break-even; that is a separate
+    # question, and the week-1 journal showed it is the entry that needs answering first).
+    p = replace(bots.P(), exit_mode="tp")
+    start, end = pd.Timestamp("2023-09-05", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC")
+    trades = bots.run(f, p, start, end)
+    rows = []
+    for t in trades:
+        st = path_stats(m1, t, p)
+        if not st:
+            continue
+        # a stop at x1.0 is the trade run() already settled: if the two disagree this harness is wrong
+        if abs(st["r_x1.0"] - t.r) > 1e-6:
+            raise SystemExit(
+                f"harness disagrees with bots.run on {t.bot} {t.at}: {st['r_x1.0']:+.4f} vs {t.r:+.4f}"
+            )
+        rows.append({"bot": t.bot, "at": t.at, "r": t.r, "out": t.out, **st})
+    df = pd.DataFrame(rows)
+    df["fitted"] = (df["at"] >= FIT[0]) & (df["at"] < FIT[1])  # df.at is pandas own indexer
+    print(f"# The entry's geometry, {start.date()} .. {end.date()}\n")
+    print(
+        f"{len(df)} trades: {int(df.fitted.sum())} inside the fit window, {int((~df.fitted).sum())} outside"
+    )
+    for bot in ("DOWN", "UP", "RANGE"):
+        g = df[df.bot == bot]
+        if g.empty:
+            continue
+        print(f"\n## {bot}")
+        table(g[~g.fitted], f"{bot} - never seen")
+        table(g[g.fitted], f"{bot} - inside the fit window")
+    df.to_csv(Path(__file__).resolve().parent / "geometry_trades.csv", index=False)
+
+
+if __name__ == "__main__":
+    main()
+
+"""The three bots' edge by market condition, on the knowledge base's own split (P25).
+
+The owner, 2026-10-27: *"we should have known long ago that we must pick the trades well - the conditions
+where we have the edge."* They are right, and they said so on 2026-10-25 (P25, R08): record the edge **by
+market condition**, never "it won in this period and lost in that one". The knowledge base already holds
+the finding this touches:
+
+    F20 / the bull-regime finding: in a BULL REGIME (D1 over a rising 50-day mean) an M5 SELL is at a
+    disadvantage - every sell tested lost there. R08, the draft brake, became the shadow S11: bull regime
+    -> no M5 sell except the surest.
+
+The three bots never saw that brake. Week 1's three losers were sells into a rising gold market. So this
+does not invent a new split: it is P25's fixed split - side x the D1 regime x the owner's session windows
+- applied to the 248 trades `geometry.py` settled, so the cells compare with every other KB table.
+
+Regime, exactly as the knowledge base defines it, read from the last D1 bar CLOSED before the entry:
+  bull  = close over a 50-day mean that is rising
+  bear  = close under a 50-day mean that is falling
+  mixed = anything else
+
+    .venv\\Scripts\\python research/2026-10-26-three-bots/edge_by_condition.py
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(HERE))
+
+import bots  # noqa: E402
+from app.core.enums import Timeframe  # noqa: E402
+from app.engine.ai_trader import to_frame  # noqa: E402
+from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
+
+FIT = (pd.Timestamp("2025-10-20", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC"))
+MEAN_DAYS = 50
+
+
+def regimes(h1: pd.DataFrame) -> pd.DataFrame:
+    """One row per CLOSED D1 bar: its close, the 50-day mean, and the regime label."""
+    opens = h1.copy()
+    opens.index = pd.DatetimeIndex(opens.index) - pd.Timedelta(hours=1)  # frames are close-stamped
+    d1 = opens.resample("1D").agg({"high": "max", "low": "min", "close": "last"}).dropna()
+    d1["mean50"] = d1.close.rolling(MEAN_DAYS).mean()
+    d1["rising"] = d1.mean50.diff() > 0
+    over = d1.close > d1.mean50
+    d1["regime"] = "mixed"
+    d1.loc[over & d1.rising, "regime"] = "bull"
+    d1.loc[~over & ~d1.rising, "regime"] = "bear"
+    d1.loc[d1.mean50.isna(), "regime"] = "unknown"
+    d1["closed_at"] = d1.index + pd.Timedelta(days=1)  # the bar is readable only after it closes
+    return d1
+
+
+def label(d1: pd.DataFrame, at: pd.Timestamp) -> str:
+    usable = d1[d1.closed_at <= at]
+    return str(usable.regime.iloc[-1]) if len(usable) else "unknown"
+
+
+def window_of(at: pd.Timestamp) -> str:
+    th = at.tz_convert(bots.TH)
+    ny = at.tz_convert(bots.NY)
+    if pd.Timestamp("07:00").time() < th.time() <= pd.Timestamp("09:00").time():
+        return "Asia 07-09"
+    if pd.Timestamp("13:00").time() < th.time() <= pd.Timestamp("15:00").time():
+        return "London 13-15"
+    if pd.Timestamp("08:00").time() < ny.time() <= pd.Timestamp("11:30").time():
+        return "NY open"
+    return "other"
+
+
+def cells(df: pd.DataFrame, by: list[str], title: str, least: int = 8) -> None:
+    print(f"\n### {title}\n")
+    print(f"| {' | '.join(by)} | trades | win | R a trade | total R | in fit / unseen R |")
+    print(f"|{'---|' * (len(by) + 5)}")
+    for key, g in df.groupby(by):
+        if len(g) < least:
+            continue
+        keys = key if isinstance(key, tuple) else (key,)
+        fit, uns = g[g.fitted], g[~g.fitted]
+        both = f"{fit.r.mean():+.3f} / {uns.r.mean():+.3f}" if len(fit) and len(uns) else "-"
+        print(
+            f"| {' | '.join(str(k) for k in keys)} | {len(g)} | {(g.r > 0).mean():.0%} | "
+            f"{g.r.mean():+.3f} | {g.r.sum():+.1f} | {both} |"
+        )
+    small = sum(len(g) for _, g in df.groupby(by) if len(g) < least)
+    if small:
+        print(f"\n({small} trades sit in cells under {least} trades and are left out)")
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+    path = HERE / "geometry_trades.csv"
+    if not path.exists():
+        raise SystemExit("run geometry.py first: it writes geometry_trades.csv")
+    df = pd.read_csv(path, parse_dates=["at"])
+    df["at"] = pd.to_datetime(df["at"], utc=True)
+    hs = ParquetHistoryStore(ROOT / "data/history")
+    h1 = to_frame(hs.load("FBS-Demo", "XAUUSD", Timeframe.H1, None, None))
+    d1 = regimes(h1)
+    df["regime"] = [label(d1, t) for t in df["at"]]
+    df["window"] = [window_of(t) for t in df["at"]]
+    df["side"] = df.bot.map({"DOWN": "SELL", "UP": "BUY", "RANGE": "both"})
+    print("# The three bots' edge by market condition (P25's split)\n")
+    print(f"{len(df)} trades, 2023-09 .. 2026-10; exits are stop and target only, so this reads the entry.\n")
+    print(
+        "Regime days behind the trades: " + ", ".join(f"{k} {v}" for k, v in df.regime.value_counts().items())
+    )
+    cells(df, ["bot", "regime"], "Each bot by the D1 regime")
+    cells(df, ["bot", "window"], "Each bot by the owner's session windows")
+    cells(df, ["bot", "regime", "window"], "Both together", least=6)
+    df.to_csv(HERE / "edge_trades.csv", index=False)
+
+
+if __name__ == "__main__":
+    main()
+
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -TotalCount 20 research/2026-10-26-three-bots/geometry_trades.csv; Get-Content -TotalCount 20 research/2026-10-26-three-bots/edge_trades.csv; Get-Content -Raw research/2026-10-26-three-bots/CONSULT_REPLY_raw.txt; Get-Content -Raw research/2026-10-26-three-bots/bots.py' in C:\Users\korap\taa
+ succeeded in 317ms:
+bot,at,r,out,mae_r,mfe_r,risk,r_x1.0,out_x1.0,r_x1.25,out_x1.25,r_x1.5,out_x1.5,r_x2.0,out_x2.0,r_x3.0,out_x3.0,fitted
+UP,2023-09-12 01:15:00+00:00,-1.1294219154443494,SL,1.0526315789473013,0.13373597929256903,2.3179999999999836,-1.1294219154443494,SL,-1.3794219154443468,SL,-1.6294219154443454,SL,-2.1294219154443494,SL,-3.1294219154443494,SL,False
+RANGE,2023-09-15 02:00:00+00:00,8.227777777777119,TP,0.7888888888888496,8.588888888888041,0.900000000000091,8.227777777777119,TP,8.227777777776287,TP,8.227777777777117,TP,8.227777777777119,TP,8.227777777777117,TP,False
+RANGE,2023-09-27 01:25:00+00:00,-1.2798507462686264,SL,1.287313432835783,2.472014925372951,1.0720000000001164,-1.2798507462686264,SL,-1.5298507462686264,SL,-1.7798507462686264,SL,-2.279850746268626,SL,-3.279850746268626,SL,False
+DOWN,2023-10-05 06:10:00+00:00,1.8790849673203465,TP,0.007002801120442009,2.791783380018762,4.283999999999878,1.8790849673203465,TP,1.8790849673203667,TP,1.8790849673203798,TP,1.8790849673203465,TP,1.8790849673203465,TP,False
+DOWN,2023-10-06 06:25:00+00:00,-1.0616269515201322,SL,1.0147904683648556,0.32456861133939496,4.867999999999938,-1.0616269515201322,SL,1.4215283483976964,TP,1.421528348397723,TP,1.421528348397723,TP,1.421528348397723,TP,False
+UP,2023-10-10 14:15:00+00:00,0.1415820252385381,eod,0.778701138811928,0.6648199445983233,6.498000000000047,0.1415820252385381,eod,0.1415820252385361,eod,0.14158202523853808,eod,0.1415820252385381,eod,0.14158202523853808,eod,False
+UP,2023-10-13 00:20:00+00:00,4.099041533546515,TP,0.5495207667731924,4.198083067092842,3.1299999999998818,4.099041533546515,TP,4.099041533546456,TP,4.099041533546615,TP,4.099041533546515,TP,4.099041533546515,TP,False
+RANGE,2023-10-18 12:45:00+00:00,-1.1196172248803808,SL,1.056618819776644,0.3110047846889796,2.508000000000038,-1.1196172248803808,SL,-1.369617224880383,SL,-1.6196172248803773,SL,-2.119617224880381,SL,-3.119617224880381,SL,False
+RANGE,2023-10-18 13:05:00+00:00,-1.1443695861405214,SL,1.0394610202116847,-0.009624639076026013,2.0779999999999745,-1.1443695861405214,SL,-1.3943695861405279,SL,-1.6443695861405216,SL,-2.144369586140521,SL,-3.144369586140521,SL,False
+RANGE,2023-10-18 14:50:00+00:00,-1.0567751703255097,SL,1.0370931112793165,1.625662376987083,5.2840000000001055,-1.0567751703255097,SL,-1.3067751703255088,SL,-1.55677517032551,SL,-0.815669947009823,eod,-0.815669947009823,eod,False
+RANGE,2023-10-19 06:30:00+00:00,-1.1415094339622562,SL,1.1509433962263766,0.15566037735844757,2.1200000000001182,-1.1415094339622562,SL,-1.3915094339622591,SL,-1.6415094339622611,SL,-2.141509433962256,SL,-3.1415094339622565,SL,False
+UP,2023-10-30 12:35:00+00:00,-0.5569556451612947,eod,0.9576612903225799,0.36668346774191024,7.936000000000149,-0.5569556451612947,eod,-0.5569556451613011,eod,-0.5569556451612947,eod,-0.5569556451612947,eod,-0.5569556451612947,eod,False
+UP,2023-10-31 01:30:00+00:00,-1.084222346996072,SL,1.0275126333521019,0.03649635036493135,3.561999999999898,-1.084222346996072,SL,-1.3342223469960721,SL,-1.584222346996072,SL,-2.084222346996072,SL,-3.0842223469960723,SL,False
+UP,2023-10-31 07:05:00+00:00,-1.0684931506849298,SL,1.1073059360730628,2.6826484018264174,4.380000000000109,-1.0684931506849298,SL,-1.3184931506849298,SL,-1.5684931506849296,SL,-2.06849315068493,SL,-3.06849315068493,SL,False
+DOWN,2023-11-02 14:10:00+00:00,-0.5721192586623501,eod,0.7762557077625625,0.28203062046738664,7.445999999999913,-0.5721192586623501,eod,-0.5721192586623501,eod,-0.57211925866235,eod,-0.5721192586623501,eod,-0.57211925866235,eod,False
+UP,2023-11-06 13:35:00+00:00,-1.0476795931341392,SL,1.012396694214872,0.027018436109357124,6.291999999999916,-1.0476795931341392,SL,-1.29767959313414,SL,-1.5476795931341392,SL,-2.047679593134139,SL,-1.9564526382708447,eod,False
+RANGE,2023-11-08 00:20:00+00:00,-1.6666666666669363,SL,1.1777777777781933,0.24444444444482621,0.4499999999998181,-1.6666666666669363,SL,-1.9166666666669363,SL,-2.166666666666936,SL,-2.666666666666936,SL,-3.666666666666936,SL,False
+DOWN,2023-11-10 06:05:00+00:00,3.0103896103894705,TP,0.48051948051949894,3.3558441558439966,3.8500000000001364,3.0103896103894705,TP,3.010389610389435,TP,3.010389610389411,TP,3.0103896103894705,TP,3.0103896103894705,TP,False
+DOWN,2023-11-14 01:50:00+00:00,-1.0918554807103469,SL,3.248622167789238,2.513778322106505,3.2660000000000764,-1.0918554807103469,SL,-1.3418554807103495,SL,-1.5918554807103469,SL,-2.091855480710347,SL,-3.091855480710347,SL,False
+bot,at,r,out,mae_r,mfe_r,risk,r_x1.0,out_x1.0,r_x1.25,out_x1.25,r_x1.5,out_x1.5,r_x2.0,out_x2.0,r_x3.0,out_x3.0,fitted,regime,window,side
+UP,2023-09-12 01:15:00+00:00,-1.1294219154443494,SL,1.0526315789473013,0.133735979292569,2.317999999999984,-1.1294219154443494,SL,-1.3794219154443468,SL,-1.6294219154443454,SL,-2.129421915444349,SL,-3.129421915444349,SL,False,unknown,Asia 07-09,BUY
+RANGE,2023-09-15 02:00:00+00:00,8.227777777777119,TP,0.7888888888888496,8.588888888888041,0.900000000000091,8.227777777777119,TP,8.227777777776287,TP,8.227777777777117,TP,8.227777777777119,TP,8.227777777777117,TP,False,unknown,Asia 07-09,both
+RANGE,2023-09-27 01:25:00+00:00,-1.2798507462686264,SL,1.287313432835783,2.472014925372951,1.0720000000001164,-1.2798507462686264,SL,-1.5298507462686264,SL,-1.7798507462686264,SL,-2.279850746268626,SL,-3.279850746268626,SL,False,bear,Asia 07-09,both
+DOWN,2023-10-05 06:10:00+00:00,1.8790849673203465,TP,0.007002801120442,2.791783380018762,4.283999999999878,1.8790849673203465,TP,1.879084967320367,TP,1.87908496732038,TP,1.8790849673203465,TP,1.8790849673203465,TP,False,bear,London 13-15,SELL
+DOWN,2023-10-06 06:25:00+00:00,-1.0616269515201322,SL,1.0147904683648556,0.3245686113393949,4.867999999999938,-1.0616269515201322,SL,1.4215283483976964,TP,1.421528348397723,TP,1.421528348397723,TP,1.421528348397723,TP,False,bear,London 13-15,SELL
+UP,2023-10-10 14:15:00+00:00,0.1415820252385381,eod,0.778701138811928,0.6648199445983233,6.498000000000047,0.1415820252385381,eod,0.1415820252385361,eod,0.141582025238538,eod,0.1415820252385381,eod,0.141582025238538,eod,False,bear,NY open,BUY
+UP,2023-10-13 00:20:00+00:00,4.099041533546515,TP,0.5495207667731924,4.198083067092842,3.1299999999998818,4.099041533546515,TP,4.099041533546456,TP,4.099041533546615,TP,4.099041533546515,TP,4.099041533546515,TP,False,bear,Asia 07-09,BUY
+RANGE,2023-10-18 12:45:00+00:00,-1.1196172248803808,SL,1.056618819776644,0.3110047846889796,2.508000000000038,-1.1196172248803808,SL,-1.369617224880383,SL,-1.6196172248803773,SL,-2.119617224880381,SL,-3.119617224880381,SL,False,bull,NY open,both
+RANGE,2023-10-18 13:05:00+00:00,-1.1443695861405214,SL,1.0394610202116847,-0.009624639076026,2.0779999999999745,-1.1443695861405214,SL,-1.394369586140528,SL,-1.6443695861405216,SL,-2.144369586140521,SL,-3.144369586140521,SL,False,bull,NY open,both
+RANGE,2023-10-18 14:50:00+00:00,-1.0567751703255095,SL,1.0370931112793165,1.625662376987083,5.2840000000001055,-1.0567751703255095,SL,-1.3067751703255088,SL,-1.55677517032551,SL,-0.815669947009823,eod,-0.815669947009823,eod,False,bull,NY open,both
+RANGE,2023-10-19 06:30:00+00:00,-1.1415094339622562,SL,1.1509433962263766,0.1556603773584475,2.1200000000001182,-1.1415094339622562,SL,-1.3915094339622591,SL,-1.6415094339622611,SL,-2.141509433962256,SL,-3.1415094339622565,SL,False,bull,London 13-15,both
+UP,2023-10-30 12:35:00+00:00,-0.5569556451612947,eod,0.95766129032258,0.3666834677419102,7.936000000000149,-0.5569556451612947,eod,-0.5569556451613011,eod,-0.5569556451612947,eod,-0.5569556451612947,eod,-0.5569556451612947,eod,False,bull,NY open,BUY
+UP,2023-10-31 01:30:00+00:00,-1.084222346996072,SL,1.027512633352102,0.0364963503649313,3.561999999999898,-1.084222346996072,SL,-1.334222346996072,SL,-1.584222346996072,SL,-2.084222346996072,SL,-3.0842223469960723,SL,False,bull,Asia 07-09,BUY
+UP,2023-10-31 07:05:00+00:00,-1.0684931506849298,SL,1.1073059360730628,2.6826484018264174,4.380000000000109,-1.0684931506849298,SL,-1.3184931506849298,SL,-1.5684931506849296,SL,-2.06849315068493,SL,-3.06849315068493,SL,False,bull,London 13-15,BUY
+DOWN,2023-11-02 14:10:00+00:00,-0.5721192586623501,eod,0.7762557077625625,0.2820306204673866,7.445999999999913,-0.5721192586623501,eod,-0.5721192586623501,eod,-0.57211925866235,eod,-0.5721192586623501,eod,-0.57211925866235,eod,False,bull,NY open,SELL
+UP,2023-11-06 13:35:00+00:00,-1.0476795931341392,SL,1.012396694214872,0.0270184361093571,6.291999999999916,-1.0476795931341392,SL,-1.29767959313414,SL,-1.5476795931341392,SL,-2.047679593134139,SL,-1.9564526382708447,eod,False,bull,NY open,BUY
+RANGE,2023-11-08 00:20:00+00:00,-1.6666666666669363,SL,1.1777777777781933,0.2444444444448262,0.4499999999998181,-1.6666666666669363,SL,-1.9166666666669363,SL,-2.166666666666936,SL,-2.666666666666936,SL,-3.666666666666936,SL,False,bull,Asia 07-09,both
+DOWN,2023-11-10 06:05:00+00:00,3.0103896103894705,TP,0.4805194805194989,3.3558441558439966,3.850000000000136,3.0103896103894705,TP,3.010389610389435,TP,3.010389610389411,TP,3.0103896103894705,TP,3.0103896103894705,TP,False,bull,London 13-15,SELL
+DOWN,2023-11-14 01:50:00+00:00,-1.0918554807103469,SL,3.248622167789238,2.513778322106505,3.2660000000000764,-1.0918554807103469,SL,-1.3418554807103495,SL,-1.5918554807103469,SL,-2.091855480710347,SL,-3.091855480710347,SL,False,bull,Asia 07-09,SELL
+Reading additional input from stdin...
+OpenAI Codex v0.164.0-alpha.11.1
+--------
+workdir: C:\Users\korap\taa
+model: gpt-6-luna
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 01a17ce4-54cf-7af0-82ed-72988630b57c
+--------
+user
+Read research/2026-10-26-three-bots/CONSULT.md and answer it. You are in read-only mode on purpose: analyse, verify my numbers against the CSVs if you want, and reply with your own view. Print your full reply to stdout - I will save it.
+codex
+Iâ€™ll read the consultation and inspect the referenced CSVs so I can answer from the data where useful. Iâ€™ll keep the workspace unchanged and print the full response here.
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -Raw research/2026-10-26-three-bots/CONSULT.md; Get-ChildItem -Recurse -File research/2026-10-26-three-bots | Select-Object -ExpandProperty FullName' in C:\Users\korap\taa
+ succeeded in 398ms:
+# A question put to the developer session, not a task (2026-10-27)
+
+The owner asked the two of us to **talk this through together** and find the design that makes all three
+bots work as well as they can. This is not a spec. Read `DEV_SPEC_3.md` first - it carries today's
+findings in full - then answer with your own view. **Disagreeing with me is the useful outcome here.**
+Write nothing but `research/2026-10-26-three-bots/CONSULT_REPLY.md`; change no code.
+
+## Where we are
+
+- 248 trades, 2023-09 .. 2026-10. 163 of them in a D1 bull regime, and **every bot loses in bull**
+  (DOWN -0.111, UP -0.118, RANGE -0.639 R a trade).
+- Losers never move in our favour at all (median MFE 0.17-0.68 R), so this is selection, not exits.
+- The owner's new rule: **every trade takes only the side with the edge on a timeframe larger than the
+  entry timeframe.** Entries are M5, so the D1 regime decides the side.
+- The cells that keep their sign in both the fitted window and the unseen years: UP in Asia 07-09
+  (+0.91 / +0.18), DOWN in London 13-15 (+0.13 / +0.48), RANGE in bear (+0.10 / +0.03). Negative in both:
+  RANGE in bull (-0.72 / -0.62), UP in bull (-0.03 / -0.15).
+- My plan: a hard side filter from D1, then a weighted score over the readings that are measurable at the
+  decision bar, weights from their measured separation of winners and losers, kept only where the sign
+  holds in both periods.
+
+## The four questions
+
+1. **Does the hard D1 side filter actually leave a workable system?** In a bull regime only the UP bot and
+   a RANGE break upward may trade - and UP in bull measures -0.118 R. The filter removes the DOWN bot for
+   roughly two thirds of the history. Does that leave enough trades to be a system at all, and is there a
+   better way to honour the owner's rule than a binary regime label?
+
+2. **Is "three bots split by direction" still the right shape once D1 decides the direction?** DOWN and UP
+   are the same method mirrored. If D1 picks the side, are they one method with a direction input, and is
+   the real split method-based (trend-pullback vs range-break) rather than direction-based? Say plainly if
+   you think the three-bot shape should change - the owner's picture is three traders in one account, at
+   most two open at once, and any answer has to keep that true.
+
+3. **What is wrong with my weighted-score plan?** Be specific. I am aware of two risks: the weights are
+   fitted on the same 248 trades that produced the findings, and a weighted score can quietly let a trade
+   through on many weak agreements where a gate would have refused it. What else? And what would you
+   measure to know whether the score is better than the gates, rather than just different?
+
+4. **Where is the biggest gain for the least risk of fooling ourselves?** If you had to pick ONE change
+   for the three bots, which, and what number would tell us within one week whether it worked?
+
+## How to answer
+
+Short and concrete. Where you disagree, say what you would do instead and what you would measure to
+settle it. If you think a piece of my reasoning is wrong, say which sentence and why. You have the whole
+repository: check anything you want to check rather than taking my numbers on trust - `geometry.py`,
+`edge_by_condition.py` and their CSVs are there, and `geometry_trades.csv` / `edge_trades.csv` hold every
+trade with its readings.
+
+C:\Users\korap\taa\research\2026-10-26-three-bots\audit.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\bots.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\CONSULT.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\CONSULT_REPLY_raw.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\dev2_log.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\dev3_log.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_NOTES.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_NOTES_2.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_SPEC.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_SPEC_2.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\DEV_SPEC_3.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\edge_by_condition.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\edge_trades.csv
+C:\Users\korap\taa\research\2026-10-26-three-bots\gate_bite.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\geometry.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\geometry_trades.csv
+C:\Users\korap\taa\research\2026-10-26-three-bots\HYPOTHESIS.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\JOURNAL.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\momentum_depth.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\my_bugs.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\out_my_bugs.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\out_round1.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\out_round2.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\out_round7.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\parity.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\parity_output.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\plant_bugs.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\plant_bugs_2.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\plant_bugs_2_output.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\plant_bugs_output.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\PREDICTION.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\relative.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\REVIEW_BRIEF.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\REVIEW_FINDINGS.md
+C:\Users\korap\taa\research\2026-10-26-three-bots\review_log.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\review_plant_bugs.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\review_plant_bugs_output.txt
+C:\Users\korap\taa\research\2026-10-26-three-bots\robust.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round3.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round4.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round5.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round6.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\round7.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\selection_bias.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\sweep.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\together.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\unseen.py
+C:\Users\korap\taa\research\2026-10-26-three-bots\__pycache__\audit.cpython-311.pyc
+C:\Users\korap\taa\research\2026-10-26-three-bots\__pycache__\bots.cpython-311.pyc
+C:\Users\korap\taa\research\2026-10-26-three-bots\__pycache__\relative.cpython-311.pyc
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -Raw research/2026-10-26-three-bots/DEV_SPEC_3.md; Get-Content -Raw research/2026-10-26-three-bots/geometry.py; Get-Content -Raw research/2026-10-26-three-bots/edge_by_condition.py' in C:\Users\korap\taa
+ succeeded in 261ms:
+# DEV_SPEC 3 Ã¢â‚¬â€ the decision becomes a weighted score behind one hard rule (2026-10-27)
+
+The owner asked for this round to be shared work: *"share what we discussed with Codex and work together
+to make the system actually usable."* So this spec starts with the whole picture, not just the task.
+
+## What we found today, in numbers
+
+**1. The entry, not the exit, is where it breaks.** Over 248 trades, 2023-09 .. 2026-10, with the exits
+stripped to stop-and-target so the entry is measured alone (`geometry.py`):
+
+| bot / period | winners' median MAE | losers' median MAE | **losers' median MFE** |
+|---|---|---|---|
+| DOWN never seen | 0.36 R | 1.08 R | **0.37 R** |
+| DOWN in the fit window | 0.27 R | 1.04 R | **0.17 R** |
+| UP never seen | 0.36 R | 1.05 R | **0.48 R** |
+| UP in the fit window | 0.32 R | 1.09 R | **0.32 R** |
+| RANGE never seen | 0.50 R | 1.08 R | **0.52 R** |
+| RANGE in the fit window | 0.39 R | 1.06 R | **0.68 R** |
+
+A winner barely dips; a loser walks straight into the stop and **never goes anywhere in our favour**. So
+the stop is not too tight, and widening it does not help - the counterfactual on the real M1 path, same
+entry, same target, stop k times wider, confirms it (DOWN never seen: x1.0 -0.267, x1.5 -0.228, x2.0
+-0.296; UP and RANGE get monotonically worse). **The losers are not stopped out early - they are wrong
+from the first minute.** That makes this a selection problem.
+
+**2. The selection problem has a name, and it was already measured.** On the knowledge base's own split
+(`edge_by_condition.py`, P25: side x the D1 regime x the owner's windows):
+
+| bot | D1 regime | trades | R a trade | in fit / never seen |
+|---|---|---|---|---|
+| DOWN | bear | 24 | +0.164 | +0.240 / -0.020 |
+| DOWN | **bull** | 49 | **-0.111** | +0.140 / **-0.244** |
+| UP | bear | 11 | +0.224 | -0.013 / +0.422 |
+| UP | **bull** | 76 | **-0.118** | -0.029 / -0.150 |
+| RANGE | bear | 22 | +0.069 | +0.099 / +0.032 |
+| RANGE | **bull** | 38 | **-0.639** | **-0.723 / -0.616** |
+
+163 of the 248 trades happened in a bull regime, and every bot loses there. That is the whole story of
+the negative results. The knowledge base already held this as **F20** and the brake **R08 / S11** -
+"bull regime (D1 over a rising 50-day mean) Ã¢â€ â€™ no M5 sell" - and the bots never used it.
+
+**3. The bots decide on 4.5 % of what the system can measure, and weigh none of it.**
+
+| decision path | measures used | of 132 available |
+|---|---|---|
+| `trend_box_down` / `trend_box_up` | 6 | 4.5 % |
+| `range_break` | 3 | 2.3 % |
+| `ai_trader` | 18 | 13.6 % |
+
+Every one is a pass/fail gate. Nothing counts how many readings agree. Week 1's three losers passed all
+six gates; the reading that would have stopped them (the D1 regime) was not among the six.
+
+## The owner's rule for this round
+
+> **Every trade takes only the side that has the edge on a timeframe LARGER than the entry timeframe.**
+> (owner, 2026-10-27, for the whole system - the rule bots and the AI alike)
+
+Our entries are M5. So the side is decided above M5, and the measurement above says the D1 regime decides
+it. This is a **hard filter, not a weight**: a bot whose direction disagrees with the larger timeframe's
+edge side does not trade, however good its own trigger looks.
+
+## The division of work
+
+- **The research session (not you):** which of the 132 measures can actually be read at the decision bar,
+  each one's measured power to separate winners from losers on the 248 trades, split fitted / never seen,
+  and the weights that come out of it. **You do not choose, tune or judge any weight.**
+- **You:** the mechanism that carries them. Build the vessel; the research session fills it. Everything
+  you add must be inert until weights are supplied, and `config.yaml` stays untouched.
+
+## Task A Ã¢â‚¬â€ one place that answers "which side has the edge above this frame"
+
+New module `app/strategy/edge_side.py`.
+
+```python
+def edge_side(frames: Mapping[Timeframe, pd.DataFrame], at: pd.Timestamp, entry: Timeframe) -> Side | None
+```
+
+- Reads the **D1 regime** from the lane's H1 frame: shift the close-stamped index back one hour, resample
+  to `1D`, take only bars closed at `at`, a 50-day rolling mean of the close.
+  - `BUY` when the close is over a mean that is rising (bull),
+  - `SELL` when the close is under a mean that is falling (bear),
+  - `None` when neither (mixed, or fewer than 50 closed D1 bars).
+- `entry` is the entry timeframe and must be **smaller than D1**; raise `ValueError` if it is not, so the
+  rule can never be read from a frame at or below the entry frame.
+- Needs 50 closed D1 bars, so about 1,200 closed H1 bars. If the frame is shorter, return `None` - never
+  guess from a short mean.
+- Pure function, no I/O, no clock reads.
+
+Hand-worked tests: bull, bear, both mixed cases, exactly 50 bars, 49 bars, a D1 bar that has not closed
+yet (the same shape as `test_an_unclosed_h4_bar_never_reaches_the_zigzag`), and the `ValueError`.
+
+## Task B Ã¢â‚¬â€ the trend and range bots obey it, behind one parameter
+
+Add `require_edge_side: bool = False` to `TrendBoxParams` and `RangeBreakParams`.
+
+When `True`, as the **first** gate after `in_window` (before any other work):
+
+- `side = edge_side(ctx.frames, at, ctx.market.entry_timeframe)`
+- `trend_box_down` holds with reason `"AGAINST_EDGE_SIDE"` unless `side is Side.SELL`.
+- `trend_box_up` holds unless `side is Side.BUY`.
+- `range_break` computes its break first, then holds unless the break's side equals `side`.
+- `side is None` **blocks every bot**: no clear edge side above the entry frame, no trade. Write this in
+  the docstring - it is the owner's rule, not a default worth softening.
+
+## Task C Ã¢â‚¬â€ the vessel for the weighted decision
+
+New module `app/strategy/weighing.py`. No strategy calls it yet; this round only builds and tests it.
+
+```python
+@dataclass(frozen=True)
+class Weight:
+    name: str          # the reading's name
+    weight: float      # how much it counts, >= 0
+    wants: str         # "high" | "low" | "true" | "false": which direction supports the trade
+
+@dataclass(frozen=True)
+class Scale:
+    weights: tuple[Weight, ...]
+    threshold: float   # the score needed to trade, 0..1
+
+def score(readings: Mapping[str, float | bool | None], scale: Scale) -> ScoreResult
+```
+
+`ScoreResult` carries: the total score **normalised to 0..1 over the weights that could be read**, the
+list of readings that supported the trade, the list that opposed it, and the list that was missing. A
+reading absent or `None` is **left out of both the numerator and the denominator** - never counted as
+agreement. An empty scale, or one where nothing could be read, scores `0.0` and supports nothing.
+
+Boolean readings: `wants="true"` scores its full weight when the value is `True`, zero when `False`.
+Numeric readings: the caller passes values already normalised to 0..1, and `wants="low"` scores
+`weight * (1 - value)`. Document that normalisation is the caller's job - do not invent one.
+
+Hand-worked tests, every number worked out by hand in the test: all agree, all disagree, a mix, a missing
+reading changing the denominator, `wants="low"`, an empty scale, a zero weight, and a threshold exactly
+met (document and test whether `>=` or `>` - pick `>=` and say so).
+
+## The absolute rules (unchanged from DEV_SPEC 2, they worked)
+
+1. Everything defaults OFF/inert; defaults must be byte-identical to today. Prove it: the full suite and
+   the parity numbers unchanged.
+2. Never re-implement production logic inside a test.
+3. Every new test proven to bite: break the one line it covers, run that test, confirm it fails, restore.
+   Report each one.
+4. At least 10 new planted bugs for this round in `plant_bugs_3.py`, crash-safe, output committed, caught
+   and MISSED both reported honestly.
+5. No `.env`, no `TRADING_MODE`, no DEMO/LIVE, no credentials, no commit, no push, no deploy.
+6. `ruff format`, `ruff check app tests`, `mypy app`, `bandit`, full `pytest` all green before you stop.
+7. Do not change any default or `config.yaml`. Do not touch `geometry*.py`, `edge_by_condition.py`,
+   `JOURNAL.md`, or anything under `research/2026-10-26-three-bots/weights*` - the research session is in
+   those right now.
+8. **If anything here contradicts anything else, stop and write it in `DEV_NOTES_3.md` instead of
+   guessing.** Last round you found the spec clear; say so again if it is, and say where it is not.
+
+## What to write when done
+
+`DEV_NOTES_3.md`: each task, the tests x the mutation proving each bites, the planted-bug table, the
+proof defaults are unchanged (suite counts, parity numbers), anything unclear, and what you did not do.
+
+"""Where the trend bots' entries actually sit, measured on the price path (journal week 1, 2026-10-27).
+
+The journal's week 1 found the two winning down trades went 0.81 R and 0.38 R *against* the entry before
+they ran, which is why a break-even stop destroyed them. That is a statement about the entry, not about
+the exit, so this measures the entry itself over the whole history rather than one week:
+
+1. the adverse excursion before a trade works, separately for winners and losers - if winners routinely
+   dip most of the way to the stop, the stop is too tight for where the entry is placed;
+2. the favourable excursion of the losers - if losers never go anywhere, they are simply wrong and no
+   stop width will save them;
+3. the counterfactual: the same entry and the same target with a stop k times wider, settled on the real
+   M1 path. This answers "widen the stop" with one number per k instead of a parameter sweep.
+
+Every number is split by the window the parameters were fitted on (2025-10-20 .. 2026-10-24) and the
+years before it, because a lesson that only holds inside the fit is not a lesson.
+
+    .venv\\Scripts\\python research/2026-10-26-three-bots/geometry.py
+"""
+
+from __future__ import annotations
+
+import sys
+from dataclasses import replace
+from pathlib import Path
+
+import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import bots  # noqa: E402
+from app.core.enums import Timeframe  # noqa: E402
+from app.engine.ai_trader import to_frame  # noqa: E402
+from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[2]
+FIT = (pd.Timestamp("2025-10-20", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC"))
+WIDE = [1.0, 1.25, 1.5, 2.0, 3.0]
+
+
+def day_end(at: pd.Timestamp) -> pd.Timestamp:
+    """``run``'s own deadline for a trade opened at ``at``: 07:00 Bangkok the next morning."""
+    th = at.tz_convert(bots.TH)
+    return (pd.Timestamp(th.date(), tz=bots.TH) + pd.Timedelta(days=1, hours=7)).tz_convert("UTC")
+
+
+def path_stats(m1: pd.DataFrame, t: bots.Trade, p: bots.P) -> dict:
+    """Walk the real M1 path once and read off everything the entry's geometry needs.
+
+    The counterfactual stops get the SAME DEADLINE the original trade had (07:00 Bangkok the next day,
+    and ``max_hours``), not the moment the original happened to exit: the original exited early *because*
+    it was stopped, so cutting the wider stop off there would answer the question with itself. The first
+    version of this file did exactly that and gave a win rate that did not move with the stop width -
+    which is impossible, and is what exposed the mistake.
+    """
+    x = m1[(m1.index >= t.at) & (m1.index <= t.extra["closed"])]
+    if x.empty:
+        return {}
+    sell = t.side == "SELL"
+    risk = abs(t.stop - t.entry)
+    hi, lo = x.high.to_numpy(float), x.low.to_numpy(float)
+    adverse = (hi.max() - t.entry) if sell else (t.entry - lo.min())
+    favour = (t.entry - lo.min()) if sell else (hi.max() - t.entry)
+    out = {"mae_r": adverse / risk, "mfe_r": favour / risk, "risk": risk}
+    until = day_end(t.at)
+    for k in WIDE:
+        wider = bots.Trade(
+            t.bot, t.side, t.at, t.entry, t.entry + k * risk if sell else t.entry - k * risk, t.tp
+        )
+        got = bots.settle(m1, wider, until, p)
+        out[f"r_x{k}"] = got.r * k  # back into R of the ORIGINAL risk, so the k columns are comparable
+        out[f"out_x{k}"] = got.out
+    return out
+
+
+def table(df: pd.DataFrame, title: str) -> None:
+    print(f"\n### {title}  ({len(df)} trades)\n")
+    if df.empty:
+        print("no trades")
+        return
+    win, lose = df[df.r > 0], df[df.r <= 0]
+    print("| group | trades | median MAE (R) | 75th MAE | median MFE (R) | mean R |")
+    print("|---|---|---|---|---|---|")
+    for name, g in (("winners", win), ("losers", lose), ("all", df)):
+        if g.empty:
+            continue
+        print(
+            f"| {name} | {len(g)} | {g.mae_r.median():.2f} | {g.mae_r.quantile(0.75):.2f} | "
+            f"{g.mfe_r.median():.2f} | {g.r.mean():+.3f} |"
+        )
+    print("\n| stop width | mean R a trade | win rate | trades stopped out |")
+    print("|---|---|---|---|")
+    for k in WIDE:
+        col = df[f"r_x{k}"]
+        print(f"| x{k} | {col.mean():+.3f} | {(col > 0).mean():.0%} | {(col <= -0.9 * k).sum()} |")
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+    hs = ParquetHistoryStore(ROOT / "data/history")
+    f = {t: to_frame(hs.load("FBS-Demo", "XAUUSD", t, None, None)) for t in (Timeframe.M1, Timeframe.H1)}
+    m1 = f[Timeframe.M1]
+    # exit_mode "tp" for every bot: the stop and the target alone, so the entry is measured without any
+    # exit rule layered on top (the configured UP and RANGE bots move to break-even; that is a separate
+    # question, and the week-1 journal showed it is the entry that needs answering first).
+    p = replace(bots.P(), exit_mode="tp")
+    start, end = pd.Timestamp("2023-09-05", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC")
+    trades = bots.run(f, p, start, end)
+    rows = []
+    for t in trades:
+        st = path_stats(m1, t, p)
+        if not st:
+            continue
+        # a stop at x1.0 is the trade run() already settled: if the two disagree this harness is wrong
+        if abs(st["r_x1.0"] - t.r) > 1e-6:
+            raise SystemExit(
+                f"harness disagrees with bots.run on {t.bot} {t.at}: {st['r_x1.0']:+.4f} vs {t.r:+.4f}"
+            )
+        rows.append({"bot": t.bot, "at": t.at, "r": t.r, "out": t.out, **st})
+    df = pd.DataFrame(rows)
+    df["fitted"] = (df["at"] >= FIT[0]) & (df["at"] < FIT[1])  # df.at is pandas own indexer
+    print(f"# The entry's geometry, {start.date()} .. {end.date()}\n")
+    print(
+        f"{len(df)} trades: {int(df.fitted.sum())} inside the fit window, {int((~df.fitted).sum())} outside"
+    )
+    for bot in ("DOWN", "UP", "RANGE"):
+        g = df[df.bot == bot]
+        if g.empty:
+            continue
+        print(f"\n## {bot}")
+        table(g[~g.fitted], f"{bot} - never seen")
+        table(g[g.fitted], f"{bot} - inside the fit window")
+    df.to_csv(Path(__file__).resolve().parent / "geometry_trades.csv", index=False)
+
+
+if __name__ == "__main__":
+    main()
+
+"""The three bots' edge by market condition, on the knowledge base's own split (P25).
+
+The owner, 2026-10-27: *"we should have known long ago that we must pick the trades well - the conditions
+where we have the edge."* They are right, and they said so on 2026-10-25 (P25, R08): record the edge **by
+market condition**, never "it won in this period and lost in that one". The knowledge base already holds
+the finding this touches:
+
+    F20 / the bull-regime finding: in a BULL REGIME (D1 over a rising 50-day mean) an M5 SELL is at a
+    disadvantage - every sell tested lost there. R08, the draft brake, became the shadow S11: bull regime
+    -> no M5 sell except the surest.
+
+The three bots never saw that brake. Week 1's three losers were sells into a rising gold market. So this
+does not invent a new split: it is P25's fixed split - side x the D1 regime x the owner's session windows
+- applied to the 248 trades `geometry.py` settled, so the cells compare with every other KB table.
+
+Regime, exactly as the knowledge base defines it, read from the last D1 bar CLOSED before the entry:
+  bull  = close over a 50-day mean that is rising
+  bear  = close under a 50-day mean that is falling
+  mixed = anything else
+
+    .venv\\Scripts\\python research/2026-10-26-three-bots/edge_by_condition.py
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(HERE))
+
+import bots  # noqa: E402
+from app.core.enums import Timeframe  # noqa: E402
+from app.engine.ai_trader import to_frame  # noqa: E402
+from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
+
+FIT = (pd.Timestamp("2025-10-20", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC"))
+MEAN_DAYS = 50
+
+
+def regimes(h1: pd.DataFrame) -> pd.DataFrame:
+    """One row per CLOSED D1 bar: its close, the 50-day mean, and the regime label."""
+    opens = h1.copy()
+    opens.index = pd.DatetimeIndex(opens.index) - pd.Timedelta(hours=1)  # frames are close-stamped
+    d1 = opens.resample("1D").agg({"high": "max", "low": "min", "close": "last"}).dropna()
+    d1["mean50"] = d1.close.rolling(MEAN_DAYS).mean()
+    d1["rising"] = d1.mean50.diff() > 0
+    over = d1.close > d1.mean50
+    d1["regime"] = "mixed"
+    d1.loc[over & d1.rising, "regime"] = "bull"
+    d1.loc[~over & ~d1.rising, "regime"] = "bear"
+    d1.loc[d1.mean50.isna(), "regime"] = "unknown"
+    d1["closed_at"] = d1.index + pd.Timedelta(days=1)  # the bar is readable only after it closes
+    return d1
+
+
+def label(d1: pd.DataFrame, at: pd.Timestamp) -> str:
+    usable = d1[d1.closed_at <= at]
+    return str(usable.regime.iloc[-1]) if len(usable) else "unknown"
+
+
+def window_of(at: pd.Timestamp) -> str:
+    th = at.tz_convert(bots.TH)
+    ny = at.tz_convert(bots.NY)
+    if pd.Timestamp("07:00").time() < th.time() <= pd.Timestamp("09:00").time():
+        return "Asia 07-09"
+    if pd.Timestamp("13:00").time() < th.time() <= pd.Timestamp("15:00").time():
+        return "London 13-15"
+    if pd.Timestamp("08:00").time() < ny.time() <= pd.Timestamp("11:30").time():
+        return "NY open"
+    return "other"
+
+
+def cells(df: pd.DataFrame, by: list[str], title: str, least: int = 8) -> None:
+    print(f"\n### {title}\n")
+    print(f"| {' | '.join(by)} | trades | win | R a trade | total R | in fit / unseen R |")
+    print(f"|{'---|' * (len(by) + 5)}")
+    for key, g in df.groupby(by):
+        if len(g) < least:
+            continue
+        keys = key if isinstance(key, tuple) else (key,)
+        fit, uns = g[g.fitted], g[~g.fitted]
+        both = f"{fit.r.mean():+.3f} / {uns.r.mean():+.3f}" if len(fit) and len(uns) else "-"
+        print(
+            f"| {' | '.join(str(k) for k in keys)} | {len(g)} | {(g.r > 0).mean():.0%} | "
+            f"{g.r.mean():+.3f} | {g.r.sum():+.1f} | {both} |"
+        )
+    small = sum(len(g) for _, g in df.groupby(by) if len(g) < least)
+    if small:
+        print(f"\n({small} trades sit in cells under {least} trades and are left out)")
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+    path = HERE / "geometry_trades.csv"
+    if not path.exists():
+        raise SystemExit("run geometry.py first: it writes geometry_trades.csv")
+    df = pd.read_csv(path, parse_dates=["at"])
+    df["at"] = pd.to_datetime(df["at"], utc=True)
+    hs = ParquetHistoryStore(ROOT / "data/history")
+    h1 = to_frame(hs.load("FBS-Demo", "XAUUSD", Timeframe.H1, None, None))
+    d1 = regimes(h1)
+    df["regime"] = [label(d1, t) for t in df["at"]]
+    df["window"] = [window_of(t) for t in df["at"]]
+    df["side"] = df.bot.map({"DOWN": "SELL", "UP": "BUY", "RANGE": "both"})
+    print("# The three bots' edge by market condition (P25's split)\n")
+    print(f"{len(df)} trades, 2023-09 .. 2026-10; exits are stop and target only, so this reads the entry.\n")
+    print(
+        "Regime days behind the trades: " + ", ".join(f"{k} {v}" for k, v in df.regime.value_counts().items())
+    )
+    cells(df, ["bot", "regime"], "Each bot by the D1 regime")
+    cells(df, ["bot", "window"], "Each bot by the owner's session windows")
+    cells(df, ["bot", "regime", "window"], "Both together", least=6)
+    df.to_csv(HERE / "edge_trades.csv", index=False)
+
+
+if __name__ == "__main__":
+    main()
+
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command 'Get-Content -TotalCount 20 research/2026-10-26-three-bots/geometry_trades.csv; Get-Content -TotalCount 20 research/2026-10-26-three-bots/edge_trades.csv; Get-Content -Raw research/2026-10-26-three-bots/CONSULT_REPLY_raw.txt; Get-Content -Raw research/2026-10-26-three-bots/bots.py' in C:\Users\korap\taa
+
+"""One trader, three bots (owner 2026-10-26: "the bots are like three traders, each trading its own setup at the
+same time, one account - at one decision point they cannot all enter: at most two, a trend one way and sideways";
+"make it profitable first - no before / after the exam").
+
+Plain code, no AI, so it can be tuned fast. Each bot watches for its OWN structure at every M5 close inside the
+owner's windows (Asia 07:00-09:00, London 13:00-15:00 Thai, New York 08:00-11:30 NY) and holds its own position;
+a trend bot and the range bot can overlap, the two trend bots cannot (their conditions are opposites).
+
+- DOWN: MetaTrader 5's ZigZag (12, 5, 3) on the H1 bars closed by then shows a lower high AND a lower low; its
+  last leg A (high) -> B (low); price pulled back RETRACE of it; an M5 box (6-24 bars, at most BOX of the leg
+  tall) - the quiet; an M5 close under the box = SELL; stop over the box by BUFFER of the box height;
+  take-profit at B, at least MIN_TP USD and MIN_R x the risk. UP: the mirror;
+- RANGE: the box comes from the BIG picture (owner 2026-10-26: "sideways has to be measured on H1-H4"):
+  ``range_tf`` names the frame whose ZigZag gives the box - H4, H1, or 'both' (the H4 box, and the H1 swings
+  must sit inside it). That frame must not be stepping (no lower-high-and-lower-low, no higher pair), and price
+  must be inside the box. Then an M5 bar over the box top closing back under it = SELL (a sweep closed back),
+  stop over that bar's high + BUFFER x its range, take-profit TP_RANGE of the way to the box low; the mirror at
+  the bottom. ``range_mode`` 'opposite' takes the other side, 'break' trades an M5 close out of the box;
+- shared by the account: no entry into a push still running toward the stop (the 60 minutes before ran more than
+  RUN x the stop distance), and the windows;
+- the exit, ``exit_mode``: 'tp' the stop and take-profit alone; 'be' the stop to break-even once the trade is
+  BE_AT x risk ahead; 'trail' the same, then the stop follows the extreme of the last TRAIL_MIN minutes of M1
+  bars; 'struct' out when STRUCT_BARS M5 bars close back across the entry. 'tp' leans on where the test stops
+  (the Thai day's end carried 29-48 % of each bot's gross R), so it is a baseline, not a design;
+- SL / TP on the M1 bars (bid), the spread SPREAD USD off every trade; a trade still open at the Thai day's end
+  is closed there.
+
+    .venv/Scripts/python research/2026-10-26-three-bots/bots.py
+"""
+
+from __future__ import annotations
+
+import sys
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
+from app.core.enums import Timeframe  # noqa: E402
+from app.engine.ai_trader import to_frame  # noqa: E402
+from app.market_data.history_store import ParquetHistoryStore  # noqa: E402
+from app.strategy.zigzag import zigzag  # noqa: E402
+
+TH, NY = "Asia/Bangkok", "America/New_York"
+START, END = pd.Timestamp("2025-10-20", tz="UTC"), pd.Timestamp("2026-10-24", tz="UTC")
+
+
+@dataclass
+class P:
+    retrace: tuple[float, float] = (0.382, 0.786)
+    box: float = 0.25  # the box at most this share of the H1 leg tall
+    buffer: float = 0.2  # the stop past the box by this share of the box height
+    min_tp: float = 0.0  # the 5 USD floor, off since 2026-10-27 (it rejected 1 of 496 signals)
+    min_r: float = 1.0
+    tp_range: float = 0.5
+    run: float = 1.2
+    spread: float = 0.30
+    exit_mode: str = "tp"  # tp | be | trail | struct (see the module docstring)
+    be_at: float = 1.0  # the trade must be this many R ahead before the stop moves
+    trail_min: int = 30  # 'trail': the stop follows the extreme of the last this many minutes of M1 bars
+    struct_bars: int = 3  # 'struct': this many M5 closes back across the entry end the trade
+    max_hours: float = (
+        0  # the trade is closed at this bar's close after this many hours (0: at the day's end)
+    )
+    bots: tuple[str, ...] = ("DOWN", "UP", "RANGE")
+    d1: bool = False  # the trend bots only with the D1 regime (the close against its 50-day mean)
+    range_mode: str = "fade"  # fade: sell a sweep closed back; opposite: the same trigger, the other side;
+    # break: an M5 close out of the box, traded with the break
+    range_tf: str = "H4"  # where the box comes from: "H4", "H1" or "both" (the H4 box with H1 inside it)
+    range_flat: bool = True  # the box frame must not be stepping up or down
+
+
+@dataclass
+class Trade:
+    bot: str
+    side: str
+    at: pd.Timestamp
+    entry: float
+    stop: float
+    tp: float
+    r: float = 0.0
+    out: str = ""
+    extra: dict = field(default_factory=dict)
+
+
+def windows(day: pd.Timestamp) -> list[tuple[pd.Timestamp, pd.Timestamp]]:
+    th, ny = pd.Timestamp(day.date(), tz=TH), pd.Timestamp(day.date(), tz=NY)
+    return [
+        ((th + pd.Timedelta(hours=7)).tz_convert("UTC"), (th + pd.Timedelta(hours=9)).tz_convert("UTC")),
+        ((th + pd.Timedelta(hours=13)).tz_convert("UTC"), (th + pd.Timedelta(hours=15)).tz_convert("UTC")),
+        (
+            (ny + pd.Timedelta(hours=8)).tz_convert("UTC"),
+            (ny + pd.Timedelta(hours=11, minutes=30)).tz_convert("UTC"),
+        ),
+    ]
+
+
+def market(h1: pd.DataFrame) -> tuple[str, list]:  # the census only: the bots no longer switch on it
+    sw, _ = zigzag(h1.high.to_numpy(float), h1.low.to_numpy(float))
+    highs = [s for s in sw if s.kind == 1]
+    lows = [s for s in sw if s.kind == -1]
+    if len(highs) < 2 or len(lows) < 2:
+        return "NONE", sw
+    if highs[-1].price < highs[-2].price and lows[-1].price < lows[-2].price:
+        return "DOWN", sw
+    if highs[-1].price > highs[-2].price and lows[-1].price > lows[-2].price:
+        return "UP", sw
+    return "RANGE", sw
+
+
+def settle(m1: pd.DataFrame, t: Trade, until: pd.Timestamp, p: P) -> Trade:
+    """Walk the M1 bars from the entry to ``until``: the stop (moved by ``exit_mode``) and the take-profit, the
+    worse of the two first when a bar holds both; else the last close. The spread is taken off once."""
+    if p.max_hours:
+        until = min(until, t.at + pd.Timedelta(hours=p.max_hours))
+    x = m1[(m1.index >= t.at) & (m1.index < until)]
+    sell = t.side == "SELL"
+    risk = abs(t.stop - t.entry)
+    hi = x.high.to_numpy()
+    lo = x.low.to_numpy()
+    cl = x.close.to_numpy()
+    ix = x.index
+    stop, best = t.stop, t.entry  # best: the furthest price reached in the trade's favour
+    exit_px, out, when = None, ("time" if p.max_hours else "eod"), until
+    back = 0  # 'struct': M5 closes in a row back across the entry
+    for i in range(len(x)):
+        if (hi[i] >= stop) if sell else (lo[i] <= stop):
+            exit_px, out, when = stop, ("SL" if stop == t.stop else "trail"), ix[i]
+            break
+        if (lo[i] <= t.tp) if sell else (hi[i] >= t.tp):
+            exit_px, out, when = t.tp, "TP", ix[i]
+            break
+        best = min(best, lo[i]) if sell else max(best, hi[i])
+        ahead = (t.entry - best) if sell else (best - t.entry)
+        if p.exit_mode in ("be", "trail") and ahead >= p.be_at * risk:
+            moved = t.entry
+            if p.exit_mode == "trail" and i >= 1:
+                j = max(0, i - p.trail_min + 1)
+                moved = float(hi[j : i + 1].max()) if sell else float(lo[j : i + 1].min())
+            stop = min(stop, max(moved, t.entry)) if sell else max(stop, min(moved, t.entry))
+        if p.exit_mode == "struct" and (i + 1) % 5 == 0:
+            back = back + 1 if ((cl[i] > t.entry) if sell else (cl[i] < t.entry)) else 0
+            if back >= p.struct_bars:
+                exit_px, out, when = float(cl[i]), "struct", ix[i]
+                break
+    if exit_px is None:
+        exit_px = float(cl[-1]) if len(x) else t.entry
+    gain = (t.entry - exit_px) if sell else (exit_px - t.entry)
+    t.r, t.out = (gain - p.spread) / risk, out
+    t.extra["closed"] = when
+    return t
+
+
+def run(
+    f: dict, params: P | dict[str, P], start: pd.Timestamp = START, end: pd.Timestamp = END
+) -> list[Trade]:
+    """Every bot of ``params`` (one P for all its bots, or one P per bot) side by side, each with its own
+    position, so a trend trade and a range trade can be open at once."""
+    per: dict[str, P] = params if isinstance(params, dict) else {b: params for b in params.bots}
+    m1, h1 = f[Timeframe.M1], f[Timeframe.H1]
+    h4 = h1.resample("4h").agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
+    m1 = m1[(m1.index >= start - pd.Timedelta(days=3)) & (m1.index < end + pd.Timedelta(days=2))]
+    m5 = m1.resample("5min").agg({"open": "first", "high": "max", "low": "min", "close": "last"}).dropna()
+    trades: list[Trade] = []
+    busy = dict.fromkeys(per, start)  # each bot's own position: free again from this time
+    for day in pd.date_range(start, end, freq="D"):
+        if day.weekday() >= 5:
+            continue
+        day_end = (pd.Timestamp(day.date(), tz=TH) + pd.Timedelta(days=1, hours=7)).tz_convert("UTC")
+        for w0, w1 in windows(day):
+            bars = m5[(m5.index >= w0 - pd.Timedelta(hours=2)) & (m5.index < w1)]
+            seen, sw, sw4 = None, [], []
+            for i in range(len(bars)):
+                t_close = bars.index[i] + pd.Timedelta(minutes=5)
+                if t_close <= w0 or t_close > w1:
+                    continue
+                hx = h1[h1.index + pd.Timedelta(hours=1) <= t_close].iloc[-400:]
+                if seen != len(hx):
+                    seen = len(hx)
+                    sw, _ = zigzag(hx.high.to_numpy(float), hx.low.to_numpy(float))
+                    h4x = h4[h4.index + pd.Timedelta(hours=4) <= t_close].iloc[-300:]
+                    sw4, _ = zigzag(h4x.high.to_numpy(float), h4x.low.to_numpy(float))
+                if len(sw) < 3:
+                    continue
+                past = bars.iloc[: i + 1]
+                for bot, p in per.items():
+                    if t_close < busy[bot]:
+                        continue  # this bot's own trade is still open
+                    tr = signal(bot, sw, sw4, past, p, t_close)
+                    if tr is None:
+                        continue
+                    before = m1[(m1.index >= t_close - pd.Timedelta(minutes=60)) & (m1.index < t_close)]
+                    runup = (
+                        (tr.entry - before.low.min()) if tr.side == "SELL" else (before.high.max() - tr.entry)
+                    )
+                    if p.run and runup > p.run * abs(tr.stop - tr.entry):
+                        continue
+                    tr = settle(m1, tr, day_end, p)
+                    trades.append(tr)
+                    busy[bot] = tr.extra["closed"]
+    return sorted(trades, key=lambda x: x.at)
+
+
+def stepping(sws: list) -> str:
+    """'DOWN' (lower high and lower low), 'UP', or 'FLAT' - from the last two confirmed swings of each kind."""
+    highs = [s for s in sws if s.kind == 1]
+    lows = [s for s in sws if s.kind == -1]
+    if len(highs) < 2 or len(lows) < 2:
+        return "FLAT"
+    if highs[-1].price < highs[-2].price and lows[-1].price < lows[-2].price:
+        return "DOWN"
+    if highs[-1].price > highs[-2].price and lows[-1].price > lows[-2].price:
+        return "UP"
+    return "FLAT"
+
+
+def range_box(sw: list, sw4: list, p: P) -> tuple[float, float] | None:
+    """(top, bottom) of the big-picture box, or None when that frame is not sideways."""
+    big = sw4 if p.range_tf in ("H4", "both") else sw
+    if len(big) < 2:
+        return None
+    if p.range_flat and stepping(big) != "FLAT":
+        return None
+    highs = [s.price for s in big if s.kind == 1]
+    lows = [s.price for s in big if s.kind == -1]
+    if not highs or not lows:
+        return None
+    top, floor = highs[-1], lows[-1]
+    if top <= floor:
+        return None
+    if p.range_tf == "both":  # the H1 swings have to sit inside the H4 box
+        h1h = [s.price for s in sw if s.kind == 1][-1:]
+        h1l = [s.price for s in sw if s.kind == -1][-1:]
+        if not h1h or not h1l or h1h[0] > top or h1l[0] < floor:
+            return None
+    return top, floor
+
+
+def signal(bot: str, sw: list, sw4: list, past: pd.DataFrame, p: P, t: pd.Timestamp) -> Trade | None:
+    """The bot's own setup on these bars, or None. Each bot tests its own structure, so a down leg and a range
+    can hold at the same moment; the two trend bots cannot, their conditions being opposites."""
+    price = float(past.close.iloc[-1])
+    highs = [s for s in sw if s.kind == 1]
+    lows = [s for s in sw if s.kind == -1]
+    if len(highs) < 2 or len(lows) < 2:
+        return None
+    if bot in ("DOWN", "UP"):
+        down = bot == "DOWN"
+        stepping = (
+            (highs[-1].price < highs[-2].price and lows[-1].price < lows[-2].price)
+            if down
+            else (highs[-1].price > highs[-2].price and lows[-1].price > lows[-2].price)
+        )
+        if not stepping:
+            return None
+        a, b = sw[-2], sw[-1]  # the last confirmed leg
+        if (a.kind, b.kind) != ((1, -1) if down else (-1, 1)):
+            return None
+        leg = abs(a.price - b.price)
+        if leg <= 0:
+            return None
+        for n in range(24, 5, -1):  # the longest box that still fits
+            if len(past) < n + 1:
+                continue
+            box = past.iloc[-n - 1 : -1]
+            top, floor = float(box.high.max()), float(box.low.min())
+            if top - floor > p.box * leg:
+                continue
+            mid = (top + floor) / 2
+            retr = (mid - b.price) / leg if down else (b.price - mid) / leg
+            if not (p.retrace[0] <= retr <= p.retrace[1]):
+                return None
+            if down and price < floor:
+                stop, tp = top + p.buffer * (top - floor), b.price
+            elif not down and price > top:
+                stop, tp = floor - p.buffer * (top - floor), b.price
+            else:
+                return None
+            risk, reward = abs(stop - price), abs(price - tp)
+            if reward < p.min_tp or reward < p.min_r * risk or (tp >= price if down else tp <= price):
+                return None
+            side = "SELL" if down else "BUY"
+            return Trade(bot, side, t, price, stop, tp, extra={"retrace": round(retr, 2), "box": n})
+        return None
+    box = range_box(sw, sw4, p)
+    if box is None:
+        return None
+    hh, ll = box
+    bar = past.iloc[-1]
+    rng = hh - ll
+    if p.range_mode == "break":  # price leaves the box: the close through decides, no 'inside' gate
+        prev = float(past.close.iloc[-2]) if len(past) > 1 else price
+        if price > hh >= prev:
+            stop, tp, side = hh - p.buffer * rng * 0.25, price + p.tp_range * rng, "BUY"
+        elif price < ll <= prev:
+            stop, tp, side = ll + p.buffer * rng * 0.25, price - p.tp_range * rng, "SELL"
+        else:
+            return None
+        risk, reward = abs(stop - price), abs(tp - price)
+        if risk <= 0 or reward < p.min_tp or reward < p.min_r * risk:
+            return None
+        return Trade("RANGE", side, t, price, stop, tp, extra={"range": round(rng, 1)})
+    if not ll < price < hh:  # a fade is taken from inside the box only
+        return None
+    if bar.high > hh and bar.close < hh:
+        stop = float(bar.high) + p.buffer * float(bar.high - bar.low)
+        tp = price - p.tp_range * (price - ll)
+        side = "SELL"
+    elif bar.low < ll and bar.close > ll:
+        stop = float(bar.low) - p.buffer * float(bar.high - bar.low)
+        tp = price + p.tp_range * (hh - price)
+        side = "BUY"
+    else:
+        return None
+    if p.range_mode == "opposite":  # the same moment, the other side: stop and take-profit mirrored
+        side = "BUY" if side == "SELL" else "SELL"
+        stop, tp = 2 * price - stop, 2 * price - tp
+    risk, reward = abs(stop - price), abs(tp - price)
+    if reward < p.min_tp or reward < p.min_r * risk:
+        return None
+    return Trade("RANGE", side, t, price, stop, tp, extra={"range": round(rng, 1)})
+
+
+def report(trades: list[Trade], title: str) -> None:
+    df = pd.DataFrame([{"bot": t.bot, "side": t.side, "at": t.at, "r": t.r, "out": t.out} for t in trades])
+    print(f"\n== {title}: {len(df)} trades ==")
+    if not len(df):
+        return
+    print("| bot | trades | win % | R / trade (after spread) | total R | weeks + / - | worst streak |")
+    print("|---|---|---|---|---|---|---|")
+    for bot, g in [*df.groupby("bot"), ("ALL", df)]:
+        wk = g.groupby(g["at"].dt.tz_convert(TH).dt.to_period("W")).r.sum()
+        streak = cur = 0
+        for r in g.r:
+            cur = cur + 1 if r < 0 else 0
+            streak = max(streak, cur)
+        print(
+            f"| {bot} | {len(g)} | {(g.r > 0).mean():.0%} | {g.r.mean():+.3f} | {g.r.sum():+.1f} | "
+            f"{(wk > 0).sum()} / {(wk <= 0).sum()} | {streak} |"
+        )
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+    hs = ParquetHistoryStore(ROOT / "data/history")
+    f = {t: to_frame(hs.load("FBS-Demo", "XAUUSD", t, None, None)) for t in (Timeframe.M1, Timeframe.H1)}
+    report(run(f, P()), "three bots side by side, defaults, 2025-10-20 .. 2026-10-23")
+
+
+if __name__ == "__main__":
+    main()
+
+
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command "@'
+import pandas as pd
+p='research/2026-10-26-three-bots/edge_trades.csv'
+d=pd.read_csv(p)
+print('regimes',d.regime.value_counts().to_dict(),'rows',len(d))
+print('bot regime'); print(d.groupby(['bot','regime']).r.agg(['size','mean']).round(3).to_string())
+print('aligned entries');
+d['align']=((d.regime=='bull') & (d.side=='BUY')) | ((d.regime=='bear') & (d.side=='SELL'))
+print(d.groupby(['bot','regime','align']).r.agg(['size','mean']).round(3).to_string())
+print('claimed cells by fit');
+for filt,name in [(('UP','Asia 07-09'),'UP Asia'),(('DOWN','London 13-15'),'DOWN London')]:
+ g=d[(d.bot==filt[0])&(d.window==filt[1])]
+ print(name,len(g),g.groupby('fitted').r.mean().to_dict())
+g=d[(d.bot=='RANGE')&(d.regime=='bear')]; print('RANGE bear',len(g),g.groupby('fitted').r.mean().to_dict())
+for bot,reg in [('RANGE','bull'),('UP','bull')]:
+ g=d[(d.bot==bot)&(d.regime==reg)]; print(bot,reg,len(g),g.groupby('fitted').r.mean().to_dict())
+'@ | python -" in C:\Users\korap\taa
+ exited 1 in 312ms:
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ModuleNotFoundError: No module named 'pandas'
+
+codex
+The consultation’s core CSV claims match the table in `DEV_SPEC_3`; I’m checking the aligned-side trade count next. The system Python lacks pandas, so I’ll use the repository’s virtual environment if it’s present.
+exec
+"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -Command "@'
+import pandas as pd
+p='research/2026-10-26-three-bots/edge_trades.csv'
+d=pd.read_csv(p)
+print('regimes',d.regime.value_counts().to_dict(),'rows',len(d))
+print('bot regime'); print(d.groupby(['bot','regime']).r.agg(['size','mean']).round(3).to_string())
+d['align']=((d.regime=='bull') & (d.side=='BUY')) | ((d.regime=='bear') & (d.side=='SELL'))
+print('aligned'); print(d.groupby(['bot','regime','align']).r.agg(['size','mean']).round(3).to_string())
+for bot,cond in [('UP Asia', (d.bot=='UP')&(d.window=='Asia 07-09')),('DOWN London',(d.bot=='DOWN')&(d.window=='London 13-15')),('RANGE bear',(d.bot=='RANGE')&(d.regime=='bear')),('RANGE bull',(d.bot=='RANGE')&(d.regime=='bull')),('UP bull',(d.bot=='UP')&(d.regime=='bull'))]:
+ g=d[cond]; print(bot,len(g),g.groupby('fitted').r.mean().round(3).to_dict())
+'@ | .\\.venv\\Scripts\\python.exe -" in C:\Users\korap\taa
+ succeeded in 1311ms:
+regimes {'bull': 163, 'bear': 57, 'mixed': 26, 'unknown': 2} rows 248
+bot regime
+               size   mean
+bot   regime              
+DOWN  bear       24  0.164
+      bull       49 -0.111
+      mixed       9 -0.397
+RANGE bear       22  0.069
+      bull       38 -0.639
+      mixed      10 -0.178
+      unknown     1  8.228
+UP    bear       11  0.224
+      bull       76 -0.118
+      mixed       7  0.401
+      unknown     1 -1.129
+aligned
+                     size   mean
+bot   regime  align             
+DOWN  bear    True     24  0.164
+      bull    False    49 -0.111
+      mixed   False     9 -0.397
+RANGE bear    False    22  0.069
+      bull    False    38 -0.639
+      mixed   False    10 -0.178
+      unknown False     1  8.228
+UP    bear    False    11  0.224
+      bull    True     76 -0.118
+      mixed   False     7  0.401
+      unknown False     1 -1.129
+UP Asia 30 {False: 0.183, True: 0.907}
+DOWN London 17 {False: 0.481, True: 0.132}
+RANGE bear 22 {False: 0.032, True: 0.099}
+RANGE bull 38 {False: -0.616, True: -0.723}
+UP bull 76 {False: -0.15, True: -0.029}
+
+codex
+## 1. Does the D1 filter leave a workable system?
+
+There is not enough evidence to call the filtered system workable. The CSV has 163 bull, 57 bear, 26 mixed, and 2 unknown trades. Applying the D1 direction to the trend bots leaves 76 UP trades in bull and 24 DOWN trades in bear: 100 historical trend entries. Those average about **−0.05 R per trade combined**. That is not evidence of an edge.
+
+The RANGE data cannot tell us how many entries would survive: `edge_trades.csv` labels every RANGE trade’s side as `both`, and these are not a clean sample of the proposed directional range-break method. Measure that method separately.
+
+I would keep the owner’s higher-timeframe side rule as a hard constraint, but treat “bull means BUY, bear means SELL” as a hypothesis to validate, not a proven profitable mapping. In particular, UP in bull loses **−0.118 R** overall and is negative in both splits. The regime label does not make an entry good just because its side agrees.
+
+## 2. Should the three-bot shape change?
+
+Yes: make the strategy logic **one directional trend method with a side input**, plus a separate range-break method. Keep three trader instances if that is useful for the account picture, but do not maintain mirrored UP and DOWN implementations as separate strategy concepts.
+
+Preserve the account constraint with one shared position coordinator: at most two open positions, with the allowed combinations explicit. D1 should constrain each entry’s side; it should not silently change which methods can compete for those slots.
+
+## 3. What is wrong with the weighted-score plan?
+
+Besides fitting weights on the same 248 trades:
+
+- With 132 candidate measures, feature hunting and trying variants can overfit even if the final weights look simple. Related readings can count the same evidence repeatedly.
+- Winner/loser separation is not the same as predicting **net R**. It can favor readings associated with more winners while ignoring payoff size, stops, spreads, and losses.
+- Missing readings change the denominator. A trade with only a few favorable readings can score highly if the more informative readings are missing.
+- A score can combine methods or regimes where a reading’s meaning changes. Pooling them can hide opposite effects.
+- “Measurable at the decision bar” needs strict point-in-time verification. A value can be available in a CSV yet still depend on a bar or indicator state that was not closed then.
+- More indicators and thresholds mean more choices. Picking the best threshold after seeing results adds another layer of selection bias.
+
+Compare score and gates on the same chronological, out-of-sample candidate trades with weights and thresholds locked in advance. Report **net R per calendar week including abstentions as zero**, trade count, drawdown, and trade rate; also compare at matched trade counts or risk budgets. Use a week-blocked uncertainty estimate, since trades from the same market week are not independent.
+
+## 4. One change, and a one-week measure
+
+I would first add the **hard D1 side veto** as an admission rule, with mixed or unavailable regimes producing no trade. It directly enforces the owner’s rule and prevents countertrend entries; it does not claim that aligned entries are profitable.
+
+Within one week, the meaningful pass/fail number is **zero entries whose side opposes a clear D1 edge**. Also record eligible signals and their shadow net R, but one week’s realized R cannot establish an edge. Keep the rule fixed and judge profitability on a longer, predeclared forward sample.
+
+One correction to the premise: “Losers never move in our favour at all” is too strong. The reported losing-trade median MFE is **0.17–0.68 R**, which is some favorable movement; it does not show that exits are irrelevant. The figures do support investigating selection, but they do not prove that selection is the whole problem.
+tokens used
+45,623
+## 1. Does the D1 filter leave a workable system?
+
+There is not enough evidence to call the filtered system workable. The CSV has 163 bull, 57 bear, 26 mixed, and 2 unknown trades. Applying the D1 direction to the trend bots leaves 76 UP trades in bull and 24 DOWN trades in bear: 100 historical trend entries. Those average about **−0.05 R per trade combined**. That is not evidence of an edge.
+
+The RANGE data cannot tell us how many entries would survive: `edge_trades.csv` labels every RANGE trade’s side as `both`, and these are not a clean sample of the proposed directional range-break method. Measure that method separately.
+
+I would keep the owner’s higher-timeframe side rule as a hard constraint, but treat “bull means BUY, bear means SELL” as a hypothesis to validate, not a proven profitable mapping. In particular, UP in bull loses **−0.118 R** overall and is negative in both splits. The regime label does not make an entry good just because its side agrees.
+
+## 2. Should the three-bot shape change?
+
+Yes: make the strategy logic **one directional trend method with a side input**, plus a separate range-break method. Keep three trader instances if that is useful for the account picture, but do not maintain mirrored UP and DOWN implementations as separate strategy concepts.
+
+Preserve the account constraint with one shared position coordinator: at most two open positions, with the allowed combinations explicit. D1 should constrain each entry’s side; it should not silently change which methods can compete for those slots.
+
+## 3. What is wrong with the weighted-score plan?
+
+Besides fitting weights on the same 248 trades:
+
+- With 132 candidate measures, feature hunting and trying variants can overfit even if the final weights look simple. Related readings can count the same evidence repeatedly.
+- Winner/loser separation is not the same as predicting **net R**. It can favor readings associated with more winners while ignoring payoff size, stops, spreads, and losses.
+- Missing readings change the denominator. A trade with only a few favorable readings can score highly if the more informative readings are missing.
+- A score can combine methods or regimes where a reading’s meaning changes. Pooling them can hide opposite effects.
+- “Measurable at the decision bar” needs strict point-in-time verification. A value can be available in a CSV yet still depend on a bar or indicator state that was not closed then.
+- More indicators and thresholds mean more choices. Picking the best threshold after seeing results adds another layer of selection bias.
+
+Compare score and gates on the same chronological, out-of-sample candidate trades with weights and thresholds locked in advance. Report **net R per calendar week including abstentions as zero**, trade count, drawdown, and trade rate; also compare at matched trade counts or risk budgets. Use a week-blocked uncertainty estimate, since trades from the same market week are not independent.
+
+## 4. One change, and a one-week measure
+
+I would first add the **hard D1 side veto** as an admission rule, with mixed or unavailable regimes producing no trade. It directly enforces the owner’s rule and prevents countertrend entries; it does not claim that aligned entries are profitable.
+
+Within one week, the meaningful pass/fail number is **zero entries whose side opposes a clear D1 edge**. Also record eligible signals and their shadow net R, but one week’s realized R cannot establish an edge. Keep the rule fixed and judge profitability on a longer, predeclared forward sample.
+
+One correction to the premise: “Losers never move in our favour at all” is too strong. The reported losing-trade median MFE is **0.17–0.68 R**, which is some favorable movement; it does not show that exits are irrelevant. The figures do support investigating selection, but they do not prove that selection is the whole problem.
