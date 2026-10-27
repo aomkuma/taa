@@ -13,6 +13,7 @@ One code version, one day at a time, reported to the owner before the next day r
 | day | wakes | trades | R | 300 acct | 100 acct | AI cost |
 |---|---:|---:|---:|---|---|---:|
 | 2026-07-06 | 27 | **0** | +0.00 | 300.00 → 300.00 | 100.00 → 100.00 | 0 USD |
+| 2026-07-06 (round 2, after ISSUES 37-38 fixed) | 36 | **3** | **+0.71** | 300.00 → 314.22 | 100.00 → 114.23 | 0 USD |
 
 ---
 
@@ -109,3 +110,79 @@ the prompt - and a weapon whose reading is absent is an open point, not a weapon
 
 Each fix is measured by re-running this same day from a clean store, and the result is appended to this file
 as its own row, never over the row above.
+
+---
+
+## Day 1, round 2 - the same Monday with R10's number and W03's range supplied
+
+Commit `2da4c76`, from an empty store, an empty answers cache and a ledger with only its header. The report is
+`r2_day_2026-07-06.md`; round 1's is `day_2026-07-06.md`, untouched.
+
+**3 trades, +0.71 R, +0.237 R a trade, 2 wins of 3, net +14.23 USD.** 300 USD account 300.00 -> 314.22;
+100 USD account 100.00 -> 114.23 at 0.01 lot. 36 wakes: 25 WAIT, 3 BUY, 7 HOLD, 1 EXIT. Round 1 of the same
+day, same market, was 27 wakes and no trade at all.
+
+| in (Thai) | out | side | entry | stop | exit | why out | R | source |
+|---|---|---|---|---:|---:|---|---:|---|
+| 08:05:00 | 08:07:11 | SELL | 4187.22 | 4209.14 | 4178.16 | TP | **+0.41** | the morning plan's scenario A |
+| 13:25:00 | 14:28:00 | BUY | 4152.91 | 4139.77 | 4152.56 | SIGNAL | -0.03 | W03, the London ORB |
+| 22:00:00 | 22:04:37 | BUY | 4138.73 | 4121.44 | 4144.25 | TP | **+0.32** | W09, the sweep and turn |
+
+### What is attributable to the fixes, and what is not
+
+Three things could not have happened before and are tied to the readings:
+
+- **W03 fired for the first time.** Its own words: "ORB range 4145.69-4152.18 is 6.49, below 1.5x H1 ATR
+  (23.21); orb_break is up." In round 1 the same weapon answered "the range is not provided" five times.
+- **R10 was cited by value, not guessed**: "H4 lean +2.685 permits a buy under R10". All three step
+  decisions were BUYs, each with the lean behind it (+3.515, +2.950, +2.685) - the rule now filters.
+- **The morning plan priced both scenarios and named an edge side** (SELL). In round 1 it priced nothing and
+  answered `none`, and three later wakes cited that emptiness as grounds to wait (ISSUES 39).
+
+**The +0.71 R itself is not attributable.** Round 2 differs from round 1 by the fixes *and* by fresh answers
+from a wiped cache, and the answerer is not deterministic. One day settles nothing; what it shows is that the
+three mechanisms are reachable at all.
+
+### Where the measurer disagrees
+
+**1. The plan's SELL bypassed R10, and it is most of the day's profit.** `h4_lean` was **+3.515** at that
+hour, so behind a SELL it is **-3.515**, well under zero: R10 forbids the trade. The three step decisions all
+respected the rule; the **plan-order path checks it nowhere**, no veto was recorded, and the order filled. The
+plan's own `why` even reads "a sell premature without the specified sweep-and-reclaim pattern". It won
+(+0.41 R of the day's +0.71 R), so the day is positive partly on a trade our own locked rule forbids. **A rule
+enforced on one path only is not enforced.**
+
+**2. The right order was placed at the right level and expired fourteen minutes too early.** At 07:16 the AI
+placed a BUY at **4177.16** - the level and the side this journal argued for after round 1 - with
+`valid_minutes` 30, so it died at 07:46. The qualifying sweep came at **08:00** (low 4172.48, closing back to
+4177.21 on 1.8x volume). The armed-order rule of 2026-10-26 says the first touch is not the entry and the
+order must wait for a signal at the level; a 30-minute life does not let it wait that long. The two rules are
+in tension, and the tension cost the day's cleanest entry.
+
+**3. The ORB trade left on a signal at 63 minutes for -0.03 R.** W03's definition is out after 60 minutes, so
+this is near enough, but a scratch exit on `SIGNAL` rather than the time stop is worth watching once there
+are more ORB trades to compare.
+
+### Where the measurer agrees
+
+The 22:00 buy is what the checklist asks for, item by item: a sweep of equal lows at 4132.44 on 1.5x mean
+volume closing back at 4140.92, M5 higher lows and higher highs after it, `h4_lean` +2.685 behind the side,
+the target 4144.90 placed before the strong resistance at 4150.10, the stop beyond the mapped buy stop and
+its liquidate zone, and half size because W09 is a shadow weapon. Nothing to add to it.
+
+### The day's lesson (a shadow, not a rule)
+
+**A rule holds only on the paths that check it.** R10 is enforced in three bot strategies by
+`require_edge_side`, and it is now readable by the AI - but the plan-order path, which placed the day's
+largest winner, consults neither. Before a rule is called in force, list every path that can open a trade and
+show the check on each.
+
+### Proposed next, in order
+
+1. Check plan orders against R10 before they are armed, and re-check at each wake exactly as the map stops
+   already are. Then re-run this day: the 08:05 SELL should not be taken, and the day's result will fall -
+   that is the point, not a regression.
+2. Let an armed order live to the end of its window instead of 30 minutes, so the confirmation rule and the
+   order's life stop contradicting each other.
+3. Then day 2 (2026-07-07), on whatever code those two leave behind.
+

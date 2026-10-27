@@ -55,6 +55,7 @@ reading of every decision, is `rerun_2026-10-28/JOURNAL.md`; the generated repor
 | Thai day | wakes | trades | R | 300 USD account | 100 USD account | AI cost |
 |---|---:|---:|---:|---|---|---:|
 | 2026-07-06 | 27 | **0** | +0.00 | 300.00 -> 300.00 | 100.00 -> 100.00 | 0 USD |
+| 2026-07-06 round 2 (`2da4c76`, ISSUES 37-38 fixed) | 36 | **3** | **+0.71** | 300.00 -> 314.22 | 100.00 -> 114.23 | 0 USD |
 
 Day 1 took no trade in a 74.47 USD day. Four causes were found and recorded as ISSUES 37-40, three of them
 inputs the AI was never given: R10's H4 lean (the real value was +3.515 all morning, behind a BUY, while the
