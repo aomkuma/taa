@@ -298,7 +298,7 @@ class TestCatalog:
         # the inverted copies were removed (2026-10-14); Setup OWN F1 and S2 live in their own modules (2026-10-18),
         # PLAN-1's London ORB and NY straddle in app/strategy/plan1.py (2026-10-21)
         # + PLAN-1's Asia B2 on M1 and M5 (plan1_b2.py) + the AI trader (ai_lane.py, 2026-10-24)
-        assert len(STRATEGIES) == 1 + len(SETUPS) + 7
+        assert len(STRATEGIES) == 1 + len(SETUPS) + 10
 
     def test_config_yaml_trades_harmonic_on_its_normal_side_only(self) -> None:
         settings = load_settings(
@@ -316,6 +316,7 @@ class TestCatalog:
             "setup_plan1_b2m5",
         }  # lane plan1 (2026-10-21, docs/PLAN1_LANE.md)
         originals |= {"ai_trader"}  # lane ai (2026-10-24, PLAN §A37)
+        originals |= {"trend_box_down", "trend_box_up", "range_break"}  # disabled research lane (2026-10-27)
         assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
         # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only; 2026-10-16: its own stop cap off;
@@ -343,7 +344,8 @@ class TestCatalog:
             "max_sl_atr": 20.0,
         }  # §15.3, no PRZ confirmation; h4_room_2 (owner, 2026-10-15; §18); own stop cap off (2026-10-16)
         # S1, M1 gold scalping (owner, 2026-10-15; §17); Setup OWN F1 and S2 (2026-10-18), all off until the owner
-        s1, own, news, plan1, ai = settings.config.lanes
+        lanes = {lane.name: lane for lane in settings.config.lanes}
+        s1, own, news, plan1, ai = (lanes[name] for name in ("s1", "own", "news", "plan1", "ai"))
         # lane ai (2026-10-24, PLAN §A37): the AI trader on gold M1, off until the owner says so
         assert (ai.symbols, [(i.name, i.enabled) for i in ai.strategies.items]) == (
             ["XAUUSD"],
@@ -369,6 +371,14 @@ class TestCatalog:
         )
         assert b2["second_same_side"] is True  # the frozen rules (CHECKLIST 61-63): the week-6 rule on
         assert plan1.timeframes.higher is Timeframe.H1 and plan1.max_spread_points == 60
+        three_bots = lanes["three_bots"]
+        assert three_bots.timeframes.enabled == [Timeframe.H1, Timeframe.M5, Timeframe.M1]
+        assert three_bots.timeframes.context == [] and three_bots.timeframes.warmup_bars == 1200
+        assert [(item.name, item.enabled) for item in three_bots.strategies.items] == [
+            ("trend_box_down", False),
+            ("trend_box_up", False),
+            ("range_break", False),
+        ]
 
     def test_each_setup_can_be_enabled_alone(self) -> None:
         for cls in SETUPS:

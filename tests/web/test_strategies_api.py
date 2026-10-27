@@ -89,6 +89,9 @@ class TestStateAndParameters:
             "setup_plan1_b2m5",
             "setup_plan1_ny",
             "ai_trader",  # lane ai (2026-10-24)
+            "trend_box_down",
+            "trend_box_up",
+            "range_break",  # disabled three-bots lane (2026-10-27)
         ]
         assert by_name(body)["setup_breakout_scalp"]["known"] is True
         example, setup = by_name(body)[EXAMPLE], by_name(body)[SETUP]
