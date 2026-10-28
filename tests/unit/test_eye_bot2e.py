@@ -29,7 +29,7 @@ TH = "Asia/Bangkok"
 DATA = ROOT / "data/history/FBS-Demo/XAUUSD"
 needs_data = pytest.mark.skipif(not (DATA / "M5.parquet").exists(), reason="stored gold bars not present")
 P = bot.Params()
-P0 = bot.Params(min_r=0.0)  # the 04-06 London setup has R 0.44; tests that need it written drop the floor
+P0 = bot.Params(min_r=0.0)  # tests of the steps drop the 2R floor; test_reward_floor tests the floor itself
 
 
 def now_at(text: str) -> pd.Timestamp:
@@ -87,11 +87,11 @@ def build(
     return pv, path + 0.1, path - 0.1, path, macd, rsi
 
 
-# L* = 4600 sits in a narrow support band; X = 4685 is the entry; the resistance band starts at 4800.
-NARROW = [(4598.0, 4602.0), (4800.0, 4810.0)]
+# One support zone holds every low (4590-4665); X = 4685 is the entry; the resistance band starts at 4800.
+NARROW = [(4590.0, 4665.0), (4800.0, 4810.0)]
 
 
-def run(lows: list[float], bands=NARROW, params=P, **kw):
+def run(lows: list[float], bands=NARROW, params=P0, **kw):
     pv, hi, lo, close, macd, rsi = build(lows, **kw)
     return bot.analyse_view(pv, hi, lo, close, macd, rsi, bands, "M5", params)
 
@@ -99,58 +99,66 @@ def run(lows: list[float], bands=NARROW, params=P, **kw):
 def test_count_and_divergence() -> None:
     """Step 2: 2, 3, 5 and 6 lows, with and without divergence on each oscillator."""
     two = [4650.0, 4600.0]
+    mid = [4670.0]
     three = [4640.0, 4620.0, 4600.0]
     five = [4660.0, 4650.0, 4640.0, 4620.0, 4600.0]
     six = [4670.0, *five]
-    assert run(two).reason == "step2: count outside 3-5 and no M"
-    assert run(two, macd_div=True, rsi_div=True).reason == "step2: count outside 3-5 and no M"
+    assert run([4600.0]).reason == "step2: count outside 3-5 and no M"  # one zone low
+    assert (
+        run(two, macd_div=False, rsi_div=False, highs_between=mid).reason == "order written"
+    )  # exactly two: the M
     for lows in (three, five):
         assert run(lows).reason == "order written"
         assert run(lows, macd_div=False).reason == "step2: no divergence on both"
         assert run(lows, rsi_div=False).reason == "step2: no divergence on both"
         assert run(lows, macd_div=False, rsi_div=False).reason == "step2: no divergence on both"
-    # (the last 12 pivots are the window the count lives in, so six lows need it widened)
-    wide = bot.Params(counter_pivots=20)
-    assert run(six, params=wide).reason == "step2: count outside 3-5 and no M"
+    assert run(six, bands=[(4590.0, 4680.0), (4800.0, 4810.0)]).reason == "step2: count outside 3-5 and no M"
 
 
-def test_m_needs_no_divergence_and_one_band() -> None:
-    """Step 2: two lows inside one band with a high between hold without divergence; in two bands they do not."""
+def test_m_needs_no_divergence_and_one_zone() -> None:
+    """R10: exactly two zone lows hold without divergence; two lows in different bands count one each."""
     one_band = [(4595.0, 4605.0), (4800.0, 4810.0)]
     two_bands = [(4640.0, 4660.0), (4595.0, 4605.0), (4800.0, 4810.0)]
     ok = run([4601.0, 4600.0], bands=one_band, macd_div=False, rsi_div=False, highs_between=[4670.0])
     assert ok.reason == "order written" and ok.setup is not None and ok.setup.kind == "M"
     assert not (ok.setup.div_macd or ok.setup.div_rsi)
-    assert run(
-        [4650.0, 4600.0], bands=two_bands, macd_div=False, rsi_div=False, highs_between=[4670.0]
-    ).reason == ("step2: count outside 3-5 and no M")
-    # L* must be in a support band at all
+    out = run([4650.0, 4600.0], bands=two_bands, macd_div=False, rsi_div=False, highs_between=[4670.0])
+    assert out.reason == "step2: count outside 3-5 and no M" and out.info["count"] == "1"
     assert run([4601.0, 4600.0], bands=[(4700.0, 4710.0)]).reason == "step2: L* not in a support band"
 
 
-def test_m_is_exactly_two_lows() -> None:
-    """Revision 1, R3: three lows with the last two in one band and no divergence do not pass as an M."""
-    band = [(4595.0, 4605.0), (4800.0, 4810.0)]
-    out = run([4640.0, 4601.0, 4600.0], bands=band, macd_div=False, rsi_div=False)
+def test_three_zone_lows_need_divergence() -> None:
+    """R3: three zone lows without divergence are not an M, whatever band they share."""
+    out = run([4640.0, 4620.0, 4600.0], macd_div=False, rsi_div=False)
     assert out.reason == "step2: no divergence on both" and out.setup is None
 
 
+def test_zone_resets_on_a_close_below() -> None:
+    """R10: a close under the band's lower edge ends the zone; lows before it do not count."""
+    pv, hi, lo, close, macd, rsi = build([4640.0, 4620.0, 4600.0])
+    close[pv[1].pos + 2] = 4580.0  # after the first low (4640), under the band edge 4590
+    out = bot.analyse_view(pv, hi, lo, close, macd, rsi, NARROW, "M5", P0)
+    assert out.info["count"] == "2"  # 4620 and 4600 only
+
+
 def test_nearest_centre_band_is_used() -> None:
-    """Revision 1, R1: of several bands holding L*, the one whose centre is nearest is the support."""
+    """R1: of several bands holding L*, the one whose centre is nearest is the support."""
     bands = [(4590.0, 4606.0), (4597.0, 4603.0), (4800.0, 4810.0)]
-    out = run([4640.0, 4620.0, 4600.0], bands=bands)
+    out = run([4602.0, 4601.0, 4600.0], bands=bands)
     assert out.setup is not None and out.setup.band == (4597.0, 4603.0)
     assert out.setup.stop_v == 4597.0 - P.stop_buffer
 
 
 def test_reward_floor() -> None:
-    """Revision 1, R2: R under min_r (1.0) writes nothing; with min_r 0 the same setup is written."""
-    near = [(4598.0, 4602.0), (4700.0, 4710.0)]  # target 4699.5, entry 4685, stop 4597.5
-    out = run([4640.0, 4620.0, 4600.0], bands=near)
-    assert out.reason == "reward under 1R" and out.setup is None
-    assert out.info["step5"].endswith("R 0.16")
-    assert run([4640.0, 4620.0, 4600.0], bands=near, params=bot.Params(min_r=0.0)).setup is not None
-    assert bot.Params().min_r == 1.0
+    """R9: R under min_r (2.0) writes nothing; with min_r 0 the same setup is written."""
+    near = [(4590.0, 4665.0), (4700.0, 4710.0)]  # target 4699.5, entry 4685, stop 4589.5
+    out = run([4640.0, 4620.0, 4600.0], bands=near, params=P)
+    assert out.reason == "reward under 2R" and out.setup is None
+    assert out.info["step5"].endswith("R 0.15")
+    assert run([4640.0, 4620.0, 4600.0], bands=near).setup is not None
+    assert bot.Params().min_r == 2.0
+    wide = [(4590.0, 4665.0), (5000.0, 5010.0)]  # R about 3
+    assert run([4640.0, 4620.0, 4600.0], bands=wide, params=P).setup is not None
 
 
 def test_steps_3_to_7_formulas() -> None:
@@ -164,7 +172,7 @@ def test_steps_3_to_7_formulas() -> None:
     assert s is not None
     assert s.entry_v == 4685.0  # H_d
     assert s.trigger_v == 4685.0 + P.trigger_offset  # the stop limit's trigger, a little over
-    assert s.stop_v == 4598.0 - P.stop_buffer  # the band's lower edge (below L*=4600... edge is lower)
+    assert s.stop_v == 4590.0 - P.stop_buffer  # the band's lower edge, below L*
     assert s.target_v == 4800.0 - P.target_buffer  # before the resistance band's lower edge
     assert s.r == pytest.approx((s.target_v - s.entry_v - P.spread) / (s.entry_v - s.stop_v))
     assert s.lhl.price == 4625.0 and s.hd.price == 4685.0
@@ -175,12 +183,12 @@ def test_steps_3_to_7_formulas() -> None:
     # closed above earlier but back under H_d now: a plain limit would be a stop on the break, so a stop limit
     pv, hi, lo, close, macd, rsi = build(lows)
     close[-4] = 4700.0
-    back = bot.analyse_view(pv, hi, lo, close, macd, rsi, NARROW, "M5", P)
+    back = bot.analyse_view(pv, hi, lo, close, macd, rsi, NARROW, "M5", P0)
     assert back.setup is not None and back.setup.trigger_v == 4685.0 + P.trigger_offset
     # price below the higher low: void
-    assert run(lows, l_hl=4625.0, tail=-60.0).reason == "step5: price below the higher low"
+    assert run(lows, l_hl=4625.0, tail=-30.0).reason == "step5: price below the higher low"
     # no resistance band above the entry: no trade
-    assert run(lows, bands=[(4598.0, 4602.0)]).reason == "step7: no target level"
+    assert run(lows, bands=[(4590.0, 4665.0)]).reason == "step7: no target level"
 
 
 def test_mirror_of_pivots_is_a_sell() -> None:
@@ -255,10 +263,10 @@ def test_played_out_setup_is_not_written() -> None:
     """R8: a touch of the target, or of the stop, after the higher low writes nothing."""
     lows = [4640.0, 4620.0, 4600.0]
     assert run(lows).reason == "order written"
-    for col, at in ((0, 4800.0), (1, 4590.0)):
+    for col, at in ((0, 4800.0), (1, 4585.0)):
         pv, hi, lo, close, macd, rsi = build(lows)
         (hi, lo)[col][-2] = at
-        out = bot.analyse_view(pv, hi, lo, close, macd, rsi, NARROW, "M5", P)
+        out = bot.analyse_view(pv, hi, lo, close, macd, rsi, NARROW, "M5", P0)
         assert out.setup is None and out.reason == "setup already played out"
 
 
@@ -267,7 +275,7 @@ def test_outside_window_and_pending(full) -> None:
     outside = now_at("2026-04-06 11:00")
     res = bot.decide(bot.cut(full, outside), outside, P0)
     assert res.decision is None and res.log["reason"] == "outside window"
-    inside = now_at("2026-04-06 13:05")
+    inside = now_at("2026-04-06 21:20")  # the 04-06 New York decision
     free = bot.decide(bot.cut(full, inside), inside, P0)
     assert free.decision is not None  # the bar the walk writes its order at
     held = bot.decide(bot.cut(full, inside), inside, P0, pending=True)
@@ -295,7 +303,7 @@ def test_one_order_at_a_time_in_the_walk(full) -> None:
 def test_no_lookahead(full) -> None:
     """Decisions with every bar after ``now`` replaced by noise equal those on the real data."""
     rng = np.random.default_rng(7)
-    for text in ("2026-04-06 07:05", "2026-04-06 13:05", "2026-04-06 14:00", "2026-04-06 20:00"):
+    for text in ("2026-04-06 07:05", "2026-04-06 13:05", "2026-04-06 21:20", "2026-04-06 20:00"):
         now = now_at(text)
         noisy = {}
         for tf, df in full.items():
@@ -361,9 +369,9 @@ def test_mirror(full) -> None:
 
     mirrored = {tf: mirror(df) for tf, df in full.items()}
     flip = {"BUY": "SELL", "SELL": "BUY", "": ""}
-    start = now_at("2026-04-06 13:00")
+    start = now_at("2026-04-06 21:00")
     seen_decision = False
-    for i in range(1, 25):
+    for i in range(1, 26):
         now = start + pd.Timedelta(minutes=5 * i)
         a = bot.decide(bot.cut(full, now), now, P0)
         b = bot.decide(bot.cut(mirrored, now), now, P0)
@@ -413,3 +421,26 @@ def test_ledger_rows_score_and_money_reads_them(full, tmp_path, monkeypatch) -> 
     monkeypatch.setattr(money, "HERE", tmp_path)
     monkeypatch.setattr(sys, "argv", ["money.py", "--ledger", "bot_ledger.csv"])
     money.main()
+
+
+@needs_data
+def test_w_zone_4141_on_22_oct(full) -> None:
+    """R10's case: at 22/10 07:00 Thai the 4141-4142 resistance zone is one zone on M5, holding both 4141.87
+    and 4142.23 (the dip to 4104.92 between them no longer splits it). It holds five fixed highs on M5, not
+    two, and on M15 the 4142.23 top is not yet a fixed pivot - see the report."""
+    now = now_at("2026-10-22 07:00")
+    frames = bot.cut(full, now)
+    h1 = bot._zigzag(frames["H1"])
+    bands = bot.h1_bands(h1, len(frames["H1"]), now, P)
+    bands_v = sorted((-b, -a) for a, b in bands)
+    seen = {}
+    for tf in ("M15", "M5"):
+        df = frames[tf]
+        piv = bot.to_view(bot._zigzag(df), -1)
+        macd = -bot.macd_mt5(df.close)["main"].to_numpy()
+        rsi_v = -bot.rsi(df.close, 14).to_numpy() + 100.0
+        seen[tf] = bot.analyse_view(
+            piv, -df.low.to_numpy(), -df.high.to_numpy(), -df.close.to_numpy(), macd, rsi_v, bands_v, tf, P
+        )
+    assert "4141.87" in seen["M5"].info["pivots"] and "4142.23" in seen["M5"].info["pivots"]
+    assert seen["M5"].info["count"] == "5" and seen["M15"].info["count"] == "1"

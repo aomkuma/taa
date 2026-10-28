@@ -25,3 +25,22 @@ coordinates, checks every result before it is believed, and decides what is kept
 
 | # | date | who proposed | what changed | why | Oct trades (filled) | won / lost | USD from 200 | kept? |
 |---|---|---|---|---|---:|---:|---:|---|
+| 0a | 10-28 | - | baseline: revision 3, h1 `strict`, min_r 2 (owner), band_frac 0.10, count window 20 | the starting point | **0** | - | 200.00 | the base |
+| 0b | 10-28 | - | baseline, h1 `lows` | the other H1 reading | **0** | - | 200.00 | the base |
+
+**What the baseline shows** (October, 1,767 bars evaluated with the market open; `strict` / `lows`): H1 gave
+no side on 849 / 620; step 2 found no 3-5 count and no M/W on 430 / 551, no counter-move on 194 / 190, no
+divergence on both on 140 / 136; step 3 had no higher low yet on 111 / 179; the reward was under 2R on 12 /
+58. **Zero trades in a month: the bot as specified is too narrow to measure.** The gates are, in order: the
+H1 side, then the count.
+
+**Claude's hypotheses, written before reading Codex's or Sonnet's:**
+- C-H1: the H1 side from only the last two fixed H1 pivots of each kind is too slow - one stale pivot holds
+  "no side" for days. A side from H4 or from the last three swings may be closer to what the owner reads.
+- C-H2: the count of 3-5 on an M5 zone is cut by ZigZag depth 12: pushes inside a zone are often smaller
+  than a depth-12 swing, so the count is 1-2 where a reader sees 4. The M15 count is the closer one.
+- C-H3: `band_frac` 0.10 of the median H1 leg is narrow for gold at 4,000; a band of 0.15-0.20 would hold
+  more of a zone's touches.
+- C-H4: "divergence on both" for the count may be stricter than the owner meant ("if both happen it is
+  clear" says both is the strong case, not that one is not enough) - **this one touches the owner's rule:
+  if it is the key, it goes to the owner.**

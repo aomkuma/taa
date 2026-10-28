@@ -85,13 +85,13 @@ class Params:
     level_bars: int = 500  # [Claude] levels come from the last this-many H1 bars
     band_frac: float = 0.10  # [Claude] half-width of a level band = this x median height of 20 H1 legs
     band_legs: int = 20  # [Claude] how many H1 ZigZag legs the median height is taken over
-    counter_pivots: int = 12  # [Claude] the counter-move starts at the extreme of the last this-many pivots
+    counter_pivots: int = 20  # [Claude] the zone's lows are looked for among the last this-many fixed pivots
     count_min: int = 3  # the owner: "3 to 5 peaks"
     count_max: int = 5
     trigger_offset: float = 0.50  # [Claude] "a little over" the broken level, USD
     stop_buffer: float = 0.50  # [Claude] stop beyond the extreme / band edge, USD
     target_buffer: float = 0.50  # [Claude] target before the opposite band's edge, USD
-    min_r: float = 1.0  # the owner's floor (Revision 1, R2): no decision when R is under 1.0
+    min_r: float = 2.0  # the owner's floor (R9): "the profit has to be 1:2"; no decision under it
     spread: float = (
         SPREAD  # the owner's real spread on gold, USD (the R written into a decision is net of it)
     )
@@ -113,7 +113,7 @@ REASONS = [
     "step2: no counter-move", "step2: L* not in a support band", "step2: count outside 3-5 and no M",
     "step2: no divergence on both", "step3: structure not broken", "step3: no higher low yet",
     "step4: no H_d", "step5: price below the higher low", "step7: no target level",
-    "reward under 1R", "setup already played out", "setup already used", "order written",
+    "reward under 2R", "setup already played out", "setup already used", "order written",
 ]  # fmt: skip
 RANK = {r: i for i, r in enumerate(REASONS)}
 
@@ -275,55 +275,56 @@ def analyse_view(
     if not bands_v:
         return out
 
-    # 2b: the counter-move: from the highest high among the last pivots, the lows after it.
-    last = list(pv)[-p.counter_pivots :]
-    highs = [q for q in last if not q.low]
+    # 2b (R10): count by zone. The zone is the support band holding a fixed LOW of the entry timeframe.
+    # SPEC-QUESTION: R10 says "the latest fixed LOW", but once the higher low of step 3 has formed the latest
+    # low sits above the band and the zone would vanish just when steps 3-7 need it. So the latest fixed
+    # low of the last `counter_pivots` pivots that lies inside ANY band is taken; of the bands holding it,
+    # the one whose centre is nearest (R1). Bands are the view's bands; no test that they lie "below price".
+    full = list(pv)
+    last = full[-p.counter_pivots :]
     out.reason = "step2: no counter-move"
-    if not highs:
+    band: tuple[float, float] | None = None
+    for q in reversed([q for q in last if q.low]):
+        holding = [b for b in bands_v if b[0] <= q.price <= b[1]]
+        if holding:
+            band = min(holding, key=lambda b: abs((b[0] + b[1]) / 2 - q.price))
+            break
+    out.reason = "step2: L* not in a support band"
+    if band is None:
         return out
-    start = highs[0]
-    for q in highs:
-        if q.price >= start.price:  # the latest of equal highs
-            start = q
-    lows = [q for q in last if q.low and q.pos > start.pos]
-    if not lows:
+    out.info["band"] = f"{band[0]:.2f}-{band[1]:.2f}"
+    below = np.flatnonzero(close_v < band[0])  # a close through the zone ends it as a support
+    reset = int(below[-1]) if below.size else -1
+    zone = [q for q in last if q.low and band[0] <= q.price <= band[1] and q.pos > reset]
+    out.reason = "step2: no counter-move"
+    if not zone:
         return out
-    lstar = lows[0]
-    for q in lows:
+    lstar = zone[0]
+    for q in zone:
         if q.price < lstar.price:  # the first of equal lows
             lstar = q
-    # SPEC-QUESTION: the count is of the lows up to and including L* (the exhaustion into the level); lows
-    # after L* (the higher low of step 3) are not part of it. The spec says "the lows counted = the fixed LOW
-    # pivots after it" and does not say whether the later higher low is in the count.
-    counted = [q for q in lows if q.pos <= lstar.pos]
+    # SPEC-QUESTION: R10 says the count = how many zone lows there are. Counted here: the zone lows up to
+    # and including L*; a zone low after L* (a higher low of step 3 still inside a wide band) is not part of
+    # the exhaustion into the level, and counting it would inflate every setup past 5 (tried: 04-06's
+    # decision vanished). Divergence is read at L* against the zone low immediately before it.
+    counted = [q for q in zone if q.pos <= lstar.pos]
     n = len(counted)
     out.info["count"] = str(n)
     out.info["pivots"] = " ".join(f"{q.price:.2f}" for q in counted)
 
-    # SPEC-QUESTION: "a support is a band below the price at the start of the counter-move" is read as a
-    # band whose upper edge is under the start high. Of the support bands that contain L*, the one used is
-    # the band whose centre is nearest L* (Revision 1, R1).
-    inside = [b for b in bands_v if b[1] < start.price and b[0] <= lstar.price <= b[1]]
-    out.reason = "step2: L* not in a support band"
-    if not inside:
-        return out
-    band = min(inside, key=lambda b: abs((b[0] + b[1]) / 2 - lstar.price))
-    out.info["band"] = f"{band[0]:.2f}-{band[1]:.2f}"
-
-    full = list(pv)
     il = full.index(lstar)
-    # SPEC-QUESTION: "the low before it" is read as the LOW pivot two places earlier in the pivot list
-    # (pivots alternate), not the previous counted low.
-    prev_low = full[il - 2] if il >= 2 and full[il - 2].low else None
+    # Divergence at L* against the zone low before it (R10).
+    iz = zone.index(lstar)
+    prev_low = zone[iz - 1] if iz >= 1 else None
     d_macd = d_rsi = False
     if prev_low is not None:
         d_macd = _div(lstar.price, prev_low.price, float(macd_v[lstar.pos]), float(macd_v[prev_low.pos]))
         d_rsi = _div(lstar.price, prev_low.price, float(rsi_v[lstar.pos]), float(rsi_v[prev_low.pos]))
     out.info["div_macd"], out.info["div_rsi"] = str(d_macd), str(d_rsi)
 
-    # The M is exactly two counted lows, both inside the band used (Revision 1, R3); a count of 3-5
+    # The M is exactly two counted lows, both zone lows (R3, R10); a count of 3-5
     # always needs divergence on both.
-    m_ok = n == 2 and band[0] <= counted[-2].price <= band[1]
+    m_ok = n == 2
     count_ok = p.count_min <= n <= p.count_max and d_macd and d_rsi
     if not (count_ok or m_ok):
         out.reason = (
@@ -384,7 +385,7 @@ def analyse_view(
         return out
     r = (target_v - entry_v - p.spread) / (entry_v - stop_v)
     out.info["step5"] += f"; R {r:.2f}"
-    out.reason = "reward under 1R"  # the owner's floor, Revision 1 R2 (min_r)
+    out.reason = "reward under 2R"  # the owner's floor, R9 (min_r)
     if r < p.min_r:
         return out
 
