@@ -428,13 +428,16 @@ very pretty."* What the bars show (read after the outcome was known - this is a 
 - **The small M on M5 at the second top:** 4706.58 (16:40) and 4696.78 (17:40), neckline about 4685 (lows
   4686.05 and 4684.96). Price lost the neckline and fell to 4659.76 by 19:25; it came back up to
   4690.79-4697.57 between 21:00 and 21:35 - the retest - and fell to 4651.98 at 22:35.
-- **Why I passed it:** I counted "3 to 5 peaks" literally and saw two; and I read H1 as up, which made
-  the sell side the wrong side. The owner's correction is written into 2e step 2: **two peaks that make
+- **Why I passed it (if it was a sell - Claude's assumption):** I counted "3 to 5 peaks" literally and
+  saw two; and I read H1 as up, which made the sell side the wrong side. The owner's correction is written into 2e step 2: **two peaks that make
   an M (a W for a buy) count.** The H1 question is open (below).
 - So New York was not `no-setup` by the owner's reading - it was a setup the rules, as I applied them,
   refused. Its row in `sessions.csv` keeps what I recorded at the time; this note is the correction.
 
 The owner, adding: *"an asymmetric M, but you can see at once that that is the support."* The two tops are
-not equal (4706.58 and 4696.78 on M5; 4699.44 and 4706.58 on the larger M) and need not be; the low between
-them - **about 4685, the neckline - is the support** that breaks, and its retest (21:00-21:35, up to
-4690.79-4697.57) is where the sell is. Written into 2e step 2.
+not equal and need not be - that much is the owner's. **The rest of this section is Claude's reading, not
+the owner's:** that the support meant is the M's neckline (about 4685), that the trade is a sell on its
+retest, and the +1.4 R worked from it. The owner then asked: *"when did I say it was a down trend? What did
+you conclude that from?"* - Claude had assumed the M meant a sell and, from 2e's rule that a sell needs the
+H1 sell side, that the owner read H1 as down. Neither was said. **Open, for the owner: which spot is the
+support, and which side the trade was.**

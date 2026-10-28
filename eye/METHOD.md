@@ -172,8 +172,9 @@ through that later answer: the LL is the break, the sell is its retest.
    the left of the chart built.
 2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level - **or two that make an M** (the owner,
    after day 3: *"two legs, but it is an M pattern"*; and *"an asymmetric M, but you can see at once that
-   that is the support"* - the M need not be symmetric, and **its neckline is the support** whose break is
-   step 3-4 and whose retest is the entry) - with **divergence** on MACD and RSI
+   that is the support"* - the M need not be symmetric. *Which spot the owner calls the support, and which
+   side the trade was, the owner has not said; Claude had read it as the neckline of a sell and was wrong
+   to write that as the owner's*) - with **divergence** on MACD and RSI
    against price. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); nothing is
    recorded about one alone - the record says which it was. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
    gave the entry timeframe, not the counting one; the example has 3 peaks on M15 and 4 on M5)*.
