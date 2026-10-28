@@ -41,3 +41,33 @@ Measured there, kept here so the same ground is not covered twice. Full record:
 | The owner's frame ordering H1 then H4 then D1 | **FAILS as a filter** - -0.205 R a trade on those candidates |
 | Targets nearer than the stop | **FAILS** - 53.8 % right and still -0.115 R a trade, because winners paid +0.643 against losers at -1.00 |
 | Indicators, a knowledge base, weapon catalogues, shadow rules | Stopped and archived 2026-10-28 by the owner; the method here uses none of them |
+
+---
+
+## The rules on trial (owner, 2026-10-28)
+
+*"The rules need something that proves them too - which ones actually work, and which ones are always in
+conflict with another rule, so that they push you into bad trades."*
+
+Every decision from here records, at the moment it is made, which of the nine held and which did not, and
+which pair pointed opposite ways (`rules` and `conflict` in the ledger; `eye/rules.py` counts them). Two
+questions then become counting: does a rule help, and does it fight the others.
+
+**The conflicts I expect, written before the evidence** so the counting judges the prediction rather than
+the other way round:
+
+| | The conflict | Why they fight | What I expect |
+|---|---|---|---|
+| A | **3 (price has run into a level) vs 5 (the structure at the level)** | Arriving at a level is necessary and not sufficient. Rule 3 says "here is a moment"; rule 5 often says "and it is going to break" | The main one. Every loser so far came from letting 3 authorise what 5 refused. If the counting agrees, **rule 3 is a trigger to look, never a reason to trade** |
+| B | **4 (trade the fifth leg with it) vs 5 at a counter-trend level** | At a support inside a downtrend the live leg points down, so a bounce trade is against rule 4 while the level invites it | They will mostly agree to refuse, which is right - but together they may refuse so much that the system almost never trades. Watch the count of stand-asides |
+| C | **7 (the entry is reachable) vs 9 (the stop beyond the structure)** | A wide structure forces a far stop; keeping R sane needs an entry near it, and by then price has often left | The window these two leave open may be small. If most moments die here, one of them is wrong as written |
+| D | **3 vs 7, through 5** | By the time the structure at the level is readable, price has moved away from the entry | Produces no-fills - two of my first nine trades never filled. If this is common, the entry must be placed as the structure forms, not after it is complete |
+
+**What would make a rule guilty:** it is broken on trades that still win, or every trade it authorises alone
+loses, or it is on the losing side of the same conflict again and again. A rule that never once decides
+anything is also guilty - of not being a rule.
+
+The control, for comparison: **10 trades, -3.51 R, -0.351 a trade**, taken before these rules existed. None
+of them is judged against the rules, because scoring my own past decisions from memory would make the rules
+look however I wanted.
+
