@@ -1,6 +1,7 @@
 """DEMO soak report (TAA-1206): what the engine did on the demo account, from the local database only.
 
-It answers the soak questions of ``docs/RUNBOOK_DEMO.md``: did every order end in a known state, how often
+It answers the soak questions of ``docs/archive/RUNBOOK_DEMO.md``: did every order end in a known state, how
+often
 did the server refuse, how much slippage, which breakers tripped, what did the closed bot trades return.
 Nothing here forecasts anything; a two-week demo says little about profitability.
 """
@@ -44,7 +45,7 @@ class DemoReport:
 
     @property
     def checks(self) -> dict[str, bool]:
-        """Soak acceptance checks (docs/RUNBOOK_DEMO.md §4)."""
+        """Soak acceptance checks (docs/archive/RUNBOOK_DEMO.md §4)."""
         sent = sum(self.intents_by_state.values())
         return {
             "every order in a final state": self.unresolved == 0,

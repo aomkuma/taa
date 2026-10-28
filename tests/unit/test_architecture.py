@@ -1,4 +1,4 @@
-"""Architecture rules enforced as tests (see docs/CODING_STANDARDS.md §2-§3).
+"""Architecture rules enforced as tests (see docs/archive/CODING_STANDARDS.md §2-§3).
 
 These turn conventions that used to be honor-system into build failures:
 
@@ -9,7 +9,7 @@ These turn conventions that used to be honor-system into build failures:
 5. Domain code never reads the wall clock directly; time comes from an injected ``Clock``.
 6. Analysis and strategy code is pure: no broker services, storage, secrets, settings loaders or environment.
 
-Changing ``LAYERS`` or an allow-list is a design decision: update docs/CODING_STANDARDS.md in the same change.
+Changing ``LAYERS`` or an allow-list is a design decision: update docs/archive/CODING_STANDARDS.md in the same change.
 """
 
 from __future__ import annotations

@@ -1,7 +1,8 @@
 """The US release calendar (official dates: BLS, BEA, the Federal Reserve; research/2026-10-18-moments/
 build_calendar.py): one row per release, ``date,time_et,event[,note]`` with the time in New York local time.
 
-Setup OWN S2 (the CPI / NFP release-minute straddle, docs/OWN_SETUP.md) trades at these instants; a missing or
+Setup OWN S2 (the CPI / NFP release-minute straddle, docs/archive/OWN_SETUP.md) trades at these instants; a
+missing or
 malformed file is a :class:`ConfigError` (fail closed: no calendar, no release trades).
 """
 

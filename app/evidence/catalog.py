@@ -1,6 +1,7 @@
 """The detector catalog: every production detector, listed explicitly (no import-time registration magic).
 
-Each entry must be documented in docs/PATTERNS.md. ``tests/unit/test_evidence_catalog.py`` checks that and
+Each entry must be documented in docs/archive/PATTERNS.md. ``tests/unit/test_evidence_catalog.py`` checks
+that and
 runs the look-ahead harness against every entry.
 """
 

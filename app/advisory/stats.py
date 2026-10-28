@@ -3,7 +3,7 @@
 Pure functions over closed shadow trades (:class:`TradeRecord`), shared with the cloud analytics: no broker,
 no clock, no database except the optional loader :func:`load_records`.
 
-Definitions (every result is hypothetical; see ``docs/ADVISORY.md``):
+Definitions (every result is hypothetical; see ``docs/archive/ADVISORY.md``):
 
 - **hit rate** = TP first ÷ resolved, with a 90% Wilson interval;
 - **expectancy** = mean ``r_net`` (R after costs) and mean ``net_pnl`` (account currency, at the lot

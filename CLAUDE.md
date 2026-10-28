@@ -1,185 +1,70 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code (claude.ai/code) working in this repository.
 
-## Project
+## Read first
 
-TAA is an automated trading platform for an FBS account via MetaTrader 5. A Python **engine** runs on Windows next to
-the MT5 terminal (the `MetaTrader5` package is Windows-only). A FastAPI **web** service (API + React PWA), a
-**worker** and PostgreSQL run on Railway. The design favors capital protection, fail-closed behavior and
-auditability over features. No profitability claims anywhere.
+- **`docs/START_HERE.md`** - what this repository is now, what we are doing, and the one number everything
+  is judged against.
+- **`docs/HOUSE_RULES.md`** - how to work here. Every rule in it was paid for with a real mistake.
+- **`eye/METHOD.md`**, **`eye/TRIED.md`**, **`eye/LESSONS.md`** - the live work: trading gold by eye, what
+  has been tried and whether it worked, and what the ledger supports.
 
-Read before larger work:
-- `docs/PLAN.md`: design, revision 6. Section numbers run A1–A21, then A25–A34, then A22–A24.
-- `docs/TICKETS.md`: tickets, checklists, progress table and execution order.
-- `docs/HANDOFF.md`: current state and open items.
-- `docs/CODING_STANDARDS.md`: detailed coding conventions. **Follow them.**
-- `docs/TRADING_FLOW.md`: the trading day end to end - data, the engine's cycle, the gate ladder, the journal
-  after each trade - and the six practical consequences, two of which are open faults.
-- `docs/TRADER_ROUTINE.md`: the trader's routine, and the four parts of a replay / live **day report**.
-- `docs/FOUNDATION.md`: **start here.** On 2026-10-28 the owner cleared everything - every setup, all the
-  research, the knowledge base's conclusions and the working method - and kept the raw data and the
-  indicators, waiting to be put together again. This file is the inventory of what survived and what is
-  switched off.
-- `docs/archive/README.md`: what the cleared work established, and what it cost. A record, **not a starting
-  point** - read it so the same ground is not covered twice.
+Everything built before 2026-10-28 is stopped and archived: `docs/archive/README.md` and
+`research/archive/`. It is a record so the same ground is not covered twice, **not a starting point.**
 
-## Commands (Windows, run from the repo root; always use the venv)
+## The project
+
+TAA was an automated trading platform for an FBS account through MetaTrader 5, built on Windows beside the
+terminal. On 2026-10-28 the owner stopped and archived all of it - every setup, all the research, the
+knowledge base and the working method - keeping the raw data and the indicator primitives, to be put
+together again.
+
+So the code still builds and its tests pass, but **no strategy is enabled in `config.yaml`, in any lane.**
+A started engine sends no order. DEMO and the hourly observer are disabled in Task Scheduler. LIVE stays
+off and needs Phase 14 and an explicit word.
+
+## Commands (Windows, from the repo root, always the venv)
 
 ```powershell
 .venv\Scripts\python -m pip install -r requirements.txt -r requirements/dev.txt   # setup
-.venv\Scripts\python -m pytest -q                                   # all tests
-.venv\Scripts\python -m pytest tests/unit/test_broker.py::TestConnection::test_reconnect_with_backoff -q  # one test
-.venv\Scripts\python -m pytest -m mt5      # real-terminal contract tests (also needs TAA_MT5_TESTS=1 and a .env;
-                                            # TAA_MT5_TRADING_TESTS=1 adds order_check on a DEMO login, never order_send)
-.venv\Scripts\python -m pytest -m postgres # local PostgreSQL 16; TAA_POSTGRES_URL in .env (role taa)
+.venv\Scripts\python -m pytest -q                              # all tests (about 15 minutes)
+.venv\Scripts\python -m pytest tests/unit/test_broker.py -q    # one file
 .venv\Scripts\ruff format app tests scripts; .venv\Scripts\ruff check app tests scripts
-.venv\Scripts\mypy app
-.venv\Scripts\bandit -q -r app -c pyproject.toml
-.venv\Scripts\python -m app.cli doctor --fake        # diagnostics against FakeMT5 (drop --fake for the real terminal)
-.venv\Scripts\python -m app.cli config show | kill --reason "..." | audit verify | db upgrade
-.venv\Scripts\python -m app.cli backtest --server FBS-Demo --symbols EURUSD --start 2026-01-01 --end 2026-09-30   # needs data/history
-.venv\Scripts\python -m app.cli backtest --lane own --server FBS-Demo --symbols XAUUSD --start 2026-04-18 --end 2026-10-17   # one lane (config lanes)
-.venv\Scripts\python -m app.cli backtest --portfolio --server FBS-Demo --start 2026-04-18 --end 2026-10-17   # every lane, one account (TAA-507)
-.venv\Scripts\python -m pytest research/archive/2026-10-18-moments/agents/precursors -q   # the research's own tests (foundation, LV3, evidence)
-.venv\Scripts\python research/archive/2026-10-18-moments/agents/precursors/wf.py [3y]   # LV3 walk-forward: latest 12 months (3y: three years)
-.venv\Scripts\python research/archive/2026-10-24-replay/rollback.py 2026-07-06   # AI-trader replay: undo that day and later first
-.venv\Scripts\python research/archive/2026-10-24-replay/day.py 2026-07-06 > research\archive\2026-10-24-replay\<folder>\day.md
-                                            # one Thai day through the engine's own AI path; add --report to re-report only.
-                                            # Days must run in order (state and balance carry over). The report goes to a
-                                            # file in the research folder in the SAME change, under the name a reader looks
-                                            # for: on 10-26/27 four runs went to data/replay/ai/*.log (data/ is gitignored)
-                                            # while four 0-byte .md files held their names - a third of the record was lost
-                                            # until 10-28 (research/archive/2026-10-24-replay/RECORD.md).
-.venv\Scripts\python research/archive/2026-10-24-replay/plant_bugs_swallowed.py   # planted bugs: every one must make a test fail
-.venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
-.venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
-.venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14 | demo-track --proven-only
-.venv\Scripts\python -m app.cli sync upload-history [--send]   # local Parquet history → cloud (TAA-706)
-.venv\Scripts\python -m app.cli research hypotheses --strategy NAME --from "data/research/fam_*.db" | replay-family NAME ...  # TAA-L707
-.venv\Scripts\python -m app.cli web engine add --owner NAME --label X | rotate ID | rename ID --label X | revoke ID --confirm ID | list | import-env --owner NAME
-.venv\Scripts\python -m app.web     # API + built PWA on 127.0.0.1:8000 (needs WEB_ENV/WEB_SESSION_SECRET)
-scripts\start-demo.cmd                # local demo: web + worker + FakeMT5 PAPER engine (once: start-demo.ps1 -Setup -Owner NAME)
-.venv\Scripts\python -m app.cli web create-user NAME | reset-password NAME | reset-totp NAME | list-users   # web users + TOTP
-.venv\Scripts\python scripts\tickets.py tick TAA-201 1 2   # tick checklist items; then:
-.venv\Scripts\python scripts\tickets.py sync               # recompute statuses + progress table
+.venv\Scripts\mypy app; .venv\Scripts\bandit -q -r app -c pyproject.toml
+.venv\Scripts\python -m app.cli doctor --fake                  # diagnostics against FakeMT5
+.venv\Scripts\python -m app.cli backtest --server FBS-Demo --symbols XAUUSD --start 2026-01-01 --end 2026-06-30
 ```
 
-New tables: add the model under `app/storage/models/` and export it from `app/storage/models/__init__.py`. Then
-delete `data/dev-migrations.db`, run `.venv\Scripts\alembic upgrade head`, then
-`.venv\Scripts\alembic revision --autogenerate -m "..." --rev-id 000N`, and review the generated file.
-
-A ticket is DONE only when tests, ruff (format + check), mypy and bandit are all green.
-
-Frontend (PWA, `frontend/`, run from that folder; Node ≥ 22; details in `frontend/README.md`):
+The eye work:
 
 ```powershell
-npm install; npm run dev        # http://127.0.0.1:5173, proxies /api to FastAPI on 127.0.0.1:8000
-npm run lint; npm run typecheck; npm run test; npm run build   # all four green = frontend ticket DONE
+.venv\Scripts\python eye/sheets.py moments          # the hundred clock-sampled moments
+.venv\Scripts\python eye/walk.py <id> <bars>        # sit at a moment and advance; H1 three weeks + M5 33 hours
+.venv\Scripts\python eye/score.py [summary]         # score the ledger's unscored rows, or the running totals
 ```
 
-## Architecture (big picture)
+**Nothing is committed without `ruff`, `mypy`, `bandit` and the tests green**, and nothing is pushed,
+deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per
+step by explicit paths is fine without asking.
 
-- **Dependency direction:** `core` → `config` / `security` → `storage` → `broker` (gateway protocol) →
-  `market_data` → `indicators` / `evidence` → `strategy` → `risk` / `engine` (decision) → `execution`. Cloud side:
-  `sync` → `web` / `worker`; `advisory` and `analytics` are shared libraries.
-  - This is **enforced** by `tests/unit/test_architecture.py`: the layer table, MetaTrader5 only in `app/broker`,
-    no live-broker imports in web/worker, order functions only in `app/broker`, no direct wall-clock reads.
-  - A new package must be added to its `LAYERS` table.
-- **Broker access only through `app/broker/gateway.py`:**
-  - The `MarketDataGateway` protocol, implemented by `ReadOnlyMT5Gateway` over `MT5Client`.
-  - Nothing outside `app/broker/` imports `MetaTrader5`.
-  - `MT5Client.call` refuses `order_send` / `order_check` unless `allow_trading=True`, which is only possible in
-    DEMO/LIVE. Broker orders go only through `app/broker/execution.py` (`ExecutionGateway`): a DEMO account
-    in DEMO mode, a REAL account in LIVE mode (TAA-1401), and every order passes the mode gate
-    (`app/risk/mode_gates.py`) first. PAPER never sends broker orders.
-- **Time:** MT5 returns bar/tick/deal epochs in **broker server wall-clock time** (FBS = EET, `Europe/Athens`),
-  not UTC. Convert only via `ServerClock` (`app/core/clock.py`). Internally everything is timezone-aware UTC;
-  history queries widen the window by ±1 day, then filter.
-- **Closed candles only:** `CandleService` drops the forming bar (with a grace period). `CandleWatermarks`
-  (persisted) guarantees each bar is evaluated once, even across restarts. Indicators and detectors must never look
-  ahead.
-- **State ownership:**
-  - The engine's local SQLite (`data/taa_engine.db`, WAL, synchronous=FULL) is authoritative for trading state.
-  - The cloud Postgres (database `taa`) is a replica plus a command queue, fed by an HMAC-signed outbox.
-  - One SQLAlchemy model set and one Alembic history serve both databases, so keep types portable
-    (`UTCDateTime`, `JSONType`).
-- **Safety primitives:**
-  - Hash-chained audit log (`app/storage/audit.py`, chains per process).
-  - Kill switch = the presence of a file (`app/risk/kill_switch.py`); release is local CLI only.
-  - Account verification after every (re)connect (`app/broker/verification.py`). Leverage is *not* identity,
-    because FBS changes Forex leverage by equity tier.
-- **Config:** secrets and safety flags come from env/`.env` (`EnvSettings`); parameters come from `config.yaml`
-  (`AppConfig`, `extra="forbid"`). Env overrides yaml. Risk values are **percent** of equity with hard ceilings.
-  `load_settings()` raises `ConfigError` on any problem.
-- **Advisory (rev. 2):** "compute once, personalize per user". The engine computes market facts (evidence,
-  opportunities, shadow trades); the cloud personalizer applies each user's theory selection, thresholds, windows
-  and entitlements.
-- **Web service (`app/web/`):** `create_app(WebSettings)`; settings are env only (`WEB_ENV` defaults to
-  production). Protected routes take `CurrentSession`, mutations `CsrfSession`, control actions `StepUpSession`
-  (`app/web/deps.py`). Expected errors are `ApiProblem(status, code, message)`. Users exist only via
-  `app.cli web create-user`; TOTP is mandatory.
-- **Frontend (`frontend/`):** Vite + React + TypeScript PWA, built into `frontend/dist` and served by FastAPI
-  (same origin, strict CSP: no inline scripts, no CDNs, fonts bundled). Every API response is validated with zod.
-  All UI text goes through react-i18next (`th` default, `en`); backend codes map to translation keys
-  (`codes:<kind>.<CODE>`, `explain:<key>`). Parity tests read the backend enums and `app/advisory/explanations.py`,
-  so **changing a reason code, status enum or explanation key/placeholder means updating
-  `frontend/src/i18n/` in the same change** (run `npm run test` in `frontend/`).
-- **Tests:**
-  - `FakeMT5` (`app/broker/fake_mt5.py`) emulates the MT5 module, including server time, schedules per asset type,
-    ticks, pending orders, failures and call counters. Inject it via `MT5Client(..., mt5_module=fake)`. It is pure
-    Python, so C-module quirks (e.g. an empty `**kwargs` refused by `order_check`) only show in `-m mt5` tests.
-  - Use `ManualClock` for time. Fixtures use Wednesday 2026-09-30 (market open, EEST +3) and Saturday 2026-10-03
-    (market closed).
+## Working with the owner
 
-## Working rules
+- Chat in **Thai**. Documents, code and comments in **English**. Times to the owner in **Thai time**, read
+  with PowerShell `Get-Date` (Git Bash `date` is wrong on this machine).
+- **Record every trade and every decision when it happens**, in the file that holds them - never only in
+  conversation.
+- Report what the measurement says, including when it contradicts what was said before. A conclusion drawn
+  from a handful of samples has been wrong three times out of three here.
+- The owner's goal is fixed: **at least +0.15 R a trade after costs**. The method is theirs to direct.
 
-- Chat with the user in **Thai**. Docs, code comments and docstrings are in **English**. The PWA UI is Thai (default) +
-  English, through translation keys only.
-- After completing ticket items, tick them in `docs/TICKETS.md` via `scripts/tickets.py` in the same change.
-- No Docker locally. `deploy/railway/*.Dockerfile` and `.railway/railway.ts` exist only for Railway builds.
-- **The owner's goals and principles (2026-10-17) come first:** `docs/OWNER_GOALS.md` (consistent profit, a trade
-  every day, enter when price is about to run, quick profit; no single rule decides direction; everything
-  relative; live in the present). Current focus: Setup OWN (`docs/archive/OWN_SETUP.md`). **Stopped and archived on 2026-10-28 by the owner: every setup, every
-  research folder, and every strategy in `config.yaml`. Read `docs/archive/README.md` before restarting any of
-  it - it carries what the work established, including that the losses were the trades' geometry and not their
-  direction.**
-  **The exam is the latest six months counted from today** (owner, 2026-10-18; on 2026-10-18: 2026-04-18 .. the
-  data end): design and fit only on data before it, then run each frozen rule once on it. **Learning runs use the
-  latest 12 months first** (2025-10-18 .., "to see results quickly"; the three-year history only once a setup
-  works there), walk-forward month by month; results are reported **week by week** (Thai weeks). Setups are
-  revised every 3-6 months.
-- **Archived 2026-10-28 (kept for the record; the task is Disabled and the folder is under
-  `research/archive/`).** The observer's habits - start of every session and every look at price (owner, 2026-10-23: "always remember,
-  always observe"):** before any trading talk, read `research/2026-10-23-entry/DECISION_CHECKLIST.md`, the market
-  diary (`research/2026-10-23-entry/diary/`: the latest day, `TO_STUDY.md`, the scorecard) and the latest journal /
-  replay, and `knowledge/kb.py now` (the knowledge base, `knowledge/kb.yaml`: what applies at this moment). Never
-  read price tables by eye: run `rhythm_scan.py`, `picture_read.py` and `routine_read.py` at every look. Write the expected scenarios before each step, score them after. Every point the owner sees that I missed
-  becomes, in the same change, a checklist item, a permanent acceptance case and a memory. The hourly observer
-  (`scripts/observe-task.ps1`, read-only) writes the diary even when no one is trading.
-- **Code correctness before results (owner, 2026-10-18):** every building block of a setup has hand-worked unit
-  tests, planted bugs the tests must catch, and an independent re-derivation; no learning run before the code is
-  proven (short runs to test the code are fine). Research indicators are MetaTrader 5's own formulas
-  (`research/archive/2026-10-18-moments/agents/precursors/foundation.py`).
-- **Be an observer - no coin flip in the system (owner, 2026-10-19):** "this game is 50/50 if you look carelessly".
-  The coin / random side / "no better than chance" is removed from the system: no random-side baselines, no
-  "50-50" verdicts, no synonym for it. A result near 50 % means observe closer - split it by what was there
-  (larger timeframes, indicators, place, the move before, session, volatility), find where and why price goes one
-  way, test that (learning parts, then the exam once). Judge each component by its own outcome (win %, R after
-  costs, USD) against the goal and the other components.
-- **Setup work, one setup at a time (owner, 2026-10-13):** backtest a setup, then change its conditions (stop,
-  entry, timeframe, filters, exits) and backtest again until it reaches the goal (≥ +0.15 R/trade net). A losing
-  result means *change the conditions*, never *drop the setup and move on*. Don't propose switching to another
-  setup unless the owner asks; if the levers run out, say so and ask.
-  **System principle (owner, 2026-10-14): when the market phase does not suit a setup, that setup trades less,
-  not never:** in an unsuitable phase (measured per setup, e.g. low H4 volatility for breakouts) it takes only
-  its surest signals (stricter conditions), and the other setups carry the portfolio.
-  **A signal alone is not enough (owner, 2026-10-14):** every setup is judged with the trend (H4/H1 screens),
-  support/resistance (demand/supply zones, range box) and market structure (HH/HL vs LH/LL) around it; how each
-  is used is measured per setup (docs/archive/STRATEGIES.md, "A signal alone is not enough").
-- No profitability claims in any UI text either (`frontend/src/i18n/catalogs.test.ts` checks the catalogs).
-- Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
-- LIVE (real money) is off by default. Its path exists since TAA-1401 and needs `TRADING_MODE=LIVE`,
-  `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-<MT5_LOGIN>` and a REAL account; never
-  switch it on without the finished Phase 14 and the user's explicit go-ahead at that moment. DEMO orders need
-  `TRADING_MODE=DEMO` plus `ENABLE_DEMO_TRADING=true` and a demo account. Subscription and billing stay behind `SUBSCRIPTIONS_ENABLED=false`.
+## Architecture, while the code exists
+
+`core` → `config`/`security` → `storage` → `broker` → `market_data` → `indicators`/`evidence` → `strategy`
+→ `risk`/`engine` → `execution`; `sync` → `web`/`worker`. Enforced by `tests/unit/test_architecture.py`:
+MetaTrader5 only inside `app/broker`, order functions only there, no wall-clock reads outside
+`app/core/clock.py`, strategies pure. A new package must be added to that test's `LAYERS` table.
+
+Decisions use **closed bars only**; MT5 epochs are broker server time and convert through `ServerClock`;
+everything internal is timezone-aware UTC. Secrets and safety flags come from the environment, parameters
+from `config.yaml`. Conventions in `docs/archive/CODING_STANDARDS.md`.

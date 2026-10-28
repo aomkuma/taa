@@ -1,4 +1,4 @@
-"""Chart read (TAA-L813, docs/CHART_READ.md §10): the MT5 ZigZag port, structure, levels with roles,
+"""Chart read (TAA-L813, docs/archive/CHART_READ.md §10): the MT5 ZigZag port, structure, levels with roles,
 trendlines, events, scenarios, no look-ahead and serialization."""
 
 from __future__ import annotations

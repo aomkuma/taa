@@ -1,6 +1,7 @@
 """Volatility and volume detectors (PLAN §A29, family VOLATILITY_VOLUME, tier T1).
 
-Volume is MT5 *tick* volume: relative measures only (see docs/INDICATORS.md, "Volume"). Detectors that need
+Volume is MT5 *tick* volume: relative measures only (see docs/archive/INDICATORS.md, "Volume"). Detectors
+that need
 volume skip bars where it is missing.
 """
 

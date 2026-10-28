@@ -1,7 +1,8 @@
-"""Maintain docs/TICKETS.md: tick checklist items, set statuses, recompute the progress table.
+"""Maintain docs/archive/TICKETS.md: tick checklist items, set statuses, recompute the progress table.
 
 Usage:
-    python scripts/tickets.py --file docs/TICKETS_LEARNING.md sync   # any command, on another ticket file
+    python scripts/tickets.py --file docs/archive/TICKETS_LEARNING.md sync   # any command, on another ticket
+    file
     python scripts/tickets.py tick TAA-002 1 3        # tick items 1 and 3 of TAA-002
     python scripts/tickets.py tick TAA-001 all        # tick every item
     python scripts/tickets.py status TAA-005 BLOCKED  # set status explicitly

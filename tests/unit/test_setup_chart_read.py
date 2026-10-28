@@ -1,4 +1,4 @@
-"""Chart read gates of the setups (TAA-L813 CR-5, docs/CHART_READ.md §7): all off by default, each one on its
+"""Chart read gates of the setups (TAA-L813 CR-5, docs/archive/CHART_READ.md §7): all off by default, each one on its
 own, relative to the trade actually taken (the fade's side for a fade)."""
 
 from __future__ import annotations

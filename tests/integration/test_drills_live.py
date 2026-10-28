@@ -1,4 +1,4 @@
-"""Go-live drills rehearsed on LIVE with FakeMT5 and a REAL account (TAA-1403; docs/RUNBOOK_LIVE.md).
+"""Go-live drills rehearsed on LIVE with FakeMT5 and a REAL account (TAA-1403; docs/archive/RUNBOOK_LIVE.md).
 
 Each drill is the automated half of a runbook step; the owner repeats it on the engine machine before LIVE.
 Credential rotation is rehearsed in tests/web/test_engines_api.py (HMAC rotate/revoke) and

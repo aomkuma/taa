@@ -1,4 +1,4 @@
-"""Chart read: one timeframe's chart read the way a trader does (TAA-L813, docs/CHART_READ.md §4).
+"""Chart read: one timeframe's chart read the way a trader does (TAA-L813, docs/archive/CHART_READ.md §4).
 
 Pure functions over closed candles of one timeframe (open/high/low/close indexed by close time).
 :class:`ChartReadFrame` computes the swings and the ATR of a frame once; :meth:`ChartReadFrame.at` reads

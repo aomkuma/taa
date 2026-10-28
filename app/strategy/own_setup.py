@@ -1,4 +1,5 @@
-"""Setup OWN, F1 CONF-72: the owner's gold scalp on M1 (docs/OWN_SETUP.md; owner, 2026-10-18: "F1 + a stop
+"""Setup OWN, F1 CONF-72: the owner's gold scalp on M1 (docs/archive/OWN_SETUP.md; owner, 2026-10-18: "F1 + a
+stop
 of at least 0.5 M15 ATR").
 
 The rule exactly as frozen and tested in the research (research/2026-10-18-moments/agents/journal/build.py

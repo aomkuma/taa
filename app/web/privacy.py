@@ -15,7 +15,8 @@ public view, never secrets).
 - refused: the deployment's OWNER (409 ``owner_cannot_be_erased``) and a user with an ACTIVE engine (409
   ``engines_active``: revoke it first, so nothing keeps sending data for an erased user)
 
-Legal review (``docs/COMPLIANCE.md``) decides the retention of the kept records before subscriptions open.
+Legal review (``docs/archive/COMPLIANCE.md``) decides the retention of the kept records before subscriptions
+open.
 """
 
 from __future__ import annotations

@@ -1,5 +1,6 @@
 """Setup OWN PLAN-1 as a lane (``plan1``): the London 13:00-Thai opening-range break and the NY 08:30
-straddle on every weekday (docs/PLAN1_LANE.md; research/2026-10-18-moments/agents/dev/plan1.py, the rules in
+straddle on every weekday (docs/archive/PLAN1_LANE.md; research/2026-10-18-moments/agents/dev/plan1.py, the
+rules in
 force in journal/PLAN1_JOURNAL.md / rules_week.py). Asia B2 is the third piece; it comes later (checkpoint B).
 
 **London ORB** (:class:`Plan1Orb`, closed M1 bars; research ``d1_orb.decide`` + ``plan1.orb_trade``):

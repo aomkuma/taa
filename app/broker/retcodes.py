@@ -1,4 +1,4 @@
-"""Trade server return codes and how TAA treats them (handling matrix in docs/PLAN.md §A12)."""
+"""Trade server return codes and how TAA treats them (handling matrix in docs/archive/PLAN.md §A12)."""
 
 from __future__ import annotations
 

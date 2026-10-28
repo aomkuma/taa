@@ -314,13 +314,13 @@ class TestCatalog:
             "setup_plan1_ny",
             "setup_plan1_b2",
             "setup_plan1_b2m5",
-        }  # lane plan1 (2026-10-21, docs/PLAN1_LANE.md)
+        }  # lane plan1 (2026-10-21, docs/archive/PLAN1_LANE.md)
         originals |= {"ai_trader"}  # lane ai (2026-10-24, PLAN §A37)
         originals |= {"trend_box_down", "trend_box_up", "range_break"}  # disabled research lane (2026-10-27)
         assert set(listed) | in_lanes == originals
         # owner, 2026-10-12 (SETUP_REVIEW §15): harmonic, normal side, no break-even/trailing;
         # 2026-10-14 (§16): breakout F1, fades with the H4/H1 trend only; 2026-10-16: its own stop cap off;
-        # 2026-10-17: every earlier setup stopped, the bot starts over with Setup OWN (docs/OWN_SETUP.md)
+        # 2026-10-17: every earlier setup stopped, the bot starts over with Setup OWN (docs/archive/OWN_SETUP.md)
         assert not any(listed.values())
         breakout = next(i for i in settings.config.strategies.items if i.name == "setup_breakout")
         assert breakout.params == {

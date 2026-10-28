@@ -1,4 +1,4 @@
-"""Momentum indicators: RSI, Stochastic and CCI (PLAN §A6, formulas in docs/INDICATORS.md)."""
+"""Momentum indicators: RSI, Stochastic and CCI (PLAN §A6, formulas in docs/archive/INDICATORS.md)."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""The owner's triple screen setup TS (2026-10-17, docs/OWNER_TRADING.md "Setup TS"): with the H4 tide, a
+"""The owner's triple screen setup TS (2026-10-17, docs/archive/OWNER_TRADING.md "Setup TS"): with the H4 tide, a
 pullback that turned at an H1/H4 chart-read level, entered on the entry timeframe's structure break."""
 
 from __future__ import annotations

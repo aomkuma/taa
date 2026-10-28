@@ -57,7 +57,8 @@ Each setup turns one *trigger* detector's evidence on the entry timeframe into a
   many entry bars instead of the frame's ATR(14) (M1: 60 bars = one hour, the scale the behaviour was
   measured on); ``skip_window_ny`` ("HH:MM-HH:MM" New York time) takes no entry inside it (gold scalps lose
   around the US releases, 08:00-12:00 New York). Both off by default.
-- **Chart read gates** (TAA-L813, docs/CHART_READ.md §7; each off by default, chosen per setup only after
+- **Chart read gates** (TAA-L813, docs/archive/CHART_READ.md §7; each off by default, chosen per setup only
+after
   its backtests hold). They read the chart read of ``structure_tf`` (a context timeframe; the MT5 ZigZag
   swings) relative to the trade actually taken (the fade's side for a fade), at the plan's entry; a missing
   read holds (fail closed):
@@ -1086,7 +1087,8 @@ def _map_tide(market: MarketContext, tf: str, buy: bool) -> Condition:
 
 
 class TripleScreen(EvidenceSetup):
-    """The owner's triple screen (2026-10-17, docs/OWNER_TRADING.md "Setup TS"): with the tide, sell the end
+    """The owner's triple screen (2026-10-17, docs/archive/OWNER_TRADING.md "Setup TS"): with the tide, sell
+    the end
     of a wave that rallied into a level (buy the mirror), entered when the entry timeframe breaks its
     structure.
 

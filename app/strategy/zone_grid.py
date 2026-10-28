@@ -1,4 +1,5 @@
-"""The owner's gold zone grid (owner 2026-10-22, docs/OWNER_GOALS.md "Gold runs in zones of about 70-90
+"""The owner's gold zone grid (owner 2026-10-22, docs/archive/OWNER_GOALS.md "Gold runs in zones of about
+70-90
 USD"; ported from research/2026-10-22-zones/zone_grid_v1.py ``daily_grid``; research/2026-10-23-entry/SPEC.md
 C5).
 

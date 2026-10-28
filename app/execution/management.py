@@ -6,7 +6,7 @@ Evaluated on closed bars only; a change applies from the next bar on.
   once the best price since the last call reached it), the stop moves to the entry plus
   ``break_even_buffer_points`` (costs), on the profitable side. With ``break_even_target_share`` the trigger
   is instead that share of the way to the take-profit, reached by the best price since the last call (Setup
-  OWN: 0.6 of a fixed target, whatever the stop; docs/OWN_SETUP.md).
+  OWN: 0.6 of a fixed target, whatever the stop; docs/archive/OWN_SETUP.md).
 - **Trailing:** from ``trailing_start_r`` R, the stop trails ``trailing_atr_multiple`` × ATR behind the mark.
 - **Invariants:** the stop only ever moves in the favourable direction, never through the current price, never
   removed, and by at least ``min_sl_step_points`` per change.

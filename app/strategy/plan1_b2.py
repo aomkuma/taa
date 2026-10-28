@@ -1,5 +1,5 @@
 """Setup OWN PLAN-1, Asia B2: a chart pattern at the owner's H1 level, confirmed by a pullback and a new
-close, in the Asia window 07:00-09:00 Thai (docs/PLAN1_LANE.md; ported 1:1 from
+close, in the Asia window 07:00-09:00 Thai (docs/archive/PLAN1_LANE.md; ported 1:1 from
 research/2026-10-18-moments/agents/dev: patterns.py, p2_trades.py ``confirm_b`` / ``structure_exit_time``,
 p3_trades.py setting ``B2``, p4_trades.py ``window_of``; precursors/zones.py ``levels_at``;
 journal/rules_week.py's week-6 rule).

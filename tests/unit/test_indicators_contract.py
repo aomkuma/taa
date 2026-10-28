@@ -1,4 +1,4 @@
-"""Contract shared by every indicator (docs/INDICATORS.md): exact warm-up, no look-ahead, short input is NaN.
+"""Contract shared by every indicator (docs/archive/INDICATORS.md): exact warm-up, no look-ahead, short input is NaN.
 
 Add every new indicator to ``REGISTRY`` with the first defined position of each output column.
 """

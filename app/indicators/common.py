@@ -1,6 +1,6 @@
 """Shared building blocks for indicators: input coercion, rolling means and recursive smoothers.
 
-Conventions shared by every indicator (see docs/INDICATORS.md):
+Conventions shared by every indicator (see docs/archive/INDICATORS.md):
 
 - Inputs are pandas Series; outputs keep the input index and use ``float64``.
 - The value at position *t* depends only on positions <= *t* (no look-ahead).

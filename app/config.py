@@ -491,7 +491,7 @@ class StrategyManagement(StrictModel):
     trailing: bool = True
     break_even_trigger_r: float | None = Field(default=None, gt=0)
     # the break-even at this share of the way to the take-profit instead of an R trigger (Setup OWN: 0.6 of
-    # a fixed target, docs/OWN_SETUP.md); None: the R trigger
+    # a fixed target, docs/archive/OWN_SETUP.md); None: the R trigger
     break_even_target_share: float | None = Field(default=None, gt=0, lt=1)
     # the R trigger on the best price since the last check (a touch: a bar's high / ask low) instead of
     # the mark - what the live managers do on every quote (owner 2026-10-25: the AI trader's break-even
@@ -788,7 +788,7 @@ class ContextMapOverride(StrictModel):
 
 class ChartReadOverride(StrictModel):
     """Per-timeframe ZigZag settings of the chart read, only to match the owner's charts (never fitted to a
-    backtest; docs/CHART_READ.md §12). Unset fields keep the block's value."""
+    backtest; docs/archive/CHART_READ.md §12). Unset fields keep the block's value."""
 
     depth: int | None = Field(default=None, ge=2, le=500)
     deviation: int | None = Field(default=None, ge=0, le=100_000)
@@ -1043,7 +1043,7 @@ class DetectorSettings(StrictModel):
 
 
 class ConfluenceConfig(StrictModel):
-    """Setup-strength weights (PLAN §A29, docs/PATTERNS.md "Confluence score"). Points out of 100.
+    """Setup-strength weights (PLAN §A29, docs/archive/PATTERNS.md "Confluence score"). Points out of 100.
 
     Family names are checked against the evidence families when the score is computed (config cannot import
     the evidence package: it lives in a higher layer).
@@ -1387,13 +1387,15 @@ class WebSettings(BaseSettings):
     ENGINE_ID: str | None = Field(default=None, min_length=1, max_length=64)
     ENGINE_HMAC_SECRET: SecretStr | None = None
     ENGINE_HMAC_SECRET_PREVIOUS: SecretStr | None = None
-    # false: only OWNER users may register engines (turning it on needs the legal review, docs/COMPLIANCE.md)
+    # false: only OWNER users may register engines (turning it on needs the legal review,
+    # docs/archive/COMPLIANCE.md)
     MULTI_ENGINE_ENABLED: bool = False
     WEB_MAX_ENGINES_PER_USER: int = Field(default=1, ge=1, le=20)
     # Web Push (TAA-806): the browsers' applicationServerKey (scripts/generate_vapid_keys.py); unset: off.
     VAPID_PUBLIC_KEY: str | None = Field(default=None, pattern=VAPID_PUBLIC_KEY_PATTERN)
     # (TAA-8A5) Compliance gate: every subscription and billing route is 404 while false. Turning it on
-    # needs the owner's record of the legal review (docs/COMPLIANCE.md), e.g. "2027-01-15 counsel memo #12".
+    # needs the owner's record of the legal review (docs/archive/COMPLIANCE.md), e.g. "2027-01-15 counsel
+    # memo #12".
     SUBSCRIPTIONS_ENABLED: bool = False
     SUBSCRIPTIONS_LEGAL_REVIEW: str | None = Field(default=None, min_length=8, max_length=200)
     BILLING_WEBHOOK_SECRET: SecretStr | None = None
@@ -1765,6 +1767,6 @@ def load_web_settings(
     if web.SUBSCRIPTIONS_ENABLED and web.SUBSCRIPTIONS_LEGAL_REVIEW is None:
         raise ConfigError(
             "SUBSCRIPTIONS_ENABLED needs SUBSCRIPTIONS_LEGAL_REVIEW: record the legal review first"
-            " (docs/COMPLIANCE.md)"
+            " (docs/archive/COMPLIANCE.md)"
         )
     return web

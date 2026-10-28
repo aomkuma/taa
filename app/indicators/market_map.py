@@ -519,7 +519,7 @@ _PHASE = {
 def read_features(
     r: ChartRead, key: str, *, buy: bool, entry: float, risk: float | None, room_cap: float
 ) -> dict[str, float]:
-    """The chart read relative to one trade (docs/CHART_READ.md §6); absent keys = unknown.
+    """The chart read relative to one trade (docs/archive/CHART_READ.md §6); absent keys = unknown.
 
     ``inv_r`` = (entry − invalidation) × side / risk: positive when the structure's invalidation lies behind
     the entry (below 1 the stop is beyond it), negative when it lies ahead (a trade against the structure).

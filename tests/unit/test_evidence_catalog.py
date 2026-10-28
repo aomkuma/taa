@@ -10,7 +10,9 @@ from app.evidence.catalog import ALL_DETECTORS, default_registry
 from app.evidence.framework import Detector
 from tests.evidence_harness import assert_no_lookahead
 
-PATTERNS_DOC = (Path(__file__).resolve().parents[2] / "docs" / "PATTERNS.md").read_text(encoding="utf-8")
+# Archived with the rest of the old documents on 2026-10-28; the detectors it describes are still in
+# app/evidence, so the catalogue is still checked against it.
+PATTERNS_DOC = (Path(__file__).resolve().parents[2] / "docs/archive/PATTERNS.md").read_text(encoding="utf-8")
 IDS = [d.id for d in ALL_DETECTORS]
 
 
@@ -30,7 +32,7 @@ def test_no_lookahead(detector: Detector) -> None:
 
 @pytest.mark.parametrize("detector", ALL_DETECTORS, ids=IDS)
 def test_documented_and_well_formed(detector: Detector) -> None:
-    assert f"`{detector.id}`" in PATTERNS_DOC, f"{detector.id} is missing from docs/PATTERNS.md"
+    assert f"`{detector.id}`" in PATTERNS_DOC, f"{detector.id} is missing from docs/archive/PATTERNS.md"
     assert detector.id.count(".") >= 1 and detector.id == detector.id.lower()
     assert detector.name and detector.version >= 1
     detector.Params()  # defaults must validate

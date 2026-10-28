@@ -1,4 +1,5 @@
-"""Setup OWN S2: the CPI / NFP release-minute straddle (docs/OWN_SETUP.md; research/2026-10-18-moments/
+"""Setup OWN S2: the CPI / NFP release-minute straddle (docs/archive/OWN_SETUP.md;
+research/2026-10-18-moments/
 agents/news, notes.md "FROZEN RULE S2", s2_ticks.py).
 
 At the release second (08:30:00 New York) a buy stop ``trigger_u`` U above the last ask and a sell stop the

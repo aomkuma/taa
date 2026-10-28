@@ -1,4 +1,5 @@
-"""Trend indicators: SMA, EMA, MACD and ADX with +DI/-DI (PLAN §A6, formulas in docs/INDICATORS.md)."""
+"""Trend indicators: SMA, EMA, MACD and ADX with +DI/-DI (PLAN §A6, formulas in
+docs/archive/INDICATORS.md)."""
 
 from __future__ import annotations
 

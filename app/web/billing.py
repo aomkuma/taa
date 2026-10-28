@@ -15,7 +15,7 @@ plus a provider adapter:
   PAYMENT_FAILED (PAST_DUE) → no longer ACTIVE, so the user falls back to FREE (``EntitlementService``).
 
 The routes (``app/web/routers/billing.py``) are unreachable (404) while ``SUBSCRIPTIONS_ENABLED`` is false,
-and that flag needs a recorded legal review (``docs/COMPLIANCE.md``).
+and that flag needs a recorded legal review (``docs/archive/COMPLIANCE.md``).
 """
 
 from __future__ import annotations
