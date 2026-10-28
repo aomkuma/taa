@@ -157,17 +157,17 @@ lanes:
       items:                        # each journal rule is a parameter here (target_r, atr_floor, hold, ...); row 62's
                                     # regime switch: no new entry while the D1 ATR(20) < d1_atr20_min_usd (null = off)
         - name: setup_plan1_orb
-          enabled: true             # DEMO (owner, 2026-10-21: plan1 the only lane); journal week 5: target 1.5 R
+          enabled: false             # DEMO (owner, 2026-10-21: plan1 the only lane); journal week 5: target 1.5 R
           params: {target_r: 1.5, atr_floor: null, pool_break_when_h4_contracting: true, d1_atr20_min_usd: 60.0}   # week 6: no ATR
           # floor (the H1 ATR stays in the journal); week 10: in a contracting H4 ATR (24 h) only after a pool break
         - name: setup_plan1_b2         # Asia B2 on M1 patterns (checkpoint B): 07:00-09:00 Thai; second_same_side:
-          enabled: true             # the week-6 rule, on in the frozen rules (read from the decision store)
+          enabled: false             # the week-6 rule, on in the frozen rules (read from the decision store)
           params: {second_same_side: true, atr_floor: null, d1_atr20_min_usd: 60.0}
         - name: setup_plan1_b2m5       # Asia B2 on M5 patterns (its own name: a position's TF after a restart)
-          enabled: true
+          enabled: false
           params: {second_same_side: true, atr_floor: null, d1_atr20_min_usd: 60.0}
         - name: setup_plan1_ny
-          enabled: true             # every weekday 08:30 New York; 2 / 8 USD, out after 30 minutes, no target
+          enabled: false             # every weekday 08:30 New York; 2 / 8 USD, out after 30 minutes, no target
           params: {trigger_u: 2.0, stop_u: 8.0, hold_seconds: 1800, target_cap_u: 100.0, atr_floor: null, d1_atr20_min_usd: 60.0}
     max_spread_to_sl_ratio: 0.5     # the research has no spread rule; a 4-USD range stop against a 0.4 spread passes
     max_spread_points: 60           # above the widest 08:29-08:31 NY spread on P1 / P2 ticks (53; fills <= 39)
@@ -209,17 +209,17 @@ lanes:
       signal_expiry_bars: 1
       items:
         - name: trend_box_down
-          enabled: true
+          enabled: false
           # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
           # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
           params: {require_edge_side: true}
         - name: trend_box_up
-          enabled: true
+          enabled: false
           # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
           # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
           params: {require_edge_side: true}
         - name: range_break
-          enabled: true
+          enabled: false
           # The H4 lean must be on the trade's side (RULES_LOCKED.md rule set 2, 2026-10-27):
           # +0.102 -> +0.210 R a trade over 2023-09..2026-10, +0.214 fitted / +0.207 never seen.
           params: {require_edge_side: true}

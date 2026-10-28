@@ -10,7 +10,7 @@ harmonic lost on every symbol). Traded on DEMO 2026-10-09 .. 10-12. Read this be
 
 Classic technical analysis says: when a breakout, a pattern or a harmonic completion fires, trade **in** its
 direction, with the stop where the idea is invalidated and a target at least 1.5-2 R away. Every setup in this
-repository was built that way (docs/STRATEGIES.md).
+repository was built that way (docs/archive/STRATEGIES.md).
 
 The inverted setups take exactly those signals and trade the **opposite** side. That contradicts the textbook on
 purpose. The reason is measurement, not theory:

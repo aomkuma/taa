@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import timedelta
 from pathlib import Path
 
@@ -20,8 +21,14 @@ from app.strategy.registry import StrategySet
 from tests.integration.test_engine_paper import START, BuyEveryBar, settings
 
 
-def make_engine(tmp_path: Path, db: Database, clock: ManualClock, sink: MemorySink) -> Engine:
-    s = settings(tmp_path)
+def make_engine(
+    tmp_path: Path,
+    db: Database,
+    clock: ManualClock,
+    sink: MemorySink,
+    enable: Sequence[str] = (),
+) -> Engine:
+    s = settings(tmp_path, enable=enable)
     return Engine(
         s,
         build_read_only(s, fake=True, clock=clock),

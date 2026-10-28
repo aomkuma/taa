@@ -226,7 +226,7 @@ consolidation zone, with the SL above 4160."
   wrong).
   Held through the base rather than taken at the first target.
 - **For the rules:**
-  - the break-and-retest entry (P5 in `research/2026-10-18-moments/agents/DEV_PROMPT.md`);
+  - the break-and-retest entry (P5 in `research/archive/2026-10-18-moments/agents/DEV_PROMPT.md`);
   - "every TF up to H1 agrees -> enter early inside the consolidation, the stop past the structure";
   - a trailing stop past the structure, not a fixed USD.
 
@@ -272,8 +272,8 @@ risk per signal).
 ## Setup TS - the triple screen pullback (owner, 2026-10-17)
 
 > **Stopped 2026-10-17:** the trigger showed no edge over five years and every in-sample rule failed its hold-out
-> years (`docs/STRATEGIES.md`, stopped setups). Kept as the record; the current work is Setup OWN
-> (`docs/OWN_SETUP.md`).
+> years (`docs/archive/STRATEGIES.md`, stopped setups). Kept as the record; the current work is Setup OWN
+> (`docs/archive/OWN_SETUP.md`).
 
 **Where it came from.** The owner's plan for the week of 2026-10-19 (XAUUSD, H1 chart at the Friday close
 4,165, OANDA): the H4 still falls (lower highs 4,225 -> 4,215 -> 4,200 under the trendline from 4,400), the H1
@@ -315,7 +315,7 @@ without TS.
 **Open points for the owner:** the entry window. The setups trade 07:00-20:00 UTC (14:00-03:00 Thai); the
 Monday Asian bounce of case A (05:00-14:00 Thai) falls outside it.
 
-### TS results, March 2026 (XAUUSD, TS alone; `research/2026-10-17-ts/`, outputs `data/backtests/ts/`)
+### TS results, March 2026 (XAUUSD, TS alone; `research/archive/2026-10-17-ts/`, outputs `data/backtests/ts/`)
 
 One month is a screen, not proof. R per trade (net mixes lot sizes: a far stop opens the minimum lot above the
 risk budget).
@@ -342,7 +342,7 @@ any rule goes into the setup.
 ### TS: the two-year study and the day-trade version (2026-10-17)
 
 Every structure-break trigger of gold M15 over two years (in-sample 2025-10 .. 2026-09 and the out-of-sample
-year 2024-10 .. 2025-09; 3,055 triggers), its outcome on M1 bars (`research/2026-10-17-ts/`). R per trade at 3 R
+year 2024-10 .. 2025-09; 3,055 triggers), its outcome on M1 bars (`research/archive/2026-10-17-ts/`). R per trade at 3 R
 unless stated; "4/4" = positive in all four half-years.
 
 | Rule | In-sample | Out-of-sample | Verdict |
@@ -429,7 +429,7 @@ A4 -0.073, A5 -0.081. Over five years (about 7,700 triggers) the M15 structure b
 years (2021-2023) and is slightly positive only in the strong rally (2024-2026); the habits found came from that
 rally. **TS on this trigger is stopped** (no further variants; the TS-h4 engine runs were cancelled to free the
 machine for S1). Kept: the code (`setup_triple_screen`, off, lane / research only), the tools
-(`research/2026-10-17-ts/`, offline triggers and outcomes for any year) and five years of gold history (2021-10 on)
+(`research/archive/2026-10-17-ts/`, offline triggers and outcomes for any year) and five years of gold history (2021-10 on)
 for testing other setups.
 
 **The daily goal in numbers:** expected USD a day = trades a day x R a trade x the risk a trade. With B3 (1.24 a
@@ -447,7 +447,7 @@ years of gold (2021-10 .. 2026-09) with the 2021-23 years held out until the rul
 
 - Why: TS and S1 pay only in gold's 2024-26 rally; the owner: a setup fitting only some periods is normal, the
   system must see the present without bias and choose accordingly.
-- Method, hypotheses (fixed before testing) and results month by month: `docs/OWN_SETUP.md`.
+- Method, hypotheses (fixed before testing) and results month by month: `docs/archive/OWN_SETUP.md`.
 
 ## Hypotheses to test (with the report and backtests)
 

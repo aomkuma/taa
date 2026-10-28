@@ -10,10 +10,14 @@ from app.monitoring.alerts import MemorySink
 from tests.integration.test_engine_paper import START
 from tests.integration.test_engine_restart import fresh_db, make_engine
 
+STRATEGY = "example_trend_pullback"
+
 
 def test_engine_magic_survives_a_changed_strategy_order(tmp_path: Path) -> None:
     db, clock = fresh_db(), ManualClock(START)
-    first = make_engine(tmp_path, db, clock, MemorySink())
+    # the shipped config has every strategy disabled since 2026-10-28, so this test names the one it
+    # needs: what it checks is the registry's stability, not which setups happen to ship switched on
+    first = make_engine(tmp_path, db, clock, MemorySink(), enable=(STRATEGY,))
     first.start()
     names = list(first.magic)  # every lane's strategies, in the order they were registered
     assert names
@@ -23,7 +27,7 @@ def test_engine_magic_survives_a_changed_strategy_order(tmp_path: Path) -> None:
     # an earlier config had another strategy first: its slot stays taken and the others keep theirs
     db2 = fresh_db()
     MagicRegistry(db2, base, clock).ensure(["retired_strategy", *reversed(names)])
-    second = make_engine(tmp_path, db2, clock, MemorySink())
+    second = make_engine(tmp_path, db2, clock, MemorySink(), enable=(STRATEGY,))
     second.start()
     expected = {n: base + 1 + i for i, n in enumerate(reversed(names))}
     assert second.magic == expected

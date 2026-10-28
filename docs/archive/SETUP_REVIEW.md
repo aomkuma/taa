@@ -286,7 +286,7 @@ docs/archive/INVERTED_SETUPS.md.
 Goal before: the best history estimate of an inverted setup was +0.059 / +0.036 R (pattern breakout / breakout,
 R of the original risk; §13), a gap of about +0.10 R to the target (≥ +0.15 R/trade net).
 
-**Part 1, what happens before real runs** (`research/2026-10-11-pre-run/pre_run.py`, output
+**Part 1, what happens before real runs** (`research/archive/2026-10-11-pre-run/pre_run.py`, output
 `data/research/pre_run_part1.txt`; 8 symbols, M15 and H1, 2025-10-15 .. 2026-10-05; definitions fixed before
 the run). A run = +3 ATR within 16 bars before −1 ATR. Precursors over the 8 bars before: a sweep of the other
 side's 20-bar extreme closing back inside, a false break on the run's side, compression (lowest fifth of the
@@ -351,7 +351,7 @@ Owner, 2026-10-11: judge setups with the backtester, one setup at a time, harmon
 the inverted as two separate worlds (INVERTED_SETUPS §5). `setup_harmonic_prz` and
 `setup_harmonic_prz_inverted`, 8 symbols, 2025-10-15 .. 2026-10-05 as three 4-month runs (`4mA`, `4mB`, `4m`)
 joined per world, research config `data/research/config_paired_bt.yaml` (breakers at their widest, 0.5 %
-risk). Outputs `data/backtests/inv/harmonic_1y_*.txt`; scripts in `research/2026-10-11-pre-run/`.
+risk). Outputs `data/backtests/inv/harmonic_1y_*.txt`; scripts in `research/archive/2026-10-11-pre-run/`.
 Goal before: harmonic +0.02 R in the replay harness (§11), gap +0.13 R.
 
 | World | Trades | Win % | R/trade [90 % CI] | Max DD | Avg win / loss |
@@ -485,7 +485,7 @@ trade in any month.
 - Wins and losses: 37 targets, 39 stops; average win +1.67 R, average loss −1.04 R.
 - Months: 9 of 12 positive; the losers are November (−0.22, 3 trades), December (−0.60, 6) and July (−0.18, 6).
 - **Gap:** the first half's interval reaches below zero, and 76 trades a year is few for scalping. The rules were
-  shaped on the same year's M1 study (`research/2026-10-11-pre-run/m1_scalp_study.py`), so this is in-sample.
+  shaped on the same year's M1 study (`research/archive/2026-10-11-pre-run/m1_scalp_study.py`), so this is in-sample.
 - **On DEMO since 2026-10-15 (owner):** lane `s1` in `config.yaml` (`setup_breakout_scalp`, PLAN §A7 entry
   lanes), in the aggressive preset's setups (a fade: half the preset risk). Parity: `backtest --lane s1` on
   March 2026 (`data/backtests/inv/s1lane_2026-03`) reproduces `scalp_s1_2026-03` trade for trade (10 trades,
@@ -496,7 +496,7 @@ trade in any month.
 ## 18. V1 + h4_room_2, the year (2026-10-15)
 
 h4_room_2 = V1 plus at least 2 R of room between the entry and the nearest opposing level of the H4 chart read
-(`structure_tf: H4`, `room_min_r: 2`; chosen in the walk-forward of `research/2026-10-14-chart-read/CR3_V1.md`).
+(`structure_tf: H4`, `room_min_r: 2`; chosen in the walk-forward of `research/archive/2026-10-14-chart-read/CR3_V1.md`).
 Base and room ran with identical configs except those two lines (`data/research/config_h_v1cr_base.yaml` /
 `config_h_v1cr_room.yaml`; drawdown limit 50 %, consecutive-loss breaker off so no breaker shapes the
 comparison), as monthly runs 2025-10 .. 2026-09 (`data/backtests/inv/v1cr_{base,room}_YYYY-MM`). Halves are
@@ -582,7 +582,7 @@ identically to the runs with it (`data/backtests/inv/{v1,f1}nocap_2026-03`).
 ## 21. V1 by market condition, and the rules to judge on fresh data (2026-10-17)
 
 Owner, 2026-10-17: every setup profitable in every market condition, one setup at a time; V1 first, because it
-fails the out-of-sample year (docs/archive/OUT_OF_SAMPLE.md). `research/2026-10-17-v1/v1_regimes.py` rebuilds the market
+fails the out-of-sample year (docs/archive/OUT_OF_SAMPLE.md). `research/archive/2026-10-17-v1/v1_regimes.py` rebuilds the market
 map at each V1 entry (the engine's `MapBook`, H1/H4/D1, plus each timeframe's ATR percentile) for year A
 (2024-10 .. 2025-02, the five months done) and year B (2025-10 .. 2026-09, in sample).
 
@@ -631,7 +631,7 @@ measurements above, accepted by the owner:
 
 Owner, 2026-10-17: "the spread should not be what stops a trade; find it and fix it". S1 is priority 1 (§22).
 
-**What was wrong.** `research/2026-10-17-s1/s1_funnel.py` rebuilds S1's event pool (a counter-trend M1 break,
+**What was wrong.** `research/archive/2026-10-17-s1/s1_funnel.py` rebuilds S1's event pool (a counter-trend M1 break,
 faded) on three years of gold M1 with the engine's plan and fills (parity: the engine's trades it also takes
 match within 0.01-0.06 R; its trigger is Donchian-20 only, so some entries differ).
 
@@ -655,7 +655,7 @@ trades. Chosen on year A only (round-trip cost floors k 6-16, then the spread-on
 
 - A longer hold alone does not help (no floor, time stop 120: C −0.359, A −0.142): the floor is the lever.
 - A scaled time stop needs a per-position time stop (not in the engine yet); the fixed 240-bar time stop is a
-  config value. Engine runs (`research/2026-10-17-s1/s1_floor_queue.sh`, `data/backtests/s1fix/`): the floor on
+  config value. Engine runs (`research/archive/2026-10-17-s1/s1_floor_queue.sh`, `data/backtests/s1fix/`): the floor on
   2026-03, 2026-08, 2024-10 .. 12, 2024-03 and 2024-08, S1 as it is on 2024-03 and 2024-08 (frozen code).
   `config.yaml` stays until they hold and the owner agrees.
 
@@ -705,7 +705,7 @@ harness, nothing chosen on them. Gold ranged at 1,700-2,000; the spread was 0.40
   range at the entry (last closed D1). No threshold holds even inside the choosing years A and B (A: every trade
   at 0.75 or above, buys +0.06 .. +0.22; B: buys at 0.9 or above −0.386, below 0.75 +0.09 .. +0.63), so none was
   fixed and none goes to C/D/E. Still open: a regime measure that tells the 2024-26 rally from the 2021-23 range
-  as of the entry (the D1 EMA tide and D1 trend strength of `research/2026-10-17-ts/ts_d1_tide.py` are next).
+  as of the entry (the D1 EMA tide and D1 trend strength of `research/archive/2026-10-17-ts/ts_d1_tide.py` are next).
 
 ## 10. Still to do
 

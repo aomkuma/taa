@@ -1,4 +1,9 @@
 <#
+    STOPPED AND ARCHIVED 2026-10-28 (owner: clear everything, keep the raw data and the indicators).
+    The scheduled task "TAA Observer" is Disabled and the observer now lives under researchrchive\.
+    Re-registering it is a deliberate decision, not a restart.
+#>
+<#
 .SYNOPSIS
     Runs the market observer (research\2026-10-23-entry\observe.py) every hour of the trading day from Windows
     Task Scheduler.

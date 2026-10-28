@@ -12,7 +12,10 @@ import pytest
 
 from app.strategy import knowledge as kb
 
-CHECKLIST = Path(__file__).resolve().parents[2] / "research/2026-10-23-entry/DECISION_CHECKLIST.md"
+# Archived with the method it belonged to (owner, 2026-10-28: clear everything, keep the raw data and
+# the indicators). The parity test stays because app/strategy/checklist.py still mirrors the document;
+# if that module is ever stripped, this test goes with it.
+CHECKLIST = Path(__file__).resolve().parents[2] / "research/archive/2026-10-23-entry/DECISION_CHECKLIST.md"
 
 ITEMS = {"A1", "A5", "C4"}
 
@@ -120,9 +123,9 @@ def test_the_real_base_is_sound():
     import re
 
     items = set(re.findall(r"^\| ([A-E]\d+) \|", CHECKLIST.read_text(encoding="utf-8"), flags=re.M))
-    entries = kb.load(
-        CHECKLIST.parents[2] / "app/strategy/kb.yaml"
-    )  # the file itself, wherever the module runs
+    # the file itself. Taken from THIS file's location, not the checklist's: the checklist moved into
+    # research/archive/ on 2026-10-28 and a relative hop from it silently pointed at research/app/.
+    entries = kb.load(Path(__file__).resolve().parents[2] / "app/strategy/kb.yaml")
     assert kb.validate(entries, items) == []
     assert len(entries) >= 100
 

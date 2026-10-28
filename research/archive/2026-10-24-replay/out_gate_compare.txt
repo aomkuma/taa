@@ -1,0 +1,34 @@
+# Three readings of the edge side, 17 candidates over 2026-07-06 and 2026-07-07
+
+Order life 60 minutes for every gate. A bar touching both levels counts as the stop.
+
+| Thai | side | source | entry | stop | target | outcome | R | lean_h4 | trend_h4 | lean_h1_first |
+|---|---|---|---|---:|---:|---|---:|---|---|---|
+| 07-06 07:00 | SELL | plan morning A | 4191.40 | 4207.52 | 4177.16 | no fill | +0.00 | refuse | refuse | refuse |
+| 07-06 07:00 | BUY | plan morning B | 4177.16 | 4170.61 | 4186.51 | stop | -1.00 | take | refuse | take |
+| 07-06 07:16 | BUY | decision | 4177.16 | 4163.59 | 4186.51 | target | +0.69 | take | refuse | take |
+| 07-06 08:01 | BUY | wait_order | 4177.16 | 4161.65 | 4186.51 | target | +0.60 | take | refuse | take |
+| 07-06 08:08 | BUY | wait_order | 4177.16 | 4160.49 | 4186.51 | no fill | +0.00 | take | refuse | take |
+| 07-06 13:00 | BUY | plan london A | 4144.62 | 4139.85 | 4150.10 | no fill | +0.00 | take | refuse | take |
+| 07-06 13:00 | SELL | plan london B | 4156.89 | 4171.34 | 4144.62 | target | +0.85 | refuse | refuse | refuse |
+| 07-06 13:25 | BUY | decision | 4152.51 | 4139.77 | 4162.42 | target | +0.78 | take | refuse | take |
+| 07-06 22:00 | BUY | decision | 4138.13 | 4121.44 | 4144.90 | target | +0.41 | take | refuse | refuse |
+| 07-07 07:00 | BUY | plan morning A | 4156.84 | 4150.26 | 4162.60 | target | +0.88 | take | take | refuse |
+| 07-07 07:00 | SELL | plan morning B | 4150.00 | 4170.44 | 4144.00 | target | +0.29 | refuse | refuse | take |
+| 07-07 07:28 | BUY | decision | 4157.36 | 4142.82 | 4165.44 | stop | -1.00 | take | take | refuse |
+| 07-07 19:00 | SELL | plan ny A | 4168.25 | 4174.12 | 4158.02 | stop | -1.00 | refuse | refuse | take |
+| 07-07 19:00 | BUY | plan ny B | 4150.00 | 4124.10 | 4158.02 | no fill | +0.00 | take | take | refuse |
+| 07-07 20:58 | BUY | decision | 4159.24 | 4142.08 | 4168.25 | stop | -1.00 | take | take | take |
+| 07-07 21:44 | BUY | wait_order | 4150.00 | 4117.92 | 4158.02 | stop | -1.00 | take | take | take |
+| 07-07 22:03 | BUY | wait_order | 4150.00 | 4124.10 | 4158.02 | stop | -1.00 | take | take | refuse |
+
+## What each reading would have traded
+
+| reading | trades | R total | R a trade |
+|---|---:|---:|---:|
+| lean_h4 | 10 | -1.65 | -0.165 |
+| trend_h4 | 5 | -3.12 | -0.625 |
+| lean_h1_first | 8 | -1.64 | -0.205 |
+
+Candidates with no fill are excluded from the totals: an order that price never reached costs
+nothing and tells us nothing about the gate.

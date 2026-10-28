@@ -9483,7 +9483,7 @@
               "cooldown_bars": 0,
               "items": [
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "setup_plan1_orb",
                   "params": {
                     "atr_floor": null,
@@ -9493,7 +9493,7 @@
                   }
                 },
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "setup_plan1_b2",
                   "params": {
                     "atr_floor": null,
@@ -9502,7 +9502,7 @@
                   }
                 },
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "setup_plan1_b2m5",
                   "params": {
                     "atr_floor": null,
@@ -9511,7 +9511,7 @@
                   }
                 },
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "setup_plan1_ny",
                   "params": {
                     "atr_floor": null,
@@ -9631,21 +9631,21 @@
               "cooldown_bars": 0,
               "items": [
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "trend_box_down",
                   "params": {
                     "require_edge_side": true
                   }
                 },
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "trend_box_up",
                   "params": {
                     "require_edge_side": true
                   }
                 },
                 {
-                  "enabled": true,
+                  "enabled": false,
                   "name": "range_break",
                   "params": {
                     "require_edge_side": true
@@ -14642,7 +14642,7 @@
         "warmup_bars": 50
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14689,7 +14689,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -14698,7 +14698,7 @@
         "warmup_bars": 3000
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14739,7 +14739,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -14748,7 +14748,7 @@
         "warmup_bars": 10000
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14789,7 +14789,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -14798,7 +14798,7 @@
         "warmup_bars": 10000
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14852,7 +14852,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -14914,7 +14914,7 @@
         "warmup_bars": 50
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14951,7 +14951,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1",
           "M5",
@@ -14962,7 +14962,7 @@
         "warmup_bars": 1200
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -14999,7 +14999,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1",
           "M5",
@@ -15010,7 +15010,7 @@
         "warmup_bars": 1200
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -15044,7 +15044,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1",
           "M5",
@@ -15989,7 +15989,7 @@
         "warmup_bars": 50
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16036,7 +16036,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -16045,7 +16045,7 @@
         "warmup_bars": 3000
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16086,7 +16086,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -16095,7 +16095,7 @@
         "warmup_bars": 10000
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16136,7 +16136,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -16145,7 +16145,7 @@
         "warmup_bars": 10000
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16199,7 +16199,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1"
         ],
@@ -16261,7 +16261,7 @@
         "warmup_bars": 50
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16298,7 +16298,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1",
           "M5",
@@ -16309,7 +16309,7 @@
         "warmup_bars": 1200
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16346,7 +16346,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1",
           "M5",
@@ -16357,7 +16357,7 @@
         "warmup_bars": 1200
       },
       {
-        "configured_enabled": true,
+        "configured_enabled": false,
         "decisions": {
           "ACCEPT": 0,
           "HOLD": 0,
@@ -16391,7 +16391,7 @@
           "win_rate": null,
           "wins": 0
         },
-        "state": "ENABLED",
+        "state": "DISABLED_CONFIG",
         "timeframes": [
           "M1",
           "M5",

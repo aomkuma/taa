@@ -93,7 +93,7 @@ things, so the report has four parts and no padding:
 4. **The day's close:** what the market did, what the system did, what a good hunter would have picked, and
    the one lesson - which goes to the knowledge base as a shadow, never straight to a rule.
 
-`research/2026-10-24-replay/day.py <date>` produces parts 2-4 and the table of every wake. Part 1 is the
+`research/archive/2026-10-24-replay/day.py <date>` produces parts 2-4 and the table of every wake. Part 1 is the
 measurer's own work and is written on top of it.
 
 **During a measurement run the code does not change** (`docs/CODING_STANDARDS.md` section 11): a run whose

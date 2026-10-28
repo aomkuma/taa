@@ -1,6 +1,6 @@
 # Confluence direction — reading the whole chart before choosing a side
 
-Status: **plan, nothing built yet** (owner, 2026-10-11). Ticket: TAA-L812 in `docs/TICKETS_LEARNING.md`.
+Status: **plan, nothing built yet** (owner, 2026-10-11). Ticket: TAA-L812 in `docs/archive/TICKETS_LEARNING.md`.
 Related: `docs/archive/AI_ANALYST_DISCUSSION.md` (Phase 16, the AI analyst), `docs/archive/INVERTED_SETUPS.md`,
 `docs/archive/SETUP_REVIEW.md` §14-§15, `docs/CHART_READ.md` (TAA-L813: the deterministic chart read this path
 builds on). No profitability claims: this is a plan to measure, not a result.
@@ -22,7 +22,7 @@ builds on). No profitability claims: this is a plan to measure, not a result.
 | Evidence detectors (S/R zones and breakouts, chart patterns, Fibonacci, harmonics, SMC, candles, trend, momentum, volatility, sessions) | `app/evidence/` | run on every closed bar; each item has a direction, quality, tier, invalidation and targets |
 | Confluence score (noisy-OR per family, conflicts penalized) | `app/evidence/confluence.py` (TAA-307) | used only as the **setup strength** of a signal a setup already raised, in that setup's direction |
 | H4/D1 market map (trend vs range, demand/supply zones, room to the opposing zone) | `app/indicators/market_map.py` (TAA-L809) | recorded as `ctx:h4_*` / `ctx:d1_*` features; no strategy reads it |
-| Two-world backtests (original and inverted, separate accounts) | `app.cli backtest`, `research/2026-10-11-pre-run/two_worlds.py` | the yardstick for every idea here |
+| Two-world backtests (original and inverted, separate accounts) | `app.cli backtest`, `research/archive/2026-10-11-pre-run/two_worlds.py` | the yardstick for every idea here |
 | AI analyst (theses, shadow, arm) | `docs/archive/AI_ANALYST_DISCUSSION.md`, Phase 16 | designed, not built; AI is veto/advisory only today |
 
 The missing piece is a **direction decided by the whole picture**: today the trigger decides the side, and the
@@ -65,7 +65,7 @@ screens, not on one.
    entry (`state_frame`: WITH / AGAINST / RANGE / TRANSITION relative to the side), grouped into a few phases
    with enough trades: `aligned` (H4 and H1 with), `pullback` (H4 with, M15 against or ranging: the triple
    screen entry), `range_h1_with` (H4 range, H1 with), `range_h1_other`, `against_h4`, `other`.
-   Tool: `research/2026-10-11-pre-run/three_screens.py`, both worlds side by side.
+   Tool: `research/archive/2026-10-11-pre-run/three_screens.py`, both worlds side by side.
 2. **Assign by data, not by label:** a setup gets a phase (and a side: normal or inverted) only where the phase
    holds in both halves and on the hold-out symbols. Textbook expectations, to be confirmed or rejected:
    pullback setups (fib, elliott, trend pullback) in `pullback`; breakouts at a range turning into a trend;

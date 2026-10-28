@@ -184,7 +184,7 @@ A run that produces a number is part of the record, so it is treated like code, 
 - **Never leave an empty file where a report belongs.** An empty file answers the reader's question wrongly.
   On 2026-10-26/27 four replay reports went to `data/replay/ai/*.log` while four 0-byte `.md` files held
   their names in the research folder; a third of the AI trader's whole record was lost until 2026-10-28
-  (`research/2026-10-24-replay/RECORD.md`).
+  (`research/archive/2026-10-24-replay/RECORD.md`).
 - **Say which code version produced it.** Commit the code first, then run, and name the commit in the
   report or the record. Runs that span several processes (one per day) pick up any edit made while they
   run, so `app/` is not edited while such a run is in flight - otherwise the days are not one version.

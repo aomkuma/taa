@@ -7,10 +7,10 @@ are kept for their detail, not as the present picture. This file holds **state o
 | What | Where |
 |---|---|
 | Rules and conventions | `CLAUDE.md`, `docs/CODING_STANDARDS.md` |
-| Design | `docs/PLAN.md`, `docs/PLAN_LEARNING.md` |
-| Progress | `docs/TICKETS.md`, `docs/TICKETS_LEARNING.md` |
-| Setup OWN | `docs/OWN_SETUP.md` (state), `docs/OWN_SETUP_ROUNDS.md` (rounds 1-17) |
-| The research of 2026-10-18 onward | `research/2026-10-18-moments/agents/` (`CHECKLIST.md`, `TEAM.md`, `precursors/notes.md`) |
+| Design | `docs/PLAN.md`, `docs/archive/PLAN_LEARNING.md` |
+| Progress | `docs/TICKETS.md`, `docs/archive/TICKETS_LEARNING.md` |
+| Setup OWN | `docs/archive/OWN_SETUP.md` (state), `docs/archive/OWN_SETUP_ROUNDS.md` (rounds 1-17) |
+| The research of 2026-10-18 onward | `research/archive/2026-10-18-moments/agents/` (`CHECKLIST.md`, `TEAM.md`, `precursors/notes.md`) |
 | The owner's own trades and readings | `docs/OWNER_TRADING.md` |
 | Stopped setups | `docs/archive/` |
 
@@ -28,8 +28,8 @@ Follow CLAUDE.md and the memory rules.
 Read first, in order:
 1. docs/OWNER_GOALS.md
 2. docs/HANDOFF.md - its LAST section is the current state
-3. research/2026-10-26-three-bots/RULES_LOCKED.md - the frozen rules and the standard of evidence
-4. research/2026-10-26-three-bots/WEIGHTS.md and AUDIT_FINDINGS.md - what was measured, and what was not
+3. research/archive/2026-10-26-three-bots/RULES_LOCKED.md - the frozen rules and the standard of evidence
+4. research/archive/2026-10-26-three-bots/WEIGHTS.md and AUDIT_FINDINGS.md - what was measured, and what was not
 5. research/2026-10-23-entry/DECISION_CHECKLIST.md and the market diary, before any trading talk
 
 BEFORE THE DAY TRADES: write the day's plan. It is a gate now, not a note - `data/plans/<date>.md`, and
@@ -42,7 +42,7 @@ reading from the readers (`routine_read.py`, `rhythm_scan.py`, `picture_read.py`
 Your role: research, measure, and coordinate the developer sessions. You write their briefs, then you
 check what they deliver - re-run their tests, plant your own bugs, re-derive from the raw data. The
 Codex CLI is the developer session (`codex exec -m gpt-6-luna -s workspace-write`; its full path is in
-research/2026-10-24-replay/day.py) and has its own quota, while Claude subagents share this session's.
+research/archive/2026-10-24-replay/day.py) and has its own quota, while Claude subagents share this session's.
 A brief that says "read-only" must not also say "prove each test bites by breaking a line": that
 contradiction wasted three review rounds on 2026-10-27.
 
@@ -84,7 +84,7 @@ change to risk. Committing per step by explicit paths is fine without asking.
 
 ## Current state (2026-10-20 12:40 Thai)
 
-### Setup OWN research: the team (`research/2026-10-18-moments/agents/TEAM.md`)
+### Setup OWN research: the team (`research/archive/2026-10-18-moments/agents/TEAM.md`)
 
 The main session is the researcher / measurer / coordinator. Four background agents each write only in their own
 folder, and everything is relayed through the main session.
@@ -178,13 +178,13 @@ break-and-retest, D2, and others.
    - `demo-track` once DEMO runs again;
    - **owner, before LIVE:** the DEMO soak, the drills (TAA-1403), the go-live checklist and the explicit go-ahead.
 
-### Background (kept short; details in `docs/OWN_SETUP_ROUNDS.md` and `docs/archive/`)
+### Background (kept short; details in `docs/archive/OWN_SETUP_ROUNDS.md` and `docs/archive/`)
 
 - **Every setup before Setup OWN stopped** on 2026-10-17 (V1, F1, S1, TS; `enabled: false`, parameters kept).
 - **The unmerged worktree branches** under `.claude/worktrees/`, both green on their branch; the owner decides:
   - `s1-cost-floor`;
   - `setup-groups`.
-- **Weapon 4, RUN-A and the AI chart reader:** research only, stopped (see `docs/OWN_SETUP_ROUNDS.md`).
+- **Weapon 4, RUN-A and the AI chart reader:** research only, stopped (see `docs/archive/OWN_SETUP_ROUNDS.md`).
 
 ## Local environment
 
@@ -204,7 +204,7 @@ break-and-retest, D2, and others.
 - **History:** `data/history/FBS-Demo/<symbol>/{M1,M5,M15,M30,H1,H4,D1}.parquet`: M5/M15/H1 2025-10 .. 2026-10
   for 29 symbols (28 FX pairs + gold); H4/D1 from 2024-04; gold M1 the whole year, FX M1 only from 2026-07-08.
 - **Research:** configs `data/research/config_*.yaml` (not in git); backtest outputs `data/backtests/inv/`;
-  scripts `research/2026-10-11-pre-run/`, `research/2026-10-14-chart-read/`, `research/2026-10-15-day-trade/`.
+  scripts `research/archive/2026-10-11-pre-run/`, `research/archive/2026-10-14-chart-read/`, `research/archive/2026-10-15-day-trade/`.
 - **PostgreSQL 16** (service `postgresql-x64-16`, shared with other projects): role `taa`, database
   `taa_test`, URL `TAA_POSTGRES_URL` in `.env`. Never touch other projects' databases; never clean up
   databases by `LIKE` pattern (`_` is a wildcard).
@@ -332,7 +332,7 @@ State only; the reasoning is in the memory rules and `app/strategy/kb.yaml`.
 - **The answerer is now the Codex CLI with `gpt-6-luna`** (owner, 2026-10-26), for the replays and for the
   engine: `AI_PROVIDER=codex`, `AI_MODEL=gpt-6-luna`, `AI_MODE=advisory`, no API key. The Claude CLI path is
   still there (`ClaudeCLIProvider`); `--ai-cli` picks by the executable's name.
-- **The replay journal of 06-09 Jul 2026** is in `research/2026-10-24-replay/` (`ledger.csv`, `day_*.md`,
+- **The replay journal of 06-09 Jul 2026** is in `research/archive/2026-10-24-replay/` (`ledger.csv`, `day_*.md`,
   `ISSUES.md` 1-38). Accounts 300 and 100 USD. Days 1-3: +0.21 R, -2.43 R, -1.82 R; the 300 account 300 ->
   247.64. Day 4 was stopped part-way. The side was right on nearly every trade; the losses came from entering
   into a push still running toward the stop, which is now a code gate (`run_share` 1.2 over 60 minutes).
@@ -344,7 +344,7 @@ State only; the reasoning is in the memory rules and `app/strategy/kb.yaml`.
 
 ### The three bots (research, 2026-10-26/27)
 
-`research/2026-10-26-three-bots/` - the owner's design: three bots, one account, each trading its own setup at
+`research/archive/2026-10-26-three-bots/` - the owner's design: three bots, one account, each trading its own setup at
 the same time; at most two can be in the market, since the two trend bots are each other's opposite.
 
 | bot | what it trades | 12 months to 2026-10-23 |
@@ -459,7 +459,7 @@ failures visible, then by measuring what it actually does on one code version.
 | the four causes | ISSUES 37-40, three of them inputs the AI was never given |
 | code changes pending | none applied yet - the owner asked for the record first |
 
-**Read in this order:** `research/2026-10-24-replay/README.md` (the single door to the replays),
+**Read in this order:** `research/archive/2026-10-24-replay/README.md` (the single door to the replays),
 `RECORD.md` (every day ever traded, with its code version), `rerun_2026-10-28/JOURNAL.md` (day 1 in full,
 with the measurer's own reading), `ISSUES.md` rows 37-40.
 
@@ -485,7 +485,7 @@ with the measurer's own reading), `ISSUES.md` rows 37-40.
 - `586b54d` - `docs/TRADING_FLOW.md` (the whole day end to end, agreed with the owner from the diagram) and
   the four required parts of a day report in `docs/TRADER_ROUTINE.md`.
 - `CODING_STANDARDS.md` section 11, `DECISION_CHECKLIST` D6-D8, the replay commands in `CLAUDE.md`, and
-  `research/2026-10-24-replay/README.md` as the one entry point.
+  `research/archive/2026-10-24-replay/README.md` as the one entry point.
 
 ### The next step, in order
 
@@ -521,6 +521,6 @@ its day P/L stood between 0 % and -5.39 % against a 10 % limit, and the backtest
 records (`Database("sqlite://")`), so no file says which signal failed which check. That cost one wrong
 conclusion already on 2026-10-28.
 
-Read first: `research/2026-10-24-replay/README.md`, then `RECORD.md`, then
+Read first: `research/archive/2026-10-24-replay/README.md`, then `RECORD.md`, then
 `rerun_2026-10-28/JOURNAL.md`, then `ISSUES.md` rows 37-43.
 

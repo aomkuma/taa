@@ -353,14 +353,14 @@ class TestCatalog:
         )
         assert (s1.timeframes.entry, s1.symbols) == (Timeframe.M1, ["XAUUSD"])
         assert [(i.name, i.enabled) for i in s1.strategies.items] == [("setup_breakout_scalp", False)]
-        # owner, 2026-10-21: lane plan1 is the only enabled lane for the DEMO (F1 and S2 off)
+        # owner, 2026-10-28: every setup stopped and archived, so no lane ships a strategy switched on
         assert [(i.name, i.enabled) for i in own.strategies.items] == [("setup_own_conf72", False)]
         assert [(i.name, i.enabled) for i in news.strategies.items] == [("setup_own_s2", False)]
         assert [(i.name, i.enabled) for i in plan1.strategies.items] == [
-            ("setup_plan1_orb", True),
-            ("setup_plan1_b2", True),
-            ("setup_plan1_b2m5", True),
-            ("setup_plan1_ny", True),
+            ("setup_plan1_orb", False),
+            ("setup_plan1_b2", False),
+            ("setup_plan1_b2m5", False),
+            ("setup_plan1_ny", False),
         ]
         orb, b2 = plan1.strategies.items[0].params, plan1.strategies.items[1].params
         assert (
@@ -374,12 +374,11 @@ class TestCatalog:
         three_bots = lanes["three_bots"]
         assert three_bots.timeframes.enabled == [Timeframe.H1, Timeframe.M5, Timeframe.M1]
         assert three_bots.timeframes.context == [] and three_bots.timeframes.warmup_bars == 1200
-        # live on the DEMO account since 2026-10-27 (the owner: "go to DEMO, on the real trade account,
-        # so we know whether it works"); they stay off in PAPER only by not running the lane
+        # stopped with everything else on 2026-10-28; the lane and its parameters stay, switched off
         assert [(item.name, item.enabled) for item in three_bots.strategies.items] == [
-            ("trend_box_down", True),
-            ("trend_box_up", True),
-            ("range_break", True),
+            ("trend_box_down", False),
+            ("trend_box_up", False),
+            ("range_break", False),
         ]
 
     def test_each_setup_can_be_enabled_alone(self) -> None:

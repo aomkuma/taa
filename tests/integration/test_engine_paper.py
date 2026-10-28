@@ -3,14 +3,16 @@
 from __future__ import annotations
 
 import dataclasses
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
 from sqlalchemy import select
 
 from app.broker.factory import build_read_only
-from app.config import Settings, load_settings
+from app.config import AppConfig, Settings, load_settings
 from app.core.clock import ManualClock
 from app.core.enums import Action, Timeframe, TradingMode
 from app.core.errors import SafetyViolation
@@ -54,7 +56,33 @@ class BuyEveryBar(BaseStrategy):
         )
 
 
-def settings(tmp_path: Path, **config: object) -> Settings:
+def with_enabled(cfg: AppConfig, names: Sequence[str]) -> AppConfig:
+    """``cfg`` with those strategies switched on, in the main lane and in every extra lane.
+
+    Since 2026-10-28 the shipped ``config.yaml`` has **every** strategy disabled (the owner stopped and
+    archived all of them), so a test that needs one running says which one rather than relying on what the
+    file happens to ship.
+    """
+    wanted = set(names)
+
+    def on(items: Sequence[Any]) -> list[Any]:
+        return [i.model_copy(update={"enabled": True}) if i.name in wanted else i for i in items]
+
+    lanes = [
+        lane.model_copy(
+            update={"strategies": lane.strategies.model_copy(update={"items": on(lane.strategies.items)})}
+        )
+        for lane in cfg.lanes
+    ]
+    return cfg.model_copy(
+        update={
+            "strategies": cfg.strategies.model_copy(update={"items": on(cfg.strategies.items)}),
+            "lanes": lanes,
+        }
+    )
+
+
+def settings(tmp_path: Path, *, enable: Sequence[str] = (), **config: object) -> Settings:
     env = {
         "TRADING_MODE": "PAPER",
         "MT5_LOGIN": "12345678",
@@ -80,6 +108,8 @@ def settings(tmp_path: Path, **config: object) -> Settings:
             **config,
         }
     )
+    if enable:
+        cfg = with_enabled(cfg, enable)
     return dataclasses.replace(s, config=cfg)
 
 

@@ -1966,7 +1966,7 @@ Whether a theory actually helps is **measured** on shadow/replay outcomes (R29),
      for M/W, H&S and boundary breaks, so those setups could never pass min RR. Their default stop is therefore
      the **nearer** of the pattern's invalidation and 1.5 ATR (`stop_mode: nearer`); `stop_mode: invalidation`
      restores the table's rule. The Donchian/session breakouts default to the nearer stop too (the Donchian
-     invalidation is the channel middle). Details: `docs/STRATEGIES.md`.
+     invalidation is the channel middle). Details: `docs/archive/STRATEGIES.md`.
 - **Setup strength = confluence score (deterministic, `confluence.py`):**
   - Within a family, supporting evidence combines with **diminishing returns** (noisy-OR: `1 − Π(1 − w·q)`), so five
     oscillators don't count five times.
@@ -2750,7 +2750,7 @@ Phase 16 in docs/TICKETS.md.
 edge" and "it must be the same principle as what we do - testing one way and using another, what use is that?". The
 research built an AI trader that night (research/2026-10-23-entry: the knowledge base, the behaviour readers, the
 watcher that wakes the AI, the AI's decision, the code's brakes); the engine's AI (§A35, R21) can only veto a code
-signal. Rule-by-rule setups had failed their exams (research/2026-10-18-moments/agents/CHECKLIST.md rows 1-65).
+signal. Rule-by-rule setups had failed their exams (research/archive/2026-10-18-moments/agents/CHECKLIST.md rows 1-65).
 
 **Decision (owner, 2026-10-23), superseding §A35's "the AI only proposes":** the AI **chooses** the trade (or to
 wait) from the same readings, knowledge base and journal the research uses; the engine runs **the very modules the
@@ -2861,7 +2861,7 @@ aggressive --risk 7.5` (local CLI only; cloud jobs keep the standard ceiling).
 
 ## A37. Setup OWN in the engine: a strategy's own exits and quote-driven entries (2026-10-18)
 
-The owner's Setup OWN (`docs/OWN_SETUP.md`) brought three engine needs; each stays behind the normal risk path:
+The owner's Setup OWN (`docs/archive/OWN_SETUP.md`) brought three engine needs; each stays behind the normal risk path:
 
 - **A strategy's own position management.** `BaseStrategy.manage_position(ctx, OpenPosition) -> PositionAdvice`
   (default none) runs on every closed bar of the strategy's lane, next to the configured rules: the backtester

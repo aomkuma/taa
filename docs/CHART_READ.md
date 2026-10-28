@@ -2,8 +2,8 @@
 
 Status: **CR-1 done (2026-10-14): `app/indicators/chart_read.py`, `context_map.chart_read`; the port matches
 the terminal's ZigZag on 15 of 15 exports** (§4.8). CR-2 in work; the rest is a plan (owner, 2026-10-14). Ticket: TAA-L813 in
-`docs/TICKETS_LEARNING.md`. Related: `docs/archive/CONFLUENCE_DIRECTION.md` (TAA-L812, which this read feeds),
-`docs/STRATEGIES.md` ("A signal alone is not enough"), `docs/PLAN_LEARNING.md` §L20.9 (the market map),
+`docs/archive/TICKETS_LEARNING.md`. Related: `docs/archive/CONFLUENCE_DIRECTION.md` (TAA-L812, which this read feeds),
+`docs/archive/STRATEGIES.md` ("A signal alone is not enough"), `docs/archive/PLAN_LEARNING.md` §L20.9 (the market map),
 `docs/archive/SETUP_REVIEW.md` §15-§16. No profitability claims: this is a plan to measure, not a result.
 
 ## 1. The owner's question (2026-10-14, in Thai, summarized)
@@ -30,7 +30,7 @@ The reading took five steps, and each one is something the code can do determini
 
 ## 2. What the bot sees today (measured, 2026-10-14)
 
-Scripts: `research/2026-10-14-chart-read/structure_read.py`, `structure_trades.py` (one year of FBS-Demo history,
+Scripts: `research/archive/2026-10-14-chart-read/structure_read.py`, `structure_trades.py` (one year of FBS-Demo history,
 2025-10 .. 2026-09; the trades are the backtests that made harmonic V1 and breakout F1 pass, SETUP_REVIEW §15-§16).
 
 Three ways to read the trend:
@@ -75,7 +75,7 @@ The proven setups' trades, split by the H1 major-swing structure at entry (relat
 With the 3 × ATR swings, the mixed phase looked like the place where both setups earn nothing, and harmonic
 with the H1 swing structure looked strongest. **The owner then chose the MT5 standard ZigZag (Depth 12,
 Deviation 5, Backstep 3) as the swing definition** (2026-10-14), and the same measurements with it
-(`research/2026-10-14-chart-read/mt5_zigzag.py`) give:
+(`research/archive/2026-10-14-chart-read/mt5_zigzag.py`) give:
 
 | Read (MT5 ZigZag 12/5/3, mean of the 4 symbols) | Bars per pivot | Trend | Contracting | Broadening | Label changes / 1,000 bars | Next 24 bars go its way |
 |---|---|---|---|---|---|---|
@@ -139,7 +139,7 @@ One `ChartRead` per timeframe at one instant (the last closed bar), attached to 
 
 - **Pivots: the MT5 standard ZigZag** (Depth 12, Deviation 5 points, Backstep 3; owner, 2026-10-14), so the
   bot's swings are the ones the owner sees on the MT5 chart. It is ported from MetaQuotes' `ZigZag.mq5`
-  (research version: `research/2026-10-14-chart-read/mt5_zigzag.py`) in two passes:
+  (research version: `research/archive/2026-10-14-chart-read/mt5_zigzag.py`) in two passes:
   1. **Maps:** the lowest low / highest high of the last `depth` bars is a candidate, and a new candidate
      erases weaker ones of the last `backstep` bars.
   2. **Cutting:** the candidates are made to alternate high/low; a lower low replaces the pending low while the
@@ -186,7 +186,7 @@ One `ChartRead` per timeframe at one instant (the last closed bar), attached to 
   `invalidation_now` count it. It can still move, so rules use the confirmed read first; the PWA draws it
   dashed with "?". `ChartReadParams.for_display()` is what the chart draws; rules keep the defaults until a
   backtest passes the change. Eye check against a blind sub-agent on the 20 charts
-  (`research/2026-10-14-chart-read/eye_check_score.py`, 2026-10-15): trend 6/20 → 11/20, both levels within
+  (`research/archive/2026-10-14-chart-read/eye_check_score.py`, 2026-10-15): trend 6/20 → 11/20, both levels within
   0.5 ATR 1/20 → 5/20.
 - **Breaks in the read now** (`prov_on_break`, `now_by_break`; the PWA chart, owner's CR-4 by proxy,
   2026-10-15): the open leg beyond the last swing of its kind is a provisional pivot at once (a new high in
@@ -410,7 +410,7 @@ missing read holds (condition `chart_read`). Two choices made while building:
   invalidation (pink dotted), and a panel states the structure, the invalidation, the depth in the last leg,
   the events and the two scenarios (TH/EN keys `charts.read.*`; no probability wording). `end=` (any ISO time)
   shows the chart and the read as they were then, without live refresh.
-- The 20 charts: `research/2026-10-14-chart-read/EYE_CHECK.md`, drawn by `eye_check_sample.py` (seed 20261014;
+- The 20 charts: `research/archive/2026-10-14-chart-read/EYE_CHECK.md`, drawn by `eye_check_sample.py` (seed 20261014;
   every symbol, M15/H1/H4, about three per group: UP, DOWN, CONTRACTING, BROADENING, a flipped level within
   1 ATR, SWEEP_RECLAIM, BREAK_HOLD), each with a link that opens the chart at that bar. Before the check the
   PWA needs the new build and a web restart, and the cloud needs the year's bars of the 8 symbols on M15/H1/H4

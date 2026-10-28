@@ -2055,15 +2055,15 @@ first, images later. Needs `AI_PROVIDER`/`AI_API_KEY` (costs money; owner's budg
 
 ### Phase 17 — Setup OWN lanes (PLAN-1)
 
-The research's daily plan in the bot, piece by piece, each journal rule a parameter of the lane (docs/PLAN1_LANE.md;
-research/2026-10-18-moments/agents/journal/PLAN1_JOURNAL.md). PAPER only; both items `enabled: false` until the owner says.
+The research's daily plan in the bot, piece by piece, each journal rule a parameter of the lane (docs/archive/PLAN1_LANE.md;
+research/archive/2026-10-18-moments/agents/journal/PLAN1_JOURNAL.md). PAPER only; both items `enabled: false` until the owner says.
 
 #### TAA-OWN-P1 — PLAN-1 lane `plan1` (PAPER)
 
 - **Status:** IN PROGRESS
 - **Depends on:** —
 
-- [x] design note docs/PLAN1_LANE.md (pieces, rules as parameters, the journal record, B2 porting needs)
+- [x] design note docs/archive/PLAN1_LANE.md (pieces, rules as parameters, the journal record, B2 porting needs)
 - [x] London ORB on closed M1 bars (`setup_plan1_orb`) with the journal record; target 1.5 R; `atr_floor` off
 - [x] week-10 rule: in a contracting H4 ATR (< +0.5 % over 24 h) the ORB needs a pool break (parameter, default on)
 - [x] NY 08:30 straddle every weekday on S2's quote machinery (`setup_plan1_ny`), USD triggers, out at 08:30 + 30 min
@@ -2179,7 +2179,7 @@ The owner (2026-10-25): "when the system runs for real I must see the plan of ea
 - [x] RR schema permits the requested lane value while the global cage remains 1.0 and `three_bots` uses 0.8
 - [x] `WEB_REQUIRE_TOTP` can be off in development and is refused in production; auth tests cover both
 - [x] `SYNC_ENABLED` provides the machine-only environment override
-- [x] Ruff and Bandit reported green in `research/2026-10-26-three-bots/AUDIT_FINDINGS.md`
+- [x] Ruff and Bandit reported green in `research/archive/2026-10-26-three-bots/AUDIT_FINDINGS.md`
 - [ ] full pytest green (audit could not start the suite)
 - [ ] mypy green (audit reports an internal error before completion)
 

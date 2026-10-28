@@ -17,6 +17,12 @@ Read before larger work:
 - `docs/TRADING_FLOW.md`: the trading day end to end - data, the engine's cycle, the gate ladder, the journal
   after each trade - and the six practical consequences, two of which are open faults.
 - `docs/TRADER_ROUTINE.md`: the trader's routine, and the four parts of a replay / live **day report**.
+- `docs/FOUNDATION.md`: **start here.** On 2026-10-28 the owner cleared everything - every setup, all the
+  research, the knowledge base's conclusions and the working method - and kept the raw data and the
+  indicators, waiting to be put together again. This file is the inventory of what survived and what is
+  switched off.
+- `docs/archive/README.md`: what the cleared work established, and what it cost. A record, **not a starting
+  point** - read it so the same ground is not covered twice.
 
 ## Commands (Windows, run from the repo root; always use the venv)
 
@@ -35,17 +41,17 @@ Read before larger work:
 .venv\Scripts\python -m app.cli backtest --server FBS-Demo --symbols EURUSD --start 2026-01-01 --end 2026-09-30   # needs data/history
 .venv\Scripts\python -m app.cli backtest --lane own --server FBS-Demo --symbols XAUUSD --start 2026-04-18 --end 2026-10-17   # one lane (config lanes)
 .venv\Scripts\python -m app.cli backtest --portfolio --server FBS-Demo --start 2026-04-18 --end 2026-10-17   # every lane, one account (TAA-507)
-.venv\Scripts\python -m pytest research/2026-10-18-moments/agents/precursors -q   # the research's own tests (foundation, LV3, evidence)
-.venv\Scripts\python research/2026-10-18-moments/agents/precursors/wf.py [3y]   # LV3 walk-forward: latest 12 months (3y: three years)
-.venv\Scripts\python research/2026-10-24-replay/rollback.py 2026-07-06   # AI-trader replay: undo that day and later first
-.venv\Scripts\python research/2026-10-24-replay/day.py 2026-07-06 > research\2026-10-24-replay\<folder>\day_2026-07-06.md
+.venv\Scripts\python -m pytest research/archive/2026-10-18-moments/agents/precursors -q   # the research's own tests (foundation, LV3, evidence)
+.venv\Scripts\python research/archive/2026-10-18-moments/agents/precursors/wf.py [3y]   # LV3 walk-forward: latest 12 months (3y: three years)
+.venv\Scripts\python research/archive/2026-10-24-replay/rollback.py 2026-07-06   # AI-trader replay: undo that day and later first
+.venv\Scripts\python research/archive/2026-10-24-replay/day.py 2026-07-06 > research\archive\2026-10-24-replay\<folder>\day.md
                                             # one Thai day through the engine's own AI path; add --report to re-report only.
                                             # Days must run in order (state and balance carry over). The report goes to a
                                             # file in the research folder in the SAME change, under the name a reader looks
                                             # for: on 10-26/27 four runs went to data/replay/ai/*.log (data/ is gitignored)
                                             # while four 0-byte .md files held their names - a third of the record was lost
-                                            # until 10-28 (research/2026-10-24-replay/RECORD.md).
-.venv\Scripts\python research/2026-10-24-replay/plant_bugs_swallowed.py   # planted bugs: every one must make a test fail
+                                            # until 10-28 (research/archive/2026-10-24-replay/RECORD.md).
+.venv\Scripts\python research/archive/2026-10-24-replay/plant_bugs_swallowed.py   # planted bugs: every one must make a test fail
 .venv\Scripts\python -m app.main --mode paper [--fake]   # PAPER engine; health: http://127.0.0.1:8765/health
 .venv\Scripts\python -m app.main --mode demo   # DEMO broker orders (ENABLE_DEMO_TRADING); see docs/RUNBOOK_DEMO.md
 .venv\Scripts\python -m app.cli breaker list | breaker reset NAME --reason "..." | demo-report --days 14 | demo-track --proven-only
@@ -134,13 +140,17 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
 - No Docker locally. `deploy/railway/*.Dockerfile` and `.railway/railway.ts` exist only for Railway builds.
 - **The owner's goals and principles (2026-10-17) come first:** `docs/OWNER_GOALS.md` (consistent profit, a trade
   every day, enter when price is about to run, quick profit; no single rule decides direction; everything
-  relative; live in the present). Current focus: Setup OWN (`docs/OWN_SETUP.md`); every earlier setup is stopped.
+  relative; live in the present). Current focus: Setup OWN (`docs/archive/OWN_SETUP.md`). **Stopped and archived on 2026-10-28 by the owner: every setup, every
+  research folder, and every strategy in `config.yaml`. Read `docs/archive/README.md` before restarting any of
+  it - it carries what the work established, including that the losses were the trades' geometry and not their
+  direction.**
   **The exam is the latest six months counted from today** (owner, 2026-10-18; on 2026-10-18: 2026-04-18 .. the
   data end): design and fit only on data before it, then run each frozen rule once on it. **Learning runs use the
   latest 12 months first** (2025-10-18 .., "to see results quickly"; the three-year history only once a setup
   works there), walk-forward month by month; results are reported **week by week** (Thai weeks). Setups are
   revised every 3-6 months.
-- **The observer's habits - start of every session and every look at price (owner, 2026-10-23: "always remember,
+- **Archived 2026-10-28 (kept for the record; the task is Disabled and the folder is under
+  `research/archive/`).** The observer's habits - start of every session and every look at price (owner, 2026-10-23: "always remember,
   always observe"):** before any trading talk, read `research/2026-10-23-entry/DECISION_CHECKLIST.md`, the market
   diary (`research/2026-10-23-entry/diary/`: the latest day, `TO_STUDY.md`, the scorecard) and the latest journal /
   replay, and `knowledge/kb.py now` (the knowledge base, `knowledge/kb.yaml`: what applies at this moment). Never
@@ -150,7 +160,7 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
 - **Code correctness before results (owner, 2026-10-18):** every building block of a setup has hand-worked unit
   tests, planted bugs the tests must catch, and an independent re-derivation; no learning run before the code is
   proven (short runs to test the code are fine). Research indicators are MetaTrader 5's own formulas
-  (`research/2026-10-18-moments/agents/precursors/foundation.py`).
+  (`research/archive/2026-10-18-moments/agents/precursors/foundation.py`).
 - **Be an observer - no coin flip in the system (owner, 2026-10-19):** "this game is 50/50 if you look carelessly".
   The coin / random side / "no better than chance" is removed from the system: no random-side baselines, no
   "50-50" verdicts, no synonym for it. A result near 50 % means observe closer - split it by what was there
@@ -166,7 +176,7 @@ npm run lint; npm run typecheck; npm run test; npm run build   # all four green 
   its surest signals (stricter conditions), and the other setups carry the portfolio.
   **A signal alone is not enough (owner, 2026-10-14):** every setup is judged with the trend (H4/H1 screens),
   support/resistance (demand/supply zones, range box) and market structure (HH/HL vs LH/LL) around it; how each
-  is used is measured per setup (docs/STRATEGIES.md, "A signal alone is not enough").
+  is used is measured per setup (docs/archive/STRATEGIES.md, "A signal alone is not enough").
 - No profitability claims in any UI text either (`frontend/src/i18n/catalogs.test.ts` checks the catalogs).
 - Ask before git commits, pushes, Railway deploys, or anything touching the user's accounts.
 - LIVE (real money) is off by default. Its path exists since TAA-1401 and needs `TRADING_MODE=LIVE`,
