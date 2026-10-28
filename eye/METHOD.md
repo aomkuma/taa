@@ -153,13 +153,35 @@ What is decided, in the owner's words, and nothing more:
 | **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
 | **Entry timeframe** | **M5 to M15** |
-| **The stop** | **above the High** (for a sell; below the Low for a buy) - which High is open: the bounce's high or the top of the move |
-| **The target** | **just before the level on the left** - for a sell, above the support the left of the chart built (the owner's example: above 4030) |
+| **The stop** | **beyond the High** (sell) / **Low** (buy) - see the principle below |
+| **The target** | **just before the opposite level on the left** - see the principle below |
 
 Read together, in order: H1 says which side has the edge; price comes into a level on that side; ZigZag
 counts 3 to 5 peaks into it with divergence on MACD, RSI and price; the structure breaks; the entry is the
 retest of the line it broke, on M5 to M15. (This sentence only strings the owner's answers together; it
 adds nothing.)
+
+### The principle, generalised from the owner's example
+
+The owner, 2026-10-28: *"this is an example - you have to summarise it into a principle, not turn the
+example into a fixed rule."* So no number from the example is a rule; the example below only shows what
+the words mean. Written for a sell; a buy is the mirror of every line.
+
+1. **Context** - the H1 trend gives the sell side the edge, and price has come up into a **resistance**
+   the left of the chart built.
+2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level, with **divergence** on MACD, RSI or
+   price.
+3. **The structure breaks** - price takes out the **last swing low**: the up leg is over.
+4. **The retest** - a **weak bounce** that makes a **lower high** under the top.
+5. **The entry** - sell when price **breaks the low the bounce started from**: the new lower low.
+6. **The stop** - beyond **the high whose break would cancel the lower-high / lower-low structure**: the
+   bounce's high (the lower high), not the top of the whole move. *Claude's reading of "above the High",
+   from the logic of the setup - to be confirmed by the owner.*
+7. **The target** - **just before** the opposite level from the left: for a sell, a little above the next
+   support, never on the line.
+
+Not yet given: how long a trade is held (the example's target came after 4 h 25 min, past the 4-hour
+resolve window of section 4).
 
 **The owner's own example, 2026-10-28** (on the FBS-Demo M15 chart, server time): *"suppose that around
 03:15 it bounced lightly and then made an LL - sell; SL above the High; TP above the resistance on the left
