@@ -126,6 +126,64 @@ being run:
 
 `walk.py` takes either a sampled moment's id or a real datetime: `walk.py "2026-04-01 07:00" 12`.
 
+## 2d The picture decides first (owner, 2026-10-28, from real day 3 on)
+
+The owner, looking at every chart in `eye/` the evening of 2026-10-28: *"from all the pictures, the price
+structure was not one to enter at all. How do we fix it?"* Read again, all twelve decisions: the two
+clean trend pullbacks into a level paid or would have (#3, D1-1); seven of the eight losers were taken in
+one of four pictures - in the middle of a leg still falling or rising without a pause, in the middle of a
+chop, against a break that had just happened, or on a news bar - and the eighth (#23) was the nearest to
+acceptable and still not a trend. **Against it:** #11 and #17 were not trend pictures either, never filled,
+and would have won on sight (`RULES_REVIEW.md` section 4). That reading was made **after** the results
+were known, by the reader who took the trades, on twelve trades - it is the hypothesis, not the evidence. This section is written before
+day 3 so that the days after it can judge it, and **it is not edited once day 3 starts**; a change is a
+new section with its date.
+
+Until now the order was "price is near a level, so find a reason to trade it". It is reversed: **the
+picture decides whether there is a trade at all; the level only decides where.**
+
+**Step 1 - label the picture at every look, before advancing,** in `looks.csv` (one row per look: the
+time `walk.py` printed, the price, the label, the nearest level band and its distance, the decision). The
+labels, read on the M5 frame with H1 for context:
+
+A **swing** is a turn on M5 after which price retraced **at least a third of the leg that led into it**.
+Smaller wiggles are not swings. Scale-free on purpose: the same words work at 7 and at 57 USD of risk.
+
+| label | the picture | allowed |
+|---|---|---|
+| **TREND** | the last two swing highs AND the last two swing lows both higher (up) or both lower (down), and no close beyond the last swing low (up) / high (down) since | the one entry, step 2 |
+| **VERTICAL** | the live leg is longer than the leg before it and has not yet printed a one-third retrace | no trade - wait for the pause |
+| **CHOP** | neither TREND condition holds: highs and lows do not agree | no trade |
+| **FRESH BREAK** | price closed through a level from the left within the last 12 bars and has not come back to it | no trade against it; wait for the retest, which may become step 2 |
+| **NEWS** | 19:15-20:45 Thai on the first Friday of the month (the US jobs report, 19:30 or 20:30 by daylight saving), or within 15 minutes after an M5 bar whose range is more than three times the average of the 12 before it | no trade, and no order resting through it |
+
+When two fit, the more restrictive one wins (NEWS, then VERTICAL, then FRESH BREAK, then CHOP).
+
+**Step 2 - the one entry: a pullback in a trend, into a level, with the higher low printed.**
+
+- The picture is TREND, and the trade goes **with** it.
+- Price pulls back into a band from the left - a level earlier days built, or the band of the swing it
+  last broke.
+- At that band M5 prints the turn: a low (in an up trend) followed by **two closed bars that do not
+  undercut it, the second closing above the high of the low bar** (mirror for a down trend).
+- Entry at the market on that close, provided it is within rule 7's 4 USD of the turn's extreme;
+  otherwise no trade.
+- Stop beyond the band and beyond the turn's extreme, whichever is further (`LESSONS.md` 5).
+- Target before the last swing high (up) / low (down) - a few dollars short of the line, not on it.
+- If the target is less than 1 R away, no trade.
+
+Nothing else is an entry. Of the four patterns rule 5 names, the sweep that closed back qualifies only
+when it happens as this pullback inside a TREND; a reversal from a falling market is not taken until the
+picture has become an up TREND.
+
+**Step 3 - be there when it happens.** Advance 12 bars at a time while price is more than one band width
+from the nearest level, and **3 bars at a time inside that distance** (`RULES_REVIEW.md` C9: the catch
+window at 01/04 New York was about 20 minutes, a third of a 12-bar step).
+
+**What would decide it.** After about thirty windows: how often TREND occurs at all, what the step-2 trades
+pay, and what each refused picture would have paid had it been taken - the last written as a priced
+candidate at the look, before advancing, so that `shut` stops being a word without a number (Codex X1).
+
 ## 3 What a decision is
 
 For each panel, before anything after the cut-off is drawn, I write:
@@ -174,6 +232,8 @@ reads: rules 1, 2, 6, 8 and 9 held, rules 3, 4, 5 and 7 did not. `ledger_control
 shape and holds
 the trades taken before the nine rules existed; the two are never mixed in a figure.
 
+`looks.csv` - one row per look inside a window, written before advancing (section 2d): the picture's label, the nearest band, the step, the decision, and for a refused picture the trade it would have been, priced. From real day 3 on.
+
 `sessions.csv` - one row per window walked, trade or no trade (section 2c). The denominator for everything
 in the ledger.
 
@@ -213,7 +273,7 @@ ones a trade actually turns on.
 | 4 | **Three or four legs complete, then trade the fifth - with it, never against it.** Ask each time which leg is alive and whether this trade goes its way |
 | 5 | **The structure AT the level says whether it holds.** Buying a support needs **HH and HL together**; selling a resistance needs **LH and LL together**; and a named chart pattern on top |
 | 6 | **Enter on a timeframe, exit on that timeframe** |
-| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.124, with all three unfilled plans winning and the misses 2.57, 3.85 and 3.82 USD |
+| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.217 (corrected 10-28 from -0.124, `RULES_REVIEW.md` C1), with all three unfilled plans winning and the misses 3.37, 3.85 and 3.82 USD - and on the nine filled trades, on sight was worse |
 | 8 | **The order must fill while the idea is still intact.** Not a question to anyone - a check on where the order sits against price. A sell limit above price in a rising market fills only because price kept rising, which is the idea failing (moment #13: filled 5370, stopped five minutes later). A buy limit below price in a rising market fills on the pullback, which is what was wanted |
 | 9 | **The stop sits beyond the structure that proves the idea wrong; the target is a full leg away** - the next level from the left |
 

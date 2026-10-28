@@ -165,6 +165,11 @@ true.
 and price ran through the target to 4788 at 22:40. Scored at the price on the screen instead, the same idea
 pays **+1.08 R**. This is the trade that produced the 4 USD rule (`LESSONS.md` section 4).
 
+> **Corrected 2026-10-28 (`RULES_REVIEW.md` C1).** 4709.57 was the low of the 14:55 bar - the bar already
+> on the screen when the decision was made. From the first unseen bar the lowest price was 4710.37, so the
+> plan was missed by **3.37 USD**, and on sight with the same 4-hour clock as a planned trade it pays
+> **+1.57 R** (closed at 4 hours, before the target).
+
 ### New York, 19:30 - 23:00 Thai - `open-missed`, observation only, no decision
 
 **Declared before the chart was opened:** scoring the London trade had already shown me that price reached

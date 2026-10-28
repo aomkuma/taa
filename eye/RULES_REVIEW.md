@@ -25,3 +25,73 @@ on stdin - the fix for `TRIED.md` row 14) on the live files.
 find the horizon asymmetry (C3), may or may not catch the day-roll bug (C1) since it needs the moments
 file and a careful read of `decided()`; and it will add points about the definitions of "leg" and
 "level" that are already in the known review table.
+
+## 2. Codex's findings (opened after section 1 was committed, 0ecf0fe)
+
+The first run stopped at its first finding - correctly, because **my prompt said `ledger_control.csv` had
+10 rows and it has 12** (9 trades and 3 stand-asides; the "10 control trades" are those 9 plus the reset
+trade in `ledger.csv`). The prompt was corrected and the run repeated. The log shows it did not open this
+file. Its full answer is summarised here; what it found that section 1 did not is marked **new**.
+
+| # | Codex's finding | Against section 1 |
+|---|---|---|
+| X1 | **`shut` records a refused move, not a lost trade.** No entry, stop or target is written for the 02/04 Asia sell, so "148 USD" says nothing about what a rule-compliant trade would have earned - and `shut` can make the method look worse than any measured trade does | **New.** Extends C10 |
+| X2 | **The structure split in `LESSONS.md` 1 cannot be reproduced from the CSVs** - all eight trades carry `?????????`; which four were "with" lives only in prose | **New.** The only rule with evidence has none in the record |
+| X3 | Rule 7 against 5 and 9 at 02/04 London: confirmation came 50 USD from the level, stop 59, target 56 | Same as C5, and predicted conflict C - C5 adds that 5 and 7 together allow only the second test |
+| X4 | Rule 9's target ("a full leg" or "the next level") lets a reader admit or veto the same setup | Same as C7 |
+| X5 | Rule 2 has no minimum age or test count; "earlier days built" depends on how far left the reader looks | Already in the known review table (rules not defined); X5 adds the case: it is what refused the 148 USD sell |
+| X6 | Rules 4 and 5 can be counted at different swing scales and then reinforce or contradict each other | Known (no definitions) |
+| X7 | Rule 3 is a trigger to look, not a rule - TRIED's own conflict A says so | Close to C4: by the owner's test it decides nothing alone |
+| X8 | **The on-sight column resolves over 72 bars, not 48**, and it keeps the planned stop, so R is measured on a different unit | Same as C3. Did **not** find C1 (the clock / day roll): it checked that +0.253 was reproducible from the stored fields, not that the fields were right |
+| X9 | Rule 8's "while the idea is still intact" turns on an invalidation the same reader picks | Known as TRIED row 16 |
+| X10-11 | Rules 1 and 6 are display and protocol, not rules | Same as C4 |
+| X12 | `reach` is self-assigned and outcome-aware | Same as C10 |
+
+**Codex's three changes:** (1) freeze a decision record at **every step** before advancing - price, side or
+no trade, the level band, the swing points, each rule pass/fail, entry/stop/target/invalidation - never
+revised after later bars; (2) replace `reach` with a candidate trade priced **before** the window's later
+bars are revealed, so `shut` gets a number; (3) score the on-sight column on the same 4-hour clock, and add
+a fixed-dollar-risk result beside R.
+
+**My expectation against what came** (written in section 1 before opening): C5 repeated - yes (X3); C3
+found - yes (X8); C1 missed - **it was missed**; definitions of "leg" and "level" - yes (X5, X6). What I did
+not expect: X1 and X2, both real.
+
+## 3. What was corrected the same evening
+
+| Finding | Done |
+|---|---|
+| C1, C3 | `score.py`: the clock starts at the first bar not yet on the screen (`Now` + 5 min), no day roll unless the walk went past midnight; the on-sight column gets 48 bars. Every trade re-scored. Changed: #15 fill Friday 06/03 20:30 (was Monday 09/03), on sight -1.01 (was +0.99); D1-1 missed by 3.37 (was 2.57), on sight +1.57 (was +1.08); #23 on sight -0.61 (was -1.01, the extra 2 hours reached its stop). **Planned unchanged at -4.53 R (-0.378). On sight -2.60 R, -0.217 a trade (was -0.124). Gap +0.161 (was +0.253)** - not the +0.080 estimated in C1, which still had the 72-bar horizon. The three no-fills give +3.08 R; on the nine fills on sight was worse by 1.15 R |
+| C10 | `score.py summary` leaves out windows marked excluded: 5 windows, 0 `open-missed` |
+| X2 | `LESSONS.md` 1 now names the four "with" trades and says the labels are not in the record |
+| Numbers | corrected in `LESSONS.md` 4 and 6, `TRIED.md` (a dated note under the table; rows left as written), `SHEETS.md` (a note under the D1-1 score), `sessions.csv` row 3, `METHOD.md` rule 7, `START_HERE.md`, `HANDOFF.md` |
+
+**Not changed, because they change the rules and the rules are the owner's to direct:** C5, C6, C7, C9, X1
+and Codex's changes (1) and (2). They are the agenda.
+
+## 4. Every entry picture, read again (owner's question, 2026-10-28 17:00 Thai)
+
+The owner, after looking at every chart in `eye/`: *"the price structure was not one to enter at all - how
+do we fix it?"* Read from the decision charts (`eye/walk/001_054`, `013_042`, `015_000`,
+`2026-04-01_0700_096`, `2026-04-02_1930_000`) and the two sampling sheets (`eye/sheets/claude_01`,
+`claude_02`, nine hours of M5 only). **Hindsight: the outcome of every trade was known while labelling.**
+
+| # | side | the picture at the decision | label | R (on sight) |
+|---|---|---|---|---:|
+| 1 (reset) | BUY 4615 | H1 fell 5590 -> 4600 in three days; M5 a staircase down, every high lower, no HH | VERTICAL / down | -1.01 |
+| 5 | BUY 5058 | a 5030-5065 chop, bought near its top | CHOP | -1.03 |
+| 9 | SELL 5033 | a 5005-5040 chop | CHOP | -1.04 |
+| 13 | SELL 5370 | a week's 5150-5250 range left by a weekend gap to 5390, the pullback holding a higher low | FRESH BREAK, sold against it | -1.03 |
+| 15 | SELL 5098 | price 5083 near a 5055-5065 floor held since the day before; the next bar was 20:30 Thai on the first Friday of March - the usual US jobs slot (my reading of the date; no calendar in the repo) - and moved 43 USD in five minutes | NEWS | -1.01 |
+| 19 | BUY 5016 | a vertical drop to 4975 and a V back in 30 minutes, bought straight after the long bar | VERTICAL | -1.03 |
+| 23 | SELL 4557 | a top, a distribution, a breakdown swept to 4535, sold on the retest; only one lower high | not TREND (nearest to acceptable) | -1.03 |
+| D2-1 | BUY 4605 | 4800 -> 4555 with lower highs 4700, 4650; bought before any HH | down TREND, bought against it | -1.02 |
+| **3** | BUY 4902 | a clear up staircase, higher lows, bought on the pullback to the base of the surge | **TREND pullback** | **+3.67** |
+| **D1-1** | BUY 4707 | H1 recovering from 4100; M5 a new HH at 4747 and the pullback into the broken 4700-4720 | **TREND pullback** | no fill (**+1.57**) |
+| 11 | SELL 5201 | a run up, a top at 5210, then flat at 5190 | CHOP | no fill (+0.82) |
+| 17 | SELL 5206 | a double top at 5220 and a slow bleed; highs not cleanly lower | not TREND | no fill (+0.69) |
+
+**What it shows, and what it does not.** The two TREND pullbacks are the two best outcomes in the record.
+Seven of eight losers sit in a picture with a name for why not. But #11 and #17 are not TREND pictures and
+would have won on sight, so "not TREND" is not the same as "loses". Twelve trades, one reader, labelled
+after the results: this is why `METHOD.md` 2d is written before day 3 and is judged only by days after it.

@@ -21,6 +21,7 @@ TH = "Asia/Bangkok"
 SPREAD = 0.30  # the owner's real account pays about 30 points on gold
 FILL_BARS = 24  # 2 hours to fill
 LIVE_BARS = 48  # 4 hours to resolve
+SEEN = pd.Timedelta(minutes=5)  # a `Now` label is the last bar seen; the next one is the first unseen
 
 
 def bars() -> pd.DataFrame:
@@ -43,18 +44,24 @@ def start_of(row: dict[str, str], cuts: dict[str, pd.Timestamp]) -> pd.Timestamp
     if row["id"] in cuts:
         return decided(row, cuts[row["id"]])
     day = row["cutoff_thai"][:10]
-    return pd.Timestamp(f"{day} {row['decided_at'][-5:]}", tz=TH).tz_convert("UTC")
+    return pd.Timestamp(f"{day} {row['decided_at'][-5:]}", tz=TH).tz_convert("UTC") + SEEN
 
 
 def decided(row: dict[str, str], start: pd.Timestamp) -> pd.Timestamp:
     """When the decision was actually made. A moment is where I sit down; the decision comes after however
     long I waited (METHOD section 2b), and the clock for filling and resolving starts there, not at the
-    moment I sat down."""
+    moment I sat down.
+
+    ``decided_at`` is the ``Now`` label ``walk.py`` printed: the open time of the last bar already on the
+    screen, so the first bar that can judge the decision opens five minutes later. Reading it as the first
+    bar scored one bar the reader had already seen, and when the label fell before the cut-off (#15:
+    20:25 against 20:30) it rolled the clock a whole day forward - #15 was scored from a Saturday and
+    filled on the Monday (reviewer, 2026-10-28, `eye/RULES_REVIEW.md` C1)."""
     waited = row.get("decided_at", "")
     if not waited or waited == row["cutoff_thai"]:
         return start
-    at = pd.Timestamp(f"{start.tz_convert(TH):%Y-%m-%d} {waited[-5:]}", tz=TH)
-    if at < start.tz_convert(TH):
+    at = pd.Timestamp(f"{start.tz_convert(TH):%Y-%m-%d} {waited[-5:]}", tz=TH) + SEEN
+    if at < start.tz_convert(TH):  # the walk went past midnight
         at += pd.Timedelta(days=1)
     return at.tz_convert("UTC")
 
@@ -79,7 +86,9 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     # was made. The owner, 2026-10-28: an obvious level may never be reached, because it is obvious - so
     # waiting for a better price has a cost, and this column is that cost, measured.
     seen = float(window.open.iloc[0])
-    at_out, _ = resolve(window.iloc[: FILL_BARS + LIVE_BARS], seen, stop, target, buy)
+    # Filled on the spot, so it gets the same 48 bars to resolve as a planned trade gets after its fill -
+    # not 72, which gave this column two hours more than the one it is compared with (C3).
+    at_out, _ = resolve(window.iloc[:LIVE_BARS], seen, stop, target, buy)
     at_move = (at_out - seen) if buy else (seen - at_out)
     at_r = (at_move - SPREAD) / abs(seen - stop) if abs(seen - stop) > 0 else 0.0
 
@@ -111,7 +120,9 @@ def windows() -> None:
     p = HERE / "sessions.csv"
     if not p.exists():
         return
-    rows = list(csv.DictReader(p.open(encoding="utf-8")))
+    # A window marked excluded (01/04 New York: scoring an earlier trade had already shown its outcome)
+    # is a record, not part of the denominator (C10).
+    rows = [r for r in csv.DictReader(p.open(encoding="utf-8")) if "excluded" not in r["window"]]
     steps = sum(int(r["steps"]) for r in rows)
     print(
         f"{'windows':7} walked {len(rows):3}  steps advanced {steps:3}  "

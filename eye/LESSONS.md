@@ -35,6 +35,11 @@ other ways, and the same person chose the trades and labelled them afterwards.
 It is a hypothesis to test forward. It is not evidence that the rule earns +0.14 R, and this file should
 not have implied it was.
 
+**And the split cannot be reproduced from the files** (Codex, `RULES_REVIEW.md` X2): all eight trades carry
+`?????????` in the ledgers, and which four were "with" and which "against" is written only in this
+paragraph - #5, #13, #15 and #1 against; by elimination #3, #9, #19 and #23 with. The swings behind each
+label are not recorded anywhere.
+
 **Why this still says eight when the ledger holds nine fills.** The ninth, D2-1 of 2026-04-02, has
 not been labelled with or against the structure, because at the moment of that decision price was not at
 the level yet - the plan was written in mid-range and waited for the level to come to it. Labelling it
@@ -66,25 +71,32 @@ when the decision was made, with the same stop and target.
 | | R total | R a trade |
 |---|---:|---:|
 | the entries I planned | -4.53 | **-0.378** |
-| taken at the price I saw | -1.49 | **-0.124** |
+| taken at the price I saw | -2.60 | **-0.217** |
 
-Twelve trades, updated after real day 2 (the first reading, on eleven trades, was -0.319 against -0.044
-for a gap of +0.275; D2-1 lost the same either way, so both columns fell and the gap narrowed slightly).
+**Corrected 2026-10-28 (`RULES_REVIEW.md` C1, C3).** This table first said -1.49 and -0.124, a gap of
++0.253. Two faults in `score.py` made it: the clock started on a bar the reader had already seen, and for
+#15 it rolled a whole day forward, scoring a Friday decision against Monday's bars; and the on-sight column
+got 6 hours to resolve against the planned column's 4. Re-scored with both fixed, every trade:
 
-**+0.253 R a trade**, and all of it comes from trades the plan never got into:
+**+0.161 R a trade**, and all of it - more than all of it - comes from the trades the plan never got into:
 
 | # | planned | on sight | missed by |
 |---|---:|---:|---:|
-| D1-1 | no fill, 0 | **+1.08** | 2.57 |
+| D1-1 | no fill, 0 | **+1.57** | 3.37 |
 | 11 | no fill, 0 | **+0.82** | 3.85 |
 | 17 | no fill, 0 | **+0.69** | 3.82 |
-| 15 | -1.01 | **+0.99** | - |
 | 3 | +3.67 | +2.02 | - |
+| 23 | -1.03 | -0.61 | - |
+| 15 | -1.01 | -1.01 | - (was +0.99: the Monday bars) |
 
-**All three unfilled plans would have won.** The losers lost the same either way - D2-1, the newest, was
-stopped at -1.02 planned and -1.01 on sight. So waiting for a better price has never saved a loss; it has
-only thrown away winners - and the distances missed were **2.57, 3.85 and 3.82 USD**, every one under
-four.
+The three no-fills add **+3.08 R**; on the **nine filled trades, taking them at the price on the screen
+was worse by 1.15 R** - the one winner shrinks more than the one time-closed loser saves.
+
+**All three unfilled plans would have won - and that is close to true by construction.** A limit that
+never fills is one where price left in the planned direction without coming back, so unfilled limits are
+selected for winning on sight (`RULES_REVIEW.md` C2). The losers lost about the same either way. The
+distances missed were **3.37, 3.85 and 3.82 USD** - D1-1 was 2.57 when measured from a bar already on the
+screen - and the 4 USD cap sits just above the largest of three.
 
 **Not a clean comparison**, and the file should say so: entering worse means a wider stop, so R per unit
 shrinks - which is why the one winner falls from +3.67 to +2.02. Twelve trades, and three of the five
@@ -150,4 +162,4 @@ The 01/04 New York case says the rules do find real trades; the other two say th
 Six windows is a handful and this is an observation, not a verdict. What it changes now is what gets
 recorded: `sessions.csv` has a **`reach`** column, and every window is marked `no-setup`, `shut`,
 `open-missed` or `open-taken` (defined in METHOD 2c), so that after thirty windows this is counting rather
-than impression. The standing so far: **2 `shut`, 1 `open-missed`, 2 `open-taken`, 1 `no-setup`.**
+than impression. The standing so far: **2 `shut`, 1 `open-missed`, 2 `open-taken`, 1 `no-setup`** - but the one `open-missed` is 01/04 New York, the window marked excluded, so the count that belongs in the denominator is **5 windows: 2 `shut`, 0 `open-missed`, 2 `open-taken`, 1 `no-setup`** (corrected 2026-10-28, `RULES_REVIEW.md` C10; `score.py summary` now leaves excluded windows out). And `shut` is written after the move is seen and with no priced trade behind it, so it records a move the rules refused, not what a trade there would have earned (`RULES_REVIEW.md` X1).

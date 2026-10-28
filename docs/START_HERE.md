@@ -50,8 +50,10 @@ decided:
   full stop every time - but take the single +3.67 R winner out of the good half and both halves lose
   about -1.02 R. It is a hypothesis, not a result.
 - **Waiting for a better price cost more than every losing trade.** The same twelve ideas taken at the
-  price that was on the screen make **-0.124 R a trade** instead of -0.378, and all three plans that never
-  filled would have won, missed by 2.57, 3.85 and 3.82 USD. An order now goes no further than **4 USD**
+  price that was on the screen make **-0.217 R a trade** instead of -0.378 (corrected 2026-10-28 from
+  -0.124: a scoring bug, `eye/RULES_REVIEW.md` C1), and all three plans that never filled would have won,
+  missed by 3.37, 3.85 and 3.82 USD - partly by construction, since an unfilled limit is one price left in
+  the planned direction. On the nine filled trades, on sight was worse. An order now goes no further than **4 USD**
   from price.
 - **A stop inside the band loses a trade the read got right.** Day 2's one decision was filled, swept five
   dollars past a stop placed inside the level's band, and the target it was aiming at came ninety minutes
@@ -66,6 +68,11 @@ taken whole, all three of the owner's windows walked in order, every window writ
 six windows walked, four of them with no trade, two decisions.** Day 1's New York window could not be
 judged - scoring its London trade had already shown me what price did inside it - so it was walked as an
 observation and is marked that way.
+
+**From real day 3 the picture decides first** (`eye/METHOD.md` 2d, owner, 2026-10-28): every look is
+labelled TREND, VERTICAL, CHOP, FRESH BREAK or NEWS before advancing (`eye/looks.csv`), and the only entry
+is a pullback in a TREND into a level, on a printed higher low. Adopted from a backward reading of the
+twelve decisions (`eye/RULES_REVIEW.md` section 4), and judged only by the days after it.
 
 ## Before changing anything
 
