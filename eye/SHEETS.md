@@ -258,3 +258,22 @@ idea pays +1.63 R. And at 20:25, with price back at 4597 above the floor, I refu
 written invalidation said losing 4588 meant the level had failed - **refusing a sweep-and-reclaim, which
 is one of the four patterns rule 5 names by name.** That trade, entered 4597 with the stop beyond the
 sweep, pays +4.80 R. All three are the same bars, scored three ways (`LESSONS.md` section 5).
+
+---
+
+## 2026-04-03 - no trading day
+
+Good Friday. The stored bars stop at 03:50 Thai (47 M5 bars that day) and resume on Monday 06/04 at 05:05
+Thai: none of the owner's three windows had a single bar. Nothing walked, nothing recorded in
+`sessions.csv`. Real day 3 is **2026-04-06**.
+
+---
+
+## Real day 3 - 2026-04-06 - the first day under METHOD 2e
+
+The owner's setup (2e), for every look: the H1 trend gives the side; price at a level from the left on
+that side; 3-5 ZigZag peaks into it with divergence on MACD and RSI against price (both = clear); the
+structure breaks; the low (high) breaks; the entry is a **stop limit** - `trigger` a little beyond the
+broken low (high), `entry` at it - filled on the retest; stop beyond the extreme of the move; target just
+before the next level from the left; held until stop or target. Each reading is written here before the
+chart is advanced. Server time in April is UTC+3, so Thai = server + 4.
