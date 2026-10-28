@@ -17,7 +17,7 @@ on M15 it sat 17-20 USD away, so the M15 plan bought a shelf the market had alre
 entry current and halves the stop, and its stops stay many times the spread, which M1 would not.
 
 Section 2c replaced the sheets: the chart is now advanced bar by bar through a real day, not printed six
-panels to a page. `sheets.py`, `moments.csv` and the nine `codex_*.png` sheets are kept as the record of
+panels to a page. `sheets.py` and `moments.csv` are kept as the record of
 where the control trades came from, and are no longer run.
 
 ## 2 How the moments were chosen - the sampling design, superseded 2026-10-28 by 2c
@@ -126,7 +126,32 @@ being run:
 
 `walk.py` takes either a sampled moment's id or a real datetime: `walk.py "2026-04-01 07:00" 12`.
 
-## 2d The picture decides first - Claude's proposal, ON HOLD (2026-10-28)
+## 2e The owner's principle: price structure + divergence + counting the peaks (owner, 2026-10-28)
+
+**This is the principle the work holds to.** The owner, 2026-10-28, on reading Claude's plain summary of
+2d below: *"this is not really my way. What I trade is price structure + divergence and counting the
+peaks of the chart"* - and then: hold to this principle instead.
+
+What is decided, in the owner's words, and nothing more:
+
+- **Price structure** - the swings, HH/HL and LH/LL, at levels from the left (rules 2, 3 and 5 already say
+  this much).
+- **Divergence** - none of the thirteen rules mentions it.
+- **Counting the peaks** - rule 4 ("three or four legs complete, trade the fifth") is the only rule near
+  it, and it has never been defined.
+
+**Open, and to be written in the owner's terms before real day 3 is walked** (Claude must not fill these
+in from its own reading - that is how 2d happened):
+
+1. Divergence read on what - MACD, RSI, or price alone? An oscillator would be an exception to the
+   10-28 stance "no indicators", which is the owner's to make.
+2. How the peaks are counted - three pushes to a top or bottom, a triple top, waves 1-5 / ABC, or
+   something else.
+3. How the three combine into an entry, a stop and a target.
+
+The nine rules stand where this does not contradict them; where it does, this wins.
+
+## 2d The picture decides first - Claude's proposal, ON HOLD (2026-10-28), superseded by 2e
 
 > **On hold, 2026-10-28 17:40 Thai, before any day was walked under it.** The owner asked how to fix the
 > entries; everything below is **Claude's answer, not the owner's method** - the owner said "try it", then,

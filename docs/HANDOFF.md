@@ -1,7 +1,9 @@
 # Session handoff
 
-Last updated **2026-10-28 17:10 Thai**, after the rules review with Codex (`eye/RULES_REVIEW.md`) and the
-owner's decision to let the picture decide first (`eye/METHOD.md` 2d).
+Last updated **2026-10-28 17:50 Thai**, after the rules review with Codex (`eye/RULES_REVIEW.md`) and the
+owner's word that the work holds to **their** principle - price structure + divergence + counting the peaks
+(`eye/METHOD.md` 2e). Claude's 2d is on hold. The chart images in `eye/walk/` and `eye/sheets/` were deleted at
+the owner's word (in git at 937f75a; `walk.py` draws them again on demand).
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
 files it points at, and they are few on purpose: everything built before 2026-10-28 was stopped and
@@ -35,8 +37,9 @@ Read first, in order:
 2. docs/HANDOFF.md - this file, the "Where it resumes" section
 3. eye/METHOD.md (section 2c is the method in use), eye/TRIED.md, eye/LESSONS.md
 
-Then continue the real trading days under METHOD 2d: 2026-04-03, Asia 07:00 first, one window at a time,
-every look labelled in eye/looks.csv before advancing, reporting each trade to me as it happens.
+First write METHOD 2e in my terms: ask me how I read divergence, how I count the peaks and how they
+combine into an entry - do not fill them in yourself. Then continue the real trading days: 2026-04-03,
+Asia 07:00 first, one window at a time, reporting each trade to me as it happens.
 ````
 
 ---
@@ -87,7 +90,7 @@ ledger, which is why `sessions.csv` carries `reach`.
 
 ## Where it resumes
 
-**ON HOLD (10-28 17:40 Thai): 2d is Claude's proposal and the owner said it is not their way - they trade price structure + divergence + counting the peaks. Day 3 waits for that method in the owner's terms; the paragraph below is kept as the plan that was set aside.**
+**First: `METHOD.md` 2e - the owner's principle, price structure + divergence + counting the peaks.** Its three open questions (divergence on what, how the peaks are counted, how they combine) are answered by the owner and written in their terms before day 3. Nothing below about 2d applies: 2d is Claude's proposal, on hold; the paragraph is kept as the plan that was set aside.
 
 **Next: real day 3, 2026-04-03, Asia 07:00 Thai - the first day under `METHOD.md` 2d.** Walk it with
 `python eye/walk.py "2026-04-03 07:00" 0`. At **every look**, before advancing, write a row in

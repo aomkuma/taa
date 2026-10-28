@@ -72,7 +72,7 @@ and Codex's changes (1) and (2). They are the agenda.
 ## 4. Every entry picture, read again (owner's question, 2026-10-28 17:00 Thai)
 
 The owner, after looking at every chart in `eye/`: *"the price structure was not one to enter at all - how
-do we fix it?"* Read from the decision charts (`eye/walk/001_054`, `013_042`, `015_000`,
+do we fix it?"* Read from the decision charts (deleted from the tree at the owner's word, 10-28; in git at 937f75a: `eye/walk/001_054`, `013_042`, `015_000`,
 `2026-04-01_0700_096`, `2026-04-02_1930_000`) and the two sampling sheets (`eye/sheets/claude_01`,
 `claude_02`, nine hours of M5 only). **Hindsight: the outcome of every trade was known while labelling.**
 
