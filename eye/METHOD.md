@@ -165,9 +165,10 @@ adds nothing.)
 03:15 it bounced lightly and then made an LL - sell; SL above the High; TP above the resistance on the left
 of the chart at 4030."* On the stored bars: top 4070.76 at 02:10; the structure broke at 03:00-03:05 (low
 4055.57 under the 4059.30 and 4057.66 lows); the light bounce reached 4062.76 at 03:20-03:25 (a lower
-high - the retest); 03:30 broke 4055.57 for the LL - **sell about 4055.5**. TP 4031 was reached at 07:55
-and the highest price on the way was 4059.31. With the stop above the bounce's high (4063): risk 7.5,
-**+3.23 R**; above the top (4071): risk 15.5, **+1.56 R** (both after the 0.30 spread). One example,
+high - the retest); 03:30 broke 4055.57 for the LL - **sell on the break of 4055** (the owner: *"when it
+loses 4055"*). TP 4031 was reached at 07:55 and the highest price on the way was 4059.31. With the stop
+above the bounce's high (4063): risk 8.0, **+2.96 R**; above the top (4071): risk 16.0, **+1.48 R** (both
+after the 0.30 spread). One example,
 read after the fact - it shows what the words mean, not that they pay.
 
 It also lands on an open question: the target came **4 h 25 min after the entry**, past `score.py`'s
