@@ -335,3 +335,27 @@ retest), stop 4599.5 (beyond the lowest low 4600.83), target 4668.0 (just before
 Risk 43.5; at the target about +0.57 R. It breaks rule 7 - the order is 17 USD from the price on the
 screen - and follows 2e, which is written down as the conflict. **It is not scored until the whole day
 has been walked**, so that its outcome cannot leak into London or New York (real day 1's lesson).
+
+### London, 13:00 - 15:00 Thai
+
+**Look 1 - 12:55 Thai, price 4652.60.** M5 since Asia: low 4600.83 -> high 4671.80 (09:20) -> low 4625.41
+(10:20, a higher low) -> high 4678.79 (12:15, moving, a higher high) -> now dipping to 4652.60, at the top
+of the 4642-4651 band, which was resistance until 08:15 and is now under price. H1 still up. **Buy side:**
+the dip from 4678.79 has only begun - no lows to count, no divergence. **Sell side:** price touched the
+4670-4682 resistance from the left, but H1 gives the edge to buyers - not this setup. **No trade.**
+**Expectation:** a range of about 4640-4680 through London; a full buy setup needs a fresh counter-move of
+3-5 lows into 4642-4651 or 4625 with divergence, which two hours may not hold - most likely no setup.
+
+**Looks 2-3 - 13:25 and 13:55 Thai, price 4657.34 then 4666.01. A protocol slip: both were printed in one
+command, so the 13:55 bars were on the screen before the 13:25 reading was written.** No decision was
+pending, so nothing is scored on it; from here, one step per command. What was there: the dip from
+4678.79 stopped at 4643.61 (13:00) inside the 4642-4651 band - one low, not 3-5, no divergence to read -
+and price turned back up to 4666. **No setup, no trade.**
+
+**Look 4 - 14:25 Thai, price 4650.76.** Price came back to 4644.97 (moving low) beside the 13:00 low
+4643.61 - a double bottom in the 4642-4651 band. Two lows, not 3-5; and against 4643.61 the oscillators
+are lower, not higher (MACD -1.39 vs 3.81, RSI 45.03 vs 46.44) - **no divergence. No setup, no trade.**
+
+**Look 5 - 14:55 Thai, price 4684.73.** Price ran from the 4644.97 low to 4688.40, through the 4670-4682
+resistance. A real move, on the side with the edge, from a level - and 2e could not take it: two lows,
+no divergence (step 2 failed). **Window: `shut`.**
