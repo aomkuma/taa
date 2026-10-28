@@ -111,7 +111,7 @@ takeable for about **twenty minutes**, at the level.
 **1. METHOD 2e, in the owner's terms.** Ask the owner the three open questions and write the answers as
 they give them - Claude does not fill them in (that is how 2d happened):
 
-1. **Answered 10-28: divergence on both MACD and RSI** (the owner's exception to "no indicators").
+1. **Answered 10-28: divergence on MACD, RSI "and price too"** (MACD and RSI are the owner's exception to "no indicators").
    Still open: their settings and the timeframe(s). Then `walk.py` draws both under the M5 frame, from
    `app/indicators` (`trend.macd`, `momentum.rsi`, MT5-exact).
 2. How the peaks are counted - three pushes, a triple top, waves 1-5 / ABC, or something else.
