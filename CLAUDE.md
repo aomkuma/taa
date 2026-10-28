@@ -60,8 +60,10 @@ window written into `eye/sessions.csv` whether it produced a trade or not. `eye/
 `moments.csv` are the retired clock-sampling design, kept because the control trades came from it.
 
 The principle the trading holds to is **the owner's: price structure + divergence + counting the peaks**
-(`eye/METHOD.md` 2e). Its details are the owner's to state - ask, and write their answers in their terms;
-do not fill them in from your own reading of the charts (METHOD 2d was exactly that, and is on hold).
+(`eye/METHOD.md` 2e), dictated by the owner on 2026-10-28 and written there in full - do not ask it again.
+Anything new about it is the owner's to state: ask, and write the answer in their terms; never fill it in
+from your own reading of the charts (METHOD 2d was exactly that, and is on hold). An example the owner
+gives is a principle to generalise, never a rule with its numbers.
 
 **Nothing is committed without `ruff`, `mypy`, `bandit` and the tests green**, and nothing is pushed,
 deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per

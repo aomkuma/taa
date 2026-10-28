@@ -23,9 +23,11 @@ indicators. The owner, 2026-10-28:
 > into one of the levels on the left of the chart, from earlier days or earlier hours.
 
 Later the same day the owner named what they actually trade, and the work holds to it: **price structure +
-divergence + counting the peaks** (`eye/METHOD.md` 2e). Only price structure is in the nine rules so far.
-How divergence is read - and whether that means an oscillator, an exception to "no indicators" - and how
-the peaks are counted are for the owner to say, and are not yet written.
+divergence + counting the peaks** (`eye/METHOD.md` 2e). The owner then dictated the setup, and it is written in
+full in 2e: the H1 trend gives the side; at a level from the left on that side, 3-5 ZigZag peaks with
+divergence of MACD or RSI against price (the owner's one exception to "no indicators"); the structure
+breaks, a weak retest, entry on the break; stop beyond the extreme of the move; target just before the
+next level; held until stop or target.
 
 The method, the hundred moments, the rules written before the first chart was drawn, what has been tried
 and whether it worked, and every trade: `eye/METHOD.md`, `eye/TRIED.md`, `eye/LESSONS.md`,
@@ -74,10 +76,10 @@ six windows walked, four of them with no trade, two decisions.** Day 1's New Yor
 judged - scoring its London trade had already shown me what price did inside it - so it was walked as an
 observation and is marked that way.
 
-Real day 3 waits until the owner's answers to 2e are written. Claude's own proposal for the entries,
-METHOD 2d (enter only a pullback in a trend), is **on hold**: the owner said it is not their way, and it
-never ran. The weaknesses found in the rules on 10-28, and the scoring bug fixed that evening, are in
-`eye/RULES_REVIEW.md`.
+Real day 3 is walked under 2e. Claude's own proposal for the entries, METHOD 2d (enter only a pullback
+in a trend), is **on hold**: the owner said it is not their way, and it never ran. The weaknesses found on
+10-28 - in the nine rules, then in 2e and its tools, each reviewed by Claude and Codex apart - and what
+was fixed are in `eye/RULES_REVIEW.md`.
 
 ## Before changing anything
 

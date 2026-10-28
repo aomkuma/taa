@@ -76,7 +76,7 @@ def resolve(bars: pd.DataFrame, entry: float, stop: float, target: float, buy: b
             return stop, "stop"
         if (b.high >= target) if buy else (b.low <= target):
             return target, "target"
-    return float(bars.close.iloc[-1]), "open (data ends)"
+    return float(bars.close.iloc[-1]), "open"  # neither reached in the stored bars: not a result yet
 
 
 def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str, str]:
@@ -90,21 +90,31 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     # waiting for a better price has a cost, and this column is that cost, measured.
     seen = float(window.open.iloc[0])
     # Filled on the spot, and held under the same rule as a planned trade after its fill (C3).
-    at_out, _ = resolve(window.iloc[:LIVE_BARS], seen, stop, target, buy)
+    at_out, at_why = resolve(window.iloc[:LIVE_BARS], seen, stop, target, buy)
     at_move = (at_out - seen) if buy else (seen - at_out)
     at_r = (at_move - SPREAD) / abs(seen - stop) if abs(seen - stop) > 0 else 0.0
+    at_text = "" if at_why == "open" else f"{at_r:.2f}"
 
-    hit = first[(first.low <= entry) if buy else (first.high >= entry)]
+    # The order fills when price trades through the entry from the side it was on at the decision - a limit
+    # (a buy under price, a sell over it) and a stop (METHOD 2e's entry on the break: a sell under price)
+    # alike. It used to treat every BUY as a buy limit and every SELL as a sell limit, which fills a sell
+    # stop on the first bar whose high is above it, before price ever broke (RULES_REVIEW M1).
+    from_above = entry <= seen
+    hit = first[(first.low <= entry) if from_above else (first.high >= entry)]
     if hit.empty:
-        came = first.low.min() if buy else first.high.max()
-        missed = (came - entry) if buy else (entry - came)
+        missed = (first.low.min() - entry) if from_above else (entry - first.high.max())
         return {
             "fill": "", "exit": "", "why": "no fill", "r_net": "0.0",
-            "at_decision_r": f"{at_r:.2f}", "missed_by": f"{missed:.2f}",
+            "at_decision_r": at_text, "missed_by": f"{missed:.2f}",
         }  # fmt: skip
     t0 = hit.index[0]
     after = window[window.index >= t0].iloc[:LIVE_BARS]  # held from the fill bar to the stop or the target
     out, why = resolve(after, entry, stop, target, buy)
+    if why == "open":
+        return {
+            "fill": f"{t0.tz_convert(TH):%d/%m %H:%M}", "exit": "", "why": "open", "r_net": "",
+            "at_decision_r": at_text, "missed_by": "0.00",
+        }  # fmt: skip
     move = (out - entry) if buy else (entry - out)
     r = (move - SPREAD) / abs(entry - stop)
     return {
@@ -112,7 +122,7 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
         "exit": f"{out:.2f}",
         "why": why,
         "r_net": f"{r:.2f}",
-        "at_decision_r": f"{at_r:.2f}",
+        "at_decision_r": at_text,
         "missed_by": "0.00",
     }
 
@@ -146,7 +156,7 @@ def main() -> None:
         for reader in sorted({r["reader"] for r in rows}):
             mine = [r for r in rows if r["reader"] == reader]
             taken = [r for r in mine if r["side"] in ("BUY", "SELL")]
-            filled = [r for r in taken if r["why"] not in ("no fill", "")]
+            filled = [r for r in taken if r["why"] not in ("no fill", "open", "")]
             rs = [float(r["r_net"]) for r in filled]
             wins = [x for x in rs if x > 0]
             total = sum(rs)
@@ -158,7 +168,7 @@ def main() -> None:
                 if filled
                 else f"{reader:7} decisions {len(mine):3}  nothing filled yet"
             )
-            onsight = [float(r["at_decision_r"] or 0) for r in taken]
+            onsight = [float(r["at_decision_r"]) for r in taken if r["at_decision_r"]]
             if onsight:
                 print(
                     f"{'':7} the same ideas taken at the price on the screen: "
@@ -171,7 +181,7 @@ def main() -> None:
     m5, cut = bars(), cutoffs()
     done = 0
     for r in rows:
-        if r["why"] or r["side"] not in ("BUY", "SELL"):
+        if (r["why"] and r["why"] != "open") or r["side"] not in ("BUY", "SELL"):
             continue
         r.update(score(r, m5, start_of(r, cut)))
         print(f"#{r['id']:>3} {r['side']:4} {r['entry']:>9} -> {r['why']:11} {r['r_net']:>6}")

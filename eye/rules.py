@@ -47,7 +47,7 @@ def rows() -> list[dict[str, str]]:
         if not p.exists():
             continue
         for r in csv.DictReader(p.open(encoding="utf-8")):
-            if r.get("why") in ("", "no trade"):
+            if r.get("why") in ("", "no trade", "open"):  # "open": held, not yet a result
                 continue
             r["source"] = "live" if name == "ledger.csv" else "control"
             out.append(r)

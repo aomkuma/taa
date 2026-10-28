@@ -113,3 +113,32 @@ read-only on the same files in parallel; this half is committed first.
 | M7 | **[CODE] `walk.py`'s dashed ZigZag leg can start from an older pivot than MT5 shows.** `zigzag_pivots` leaves out a pivot until `backstep` bars have printed after the opposite candidate, so in the last few bars the dashed leg may start one pivot early | `chart_read.py` `zigzag_pivots`: `if s + backstep < n: out.append(...)` | Compare with MT5 live on day 3; not a look-ahead (it shows less, never more) |
 | M8 | **[CODE] Holding without a limit scans to the end of the stored data**, and a trade still open there is closed at the last close and marked `open (data ends)` - right, but it must not be counted as a result | `score.py` `resolve()` | Exclude `open (data ends)` from the totals |
 | M9 | **Checked: the H1 picture behind the owner's example fits "what Claude understands".** Over the three weeks before it the H1 highs fell 4217 -> 4200 -> 4198 -> 4155 -> 4142 -> 4034 -> 4029.83 and price went 4144 -> 4049; the top 4070.76 sat in the 4066-4073 band of the 07/10 and 14/10 lows - a resistance from the left. **But** the rally 3989 -> 4070 had broken the H1 lower high 4034, so whether H1 was still "down" at the entry is a judgement - the place where a reader's bias enters | H1 ZigZag 12/5/3 on the stored bars | Nothing to change; it is the judgement 2e already names |
+
+## 6. Codex's half of the 2e review, and what was done (2026-10-28 evening)
+
+Opened after section 5 was committed (666e692). Codex ran read-only with the prompt on stdin; its log shows
+it did not open this file or the archive. What it found, against section 5:
+
+| # | Codex's finding | Against section 5 | Done |
+|---|---|---|---|
+| K1 | **[MISLEADING]** HANDOFF and START_HERE still say the owner's answers are awaited and tell the next session to ask | Same as M2 | HANDOFF rewritten; START_HERE and CLAUDE.md say the setup is answered and is not to be asked again |
+| K2 | **[OWNER-FIDELITY]** Claude's interpretations read as the owner's: the "adds nothing" sentence changed the divergence wording; the principle says "MACD, RSI **or price**"; steps 3-5 and "What Claude understands" add detail the owner did not give | Wider than M3 | The sentence matches the table; divergence is "MACD or RSI against price"; steps 3-5 are labelled Claude's generalisation of the example; Claude's readings in the divergence paragraph and the H1 inference are labelled |
+| K3 | **[CONSISTENCY]** Section 4 still prescribed the 4-hour close and called it open | **New** - section 5 missed it | The 48-bar rule is struck through and marked superseded; the fill-through rule added |
+| K4 | **[CONSISTENCY]** Entry on M5-M15 against "enter on M5, exit on M5" and an M5-only scorer | **New** | Written: rule 6 stands for reading; a fixed stop and target are scored on M5, the finest frame shown, whichever frame the trade was read on |
+| K5 | **[CONSISTENCY]** Rule 4's "three or four legs, trade the fifth" not reconciled with 2e | **New** (M6 covered rules 7 and 9 only) | Written: 2e replaces rule 4's count and entry, and rule 9's target and stop; rules 1-3, 5-8 stand |
+| K6 | **[CONSISTENCY]** The action table said "ready once the two open answers are in" under a line saying nothing is open | **New** | Fixed: ready once the `steps` column and the fill fix are done |
+| K7 | **[CODE]** A trade open when the stored bars end gets an R | Same as M8 | Now `open`, blank R, left out of every total and of `rules.py`, scored again when there are more bars |
+| K8 | **[CODE]** `at_decision_r` and the planned trade start at different times, so the gap is not entry price alone | Partly C3 | Noted; the column's meaning stands as "the same idea taken at the price on the screen" |
+
+**Codex did not find M1** - every sell filled as a sell limit, so 2e's entry on the break (a sell stop
+under price) would have filled before the break. It checked that `LIVE_BARS = None` reached both paths,
+not which way an order fills. **Fixed:** an order fills when price trades through the entry from the side
+it was on. Shown on the owner's example: an order placed at 08:15 Thai filled at 08:20 under the old rule,
+with price never under 4055, and at 08:30 - the bar that broke it - under the new one. The twelve stored
+trades re-score identically (fill, no-fill and miss distance, all twelve).
+
+**Section 5 found what Codex did not: M1, M4 (the counting timeframe - now written as the entry timeframe,
+Claude's reading), M5 (TRIED row 18 - added), M9 (the H1 check). Codex found K3-K6, which section 5 did
+not.** Two readers apart caught nine faults neither caught alone.
+
+**Still to do:** the `steps` column (METHOD 2e row 2); MACD and RSI against the owner's MT5.

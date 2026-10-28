@@ -1,7 +1,8 @@
 # Session handoff
 
-Last updated **2026-10-28 17:30 Thai** (read with `Get-Date`). The owner has said what they trade - price
-structure + divergence + counting the peaks - and the work now waits on them to say how, in their terms.
+Last updated **2026-10-28 18:05 Thai** (read with `Get-Date`). The owner's setup is written down in full
+(`eye/METHOD.md` 2e), the chart and the scorer are built for it, and both were reviewed by Claude and Codex
+apart. Next: two small tool jobs, then real day 3.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
 files it points at, and they are few on purpose: everything built before 2026-10-28 was stopped and
@@ -12,16 +13,16 @@ archived that day, and the rebuilding is deliberately small.
 | How to work here, and the owner's own rules | `CLAUDE.md` |
 | What the repository is now, and the one number | `docs/START_HERE.md` |
 | Rules each paid for with a real mistake | `docs/HOUSE_RULES.md` |
-| **The owner's principle** - what the work holds to | `eye/METHOD.md` **2e** - its details still open |
+| **The owner's setup** - what the trading holds to | `eye/METHOD.md` **2e**: the answers table, the seven-step principle, divergence, the worked example, what Claude understands, what can be done |
 | How a day is walked | `eye/METHOD.md` 2c |
-| The nine trading rules | the bottom of `eye/METHOD.md` - they stand where 2e does not contradict them |
-| The weaknesses found in the rules, and what was fixed | `eye/RULES_REVIEW.md` |
-| Every method tried, with a verdict | `eye/TRIED.md` |
+| The nine trading rules | the bottom of `eye/METHOD.md` - 2e replaces rules 4 and 9; the rest stand |
+| The weaknesses found, and what was fixed | `eye/RULES_REVIEW.md` (sections 1-3 the rules, 5-6 the 2e review) |
+| Every method tried, with a verdict | `eye/TRIED.md` - row 18 is the owner's setup |
 | What the trades support | `eye/LESSONS.md` |
 | Every reading, written before the reveal | `eye/SHEETS.md` |
 | The trades | `eye/ledger.csv`, `eye/ledger_control.csv` |
 | Every window walked, trade or not | `eye/sessions.csv` |
-| The archived work - a record, **not a starting point** | `docs/archive/README.md`, `research/archive/` |
+| The archived work - **old data, never decides the present** | `docs/archive/`, `research/archive/` |
 
 ---
 
@@ -36,13 +37,12 @@ in Thai time read with PowerShell Get-Date (Git Bash date is wrong on this machi
 Read first, in order:
 1. docs/START_HERE.md
 2. docs/HANDOFF.md - this file, the "Where it resumes" section
-3. eye/METHOD.md - section 2e is my principle, 2c is how a day is walked; then eye/TRIED.md,
-   eye/LESSONS.md and eye/RULES_REVIEW.md
+3. eye/METHOD.md - section 2e is my setup, 2c is how a day is walked; then eye/TRIED.md and
+   eye/RULES_REVIEW.md sections 5-6
 
-Before anything else, ask me the three open questions of METHOD 2e - how I read divergence, how I count
-the peaks, and how they combine into an entry, a stop and a target - and write my answers in my terms. Do
-not fill them in yourself. Then continue the real trading days: 2026-04-03, Asia 07:00 first, one window
-at a time, reporting each trade to me as it happens.
+My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
+generalise, never a rule with its numbers. Do the two tool jobs in "Where it resumes", then walk real
+day 3, 2026-04-03, Asia 07:00 first, one window at a time, reporting each trade to me as it happens.
 ````
 
 ---
@@ -52,102 +52,100 @@ at a time, reporting each trade to me as it happens.
 **The work.** Trading gold by eye on real candles, no strategy in `config.yaml`. The owner's bar is
 **+0.15 R a trade after costs**; the archived system reached -0.115.
 
-**The principle** (`eye/METHOD.md` 2e, owner, 2026-10-28): *"what I trade is price structure + divergence
-and counting the peaks of the chart."* Of the three, only price structure is in the nine rules; none of the
-thirteen mentions divergence, and counting is only rule 4's undefined "three or four legs, trade the
-fifth". **Divergence may need an oscillator, which would be an exception to the 10-28 stance "no
-indicators" - the owner's call, not yet made.**
+**The owner's setup** (`eye/METHOD.md` 2e, dictated 2026-10-28), for a sell - a buy is the mirror:
+
+1. the **H1 trend** gives the sell side the edge, and price comes up into a **resistance from the left**;
+2. **3-5 ZigZag peaks** into it, with **divergence** of MACD or RSI against price;
+3. the **structure breaks** - the last swing low goes;
+4. a **weak retest** - a lower high;
+5. **entry on the new lower low**, on M5-M15;
+6. **stop beyond the highest top** of the move;
+7. **target just before the next level** from the left; **held until stop or target**, no time limit.
+
+Steps 3-5 are Claude's generalisation of the owner's example (as the owner asked); the rest are the
+owner's answers. MACD and RSI are the owner's exception to "no indicators". Settings are MT5's defaults:
+ZigZag 12/5/3, MACD 12/26/9, RSI 14. The owner's one example, worked on the stored bars after the fact,
+pays +1.48 R - an illustration, not evidence.
 
 **How a day is walked** (`eye/METHOD.md` 2c): a date taken whole, the owner's three windows in order -
 Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai - advancing a few bars at a time, and
 **every window written into `eye/sessions.csv` whether it produced a trade or not.**
 
-**The ledger, all of it** (re-scored after the clock fix, `RULES_REVIEW.md` C1/C3):
+**The tools.**
+
+- `eye/walk.py` draws, per look, `_a` = H1 above M15 and `_b` = M5, with MT5's ZigZag on each frame and
+  MACD (as MT5 draws it: main as histogram, simple 9-bar signal - **not** `app.indicators.trend.macd`) and
+  RSI under M15 and M5; nothing uses a bar not closed at `now`.
+- `eye/score.py` fills an order when price trades **through** the entry from the side it was on (limits
+  and stops alike - it used to fill every sell as a limit, RULES_REVIEW M1), holds the trade until stop or
+  target, and marks one still running at the end of the stored bars `open` - not a result.
+- **Data: FBS-Demo only** (owner, 10-28). Refreshed with
+  `.venv\Scripts\python scripts/download_history.py --symbols XAUUSD --timeframes M5,M15,H1 --days 5`, which
+  runs through the bot's own terminal `C:\MT5\taa-bot` (logged in to FBS-Demo; it never touches the
+  owner's real terminal), merging into `data/history/FBS-Demo` (stored to 28 Oct 12:30 server time). MT5
+  server time is UTC+2 since 25 Oct: **Thai = server + 5**.
+- **Checked against the owner's MT5:** every M15 ZigZag pivot from 26 Oct 19:00 to 28 Oct 12:30 server
+  matched in price and time, and the 12:30 bar's open and low matched the owner's FBS-Real screen to the
+  cent. **Not yet checked: MACD and RSI values** (Claude's: M15 27 Oct 19:30 server, MACD 12.20, signal
+  13.31, RSI 78.25 - the owner reads MT5's Data Window, Ctrl+D), and ZigZag on M5 and H1.
+
+**The ledger, all of it** (before 2e; re-scored after the clock fix, `RULES_REVIEW.md` C1/C3):
 
 | | |
 |---|---|
 | Decisions that were trades | **12** (9 filled, 3 never filled), plus 3 moments stood aside |
 | As planned | **-4.53 R, -0.378 a trade** |
-| The same ideas taken at the price on the screen | **-2.60 R, -0.217 a trade** (was -0.124 before the fix) |
+| The same ideas taken at the price on the screen | **-2.60 R, -0.217 a trade** |
 | Real days walked | 2 - 2026-04-01 and 2026-04-02 |
-| Windows walked | 6, of which 5 count (01/04 New York is an excluded observation): 2 `shut`, 0 `open-missed`, 2 `open-taken`, 1 `no-setup` |
+| Windows walked | 6, of which 5 count: 2 `shut`, 0 `open-missed`, 2 `open-taken`, 1 `no-setup` |
 
-`python eye/score.py summary` and `python eye/rules.py` give the live versions; the numbers above were
-checked against them at 17:28 Thai.
+`python eye/score.py summary` and `python eye/rules.py` give the live versions. The twelve keep the
+4-hour scores they were given; the M1 fill fix re-scores all twelve identically.
 
-**The three things measured, none decided, all backwards:**
+### What happened on 2026-10-28, after the handoff of 16:48
 
-1. **The structure at the level** - with it 4 trades at +0.14 R, against it 4 trades all a full stop. Take
-   the one +3.67 R winner out and both halves lose alike, and the with/against labels are not in the
-   ledgers - only in prose (`LESSONS.md` 1, `RULES_REVIEW.md` X2). A hypothesis.
-2. **Waiting for a better price** - on sight beats planned by **+0.161 R a trade** over 12, all of it from
-   the three plans that never filled (missed by 3.37, 3.85 and 3.82 USD), which win on sight largely by
-   construction; on the nine filled trades on sight was **worse** by 1.15 R. Rule 7's 4 USD cap rests on
-   this (`LESSONS.md` 4).
-3. **A stop inside the band loses a trade the read got right** - day 2's only decision; the same idea with
-   the stop beyond the band pays +1.63 R (`LESSONS.md` 5).
-
-**And one about the method** (`LESSONS.md` 6): of the five counted windows, **two were `shut`** - the
-market moved more than a hundred dollars and the rules could not take it - and the one catchable setup was
-takeable for about **twenty minutes**, at the level.
-
-### What happened on the evening of 2026-10-28
-
-- **The rules were reviewed with Codex**, each reader apart; Claude's half was committed before Codex's
-  was opened (`eye/RULES_REVIEW.md`, 0ecf0fe).
-- **A scoring bug was found and fixed**: `score.py` started the clock on a bar already on the screen and
-  rolled #15 a day forward. Every trade was re-scored and every file carrying the old numbers corrected
-  (1050ddc).
-- **Claude proposed METHOD 2d** (label every picture, enter only a pullback in a trend). The owner said "try
-  it", then on the plain summary: *"not really my way"*. It is **on hold** and kept as a record; it never
-  ran. `eye/looks.csv` (header only) was made for it and is unused.
-- **The chart images in `eye/walk/` and `eye/sheets/` were deleted** at the owner's word (51 files,
-  recoverable from 937f75a; `walk.py` draws a chart again on demand).
+- **The nine rules were reviewed with Codex**, each reader apart (`RULES_REVIEW.md` 1-3). A scoring bug
+  was fixed: the clock started on a bar already seen and rolled #15 a day forward; the numbers everywhere
+  were corrected.
+- **Claude proposed METHOD 2d** (a trend pullback); the owner said it was not their way. **On hold**, kept
+  as a record; `eye/looks.csv` belonged to it and is unused.
+- **The chart images in `eye/walk/` and `eye/sheets/` were deleted** at the owner's word (recoverable from
+  937f75a).
+- **The owner dictated their setup** - METHOD 2e - and **the archive was declared old data** (CLAUDE.md,
+  HOUSE_RULES).
+- **2e and its tools were reviewed by Claude and Codex apart** (`RULES_REVIEW.md` 5-6). Codex missed the
+  fill bug; Claude missed four consistency faults. All fixed but the two jobs below.
 
 ---
 
 ## Where it resumes
 
-**Answered by the owner on 10-28 (`METHOD.md` 2e, the table):** edge side = the H1 trend; at resistance when sellers have the edge, at support when buyers do; 3-5 ZigZag peaks; divergence on MACD, RSI and price; entry = structure breaks, then the retest of the broken line; MT5 default settings; entry TF M5-M15. **The whole setup is now one principle in seven steps (METHOD 2e, "The principle"), generalised from the owner's example - the owner: an example is to be summarised into a principle, never made a fixed rule.** Step 6 answered 10-28: **the stop beyond the highest top / lowest bottom of the move** (Claude's first reading, the bounce's high, was wrong). **Held until the stop or the target, no time limit** (`score.py` now does that). Divergence is the book's: price against MACD/RSI at the ZigZag peaks - the owner's example shows it on both (METHOD 2e). Nothing in the setup is open any more.
+**1. Add a `steps` column to the ledgers** - seven characters, `+` / `-` per step of 2e's principle, like
+`rules` - and have `eye/rules.py` count it. A 2e trade is judged by `steps` (METHOD 2e, row 2).
 
-**Read first: `METHOD.md` 2e - "What Claude understands" and "What can be done with it"** (the six actions and their state). The three open answers are listed at its end.
+**2. Real day 3, 2026-04-03, Asia 07:00 Thai, under 2e.** `.venv\Scripts\python eye/walk.py "2026-04-03 07:00" 0`
+and advance a few bars at a time; read `_a` first (H1 side, the level), then the entry frames. Write the
+reading into `SHEETS.md` before the reveal, every decision into `ledger.csv` with `steps`, and the window
+into `sessions.csv` with its `reach` before moving to London.
 
-**1. METHOD 2e, in the owner's terms.** Ask the owner the three open questions and write the answers as
-they give them - Claude does not fill them in (that is how 2d happened):
+Carried from the earlier days, still true under 2e: **the stop goes beyond the band and the extreme, never
+inside the level** (`TRIED.md` 15-16), and **the entry has to be taken when it happens** - both earlier
+days produced a setup that was gone by the time it was complete.
 
-1. **Answered 10-28: divergence on MACD, RSI "and price too"** (MACD and RSI are the owner's exception to "no indicators").
-   Settings: MT5's defaults; read on M5-M15. `walk.py` now draws them.
-2. **Answered 10-28: the peaks are counted from ZIGZAG** (`app/indicators/chart_read.py` `zigzag_pivots`,
-   MT5's, defaults 12/5/3). Still open: settings, timeframe, how many peaks make the count.
-3. **Part answered 10-28: "at resistance when the sell side has the edge, at support when the buy side
-   has the edge."** Still open: what decides which side has the edge; the entry, the stop, the target.
-
-**2. Then real day 3, 2026-04-03, Asia 07:00 Thai.** `python eye/walk.py "2026-04-03 07:00" 0`, advancing a
-few bars at a time. Write the reading into `SHEETS.md` before the reveal, and the window into
-`sessions.csv` with its `reach` before moving to London.
-
-Carry into day 3, from day 2's single trade:
-
-- **The invalidation goes beyond the band, not at a minor low inside it** (`TRIED.md` rows 15 and 16).
-- **The entry has to be at the level** - both days produced a setup that was gone by the time it was
-  complete.
-
-**Agenda from the review, not decided** (`RULES_REVIEW.md` sections 1-3) - they change the rules, so they
-are the owner's: rules 5 and 7 together leave only one shape (C5); the 4 USD cap is in dollars while the
-risk ranges 7x (C6); rule 9 puts the target on the line, against the owner's band rule (C7); a 12-bar step
-is coarser than the ~20-minute catch window (C9); `shut` has no priced trade behind it (X1).
+**After that, when it is wanted:** let the code list the candidates - steps 2-5 are mechanical, so a scan
+can find every place they occurred, by the clock, for the eye to judge only the level and the H1 trend
+before the reveal (METHOD 2e, row 3; it answers the "one reader" hole). And a second reader on the charts.
 
 ## Open, and nobody has closed them
 
 | | |
 |---|---|
-| **Data source: FBS-Demo only** (owner, 10-28: "use the FBS Demo values"). Refreshed 10-28 17:47 Thai with `scripts/download_history.py --symbols XAUUSD --timeframes M5,M15,H1 --days 5` through the bot's own terminal `C:\MT5	aa-bot` (logged in to FBS-Demo; it never touches the owner's real terminal); stored to 28 Oct 12:30 server time. **Checked against the owner's FBS-Real M15 screenshot, 26 Oct 19:00 - 28 Oct 12:30 server: every ZigZag 12/5/3 pivot matched in price and time, and the 12:30 bar's open 4046.21 and low 4044.74 matched to the cent.** MT5 server time is UTC+2 since 25 Oct (Thai = server + 5) | `data/history/FBS-Demo` |
-| **Not yet checked against MT5: MACD and RSI values.** Claude's values at six bars are in the 10-28 chat (e.g. M15 27 Oct 19:30 server: MACD 12.20, signal 13.31, RSI 78.25); the owner reads them in MT5's Data Window (Ctrl+D). Also unchecked: ZigZag on M5 and H1, and whether a pivot fixes at the same bar MT5 stops moving it | `eye/walk.py` |
-| **Done 10-28:** `walk.py` draws the owner's setup - image `_a` H1 above M15, image `_b` M5; ZigZag 12/5/3 on every frame, MACD 12/26/9 (as MT5 draws it: main as histogram, SMA signal) and RSI 14 under M15 and M5, all computed on closed bars only. Not yet compared against the owner's own MT5 screen | `eye/walk.py` |
-| **One reader.** Codex now runs: pipe the prompt on stdin to `codex exec` (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `--sandbox read-only`). It reviewed the rules on 10-28 but has not read a chart, so one person still chooses the trade and labels which rules held | `TRIED.md` row 14, `RULES_REVIEW.md` |
-| **Seven of the nine rules have no operational definition.** Day 2 showed it live: "the higher low" could be read at two scales | `TRIED.md`, the review table |
-| **Nothing enforces the sequential reveal.** `walk.py` accepts any step, so the tooling cannot prove a decision came before the bars that judge it | `TRIED.md`, the review table |
+| **MACD and RSI not yet checked against MT5**, nor ZigZag on M5 and H1 | `eye/walk.py` |
+| **One reader.** Codex runs with the prompt piped on stdin (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `exec - --sandbox read-only`). It has reviewed documents twice, never a chart | `TRIED.md` row 14 |
+| **Two judgements in 2e** - which level from the left counts, and what the H1 trend is at that moment (the owner's example had just broken an H1 lower high) - are where a reader's bias enters | `RULES_REVIEW.md` M9 |
+| **Nothing enforces the sequential reveal.** `walk.py` accepts any step | `TRIED.md`, the review table |
 | **Nothing in `eye/` converts R into USD** on the owner's 150 USD account | `START_HERE.md` |
+| **The review agenda on the nine rules** (C5, C6, C9, X1) - partly overtaken by 2e, not decided | `RULES_REVIEW.md` 1-3 |
 
 ## Standing constraints
 
