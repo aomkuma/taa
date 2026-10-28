@@ -165,4 +165,30 @@ true.
 and price ran through the target to 4788 at 22:40. Scored at the price on the screen instead, the same idea
 pays **+1.08 R**. This is the trade that produced the 4 USD rule (`LESSONS.md` section 4).
 
-### New York, 19:30 - 23:00 Thai - not yet walked
+### New York, 19:30 - 23:00 Thai - observation only, no decision
+
+**Declared before the chart was opened:** scoring the London trade had already shown me that price reached
+4788 at 22:40, which is inside this window. Anything I "decide" here is knowing the answer, so no row goes
+in the ledger. What the window can still answer is a different question: **do the nine rules catch a move
+I already know happened?**
+
+**Expectation written before opening it:** at 19:30 price should be above the 4720 it had just broken,
+floating between levels, so rule 3 would not trigger and the rules would **miss** the run.
+
+**What was there.** H1: the decline from 5400 (03/03) to the 4120 crash low (23/03), then a base and a
+steady climb; price at 4735 is above the 4700-4720 shelf with the next supply from the left far overhead.
+M5: a staircase up from 4530 with higher lows 4530, 4600, 4670, a high of 4760 at 18:00 and a pullback to
+4735. At 19:50 that pullback reached **4717-4720 - the shelf it had broken in London - and held.**
+
+**The rules catch it.** At the level: HH 4760 over the 4747 London high, HL 4717 over 4670, break and
+retest for the second time. That is rule 5 in full, with rules 1-4 and 6-9 all satisfied: a buy at
+4717-4720, stop under the shelf, target one leg (4670 to 4760 is 90) at about 4807. Price ran to 4788.
+
+**My expectation was wrong, and in the direction that matters.** I predicted the rules would miss it
+because price was between levels. They did not miss it - **I would have, by looking an hour later.** At
+20:25 price was 4736, 16 to 19 USD above the level, past rule 7's 4 USD cap, and the trade was gone. The
+window in which it was takeable was about **twenty minutes** wide, and it was at the level, not after it.
+
+That is the same lesson the morning paid for, arriving from the opposite side: the London trade was missed
+by waiting 2.57 USD **below** price, and this one was missed by arriving 16 USD **above** it. Both are the
+same error - not being at the level when the level is where the trade is.

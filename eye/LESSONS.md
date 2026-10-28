@@ -84,3 +84,35 @@ differences are the same kind of event. What it supports is a rule to test forwa
 than that and the trade is taken at the market or not at all. Both columns are kept on every trade from
 here (`at_decision_r`, `missed_by`), so the next fifty decide it.
 
+## 5. The stop went inside the band, and that alone turned a winner into a loser (2026-04-02)
+
+The owner's standing rule, from long before this folder existed: **a level is a band, not a line - the
+target goes before the line and the stop goes beyond the band.** On real day 2 I wrote the plan myself and
+then broke it.
+
+The level was the 4550-4600 band that 31/03 built. The plan, written at 19:25 before advancing: buy
+4600-4610, **stop 4586**, target 4698. 4586 is two dollars under a minor low and **inside the band**.
+Price filled at 19:55, swept to **4580.86 at 20:20** - five dollars past the stop - and then ran to
+**4699.44 at 21:40**, through the target.
+
+The same idea, the same entry, the same target, scored three ways from the M5 bars:
+
+| the stop | risk | result |
+|---|---:|---|
+| 4586, inside the band (what I wrote) | 19 | stopped at 20:20, **-1.02 R** |
+| 4548, beyond the band | 57 | target at 21:40, **+1.63 R** |
+| 4576, beyond the sweep, entering 4597 after the reclaim | 21 | target at 21:40, **+4.80 R** |
+
+Nothing about the read was wrong. The level was right, the direction was right, the target was right and
+it paid inside two hours. **Only the line I was willing to be wrong at was wrong**, and it cost the whole
+trade.
+
+The second half is worse. At 20:25, with price back at 4597 above the floor, I refused to buy because my
+own written invalidation said that losing 4588 meant the level had failed. **The pattern I refused - a
+sweep that closed back - is one of the four rule 5 names as the thing to look for.** I wrote an
+invalidation that forbids a setup my own rules call valid.
+
+Two trades now, not one, so this is still a handful: reset #1 bought a sweep-and-higher-low with the stop
+beyond the sweep and lost anyway, because the high was falling. D2-1 refused the same shape and it paid.
+What they agree on is narrower and worth carrying forward: **the invalidation line belongs outside the
+band, and whether the setup is taken at all is rule 5's business, not the stop's.**
