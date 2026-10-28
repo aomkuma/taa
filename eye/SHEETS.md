@@ -416,3 +416,20 @@ What the day showed about reading 2e, for the next days to test:
   low that MT5's ZigZag never made a pivot; counted as MT5 draws it, two lows - no setup.
 - **A break that runs straight to the target leaves no retest before it.** The order rule (rule 8) and
   the owner's retest entry together miss exactly that move.
+
+### The owner on day 3's New York chart (2026-10-28, after the day was scored)
+
+The owner, on `eye/walk/2026-04-06_1930_000_b.png`: *"two legs, but it is an M pattern - this chart is
+very pretty."* What the bars show (read after the outcome was known - this is a lesson, not a trade):
+
+- **The large M at the 4700 resistance from the left:** tops 4699.44 (02/04 21:40; MACD 19.15, RSI 74.52)
+  and 4706.58 (06/04 16:40; MACD 8.39, RSI 68.54) - a higher high on both oscillators' lower highs:
+  **divergence on both**, at a level the left of the chart built.
+- **The small M on M5 at the second top:** 4706.58 (16:40) and 4696.78 (17:40), neckline about 4685 (lows
+  4686.05 and 4684.96). Price lost the neckline and fell to 4659.76 by 19:25; it came back up to
+  4690.79-4697.57 between 21:00 and 21:35 - the retest - and fell to 4651.98 at 22:35.
+- **Why I passed it:** I counted "3 to 5 peaks" literally and saw two; and I read H1 as up, which made
+  the sell side the wrong side. The owner's correction is written into 2e step 2: **two peaks that make
+  an M (a W for a buy) count.** The H1 question is open (below).
+- So New York was not `no-setup` by the owner's reading - it was a setup the rules, as I applied them,
+  refused. Its row in `sessions.csv` keeps what I recorded at the time; this note is the correction.

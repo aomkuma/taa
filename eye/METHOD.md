@@ -144,7 +144,7 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 |---|---|
 | **The side with the edge** | **the trend on H1** |
 | **Where** | **at resistance when the sell side has the edge, at support when the buy side has the edge** - never the other way round |
-| **The count** | **3 to 5 peaks, counted from MT5's ZigZag** |
+| **The count** | **3 to 5 peaks, counted from MT5's ZigZag** - **or two, when they make an M (a W for a buy)**: the owner, 2026-10-28, on day 3's New York chart: *"two legs, but it is an M pattern"* |
 | **Divergence** | **on MACD and RSI, against price** - the owner: *"divergence is divergence - what is it by the book?"*; and *"if both happen, it is clear"* - see the principle below |
 | **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
@@ -170,7 +170,8 @@ through that later answer: the LL is the break, the sell is its retest.
 
 1. **Context** - the H1 trend gives the sell side the edge, and price has come up into a **resistance**
    the left of the chart built.
-2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level, with **divergence** on MACD and RSI
+2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level - **or two that make an M** (the owner,
+   after day 3: *"two legs, but it is an M pattern"*) - with **divergence** on MACD and RSI
    against price. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); nothing is
    recorded about one alone - the record says which it was. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
    gave the entry timeframe, not the counting one; the example has 3 peaks on M15 and 4 on M5)*.
@@ -201,7 +202,7 @@ had said a buy is the mirror, nothing more:*
 
 1. the **H1 trend** gives the buy side the edge, and price has come down into a **support** the left of
    the chart built;
-2. ZigZag counts **3 to 5 lows** into it, with **divergence**: price makes a lower or equal low while MACD
+2. ZigZag counts **3 to 5 lows** into it - or two that make a **W** - with **divergence**: price makes a lower or equal low while MACD
    and RSI make a higher low - both is clear;
 3. the structure breaks - price takes out the **last swing high**, and the dip after it holds above the
    bottom - a higher low;
