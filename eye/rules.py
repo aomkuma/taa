@@ -56,7 +56,7 @@ def rows() -> list[dict[str, str]]:
 
 STEPS = {
     1: "H1 side, at a level from the left",
-    2: "3-5 ZigZag peaks with divergence",
+    2: "3-5 peaks with divergence, or an M / W",
     3: "the structure breaks",
     4: "the low (high) breaks",
     5: "entry on the retest (stop limit)",

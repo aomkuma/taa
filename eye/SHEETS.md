@@ -454,3 +454,8 @@ The owner: *"really? I have always understood M as buy and W as sell, in the leg
 projected."* The textbook has it the other way round, which is why Claude read the M as a sell. In the
 owner's usage the M on the 4642-4651 support is a buy - written into METHOD 2e ("The owner's words for
 patterns"), with Claude's reading of "the leg where it has already projected" marked to confirm.
+
+The owner, asked whether that was the spot and whether a clear M at support is taken though MACD and RSI
+did not diverge at its second low: *"it can be entered."* So day 3 London was a setup by the owner's rule -
+**an M at the level needs no divergence** (METHOD 2e step 2). Not added to the ledger: it is read after the
+outcome was known, and stays a lesson.

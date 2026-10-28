@@ -149,9 +149,9 @@ MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
   52-57 % of the time - the years' rise is in every row; the shape alone separates little. The level, the
   H1 side and divergence were not in that count.
 
-**Two things for the owner, still open:** (1) confirm the spot on day 3's chart was the London M on
-4642-4651; (2) at that spot MACD and RSI did not diverge (both lower at the second low) - whether a clear M
-at support is taken without divergence.
+**Answered by the owner, 10-28:** asked whether the spot was day 3 London's M on 4642-4651 and whether a
+clear M at support is taken though MACD and RSI did not diverge there - *"it can be entered."* So: **a clear
+M (W) at the level needs no divergence**; divergence is required for the 3-5 count (METHOD 2e step 2).
 
 **Next: real day 4, 2026-04-07, Asia 07:00 Thai.** Read M and W **the owner's way** (M at support = buy, W
 at resistance = sell) and count two peaks that make one. `.venv\Scripts\python eye/walk.py "2026-04-07 07:00" 0`,
