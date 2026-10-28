@@ -495,3 +495,27 @@ reclaim to 4654. Divergence cannot be read across these bars; 4667.95 still unbr
 **Look 5 - 08:55 Thai, price 4626.83.** The 4642-4651 support gave way: a moving low 4616.50, MACD -6.39,
 RSI 31.39. A 50 USD fall from 4667.95, against the H1 side - not a trade 2e takes. No buy setup either:
 the counter-move is still running. Window over: **no setup.**
+
+### London, 13:00 - 15:00 Thai
+
+**Look 1 - 12:55 Thai, price 4642.90.**
+
+- **H1:** less clear than this morning - highs falling since 4706.58 (4697.57, 4667.95, 4663.98) while
+  lows still rise (4554, 4600.83, 4616.50): a narrowing range. **The edge side is the judgement here;**
+  read as still up, weakly.
+- **M5:** two tops at about 4664 (4664.43 at 08:05, 4663.98 at 11:50) with the lows 4616.50 and 4623.03
+  on a 4616-4625 support (06/04's 4625.41 low) - **an M on the support, the owner's buy**, no divergence
+  needed for it.
+- **Step 3 not yet:** 4663.98 unbroken. And above it the 4667-4672 resistance (4667.95, 4672.55) comes
+  at once - the same squeeze as this morning: no room between a retest entry and the next level.
+- **Expectation:** a 4620-4665 range through London; no completed setup.
+
+**Look 2 - 13:25 Thai, price 4640.99.** Mid-range. Nothing new. No trade.
+
+**Look 3 - 13:55 Thai, price 4653.37.** Rising toward the 4664 tops. Not broken. No trade.
+
+**Look 4 - 14:25 Thai, price 4639.59.** 4623.03 fixed as a low; a high 4656.96 (14:10) under the 4664 tops,
+back to 4640. A narrowing range inside 4616-4664. No trade.
+
+**Look 5 - 14:55 Thai, price 4646.02.** Lows 4616.50 -> 4623.03 -> 4636.66 rising, highs 4664 -> 4656.96
+falling: a triangle inside 4616-4664. Window over: **no setup.**
