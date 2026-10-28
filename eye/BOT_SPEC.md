@@ -163,3 +163,34 @@ Re-running a range replaces the bot's rows for those days (ledger and log), noth
 Gate before handing back: `ruff format` and `ruff check` on the new and changed files, `mypy` on
 `eye/bot2e.py`, `pytest tests/unit/test_eye_bot2e.py`. Run the bot on 2026-04-06 and 2026-04-07 in both h1
 modes and report each decision and the log's reason counts - **not** whether they made money.
+
+---
+
+## Revision 1 (2026-10-28 evening) - after the first build, Codex's review and the owner
+
+These override the sections above where they differ.
+
+**R1. Levels are not merged** (the first build chained overlapping bands into one support of 4460-4625 and a
+stop 211.94 USD under the entry - Claude's spec error). Each H1 fixed pivot is its own band, centre the
+pivot price, half-width as in 2a. `L*` is "inside a support" if it lies inside at least one support band;
+**the band used is the one whose centre is nearest `L*`**. Stop (step 6) and the target band (step 7) use
+single bands only.
+
+**R2. The reward floor is the owner's: `min_r` = 1.0.** The owner, on a plan risking about 72 USD for 41:
+*"risk 72 against a profit of 41 - that is against the principle; it should not be traded."* No decision is
+written when R = (target - entry - 0.30) / (entry - stop) is under 1.0. The log reason is `reward under
+1R`, with R.
+
+**R3. The M is exactly two lows** (Codex). The M path holds only when the counted lows are exactly two, both
+inside the same support band. A count of 3-5 needs divergence on both, always. Test: three lows, the last
+two in one band, no divergence - step 2 fails.
+
+**R4. The cut guard checks every bar** (Codex): `_check_cut` verifies the index is sorted and that every
+bar's `open_time + tf <= now`, not only the last. Test: a future bar inserted inside an otherwise closed
+frame is refused.
+
+**R5. The plain limit** (Codex on SPEC-QUESTION 3): a plain limit at `H_d` only while the last close is above
+`H_d`; if price has fallen back to or under `H_d`, the order is a stop limit again (a fresh break is needed).
+
+**R6. Every SPEC-QUESTION in the report is marked in the code** - the first build reported nine and marked
+four.
