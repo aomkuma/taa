@@ -1,8 +1,8 @@
 # Session handoff
 
-Last updated **2026-10-28 18:05 Thai** (read with `Get-Date`). The owner's setup is written down in full
-(`eye/METHOD.md` 2e), the chart and the scorer are built for it, and both were reviewed by Claude and Codex
-apart. Next: two small tool jobs, then real day 3.
+Last updated **2026-10-28 18:46 Thai** (read with `Get-Date`). The owner's setup is written down in full
+(`eye/METHOD.md` 2e), the tools are built and reviewed, and real day 3 (2026-04-06) has been walked under
+it. Next: real day 4, 2026-04-07.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
 files it points at, and they are few on purpose: everything built before 2026-10-28 was stopped and
@@ -95,11 +95,11 @@ Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai - advancing a fe
 
 | | |
 |---|---|
-| Decisions that were trades | **12** (9 filled, 3 never filled), plus 3 moments stood aside |
-| As planned | **-4.53 R, -0.378 a trade** |
-| The same ideas taken at the price on the screen | **-1.73 R, -0.144 a trade** (held until stop or target) |
-| Real days walked | 2 - 2026-04-01 and 2026-04-02 |
-| Windows walked | 6, of which 5 count: 2 `shut`, 0 `open-missed`, 2 `open-taken`, 1 `no-setup` |
+| Decisions that were trades | **13** (9 filled, 4 never filled), plus 3 moments stood aside |
+| As planned | **-4.53 R, -0.348 a trade** |
+| The same ideas taken at the price on the screen | **-0.15 R, -0.012 a trade** (held until stop or target) |
+| Real days walked | 3 - 2026-04-01, 2026-04-02 and 2026-04-06 (03/04 was Good Friday, no bars) |
+| Windows walked | 9, of which 8 count: 3 `shut`, 0 `open-missed`, 3 `open-taken`, 2 `no-setup` |
 
 `python eye/score.py summary` reads `ledger.csv` only (D1-1, D2-1 and the reset trade #1, which is a
 pre-rules trade sitting in the judged ledger); `python eye/score.py ledger_control.csv summary` gives the
@@ -125,17 +125,20 @@ fill fixes re-score every planned column of all twelve identically.
 
 ## Where it resumes
 
-**1. Add a `setup` and a `trigger` column to the ledgers** - seven characters, `+` held / `-` broken / `?` not judged, one
-per step of 2e's principle, like `rules` (not `steps`: `sessions.csv` already has a `steps` column, the bars
-walked) - and have `eye/rules.py` count it. A 2e trade is judged by `setup`; its `rules` and `conflict`
-columns are still filled (METHOD 2e, row 2).
+**Done on 10-28:** the `setup` and `trigger` columns, `rules.py` judging the seven steps, and **real day 3,
+2026-04-06**, the first day under 2e (03/04 was Good Friday - no bars after 03:50 Thai). Asia: **D3-1**, a
+buy stop limit (trigger 4644.0, limit 4643.0, stop 4599.5, target 4668.0) - **no fill**: the break ran
+straight through the target before any retest, and rule 8 withdraws it (left resting: +0.57 R). London
+`shut`: a 44 USD run from a double bottom with no divergence. New York `no-setup`: divergence twice, but
+MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
 
-**2. Real day 3, 2026-04-03, Asia 07:00 Thai, under 2e.** `.venv\Scripts\python eye/walk.py "2026-04-03 07:00" 0`
-and advance a few bars at a time; read `_a` first (H1 side, the level), then the entry frames. Write the
-reading into `SHEETS.md` before the reveal, every decision into `ledger.csv` with `setup` - **the entry as a stop limit**: `trigger` a little beyond
-the low (high), `entry` at it, so it fills only on the retest after the break (METHOD 4; `score.py` scores
-it) - and the window
-into `sessions.csv` with its `reach` before moving to London.
+**Next: real day 4, 2026-04-07, Asia 07:00 Thai.** `.venv\Scripts\python eye/walk.py "2026-04-07 07:00" 0`,
+one step per command (a slip on day 3 printed two at once). At each look, the pivots with MACD and RSI:
+the helper Claude used lives in the session scratchpad, so rebuild it - `zigzag_pivots` on the closed bars
+of M5 and M15, `walk.macd_mt5` and `app.indicators.momentum.rsi` at each pivot. Read divergence against
+**fixed** pivots only (day 3: the reading changed when a pivot fixed). Write each look into `SHEETS.md`
+before advancing; a decision into `ledger.csv` with `setup` and, for a 2e entry, a `trigger`; the window
+into `sessions.csv`. **Do not run `score.py` until the whole day is walked.**
 
 Carried from the earlier days, still true under 2e: **the stop goes beyond the band and the extreme, never
 inside the level** (`TRIED.md` 15-16), and **the entry has to be taken when it happens** - both earlier
