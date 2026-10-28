@@ -60,3 +60,40 @@ sequence, which Claude had not; the divergence question is the same as C-H4 - th
 
 **The owner answered the divergence question (2026-10-28): *"one"*** - the 3-5 count needs divergence on
 one oscillator, not both. `div_mode` = one becomes the owner's default (BOT_SPEC R11), not a research variant.
+
+### Round 1 - eleven variants of the `[Claude]` definitions, October 1-27 (Sonnet's runner, `eye/bot_research.py`)
+
+With the owner's rules as they stand (one oscillator enough, at least 1:2):
+
+| # | date | who proposed | what changed | why | Oct trades | won / lost | USD from 200 | kept? |
+|---|---|---|---|---|---:|---:|---:|---|
+| 1 | 10-28 | - | `base_strict` (div one, 2R) | the owner's rules as answered | 0 | - | 200.00 | - |
+| 2 | 10-28 | - | `base_lows` | other H1 reading | 0 | - | 200.00 | - |
+| 3 | 10-28 | - | `both_strict` - div both (the old rule) | comparison | 0 | - | 200.00 | - |
+| 4 | 10-28 | Claude C-H1 | `h4_side` - side from H4 | H1 side too slow | 0 | - | 200.00 | no |
+| 5 | 10-28 | Claude C-H1 | `swings3` - three swings | firmer side | 0 (no side on 1,568 bars) | - | 200.00 | no |
+| 6 | 10-28 | Claude C-H2, Codex 3 | `m15_only` | M5 ZigZag too fine | 0 | - | 200.00 | no |
+| 7 | 10-28 | Claude C-H3, Codex 2 | `band015` | wider zones | 0 | - | 200.00 | no |
+| 8 | 10-28 | Claude C-H3, Codex 2 | `band020` | wider zones | 0 | - | 200.00 | no |
+| 9 | 10-28 | Codex 1 | `window30` - count window 30 | zone peaks outside 20 pivots | 0 | - | 200.00 | no |
+| 10 | 10-28 | - | `lows_m15` | combination | 0 | - | 200.00 | no |
+| 11 | 10-28 | - | `lows_band015` | combination | 0 | - | 200.00 | no |
+
+**Every variant: no trade.** Wider bands moved the block from step 2 to step 3 (129-183 bars "no higher low
+yet") but no setup came through.
+
+### The measurement that explains it - the 2R floor switched off, to count only (not a trading variant)
+
+| # | variant | setups through every step but the reward | R of each | if all taken |
+|---|---|---:|---|---|
+| M1 | strict, min_r 0 | **1** | 1.31 (13/10 BUY) | not filled |
+| M2 | lows, min_r 0 | **3** | 1.31, 0.10, 0.23 | none filled |
+| M3 | lows, band 0.15, min_r 0 | **4** | 0.80, 0.28, 1.19, 0.38 | 3 filled: 1 won, 2 lost, -1.64 R, **200 -> 158.47 USD** |
+
+**What it says (Claude's reading of these numbers, one month):** under the owner's rules as coded, the
+setup is **rare - one to four a month - and its reward is small: no setup in October reached 1:2; the best
+was 1.31.** The geometry does it: the stop goes beyond the extreme *and* beyond the zone's band, the target
+stops *before* the next level, and on gold in October the next level was usually closer than twice the
+stop. So the 2R floor is not the only gate, but it is the last one, and nothing passes it.
+**This is a question about the owner's rules, not a `[Claude]` setting**, and it goes to the owner with
+these numbers.
