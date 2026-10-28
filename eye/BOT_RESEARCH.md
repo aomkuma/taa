@@ -57,3 +57,6 @@ H1 side, then the count.
 
 **Agree / differ (Claude):** agree on M15 (C-H2) and bands (C-H3); Codex adds the count window and the swing
 sequence, which Claude had not; the divergence question is the same as C-H4 - the owner's, not ours.
+
+**The owner answered the divergence question (2026-10-28): *"one"*** - the 3-5 count needs divergence on
+one oscillator, not both. `div_mode` = one becomes the owner's default (BOT_SPEC R11), not a research variant.

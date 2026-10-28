@@ -207,7 +207,8 @@ through that later answer: the LL is the break, the sell is its retest.
    to write that as the owner's*) - with **divergence** on MACD and RSI
    against price. **A clear M (W) at the level is taken without divergence** - the owner, 2026-10-28, on
    day 3 London's M, whose second low had MACD and RSI lower: *"it can be entered."* Divergence is required
-   for the 3-5 count; for an M or W it adds strength, it is not a condition. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); nothing is
+   for the 3-5 count - **on one oscillator is enough** (the owner, 2026-10-28, asked whether the count needs MACD
+   and RSI both: *"one"*); both is the clear case. For an M or W it adds strength, it is not a condition. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); nothing is
    recorded about one alone - the record says which it was. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
    gave the entry timeframe, not the counting one; the example has 3 peaks on M15 and 4 on M5)*.
 3. **The structure breaks** - price takes out the **last swing low**, and the bounce after it fails under
@@ -255,7 +256,7 @@ peaks of the counter-move, price against MACD and against RSI:
   push reaches further with less force behind it;
 - for a buy at support: price makes a **lower or equal low**, the oscillator a **higher low**.
 
-*The owner:* both diverging is clear; nothing recorded about one alone. *Claude's reading:* hidden
+*The owner:* both diverging is clear; **one alone is enough for the count** (*"one"*, 2026-10-28). *Claude's reading:* hidden
 divergence - the continuation kind - is a different signal and is left out unless the
 owner adds it.
 

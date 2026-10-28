@@ -157,7 +157,7 @@ M (W) at the level needs no divergence**; divergence is required for the 3-5 cou
 
 **The bot - the work now (owner, 10-28: *"write the code and let a bot do the work"*).** `eye/bot2e.py`
 applies METHOD 2e bar by bar (spec `eye/BOT_SPEC.md`; built by a Sonnet agent, reviewed twice by Codex,
-checked by Claude; 18 tests in `tests/unit/test_eye_bot2e.py`). The owner's reward rule: **at least 1:2**,
+checked by Claude; 18 tests in `tests/unit/test_eye_bot2e.py`). Divergence for the 3-5 count: **one oscillator is enough** (owner, 10-28). The owner's reward rule: **at least 1:2**,
 and when the target just before the next level gives less - **no trade, for now**. Runs so far (06-07/04,
 20-27/10/2026): no decision. **Next for the bot: BOT_SPEC revision 3** - `min_r` 2.0 and step 2 counting
 the tops / bottoms of one zone (the 4141-4142 double top of 21-22/10 was split) - Sonnet implements,

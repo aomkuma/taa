@@ -253,3 +253,7 @@ The case it must get right (a test on the stored bars): at 22/10/2026 07:00 Thai
 resistance zone round 4141-4142 holds two fixed highs, 4141.87 (21/10 19:00 Thai) and 4142.23 (22/10 03:00
 Thai), with the dip to 4104.92 between them inside the count window - the bot counts **two zone highs (the
 owner's W)**, not one. (What it then decides is for steps 3-7 and R9.)
+
+**R11. Divergence on one oscillator is enough - the owner's** (2026-10-28, asked whether the 3-5 count needs
+MACD and RSI both: *"one"*). `div_mode` defaults to **one**; which oscillators diverged is still written
+into each decision (both = the owner's "clear" case).
