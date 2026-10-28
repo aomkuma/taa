@@ -19,7 +19,7 @@ left behind: **-0.115 R a trade**, where the direction was right 53.8 % of the t
 |---|---|---|---|---|
 | 1 | **Decide at a clock-sampled moment**: sample by the calendar, read the chart, decide there | 12 moments, 9 trades, 7 fills, 1 win, **-0.357 R a fill**. The owner, looking at the sheets: 90 % were not spots worth watching | **FAILS** | A sampled bar is not a decision. Trading 8 of 12 moments is itself the signal that the moments were wrong |
 | 2 | **One frame only**: judge from 110 M5 bars, nine hours | Every "level" named was a shelf built that morning. At moment #13 I sold into a market that had just broken a week-long ceiling with nothing above it; the trade that was there paid **+7.1 R in the direction I sold** | **FAILS** | Nine hours cannot contain a level. The missing thing was not skill, it was the left of the chart |
-| 3 | **Two frames, read top first**: H1 three weeks for the levels, M5 33 hours for the entry | Adopted after #2. One trade taken under it so far (lost, for a reason row 6 explains) | **UNPROVEN** | - |
+| 3 | **Two frames, read top first**: H1 about four weeks for the levels, M5 33 hours for the entry | Adopted after #2. One trade taken under it so far (lost, for a reason row 6 explains) | **UNPROVEN** | - |
 | 4 | **Levels from the left**: only shelves earlier days built, never one that formed minutes ago | Both of the clean winners in the whole record (#3 +3.67 R, and the 14/08 hand-read +1.62 R) were at such a level; the four full-stop losers were at shelves hours old | **UNPROVEN** | Measured only backwards so far |
 | 5 | **Wait at the moment**: advance a few bars at a time until the picture is worth trading, or the session ends with nothing | At #13 trading on arrival meant buying a base that broke 40 USD within half an hour; waiting 210 minutes found a real setup instead. But that setup then lost, for reason 6 | **UNPROVEN** | Waiting removes bad trades. It does not by itself make the remaining one good |
 | 6 | **The structure AT the level** (owner): buying a support needs **HH and HL together**, selling a resistance needs **LH and LL**, with a named pattern on top | Labelled on all 8 filled trades from the swings in the six hours before each decision: **with it, 4 trades, +0.14 R each; against it, 4 trades, -1.02 R each - all four a full stop, no exception** | **UNPROVEN, and the most promising thing measured** | The split is clean and it was measured backwards on 8 trades, with the "with" side resting on one winner. The next fifty decide it |
@@ -48,6 +48,9 @@ left behind: **-0.115 R a trade**, where the direction was right 53.8 % of the t
   no-fills give +3.08 R; on the nine filled trades on sight was worse by 1.15 R. D1-1 was missed by
   **3.37 USD, not 2.57**. Still **UNPROVEN** - weaker than written, and the no-fill part is largely a
   selection effect of limit orders (C2).
+- **Row 13 again, later that evening:** held until stop or target (the owner's rule), on sight is **-0.144**,
+  the gap **+0.233**, the no-fills **+4.35 R**, and on the nine fills on sight is worse by **1.55 R**
+  (`RULES_REVIEW.md` section 7).
 
 **Row 14, 2026-10-28 evening:** the tool works - `codex exec` with the prompt piped on stdin answered
 in about a minute, and reviewed the rules read-only (`RULES_REVIEW.md`). The verdict stays: no chart has
@@ -55,7 +58,8 @@ been read by a second reader yet.
 
 ## Methods inherited from the archived work
 
-Measured there, kept here so the same ground is not covered twice. Full record:
+**Old data - a record, not a verdict on anything now** (owner, 2026-10-28: nothing in an archive decides
+the present). Measured there, kept here so the same ground is not covered twice. Full record:
 `docs/archive/README.md`.
 
 | The method | Verdict there |

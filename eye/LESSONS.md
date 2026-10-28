@@ -71,26 +71,29 @@ when the decision was made, with the same stop and target.
 | | R total | R a trade |
 |---|---:|---:|
 | the entries I planned | -4.53 | **-0.378** |
-| taken at the price I saw | -2.60 | **-0.217** |
+| taken at the price I saw | -1.73 | **-0.144** |
 
 **Corrected 2026-10-28 (`RULES_REVIEW.md` C1, C3).** This table first said -1.49 and -0.124, a gap of
 +0.253. Two faults in `score.py` made it: the clock started on a bar the reader had already seen, and for
 #15 it rolled a whole day forward, scoring a Friday decision against Monday's bars; and the on-sight column
-got 6 hours to resolve against the planned column's 4. Re-scored with both fixed, every trade:
+got 6 hours to resolve against the planned column's 4. Re-scored with both fixed it read -2.60 / -0.217.
+**Corrected again the same evening (`RULES_REVIEW.md` section 7):** the owner then ruled that a trade is
+held until its stop or its target, and under that rule the on-sight column reads -1.73 / -0.144 (D1-1 and
+#23 had been closed at 4 hours). Planned is unchanged - none of its trades was time-closed. Now:
 
-**+0.161 R a trade**, and all of it - more than all of it - comes from the trades the plan never got into:
+**+0.233 R a trade**, and all of it - more than all of it - comes from the trades the plan never got into:
 
 | # | planned | on sight | missed by |
 |---|---:|---:|---:|
-| D1-1 | no fill, 0 | **+1.57** | 3.37 |
+| D1-1 | no fill, 0 | **+2.84** | 3.37 |
 | 11 | no fill, 0 | **+0.82** | 3.85 |
 | 17 | no fill, 0 | **+0.69** | 3.82 |
 | 3 | +3.67 | +2.02 | - |
-| 23 | -1.03 | -0.61 | - |
+| 23 | -1.03 | -1.01 | - |
 | 15 | -1.01 | -1.01 | - (was +0.99: the Monday bars) |
 
-The three no-fills add **+3.08 R**; on the **nine filled trades, taking them at the price on the screen
-was worse by 1.15 R** - the one winner shrinks more than the one time-closed loser saves.
+The three no-fills add **+4.35 R**; on the **nine filled trades, taking them at the price on the screen
+was worse by 1.55 R** - the one winner shrinks from +3.67 to +2.02, and every loser loses about the same.
 
 **All three unfilled plans would have won - and that is close to true by construction.** A limit that
 never fills is one where price left in the planned direction without coming back, so unfilled limits are

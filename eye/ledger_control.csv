@@ -10,4 +10,4 @@ id,cutoff_thai,decided_at,reader,side,entry,stop,target,fill,exit,why,r_net,stru
 17,2026-03-11 14:00,2026-03-11 14:00,claude,SELL,5206.0,5213.0,5186.0,,,no fill,0.0,"a double top at 5220 then a slow bleed; selling the retest of the 5205-5207 shelf, target under the 5191 low",?????????,,0.69,3.82
 19,2026-03-16 08:00,2026-03-16 08:00,claude,BUY,5016.0,5005.0,5045.0,16/03 08:00,5005.00,stop,-1.03,a crash to 4975 fully reclaimed in 30 minutes; buying the pullback into the post-crash shelf 5015-5018,?????????,,-1.01,0.00
 21,2026-03-20 20:30,2026-03-20 20:30,claude,-,,,,,,no trade,,mid-range between 4645 and 4693 after a choppy decline; neither edge within reach,?????????,,,
-23,2026-03-25 14:00,2026-03-25 14:00,claude,SELL,4557.0,4568.0,4522.0,25/03 14:10,4568.00,stop,-1.03,"a 4600 top, a 4570-4578 distribution range, a breakdown and a sweep to 4535; selling the retest of 4555-4560",?????????,,-0.61,0.00
+23,2026-03-25 14:00,2026-03-25 14:00,claude,SELL,4557.0,4568.0,4522.0,25/03 14:10,4568.00,stop,-1.03,"a 4600 top, a 4570-4578 distribution range, a breakdown and a sweep to 4535; selling the retest of 4555-4560",?????????,,-1.01,0.00

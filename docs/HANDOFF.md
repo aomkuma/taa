@@ -41,7 +41,7 @@ Read first, in order:
    eye/RULES_REVIEW.md sections 5-6
 
 My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
-generalise, never a rule with its numbers. Do the two tool jobs in "Where it resumes", then walk real
+generalise, never a rule with its numbers. Do the tool job in "Where it resumes", then walk real
 day 3, 2026-04-03, Asia 07:00 first, one window at a time, reporting each trade to me as it happens.
 ````
 
@@ -55,7 +55,7 @@ day 3, 2026-04-03, Asia 07:00 first, one window at a time, reporting each trade 
 **The owner's setup** (`eye/METHOD.md` 2e, dictated 2026-10-28), for a sell - a buy is the mirror:
 
 1. the **H1 trend** gives the sell side the edge, and price comes up into a **resistance from the left**;
-2. **3-5 ZigZag peaks** into it, with **divergence** of MACD or RSI against price;
+2. **3-5 ZigZag peaks** into it, with **divergence** on MACD and RSI against price;
 3. the **structure breaks** - the last swing low goes;
 4. a **weak retest** - a lower high;
 5. **entry on the new lower low**, on M5-M15;
@@ -82,8 +82,10 @@ Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai - advancing a fe
 - **Data: FBS-Demo only** (owner, 10-28). Refreshed with
   `.venv\Scripts\python scripts/download_history.py --symbols XAUUSD --timeframes M5,M15,H1 --days 5`, which
   runs through the bot's own terminal `C:\MT5\taa-bot` (logged in to FBS-Demo; it never touches the
-  owner's real terminal), merging into `data/history/FBS-Demo` (stored to 28 Oct 12:30 server time). MT5
-  server time is UTC+2 since 25 Oct: **Thai = server + 5**.
+  owner's real terminal), merging into `data/history/FBS-Demo` (stored to 28 Oct server time: M15 12:30, M5 11:55, H1 11:00; `score.py` scores on M5). MT5
+  server time is UTC+2 since 25 Oct (**Thai = server + 5**) and was UTC+3 before it, so for the April days
+  being walked **Thai = server + 4**. `walk.py` and the ledgers use Thai time; server time matters only when
+  comparing with the owner's MT5 screen.
 - **Checked against the owner's MT5:** every M15 ZigZag pivot from 26 Oct 19:00 to 28 Oct 12:30 server
   matched in price and time, and the 12:30 bar's open and low matched the owner's FBS-Real screen to the
   cent. **Not yet checked: MACD and RSI values** (Claude's: M15 27 Oct 19:30 server, MACD 12.20, signal
@@ -95,12 +97,15 @@ Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai - advancing a fe
 |---|---|
 | Decisions that were trades | **12** (9 filled, 3 never filled), plus 3 moments stood aside |
 | As planned | **-4.53 R, -0.378 a trade** |
-| The same ideas taken at the price on the screen | **-2.60 R, -0.217 a trade** |
+| The same ideas taken at the price on the screen | **-1.73 R, -0.144 a trade** (held until stop or target) |
 | Real days walked | 2 - 2026-04-01 and 2026-04-02 |
 | Windows walked | 6, of which 5 count: 2 `shut`, 0 `open-missed`, 2 `open-taken`, 1 `no-setup` |
 
-`python eye/score.py summary` and `python eye/rules.py` give the live versions. The twelve keep the
-4-hour scores they were given; the M1 fill fix re-scores all twelve identically.
+`python eye/score.py summary` reads `ledger.csv` only (D1-1, D2-1 and the reset trade #1, which is a
+pre-rules trade sitting in the judged ledger); `python eye/score.py ledger_control.csv summary` gives the
+control; the figures above are the two together. `python eye/rules.py` reads both. The twelve keep the
+planned scores (none was time-closed); their on-sight column was re-scored under the hold rule. The
+fill fixes re-score every planned column of all twelve identically.
 
 ### What happened on 2026-10-28, after the handoff of 16:48
 
@@ -120,8 +125,10 @@ Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai - advancing a fe
 
 ## Where it resumes
 
-**1. Add a `steps` column to the ledgers** - seven characters, `+` / `-` per step of 2e's principle, like
-`rules` - and have `eye/rules.py` count it. A 2e trade is judged by `steps` (METHOD 2e, row 2).
+**1. Add a `setup` column to the ledgers** - seven characters, `+` held / `-` broken / `?` not judged, one
+per step of 2e's principle, like `rules` (not `steps`: `sessions.csv` already has a `steps` column, the bars
+walked) - and have `eye/rules.py` count it. A 2e trade is judged by `setup`; its `rules` and `conflict`
+columns are still filled (METHOD 2e, row 2).
 
 **2. Real day 3, 2026-04-03, Asia 07:00 Thai, under 2e.** `.venv\Scripts\python eye/walk.py "2026-04-03 07:00" 0`
 and advance a few bars at a time; read `_a` first (H1 side, the level), then the entry frames. Write the
@@ -135,6 +142,12 @@ days produced a setup that was gone by the time it was complete.
 **After that, when it is wanted:** let the code list the candidates - steps 2-5 are mechanical, so a scan
 can find every place they occurred, by the clock, for the eye to judge only the level and the H1 trend
 before the reveal (METHOD 2e, row 3; it answers the "one reader" hole). And a second reader on the charts.
+
+## Questions for the owner (from the three-agent review)
+
+1. Divergence: must **both** MACD and RSI diverge, or is **one** enough?
+2. The entry: the example's sell came on the lower low *after* the retest. Is a sell **at the retest
+   itself**, before that lower low, also taken? (METHOD 2e, "The table's entry and step 5 are one entry")
 
 ## Open, and nobody has closed them
 

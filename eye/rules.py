@@ -60,8 +60,8 @@ def main() -> None:
     # A plan that never filled earned nothing, and averaging its 0.00 into a rule's column would
     # read as the rule being neutral when it never got a trade at all. Only fills are averaged; the
     # no-fills are counted beside them, because never filling is itself a result (METHOD rule 7).
-    scored = [r for r in judged if r["why"] != "no fill"]
-    unfilled = [r for r in judged if r["why"] == "no fill"]
+    scored = [r for r in judged if not r["why"].startswith("no fill")]
+    unfilled = [r for r in judged if r["why"].startswith("no fill")]
     print(
         f"{len(data)} trades in the ledgers, {len(judged)} with every rule judged at decision time, "
         f"of which {len(scored)} filled and {len(unfilled)} never did\n"
@@ -100,8 +100,12 @@ def main() -> None:
     old = [r for r in data if not r.get("rules") or "?" in r.get("rules", "?")]
     if old:
         rs = [float(r["r_net"]) for r in old]
+        fills = [float(r["r_net"]) for r in old if not r["why"].startswith("no fill")]
+        # Both denominators, said out loud: averaging the no-fills' 0.00 in reads as a smaller loss per trade
+        # than the fills made (reviewer, 2026-10-28).
         print(
-            f"{len(old)} trades, {sum(rs):+.2f} R, {sum(rs) / len(rs):+.3f} a trade. "
+            f"{len(old)} decisions, {sum(rs):+.2f} R, {sum(rs) / len(rs):+.3f} a decision; "
+            f"{len(fills)} of them filled, {sum(fills) / len(fills):+.3f} a fill. "
             "They are the control and are never mixed with the judged ones."
         )
 

@@ -25,7 +25,7 @@ indicators. The owner, 2026-10-28:
 Later the same day the owner named what they actually trade, and the work holds to it: **price structure +
 divergence + counting the peaks** (`eye/METHOD.md` 2e). The owner then dictated the setup, and it is written in
 full in 2e: the H1 trend gives the side; at a level from the left on that side, 3-5 ZigZag peaks with
-divergence of MACD or RSI against price (the owner's one exception to "no indicators"); the structure
+divergence on MACD and RSI against price (the owner's one exception to "no indicators"); the structure
 breaks, a weak retest, entry on the break; stop beyond the extreme of the move; target just before the
 next level; held until stop or target.
 
@@ -57,8 +57,9 @@ decided:
   full stop every time - but take the single +3.67 R winner out of the good half and both halves lose
   about -1.02 R. It is a hypothesis, not a result.
 - **Waiting for a better price cost more than every losing trade.** The same twelve ideas taken at the
-  price that was on the screen make **-0.217 R a trade** instead of -0.378 (corrected 2026-10-28 from
-  -0.124: a scoring bug, `eye/RULES_REVIEW.md` C1), and all three plans that never filled would have won,
+  price that was on the screen make **-0.144 R a trade** instead of -0.378 (corrected twice on 2026-10-28:
+  a scoring bug, then the owner's rule to hold until stop or target - `eye/RULES_REVIEW.md` C1 and section
+  7), and all three plans that never filled would have won,
   missed by 3.37, 3.85 and 3.82 USD - partly by construction, since an unfilled limit is one price left in
   the planned direction. On the nine filled trades, on sight was worse. An order now goes no further than **4 USD**
   from price.

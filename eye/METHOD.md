@@ -6,7 +6,8 @@ that timeframe. Try trading with your bare eyes."* Then: *"you need to trade a h
 picture appears."*
 
 So this folder is a hundred hand-read trades on real candles, and nothing else. No indicator, no rule set,
-no filter, no knowledge base. **These rules are written before the first chart is drawn**, so that what
+no filter, no knowledge base (since 2e, 2026-10-28: the owner's own setup, with MACD, RSI and ZigZag as its
+only tools). **These rules are written before the first chart is drawn**, so that what
 follows can judge them.
 
 ## 1 What is read
@@ -63,7 +64,7 @@ that price had just broken a week-long ceiling at 5200-5240; it read as "under r
 
 So the eye now gets, in this order:
 
-1. **H1, about three weeks** - where the levels are. Read this first, always.
+1. **H1, about four weeks** (500 bars) - where the levels are. Read this first, always.
 2. **M5, about 33 hours** - the width of the owner's own screen, for the entry.
 
 If the upper chart shows nothing at price - no level the left side built - there is no moment, whatever the
@@ -167,8 +168,8 @@ lower high, the lower low as the trigger) - what the owner asked for, and for th
 
 1. **Context** - the H1 trend gives the sell side the edge, and price has come up into a **resistance**
    the left of the chart built.
-2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level, with **divergence** of MACD or RSI
-   against price. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
+2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level, with **divergence** on MACD and RSI
+   against price (whether one oscillator is enough or both must diverge: **to ask the owner**). The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
    gave the entry timeframe, not the counting one; the example has 3 peaks on M15 and 4 on M5)*.
 3. **The structure breaks** - price takes out the **last swing low**: the up leg is over.
 4. **The retest** - a **weak bounce** that makes a **lower high** under the top.
@@ -178,17 +179,27 @@ lower high, the lower low as the trigger) - what the owner asked for, and for th
    *"the SL goes beyond the highest top or the lowest bottom."* (Claude had first read it as the bounce's
    high; the owner corrected it.)
 7. **The target** - **just before** the opposite level from the left: for a sell, a little above the next
-   support, never on the line.
+   support, never on the line - the owner's standing rule that a level is a band and the target goes
+   before the line (`LESSONS.md` 5).
 
-**Divergence, as the book has it** (the owner: *"divergence is divergence"*). Compared between ZigZag
+**The table's entry and step 5 are one entry, read on the owner's example** (two reviewers read them as
+two). The table: *"wait for the structure to break, then the retest of the support or resistance it
+broke."* In the example the structure broke at 03:00-03:05 - price took the 4059.30 and 4057.66 lows -
+and the light bounce went back up to 4062.76, into and through that broken band: **the bounce is the
+retest**. The sell was then *"when it loses 4055"* - the new lower low after the retest. So: the retest is
+where price returns to the broken level; the entry is the break that follows it. **To confirm with the
+owner** - in particular whether a sell at the retest itself, before the lower low, is also taken.
+
+**Divergence, as the book has it** (the owner: *"divergence is divergence - what is it by the book?"*). The
+definition below is *Claude's rendering of the textbook*, including "or equal". Compared between ZigZag
 peaks of the counter-move, price against MACD and against RSI:
 
 - for a sell at resistance: price makes a **higher or equal high**, the oscillator a **lower high** - the
   push reaches further with less force behind it;
 - for a buy at support: price makes a **lower or equal low**, the oscillator a **higher low**.
 
-*Claude's reading, not the owner's words:* one oscillator diverging is a divergence, and both is a
-stronger one; hidden divergence - the continuation kind - is a different signal and is left out unless the
+*Not yet asked:* whether one oscillator diverging is enough or both must. *Claude's reading:* hidden
+divergence - the continuation kind - is a different signal and is left out unless the
 owner adds it.
 
 **A trade is held until its stop or its target** - no time limit (the owner, 2026-10-28: *"hold it"*).
@@ -207,7 +218,8 @@ owner's.) One example,
 read after the fact - it shows what the words mean, not that they pay.
 
 **The divergence in the example**, measured on the bars known at the entry (03:30), at the ZigZag highs of
-the counter-move up from 3989:
+the counter-move up from 3989 - on M15 the top was still MT5's moving last point at that moment, which
+`walk.py` now draws dashed and labelled with a "?" (as it does the break to 4055.57):
 
 | M15 high (server) | price | MACD main | RSI 14 |
 |---|---:|---:|---:|
@@ -248,10 +260,10 @@ record has to say what was seen before the reveal.
 
 | | what | state |
 |---|---|---|
-| 1 | **Walk real days under 2e**, from 2026-04-03 Asia 07:00, with `walk.py` (H1 + M15, and M5; ZigZag, MACD, RSI at MT5's defaults). At each decision write which of the seven steps held | **ready** once rows 2 and 3 below are done |
-| 2 | **Record the seven steps on every trade**: a `steps` column in the ledger, seven characters like `rules` (`+` held, `-` broken), so each step is measured the way the nine rules are. **A 2e trade is judged by `steps`; its `rules` column still records the nine, where 2e has replaced rules 4 and 9 (below)** | to add before day 3 |
-| 3a | **`score.py` fills a break entry as a stop order** - it filled every SELL as a sell limit, so a sell under price would have filled before the break (RULES_REVIEW M1). Trades still open when the stored bars end are `open`, not a result | **done** 10-28; the twelve stored trades re-score identically |
-| 3 | **Let the code find the candidates, the eye judge them.** Steps 2-5 are mechanical: a scan of the stored bars can list every place where 3-5 ZigZag peaks with divergence were followed by a structure break and a lower-high retest - found by the clock, not picked by a reader. The reader then judges only the level and the H1 trend, before seeing what followed. This answers the "one reader chooses the trades" hole | possible now; not built |
+| 1 | **Walk real days under 2e**, from 2026-04-03 Asia 07:00, with `walk.py` (H1 + M15, and M5; ZigZag, MACD, RSI at MT5's defaults). At each decision write which of the seven steps held | **ready** once row 2 is done |
+| 2 | **Record the seven steps on every trade**: a `setup` column in the ledger (not `steps` - `sessions.csv` already has a `steps` column, the bars walked), seven characters like `rules`: `+` held, `-` broken, `?` not judged, so each step is measured the way the nine rules are. **A 2e trade is judged by `steps`; its `rules` column still records the nine, where 2e has replaced rules 4 and 9 (below)** | to add before day 3 |
+| 3a | **`score.py` fills a break entry as a stop order** - it filled every SELL as a sell limit, so a sell under price would have filled before the break (RULES_REVIEW M1). Trades still open when the stored bars end are `open`, not a result | **done** 10-28; the twelve stored trades re-score identically in every planned column (fill, exit, result, R, miss); the on-sight column was re-scored under the hold rule |
+| 3 | *(Claude's proposal)* **Let the code find the candidates, the eye judge them.** Steps 2-5 are mechanical: a scan of the stored bars can list every place where 3-5 ZigZag peaks with divergence were followed by a structure break and a lower-high retest - found by the clock, not picked by a reader. The reader then judges only the level and the H1 trend, before seeing what followed. This answers the "one reader chooses the trades" hole | possible now; not built |
 | 4 | **Hold until the stop or the target** - the owner answered 10-28 | **done** in `score.py` |
 | 5 | **A second reader**: Codex given the seven steps and the same charts, reading apart | the tool works (stdin); not run on charts |
 | 6 | **Check MACD and RSI against the owner's MT5** (Data Window) at a few bars - ZigZag on M15 already matched | waiting for the owner |
@@ -374,8 +386,9 @@ resolve windows were chosen when a moment was a single panel, and they have neve
 owner's standing rule that *a setup needing four to eight hours of holding, even overnight, is fine if it
 pays - the sixty-minute scalp was a method, not the goal.* Real day 1 is exactly that case: the London plan
 was never filled, and the price it was aiming at arrived at 22:40, about **eight hours** after the
-decision. A 4-hour cap scores that day as nothing happening. Both columns will be kept on every trade from
-here (resolved at 4 hours, and resolved at the end of the day) before either is called the measure.
+decision. A 4-hour cap scores that day as nothing happening. ~~Both columns will be kept on every trade
+from here (resolved at 4 hours, and resolved at the end of the day) before either is called the measure.~~
+(Not done, and no longer needed: the owner answered - hold until stop or target.)
 
 ## 5 What is written down
 
@@ -423,19 +436,20 @@ ones a trade actually turns on.
 
 | | |
 |---|---|
-| 1 | **Two frames, upper read first.** H1 about three weeks, where the levels are; M5 about 33 hours, the entry. The left of the chart must go back far enough to hold a level |
+| 1 | **Two frames, upper read first.** H1 about four weeks, where the levels are; M5 about 33 hours, the entry (since 2e: M15 about three days as well). The left of the chart must go back far enough to hold a level |
 | 2 | **Levels come from the left** - shelves earlier days built, never one that formed minutes ago |
 | 3 | **Wait for price to run into one of them.** Not at a level, nothing to decide |
 | 4 | **Three or four legs complete, then trade the fifth - with it, never against it.** Ask each time which leg is alive and whether this trade goes its way |
 | 5 | **The structure AT the level says whether it holds.** Buying a support needs **HH and HL together**; selling a resistance needs **LH and LL together**; and a named chart pattern on top |
 | 6 | **Enter on a timeframe, exit on that timeframe** |
-| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.217 (corrected 10-28 from -0.124, `RULES_REVIEW.md` C1), with all three unfilled plans winning and the misses 3.37, 3.85 and 3.82 USD - and on the nine filled trades, on sight was worse |
+| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.144 (held until stop or target; corrected twice on 10-28 from -0.124, `RULES_REVIEW.md` C1 and section 7), with all three unfilled plans winning and the misses 3.37, 3.85 and 3.82 USD - and on the nine filled trades, on sight was worse |
 | 8 | **The order must fill while the idea is still intact.** Not a question to anyone - a check on where the order sits against price. A sell limit above price in a rising market fills only because price kept rising, which is the idea failing (moment #13: filled 5370, stopped five minutes later). A buy limit below price in a rising market fills on the pullback, which is what was wanted |
 | 9 | **The stop sits beyond the structure that proves the idea wrong; the target is a full leg away** - the next level from the left |
 
-**The four that are not trading rules:** no indicators (a stance); a sampled moment is where I sit down and
+**The four that are not trading rules:** no indicators (a stance - since 2e, MACD, RSI and ZigZag are the
+owner's exception); a sampled moment is where I sit down and
 the chart advances until the picture is worth trading (how the test is run); the decision is written before
-the reveal and every trade and every wait is recorded, scored with 2 hours to fill, 4 hours to resolve, a
+the reveal and every trade and every wait is recorded, scored with 2 hours to fill, held until stop or target (4 hours until 2e), a
 bar touching both counted as the stop and 0.30 USD of spread off every entry (how it is recorded);
 +0.15 R a trade after costs (the bar).
 

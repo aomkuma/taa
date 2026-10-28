@@ -83,6 +83,8 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     side, entry, stop, target = row["side"], float(row["entry"]), float(row["stop"]), float(row["target"])
     buy = side == "BUY"
     window = m5[m5.index >= cut]
+    if window.empty:  # no bar after the decision is stored yet
+        return {"fill": "", "exit": "", "why": "open", "r_net": "", "at_decision_r": "", "missed_by": ""}
     first = window.iloc[:FILL_BARS]
 
     # What the same idea would have paid taken at the market, at the price on the screen when the decision
@@ -100,23 +102,48 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     # alike. It used to treat every BUY as a buy limit and every SELL as a sell limit, which fills a sell
     # stop on the first bar whose high is above it, before price ever broke (RULES_REVIEW M1).
     from_above = entry <= seen
-    hit = first[(first.low <= entry) if from_above else (first.high >= entry)]
-    if hit.empty:
+    touched = ((first.low <= entry) if from_above else (first.high >= entry)).to_numpy()
+    # Rule 8: the order fills only while the idea is intact. If the stop or the target trades on a bar before
+    # the one that reaches the entry, the idea failed or played out without us, and the order is withdrawn
+    # (reviewer, 2026-10-28: a 2e sell stop at 4055 would otherwise fill after price had gone through 4071).
+    gone = (
+        ((first.low <= stop) | (first.high >= target))
+        if buy
+        else ((first.high >= stop) | (first.low <= target))
+    )
+    at_fill = int(touched.argmax()) if touched.any() else len(first)
+    if gone.to_numpy()[:at_fill].any() or not touched.any():
+        if not touched.any() and not gone.to_numpy().any() and len(first) < FILL_BARS:
+            return {
+                "fill": "",
+                "exit": "",
+                "why": "open",
+                "r_net": "",
+                "at_decision_r": at_text,
+                "missed_by": "",
+            }  # fmt: skip  - the fill window is not over in the stored bars
         missed = (first.low.min() - entry) if from_above else (entry - first.high.max())
+        why = "no fill (stop or target first)" if touched.any() else "no fill"
         return {
-            "fill": "", "exit": "", "why": "no fill", "r_net": "0.0",
-            "at_decision_r": at_text, "missed_by": f"{missed:.2f}",
+            "fill": "", "exit": "", "why": why, "r_net": "0.0",
+            "at_decision_r": at_text, "missed_by": f"{max(missed, 0.0):.2f}",
         }  # fmt: skip
-    t0 = hit.index[0]
+    t0 = first.index[at_fill]
+    # A stop order (a sell under price, a buy over it - 2e's entry on the break) that a bar gaps through is
+    # filled at that bar's open, not at its price; a limit is filled at its price.
+    stop_order = from_above != buy
+    bar_open = float(first.open.iloc[at_fill])
+    gapped = stop_order and ((bar_open < entry) if not buy else (bar_open > entry))
+    price = bar_open if gapped else entry
     after = window[window.index >= t0].iloc[:LIVE_BARS]  # held from the fill bar to the stop or the target
-    out, why = resolve(after, entry, stop, target, buy)
+    out, why = resolve(after, price, stop, target, buy)
     if why == "open":
         return {
             "fill": f"{t0.tz_convert(TH):%d/%m %H:%M}", "exit": "", "why": "open", "r_net": "",
             "at_decision_r": at_text, "missed_by": "0.00",
         }  # fmt: skip
-    move = (out - entry) if buy else (entry - out)
-    r = (move - SPREAD) / abs(entry - stop)
+    move = (out - price) if buy else (price - out)
+    r = (move - SPREAD) / abs(entry - stop)  # the R unit is the planned risk
     return {
         "fill": f"{t0.tz_convert(TH):%d/%m %H:%M}",
         "exit": f"{out:.2f}",
@@ -152,11 +179,11 @@ def main() -> None:
     name = next((a for a in sys.argv[1:] if a.endswith(".csv")), "ledger.csv")
     path = HERE / name
     rows = list(csv.DictReader(path.open(encoding="utf-8")))
-    if sys.argv[1:2] == ["summary"]:
+    if "summary" in sys.argv[1:]:  # `score.py ledger_control.csv summary` used to score instead
         for reader in sorted({r["reader"] for r in rows}):
             mine = [r for r in rows if r["reader"] == reader]
             taken = [r for r in mine if r["side"] in ("BUY", "SELL")]
-            filled = [r for r in taken if r["why"] not in ("no fill", "open", "")]
+            filled = [r for r in taken if r["why"] not in ("open", "") and not r["why"].startswith("no fill")]
             rs = [float(r["r_net"]) for r in filled]
             wins = [x for x in rs if x > 0]
             total = sum(rs)

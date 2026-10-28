@@ -142,3 +142,38 @@ Claude's reading), M5 (TRIED row 18 - added), M9 (the H1 check). Codex found K3-
 not.** Two readers apart caught nine faults neither caught alone.
 
 **Still to do:** the `steps` column (METHOD 2e row 2); MACD and RSI against the owner's MT5.
+
+## 7. Three more readers - Opus, Sonnet, Haiku - and what was done (2026-10-28 evening)
+
+The owner asked for three agents to read the updated documents together: an Opus agent on consistency
+between every document and the code, a Sonnet agent on fidelity to the owner's words, and a Haiku agent
+reading cold as the next session would. (The tool chooses the model family, not the exact version.) Each
+read-only, none allowed into the archive. Every finding below was checked against the files or the bars
+before it was acted on.
+
+| Reader | Finding | Checked | Done |
+|---|---|---|---|
+| Opus | **"The twelve re-score identically" was false for the on-sight column**: D1-1 1.57 -> 2.84 and #23 -0.61 -> -1.01 once trades are held to stop or target, so -2.60 / -0.217 rested on the retired 4-hour close and the code could no longer produce it. Section 6's regression checked fill, no-fill and miss only | **Yes** - re-scored: on sight **-1.73 R, -0.144**; gap +0.233; no-fills +4.35; on the nine fills on sight worse by 1.55 | On-sight column re-scored under hold and written to both ledgers; every copy corrected (LESSONS 4, METHOD rule 7, START_HERE, HANDOFF, TRIED, SHEETS); "identically" narrowed to the planned columns |
+| Opus | Rule 8 not enforced: an order filled even after its stop or target had traded | Yes, in the code; none of the twelve affected | A stop or target on a bar before the fill now gives `no fill (stop or target first)` |
+| Opus | Fewer than 24 bars left gave a final `no fill`; no bars at all raised an error; a stop gapped through filled at its price | Yes, in the code | `open` until the fill window is over; an empty window is `open`; a gapped stop fills at the bar's open (R still on the planned risk) |
+| Opus | On the owner's example, at the entry the M15 top 4070.76 and the break to 4055.57 were not labelled or not drawn | **Yes** - drawn at 08:25 Thai, 28/10 | `walk.py` draws up to two moving legs past the last fixed pivot, labelled with a "?"; checked on that chart |
+| Opus | Control averaged with no-fills inside; `score.py <file> summary` scored instead of summarising | Yes | `rules.py` prints per decision and per fill; `summary` is found anywhere in the arguments |
+| Opus | Stale: "no indicator" in METHOD's opening and its non-rules, "4 hours to resolve", the "both columns" promise, "H1 three weeks" (500 bars are about four), the data end (only M15 reaches 12:30) | Yes | All corrected |
+| Opus | Archive figures quoted as verdicts in TRIED; the -0.115 baseline | Yes | TRIED's inherited table is headed "old data - a record, not a verdict"; -0.115 left as the owner's stated comparison - **for the owner to say if it stays** |
+| Sonnet | **"MACD or RSI"** where the owner said MACD and RSI | Yes | "MACD and RSI" everywhere; whether one is enough is a **question for the owner** |
+| Sonnet | The textbook definition and "or equal" are Claude's | Yes | Labelled as Claude's rendering |
+| Sonnet, Haiku | **The entry is written twice** - the table's "retest of the broken level" and step 5's "lower low after the bounce" | **Checked on the bars:** the bounce went to 4062.76, back into and through the broken 4057-4059 lows - the bounce *is* the retest, and the entry is the break after it | Written into 2e as one entry; **question for the owner**: is a sell at the retest itself also taken? |
+| Sonnet | "Never on the line" looked like Claude's | It is the owner's standing band rule (`LESSONS.md` 5) | Cited |
+| Sonnet | Row 3 of the actions is Claude's proposal | Yes | Labelled |
+| Haiku | `steps` would collide with `sessions.csv`'s `steps` (bars walked) | Yes | The 2e column is `setup`; `?` added for "not judged"; `rules` and `conflict` still filled |
+| Haiku | `score.py summary` shows 3 decisions where the documents say 12 | Yes - it reads `ledger.csv` only | HANDOFF says which file gives which figure |
+| Haiku | No server-time offset for April | **Checked on the bars:** server UTC+3 in April, UTC+2 since 25 Oct | HANDOFF: Thai = server + 4 for April, + 5 now |
+| Haiku | **Old memories contradict 2e** (D1 gives the side, a chart pattern or pin bar required, other windows) and would mislead a new session | Yes | Marked superseded in the memory index |
+| Haiku | "Two tool jobs" but one listed | Yes | One |
+
+Not acted on: Sonnet's wish to move the example's numbers out of TRIED row 18 (they sit in the evidence
+column, labelled as one example); Opus's "rule 7 and a stop entry" (a sell stop cannot rest above price -
+a break already past is taken at the market, which `score.py` scores as entry = the price on the screen).
+
+**What each reader caught that no other did:** Opus - the on-sight drift, rule 8, the moving ZigZag legs at
+the entry; Sonnet - "or" for "and"; Haiku - the column-name collision and the contradicting memories.

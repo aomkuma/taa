@@ -50,8 +50,8 @@ ZIGZAG = {"depth": 12, "deviation": 5, "backstep": 3}
 MACD = (12, 26, 9)
 RSI = 14
 
-# How much of each frame is on the screen. H1 about three weeks, so the left of the chart holds the levels;
-# M15 about three days; M5 about 33 hours, the width of the owner's own screen.
+# How much of each frame is on the screen. H1 about four weeks (500 bars), so the left of the chart holds
+# the levels; M15 about three days; M5 about 33 hours, the width of the owner's own screen.
 SHOWN = {"H1": 500, "M15": 288, "M5": 400}
 STEP = {"H1": pd.Timedelta(hours=1), "M15": pd.Timedelta(minutes=15), "M5": pd.Timedelta(minutes=5)}
 # Bars before the left edge used only to warm the indicators up: the EMA here is seeded with a mean where
@@ -137,17 +137,36 @@ def zigzag(ax: plt.Axes, calc: pd.DataFrame, offset: int) -> None:
             fontsize=7,
             color="#1f5fbf",
         )
-    last = pivots[-1]
-    after = calc.iloc[last.pivot_pos + 1 :]
-    if after.empty:
-        return
-    if last.kind is SwingKind.LOW:
-        at = int(np.argmax(after.high.to_numpy())) + last.pivot_pos + 1
-        price = float(calc.high.iloc[at])
-    else:
-        at = int(np.argmin(after.low.to_numpy())) + last.pivot_pos + 1
-        price = float(calc.low.iloc[at])
-    ax.plot([last.pivot_pos - offset, at - offset], [last.price, price], "--", color="#1f5fbf", linewidth=1.0)
+    last_pos, last_price = pivots[-1].pivot_pos, pivots[-1].price
+    # The legs MT5 still moves. A pivot is fixed only once `backstep` bars have printed after the opposite
+    # candidate, so the newest extreme - often the very top a setup is read against - is not in `pivots`
+    # yet (the owner's example: at the 03:30 entry the M15 top 4070.76 and the break to 4055.57 were both
+    # still moving). Draw up to two dashed legs from the last fixed pivot: to the furthest extreme after it,
+    # and from there to the furthest opposite extreme after that, each labelled with its price.
+    pos, price, looking_high = last_pos, last_price, pivots[-1].kind is SwingKind.LOW
+    for _ in range(2):
+        after = calc.iloc[pos + 1 :]
+        if after.empty:
+            return
+        if looking_high:
+            at = int(np.argmax(after.high.to_numpy())) + pos + 1
+            nxt = float(calc.high.iloc[at])
+        else:
+            at = int(np.argmin(after.low.to_numpy())) + pos + 1
+            nxt = float(calc.low.iloc[at])
+        if at == pos:
+            return
+        ax.plot([pos - offset, at - offset], [price, nxt], "--", color="#1f5fbf", linewidth=1.0)
+        ax.annotate(
+            f"{nxt:.2f}?",
+            (at - offset, nxt),
+            xytext=(0, 7 if looking_high else -12),
+            textcoords="offset points",
+            ha="center",
+            fontsize=7,
+            color="#1f5fbf",
+        )
+        pos, price, looking_high = at, nxt, not looking_high
 
 
 def panel(axes: list[plt.Axes], tf: str, now: pd.Timestamp, title: str, oscillators: bool) -> pd.DataFrame:
@@ -197,7 +216,8 @@ def draw(mid: str, step: int) -> None:
     fig_a, axes_a = plt.subplots(4, 1, figsize=(21, 17), dpi=100, height_ratios=[3, 3, 1, 1], sharex=False)
     h1 = panel([axes_a[0]], "H1", now, "", oscillators=False)
     axes_a[0].set_title(
-        f"H1 - three weeks, the trend and the levels   (to {h1.index[-1].tz_convert(TH):%d/%m %H:%M} Thai)",
+        f"H1 - about four weeks, the trend and the levels   "
+        f"(to {h1.index[-1].tz_convert(TH):%d/%m %H:%M} Thai)",
         fontsize=11,
     )
     m15 = panel(list(axes_a[1:]), "M15", now, "", oscillators=True)
