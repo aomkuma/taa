@@ -26,7 +26,7 @@ Later the same day the owner named what they actually trade, and the work holds 
 divergence + counting the peaks** (`eye/METHOD.md` 2e). The owner then dictated the setup, and it is written in
 full in 2e: the H1 trend gives the side; at a level from the left on that side, 3-5 ZigZag peaks with
 divergence on MACD and RSI against price (the owner's one exception to "no indicators"); the structure
-breaks, a weak retest, entry on the break; stop beyond the extreme of the move; target just before the
+breaks, the low (high) goes, entry on the retest of it; stop beyond the extreme of the move; target just before the
 next level; held until stop or target.
 
 The method, the hundred moments, the rules written before the first chart was drawn, what has been tried
@@ -35,11 +35,7 @@ and whether it worked, and every trade: `eye/METHOD.md`, `eye/TRIED.md`, `eye/LE
 
 ## The number everything is judged against
 
-**+0.15 R a trade after costs.** The archived system reached **-0.115 R a trade**: it was right about
-direction 53.8 % of the time, which was enough, and still lost, because its winners paid +0.643 R while
-its losers cost a full 1.00 R.
-
-So the question is not which way price goes. It is whether an entry read by eye at a real level pays more
+**+0.15 R a trade after costs.** The question is whether an entry read by eye at a real level pays more
 than one R when it is right.
 
 **Everything in `eye/` is in R, with no position size in it.** The account it is for is the owner's real

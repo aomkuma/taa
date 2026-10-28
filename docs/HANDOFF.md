@@ -50,15 +50,15 @@ day 3, 2026-04-03, Asia 07:00 first, one window at a time, reporting each trade 
 ## Where it stands, 2026-10-28
 
 **The work.** Trading gold by eye on real candles, no strategy in `config.yaml`. The owner's bar is
-**+0.15 R a trade after costs**; the archived system reached -0.115.
+**+0.15 R a trade after costs**.
 
 **The owner's setup** (`eye/METHOD.md` 2e, dictated 2026-10-28), for a sell - a buy is the mirror:
 
 1. the **H1 trend** gives the sell side the edge, and price comes up into a **resistance from the left**;
 2. **3-5 ZigZag peaks** into it, with **divergence** on MACD and RSI against price;
 3. the **structure breaks** - the last swing low goes;
-4. a **weak retest** - a lower high;
-5. **entry on the new lower low**, on M5-M15;
+4. the **low breaks** - the low the bounce after it started from;
+5. **entry on the retest** of that broken low, on M5-M15 (the owner: *"break the low, then retest"*);
 6. **stop beyond the highest top** of the move;
 7. **target just before the next level** from the left; **held until stop or target**, no time limit.
 
@@ -143,11 +143,12 @@ days produced a setup that was gone by the time it was complete.
 can find every place they occurred, by the clock, for the eye to judge only the level and the H1 trend
 before the reveal (METHOD 2e, row 3; it answers the "one reader" hole). And a second reader on the charts.
 
-## Questions for the owner (from the three-agent review)
+## The owner's answers to the three-agent questions (2026-10-28)
 
-1. Divergence: must **both** MACD and RSI diverge, or is **one** enough?
-2. The entry: the example's sell came on the lower low *after* the retest. Is a sell **at the retest
-   itself**, before that lower low, also taken? (METHOD 2e, "The table's entry and step 5 are one entry")
+1. Divergence: *"if both happen, it is clear"* - one alone not ruled out, and not "clear".
+2. The entry: *"break the low, then retest"* - the sell is on the retest of the broken low, not on the
+   break (METHOD 2e step 5; the buy is written out beside it).
+3. The archived -0.115 comparison: *"delete it"* - removed from every live document.
 
 ## Open, and nobody has closed them
 

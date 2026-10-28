@@ -145,7 +145,7 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 | **The side with the edge** | **the trend on H1** |
 | **Where** | **at resistance when the sell side has the edge, at support when the buy side has the edge** - never the other way round |
 | **The count** | **3 to 5 peaks, counted from MT5's ZigZag** |
-| **Divergence** | **on MACD and RSI, against price** - the owner: *"divergence is divergence - what is it by the book?"* - see the principle below |
+| **Divergence** | **on MACD and RSI, against price** - the owner: *"divergence is divergence - what is it by the book?"*; and *"if both happen, it is clear"* - see the principle below |
 | **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
 | **Entry timeframe** | **M5 to M15** |
@@ -169,11 +169,14 @@ lower high, the lower low as the trigger) - what the owner asked for, and for th
 1. **Context** - the H1 trend gives the sell side the edge, and price has come up into a **resistance**
    the left of the chart built.
 2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level, with **divergence** on MACD and RSI
-   against price (whether one oscillator is enough or both must diverge: **to ask the owner**). The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
+   against price. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); one alone
+   the owner did not rule out, and it is not "clear" - the record says which it was. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
    gave the entry timeframe, not the counting one; the example has 3 peaks on M15 and 4 on M5)*.
-3. **The structure breaks** - price takes out the **last swing low**: the up leg is over.
-4. **The retest** - a **weak bounce** that makes a **lower high** under the top.
-5. **The entry** - sell when price **breaks the low the bounce started from**: the new lower low.
+3. **The structure breaks** - price takes out the **last swing low**, and the bounce after it fails under
+   the top - a lower high: the up leg is over.
+4. **The low breaks** - price goes through **the low that bounce started from**.
+5. **The entry - on the retest** - sell when price comes **back up to that broken low from below** and
+   turns down there. The owner, 2026-10-28: *"break the low, then retest"* - not on the break itself.
 6. **The stop** - beyond **the highest high of the move** (sell) / **the lowest low** (buy): the top or
    bottom where the peaks and the divergence formed, not the bounce's lower high. The owner, 2026-10-28:
    *"the SL goes beyond the highest top or the lowest bottom."* (Claude had first read it as the bounce's
@@ -182,13 +185,24 @@ lower high, the lower low as the trigger) - what the owner asked for, and for th
    support, never on the line - the owner's standing rule that a level is a band and the target goes
    before the line (`LESSONS.md` 5).
 
-**The table's entry and step 5 are one entry, read on the owner's example** (two reviewers read them as
-two). The table: *"wait for the structure to break, then the retest of the support or resistance it
-broke."* In the example the structure broke at 03:00-03:05 - price took the 4059.30 and 4057.66 lows -
-and the light bounce went back up to 4062.76, into and through that broken band: **the bounce is the
-retest**. The sell was then *"when it loses 4055"* - the new lower low after the retest. So: the retest is
-where price returns to the broken level; the entry is the break that follows it. **To confirm with the
-owner** - in particular whether a sell at the retest itself, before the lower low, is also taken.
+**The entry, settled by the owner on 2026-10-28:** *"break the low, then retest."* The table said the
+same - *"wait for the structure to break, then the retest of the support or resistance it broke"* - and
+two reviewers had read Claude's first step 5 (sell on the break) as a different entry; it was. On the
+example's bars: 08:30 Thai broke the 4055.57 low (to 4053.11); 08:35-08:40 came back up to 4055.39 and
+4057.54 - the retest of the broken low from below - and turned down. **The sell is on that retest.**
+
+**The buy, written out** (the mirror of every step):
+
+1. the **H1 trend** gives the buy side the edge, and price has come down into a **support** the left of
+   the chart built;
+2. ZigZag counts **3 to 5 lows** into it, with **divergence**: price makes a lower or equal low while MACD
+   and RSI make a higher low - both is clear;
+3. the structure breaks - price takes out the **last swing high**, and the dip after it holds above the
+   bottom - a higher low;
+4. **the high breaks** - price goes through the high that dip started from;
+5. **buy on the retest** - when price comes back down to that broken high from above and turns up there;
+6. the stop beyond **the lowest low** of the move;
+7. the target just before the next **resistance** from the left; held until the stop or the target.
 
 **Divergence, as the book has it** (the owner: *"divergence is divergence - what is it by the book?"*). The
 definition below is *Claude's rendering of the textbook*, including "or equal". Compared between ZigZag
@@ -198,7 +212,7 @@ peaks of the counter-move, price against MACD and against RSI:
   push reaches further with less force behind it;
 - for a buy at support: price makes a **lower or equal low**, the oscillator a **higher low**.
 
-*Not yet asked:* whether one oscillator diverging is enough or both must. *Claude's reading:* hidden
+*The owner:* both diverging is clear; one alone was not ruled out. *Claude's reading:* hidden
 divergence - the continuation kind - is a different signal and is left out unless the
 owner adds it.
 
@@ -210,8 +224,9 @@ owner adds it.
 03:15 it bounced lightly and then made an LL - sell; SL above the High; TP above the resistance on the left
 of the chart at 4030."* On the stored bars: top 4070.76 at 02:10; the structure broke at 03:00-03:05 (low
 4055.57 under the 4059.30 and 4057.66 lows); the light bounce reached 4062.76 at 03:20-03:25 (a lower
-high - the retest); 03:30 broke 4055.57 for the LL - **sell on the break of 4055** (the owner: *"when it
-loses 4055"*). TP 4031 was reached at 07:55 and the highest price on the way was 4059.31. With the stop
+high); 03:30 broke 4055.57 for the LL (the owner: *"when it loses 4055"*), and 03:35-03:40 came back up
+to 4055.39 and 4057.54 - **the retest; the sell is there, at about 4055** (the owner: *"break the low,
+then retest"*). TP 4031 was reached at 07:55 and the highest price on the way was 4059.31. With the stop
 above the top, as the owner's principle puts it (4071): risk 16.0, **+1.48 R** after the 0.30 spread.
 (Above the bounce's high, 4063, it would have been risk 8.0 and +2.96 R - Claude's first reading, not the
 owner's.) One example,
@@ -414,11 +429,8 @@ from one trade.
 
 ## 6 What would make this worth keeping
 
-The owner's bar is **+0.15 R a trade after costs**. The number this body of work has to beat is the one
-measured the night everything was archived: **-0.115 R a trade**, where the direction was right 53.8 % of
-the time and the winners paid only +0.643 R against losers at -1.00 R. So the question is not "is the
-direction right" - it was already. It is **whether a hand-read entry at a live structure pays more than
-one R when it is right**.
+The owner's bar is **+0.15 R a trade after costs**. The question is **whether a hand-read entry at a
+live structure pays more than one R when it is right**.
 
 A hundred trades at a win rate near 50 % still carries a standard error of about 0.1 R, so a hundred will
 show a shape, not a verdict. That is what the owner asked for: *see the picture*, not prove a system.

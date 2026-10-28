@@ -7,9 +7,7 @@ when a verdict changes, the change is written underneath with its date and what 
 lost, or it cannot work mechanically. `UNPROVEN` - adopted on reasoning or on a handful of trades, still
 owes its forward evidence. `UNRESOLVED` - measured twice with opposite answers.
 
-The bar everything is judged against: **+0.15 R a trade after costs**, and the number the archived system
-left behind: **-0.115 R a trade**, where the direction was right 53.8 % of the time and the winners paid
-+0.643 R against losers at -1.00 R.
+The bar everything is judged against: **+0.15 R a trade after costs**.
 
 ---
 
@@ -34,7 +32,7 @@ left behind: **-0.115 R a trade**, where the direction was right 53.8 % of the t
 | 15 | **A stop inside the band**, placed a few dollars under the minor low at the level | D2-1, 2026-04-02: stop 4586 inside the 4550-4600 band, swept at 4580.86, **-1.02 R**; the same idea with the stop beyond the band pays **+1.63 R** and taken on the reclaim **+4.80 R** | **FAILS** | The owner's rule already said it: a level is a band, the stop goes beyond the band. One trade, but the three scorings are of the same bars, so the comparison is clean |
 | 16 | **An invalidation written before the level is reached** | D2-1: the plan said losing 4588 meant the level had failed. Price lost it by 5 USD and ran 118 USD the other way; at 20:25 I refused the buy on my own written line | **FAILS as written** | It forbade a sweep-and-reclaim, which is one of the four patterns rule 5 names. A plan may fix the entry and the target in advance; what counts as failure has to be the band, not a number chosen before the sweep |
 | 17 | **The picture decides first** (Claude's proposal; the owner said "try it", then "not really my way" - ON HOLD the evening of 10-28, never walked; superseded by the owner's principle, METHOD 2e): label every look TREND / VERTICAL / CHOP / FRESH BREAK / NEWS before advancing; enter only a pullback in a TREND, into a level, on a printed higher low; step 3 bars near a level (`METHOD.md` 2d) | Read backwards on all 12 decisions: the two TREND pullbacks paid or would have (#3 +3.67, D1-1 +1.57 on sight); 7 of the 8 losers were in VERTICAL, CHOP, FRESH BREAK (against it) or NEWS pictures, the eighth (#23) not a TREND either; **but #11 and #17, not TREND pictures, would have won on sight** (+0.82, +0.69). **Labelled after the results, by the reader who took them** | **UNPROVEN** - adopted 2026-10-28 before real day 3 | Ten trades, one reader, hindsight. Under it day 2 would have taken nothing, so the first thing to watch is whether TREND occurs often enough to trade at all (predicted conflict B) |
-| 18 | **The owner's setup (METHOD 2e)**: H1 trend gives the side; at a level from the left on that side; 3-5 ZigZag peaks with MACD/RSI divergence; the structure breaks, a weak retest, entry on the new lower low (higher high for a buy); stop beyond the extreme of the move; target just before the next level; held until stop or target | One example from the owner, worked on the stored bars after the fact: **+1.48 R** (28/10, sell on the break of 4055, stop beyond 4070.76, target above 4030). Nothing walked forward yet | **UNPROVEN** - adopted 2026-10-28, the owner's own method | The first method here that is the owner's, not Claude's. Steps 3-5 are Claude's generalisation of the example; the level and the H1 trend are the two judgements a reader's bias can enter |
+| 18 | **The owner's setup (METHOD 2e)**: H1 trend gives the side; at a level from the left on that side; 3-5 ZigZag peaks with MACD/RSI divergence; the structure breaks, the low goes, entry on the retest of the broken low (the broken high for a buy); stop beyond the extreme of the move; target just before the next level; held until stop or target | One example from the owner, worked on the stored bars after the fact: **+1.48 R** (28/10, sell on the break of 4055, stop beyond 4070.76, target above 4030). Nothing walked forward yet | **UNPROVEN** - adopted 2026-10-28, the owner's own method | The first method here that is the owner's, not Claude's. Steps 3-5 are Claude's generalisation of the example; the level and the H1 trend are the two judgements a reader's bias can enter |
 
 **Correction, 2026-10-28 evening (`RULES_REVIEW.md` C1 and C3; the rows above are left as written).**
 `score.py` started every walked decision's clock on a bar already on the screen, rolled #15 a day forward
@@ -64,10 +62,10 @@ the present). Measured there, kept here so the same ground is not covered twice.
 
 | The method | Verdict there |
 |---|---|
-| Filtering the side by a larger timeframe's lean (the locked H4 rule, R10) | **FAILS** - on the same candidates it made -0.165 R a trade against **-0.115 for no filter at all** |
+| Filtering the side by a larger timeframe's lean (the locked H4 rule, R10) | **FAILS** - on the same candidates it did worse than no filter at all |
 | The same frame judged with its slope (`h4_trend`) | **FAILS** - -0.625 R a trade; it refused all nine candidates of the profitable day |
 | The owner's frame ordering H1 then H4 then D1 | **FAILS as a filter** - -0.205 R a trade on those candidates |
-| Targets nearer than the stop | **FAILS** - 53.8 % right and still -0.115 R a trade, because winners paid +0.643 against losers at -1.00 |
+| Targets nearer than the stop | **FAILS** there - the winners paid less than the losers cost |
 | Indicators, a knowledge base, weapon catalogues, shadow rules | Stopped and archived 2026-10-28 by the owner; the method here uses none of them |
 
 ---
