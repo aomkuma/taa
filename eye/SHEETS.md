@@ -441,3 +441,11 @@ retest, and the +1.4 R worked from it. The owner then asked: *"when did I say it
 you conclude that from?"* - Claude had assumed the M meant a sell and, from 2e's rule that a sell needs the
 H1 sell side, that the owner read H1 as down. Neither was said. **Open, for the owner: which spot is the
 support, and which side the trade was.**
+
+The owner, to Claude's question "which side?": *"if I say it is support, should you buy or sell?"* -
+**buy.** Claude had read "M" as a sell and never looked at the word "support". Read as a buy, the spot that
+fits the owner's words on that chart is **London, 06/04**: an asymmetric M (tops 4678.79 at 12:20 and
+4667.74 at 13:50) whose lows, 4643.61 (13:00) and 4644.97 (14:25), sit on the 4642-4651 support band from
+the left - after which price ran to 4706.58. **Claude marked that window `shut`** (two lows; MACD and RSI
+lower at the second low, so no divergence) - a buy at support, on the H1 side, refused. *Claude's reading
+of which spot the owner means - asked to confirm.*
