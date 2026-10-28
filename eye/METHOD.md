@@ -108,7 +108,18 @@ being run:
   upper frame is drawn first, every time.
 - **The window is written down whether or not it produced a trade** - `sessions.csv`, one row per window:
   how many steps were walked, the price at the start and the end, how many setups appeared, how many trades
-  were taken, and what was being watched. A window with nothing in it is the normal outcome and has to cost
+  were taken, what was being watched, and **`reach`** - what the method was able to do with the window:
+
+  | `reach` | meaning |
+  |---|---|
+  | `no-setup` | nothing worth trading appeared; refusing cost nothing |
+  | `shut` | a real move happened **and the rules could not take it** - the expensive case |
+  | `open-missed` | the rules authorised a trade and it was not taken, or was taken wrong |
+  | `open-taken` | a decision was written, and it is in the ledger |
+
+  `shut` and `open-missed` are the two that have to be counted, because neither leaves a row in the
+  ledger and both are how a method quietly fails (`LESSONS.md` section 6). A window with nothing in
+  it is the normal outcome and has to cost
   something to leave out, or "fifty trades" could be fifty picked out of an unknown number of walks
   (the reviewer's finding, 2026-10-28).
 - The day is reported to the owner as it happens, trade by trade.
@@ -155,9 +166,12 @@ here (resolved at 4 hours, and resolved at the end of the day) before either is 
 ## 5 What is written down
 
 `ledger.csv` - one row a trade: sheet, panel, cut-off, side, entry, stop, target, fill, exit, exit reason,
-R net of the spread, the structure named at entry, which of the nine rules held (`rules`), which pair
-fought (`conflict`), and what the same idea paid taken at the price on the screen (`at_decision_r`) with
-how far the planned entry was missed by (`missed_by`). `ledger_control.csv` is the same shape and holds
+R net of the spread, the structure named at entry, which pair of rules fought (`conflict`), what the
+same idea paid taken at the price on the screen (`at_decision_r`) and how far the planned entry was
+missed by (`missed_by`). **`rules` is nine characters**, one per trading rule in the order they are listed
+below: `+` held, `-` broken, `?` not judged - the trades taken before the rules existed. So `++---+-++`
+reads: rules 1, 2, 6, 8 and 9 held, rules 3, 4, 5 and 7 did not. `ledger_control.csv` is the same
+shape and holds
 the trades taken before the nine rules existed; the two are never mixed in a figure.
 
 `sessions.csv` - one row per window walked, trade or no trade (section 2c). The denominator for everything
@@ -199,7 +213,7 @@ ones a trade actually turns on.
 | 4 | **Three or four legs complete, then trade the fifth - with it, never against it.** Ask each time which leg is alive and whether this trade goes its way |
 | 5 | **The structure AT the level says whether it holds.** Buying a support needs **HH and HL together**; selling a resistance needs **LH and LL together**; and a named chart pattern on top |
 | 6 | **Enter on a timeframe, exit on that timeframe** |
-| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured: the planned entries made -0.319 R a trade and the same ideas taken on sight made -0.044, with all three unfilled plans winning and the misses 2.57, 3.85 and 3.82 USD |
+| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.124, with all three unfilled plans winning and the misses 2.57, 3.85 and 3.82 USD |
 | 8 | **The order must fill while the idea is still intact.** Not a question to anyone - a check on where the order sits against price. A sell limit above price in a rising market fills only because price kept rising, which is the idea failing (moment #13: filled 5370, stopped five minutes later). A buy limit below price in a rising market fills on the pullback, which is what was wanted |
 | 9 | **The stop sits beyond the structure that proves the idea wrong; the target is a full leg away** - the next level from the left |
 
@@ -209,5 +223,6 @@ the reveal and every trade and every wait is recorded, scored with 2 hours to fi
 bar touching both counted as the stop and 0.30 USD of spread off every entry (how it is recorded);
 +0.15 R a trade after costs (the bar).
 
-Of the nine, only rule 5 has any evidence yet, and it is backward-looking on eight trades.
+Of the nine, only rule 5 has any evidence yet, and it is backward-looking on eight trades - the ledger
+now holds nine fills, and the ninth is not labelled for it (`LESSONS.md` section 1 says why).
 

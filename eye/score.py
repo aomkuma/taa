@@ -112,12 +112,17 @@ def windows() -> None:
     if not p.exists():
         return
     rows = list(csv.DictReader(p.open(encoding="utf-8")))
-    empty = [r for r in rows if r["trades"] == "0"]
     steps = sum(int(r["steps"]) for r in rows)
     print(
-        f"{'windows':7} walked {len(rows):3}  with no trade {len(empty):3}  "
-        f"steps advanced {steps:3}  days {len({r['date'] for r in rows}):3}"
+        f"{'windows':7} walked {len(rows):3}  steps advanced {steps:3}  "
+        f"days {len({r['date'] for r in rows}):3}"
     )
+    # `reach` is what the method could do with the window (METHOD 2c). `shut` and `open-missed` leave no
+    # row in the ledger, so they are the two a summary has to show on purpose.
+    counts = {k: 0 for k in ("no-setup", "shut", "open-missed", "open-taken")}
+    for r in rows:
+        counts[r.get("reach") or "no-setup"] += 1
+    print(f"{'reach':7} " + "  ".join(f"{k} {v}" for k, v in counts.items()))
 
 
 def main() -> None:

@@ -143,7 +143,7 @@ from 4770 to 4690, so rule 5 refuses this trade - a higher low under a lower hig
 Walked window by window, in order (METHOD 2c). The windows themselves, with their step counts and what was
 being watched, are in `sessions.csv`.
 
-### Asia, 07:00 - 09:00 Thai - 4 steps, no setup
+### Asia, 07:00 - 09:00 Thai - 4 steps, `no-setup`
 
 **Structure.** Price arrived at 4700-4720, where the 19-20/03 decline paused - the first real supply above
 the crash base - and tagged 4721.75 at 07:25.
@@ -152,7 +152,7 @@ the crash base - and tagged 4721.75 at 07:25.
 lower low: rule 5 refuses the sell. And the live leg is still up, so rule 4 refuses it too. Two rules
 pointing the same way, and both at the thing that would have been sold.
 
-### London, 13:00 - 15:00 Thai - 5 steps, decided 14:55
+### London, 13:00 - 15:00 Thai - 5 steps, `open-taken`, decided 14:55
 
 **Structure.** Price broke the 4700-4720 shelf and made 4747 - a higher high over the 4722 Asia high - with
 the pullback low 4670 above the earlier one. A break and retest from above.
@@ -165,7 +165,7 @@ true.
 and price ran through the target to 4788 at 22:40. Scored at the price on the screen instead, the same idea
 pays **+1.08 R**. This is the trade that produced the 4 USD rule (`LESSONS.md` section 4).
 
-### New York, 19:30 - 23:00 Thai - observation only, no decision
+### New York, 19:30 - 23:00 Thai - `open-missed`, observation only, no decision
 
 **Declared before the chart was opened:** scoring the London trade had already shown me that price reached
 4788 at 22:40, which is inside this window. Anything I "decide" here is knowing the answer, so no row goes
@@ -192,3 +192,63 @@ window in which it was takeable was about **twenty minutes** wide, and it was at
 That is the same lesson the morning paid for, arriving from the opposite side: the London trade was missed
 by waiting 2.57 USD **below** price, and this one was missed by arriving 16 USD **above** it. Both are the
 same error - not being at the level when the level is where the trade is.
+
+---
+
+## Real day 2 - 2026-04-02
+
+The first day walked with no knowledge of any part of it. All three windows, in order; the window rows
+with their step counts are in `sessions.csv`.
+
+### Asia, 07:00 - 09:00 Thai - 3 steps, `shut`
+
+**Structure.** Price opened 4784, having made 4798-4800 three times in the eight hours before - 01/04
+23:10, 02/04 06:20, 02/04 07:30. On M5 the trend was still up: higher lows 4530, 4600, 4670, 4718, 4755.
+On H1 the whole move is a recovery off the 4120 crash low of 23/03, and the nearest supply from the left
+above price is the 4820-4870 shelf the 19/03 decline left - still 40 to 85 USD overhead.
+
+**No trade.** Price was not at a level. The only thing at price was its own ceiling, built overnight, and
+rule 2 does not call that a level.
+
+**What happened: the third top failed at 07:30 and price fell 4798 to 4650 in an hour, 148 USD.** That
+sell was the trade of the day and **the method cannot reach it**, for three separate reasons: rule 2
+refuses the ceiling as a level, rule 4 refuses a sell against a live up leg, and rule 5 had no lower low
+to work with because all three highs were equal. Then it went vertical with no retest. This is not a
+missed moment; it is a shape the rules as written do not trade.
+
+### London, 13:00 - 15:00 Thai - 3 steps, `shut`
+
+**Structure.** The fall continued: 4650, a bounce to 4700, lower highs 4700, 4698, 4677, then a second
+drop. At 12:55 price was 4594, arriving at the **4550-4600 band that 31/03 built** - a real level from the
+left. At 13:10 it swept to 4554, reclaimed, made a higher low at 4588 and by 14:55 a higher high at 4650
+over 4603.
+
+**No trade, and not because the read failed.** Rule 5 completed - a sweep that closed back, with HH and HL
+together. By the time it completed the level was **50 USD behind price**, far past rule 7's 4 USD cap, and
+taken at the market at 4642 with the stop beyond the 4588 higher low (59 USD of risk) the nearest
+resistance from the left - the 4698-4700 shelf - was 56 USD away: **under 1 R**. Tightening the stop to
+make the ratio work is the failure TRIED rows 7 and 8 cannot yet resolve.
+
+This is **predicted conflict C**, rule 7 against rule 9, arriving exactly as it was written down before
+any evidence: *"a wide structure forces a far stop; keeping R sane needs an entry near it, and by then
+price has often left."*
+
+### New York, 19:30 - 23:00 Thai - 4 steps, `open-taken`: D2-1, -1.02 R
+
+**Structure, written at 19:25 with price at 4626.** After the 4650 high, price had spent four hours in a
+4600-4650 box sitting on top of the 4550-4600 band, with lower highs 4650, 4637, 4633, 4628 and a flat
+floor near 4600. Price was mid-box, so there was nothing to decide yet.
+
+**The plan, written before advancing:** *if price returns to 4600-4610 with the range floor intact, BUY
+there, stop 4586 under the 4588 higher low, target 4698 - the shelf from the left. Risk 19, reward 93. If
+price instead breaks 4588, the level has failed and there is no buy.*
+
+**Score: filled 19:55, stopped at 4586.** Price swept to **4580.86 at 20:20** - five dollars past the stop
+- then turned and ran to **4699.44 at 21:40**, through the target. -1.02 R.
+
+**Two mistakes, and the read was neither of them.** The stop sat *inside* the band, against the owner's
+standing rule that a level is a band and the stop goes beyond it; with the stop beyond the band the same
+idea pays +1.63 R. And at 20:25, with price back at 4597 above the floor, I refused to buy because my own
+written invalidation said losing 4588 meant the level had failed - **refusing a sweep-and-reclaim, which
+is one of the four patterns rule 5 names by name.** That trade, entered 4597 with the stop beyond the
+sweep, pays +4.80 R. All three are the same bars, scored three ways (`LESSONS.md` section 5).

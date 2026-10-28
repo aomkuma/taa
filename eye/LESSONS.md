@@ -35,6 +35,12 @@ other ways, and the same person chose the trades and labelled them afterwards.
 It is a hypothesis to test forward. It is not evidence that the rule earns +0.14 R, and this file should
 not have implied it was.
 
+**Why this still says eight when the ledger holds nine fills.** The ninth, D2-1 of 2026-04-02, has
+not been labelled with or against the structure, because at the moment of that decision price was not at
+the level yet - the plan was written in mid-range and waited for the level to come to it. Labelling it
+now, from the bars that followed, is the hindsight this section exists to warn about. It stays eight
+until a decision is made at a level with the structure readable at the time.
+
 ## 2. The chart's left side has to go back far enough to hold the levels
 
 Nine hours of M5 showed no level older than a morning, so every "level" was a shelf built minutes earlier.
@@ -59,10 +65,13 @@ when the decision was made, with the same stop and target.
 
 | | R total | R a trade |
 |---|---:|---:|
-| the entries I planned | -3.51 | **-0.319** |
-| taken at the price I saw | -0.48 | **-0.044** |
+| the entries I planned | -4.53 | **-0.378** |
+| taken at the price I saw | -1.49 | **-0.124** |
 
-**+0.275 R a trade**, and all of it comes from trades the plan never got into:
+Twelve trades, updated after real day 2 (the first reading, on eleven trades, was -0.319 against -0.044
+for a gap of +0.275; D2-1 lost the same either way, so both columns fell and the gap narrowed slightly).
+
+**+0.253 R a trade**, and all of it comes from trades the plan never got into:
 
 | # | planned | on sight | missed by |
 |---|---:|---:|---:|
@@ -72,12 +81,13 @@ when the decision was made, with the same stop and target.
 | 15 | -1.01 | **+0.99** | - |
 | 3 | +3.67 | +2.02 | - |
 
-**All three unfilled plans would have won.** The losers lost the same either way. So waiting for a better
-price never saved a loss; it only threw away winners - and the distances missed were **2.57, 3.85 and
-3.82 USD**, every one under four.
+**All three unfilled plans would have won.** The losers lost the same either way - D2-1, the newest, was
+stopped at -1.02 planned and -1.01 on sight. So waiting for a better price has never saved a loss; it has
+only thrown away winners - and the distances missed were **2.57, 3.85 and 3.82 USD**, every one under
+four.
 
 **Not a clean comparison**, and the file should say so: entering worse means a wider stop, so R per unit
-shrinks - which is why the one winner falls from +3.67 to +2.02. Eleven trades, and three of the five
+shrinks - which is why the one winner falls from +3.67 to +2.02. Twelve trades, and three of the five
 differences are the same kind of event. What it supports is a rule to test forward, not a conclusion.
 
 **The rule now under test:** an order goes no further than **4 USD** from the price on the screen. Further
@@ -116,3 +126,28 @@ Two trades now, not one, so this is still a handful: reset #1 bought a sweep-and
 beyond the sweep and lost anyway, because the high was falling. D2-1 refused the same shape and it paid.
 What they agree on is narrower and worth carrying forward: **the invalidation line belongs outside the
 band, and whether the setup is taken at all is rule 5's business, not the stop's.**
+
+## 6. The window in which the method can act is narrow - and sometimes it is shut
+
+Not a result about whether the rules are right. A result about **when they can be used at all**, which no
+number in the ledger shows, because a window that produces nothing leaves no row there. Three cases, from
+the six windows of the two real days (`sessions.csv` is the denominator):
+
+| | what the market did | what the method could do |
+|---|---|---|
+| **01/04 New York** | broke 4700-4720, retested it at 19:50 and ran to 4788 | **Catchable** - every one of the nine rules held at the retest. The window was about **twenty minutes** wide, and it was AT the level. An hour later price was 16-19 USD above it and rule 7 shut the door |
+| **02/04 Asia** | a triple top at 4798-4800 failed and price fell 148 USD in an hour | **Shut.** Rule 2 will not call an overnight ceiling a level, rule 4 refuses a sell against a live up leg, and rule 5 had no lower low - all three highs were equal. Then it went vertical with no retest |
+| **02/04 London** | swept the 4550-4600 band and reclaimed, completing rule 5 in full | **Open, then shut by geometry.** By the time the structure completed, the level was 50 USD behind price and the nearest resistance gave under 1 R against a proper stop (conflict C) |
+
+So of the six windows walked, **four produced no trade** - and they are not the same kind of nothing.
+One, 01/04 Asia, simply had nothing in it and refusing cost nothing. In **two** the market made a move of
+more than a hundred dollars that the rules could not take. In one the rules did authorise a trade and I
+was not there for it.
+
+The 01/04 New York case says the rules do find real trades; the other two say the finding has to happen
+**at the level, within about a twenty-minute window**, or it is not a trade at all.
+
+Six windows is a handful and this is an observation, not a verdict. What it changes now is what gets
+recorded: `sessions.csv` has a **`reach`** column, and every window is marked `no-setup`, `shut`,
+`open-missed` or `open-taken` (defined in METHOD 2c), so that after thirty windows this is counting rather
+than impression. The standing so far: **2 `shut`, 1 `open-missed`, 2 `open-taken`, 1 `no-setup`.**

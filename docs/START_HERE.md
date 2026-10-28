@@ -40,25 +40,30 @@ streak or margin figure can be read out of it. That is a gap, not a decision.
 
 ## What is known so far, and how little it is
 
-**Eleven decisions that were trades, eight of them filled, one winner**, plus three moments stood aside.
-Taken together: **-0.319 R a trade.** Two things have been measured on them, both backwards, neither
+**Twelve decisions that were trades, nine of them filled, one winner**, plus three moments stood aside.
+Taken together: **-0.378 R a trade.** Three things have been measured on them, all backwards, none
 decided:
 
 - **The structure at the level.** Four trades taken with it made +0.14 R each, four taken against it lost a
   full stop every time - but take the single +3.67 R winner out of the good half and both halves lose
   about -1.02 R. It is a hypothesis, not a result.
-- **Waiting for a better price cost more than every losing trade.** The same eleven ideas taken at the
-  price that was on the screen make **-0.044 R a trade** instead of -0.319, and all three plans that never
+- **Waiting for a better price cost more than every losing trade.** The same twelve ideas taken at the
+  price that was on the screen make **-0.124 R a trade** instead of -0.378, and all three plans that never
   filled would have won, missed by 2.57, 3.85 and 3.82 USD. An order now goes no further than **4 USD**
   from price.
+- **A stop inside the band loses a trade the read got right.** Day 2's one decision was filled, swept five
+  dollars past a stop placed inside the level's band, and the target it was aiming at came ninety minutes
+  later. The same idea with the stop beyond the band pays +1.63 R instead of -1.02.
 
-`eye/LESSONS.md` keeps both honest; `eye/TRIED.md` carries the verdict on every method tried, including
+`eye/LESSONS.md` keeps all three honest; `eye/TRIED.md` carries the verdict on every method tried, including
 the ones that failed.
 
 The method being run now is **real trading days, one at a time** (`eye/METHOD.md` section 2c): a date
 taken whole, all three of the owner's windows walked in order, every window written into
-`eye/sessions.csv` whether it produced a trade or not. Day 1 is 2026-04-01; Asia and London are walked,
-New York is not.
+`eye/sessions.csv` whether it produced a trade or not. **Two days are done, 2026-04-01 and 2026-04-02:
+six windows walked, four of them with no trade, two decisions.** Day 1's New York window could not be
+judged - scoring its London trade had already shown me what price did inside it - so it was walked as an
+observation and is marked that way.
 
 ## Before changing anything
 
