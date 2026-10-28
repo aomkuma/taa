@@ -169,9 +169,10 @@ the words mean. Written for a sell; a buy is the mirror of every line.
 3. **The structure breaks** - price takes out the **last swing low**: the up leg is over.
 4. **The retest** - a **weak bounce** that makes a **lower high** under the top.
 5. **The entry** - sell when price **breaks the low the bounce started from**: the new lower low.
-6. **The stop** - beyond **the high whose break would cancel the lower-high / lower-low structure**: the
-   bounce's high (the lower high), not the top of the whole move. *Claude's reading of "above the High",
-   from the logic of the setup - to be confirmed by the owner.*
+6. **The stop** - beyond **the highest high of the move** (sell) / **the lowest low** (buy): the top or
+   bottom where the peaks and the divergence formed, not the bounce's lower high. The owner, 2026-10-28:
+   *"the SL goes beyond the highest top or the lowest bottom."* (Claude had first read it as the bounce's
+   high; the owner corrected it.)
 7. **The target** - **just before** the opposite level from the left: for a sell, a little above the next
    support, never on the line.
 
@@ -184,8 +185,9 @@ of the chart at 4030."* On the stored bars: top 4070.76 at 02:10; the structure 
 4055.57 under the 4059.30 and 4057.66 lows); the light bounce reached 4062.76 at 03:20-03:25 (a lower
 high - the retest); 03:30 broke 4055.57 for the LL - **sell on the break of 4055** (the owner: *"when it
 loses 4055"*). TP 4031 was reached at 07:55 and the highest price on the way was 4059.31. With the stop
-above the bounce's high (4063): risk 8.0, **+2.96 R**; above the top (4071): risk 16.0, **+1.48 R** (both
-after the 0.30 spread). One example,
+above the top, as the owner's principle puts it (4071): risk 16.0, **+1.48 R** after the 0.30 spread.
+(Above the bounce's high, 4063, it would have been risk 8.0 and +2.96 R - Claude's first reading, not the
+owner's.) One example,
 read after the fact - it shows what the words mean, not that they pay.
 
 It also lands on an open question: the target came **4 h 25 min after the entry**, past `score.py`'s
@@ -200,8 +202,9 @@ push weaker than the last on MACD, RSI or price - the divergence. The counter-mo
 over. **It is over when the structure turns**: the last swing low (for a sell) breaks, price bounces
 weakly into a lower high, and the next lower low is the entry. So the trade is never a guess that a level
 will hold - the level is where to look, the peaks and divergence say the push is tiring, and the
-structure turning is the proof. The stop sits where that proof would be undone; the target is the next
-level the H1 move runs into.
+structure turning is the proof. The stop sits beyond the extreme of the counter-move - the top
+(or bottom) the peaks were counted into - because a new extreme means the counter-move was not over; the
+target is the next level the H1 move runs into.
 
 What this is **not**: not 2d (2d refused every reversal on M5 until a trend had formed; here the M5-M15
 reversal *is* the entry, in the H1 direction). Not a fade of the H1 trend: a buy at support in an H1 down
@@ -223,9 +226,9 @@ record has to say what was seen before the reveal.
 | 5 | **A second reader**: Codex given the seven steps and the same charts, reading apart | the tool works (stdin); not run on charts |
 | 6 | **Check MACD and RSI against the owner's MT5** (Data Window) at a few bars - ZigZag on M15 already matched | waiting for the owner |
 
-**Still open, the owner's to answer:** step 6 - the stop beyond the bounce's lower high rather than the
-top (Claude's reading); how long a trade is held; and that "divergence on price" means price's peaks
-against the oscillators'.
+**Still open, the owner's to answer:** how long a trade is held; and that "divergence on price" means
+price's peaks against the oscillators'. (Step 6 was answered 10-28: beyond the highest top / lowest
+bottom.)
 
 The nine rules stand where this does not contradict them; where it does, this wins.
 
