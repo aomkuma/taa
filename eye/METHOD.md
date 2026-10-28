@@ -149,9 +149,15 @@ in from its own reading - that is how 2d happened):
    to say (see question 3). `walk.py` has to draw both under the M5 frame, from `app/indicators` (the MT5-exact
    `trend.macd`, `momentum.rsi`). Still open: their settings, and on which timeframe(s) the divergence is
    read.
-2. How the peaks are counted - three pushes to a top or bottom, a triple top, waves 1-5 / ABC, or
-   something else.
-3. How the three combine into an entry, a stop and a target.
+2. ~~How the peaks are counted~~ **Answered by the owner, 2026-10-28: "count the peaks from ZIGZAG."**
+   `app/indicators/chart_read.py` `zigzag_pivots` is MT5's ZigZag(depth, deviation, backstep), defaults
+   12 / 5 / 3, and records the bar on which each pivot is first known, so a walk never shows a peak before
+   MT5 would have. Still open: the owner's settings, the timeframe, and how many peaks make the count.
+3. How the three combine into an entry, a stop and a target. **Part answered by the owner, 2026-10-28:
+   "it must happen at resistance when the sell side has the edge, and at support when the buy side has
+   the edge."** So the setup is taken only at a level, and only on the side that has the edge there - a
+   sell at resistance, a buy at support. Still open: what decides which side has the edge; then the
+   entry, the stop and the target.
 
 The nine rules stand where this does not contradict them; where it does, this wins.
 

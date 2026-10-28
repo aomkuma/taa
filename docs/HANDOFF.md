@@ -114,8 +114,10 @@ they give them - Claude does not fill them in (that is how 2d happened):
 1. **Answered 10-28: divergence on MACD, RSI "and price too"** (MACD and RSI are the owner's exception to "no indicators").
    Still open: their settings and the timeframe(s). Then `walk.py` draws both under the M5 frame, from
    `app/indicators` (`trend.macd`, `momentum.rsi`, MT5-exact).
-2. How the peaks are counted - three pushes, a triple top, waves 1-5 / ABC, or something else.
-3. How the three combine into an entry, a stop and a target.
+2. **Answered 10-28: the peaks are counted from ZIGZAG** (`app/indicators/chart_read.py` `zigzag_pivots`,
+   MT5's, defaults 12/5/3). Still open: settings, timeframe, how many peaks make the count.
+3. **Part answered 10-28: "at resistance when the sell side has the edge, at support when the buy side
+   has the edge."** Still open: what decides which side has the edge; the entry, the stop, the target.
 
 **2. Then real day 3, 2026-04-03, Asia 07:00 Thai.** `python eye/walk.py "2026-04-03 07:00" 0`, advancing a
 few bars at a time. Write the reading into `SHEETS.md` before the reveal, and the window into
