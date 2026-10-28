@@ -195,3 +195,33 @@ setup has one decision (D3-1, no fill), so this says what the earlier methods di
 
 Caveat: #9, #13 and #15 were stopped on the bar they filled, where five-minute bars cannot say whether the
 "best move" came before the stop or after it. Eight trades: these are where to look, not conclusions.
+
+**Did they count the peaks? No** (the owner: *"the whole problem is bad entry timing - did it really count
+the peaks?"*). The twelve earlier trades were chosen by eye before METHOD 2e existed; none counted ZigZag
+peaks or read divergence. Counted now, on the M5 bars closed at each decision - the counter-move taken to
+start at the most extreme opposite pivot of the last twelve ZigZag pivots, its lows (highs for a sell)
+counted after it, divergence read at its extreme against the pivot before:
+
+| # | side | result | count | divergence (MACD / RSI) |
+|---|---|---|---:|---|
+| 1 | BUY | stop | 6 | no / yes |
+| 3 | BUY | target | 5 (rising lows - not a fall) | none |
+| 5 | BUY | stop | 6 (rising lows) | none |
+| 9 | SELL | stop | 6 | **both** |
+| 11 | SELL | no fill | 5 | yes / no |
+| 13 | SELL | stop | 2 | no / no |
+| 15 | SELL | stop | 6 | no / no |
+| 17 | SELL | no fill | 4 | no / no |
+| 19 | BUY | stop | 3 | **both** |
+| 23 | SELL | stop | 5 | no / yes |
+| D1-1 | BUY | no fill | 1 | - |
+| D2-1 | BUY | stop | 4 | no / no |
+| D3-1 | BUY | no fill | 4 | **both** |
+
+**Only #19 (3 lows) and #9 (6 highs - over the owner's 5) had a count with divergence on both; neither
+waited for the break and the retest** (#19 bought the pullback at once; #9 sold the retest of a shelf).
+So none of the eight losers would have been taken as it was under 2e. D3-1, the one 2e decision, passed
+step 2 by this count as it did by hand. **Caveats:** the definition of where a counter-move starts is
+Claude's, and it took three attempts - the first two gave D3-1 one and two lows against the four counted
+by hand on the day, and were discarded for that; the third matches that one check, which is one check.
+M and W patterns are not in this count.
