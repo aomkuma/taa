@@ -29,6 +29,7 @@ TH = "Asia/Bangkok"
 DATA = ROOT / "data/history/FBS-Demo/XAUUSD"
 needs_data = pytest.mark.skipif(not (DATA / "M5.parquet").exists(), reason="stored gold bars not present")
 P = bot.Params()
+BOTH = bot.Params(min_r=0.0, div_mode="both")  # the earlier rule: divergence on both oscillators
 P0 = bot.Params(min_r=0.0)  # tests of the steps drop the 2R floor; test_reward_floor tests the floor itself
 
 
@@ -109,9 +110,10 @@ def test_count_and_divergence() -> None:
     )  # exactly two: the M
     for lows in (three, five):
         assert run(lows).reason == "order written"
-        assert run(lows, macd_div=False).reason == "step2: no divergence on both"
-        assert run(lows, rsi_div=False).reason == "step2: no divergence on both"
-        assert run(lows, macd_div=False, rsi_div=False).reason == "step2: no divergence on both"
+        assert run(lows, macd_div=False).reason == "order written"  # one oscillator is enough (R11)
+        assert run(lows, rsi_div=False).reason == "order written"
+        assert run(lows, macd_div=False, rsi_div=False).reason == "step2: no divergence"
+        assert run(lows, macd_div=False, params=BOTH).reason == "step2: no divergence"
     assert run(six, bands=[(4590.0, 4680.0), (4800.0, 4810.0)]).reason == "step2: count outside 3-5 and no M"
 
 
@@ -130,7 +132,7 @@ def test_m_needs_no_divergence_and_one_zone() -> None:
 def test_three_zone_lows_need_divergence() -> None:
     """R3: three zone lows without divergence are not an M, whatever band they share."""
     out = run([4640.0, 4620.0, 4600.0], macd_div=False, rsi_div=False)
-    assert out.reason == "step2: no divergence on both" and out.setup is None
+    assert out.reason == "step2: no divergence" and out.setup is None
 
 
 def test_zone_resets_on_a_close_below() -> None:
@@ -444,3 +446,84 @@ def test_w_zone_4141_on_22_oct(full) -> None:
         )
     assert "4141.87" in seen["M5"].info["pivots"] and "4142.23" in seen["M5"].info["pivots"]
     assert seen["M5"].info["count"] == "5" and seen["M15"].info["count"] == "1"
+
+
+# --- research options (eye/BOT_RESEARCH.md) --------------------------------------------------------------------
+
+
+def test_h1_swings_three() -> None:
+    """h1_swings=3: strict needs the last three highs and lows each rising (two consecutive rises)."""
+
+    def zig(highs: list[float], lows: list[float]) -> list[Swing]:
+        out: list[Swing] = []
+        for i, (lo, hi) in enumerate(zip(lows, highs, strict=True)):
+            out += [
+                Swing(SwingKind.LOW, lo, i * 20, i * 20 + 3, i * 20, i * 20 + 3),
+                Swing(SwingKind.HIGH, hi, i * 20 + 10, i * 20 + 13, i * 20 + 10, i * 20 + 13),
+            ]
+        return out
+
+    two_rises = zig([100, 110, 120], [90, 95, 100])
+    one_rise = zig([120, 110, 120], [100, 95, 100])  # the last pair rises, the one before it fell
+    assert bot.h1_side(two_rises, 105.0, "strict", 3) == "BUY"
+    assert bot.h1_side(one_rise, 105.0, "strict", 2) == "BUY"
+    assert bot.h1_side(one_rise, 105.0, "strict", 3) is None
+    assert bot.h1_side(zig([100, 110], [90, 95]), 105.0, "strict", 3) is None  # too few pivots
+    with pytest.raises(ValueError):
+        bot.h1_side(two_rises, 105.0, "strict", 4)
+
+
+@needs_data
+def test_h1_tf_h4_gives_the_side_from_h4_pivots(full) -> None:
+    sides = set()
+    for text in tuple(f"2026-10-{d:02d} 13:05" for d in range(12, 24)):
+        now = now_at(text)
+        frames = bot.cut(full, now)
+        want = bot.h1_side(bot._zigzag(frames["H4"]), float(frames["M5"].close.iloc[-1]), "strict")
+        got = bot.decide(frames, now, bot.Params(h1_tf="H4")).log["side"]
+        assert got == (want or "")
+        sides.add(got)
+    assert sides - {""}  # at least one of them had a side
+
+
+@needs_data
+def test_entry_tfs_selects_the_timeframes(full) -> None:
+    now = now_at("2026-04-06 21:20")
+    frames = bot.cut(full, now)
+    assert bot.decide(frames, now, P0).log["tf"] == "M5"
+    assert bot.decide(frames, now, bot.Params(min_r=0.0, entry_tfs="M5")).log["tf"] == "M5"
+    only15 = bot.decide(frames, now, bot.Params(min_r=0.0, entry_tfs="M15"))
+    assert only15.log["tf"] == "M15" and only15.decision is None  # M5 wrote it; M15 alone does not
+
+
+def test_div_mode_one_versus_both() -> None:
+    """R11: one oscillator is enough by default; div_mode=both is the earlier, stricter rule."""
+    lows = [4640.0, 4620.0, 4600.0]
+    assert P0.div_mode == "one" and bot.Params().div_mode == "one"
+    for kw in ({"rsi_div": False}, {"macd_div": False}):
+        assert run(lows, **kw).reason == "order written"
+        assert run(lows, params=BOTH, **kw).reason == "step2: no divergence"
+    assert run(lows, macd_div=False, rsi_div=False).reason == "step2: no divergence"
+    out = run(lows, rsi_div=False)
+    assert out.setup is not None and out.setup.div_macd and not out.setup.div_rsi
+    assert "NOT" not in P0.text() and "div_mode=one" in P0.text()
+    assert "h1_tf=H1" in P0.text() and "entry_tfs=M5,M15" in P0.text()
+
+
+@needs_data
+def test_runner_writes_only_its_own_files(full, tmp_path) -> None:
+    research = importlib.import_module("eye.bot_research")
+    watched = [
+        ROOT / "eye" / n for n in ("ledger.csv", "ledger_control.csv", "bot_ledger.csv", "bot_log.csv")
+    ]
+    before = [(p.read_bytes() if p.exists() else None) for p in watched]
+    m5 = score_mod.bars()
+    result = research.run_variant("t", {"min_r": 0.0}, "2026-04-06", "2026-04-06", full, m5, root=tmp_path)
+    research.append_summary([result], "2026-04-06", "2026-04-06", root=tmp_path)
+    after = [(p.read_bytes() if p.exists() else None) for p in watched]
+    assert before == after
+    assert (tmp_path / "t" / "ledger.csv").exists() and (tmp_path / "t" / "log.csv").exists()
+    assert (tmp_path / "summary.csv").exists() and result["decisions"] == 1
+    assert result["filled"] + result["open"] <= 1
+    with pytest.raises(SystemExit):
+        research.make_params({"nonsense": 1})

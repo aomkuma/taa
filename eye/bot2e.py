@@ -72,8 +72,9 @@ WINDOWS: tuple[tuple[str, int, int], ...] = (
     ("London", 13 * 60, 15 * 60),
     ("New York", 19 * 60 + 30, 23 * 60),
 )
-TIMEFRAMES = ("M5", "M15")  # the owner: "M5-M15"; M5 first
-FRAME_BARS = {tf: SHOWN[tf] + WARMUP for tf in ("H1", "M15", "M5")}  # what walk.py computes on, per frame
+# H4 is a stored frame too (research option h1_tf=H4); walk.py's tables do not know it.
+STEP = {**STEP, "H4": pd.Timedelta(hours=4)}
+FRAME_BARS = {tf: SHOWN[tf] + WARMUP for tf in ("H1", "M15", "M5")} | {"H4": 600}
 
 
 @dataclass(frozen=True)
@@ -92,6 +93,14 @@ class Params:
     stop_buffer: float = 0.50  # [Claude] stop beyond the extreme / band edge, USD
     target_buffer: float = 0.50  # [Claude] target before the opposite band's edge, USD
     min_r: float = 2.0  # the owner's floor (R9): "the profit has to be 1:2"; no decision under it
+    # Research options (eye/BOT_RESEARCH.md). Defaults are the behaviour of revision 3.
+    h1_tf: str = "H1"  # [Claude] the timeframe whose fixed ZigZag pivots give the side: "H1" or "H4"
+    h1_swings: int = 2  # [Claude] strict side: the last N highs and N lows each rising / falling (2 or 3)
+    entry_tfs: str = "M5,M15"  # [Claude] the entry timeframes tried, in order: "M5,M15", "M15" or "M5"
+    # [Claude] for the 3-5 count: "both" oscillators diverge (the owner's rule: "if both happen, it is
+    # clear") or "one" = at least one. The owner (R11, METHOD 2e): one oscillator is enough; both is the
+    # "clear" case. "both" is kept for comparison with the earlier rule.
+    div_mode: str = "one"
     spread: float = (
         SPREAD  # the owner's real spread on gold, USD (the R written into a decision is net of it)
     )
@@ -102,7 +111,8 @@ class Params:
             f"h1_mode={self.h1_mode} level_min_age_h={self.level_min_age_h:g} level_bars={self.level_bars} "
             f"band_frac={self.band_frac:g} band_legs={self.band_legs} counter_pivots={self.counter_pivots} "
             f"trigger_offset={self.trigger_offset:g} stop_buffer={self.stop_buffer:g} "
-            f"target_buffer={self.target_buffer:g} min_r={self.min_r:g}"
+            f"target_buffer={self.target_buffer:g} min_r={self.min_r:g} h1_tf={self.h1_tf} "
+            f"h1_swings={self.h1_swings} entry_tfs={self.entry_tfs} div_mode={self.div_mode}"
         )
 
 
@@ -111,7 +121,7 @@ class Params:
 REASONS = [
     "market closed", "outside window", "warm-up", "order pending", "step1: no side", "step2: no levels",
     "step2: no counter-move", "step2: L* not in a support band", "step2: count outside 3-5 and no M",
-    "step2: no divergence on both", "step3: structure not broken", "step3: no higher low yet",
+    "step2: no divergence", "step3: structure not broken", "step3: no higher low yet",
     "step4: no H_d", "step5: price below the higher low", "step7: no target level",
     "reward under 2R", "setup already played out", "setup already used", "order written",
 ]  # fmt: skip
@@ -191,17 +201,20 @@ def window_of(now: pd.Timestamp) -> str:
 # --- step 1: the side -----------------------------------------------------------------------------------
 
 
-def h1_side(pivots: Sequence[Swing], price: float, mode: str) -> str | None:
+def h1_side(pivots: Sequence[Swing], price: float, mode: str, swings: int = 2) -> str | None:
     """ "BUY" / "SELL" from the H1 fixed pivots, or None (spec step 1). ``strict``: both the last high and the
     last low above (below) the ones before them. ``lows``: the last low above the one before and price above
     that low (up); the last high under the one before and price under it (down); both or neither = None."""
     highs = [p.price for p in pivots if p.kind is SwingKind.HIGH]
     lows = [p.price for p in pivots if p.kind is SwingKind.LOW]
-    if len(highs) < 2 or len(lows) < 2:
+    if swings not in (2, 3):
+        raise ValueError(f"h1_swings must be 2 or 3, got {swings!r}")
+    if len(highs) < swings or len(lows) < swings:
         return None
     if mode == "strict":
-        up = highs[-1] > highs[-2] and lows[-1] > lows[-2]
-        down = highs[-1] < highs[-2] and lows[-1] < lows[-2]
+        hs, ls = highs[-swings:], lows[-swings:]
+        up = all(b > a for a, b in pairwise(hs)) and all(b > a for a, b in pairwise(ls))
+        down = all(b < a for a, b in pairwise(hs)) and all(b < a for a, b in pairwise(ls))
     elif mode == "lows":
         up = lows[-1] > lows[-2] and price > lows[-1]
         down = highs[-1] < highs[-2] and price < highs[-1]
@@ -325,12 +338,12 @@ def analyse_view(
     # The M is exactly two counted lows, both zone lows (R3, R10); a count of 3-5
     # always needs divergence on both.
     m_ok = n == 2
-    count_ok = p.count_min <= n <= p.count_max and d_macd and d_rsi
+    # R11: one oscillator is enough (the owner); both is the "clear" case, and the decision text says which.
+    diverged = (d_macd or d_rsi) if p.div_mode == "one" else (d_macd and d_rsi)
+    count_ok = p.count_min <= n <= p.count_max and diverged
     if not (count_ok or m_ok):
         out.reason = (
-            "step2: no divergence on both"
-            if p.count_min <= n <= p.count_max
-            else "step2: count outside 3-5 and no M"
+            "step2: no divergence" if p.count_min <= n <= p.count_max else "step2: count outside 3-5 and no M"
         )
         return out
     kind = "count" if count_ok else "M"
@@ -461,7 +474,8 @@ def decide(
 
     h1 = frames["H1"]
     h1_piv = _zigzag(h1)
-    side = h1_side(h1_piv, float(m5.close.iloc[-1]), p.h1_mode)
+    side_piv = h1_piv if p.h1_tf == "H1" else _zigzag(frames[p.h1_tf])
+    side = h1_side(side_piv, float(m5.close.iloc[-1]), p.h1_mode, p.h1_swings)
     if side is None:
         return done("step1: no side")
     log["side"] = side
@@ -470,7 +484,7 @@ def decide(
     bands_v = sorted((min(sign * lo, sign * hi), max(sign * lo, sign * hi)) for lo, hi in bands)
 
     outcomes: list[Outcome] = []
-    for tf in TIMEFRAMES:
+    for tf in p.entry_tfs.split(","):
         df = frames[tf]
         piv = to_view(_zigzag(df), sign)
         hi_v = df.high.to_numpy(dtype=np.float64) if sign > 0 else -df.low.to_numpy(dtype=np.float64)
@@ -557,7 +571,7 @@ def _row(s: Setup, side: str, sign: int, now: pd.Timestamp, df: pd.DataFrame, p:
 
 
 def load_frames() -> dict[str, pd.DataFrame]:
-    return {tf: frame(tf) for tf in ("H1", "M15", "M5")}
+    return {tf: frame(tf) for tf in ("H1", "H4", "M15", "M5")}
 
 
 def _read(path: Path, columns: list[str]) -> list[dict[str, str]]:
@@ -652,19 +666,40 @@ def main(argv: Sequence[str] | None = None) -> None:
     ap.add_argument("--to", dest="last", required=True, help="last Thai date, YYYY-MM-DD")
     d = Params()
     ap.add_argument("--h1-mode", choices=("strict", "lows"), default=d.h1_mode)
+    ap.add_argument("--h1-tf", choices=("H1", "H4"), default=d.h1_tf)
+    ap.add_argument("--h1-swings", type=int, choices=(2, 3), default=d.h1_swings)
+    ap.add_argument("--entry-tfs", choices=("M5,M15", "M15", "M5"), default=d.entry_tfs)
+    ap.add_argument(
+        "--div-mode",
+        choices=("both", "one"),
+        default=d.div_mode,
+        help="'one' (the owner's rule, R11) or 'both'",
+    )
     ap.add_argument("--min-r", type=float, default=d.min_r)
     ap.add_argument("--trigger-offset", type=float, default=d.trigger_offset)
     ap.add_argument("--stop-buffer", type=float, default=d.stop_buffer)
     ap.add_argument("--target-buffer", type=float, default=d.target_buffer)
     ap.add_argument("--band-frac", type=float, default=d.band_frac)
+    ap.add_argument("--band-legs", type=int, default=d.band_legs)
+    ap.add_argument("--level-min-age-h", type=float, default=d.level_min_age_h)
+    ap.add_argument("--level-bars", type=int, default=d.level_bars)
+    ap.add_argument("--counter-pivots", type=int, default=d.counter_pivots)
     a = ap.parse_args(argv)
     params = Params(
         h1_mode=a.h1_mode,
+        h1_tf=a.h1_tf,
+        h1_swings=a.h1_swings,
+        entry_tfs=a.entry_tfs,
+        div_mode=a.div_mode,
         min_r=a.min_r,
         trigger_offset=a.trigger_offset,
         stop_buffer=a.stop_buffer,
         target_buffer=a.target_buffer,
         band_frac=a.band_frac,
+        band_legs=a.band_legs,
+        level_min_age_h=a.level_min_age_h,
+        level_bars=a.level_bars,
+        counter_pivots=a.counter_pivots,
     )
     run(a.first, a.last, params)
 
