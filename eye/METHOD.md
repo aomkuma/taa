@@ -179,6 +179,9 @@ through that later answer: the LL is the break, the sell is its retest.
 4. **The low breaks** - price goes through **the low that bounce started from**.
 5. **The entry - on the retest** - sell when price comes **back up to that broken low from below** and
    turns down there. The owner, 2026-10-28: *"break the low, then retest"* - not on the break itself.
+   **The order is a Sell Stop Limit** (the owner asked whether it should be a stop limit; it is the order
+   that does exactly this): its stop price a little under the low, so it wakes only once the low has
+   broken, and its limit price at the low, filled on the retest. It can be placed before the break.
 6. **The stop** - beyond **the highest high of the move** (sell) / **the lowest low** (buy): the top or
    bottom where the peaks and the divergence formed, not the bounce's lower high. The owner, 2026-10-28:
    *"the SL goes beyond the highest top or the lowest bottom."* (Claude had first read it as the bounce's
@@ -203,7 +206,8 @@ had said a buy is the mirror, nothing more:*
 3. the structure breaks - price takes out the **last swing high**, and the dip after it holds above the
    bottom - a higher low;
 4. **the high breaks** - price goes through the high that dip started from;
-5. **buy on the retest** - when price comes back down to that broken high from above and turns up there;
+5. **buy on the retest** - when price comes back down to that broken high from above and turns up there:
+   a **Buy Stop Limit**, stop price a little over the high, limit price at the high;
 6. the stop beyond **the lowest low** of the move;
 7. the target just before the next **resistance** from the left; held until the stop or the target.
 
@@ -390,10 +394,14 @@ level I want is already far behind price, that is **no trade**, and it says so.
   or target first)** - rule 8. While fewer than 24 bars after the decision are stored, an unfilled order
   is `open`, not a no-fill. A stop order that a bar gaps through fills at that bar's open; R stays on the
   planned risk.
-- **A 2e decision is written only after a bar has closed through the low** (the high, for a buy): it is
-  then a sell limit at the broken low, above the price on the screen, and fills on the retest. Written
-  before the break, the same price sits under the screen price and scores as a sell stop - filled on the
-  break, which is the entry the owner rejected (reviewer, 2026-10-28; on the example: decided 08:30 Thai,
+- **A 2e entry is a stop limit** - the ledger's `trigger` column holds its stop price (a little beyond the
+  low, for a sell), `entry` its limit price (the broken low). `score.py` wakes the order when price trades
+  through `trigger`, then fills the limit on the retest from the next bar, with its own 24 bars; the stop
+  traded before the trigger withdraws it, and a trigger never reached in 24 bars is `no fill (never
+  triggered)`. Written without a `trigger`, a 2e decision must wait until a bar has closed through the low,
+  and is then a plain sell limit. **Never a plain order at the low before the break:** it would sit under
+  the price on the screen and score as a sell stop - filled on the break, which is the entry the owner
+  rejected (reviewer, 2026-10-28; on the example: decided 08:30 Thai,
   after the break bar, it fills 08:35 on the retest; decided 08:15, it fills 08:30 on the break).
 - After the fill, the first of stop or target decides the result. **A bar touching both counts as the
   stop.**

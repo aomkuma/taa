@@ -125,15 +125,16 @@ fill fixes re-score every planned column of all twelve identically.
 
 ## Where it resumes
 
-**1. Add a `setup` column to the ledgers** - seven characters, `+` held / `-` broken / `?` not judged, one
+**1. Add a `setup` and a `trigger` column to the ledgers** - seven characters, `+` held / `-` broken / `?` not judged, one
 per step of 2e's principle, like `rules` (not `steps`: `sessions.csv` already has a `steps` column, the bars
 walked) - and have `eye/rules.py` count it. A 2e trade is judged by `setup`; its `rules` and `conflict`
 columns are still filled (METHOD 2e, row 2).
 
 **2. Real day 3, 2026-04-03, Asia 07:00 Thai, under 2e.** `.venv\Scripts\python eye/walk.py "2026-04-03 07:00" 0`
 and advance a few bars at a time; read `_a` first (H1 side, the level), then the entry frames. Write the
-reading into `SHEETS.md` before the reveal, every decision into `ledger.csv` with `setup` - **written only after a bar has closed through the low
-(high)**, as a limit at the broken level (METHOD 4) - and the window
+reading into `SHEETS.md` before the reveal, every decision into `ledger.csv` with `setup` - **the entry as a stop limit**: `trigger` a little beyond
+the low (high), `entry` at it, so it fills only on the retest after the break (METHOD 4; `score.py` scores
+it) - and the window
 into `sessions.csv` with its `reach` before moving to London.
 
 Carried from the earlier days, still true under 2e: **the stop goes beyond the band and the extreme, never

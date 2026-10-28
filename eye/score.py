@@ -103,6 +103,41 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     # which fills a sell stop on the first bar whose high is above it, before price ever broke
     # (RULES_REVIEW M1).
     from_above = entry <= seen
+    trigger = row.get("trigger", "")
+    if trigger:
+        # A stop limit, for 2e's "break the low, then retest" (the owner asked on 2026-10-28 whether the
+        # entry should be a stop limit; it is the order that matches). The order wakes only when price trades
+        # through `trigger` (a sell: down to it, under the low; a buy: up to it), then rests as a limit at
+        # `entry` - the broken level - filled on the retest. Price reaching the stop before the trigger means
+        # the setup failed: withdrawn. The limit rests from the bar after the trigger bar - five-minute bars
+        # cannot say whether a retest inside the trigger bar came after the break - with its own 24 bars.
+        level = float(trigger)
+        woke = ((first.low <= level) if not buy else (first.high >= level)).to_numpy()
+        failed = ((first.high >= stop) if not buy else (first.low <= stop)).to_numpy()
+        k = int(woke.argmax()) if woke.any() else len(first)
+        if failed[: k + 1].any() and not (woke.any() and not failed[:k].any()):
+            return {
+                "fill": "", "exit": "", "why": "no fill (stop or target first)", "r_net": "0.0",
+                "at_decision_r": at_text, "missed_by": "",
+            }  # fmt: skip
+        if not woke.any():
+            done = len(first) >= FILL_BARS
+            return {
+                "fill": "", "exit": "", "why": "no fill (never triggered)" if done else "open",
+                "r_net": "0.0" if done else "", "at_decision_r": at_text, "missed_by": "",
+            }  # fmt: skip
+        window = window[window.index > first.index[k]]
+        if window.empty:
+            return {
+                "fill": "",
+                "exit": "",
+                "why": "open",
+                "r_net": "",
+                "at_decision_r": at_text,
+                "missed_by": "",
+            }
+        first = window.iloc[:FILL_BARS]
+        from_above = buy  # now a plain limit: a sell above price, a buy below it
     touched = ((first.low <= entry) if from_above else (first.high >= entry)).to_numpy()
     # Rule 8: the order fills only while the idea is intact. If the stop or the target trades on a bar before
     # the one that reaches the entry, the idea failed or played out without us, and the order is withdrawn
