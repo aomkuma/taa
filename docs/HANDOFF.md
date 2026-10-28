@@ -111,8 +111,9 @@ takeable for about **twenty minutes**, at the level.
 **1. METHOD 2e, in the owner's terms.** Ask the owner the three open questions and write the answers as
 they give them - Claude does not fill them in (that is how 2d happened):
 
-1. Divergence read on what - MACD, RSI, or price alone? If an oscillator, `walk.py` has to draw it under
-   the M5 frame, from `app/indicators` (the MT5-exact primitives).
+1. **Answered 10-28: divergence on both MACD and RSI** (the owner's exception to "no indicators").
+   Still open: their settings and the timeframe(s). Then `walk.py` draws both under the M5 frame, from
+   `app/indicators` (`trend.macd`, `momentum.rsi`, MT5-exact).
 2. How the peaks are counted - three pushes, a triple top, waves 1-5 / ABC, or something else.
 3. How the three combine into an entry, a stop and a target.
 
@@ -135,7 +136,7 @@ is coarser than the ~20-minute catch window (C9); `shut` has no priced trade beh
 
 | | |
 |---|---|
-| **Divergence and "no indicators"** - the owner trades divergence; the 10-28 stance says no indicators, and `walk.py` draws none | `METHOD.md` 2e |
+| **MACD and RSI are not drawn yet** - the owner reads divergence on both (10-28); `walk.py` draws neither, and their settings and timeframe(s) are not yet given | `METHOD.md` 2e |
 | **One reader.** Codex now runs: pipe the prompt on stdin to `codex exec` (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `--sandbox read-only`). It reviewed the rules on 10-28 but has not read a chart, so one person still chooses the trade and labels which rules held | `TRIED.md` row 14, `RULES_REVIEW.md` |
 | **Seven of the nine rules have no operational definition.** Day 2 showed it live: "the higher low" could be read at two scales | `TRIED.md`, the review table |
 | **Nothing enforces the sequential reveal.** `walk.py` accepts any step, so the tooling cannot prove a decision came before the bars that judge it | `TRIED.md`, the review table |

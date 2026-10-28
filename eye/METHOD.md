@@ -143,8 +143,11 @@ What is decided, in the owner's words, and nothing more:
 **Open, and to be written in the owner's terms before real day 3 is walked** (Claude must not fill these
 in from its own reading - that is how 2d happened):
 
-1. Divergence read on what - MACD, RSI, or price alone? An oscillator would be an exception to the
-   10-28 stance "no indicators", which is the owner's to make.
+1. ~~Divergence read on what~~ **Answered by the owner, 2026-10-28: "both MACD and RSI."** This is the
+   owner's exception to the 10-28 stance "no indicators": MACD and RSI are read for divergence, nothing
+   else is added. `walk.py` has to draw both under the M5 frame, from `app/indicators` (the MT5-exact
+   `trend.macd`, `momentum.rsi`). Still open: their settings, and on which timeframe(s) the divergence is
+   read.
 2. How the peaks are counted - three pushes to a top or bottom, a triple top, waves 1-5 / ABC, or
    something else.
 3. How the three combine into an entry, a stop and a target.
