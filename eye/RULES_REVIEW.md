@@ -94,4 +94,5 @@ do we fix it?"* Read from the decision charts (deleted from the tree at the owne
 **What it shows, and what it does not.** The two TREND pullbacks are the two best outcomes in the record.
 Seven of eight losers sit in a picture with a name for why not. But #11 and #17 are not TREND pictures and
 would have won on sight, so "not TREND" is not the same as "loses". Twelve trades, one reader, labelled
-after the results: this is why `METHOD.md` 2d is written before day 3 and is judged only by days after it.
+after the results. `METHOD.md` 2d was built on this table; the owner set it aside as not their way, and the
+work holds to their principle instead - structure + divergence + counting the peaks (`METHOD.md` 2e).

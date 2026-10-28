@@ -1,5 +1,10 @@
 # Brief for the second reader (Codex)
 
+> **Retired, kept as a record (2026-10-28).** This brief was for the 50/50 split of the clock-sampled
+> sheets, which never produced one answer (`TRIED.md` row 14), and the sheet images it refers to were
+> deleted at the owner's word (recoverable from 937f75a). A new brief for Codex follows METHOD 2e once
+> the owner has written it. What works now: the prompt piped on stdin to `codex exec`.
+
 You are the second of two readers trading gold by eye. The owner's instruction, in full:
 
 > Start from looking at price structure and finding an entry that has an edge. That is all. Any

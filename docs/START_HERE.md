@@ -12,7 +12,7 @@ still open.
 | **The work** | `eye/` - learning to trade gold by eye, a hundred hand-read trades, recorded one by one |
 | **The raw material** | bar and tick history in `data/history` and `data/ticks`, and the indicator primitives in `app/indicators` - nothing above them is in use |
 | **The machine** | `app/` still builds and its tests pass, but **no strategy is enabled in `config.yaml`**, in any lane. A started engine sends no order |
-| **The record of what was tried** | `docs/archive/README.md` and `research/archive/` - a record, **not a starting point** |
+| **The record of what was tried** | `docs/archive/README.md` and `research/archive/` - **old data: it never decides the present** (owner, 2026-10-28), a record so the same ground is not covered twice |
 
 ## What we are doing
 
@@ -21,6 +21,11 @@ indicators. The owner, 2026-10-28:
 
 > Trading now barely needs any indicators at all. Just price, the trend and the decision. Let price run
 > into one of the levels on the left of the chart, from earlier days or earlier hours.
+
+Later the same day the owner named what they actually trade, and the work holds to it: **price structure +
+divergence + counting the peaks** (`eye/METHOD.md` 2e). Only price structure is in the nine rules so far.
+How divergence is read - and whether that means an oscillator, an exception to "no indicators" - and how
+the peaks are counted are for the owner to say, and are not yet written.
 
 The method, the hundred moments, the rules written before the first chart was drawn, what has been tried
 and whether it worked, and every trade: `eye/METHOD.md`, `eye/TRIED.md`, `eye/LESSONS.md`,
@@ -69,10 +74,10 @@ six windows walked, four of them with no trade, two decisions.** Day 1's New Yor
 judged - scoring its London trade had already shown me what price did inside it - so it was walked as an
 observation and is marked that way.
 
-**The principle the work holds to is the owner's: price structure + divergence + counting the peaks** (`eye/METHOD.md` 2e, its details still to be written in the owner's terms). Claude's 2d is **on hold - a proposal, not the owner's way** (owner, 10-28: *"what I trade is price structure + divergence and counting the peaks"*). It read: every look is
-labelled TREND, VERTICAL, CHOP, FRESH BREAK or NEWS before advancing (`eye/looks.csv`), and the only entry
-is a pullback in a TREND into a level, on a printed higher low. Adopted from a backward reading of the
-twelve decisions (`eye/RULES_REVIEW.md` section 4), and judged only by the days after it.
+Real day 3 waits until the owner's answers to 2e are written. Claude's own proposal for the entries,
+METHOD 2d (enter only a pullback in a trend), is **on hold**: the owner said it is not their way, and it
+never ran. The weaknesses found in the rules on 10-28, and the scoring bug fixed that evening, are in
+`eye/RULES_REVIEW.md`.
 
 ## Before changing anything
 

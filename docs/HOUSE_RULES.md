@@ -26,6 +26,15 @@ reversed it.*
 what it rests on.
 *A filter was adopted on two halves that agreed in mean only, while its effect flipped sign between them.*
 
+**Everything in an archive folder is old data and never decides the present** -
+`docs/archive/`, `research/archive/`, and any folder named `archive`. Its numbers, verdicts, rules,
+setups and lessons were measured under a method that was stopped; they are not evidence for or against
+anything done now, not a default to fall back on, and not quoted as a reason. Read it only to avoid
+covering the same ground twice, and say so when you do. A decision about the present rests on what
+the present work has measured, or on the owner's word.
+*The owner, 2026-10-28, after a session went looking in the archive for how the owner trades:
+"treat everything in the archive folder as old data; do not use it to judge the present."*
+
 ## Recording
 
 **Write it down when it happens, not afterwards.** Every trade, every decision, every lesson, in the file

@@ -15,6 +15,13 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 Everything built before 2026-10-28 is stopped and archived: `docs/archive/README.md` and
 `research/archive/`. It is a record so the same ground is not covered twice, **not a starting point.**
 
+**Everything in an archive folder is old data and never decides the present** (owner, 2026-10-28) -
+`docs/archive/`, `research/archive/`, and any folder named `archive`. Its numbers, verdicts, rules,
+setups and lessons were measured under a method that was stopped; they are not evidence for or against
+anything done now, not a default to fall back on, and not quoted as a reason. Read it only to avoid
+covering the same ground twice, and say so when you do. A decision about the present rests on what
+the present work has measured, or on the owner's word.
+
 ## The project
 
 TAA was an automated trading platform for an FBS account through MetaTrader 5, built on Windows beside the
@@ -52,6 +59,10 @@ three windows walked in order - Asia 07:00-09:00, London 13:00-15:00, New York 1
 window written into `eye/sessions.csv` whether it produced a trade or not. `eye/sheets.py` and
 `moments.csv` are the retired clock-sampling design, kept because the control trades came from it.
 
+The principle the trading holds to is **the owner's: price structure + divergence + counting the peaks**
+(`eye/METHOD.md` 2e). Its details are the owner's to state - ask, and write their answers in their terms;
+do not fill them in from your own reading of the charts (METHOD 2d was exactly that, and is on hold).
+
 **Nothing is committed without `ruff`, `mypy`, `bandit` and the tests green**, and nothing is pushed,
 deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per
 step by explicit paths is fine without asking.
@@ -72,6 +83,8 @@ step by explicit paths is fine without asking.
   is the thing that misleads the next session.
 - **Report what the measurement says even when it contradicts me**, and say which part is measured and
   which part is my reading.
+- **The archive is old data.** Nothing in `docs/archive/`, `research/archive/` or any `archive` folder
+  decides the present - not a number, a verdict, a rule or a lesson (owner, 2026-10-28).
 - **Ask before:** git push, any deploy, starting DEMO or LIVE, anything touching the owner's accounts, and
   any change to risk. Committing per step by explicit paths is fine without asking.
 

@@ -153,7 +153,7 @@ The nine rules stand where this does not contradict them; where it does, this wi
 
 ## 2d The picture decides first - Claude's proposal, ON HOLD (2026-10-28), superseded by 2e
 
-> **On hold, 2026-10-28 17:40 Thai, before any day was walked under it.** The owner asked how to fix the
+> **On hold, the evening of 2026-10-28, before any day was walked under it.** The owner asked how to fix the
 > entries; everything below is **Claude's answer, not the owner's method** - the owner said "try it", then,
 > on reading the plain summary: *"this is not really my way. What I trade is price structure + divergence
 > and counting the peaks of the chart."* None of the thirteen rules mentions divergence, rule 4 is the only
@@ -265,7 +265,7 @@ reads: rules 1, 2, 6, 8 and 9 held, rules 3, 4, 5 and 7 did not. `ledger_control
 shape and holds
 the trades taken before the nine rules existed; the two are never mixed in a figure.
 
-`looks.csv` - one row per look inside a window, written before advancing (section 2d): the picture's label, the nearest band, the step, the decision, and for a refused picture the trade it would have been, priced. From real day 3 on.
+`looks.csv` - made for section 2d (on hold) and unused: header only.
 
 `sessions.csv` - one row per window walked, trade or no trade (section 2c). The denominator for everything
 in the ledger.
