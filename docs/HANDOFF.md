@@ -190,7 +190,7 @@ before the reveal (METHOD 2e, row 3; it answers the "one reader" hole). And a se
 | **One reader.** Codex runs with the prompt piped on stdin (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `exec - --sandbox read-only`). It has reviewed documents twice, never a chart | `TRIED.md` row 14 |
 | **Two judgements in 2e** - which level from the left counts, and what the H1 trend is at that moment (the owner's example had just broken an H1 lower high) - are where a reader's bias enters | `RULES_REVIEW.md` M9 |
 | **Nothing enforces the sequential reveal.** `walk.py` accepts any step | `TRIED.md`, the review table |
-| **Nothing in `eye/` converts R into USD** on the owner's 150 USD account | `START_HERE.md` |
+| **Done 10-28: the record in money** - `eye/money.py`, 200 USD at 0.01 lot: 200.00 -> 110.13 (-44.9 %), deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the owner's | `eye/money.py` |
 | **The review agenda on the nine rules** (C5, C6, C9, X1) - partly overtaken by 2e, not decided | `RULES_REVIEW.md` 1-3 |
 
 ## Standing constraints

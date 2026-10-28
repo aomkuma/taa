@@ -40,10 +40,11 @@ and whether it worked, and every trade: `eye/METHOD.md`, `eye/TRIED.md`, `eye/LE
 **+0.15 R a trade after costs.** The question is whether an entry read by eye at a real level pays more
 than one R when it is right.
 
-**Everything in `eye/` is in R, with no position size in it.** The account it is for is the owner's real
-one: **150 USD at 1:2000**, with 7.5 % of equity risked a trade in the archived settings - the owner's own
-choice, never a concern to raise. Nothing in the eye record converts R into USD yet, so no drawdown,
-streak or margin figure can be read out of it. That is a gap, not a decision.
+**The record is kept in R, and read in money with `eye/money.py`** (the owner, 2026-10-28: *"make it simple
+- think from a 200 USD account and work it out in money"*): a **200 USD** balance, **0.01 lot** (on gold,
+1.00 of price = 1 USD), the 0.30 spread included, every trade of both ledgers in date order. Read on
+2026-10-28: **200.00 -> 110.13 USD (-44.9 %)**, deepest fall from a high 97.18 USD, seven losses in a row.
+The lot is the reading's assumption, not a decision - risk is the owner's to set.
 
 ## What is known so far, and how little it is
 

@@ -52,6 +52,7 @@ The eye work:
 .venv\Scripts\python eye/walk.py <id> <bars>            # the same, at one of the retired sampled moments
 .venv\Scripts\python eye/score.py [summary]             # score the ledger's unscored rows, or the running totals
 .venv\Scripts\python eye/rules.py                       # which of the nine rules held, and where they fought
+.venv\Scripts\python eye/money.py                       # the record in money: 200 USD, 0.01 lot (args: balance lot)
 ```
 
 The method is **real trading days, one at a time** (`eye/METHOD.md` 2c): a date taken whole, the owner's
