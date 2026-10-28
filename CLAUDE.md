@@ -63,7 +63,9 @@ The principle the trading holds to is **the owner's: price structure + divergenc
 (`eye/METHOD.md` 2e), dictated by the owner on 2026-10-28 and written there in full - do not ask it again.
 Anything new about it is the owner's to state: ask, and write the answer in their terms; never fill it in
 from your own reading of the charts (METHOD 2d was exactly that, and is on hold). An example the owner
-gives is a principle to generalise, never a rule with its numbers.
+gives is a principle to generalise, never a rule with its numbers. **The owner's pattern words are not
+the textbook's: in the owner's usage an M is a buy (it forms coming down into a support) and a W a sell** -
+read them the owner's way, and never fill in a side or a trend reading the owner did not give.
 
 **Nothing is committed without `ruff`, `mypy`, `bandit` and the tests green**, and nothing is pushed,
 deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per

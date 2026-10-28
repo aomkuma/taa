@@ -24,10 +24,12 @@ indicators. The owner, 2026-10-28:
 
 Later the same day the owner named what they actually trade, and the work holds to it: **price structure +
 divergence + counting the peaks** (`eye/METHOD.md` 2e). The owner then dictated the setup, and it is written in
-full in 2e: the H1 trend gives the side; at a level from the left on that side, 3-5 ZigZag peaks with
-divergence on MACD and RSI against price (the owner's one exception to "no indicators"); the structure
+full in 2e: the H1 trend gives the side; at a level from the left on that side, 3-5 ZigZag peaks (or two that make
+an M or a W) with divergence on MACD and RSI against price (the owner's one exception to "no indicators"); the structure
 breaks, the low (high) goes, entry on the retest of it; stop beyond the extreme of the move; target just before the
-next level; held until stop or target.
+next level; held until stop or target. **In the owner's words an M is a buy and a W a sell** - the
+opposite of the textbook; read them the owner's way (`eye/METHOD.md` 2e, "The owner's words for
+patterns").
 
 The method, the hundred moments, the rules written before the first chart was drawn, what has been tried
 and whether it worked, and every trade: `eye/METHOD.md`, `eye/TRIED.md`, `eye/LESSONS.md`,

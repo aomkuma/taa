@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated **2026-10-28 18:46 Thai** (read with `Get-Date`). The owner's setup is written down in full
+Last updated **2026-10-28 18:54 Thai** (read with `Get-Date`). The owner's setup is written down in full
 (`eye/METHOD.md` 2e), the tools are built and reviewed, and real day 3 (2026-04-06) has been walked under
 it. Next: real day 4, 2026-04-07.
 
@@ -55,7 +55,8 @@ day 3, 2026-04-03, Asia 07:00 first, one window at a time, reporting each trade 
 **The owner's setup** (`eye/METHOD.md` 2e, dictated 2026-10-28), for a sell - a buy is the mirror:
 
 1. the **H1 trend** gives the sell side the edge, and price comes up into a **resistance from the left**;
-2. **3-5 ZigZag peaks** into it, with **divergence** on MACD and RSI against price;
+2. **3-5 ZigZag peaks** into it - **or two that make an M** (a W for a buy) - with **divergence** on MACD and RSI
+   against price;
 3. the **structure breaks** - the last swing low goes;
 4. the **low breaks** - the low the bounce after it started from;
 5. **entry on the retest** of that broken low, on M5-M15 (the owner: *"break the low, then retest"*);
@@ -132,7 +133,28 @@ straight through the target before any retest, and rule 8 withdraws it (left res
 `shut`: a 44 USD run from a double bottom with no divergence. New York `no-setup`: divergence twice, but
 MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
 
-**Next: real day 4, 2026-04-07, Asia 07:00 Thai.** `.venv\Scripts\python eye/walk.py "2026-04-07 07:00" 0`,
+**Read again with the owner after the day was scored** (`eye/SHEETS.md`, the end of day 3; METHOD 2e):
+
+- *"Two legs, but it is an M pattern"* - **two peaks that make an M (a W) count**, not only 3-5; the M may
+  be asymmetric.
+- *"If I say it is support, should you buy or sell?"* - **at support, buy.** And *"I have always understood
+  M as buy and W as sell, in the leg where it has already projected"* - **the owner's M is a buy and W a
+  sell, the opposite of the textbook.** Claude read "M" the textbook way, took it for a sell, and assumed
+  the owner read H1 as down - neither was said; the record is corrected.
+- So day 3 **London**, recorded `shut`, holds the buy Claude refused: an asymmetric M (tops 4678.79,
+  4667.74) whose lows 4643.61 / 4644.97 sat on the 4642-4651 support, then the run to 4706.58. *That this
+  is the spot the owner means is Claude's reading, asked and not yet confirmed.* The rows of
+  `sessions.csv` keep what was recorded at the time; the note is the correction.
+- **Measured on three years of M15 gold** (METHOD 2e, the table): M and W, of either kind, went up first
+  52-57 % of the time - the years' rise is in every row; the shape alone separates little. The level, the
+  H1 side and divergence were not in that count.
+
+**Two things for the owner, still open:** (1) confirm the spot on day 3's chart was the London M on
+4642-4651; (2) at that spot MACD and RSI did not diverge (both lower at the second low) - whether a clear M
+at support is taken without divergence.
+
+**Next: real day 4, 2026-04-07, Asia 07:00 Thai.** Read M and W **the owner's way** (M at support = buy, W
+at resistance = sell) and count two peaks that make one. `.venv\Scripts\python eye/walk.py "2026-04-07 07:00" 0`,
 one step per command (a slip on day 3 printed two at once). At each look, the pivots with MACD and RSI:
 the helper Claude used lives in the session scratchpad, so rebuild it - `zigzag_pivots` on the closed bars
 of M5 and M15, `walk.macd_mt5` and `app.indicators.momentum.rsi` at each pivot. Read divergence against
