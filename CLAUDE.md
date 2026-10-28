@@ -48,7 +48,7 @@ off and needs Phase 14 and an explicit word.
 The eye work:
 
 ```powershell
-.venv\Scripts\python eye/walk.py "2026-04-01 07:00" 12   # a real day: sit down and advance; H1 3 weeks + M5 33 h
+.venv\Scripts\python eye/walk.py "2026-04-01 07:00" 12   # a real day, advanced 12 M5 bars: _a = H1 + M15, _b = M5; ZigZag, MACD, RSI
 .venv\Scripts\python eye/walk.py <id> <bars>            # the same, at one of the retired sampled moments
 .venv\Scripts\python eye/score.py [summary]             # score the ledger's unscored rows, or the running totals
 .venv\Scripts\python eye/rules.py                       # which of the nine rules held, and where they fought

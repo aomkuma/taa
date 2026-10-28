@@ -114,8 +114,7 @@ takeable for about **twenty minutes**, at the level.
 they give them - Claude does not fill them in (that is how 2d happened):
 
 1. **Answered 10-28: divergence on MACD, RSI "and price too"** (MACD and RSI are the owner's exception to "no indicators").
-   Still open: their settings and the timeframe(s). Then `walk.py` draws both under the M5 frame, from
-   `app/indicators` (`trend.macd`, `momentum.rsi`, MT5-exact).
+   Settings: MT5's defaults; read on M5-M15. `walk.py` now draws them.
 2. **Answered 10-28: the peaks are counted from ZIGZAG** (`app/indicators/chart_read.py` `zigzag_pivots`,
    MT5's, defaults 12/5/3). Still open: settings, timeframe, how many peaks make the count.
 3. **Part answered 10-28: "at resistance when the sell side has the edge, at support when the buy side
@@ -140,7 +139,7 @@ is coarser than the ~20-minute catch window (C9); `shut` has no priced trade beh
 
 | | |
 |---|---|
-| **MACD and RSI are not drawn yet** - the owner reads divergence on both (10-28); `walk.py` draws neither, and their settings and timeframe(s) are not yet given | `METHOD.md` 2e |
+| **Done 10-28:** `walk.py` draws the owner's setup - image `_a` H1 above M15, image `_b` M5; ZigZag 12/5/3 on every frame, MACD 12/26/9 (as MT5 draws it: main as histogram, SMA signal) and RSI 14 under M15 and M5, all computed on closed bars only. Not yet compared against the owner's own MT5 screen | `eye/walk.py` |
 | **One reader.** Codex now runs: pipe the prompt on stdin to `codex exec` (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `--sandbox read-only`). It reviewed the rules on 10-28 but has not read a chart, so one person still chooses the trade and labels which rules held | `TRIED.md` row 14, `RULES_REVIEW.md` |
 | **Seven of the nine rules have no operational definition.** Day 2 showed it live: "the higher low" could be read at two scales | `TRIED.md`, the review table |
 | **Nothing enforces the sequential reveal.** `walk.py` accepts any step, so the tooling cannot prove a decision came before the bars that judge it | `TRIED.md`, the review table |

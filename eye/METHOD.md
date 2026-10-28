@@ -11,7 +11,9 @@ follows can judge them.
 
 ## 1 What is read
 
-Gold, **M5**, drawn as candles and looked at as a picture - never read as a table of numbers. M5 because
+Gold, drawn as candles and looked at as a picture - never read as a table of numbers. **Since 2026-10-28 (2e)
+`walk.py` draws H1 above M15 (`_a`) and M5 (`_b`), with MT5's ZigZag 12/5/3 on each frame and MACD
+12/26/9 and RSI 14 under M15 and M5.** What follows was the reason for M5 alone. M5 because
 of what the first hand-read showed on 2026-08-14: the newest structure on M5 sat 6-8 USD from price while
 on M15 it sat 17-20 USD away, so the M15 plan bought a shelf the market had already left. M5 keeps the
 entry current and halves the stop, and its stops stay many times the spread, which M1 would not.
