@@ -144,12 +144,13 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 | **The side with the edge** | **the trend on H1** |
 | **Where** | **at resistance when the sell side has the edge, at support when the buy side has the edge** - never the other way round |
 | **The count** | **3 to 5 peaks, counted from MT5's ZigZag** |
-| **Divergence** | **on MACD, on RSI, and on price** - price's peaks against the oscillators' (the owner's "yes" to that reading; to confirm) |
+| **Divergence** | **on MACD and RSI, against price** - the owner: *"divergence is divergence - what is it by the book?"* - see the principle below |
 | **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
 | **Entry timeframe** | **M5 to M15** |
 | **The stop** | **beyond the High** (sell) / **Low** (buy) - see the principle below |
 | **The target** | **just before the opposite level on the left** - see the principle below |
+| **How long a trade is held** | **until the stop or the target** - the owner: *"hold it"*. No time limit |
 
 Read together, in order: H1 says which side has the edge; price comes into a level on that side; ZigZag
 counts 3 to 5 peaks into it with divergence on MACD, RSI and price; the structure breaks; the entry is the
@@ -176,8 +177,19 @@ the words mean. Written for a sell; a buy is the mirror of every line.
 7. **The target** - **just before** the opposite level from the left: for a sell, a little above the next
    support, never on the line.
 
-Not yet given: how long a trade is held (the example's target came after 4 h 25 min, past the 4-hour
-resolve window of section 4).
+**Divergence, as the book has it** (the owner: *"divergence is divergence"*). Compared between ZigZag
+peaks of the counter-move, price against MACD and against RSI:
+
+- for a sell at resistance: price makes a **higher or equal high**, the oscillator a **lower high** - the
+  push reaches further with less force behind it;
+- for a buy at support: price makes a **lower or equal low**, the oscillator a **higher low**.
+
+One oscillator diverging is a divergence; both is a stronger one. (Hidden divergence - the continuation
+kind - is a different signal and is not part of this unless the owner adds it.)
+
+**A trade is held until its stop or its target** - no time limit (the owner, 2026-10-28: *"hold it"*).
+`score.py` scores new trades that way; the twelve earlier trades keep the scores they got under the old
+4-hour window.
 
 **The owner's own example, 2026-10-28** (on the FBS-Demo M15 chart, server time): *"suppose that around
 03:15 it bounced lightly and then made an LL - sell; SL above the High; TP above the resistance on the left
@@ -190,8 +202,20 @@ above the top, as the owner's principle puts it (4071): risk 16.0, **+1.48 R** a
 owner's.) One example,
 read after the fact - it shows what the words mean, not that they pay.
 
-It also lands on an open question: the target came **4 h 25 min after the entry**, past `score.py`'s
-4-hour resolve window (section 4), which would have closed it at the market at 07:30.
+**The divergence in the example**, measured on the bars known at the entry (03:30), at the ZigZag highs of
+the counter-move up from 3989:
+
+| M15 high (server) | price | MACD main | RSI 14 |
+|---|---:|---:|---:|
+| 27 Oct 19:30 | 4065.68 | 12.20 | 78.25 |
+| 28 Oct 00:45 | 4064.56 | 4.96 | 65.74 |
+| 28 Oct 02:00 - the top | **4070.76** | **3.96** | **68.61** |
+
+Three peaks, the last the highest in price, and both MACD (12.20 -> 3.96) and RSI (78.25 -> 68.61) lower:
+a divergence on both. On M5 there were four highs at the top (4065.68, 4064.17, 4064.56, 4070.76) and the
+same shape, weaker: MACD 2.84 -> 1.29, RSI 66.04 -> 64.94.
+
+The target came **4 h 25 min after the entry** - held, as the owner holds, it is reached.
 
 ### What Claude understands (Claude's words, for the owner to correct)
 
@@ -222,13 +246,13 @@ record has to say what was seen before the reveal.
 | 1 | **Walk real days under 2e**, from 2026-04-03 Asia 07:00, with `walk.py` (H1 + M15, and M5; ZigZag, MACD, RSI at MT5's defaults). At each decision write which of the seven steps held | ready once the two open answers below are in |
 | 2 | **Record the seven steps on every trade**: a `steps` column in the ledger, seven characters like `rules` (`+` held, `-` broken), so each step is measured the way the nine rules are | to add before day 3 |
 | 3 | **Let the code find the candidates, the eye judge them.** Steps 2-5 are mechanical: a scan of the stored bars can list every place where 3-5 ZigZag peaks with divergence were followed by a structure break and a lower-high retest - found by the clock, not picked by a reader. The reader then judges only the level and the H1 trend, before seeing what followed. This answers the "one reader chooses the trades" hole | possible now; not built |
-| 4 | **Score both hold times** on every trade - the 4-hour window and to the end of the day (section 4 already asks for both) - until the owner says how long a trade is held | the second column is not in `score.py` yet |
+| 4 | **Hold until the stop or the target** - the owner answered 10-28 | **done** in `score.py` |
 | 5 | **A second reader**: Codex given the seven steps and the same charts, reading apart | the tool works (stdin); not run on charts |
 | 6 | **Check MACD and RSI against the owner's MT5** (Data Window) at a few bars - ZigZag on M15 already matched | waiting for the owner |
 
-**Still open, the owner's to answer:** how long a trade is held; and that "divergence on price" means
-price's peaks against the oscillators'. (Step 6 was answered 10-28: beyond the highest top / lowest
-bottom.)
+**Nothing in the setup is open any more** (10-28): step 6 - beyond the highest top / lowest bottom; held
+until the stop or the target; divergence as the book has it. What remains is checking the tools (row 6)
+and building rows 2 and 3.
 
 The nine rules stand where this does not contradict them; where it does, this wins.
 
@@ -326,6 +350,9 @@ level I want is already far behind price, that is **no trade**, and it says so.
   Enter on M5, exit on M5.
 - R = (the move in my favour) / (entry - stop). Costs: the spread, **0.30 USD**, taken off every entry -
   the owner's real account pays about 30 points on gold.
+
+**Answered 2026-10-28 by the owner: hold until the stop or the target - no time limit** (2e; `score.py`
+scores new trades that way). The question as it was written:
 
 **Open question about the 4 hours (written 2026-10-28, not yet decided).** The 2-hour fill and 4-hour
 resolve windows were chosen when a moment was a single panel, and they have never been checked against the

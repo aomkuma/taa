@@ -20,7 +20,10 @@ ROOT = HERE.parent
 TH = "Asia/Bangkok"
 SPREAD = 0.30  # the owner's real account pays about 30 points on gold
 FILL_BARS = 24  # 2 hours to fill
-LIVE_BARS = 48  # 4 hours to resolve
+# No time limit: a trade is held until its stop or its target (the owner, 2026-10-28: "hold it"). The
+# twelve trades in the ledgers were scored under the old 4-hour window (48 bars) and keep those scores;
+# only unscored rows are scored, and they are scored this way.
+LIVE_BARS: int | None = None
 SEEN = pd.Timedelta(minutes=5)  # a `Now` label is the last bar seen; the next one is the first unseen
 
 
@@ -73,7 +76,7 @@ def resolve(bars: pd.DataFrame, entry: float, stop: float, target: float, buy: b
             return stop, "stop"
         if (b.high >= target) if buy else (b.low <= target):
             return target, "target"
-    return float(bars.close.iloc[-1]), "time (4 h)"
+    return float(bars.close.iloc[-1]), "open (data ends)"
 
 
 def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str, str]:
@@ -86,8 +89,7 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     # was made. The owner, 2026-10-28: an obvious level may never be reached, because it is obvious - so
     # waiting for a better price has a cost, and this column is that cost, measured.
     seen = float(window.open.iloc[0])
-    # Filled on the spot, so it gets the same 48 bars to resolve as a planned trade gets after its fill -
-    # not 72, which gave this column two hours more than the one it is compared with (C3).
+    # Filled on the spot, and held under the same rule as a planned trade after its fill (C3).
     at_out, _ = resolve(window.iloc[:LIVE_BARS], seen, stop, target, buy)
     at_move = (at_out - seen) if buy else (seen - at_out)
     at_r = (at_move - SPREAD) / abs(seen - stop) if abs(seen - stop) > 0 else 0.0
@@ -101,7 +103,7 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
             "at_decision_r": f"{at_r:.2f}", "missed_by": f"{missed:.2f}",
         }  # fmt: skip
     t0 = hit.index[0]
-    after = window[window.index >= t0].iloc[:LIVE_BARS]  # 48 bars, not 49 (reviewer, 10-28)
+    after = window[window.index >= t0].iloc[:LIVE_BARS]  # held from the fill bar to the stop or the target
     out, why = resolve(after, entry, stop, target, buy)
     move = (out - entry) if buy else (entry - out)
     r = (move - SPREAD) / abs(entry - stop)

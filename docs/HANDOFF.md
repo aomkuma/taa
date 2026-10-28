@@ -108,7 +108,7 @@ takeable for about **twenty minutes**, at the level.
 
 ## Where it resumes
 
-**Answered by the owner on 10-28 (`METHOD.md` 2e, the table):** edge side = the H1 trend; at resistance when sellers have the edge, at support when buyers do; 3-5 ZigZag peaks; divergence on MACD, RSI and price; entry = structure breaks, then the retest of the broken line; MT5 default settings; entry TF M5-M15. **The whole setup is now one principle in seven steps (METHOD 2e, "The principle"), generalised from the owner's example - the owner: an example is to be summarised into a principle, never made a fixed rule.** Step 6 answered 10-28: **the stop beyond the highest top / lowest bottom of the move** (Claude's first reading, the bounce's high, was wrong). Still open: how long a trade is held, and a confirmation that 'divergence on price' means price's peaks against the oscillators'. The example's target came 4 h 25 min after entry - past the 4-hour resolve window, which now matters.
+**Answered by the owner on 10-28 (`METHOD.md` 2e, the table):** edge side = the H1 trend; at resistance when sellers have the edge, at support when buyers do; 3-5 ZigZag peaks; divergence on MACD, RSI and price; entry = structure breaks, then the retest of the broken line; MT5 default settings; entry TF M5-M15. **The whole setup is now one principle in seven steps (METHOD 2e, "The principle"), generalised from the owner's example - the owner: an example is to be summarised into a principle, never made a fixed rule.** Step 6 answered 10-28: **the stop beyond the highest top / lowest bottom of the move** (Claude's first reading, the bounce's high, was wrong). **Held until the stop or the target, no time limit** (`score.py` now does that). Divergence is the book's: price against MACD/RSI at the ZigZag peaks - the owner's example shows it on both (METHOD 2e). Nothing in the setup is open any more.
 
 **Read first: `METHOD.md` 2e - "What Claude understands" and "What can be done with it"** (the six actions and their state). The three open answers are listed at its end.
 
@@ -147,7 +147,6 @@ is coarser than the ~20-minute catch window (C9); `shut` has no priced trade beh
 | **One reader.** Codex now runs: pipe the prompt on stdin to `codex exec` (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `--sandbox read-only`). It reviewed the rules on 10-28 but has not read a chart, so one person still chooses the trade and labels which rules held | `TRIED.md` row 14, `RULES_REVIEW.md` |
 | **Seven of the nine rules have no operational definition.** Day 2 showed it live: "the higher low" could be read at two scales | `TRIED.md`, the review table |
 | **Nothing enforces the sequential reveal.** `walk.py` accepts any step, so the tooling cannot prove a decision came before the bars that judge it | `TRIED.md`, the review table |
-| **The 4-hour resolve window was never checked** against the owner's rule that a 4-8 hour hold is fine if it pays. Day 1's target arrived about eight hours out | `METHOD.md` 4 |
 | **Nothing in `eye/` converts R into USD** on the owner's 150 USD account | `START_HERE.md` |
 
 ## Standing constraints
