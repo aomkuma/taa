@@ -30,6 +30,52 @@ Each sheet shows **six panels, each a different moment**, about 90 bars (7.5 hou
 - July 6-9 and October 19-27 of 2026 are **excluded**: those days were examined in earlier work and are no
   longer unseen.
 
+## 2b A sampled moment is where I sit down, not where I trade
+
+The owner, 2026-10-28, after looking at the first sheets: **90 % of them were not spots worth watching.**
+The structure was not clear and the wave legs were not complete; and price was not near the support or
+resistance of the side being watched - or if it was near, it looked likely to go straight through, because
+the structure at that level gave no picture.
+
+The sampling is not the fault. The fault was treating the sampled bar as a decision. So:
+
+- A sampled moment is **where I sit down at the screen**.
+- From there the chart advances a few bars at a time (`walk.py`), and I look again. I see only what had
+  printed by then; no bar from the future is ever on the screen.
+- **If the picture is not worth trading, I wait and look again.** If it never becomes worth trading inside
+  the session, that is recorded as a session with no setup - which is the normal outcome.
+- Every wait is part of the record: how many bars I sat before a setup appeared, or that none did.
+
+**See the whole structure before anything else** (the owner, 2026-10-28, after watching the first walk:
+*"the left of the chart shows nothing at all - there are no levels there"*, *"I mean the LEFT of the chart,
+it has to go back far"*, and *"the main thing is you probably need to see the complete price structure
+first - then it is easier to trade"*).
+
+The first chart was 110 M5 bars - nine hours. Nothing on it was older than a morning, so every "level" I
+named was a shelf built minutes earlier, and I twice sold into the strongest move on the screen because
+the thing that made it strong was off the left edge. At moment #13 the nine-hour window could not show
+that price had just broken a week-long ceiling at 5200-5240; it read as "under resistance" when it was
+"above a broken range", and the trade that was there paid +7.1 R in the direction I sold.
+
+So the eye now gets, in this order:
+
+1. **H1, about three weeks** - where the levels are. Read this first, always.
+2. **M5, about 33 hours** - the width of the owner's own screen, for the entry.
+
+If the upper chart shows nothing at price - no level the left side built - there is no moment, whatever the
+lower chart is doing.
+
+**What makes a picture worth trading** (the owner's words, 2026-10-28):
+
+1. **The legs are complete.** Three or four legs are on the chart and the last one has **finished** - then
+   the trade is the fifth leg. Not a pullback inside a leg that is still running.
+2. **Price is at the support or resistance of the side being watched** - a level the structure built, where
+   price has turned before or where a large leg left from. Not a shelf that formed in passing minutes ago.
+3. **The structure at that level gives a picture** - something says it will hold rather than pass straight
+   through.
+
+If the three are not there, there is nothing to decide and no entry is written.
+
 ## 3 What a decision is
 
 For each panel, before anything after the cut-off is drawn, I write:
