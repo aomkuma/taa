@@ -126,7 +126,15 @@ being run:
 
 `walk.py` takes either a sampled moment's id or a real datetime: `walk.py "2026-04-01 07:00" 12`.
 
-## 2d The picture decides first (owner, 2026-10-28, from real day 3 on)
+## 2d The picture decides first - Claude's proposal, ON HOLD (2026-10-28)
+
+> **On hold, 2026-10-28 17:40 Thai, before any day was walked under it.** The owner asked how to fix the
+> entries; everything below is **Claude's answer, not the owner's method** - the owner said "try it", then,
+> on reading the plain summary: *"this is not really my way. What I trade is price structure + divergence
+> and counting the peaks of the chart."* None of the thirteen rules mentions divergence, rule 4 is the only
+> one near counting, and this section drops counting altogether and refuses the reversals counting finds
+> (the 02/04 Asia triple top). Kept as a record; real day 3 waits for the owner's method to be written
+> down in the owner's terms.
 
 The owner, looking at every chart in `eye/` the evening of 2026-10-28: *"from all the pictures, the price
 structure was not one to enter at all. How do we fix it?"* Read again, all twelve decisions: the two

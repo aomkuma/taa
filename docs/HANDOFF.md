@@ -87,6 +87,8 @@ ledger, which is why `sessions.csv` carries `reach`.
 
 ## Where it resumes
 
+**ON HOLD (10-28 17:40 Thai): 2d is Claude's proposal and the owner said it is not their way - they trade price structure + divergence + counting the peaks. Day 3 waits for that method in the owner's terms; the paragraph below is kept as the plan that was set aside.**
+
 **Next: real day 3, 2026-04-03, Asia 07:00 Thai - the first day under `METHOD.md` 2d.** Walk it with
 `python eye/walk.py "2026-04-03 07:00" 0`. At **every look**, before advancing, write a row in
 `looks.csv`: the picture's label (TREND / VERTICAL / CHOP / FRESH BREAK / NEWS), the nearest band and its

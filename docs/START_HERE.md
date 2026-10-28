@@ -69,7 +69,7 @@ six windows walked, four of them with no trade, two decisions.** Day 1's New Yor
 judged - scoring its London trade had already shown me what price did inside it - so it was walked as an
 observation and is marked that way.
 
-**From real day 3 the picture decides first** (`eye/METHOD.md` 2d, owner, 2026-10-28): every look is
+**On hold - Claude's proposal, not the owner's way** (owner, 10-28: *"what I trade is price structure + divergence and counting the peaks"*). It read: every look is
 labelled TREND, VERTICAL, CHOP, FRESH BREAK or NEWS before advancing (`eye/looks.csv`), and the only entry
 is a pullback in a TREND into a level, on a printed higher low. Adopted from a backward reading of the
 twelve decisions (`eye/RULES_REVIEW.md` section 4), and judged only by the days after it.
