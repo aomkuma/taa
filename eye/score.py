@@ -59,7 +59,7 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     if hit.empty:
         return {"fill": "", "exit": "", "why": "no fill", "r_net": "0.0"}
     t0 = hit.index[0]
-    after = window[window.index >= t0].iloc[: LIVE_BARS + 1]
+    after = window[window.index >= t0].iloc[:LIVE_BARS]  # 48 bars, not 49 (reviewer, 10-28)
     for _, b in after.iterrows():
         if (b.low <= stop) if buy else (b.high >= stop):  # a bar touching both counts as the stop
             out, why = stop, "stop"

@@ -23,9 +23,17 @@ needs **LH and LL together**. My losing buy #1 had a higher low but a **lower hi
 4600 was above the 4583 sweep, so I read returning demand, while the high had fallen from 4770 to 4690 -
 sellers still in control. The level broke within five minutes and price went 213 USD lower.
 
-**Eight trades is not proof.** The split is clean and it matches what the owner teaches, but it was
-measured after the fact on a tiny sample, and the "with" group's +0.14 R rests on one winner. It is the
-rule the next trades are taken under, and the thing the next fifty trades have to confirm or kill.
+**The split is one trade wide.** A reviewer (Codex, 2026-10-28) put the knife in the right place: take
+the single +3.67 R winner out of the "with" group and the remaining three make **-1.03 R each - the same
+as the four that went against the structure (-1.02)**. So what the eight trades show is four full-stop
+losses on one side, four trades on the other side of which three also lost a full stop, and one winner.
+
+Stated honestly: **I noticed a split while looking back at eight trades and then named a rule that
+explains them, and one large winner happened to land on the favoured side.** The groups may differ in
+other ways, and the same person chose the trades and labelled them afterwards.
+
+It is a hypothesis to test forward. It is not evidence that the rule earns +0.14 R, and this file should
+not have implied it was.
 
 ## 2. The chart's left side has to go back far enough to hold the levels
 

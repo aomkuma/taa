@@ -99,11 +99,17 @@ level I want is already far behind price, that is **no trade**, and it says so.
 
 ## 4 How a trade is scored
 
-- Entry fills when price trades through it within **24 bars** (2 hours) of the cut-off. If it never does:
+- **The clock starts when the decision is made**, not at the sampled bar: a moment is where I sit down and
+  the decision comes after however long I waited (section 2b), so `decided_at` is the start of both windows
+  below (`score.py`). The text used to say "the cut-off" while the code used `decided_at`; the code is
+  right and this is the correction (reviewer, 2026-10-28).
+- Entry fills when price trades through it within **24 bars** (2 hours) of the decision. If it never does:
   **no fill**, which is recorded and counted - a plan that does not fill is a plan that earned nothing.
 - After the fill, the first of stop or target decides the result. **A bar touching both counts as the
   stop.**
 - If neither is touched within **48 bars** (4 hours) of the fill, the trade is closed at that bar's close.
+  The fill bar itself is included in that window, so a bar that reached the entry and the stop is scored as
+  a stop: five-minute OHLC cannot say which came first, and the conservative reading is taken.
   Enter on M5, exit on M5.
 - R = (the move in my favour) / (entry - stop). Costs: the spread, **0.30 USD**, taken off every entry -
   the owner's real account pays about 30 points on gold.

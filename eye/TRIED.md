@@ -71,3 +71,31 @@ The control, for comparison: **10 trades, -3.51 R, -0.351 a trade**, taken befor
 of them is judged against the rules, because scoring my own past decisions from memory would make the rules
 look however I wanted.
 
+---
+
+## What an outside reader found (Codex, 2026-10-28, review of this whole plan)
+
+Asked to find the holes rather than agree, and given the live documents, the ledgers and the tooling. The
+findings I accept, with what was done about each:
+
+| What it found | True? | Done |
+|---|---|---|
+| **The one finding is one trade wide.** Remove the single +3.67 R winner and the "with structure" group makes -1.03 R each - the same as the group against it | **Yes, checked** | `LESSONS.md` now says it that way, as a sceptic would |
+| **The control number has no written definition.** "10 trades, -3.51 R" could not be reproduced from the files | **Yes** | It is 7 filled control trades (-2.50 R), plus 2 that never filled, plus the one trade of the reset (-1.01). Defined below |
+| **48 bars is 49 in the code** (`LIVE_BARS + 1`) | **Yes** | Fixed |
+| **The spec and the code disagree on when the fill clock starts** - METHOD said the cut-off, `score.py` used `decided_at` | **Yes** | METHOD corrected; the decision time is the clock |
+| **Nothing logs the waits.** Only trades are recorded, so "fifty trades" could be fifty picked out of an unknown number of walks | **Yes** | Not yet fixed - see below |
+| **Nothing enforces the sequential reveal.** `walk.py` accepts any step, so the tooling cannot show that a decision came before the bars that judge it | **Yes** | Not yet fixed - see below |
+| **Rules 2,3,4,5,7,8,9 are not operationally defined** - two readers could disagree and both claim to have followed them | **Yes** | Not yet fixed. The honest consequence: the per-rule table measures a reader, not a rule |
+| **One person both chooses the trade and labels which rules held** | **Yes** | Not yet fixed. A second reader, blind to the outcome, could label from the decision-time chart |
+| **5 versus 7/8 is a conflict the predictions missed**: the structure confirms only after the reachable entry has gone, and an earlier order fills before confirmation | **Yes** | Added to the predicted conflicts |
+| 50 trades cannot establish +0.15 R; the standard error is about 0.14 R even at a standard deviation of 1 | Yes, and the method already said a hundred shows a shape, not a verdict | - |
+
+**The control, defined.** 7 trades filled under the old method, **-2.50 R, -0.357 a trade**; 2 more never
+filled; 3 moments were stood aside. The single trade of the reset (-1.01) is counted separately. Any figure
+quoted for the control from now on says which of those it includes.
+
+**The reviewer's verdict on the whole thing:** price and structure alone could work and nothing here shows
+it cannot - but under this protocol fifty trades would largely measure the reader's selection and labelling
+rather than the method. That is the thing to fix before spending them.
+
