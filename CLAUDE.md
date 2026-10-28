@@ -48,6 +48,25 @@ The eye work:
 deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per
 step by explicit paths is fine without asking.
 
+## My own working rules (owner, 2026-10-28: keep these here)
+
+- **When I say something is recorded, name the file and say what it holds.** "Recorded" on its own tells
+  the owner nothing about where to look.
+- **Write it where it belongs the moment it happens** - every trade, every wait, every lesson - and never
+  only in the conversation. A day reported in chat and left out of the journal has happened twice.
+- **Do not conclude from a handful.** Three times in one session I stated a conclusion from two to six
+  samples and the next measurement reversed it. Say the sample size and what the number rests on.
+- **Write the expectation before the reveal.** Every time that was skipped, the explanation arrived after
+  the number and fitted it too well.
+- **An abnormal count stops the report** until it is explained - a zero, an empty file, a rate that will
+  not move.
+- **When I am wrong, correct the record, not just the sentence.** The file that carries the wrong number
+  is the thing that misleads the next session.
+- **Report what the measurement says even when it contradicts me**, and say which part is measured and
+  which part is my reading.
+- **Ask before:** git push, any deploy, starting DEMO or LIVE, anything touching the owner's accounts, and
+  any change to risk. Committing per step by explicit paths is fine without asking.
+
 ## Working with the owner
 
 - Chat in **Thai**. Documents, code and comments in **English**. Times to the owner in **Thai time**, read
