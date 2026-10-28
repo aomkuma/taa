@@ -168,6 +168,25 @@ a support** - its lows on the level - so it is the end of that move and a **buy*
 **up into a resistance**, and is a **sell**. Day 3 London fits: an asymmetric M (tops 4678.79, 4667.74)
 with its lows 4643.61 / 4644.97 on the 4642-4651 support, and the run to 4706.58 after it.
 
+**Measured on the stored gold bars, 2026-10-28** (the owner: *"the textbook is one thing - how is it really
+used?"*). Every M and W that MT5's ZigZag 12/5/3 drew on M15 from 2023-08 to 2026-10 - two tops (bottoms)
+within 35 % of the pattern's height of each other, asymmetry allowed - followed from the bar the second top
+is known, for two days: which came first, the neckline broken by a quarter of the height, or the far
+extreme taken.
+
+| | n | up first | down first |
+|---|---:|---:|---:|
+| M after a leg up (the textbook's) | 499 | 52.5 % | 47.3 % |
+| M in a leg down (the owner's buy) | 404 | 53.7 % | 44.3 % |
+| W after a leg down (the textbook's) | 393 | 53.4 % | 45.8 % |
+| W in a leg up (the owner's sell) | 434 | 56.9 % | 42.4 % |
+
+**Every kind went up first more often** - gold rose from about 1,900 to over 4,000 in these years, and that
+drift is in all four rows. **The shape alone, and the leg it forms in, separate little.** Not tested here,
+because they cannot be counted without judgement: the level from the left the pattern sits on, the H1 side,
+and divergence - the rest of the owner's setup, which is where the difference has to come from if it is
+anywhere. Claude's definitions (35 %, a quarter of the height, two days); one timeframe; no costs.
+
 ### The principle, generalised from the owner's example
 
 The owner, 2026-10-28: *"this is an example - you have to summarise it into a principle, not turn the
