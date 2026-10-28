@@ -44,3 +44,16 @@ H1 side, then the count.
 - C-H4: "divergence on both" for the count may be stricter than the owner meant ("if both happen it is
   clear" says both is the strong case, not that one is not enough) - **this one touches the owner's rule:
   if it is the key, it goes to the owner.**
+
+**Codex's reading of the October log** (read-only, its own hypotheses before seeing Claude's):
+- 1,147 of 1,767 bars reach step 2. Counts: 1 on **551**, 2 on 214, 3 on 145, 4 on 22, 5 on 25. Of the 3-5
+  counts, **56** diverge on both, **113 on MACD only**, 1 on neither.
+- Ranked `[Claude]` changes: (1) a longer count window than 20 pivots; (2) wider bands; (3) M15 before M5 or
+  alone - on 22/10 London **M15 counted three highs with divergence on both and broke 4104.92, then stopped
+  at "no fixed lower high"**; (4) the step 3-5 swing sequence (179 bars break but no fixed swing yet);
+  (5) a smaller stop buffer for the 58 rows under 2R.
+- **For the owner, from Codex too:** does the 3-5 count need divergence on both? 113 bars have MACD only.
+- On the fall from 4141: not shown reachable by `[Claude]` changes alone from this log.
+
+**Agree / differ (Claude):** agree on M15 (C-H2) and bands (C-H3); Codex adds the count window and the swing
+sequence, which Claude had not; the divergence question is the same as C-H4 - the owner's, not ours.
