@@ -6,6 +6,7 @@ its R (already net of the 0.30 spread) times its stop distance times the ounces.
 
     python eye/money.py                 # 200 USD, 0.01 lot
     python eye/money.py 200 0.02        # another balance or lot
+    python eye/money.py --ledger bot_ledger.csv   # one ledger only (default: both of Claude's)
 """
 
 from __future__ import annotations
@@ -25,11 +26,17 @@ def when(r: dict[str, str]) -> pd.Timestamp:
 
 
 def main() -> None:
-    balance = float(sys.argv[1]) if len(sys.argv) > 1 else 200.0
-    lot = float(sys.argv[2]) if len(sys.argv) > 2 else 0.01
+    args = sys.argv[1:]
+    names: tuple[str, ...] = ("ledger_control.csv", "ledger.csv")
+    if "--ledger" in args:
+        at = args.index("--ledger")
+        names = (args[at + 1],)
+        del args[at : at + 2]
+    balance = float(args[0]) if len(args) > 0 else 200.0
+    lot = float(args[1]) if len(args) > 1 else 0.01
     oz = lot * OZ_PER_LOT
     rows = []
-    for name in ("ledger_control.csv", "ledger.csv"):
+    for name in names:
         for r in csv.DictReader((HERE / name).open(encoding="utf-8")):
             if r["side"] in ("BUY", "SELL"):
                 rows.append(r)

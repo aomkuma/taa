@@ -215,6 +215,11 @@ def main() -> None:
     name = next((a for a in sys.argv[1:] if a.endswith(".csv")), "ledger.csv")
     path = HERE / name
     rows = list(csv.DictReader(path.open(encoding="utf-8")))
+    if not rows:  # a ledger with a header and no row yet (the bot's, on a day it wrote nothing)
+        print(f"{name}: no rows")
+        if "summary" in sys.argv[1:]:
+            windows()
+        return
     if "summary" in sys.argv[1:]:  # `score.py ledger_control.csv summary` used to score instead
         for reader in sorted({r["reader"] for r in rows}):
             mine = [r for r in rows if r["reader"] == reader]

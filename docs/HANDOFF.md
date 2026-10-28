@@ -155,7 +155,15 @@ M (W) at the level needs no divergence**; divergence is required for the 3-5 cou
 
 **Real day 4, 2026-04-07, walked:** no decision. Asia, London, New York all `no-setup`; step 7's next level sat a few dollars over every retest entry (`SHEETS.md`, "Day 4 in one place"). **Open for the owner: a minimum reward** - Claude refused a 0.1 R plan on its own judgement.
 
-**Next: real day 5, 2026-04-08, Asia 07:00 Thai.** (The day-4 instructions below still apply.)
+**The bot - the work now (owner, 10-28: *"write the code and let a bot do the work"*).** `eye/bot2e.py`
+applies METHOD 2e bar by bar (spec `eye/BOT_SPEC.md`; built by a Sonnet agent, reviewed twice by Codex,
+checked by Claude; 18 tests in `tests/unit/test_eye_bot2e.py`). The owner's reward rule: **at least 1:2**,
+and when the target just before the next level gives less - **no trade, for now**. Runs so far (06-07/04,
+20-27/10/2026): no decision. **Next for the bot: BOT_SPEC revision 3** - `min_r` 2.0 and step 2 counting
+the tops / bottoms of one zone (the 4141-4142 double top of 21-22/10 was split) - Sonnet implements,
+Codex reviews, Claude checks; then a run over months, read in money (`money.py --ledger bot_ledger.csv`).
+
+**Next: real day 5, 2026-04-08, Asia 07:00 Thai.** (walking by hand continues beside the bot.) (The day-4 instructions below still apply.)
 
 **Day 4's instructions, kept:** real day 4, 2026-04-07, Asia 07:00 Thai. Read M and W **the owner's way** (M at support = buy, W
 at resistance = sell) and count two peaks that make one. `.venv\Scripts\python eye/walk.py "2026-04-07 07:00" 0`,

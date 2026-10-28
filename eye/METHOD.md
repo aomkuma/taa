@@ -152,6 +152,7 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 | **The stop** | **beyond the High** (sell) / **Low** (buy) - see the principle below |
 | **The target** | **just before the opposite level on the left** - see the principle below |
 | **How long a trade is held** | **until the stop or the target** - the owner: *"hold it"*. No time limit |
+| **Reward** | **at least 1:2** - the owner, 2026-10-28: *"the profit has to be 1:2, 1:3"*; when the target just before the next level gives less: *"no trade, for now"* |
 
 Read together, in order: H1 says which side has the edge; price comes into a level on that side; ZigZag
 counts 3 to 5 peaks into it with divergence on MACD and RSI against price; the structure breaks; the
@@ -290,6 +291,16 @@ a divergence on both. On M5 there were four highs at the top (4065.68, 4064.17, 
 same shape, weaker: MACD 2.84 -> 1.29, RSI 66.04 -> 64.94.
 
 The target came **4 h 25 min after the entry** - held, as the owner holds, it is reached.
+
+### The bot (2026-10-28)
+
+The owner: *"write the code and let a bot do the work - correct, with every condition."* `eye/bot2e.py`
+applies these steps bar by bar on the stored data, inside the owner's windows, on closed bars only, and
+writes its decisions to `eye/bot_ledger.csv` (scored by `score.py`, read in money by `money.py --ledger`).
+Its rules are `eye/BOT_SPEC.md`; every definition the owner did not give is marked `[Claude]` there and
+is a parameter written into each decision. Built by a Sonnet agent, reviewed twice by Codex, checked by
+Claude. **First runs (06-07/04 and 20-27/10/2026): no decision** - the reward floor and step 2 refused
+everything; the count was found splitting a double top in one zone (BOT_SPEC revision 3).
 
 ### What Claude understands (Claude's words, for the owner to correct)
 

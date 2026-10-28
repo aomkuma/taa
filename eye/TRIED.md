@@ -39,6 +39,8 @@ through the target before any retest), London `shut`, New York `no-setup`. Read 
 London window held the owner's buy - an M on the 4642-4651 support - refused because Claude counted "3 to 5"
 literally and read "M" the textbook way (`SHEETS.md`). Verdict unchanged: **UNPROVEN**.
 
+| 19 | **The owner's setup as a bot** (`eye/bot2e.py`, `eye/BOT_SPEC.md`): METHOD 2e applied bar by bar, closed bars only, inside the owner's windows; stop limit orders; reward at least 1:2 (owner) | Runs on 06-07/04 and 20-27/10/2026: **no decision** - H1 gave no side on many bars, step 2 failed on most, and every setup that reached step 7 was under the floor. Found: the count split the 4141-4142 double top of 21-22/10 into one high (spec revision 3) | **UNPROVEN - being built** | A bot that never trades proves nothing either way; the next run needs months, not days |
+
 **Correction, 2026-10-28 evening (`RULES_REVIEW.md` C1 and C3; the rows above are left as written).**
 `score.py` started every walked decision's clock on a bar already on the screen, rolled #15 a day forward
 (a Friday decision scored on Monday's bars), and gave the on-sight column 72 bars against 48. Re-scored:

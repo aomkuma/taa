@@ -81,6 +81,10 @@ in a trend), is **on hold**: the owner said it is not their way, and it never ra
 10-28 - in the nine rules, then in 2e and its tools, each reviewed by Claude and Codex apart - and what
 was fixed are in `eye/RULES_REVIEW.md`.
 
+**Since the evening of 2026-10-28 a bot applies the owner's setup** (`eye/bot2e.py`, its rules in
+`eye/BOT_SPEC.md`), on closed bars only, inside the owner's windows, with the owner's reward rule - **at
+least 1:2, and no trade when the next level leaves less**. It has not written a decision yet.
+
 ## Before changing anything
 
 Read `docs/HOUSE_RULES.md`. Every rule in it was paid for with a real mistake.

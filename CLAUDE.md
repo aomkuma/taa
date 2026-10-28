@@ -53,6 +53,8 @@ The eye work:
 .venv\Scripts\python eye/score.py [summary]             # score the ledger's unscored rows, or the running totals
 .venv\Scripts\python eye/rules.py                       # which of the nine rules held, and where they fought
 .venv\Scripts\python eye/money.py                       # the record in money: 200 USD, 0.01 lot (args: balance lot)
+.venv\Scripts\python eye/bot2e.py --from 2026-04-06 --to 2026-04-07   # the bot: METHOD 2e bar by bar (eye/BOT_SPEC.md)
+.venv\Scripts\python eye/score.py bot_ledger.csv; .venv\Scripts\python eye/money.py --ledger bot_ledger.csv
 ```
 
 The method is **real trading days, one at a time** (`eye/METHOD.md` 2c): a date taken whole, the owner's

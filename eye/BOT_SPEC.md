@@ -176,8 +176,11 @@ pivot price, half-width as in 2a. `L*` is "inside a support" if it lies inside a
 **the band used is the one whose centre is nearest `L*`**. Stop (step 6) and the target band (step 7) use
 single bands only.
 
-**R2. The reward floor is the owner's: `min_r` = 1.0.** The owner, on a plan risking about 72 USD for 41:
-*"risk 72 against a profit of 41 - that is against the principle; it should not be traded."* No decision is
+**R2. A reward floor, `min_r` = 1.0 - the number is Claude's reading `[Claude]`.** The owner, on a plan
+risking about 72 USD for 41: *"risk 72 against a profit of 41 - that is against the principle; it should not
+be traded."* The owner said that trade should not be taken; **the owner did not say 1R** - asked *"who set
+1R?"*, Claude had written its own reading as the owner's rule. 1.0 stays the default until the owner gives
+the number. No decision is
 written when R = (target - entry - 0.30) / (entry - stop) is under 1.0. The log reason is `reward under
 1R`, with R.
 
@@ -194,3 +197,59 @@ frame is refused.
 
 **R6. Every SPEC-QUESTION in the report is marked in the code** - the first build reported nine and marked
 four.
+
+## Revision 2 (2026-10-28 evening) - Claude's final check
+
+**R7. A window opens at its start.** The first look of a window is the close at its start (07:00, 13:00,
+19:30 Thai - the bar before it has just closed), as in the walks by hand: `start <= now <= end`.
+
+**R8. A setup already played out is not written** `[Claude]` (Codex's second review: implemented but not in
+the spec): if, after the higher low formed and before the decision, price has traded at the stop or the
+target, the setup is over - the order would have been withdrawn the moment it was written (METHOD rule 8).
+Reason `setup already played out`; a test for it.
+
+## The owner's reward rule, and what the first longer run showed (2026-10-28, late)
+
+**The owner: *"the profit has to be 1:2, 1:3."*** So `min_r` = **2.0** is the owner's (R2's 1.0 was
+Claude's reading and is replaced). Whether 3 is wanted where 2 is reachable is not said.
+
+Run 2026-10-20..27, `min_r` 2, both h1 modes: **no decision.** On the owner's example - the fall from 4141:
+- 21/10 New York: sell side, five M5 highs into the 4137-4150 resistance (4124, 4126, 4129, 4126, 4141.87),
+  no divergence on both at the last - step 2 failed, rightly by the rule.
+- 22/10 Asia: the top 4142.23 (03:00 Thai) counted as **one** high, because the counter-move is defined from
+  the lowest low of the last 12 pivots and the dip to 4104.92 (01:00-02:00) between the two tops at 4142
+  restarted it. **A reader sees a double top at 4141-4142 in one zone; the bot's definition split it** - a
+  spec error. The owner asked: *"can you find the trough of a price zone, or its top?"* - the count should be
+  of the tops (bottoms) that touch the same zone, not of a counter-move cut at its lowest low. **Open:
+  rewrite step 2b so.**
+- Even counted right, the sell on the retest of 4105 (London 22/10 reached 4102.77) had its target just
+  before the next support from the left, 4066-4073: about 39 risk for 28 - **0.7R, under 1:2.** Price went on
+  to 3976. **Open for the owner: when the next level is too close for 1:2 - skip to the level after it,
+  target 2R / 3R regardless of levels, or no trade.**
+
+## Revision 3 (2026-10-28, late) - the owner's reward rule, and counting by zone
+
+**R9. Reward: at least 1:2 - the owner's.** *"The profit has to be 1:2, 1:3"*; and, asked what to do when
+the next level from the left is too close for that - skip to the level after it, a 2R / 3R target
+regardless of levels, or no trade: *"no trade, for now."* So `min_r` defaults to **2.0**; the target stays
+**just before the nearest opposite level** (step 7); when that gives R under 2.0 there is **no decision**
+(reason `reward under 2R`, with R). No skipping to a further level, no fixed-R target.
+
+**R10. Step 2b counts by zone** (replaces the counter-move definition of 2b; the owner: *"can you find the
+trough of a price zone, or its top?"*). For a BUY:
+- the zone = a support band (step 2a, single bands as R1) that holds the latest fixed LOW on the entry
+  timeframe;
+- the zone's lows = the fixed LOW pivots on that timeframe whose price is inside the band, among the last
+  `counter_pivots` (`[Claude]` default 20) fixed pivots, **and after the last close below the band's lower
+  edge** (a close through the zone ends it as a support; lows before that do not count);
+- `L*` = the lowest of the zone's lows; the count = how many zone lows there are;
+- step 2 holds for 3-5 zone lows with divergence on both at `L*` against the zone low before it, or for
+  exactly 2 zone lows (the owner's M) without divergence;
+- steps 3-7 as before, from `L*`.
+SELL: the mirror - a resistance band, its highs, reset by a close above its upper edge; exactly two zone
+highs = the owner's W.
+
+The case it must get right (a test on the stored bars): at 22/10/2026 07:00 Thai on M15 (or M5), the
+resistance zone round 4141-4142 holds two fixed highs, 4141.87 (21/10 19:00 Thai) and 4142.23 (22/10 03:00
+Thai), with the dip to 4104.92 between them inside the count window - the bot counts **two zone highs (the
+owner's W)**, not one. (What it then decides is for steps 3-7 and R9.)
