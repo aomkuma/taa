@@ -140,8 +140,26 @@ What is decided, in the owner's words, and nothing more:
 - **Counting the peaks** - rule 4 ("three or four legs complete, trade the fifth") is the only rule near
   it, and it has never been defined.
 
-**Open, and to be written in the owner's terms before real day 3 is walked** (Claude must not fill these
-in from its own reading - that is how 2d happened):
+### The owner's setup, as answered on 2026-10-28
+
+| | the owner's answer |
+|---|---|
+| **The side with the edge** | **the trend on H1** |
+| **Where** | **at resistance when the sell side has the edge, at support when the buy side has the edge** - never the other way round |
+| **The count** | **3 to 5 peaks, counted from MT5's ZigZag** |
+| **Divergence** | **on MACD, on RSI, and on price** - price's peaks against the oscillators' (the owner's "yes" to that reading; to confirm) |
+| **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
+| **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
+| **Entry timeframe** | **M5 to M15** |
+| **The stop and the target** | **not yet given** |
+
+Read together, in order: H1 says which side has the edge; price comes into a level on that side; ZigZag
+counts 3 to 5 peaks into it with divergence on MACD, RSI and price; the structure breaks; the entry is the
+retest of the line it broke, on M5 to M15. (This sentence only strings the owner's answers together; it
+adds nothing.)
+
+**The questions as they were asked** (Claude must not fill these in from its own reading - that is how 2d
+happened):
 
 1. ~~Divergence read on what~~ **Answered by the owner, 2026-10-28: "both MACD and RSI" - then "price
    too".** Divergence is read on MACD, on RSI and on price. MACD and RSI are the owner's exception to the

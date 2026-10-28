@@ -108,6 +108,8 @@ takeable for about **twenty minutes**, at the level.
 
 ## Where it resumes
 
+**Answered by the owner on 10-28 (`METHOD.md` 2e, the table):** edge side = the H1 trend; at resistance when sellers have the edge, at support when buyers do; 3-5 ZigZag peaks; divergence on MACD, RSI and price; entry = structure breaks, then the retest of the broken line; MT5 default settings; entry TF M5-M15. **Still open: the stop and the target** (and a confirmation that 'divergence on price' means price's peaks against the oscillators').
+
 **1. METHOD 2e, in the owner's terms.** Ask the owner the three open questions and write the answers as
 they give them - Claude does not fill them in (that is how 2d happened):
 
