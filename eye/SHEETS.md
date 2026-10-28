@@ -359,3 +359,60 @@ are lower, not higher (MACD -1.39 vs 3.81, RSI 45.03 vs 46.44) - **no divergence
 **Look 5 - 14:55 Thai, price 4684.73.** Price ran from the 4644.97 low to 4688.40, through the 4670-4682
 resistance. A real move, on the side with the edge, from a level - and 2e could not take it: two lows,
 no divergence (step 2 failed). **Window: `shut`.**
+
+### New York, 19:30 - 23:00 Thai
+
+**Look 1 - 19:25 Thai, price 4666.01.** After London price made 4706.58 (16:40), over the 4699.44 lower
+high - **H1 up, firmer than this morning.** Now a counter-move down from 4706.58 to a moving low 4659.76,
+back under the 4670-4682 band; RSI 29.10, MACD -5.75. One low so far, nothing to compare - **no setup.**
+Support from the left below: 4642-4651, then 4625. **Expectation:** with three and a half hours, price
+has room to work down into 4642-4651 in 3-5 lows; whether MACD and RSI diverge there is the question. If
+a setup completes, it is a buy stop limit over the last swing high of that counter-move.
+
+**Look 2 - 19:55 Thai, price 4675.84.** A bounce from 4659.76; still one low in the counter-move. No setup.
+
+**Look 3 - 20:25 Thai, price 4668.57.** Drifting 4660-4676; the counter-move still has one low. No setup.
+The 20:30 bar is the US session's first data slot - watching the next step.
+
+**Look 4 - 20:55 Thai, price 4679.99.** Up to 4680 inside the 4670-4682 band; the counter-move's only low
+is still 4659.76, and price is moving away from the support, not into it. No setup.
+
+**Look 5 - 21:25 Thai, price 4686.03.** ZigZag fixed 4659.76 (19:25). A second low at 4659.81 (20:20)
+**did diverge on both** - MACD -4.26 against -5.75, RSI 44.90 against 29.10 - and price has since run to
+4690.79, over the swing high between the two lows. But the counter-move from 4706.58 has **two** lows, not
+3-5, and 4660 is not a level from the left (the band is 4642-4651 below). Step 2 not met as the owner gave
+it - **no trade**; written down because it is exactly the case a count of two would have taken.
+
+**Look 6 - 21:55 Thai, price 4682.73.** High 4697.57 (21:35), under 4706.58; back to 4683. Inside the
+4670-4706 range; no counter-move into a support, no setup.
+
+**Look 7 - 22:25 Thai, price 4667.20.** A new low 4655.62 (22:15, moving), under 4659.76, with MACD -1.75
+and RSI 42.17 against -5.75 and 29.10 - divergence on both against the first low. **Counted as MT5's
+ZigZag draws it**, the counter-move is 4706.58 -> 4659.76 -> 4697.57 -> 4655.62: two lows (4659.81 was
+never a ZigZag pivot). And 4655 is just above the 4642-4651 band, not in it. **Two lows - no setup.**
+
+**Look 8 - 22:55 Thai, price 4668.09.** ZigZag fixed 4697.57. A moving low 4651.98 (22:35) at the top of
+the 4642-4651 band, diverging on both against 4659.76 (MACD -3.83 vs -5.75, RSI 34.95 vs 29.10) - still
+two lows in the ZigZag count. Window over: **no setup.**
+
+### Day 3 scored, after the whole day was walked
+
+**D3-1: no fill (stop or target first), 0 R.** The order woke at 09:15 Thai - one bar ran from 4636.54 to
+4665.05 through the 4644.0 trigger - and the next bar, 09:20, reached 4671.80, through the 4668.0 target,
+before any retest of 4643. Rule 8 withdraws an order whose target trades first. The retest came at 10:00
+(down to 4631), after the target. Left resting, it would have filled there, gone no lower than 4625.41
+(over the 4599.5 stop) and reached the target by 12:15 - **+0.57 R**; taken at the price on the screen at
+08:55, **+1.58 R**. One trade, recorded, not concluded.
+
+**The day: Asia `open-taken` (D3-1, no fill), London `shut` (a 44 USD run from a double bottom with no
+divergence), New York `no-setup` (divergence twice, but MT5's ZigZag drew two lows, never 3-5).**
+
+What the day showed about reading 2e, for the next days to test:
+
+- **ZigZag lags.** A low is a fixed pivot only bars later; at 07:25 I compared the moving low with the
+  wrong pivot and read "no divergence", and at 07:55 the same bars read "divergence on both". Divergence
+  is read against fixed pivots, and the reading can change as one fixes.
+- **The count of 3-5, at depth 12 on M5, is strict.** Twice in New York the oscillators diverged at a
+  low that MT5's ZigZag never made a pivot; counted as MT5 draws it, two lows - no setup.
+- **A break that runs straight to the target leaves no retest before it.** The order rule (rule 8) and
+  the owner's retest entry together miss exactly that move.
