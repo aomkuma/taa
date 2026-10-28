@@ -99,8 +99,8 @@ Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai - advancing a fe
 | Decisions that were trades | **13** (9 filled, 4 never filled), plus 3 moments stood aside |
 | As planned | **-4.53 R, -0.348 a trade** |
 | The same ideas taken at the price on the screen | **-0.15 R, -0.012 a trade** (held until stop or target) |
-| Real days walked | 3 - 2026-04-01, 2026-04-02 and 2026-04-06 (03/04 was Good Friday, no bars) |
-| Windows walked | 9, of which 8 count: 3 `shut`, 0 `open-missed`, 3 `open-taken`, 2 `no-setup` |
+| Real days walked | 4 - 2026-04-01, 04-02, 04-06 and 04-07 (03/04 was Good Friday, no bars) |
+| Windows walked | 12, of which 11 count: 3 `shut`, 0 `open-missed`, 3 `open-taken`, 5 `no-setup` |
 
 `python eye/score.py summary` reads `ledger.csv` only (D1-1, D2-1 and the reset trade #1, which is a
 pre-rules trade sitting in the judged ledger); `python eye/score.py ledger_control.csv summary` gives the
@@ -153,7 +153,11 @@ MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
 clear M at support is taken though MACD and RSI did not diverge there - *"it can be entered."* So: **a clear
 M (W) at the level needs no divergence**; divergence is required for the 3-5 count (METHOD 2e step 2).
 
-**Next: real day 4, 2026-04-07, Asia 07:00 Thai.** Read M and W **the owner's way** (M at support = buy, W
+**Real day 4, 2026-04-07, walked:** no decision. Asia, London, New York all `no-setup`; step 7's next level sat a few dollars over every retest entry (`SHEETS.md`, "Day 4 in one place"). **Open for the owner: a minimum reward** - Claude refused a 0.1 R plan on its own judgement.
+
+**Next: real day 5, 2026-04-08, Asia 07:00 Thai.** (The day-4 instructions below still apply.)
+
+**Day 4's instructions, kept:** real day 4, 2026-04-07, Asia 07:00 Thai. Read M and W **the owner's way** (M at support = buy, W
 at resistance = sell) and count two peaks that make one. `.venv\Scripts\python eye/walk.py "2026-04-07 07:00" 0`,
 one step per command (a slip on day 3 printed two at once). At each look, the pivots with MACD and RSI:
 the helper Claude used lives in the session scratchpad, so rebuild it - `zigzag_pivots` on the closed bars

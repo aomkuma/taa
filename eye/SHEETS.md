@@ -519,3 +519,57 @@ back to 4640. A narrowing range inside 4616-4664. No trade.
 
 **Look 5 - 14:55 Thai, price 4646.02.** Lows 4616.50 -> 4623.03 -> 4636.66 rising, highs 4664 -> 4656.96
 falling: a triangle inside 4616-4664. Window over: **no setup.**
+
+### New York, 19:30 - 23:00 Thai
+
+**Look 1 - 19:25 Thai, price 4666.02.** Between the windows (16:25) price broke the 4664 tops and ran to
+4694.37 - **London's M on the support did resolve the owner's way, up, outside the owner's hours.** Then a
+fall to 4628.90 (18:10), back onto the 4616-4636 support, and a bounce to 4666 under the 4667-4672
+resistance. The fall from 4694.37 is one ZigZag leg with one low (4628.90; 4633.08 moving) - no count, no
+M yet. **No trade.** Watching: a second leg into 4616-4636 that makes an M or 3-5 lows with divergence,
+then the break and retest; or a W into 4694-4706 (the owner's sell) if H1 turns.
+
+**Look 2 - 19:55 Thai, price 4651.54.** Turned down from 4670.90 under the 4667-4672 resistance. No trade.
+
+**Look 3 - 20:25 Thai, price 4658.00.** 4670.90 fixed as a high; a dip to 4646.85 (19:50) and back to 4658.
+Inside 4628-4671. No trade.
+
+**Look 4 - 20:55 Thai, price 4644.01.** A second low 4635.65 (20:40, moving) on the 4616-4636 support,
+above 4628.90. Tops 4694.37 and 4670.90 over those two lows: **an asymmetric M on the support - the
+owner's buy** (no divergence needed: MACD -3.00, RSI 36.67 at a higher low). Step 3 needs 4670.90 to break
+- again right at the 4667-4672 resistance; the next level is 4694-4706. If it comes: a retest near 4671,
+stop beyond 4628.90, target before 4694 - about 0.4-0.5 R. **No order yet.**
+
+**Look 5 - 21:25 Thai, price 4645.30.** 21:00 Thai is 10:00 New York - a US data slot - and the bars show
+it: 21:00 fell 4644 -> 4622.72, 21:05 to **4607.48**, 21:15 4609.86, all on 2,900-3,200 ticks; then the
+21:20 bar ran 4615.69 -> 4645.25. **A sweep under the 4616-4636 support, a double low at 4607-4610 by the
+4600.83 H1 low, and a reclaim.** Step 3 has happened (the 4625.61 high of the fall is gone). Steps 4-5 need
+a dip that holds over 4607.48 and the break of the high it starts from - not yet: an order now would buy a
+continuation, not a retest. Stop would go beyond 4607.48; the next level up is 4667-4672. **No order yet.**
+
+**Look 6 - 21:55 Thai, price 4633.31.** Up to 4661.24 (21:35), dipping to 4633 above 4607.48 - step 4 would
+be 4661.24 breaking. But the order it implies - limit about 4661, stop beyond 4607.48 (risk about 55),
+target just before the 4667-4672 level (about 4666) - pays **under 0.1 R**. **Refused - Claude's
+judgement, not a rule:** the owner has given no minimum reward, and this is the third time today step 7's
+"next level" sat a few dollars over the entry. Asked of the owner at the end of the day.
+
+**Look 7 - 22:25 Thai, price 4652.96.** Back up toward 4661.24; not broken. No trade.
+
+**Look 8 - 22:55 Thai, price 4655.53.** 4661.24 never broke; the refused plan would not have woken inside the
+window. Window over: **no setup taken.**
+
+### Day 4 in one place
+
+**No decision all day.** Asia `no-setup`, London `no-setup`, New York `no-setup` (a buy forming after the
+21:00 sweep, refused on reward and never triggered).
+
+What the day showed, for the next days to test:
+
+- **The M on support resolved the owner's way three times** - Asia's on 4642-4651 broke down instead (the
+  only one that failed), London's on 4616-4625 ran to 4694.37 between 15:00 and 16:25, outside the owner's
+  hours, and New York's ended in a news sweep and reclaim.
+- **Step 7 is where the trades die.** Three times the break-and-retest entry sat a few dollars under the
+  next resistance from the left (4667-4672 under 4664 / 4671, again under 4661), while the stop beyond the
+  extreme was 40-55 away. The owner has given no minimum reward; Claude refused the 0.1 R one.
+- **Two news-like whipsaws** (08:00 and 21:00 Thai, 2,500-3,200 ticks a bar) made divergence unreadable
+  across them and swept the supports.
