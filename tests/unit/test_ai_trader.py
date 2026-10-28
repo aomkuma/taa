@@ -389,3 +389,52 @@ def test_c4_moves_a_short_stop_out_past_the_zone_or_vetoes(monkeypatch: pytest.M
     readings(4010.0)
     rec = T.decide(FakeProvider(ok(w)), [], None, T0, "")  # type: ignore[arg-type]
     assert rec["decision"]["stop"] == 4010.0 and rec["final_size"] == "half"
+
+
+# R10 as a check on every path, not prose (ISSUES 41) ------------------------------------------------------
+
+R10 = {"id": "R10", "kind": "rule", "action": "stand_aside_unless_lean_behind", "lean": "h4_lean"}
+
+
+def test_the_lean_must_be_behind_the_side_and_zero_passes():
+    assert T.rule_vetoes([R10], {"h4_lean": 3.515}, "BUY") == []
+    assert T.rule_vetoes([R10], {"h4_lean": 3.515}, "SELL") == ["R10"]  # 2026-07-06 08:05, the plan's SELL
+    assert T.rule_vetoes([R10], {"h4_lean": -0.4}, "BUY") == ["R10"]
+    assert T.rule_vetoes([R10], {"h4_lean": -0.4}, "SELL") == []
+    # the measured rule is "at least 0 on the trade's own side", so exactly zero is behind both
+    assert T.rule_vetoes([R10], {"h4_lean": 0.0}, "BUY") == []
+    assert T.rule_vetoes([R10], {"h4_lean": 0.0}, "SELL") == []
+
+
+def test_a_lean_that_cannot_be_read_refuses_both_sides():
+    """A missing reading must refuse, never pass.
+
+    NaN refuses by itself - it compares False against everything - but **infinity does not**: without the
+    finiteness guard ``inf >= 0`` is True and a BUY would pass on no evidence at all. That is what the guard
+    is for, and the planted bug that removes it is caught here, not by the NaN case.
+    """
+    for value in (float("nan"), float("inf"), float("-inf"), None, "up", True):
+        f = {"h4_lean": value}
+        assert T.rule_vetoes([R10], f, "BUY") == ["R10"], value
+        assert T.rule_vetoes([R10], f, "SELL") == ["R10"], value
+    assert T.rule_vetoes([R10], {}, "BUY") == ["R10"]  # the reading absent entirely
+
+
+def test_the_lean_rule_stops_the_trade_through_the_brakes_and_can_be_suspended():
+    assert T.brakes([R10], {"h4_lean": 3.515}, step(decision="SELL")) == ("none", ["R10"])
+    assert T.brakes([R10], {"h4_lean": 3.515}, step(decision="BUY")) == ("half", [])
+    assert T.brakes([R10], {"h4_lean": 3.515}, step(decision="SELL"), frozenset({"R10"})) == ("half", [])
+
+
+def test_a_rule_naming_no_reading_cannot_refuse():
+    bare = {"id": "RXX", "kind": "rule", "action": "stand_aside_unless_lean_behind"}
+    assert T.rule_vetoes([bare], {"h4_lean": -5.0}, "BUY") == []
+
+
+def test_the_shipped_rule_is_wired_to_the_shipped_reading():
+    """kb.yaml's R10 and knowledge.features() must name the same reading, or the rule checks nothing."""
+    from app.strategy import knowledge as kn
+
+    r10 = next(e for e in kn.load() if e["id"] == "R10")
+    assert r10["action"] == "stand_aside_unless_lean_behind"
+    assert r10["lean"] == "h4_lean" and r10["lean"] in kn.FEATURES

@@ -27,6 +27,8 @@ from app.strategy.readout import reader_lines
 
 TH = "Asia/Bangkok"
 STAND_ASIDE = {"stand_aside"}  # R02 (stand_aside_plan1) is PLAN-1's switch, not the AI's (owner 2026-10-25)
+# R10: the frame above must lean the trade's way, by the numeric reading the rule names (see lean_behind)
+LEAN_BEHIND = "stand_aside_unless_lean_behind"
 HIDDEN = ("sell_stop_beyond", "buy_stop_beyond")  # the code's own stops, kept out of the readings
 # the end of the session journal sent with each call: above the watcher's own parts (the journal's 3,500, its
 # calls' 1,500, the plan's orders, the position), so nothing is cut twice from the front (07-06: the position
@@ -255,6 +257,28 @@ def suspended(rows: dict[str, str], now: pd.Timestamp) -> dict[str, str]:
     return live
 
 
+def lean_behind(entry: dict[str, Any], f: dict[str, Any], side: str) -> bool:
+    """Is the frame above leaning ``side``'s way, by the reading the rule names (``lean``)?
+
+    The reading is signed for "up", so behind the trade is ``+lean`` for a BUY and ``-lean`` for a SELL, and
+    the threshold is zero (R10, rule set 2). **A reading that cannot be read is a refusal, never a pass**:
+    a NaN compares False against everything, which would otherwise sail a trade through on no evidence.
+
+    This exists because R10 was prose in the knowledge base rather than a check. On the 2026-07-06 replay the
+    morning plan armed a SELL while the lean stood at +3.515, behind a BUY: the step decisions respected the
+    rule and the plan-order path consulted nothing (ISSUES 41). Putting it here covers every path at once -
+    the step decision, the plan's orders when they are armed, and the per-wake side veto that withdraws them.
+    """
+    name = entry.get("lean")
+    if not name:
+        return True  # a rule that names no reading cannot refuse on one
+    value = f.get(name)
+    if not isinstance(value, (int, float)) or isinstance(value, bool):
+        return False
+    lean = float(value)
+    return math.isfinite(lean) and (lean if side == "BUY" else -lean) >= 0
+
+
 def rule_vetoes(
     entries: list[dict[str, Any]], f: dict[str, Any], side: str, off: frozenset[str] = frozenset()
 ) -> list[str]:
@@ -268,6 +292,7 @@ def rule_vetoes(
         and e.get("side") in (None, side)
     ]
     vetoes = [e["id"] for e in live if e.get("action") in STAND_ASIDE and e.get("when")]
+    vetoes += [e["id"] for e in live if e.get("action") == LEAN_BEHIND and not lean_behind(e, f, side)]
     against = "down" if side == "BUY" else "up"
     vetoes += [
         e["id"]

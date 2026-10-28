@@ -322,6 +322,8 @@
 - id: R10
   kind: rule
   stage: entry
+  action: stand_aside_unless_lean_behind   # the brakes refuse the side when the lean is not behind it
+  lean: h4_lean                            # signed for up: behind a BUY is +h4_lean, behind a SELL is -h4_lean
   items: [A2]
   says: "One rule frozen on 2026-10-27 before any later day was replayed (research/2026-10-26-three-bots/RULES_LOCKED.md, rule set 2): take the trade only when H4 momentum behind it is at least 0 (F23). On the shipped bots over 2023-09 .. 2026-10-24 it moves them from +0.102 to +0.210 R a trade, +0.214 inside the fitted window and +0.207 outside it. The reading is `h4_lean` (positive = leaning up): behind the trade is +h4_lean for a BUY and -h4_lean for a SELL, and the trade is allowed when that is at least 0. Read the number, never infer it from h4_rhythm, h4_big or h4_trend - on the 2026-07-06 replay the number was absent from the readings and the inference ran the wrong way all morning while the real lean was +3.515, behind a BUY (ISSUES 37). It is the owner's own rule of that day - only the side with the edge on a timeframe LARGER than the entry frame - with the frame the measurement chose and a threshold of zero rather than a fitted number. Rule set 1 (an H1 threshold and a range-sell ban) was withdrawn the same evening: it was measured on the wrong parameters and with a one-hour lookahead."
   evidence: "239 shipped trades, 2023-09 .. 2026-10-24; 199 survive the rule"

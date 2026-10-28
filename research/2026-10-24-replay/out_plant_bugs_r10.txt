@@ -1,0 +1,10 @@
+caught  an unreadable lean passes instead of refusing
+caught  an infinite lean passes without the finiteness guard
+caught  the sign is not flipped for a SELL
+caught  exactly zero is refused, against the measured rule
+caught  a boolean reading counts as a number
+caught  the rule is never consulted by the brakes
+caught  the veto is inverted
+caught  the shipped rule loses its action, so it checks nothing
+caught  the shipped rule names a reading that does not exist
+9/9 caught
