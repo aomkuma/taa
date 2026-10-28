@@ -166,3 +166,32 @@ Six windows is a handful and this is an observation, not a verdict. What it chan
 recorded: `sessions.csv` has a **`reach`** column, and every window is marked `no-setup`, `shut`,
 `open-missed` or `open-taken` (defined in METHOD 2c), so that after thirty windows this is counting rather
 than impression. The standing so far: **2 `shut`, 1 `open-missed`, 2 `open-taken`, 1 `no-setup`** - but the one `open-missed` is 01/04 New York, the window marked excluded, so the count that belongs in the denominator is **5 windows: 2 `shut`, 0 `open-missed`, 2 `open-taken`, 1 `no-setup`** (corrected 2026-10-28, `RULES_REVIEW.md` C10; `score.py summary` now leaves excluded windows out). And `shut` is written after the move is seen and with no priced trade behind it, so it records a move the rules refused, not what a trade there would have earned (`RULES_REVIEW.md` X1).
+
+## 7. Where the money went (2026-10-28, `eye/money.py`: 200 USD, 0.01 lot)
+
+The owner, on 200.00 -> 110.13 USD: *"a very large loss - what caused it?"* One winner (+47.71), eight
+losers (-137.58), four no-fills. Every one of the eight losers was taken **before** METHOD 2e; the owner's
+setup has one decision (D3-1, no fill), so this says what the earlier methods did wrong, not what 2e does.
+
+| # | stop USD | minutes to the stop | best move for us before it | USD |
+|---|---:|---:|---:|---:|
+| 1 | 40.0 | 5 | 27.79 | -40.40 |
+| 5 | 9.0 | 35 | 11.34 | -9.27 |
+| 9 | 8.0 | 0 | 2.07 | -8.32 |
+| 13 | 9.0 | 0 | 5.55 | -9.27 |
+| 15 | 28.0 | 0 | 14.61 | -28.28 |
+| 19 | 11.0 | 10 | 10.54 | -11.33 |
+| 23 | 11.0 | 235 | 29.18 | -11.33 |
+| D2-1 | 19.0 | 5 | 16.44 | -19.38 |
+
+- **Stopped within ten minutes: 6 of 8** (#1, #9, #13, #15, #19, D2-1; -117.0 USD) - the entry was in the
+  wrong place at the wrong moment, which is what the owner saw in the pictures (RULES_REVIEW section 4: a
+  falling market, a chop, against a fresh break, a news bar).
+- **In profit by a full stop or more, then stopped: 3** (#5 +11.34 on a 9 stop, #19 +10.54 on 11, #23
+  +29.18 on 11; -31.93 USD) - nothing protected a trade that had already paid its risk.
+- **The two widest stops lost half the money:** #1 (40) and #15 (28), -68.68 USD - a fixed lot makes a
+  wide stop a large loss.
+- **The three no-fills would all have won** at the price on the screen (`LESSONS.md` 4) and earned 0.
+
+Caveat: #9, #13 and #15 were stopped on the bar they filled, where five-minute bars cannot say whether the
+"best move" came before the stop or after it. Eight trades: these are where to look, not conclusions.
