@@ -459,3 +459,39 @@ The owner, asked whether that was the spot and whether a clear M at support is t
 did not diverge at its second low: *"it can be entered."* So day 3 London was a setup by the owner's rule -
 **an M at the level needs no divergence** (METHOD 2e step 2). Not added to the ledger: it is read after the
 outcome was known, and stays a lesson.
+
+---
+
+## Real day 4 - 2026-04-07 (Tuesday), under METHOD 2e with the M / W reading
+
+### Asia, 07:00 - 09:00 Thai
+
+**Look 1 - 06:55 Thai, price 4658.82.**
+
+- **H1:** up - rising lows since 4099, last high 4706.58. The buy side has the edge.
+- **Level:** overnight price ranged 4645-4668 with its lows on the **4642-4651 support band**.
+- **Step 2:** M5 lows 4645.87 (00:10) and 4645.55 (02:15) - equal lows, MACD -3.50 -> -2.67 and RSI
+  34.65 -> 38.29: **divergence on both**. And the tops 4666.69 / 4667.95 over those lows make **an M on the
+  support - the owner's buy**. Steps 1-2 held.
+- **Step 3 not yet:** the last swing high 4667.95 is unbroken (price 4658.82).
+- **The geometry problem:** 4667.95 sits right under the **4670-4682 resistance** (4672.55, 4678.79,
+  4681.81). A retest entry near 4668 has its "next level" a few dollars away; the level after it is
+  4697-4706. Stop would go beyond the band and the low: about 4641.5.
+- **Expectation:** Asia stays inside 4645-4668; if 4667.95 breaks, it runs straight into 4670-4682, and a
+  2e buy there has almost no room to the next level. Likely no trade this window.
+
+**Look 2 - 07:25 Thai, price 4659.07.** Another low 4649.04 (07:00) on the band, back to 4659. 4667.95
+unbroken. No trade.
+
+**Look 3 - 07:55 Thai, price 4654.78.** Inside the range, 4649-4668. No trade.
+
+**Look 4 - 08:25 Thai, price 4654.79. An odd count, checked before reading:** a ZigZag low 4628.57 at 08:00
+with RSI 56.40, and a high 4664.43 at 08:05 with RSI 33.90. The raw bars explain it: the 08:00 bar ran
+4654.69 -> 4628.57 -> closed 4661.21 on 2,538 ticks (about 3.5 times the hour's bars); 08:05 made 4664.43
+and closed 4644.29; 08:10 went to 4629.23. A news-like whipsaw - RSI follows the closes, so its value at a
+wick says nothing. **Picture:** a sweep under the 4642-4651 support, twice (4628.57, 4629.23), and a
+reclaim to 4654. Divergence cannot be read across these bars; 4667.95 still unbroken. **No trade.**
+
+**Look 5 - 08:55 Thai, price 4626.83.** The 4642-4651 support gave way: a moving low 4616.50, MACD -6.39,
+RSI 31.39. A 50 USD fall from 4667.95, against the H1 side - not a trade 2e takes. No buy setup either:
+the counter-move is still running. Window over: **no setup.**
