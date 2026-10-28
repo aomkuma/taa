@@ -79,7 +79,7 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     # was made. The owner, 2026-10-28: an obvious level may never be reached, because it is obvious - so
     # waiting for a better price has a cost, and this column is that cost, measured.
     seen = float(window.open.iloc[0])
-    at_out, at_why = resolve(window.iloc[: FILL_BARS + LIVE_BARS], seen, stop, target, buy)
+    at_out, _ = resolve(window.iloc[: FILL_BARS + LIVE_BARS], seen, stop, target, buy)
     at_move = (at_out - seen) if buy else (seen - at_out)
     at_r = (at_move - SPREAD) / abs(seen - stop) if abs(seen - stop) > 0 else 0.0
 
@@ -106,6 +106,20 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     }
 
 
+def windows() -> None:
+    """The denominator: every window walked, trade or no trade (METHOD section 2c)."""
+    p = HERE / "sessions.csv"
+    if not p.exists():
+        return
+    rows = list(csv.DictReader(p.open(encoding="utf-8")))
+    empty = [r for r in rows if r["trades"] == "0"]
+    steps = sum(int(r["steps"]) for r in rows)
+    print(
+        f"{'windows':7} walked {len(rows):3}  with no trade {len(empty):3}  "
+        f"steps advanced {steps:3}  days {len({r['date'] for r in rows}):3}"
+    )
+
+
 def main() -> None:
     name = next((a for a in sys.argv[1:] if a.endswith(".csv")), "ledger.csv")
     path = HERE / name
@@ -126,6 +140,14 @@ def main() -> None:
                 if filled
                 else f"{reader:7} decisions {len(mine):3}  nothing filled yet"
             )
+            onsight = [float(r["at_decision_r"] or 0) for r in taken]
+            if onsight:
+                print(
+                    f"{'':7} the same ideas taken at the price on the screen: "
+                    f"R {sum(onsight):+7.2f}  per trade {sum(onsight) / len(onsight):+6.3f}  "
+                    f"(the 4 USD rule, METHOD rule 7)"
+                )
+        windows()
         return
 
     m5, cut = bars(), cutoffs()

@@ -16,9 +16,11 @@ of what the first hand-read showed on 2026-08-14: the newest structure on M5 sat
 on M15 it sat 17-20 USD away, so the M15 plan bought a shelf the market had already left. M5 keeps the
 entry current and halves the stop, and its stops stay many times the spread, which M1 would not.
 
-Each sheet shows **six panels, each a different moment**, about 90 bars (7.5 hours) up to its cut-off.
+Section 2c replaced the sheets: the chart is now advanced bar by bar through a real day, not printed six
+panels to a page. `sheets.py`, `moments.csv` and the nine `codex_*.png` sheets are kept as the record of
+where the control trades came from, and are no longer run.
 
-## 2 How the moments are chosen
+## 2 How the moments were chosen - the sampling design, superseded 2026-10-28 by 2c
 
 **By the clock, never by what they look like.** Picking moments that look interesting is how a library of
 "patterns" becomes a record of hindsight (the lesson that voided an earlier body of work).
@@ -85,6 +87,34 @@ lower chart is doing.
 
 If the three are not there, there is nothing to decide and no entry is written.
 
+## 2c Real trading days, one at a time (owner, 2026-10-28)
+
+*"This way may not work. How about we run real days, one at a time?"* - said after the sampled moments
+produced nine decisions and one winner. So the sampling in section 2 is retired and this is the method
+being run:
+
+- A date is taken whole, in order, and **every one of the owner's windows is walked, in sequence** - no
+  window is skipped because the previous one gave nothing:
+
+  | window | Thai time | what it is |
+  |---|---|---|
+  | Asia | 07:00 - 09:00 | the Asian session, the quietest of the three |
+  | London | 13:00 - 15:00 | the London open, give or take a little |
+  | New York | 19:30 - 23:00 | the New York open and the hours after it |
+
+  (The owner's windows, unchanged from the archived work; outside them is the lowest priority and only a
+  really clean picture is worth taking, which is the owner's judgement to make.)
+- Inside a window the chart advances a few bars at a time from the opening price, exactly as in 2b. The
+  upper frame is drawn first, every time.
+- **The window is written down whether or not it produced a trade** - `sessions.csv`, one row per window:
+  how many steps were walked, the price at the start and the end, how many setups appeared, how many trades
+  were taken, and what was being watched. A window with nothing in it is the normal outcome and has to cost
+  something to leave out, or "fifty trades" could be fifty picked out of an unknown number of walks
+  (the reviewer's finding, 2026-10-28).
+- The day is reported to the owner as it happens, trade by trade.
+
+`walk.py` takes either a sampled moment's id or a real datetime: `walk.py "2026-04-01 07:00" 12`.
+
 ## 3 What a decision is
 
 For each panel, before anything after the cut-off is drawn, I write:
@@ -114,12 +144,27 @@ level I want is already far behind price, that is **no trade**, and it says so.
 - R = (the move in my favour) / (entry - stop). Costs: the spread, **0.30 USD**, taken off every entry -
   the owner's real account pays about 30 points on gold.
 
+**Open question about the 4 hours (written 2026-10-28, not yet decided).** The 2-hour fill and 4-hour
+resolve windows were chosen when a moment was a single panel, and they have never been checked against the
+owner's standing rule that *a setup needing four to eight hours of holding, even overnight, is fine if it
+pays - the sixty-minute scalp was a method, not the goal.* Real day 1 is exactly that case: the London plan
+was never filled, and the price it was aiming at arrived at 22:40, about **eight hours** after the
+decision. A 4-hour cap scores that day as nothing happening. Both columns will be kept on every trade from
+here (resolved at 4 hours, and resolved at the end of the day) before either is called the measure.
+
 ## 5 What is written down
 
 `ledger.csv` - one row a trade: sheet, panel, cut-off, side, entry, stop, target, fill, exit, exit reason,
-R net of the spread, and the structure named at entry.
+R net of the spread, the structure named at entry, which of the nine rules held (`rules`), which pair
+fought (`conflict`), and what the same idea paid taken at the price on the screen (`at_decision_r`) with
+how far the planned entry was missed by (`missed_by`). `ledger_control.csv` is the same shape and holds
+the trades taken before the nine rules existed; the two are never mixed in a figure.
 
-`SHEETS.md` - every panel's reading in my own words, written before the reveal, and the score after it.
+`sessions.csv` - one row per window walked, trade or no trade (section 2c). The denominator for everything
+in the ledger.
+
+`SHEETS.md` - every reading in my own words, written before the reveal, and the score after it: the
+sampled panels first, then the reset and the real days.
 
 `LESSONS.md` - only what the ledger supports, with the trade numbers that support it. Nothing that comes
 from one trade.

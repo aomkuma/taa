@@ -17,8 +17,8 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import pandas as pd  # noqa: E402
+import matplotlib.pyplot as plt
+import pandas as pd
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -42,7 +42,7 @@ def moments(bars: pd.DataFrame, count: int = 100) -> list[pd.Timestamp]:
     days = sorted({d for d in local.index.normalize().unique() if str(d.date()) >= START})
     seen = [(pd.Timestamp(a, tz=TH), pd.Timestamp(b, tz=TH) + pd.Timedelta(days=1)) for a, b in SEEN]
     out: list[pd.Timestamp] = []
-    for i, day in enumerate(days[::2]):
+    for day in days[::2]:
         if any(a <= day < b for a, b in seen):
             continue
         at = day + pd.Timedelta(hours=int(HOURS[len(out) % 3][:2]), minutes=int(HOURS[len(out) % 3][3:]))
@@ -77,7 +77,9 @@ def panel(ax: plt.Axes, frame: pd.DataFrame, title: str) -> None:
         ax.plot([i, i], [b.low, b.high], color=colour, linewidth=0.9, zorder=2)
         lo, hi = (b.open, b.close) if up else (b.close, b.open)
         ax.add_patch(
-            plt.Rectangle((i - 0.36, lo), 0.72, max(hi - lo, 0.01), facecolor=colour, edgecolor=colour, zorder=3)
+            plt.Rectangle(
+                (i - 0.36, lo), 0.72, max(hi - lo, 0.01), facecolor=colour, edgecolor=colour, zorder=3
+            )
         )
     step = max(1, len(frame) // 7)
     ax.set_xticks(list(range(0, len(frame), step)))
@@ -120,7 +122,7 @@ def draw_sheet(reader: str, number: int, reveal: int = 0) -> None:
     for r in rows:
         cut = pd.Timestamp(r["cutoff_utc"])
         before = bars[bars.index + pd.Timedelta(minutes=5) <= cut].iloc[-BARS:]
-        print(f"  #{r['id']} panel {r['panel']}  {r['cutoff_thai']} Thai   last close {before.close.iloc[-1]:.2f}")
+        print(f"  #{r['id']} panel {r['panel']}  {r['cutoff_thai']} Thai   close {before.close.iloc[-1]:.2f}")
 
 
 if __name__ == "__main__":

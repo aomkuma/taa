@@ -3,7 +3,13 @@
 Each panel is read and written here **before** anything after its cut-off is drawn. The score is added
 after the reveal, under the same entry. Nothing above a line is ever rewritten.
 
-Reader: Claude (odd-numbered moments). Codex reads the even ones; the two are compared in `COMPARE.md`.
+Reader: Claude, throughout. The plan was to give Codex the even-numbered moments and compare the two
+readers in `COMPARE.md`; **that run never answered a single sheet** and was stopped on 2026-10-28
+(`TRIED.md` row 14), so there is no second reader and no `COMPARE.md`. Every reading below is one person's,
+and that person also labelled which rules held - the hole the reviewer named and the one still open.
+
+Sheet 1 is the sampled design (METHOD section 2). Everything from "The reset" down is read bar by bar with
+the full picture, and from "Real day 1" down it is whole trading days (METHOD section 2c).
 
 ---
 
@@ -107,3 +113,56 @@ What the losers actually say is about **timing, not stop width**: in both I ente
 move against me had not finished. The stop was not in the wrong place; the entry was too early in the
 sweep. That is a different thing to fix, and it needs more than three trades to see.
 
+---
+
+## The reset - the first readings with the full picture (2026-10-28)
+
+Written at the time of the decision in the conversation and into `ledger.csv`; transcribed here, because a
+reading that lives only in a ledger cell is not a record anyone can read. Nothing is added with hindsight:
+what follows is the text written before the reveal, with the score under it.
+
+### #1 - 2026-02-02, sat down 08:00, decided 12:25 Thai
+
+**Structure.** H1 five weeks: a week-long shelf at 4580-4630 (13-19/01) that the market built before the
+whole rally; price crashed 5590 -> 4583 and came back to it. Watched 270 minutes from sitting down: the
+first touch wicked to 4583 and bounced 180 USD to 4770, the second touch held 4600 - a higher low - and
+price has consolidated 4600-4690 above it.
+
+**BUY 4615, stop 4575, target 4770.** The pullback into the second low, the stop beyond the 4583 sweep, the
+target the bounce high.
+
+**Score: filled 12:35, stopped at 4575, -1.01 R.** The level broke five minutes after the fill and price
+went 213 USD lower. The reason, found afterwards: the second low was higher but the **high had fallen**
+from 4770 to 4690, so rule 5 refuses this trade - a higher low under a lower high is still a downtrend. A
+180 USD bounce inside an 18 %-in-three-days collapse is a breath, not demand (`TRIED.md` row 11).
+
+---
+
+## Real day 1 - 2026-04-01
+
+Walked window by window, in order (METHOD 2c). The windows themselves, with their step counts and what was
+being watched, are in `sessions.csv`.
+
+### Asia, 07:00 - 09:00 Thai - 4 steps, no setup
+
+**Structure.** Price arrived at 4700-4720, where the 19-20/03 decline paused - the first real supply above
+the crash base - and tagged 4721.75 at 07:25.
+
+**No trade.** At the level a lower high was forming but the lows stayed flat at 4680-4684, so there was no
+lower low: rule 5 refuses the sell. And the live leg is still up, so rule 4 refuses it too. Two rules
+pointing the same way, and both at the thing that would have been sold.
+
+### London, 13:00 - 15:00 Thai - 5 steps, decided 14:55
+
+**Structure.** Price broke the 4700-4720 shelf and made 4747 - a higher high over the 4722 Asia high - with
+the pullback low 4670 above the earlier one. A break and retest from above.
+
+**BUY 4707, stop 4688, target 4784.** The stop under the level that must now hold; the target one full leg
+(4670 to 4747 is 77 USD). **All nine rules held** - the first decision in the whole record of which that is
+true.
+
+**Score: never filled.** The lowest price after the decision was 4709.57 - **2.57 USD above the entry** -
+and price ran through the target to 4788 at 22:40. Scored at the price on the screen instead, the same idea
+pays **+1.08 R**. This is the trade that produced the 4 USD rule (`LESSONS.md` section 4).
+
+### New York, 19:30 - 23:00 Thai - not yet walked

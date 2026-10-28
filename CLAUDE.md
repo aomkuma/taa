@@ -39,10 +39,16 @@ off and needs Phase 14 and an explicit word.
 The eye work:
 
 ```powershell
-.venv\Scripts\python eye/sheets.py moments          # the hundred clock-sampled moments
-.venv\Scripts\python eye/walk.py <id> <bars>        # sit at a moment and advance; H1 three weeks + M5 33 hours
-.venv\Scripts\python eye/score.py [summary]         # score the ledger's unscored rows, or the running totals
+.venv\Scripts\python eye/walk.py "2026-04-01 07:00" 12   # a real day: sit down and advance; H1 3 weeks + M5 33 h
+.venv\Scripts\python eye/walk.py <id> <bars>            # the same, at one of the retired sampled moments
+.venv\Scripts\python eye/score.py [summary]             # score the ledger's unscored rows, or the running totals
+.venv\Scripts\python eye/rules.py                       # which of the nine rules held, and where they fought
 ```
+
+The method is **real trading days, one at a time** (`eye/METHOD.md` 2c): a date taken whole, the owner's
+three windows walked in order - Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai - and every
+window written into `eye/sessions.csv` whether it produced a trade or not. `eye/sheets.py` and
+`moments.csv` are the retired clock-sampling design, kept because the control trades came from it.
 
 **Nothing is committed without `ruff`, `mypy`, `bandit` and the tests green**, and nothing is pushed,
 deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per

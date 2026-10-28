@@ -23,8 +23,8 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import pandas as pd  # noqa: E402
+import matplotlib.pyplot as plt
+import pandas as pd
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -90,7 +90,7 @@ def draw(mid: str, step: int) -> None:
     fig, (ax_h1, ax) = plt.subplots(2, 1, figsize=(21, 13), dpi=100, height_ratios=[1, 1])
     candles(ax_h1, above, width=0.34, lw=0.9)
     ax_h1.set_title(
-        f"H1 - three weeks back, where the levels are   (to {above.index[-1].tz_convert(TH):%d/%m %H:%M} Thai)",
+        f"H1 - three weeks back, the levels   (to {above.index[-1].tz_convert(TH):%d/%m %H:%M} Thai)",
         fontsize=11,
     )
     candles(ax, entry, width=0.3, lw=0.7)

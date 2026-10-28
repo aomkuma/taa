@@ -33,12 +33,32 @@ its losers cost a full 1.00 R.
 So the question is not which way price goes. It is whether an entry read by eye at a real level pays more
 than one R when it is right.
 
+**Everything in `eye/` is in R, with no position size in it.** The account it is for is the owner's real
+one: **150 USD at 1:2000**, with 7.5 % of equity risked a trade in the archived settings - the owner's own
+choice, never a concern to raise. Nothing in the eye record converts R into USD yet, so no drawdown,
+streak or margin figure can be read out of it. That is a gap, not a decision.
+
 ## What is known so far, and how little it is
 
-Eight hand-read trades. Four taken with the structure at the level made +0.14 R each; four taken against
-it lost a full stop every time. That is the most promising thing measured and it is still nothing -
-measured backwards, on eight trades, with one winner carrying the good half. `eye/LESSONS.md` keeps it
-honest.
+**Eleven decisions that were trades, eight of them filled, one winner**, plus three moments stood aside.
+Taken together: **-0.319 R a trade.** Two things have been measured on them, both backwards, neither
+decided:
+
+- **The structure at the level.** Four trades taken with it made +0.14 R each, four taken against it lost a
+  full stop every time - but take the single +3.67 R winner out of the good half and both halves lose
+  about -1.02 R. It is a hypothesis, not a result.
+- **Waiting for a better price cost more than every losing trade.** The same eleven ideas taken at the
+  price that was on the screen make **-0.044 R a trade** instead of -0.319, and all three plans that never
+  filled would have won, missed by 2.57, 3.85 and 3.82 USD. An order now goes no further than **4 USD**
+  from price.
+
+`eye/LESSONS.md` keeps both honest; `eye/TRIED.md` carries the verdict on every method tried, including
+the ones that failed.
+
+The method being run now is **real trading days, one at a time** (`eye/METHOD.md` section 2c): a date
+taken whole, all three of the owner's windows walked in order, every window written into
+`eye/sessions.csv` whether it produced a trade or not. Day 1 is 2026-04-01; Asia and London are walked,
+New York is not.
 
 ## Before changing anything
 

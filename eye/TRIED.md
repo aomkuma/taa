@@ -17,7 +17,7 @@ left behind: **-0.115 R a trade**, where the direction was right 53.8 % of the t
 
 | # | The method | What the evidence was | Verdict | The lesson |
 |---|---|---|---|---|
-| 1 | **Decide at a clock-sampled moment**: sample by the calendar, read the chart, decide there | 12 moments, 9 trades, 7 fills, 1 win, **-0.360 R a fill**. The owner, looking at the sheets: 90 % were not spots worth watching | **FAILS** | A sampled bar is not a decision. Trading 8 of 12 moments is itself the signal that the moments were wrong |
+| 1 | **Decide at a clock-sampled moment**: sample by the calendar, read the chart, decide there | 12 moments, 9 trades, 7 fills, 1 win, **-0.357 R a fill**. The owner, looking at the sheets: 90 % were not spots worth watching | **FAILS** | A sampled bar is not a decision. Trading 8 of 12 moments is itself the signal that the moments were wrong |
 | 2 | **One frame only**: judge from 110 M5 bars, nine hours | Every "level" named was a shelf built that morning. At moment #13 I sold into a market that had just broken a week-long ceiling with nothing above it; the trade that was there paid **+7.1 R in the direction I sold** | **FAILS** | Nine hours cannot contain a level. The missing thing was not skill, it was the left of the chart |
 | 3 | **Two frames, read top first**: H1 three weeks for the levels, M5 33 hours for the entry | Adopted after #2. One trade taken under it so far (lost, for a reason row 6 explains) | **UNPROVEN** | - |
 | 4 | **Levels from the left**: only shelves earlier days built, never one that formed minutes ago | Both of the clean winners in the whole record (#3 +3.67 R, and the 14/08 hand-read +1.62 R) were at such a level; the four full-stop losers were at shelves hours old | **UNPROVEN** | Measured only backwards so far |
@@ -28,6 +28,9 @@ left behind: **-0.115 R a trade**, where the direction was right 53.8 % of the t
 | 9 | **A limit inside the level being faded** (sell limit above price into resistance) | #13: the order could only fill if price rose through the level - it filled at the moment the idea was failing, and the stop went five minutes later | **FAILS** | Before every order: *does this fill when the idea is right, or when it is wrong?* |
 | 10 | **Sell the first bounce into a shelf that just broke** | #15: filled 5098, stop 5126 hit **five minutes later**, price ran to 5174 | **FAILS** | After a long run down, the first bounce can be the reversal. Selling it needs the bounce to show exhaustion, not just a level overhead |
 | 11 | **Buy a support while the trend is violently down**, on a sweep and a higher low | #1 of the reset: a week-long shelf, a sweep to 4583, a 180 USD bounce, a higher low at 4600 - and the level broke five minutes after the fill, price 213 USD lower | **FAILS** | A 180 USD bounce inside an 18 %-in-three-days collapse is a breath, not demand. And the high was still falling: row 6 would have refused it |
+| 12 | **Real trading days, one at a time** (owner): take a date whole, walk all three windows in order, write every window down trade or not | Day 1, 2026-04-01: Asia 4 steps no setup, London 1 trade, New York not yet walked. 2 windows, 1 decision | **UNPROVEN** | It is the first method whose denominator is written down (`sessions.csv`). Nothing can be said about it on two windows |
+| 13 | **Take it at the price on the screen if the plan is more than 4 USD away** (owner) | All 11 trades scored twice: the entries I planned made **-0.319 R a trade**, the same ideas on sight **-0.044**. All three unfilled plans would have won, missed by 2.57, 3.85 and 3.82 USD - every one under four | **UNPROVEN, and the only positive difference measured so far** | Backward on 11 trades, and 3 of the 5 differences are the same kind of event. Entering worse widens the stop, so the one winner falls from +3.67 to +2.02 R |
+| 14 | **Split the hundred with a second reader** (owner: fifty each, Claude and Codex, then compare) | **Not one sheet was ever answered.** The prompt was passed to `codex exec` as an argument, so it sat on `Reading prompt from stdin...` for 5.5 hours and exited 15 with no output, twice. Stopped 2026-10-28 16:26 Thai | **UNRESOLVED - never ran** | A second, independent reader is still the fix the reviewer asked for (one person chooses the trade and labels the rules). It needs the prompt piped on stdin and one sheet proven end to end before nine are queued |
 
 ## Methods inherited from the archived work
 
@@ -67,9 +70,11 @@ the other way round:
 loses, or it is on the losing side of the same conflict again and again. A rule that never once decides
 anything is also guilty - of not being a rule.
 
-The control, for comparison: **10 trades, -3.51 R, -0.351 a trade**, taken before these rules existed. None
-of them is judged against the rules, because scoring my own past decisions from memory would make the rules
-look however I wanted.
+The control, for comparison: **10 decisions that were trades, -3.51 R, -0.351 a decision** - the 7 control
+fills at -2.50 R (**-0.357 a fill**), 2 control plans that never filled at 0, and the single trade of the
+reset at -1.01 - all taken before these rules existed. Any figure for the control says which denominator it
+uses; the two above are the same trades counted two ways. None of them is judged against the rules, because
+scoring my own past decisions from memory would make the rules look however I wanted.
 
 ---
 
@@ -84,10 +89,10 @@ findings I accept, with what was done about each:
 | **The control number has no written definition.** "10 trades, -3.51 R" could not be reproduced from the files | **Yes** | It is 7 filled control trades (-2.50 R), plus 2 that never filled, plus the one trade of the reset (-1.01). Defined below |
 | **48 bars is 49 in the code** (`LIVE_BARS + 1`) | **Yes** | Fixed |
 | **The spec and the code disagree on when the fill clock starts** - METHOD said the cut-off, `score.py` used `decided_at` | **Yes** | METHOD corrected; the decision time is the clock |
-| **Nothing logs the waits.** Only trades are recorded, so "fifty trades" could be fifty picked out of an unknown number of walks | **Yes** | Not yet fixed - see below |
+| **Nothing logs the waits.** Only trades are recorded, so "fifty trades" could be fifty picked out of an unknown number of walks | **Yes** | **Fixed** - `sessions.csv`, one row per window walked, trade or no trade; written into METHOD 2c as part of the method, not an extra |
 | **Nothing enforces the sequential reveal.** `walk.py` accepts any step, so the tooling cannot show that a decision came before the bars that judge it | **Yes** | Not yet fixed - see below |
 | **Rules 2,3,4,5,7,8,9 are not operationally defined** - two readers could disagree and both claim to have followed them | **Yes** | Not yet fixed. The honest consequence: the per-rule table measures a reader, not a rule |
-| **One person both chooses the trade and labels which rules held** | **Yes** | Not yet fixed. A second reader, blind to the outcome, could label from the decision-time chart |
+| **One person both chooses the trade and labels which rules held** | **Yes** | Not yet fixed, and the attempt failed: the second reader never answered a single sheet (row 14). This is the largest hole still open |
 | **5 versus 7/8 is a conflict the predictions missed**: the structure confirms only after the reachable entry has gone, and an earlier order fills before confirmation | **Yes** | Added to the predicted conflicts |
 | 50 trades cannot establish +0.15 R; the standard error is about 0.14 R even at a standard deviation of 1 | Yes, and the method already said a hundred shows a shape, not a verdict | - |
 

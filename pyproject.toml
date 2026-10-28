@@ -32,6 +32,7 @@ ignore = [
 "tests/**" = ["S101", "S105", "S106", "S311", "DTZ001", "T20", "PT011", "PT018", "E501"]
 "scripts/**" = ["T20"]
 "app/cli/**" = ["T20"]
+"eye/**" = ["T20"]  # the eye scripts are CLIs: their output IS the deliverable
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]

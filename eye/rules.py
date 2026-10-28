@@ -56,8 +56,16 @@ def rows() -> list[dict[str, str]]:
 
 def main() -> None:
     data = rows()
-    scored = [r for r in data if r.get("rules") and "?" not in r["rules"]]
-    print(f"{len(data)} trades in the ledgers, {len(scored)} with every rule judged at decision time\n")
+    judged = [r for r in data if r.get("rules") and "?" not in r["rules"]]
+    # A plan that never filled earned nothing, and averaging its 0.00 into a rule's column would
+    # read as the rule being neutral when it never got a trade at all. Only fills are averaged; the
+    # no-fills are counted beside them, because never filling is itself a result (METHOD rule 7).
+    scored = [r for r in judged if r["why"] != "no fill"]
+    unfilled = [r for r in judged if r["why"] == "no fill"]
+    print(
+        f"{len(data)} trades in the ledgers, {len(judged)} with every rule judged at decision time, "
+        f"of which {len(scored)} filled and {len(unfilled)} never did\n"
+    )
 
     if scored:
         print("| rule | held: n, R a trade | broken: n, R a trade | what breaking it cost |")
@@ -67,9 +75,7 @@ def main() -> None:
             broke = [float(r["r_net"]) for r in scored if r["rules"][i - 1] == "-"]
             h = f"{len(held)}, {sum(held) / len(held):+.2f}" if held else "-"
             b = f"{len(broke)}, {sum(broke) / len(broke):+.2f}" if broke else "-"
-            gap = (
-                f"{sum(held) / len(held) - sum(broke) / len(broke):+.2f}" if held and broke else "-"
-            )
+            gap = f"{sum(held) / len(held) - sum(broke) / len(broke):+.2f}" if held and broke else "-"
             print(f"| {i} {NAMES[i]} | {h} | {b} | {gap} |")
 
         pairs: dict[str, list[float]] = defaultdict(list)
@@ -85,7 +91,10 @@ def main() -> None:
         else:
             print("No conflict recorded yet.")
     else:
-        print("No trade has been judged against the rules yet - the first will be the first row.")
+        print(
+            f"No filled trade has been judged against the rules yet "
+            f"({len(unfilled)} judged plan(s) never filled) - the first fill will be the first row."
+        )
 
     print("\n## The trades taken before the rules existed\n")
     old = [r for r in data if not r.get("rules") or "?" in r.get("rules", "?")]
