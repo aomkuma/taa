@@ -48,6 +48,10 @@ def frame(tf: str) -> pd.DataFrame:
 
 
 def moment(mid: str) -> pd.Timestamp:
+    """A sampled moment by id, or a Thai wall-clock time written out - the owner, 2026-10-28: run real
+    days, one at a time, instead of sampled moments, so nothing is selected and every wait is walked."""
+    if "-" in mid:  # "2026-04-01 07:00" Thai
+        return pd.Timestamp(mid, tz=TH).tz_convert("UTC")
     for r in csv.DictReader((HERE / "moments.csv").open(encoding="utf-8")):
         if r["id"] == mid:
             return pd.Timestamp(r["cutoff_utc"])
@@ -92,13 +96,14 @@ def draw(mid: str, step: int) -> None:
     candles(ax, entry, width=0.3, lw=0.7)
     loc = entry.index.tz_convert(TH)
     ax.set_title(
-        f"M5 - moment #{mid}, waited {step} bars ({step * 5} min). "
+        f"M5 - {mid}, +{step} bars ({step * 5} min). "
         f"Now {loc[-1]:%d/%m %H:%M} Thai, last close {entry.close.iloc[-1]:.2f}",
         fontsize=12,
     )
     frame_, loc_ = entry, loc
     fig.tight_layout()
-    out = HERE / "walk" / f"{int(mid):03d}_{step:03d}.png"
+    stem = mid.replace(" ", "_").replace(":", "") if "-" in mid else f"{int(mid):03d}"
+    out = HERE / "walk" / f"{stem}_{step:03d}.png"
     out.parent.mkdir(exist_ok=True)
     fig.savefig(out)
     print(f"{out}")

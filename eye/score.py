@@ -37,6 +37,15 @@ def cutoffs() -> dict[str, pd.Timestamp]:
     }
 
 
+def start_of(row: dict[str, str], cuts: dict[str, pd.Timestamp]) -> pd.Timestamp:
+    """The row's own starting point: a sampled moment by id, or - for a real trading day - the date in
+    ``cutoff_thai`` with the time in ``decided_at`` (the owner, 2026-10-28: run real days, one at a time)."""
+    if row["id"] in cuts:
+        return decided(row, cuts[row["id"]])
+    day = row["cutoff_thai"][:10]
+    return pd.Timestamp(f"{day} {row['decided_at'][-5:]}", tz=TH).tz_convert("UTC")
+
+
 def decided(row: dict[str, str], start: pd.Timestamp) -> pd.Timestamp:
     """When the decision was actually made. A moment is where I sit down; the decision comes after however
     long I waited (METHOD section 2b), and the clock for filling and resolving starts there, not at the
@@ -50,25 +59,41 @@ def decided(row: dict[str, str], start: pd.Timestamp) -> pd.Timestamp:
     return at.tz_convert("UTC")
 
 
+def resolve(bars: pd.DataFrame, entry: float, stop: float, target: float, buy: bool) -> tuple[float, str]:
+    """The first of stop or target from the fill bar on; a bar touching both counts as the stop."""
+    for _, b in bars.iterrows():
+        if (b.low <= stop) if buy else (b.high >= stop):
+            return stop, "stop"
+        if (b.high >= target) if buy else (b.low <= target):
+            return target, "target"
+    return float(bars.close.iloc[-1]), "time (4 h)"
+
+
 def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str, str]:
     side, entry, stop, target = row["side"], float(row["entry"]), float(row["stop"]), float(row["target"])
     buy = side == "BUY"
     window = m5[m5.index >= cut]
     first = window.iloc[:FILL_BARS]
+
+    # What the same idea would have paid taken at the market, at the price on the screen when the decision
+    # was made. The owner, 2026-10-28: an obvious level may never be reached, because it is obvious - so
+    # waiting for a better price has a cost, and this column is that cost, measured.
+    seen = float(window.open.iloc[0])
+    at_out, at_why = resolve(window.iloc[: FILL_BARS + LIVE_BARS], seen, stop, target, buy)
+    at_move = (at_out - seen) if buy else (seen - at_out)
+    at_r = (at_move - SPREAD) / abs(seen - stop) if abs(seen - stop) > 0 else 0.0
+
     hit = first[(first.low <= entry) if buy else (first.high >= entry)]
     if hit.empty:
-        return {"fill": "", "exit": "", "why": "no fill", "r_net": "0.0"}
+        came = first.low.min() if buy else first.high.max()
+        missed = (came - entry) if buy else (entry - came)
+        return {
+            "fill": "", "exit": "", "why": "no fill", "r_net": "0.0",
+            "at_decision_r": f"{at_r:.2f}", "missed_by": f"{missed:.2f}",
+        }  # fmt: skip
     t0 = hit.index[0]
     after = window[window.index >= t0].iloc[:LIVE_BARS]  # 48 bars, not 49 (reviewer, 10-28)
-    for _, b in after.iterrows():
-        if (b.low <= stop) if buy else (b.high >= stop):  # a bar touching both counts as the stop
-            out, why = stop, "stop"
-            break
-        if (b.high >= target) if buy else (b.low <= target):
-            out, why = target, "target"
-            break
-    else:
-        out, why = float(after.close.iloc[-1]), "time (4 h)"
+    out, why = resolve(after, entry, stop, target, buy)
     move = (out - entry) if buy else (entry - out)
     r = (move - SPREAD) / abs(entry - stop)
     return {
@@ -76,11 +101,14 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
         "exit": f"{out:.2f}",
         "why": why,
         "r_net": f"{r:.2f}",
+        "at_decision_r": f"{at_r:.2f}",
+        "missed_by": "0.00",
     }
 
 
 def main() -> None:
-    path = HERE / "ledger.csv"
+    name = next((a for a in sys.argv[1:] if a.endswith(".csv")), "ledger.csv")
+    path = HERE / name
     rows = list(csv.DictReader(path.open(encoding="utf-8")))
     if sys.argv[1:2] == ["summary"]:
         for reader in sorted({r["reader"] for r in rows}):
@@ -105,7 +133,7 @@ def main() -> None:
     for r in rows:
         if r["why"] or r["side"] not in ("BUY", "SELL"):
             continue
-        r.update(score(r, m5, decided(r, cut[r["id"]])))
+        r.update(score(r, m5, start_of(r, cut)))
         print(f"#{r['id']:>3} {r['side']:4} {r['entry']:>9} -> {r['why']:11} {r['r_net']:>6}")
         done += 1
     with path.open("w", encoding="utf-8", newline="") as fh:

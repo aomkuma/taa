@@ -47,3 +47,40 @@ weeks above M5 over 33 hours, read top first.
 At moment #13, trading at the sampled bar meant buying a base that broke 40 USD within half an hour.
 Waiting 210 minutes produced a real setup instead. At moment #1, the sampled bar had price in open space
 between levels - 140 USD from the nearest - and the answer was to wait, not to hunt.
+
+## 4. Waiting for a better price cost more than every losing trade (measured 2026-10-28)
+
+The owner, after the first real-day trade missed its entry by 2.57 USD and the market ran through the
+target: *"if price is really going to run the way we expect, it may never reach the spot we see - because
+it is obvious and everyone sees it. We may have to leave some room."*
+
+Every trade so far, scored twice: once at the entry I planned, and once at the price that was on the screen
+when the decision was made, with the same stop and target.
+
+| | R total | R a trade |
+|---|---:|---:|
+| the entries I planned | -3.51 | **-0.319** |
+| taken at the price I saw | -0.48 | **-0.044** |
+
+**+0.275 R a trade**, and all of it comes from trades the plan never got into:
+
+| # | planned | on sight | missed by |
+|---|---:|---:|---:|
+| D1-1 | no fill, 0 | **+1.08** | 2.57 |
+| 11 | no fill, 0 | **+0.82** | 3.85 |
+| 17 | no fill, 0 | **+0.69** | 3.82 |
+| 15 | -1.01 | **+0.99** | - |
+| 3 | +3.67 | +2.02 | - |
+
+**All three unfilled plans would have won.** The losers lost the same either way. So waiting for a better
+price never saved a loss; it only threw away winners - and the distances missed were **2.57, 3.85 and
+3.82 USD**, every one under four.
+
+**Not a clean comparison**, and the file should say so: entering worse means a wider stop, so R per unit
+shrinks - which is why the one winner falls from +3.67 to +2.02. Eleven trades, and three of the five
+differences are the same kind of event. What it supports is a rule to test forward, not a conclusion.
+
+**The rule now under test:** an order goes no further than **4 USD** from the price on the screen. Further
+than that and the trade is taken at the market or not at all. Both columns are kept on every trade from
+here (`at_decision_r`, `missed_by`), so the next fifty decide it.
+
