@@ -71,8 +71,17 @@ lower chart is doing.
    the trade is the fifth leg. Not a pullback inside a leg that is still running.
 2. **Price is at the support or resistance of the side being watched** - a level the structure built, where
    price has turned before or where a large leg left from. Not a shelf that formed in passing minutes ago.
-3. **The structure at that level gives a picture** - something says it will hold rather than pass straight
-   through.
+3. **The structure AT the level says it will hold** (the owner, 2026-10-28, asked how you tell a level that
+   holds from one that breaks: *"the price structure at the level - the chart pattern together with HH/HL
+   and LH/LL"*). Read the last two swing highs and the last two swing lows as price works the level:
+   - buying a support needs **HH and HL together**; a higher low under a **lower** high is still a
+     downtrend and the level is more likely to break;
+   - selling a resistance needs **LH and LL together**;
+   - and a named chart pattern on top of it - a double bottom or top, a base and its break, a sweep that
+     closed back, a head and shoulders.
+
+   Measured on the first eight filled trades: four taken with this structure made +0.14 R a trade, four
+   taken against it **all lost a full stop**, -1.02 R a trade (`LESSONS.md`).
 
 If the three are not there, there is nothing to decide and no entry is written.
 
