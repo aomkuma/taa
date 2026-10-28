@@ -128,3 +128,35 @@ one R when it is right**.
 
 A hundred trades at a win rate near 50 % still carries a standard error of about 0.1 R, so a hundred will
 show a shape, not a verdict. That is what the owner asked for: *see the picture*, not prove a system.
+
+---
+
+## The nine trading rules, separated from the rest (owner, 2026-10-28)
+
+Asked for the rules, I listed thirteen and the owner separated them: **nine are the rules you look at a
+chart and decide by. The other four are not trading rules at all** - one is a stance, one is how the test
+is run, one is how it is recorded, one is the bar it is judged against. Keeping them in one list hid which
+ones a trade actually turns on.
+
+**The nine, in the order they are used:**
+
+| | |
+|---|---|
+| 1 | **Two frames, upper read first.** H1 about three weeks, where the levels are; M5 about 33 hours, the entry. The left of the chart must go back far enough to hold a level |
+| 2 | **Levels come from the left** - shelves earlier days built, never one that formed minutes ago |
+| 3 | **Wait for price to run into one of them.** Not at a level, nothing to decide |
+| 4 | **Three or four legs complete, then trade the fifth - with it, never against it.** Ask each time which leg is alive and whether this trade goes its way |
+| 5 | **The structure AT the level says whether it holds.** Buying a support needs **HH and HL together**; selling a resistance needs **LH and LL together**; and a named chart pattern on top |
+| 6 | **Enter on a timeframe, exit on that timeframe** |
+| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade |
+| 8 | **The order must fill while the idea is still intact.** Not a question to anyone - a check on where the order sits against price. A sell limit above price in a rising market fills only because price kept rising, which is the idea failing (moment #13: filled 5370, stopped five minutes later). A buy limit below price in a rising market fills on the pullback, which is what was wanted |
+| 9 | **The stop sits beyond the structure that proves the idea wrong; the target is a full leg away** - the next level from the left |
+
+**The four that are not trading rules:** no indicators (a stance); a sampled moment is where I sit down and
+the chart advances until the picture is worth trading (how the test is run); the decision is written before
+the reveal and every trade and every wait is recorded, scored with 2 hours to fill, 4 hours to resolve, a
+bar touching both counted as the stop and 0.30 USD of spread off every entry (how it is recorded);
++0.15 R a trade after costs (the bar).
+
+Of the nine, only rule 5 has any evidence yet, and it is backward-looking on eight trades.
+
