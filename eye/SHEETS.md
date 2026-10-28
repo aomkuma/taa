@@ -433,3 +433,8 @@ very pretty."* What the bars show (read after the outcome was known - this is a 
   an M (a W for a buy) count.** The H1 question is open (below).
 - So New York was not `no-setup` by the owner's reading - it was a setup the rules, as I applied them,
   refused. Its row in `sessions.csv` keeps what I recorded at the time; this note is the correction.
+
+The owner, adding: *"an asymmetric M, but you can see at once that that is the support."* The two tops are
+not equal (4706.58 and 4696.78 on M5; 4699.44 and 4706.58 on the larger M) and need not be; the low between
+them - **about 4685, the neckline - is the support** that breaks, and its retest (21:00-21:35, up to
+4690.79-4697.57) is where the sell is. Written into 2e step 2.
