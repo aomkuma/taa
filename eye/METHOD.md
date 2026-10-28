@@ -134,13 +134,8 @@ being run:
 2d below: *"this is not really my way. What I trade is price structure + divergence and counting the
 peaks of the chart"* - and then: hold to this principle instead.
 
-What is decided, in the owner's words, and nothing more:
-
-- **Price structure** - the swings, HH/HL and LH/LL, at levels from the left (rules 2, 3 and 5 already say
-  this much).
-- **Divergence** - none of the thirteen rules mentions it.
-- **Counting the peaks** - rule 4 ("three or four legs complete, trade the fifth") is the only rule near
-  it, and it has never been defined.
+Before that day none of the thirteen rules mentioned divergence, and counting was only rule 4's undefined
+"three or four legs, trade the fifth". The owner then answered, one question at a time:
 
 ### The owner's setup, as answered on 2026-10-28
 
@@ -196,24 +191,41 @@ read after the fact - it shows what the words mean, not that they pay.
 It also lands on an open question: the target came **4 h 25 min after the entry**, past `score.py`'s
 4-hour resolve window (section 4), which would have closed it at the market at 07:30.
 
-**The questions as they were asked** (Claude must not fill these in from its own reading - that is how 2d
-happened):
+### What Claude understands (Claude's words, for the owner to correct)
 
-1. ~~Divergence read on what~~ **Answered by the owner, 2026-10-28: "both MACD and RSI" - then "price
-   too".** Divergence is read on MACD, on RSI and on price. MACD and RSI are the owner's exception to the
-   10-28 stance "no indicators"; nothing else is added. What "price too" means in practice is the owner's
-   to say (see question 3). `walk.py` has to draw both under the M5 frame, from `app/indicators` (the MT5-exact
-   `trend.macd`, `momentum.rsi`). Still open: their settings, and on which timeframe(s) the divergence is
-   read.
-2. ~~How the peaks are counted~~ **Answered by the owner, 2026-10-28: "count the peaks from ZIGZAG."**
-   `app/indicators/chart_read.py` `zigzag_pivots` is MT5's ZigZag(depth, deviation, backstep), defaults
-   12 / 5 / 3, and records the bar on which each pivot is first known, so a walk never shows a peak before
-   MT5 would have. Still open: the owner's settings, the timeframe, and how many peaks make the count.
-3. How the three combine into an entry, a stop and a target. **Part answered by the owner, 2026-10-28:
-   "it must happen at resistance when the sell side has the edge, and at support when the buy side has
-   the edge."** So the setup is taken only at a level, and only on the side that has the edge there - a
-   sell at resistance, a buy at support. Still open: what decides which side has the edge; then the
-   entry, the stop and the target.
+**It is a trade with the H1 trend, entered at the end of a counter-move.** H1 says which way the market is
+going. On M5-M15 price moves against that - up into a resistance in an H1 down trend, down into a support
+in an H1 up trend. That counter-move is what gets counted: 3 to 5 ZigZag peaks into the level, each
+push weaker than the last on MACD, RSI or price - the divergence. The counter-move is tired; it is not yet
+over. **It is over when the structure turns**: the last swing low (for a sell) breaks, price bounces
+weakly into a lower high, and the next lower low is the entry. So the trade is never a guess that a level
+will hold - the level is where to look, the peaks and divergence say the push is tiring, and the
+structure turning is the proof. The stop sits where that proof would be undone; the target is the next
+level the H1 move runs into.
+
+What this is **not**: not 2d (2d refused every reversal on M5 until a trend had formed; here the M5-M15
+reversal *is* the entry, in the H1 direction). Not a fade of the H1 trend: a buy at support in an H1 down
+trend is not this setup, however good the divergence.
+
+Every step except two can be read the same way by anyone: ZigZag peaks, MACD and RSI values, a swing low
+broken, a lower high, a lower low. **The two that need judgement are which level from the left counts,
+and what "the H1 trend" is at that moment** - that is where a reader's bias can enter, and where the
+record has to say what was seen before the reveal.
+
+### What can be done with it
+
+| | what | state |
+|---|---|---|
+| 1 | **Walk real days under 2e**, from 2026-04-03 Asia 07:00, with `walk.py` (H1 + M15, and M5; ZigZag, MACD, RSI at MT5's defaults). At each decision write which of the seven steps held | ready once the two open answers below are in |
+| 2 | **Record the seven steps on every trade**: a `steps` column in the ledger, seven characters like `rules` (`+` held, `-` broken), so each step is measured the way the nine rules are | to add before day 3 |
+| 3 | **Let the code find the candidates, the eye judge them.** Steps 2-5 are mechanical: a scan of the stored bars can list every place where 3-5 ZigZag peaks with divergence were followed by a structure break and a lower-high retest - found by the clock, not picked by a reader. The reader then judges only the level and the H1 trend, before seeing what followed. This answers the "one reader chooses the trades" hole | possible now; not built |
+| 4 | **Score both hold times** on every trade - the 4-hour window and to the end of the day (section 4 already asks for both) - until the owner says how long a trade is held | the second column is not in `score.py` yet |
+| 5 | **A second reader**: Codex given the seven steps and the same charts, reading apart | the tool works (stdin); not run on charts |
+| 6 | **Check MACD and RSI against the owner's MT5** (Data Window) at a few bars - ZigZag on M15 already matched | waiting for the owner |
+
+**Still open, the owner's to answer:** step 6 - the stop beyond the bounce's lower high rather than the
+top (Claude's reading); how long a trade is held; and that "divergence on price" means price's peaks
+against the oscillators'.
 
 The nine rules stand where this does not contradict them; where it does, this wins.
 

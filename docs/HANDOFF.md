@@ -110,6 +110,8 @@ takeable for about **twenty minutes**, at the level.
 
 **Answered by the owner on 10-28 (`METHOD.md` 2e, the table):** edge side = the H1 trend; at resistance when sellers have the edge, at support when buyers do; 3-5 ZigZag peaks; divergence on MACD, RSI and price; entry = structure breaks, then the retest of the broken line; MT5 default settings; entry TF M5-M15. **The whole setup is now one principle in seven steps (METHOD 2e, "The principle"), generalised from the owner's example - the owner: an example is to be summarised into a principle, never made a fixed rule.** Still open: the owner's confirmation of step 6 (the stop beyond the bounce's lower high, not the top - Claude's reading), how long a trade is held, and a confirmation that 'divergence on price' means price's peaks against the oscillators'. The example's target came 4 h 25 min after entry - past the 4-hour resolve window, which now matters.
 
+**Read first: `METHOD.md` 2e - "What Claude understands" and "What can be done with it"** (the six actions and their state). The three open answers are listed at its end.
+
 **1. METHOD 2e, in the owner's terms.** Ask the owner the three open questions and write the answers as
 they give them - Claude does not fill them in (that is how 2d happened):
 
