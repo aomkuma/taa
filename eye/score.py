@@ -98,9 +98,10 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     at_text = "" if at_why == "open" else f"{at_r:.2f}"
 
     # The order fills when price trades through the entry from the side it was on at the decision - a limit
-    # (a buy under price, a sell over it) and a stop (METHOD 2e's entry on the break: a sell under price)
-    # alike. It used to treat every BUY as a buy limit and every SELL as a sell limit, which fills a sell
-    # stop on the first bar whose high is above it, before price ever broke (RULES_REVIEW M1).
+    # (a buy under price, a sell over it - 2e's retest entry, written once the low has broken) and a stop (a
+    # sell under price) alike. It used to treat every BUY as a buy limit and every SELL as a sell limit,
+    # which fills a sell stop on the first bar whose high is above it, before price ever broke
+    # (RULES_REVIEW M1).
     from_above = entry <= seen
     touched = ((first.low <= entry) if from_above else (first.high >= entry)).to_numpy()
     # Rule 8: the order fills only while the idea is intact. If the stop or the target trades on a bar before
@@ -129,7 +130,7 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
             "at_decision_r": at_text, "missed_by": f"{max(missed, 0.0):.2f}",
         }  # fmt: skip
     t0 = first.index[at_fill]
-    # A stop order (a sell under price, a buy over it - 2e's entry on the break) that a bar gaps through is
+    # A stop order (a sell under price, a buy over it) that a bar gaps through is
     # filled at that bar's open, not at its price; a limit is filled at its price.
     stop_order = from_above != buy
     bar_open = float(first.open.iloc[at_fill])

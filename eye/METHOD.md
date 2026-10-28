@@ -163,14 +163,16 @@ together.)
 The owner, 2026-10-28: *"this is an example - you have to summarise it into a principle, not turn the
 example into a fixed rule."* So no number from the example is a rule; the example below only shows what
 the words mean. Written for a sell; a buy is the mirror of every line. **Steps 1, 2, 6 and 7 are the
-owner's answers; steps 3, 4 and 5 are Claude's generalisation of the owner's example** (the bounce, the
-lower high, the lower low as the trigger) - what the owner asked for, and for the owner to correct.
+owner's answers; steps 3 and 4 are Claude's generalisation of the owner's example** (the bounce, the
+lower high, the low that breaks), and **step 5 is the owner's answer** of the same evening (*"break the
+low, then retest"*). The example's own words - *"bounced lightly and then made an LL - sell"* - are read
+through that later answer: the LL is the break, the sell is its retest.
 
 1. **Context** - the H1 trend gives the sell side the edge, and price has come up into a **resistance**
    the left of the chart built.
 2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level, with **divergence** on MACD and RSI
-   against price. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); one alone
-   the owner did not rule out, and it is not "clear" - the record says which it was. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
+   against price. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); nothing is
+   recorded about one alone - the record says which it was. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
    gave the entry timeframe, not the counting one; the example has 3 peaks on M15 and 4 on M5)*.
 3. **The structure breaks** - price takes out the **last swing low**, and the bounce after it fails under
    the top - a lower high: the up leg is over.
@@ -191,7 +193,8 @@ two reviewers had read Claude's first step 5 (sell on the break) as a different 
 example's bars: 08:30 Thai broke the 4055.57 low (to 4053.11); 08:35-08:40 came back up to 4055.39 and
 4057.54 - the retest of the broken low from below - and turned down. **The sell is on that retest.**
 
-**The buy, written out** (the mirror of every step):
+**The buy, written out** - *Claude's mirror of the sell steps; the owner asked "and the buy side?" and
+had said a buy is the mirror, nothing more:*
 
 1. the **H1 trend** gives the buy side the edge, and price has come down into a **support** the left of
    the chart built;
@@ -212,13 +215,14 @@ peaks of the counter-move, price against MACD and against RSI:
   push reaches further with less force behind it;
 - for a buy at support: price makes a **lower or equal low**, the oscillator a **higher low**.
 
-*The owner:* both diverging is clear; one alone was not ruled out. *Claude's reading:* hidden
+*The owner:* both diverging is clear; nothing recorded about one alone. *Claude's reading:* hidden
 divergence - the continuation kind - is a different signal and is left out unless the
 owner adds it.
 
-**A trade is held until its stop or its target** - no time limit (the owner, 2026-10-28: *"hold it"*).
-`score.py` scores new trades that way; the twelve earlier trades keep the scores they got under the old
-4-hour window.
+**A trade is held until its stop or its target** - no time limit (asked "until the stop or the target with
+no time limit, or a time to cut?", the owner, 2026-10-28: *"hold it"*). `score.py` scores every trade that
+way; the twelve earlier trades' planned columns were never time-closed, and their on-sight column was
+re-scored under it.
 
 **The owner's own example, 2026-10-28** (on the FBS-Demo M15 chart, server time): *"suppose that around
 03:15 it bounced lightly and then made an LL - sell; SL above the High; TP above the resistance on the left
@@ -253,9 +257,10 @@ The target came **4 h 25 min after the entry** - held, as the owner holds, it is
 **It is a trade with the H1 trend, entered at the end of a counter-move.** H1 says which way the market is
 going. On M5-M15 price moves against that - up into a resistance in an H1 down trend, down into a support
 in an H1 up trend. That counter-move is what gets counted: 3 to 5 ZigZag peaks into the level, each
-push weaker than the last on MACD, RSI or price - the divergence. The counter-move is tired; it is not yet
+push weaker than the last on MACD and RSI against price - the divergence. The counter-move is tired; it is not yet
 over. **It is over when the structure turns**: the last swing low (for a sell) breaks, price bounces
-weakly into a lower high, and the next lower low is the entry. So the trade is never a guess that a level
+weakly into a lower high, the low that bounce left from breaks, and the entry is the retest of that broken
+low from below. So the trade is never a guess that a level
 will hold - the level is where to look, the peaks and divergence say the push is tiring, and the
 structure turning is the proof. The stop sits beyond the extreme of the counter-move - the top
 (or bottom) the peaks were counted into - because a new extreme means the counter-move was not over; the
@@ -276,21 +281,22 @@ record has to say what was seen before the reveal.
 | | what | state |
 |---|---|---|
 | 1 | **Walk real days under 2e**, from 2026-04-03 Asia 07:00, with `walk.py` (H1 + M15, and M5; ZigZag, MACD, RSI at MT5's defaults). At each decision write which of the seven steps held | **ready** once row 2 is done |
-| 2 | **Record the seven steps on every trade**: a `setup` column in the ledger (not `steps` - `sessions.csv` already has a `steps` column, the bars walked), seven characters like `rules`: `+` held, `-` broken, `?` not judged, so each step is measured the way the nine rules are. **A 2e trade is judged by `steps`; its `rules` column still records the nine, where 2e has replaced rules 4 and 9 (below)** | to add before day 3 |
-| 3a | **`score.py` fills a break entry as a stop order** - it filled every SELL as a sell limit, so a sell under price would have filled before the break (RULES_REVIEW M1). Trades still open when the stored bars end are `open`, not a result | **done** 10-28; the twelve stored trades re-score identically in every planned column (fill, exit, result, R, miss); the on-sight column was re-scored under the hold rule |
-| 3 | *(Claude's proposal)* **Let the code find the candidates, the eye judge them.** Steps 2-5 are mechanical: a scan of the stored bars can list every place where 3-5 ZigZag peaks with divergence were followed by a structure break and a lower-high retest - found by the clock, not picked by a reader. The reader then judges only the level and the H1 trend, before seeing what followed. This answers the "one reader chooses the trades" hole | possible now; not built |
+| 2 | **Record the seven steps on every trade**: a `setup` column in the ledger (not `steps` - `sessions.csv` already has a `steps` column, the bars walked), seven characters like `rules`: `+` held, `-` broken, `?` not judged, so each step is measured the way the nine rules are. **A 2e trade is judged by `setup`; its `rules` column still records the nine, where 2e has replaced rules 4 and 9 (below)** | to add before day 3 |
+| 3a | **`score.py` fills an order by the side price was on** - it filled every SELL as a sell limit, so a sell under price filled before price got there (RULES_REVIEW M1); it now withdraws an order whose stop or target trades first (rule 8), and fills a gapped stop at the bar's open. Trades still open when the stored bars end are `open`, not a result | **done** 10-28; the twelve stored trades re-score identically in every planned column (fill, exit, result, R, miss); the on-sight column was re-scored under the hold rule |
+| 3 | *(Claude's proposal)* **Let the code find the candidates, the eye judge them.** Steps 2-5 are mechanical: a scan of the stored bars can list every place where 3-5 ZigZag peaks with divergence were followed by a structure break, the low breaking and its retest - found by the clock, not picked by a reader. The reader then judges only the level and the H1 trend, before seeing what followed. This answers the "one reader chooses the trades" hole | possible now; not built |
 | 4 | **Hold until the stop or the target** - the owner answered 10-28 | **done** in `score.py` |
 | 5 | **A second reader**: Codex given the seven steps and the same charts, reading apart | the tool works (stdin); not run on charts |
 | 6 | **Check MACD and RSI against the owner's MT5** (Data Window) at a few bars - ZigZag on M15 already matched | waiting for the owner |
 
 **Nothing in the setup is open any more** (10-28): step 6 - beyond the highest top / lowest bottom; held
 until the stop or the target; divergence as the book has it. What remains is checking the tools (row 6)
-and building rows 2 and 3.
+and building row 2 (row 3 is optional).
 
 **What 2e replaces among the nine rules.** Rule 4's count ("three or four legs, trade the fifth") is
 replaced by 2e step 2 (3 to 5 ZigZag peaks) and its entry by steps 3-5; rule 9's target ("a full leg away")
 by step 7 (just before the next level from the left) and its stop by step 6. Rules 1-3, 5-8 stand, and
-rule 7's 4 USD cap fits: the entry is at the market on the break. Rule 6 (enter and exit on one
+rule 7's 4 USD cap fits: the entry is a sell limit resting at the broken low, written once price has
+closed under it, a few dollars from the price on the screen. Rule 6 (enter and exit on one
 timeframe) stands for reading; a trade's fixed stop and target are scored on M5, the finest frame the
 walk shows, whichever of M5 or M15 it was read on - finer bars only make "a bar touching both" rarer.
 
@@ -380,12 +386,22 @@ level I want is already far behind price, that is **no trade**, and it says so.
   right and this is the correction (reviewer, 2026-10-28).
 - Entry fills when price trades through it within **24 bars** (2 hours) of the decision. If it never does:
   **no fill**, which is recorded and counted - a plan that does not fill is a plan that earned nothing.
+  If the stop or the target trades on a bar before the entry does, the order is withdrawn: **no fill (stop
+  or target first)** - rule 8. While fewer than 24 bars after the decision are stored, an unfilled order
+  is `open`, not a no-fill. A stop order that a bar gaps through fills at that bar's open; R stays on the
+  planned risk.
+- **A 2e decision is written only after a bar has closed through the low** (the high, for a buy): it is
+  then a sell limit at the broken low, above the price on the screen, and fills on the retest. Written
+  before the break, the same price sits under the screen price and scores as a sell stop - filled on the
+  break, which is the entry the owner rejected (reviewer, 2026-10-28; on the example: decided 08:30 Thai,
+  after the break bar, it fills 08:35 on the retest; decided 08:15, it fills 08:30 on the break).
 - After the fill, the first of stop or target decides the result. **A bar touching both counts as the
   stop.**
 - ~~If neither is touched within 48 bars (4 hours) of the fill, the trade is closed at that bar's close.~~
   **Superseded 2026-10-28 (the owner: "hold it"): a trade is held until its stop or its target.** A trade
   neither has reached when the stored bars end is `open` - not a result, scored again when there are more
-  bars. The twelve trades scored before keep their 4-hour scores. The fill bar itself counts, so a bar that
+  bars. None of the twelve earlier trades was time-closed in its planned columns; their on-sight column
+  was re-scored under the hold rule. The fill bar itself counts, so a bar that
   reached the entry and the stop is scored as a stop: five-minute OHLC cannot say which came first, and
   the conservative reading is taken.
 - **An order fills when price trades through the entry from the side it was on at the decision** - a limit

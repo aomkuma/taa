@@ -177,3 +177,30 @@ a break already past is taken at the market, which `score.py` scores as entry = 
 
 **What each reader caught that no other did:** Opus - the on-sight drift, rule 8, the moving ZigZag legs at
 the entry; Sonnet - "or" for "and"; Haiku - the column-name collision and the contradicting memories.
+
+## 8. The three readers again, on the fixes and the owner's new answers (2026-10-28 evening)
+
+The same three agents, resumed with their first reports in hand, read commits 556f70f and 632db9c.
+
+**Confirmed fixed:** the on-sight column (every column of all twelve trades re-scores with zero
+differences; on sight -1.73 R, -0.144), rule 8, the open state, the gapped stop, `summary` in any position,
+the moving ZigZag legs (M15 at the example's entry shows 4070.76? and 4055.57?), -0.115 gone from the live
+documents, "about four weeks", the 3-vs-12 summary note, the memory index.
+
+**Still wrong, found by all three:** text describing the old entry - "the lower low as the trigger", "the
+next lower low is the entry", "at the market on the break", "fills a break entry", "a lower-high retest",
+TRIED row 18's "sell on the break of 4055", two code comments - and `steps` still named in METHOD row 2 and
+HANDOFF. **Opus alone:** a 2e order written *before* the break sits under the price on the screen and is
+scored as a sell stop, filled on the break - the entry the owner rejected (decided 08:15 on the example: fills
+08:30 on the break; decided 08:30, after the break bar: fills 08:35 on the retest); METHOD 4 behind the code;
+two sentences saying the twelve kept their 4-hour scores. **Sonnet alone:** "one alone ... is not clear"
+goes past the owner's words; the buy side not labelled as Claude's mirror; the example's "made an LL -
+sell" read through the later answer without saying so. **Haiku alone:** the old memory files themselves
+carried no marker - only the index did.
+
+**Done:** every stale entry phrase reworded to the retest of the broken low; `setup` everywhere; METHOD 4
+gained rule 8, `open`, the gapped stop, and **"a 2e decision is written only after a bar has closed through
+the low"** (HANDOFF repeats it); "nothing recorded about one alone"; the buy side labelled Claude's mirror;
+the example's wording explained; "no time limit" shown as the owner's choice between the two options asked;
+each of the six superseded memory files marked at its top. Not changed: the counting timeframe stays
+Claude's reading (M5 or M15), marked as such.

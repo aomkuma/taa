@@ -132,7 +132,8 @@ columns are still filled (METHOD 2e, row 2).
 
 **2. Real day 3, 2026-04-03, Asia 07:00 Thai, under 2e.** `.venv\Scripts\python eye/walk.py "2026-04-03 07:00" 0`
 and advance a few bars at a time; read `_a` first (H1 side, the level), then the entry frames. Write the
-reading into `SHEETS.md` before the reveal, every decision into `ledger.csv` with `steps`, and the window
+reading into `SHEETS.md` before the reveal, every decision into `ledger.csv` with `setup` - **written only after a bar has closed through the low
+(high)**, as a limit at the broken level (METHOD 4) - and the window
 into `sessions.csv` with its `reach` before moving to London.
 
 Carried from the earlier days, still true under 2e: **the stop goes beyond the band and the extreme, never
@@ -145,10 +146,11 @@ before the reveal (METHOD 2e, row 3; it answers the "one reader" hole). And a se
 
 ## The owner's answers to the three-agent questions (2026-10-28)
 
-1. Divergence: *"if both happen, it is clear"* - one alone not ruled out, and not "clear".
+1. Divergence: *"if both happen, it is clear"* - nothing recorded about one alone.
 2. The entry: *"break the low, then retest"* - the sell is on the retest of the broken low, not on the
    break (METHOD 2e step 5; the buy is written out beside it).
-3. The archived -0.115 comparison: *"delete it"* - removed from every live document.
+3. The archived -0.115 comparison: *"delete it"* - removed from every live document (the history files,
+   `eye/RULES_REVIEW.md` and the retired `eye/CODEX_BRIEF.md`, keep it as a record).
 
 ## Open, and nobody has closed them
 
