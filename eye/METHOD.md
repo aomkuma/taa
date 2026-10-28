@@ -153,12 +153,25 @@ What is decided, in the owner's words, and nothing more:
 | **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
 | **Entry timeframe** | **M5 to M15** |
-| **The stop and the target** | **not yet given** |
+| **The stop** | **above the High** (for a sell; below the Low for a buy) - which High is open: the bounce's high or the top of the move |
+| **The target** | **just before the level on the left** - for a sell, above the support the left of the chart built (the owner's example: above 4030) |
 
 Read together, in order: H1 says which side has the edge; price comes into a level on that side; ZigZag
 counts 3 to 5 peaks into it with divergence on MACD, RSI and price; the structure breaks; the entry is the
 retest of the line it broke, on M5 to M15. (This sentence only strings the owner's answers together; it
 adds nothing.)
+
+**The owner's own example, 2026-10-28** (on the FBS-Demo M15 chart, server time): *"suppose that around
+03:15 it bounced lightly and then made an LL - sell; SL above the High; TP above the resistance on the left
+of the chart at 4030."* On the stored bars: top 4070.76 at 02:10; the structure broke at 03:00-03:05 (low
+4055.57 under the 4059.30 and 4057.66 lows); the light bounce reached 4062.76 at 03:20-03:25 (a lower
+high - the retest); 03:30 broke 4055.57 for the LL - **sell about 4055.5**. TP 4031 was reached at 07:55
+and the highest price on the way was 4059.31. With the stop above the bounce's high (4063): risk 7.5,
+**+3.23 R**; above the top (4071): risk 15.5, **+1.56 R** (both after the 0.30 spread). One example,
+read after the fact - it shows what the words mean, not that they pay.
+
+It also lands on an open question: the target came **4 h 25 min after the entry**, past `score.py`'s
+4-hour resolve window (section 4), which would have closed it at the market at 07:30.
 
 **The questions as they were asked** (Claude must not fill these in from its own reading - that is how 2d
 happened):
