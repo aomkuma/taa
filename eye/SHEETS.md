@@ -277,3 +277,61 @@ structure breaks; the low (high) breaks; the entry is a **stop limit** - `trigge
 broken low (high), `entry` at it - filled on the retest; stop beyond the extreme of the move; target just
 before the next level from the left; held until stop or target. Each reading is written here before the
 chart is advanced. Server time in April is UTC+3, so Thai = server + 4.
+
+### Asia, 07:00 - 09:00 Thai
+
+**Look 1 - 06:55 Thai, price 4610.56, written before advancing.**
+
+- **H1 side:** since the 4099 low (23/03) the lows have risen 4099 -> 4306 -> 4351 -> 4482 -> 4554, and the
+  highs reached 4800.48 (02/04). The pullback from 4800 held 4554, above 4482, then bounced to 4699 - a
+  lower high under 4800. **Read: H1 up, the buy side has the edge** - a judgement, because 4699 is under
+  4800 and one more lower low would turn it.
+- **Level from the left:** support band **4550-4600** (31/03's band and the 4554 low of 02/04); 4482 below
+  it. Price is about 10 USD above the band's top.
+- **The counter-move (M5/M15):** down from 4699.44 with lows 4642.93, 4645.76 and now 4605 (still moving).
+  MACD and RSI made lower lows with price - **no divergence**; 2 to 3 lows counted.
+- **Setup steps:** 1 held (H1 up, price nearing support); 2 not yet; 3-5 not yet. **No trade.**
+- **Watching:** price into 4550-4600, 3-5 M5/M15 lows there with MACD and RSI making higher lows, then the
+  last swing high broken and its retest from above - a buy stop limit.
+- **Expectation, before the reveal:** price tests the 4580-4600 part of the band inside this window; a
+  divergence may start forming, but the full setup - break and retest as well - is unlikely to complete
+  before 09:00. Most likely outcome of the window: no setup.
+
+**Look 2 - 07:25 Thai, price 4603.32.** A new low 4600.83, at the top of the 4550-4600 band. By eye the
+oscillators looked to be turning up; **measured, they are not**: against the previous M5 ZigZag low
+(4645.76: MACD -1.77, RSI 44.16) the new low has MACD -8.46, RSI 35.95 - lower with price, **no
+divergence**. On M5 the whole fall from 4681.81 is one ZigZag leg (this morning's small lows are not
+pivots at depth 12); on M15 the fall from 4699.44 has no fixed pivot yet. Steps: 1 held, 2 not. **No trade.**
+(Lesson already: read divergence from the numbers at the ZigZag pivots, not from the picture.)
+
+**Look 3 - 07:55 Thai, price 4622.23.** ZigZag has now fixed the 06:40 low 4605.31 and the 07:15 high
+4629.40, so look 2 compared the moving low with the wrong pivot - **ZigZag's lag: a pivot is fixed bars
+after it prints, and divergence has to be read against fixed pivots.** Now, against 4605.31 (MACD -12.05,
+RSI 31.19), the moving low 4600.83 has MACD -8.46 and RSI 35.95: **price lower, both oscillators higher -
+divergence on both, clear**, at the top of the 4550-4600 band. Lows into the level: 4642.93, 4645.76,
+4605.31, 4600.83 - four. **Steps 1-2 held.**
+
+Next, the buy side of 2e: (3) price takes out the last swing high **4629.40** and the dip after it holds
+above 4600.83; (4) the high that dip starts from breaks; (5) buy its retest from above with a buy stop
+limit. Stop beyond the lowest low (under 4600.83); target just before the next level from the left - the
+4642-4651 band of the 02/04-03/04 lows, then 4670-4682. **No order yet - step 3 has not happened.**
+
+**Expectation:** the divergence is at the level, so 4629.40 breaking inside the window is likely; the
+whole sequence 3-5 needs a break, a dip and a second break, which the 65 minutes left may not hold. And
+the nearest target, just under 4642, sits about 12 USD above a likely entry against a stop about 30 USD
+below it - **about 0.35 R**; if it comes to that, it is the owner's principle followed as written, and the
+record will say what it paid.
+
+**Look 4 - 08:25 Thai, price 4641.15.** 4629.40 broke and price ran to 4643.07 (08:15) - **step 3
+happened**, and price is already inside the 4642-4651 band that would have been the first target. Now
+watching for (4): a dip that holds above 4600.83, then its starting high (4643.07 or whatever the dip
+leaves from) breaking, and (5) its retest. If it comes, the next level is 4670-4682: target just under
+4670, stop under 4600.83 - roughly 0.5-0.6 R. Not yet. **No order.**
+
+**Look 5 - 08:55 Thai, price 4625.79 - decision D3-1.** ZigZag fixed 4600.83 as the low; the move up made
+4643.07 and price is dipping, still above 4600.83. Steps 1, 2, 3 held; 4 and 5 are what the order waits
+for: **buy stop limit - trigger 4644.0 (over the 4643.07 high the dip starts from), limit 4643.0 (its
+retest), stop 4599.5 (beyond the lowest low 4600.83), target 4668.0 (just before the 4670-4682 level).**
+Risk 43.5; at the target about +0.57 R. It breaks rule 7 - the order is 17 USD from the price on the
+screen - and follows 2e, which is written down as the conflict. **It is not scored until the whole day
+has been walked**, so that its outcome cannot leak into London or New York (real day 1's lesson).
