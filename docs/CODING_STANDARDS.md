@@ -190,6 +190,11 @@ A run that produces a number is part of the record, so it is treated like code, 
   run, so `app/` is not edited while such a run is in flight - otherwise the days are not one version.
 - **A run that changes decisions is measured, not assumed.** A fix to what is *recorded* cannot change a
   result and must not be reported as if it might.
+- **Label a planted bug by what it actually catches.** A bug that is not caught may be no bug at all (an
+  equivalent rewrite), or it may be catching something other than its name says - on 2026-10-28 a bug
+  labelled "a NaN lean passes" was really the infinite-lean case, since NaN refuses by itself and
+  `inf >= 0` does not. Check which, then either drop it with its reason or correct the label and close the
+  hole in the test. A planted bug that passes for the wrong reason teaches the wrong lesson.
 - **Restore files with `write_bytes`.** `Path.write_text` rewrites a whole file as CRLF on this machine;
   that is how 66 of `app/`'s Python files became CRLF, which breaks the vitest tests that parse Python
   sources.

@@ -14,6 +14,7 @@ One code version, one day at a time, reported to the owner before the next day r
 |---|---:|---:|---:|---|---|---:|
 | 2026-07-06 | 27 | **0** | +0.00 | 300.00 → 300.00 | 100.00 → 100.00 | 0 USD |
 | 2026-07-06 (round 2, after ISSUES 37-38 fixed) | 36 | **3** | **+0.71** | 300.00 → 314.22 | 100.00 → 114.23 | 0 USD |
+| 2026-07-07 (day 2, the 150 USD account) | 49 | 1 | **-1.08** | 164.22 → **148.10** | - | 0 USD |
 
 ---
 
@@ -185,4 +186,84 @@ show the check on each.
 2. Let an armed order live to the end of its window instead of 30 minutes, so the confirmation rule and the
    order's life stop contradicting each other.
 3. Then day 2 (2026-07-07), on whatever code those two leave behind.
+
+---
+
+## Day 2 - Tuesday 2026-07-07
+
+Commit `2da4c76`, carried on from day 1: the account at 164.22, the watcher's last call 22:00 Thai, and the
+AI reading its own 10,484-character journal. The report is `day_2026-07-07.md`. From this day the reference
+account is the owner's own size, 150 USD at 1:2000 (docs/TRADER_ROUTINE.md).
+
+**1 trade, -1.08 R, -16.12 USD. The account 164.22 -> 148.10, down 9.8 %.** Worst drawdown 11.65 %. 49 wakes:
+40 WAIT, 2 BUY, 7 HOLD. Three plans were written (morning: edge none; London: SELL; New York: SELL).
+Two days together: **4 trades, -0.37 R, 150.00 -> 148.10**.
+
+| window | in | out | strategy | side | entry | SL | TP | exit | why | held | R | USD |
+|---|---|---|---|---|---:|---:|---:|---:|---|---:|---:|---:|
+| Asia | 07:28:00 | 08:00:07 | W09 | BUY | 4157.82 | 4142.82 | 4164.67 | 4141.70 | **SL** | **32m 07s** | **-1.08** | **-16.12** |
+
+Its own reasons at entry: 07:15 swept 4155.01 to 4151.88 and closed back at 4156.95 on **2.3x volume**, then
+one M5 higher-low and higher-high; `h4_lean` +2.691 behind the BUY; the stop clearing the mapped lower
+liquidity zone; the target 4165.44, which it described itself as **about 0.56 R**.
+
+### Where the measurer disagrees
+
+**1. A target nearer than the stop, then held 32 minutes.** Risking 15.00 USD for 8.08 is 0.54 R, and it
+passed only because the AI lane sets `min_risk_reward` 0.2. At that geometry the setup needs to win about
+twice for every loss just to break even, and the record so far is 2 wins in 5. The sweep itself was strong -
+2.3x volume is the best entry signal either day has shown - so the entry is not what I would change; the
+**exit plan** is. A trade with 0.56 R of room cannot be given 32 minutes to come back.
+
+**2. The holding times are splitting into two clean groups, and this is the second day of it.** Across both
+days: under 5 minutes, 2 trades, **both reached their take-profit**; over 30 minutes, 3 trades, **all three
+lost or scratched** (-0.03, -1.08, and day 1's 63-minute ORB). Five trades is not a finding yet, but the
+direction matches the owner's own principle - enter when price is about to run, take the profit quickly - and
+it is now worth measuring deliberately rather than noticing.
+
+**3. The London plan priced nothing again.** At 13:00 it named the edge side SELL and then set `entry`,
+`stop` and `take_profit` to null for both scenarios, while the morning and New York plans priced theirs in
+full. ISSUES 39 again, now in one window rather than the whole day.
+
+### Where the measurer agrees
+
+**No trade went against R10 all day.** Both entry decisions had the lean behind them (+2.691, +2.400), and
+the New York plan's armed SELL never filled, so yesterday's fault did not repeat. **That was luck, not a
+gate** - at the time the plan-order path still checked nothing, and if price had reached 4168.25 the SELL
+would have opened against a positive lean exactly as it did on day 1. It is a gate now (see round 3).
+
+And 49 wakes produced one trade on a day the first build traded four times for -2.43 R. **-2.43 R to
+-1.08 R on the same day and the same market** is the clearest sign yet that the run-into-a-push gate is
+doing work.
+
+### The day's lesson (a shadow, not a rule)
+
+**A trade that has not run within its first ten minutes tends to end at the stop, not the target.** To be
+measured on every trade from here - the holding time is now a column in the report for exactly this reason -
+and it holds or it is dropped after four weeks of forward record.
+
+---
+
+## Round 3: R10 made a check on every path (commit `b54c9eb`), before day 3
+
+ISSUES 41 said the rule held on one path only. Rather than add a second check beside the plan-order path -
+which is how the first gap happened - R10 now carries an action the brakes read
+(`stand_aside_unless_lean_behind`) and names its reading (`h4_lean`), and `rule_vetoes` checks it. Every path
+that can open a trade goes through `rule_vetoes`: the step decision, the plan's orders when armed
+(`plan_orders` reads the same vetoes), the per-wake side veto that withdraws them
+(`side_vetoes` -> `drop_plan_side`), and a WAIT's own order.
+
+Checked against the days' own numbers: at `lean` +3.515 a BUY passes and **a SELL is refused** - that is day
+1's 08:05 trade. At -0.4 the sides swap. At exactly 0 both pass, as the measured rule says. NaN, infinity,
+None and a missing reading all refuse **both** sides.
+
+9 of 9 planted bugs caught. One was mislabelled when planted: it was called the NaN case, and NaN refuses by
+itself because it compares False against everything; what it actually catches is an **infinite** lean, since
+`inf >= 0` is True, and it only bit once the test covered infinity. **A planted bug that passes for the wrong
+reason teaches the wrong lesson**, so the label was corrected in the script rather than quietly kept.
+
+**Written down before re-running**, so the number cannot be explained after the fact: day 1 should **lose**
+its 08:05 SELL and fall from +0.71 R to about **+0.29 R (+5.17 USD)**, and day 2 should not change, since its
+only trade had the lean behind it. A fall is the point - profit from a trade our own rule forbids was never
+ours to count.
 

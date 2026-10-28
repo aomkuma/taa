@@ -498,3 +498,29 @@ with the measurer's own reading), `ISSUES.md` rows 37-40.
 
 Nothing is pushed. Still needing the owner: whether to restore the loss breakers, DEMO, and LIVE (Phase 14).
 
+---
+
+## Update 2026-10-28, after day 2 of the re-run
+
+| | state |
+|---|---|
+| the replay | days 1 and 2 done, one day at a time, each reported before the next ran |
+| day 1 (2026-07-06) | round 1 at `d00c658`: **0 trades** in a 74 USD day. Round 2 at `2da4c76`: 3 trades, +0.71 R |
+| day 2 (2026-07-07) | 1 trade, **-1.08 R**; the 150 USD account 164.22 -> 148.10. The first build traded this day 4 times for -2.43 R |
+| two days together | 4 trades, -0.37 R, 150.00 -> 148.10 |
+| the reference account | **150 USD at 1:2000**, the owner's own size, run through the engine. The arithmetic second account is deleted: it read +14.23 USD for a 100 USD account that, run properly, took one trade of three and ended -0.35 |
+| fixed since 00:35 | `d00c658` lost wakes are recorded; `2da4c76` the readings carry R10's lean and W03's ORB range; `b54c9eb` R10 is a check on every path; `20eac09` the report's fourteen columns and one account |
+| not yet applied | ISSUES 39/39b (a plan that prices nothing arms nothing), 42 (an armed order dies in 30 minutes while its signal comes later), 43 (a target nearer than the stop, held 32 minutes) |
+
+**Before day 3:** re-run days 1 and 2 on `b54c9eb` to see the R10 gate bite. Written down beforehand: day 1
+should lose its 08:05 SELL and fall from +0.71 R to about +0.29 R, and day 2 should not change. The re-run is
+free - the stored answers are reused because the AI's prompt carries no account or position size.
+
+**Still open from the night before:** `DAILY_LOSS_LIMIT` appeared in the 100 USD account's rejections while
+its day P/L stood between 0 % and -5.39 % against a 10 % limit, and the backtest discards its decision
+records (`Database("sqlite://")`), so no file says which signal failed which check. That cost one wrong
+conclusion already on 2026-10-28.
+
+Read first: `research/2026-10-24-replay/README.md`, then `RECORD.md`, then
+`rerun_2026-10-28/JOURNAL.md`, then `ISSUES.md` rows 37-43.
+
