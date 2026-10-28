@@ -122,9 +122,20 @@ Correlation of "momentum behind the trade" with the trade's R, after the lookahe
 | H1 | +0.048 |
 | D1 | +0.030 |
 
-Before the fix I reported H1 strongest at +0.148. That was the lookahead. The owner proposed the order
-H1 → H4 → D1 with D1 strongest; the measurement puts **H4 strongest and D1 weakest**, so the middle
-frame carries it — nearer than D1, slower than the hour.
+Before the fix I reported H1 strongest at +0.148. That was the lookahead.
+
+**Corrected 2026-10-28 by the owner.** This file said "the owner proposed the order H1 → H4 → D1 with D1
+strongest", which contradicts itself and wrote the instruction down backwards. The owner's words were
+**H1 → H4 → D1 in order of importance: H1 first, D1 last.** The measurement puts **H4 strongest and D1
+weakest**, so it agrees with the owner that D1 matters least and **disagrees about H1**, which it ranks
+second from last (+0.048) where the owner ranks it first.
+
+That disagreement is an open point, not something this measurement settles. The frame the owner's ordering
+puts first is the one rule set 1 used, and rule set 1 was withdrawn for measurement faults — the wrong
+parameter set and an hour of lookahead — not because H1 had been tested cleanly and failed. Its +0.048 is
+what was left after the lookahead was removed, on the same sample whose incremental effect flips sign
+between the two halves (WEIGHTS.md). H1 deserves a clean re-measurement before the owner's first choice is
+set aside, and until then this rule stands on the measurement's second-ranked frame, not the owner's first.
 
 ## What is left out, and why
 
