@@ -65,9 +65,31 @@ things, so the report has four parts and no padding:
    (owner 2026-10-26). Each disagreement names the time, what the AI decided, what the measurer would have
    done, and which checklist item or knowledge-base entry divides them. `code sees / same?` in the
    generated report is the code's weapon reading against the AI's: a machine against a machine, not this.
-2. **Every trade in detail:** in and out in Thai time, side, entry, stop, exit, why it left, R, and the USD
-   of both accounts with the lot size.
-3. **Profit and loss:** R a trade and R summed, net USD, and both accounts' balance at the day's end.
+2. **Every trade in detail.** The table has these columns and is not complete without them (owner,
+   2026-10-28 - the first version left out the four that decide whether a weapon is worth keeping):
+
+   | column | why it is there |
+   |---|---|
+   | the owner's window | Asia 07-09, London 13-15, New York 19:30-23 Thai - which session the entry sits in |
+   | in / out, Thai time | when, to the second |
+   | **the strategy that entered** | the weapon (W01..W09) or "the morning plan, scenario X"; a result per weapon is the only way to judge one |
+   | side | BUY / SELL |
+   | entry | the fill |
+   | **SL** | the stop as placed |
+   | **TP** | the take-profit as placed - not just "it left on TP"; a target never reached is itself the finding |
+   | exit, and why | the price and the reason (TP, SL, SIGNAL, time) |
+   | **the holding time** | how long the trade was open; a quick winner and a long scratch are different trades |
+   | R | after costs |
+   | USD and lots | on the reference account |
+
+3. **Profit and loss** on the **150 USD account** - the owner's real account size (150 USD at 1:2000). R a
+   trade, R summed, net USD, the balance at the day's end and the day's worst drawdown. One account, not a
+   pair: a second account computed from the first account's trades rather than run through the engine shows
+   growth that could never have happened. On 2026-07-06 the arithmetic 100 USD account read +14.23 USD while
+   the same account run through the engine took one trade of the three and ended **-0.35** - the engine
+   refused the other two (RISK_BELOW_MIN_LOT, MAX_TOTAL_OPEN_RISK, DAILY_LOSS_LIMIT). Any further account
+   size is its own engine run, never arithmetic on another's trades; the AI's prompt carries no account or
+   position size, so the stored answers are reused and it costs nothing.
 4. **The day's close:** what the market did, what the system did, what a good hunter would have picked, and
    the one lesson - which goes to the knowledge base as a shadow, never straight to a rule.
 

@@ -23,10 +23,9 @@ from __future__ import annotations
 
 import csv
 import json
-import math
 import subprocess
 import sys
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -45,21 +44,22 @@ CLI = (
 )
 MODEL = "gpt-6-luna" if _CODEX else "claude-sonnet-5-5"
 RUN = ROOT / "data/replay/ai"  # answers/, store/, days/<date>/ (the backtest's files)
-LEDGER = HERE / "ledger.csv"  # one row a day: date, trades, R, the two accounts at the day's end
-START = {"acct300": 300.0, "acct100": 100.0}
-RISK100 = (
-    0.18  # owner 2026-10-25: covers the median stop past the liquidation zone at 0.01 lot (17.7 USD in July)
-)
+LEDGER = HERE / "ledger.csv"  # one row a day: date, trades, R, the account at the day's end
+# One reference account, the owner's own size (150 USD at 1:2000), run through the engine. A second account
+# computed from this one's trades was dropped on 2026-10-28: on 2026-07-06 the arithmetic 100 USD account
+# read +14.23 USD while the same account run through the engine took one of the three trades and ended
+# -0.35, the engine having refused the other two. Another size is its own engine run, never arithmetic.
+START = {"acct150": 150.0}
 TH = "Asia/Bangkok"
 
 
 def balances(day: date) -> dict[str, float]:
-    """The two accounts at the start of ``day``: the last ledger row before it."""
+    """The account at the start of ``day``: the last ledger row before it."""
     out = dict(START)
     if LEDGER.exists():
         for row in csv.DictReader(LEDGER.open(encoding="utf-8")):
-            if row["date"] < day.isoformat():
-                out = {"acct300": float(row["acct300"]), "acct100": float(row["acct100"])}
+            if row["date"] < day.isoformat() and row.get("acct150"):
+                out = {"acct150": float(row["acct150"])}
     return out
 
 
@@ -83,27 +83,41 @@ def check_watcher_is_not_ahead(day: date) -> None:
         )
 
 
-def replay(day: date, bal300: float) -> None:
+def replay(day: date, balance: float) -> None:
     check_watcher_is_not_ahead(day)
     out = RUN / "days" / day.isoformat()
     cmd = [
         sys.executable, "-m", "app.cli", "backtest", "--lane", "ai", "--strategies", "ai_trader",
         "--server", "FBS-Demo", "--symbols", "XAUUSD", "--ticks", "data/ticks",
         "--start", day.isoformat(), "--end", (day + timedelta(days=1)).isoformat(),
-        "--balance", f"{bal300:.2f}", "--out", str(out), "--preset", "aggressive", "--risk", "6",
+        "--balance", f"{balance:.2f}", "--out", str(out), "--preset", "aggressive", "--risk", "7.5",
         "--ai-answers", str(RUN / "answers"), "--ai-store", str(RUN / "store"), "--ai-cli", str(CLI),
         "--ai-model", MODEL,
     ]  # fmt: skip
     subprocess.run(cmd, cwd=ROOT, check=True)  # noqa: S603
 
 
-def size100(equity: float, risk_frac: float, stop_usd: float) -> float:
-    """Lots for the 100 USD account: its risk over the stop's USD a lot, floored to 0.01, never below the 0.01
-    minimum (P15: the account's size never vetoes a trade); 0 only for an empty account."""
-    if equity <= 0 or stop_usd <= 0:
-        return 0.0
-    lots = math.floor(equity * risk_frac / (stop_usd * 100) / 0.01 + 1e-9) * 0.01
-    return round(max(lots, 0.01), 2)  # P15 (owner): the 0.01-lot minimum is recorded, never a veto
+def window(at: pd.Timestamp) -> str:
+    """The owner's window an entry sits in (Thai time): Asia 07-09, London 13-15, New York 19:30-23."""
+    t = at.tz_convert(TH).time()
+    if time(7) <= t < time(9):
+        return "Asia"
+    if time(13) <= t < time(15):
+        return "London"
+    if time(19, 30) <= t < time(23):
+        return "New York"
+    return "outside"
+
+
+def weapon_of(rec: dict, by_key: dict) -> str:
+    """The strategy that entered: the AI's weapon, or the morning plan's scenario (owner 2026-10-28 - a
+    result per weapon is the only way to judge one)."""
+    words = str(rec.get("conditions", {}).get("ai_decision", "")).replace(")", "").split()
+    if any(w.startswith("plan-") for w in words):
+        name = next((w.rsplit("-", 1)[-1] for w in words if w.startswith("plan-")), "?")
+        return f"the morning plan, scenario {name}"
+    key = next((w for w in words if w.startswith("step-")), "")
+    return ((by_key.get(key) or {}).get("decision") or {}).get("weapon") or "-"
 
 
 KEYS = ("price", "session", "h1_vol", "h1_atr", "yesterday", "phase", "m15_rhythm", "m15_leg", "h1_rhythm",
@@ -249,52 +263,43 @@ def report(day: date) -> None:
             f"{code} | {same} | {d.get('buy_odds', '-')} | {d.get('sell_odds', '-')} | {size}{veto} | {why} |"
         )
     steps(decisions)
-    eq300, eq100 = start["acct300"], start["acct100"]
+    equity = start["acct150"]
     rows, r_sum = [], 0.0
     for t in trades:
-        side = 1 if t["side"] == "BUY" else -1
-        entry, exit_, sl = float(t["entry_price"]), float(t["exit_price"]), float(t["sl_initial"])
         rec = journal.get(t["signal_id"], {})
-        key = next(
-            (
-                w
-                for w in str(rec.get("conditions", {}).get("ai_decision", "")).replace(")", "").split()
-                if w.startswith("step-")
-            ),
-            "",
-        )
-        words = str(rec.get("conditions", {}).get("ai_decision", "")).replace(")", "").split()
-        plan = any(w.startswith("plan-") for w in words)  # a plan order is always half (risk_scale 0.5)
-        scale = 0.5 if plan or (by_key.get(key) or {}).get("final_size") == "half" else 1.0
-        stop = abs(entry - sl)
-        lots = size100(eq100, RISK100 * scale, stop)
-        pnl100 = side * (exit_ - entry) * lots * 100
-        eq100 += pnl100
-        eq300 += float(t["net"])
+        equity += float(t["net"])
         r = float(t["r_multiple"]) if t["r_multiple"] else 0.0
         r_sum += r
-        rows.append((t, r, pnl100, lots, rec))
+        rows.append((t, r, rec))
     print(f"\n## Trades: {len(trades)}\n")
     if rows:
+        # the columns the owner asked for on 2026-10-28 (docs/TRADER_ROUTINE.md): the window, the strategy
+        # that entered, the TP as placed and the holding time. Without them a weapon cannot be judged, and
+        # a target never reached is itself a finding.
         print(
-            "| in (Thai) | out (Thai) | side | entry | stop | exit | why out | R | 300 acct USD | 100 acct USD (lots) |"
+            "| window | in (Thai) | out (Thai) | strategy | side | entry | SL | TP | exit | why out "
+            "| held | R | USD | lots |"
         )
-        print("|---|---|---|---|---|---|---|---|---|---|")
-        for t, r, pnl100, lots, rec in rows:
+        print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+        for t, r, rec in rows:
             tin = pd.Timestamp(t["entry_time"]).tz_convert(TH)
             tout = pd.Timestamp(t["exit_time"]).tz_convert(TH)
+            mins, secs = divmod(int((tout - tin).total_seconds()), 60)
+            tp = f"{float(t['tp_initial']):.2f}" if t["tp_initial"] else "-"
             print(
-                f"| {tin:%H:%M:%S} | {tout:%H:%M:%S} | {t['side']} | {float(t['entry_price']):.2f} | "
-                f"{float(t['sl_initial']):.2f} | {float(t['exit_price']):.2f} | {t['exit_reason']} | {r:+.2f} | "
-                f"{float(t['net']):+.2f} | {pnl100:+.2f} ({lots:.2f}) |"
+                f"| {window(tin)} | {tin:%H:%M:%S} | {tout:%H:%M:%S} | {weapon_of(rec, by_key)} "
+                f"| {t['side']} | {float(t['entry_price']):.2f} | {float(t['sl_initial']):.2f} | {tp} "
+                f"| {float(t['exit_price']):.2f} | {t['exit_reason']} | {mins}m {secs:02d}s | {r:+.2f} "
+                f"| {float(t['net']):+.2f} | {float(t['volume']):.2f} |"
             )
-        for t, _, _, _, rec in rows:
+        for t, _, rec in rows:
             print(
-                f"\n- {pd.Timestamp(t['entry_time']).tz_convert(TH):%H:%M} {t['side']}: {rec.get('explanation', '')}"
+                f"\n- {pd.Timestamp(t['entry_time']).tz_convert(TH):%H:%M} {t['side']}: "
+                f"{rec.get('explanation', '')}"
             )
     print(
-        f"\n**Day:** {len(trades)} trades, {r_sum:+.2f} R; 300 USD account {start['acct300']:.2f} -> {eq300:.2f}; "
-        f"100 USD account {start['acct100']:.2f} -> {eq100:.2f}"
+        f"\n**Day:** {len(trades)} trades, {r_sum:+.2f} R; the 150 USD account "
+        f"{start['acct150']:.2f} -> {equity:.2f}"
     )
     print(
         "\n_Labels: the knowledge base was partly measured on these months; the model's training data runs to about "
@@ -308,14 +313,13 @@ def report(day: date) -> None:
             "date": day.isoformat(),
             "trades": len(trades),
             "r": round(r_sum, 2),
-            "acct300": round(eq300, 2),
-            "acct100": round(eq100, 2),
+            "acct150": round(equity, 2),
             "wakes": len(decisions),
         }
     )
     rows_out.sort(key=lambda r: r["date"])
     with LEDGER.open("w", encoding="utf-8", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=["date", "trades", "r", "acct300", "acct100", "wakes"])
+        w = csv.DictWriter(fh, fieldnames=["date", "trades", "r", "acct150", "wakes"])
         w.writeheader()
         w.writerows(rows_out)
 
@@ -326,7 +330,7 @@ def main() -> None:
     )  # the AI's notes carry arrows; the Windows console codec is cp1252
     day = date.fromisoformat(sys.argv[1])
     if "--report" not in sys.argv:
-        replay(day, balances(day)["acct300"])
+        replay(day, balances(day)["acct150"])
     report(day)
     state = RUN / "store" / "watch_state.json"
     if state.exists():
