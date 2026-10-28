@@ -1,7 +1,9 @@
 # Start here
 
-Everything built before 2026-10-28 is stopped and archived. This file and `docs/HOUSE_RULES.md` are the
-whole live document set; the work itself lives in `eye/`.
+Everything built before 2026-10-28 is stopped and archived. This file, `docs/HOUSE_RULES.md` and
+`docs/HANDOFF.md` are the whole live document set; the work itself lives in `eye/`. **`docs/HANDOFF.md`
+is where a new session starts**: it carries the current numbers, where the walking resumes, and what is
+still open.
 
 ## What this repository is now
 

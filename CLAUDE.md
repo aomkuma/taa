@@ -4,6 +4,8 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 
 ## Read first
 
+- **`docs/HANDOFF.md`** - **start here in a new session**: where the work stands, the current numbers,
+  where the next day resumes, and what is still open.
 - **`docs/START_HERE.md`** - what this repository is now, what we are doing, and the one number everything
   is judged against.
 - **`docs/HOUSE_RULES.md`** - how to work here. Every rule in it was paid for with a real mistake.
