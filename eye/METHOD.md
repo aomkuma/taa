@@ -158,6 +158,16 @@ counts 3 to 5 peaks into it with divergence on MACD and RSI against price; the s
 entry is the retest of the line it broke, on M5 to M15. (This sentence only strings the table's answers
 together.)
 
+### The owner's words for patterns - read them the owner's way
+
+The owner, 2026-10-28: *"I have always understood M as buy and W as sell, in the leg where it has already
+projected."* **This is the opposite of the textbook** (where an M, a double top, is a sell and a W, a
+double bottom, a buy), and Claude translated "M" the textbook way and got the side wrong on day 3. In the
+owner's usage, as Claude understands it (to confirm): the M is drawn by the counter-move **coming down into
+a support** - its lows on the level - so it is the end of that move and a **buy**; the W is drawn going
+**up into a resistance**, and is a **sell**. Day 3 London fits: an asymmetric M (tops 4678.79, 4667.74)
+with its lows 4643.61 / 4644.97 on the 4642-4651 support, and the run to 4706.58 after it.
+
 ### The principle, generalised from the owner's example
 
 The owner, 2026-10-28: *"this is an example - you have to summarise it into a principle, not turn the

@@ -449,3 +449,8 @@ fits the owner's words on that chart is **London, 06/04**: an asymmetric M (tops
 the left - after which price ran to 4706.58. **Claude marked that window `shut`** (two lows; MACD and RSI
 lower at the second low, so no divergence) - a buy at support, on the H1 side, refused. *Claude's reading
 of which spot the owner means - asked to confirm.*
+
+The owner: *"really? I have always understood M as buy and W as sell, in the leg where it has already
+projected."* The textbook has it the other way round, which is why Claude read the M as a sell. In the
+owner's usage the M on the 4642-4651 support is a buy - written into METHOD 2e ("The owner's words for
+patterns"), with Claude's reading of "the leg where it has already projected" marked to confirm.
