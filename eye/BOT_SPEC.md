@@ -591,7 +591,8 @@ judges them on the real run.
   161.8 % target, the target becomes just before that band (2e step 7: `band edge - target_buffer`); R
   recomputed; under 2R no order. *(2e's own target rule, applied to the Fibo target.)*
 
-**R24. A range is traded (the owner's sideways rule, METHOD 2e "The owner's Fibonacci"):** when the H1 lean
+**R24. A range is traded (called "the owner's sideways rule" here - a misattribution: reading it on the setup
+timeframe was Claude's misreading, withdrawn 2026-10-29 evening; see "Rule 11 rewritten" below):** when the H1 lean
 is none **and** R22 gives no M5 trend, the range is the latest fixed HIGH and LOW on the **setup timeframe**
 (M5 or M15 - not H1, too slow): drawn 0 % at the low, 100 % at the high; a SELL limit at 88 %, stop beyond
 127 % + `stop_buffer`, target the low edge + `target_buffer` (the owner's "around 100 %" read as the other
@@ -731,3 +732,14 @@ bars for M5 and M15 legs; `H100` worded as the highest high of the fall (what th
 take - one reviewer read "began from" as the first high); a stop cannot withdraw a resting limit; `order_life_bars`
 in the table; warm-up restored; the judging bar (+0.15 R a trade, at least 30 filled trades); the withdrawn list
 completed; acceptance cases with expected verdicts or *report*.
+
+## Rule 11 rewritten - sideways is read on H1 (2026-10-29 evening)
+
+The owner, on the drawn October trades: *"sideways means in the 1-hour timeframe, and the trend is found in the
+5-minute"*; the range counts after price has gone back and forth inside it, *"at least one to two times each side"*;
+the trade is in the fourth and fifth leg, *"if it can be found from the third leg, that is good"*; at the top edge
+with M5 turning down, the sell on the M5 Fibo pullback - *"yes"*. Rule 11 before this (a range read on the setup
+timeframe from its latest two pivots, faded at 88 % / 12 %) was **Claude's misreading** and is withdrawn. In force:
+`eye/BOT_RULES.md` rule 11 - the H1 range (pivots touching the 88-127 % / -27-12 % edge zones), sideways from three
+pivots, legs 3-5, the side away from the latest pivot, the leg path's rules 2-10 on that side, the target capped at
+the opposite edge (`range_tp`).

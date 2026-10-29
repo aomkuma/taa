@@ -720,3 +720,7 @@ at +2.05 to +2.49 R, so the break-even win rate is about 0.31.
     made newer swings; stopped.
   - 01/10 BUY: the order sat at 61.8 % after price had already bounced to 4185.86 - near the 100 % - and come back;
     stopped.
+- **The owner's answer (2026-10-29):** sideways is read on **H1** and the trend for the entry on M5; the range counts
+  after price has gone back and forth inside it, and the trade is from its third leg to its fifth. The range rows
+  above (lean on 1, lean off 19) were **Claude's misreading** - a range read on M5 and faded at its edges - and that
+  rule is withdrawn (BOT_RULES rule 11 rewritten). The leg rows stand as measured.
