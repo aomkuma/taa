@@ -120,8 +120,8 @@ rule 11 calls "no trend"; rule 13 decides between them.)*
 the run has **3 to 5** lows - 1 low and 6 or more fail [Claude] - **and** divergence at `L0` against the previous low
 of the run on at least one oscillator (owner: "one is enough") - [Claude's rendering]: MACD main or RSI at `L0`'s pivot
 bar higher than at the previous low's pivot bar, setup timeframe. **Or the owner's M** (owner: two peaks that make an M
-count; a clear M is entered without divergence): a run of exactly **2** lows passes without divergence - [Claude,
-provisional: any two-low run is taken as the M; the owner has been asked what makes an M "clear"]. Which oscillator
+count; a clear M is entered without divergence): a run of exactly **2** lows passes without divergence - any two-low run is taken as the M
+(the owner, 2026-10-29: *"try it this way first"*). Which oscillator
 diverged (MACD / RSI / both / none) is written into every decision (owner: "the record says which").
 
 ## 5. The trend run's count - no chasing
@@ -152,7 +152,8 @@ says a fifth leg is the trend ending, and buying its pullback is chasing.
 ## 7. The stop
 
 The owner's words differ by case: 2e step 6 - *"beyond the highest top / lowest bottom"*; the Fibonacci - *"the SL is
-beyond 88 % - 0 %"*, and for the 61 % entry *"beyond 23 %"*. [Claude] the Fibonacci's specific words govern:
+beyond 88 % - 0 %"*, and for the 61 % entry *"beyond 23 %"*. **The owner confirmed (2026-10-29): for the 0.618
+entry the stop is beyond 23 %** - the Fibonacci's specific words govern:
 - 0.382 / 0.236: `L0 - stop_buffer` (beyond the lowest bottom - both sentences hold).
 - 0.618, `fib_stop` **line**: the 23.6 % level - `stop_buffer` ("beyond 23 %"; above `L0`, so not beyond the lowest
   bottom).
