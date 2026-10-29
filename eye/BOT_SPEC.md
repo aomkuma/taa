@@ -225,7 +225,7 @@ Run 2026-10-20..27, `min_r` 2, both h1 modes: **no decision.** On the owner's ex
 - Even counted right, the sell on the retest of 4105 (London 22/10 reached 4102.77) had its target just
   before the next support from the left, 4066-4073: about 39 risk for 28 - **0.7R, under 1:2.** Price went on
   to 3976. **Open for the owner: when the next level is too close for 1:2 - skip to the level after it,
-  target 2R / 3R regardless of levels, or no trade.**
+  target 2R / 3R regardless of levels, or no trade.** *(Answered: "no trade, for now" - R9 below.)*
 
 ## Revision 3 (2026-10-28, late) - the owner's reward rule, and counting by zone
 
@@ -327,7 +327,7 @@ The owner on what will be hard: *"the problem I can see coming is reading whethe
   really strong, maybe enter from the pullback to 61 %"*): variants **0.382**, **0.236**, **0.618** - on the scale above (0 % at the low),
   a level of 0.382 is a pullback of 61.8 % of the leg. `[Claude: this is the reading of the scale, asked]`
 - The stop: below the 0 % (the leg's low) - `stop_buffer` (*"beyond 88 % - 0 %"*, read as beyond 0 %
-  `[Claude]`).
+  `[Claude]`); for the 0.618 entry, beyond 23.6 % (the owner - below).
 - The target, `[Claude]`, two variants: `fib_target = level` - the 2e rule, just before the nearest
   opposite H1 band above the entry (as step 7); `fib_target = high` - the leg's 100 % - `target_buffer`.
 - **At least 2R - the owner's**; under it, no decision. Spread 0.30 as now.
@@ -345,8 +345,8 @@ is removed); the stop of R14, the target per `fib_target`, at least 2R.
 **R17. Sideways (no H1 side), `[Claude]` drawing, on by `fib_range = on`:** the range = the last fixed H1
 HIGH and LOW (the latest two pivots); drawn 0 % at the low, 100 % at the high. Sell zone 88 % - 127 % (*"at
 the edge, around 88 % - 127 %"*): a plain limit sell at 88 %, stop above 127 % + `stop_buffer`, target the
-range's 12 % level + `target_buffer` `[Claude]`; the buy the mirror (limit at 12 %, stop below -27 %, target
-88 %). At least 2R. With `fib_count = on`, step 2 must hold at that edge as in R16.
+range's 12 % level + `target_buffer` `[Claude]` *(superseded below: the range's other edge)*; the buy the
+mirror (limit at 12 %, stop below -27 %, target 88 % - likewise the other edge). At least 2R. With `fib_count = on`, step 2 must hold at that edge as in R16.
 
 Every decision text names: mode, the leg's low and high (prices, Thai times), the levels used, entry,
 stop, target, R. Every one of these is written into the ledger's structure text so the walk-by-hand can

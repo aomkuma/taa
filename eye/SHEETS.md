@@ -421,7 +421,8 @@ What the day showed about reading 2e, for the next days to test:
 
 - **The owner's M is a buy, the W a sell** - *"I have always understood M as buy and W as sell"* - the
   opposite of the textbook; at support, buy.
-- **Two peaks that make an M (W) count**, not only 3-5, and the M need not be symmetric.
+- **Two peaks that make an M (buy, at support) or a W (sell, at resistance) count**, not only 3-5, and
+  they need not be symmetric.
 - **A clear M at support is entered without divergence** - *"it can be entered"* - as day 3 London's M on
   the 4642-4651 support (lows 4643.61 / 4644.97, then the run to 4706.58), which Claude had marked `shut`.
   Not added to the ledger: read after the outcome was known, it stays a lesson.
@@ -517,7 +518,8 @@ continuation, not a retest. Stop would go beyond 4607.48; the next level up is 4
 be 4661.24 breaking. But the order it implies - limit about 4661, stop beyond 4607.48 (risk about 55),
 target just before the 4667-4672 level (about 4666) - pays **under 0.1 R**. **Refused - Claude's
 judgement, not a rule:** the owner has given no minimum reward, and this is the third time today step 7's
-"next level" sat a few dollars over the entry. Asked of the owner at the end of the day.
+"next level" sat a few dollars over the entry. Asked of the owner at the end of the day. *(Answered 10-28:
+at least 1:2 - the owner's.)*
 
 **Look 7 - 22:25 Thai, price 4652.96.** Back up toward 4661.24; not broken. No trade.
 
@@ -531,11 +533,12 @@ window. Window over: **no setup taken.**
 
 What the day showed, for the next days to test:
 
-- **The M on support resolved the owner's way three times** - Asia's on 4642-4651 broke down instead (the
-  only one that failed), London's on 4616-4625 ran to 4694.37 between 15:00 and 16:25, outside the owner's
-  hours, and New York's ended in a news sweep and reclaim.
+- **An M on support formed three times; it resolved the owner's way cleanly once** - Asia's on 4642-4651
+  broke down instead, London's on 4616-4625 ran to 4694.37 between 15:00 and 16:25, outside the owner's
+  hours, and New York's ended in a news sweep and reclaim. *(Corrected 10-29: this line said "three times".)*
 - **Step 7 is where the trades die.** Three times the break-and-retest entry sat a few dollars under the
   next resistance from the left (4667-4672 under 4664 / 4671, again under 4661), while the stop beyond the
-  extreme was 40-55 away. The owner has given no minimum reward; Claude refused the 0.1 R one.
+  extreme was 40-55 away. The owner had given no minimum reward; Claude refused the 0.1 R one. *(Answered
+10-28: at least 1:2.)*
 - **Two news-like whipsaws** (08:00 and 21:00 Thai, 2,500-3,200 ticks a bar) made divergence unreadable
   across them and swept the supports.

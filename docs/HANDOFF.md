@@ -109,7 +109,7 @@ Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai - advancing a fe
 
 `python eye/score.py summary` reads `ledger.csv` only (D1-1, D2-1 and the reset trade #1, which is a
 pre-rules trade sitting in the judged ledger); `python eye/score.py ledger_control.csv summary` gives the
-control; the figures above are the two together. `python eye/rules.py` reads both. The twelve keep the
+control; the figures above are the two together. `python eye/rules.py` reads both. The decisions keep the
 planned scores (none was time-closed); their on-sight column was re-scored under the hold rule. The
 fill fixes re-score every planned column of all twelve identically.
 
@@ -155,13 +155,14 @@ fill fixes re-score every planned column of all twelve identically.
 **Done on 10-28:** the `setup` and `trigger` columns, `rules.py` judging the seven steps, and **real day 3,
 2026-04-06**, the first day under 2e (03/04 was Good Friday - no bars after 03:50 Thai). Asia: **D3-1**, a
 buy stop limit (trigger 4644.0, limit 4643.0, stop 4599.5, target 4668.0) - **no fill**: the break ran
-straight through the target before any retest, and rule 8 withdraws it (left resting: +0.57 R). London
+straight through the target before any retest, and rule 8 withdraws it (left resting: +0.57 R, the plan's R as written in `SHEETS.md`). London
 `shut`: a 44 USD run from a double bottom with no divergence. New York `no-setup`: divergence twice, but
 MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
 
 **Read again with the owner after the day was scored** (`eye/SHEETS.md`, the end of day 3; METHOD 2e):
 
-- **Two peaks that make an M (a W) count**, not only 3-5; the M may be asymmetric.
+- **Two peaks that make an M (buy, at support) or a W (sell, at resistance) count**, not only 3-5; they
+  may be asymmetric.
 - *"If I say it is support, should you buy or sell?"* - **at support, buy.** And *"I have always understood
   M as buy and W as sell, in the leg where it has already projected"* - **the owner's M is a buy and W a
   sell, the opposite of the textbook.** Claude read "M" the textbook way, took it for a sell, and assumed
@@ -175,7 +176,7 @@ MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
 
 **Answered by the owner, 10-28:** asked whether the spot was day 3 London's M on 4642-4651 and whether a
 clear M at support is taken though MACD and RSI did not diverge there - *"it can be entered."* So: **a clear
-M (W) at the level needs no divergence**; divergence is required for the 3-5 count (METHOD 2e step 2).
+M at support (W at resistance) needs no divergence**; divergence is required for the 3-5 count (METHOD 2e step 2).
 
 **Real day 4, 2026-04-07, walked:** no decision. Asia, London, New York all `no-setup`; step 7's next level sat a few dollars over every retest entry (`SHEETS.md`, "Day 4 in one place"). The minimum reward was then answered by the owner: **at least 1:2**.
 
@@ -188,7 +189,7 @@ month, the best 1.31 R. `eye/bot_ledger.csv` is empty because research runs writ
 
 **Next by hand: real day 5, 2026-04-08, Asia 07:00 Thai** (walking by hand continues beside the bot).
 
-**How a day is walked (written for day 4, still the procedure):** Read M and W **the owner's way** (M at support = buy, W
+**How a day is walked (written for day 4, still the procedure; for day 5 use `"2026-04-08 07:00"`):** Read M and W **the owner's way** (M at support = buy, W
 at resistance = sell) and count two peaks that make one. `.venv\Scripts\python eye/walk.py "2026-04-07 07:00" 0`,
 one step per command (a slip on day 3 printed two at once). At each look, the pivots with MACD and RSI:
 the helper Claude used lives in the session scratchpad, so rebuild it - `zigzag_pivots` on the closed bars

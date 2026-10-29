@@ -159,6 +159,9 @@ counts 3 to 5 peaks into it with divergence on MACD and RSI against price; the s
 entry is the retest of the line it broke, on M5 to M15. (This sentence only strings the table's answers
 together.)
 
+*Corrected 10-29: the written-out steps had the textbook's sides (a sell from an M, a buy from a W); they
+now read the owner's way - a W is the sell, an M the buy.*
+
 ### The owner's words for patterns - read them the owner's way
 
 The owner, 2026-10-28: *"I have always understood M as buy and W as sell, in the leg where it has already
@@ -200,9 +203,9 @@ through that later answer: the LL is the break, the sell is its retest.
 
 1. **Context** - the H1 trend gives the sell side the edge, and price has come up into a **resistance**
    the left of the chart built.
-2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level - **or two that make a W** - in the owner's words a W is the sell (corrected 10-29; this line had "M", the textbook's word) (the M / W need not be symmetric) - with **divergence** on MACD or RSI
-   against price. **A clear M (W) at the level is taken without divergence** - the owner, 2026-10-28, on
-   day 3 London's M, whose second low had MACD and RSI lower: *"it can be entered."* Divergence is required
+2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level - **or two that make a W** - the owner's sell (it need not be symmetric) - with **divergence** on MACD or RSI
+   against price. **A clear W at resistance (M at support, for the buy) is taken without divergence** - the owner,
+   2026-10-28, on day 3 London's M, whose second low had MACD and RSI lower: *"it can be entered."* Divergence is required
    for the 3-5 count - **on one oscillator is enough** (the owner, 2026-10-28, asked whether the count needs MACD
    and RSI both: *"one"*); both is the clear case. For an M or W it adds strength, it is not a condition. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); nothing is
    recorded about one alone - the record says which it was. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
@@ -234,7 +237,7 @@ had said a buy is the mirror, nothing more:*
 
 1. the **H1 trend** gives the buy side the edge, and price has come down into a **support** the left of
    the chart built;
-2. ZigZag counts **3 to 5 lows** into it - or two that make an **M** (the owner's buy; corrected 10-29 from "W") - with **divergence**: price makes a lower or equal low while MACD
+2. ZigZag counts **3 to 5 lows** into it - or two that make an **M** (the owner's buy) - with **divergence**: price makes a lower or equal low while MACD
    or RSI makes a higher low - one is enough, both is clear; a clear M needs none;
 3. the structure breaks - price takes out the **last swing high**, and the dip after it holds above the
    bottom - a higher low;
@@ -321,7 +324,8 @@ every one marked `[Claude]`:**
 
 The owner: *"write the code and let a bot do the work - correct, with every condition."* `eye/bot2e.py`
 applies these steps bar by bar on the stored data, inside the owner's windows, on closed bars only, and
-writes its decisions to `eye/bot_ledger.csv` (scored by `score.py`, read in money by `money.py --ledger`).
+writes its decisions to `eye/bot_ledger.csv` (scored by `score.py`, read in money by `money.py --ledger`);
+research runs write to `eye/research/<variant>/` instead, so `bot_ledger.csv` may be empty.
 Its rules are `eye/BOT_SPEC.md`; every definition the owner did not give is marked `[Claude]` there and
 is a parameter written into each decision. Built by a Sonnet agent, reviewed twice by Codex, checked by
 Claude. **First runs (06-07/04 and 20-27/10/2026): no decision** - the reward floor and step 2 refused
