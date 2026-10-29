@@ -262,8 +262,7 @@ into each decision (both = the owner's "clear" case).
 
 **Removed from the code at the owner's word (2026-10-29: *"take it out"*).** It was built on a misreading:
 the owner, after seeing it: *"1H 6 USD was only a question - not meant to be researched or taken further; it was a comparison."* The text below is kept as the record of what was built and
-run (`eye/BOT_RESEARCH.md` round 2: 3 distinct trades, none won); none of it is the owner's rule, and the "open
-question" on the 60 % belonged to the same comparison and is closed.
+run (`eye/BOT_RESEARCH.md` round 2: 3 distinct trades, none won); none of it is the owner's rule.
 
 ### As it was written (record only)
 

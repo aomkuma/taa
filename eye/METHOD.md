@@ -145,7 +145,7 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 | **The side with the edge** | **the trend on H1** |
 | **Where** | **at resistance when the sell side has the edge, at support when the buy side has the edge** - never the other way round |
 | **The count** | **3 to 5 peaks, counted from MT5's ZigZag** - **or two, when they make the owner's W (sell, at resistance) or M (buy, at support)** - the owner, 2026-10-28 |
-| **Divergence** | **on MACD and RSI, against price** - the owner: *"divergence is divergence - what is it by the book?"*; and *"if both happen, it is clear"* - see the principle below |
+| **Divergence** | **on MACD or RSI, against price - one is enough** (the owner, 2026-10-28); both is the clear case - see the principle below |
 | **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
 | **Entry timeframe** | **M5 to M15** |
@@ -329,9 +329,8 @@ up, each high higher than the one before, into the top.**
 how gold actually runs on the timeframe we trade."* **After the research script's fill bug was fixed (BOT_RESEARCH,
 "Correction - the fill bug"): the high the fall began from - clearly at the 61.8 % entry, ahead on M5, on
 M15 and in both halves; at 23.6 % and 38.2 % neither is reliably better.** (The "it depends on the depth"
-reading written first came from the buggy run and is withdrawn.) The first summary below (three years of M15 only) is kept as
-measured.
-*First summary:* the
+reading written first came from the buggy run and is withdrawn.) *Superseded first summary (from the buggy run, kept as
+measured):* the
 high the fall began from (for a sell, the low the rise began from). Three years of M15, both sides: ahead
 in 3 of 5 entry / target pairs (the latest high ahead at the 23.6 % entry, where both lose); at the 61.8 %
 entry with the 161 % target ahead in both halves (+0.19 / +0.28 R a trade against +0.10 / +0.08). One

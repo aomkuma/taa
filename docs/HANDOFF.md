@@ -2,9 +2,9 @@
 
 Last updated **2026-10-29 Thai** (read with `Get-Date`). The owner's setup is written down in full
 (`eye/METHOD.md` 2e) and a bot applies it (`eye/bot2e.py`). Under the owner's rules it made **no trade in
-October 2026**. **Now: round 4 - the owner's Fibonacci on the owner's leg** (METHOD 2e "The owner's Fibonacci",
-`eye/BOT_SPEC.md` revision 6, R18), being built and run on October - no results yet. Round 3 (revision 5,
-Claude's wrong leg) is measured: about 33 fills, 1 won. Results go into `eye/BOT_RESEARCH.md`. Walking by hand
+October 2026**. **Now: the owner's Fibonacci on the owner's leg** (METHOD 2e "The owner's Fibonacci", `eye/BOT_SPEC.md`
+revision 6, R18). Round 4 (revision 6, R18, the owner's leg) ran on October inside the owner's windows: the best M5 rows were the 61.8 % entry with 100 % at the high the fall began from (side from the entry timeframe: 15 fills, 6 won, +4.86 R, 200 -> 234.15 USD; no side filter: 24 fills, 8 won, +2.64 R, 190.92 USD) and the 23.6 % entry (17 fills, 4 won, +7.61 R, 293.10 USD - run with the 'latest' high, a mapping since withdrawn); M15 rows had 1-5 fills each. One month, few trades: not an edge yet; the code is not yet reviewed by Codex. Next: Codex reviews the revision-6 code, the full test suite goes green,
+then September is run once, unchanged. Walking by hand
 resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
@@ -135,15 +135,14 @@ fill fixes re-score every planned column of all twelve identically.
 
 **2026-10-29, in order:**
 
-1. **Round 2 - an entry on M1 (removed).** Claude took the owner's question *"if 1H runs 6 USD and M1 gets
-   in near the top..."* for the answer on 1:2 and built BOT_SPEC revision 4. October: 3 distinct
-   trades, none won; Codex found no bug. The owner: *"1H 6 USD was only a question - a comparison"*, then
-   *"take it out"*. Removed from the code; kept in `BOT_RESEARCH.md` and `TRIED.md` row 20 as a record.
-   Lesson in memory: a question of the owner's is not a rule.
-2. **The owner's Fibonacci** (volunteered; drawn on the counter-move just ended - item 3b): trend - 0 % at
+1. **Round 2 - an entry on M1 (removed).** Built by Claude on a misreading (BOT_SPEC revision 4).
+   October: 3 distinct trades, none won; Codex found no bug. Removed at the owner's word; kept in
+   `BOT_RESEARCH.md` and `TRIED.md` row 20 as a record.
+2. **The owner's Fibonacci** (volunteered; drawn high -> low to play an up move, low -> high to play a down move - item 3b; "the
+   counter-move just ended" is Claude's wording): trend - 0 % at
    the low, 100 % at the high,
    enter on the pullback to 38-23 % (61 % when the bulls are strong; its stop beyond 23 %), stop beyond 0 %,
-   target 127-161 % (put as a question); sideways - the edge 88-127 %, target around 100 %; with and without
+   target 127-161 % (the owner's proposal); sideways - the edge 88-127 %, target around 100 %; with and without
    the count (*"try both"*). The owner foresees the hard part: *"reading whether it is a trend or
    sideways"*. Every word is in METHOD 2e; the open readings are listed there and run as variants.
 3. **Round 3 measured** - BOT_SPEC revision 5 (R13-R17, `mode=fib` in `eye/bot2e.py`): about 33 fills in

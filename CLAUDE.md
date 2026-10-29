@@ -71,9 +71,8 @@ from your own reading of the charts (METHOD 2d was exactly that, and is on hold)
 gives is a principle to generalise, never a rule with its numbers. **The owner's pattern words are not
 the textbook's: in the owner's usage an M is a buy (it forms coming down into a support) and a W a sell** -
 read them the owner's way, and never fill in a side or a trend reading the owner did not give. On 2026-10-29 the
-owner added **their Fibonacci** (METHOD 2e, "The owner's Fibonacci") - its open readings are listed there.
-**A question the owner asks ("say 1H runs 6 USD...") is a question, not a rule** - an entry on M1 was built
-on one and removed.
+owner added **their Fibonacci** (METHOD 2e, "The owner's Fibonacci"). **A question the owner asks, or a chart the owner shows as an
+example, is supporting information, never a rule; the documents record only the rules and what to do.**
 
 **Nothing is committed without `ruff`, `mypy`, `bandit` and the tests green**, and nothing is pushed,
 deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per
