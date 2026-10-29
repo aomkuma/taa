@@ -477,3 +477,33 @@ the last close (the owner, 2026-10-28: an order goes no further than 4 USD from 
 **Acceptance cases (the stored bars, h1 side lows, M5, 0.618, ext161, the decisions of `eye/research/h1L_618_m5/`):**
 07/10 07:30 SELL is still written (entry 4159.07); 01/10 06:55, 12/10 06:55, 16/10 13:15, 21/10 21:00 and
 27/10 14:00 are refused by R19; 09/10 06:55 is refused by R20.
+
+### Revision 7, made precise after review (Codex and the developer, 2026-10-29) - all `[Claude]` unless said
+
+- **R19, the crossing:** a wick counts - for a BUY any bar with `high > H100`, for a SELL `low < H100`
+  (touching it exactly does not). Counted on the setup-timeframe bars from the bar after `L0`'s pivot bar
+  (its confirmation bars included) up to the decision. **The scorer** withdraws a resting order when a bar
+  *before* the fill bar crosses `H100`; a bar that both fills the order and crosses `H100` keeps the fill
+  (the same rule as a fill bar that reaches the stop - order inside a bar is unknown).
+- **R19 and R8:** the ext127 / ext161 targets lie beyond `H100`, so R8's target check is covered by R19; R8's
+  stop check stays.
+- **R20, the price:** the last closed **M5** close at the decision, for an M5 and an M15 leg alike; the
+  absolute distance from the entry; over **4 USD** the setup is **passed** (rule 7 also allows taking it at
+  the market - not used here: it changes the stop and the R).
+- **Leg life:** a leg is used once an order is written on it, whatever happens to that order; a leg that
+  has not run (R19) has no age limit. *(Stale legs across a weekend that never crossed `H100` stay
+  possible - to be judged on the drawn trades.)*
+- **`H100`** is the high the fall began from (`start`) in every rule and acceptance case; `latest` is a
+  comparison only.
+- **`fib_stop = swing`:** the most extreme fixed pivot on the stop side on the setup timeframe, formed after
+  `L0` and fixed by the decision (the lowest such low for a BUY); the stop is one `stop_buffer` beyond the
+  farther of that pivot and the line stop. It changes only the 0.618 entry (with a 0 % stop every later low
+  is above `L0`).
+- **`fib_level = on`:** `L0` inside a single H1 band (R1), edges inclusive, no extra buffer; a SELL's top in
+  a resistance band (the view's mirror).
+- **The real run** is four independent ledgers - `fib_stop` line / swing x `fib_level` off / on - every other
+  setting equal, for the owner to judge. `fib_level = off` leaves out 2e's "at a level from the left": it is
+  a comparison, not the rule.
+- **The log:** R19's reason is checked right after the leg is found.
+- **The 27/10 18:30 pin** (BUY 4003.01): the last M5 close was 4010.95, 7.94 USD away - R20 refuses it. That
+  is the rule working (the order never filled - the low after was 4007.53); the pin changes to the refusal.
