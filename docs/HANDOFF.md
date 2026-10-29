@@ -2,9 +2,14 @@
 
 Last updated **2026-10-29 Thai** (read with `Get-Date`). The owner's setup is written down in full
 (`eye/METHOD.md` 2e) and a bot applies it (`eye/bot2e.py`). Under the owner's rules it made **no trade in
-October 2026**. **Now: the owner's Fibonacci on the owner's leg** (METHOD 2e "The owner's Fibonacci", `eye/BOT_SPEC.md`
-revision 6, R18). Round 4 (revision 6, R18, the owner's leg) ran on October inside the owner's windows: the best M5 rows were the 61.8 % entry with 100 % at the high the fall began from (side from the entry timeframe: 15 fills, 6 won, +4.86 R, 200 -> 234.15 USD; no side filter: 24 fills, 8 won, +2.64 R, 190.92 USD) and the 23.6 % entry (17 fills, 4 won, +7.61 R, 293.10 USD - run with the 'latest' high, a mapping since withdrawn); M15 rows had 1-5 fills each. One month, few trades: not an edge yet; the code is not yet reviewed by Codex. Codex reviewed the code twice, fixes in, full suite green (commit 87015cc). **The September check failed:** the
-October winner ran unchanged on September - 8 fills, 1 won, -4.61 R, 200 -> 147.85 USD. No variant has passed. Walking by hand
+October 2026**. **Now: the owner's Fibonacci on the owner's leg** (METHOD 2e, `eye/BOT_SPEC.md` revision 6, R18; code at
+87015cc, reviewed twice by Codex, full suite green). The October winner (M5, 61.8 %, `fib_side = entry`)
+**failed September**: 8 fills, 1 won, -4.61 R, 200 -> 147.85 USD - its buys went against the H1 side the bot
+itself read (Codex: not a code bug; the variant dropped the owner's H1 rule). **The owner's rule: the larger
+timeframe's trend is never ignored** - only `fib_side = h1` may be used. October with the H1 side, 61.8 %:
++3.27 / +3.50 R (7 / 10 fills). **No test or research run until the code is confirmed correct** (the owner):
+next, remove the side options that break the rule, draw each October trade for the owner to judge, a last
+Codex review. Walking by hand
 resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the

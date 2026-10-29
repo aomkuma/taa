@@ -87,8 +87,9 @@ was fixed are in `eye/RULES_REVIEW.md`.
 least 1:2, and no trade when the next level leaves less**. **October 2026 under the owner's rules: no
 trade** (`eye/BOT_RESEARCH.md`). An entry on M1 tried on 10-29 was Claude's misreading and is removed.
 **Now: the owner's Fibonacci** (`eye/METHOD.md` 2e, "The owner's Fibonacci"): round 3 drew the wrong
-leg (Claude's) and lost; round 4, on the owner's leg (BOT_SPEC revision 6), is measured on October -
-`docs/HANDOFF.md` has the numbers; not an edge yet.
+leg (Claude's) and lost; round 4, on the owner's leg (BOT_SPEC revision 6), won October but failed September
+because a Claude side option ignored the H1 trend; only the H1 side is used now, and no test runs until the
+code is confirmed correct - `docs/HANDOFF.md`.
 
 ## Before changing anything
 

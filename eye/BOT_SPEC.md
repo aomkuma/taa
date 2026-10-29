@@ -435,3 +435,19 @@ Every choice the code makes where the owner gave no rule - each marked `# SPEC-Q
 - **Defaults** (from 2026-10-29): `fib_high` = `start`; `fib_target` = `ext161`; `fib_leg` = `counter`
   (`trend` = revision 5's leg, comparison only); R18's count-on writes the same plain limit at the level as
   count-off (the last-close entry belongs to revision 5's R16 only).
+
+## The side, after September (2026-10-29) - the owner's rule restated
+
+The owner: *"the big trend was down and the trade bought - that alone is already wrong"*, and: *"'ignoring
+the trend' - you must except the larger timeframe, understand?"* **The larger timeframe's trend (H1) is
+never ignored; only a smaller timeframe's trend may be set aside.** So:
+- **`fib_side = h1` is the only side rule that keeps the owner's rules** - the only one a candidate may use.
+- `fib_side = entry` (the entry timeframe's structure alone) and `any` (no side) drop the H1 trend: **they
+  break the owner's rule and are to be removed from the code.** They are kept in this record only because
+  October's and September's runs used them.
+- An entry-timeframe confirmation may be added **on top of** the H1 side (H1 allows the side, then the
+  entry timeframe's structure confirms) - never instead of it.
+
+**No test or research run until the code is confirmed correct** (the owner, 2026-10-29). The confirmation
+planned: remove the side options that break the rule; draw each October trade of the H1-side 61.8 % variant
+on its chart for the owner to judge by eye; a last Codex review.
