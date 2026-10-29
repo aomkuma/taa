@@ -60,8 +60,7 @@ at the earlier snapshot of twelve (-0.378 R a trade); all backwards, none decide
   a scoring bug, then the owner's rule to hold until stop or target - `eye/RULES_REVIEW.md` C1 and section
   7), and all three plans that never filled would have won,
   missed by 3.37, 3.85 and 3.82 USD - partly by construction, since an unfilled limit is one price left in
-  the planned direction. On the nine filled trades, on sight was worse. An order now goes no further than **4 USD**
-  from price.
+  the planned direction. On the nine filled trades, on sight was worse. An order now goes no further than **the market can reach** (the owner's 4 USD was an example).
 - **A stop inside the band loses a trade the read got right.** Day 2's one decision was filled, swept five
   dollars past a stop placed inside the level's band, and the target it was aiming at came ninety minutes
   later. The same idea with the stop beyond the band pays +1.63 R instead of -1.02.

@@ -622,7 +622,16 @@ a rule.**
 7. **A range is traded at its edges**, not skipped. *(R24)*
 8. **No number is believed until the trades behind it are drawn and every one keeps the rules.**
 
-**Scale:** numbers carried in USD (the 4 USD reach of rule 7, the 0.50 buffers) are the owner's or Claude's
+**Scale:** numbers carried in USD (the 0.50 buffers; the 4 USD reach, withdrawn - see "R20 corrected") are Claude's
 for gold near 4,000 in 2026; the levels, the counts and the percentages are scale-free. **The check that the
 rules are not October's:** after the code is built and judged on October, it is run on months **never looked
 at** (M5 is stored from 2025-10: November 2025 - August 2026), unchanged, and reported month by month.
+
+## R20 corrected - the reach is a principle, not 4 USD (2026-10-29)
+
+The owner: *"4 USD - that was an example too; I did not mean it as a rule."* The rule is the principle: **the
+entry must be a price the market can still reach from where it is** (rule 7; principle 2 above). Claude
+wrote the owner's example in as the rule (R20, and "made precise"); corrected here. **R20 now, `[Claude]`,
+scale-free:** the distance from the last closed M5 close to the entry may be at most **`max_entry_frac` of
+the leg** (`|H100 - L0|`; for R24 the range's height) - default **0.25**, run also at 0.15 and 0.35. A fixed
+USD distance is not used. *(For scale only, on October's legs of 20-40 USD, 0.25 is 5-10 USD.)*

@@ -402,7 +402,7 @@ until the stop or the target; divergence as the book has it. What remains is che
 **What 2e replaces among the nine rules.** Rule 4's count ("three or four legs, trade the fifth") is
 replaced by 2e step 2 (3 to 5 ZigZag peaks) and its entry by steps 3-5; rule 9's target ("a full leg away")
 by step 7 (just before the next level from the left) and its stop by step 6. Rules 1-3, 5-8 stand, and
-rule 7's 4 USD cap fits: the entry is a sell limit resting at the broken low, written once price has
+rule 7's reach fits: the entry is a sell limit resting at the broken low, written once price has
 closed under it, a few dollars from the price on the screen. Rule 6 (enter and exit on one
 timeframe) stands for reading; a trade's fixed stop and target are scored on M5, the finest frame the
 walk shows, whichever of M5 or M15 it was read on - finer bars only make "a bar touching both" rarer.
@@ -455,7 +455,7 @@ When two fit, the more restrictive one wins (NEWS, then VERTICAL, then FRESH BRE
   last broke.
 - At that band M5 prints the turn: a low (in an up trend) followed by **two closed bars that do not
   undercut it, the second closing above the high of the low bar** (mirror for a down trend).
-- Entry at the market on that close, provided it is within rule 7's 4 USD of the turn's extreme;
+- Entry at the market on that close, provided it is within rule 7's reach of the turn's extreme;
   otherwise no trade.
 - Stop beyond the band and beyond the turn's extreme, whichever is further (`LESSONS.md` 5).
 - Target before the last swing high (up) / low (down) - a few dollars short of the line, not on it.
@@ -581,7 +581,7 @@ ones a trade actually turns on.
 | 4 | **Three or four legs complete, then trade the fifth - with it, never against it.** Ask each time which leg is alive and whether this trade goes its way |
 | 5 | **The structure AT the level says whether it holds.** Buying a support needs **HH and HL together**; selling a resistance needs **LH and LL together**; and a named chart pattern on top |
 | 6 | **Enter on a timeframe, exit on that timeframe** |
-| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.144 (held until stop or target; corrected twice on 10-28 from -0.124, `RULES_REVIEW.md` C1 and section 7), with all three unfilled plans winning and the misses 3.37, 3.85 and 3.82 USD - and on the nine filled trades, on sight was worse. *(Measured at 12; with D3-1, 13 decisions: -0.348 a trade planned, -0.012 on sight - `docs/HANDOFF.md`.)* |
+| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And not far from the price on the screen** *(the owner gave 4 USD as an example, not as the rule - 2026-10-29)* (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.144 (held until stop or target; corrected twice on 10-28 from -0.124, `RULES_REVIEW.md` C1 and section 7), with all three unfilled plans winning and the misses 3.37, 3.85 and 3.82 USD - and on the nine filled trades, on sight was worse. *(Measured at 12; with D3-1, 13 decisions: -0.348 a trade planned, -0.012 on sight - `docs/HANDOFF.md`.)* |
 | 8 | **The order must fill while the idea is still intact.** Not a question to anyone - a check on where the order sits against price. A sell limit above price in a rising market fills only because price kept rising, which is the idea failing (moment #13: filled 5370, stopped five minutes later). A buy limit below price in a rising market fills on the pullback, which is what was wanted |
 | 9 | **The stop sits beyond the structure that proves the idea wrong; the target is a full leg away** - the next level from the left |
 
