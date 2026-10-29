@@ -40,6 +40,7 @@ decides between a BUY and a SELL candidate; rule 12 governs the order's life.
 
 | name | values | default | whose |
 |---|---|---|---|
+| `mode` | fib, 2e | fib (2e is a record only - not run) | [Claude] |
 | `fib_tf` | M5, M15 | M5 | [Claude] |
 | `fib_entry` | 0.618, 0.382, 0.236 | 0.618 (until the real run picks the best - rule 6) | owner's levels, [Claude] default |
 | `fib_early` | 0, 0.10 (x the leg) | 0 | [Claude], the owner's idea |
@@ -70,12 +71,12 @@ swing with an entry other than 0.618; `line_tight` without `fib_early`) is refus
   M5 close (`now` = that bar's open + 5 min) inside a window, start and end included [Claude]. A written order may
   fill and run outside the windows [Claude].
 - **R** [Claude] = (target - entry - spread) / (entry - stop) for a BUY, (entry - target - spread) / (stop - entry)
-  for a SELL. The owner's rule is the 1:2 floor; the net-of-spread form is Claude's. The spread enters only R and the
+  for a SELL, `entry` = the order price - the **planned** R. The owner's rule is the 1:2 floor; the net-of-spread form is Claude's. The spread enters only R and the
   floor; fills and touches use the bar prices.
 - **This path is the owner's Fibonacci** (METHOD 2e, "The owner's Fibonacci"): its entry (rule 6) and target (rule 8)
   take the place of 2e's break-and-retest entry (2e steps 3-5) and "at a level from the left" (2e steps 1-2), by the
   owner's later words *"price usually turns before a level; when it reaches the level it usually carries on"*
-  (METHOD 2e, "Levels and the turn"). The 2e setup stays in the code as `mode = 2e` - a record only. METHOD's nine rules
+  (METHOD 2e, "Levels and the turn"). The 2e setup stays in the code as `mode = 2e` - a record only; **the default `mode` is `fib`** (this path). METHOD's nine rules
   were written for the walk by hand; on this path [Claude]: no. 4 and no. 9 were replaced by 2e; no. 1-3 (frames,
   levels from the left, wait for a level) and no. 5 (the structure at the level) are replaced by rules 1-3, 6 and the
   owner's "Levels and the turn"; no. 6 ("enter on a timeframe, exit on that timeframe") holds - the stop and target
@@ -110,7 +111,9 @@ the high. On the setup timeframe's fixed pivots [Claude]:
 - **The latest leg of each side** is considered at a decision [Claude] - the latest `L0` (a BUY) and the latest top (a
   SELL), each evaluated on its own; an older leg of the same side is not.
 - **One order per leg** [Claude]: key = side, setup timeframe, `L0` time, `H100` time; the leg is **used** once an order
-  is written on it, whatever happens to that order. Until then, while it is still the latest leg, it is a candidate
+  is written on it, whatever happens to that order - in this run or an earlier one (the keys of the rows already in
+  the ledger are used from the start of a run - every row the run keeps, earlier or later than the days it walks;
+  the rows of the days it walks are replaced). Until then, while it is still the latest leg, it is a candidate
   at every decision, with no age limit; refused once (by a rule, or because `max_orders` was full) it may pass
   later. Rule 10 ends it for good.
 
@@ -232,7 +235,8 @@ not mirrored. `fib_range`: on in the real run [Claude].
   bar just closed updates the orders already written (fills, exits, expiries, withdrawals); then the decision
   counts `max_orders` and evaluates.
 - **Fixed when written:** an order's price, stop, target and planned R never change. The scorer reports the
-  **realised** R, from the actual fill price.
+  **realised** R: the actual fill price in the numerator, the planned risk (order price to stop) in the
+  denominator (below).
 - **Fill**, on **M5** bars from the bar after the decision, within `order_life_bars` (the last included): a buy limit fills on the first bar whose
   low is at or below its price, at min(that bar's open, the price); a sell limit at max(open, price). Not filled after
   the last of them: **expired** (`no fill`); it frees `max_orders`; its leg or range stays used.
@@ -244,13 +248,15 @@ not mirrored. `fib_range`: on in the real run [Claude].
   counts on the M5 bar that closes with it. A bar that both fills and withdraws keeps the fill.
 - **Held (owner)** until the stop or the target, no time limit, judged on M5 bars from the fill bar on. On the fill bar
   only the stop counts; from the next bar a bar touching both counts as the stop. **Exit price:** the stop or target
-  price; a bar that opens beyond the stop exits at its open [Claude]. **Realised R** = (exit - fill - spread) / (fill -
-  stop) for a BUY (mirror for a SELL) - `r_net`. A trade still open when the data ends is `open`, not a result. A new
+  price; a bar that opens beyond the stop exits at its open [Claude]. **Realised R** = (exit - fill - spread) / (order
+  price - stop) for a BUY (mirror for a SELL) - `r_net`: the denominator is the planned risk, the same for every fill
+  of the order, so a gap fill beyond the stop is still defined [Claude]. A trade still open when the data ends is `open`, not a result. A new
   range appearing does not touch an order already resting on the old one.
 
 ## 13. Which one, when several qualify [Claude]
 
-A BUY and a SELL candidate at one decision (a leg of each side, or both range orders): the smaller |the price - the
+A BUY and a SELL candidate at one decision (a leg of each side; both range orders cannot both pass rule 9 at the listed `max_entry_frac` values - their
+reaches sum to 0.76 of the range - but the tie-break covers them too): the smaller |the price - the
 order price|; then a BUY before a SELL.
 
 ## 14. What the bot writes, and the acceptance cases [Claude]

@@ -14,6 +14,7 @@ import re
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
@@ -80,6 +81,102 @@ def resolve(bars: pd.DataFrame, entry: float, stop: float, target: float, buy: b
     return float(bars.close.iloc[-1]), "open"  # neither reached in the stored bars: not a result yet
 
 
+LIFE_MARK = re.compile(r"order_life_bars=(\d+)")
+RANGE_MARK = re.compile(r"range break (M5|M15) close beyond (-?\d+(?:\.\d+)?) / (-?\d+(?:\.\d+)?)")
+H100_MARK = re.compile(r"withdraw beyond (-?\d+(?:\.\d+)?)")
+
+
+def score_limit(
+    row: dict[str, str], window: pd.DataFrame, life: int, spread: float, at_text: str
+) -> dict[str, str]:
+    """A plain limit order scored by eye/BOT_RULES.md rule 12 (the fib rows carry ``order_life_bars=``).
+
+    Fill: on the first of the ``life`` M5 bars after the decision whose low (BUY) / high (SELL) reaches the
+    price, at min(open, price) / max(open, price). Withdrawn by an M5 bar BEFORE the fill bar only: its target
+    touched, a leg's ``H100`` crossed strictly (marker ``withdraw beyond``), a range broken by a closed
+    setup-timeframe bar (marker ``range break``; an M15 close counts on the M5 bar that closes with it); a bar
+    that fills and withdraws keeps the fill. Not filled within ``life`` bars: ``no fill``. Held until the stop
+    or the target: on the fill bar only the stop counts, later a bar touching both counts as the stop; a bar
+    that opens beyond the stop exits at its open. R is realised: (exit - fill - spread) / |order - stop|."""
+    buy = row["side"] == "BUY"
+    entry, stop, target = float(row["entry"]), float(row["stop"]), float(row["target"])
+    structure = row.get("structure", "")
+    first = window.iloc[:life]
+    n = len(first)
+    touched = ((first.low <= entry) if buy else (first.high >= entry)).to_numpy()
+    by_target = ((first.high >= target) if buy else (first.low <= target)).to_numpy()
+    by_h100 = np.zeros(n, dtype=bool)
+    h100 = H100_MARK.search(structure)
+    if h100:
+        level = float(h100.group(1))
+        by_h100 = ((first.high > level) if buy else (first.low < level)).to_numpy()
+    by_range = np.zeros(n, dtype=bool)
+    rng = RANGE_MARK.search(structure)
+    if rng:
+        beyond = (first.close < float(rng.group(2))) | (first.close > float(rng.group(3)))
+        if rng.group(1) == "M15":  # the M5 bar that closes with an M15 bar opens at minute 10 of its quarter
+            beyond &= pd.DatetimeIndex(first.index).minute % 15 == 10
+        by_range = beyond.to_numpy()
+    gone = by_target | by_h100 | by_range
+    at_fill = int(touched.argmax()) if touched.any() else n
+    if gone[:at_fill].any():
+        k = int(gone[:at_fill].argmax())
+        # SPEC-QUESTION: BOT_RULES says the scorer writes the reason but not its text; the two new ones
+        #  start with
+        # "no fill" so the summaries count them as unfilled.
+        if by_target[k]:
+            why = "no fill (stop or target first)"
+        elif by_h100[k]:
+            why = f"no fill (withdrawn: beyond {h100.group(1) if h100 else ''})"
+        else:
+            why = f"no fill (withdrawn: range break {rng.group(1) if rng else ''})"
+        missed = (first.low.min() - entry) if buy else (entry - first.high.max())
+        return {
+            "fill": "", "exit": "", "why": why, "r_net": "0.0",
+            "at_decision_r": at_text, "missed_by": f"{max(missed, 0.0):.2f}",
+        }  # fmt: skip
+    if not touched.any():
+        if n < life:  # the fill window is not over in the stored bars
+            return {
+                "fill": "", "exit": "", "why": "open", "r_net": "",
+                "at_decision_r": at_text, "missed_by": "",
+            }  # fmt: skip
+        missed = (first.low.min() - entry) if buy else (entry - first.high.max())
+        return {
+            "fill": "", "exit": "", "why": "no fill", "r_net": "0.0",
+            "at_decision_r": at_text, "missed_by": f"{max(missed, 0.0):.2f}",
+        }  # fmt: skip
+    t0 = first.index[at_fill]
+    after = window[window.index >= t0]
+    opens, highs, lows = (after[c].to_numpy(dtype=float) for c in ("open", "high", "low"))
+    # SPEC-QUESTION: a fill bar that opens beyond the stop fills at its open and exits at its open (literal
+    #  rule 12).
+    fill = min(opens[0], entry) if buy else max(opens[0], entry)
+    exit_price, why = None, "open"
+    for i in range(len(after)):
+        stop_hit = (lows[i] <= stop) if buy else (highs[i] >= stop)
+        target_hit = i > 0 and ((highs[i] >= target) if buy else (lows[i] <= target))
+        if stop_hit:
+            gapped = (opens[i] < stop) if buy else (opens[i] > stop)
+            exit_price, why = (float(opens[i]) if gapped else stop), "stop"
+            break
+        if target_hit:
+            exit_price, why = target, "target"
+            break
+    stamp = f"{t0.tz_convert(TH):%d/%m %H:%M}"
+    if exit_price is None:
+        return {
+            "fill": stamp, "exit": "", "why": "open", "r_net": "",
+            "at_decision_r": at_text, "missed_by": "0.00",
+        }  # fmt: skip
+    unit = abs(entry - stop)  # rule 12: the planned risk (order price to stop), the same for every fill
+    move = (exit_price - fill) if buy else (fill - exit_price)
+    return {
+        "fill": stamp, "exit": f"{exit_price:.2f}", "why": why, "r_net": f"{(move - spread) / unit:.2f}",
+        "at_decision_r": at_text, "missed_by": "0.00",
+    }  # fmt: skip
+
+
 def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp, spread: float = SPREAD) -> dict[str, str]:
     side, entry, stop, target = row["side"], float(row["entry"]), float(row["stop"]), float(row["target"])
     buy = side == "BUY"
@@ -97,6 +194,12 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp, spread: floa
     at_move = (at_out - seen) if buy else (seen - at_out)
     at_r = (at_move - spread) / abs(seen - stop) if abs(seen - stop) > 0 else 0.0
     at_text = "" if at_why == "open" else f"{at_r:.2f}"
+
+    # The fib path's rows (BOT_RULES rule 12) carry ``order_life_bars=`` in their parameters and are scored by
+    # ``score_limit``; every other row - every earlier ledger - goes on below exactly as before.
+    life = LIFE_MARK.search(row.get("structure", ""))
+    if life:
+        return score_limit(row, window, int(life.group(1)), spread, at_text)
 
     # The order fills when price trades through the entry from the side it was on at the decision - a limit
     # (a buy under price, a sell over it - 2e's retest entry, written once the low has broken) and a stop (a
