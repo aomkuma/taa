@@ -1748,6 +1748,8 @@ def test_acceptance_27_oct_1830_h1_range_and_the_buy_leg(full) -> None:
     d = full_res.decision
     assert d is not None and (d["side"], d["entry"], d["target"]) == ("BUY", "4003.01", "4033.73")
     assert "H1 range LOW 3986.62@23/10 09:00" in d["structure"] and "range_tp=edge" in d["structure"]
+    assert "Lean not read (H1 sideways)" in d["structure"]  # the lean is not read while H1 is sideways
+    assert full_res.log["lean"] == "not read (H1 sideways)" and "3 pivots" in full_res.log["r11"]
     # fib_range off: H1 is never classed sideways, the lean (SELL) is read and refuses the BUY leg
     _, foff, poff = at(full, "2026-10-27 18:30", fib_entry=0.382, fib_range="off")
     assert foff.h1_range is None and foff.lean == "SELL" and not foff.datas[0].sideways
@@ -1762,6 +1764,10 @@ def test_acceptance_27_oct_1930_range_has_four_pivots_and_sells(full) -> None:
     assert (rng.lo, rng.hi) == (3986.62, 4034.23)
     assert pytest.approx(0.908, abs=0.001) == (4029.83 - 3986.62) / (4034.23 - 3986.62)
     assert [d.range_gate for d in fi.datas] == ["SELL", "SELL"]  # only SELL legs are traded
+    buy = bot.analyse_leg(
+        fi.datas[0], bot.Params(mode="fib")
+    )  # the BUY candidate is refused by the range side
+    assert buy.reason == "fib: against the H1 range side" and buy.setup is None
 
 
 @needs_data
@@ -2195,3 +2201,140 @@ def test_rule11_params_validated_in_text_and_cli() -> None:
     assert (seen["params"].range_min_leg, seen["params"].range_tp) == (4, "ext")
     for gone in ("analyse_range", "m5_has_trend", "_range_out"):
         assert not hasattr(bot, gone), gone  # the M5 / M15 range faded at 88 / 12 % is withdrawn
+
+
+# --- look-ahead: a pivot is used only once its confirm bar has closed ---------------------------------------------
+
+
+def walk_frame(n: int, freq: str, end: str, seed: int) -> pd.DataFrame:
+    """A random-walk OHLC frame of ``n`` bars of ``freq`` whose last bar opens at ``end`` (UTC)."""
+    rng = np.random.default_rng(seed)
+    idx = pd.date_range(end=pd.Timestamp(end, tz="UTC"), periods=n, freq=freq)
+    close = 4000.0 + np.cumsum(rng.normal(0, 3.0, n))
+    spread = np.abs(rng.normal(0, 1.5, n)) + 0.2
+    return pd.DataFrame(
+        {"open": close, "high": close + spread, "low": close - spread, "close": close}, index=idx
+    )
+
+
+@pytest.mark.parametrize(("freq", "end"), [("1h", "2026-10-05 11:00"), ("15min", "2026-10-05 11:45"),
+                                           ("5min", "2026-10-05 11:55")])  # fmt: skip
+def test_lookahead_a_pivot_is_absent_until_its_confirm_bar_has_closed(freq, end) -> None:
+    """H1, M15 and M5: take a pivot of the full series; the frame cut just before its confirm bar does not
+    return it, the frame that includes the confirm bar does; and no returned pivot ever has a confirm bar at or
+    beyond the frame's length."""
+    df = walk_frame(1700, freq, end, seed=11)
+    full = bot._zigzag(df)
+    target = next(s for s in reversed(full) if s.confirm_pos < len(df) - 5)
+    c = target.confirm_pos
+    before, with_it = bot._zigzag(df.iloc[:c]), bot._zigzag(df.iloc[: c + 1])
+    assert target.pivot_pos not in [
+        s.pivot_pos for s in before if s.kind is target.kind and s.price == target.price
+    ]
+    assert any(s.pivot_pos == target.pivot_pos and s.price == target.price for s in with_it)
+    for cut_at in (c, c + 1, c + 40, len(df)):
+        frame = df.iloc[:cut_at]
+        assert all(s.confirm_pos < len(frame) for s in bot._zigzag(frame))
+
+
+def test_lookahead_the_lean_and_the_h1_range_do_not_see_an_unconfirmed_pivot() -> None:
+    """Through fib_inputs: H1 bars (a seeded walk) where one pivot, confirmed at bar C = 1779, changes both the
+    lean (SELL -> none) and the H1 range (3 pivots, sideways -> 2 pivots, not sideways) once it is used. At a
+    ``now`` before bar C has closed the result equals the confirmed-only reading and differs from the result
+    at a ``now`` after it."""
+    ends = {
+        "H4": "2026-10-05 08:00",
+        "H1": "2026-10-05 11:00",
+        "M15": "2026-10-05 11:45",
+        "M5": "2026-10-05 11:55",
+    }
+    sizes = {"H4": (1600, "4h"), "H1": (1800, "1h"), "M15": (2400, "15min"), "M5": (4000, "5min")}
+    frames = {tf: walk_frame(n, f, ends[tf], seed=3 if tf == "H1" else 7) for tf, (n, f) in sizes.items()}
+    h1 = frames["H1"]
+    full = bot._zigzag(h1)
+    c = 1779
+    assert any(s.confirm_pos == c for s in full)
+    close_c = h1.index[c] + pd.Timedelta(hours=1)  # bar C closes here
+    before, after = close_c - pd.Timedelta(minutes=5), close_c
+
+    def read(now: pd.Timestamp):
+        fi = bot.fib_inputs(bot.cut(frames, now), now, bot.Params(mode="fib"))
+        r = fi.h1_range
+        return fi.lean, fi.lean_text, None if r is None else (r.pivots, r.sideways, r.latest_kind, r.lo, r.hi)
+
+    got_before, got_after = read(before), read(after)
+
+    def by_hand(n_bars: int, piv: list[Swing]):
+        # exactly the H1 window fib_inputs reads: the last FIB_BARS closed bars, pivot positions re-aligned to it
+        lo = max(0, n_bars - bot.FIB_BARS)
+        cut = h1.iloc[lo:n_bars]
+        piv = [
+            replace(q, pivot_pos=q.pivot_pos - lo, confirm_pos=q.confirm_pos - lo)
+            for q in piv
+            if q.pivot_pos >= lo
+        ]
+        lean, text = bot.h1_lean(cut, piv)
+        r = bot.h1_range(cut, piv)
+        if r is not None and r.sideways:
+            lean, text = None, "not read (H1 sideways)"
+        return lean, text, None if r is None else (r.pivots, r.sideways, r.latest_kind, r.lo, r.hi)
+
+    confirmed_only = by_hand(c, [s for s in full if s.confirm_pos < c])  # bars 0..C-1, pivots fixed by then
+    with_pivot = by_hand(c + 1, [s for s in full if s.confirm_pos <= c])
+    assert confirmed_only != with_pivot  # the unconfirmed pivot would change the lean and the range
+    assert confirmed_only[2] is not None and with_pivot[2] is not None
+    assert confirmed_only[2][:2] == (3, True) and with_pivot[2][:2] == (2, False)
+    assert got_before == confirmed_only  # not used before its confirm bar has closed
+    assert got_after == with_pivot  # used as soon as it has
+
+
+def test_lookahead_fib_inputs_reads_only_confirmed_pivots_on_every_timeframe() -> None:
+    end = {
+        "H4": "2026-10-05 08:00",
+        "H1": "2026-10-05 11:00",
+        "M15": "2026-10-05 11:45",
+        "M5": "2026-10-05 11:55",
+    }
+    freq = {"H4": "4h", "H1": "1h", "M15": "15min", "M5": "5min"}
+    frames = {tf: walk_frame(1700, freq[tf], end[tf], seed=3 + i) for i, tf in enumerate(freq)}
+    now = pd.Timestamp("2026-10-05 12:00", tz="UTC")
+    for tf in ("M5", "M15"):
+        fi = bot.fib_inputs(frames, now, bot.Params(mode="fib", fib_tf=tf))
+        assert fi.zz and fi.m5_zz
+        assert all(s.confirm_pos < len(fi.df) for s in fi.zz)
+        assert all(s.confirm_pos < min(len(frames["M5"]), bot.FIB_BARS) for s in fi.m5_zz)
+        # the M5 / setup pivots used are exactly those of the closed frame
+        assert [s.pivot_pos for s in fi.zz] == [
+            s.pivot_pos for s in bot._zigzag(frames[tf].tail(bot.FIB_BARS))
+        ]
+
+
+def test_rule6_played_out_uses_the_chosen_target_the_range_edge_when_it_is_nearer() -> None:
+    """With the H1 edge target (4090, nearer than the extension 4161.3) a high of 4095 after the first bar above
+    the order price has played the setup out; under range_tp ext (target 4161.3) the same bars still write."""
+    edge_p = bot.Params(mode="fib", fib_entry=0.382, min_r=0.0)
+    ext_p = bot.Params(mode="fib", fib_entry=0.382, min_r=0.0, range_tp="ext")
+    for sell in (False, True):
+        base = leg_data()
+        j = 61 + int(np.flatnonzero(base.m5_hi_v[61:] > 4038.2)[0])
+
+        def raise_high(hi, lo, cl, m, r, k=j + 3):
+            hi[k] = 4095.0  # above the edge target 4090, below H100 4100 (rule 10 stays quiet)
+
+        side = "SELL" if sell else "BUY"
+        d = sideways_leg(side, 4090.0, sell=sell, edit=raise_high)
+        assert bot.analyse_leg(d, edge_p).reason == "setup already played out"
+        assert bot.analyse_leg(d, ext_p).reason == "order written"
+        quiet = sideways_leg(side, 4090.0, sell=sell)
+        assert bot.analyse_leg(quiet, edge_p).setup is not None
+
+
+def test_rule11_the_break_is_judged_on_closes_not_opens_or_wicks() -> None:
+    df, piv = h1_frame([*BASE, ("LOW", 4005.0)], {35: 4130.0})
+    df.loc[df.index[35], "open"] = 4050.0  # the close is beyond 4127, the open is not
+    r = bot.h1_range(df, piv)
+    assert r is not None and not r.sideways
+    df2, piv2 = h1_frame([*BASE, ("LOW", 4005.0)])
+    df2.loc[df2.index[35], ["open", "high"]] = [4130.0, 4140.0]  # open and wick beyond, the close inside
+    r2 = bot.h1_range(df2, piv2)
+    assert r2 is not None and r2.sideways
