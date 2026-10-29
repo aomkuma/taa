@@ -195,7 +195,7 @@ extension tested (before `target_buffer`); a band the order price sits inside is
 ## 9. The entry must be reachable
 
 METHOD's nine rules, no. 7 - *"the entry must be a price the market can reach from here"* - with the owner's reason,
-*"an obvious level may never be reached precisely because it is obvious."* [Claude] |the price - the order price| at
+*"an obvious level may never be reached precisely because it is obvious."* [Claude] abs(the price - the order price) at
 most `max_entry_frac` x the leg (a range: its height). The owner's "4 USD" was an example.
 
 ## 10. A leg that has run is over
@@ -228,7 +228,9 @@ not mirrored. `fib_range`: on in the real run [Claude].
 
 ## 12. Orders and their life [Claude, except the hold]
 
-- **At a time** `max_orders`: pending orders plus open trades.
+- **At a time** `max_orders`: pending orders plus open trades. **Event order at each M5 close** [Claude]: first the
+  bar just closed updates the orders already written (fills, exits, expiries, withdrawals); then the decision
+  counts `max_orders` and evaluates.
 - **Fixed when written:** an order's price, stop, target and planned R never change. The scorer reports the
   **realised** R, from the actual fill price.
 - **Fill**, on **M5** bars from the bar after the decision, within `order_life_bars` (the last included): a buy limit fills on the first bar whose
