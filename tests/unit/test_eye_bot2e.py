@@ -2121,3 +2121,58 @@ def test_old_log_ladder_values_are_carried_into_extension(tmp_path) -> None:
     assert [r["extension"] for r in rows] == ["1.618", ""] and rows[0]["r"] == "3.07"
     bot._write(path, bot.LOG_COLUMNS, rows)
     assert bot._read(path, bot.LOG_COLUMNS)[0]["extension"] == "1.618"
+
+
+def test_fib_lean_switch_validated_in_text_and_cli() -> None:
+    assert bot.Params().fib_lean == "on" and "fib_lean=on" in bot.Params().text()
+    assert "fib_lean=off" in bot.Params(fib_lean="off").text()
+    with pytest.raises(ValueError):
+        bot.Params(fib_lean="maybe")
+    seen: dict[str, bot.Params] = {}
+    orig = bot.run
+    bot.run = lambda first, last, params, *a, **k: seen.update(params=params)  # type: ignore[assignment]
+    try:
+        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--fib-lean", "off"])
+    finally:
+        bot.run = orig  # type: ignore[assignment]
+    assert seen["params"].fib_lean == "off"
+
+
+def test_fib_lean_off_rule3_refusal_is_skipped_both_sides_and_on_is_unchanged() -> None:
+    off = bot.Params(mode="fib", fib_entry=0.382, fib_lean="off")
+    d = leg_data()
+    for wrap, against in ((lambda x: x, "SELL"), (as_sell, "BUY")):
+        x = replace(d, lean=against) if wrap is not as_sell else as_sell(d, against)
+        assert bot.analyse_leg(x, PB).reason == "fib: against the H1 lean"  # on: refused
+        assert bot.analyse_leg(x, off).reason == "order written"  # off: not refused
+        assert f"Lean {against}" in bot.analyse_leg(replace(x, lean_text=against), off).setup.detail  # type: ignore[union-attr]
+    # the M5 trend test still applies with the lean off
+    assert bot.analyse_leg(leg_data(m5_highs=(4120.0,), lean="SELL"), off).reason.startswith("fib: M5 trend")
+
+
+def test_fib_lean_off_rule11_counts_the_moment_as_having_no_lean() -> None:
+    p_on = rng_p(max_entry_frac=0.5)
+    p_off = rng_p(max_entry_frac=0.5, fib_lean="off")
+    for lean in ("BUY", "SELL"):
+        fi = range_inputs(lean=lean)
+        assert decide_inputs(fi, p_on).decision is None  # on: a lean forbids the range
+        assert decide_inputs(fi, p_off).decision is not None  # off: only no M5 trend is needed
+    assert (
+        decide_inputs(range_inputs(lean="BUY", m5_trend=True), p_off).decision is None
+    )  # a trend still does
+    assert decide_inputs(range_inputs(), p_off).decision is not None  # no lean: same as on
+    assert decide_inputs(range_inputs(lean="SELL"), p_off).log["lean"] == "SELL"  # the lean is still written
+
+
+@needs_data
+def test_acceptance_fib_lean_off_07_oct_and_27_oct(full) -> None:
+    res, fi, p = at(full, "2026-10-07 07:30", fib_lean="off")
+    sell = bot.analyse_leg(fi.datas[1], p)
+    assert fi.lean == "BUY" and sell.reason != "fib: against the H1 lean"
+    assert sell.info["leg"].startswith("L0 4184.25@")
+    assert (
+        sell.reason == "fib: no bounce above the order price" and sell.setup is None
+    )  # reported: stops at rule 6
+    res, fi, p = at(full, "2026-10-27 18:30", fib_lean="off", fib_entry=0.382)
+    assert fi.lean == "SELL" and res.decision is not None and res.decision["side"] == "BUY"
+    assert (res.decision["entry"], res.decision["target"], res.log["r"]) == ("4003.01", "4047.39", "3.07")

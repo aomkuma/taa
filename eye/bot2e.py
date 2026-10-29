@@ -128,6 +128,7 @@ class Params:
     max_trend_legs: int = 5  # [Claude] rule 5: a trend of this many legs or more is not chased
     fib_target: float = 1.618  # the owner's extensions 1.618 / 1.272; default [Claude] (rule 8)
     max_entry_frac: float = 0.25  # [Claude] rule 9: |price - order price| at most this x the leg
+    fib_lean: str = "on"  # [Claude] research switch (rule 1): "off" = the lean is written but refuses nothing
     fib_range: str = "on"  # [Claude] rule 11: trade the range when there is no lean and no M5 trend
     max_orders: int = 1  # [Claude] orders live (pending or open) at once; a new one needs fewer than this
     order_life_bars: int = 24  # [Claude] rule 12: M5 bars an order may wait for its fill (last included)
@@ -148,6 +149,7 @@ class Params:
             ("max_entry_frac", (0.15, 0.25, 0.35)),
             ("fib_target", (1.618, 1.272)),
             ("fib_range", ("on", "off")),
+            ("fib_lean", ("on", "off")),
         ):
             if getattr(self, name) not in allowed:
                 raise ValueError(f"{name} must be one of {allowed}, got {getattr(self, name)!r}")
@@ -167,7 +169,7 @@ class Params:
                 f"fib_early={self.fib_early:g} fib_stop={self.fib_stop} fib_count={self.fib_count} "
                 f"max_trend_legs={self.max_trend_legs} fib_target={self.fib_target:g} "
                 f"max_entry_frac={self.max_entry_frac:g} "
-                f"fib_range={self.fib_range} stop_buffer={self.stop_buffer:g} "
+                f"fib_lean={self.fib_lean} fib_range={self.fib_range} stop_buffer={self.stop_buffer:g} "
                 f"target_buffer={self.target_buffer:g} spread={self.spread:g} max_orders={self.max_orders} "
                 f"order_life_bars={self.order_life_bars} min_r={self.min_r:g}"
             )
@@ -779,7 +781,7 @@ def analyse_leg(d: LegData, p: Params, used: frozenset[str] = frozenset()) -> Fi
     if not h100.price > ref.price:
         return out
     out.reason = "fib: against the H1 lean"
-    if d.lean is not None and d.lean != d.side:
+    if p.fib_lean == "on" and d.lean is not None and d.lean != d.side:
         return out
 
     # 4: the count (a filter, off by default); the divergence is recorded either way.
@@ -1191,7 +1193,11 @@ def fib_decision(
         best = next(o for o in written if o.setup is pick)
         return _emit(best, now, tf, p, log, done)
     best = max(outs, key=lambda o: RANK[o.reason])  # the one that got furthest; a tie goes to the BUY
-    if p.fib_range == "on" and fi.lean is None and m5_has_trend(to_view(fi.m5_zz, 1)) is False:
+    if (
+        p.fib_range == "on"
+        and (fi.lean is None or p.fib_lean == "off")
+        and m5_has_trend(to_view(fi.m5_zz, 1)) is False
+    ):
         ro = _range_out(fi.zz, fi.times, fi.df, fi.price, tf, p, used)
         if ro.setup is not None:
             return _emit(ro, now, tf, p, log, done)
@@ -1488,6 +1494,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     ap.add_argument("--fib-target", type=float, choices=(1.618, 1.272), default=d.fib_target)
     ap.add_argument("--max-entry-frac", type=float, default=d.max_entry_frac)
     ap.add_argument("--fib-range", choices=("on", "off"), default=d.fib_range)
+    ap.add_argument("--fib-lean", choices=("on", "off"), default=d.fib_lean)
     ap.add_argument("--max-orders", type=int, default=d.max_orders, help="orders live at once")
     ap.add_argument("--order-life-bars", type=int, default=d.order_life_bars, help="M5 bars to fill")
     ap.add_argument("--min-r", type=float, default=d.min_r)
@@ -1516,6 +1523,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         fib_target=a.fib_target,
         max_entry_frac=a.max_entry_frac,
         fib_range=a.fib_range,
+        fib_lean=a.fib_lean,
         max_orders=a.max_orders,
         order_life_bars=a.order_life_bars,
         min_r=a.min_r,

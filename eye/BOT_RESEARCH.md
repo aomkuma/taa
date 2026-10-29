@@ -676,3 +676,17 @@ first.
 - **Not answered here:** this counts which barrier price touches first, not the bot's trades (a pullback entry,
   a stop beyond it, a 1.618 target). September's loss was trades. That is answered by the bot itself, run with
   and without the lean (the owner's word, 2026-10-29: *"if you want to try option three first, go ahead"*).
+
+## The bot with and without the H1 lean - October (the plan and the expectation, written before the run)
+
+The owner, 2026-10-29: *"if you want to try option three first, go ahead"*; and on how to judge it: every
+direction statistic comes out near 50 % - what matters is how the rules put the trades on the winning side. So
+the measure is the trades: R per filled trade after costs, the win rate against the break-even rate 1 / (1 + R),
+the size of the losers. `eye/bot_research.py --from 2026-10-01 --to 2026-10-27 --variants
+eye/research/lean_onoff.json`: `r8_lean_on` (the defaults, commit with `fib_lean`) and `r8_lean_off`. Every trade
+drawn (`eye/draw_trades.py`) and judged by eye before any number is believed.
+
+**Expectation:** few fills either way (under 30 - not judged on its own, rule 15); off has more orders (the lean
+refused about half the candidates), and its extra trades are counter-lean BUYs and SELLs whose R per trade is no
+worse than the on trades' - the lean showed no edge on direction. If the off trades lose clearly more, the lean
+does something the direction test missed.
