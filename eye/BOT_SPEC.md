@@ -709,3 +709,8 @@ events withdraw on the M5 bar that closes with them; the SELL near edge of a ban
 tie-break (BUY before SELL); the 27/10 acceptance case corrected (at 0.618 the price is under the order price -
 rule 6; at 0.382 rule 9 passes - Haiku found the old line wrong on its own numbers); the Fibonacci path stated as
 taking the place of 2e's entry and "where", with 2e kept as `mode = 2e`.
+
+**Fourth review round (2026-10-29, Codex + fresh Haiku):** the fill window's expiry and gap fills; "best level"
+defined (the highest mean R a filled trade, the owner confirms); "played out" judged on M5; the M / W words and
+exact levels in the glossary; the band moves absolute, as of `now`; the files named; a "Withdrawn - do not
+build" list. All `[Claude]` except the owner's words quoted.
