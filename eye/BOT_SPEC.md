@@ -723,3 +723,11 @@ bar; one withdrawal mechanism with its `why`; on the fill bar only the stop coun
 decision row's columns listed; the acceptance cases with windows switched off, Thai `now`, M5; nine rules no. 4 / 9
 replaced by 2e, no. 6 holding. Two points asked of the owner: the 0.618 stop (line vs beyond the lowest bottom) and
 what makes an M "clear".
+
+**Sixth review round (2026-10-29, Codex + fresh Sonnet + fresh Haiku):** the owner confirmed the 0.618 stop beyond 23 %
+and, for now, any two-low run as the M. Changes, `[Claude]`: the order of evaluation puts "played out" after the stop
+and target; only the latest leg is considered (the "later `L0`" tie-break dropped); rule 10 and the bounce read **M5**
+bars for M5 and M15 legs; `H100` worded as the highest high of the fall (what the research's `start` and the code
+take - one reviewer read "began from" as the first high); a stop cannot withdraw a resting limit; `order_life_bars`
+in the table; warm-up restored; the judging bar (+0.15 R a trade, at least 30 filled trades); the withdrawn list
+completed; acceptance cases with expected verdicts or *report*.
