@@ -381,9 +381,9 @@ high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
   every fixed low after it (later lows are higher - a bottom), with no bar closed below it since. `H100`
   `[Claude]` = the
   highest fixed HIGH of the descending run into `L0`: walking back from `L0` while each earlier fixed low is
-  higher than the one after it, the highest fixed high met (on M15 at 27/10: 4025.45 -> 3989.14). The owner
-  confirmed "the latest high"; where the fall has several highs, taking the one it started from is Claude's
-  (open in METHOD 2e).
+  higher than the one after it, the highest fixed high met (on M15 at 27/10: 4025.45 -> 3989.14). **Chosen by
+  research at the owner's request** (BOT_RESEARCH, "Which high is 100 %"): the high the fall began from beat
+  the latest high before `L0` in 4 of 5 entry / target pairs over three years of M15.
   Levels: `L0 + x * (H100 - L0)`; 0 % at the low, 100 % at the high (the owner's scale).
 - **Entry:** once a bar has traded above the entry level after `L0` (the bounce), and while the last close is
   above it, a plain limit at the entry level (*"wait for it to fall back to around 38 - 23 %; 61 % if the
@@ -398,3 +398,8 @@ high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
   27/10, read by Claude as the M5 lows 4000.00, 3997.23, 3989.14 (MACD and RSI both higher at the last). `[Claude]`: the count is of lower lows
   ("legs"), not of touches of one zone; the M / W is not part of this path yet.
 - Range mode (R17) is unchanged and not run in this round.
+
+**The owner on the count (2026-10-29):** "3 to 5 peaks" = legs - *"yes - but when we talk about the
+framework, I want both sides included."* So R18's count is the owner's: **BUY - 3-5 legs down, each fixed
+low lower than the one before, into `L0`; SELL - 3-5 legs up, each fixed high higher than the one before,
+into the top.** Which high is 100 % (`H100`) is researched (BOT_RESEARCH, "Which high is 100 %").

@@ -322,14 +322,21 @@ Claude had coded the other leg in revision 5.)*
 **The owner's questions on the same charts, not rules:** *"this counts as three legs down, then it broke the high and ran - can our system see a picture like this?"* - and *"zoomed into M5 it is a mega trend - should we read 'trend' on the timeframe we enter, or on the one larger than that?"*
 
 **Answered:** the drawing direction - 0 % at the low, 100 % at the high, high -> low to play an up move.
+**Answered (2026-10-29):** "3 to 5 peaks" is counted as **legs** - asked whether it means legs with lower
+lows, as on 27/10: *"yes - but when we talk about the framework, I want both sides included."* So, both
+sides: **for a buy, 3-5 legs down, each low lower than the one before, into the bottom; for a sell, 3-5 legs
+up, each high higher than the one before, into the top.**
+**Researched by Claude at the owner's request - which high is 100 % when the fall into the low has several
+highs: the high the fall began from** (for a sell, the low the rise began from). Three years of M15, both
+sides: ahead in 4 of 5 entry / target pairs, and at the 61.8 % entry with the 161 % target ahead in both
+halves of the period (+0.19 / +0.28 R a trade against +0.10 / +0.08) - `eye/BOT_RESEARCH.md`, "Which high
+is 100 %".
 
 **Still open - asked, not answered; the bot runs each reading as a variant (`eye/BOT_SPEC.md` revisions 5-6),
 every one marked `[Claude]`:**
 - the depth: "falls to 38 - 23 %" read as price 23-38 % of the leg above the low - is that the reading?
 - the stop "beyond 88 % - 0 %" for the 38 / 23 % entries: below the 0 % (the low)?
-- which high is 100 % when the fall into the low has several highs (the latest, or the one the fall started
-  from)?
-- "3 to 5 peaks": counted as legs with lower lows, as on 27/10 - asked, not answered.
+
 - sideways 88 % - 127 %: drawn across the range from one edge to the other, 127 % a push past the edge? And
   is "around 100 %" for the target the range's other edge?
 - trend or sideways: which reading of the chart decides it (the owner's own concern above), and on which

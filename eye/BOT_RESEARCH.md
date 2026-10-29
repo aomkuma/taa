@@ -194,3 +194,41 @@ fewer trades (0-5). `any` side will trade about twice as often as `h1`, `entry` 
 not be surprised by either sign. Over 80 trades in a variant, or 0 in every count-off variant, stops the
 report.
 
+
+## Which high is 100 % - research asked by the owner (2026-10-29)
+
+The owner, asked whether 100 % is the latest high before the low or the high the fall started from: *"research
+it and find me the answer."* Two definitions, both sides (a sell is the mirror: which low is 100 % under a
+rise of 3-5 higher highs):
+- **latest** - the fixed high immediately before `L0`;
+- **start** - the highest fixed high of the descending run into `L0` (where the fall began).
+On runs of one leg they are the same; only the runs where they differ can tell them apart.
+
+**Claude's expectation, written before the run:** `start` draws a bigger leg - its 38 % level sits further
+from the low, its stop is longer, its 161 % target much further. I expect `start` to fill less often and win
+less often, with bigger wins; `latest` the opposite. Per trade, I expect the two within 0.1 R of each other -
+I have no strong reason to favour either.
+
+**Result (2026-10-29; `eye/research/fib_high.py`, M15 FBS-Demo, 2023-09-01 .. 2026-10-28, both sides, 3-5
+legs, no divergence filter, all hours - not only the owner's windows, no H1 side filter; the 2R floor,
+spread 0.30; each row a separate entry / target).** R a trade, n trades in brackets; `latest` / `start`:
+
+| entry | target | whole 3 years | 2023-09 .. 2025-03 | 2025-04 .. 2026-10 | with divergence (3 y) |
+|---|---|---|---|---|---|
+| 23.6 % | 127 % | -0.085 (418) / -0.108 (465) | -0.225 / -0.088 | **+0.030** / -0.122 | -0.084 / -0.258 |
+| 23.6 % | 161 % | -0.067 (455) / -0.126 (479) | -0.261 / -0.078 | **+0.103** / -0.163 | -0.081 / -0.271 |
+| 38.2 % | 127 % | -0.073 (342) / **+0.024** (375) | -0.186 / **+0.100** | -0.020 / -0.029 | -0.114 / -0.023 |
+| 38.2 % | 161 % | -0.118 (446) / **+0.026** (410) | -0.269 / **+0.120** | -0.006 / -0.049 | -0.182 / **+0.029** |
+| 61.8 % | 161 % | +0.094 (280) / **+0.235** (160) | +0.099 / **+0.191** | +0.076 / **+0.278** | +0.010 / **+0.332** (90) |
+
+(61.8 % at 127 % never reaches 2R: 1.7 R planned.) The two definitions differ on 85-90 % of the bottoms.
+
+**What it says (Claude's reading, measured above):** **`start` - the high the fall began from - is the
+better 100 %** in 4 of the 5 rows over three years, and at the owner's strong-bull entry (61.8 %, stop beyond
+23.6 %, target 161 %) it is ahead in **both halves** (+0.19 and +0.28 R a trade against +0.10 and +0.08) -
+the only combination positive in both halves, on 78-82 trades each. `latest` wins only at the deep 23.6 %
+entry in the recent half. Check of the arithmetic a second way: 61.8 % / 161 % plans 2.62 R; won 36 % ->
+0.36 x 2.62 - 0.64 = +0.30, against +0.24 measured (stops cost a little more than 1 R with the spread).
+**Against the expectation:** I expected no difference (within 0.1 R); `start` was ahead by 0.10-0.20 R
+in most rows - the expectation was wrong. The sample is three years of one timeframe, all hours, no H1 or
+window filter: a guide for the bot's default, not proof the setup pays.
