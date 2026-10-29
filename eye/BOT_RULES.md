@@ -349,5 +349,5 @@ path as a live option; the nine rules no. 4 ("trade the fifth leg") and no. 9 (t
 ## Code status, 2026-10-29 (not a rule)
 
 `eye/bot2e.py` builds every rule above, rule 11 as rewritten included (the H1 range, `range_min_leg`, `range_tp`;
-the M5 range removed), each reviewed by Codex until no findings. Nothing is to build. Rule 1 is under test (rule 1's
-note).
+the M5 range removed), each reviewed by Codex until no findings. Nothing is to build. It has been run on October 2026 (BOT_RESEARCH, "The current build - October 1-27"). Rule 1
+is under test (rule 1's note).

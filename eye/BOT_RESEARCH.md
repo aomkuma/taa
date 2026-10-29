@@ -724,3 +724,43 @@ at +2.05 to +2.49 R, so the break-even win rate is about 0.31.
   after price has gone back and forth inside it, and the trade is from its third leg to its fifth. The range rows
   above (lean on 1, lean off 19) were **Claude's misreading** - a range read on M5 and faded at its edges - and that
   rule is withdrawn (BOT_RULES rule 11 rewritten). The leg rows stand as measured.
+
+## The current build - October 1-27 (the plan and the expectation, written before the run)
+
+The owner, 2026-10-29: *"run it"*. The build at commit 613f00f (BOT_RULES with rule 11 rewritten: sideways read on
+H1, the H1 range's side in legs 3-5, its edge as the target), `eye/bot_research.py --from 2026-10-01 --to 2026-10-27
+--variants eye/research/r11_onoff.json`: `r11_lean_on` (the defaults) and `r11_lean_off`. Judged by the trades: R per
+fill after costs, the win rate against the break-even 1 / (1 + R), the losers; every decision drawn and checked by eye
+against the rules before any number is believed.
+
+**Expectation:** fewer decisions than the pre-rewrite lean-off run (30) - the M5 range orders are gone; H1 reads as
+sideways on part of October (the 23-27/10 range at least), where the range's side replaces the lean; the edge target
+lowers R, so some sideways legs fall under 1:2. Fills under 30 in each variant - not judged on October alone. The leg
+trades of the pre-rewrite runs that fall outside an H1 range should repeat unchanged.
+
+### The result (2026-10-29 evening)
+
+`eye/research/r11_lean_on/`, `r11_lean_off/`; every decision of the off run drawn (`eye/trades/r11_lean_off/` - the on
+run's eight decisions are among them, same ids and prices).
+
+| | decisions | filled | won | R total | R per fill |
+|---|---|---|---|---|---|
+| lean on | 8 | 7 | 1 | -3.73 | -0.53 |
+| lean off | 15 | 12 | 3 | -1.89 | -0.16 |
+
+- **H1 sideways** was read on 10 October days, about 8 % of the evaluated bars (218 of 2,511 log rows, lean on), all in
+  legs 3-4. **No order was written while H1 was sideways**: the reasons there - the leg had run (142), against the
+  range side (45), no bounce / price not above the order price (25), trend run at the limit (6). The H1 ZigZag fixes
+  late: on 26/10 the 23/10 range had only 2 fixed pivots until the evening; it read sideways from 26/10 19:30.
+- **Measured:** both runs lose; the wins pay +2.40 to +2.49 R, the break-even win rate about 0.30; off won 3 of 12
+  (0.25). Under 30 fills - not judged.
+- Expectation against the result: fewer decisions than 30 (15) as expected; sideways on part of October, as expected,
+  but **no range trade at all** - not expected.
+- **Seen on the drawn trades [Claude's reading, to discuss with the owner]:**
+  - **Old legs:** the leg can be days old - 19/10 BUY on the 16-17/10 leg, 26/10 SELL and BUY on 23/10's legs (across
+    the weekend); all stopped. Rule 2 gives a leg no age limit [Claude].
+  - **Orders placed after price has already come back to the level from far beyond it:** 01/10 BUY (price had
+    returned from 4185.86, near the 100 %), 05/10 BUY, 19/10 BUY (price at the 61.8 % line after hours of drift) - a
+    level reached slowly, not a pullback turning; stopped. The owner: price that reaches a level tends to carry on.
+  - The three winners (07/10 SELL, 14/10 SELL, 16/10 SELL at 19:25) were fresh legs, decided within a few hours of
+    the leg's end.

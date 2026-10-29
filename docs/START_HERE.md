@@ -85,7 +85,7 @@ was fixed are in `eye/RULES_REVIEW.md`.
 the owner's reward floor of 1:2. **Its rules in force are `eye/BOT_RULES.md`** - the owner's Fibonacci (`eye/METHOD.md`
 2e); `eye/BOT_SPEC.md` is their history. The first version, 2e's break-and-retest entry, made no trade in October
 2026; the Fibonacci rounds and the runs of the build before rule 11 was rewritten are in `eye/BOT_RESEARCH.md` (the
-current build is not yet run), and where the work stands is in
+current build's October run too), and where the work stands is in
 `docs/HANDOFF.md`.
 
 ## Before changing anything
