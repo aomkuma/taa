@@ -241,3 +241,29 @@ expected `start` to fill less often: it filled less only at 61.8 % (160 against 
 **Limits:** one timeframe (M15), Claude's own script, all hours (not the owner's windows), no H1 side, no
 session filter; the best row is picked after looking at 5 pairs on the same data. A guide for the bot's
 default, not proof the setup pays.
+
+### On the timeframes we trade (2026-10-29) - the owner: *"go by the facts that match how gold actually runs on the timeframe we trade"*
+
+*No expectation was written before these two runs - a slip against the house rule; the numbers below are
+read as they came.* Same script, the last year (2025-10-06 .. 2026-10-28; M5 is stored only from 2025-10),
+both sides, 3-5 legs, all hours, no H1 filter. R a trade (trades), `latest` / `start`:
+
+| entry | target | M5, 1 year | M15, the same year | M15, 3 years (above) |
+|---|---|---|---|---|
+| 23.6 % | 127 % | **+0.104** (460) / +0.016 (483) | **+0.095** (154) / -0.166 (168) | **-0.085** / -0.108 |
+| 23.6 % | 161 % | **+0.078** (477) / +0.017 (493) | **+0.228** (164) / -0.226 (170) | **-0.067** / -0.126 |
+| 38.2 % | 127 % | -0.068 (406) / **-0.038** (398) | **-0.017** (144) / -0.070 (140) | -0.073 / **+0.024** |
+| 38.2 % | 161 % | -0.037 (466) / **+0.020** (413) | **-0.085** (156) / -0.162 (143) | -0.118 / **+0.026** |
+| 61.8 % | 161 % | +0.070 (265) / **+0.322** (148) | -0.224 (107) / **+0.033** (51) | +0.094 / **+0.235** |
+
+**What the facts say (Claude's reading):** neither high is better everywhere - **it depends on how deep
+the entry is, and the same way on both timeframes and in every period run:**
+- **the deep entry (23.6 %) goes with the latest high** - ahead on M5, on M15 this year and over three years;
+- **the shallow, strong-bull entry (61.8 %, stop beyond 23.6 %) goes with the high the fall began from** -
+  ahead on M5, on M15 this year and over three years;
+- 38.2 % has no consistent winner (`start` on M5 and over three years, `latest` on M15 this year).
+A reading of why, not measured: a deep pullback of the small last leg and a shallow pullback of the whole
+fall are close to the same price - both say "the fall's last push is being retested".
+The best rows on the timeframes we trade, this year: **M5 61.8 % / 161 % `start` +0.32 R (148 trades)** and
+**M15 23.6 % / 161 % `latest` +0.23 R (164)**. Limits as above: all hours, no H1 or window filter, one year
+on M5, rows picked after looking.

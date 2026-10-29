@@ -385,6 +385,9 @@ high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
   Claude from research the owner asked for** (BOT_RESEARCH, "Which high is 100 %"; not yet confirmed by the
   owner): the high the fall began from was ahead of the latest high before `L0` in 3 of 5 entry / target
   pairs over three years of M15, and at 61.8 % / 161 % in both halves; one timeframe, all hours - a guide.
+  **Superseded by the M5 / M15 run the owner asked for** (*"go by the facts ... on the timeframe we trade"*):
+  `fib_high` = `start` for the 0.618 entry, `latest` (the fixed high just before `L0`) for the 0.236
+  entry; for 0.382 both are run. Mirror for a sell.
   Levels: `L0 + x * (H100 - L0)`; 0 % at the low, 100 % at the high (the owner's scale).
 - **Entry:** once a bar has traded above the entry level after `L0` (the bounce), and while the last close is
   above it, a plain limit at the entry level (*"wait for it to fall back to around 38 - 23 %; 61 % if the

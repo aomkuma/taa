@@ -327,8 +327,13 @@ lows, as on 27/10: *"yes - but when we talk about the framework, I want both sid
 sides, for the Fibo path (R18; 2e's zone count is unchanged until the owner says): **for a buy, 3-5 legs down, each low lower than the one before, into the bottom; for a sell, 3-5 legs
 up, each high higher than the one before, into the top.**
 **Researched by Claude at the owner's request** (*"research it and find me the answer"*) - which high is
-100 % when the fall into the low has several highs. **Claude's reading, not yet confirmed by the owner: the
-high the fall began from** (for a sell, the low the rise began from). Three years of M15, both sides: ahead
+100 % when the fall into the low has several highs. The owner then: *"go by the facts that match
+how gold actually runs on the timeframe we trade."* **Measured on M5 and M15 (BOT_RESEARCH): it depends on
+the entry - the 61.8 % entry with the high the fall began from, the 23.6 % entry with the latest high
+before the low; 38.2 % no consistent winner.** The first summary below (three years of M15 only) is kept as
+measured.
+*First summary:* the
+high the fall began from (for a sell, the low the rise began from). Three years of M15, both sides: ahead
 in 3 of 5 entry / target pairs (the latest high ahead at the 23.6 % entry, where both lose); at the 61.8 %
 entry with the 161 % target ahead in both halves (+0.19 / +0.28 R a trade against +0.10 / +0.08). One
 timeframe, all hours, no H1 or window filter - a guide, not proof (`eye/BOT_RESEARCH.md`, "Which high is
