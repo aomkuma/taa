@@ -444,3 +444,16 @@ hours, both sides, target 161.8 %; R a trade (trades)):**
 Against the expectation: continuation stayed below the reversal (R18's 61.8 % / start, +0.31 R on M5) -
 best +0.14 R (M5, 38.2 %, trend<3, 318 trades), not within 0.1 R; on M1 every row lost, as expected. **Nothing
 here goes into the bot.**
+
+## September 2026 - the October winner, once, unchanged (2026-10-29, the owner: *"run it"*)
+
+The ground rule written before round 1: the variant that wins October is run **once, unchanged** on
+September. The winner on the owner's rules as they stand: **M5, R18 leg, entry 61.8 %, stop beyond 23.6 %,
+target 161.8 %, 100 % at the high the fall began from, side from the entry timeframe** (`fib_side = entry`) -
+October: 29 orders, 15 filled, 6 won, +4.86 R, 200 -> 234.15 USD. (The 23.6 % row with +7.61 R used the
+withdrawn `latest` mapping and is not the winner.)
+
+**Claude's expectation, written before the run:** October's +0.32 R a fill came from 6 wins in 15. The
+research script (all hours, one year of M5) put this entry at about +0.31 R a trade over 149 trades, so I
+expect September to be positive but smaller - **8-20 fills, +0 to +0.3 R a fill** - and I would not be
+surprised by a small loss: one month of 10-20 trades swings by more than 1 R a trade.

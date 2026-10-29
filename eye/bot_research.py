@@ -25,7 +25,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
 from eye import bot2e  # noqa: E402
-from eye.score import bars, score, start_of  # noqa: E402
+from eye.score import SPREAD, bars, score, start_of  # noqa: E402
 
 RESEARCH = HERE / "research"
 OZ = 1.0  # 0.01 lot of gold = 1 oz: 1.00 of price = 1 USD
@@ -34,6 +34,8 @@ SUMMARY_COLUMNS = [
     "timestamp", "from", "to", "variant", "params", "decisions", "filled", "won", "lost", "open",
     "r_total", "usd_from_200", "deepest_fall", "top_reasons",
 ]  # fmt: skip
+
+PEAKS: dict[str, dict[str, int]] = {}  # per variant: the most orders live / filled-and-open at once
 
 DEFAULT_VARIANTS: dict[str, dict[str, Any]] = {
     "base_strict": {},
@@ -58,12 +60,12 @@ def make_params(overrides: dict[str, Any]) -> bot2e.Params:
     return replace(bot2e.Params(), **overrides)
 
 
-def scored_rows(rows: list[dict[str, str]], m5: Any) -> list[dict[str, str]]:
+def scored_rows(rows: list[dict[str, str]], m5: Any, spread: float = SPREAD) -> list[dict[str, str]]:
     """Each decision scored in memory by score.py; the result is written beside the row."""
     out = []
     for r in rows:
         row = dict(r)
-        row.update(score(row, m5, start_of(row, {})))
+        row.update(score(row, m5, start_of(row, {}), spread))
         out.append(row)
     return out
 
@@ -74,13 +76,18 @@ def money(rows: list[dict[str, str]]) -> dict[str, Any]:
     open_ = [r for r in rows if r["why"] == "open"]
     balance = peak = START_BALANCE
     fall = r_total = 0.0
+    gone = ""  # once the balance reaches 0 or below, no more money is counted (R keeps counting all trades)
     for r in sorted(rows, key=lambda r: r["decided_at"][3:5] + r["decided_at"]):  # month then day/time text
         if r["why"] not in ("target", "stop"):
             continue
         r_total += float(r["r_net"])
+        if gone:
+            continue
         balance += float(r["r_net"]) * abs(float(r["entry"]) - float(r["stop"])) * OZ
         peak = max(peak, balance)
         fall = max(fall, peak - balance)
+        if balance <= 0:
+            gone = r["decided_at"][:5]  # dd/mm of the trade that ended the account
     return {
         "decisions": len(rows),
         "filled": len(filled),
@@ -90,6 +97,7 @@ def money(rows: list[dict[str, str]]) -> dict[str, Any]:
         "r_total": round(r_total, 2),
         "usd_from_200": round(balance, 2),
         "deepest_fall": round(fall, 2),
+        "account_gone": gone,
     }
 
 
@@ -99,14 +107,21 @@ def run_variant(
 ) -> dict[str, Any]:  # fmt: skip
     p = make_params(overrides)
     rows, logs = bot2e.walk_days(bot2e.days_between(first, last), p, full)
-    rows = scored_rows(rows, m5)
+    rows = scored_rows(rows, m5, p.spread)
     folder = root / name
     folder.mkdir(parents=True, exist_ok=True)
     bot2e._write(folder / "ledger.csv", bot2e.LEDGER_COLUMNS, rows)
     bot2e._write(folder / "log.csv", bot2e.LOG_COLUMNS, logs)
     counts = Counter(r["reason"] for r in logs if r["reason"] not in ("market closed", "outside window"))
     top = "; ".join(f"{k} {v}" for k, v in counts.most_common(3))
-    return {"variant": name, "params": json.dumps(asdict(p)), **money(rows), "top_reasons": top}
+    PEAKS[name] = dict(bot2e.PEAK)
+    return {
+        "variant": name,
+        "params": json.dumps(asdict(p)),
+        **(m := money(rows)),
+        "top_reasons": top
+        + (f"; account gone at {m['account_gone']} (R counts all trades)" if m["account_gone"] else ""),
+    }
 
 
 def append_summary(results: list[dict[str, Any]], first: str, last: str, root: Path = RESEARCH) -> None:
@@ -114,7 +129,7 @@ def append_summary(results: list[dict[str, Any]], first: str, last: str, root: P
     new = not path.exists()
     stamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
     with path.open("a", encoding="utf-8", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=SUMMARY_COLUMNS)
+        w = csv.DictWriter(fh, fieldnames=SUMMARY_COLUMNS, extrasaction="ignore")
         if new:
             w.writeheader()
         for r in results:
@@ -150,6 +165,8 @@ def main(argv: list[str] | None = None) -> None:
     results = [run_variant(n, o, a.first, a.last, full, m5) for n, o in variants.items()]
     append_summary(results, a.first, a.last)
     print(table(results))
+    for n, pk in PEAKS.items():
+        print(f"  peak {n}: live {pk['live']}, filled-and-open {pk['filled']}")
 
 
 if __name__ == "__main__":

@@ -43,6 +43,7 @@ def main() -> None:
     rows.sort(key=when)
 
     start, peak, worst_dd, streak, worst_streak = balance, balance, 0.0, 0, 0
+    gone = ""  # the date the balance reached 0 or below; trades after it are listed but not counted
     print(
         f"start {balance:.2f} USD, {lot:.2f} lot ({oz:g} oz: 1.00 of price = {oz:g} USD), spread included\n"
     )
@@ -51,7 +52,15 @@ def main() -> None:
         risk = abs(float(r["entry"]) - float(r["stop"])) * oz
         why = r["why"] or "not scored"
         usd = float(r["r_net"]) * risk if r["r_net"] and not why.startswith("no fill") else 0.0
+        if gone:
+            print(
+                f"{r['id']:>5} {r['cutoff_thai'][:10]} {r['side']:4} {risk:8.2f} "
+                f"{'after the account was gone':>26}"
+            )
+            continue
         balance += usd
+        if balance <= 0:
+            gone = r["cutoff_thai"][:10]
         peak = max(peak, balance)
         worst_dd = max(worst_dd, peak - balance)
         if usd:  # a plan that never filled is not a trade: it neither extends nor ends a losing run
@@ -65,6 +74,8 @@ def main() -> None:
         f"\nend {balance:.2f} USD ({balance - start:+.2f}, {(balance - start) / start:+.1%}); "
         f"deepest fall from a high {worst_dd:.2f} USD; most losses in a row {worst_streak}"
     )
+    if gone:
+        print(f"account gone at {gone}: later trades are not counted in money")
 
 
 if __name__ == "__main__":

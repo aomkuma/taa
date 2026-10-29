@@ -73,12 +73,8 @@ WINDOWS: tuple[tuple[str, int, int], ...] = (
     ("New York", 19 * 60 + 30, 23 * 60),
 )
 # H4 is a stored frame too (research option h1_tf=H4); walk.py's tables do not know it.
-# M1 is the entry frame of revision 4 (R12).
-STEP = {**STEP, "H4": pd.Timedelta(hours=4), "M1": pd.Timedelta(minutes=1)}
-# SPEC-QUESTION: how far back the M1 frame reaches. L* can be up to `counter_pivots` setup-timeframe pivots
-# back; 7200 M1 bars = 5 days of trading. A setup whose L* is older is refused
-# ("m1: L* older than the M1 frame").
-FRAME_BARS = {tf: SHOWN[tf] + WARMUP for tf in ("H1", "M15", "M5")} | {"H4": 600, "M1": 7200}
+STEP = {**STEP, "H4": pd.Timedelta(hours=4)}
+FRAME_BARS = {tf: SHOWN[tf] + WARMUP for tf in ("H1", "M15", "M5")} | {"H4": 600}
 
 
 @dataclass(frozen=True)
@@ -108,9 +104,45 @@ class Params:
     spread: float = (
         SPREAD  # the owner's real spread on gold, USD (the R written into a decision is net of it)
     )
-    # R12 (revision 4): "m1" = steps 3-6 on M1 near the extreme; "setup" = revision 3's steps 3-6 on the
-    # setup timeframe (M5 / M15), kept for comparison.
-    entry_mode: str = "m1"
+    # Revision 5 (R13-R17), the owner's Fibonacci. mode "2e" (default) is every earlier revision untouched.
+    mode: str = "2e"  # "2e" | "fib"
+    fib_tf: str = "M15"  # [Claude] the timeframe the Fibo leg is read on: "M15" or "M5"
+    fib_entry: float = 0.382  # [Claude] the entry level as a fraction of the leg, 0 % at the low (R14)
+    # [Claude] "level" = before the next H1 band (step 7), "high" = the leg's 100 %; the owner (10-29: "in a
+    # trend it should be 127-161 %"): "ext127" / "ext161" = the 127.2 % / 161.8 % extension - target_buffer
+    fib_target: str = "ext161"
+    fib_count: str = "off"  # [Claude] "on" = the zone count (R16) must hold, "off" = R15
+    # R18 (revision 6): "counter" = the owner's leg, the counter-move just ended (high -> low, then the
+    # bounce);
+    # "trend" = revision 5's leg - comparison only (finished leg in the trade's direction; count-on enters at
+    # the last close there).
+    fib_leg: str = "counter"
+    # [Claude] "h1" = only the H1 side may trade, "any" = the leg alone decides, "entry" = the side read on
+    # fib_tf itself: a bar after L0 has traded beyond the last fixed high before L0 (R18 leg only)
+    fib_side: str = "h1"
+    # [Claude] which high is 100 % on the counter leg: "start" = the highest fixed high of the descending run,
+    # "latest" = the fixed high immediately before L0 (comparison only; the depth-based "auto" was withdrawn)
+    fib_high: str = "start"
+    max_orders: int = (
+        1  # [Claude] research: orders live (pending or open) at once; a new one needs fewer than this
+    )
+    fib_range: str = "off"  # [Claude] "on" = trade the sideways edges 88 % / 12 % when H1 gives no side (R17)
+
+    def __post_init__(self) -> None:
+        if self.max_orders < 1:
+            raise ValueError(f"max_orders must be at least 1, got {self.max_orders!r}")
+        for name, allowed in (
+            ("mode", ("2e", "fib")),
+            ("fib_tf", ("M15", "M5")),
+            ("fib_target", ("level", "high", "ext127", "ext161")),
+            ("fib_count", ("off", "on")),
+            ("fib_range", ("off", "on")),
+            ("fib_leg", ("counter", "trend")),
+            ("fib_high", ("start", "latest")),
+            ("fib_side", ("h1", "any", "entry")),
+        ):
+            if getattr(self, name) not in allowed:
+                raise ValueError(f"{name} must be one of {allowed}, got {getattr(self, name)!r}")
 
     def text(self) -> str:
         """The [Claude] parameters as they are written into a decision."""
@@ -120,16 +152,24 @@ class Params:
             f"trigger_offset={self.trigger_offset:g} stop_buffer={self.stop_buffer:g} "
             f"target_buffer={self.target_buffer:g} min_r={self.min_r:g} h1_tf={self.h1_tf} "
             f"h1_swings={self.h1_swings} entry_tfs={self.entry_tfs} div_mode={self.div_mode} "
-            f"entry_mode={self.entry_mode}"
+            f"mode={self.mode} fib_tf={self.fib_tf} "
+            f"fib_entry={self.fib_entry:g} fib_target={self.fib_target} fib_count={self.fib_count} "
+            f"fib_range={self.fib_range} fib_leg={self.fib_leg} fib_side={self.fib_side} "
+            f"fib_high={self.fib_high} max_orders={self.max_orders}"
         )
 
 
 # The reasons a bar can end without an order, in the order the steps run; a later one means the bar got
 # further. ``reason`` in the log is always one of these, or "order written".
 REASONS = [
-    "market closed", "outside window", "warm-up", "order pending", "step1: no side", "step2: no levels",
+    "market closed", "outside window", "warm-up", "order pending", "step1: no side",
+    "fib: no range", "fib: range broken", "fib: no live leg", "fib: price below the entry level",
+    "fib: price past the range edge", "fib: price not in the zone yet", "fib: price under the stop",
+    "fib: no bounce above the entry level", "fib: count outside 3-5",
+    "fib: structure not turned up",
+    "fib: no target level", "step2: no levels",
     "step2: no counter-move", "step2: L* not in a support band", "step2: count outside 3-5 and no M",
-    "step2: no divergence", "m1: L* older than the M1 frame", "step3: structure not broken",
+    "step2: no divergence", "step3: structure not broken",
     "step3: no higher low yet",
     "step4: no H_d", "step5: price below the higher low", "step7: no target level",
     "reward under 2R", "setup already played out", "setup already used", "order written",
@@ -164,20 +204,41 @@ class Setup:
     stop_v: float
     target_v: float
     r: float
-    l1: VPivot | None = None  # m1 mode: the M1 low that is the same extreme as L*; lhl / hd then index M1
-    m1_break_v: float | None = None  # m1 mode: the M1 high level whose break was waited for
 
 
-@dataclass(frozen=True)
-class M1Ctx:
-    """The M1 frame in the view, for steps 3-6 in m1 mode, plus the setup timeframe's bar times."""
+@dataclass
+class FibCount:
+    """What step 2 found in the Fibo zone (R16), in the view."""
 
-    setup_times: pd.DatetimeIndex
-    m1_times: pd.DatetimeIndex
-    pv: list[VPivot]
-    hi_v: np.ndarray
-    lo_v: np.ndarray
-    close_v: np.ndarray
+    lstar: VPivot
+    band: tuple[float, float]
+    counted: list[VPivot]
+    kind: str  # "count" or "M"
+    div_macd: bool
+    div_rsi: bool
+
+
+@dataclass
+class FibSetup:
+    """A Fibo order (R15 / R17), in the view: a plain limit at ``entry_v``."""
+
+    kind: str  # "leg" (R15) or "range" (R17)
+    lo_v: float  # 0 % of the leg / range, in the view
+    hi_v: float  # 100 %
+    lo_pos: int  # bar positions on the frame the leg / range was read on (the range: an H1 frame)
+    hi_pos: int
+    entry_v: float
+    stop_v: float
+    target_v: float
+    r: float
+    count: FibCount | None = None  # fib_count on: the zone count behind it (R16)
+
+
+@dataclass
+class FibOut:
+    reason: str
+    info: dict[str, str] = field(default_factory=dict)
+    setup: FibSetup | None = None
 
 
 @dataclass
@@ -305,84 +366,17 @@ def analyse_view(
     bands_v: Sequence[tuple[float, float]],
     tf: str,
     p: Params,
-    m1_ctx: Callable[[], M1Ctx] | None = None,
-    setup_times: pd.DatetimeIndex | None = None,
 ) -> Outcome:
-    """Steps 2b-7 for a BUY in the view, on one timeframe. Takes only data already cut at ``now``.
-    In m1 mode steps 3-6 run on the M1 frame ``m1_ctx()`` gives (built only once step 2 holds)."""
+    """Steps 2b-7 for a BUY in the view, on one timeframe. Takes only data already cut at ``now``."""
     out = Outcome(tf=tf, reason="step2: no levels")
     if not bands_v:
         return out
-
-    # 2b (R10): count by zone. The zone is the support band holding a fixed LOW of the entry timeframe.
-    # SPEC-QUESTION: R10 says "the latest fixed LOW", but once the higher low of step 3 has formed the latest
-    # low sits above the band and the zone would vanish just when steps 3-7 need it. So the latest fixed
-    # low of the last `counter_pivots` pivots that lies inside ANY band is taken; of the bands holding it,
-    # the one whose centre is nearest (R1). Bands are the view's bands; no test that they lie "below price".
     full = list(pv)
-    last = full[-p.counter_pivots :]
-    out.reason = "step2: no counter-move"
-    band: tuple[float, float] | None = None
-    for q in reversed([q for q in last if q.low]):
-        holding = [b for b in bands_v if b[0] <= q.price <= b[1]]
-        if holding:
-            band = min(holding, key=lambda b: abs((b[0] + b[1]) / 2 - q.price))
-            break
-    out.reason = "step2: L* not in a support band"
-    if band is None:
+    found = step2(out, full, close_v, macd_v, rsi_v, bands_v, p)
+    if found is None:
         return out
-    out.info["band"] = f"{band[0]:.2f}-{band[1]:.2f}"
-    below = np.flatnonzero(close_v < band[0])  # a close through the zone ends it as a support
-    reset = int(below[-1]) if below.size else -1
-    zone = [q for q in last if q.low and band[0] <= q.price <= band[1] and q.pos > reset]
-    out.reason = "step2: no counter-move"
-    if not zone:
-        return out
-    lstar = zone[0]
-    for q in zone:
-        if q.price < lstar.price:  # the first of equal lows
-            lstar = q
-    # SPEC-QUESTION: R10 says the count = how many zone lows there are. Counted here: the zone lows up to
-    # and including L*; a zone low after L* (a higher low of step 3 still inside a wide band) is not part of
-    # the exhaustion into the level, and counting it would inflate every setup past 5 (tried: 04-06's
-    # decision vanished). Divergence is read at L* against the zone low immediately before it.
-    counted = [q for q in zone if q.pos <= lstar.pos]
-    n = len(counted)
-    out.info["count"] = str(n)
-    out.info["pivots"] = " ".join(f"{q.price:.2f}" for q in counted)
-
+    lstar, band, counted, kind, d_macd, d_rsi = found
     il = full.index(lstar)
-    # Divergence at L* against the zone low before it (R10).
-    iz = zone.index(lstar)
-    prev_low = zone[iz - 1] if iz >= 1 else None
-    d_macd = d_rsi = False
-    if prev_low is not None:
-        d_macd = _div(lstar.price, prev_low.price, float(macd_v[lstar.pos]), float(macd_v[prev_low.pos]))
-        d_rsi = _div(lstar.price, prev_low.price, float(rsi_v[lstar.pos]), float(rsi_v[prev_low.pos]))
-    out.info["div_macd"], out.info["div_rsi"] = str(d_macd), str(d_rsi)
-
-    # The M is exactly two counted lows, both zone lows (R3, R10); a count of 3-5
-    # always needs divergence on both.
-    m_ok = n == 2
-    # R11: one oscillator is enough (the owner); both is the "clear" case, and the decision text says which.
-    diverged = (d_macd or d_rsi) if p.div_mode == "one" else (d_macd and d_rsi)
-    count_ok = p.count_min <= n <= p.count_max and diverged
-    if not (count_ok or m_ok):
-        out.reason = (
-            "step2: no divergence" if p.count_min <= n <= p.count_max else "step2: count outside 3-5 and no M"
-        )
-        return out
-    kind = "count" if count_ok else "M"
-    out.info["kind"] = kind
-
-    if p.entry_mode == "m1":
-        if m1_ctx is None or setup_times is None:
-            raise ValueError("entry_mode 'm1' needs the M1 frame and the setup timeframe's bar times")
-        return _m1_steps(
-            out, lstar, band, counted, kind, d_macd, d_rsi, m1_ctx(), setup_times, bands_v, tf, p
-        )
-    if p.entry_mode != "setup":
-        raise ValueError(f"entry_mode must be 'm1' or 'setup', got {p.entry_mode!r}")
 
     # 3: the structure breaks: a bar's high above the last fixed high before L*, then a fixed higher low.
     out.reason = "step3: structure not broken"
@@ -451,97 +445,357 @@ def analyse_view(
     return out
 
 
-def _m1_steps(
+def step2(
     out: Outcome,
-    lstar: VPivot,
-    band: tuple[float, float],
-    counted: list[VPivot],
-    kind: str,
-    d_macd: bool,
-    d_rsi: bool,
-    m1: M1Ctx,
-    setup_times: pd.DatetimeIndex,
+    full: list[VPivot],
+    close_v: np.ndarray,
+    macd_v: np.ndarray,
+    rsi_v: np.ndarray,
     bands_v: Sequence[tuple[float, float]],
-    tf: str,
     p: Params,
-) -> Outcome:
-    """R12: steps 3-6 on M1 (a BUY in the view), step 7 as before. Only closed M1 bars are in ``m1``."""
-    full = m1.pv
-    t0 = setup_times[lstar.pos]  # the open time of L*'s bar on the setup timeframe
-    out.reason = "m1: L* older than the M1 frame"
-    # SPEC-QUESTION: "older than the frame" = the frame's first bar opens more than one setup-timeframe bar
-    # after L*'s bar (a bar or two missing at the start of a bar is a data gap, not a cut frame).
-    if len(m1.m1_times) == 0 or m1.m1_times[0] > t0 + (setup_times[1] - setup_times[0]):
-        return out
+) -> tuple[VPivot, tuple[float, float], list[VPivot], str, bool, bool] | None:
+    """Step 2b (R10) for a BUY in the view: the zone count. Returns (L*, band, counted, kind, MACD div,
+    RSI div), or None with ``out.reason`` set."""
+    # 2b (R10): count by zone. The zone is the support band holding a fixed LOW of the entry timeframe.
+    # SPEC-QUESTION: R10 says "the latest fixed LOW", but once the higher low of step 3 has formed the latest
+    # low sits above the band and the zone would vanish just when steps 3-7 need it. So the latest fixed
+    # low of the last `counter_pivots` pivots that lies inside ANY band is taken; of the bands holding it,
+    # the one whose centre is nearest (R1). Bands are the view's bands; no test that they lie "below price".
+    last = full[-p.counter_pivots :]
+    out.reason = "step2: no counter-move"
+    band: tuple[float, float] | None = None
+    for q in reversed([q for q in last if q.low]):
+        holding = [b for b in bands_v if b[0] <= q.price <= b[1]]
+        if holding:
+            band = min(holding, key=lambda b: abs((b[0] + b[1]) / 2 - q.price))
+            break
+    out.reason = "step2: L* not in a support band"
+    if band is None:
+        return None
+    out.info["band"] = f"{band[0]:.2f}-{band[1]:.2f}"
+    below = np.flatnonzero(close_v < band[0])  # a close through the zone ends it as a support
+    reset = int(below[-1]) if below.size else -1
+    zone = [q for q in last if q.low and band[0] <= q.price <= band[1] and q.pos > reset]
+    out.reason = "step2: no counter-move"
+    if not zone:
+        return None
+    lstar = zone[0]
+    for q in zone:
+        if q.price < lstar.price:  # the first of equal lows
+            lstar = q
+    # SPEC-QUESTION: R10 says the count = how many zone lows there are. Counted here: the zone lows up to
+    # and including L*; a zone low after L* (a higher low of step 3 still inside a wide band) is not part of
+    # the exhaustion into the level, and counting it would inflate every setup past 5 (tried: 04-06's
+    # decision vanished). Divergence is read at L* against the zone low immediately before it.
+    counted = [q for q in zone if q.pos <= lstar.pos]
+    n = len(counted)
+    out.info["count"] = str(n)
+    out.info["pivots"] = " ".join(f"{q.price:.2f}" for q in counted)
 
-    # L1 (R12): the M1 fixed LOW with the lowest price among the M1 bars that opened at or after t0.
-    out.reason = "step3: structure not broken"
-    cand = [q for q in full if q.low and m1.m1_times[q.pos] >= t0]
-    if not cand:
-        return out
-    l1 = cand[0]
-    for q in cand:
-        if q.price < l1.price:  # the first of equal lows
-            l1 = q
-    il = full.index(l1)
-    # Step 3 on M1: a high above the last fixed M1 HIGH before L1, then a fixed higher low above L1.
-    # SPEC-QUESTION: "the last fixed M1 HIGH before L1" is the pivot just before L1 (pivots alternate); if L1
-    # is the first pivot of the frame there is none and the structure is not broken.
-    if il < 1 or full[il - 1].low:
-        return out
-    h_prev = full[il - 1]
-    after = m1.hi_v[l1.pos + 1 :]
-    above = np.flatnonzero(after > h_prev.price)
-    if above.size == 0:
-        return out
-    break_pos = l1.pos + 1 + int(above[0])
-    out.info["step3"] = f"M1 L1 {l1.price:.2f}; broke {h_prev.price:.2f}"
-    out.reason = "step3: no higher low yet"
-    lhl = next((q for q in full[il + 1 :] if q.low and q.pos > break_pos and q.price > l1.price), None)
-    if lhl is None:
-        return out
-    out.info["step3"] += f"; higher low {lhl.price:.2f}"
+    # Divergence at L* against the zone low before it (R10).
+    iz = zone.index(lstar)
+    prev_low = zone[iz - 1] if iz >= 1 else None
+    d_macd = d_rsi = False
+    if prev_low is not None:
+        d_macd = _div(lstar.price, prev_low.price, float(macd_v[lstar.pos]), float(macd_v[prev_low.pos]))
+        d_rsi = _div(lstar.price, prev_low.price, float(rsi_v[lstar.pos]), float(rsi_v[prev_low.pos]))
+    out.info["div_macd"], out.info["div_rsi"] = str(d_macd), str(d_rsi)
 
-    out.reason = "step4: no H_d"
-    ih = full.index(lhl)
-    if ih < 1 or full[ih - 1].low:
-        return out
-    hd = full[ih - 1]
-    out.info["step4"] = f"H_d {hd.price:.2f}"
+    # The M is exactly two counted lows, both zone lows (R3, R10); a count of 3-5
+    # always needs divergence on both.
+    m_ok = n == 2
+    # R11: one oscillator is enough (the owner); both is the "clear" case, and the decision text says which.
+    diverged = (d_macd or d_rsi) if p.div_mode == "one" else (d_macd and d_rsi)
+    count_ok = p.count_min <= n <= p.count_max and diverged
+    if not (count_ok or m_ok):
+        out.reason = (
+            "step2: no divergence" if p.count_min <= n <= p.count_max else "step2: count outside 3-5 and no M"
+        )
+        return None
+    kind = "count" if count_ok else "M"
+    out.info["kind"] = kind
+    return lstar, band, counted, kind, d_macd, d_rsi
 
-    out.reason = "step5: price below the higher low"
-    if m1.close_v[-1] < lhl.price:
-        return out
-    plain = bool(m1.close_v[-1] > hd.price)
-    trigger_v = None if plain else hd.price + p.trigger_offset
-    out.info["step5"] = "limit" if plain else "stop limit"
 
-    # 6: beyond the lowest bottom; the band edge is NOT added in m1 mode (the owner: beyond the extreme).
-    entry_v = hd.price
-    stop_v = min(lstar.price, l1.price) - p.stop_buffer
-    out.reason = "step7: no target level"
-    resist = [b for b in bands_v if b[0] > entry_v]
-    if not resist:
-        return out
-    target_v = min(b[0] for b in resist) - p.target_buffer
-    if target_v <= entry_v or entry_v <= stop_v:
+# --- revision 5 (R13-R17): the owner's Fibonacci -----------------------------------------------------------
+
+
+def fib_leg(
+    pv: Sequence[VPivot], hi_v: np.ndarray, close_v: np.ndarray
+) -> tuple[VPivot, VPivot] | None:  # fmt: skip
+    """R13 for a BUY in the view: the latest fixed HIGH and the fixed LOW before it (the leg rises), while the
+    leg is live: no close under its 0 % since the high, no bar above its 100 % since the high. None if not."""
+    # SPEC-QUESTION: "the latest fixed HIGH": once a pullback has bounced and ZigZag has fixed a lower high,
+    # that lower high and the low before it (the pullback's low) are the leg - the leg shrinks to the bounce.
+    highs = [i for i, q in enumerate(pv) if not q.low]
+    if not highs or highs[-1] < 1 or not pv[highs[-1] - 1].low:
+        return None
+    low, high = pv[highs[-1] - 1], pv[highs[-1]]
+    if high.price <= low.price:
+        return None
+    # SPEC-QUESTION: "closed below its 0 %" is read as a close strictly under the low's price, bars after the
+    # high's bar only; "a new high above 100 %" is a bar high strictly above the high's price after its bar.
+    if close_v[high.pos + 1 :].size and float(close_v[high.pos + 1 :].min()) < low.price:
+        return None
+    if hi_v[high.pos + 1 :].size and float(hi_v[high.pos + 1 :].max()) > high.price:
+        return None
+    return low, high
+
+
+FIB_EXT = {"ext127": 1.272, "ext161": 1.618}  # the leg's extensions, 0 % at the low, 100 % at the high
+
+
+def fib_high_choice(p: Params) -> str:
+    """``start`` (the highest fixed high of the descending run) or ``latest`` (the fixed high just before L0).
+    The depth-based ``auto`` mapping was withdrawn; the default is ``start`` for every entry."""
+    return p.fib_high
+
+
+def fib_leg_counter(
+    pv: Sequence[VPivot], close_v: np.ndarray, high_mode: str = "start"
+) -> tuple[VPivot, VPivot, list[VPivot]] | None:  # fmt: skip
+    """R18 for a BUY in the view: ``L0`` = the latest fixed LOW lower than every fixed low after it (a
+    bottom), with no close under it since; ``H100`` = the highest fixed HIGH of the descending run into L0.
+    Returns (L0, H100, the run's lows, each lower than the one before, L0 last), or None."""
+    # SPEC-QUESTION: [Claude] "lower than every fixed low after it" needs at least one later fixed low - the
+    # newest low is not a bottom until a higher low has been fixed after it.
+    lows = [i for i, q in enumerate(pv) if q.low]
+    k = None
+    for a in range(len(lows) - 2, -1, -1):
+        if all(pv[lows[a]].price < pv[j].price for j in lows[a + 1 :]):
+            k = a
+            break
+    if k is None:
+        return None
+    l0 = pv[lows[k]]
+    if close_v[l0.pos + 1 :].size and float(close_v[l0.pos + 1 :].min()) < l0.price:
+        return None  # a close under the bottom
+    first = k
+    while first > 0 and pv[lows[first - 1]].price > pv[lows[first]].price:
+        first -= 1
+    run = [pv[j] for j in lows[first : k + 1]]
+    # SPEC-QUESTION: [Claude] the run starts at the high before its first low (if the pivot before it is a
+    # high); H100 is the highest fixed high from there to L0.
+    start = lows[first] - 1 if lows[first] >= 1 and not pv[lows[first] - 1].low else lows[first]
+    highs = [q for q in pv[start : lows[k]] if not q.low]
+    if not highs:
+        return None
+    top = highs[-1]  # "latest": the fixed high just before L0
+    if high_mode == "start":
+        top = highs[0]
+        for q in highs:
+            if q.price > top.price:
+                top = q
+    return l0, top, run
+
+
+STRONG_BULL_ENTRY = 0.618  # the owner (10-29): an entry this shallow (61.8 %) is the strong-bull case
+STRONG_BULL_STOP = 0.236  # ... and its stop is "beyond 23 %", below the 23.6 % level, not below the 0 %
+
+
+def fib_stop_v(p: Params, low_price: float, high_price: float) -> float:
+    """The stop under the leg: below the 0 % - stop_buffer; for an entry at 61.8 % or shallower (the owner's
+    strong-bull case) below the 23.6 % level - stop_buffer."""
+    # SPEC-QUESTION: "entry 61.8 %" is applied to any fib_entry >= 0.618, not only the value 0.618 itself.
+    base = low_price
+    if p.fib_entry >= STRONG_BULL_ENTRY:
+        base = low_price + STRONG_BULL_STOP * (high_price - low_price)
+    return base - p.stop_buffer
+
+
+def fib_fixed_target_v(p: Params, low_price: float, high_price: float) -> float | None:
+    """The target that is a price on the leg itself: ``high`` = the 100 % - target_buffer, ``ext127`` /
+    ``ext161`` = the 127.2 % / 161.8 % extension - target_buffer; None for ``level`` (the H1 bands decide)."""
+    if p.fib_target == "high":
+        return high_price - p.target_buffer
+    if p.fib_target in FIB_EXT:
+        return low_price + FIB_EXT[p.fib_target] * (high_price - low_price) - p.target_buffer
+    return None
+
+
+def fib_target_v(
+    p: Params, low_price: float, high_price: float, entry_v: float, bands_v: Sequence[tuple[float, float]]
+) -> float | None:  # fmt: skip
+    """R14: see ``fib_fixed_target_v``; ``level`` = just before the nearest H1 band above the entry (step 7).
+    None when there is no target above the entry."""
+    target = fib_fixed_target_v(p, low_price, high_price)
+    if target is None:
+        resist = [b for b in bands_v if b[0] > entry_v]
+        if not resist:
+            return None
+        target = min(b[0] for b in resist) - p.target_buffer
+    return target if target > entry_v else None
+
+
+def analyse_fib(
+    pv: Sequence[VPivot],
+    hi_v: np.ndarray,
+    lo_v: np.ndarray,
+    close_v: np.ndarray,
+    bands_v: Sequence[tuple[float, float]],
+    p: Params,
+    macd_v: np.ndarray | None = None,
+    rsi_v: np.ndarray | None = None,
+) -> FibOut:
+    """R15 (fib_count off), for a BUY in the view: a plain limit at the entry level while the leg is live and
+    the last close is above it; stop per ``fib_stop_v``; target per ``fib_target``; at least ``min_r``.
+    R16 (fib_count on, needs ``macd_v`` / ``rsi_v``): the same, but only when step 2 (the zone count or the
+    M, R10) holds in the Fibo zone [0 %, entry level] and price has traded into it; the plain limit is then
+    written at the last close."""
+    out = FibOut(reason="fib: no live leg")
+    counter = p.fib_leg == "counter"
+    run: list[VPivot] = []
+    if counter:
+        got = fib_leg_counter(pv, close_v, fib_high_choice(p))
+        if got is None:
+            return out
+        low, high, run = got
+    else:
+        leg = fib_leg(pv, hi_v, close_v)
+        if leg is None:
+            return out
+        low, high = leg
+    if counter and p.fib_side == "entry":
+        # SPEC-QUESTION: [Claude] "the last fixed HIGH before L0" = the fixed pivot just before L0 when it
+        # is a high (the top the last drop started from); a bar after L0 must have traded above it.
+        out.reason = "fib: structure not turned up"
+        i0 = pv.index(low)
+        if i0 < 1 or pv[i0 - 1].low:
+            return out
+        if not hi_v[low.pos + 1 :].size or float(hi_v[low.pos + 1 :].max()) <= pv[i0 - 1].price:
+            return out
+    # R8 reads the bars from here: the target from ``since_t``, the stop from ``since_l`` (they differ by one
+    # bar on the counter leg, see below).
+    since_t = since_l = (low.pos if counter else high.pos) + 1
+    rng = high.price - low.price
+    entry_v = low.price + p.fib_entry * rng
+    out.info["pivots"] = f"{low.price:.2f} {high.price:.2f}"
+    stop_v = fib_stop_v(p, low.price, high.price)
+    count: FibCount | None = None
+    if counter:
+        if p.fib_count == "on":
+            # R18 count on: the run into L0 has 3-5 lower lows, divergence at L0 against the low before it.
+            if macd_v is None or rsi_v is None:
+                raise ValueError("fib_count on needs the MACD and RSI arrays")
+            n = len(run)
+            out.info["count"], out.info["pivots"] = str(n), " ".join(f"{q.price:.2f}" for q in run)
+            out.reason = "fib: count outside 3-5"
+            if not p.count_min <= n <= p.count_max:
+                return out
+            d_macd = d_rsi = False
+            if n >= 2:
+                a, b = run[-2], run[-1]
+                d_macd = _div(b.price, a.price, float(macd_v[b.pos]), float(macd_v[a.pos]))
+                d_rsi = _div(b.price, a.price, float(rsi_v[b.pos]), float(rsi_v[a.pos]))
+            out.info["div_macd"], out.info["div_rsi"] = str(d_macd), str(d_rsi)
+            out.reason = "step2: no divergence"
+            if not ((d_macd or d_rsi) if p.div_mode == "one" else (d_macd and d_rsi)):
+                return out
+            count = FibCount(low, (low.price, entry_v), run, "count", d_macd, d_rsi)
+        out.reason = "fib: no bounce above the entry level"
+        if not hi_v[low.pos + 1 :].size or float(hi_v[low.pos + 1 :].max()) <= entry_v:
+            return out
+        # SPEC-QUESTION: [Claude] R8 for the counter leg is read from the bar that first traded above the
+        # entry level: the climb out of L0 itself passes under the 23.6 % stop of a 61.8 % entry. On that
+        # crossing bar the TARGET counts (a high at or above it = played out) but its LOW does not (order
+        # inside the bar unknown); from the next bar on both count.
+        since_t = low.pos + 1 + int(np.flatnonzero(hi_v[low.pos + 1 :] > entry_v)[0])
+        since_l = since_t + 1
+        out.reason = "fib: price below the entry level"
+        if close_v[-1] <= entry_v:
+            return out
+    elif p.fib_count == "on":
+        if macd_v is None or rsi_v is None:
+            raise ValueError("fib_count on needs the MACD and RSI arrays")
+        # SPEC-QUESTION: [Claude] count-on entry at the last close. The zone lows are already inside
+        # [0 %, entry level], so a limit at the entry level could not work; the limit is written at the last
+        # setup-timeframe close, while price has traded into the zone since the high and the close is still
+        # over the stop. The leg's own low is a zone low (the zone is not cut at the high).
+        out.reason = "fib: price not in the zone yet"
+        zone = (low.price, entry_v)
+        if lo_v[high.pos + 1 :].size == 0 or float(lo_v[high.pos + 1 :].min()) > zone[1]:
+            return out
+        c2 = Outcome(tf="", reason="")
+        found = step2(c2, list(pv), close_v, macd_v, rsi_v, [zone], p)
+        out.info.update(c2.info)
+        if found is None:
+            out.reason = c2.reason
+            return out
+        count = FibCount(*found)
+        entry_v = float(close_v[-1])
+        out.reason = "fib: price under the stop"
+        if entry_v <= stop_v:
+            return out
+    else:
+        out.reason = "fib: price below the entry level"
+        if close_v[-1] <= entry_v:
+            return out
+    out.reason = "fib: no target level"
+    target_v = fib_target_v(p, low.price, high.price, entry_v, bands_v)
+    if target_v is None:
         return out
     r = (target_v - entry_v - p.spread) / (entry_v - stop_v)
-    out.info["step5"] += f"; R {r:.2f}"
+    out.info["step5"] = f"limit; R {r:.2f}"
     out.reason = "reward under 2R"
     if r < p.min_r:
         return out
-
-    # R8 on M1: the stop or the target traded since the M1 higher low.
+    # R8: the stop or the target has traded since the leg's high was fixed - the order would be withdrawn.
+    # SPEC-QUESTION: an entry level already touched and bounced from since the high does not stop the order;
+    # the limit is written and waits for the next retest.
     out.reason = "setup already played out"
-    if m1.hi_v[lhl.pos + 1 :].size and (
-        float(m1.hi_v[lhl.pos + 1 :].max()) >= target_v or float(m1.lo_v[lhl.pos + 1 :].min()) <= stop_v
+    if (hi_v[since_t:].size and float(hi_v[since_t:].max()) >= target_v) or (
+        lo_v[since_l:].size and float(lo_v[since_l:].min()) <= stop_v
     ):
         return out
-    out.setup = Setup(
-        tf, lstar, lhl, hd, band, counted, kind, d_macd, d_rsi, entry_v, trigger_v, stop_v, target_v, r,
-        l1=l1, m1_break_v=h_prev.price,
-    )  # fmt: skip
+    out.setup = FibSetup("leg", low.price, high.price, low.pos, high.pos, entry_v, stop_v, target_v, r, count)
+    out.reason = "order written"
+    return out
+
+
+# SPEC-QUESTION (R17): the owner's "88 % - 127 %" is read as the sell limit at 88 %, the stop beyond
+# 127 %, the target the range's other edge (the owner, 10-29: "sideways, around 100 %"): the range low +
+# buffer; the buy limit is at 12 %, the stop beyond -27 %, the target the range high - buffer. 0 % is
+# the range's low, 100 % its high.
+RANGE_EDGE = 0.12  # the buy limit; the sell limit is the mirror, 88 %
+RANGE_PAST = 0.27  # the stop sits beyond this: 27 % under the low, 127 % over the high
+
+
+def analyse_range(
+    lo_price_v: float,
+    rng: float,
+    hi_v: np.ndarray,
+    lo_v: np.ndarray,
+    close_v: np.ndarray,
+    p: Params,
+) -> FibOut:
+    """R17 for a BUY in the view on the M5 bars since the range's later pivot (a SELL is the mirror): a plain
+    limit at 12 % above the range's low, stop under -27 % - stop_buffer, target 100 % - target_buffer; at
+    least ``min_r``. ``close_v``'s last value is the price now."""
+    out = FibOut(reason="fib: range broken")
+    broken = lo_price_v - RANGE_PAST * rng
+    # SPEC-QUESTION: a close beyond the stop level (-27 % / 127 %) since the later pivot voids the range.
+    if close_v.size == 0 or float(close_v.min()) < broken:
+        return out
+    entry_v = lo_price_v + RANGE_EDGE * rng
+    # SPEC-QUESTION: the limit is written only while the last close is still on the far side of the edge
+    # (above the buy limit, below the sell limit), so it rests as a limit and does not fill at the market.
+    out.reason = "fib: price past the range edge"
+    if close_v[-1] <= entry_v:
+        return out
+    stop_v = broken - p.stop_buffer
+    target_v = lo_price_v + rng - p.target_buffer
+    out.reason = "fib: no target level"
+    if target_v <= entry_v:
+        return out
+    r = (target_v - entry_v - p.spread) / (entry_v - stop_v)
+    out.info["step5"] = f"limit; R {r:.2f}"
+    out.reason = "reward under 2R"
+    if r < p.min_r:
+        return out
+    out.reason = "setup already played out"
+    if float(hi_v.max()) >= target_v or float(lo_v.min()) <= stop_v:
+        return out
+    out.setup = FibSetup("range", lo_price_v, lo_price_v + rng, -1, -1, entry_v, stop_v, target_v, r)
     out.reason = "order written"
     return out
 
@@ -557,6 +811,16 @@ def _zigzag(df: pd.DataFrame) -> list[Swing]:
         index=list(df.index),
         **ZIGZAG,
     )
+
+
+def _view_arrays(df: pd.DataFrame, sign: int) -> tuple[np.ndarray, ...]:
+    """high, low, close, MACD and RSI of a frame in the view (a SELL's: negated, highs and lows swapped)."""
+    hi_v = df.high.to_numpy(dtype=np.float64) if sign > 0 else -df.low.to_numpy(dtype=np.float64)
+    lo_v = df.low.to_numpy(dtype=np.float64) if sign > 0 else -df.high.to_numpy(dtype=np.float64)
+    close_v = sign * df.close.to_numpy(dtype=np.float64)
+    macd_v = sign * macd_mt5(df.close)["main"].to_numpy(dtype=np.float64)
+    rsi_v = sign * rsi(df.close, 14).to_numpy(dtype=np.float64) + (0.0 if sign > 0 else 100.0)
+    return hi_v, lo_v, close_v, macd_v, rsi_v
 
 
 def _check_cut(frames: dict[str, pd.DataFrame], now: pd.Timestamp) -> None:
@@ -606,6 +870,8 @@ def decide(
     h1_piv = _zigzag(h1)
     side_piv = h1_piv if p.h1_tf == "H1" else _zigzag(frames[p.h1_tf])
     side = h1_side(side_piv, float(m5.close.iloc[-1]), p.h1_mode, p.h1_swings)
+    if p.mode == "fib":
+        return _decide_fib(frames, now, p, used, log, done, side, h1_piv)
     if side is None:
         return done("step1: no side")
     log["side"] = side
@@ -613,36 +879,16 @@ def decide(
     bands = h1_bands(h1_piv, len(h1), now, p)
     bands_v = sorted((min(sign * lo, sign * hi), max(sign * lo, sign * hi)) for lo, hi in bands)
 
-    m1_pivots: list[list[Swing]] = []  # the M1 ZigZag, run once per bar and only when step 2 holds
-
-    def m1_ctx_for(tf_times: pd.DatetimeIndex) -> Callable[[], M1Ctx]:
-        def build() -> M1Ctx:
-            if not m1_pivots:
-                m1_pivots.append(_zigzag(frames["M1"]))
-            return m1_context(frames["M1"], sign, m1_pivots[0], tf_times)
-
-        return build
-
     outcomes: list[Outcome] = []
     for tf in p.entry_tfs.split(","):
         df = frames[tf]
-        tf_times = pd.DatetimeIndex(df.index)
         piv = to_view(_zigzag(df), sign)
-        hi_v = df.high.to_numpy(dtype=np.float64) if sign > 0 else -df.low.to_numpy(dtype=np.float64)
-        lo_v = df.low.to_numpy(dtype=np.float64) if sign > 0 else -df.high.to_numpy(dtype=np.float64)
-        close_v = sign * df.close.to_numpy(dtype=np.float64)
-        macd_v = sign * macd_mt5(df.close)["main"].to_numpy(dtype=np.float64)
-        rsi_v = sign * rsi(df.close, 14).to_numpy(dtype=np.float64) + (0.0 if sign > 0 else 100.0)
-        m1 = p.entry_mode == "m1"
-        out = analyse_view(
-            piv, hi_v, lo_v, close_v, macd_v, rsi_v, bands_v, tf, p,
-            m1_ctx_for(tf_times) if m1 else None, tf_times,
-        )  # fmt: skip
+        hi_v, lo_v, close_v, macd_v, rsi_v = _view_arrays(df, sign)
+        out = analyse_view(piv, hi_v, lo_v, close_v, macd_v, rsi_v, bands_v, tf, p)
         if out.setup is not None:
             s = out.setup
             times = df.index
-            hl_time = frames["M1"].index[s.lhl.pos] if m1 else times[s.lhl.pos]
-            key = f"{side}|{tf}|{times[s.lstar.pos]}|{hl_time}"
+            key = f"{side}|{tf}|{times[s.lstar.pos]}|{times[s.lhl.pos]}"
             # SPEC-QUESTION: the spec does not say how a setup that stays valid for many bars is kept from
             # being written twice; its identity is side, timeframe, L* time and higher-low time.
             if key in used:
@@ -659,31 +905,221 @@ def decide(
     best = outcomes[-1] if outcomes[-1].setup else max(outcomes, key=lambda o: RANK[o.reason])
     info = dict(best.info)
     info.pop("key", None)
-    result = done(best.reason, info, f"{best.tf}>M1" if p.entry_mode == "m1" else best.tf)
+    result = done(best.reason, info, best.tf)
     if best.setup is None:
         return result
     result.key = best.info["key"]
-    result.decision = _row(best.setup, side, sign, now, frames[best.tf], p, frames.get("M1"))
+    result.decision = _row(best.setup, side, sign, now, frames[best.tf], p)
     return result
 
 
-def m1_context(m1: pd.DataFrame, sign: int, pivots: Sequence[Swing], setup_times: pd.DatetimeIndex) -> M1Ctx:
-    """The M1 frame in the view (prices negated for a SELL, highs and lows swapped), with its fixed pivots."""
-    hi = m1.high.to_numpy(dtype=np.float64)
-    lo = m1.low.to_numpy(dtype=np.float64)
-    return M1Ctx(
-        setup_times=setup_times,
-        m1_times=pd.DatetimeIndex(m1.index),
-        pv=to_view(pivots, sign),
-        hi_v=hi if sign > 0 else -lo,
-        lo_v=lo if sign > 0 else -hi,
-        close_v=sign * m1.close.to_numpy(dtype=np.float64),
+def _decide_fib(
+    frames: dict[str, pd.DataFrame],
+    now: pd.Timestamp,
+    p: Params,
+    used: frozenset[str],
+    log: dict[str, str],
+    done: Callable[..., Result],
+    side: str | None,
+    h1_piv: Sequence[Swing],
+) -> Result:
+    """Mode "fib" (R13-R18): the H1 side (or, with fib_range on and no side, the range edges), then the Fibo
+    leg. With ``fib_side`` "any" there is no H1 filter: both views are tried and of those that qualify the one
+    whose L0 / top is more recent is written. Closed bars only: ``decide`` has checked the cut."""
+    h1 = frames["H1"]
+    if p.fib_side in ("any", "entry"):
+        views = [("BUY", 1), ("SELL", -1)]
+    elif side is None:
+        if p.fib_range != "on":
+            return done("step1: no side")
+        return _decide_range(frames, now, p, used, log, done, h1_piv)
+    else:
+        views = [(side, 1 if side == "BUY" else -1)]
+    tf = p.fib_tf
+    df = frames[tf]
+    times = pd.DatetimeIndex(df.index)
+    zz = _zigzag(df)
+    found: list[tuple[str, int, FibOut]] = []
+    worst = FibOut(reason="fib: no live leg")
+    for vside, sign in views:
+        bands = h1_bands(h1_piv, len(h1), now, p)
+        bands_v = sorted((min(sign * lo, sign * hi), max(sign * lo, sign * hi)) for lo, hi in bands)
+        hi_v, lo_v, close_v, macd_v, rsi_v = _view_arrays(df, sign)
+        fo = analyse_fib(to_view(zz, sign), hi_v, lo_v, close_v, bands_v, p, macd_v, rsi_v)
+        if fo.setup is not None:
+            found.append((vside, sign, fo))
+        elif RANK[fo.reason] >= RANK[worst.reason]:
+            worst = fo
+    if not found:
+        return done(worst.reason, worst.info, tf)
+    # SPEC-QUESTION: [Claude] "more recent" = the later L0 (leg low) bar, then the later top.
+    vside, sign, fo = max(found, key=lambda t: (t[2].setup.lo_pos, t[2].setup.hi_pos))  # type: ignore[union-attr]
+    log["side"] = vside
+    s = fo.setup
+    if s is None:  # not reachable: ``found`` only holds outcomes with a setup
+        return done(fo.reason, fo.info, tf)
+    key = f"{vside}|{tf}|{times[s.lo_pos]}|{times[s.hi_pos]}"
+    if key in used:
+        return done("setup already used", fo.info, tf)
+    result = done(fo.reason, fo.info, tf)
+    result.key = key
+    result.decision = _fib_row(s, vside, sign, now, times, tf, p)
+    return result
+
+
+def _decide_range(
+    frames: dict[str, pd.DataFrame],
+    now: pd.Timestamp,
+    p: Params,
+    used: frozenset[str],
+    log: dict[str, str],
+    done: Callable[..., Result],
+    h1_piv: Sequence[Swing],
+) -> Result:
+    """R17: H1 gives no side. The range = the last two fixed H1 pivots (one high, one low); a sell limit at
+    88 % and a buy limit at 12 %, each tried; of those that qualify, the one with the nearer entry."""
+    h1, m5 = frames["H1"], frames["M5"]
+    if len(h1_piv) < 2 or h1_piv[-1].kind is h1_piv[-2].kind:
+        return done("fib: no range")
+    a, b = h1_piv[-2], h1_piv[-1]
+    hi_p, lo_p = (a, b) if a.kind is SwingKind.HIGH else (b, a)
+    # SPEC-QUESTION: the range has "seen" the M5 bars from the later pivot's H1 bar on (broken / played out).
+    m5s = m5[m5.index >= h1.index[b.pivot_pos]]
+    if len(m5s) == 0:
+        return done("fib: no range")
+    rng = hi_p.price - lo_p.price
+    last = float(m5.close.iloc[-1])
+    best: tuple[str, int, FibOut] | None = None
+    worst = FibOut(reason="fib: no range")
+    for side, sign in (("SELL", -1), ("BUY", 1)):
+        lo_view = lo_p.price if sign > 0 else -hi_p.price
+        hi_v, lo_v, close_v, _, _ = _view_arrays(m5s, sign)
+        fo = analyse_range(lo_view, rng, hi_v, lo_v, close_v, p)
+        if fo.setup is not None and p.fib_count == "on":
+            # R17: step 2 must hold at the edge: zone 12 % .. -27 % (88 % .. 127 % for the sell), on fib_tf.
+            # SPEC-QUESTION: here step 2 is a filter only; the entry stays the plain limit at the edge.
+            df = frames[p.fib_tf]
+            _, _, cv, mv, rv = _view_arrays(df, sign)
+            zone = (lo_view - RANGE_PAST * rng, lo_view + RANGE_EDGE * rng)
+            c2 = Outcome(tf=p.fib_tf, reason="step2: no levels")
+            if step2(c2, to_view(_zigzag(df), sign), cv, mv, rv, [zone], p) is None:
+                fo = FibOut(c2.reason, {**fo.info, **c2.info})
+        if fo.setup is not None:
+            if best is None or abs(sign * fo.setup.entry_v - last) < abs(
+                best[1] * best[2].setup.entry_v - last  # type: ignore[union-attr]
+            ):
+                best = (side, sign, fo)
+        elif RANK[fo.reason] >= RANK[worst.reason]:
+            worst = fo
+    if best is None:
+        return done(worst.reason, worst.info, "range")
+    side, sign, fo = best
+    s = fo.setup
+    if s is None:  # not reachable: ``best`` only holds outcomes with a setup
+        return done(fo.reason, fo.info, "range")
+    log["side"] = side
+    key = f"{side}|range|{h1.index[lo_p.pivot_pos]}|{h1.index[hi_p.pivot_pos]}"
+    if key in used:
+        return done("setup already used", fo.info, "range")
+    s.lo_pos, s.hi_pos = lo_p.pivot_pos, hi_p.pivot_pos
+    result = done(fo.reason, fo.info, "range")
+    result.key = key
+    result.decision = _fib_row(s, side, sign, now, pd.DatetimeIndex(h1.index), "H1", p)
+    return result
+
+
+def _fib_row(
+    s: FibSetup, side: str, sign: int, now: pd.Timestamp, times: pd.DatetimeIndex, tf: str, p: Params,
+) -> dict[str, str]:  # fmt: skip
+    """The ledger row of a Fibo order (R13-R17), prices back in real terms."""
+    th = times.tz_convert(TH)
+
+    def real(v: float) -> float:
+        return round(sign * v, 2)
+
+    rng = s.hi_v - s.lo_v
+    hc = fib_high_choice(p)
+    lo_t = f"{th[s.lo_pos]:%d/%m %H:%M}" if s.lo_pos >= 0 else "range"
+    hi_t = f"{th[s.hi_pos]:%d/%m %H:%M}" if s.hi_pos >= 0 else "range"
+    if s.kind == "range":
+        shape = "sell edge 88 %-127 %" if sign < 0 else "buy edge 12 %-(-27 %)"
+        lo_name = f"range low @{lo_t}, high @{hi_t}"
+        text = (
+            f"bot2e fib range {shape}, no H1 side, {tf} pivots. {lo_name}; 0 % {real(s.lo_v):.2f}, "
+            f"100 % {real(s.hi_v):.2f}; entry (plain limit) {real(s.entry_v):.2f}, "
+            f"stop {real(s.stop_v):.2f}, "
+            f"target {real(s.target_v):.2f} (the range's other edge, buffer, fib_count={p.fib_count}); "
+            f"R {s.r:.2f} (net of {p.spread:g} spread)"
+        )
+        trig = ""
+        entry, stop, target = real(s.entry_v), real(s.stop_v), real(s.target_v)
+    else:
+        levels = ", ".join(f"{x * 100:.1f} % {real(s.lo_v + x * rng):.2f}" for x in (0.236, 0.382, 0.618))
+        which = (
+            "highest fixed high of the descending run into L0 (the high the fall began from)"
+            if hc == "start"
+            else "fixed high immediately before L0"
+        )
+        h100_text = f"H100 = the {which} (fib_high {p.fib_high} -> {hc}); "
+        text = (
+            f"bot2e fib {tf} {side}, mode fib (leg {p.fib_leg}, side {p.fib_side}, count {p.fib_count}, "
+            f"target {p.fib_target}), "
+            f"{p.h1_mode} H1 side. "
+            f"Leg low {real(s.lo_v):.2f}@{lo_t} (0 %), high {real(s.hi_v):.2f}@{hi_t} (100 %); "
+            + (h100_text if p.fib_leg == "counter" else "")
+            + f"levels {levels}; "
+            f"entry level {p.fib_entry * 100:.1f} % = {real(s.lo_v + p.fib_entry * rng):.2f}"
+        )
+    if s.count is not None:
+        c = s.count
+        pts = ", ".join(f"{real(q.price):.2f}@{th[q.pos]:%d/%m %H:%M}" for q in c.counted)
+        text += (
+            f"; zone count ({c.kind}, {len(c.counted)} lows: {pts}) in the Fibo zone "
+            f"{real(c.band[0]):.2f}-{real(c.band[1]):.2f}, divergence on MACD {c.div_macd}, on RSI "
+            f"{c.div_rsi}; "
+            + ("the entry is the level" if p.fib_leg == "counter" else "the entry is the last close")
+        )
+    if s.kind == "leg":
+        text += (
+            f"; plain limit {real(s.entry_v):.2f}, stop {real(s.stop_v):.2f} (beyond the 0 %, or beyond "
+            f"23.6 % for a 61.8 % entry), "
+            f"target {real(s.target_v):.2f}, R {s.r:.2f} (net of {p.spread:g} spread)"
+        )
+        trig = ""
+        entry, stop, target = real(s.entry_v), real(s.stop_v), real(s.target_v)
+    return _ledger_dict(
+        now, side, f"{entry:.2f}", f"{stop:.2f}", f"{target:.2f}", trig, f"{text}. Parameters: {p.text()}"
     )
 
 
+def _ledger_dict(
+    now: pd.Timestamp, side: str, entry: str, stop: str, target: str, trigger: str, structure: str
+) -> dict[str, str]:
+    """The ledger row's fixed fields (spec section 6)."""
+    t = now.tz_convert(TH)
+    last_bar = t - pd.Timedelta(minutes=5)
+    return {
+        "id": "",  # numbered by the walker
+        "cutoff_thai": f"{t:%Y-%m-%d} 07:00",
+        "decided_at": f"{last_bar:%d/%m %H:%M}",
+        "reader": READER,
+        "side": side,
+        "entry": entry,
+        "stop": stop,
+        "target": target,
+        "fill": "", "exit": "", "why": "", "r_net": "",
+        "structure": structure,
+        "rules": "?????????",
+        "conflict": "",
+        "at_decision_r": "",
+        "missed_by": "",
+        "trigger": trigger,
+        "setup": "+++++++",
+    }  # fmt: skip
+
+
 def _row(
-    s: Setup, side: str, sign: int, now: pd.Timestamp, df: pd.DataFrame, p: Params,
-    m1df: pd.DataFrame | None = None,
+    s: Setup, side: str, sign: int, now: pd.Timestamp, df: pd.DataFrame, p: Params
 ) -> dict[str, str]:  # fmt: skip
     """The ledger row (spec section 6) for a setup, prices back in real terms."""
     t = now.tz_convert(TH)
@@ -699,20 +1135,11 @@ def _row(
         f"{real(q.price):.2f}@{times[q.pos]:%d/%m %H:%M} macd {macd[q.pos]:.2f} rsi {rs[q.pos]:.1f}"
         for q in s.counted
     )
-    if s.l1 is not None and m1df is not None:
-        m1t = pd.DatetimeIndex(m1df.index).tz_convert(TH)
-        tail = (
-            f"M1 entry: L*={real(s.lstar.price):.2f}, L1={real(s.l1.price):.2f}@{m1t[s.l1.pos]:%d/%m %H:%M}, "
-            f"M1 break of {real(s.m1_break_v or 0.0):.2f}, M1 higher low {real(s.lhl.price):.2f}"
-            f"@{m1t[s.lhl.pos]:%d/%m %H:%M}, H_d={real(s.hd.price):.2f}"
-        )
-        tfs = f"{s.tf}>M1"
-    else:
-        tail = (
-            f"Structure broken, higher low {real(s.lhl.price):.2f}@{times[s.lhl.pos]:%d/%m %H:%M}; "
-            f"H_d={real(s.hd.price):.2f}"
-        )
-        tfs = s.tf
+    tail = (
+        f"Structure broken, higher low {real(s.lhl.price):.2f}@{times[s.lhl.pos]:%d/%m %H:%M}; "
+        f"H_d={real(s.hd.price):.2f}"
+    )
+    tfs = s.tf
     high_word = "lowest low" if sign > 0 else "highest high"
     shape = {"count": f"count of {len(s.counted)}", "M": "M" if sign > 0 else "W"}[s.kind]
     structure = (
@@ -747,7 +1174,7 @@ def _row(
 
 
 def load_frames() -> dict[str, pd.DataFrame]:
-    return {tf: frame(tf) for tf in ("H1", "H4", "M15", "M5", "M1")}
+    return {tf: frame(tf) for tf in ("H1", "H4", "M15", "M5")}
 
 
 def _read(path: Path, columns: list[str]) -> list[dict[str, str]]:
@@ -764,6 +1191,10 @@ def _write(path: Path, columns: list[str], rows: list[dict[str, str]]) -> None:
         w.writerows(rows)
 
 
+# The most orders live (pending or open) and the most filled-and-open at one bar in the last ``walk_days``.
+PEAK: dict[str, int] = {"live": 0, "filled": 0}
+
+
 def walk_days(
     days: Sequence[str],
     p: Params,
@@ -777,6 +1208,7 @@ def walk_days(
     logs: list[dict[str, str]] = []
     used: set[str] = set()
     finished: set[str] = set()
+    PEAK.update(live=0, filled=0)
     for day in days:
         midnight = pd.Timestamp(day, tz=TH)
         for _, a, b in WINDOWS:
@@ -786,16 +1218,18 @@ def walk_days(
                 now_utc = now.tz_convert("UTC")
                 frames = cut(full, now_utc)
                 known = frames["M5"]
-                live = False
-                for r in written:  # one order at a time: live while score.py still calls it open
+                live = filled = 0
+                for r in written:  # live while score.py still calls it open (pending or filled)
                     if r["id"] in finished:
                         continue
-                    scored = score(r, known, start_of(r, {}))
+                    scored = score(r, known, start_of(r, {}), p.spread)
                     if scored["why"] == "open":
-                        live = True
+                        live += 1
+                        filled += 1 if scored.get("fill") else 0
                     else:
                         finished.add(r["id"])
-                res = decide(frames, now_utc, p, frozenset(used), pending=live)
+                PEAK["live"], PEAK["filled"] = max(PEAK["live"], live), max(PEAK["filled"], filled)
+                res = decide(frames, now_utc, p, frozenset(used), pending=live >= p.max_orders)
                 logs.append(res.log)
                 if res.decision is not None:
                     n = sum(1 for r in mine if r["cutoff_thai"][:10] == day) + 1
@@ -852,11 +1286,22 @@ def main(argv: Sequence[str] | None = None) -> None:
         help="'one' (the owner's rule, R11) or 'both'",
     )
     ap.add_argument(
-        "--entry-mode",
-        choices=("m1", "setup"),
-        default=d.entry_mode,
-        help="'m1' (R12: steps 3-6 on M1 near the extreme) or 'setup' (revision 3)",
+        "--mode", choices=("2e", "fib"), default=d.mode, help="'fib' = the owner's Fibonacci (R13-R17)"
     )
+    ap.add_argument("--fib-tf", choices=("M15", "M5"), default=d.fib_tf)
+    ap.add_argument("--fib-entry", type=float, default=d.fib_entry, help="entry level, 0 %% at the leg's low")
+    ap.add_argument("--fib-target", choices=("level", "high", "ext127", "ext161"), default=d.fib_target)
+    ap.add_argument("--fib-count", choices=("off", "on"), default=d.fib_count)
+    ap.add_argument("--fib-range", choices=("off", "on"), default=d.fib_range)
+    ap.add_argument(
+        "--fib-leg",
+        choices=("counter", "trend"),
+        default=d.fib_leg,
+        help="R18 'counter' or 'trend' (revision 5's leg - comparison only)",
+    )
+    ap.add_argument("--fib-high", choices=("start", "latest"), default=d.fib_high)
+    ap.add_argument("--max-orders", type=int, default=d.max_orders, help="orders live at once (research)")
+    ap.add_argument("--fib-side", choices=("h1", "any", "entry"), default=d.fib_side)
     ap.add_argument("--min-r", type=float, default=d.min_r)
     ap.add_argument("--trigger-offset", type=float, default=d.trigger_offset)
     ap.add_argument("--stop-buffer", type=float, default=d.stop_buffer)
@@ -873,7 +1318,16 @@ def main(argv: Sequence[str] | None = None) -> None:
         h1_swings=a.h1_swings,
         entry_tfs=a.entry_tfs,
         div_mode=a.div_mode,
-        entry_mode=a.entry_mode,
+        mode=a.mode,
+        fib_tf=a.fib_tf,
+        fib_entry=a.fib_entry,
+        fib_target=a.fib_target,
+        fib_count=a.fib_count,
+        fib_range=a.fib_range,
+        fib_leg=a.fib_leg,
+        fib_side=a.fib_side,
+        max_orders=a.max_orders,
+        fib_high=a.fib_high,
         min_r=a.min_r,
         trigger_offset=a.trigger_offset,
         stop_buffer=a.stop_buffer,

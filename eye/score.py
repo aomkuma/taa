@@ -79,7 +79,7 @@ def resolve(bars: pd.DataFrame, entry: float, stop: float, target: float, buy: b
     return float(bars.close.iloc[-1]), "open"  # neither reached in the stored bars: not a result yet
 
 
-def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str, str]:
+def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp, spread: float = SPREAD) -> dict[str, str]:
     side, entry, stop, target = row["side"], float(row["entry"]), float(row["stop"]), float(row["target"])
     buy = side == "BUY"
     window = m5[m5.index >= cut]
@@ -94,7 +94,7 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
     # Filled on the spot, and held under the same rule as a planned trade after its fill (C3).
     at_out, at_why = resolve(window.iloc[:LIVE_BARS], seen, stop, target, buy)
     at_move = (at_out - seen) if buy else (seen - at_out)
-    at_r = (at_move - SPREAD) / abs(seen - stop) if abs(seen - stop) > 0 else 0.0
+    at_r = (at_move - spread) / abs(seen - stop) if abs(seen - stop) > 0 else 0.0
     at_text = "" if at_why == "open" else f"{at_r:.2f}"
 
     # The order fills when price trades through the entry from the side it was on at the decision - a limit
@@ -179,7 +179,7 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp) -> dict[str,
             "at_decision_r": at_text, "missed_by": "0.00",
         }  # fmt: skip
     move = (out - price) if buy else (price - out)
-    r = (move - SPREAD) / abs(entry - stop)  # the R unit is the planned risk
+    r = (move - spread) / abs(entry - stop)  # the R unit is the planned risk
     return {
         "fill": f"{t0.tz_convert(TH):%d/%m %H:%M}",
         "exit": f"{out:.2f}",

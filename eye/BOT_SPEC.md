@@ -420,7 +420,11 @@ Every choice the code makes where the owner gave no rule - each marked `# SPEC-Q
   after `L*` is the higher low of step 3, not part of the exhaustion.
 - **Fibo stop:** the stop beyond 23.6 % applies to any entry at or above 0.618.
 - **R18, R8 (played out):** read from the bar that first traded above the entry level, not from `L0` - the
-  climb out of `L0` always passes under the 23.6 % stop of a 0.618 entry.
+  climb out of `L0` always passes under the 23.6 % stop of a 0.618 entry. On that crossing bar only the
+  target counts (its low may be the climb itself); from the next bar on, stop and target both count
+  (Codex's second code review, 2026-10-29).
+- **Money:** the USD reading stops at a balance of 0 or below ("account gone"); the R totals still count
+  every trade. A variant's spread must match the scorer's.
 - **R18, `L0`:** a low is a bottom only once a later fixed low above it exists.
 - **R18, the count** can include more lows than the owner counted by eye (the whole descending run).
 - **`fib_side` = `any` / `entry`:** when both the BUY and the SELL view qualify, the later `L0` (top) wins.
