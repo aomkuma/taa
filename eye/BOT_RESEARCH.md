@@ -98,12 +98,18 @@ stop. So the 2R floor is not the only gate, but it is the last one, and nothing 
 **This is a question about the owner's rules, not a `[Claude]` setting**, and it goes to the owner with
 these numbers.
 
-## The owner's answer on 1:2 (2026-10-29), and round 2
+## Round 2 (2026-10-29) - an entry on M1: Claude's misreading, removed
 
-The owner: *"As we discussed: if 1H runs 6 USD, and M1 gets in near the top or the bottom of price, and it turns, that is 2R already."* - the reward on H1, the risk on M1. Written as BOT_SPEC revision 4 (R12): the
-picture (level, count / M / W, divergence) on M5 / M15 as before; the break, the retest and the stop on M1;
-the stop beyond the extreme only. **This changes an owner's rule only as the owner stated it**; the M1
-definitions are `[Claude]` and marked.
+**Correction (the owner, 2026-10-29):** *"1H 6 USD was only a question - not meant to be researched or taken further; it was a comparison."* Claude had taken the owner's question as the
+answer on 1:2 and built revision 4 on it. **Removed from the code at the owner's word (*"take it out"*).**
+Kept below as the record of a method tried - not the owner's, and not to be run again.
+
+### As it was recorded at the time
+
+Claude took the owner's comparison *"if 1H runs 6 USD, and M1 gets in near the top or the bottom of price,
+and it turns, that is 2R already"* for a rule (**a misreading - the owner later: only a comparison**) and
+wrote BOT_SPEC revision 4 (R12): the picture on M5 / M15 as before; the break, the retest and the stop on
+M1; the stop beyond the extreme only.
 
 **Claude's expectation, written before the run (2026-10-29):** the stop falls from round 1's 10-40 USD to
 roughly 2-8 USD, so far more setups pass 2R: **5-15 filled trades in October** (from 0). The tight stop will
@@ -111,12 +117,12 @@ be hit by M1 noise more often: **a win rate of 30-40 %**. Whether that pays at 2
 break-even, between -0.2 and +0.3 R a trade. If it comes out at 0 trades or over 40, that is an abnormal
 count and the report stops until it is explained.
 
-### Round 2 - R12 (entry on M1), October 1-27 (Sonnet's build, before Codex's review)
+### Round 2 results - R12 (entry on M1), October 1-27
 
 | # | date | who proposed | what changed | why | Oct trades (filled) | won / lost | USD from 200 | kept? |
 |---|---|---|---|---|---:|---:|---:|---|
-| 12 | 10-29 | the owner | `m1_strict` - R12, h1 strict | the owner's answer on 1:2 | 2 (2) | 0 / 2 | 183.66 (-2.08 R) | under review |
-| 13 | 10-29 | the owner | `m1_lows` - R12, h1 lows | the same, other H1 reading | 3 (3) | 0 / 3 | 171.51 (-3.11 R) | under review |
+| 12 | 10-29 | Claude (misread) | `m1_strict` - R12, h1 strict | Claude's misreading of a question | 2 (2) | 0 / 2 | 183.66 (-2.08 R) | removed |
+| 13 | 10-29 | Claude (misread) | `m1_lows` - R12, h1 lows | the same, other H1 reading | 3 (3) | 0 / 3 | 171.51 (-3.11 R) | removed |
 
 The three trades (`m1_lows`; `m1_strict` wrote the first and the third), traced by Claude on M1 for 48 h:
 
@@ -130,7 +136,8 @@ The three trades (`m1_lows`; `m1_strict` wrote the first and the third), traced 
 **none** did. Three trades say nothing about the method (CLAUDE.md: no conclusion from a handful). What is
 measured: the M1 entry made 2R reachable (206 / 275 bars now stop at "reward under 2R" instead of every one),
 but each entry was the retest of the broken M1 high, already 8-12 USD from the extreme, and all three were
-stopped within 34 minutes. Still under review (Codex), not yet believed.
+stopped within 34 minutes. **3 distinct trades** (2 under `strict`, 3 under `lows`, the strict two among
+them). Codex's review below found no bug.
 
 **Codex's review of the R12 build (2026-10-29, read-only):** no look-ahead (every frame's close time is
 checked, M1 included; ZigZag emits only fixed pivots); the R12 formulas faithful, the SELL mirrored;
@@ -138,3 +145,24 @@ checked, M1 included; ZigZag emits only fixed pivots); the R12 formulas faithful
 from the stored M1 / M5 bars and got the same side, entry, stop and target.** One medium risk, not observed
 in October: an `L*` older than the 7,200-bar M1 frame (five trading days) is refused - zero such rows.
 So the three losses are what the rules as written do, not a bug.
+
+## Round 3 - the owner's Fibonacci (BOT_SPEC revision 5), with and without the count
+
+**Claude's expectation, written before the run (2026-10-29):**
+- Arithmetic, not a guess: with the stop at 0 % and the target at the leg's 100 %, R = (1 - e) / e before
+  spread for an entry level e: 0.236 -> 3.2, 0.382 -> 1.6, 0.618 -> 0.6. **So with `fib_target = high`
+  only the 0.236 entry can pass the owner's 2R**; 0.382 and 0.618 need the target to be a level further away.
+- Without the count: many more orders than 2e - I expect **15-40 in October** at 0.236 / level targets, a
+  win rate near 30-40 % (a 0.236 pullback is deep: many legs break their low).
+- With the count: rare, as 2e was - **0-5**.
+- Over 60 trades in a month, or 0 in every no-count variant, is an abnormal count and stops the report.
+
+**The owner on what will matter next (2026-10-29):** *"the problem I can see coming is reading whether it is
+a trend or sideways - but never mind, try it first."* In revision 5 that reading is Claude's: trend = step 1's
+H1 side (`h1_mode`), sideways = no H1 side. Every Fibo decision writes which it was, so the trend / sideways
+call can be judged trade by trade after the run.
+
+**The round 3 expectation, updated for the owner's targets (written before any round 3 result):** stop at 0 %
+(0.618 entry: at 23.6 %), before spread - entry 0.382: 2.3 R at 127 %, 3.2 R at 161 %; 0.236: 4.4 / 5.9 R;
+0.618: 1.7 / 2.6 R. So `ext127` passes 2R for 0.382 and 0.236 only; `ext161` for all three. The trade-count
+and win-rate expectation above is unchanged.

@@ -1,8 +1,8 @@
 # Bot 2e - specification
 
 Written by Claude on 2026-10-28 from `eye/METHOD.md` section 2e, at the owner's word: *"write the code and
-let a bot do the work - correct, with every condition. A Sonnet agent writes it, Codex reviews it, Claude
-checks the final spec."* The owner's rules are quoted from 2e. **Every definition the owner did not give is
+let a bot do the work - correct, with every condition"*; and the division of the work: a Sonnet agent writes
+it, Codex reviews it, Claude checks the final spec. The owner's rules are quoted from 2e. **Every definition the owner did not give is
 marked `[Claude]`, is a named parameter with a default, and is written into each decision the bot makes**,
 so that the owner can change it and the record shows which one produced which trade.
 
@@ -75,8 +75,7 @@ lowest of them. Step 2 holds if `L*` lies inside a support band and **either**:
 - **the count**: 3 to 5 lows (the owner: *"3 to 5 peaks"*) **and divergence on both** at `L*` against the
   low before it - price lower or equal, MACD main higher, RSI higher (the owner: *"if both happen, it is
   clear"*; METHOD 2e: divergence is required for the count); **or**
-- **the M** (the owner's word for a buy - *"M as buy, W as sell"*; *"two legs, but it is an M pattern"*;
-  *"an asymmetric M"*): exactly the last two counted lows both inside the same support band, a high between
+- **the M** (the owner's word for a buy - *"M as buy, W as sell"*; it need not be symmetric): exactly the last two counted lows both inside the same support band, a high between
   them. No divergence needed (the owner: *"it can be entered"*). Record whether it diverged anyway.
 
 **Step 3 - the structure breaks.** After `L*`: a bar's high goes above the last fixed HIGH before `L*`, and
@@ -85,8 +84,8 @@ then a fixed LOW `L_hl` forms above `L*` - a higher low.
 **Step 4 - the high breaks.** `H_d` = the fixed HIGH the dip to `L_hl` started from. The order waits for
 price to go through `H_d`.
 
-**Step 5 - the entry on the retest: a Buy Stop Limit.** The owner: *"break the high, then retest"*; *"a stop
-limit"*. Written once `L_hl` is fixed: `trigger` = `H_d` + `trigger_offset` (`[Claude]` 0.50 USD - "a
+**Step 5 - the entry on the retest: a Buy Stop Limit.** The owner, for the sell: *"break the low, then retest"*; *"a stop
+limit"* - the buy's "break the high" is Claude's mirror. Written once `L_hl` is fixed: `trigger` = `H_d` + `trigger_offset` (`[Claude]` 0.50 USD - "a
 little over"), `entry` (limit) = `H_d`. If a bar has already closed above `H_d` when the decision is
 written, `trigger` is left empty and the order is a plain buy limit at `H_d`, below the price on the
 screen. If price is already below `L_hl` the setup is void.
@@ -100,6 +99,7 @@ No such band in the last 500 H1 bars = no trade. **Held until stop or target** -
 this.
 
 **Reward** `[Claude]` `min_r` default **0** (no filter - the owner has not set one; the question is open).
+*Superseded: R2 (1.0, Claude's), then R9 - **2.0, the owner's**.*
 R = (target - entry - 0.30) / (entry - stop) is written into every decision whatever `min_r` is.
 
 **SELL:** the mirror - H1 down; a resistance band; the lowest LOW among the last 12 fixed pivots starts the
@@ -258,7 +258,14 @@ owner's W)**, not one. (What it then decides is for steps 3-7 and R9.)
 MACD and RSI both: *"one"*). `div_mode` defaults to **one**; which oscillators diverged is still written
 into each decision (both = the owner's "clear" case).
 
-## Revision 4 (2026-10-29) - the entry on M1, near the extreme: the owner's answer on 1:2
+## Revision 4 (2026-10-29) - REMOVED: an entry on M1 - Claude's misreading of a question
+
+**Removed from the code at the owner's word (2026-10-29: *"take it out"*).** It was built on a misreading:
+the owner, after seeing it: *"1H 6 USD was only a question - not meant to be researched or taken further; it was a comparison."* The text below is kept as the record of what was built and
+run (`eye/BOT_RESEARCH.md` round 2: 3 distinct trades, none won); none of it is the owner's rule, and the "open
+question" on the 60 % belonged to the same comparison and is closed.
+
+### As it was written (record only)
 
 Asked how a real trade reaches 1:2 - 1:3 with the stop beyond the extreme and the target before the next
 level, the owner: *"As we discussed: if 1H runs 6 USD, and M1 gets in near the top or the bottom of price, and it turns, that is 2R already."* Earlier the same evening, the owner's own question: *"say an H1 bar has
@@ -286,8 +293,79 @@ M15; the target just before the next opposite level; at least 2R, the owner's). 
   M1 as on every frame. Decisions use closed M1 bars only (the cut guard covers M1).
 - The setup's identity for "already used" is side, setup timeframe, `L*` time and the M1 higher-low time.
 - R8 (played out) is read on M1 bars after the M1 higher low.
-- `[Claude]` `stop_buffer` stays 0.50 USD. **Open for the owner:** the "60 %" - beyond the extreme by 60 %
-  of what (the H1 ATR, the H1 bar, the M1 swing)? Until answered it is not used.
+- `[Claude]` `stop_buffer` stays 0.50 USD. *(The "60 %" question written here is closed: it belonged to
+  the owner's comparison, not to a rule.)*
 
 Ledger: the `entry_tf` / setup columns say `M15>M1` or `M5>M1`; the decision text names `L*`, `L1`, the M1
 break, the M1 higher low and `H_d`.
+
+## Revision 5 (2026-10-29) - the owner's Fibonacci, with and without the count
+
+The owner's words are in METHOD 2e, "The owner's Fibonacci". Asked whether the count / M-W / divergence is
+still needed with it: *"try both, counting and not counting"*, then *"go on"*. The scale, the stop, the
+target and the sideways drawing were asked and, when this was written, **not yet answered** (the target
+and the 61.8 % entry's stop were answered later - below): every reading below that is not in the
+owner's words is `[Claude]`, and the variants run each open reading rather than choosing one.
+
+*Corrections after review (10-29): the count-on path does not use M1 (revision 4 is removed) - see the
+note "R16 as built" below; the trend target and the sideways target are the owner's proposals, put as a
+question, run as variants.*
+
+The owner on what will be hard: *"the problem I can see coming is reading whether it is a trend or sideways
+- but never mind, try it first."* Trend = an H1 side from step 1, sideways = none: `[Claude]`.
+
+**R13. The Fibo leg (a BUY in an up trend; SELL the mirror in a down trend).**
+- The side: step 1 as now (H1). `[Claude]`
+- The leg, `[Claude]`: on the setup timeframe (`fib_tf`, default M15; variant M5), the latest fixed ZigZag
+  HIGH and the fixed LOW before it, the leg rising (high > low) - *"0 % at the previous lowest price, 100 %
+  at the previous highest price"*. A level at `x` = low + x * (high - low).
+- The leg is live while no bar has closed below its 0 % since the high, and no bar has made a new high
+  above 100 % (a new high is a new leg once ZigZag fixes it).
+
+**R14. Entry, stop, target.**
+- Entry level `fib_entry` (the owner: *"then wait for it to fall back to around 38 - 23 %; if the bulls are
+  really strong, maybe enter from the pullback to 61 %"*): variants **0.382**, **0.236**, **0.618** - on the scale above (0 % at the low),
+  a level of 0.382 is a pullback of 61.8 % of the leg. `[Claude: this is the reading of the scale, asked]`
+- The stop: below the 0 % (the leg's low) - `stop_buffer` (*"beyond 88 % - 0 %"*, read as beyond 0 %
+  `[Claude]`).
+- The target, `[Claude]`, two variants: `fib_target = level` - the 2e rule, just before the nearest
+  opposite H1 band above the entry (as step 7); `fib_target = high` - the leg's 100 % - `target_buffer`.
+- **At least 2R - the owner's**; under it, no decision. Spread 0.30 as now.
+
+**R15. Without the count (`fib_count = off`).** When the leg is live and the last close is above the entry
+level, write a **plain limit** at the entry level with the stop and target above. One order per leg (key:
+side, fib_tf, leg low time, leg high time). R8 played-out applies (stop or target traded since the leg's
+high was fixed).
+
+**R16. With the count (`fib_count = on`).** The Fibo zone `[0 %, entry level]` takes the place of the H1
+band as "where": step 2 (R10 zone count by fixed lows inside that zone; 3-5 with divergence on one, or the
+M / W of exactly two) on the setup timeframe; the order as in "R16 as built" below (no M1 - revision 4
+is removed); the stop of R14, the target per `fib_target`, at least 2R.
+
+**R17. Sideways (no H1 side), `[Claude]` drawing, on by `fib_range = on`:** the range = the last fixed H1
+HIGH and LOW (the latest two pivots); drawn 0 % at the low, 100 % at the high. Sell zone 88 % - 127 % (*"at
+the edge, around 88 % - 127 %"*): a plain limit sell at 88 %, stop above 127 % + `stop_buffer`, target the
+range's 12 % level + `target_buffer` `[Claude]`; the buy the mirror (limit at 12 %, stop below -27 %, target
+88 %). At least 2R. With `fib_count = on`, step 2 must hold at that edge as in R16.
+
+Every decision text names: mode, the leg's low and high (prices, Thai times), the levels used, entry,
+stop, target, R. Every one of these is written into the ledger's structure text so the walk-by-hand can
+check it.
+
+**The owner on the target (2026-10-29, after revision 5 was written):** *"TP: if sideways, yes, around
+100 %; but in a trend, shouldn't it be 127 - 161 %?"* So `fib_target` gains **`ext127`** (low + 1.272 x
+leg - `target_buffer`) and **`ext161`** (low + 1.618 x leg - `target_buffer`) - the owner's proposal for a trend (put as a question);
+`level` and `high` are kept for comparison only. In R17 the target is **the range's opposite edge** -
+Claude's reading of the owner's "around 100 %" (open: on a 0 %-low scale the far edge from a sell at 88 % is
+0 %) - replacing Claude's 12 % level. Arithmetic (stop at 0 %, before spread): entry
+0.382 -> 2.3 R at 127 %, 3.2 R at 161 %; 0.236 -> 4.4 R at 127 %. (The 0.618 entry's stop is at 23.6 % -
+the next paragraph.)
+
+**The owner on the 61.8 % entry's stop (2026-10-29):** asked where the stop goes when entering at 61.8 %:
+*"beyond 23 %."* So for `fib_entry` 0.618 the stop = the 0.236 level - `stop_buffer`; for 0.382 and 0.236 it
+stays beyond 0 % `[Claude's reading of "beyond 88 % - 0 %"]`. Arithmetic before spread: 0.618 entry, stop 0.236 -> 1.7 R at 127 %, 2.6 R at 161 %.
+
+**R16 as built (2026-10-29, after revision 4 was removed):** with the count on, the order is written when
+price has entered the Fibo zone `[0 %, entry level]` and step 2 holds there (the zone count 3-5 with
+divergence on one, or the owner's M / W of two) on the setup timeframe: a plain limit at the **last close**
+`[Claude]`, the stop and target of R14, R recomputed from that entry, at least 2R. No M1.

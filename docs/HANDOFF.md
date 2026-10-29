@@ -1,8 +1,10 @@
 # Session handoff
 
-Last updated **2026-10-28 18:54 Thai** (read with `Get-Date`). The owner's setup is written down in full
-(`eye/METHOD.md` 2e), the tools are built and reviewed, and real day 3 (2026-04-06) has been walked under
-it. Next: real day 4, 2026-04-07.
+Last updated **2026-10-29 Thai** (read with `Get-Date`). The owner's setup is written down in full
+(`eye/METHOD.md` 2e) and a bot applies it (`eye/bot2e.py`). Under the owner's rules it made **no trade in
+October 2026**. **Now: round 3 - the owner's Fibonacci** (METHOD 2e "The owner's Fibonacci", `eye/BOT_SPEC.md`
+revision 5), being built and run on October; its results go into `eye/BOT_RESEARCH.md`. Walking by hand
+resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
 files it points at, and they are few on purpose: everything built before 2026-10-28 was stopped and
@@ -17,7 +19,8 @@ archived that day, and the rebuilding is deliberately small.
 | How a day is walked | `eye/METHOD.md` 2c |
 | The nine trading rules | the bottom of `eye/METHOD.md` - 2e replaces rules 4 and 9; the rest stand |
 | The weaknesses found, and what was fixed | `eye/RULES_REVIEW.md` (sections 1-3 the rules, 5-6 the 2e review) |
-| Every method tried, with a verdict | `eye/TRIED.md` - row 18 is the owner's setup |
+| Every method tried, with a verdict | `eye/TRIED.md` - row 18 the owner's setup, 19 the bot, 20 the removed M1 entry, 21 the owner's Fibonacci |
+| **The bot** - its rules, and every research run with its result | `eye/BOT_SPEC.md` (revisions 1-5), `eye/BOT_RESEARCH.md`, `eye/bot_research.py`; each run's ledger and log in `eye/research/<variant>/` (not committed; `summary.csv` is) |
 | What the trades support | `eye/LESSONS.md` |
 | Every reading, written before the reveal | `eye/SHEETS.md` |
 | The trades | `eye/ledger.csv`, `eye/ledger_control.csv` |
@@ -41,13 +44,14 @@ Read first, in order:
    eye/RULES_REVIEW.md sections 5-6
 
 My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
-generalise, never a rule with its numbers. Do the tool job in "Where it resumes", then walk real
-day 3, 2026-04-03, Asia 07:00 first, one window at a time, reporting each trade to me as it happens.
+generalise, never a rule with its numbers; a question I ask is a question, not a rule. Pick up round 3 (my
+Fibonacci) in eye/BOT_RESEARCH.md: read its results, check them, report them to me in USD from 200. Then
+real day 5, 2026-04-08, Asia 07:00 first, one window at a time.
 ````
 
 ---
 
-## Where it stands, 2026-10-28
+## Where it stands, 2026-10-28 (the bot and Fibonacci of 10-29: "Where it resumes")
 
 **The work.** Trading gold by eye on real candles, no strategy in `config.yaml`. The owner's bar is
 **+0.15 R a trade after costs**.
@@ -55,16 +59,17 @@ day 3, 2026-04-03, Asia 07:00 first, one window at a time, reporting each trade 
 **The owner's setup** (`eye/METHOD.md` 2e, dictated 2026-10-28), for a sell - a buy is the mirror:
 
 1. the **H1 trend** gives the sell side the edge, and price comes up into a **resistance from the left**;
-2. **3-5 ZigZag peaks** into it - **or two that make an M** (a W for a buy) - with **divergence** on MACD and RSI
-   against price;
+2. **3-5 ZigZag peaks** into it with **divergence** on MACD or RSI against price (one is enough) - **or two
+   that make the owner's W** (an M for a buy - the owner's words, the textbook's reversed), which needs no
+   divergence;
 3. the **structure breaks** - the last swing low goes;
 4. the **low breaks** - the low the bounce after it started from;
 5. **entry on the retest** of that broken low, on M5-M15 (the owner: *"break the low, then retest"*);
 6. **stop beyond the highest top** of the move;
 7. **target just before the next level** from the left; **held until stop or target**, no time limit.
 
-Steps 3-5 are Claude's generalisation of the owner's example (as the owner asked); the rest are the
-owner's answers. MACD and RSI are the owner's exception to "no indicators". Settings are MT5's defaults:
+Steps 3-4 are Claude's generalisation of the owner's example (as the owner asked); step 5 and the rest
+are the owner's answers. MACD and RSI are the owner's exception to "no indicators". Settings are MT5's defaults:
 ZigZag 12/5/3, MACD 12/26/9, RSI 14. The owner's one example, worked on the stored bars after the fact,
 pays +1.48 R - an illustration, not evidence.
 
@@ -126,12 +131,26 @@ fill fixes re-score every planned column of all twelve identically.
 
 ## Where it resumes
 
-**2026-10-29 - the owner answered how 1:2 is reached:** *"if 1H runs 6 USD, and M1 gets in near the top or
-the bottom of price, and it turns, that is 2R already"* - the reward on H1, the risk on M1. Written as
-`eye/BOT_SPEC.md` revision 4 (R12: steps 3-6 on M1, the stop beyond the extreme only) and in METHOD 2e;
-Claude's expectation before the run is in `eye/BOT_RESEARCH.md` (5-15 trades in October, 30-40 % won).
-A Sonnet agent is implementing R12 and running October; then Codex reviews and Claude checks.
-**Open for the owner:** the "60 %" (*"SL beyond the top of the H1 bar by 60 %"*) - 60 % of what.
+**2026-10-29, in order:**
+
+1. **Round 2 - an entry on M1 (removed).** Claude took the owner's question *"if 1H runs 6 USD and M1 gets
+   in near the top..."* for the answer on 1:2 and built BOT_SPEC revision 4. October: 3 distinct
+   trades, none won; Codex found no bug. The owner: *"1H 6 USD was only a question - a comparison"*, then
+   *"take it out"*. Removed from the code; kept in `BOT_RESEARCH.md` and `TRIED.md` row 20 as a record.
+   Lesson in memory: a question of the owner's is not a rule.
+2. **The owner's Fibonacci** (volunteered): trend - 0 % at the previous low, 100 % at the previous high,
+   enter on the pullback to 38-23 % (61 % when the bulls are strong; its stop beyond 23 %), stop beyond 0 %,
+   target 127-161 % (put as a question); sideways - the edge 88-127 %, target around 100 %; with and without
+   the count (*"try both"*). The owner foresees the hard part: *"reading whether it is a trend or
+   sideways"*. Every word is in METHOD 2e; the open readings are listed there and run as variants.
+3. **Round 3** - BOT_SPEC revision 5 (R13-R17), built by a Sonnet agent (`mode=fib` in `eye/bot2e.py`), run on
+   October with `eye/bot_research.py`. **Next: read its results, have Codex review the build, check the
+   trades on the bars, and write them into `BOT_RESEARCH.md`, `TRIED.md` row 21 and here.** Claude's
+   expectation is written there before the run.
+4. **The documents were reviewed by Codex, Sonnet and Haiku apart** and corrected: the M / W sides in the
+   written-out steps (they had the textbook's), stale status in this file, START_HERE and TRIED,
+   attributions of Claude's readings to the owner.
+
 
 **Done on 10-28:** the `setup` and `trigger` columns, `rules.py` judging the seven steps, and **real day 3,
 2026-04-06**, the first day under 2e (03/04 was Good Friday - no bars after 03:50 Thai). Asia: **D3-1**, a
@@ -142,15 +161,13 @@ MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
 
 **Read again with the owner after the day was scored** (`eye/SHEETS.md`, the end of day 3; METHOD 2e):
 
-- *"Two legs, but it is an M pattern"* - **two peaks that make an M (a W) count**, not only 3-5; the M may
-  be asymmetric.
+- **Two peaks that make an M (a W) count**, not only 3-5; the M may be asymmetric.
 - *"If I say it is support, should you buy or sell?"* - **at support, buy.** And *"I have always understood
   M as buy and W as sell, in the leg where it has already projected"* - **the owner's M is a buy and W a
   sell, the opposite of the textbook.** Claude read "M" the textbook way, took it for a sell, and assumed
   the owner read H1 as down - neither was said; the record is corrected.
 - So day 3 **London**, recorded `shut`, holds the buy Claude refused: an asymmetric M (tops 4678.79,
-  4667.74) whose lows 4643.61 / 4644.97 sat on the 4642-4651 support, then the run to 4706.58. *That this
-  is the spot the owner means is Claude's reading, asked and not yet confirmed.* The rows of
+  4667.74) whose lows 4643.61 / 4644.97 sat on the 4642-4651 support, then the run to 4706.58. The rows of
   `sessions.csv` keep what was recorded at the time; the note is the correction.
 - **Measured on three years of M15 gold** (METHOD 2e, the table): M and W, of either kind, went up first
   52-57 % of the time - the years' rise is in every row; the shape alone separates little. The level, the
@@ -160,19 +177,18 @@ MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
 clear M at support is taken though MACD and RSI did not diverge there - *"it can be entered."* So: **a clear
 M (W) at the level needs no divergence**; divergence is required for the 3-5 count (METHOD 2e step 2).
 
-**Real day 4, 2026-04-07, walked:** no decision. Asia, London, New York all `no-setup`; step 7's next level sat a few dollars over every retest entry (`SHEETS.md`, "Day 4 in one place"). **Open for the owner: a minimum reward** - Claude refused a 0.1 R plan on its own judgement.
+**Real day 4, 2026-04-07, walked:** no decision. Asia, London, New York all `no-setup`; step 7's next level sat a few dollars over every retest entry (`SHEETS.md`, "Day 4 in one place"). The minimum reward was then answered by the owner: **at least 1:2**.
 
 **The bot - the work now (owner, 10-28: *"write the code and let a bot do the work"*).** `eye/bot2e.py`
 applies METHOD 2e bar by bar (spec `eye/BOT_SPEC.md`; built by a Sonnet agent, reviewed twice by Codex,
 checked by Claude; 18 tests in `tests/unit/test_eye_bot2e.py`). Divergence for the 3-5 count: **one oscillator is enough** (owner, 10-28). The owner's reward rule: **at least 1:2**,
-and when the target just before the next level gives less - **no trade, for now**. Runs so far (06-07/04,
-20-27/10/2026): no decision. **Next for the bot: BOT_SPEC revision 3** - `min_r` 2.0 and step 2 counting
-the tops / bottoms of one zone (the 4141-4142 double top of 21-22/10 was split) - Sonnet implements,
-Codex reviews, Claude checks; then a run over months, read in money (`money.py --ledger bot_ledger.csv`).
+and when the target just before the next level gives less - **no trade, for now**. Revision 3 (`min_r` 2.0, counting by zone) was built and
+October 2026 run in 11 variants: **no trade** (`BOT_RESEARCH.md` round 1); with the floor off, 1-4 setups a
+month, the best 1.31 R. `eye/bot_ledger.csv` is empty because research runs write to `eye/research/`.
 
-**Next: real day 5, 2026-04-08, Asia 07:00 Thai.** (walking by hand continues beside the bot.) (The day-4 instructions below still apply.)
+**Next by hand: real day 5, 2026-04-08, Asia 07:00 Thai** (walking by hand continues beside the bot).
 
-**Day 4's instructions, kept:** real day 4, 2026-04-07, Asia 07:00 Thai. Read M and W **the owner's way** (M at support = buy, W
+**How a day is walked (written for day 4, still the procedure):** Read M and W **the owner's way** (M at support = buy, W
 at resistance = sell) and count two peaks that make one. `.venv\Scripts\python eye/walk.py "2026-04-07 07:00" 0`,
 one step per command (a slip on day 3 printed two at once). At each look, the pivots with MACD and RSI:
 the helper Claude used lives in the session scratchpad, so rebuild it - `zigzag_pivots` on the closed bars
@@ -197,15 +213,20 @@ before the reveal (METHOD 2e, row 3; it answers the "one reader" hole). And a se
 3. The archived -0.115 comparison: *"delete it"* - removed from every live document (the history files,
    `eye/RULES_REVIEW.md` and the retired `eye/CODEX_BRIEF.md`, keep it as a record).
 
+**The record in money** (done 10-28): `eye/money.py`, 200 USD at 0.01 lot: 200.00 -> 110.13 (-44.9 %),
+deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the owner's.
+
 ## Open, and nobody has closed them
 
 | | |
 |---|---|
+| **The owner's Fibonacci, asked and not answered:** the scale (0 % at the low - is 38-23 % a deep pullback?), the stop for the 38 / 23 % entries, the sideways drawing and its "around 100 %" target, and how trend vs sideways is read | METHOD 2e, "The owner's Fibonacci" |
+| **H1 side `strict` or `lows`**, and whether 3R is wanted where 2R is reachable | `eye/BOT_SPEC.md` |
+| **The September check** - a variant that wins October is run once, unchanged, on September | `eye/BOT_RESEARCH.md` ground rules |
 | **MACD and RSI not yet checked against MT5**, nor ZigZag on M5 and H1 | `eye/walk.py` |
 | **One reader.** Codex runs with the prompt piped on stdin (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `exec - --sandbox read-only`). It has reviewed documents twice, never a chart | `TRIED.md` row 14 |
 | **Two judgements in 2e** - which level from the left counts, and what the H1 trend is at that moment (the owner's example had just broken an H1 lower high) - are where a reader's bias enters | `RULES_REVIEW.md` M9 |
 | **Nothing enforces the sequential reveal.** `walk.py` accepts any step | `TRIED.md`, the review table |
-| **Done 10-28: the record in money** - `eye/money.py`, 200 USD at 0.01 lot: 200.00 -> 110.13 (-44.9 %), deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the owner's | `eye/money.py` |
 | **The review agenda on the nine rules** (C5, C6, C9, X1) - partly overtaken by 2e, not decided | `RULES_REVIEW.md` 1-3 |
 
 ## Standing constraints

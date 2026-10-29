@@ -417,48 +417,14 @@ What the day showed about reading 2e, for the next days to test:
 - **A break that runs straight to the target leaves no retest before it.** The order rule (rule 8) and
   the owner's retest entry together miss exactly that move.
 
-### The owner on day 3's New York chart (2026-10-28, after the day was scored)
+### What the owner settled after day 3 (2026-10-28)
 
-The owner, on `eye/walk/2026-04-06_1930_000_b.png`: *"two legs, but it is an M pattern - this chart is
-very pretty."* What the bars show (read after the outcome was known - this is a lesson, not a trade):
-
-- **The large M at the 4700 resistance from the left:** tops 4699.44 (02/04 21:40; MACD 19.15, RSI 74.52)
-  and 4706.58 (06/04 16:40; MACD 8.39, RSI 68.54) - a higher high on both oscillators' lower highs:
-  **divergence on both**, at a level the left of the chart built.
-- **The small M on M5 at the second top:** 4706.58 (16:40) and 4696.78 (17:40), neckline about 4685 (lows
-  4686.05 and 4684.96). Price lost the neckline and fell to 4659.76 by 19:25; it came back up to
-  4690.79-4697.57 between 21:00 and 21:35 - the retest - and fell to 4651.98 at 22:35.
-- **Why I passed it (if it was a sell - Claude's assumption):** I counted "3 to 5 peaks" literally and
-  saw two; and I read H1 as up, which made the sell side the wrong side. The owner's correction is written into 2e step 2: **two peaks that make
-  an M (a W for a buy) count.** The H1 question is open (below).
-- So New York was not `no-setup` by the owner's reading - it was a setup the rules, as I applied them,
-  refused. Its row in `sessions.csv` keeps what I recorded at the time; this note is the correction.
-
-The owner, adding: *"an asymmetric M, but you can see at once that that is the support."* The two tops are
-not equal and need not be - that much is the owner's. **The rest of this section is Claude's reading, not
-the owner's:** that the support meant is the M's neckline (about 4685), that the trade is a sell on its
-retest, and the +1.4 R worked from it. The owner then asked: *"when did I say it was a down trend? What did
-you conclude that from?"* - Claude had assumed the M meant a sell and, from 2e's rule that a sell needs the
-H1 sell side, that the owner read H1 as down. Neither was said. **Open, for the owner: which spot is the
-support, and which side the trade was.**
-
-The owner, to Claude's question "which side?": *"if I say it is support, should you buy or sell?"* -
-**buy.** Claude had read "M" as a sell and never looked at the word "support". Read as a buy, the spot that
-fits the owner's words on that chart is **London, 06/04**: an asymmetric M (tops 4678.79 at 12:20 and
-4667.74 at 13:50) whose lows, 4643.61 (13:00) and 4644.97 (14:25), sit on the 4642-4651 support band from
-the left - after which price ran to 4706.58. **Claude marked that window `shut`** (two lows; MACD and RSI
-lower at the second low, so no divergence) - a buy at support, on the H1 side, refused. *Claude's reading
-of which spot the owner means - asked to confirm.*
-
-The owner: *"really? I have always understood M as buy and W as sell, in the leg where it has already
-projected."* The textbook has it the other way round, which is why Claude read the M as a sell. In the
-owner's usage the M on the 4642-4651 support is a buy - written into METHOD 2e ("The owner's words for
-patterns"), with Claude's reading of "the leg where it has already projected" marked to confirm.
-
-The owner, asked whether that was the spot and whether a clear M at support is taken though MACD and RSI
-did not diverge at its second low: *"it can be entered."* So day 3 London was a setup by the owner's rule -
-**an M at the level needs no divergence** (METHOD 2e step 2). Not added to the ledger: it is read after the
-outcome was known, and stays a lesson.
+- **The owner's M is a buy, the W a sell** - *"I have always understood M as buy and W as sell"* - the
+  opposite of the textbook; at support, buy.
+- **Two peaks that make an M (W) count**, not only 3-5, and the M need not be symmetric.
+- **A clear M at support is entered without divergence** - *"it can be entered"* - as day 3 London's M on
+  the 4642-4651 support (lows 4643.61 / 4644.97, then the run to 4706.58), which Claude had marked `shut`.
+  Not added to the ledger: read after the outcome was known, it stays a lesson.
 
 ---
 

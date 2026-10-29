@@ -9,6 +9,8 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 - **`docs/START_HERE.md`** - what this repository is now, what we are doing, and the one number everything
   is judged against.
 - **`docs/HOUSE_RULES.md`** - how to work here. Every rule in it was paid for with a real mistake.
+- **`eye/BOT_SPEC.md`**, **`eye/BOT_RESEARCH.md`** - the bot that applies the owner's setup, and every
+  research run on it with its result (`eye/research/<variant>/` holds each run's ledger and log).
 - **`eye/METHOD.md`**, **`eye/TRIED.md`**, **`eye/LESSONS.md`** - the live work: trading gold by eye, what
   has been tried and whether it worked, and what the ledger supports.
 
@@ -68,7 +70,10 @@ Anything new about it is the owner's to state: ask, and write the answer in thei
 from your own reading of the charts (METHOD 2d was exactly that, and is on hold). An example the owner
 gives is a principle to generalise, never a rule with its numbers. **The owner's pattern words are not
 the textbook's: in the owner's usage an M is a buy (it forms coming down into a support) and a W a sell** -
-read them the owner's way, and never fill in a side or a trend reading the owner did not give.
+read them the owner's way, and never fill in a side or a trend reading the owner did not give. On 2026-10-29 the
+owner added **their Fibonacci** (METHOD 2e, "The owner's Fibonacci") - its open readings are listed there.
+**A question the owner asks ("say 1H runs 6 USD...") is a question, not a rule** - an entry on M1 was built
+on one and removed.
 
 **Nothing is committed without `ruff`, `mypy`, `bandit` and the tests green**, and nothing is pushed,
 deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per

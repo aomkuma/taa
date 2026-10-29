@@ -25,7 +25,7 @@ indicators. The owner, 2026-10-28:
 Later the same day the owner named what they actually trade, and the work holds to it: **price structure +
 divergence + counting the peaks** (`eye/METHOD.md` 2e). The owner then dictated the setup, and it is written in
 full in 2e: the H1 trend gives the side; at a level from the left on that side, 3-5 ZigZag peaks (or two that make
-an M or a W) with divergence on MACD and RSI against price (the owner's one exception to "no indicators"); the structure
+an M or a W) with divergence on MACD or RSI against price (one is enough; a clear M / W needs none) (the owner's one exception to "no indicators"); the structure
 breaks, the low (high) goes, entry on the retest of it; stop beyond the extreme of the move; target just before the
 next level; held until stop or target. **In the owner's words an M is a buy and a W a sell** - the
 opposite of the textbook; read them the owner's way (`eye/METHOD.md` 2e, "The owner's words for
@@ -48,9 +48,9 @@ The lot is the reading's assumption, not a decision - risk is the owner's to set
 
 ## What is known so far, and how little it is
 
-**Twelve decisions that were trades, nine of them filled, one winner**, plus three moments stood aside.
-Taken together: **-0.378 R a trade.** Three things have been measured on them, all backwards, none
-decided:
+**Now: 13 decisions that were trades, 9 filled** - **-0.348 R a trade** as planned, **-0.012** taken at the
+price on the screen (`docs/HANDOFF.md` carries the current figures). The three measurements below were made
+at the earlier snapshot of twelve (-0.378 R a trade); all backwards, none decided:
 
 - **The structure at the level.** Four trades taken with it made +0.14 R each, four taken against it lost a
   full stop every time - but take the single +3.67 R winner out of the good half and both halves lose
@@ -71,8 +71,9 @@ the ones that failed.
 
 The method being run now is **real trading days, one at a time** (`eye/METHOD.md` section 2c): a date
 taken whole, all three of the owner's windows walked in order, every window written into
-`eye/sessions.csv` whether it produced a trade or not. **Two days are done, 2026-04-01 and 2026-04-02:
-six windows walked, four of them with no trade, two decisions.** Day 1's New York window could not be
+`eye/sessions.csv` whether it produced a trade or not. **Four days are done - 2026-04-01, 04-02, 04-06
+and 04-07 (03/04 was Good Friday): twelve windows walked** (the first two days: six windows, four with no
+trade, two decisions). Day 1's New York window could not be
 judged - scoring its London trade had already shown me what price did inside it - so it was walked as an
 observation and is marked that way.
 
@@ -83,7 +84,9 @@ was fixed are in `eye/RULES_REVIEW.md`.
 
 **Since the evening of 2026-10-28 a bot applies the owner's setup** (`eye/bot2e.py`, its rules in
 `eye/BOT_SPEC.md`), on closed bars only, inside the owner's windows, with the owner's reward rule - **at
-least 1:2, and no trade when the next level leaves less**. It has not written a decision yet.
+least 1:2, and no trade when the next level leaves less**. **October 2026 under the owner's rules: no
+trade** (`eye/BOT_RESEARCH.md`). An entry on M1 tried on 10-29 was Claude's misreading and is removed.
+**Now: the owner's Fibonacci** (`eye/METHOD.md` 2e, "The owner's Fibonacci"), round 3 of the research.
 
 ## Before changing anything
 

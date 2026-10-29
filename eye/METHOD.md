@@ -144,12 +144,12 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 |---|---|
 | **The side with the edge** | **the trend on H1** |
 | **Where** | **at resistance when the sell side has the edge, at support when the buy side has the edge** - never the other way round |
-| **The count** | **3 to 5 peaks, counted from MT5's ZigZag** - **or two, when they make an M (a W for a buy)**: the owner, 2026-10-28, on day 3's New York chart: *"two legs, but it is an M pattern"* |
+| **The count** | **3 to 5 peaks, counted from MT5's ZigZag** - **or two, when they make the owner's W (sell, at resistance) or M (buy, at support)** - the owner, 2026-10-28 |
 | **Divergence** | **on MACD and RSI, against price** - the owner: *"divergence is divergence - what is it by the book?"*; and *"if both happen, it is clear"* - see the principle below |
 | **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
-| **Entry timeframe** | **M5 to M15** for the picture; **the entry itself on M1, near the top / bottom** - the owner, 2026-10-29: *"As we discussed: if 1H runs 6 USD, and M1 gets in near the top or the bottom of price, and it turns, that is 2R already."* |
-| **The stop** | **beyond the High** (sell) / **Low** (buy) - see the principle below. Entered on M1 near that extreme, the stop is short and an ordinary H1 move pays 1:2 (the owner, 2026-10-29) |
+| **Entry timeframe** | **M5 to M15** |
+| **The stop** | **beyond the High** (sell) / **Low** (buy) - see the principle below |
 | **The target** | **just before the opposite level on the left** - see the principle below |
 | **How long a trade is held** | **until the stop or the target** - the owner: *"hold it"*. No time limit |
 | **Reward** | **at least 1:2** - the owner, 2026-10-28: *"the profit has to be 1:2, 1:3"*; when the target just before the next level gives less: *"no trade, for now"* |
@@ -164,7 +164,7 @@ together.)
 The owner, 2026-10-28: *"I have always understood M as buy and W as sell, in the leg where it has already
 projected."* **This is the opposite of the textbook** (where an M, a double top, is a sell and a W, a
 double bottom, a buy), and Claude translated "M" the textbook way and got the side wrong on day 3. In the
-owner's usage, as Claude understands it (to confirm): the M is drawn by the counter-move **coming down into
+owner's usage: the M is drawn by the counter-move **coming down into
 a support** - its lows on the level - so it is the end of that move and a **buy**; the W is drawn going
 **up into a resistance**, and is a **sell**. Day 3 London fits: an asymmetric M (tops 4678.79, 4667.74)
 with its lows 4643.61 / 4644.97 on the 4642-4651 support, and the run to 4706.58 after it.
@@ -200,11 +200,7 @@ through that later answer: the LL is the break, the sell is its retest.
 
 1. **Context** - the H1 trend gives the sell side the edge, and price has come up into a **resistance**
    the left of the chart built.
-2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level - **or two that make an M** (the owner,
-   after day 3: *"two legs, but it is an M pattern"*; and *"an asymmetric M, but you can see at once that
-   that is the support"* - the M need not be symmetric. *Which spot the owner calls the support, and which
-   side the trade was, the owner has not said; Claude had read it as the neckline of a sell and was wrong
-   to write that as the owner's*) - with **divergence** on MACD and RSI
+2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level - **or two that make a W** - in the owner's words a W is the sell (corrected 10-29; this line had "M", the textbook's word) (the M / W need not be symmetric) - with **divergence** on MACD or RSI
    against price. **A clear M (W) at the level is taken without divergence** - the owner, 2026-10-28, on
    day 3 London's M, whose second low had MACD and RSI lower: *"it can be entered."* Divergence is required
    for the 3-5 count - **on one oscillator is enough** (the owner, 2026-10-28, asked whether the count needs MACD
@@ -238,8 +234,8 @@ had said a buy is the mirror, nothing more:*
 
 1. the **H1 trend** gives the buy side the edge, and price has come down into a **support** the left of
    the chart built;
-2. ZigZag counts **3 to 5 lows** into it - or two that make a **W** - with **divergence**: price makes a lower or equal low while MACD
-   and RSI make a higher low - both is clear;
+2. ZigZag counts **3 to 5 lows** into it - or two that make an **M** (the owner's buy; corrected 10-29 from "W") - with **divergence**: price makes a lower or equal low while MACD
+   or RSI makes a higher low - one is enough, both is clear; a clear M needs none;
 3. the structure breaks - price takes out the **last swing high**, and the dip after it holds above the
    bottom - a higher low;
 4. **the high breaks** - price goes through the high that dip started from;
@@ -295,20 +291,31 @@ The target came **4 h 25 min after the entry** - held, as the owner holds, it is
 
 ### The owner's Fibonacci (2026-10-29)
 
-The owner, asked nothing about it, in their words: *"Have you ever measured with Fibo? I like to use it.
+The owner, volunteered unasked, in their words: *"Have you ever measured with Fibo? I like to use it.
 Sideways: enter at the edge, around 88 % - 127 %. Up trend: draw the Fibo with the ZigZag alongside - 0 % at
 the previous lowest price, 100 % at the previous highest price - then wait for it to fall back to around
 38 - 23 %; if the bulls are really strong, maybe enter from the pullback to 61 %. The SL is beyond 88 % - 0 %.
 Down trend: the reverse of the up trend."*
 
-**Open, asked of the owner before anything is coded** (Claude reads these several ways; none is filled in):
+The target, the owner (the same evening): *"TP: if sideways, yes, around 100 %; but in a trend,
+shouldn't it be 127 - 161 %?"* - put as a question; **Claude takes it as the owner's proposal and runs it:
+trend: the 127 - 161 % extension; sideways: "around 100 %", read by Claude as the range's other edge.**
+The owner on whether the count / M-W / divergence is still needed with the Fibo: *"try both, counting and
+not counting."*
+
+The stop when entering at 61.8 %, the owner: *"beyond 23 %."*
+
+The owner on what will be hard (the same evening): *"the problem I can see coming is reading whether it is a
+trend or sideways - but never mind, try it first."*
+
+**Still open - asked, not answered; the bot runs each reading as a variant (`eye/BOT_SPEC.md` revision 5),
+every one marked `[Claude]`:**
 - the scale: with 0 % at the low and 100 % at the high, "falls to 38 - 23 %" is a deep pullback (price
   23-38 % of the leg above the low) and 61 % a shallow one - is that the reading?
-- the stop "beyond 88 % - 0 %": below the 0 % (the low), or another level?
-- sideways 88 % - 127 %: drawn across the range from its one edge to the other, 127 % being a push past the
-  edge?
-- the target, and how it joins the count / divergence / M-W of 2e: does the Fibo zone replace the H1 level as
-  "where", or must both agree?
+- the stop "beyond 88 % - 0 %" for the 38 / 23 % entries: below the 0 % (the low)?
+- sideways 88 % - 127 %: drawn across the range from one edge to the other, 127 % a push past the edge? And
+  is "around 100 %" for the target the range's other edge?
+- trend or sideways: which reading of the chart decides it (the owner's own concern above).
 
 ### The bot (2026-10-28)
 
@@ -318,7 +325,10 @@ writes its decisions to `eye/bot_ledger.csv` (scored by `score.py`, read in mone
 Its rules are `eye/BOT_SPEC.md`; every definition the owner did not give is marked `[Claude]` there and
 is a parameter written into each decision. Built by a Sonnet agent, reviewed twice by Codex, checked by
 Claude. **First runs (06-07/04 and 20-27/10/2026): no decision** - the reward floor and step 2 refused
-everything; the count was found splitting a double top in one zone (BOT_SPEC revision 3).
+everything; the count was found splitting a double top in one zone (BOT_SPEC revision 3). **October 2026
+under the owner's rules (revision 3, 11 variants): no trade** (`eye/BOT_RESEARCH.md` round 1). An entry on M1
+(revision 4) was **Claude's misreading of a question of the owner's** and was removed at the owner's word
+(10-29). The owner's Fibonacci (above) is round 3, revision 5.
 
 ### What Claude understands (Claude's words, for the owner to correct)
 
@@ -348,8 +358,8 @@ record has to say what was seen before the reveal.
 
 | | what | state |
 |---|---|---|
-| 1 | **Walk real days under 2e**, from 2026-04-03 Asia 07:00, with `walk.py` (H1 + M15, and M5; ZigZag, MACD, RSI at MT5's defaults). At each decision write which of the seven steps held | **ready** once row 2 is done |
-| 2 | **Record the seven steps on every trade**: a `setup` column in the ledger (not `steps` - `sessions.csv` already has a `steps` column, the bars walked), seven characters like `rules`: `+` held, `-` broken, `?` not judged, so each step is measured the way the nine rules are. **A 2e trade is judged by `setup`; its `rules` column still records the nine, where 2e has replaced rules 4 and 9 (below)** | to add before day 3 |
+| 1 | **Walk real days under 2e** (days 3 and 4, 04-06 and 04-07, walked; next 04-08), with `walk.py` (H1 + M15, and M5; ZigZag, MACD, RSI at MT5's defaults). At each decision write which of the seven steps held | **in progress** |
+| 2 | **Record the seven steps on every trade**: a `setup` column in the ledger (not `steps` - `sessions.csv` already has a `steps` column, the bars walked), seven characters like `rules`: `+` held, `-` broken, `?` not judged, so each step is measured the way the nine rules are. **A 2e trade is judged by `setup`; its `rules` column still records the nine, where 2e has replaced rules 4 and 9 (below)** | **done** 10-28 |
 | 3a | **`score.py` fills an order by the side price was on** - it filled every SELL as a sell limit, so a sell under price filled before price got there (RULES_REVIEW M1); it now withdraws an order whose stop or target trades first (rule 8), and fills a gapped stop at the bar's open. Trades still open when the stored bars end are `open`, not a result | **done** 10-28; the twelve stored trades re-score identically in every planned column (fill, exit, result, R, miss); the on-sight column was re-scored under the hold rule |
 | 3 | *(Claude's proposal)* **Let the code find the candidates, the eye judge them.** Steps 2-5 are mechanical: a scan of the stored bars can list every place where 3-5 ZigZag peaks with divergence were followed by a structure break, the low breaking and its retest - found by the clock, not picked by a reader. The reader then judges only the level and the H1 trend, before seeing what followed. This answers the "one reader chooses the trades" hole | possible now; not built |
 | 4 | **Hold until the stop or the target** - the owner answered 10-28 | **done** in `score.py` |
@@ -357,8 +367,7 @@ record has to say what was seen before the reveal.
 | 6 | **Check MACD and RSI against the owner's MT5** (Data Window) at a few bars - ZigZag on M15 already matched | waiting for the owner |
 
 **Nothing in the setup is open any more** (10-28): step 6 - beyond the highest top / lowest bottom; held
-until the stop or the target; divergence as the book has it. What remains is checking the tools (row 6)
-and building row 2 (row 3 is optional).
+until the stop or the target; divergence as the book has it. What remains is checking the tools (row 6); row 3 became the bot (`eye/bot2e.py`).
 
 **What 2e replaces among the nine rules.** Rule 4's count ("three or four legs, trade the fifth") is
 replaced by 2e step 2 (3 to 5 ZigZag peaks) and its entry by steps 3-5; rule 9's target ("a full leg away")
@@ -542,7 +551,7 @@ ones a trade actually turns on.
 | 4 | **Three or four legs complete, then trade the fifth - with it, never against it.** Ask each time which leg is alive and whether this trade goes its way |
 | 5 | **The structure AT the level says whether it holds.** Buying a support needs **HH and HL together**; selling a resistance needs **LH and LL together**; and a named chart pattern on top |
 | 6 | **Enter on a timeframe, exit on that timeframe** |
-| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.144 (held until stop or target; corrected twice on 10-28 from -0.124, `RULES_REVIEW.md` C1 and section 7), with all three unfilled plans winning and the misses 3.37, 3.85 and 3.82 USD - and on the nine filled trades, on sight was worse |
+| 7 | **The entry must be a price the market can reach from here**, not one I would like. If the level I want is already behind price, there is no trade. **And no further than 4 USD from the price on the screen** (owner, 2026-10-28: an obvious level may never be reached precisely because it is obvious). Beyond that, take it at the market or pass - measured over 12 trades: the planned entries made -0.378 R a trade and the same ideas taken on sight made -0.144 (held until stop or target; corrected twice on 10-28 from -0.124, `RULES_REVIEW.md` C1 and section 7), with all three unfilled plans winning and the misses 3.37, 3.85 and 3.82 USD - and on the nine filled trades, on sight was worse. *(Measured at 12; with D3-1, 13 decisions: -0.348 a trade planned, -0.012 on sight - `docs/HANDOFF.md`.)* |
 | 8 | **The order must fill while the idea is still intact.** Not a question to anyone - a check on where the order sits against price. A sell limit above price in a rising market fills only because price kept rising, which is the idea failing (moment #13: filled 5370, stopped five minutes later). A buy limit below price in a rising market fills on the pullback, which is what was wanted |
 | 9 | **The stop sits beyond the structure that proves the idea wrong; the target is a full leg away** - the next level from the left |
 
