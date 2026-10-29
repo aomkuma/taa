@@ -764,3 +764,18 @@ run's eight decisions are among them, same ids and prices).
     level reached slowly, not a pullback turning; stopped. The owner: price that reaches a level tends to carry on.
   - The three winners (07/10 SELL, 14/10 SELL, 16/10 SELL at 19:25) were fresh legs, decided within a few hours of
     the leg's end.
+
+### The bot's H1 reading against the owner's October H1 chart (2026-10-29)
+
+The owner showed the October H1 chart and asked only to compare it with what the bot reads. `eye/research/
+h1_read_month.py 2026-09-24 2026-10-28` draws the bot's own reading for every H1 close (rule 11, rule 1) over the
+candles: `eye/trades/h1_read_2026-09-24_2026-10-28.png`.
+
+- **The owner's chart:** price in a range of about 4080-4220 from the end of September to about 21/10, then a break
+  down, then a range of about 3980-4080 from 22/10.
+- **The bot's reading:** H1 sideways **14 %** of the hours, in short patches with edges of their own (around
+  05/10, 08/10, 14/10, 21/10 and 26-27/10 - the last 3987-4034); lean SELL **51 %**, lean BUY **27 %**, none 9 % - the
+  lean flips inside the owner's range (BUY 09-13/10, SELL 14/10, BUY 15-19/10, SELL from 20/10). The 4080-4220 range is
+  never read as one range.
+- **Why [Claude's reading of the code]:** rule 11 needs every fixed H1 pivot after the first two to sit in an edge zone
+  (88-127 % / -27-12 %); the range's middle swings (4130-4190) are pivots too, so each one ends the range.
