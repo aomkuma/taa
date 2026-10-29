@@ -396,7 +396,7 @@ better). These rows were chosen after looking, on the same year.
 - The owner's M1 example: 0 % at the high 4050.2, 100 % at the low 4037.0 - the 38.2 % line is **4045.16**
   and the sell at 4043 is about **16 %** of the leg early, not 12 %. **Its leg is also not R18's**: it is
   drawn on the fall in the trade's direction (sell after the fall, target 161.8 % below its low, 4029) - a
-  continuation, while R18 (the 27/10 buy) draws the counter-move that just ended. **Asked of the owner.**
+  continuation, while R18 (the 27/10 buy) draws the counter-move that just ended. *(Asked; the owner: an example is information, not a rule - the drawing is R18's.)*
 - The count: the scripts count 3-5 lows (each lower) into the extreme - three lows are three legs down, as
   on 27/10 (4000.00, 3997.23, 3989.14). Codex read it as 2-4 transitions; Claude keeps lows = legs.
 - The 2R floor uses the net reward over the gross stop distance (as the bot does); a stop costs a little
@@ -408,3 +408,48 @@ better). These rows were chosen after looking, on the same year.
 of 8 pairs; at most 2-5 orders live at once. M5 38.2 %: 37 fills, -18.07 R, **200 -> -3.93 USD** (the runner
 ignores margin); M5 23.6 % latest: 27 fills, +3.06 R, 252.09 USD (against +7.61 R, 293.10 with one order);
 M5 61.8 % start: 29 fills, +0.84 R, 161.60 USD. Not reviewed yet.
+
+## Two plays on one principle (2026-10-29)
+
+**WITHDRAWN as a rule - the owner, the same evening:** *"Do not take what I ask, or what I show as an example, and decide it must be a rule - treat it as supporting information, understand? Because how to draw the Fibo we have already discussed."* What follows was Claude turning the 29/10 M1 example into a second play; it is kept only as the record of what was measured. The rule stays the owner's drawing (R18).
+
+**Two plays on one principle - 2026-10-29.** Asked why the 27/10 buy was drawn on the fall it reversed
+(M5 / M15, 4025 -> 3989, a buy after three legs) while the 29/10 sell was drawn on the fall it followed (M1,
+4050 -> 4037, sell at 4043, stop 4046, target 4029), the owner asked back *"the down leg of which timeframe -
+the same timeframe?"* (no: M5 / M15 against M1). Claude's reading: one principle on two layers - **on the
+larger timeframe a fall that has not yet made its 3-5 legs is sold on the smaller timeframe's bounce (the
+Fibo drawn on the smaller fall, the target its 161 % extension: a continuation); a fall that has made its
+3-5 legs with divergence is bought (R18: a reversal).** The owner: *"go by the principles we discussed."*
+The split - count the legs on the larger timeframe, continue under 3, reverse at 3-5 - is Claude's reading
+of that, not yet measured.
+The owner, then: *"whichever works, that one."* So both plays are measured side by side.
+
+### Continuation against reversal - the plan and the expectation (written before the run)
+
+**Continuation `[Claude]`** (`eye/research/fib_cont.py`): on the small timeframe (M5, context M15; or M1,
+context M5) the latest fixed leg in the trade's direction - for a buy, a fixed LOW then the fixed HIGH after
+it - drawn 0 % at the low (the stop side), 100 % at the high, as in the owner's 29/10 sell. A limit at the
+line (38.2 % or 61.8 %) - or early, 10 % of the leg before it with the stop 0.5 USD beyond the line -
+placed once the high is fixed and while price is above the line; withdrawn when price makes a new high
+first or after 96 bars. Stop beyond 0 % (beyond 23.6 % for 61.8 %), target 161.8 %, at least 2R. Context
+filter on the larger timeframe: `none`; `trend` (its last two fixed highs and lows rising for a buy); and
+`trend<3` (rising, and the current run has made fewer than 3 higher highs - the fall / rise not yet complete).
+
+**Expectation:** continuation without a filter loses, as revision 5 did in October (1 won of about 33). With
+the larger-timeframe trend it improves; with `trend<3` it improves again but trades rarely. I expect the
+best continuation row to be within 0.1 R of the best reversal row (61.8 % / start, +0.31 R on M5), not
+clearly above it. On M1 the spread eats more of the small stops: I expect M1 below M5.
+
+**Continuation results (Claude's idea, not a rule - recorded as measured, `eye/research/fib_cont.py`; all
+hours, both sides, target 161.8 %; R a trade (trades)):**
+
+| line | entry | M5, context M15, 1 year: none / trend / trend<3 | M15, context H1, 3 years: none / trend / trend<3 | M1, context M5, 1 year: none / trend<3 |
+|---|---|---|---|---|
+| 38.2 % | at the line | +0.062 (1304) / +0.078 (390) / +0.140 (318) | +0.046 (1251) / -0.022 / -0.018 | -0.095 (6459) / -0.155 |
+| 38.2 % | 10 % early | -0.109 / -0.043 / +0.114 (290) | -0.022 / -0.075 / -0.041 | -0.181 / -0.301 |
+| 61.8 % | at the line | -0.057 / -0.049 / +0.011 | +0.062 (821) / +0.040 / +0.099 (196) | -0.086 / -0.188 |
+| 61.8 % | 10 % early | -0.062 / -0.316 / -0.311 | -0.208 / -0.047 / -0.069 | -0.195 / -0.205 |
+
+Against the expectation: continuation stayed below the reversal (R18's 61.8 % / start, +0.31 R on M5) -
+best +0.14 R (M5, 38.2 %, trend<3, 318 trades), not within 0.1 R; on M1 every row lost, as expected. **Nothing
+here goes into the bot.**

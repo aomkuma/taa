@@ -340,6 +340,8 @@ entry with the 161 % target ahead in both halves (+0.19 / +0.28 R a trade agains
 timeframe, all hours, no H1 or window filter - a guide, not proof (`eye/BOT_RESEARCH.md`, "Which high is
 100 %").
 
+**Examples are information, not rules - the owner, 2026-10-29:** *"Do not take what I ask, or what I show as an example, and decide it must be a rule - treat it as supporting information, understand? Because how to draw the Fibo we have already discussed."* The drawing is the one answered above (to play an up move, high -> low; a down move, low -> high). The 29/10 M1 sell (4043 / 4046 / 4029) is supporting information only; Claude's "two plays" reading built on it was withdrawn the same day (`eye/BOT_RESEARCH.md`).
+
 **Still open - asked, not answered; the bot runs each reading as a variant (`eye/BOT_SPEC.md` revisions 5-6),
 every one marked `[Claude]`:**
 - the depth: "falls to 38 - 23 %" read as price 23-38 % of the leg above the low - is that the reading?
