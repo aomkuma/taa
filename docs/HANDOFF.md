@@ -2,8 +2,9 @@
 
 Last updated **2026-10-29 Thai** (read with `Get-Date`). The owner's setup is written down in full
 (`eye/METHOD.md` 2e) and a bot applies it (`eye/bot2e.py`). Under the owner's rules it made **no trade in
-October 2026**. **Now: round 3 - the owner's Fibonacci** (METHOD 2e "The owner's Fibonacci", `eye/BOT_SPEC.md`
-revision 5), being built and run on October; its results go into `eye/BOT_RESEARCH.md`. Walking by hand
+October 2026**. **Now: round 4 - the owner's Fibonacci on the owner's leg** (METHOD 2e "The owner's Fibonacci",
+`eye/BOT_SPEC.md` revision 6, R18), being built and run on October - no results yet. Round 3 (revision 5,
+Claude's wrong leg) is measured: about 33 fills, 1 won. Results go into `eye/BOT_RESEARCH.md`. Walking by hand
 resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
@@ -44,8 +45,9 @@ Read first, in order:
    eye/RULES_REVIEW.md sections 5-6
 
 My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
-generalise, never a rule with its numbers; a question I ask is a question, not a rule. Pick up round 3 (my
-Fibonacci) in eye/BOT_RESEARCH.md: read its results, check them, report them to me in USD from 200. Then
+generalise, never a rule with its numbers; a question I ask is a question, not a rule. Pick up round 4 (my
+Fibonacci, revision 6) in eye/BOT_RESEARCH.md: read its results, check them, report them to me in USD from
+200. Then
 real day 5, 2026-04-08, Asia 07:00 first, one window at a time.
 ````
 
@@ -138,15 +140,17 @@ fill fixes re-score every planned column of all twelve identically.
    trades, none won; Codex found no bug. The owner: *"1H 6 USD was only a question - a comparison"*, then
    *"take it out"*. Removed from the code; kept in `BOT_RESEARCH.md` and `TRIED.md` row 20 as a record.
    Lesson in memory: a question of the owner's is not a rule.
-2. **The owner's Fibonacci** (volunteered): trend - 0 % at the previous low, 100 % at the previous high,
+2. **The owner's Fibonacci** (volunteered; drawn on the counter-move just ended - item 3b): trend - 0 % at
+   the low, 100 % at the high,
    enter on the pullback to 38-23 % (61 % when the bulls are strong; its stop beyond 23 %), stop beyond 0 %,
    target 127-161 % (put as a question); sideways - the edge 88-127 %, target around 100 %; with and without
    the count (*"try both"*). The owner foresees the hard part: *"reading whether it is a trend or
    sideways"*. Every word is in METHOD 2e; the open readings are listed there and run as variants.
-3. **Round 3** - BOT_SPEC revision 5 (R13-R17), built by a Sonnet agent (`mode=fib` in `eye/bot2e.py`), run on
-   October with `eye/bot_research.py`. **Next: read its results, have Codex review the build, check the
-   trades on the bars, and write them into `BOT_RESEARCH.md`, `TRIED.md` row 21 and here.** Claude's
-   expectation is written there before the run.
+3. **Round 3 measured** - BOT_SPEC revision 5 (R13-R17, `mode=fib` in `eye/bot2e.py`): about 33 fills in
+   October, 1 won; Codex found no bug. The owner's
+   M5 / M15 charts of 27/10 then showed the leg is drawn on the counter-move just ended - *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* (METHOD 2e). **Round 4 - revision 6 (R18) -
+   being built and run by Sonnet**; expectation written in `BOT_RESEARCH.md`. The owner also asked *"zoomed into M5 it is a mega trend - should we read 'trend' on the timeframe we enter, or on the one larger than that?"* - a
+   question, not a rule; run as `fib_side` = `h1` / `entry` / `any` (Claude's variants).
 4. **The documents were reviewed by Codex, Sonnet and Haiku apart** and corrected: the M / W sides in the
    written-out steps (they had the textbook's), stale status in this file, START_HERE and TRIED,
    attributions of Claude's readings to the owner.
@@ -221,7 +225,7 @@ deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the
 
 | | |
 |---|---|
-| **The owner's Fibonacci, asked and not answered:** the scale (0 % at the low - is 38-23 % a deep pullback?), the stop for the 38 / 23 % entries, the sideways drawing and its "around 100 %" target, and how trend vs sideways is read | METHOD 2e, "The owner's Fibonacci" |
+| **The owner's Fibonacci, asked and not answered:** the stop for the 38 / 23 % entries (below 0 %?), the sideways drawing and its "around 100 %" target, which high is 100 % when the fall has several highs, how trend vs sideways is read, and whether "3-5 peaks" counts legs with lower lows (the 27/10 picture) | METHOD 2e, "The owner's Fibonacci" |
 | **H1 side `strict` or `lows`**, and whether 3R is wanted where 2R is reachable | `eye/BOT_SPEC.md` |
 | **The September check** - a variant that wins October is run once, unchanged, on September | `eye/BOT_RESEARCH.md` ground rules |
 | **MACD and RSI not yet checked against MT5**, nor ZigZag on M5 and H1 | `eye/walk.py` |

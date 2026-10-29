@@ -311,14 +311,29 @@ The stop when entering at 61.8 %, the owner: *"beyond 23 %."*
 The owner on what will be hard (the same evening): *"the problem I can see coming is reading whether it is a
 trend or sideways - but never mind, try it first."*
 
-**Still open - asked, not answered; the bot runs each reading as a variant (`eye/BOT_SPEC.md` revision 5),
+**Which leg is drawn - the owner, 2026-10-29**, showing the M5 / M15 charts of 27/10, asked whether a buy is
+drawn from the latest high (100 %) down to the low made after it (0 %): *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* *(Claude's reading,
+for the owner to correct: the Fibo is drawn on the counter-move that has just ended - for a buy, the fall
+into the low - not on the finished leg in the trade's direction; the entry is the pullback after the bounce
+from that low, the target the extension beyond the high. On those charts, by Claude's measurement: the
+fall from 4025 to 3989 in three legs, the bounce, the pullback, the run through the high to 161.8-200 %.
+Claude had coded the other leg in revision 5.)*
+
+**The owner's questions on the same charts, not rules:** *"this counts as three legs down, then it broke the high and ran - can our system see a picture like this?"* - and *"zoomed into M5 it is a mega trend - should we read 'trend' on the timeframe we enter, or on the one larger than that?"*
+
+**Answered:** the drawing direction - 0 % at the low, 100 % at the high, high -> low to play an up move.
+
+**Still open - asked, not answered; the bot runs each reading as a variant (`eye/BOT_SPEC.md` revisions 5-6),
 every one marked `[Claude]`:**
-- the scale: with 0 % at the low and 100 % at the high, "falls to 38 - 23 %" is a deep pullback (price
-  23-38 % of the leg above the low) and 61 % a shallow one - is that the reading?
+- the depth: "falls to 38 - 23 %" read as price 23-38 % of the leg above the low - is that the reading?
 - the stop "beyond 88 % - 0 %" for the 38 / 23 % entries: below the 0 % (the low)?
+- which high is 100 % when the fall into the low has several highs (the latest, or the one the fall started
+  from)?
+- "3 to 5 peaks": counted as legs with lower lows, as on 27/10 - asked, not answered.
 - sideways 88 % - 127 %: drawn across the range from one edge to the other, 127 % a push past the edge? And
   is "around 100 %" for the target the range's other edge?
-- trend or sideways: which reading of the chart decides it (the owner's own concern above).
+- trend or sideways: which reading of the chart decides it (the owner's own concern above), and on which
+  timeframe (the owner's question above).
 
 ### The bot (2026-10-28)
 
@@ -332,7 +347,7 @@ Claude. **First runs (06-07/04 and 20-27/10/2026): no decision** - the reward fl
 everything; the count was found splitting a double top in one zone (BOT_SPEC revision 3). **October 2026
 under the owner's rules (revision 3, 11 variants): no trade** (`eye/BOT_RESEARCH.md` round 1). An entry on M1
 (revision 4) was **Claude's misreading of a question of the owner's** and was removed at the owner's word
-(10-29). The owner's Fibonacci (above) is round 3, revision 5.
+(10-29). The owner's Fibonacci (above): round 3 (revision 5, Claude's wrong leg) lost; round 4 is revision 6.
 
 ### What Claude understands (Claude's words, for the owner to correct)
 

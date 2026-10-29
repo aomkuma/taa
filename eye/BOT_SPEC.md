@@ -72,7 +72,7 @@ band - the target goes before the line, the stop beyond the band"* (LESSONS 5). 
 either may produce the decision, M5 first. The counter-move `[Claude]`: start = the highest fixed HIGH
 among the last 12 fixed pivots; the lows counted = the fixed LOW pivots after it; its extreme `L*` = the
 lowest of them. Step 2 holds if `L*` lies inside a support band and **either**:
-- **the count**: 3 to 5 lows (the owner: *"3 to 5 peaks"*) **and divergence on both** at `L*` against the
+- **the count** *(divergence on one is enough - R11 supersedes "both")*: 3 to 5 lows (the owner: *"3 to 5 peaks"*) **and divergence on both** at `L*` against the
   low before it - price lower or equal, MACD main higher, RSI higher (the owner: *"if both happen, it is
   clear"*; METHOD 2e: divergence is required for the count); **or**
 - **the M** (the owner's word for a buy - *"M as buy, W as sell"*; it need not be symmetric): exactly the last two counted lows both inside the same support band, a high between
@@ -185,7 +185,7 @@ written when R = (target - entry - 0.30) / (entry - stop) is under 1.0. The log 
 1R`, with R.
 
 **R3. The M is exactly two lows** (Codex). The M path holds only when the counted lows are exactly two, both
-inside the same support band. A count of 3-5 needs divergence on both, always. Test: three lows, the last
+inside the same support band. A count of 3-5 needs divergence on both, always *(superseded by R11: one)*. Test: three lows, the last
 two in one band, no divergence - step 2 fails.
 
 **R4. The cut guard checks every bar** (Codex): `_check_cut` verifies the index is sorted and that every
@@ -243,7 +243,7 @@ trough of a price zone, or its top?"*). For a BUY:
   `counter_pivots` (`[Claude]` default 20) fixed pivots, **and after the last close below the band's lower
   edge** (a close through the zone ends it as a support; lows before that do not count);
 - `L*` = the lowest of the zone's lows; the count = how many zone lows there are;
-- step 2 holds for 3-5 zone lows with divergence on both at `L*` against the zone low before it, or for
+- step 2 holds for 3-5 zone lows with divergence on both *(R11: one)* at `L*` against the zone low before it, or for
   exactly 2 zone lows (the owner's M) without divergence;
 - steps 3-7 as before, from `L*`.
 SELL: the mirror - a resistance band, its highs, reset by a close above its upper edge; exactly two zone
@@ -314,7 +314,7 @@ question, run as variants.*
 The owner on what will be hard: *"the problem I can see coming is reading whether it is a trend or sideways
 - but never mind, try it first."* Trend = an H1 side from step 1, sideways = none: `[Claude]`.
 
-**R13. The Fibo leg (a BUY in an up trend; SELL the mirror in a down trend).**
+**R13. The Fibo leg (a BUY in an up trend; SELL the mirror in a down trend).** *(The leg is superseded by R18, revision 6.)*
 - The side: step 1 as now (H1). `[Claude]`
 - The leg, `[Claude]`: on the setup timeframe (`fib_tf`, default M15; variant M5), the latest fixed ZigZag
   HIGH and the fixed LOW before it, the leg rising (high > low) - *"0 % at the previous lowest price, 100 %
@@ -332,7 +332,7 @@ The owner on what will be hard: *"the problem I can see coming is reading whethe
   opposite H1 band above the entry (as step 7); `fib_target = high` - the leg's 100 % - `target_buffer`.
 - **At least 2R - the owner's**; under it, no decision. Spread 0.30 as now.
 
-**R15. Without the count (`fib_count = off`).** When the leg is live and the last close is above the entry
+**R15. Without the count (`fib_count = off`).** *(Its trigger is superseded by R18 for the owner's leg.)* When the leg is live and the last close is above the entry
 level, write a **plain limit** at the entry level with the stop and target above. One order per leg (key:
 side, fib_tf, leg low time, leg high time). R8 played-out applies (stop or target traded since the leg's
 high was fixed).
@@ -365,7 +365,36 @@ the next paragraph.)
 *"beyond 23 %."* So for `fib_entry` 0.618 the stop = the 0.236 level - `stop_buffer`; for 0.382 and 0.236 it
 stays beyond 0 % `[Claude's reading of "beyond 88 % - 0 %"]`. Arithmetic before spread: 0.618 entry, stop 0.236 -> 1.7 R at 127 %, 2.6 R at 161 %.
 
-**R16 as built (2026-10-29, after revision 4 was removed):** with the count on, the order is written when
+**R16 as built (2026-10-29, after revision 4 was removed; for revision 5's leg only - revision 6 has its own
+entry):** with the count on, the order is written when
 price has entered the Fibo zone `[0 %, entry level]` and step 2 holds there (the zone count 3-5 with
 divergence on one, or the owner's M / W of two) on the setup timeframe: a plain limit at the **last close**
 `[Claude]`, the stop and target of R14, R recomputed from that entry, at least 2R. No M1.
+
+## Revision 6 (2026-10-29) - the Fibo leg the owner draws: the counter-move just ended
+
+The owner, on the 27/10 M5 / M15 charts, asked whether the buy is drawn from the latest high (100 %) down to
+the low after it (0 %): *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* Revision 5 drew the finished leg in the trade's direction (low, then the
+high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
+
+- **The leg, for a BUY (SELL the mirror):** on `fib_tf`, `L0` `[Claude]` = the latest fixed LOW lower than
+  every fixed low after it (later lows are higher - a bottom), with no bar closed below it since. `H100`
+  `[Claude]` = the
+  highest fixed HIGH of the descending run into `L0`: walking back from `L0` while each earlier fixed low is
+  higher than the one after it, the highest fixed high met (on M15 at 27/10: 4025.45 -> 3989.14). The owner
+  confirmed "the latest high"; where the fall has several highs, taking the one it started from is Claude's
+  (open in METHOD 2e).
+  Levels: `L0 + x * (H100 - L0)`; 0 % at the low, 100 % at the high (the owner's scale).
+- **Entry:** once a bar has traded above the entry level after `L0` (the bounce), and while the last close is
+  above it, a plain limit at the entry level (*"wait for it to fall back to around 38 - 23 %; 61 % if the
+  bulls are really strong"*). One order per (`L0`, `H100`).
+- **Stop:** below 0 % - `stop_buffer` (`[Claude]` reading of "beyond 88 % - 0 %"); for the 0.618 entry below
+  23.6 % (the owner). **Target:** `ext127` / `ext161` (the owner's proposal). At least 2R. R8 as before.
+- **Side** `[Claude]`, three variants: `fib_side = h1` (the H1 side must allow it, as now); `entry` (the
+  entry timeframe's own structure: a BUY only once, after `L0`, a bar has traded above the last fixed high
+  before `L0`); `any` (no side filter). The owner asked *"zoomed into M5 it is a mega trend - should we read 'trend' on the timeframe we enter, or on the one larger than that?"* - a question, run as these variants.
+- **Count on:** the descending run into `L0` has 3-5 fixed lows (each lower than the one before) with
+  divergence on one oscillator at `L0` against the low before it - the three legs the owner pointed to on
+  27/10, read by Claude as the M5 lows 4000.00, 3997.23, 3989.14 (MACD and RSI both higher at the last). `[Claude]`: the count is of lower lows
+  ("legs"), not of touches of one zone; the M / W is not part of this path yet.
+- Range mode (R17) is unchanged and not run in this round.

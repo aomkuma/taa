@@ -126,7 +126,7 @@ count and the report stops until it is explained.
 
 The three trades (`m1_lows`; `m1_strict` wrote the first and the third), traced by Claude on M1 for 48 h:
 
-| trade | risk USD | stop hit (Thai) | best move before the stop | target later? |
+| trade | risk USD | stop hit (Thai) | best move before the stop | target reached later if held? |
 |---|---:|---|---:|---|
 | 06/10 SELL W at 4144-4145, entry 4137.89 | 7.93 | 07:49, 34 min after the fill | 0.31 R | **yes, 09:35** - after going 1.79 R against |
 | 09/10 BUY M at 4175, entry 4186.46 | 11.80 | 19:51, 16 min | -0.09 R | no |
@@ -150,7 +150,8 @@ So the three losses are what the rules as written do, not a bug.
 
 **Claude's expectation, written before the run (2026-10-29):**
 - Arithmetic, not a guess: with the stop at 0 % and the target at the leg's 100 %, R = (1 - e) / e before
-  spread for an entry level e: 0.236 -> 3.2, 0.382 -> 1.6, 0.618 -> 0.6. **So with `fib_target = high`
+  spread for an entry level e: 0.236 -> 3.2, 0.382 -> 1.6, 0.618 -> 0.6 (a stop-at-0 reference; the owner's
+  0.618 stop is at 23.6 %, below). **So with `fib_target = high`
   only the 0.236 entry can pass the owner's 2R**; 0.382 and 0.618 need the target to be a level further away.
 - Without the count: many more orders than 2e - I expect **15-40 in October** at 0.236 / level targets, a
   win rate near 30-40 % (a 0.236 pullback is deep: many legs break their low).
@@ -166,3 +167,30 @@ call can be judged trade by trade after the run.
 (0.618 entry: at 23.6 %), before spread - entry 0.382: 2.3 R at 127 %, 3.2 R at 161 %; 0.236: 4.4 / 5.9 R;
 0.618: 1.7 / 2.6 R. So `ext127` passes 2R for 0.382 and 0.236 only; `ext161` for all three. The trade-count
 and win-rate expectation above is unchanged.
+
+### Round 3 results (revision 5 - the wrong leg), October 1-27
+
+15 variants (Sonnet's report, `eye/research/fib*/`): **about 33 fills, 1 won** (M5, 23.6 %, target before the
+H1 level: 6 fills, 1 won, -0.55 R, 191.74 USD); every other variant lost every fill, 76.45-195.30 USD. Claude
+checked two stop-outs on the bars (15/10 SELL stopped 09:55; 16/10 BUY held to 19/10, stopped): real, not a
+scoring bug. **Then the owner's charts of 27/10 showed revision 5 drew the wrong leg** (the finished leg
+instead of the counter-move just ended) - so round 3 measured Claude's leg, not the owner's.
+
+**Against the expectation:** 15-40 orders expected without the count - 2-14 came (8-14 at the extension
+targets); a 30-40 % win rate expected - 1 in about 33 fills; 0-5 with the count - 1-3 came.
+
+**Codex's review of the revision-5 build (2026-10-29, read-only):** no look-ahead; R13-R17 and the later
+notes implemented as written; the SELL mirrored; `mode=2e` unchanged; no M1 logic left. Codex replayed the
+15/10 SELL and 13/10 BUY legs from the stored M15 / H1 bars - the fixed pivots match. `ext161` is applied
+(targets differ; the same 13 orders of `fib382_ext127` / `fib382_ext161` pass 2R under both). **So round 3's
+losses are revision 5's leg, not a bug.**
+
+## Round 4 - revision 6, the owner's leg
+
+**Claude's expectation, written before the run (2026-10-29):** with the owner's leg the entries sit near a
+fresh bottom / top, so stops are shorter and the trades are reversals. I expect **more fills than round 3
+(10-30 a variant in October)**, a win rate of **25-40 %** at 127-161 % targets, and with the count on, far
+fewer trades (0-5). `any` side will trade about twice as often as `h1`, `entry` between them. Whether it pays: unknown; I would
+not be surprised by either sign. Over 80 trades in a variant, or 0 in every count-off variant, stops the
+report.
+
