@@ -58,10 +58,17 @@ def main() -> None:
             if len(piv) < 21:
                 continue
             side, text = bot2e.h1_lean(h1, piv)
-            med = float(np.median([abs(b.price - a.price) for a, b in zip(piv[-21:-1], piv[-20:], strict=True)]))
+            med = float(
+                np.median([abs(b.price - a.price) for a, b in zip(piv[-21:-1], piv[-20:], strict=True)])
+            )
             base = float(cl[k - 1])
-            row = {"now_thai": now.tz_convert(bot2e.TH).strftime("%Y-%m-%d %H:%M"), "lean": side or "none",
-                   "lean_text": text, "price": base, "med_leg": round(med, 2)}
+            row = {
+                "now_thai": now.tz_convert(bot2e.TH).strftime("%Y-%m-%d %H:%M"),
+                "lean": side or "none",
+                "lean_text": text,
+                "price": base,
+                "med_leg": round(med, 2),
+            }
             for kk in KS:
                 row[f"k{kk:g}"] = first_hit(hi, lo, k, base, kk * med)
             rows.append(row)
@@ -81,7 +88,9 @@ def main() -> None:
             up = float(np.mean(s[col] == "UP"))
             ci = 1.96 * np.sqrt(up * (1 - up) / len(s))
             right = up if lean == "BUY" else 1 - up if lean == "SELL" else float("nan")
-            lines.append(f"  lean {lean:4}: n {len(s):4}  UP first {up:.3f} +/- {ci:.3f}   lean side first {right:.3f}")
+            lines.append(
+                f"  lean {lean:4}: n {len(s):4}  UP first {up:.3f} +/- {ci:.3f}   lean side first {right:.3f}"
+            )
         lines.append("")
     by_month = df.assign(m=df.now_thai.str[:7])
     lines.append("by month, X = 0.5: lean side first (n)")
