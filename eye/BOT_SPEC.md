@@ -700,3 +700,12 @@ the price from the bar after the decision; a range break ends both sides; `fib_r
 **The entry level (the owner, 2026-10-29):** *"use the level that works best."* `fib_entry` defaults to the best
 level by results - all three run, the best kept and checked forward; until the real run, 0.618 (the research's
 best). This replaces the second round's 0.382 default.
+
+**Third review round (2026-10-29, Codex + fresh Haiku; Sonnet stopped by a usage limit) - changes, `[Claude]`
+unless said:** the lean is recomputed at every decision; the trend-run count anchors on the `H100` price for an
+M15 leg; **the owner's M (exactly two lows, no divergence) passes the count** - the history's "not built" left it
+refused, against METHOD 2e; which oscillator diverged is written into each decision (owner); setup-timeframe
+events withdraw on the M5 bar that closes with them; the SELL near edge of a band; range bounds strict; a final
+tie-break (BUY before SELL); the 27/10 acceptance case corrected (at 0.618 the price is under the order price -
+rule 6; at 0.382 rule 9 passes - Haiku found the old line wrong on its own numbers); the Fibonacci path stated as
+taking the place of 2e's entry and "where", with 2e kept as `mode = 2e`.
