@@ -10,6 +10,7 @@ left empty. This fills in the fill time, the exit, the reason and R - and nothin
 from __future__ import annotations
 
 import csv
+import re
 import sys
 from pathlib import Path
 
@@ -147,6 +148,13 @@ def score(row: dict[str, str], m5: pd.DataFrame, cut: pd.Timestamp, spread: floa
         if buy
         else ((first.high >= stop) | (first.low <= target))
     )
+    # Revision 7, R19 (a fib row only): the bot writes "withdraw beyond <H100>" into the structure text; the
+    # order is also withdrawn when price trades beyond that level before the fill. Rows without the marker
+    # (every earlier ledger) score exactly as before.
+    marker = re.search(r"withdraw beyond (-?\d+(?:\.\d+)?)", row.get("structure", ""))
+    if marker:
+        h100 = float(marker.group(1))
+        gone = gone | ((first.high > h100) if buy else (first.low < h100))
     at_fill = int(touched.argmax()) if touched.any() else len(first)
     if gone.to_numpy()[:at_fill].any() or not touched.any():
         if not touched.any() and not gone.to_numpy().any() and len(first) < FILL_BARS:
