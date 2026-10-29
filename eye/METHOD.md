@@ -319,8 +319,6 @@ from that low, the target the extension beyond the high. On those charts, by Cla
 fall from 4025 to 3989 in three legs, the bounce, the pullback, the run through the high to 161.8-200 %.
 Claude had coded the other leg in revision 5.)*
 
-**The owner's questions on the same charts, not rules:** *"this counts as three legs down, then it broke the high and ran - can our system see a picture like this?"* - and *"zoomed into M5 it is a mega trend - should we read 'trend' on the timeframe we enter, or on the one larger than that?"*
-
 **Answered:** the drawing direction - 0 % at the low, 100 % at the high, high -> low to play an up move.
 **Answered (2026-10-29):** "3 to 5 peaks" is counted as **legs** - asked whether it means legs with lower
 lows, as on 27/10: *"yes - but when we talk about the framework, I want both sides included."* So, both
@@ -342,8 +340,8 @@ timeframe, all hours, no H1 or window filter - a guide, not proof (`eye/BOT_RESE
 
 **Examples are information, not rules - the owner, 2026-10-29:** *"Do not take what I ask, or what I show as an example, and decide it must be a rule - treat it as supporting information, understand? Because how to draw the Fibo we have already discussed."* The drawing is the one answered above (to play an up move, high -> low; a down move, low -> high). The 29/10 M1 sell (4043 / 4046 / 4029) is supporting information only; Claude's "two plays" reading built on it was withdrawn the same day (`eye/BOT_RESEARCH.md`).
 
-**Still open - asked, not answered; the bot runs each reading as a variant (`eye/BOT_SPEC.md` revisions 5-6),
-every one marked `[Claude]`:**
+**Claude's readings in use where the owner gave no rule - each run as a variant (`eye/BOT_SPEC.md`
+revisions 5-6), every one marked `[Claude]`:**
 - the depth: "falls to 38 - 23 %" read as price 23-38 % of the leg above the low - is that the reading?
 - the stop "beyond 88 % - 0 %" for the 38 / 23 % entries: below the 0 % (the low)?
 

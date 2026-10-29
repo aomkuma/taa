@@ -149,8 +149,7 @@ fill fixes re-score every planned column of all twelve identically.
 3. **Round 3 measured** - BOT_SPEC revision 5 (R13-R17, `mode=fib` in `eye/bot2e.py`): about 33 fills in
    October, 1 won; Codex found no bug. The owner's
    M5 / M15 charts of 27/10 then showed the leg is drawn on the counter-move just ended - *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* (METHOD 2e). **Round 4 - revision 6 (R18) -
-   being built and run by Sonnet**; expectation written in `BOT_RESEARCH.md`. The owner also asked *"zoomed into M5 it is a mega trend - should we read 'trend' on the timeframe we enter, or on the one larger than that?"* - a
-   question, not a rule; run as `fib_side` = `h1` / `entry` / `any` (Claude's variants).
+   being built and run by Sonnet**; expectation written in `BOT_RESEARCH.md`. The side is run as `fib_side` = `h1` / `entry` / `any` (Claude's variants).
 4. **The documents were reviewed by Codex, Sonnet and Haiku apart** and corrected: the M / W sides in the
    written-out steps (they had the textbook's), stale status in this file, START_HERE and TRIED,
    attributions of Claude's readings to the owner.

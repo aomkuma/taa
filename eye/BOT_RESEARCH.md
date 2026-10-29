@@ -413,16 +413,7 @@ M5 61.8 % start: 29 fills, +0.84 R, 161.60 USD. Not reviewed yet.
 
 **WITHDRAWN as a rule - the owner, the same evening:** *"Do not take what I ask, or what I show as an example, and decide it must be a rule - treat it as supporting information, understand? Because how to draw the Fibo we have already discussed."* What follows was Claude turning the 29/10 M1 example into a second play; it is kept only as the record of what was measured. The rule stays the owner's drawing (R18).
 
-**Two plays on one principle - 2026-10-29.** Asked why the 27/10 buy was drawn on the fall it reversed
-(M5 / M15, 4025 -> 3989, a buy after three legs) while the 29/10 sell was drawn on the fall it followed (M1,
-4050 -> 4037, sell at 4043, stop 4046, target 4029), the owner asked back *"the down leg of which timeframe -
-the same timeframe?"* (no: M5 / M15 against M1). Claude's reading: one principle on two layers - **on the
-larger timeframe a fall that has not yet made its 3-5 legs is sold on the smaller timeframe's bounce (the
-Fibo drawn on the smaller fall, the target its 161 % extension: a continuation); a fall that has made its
-3-5 legs with divergence is bought (R18: a reversal).** The owner: *"go by the principles we discussed."*
-The split - count the legs on the larger timeframe, continue under 3, reverse at 3-5 - is Claude's reading
-of that, not yet measured.
-The owner, then: *"whichever works, that one."* So both plays are measured side by side.
+Claude's reading (withdrawn as a rule): besides R18's reversal, a continuation - on the smaller timeframe, the leg in the trade's direction, sold / bought on its pullback, target 161.8 %. Measured below as a record only.
 
 ### Continuation against reversal - the plan and the expectation (written before the run)
 

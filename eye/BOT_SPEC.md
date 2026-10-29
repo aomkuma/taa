@@ -398,7 +398,7 @@ high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
   23.6 % (the owner). **Target:** `ext127` / `ext161` (the owner's proposal). At least 2R. R8 as before.
 - **Side** `[Claude]`, three variants: `fib_side = h1` (the H1 side must allow it, as now); `entry` (the
   entry timeframe's own structure: a BUY only once, after `L0`, a bar has traded above the last fixed high
-  before `L0`); `any` (no side filter). The owner asked *"zoomed into M5 it is a mega trend - should we read 'trend' on the timeframe we enter, or on the one larger than that?"* - a question, run as these variants.
+  before `L0`); `any` (no side filter).
 - **Count on** (SELL: the ascending run into the top, 3-5 fixed highs each higher than the one before):
   the descending run into `L0` has 3-5 fixed lows (each lower than the one before) with
   divergence on one oscillator at `L0` against the low before it - the three legs the owner pointed to on
