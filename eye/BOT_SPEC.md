@@ -677,3 +677,15 @@ the same way - we discussed this in the morning."* So:
     two pivot times); a new pivot makes a new range.
   - **Not applied to R24:** R18's count, R22, R23 (a), the target ladder.
 - **R20 everywhere** uses the last closed M5 close and `max_entry_frac` of the leg (or range height).
+
+## Consolidation into BOT_RULES.md (2026-10-29) - what changed on the way
+
+The rules in force moved to `eye/BOT_RULES.md` after three reviews (Codex, a fresh Sonnet, a fresh Haiku). The
+changes against this history, all `[Claude]`: the M5 trend (R22) is read on **M5 pivots** for M5 and M15
+legs; a major band counts as **in the way only if its whole width is beyond the entry** (it replaces "any part
+between" of revision 9 corrected - a band the entry sits inside is ignored; it gave a target below the entry
+on 19/10); the swing stop applies to the **0.618 entry only**; the count needs **3-5** lows (6 or more fail)
+and divergence mirrored for a SELL; **defaults** `fib_tf` M5 and `fib_entry` 0.618 (the research's strongest);
+`fib_early` (before the line) added as a variant; a priority when several qualify; fills, withdrawals and
+exits judged on M5; the plan's "months never looked at" corrected - those months were used by the research,
+so the clean test is forward.

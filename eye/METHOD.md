@@ -307,11 +307,11 @@ of the up trend."*
 | | the rule |
 |---|---|
 | **The drawing** | *"To play an up move, draw high -> low; to play a down move, draw low -> high"* - 0 % at the low, 100 % at the high for a buy |
-| **The entry** | the pullback to around 38 - 23 %; from 61 % *"if the bulls are really strong"*; **before the line rather than at it** - a pullback that reaches the line tends to go through it |
+| **The entry** | the pullback to around 38 - 23 %; from 61 % *"if the bulls are really strong"*; entering a little **before** the line, with the stop just beyond it, is the owner's idea - run as a variant (`eye/BOT_RULES.md` rule 6) |
 | **The stop** | beyond 0 % (*"beyond 88 % - 0 %"*); for the 61 % entry *"beyond 23 %"* |
 | **The target** | the extension - 127 - 161 % in a trend; **the take-profit placed is the one price can reach** |
 | **The count** | try it both ways - with and without; counted as **legs, both sides**: 3-5 lower lows into a bottom (buy), 3-5 higher highs into a top (sell) |
-| **Sideways** | enter at the edge around 88 - 127 %, the target around 100 % (the other edge) |
+| **Sideways** | enter at the edge around 88 - 127 %, the target around 100 % (read by Claude as the other edge) |
 | **The side** | H1 gives the lean, M5 measures the trend; never against a clear lean (the 2e side row) |
 | **Examples** | a question or a chart the owner shows is information, never a rule; a number in an example is not a rule |
 
