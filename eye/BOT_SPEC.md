@@ -451,3 +451,29 @@ never ignored; only a smaller timeframe's trend may be set aside.** So:
 **No test or research run until the code is confirmed correct** (the owner, 2026-10-29). The confirmation
 planned: remove the side options that break the rule; draw each October trade of the H1-side 61.8 % variant
 on its chart for the owner to judge by eye; a last Codex review.
+
+## Revision 7 (2026-10-29) - from the October trades drawn and judged by eye
+
+Claude drew every October decision of the H1-side 61.8 % variant (`eye/draw_trades.py`,
+`eye/trades/h1L_618_m5/`) and judged each against METHOD 2e and this spec: of 14, one (07/10) kept every
+rule. The owner confirmed the two rules below, and asked that the two open points be run both ways and
+judged in the real run.
+
+**R19. A leg that has run is over.** For a BUY (SELL the mirror): once any bar after `L0` has traded above
+`H100` (the 100 % level) before the order fills, the leg is finished - the move the setup waits for has
+already happened. No order is written on it, and an order resting on it is withdrawn. (The 27/10 picture:
+the entry is the pullback after the bounce, before the high breaks.)
+
+**R20. The entry must be reachable - the owner's rule 7.** No order whose entry is more than **4 USD** from
+the last close (the owner, 2026-10-28: an order goes no further than 4 USD from the price on the screen).
+
+**Run both ways (Claude's two readings, the owner to judge on the real run):**
+- `fib_stop` = `line` (default - beyond the 0 % line, or beyond 23.6 % for a 0.618 entry) | `swing` - also
+  beyond the most extreme fixed pivot on the stop side formed after `L0` (the latest higher low for a buy),
+  per 2e's "beyond the highest top / lowest bottom"; R recomputed, under 2R no order.
+- `fib_level` = `off` (default) | `on` - `L0` must lie inside a support band from the left (2e step 2a, the
+  H1 bands; resistance for a sell).
+
+**Acceptance cases (the stored bars, h1 side lows, M5, 0.618, ext161, the decisions of `eye/research/h1L_618_m5/`):**
+07/10 07:30 SELL is still written (entry 4159.07); 01/10 06:55, 12/10 06:55, 16/10 13:15, 21/10 21:00 and
+27/10 14:00 are refused by R19; 09/10 06:55 is refused by R20.

@@ -8,8 +8,10 @@ October 2026**. **Now: the owner's Fibonacci on the owner's leg** (METHOD 2e, `e
 itself read (Codex: not a code bug; the variant dropped the owner's H1 rule). **The owner's rule: the larger
 timeframe's trend is never ignored** - only `fib_side = h1` may be used. October with the H1 side, 61.8 %:
 +3.27 / +3.50 R (7 / 10 fills). **No test or research run until the code is confirmed correct** (the owner):
-next, remove the side options that break the rule, draw each October trade for the owner to judge, a last
-Codex review. Walking by hand
+the side options that break the rule are removed (uncommitted until the suite runs); each October trade was
+drawn and judged (`eye/trades/`): one of 14 kept every rule. **Next: BOT_SPEC revision 7** (R19 a leg that has
+run is over; R20 the owner's 4 USD rule; `fib_stop` and `fib_level` run both ways) - Sonnet implements,
+Codex reviews, the trades are redrawn and judged again; then the real run. Walking by hand
 resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
