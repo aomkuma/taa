@@ -29,7 +29,13 @@ from walk import TH, candles, frame, zigzag  # noqa: E402
 LEG = re.compile(
     r"Leg low ([\d.]+)@(\d\d/\d\d \d\d:\d\d) \(0 %\), high ([\d.]+)@(\d\d/\d\d \d\d:\d\d) \(100 %\)"
 )
+# BOT_RULES rule 14's leg (both sides: L0 is the 0 %, H100 the 100 %) and rule 11's range (0 % at the low)
+LEG_FIB = re.compile(
+    r"Leg: L0 ([\d.]+)@(\d\d/\d\d \d\d:\d\d) \(0 %\), H100 ([\d.]+)@(\d\d/\d\d \d\d:\d\d) \(100 %\)"
+)
+RANGE = re.compile(r"Range pivots: low ([\d.]+)@(\d\d/\d\d \d\d:\d\d), high ([\d.]+)@(\d\d/\d\d \d\d:\d\d)")
 LEVELS = (0.0, 0.236, 0.382, 0.618, 1.0, 1.618)
+RANGE_LEVELS = (-0.27, 0.0, 0.12, 0.88, 1.0, 1.27)
 
 
 def when(year: str, ddmm_hhmm: str) -> pd.Timestamp:
@@ -40,9 +46,10 @@ def when(year: str, ddmm_hhmm: str) -> pd.Timestamp:
 
 def draw(row: dict[str, str], m5: pd.DataFrame, out: Path) -> Path:
     year = row["cutoff_thai"][:4]
-    m = LEG.search(row["structure"])
+    m = LEG.search(row["structure"]) or LEG_FIB.search(row["structure"]) or RANGE.search(row["structure"])
     if not m:
         raise ValueError(f"{row['id']}: no leg in the structure text")
+    levels = RANGE_LEVELS if m.re is RANGE else LEVELS
     p0, t0, p100, t100 = float(m[1]), when(year, m[2]), float(m[3]), when(year, m[4])
     decided = pd.Timestamp(f"{row['cutoff_thai'][:10]} {row['decided_at'][-5:]}", tz=TH)
     now = decided + pd.Timedelta(minutes=5)  # the bar labelled decided_at closes here
@@ -79,7 +86,7 @@ def draw(row: dict[str, str], m5: pd.DataFrame, out: Path) -> Path:
             va="center",
             fontweight="bold",
         )
-    for lv in LEVELS:
+    for lv in levels:
         y = p0 + lv * leg
         ax.plot([xa, xb], [y, y], color="#b08d00", linewidth=0.9, zorder=1)
         ax.annotate(
@@ -97,7 +104,7 @@ def draw(row: dict[str, str], m5: pd.DataFrame, out: Path) -> Path:
     r = row.get("r_net", "")
     ax.set_title(
         f"{row['id']}  {row['side']}  decided {decided:%d/%m %H:%M} Thai  |  "
-        f"leg 0 % {p0:.2f} ({t0:%d/%m %H:%M}) -> "
+        f"{'range' if m.re is RANGE else 'leg'} 0 % {p0:.2f} ({t0:%d/%m %H:%M}) -> "
         f"100 % {p100:.2f} ({t100:%d/%m %H:%M})  |  result: {result} {r}  (shaded = after the decision)",
         fontsize=10,
     )

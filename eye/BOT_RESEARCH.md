@@ -674,8 +674,8 @@ first.
 - Expectation against the result: expected 0.55-0.60 for the strongest moves; measured about 0.50-0.57, not
   steady.
 - **Not answered here:** this counts which barrier price touches first, not the bot's trades (a pullback entry,
-  a stop beyond it, a 1.618 target). September's loss was trades. That is answered by the bot itself, run with
-  and without the lean (the owner's word, 2026-10-29: *"if you want to try option three first, go ahead"*).
+  a stop beyond it, a 1.618 target). September's loss was trades. The bot itself, run with and without the lean,
+  measures it (below - October only, under 30 fills, not judged) (the owner's word, 2026-10-29: *"if you want to try option three first, go ahead"*).
 
 ## The bot with and without the H1 lean - October (the plan and the expectation, written before the run)
 
@@ -690,3 +690,33 @@ drawn (`eye/draw_trades.py`) and judged by eye before any number is believed.
 refused about half the candidates), and its extra trades are counter-lean BUYs and SELLs whose R per trade is no
 worse than the on trades' - the lean showed no edge on direction. If the off trades lose clearly more, the lean
 does something the direction test missed.
+
+### The result - October 1-27 (2026-10-29)
+
+`eye/research/r8_lean_on/`, `r8_lean_off/` (ledgers and logs not committed; `summary.csv` is); every decision drawn
+(`eye/trades/r8_lean_off/`, the on run's eight decisions are among them - same ids and prices). Winning trades are
+at +2.05 to +2.49 R, so the break-even win rate is about 0.31.
+
+| | decisions | filled | won | R total | R per fill |
+|---|---|---|---|---|---|
+| lean on - legs | 7 | 6 | 1 | -2.71 | -0.45 |
+| lean on - ranges | 1 | 1 | 0 | -1.03 | -1.03 |
+| **lean on - all** | 8 | 7 | 1 | **-3.74** | **-0.53** |
+| lean off - legs | 11 | 9 | 3 | +1.19 | +0.13 |
+| lean off - ranges | 19 | 12 | 4 | +0.21 | +0.02 |
+| **lean off - all** | 30 | 21 | 7 | **+1.40** | **+0.07** |
+
+- **Measured:** with the lean on, 7 fills, 1 won. With it off, 21 fills, 7 won (0.33, about break-even), +0.07 R a
+  fill. Two of the off run's three extra leg fills are winners the lean had refused (07/10 SELL +2.49, 08/10 BUY
+  +2.42). **21 fills - under the 30 rule 15 asks; not judged.**
+- Expectation against the result: expected fewer than 30 fills (21), more orders off (30 against 8), the off trades
+  no worse (better on these few).
+- **Seen on the drawn trades [Claude's reading, to discuss with the owner]:**
+  - **The range trades are mostly not ranges.** Rule 11 takes the latest two fixed M5 pivots as the range whenever
+    M5 has no trend; 19 of the off run's 30 decisions are such "ranges", their two pivots 25 minutes to 5 hours apart
+    (01/10: 21:10 -> 21:35, 23.55 USD). Selling at 88 % of one fresh up-swing (16/10, 12/10) is fading an impulse,
+    not trading the edge of a sideways market.
+  - **A stale leg:** 26/10 13:00 BUY drew its Fibo on 23/10's leg (4034.23 -> 3975.58, three days old) after price had
+    made newer swings; stopped.
+  - 01/10 BUY: the order sat at 61.8 % after price had already bounced to 4185.86 - near the 100 % - and come back;
+    stopped.

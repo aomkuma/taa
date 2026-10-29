@@ -81,14 +81,11 @@ in a trend), is **on hold**: the owner said it is not their way, and it never ra
 10-28 - in the nine rules, then in 2e and its tools, each reviewed by Claude and Codex apart - and what
 was fixed are in `eye/RULES_REVIEW.md`.
 
-**Since the evening of 2026-10-28 a bot applies the owner's setup** (`eye/bot2e.py`, its rules in
-`eye/BOT_SPEC.md`), on closed bars only, inside the owner's windows, with the owner's reward rule - **at
-least 1:2, and no trade when the next level leaves less**. **October 2026 under the owner's rules: no
-trade** (`eye/BOT_RESEARCH.md`). An entry on M1 tried on 10-29 was Claude's misreading and is removed.
-**Now: the owner's Fibonacci** (`eye/METHOD.md` 2e, "The owner's Fibonacci"): round 3 drew the wrong
-leg (Claude's) and lost; round 4, on the owner's leg (BOT_SPEC revision 6), won October but failed September
-because a Claude side option ignored the H1 trend; only the H1 side is used now, and no test runs until the
-code is confirmed correct - `docs/HANDOFF.md`.
+**A bot applies the owner's setup** (`eye/bot2e.py`), on closed bars only, inside the owner's windows, with
+the owner's reward floor of 1:2. **Its rules in force are `eye/BOT_RULES.md`** - the owner's Fibonacci (`eye/METHOD.md`
+2e); `eye/BOT_SPEC.md` is their history. The first version, 2e's break-and-retest entry, made no trade in October
+2026; the Fibonacci rounds and the current build's runs are in `eye/BOT_RESEARCH.md`, and where the work stands is in
+`docs/HANDOFF.md`.
 
 ## Before changing anything
 

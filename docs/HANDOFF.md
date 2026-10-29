@@ -1,15 +1,18 @@
 # Session handoff
 
 Last updated **2026-10-29 Thai** (read with `Get-Date`). The owner's setup is written down in full
-(`eye/METHOD.md` 2e) and a bot applies it (`eye/bot2e.py`). Under the owner's rules it made **no trade in
-October 2026**. **Now (2026-10-29 evening):** the bot's rules in force are **`eye/BOT_RULES.md`**, and **`eye/bot2e.py` builds
+(`eye/METHOD.md` 2e) and a bot applies it (`eye/bot2e.py`). Its first version (2e's break-and-retest entry) made **no trade in
+October 2026** - history; the current build's runs are below. **Now (2026-10-29 evening):** the bot's rules in force are **`eye/BOT_RULES.md`**, and **`eye/bot2e.py` builds
 them** - written by a Sonnet developer, reviewed by Codex until no findings, gates and full suite green. Tested
 today at the owner's word *"find the answers by testing and proof"* (`eye/BOT_RESEARCH.md`, the last three
 sections): **no tested band of H1 / H4 pivots is respected more than a control**, so rule 8's take-profit is the
 Fibo extension (1.618, variant 1.272), no band cap; **no tested reading of H1 (rule 1 and three others) tells the
-side of the next 24-47 USD move** (best 0.52 against a bar of 0.55). **Open, the owner's to decide:** what replaces
-the H1 lean - none, kept, or the bot run with and without it. **No bot run yet** - it needs the owner's word, then
-every trade drawn (`eye/draw_trades.py`) and judged. The development process is in CLAUDE.md ("How the system is
+side of the next 24-47 USD move** (best 0.52 against a bar of 0.55). **The bot run with and without the lean** (the owner's word;
+`fib_lean` on/off, October 1-27, every decision drawn): on - 7 fills, 1 won, -3.74 R; off - 21 fills, 7 won,
++1.40 R (+0.07 a fill). Under 30 fills - not judged. Seen on the drawn trades: rule 11's "range" is mostly one fresh
+M5 swing, not a sideways market; one leg drawn three days old. **Open, with the owner:** what replaces the lean, and
+how the owner reads a sideways range - the discussion of how the basic rules put the trades on the winning side of
+50 % (the owner, 2026-10-29: judge by the trades, not by direction rates). The development process is in CLAUDE.md ("How the system is
 developed"). Walking by hand
 resumes at real day 5, 2026-04-08.
 
@@ -51,10 +54,11 @@ Read first, in order:
    eye/RULES_REVIEW.md sections 5-6
 
 My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
-generalise, never a rule with its numbers; a question I ask is a question, not a rule. No test or research
-run until the code is confirmed correct. Next, in order: remove the side options that ignore the H1 trend
-(fib_side entry / any) from eye/bot2e.py; draw each October trade of the H1-side 61.8 % variant on its chart
-for me to judge; a last Codex review of the code. Only when I am satisfied, run September.
+generalise, never a rule with its numbers; a question I ask is a question, not a rule. The bot's rules in
+force are eye/BOT_RULES.md, built in eye/bot2e.py. Judge a rule by the trades it gives (R per trade), not by
+how often price goes one way first. Next: the discussion with me of how the basic rules put the trades on the
+winning side - what replaces the H1 lean, and how I read a sideways range (HANDOFF, "Open"). No bot or research
+run without my word.
 ````
 
 ---
@@ -153,8 +157,8 @@ fill fixes re-score every planned column of all twelve identically.
    sideways"*. Every word is in METHOD 2e; the open readings are listed there and run as variants.
 3. **Round 3 measured** - BOT_SPEC revision 5 (R13-R17, `mode=fib` in `eye/bot2e.py`): about 33 fills in
    October, 1 won; Codex found no bug. The owner's
-   M5 / M15 charts of 27/10 then showed the leg is drawn on the counter-move just ended - *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* (METHOD 2e). **Round 4 - revision 6 (R18) -
-   being built and run by Sonnet**; expectation written in `BOT_RESEARCH.md`. The side is run as `fib_side` = `h1` / `entry` / `any` (Claude's variants).
+   M5 / M15 charts of 27/10 then showed the leg is drawn on the counter-move just ended - *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* (METHOD 2e). Round 4 - revision 6 (R18) - ran
+   (history; `BOT_RESEARCH.md`); its `fib_side` options are withdrawn. The rules in force are `eye/BOT_RULES.md`.
 4. **The documents were reviewed by Codex, Sonnet and Haiku apart** and corrected: the M / W sides in the
    written-out steps (they had the textbook's), stale status in this file, START_HERE and TRIED,
    attributions of Claude's readings to the owner.
@@ -185,9 +189,9 @@ London's M on 4642-4651 is the case); divergence is required for the 3-5 count (
 
 **Real day 4, 2026-04-07, walked:** no decision. Asia, London, New York all `no-setup`; step 7's next level sat a few dollars over every retest entry (`SHEETS.md`, "Day 4 in one place"). The minimum reward was then answered by the owner: **at least 1:2**.
 
-**The bot - the work now (owner, 10-28: *"write the code and let a bot do the work"*).** `eye/bot2e.py`
-applies METHOD 2e bar by bar (spec `eye/BOT_SPEC.md`; built by a Sonnet agent, reviewed twice by Codex,
-checked by Claude; 18 tests in `tests/unit/test_eye_bot2e.py`). Divergence for the 3-5 count: **one oscillator is enough** (owner, 10-28). The owner's reward rule: **at least 1:2**,
+**The bot, first version (history; owner, 10-28: *"write the code and let a bot do the work"*).** `eye/bot2e.py`
+applied METHOD 2e bar by bar (then `eye/BOT_SPEC.md`; now `--mode 2e`, a record - the rules in force are
+`eye/BOT_RULES.md`, see the top of this file). Divergence for the 3-5 count: **one oscillator is enough** (owner, 10-28). The owner's reward rule: **at least 1:2**,
 and when the target just before the next level gives less - **no trade, for now**. Revision 3 (`min_r` 2.0, counting by zone) was built and
 October 2026 run in 11 variants: **no trade** (`BOT_RESEARCH.md` round 1); with the floor off, 1-4 setups a
 month, the best 1.31 R. `eye/bot_ledger.csv` is empty because research runs write to `eye/research/`.
@@ -226,9 +230,9 @@ deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the
 
 | | |
 |---|---|
-| **The owner's Fibonacci, asked and not answered:** the stop for the 38 / 23 % entries (below 0 %?), the sideways drawing and its "around 100 %" target, and how trend vs sideways is read (and on which timeframe). *Answered 10-29: "3-5 peaks" = legs, both sides (the owner). Researched 10-29 on M5 and M15 at the owner's word ("go by the facts on the timeframe we trade"): after the research fill-bug fix, 100 % = the high the fall began from (clearly at 61.8 %); entering before the line holds only at 38.2 % on M5 (BOT_RESEARCH, "Correction"). The owner: examples and questions are information, not rules; the drawing is R18's* | METHOD 2e, "The owner's Fibonacci" |
-| **H1 side `strict` or `lows`**, and whether 3R is wanted where 2R is reachable | `eye/BOT_SPEC.md` |
-| **The September check** - a variant that wins October is run once, unchanged, on September | `eye/BOT_RESEARCH.md` ground rules |
+| **What replaces the H1 lean** - no tested reading of H1 told the side; the bot with the lean off did no worse in October (21 fills, not judged) | `eye/BOT_RESEARCH.md`, the last sections; BOT_RULES rule 1 |
+| **How the owner reads a sideways range** - rule 11 takes the latest two M5 pivots, mostly one fresh swing, not a range | `eye/BOT_RESEARCH.md`, "The result - October 1-27"; BOT_RULES rule 11 |
+| **The clean test is forward** - the stored months were used to choose; the months after 2026-10-28 as they arrive | BOT_RULES rule 15 |
 | **MACD and RSI not yet checked against MT5**, nor ZigZag on M5 and H1 | `eye/walk.py` |
 | **One reader.** Codex runs with the prompt piped on stdin (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `exec - --sandbox read-only`). It has reviewed documents twice, never a chart | `TRIED.md` row 14 |
 | **Two judgements in 2e** - which level from the left counts, and what the H1 trend is at that moment (the owner's example had just broken an H1 lower high) - are where a reader's bias enters | `RULES_REVIEW.md` M9 |

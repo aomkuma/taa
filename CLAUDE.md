@@ -56,7 +56,7 @@ The eye work:
 .venv\Scripts\python eye/score.py [summary]             # score the ledger's unscored rows, or the running totals
 .venv\Scripts\python eye/rules.py                       # which of the nine rules held, and where they fought
 .venv\Scripts\python eye/money.py                       # the record in money: 200 USD, 0.01 lot (args: balance lot)
-.venv\Scripts\python eye/bot2e.py --from 2026-04-06 --to 2026-04-07   # the bot: METHOD 2e bar by bar (eye/BOT_SPEC.md)
+.venv\Scripts\python eye/bot2e.py --from 2026-04-06 --to 2026-04-07   # the bot, bar by bar (eye/BOT_RULES.md; --mode 2e = the 2e record)
 .venv\Scripts\python eye/score.py bot_ledger.csv; .venv\Scripts\python eye/money.py --ledger bot_ledger.csv
 ```
 
@@ -84,7 +84,8 @@ step by explicit paths is fine without asking.
 1. **Discuss** with the owner, and **conclude** - what was decided, in the owner's words where they are
    the owner's.
 2. **Record** it in the documents (rules and what to do only - no questions): METHOD 2e for the owner's
-   rules, `eye/BOT_SPEC.md` for the bot's spec, `docs/HANDOFF.md` for the state.
+   rules, `eye/BOT_RULES.md` for the bot's rules (with a note in `eye/BOT_SPEC.md`, its history),
+   `docs/HANDOFF.md` for the state.
 3. **An agent reviews the documents** (Codex, read-only) - ambiguities, contradictions with the owner's
    rules, attributions, acceptance cases checked against the stored bars. Fix the documents; review again
    if the fixes were not small.
