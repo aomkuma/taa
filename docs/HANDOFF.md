@@ -126,6 +126,13 @@ fill fixes re-score every planned column of all twelve identically.
 
 ## Where it resumes
 
+**2026-10-29 - the owner answered how 1:2 is reached:** *"if 1H runs 6 USD, and M1 gets in near the top or
+the bottom of price, and it turns, that is 2R already"* - the reward on H1, the risk on M1. Written as
+`eye/BOT_SPEC.md` revision 4 (R12: steps 3-6 on M1, the stop beyond the extreme only) and in METHOD 2e;
+Claude's expectation before the run is in `eye/BOT_RESEARCH.md` (5-15 trades in October, 30-40 % won).
+A Sonnet agent is implementing R12 and running October; then Codex reviews and Claude checks.
+**Open for the owner:** the "60 %" (*"SL beyond the top of the H1 bar by 60 %"*) - 60 % of what.
+
 **Done on 10-28:** the `setup` and `trigger` columns, `rules.py` judging the seven steps, and **real day 3,
 2026-04-06**, the first day under 2e (03/04 was Good Friday - no bars after 03:50 Thai). Asia: **D3-1**, a
 buy stop limit (trigger 4644.0, limit 4643.0, stop 4599.5, target 4668.0) - **no fill**: the break ran

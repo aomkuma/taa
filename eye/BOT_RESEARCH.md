@@ -97,3 +97,44 @@ stops *before* the next level, and on gold in October the next level was usually
 stop. So the 2R floor is not the only gate, but it is the last one, and nothing passes it.
 **This is a question about the owner's rules, not a `[Claude]` setting**, and it goes to the owner with
 these numbers.
+
+## The owner's answer on 1:2 (2026-10-29), and round 2
+
+The owner: *"As we discussed: if 1H runs 6 USD, and M1 gets in near the top or the bottom of price, and it turns, that is 2R already."* - the reward on H1, the risk on M1. Written as BOT_SPEC revision 4 (R12): the
+picture (level, count / M / W, divergence) on M5 / M15 as before; the break, the retest and the stop on M1;
+the stop beyond the extreme only. **This changes an owner's rule only as the owner stated it**; the M1
+definitions are `[Claude]` and marked.
+
+**Claude's expectation, written before the run (2026-10-29):** the stop falls from round 1's 10-40 USD to
+roughly 2-8 USD, so far more setups pass 2R: **5-15 filled trades in October** (from 0). The tight stop will
+be hit by M1 noise more often: **a win rate of 30-40 %**. Whether that pays at 2R+ is open - my guess is near
+break-even, between -0.2 and +0.3 R a trade. If it comes out at 0 trades or over 40, that is an abnormal
+count and the report stops until it is explained.
+
+### Round 2 - R12 (entry on M1), October 1-27 (Sonnet's build, before Codex's review)
+
+| # | date | who proposed | what changed | why | Oct trades (filled) | won / lost | USD from 200 | kept? |
+|---|---|---|---|---|---:|---:|---:|---|
+| 12 | 10-29 | the owner | `m1_strict` - R12, h1 strict | the owner's answer on 1:2 | 2 (2) | 0 / 2 | 183.66 (-2.08 R) | under review |
+| 13 | 10-29 | the owner | `m1_lows` - R12, h1 lows | the same, other H1 reading | 3 (3) | 0 / 3 | 171.51 (-3.11 R) | under review |
+
+The three trades (`m1_lows`; `m1_strict` wrote the first and the third), traced by Claude on M1 for 48 h:
+
+| trade | risk USD | stop hit (Thai) | best move before the stop | target later? |
+|---|---:|---|---:|---|
+| 06/10 SELL W at 4144-4145, entry 4137.89 | 7.93 | 07:49, 34 min after the fill | 0.31 R | **yes, 09:35** - after going 1.79 R against |
+| 09/10 BUY M at 4175, entry 4186.46 | 11.80 | 19:51, 16 min | -0.09 R | no |
+| 13/10 BUY count 4 at 4180, entry 4186.95 | 7.78 | 19:54, 19 min | 0.30 R | no |
+
+**Against the expectation written before the run:** 5-15 trades expected, **2-3** came; 30-40 % won expected,
+**none** did. Three trades say nothing about the method (CLAUDE.md: no conclusion from a handful). What is
+measured: the M1 entry made 2R reachable (206 / 275 bars now stop at "reward under 2R" instead of every one),
+but each entry was the retest of the broken M1 high, already 8-12 USD from the extreme, and all three were
+stopped within 34 minutes. Still under review (Codex), not yet believed.
+
+**Codex's review of the R12 build (2026-10-29, read-only):** no look-ahead (every frame's close time is
+checked, M1 included; ZigZag emits only fixed pivots); the R12 formulas faithful, the SELL mirrored;
+`entry_mode=setup` reproduces the pinned round-1 decision. **Codex replayed all three October decisions
+from the stored M1 / M5 bars and got the same side, entry, stop and target.** One medium risk, not observed
+in October: an `L*` older than the 7,200-bar M1 frame (five trading days) is refused - zero such rows.
+So the three losses are what the rules as written do, not a bug.

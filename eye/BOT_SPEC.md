@@ -257,3 +257,37 @@ owner's W)**, not one. (What it then decides is for steps 3-7 and R9.)
 **R11. Divergence on one oscillator is enough - the owner's** (2026-10-28, asked whether the 3-5 count needs
 MACD and RSI both: *"one"*). `div_mode` defaults to **one**; which oscillators diverged is still written
 into each decision (both = the owner's "clear" case).
+
+## Revision 4 (2026-10-29) - the entry on M1, near the extreme: the owner's answer on 1:2
+
+Asked how a real trade reaches 1:2 - 1:3 with the stop beyond the extreme and the target before the next
+level, the owner: *"As we discussed: if 1H runs 6 USD, and M1 gets in near the top or the bottom of price, and it turns, that is 2R already."* Earlier the same evening, the owner's own question: *"say an H1 bar has
+an ATR of 6 and M1 runs 0.9 - how many R is that?"* and *"SL beyond the top of the H1 bar by 60 %"*.
+
+**The principle, generalised by Claude (for the owner to correct; not the numbers 6, 0.9 or 60 %):** the
+reward is measured on the large timeframe - the H1 move to the next level; the risk on the smallest - the
+entry is taken on M1 close to the zone's extreme, so the stop beyond that extreme is short and an ordinary
+H1 move is two stops or more. Round 1 put the stop beyond the extreme *and* the band edge and entered on the
+M5 / M15 retest, far from the extreme: no setup in October reached 1:2.
+
+**R12.** Steps 1, 2 and 7 as before (H1 side and levels; the zone count or M / W with divergence on M5 /
+M15; the target just before the next opposite level; at least 2R, the owner's). Steps 3-6 move to M1:
+- `[Claude]` From the M1 bars that opened at or after the bar of `L*` (the setup timeframe's zone extreme):
+  `L1` = the M1 fixed LOW with the lowest price there (for a BUY; the mirror for a SELL). Its price is
+  `L*`'s or close to it - the same extreme seen on M1.
+- Step 3 on M1: an M1 bar's high above the last fixed M1 HIGH before `L1`, then a fixed M1 higher low
+  after that break, above `L1`.
+- Step 4 on M1: `H_d` = the fixed M1 HIGH the dip to that higher low started from.
+- Step 5 on M1: void if the last M1 close is below the M1 higher low; entry at `H_d`, a stop limit while
+  the last M1 close is at or under `H_d`, a plain limit while it is above (R5).
+- Step 6: **stop = the extreme (`min(L*, L1)` for a BUY) - `stop_buffer`** - beyond the lowest bottom, the
+  owner's words; the band edge is no longer added (that was Claude's).
+- `entry_mode` = `m1` (default) | `setup` (round 1's behaviour, kept for comparison). ZigZag 12 / 5 / 3 on
+  M1 as on every frame. Decisions use closed M1 bars only (the cut guard covers M1).
+- The setup's identity for "already used" is side, setup timeframe, `L*` time and the M1 higher-low time.
+- R8 (played out) is read on M1 bars after the M1 higher low.
+- `[Claude]` `stop_buffer` stays 0.50 USD. **Open for the owner:** the "60 %" - beyond the extreme by 60 %
+  of what (the H1 ATR, the H1 bar, the M1 swing)? Until answered it is not used.
+
+Ledger: the `entry_tf` / setup columns say `M15>M1` or `M5>M1`; the decision text names `L*`, `L1`, the M1
+break, the M1 higher low and `H_d`.

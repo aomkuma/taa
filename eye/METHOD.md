@@ -148,8 +148,8 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 | **Divergence** | **on MACD and RSI, against price** - the owner: *"divergence is divergence - what is it by the book?"*; and *"if both happen, it is clear"* - see the principle below |
 | **The entry** | **wait for the structure to break, then the retest of the support or resistance it broke** |
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
-| **Entry timeframe** | **M5 to M15** |
-| **The stop** | **beyond the High** (sell) / **Low** (buy) - see the principle below |
+| **Entry timeframe** | **M5 to M15** for the picture; **the entry itself on M1, near the top / bottom** - the owner, 2026-10-29: *"As we discussed: if 1H runs 6 USD, and M1 gets in near the top or the bottom of price, and it turns, that is 2R already."* |
+| **The stop** | **beyond the High** (sell) / **Low** (buy) - see the principle below. Entered on M1 near that extreme, the stop is short and an ordinary H1 move pays 1:2 (the owner, 2026-10-29) |
 | **The target** | **just before the opposite level on the left** - see the principle below |
 | **How long a trade is held** | **until the stop or the target** - the owner: *"hold it"*. No time limit |
 | **Reward** | **at least 1:2** - the owner, 2026-10-28: *"the profit has to be 1:2, 1:3"*; when the target just before the next level gives less: *"no trade, for now"* |
@@ -292,6 +292,23 @@ a divergence on both. On M5 there were four highs at the top (4065.68, 4064.17, 
 same shape, weaker: MACD 2.84 -> 1.29, RSI 66.04 -> 64.94.
 
 The target came **4 h 25 min after the entry** - held, as the owner holds, it is reached.
+
+### The owner's Fibonacci (2026-10-29)
+
+The owner, asked nothing about it, in their words: *"Have you ever measured with Fibo? I like to use it.
+Sideways: enter at the edge, around 88 % - 127 %. Up trend: draw the Fibo with the ZigZag alongside - 0 % at
+the previous lowest price, 100 % at the previous highest price - then wait for it to fall back to around
+38 - 23 %; if the bulls are really strong, maybe enter from the pullback to 61 %. The SL is beyond 88 % - 0 %.
+Down trend: the reverse of the up trend."*
+
+**Open, asked of the owner before anything is coded** (Claude reads these several ways; none is filled in):
+- the scale: with 0 % at the low and 100 % at the high, "falls to 38 - 23 %" is a deep pullback (price
+  23-38 % of the leg above the low) and 61 % a shallow one - is that the reading?
+- the stop "beyond 88 % - 0 %": below the 0 % (the low), or another level?
+- sideways 88 % - 127 %: drawn across the range from its one edge to the other, 127 % being a push past the
+  edge?
+- the target, and how it joins the count / divergence / M-W of 2e: does the Fibo zone replace the H1 level as
+  "where", or must both agree?
 
 ### The bot (2026-10-28)
 

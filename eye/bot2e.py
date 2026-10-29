@@ -25,7 +25,7 @@ import argparse
 import csv
 import importlib
 import sys
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from itertools import pairwise
 from pathlib import Path
@@ -73,8 +73,12 @@ WINDOWS: tuple[tuple[str, int, int], ...] = (
     ("New York", 19 * 60 + 30, 23 * 60),
 )
 # H4 is a stored frame too (research option h1_tf=H4); walk.py's tables do not know it.
-STEP = {**STEP, "H4": pd.Timedelta(hours=4)}
-FRAME_BARS = {tf: SHOWN[tf] + WARMUP for tf in ("H1", "M15", "M5")} | {"H4": 600}
+# M1 is the entry frame of revision 4 (R12).
+STEP = {**STEP, "H4": pd.Timedelta(hours=4), "M1": pd.Timedelta(minutes=1)}
+# SPEC-QUESTION: how far back the M1 frame reaches. L* can be up to `counter_pivots` setup-timeframe pivots
+# back; 7200 M1 bars = 5 days of trading. A setup whose L* is older is refused
+# ("m1: L* older than the M1 frame").
+FRAME_BARS = {tf: SHOWN[tf] + WARMUP for tf in ("H1", "M15", "M5")} | {"H4": 600, "M1": 7200}
 
 
 @dataclass(frozen=True)
@@ -104,6 +108,9 @@ class Params:
     spread: float = (
         SPREAD  # the owner's real spread on gold, USD (the R written into a decision is net of it)
     )
+    # R12 (revision 4): "m1" = steps 3-6 on M1 near the extreme; "setup" = revision 3's steps 3-6 on the
+    # setup timeframe (M5 / M15), kept for comparison.
+    entry_mode: str = "m1"
 
     def text(self) -> str:
         """The [Claude] parameters as they are written into a decision."""
@@ -112,7 +119,8 @@ class Params:
             f"band_frac={self.band_frac:g} band_legs={self.band_legs} counter_pivots={self.counter_pivots} "
             f"trigger_offset={self.trigger_offset:g} stop_buffer={self.stop_buffer:g} "
             f"target_buffer={self.target_buffer:g} min_r={self.min_r:g} h1_tf={self.h1_tf} "
-            f"h1_swings={self.h1_swings} entry_tfs={self.entry_tfs} div_mode={self.div_mode}"
+            f"h1_swings={self.h1_swings} entry_tfs={self.entry_tfs} div_mode={self.div_mode} "
+            f"entry_mode={self.entry_mode}"
         )
 
 
@@ -121,7 +129,8 @@ class Params:
 REASONS = [
     "market closed", "outside window", "warm-up", "order pending", "step1: no side", "step2: no levels",
     "step2: no counter-move", "step2: L* not in a support band", "step2: count outside 3-5 and no M",
-    "step2: no divergence", "step3: structure not broken", "step3: no higher low yet",
+    "step2: no divergence", "m1: L* older than the M1 frame", "step3: structure not broken",
+    "step3: no higher low yet",
     "step4: no H_d", "step5: price below the higher low", "step7: no target level",
     "reward under 2R", "setup already played out", "setup already used", "order written",
 ]  # fmt: skip
@@ -155,6 +164,20 @@ class Setup:
     stop_v: float
     target_v: float
     r: float
+    l1: VPivot | None = None  # m1 mode: the M1 low that is the same extreme as L*; lhl / hd then index M1
+    m1_break_v: float | None = None  # m1 mode: the M1 high level whose break was waited for
+
+
+@dataclass(frozen=True)
+class M1Ctx:
+    """The M1 frame in the view, for steps 3-6 in m1 mode, plus the setup timeframe's bar times."""
+
+    setup_times: pd.DatetimeIndex
+    m1_times: pd.DatetimeIndex
+    pv: list[VPivot]
+    hi_v: np.ndarray
+    lo_v: np.ndarray
+    close_v: np.ndarray
 
 
 @dataclass
@@ -282,8 +305,11 @@ def analyse_view(
     bands_v: Sequence[tuple[float, float]],
     tf: str,
     p: Params,
+    m1_ctx: Callable[[], M1Ctx] | None = None,
+    setup_times: pd.DatetimeIndex | None = None,
 ) -> Outcome:
-    """Steps 2b-7 for a BUY in the view, on one timeframe. Takes only data already cut at ``now``."""
+    """Steps 2b-7 for a BUY in the view, on one timeframe. Takes only data already cut at ``now``.
+    In m1 mode steps 3-6 run on the M1 frame ``m1_ctx()`` gives (built only once step 2 holds)."""
     out = Outcome(tf=tf, reason="step2: no levels")
     if not bands_v:
         return out
@@ -349,6 +375,15 @@ def analyse_view(
     kind = "count" if count_ok else "M"
     out.info["kind"] = kind
 
+    if p.entry_mode == "m1":
+        if m1_ctx is None or setup_times is None:
+            raise ValueError("entry_mode 'm1' needs the M1 frame and the setup timeframe's bar times")
+        return _m1_steps(
+            out, lstar, band, counted, kind, d_macd, d_rsi, m1_ctx(), setup_times, bands_v, tf, p
+        )
+    if p.entry_mode != "setup":
+        raise ValueError(f"entry_mode must be 'm1' or 'setup', got {p.entry_mode!r}")
+
     # 3: the structure breaks: a bar's high above the last fixed high before L*, then a fixed higher low.
     out.reason = "step3: structure not broken"
     if il < 1 or full[il - 1].low:
@@ -412,6 +447,101 @@ def analyse_view(
     out.setup = Setup(
         tf, lstar, lhl, hd, band, counted, kind, d_macd, d_rsi, entry_v, trigger_v, stop_v, target_v, r
     )
+    out.reason = "order written"
+    return out
+
+
+def _m1_steps(
+    out: Outcome,
+    lstar: VPivot,
+    band: tuple[float, float],
+    counted: list[VPivot],
+    kind: str,
+    d_macd: bool,
+    d_rsi: bool,
+    m1: M1Ctx,
+    setup_times: pd.DatetimeIndex,
+    bands_v: Sequence[tuple[float, float]],
+    tf: str,
+    p: Params,
+) -> Outcome:
+    """R12: steps 3-6 on M1 (a BUY in the view), step 7 as before. Only closed M1 bars are in ``m1``."""
+    full = m1.pv
+    t0 = setup_times[lstar.pos]  # the open time of L*'s bar on the setup timeframe
+    out.reason = "m1: L* older than the M1 frame"
+    # SPEC-QUESTION: "older than the frame" = the frame's first bar opens more than one setup-timeframe bar
+    # after L*'s bar (a bar or two missing at the start of a bar is a data gap, not a cut frame).
+    if len(m1.m1_times) == 0 or m1.m1_times[0] > t0 + (setup_times[1] - setup_times[0]):
+        return out
+
+    # L1 (R12): the M1 fixed LOW with the lowest price among the M1 bars that opened at or after t0.
+    out.reason = "step3: structure not broken"
+    cand = [q for q in full if q.low and m1.m1_times[q.pos] >= t0]
+    if not cand:
+        return out
+    l1 = cand[0]
+    for q in cand:
+        if q.price < l1.price:  # the first of equal lows
+            l1 = q
+    il = full.index(l1)
+    # Step 3 on M1: a high above the last fixed M1 HIGH before L1, then a fixed higher low above L1.
+    # SPEC-QUESTION: "the last fixed M1 HIGH before L1" is the pivot just before L1 (pivots alternate); if L1
+    # is the first pivot of the frame there is none and the structure is not broken.
+    if il < 1 or full[il - 1].low:
+        return out
+    h_prev = full[il - 1]
+    after = m1.hi_v[l1.pos + 1 :]
+    above = np.flatnonzero(after > h_prev.price)
+    if above.size == 0:
+        return out
+    break_pos = l1.pos + 1 + int(above[0])
+    out.info["step3"] = f"M1 L1 {l1.price:.2f}; broke {h_prev.price:.2f}"
+    out.reason = "step3: no higher low yet"
+    lhl = next((q for q in full[il + 1 :] if q.low and q.pos > break_pos and q.price > l1.price), None)
+    if lhl is None:
+        return out
+    out.info["step3"] += f"; higher low {lhl.price:.2f}"
+
+    out.reason = "step4: no H_d"
+    ih = full.index(lhl)
+    if ih < 1 or full[ih - 1].low:
+        return out
+    hd = full[ih - 1]
+    out.info["step4"] = f"H_d {hd.price:.2f}"
+
+    out.reason = "step5: price below the higher low"
+    if m1.close_v[-1] < lhl.price:
+        return out
+    plain = bool(m1.close_v[-1] > hd.price)
+    trigger_v = None if plain else hd.price + p.trigger_offset
+    out.info["step5"] = "limit" if plain else "stop limit"
+
+    # 6: beyond the lowest bottom; the band edge is NOT added in m1 mode (the owner: beyond the extreme).
+    entry_v = hd.price
+    stop_v = min(lstar.price, l1.price) - p.stop_buffer
+    out.reason = "step7: no target level"
+    resist = [b for b in bands_v if b[0] > entry_v]
+    if not resist:
+        return out
+    target_v = min(b[0] for b in resist) - p.target_buffer
+    if target_v <= entry_v or entry_v <= stop_v:
+        return out
+    r = (target_v - entry_v - p.spread) / (entry_v - stop_v)
+    out.info["step5"] += f"; R {r:.2f}"
+    out.reason = "reward under 2R"
+    if r < p.min_r:
+        return out
+
+    # R8 on M1: the stop or the target traded since the M1 higher low.
+    out.reason = "setup already played out"
+    if m1.hi_v[lhl.pos + 1 :].size and (
+        float(m1.hi_v[lhl.pos + 1 :].max()) >= target_v or float(m1.lo_v[lhl.pos + 1 :].min()) <= stop_v
+    ):
+        return out
+    out.setup = Setup(
+        tf, lstar, lhl, hd, band, counted, kind, d_macd, d_rsi, entry_v, trigger_v, stop_v, target_v, r,
+        l1=l1, m1_break_v=h_prev.price,
+    )  # fmt: skip
     out.reason = "order written"
     return out
 
@@ -483,20 +613,36 @@ def decide(
     bands = h1_bands(h1_piv, len(h1), now, p)
     bands_v = sorted((min(sign * lo, sign * hi), max(sign * lo, sign * hi)) for lo, hi in bands)
 
+    m1_pivots: list[list[Swing]] = []  # the M1 ZigZag, run once per bar and only when step 2 holds
+
+    def m1_ctx_for(tf_times: pd.DatetimeIndex) -> Callable[[], M1Ctx]:
+        def build() -> M1Ctx:
+            if not m1_pivots:
+                m1_pivots.append(_zigzag(frames["M1"]))
+            return m1_context(frames["M1"], sign, m1_pivots[0], tf_times)
+
+        return build
+
     outcomes: list[Outcome] = []
     for tf in p.entry_tfs.split(","):
         df = frames[tf]
+        tf_times = pd.DatetimeIndex(df.index)
         piv = to_view(_zigzag(df), sign)
         hi_v = df.high.to_numpy(dtype=np.float64) if sign > 0 else -df.low.to_numpy(dtype=np.float64)
         lo_v = df.low.to_numpy(dtype=np.float64) if sign > 0 else -df.high.to_numpy(dtype=np.float64)
         close_v = sign * df.close.to_numpy(dtype=np.float64)
         macd_v = sign * macd_mt5(df.close)["main"].to_numpy(dtype=np.float64)
         rsi_v = sign * rsi(df.close, 14).to_numpy(dtype=np.float64) + (0.0 if sign > 0 else 100.0)
-        out = analyse_view(piv, hi_v, lo_v, close_v, macd_v, rsi_v, bands_v, tf, p)
+        m1 = p.entry_mode == "m1"
+        out = analyse_view(
+            piv, hi_v, lo_v, close_v, macd_v, rsi_v, bands_v, tf, p,
+            m1_ctx_for(tf_times) if m1 else None, tf_times,
+        )  # fmt: skip
         if out.setup is not None:
             s = out.setup
             times = df.index
-            key = f"{side}|{tf}|{times[s.lstar.pos]}|{times[s.lhl.pos]}"
+            hl_time = frames["M1"].index[s.lhl.pos] if m1 else times[s.lhl.pos]
+            key = f"{side}|{tf}|{times[s.lstar.pos]}|{hl_time}"
             # SPEC-QUESTION: the spec does not say how a setup that stays valid for many bars is kept from
             # being written twice; its identity is side, timeframe, L* time and higher-low time.
             if key in used:
@@ -513,15 +659,32 @@ def decide(
     best = outcomes[-1] if outcomes[-1].setup else max(outcomes, key=lambda o: RANK[o.reason])
     info = dict(best.info)
     info.pop("key", None)
-    result = done(best.reason, info, best.tf)
+    result = done(best.reason, info, f"{best.tf}>M1" if p.entry_mode == "m1" else best.tf)
     if best.setup is None:
         return result
     result.key = best.info["key"]
-    result.decision = _row(best.setup, side, sign, now, frames[best.tf], p)
+    result.decision = _row(best.setup, side, sign, now, frames[best.tf], p, frames.get("M1"))
     return result
 
 
-def _row(s: Setup, side: str, sign: int, now: pd.Timestamp, df: pd.DataFrame, p: Params) -> dict[str, str]:
+def m1_context(m1: pd.DataFrame, sign: int, pivots: Sequence[Swing], setup_times: pd.DatetimeIndex) -> M1Ctx:
+    """The M1 frame in the view (prices negated for a SELL, highs and lows swapped), with its fixed pivots."""
+    hi = m1.high.to_numpy(dtype=np.float64)
+    lo = m1.low.to_numpy(dtype=np.float64)
+    return M1Ctx(
+        setup_times=setup_times,
+        m1_times=pd.DatetimeIndex(m1.index),
+        pv=to_view(pivots, sign),
+        hi_v=hi if sign > 0 else -lo,
+        lo_v=lo if sign > 0 else -hi,
+        close_v=sign * m1.close.to_numpy(dtype=np.float64),
+    )
+
+
+def _row(
+    s: Setup, side: str, sign: int, now: pd.Timestamp, df: pd.DataFrame, p: Params,
+    m1df: pd.DataFrame | None = None,
+) -> dict[str, str]:  # fmt: skip
     """The ledger row (spec section 6) for a setup, prices back in real terms."""
     t = now.tz_convert(TH)
     last_bar = t - pd.Timedelta(minutes=5)
@@ -536,15 +699,28 @@ def _row(s: Setup, side: str, sign: int, now: pd.Timestamp, df: pd.DataFrame, p:
         f"{real(q.price):.2f}@{times[q.pos]:%d/%m %H:%M} macd {macd[q.pos]:.2f} rsi {rs[q.pos]:.1f}"
         for q in s.counted
     )
+    if s.l1 is not None and m1df is not None:
+        m1t = pd.DatetimeIndex(m1df.index).tz_convert(TH)
+        tail = (
+            f"M1 entry: L*={real(s.lstar.price):.2f}, L1={real(s.l1.price):.2f}@{m1t[s.l1.pos]:%d/%m %H:%M}, "
+            f"M1 break of {real(s.m1_break_v or 0.0):.2f}, M1 higher low {real(s.lhl.price):.2f}"
+            f"@{m1t[s.lhl.pos]:%d/%m %H:%M}, H_d={real(s.hd.price):.2f}"
+        )
+        tfs = f"{s.tf}>M1"
+    else:
+        tail = (
+            f"Structure broken, higher low {real(s.lhl.price):.2f}@{times[s.lhl.pos]:%d/%m %H:%M}; "
+            f"H_d={real(s.hd.price):.2f}"
+        )
+        tfs = s.tf
     high_word = "lowest low" if sign > 0 else "highest high"
     shape = {"count": f"count of {len(s.counted)}", "M": "M" if sign > 0 else "W"}[s.kind]
     structure = (
-        f"bot2e {s.tf} {side}, {p.h1_mode} H1 side. Level band {real(s.band[0]):.2f}-{real(s.band[1]):.2f}"
+        f"bot2e {tfs} {side}, {p.h1_mode} H1 side. Level band {real(s.band[0]):.2f}-{real(s.band[1]):.2f}"
         f" (support in the view); {shape} at L*={real(s.lstar.price):.2f} ({high_word} of the counter-move). "
         f"Counted: {pts}. Divergence on MACD {s.div_macd}, on RSI {s.div_rsi}"
         f"{' (diverged anyway)' if s.kind == 'M' and s.div_macd and s.div_rsi else ''}. "
-        f"Structure broken, higher low {real(s.lhl.price):.2f}@{times[s.lhl.pos]:%d/%m %H:%M}; "
-        f"H_d={real(s.hd.price):.2f}. R {s.r:.2f} (net of {p.spread:g} spread). Parameters: {p.text()}"
+        f"{tail}. R {s.r:.2f} (net of {p.spread:g} spread). Parameters: {p.text()}"
     )
     trig = "" if s.trigger_v is None else f"{real(s.trigger_v):.2f}"
     return {
@@ -571,7 +747,7 @@ def _row(s: Setup, side: str, sign: int, now: pd.Timestamp, df: pd.DataFrame, p:
 
 
 def load_frames() -> dict[str, pd.DataFrame]:
-    return {tf: frame(tf) for tf in ("H1", "H4", "M15", "M5")}
+    return {tf: frame(tf) for tf in ("H1", "H4", "M15", "M5", "M1")}
 
 
 def _read(path: Path, columns: list[str]) -> list[dict[str, str]]:
@@ -675,6 +851,12 @@ def main(argv: Sequence[str] | None = None) -> None:
         default=d.div_mode,
         help="'one' (the owner's rule, R11) or 'both'",
     )
+    ap.add_argument(
+        "--entry-mode",
+        choices=("m1", "setup"),
+        default=d.entry_mode,
+        help="'m1' (R12: steps 3-6 on M1 near the extreme) or 'setup' (revision 3)",
+    )
     ap.add_argument("--min-r", type=float, default=d.min_r)
     ap.add_argument("--trigger-offset", type=float, default=d.trigger_offset)
     ap.add_argument("--stop-buffer", type=float, default=d.stop_buffer)
@@ -691,6 +873,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         h1_swings=a.h1_swings,
         entry_tfs=a.entry_tfs,
         div_mode=a.div_mode,
+        entry_mode=a.entry_mode,
         min_r=a.min_r,
         trigger_offset=a.trigger_offset,
         stop_buffer=a.stop_buffer,
