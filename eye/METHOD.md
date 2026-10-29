@@ -142,7 +142,7 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 
 | | the owner's answer |
 |---|---|
-| **The side with the edge** | **the trend on H1** - and the larger timeframe's trend is never ignored: a smaller timeframe's trend may be set aside, the larger one's may not (the owner, 2026-10-29) |
+| **The side with the edge** | **H1 gives the lean (the tendency); the trend that is traded is measured on M5.** Never trade against a clear H1 lean; when the H1 lean is not clear, M5's trend decides - *"if you wait for H1 to be clear, the market has run already"* (the owner, 2026-10-29). The larger timeframe's lean is never ignored |
 | **Where** | **at resistance when the sell side has the edge, at support when the buy side has the edge** - never the other way round |
 | **The count** | **3 to 5 peaks, counted from MT5's ZigZag** - **or two, when they make the owner's W (sell, at resistance) or M (buy, at support)** - the owner, 2026-10-28 |
 | **Divergence** | **on MACD or RSI, against price - one is enough** (the owner, 2026-10-28); both is the clear case - see the principle below |

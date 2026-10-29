@@ -507,3 +507,34 @@ the last close (the owner, 2026-10-28: an order goes no further than 4 USD from 
 - **The log:** R19's reason is checked right after the leg is found.
 - **The 27/10 18:30 pin** (BUY 4003.01): the last M5 close was 4010.95, 7.94 USD away - R20 refuses it. That
   is the rule working (the order never filled - the low after was 4007.53); the pin changes to the refusal.
+
+## Revision 8 (2026-10-29) - H1 is the lean, M5 measures the trend
+
+**Why:** the bot's H1 side (ZigZag 12 on H1, two fixed highs and two fixed lows in order) said "no side" on 13
+of the 24 October window opens where gold had moved over 40 USD in 24 h - all six from 22/10 19:30 to 23/10
+22:00 while it fell 56-107 USD. A fixed H1 pivot needs about 12 H1 bars; by then the move is over.
+
+**The owner (2026-10-29):** H1 is not a gate that must show a trend before a trade - *"H1 is the lean; the
+trend is measured on M5"*; never trade against a clear H1 lean; when the H1 lean is not clear, M5 decides;
+*"if you wait for H1 to be clear, the market has run already."*
+
+**R21. The H1 lean `[Claude]`, by the owner's description** ("price below the latest high and making lower
+lows"): with `Hf` the latest fixed H1 HIGH and `Lp` the latest fixed H1 LOW before `Hf`:
+- **SELL lean** when the last close is below `Hf` and some bar after `Hf` (fixed or not) has traded below
+  `Lp` - a lower low made under the latest high;
+- **BUY lean** the mirror (`Lf` the latest fixed LOW, `Hp` the latest fixed HIGH before it: last close above
+  `Lf` and some bar after `Lf` above `Hp`);
+- **no lean** otherwise. (If both were true, the one whose pivot is later wins.)
+
+**R22. The trade's side from M5 `[Claude]`:** for the R18 counter leg, the M5 trend is read at the leg - a
+**BUY** needs `H100` (the high the fall began from) to be a **higher high** than the fixed M5 high before it
+(the fall is a counter-move in an M5 rise); a **SELL** needs the 100 % low to be a **lower low** than the
+fixed M5 low before it. Then: **a BUY is refused when the H1 lean is SELL, a SELL when it is BUY; with no
+lean, M5 decides alone.** This replaces step 1's H1 side for the fib path (`fib_side = h1` -> `lean`); the
+2e path keeps step 1 unchanged.
+
+**Acceptance cases to check before coding (from the stored bars):** 22/10 19:30 - 23/10 22:00: H1 lean
+SELL (not "no side"); 27/10 18:30 BUY leg 4025.45 -> 3989.14: H100 4025.45 against the M5 high before it
+(4019.86 / 4019.18) - an M5 higher high, so the BUY side holds (the R20 distance still refuses that order);
+07/10 07:30 SELL still written. The share of window opens with "no lean" and with a lean against the 24 h
+move is to be reported against the old H1 side (34 % / 49 % "no side"; 2 against).
