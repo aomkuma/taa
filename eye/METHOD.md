@@ -206,8 +206,7 @@ through that later answer: the LL is the break, the sell is its retest.
 2. **Exhaustion** - ZigZag counts **3 to 5 peaks** into that level - **or two that make a W** - the owner's sell (it need not be symmetric) - with **divergence** on MACD or RSI
    against price. **A clear W at resistance (M at support, for the buy) is taken without divergence** - the owner,
    2026-10-28, on day 3 London's M, whose second low had MACD and RSI lower: *"it can be entered."* Divergence is required
-   for the 3-5 count - **on one oscillator is enough** (the owner, 2026-10-28, asked whether the count needs MACD
-   and RSI both: *"one"*); both is the clear case. For an M or W it adds strength, it is not a condition. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); nothing is
+   for the 3-5 count - **on one oscillator is enough** (the owner, 2026-10-28); both is the clear case. For an M or W it adds strength, it is not a condition. **Both diverging is a clear signal** (the owner: *"if both happen, it is clear"*); nothing is
    recorded about one alone - the record says which it was. The peaks are counted on the entry timeframe, M5 or M15 *(Claude's reading - the owner
    gave the entry timeframe, not the counting one; the example has 3 peaks on M15 and 4 on M5)*.
 3. **The structure breaks** - price takes out the **last swing low**, and the bounce after it fails under
@@ -215,8 +214,7 @@ through that later answer: the LL is the break, the sell is its retest.
 4. **The low breaks** - price goes through **the low that bounce started from**.
 5. **The entry - on the retest** - sell when price comes **back up to that broken low from below** and
    turns down there. The owner, 2026-10-28: *"break the low, then retest"* - not on the break itself.
-   **The order is a Sell Stop Limit** (the owner asked whether it should be a stop limit; it is the order
-   that does exactly this): its stop price a little under the low, so it wakes only once the low has
+   **The order is a Sell Stop Limit** (it is the order that does exactly this): its stop price a little under the low, so it wakes only once the low has
    broken, and its limit price at the low, filled on the retest. It can be placed before the break.
 6. **The stop** - beyond **the highest high of the move** (sell) / **the lowest low** (buy): the top or
    bottom where the peaks and the divergence formed, not the bounce's lower high. The owner, 2026-10-28:
@@ -300,9 +298,8 @@ the previous lowest price, 100 % at the previous highest price - then wait for i
 38 - 23 %; if the bulls are really strong, maybe enter from the pullback to 61 %. The SL is beyond 88 % - 0 %.
 Down trend: the reverse of the up trend."*
 
-The target, the owner (the same evening): *"TP: if sideways, yes, around 100 %; but in a trend,
-shouldn't it be 127 - 161 %?"* - put as a question; **Claude takes it as the owner's proposal and runs it:
-trend: the 127 - 161 % extension; sideways: "around 100 %", read by Claude as the range's other edge.**
+The target, the owner (the same evening): **target: in a trend the 127 - 161 % extension;
+sideways around 100 % - read by Claude as the range's other edge.**
 The owner on whether the count / M-W / divergence is still needed with the Fibo: *"try both, counting and
 not counting."*
 
@@ -311,8 +308,8 @@ The stop when entering at 61.8 %, the owner: *"beyond 23 %."*
 The owner on what will be hard (the same evening): *"the problem I can see coming is reading whether it is a
 trend or sideways - but never mind, try it first."*
 
-**Which leg is drawn - the owner, 2026-10-29**, showing the M5 / M15 charts of 27/10, asked whether a buy is
-drawn from the latest high (100 %) down to the low made after it (0 %): *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* *(Claude's reading,
+**Which leg is drawn - the owner, 2026-10-29:** *"to play an up move, draw high -> low; to play a down
+move, draw low -> high."* *(Claude's reading,
 for the owner to correct: the Fibo is drawn on the counter-move that has just ended - for a buy, the fall
 into the low (a sell: the rise into the top) - not on the finished leg in the trade's direction; the entry is the pullback after the bounce
 from that low, the target the extension beyond the high. On those charts, by Claude's measurement: the
@@ -320,9 +317,8 @@ fall from 4025 to 3989 in three legs, the bounce, the pullback, the run through 
 Claude had coded the other leg in revision 5.)*
 
 **Answered:** the drawing direction - 0 % at the low, 100 % at the high, high -> low to play an up move.
-**Answered (2026-10-29):** "3 to 5 peaks" is counted as **legs** - asked whether it means legs with lower
-lows, as on 27/10: *"yes - but when we talk about the framework, I want both sides included."* So, both
-sides, for the Fibo path (R18; 2e's zone count is unchanged until the owner says): **for a buy, 3-5 legs down, each low lower than the one before, into the bottom; for a sell, 3-5 legs
+**The count (the owner, 2026-10-29):** "3 to 5 peaks" is counted as **legs**, and the framework is always
+stated for both sides - for the Fibo path (R18; 2e's zone count is unchanged until the owner says): **for a buy, 3-5 legs down, each low lower than the one before, into the bottom; for a sell, 3-5 legs
 up, each high higher than the one before, into the top.**
 **Researched by Claude at the owner's request** (*"research it and find me the answer"*) - which high is
 100 % when the fall into the low has several highs. The owner then: *"go by the facts that match

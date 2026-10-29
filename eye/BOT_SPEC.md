@@ -161,8 +161,8 @@ Re-running a range replaces the bot's rows for those days (ledger and log), noth
 8. **Ledger compatibility:** a written row scores with `score.py` without error, and `money.py --ledger` reads it.
 
 Gate before handing back: `ruff format` and `ruff check` on the new and changed files, `mypy` on
-`eye/bot2e.py`, `pytest tests/unit/test_eye_bot2e.py`. Run the bot on 2026-04-06 and 2026-04-07 in both h1
-modes and report each decision and the log's reason counts - **not** whether they made money.
+`eye/bot2e.py`, `pytest tests/unit/test_eye_bot2e.py`. *(The first build's run instruction is retired: from
+2026-10-29 no bot or research run until the code is confirmed correct - "The side, after September".)*
 
 ---
 
@@ -254,8 +254,7 @@ resistance zone round 4141-4142 holds two fixed highs, 4141.87 (21/10 19:00 Thai
 Thai), with the dip to 4104.92 between them inside the count window - the bot counts **two zone highs (the
 owner's W)**, not one. (What it then decides is for steps 3-7 and R9.)
 
-**R11. Divergence on one oscillator is enough - the owner's** (2026-10-28, asked whether the 3-5 count needs
-MACD and RSI both: *"one"*). `div_mode` defaults to **one**; which oscillators diverged is still written
+**R11. Divergence on one oscillator is enough - the owner's** (2026-10-28). `div_mode` defaults to **one**; which oscillators diverged is still written
 into each decision (both = the owner's "clear" case).
 
 ## Revision 4 (2026-10-29) - REMOVED: an entry on M1 - Claude's misreading of a question
@@ -353,7 +352,7 @@ check it.
 
 **The owner on the target (2026-10-29, after revision 5 was written):** *"TP: if sideways, yes, around
 100 %; but in a trend, shouldn't it be 127 - 161 %?"* So `fib_target` gains **`ext127`** (low + 1.272 x
-leg - `target_buffer`) and **`ext161`** (low + 1.618 x leg - `target_buffer`) - the owner's proposal for a trend (put as a question);
+leg - `target_buffer`) and **`ext161`** (low + 1.618 x leg - `target_buffer`) - the owner's for a trend;
 `level` and `high` are kept for comparison only. In R17 the target is **the range's opposite edge** -
 Claude's reading of the owner's "around 100 %" (open: on a 0 %-low scale the far edge from a sell at 88 % is
 0 %) - replacing Claude's 12 % level. Arithmetic (stop at 0 %, before spread): entry
@@ -372,8 +371,8 @@ divergence on one, or the owner's M / W of two) on the setup timeframe: a plain 
 
 ## Revision 6 (2026-10-29) - the Fibo leg the owner draws: the counter-move just ended
 
-The owner, on the 27/10 M5 / M15 charts, asked whether the buy is drawn from the latest high (100 %) down to
-the low after it (0 %): *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* Revision 5 drew the finished leg in the trade's direction (low, then the
+The owner's drawing rule (2026-10-29): *"to play an up move, draw high -> low; to play a down move, draw
+low -> high."* Revision 5 drew the finished leg in the trade's direction (low, then the
 high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
 
 - **The leg, for a BUY (SELL the mirror):** on `fib_tf`, `L0` `[Claude]` = the latest fixed LOW lower than
@@ -395,7 +394,8 @@ high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
   bulls are really strong"*). One order per (`L0`, `H100`).
 - **Stop:** below 0 % - `stop_buffer` (`[Claude]` reading of "beyond 88 % - 0 %"); for the 0.618 entry below
   23.6 % (the owner). **Target:** `ext127` / `ext161` (the owner's proposal). At least 2R. R8 as before.
-- **Side** `[Claude]`, three variants: `fib_side = h1` (the H1 side must allow it, as now); `entry` (the
+- **Side** - *superseded: only `fib_side = h1` keeps the owner's rules ("The side, after September"); the
+  other two are a historical record.* `[Claude]`, three variants: `fib_side = h1` (the H1 side must allow it, as now); `entry` (the
   entry timeframe's own structure: a BUY only once, after `L0`, a bar has traded above the last fixed high
   before `L0`); `any` (no side filter).
 - **Count on** (SELL: the ascending run into the top, 3-5 fixed highs each higher than the one before):

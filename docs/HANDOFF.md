@@ -50,10 +50,10 @@ Read first, in order:
    eye/RULES_REVIEW.md sections 5-6
 
 My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
-generalise, never a rule with its numbers; a question I ask is a question, not a rule. Pick up round 4 (my
-Fibonacci, revision 6) in eye/BOT_RESEARCH.md: read its results, check them, report them to me in USD from
-200. Then
-real day 5, 2026-04-08, Asia 07:00 first, one window at a time.
+generalise, never a rule with its numbers; a question I ask is a question, not a rule. No test or research
+run until the code is confirmed correct. Next, in order: remove the side options that ignore the H1 trend
+(fib_side entry / any) from eye/bot2e.py; draw each October trade of the H1-side 61.8 % variant on its chart
+for me to judge; a last Codex review of the code. Only when I am satisfied, run September.
 ````
 
 ---
@@ -170,10 +170,8 @@ MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
 
 - **Two peaks that make an M (buy, at support) or a W (sell, at resistance) count**, not only 3-5; they
   may be asymmetric.
-- *"If I say it is support, should you buy or sell?"* - **at support, buy.** And *"I have always understood
-  M as buy and W as sell, in the leg where it has already projected"* - **the owner's M is a buy and W a
-  sell, the opposite of the textbook.** Claude read "M" the textbook way, took it for a sell, and assumed
-  the owner read H1 as down - neither was said; the record is corrected.
+- **At support, buy. The owner's M is a buy and W a sell, the opposite of the textbook.** Claude read "M"
+  the textbook way and took it for a sell; the record is corrected.
 - So day 3 **London**, recorded `shut`, holds the buy Claude refused: an asymmetric M (tops 4678.79,
   4667.74) whose lows 4643.61 / 4644.97 sat on the 4642-4651 support, then the run to 4706.58. The rows of
   `sessions.csv` keep what was recorded at the time; the note is the correction.
@@ -181,9 +179,8 @@ MT5's ZigZag drew two lows, never 3-5. `eye/SHEETS.md` has every look.
   52-57 % of the time - the years' rise is in every row; the shape alone separates little. The level, the
   H1 side and divergence were not in that count.
 
-**Answered by the owner, 10-28:** asked whether the spot was day 3 London's M on 4642-4651 and whether a
-clear M at support is taken though MACD and RSI did not diverge there - *"it can be entered."* So: **a clear
-M at support (W at resistance) needs no divergence**; divergence is required for the 3-5 count (METHOD 2e step 2).
+**The owner, 10-28: a clear M at support (W at resistance) is entered without divergence** (day 3
+London's M on 4642-4651 is the case); divergence is required for the 3-5 count (METHOD 2e step 2).
 
 **Real day 4, 2026-04-07, walked:** no decision. Asia, London, New York all `no-setup`; step 7's next level sat a few dollars over every retest entry (`SHEETS.md`, "Day 4 in one place"). The minimum reward was then answered by the owner: **at least 1:2**.
 
