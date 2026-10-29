@@ -779,3 +779,24 @@ candles: `eye/trades/h1_read_2026-09-24_2026-10-28.png`.
   never read as one range.
 - **Why [Claude's reading of the code]:** rule 11 needs every fixed H1 pivot after the first two to sit in an edge zone
   (88-127 % / -27-12 %); the range's middle swings (4130-4190) are pivots too, so each one ends the range.
+
+### Where the bot reads M5 wrongly (2026-10-30, the owner: *"find the trend on M5 - a win rate this low means trading against the market on M5"*)
+
+`eye/research/m5_structure_check.py` reads the M5 structure at each filled decision (the latest two fixed M5 highs
+and lows at the decision: higher high and higher low = UP, lower high and lower low = DOWN, otherwise MIXED) for the
+October runs `r11_lean_off` and `r8_lean_off` (25 distinct fills).
+
+| M5 structure at the decision, against the trade | fills | won | R | R per fill |
+|---|---|---|---|---|
+| with the trade (UP for a BUY, DOWN for a SELL) | 5 | 3 | +5.20 | +1.04 |
+| MIXED - no M5 trend | 20 | 5 | -4.45 | -0.22 |
+| against the trade | 0 | - | - | - |
+
+- **Measured:** no trade was against a clear M5 trend; **20 of 25 were taken when M5 had no trend at all**, and those
+  lost; the 5 taken with the M5 trend won 3. 5 and 20 fills - far too few to conclude.
+- **Where it comes from in the rules [Claude's reading]:** rule 3 tests the M5 trend **once, at `H100`** - `H100` above
+  the one M5 high before it - and never at the decision. By the decision the pullback has made its own lower lows, and
+  M5 is often no longer rising; rule 3 still passes. The owner's 27/10 example (three legs down, then the high broken,
+  then the run) has the M5 trend turning back up before the entry.
+- `eye/research/m5_break_check.py` (whether the pullback's last swing was broken before the decision) is kept; its
+  reference is `H100` itself on a one-leg pullback, so it does not separate the cases.
