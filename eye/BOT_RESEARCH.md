@@ -222,13 +222,22 @@ spread 0.30; each row a separate entry / target).** R a trade, n trades in brack
 | 61.8 % | 161 % | +0.094 (280) / **+0.235** (160) | +0.099 / **+0.191** | +0.076 / **+0.278** | +0.010 / **+0.332** (90) |
 
 (61.8 % at 127 % never reaches 2R: 1.7 R planned.) The two definitions differ on 85-90 % of the bottoms.
+61.8 % / 161 % per half, trades and won: `latest` 120 (34.2 %) and 159 (31.4 %); `start` 78 (35.9 %) and 82
+(36.6 %); over three years `start` 160 (36.2 %), `latest` 280 (32.9 %).
 
-**What it says (Claude's reading, measured above):** **`start` - the high the fall began from - is the
-better 100 %** in 4 of the 5 rows over three years, and at the owner's strong-bull entry (61.8 %, stop beyond
-23.6 %, target 161 %) it is ahead in **both halves** (+0.19 and +0.28 R a trade against +0.10 and +0.08) -
-the only combination positive in both halves, on 78-82 trades each. `latest` wins only at the deep 23.6 %
-entry in the recent half. Check of the arithmetic a second way: 61.8 % / 161 % plans 2.62 R; won 36 % ->
-0.36 x 2.62 - 0.64 = +0.30, against +0.24 measured (stops cost a little more than 1 R with the spread).
-**Against the expectation:** I expected no difference (within 0.1 R); `start` was ahead by 0.10-0.20 R
-in most rows - the expectation was wrong. The sample is three years of one timeframe, all hours, no H1 or
-window filter: a guide for the bot's default, not proof the setup pays.
+**What it says (Claude's reading, measured above; corrected 10-29 after the fourth review - the first
+version said "4 of 5", which the table does not show):** over three years **`start` is ahead in 3 of the 5
+rows** (38.2 % at both targets, 61.8 % / 161 %) and **`latest` in 2** (23.6 % at both targets - both
+negative either way). In the recent half `latest` is ahead at 23.6 % and, by 0.01-0.04 R, at 38.2 %. The
+clearest difference is the owner's strong-bull entry (61.8 %, stop beyond 23.6 %, target 161 %): **positive
+for both definitions in both halves, and `start` ahead in both** (+0.19 / +0.28 R a trade against +0.10 /
++0.08). So `start` is Claude's choice for the bot's default - **not confirmed by the owner**. Check of the
+arithmetic a second way: 61.8 % / 161 % plans 2.62 R; `start` won 36.2 % -> 0.362 x 2.62 - 0.638 = +0.31,
+against +0.235 measured (stops cost a little more than 1 R with the spread).
+**Against the expectation:** I expected no difference (within 0.1 R): over three years `start` was ahead by
+0.10-0.14 R in 3 rows and behind by 0.02-0.06 in 2 - partly right; in the halves the gaps reach 0.2-0.3. I
+expected `start` to fill less often: it filled less only at 61.8 % (160 against 280); at 23.6 % and
+38.2 % / 127 % it filled more.
+**Limits:** one timeframe (M15), Claude's own script, all hours (not the owner's windows), no H1 side, no
+session filter; the best row is picked after looking at 5 pairs on the same data. A guide for the bot's
+default, not proof the setup pays.

@@ -21,7 +21,7 @@ archived that day, and the rebuilding is deliberately small.
 | The nine trading rules | the bottom of `eye/METHOD.md` - 2e replaces rules 4 and 9; the rest stand |
 | The weaknesses found, and what was fixed | `eye/RULES_REVIEW.md` (sections 1-3 the rules, 5-6 the 2e review) |
 | Every method tried, with a verdict | `eye/TRIED.md` - row 18 the owner's setup, 19 the bot, 20 the removed M1 entry, 21 the owner's Fibonacci |
-| **The bot** - its rules, and every research run with its result | `eye/BOT_SPEC.md` (revisions 1-5), `eye/BOT_RESEARCH.md`, `eye/bot_research.py`; each run's ledger and log in `eye/research/<variant>/` (not committed; `summary.csv` is) |
+| **The bot** - its rules, and every research run with its result | `eye/BOT_SPEC.md` (revisions 1-6), `eye/BOT_RESEARCH.md`, `eye/bot_research.py`; each run's ledger and log in `eye/research/<variant>/` (not committed; `summary.csv` is) |
 | What the trades support | `eye/LESSONS.md` |
 | Every reading, written before the reveal | `eye/SHEETS.md` |
 | The trades | `eye/ledger.csv`, `eye/ledger_control.csv` |
@@ -225,7 +225,7 @@ deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the
 
 | | |
 |---|---|
-| **The owner's Fibonacci, asked and not answered:** the stop for the 38 / 23 % entries (below 0 %?), the sideways drawing and its "around 100 %" target, and how trend vs sideways is read (and on which timeframe). *Answered / researched 10-29: "3-5 peaks" = legs, both sides (the owner); 100 % = the high the fall began from (research, BOT_RESEARCH)* | METHOD 2e, "The owner's Fibonacci" |
+| **The owner's Fibonacci, asked and not answered:** the stop for the 38 / 23 % entries (below 0 %?), the sideways drawing and its "around 100 %" target, and how trend vs sideways is read (and on which timeframe). *Answered 10-29: "3-5 peaks" = legs, both sides (the owner). Researched 10-29, not yet confirmed by the owner: 100 % = the high the fall began from (Claude's reading; 3 of 5 pairs, 61.8 % / 161 % ahead in both halves - BOT_RESEARCH)* | METHOD 2e, "The owner's Fibonacci" |
 | **H1 side `strict` or `lows`**, and whether 3R is wanted where 2R is reachable | `eye/BOT_SPEC.md` |
 | **The September check** - a variant that wins October is run once, unchanged, on September | `eye/BOT_RESEARCH.md` ground rules |
 | **MACD and RSI not yet checked against MT5**, nor ZigZag on M5 and H1 | `eye/walk.py` |

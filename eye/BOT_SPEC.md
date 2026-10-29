@@ -243,7 +243,7 @@ trough of a price zone, or its top?"*). For a BUY:
   `counter_pivots` (`[Claude]` default 20) fixed pivots, **and after the last close below the band's lower
   edge** (a close through the zone ends it as a support; lows before that do not count);
 - `L*` = the lowest of the zone's lows; the count = how many zone lows there are;
-- step 2 holds for 3-5 zone lows with divergence on both *(R11: one)* at `L*` against the zone low before it, or for
+- step 2 holds for 3-5 zone lows (SELL: zone highs) with divergence on both *(R11: one)* at `L*` against the zone low before it, or for
   exactly 2 zone lows (the owner's M) without divergence;
 - steps 3-7 as before, from `L*`.
 SELL: the mirror - a resistance band, its highs, reset by a close above its upper edge; exactly two zone
@@ -382,8 +382,9 @@ high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
   `[Claude]` = the
   highest fixed HIGH of the descending run into `L0`: walking back from `L0` while each earlier fixed low is
   higher than the one after it, the highest fixed high met (on M15 at 27/10: 4025.45 -> 3989.14). **Chosen by
-  research at the owner's request** (BOT_RESEARCH, "Which high is 100 %"): the high the fall began from beat
-  the latest high before `L0` in 4 of 5 entry / target pairs over three years of M15.
+  Claude from research the owner asked for** (BOT_RESEARCH, "Which high is 100 %"; not yet confirmed by the
+  owner): the high the fall began from was ahead of the latest high before `L0` in 3 of 5 entry / target
+  pairs over three years of M15, and at 61.8 % / 161 % in both halves; one timeframe, all hours - a guide.
   Levels: `L0 + x * (H100 - L0)`; 0 % at the low, 100 % at the high (the owner's scale).
 - **Entry:** once a bar has traded above the entry level after `L0` (the bounce), and while the last close is
   above it, a plain limit at the entry level (*"wait for it to fall back to around 38 - 23 %; 61 % if the
@@ -393,7 +394,8 @@ high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
 - **Side** `[Claude]`, three variants: `fib_side = h1` (the H1 side must allow it, as now); `entry` (the
   entry timeframe's own structure: a BUY only once, after `L0`, a bar has traded above the last fixed high
   before `L0`); `any` (no side filter). The owner asked *"zoomed into M5 it is a mega trend - should we read 'trend' on the timeframe we enter, or on the one larger than that?"* - a question, run as these variants.
-- **Count on:** the descending run into `L0` has 3-5 fixed lows (each lower than the one before) with
+- **Count on** (SELL: the ascending run into the top, 3-5 fixed highs each higher than the one before):
+  the descending run into `L0` has 3-5 fixed lows (each lower than the one before) with
   divergence on one oscillator at `L0` against the low before it - the three legs the owner pointed to on
   27/10, read by Claude as the M5 lows 4000.00, 3997.23, 3989.14 (MACD and RSI both higher at the last). `[Claude]`: the count is of lower lows
   ("legs"), not of touches of one zone; the M / W is not part of this path yet.

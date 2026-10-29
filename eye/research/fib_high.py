@@ -127,9 +127,7 @@ def main() -> None:
     a = ap.parse_args()
     df = frame(a.tf)[a.first : a.last]
     print(f"{a.tf} {a.first}..{a.last} bars {len(df)} div={a.div}")
-    print(
-        f"{'entry':>6} {'ext':>5} {'H':>7} | {'all: n  win%  R/tr':>22} | {'differ: n  win%  R/tr':>28}"
-    )
+    print(f"{'entry':>6} {'ext':>5} {'H':>7} | {'all: n  win%  R/tr':>22} | {'differ: n  win%  R/tr':>28}")
     for entry_x in (0.236, 0.382, 0.618):
         for ext in (1.272, 1.618):
             for which in ("latest", "start"):

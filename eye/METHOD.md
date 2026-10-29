@@ -314,7 +314,7 @@ trend or sideways - but never mind, try it first."*
 **Which leg is drawn - the owner, 2026-10-29**, showing the M5 / M15 charts of 27/10, asked whether a buy is
 drawn from the latest high (100 %) down to the low made after it (0 %): *"Yes - to play an up move, draw high -> low; to play a down move, draw low -> high."* *(Claude's reading,
 for the owner to correct: the Fibo is drawn on the counter-move that has just ended - for a buy, the fall
-into the low - not on the finished leg in the trade's direction; the entry is the pullback after the bounce
+into the low (a sell: the rise into the top) - not on the finished leg in the trade's direction; the entry is the pullback after the bounce
 from that low, the target the extension beyond the high. On those charts, by Claude's measurement: the
 fall from 4025 to 3989 in three legs, the bounce, the pullback, the run through the high to 161.8-200 %.
 Claude had coded the other leg in revision 5.)*
@@ -324,13 +324,15 @@ Claude had coded the other leg in revision 5.)*
 **Answered:** the drawing direction - 0 % at the low, 100 % at the high, high -> low to play an up move.
 **Answered (2026-10-29):** "3 to 5 peaks" is counted as **legs** - asked whether it means legs with lower
 lows, as on 27/10: *"yes - but when we talk about the framework, I want both sides included."* So, both
-sides: **for a buy, 3-5 legs down, each low lower than the one before, into the bottom; for a sell, 3-5 legs
+sides, for the Fibo path (R18; 2e's zone count is unchanged until the owner says): **for a buy, 3-5 legs down, each low lower than the one before, into the bottom; for a sell, 3-5 legs
 up, each high higher than the one before, into the top.**
-**Researched by Claude at the owner's request - which high is 100 % when the fall into the low has several
-highs: the high the fall began from** (for a sell, the low the rise began from). Three years of M15, both
-sides: ahead in 4 of 5 entry / target pairs, and at the 61.8 % entry with the 161 % target ahead in both
-halves of the period (+0.19 / +0.28 R a trade against +0.10 / +0.08) - `eye/BOT_RESEARCH.md`, "Which high
-is 100 %".
+**Researched by Claude at the owner's request** (*"research it and find me the answer"*) - which high is
+100 % when the fall into the low has several highs. **Claude's reading, not yet confirmed by the owner: the
+high the fall began from** (for a sell, the low the rise began from). Three years of M15, both sides: ahead
+in 3 of 5 entry / target pairs (the latest high ahead at the 23.6 % entry, where both lose); at the 61.8 %
+entry with the 161 % target ahead in both halves (+0.19 / +0.28 R a trade against +0.10 / +0.08). One
+timeframe, all hours, no H1 or window filter - a guide, not proof (`eye/BOT_RESEARCH.md`, "Which high is
+100 %").
 
 **Still open - asked, not answered; the bot runs each reading as a variant (`eye/BOT_SPEC.md` revisions 5-6),
 every one marked `[Claude]`:**
