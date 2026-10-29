@@ -597,3 +597,32 @@ the fib path.
 
 **To check before coding (from the stored bars):** how many October window opens fall to R24 (no lean and no
 M5 trend), and how many orders R23 (a) / (b) / (c) would each remove from revision 7's October run.
+
+## The principles behind revisions 7-9 - what October taught, written to hold in any month (2026-10-29)
+
+The owner: *"have the observations been turned into understanding? Every month these pictures will occur - if
+you remember this month's pictures without turning them into a way of thinking or rules, they work for this
+month only. Be careful."* The October trades are the evidence; the rules rest on these principles, not on
+the trades. **The October cases are tests that the code does what the principle says - never the reason for
+a rule.**
+
+1. **A setup is a moment, not a level.** Once the move it waits for has happened (price beyond 100 %), it is
+   gone; an order left on it is a different trade. *(R19)*
+2. **Enter where the market still is.** An entry far from price is a hope; the deep fill it gets is often the
+   idea failing - the pullbacks that reach a deep line are the ones that keep going. *(R20; "Filled against
+   not filled")*
+3. **The stop belongs beyond what proves the idea wrong** - the latest swing on the stop side, not a fixed
+   line that a new swing has already passed. *(`fib_stop = swing`)*
+4. **The larger timeframe gives the lean, read from its latest break - not from a structure that takes half a
+   day to confirm.** The trade's trend is read on the entry timeframe; a trade never goes against a clear
+   lean. *(R21, R22)*
+5. **A trend has a count.** After 3-5 legs it is ending; following it further is chasing. *(R23 a)*
+6. **Trade at a level of the right kind, and only where there is room** - the target ends before the next
+   opposite level. *(R23 b, c)*
+7. **A range is traded at its edges**, not skipped. *(R24)*
+8. **No number is believed until the trades behind it are drawn and every one keeps the rules.**
+
+**Scale:** numbers carried in USD (the 4 USD reach of rule 7, the 0.50 buffers) are the owner's or Claude's
+for gold near 4,000 in 2026; the levels, the counts and the percentages are scale-free. **The check that the
+rules are not October's:** after the code is built and judged on October, it is run on months **never looked
+at** (M5 is stored from 2025-10: November 2025 - August 2026), unchanged, and reported month by month.
