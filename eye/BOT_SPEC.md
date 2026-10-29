@@ -689,3 +689,10 @@ and divergence mirrored for a SELL; **defaults** `fib_tf` M5 and `fib_entry` 0.6
 `fib_early` (before the line) added as a variant; a priority when several qualify; fills, withdrawals and
 exits judged on M5; the plan's "months never looked at" corrected - those months were used by the research,
 so the clean test is forward.
+
+**Second review round (2026-10-29, Codex + fresh Sonnet + fresh Haiku) - further changes, all `[Claude]`:** the
+trend run's count (R23 a) is read on **M5** pivots for M5 and M15 legs, like R22 (the history had M15 pivots for
+an M15 leg); the range's "no trend" is read on **M5** (the owner's trend frame); **the default entry is 0.382**
+(the owner's primary "around 38 - 23 %"; 0.618 is the owner's strong-bull case, a variant - the research favoured
+it on months that are not clean); an order's prices are fixed when written; the fill is an M5 low at or below
+the price from the bar after the decision; a range break ends both sides; `fib_range` on in the real run.
