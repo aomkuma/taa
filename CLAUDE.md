@@ -78,6 +78,26 @@ example, is supporting information, never a rule; the documents record only the 
 deployed, started on DEMO or LIVE, or pointed at the owner's accounts without asking first. Committing per
 step by explicit paths is fine without asking.
 
+## How the system is developed (the owner, 2026-10-29) - every change, in this order
+
+1. **Discuss** with the owner, and **conclude** - what was decided, in the owner's words where they are
+   the owner's.
+2. **Record** it in the documents (rules and what to do only - no questions): METHOD 2e for the owner's
+   rules, `eye/BOT_SPEC.md` for the bot's spec, `docs/HANDOFF.md` for the state.
+3. **An agent reviews the documents** (Codex, read-only) - ambiguities, contradictions with the owner's
+   rules, attributions, acceptance cases checked against the stored bars. Fix the documents; review again
+   if the fixes were not small.
+4. **Another agent writes the code** (a Sonnet developer) from the reviewed spec only - no bot or research
+   run, gates green (ruff, mypy, the bot's tests).
+5. **Another agent reviews the code** against the spec (Codex, read-only). **Every fix after a review goes
+   back to review** until a review finds nothing.
+6. **Run the tests**: the full suite, then commit by explicit paths. Only then, with the owner's word, a
+   bot / research run - and its trades drawn (`eye/draw_trades.py`) and judged by eye against the rules
+   before any number is believed.
+
+Claude coordinates, checks every agent's result itself, and never skips a step because a change looks
+small.
+
 ## My own working rules (owner, 2026-10-28: keep these here)
 
 - **When I say something is recorded, name the file and say what it holds.** "Recorded" on its own tells
