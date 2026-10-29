@@ -49,6 +49,7 @@ and 8) -> 9 (reach) -> write. Rule 13 decides between a BUY and a SELL candidate
 | `max_trend_legs` | 5, 3 | 5 | [Claude] |
 | `fib_target` | 1.618, 1.272 | 1.618 | the owner's extensions; default [Claude] (rule 8) |
 | `max_entry_frac` | 0.15, 0.25, 0.35 | 0.25 | [Claude] |
+| `m5_trend` | now, h100 | now | [Claude] (rule 3: the M5 trend at the decision; h100 = the earlier test, a record) |
 | `h1_read` | state, lean | state | [Claude] (rule 11's H1 state gives the side; `lean` = rule 1, a record for comparison) |
 | `fib_lean` | on, off | on | [Claude], a research switch: the H1 trend side refuses the other side, or not (rules 1, 11) |
 | `fib_range` | on, off | on | [Claude] (rule 11: read the H1 range) |
@@ -132,9 +133,16 @@ the high. On the setup timeframe's fixed pivots [Claude]:
 
 ## 3. The trend on M5 (owner: "the trend is measured on M5")
 
-[Claude] On **M5** fixed pivots for M5 and M15 legs alike: a BUY needs `H100` strictly above the latest fixed M5 HIGH
-whose time is strictly before `H100`'s and which is fixed by `now` - the fall is a pullback in an M5 rise. None - no
-order on this leg. Then the side (rule 11): **while H1 is sideways**, refused when the range's side is SELL (from leg 6
+The owner, 2026-10-30, on the October trades: *"a win rate this low means trading against the market on M5 - find
+it"*; 20 of 25 fills had been taken with no M5 trend at the decision (`eye/BOT_RESEARCH.md`, "Where the bot reads M5
+wrongly"). **The M5 trend is read at the decision** [Claude], `m5_trend` **now** (the default), on **M5** fixed pivots
+fixed by `now`, for M5 and M15 legs alike: the latest two fixed M5 HIGHs and the latest two fixed M5 LOWs by time -
+**UP** when the later high is strictly above the earlier high **and** the later low strictly above the earlier low;
+**DOWN** when both are strictly below; otherwise **no M5 trend** (also with fewer than two of either). **A BUY needs
+UP** (a SELL: DOWN); otherwise no order on this leg. *(The latest two highs and lows are taken wherever they fall: before `L0`, around it or all after it - M5 is UP when
+price, at the decision, is making higher highs and higher lows, whichever swings those are. Rule 10 still ends the
+leg once a high goes above `H100`.)* `m5_trend` **h100** (a record, for comparison): a BUY needs `H100` strictly above
+the latest fixed M5 HIGH whose time is strictly before `H100`'s and which is fixed by `now` (none - no order). Then the side (rule 11): **while H1 is sideways**, refused when the range's side is SELL (from leg 6
 there is no range side and nothing is refused here); **otherwise** refused when the H1 side is SELL - the H1 trend
 (`h1_read` state) or the lean (`h1_read` lean); skipped when `fib_lean` is off. No H1 side: nothing is refused.
 
@@ -344,6 +352,9 @@ the smaller |the price - the order price|; then a BUY before a SELL.
     while H1 is sideways (07/10 07:30, 27/10 18:30) the range's side still applies - the same outcomes as above.
   - With `range_min_leg` 4 at 27/10/2026 18:30: leg 3 - no order. With `fib_range` off at 18:30: no H1 range is read,
     the H1 side is none with `h1_read` state (or the lean SELL with `h1_read` lean) - *report*.
+  - Rule 3 (`m5_trend` now) at the filled October decisions, against `eye/research/m5_structure_check.py` (the same
+    reading, written apart): the bot's UP / DOWN / no trend equals the script's at every one - *report* any difference;
+    with `m5_trend` now, none of the 20 decisions the script marks MIXED is written.
   - Rules 4, 5 and 12 have no stored-bar case yet: the developer tests each branch on constructed bars (unit tests)
     and reports which stored-bar case first exercises it.
 
@@ -354,7 +365,7 @@ each trade behind it is drawn (`eye/draw_trades.py`) and checked against these r
 at least **+0.15 R a trade after costs** (CLAUDE.md); [Claude] not judged on fewer than 30 filled trades. The real run: the defaults, beside these
 variants one at a time - `fib_entry` 0.382 and 0.236, `fib_stop` swing (at 0.618), `fib_count` on, `fib_early` 0.10 with
 `line_tight` (at 0.382), `fib_tf` M15, `max_trend_legs` 3, `fib_target` 1.272, `max_entry_frac` 0.15 and 0.35, `fib_lean` off,
-`range_min_leg` 4, `range_tp` ext, `fib_range` off, `h1_read` lean. October 2026
+`range_min_leg` 4, `range_tp` ext, `fib_range` off, `h1_read` lean, `m5_trend` h100. October 2026
 first, then the stored months before it (M5 from 2025-10), month by month - **not clean**: the research that chose `H100` and the entry
 depth used them. **The clean test is forward**, on the months after 2026-10-28 as their bars arrive.
 
@@ -374,5 +385,5 @@ path as a live option; the nine rules no. 4 ("trade the fifth leg") and no. 9 (t
 ## Code status, 2026-10-30 (not a rule)
 
 `eye/bot2e.py` builds every rule above except **rule 11's H1 state** (and `h1_read`): it still has the range that needs
-every pivot at an edge. **To build:** the H1 state (rule 11), `h1_read`, the H1 trend side in rule 3, the acceptance
-cases above. Rule 1 stays in the code as `h1_read` lean.
+every pivot at an edge. **To build:** the H1 state (rule 11), `h1_read`, the H1 trend side in rule 3, rule 3's M5 trend at the decision
+(`m5_trend`), the acceptance cases above. Rule 1 stays in the code as `h1_read` lean.

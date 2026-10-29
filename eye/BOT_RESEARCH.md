@@ -794,9 +794,10 @@ October runs `r11_lean_off` and `r8_lean_off` (25 distinct fills).
 
 - **Measured:** no trade was against a clear M5 trend; **20 of 25 were taken when M5 had no trend at all**, and those
   lost; the 5 taken with the M5 trend won 3. 5 and 20 fills - far too few to conclude.
-- **Where it comes from in the rules [Claude's reading]:** rule 3 tests the M5 trend **once, at `H100`** - `H100` above
+- **Where it comes from in the rules [Claude's reading]:** rule 3 as it was then (now `m5_trend` h100, a record -
+  rule 3 reads the trend at the decision since 2026-10-30) tested the M5 trend **once, at `H100`** - `H100` above
   the one M5 high before it - and never at the decision. By the decision the pullback has made its own lower lows, and
-  M5 is often no longer rising; rule 3 still passes. The owner's 27/10 example (three legs down, then the high broken,
+  M5 is often no longer rising; that rule still passed. The owner's 27/10 example (three legs down, then the high broken,
   then the run) has the M5 trend turning back up before the entry.
 - `eye/research/m5_break_check.py` (whether the pullback's last swing was broken before the decision) is kept; its
   reference is `H100` itself on a one-leg pullback, so it does not separate the cases.
