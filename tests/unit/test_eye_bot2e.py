@@ -698,7 +698,6 @@ def test_scorer_keeps_the_fill_on_a_bar_that_also_crosses_h100() -> None:
 # (side "SELL", sign -1), so its outputs are the negated view prices - or the stored bars negated (test_fib_mirror).
 
 PB = bot.Params(mode="fib", fib_entry=0.382)  # the base case's level; the defaults are tested on their own
-LEG_BANDS: list[tuple[float, float]] = []  # the ladder's 1.618 step needs no band
 
 
 def counter_case(
@@ -743,7 +742,6 @@ def leg_data(
     last: float = 4041.0,
     later: float = 4015.0,
     m5_highs=(4090.0,),
-    bands=LEG_BANDS,
     lean: str | None = None,
     edit=None,
 ) -> bot.LegData:
@@ -758,7 +756,7 @@ def leg_data(
     return bot.LegData(
         side="BUY", sign=1, tf="M5", pv=pv, times=times, close_v=close, macd_v=macd, rsi_v=rsi,
         m5_times=times, m5_hi_v=hi, m5_lo_v=lo, price_v=float(close[-1]), m5_pv=m5_pv, m5_ptimes=times,
-        bands_v=list(bands), lean=lean, lean_text=lean or "none",
+        lean=lean, lean_text=lean or "none",
     )  # fmt: skip
 
 
@@ -786,11 +784,11 @@ def swings_of(pv: list[bot.VPivot], sign: int) -> list[Swing]:
 def test_fib_parameter_defaults_are_the_tables() -> None:
     d = bot.Params()
     assert (d.fib_tf, d.fib_entry, d.fib_early, d.fib_stop, d.fib_count) == ("M5", 0.618, 0, "line", "off")
-    assert (d.max_trend_legs, d.major_tf, d.level_bars, d.level_min_age_h) == (5, "H4", 500, 24.0)
-    assert (d.band_frac, d.band_legs, d.max_entry_frac, d.fib_range) == (0.10, 20, 0.25, "on")
+    assert (d.max_trend_legs, d.fib_target, d.fib_early) == (5, 1.618, 0)
+    assert (d.max_entry_frac, d.fib_range) == (0.25, "on")
     assert (d.stop_buffer, d.target_buffer, d.spread, d.max_orders) == (0.5, 0.5, 0.3, 1)
     assert (d.order_life_bars, d.min_r, d.mode) == (24, 2.0, "fib")  # fib is the default; 2e is a record
-    for gone in ("max_entry_distance", "fib_target", "fib_leg", "fib_side", "fib_high", "fib_level"):
+    for gone in ("max_entry_distance", "major_tf", "fib_leg", "fib_side", "fib_high", "fib_level"):
         assert not hasattr(d, gone), gone  # the withdrawn options are not parameters any more
     src = Path(bot.__file__).read_text(encoding="utf-8")
     assert (
@@ -813,7 +811,8 @@ def test_meaningless_combinations_are_refused_at_start() -> None:
         {"fib_tf": "H1"},
         {"fib_count": "x"},
         {"max_trend_legs": 4},
-        {"major_tf": "D1"},
+        {"fib_target": 1.5},
+        {"fib_target": 2.0},
         {"fib_range": "x"},
         {"mode": "x"},
         {"max_entry_frac": 0.0},
@@ -830,7 +829,13 @@ def test_meaningless_combinations_are_refused_at_start() -> None:
         {"fib_entry": 0.382, "fib_early": 0.10, "fib_stop": "line_tight"},
         {"fib_entry": 0.382},
         {"fib_entry": 0.236, "fib_stop": "line"},
-        {"fib_tf": "M15", "major_tf": "H1", "max_trend_legs": 3, "max_entry_frac": 0.35, "fib_count": "on"},
+        {
+            "fib_tf": "M15",
+            "fib_target": 1.272,
+            "max_trend_legs": 3,
+            "max_entry_frac": 0.35,
+            "fib_count": "on",
+        },
     )
     for kw in ok:
         bot.Params(mode="fib", **kw)
@@ -840,8 +845,7 @@ def test_fib_params_are_written_into_the_text_and_the_command_line() -> None:
     text = bot.Params(mode="fib", fib_entry=0.382, fib_early=0.10, fib_stop="line_tight").text()
     for part in (
         "mode=fib", "fib_tf=M5", "fib_entry=0.382", "fib_early=0.1", "fib_stop=line_tight", "fib_count=off",
-        "max_trend_legs=5", "major_tf=H4", "level_bars=500", "level_min_age_h=24", "band_frac=0.1",
-        "band_legs=20", "max_entry_frac=0.25", "fib_range=on", "stop_buffer=0.5", "target_buffer=0.5",
+        "max_trend_legs=5", "fib_target=1.618", "max_entry_frac=0.25", "fib_range=on", "stop_buffer=0.5", "target_buffer=0.5",
         "spread=0.3", "max_orders=1", "order_life_bars=24", "min_r=2",
     ):  # fmt: skip
         assert part in text, part
@@ -852,14 +856,14 @@ def test_fib_params_are_written_into_the_text_and_the_command_line() -> None:
     try:
         bot.main(
             ["--from", "2026-10-01", "--to", "2026-10-02", "--mode", "fib", "--fib-entry", "0.382",
-             "--fib-early", "0.1", "--fib-stop", "line_tight", "--max-trend-legs", "3", "--major-tf", "H1",
+             "--fib-early", "0.1", "--fib-stop", "line_tight", "--max-trend-legs", "3", "--fib-target", "1.272",
              "--max-entry-frac", "0.35", "--fib-range", "off", "--order-life-bars", "12", "--fib-count", "on"]
         )  # fmt: skip
     finally:
         bot.run = orig  # type: ignore[assignment]
     q = seen["params"]
-    assert (q.mode, q.fib_entry, q.fib_early, q.fib_stop, q.max_trend_legs, q.major_tf) == (
-        "fib", 0.382, 0.1, "line_tight", 3, "H1",
+    assert (q.mode, q.fib_entry, q.fib_early, q.fib_stop, q.max_trend_legs, q.fib_target) == (
+        "fib", 0.382, 0.1, "line_tight", 3, 1.272,
     )  # fmt: skip
     assert (q.max_entry_frac, q.fib_range, q.order_life_bars, q.fib_count) == (0.35, "off", 12, "on")
     with pytest.raises(SystemExit):
@@ -1034,9 +1038,9 @@ def test_base_order_numbers_buy_and_sell() -> None:
         "23.6 % 4023.60",
         "38.2 % 4038.20",
         "61.8 % 4061.80",
-        "step 1.618",
+        "extension 1.618",
     ):
-        assert part.replace("step", "ladder step") in s.detail or part in s.detail, part
+        assert part in s.detail, part
 
 
 # --- rule 10: a leg that has run ------------------------------------------------------------------------------
@@ -1279,20 +1283,8 @@ def test_rule6_played_out_target_from_the_first_bar_stop_from_the_next() -> None
         def set_lo(k, v):
             return lambda hi, lo, cl, m, r: lo.__setitem__(k, v)
 
-        # the target 4161.3 - but a high that high is beyond H100: use a ladder step with a nearer target
-        # a band before 1.272 gives a target near the order price (the 1.618 target lies beyond H100)
-        near = [(4046.0, 4050.0)]  # the target is 4046.0 - 0.5 = 4045.5
-        d = wrap(leg_data(bands=near))
-        s = bot.analyse_leg(d, bot.Params(mode="fib", fib_entry=0.382, min_r=0.0)).setup
-        assert s is not None and s.step == "band"
-        assert s.target == pytest.approx(-4045.5 if sell else 4045.5)
-        # a high at the target on the first bar above the order price counts; one bar later it counts too
-        for k in (j, j + 3):
-            e = wrap(leg_data(bands=near, edit=set_hi(k, 4045.5)))
-            assert bot.analyse_leg(e, bot.Params(mode="fib", fib_entry=0.382, min_r=0.0)).reason == why, k
-        # a high just under the target does not
-        e = wrap(leg_data(bands=near, edit=set_hi(j + 3, 4045.4)))
-        assert bot.analyse_leg(e, bot.Params(mode="fib", fib_entry=0.382, min_r=0.0)).setup is not None
+        # (the target branch: the extension target lies beyond H100, so a high at it ends the leg by rule 10
+        # first - see test_rule8; here the stop branch)
         # a low at the stop on the first bar above the order price is ignored (the climb out of L0)
         e = wrap(leg_data(edit=set_lo(j, 3999.5)))
         assert bot.analyse_leg(e, PB).reason == "order written"
@@ -1339,50 +1331,55 @@ def test_rule7_stop_by_entry_and_fib_stop() -> None:
     assert bot.fib_stop_v(wide, d.pv, l0, 100.0) == pytest.approx(3998.0)
 
 
-# --- rule 8: the ladder -----------------------------------------------------------------------------------------------
+# --- rule 8: the target is the extension ---------------------------------------------------------------------------
 
 
-def test_rule8_ladder_steps_and_no_fall_through() -> None:
+def test_rule8_target_is_the_extension_both_sides_and_both_values() -> None:
+    l0, leg = 4000.0, 100.0
     p = bot.Params(mode="fib", fib_entry=0.382, min_r=0.0)
-    l0, leg, order = 4000.0, 100.0, 4038.2
-    raw127, raw161 = l0 + 127.2, l0 + 161.8
-    # no band in the way: 1.618
-    assert bot.fib_ladder(p, l0, leg, order, []) == (pytest.approx(raw161 - 0.5), "1.618")
-    # a band between 1.272 and 1.618 (near edge): 1.272
-    assert bot.fib_ladder(p, l0, leg, order, [(raw127 + 5, raw127 + 9)]) == (
-        pytest.approx(raw127 - 0.5),
-        "1.272",
+    assert bot.fib_target_v(p, l0, leg) == pytest.approx(4161.8 - 0.5)  # 1.618 is the default
+    q = bot.Params(mode="fib", fib_entry=0.382, fib_target=1.272)
+    assert bot.fib_target_v(q, l0, leg) == pytest.approx(4127.2 - 0.5)
+    assert bot.fib_target_v(bot.Params(mode="fib", fib_entry=0.382, target_buffer=2.0), l0, leg) == (
+        pytest.approx(4161.8 - 2.0)
     )
-    # a band before 1.272: its near edge - buffer (the nearest of several)
-    got = bot.fib_ladder(p, l0, leg, order, [(4110.0, 4120.0), (4070.0, 4075.0), (raw127 + 5, raw127 + 9)])
-    assert got == (pytest.approx(4069.5), "band")
-    # a band whose near edge is at or below the order price is ignored, and so is one the price sits inside
-    assert bot.fib_ladder(p, l0, leg, order, [(4038.2, 4045.0)])[1] == "1.618"  # edge == order: not above it
-    assert bot.fib_ladder(p, l0, leg, order, [(4030.0, 4050.0)])[1] == "1.618"  # the order price is inside
-    # edges are strict against the raw extensions: an edge AT the raw 1.618 is not before it
-    assert bot.fib_ladder(p, l0, leg, order, [(raw161, raw161 + 4)])[1] == "1.618"
-    assert bot.fib_ladder(p, l0, leg, order, [(raw161 - 0.01, raw161 + 4)])[1] == "1.272"
-    assert bot.fib_ladder(p, l0, leg, order, [(raw127, raw127 + 4)])[1] == "1.272"  # at 1.272: not before it
-    assert bot.fib_ladder(p, l0, leg, order, [(raw127 - 0.01, raw127 + 4)])[1] == "band"
-    # target buffer is the parameter
-    q = bot.Params(mode="fib", fib_entry=0.382, target_buffer=2.0)
-    assert bot.fib_ladder(q, l0, leg, order, [])[0] == pytest.approx(raw161 - 2.0)
-    # no fall-through: the nearest band's edge gives R under 2 though the 1.272 step would pay -> no order
-    near = [(4046.0, 4050.0)]  # target 4045.5, R tiny
-    out = bot.analyse_leg(leg_data(bands=near), bot.Params(mode="fib", fib_entry=0.382))
-    assert out.reason == "reward under 2R" and out.setup is None
-    # a target not above the order price: no order
-    back = [(4038.5, 4040.0)]  # edge 4038.5 > order 4038.2, target 4038.0 <= order
-    assert bot.analyse_leg(leg_data(bands=back), p).reason == "fib: no target above the order price"
-    # the SELL: a band is the mirror; the nearest edge is the view's lower edge
-    sell = bot.analyse_leg(as_sell(leg_data(bands=[(4046.0, 4050.0)])), p).setup
-    assert sell is not None and sell.step == "band" and sell.target == pytest.approx(-4045.5)
-    # the example of BOT_RULES: leg 3989.14 -> 4025.45, entry 0.382 = 4003.01, stop 3988.64, no band: R 3.07
+    for ext, step in ((1.618, "1.618"), (1.272, "1.272")):
+        pe = bot.Params(mode="fib", fib_entry=0.382, fib_target=ext)
+        buy = bot.analyse_leg(leg_data(), pe).setup
+        sell = bot.analyse_leg(as_sell(leg_data()), pe).setup
+        assert buy is not None and sell is not None
+        assert buy.target == pytest.approx(4000.0 + ext * 100.0 - 0.5) and buy.step == step
+        assert sell.target == pytest.approx(
+            -(4000.0 + ext * 100.0 - 0.5)
+        )  # the mirror: L0 - ext x leg + buffer
+        assert f"extension {step}" in buy.detail and "ladder" not in buy.detail
+    # the example of BOT_RULES: leg 3989.14 -> 4025.45, entry 0.382 = 4003.01, stop 3988.64: TP 4047.39, R 3.07
     leg2 = 4025.45 - 3989.14
     order2 = 3989.14 + 0.382 * leg2
-    tgt, step = bot.fib_ladder(p, 3989.14, leg2, order2, [])
-    assert (round(order2, 2), step, round(tgt, 2)) == (4003.01, "1.618", 4047.39)
+    tgt = bot.fib_target_v(p, 3989.14, leg2)
+    assert (round(order2, 2), round(tgt, 2)) == (4003.01, 4047.39)
     assert round(bot.planned_r(order2, 3989.14 - 0.5, tgt, 0.3), 2) == 3.07
+    # no band is read: the fib path has neither the function nor the parameters
+    assert (
+        not hasattr(bot, "fib_ladder")
+        and not hasattr(p, "major_tf")
+        and "bands_v" not in bot.LegData.__annotations__
+    )
+
+
+def test_rule8_no_order_when_r_is_under_min_r_or_the_target_is_not_beyond_the_order_price() -> None:
+    # R under the floor: the 1.272 extension of a leg whose order sits deep pays less than 2R
+    d = leg_data(bounce=4070.0, last=4063.0, later=4030.0)
+    deep = bot.Params(mode="fib", fib_entry=0.618, fib_target=1.272)
+    out = bot.analyse_leg(d, deep)
+    s = bot.analyse_leg(d, bot.Params(mode="fib", fib_entry=0.618)).setup  # 1.618: R 2.56
+    assert s is not None and s.r == pytest.approx((4161.3 - 4061.8 - 0.3) / (4061.8 - 4023.1))
+    assert out.setup is None and out.reason == "reward under 2R"  # (4126.7 - 4061.8 - 0.3) / 38.7 = 1.67
+    # the TP not beyond the order price: a huge target_buffer pulls it under (BUY) / over (SELL)
+    pulled = bot.Params(mode="fib", fib_entry=0.382, target_buffer=130.0, min_r=0.0)
+    for wrap in (lambda x: x, as_sell):
+        o = bot.analyse_leg(wrap(leg_data()), pulled)
+        assert o.reason == "fib: no target above the order price" and o.setup is None
 
 
 def test_rule8_min_r_floor_is_the_parameter() -> None:
@@ -1641,16 +1638,16 @@ def test_rule14_row_fields_structure_and_log_columns() -> None:
         "bot2e fib M5 BUY", "Lean none", "L0 4000.00@", "H100 4100.00@", "23.6 % 4023.60", "38.2 % 4038.20",
         "61.8 % 4061.80", "run of 3 lows", "divergence on MACD True, on RSI True", "M5 trend: H100 4100.00 beyond the M5 high",
         "trend legs", "Entry level 38.2 % = 4038.20", "order price 4038.20", "stop 3999.50", "target 4161.30",
-        "ladder step 1.618", "planned R", "withdraw beyond 4100.00", "Parameters: mode=fib",
+        "extension 1.618", "planned R", "withdraw beyond 4100.00", "Parameters: mode=fib",
         "order_life_bars=24", "fib_entry=0.382",
     ):  # fmt: skip
         assert part in s, part
     assert (d["entry"], d["stop"], d["target"]) == ("4038.20", "3999.50", "4161.30")
     log = res.log
     assert set(log) == set(bot.LOG_COLUMNS)
-    for col in ("r10", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "order", "stop", "target", "ladder", "r"):
+    for col in ("r10", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "order", "stop", "target", "extension", "r"):
         assert log[col], col
-    assert log["order"] == "4038.20" and log["ladder"] == "1.618" and log["reason"] == "order written"
+    assert log["order"] == "4038.20" and log["extension"] == "1.618" and log["reason"] == "order written"
 
 
 def test_every_reason_the_code_can_give_is_ranked() -> None:
@@ -1922,9 +1919,12 @@ def test_acceptance_27_oct_1830_buy_leg(full) -> None:
     at382 = bot.analyse_leg(free, q)
     assert at382.info["r6"].startswith("order price 4003.01")
     assert abs(4010.95 - 4003.01) == pytest.approx(7.94, abs=0.005) and pytest.approx(9.0775) == 0.25 * 36.31
-    # reported: a band lies in the way, so the ladder step is "band" and R is far under 2 - no order
-    assert at382.info["r8"] == "target 4004.47 (step band)" and at382.reason == "reward under 2R"
-    assert float(at382.info["r"]) < 2.0
+    # rule 8: TP = 3989.14 + 1.618 x 36.31 - 0.5 = 4047.39, R 3.07 - with the lean set aside the order is written
+    assert at382.info["r8"] == "target 4047.39 (extension 1.618)" and at382.reason == "order written"
+    assert float(at382.info["r"]) == pytest.approx(3.07)
+    assert (
+        bot.analyse_leg(fi.datas[0], q).reason == "fib: against the H1 lean"
+    )  # as it stands: the lean refuses
 
 
 @needs_data
@@ -1934,10 +1934,14 @@ def test_acceptance_19_oct_0700_buy_leg_at_0618(full) -> None:
     buy = bot.analyse_leg(fi.datas[0], p)
     assert buy.info["leg"].startswith("L0 4155.81@") and "H100 4198.73@" in buy.info["leg"]
     assert buy.info["r6"].startswith("order price 4182.33")
-    assert buy.info["r8"] == "target 4188.23 (step band)"  # the target lies above the order price
+    # reported: TP = 4155.81 + 1.618 x 42.92 - 0.5 = 4224.75, R = (4224.75 - 4182.33 - 0.3) / 16.89 = 2.49 - written
+    assert buy.info["r8"] == "target 4224.75 (extension 1.618)"
     assert (
-        buy.reason == "reward under 2R" and buy.setup is None and float(buy.info["r"]) == pytest.approx(0.33)
+        buy.reason == "order written"
+        and buy.setup is not None
+        and buy.setup.r == pytest.approx(2.49, abs=0.005)
     )
+    assert (buy.setup.order, buy.setup.stop, buy.setup.target) == (4182.33, 4165.44, 4224.75)
 
 
 # --- the stored bars: closed bars only, the mirror, the walk -------------------------------------------------------------
@@ -1962,7 +1966,7 @@ def test_fib_path_has_no_lookahead(full) -> None:
             noisy[tf] = df
         for p in (
             bot.Params(mode="fib", fib_entry=0.382, min_r=0.0),
-            bot.Params(mode="fib", fib_tf="M15", fib_count="on", major_tf="H1"),
+            bot.Params(mode="fib", fib_tf="M15", fib_count="on", fib_target=1.272),
         ):
             a = bot.decide(bot.cut(full, now), now, p)
             b = bot.decide(bot.cut(noisy, now), now, p)
@@ -2028,17 +2032,17 @@ def test_fib_walk_one_window_writes_known_reasons_and_scores(full, tmp_path) -> 
 @pytest.mark.parametrize(
     ("text", "kw", "row", "scored"),
     [
-        (  # rule 6 fib_early, rule 7 line_tight, rule 8 the band step, a BUY leg under a BUY lean
+        (  # rule 6 fib_early, rule 7 line_tight, rule 8 the extension target, a BUY leg under a BUY lean
             "2026-10-19 07:00",
             {"fib_entry": 0.382, "fib_early": 0.10, "fib_stop": "line_tight"},
-            ("BUY", "4176.50", "4171.71", "4188.23", "band", "2.39"),
+            ("BUY", "4176.50", "4171.71", "4224.75", "1.618", "10.01"),
             ("19/10 07:20", "4171.71", "stop", "-1.06"),
         ),
         (  # a SELL leg at the 0.236 level under a SELL lean (the mirror of every BUY rule)
-            "2026-10-26 07:00",
+            "2026-10-08 07:00",
             {"fib_entry": 0.236},
-            ("SELL", "3999.16", "4006.95", "3974.25", "band", "3.16"),
-            ("26/10 08:15", "4006.95", "stop", "-1.04"),
+            ("SELL", "4112.61", "4127.38", "4029.56", "1.618", "5.60"),
+            ("08/10 07:45", "4127.38", "stop", "-1.02"),
         ),
         (  # rule 11: the range, no lean and no M5 trend (the 2R floor and the reach are relaxed here)
             "2026-10-13 19:35",
@@ -2056,7 +2060,7 @@ def test_stored_bar_orders_are_written_and_scored_by_the_new_rules(full, text, k
     res = bot.decide(bot.cut(full, now), now, p)
     d = res.decision
     assert d is not None
-    assert (d["side"], d["entry"], d["stop"], d["target"], res.log["ladder"], res.log["r"]) == row
+    assert (d["side"], d["entry"], d["stop"], d["target"], res.log["extension"], res.log["r"]) == row
     d["id"] = "X"
     got = score_mod.score(d, score_mod.bars(), score_mod.start_of(d, {}), p.spread)
     assert (got["fill"], got["exit"], got["why"], got["r_net"]) == scored
@@ -2105,3 +2109,15 @@ def test_run_seeds_used_from_every_kept_row_later_days_too(full, tmp_path) -> No
     bot._write(ledger, bot.LEDGER_COLUMNS, [])
     bot.run("2026-10-13", "2026-10-13", p, ledger, log)
     assert keys <= {bot.row_key(r) for r in bot._read(ledger, bot.LEDGER_COLUMNS)}
+
+
+def test_old_log_ladder_values_are_carried_into_extension(tmp_path) -> None:
+    """A bot_log.csv written with the old ``ladder`` header keeps those values under ``extension``."""
+    path = tmp_path / "log.csv"
+    path.write_text(
+        "date,reason,ladder,r\n2026-10-13,order written,1.618,3.07\n2026-10-14,x,,\n", encoding="utf-8"
+    )
+    rows = bot._read(path, bot.LOG_COLUMNS)
+    assert [r["extension"] for r in rows] == ["1.618", ""] and rows[0]["r"] == "3.07"
+    bot._write(path, bot.LOG_COLUMNS, rows)
+    assert bot._read(path, bot.LOG_COLUMNS)[0]["extension"] == "1.618"

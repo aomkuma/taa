@@ -2,15 +2,15 @@
 
 Last updated **2026-10-29 Thai** (read with `Get-Date`). The owner's setup is written down in full
 (`eye/METHOD.md` 2e) and a bot applies it (`eye/bot2e.py`). Under the owner's rules it made **no trade in
-October 2026**. **Now (2026-10-29 evening):** the bot's rules in force are **`eye/BOT_RULES.md`** - consolidated from the
-history and reviewed over seven rounds (Codex, fresh Sonnet, fresh Haiku each round) until no review found a
-blocker. The owner's answers today are in it: H1 is the lean and M5 the trend; no chasing and trades in a range;
-the Fibo target ladder (161.8 / 127 / before a major band); the reach as a share of the leg (the 4 USD was an
-example); the 0.618 stop beyond 23 %; two lows as the M for now; the entry level = the one that works best.
-**A Sonnet developer is building the code from BOT_RULES.md**; next, Codex reviews the code (again after every fix),
-the full suite, commit; then - with the owner's word - the real run, every trade drawn and judged. The owner's
-development process is in CLAUDE.md ("How the system is developed"). September's failure and the H1-side trace
-are in `eye/BOT_RESEARCH.md`. Walking by hand
+October 2026**. **Now (2026-10-29 evening):** the bot's rules in force are **`eye/BOT_RULES.md`**, and **`eye/bot2e.py` builds
+them** - written by a Sonnet developer, reviewed by Codex until no findings, gates and full suite green. Tested
+today at the owner's word *"find the answers by testing and proof"* (`eye/BOT_RESEARCH.md`, the last three
+sections): **no tested band of H1 / H4 pivots is respected more than a control**, so rule 8's take-profit is the
+Fibo extension (1.618, variant 1.272), no band cap; **no tested reading of H1 (rule 1 and three others) tells the
+side of the next 24-47 USD move** (best 0.52 against a bar of 0.55). **Open, the owner's to decide:** what replaces
+the H1 lean - none, kept, or the bot run with and without it. **No bot run yet** - it needs the owner's word, then
+every trade drawn (`eye/draw_trades.py`) and judged. The development process is in CLAUDE.md ("How the system is
+developed"). Walking by hand
 resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the

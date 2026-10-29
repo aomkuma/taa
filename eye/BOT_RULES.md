@@ -309,5 +309,5 @@ path as a live option; the nine rules no. 4 ("trade the fifth leg") and no. 9 (t
 
 ## Code status, 2026-10-29 (not a rule)
 
-`eye/bot2e.py` at commit 43385b7 builds every rule above as written before this rule 8: its ladder still reads the
-H1 / H4 bands. **To build:** rule 8 as written now (the extension, `fib_target`, no bands on this path).
+`eye/bot2e.py` builds every rule above, rule 8 as written now included (reviewed by Codex until no findings).
+Nothing is to build. Rule 1 is under test (rule 1's note).

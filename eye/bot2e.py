@@ -70,7 +70,7 @@ LOG_COLUMNS = [
     "div_rsi", "kind", "step3", "step4", "step5", "reason",
     # the fib path (BOT_RULES rule 14): the lean, the leg, each rule's state and numbers, the order
     "lean", "leg", "r10", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r11", "trend_legs", "order", "stop",
-    "target", "ladder", "r",
+    "target", "extension", "r",
 ]  # fmt: skip
 
 # The owner's windows (METHOD 2c), Thai time, in minutes after midnight. A decision is written at an M5
@@ -126,7 +126,7 @@ class Params:
     fib_stop: str = "line"  # line (owner) | swing, line_tight ([Claude] variants); rule 7
     fib_count: str = "off"  # owner: "try both"; the default [Claude]; rule 4
     max_trend_legs: int = 5  # [Claude] rule 5: a trend of this many legs or more is not chased
-    major_tf: str = "H4"  # [Claude] the timeframe the bands (rule 8) are read on
+    fib_target: float = 1.618  # the owner's extensions 1.618 / 1.272; default [Claude] (rule 8)
     max_entry_frac: float = 0.25  # [Claude] rule 9: |price - order price| at most this x the leg
     fib_range: str = "on"  # [Claude] rule 11: trade the range when there is no lean and no M5 trend
     max_orders: int = 1  # [Claude] orders live (pending or open) at once; a new one needs fewer than this
@@ -146,7 +146,7 @@ class Params:
             ("fib_count", ("off", "on")),
             ("max_trend_legs", (5, 3)),
             ("max_entry_frac", (0.15, 0.25, 0.35)),
-            ("major_tf", ("H4", "H1")),
+            ("fib_target", (1.618, 1.272)),
             ("fib_range", ("on", "off")),
         ):
             if getattr(self, name) not in allowed:
@@ -165,9 +165,8 @@ class Params:
             return (
                 f"mode={self.mode} fib_tf={self.fib_tf} fib_entry={self.fib_entry:g} "
                 f"fib_early={self.fib_early:g} fib_stop={self.fib_stop} fib_count={self.fib_count} "
-                f"max_trend_legs={self.max_trend_legs} major_tf={self.major_tf} level_bars={self.level_bars} "
-                f"level_min_age_h={self.level_min_age_h:g} band_frac={self.band_frac:g} "
-                f"band_legs={self.band_legs} max_entry_frac={self.max_entry_frac:g} "
+                f"max_trend_legs={self.max_trend_legs} fib_target={self.fib_target:g} "
+                f"max_entry_frac={self.max_entry_frac:g} "
                 f"fib_range={self.fib_range} stop_buffer={self.stop_buffer:g} "
                 f"target_buffer={self.target_buffer:g} spread={self.spread:g} max_orders={self.max_orders} "
                 f"order_life_bars={self.order_life_bars} min_r={self.min_r:g}"
@@ -517,7 +516,6 @@ def step2(
 
 FIB_BARS = 1500  # BOT_RULES "Words used": fixed pivots are read on the last 1,500 closed bars of a timeframe
 FIB_LEVELS = (0.236, 0.382, 0.618)
-EXT_127, EXT_161 = 1.272, 1.618
 RANGE_SELL, RANGE_BUY = 0.88, 0.12  # rule 11: the limit levels (a share of the range above its low)
 RANGE_PAST_LOW, RANGE_PAST_HIGH = -0.27, 1.27  # rule 11: the stops, and (no buffer) the break levels
 M_COUNT, COUNT_MIN, COUNT_MAX = 2, 3, 5  # rule 4: the owner's M, and "3 to 5 peaks"
@@ -546,7 +544,7 @@ class FibSetup:
     stop: float
     target: float
     r: float
-    step: str  # the ladder step ("1.618", "1.272", "band") or "range edge"
+    step: str  # the target's extension ("1.618" / "1.272") or "range edge"
     gap: float  # |the price - the order price|, for rule 13
     marker: str
     detail: str
@@ -578,7 +576,6 @@ class LegData:
     price_v: float
     m5_pv: list[VPivot]
     m5_ptimes: pd.DatetimeIndex
-    bands_v: list[tuple[float, float]]
     lean: str | None
     lean_text: str
 
@@ -725,18 +722,10 @@ def fib_stop_v(p: Params, pv: Sequence[VPivot], l0: VPivot, leg: float) -> float
     return line - p.stop_buffer
 
 
-def fib_ladder(
-    p: Params, l0: float, leg: float, order: float, bands_v: Sequence[tuple[float, float]]
-) -> tuple[float, str]:  # fmt: skip
-    """Rule 8 for a BUY in the view: ONE step by the bands, no fall-through. A band is "in the way" when its
-    near (lower) edge lies strictly above the order price and strictly below the raw extension tested."""
-    raw127, raw161 = l0 + EXT_127 * leg, l0 + EXT_161 * leg
-    way = [b[0] for b in bands_v if order < b[0] < raw161]
-    if not way:
-        return raw161 - p.target_buffer, "1.618"
-    if not any(e < raw127 for e in way):
-        return raw127 - p.target_buffer, "1.272"
-    return min(way) - p.target_buffer, "band"
+def fib_target_v(p: Params, l0: float, leg: float) -> float:
+    """Rule 8 for a BUY in the view: the Fibo extension ``L0 + fib_target x leg - target_buffer``. No band and
+    no step: no level is major on this path (a SELL is the mirror)."""
+    return l0 + p.fib_target * leg - p.target_buffer
 
 
 def planned_r(order: float, stop: float, target: float, spread: float) -> float:
@@ -828,9 +817,9 @@ def analyse_leg(d: LegData, p: Params, used: frozenset[str] = frozenset()) -> Fi
 
     # 7 and 8: the stop and the target.
     stop = fib_stop_v(p, d.pv, l0, leg)
-    target, step = fib_ladder(p, l0.price, leg, order, d.bands_v)
+    target, step = fib_target_v(p, l0.price, leg), f"{p.fib_target:g}"
     out.info["r7"] = f"stop {_real(s, stop):.2f} ({p.fib_stop})"
-    out.info["r8"] = f"target {_real(s, target):.2f} (step {step})"
+    out.info["r8"] = f"target {_real(s, target):.2f} (extension {step})"
     out.reason = "fib: no target above the order price"
     if not target > order:
         return out
@@ -867,7 +856,7 @@ def analyse_leg(d: LegData, p: Params, used: frozenset[str] = frozenset()) -> Fi
         f"{_real(s, ref.price):.2f}@{_tt(pd.Timestamp(d.m5_ptimes[ref.pos]))}; {legs} trend legs (limit "
         f"{p.max_trend_legs}). Entry level {x * 100:.1f} % = {_real(s, l0.price + x * leg):.2f}, order price "
         f"{_real(s, order):.2f} (fib_early {p.fib_early:g}); stop {_real(s, stop):.2f} ({p.fib_stop}); "
-        f"target {_real(s, target):.2f} (ladder step {step}); planned R {r:.2f} "
+        f"target {_real(s, target):.2f} (extension {step}); planned R {r:.2f} "
         f"(net of {p.spread:g} spread). "
         f"Order price {gap:.2f} from the price, limit {p.max_entry_frac * leg:.2f}"
     )
@@ -1117,9 +1106,8 @@ class FibInputs:
 
 
 def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) -> FibInputs:
-    """Cut every timeframe to its last 1,500 closed bars, read the fixed pivots, the lean (rule 1) and the
-    bands (rule 8), and put each side in its view. ``frames`` are already cut to the bars closed at
-    ``now``."""
+    """Cut every timeframe to its last 1,500 closed bars, read the fixed pivots and the lean (rule 1), and put
+    each side in its view. ``frames`` are already cut to the bars closed at ``now``."""
     # SPEC-QUESTION: MACD / RSI are computed over the same last 1,500 closed bars as the pivots (the rules
     #  do not
     # give the series length); ``cut`` keeps 4,700 M5 bars so an M15 leg's L0 (up to 1,500 M15 bars back) has
@@ -1135,15 +1123,12 @@ def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) ->
     m5_tail = m5_full.tail(FIB_BARS)
     m5_zz = _zigzag(m5_tail)
     m5_ptimes = pd.DatetimeIndex(m5_tail.index)
-    major = frames[p.major_tf].tail(FIB_BARS)
-    bands = h1_bands(_zigzag(major), len(major), now, p)
     macd = macd_mt5(df.close)["main"].to_numpy(dtype=np.float64)
     rs = rsi(df.close, 14).to_numpy(dtype=np.float64)
     price = float(m5_full.close.iloc[-1])
     m5_times = pd.DatetimeIndex(m5_full.index)
     datas: list[LegData] = []
     for side, sign in (("BUY", 1), ("SELL", -1)):
-        bands_v = sorted((min(sign * lo, sign * hi), max(sign * lo, sign * hi)) for lo, hi in bands)
         m5_hi_v, m5_lo_v = _hl_view(m5_full, sign)
         datas.append(
             LegData(
@@ -1161,7 +1146,6 @@ def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) ->
                 price_v=sign * price,
                 m5_pv=to_view(m5_zz, sign),
                 m5_ptimes=m5_ptimes,
-                bands_v=bands_v,
                 lean=lean,
                 lean_text=lean_text,
             )
@@ -1255,7 +1239,11 @@ def _emit(
         return done(o.reason, o.info, tf)
     info = dict(o.info)
     info.update(
-        order=f"{s.order:.2f}", stop=f"{s.stop:.2f}", target=f"{s.target:.2f}", ladder=s.step, r=f"{s.r:.2f}"
+        order=f"{s.order:.2f}",
+        stop=f"{s.stop:.2f}",
+        target=f"{s.target:.2f}",
+        extension=s.step,
+        r=f"{s.r:.2f}",
     )
     result = done(o.reason, info, tf)
     log["side"] = s.side
@@ -1366,7 +1354,14 @@ def _read(path: Path, columns: list[str]) -> list[dict[str, str]]:
     if not path.exists():
         return []
     with path.open(encoding="utf-8", newline="") as fh:
-        return [{c: r.get(c, "") for c in columns} for r in csv.DictReader(fh)]
+        rows = [{c: r.get(c, "") for c in columns} for r in csv.DictReader(fh)]
+        fh.seek(0)
+        # A log written before rule 8 has a ``ladder`` column where ``extension`` is now: carry it over.
+        if "extension" in columns:
+            for new, old in zip(rows, csv.DictReader(fh), strict=True):
+                if not new["extension"] and old.get("ladder"):
+                    new["extension"] = old["ladder"]
+        return rows
 
 
 def _write(path: Path, columns: list[str], rows: list[dict[str, str]]) -> None:
@@ -1490,7 +1485,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     ap.add_argument("--fib-stop", choices=("line", "swing", "line_tight"), default=d.fib_stop)
     ap.add_argument("--fib-count", choices=("off", "on"), default=d.fib_count)
     ap.add_argument("--max-trend-legs", type=int, choices=(5, 3), default=d.max_trend_legs)
-    ap.add_argument("--major-tf", choices=("H4", "H1"), default=d.major_tf)
+    ap.add_argument("--fib-target", type=float, choices=(1.618, 1.272), default=d.fib_target)
     ap.add_argument("--max-entry-frac", type=float, default=d.max_entry_frac)
     ap.add_argument("--fib-range", choices=("on", "off"), default=d.fib_range)
     ap.add_argument("--max-orders", type=int, default=d.max_orders, help="orders live at once")
@@ -1518,7 +1513,7 @@ def main(argv: Sequence[str] | None = None) -> None:
         fib_stop=a.fib_stop,
         fib_count=a.fib_count,
         max_trend_legs=a.max_trend_legs,
-        major_tf=a.major_tf,
+        fib_target=a.fib_target,
         max_entry_frac=a.max_entry_frac,
         fib_range=a.fib_range,
         max_orders=a.max_orders,
