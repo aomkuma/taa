@@ -34,6 +34,10 @@ LEG_FIB = re.compile(
     r"Leg: L0 ([\d.]+)@(\d\d/\d\d \d\d:\d\d) \(0 %\), H100 ([\d.]+)@(\d\d/\d\d \d\d:\d\d) \(100 %\)"
 )
 RANGE = re.compile(r"Range pivots: low ([\d.]+)@(\d\d/\d\d \d\d:\d\d), high ([\d.]+)@(\d\d/\d\d \d\d:\d\d)")
+# BOT_RULES rule 11's H1 range, written in the structure while H1 is sideways
+H1_RANGE = re.compile(
+    r"H1 range LOW ([\d.]+)@\S+ \S+ - HIGH ([\d.]+)@\S+ \S+, (\d+) pivots, legs so far \d+, leg (\d+)"
+)
 LEVELS = (0.0, 0.236, 0.382, 0.618, 1.0, 1.618)
 RANGE_LEVELS = (-0.27, 0.0, 0.12, 0.88, 1.0, 1.27)
 
@@ -92,6 +96,19 @@ def draw(row: dict[str, str], m5: pd.DataFrame, out: Path) -> Path:
         ax.annotate(
             f"{lv * 100:.1f} %  {y:.2f}", (xb + 1, y), fontsize=7, color="#806600", ha="left", va="center"
         )
+    rng = H1_RANGE.search(row["structure"])
+    if rng:  # the H1 range's edges and edge zones (-0.27 / 0.12, 0.88 / 1.27), across the whole chart
+        lo, hi = float(rng[1]), float(rng[2])
+        for lv in (-0.27, 0.0, 0.12, 0.88, 1.0, 1.27):
+            y = lo + lv * (hi - lo)
+            edge = lv in (0.0, 1.0)
+            ax.axhline(
+                y, color="#7a3fa0", linewidth=1.2 if edge else 0.7, linestyle="-" if edge else ":", zorder=1
+            )
+            ax.annotate(
+                f"H1 {lv * 100:.0f} %  {y:.2f}" + (f"  ({rng[3]} pivots, leg {rng[4]})" if lv == 1.0 else ""),
+                (0, y), fontsize=7, color="#7a3fa0", va="bottom",
+            )  # fmt: skip
     for name, key, colour in (
         ("entry", "entry", "#1f5fbf"),
         ("stop", "stop", "#a83242"),

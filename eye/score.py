@@ -82,7 +82,6 @@ def resolve(bars: pd.DataFrame, entry: float, stop: float, target: float, buy: b
 
 
 LIFE_MARK = re.compile(r"order_life_bars=(\d+)")
-RANGE_MARK = re.compile(r"range break (M5|M15) close beyond (-?\d+(?:\.\d+)?) / (-?\d+(?:\.\d+)?)")
 H100_MARK = re.compile(r"withdraw beyond (-?\d+(?:\.\d+)?)")
 
 
@@ -93,8 +92,7 @@ def score_limit(
 
     Fill: on the first of the ``life`` M5 bars after the decision whose low (BUY) / high (SELL) reaches the
     price, at min(open, price) / max(open, price). Withdrawn by an M5 bar BEFORE the fill bar only: its target
-    touched, a leg's ``H100`` crossed strictly (marker ``withdraw beyond``), a range broken by a closed
-    setup-timeframe bar (marker ``range break``; an M15 close counts on the M5 bar that closes with it); a bar
+    touched, a leg's ``H100`` crossed strictly (marker ``withdraw beyond``); a bar
     that fills and withdraws keeps the fill. Not filled within ``life`` bars: ``no fill``. Held until the stop
     or the target: on the fill bar only the stop counts, later a bar touching both counts as the stop; a bar
     that opens beyond the stop exits at its open. R is realised: (exit - fill - spread) / |order - stop|."""
@@ -110,14 +108,7 @@ def score_limit(
     if h100:
         level = float(h100.group(1))
         by_h100 = ((first.high > level) if buy else (first.low < level)).to_numpy()
-    by_range = np.zeros(n, dtype=bool)
-    rng = RANGE_MARK.search(structure)
-    if rng:
-        beyond = (first.close < float(rng.group(2))) | (first.close > float(rng.group(3)))
-        if rng.group(1) == "M15":  # the M5 bar that closes with an M15 bar opens at minute 10 of its quarter
-            beyond &= pd.DatetimeIndex(first.index).minute % 15 == 10
-        by_range = beyond.to_numpy()
-    gone = by_target | by_h100 | by_range
+    gone = by_target | by_h100
     at_fill = int(touched.argmax()) if touched.any() else n
     if gone[:at_fill].any():
         k = int(gone[:at_fill].argmax())
@@ -126,10 +117,8 @@ def score_limit(
         # "no fill" so the summaries count them as unfilled.
         if by_target[k]:
             why = "no fill (stop or target first)"
-        elif by_h100[k]:
-            why = f"no fill (withdrawn: beyond {h100.group(1) if h100 else ''})"
         else:
-            why = f"no fill (withdrawn: range break {rng.group(1) if rng else ''})"
+            why = f"no fill (withdrawn: beyond {h100.group(1) if h100 else ''})"
         missed = (first.low.min() - entry) if buy else (entry - first.high.max())
         return {
             "fill": "", "exit": "", "why": why, "r_net": "0.0",

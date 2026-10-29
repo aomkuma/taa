@@ -120,7 +120,7 @@ class Params:
     )
     mode: str = "fib"  # "fib" (eye/BOT_RULES.md, the default) | "2e" (a record only - not run)
     # --- the fib path ---
-    fib_tf: str = "M5"  # [Claude] the setup timeframe: the leg (rule 2) and the range (rule 11)
+    fib_tf: str = "M5"  # [Claude] the setup timeframe: the leg (rule 2); the range is read on H1 (rule 11)
     fib_entry: float = 0.618  # the owner's levels 0.618 / 0.382 / 0.236; default [Claude] until the real run
     fib_early: float = 0.0  # [Claude] x the leg above the level (the owner's idea of getting in early)
     fib_stop: str = "line"  # line (owner) | swing, line_tight ([Claude] variants); rule 7
@@ -129,7 +129,9 @@ class Params:
     fib_target: float = 1.618  # the owner's extensions 1.618 / 1.272; default [Claude] (rule 8)
     max_entry_frac: float = 0.25  # [Claude] rule 9: |price - order price| at most this x the leg
     fib_lean: str = "on"  # [Claude] research switch (rule 1): "off" = the lean is written but refuses nothing
-    fib_range: str = "on"  # [Claude] rule 11: trade the range when there is no lean and no M5 trend
+    fib_range: str = "on"  # [Claude] rule 11: read the H1 range (sideways gives the side), or not at all
+    range_min_leg: int = 3  # the owner's "from the third leg" (variant 4): the first range leg traded
+    range_tp: str = "edge"  # [Claude] rule 11: "edge" = the nearer of the extension and the opposite H1 edge
     max_orders: int = 1  # [Claude] orders live (pending or open) at once; a new one needs fewer than this
     order_life_bars: int = 24  # [Claude] rule 12: M5 bars an order may wait for its fill (last included)
 
@@ -150,6 +152,8 @@ class Params:
             ("fib_target", (1.618, 1.272)),
             ("fib_range", ("on", "off")),
             ("fib_lean", ("on", "off")),
+            ("range_min_leg", (3, 4)),
+            ("range_tp", ("edge", "ext")),
         ):
             if getattr(self, name) not in allowed:
                 raise ValueError(f"{name} must be one of {allowed}, got {getattr(self, name)!r}")
@@ -169,7 +173,8 @@ class Params:
                 f"fib_early={self.fib_early:g} fib_stop={self.fib_stop} fib_count={self.fib_count} "
                 f"max_trend_legs={self.max_trend_legs} fib_target={self.fib_target:g} "
                 f"max_entry_frac={self.max_entry_frac:g} "
-                f"fib_lean={self.fib_lean} fib_range={self.fib_range} stop_buffer={self.stop_buffer:g} "
+                f"fib_lean={self.fib_lean} fib_range={self.fib_range} range_min_leg={self.range_min_leg} "
+                f"range_tp={self.range_tp} stop_buffer={self.stop_buffer:g} "
                 f"target_buffer={self.target_buffer:g} spread={self.spread:g} max_orders={self.max_orders} "
                 f"order_life_bars={self.order_life_bars} min_r={self.min_r:g}"
             )
@@ -188,12 +193,12 @@ class Params:
 # (BOT_RULES' order of evaluation); the 2e path's keep their relative order.
 REASONS = [
     "market closed", "outside window", "warm-up", "order pending",
-    "fib: no range", "fib: no live leg", "fib: leg or range already used",
+    "fib: no live leg", "fib: leg already used",
     "fib: leg has run (100 % traded)", "fib: M5 trend (H100 not above the M5 high)",
-    "fib: against the H1 lean", "fib: count outside 3-5 and no M", "fib: no divergence",
+    "fib: against the H1 lean", "fib: against the H1 range side",
+    "fib: count outside 3-5 and no M", "fib: no divergence",
     "fib: trend run at the limit", "fib: no bounce above the order price",
     "fib: price not above the order price", "fib: no target above the order price",
-    "fib: range broken", "fib: price outside the range zone",
     "step1: no side",
     "step2: no levels",
     "step2: no counter-move", "step2: L* not in a support band", "step2: count outside 3-5 and no M",
@@ -514,12 +519,15 @@ def step2(
 # --- the fib path (eye/BOT_RULES.md): rules 1-13 ---------------------------------------------------------
 #
 # Prices here are in the view of the side being tried (a SELL's are negated, highs and lows swapped) except
-# rule 11, which is written for both sides and is not mirrored. ``real`` turns a view price back.
+# rule 11 (the H1 range), which is written for both sides and is not mirrored. ``_real`` turns a view
+# price back.
 
 FIB_BARS = 1500  # BOT_RULES "Words used": fixed pivots are read on the last 1,500 closed bars of a timeframe
 FIB_LEVELS = (0.236, 0.382, 0.618)
-RANGE_SELL, RANGE_BUY = 0.88, 0.12  # rule 11: the limit levels (a share of the range above its low)
-RANGE_PAST_LOW, RANGE_PAST_HIGH = -0.27, 1.27  # rule 11: the stops, and (no buffer) the break levels
+# rule 11: the H1 range's edge zones and break levels, as shares of its height above its low
+RANGE_HIGH_ZONE, RANGE_LOW_ZONE = (0.88, 1.27), (-0.27, 0.12)
+RANGE_PAST_LOW, RANGE_PAST_HIGH = -0.27, 1.27
+RANGE_MIN_PIVOTS, RANGE_MAX_LEG = 3, 5
 M_COUNT, COUNT_MIN, COUNT_MAX = 2, 3, 5  # rule 4: the owner's M, and "3 to 5 peaks"
 EPS = 1e-9  # float noise at an exact boundary is not a refusal
 
@@ -538,7 +546,6 @@ class FibSetup:
     """An order the fib path found. Prices are real (a SELL's too); ``marker`` is the withdrawal marker that
     ``eye/score.py`` reads from the row, ``detail`` the text that names the leg or the range."""
 
-    kind: str  # "leg" or "range"
     side: str
     tf: str
     key: str
@@ -550,6 +557,33 @@ class FibSetup:
     gap: float  # |the price - the order price|, for rule 13
     marker: str
     detail: str
+
+
+@dataclass
+class H1Range:
+    """Rule 11: the H1 range found at ``now`` (real prices). ``sideways`` is the rule's verdict; ``why`` says
+    what failed when it is False."""
+
+    lo: float
+    hi: float
+    lo_at: pd.Timestamp
+    hi_at: pd.Timestamp
+    pivots: int
+    latest_kind: str  # "HIGH" or "LOW"
+    sideways: bool
+    why: str = ""
+
+    @property
+    def leg(self) -> int:
+        """The leg being traded: legs so far (pivots - 1) + 1."""
+        return self.pivots
+
+    def text(self) -> str:
+        return (
+            f"H1 range LOW {self.lo:.2f}@{_tt(self.lo_at)} - HIGH {self.hi:.2f}@{_tt(self.hi_at)}, "
+            f"{self.pivots} pivots, legs so far {self.pivots - 1}, leg {self.leg}, latest pivot "
+            f"{self.latest_kind}"
+        )
 
 
 @dataclass
@@ -580,6 +614,13 @@ class LegData:
     m5_ptimes: pd.DatetimeIndex
     lean: str | None
     lean_text: str
+    # Rule 11, when H1 is sideways (set by ``fib_inputs``): the side the range allows ("BUY" / "SELL"; "NONE"
+    # below ``range_min_leg``; None from leg 6, nothing refused), the opposite-edge target in this view, and
+    # the text.
+    sideways: bool = False
+    range_gate: str | None = None
+    edge_target_v: float | None = None
+    range_text: str = ""
 
 
 # --- rule 1: the H1 lean ------------------------------------------------------------------------------------
@@ -757,7 +798,7 @@ def analyse_leg(d: LegData, p: Params, used: frozenset[str] = frozenset()) -> Fi
     out.info["count"] = str(len(run))
     out.info["pivots"] = " ".join(f"{_real(s, q.price):.2f}" for q in run)
     if key in used:
-        out.reason = "fib: leg or range already used"
+        out.reason = "fib: leg already used"
         return out
 
     # 10: a leg that has run is over (M5 bars whose open is at or after L0's pivot bar's close).
@@ -780,9 +821,14 @@ def analyse_leg(d: LegData, p: Params, used: frozenset[str] = frozenset()) -> Fi
     out.info["r3"] = f"H100 {_real(s, h100.price):.2f} vs M5 {word} {_real(s, ref.price):.2f}@{t_ref}"
     if not h100.price > ref.price:
         return out
-    out.reason = "fib: against the H1 lean"
-    if p.fib_lean == "on" and d.lean is not None and d.lean != d.side:
-        return out
+    if d.sideways:  # rule 11: the H1 range gives the side, the lean is not read
+        out.reason = "fib: against the H1 range side"
+        if d.range_gate is not None and d.range_gate != d.side:
+            return out
+    else:
+        out.reason = "fib: against the H1 lean"
+        if p.fib_lean == "on" and d.lean is not None and d.lean != d.side:
+            return out
 
     # 4: the count (a filter, off by default); the divergence is recorded either way.
     d_macd, d_rsi = run_divergence(run, d.macd_v, d.rsi_v)
@@ -820,8 +866,10 @@ def analyse_leg(d: LegData, p: Params, used: frozenset[str] = frozenset()) -> Fi
     # 7 and 8: the stop and the target.
     stop = fib_stop_v(p, d.pv, l0, leg)
     target, step = fib_target_v(p, l0.price, leg), f"{p.fib_target:g}"
+    if d.sideways and p.range_tp == "edge" and d.edge_target_v is not None and d.edge_target_v < target:
+        target, step = d.edge_target_v, "range edge"  # the nearer of the extension and the opposite H1 edge
     out.info["r7"] = f"stop {_real(s, stop):.2f} ({p.fib_stop})"
-    out.info["r8"] = f"target {_real(s, target):.2f} (extension {step})"
+    out.info["r8"] = f"target {_real(s, target):.2f} ({_target_word(step)})"
     out.reason = "fib: no target above the order price"
     if not target > order:
         return out
@@ -851,116 +899,90 @@ def analyse_leg(d: LegData, p: Params, used: frozenset[str] = frozenset()) -> Fi
     pts = ", ".join(f"{_real(s, q.price):.2f}@{_tt(pd.Timestamp(d.times[q.pos]))}" for q in run)
     h100_real = _real(s, h100.price)
     detail = (
-        f"Lean {d.lean_text}. Leg: L0 {_real(s, l0.price):.2f}@{_tt(t0)} (0 %), "
+        f"Lean {d.lean_text}. {d.range_text + '. ' if d.sideways else ''}"
+        f"Leg: L0 {_real(s, l0.price):.2f}@{_tt(t0)} (0 %), "
         f"H100 {h100_real:.2f}@{_tt(t100)} (100 %), leg {leg:.2f}; levels {levels}; "
         f"run of {len(run)} lows ({pts}), divergence on MACD {d_macd}, "
         f"on RSI {d_rsi}, fib_count {p.fib_count}. M5 trend: H100 {h100_real:.2f} beyond the M5 {word} "
         f"{_real(s, ref.price):.2f}@{_tt(pd.Timestamp(d.m5_ptimes[ref.pos]))}; {legs} trend legs (limit "
         f"{p.max_trend_legs}). Entry level {x * 100:.1f} % = {_real(s, l0.price + x * leg):.2f}, order price "
         f"{_real(s, order):.2f} (fib_early {p.fib_early:g}); stop {_real(s, stop):.2f} ({p.fib_stop}); "
-        f"target {_real(s, target):.2f} (extension {step}); planned R {r:.2f} "
+        f"target {_real(s, target):.2f} ({_target_word(step)}); planned R {r:.2f} "
         f"(net of {p.spread:g} spread). "
         f"Order price {gap:.2f} from the price, limit {p.max_entry_frac * leg:.2f}"
     )
     out.setup = FibSetup(
-        "leg", d.side, d.tf, key, _real(s, order), _real(s, stop), _real(s, target), r, step, gap,
+        d.side, d.tf, key, _real(s, order), _real(s, stop), _real(s, target), r, step, gap,
         f"withdraw beyond {h100_real:.2f}", detail,
     )  # fmt: skip
     out.reason = "order written"
     return out
 
 
-# --- rule 11: the range -------------------------------------------------------------------------------
+def _target_word(step: str) -> str:
+    return step if step == "range edge" else f"extension {step}"
 
 
-def m5_has_trend(m5_pv_real: Sequence[VPivot]) -> bool | None:
-    """Rule 11's M5 test on the real fixed M5 pivots: the latest two highs and the latest two lows. True when
-    they are "higher high and higher low" or "lower high and lower low"; None when either kind has fewer
-    than two."""
-    highs = [q.price for q in m5_pv_real if not q.low]
-    lows = [q.price for q in m5_pv_real if q.low]
-    if len(highs) < 2 or len(lows) < 2:
-        return None
-    up = highs[-1] > highs[-2] and lows[-1] > lows[-2]
-    down = highs[-1] < highs[-2] and lows[-1] < lows[-2]
-    return up or down
+# --- rule 11: the H1 range ----------------------------------------------------------------------------
 
 
-def analyse_range(
-    lo: float, hi: float, price: float, closes_after: np.ndarray, p: Params, tf: str
-) -> FibOut:  # fmt: skip
-    """Rule 11, real prices (not mirrored): the range ``lo``..``hi``, the last M5 close ``price``, the setup-
-    timeframe closes after the later pivot. SELL limit at 0.88 while 0 < level < 0.88, BUY limit at 0.12 while
-    0.12 < level < 1; at least ``min_r``; rule 9 with the range's height; of the two the nearer, then the
-    BUY."""
-    out = FibOut("fib: range broken")
-    h = hi - lo
-    # SPEC-QUESTION: the floor (min_r) and the reach (rule 9) are tested on each of the two orders before the
-    # nearer is chosen (rule 11 says "if both qualify, the nearer"; whether a refused one still counts is
-    # open).
-    if h <= 0:
-        out.reason = "fib: no range"
-        return out
-    brk_lo, brk_hi = lo + RANGE_PAST_LOW * h, lo + RANGE_PAST_HIGH * h
-    if closes_after.size and (float(closes_after.min()) < brk_lo or float(closes_after.max()) > brk_hi):
-        return out
-    level = (price - lo) / h
-    out.info["r11"] = f"range {lo:.2f}-{hi:.2f}, price level {level:.2f}"
-    # SPEC-QUESTION: the break levels are written to 4 decimals, not 2, so the scorer's strict test is the
-    #  bot's.
-    marker = f"range break {tf} close beyond {brk_lo:.4f} / {brk_hi:.4f}"
-    out.reason = "fib: price outside the range zone"
-    cands: list[FibSetup] = []
-    worst = out.reason
-    for side in ("BUY", "SELL"):
-        if side == "BUY":
-            ok = RANGE_BUY < level < 1
-            order, stop, target = lo + RANGE_BUY * h, brk_lo - p.stop_buffer, hi - p.target_buffer
-            r = (target - order - p.spread) / (order - stop)
-        else:
-            ok = 0 < level < RANGE_SELL
-            order, stop, target = lo + RANGE_SELL * h, brk_hi + p.stop_buffer, lo + p.target_buffer
-            r = (order - target - p.spread) / (stop - order)
+def range_gate(rng: H1Range, p: Params) -> tuple[str | None, float | None]:
+    """Rule 11 for a sideways range: (the side it allows, the opposite-edge target in real prices). Legs
+    ``range_min_leg`` to 5: the side away from the latest pivot (HIGH: SELL, LOW: BUY) and the edge less
+    (BUY) / plus (SELL) ``target_buffer``; leg 6 on: (None, None) - no side, no edge target; below
+    ``range_min_leg``: ("NONE", None) - sideways but this leg is not traded."""
+    # SPEC-QUESTION: BOT_RULES trades legs range_min_leg to 5 and gives leg 6 on no side; for a sideways H1
+    # whose leg is under range_min_leg (3 pivots with range_min_leg 4) it says nothing, so no side is allowed.
+    if rng.leg > RANGE_MAX_LEG:
+        return None, None
+    if rng.leg < p.range_min_leg:
+        return "NONE", None
+    if rng.latest_kind == "HIGH":
+        return "SELL", rng.lo + p.target_buffer
+    return "BUY", rng.hi - p.target_buffer
+
+
+def h1_range(h1: pd.DataFrame, piv: Sequence[Swing]) -> H1Range | None:
+    """Rule 11 on the closed H1 bars and their fixed pivots (real prices). For consecutive pivots P(k), P(k+1)
+    (one HIGH, one LOW; ``h`` <= 0 skipped) the edges are their prices; every later pivot must touch its edge
+    zone (a HIGH at level 0.88 to 1.27, a LOW at -0.27 to 0.12, bounds included). The range is the earliest
+    such pair. Sideways: at least 3 pivots, and no H1 close after the latest pivot beyond -0.27 / 1.27. None
+    when there is no pair at all."""
+    for k in range(len(piv) - 1):
+        a, b = piv[k], piv[k + 1]
+        hi_s, lo_s = (a, b) if a.kind is SwingKind.HIGH else (b, a)
+        h = hi_s.price - lo_s.price
+        if h <= 0:
+            continue
+        ok = True
+        for q in piv[k + 2 :]:
+            level = (q.price - lo_s.price) / h
+            lo_z, hi_z = RANGE_HIGH_ZONE if q.kind is SwingKind.HIGH else RANGE_LOW_ZONE
+            if not (lo_z - EPS <= level <= hi_z + EPS):
+                ok = False
+                break
         if not ok:
             continue
-        why = ""
-        if r < p.min_r:
-            why = "reward under 2R"
-        elif abs(price - order) > p.max_entry_frac * h + EPS:
-            why = "fib: order price too far from price"
-        if why:
-            if RANK[why] > RANK[worst]:
-                worst = why
-            continue
-        detail = (
-            f"Range: low {lo:.2f}, high {hi:.2f} (0 % at the low), height {h:.2f}; no H1 lean, no M5 trend. "
-            f"{side} limit {order:.2f} at {(order - lo) / h * 100:.0f} %, stop {stop:.2f}, "
-            f"target {target:.2f} "
-            f"(the far edge); planned R {r:.2f} (net of {p.spread:g} spread); price level {level:.2f}, order "
-            f"price {abs(price - order):.2f} from the price, limit {p.max_entry_frac * h:.2f}"
-        )
-        cands.append(
-            FibSetup(
-                "range",
-                side,
-                tf,
-                "",
-                order,
-                stop,
-                target,
-                r,
-                "range edge",
-                abs(price - order),
-                marker,
-                detail,
-            )
-        )
-    if not cands:
-        out.reason = worst
-        return out
-    out.setup = choose(cands)
-    out.reason = "order written"
-    return out
+        n = len(piv) - k
+        last = piv[-1]
+        idx = pd.DatetimeIndex(h1.index)
+        r = H1Range(
+            lo_s.price, hi_s.price, pd.Timestamp(idx[lo_s.pivot_pos]), pd.Timestamp(idx[hi_s.pivot_pos]),
+            n, last.kind.value, False,
+        )  # fmt: skip
+        if n < RANGE_MIN_PIVOTS:
+            r.why = f"only {n} pivots"
+            return r
+        closes = h1.close.to_numpy(dtype=np.float64)[last.pivot_pos + 1 :]
+        if closes.size and (
+            float(closes.min()) < lo_s.price + RANGE_PAST_LOW * h
+            or float(closes.max()) > lo_s.price + RANGE_PAST_HIGH * h
+        ):
+            r.why = "an H1 close beyond -0.27 / 1.27"
+            return r
+        r.sideways = True
+        return r
+    return None
 
 
 def choose(cands: Sequence[FibSetup]) -> FibSetup:
@@ -1105,6 +1127,8 @@ class FibInputs:
     zz: list[Swing]
     m5_zz: list[Swing]
     price: float
+    h1_range: H1Range | None = None
+    range_text: str = ""
 
 
 def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) -> FibInputs:
@@ -1116,7 +1140,17 @@ def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) ->
     # its
     # M5 bars for rules 6 and 10.
     h1 = frames["H1"].tail(FIB_BARS)
-    lean, lean_text = h1_lean(h1, _zigzag(h1))
+    h1_zz = _zigzag(h1)
+    lean, lean_text = h1_lean(h1, h1_zz)
+    # Rule 11: with ``fib_range`` on, a sideways H1 gives the side (the lean is not read); off: not read.
+    rng = h1_range(h1, h1_zz) if p.fib_range == "on" else None
+    sideways = rng is not None and rng.sideways
+    range_text = "" if rng is None else (rng.text() if sideways else f"H1 not sideways ({rng.why})")
+    gate: str | None = None
+    edge_real: float | None = None
+    if rng is not None and sideways:
+        lean, lean_text = None, "not read (H1 sideways)"
+        gate, edge_real = range_gate(rng, p)
     tf = p.fib_tf
     df = frames[tf].tail(FIB_BARS)
     times = pd.DatetimeIndex(df.index)
@@ -1150,9 +1184,13 @@ def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) ->
                 m5_ptimes=m5_ptimes,
                 lean=lean,
                 lean_text=lean_text,
+                sideways=sideways,
+                range_gate=gate,
+                edge_target_v=None if edge_real is None else sign * edge_real,
+                range_text=range_text,
             )
         )
-    return FibInputs(lean, lean_text, datas, df, times, zz, m5_zz, price)
+    return FibInputs(lean, lean_text, datas, df, times, zz, m5_zz, price, rng, range_text)
 
 
 def _decide_fib(
@@ -1165,8 +1203,8 @@ def _decide_fib(
     done: Callable[..., Result],
 ) -> Result:
     """Mode "fib" (eye/BOT_RULES.md) at an M5 close ``now``: warm-up and ``max_orders`` (rule 0), the H1
-    lean (1), each side's latest leg (2-10), the choice between a BUY and a SELL (13), and - only if no leg
-    order was written - the range (11). Closed bars only: ``decide`` has checked the cut."""
+    H1 range (11) or lean (1), each side's latest leg (2-10), and the choice between a BUY and a SELL (13).
+    Closed bars only: ``decide`` has checked the cut."""
     if any(len(frames[tf]) < FIB_BARS for tf in ("H4", "H1", "M15", "M5")):
         return done("warm-up")
     if pending:
@@ -1183,9 +1221,10 @@ def fib_decision(
     done: Callable[..., Result],
 ) -> Result:
     """Rules 2-13 on the inputs of one ``now``: each side's leg, the choice between a BUY and a SELL (rule
-    13), and - only if no leg order was written - the range (rule 11)."""
+    13). The H1 range (rule 11) was read in ``fib_inputs`` and gates the sides there."""
     tf = p.fib_tf
     log["lean"] = fi.lean_text
+    log["r11"] = fi.range_text
     outs = [analyse_leg(d, p, used) for d in fi.datas]
     written = [o for o in outs if o.setup is not None]
     if written:
@@ -1193,47 +1232,7 @@ def fib_decision(
         best = next(o for o in written if o.setup is pick)
         return _emit(best, now, tf, p, log, done)
     best = max(outs, key=lambda o: RANK[o.reason])  # the one that got furthest; a tie goes to the BUY
-    if (
-        p.fib_range == "on"
-        and (fi.lean is None or p.fib_lean == "off")
-        and m5_has_trend(to_view(fi.m5_zz, 1)) is False
-    ):
-        ro = _range_out(fi.zz, fi.times, fi.df, fi.price, tf, p, used)
-        if ro.setup is not None:
-            return _emit(ro, now, tf, p, log, done)
-        if RANK[ro.reason] > RANK[best.reason]:
-            best = ro
     return done(best.reason, best.info, tf)
-
-
-def _range_out(
-    zz: Sequence[Swing], times: pd.DatetimeIndex, df: pd.DataFrame, price: float, tf: str, p: Params,
-    used: frozenset[str],
-) -> FibOut:  # fmt: skip
-    """Rule 11 on the setup timeframe: the latest fixed HIGH and LOW, in whichever order; one order per
-    range."""
-    highs = [s for s in zz if s.kind is SwingKind.HIGH]
-    lows = [s for s in zz if s.kind is SwingKind.LOW]
-    if not highs or not lows:
-        return FibOut("fib: no range")
-    hi, lo = highs[-1], lows[-1]
-    later = max(hi.pivot_pos, lo.pivot_pos)
-    closes_after = df.close.to_numpy(dtype=np.float64)[later + 1 :]
-    out = analyse_range(lo.price, hi.price, price, closes_after, p, tf)
-    if out.setup is None:
-        return out
-    # SPEC-QUESTION: one order per range (its two pivot times) - the key has no side, so a BUY and a SELL on
-    #  the
-    # same range share it.
-    key = f"range|{tf}|{times[lo.pivot_pos]}|{times[hi.pivot_pos]}"
-    if key in used:
-        return FibOut("fib: leg or range already used", out.info)
-    out.setup.key = key
-    t_lo, t_hi = _tt(times[lo.pivot_pos]), _tt(times[hi.pivot_pos])
-    out.setup.detail = (
-        f"Range pivots: low {lo.price:.2f}@{t_lo}, high {hi.price:.2f}@{t_hi}. " + out.setup.detail
-    )
-    return out
 
 
 def _emit(
@@ -1494,6 +1493,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     ap.add_argument("--fib-target", type=float, choices=(1.618, 1.272), default=d.fib_target)
     ap.add_argument("--max-entry-frac", type=float, default=d.max_entry_frac)
     ap.add_argument("--fib-range", choices=("on", "off"), default=d.fib_range)
+    ap.add_argument("--range-min-leg", type=int, choices=(3, 4), default=d.range_min_leg)
+    ap.add_argument("--range-tp", choices=("edge", "ext"), default=d.range_tp)
     ap.add_argument("--fib-lean", choices=("on", "off"), default=d.fib_lean)
     ap.add_argument("--max-orders", type=int, default=d.max_orders, help="orders live at once")
     ap.add_argument("--order-life-bars", type=int, default=d.order_life_bars, help="M5 bars to fill")
@@ -1523,6 +1524,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         fib_target=a.fib_target,
         max_entry_frac=a.max_entry_frac,
         fib_range=a.fib_range,
+        range_min_leg=a.range_min_leg,
+        range_tp=a.range_tp,
         fib_lean=a.fib_lean,
         max_orders=a.max_orders,
         order_life_bars=a.order_life_bars,

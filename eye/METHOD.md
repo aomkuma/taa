@@ -332,7 +332,8 @@ everything; the count was found splitting a double top in one zone (BOT_SPEC rev
 under the owner's rules (revision 3, 11 variants): no trade** (`eye/BOT_RESEARCH.md` round 1). An entry on M1
 (revision 4) was **Claude's misreading of a question of the owner's** and was removed at the owner's word
 (10-29). The owner's Fibonacci (above): round 3 (revision 5, Claude's wrong leg) lost; round 4 (revision 6) won October and
-failed September; the current build follows `eye/BOT_RULES.md`, its runs in `eye/BOT_RESEARCH.md`.
+failed September; the current build follows `eye/BOT_RULES.md` and is not yet run (the runs before rule 11 was rewritten are in
+`eye/BOT_RESEARCH.md`).
 
 ### What Claude understands (Claude's words, for the owner to correct)
 

@@ -632,7 +632,7 @@ gold's moves of 24-47 USD inside a day turn as often as they run on.
 
 ### Other readings of the H1 lean - the result (lean_cands.py, 2026-10-29)
 
-The plan above, run as written (`eye/research/lean_cands.py`; `lean_levels/lean_cands_summary.txt`). Candidate A
+The plan above, run as written (`eye/research/lean_cands.py`; `eye/research/lean_levels/lean_cands_summary.txt`). Candidate A
 reproduces `lean_test.py` exactly (0.487 / 0.506 at k 0.25), so the four are measured alike.
 
 | candidate | with a lean | k 0.25: pooled (BUY / SELL) | k 0.5: pooled (BUY / SELL) | months above 0.5 (k 0.25 / 0.5) | passes |
@@ -653,7 +653,7 @@ n per side 772-1,251. In every candidate the BUY lean came first 0.53-0.58 in th
 
 ### Strong moves - do they carry on? (lean_strength.py, 2026-10-29, the owner: *"on a very clear trend day, would trading against it lose?"*)
 
-Expectation written before the run (`lean_levels/EXPECTATION.md`, test 3). The same 2,720 moments; the strength = the
+Expectation written before the run (`eye/research/lean_levels/EXPECTATION.md`, test 3). The same 2,720 moments; the strength = the
 move of the last 24 closed H1 bars in ATR(14) units of H1; the outcome as before (k 0.25 / 0.5): the move's side
 first.
 
