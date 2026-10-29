@@ -562,3 +562,32 @@ move is to be reported against the old H1 side (34 % / 49 % "no side"; 2 against
 34 % "no side" before); of the 24 opens after a move over 40 USD in 24 h, no lean on **0** (13 before) and a
 lean against the move on 2 (15/10 22:00, 20/10 07:00; 2 before). 22/10 19:30 - 23/10 22:00: SELL lean on all
 six.
+
+## Revision 9 (2026-10-29) - no chasing, and a range is traded too
+
+**The owner**, on revision 8: two problems will follow - chasing the price, and no trade when the market goes
+sideways - *"don't let these two happen."* Claude's definitions below (`[Claude]`) are the means; the owner
+judges them on the real run.
+
+**R23. No chasing - three checks, all on the fib path:**
+- **(a) The trend is not exhausted:** count the M5 legs of the trend the counter-move interrupted - for a
+  BUY, the higher highs in a row up to and including `H100` (each fixed M5 high higher than the one before);
+  a SELL the mirror (lower lows to the 100 % low). At **5 or more** (`max_trend_legs`, default 5; run also at
+  3), no with-trend order - the owner's own count says the move is ending (METHOD 2e: 3 to 5 peaks, then
+  the turn).
+- **(b) At the level of the right kind:** `fib_level = on` becomes the default - `L0` (a SELL: its top) inside
+  an H1 band, support for a BUY and resistance for a SELL (2e "where").
+- **(c) Room to the target:** if an opposite H1 band (resistance for a BUY) lies between the entry and the
+  161.8 % target, the target becomes just before that band (2e step 7: `band edge - target_buffer`); R
+  recomputed; under 2R no order. *(2e's own target rule, applied to the Fibo target.)*
+
+**R24. A range is traded (the owner's sideways rule, METHOD 2e "The owner's Fibonacci"):** when the H1 lean
+is none **and** R22 gives no M5 trend, the range is the latest fixed HIGH and LOW on the **setup timeframe**
+(M5 or M15 - not H1, too slow): drawn 0 % at the low, 100 % at the high; a SELL limit at 88 %, stop beyond
+127 % + `stop_buffer`, target the low edge + `target_buffer` (the owner's "around 100 %" read as the other
+edge); a BUY the mirror; at least 2R; R20 applies; a range is broken (no order, a resting one withdrawn) once
+a bar closes beyond its 127 % line. One order per range (its two pivot times). This replaces R17's H1 range for
+the fib path.
+
+**To check before coding (from the stored bars):** how many October window opens fall to R24 (no lean and no
+M5 trend), and how many orders R23 (a) / (b) / (c) would each remove from revision 7's October run.
