@@ -409,3 +409,25 @@ high after it) - the wrong leg (Claude's). **R18 replaces R13 / R15's leg:**
 framework, I want both sides included."* So R18's count is the owner's: **BUY - 3-5 legs down, each fixed
 low lower than the one before, into `L0`; SELL - 3-5 legs up, each fixed high higher than the one before,
 into the top.** Which high is 100 % (`H100`) is researched (BOT_RESEARCH, "Which high is 100 %").
+
+## Claude's rules in the code, written down (2026-10-29, after Codex compared the code with this spec)
+
+Every choice the code makes where the owner gave no rule - each marked `# SPEC-QUESTION:` in
+`eye/bot2e.py` - is a `[Claude]` rule:
+- **2e, setup age:** no limit - a higher low fixed hours before a window can still give an order there.
+- **2e, the zone:** the latest fixed low of the last `counter_pivots` that lies inside any band picks the
+  zone (the nearest centre if several); the count is the zone lows **up to and including `L*`** - a zone low
+  after `L*` is the higher low of step 3, not part of the exhaustion.
+- **Fibo stop:** the stop beyond 23.6 % applies to any entry at or above 0.618.
+- **R18, R8 (played out):** read from the bar that first traded above the entry level, not from `L0` - the
+  climb out of `L0` always passes under the 23.6 % stop of a 0.618 entry.
+- **R18, `L0`:** a low is a bottom only once a later fixed low above it exists.
+- **R18, the count** can include more lows than the owner counted by eye (the whole descending run).
+- **`fib_side` = `any` / `entry`:** when both the BUY and the SELL view qualify, the later `L0` (top) wins.
+- **`fib_side` = `entry`:** "the last fixed high before `L0`" is the pivot just before it.
+- **R17 range:** broken by any M5 close beyond the stop level since the later H1 pivot; an edge limit only
+  while the last close is on the far side of the edge; the range sees the M5 bars from that pivot's H1 bar.
+- **The log:** one row per bar; its reason is the timeframe that got furthest (M5 on a tie).
+- **Defaults** (from 2026-10-29): `fib_high` = `start`; `fib_target` = `ext161`; `fib_leg` = `counter`
+  (`trend` = revision 5's leg, comparison only); R18's count-on writes the same plain limit at the level as
+  count-off (the last-close entry belongs to revision 5's R16 only).
