@@ -294,3 +294,49 @@ trade). What the numbers do support: a pullback that reaches a deep line is ofte
 variants that paid are the ones whose entry sits nearest the bounce (61.8 % of the whole fall, 23.6 % of the
 last leg). Still missing: a sign, readable **before** the entry, of which pullbacks will turn - asked of the
 owner (a limit resting at the level, or waiting in the zone for a turn on a smaller timeframe).
+
+## Entering before the line, with a tight stop - the owner's idea (2026-10-29)
+
+The owner: *"I actually see this picture often - I forgot to say. Can you find a moment to get in before the
+price I meant, with a narrower stop - say just beyond the line I meant?"*
+
+**Claude's definitions `[Claude]`, for the owner to correct:** the intended line `x` (23.6 / 38.2 / 61.8 %
+of the leg, the 100 % chosen by depth as measured: 61.8 % with the high the fall began from, 23.6 % with
+the latest high, 38.2 % both); **enter early** at `x + d` of the leg, `d` = 5 %, 10 % or 15 % (a limit, after
+price has closed above it); **stop just beyond the line**: `x - 0.5 USD`, or `x - 3 %` of the leg; target
+161 % as before; at least 2R.
+
+**Claude's expectation, written before the run:** the stop shrinks to a few dollars, so R per win jumps
+(often 6-15 R) and the win rate falls hard - I expect **10-20 %** won at `d` = 10 %. Because the pullbacks
+that reach the line are the ones that run on through it (above), a stop just beyond the line will be hit
+often; I expect the 0.5 USD stop to lose to the 3 % stop. Overall I expect at least one early entry to beat
+the same line entered at the line, on M5, by 0.1 R a trade or more - but not on every line.
+
+**Result (2026-10-29; `eye/research/fib_early.py`, the last year, both sides, 3-5 legs, all hours, no H1 or
+window filter, target 161 %, at least 2R; R a trade, trades in brackets).** The intended line entered at the
+line with the owner's stop, against entered early with the stop 0.5 USD beyond the line:
+
+| line, 100 % | M5 at the line | M5 +5 % early | M5 +10 % early | M15 at the line | M15 +5 % early | M15 +10 % early |
+|---|---|---|---|---|---|---|
+| 23.6 %, latest | +0.078 (477) | +0.389 (224) | +0.353 (279) | +0.228 (164) | -0.148 (72) | -0.388 (96) |
+| 38.2 %, latest | -0.037 (466) | +0.899 (140) | +0.203 (173) | -0.085 (156) | +1.201 (46) | -0.003 (64) |
+| 38.2 %, start | +0.020 (413) | +1.075 (76) | +0.723 (94) | -0.162 (143) | +1.015 (31) | -0.077 (36) |
+| 61.8 %, start | +0.322 (148) | +0.338 (31) | -0.064 (34) | +0.033 (51) | +1.329 (7) | -0.127 (10) |
+
+(The stop 3 % of the leg beyond the line gives the same picture, a little weaker on M5.)
+
+**What it says (Claude's reading):** entering early with the stop just beyond the line **raises R a trade a
+lot on M5 at the 38.2 % line** (from about 0 to +0.2 .. +1.1) and at 23.6 % (to +0.35 .. +0.39); on M15 it
+is mixed and the samples are small. **The price of it, measured:** the stops are tiny - median 2.0-2.5 USD at
++5 %, 4.3 USD at +10 % (38.2 %, start) - so 8-17 % of trades win, each win averaging 9-18 R, and the losing
+runs are long: **13 in a row** at 38.2 % / start / +10 %, **18-54 in a row** at +5 %. With stops of 2 USD,
+the 0.30 spread is 15 % of the risk and any slippage moves the result; M5 bars cannot show what happened
+inside a bar (a bar touching stop and target counts as the stop). The rows were picked after looking.
+**Against the expectation:** win rates 8-17 % (expected 10-20 %) - right; the 0.5 USD stop beat the 3 %
+stop on M5 - wrong (expected the opposite); early beat the line on M5 by more than 0.1 R on 3 of 4 lines -
+right.
+
+**The owner's example (2026-10-29, M1, 29/10 05:45 Thai):** *"say I sell at 4043 and the SL is 4046"* - on
+a Fibo of the fall 4050.2 -> 4037.0 with price back at the 50 % line: Claude's reading, to confirm - the
+intended line is 38.2 % (4045.3), the sell is taken about 12 % of the leg early (4043), the stop about 0.7
+USD beyond the line (4046): risk 3 USD. That is the `+10 % early, stop just beyond the line` row.

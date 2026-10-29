@@ -36,8 +36,20 @@ SPREAD, BUF, FILL_BARS = 0.30, 0.50, 96
 
 
 def trades(
-    df: pd.DataFrame, sign: int, which: str, entry_x: float, ext: float, nmin: int, nmax: int, div: bool
+    df: pd.DataFrame,
+    sign: int,
+    which: str,
+    entry_x: float,
+    ext: float,
+    nmin: int,
+    nmax: int,
+    div: bool,
+    before: float = 0.0,
+    stop_mode: str = "owner",
 ) -> list[dict[str, object]]:
+    """``before`` > 0: enter early at ``entry_x + before`` of the leg; ``stop_mode`` "owner" (beyond 0 %, or
+    23.6 % for a 61.8 % entry), "line_usd" (the intended line - 0.5 USD) or "line_pct" (the line - 3 % of the
+    leg) - the owner's idea of 2026-10-29, Claude's definitions."""
     hi = (df.high if sign > 0 else -df.low).to_numpy(np.float64)
     lo = (df.low if sign > 0 else -df.high).to_numpy(np.float64)
     close = (sign * df.close).to_numpy(np.float64)
@@ -66,8 +78,14 @@ def trades(
         l0, leg = p.price, h - p.price
         if leg <= 0:
             continue
-        entry = l0 + entry_x * leg
-        stop = (l0 + 0.236 * leg if entry_x >= 0.618 else l0) - BUF
+        line = l0 + entry_x * leg
+        entry = line + before * leg
+        if stop_mode == "line_usd":
+            stop = line - BUF
+        elif stop_mode == "line_pct":
+            stop = line - 0.03 * leg
+        else:
+            stop = (l0 + 0.236 * leg if entry_x >= 0.618 else l0) - BUF
         target = l0 + ext * leg - BUF
         r = (target - entry - SPREAD) / (entry - stop)
         if r < 2.0:
