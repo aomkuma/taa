@@ -27,7 +27,8 @@ record (the original setup, BOT_SPEC revisions 1-3) and is not part of these rul
   M5 close** at `now`, for either setup timeframe.
 - **Spread** 0.30 USD in every R and every score [Claude]. Buffers: `stop_buffer` and `target_buffer` 0.50 USD
   [Claude].
-- **Orders at a time** `max_orders` [Claude], default 1: no new order while that many are pending or open.
+- **Orders at a time** `max_orders` [Claude], default 1, **across everything** - legs, ranges, M5 and M15:
+  no new order while that many are pending or open.
 
 ## 1. The H1 lean (owner: "H1 is the lean; the trend is measured on M5")
 
@@ -72,7 +73,7 @@ while price is lower or equal). SELL: 3-5 higher highs into the top.
 
 ## 5. No chasing - the trend's own count (owner: "don't let it happen"; the count of legs)
 
-[Claude] For a BUY, walk back from `H100` over the fixed highs on the setup timeframe while each is strictly
+[Claude - provisional, the owner to judge on the real run] For a BUY, walk back from `H100` over the fixed highs on the setup timeframe while each is strictly
 higher than the one before; the number of highs in that run (`H100` included) is the trend's legs. At
 `max_trend_legs` (default **5**; run also at 3) or more, no order - the trend is ending (owner: 3-5 peaks,
 then the turn). SELL mirrored on lows.
@@ -84,8 +85,9 @@ then the turn). SELL mirrored on lows.
 - **The bounce (owner: the entry is the pullback after the bounce):** an order is written only once a bar
   after `L0` has traded above the entry level, and only while the last close is above it - a **plain limit**
   at the entry level.
-- **R8 - played out** [Claude]: from the bar that first traded above the entry level, a target touch on that
-  bar or after, or a stop touch after it, ends the setup.
+- **R8 - played out** [Claude]: from the bar that first traded above the entry level, a touch of **the
+  target the ladder selects (rule 8)** on that bar or after, or a stop touch after it, ends the setup. (Rule
+  10 covers the run beyond 100 % separately - a ladder target before a band can lie below `H100`.)
 
 ## 7. The stop (owner: "beyond the lowest bottom"; for the 61.8 % entry "beyond 23 %")
 
@@ -105,8 +107,9 @@ major band** (its near edge - `target_buffer`). **At least 1:2 (owner):** R = (T
 **Major band** [Claude]: a single band per fixed **H4** pivot (`major_tf`, default H4; variant H1) - centre
 the pivot price, half-width `band_frac` (0.10) x the median of the last `band_legs` (20) legs of that
 timeframe, only pivots at least `level_min_age_h` (24 h) old, among the last `level_bars` (500) bars; edges
-inclusive; "between" = any part of the band strictly between the entry and the target. SELL mirrored
-(support bands below).
+inclusive. **A band counts only if its whole width lies on the target side of the entry** (its near edge
+above the entry for a BUY) and its near edge is below the extension being tested; a band the entry sits
+inside is ignored - price is already in it. SELL mirrored (support bands below).
 
 ## 9. The entry must be reachable (owner, rule 7: "a price the market can reach from here")
 
@@ -130,8 +133,10 @@ both fills and crosses keeps the fill.
   + `target_buffer` [Claude's reading of "around 100 %"]; a BUY limit at 12 % while the price is above it, stop
   below -27 % - `stop_buffer`, TP the high edge - `target_buffer`; if both, the one nearer the price. At least
   2R; rule 9 with the range height.
-- **Broken:** a closed setup-timeframe bar beyond 127 % / -27 % after the later pivot - no order; a resting one
-  is withdrawn (the scorer marker as rule 10). One order per range (its two pivot times).
+- **Broken:** a **closed** setup-timeframe bar beyond 127 % / -27 % after the later pivot - no order. A resting
+  order is withdrawn when such a close comes before its fill bar - the decision text carries its own marker,
+  `range break <timeframe> close beyond <127 % price> / <-27 % price>`, read by the scorer on that timeframe's
+  closes (not wicks). One order per range (its two pivot times).
 - Rules 3, 4, 5 and 8 do not apply to the range.
 
 ## 12. Holding and scoring (owner)

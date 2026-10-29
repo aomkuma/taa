@@ -467,6 +467,7 @@ judged in the real run.
 already happened. No order is written on it, and an order resting on it is withdrawn. (The 27/10 picture:
 the entry is the pullback after the bounce, before the high breaks.)
 
+*(R20 below is superseded - see "R20 corrected": the 4 USD was the owner's example.)*
 **R20. The entry must be reachable - the owner's rule 7.** No order whose entry is more than **4 USD** from
 the last close (the owner, 2026-10-28: an order goes no further than 4 USD from the price on the screen).
 
@@ -620,8 +621,9 @@ a rule.**
    day to confirm.** The trade's trend is read on the entry timeframe; a trade never goes against a clear
    lean. *(R21, R22)*
 5. **A trend has a count.** After 3-5 legs it is ending; following it further is chasing. *(R23 a)*
-6. **Trade at a level of the right kind, and only where there is room** - the target ends before the next
-   opposite level. *(R23 b, c)*
+6. **Price usually turns before a level; reaching it, it tends to carry on** (the owner) - so a setup need
+   not sit on a level, and **the take-profit is the extension price can reach before a major level** *(R23 c,
+   the ladder; R23 b withdrawn)*.
 7. **A range is traded at its edges**, not skipped. *(R24)*
 8. **No number is believed until the trades behind it are drawn and every one keeps the rules.**
 
