@@ -508,3 +508,32 @@ never candidates.
 | 61.8 %, strict, M15 | 6 | 1 | 0 / 1 | -1.01 | 150.46 | |
 
 Against the expectation: 61.8 % stayed positive with 7-10 fills - as expected.
+
+## Revision 7, October - the four paired runs (2026-10-29, the owner: "run it")
+
+Code fff8c1a (spec reviewed, code reviewed twice, full suite green). M5, H1 side (lows), entry 61.8 %, 100 %
+at the start high, target 161.8 %, R19, R20; `fib_stop` line / swing x `fib_level` off / on. The trades are
+drawn (`eye/trades/<variant>/`) and judged against the rules before any number is believed.
+
+**Claude's expectation, written before the run:** R19 and R20 remove most of the 14 orders of the old run -
+I expect **3-7 orders a variant**, `fib_level = on` fewer still (0-3); with so few, the R and USD figures say
+nothing yet; the point of this run is whether every drawn trade keeps the rules.
+
+**Result and the drawn trades judged (Claude, 2026-10-29; `eye/trades/r7_*/`):**
+
+| variant | orders = fills | won / lost | R | USD from 200 | trades |
+|---|---:|---:|---:|---:|---|
+| line, level off | 4 | 1 / 3 | -0.59 | 201.93 | 07/10 SELL target; 14/10 SELL stop; 19/10 BUY stop; 26/10 SELL stop |
+| swing, level off | 2 | 1 / 1 | +1.47 | 220.07 | 07/10 SELL target; 19/10 BUY stop |
+| line, level on | 2 | 0 / 2 | -2.06 | 174.45 | 14/10; 19/10 |
+| swing, level on | 1 | 0 / 1 | -1.02 | 180.06 | 19/10 |
+
+R19 refused 788-813 bars ("leg has run") - the largest gate; R20 removed 09/10. Against the expectation: 1-4
+orders (expected 3-7; level on 0-3) - lower than expected, and far too few for any number to mean anything.
+
+Judged against the rules: **07/10** keeps every rule. **14/10** and **26/10** (line stop) put the stop under
+the latest lower high (4162.82 / 4163.42; 4004.20) - inside the structure; the swing stop removes both (their
+R falls under 2). **19/10** - with the swing stop beyond the higher low 4163.28 it keeps the stop rule, but its
+leg is from Friday 16-17/10 used on Monday 06:55; **26/10** likewise (Thursday 23/10 -> Monday). **Every
+remaining doubtful trade is a leg carried over a weekend** - the open "leg life" point. No other rule broken
+in the drawn trades.
