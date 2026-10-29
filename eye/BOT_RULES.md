@@ -47,8 +47,7 @@ decides between a BUY and a SELL candidate; rule 12 governs the order's life.
 | `fib_stop` | line, swing, line_tight | line (it matters at 0.618 only; at 0.382 / 0.236 the stop is `L0 - stop_buffer`) | line: owner (0.618 "beyond 23 %"); swing, line_tight: [Claude] |
 | `fib_count` | off, on | off | owner: "try both"; the default [Claude] |
 | `max_trend_legs` | 5, 3 | 5 | [Claude] |
-| `major_tf` | H4, H1 | H4 | [Claude] |
-| `level_bars`, `level_min_age_h`, `band_frac`, `band_legs` | 500 bars, 24 h, 0.10, 20 | as listed | [Claude] |
+| `fib_target` | 1.618, 1.272 | 1.618 | the owner's extensions; default [Claude] (rule 8) |
 | `max_entry_frac` | 0.15, 0.25, 0.35 | 0.25 | [Claude] |
 | `fib_range` | on, off | on | [Claude] |
 | `stop_buffer`, `target_buffer` | USD | 0.50, 0.50 | [Claude] |
@@ -94,6 +93,9 @@ recomputed at every decision (not latched):
 - Both hold: the one whose pivot (`Hf` / `Lf`) is later. Neither: **no lean**.
 - **(owner)** never against a clear lean; with no lean the M5 trend (rule 3) decides alone - *"if you wait for H1 to
   be clear, the market has run already."*
+- **Under test** [Claude, at the owner's word, 2026-10-29]: this reading showed no edge at the traded move sizes
+  (`eye/BOT_RESEARCH.md`, "The H1 lean and the major levels - tested"); other readings of H1 are tested the same way
+  (the plan there). Until a reading passes and the owner confirms it, this rule stays as written.
 
 ## 2. The counter-leg - the owner's Fibonacci
 
@@ -175,25 +177,23 @@ entry the stop is beyond 23 %** - the Fibonacci's specific words govern:
 
 ## 8. The target - the ladder
 
-The owner: *"the target from the Fibo; the take-profit placed is what can be reached."* The three steps are the
-owner's; the bands and the "in the way" test are [Claude]. **One step is chosen by the bands; if its R is under
-`min_r`, or its target is not above the order price, no order - there is no fall-through to another step.**
+The owner: *"the target from the Fibo; the take-profit placed is what can be reached"* - 1.618 if nothing major stands
+before it, else 1.272, else just before that level (METHOD 2e). **A level is major only if price turns at it more
+often than at a control** - the test in `eye/BOT_RESEARCH.md`, "The H1 lean and the major levels - tested" [Claude, at
+the owner's word *"find the answers by testing and proof"*, 2026-10-29]. No tested band - H1 or H4 pivots, one or
+several - turned price more than the control with any consistency, so **no level counts as major on this path**
+and the take-profit is the extension:
 
-| take-profit | when |
-|---|---|
-| 1.618 extension: `L0 + 1.618 x leg - target_buffer` | no band in the way up to it |
-| 1.272 extension: `L0 + 1.272 x leg - target_buffer` | a band in the way before 1.618, none before 1.272 |
-| the nearest band's near edge - `target_buffer` | a band in the way before 1.272 |
+- **TP** = `L0 + fib_target x leg - target_buffer`, `fib_target` 1.618 (variant 1.272) [Claude, the owner's two
+  extensions; 1.618 is the owner's first step]. A SELL: the mirror, `L0 - fib_target x leg +
+  target_buffer`.
+- If R (rule 0) is under `min_r`, or the TP is not beyond the order price (above it for a BUY, below for a SELL), no
+  order.
+- A level definition that passes the test (consistently above the control, month by month) brings back the steps before a major level (1.272, then just before the
+  level); until one does, none is built.
 
-**Bands** [Claude], on `major_tf`: every fixed pivot (highs and lows) among its last `level_bars` bars whose time is at
-least `level_min_age_h` before `now` is one band, not merged, centre the pivot price, half-width `band_frac` x the median
-of the last `band_legs` absolute price moves between consecutive fixed pivots of that timeframe, as fixed by `now`
-(fewer than `band_legs` moves: the moves there are; fewer than 2 pivots: no bands); edges inclusive. **In the way:** a
-band whose near edge (the lower for a BUY) lies strictly above the order price and strictly below the **raw**
-extension tested (before `target_buffer`); a band the order price sits inside is ignored; "nearest" = the near edge closest to the order price.
 *Example (27/10, BUY, leg 3989.14 -> 4025.45 = 36.31, entry 0.382 = 4003.01, stop 3988.64): the raw 1.618 extension is
-4047.89; if no band lies above 4003.01 and below 4047.89, TP = 4047.89 - 0.50 = 4047.39, R = (4047.39 - 4003.01 -
-0.30) / 14.37 = 3.07.*
+4047.89; TP = 4047.89 - 0.50 = 4047.39, R = (4047.39 - 4003.01 - 0.30) / 14.37 = 3.07.*
 
 ## 9. The entry must be reachable
 
@@ -266,7 +266,7 @@ order price|; then a BUY before a SELL.
 - **The decision row** - the columns of `eye/ledger.csv`: id, cutoff_thai, decided_at, reader = `bot2e`, side, entry,
   stop, target; fill, exit, why, r_net, at_decision_r, missed_by left to the scorer; trigger, rules, conflict, setup
   empty; `structure` names the leg (`L0`, `H100`, prices and Thai times) or the range (its pivots), the levels, the
-  order price, stop, target and its ladder step, planned R, the lean, the M5 trend comparison, the counts and which
+  order price, stop, target and its extension, planned R, the lean, the M5 trend comparison, the counts and which
   oscillator diverged, every parameter, and the withdrawal marker.
 - **The log** - one row per evaluated bar: the time, the lean, each rule's state and numbers, and the reason no order
   was written; with several candidates, the reason of the one that got furthest in the order of evaluation (the last
@@ -281,9 +281,9 @@ order price|; then a BUY before a SELL.
     candidate - *report*.
   - 27/10/2026 18:30, the BUY leg 4025.45 -> 3989.14: rule 3 passes (`H100` 4025.45 above the M5 high 4019.18); at 0.618
     the order price 4011.58 is above the price 4010.95 - **no order** (rule 6); at 0.382 the order price 4003.01 is 7.94
-    away, within 0.25 x 36.31 = 9.08 (rule 9); the lean, the ladder step and the outcome - *report*.
-  - 19/10/2026 07:00, the BUY leg 4198.73 -> 4155.81 at 0.618 (order price 4182.33): *report* the ladder step, whether its target lies above the order
-    price, and R (a target at or below the order price, or R under 2, means no order).
+    away, within 0.25 x 36.31 = 9.08 (rule 9); TP 4047.39, R 3.07 (rule 8); the lean and the outcome - *report*.
+  - 19/10/2026 07:00, the BUY leg 4198.73 -> 4155.81 at 0.618 (order price 4182.33): *report* the target and R (R under 2 means
+    no order).
   - Rules 4, 5, 11 and 12 have no stored-bar case yet: the developer tests each branch on constructed bars (unit tests)
     and reports which stored-bar case first exercises it.
 
@@ -293,7 +293,7 @@ order price|; then a BUY before a SELL.
 each trade behind it is drawn (`eye/draw_trades.py`) and checked against these rules. **The bar** is the owner's goal:
 at least **+0.15 R a trade after costs** (CLAUDE.md); [Claude] not judged on fewer than 30 filled trades. The real run: the defaults, beside these
 variants one at a time - `fib_entry` 0.382 and 0.236, `fib_stop` swing (at 0.618), `fib_count` on, `fib_early` 0.10 with
-`line_tight` (at 0.382), `fib_tf` M15, `max_trend_legs` 3, `major_tf` H1, `max_entry_frac` 0.15 and 0.35. October 2026
+`line_tight` (at 0.382), `fib_tf` M15, `max_trend_legs` 3, `fib_target` 1.272, `max_entry_frac` 0.15 and 0.35. October 2026
 first, then the stored months before it (M5 from 2025-10), month by month - **not clean**: the research that chose `H100` and the entry
 depth used them. **The clean test is forward**, on the months after 2026-10-28 as their bars arrive.
 
@@ -302,13 +302,12 @@ depth used them. **The clean test is forward**, on the months after 2026-10-28 a
 None of these is a parameter to implement; they live only in the history (`eye/BOT_SPEC.md`): a side from H1
 structure alone (replaced by the lean); revision 5's leg drawn in the trade's direction; the M1 entry; a fixed USD
 reach; "the leg's extreme must sit on a level" and 2e's "Where" row on this path (replaced by the owner's "Levels and
-the turn"); the fixed 1.618 target without the ladder; a range drawn on H1; a depth-dependent choice of `H100`; the 2e
+the turn"); the bands of H1 / H4 pivots capping the target and their parameters (`major_tf`, `level_bars`,
+`level_min_age_h`, `band_frac`, `band_legs` on this path - no band turned price more than a control); a range drawn on H1; a depth-dependent choice of `H100`; the 2e
 path as a live option; the nine rules no. 4 ("trade the fifth leg") and no. 9 (target a full leg away) - replaced by
 2e before this path.
 
 ## Code status, 2026-10-29 (not a rule)
 
-`eye/bot2e.py` at commit fff8c1a builds rules 2, 6 (at the level), 7 (line, swing), 10 and the scorer's `H100`
-withdrawal. Everything else here is **to build**, including: the lean (it replaces the code's `fib_side` / H1 side),
-rules 3, 4 as written, 5, 8, 9 (the code has a fixed 4.0 USD and a comment calling it "the owner's rule 7"), 10 on M5
-bars, 11, 12's expiry and gap fills, 13, the parameter defaults, and the refusal of meaningless combinations.
+`eye/bot2e.py` at commit 43385b7 builds every rule above as written before this rule 8: its ladder still reads the
+H1 / H4 bands. **To build:** rule 8 as written now (the extension, `fib_target`, no bands on this path).

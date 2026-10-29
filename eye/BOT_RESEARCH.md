@@ -547,8 +547,8 @@ output in `eye/research/lean_levels/`. No bot run.
 
 ### The H1 lean (lean_test.py) - 2,720 hourly window moments, 2025-10-08 .. 2026-10-27
 
-The lean computed as the bot does; the outcome: which comes first on M5 within 24 h, the close +X or -X,
-X = k x the median of the last 20 H1 ZigZag legs. **The median H1 ZigZag leg is 94 USD** (quartiles 78-112):
+The lean computed as the bot does; the outcome: which barrier an M5 bar's high or low touches first within 24 h,
+the moment's close +X or -X (a bar touching both, or neither touched: not counted), X = k x the median of the last 20 H1 ZigZag legs. **The median H1 ZigZag leg is 94 USD** (quartiles 78-112):
 an H1 pivot is a swing of days, so the lean reads a structure of days.
 
 | X | lean BUY: up first | lean SELL: down first | all moments: up first |
@@ -557,11 +557,12 @@ an H1 pivot is a swing of days, so the lean reads a structure of days.
 | 0.5 (~47 USD) | 0.505 (n 842) | 0.508 (n 959) | 0.489 |
 | 1.0 (~94 USD) | 0.557 (n 377) | 0.565 (n 418) | 0.471 |
 
-95 % noise is about +/- 0.03 at 0.25-0.5 and +/- 0.05 at 1.0. By month (X 0.5) the lean side came first 0.37
-to 0.67; October 2026 0.398 (n 128).
+The binomial +/- 0.03 (0.05 at 1.0) understates the noise: the moments are several a day with overlapping 24 h
+outcomes (Codex, review). The month is the sturdier unit: by month (X 0.5) the lean side came first 0.37 to 0.67,
+**above 0.5 in 6 of 13 months**; October 2026 0.398 (n 128).
 
-- **Measured:** for moves of the size traded (24-47 USD) the lean side comes first as often as a coin. Only for
-  moves of a whole H1 leg (~94 USD) is there an edge (about 0.56, +/- 0.05).
+- **Measured:** for moves of the size traded (24-47 USD) the lean side comes first about as often as not, and
+  in half the months less. For moves of a whole H1 leg (~94 USD) 0.56 - a possible edge, on overlapping samples.
 - **27/10** (`lean_day.py 2026-10-27`): lean SELL 00:00-18:00 Thai from `Hf` 4034.23 of **23/10 20:00** - a
   pair of pivots four days old; price had ranged 3975-4034 since. The H1 high of 27/10 00:00 (4029.83) was fixed
   only at 19:00, the low of 15:00 (3989.14) only at 04:00 the next day. The lean went BUY at 22:00, after price
@@ -581,9 +582,50 @@ width more to go), so only real against control means anything.
 | H1 | 0.658 (n 14,025) | 0.663 | 0.683 | 0.617 | 0.679 (n 14,889) |
 | H4 | 0.701 (n 5,118) | 0.693 | 0.688 | 0.732 | 0.733 (n 4,706) |
 
-- **Measured:** no pivot band - H1 or H4, one pivot or several - turns price more often than a band at the
-  middle of a leg. The H4 3+ pivot bands (0.732) equal their control (0.753 for 3+, 0.733 all).
+The control's own split by "pivots" counts pivots near a leg's midpoint - not comparable; each real group is
+compared with the control as a whole. **Correction (Codex, review):** an earlier version of this section said no
+group beat its control; on the raw counts the H1 2-pivot bands (0.683) are above the control (0.679 all; 0.644 for
+the control's 2-pivot split). The raw counts also repeat one band many times with overlapping outcomes, so the test
+below de-clusters and compares month by month.
+
+**De-clustered** (the first reach per group, day and direction) and **by month** (the group's turn rate minus the
+control's, each month):
+
+| | 1 pivot | 2 pivots | 3+ pivots | control |
+|---|---|---|---|---|
+| H1, turn rate (n) | 0.691 (408) | 0.703 (337) | 0.649 (208) | 0.685 (496) |
+| H1, minus control by month: mean, months above | +0.007, 6/13 | +0.017, 6/13 | -0.026, 4/13 | |
+| H4, turn rate (n) | 0.664 (214) | 0.669 (181) | 0.758 (99) | 0.734 (368) |
+| H4, minus control by month: mean, months above | -0.031, 4/13 | -0.078, 2/12 | +0.033, 4/8 | |
+
+- **Measured:** no tested band group turns price more than the control with any consistency - the best are above it
+  in half the months or fewer, by a mean of 0.03 or less against a month-to-month spread of 0.07-0.16.
 - Expectation against the result: expected 2+ pivot bands at 55-60 % against a control near 50 %; measured no
-  band above its control.
-- **What it means for rule 8 [Claude's reading]:** the bands that cap the target are levels price does not
-  respect more than any other price, so the "band" step of the ladder cuts targets on no evidence.
+  group consistently above the control.
+- **What it means for rule 8 [Claude's reading]:** none of the tested band definitions (H1 / H4 pivots, rule 8's
+  width, by pivot count) is shown to be respected more than any other price; the "band" step cut targets on no
+  evidence. Other level definitions are not tested here.
+
+### Next - other readings of the H1 lean (the plan and the expectation, written before the run)
+
+The owner keeps H1 as the lean (METHOD 2e: the larger timeframe is never ignored); the reading of rule 1 showed no
+edge. Each candidate below is a reading of the **closed H1 bars** at the moment [Claude], measured exactly as above
+(`lean_test.py`: the same 2,720 moments, the same outcome, k 0.25 and 0.5; a moment with neither barrier
+touched, or both on one bar, is not counted). Every candidate reads the same closed H1 frame the bot cuts:
+
+| candidate | BUY lean when (SELL the mirror; otherwise no lean) |
+|---|---|
+| A - rule 1 as written | the baseline above |
+| B - rule 1 on a faster ZigZag | rule 1 on H1 pivots of ZigZag depth 5 (deviation 5, backstep 3) |
+| C - EMA | the last H1 close above EMA(50) of H1 closes, and that EMA higher than 5 bars before (`app.indicators.trend.ema`) |
+| D - the last day | the last H1 close above the close 24 H1 bars before by more than ATR(14) of H1 (`app.indicators.volatility.atr`) |
+
+**Passes** if, at k 0.25 and at k 0.5: the lean side comes first at least 0.55 of the counted moments on each
+side (BUY and SELL), with at least 300 counted moments on each side; at least 0.53 on each side in each half of the
+year (2025-10..2026-03 and 2026-04..2026-10), with at least 100 on each side in each half; and above 0.5 in at least
+9 of the 13 months (both sides together). The best of those passing (the highest lean-side-first rate at k 0.25, BUY and
+SELL counted moments pooled) is brought to the owner for
+rule 1. **If none passes**, that is brought to the owner: what replaces the lean is the owner's to say.
+
+**Expectation (not a result):** none passes. B a little above A (0.51-0.53, faster pivots but the same idea); C and D 0.49-0.53 -
+gold's moves of 24-47 USD inside a day turn as often as they run on.
