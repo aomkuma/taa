@@ -225,7 +225,7 @@ deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the
 
 | | |
 |---|---|
-| **The owner's Fibonacci, asked and not answered:** the stop for the 38 / 23 % entries (below 0 %?), the sideways drawing and its "around 100 %" target, and how trend vs sideways is read (and on which timeframe). *Answered 10-29: "3-5 peaks" = legs, both sides (the owner). Researched 10-29 on M5 and M15 at the owner's word ("go by the facts on the timeframe we trade"): 100 % depends on the entry - 61.8 % with the high the fall began from, 23.6 % with the latest high; 38.2 % open (BOT_RESEARCH)* | METHOD 2e, "The owner's Fibonacci" |
+| **The owner's Fibonacci, asked and not answered:** the stop for the 38 / 23 % entries (below 0 %?), the sideways drawing and its "around 100 %" target, and how trend vs sideways is read (and on which timeframe). *Answered 10-29: "3-5 peaks" = legs, both sides (the owner). Researched 10-29 on M5 and M15 at the owner's word ("go by the facts on the timeframe we trade"): after the research fill-bug fix, 100 % = the high the fall began from (clearly at 61.8 %); entering before the line holds only at 38.2 % on M5 (BOT_RESEARCH, "Correction"). Open for the owner: the M1 example's leg is a continuation, not R18's counter-move* | METHOD 2e, "The owner's Fibonacci" |
 | **H1 side `strict` or `lows`**, and whether 3R is wanted where 2R is reachable | `eye/BOT_SPEC.md` |
 | **The September check** - a variant that wins October is run once, unchanged, on September | `eye/BOT_RESEARCH.md` ground rules |
 | **MACD and RSI not yet checked against MT5**, nor ZigZag on M5 and H1 | `eye/walk.py` |

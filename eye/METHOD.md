@@ -328,9 +328,10 @@ sides, for the Fibo path (R18; 2e's zone count is unchanged until the owner says
 up, each high higher than the one before, into the top.**
 **Researched by Claude at the owner's request** (*"research it and find me the answer"*) - which high is
 100 % when the fall into the low has several highs. The owner then: *"go by the facts that match
-how gold actually runs on the timeframe we trade."* **Measured on M5 and M15 (BOT_RESEARCH): it depends on
-the entry - the 61.8 % entry with the high the fall began from, the 23.6 % entry with the latest high
-before the low; 38.2 % no consistent winner.** The first summary below (three years of M15 only) is kept as
+how gold actually runs on the timeframe we trade."* **After the research script's fill bug was fixed (BOT_RESEARCH,
+"Correction - the fill bug"): the high the fall began from - clearly at the 61.8 % entry, ahead on M5, on
+M15 and in both halves; at 23.6 % and 38.2 % neither is reliably better.** (The "it depends on the depth"
+reading written first came from the buggy run and is withdrawn.) The first summary below (three years of M15 only) is kept as
 measured.
 *First summary:* the
 high the fall began from (for a sell, the low the rise began from). Three years of M15, both sides: ahead

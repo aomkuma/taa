@@ -197,6 +197,8 @@ report.
 
 ## Which high is 100 % - research asked by the owner (2026-10-29)
 
+**NUMBERS IN THIS SECTION ARE SUPERSEDED** - measured with a fill bug in `eye/research/fib_high.py`; the corrected numbers are in "Correction - the fill bug" below.
+
 The owner, asked whether 100 % is the latest high before the low or the high the fall started from: *"research
 it and find me the answer."* Two definitions, both sides (a sell is the mirror: which low is 100 % under a
 rise of 3-5 higher highs):
@@ -243,6 +245,8 @@ session filter; the best row is picked after looking at 5 pairs on the same data
 default, not proof the setup pays.
 
 ### On the timeframes we trade (2026-10-29) - the owner: *"go by the facts that match how gold actually runs on the timeframe we trade"*
+
+**NUMBERS IN THIS SECTION ARE SUPERSEDED** - measured with a fill bug in `eye/research/fib_high.py`; the corrected numbers are in "Correction - the fill bug" below.
 
 *No expectation was written before these two runs - a slip against the house rule; the numbers below are
 read as they came.* Same script, the last year (2025-10-06 .. 2026-10-28; M5 is stored only from 2025-10),
@@ -297,6 +301,8 @@ owner (a limit resting at the level, or waiting in the zone for a turn on a smal
 
 ## Entering before the line, with a tight stop - the owner's idea (2026-10-29)
 
+**NUMBERS IN THIS SECTION ARE SUPERSEDED** - measured with a fill bug in `eye/research/fib_high.py`; the corrected numbers are in "Correction - the fill bug" below.
+
 The owner: *"I actually see this picture often - I forgot to say. Can you find a moment to get in before the
 price I meant, with a narrower stop - say just beyond the line I meant?"*
 
@@ -340,3 +346,65 @@ right.
 a Fibo of the fall 4050.2 -> 4037.0 with price back at the 50 % line: Claude's reading, to confirm - the
 intended line is 38.2 % (4045.3), the sell is taken about 12 % of the leg early (4043), the stop about 0.7
 USD beyond the line (4046): risk 3 USD. That is the `+10 % early, stop just beyond the line` row.
+
+## Correction - the fill bug in the research script (2026-10-29)
+
+**Found by Sonnet's review (confirmed by Haiku and Codex, and by Claude in the code):** `fib_high.py`
+withdrew an order when the bar that reached the entry also reached the stop. For a buy limit below price
+every bar that reaches the stop passes the entry first - so those were fills that lost, and the script
+dropped them. It hid losers, most of all with the tight stops of the early entry. (The bot is not affected:
+its `score.py` counts the same bar as a fill.) Fixed; every table rerun. All hours, no H1 or window filter,
+both sides, 3-5 lows into the extreme, target 161 % unless said; R a trade (trades).
+
+**Which high is 100 %, corrected** (`latest` / `start`):
+
+| entry | target | M5, last year | M15, last year | M15, 3 years | M15 2023-09 .. 2025-03 | M15 2025-04 .. 2026-10 |
+|---|---|---|---|---|---|---|
+| 23.6 % | 127 % | +0.051 (482) / +0.001 (490) | **+0.053** (160) / -0.181 (171) | -0.147 / -0.136 | -0.293 / **-0.123** | **-0.023** / -0.144 |
+| 23.6 % | 161 % | -0.002 (513) / -0.004 (503) | **+0.149** (175) / -0.245 (174) | -0.140 / -0.153 | -0.327 / **-0.112** | **+0.024** / -0.186 |
+| 38.2 % | 127 % | -0.067 / -0.043 | -0.031 / -0.083 | -0.087 / **+0.010** | -0.193 / **+0.086** | -0.038 / -0.043 |
+| 38.2 % | 161 % | -0.052 / +0.012 | -0.109 / -0.174 | -0.144 / **+0.011** | -0.296 / **+0.102** | -0.030 / -0.062 |
+| 61.8 % | 161 % | +0.058 (268) / **+0.313** (149) | -0.207 (109) / **+0.013** (52) | +0.067 (290) / **+0.204** (164) | +0.053 / **+0.145** (81) | +0.063 / **+0.262** (83) |
+
+**What survives (Claude's reading):** the one result that holds everywhere is the owner's strong-bull
+entry - **61.8 %, stop beyond 23.6 %, target 161 %, with 100 % at the high the fall began from: ahead of the
+latest high on M5, on M15 this year, over three years and in both halves** (+0.15 / +0.26 R a trade on M15
+by half, +0.31 on M5; 52-164 trades). At 23.6 % and 38.2 % neither high is reliably better - the M15 halves
+point opposite ways - and most of those rows lose. **The "it depends on the depth" reading of 10-29 does
+not survive** (it rested on one year); the simpler rule - 100 % at the high the fall began from - is never
+clearly worse where anything pays.
+
+**Entering before the line, corrected** (stop 0.5 USD beyond the line; "at the line" with the owner's stop):
+
+| line, 100 % | M5 at the line | M5 +5 % | M5 +10 % | M5 +15 % | M15 at the line | M15 +5 % | M15 +10 % |
+|---|---|---|---|---|---|---|---|
+| 23.6 %, latest | -0.002 (513) | -0.228 (372) | +0.026 (360) | -0.030 (343) | +0.149 (175) | -0.556 (126) | -0.535 (123) |
+| 38.2 %, latest | -0.052 (473) | +0.062 (235) | -0.113 (228) | -0.027 (221) | -0.109 (160) | +0.127 (86) | -0.275 (86) |
+| 38.2 %, start | +0.012 (416) | +0.278 (119) | **+0.406** (114) | +0.313 (103) | -0.174 (145) | +0.303 (47) | -0.196 (41) |
+| 61.8 %, start | **+0.313** (149) | -0.081 (43) | -0.221 (40) | -0.222 (36) | +0.013 (52) | +0.041 (15) | -0.281 (12) |
+
+**What survives:** most of the early-entry gain was the bug. **One family holds on M5: the 38.2 % line of
+the whole fall, entered 5-15 % early with the stop just beyond it - +0.28 / +0.41 / +0.31 R a trade on
+103-119 trades** (7.6-18.4 % won); on M15 the same rows swing (+0.30 at +5 %, -0.20 at +10 %, 41-47
+trades). Early entry at 23.6 % and 61.8 % does not pay. **The best at-the-line result is still 61.8 % /
+start (+0.31 R on M5).** The 0.5 USD stop does not beat the 3 % stop on every line (at 61.8 % the 3 % stop is
+better). These rows were chosen after looking, on the same year.
+
+**Other corrections from the same reviews:**
+- "38.2 % on M5: 46 orders, -0.08 R a trade" (filled vs not filled) - that figure is every order taken at
+  the market price (`at_decision_r` of all 46), not the sum of the two rows of that table.
+- The owner's M1 example: 0 % at the high 4050.2, 100 % at the low 4037.0 - the 38.2 % line is **4045.16**
+  and the sell at 4043 is about **16 %** of the leg early, not 12 %. **Its leg is also not R18's**: it is
+  drawn on the fall in the trade's direction (sell after the fall, target 161.8 % below its low, 4029) - a
+  continuation, while R18 (the 27/10 buy) draws the counter-move that just ended. **Asked of the owner.**
+- The count: the scripts count 3-5 lows (each lower) into the extreme - three lows are three legs down, as
+  on 27/10 (4000.00, 3997.23, 3989.14). Codex read it as 2-4 transitions; Claude keeps lows = legs.
+- The 2R floor uses the net reward over the gross stop distance (as the bot does); a stop costs a little
+  more than 1 R. Order lifetime: 96 bars (8 h on M5, 24 h on M15). Stops that gap are scored at the stop.
+- The bot's October runs are unaffected by the bug; they used `fib_high` = latest for 23.6 % on the
+  strength of the uncorrected table - that mapping is withdrawn.
+
+**Multi-order runs (bot, October, `max_orders` 10, Sonnet's):** more live orders did not help - R fell in 5
+of 8 pairs; at most 2-5 orders live at once. M5 38.2 %: 37 fills, -18.07 R, **200 -> -3.93 USD** (the runner
+ignores margin); M5 23.6 % latest: 27 fills, +3.06 R, 252.09 USD (against +7.61 R, 293.10 with one order);
+M5 61.8 % start: 29 fills, +0.84 R, 161.60 USD. Not reviewed yet.

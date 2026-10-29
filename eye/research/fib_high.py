@@ -106,11 +106,15 @@ def trades(
             continue
         filled = None
         for b in range(armed, min(armed + FILL_BARS, len(df))):
-            if lo[b] <= stop or hi[b] >= target:
-                break  # the idea failed or ran without us
+            # A resting buy limit below price: any bar reaching the stop passes the entry first, so a bar that
+            # touches the entry is a fill even if it also reaches the stop (scored a loss from that bar on, as
+            # score.py does). Only a target on an earlier bar withdraws the order. (Fixed 2026-10-29: the
+            # first version dropped those bars as "failed", hiding losers - Sonnet's review.)
             if lo[b] <= entry:
                 filled = b
                 break
+            if hi[b] >= target:
+                break  # ran without us
         if filled is None:
             continue
         res = None
