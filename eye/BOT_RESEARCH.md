@@ -267,3 +267,30 @@ fall are close to the same price - both say "the fall's last push is being retes
 The best rows on the timeframes we trade, this year: **M5 61.8 % / 161 % `start` +0.32 R (148 trades)** and
 **M15 23.6 % / 161 % `latest` +0.23 R (164)**. Limits as above: all hours, no H1 or window filter, one year
 on M5, rows picked after looking.
+
+**One order at a time, or several (2026-10-29).** The bot holds one order at a time (`[Claude]`, from the
+first spec). October's log: on M5 it blocked setups on 838 bars - the largest gate - against 25 fills, where
+the research script (all hours, no limit) finds about 38 trades a month on M5. Asked whether to run a variant
+holding several orders at once, the owner: *"yes - to find the best entry, right?"* `max_orders` (default 1)
+is added for research; how many to hold live is a risk decision left to the owner.
+
+### Filled against not filled (2026-10-29) - the owner's reading
+
+The owner, on the M5 38.2 % run (46 orders, 25 filled): *"so if you get in before the price reaches the
+level, price has a chance to go on; if you get in when it reaches the line you set, price has a chance to
+keep running that way until the stop."* Measured on the October ledgers (M5, `any` side):
+
+| variant | filled: won, R | not filled, taken at the market price at the decision: won, R |
+|---|---|---|
+| 38.2 % | 4 of 25, -9.83 | 17 of 21, +9.79 |
+| 23.6 %, latest high | 4 of 17, +7.61 | 21 of 29, +13.89 |
+| 61.8 %, start high | 8 of 24, +2.64 | 9 of 11, +4.84 |
+| 61.8 %, start high, `entry` side | 6 of 15, +4.86 | 11 of 14, +5.72 |
+
+**Claude's reading:** the pattern holds in all four, but **part of it is by construction** - a limit that
+does not fill is one price ran away from, in the planned direction, and that is known only afterwards.
+Taking every order at the market instead does not pay on its own (38.2 % on M5: 46 orders, -0.08 R a
+trade). What the numbers do support: a pullback that reaches a deep line is often the leg going on, and the
+variants that paid are the ones whose entry sits nearest the bounce (61.8 % of the whole fall, 23.6 % of the
+last leg). Still missing: a sign, readable **before** the entry, of which pullbacks will turn - asked of the
+owner (a limit resting at the level, or waiting in the zone for a turn on a smaller timeframe).
