@@ -457,3 +457,15 @@ withdrawn `latest` mapping and is not the winner.)
 research script (all hours, one year of M5) put this entry at about +0.31 R a trade over 149 trades, so I
 expect September to be positive but smaller - **8-20 fills, +0 to +0.3 R a fill** - and I would not be
 surprised by a small loss: one month of 10-20 trades swings by more than 1 R a trade.
+
+**Result (2026-10-29, after the bot code was committed at 87015cc - full suite 4094 passed):**
+September 2026, the October winner unchanged: **28 orders, 8 filled, 1 won, 7 lost, -4.61 R, 200 -> 147.85
+USD**, deepest fall 110.72 USD. The fills: six BUYs (04/09, 10/09, 21/09, 22/09, 24/09, 25/09) all stopped
+while gold fell from about 4,480 to 4,280; one SELL stopped (15/09); one SELL won +2.53 R (25/09 21:00).
+Stops 11.6-23.2 USD.
+
+**Against the expectation:** 8-20 fills, 0 to +0.3 R a fill expected - 8 fills, **-0.58 R a fill**: outside
+it, on the losing side. **The October result did not hold in September.** By the ground rule written before
+round 1, that means **no variant has passed; the setup is not an edge as built.** Claude's reading of the
+fills, not measured: September was a falling month and six of the seven losers were buys at bottoms of the
+M5 legs - the side from the entry timeframe (`entry`) took reversals against the larger fall.
