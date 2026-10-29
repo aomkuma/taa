@@ -2,16 +2,15 @@
 
 Last updated **2026-10-29 Thai** (read with `Get-Date`). The owner's setup is written down in full
 (`eye/METHOD.md` 2e) and a bot applies it (`eye/bot2e.py`). Under the owner's rules it made **no trade in
-October 2026**. **Now: the owner's Fibonacci on the owner's leg** (METHOD 2e, `eye/BOT_SPEC.md` revision 6, R18; code at
-87015cc, reviewed twice by Codex, full suite green). The October winner (M5, 61.8 %, `fib_side = entry`)
-**failed September**: 8 fills, 1 won, -4.61 R, 200 -> 147.85 USD - its buys went against the H1 side the bot
-itself read (Codex: not a code bug; the variant dropped the owner's H1 rule). **The owner's rule: the larger
-timeframe's trend is never ignored** - only `fib_side = h1` may be used. October with the H1 side, 61.8 %:
-+3.27 / +3.50 R (7 / 10 fills). **No test or research run until the code is confirmed correct** (the owner):
-the side options that break the rule are removed (uncommitted until the suite runs); each October trade was
-drawn and judged (`eye/trades/`): one of 14 kept every rule. **Next: BOT_SPEC revision 7** (R19 a leg that has
-run is over; R20 the reach of rule 7 - since made scale-free, a share of the leg, the 4 USD being the owner's example; `fib_stop` and `fib_level` run both ways) - Sonnet implements,
-Codex reviews, the trades are redrawn and judged again; then the real run. Walking by hand
+October 2026**. **Now (2026-10-29 evening):** the bot's rules in force are **`eye/BOT_RULES.md`** - consolidated from the
+history and reviewed over seven rounds (Codex, fresh Sonnet, fresh Haiku each round) until no review found a
+blocker. The owner's answers today are in it: H1 is the lean and M5 the trend; no chasing and trades in a range;
+the Fibo target ladder (161.8 / 127 / before a major band); the reach as a share of the leg (the 4 USD was an
+example); the 0.618 stop beyond 23 %; two lows as the M for now; the entry level = the one that works best.
+**A Sonnet developer is building the code from BOT_RULES.md**; next, Codex reviews the code (again after every fix),
+the full suite, commit; then - with the owner's word - the real run, every trade drawn and judged. The owner's
+development process is in CLAUDE.md ("How the system is developed"). September's failure and the H1-side trace
+are in `eye/BOT_RESEARCH.md`. Walking by hand
 resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
