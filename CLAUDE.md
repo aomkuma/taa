@@ -9,7 +9,8 @@ Guidance for Claude Code (claude.ai/code) working in this repository.
 - **`docs/START_HERE.md`** - what this repository is now, what we are doing, and the one number everything
   is judged against.
 - **`docs/HOUSE_RULES.md`** - how to work here. Every rule in it was paid for with a real mistake.
-- **`eye/BOT_SPEC.md`**, **`eye/BOT_RESEARCH.md`** - the bot that applies the owner's setup, and every
+- **`eye/BOT_RULES.md`** - the bot's rules in force (build from this). **`eye/BOT_SPEC.md`** (how each rule
+  came to be) and **`eye/BOT_RESEARCH.md`** - the bot's history, and every
   research run on it with its result (`eye/research/<variant>/` holds each run's ledger and log).
 - **`eye/METHOD.md`**, **`eye/TRIED.md`**, **`eye/LESSONS.md`** - the live work: trading gold by eye, what
   has been tried and whether it worked, and what the ledger supports.

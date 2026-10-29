@@ -1,4 +1,7 @@
-# Bot 2e - specification
+# Bot 2e - specification (the history)
+
+> **The rules in force are in `eye/BOT_RULES.md`.** This file is the record of how each rule came to be -
+> every revision, including the ones withdrawn. Read it to know why; build from `BOT_RULES.md`.
 
 Written by Claude on 2026-10-28 from `eye/METHOD.md` section 2e, at the owner's word: *"write the code and
 let a bot do the work - correct, with every condition"*; and the division of the work: a Sonnet agent writes

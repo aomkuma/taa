@@ -295,58 +295,29 @@ The target came **4 h 25 min after the entry** - held, as the owner holds, it is
 
 ### The owner's Fibonacci (2026-10-29)
 
-The owner, volunteered unasked, in their words: *"Have you ever measured with Fibo? I like to use it.
-Sideways: enter at the edge, around 88 % - 127 %. Up trend: draw the Fibo with the ZigZag alongside - 0 % at
-the previous lowest price, 100 % at the previous highest price - then wait for it to fall back to around
-38 - 23 %; if the bulls are really strong, maybe enter from the pullback to 61 %. The SL is beyond 88 % - 0 %.
-Down trend: the reverse of the up trend."*
+The owner's words, volunteered: *"Have you ever measured with Fibo? I like to use it. Sideways: enter at the
+edge, around 88 % - 127 %. Up trend: draw the Fibo with the ZigZag alongside - 0 % at the previous lowest
+price, 100 % at the previous highest price - then wait for it to fall back to around 38 - 23 %; if the bulls
+are really strong, maybe enter from the pullback to 61 %. The SL is beyond 88 % - 0 %. Down trend: the reverse
+of the up trend."*
 
-The target, the owner (the same evening): **target: in a trend the 127 - 161 % extension;
-sideways around 100 % - read by Claude as the range's other edge.**
-The owner on whether the count / M-W / divergence is still needed with the Fibo: *"try both, counting and
-not counting."*
+**The owner's rules for it** (each in the owner's words where quoted; the bot's form of every rule is in
+`eye/BOT_RULES.md`):
 
-The stop when entering at 61.8 %, the owner: *"beyond 23 %."*
+| | the rule |
+|---|---|
+| **The drawing** | *"To play an up move, draw high -> low; to play a down move, draw low -> high"* - 0 % at the low, 100 % at the high for a buy |
+| **The entry** | the pullback to around 38 - 23 %; from 61 % *"if the bulls are really strong"*; **before the line rather than at it** - a pullback that reaches the line tends to go through it |
+| **The stop** | beyond 0 % (*"beyond 88 % - 0 %"*); for the 61 % entry *"beyond 23 %"* |
+| **The target** | the extension - 127 - 161 % in a trend; **the take-profit placed is the one price can reach** |
+| **The count** | try it both ways - with and without; counted as **legs, both sides**: 3-5 lower lows into a bottom (buy), 3-5 higher highs into a top (sell) |
+| **Sideways** | enter at the edge around 88 - 127 %, the target around 100 % (the other edge) |
+| **The side** | H1 gives the lean, M5 measures the trend; never against a clear lean (the 2e side row) |
+| **Examples** | a question or a chart the owner shows is information, never a rule; a number in an example is not a rule |
 
-The owner on what will be hard (the same evening): *"the problem I can see coming is reading whether it is a
-trend or sideways - but never mind, try it first."*
-
-**Which leg is drawn - the owner, 2026-10-29:** *"to play an up move, draw high -> low; to play a down
-move, draw low -> high."* *(Claude's reading,
-for the owner to correct: the Fibo is drawn on the counter-move that has just ended - for a buy, the fall
-into the low (a sell: the rise into the top) - not on the finished leg in the trade's direction; the entry is the pullback after the bounce
-from that low, the target the extension beyond the high. On those charts, by Claude's measurement: the
-fall from 4025 to 3989 in three legs, the bounce, the pullback, the run through the high to 161.8-200 %.
-Claude had coded the other leg in revision 5.)*
-
-**Answered:** the drawing direction - 0 % at the low, 100 % at the high, high -> low to play an up move.
-**The count (the owner, 2026-10-29):** "3 to 5 peaks" is counted as **legs**, and the framework is always
-stated for both sides - for the Fibo path (R18; 2e's zone count is unchanged until the owner says): **for a buy, 3-5 legs down, each low lower than the one before, into the bottom; for a sell, 3-5 legs
-up, each high higher than the one before, into the top.**
-**Researched by Claude at the owner's request** (*"research it and find me the answer"*) - which high is
-100 % when the fall into the low has several highs. The owner then: *"go by the facts that match
-how gold actually runs on the timeframe we trade."* **After the research script's fill bug was fixed (BOT_RESEARCH,
-"Correction - the fill bug"): the high the fall began from - clearly at the 61.8 % entry, ahead on M5, on
-M15 and in both halves; at 23.6 % and 38.2 % neither is reliably better.** (The "it depends on the depth"
-reading written first came from the buggy run and is withdrawn.) *Superseded first summary (from the buggy run, kept as
-measured):* the
-high the fall began from (for a sell, the low the rise began from). Three years of M15, both sides: ahead
-in 3 of 5 entry / target pairs (the latest high ahead at the 23.6 % entry, where both lose); at the 61.8 %
-entry with the 161 % target ahead in both halves (+0.19 / +0.28 R a trade against +0.10 / +0.08). One
-timeframe, all hours, no H1 or window filter - a guide, not proof (`eye/BOT_RESEARCH.md`, "Which high is
-100 %").
-
-**Examples are information, not rules - the owner, 2026-10-29:** *"Do not take what I ask, or what I show as an example, and decide it must be a rule - treat it as supporting information, understand? Because how to draw the Fibo we have already discussed."* The drawing is the one answered above (to play an up move, high -> low; a down move, low -> high). The 29/10 M1 sell (4043 / 4046 / 4029) is supporting information only; Claude's "two plays" reading built on it was withdrawn the same day (`eye/BOT_RESEARCH.md`).
-
-**Claude's readings in use where the owner gave no rule - each run as a variant (`eye/BOT_SPEC.md`
-revisions 5-6), every one marked `[Claude]`:**
-- the depth: "falls to 38 - 23 %" read as price 23-38 % of the leg above the low - is that the reading?
-- the stop "beyond 88 % - 0 %" for the 38 / 23 % entries: below the 0 % (the low)?
-
-- sideways 88 % - 127 %: drawn across the range from one edge to the other, 127 % a push past the edge? And
-  is "around 100 %" for the target the range's other edge?
-- trend or sideways: which reading of the chart decides it (the owner's own concern above), and on which
-  timeframe (the owner's question above).
+The owner foresaw the hard part: reading whether the market is trending or sideways. Which high is 100 %
+when a fall has several highs was researched at the owner's request: the high the fall began from
+(`eye/BOT_RESEARCH.md`, "Correction - the fill bug").
 
 ### The bot (2026-10-28)
 

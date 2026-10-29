@@ -28,7 +28,7 @@ archived that day, and the rebuilding is deliberately small.
 | The nine trading rules | the bottom of `eye/METHOD.md` - 2e replaces rules 4 and 9; the rest stand |
 | The weaknesses found, and what was fixed | `eye/RULES_REVIEW.md` (sections 1-3 the rules, 5-6 the 2e review) |
 | Every method tried, with a verdict | `eye/TRIED.md` - row 18 the owner's setup, 19 the bot, 20 the removed M1 entry, 21 the owner's Fibonacci |
-| **The bot** - its rules, and every research run with its result | `eye/BOT_SPEC.md` (revisions 1-6), `eye/BOT_RESEARCH.md`, `eye/bot_research.py`; each run's ledger and log in `eye/research/<variant>/` (not committed; `summary.csv` is) |
+| **The bot** - its rules, and every research run with its result | **`eye/BOT_RULES.md` (the rules in force)**, `eye/BOT_SPEC.md` (the history, revisions 1-9), `eye/BOT_RESEARCH.md`, `eye/bot_research.py`; each run's ledger and log in `eye/research/<variant>/` (not committed; `summary.csv` is) |
 | What the trades support | `eye/LESSONS.md` |
 | Every reading, written before the reveal | `eye/SHEETS.md` |
 | The trades | `eye/ledger.csv`, `eye/ledger_control.csv` |
