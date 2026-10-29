@@ -629,3 +629,24 @@ rule 1. **If none passes**, that is brought to the owner: what replaces the lean
 
 **Expectation (not a result):** none passes. B a little above A (0.51-0.53, faster pivots but the same idea); C and D 0.49-0.53 -
 gold's moves of 24-47 USD inside a day turn as often as they run on.
+
+### Other readings of the H1 lean - the result (lean_cands.py, 2026-10-29)
+
+The plan above, run as written (`eye/research/lean_cands.py`; `lean_levels/lean_cands_summary.txt`). Candidate A
+reproduces `lean_test.py` exactly (0.487 / 0.506 at k 0.25), so the four are measured alike.
+
+| candidate | with a lean | k 0.25: pooled (BUY / SELL) | k 0.5: pooled (BUY / SELL) | months above 0.5 (k 0.25 / 0.5) | passes |
+|---|---|---|---|---|---|
+| A - rule 1 | 0.83 | 0.497 (0.487 / 0.506) | 0.506 (0.505 / 0.508) | 4 / 6 of 13 | no |
+| B - ZigZag depth 5 | 0.85 | 0.520 (0.502 / 0.537) | 0.510 (0.497 / 0.522) | 7 / 8 | no |
+| C - EMA(50) | 0.91 | 0.517 (0.501 / 0.534) | 0.520 (0.517 / 0.523) | 6 / 7 | no |
+| D - the last 24 h | 0.74 | 0.517 (0.506 / 0.530) | 0.507 (0.506 / 0.509) | 8 / 6 | no |
+
+n per side 772-1,251. In every candidate the BUY lean came first 0.53-0.58 in the first half of the year and
+0.42-0.48 in the second: the reading follows whichever way the half-year drifted, not the next move.
+
+- **Measured:** none passes - no reading of the closed H1 bars tested here tells the side of the next 24-47 USD
+  move better than 0.52 pooled, against a bar of 0.55.
+- Expectation against the result: expected none to pass, B at 0.51-0.53 (0.520 / 0.510) and C, D at 0.49-0.53
+  (0.517-0.520 / 0.507-0.520) - as expected.
+- Brought to the owner: what replaces the lean is the owner's to say. Rule 1 stays as written until then.

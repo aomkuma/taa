@@ -1,0 +1,29 @@
+moments: 2720
+
+candidate A: share with a lean 0.83
+  k 0.25: pooled 0.497 (n 2237); BUY 0.487 (n 1068; halves 0.526/612, 0.434/456); SELL 0.506 (n 1169; halves 0.527/368, 0.496/801)
+         months above 0.5: 4/13
+  k 0.5: pooled 0.506 (n 1801); BUY 0.505 (n 842; halves 0.566/495, 0.418/347); SELL 0.508 (n 959; halves 0.519/289, 0.503/670)
+         months above 0.5: 6/13
+  PASSES: False
+
+candidate B: share with a lean 0.85
+  k 0.25: pooled 0.520 (n 2298); BUY 0.502 (n 1145; halves 0.548/586, 0.454/559); SELL 0.537 (n 1153; halves 0.530/451, 0.541/702)
+         months above 0.5: 7/13
+  k 0.5: pooled 0.510 (n 1856); BUY 0.497 (n 919; halves 0.573/468, 0.419/451); SELL 0.522 (n 937; halves 0.503/356, 0.534/581)
+         months above 0.5: 8/13
+  PASSES: False
+
+candidate C: share with a lean 0.91
+  k 0.25: pooled 0.517 (n 2435); BUY 0.501 (n 1251; halves 0.539/694, 0.454/557); SELL 0.534 (n 1184; halves 0.538/416, 0.531/768)
+         months above 0.5: 6/13
+  k 0.5: pooled 0.520 (n 1964); BUY 0.517 (n 990; halves 0.584/546, 0.435/444); SELL 0.523 (n 974; halves 0.500/340, 0.535/634)
+         months above 0.5: 7/13
+  PASSES: False
+
+candidate D: share with a lean 0.74
+  k 0.25: pooled 0.517 (n 1999); BUY 0.506 (n 1040; halves 0.534/549, 0.475/491); SELL 0.530 (n 959; halves 0.533/362, 0.528/597)
+         months above 0.5: 8/13
+  k 0.5: pooled 0.507 (n 1614); BUY 0.506 (n 842; halves 0.558/439, 0.449/403); SELL 0.509 (n 772; halves 0.526/302, 0.498/470)
+         months above 0.5: 6/13
+  PASSES: False
