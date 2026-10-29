@@ -14,7 +14,7 @@ side of the next 24-47 USD move** (best 0.52 against a bar of 0.55). **The bot r
 M5 swing - **Claude's misreading**; the owner: sideways is read on **H1**, the trend for the entry on M5, the trade from
 the H1 range's third leg to its fifth. **Rule 11 is rewritten** (BOT_RULES) and goes through the process: Codex reviews
 the documents, the developer builds it, Codex reviews the code, the full suite. **Open, with the owner:** what replaces
-the lean, and rule 11's leg 6 (the owner: be ready for a break through the edge - Claude's reading: no side, no edge target, to confirm) - in the discussion
+the lean, and rule 11 once built and measured - in the discussion
 of how the basic rules put the trades on the winning side of 50 % (judge by the trades, not by direction rates). The development process is in CLAUDE.md ("How the system is
 developed"). Walking by hand
 resumes at real day 5, 2026-04-08.
@@ -234,7 +234,7 @@ deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the
 | | |
 |---|---|
 | **What replaces the H1 lean** - no tested reading of H1 told the side; the bot with the lean off did no worse in October (21 fills, not judged) | `eye/BOT_RESEARCH.md`, the last sections; BOT_RULES rule 1 |
-| **Rule 11, the H1 range** - rewritten from the owner's answer (sideways on H1, trend on M5, legs 3-5); its target's principle is the owner's (the M5 target, the H1 edges as support / resistance / take-profit), the min / max formula Claude's; leg 6 on: the owner's "be ready for it to run through the edge", Claude's reading (no side, no edge target) to confirm; to build through the process | BOT_RULES rule 11; METHOD 2e "Sideways" |
+| **Rule 11, the H1 range** - rewritten from the owner's answer (sideways on H1, trend on M5, legs 3-5); its target's principle is the owner's (the M5 target, the H1 edges as support / resistance / take-profit), the min / max formula Claude's; leg 6 on: no side and no edge target (Claude's reading of the owner's "be ready for it to run through the edge", confirmed); to build through the process | BOT_RULES rule 11; METHOD 2e "Sideways" |
 | **The clean test is forward** - the stored months were used to choose; the months after 2026-10-28 as they arrive | BOT_RULES rule 15 |
 | **MACD and RSI not yet checked against MT5**, nor ZigZag on M5 and H1 | `eye/walk.py` |
 | **One reader.** Codex runs with the prompt piped on stdin (`codex.exe` ships with the VS Code extension, not on PATH: `~/.vscode/extensions/openai.chatgpt-*/bin/windows-x86_64/codex.exe`; `exec - --sandbox read-only`). It has reviewed documents twice, never a chart | `TRIED.md` row 14 |

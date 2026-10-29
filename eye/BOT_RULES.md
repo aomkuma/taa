@@ -241,7 +241,7 @@ read; off: rule 11 is not read at all - H1 is never classed sideways, no range s
   taken in legs `range_min_leg` (default **3**, the owner's *"from the third leg"*; variant 4) to **5** (the owner's
   *"the fourth and fifth"*).
 - **Leg 6 on** - the owner, 2026-10-29: *"at the sixth leg, be ready for it to run through the edge, which can be
-  where we make a big profit"*. [Claude's reading:] from leg 6 the range gives **no side and no edge target**: the
+  where we make a big profit"*. [Claude's reading, confirmed by the owner the same evening:] from leg 6 the range gives **no side and no edge target**: the
   legs of either side are taken on the M5 trend (rules 2-10; the lean is still not read - H1 is still sideways),
   with rule 8's extension as the target, so a move through the edge is not cut at it.
 - **The side**, in legs `range_min_leg` to 5 [Claude, from the owner's legs]: away from the latest pivot - latest
