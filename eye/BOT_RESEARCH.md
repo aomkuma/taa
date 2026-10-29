@@ -469,3 +469,42 @@ it, on the losing side. **The October result did not hold in September.** By the
 round 1, that means **no variant has passed; the setup is not an edge as built.** Claude's reading of the
 fills, not measured: September was a falling month and six of the seven losers were buys at bottoms of the
 M5 legs - the side from the entry timeframe (`entry`) took reversals against the larger fall.
+
+### The owner on September: the side was wrong (2026-10-29)
+
+The owner: *"the big trend was down and the trade bought - that alone is already wrong."* **The owner's rule
+from the start (METHOD 2e): the H1 trend gives the side.** The October winner used `fib_side = entry` - a
+Claude variant that drops the owner's H1 rule - and so did `any`. **Neither should have been a candidate:
+only variants that keep every owner rule may be chosen.** From here the Fibo runs keep `fib_side = h1`.
+
+**Next run, chosen before it (written 2026-10-29):** October, M5 (and one M15), `fib_side = h1` under both
+H1 readings (`lows`, `strict` - both Claude's readings of "the H1 trend"), entries 61.8 / 38.2 / 23.6 %,
+100 % at the start high, target 161.8 %, count off (one 61.8 % with the count on). The best on October is
+run on September once. **Caveat stated now:** September has already been seen once, so this second check is
+weaker than the first - its result is reported as such.
+
+**Claude's expectation:** keeping the H1 side cuts the trades to about half and removes most September-type
+losers; I expect the 61.8 % rows to stay positive on October with 5-12 fills, and do not know the sign on
+September.
+
+**Where the September buys came from - Claude's trace, confirmed by Codex (2026-10-29):** the code did what
+the variant said. With `fib_side = entry` the fib path evaluates both the BUY and the SELL view and never
+filters them by the H1 side it has just read (`eye/bot2e.py` ~869-930). At the six buys the H1 reading was:
+04/09 lows none / strict SELL; 10/09, 22/09, 24/09, 25/09 SELL / SELL; 21/09 BUY / BUY. So five of the six
+buys were against the H1 side the bot itself read. `h1_side()` matches its spec; the closed-bar cut is not
+involved. With `fib_side = h1` a BUY cannot be written while H1 says SELL. **Not a code bug - Claude's
+choice of a variant that drops the owner's rule.** `fib_side = entry` / `any` are comparison only from here,
+never candidates.
+
+**October with the owner's H1 side (the run chosen above):**
+
+| variant (M5 unless said) | orders | fills | won / lost | R | USD from 200 | deepest fall |
+|---|---:|---:|---:|---:|---:|---:|
+| 61.8 %, H1 lows | 14 | 10 | 4 / 6 | +3.50 | 254.42 | 43.52 |
+| 61.8 %, H1 strict | 9 | 7 | 3 / 4 | +3.27 | 265.09 | 26.29 |
+| 38.2 %, lows / strict | 18 / 12 | 10 / 8 | 1 / 9, 1 / 7 | -6.19 / -4.11 | 150.18 / 168.86 | |
+| 23.6 %, lows / strict | 19 / 13 | 10 / 8 | 1 / 9, 1 / 7 | -4.00 / -1.97 | 163.81 / 187.78 | |
+| 61.8 %, lows, count on | 1 | 0 | - | 0 | 200.00 | |
+| 61.8 %, strict, M15 | 6 | 1 | 0 / 1 | -1.01 | 150.46 | |
+
+Against the expectation: 61.8 % stayed positive with 7-10 fills - as expected.
