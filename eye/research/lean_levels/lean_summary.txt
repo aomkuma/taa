@@ -1,0 +1,34 @@
+moments: 2720  (2025-10-08 07:00 .. 2026-10-27 22:30)
+
+X = 0.25 x median H1 leg
+  all moments: UP first 0.478 (n 2686)
+  lean BUY : n 1068  UP first 0.487 +/- 0.030   lean side first 0.487
+  lean SELL: n 1169  UP first 0.494 +/- 0.029   lean side first 0.506
+  lean none: n  449  UP first 0.414 +/- 0.046   lean side first nan
+
+X = 0.5 x median H1 leg
+  all moments: UP first 0.489 (n 2159)
+  lean BUY : n  842  UP first 0.505 +/- 0.034   lean side first 0.505
+  lean SELL: n  959  UP first 0.492 +/- 0.032   lean side first 0.508
+  lean none: n  358  UP first 0.441 +/- 0.051   lean side first nan
+
+X = 1 x median H1 leg
+  all moments: UP first 0.471 (n 910)
+  lean BUY : n  377  UP first 0.557 +/- 0.050   lean side first 0.557
+  lean SELL: n  418  UP first 0.435 +/- 0.048   lean side first 0.565
+  lean none: n  115  UP first 0.322 +/- 0.085   lean side first nan
+
+by month, X = 0.5: lean side first (n)
+  2025-10: 0.594 (133)   no lean 0.19
+  2025-11: 0.593 (81)   no lean 0.23
+  2025-12: 0.538 (156)   no lean 0.20
+  2026-01: 0.667 (156)   no lean 0.07
+  2026-02: 0.407 (123)   no lean 0.24
+  2026-03: 0.481 (135)   no lean 0.22
+  2026-04: 0.452 (84)   no lean 0.30
+  2026-05: 0.373 (153)   no lean 0.14
+  2026-06: 0.515 (165)   no lean 0.17
+  2026-07: 0.493 (146)   no lean 0.20
+  2026-08: 0.558 (172)   no lean 0.08
+  2026-09: 0.491 (169)   no lean 0.04
+  2026-10: 0.398 (128)   no lean 0.11

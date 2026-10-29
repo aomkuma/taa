@@ -537,3 +537,53 @@ R falls under 2). **19/10** - with the swing stop beyond the higher low 4163.28 
 leg is from Friday 16-17/10 used on Monday 06:55; **26/10** likewise (Thursday 23/10 -> Monday). **Every
 remaining doubtful trade is a leg carried over a weekend** - the open "leg life" point. No other rule broken
 in the drawn trades.
+
+## The H1 lean and the major levels - tested (2026-10-29, the owner: *"find the answers by testing and proof"*)
+
+Two questions the built bot raised: its H1 lean refused the owner's 27/10 buy, and its rule-8 bands capped
+most targets below R 2 (almost no orders in October). The expectation was written before the runs:
+`eye/research/lean_levels/EXPECTATION.md`. Scripts: `eye/research/lean_test.py`, `band_test.py`, `lean_day.py`;
+output in `eye/research/lean_levels/`. No bot run.
+
+### The H1 lean (lean_test.py) - 2,720 hourly window moments, 2025-10-08 .. 2026-10-27
+
+The lean computed as the bot does; the outcome: which comes first on M5 within 24 h, the close +X or -X,
+X = k x the median of the last 20 H1 ZigZag legs. **The median H1 ZigZag leg is 94 USD** (quartiles 78-112):
+an H1 pivot is a swing of days, so the lean reads a structure of days.
+
+| X | lean BUY: up first | lean SELL: down first | all moments: up first |
+|---|---|---|---|
+| 0.25 (~24 USD) | 0.487 (n 1,068) | 0.506 (n 1,169) | 0.478 |
+| 0.5 (~47 USD) | 0.505 (n 842) | 0.508 (n 959) | 0.489 |
+| 1.0 (~94 USD) | 0.557 (n 377) | 0.565 (n 418) | 0.471 |
+
+95 % noise is about +/- 0.03 at 0.25-0.5 and +/- 0.05 at 1.0. By month (X 0.5) the lean side came first 0.37
+to 0.67; October 2026 0.398 (n 128).
+
+- **Measured:** for moves of the size traded (24-47 USD) the lean side comes first as often as a coin. Only for
+  moves of a whole H1 leg (~94 USD) is there an edge (about 0.56, +/- 0.05).
+- **27/10** (`lean_day.py 2026-10-27`): lean SELL 00:00-18:00 Thai from `Hf` 4034.23 of **23/10 20:00** - a
+  pair of pivots four days old; price had ranged 3975-4034 since. The H1 high of 27/10 00:00 (4029.83) was fixed
+  only at 19:00, the low of 15:00 (3989.14) only at 04:00 the next day. The lean went BUY at 22:00, after price
+  had risen from 3989 to 4052.
+- Expectation against the result: expected a 52-56 % edge at the traded sizes; measured none.
+
+### The levels (band_test.py) - 43,914 band reaches on M5, 2025-10 .. 2026-10
+
+Rule-8 bands (H1 or H4 fixed pivots, last 500 bars, >= 24 h old, +- 0.10 x the median of 20 legs - H1 half-width
+~9.5 USD, H4 ~17.6 USD). At every M5 reach of a band from outside: a turn (W = 2 x the half-width back beyond the
+near edge) or a break (W beyond the far edge), first within 24 h. The control: the same bands centred at the
+midpoints of the same legs. Turn rate = turn / (turn + break); the test favours turns (the break has the band's
+width more to go), so only real against control means anything.
+
+| | real, all | 1 pivot | 2 pivots | 3+ pivots | control, all |
+|---|---|---|---|---|---|
+| H1 | 0.658 (n 14,025) | 0.663 | 0.683 | 0.617 | 0.679 (n 14,889) |
+| H4 | 0.701 (n 5,118) | 0.693 | 0.688 | 0.732 | 0.733 (n 4,706) |
+
+- **Measured:** no pivot band - H1 or H4, one pivot or several - turns price more often than a band at the
+  middle of a leg. The H4 3+ pivot bands (0.732) equal their control (0.753 for 3+, 0.733 all).
+- Expectation against the result: expected 2+ pivot bands at 55-60 % against a control near 50 %; measured no
+  band above its control.
+- **What it means for rule 8 [Claude's reading]:** the bands that cap the target are levels price does not
+  respect more than any other price, so the "band" step of the ladder cuts targets on no evidence.

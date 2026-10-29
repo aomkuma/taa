@@ -1,0 +1,21 @@
+events: 43914  M5 2025-10-05 22:05:00+00:00 .. 2026-10-28 09:55:00+00:00
+
+H1: turn rate (turn / (turn + break)), n, +/- 95 %
+  real    all      : 0.658 n 14025 +/- 0.008
+  real    1 pivot  : 0.663 n  5766 +/- 0.012
+  real    2 pivots : 0.683 n  4775 +/- 0.013
+  real    3+ pivots: 0.617 n  3484 +/- 0.016
+  control all      : 0.679 n 14889 +/- 0.007
+  control 1 pivot  : 0.690 n  5158 +/- 0.013
+  control 2 pivots : 0.644 n  2994 +/- 0.017
+  control 3+ pivots: 0.688 n  1452 +/- 0.024
+
+H4: turn rate (turn / (turn + break)), n, +/- 95 %
+  real    all      : 0.701 n  5118 +/- 0.013
+  real    1 pivot  : 0.693 n  1844 +/- 0.021
+  real    2 pivots : 0.688 n  1962 +/- 0.021
+  real    3+ pivots: 0.732 n  1312 +/- 0.024
+  control all      : 0.733 n  4706 +/- 0.013
+  control 1 pivot  : 0.711 n  1337 +/- 0.024
+  control 2 pivots : 0.692 n   892 +/- 0.030
+  control 3+ pivots: 0.753 n   546 +/- 0.036
