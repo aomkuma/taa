@@ -12,8 +12,7 @@ owner to change. A question or a chart the owner shows, and any number inside on
 ## Words used
 
 - **Fixed pivot** - a pivot returned by `app.indicators.chart_read.zigzag_pivots` (MT5's ZigZag 12 / 5 / 3, owner)
-  run on the closed bars of a frame of the timeframe being read that starts **1,500 bars of that timeframe before
-  `now`** [Claude]; it is **known** from its
+  run on the last **1,500 closed bars present in the data** of the timeframe being read, up to `now` [Claude]; it is **known** from its
   `confirm_pos` bar (the opposite candidate's bar + `backstep`) - "fixed by `now`" means that bar has closed by
   `now`. A pivot's **time** is its pivot bar's open time (UTC in the data; Thai = Asia/Bangkok for reading).
 - **Setup timeframe** `fib_tf` [Claude] - M5 or M15, one per run; the leg (rule 2) and the range (rule 11) are read
@@ -44,7 +43,7 @@ decides between a BUY and a SELL candidate; rule 12 governs the order's life.
 | `fib_tf` | M5, M15 | M5 | [Claude] |
 | `fib_entry` | 0.618, 0.382, 0.236 | 0.618 (until the real run picks the best - rule 6) | owner's levels, [Claude] default |
 | `fib_early` | 0, 0.10 (x the leg) | 0 | [Claude], the owner's idea |
-| `fib_stop` | line, swing, line_tight | line (it matters at 0.618 only; at 0.382 / 0.236 the stop is `L0 - stop_buffer`) | [Claude] |
+| `fib_stop` | line, swing, line_tight | line (it matters at 0.618 only; at 0.382 / 0.236 the stop is `L0 - stop_buffer`) | line: owner (0.618 "beyond 23 %"); swing, line_tight: [Claude] |
 | `fib_count` | off, on | off | owner: "try both"; the default [Claude] |
 | `max_trend_legs` | 5, 3 | 5 | [Claude] |
 | `major_tf` | H4, H1 | H4 | [Claude] |
@@ -76,13 +75,16 @@ swing with an entry other than 0.618; `line_tight` without `fib_early`) is refus
 - **This path is the owner's Fibonacci** (METHOD 2e, "The owner's Fibonacci"): its entry (rule 6) and target (rule 8)
   take the place of 2e's break-and-retest entry (2e steps 3-5) and "at a level from the left" (2e steps 1-2), by the
   owner's later words *"price usually turns before a level; when it reaches the level it usually carries on"*
-  (METHOD 2e, "Levels and the turn"). The 2e setup stays in the code as `mode = 2e` - a record only. The owner's nine
-  rules no. 4 and no. 9 were replaced by 2e earlier (METHOD); no. 6 ("enter on a timeframe, exit on that timeframe")
-  holds - the stop and target are the setup's, M5 bars only time the touches.
+  (METHOD 2e, "Levels and the turn"). The 2e setup stays in the code as `mode = 2e` - a record only. METHOD's nine rules
+  were written for the walk by hand; on this path [Claude]: no. 4 and no. 9 were replaced by 2e; no. 1-3 (frames,
+  levels from the left, wait for a level) and no. 5 (the structure at the level) are replaced by rules 1-3, 6 and the
+  owner's "Levels and the turn"; no. 6 ("enter on a timeframe, exit on that timeframe") holds - the stop and target
+  are the setup's, M5 bars only time the touches; no. 7 is rule 9; no. 8 is rule 6's played-out test.
 
 ## 1. The H1 lean (owner: "H1 is the lean; the trend is measured on M5")
 
-[Claude, after the owner's "price below the latest high and making lower lows"], closed H1 bars, fixed H1 pivots,
+[Claude, after the owner's description as Claude restated it and the owner confirmed: price below the latest high
+and making lower lows], closed H1 bars, fixed H1 pivots,
 recomputed at every decision (not latched):
 - **SELL lean:** `Hf` = the latest fixed H1 HIGH, `Lp` = the latest fixed H1 LOW with a time before `Hf`'s. The last
   H1 close is strictly below `Hf`, **and** some H1 bar after `Hf`'s pivot bar has a low strictly below `Lp`. No `Lp` -
@@ -105,7 +107,8 @@ the high. On the setup timeframe's fixed pivots [Claude]:
   the top of the whole fall. The owner's words are "the previous highest price"; the research compared this with
   the high just before `L0` and chose the highest [Claude] (BOT_RESEARCH, `start`). None - no leg.
 - **Levels** `L0 + x * (H100 - L0)`; **the leg** = `H100 - L0`.
-- **Only the latest leg** is considered at a decision [Claude] - the `L0` above; an older leg is not.
+- **The latest leg of each side** is considered at a decision [Claude] - the latest `L0` (a BUY) and the latest top (a
+  SELL), each evaluated on its own; an older leg of the same side is not.
 - **One order per leg** [Claude]: key = side, setup timeframe, `L0` time, `H100` time; the leg is **used** once an order
   is written on it, whatever happens to that order. Until then, while it is still the latest leg, it is a candidate
   at every decision, with no age limit; refused once (by a rule, or because `max_orders` was full) it may pass
@@ -116,12 +119,13 @@ the high. On the setup timeframe's fixed pivots [Claude]:
 [Claude] On **M5** fixed pivots for M5 and M15 legs alike: a BUY needs `H100` strictly above the latest fixed M5 HIGH
 whose time is strictly before `H100`'s and which is fixed by `now` - the fall is a pullback in an M5 rise. None - no
 order on this leg. Then rule 1: refused under a SELL lean. *(This one comparison can hold in a broadening market that
-rule 11 calls "no trend"; rule 13 decides between them.)*
+rule 11 calls "no trend": the leg path goes first - rule 11 runs only if no leg order was written.)*
 
 ## 4. The pullback's count - a filter (owner: "try both, counting and not counting")
 
-`fib_count`: **off** (default) - any pullback run passes. **On** (owner: "3-5 peaks", counted as **legs, both sides**):
-the run has **3 to 5** lows - 1 low and 6 or more fail [Claude] - **and** divergence at `L0` against the previous low
+`fib_count`: **off** (default) - any pullback run passes. **On** (owner: "3-5 peaks", counted as **legs, both sides** -
+asked whether that means legs with lower lows, the owner said yes; so a leg here = one low of the run [Claude's
+rendering]): the run has **3 to 5** lows - 1 low and 6 or more fail [Claude] - **and** divergence at `L0` against the previous low
 of the run on at least one oscillator (owner: "one is enough") - [Claude's rendering]: MACD main or RSI at `L0`'s pivot
 bar higher than at the previous low's pivot bar, setup timeframe. **Or the owner's M** (owner: two peaks that make an M
 count; a clear M is entered without divergence): a run of exactly **2** lows passes without divergence - any two-low run is taken as the M
@@ -146,7 +150,8 @@ says a fifth leg is the trend ending, and buying its pullback is chasing.
   frozen before the forward test.** Until the real run: 0.618 (the research's best, [Claude]).
 - **Order price** = the level + `fib_early x leg` (above the level for a BUY) - `fib_early` [Claude, the owner's idea of
   getting in before the line]: 0 by default; variant 0.10 with `line_tight`, at the 0.382 level only.
-- **The bounce** [Claude]: an order is written only once an **M5** bar after `L0`'s pivot bar has a high strictly above
+- **The bounce** [Claude]: an order is written only once an **M5** bar after `L0`'s pivot bar (opening at or after the
+  pivot bar's close) has a high strictly above
   the order price, and only while the price is strictly above it - a **plain buy limit**. A touch of the order price
   after the bounce and before `now` does not stop it (no order was resting then).
 - **Played out** [Claude], checked after rules 7 and 8: on the **M5** bars from that first M5 bar above the order price
@@ -161,9 +166,9 @@ entry the stop is beyond 23 %** - the Fibonacci's specific words govern:
 - 0.382 / 0.236: `L0 - stop_buffer` (beyond the lowest bottom - both sentences hold).
 - 0.618, `fib_stop` **line**: the 23.6 % level - `stop_buffer` ("beyond 23 %"; above `L0`, so not beyond the lowest
   bottom).
-- 0.618, `fib_stop` **swing**: one `stop_buffer` below the lower of the 23.6 % level and the **lowest** fixed
+- 0.618, `fib_stop` **swing** [Claude, a variant]: one `stop_buffer` below the lower of the 23.6 % level and the **lowest** fixed
   setup-timeframe low formed after `L0` and fixed by `now`. No such low: the line stop.
-- `line_tight` (with `fib_early`): the 0.382 level - `stop_buffer`.
+- `line_tight` [Claude, a variant] (with `fib_early`): the 0.382 level - `stop_buffer`.
 
 ## 8. The target - the ladder
 
@@ -183,8 +188,9 @@ of the last `band_legs` absolute price moves between consecutive fixed pivots of
 (fewer than `band_legs` moves: the moves there are; fewer than 2 pivots: no bands); edges inclusive. **In the way:** a
 band whose near edge (the lower for a BUY) lies strictly above the order price and strictly below the **raw**
 extension tested (before `target_buffer`); a band the order price sits inside is ignored; "nearest" = the near edge closest to the order price.
-*Example (27/10, BUY, leg 3989.14 -> 4025.45 = 36.31, entry 0.382 = 4003.01, stop 3988.64): 1.618 = 4047.39; if no band
-lies above 4003.01 and below 4047.39, TP 4047.39, R = (4047.39 - 4003.01 - 0.30) / 14.37 = 3.07.*
+*Example (27/10, BUY, leg 3989.14 -> 4025.45 = 36.31, entry 0.382 = 4003.01, stop 3988.64): the raw 1.618 extension is
+4047.89; if no band lies above 4003.01 and below 4047.89, TP = 4047.89 - 0.50 = 4047.39, R = (4047.39 - 4003.01 -
+0.30) / 14.37 = 3.07.*
 
 ## 9. The entry must be reachable
 
@@ -194,8 +200,9 @@ most `max_entry_frac` x the leg (a range: its height). The owner's "4 USD" was a
 
 ## 10. A leg that has run is over
 
-The owner confirmed it (2026-10-29), from the drawn October trades. [Claude's test], one test for both uses: once any
-**M5** bar after `L0`'s pivot bar has a high **strictly above** `H100` (a touch at `H100` is not enough), no order on the
+The owner confirmed it (2026-10-29: *"confirm the two you said"* - this rule and rule 9's reach), from the drawn
+October trades. [Claude's test], one test for both uses: once any **M5** bar after `L0`'s pivot bar - an M5 bar whose
+open is at or after the pivot bar's close - has a high **strictly above** `H100` (a touch at `H100` is not enough), no order on the
 leg, ever, and a resting order on it is withdrawn (rule 12).
 
 ## 11. The range - the owner's sideways rule
@@ -227,17 +234,22 @@ not mirrored. `fib_range`: on in the real run [Claude].
 - **Fill**, on **M5** bars from the bar after the decision, within `order_life_bars` (the last included): a buy limit fills on the first bar whose
   low is at or below its price, at min(that bar's open, the price); a sell limit at max(open, price). Not filled after
   the last of them: **expired** (`no fill`); it frees `max_orders`; its leg or range stays used.
-- **Withdrawn** - by an M5 bar **before** the fill bar only, the reason written as the row's `why`: its target touched
+- **Withdrawn** - by an M5 bar **before** the fill bar only; **the scorer** writes the reason as the row's `why` (the
+  bot writes only the markers below; where both a target and an `H100` crossing happen on one bar, the target's
+  reason is written): its target touched
   (`no fill (stop or target first)` - a stop cannot be reached first, the limit lies between); a leg's `H100` crossed strictly (`withdraw beyond <H100>` in the decision
   text); a range broken by a setup-timeframe close (`range break <tf> close beyond <price> / <price>`) - an M15 close
   counts on the M5 bar that closes with it. A bar that both fills and withdraws keeps the fill.
 - **Held (owner)** until the stop or the target, no time limit, judged on M5 bars from the fill bar on. On the fill bar
-  only the stop counts; from the next bar a bar touching both counts as the stop.
+  only the stop counts; from the next bar a bar touching both counts as the stop. **Exit price:** the stop or target
+  price; a bar that opens beyond the stop exits at its open [Claude]. **Realised R** = (exit - fill - spread) / (fill -
+  stop) for a BUY (mirror for a SELL) - `r_net`. A trade still open when the data ends is `open`, not a result. A new
+  range appearing does not touch an order already resting on the old one.
 
 ## 13. Which one, when several qualify [Claude]
 
-A BUY and a SELL candidate at one decision (a leg of each side, or both range orders): the order price nearer the
-price; then a BUY before a SELL.
+A BUY and a SELL candidate at one decision (a leg of each side, or both range orders): the smaller |the price - the
+order price|; then a BUY before a SELL.
 
 ## 14. What the bot writes, and the acceptance cases [Claude]
 
@@ -249,20 +261,23 @@ price; then a BUY before a SELL.
   order price, stop, target and its ladder step, planned R, the lean, the M5 trend comparison, the counts and which
   oscillator diverged, every parameter, and the withdrawal marker.
 - **The log** - one row per evaluated bar: the time, the lean, each rule's state and numbers, and the reason no order
-  was written; with several candidates, the reason of the one that got furthest (on a tie, the leg before the range).
+  was written; with several candidates, the reason of the one that got furthest in the order of evaluation (the last
+  rule it reached; on a tie, the BUY).
 - **Acceptance cases** - evaluated with the window test switched off where the time is outside a window; times are
   Thai, `now` = the time given; `fib_tf` M5, other parameters at their defaults unless named. Each expected outcome
   below is what the rules give; the developer computes every case from the bars and **reports** each one - a case that
   does not come out as written is reported, not bent to fit; where a part is marked *report*, the developer reports
   what the bars give:
-  - At each of the 22/10/2026 19:30, 22:00 and 23/10/2026 07:00, 13:00, 19:30, 22:00 window opens: H1 lean **SELL**.
-  - 07/10/2026 07:30: H1 lean **BUY**; the latest leg there is a SELL leg (top 4184.25, 100 % low 4143.51) - **no order**
-    (rule 1).
+  - At 22/10/2026 19:30 and 22:00, and 23/10/2026 07:00, 13:00, 19:30 and 22:00: H1 lean **SELL**.
+  - 07/10/2026 07:30: H1 lean **BUY**; the SELL candidate (top 4184.25, 100 % low 4143.51) - **no order** (rule 1); the BUY
+    candidate - *report*.
   - 27/10/2026 18:30, the BUY leg 4025.45 -> 3989.14: rule 3 passes (`H100` 4025.45 above the M5 high 4019.18); at 0.618
     the order price 4011.58 is above the price 4010.95 - **no order** (rule 6); at 0.382 the order price 4003.01 is 7.94
     away, within 0.25 x 36.31 = 9.08 (rule 9); the lean, the ladder step and the outcome - *report*.
-  - 19/10/2026 07:00, the BUY leg 4198.73 -> 4155.81 at 0.618 (order price 4182.33): the ladder never selects a target
-    at or below the order price - *report* the step and R.
+  - 19/10/2026 07:00, the BUY leg 4198.73 -> 4155.81 at 0.618 (order price 4182.33): *report* the ladder step, whether its target lies above the order
+    price, and R (a target at or below the order price, or R under 2, means no order).
+  - Rules 4, 5, 11 and 12 have no stored-bar case yet: the developer tests each branch on constructed bars (unit tests)
+    and reports which stored-bar case first exercises it.
 
 ## 15. How results are judged
 
