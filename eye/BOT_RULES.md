@@ -49,6 +49,7 @@ decides between a BUY and a SELL candidate; rule 12 governs the order's life.
 | `max_trend_legs` | 5, 3 | 5 | [Claude] |
 | `fib_target` | 1.618, 1.272 | 1.618 | the owner's extensions; default [Claude] (rule 8) |
 | `max_entry_frac` | 0.15, 0.25, 0.35 | 0.25 | [Claude] |
+| `fib_lean` | on, off | on | [Claude], a research switch (rule 1) |
 | `fib_range` | on, off | on | [Claude] |
 | `stop_buffer`, `target_buffer` | USD | 0.50, 0.50 | [Claude] |
 | `spread` | USD | 0.30 | [Claude] |
@@ -96,6 +97,10 @@ recomputed at every decision (not latched):
 - **Under test** [Claude, at the owner's word, 2026-10-29]: this reading showed no edge at the traded move sizes
   (`eye/BOT_RESEARCH.md`, "The H1 lean and the major levels - tested"); other readings of H1 are tested the same way
   (the plan there). Until a reading passes and the owner confirms it, this rule stays as written.
+- **`fib_lean` off** [Claude, the owner's word 2026-10-29: run the bot with and without the lean]: the lean is still
+  computed and written (rule 14) but refuses nothing (rule 3's lean refusal is skipped), and rule 11 counts the
+  moment as having no lean - a range needs only no M5 trend. `on` is this rule as written. `off` goes against the owner's "never against a
+  clear lean" (METHOD 2e) - it is a measurement the owner asked for, never the real-run setting without the owner's word.
 
 ## 2. The counter-leg - the owner's Fibonacci
 
@@ -284,6 +289,9 @@ order price|; then a BUY before a SELL.
     away, within 0.25 x 36.31 = 9.08 (rule 9); TP 4047.39, R 3.07 (rule 8); the lean and the outcome - *report*.
   - 19/10/2026 07:00, the BUY leg 4198.73 -> 4155.81 at 0.618 (order price 4182.33): *report* the target and R (R under 2 means
     no order).
+  - `fib_lean` off, 07/10/2026 07:30: the SELL candidate (top 4184.25, 100 % low 4143.51) is not refused by rule 1 -
+    *report* how far it gets and its outcome; 27/10/2026 18:30 at 0.382: the BUY is not refused by the lean - *report*
+    (rules 6-9 give order 4003.01, TP 4047.39, R 3.07). Rule 11 with the lean off: tested on constructed bars.
   - Rules 4, 5, 11 and 12 have no stored-bar case yet: the developer tests each branch on constructed bars (unit tests)
     and reports which stored-bar case first exercises it.
 
@@ -293,7 +301,7 @@ order price|; then a BUY before a SELL.
 each trade behind it is drawn (`eye/draw_trades.py`) and checked against these rules. **The bar** is the owner's goal:
 at least **+0.15 R a trade after costs** (CLAUDE.md); [Claude] not judged on fewer than 30 filled trades. The real run: the defaults, beside these
 variants one at a time - `fib_entry` 0.382 and 0.236, `fib_stop` swing (at 0.618), `fib_count` on, `fib_early` 0.10 with
-`line_tight` (at 0.382), `fib_tf` M15, `max_trend_legs` 3, `fib_target` 1.272, `max_entry_frac` 0.15 and 0.35. October 2026
+`line_tight` (at 0.382), `fib_tf` M15, `max_trend_legs` 3, `fib_target` 1.272, `max_entry_frac` 0.15 and 0.35, `fib_lean` off. October 2026
 first, then the stored months before it (M5 from 2025-10), month by month - **not clean**: the research that chose `H100` and the entry
 depth used them. **The clean test is forward**, on the months after 2026-10-28 as their bars arrive.
 
