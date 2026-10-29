@@ -714,3 +714,12 @@ taking the place of 2e's entry and "where", with 2e kept as `mode = 2e`.
 defined (the highest mean R a filled trade, the owner confirms); "played out" judged on M5; the M / W words and
 exact levels in the glossary; the band moves absolute, as of `now`; the files named; a "Withdrawn - do not
 build" list. All `[Claude]` except the owner's words quoted.
+
+**Fifth review round (2026-10-29, Codex + fresh Sonnet + fresh Haiku) - BOT_RULES.md rewritten:** a parameter table
+and the order of evaluation; the fixed-pivot frame (1,500 bars) and the known bar; the stop section corrected -
+`swing` sits above `L0` and does **not** meet 2e step 6 (Claude had written that it met both of the owner's
+sentences; Haiku found it); the ladder picks one step, no fall-through; "played out" timed on M5 from the setup
+bar; one withdrawal mechanism with its `why`; on the fill bar only the stop counts; realised R reported; the
+decision row's columns listed; the acceptance cases with windows switched off, Thai `now`, M5; nine rules no. 4 / 9
+replaced by 2e, no. 6 holding. Two points asked of the owner: the 0.618 stop (line vs beyond the lowest bottom) and
+what makes an M "clear".
