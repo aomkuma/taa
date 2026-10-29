@@ -696,3 +696,7 @@ an M15 leg); the range's "no trend" is read on **M5** (the owner's trend frame);
 (the owner's primary "around 38 - 23 %"; 0.618 is the owner's strong-bull case, a variant - the research favoured
 it on months that are not clean); an order's prices are fixed when written; the fill is an M5 low at or below
 the price from the bar after the decision; a range break ends both sides; `fib_range` on in the real run.
+
+**The entry level (the owner, 2026-10-29):** *"use the level that works best."* `fib_entry` defaults to the best
+level by results - all three run, the best kept and checked forward; until the real run, 0.618 (the research's
+best). This replaces the second round's 0.382 default.

@@ -84,8 +84,10 @@ after it; the number of highs, `H100` included, is the trend's legs. At `max_tre
 
 ## 6. The entry
 
-- **Level** `fib_entry` [Claude, from the owner's "wait for it to fall back to around 38 - 23 %; if the bulls are
-  really strong, maybe from 61 %"]: **0.382** (default), 0.236, 0.618.
+- **Level** `fib_entry` - the levels from the owner's "wait for it to fall back to around 38 - 23 %; if the bulls
+  are really strong, maybe from 61 %": 0.618, 0.382, 0.236. **Which one is the default: the one that works best
+  (owner, 2026-10-29)** - all three are run, and the best kept, checked forward. Until the real run: **0.618**
+  (the best in the research so far).
 - **Order price** = the level + `fib_early x leg` (above the level for a BUY) - `fib_early` [Claude, the owner's
   idea of getting in before the line]: **0** (default), variant **0.10** with `fib_stop = line_tight`, at the
   0.382 level only.
@@ -181,7 +183,7 @@ A leg before a range; among legs, the later `L0`; then the order price nearer th
 
 [Claude, from the owner's "no test run until the code is confirmed correct"] No number is believed until each
 trade behind it is drawn (`eye/draw_trades.py`) and checked against these rules. The real run: the defaults,
-beside these variants one at a time - `fib_entry` 0.618 and 0.236, `fib_stop` swing, `fib_count` on, `fib_early`
+beside these variants one at a time - `fib_entry` 0.382 and 0.236 (the best level becomes the default), `fib_stop` swing, `fib_count` on, `fib_early`
 0.10 with `line_tight`, `fib_tf` M15, `max_trend_legs` 3, `major_tf` H1, `max_entry_frac` 0.15 and 0.35. October
 2026 first, then the stored months before it, month by month - **not clean**: the research that chose `H100`
 and the entry depth used them; **the clean test is forward**, on the months after 2026-10-28 as their bars arrive.
