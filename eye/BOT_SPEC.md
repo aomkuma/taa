@@ -563,6 +563,12 @@ move is to be reported against the old H1 side (34 % / 49 % "no side"; 2 against
 lean against the move on 2 (15/10 22:00, 20/10 07:00; 2 before). 22/10 19:30 - 23/10 22:00: SELL lean on all
 six.
 
+**Revision 8, last precisions (Codex's second review):** R22's comparator is the preceding M5 high by pivot
+time that is **fixed by the decision** (not necessarily by `H100`); the H1 lean checked against it is the lean
+**at the decision**. The October count's population: the window opens 07:00, 13:00, 19:30 and 22:00 Thai on
+the trading days 01-27/10 where the M5 bar closing then exists (76); a strong move = |the last H1 close - the
+H1 close 24 bars before| > 40 USD.
+
 ## Revision 9 (2026-10-29) - no chasing, and a range is traded too
 
 **The owner**, on revision 8: two problems will follow - chasing the price, and no trade when the market goes
