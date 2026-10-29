@@ -650,3 +650,29 @@ n per side 772-1,251. In every candidate the BUY lean came first 0.53-0.58 in th
 - Expectation against the result: expected none to pass, B at 0.51-0.53 (0.520 / 0.510) and C, D at 0.49-0.53
   (0.517-0.520 / 0.507-0.520) - as expected.
 - Brought to the owner: what replaces the lean is the owner's to say. Rule 1 stays as written until then.
+
+### Strong moves - do they carry on? (lean_strength.py, 2026-10-29, the owner: *"on a very clear trend day, would trading against it lose?"*)
+
+Expectation written before the run (`lean_levels/EXPECTATION.md`, test 3). The same 2,720 moments; the strength = the
+move of the last 24 closed H1 bars in ATR(14) units of H1; the outcome as before (k 0.25 / 0.5): the move's side
+first.
+
+**The buckets set before the run were wrong for the measure:** a 24-bar move in 1-bar ATR units is large by nature
+(median 2.3), so ">= 3 ATR" held 39 % of the moments - not "strong". By the planned buckets continuation was
+0.489-0.522 (k 0.25) and 0.495-0.534 (k 0.5). Re-cut **after the run** by the strongest share of moments:
+
+| strongest | |move| at least | k 0.25: continuation first (n, months above 0.5) | k 0.5 |
+|---|---|---|---|
+| all | 0 | 0.510 (2,686, 8/13) | 0.510 (2,159, 7/13) |
+| top 25 % | 3.9 ATR | 0.529 (677, 7/13) | 0.519 (568, 7/13) |
+| top 10 % | 5.7 ATR | 0.567 (270, 72 days, 8/13) | 0.529 (238, 5/13) |
+| top 5 % | 6.6 ATR | 0.504 (135, 48 days, 4/13) | 0.496 (123, 3/13) |
+
+- **Measured:** even the strongest 24 h moves carry on into the next 24-47 USD about as often as they turn; the top
+  10 % at 0.567 (k 0.25) falls back to 0.504 in the top 5 %, so no steady pattern. The re-cut thresholds were chosen
+  after seeing the data.
+- Expectation against the result: expected 0.55-0.60 for the strongest moves; measured about 0.50-0.57, not
+  steady.
+- **Not answered here:** this counts which barrier price touches first, not the bot's trades (a pullback entry,
+  a stop beyond it, a 1.618 target). September's loss was trades. That is answered by the bot itself, run with
+  and without the lean (the owner's word, 2026-10-29: *"if you want to try option three first, go ahead"*).

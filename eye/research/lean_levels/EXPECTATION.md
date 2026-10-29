@@ -25,3 +25,14 @@ Split by timeframe and by how many pivots of that timeframe fall inside the band
 Expected: a single-pivot band turns price about as often as the control (near 50 %); bands with 2+ pivots
 turn it more (55-60 %); H4 slightly above H1. If so, "major" = 2+ pivots, and single-pivot bands should not
 block the target.
+
+## Test 3 - strong trends (eye/research/lean_strength.py), written before the run
+
+The owner, 2026-10-29: without the H1 lean, would trading against a very clear trend lose, as September did?
+The same 2,720 moments (lean_test.py); the trend's strength known at the moment = the move of the last 24 closed
+H1 bars (close minus the close 24 bars before) in units of ATR(14) of H1. Buckets of |move|: < 1, 1-2, 2-3, >= 3
+ATR. The outcome as before (k 0.25 and 0.5): does the side of the move (continuation) come first?
+
+Expected: continuation near 0.50 below 2 ATR; 0.55-0.60 at >= 3 ATR, on few moments (under 200) - a strong move
+tends to carry on. If so, a guard against trading against a >= 3 ATR move is supported; if the >= 3 ATR bucket is
+also near 0.50, trading against a strong move is no worse than with it, at these move sizes.
