@@ -538,3 +538,27 @@ SELL (not "no side"); 27/10 18:30 BUY leg 4025.45 -> 3989.14: H100 4025.45 again
 (4019.86 / 4019.18) - an M5 higher high, so the BUY side holds (the R20 distance still refuses that order);
 07/10 07:30 SELL still written. The share of window opens with "no lean" and with a lean against the 24 h
 move is to be reported against the old H1 side (34 % / 49 % "no side"; 2 against).
+
+### Revision 8, made precise after Codex's review (2026-10-29) - `[Claude]` unless said
+
+- **R21 bars and times:** closed **H1** bars only, up to the decision; "after `Hf`" = after `Hf`'s pivot bar
+  (by pivot time, not the time it became fixed); comparisons strict (a bar exactly at `Lp` is not a lower
+  low; a close exactly at `Hf` is not below it). If both leans held, the one whose pivot (`Hf` or `Lf`) has
+  the later pivot time wins. **The lean renews itself:** each new fixed H1 pivot replaces `Hf` / `Lf`, and a
+  close back above `Hf` ends a SELL lean - an old break does not keep a lean alive past that.
+- **R22 comparator:** the immediately preceding fixed M5 HIGH by pivot time, strictly before `H100`; `H100`
+  must be strictly above it (equal is not a higher high). No such pivot - no side, no order. SELL mirrored
+  (the immediately preceding fixed M5 LOW, the 100 % low strictly below it). On 27/10 that comparator is
+  4019.18 (not 4019.86).
+- **R22 is read at the leg** (at `H100`): the trend the counter-move interrupted. It applies always - with
+  an H1 lean it must agree with it; with no lean it decides alone.
+- **Scope:** revision 8 is the fib path's side rule (`fib_side = lean` replaces `h1`); the 2e path (`mode =
+  2e`) is a record and keeps step 1.
+- **Acceptance case corrected:** at **07/10 07:30 the H1 lean is BUY** (the low 4104.21, the high 4170.28
+  before it exceeded on 06/10) - so the 07/10 SELL is **refused** under the owner's rule (never against a
+  clear H1 lean). Claude's earlier acceptance line ("07/10 still written") was wrong.
+
+**Measured by Codex on October's 76 window opens (closed bars):** R21 gives no lean on 9 (11.8 %, against
+34 % "no side" before); of the 24 opens after a move over 40 USD in 24 h, no lean on **0** (13 before) and a
+lean against the move on 2 (15/10 22:00, 20/10 07:00; 2 before). 22/10 19:30 - 23/10 22:00: SELL lean on all
+six.
