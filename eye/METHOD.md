@@ -150,6 +150,8 @@ Before that day none of the thirteen rules mentioned divergence, and counting wa
 | **Settings** | **MT5's own defaults** - ZigZag 12 / 5 / 3, MACD 12 / 26 / 9, RSI 14 |
 | **Entry timeframe** | **M5 to M15** |
 | **The stop** | **beyond the High** (sell) / **Low** (buy) - see the principle below |
+| **Levels and the turn** | **price usually turns before it reaches a level; when it does reach the level, it usually carries on the same way** (the owner, 2026-10-29 - the same as the morning's "get in before the line": a pullback that reaches the line tends to go through it). So a setup does not need its top / bottom to sit on a level |
+| **The target** (the Fibo extensions) | **the Fibo extension is the target; the take-profit actually placed is the one price can reach** - 161.8 % if nothing major stands before it, else 127 %, else just before that level; at least 1:2 (the owner, 2026-10-29) |
 | **No chasing, and trades in a range too** | the owner, 2026-10-29, on the bot's spec: *"don't let these two happen"* - entering late after the move has run (chasing), and no trade at all when the market goes sideways |
 | **The target** | **just before the opposite level on the left** - see the principle below |
 | **How long a trade is held** | **until the stop or the target** - the owner: *"hold it"*. No time limit |

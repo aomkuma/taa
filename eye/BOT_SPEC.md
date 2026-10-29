@@ -635,3 +635,40 @@ wrote the owner's example in as the rule (R20, and "made precise"); corrected he
 scale-free:** the distance from the last closed M5 close to the entry may be at most **`max_entry_frac` of
 the leg** (`|H100 - L0|`; for R24 the range's height) - default **0.25**, run also at 0.15 and 0.35. A fixed
 USD distance is not used. *(For scale only, on October's legs of 20-40 USD, 0.25 is 5-10 USD.)*
+
+## Revision 9 corrected (2026-10-29) - after Codex's review and the owner's answers
+
+**The owner on R23 (c):** *"the target from the Fibo, but the take-profit actually placed - what can be
+reached."* **On R23 (b):** *"price turns before it reaches a level; if it reaches the level it usually goes on
+the same way - we discussed this in the morning."* So:
+
+- **R23 (b) is withdrawn** - a top / bottom is **not** required to sit in a band. `fib_level` stays a
+  comparison only (default `off`). The owner's principle runs the other way: a setup whose pullback reaches a
+  level tends to break it.
+- **R23 (c) becomes the target ladder** (replaces "room to the target"): for a BUY, **TP = the 161.8 %
+  extension if no major resistance band lies between the entry and it; else the 127 % extension if none
+  lies before that; else just before the first major band (`near edge - target_buffer`)**; R recomputed;
+  under 2R no order. SELL mirrored. **"Major" `[Claude]`:** a single band (R1 rules: pivot centre,
+  half-width `band_frac` x the median of the last `band_legs` legs, inclusive edges) built from **H4**
+  fixed pivots; a band counts as "between" when any part of it lies strictly between the entry and the
+  target. *(H1 bands are too dense - one stood before almost every target in October.)* Variant:
+  `major_tf = H1`.
+- **R23 (a), counted precisely:** for a BUY, walk back from `H100` over the fixed M5 HIGHs by pivot time
+  while each is strictly higher than the one before it; the count is the number of highs in that run,
+  `H100` included (three highs = three legs up). For an M15 leg, the same on M15 pivots. At `max_trend_legs`
+  (default 5; run also at 3) or more, no order. SELL mirrored on lows.
+- **R24 (the range), precisely:**
+  - **When:** the H1 lean is none (R21) **and** the setup timeframe shows no trend at the decision -
+    `[Claude]`: of its latest two fixed HIGHs and latest two fixed LOWs, neither "both higher" nor "both
+    lower" holds.
+  - **The range:** the latest fixed HIGH and the latest fixed LOW on the setup timeframe, whichever came
+    first; its height = high - low; 0 % at the low, 100 % at the high.
+  - **Orders:** a SELL limit at 88 % only while the last M5 close is below it (price inside the range), stop
+    above 127 % + `stop_buffer`, TP the low edge + `target_buffer`; a BUY limit at 12 % only while the
+    close is above it, stop below -27 % - `stop_buffer`, TP the high edge - `target_buffer`. If both could be
+    written, the one nearer the last close. At least 2R; R20 with the range height as the leg.
+  - **Broken:** a closed **setup-timeframe** bar beyond the 127 % / -27 % line (no buffer) after the later
+    pivot - no order, and a resting one is withdrawn (the scorer marker as R19). One order per range (its
+    two pivot times); a new pivot makes a new range.
+  - **Not applied to R24:** R18's count, R22, R23 (a), the target ladder.
+- **R20 everywhere** uses the last closed M5 close and `max_entry_frac` of the leg (or range height).
