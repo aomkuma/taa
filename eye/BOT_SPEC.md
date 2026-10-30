@@ -743,3 +743,10 @@ timeframe from its latest two pivots, faded at 88 % / 12 %) was **Claude's misre
 `eye/BOT_RULES.md` rule 11 - the H1 range (pivots touching the 88-127 % / -27-12 % edge zones), sideways from three
 pivots, legs 3-5, the side away from the latest pivot, the leg path's rules 2-10 on that side, the target capped at
 the opposite edge (`range_tp`).
+
+## The trend timeframe moves to M30 (2026-10-30)
+
+The owner: *"we change to M30 and drop 1H - change it all to M30"* - for reading the trend above M5 (faster signals,
+closer to M5), after the H1 state's reading failed the market check on July-October (BOT_RESEARCH, "The H1 state on
+four months"). In force: `eye/BOT_RULES.md`, `state_tf` M30 (H1 kept as a record); the state's rework and its M30
+acceptance values follow CLAUDE.md step 7.

@@ -11,21 +11,35 @@ trade drawn. Tests green means the code matches the spec, never "passed". Every 
 measured.
 
 **Where the bot stands (2026-10-30).**
-- Built and committed: rules 0-10, 12-15 as BOT_RULES writes them, with rule 8's take-profit the Fibo extension (no
-  tested level beat a control) and rule 1 the H1 lean (no tested reading of H1 told the side; kept as `h1_read` lean).
-- **Rule 11 - the H1 state** (a range ignores its middle swings; an H1 close beyond its edge is a break, then a trend
-  that way): specified and reviewed; **built but not committed** - the build, its tests (the bot's 125) and a mutation
-  check (22 of 24 caught) are in the working tree, backed up with a half-done rule 3 change in the session scratchpad.
-  **Its reading fails the market check**: run on July-October, August's rise 4020 -> 4697 was read as SELL from 10/08
-  (`eye/BOT_RESEARCH.md`, "The H1 state on four months"). The cause [Claude]: how a range is started and widened.
-  A no-widening variant and M30 (the owner's suggestion: faster, closer to M5) were tried - each better on some months,
-  none on all. **Under rework**; the owner's choice between H1 and M30 is open.
+- **The trend timeframe is M30** (the owner: *"we change to M30 and drop 1H - change it all to M30"*): the lean (rule 1)
+  and the state - sideways, trend, break (rule 11) - are read on M30, built from the stored M15 (BOT_RULES "Data");
+  H1 is kept only as a record (`state_tf` H1). Specified in BOT_RULES and METHOD 2e and reviewed by Codex; **not built**.
+- Built and committed: rules 0-10, 12-15 as BOT_RULES writes them - rule 8's take-profit is the Fibo extension (no
+  tested level beat a control); rule 1 is the lean, kept as `h1_read` lean (no tested reading of H1 told the side).
+- **Rule 11 - the state** (a range ignores its middle swings; a close beyond its edge is a break, then a trend that
+  way): built on **H1** in the working tree, **not committed** - the build, its tests (the bot's 125) and a mutation
+  check (22 of 24 caught) are there, backed up, with a half-done rule 3 change, in `eye/wip/` (not committed: `bot2e_h1_state_reviewed.py.txt` - the
+  reviewed H1-state build; `bot2e_rule3_half_done.py.txt` and `test_eye_bot2e_rule3_half_done.py.txt` - the working tree with
+  rule 3 half done; `working_tree_2026-10-30.diff`). **Its reading fails the market check**: on July-October
+  the H1 version read August's rise 4020 -> 4697 as SELL from 10/08 (`eye/BOT_RESEARCH.md`, "The H1 state on four
+  months"). The cause [Claude]: how a range is started and widened - a touch widens an edge without a cap and the break
+  is tested after the widening. The research prototype `eye/research/h1_state.py` has v1 (as built), v2, v3 (closes
+  tested before each pivot; v3 no widening); `eye/research/state_tf.py` runs it on M30 - better on August, not on all
+  months.
 - **Rule 3 - the M5 trend at the decision** (`m5_trend` now): specified and reviewed, **not built** - 20 of 25 October
   fills had been taken with no M5 trend (`eye/BOT_RESEARCH.md`, "Where the bot reads M5 wrongly").
-- Trading runs so far are October only, under 30 fills, not judged; the last one predates both changes.
+- Trading runs so far are October only, under 30 fills, not judged; the last one predates these changes.
 
-**Next:** the H1 (or M30) state reworked until its drawn reading matches the market on July-October and the owner
-passes it; then rule 3 built and its M5 reading checked the same way; only then a trading run, with the owner's word.
+**Next, in order (CLAUDE.md's process):**
+1. Rework how a range starts and widens **on M30** in the research prototype until its drawing (July-October, the
+   side it allows, its edges) matches the market to Claude's eye and then the owner's - August's rise BUY, October's
+   4080-4220 range and its break down, July's swings - and record each attempt in BOT_RESEARCH.
+2. Write the passing reading into BOT_RULES rule 11 (and its M30 acceptance values), Codex reviews it.
+3. A fresh Sonnet developer builds `state_tf` M30 and the reworked state (starting from the uncommitted H1 build),
+   Codex reviews the code, mutation check, the full suite, commit.
+4. The bot's own reading drawn again on several months - the owner passes it.
+5. Rule 3 (`m5_trend`) built the same way, its M5 reading drawn and passed.
+6. Only then, with the owner's word, a trading run - every trade drawn and judged.
 Walking by hand resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
@@ -61,7 +75,7 @@ in Thai time read with PowerShell Get-Date (Git Bash date is wrong on this machi
 
 Read first, in order:
 1. docs/START_HERE.md
-2. docs/HANDOFF.md - this file, the "Where it resumes" section
+2. docs/HANDOFF.md - this file, the top: "Where the bot stands" and "Next"
 3. eye/METHOD.md - section 2e is my setup, 2c is how a day is walked; then eye/TRIED.md and
    eye/RULES_REVIEW.md sections 5-6
 
@@ -70,13 +84,13 @@ generalise, never a rule with its numbers; a question I ask is a question, not a
 force are eye/BOT_RULES.md; follow CLAUDE.md's development process exactly - tests green is not passing, a
 reading passes only when it is drawn on several months and matches the market to my eye. Judge a rule by the
 trades it gives (R per trade), not by how often price goes one way first. Next: HANDOFF, "Where the bot stands" -
-rework the H1 (or M30) state until it reads July-October like the market. No trading or research run without my
-word; record every result when it is measured.
+rework the state on M30 until it reads July-October like the market (the "Next" list). Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
+bot research run needs my word. Record every result when it is measured.
 ````
 
 ---
 
-## Where it stands, 2026-10-28 (the bot and Fibonacci of 10-29: "Where it resumes")
+## Where it stood, 2026-10-28 - the walk by hand (history; the bot's state is at the top of this file)
 
 **The work.** Trading gold by eye on real candles, no strategy in `config.yaml`. The owner's bar is
 **+0.15 R a trade after costs**.
@@ -245,7 +259,7 @@ deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the
 | | |
 |---|---|
 | **What replaces the H1 lean** - no tested reading of H1 told the side; the bot with the lean off did no worse in October (before rule 11 was rewritten 21 fills, after it 12; not judged) | `eye/BOT_RESEARCH.md`, the last sections; BOT_RULES rule 1 |
-| **Rule 11, the H1 state** - its reading fails the market check (August read as SELL through the rise); rework how a range starts and widens; H1 or M30 is the owner's choice | `eye/BOT_RESEARCH.md`, "The H1 state on four months"; BOT_RULES rule 11 |
+| **Rule 11, the state on M30** - the H1 build's reading failed the market check (August read as SELL through the rise); the trend timeframe is now M30 (the owner); rework how a range starts and widens until the drawing passes the owner's eye | `eye/BOT_RESEARCH.md`, "The H1 state on four months"; BOT_RULES rule 11 |
 | **Rule 3, the M5 trend at the decision** - specified, not built; its reading to be checked on several months before any trading run | BOT_RULES rule 3 |
 | **The clean test is forward** - the stored months were used to choose; the months after 2026-10-28 as they arrive | BOT_RULES rule 15 |
 | **MACD and RSI not yet checked against MT5**, nor ZigZag on M5 and H1 | `eye/walk.py` |
