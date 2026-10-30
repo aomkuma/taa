@@ -29,6 +29,14 @@ measured.
 - **Rule 3 - the M5 trend at the decision** (`m5_trend` now): specified and reviewed, **not built** - 20 of 25 October
   fills had been taken with no M5 trend (`eye/BOT_RESEARCH.md`, "Where the bot reads M5 wrongly").
 - Trading runs so far are October only, under 30 fills, not judged; the last one predates these changes.
+- **The working tree is not clean on purpose** - four tracked code files are modified and must not be committed as
+  they are (research outputs - `eye/bot_ledger.csv`, `eye/bot_log.csv`, `eye/research/<variant>/`, `eye/trades/` - are
+  untracked by design; stage only by explicit paths):
+  `eye/bot2e.py` (the H1-state build **plus a half-done rule 3** - `m5_trend` started, its tests not written; the bot's
+  tests may fail), `tests/unit/test_eye_bot2e.py` (the H1-state tests), `eye/draw_trades.py` (parses the new
+  "H1 state sideways: lo, hi, legs, leg" structure text), `eye/research/h1_read_month.py` (calls `bot2e.h1_state`, which
+  exists only in the working tree). The reviewed H1-state build without the rule 3 start is
+  `eye/wip/bot2e_h1_state_reviewed.py.txt`.
 
 **Next, in order (CLAUDE.md's process):**
 1. Rework how a range starts and widens **on M30** in the research prototype until its drawing (July-October, the
@@ -40,6 +48,25 @@ measured.
 4. The bot's own reading drawn again on several months - the owner passes it.
 5. Rule 3 (`m5_trend`) built the same way, its M5 reading drawn and passed.
 6. Only then, with the owner's word, a trading run - every trade drawn and judged.
+
+**Carry these into the steps above - they are not done:**
+- **Step 1, check on purpose:** a wide range breaks late - with the H1 build, the 4066-4229 range (h 162) needed a close
+  below 4022 to break, so on 22/10 19:30-22:00 it still allowed a **BUY (leg 5) while price was falling through the
+  edge**. The reworked M30 reading must not do this.
+- **Step 3, two tests owed:** the H1-state mutation check left 2 of 24 uncaught - "the touch test uses `h` after the pivot
+  widens the edge" and "the break window starts at the pivot bar" (the table: `eye/wip/mutation_h1_state_2026-10-30.log`). The reworked build needs tests that catch both, and its own full mutation check.
+- **Step 2, one spec question from the developer:** while the state is sideways the build writes the lean as
+  `not read (H1 sideways); computed <rule 1 lean>`; BOT_RULES rule 14 says only `not read (... sideways)`. Settle the
+  text in the spec.
+- **Step 5, the owner's test for rule 3** (2026-10-30: *"test that the bot reads the trend right and does not trade
+  against the market"*): unit tests (UP / DOWN / mixed, equal prices, fewer than two pivots, an unfixed pivot ignored,
+  BUY and SELL, an M15 leg on M5 pivots, `m5_trend` h100 unchanged); the bot's M5 reading equal to
+  `eye/research/m5_structure_check.py`'s `structure()` at every filled decision of the October ledgers; an audit of
+  every October window bar (decide() without writing or scoring) - every order the bot would write has the M5 trend
+  of its side, **0 mismatches**; a mutation check. The half-done start is in `eye/wip/bot2e_rule3_half_done.py.txt`.
+- **After the readings pass, with the owner:** what the drawn October losers showed - legs days old (across weekends)
+  and orders at a level price reached slowly (`eye/BOT_RESEARCH.md`, "The current build - October 1-27"); and what
+  replaces the lean (rule 1) - judged by the trades (R per trade), never by direction rates.
 Walking by hand resumes at real day 5, 2026-04-08.
 
 This file holds **state only** - where the work stands and where it resumes. The thinking lives in the
@@ -74,17 +101,19 @@ Continue TAA (C:\Users\korap\taa). Chat with me in Thai; docs, code and comments
 in Thai time read with PowerShell Get-Date (Git Bash date is wrong on this machine). Follow CLAUDE.md.
 
 Read first, in order:
-1. docs/START_HERE.md
-2. docs/HANDOFF.md - this file, the top: "Where the bot stands" and "Next"
-3. eye/METHOD.md - section 2e is my setup, 2c is how a day is walked; then eye/TRIED.md and
-   eye/RULES_REVIEW.md sections 5-6
+1. docs/HANDOFF.md - the top: "Where the bot stands", "Next" and "Carry these into the steps above"
+2. CLAUDE.md - "How the system is developed" (steps 1-8)
+3. docs/START_HERE.md
+4. eye/METHOD.md - section 2e is my setup (the trend timeframe is M30 since 2026-10-30)
+5. eye/BOT_RULES.md - the bot's rules in force; eye/BOT_RESEARCH.md - the last sections
 
 My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
 generalise, never a rule with its numbers; a question I ask is a question, not a rule. The bot's rules in
 force are eye/BOT_RULES.md; follow CLAUDE.md's development process exactly - tests green is not passing, a
 reading passes only when it is drawn on several months and matches the market to my eye. Judge a rule by the
 trades it gives (R per trade), not by how often price goes one way first. Next: HANDOFF, "Where the bot stands" -
-rework the state on M30 until it reads July-October like the market (the "Next" list). Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
+rework the state on M30 until it reads July-October like the market (the "Next" list) - start with
+eye/research/state_tf.py <first> <last> M30 <v1|v2|v3> and change the prototype in eye/research/h1_state.py. Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
 bot research run needs my word. Record every result when it is measured.
 ````
 
