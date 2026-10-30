@@ -12,7 +12,12 @@ side of the next 24-47 USD move** (best 0.52 against a bar of 0.55). **The bot r
 `fib_lean` on/off, October 1-27, every decision drawn): on - 7 fills, 1 won, -3.74 R; off - 21 fills, 7 won,
 +1.40 R (+0.07 a fill). Under 30 fills - not judged. Seen on the drawn trades: the old rule 11's "range" was one fresh
 M5 swing - **Claude's misreading**; the owner: sideways is read on **H1**, the trend for the entry on M5, the trade from
-the H1 range's third leg to its fifth. **Rule 11 is rewritten** and built through the process (Codex until no findings; a mutation check, every break caught). **Run on October** (the owner's word): lean on - 7 fills, 1 won, -3.73 R; lean off - 12 fills, 3 won, -1.89 R; H1 sideways on 10 days but no range trade passed; the drawn losers show old legs (days, across weekends) and orders at a level price reached slowly. Under 30 fills - not judged (BOT_RESEARCH, "The current build - October 1-27"). **Open, with the owner:** what replaces
+the H1 range's third leg to its fifth. **Rule 11 is rewritten** and built through the process (Codex until no findings; a mutation check, every break caught). **Run on October** (the owner's word): lean on - 7 fills, 1 won, -3.73 R; lean off - 12 fills, 3 won, -1.89 R; H1 sideways on 10 days but no range trade passed; the drawn losers show old legs (days, across weekends) and orders at a level price reached slowly. Under 30 fills - not judged (BOT_RESEARCH, "The current build - October 1-27"). **2026-10-30:** rule 11 rewritten as the H1 state (a range ignores its middle swings, a break makes a trend) and
+built (uncommitted; the build and a half-done rule 3 `m5_trend` change are backed up in the session scratchpad);
+rule 3 rewritten to read the M5 trend at the decision (BOT_RULES, reviewed; not yet built). **The H1 state does not
+yet read the market** on July-October (August's rise read as SELL - BOT_RESEARCH, "The H1 state on four months");
+M30 tried at the owner's suggestion - better on August, not on all months. No trading run until the reading passes the
+owner's eye. **Open, with the owner:** what replaces
 the lean, and what the drawn October losers show (old legs, levels reached slowly) - in the discussion
 of how the basic rules put the trades on the winning side of 50 % (judge by the trades, not by direction rates). The development process is in CLAUDE.md ("How the system is
 developed"). Walking by hand

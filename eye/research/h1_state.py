@@ -39,6 +39,18 @@ from eye import bot2e  # noqa: E402
 
 TOUCH_HI, TOUCH_LO, BREAK = 0.88, 0.12, 0.27
 COLOURS = {"sideways": "#b48ad6", "forming": "#e8dcf2", "down": "#f2a3a3", "up": "#9fd9a8", "none": "#dddddd"}
+SIDE_COLOURS = {"BUY": "#9fd9a8", "SELL": "#f2a3a3", "either": "#f3e6a0", "none": "#dddddd"}
+
+
+def side_of(s: State) -> str:
+    """The side the bot would allow (rule 11 with range_min_leg 3): a range's legs 3-5 away from its last
+    touch, leg 6 on either side, a trend its own way, otherwise none."""
+    if s.kind == "sideways":
+        leg = s.legs + 1
+        if leg >= 6:
+            return "either"
+        return "SELL" if s.last_touch == "HIGH" else "BUY"
+    return {"up": "BUY", "down": "SELL"}.get(s.kind, "none")
 
 
 @dataclass
@@ -50,7 +62,66 @@ class State:
     last_touch: str = ""  # HIGH / LOW
 
 
-def read(h1: pd.DataFrame, piv: list) -> State:
+def read(h1: pd.DataFrame, piv: list, mode: str = "v1") -> State:
+    """The H1 state at the last closed bar of ``h1`` from its fixed pivots (time order).
+
+    ``v1``: the first prototype (touches widen without a cap; the break is tested on the closes after a pivot,
+    with the edges after it). ``v2``: the closes leading into each pivot are tested against the range as it
+    stood before that pivot (then the pivot is taken in); a touch widens an edge only up to the break level.
+    ``v3``: as v2 with no widening at all (the edges are the starting pair's)."""
+    if mode == "v1":
+        return _read_v1(h1, piv)
+    close = h1.close.to_numpy(np.float64)
+    st, trend = State("none"), "none"
+    start, i = 0, 0
+    while i < len(piv):
+        if i - start == 0:
+            i += 1
+            continue
+        if i - start == 1:
+            a, b = piv[start], piv[i]
+            st = State("forming", min(a.price, b.price), max(a.price, b.price), 1, b.kind.value)
+            if st.hi - st.lo <= 0:
+                start, i = i + 1, i + 2
+                continue
+            i += 1
+            continue
+        h = st.hi - st.lo
+        up_lvl, dn_lvl = st.hi + BREAK * h, st.lo - BREAK * h
+        seg = close[piv[i - 1].pivot_pos + 1 : piv[i].pivot_pos + 1]  # the closes leading into pivot i
+        up, dn = np.nonzero(seg > up_lvl)[0], np.nonzero(seg < dn_lvl)[0]
+        if up.size or dn.size:
+            trend = "up" if (up[0] if up.size else 1e9) < (dn[0] if dn.size else 1e9) else "down"
+            st, start = State(trend), i  # pivot i and the next start a new range
+            continue
+        q = piv[i]
+        if q.kind.value == "HIGH" and q.price >= st.lo + TOUCH_HI * h:
+            if mode == "v2":
+                st.hi = max(st.hi, min(q.price, up_lvl))
+            if st.last_touch != "HIGH":
+                st.legs, st.last_touch = st.legs + 1, "HIGH"
+        elif q.kind.value == "LOW" and q.price <= st.lo + TOUCH_LO * h:
+            if mode == "v2":
+                st.lo = min(st.lo, max(q.price, dn_lvl))
+            if st.last_touch != "LOW":
+                st.legs, st.last_touch = st.legs + 1, "LOW"
+        i += 1
+    if st.kind == "forming" and i - start >= 2:  # the closes after the last pivot, up to now
+        h = st.hi - st.lo
+        seg = close[piv[-1].pivot_pos + 1 :]
+        up, dn = np.nonzero(seg > st.hi + BREAK * h)[0], np.nonzero(seg < st.lo - BREAK * h)[0]
+        if up.size or dn.size:
+            trend = "up" if (up[0] if up.size else 1e9) < (dn[0] if dn.size else 1e9) else "down"
+            st = State(trend)
+    if st.kind == "forming":
+        if st.legs >= 2:
+            st.kind = "sideways"
+        elif trend != "none":
+            st.kind = trend
+    return st
+
+
+def _read_v1(h1: pd.DataFrame, piv: list) -> State:
     """The H1 state at the last closed bar of ``h1`` from its fixed pivots (time order)."""
     close = h1.close.to_numpy(np.float64)
     st, trend = State("none"), "none"
@@ -95,7 +166,7 @@ def read(h1: pd.DataFrame, piv: list) -> State:
     return st
 
 
-def main(first: str, last: str) -> None:
+def main(first: str, last: str, mode: str = "v1") -> None:
     full = bot2e.load_frames()
     h1_all = full["H1"]
     start = pd.Timestamp(first, tz=bot2e.TH).tz_convert("UTC")
@@ -104,11 +175,11 @@ def main(first: str, last: str) -> None:
     reads = []
     for t in bars.index:
         h1 = bot2e.cut({"H1": h1_all}, t + pd.Timedelta(hours=1))["H1"].tail(bot2e.FIB_BARS)
-        reads.append(read(h1, bot2e._zigzag(h1)))
+        reads.append(read(h1, bot2e._zigzag(h1), mode))
     fig, ax = plt.subplots(figsize=(20, 9))
     candles(ax, bars, width=0.5, lw=0.6)
     for i, s in enumerate(reads):
-        ax.axvspan(i - 0.5, i + 0.5, color=COLOURS[s.kind], alpha=0.4, zorder=0, lw=0)
+        ax.axvspan(i - 0.5, i + 0.5, color=SIDE_COLOURS[side_of(s)], alpha=0.45, zorder=0, lw=0)
         if s.kind in ("sideways", "forming"):
             for y in (s.lo, s.hi):
                 ax.plot([i - 0.5, i + 0.5], [y, y], color="#5b2a86", lw=1.3)
@@ -126,17 +197,19 @@ def main(first: str, last: str) -> None:
         [f"{bars.index[k].tz_convert(bot2e.TH):%d/%m}" for k in ticks], rotation=45, fontsize=8
     )
     share = {k: sum(s.kind == k for s in reads) / len(reads) for k in COLOURS}
+    sides = {k: sum(side_of(s) == k for s in reads) / len(reads) for k in SIDE_COLOURS}
     ax.set_title(
-        f"H1 {first} .. {last} prototype: sideways {share['sideways']:.0%}, light purple "
-        f"forming {share['forming']:.0%}, red down {share['down']:.0%}, green up {share['up']:.0%}, "
-        f"grey none {share['none']:.0%}",
+        f"H1 {first} .. {last} prototype {mode} - the side the bot allows: green BUY {sides['BUY']:.0%}, "
+        f"red SELL {sides['SELL']:.0%}, yellow either (leg 6+) {sides['either']:.0%}, "
+        f"grey none {sides['none']:.0%}; "
+        f"purple lines = range edges (sideways {share['sideways']:.0%})",
         fontsize=10,
     )
     fig.tight_layout()
-    out = HERE.parent / "trades" / f"h1_state_{first}_{last}.png"
+    out = HERE.parent / "trades" / f"h1_state_{mode}_{first}_{last}.png"
     fig.savefig(out, dpi=100)
-    print(out, {k: round(v, 3) for k, v in share.items()})
+    print(out, {k: round(v, 3) for k, v in sides.items()})
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1], sys.argv[2], sys.argv[3] if len(sys.argv) > 3 else "v1")

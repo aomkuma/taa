@@ -801,3 +801,26 @@ October runs `r11_lean_off` and `r8_lean_off` (25 distinct fills).
   then the run) has the M5 trend turning back up before the entry.
 - `eye/research/m5_break_check.py` (whether the pullback's last swing was broken before the decision) is kept; its
   reference is `H100` itself on a one-leg pullback, so it does not separate the cases.
+
+### The H1 state on four months - the reading is not yet the market's (2026-10-30)
+
+The owner: *"I don't call that passing - passing is the bot reading the chart as close to the market as possible."*
+The H1 state as built (rule 11, the prototype `read()` - call it **v1**) was run on its own, without trading, on every
+H1 close of July-October 2026 and drawn, coloured by the side it allows (`eye/research/h1_read_month.py`,
+`eye/research/h1_state.py`, images `eye/trades/h1_read_*.png`, `h1_state_v*_*.png`).
+
+- **v1 fails in a trend.** August 2026 rose 4020 -> 4697; v1 read it sideways all month and, from 10/08, allowed **SELL
+  only** through the rise 4311 -> 4697. Cause [Claude]: a touch widens the edge with no cap, and the break is tested
+  after the widening, so a trend keeps stretching the range and never breaks it. July too read 100 % sideways (a
+  4023-4369 range held from May).
+- **v3** (research only: the closes leading into each pivot tested against the range as it stood before it; no
+  widening): August close to the market - BUY on the rise, SELL in the mid-month chop, BUY on the break up, SELL on
+  the fall from 28/08; but October's range broken mid-month and read as alternating trends, and July held the old
+  4023-4369 range with BUY all month.
+- **M30** (the owner's suggestion; M30 built from the stored M15, v1, `eye/research/state_tf.py`, images
+  `eye/trades/state_M30_v1_*.png`): August mostly BUY on the rise and SELL on the fall from 28/08, but SELL on its
+  start (01-05/08); October's range 4066-4229 seen, the break down on 22/10 seen, but legs past 6 from 15/10 (no side);
+  July 70 % SELL.
+- **Measured, not judged by a number:** no version yet reads all four months the way the candles move. The common
+  cause [Claude]: how a range is started (from which pair of pivots) and widened; the timeframe changes the scale of
+  the problem, not its cause.
