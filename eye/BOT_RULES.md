@@ -360,8 +360,11 @@ the smaller |the price - the order price|; then a BUY before a SELL.
 
 ## 15. How results are judged
 
-[Claude, from the owner's "no test or research run until the code is confirmed correct"] No number is believed until
-each trade behind it is drawn (`eye/draw_trades.py`) and checked against these rules. **The bar** is the owner's goal:
+[Claude, from the owner's "no test or research run until the code is confirmed correct"] **Before any trading run**,
+every reading a change touches is run without trading on several stored months, drawn over the candles and passed
+by the owner's eye (CLAUDE.md, "How the system is developed", step 7 - the owner, 2026-10-30: *"passing is the bot
+reading the chart as close to the market as possible"*). No number is believed until each trade behind it is drawn
+(`eye/draw_trades.py`) and checked against these rules. **The bar** is the owner's goal:
 at least **+0.15 R a trade after costs** (CLAUDE.md); [Claude] not judged on fewer than 30 filled trades. The real run: the defaults, beside these
 variants one at a time - `fib_entry` 0.382 and 0.236, `fib_stop` swing (at 0.618), `fib_count` on, `fib_early` 0.10 with
 `line_tight` (at 0.382), `fib_tf` M15, `max_trend_legs` 3, `fib_target` 1.272, `max_entry_frac` 0.15 and 0.35, `fib_lean` off,
@@ -384,6 +387,7 @@ path as a live option; the nine rules no. 4 ("trade the fifth leg") and no. 9 (t
 
 ## Code status, 2026-10-30 (not a rule)
 
-`eye/bot2e.py` builds every rule above except **rule 11's H1 state** (and `h1_read`): it still has the range that needs
-every pivot at an edge. **To build:** the H1 state (rule 11), `h1_read`, the H1 trend side in rule 3, rule 3's M5 trend at the decision
-(`m5_trend`), the acceptance cases above. Rule 1 stays in the code as `h1_read` lean.
+Committed: every rule above except rule 11's H1 state and rule 3's `m5_trend`. **Rule 11 (the H1 state, `h1_read`)** is
+built in the working tree, not committed: its reading failed the market check on July-October (`eye/BOT_RESEARCH.md`,
+"The H1 state on four months") and is under rework - the rule text above may change. **Rule 3's M5 trend at the
+decision (`m5_trend`)** is not built. Rule 1 stays in the code as `h1_read` lean.

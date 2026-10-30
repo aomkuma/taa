@@ -84,9 +84,10 @@ was fixed are in `eye/RULES_REVIEW.md`.
 **A bot applies the owner's setup** (`eye/bot2e.py`), on closed bars only, inside the owner's windows, with
 the owner's reward floor of 1:2. **Its rules in force are `eye/BOT_RULES.md`** - the owner's Fibonacci (`eye/METHOD.md`
 2e); `eye/BOT_SPEC.md` is their history. The first version, 2e's break-and-retest entry, made no trade in October
-2026; the Fibonacci rounds and the runs of the build before rule 11 was rewritten are in `eye/BOT_RESEARCH.md` (the
-current build's October run too), and where the work stands is in
-`docs/HANDOFF.md`.
+2026; the Fibonacci rounds and the runs of the build before rule 11 was rewritten are in `eye/BOT_RESEARCH.md` (the October run of commit 613f00f, before
+rule 11 became the H1 state and rule 3 read the trend at the decision), and where the work stands is in
+`docs/HANDOFF.md`. Every change follows CLAUDE.md, "How the system is developed" - and nothing counts as passed
+until the bot's reading, drawn on several months, matches the market to the owner's eye.
 
 ## Before changing anything
 
