@@ -93,12 +93,20 @@ step by explicit paths is fine without asking.
    run, gates green (ruff, mypy, the bot's tests).
 5. **Another agent reviews the code** against the spec (Codex, read-only). **Every fix after a review goes
    back to review** until a review finds nothing.
-6. **Run the tests**: the full suite, then commit by explicit paths. Only then, with the owner's word, a
-   bot / research run - and its trades drawn (`eye/draw_trades.py`) and judged by eye against the rules
-   before any number is believed.
+6. **Run the tests**: the full suite, then commit by explicit paths. Tests green means **the code does what
+   the spec says** - never "passed" (the owner, 2026-10-30).
+7. **Check the reading against the market** (the owner, 2026-10-30: *"passing is the bot reading the chart as
+   close to the market as possible"*): every reading a change touches (the H1 state, the M5 trend, the leg...) is
+   run on its own, **without trading**, on the stored bars of **several months**, drawn over the candles (the
+   side it allows, its edges and pivots), and judged by eye - Claude first, then the owner. A reading that
+   is wrong in any month goes back to step 1. **Passed** is the owner's word on these drawings.
+8. Only then, with the owner's word, a **trading run** - and its trades drawn (`eye/draw_trades.py`) and
+   judged by eye against the rules before any number is believed.
 
-Claude coordinates, checks every agent's result itself, and never skips a step because a change looks
-small.
+**Every result is recorded the moment it is measured** - `eye/BOT_RESEARCH.md` for measurements and drawings,
+`docs/HANDOFF.md` for the state - and committed; a result reported in chat only is not recorded (the owner,
+2026-10-30). Claude coordinates, checks every agent's result itself, and never skips a step because a change
+looks small.
 
 ## My own working rules (owner, 2026-10-28: keep these here)
 
