@@ -283,16 +283,18 @@ def test_runner_writes_only_its_own_files(full, tmp_path) -> None:
     before = [(p.read_bytes() if p.exists() else None) for p in watched]
     m5 = score_mod.bars()
     result = research.run_variant(
-        "t", {"min_r": 0.0, "fib_entry": 0.382}, "2026-10-19", "2026-10-19", full, m5, root=tmp_path
-    )
+        "XAUUSD", "t", 3, bot.Params(min_r=0.0, fib_entry=0.382), "2026-10-19", "2026-10-19", full, m5,
+        root=tmp_path,
+    )  # fmt: skip
     after = [(p.read_bytes() if p.exists() else None) for p in watched]
     assert before == after
-    assert (tmp_path / "t" / "ledger.csv").exists() and (tmp_path / "t" / "log.csv").exists()
-    assert (tmp_path / "t" / "summary.csv").exists() and result["orders"] >= 1
-    with pytest.raises(SystemExit):
-        research.make_params({"nonsense": 1})
-    with pytest.raises(SystemExit):
-        research.make_params({"band_frac": 0.15})  # an H1 band parameter: removed
+    folder = tmp_path / "XAUUSD" / "t"
+    assert (folder / "ledger.csv").exists() and (folder / "log.csv").exists()
+    assert (folder / "summary.csv").exists() and result["orders"] >= 1
+    got = list(csv.DictReader((folder / "summary.csv").open(encoding="utf-8")))
+    assert (got[0]["market"], got[0]["set"], got[0]["version"]) == ("XAUUSD", "t", "3")
+    ledger = list(csv.DictReader((folder / "ledger.csv").open(encoding="utf-8")))
+    assert all("Parameters: config=XAUUSD/t@v3 mode=fib" in r["structure"] for r in ledger)
 
 
 T_START = pd.Timestamp("2026-10-05 00:00", tz="UTC")
@@ -557,42 +559,119 @@ def test_fib_params_are_written_into_the_text_and_the_command_line() -> None:
     for part in (
         "mode=fib", "fib_tf=M5", "fib_entry=0.382", "fib_early=0.1", "fib_stop=line_tight", "fib_count=off",
         "fib_target=1.618", "max_entry_frac=0.25", "fib_lean=on", "stop_buffer=0.5", "target_buffer=0.5",
-        "spread=0.3", "max_orders=1", "order_life_bars=24", "min_r=2",
+        "spread=0.3", "max_orders=1", "order_life_bars=24", "min_r=2.0",
     ):  # fmt: skip
         assert part in text, part
     for gone in ("fib_range", "range_min_leg", "range_tp", "h1_mode", "band_frac", "trigger_offset"):
         assert gone not in text, gone  # the removed parameters are not written
+    # the command line takes no parameter flags: the values come from the database (BOT_RULES, Parameters)
+    for flag, val in (
+        ("--mode", "fib"), ("--fib-tf", "M5"), ("--fib-entry", "0.382"), ("--fib-early", "0.1"),
+        ("--fib-stop", "line"), ("--fib-count", "off"), ("--fib-target", "1.272"),
+        ("--max-entry-frac", "0.35"), ("--fib-lean", "on"), ("--setup-days", "2"), ("--m5-trend", "off"),
+        ("--early-leg", "off"), ("--fade-min", "off"), ("--fade-entry", "0.5"), ("--max-orders", "2"),
+        ("--order-life-bars", "12"), ("--min-r", "1"), ("--stop-buffer", "1"), ("--target-buffer", "1"),
+        ("--fib-range", "1"), ("--h1-mode", "1"), ("--band-frac", "1"), ("--trigger-offset", "1"),
+    ):  # fmt: skip
+        with pytest.raises(SystemExit):
+            bot.main(["--from", "2026-10-01", "--to", "2026-10-02", flag, val])
+
+
+def _main_params(tmp_path, **assign: str) -> bot.Params:
+    """The Params ``bot.main`` hands to ``run`` for a fresh database seeded with the defaults and then given
+    ``assign`` (name -> text); ``run`` itself is replaced."""
+    cfg = importlib.import_module("eye.bot_config")
+    db = tmp_path / f"p{len(list(tmp_path.glob('p*.db')))}.db"
+    at = pd.Timestamp("2026-10-31 10:00", tz="UTC").to_pydatetime()
+    cfg.seed(db, "XAUUSD", "default", "t", at)
+    if assign:
+        cfg.set_values(db, "XAUUSD", "default", "t", at, "n", assign)
     seen: dict[str, bot.Params] = {}
     orig = bot.run
     bot.run = lambda first, last, params, *a, **k: seen.update(params=params)  # type: ignore[assignment]
     try:
-        bot.main(
-            ["--from", "2026-10-01", "--to", "2026-10-02", "--mode", "fib", "--fib-entry", "0.382",
-             "--fib-early", "0.1", "--fib-stop", "line_tight", "--fib-target", "1.272",
-             "--max-entry-frac", "0.35", "--order-life-bars", "12", "--fib-count", "off"]
-        )  # fmt: skip
+        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--db", str(db)])
     finally:
         bot.run = orig  # type: ignore[assignment]
-    q = seen["params"]
-    assert (q.mode, q.fib_entry, q.fib_early, q.fib_stop, q.fib_target) == (
-        "fib", 0.382, 0.1, "line_tight", 1.272,
-    )  # fmt: skip
-    assert (q.max_entry_frac, q.order_life_bars, q.fib_count) == (0.35, 12, "off")
-    with pytest.raises(SystemExit):
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--fib-target", "ext161"])  # withdrawn
-    for flag in ("--fib-range", "--range-min-leg", "--range-tp", "--h1-mode", "--h1-tf", "--h1-swings",
-                 "--entry-tfs", "--div-mode", "--band-frac", "--band-legs", "--level-min-age-h",
-                 "--level-bars", "--counter-pivots", "--trigger-offset"):  # fmt: skip
-        with pytest.raises(SystemExit):
-            bot.main(["--from", "2026-10-01", "--to", "2026-10-02", flag, "1"])  # removed with H1 and 2e
-    for flag, val in (
-        ("--max-trend-legs", "5"),
-        ("--mode", "2e"),
-        ("--fib-count", "on"),
-        ("--fib-stop", "swing"),
+    return seen["params"]
+
+
+def _refused(tmp_path, **assign: str) -> None:
+    """A value the database refuses to store (``Params`` does not allow it): nothing is written."""
+    cfg = importlib.import_module("eye.bot_config")
+    db = tmp_path / "refused.db"
+    at = pd.Timestamp("2026-10-31 10:00", tz="UTC").to_pydatetime()
+    cfg.seed(db, "XAUUSD", "default", "t", at)
+    with pytest.raises(cfg.ConfigError):
+        cfg.set_values(db, "XAUUSD", "default", "t", at, "n", assign)
+    db.unlink()
+
+
+def _seeded_db(tmp_path):
+    cfg = importlib.import_module("eye.bot_config")
+    db = tmp_path / "cfg" / "bot_config.db"
+    at = pd.Timestamp("2026-10-31 10:00", tz="UTC").to_pydatetime()
+    cfg.seed(db, "XAUUSD", "default", "t", at)
+    cfg.set_values(db, "XAUUSD", "default", "t", at, "n", {"min_r": "1.5", "order_life_bars": "12"})
+    cfg.seed(db, "XAUUSD", "r3_off", "t", at)
+    return cfg, db
+
+
+def test_run_reads_the_set_from_the_database_and_labels_it(tmp_path, monkeypatch) -> None:
+    _, db = _seeded_db(tmp_path)
+    seen: dict = {}
+    monkeypatch.setattr(bot, "run", lambda first, last, params, *a, **k: seen.update(p=params, k=k, a=a))
+    bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--db", str(db)])
+    assert seen["p"] == bot.Params(min_r=1.5, order_life_bars=12)
+    assert seen["k"]["label"] == "config=XAUUSD/default@v23"
+    bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--db", str(db), "--set", "r3_off"])
+    assert seen["p"] == bot.Params() and seen["k"]["label"] == "config=XAUUSD/r3_off@v44"
+    # a missing database / set stops with the seed command and reads or loads nothing
+    monkeypatch.setattr(bot, "load_frames", lambda: pytest.fail("bars loaded"))
+    for args, text in (
+        (["--db", str(tmp_path / "none.db")], "bot_config.py seed --market XAUUSD --set default"),
+        (["--db", str(db), "--set", "nope"], "seed --market XAUUSD --set nope"),
+        (["--db", str(db), "--set", "a/b"], "letters, digits"),
     ):
-        with pytest.raises(SystemExit):
-            bot.main(["--from", "2026-10-01", "--to", "2026-10-02", flag, val])  # withdrawn / fixed
+        with pytest.raises(SystemExit, match=text.split("  ")[0]):
+            bot.main(["--from", "2026-10-01", "--to", "2026-10-02", *args])
+    assert not (tmp_path / "none.db").exists()
+
+
+def test_another_market_stops_before_any_bar_is_loaded(tmp_path, monkeypatch) -> None:
+    _, db = _seeded_db(tmp_path)
+    monkeypatch.setattr(bot, "load_frames", lambda: pytest.fail("bars loaded"))
+    for market, text in (("EURUSD", "no bars for EURUSD"), ("../x", "letters, digits")):
+        with pytest.raises(SystemExit, match=text):
+            bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--db", str(db), "--market", market])
+
+
+def test_the_label_goes_into_the_structure_not_into_params(monkeypatch) -> None:
+    from dataclasses import fields
+
+    assert bot.config_label("XAUUSD", "default", 7) == "config=XAUUSD/default@v7"
+    assert "config" not in {f.name for f in fields(bot.Params)}
+    assert "config=" not in bot.Params().text()
+
+    def fake(frames, now, p, used=frozenset(), pending=False):
+        log = dict.fromkeys(bot.LOG_COLUMNS, "")
+        log["reason"] = "order written"
+        row = {c: "" for c in bot.LEDGER_COLUMNS}
+        row.update(cutoff_thai="2026-04-06 07:00", decided_at="06/04 07:00", side="BUY", reader="bot2e")
+        row["structure"] = "bot2e fib x. Parameters: " + p.text()
+        return bot.Result(log, row, key="k")
+
+    monkeypatch.setattr(bot, "decide", fake)
+    monkeypatch.setattr(bot, "cut", lambda full, now: full)
+    monkeypatch.setattr(bot, "day_times", lambda day, p: [pd.Timestamp("2026-04-06 07:00", tz=TH)])
+    monkeypatch.setattr(bot, "score", lambda *a, **k: {"fill": "", "why": "open"})
+    monkeypatch.setattr(bot, "start_of", lambda *a, **k: None)
+    full = {"M5": None}
+    p = bot.Params()
+    mine, _ = bot.walk_days(["2026-04-06"], p, full, label="config=XAUUSD/default@v7")
+    assert [r["structure"] for r in mine] == ["bot2e fib x. Parameters: config=XAUUSD/default@v7 " + p.text()]
+    mine, _ = bot.walk_days(["2026-04-06"], p, full)  # no label: the text is as before
+    assert mine[0]["structure"] == "bot2e fib x. Parameters: " + p.text()
 
 
 # --- rule 1: the H1 lean ------------------------------------------------------------------------------------------
@@ -1011,6 +1090,63 @@ def test_rule14_row_fields_structure_and_log_columns() -> None:
     for col in ("r10", "r3", "r6", "r7", "r8", "r9", "order", "stop", "target", "extension", "r"):
         assert log[col], col
     assert log["order"] == "4038.20" and log["extension"] == "1.618" and log["reason"] == "order written"
+
+
+ALLOWED = {
+    "mode": ("fib",), "fib_tf": ("M5", "M15"), "fib_entry": (0.382, 0.618, 0.236), "fib_early": (0, 0.10),
+    "fib_stop": ("line", "line_tight"), "fib_count": ("off",), "max_entry_frac": (0.15, 0.25, 0.35),
+    "fib_target": (1.618, 1.272), "fib_lean": ("on", "off"), "setup_days": (2,),
+    "m5_trend": ("now", "h100", "off"), "early_leg": (0.382, 0.618, "off"), "fade_min": (1.0, "off"),
+    "fade_entry": (0.5, 0.382, 0.618), "windows": ("off", "on"),
+}  # fmt: skip
+
+
+def test_param_text_round_trips_every_field_at_default_and_each_allowed_value() -> None:
+    from dataclasses import fields
+
+    d = bot.Params()
+    names = [f.name for f in fields(bot.Params)]
+    assert set(bot.TEXT_ORDER) == set(names) and len(bot.TEXT_ORDER) == len(names)
+    for n in names:
+        v = getattr(d, n)
+        assert bot.param_from_text(n, bot.param_to_text(n, v)) == v, n
+        for a in ALLOWED.get(n, ()):
+            back = bot.param_from_text(n, bot.param_to_text(n, a))
+            assert back == a and (n == "fib_early" or type(back) is type(a)), (n, a)
+    for n, v in (
+        ("stop_buffer", 0.1),
+        ("target_buffer", 1.5),
+        ("spread", 0.1),
+        ("min_r", 0.1),
+        ("max_orders", 3),
+    ):
+        assert bot.param_from_text(n, bot.param_to_text(n, v)) == v, n
+    assert (
+        bot.param_from_text("early_leg", "off") == "off" and bot.param_from_text("fade_min", "off") == "off"
+    )
+    assert bot.param_to_text("fib_early", 0.1) == "0.1" and bot.param_from_text("fib_early", "0.1") == 0.1
+    assert bot.param_to_text("min_r", 2.0) == "2.0" and bot.param_to_text("max_orders", 1) == "1"
+    assert bot.param_to_text("early_leg", 0.382) == "0.382" and bot.param_to_text("early_leg", "off") == "off"
+    assert bot.param_to_text("fib_early", 0) == "0.0"
+
+
+def test_param_text_refuses_unknown_names_and_bad_text() -> None:
+    for fn, args in (
+        (bot.param_to_text, ("nope", 1)), (bot.param_from_text, ("nope", "1")),
+        (bot.param_from_text, ("min_r", "abc")), (bot.param_from_text, ("max_orders", "1.5")),
+        (bot.param_from_text, ("early_leg", "on")),
+    ):  # fmt: skip
+        with pytest.raises(ValueError):
+            fn(*args)
+
+
+def test_params_text_uses_the_shared_text_form() -> None:
+    t = bot.Params().text()
+    assert t.startswith("mode=fib fib_tf=M5 fib_entry=0.382 fib_early=0.0 ") and t.endswith(
+        "min_r=2.0 windows=off"
+    )
+    assert "spread=0.3 " in t and "early_leg=0.382 fade_min=1.0 " in t
+    assert "fib_early=0.1 " in bot.Params(fib_early=0.10, fib_stop="line_tight").text()
 
 
 def test_every_reason_the_code_can_give_is_ranked() -> None:
@@ -1447,19 +1583,13 @@ def test_old_log_ladder_values_are_carried_into_extension(tmp_path) -> None:
     assert bot._read(path, bot.LOG_COLUMNS)[0]["extension"] == "1.618"
 
 
-def test_fib_lean_switch_validated_in_text_and_cli() -> None:
+def test_fib_lean_switch_validated_in_text_and_database(tmp_path) -> None:
     assert bot.Params().fib_lean == "on" and "fib_lean=on" in bot.Params().text()
     assert "fib_lean=off" in bot.Params(fib_lean="off").text()
     with pytest.raises(ValueError):
         bot.Params(fib_lean="maybe")
-    seen: dict[str, bot.Params] = {}
-    orig = bot.run
-    bot.run = lambda first, last, params, *a, **k: seen.update(params=params)  # type: ignore[assignment]
-    try:
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--fib-lean", "off"])
-    finally:
-        bot.run = orig  # type: ignore[assignment]
-    assert seen["params"].fib_lean == "off"
+    assert _main_params(tmp_path, fib_lean="off").fib_lean == "off"
+    _refused(tmp_path, fib_lean="maybe")
 
 
 # range LOW 4000 / HIGH 4100 (height 100): the HIGH zone is 4088..4127, the LOW zone 3973..4012
@@ -1565,21 +1695,13 @@ def test_acceptance_27_oct_1830_h4_not_clear_and_no_fade_leg(full) -> None:
     assert [bot.analyse_leg(d, p).reason for d in fi.datas] == ["fib: no live leg"] * 2
 
 
-def test_setup_days_parameter_text_and_refused_values() -> None:
+def test_setup_days_parameter_text_and_refused_values(tmp_path) -> None:
     assert bot.Params().setup_days == 2 and "setup_days=2" in bot.Params().text()
     for bad in (1, 3, 0, 2.5, "2"):
         with pytest.raises(ValueError):
             bot.Params(setup_days=bad)  # type: ignore[arg-type]
-    seen: dict[str, bot.Params] = {}
-    orig = bot.run
-    bot.run = lambda first, last, params, *a, **k: seen.update(params=params)  # type: ignore[assignment]
-    try:
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--setup-days", "2"])
-    finally:
-        bot.run = orig  # type: ignore[assignment]
-    assert seen["params"].setup_days == 2
-    with pytest.raises(SystemExit):
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--setup-days", "3"])
+    assert _main_params(tmp_path, setup_days="2").setup_days == 2
+    _refused(tmp_path, setup_days="3")
     assert (bot.state11.BARS_PER_DAY["M5"], bot.state11.BARS_PER_DAY["M15"]) == (274, 92)
 
 
@@ -1683,7 +1805,7 @@ def test_m5_trend_now_reads_the_latest_two_of_each_kind_wherever_they_fall() -> 
     assert bot.analyse_leg(replace(d, m5_pv=[*d.m5_pv, *late]), PN).reason != "fib: no M5 trend of its side"
 
 
-def test_m5_trend_h100_is_unchanged_and_still_selectable() -> None:
+def test_m5_trend_h100_is_unchanged_and_still_selectable(tmp_path) -> None:
     assert bot.Params().m5_trend == "now" and "m5_trend=now" in bot.Params().text()
     assert "m5_trend=h100" in bot.Params(m5_trend="h100", early_leg="off").text()
     with pytest.raises(ValueError):
@@ -1695,16 +1817,8 @@ def test_m5_trend_h100_is_unchanged_and_still_selectable() -> None:
     mixed = with_m5(leg_data(m5_highs=()), (4080.0, 4090.0), (4010.0, 4000.0))
     assert bot.analyse_leg(mixed, PB).reason == "order written"
     assert bot.analyse_leg(mixed, PN).reason == "fib: no M5 trend of its side"
-    seen: dict[str, bot.Params] = {}
-    orig = bot.run
-    bot.run = lambda first, last, params, *a, **k: seen.update(params=params)  # type: ignore[assignment]
-    try:
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--m5-trend", "h100"])
-    finally:
-        bot.run = orig  # type: ignore[assignment]
-    assert seen["params"].m5_trend == "h100"
-    with pytest.raises(SystemExit):
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--m5-trend", "x"])
+    assert _main_params(tmp_path, m5_trend="h100").m5_trend == "h100"
+    _refused(tmp_path, m5_trend="x")
     assert bot.RANK["fib: against the H4 trend"] < bot.RANK["fib: no live leg"]
 
 
@@ -1739,7 +1853,7 @@ def test_m5_trend_now_ignores_an_unfixed_pivot_and_a_pivot_outside_the_look() ->
 # --- rule 2: the early leg, the latest fixed low, and the keys ---------------------------------------------------
 
 
-def test_early_leg_parameter_default_text_validation_and_cli() -> None:
+def test_early_leg_parameter_default_text_validation_and_database(tmp_path) -> None:
     assert bot.Params().early_leg == 0.382 and "early_leg=0.382" in bot.Params().text()
     assert (
         "early_leg=off" in bot.Params(early_leg="off").text()
@@ -1748,19 +1862,10 @@ def test_early_leg_parameter_default_text_validation_and_cli() -> None:
     for bad in (0.5, 0.236, "on", 1, None):
         with pytest.raises(ValueError):
             bot.Params(early_leg=bad)  # type: ignore[arg-type]
-    seen: dict[str, bot.Params] = {}
-    orig = bot.run
-    bot.run = lambda first, last, params, *a, **k: seen.update(params=params)  # type: ignore[assignment]
-    try:
-        for flag, want in (("0.618", 0.618), ("off", "off"), ("0.382", 0.382)):
-            bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--early-leg", flag])
-            assert seen["params"].early_leg == want
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02"])
-        assert seen["params"].early_leg == 0.382
-    finally:
-        bot.run = orig  # type: ignore[assignment]
-    with pytest.raises(SystemExit):
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--early-leg", "0.5"])
+    for text, want in (("0.618", 0.618), ("off", "off"), ("0.382", 0.382)):
+        assert _main_params(tmp_path, early_leg=text).early_leg == want
+    assert _main_params(tmp_path).early_leg == 0.382
+    _refused(tmp_path, early_leg="0.5")
 
 
 # --- rule 2: the leg traded with it (0 % at the start, 100 % at the end) --------------------------------------------
@@ -2296,7 +2401,7 @@ def test_07_oct_h4_reading_and_the_fade_sell_example_on_the_stored_bars(full) ->
     assert fi.h4 == "down" and res7.decision is None
 
 
-def test_fade_parameters_text_validation_and_cli() -> None:
+def test_fade_parameters_text_validation_and_database(tmp_path) -> None:
     d = bot.Params()
     assert (d.fade_min, d.fade_entry) == (1.0, 0.5)
     assert "fade_min=1.0" in d.text() and "fade_entry=0.5" in d.text()
@@ -2304,18 +2409,11 @@ def test_fade_parameters_text_validation_and_cli() -> None:
     for kw in ({"fade_min": 2.0}, {"fade_min": "on"}, {"fade_entry": 0.236}, {"fade_entry": 0.7}):
         with pytest.raises(ValueError):
             bot.Params(**kw)
-    seen: dict[str, bot.Params] = {}
-    orig = bot.run
-    bot.run = lambda first, last, params, *a, **k: seen.update(params=params)  # type: ignore[assignment]
-    try:
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--fade-min", "off", "--fade-entry", "0.382"])
-        assert (seen["params"].fade_min, seen["params"].fade_entry) == ("off", 0.382)
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02"])
-        assert (seen["params"].fade_min, seen["params"].fade_entry) == (1.0, 0.5)
-    finally:
-        bot.run = orig  # type: ignore[assignment]
-    with pytest.raises(SystemExit):
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--fade-entry", "0.7"])
+    q = _main_params(tmp_path, fade_min="off", fade_entry="0.382")
+    assert (q.fade_min, q.fade_entry) == ("off", 0.382)
+    q = _main_params(tmp_path)
+    assert (q.fade_min, q.fade_entry) == (1.0, 0.5)
+    _refused(tmp_path, fade_entry="0.7")
 
 
 # --- rule 17: the break and its retest (trend legs only) ----------------------------------------------------------
@@ -2520,7 +2618,7 @@ def test_rule17_07_oct_sell_retest_on_the_stored_bars(full) -> None:
     )
 
 
-def test_m5_trend_off_applies_rule_3_nowhere_trend_legs_and_retests_alike() -> None:
+def test_m5_trend_off_applies_rule_3_nowhere_trend_legs_and_retests_alike(tmp_path) -> None:
     assert (
         bot.Params(m5_trend="off").m5_trend == "off" and "m5_trend=off" in bot.Params(m5_trend="off").text()
     )
@@ -2542,14 +2640,7 @@ def test_m5_trend_off_applies_rule_3_nowhere_trend_legs_and_retests_alike() -> N
     # rule 16 and the fade leg are not touched by it
     assert bot.analyse_leg(replace(leg_data(), h4="down"), off).reason == "fib: against the H4 trend"
     assert bot.analyse_leg(fade_data(), replace(FADE, m5_trend="off")).reason == "order written"
-    seen: dict[str, bot.Params] = {}
-    orig = bot.run
-    bot.run = lambda first, last, params, *a, **k: seen.update(params=params)  # type: ignore[assignment]
-    try:
-        bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--m5-trend", "off"])
-    finally:
-        bot.run = orig  # type: ignore[assignment]
-    assert seen["params"].m5_trend == "off"
+    assert _main_params(tmp_path, m5_trend="off").m5_trend == "off"
     with pytest.raises(ValueError):
         bot.Params(m5_trend="maybe")
 
@@ -2568,12 +2659,8 @@ def test_rule17_an_early_leg_never_breaks() -> None:
 
 def test_research_runner_variants_summary_kinds_and_trade_lines(tmp_path) -> None:
     research = importlib.import_module("eye.bot_research")
-    assert research.DEFAULT_VARIANTS == {"r3_now": {}, "r3_off": {"m5_trend": "off"}}
-    assert research.make_params(research.DEFAULT_VARIANTS["r3_off"]).m5_trend == "off"
-    assert research.make_params({}).m5_trend == "now"
-    for stale in ("h1_mode", "band_frac", "entry_tfs", "h1_tf", "div_mode", "counter_pivots"):
-        with pytest.raises(SystemExit):
-            research.make_params({stale: 1})
+    for gone in ("DEFAULT_VARIANTS", "make_params"):
+        assert not hasattr(research, gone), gone  # a variant is a stored set now
     base = {"why": "target", "r_net": "2.0", "entry": "4100.00", "stop": "4090.00", "target": "4120.00",
             "side": "BUY", "fill": "07/10 07:40", "decided_at": "07/10 07:30", "structure": "x"}  # fmt: skip
     rows = [
@@ -2605,7 +2692,7 @@ def test_research_runner_variants_summary_kinds_and_trade_lines(tmp_path) -> Non
     assert len(lines) == 3 and lines[0].startswith("07/10 07:40  BUY   trend ")
     assert "SELL  fade" in lines[1] and "stop  R -1.00" in lines[1] and "retest" in lines[2]
     assert "entry 4100.00  stop 4090.00  target 4120.00  target  R +2.00" in lines[0]
-    result = {"variant": "v", "params": "{}", "top_reasons": "a 1", **m}
+    result = {"market": "XAUUSD", "set": "v", "version": 5, "params": "{}", "top_reasons": "a 1", **m}
     research.write_summary(result, tmp_path, "2026-10-01", "2026-10-28")
     got = list(csv.DictReader((tmp_path / "summary.csv").open(encoding="utf-8")))
     assert (
@@ -2613,49 +2700,88 @@ def test_research_runner_variants_summary_kinds_and_trade_lines(tmp_path) -> Non
         and got[0]["fills"] == "3"
         and got[0]["r_per_fill"] == "1.0"
         and got[0]["to"] == "2026-10-28"
+        and (got[0]["market"], got[0]["set"], got[0]["version"]) == ("XAUUSD", "v", "5")
     )
     assert list(got[0]) == research.SUMMARY_COLUMNS
     table = research.table([{**result, "r_total": 3.0}])
-    assert "orders" in table and "R/fill" in table and "+1.000" in table
+    assert "orders" in table and "R/fill" in table and "+1.000" in table and "XAUUSD/v@v5" in table
 
 
-def test_research_runner_refuses_variant_names_that_leave_the_research_folder(tmp_path) -> None:
+def test_research_runner_refuses_names_that_leave_the_research_folder(tmp_path) -> None:
     research = importlib.import_module("eye.bot_research")
     root = tmp_path / "research"
     root.mkdir()
     for good in ("r3_now", "r3-off", "A1", "x"):
-        assert research.variant_folder(good, root) == (root / good).resolve()
+        assert research.variant_folder("XAUUSD", good, root) == (root / "XAUUSD" / good).resolve()
     for bad in (
         "", "..", ".", "../x", "..\\x", "a/b", "a\\b", "/abs", "C:\\x", "../../eye", "a b", "a.b",
         "a\\n", "-a/..",
     ):  # fmt: skip
         with pytest.raises(SystemExit):
-            research.variant_folder(bad, root)
+            research.variant_folder("XAUUSD", bad, root)
+        with pytest.raises(SystemExit):
+            research.variant_folder(bad, "default", root)
     # a name that passes the pattern but resolves elsewhere: a link inside root pointing outside it
     outside = tmp_path / "outside"
     outside.mkdir()
+    (root / "XAUUSD").mkdir()
     try:
-        (root / "link").symlink_to(outside, target_is_directory=True)
+        (root / "XAUUSD" / "link").symlink_to(outside, target_is_directory=True)
     except (OSError, NotImplementedError):
         pass  # no symlink right on this machine: the pattern test above stands
     else:
         with pytest.raises(SystemExit):
-            research.variant_folder("link", root)
+            research.variant_folder("XAUUSD", "link", root)
     # run_variant refuses before it runs or writes anything
     with pytest.raises(SystemExit):
-        research.run_variant("../../eye", {}, "2026-10-19", "2026-10-19", {}, None, root=root)
-    assert list(root.iterdir()) == [] or [p.name for p in root.iterdir()] == ["link"]
-    assert not (tmp_path / "eye").exists()
-    with pytest.raises(SystemExit):  # the command line refuses a bad name in --variants before running
-        research.main(
-            ["--from", "2026-10-19", "--to", "2026-10-19", "--variants", str(_variants_file(tmp_path))]
+        research.run_variant(
+            "XAUUSD", "../../eye", 1, bot.Params(), "2026-10-19", "2026-10-19", {}, None, root=root
         )
+    assert [p.name for p in (root / "XAUUSD").iterdir()] in ([], ["link"])
+    assert not (tmp_path / "eye").exists()
 
 
-def _variants_file(tmp_path):
-    path = tmp_path / "v.json"
-    path.write_text('{"../../eye": {}}', encoding="utf-8")
-    return path
+def test_research_main_runs_each_set_from_the_database_into_market_set_folders(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    research = importlib.import_module("eye.bot_research")
+    _, db = _seeded_db(tmp_path)
+    root = tmp_path / "research"
+    monkeypatch.setattr(research, "RESEARCH", root)
+    monkeypatch.setattr(research.bot2e, "load_frames", lambda: {})
+    monkeypatch.setattr(research, "bars", lambda: None)
+    calls: list = []
+
+    def fake_walk(days, p, full, prior=(), kept=(), label=""):
+        calls.append((p, label))
+        bot.PEAK.update(live=0, filled=0)
+        return [], []
+
+    monkeypatch.setattr(research.bot2e, "walk_days", fake_walk)
+    research.main(["--from", "2026-10-01", "--to", "2026-10-01", "--db", str(db), "--sets", "default,r3_off"])
+    assert calls == [
+        (bot.Params(min_r=1.5, order_life_bars=12), "config=XAUUSD/default@v23"),
+        (bot.Params(), "config=XAUUSD/r3_off@v44"),
+    ]
+    for name, version in (("default", "23"), ("r3_off", "44")):
+        got = list(csv.DictReader((root / "XAUUSD" / name / "summary.csv").open(encoding="utf-8")))
+        assert (got[0]["market"], got[0]["set"], got[0]["version"]) == ("XAUUSD", name, version)
+    out = capsys.readouterr().out
+    assert "XAUUSD/default@v23" in out and "XAUUSD/r3_off@v44" in out
+    # a market without bars, a missing set and a bad name stop before bars are loaded or anything is written
+    monkeypatch.setattr(research.bot2e, "load_frames", lambda: pytest.fail("bars loaded"))
+    before = sorted(p.name for p in root.iterdir())
+    for extra, text in (
+        (["--market", "EURUSD"], "no bars for EURUSD"),
+        (["--sets", "default,nope"], "seed --market XAUUSD --set nope"),
+        (["--sets", "../x"], "letters, digits"),
+    ):
+        with pytest.raises(SystemExit, match=text):
+            research.main(["--from", "2026-10-01", "--to", "2026-10-01", "--db", str(db), *extra])
+    assert sorted(p.name for p in root.iterdir()) == before
+    for gone in ("--variants", "--only"):
+        with pytest.raises(SystemExit):
+            research.main(["--from", "2026-10-01", "--to", "2026-10-01", gone, "x"])
 
 
 def test_start_of_a_midnight_decision_starts_at_its_now() -> None:

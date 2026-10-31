@@ -14,14 +14,19 @@ nothing written and ``used`` kept for the run (a leg that has produced an order 
   order price, stop and target from the decision bar with planned R, and where it would fill and exit, scored
   by ``eye/score.py`` (BOT_RULES rule 12).
 
-Usage: bot_read_day.py 2026-10-07 [name=value ...]   (overrides of ``bot2e.Params``, e.g. fib_entry=0.382)
+Usage: bot_read_day.py 2026-10-07 [market=XAUUSD] [set=default] [db=PATH] [name=value ...]
+
+The base ``Params`` are the stored set ``market`` / ``set`` of the config database ``db`` (default
+``data/bot_config.db``); ``name=value`` overrides (``bot2e.Params`` fields, e.g. fib_entry=0.382) apply
+on top, for drawing only. The drawing's title names the set, its version and every override. The market
+is checked before any bar is loaded.
 """
 
 from __future__ import annotations
 
 import re
 import sys
-from dataclasses import fields
+from dataclasses import fields, replace
 from pathlib import Path
 from typing import Any
 
@@ -77,17 +82,53 @@ REASON_STYLE: list[tuple[str, str, tuple[str, ...]]] = [
 STYLE_OF = {reason: (label, colour) for label, colour, reasons in REASON_STYLE for reason in reasons}
 
 
+def split_base(args: list[str]) -> tuple[dict[str, str], list[str]]:
+    """Take ``market=``, ``set=`` and ``db=`` out of the ``name=value`` words: (the base choice, the rest)."""
+    base = {"market": bot2e.MARKET, "set": "default", "db": str(bot2e.CONFIG_DB)}
+    rest: list[str] = []
+    for a in args:
+        name, sep, text = a.partition("=")
+        if sep and name in base:
+            base[name] = text
+        else:
+            rest.append(a)
+    return base, rest
+
+
+def resolve_params(base: dict[str, str], overrides: dict[str, Any]) -> tuple[bot2e.Params, int]:
+    """(the stored set with the overrides on top, the set's version). The market is checked first and a
+    database error stops with its message (``bot2e.load_set``); an override that makes the set
+    invalid stops."""
+    params, version = bot2e.load_set(base["db"], base["market"], base["set"])  # the one read of the set
+    return apply_overrides(params, overrides), version
+
+
+def apply_overrides(params: bot2e.Params, overrides: dict[str, Any]) -> bot2e.Params:
+    """The loaded ``params`` with the overrides on top, checked by ``Params``; an invalid result stops."""
+    try:
+        return replace(params, **overrides)
+    except ValueError as e:
+        raise SystemExit(f"bad override: {e}") from None
+
+
+def config_line(base: dict[str, str], version: int, overrides: dict[str, Any]) -> str:
+    """The set a drawing was made from and every override: ``config=XAUUSD/default@v21; overrides: none``."""
+    shown = " ".join(f"{k}={bot2e.param_to_text(k, v)}" for k, v in overrides.items()) or "none"
+    return f"{bot2e.config_label(base['market'], base['set'], version)}; overrides: {shown}"
+
+
 def parse_overrides(args: list[str]) -> dict[str, Any]:
-    """``name=value`` words to ``Params`` keyword arguments, typed like each field's default."""
-    known = {f.name: f for f in fields(bot2e.Params)}
-    default = bot2e.Params()
+    """``name=value`` words to ``Params`` keyword arguments, read by ``bot2e.param_from_text``."""
+    known = {f.name for f in fields(bot2e.Params)}
     out: dict[str, Any] = {}
     for a in args:
         name, sep, text = a.partition("=")
         if not sep or name not in known:
             raise SystemExit(f"unknown parameter override {a!r}")
-        current = getattr(default, name)
-        out[name] = type(current)(text) if not isinstance(current, str) else text
+        try:
+            out[name] = bot2e.param_from_text(name, text)
+        except ValueError as e:
+            raise SystemExit(f"bad parameter override {a!r}: {e}") from None
     return out
 
 
@@ -214,7 +255,9 @@ def score_orders(orders: list[dict[str, Any]], p: bot2e.Params, m5: pd.DataFrame
                 )
 
 
-def draw(day: str, p: bot2e.Params, overrides: dict[str, Any], full: dict[str, pd.DataFrame]) -> Path:
+def draw(
+    day: str, p: bot2e.Params, overrides: dict[str, Any], full: dict[str, pd.DataFrame], config: str = ""
+) -> Path:
     m5 = full["M5"]
     start, end = day_bounds(day)
     bars = m5[(m5.index >= start) & (m5.index < end)]
@@ -335,8 +378,10 @@ def draw(day: str, p: bot2e.Params, overrides: dict[str, Any], full: dict[str, p
     shown = ", ".join(f"{k}={getattr(p, k)}" for k in keys)
     counts = (f"{n_rows} window bars, {len(orders)} orders, {fills} filled, {results} resolved, "
               f"R {total_r:+.2f}")  # fmt: skip
-    ax.set_title(f"XAUUSD M5  {day} (Thai)  |  {counts}\n{shown}   [no max_orders; used kept per run; "
-                 f"overrides: {overrides or 'none'}]", fontsize=11)  # fmt: skip
+    ax.set_title(
+        f"XAUUSD M5  {day} (Thai)  |  {counts}\n{shown}   [no max_orders; used kept per run]\n{config}",
+        fontsize=11,
+    )
     seen = {r["reason"] for r in walked["rows"]}
     handles = [Patch(color=c, label=label) for label, c, reasons in REASON_STYLE if seen & set(reasons)]
     for label, key in (("BUY / UP", "BUY"), ("SELL / DOWN", "SELL"), ("none", "none")):
@@ -356,8 +401,12 @@ def draw(day: str, p: bot2e.Params, overrides: dict[str, Any], full: dict[str, p
 def main(argv: list[str]) -> None:
     if not argv:
         raise SystemExit("usage: bot_read_day.py YYYY-MM-DD [name=value ...]")
-    overrides = parse_overrides(argv[1:])
-    draw(argv[0], bot2e.Params(**overrides), overrides, bot2e.load_frames())
+    base, rest = split_base(argv[1:])
+    overrides = parse_overrides(rest)
+    params, version = resolve_params(base, overrides)  # before any bar is loaded
+    line = config_line(base, version, overrides)
+    print(line)
+    draw(argv[0], params, overrides, bot2e.load_frames(), line)
 
 
 if __name__ == "__main__":

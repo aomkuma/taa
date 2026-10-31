@@ -16,6 +16,17 @@ sys.path.insert(0, str(ROOT))
 
 view = importlib.import_module("eye.research.bot_view")
 bot = importlib.import_module("eye.bot2e")
+
+
+def seeded_db(tmp_path: Path) -> Path:
+    cfg = importlib.import_module("eye.bot_config")
+    db = tmp_path / "cfg" / "bot_config.db"
+    at = pd.Timestamp("2026-10-31 10:00", tz="UTC").to_pydatetime()
+    cfg.seed(db, "XAUUSD", "default", "t", at)
+    cfg.set_values(db, "XAUUSD", "default", "t", at, "n", {"min_r": "1.5"})
+    return db
+
+
 SwingKind = importlib.import_module("app.indicators.price_action").SwingKind
 
 
@@ -172,3 +183,91 @@ def test_retest_sentence_order_and_reason() -> None:
     assert "break and retest: ORDER limit 4161.42, SL 4170.39, TP 4139.09 (2), R 2.46" in text
     refused = SimpleNamespace(reason="fib: no M5 trend of its side", setup=None)
     assert view.retest_sentence("SELL", refused).endswith("no order: no M5 trend of its side")
+
+
+def test_parse_args_takes_the_base_set() -> None:
+    got = view.parse_args(["2026-10-07", "07:00"])
+    assert got["base"] == {"market": "XAUUSD", "set": "default", "db": str(bot.CONFIG_DB)}
+    got = view.parse_args(["2026-10-07", "legs", "set=r3_off", "market=EURUSD", "db=x.db", "min_r=1"])
+    assert got["base"] == {"market": "EURUSD", "set": "r3_off", "db": "x.db"} and got["overrides"] == {
+        "min_r": 1.0
+    }
+
+
+def test_params_are_the_stored_set_with_tf_and_overrides_on_top(tmp_path: Path) -> None:
+    db = str(seeded_db(tmp_path))
+    args = view.parse_args(["2026-10-07", "07:00", "tf=M15", f"db={db}", "fade_min=off"])
+    p, version = view.params_of(args)
+    assert (p.fib_tf, p.fade_min, p.min_r, version) == ("M15", "off", 1.5, 22)
+    p, _ = view.params_of(view.parse_args(["2026-10-07", "07:00", f"db={db}", "fib_tf=M15"]))
+    assert p.fib_tf == "M15"  # an explicit fib_tf override wins over tf
+
+
+def test_another_market_stops_before_bars_load(tmp_path: Path, monkeypatch) -> None:
+    db = str(seeded_db(tmp_path))
+    monkeypatch.setattr(bot, "load_frames", lambda: pytest.fail("bars loaded"))
+    one = view.parse_args(["2026-10-07", "07:00", f"db={db}", "market=EURUSD"])
+    with pytest.raises(SystemExit, match="no bars for EURUSD"):
+        view.draw(one)
+    legs = view.parse_args(["2026-10-07", "legs", f"db={db}", "market=EURUSD"])
+    with pytest.raises(SystemExit, match="no bars for EURUSD"):
+        view.legs_mode(legs)
+    missing = view.parse_args(["2026-10-07", "07:00", f"db={db}", "set=nope"])
+    with pytest.raises(SystemExit, match="seed --market XAUUSD --set nope"):
+        view.draw(missing)
+
+
+def test_the_header_lists_a_tf_that_changes_the_sets_fib_tf(tmp_path: Path) -> None:
+    db = str(seeded_db(tmp_path))
+    _, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", "tf=M15", f"db={db}"]))
+    assert line == "config=XAUUSD/default@v22; overrides: fib_tf=M15"
+    _, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", "tf=M5", f"db={db}"]))
+    assert line == "config=XAUUSD/default@v22; overrides: none"  # tf equal to the set's fib_tf adds nothing
+    _, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", f"db={db}", "min_r=3"]))
+    assert line.endswith("overrides: min_r=3.0")
+    _, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", "tf=M15", f"db={db}", "fib_tf=M5"]))
+    assert line.endswith("overrides: fib_tf=M5")  # an explicit fib_tf override is shown as given
+    p, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", "tf=M15", f"db={db}", "min_r=3"]))
+    assert p.fib_tf == "M15" and line.endswith("overrides: fib_tf=M15 min_r=3.0")
+
+
+def test_each_tool_reads_the_set_once_per_drawing(tmp_path: Path, monkeypatch) -> None:
+    cfg = importlib.import_module("eye.bot_config")
+    day = importlib.import_module("eye.research.bot_read_day")
+    db = str(seeded_db(tmp_path))
+    calls: list[tuple] = []
+    real = cfg.load_params
+
+    def counting(*a, **k):
+        calls.append(a)
+        return real(*a, **k)
+
+    monkeypatch.setattr(cfg, "load_params", counting)
+    view.config_of(view.parse_args(["2026-10-07", "07:00", "tf=M15", f"db={db}", "min_r=3"]))
+    assert len(calls) == 1
+    calls.clear()
+    base, rest = day.split_base([f"db={db}", "min_r=3"])
+    day.resolve_params(base, day.parse_overrides(rest))
+    assert len(calls) == 1
+
+
+def test_a_legs_run_reads_the_set_once_for_all_its_images(tmp_path: Path, monkeypatch) -> None:
+    cfg = importlib.import_module("eye.bot_config")
+    db = str(seeded_db(tmp_path))
+    calls: list[tuple] = []
+    real = cfg.load_params
+    monkeypatch.setattr(cfg, "load_params", lambda *a, **k: (calls.append(a), real(*a, **k))[1])
+    t = [pd.Timestamp(f"2026-10-07 0{h}:00", tz="UTC") for h in (1, 2, 3)]
+    seen: list = []
+    monkeypatch.setattr(bot, "load_frames", lambda: {})
+    monkeypatch.setattr(view, "new_leg_moments", lambda date, p, full: [(x, "BUY", None) for x in t])
+    monkeypatch.setattr(view, "summary_line", lambda full, p, nu, side: "line")
+
+    def fake_draw(one, full=None, only_side=None, resolved=None):
+        seen.append(resolved)
+        return Path("x.png")
+
+    monkeypatch.setattr(view, "draw", fake_draw)
+    view.legs_mode(view.parse_args(["2026-10-07", "legs", "tf=M15", f"db={db}"]))
+    assert len(calls) == 1 and len(seen) == 3
+    assert all(r is seen[0] and r[2].endswith("overrides: fib_tf=M15") for r in seen)

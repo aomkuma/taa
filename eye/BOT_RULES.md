@@ -81,6 +81,75 @@ order instead. Rule 13 decides between a BUY and a SELL candidate; rule 12 gover
 A combination without meaning (`fib_early` > 0 with an entry other than 0.382 or without `line_tight`; `fib_stop`
 swing with an entry other than 0.618; `line_tight` without `fib_early`) is refused at start [Claude].
 
+### The parameters come from a database (the owner, 2026-10-31)
+
+The owner: *"I want every config value read from a db"*; *"the web page later - this for now, because some markets
+may need some values switched off"*. The form [Claude], agreed by the owner (*"do it"*):
+
+- **The database**: SQLite, `data/bot_config.db` (its own file, apart from the trading system's databases; `data/`
+  is not in git, so the history below is the record). Every program that takes it has `--db PATH` (default that
+  file); tests use a temporary file. **On a fresh machine** the file does not exist: the first step is
+  `eye/bot_config.py seed --market XAUUSD --set default --by <who>`; a run without the file or the set stops with a
+  message that names this command, with the `--db` in use when it is not the default.
+- **A set** - a full set of every field of `Params` (the table above), named by **market** (`XAUUSD`, ...) and **set
+  name** (`default`, `r3_off`, ...); both are path-safe - letters, digits, `_` and `-` only (they name folders),
+  checked on every write and read. A market may have several sets; a set of one market says nothing about another.
+- **Text form of a value** - one pair of functions in `eye/bot2e.py`, `param_to_text(name, value)` and
+  `param_from_text(name, text)`, used by the database, by `Params.text()` and by the drawing tools' `name=value`
+  overrides (`bot_read_day.parse_overrides` today types by the default's type, so `early_leg=off` fails - it uses
+  these instead): a float as Python's `repr` (the shortest text that reads back to the same float: `0.1`, `0.382`,
+  `2.0`), an int as digits, a text field as itself; `early_leg` and `fade_min` - `off`, else a float. Reading back
+  must give exactly the value written (`param_from_text(n, param_to_text(n, v)) == v` for every field).
+  `Params.text()` keeps its order of fields and switches to this form (`fib_early=0.1` where it wrote `0.1` already;
+  `min_r=2.0` where it wrote `2`).
+- **Table `config_change`** - append-only, one row per value written: `id` (integer, increasing), `market`, `set_name`,
+  `name` (a `Params` field), `value` (text, as `Params.text()` writes it), `changed_at_utc` (ISO, UTC), `changed_by`,
+  `note`. Nothing is updated or deleted. A set's **current values** are, per `name`, the row with the highest `id`;
+  its **version** is the highest `id` among its rows. A set's values and version are read in one query (one
+  snapshot).
+- **Reading a set** (`eye/bot_config.py` `load_params(db, market, set_name) -> (Params, version)`; in `eye/bot_config.py`, not `bot2e.py`, so the two do not import each other): every `Params` field must be
+  present and no other name may be - otherwise it stops with the missing / unknown names; **no value falls back to
+  the code's default**. Each text value is turned into the field's type (float, int, text; for `early_leg` and
+  `fade_min` the text `off` stays text, else a float) and the whole set goes through `Params` (its allowed values
+  and combinations) - a set `Params` refuses stops the run. A set that does not exist stops the run.
+- **Writing** (`eye/bot_config.py`, a command line; every write is one transaction, and the whole set as it would be
+  after the write is checked through `Params` first - a write that makes the set invalid writes nothing; every write
+  opens with `BEGIN IMMEDIATE`, so two writers are taken one after the other, and the existence check and the
+  validation are made inside that transaction; the time `changed_at_utc` is read once in the command's `main`, in
+  UTC, and passed down - the write functions take it as an argument, tests give a fixed time):
+  - `seed --market M --set S --by WHO` - a new set from the code's defaults (`Params()`), note "seeded from the code
+    defaults"; refused if the set exists.
+  - `copy --market M --set S --to-market M2 --to-set S2 --by WHO [--note]` - a new set with the values of an existing
+    one; refused if the target exists.
+  - `set --market M --set S --by WHO --note TEXT name=value [name=value ...]` - one row per value **that changes**;
+    a value equal to the current one is not written; an unknown name is refused.
+  - `show --market M --set S` - the current values and the version; `list` - every market and set with its version;
+    `history --market M --set S [name]` - the rows, oldest first.
+- **Who reads it**:
+  - `eye/bot2e.py` (a run): `--market` (default `XAUUSD`) and `--set` (default `default`); the parameter flags
+    (`--fib-tf`, `--m5-trend` ...) are **removed** - the values come only from the set.
+  - `eye/bot_research.py`: a variant is a set - `--sets S1,S2` (default `default`) on `--market` (default `XAUUSD`);
+    the variant's folder is `eye/research/<market>/<set name>/` (a later run of the same set replaces it, as a
+    variant's folder is replaced now); its `summary.csv` and the printed table carry the market, set and version. The JSON `--variants` and `DEFAULT_VARIANTS` are removed.
+  - `eye/research/bot_view.py` and `bot_read_day.py` (drawings, no trading): take `market=` and `set=` (defaults
+    `XAUUSD`, `default`) as the base; their `name=value` overrides stay for drawing only, and the drawing's text
+    names the set, its version and every override.
+  - Tests may still build `Params(...)` directly.
+- **Markets**: the bars loaded are XAUUSD's (`eye/walk.py`); the market is checked **before** any bar is loaded - a
+  run or drawing on another market stops with "no bars for <market>" until its bars are wired in.
+- **Written into every decision** (rule 14): the structure text's parameter part begins `config=<market>/<set>@v<version>`,
+  then every value as now (`Params.text()`); a research run's `summary.csv` has the market, set and version.
+- The code's defaults (`Params()`) stay as the **seed** of a new set; the table above is the default set's values.
+- **What a build must show** (tests, on a temporary database and a fixed time): a seeded set loads back equal to
+  `Params()`; the text round trip for every field (and `0.1`, `off`); a set missing a field, or with an unknown name,
+  stops with the names; a missing database and a missing set stop with the seed command; an invalid value or
+  combination written by `set` writes nothing (the history unchanged); `set` of an unchanged value writes no row; the
+  version rises with each write and `history` lists every row; `seed` / `copy` onto an existing set are refused; two
+  writes from two connections both land, one after the other; another market stops with "no bars for <market>"
+  before loading bars; a decision's structure text begins `config=XAUUSD/default@v<n>`; one research run from a
+  seeded temporary database writes `eye/research/XAUUSD/default/` (in a temporary root) with the market, set and
+  version in its summary; `bot_view` / `bot_read_day` read the set and their text names it and the overrides.
+
 ## 0. Data, time, costs
 
 - **Data:** FBS-Demo XAUUSD bars - **H4 (rule 16), M15 and M5** (`data/history/FBS-Demo/XAUUSD`); MACD 12 / 26 / 9 as MT5 draws it
@@ -579,5 +648,8 @@ which for a decision at 00:00 is 23:55 of the **previous** day while `cutoff_tha
 then that previous day at 23:55 + 5 min (= `now`), never a day later - when `decided_at`'s `dd/mm` is the day before
 `cutoff_thai`'s date, the date is moved back one day. The same row scored by `walk_days`' live-order check starts at
 the same time.
+**Built** (2026-10-31, Codex reviewed until it found nothing, the full suite green): "The parameters come from a
+database" (under Parameters) - `eye/bot_config.py`; runs before it wrote `eye/research/<variant>/`, runs after it
+`eye/research/<market>/<set>/`. A fresh machine seeds first: `eye/bot_config.py seed --market XAUUSD --set default --by <who>`.
 **Open**: levels from the left / the owner's price clusters as obstacles to a target - to be measured first. The
 set-aside work is in `eye/wip/`; `eye/state11.py` (rule 11, failed) is kept, unused.

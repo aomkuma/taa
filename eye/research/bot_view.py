@@ -6,11 +6,15 @@ dashed), the Fibo the bot would draw on its latest leg of each side (rule 2; MT5
 leg's start to the right edge at 0, 23.6, 38.2, 50, 61.8, 78.6, 100, 127.2, 161.8 %), and the bot's
 decision in plain words.
 
-Usage: bot_view.py 2026-10-07 07:00 [tf=M5|M15] [hours_before=8] [hours_after=8] [name=value ...]
+Usage: bot_view.py 2026-10-07 07:00 [tf=M5|M15] [hours_before=8] [hours_after=8] [market=XAUUSD] [set=default]
+       [db=PATH] [name=value ...]
        bot_view.py 2026-10-07 legs [tf=M5|M15] [...]   one image at every moment of the day's windows where
        a NEW leg first appears to the bot (a leg key not seen before that day), per side
 ``tf`` is also the bot's setup timeframe (``fib_tf``) unless ``fib_tf=`` is given. The moment is the M5 close
 the bot decides at (07:00 = the bar that opened 06:55); the window test is off.
+The base ``Params`` are the stored set ``market`` / ``set`` of the config database ``db`` (default
+``data/bot_config.db``); ``name=value`` overrides apply on top, for drawing only. The text names the set, its
+version and every override. The market is checked before any bar is loaded.
 """
 
 from __future__ import annotations
@@ -36,7 +40,8 @@ LADDER = day_tools.FIB_LEVELS
 LEG_COLOUR = {"BUY": "#4fc3f7", "SELL": "#ffa726"}
 ZIGZAG_COLOUR = "#ffeb3b"
 USAGE = (
-    "usage: bot_view.py YYYY-MM-DD HH:MM|legs [tf=M5|M15] [hours_before=8] [hours_after=8] [name=value ...]"
+    "usage: bot_view.py YYYY-MM-DD HH:MM|legs [tf=M5|M15] [hours_before=8] [hours_after=8] "
+    "[market=XAUUSD] [set=default] [db=PATH] [name=value ...]"
 )
 
 
@@ -49,8 +54,10 @@ def parse_args(argv: list[str]) -> dict[str, Any]:
     if tf not in ("M5", "M15"):
         raise SystemExit(f"tf must be M5 or M15, got {tf!r}")
     before, after = float(rest.pop("hours_before", 8)), float(rest.pop("hours_after", 8))
-    overrides = day_tools.parse_overrides([f"{k}={v}" for k, v in rest.items()])
+    base, others = day_tools.split_base([f"{k}={v}" for k, v in rest.items()])
+    overrides = day_tools.parse_overrides(others)
     return {
+        "base": base,
         "date": argv[0],
         "hhmm": None if argv[1] == "legs" else argv[1],
         "tf": tf,
@@ -58,6 +65,23 @@ def parse_args(argv: list[str]) -> dict[str, Any]:
         "after": after,
         "overrides": overrides,
     }
+
+
+def config_of(args: dict[str, Any]) -> tuple[bot2e.Params, int, str]:
+    """(the stored set with ``fib_tf`` = ``tf`` and the overrides on top, the set's version, the config line).
+    A ``tf`` that changes the set's ``fib_tf`` is listed among the overrides in the line."""
+    stored, version = bot2e.load_set(args["base"]["db"], args["base"]["market"], args["base"]["set"])
+    shown = dict(args["overrides"])
+    if "fib_tf" not in shown and args["tf"] != stored.fib_tf:
+        shown = {"fib_tf": args["tf"], **shown}
+    p = day_tools.apply_overrides(stored, {"fib_tf": args["tf"], **args["overrides"]})  # the set is read once
+    return p, version, day_tools.config_line(args["base"], version, shown)
+
+
+def params_of(args: dict[str, Any]) -> tuple[bot2e.Params, int]:
+    """(the stored set, with ``fib_tf`` = ``tf`` and the overrides on top; the set's version)."""
+    p, version, _ = config_of(args)
+    return p, version
 
 
 def view_bounds(
@@ -207,14 +231,15 @@ def summary_line(full: dict[str, pd.DataFrame], p: bot2e.Params, nu: pd.Timestam
 
 
 def legs_mode(args: dict[str, Any]) -> list[Path]:
+    resolved = config_of(args)  # before any bar is loaded; one snapshot of the set for every image
+    p = resolved[0]
     full = bot2e.load_frames()
-    p = bot2e.Params(**{"fib_tf": args["tf"], **args["overrides"]})
     paths: list[Path] = []
     rows = new_leg_moments(args["date"], p, full)
     print(f"{len(rows)} new legs on {args['date']} ({args['tf']}):")
     for nu, side, _ in rows:
         one = {**args, "hhmm": f"{nu.tz_convert(TH):%H:%M}"}
-        paths.append(draw(one, full, side))
+        paths.append(draw(one, full, side, resolved=resolved))
     print()
     print(f"New legs of {args['date']} ({args['tf']}), Thai time of the moment:")
     for (nu, side, _), path in zip(rows, paths, strict=True):
@@ -224,11 +249,16 @@ def legs_mode(args: dict[str, Any]) -> list[Path]:
 
 
 def draw(
-    args: dict[str, Any], full: dict[str, pd.DataFrame] | None = None, only_side: str | None = None
+    args: dict[str, Any],
+    full: dict[str, pd.DataFrame] | None = None,
+    only_side: str | None = None,
+    resolved: tuple[bot2e.Params, int, str] | None = None,
 ) -> Path:
+    """One image. ``resolved`` is the (params, version, config line) a legs run took once; alone, the set is
+    read here."""
+    p, _, config = resolved if resolved is not None else config_of(args)  # market checked before bars load
     full = full if full is not None else bot2e.load_frames()
     tf = args["tf"]
-    p = bot2e.Params(**{"fib_tf": tf, **args["overrides"]})
     now, start, end = view_bounds(args["date"], args["hhmm"], args["before"], args["after"])
     frames = bot2e.cut(full, now)
     df_all = full[tf]
@@ -274,7 +304,8 @@ def draw(
     boxes: list[tuple[str, str]] = []
     lines = [
         f"Bot at {now.tz_convert(TH):%d/%m/%Y %H:%M} Thai, {tf} chart, fib_entry {p.fib_entry}, "
-        f"m5_trend {p.m5_trend}, fib_lean {p.fib_lean}"
+        f"m5_trend {p.m5_trend}, fib_lean {p.fib_lean}",
+        config,
     ]
     if fi is None:
         lines.append(f"No decision: {reason}.")

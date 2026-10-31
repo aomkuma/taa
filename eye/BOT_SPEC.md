@@ -865,3 +865,11 @@ or bounce"*; *"only up to H4 - reading the big timeframe has failed many times, 
 Asked how close the research runs are to live, Claude listed that the runs decide only inside the owner's three
 windows; the owner, 2026-10-31: *"no need [for the three windows] - run it all the time"*. Rule 0: parameter `windows`, default **off** - a decision at every M5 close of the day; `on` keeps the
 three windows as a record (every run before 2026-10-31). Every result measured before this was made with the windows.
+
+## The parameters from a database (2026-10-31)
+
+The owner: *"I want every config value read from a db"*; the web page later, *"because some markets may need some
+values switched off"*. Claude proposed, and the owner took (*"do it"*): only the bot's `Params` (not the trading
+system's `config.yaml`, which touches the accounts); a SQLite file of its own; sets named by market and set name;
+every value read from the set, none falling back to the code; an append-only history; the ledger names the set and
+its version (BOT_RULES, Parameters, "The parameters come from a database").

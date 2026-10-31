@@ -16,10 +16,25 @@ day = importlib.import_module("eye.research.bot_read_day")
 bot = importlib.import_module("eye.bot2e")
 
 
+def seeded_db(tmp_path: Path) -> Path:
+    cfg = importlib.import_module("eye.bot_config")
+    db = tmp_path / "cfg" / "bot_config.db"
+    at = pd.Timestamp("2026-10-31 10:00", tz="UTC").to_pydatetime()
+    cfg.seed(db, "XAUUSD", "default", "t", at)
+    cfg.set_values(db, "XAUUSD", "default", "t", at, "n", {"min_r": "1.5"})
+    return db
+
+
 def test_parse_overrides_types_and_unknown_names() -> None:
     got = day.parse_overrides(["fib_entry=0.382", "fib_count=on", "max_orders=2", "setup_days=2"])
     assert got == {"fib_entry": 0.382, "fib_count": "on", "max_orders": 2, "setup_days": 2}
     assert day.parse_overrides([]) == {}
+    assert day.parse_overrides(["early_leg=off", "fade_min=off", "fib_early=0.1", "min_r=2"]) == {
+        "early_leg": "off", "fade_min": "off", "fib_early": 0.1, "min_r": 2.0,
+    }  # fmt: skip
+    for bad in ("min_r=abc", "max_orders=1.5"):
+        with pytest.raises(SystemExit):
+            day.parse_overrides([bad])
     for bad in ("band_frac=0.1", "nonsense", "fib_entry"):
         with pytest.raises(SystemExit):
             day.parse_overrides([bad])
@@ -137,3 +152,49 @@ def test_walk_day_lists_times_outside_the_windows_as_all_day(monkeypatch) -> Non
     calls.clear()
     rows = day.walk_day("2026-04-07", bot.Params(windows="on"), {})["rows"]
     assert len(rows) == 93 and "all day" not in {r["window"] for r in rows}
+
+
+def test_split_base_takes_market_set_and_db_out_of_the_overrides() -> None:
+    base, rest = day.split_base(["fib_entry=0.382", "set=r3_off", "market=XAUUSD", "db=x.db", "min_r=1"])
+    assert base == {"market": "XAUUSD", "set": "r3_off", "db": "x.db"} and rest == [
+        "fib_entry=0.382",
+        "min_r=1",
+    ]
+    base, rest = day.split_base([])
+    assert base == {"market": "XAUUSD", "set": "default", "db": str(bot.CONFIG_DB)} and rest == []
+
+
+def test_the_base_is_the_stored_set_with_the_overrides_on_top(tmp_path: Path) -> None:
+    base = {"market": "XAUUSD", "set": "default", "db": str(seeded_db(tmp_path))}
+    p, version = day.resolve_params(base, {})
+    assert p == bot.Params(min_r=1.5) and version == 22
+    p, version = day.resolve_params(base, {"fib_entry": 0.618, "early_leg": "off"})
+    assert (p.min_r, p.fib_entry, p.early_leg) == (1.5, 0.618, "off") and version == 22
+    line = day.config_line(base, version, {"fib_entry": 0.618, "early_leg": "off"})
+    assert line == "config=XAUUSD/default@v22; overrides: fib_entry=0.618 early_leg=off"
+    assert day.config_line(base, 22, {}) == "config=XAUUSD/default@v22; overrides: none"
+    with pytest.raises(SystemExit, match="bad override"):
+        day.resolve_params(base, {"fib_early": 0.1})  # a combination Params refuses
+    with pytest.raises(SystemExit, match="no bars for EURUSD"):
+        day.resolve_params({**base, "market": "EURUSD"}, {})
+    with pytest.raises(SystemExit, match="seed --market XAUUSD --set nope"):
+        day.resolve_params({**base, "set": "nope"}, {})
+
+
+def test_main_reads_the_set_names_it_and_checks_the_market_before_bars(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    db = str(seeded_db(tmp_path))
+    monkeypatch.setattr(bot, "load_frames", lambda: pytest.fail("bars loaded"))
+    with pytest.raises(SystemExit, match="no bars for EURUSD"):
+        day.main(["2026-10-07", f"db={db}", "market=EURUSD"])
+    seen: dict = {}
+    monkeypatch.setattr(bot, "load_frames", lambda: {"M5": None})
+    monkeypatch.setattr(day, "draw", lambda d, p, o, full, config="": seen.update(p=p, o=o, c=config))
+    day.main(["2026-10-07", f"db={db}", "fib_entry=0.618", "min_r=3"])
+    assert seen["p"] == bot.Params(min_r=3.0, fib_entry=0.618) and seen["o"] == {
+        "fib_entry": 0.618,
+        "min_r": 3.0,
+    }
+    assert seen["c"] == "config=XAUUSD/default@v22; overrides: fib_entry=0.618 min_r=3.0"
+    assert seen["c"] in capsys.readouterr().out

@@ -56,7 +56,8 @@ The eye work:
 .venv\Scripts\python eye/score.py [summary]             # score the ledger's unscored rows, or the running totals
 .venv\Scripts\python eye/rules.py                       # which of the nine rules held, and where they fought
 .venv\Scripts\python eye/money.py                       # the record in money: 200 USD, 0.01 lot (args: balance lot)
-.venv\Scripts\python eye/bot2e.py --from 2026-04-06 --to 2026-04-07   # the bot, bar by bar (eye/BOT_RULES.md; --mode 2e = the 2e record)
+.venv\Scripts\python eye/bot_config.py seed --market XAUUSD --set default --by <who>   # once: the bot's parameters (data/bot_config.db)
+.venv\Scripts\python eye/bot2e.py --from 2026-04-06 --to 2026-04-07 [--set default]   # the bot, bar by bar (eye/BOT_RULES.md)
 .venv\Scripts\python eye/score.py bot_ledger.csv; .venv\Scripts\python eye/money.py --ledger bot_ledger.csv
 ```
 
@@ -148,4 +149,5 @@ MetaTrader5 only inside `app/broker`, order functions only there, no wall-clock 
 
 Decisions use **closed bars only**; MT5 epochs are broker server time and convert through `ServerClock`;
 everything internal is timezone-aware UTC. Secrets and safety flags come from the environment, parameters
-from `config.yaml`. Conventions in `docs/archive/CODING_STANDARDS.md`.
+from `config.yaml` - except the eye bot's `Params`, read from `data/bot_config.db` (owner, 2026-10-31;
+`eye/BOT_RULES.md`, Parameters). Conventions in `docs/archive/CODING_STANDARDS.md`.

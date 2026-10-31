@@ -30,7 +30,7 @@ import importlib
 import re
 import sys
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Any
 
@@ -57,6 +57,8 @@ macd_mt5 = walk.macd_mt5
 
 TH = "Asia/Bangkok"
 READER = "bot2e"
+MARKET = "XAUUSD"  # the only market with bars (eye/walk.py loads XAUUSD)
+CONFIG_DB = ROOT / "data" / "bot_config.db"
 LEDGER_PATH = HERE / "bot_ledger.csv"
 LOG_PATH = HERE / "bot_log.csv"
 LEDGER_COLUMNS = [
@@ -151,18 +153,56 @@ class Params:
             raise ValueError("fib_stop line_tight needs fib_early above 0")
 
     def text(self) -> str:
-        """The [Claude] parameters as they are written into a decision."""
-        return (
-            f"mode={self.mode} fib_tf={self.fib_tf} fib_entry={self.fib_entry:g} "
-            f"fib_early={self.fib_early:g} fib_stop={self.fib_stop} fib_count={self.fib_count} "
-            f"fib_target={self.fib_target:g} "
-            f"max_entry_frac={self.max_entry_frac:g} setup_days={self.setup_days} "
-            f"m5_trend={self.m5_trend} early_leg={self.early_leg} fade_min={self.fade_min} "
-            f"fade_entry={self.fade_entry:g} fib_lean={self.fib_lean} "
-            f"stop_buffer={self.stop_buffer:g} target_buffer={self.target_buffer:g} spread={self.spread:g} "
-            f"max_orders={self.max_orders} order_life_bars={self.order_life_bars} min_r={self.min_r:g} "
-            f"windows={self.windows}"
-        )
+        """The [Claude] parameters as they are written into a decision (``param_to_text`` of every field)."""
+        return " ".join(f"{n}={param_to_text(n, getattr(self, n))}" for n in TEXT_ORDER)
+
+
+# The order of the fields in ``Params.text()`` (kept from before the text form was shared).
+TEXT_ORDER = (
+    "mode", "fib_tf", "fib_entry", "fib_early", "fib_stop", "fib_count", "fib_target", "max_entry_frac",
+    "setup_days", "m5_trend", "early_leg", "fade_min", "fade_entry", "fib_lean", "stop_buffer",
+    "target_buffer", "spread", "max_orders", "order_life_bars", "min_r", "windows",
+)  # fmt: skip
+
+# Fields whose text is ``off`` or a float (BOT_RULES, "Text form of a value").
+_OFF_OR_FLOAT = ("early_leg", "fade_min")
+
+
+def _field_kind(name: str) -> type:
+    """The type a field's text is read as: float, int or str, taken from the field's default."""
+    known = {f.name for f in fields(Params)}
+    if name not in known:
+        raise ValueError(f"unknown parameter {name!r}")
+    return type(getattr(Params(), name))
+
+
+def param_to_text(name: str, value: Any) -> str:
+    """A parameter value as text: a float as Python's ``repr`` (shortest text that reads back to the same
+    float: ``0.1``, ``2.0``), an int as digits, a text as itself; ``early_leg`` / ``fade_min``: ``off`` or a
+    float. ``param_from_text(name, param_to_text(name, v)) == v``."""
+    kind = _field_kind(name)
+    if name in _OFF_OR_FLOAT:
+        return "off" if value == "off" else repr(float(value))
+    if kind is float:
+        return repr(float(value))
+    if kind is int:
+        return str(int(value))
+    return str(value)
+
+
+def param_from_text(name: str, text: str) -> Any:
+    """The inverse of ``param_to_text``; a text that is not a value of the field's type is a ValueError."""
+    kind = _field_kind(name)
+    try:
+        if name in _OFF_OR_FLOAT:
+            return "off" if text == "off" else float(text)
+        if kind is float:
+            return float(text)
+        if kind is int:
+            return int(text)
+    except ValueError:
+        raise ValueError(f"{name}: {text!r} is not a {kind.__name__} value") from None
+    return text
 
 
 # The reasons a bar can end without an order, in the order the rules run; a later one means the bar got
@@ -992,6 +1032,27 @@ def _ledger_dict(
 # --- the walk ---------------------------------------------------------------------------------------------
 
 
+def config_label(market: str, set_name: str, version: int) -> str:
+    """How a decision names the set its parameters came from (BOT_RULES, "Written into every decision")."""
+    return f"config={market}/{set_name}@v{version}"
+
+
+def load_set(db: Path | str, market: str, set_name: str) -> tuple[Params, int]:
+    """The ``Params`` and version of a stored set for a run or a drawing. The market is checked first (names
+    path-safe, and only XAUUSD has bars), so nothing is read or loaded for another; a database error
+    stops with its message (``SystemExit``)."""
+    from eye import bot_config  # here, not at the top: bot_config imports this module
+
+    try:
+        bot_config.check_name("market", market)
+        bot_config.check_name("set", set_name)
+        if market != MARKET:
+            raise bot_config.ConfigError(f"no bars for {market}")
+        return bot_config.load_params(db, market, set_name)
+    except bot_config.ConfigError as e:
+        raise SystemExit(f"bot2e: {e}") from None
+
+
 def load_frames() -> dict[str, pd.DataFrame]:
     return {tf: frame(tf) for tf in TIMEFRAMES}  # H4, M15 and M5: no H1 is loaded
 
@@ -1036,10 +1097,12 @@ def walk_days(
     full: dict[str, pd.DataFrame],
     prior: Sequence[dict[str, str]] = (),
     kept: Sequence[dict[str, str]] = (),
+    label: str = "",
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     """Walk the given Thai dates in order; returns (decisions, log rows). ``prior`` are rows written before
     the first day, which may still be live (one order at a time); ``kept`` are the other rows the ledger keeps
-    (later days), whose keys are used too but which are not live."""
+    (later days), whose keys are used too but which are not live. ``label`` (``config_label``) is put in
+    front of the parameters in each decision's ``structure``; it is not a ``Params`` field."""
     written: list[dict[str, str]] = [r for r in prior if r["side"] in ("BUY", "SELL")]
     mine: list[dict[str, str]] = []
     logs: list[dict[str, str]] = []
@@ -1078,6 +1141,8 @@ def walk_days(
             if res.decision is not None:
                 n = sum(1 for r in mine if r["cutoff_thai"][:10] == day) + 1
                 row = res.decision
+                if label:
+                    row["structure"] = row["structure"].replace("Parameters: ", f"Parameters: {label} ", 1)
                 row["id"] = f"B-{day.replace('-', '')}-{n}"
                 mine.append(row)
                 written.append(row)
@@ -1097,13 +1162,15 @@ def days_between(first: str, last: str) -> list[str]:
     return [f"{d:%Y-%m-%d}" for d in pd.date_range(first, last, freq="D")]
 
 
-def run(first: str, last: str, p: Params, ledger: Path = LEDGER_PATH, log: Path = LOG_PATH) -> None:
+def run(
+    first: str, last: str, p: Params, ledger: Path = LEDGER_PATH, log: Path = LOG_PATH, label: str = ""
+) -> None:
     days = days_between(first, last)
     full = load_frames()
     old = _read(ledger, LEDGER_COLUMNS)
     prior = [r for r in old if r["cutoff_thai"][:10] < days[0]]
     keep = [r for r in old if r["cutoff_thai"][:10] not in days]  # every row the run keeps
-    mine, logs = walk_days(days, p, full, prior, [r for r in keep if r not in prior])
+    mine, logs = walk_days(days, p, full, prior, [r for r in keep if r not in prior], label)
     _write(ledger, LEDGER_COLUMNS, sorted(keep + mine, key=lambda r: (r["cutoff_thai"][:10], r["id"])))
     old_log = [r for r in _read(log, LOG_COLUMNS) if r["date"] not in days]
     _write(log, LOG_COLUMNS, old_log + logs)
@@ -1125,49 +1192,14 @@ def main(argv: Sequence[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0] if __doc__ else "")
     ap.add_argument("--from", dest="first", required=True, help="first Thai date, YYYY-MM-DD")
     ap.add_argument("--to", dest="last", required=True, help="last Thai date, YYYY-MM-DD")
-    d = Params()
-    ap.add_argument("--mode", choices=("fib",), default=d.mode)
-    ap.add_argument("--fib-tf", choices=("M5", "M15"), default=d.fib_tf)
-    ap.add_argument("--fib-entry", type=float, choices=(0.618, 0.382, 0.236), default=d.fib_entry)
-    ap.add_argument("--fib-early", type=float, choices=(0.0, 0.10), default=d.fib_early)
-    ap.add_argument("--fib-stop", choices=("line", "line_tight"), default=d.fib_stop)
-    ap.add_argument("--fib-count", choices=("off",), default=d.fib_count)
-    ap.add_argument("--fib-target", type=float, choices=(1.618, 1.272), default=d.fib_target)
-    ap.add_argument("--max-entry-frac", type=float, default=d.max_entry_frac)
-    ap.add_argument("--fib-lean", choices=("on", "off"), default=d.fib_lean)
-    ap.add_argument("--setup-days", type=int, choices=(2,), default=d.setup_days)
-    ap.add_argument("--m5-trend", choices=("now", "h100", "off"), default=d.m5_trend)
-    ap.add_argument("--early-leg", choices=("0.382", "0.618", "off"), default=str(d.early_leg))
-    ap.add_argument("--fade-min", choices=("1.0", "off"), default=str(d.fade_min))
-    ap.add_argument("--fade-entry", type=float, choices=(0.5, 0.382, 0.618), default=d.fade_entry)
-    ap.add_argument("--max-orders", type=int, default=d.max_orders, help="orders live at once")
-    ap.add_argument("--order-life-bars", type=int, default=d.order_life_bars, help="M5 bars to fill")
-    ap.add_argument("--min-r", type=float, default=d.min_r)
-    ap.add_argument("--stop-buffer", type=float, default=d.stop_buffer)
-    ap.add_argument("--target-buffer", type=float, default=d.target_buffer)
-    a = ap.parse_args(argv)
-    params = Params(
-        mode=a.mode,
-        fib_tf=a.fib_tf,
-        fib_entry=a.fib_entry,
-        fib_early=a.fib_early,
-        fib_stop=a.fib_stop,
-        fib_count=a.fib_count,
-        fib_target=a.fib_target,
-        max_entry_frac=a.max_entry_frac,
-        setup_days=a.setup_days,
-        m5_trend=a.m5_trend,
-        early_leg=a.early_leg if a.early_leg == "off" else float(a.early_leg),
-        fade_min=a.fade_min if a.fade_min == "off" else float(a.fade_min),
-        fade_entry=a.fade_entry,
-        fib_lean=a.fib_lean,
-        max_orders=a.max_orders,
-        order_life_bars=a.order_life_bars,
-        min_r=a.min_r,
-        stop_buffer=a.stop_buffer,
-        target_buffer=a.target_buffer,
+    ap.add_argument(
+        "--db", default=str(CONFIG_DB), help="the parameter database (default data/bot_config.db)"
     )
-    run(a.first, a.last, params)
+    ap.add_argument("--market", default=MARKET, help="the market whose set is read (default XAUUSD)")
+    ap.add_argument("--set", dest="set_name", default="default", help="the parameter set (default: default)")
+    a = ap.parse_args(argv)
+    params, version = load_set(a.db, a.market, a.set_name)  # the market is checked before any bar is loaded
+    run(a.first, a.last, params, label=config_label(a.market, a.set_name, version))
 
 
 if __name__ == "__main__":

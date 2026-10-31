@@ -1,14 +1,14 @@
 """Run variants of bot 2e side by side on one date range, fairly: each into its own files, scored in memory.
 
-    python eye/bot_research.py --from 2026-10-01 --to 2026-10-28                 # the built-in variants
-    python eye/bot_research.py --from 2026-10-01 --to 2026-10-28 --variants v.json --only r3_off
+    python eye/bot_research.py --from 2026-10-01 --to 2026-10-28                          # the set "default"
+    python eye/bot_research.py --from 2026-10-01 --to 2026-10-28 --sets default,r3_off    # two variants
 
-The built-in variants are ``r3_now`` (every parameter at its default) and ``r3_off`` (``m5_trend`` off: rule 3
-not applied). ``v.json`` is ``{"name": {"m5_trend": "off", ...}}``: overrides of the current ``Params``.
-Each variant writes ``eye/research/<name>/ledger.csv``, ``log.csv`` and ``summary.csv`` (never
-``eye/bot_ledger.csv``, never Claude's ledgers) and is scored with ``eye/score.py`` unchanged. Money is the
-record in USD from 200 at 0.01 lot: a filled trade is its ``r_net`` x its stop distance x 1 oz. ``r_net`` is
-net of the spread.
+A variant is a parameter set in the config database (``eye/bot_config.py``; ``--db``, default
+``data/bot_config.db``) of ``--market`` (default XAUUSD). Each variant writes
+``eye/research/<market>/<set>/ledger.csv``, ``log.csv`` and ``summary.csv`` (never ``eye/bot_ledger.csv``,
+never Claude's ledgers) and is scored with ``eye/score.py`` unchanged; the summary and the printed table carry
+the market, set and version. Money is the record in USD from 200 at 0.01 lot: a filled trade is its ``r_net``
+x its stop distance x 1 oz. ``r_net`` is net of the spread.
 """
 
 from __future__ import annotations
@@ -16,10 +16,9 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import re
 import sys
 from collections import Counter
-from dataclasses import asdict, fields, replace
+from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -27,36 +26,24 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 
-from eye import bot2e  # noqa: E402
+from eye import bot2e, bot_config  # noqa: E402
 from eye.score import SPREAD, bars, score, start_of  # noqa: E402
 
 RESEARCH = HERE / "research"
 OZ = 1.0  # 0.01 lot of gold = 1 oz: 1.00 of price = 1 USD
 START_BALANCE = 200.0
 SUMMARY_COLUMNS = [
-    "timestamp", "from", "to", "variant", "params", "orders", "fills", "wins", "losses", "open",
+    "timestamp", "from", "to", "market", "set", "version", "params", "orders", "fills", "wins", "losses",
+    "open",
     "r_total", "r_per_fill", "usd_from_200", "deepest_fall", "top_reasons",
 ]  # fmt: skip
 
-PEAKS: dict[str, dict[str, int]] = {}  # per variant: the most orders live / filled-and-open at once
-
-DEFAULT_VARIANTS: dict[str, dict[str, Any]] = {
-    "r3_now": {},
-    "r3_off": {"m5_trend": "off"},
-}
+PEAKS: dict[str, dict[str, int]] = {}  # per "market/set": the most orders live / filled-and-open at once
 
 
 def _order_key(row: dict[str, str]) -> str:
     """Decision order: ``decided_at`` is ``dd/mm HH:MM``, so month first."""
     return row["decided_at"][3:5] + row["decided_at"]
-
-
-def make_params(overrides: dict[str, Any]) -> bot2e.Params:
-    known = {f.name for f in fields(bot2e.Params)}
-    bad = set(overrides) - known
-    if bad:
-        raise SystemExit(f"unknown Params fields: {sorted(bad)}")
-    return replace(bot2e.Params(), **overrides)
 
 
 def scored_rows(rows: list[dict[str, str]], m5: Any, spread: float = SPREAD) -> list[dict[str, str]]:
@@ -101,37 +88,40 @@ def money(rows: list[dict[str, str]]) -> dict[str, Any]:
     }
 
 
-NAME_OK = re.compile(r"[A-Za-z0-9_-]+")
-
-
-def variant_folder(name: str, root: Path = RESEARCH) -> Path:
-    """The folder a variant writes into: ``root / name``. The name is letters, digits, ``_`` and ``-`` only,
-    and the resolved folder must be a direct child of ``root`` - a name that would leave it (``..``, a path,
-    an absolute path) is refused (``SystemExit``), before anything is run or written."""
-    if not NAME_OK.fullmatch(name):
-        raise SystemExit(f"variant name {name!r}: only letters, digits, _ and - are allowed")
-    folder = (root / name).resolve()
-    if folder.parent != root.resolve():
-        raise SystemExit(f"variant name {name!r} resolves outside {root}")
+def variant_folder(market: str, set_name: str, root: Path = RESEARCH) -> Path:
+    """The folder a variant writes into: ``root / market / set_name``. Both names are letters, digits,
+    ``_`` and ``-`` only (``bot_config.check_name``), and the resolved folder must be
+    ``root / market / set_name``: a name that would leave it (a link, say) is refused (``SystemExit``),
+    before anything is run or written."""
+    try:
+        bot_config.check_name("market", market)
+        bot_config.check_name("set", set_name)
+    except bot_config.ConfigError as e:
+        raise SystemExit(f"bot_research: {e}") from None
+    folder = (root / market / set_name).resolve()
+    if folder.parent.parent != root.resolve():
+        raise SystemExit(f"{market}/{set_name} resolves outside {root}")
     return folder
 
 
 def run_variant(
-    name: str, overrides: dict[str, Any], first: str, last: str, full: dict[str, Any], m5: Any,
-    root: Path = RESEARCH,
+    market: str, set_name: str, version: int, p: bot2e.Params, first: str, last: str, full: dict[str, Any],
+    m5: Any, root: Path = RESEARCH,
 ) -> dict[str, Any]:  # fmt: skip
-    folder = variant_folder(name, root)  # refused before the (long) walk when the name is not a plain name
-    p = make_params(overrides)
-    rows, logs = bot2e.walk_days(bot2e.days_between(first, last), p, full)
+    folder = variant_folder(market, set_name, root)  # refused before the (long) walk when a name is not plain
+    label = bot2e.config_label(market, set_name, version)
+    rows, logs = bot2e.walk_days(bot2e.days_between(first, last), p, full, label=label)
     rows = scored_rows(rows, m5, p.spread)
     folder.mkdir(parents=True, exist_ok=True)
     bot2e._write(folder / "ledger.csv", bot2e.LEDGER_COLUMNS, rows)
     bot2e._write(folder / "log.csv", bot2e.LOG_COLUMNS, logs)
     counts = Counter(r["reason"] for r in logs if r["reason"] not in ("market closed", "outside window"))
     top = "; ".join(f"{k} {v}" for k, v in counts.most_common(3))
-    PEAKS[name] = dict(bot2e.PEAK)
+    PEAKS[f"{market}/{set_name}"] = dict(bot2e.PEAK)
     result = {
-        "variant": name,
+        "market": market,
+        "set": set_name,
+        "version": version,
         "params": json.dumps(asdict(p)),
         **(m := money(rows)),
         "top_reasons": top
@@ -173,13 +163,14 @@ def write_summary(result: dict[str, Any], folder: Path, first: str, last: str) -
 
 def table(results: list[dict[str, Any]]) -> str:
     head = (
-        f"{'variant':10} {'orders':>6} {'fills':>5} {'wins':>4} {'loss':>4} {'open':>4} "
+        f"{'market/set@version':22} {'orders':>6} {'fills':>5} {'wins':>4} {'loss':>4} {'open':>4} "
         f"{'R':>7} {'R/fill':>7} {'USD':>8} {'fall':>7}  top reasons"
     )
     lines = [head]
     for r in results:
+        name = f"{r['market']}/{r['set']}@v{r['version']}"
         lines.append(
-            f"{r['variant']:10} {r['orders']:6d} {r['fills']:5d} {r['wins']:4d} {r['losses']:4d} "
+            f"{name:22} {r['orders']:6d} {r['fills']:5d} {r['wins']:4d} {r['losses']:4d} "
             f"{r['open']:4d} {r['r_total']:+7.2f} {r['r_per_fill']:+7.3f} {r['usd_from_200']:8.2f} "
             f"{r['deepest_fall']:7.2f}  {r['top_reasons']}"
         )
@@ -187,23 +178,28 @@ def table(results: list[dict[str, Any]]) -> str:
 
 
 def main(argv: list[str] | None = None) -> None:
-    ap = argparse.ArgumentParser(description="Run named variants of bot 2e on one range.")
+    ap = argparse.ArgumentParser(description="Run parameter sets of bot 2e on one range.")
     ap.add_argument("--from", dest="first", required=True)
     ap.add_argument("--to", dest="last", required=True)
-    ap.add_argument("--variants", help="JSON file {name: {Params overrides}}; default: r3_now and r3_off")
-    ap.add_argument("--only", help="comma-separated variant names to run")
+    ap.add_argument("--db", default=str(bot2e.CONFIG_DB), help="the parameter database")
+    ap.add_argument("--market", default=bot2e.MARKET)
+    ap.add_argument("--sets", default="default", help="comma-separated set names, one variant each")
     a = ap.parse_args(argv)
-    variants = json.loads(Path(a.variants).read_text(encoding="utf-8")) if a.variants else DEFAULT_VARIANTS
-    if a.only:
-        variants = {k: variants[k] for k in a.only.split(",")}
-    for n in variants:
-        variant_folder(n)  # every name is checked before the first variant runs
+    names = a.sets.split(",")
+    loaded = [
+        (n, *bot2e.load_set(a.db, a.market, n)) for n in names
+    ]  # every set is read before any bar is loaded
+    for n in names:
+        variant_folder(a.market, n, RESEARCH)  # every name is checked before the first variant runs
     full, m5 = bot2e.load_frames(), bars()
-    results = [run_variant(n, o, a.first, a.last, full, m5) for n, o in variants.items()]
+    results = [run_variant(a.market, n, v, p, a.first, a.last, full, m5, RESEARCH) for n, p, v in loaded]
     print(table(results))
     for r in results:
-        pk = PEAKS[r["variant"]]
-        print(f"  {r['variant']}: peak live {pk['live']}, filled-and-open {pk['filled']}")
+        pk = PEAKS[f"{r['market']}/{r['set']}"]
+        print(
+            f"  {r['market']}/{r['set']}@v{r['version']}: peak live {pk['live']}, "
+            f"filled-and-open {pk['filled']}"
+        )
         for line in r["trades"]:
             print(f"    {line}")
 

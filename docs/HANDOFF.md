@@ -22,6 +22,8 @@ measured.
   the owner: *"run it all the time"*; the form [Claude] - decide at every 5-minute time, 00:00 - 23:55 Thai, not only in the
   three windows):
   built and committed (the full suite green).
+- **The parameters from a database** (2026-10-31, the owner: *"every config value read from a db"*, per market - *"some
+  markets may need some values switched off"*; a web page later): built (`eye/bot_config.py`; a fresh machine runs `.venv\Scripts\python eye/bot_config.py seed --market XAUUSD --set default --by <who>` first; research runs now write `eye/research/XAUUSD/<set>/`).
 - **Step 7 started** (`eye/BOT_RESEARCH.md`, "Step 7: the leg's 0 and 100 drawn"): on 15/07 the M5 leg put 100 % at a
   small swing; **M15 put 0 and 100 where the owner reads them** (*"OK, better"*), but late; the 161.8 % target was
   beyond where price turned. The owner took Claude's proposal: measure the leg on M15, M5 for the entry - being
