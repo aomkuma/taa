@@ -46,9 +46,9 @@ owner to change. A question or a chart the owner shows, and any number inside on
   `L0 - x * leg` (rule 2). The spread stays a positive cost.
   Rule 16 is written for both sides.
 
-## Order of evaluation, at each M5 close inside a window
+## Order of evaluation, at each M5 close (inside a window when `windows` is on)
 
-0 (time, window, warm-up, `max_orders`) -> 16 (the side: H4 trend leg or a fade leg) -> 2 (the latest leg) -> 10 (has it run?) -> 3 (M5 trend, and the side) -> 4 (count, if
+0 (time, the window when `windows` is on, warm-up, `max_orders`) -> 16 (the side: H4 trend leg or a fade leg) -> 2 (the latest leg) -> 10 (has it run?) -> 3 (M5 trend, and the side) -> 4 (count, if
 on) -> 6 (level, order price, bounce) -> 7 (stop) -> 8 (target, 1:2) -> 6 (played out, which needs 7
 and 8) -> 9 (reach) -> write; for a trend leg whose end has just broken, 17 (the break and its retest) writes its
 order instead. Rule 13 decides between a BUY and a SELL candidate; rule 12 governs the order's life.
@@ -76,6 +76,7 @@ order instead. Rule 13 decides between a BUY and a SELL candidate; rule 12 gover
 | `max_orders` | count | 1 | [Claude] |
 | `order_life_bars` | M5 bars | 24 | [Claude] |
 | `min_r` | R | 2.0 | owner (1:2) |
+| `windows` | off, on | off | the owner, 2026-10-31: *"run it all the time"*; the parameter and its default [Claude] (rule 0); `on` = the three windows, a record |
 
 A combination without meaning (`fib_early` > 0 with an entry other than 0.382 or without `line_tight`; `fib_stop`
 swing with an entry other than 0.618; `line_tight` without `fib_early`) is refused at start [Claude].
@@ -88,9 +89,14 @@ swing with an entry other than 0.618; `line_tight` without `fib_early`) is refus
   `open_time + tf <= now`.
 - **Warm-up** [Claude]: no decision until H4 and M5 (and M15 when it is the setup timeframe) each have 1,500 closed bars
   before `now`.
-- **Windows (owner):** Asia 07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai. A decision is made only at an
-  M5 close (`now` = that bar's open + 5 min) inside a window, start and end included [Claude]. A written order may
-  fill and run outside the windows [Claude].
+- **All day** - the owner, 2026-10-31: *"no need [for the three windows] - run it all the time"*. The form [Claude]:
+  parameter `windows`, default **off** - an evaluation at **every 5-minute time** `now` of the Thai calendar day,
+  **00:00, 00:05 ... 23:55** (288 scheduled times; `now` = an M5 bar's open + 5 min, so 00:00 is the close of the
+  previous day's last bar, and it belongs to the day it falls on - for the order ids `B-<day>-<n>`, the log's `date`
+  and a rerun's replacement of a day). A time with no bar (the market closed) gives the reason "market closed", as
+  before. `windows` **on** (a record - how every run before 2026-10-31 was made): only the owner's windows, Asia
+  07:00-09:00, London 13:00-15:00, New York 19:30-23:00 Thai, start and end included. A written order may fill and
+  run at any time.
 - **R** [Claude] = (target - entry - spread) / (entry - stop) for a BUY, (entry - target - spread) / (stop - entry)
   for a SELL, `entry` = the order price - the **planned** R. The owner's rule is the 1:2 floor; the net-of-spread form is Claude's. The spread enters only R and the
   floor; fills and touches use the bar prices.
@@ -443,7 +449,7 @@ the smaller |the price - the order price|; then a BUY before a SELL.
 - **The log** - one row per evaluated bar: the time, rule 16's side, each rule's state and numbers, and the reason no order
   was written; with several candidates, the reason of the one that got furthest in the order of evaluation (the last
   rule it reached; on a tie, the BUY).
-- **Acceptance cases** - evaluated with the window test switched off where the time is outside a window; times are
+- **Acceptance cases** - evaluated with the window test switched off (`windows` off, the default); times are
   Thai, `now` = the time given; `fib_tf` M5, other parameters at their defaults unless named. Each expected outcome
   below is what the rules give; the developer computes every case from the bars and **reports** each one - a case that
   does not come out as written is reported, not bent to fit; where a part is marked *report*, the developer reports
@@ -551,12 +557,27 @@ path as a live option; the nine rules no. 4 ("trade the fifth leg") and no. 9 (t
 
 **Everything above is built** in `eye/bot2e.py` (from the committed code, git HEAD 968f37e, a piece at a time by a
 Sonnet developer, each piece checked by Claude's real mutation runs and Codex; tests green - 276 across the bot, its
-tools, architecture, signal study and state11; **not committed**): H1 / the lean / the old range / mode 2e taken out;
+tools, architecture, signal study and state11; **committed** c09c13e, the full suite green): H1 / the lean / the old range / mode 2e taken out;
 H4 read for rule 16 (a trend leg when H4 trends clearly, else a fade leg); rule 2's trend leg (with the early leg) and
 fade leg; rule 17; the setup look; rule 3 (`m5_trend` now / h100 / off). Rule 5 and the count removed. The M15 strip
 side (built 2026-10-30) is withdrawn. Tools: `eye/research/bot_view.py` (MT5-style, per moment / per new leg),
 `bot_read_day.py`; the runner `eye/bot_research.py` (variants into `eye/research/<variant>/`).
 **First run** (October 2026, `r3_now` / `r3_off` - `eye/BOT_RESEARCH.md`, "October 2026 with rule 3 on and off"):
 -0.23 / +0.11 R a resolved fill on 17 / 32 fills; fades -0.40 R each (10); not yet drawn and judged.
+**Built** (2026-10-31, the full suite green): rule 0's `windows` (default off). The build: the parameter in `Params`; `decide`'s window
+test follows `p.windows` when its `windowed` argument is not given (`bot_view.py` keeps passing `windowed=False`
+and is unchanged); `walk_days` (`eye/bot2e.py`) and `walk_day` (`eye/research/bot_read_day.py`) step through the 288
+times 00:00 - 23:55 of the day with `windows` off and through the three windows with it on, and both use the
+calendar day of `now` as the day (rule 0). The comment above `WINDOWS` is corrected to `start <= now <= end` (what
+`window_of` does). `bot_read_day.py` lists the times outside the three windows under the
+name "all day". What a build must show: `decide` at 03:00 Thai on a weekday with the market open gives a reason
+other than "outside window" with `windows` off, and "outside window" with `windows` on; one day's walk with
+`windows` off has 288 scheduled times (some may be "market closed"), with `windows` on 93 (25 + 25 + 43 - each
+window's start and end included); an order written at 00:00 carries that day's date in its id.
+`eye/score.py` `start_of` [Claude, found by the developer]: a row's `decided_at` is its last bar's open (`dd/mm HH:MM`),
+which for a decision at 00:00 is 23:55 of the **previous** day while `cutoff_thai` holds the new day; the start is
+then that previous day at 23:55 + 5 min (= `now`), never a day later - when `decided_at`'s `dd/mm` is the day before
+`cutoff_thai`'s date, the date is moved back one day. The same row scored by `walk_days`' live-order check starts at
+the same time.
 **Open**: levels from the left / the owner's price clusters as obstacles to a target - to be measured first. The
 set-aside work is in `eye/wip/`; `eye/state11.py` (rule 11, failed) is kept, unused.

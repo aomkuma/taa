@@ -18,8 +18,14 @@ measured.
   0 %, target 161.8 %); a break past its end -> **its retest** (rule 17: target 161.8, else 200 %); H4 not clear ->
   **fade the latest run** if it is at least as long as the leg before it (0 % at the run's end, entry 50 %, target
   161.8 % past its start). Targets reachable first, 1:2 only a filter.
-- **Code**: all of BOT_RULES is built (BOT_RULES "Code status"), tests green, **not committed** (the owner: commit
-  once it works).
+- **Code**: BOT_RULES is built and committed (c09c13e, the full suite green), except rule 0's `windows` (2026-10-31,
+  the owner: *"run it all the time"*; the form [Claude] - decide at every 5-minute time, 00:00 - 23:55 Thai, not only in the
+  three windows):
+  built and committed (the full suite green).
+- **Step 7 started** (`eye/BOT_RESEARCH.md`, "Step 7: the leg's 0 and 100 drawn"): on 15/07 the M5 leg put 100 % at a
+  small swing; **M15 put 0 and 100 where the owner reads them** (*"OK, better"*), but late; the 161.8 % target was
+  beyond where price turned. The owner took Claude's proposal: measure the leg on M15, M5 for the entry - being
+  drawn on more days, August - October.
 - **First run, October 2026** (`eye/BOT_RESEARCH.md`, "October 2026 with rule 3 on and off"): rule 3 on -0.23 R a fill
   (17); **rule 3 off +0.11 R (32)** - trend legs +0.13 (20), retests +2.42 (2), **fades -0.40 (10)**. Under 30 per
   group, one month already seen - a direction only. **Next: draw every trade (`r3_off` first, the losing fades

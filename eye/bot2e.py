@@ -74,7 +74,7 @@ LOG_COLUMNS = [
 TIMEFRAMES = ("H4", "M15", "M5")
 
 # The owner's windows (METHOD 2c), Thai time, in minutes after midnight. A decision is written at an M5
-# close ``now`` with start < now <= end (the bar that closes at the start belongs to the time before).
+# close ``now`` with start <= now <= end (the close at the start is the first look; the end is included).
 WINDOWS: tuple[tuple[str, int, int], ...] = (
     ("Asia", 7 * 60, 9 * 60),
     ("London", 13 * 60, 15 * 60),
@@ -118,6 +118,7 @@ class Params:
     fib_lean: str = "on"  # [Claude] research switch: "off" = H4 is not read (rule 16), always a fade leg
     max_orders: int = 1  # [Claude] orders live (pending or open) at once; a new one needs fewer than this
     order_life_bars: int = 24  # [Claude] rule 12: M5 bars an order may wait for its fill (last included)
+    windows: str = "off"  # [Claude] rule 0: "off" = every 5-minute time of the day; "on" = the three windows
 
     def __post_init__(self) -> None:
         if self.max_orders < 1:
@@ -139,6 +140,7 @@ class Params:
             ("early_leg", (0.382, 0.618, "off")),
             ("fade_min", (1.0, "off")),
             ("fade_entry", (0.5, 0.382, 0.618)),
+            ("windows", ("off", "on")),
         ):
             if getattr(self, name) not in allowed:
                 raise ValueError(f"{name} must be one of {allowed}, got {getattr(self, name)!r}")
@@ -158,7 +160,8 @@ class Params:
             f"m5_trend={self.m5_trend} early_leg={self.early_leg} fade_min={self.fade_min} "
             f"fade_entry={self.fade_entry:g} fib_lean={self.fib_lean} "
             f"stop_buffer={self.stop_buffer:g} target_buffer={self.target_buffer:g} spread={self.spread:g} "
-            f"max_orders={self.max_orders} order_life_bars={self.order_life_bars} min_r={self.min_r:g}"
+            f"max_orders={self.max_orders} order_life_bars={self.order_life_bars} min_r={self.min_r:g} "
+            f"windows={self.windows}"
         )
 
 
@@ -783,11 +786,14 @@ def decide(
     p: Params,
     used: frozenset[str] = frozenset(),
     pending: bool = False,
-    windowed: bool = True,
+    windowed: bool | None = None,
 ) -> Result:
     """Apply eye/BOT_RULES.md at ``now`` to frames already cut to the bars closed then (``cut``); only the M15
     and M5 frames are read. ``used`` holds setups already written; ``pending`` is true while ``max_orders``
-    orders are live; ``windowed`` False switches the window test off (the acceptance cases)."""
+    orders are live; ``windowed`` True / False forces the window test on / off (the acceptance cases);
+    None follows ``p.windows``."""
+    if windowed is None:
+        windowed = p.windows == "on"
     _check_cut(frames, now)
     t = now.tz_convert(TH)
     m5 = frames["M5"]
@@ -1047,42 +1053,44 @@ def walk_days(
     finished: set[str] = set()
     PEAK.update(live=0, filled=0)
     for day in days:
-        midnight = pd.Timestamp(day, tz=TH)
-        for _, a, b in WINDOWS:
-            now = midnight + pd.Timedelta(minutes=a)
-            end = midnight + pd.Timedelta(minutes=b)
-            while now <= end:
-                now_utc = now.tz_convert("UTC")
-                frames = cut(full, now_utc)
-                known = frames["M5"]
-                live = filled = 0
-                waiting: set[str] = set()
-                for r in written:  # live while score.py still calls it open (pending or filled)
-                    if r["id"] in finished:
-                        continue
-                    scored = score(r, known, start_of(r, {}), p.spread)
-                    if scored["fill"] and (k := row_key(r)):
-                        filled_keys.add(k)
-                    if scored["why"] == "open":
-                        live += 1
-                        filled += 1 if scored.get("fill") else 0
-                        if not scored["fill"] and (k := row_key(r)):
-                            waiting.add(k)
-                    else:
-                        finished.add(r["id"])
-                PEAK["live"], PEAK["filled"] = max(PEAK["live"], live), max(PEAK["filled"], filled)
-                res = decide(
-                    frames, now_utc, p, frozenset(filled_keys | waiting), pending=live >= p.max_orders
-                )
-                logs.append(res.log)
-                if res.decision is not None:
-                    n = sum(1 for r in mine if r["cutoff_thai"][:10] == day) + 1
-                    row = res.decision
-                    row["id"] = f"B-{day.replace('-', '')}-{n}"
-                    mine.append(row)
-                    written.append(row)
-                now += pd.Timedelta(minutes=5)
+        for now in day_times(day, p):
+            now_utc = now.tz_convert("UTC")
+            frames = cut(full, now_utc)
+            known = frames["M5"]
+            live = filled = 0
+            waiting: set[str] = set()
+            for r in written:  # live while score.py still calls it open (pending or filled)
+                if r["id"] in finished:
+                    continue
+                scored = score(r, known, start_of(r, {}), p.spread)
+                if scored["fill"] and (k := row_key(r)):
+                    filled_keys.add(k)
+                if scored["why"] == "open":
+                    live += 1
+                    filled += 1 if scored.get("fill") else 0
+                    if not scored["fill"] and (k := row_key(r)):
+                        waiting.add(k)
+                else:
+                    finished.add(r["id"])
+            PEAK["live"], PEAK["filled"] = max(PEAK["live"], live), max(PEAK["filled"], filled)
+            res = decide(frames, now_utc, p, frozenset(filled_keys | waiting), pending=live >= p.max_orders)
+            logs.append(res.log)
+            if res.decision is not None:
+                n = sum(1 for r in mine if r["cutoff_thai"][:10] == day) + 1
+                row = res.decision
+                row["id"] = f"B-{day.replace('-', '')}-{n}"
+                mine.append(row)
+                written.append(row)
     return mine, logs
+
+
+def day_times(day: str, p: Params) -> list[pd.Timestamp]:
+    """The scheduled ``now`` times of a Thai day (BOT_RULES rule 0): with ``windows`` off every 5 minutes
+    from 00:00 to 23:55 (288), with it on the three windows, start and end included (93)."""
+    midnight = pd.Timestamp(day, tz=TH)
+    if p.windows == "off":
+        return [midnight + pd.Timedelta(minutes=m) for m in range(0, 24 * 60, 5)]
+    return [midnight + pd.Timedelta(minutes=m) for _, a, b in WINDOWS for m in range(a, b + 1, 5)]
 
 
 def days_between(first: str, last: str) -> list[str]:

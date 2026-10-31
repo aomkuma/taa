@@ -113,3 +113,27 @@ def test_leg_from_log_reads_a_fade_leg_and_is_fade() -> None:
     assert not day.is_fade("L0 4000.00@05/10 10:00 H100 4100.00@05/10 12:00 leg 100.00")
     lv = day.fib_prices(l0, h100)
     assert lv[0.0] == 4184.25 and lv[1.0] == 4154.21 and lv[1.618] == pytest.approx(4184.25 - 1.618 * 30.04)
+
+
+def test_walk_day_lists_times_outside_the_windows_as_all_day(monkeypatch) -> None:
+    """Rule 0: with ``windows`` off the day is walked at its 288 times, those outside the three windows under
+    the name "all day"; with it on only the windows."""
+    calls: list[pd.Timestamp] = []
+
+    def fake(frames, now, p, used=frozenset(), pending=False, windowed=None):
+        calls.append(now)
+        log = dict.fromkeys(bot.LOG_COLUMNS, "")
+        log["reason"] = "warm-up"
+        return bot.Result(log)
+
+    monkeypatch.setattr(bot, "cut", lambda full, now: {})
+    monkeypatch.setattr(bot, "decide", fake)
+    rows = day.walk_day("2026-04-07", bot.Params(), {})["rows"]
+    assert len(calls) == len(rows) == 288
+    names = [r["window"] for r in rows]
+    assert names.count("all day") == 288 - 93
+    assert {n for n in names if n != "all day"} == {"Asia", "London", "New York"}
+    assert rows[0]["window"] == "all day" and rows[0]["close"] == pd.Timestamp("2026-04-06 17:00", tz="UTC")
+    calls.clear()
+    rows = day.walk_day("2026-04-07", bot.Params(windows="on"), {})["rows"]
+    assert len(rows) == 93 and "all day" not in {r["window"] for r in rows}

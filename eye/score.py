@@ -48,8 +48,13 @@ def start_of(row: dict[str, str], cuts: dict[str, pd.Timestamp]) -> pd.Timestamp
     ``cutoff_thai`` with the time in ``decided_at`` (the owner, 2026-10-28: run real days, one at a time)."""
     if row["id"] in cuts:
         return decided(row, cuts[row["id"]])
-    day = row["cutoff_thai"][:10]
-    return pd.Timestamp(f"{day} {row['decided_at'][-5:]}", tz=TH).tz_convert("UTC") + SEEN
+    day = pd.Timestamp(row["cutoff_thai"][:10])
+    # ``decided_at`` is ``dd/mm HH:MM``, the last bar's open: for a decision at 00:00 that is 23:55 of the day
+    # before ``cutoff_thai``'s date, so the date moves back one day (BOT_RULES, Code status).
+    before = day - pd.Timedelta(days=1)
+    if row["decided_at"][:5] == f"{before:%d/%m}":
+        day = before
+    return pd.Timestamp(f"{day:%Y-%m-%d} {row['decided_at'][-5:]}", tz=TH).tz_convert("UTC") + SEEN
 
 
 def decided(row: dict[str, str], start: pd.Timestamp) -> pd.Timestamp:

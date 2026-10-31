@@ -1082,3 +1082,21 @@ By kind (resolved fills; `kind_of` from the structure text):
   already seen; the clean test is forward).
 - The summary's "fills" column counts resolved fills only (the open one is apart) - checked against the ledgers.
 - Not yet done: every trade drawn and checked against the rules (CLAUDE.md step 8) before any number is believed.
+
+### Step 7: the leg's 0 and 100 drawn - M5 against M15 (2026-10-31; `eye/research/bot_view.py`, no trading)
+
+The owner: the leg *"depends on which timeframe you measure it on - M5 draws it like this and it is right on M5, but
+M30 or 1H may put it at 4062"*. Claude's proposal, taken by the owner (*"go with what you propose first"*): measure
+the leg on **M15**, keep M5 for the entry; draw M5 against M15 on days of several months.
+
+**15/07/2026** (H4 not clear - a fade), rule 3 off, defaults otherwise:
+
+| moment (Thai) | timeframe | 100 % (S) | 0 % (E) | order | judged |
+|---|---|---|---|---|---|
+| 07:00 | M15 | 4013.69 (14/07 16:30) | 4103.74 (14/07 19:30) | SELL 4058.72, SL 4104.24, TP 3958.54 (161.8 %), R 2.19 | **0 and 100 right** (Claude) - the 90 USD run of 14/07 evening; on the drawing the sell fills ~07:30 and price falls to ~4017 (the 100 % line, the run's start) by 14:00, then returns to ~4069 by 19:30: **the target at 161.8 % is beyond where price turned** - the reachable target here was near 100 % (Claude's reading, to be measured) |
+| 14:20 | M5 | 4036.59 (12:40) | 4021.14 (13:20) | BUY 4028.86, SL 4020.64, TP 4045.64, R 2.00 | **wrong 100 %** (Claude; the owner: right on M5, a matter of the timeframe) - the run was 4062.11 -> 4021; on the drawing the SL is taken (low ~4017) before the TP |
+| 14:20 | M15 | - | - | none: the leg 4062.11 -> ~4021 not yet fixed | - |
+| 19:30 | M15 | 4062.11 (08:00) | 4017.28 (15:00) | BUY 4039.70, SL 4016.78, TP 4089.31, R 2.15 | **0 and 100 right** (Claude; the owner: *"OK, better"*); **late** - fixed 4.5 h after the low, price already at 50 % |
+
+At 14:20 the M30 ZigZag's latest fixed leg is 4103.74 (14/07 19:30) -> 4042.88 (15/07 01:30); 4062.11 is not yet an M30
+pivot. One day - nothing concluded; more days of August - October follow.

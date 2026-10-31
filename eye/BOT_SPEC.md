@@ -859,3 +859,9 @@ or bounce"*; *"only up to H4 - reading the big timeframe has failed many times, 
 **fade leg** - the latest run traded against it, 0 % at its end, 100 % at its start (the owner's drawing), entry
 `fade_entry` 0.5 (the owner's zone 61 - 38 %), stop beyond the end, target the first extension past the start giving
 1:2. The M15 strip B side is withdrawn. On 07/10: sell at 4169.23, stop 4184.75, target 4136.15, R 2.11.
+
+## All day - the three windows dropped (2026-10-31)
+
+Asked how close the research runs are to live, Claude listed that the runs decide only inside the owner's three
+windows; the owner, 2026-10-31: *"no need [for the three windows] - run it all the time"*. Rule 0: parameter `windows`, default **off** - a decision at every M5 close of the day; `on` keeps the
+three windows as a record (every run before 2026-10-31). Every result measured before this was made with the windows.

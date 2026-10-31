@@ -76,11 +76,79 @@ def test_window_edges() -> None:
 @needs_data
 def test_outside_window_and_pending(full) -> None:
     outside = now_at("2026-04-06 11:00")
-    res = bot.decide(bot.cut(full, outside), outside, P0)
+    res = bot.decide(bot.cut(full, outside), outside, replace(P0, windows="on"))
     assert res.decision is None and res.log["reason"] == "outside window"
     inside = now_at("2026-04-06 21:20")
     held = bot.decide(bot.cut(full, inside), inside, P0, pending=True)
     assert held.decision is None and held.log["reason"] == "order pending"
+
+
+@needs_data
+def test_windows_parameter_off_runs_all_day_on_keeps_the_three_windows(full) -> None:
+    """Rule 0: 03:00 Thai on a weekday (market open) is looked at with ``windows`` off (the default) and is
+    "outside window" with it on; an explicit ``windowed`` still wins; the parameter is validated and written."""
+    three = now_at("2026-10-13 03:00")
+    frames = bot.cut(full, three)
+    assert bot.window_of(three) == ""
+    assert bot.Params().windows == "off"
+    off = bot.decide(frames, three, P0)
+    on = bot.decide(frames, three, replace(P0, windows="on"))
+    assert off.log["reason"] not in ("outside window", "market closed")
+    assert on.log["reason"] == "outside window"
+    assert bot.decide(frames, three, P0, windowed=True).log["reason"] == "outside window"
+    assert (
+        bot.decide(frames, three, replace(P0, windows="on"), windowed=False).log["reason"] != "outside window"
+    )
+    assert "windows=off" in bot.Params().text() and "windows=on" in bot.Params(windows="on").text()
+    with pytest.raises(ValueError):
+        bot.Params(windows="maybe")
+
+
+def _quiet_decide(monkeypatch, nows: list[pd.Timestamp], row_at: str = "") -> None:
+    """A stand-in decide that records every ``now`` and writes one order at the Thai time ``row_at``."""
+
+    def fake(frames, now, p, used=frozenset(), pending=False, windowed=None):
+        nows.append(now)
+        t = now.tz_convert(TH)
+        log = dict.fromkeys(bot.LOG_COLUMNS, "")
+        log.update(date=f"{t:%Y-%m-%d}", time_thai=f"{t:%H:%M}", reason="outside window")
+        if f"{t:%H:%M}" != row_at:
+            return bot.Result(log)
+        log["reason"] = "order written"
+        row = {c: "" for c in bot.LEDGER_COLUMNS}
+        row.update(
+            cutoff_thai=f"{t:%Y-%m-%d} 07:00", decided_at=f"{t - pd.Timedelta(minutes=5):%d/%m %H:%M}",
+            side="BUY", entry="1.00", stop="0.50", target="99998", reader="bot2e",
+        )  # fmt: skip
+        return bot.Result(log, row, key="k")
+
+    monkeypatch.setattr(bot, "decide", fake)
+
+
+@needs_data
+def test_walk_days_schedule_is_288_times_off_and_93_on(full, monkeypatch) -> None:
+    """Rule 0: one day's walk has the 288 times 00:00 .. 23:55 with ``windows`` off, the three windows (25 + 25
+    + 43 = 93, start and end included) with it on; the log's date is the calendar day of ``now``."""
+    nows: list[pd.Timestamp] = []
+    _quiet_decide(monkeypatch, nows)
+    _, logs = bot.walk_days(["2026-04-07"], bot.Params(), full)
+    assert len(logs) == len(nows) == 288 and len(set(nows)) == 288
+    thai = [n.tz_convert(TH) for n in nows]
+    assert f"{thai[0]:%Y-%m-%d %H:%M}" == "2026-04-07 00:00" and f"{thai[-1]:%H:%M}" == "23:55"
+    assert {r["date"] for r in logs} == {"2026-04-07"}
+    nows.clear()
+    _, logs = bot.walk_days(["2026-04-07"], bot.Params(windows="on"), full)
+    assert len(logs) == len(nows) == 25 + 25 + 43
+    assert all(bot.window_of(n) for n in nows)
+
+
+@needs_data
+def test_an_order_at_midnight_carries_that_days_date(full, monkeypatch) -> None:
+    """Rule 0: 00:00 belongs to the day it falls on - the order id, the row's date and the log's date."""
+    _quiet_decide(monkeypatch, [], row_at="00:00")
+    mine, logs = bot.walk_days(["2026-04-07"], bot.Params(), full)
+    assert [r["id"] for r in mine] == ["B-20260407-1"] and mine[0]["cutoff_thai"][:10] == "2026-04-07"
+    assert logs[0]["date"] == "2026-04-07" and logs[0]["time_thai"] == "00:00"
 
 
 @needs_data
@@ -92,7 +160,7 @@ def test_one_order_at_a_time_in_the_walk(full) -> None:
         id="B-20260402-1", cutoff_thai="2026-04-02 07:00", decided_at="02/04 13:00", side="BUY",
         entry=f"{seen:.2f}", stop="1", target="99998",
     )  # fmt: skip
-    mine, logs = bot.walk_days(["2026-04-06"], P, full, [live])
+    mine, logs = bot.walk_days(["2026-04-06"], replace(P, windows="on"), full, [live])
     assert mine == []
     in_window = [r for r in logs if r["window"] and r["reason"] != "market closed"]
     assert in_window and {r["reason"] for r in in_window} == {"order pending"}
@@ -168,7 +236,9 @@ def test_ledger_rows_score_and_money_reads_them(full, tmp_path, monkeypatch) -> 
     other = {c: "" for c in bot.LEDGER_COLUMNS}
     other.update(id="B-20261018-1", cutoff_thai="2026-10-18 07:00", reader="bot2e", side="WAIT")
     bot._write(ledger, bot.LEDGER_COLUMNS, [other])
-    p = bot.Params(fib_entry=0.382, fib_early=0.10, fib_stop="line_tight")  # writes an order at 10-19 07:00
+    p = bot.Params(
+        fib_entry=0.382, fib_early=0.10, fib_stop="line_tight", windows="on"
+    )  # an order at 10-19 07:00
     bot.run("2026-10-19", "2026-10-19", p, ledger, log)
     rows = bot._read(ledger, bot.LEDGER_COLUMNS)
     ids = [r["id"] for r in rows]
@@ -181,6 +251,7 @@ def test_ledger_rows_score_and_money_reads_them(full, tmp_path, monkeypatch) -> 
         "stop_buffer=",
         "target_buffer=",
         "order_life_bars=",
+        "windows=on",
         "H4 ",
         "trade: ",
     ):
@@ -251,7 +322,7 @@ def test_max_orders_allows_several_live_orders(full, monkeypatch) -> None:
     monkeypatch.setattr(bot, "decide", fake)
     for n in (1, 3):
         calls.clear()
-        mine, _ = bot.walk_days(["2026-04-06"], bot.Params(max_orders=n), full)
+        mine, _ = bot.walk_days(["2026-04-06"], bot.Params(max_orders=n, windows="on"), full)
         assert len(mine) == n, n
         assert bot.PEAK["live"] == n and bot.PEAK["filled"] == n
     assert "max_orders=3" in bot.Params(max_orders=3).text() and bot.Params().max_orders == 1
@@ -1100,7 +1171,7 @@ def test_rule12_an_expired_order_frees_max_orders_in_the_walk(full, monkeypatch)
     never fill, with a 3-bar life: written at once, pending for two decisions, free again at the third."""
     calls: list[bool] = []
 
-    def fake(frames, now, p, used=frozenset(), pending=False, windowed=True):
+    def fake(frames, now, p, used=frozenset(), pending=False, windowed=None):
         calls.append(pending)
         log = dict.fromkeys(bot.LOG_COLUMNS, "")
         log["reason"] = "order pending" if pending else "order written"
@@ -1115,7 +1186,7 @@ def test_rule12_an_expired_order_frees_max_orders_in_the_walk(full, monkeypatch)
         return bot.Result(log, row, key=f"k{len(used)}")
 
     monkeypatch.setattr(bot, "decide", fake)
-    mine, _ = bot.walk_days(["2026-04-06"], bot.Params(mode="fib", order_life_bars=3), full)
+    mine, _ = bot.walk_days(["2026-04-06"], bot.Params(mode="fib", order_life_bars=3, windows="on"), full)
     asia = calls[:25]  # the Asia window 07:00..09:00 is 25 decisions
     assert asia[:8] == [False, True, True, False, True, True, False, True]  # written, 2 waiting, free, ...
     assert len(mine) >= 8
@@ -1216,7 +1287,7 @@ def test_fib_mirror_on_stored_bars(full) -> None:
 def test_fib_walk_one_window_writes_known_reasons_and_scores(full, tmp_path) -> None:
     """The walk over one day's Asia window on stored bars: every log row has a known reason, the row layout is
     the ledger's, a written order is scored by the new rules."""
-    p = bot.Params(mode="fib", fib_entry=0.382, min_r=0.0, max_entry_frac=0.35)
+    p = bot.Params(mode="fib", fib_entry=0.382, min_r=0.0, max_entry_frac=0.35, windows="on")
     mine, logs = bot.walk_days(["2026-10-13"], p, full)  # (writes an order or not: both are checked below)
     assert len(logs) == 25 + 25 + 43 and all(r["reason"] in bot.RANK for r in logs)
     assert set(logs[0]) == set(bot.LOG_COLUMNS)
@@ -1280,7 +1351,7 @@ def _keyed_decide(monkeypatch, entry: str = "5000.00"):
     limit far above the market: it fills on the next bar; 1.00 is far below: it never fills and expires."""
     key = "BUY|M5|2026-10-12 05:00:00+00:00"
 
-    def fake(frames, now, p, used=frozenset(), pending=False, windowed=True):
+    def fake(frames, now, p, used=frozenset(), pending=False, windowed=None):
         log = dict.fromkeys(bot.LOG_COLUMNS, "")
         if pending or key in used or bot.window_of(now) != "Asia":
             log["reason"] = "order pending" if pending else "outside window"
@@ -1305,7 +1376,7 @@ def test_a_leg_is_used_across_runs_the_keys_of_the_ledger_rows_count(full, monke
     days: the second, given the first's (filled) rows as the ledger, writes none of the same key; the row
     carries its key, and a row without one (any other reader) adds none."""
     key = _keyed_decide(monkeypatch)
-    p = bot.Params(mode="fib")
+    p = bot.Params(mode="fib", windows="on")
     first, _ = bot.walk_days(["2026-10-13"], p, full)
     assert [bot.row_key(r) for r in first] == [key]
     second, _ = bot.walk_days(["2026-10-13", "2026-10-14"], p, full, first)
@@ -1322,7 +1393,7 @@ def test_run_seeds_used_from_every_kept_row_later_days_too(full, tmp_path, monke
     """Rule 2 through run(): the rows of the days a run walks are replaced, every other row is kept and its
     key is used - a row on a LATER day too. The same leg is not written on the earlier day again."""
     key = _keyed_decide(monkeypatch)
-    p = bot.Params(mode="fib")
+    p = bot.Params(mode="fib", windows="on")
     ledger, log = tmp_path / "l.csv", tmp_path / "g.csv"
     bot.run("2026-10-13", "2026-10-13", p, ledger, log)
     rows = bot._read(ledger, bot.LEDGER_COLUMNS)
@@ -1348,7 +1419,7 @@ def test_a_leg_is_used_only_when_its_order_fills_an_expired_order_frees_it(full,
     there is no trade) - the leg is written again - and in the ledger of an earlier run only a row that FILLED
     counts. With a filling entry the leg is written once."""
     key = _keyed_decide(monkeypatch, entry="1.00")  # never fills: expires after 3 bars
-    p = bot.Params(mode="fib", order_life_bars=3)
+    p = bot.Params(mode="fib", order_life_bars=3, windows="on")
     rows, _ = bot.walk_days(["2026-10-13"], p, full)
     assert len(rows) >= 3 and {bot.row_key(r) for r in rows} == {key}  # written again after each expiry
     ids = [r["id"] for r in rows]
@@ -2585,3 +2656,16 @@ def _variants_file(tmp_path):
     path = tmp_path / "v.json"
     path.write_text('{"../../eye": {}}', encoding="utf-8")
     return path
+
+
+def test_start_of_a_midnight_decision_starts_at_its_now() -> None:
+    """``decided_at`` is the last bar's open: a 00:00 decision (cutoff the new day, last bar 23:55 of the day
+    before) starts at that 00:00 - not a day later; a normal row is unchanged; also across New Year."""
+
+    def row(cutoff: str, decided: str) -> dict[str, str]:
+        return {"id": "B-x", "cutoff_thai": f"{cutoff} 07:00", "decided_at": decided}
+
+    assert score_mod.start_of(row("2026-04-07", "06/04 23:55"), {}) == now_at("2026-04-07 00:00")
+    assert score_mod.start_of(row("2026-04-07", "07/04 07:00"), {}) == now_at("2026-04-07 07:05")
+    assert score_mod.start_of(row("2027-01-01", "31/12 23:55"), {}) == now_at("2027-01-01 00:00")
+    assert score_mod.start_of(row("2027-01-01", "01/01 00:05"), {}) == now_at("2027-01-01 00:10")

@@ -172,31 +172,29 @@ def thai_stamp(text: str, year: int) -> pd.Timestamp:
 
 
 def walk_day(day: str, p: bot2e.Params, full: dict[str, pd.DataFrame]) -> dict[str, Any]:
-    """Run the decision logic at every window M5 close of ``day``; nothing is written."""
-    mid = pd.Timestamp(day, tz=TH)
+    """Run the decision logic at every scheduled M5 close of ``day`` (BOT_RULES rule 0: all 288 times with
+    ``windows`` off, the three windows with it on); nothing is written. A time outside the three windows is
+    listed under the name "all day"."""
     window_rows: list[dict[str, Any]] = []
     orders: list[dict[str, Any]] = []
     used: set[str] = set()
-    for name, a, b in bot2e.WINDOWS:
-        now = mid + pd.Timedelta(minutes=a)
-        end = mid + pd.Timedelta(minutes=b)
-        while now <= end:
-            nu = now.tz_convert("UTC")
-            frames = bot2e.cut(full, nu)
-            res = bot2e.decide(frames, nu, p, frozenset(used))
-            reason = res.log["reason"]
-            if reason != "market closed":
-                trend = "none"
-                if reason != "warm-up":
-                    fi = bot2e.fib_inputs(frames, nu, p)
-                    trend = trend_word(bot2e.m5_state(fi.datas[0].m5_pv)[0], 1)
-                window_rows.append({"close": nu, "window": name, "reason": reason, "trend": trend})
-                if res.decision is not None:
-                    used.add(res.key)
-                    t0, l0, t100, h100 = leg_from_log(res.key, res.log["leg"])
-                    orders.append({"close": nu, "row": res.decision, "key": res.key, "log": res.log,
-                                   "t0": t0, "l0": l0, "t100": t100, "h100": h100})  # fmt: skip
-            now += pd.Timedelta(minutes=5)
+    for now in bot2e.day_times(day, p):
+        nu = now.tz_convert("UTC")
+        name = bot2e.window_of(nu) or "all day"
+        frames = bot2e.cut(full, nu)
+        res = bot2e.decide(frames, nu, p, frozenset(used))
+        reason = res.log["reason"]
+        if reason != "market closed":
+            trend = "none"
+            if reason != "warm-up":
+                fi = bot2e.fib_inputs(frames, nu, p)
+                trend = trend_word(bot2e.m5_state(fi.datas[0].m5_pv)[0], 1)
+            window_rows.append({"close": nu, "window": name, "reason": reason, "trend": trend})
+            if res.decision is not None:
+                used.add(res.key)
+                t0, l0, t100, h100 = leg_from_log(res.key, res.log["leg"])
+                orders.append({"close": nu, "row": res.decision, "key": res.key, "log": res.log,
+                               "t0": t0, "l0": l0, "t100": t100, "h100": h100})  # fmt: skip
     return {"rows": window_rows, "orders": orders}
 
 
