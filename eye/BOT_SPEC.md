@@ -735,6 +735,8 @@ completed; acceptance cases with expected verdicts or *report*.
 
 ## Rule 11 rewritten - sideways is read on H1 (2026-10-29 evening)
 
+*(Superseded 2026-10-30 - see the status note at the top of `eye/BOT_RULES.md`.)* Rules 1 and 11 and the looks of this section are withdrawn; the side is rule 16.
+
 The owner, on the drawn October trades: *"sideways means in the 1-hour timeframe, and the trend is found in the
 5-minute"*; the range counts after price has gone back and forth inside it, *"at least one to two times each side"*;
 the trade is in the fourth and fifth leg, *"if it can be found from the third leg, that is good"*; at the top edge
@@ -746,7 +748,114 @@ the opposite edge (`range_tp`).
 
 ## The trend timeframe moves to M30 (2026-10-30)
 
+*(Superseded 2026-10-30 - see the status note at the top of `eye/BOT_RULES.md`.)* Rules 1 and 11 and the looks of this section are withdrawn; the side is rule 16.
+
 The owner: *"we change to M30 and drop 1H - change it all to M30"* - for reading the trend above M5 (faster signals,
 closer to M5), after the H1 state's reading failed the market check on July-October (BOT_RESEARCH, "The H1 state on
 four months"). In force: `eye/BOT_RULES.md`, `state_tf` M30 (H1 kept as a record); the state's rework and its M30
 acceptance values follow CLAUDE.md step 7.
+
+## Rule 11's state rewritten - where a range starts (2026-10-30)
+
+*(Superseded 2026-10-30 - see the status note at the top of `eye/BOT_RULES.md`.)* Rules 1 and 11 and the looks of this section are withdrawn; the side is rule 16.
+
+The H1 state as built, and the prototypes v2-v5 on M30, did not read July-October like the market
+(`eye/BOT_RESEARCH.md`, "The H1 state on four months", "The state on M30 - v2, v4, v5"). Claude researched what a
+range is from outside sources (Wyckoff, Al Brooks; BOT_RESEARCH, "What a range is - outside sources") and the owner
+agreed (*"yes"*, METHOD 2e, the Sideways row): a range starts when a trend stops making new extremes - the trend's
+last extreme and the first bounce from it are the edges; it counts once the first edge is tested again; the swings
+inside are not counted; a break is an M30 close beyond 127 %. Changed in `eye/BOT_RULES.md` rule 11, `[Claude]` in
+form: (1) after a break the next range starts at the trend's extreme at the break (the HIGH / LOW bounding the
+breaking segment) and the pivot after it - before, any two pivots after the segment; (2) the edges never move - a
+touch beyond an edge short of the break level used to widen it; (3) the state is walked on the last 3,000 M30 bars,
+not 1,500 - **replaced the same day** by the owner's looks (below). Kept: the touch zones, the break at 27 %, legs and "sideways from two legs", the closes tested before a
+pivot is taken in. Also settled (a developer's question): while M30 is sideways the lean is written
+`not read (M30 sideways); computed <rule 1's lean>` (rule 14).
+
+## The owner's two views - the looks (2026-10-30)
+
+*(Superseded 2026-10-30 - see the status note at the top of `eye/BOT_RULES.md`.)* Rules 1 and 11 and the looks of this section are withdrawn; the side is rule 16.
+
+The owner, on the month-long drawings: looking back that far *"makes you miss the day's trades"*; *"looking at
+the big picture to see the trend and digging into the chart to find the entry are different things"*; the trend is
+*"looking back many days, on any timeframe - M15 to 1H"*; then the owner set the looks: **the trend - M30, 7 trading
+days** (the side with the edge when there is no range); **the range traded - M30, 4 trading days** (edges, legs,
+side, target); **the leg - M5, 2 trading days** (the Fibo leg and the M5 trend at the entry). In
+`eye/BOT_RULES.md`: "The looks" (Words used), `trend_days` / `range_days` / `setup_days`, rule 11's walk run on the
+range look and the trend look. `[Claude]`: a trading day as a bar count (46 M30, 274 M5), the pivots taken from the
+1,500-bar frame and chosen by the look, and how the two walks combine. The 3,000-bar walk written earlier the same
+day is withdrawn.
+
+## Five models' review, and the owner's two choices (2026-10-30)
+
+*(Superseded 2026-10-30 - see the status note at the top of `eye/BOT_RULES.md`.)* Rules 1 and 11 and the looks of this section are withdrawn; the side is rule 16.
+
+Codex, Sonnet, Opus, Fable and Haiku read rule 11 and the looks (`eye/BOT_RESEARCH.md`, "Rule 11 and the looks read
+by five models"). Two findings changed what the bot reads and went to the owner:
+- **A look's walk started by taking its first two pivots as a range** (all five): the state could change with no new
+  price and a trend cut at the look's start read as a range. The owner chose **1A** - one walk on the 1,500-bar frame,
+  the looks only date the range (`E` in the last 4 trading days) and the break (in the last 7) - with *"careful not to
+  get the same result as before - write the code tightly"*: rule 14 now asks for a stability check (two frame lengths
+  agree; every change of state has a cause; edges never move under one `E` / `B`) and a unit test per branch.
+- **A pivot beyond the first edge short of a 127 % close** (four models): Claude's text counted it as a test. The
+  owner chose **2B** - keep it a test: *"once it breaks, you have to wait for the retest anyway"*. The choice is now
+  the owner's.
+Text fixes, `[Claude]`: the four ordered cases of the M30 state (no case left open); every break names the next `E` /
+`B` alike; the break line at 127 % marked Claude's; rule 2's age bound by the setup look; rule 13's wording; the
+structure writes which case gave the state; the H1 acceptance values of prototype v1 withdrawn as acceptance values.
+
+## The side from M15 structure; H1 removed (2026-10-30)
+
+The owner, after the strips were drawn and measured: the M15-M30 structure side is the closest; keep the owner's
+Fibonacci path (rules 2-10) and change only the side; *"fix it from here, and remove 1H"*. The working tree's
+uncommitted H1-state build and half-done rule 3 were set aside (backed up in `eye/wip/`, including
+`working_tree_before_restore_2026-10-30.diff`) and the build restarts from the committed code. In `eye/BOT_RULES.md`:
+**rule 16** - the side is strip B on M15 (a close beyond the latest fixed M15 swing), reusing `eye/signal_study.py`;
+rule 3's side refusal reads rule 16; rules 1 and 11 and their parameters are withdrawn (kept as the record).
+
+## Rule 2's leg - the latest low, and an early leg (2026-10-30)
+
+On the MT5-style drawing of 07/10/2026 07:00 the bot's BUY Fibo ran from 4154.21 to 4170.48 (an old fall), not from
+the top 4184.25 to the 4161.42 low the pullback reached. The owner: 100 % belongs at the top before price came down;
+the cause was Claude's "`L0` needs a fixed low after it". Rule 2 now: `L0` = the latest fixed LOW (no close below it);
+`H100` follows unchanged (here 4184.25). The owner added: if price has come down a lot, draw at once - `early_leg`
+0.382 (the owner: "about 38, 61 %"; 0.618 a variant): a provisional `L0` at the lowest low since the latest fixed HIGH once the fall
+reaches 38.2 % of the rise into that HIGH (the owner: "about 38, 61 %"; 0.618 a variant). A SELL is the mirror (the owner: *"a down leg the opposite"*).
+
+## The owner's filter cut, and the Fibo that moves while there is no trade (2026-10-30)
+
+After the document review the owner answered: *"cut what makes the decision worse - with the Fibo, cut the trend legs
+at the entry"* -> **rule 5 withdrawn** (`max_trend_legs`); on 61.8 vs 38.2 %: *"almost the same, just the Fibo the
+other way round"* -> the entry level stays. From the owner's "while there is no trade the Fibo moves" `[Claude]`: a leg
+is used only when an order on it **fills** (an unfilled order frees it); **a low below a fixed `L0`** makes `L0`
+provisional at the lowest low since (as an early leg) instead of ending the leg. Reviewed by Codex; four points fixed.
+
+## Rule 2 rewritten - the leg traded with it (2026-10-30)
+
+On the MT5-style drawing of 07/10 07:00 the owner saw the bot's Fibo on the fall 4184.25 -> 4161.42 as a **buy** setup
+(targets above) and said they draw it the other way to see the target below when they expect the fall to go on;
+confirmed: the Fibo goes on the leg running the way price is expected to continue - 0 % at its start, 100 % at its
+end, entry on the pullback into 38 - 23 % (61 % if strong), stop beyond 0 %, target 127 - 161 % the same way. **Revision
+6 and everything since had the leg backwards** (the counter-move, traded against it) - Claude's misreading of "to play
+an up move, draw high -> low". Rule 2 rewritten (the side's direction gives the leg; `H100` = the latest fixed HIGH,
+`L0` = the LOW before it, for a BUY; the early leg's provisional end; a break past the end moves the Fibo, past the
+start kills the leg; used once filled); rules 6 and 10 read "after `H100`'s bar"; `fib_entry` default 0.382.
+
+## Rule 17 - the break and its retest (2026-10-30)
+
+The owner on 07/10 (the pullback to the entry never came): once it breaks the low it has to be entered anyway - on
+the retest of the old low; the stop beyond the bounce (Claude's option C); the target a ladder 161.8 / 200 / 261.8 %,
+the first giving at least 1:2 (the owner: "261 may be a bit far; 161 - 200 % may be the minimum" - "try it"). The
+owner also: the edge is when the big trend is down - recorded; the run reports these trades by side and the M15
+structure before. Rule 17 in BOT_RULES; reviewed by Codex twice; the 07/10 example fills 07:40, target 4139.09 at
+10:10 (re-checked; Codex's 08:50 was wrong), R 2.46 (stored bars).
+
+## The side rewritten - fade the latest run unless H4 trends clearly (2026-10-30)
+
+The owner, after the 07/10 07:00 drawing (*"buy what? sell!"*): *"simply: if price has run up, look for a sell; if it
+has come down a lot, look for a buy - unless the big trend (1D / 4H) is very clear: then with the trend on the pullback
+or bounce"*; *"only up to H4 - reading the big timeframe has failed many times, but try it"*. Rule 16 now: H4 clear
+(HH + HL / LH + LL on its latest two fixed swings) -> a trend leg (rule 2 as rewritten earlier the same day); else a
+**fade leg** - the latest run traded against it, 0 % at its end, 100 % at its start (the owner's drawing), entry
+`fade_entry` 0.5 (the owner's zone 61 - 38 %), stop beyond the end, target the first extension past the start giving
+1:2. The M15 strip B side is withdrawn. On 07/10: sell at 4169.23, stop 4184.75, target 4136.15, R 2.11.

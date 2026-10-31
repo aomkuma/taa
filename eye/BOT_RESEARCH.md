@@ -824,3 +824,261 @@ H1 close of July-October 2026 and drawn, coloured by the side it allows (`eye/re
 - **Measured, not judged by a number:** no version yet reads all four months the way the candles move. The common
   cause [Claude]: how a range is started (from which pair of pivots) and widened; the timeframe changes the scale of
   the problem, not its cause.
+
+### The state on M30 - v2, v4, v5 (2026-10-30, step 1 of HANDOFF "Next"; research prototype, no trading)
+
+`eye/research/state_tf.py <first> <last> M30 <mode>` on July, August, September and 24/09-28/10, images
+`eye/trades/state_M30_<mode>_*.png`. Every version below is [Claude]'s, written before its run.
+
+| Version | What it changes | Expected | What the drawing shows |
+|---|---|---|---|
+| v2 on M30 | v1's wick edges; closes tested before each pivot is taken in; a touch widens an edge only up to the break level | close to v1 | **almost identical to v1** on all four months (October: range 4071-4229, legs 6+ from 15/10, break down 22/10; August SELL 01-05/08 and 14-18/08 through rises; July SELL 70 %). The cap rarely binds on M30. |
+| v4 | as v2, but the edges are the pivots' extreme **closes**, not wicks (a wick past the bodies does not move an edge) | October's range about 4080-4215, the break down earlier than 4022 | **worse**: close-based two-pivot ranges are narrow and break all the time - sideways 8-37 %, October's range never seen (BUY 09-14/10, then SELL 14/10-27/10 through the range), August 18-20/08 SELL through the 4330 -> 4520 rise |
+| v5 | as v2, and after a break the **breaking leg itself** (its two pivots) starts the next range - to close a gap found in v2-v4: after a break nothing is tested until two new pivots fix, so a V-shaped turn keeps the old trend | turns read sooner | **fails**: a breaking leg is a long move, so its range is huge and never breaks again - October SELL for a month (90 %), August BUY 100 % including the fall on 28/08, September BUY 88 % through the fall |
+
+- **Measured:** none of v2, v4, v5 reads the four months better than v1 on M30. v1 / v2 remain the closest:
+  October's range and its break are seen (late), the rest of the failures stand.
+- **Found in the code [Claude]:** in v2-v4, after a break the trend holds until two new pivots fix; on a V-shaped
+  turn that is long. v5's way of closing it fails; the gap is still open.
+- **[Claude's reading]:** each change trades one month for another because the target is known only for October
+  (the owner's 4080-4220 range, the break down, 3980-4080 from 22/10) and for August's rise. Tuning further against
+  Claude's own reading of July and September would be METHOD 2d again; the owner's reading of those months is the
+  acceptance target that is missing.
+
+### What a range is - outside sources, and why the bot draws it wrongly (2026-10-30)
+
+The owner: research the basics (what a price range is, what ZigZag is and how it is used) from outside sources
+before asking. What the sources say (mostly broker / education sites and secondary summaries of Wyckoff and Al
+Brooks, not their own texts):
+
+- **A range** is price moving back and forth between a floor and a ceiling, **testing the same edges more than once**
+  (some say two to three bounces before it counts). Wyckoff: a range follows the end of a trend - the climax's extreme
+  and the first rally (reaction) after it set the edges, and a later test of the climax's area confirms them. Brooks:
+  a trend flattens into a range; in a range most breakout attempts fail. A break is a close beyond an edge; a broken
+  edge often changes role.
+- **ZigZag** joins alternating swing highs and lows and drops moves under its threshold (MT5: Depth 12 sets the swing
+  size most; Deviation 5, Backstep 3). The last leg repaints - only fixed pivots are used (the bot does). Higher highs
+  and higher lows = up, lower highs and lower lows = down; a range's edges are drawn through recent swing highs / lows.
+- Sources: therighttrader.com (trading range), journalplus.co (range trading), vtmarkets (sideways markets), fxtm
+  (range in forex), OANDA Japan (MT5 ZigZag settings), LuxAlgo (ZigZag structure; Swing High/Low), Wiley (Al Brooks,
+  *Trading Price Action: Trading Ranges*), the Brooks course forum, TradingView (Wyckoff anatomy of a trading range).
+
+**Why the bot draws the range wrongly** - against the sources:
+
+| | cause | measured / reading |
+|---|---|---|
+| 1 | an edge widens on every touch beyond it, without a cap - a trend stretches the range instead of breaking it | measured: August read as a range, SELL through the rise (H1) |
+| 2 | a wick moves an edge | measured: M30 v1 low edge 4066 from the 07/10 wick; the owner's 4080 |
+| 3 | a wide range breaks late (27 % of a stretched height) | measured: H1, 22/10 BUY leg 5 while price fell through the edge |
+| 4 | after a break, nothing is tested until two new pivots fix | found in the code (v2-v4) |
+| 5 | **any two consecutive pivots start a range at once** - the sources start it at the end of a trend and want the edge tested again | Claude's reading, not yet traced on the drawing |
+| 6 | the walk starts at the first pivots of the 1,500-bar window, which slides - an old range can carry on | measured on H1 (July held May's 4023-4369); not checked on M30 |
+
+**Agreed with the owner (2026-10-30), for the next prototype mode** - build on what exists, change only what is wrong:
+keep the fixed ZigZag pivots, M30 from M15, the touch zones 88 / 12 %, the break at 27 % (the owner's 127 %), the leg
+count and "sideways from two legs" (it already means the first edge was tested again), v2's order (closes tested
+before a pivot is taken in), `state_tf.py`, and the uncommitted H1 build with its tests. Change: (1) a range starts
+at the trend's last extreme and the first bounce from it, not any two pivots; (2) a pivot beyond an edge but short of
+the break level is a touch and does not move the edge - a close beyond the break level is a break; (3) the walk starts
+further back so an old range does not carry from the window's start. v4 and v5 are dropped.
+
+### Closes between two ZigZag pivots (2026-10-30, measured for rule 11's text)
+
+Claude wrote into rule 11 that the closes between two consecutive pivots lie between their prices "by the ZigZag's
+construction"; checked on the stored M30 bars (built from M15, 38,331 bars, ZigZag 12/5/3 on 3,000-bar frames every
+1,000 bars): **125 of 6,282 pivot pairs had a close outside the two pivot prices, by up to 16.04 USD**. The claim was
+wrong and was taken out; rule 11 now ignores the closes between `E` and `B` as a rule, not as a property of ZigZag.
+
+### Rule 11 and the looks read by five models (2026-10-30, the owner: "send it to every model on this machine")
+
+The same read-only brief (ambiguities, contradictions, attributions, trading sense, a hand trace) to Codex, Sonnet,
+Opus, Fable and Haiku, on `eye/BOT_RULES.md` after the looks were written. Claude grouped the findings and checked the
+ones a file can settle.
+
+| # | Finding | Models | Claude's check | Kind |
+|---|---|---|---|---|
+| 1 | **A look's walk starts by taking its first two pivots as a range**, and the look slides every bar - the state can change with no new price (a pivot leaves the look), and a trend cut at the look's start is read as a range | all five | true, from the text (the short looks make it much more frequent than the 1,500-bar frame did) | design - the owner's |
+| 2 | **A pivot beyond the first edge, short of the 127 % close, counts as a test** - a staircase trend (a higher high after a shallow pullback) is read as a range and sold | Sonnet, Opus, Fable, Haiku | true; it is Claude's [Claude] reading of "without a new extreme beyond it", against its plain sense | design - the owner's |
+| 3 | The two walks' combination leaves a case open: range look trending, trend look "neither"; and a fresh break on the range look is ignored when the trend look is sideways | Opus, Fable, Haiku | true (rule 11, "Only when neither walk...") | text |
+| 4 | "No trend on the 7 days is a range" vs the 7-day walk "neither" (legs 1) giving no side | Sonnet, Opus, Fable | true | text, follows the owner's sentence |
+| 5 | The `state_tf` H1 acceptance values come from prototype v1 (edges that widen) and cannot be produced by the new text | Sonnet, Opus, Fable | true (`lo` 4110.78 -> 4104.21 -> 4066.42 inside one range) | text |
+| 6 | "the owner's 127 % line" - the break at 127 % is Claude's (the owner gave 88-127 % as the entry zone) | Sonnet, Fable, Haiku | true (rule 11) | attribution |
+| 7 | Rule 2 "with no age limit" vs the 2-day setup look | Fable | true | text |
+| 8 | A second break the same way - say plainly that it starts a new `E` / `B` | Sonnet, Haiku | the text implies it | text |
+| 9 | The structure written (rule 14) does not say which look gave the state | Fable | true | text |
+| 10 | Rule 13 still says "the lean nor the M30 range"; the break written once as "beyond its edge", once as 127 % | Opus, Sonnet, Haiku | true | text |
+| 11 | Opinions, not checked: a tiny `h` after a break flickers; a deep first bounce makes `h` wide and freezes a trend against the move | Sonnet, Opus, Fable, Haiku | to be seen on the drawing | trading sense |
+| - | Haiku's "quote not found" for *"confirm the two you said"* and "sideways is read on the higher timeframe" | Haiku | the first is in BOT_RULES only (from the 10-29 chat); the second is a paraphrase in rule 11, not a quote | minor |
+
+**Measured: nothing** - this is a reading of the text. Findings 1 and 2 change what the bot reads and are the owner's
+to decide; 3-10 are text fixes; 11 waits for the drawing.
+
+After the owner's choices (1A, 2B) rule 11 was rewritten and Codex reviewed it: no contradiction, no wrong attribution;
+three small points (the 2,500-bar check's settings fixed; a pivot touching both edges cannot happen - a HIGH is tested
+only against the high edge; a close on a pivot bar belongs to one segment by the text). Its hand walk of an
+11-pivot sequence came out decided: at the end, trending up by case 2 (the range's `E` older than 4 days, the break
+inside 7).
+
+### Rule 11's state - the stability check on July-October (2026-10-30, rule 14; a reading, no trading)
+
+`eye/research/state11_check.py 2026-07-01 2026-10-28` on the built `eye/state11.py` (step 4, pieces 1-4; not
+committed). Expected before the run [Claude]: 0 / 0 / 0, since the walk no longer starts at a look.
+
+| | result |
+|---|---|
+| M30 closes checked | 3,930 |
+| (a) the state from a 1,500-bar frame vs a 2,500-bar frame | **0 differences** |
+| (b) changes of state | 112 - a pivot fixed 69, a close broke 38, the range look passed `E` 4, the trend look passed the break 1; **0 without a cause** |
+| (c) `lo` / `hi` changed under the same `E` / `B` | **0** |
+
+- **Fable checked the zeros are not trivial:** the 2,500-bar ZigZag differs from the 1,500-bar one over the shared span
+  at 249 closes, and a 1,000-bar frame gives a different state at 304 - so (a) can fail; a cause is present at only
+  286 of 3,930 closes (7.3 %), so (b) is not passed by default; all 112 changes were recomputed one by one and each
+  cause confirmed. (c) is nearly true by construction (edges are the `E` / `B` pivot prices). The check functions' unit
+  tests were too weak (sent back to the developer).
+- **The share of each state (measured; not judged):** down 48.7 %, up 35.6 %, **sideways 15.7 %**; case 1 581 closes,
+  case 2 3,312, case 3 37, **case 4 (no side) 0**. [Claude, a reading to check on the drawing, not a conclusion:] the
+  state is mostly "trending" because almost every 7 days hold a break - small ranges after a break break easily (the
+  five models' finding 11). Whether that matches the market is step 7's question, on the drawing.
+- In 7 changes the break was dated hours before the close where it was recognised (e.g. recognised 08/07 19:00, the
+  breaking close 15:30) - closes after a break are tested only once the new `B` is fixed (rule 11 as written).
+
+### Rule 11's state drawn on July-October - Claude's eye: not yet the market (2026-10-30, step 7)
+
+`eye/research/state11_draw.py` (step 4 piece 5), images `eye/trades/state11_2026-07-01_2026-07-31.png`, `..._08-01_08-31`,
+`..._09-01_09-30`, `..._10-01_10-28`. Measured shares (closes): July BUY 38 % / SELL 62 %, case 2 91 %; August 45 / 55,
+case 2 93 %; September 41 / 59, case 2 81 %, case 3 4 %; October 52 / 48, case 2 71 %, case 1 29 %; "either" and "none"
+0 % in every month.
+
+Claude's reading of the drawings (to be judged by the owner):
+- **Right:** October's break down on 22/10 and the SELL after it, the 3987-4034 range of 23-27/10 and the BUY on its
+  break up on 28/10; August's BUY 05-13/08 and 21-25/08 on the rise, SELL on the fall from 28/08; September's fall
+  from 26/09 SELL.
+- **Wrong:** August 19-21/08 - **SELL through the rise 4324 -> 4524** (after the 18/08 break down the new range is
+  `E` 4324.54 / `B` 4523.91, legs 1, so the down trend holds until a close above 4577); August 01-05/08 SELL on the start
+  of the rise 4030 -> 4170; July 20-23/07 SELL through the rise 3960 -> 4140; September 23-26/09 BUY through the fall
+  4370 -> 4245; October's 4080-4220 range (the owner's, 01-21/10) never read as one range - the side flips about eight
+  times inside it as small ranges break.
+- **The common cause [Claude]:** both failure modes come from a range's height being set by one bounce. After a
+  break the trend holds until the range of `E` and its first bounce `B` breaks the other way at 27 % beyond it: when
+  the bounce is big (a V turn), the turn is read late, against the move; when it is small, the range breaks at once
+  and the side flips on noise.
+- **Verdict (Claude): not passed** - wrong in every month; back to CLAUDE.md step 1 with the owner.
+
+### The side from price structure against rule 11 - six weeks drawn (2026-10-30; research, no trading)
+
+The owner, on the weekly drawing of 06-10/10: *"the 7th, falling that hard in the morning - how can it buy?"*, and
+when the sell came, price went sideways up - *"traded like this it always loses"*; then: *"go by the colour strip,
+compared with the price structure"*. Measured on 07/10: rule 11 stayed BUY until 17:00 (the 30/09 break up, 6 days
+old, still inside the 7-day look; a close below the 127 % line 4117 needed) and M30's ZigZag fixes late (the 4184.25
+top of 02:00 fixed at 14:30; the 4066.42 low of 19:30 fixed at 01:30 next day).
+
+`eye/research/structure_side.py` draws three strips under one week of M30: rule 11's side; **A** - a side from M30
+structure [Claude, from the owner's 2e step 3]: a close above the latest fixed swing HIGH -> BUY, below the latest
+fixed swing LOW -> SELL, otherwise unchanged; **B** - the same on M15 pivots and closes. Images
+`eye/trades/structure_side_<week>.png`; side changes per week (rule 11 / A / B): 20-24/07 4 / 2 / 6; 03-07/08
+3 / 3 / 7; 17-21/08 3 / 3 / 8; 21-25/09 1 / 2 / 10; 06-10/10 2 / 4 / 4; 19-23/10 5 / 3 / 5.
+
+Claude's reading of the strips (the owner judges):
+- **A and B follow the structure far better than rule 11**: 07/10 SELL from about 09:00 (rule 11 17:00); 19-21/08
+  BUY on the rise (rule 11 SELL); 21-25/09 SELL through the fall (rule 11 BUY); 20-22/07 BUY on the rise (rule 11
+  SELL); 22/10 SELL on the fall (all three).
+- **B turns sooner** (19/08 07:00 BUY before the rise; 08/10 07:00 BUY after the 4066 low) **but flips in chop**
+  (10 changes on 21-25/09, mostly 21-22/09).
+- **Neither reads a range**: in sideways stretches (08/10, 20-21/10, 24/09) A holds an old side and B flips.
+
+### The three side strips measured against the structure (2026-10-30; `eye/research/side_score.py`, research)
+
+The owner: the strips are wrong and visible from the picture; then *"you can see M15-M30 is the closest"*. The
+structure in hindsight = the final M30 ZigZag legs; a side decided at a close is held over the next M30 bar.
+July 1 - October 28: 3,930 M30 closes, 22,476 USD of bar-to-bar movement, 122 legs of at least 50 USD.
+
+| strip | right USD | wrong USD | right | strip P&L (no costs) | big legs: median lag | median share of the leg gone first | never on its side |
+|---|---|---|---|---|---|---|---|
+| rule 11 | 10,743 | 11,703 | 48 % | -1,004 | 1.0 h | 68 % | 47 / 122 |
+| A: M30 structure | 11,203 | 11,243 | 50 % | -267 | 1.0 h | 59 % | 36 / 122 |
+| **B: M15 structure** | 11,552 | 10,894 | **51 %** | **+99** | 3.0 h | **57 %** | **15 / 122** |
+
+- **Measured:** B is the closest to the structure on every count, then A, then rule 11 - as the owner read the
+  pictures. **But all three are near a coin's 50 %**: on a big M30 leg, each strip comes on its side after more than
+  half of the leg is gone (the median share counts a leg never reached as 100 %; the median lag counts only legs
+  reached - read the two together).
+- [Claude] The M30 ZigZag's legs (122 of >= 50 USD in four months, about one a day) are short next to the time a
+  structure break needs to show; a side read from breaks of the last swing comes late on most of them.
+
+### Which side of the 50 each signal falls on - the plan and the expectation, written before any result (2026-10-30)
+
+The owner: trading is 50/50; the work is to see, for each signal, which side of the 50 it falls on; done with Codex.
+Codex reviewed the plan (no look-ahead; the owner's entry is the **retest**, not the break; the stop beyond the
+extreme of the counted move; spread from the bars' stored `spread`; freeze the definitions before results; October
+2026 is not clean). Discovery: M15, 2023-08 .. 2025-09; check: 2025-10 .. 2026-10 (M5 there too).
+
+**What the study delivers:** one row per signal B (a close beyond the latest fixed M15 swing) - the owner's
+conditions at that moment (divergence MACD or RSI; 3-5 peaks or the owner's M / W; a level from the left; M30
+agreeing; the window) and the outcome in R net of spread, for an entry at the break and at the retest (with
+no-fills).
+
+**Expected [Claude, before any number]:**
+1. About 5-8 signals a week: ~600-800 in discovery, ~300-400 in the check.
+2. All signals together, net of spread: **about 0 R a signal** (slightly negative at the break; the strip P&L of
+   July-October was +99 USD over four months, flat).
+3. Signals meeting the owner's full set (count or M / W, with divergence where the count needs it, at a level from
+   the left, M30 agreeing): **a small share, about 5-10 %**, and **better than the rest by 0.1-0.3 R a signal** in
+   discovery - the level and the count doing most of it, divergence alone little.
+4. The retest entry fills about half the time; **the unfilled ones are the strongest moves**, so the filled retests
+   look worse than the break entry would suggest (as in the hand-walked days).
+5. **Risk named now:** the edge seen in discovery shrinks in the check; it counts only if the full set stays at or
+   above **+0.15 R a trade after costs with at least 30 trades** in the check period. Otherwise: nothing found, and
+   back to the owner.
+
+### The signal study's definitions audited before the study (2026-10-30)
+
+The owner: before starting, how do we know the reference documents are right and not confusing? `eye/SIGNAL_STUDY.md`
+(one table of definitions, each with its METHOD / LESSONS source and owner vs [Claude]) was audited apart by Codex and
+a fresh Sonnet. Both found the first draft had **reduced the owner's entry sequence (break, higher low, the high
+breaks, retest) to a single break**, and had left out the 1:2 floor, the targets, no-chasing, the M5 trend and
+LESSONS' structure at the level (HH + HL / LH + LL); Sonnet listed further disagreements inside METHOD 2e. Rewritten;
+Codex re-audited twice (a hand-walked BUY through S3-S5 came out decided after the last fixes). METHOD 2e corrected
+in three places that contradicted the owner's later words (the summary's "MACD and RSI"; "H1" in step 1 of both
+sides; "nothing open"). BOT_RULES rule 11 carries a status note: failed, not to be built on. HANDOFF has a short
+current-state box at the top. Waiting on the owner to confirm the table and set the open values.
+
+### The bot's reading of 07/10/2026, drawn - the owner's view (2026-10-30)
+
+The rebuilt bot (H1 removed; side from M15 structure, rule 16; setup look 2 days; rule 3 `m5_trend` now) drawn for
+07/10/2026 by `eye/research/bot_read_day.py` (`eye/trades/bot_read_2026-10-07.png`): **no order** on a day that fell
+4168 -> 4066; the side turned SELL at 09:15; the London fall was stopped by "leg has run" (rule 10) on every bar, Asia
+by "no M5 trend of its side". The owner could not read the colour strips (*"I can't read it, but I can read price -
+why not draw it as in MT5, add the Fibo lines"*) and read the price: **the sell was there from about 07:00, when a
+red candle engulfed the long green candle before it - a sell should have been looked for there.** (An example from
+the owner's eye - information, not a rule.) Next: the chart drawn as MT5 shows it, with ZigZag and the bot's Fibo at
+a moment (`eye/research/bot_view.py`).
+
+### October 2026 with rule 3 on and off - the rebuilt bot (2026-10-31; the owner: "do it")
+
+The bot as built on 2026-10-30/31 (`eye/BOT_RULES.md`: H1 removed; rule 16 - H4's clear trend -> a trend leg, else a
+fade of the latest run; rule 2's trend leg and fade leg; rule 17 the break and its retest; setup look 2 days; defaults
+otherwise, `max_orders` 1). `eye/bot_research.py`, variants `r3_now` (defaults) and `r3_off` (`m5_trend` off), 2026-10-01
+.. 10-28, scored by `eye/score.py`, net of spread. Outputs `eye/research/r3_now/`, `eye/research/r3_off/`.
+Expected before the run [Claude]: more trades with rule 3 off; R per trade not predictable; under 30 trades each - a
+direction only.
+
+| variant | orders | filled (resolved + open) | won | lost | R total | R per resolved fill |
+|---|---|---|---|---|---|---|
+| `r3_now` | 24 | 18 (17 + 1) | 4 | 13 | -3.94 | **-0.23** |
+| `r3_off` | 43 | 33 (32 + 1) | 10 | 22 | +3.45 | **+0.11** |
+
+By kind (resolved fills; `kind_of` from the structure text):
+
+| kind | `r3_now`: n, R, R/fill, won | `r3_off`: n, R, R/fill, won |
+|---|---|---|
+| trend leg (H4 clear) | 6, -2.33, -0.39, 1 | 20, +2.60, +0.13, 6 |
+| break and retest (rule 17) | 1, +2.38, +2.38, 1 | 2, +4.84, +2.42, 2 |
+| fade (H4 not clear) | 10, -3.99, -0.40, 2 | 10, -3.99, -0.40, 2 |
+
+- **Measured:** rule 3 off took 14 more trend legs and one more retest (07/10 07:40, +2.46) and turned the month from
+  -3.94 to +3.45 R; the fades are the same in both (rule 3 never applied to them) and lost: 2 of 10 won, -0.40 R each.
+  No variant reaches the owner's +0.15 R a trade; 32 and 17 resolved fills - **far too few to conclude** (one month,
+  already seen; the clean test is forward).
+- The summary's "fills" column counts resolved fills only (the open one is apart) - checked against the ledgers.
+- Not yet done: every trade drawn and checked against the rules (CLAUDE.md step 8) before any number is believed.

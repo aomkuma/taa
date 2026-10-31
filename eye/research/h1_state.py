@@ -72,6 +72,8 @@ def read(h1: pd.DataFrame, piv: list, mode: str = "v1") -> State:
     if mode == "v1":
         return _read_v1(h1, piv)
     close = h1.close.to_numpy(np.float64)
+    if mode == "v4":
+        return _read_v4(close, piv)
     st, trend = State("none"), "none"
     start, i = 0, 0
     while i < len(piv):
@@ -92,21 +94,82 @@ def read(h1: pd.DataFrame, piv: list, mode: str = "v1") -> State:
         up, dn = np.nonzero(seg > up_lvl)[0], np.nonzero(seg < dn_lvl)[0]
         if up.size or dn.size:
             trend = "up" if (up[0] if up.size else 1e9) < (dn[0] if dn.size else 1e9) else "down"
-            st, start = State(trend), i  # pivot i and the next start a new range
+            # v5: the breaking leg itself (pivots i-1, i) starts the next range: a turn back is tested now
+            st, start = State(trend), (i - 1 if mode == "v5" else i)
             continue
         q = piv[i]
         if q.kind.value == "HIGH" and q.price >= st.lo + TOUCH_HI * h:
-            if mode == "v2":
+            if mode in ("v2", "v5"):
                 st.hi = max(st.hi, min(q.price, up_lvl))
             if st.last_touch != "HIGH":
                 st.legs, st.last_touch = st.legs + 1, "HIGH"
         elif q.kind.value == "LOW" and q.price <= st.lo + TOUCH_LO * h:
-            if mode == "v2":
+            if mode in ("v2", "v5"):
                 st.lo = min(st.lo, max(q.price, dn_lvl))
             if st.last_touch != "LOW":
                 st.legs, st.last_touch = st.legs + 1, "LOW"
         i += 1
     if st.kind == "forming" and i - start >= 2:  # the closes after the last pivot, up to now
+        h = st.hi - st.lo
+        seg = close[piv[-1].pivot_pos + 1 :]
+        up, dn = np.nonzero(seg > st.hi + BREAK * h)[0], np.nonzero(seg < st.lo - BREAK * h)[0]
+        if up.size or dn.size:
+            trend = "up" if (up[0] if up.size else 1e9) < (dn[0] if dn.size else 1e9) else "down"
+            st = State(trend)
+    if st.kind == "forming":
+        if st.legs >= 2:
+            st.kind = "sideways"
+        elif trend != "none":
+            st.kind = trend
+    return st
+
+
+def _edge(close: np.ndarray, piv: list, j: int) -> float:
+    """v4: a pivot's price read on closes - the extreme close from the bar after the previous pivot to the bar
+    after this one (a wick past the bodies does not move an edge)."""
+    lo_pos = piv[j - 1].pivot_pos + 1 if j > 0 else max(0, piv[j].pivot_pos - 1)
+    seg = close[lo_pos : piv[j].pivot_pos + 2]
+    return float(seg.max() if piv[j].kind.value == "HIGH" else seg.min())
+
+
+def _read_v4(close: np.ndarray, piv: list) -> State:
+    """v4 [Claude, research]: as v2 (the closes leading into each pivot are tested against the range as it
+    stood before it), but the edges are the pivots' extreme closes (``_edge``); a touch is still the pivot's
+    wick in the edge zone, and a touch whose close lies beyond the edge widens the edge to that close (it
+    cannot pass the break level - a close there is a break)."""
+    st, trend = State("none"), "none"
+    start, i = 0, 0
+    while i < len(piv):
+        if i - start == 0:
+            i += 1
+            continue
+        if i - start == 1:
+            ea, eb = _edge(close, piv, start), _edge(close, piv, i)
+            st = State("forming", min(ea, eb), max(ea, eb), 1, piv[i].kind.value)
+            if st.hi - st.lo <= 0:
+                start, i = i + 1, i + 2
+                continue
+            i += 1
+            continue
+        h = st.hi - st.lo
+        up_lvl, dn_lvl = st.hi + BREAK * h, st.lo - BREAK * h
+        seg = close[piv[i - 1].pivot_pos + 1 : piv[i].pivot_pos + 1]
+        up, dn = np.nonzero(seg > up_lvl)[0], np.nonzero(seg < dn_lvl)[0]
+        if up.size or dn.size:
+            trend = "up" if (up[0] if up.size else 1e9) < (dn[0] if dn.size else 1e9) else "down"
+            st, start = State(trend), i
+            continue
+        q = piv[i]
+        if q.kind.value == "HIGH" and q.price >= st.lo + TOUCH_HI * h:
+            st.hi = max(st.hi, _edge(close, piv, i))
+            if st.last_touch != "HIGH":
+                st.legs, st.last_touch = st.legs + 1, "HIGH"
+        elif q.kind.value == "LOW" and q.price <= st.lo + TOUCH_LO * h:
+            st.lo = min(st.lo, _edge(close, piv, i))
+            if st.last_touch != "LOW":
+                st.legs, st.last_touch = st.legs + 1, "LOW"
+        i += 1
+    if st.kind in ("forming",) and i - start >= 2:
         h = st.hi - st.lo
         seg = close[piv[-1].pivot_pos + 1 :]
         up, dn = np.nonzero(seg > st.hi + BREAK * h)[0], np.nonzero(seg < st.lo - BREAK * h)[0]

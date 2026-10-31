@@ -24,7 +24,7 @@ indicators. The owner, 2026-10-28:
 
 Later the same day the owner named what they actually trade, and the work holds to it: **price structure +
 divergence + counting the peaks** (`eye/METHOD.md` 2e). The owner then dictated the setup, and it is written in
-full in 2e: the higher timeframe's trend gives the side (H1 as dictated; **M30 since 2026-10-30**, the owner); at a level from the left on that side, 3-5 ZigZag peaks (or two that make
+full in 2e: the higher timeframe's trend gives the side (H1 as dictated; in the bot since 2026-10-30 **H4's clear trend, else a fade of the latest run**, H1 removed - BOT_RULES rule 16); at a level from the left on that side, 3-5 ZigZag peaks (or two that make
 an M or a W) with divergence on MACD or RSI against price (one is enough; a clear M / W needs none) (the owner's one exception to "no indicators"); the structure
 breaks, the low (high) goes, entry on the retest of it; stop beyond the extreme of the move; target just before the
 next level; held until stop or target. **In the owner's words an M is a buy and a W a sell** - the

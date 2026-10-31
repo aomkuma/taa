@@ -10,6 +10,27 @@ several months, drawn, judged by Claude then the owner** -> only then, with the 
 trade drawn. Tests green means the code matches the spec, never "passed". Every result is recorded the moment it is
 measured.
 
+**Where the work stands (2026-10-31) - read this; everything after it down to "Standing constraints" is history.**
+
+- **The owner's goal**: *"to know where 100 and 0 are"* - the leg's start and end read right (METHOD 2e "The goal").
+- **The method** (METHOD 2e, the owner's words; `eye/BOT_RULES.md` the form, rules 2, 16, 17): H4 trends clearly (HH +
+  HL / LH + LL) -> a **trend leg** traded with it on the pullback (0 % at the leg's start, entry 38.2 %, stop beyond
+  0 %, target 161.8 %); a break past its end -> **its retest** (rule 17: target 161.8, else 200 %); H4 not clear ->
+  **fade the latest run** if it is at least as long as the leg before it (0 % at the run's end, entry 50 %, target
+  161.8 % past its start). Targets reachable first, 1:2 only a filter.
+- **Code**: all of BOT_RULES is built (BOT_RULES "Code status"), tests green, **not committed** (the owner: commit
+  once it works).
+- **First run, October 2026** (`eye/BOT_RESEARCH.md`, "October 2026 with rule 3 on and off"): rule 3 on -0.23 R a fill
+  (17); **rule 3 off +0.11 R (32)** - trend legs +0.13 (20), retests +2.42 (2), **fades -0.40 (10)**. Under 30 per
+  group, one month already seen - a direction only. **Next: draw every trade (`r3_off` first, the losing fades
+  first) one image at a time for the owner, MT5-style, before believing any number.**
+- **Open**: levels from the left / the owner's 2-3 price clusters as obstacles to a target (to be measured); counting
+  three peaks - Elliott waves - in each wave aimed at (an idea of the owner's, not a rule).
+- **How the owner wants it**: Claude supervises (Sonnet builds piece by piece, Codex reviews, Claude runs the mutation
+  checks - never while an agent edits the file); MT5-style drawings one at a time; the owner reads price, not strips.
+
+**History of 2026-10-30 (superseded by the box above; kept as the record):**
+
 **Where the bot stands (2026-10-30).**
 - **The trend timeframe is M30** (the owner: *"we change to M30 and drop 1H - change it all to M30"*): the lean (rule 1)
   and the state - sideways, trend, break (rule 11) - are read on M30, built from the stored M15 (BOT_RULES "Data");
@@ -42,6 +63,40 @@ measured.
 1. Rework how a range starts and widens **on M30** in the research prototype until its drawing (July-October, the
    side it allows, its edges) matches the market to Claude's eye and then the owner's - August's rise BUY, October's
    4080-4220 range and its break down, July's swings - and record each attempt in BOT_RESEARCH.
+   **2026-10-30 morning:** v2, v4 (edges on closes) and v5 (the breaking leg starts the next range) drawn on M30 -
+   none better than v1 (`eye/BOT_RESEARCH.md`, "The state on M30 - v2, v4, v5"; `h1_state.py` modes v4, v5).
+   **Then, with the owner:** what a range is was researched from outside sources and the owner agreed where a range
+   starts (METHOD 2e, the Sideways row; `eye/BOT_RESEARCH.md`, "What a range is - outside sources"). **Next: a new mode
+   in `h1_state.py`** building on v2 - (1) a range starts at the trend's last extreme and the first bounce, (2) a pivot
+   beyond an edge short of the break level does not move the edge, (3) the walk starts further back - drawn on M30
+   July-October, Claude judges first, then the owner. v4 and v5 dropped.
+   **Then (the owner: "start"), CLAUDE.md's order instead of a prototype first:** rule 11's state rewritten in
+   `eye/BOT_RULES.md` (a range = the trend's extreme `E` and the first bounce `B`; the edges never move; only a close
+   beyond 127 % breaks) with a note in `eye/BOT_SPEC.md`; the rule 14 lean text settled
+   (`not read (M30 sideways); computed <lean>`). **Codex reviewed it twice** - round 1: 6 ambiguities and the 1,500 /
+   3,000 contradiction, all fixed; round 2: its hand walk of a 9-pivot sequence came out decided, 3 small points fixed.
+   **Then the owner's looks** (METHOD 2e "Two views"): the trend on M30 over 7 trading days, the range traded on M30
+   over 4, the leg on M5 over 2 (`trend_days`, `range_days`, `setup_days`; the 3,000-bar walk withdrawn) - written
+   into BOT_RULES ("The looks", rule 11). **Codex reviewed it twice** (round 1: which rules the setup look bounds, a
+   leg starting before the look, M15, the lean, H1, weekends, METHOD's example vs the set values, attributions - all
+   fixed; round 2: two small points, fixed). The owner then: no trend on the 7 days means a range - traded as one
+   (rule 11, "The M30 state at `now`"; Codex: none after one fix). **Five models read it** (`eye/BOT_RESEARCH.md`,
+   "Rule 11 and the looks read by five models"); the owner chose **1A** (one walk on the 1,500-bar frame, the looks
+   only date the range and the break - *"write the code tightly"*: rule 14's stability check) and **2B** (a pivot past
+   the first edge without a 127 % close is a test - *"wait for the retest anyway"*); rule 11 rewritten, the rest fixed
+   (`eye/BOT_SPEC.md`, "Five models' review"). Codex reviewed it. **Step 4 under way, piece by piece** (the owner: each
+   function delivered with its unit tests and checked before the next; checked by Claude and Fable, then a mutation
+   run): new module `eye/state11.py`, tests `tests/unit/test_eye_state11.py` (not committed). Piece 1 - `m30_from_m15`
+   (equals the prototype's M30 on all 38,331 bars) and `look` - passed, 14/14 mutants caught. Piece 2 - `walk` (rule
+   11's one walk) - passed after one round (h <= 0 after a break now dropped, spec updated; pivots must alternate),
+   29/29 mutants caught, 58 tests. Piece 3 - `state_at`, `classify`, `describe` - passed, 19/19 mutants. Piece 4 -
+   rule 14's stability check (`eye/research/state11_check.py`) - July-October: 0 / 0 / 0 (BOT_RESEARCH, "Rule 11's
+   state - the stability check"), Fable confirmed the zeros are real; 12/12 mutants of the check caught; 110 tests.
+   Piece 5 - the state drawn on July-October (`eye/research/state11_draw.py`, `eye/trades/state11_*.png`, 115 tests).
+   **Claude's eye: not passed** - wrong in every month (August 19-21 SELL through the rise, October's range read as
+   flips; BOT_RESEARCH, "Rule 11's state drawn on July-October"). Waiting on the owner's judgement; then step 1 again.
+   Then step 4 - a fresh Sonnet developer builds `state_tf` M30, the
+   looks and the state from the reviewed text.
 2. Write the passing reading into BOT_RULES rule 11 (and its M30 acceptance values), Codex reviews it.
 3. A fresh Sonnet developer builds `state_tf` M30 and the reworked state (starting from the uncommitted H1 build),
    Codex reviews the code, mutation check, the full suite, commit.
@@ -101,19 +156,18 @@ Continue TAA (C:\Users\korap\taa). Chat with me in Thai; docs, code and comments
 in Thai time read with PowerShell Get-Date (Git Bash date is wrong on this machine). Follow CLAUDE.md.
 
 Read first, in order:
-1. docs/HANDOFF.md - the top: "Where the bot stands", "Next" and "Carry these into the steps above"
+1. docs/HANDOFF.md - the top box "Where the work stands" (the rest is history)
 2. CLAUDE.md - "How the system is developed" (steps 1-8)
 3. docs/START_HERE.md
-4. eye/METHOD.md - section 2e is my setup (the trend timeframe is M30 since 2026-10-30)
+4. eye/METHOD.md - section 2e is my setup (rows "The goal", "Keep it simple", the 07/10 drawing, "The side")
 5. eye/BOT_RULES.md - the bot's rules in force; eye/BOT_RESEARCH.md - the last sections
 
 My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
 generalise, never a rule with its numbers; a question I ask is a question, not a rule. The bot's rules in
 force are eye/BOT_RULES.md; follow CLAUDE.md's development process exactly - tests green is not passing, a
 reading passes only when it is drawn on several months and matches the market to my eye. Judge a rule by the
-trades it gives (R per trade), not by how often price goes one way first. Next: HANDOFF, "Where the bot stands" -
-rework the state on M30 until it reads July-October like the market (the "Next" list) - start with
-eye/research/state_tf.py <first> <last> M30 <v1|v2|v3> and change the prototype in eye/research/h1_state.py. Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
+trades it gives (R per trade), not by how often price goes one way first. Next: HANDOFF, "Where the work stands" -
+draw every trade of the October run (eye/research/r3_off/, the losing fades first) MT5-style, one image at a time, and judge them with me before believing any number. Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
 bot research run needs my word. Record every result when it is measured.
 ````
 
@@ -285,6 +339,9 @@ deepest fall 97.18, seven losses in a row. The lot is an assumption; risk is the
 
 ## Open, and nobody has closed them
 
+*(2026-10-30: the first three rows - the H1 lean, rule 11 on M30, rule 3 - are closed: the lean and rule 11 withdrawn,
+the side is rule 16, rule 3 `m5_trend` now built. The open points now are in "Where the work stands" at the top.)*
+
 | | |
 |---|---|
 | **What replaces the H1 lean** - no tested reading of H1 told the side; the bot with the lean off did no worse in October (before rule 11 was rewritten 21 fills, after it 12; not judged) | `eye/BOT_RESEARCH.md`, the last sections; BOT_RULES rule 1 |
@@ -307,3 +364,12 @@ delete - unless the owner says to delete (as with the chart images, 10-28).
 **Everything in an archive folder is old data and never decides the present** (owner, 2026-10-28) -
 `docs/archive/`, `research/archive/`, any `archive` folder: not a number, a verdict, a rule or a lesson
 (`CLAUDE.md`, `docs/HOUSE_RULES.md`).
+
+**Later on 2026-10-30 (the rebuilt bot):** built from the committed code, a piece at a time (Sonnet), each checked by
+Claude (real mutation runs) and Codex: H1 / H4 / the lean / the old range / mode 2e removed; **rule 16** - the side
+from M15 structure (strip B, reusing `eye/signal_study.py`; acceptance values exact); the setup look (2 days);
+**rule 3 `m5_trend` now** (October: 0 mismatches over 1,817 window bars). Drawing tools `eye/research/bot_read_day.py`,
+`bot_view.py` (MT5-style, ZigZag + the bot's Fibo at a moment, one image per new leg). On 07/10 the owner: 100 % belongs
+at the top before the pullback -> **rule 2 changed** (`L0` = the latest fixed LOW; an early leg once the pullback
+reaches 38.2 % - the owner "about 38, 61 %"); specified and reviewed by Codex, **not built yet**. Nothing committed -
+the owner: commit once it works.

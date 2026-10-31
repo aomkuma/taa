@@ -83,6 +83,8 @@ def resolve(bars: pd.DataFrame, entry: float, stop: float, target: float, buy: b
 
 LIFE_MARK = re.compile(r"order_life_bars=(\d+)")
 H100_MARK = re.compile(r"withdraw beyond (-?\d+(?:\.\d+)?)")
+# a fade leg (BOT_RULES rule 2): a new extreme beyond E - a BUY: a low under it, a SELL: a high over it
+FADE_MARK = re.compile(r"withdraw (under|over) (-?\d+(?:\.\d+)?)")
 
 
 def score_limit(
@@ -105,9 +107,13 @@ def score_limit(
     by_target = ((first.high >= target) if buy else (first.low <= target)).to_numpy()
     by_h100 = np.zeros(n, dtype=bool)
     h100 = H100_MARK.search(structure)
+    fade = FADE_MARK.search(structure)
     if h100:
         level = float(h100.group(1))
         by_h100 = ((first.high > level) if buy else (first.low < level)).to_numpy()
+    elif fade:
+        level = float(fade.group(2))
+        by_h100 = ((first.low < level) if buy else (first.high > level)).to_numpy()
     gone = by_target | by_h100
     at_fill = int(touched.argmax()) if touched.any() else n
     if gone[:at_fill].any():
@@ -118,7 +124,8 @@ def score_limit(
         if by_target[k]:
             why = "no fill (stop or target first)"
         else:
-            why = f"no fill (withdrawn: beyond {h100.group(1) if h100 else ''})"
+            beyond = h100.group(1) if h100 else (fade.group(2) if fade else "")
+            why = f"no fill (withdrawn: beyond {beyond})"
         missed = (first.low.min() - entry) if buy else (entry - first.high.max())
         return {
             "fill": "", "exit": "", "why": why, "r_net": "0.0",
