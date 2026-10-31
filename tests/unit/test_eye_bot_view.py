@@ -158,7 +158,7 @@ def test_leg_geometry_fade_leg_has_0_percent_at_e_and_100_percent_at_s() -> None
     pv = [bot.VPivot(True, 4050.0, 20), bot.VPivot(False, 4100.0, 40), bot.VPivot(True, 4000.0, 60)]
     d = SimpleNamespace(pv=pv, hi_v=np.full(n, 4060.0), lo_v=np.full(n, 4010.0), look_lo=0, sign=1, times=times,
                         h4="none", side="BUY")  # fmt: skip
-    t0, p0, t100, p100, early, key, fade = view.leg_geometry(d, bot.Params())
+    t0, p0, t100, p100, early, key, fade = view.leg_geometry(d, bot.Params(side_rule="h4"))
     assert fade and not early and (p0, p100) == (4000.0, 4100.0)  # 0 % at E (the run's end), 100 % at S
     assert t0 == times[60] and t100 == times[40] and key == times[60]
     lv = view.ladder(p0, p100)
@@ -198,7 +198,7 @@ def test_params_are_the_stored_set_with_tf_and_overrides_on_top(tmp_path: Path) 
     db = str(seeded_db(tmp_path))
     args = view.parse_args(["2026-10-07", "07:00", "tf=M15", f"db={db}", "fade_min=off"])
     p, version = view.params_of(args)
-    assert (p.fib_tf, p.fade_min, p.min_r, version) == ("M15", "off", 1.5, 22)
+    assert (p.fib_tf, p.fade_min, p.min_r, version) == ("M15", "off", 1.5, 24)
     p, _ = view.params_of(view.parse_args(["2026-10-07", "07:00", f"db={db}", "fib_tf=M15"]))
     assert p.fib_tf == "M15"  # an explicit fib_tf override wins over tf
 
@@ -220,9 +220,9 @@ def test_another_market_stops_before_bars_load(tmp_path: Path, monkeypatch) -> N
 def test_the_header_lists_a_tf_that_changes_the_sets_fib_tf(tmp_path: Path) -> None:
     db = str(seeded_db(tmp_path))
     _, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", "tf=M15", f"db={db}"]))
-    assert line == "config=XAUUSD/default@v22; overrides: fib_tf=M15"
+    assert line == "config=XAUUSD/default@v24; overrides: fib_tf=M15"
     _, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", "tf=M5", f"db={db}"]))
-    assert line == "config=XAUUSD/default@v22; overrides: none"  # tf equal to the set's fib_tf adds nothing
+    assert line == "config=XAUUSD/default@v24; overrides: none"  # tf equal to the set's fib_tf adds nothing
     _, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", f"db={db}", "min_r=3"]))
     assert line.endswith("overrides: min_r=3.0")
     _, _, line = view.config_of(view.parse_args(["2026-10-07", "07:00", "tf=M15", f"db={db}", "fib_tf=M5"]))

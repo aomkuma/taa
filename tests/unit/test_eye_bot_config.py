@@ -274,8 +274,8 @@ def test_the_command_line(db: Path, capsys: pytest.CaptureFixture[str]) -> None:
     )
     assert cfg.main(["show", "--market", "XAUUSD", "--set", "default", *d]) == 0
     out = capsys.readouterr().out
-    assert "XAUUSD/default@v22" in out and "min_r=2.5" in out and "windows=off" in out
-    assert cfg.main(["list", *d]) == 0 and "XAUUSD/default@v22" in capsys.readouterr().out
+    assert "XAUUSD/default@v24" in out and "min_r=2.5" in out and "windows=off" in out
+    assert cfg.main(["list", *d]) == 0 and "XAUUSD/default@v24" in capsys.readouterr().out
     assert cfg.main(["history", "--market", "XAUUSD", "--set", "default", "min_r", *d]) == 0
     assert capsys.readouterr().out.count("min_r=") == 2
     assert cfg.main(["copy", "--market", "XAUUSD", "--set", "default", "--to-market", "XAUUSD", "--to-set", "b",

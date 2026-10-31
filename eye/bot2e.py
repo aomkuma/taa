@@ -121,6 +121,10 @@ class Params:
     max_orders: int = 1  # [Claude] orders live (pending or open) at once; a new one needs fewer than this
     order_life_bars: int = 24  # [Claude] rule 12: M5 bars an order may wait for its fill (last included)
     windows: str = "off"  # [Claude] rule 0: "off" = every 5-minute time of the day; "on" = the three windows
+    side_rule: str = (
+        "m15"  # the owner (2026-10-31, rule 16): "m15" = the M15 side (M, W, HH, LL); "h4" = the record
+    )
+    mw_tol: float = 0.20  # [Claude] rule 16: two pivots this close, x the swing between, are an M or a W
 
     def __post_init__(self) -> None:
         if self.max_orders < 1:
@@ -143,6 +147,8 @@ class Params:
             ("fade_min", (1.0, "off")),
             ("fade_entry", (0.5, 0.382, 0.618)),
             ("windows", ("off", "on")),
+            ("side_rule", ("m15", "h4")),
+            ("mw_tol", (0.20, 0.15)),
         ):
             if getattr(self, name) not in allowed:
                 raise ValueError(f"{name} must be one of {allowed}, got {getattr(self, name)!r}")
@@ -160,7 +166,8 @@ class Params:
 # The order of the fields in ``Params.text()`` (kept from before the text form was shared).
 TEXT_ORDER = (
     "mode", "fib_tf", "fib_entry", "fib_early", "fib_stop", "fib_count", "fib_target", "max_entry_frac",
-    "setup_days", "m5_trend", "early_leg", "fade_min", "fade_entry", "fib_lean", "stop_buffer",
+    "setup_days", "m5_trend", "early_leg", "fade_min", "fade_entry", "fib_lean", "side_rule", "mw_tol",
+    "stop_buffer",
     "target_buffer", "spread", "max_orders", "order_life_bars", "min_r", "windows",
 )  # fmt: skip
 
@@ -209,6 +216,7 @@ def param_from_text(name: str, text: str) -> Any:
 # further. ``reason`` in the log is always one of these, or "order written" (BOT_RULES' order of evaluation).
 REASONS = [
     "market closed", "outside window", "warm-up", "order pending",
+    "side: no M15 event", "fib: against the M15 side",
     "fib: against the H4 trend", "fib: no live leg", "fib: leg already used",
     "fib: leg has run (100 % traded)", "fib: M5 trend (H100 not above the M5 high)",
     "fib: no M5 trend of its side",
@@ -365,6 +373,40 @@ def h4_reading(piv: Sequence[Swing]) -> tuple[str, str]:
     return "none", f"H4 not clear {text}"
 
 
+def m15_side(pivots: Sequence[Swing], mw_tol: float) -> tuple[str, str]:
+    """Rule 16, ``side_rule`` m15: the side of the latest M15 event among the fixed pivots, taken in order.
+    For a pivot ``q`` with ``m`` before it and ``p`` before ``m`` (``p`` the same kind as ``q``): ``q`` a
+    HIGH -
+    ``|q - p| <= mw_tol x (max(p, q) - m)`` a W (SELL), else ``q > p`` an HH (BUY); ``q`` a LOW -
+    ``|q - p| <= mw_tol x (m - min(p, q))`` an M (BUY), else ``q < p`` an LL (SELL); otherwise no event.
+    Returns (``BUY`` / ``SELL`` / ``none``, the written form). The ZigZag alternates HIGH / LOW, so ``p`` and
+    ``q`` are always one kind and ``m`` the other; a triple that does not alternate (not reachable from the
+    ZigZag) is skipped as no event, never read."""
+    for i in range(len(pivots) - 1, 1, -1):
+        p_, m_, q_ = pivots[i - 2], pivots[i - 1], pivots[i]
+        if not (p_.kind is q_.kind and m_.kind is not q_.kind):
+            continue
+        p, m, q = p_.price, m_.price, q_.price
+        when = _tt(pd.Timestamp(q_.pivot_at))
+        if q_.kind is SwingKind.HIGH:
+            if abs(q - p) <= mw_tol * (max(p, q) - m) + EPS:
+                return "SELL", f"M15 side SELL (W {p:.2f} / {q:.2f}, {when})"
+            if q > p:
+                return "BUY", f"M15 side BUY (HH {p:.2f} -> {q:.2f}, {when})"
+        else:
+            if abs(q - p) <= mw_tol * (m - min(p, q)) + EPS:
+                return "BUY", f"M15 side BUY (M {p:.2f} / {q:.2f}, {when})"
+            if q < p:
+                return "SELL", f"M15 side SELL (LL {p:.2f} -> {q:.2f}, {when})"
+    return "none", "M15 side: no event"
+
+
+def read_m15(frames: dict[str, pd.DataFrame], p: Params) -> tuple[str, str]:
+    """Rule 16's M15 side at the last closed bar: the ZigZag on the last 1,500 closed M15 bars (``cut`` keeps
+    ``SHOWN + WARMUP`` = 1,788 M15 bars whatever ``fib_tf`` is), then ``m15_side``."""
+    return m15_side(_zigzag(frames["M15"].tail(FIB_BARS)), p.mw_tol)
+
+
 def read_h4(frames: dict[str, pd.DataFrame], p: Params) -> tuple[str, str]:
     """Rule 16's H4 reading at the last closed bar; with ``fib_lean`` off H4 is not read (always a fade)."""
     if p.fib_lean == "off":
@@ -443,6 +485,12 @@ def fade_leg(pv: Sequence[VPivot], fade_min: float | str) -> Leg | None:
     return Leg(e, s_, fade=True)
 
 
+def _side_binds(p: Params) -> bool:
+    """Rule 16 refuses the other side: always with ``side_rule`` m15 (``fib_lean`` is ignored), with h4 only
+    while ``fib_lean`` is on."""
+    return p.side_rule == "m15" or p.fib_lean == "on"
+
+
 def find_leg(d: LegData, p: Params) -> Leg | None:
     """The side's latest leg (rule 2) as rule 16 allows: H4 up / down (``fib_lean`` on) - only the trend
     leg of that direction (an early leg when ``early_leg`` is on and one stands, else the fixed leg); H4 not
@@ -454,6 +502,8 @@ def find_leg(d: LegData, p: Params) -> Leg | None:
         leg = early_leg(d.pv, d.hi_v, d.lo_v, float(p.early_leg)) if p.early_leg != "off" else None
         if leg is None:
             leg = fib_leg(d.pv, d.lo_v)
+    elif p.side_rule == "m15":
+        return None  # rule 16, m15: no M15 event - no leg; a fade leg is never offered with m15
     else:
         leg = fade_leg(d.pv, p.fade_min)
     if leg is None or leg.l0.pos < d.look_lo or leg.h100.pos < d.look_lo:
@@ -570,8 +620,9 @@ def analyse_leg(d: LegData, p: Params, used: frozenset[str] = frozenset()) -> Fi
     """One side's latest leg through the order of evaluation (BOT_RULES): 2 -> 10 -> 3 -> 4
     -> 5 -> 6 -> 7 -> 8 -> 6 (played out) -> 9. Returns the order, or the reason for none."""
     out = FibOut("fib: no live leg")
-    if p.fib_lean == "on" and d.h4 in ("up", "down") and (d.h4 == "up") != (d.side == "BUY"):
-        out.reason = "fib: against the H4 trend"  # rule 16: only the trend leg of H4's direction
+    if _side_binds(p) and d.h4 in ("up", "down") and (d.h4 == "up") != (d.side == "BUY"):
+        # rule 16: only the trend leg of the side (H4's direction with h4; the M15 side with m15)
+        out.reason = "fib: against the M15 side" if p.side_rule == "m15" else "fib: against the H4 trend"
         return out
     found = find_leg(d, p)  # rule 2, inside the setup look
     if found is None:
@@ -707,8 +758,8 @@ def analyse_retest(d: LegData, p: Params, used: frozenset[str] = frozenset()) ->
     had its end broken - the first setup-timeframe close beyond ``H100`` closes now - the retest order of that
     leg, after rules 3 and 16; None when there is no break now (or H4 allows no trend leg of this side, the
     leg is used, or it is a fade leg: a fade never gets this order)."""
-    if d.h4 not in ("up", "down") or p.fib_lean == "off":
-        return None  # a trend leg exists only when H4 trends clearly (rule 16); fade legs have no retest
+    if d.h4 not in ("up", "down") or not _side_binds(p):
+        return None  # a trend leg exists only when rule 16 gives a side (H4 / M15); a fade: none
     if (d.h4 == "up") != (d.side == "BUY"):
         return None
     leg = fib_leg(d.pv, d.lo_v)  # the fixed leg, wherever an early leg stands
@@ -877,6 +928,8 @@ class FibInputs:
     zz: list[Swing]
     m5_zz: list[Swing]
     price: float
+    m15: str = ""  # rule 16, ``side_rule`` m15: the M15 side "BUY" / "SELL" / "none"; "" with h4 (not read)
+    m15_text: str = ""  # its written form
 
 
 def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) -> FibInputs:
@@ -885,7 +938,18 @@ def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) ->
     # SPEC-QUESTION: MACD / RSI are computed over the same last 1,500 closed bars as the pivots (the rules
     # do not give the series length); ``cut`` keeps 4,700 M5 bars so an M15 leg's L0 (up to 1,500 M15 bars
     # back) has its M5 bars for rules 6 and 10.
-    h4, h4_text = read_h4(frames, p)
+    # with m15 H4 is read for the record only, whatever fib_lean says (it is ignored there)
+    h4, h4_text = (
+        h4_reading(_zigzag(frames["H4"].tail(FIB_BARS))) if p.side_rule == "m15" else read_h4(frames, p)
+    )
+    m15, m15_text = read_m15(frames, p) if p.side_rule == "m15" else ("", "")
+    # What decides the legs: the H4 reading (h4), or the M15 side as the same up / down direction (m15), so a
+    # side's trend leg, rule 3 and rule 17 read it alike; "none" (no event) ends the bar before any leg.
+    lean, lean_text = (
+        (h4, h4_text)
+        if p.side_rule == "h4"
+        else ({"BUY": "up", "SELL": "down"}.get(m15, "none"), f"{m15_text}; {h4_text} (record)")
+    )
     tf = p.fib_tf
     df = frames[tf].tail(FIB_BARS)
     times = pd.DatetimeIndex(df.index)
@@ -920,11 +984,11 @@ def fib_inputs(frames: dict[str, pd.DataFrame], now: pd.Timestamp, p: Params) ->
                 m5_pv=to_view(m5_read, sign),
                 look_lo=look_lo,
                 m5_ptimes=m5_ptimes,
-                h4=h4,
-                h4_text=h4_text,
+                h4=lean,
+                h4_text=lean_text,
             )
         )
-    return FibInputs(h4, h4_text, datas, df, times, zz, m5_zz, price)
+    return FibInputs(h4, h4_text, datas, df, times, zz, m5_zz, price, m15, m15_text)
 
 
 def _decide_fib(
@@ -939,7 +1003,7 @@ def _decide_fib(
     """eye/BOT_RULES.md at an M5 close ``now``: warm-up and ``max_orders`` (rule 0), rule 16's side, each
     side's latest leg (2-10), and the choice between a BUY and a SELL (13). Closed bars only: ``decide`` has
     checked the cut."""
-    needed = ("H4", "M5") if p.fib_tf == "M5" else ("H4", "M15", "M5")
+    needed = ("H4", "M5") if p.fib_tf == "M5" and p.side_rule == "h4" else ("H4", "M15", "M5")
     if any(len(frames[tf]) < FIB_BARS for tf in needed):
         return done("warm-up")  # 1,500 closed bars of H4 and M5 (and M15 as the setup timeframe), rule 0
     if pending:
@@ -958,7 +1022,9 @@ def fib_decision(
     """Rules 2-13 on the inputs of one ``now``: each side's leg, the choice between a BUY and a SELL (rule
     13). Rule 16's H4 reading is written; it decides which kind of leg each side may have."""
     tf = p.fib_tf
-    log["rule16"] = fi.h4_text
+    log["rule16"] = fi.datas[0].h4_text  # h4: the H4 reading; m15: the M15 side, then the H4 reading (record)
+    if p.side_rule == "m15" and fi.m15 == "none":
+        return done("side: no M15 event", {}, tf)  # rule 16: no event, no order on either side
     outs = [analyse_leg(d, p, used) for d in fi.datas]
     outs += [o for d in fi.datas if (o := analyse_retest(d, p, used)) is not None]  # rule 17
     written = [o for o in outs if o.setup is not None]

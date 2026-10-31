@@ -433,7 +433,7 @@ def test_scorer_keeps_the_fill_on_a_bar_that_also_crosses_h100() -> None:
 # (side "SELL", sign -1), so its outputs are the negated view prices - or the stored bars negated (test_fib_mirror).
 
 PB = bot.Params(
-    mode="fib", m5_trend="h100", early_leg="off", fib_entry=0.382
+    mode="fib", m5_trend="h100", early_leg="off", fib_entry=0.382, side_rule="h4"
 )  # the base case's level; the defaults are tested on their own
 
 
@@ -623,9 +623,9 @@ def test_run_reads_the_set_from_the_database_and_labels_it(tmp_path, monkeypatch
     monkeypatch.setattr(bot, "run", lambda first, last, params, *a, **k: seen.update(p=params, k=k, a=a))
     bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--db", str(db)])
     assert seen["p"] == bot.Params(min_r=1.5, order_life_bars=12)
-    assert seen["k"]["label"] == "config=XAUUSD/default@v23"
+    assert seen["k"]["label"] == "config=XAUUSD/default@v25"
     bot.main(["--from", "2026-10-01", "--to", "2026-10-02", "--db", str(db), "--set", "r3_off"])
-    assert seen["p"] == bot.Params() and seen["k"]["label"] == "config=XAUUSD/r3_off@v44"
+    assert seen["p"] == bot.Params() and seen["k"]["label"] == "config=XAUUSD/r3_off@v48"
     # a missing database / set stops with the seed command and reads or loads nothing
     monkeypatch.setattr(bot, "load_frames", lambda: pytest.fail("bars loaded"))
     for args, text in (
@@ -1098,6 +1098,7 @@ ALLOWED = {
     "fib_target": (1.618, 1.272), "fib_lean": ("on", "off"), "setup_days": (2,),
     "m5_trend": ("now", "h100", "off"), "early_leg": (0.382, 0.618, "off"), "fade_min": (1.0, "off"),
     "fade_entry": (0.5, 0.382, 0.618), "windows": ("off", "on"),
+    "side_rule": ("m15", "h4"), "mw_tol": (0.20, 0.15),
 }  # fmt: skip
 
 
@@ -1333,7 +1334,7 @@ def test_rule12_an_expired_order_frees_max_orders_in_the_walk(full, monkeypatch)
 
 def at(full, text: str, **kw):
     """decide() at a Thai time with the window test off; returns the Result and the per-side outcomes."""
-    p = bot.Params(mode="fib", **kw)
+    p = bot.Params(mode="fib", **{"side_rule": "h4", **kw})  # the H4 / fade readings these cases pin
     now = now_at(text)
     frames = bot.cut(full, now)
     return bot.decide(frames, now, p, windowed=False), bot.fib_inputs(frames, now, p), p
@@ -1400,7 +1401,7 @@ def test_fib_mirror_on_stored_bars(full) -> None:
 
     mirrored = {tf: mirror(df) for tf, df in full.items()}
     flip = {"BUY": "SELL", "SELL": "BUY", "none": "none"}
-    p = bot.Params(mode="fib", fib_entry=0.382, min_r=0.0, max_entry_frac=0.35)
+    p = bot.Params(mode="fib", fib_entry=0.382, min_r=0.0, max_entry_frac=0.35, side_rule="h4")
     for text in ("2026-10-07 07:30", "2026-10-19 07:00", "2026-10-22 19:30", "2026-10-27 18:30", "2026-10-13 19:35",
                  "2026-10-23 13:00"):  # fmt: skip
         now = now_at(text)
@@ -1470,7 +1471,7 @@ def test_fib_walk_one_window_writes_known_reasons_and_scores(full, tmp_path) -> 
 def test_stored_bar_orders_are_written_and_scored_by_the_new_rules(full, text, kw, row, scored) -> None:
     """The first stored-bar cases that write an order: the numbers are what the code gives (hand-checked), and the
     scorer's realised result for each (rule 12): the fill bar, the exit, the realised R."""
-    p = bot.Params(mode="fib", **kw)
+    p = bot.Params(mode="fib", **{"side_rule": "h4", **kw})  # the H4 trend / fade orders these cases pin
     now = now_at(text)
     res = bot.decide(bot.cut(full, now), now, p)
     d = res.decision
@@ -1659,13 +1660,20 @@ def test_the_bot_reads_h4_m15_and_m5_only() -> None:
     extra = {**three, "H1": walk_frame(1700, "1h", "2026-10-05 11:00", seed=9)}
     assert set(bot.cut(extra, now)) == {"H4", "M15", "M5"}  # an H1 frame given to ``cut`` is not carried on
     for tf in ("M5", "M15"):
-        res = bot.decide(bot.cut(three, now), now, bot.Params(fib_tf=tf), windowed=False)
+        res = bot.decide(bot.cut(three, now), now, bot.Params(fib_tf=tf, side_rule="h4"), windowed=False)
         assert res.log["reason"] in bot.RANK and res.log["reason"] != "warm-up"
         assert res.log["rule16"].startswith("H4 ")
+        res = bot.decide(bot.cut(three, now), now, bot.Params(fib_tf=tf), windowed=False)  # side_rule m15
+        assert res.log["reason"] in bot.RANK and res.log["reason"] != "warm-up"
+        assert res.log["rule16"].startswith("M15 side") and "(record)" in res.log["rule16"]
     short_h4 = {**bot.cut(three, now), "H4": three["H4"].iloc[:1000]}
     assert bot.decide(short_h4, now, bot.Params(), windowed=False).log["reason"] == "warm-up"
     short_m15 = {**bot.cut(three, now), "M15": three["M15"].iloc[:1000]}
-    assert bot.decide(short_m15, now, bot.Params(), windowed=False).log["reason"] != "warm-up"  # M5 setup: ok
+    h4_rule = bot.Params(side_rule="h4")
+    assert bot.decide(short_m15, now, h4_rule, windowed=False).log["reason"] != "warm-up"  # M5 setup: ok
+    assert (
+        bot.decide(short_m15, now, bot.Params(), windowed=False).log["reason"] == "warm-up"
+    )  # m15 reads M15
     assert bot.decide(short_m15, now, bot.Params(fib_tf="M15"), windowed=False).log["reason"] == "warm-up"
     src = Path(bot.__file__).read_text(encoding="utf-8")
     assert '"H1"' not in src and '"M30"' not in src
@@ -2168,7 +2176,7 @@ def fade_data(*, last=4060.0, prior=4050.0, edit=None, h4="none", with_prior=Tru
 
 
 FADE = bot.Params(
-    mode="fib", m5_trend="h100", early_leg="off"
+    mode="fib", m5_trend="h100", early_leg="off", side_rule="h4"
 )  # fade_entry 0.5, fade_min 1.0, fib_target 1.618
 
 
@@ -2372,7 +2380,7 @@ def test_07_oct_h4_reading_and_the_fade_sell_example_on_the_stored_bars(full) ->
     target is touched (decided 06:35: filled 07:10). At 07:00 the low 4161.42 (05:50) is fixed, the latest run is
     4184.25 -> 4161.42, shorter than the leg before it: no fade leg."""
     now = now_at("2026-10-07 06:35")
-    p = bot.Params(fib_lean="off")
+    p = bot.Params(fib_lean="off", side_rule="h4")
     res = bot.decide(bot.cut(full, now), now, p, windowed=False)
     d = res.decision
     assert d is not None and (d["side"], d["entry"], d["stop"], d["target"]) == (
@@ -2760,14 +2768,14 @@ def test_research_main_runs_each_set_from_the_database_into_market_set_folders(
     monkeypatch.setattr(research.bot2e, "walk_days", fake_walk)
     research.main(["--from", "2026-10-01", "--to", "2026-10-01", "--db", str(db), "--sets", "default,r3_off"])
     assert calls == [
-        (bot.Params(min_r=1.5, order_life_bars=12), "config=XAUUSD/default@v23"),
-        (bot.Params(), "config=XAUUSD/r3_off@v44"),
+        (bot.Params(min_r=1.5, order_life_bars=12), "config=XAUUSD/default@v25"),
+        (bot.Params(), "config=XAUUSD/r3_off@v48"),
     ]
-    for name, version in (("default", "23"), ("r3_off", "44")):
+    for name, version in (("default", "25"), ("r3_off", "48")):
         got = list(csv.DictReader((root / "XAUUSD" / name / "summary.csv").open(encoding="utf-8")))
         assert (got[0]["market"], got[0]["set"], got[0]["version"]) == ("XAUUSD", name, version)
     out = capsys.readouterr().out
-    assert "XAUUSD/default@v23" in out and "XAUUSD/r3_off@v44" in out
+    assert "XAUUSD/default@v25" in out and "XAUUSD/r3_off@v48" in out
     # a market without bars, a missing set and a bad name stop before bars are loaded or anything is written
     monkeypatch.setattr(research.bot2e, "load_frames", lambda: pytest.fail("bars loaded"))
     before = sorted(p.name for p in root.iterdir())
@@ -2795,3 +2803,231 @@ def test_start_of_a_midnight_decision_starts_at_its_now() -> None:
     assert score_mod.start_of(row("2026-04-07", "07/04 07:00"), {}) == now_at("2026-04-07 07:05")
     assert score_mod.start_of(row("2027-01-01", "31/12 23:55"), {}) == now_at("2027-01-01 00:00")
     assert score_mod.start_of(row("2027-01-01", "01/01 00:05"), {}) == now_at("2027-01-01 00:10")
+
+
+# --- rule 16, side_rule m15: the side held on M15, with the owner's M and W ----------------------------------------------
+
+M15P = bot.Params(
+    mode="fib", m5_trend="h100", early_leg="off", fib_entry=0.382
+)  # side_rule m15 (the default)
+
+
+def zz_of(*spec: tuple[str, float]) -> list[Swing]:
+    """Made-up fixed pivots, oldest first: ("H" / "L", price), one hour apart."""
+    t0 = pd.Timestamp("2026-08-12 00:00", tz="UTC")
+    out = []
+    for i, (k, price) in enumerate(spec):
+        at_ = t0 + pd.Timedelta(hours=i)
+        out.append(Swing(SwingKind.HIGH if k == "H" else SwingKind.LOW, price, 4 * i, 4 * i + 3, at_, at_))
+    return out
+
+
+def test_params_side_rule_and_mw_tol_are_the_tables() -> None:
+    d = bot.Params()
+    assert (d.side_rule, d.mw_tol) == ("m15", 0.20)
+    assert "side_rule=m15 mw_tol=0.2 " in d.text()
+    assert "side_rule=h4 mw_tol=0.15 " in bot.Params(side_rule="h4", mw_tol=0.15).text()
+    for bad in ({"side_rule": "h1"}, {"mw_tol": 0.3}):
+        with pytest.raises(ValueError):
+            bot.Params(**bad)
+
+
+@pytest.mark.parametrize(
+    ("spec", "side", "word"),
+    [
+        ((("H", 110.0), ("L", 100.0), ("H", 125.0)), "BUY", "HH 110.00 -> 125.00"),  # an HH
+        ((("L", 100.0), ("H", 110.0), ("L", 90.0)), "SELL", "LL 100.00 -> 90.00"),  # an LL
+        ((("L", 100.0), ("H", 110.0), ("L", 101.0)), "BUY", "M 100.00 / 101.00"),  # an M: a buy
+        ((("H", 110.0), ("L", 100.0), ("H", 112.0)), "SELL", "W 110.00 / 112.00"),  # a W: a sell
+        ((("H", 110.0), ("L", 100.0), ("H", 105.0)), "none", ""),  # a lower high: no event
+        ((("L", 100.0), ("H", 110.0), ("L", 106.0)), "none", ""),  # a higher low: no event
+        ((("L", 100.0), ("H", 110.0)), "none", ""),  # too few pivots
+        ((), "none", ""),
+    ],
+)
+def test_rule16_m15_events_on_made_up_pivots(spec, side, word) -> None:
+    got, text = bot.m15_side(zz_of(*spec), 0.20)
+    assert got == side
+    if side == "none":
+        assert text == "M15 side: no event"
+    else:
+        assert text.startswith(f"M15 side {side} ({word}, ") and text.endswith(")")
+        assert (
+            text.split(", ")[-1] == "12/08 " + f"{7 + len(spec) - 1:02d}:00)"
+        )  # Thai time of the later pivot
+
+
+def test_rule16_m15_the_latest_event_decides_and_a_non_event_keeps_it() -> None:
+    hh = (("H", 110.0), ("L", 100.0), ("H", 125.0))
+    assert bot.m15_side(zz_of(*hh, ("L", 120.0)), 0.20)[0] == "BUY"  # a higher low after the HH: no new event
+    assert bot.m15_side(zz_of(*hh, ("L", 90.0)), 0.20)[0] == "SELL"  # an LL turns it
+    assert bot.m15_side(zz_of(*hh, ("L", 90.0), ("H", 100.0)), 0.20)[0] == "SELL"  # a lower high keeps the LL
+
+
+def test_rule16_m15_the_tolerance_edge_equal_is_inside_and_mw_tol_015() -> None:
+    # p 100, m 92, q 102: |q - p| = 2.0 = 0.20 x (102 - 92) -> inside (a W); a hair more is an HH
+    assert bot.m15_side(zz_of(("H", 100.0), ("L", 92.0), ("H", 102.0)), 0.20)[0] == "SELL"
+    assert bot.m15_side(zz_of(("H", 100.0), ("L", 92.0), ("H", 102.01)), 0.20)[0] == "BUY"
+    # the same for a low: p 100, m 108, q 98: 2.0 = 0.20 x (108 - 98) -> an M; a hair lower is an LL
+    assert bot.m15_side(zz_of(("L", 100.0), ("H", 108.0), ("L", 98.0)), 0.20)[0] == "BUY"
+    assert bot.m15_side(zz_of(("L", 100.0), ("H", 108.0), ("L", 97.99)), 0.20)[0] == "SELL"
+    # 0.15: 2.0 against 0.15 x 10 = 1.5 -> outside: an HH
+    assert bot.m15_side(zz_of(("H", 100.0), ("L", 92.0), ("H", 102.0)), 0.15)[0] == "BUY"
+
+
+def test_rule16_m15_pivots_that_do_not_alternate_are_skipped_as_no_event() -> None:
+    # not reachable from the ZigZag (it alternates); read as no event, never as a side
+    assert bot.m15_side(zz_of(("H", 110.0), ("H", 100.0), ("H", 125.0)), 0.20)[0] == "none"
+    assert bot.m15_side(zz_of(("H", 110.0), ("L", 100.0), ("L", 90.0)), 0.20)[0] == "none"
+
+
+def test_rule16_m15_no_event_ends_the_bar_for_both_sides() -> None:
+    d = leg_data(h4="none")
+    fi = bot.FibInputs(
+        "none", "H4 not clear (test)", [d, as_sell(d)], None, None, [], [], 0.0,  # type: ignore[arg-type]
+        "none", "M15 side: no event",
+    )  # fmt: skip
+    res = decide_inputs(fi, M15P)
+    assert res.log["reason"] == "side: no M15 event" and res.decision is None
+    assert bot.RANK["side: no M15 event"] < bot.RANK["fib: no live leg"]
+
+
+def test_rule16_m15_the_side_binds_whatever_fib_lean_says_and_h4_is_unchanged() -> None:
+    off = replace(M15P, fib_lean="off")
+    for p in (M15P, off):
+        assert bot.analyse_leg(leg_data(h4="up"), p).setup is not None
+        out = bot.analyse_leg(leg_data(h4="down", edit=None), p)  # a BUY leg while the M15 side is SELL
+        assert out.reason == "fib: against the M15 side" and out.setup is None
+    # side_rule h4: unchanged - binding with fib_lean on, not with it off
+    assert bot.analyse_leg(leg_data(h4="down"), PB).reason == "fib: against the H4 trend"
+    assert (
+        bot.analyse_leg(leg_data(h4="down"), replace(PB, fib_lean="off")).reason
+        != "fib: against the H4 trend"
+    )
+
+
+def test_rule17_m15_retest_only_while_the_m15_side_at_now_is_the_legs_side() -> None:
+    d = retest_data()
+    for p in (M15P, replace(M15P, fib_lean="off")):
+        assert bot.analyse_retest(d, p).setup is not None  # type: ignore[union-attr]
+        assert bot.analyse_retest(replace(d, h4="down"), p) is None  # the M15 side at now is SELL
+        assert bot.analyse_retest(replace(d, h4="none"), p) is None
+
+
+@needs_data
+def test_acceptance_m15_side_on_the_stored_bars(full) -> None:
+    """Rule 16 m15, BOT_RULES "Code status": BUY at 12/08/2026 13:45 Thai (the M at 4356.72 / 4360.22, then the HH
+    4404.17 -> 4415.88); at 13/08 10:30 the W 4441.12 / 4449.54 -> SELL at 0.20 and the HH -> BUY at 0.15."""
+
+    def side(text: str, tol: float):
+        now = now_at(text)
+        frames = bot.cut(full, now)
+        assert len(frames["M15"].tail(bot.FIB_BARS)) == bot.FIB_BARS
+        return bot.read_m15(frames, bot.Params(mw_tol=tol))
+
+    for tol in (0.20, 0.15):
+        assert side("2026-08-12 13:45", tol) == ("BUY", "M15 side BUY (HH 4404.17 -> 4415.88, 12/08 10:00)")
+    assert side("2026-08-13 10:30", 0.20) == ("SELL", "M15 side SELL (W 4441.12 / 4449.54, 13/08 07:30)")
+    assert side("2026-08-13 10:30", 0.15) == ("BUY", "M15 side BUY (HH 4441.12 -> 4449.54, 13/08 07:30)")
+    # the M at 11-12/08 is an event on its own, read at the pivots before the HH
+    now = now_at("2026-08-12 13:45")
+    zz = bot._zigzag(bot.cut(full, now)["M15"].tail(bot.FIB_BARS))
+    assert bot.m15_side(zz[:-1], 0.20)[1].startswith("M15 side BUY (M 4356.72 / 4360.22, 12/08 ")
+    # decide() writes the M15 side first and the H4 reading for the record
+    res = bot.decide(bot.cut(full, now), now, bot.Params(), windowed=False)
+    assert res.log["rule16"].startswith("M15 side BUY (HH 4404.17 -> 4415.88, 12/08 10:00); H4 ")
+    assert res.log["rule16"].endswith("(record)")
+
+
+@needs_data
+def test_m15_never_trades_a_fade_leg_on_the_stored_bars(full) -> None:
+    for text in ("2026-10-15 14:15", "2026-10-15 20:10", "2026-10-07 06:35"):  # the h4 rule's fade orders
+        now = now_at(text)
+        res = bot.decide(bot.cut(full, now), now, bot.Params(), windowed=False)
+        assert not res.log["trade"].startswith("fade"), text
+        if res.decision is not None:
+            assert "fade" not in res.log["trade"]
+
+
+def test_read_m15_reads_the_last_1500_bars_not_fewer_and_not_more(monkeypatch) -> None:
+    """An event more than 300 bars old still decides when the later pivots have none; one that lies before
+    the last 1,500 bars does not (the ZigZag is run on the last 1,500 closed M15 bars; the numbers are literal)."""
+    idx = pd.date_range("2026-01-05", periods=1788, freq="15min", tz="UTC")
+    frame = pd.DataFrame({"open": 1.0, "high": 2.0, "low": 0.5, "close": 1.5}, index=idx)
+    kinds = ("H", "L", "H", "L", "H", "L")  # an HH, then a higher low, a lower high, a higher low: no event
+    prices = (110.0, 100.0, 125.0, 120.0, 123.0, 121.0)
+
+    def table(first: int) -> list[tuple[pd.Timestamp, str, float]]:
+        return [(idx[first + 4 * i], kinds[i], prices[i]) for i in range(6)]
+
+    def run(first: int) -> tuple[str, str]:
+        rows = table(first)
+
+        def fake(df: pd.DataFrame) -> list[Swing]:
+            out = []
+            for ts, k, price in rows:
+                if ts in df.index:
+                    pos = int(df.index.get_loc(ts))
+                    out.append(
+                        Swing(SwingKind.HIGH if k == "H" else SwingKind.LOW, price, pos, pos + 3, ts, ts)
+                    )
+            return out
+
+        monkeypatch.setattr(bot, "_zigzag", fake)
+        return bot.read_m15({"M15": frame}, bot.Params())
+
+    got = run(780)  # the HH at bar 788, 999 bars before the last bar: inside the last 1,500
+    assert got[0] == "BUY" and got[1].startswith("M15 side BUY (HH 110.00 -> 125.00, ")
+    # the boundary: the last 1,500 of 1,788 bars start at bar 288. The first pivot (the HH's p) on bar 288
+    # counts; on bar 287 it is outside, the rest has no event (a 1,000- or a 1,600-bar read fails one of them)
+    assert run(288)[0] == "BUY"
+    assert run(287)[0] == "none"
+    assert run(100)[0] == "none"
+
+
+def test_warm_up_needs_m15_only_with_side_rule_m15_or_an_m15_setup() -> None:
+    end = {"H4": "2026-10-05 08:00", "M15": "2026-10-05 11:45", "M5": "2026-10-05 11:55"}
+    freq = {"H4": "4h", "M15": "15min", "M5": "5min"}
+    three = {tf: walk_frame(1700, freq[tf], end[tf], seed=3 + i) for i, tf in enumerate(freq)}
+    now = pd.Timestamp("2026-10-05 12:00", tz="UTC")
+    short = {**bot.cut(three, now), "M15": three["M15"].iloc[:1000]}
+    why = {
+        (rule, tf): bot.decide(short, now, bot.Params(side_rule=rule, fib_tf=tf), windowed=False).log[
+            "reason"
+        ]
+        for rule in ("h4", "m15")
+        for tf in ("M5", "M15")
+    }
+    assert why[("h4", "M5")] != "warm-up"  # H4 rule, M5 setup: M15 is not needed
+    assert why[("h4", "M15")] == why[("m15", "M5")] == why[("m15", "M15")] == "warm-up"
+
+
+@needs_data
+def test_m15_with_fib_lean_off_still_writes_the_h4_reading_for_the_record(full) -> None:
+    now = now_at("2026-08-12 13:45")
+    frames = bot.cut(full, now)
+    for lean in ("on", "off"):
+        p = bot.Params(fib_lean=lean)
+        fi = bot.fib_inputs(frames, now, p)
+        assert fi.h4_text.startswith("H4 ") and "not read" not in fi.h4_text, lean
+        assert "; H4 " in fi.datas[0].h4_text and "not read" not in fi.datas[0].h4_text, lean
+        res = bot.decide(frames, now, p, windowed=False)
+        assert res.log["rule16"].startswith("M15 side BUY") and "H4 not read" not in res.log["rule16"], lean
+    assert bot.fib_inputs(frames, now, bot.Params(side_rule="h4", fib_lean="off")).h4_text.startswith(
+        "H4 not read"
+    )  # side_rule h4: unchanged
+
+
+def test_m15_no_event_gives_no_leg_and_never_a_fade_leg_at_the_leg_level() -> None:
+    for h4 in ("none", "off"):
+        d = leg_data(h4=h4)
+        for p in (M15P, replace(M15P, fib_lean="off"), replace(M15P, fade_min="off")):
+            assert bot.find_leg(d, p) is None, (h4, p)
+            assert bot.find_leg(as_sell(d), p) is None
+            assert bot.analyse_leg(d, p).setup is None and bot.analyse_leg(d, p).reason == "fib: no live leg"
+    # a real fade shape (a run down to a fixed low): h4 offers the fade leg, m15 does not
+    fade = bot.LegData(
+        **{**leg_data(h4="none").__dict__, "pv": pv_of([("H", 4100.0, 20), ("L", 4040.0, 60)])}
+    )
+    assert bot.find_leg(fade, replace(PB, fade_min="off")) is not None
+    assert bot.find_leg(fade, replace(PB, fade_min="off", side_rule="m15")) is None

@@ -1100,3 +1100,71 @@ the leg on **M15**, keep M5 for the entry; draw M5 against M15 on days of severa
 
 At 14:20 the M30 ZigZag's latest fixed leg is 4103.74 (14/07 19:30) -> 4042.88 (15/07 01:30); 4062.11 is not yet an M30
 pivot. One day - nothing concluded; more days of August - October follow.
+
+**12/08/2026** (set `XAUUSD/r3_off@v43`, `fib_tf` M15 - the parameters from the database since e98fe71):
+
+| moment (Thai) | timeframe | 100 % (S) | 0 % (E) | order | judged |
+|---|---|---|---|---|---|
+| 13:45 | M15 | 4360.22 (12/08 01:00) | 4415.88 (12/08 10:00) | none (no bounce yet, rule 6) | the leg's 0 and 100 right on M15 (Claude); **the side wrong** - see below |
+
+- **H4 read "not clear" in a clear up trend** (Claude, measured on the stored H4 bars): the bot's latest fixed H4 pivots
+  at 12/08 13:45 are HIGH 4166.08 (22/07) -> 4120.02 (30/07) and LOW 3995.97 (29/07) -> 4019.08 (03/08); since the
+  last fixed low price rose to 4435.18 and closed 4401.02 - about 380 USD above the last fixed H4 low, far above both
+  fixed highs - with no H4 pullback deep enough to fix a pivot. Rule 16 reads only fixed pivots, so it calls H4
+  not clear and the bot **fades the run up (SELL)** inside the owner's "very clear" trend (*"unless the big trend
+  ... is very clear, then go with the trend"*). The other two new legs of the day were SELL fades as well (20:30,
+  refused by rule 10) and one BUY (21:00, refused by rule 9). **Rule 16's reading fails this month - back to step 1.**
+
+### The side held on M15 until the opposite break - a prototype (2026-10-31; research, no trading)
+
+The owner, on 12/08: *"there is no LL yet"*; *"two things - buy the pullback, and wait for a clear picture to sell;
+to sell, the ZigZag should make an LL first"*; *"an LL on M15 is enough to sell"*; then *"try it"*. The prototype
+[Claude, scratchpad `m15_state.py` / `m15_draw.py`]: on the M15 fixed pivots (MT5 ZigZag 12 / 5 / 3, run once on
+15/06 - 30/10; the bot reads the last 1,500 bars, which may differ slightly), a fixed HIGH above the fixed HIGH
+before it (HH) makes the side **BUY**, a fixed LOW below the LOW before it (LL) makes it **SELL**; the side holds until
+the opposite break, known at the close of the pivot's confirm bar.
+
+- **July - October**: 147 side changes (37 / 34 / 37 / 39 a month); a side holds a median **11.4 h** (quartiles 6.2 /
+  21.5 h).
+- **10 - 14/08 drawn** (`eye/trades/m15_side_aug10-14.png`): BUY through the rise 4313 -> 4449 (10 - 13/08), with two
+  short SELLs - 10/08 15:45 - 19:15 (LL 4327.86 -> 4313.31) and **12/08 21:00 - 13/08 00:45 on an LL of 1.25 USD**
+  (4383.89 -> 4382.64); SELL from 13/08 19:15 (LL 4396.49 -> 4364.09, known 12 h after the top 4449.54, price ~4395)
+  through the fall to 4310.92, and still SELL on 14/08 evening as price came back to 4396.98 (no HH yet). On 12/08
+  13:45 (the failure above) the side is BUY. Claude's reading; not yet judged by the owner.
+- **With the owner's M and W** (the owner, on the drawing: *"I see W and M clearly - try applying it"*; the owner's
+  usage - an M a buy, a W a sell): prototype 2 [Claude, scratchpad `m15_mw.py`]: two fixed M15 LOWs within `TOL` x
+  the swing between them (the HIGH between minus the lower low) are an M -> **BUY**; two fixed HIGHs within `TOL` x
+  the swing between them are a W -> **SELL**; otherwise HH -> BUY, LL -> SELL as before. July - October: `TOL` 0.15 -
+  139 side changes (45 by an M or W), a side holds a median 12.5 h; `TOL` 0.20 - 143 (61), 11.1 h. On 10 - 14/08
+  (`m15_side_aug10-14_mw.png`, `_mw20.png`): the 1.25 USD LL of 12/08 21:00 becomes an M (BUY held); 14/08 14:00
+  the M 4310.92 / 4310.96 turns it BUY (price ~4335, then 4397); at 0.20 the W 4441.12 / 4449.54 turns it SELL at
+  13/08 10:30 (price ~4410) - 9 h before the LL did - at 0.15 it does not (the two highs are 8.42 apart, 15.9 % of
+  the 53.05 swing). **`TOL` is Claude's and was looked at on this one week only** - other weeks and months to be
+  drawn before any value is taken.
+- **Two more weeks drawn, `TOL` 0.20** (Claude's reading of the drawings; the owner has not judged them yet):
+  - **14 - 18/09** (`m15_side_sep14-18_mw20.png`; H4 held down) - **mostly wrong**: swings of 50 - 130 USD and each
+    change comes at the far end of one: SELL 14/09 20:15 (LL 4322.01 -> 4278.36, price ~4265, near the low 4253.59);
+    SELL 15/09 14:30 (W 4317.64 / 4317.30) held through the rise 4275.48 -> 4360.28 of 16/09 (the higher low 4275.48
+    is not an M at 0.20 - 29 % - and no HH came until 4360); BUY 16/09 22:00 (HH, ~4350) just before the fall to
+    4234.93; SELL 17/09 03:00 (W 4360.28 / 4368.25, ~4265) at the bottom before the rise to 4381.31.
+  - **05 - 09/10** (`m15_side_oct05-09_mw20.png`; H4 held down) - **mostly right**: SELL 07/10 05:45 (W 4179.59 /
+    4184.25, ~4165) before the fall to 4066.42 (the owner's 07/10 sell); BUY 08/10 14:30 (HH, ~4125) before the
+    rise to 4207.52; but SELL 06/10 17:30 (LL known with price back at ~4170) and a SELL / BUY pair 15 min apart on
+    09/10 00:00 - 00:15 (a W and an M confirmed together).
+  - So far one week good (August), one mostly good (October), one bad (September); the held side is late by the
+    length of a pivot's confirmation and turns at the end of large swings.
+- **Option A - the break counted at the close** (the owner chose A after Claude's reading that the side is late
+  because an LL waits for the new low's confirmation): prototype 3 [Claude, scratchpad `m15_break.py`], `TOL` 0.20 -
+  an LL at the first M15 close below the latest fixed LOW by more than 0.20 x the swing above it, an HH mirrored;
+  M and W as before. July - October: 123 side changes, a side holds a median 13.9 h. The same three weeks
+  (`m15_side_*_brk.png`), Claude's reading:
+  - 14 - 18/09: SELL 14/09 15:45 at 4311.91 (was 20:15 near the low) before the fall to 4253.59; BUY 16/09 11:15 at
+    4326.83 (was 22:00 at ~4350); still BUY through the crash 4368 -> 4234.93 of 16/09 night and SELL at its bottom
+    (17/09 03:00, the W), then SELL held through the rise to 4381.31 until 17/09 20:15.
+  - 10 - 14/08: a SELL at 10/08 08:15 (4323.09, near the low 4313.31) held 16 h over a flat stretch (was 3.5 h);
+    the rest unchanged.
+  - 05 - 09/10: SELL 06/10 10:30 at 4127.81 before the dip to 4104.21, then BUY only at 18:30 (~4170) after the rise;
+    BUY 08/10 09:00 at 4132.82 (was 14:30); the 09/10 00:00 SELL / BUY pair remains.
+  - **Earlier at some turns, later or longer at others - not clearly better** than prototype 2. Three weeks; not
+    yet judged by the owner.
+

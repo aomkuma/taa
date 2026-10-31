@@ -873,3 +873,13 @@ values switched off"*. Claude proposed, and the owner took (*"do it"*): only the
 system's `config.yaml`, which touches the accounts); a SQLite file of its own; sets named by market and set name;
 every value read from the set, none falling back to the code; an append-only history; the ledger names the set and
 its version (BOT_RULES, Parameters, "The parameters come from a database").
+
+## The side held on M15, with M and W (2026-10-31)
+
+Step 7 on 2026-08-12: H4's latest fixed pivots (highs 4166 -> 4120, lows 3996 -> 4019) read "not clear" while price
+had risen about 400 USD with no H4 pivot fixed, and the bot faded the rise. The owner: no LL yet - buy the pullback;
+to sell, an LL first, an M15 LL is enough; then the owner's M and W. Prototypes drawn on three weeks (BOT_RESEARCH):
+the held side with M and W was right in August, mostly in October, mostly wrong in September (late at the ends of
+large swings); counting the break at the close (option A) was not clearly better. The owner chose to judge it by the
+trades (*"C"*): rule 16 `side_rule` m15, trend legs only; the H4 rule kept as `side_rule` h4, a record.
+

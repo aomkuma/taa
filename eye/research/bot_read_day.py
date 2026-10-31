@@ -68,6 +68,8 @@ REASON_STYLE: list[tuple[str, str, tuple[str, ...]]] = [
         ("fib: no M5 trend of its side", "fib: M5 trend (H100 not above the M5 high)"),
     ),
     ("against the H4 trend", "#d63384", ("fib: against the H4 trend",)),
+    ("against the M15 side", "#c2185b", ("fib: against the M15 side",)),
+    ("no M15 event (rule 16)", "#7f8c8d", ("side: no M15 event",)),
     ("count (rule 4)", "#16a085", ("fib: count outside 3-5 and no M", "fib: no divergence")),
     ("trend run at the limit (rule 5)", "#c8b400", ("fib: trend run at the limit",)),
     (

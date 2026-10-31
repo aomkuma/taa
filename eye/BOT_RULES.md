@@ -10,7 +10,7 @@ Claude gave where the owner gave none: a named parameter with a default, written
 owner to change. A question or a chart the owner shows, and any number inside one, is never a rule.
 
 > **2026-10-30, the owner: build from the committed code and take H1 out** (*"fix it from here, and remove 1H"*).
-> The side comes from **rule 16** (H4's clear trend, else fading the latest run - rewritten the same evening). **Rules 1 (the lean) and 11 (the H1 / M30 range state)
+> The side comes from **rule 16** - since 2026-10-31 **held on M15 until the opposite break, with the owner's M and W, trend legs only** (`side_rule` m15); H4's clear trend, else fading the latest run (2026-10-30 evening) is kept as `side_rule` h4, a record. **Rules 1 (the lean) and 11 (the H1 / M30 range state)
 > are not used and not built** - kept below only as the record; every parameter of theirs (`h1_read`, `state_tf`,
 > `fib_range`, `range_min_leg`, `range_tp`, `trend_days`, `range_days`) is withdrawn. Rules 0, 2, 3, 6-10, 12-17 stand.
 
@@ -48,7 +48,7 @@ owner to change. A question or a chart the owner shows, and any number inside on
 
 ## Order of evaluation, at each M5 close (inside a window when `windows` is on)
 
-0 (time, the window when `windows` is on, warm-up, `max_orders`) -> 16 (the side: H4 trend leg or a fade leg) -> 2 (the latest leg) -> 10 (has it run?) -> 3 (M5 trend, and the side) -> 4 (count, if
+0 (time, the window when `windows` is on, warm-up, `max_orders`) -> 16 (the side: `side_rule` m15 - the M15 side, trend legs; no event - no order, reason "side: no M15 event"; `side_rule` h4 - H4 trend leg or a fade leg) -> 2 (the latest leg) -> 10 (has it run?) -> 3 (M5 trend, and the side) -> 4 (count, if
 on) -> 6 (level, order price, bounce) -> 7 (stop) -> 8 (target, 1:2) -> 6 (played out, which needs 7
 and 8) -> 9 (reach) -> write; for a trend leg whose end has just broken, 17 (the break and its retest) writes its
 order instead. Rule 13 decides between a BUY and a SELL candidate; rule 12 governs the order's life.
@@ -66,9 +66,9 @@ order instead. Rule 13 decides between a BUY and a SELL candidate; rule 12 gover
 | `fib_target` | 1.618, 1.272 | 1.618 | the owner's extensions; default [Claude] (rule 8) |
 | `max_entry_frac` | 0.15, 0.25, 0.35 | 0.25 | [Claude] |
 | `m5_trend` | now, h100, off | now | [Claude] (rule 3: the M5 trend at the decision; h100 = the earlier test, a record; `off` = rule 3 not applied, a research variant - the owner, 2026-10-31, on running it with and without: *"do it"*) |
-| `fib_lean` | on, off | on | [Claude], a research switch kept (not withdrawn): rule 16's side refuses the other side (on), or not (off) |
-| `fade_min` | 1.0, off | 1.0 | [Claude], from the owner's "come down a lot" (rule 16) |
-| `fade_entry` | 0.5, 0.382, 0.618 | 0.5 | the owner's zone "61 - 38 %"; the default [Claude] (rule 2, a fade leg) |
+| `fib_lean` | on, off | on | [Claude], a research switch kept (not withdrawn), **`side_rule` h4 only**: rule 16's side refuses the other side (on), or not (off); ignored with m15 |
+| `fade_min` | 1.0, off | 1.0 | [Claude], from the owner's "come down a lot" (rule 16; **`side_rule` h4 only** - no fade legs with m15) |
+| `fade_entry` | 0.5, 0.382, 0.618 | 0.5 | the owner's zone "61 - 38 %"; the default [Claude] (rule 2, a fade leg; **`side_rule` h4 only**) |
 | `early_leg` | 0.382, 0.618, off | 0.382 | the owner (2026-10-30: "about 38, 61 %"); the exact form [Claude] (rule 2) |
 | `setup_days` | 2 | 2 | the owner (2026-10-30): the leg look, M5 trading days; with `fib_tf` M15 also applied to M15 [Claude] |
 | `stop_buffer`, `target_buffer` | USD | 0.50, 0.50 | [Claude] |
@@ -76,6 +76,8 @@ order instead. Rule 13 decides between a BUY and a SELL candidate; rule 12 gover
 | `max_orders` | count | 1 | [Claude] |
 | `order_life_bars` | M5 bars | 24 | [Claude] |
 | `min_r` | R | 2.0 | owner (1:2) |
+| `side_rule` | m15, h4 | m15 | the owner, 2026-10-31 (rule 16); the form and the default [Claude]; `h4` = the rule of 2026-10-30, a record |
+| `mw_tol` | 0.20, 0.15 | 0.20 | [Claude] (rule 16: two pivots this close, x the swing between, are an M or a W) |
 | `windows` | off, on | off | the owner, 2026-10-31: *"run it all the time"*; the parameter and its default [Claude] (rule 0); `on` = the three windows, a record |
 
 A combination without meaning (`fib_early` > 0 with an entry other than 0.382 or without `line_tight`; `fib_stop`
@@ -156,8 +158,8 @@ may need some values switched off"*. The form [Claude], agreed by the owner (*"d
   (`walk.macd_mt5`, main line), RSI 14 (owner).
 - **Closed bars only** (the project's rule, CLAUDE.md): at `now` a bar of timeframe `tf` exists only if
   `open_time + tf <= now`.
-- **Warm-up** [Claude]: no decision until H4 and M5 (and M15 when it is the setup timeframe) each have 1,500 closed bars
-  before `now`.
+- **Warm-up** [Claude]: no decision until H4 and M5 (and M15 when it is the setup timeframe **or `side_rule` is m15** -
+  rule 16 reads the M15 ZigZag) each have 1,500 closed bars before `now`.
 - **All day** - the owner, 2026-10-31: *"no need [for the three windows] - run it all the time"*. The form [Claude]:
   parameter `windows`, default **off** - an evaluation at **every 5-minute time** `now` of the Thai calendar day,
   **00:00, 00:05 ... 23:55** (288 scheduled times; `now` = an M5 bar's open + 5 min, so 00:00 is the close of the
@@ -223,8 +225,8 @@ fixed pivots:
   `Hf - early_leg x (Hf - Lp)` - `L0` = `Hf`, a provisional `H100` = that lowest low. **Example (07/10/2026 M5, the
   owner's)**: start 4184.25 (02:00), end 4161.42 (05:50), leg 22.83 - entry 0.382 = **4175.53**, stop 4184.75, the
   161.8 % extension 4147.31, target 4147.81.
-- **Which leg is traded** - rule 16: a trend leg in H4's direction when H4 trends clearly, else a fade leg against
-  the latest run.
+- **Which leg is traded** - rule 16: with `side_rule` m15 (the default) a trend leg of the M15 side; with h4 (the
+  record) a trend leg in H4's direction when H4 trends clearly, else a fade leg against the latest run.
 - **`H100`** = the leg's end = **the latest fixed HIGH**; **`L0`** = the leg's start = **the fixed LOW immediately
   before it**. The leg = `H100 - L0` > 0 (else no leg). Levels `L0 + x * (H100 - L0)` - the owner's labels exactly
   (0 % = `L0`, 100 % = `H100`, 127.2 / 161.8 % above `H100`).
@@ -288,7 +290,8 @@ UP** (a SELL: DOWN); otherwise no order on this leg - **for a trend leg only; a 
 price, at the decision, is making higher highs and higher lows, whichever swings those are. Rule 10 still ends the
 leg once a high goes above `H100`.)* `m5_trend` **h100** (a record, for comparison): a BUY needs `H100` strictly above
 the latest fixed M5 HIGH whose time is strictly before `H100`'s and which is fixed by `now` (none - no order). Then the side (**rule 16**): a BUY candidate is refused when the side is SELL (a SELL candidate when it is BUY);
-no side yet: nothing is refused; skipped when `fib_lean` is off.
+no side yet: nothing is refused; skipped when `fib_lean` is off - **all of this with `side_rule` h4 only**; with m15
+rule 16 has already kept only the side's legs (no event - no order on either side).
 
 ## 4. The pullback's count - a filter (owner: "try both, counting and not counting")
 
@@ -503,7 +506,7 @@ read; off: no M30 state is read at all - never sideways, no range side, no edge 
 
 ## 13. Which one, when several qualify [Claude]
 
-A BUY and a SELL candidate at one decision (a leg of each side - when rule 16's side is none, or with `fib_lean` off):
+A BUY and a SELL candidate at one decision (a leg of each side - `side_rule` h4 only: when rule 16's side is none, or with `fib_lean` off; with m15 there is never more than the side's):
 the smaller |the price - the order price|; then a BUY before a SELL.
 
 ## 14. What the bot writes, and the acceptance cases [Claude]
@@ -523,7 +526,7 @@ the smaller |the price - the order price|; then a BUY before a SELL.
   below is what the rules give; the developer computes every case from the bars and **reports** each one - a case that
   does not come out as written is reported, not bent to fit; where a part is marked *report*, the developer reports
   what the bars give:
-  - **Rule 16 and the fade leg** - 07/10/2026 07:00 M5: H4 **down** (highs 4315.65 -> 4228.63, lows 4244.12 -> 4110.78);
+  - **Rule 16 and the fade leg** (`side_rule` **h4**, the record) - 07/10/2026 07:00 M5: H4 **down** (highs 4315.65 -> 4228.63, lows 4244.12 -> 4110.78);
   the SELL trend leg 4184.25 -> 4161.42, refused by rule 3 (M5 not DOWN), no order. With `fib_lean` off at 06:35: the
   fade SELL of rule 2's example (limit 4169.23, stop 4184.75, target 4136.15, R 2.11) - on the stored bars it fills on the 07:10 bar and
   reaches the target at 11:55 Thai (Codex) - *report* what the bot writes.
@@ -552,7 +555,33 @@ variants one at a time - `fib_entry` 0.618 and 0.236, `fib_early` 0.10 with
 first, then the stored months before it (M5 from 2025-10), month by month - **not clean**: the research that chose `H100` and the entry
 depth used them. **The clean test is forward**, on the months after 2026-10-28 as their bars arrive.
 
-## 16. The side - fade the latest run, unless H4 trends clearly (the owner, 2026-10-30)
+## 16. The side - held on M15 until the opposite break, with the owner's M and W (the owner, 2026-10-31)
+
+The owner, on 2026-08-12 where H4 read "not clear" through a 400 USD rise: *"there is no LL yet"*; *"two things -
+buy the pullback, and wait for a clear picture to sell; to sell, the ZigZag should make an LL first"*; *"an LL on
+M15 is enough to sell"*; on the drawing *"I see W and M clearly - try applying it"* (the owner's usage: an M a buy, a
+W a sell); after the drawings of three weeks, the owner chose to judge it by the trades (*"C"*). Exactly [Claude, the
+form - the prototype `m15_mw.py`, `eye/BOT_RESEARCH.md` "The side held on M15 until the opposite break"]:
+
+- **`side_rule` m15** (the default): on M15 fixed pivots (MT5 ZigZag 12 / 5 / 3 on the last 1,500 closed M15 bars,
+  fixed by `now`), taken in order; for each pivot `q` with the pivot before it `m` and the one before that `p` (the
+  same kind as `q`):
+  - `q` a HIGH: `|q - p| <= mw_tol x (max(p, q) - m)` - a **W** -> **SELL**; else `q > p` - an **HH** -> **BUY**;
+  - `q` a LOW: `|q - p| <= mw_tol x (m - min(p, q))` - an **M** -> **BUY**; else `q < p` - an **LL** -> **SELL**;
+  - otherwise (a lower high, a higher low, outside the tolerance) - no event.
+  The side is that of the **latest event**; no event among the pivots - no side, no order (reason "side: no M15
+  event"). `mw_tol` **0.20** [Claude; looked at on one week only - a parameter, 0.15 the variant].
+- **The side's legs**: side BUY - only BUY **trend legs** (rule 2, "a trend leg": the early leg when `early_leg` is
+  on and one stands, else the fixed leg) - the owner's *"buy the pullback"*; side SELL - only SELL trend legs. **Fade
+  legs are not used** with `side_rule` m15 (a turn is the side changing: an LL or a W). Rule 17 (the break and its
+  retest) applies to these trend legs as written - its order is written only while the M15 side **at that decision**
+(`now`) is the leg's side [Claude]; rule 3 to trend legs as written.
+- **`side_rule` h4** (a record - the rule of 2026-10-30, every run before 2026-10-31): H4 trends clearly, else fade the
+  latest run, as below.
+- **Written** (rule 14): `M15 side BUY (HH a -> b, <Thai time of b>)` / `SELL (W a / b, ...)` / `(M ...)` / `(LL ...)`,
+  or `M15 side: no event`; the H4 reading is still written (below), for the record only, when `side_rule` is m15.
+
+### 16 (record, `side_rule` h4) - fade the latest run, unless H4 trends clearly (the owner, 2026-10-30)
 
 The owner: *"simply: if price has run up, look for a sell; if price has come down a lot, look for a buy - unless the
 big trend, like 1D / 4H, is very clear, then go with the trend on the pullback or the bounce"*; then *"only up to H4
@@ -624,7 +653,7 @@ path as a live option; the nine rules no. 4 ("trade the fifth leg") and no. 9 (t
 
 ## Code status, 2026-10-31 (not a rule)
 
-**Everything above is built** in `eye/bot2e.py` (from the committed code, git HEAD 968f37e, a piece at a time by a
+**Everything above is built** (rule 16's `side_rule` m15 since 2026-10-31 - below) in `eye/bot2e.py` (from the committed code, git HEAD 968f37e, a piece at a time by a
 Sonnet developer, each piece checked by Claude's real mutation runs and Codex; tests green - 276 across the bot, its
 tools, architecture, signal study and state11; **committed** c09c13e, the full suite green): H1 / the lean / the old range / mode 2e taken out;
 H4 read for rule 16 (a trend leg when H4 trends clearly, else a fade leg); rule 2's trend leg (with the early leg) and
@@ -651,5 +680,14 @@ the same time.
 **Built** (2026-10-31, Codex reviewed until it found nothing, the full suite green): "The parameters come from a
 database" (under Parameters) - `eye/bot_config.py`; runs before it wrote `eye/research/<variant>/`, runs after it
 `eye/research/<market>/<set>/`. A fresh machine seeds first: `eye/bot_config.py seed --market XAUUSD --set default --by <who>`.
+**Built** (2026-10-31; Codex reviewed four times until it found nothing, Claude's mutation runs, the full suite green):
+rule 16's `side_rule` m15 and `mw_tol` (the side held on M15 with M and W; trend legs only; no event - no leg). What a build must show: on the stored bars `side_rule` m15 gives the side **BUY at 12/08/2026 13:45 Thai**
+(Claude's hand count: the low pair 4356.72 / 4360.22 is an M - 3.50 apart, 0.20 x 47.45 = 9.49 - and the latest
+event is the HH 4404.17 -> 4415.88 - 11.71 apart, just outside 0.20 x 55.66 = 11.13, so not a W) - the developer
+*reports* the events the code finds; the W 4441.12 / 4449.54 (8.42 apart, the swing to 4396.49 53.05 -
+15.9 %) - at **2026-08-13 10:30 Thai** (a later cut-off) the latest event is that W -> SELL at `mw_tol` 0.20 and the
+HH -> BUY at 0.15 (Codex's read-only recomputation, 2026-10-31: 8.42 against 10.61 at 0.20); unit tests on made-up pivots for each of HH, LL, M, W, a lower
+high and a higher low (no event), the tolerance edge (equal = inside), no event -> no side; a fade leg is never
+offered with m15; `side_rule` h4 gives exactly today's results (the existing rule 16 tests pass with `side_rule` h4).
 **Open**: levels from the left / the owner's price clusters as obstacles to a target - to be measured first. The
 set-aside work is in `eye/wip/`; `eye/state11.py` (rule 11, failed) is kept, unused.

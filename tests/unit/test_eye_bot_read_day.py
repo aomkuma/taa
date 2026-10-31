@@ -167,12 +167,12 @@ def test_split_base_takes_market_set_and_db_out_of_the_overrides() -> None:
 def test_the_base_is_the_stored_set_with_the_overrides_on_top(tmp_path: Path) -> None:
     base = {"market": "XAUUSD", "set": "default", "db": str(seeded_db(tmp_path))}
     p, version = day.resolve_params(base, {})
-    assert p == bot.Params(min_r=1.5) and version == 22
+    assert p == bot.Params(min_r=1.5) and version == 24
     p, version = day.resolve_params(base, {"fib_entry": 0.618, "early_leg": "off"})
-    assert (p.min_r, p.fib_entry, p.early_leg) == (1.5, 0.618, "off") and version == 22
+    assert (p.min_r, p.fib_entry, p.early_leg) == (1.5, 0.618, "off") and version == 24
     line = day.config_line(base, version, {"fib_entry": 0.618, "early_leg": "off"})
-    assert line == "config=XAUUSD/default@v22; overrides: fib_entry=0.618 early_leg=off"
-    assert day.config_line(base, 22, {}) == "config=XAUUSD/default@v22; overrides: none"
+    assert line == "config=XAUUSD/default@v24; overrides: fib_entry=0.618 early_leg=off"
+    assert day.config_line(base, 24, {}) == "config=XAUUSD/default@v24; overrides: none"
     with pytest.raises(SystemExit, match="bad override"):
         day.resolve_params(base, {"fib_early": 0.1})  # a combination Params refuses
     with pytest.raises(SystemExit, match="no bars for EURUSD"):
@@ -196,5 +196,5 @@ def test_main_reads_the_set_names_it_and_checks_the_market_before_bars(
         "fib_entry": 0.618,
         "min_r": 3.0,
     }
-    assert seen["c"] == "config=XAUUSD/default@v22; overrides: fib_entry=0.618 min_r=3.0"
+    assert seen["c"] == "config=XAUUSD/default@v24; overrides: fib_entry=0.618 min_r=3.0"
     assert seen["c"] in capsys.readouterr().out

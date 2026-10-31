@@ -13,15 +13,19 @@ measured.
 **Where the work stands (2026-10-31) - read this; everything after it down to "Standing constraints" is history.**
 
 - **The owner's goal**: *"to know where 100 and 0 are"* - the leg's start and end read right (METHOD 2e "The goal").
-- **The method** (METHOD 2e, the owner's words; `eye/BOT_RULES.md` the form, rules 2, 16, 17): H4 trends clearly (HH +
-  HL / LH + LL) -> a **trend leg** traded with it on the pullback (0 % at the leg's start, entry 38.2 %, stop beyond
-  0 %, target 161.8 %); a break past its end -> **its retest** (rule 17: target 161.8, else 200 %); H4 not clear ->
-  **fade the latest run** if it is at least as long as the leg before it (0 % at the run's end, entry 50 %, target
-  161.8 % past its start). Targets reachable first, 1:2 only a filter.
-- **Code**: BOT_RULES is built and committed (c09c13e, the full suite green), except rule 0's `windows` (2026-10-31,
-  the owner: *"run it all the time"*; the form [Claude] - decide at every 5-minute time, 00:00 - 23:55 Thai, not only in the
-  three windows):
-  built and committed (the full suite green).
+- **The method** (METHOD 2e, the owner's words; `eye/BOT_RULES.md` the form, rules 2, 16, 17): **the side is held on
+  M15** - an HH or the owner's M -> BUY, an LL or a W -> SELL, until the opposite (rule 16 as rewritten 2026-10-31,
+  built; H4's clear trend, else fade the latest run is kept as `side_rule` h4); a **trend
+  leg** of the side traded on the pullback (0 % at the leg's start, entry 38.2 %, stop beyond 0 %, target 161.8 %); a
+  break past its end -> **its retest** while the M15 side at that decision is still the leg's (rule 17: target 161.8,
+  else 200 %). Targets reachable first, 1:2 only a
+  filter.
+- **Code**: BOT_RULES is built and committed (c09c13e, 3b64f86, e98fe71; the full suite green) - including rule 0's
+  `windows` (2026-10-31, the owner: *"run it all the time"*; decide at every 5-minute time, 00:00 - 23:55 Thai) and the
+  parameters from the database, and rule 16's `side_rule` m15.
+- **Rule 16 rewritten** (2026-10-31, step 7 found H4 "not clear" through the August rise): the side is held on M15
+  until the opposite break, with the owner's M and W (an M buys, a W sells), trend legs only; the owner chose to judge
+  it by a trading run (*"C"* - July to October, every trade drawn). Built.
 - **The parameters from a database** (2026-10-31, the owner: *"every config value read from a db"*, per market - *"some
   markets may need some values switched off"*; a web page later): built (`eye/bot_config.py`; a fresh machine runs `.venv\Scripts\python eye/bot_config.py seed --market XAUUSD --set default --by <who>` first; research runs now write `eye/research/XAUUSD/<set>/`).
 - **Step 7 started** (`eye/BOT_RESEARCH.md`, "Step 7: the leg's 0 and 100 drawn"): on 15/07 the M5 leg put 100 % at a
