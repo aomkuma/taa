@@ -1756,3 +1756,13 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   the score > 0. Expectation written before: the gains on active days, January - March mostly off. **Measured: 321
   of 365 days active (January 90 %, February 57 %); active days 96 trades +0.182 R (+860 USD), inactive 11 trades
   +0.436 R (+187 USD)** - the score does not separate; the expectation was wrong. Not kept.
+- **Read from the price chart** (the owner: *"look at the price chart"*; `d1_trades_12m.png` - D1 with every trade
+  and the running total; `c_by_d1_12m.csv`). Claude's eye: the wins come in the ranges (July, mid-August, March -
+  April); the losses come in D1 staircase trends - SELLs in the December - January rise, BUYs in the May fall and the
+  September - October fall (the total from 1460 down to 1050). The efficiency ratio missed them (a staircase pulls
+  back all the way). Measured with structure - the last two fixed MT5 ZigZag (12/5/3) highs and lows, both higher =
+  up, both lower = down, at the entry: on **H4** it does not separate (C against 21 +0.443 R, none 23 +0.421, with 19
+  +0.095); on **D1** it does: **C against the D1 trend 29 setups -0.090 R (-280 USD), no trend 21 +0.709 (+836), with
+  13 +0.655 (+446)**, and in both halves (against: November - April 18 -0.069 R, May - October 11 -0.124 R). C
+  without the against-D1 setups: **34 setups, +0.688 R, +1282 USD**. Two frames were tried and D1 kept - after seeing
+  both. It is the owner's standing rule (METHOD 2e: never against a clear lean of the larger frame).
