@@ -1697,3 +1697,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   May - October **29 setups, +0.074 R a setup, -6 USD**; November - April **28 setups, -0.032 R, -255 USD** - against
   v7's +0.397 / +0.234 on the same rules. What was measured does not support the fixed lines over v7; the owner's
   reading of 2025 is to be asked.
+  - The owner: *"the period where it can lose heavily is mid-January 2026, in my view"*. The setups of the
+    unseen run, in order (`trades_two_10_15_38_2025-11.csv`): v7 kept one grid all six months (no new pair 2S apart
+    fixed). Deepest drawdown -502 USD, 24/11/25 (+304) to 21/02/26 (-198). Losing runs: **11 - 31/12, 4 SL in a row
+    (-284), SELLs at 4266 / 4342 / 4418 into the December rise and one BUY**; 06 - 20/01 net +146 (3 TP, 1 SL);
+    **21/01 - 04/02, 4 SL in a row (-284): SELLs at 4798 / 5102 / 5254 into the January spike (top 5597.88 on 29/01)
+    and a BUY at 5026 in the fall**; 18 - 23/02, 3 SL (-213), SELLs in the rebound. Most losses were fades against the
+    big move, which the momentum filters did not stop.
