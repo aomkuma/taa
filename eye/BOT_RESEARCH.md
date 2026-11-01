@@ -1636,3 +1636,8 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     the candle-body form. Added: or the last 6 H1 bars moved a full step toward the line. **35 trades, 10 TP (29 %),
     +5.00 R, +0.143 R a trade, +127 USD at 0.01 lot** (May -5, then +3 / +3 / +7 / -1 / -2 R). Only that one trade
     removed; still a handful.
+  - Trade 07/05 SELL 4738 (the owner: *"it shouldn't - so how did it trade?"*): the momentum check ran once, on
+    the closed H1 bars at the visit; a spike of about 33 in 20 minutes inside the visit hour filled the resting
+    limit. Added: the resting limit is cancelled when the last 12 closed M5 bars ran S/3 toward the line. **26
+    trades, 7 TP (27 %), +2.00 R, +0.077 R a trade, +51 USD at 0.01 lot** (-3 / +6 / +3 / +5 / -5 / -4 R); 18 limits
+    cancelled - winners among them as well as the 07/05 loss. A handful.
