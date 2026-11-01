@@ -1712,3 +1712,12 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   same 31 setups and +0.234 R as v7. There the losses were fades against the big move, which a shift of the lines'
   phase does not change; the owner's rule for a line that does not hold - a stop limit the way of the break - is not
   built yet.
+- **The stop limit when the line does not hold** (the owner: *"do it"*; `eye/wip/zones_2026-11-01/run_break.py`,
+  `trades_break_2026-05_k123.csv`, `trades_break_2025-11_k123.csv`; a book of its own beside variant C, on the v8
+  zones). The owner's formula: after a visit (any kind, momentum skips too), price trades S/3 past the line within
+  48 h -> a limit the way of the break at the line (the retest), SL S/3 + S/15 back past it, TP one step on;
+  cancelled if the TP comes first or 48 h pass. Measured: **May - October 32 trades, 7 TP (22 %), -0.234 R a trade,
+  -228 USD; November - April 13 trades, 3 TP (23 %), -0.192 R, -76 USD** (195 visits without a break of S/3 in 48 h,
+  16 broke and ran on without a retest). Totals rebuilt by hand (a TP +76, an SL -30.4). The break-even at 1:2.5 is
+  29 % TP; the retests win 22 - 23 %. With variant C the two books together: +739 USD May - October (C alone +967),
+  +187 November - April (C alone +263). Not kept as it stands.
