@@ -1766,3 +1766,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   13 +0.655 (+446)**, and in both halves (against: November - April 18 -0.069 R, May - October 11 -0.124 R). C
   without the against-D1 setups: **34 setups, +0.688 R, +1282 USD**. Two frames were tried and D1 kept - after seeing
   both. It is the owner's standing rule (METHOD 2e: never against a clear lean of the larger frame).
+- **The trend on M15 + H1 + H4 + D1, weighted** (the owner: *"find the trend on M15, 1H, 4H, 1D and weight the
+  whole picture?"*; `c_by_tf_12m.csv`). Same structure reading on each frame; weights fixed before looking (D1 .4,
+  H4 .3, H1 .2, M15 .1; +1 with, -1 against, 0 none). Expectation written before: D1 separates, the blend about the
+  same as D1 alone. Measured on C's 63 setups: against the trend - D1 29 -0.090 R; **H4 21 +0.443, H1 21 +0.330, M15
+  22 +0.308** (with: D1 +0.655, H4 +0.095, H1 +0.117, M15 +0.196) - against the smaller frames is better, as a fade
+  at the zone meets the short move into it. The blend: against (< -0.25) 25 +0.279, mixed 23 +0.178, with 15 +0.648,
+  and the halves disagree (mixed: May - October -0.247, November - April +1.710). Without the blend's "against": 38
+  setups +0.364 R, +633 USD - worse than D1 alone (34, +0.688, +1282). Only D1 separates.
