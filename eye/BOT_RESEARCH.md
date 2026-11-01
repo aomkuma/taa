@@ -1856,3 +1856,9 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   A plateau at 2.5 - 3.5 on both spans (the owner's 2.5 - 3, named before the sweep); 3 is its middle. **Whole span at
   3: 104 setups, +0.348 R a setup, 50 % TP, +1228 USD at 0.01 lot each, 14 of 35 months negative, drawdown -744 USD
   (to 06/04/26)**; at 2.5: 95, +0.316 R, +816, drawdown -694.
+- **A fault in the reference, found writing `eye/ZONE_RULES.md`**: a SELL limit was filled when the *ask* reached it
+  (`high + spread`), not the bid - in `run_two.py`, `system_long.py` and `eye/research/zone_reference.py` alike, so
+  every variant-C number above carries it (SELL fills about one spread too easy). Fixed in the reference (bid high >=
+  price). Rerun: **the defaults, October 2023 - October 2026: 104 setups, +0.340 R a setup (was +0.348), +1211.4 USD
+  (was +1228.2), 15 of 35 months negative (was 14)**; the fixed-76 M5 year unchanged (41, +0.615, +1378). The
+  measured picture does not change.
