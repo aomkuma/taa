@@ -1740,3 +1740,13 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   negative; deepest drawdown -522 USD, 29/11/25 to 04/02/26. Checked: May - October inside this run is +739 against
   +967 run alone - the separate run took a setup on 01/05 (+157) and this one took 04/05 (-71) instead, because
   the H4 ZigZag started from a different first bar (the run's own start); +157 + 71 = 228, the whole difference.
+- **By market state at the entry** (the owner: *"does this setup suit H4 / D1 sideways and weak trends better?"*;
+  `eye/wip/zones_2026-11-01/regime_12m.csv`). Form [Claude]: the efficiency ratio |net move| / sum of |moves| -
+  D1 20 days, H4 30 bars; < 0.3 sideways, 0.3 - 0.5 weak, > 0.5 strong. Expectation written before: C better
+  sideways / weak, the stop limit better in strong trends. Measured on the twelve-month run:
+  - D1: **C sideways 41 setups +0.287 R (+647 USD), weak 19 +0.507 R (+431), strong 3 -0.208 R (-76)**; stop limit
+    sideways 27 +0.037, weak 12 -0.125, strong 5 +0.400 (+61).
+  - H4: **C sideways 50 +0.422 R (+1149), weak 12 +0.059 (-76), strong 1 -1.0 (-71)**; stop limit sideways 29
+    -0.034, weak 12 +0.167, strong 3 +0.167.
+  C earns in the sideways and weak D1 states and in the sideways H4 state; almost no setups came in a strong trend
+  (the momentum skips keep it out), so a state filter would remove few. Strong-trend counts are 1 - 5.
