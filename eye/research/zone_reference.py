@@ -255,7 +255,7 @@ for r in v.itertuples():
     sl, tp = L - sgn * S / 2, L + sgn * S
     j0 = int(ex.th.searchsorted(r.visit))
     if FIX and j0 < PER_H:
-        raise SystemExit(f"{EXEC} has no hour of history before the visit {r.visit} - start the run later")
+        raise SystemExit(f"{EXEC} has no hour of history before the visit {r.visit} - start the run at {ex.th.iloc[PER_H]} or later")
     end = min(j0 + 48 * PER_H, len(ex))
     fills, out, cancelled, j = {}, None, False, j0
     while j < len(ex):

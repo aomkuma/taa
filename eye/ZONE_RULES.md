@@ -76,8 +76,8 @@ effect (acceptance case 3b).
 
 **Parity with the reference** [Claude]: at the defaults the build computes the same numbers as the reference. The
 fractions are the exact floats above (the reference writes `S * 10 / 76`; `near_frac * S` may differ from it in the last
-bit - compare prices with a tolerance of 1e-9, never with ==); the line index uses Python's float floor division `//`
-as the reference does.
+bit - compare prices with a tolerance of 1e-9, never with ==); the candidate line range is rule 4's (ceil / floor, one
+line wider each side).
 
 ## 1. The parameters come from a database (the owner, 2026-10-31: *"every config value read from a db"*)
 
@@ -276,7 +276,7 @@ Under `eye/research/zone/<market>/<set>/`:
 - `positions.csv` - one row per filled position: visit time (Thai), P1 / P2, side, line, S, entry time, fill, SL, TP,
   exit time, exit, how (SL / TP / open), risk, pnl.
 - `visits.csv` - one row per visit: time, side, line, S, grid anchor, and its outcome: the skip reason (`momentum`,
-  `busy`, `abnormal`, `trend`), `no fill`, `cancel`, or `traded`; with the numbers each skip read (the momentum
+  `busy`, `abnormal`, `trend`), `no fill`, `cancel`, `pending`, or `traded`; with the numbers each skip read (the momentum
   body and median, the 6-bar run, the EMA distance and ATR, the sideways share and each frame's reading).
 - `grids.csv` - every grid: start time (Thai), anchor, step, what started it (pair a / b, or month).
 - `summary.csv` - `zone=<market>/<set>@v<version>`, every parameter, the span, setups, R a setup, TP share, USD, by
