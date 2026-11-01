@@ -229,6 +229,11 @@ if FIX and len(v):
     v["touch_j"] = [x[0] for x in _tt]
     v["from_open"] = [x[1] for x in _tt]
     v = v.sort_values(["visit", "touch_j", "from_open", "line"], kind="stable").reset_index(drop=True)
+if os.environ.get("ZVISITS") and len(v):
+    (HERE / "zone_reference_out").mkdir(exist_ok=True)
+    v.to_csv(HERE / "zone_reference_out" / f"visits_{TAG}.csv", index=False, float_format="%.6f")
+    pd.DataFrame([(g[0], g[1], g[2]) for g in grids], columns=["start", "anchor", "step"]).to_csv(
+        HERE / "zone_reference_out" / f"grids_{TAG}.csv", index=False, float_format="%.6f")
 
 # the setups
 rows, busy, skip = [], None, {"momentum": 0, "trend gate": 0, "busy": 0, "cancel": 0, "no fill": 0}
