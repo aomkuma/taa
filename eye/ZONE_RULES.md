@@ -42,18 +42,18 @@ and any number inside one, is never a rule.
 
 | name | default | meaning | whose |
 |---|---|---|---|
-| `step_mode` | `watr` | `watr` = `step_factor` x weekly ATR(14); `fixed` = `step_fixed` | owner: *"the zone may be 1/2 - 1/3 of the ATR"*; the form [Claude] |
+| `step_mode` | `watr` | `watr` = `step_factor` x weekly ATR(14); `fixed` = `step_fixed` | the owner floated it (*"maybe 1/2 - 1/3 of the ATR?"*) after *"keep the zone at 80"* for the present market; the form, the monthly update and the remake are [Claude], chosen by measurement |
 | `step_factor` | 0.3333 | x the weekly ATR | owner's range 1/3 - 1/2; 1/3 measured (BOT_RESEARCH - a narrow peak: 0.3 and 0.4 much lower) |
 | `step_fixed` | 76.0 | the step when `fixed` | owner (*"about 80"*, the lines of 01/11/2026) |
 | `grid_ks` | 1,2,3 | a cluster spans k steps | [Claude] (the owner's boxes were 2 steps; v8) |
 | `grid_tol` | 0.10 | a pair's distance within this x S of k S | [Claude] |
-| `shift_tol` | 0.20 | a new anchor more than this x S off the lines shifts the grid | [Claude] (the owner: the leftover is the fake-break distance) |
+| `shift_tol` | 0.20 | a new anchor more than this x S off the lines shifts the grid | [Claude] |
 | `step_remake` | 0.20 | a month's step this far (relative) from the grid's step remakes the grid | [Claude] |
-| `near_frac` | 0.131579 (10/76) | a visit: within `near_frac` x S of a line | [Claude] |
+| `near_frac` | 10/76 = 0.13157894736842105 | a visit: within `near_frac` x S of a line | [Claude] |
 | `away_frac` | 0.5 | a line is armed again once a whole H1 bar is this x S away; orders withdrawn at this x S away | [Claude] |
-| `p1_frac` | 0.131579 (10/76) | P1 - this x S before the line | owner: *"one before price"*; the number [Claude] |
-| `p2_frac` | 0.197368 (15/76) | P2 - this x S past the line (in the fake break) | owner: *"one on the fake break"*; the number [Claude] |
-| `sl_frac` | 0.5 | SL this x S past the line, for both | owner: *"SL beyond the liquidation zone"*; the number [Claude] |
+| `p1_frac` | 10/76 = 0.13157894736842105 | P1 - this x S before the line | owner: *"one before price"*; the number [Claude] |
+| `p2_frac` | 15/76 = 0.19736842105263158 | P2 - this x S past the line (in the fake break) | owner: *"one on the fake break"*; the number [Claude] |
+| `sl_frac` | 0.5 | SL this x S past the line, for both | owner, with the two entries: *"SL beyond the liquidation zone"*; the number [Claude], from the measured fake-break depth (26 - 37 at S 76) - it departs from the owner's earlier single-entry SL *"about past a third of the box"* |
 | `tp_steps` | 1 | TP this many steps from the line (the opposite edge) | owner: *"TP is the opposite edge"* |
 | `order_life_h` | 48 | hours an unfilled setup waits | [Claude] |
 | `cancel_frac` | 0.3333 | momentum cancel: price ran this x S toward the line in the last hour | [Claude], from the owner's *"no fade against momentum"* |
@@ -64,9 +64,18 @@ and any number inside one, is never a rule.
 | `ema_len`, `atr_len` | 50, 14 | H1 EMA and ATR lengths for `abn_atr` | [Claude]; ATR as MT5 (owner's screen) |
 | `exec_tf` | M15 | the frame fills and exits are judged on | [Claude] (M5 starts 2025-10-05; the measurements over 2023 - 2026 were on M15) |
 
-Every name above is one field of `ZoneParams` (rule 1). A value outside its meaning (a fraction <= 0, `gate_min` outside
-[0, 1), `exec_tf` not M5 / M15, `step_mode` not `watr` / `fixed`, weights that do not sum to 1 within 1e-9, an empty
-`grid_ks`) is refused at start [Claude].
+Every name above is one field of `ZoneParams` (rule 1). Types and bounds [Claude], refused at start otherwise:
+`step_mode` in {watr, fixed}; `exec_tf` in {M5, M15}; floats `step_factor`, `step_fixed`, `near_frac`, `away_frac`,
+`p1_frac`, `p2_frac`, `sl_frac`, `cancel_frac`, `abn_atr` > 0; `grid_tol`, `shift_tol`, `step_remake` in (0, 1);
+`gate_min` in [0, 1); `p2_frac` < `sl_frac` (P2 must lie before the SL); ints `tp_steps`, `order_life_h`, `mom_bars`,
+`mom_med_bars`, `run_bars`, `ema_len`, `atr_len` >= 1; `grid_ks` a non-empty strictly increasing tuple of ints >= 1;
+`gate_w` four floats >= 0 (D1, H4, H1, M15) summing to 1 within 1e-9. An `abn_atr` of 1e9 or more switches 5c off in
+effect (acceptance case 3b).
+
+**Parity with the reference** [Claude]: at the defaults the build computes the same numbers as the reference. The
+fractions are the exact floats above (the reference writes `S * 10 / 76`; `near_frac * S` may differ from it in the last
+bit - compare prices with a tolerance of 1e-9, never with ==); the line index uses Python's float floor division `//`
+as the reference does.
 
 ## 1. The parameters come from a database (the owner, 2026-10-31: *"every config value read from a db"*)
 
@@ -96,7 +105,12 @@ module**, so the two never touch:
 - **The month's step**: at each Thai month start `m` (00:00 Asia/Bangkok), `S(m)` = `step_factor` x the ATR of the
   last week closed at or before `m` (`step_mode` watr), or `step_fixed` (fixed). A time `t` uses `S` of its Thai month.
 
-## 3. The zones - grids (owner: a box over a price cluster, moved along; a zone shift after a full step back, read with the structure)
+## 3. The zones - grids (owner: a box over a price cluster, moved along; *"the zone shift is reading the market"*)
+
+**Whose**: the owner reads the shift by eye - after a full step back from a turn, with the structure (METHOD 2e). What
+follows is **[Claude]'s measured proxy** for that reading (v8, BOT_RESEARCH): it has no full-step reversal condition;
+the owner's two boxes (September and October 2026) were two neighbouring H4 turns two steps apart, and this form
+finds both.
 
 Events in time order: every **H4 pair** (two neighbouring fixed H4 pivots a, b - known at the close of b's
 `confirm_pos` bar) and every **Thai month start**. Equal times: the reference's order (a stable sort of pairs, then
@@ -116,14 +130,22 @@ months, by time) [Claude].
 
 ## 4. Visits - price comes to a line (H1)
 
-At each **H1 bar** `i` (its open `t_i`, from the run's start on; warm-up: no visit before H1 bar 130 of the file and
-never without a grid):
+At each **H1 bar** `i` (its open `t_i`, from the run's start on; never without a grid):
 
 - For the grid in force at `t_i` (`A`, `S`), the lines `L = round(A + k S, 2)` for `k = floor((low_i - A) / S) - 1` to
   `k + 3`. `Z = near_frac x S`.
 - **A visit** on `L`: (`low_i <= L + Z` and `open_i > L`) -> a **BUY** visit; else (`high_i >= L - Z` and `open_i < L`)
-  -> a **SELL** visit; and the line is **armed**. The visit's time is `t_i` (the bar's open: the setup's limit orders
-  are resting from then on - only bars closed before `t_i` decide anything, rules 5 - 6).
+  -> a **SELL** visit; and the line is **armed**. The visit's time is `t_i`.
+- **Why this is not look-ahead** [Claude]: P1 is a limit `near_frac x S` before the line (`p1_frac` = `near_frac`), so
+  "the bar came within Z" is "the resting P1 order was reached (by the bid)". The real-time form: at each H1 open
+  `t_i`, for every armed line, the bot decides rules 5a-5d **from bars and pivots closed before `t_i`** and, if none
+  skips, rests P1 and P2 from `t_i`; a line not reached in the hour has no setup that hour (decided again at the next
+  open). The simulation records only the hours in which a line was reached - the same trades. Nothing in rules 5 - 6
+  reads bar `i`'s high, low or close; the cut test (rule 12, case 4) checks it.
+- **Several visits on one H1 bar** are taken in ascending line price (the reference's loop over k), each through
+  rules 5 - 8 in turn.
+- **Warm-up**: the first H1 bar that can make a visit has the 0-based row index 130 in the stored H1 file (and is not
+  before the run's start).
 - **Armed** [Claude]: a line key (`round(A,2)`, `round(S,2)`, `L`) is armed until it is visited; it is armed again
   after an H1 bar whose high and low are both at least `away_frac x S` from `L`. A new grid has new keys - all armed.
   A visit disarms the line whatever rule 5 then decides.
@@ -146,7 +168,11 @@ d. **The market state** (owner: *"if that period is a trend, no trade"*; *"sidew
    **sideways share** = the sum of `gate_w` over the sideways frames. Skip when the share `<= gate_min`. Reason
    `trend`.
 
-## 6. The setup - two positions (owner: *"one before price and one on the fake break, SL beyond the liquidation zone"*; *"TP is the opposite edge"*)
+## 6. The setup - two positions (owner: *"or else, enter two positions - one before price and one on the fake break, with the SL beyond the liquidation zone"*; *"TP is the opposite edge"*)
+
+**Whose**: the owner's first choice was to wait for a candle signal on M15 at the line (*"there is no fixed pattern"*);
+the M5 / M15 turns measured did not hold (BOT_RESEARCH). This setup takes the owner's **"or else" branch** - two
+resting limits - which is what was measured.
 
 For a visit not skipped, with `sgn`:
 - **P1** a limit at `L + sgn x p1_frac x S`; **P2** a limit at `L - sgn x p2_frac x S`.
@@ -158,7 +184,11 @@ For a visit not skipped, with `sgn`:
   - **Momentum cancel** (rule 5a, at the fill moment) [Claude]: the `exec_tf` bars of the last hour (`j - per_h .. j-1`,
     closed) ran `cancel_frac x S` toward the line (`(close_{j-1} - open_{j-per_h}) x -sgn`), or, on a bar that would
     fill the first position, the move from `open_{j-per_h}` to that position's price is that far toward the line.
-    Reason `cancel`.
+    Reason `cancel`. (After the warm-up `j >= per_h` always holds; a build asserts it.)
+  - **The order within a bar** [Claude, as the reference]: (1) withdrawal / expiry, (2) the closed-hour cancel, (3) P1
+    then P2: a position whose price the bar reaches is tested for the fill-moment cancel only while nothing has filled
+    yet - a cancel there cancels the whole setup and P2 is not tested; else it fills; (4) the exit test of rule 7 on
+    the same bar.
 - After the first fill the orders stay until the exit (no withdrawal or expiry for P2).
 
 ## 7. Fills and exits [Claude, as the reference]
@@ -168,7 +198,9 @@ For a visit not skipped, with `sgn`:
 - **Exit** on the bars from the first fill on: BUY - SL when `low <= SL`, else TP when `high >= TP`; SELL - SL when `high +
   spread x point >= SL`, else TP when `low + spread x point <= TP`. SL first when a bar holds both; **TP only on a bar
   after every fill** (on a fill bar only the SL counts). Exit price = the SL or TP price. Both positions exit together.
-  A setup still open when the data ends is `open` (its last close), not a result.
+  A setup still open when the data ends is `open` - its exit = the close of the last stored `exec_tf` bar, its exit time
+  that bar's close - shown, but not a result. **No rounding** in any comparison (raw floats, with the tolerance of the
+  parity note); outputs are rounded to 2 decimals.
 - **Cost** = the spread only (the owner, 10/20), through the fills and exits above; no slippage.
 - **Results**: a position's `pnl = sgn x (exit - fill)` (USD at 0.01 lot), `risk = sgn x (fill - SL)`; a **setup's R** =
   the sum of its positions' pnl / the sum of their risks. Every SL exit has pnl < 0 (asserted).
@@ -188,6 +220,9 @@ For each visit in time order: 5a momentum -> 5b busy -> 5c abnormal -> 5d state 
 
 ## 10. Data
 
+The build asserts, per timeframe, that `open_time` is strictly increasing (no duplicates) and `close_time > open_time`;
+gaps (weekends, holidays, missing hours) are taken as they are - bars are counted, not clock hours, in every look-back.
+
 FBS-Demo XAUUSD, `data/history/FBS-Demo/XAUUSD/{D1,H4,H1,M15,M5}.parquet` and `spec.json`; `spread` (points) from the
 bar of `exec_tf`. The run's span: `--start` and `--end` (Thai dates; default 2023-10-01 to the last stored bar).
 
@@ -202,6 +237,10 @@ Under `eye/research/zone/<market>/<set>/`:
 - `grids.csv` - every grid: start time (Thai), anchor, step, what started it (pair a / b, or month).
 - `summary.csv` - `zone=<market>/<set>@v<version>`, every parameter, the span, setups, R a setup, TP share, USD, by
   year and by month, the deepest drawdown.
+- Times are ISO text in Thai time (`2026-10-14 08:30:00+07:00`); prices and USD to 2 decimals.
+- **Drawdown** [Claude, as the reference] = the lowest (cumulative USD - its running peak) over the setups in visit-time
+  order; **a negative month** = a Thai calendar month (by visit time) with at least one setup and a USD sum < 0; months
+  without a setup are not counted.
 
 ## 12. Acceptance - what a build must show
 
@@ -221,7 +260,8 @@ is reported, not bent to fit.
    Every setup's visit time, side, line, positions, fills, exit and pnl equal the reference's; any difference listed.
 4. **No look-ahead** [Claude]: a run on the bars cut at a time `T` (every timeframe's bars with `close_time <= T`) gives
    the same visits, skips and setups for every visit before `T - order_life_h`, and the same fills / exits for every
-   setup that exited before `T` - tested at three cuts (2024-06-01, 2025-12-15, 2026-08-01).
+   setup that exited before `T` - tested at three cuts, `T` = 2024-06-01 00:00 UTC, 2025-12-15 00:00 UTC and
+   2026-08-01 00:00 UTC.
 5. **Unit tests on constructed bars** for: the weekly ATR; a pair at 1, 2, 3 steps (+- the tolerance edge) and one
    just outside; a shift and a non-shift by `shift_tol`; a month remake; arming and re-arming; each skip (a-d) on and
    off at its edge; P1 / P2 / SL / TP prices for a BUY and a SELL; withdrawal, expiry and both cancels; a bar filling
