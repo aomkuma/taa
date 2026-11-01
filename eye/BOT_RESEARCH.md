@@ -1596,3 +1596,13 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   [Claude]: skip when any 1 - 2 closed H1 bars in the 6 hours before the fill span >= S): removes **4** of the 76
   entries (12/06 SELL 4206, 17/09 BUY 4247 and SELL 4323, 14/10 BUY 4066) - a full step in two H1 bars is rare; the
   trend legs seen by eye (22/10, June) are still entered.
+- **+ an M5 trend catcher** (the owner: *"try it in first; if it doesn't work, take it out"*;
+  `eye/wip/zones_2026-11-01/entries_m5.py`, `entries_m5.csv`, `entries_m5_2026-05..10.png`). Form [Claude]: after
+  a zone visit, enter on the first M5 close past the last fixed M5 ZigZag (12/5/3) swing the other way (BUY above
+  the last high, SELL below the last low); none if price reaches the SL level first (the line broke - the
+  stop-limit case), moves S/2 away, or 48 h pass. May - October: **50 entries** (7 / 9 / 14 / 11 / 5 / 4), 1 high
+  volatility, 48 left without a turn, 33 the line broke. By eye on October: the trend legs (22/10 4066 and 3990,
+  30/10 3990 and 3914) are no longer entered. **But the entry comes a median 21.8 USD past the line** (-1.1 to 36.5):
+  with the SL at S/3 beyond the line the planned R is a median 1.15, 45 of 50 under 1:2. With the SL beyond the
+  zone's own low / high before the turn (+2 USD) instead: risk a median 25.5 USD, planned R a median 2.13, 28 of 50
+  at 1:2 or more. No outcomes scored.
