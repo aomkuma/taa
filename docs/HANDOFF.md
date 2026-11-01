@@ -40,6 +40,19 @@ measured.
   target 61.8 %, M15), the losing ones first, one image at a time, and ask what the owner sees that would skip them;
   the owner's choice of leg on 30/10 ("why that leg") is still unanswered. Nothing here is a rule yet; BOT_RULES is
   unchanged since 3728254.
+- **The owner's run zones (2026-11-01, most of the day)** - METHOD 2e row "The run zones" (the owner's words: a box of
+  gold's run, about 76 - 80 lately, drawn from a price cluster and moved along; the lines are points to watch, targets
+  and turning lines; a zone shift after a full step back with the structure; SL past the liquidation zone; two
+  positions - before the line and on the fake break; no fade against momentum; trade only in a sideways market -
+  sideway / sideway up / sideway down - and only when gold runs about a step a day; the setup reviewed every 3 - 6
+  months). Every form and measurement in `eye/BOT_RESEARCH.md` from "The owner's run zones, drawn"; prototypes in
+  `eye/wip/zones_2026-11-01/` (not committed; `system_long.py` runs the whole system). **Where it stands**: v8 zones
+  (two neighbouring H4 ZigZag turns 1 - 3 steps apart), variant C (P1 10 before the line, P2 15 into it, SL S/2, TP one
+  step), momentum skips, the weighted D1 .4 / H4 .3 / H1 .2 / M15 .1 sideways gate: **November 2025 - October 2026,
+  41 setups, +0.615 R a setup, +1378 USD at 0.01 lot a position** - built and tuned on that year; on the two years
+  before (never used) no step gives an edge (-0.097 R with the range step; -0.012 / +0.055 / -0.091 with 40 / 45 / 50).
+  The owner: the market then was not this setup's market, and a setup is reviewed every 3 - 6 months. Not a bot rule
+  yet - the next step, at the owner's word, is BOT_RULES through the process, then months after today.
 - **A side study, stopped by the owner on 2026-11-01 ~10:55 Thai: Volume Profile on XAUUSD M5** (Codex, 2026-10-31 -
   11-01; `research/xauusd_poc_m5/`, the summary in its `RESEARCH_STATUS.md`). Outside the owner's method (METHOD 2e) and
   outside the development process above; not part of the bot. About 50 trading-rule variants on FBS-Demo data to
