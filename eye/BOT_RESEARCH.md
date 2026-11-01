@@ -1721,3 +1721,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   16 broke and ran on without a retest). Totals rebuilt by hand (a TP +76, an SL -30.4). The break-even at 1:2.5 is
   29 % TP; the retests win 22 - 23 %. With variant C the two books together: +739 USD May - October (C alone +967),
   +187 November - April (C alone +263). Not kept as it stands.
+  - The owner: *"but the stop limit triggers when price is past the liquidation zone"*. Redone (`ZBREAK=liq`): the
+    stop S/2 past the line (variant C's SL - past the liquidation zone), the limit back at S/3 past it, SL S/3 + S/15
+    from the limit; TP at the next line (1:1.67) or one step from the limit (1:2.5). May - October: **25 trades, 28 %
+    TP, -0.253 R, -193 USD (TP line) / 26, 23 %, -0.192 R, -152 USD (TP step)**; November - April: **14, 50 %, +0.333 R,
+    +142 USD / 18, 39 %, +0.361 R, +198 USD**. Totals rebuilt by hand (7 x 50.67 - 7 x 30.4 = +141.9). It loses in the
+    months of ranges and wins in the months of the big rise and fall. With variant C (TP step): **+815 USD May -
+    October, +461 November - April** (C alone +967 / +263) - about the same in total, the two halves closer. Samples
+    of 14 - 26.
