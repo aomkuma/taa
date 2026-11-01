@@ -59,6 +59,8 @@ d1["r"] = d1.high - d1.low
 
 # the step by month
 _m0 = (h4.th.iloc[0].tz_localize(None) if FIX else START.tz_localize(None)) - pd.offsets.MonthBegin(1)
+if FIX:
+    _m0 = _m0.normalize()  # month starts at 00:00 Thai (rule 2) - before, they kept the first H4 bar's 04:00 (found by the build)
 months = pd.date_range(_m0, END.tz_localize(None), freq="MS").tz_localize(TH)
 # weekly ATR(14) (MT5's: a simple mean of the true range), weeks built from D1 in broker time - matches the owner's
 # screen (195.99 on the week of 25/10/2026)

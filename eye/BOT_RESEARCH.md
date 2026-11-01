@@ -1890,3 +1890,9 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   (-44 %)**; lots 0.01 - 0.04. A setup's risk at 0.01 lot grew with the step - median 12 / 22 / 32 / 84 USD in 2023 /
   2024 / 2025 / 2026 - so from 2026 even 0.01 lot risks about 28 % of 300; the 7.5 % rule is then bounded by the
   minimum lot.
+  - **Found by the build (piece 2a)**: the reference's month starts kept the first H4 bar's clock time, 04:00 Thai, not
+    00:00 (rule 2) - 15 of 36 grid remakes four hours late, 5 of 1087 visits different. Fixed in the reference (v4).
+    **The defaults: whole span 104 setups +0.433 R, 53 % TP, +1761.8 USD, drawdown -617.5, 11 of 36 months negative;
+    never-used span 63 +0.366 R (+411); built year 41 +0.536 R (+1351).** Fixed 76 / M5 unchanged (41, +0.615, +1378).
+    The build's grids and visits equal the reference row for row on both acceptance runs, and its cut test at three
+    times holds.

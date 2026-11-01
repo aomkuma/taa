@@ -301,8 +301,8 @@ is reported, not bent to fit.
 3. **The reference reproduced, setup for setup** (`eye/research/zone_reference.py` with the same settings; its CSV
    under `eye/research/zone_reference_out/`):
    - the **defaults**, 2023-10-01 to 2026-11-01 (the reference with `ZS=watr0.3333333333333333 ZEXEC=M15 ZABN=3 ZABNK=C`,
-     `ZFIX=1`): **103 setups, +0.447 R a setup, 53 % TP, +1783.1 USD**, drawdown -617.5 USD (to 06/04/26), 12 of 36
-     months negative, 0 open, 0 pending; skips: momentum 529, trend 132, busy 59, cancel 61, no fill 71, abnormal 132
+     `ZFIX=1`): **104 setups, +0.433 R a setup, 53 % TP, +1761.8 USD**, drawdown -617.5 USD (to 06/04/26), 11 of 36
+     months negative, 0 open, 0 pending; skips: momentum 530, trend 131, busy 59, cancel 61, no fill 72, abnormal 130
      (the reference's counter order differs; the counts must match). The reference before v2 and BOT_RESEARCH's earlier
      numbers differ (0.333, the old busy, the old line choice) - BOT_RESEARCH, "Sol's review".
    - `step_mode` fixed 76, `exec_tf` M5, `abn_atr` off (1e9), 2025-11-01 to 2026-11-01: **41 setups, +0.615 R, +1378 USD**
