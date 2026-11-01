@@ -1848,3 +1848,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   40 +0.254, drawdown -639.** Whole span: **B 113 setups +0.234 R, +685 USD, 14 of 36 months negative, drawdown -750**
   (2024 still -0.063 on 34); A or B 106 +0.217 R, +672, drawdown -639. B (price far from its mean) is better than the
   baseline on both spans.
+- **Price far from its mean in H1 ATR units** (the owner: *"maybe as far as 2.5 - 3 ATR"*, then *"measure which number
+  is best"*). C: skip when |close - EMA50| >= x * ATR(14), H1, at the visit (closed bars). 1/3-ATR system, M15; setups
+  and R a setup, never-used span (Oct 2023 - Oct 2025) / built year (Nov 2025 - Oct 2026):
+  none 91 +0.191 / 51 +0.156; 1.5 - 47 +0.441 / 23 +0.038; 2 - 51 +0.484 / 32 +0.170; **2.5 - 59 +0.364 / 36 +0.238;
+  3 - 65 +0.373 / 39 +0.307; 3.5 - 69 +0.328 / 42 +0.290**; 4 - 80 +0.145 / 47 +0.204; 5 - 87 +0.209 / 49 +0.154.
+  A plateau at 2.5 - 3.5 on both spans (the owner's 2.5 - 3, named before the sweep); 3 is its middle. **Whole span at
+  3: 104 setups, +0.348 R a setup, 50 % TP, +1228 USD at 0.01 lot each, 14 of 35 months negative, drawdown -744 USD
+  (to 06/04/26)**; at 2.5: 95, +0.316 R, +816, drawdown -694.
