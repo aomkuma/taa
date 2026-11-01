@@ -88,6 +88,19 @@ module**, so the two never touch:
   current values = per name the highest `id`; version = the highest `id`; no value falls back to the code; every
   `ZoneParams` field present and no other; a write checked whole through `ZoneParams` inside `BEGIN IMMEDIATE`; the
   time passed in from `main`; market and set names: letters, digits, `_`, `-`).
+- **The command line** (`python eye/zone_config.py <command>`, every command takes `--db PATH`, default
+  `data/bot_config.db`):
+  - `seed --market M --set S --by WHO` - a new set from `ZoneParams()`, one row per field, note "seeded from the code
+    defaults"; refused (exit 1, nothing written) if the set exists.
+  - `copy --market M --set S --to-market M2 --to-set S2 --by WHO [--note TEXT]` - a new set with the current values of
+    an existing one; refused if the source is missing or the target exists.
+  - `set --market M --set S --by WHO --note TEXT name=value [name=value ...]` - one row per value that **changes**
+    (equal to the current value: no row); an unknown name, a value that does not parse, or a set that `ZoneParams`
+    refuses writes nothing (exit 1, the reason printed).
+  - `show --market M --set S` - every field `name=value` in `ZoneParams` field order, then `version=<n>`;
+    `list` - one line per market and set with its version; `history --market M --set S [name]` - every row, oldest
+    first: `id`, time, `name`, `value`, `changed_by`, `note`.
+  - A missing database or set: exit 1 with a message naming `seed` and the `--db` in use.
 - Text form: floats as Python `repr`, ints as digits, `grid_ks` as `1,2,3`, `gate_w` as `0.4,0.3,0.2,0.1` (D1, H4, H1,
   M15 in that order); reading back gives exactly the value written.
 - `eye/zone_bot.py` takes `--db`, `--market` (default `XAUUSD`, the only market with bars wired - another stops with
@@ -136,12 +149,16 @@ At each **H1 bar** `i` (its open `t_i`, from the run's start on; never without a
   `k + 3`. `Z = near_frac x S`.
 - **A visit** on `L`: (`low_i <= L + Z` and `open_i > L`) -> a **BUY** visit; else (`high_i >= L - Z` and `open_i < L`)
   -> a **SELL** visit; and the line is **armed**. The visit's time is `t_i`.
-- **Why this is not look-ahead** [Claude]: P1 is a limit `near_frac x S` before the line (`p1_frac` = `near_frac`), so
-  "the bar came within Z" is "the resting P1 order was reached (by the bid)". The real-time form: at each H1 open
-  `t_i`, for every armed line, the bot decides rules 5a-5d **from bars and pivots closed before `t_i`** and, if none
-  skips, rests P1 and P2 from `t_i`; a line not reached in the hour has no setup that hour (decided again at the next
-  open). The simulation records only the hours in which a line was reached - the same trades. Nothing in rules 5 - 6
-  reads bar `i`'s high, low or close; the cut test (rule 12, case 4) checks it.
+- **Why this is not look-ahead** [Claude]: the visit is the **bid** reaching P1's price (`p1_frac` = `near_frac`); P1
+  itself fills on the **ask** (rule 7), so a visit can happen without a fill - the orders then wait (rule 6). The
+  other way round always holds: a fill of P1 (ask at P1's price, so the bid lower still) or of P2 (past the line)
+  needs the bid within Z of the line in that hour or an earlier one - **no fill can come without its visit**. The
+  real-time form: at each H1 open `t_i`, for every armed line, the bot decides rules 5a-5d **from bars and pivots closed
+  before `t_i`** and, if none skips, rests P1 and P2 from `t_i`; if the bid comes within Z during the hour (seen as it
+  happens), the line is disarmed and the setup lives on (rule 6, counted from `t_i`); if not, the orders are taken off
+  at the hour's end, unfilled, and the decision is made again at the next open. The simulation records only the hours
+  with a visit - the same fills and exits. Nothing in rules 5 - 6 reads bar `i`'s high, low or close (only the visit
+  test and the re-arm test of this rule do, as they happen); the cut test (rule 12, case 4) checks it.
 - **Several visits on one H1 bar** are taken in ascending line price (the reference's loop over k), each through
   rules 5 - 8 in turn.
 - **Warm-up**: the first H1 bar that can make a visit has the 0-based row index 130 in the stored H1 file (and is not
@@ -180,7 +197,8 @@ For a visit not skipped, with `sgn`:
 - On the **`exec_tf` bars from the bar that opens at or after the visit's time** (`j0`), until `j0 + order_life_h x
   bars-per-hour` (12 for M5, 4 for M15), bar by bar, before any fill:
   - **Withdrawn** if `j >= end`, or (from the bar after `j0`) the bar reaches `away_frac x S` beyond the line on the far
-    side (`sgn x (high or low - L) >= away_frac x S`: the high for a BUY, the low for a SELL). Reason `no fill`.
+    side: a BUY when `high - L >= away_frac x S`, a SELL when `L - low >= away_frac x S` (equality withdraws). Reason
+    `no fill`.
   - **Momentum cancel** (rule 5a, at the fill moment) [Claude]: the `exec_tf` bars of the last hour (`j - per_h .. j-1`,
     closed) ran `cancel_frac x S` toward the line (`(close_{j-1} - open_{j-per_h}) x -sgn`), or, on a bar that would
     fill the first position, the move from `open_{j-per_h}` to that position's price is that far toward the line.
