@@ -1561,3 +1561,16 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   held through the 22 - 23/10 break** (v3 lost it there); late September 4234.93 - 4479 (the owner's boxes 4244 -
   4400, about 9 off at the low); on 28/10 09:00 it shifted to 4024.56, 34 - 37 USD off the owner's lines, where the
   owner kept October's. Still judged against one month of the owner's lines only.
+- **v6** (v5 + a new cluster must hold 12 H4 bars): 15 shifts, the 28/10 wrong shift only moved to 30/10. Dropped.
+- **v7 - a pair of H4 turns two steps apart** (`eye/wip/zones_2026-11-01/zone_pairs.py`, drawings `zone_v7_1..3.png`;
+  the owner, on being asked where v5 went wrong: *"you can see where it is wrong yourself"* - Claude judged the
+  drawings itself). From the owner's two examples - September 4399.56 / 4244.12 and October 4066.42 / 4217.08 are
+  each two neighbouring fixed H4 ZigZag (12/5/3) turns 2S apart: a cluster is such a pair (2S +- 10 %), known when the
+  second turn is fixed; the grid shifts only when the pair's low is more than S/5 off the lines. Measured, May -
+  October: **3 shifts** (05/05 on 4510.20; 02/07 on 3942.95; 14/10 00:00 on 4066.42). The grid of 02/07 - 14/10 runs
+  4399 / 4323 / 4247 - **the owner's September boxes (about 4400 / 4323 / 4245)**; from 14/10 the lines are the owner's
+  October lines within 0.0 - 2.6 USD. Claude's eye on the other months: May - June the lines mark the clusters'
+  edges (4510 and 4586 around 15 - 27/05, 4358 the mid-June top, 4130 and 3978 the late-June lows); July's lows of
+  17 - 20/07 go 30 - 55 below 4019 and mid-August's tops 30 - 40 above 4399 - more than a fake break. The September
+  and October agreement is not independent - the form came from those two examples; May - August is judged by
+  Claude only, the owner's word next.
