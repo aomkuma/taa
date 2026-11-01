@@ -129,6 +129,17 @@ for tf, df in (("D1", d1), ("H4", h4), ("H1", h1), ("M15", m15)):
     PIV[tf] = (np.array([df.ct[p.confirm_pos].value for p in z]), np.array([p.kind.name for p in z]), np.array([p.price for p in z]))
 
 
+def frame_trends(t):
+    """Each of D1 / H4 / H1 / M15 trending (True) or sideways (False) at t - for the build to compare."""
+    out = {}
+    for tf in W:
+        ct, kd, pr = PIV[tf]
+        m = ct <= t.value
+        hs, ls = pr[m & (kd == "HIGH")][-2:], pr[m & (kd == "LOW")][-2:]
+        out[tf] = bool(len(hs) == 2 and len(ls) == 2 and ((hs[1] > hs[0] and ls[1] > ls[0]) or (hs[1] < hs[0] and ls[1] < ls[0])))
+    return out
+
+
 def side_share(t):
     tot = 0.0
     for tf, w in W.items():
@@ -214,7 +225,7 @@ for i in range(max(i0, 130), len(h1)):
             visits.append({"visit": r.th, "side": side, "line": L, "S": S, "momentum": bool(mom), "abn": abnormal(i) if ABN > 0 else False,
                            "h1_open": float(r.open), "Z": Z, "anchor": A, "mom_body": float(toward.max()), "mom_median": med,
                            "mom_run": float(run6), "ema_dist": float(_dist[i - 1]), "atr": float(_atr[i - 1]),
-                           "share": side_share(r.th)})
+                           "share": side_share(r.th), **{f"trend_{k}": x for k, x in frame_trends(r.th).items()}})
         elif not FIX and min(abs(r.high - L), abs(r.low - L)) >= S / 2:
             far[key] = True
 v = pd.DataFrame(visits)
