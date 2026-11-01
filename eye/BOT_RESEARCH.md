@@ -1796,3 +1796,13 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   trend down 0 - the three sideway states carry the edge; the trends hardly reach a setup (the momentum skips). This
   labelling alone does not stop the December - January losses (labelled sideway / sideway up); the structure-based
   gate above does.
+- **Back to the start of the data** (the owner: *"go back to when our data starts and test from there"*; the step by
+  the market - *"before, the zone may not reach 76, but try"*; `eye/wip/zones_2026-11-01/system_long.py`, one script
+  for the whole system: v8 zones, momentum skips, the D1/H4/H1/M15 sideways gate, variant C; `long_*.csv`). M5 starts
+  2025-10-05, so the long runs fill and exit on M15; the step is the median D1 range of the 60 trading days before
+  each month. Checks first: the script reproduces the earlier pipeline exactly on November 2025 - October 2026 (M5,
+  76: 41 setups, +0.615 R, +1378 USD, the same skip counts); the same year on M15 +0.669 R (43); with the range step
+  +0.490 R (39, +1035 USD). **Never used before, October 2023 - October 2025: 82 setups, -0.097 R a setup, 34 % TP,
+  -465 USD at 0.01 lot each; 2023 8 -0.005 R, 2024 34 -0.252 R (step about 32), 2025 40 +0.016 R; 14 of 25 months
+  negative; drawdown -587 USD.** The whole span October 2023 - October 2026: 120 setups, +0.101 R, +622 USD, 17 of 37
+  months negative. The edge measured on the last year does not hold on the two years before it.
