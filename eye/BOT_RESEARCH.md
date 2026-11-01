@@ -1674,3 +1674,9 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     +223 / +238 USD). Totals rebuilt by hand (16 x 66 - 20 x 48; 7 x 91 - 20 x 23). Half the in-sample +0.446 and three
     of six months negative; the step stayed 76 while gold's median daily range was 93 - 155 in January - March (127
     visits skipped for momentum) - the owner sets the step by the market, which this run did not.
+  - **Fix before going trade by trade** (the owner: *"anything to fix first? it sounds like there is a bug"*): the
+    first fill now cancels the setup when price ran S/3 toward the line from the open 12 M5 bars back to the fill
+    price itself - known at that moment; before, a spike inside the fill bar passed the closed-bar check (the 07/05
+    SELL 4738). May - October: **32 setups, +0.397 R a setup, +648 USD** (May -198 = the -41 before less the 07/05
+    +157, as expected); November - April: **31 setups, +0.234 R a setup, +263 USD** (+233 / -218 / -86 / -127 / +223
+    / +238). The fixed step of 76 against January - March's wider days is still open - the owner's to set.
