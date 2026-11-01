@@ -1606,3 +1606,15 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   with the SL at S/3 beyond the line the planned R is a median 1.15, 45 of 50 under 1:2. With the SL beyond the
   zone's own low / high before the turn (+2 USD) instead: risk a median 25.5 USD, planned R a median 2.13, 28 of 50
   at 1:2 or more. No outcomes scored.
+- **The trading run** (the owner: *"agreed"*, to the M5 turn with the structure stop and the run that follows;
+  `eye/wip/zones_2026-11-01/run_m5.py`, `trades_m5.csv`, every trade drawn in `trades/` - losses and wins by file
+  name). Simulated on FBS-Demo M5 bid bars, May - October 2026: BUY at ask, exits on bid (SELL the mirror), cost the
+  spread only, SL first when a bar holds both, one position at a time, SL beyond the zone's low / high before the
+  turn + 2 USD, TP the opposite edge, held to SL or TP. Every SL exit asserted R < 0. Expectation written before:
+  35 - 45 % wins at about 1:2, 0 to +0.2 R a trade, too few to conclude. **Measured: 46 trades, 14 TP (30 %),
+  -2.83 R, -0.062 R a trade, -104 USD at 0.01 lot** (by month -2.05 / -5.25 / +6.66 / +0.18 / +1.63 / -4.00 R).
+  Planned R >= 2 at the entry: 25 trades, +1.28 R (+0.051 a trade); under 2: 21 trades, -4.12 R - the owner's 1:2
+  rule would have left those out. Claude's eye on single losers: #3 (13/05 BUY 4695.50, line 4662) and #44 (14/10
+  BUY 4165.01, line 4142) - price never reached the line (it turned within 10 of it), the M5 turn came 23 - 33 USD
+  past it, and the trade sat in the middle of the box; the entries are a median 22.3 USD past the line, not "around
+  the edge" as the owner put it. Not the goal (+0.15 R); 46 trades is a handful.
