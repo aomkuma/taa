@@ -1704,3 +1704,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     **21/01 - 04/02, 4 SL in a row (-284): SELLs at 4798 / 5102 / 5254 into the January spike (top 5597.88 on 29/01)
     and a BUY at 5026 in the fall**; 18 - 23/02, 3 SL (-213), SELLs in the rebound. Most losses were fades against the
     big move, which the momentum filters did not stop.
+- **Shifting the zones, the step kept** (the owner: *"keep the zone at 80 points; just shift the zones right"*).
+  v8 (`ZKS=123`): a shift on any two neighbouring fixed H4 turns 1, 2 or 3 steps apart (+-0.1 S), the anchor moved
+  when more than S/5 off. May - October: grids 05/05 4510.20, 02/07 3942.95, **09/09 4282.45, 22/09 4253.59 (the
+  owner's September box about 4244)**, 14/10 4066.42 - **32 setups, +0.523 R a setup, +967 USD**. November - April:
+  grids 24/09/25 3627.90 and 05/11/25 3886.43 only - no shift through the December - February rise and fall, the
+  same 31 setups and +0.234 R as v7. There the losses were fades against the big move, which a shift of the lines'
+  phase does not change; the owner's rule for a line that does not hold - a stop limit the way of the break - is not
+  built yet.
