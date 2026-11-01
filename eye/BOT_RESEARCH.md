@@ -1834,3 +1834,9 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     SELLs into the rise (ER 0.34 - 0.73); (4) 05/02 - 18/03/26, 6 BUYs, all SL, in the fall from 5419 to 4099 (the D1
     ZigZag still "up"; ER 0.09 - 0.25 - a wild market, step 59 - 95); (5) 27/03 - 06/04, 4 SELLs, all SL, into the rebound
     (D1 net -800, ER about 0.48). The D1 ZigZag structure lags a fast trend; the D1 20-day ER caught (1) and part of (3).
+  - The owner: *"we agreed that in a clear bear or bull market we do not use this setup"*. Added: no trade when the
+    D1 20-day ER >= 0.5 (expectation written before: the September - October and December SELLs go, February - March
+    stays). Measured (1/3 ATR, M15): **never-used span 73 setups +0.135 R (was +0.191), built year 47 +0.135 (was
+    +0.156), whole span 120 +0.135 R, +182 USD (was +0.178, +481), drawdown -1070 (was -1203)**. Worse on every span -
+    the skip took out winners with the losers, and the one-at-a-time chain moved; the expectation was wrong. The
+    remaining drawdown is the February - April 2026 fall and rebound (ER low, steps 59 - 124). Not kept as it stands.
