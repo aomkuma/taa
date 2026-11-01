@@ -1592,3 +1592,7 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   meant, and 30/10, 28/09, 05 - 07/08 are skipped; **but the trend filter misses legs that are trend runs by eye** -
   22/10 BUY 4066 and BUY 3990 in the fall, 14/10 BUY 4142, June 05/06 BUY 4434, 10/06 BUY 4206, 18/06 BUY 4206, 24/06
   BUY 4054 - the H1 pauses inside them pass S/4. About a third of June's and October's entries by eye.
+- **+ the owner's high-volatility warning** (*"sometimes it runs the full distance within only 1 - 2 H1 bars"*; form
+  [Claude]: skip when any 1 - 2 closed H1 bars in the 6 hours before the fill span >= S): removes **4** of the 76
+  entries (12/06 SELL 4206, 17/09 BUY 4247 and SELL 4323, 14/10 BUY 4066) - a full step in two H1 bars is rare; the
+  trend legs seen by eye (22/10, June) are still entered.
