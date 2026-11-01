@@ -1574,3 +1574,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   17 - 20/07 go 30 - 55 below 4019 and mid-August's tops 30 - 40 above 4399 - more than a fake break. The September
   and October agreement is not independent - the form came from those two examples; May - August is judged by
   Claude only, the owner's word next.
+- **How many trades the v7 zones would give** (the owner asked for an estimate by eye from the bot's drawings;
+  no outcomes looked at). Counted on H1: a line reached after price was at least S/2 away from it - 109 visits in 158
+  trading days, May - October (18 / 18+9 / 18 / 17 / 18 / 11 by month; 55 from above, 54 from below) - the ceiling.
+  Claude by eye on `zone_v7_1..3.png`, leaving out the visits inside a trend run (the owner: wait and see) and
+  repeats seconds apart: about 10 a month (May ~10, June ~12, July ~10, August ~10, September ~10, October ~10) -
+  about 60 in six months, 2 - 3 a week. The breaks past a line (mid-July 4019, mid-August 4399) would be stop-limit
+  trades, not counted. An estimate by eye, not a measurement.
