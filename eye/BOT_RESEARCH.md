@@ -1806,3 +1806,7 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   -465 USD at 0.01 lot each; 2023 8 -0.005 R, 2024 34 -0.252 R (step about 32), 2025 40 +0.016 R; 14 of 25 months
   negative; drawdown -587 USD.** The whole span October 2023 - October 2026: 120 setups, +0.101 R, +622 USD, 17 of 37
   months negative. The edge measured on the last year does not hold on the two years before it.
+  - The owner: *"as I said - it runs very little, it does not reach 76"*. The whole span's 120 setups (`long_M15_range_202310.csv`
+    - the whole-span run overwrote the two-year file of the same tag) by the month's step: **S < 40 (2023 - 2024)
+    56 setups -0.204 R (-504 USD); 40 - 60 30 +0.220 (+131); 60 - 70 3 +0.070; >= 70 31 +0.541 (+983)**. Where gold ran
+    little the setup lost; 40 - 60 (mostly 2025, never used to build it) is positive. Bands chosen after the run.
