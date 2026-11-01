@@ -1667,3 +1667,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   (momentum by a spike inside the hour - the filters still let P1 fill on the spike bar), here +157 USD; two of six
   months negative, the gain in June - August; 37 setups after about a dozen variants on the same six months. Needs
   months it has not seen.
+  - **Variant C unchanged on unseen months, November 2025 - April 2026** (`entries_m5_2025-11.csv`,
+    `trades_two_10_15_38_2025-11.csv`; the owner: *"I don't much believe pooled runs, but try it, then trade by
+    trade"*): **36 setups (27 with both filled); P1 36 fills, 16 TP (44 %), +0.056 R a fill, +96 USD; P2 27 fills, 7 TP
+    (26 %), +0.285 R, +177 USD; +0.218 R a setup, +273 USD at 0.01 lot each** (by month +233 / -152 / -157 / -112 /
+    +223 / +238 USD). Totals rebuilt by hand (16 x 66 - 20 x 48; 7 x 91 - 20 x 23). Half the in-sample +0.446 and three
+    of six months negative; the step stayed 76 while gold's median daily range was 93 - 155 in January - March (127
+    visits skipped for momentum) - the owner sets the step by the market, which this run did not.
