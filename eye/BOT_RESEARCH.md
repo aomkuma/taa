@@ -1840,3 +1840,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     +0.156), whole span 120 +0.135 R, +182 USD (was +0.178, +481), drawdown -1070 (was -1203)**. Worse on every span -
     the skip took out winners with the losers, and the one-at-a-time chain moved; the expectation was wrong. The
     remaining drawdown is the February - April 2026 fall and rebound (ER low, steps 59 - 124). Not kept as it stands.
+- **Abnormal moves on a smaller frame** (the owner: *"the day is too slow - use a smaller frame and measure volatility,
+  or price far away, much more than normal; it should tell at once that this is not a state for a zone setup"*).
+  On H1 against the 60 days before, skip at >= 2x (fixed before looking): A - the 24-bar high-low over its median;
+  B - |close - EMA50| over its median. 1/3-ATR system, M15 (baseline: never-used span 91 +0.191 R, built year 51
+  +0.156, drawdown -1105). **A: 82 +0.156 / 49 +0.203; B: 71 +0.257 / 42 +0.194, drawdown -750; A or B: 66 +0.196 /
+  40 +0.254, drawdown -639.** Whole span: **B 113 setups +0.234 R, +685 USD, 14 of 36 months negative, drawdown -750**
+  (2024 still -0.063 on 34); A or B 106 +0.217 R, +672, drawdown -639. B (price far from its mean) is better than the
+  baseline on both spans.
