@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated **2026-10-30 Thai** (read with `Get-Date`).
+Last updated **2026-11-01 Thai** (read with `Get-Date`).
 
 **The rules and the process in force.** The owner's setup is `eye/METHOD.md` 2e. The bot's rules are
 **`eye/BOT_RULES.md`** (the only spec in force; `eye/BOT_SPEC.md` is the history). Every change follows CLAUDE.md,
@@ -10,7 +10,37 @@ several months, drawn, judged by Claude then the owner** -> only then, with the 
 trade drawn. Tests green means the code matches the spec, never "passed". Every result is recorded the moment it is
 measured.
 
-**Where the work stands (2026-10-31) - read this; everything after it down to "Standing constraints" is history.**
+**Where the work stands (2026-11-01) - read this first; the box after it (2026-10-31) still holds for the code.**
+
+- **Paused by the owner** (*"update the documents and the handoff, then rest and do something else"*). Nothing is
+  running; the last commit is 3728254 (rule 16 m15); this update (docs only) is committed after it.
+- **Measured on 2026-10-31 / 11-01** (all in `eye/BOT_RESEARCH.md`, from "July - October with rule 16 m15, all day"
+  to the end; the scripts in `eye/wip/prototypes_2026-11-01/` - research prototypes, not the bot, not committed):
+  - The bot with rule 16 m15, July - October all day: -0.062 R a fill (213, legs on M5), -0.040 (83, legs on M15);
+    `h4_old` -1.10 R in all. Losses are not the target's distance - at a 1 R target the entries win 46 %.
+  - The break and retest (rule 17) was the one kind positive in all three sets (+0.23 / +0.23 / +1.22 R, few). Alone
+    on every M5 leg: +0.219 R July - October (112), **-0.076 on November 2025 - June 2026 (193)**; SELL retests
+    positive in both (+0.264 / +0.196; the owner had said *"the edge is when the big trend is down"*), lumpy by month.
+  - Not supported by the data in Claude's forms: Fibonacci clusters or left levels marking turns; push counts; M30
+    better than M15 (worse); the M / W second touch; the bounce to the 23.6 % line (the owner's 30/10 chart) on every
+    leg; wave 4 at a known price (best miss a fifth of the move); legs ending on the previous leg's extension lines
+    (no more than on lines between them); each wave on its textbook target. Layering 0.01 lot at every line of the
+    previous leg wins 82 - 88 % of cycles but loses in total (the runs through every line; worst cycles -298 to
+    -1153 USD); one line with its own stop and a Fibo target: no row over 50 % at 1:2, best +0.10 / +0.01 R.
+  - Two measuring faults were caught and fixed before quoting (an order placed after price passed its line, a
+    withdrawal by a target price always passes) - every simulation now asserts a stop exit has R < 0.
+- **The owner's words of these two days** (METHOD 2e row "Measuring the target (2026-11-01)"): enter at the top and
+  the bottom; wins over 50 % *and* 1:2, not relaxed; the turning point of the current leg is the target measured
+  from the previous leg; count the points - after 5 look to sell, after 3 buy wave 4 and sell the top above; enter
+  0.01 lot at every important Fibo line to learn which line works; TP at the Fibo level price can reasonably reach.
+  **The owner does not believe pooled numbers** - *"they are pooled, without knowing whether it works the way I
+  think"*: draw single trades first.
+- **Next, when the owner resumes**: draw the trades of the best single-line form (entry 161.8 %, stop beyond 200 %,
+  target 61.8 %, M15), the losing ones first, one image at a time, and ask what the owner sees that would skip them;
+  the owner's choice of leg on 30/10 ("why that leg") is still unanswered. Nothing here is a rule yet; BOT_RULES is
+  unchanged since 3728254.
+
+**Where the work stood (2026-10-31) - the code's state still holds; the rest is history.**
 
 - **The owner's goal**: *"to know where 100 and 0 are"* - the leg's start and end read right (METHOD 2e "The goal").
 - **The method** (METHOD 2e, the owner's words; `eye/BOT_RULES.md` the form, rules 2, 16, 17): **the side is held on
@@ -178,8 +208,8 @@ My setup is answered in 2e - do not ask the questions again. An example I give i
 generalise, never a rule with its numbers; a question I ask is a question, not a rule. The bot's rules in
 force are eye/BOT_RULES.md; follow CLAUDE.md's development process exactly - tests green is not passing, a
 reading passes only when it is drawn on several months and matches the market to my eye. Judge a rule by the
-trades it gives (R per trade), not by how often price goes one way first. Next: HANDOFF, "Where the work stands" -
-draw every trade of the October run (eye/research/r3_off/, the losing fades first) MT5-style, one image at a time, and judge them with me before believing any number. Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
+trades it gives (R per trade), not by how often price goes one way first. Next: HANDOFF, "Where the work stands (2026-11-01)" -
+I do not believe pooled numbers: draw single trades MT5-style, one image at a time (the losing ones first), and judge them with me before any total; the target is measured with the Fibo of the previous leg (METHOD 2e "Measuring the target"). Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
 bot research run needs my word. Record every result when it is measured.
 ````
 

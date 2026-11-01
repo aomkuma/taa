@@ -1168,3 +1168,356 @@ the opposite break, known at the close of the pivot's confirm bar.
   - **Earlier at some turns, later or longer at others - not clearly better** than prototype 2. Three weeks; not
     yet judged by the owner.
 
+### July - October with rule 16 m15, all day (2026-10-31; `eye/bot_research.py`, the owner's "C")
+
+Sets in `data/bot_config.db`: `m15side_m5` (v70: `side_rule` m15, `mw_tol` 0.2, `fib_tf` M5, `m5_trend` off, `windows`
+off), `m15side_m15` (v94: the same with `fib_tf` M15), `h4_old` (v118: `side_rule` h4 - the comparison). Expectation
+written before: fewer counter-trend losses than the H4 rule, losses in the September chop, no set clearly at +0.15.
+
+| set | resolved fills | won | R | R / fill |
+|---|---|---|---|---|
+| `m15side_m5` | 213 | 53 | -13.31 | -0.062 |
+| `m15side_m15` | 83 | 21 | -3.35 | -0.040 |
+
+By kind - early leg / fixed trend leg / retest: `m15side_m5` -0.085 (162) / -0.103 (34) / **+0.232 (17)**;
+`m15side_m15` -0.113 (45) / -0.139 (19) / **+0.229 (19)**. `m15side_m5`, Claude's checks: in money (200 USD, 0.01
+lot) +162 USD with R negative - wins average +37.76 USD, losses -11.55 (recomputed from the ledger: +153 at order
+prices); the "deepest fall" 212 USD is peak to trough (the balance's low 61.8, never below zero).
+
+- **Not the target's distance** (`m15side_m5`, re-scored from its fills on M5 [Claude, scratchpad `mfe.py`]): 77 of
+  160 losers reached +0.5 R and 45 reached +1 R before the stop; a fixed target of 0.5 / 1 / 1.5 / 2 R wins 61 / 46 /
+  39 / 32 % for -0.118 / -0.114 / -0.060 / -0.062 R a trade - the entries have no edge at 1 R (46 %).
+- Slices (one set, ~45 - 66 each, seen data): 13:00 - 18:59 Thai 45 fills, 5 won, -0.59 R each; stops under 6.9 USD
+  -0.28, over 14.2 USD +0.35. The owner: *"everything can be traded if the principle is right - find the method"* -
+  no time filter.
+- **Drawn** (`eye/trades/bot_view_2026-07-07_1540_M5.png`): the BUY leg is a two-bar spike 4124.48 -> 4139.31; stop
+  4123.98; price dipped to ~4120 and then rose to 4180. The rise's real start was 4116.58 (12:30). **0 and 100 again**:
+  the leg is a minor M5 swing, the stop sits under it.
+
+### The leg taken from the M15 structure that gives the side - a prototype (2026-10-31; research, no bot change)
+
+The owner: *"try it"* (Claude's proposal: the leg comes from the same structure as the side). Prototype [Claude,
+scratchpad `struct_leg.py` - its own simulation, not the bot]: side as rule 16 m15 (`TOL` 0.20); while BUY, `L0` = the
+latest fixed M15 LOW, `H100` = the highest M15 high after it; a BUY limit at `H100 - ENTRY x leg`, stop `L0 - 0.5`
+(below it the next low is an LL - the side turns), target `L0 + 1.618 x leg - 0.5`, only if R >= 2 (net of 0.30);
+SELL mirrored; decisions at M15 closes, fills and exits on M5 (fill bar: stop only; both touched = stop); one order
+at a time; a waiting order replaced when the leg changes, dropped when the side turns or its target comes first; one
+fill per `L0`. Expectation written before: 40 - 80 trades, risk 15 - 25 USD, 30 - 35 % won, R per trade unknown.
+
+| `ENTRY` (retrace from `H100`) | trades | won | R | R / trade | median risk | Jul / Aug / Sep / Oct R |
+|---|---|---|---|---|---|---|
+| 0.382 | 0 (R never reaches 2: 1.0 x leg gain for 0.618 x leg risk) | | | | | |
+| 0.5 | 60 | 21 (35 %) | +5.38 | +0.090 | 24.05 | +1.21 (2) / +4.91 / +7.00 / -7.73 |
+| 0.618 | 91 | 26 (29 %) | +12.76 | **+0.140** | 14.82 | -0.29 / +9.38 / +3.09 / +0.59 |
+
+- At 0.5 one BUY filled 01/07 (leg 155.6 from 3959.50) was held about five weeks to its target and blocked July.
+- **Caveats**: the same four months already seen; three entries tried and the best quoted; Claude's simulation, not
+  the bot; 60 - 91 trades. A direction, not a result - to be built into the bot and drawn.
+- **The owner: *"the wins must be more than 50 %"*.** The same prototype with the target at `L0 + EXT x leg - 0.5`
+  and no R floor (scratchpad `struct_t.py`; `EXT` 1.0 = back to `H100`, the leg's end - the reachable target):
+
+  | `ENTRY` | `EXT` | trades | won | R / trade |
+  |---|---|---|---|---|
+  | 0.382 | 1.0 | 136 | **60 %** | -0.066 |
+  | 0.382 | 1.272 | 93 | 42 % | -0.162 |
+  | 0.5 | 1.0 | 114 | **54 %** | +0.043 |
+  | 0.5 | 1.272 | 89 | 39 % | -0.041 |
+  | 0.618 | 1.0 | 118 | 47 % | **+0.173** |
+  | 0.618 | 1.272 | 99 | 30 % | -0.050 |
+  | 0.618 | 1.618 | 91 | 29 % | +0.140 |
+
+  Over half won only with the target back at `H100` and an entry at 0.5 or shallower, and there the edge is small or
+  negative; 1.272 is worse than both 1.0 and 1.618 at every entry - the differences are within the noise of ~100
+  trades on seen data (Claude's reading).
+- **The owner: *"yes - no relaxing [1:2]; enter at the top and the bottom; you must measure the target"*.**
+
+### Do Fibonacci clusters mark the M15 turns? (2026-10-31; research, scratchpad `clusters.py`)
+
+From the owner's *"price clusters usually sit at 61 - 38 % and between 61, 78 and 88 % - found, they should measure
+where the level is, top or bottom"* (METHOD 2e "The goal"). The form [Claude]: for each M15 swing A -> T (fixed
+pivots, July - October; A fixed before T was made), the levels of the last N legs fixed by then - retracements
+38.2 / 50 / 61.8 / 78.6 / 88.6 %, extensions 127.2 / 161.8 / 200 % of each leg; a price's score = levels within W
+USD; the turn's score ranked among every 0.5 USD the swing traded through (0.5 = no better than any price passed).
+Expectation written before: well above 0.5 if clusters mark the turns.
+
+| N legs | W USD | swings | mean rank | turns with >= 2 levels | prices passed with >= 2 |
+|---|---|---|---|---|---|
+| 4 | 1.5 | 188 | 0.451 | 18 % | 22 % |
+| 4 | 3.0 | 188 | 0.410 | 36 % | 44 % |
+| 2 | 1.5 | 188 | 0.455 | 3 % | 8 % |
+| 6 | 1.5 | 188 | 0.440 | 32 % | 32 % |
+
+**Measured: in this form the clusters do not mark the turns** - the turns sit on fewer levels than the prices passed
+(the turn is at the swing's end, where fewer levels of the earlier legs lie - a possible bias against it). This is
+Claude's form of the idea, not the owner's way of drawing it.
+- **The owner: *"price clusters - along the peaks there are 2 - 3 groups, and then it turns a long way, right?"***
+  Claude's first form (scratchpad `pushes.py`): M15 pushes = successive fixed HHs (LLs mirrored), counted 1, 2, 3 ...;
+  the move after push n = the push's high to the next fixed low, against the push's own leg. Expectation written
+  before: larger after push 3. July - October:
+
+  | push | n | move after, median USD | x its leg, median | share >= 1 x leg |
+  |---|---|---|---|---|
+  | 1 | 154 | 37.47 | 0.74 | 39 % |
+  | 2 | 58 | 40.98 | 0.90 | 45 % |
+  | 3 | 22 | 35.84 | 0.86 | 32 % |
+  | 4+ | 5 | 42.92 | 0.97 | 40 % |
+
+  **Not larger after the third push** in this form (22 cases). A push here is one ZigZag high; the owner's "group"
+  may be a cluster of several peaks at one level - to be drawn with the owner.
+- **The owner: *"find the timeframe where this pattern happens most"*; *"I think gold likes M30"*.** Claude's push
+  count on M5 - H4 (scratchpad `pattern_tf.py`) **does not separate the pattern**: a run's end is by definition a
+  break of structure, so 94 - 98 % of one-push runs "turn far" (>= 0.618 of the run) on every timeframe - the measure
+  says nothing; the owner's "group" is not yet defined.
+- **The structure-leg prototype on M30 and H1** (scratchpad `struct_tf.py`; the M15 run reproduces +0.140): M30 is
+  negative everywhere - entry 0.618 / target 1.618 / R >= 2: 61 trades, 18 % won, -0.326 R; 0.618 / back to `H100`:
+  72, 32 %, -0.244; 0.5 / `H100`: 67, 43 %, -0.199; 0.382 / `H100`: 79, **57 %**, -0.096. H1: 0.618 / 1.618: 21
+  trades, -0.022; 0.618 / `H100`: 35, 40 %, +0.020. In this form M15 is the best of the three, M30 the worst.
+- **Levels from the left** (the prices of the last 8 or 16 fixed pivots, scratchpad `clusters_left.py`): the M15 and
+  M30 turns sit on them no more than the prices passed (mean rank 0.44 - 0.48). The test favours the prices inside a
+  swing over its end - a weak test in both directions.
+- **With the H4 trend held** (HH -> up, LL -> down; scratchpad `split_h4.py`): the M15 prototype's trades with H4 do
+  no better than those against it (0.618 / 1.618: with +0.057 (49), against +0.238 (42); 0.618 / `H100`: +0.169 /
+  +0.178).
+- **What has held up so far, both measured on seen data and few**: the break and retest (rule 17) +0.23 R in both
+  runs (17 and 19 fills, 35 - 37 % won); the M15 structure leg entered at 0.618 (+0.14 - +0.17, 91 - 118 trades).
+  Nothing yet wins over 50 % at 1:2.
+- **The comparison set `h4_old`** (`side_rule` h4, the rest as `m15side_m5`; finished after the above): 181 resolved
+  fills, -1.10 R in all - trend legs -0.109 R (107), fades -0.066 (62), **retests +1.224 R (12)**. **The break and
+  retest is positive in all three sets** (+0.23 / +0.23 / +1.22 R a fill; 17 / 19 / 12 fills) - the one kind that
+  has held up everywhere, on few trades.
+
+### Rule 17 on every leg - the break and retest measured alone (2026-10-31; research, scratchpad `retest_all.py`)
+
+The owner: *"go with what was most positive"* (the retest). Rule 17 exactly, but on every leg of a timeframe (every
+two consecutive fixed pivots), each counted on its own (trades may overlap); order life 24 M5 bars; fills / exits on
+M5 as score.py. Expectation written before: hundreds of trades, less than +0.23 R a trade, about 35 % won.
+
+| timeframe | filter | trades | won | R | R / trade | Jul / Aug / Sep / Oct R (n) |
+|---|---|---|---|---|---|---|
+| M5 | none | 112 | 35 % | +24.8 | **+0.222** | -5.4 (32) / -9.0 (29) / +23.0 (26) / +16.2 (25) |
+| M5 | rule 16 m15 side | 43 | 35 % | +7.4 | +0.171 | -2.8 / -1.6 / +4.4 / +7.3 |
+| M15 | none | 46 | 28 % | -1.1 | -0.024 | |
+| M15 | rule 16 m15 side | 28 | 36 % | +5.4 | +0.193 | |
+| M30 | none | 16 | 25 % | -2.7 | -0.167 | |
+
+- M5, no filter, by side: BUY 43 (33 %, +0.154), SELL 69 (36 %, +0.264). **The profit is September and October**
+  (+39.2 R of +24.8) - July and August lose 14.4 R; October's SELLs +15.5 R (15).
+- 112 trades - fewer than "hundreds": a break needs the close beyond `H100` before price returns past `L0`, and a
+  retest within two hours.
+- **Not over 50 % won** - 35 %, as every 1:2 form so far.
+- **Unseen months** (the owner: *"go with what gives results"*): the same M5 retest, nothing changed, on November 2025
+  - June 2026 (scratchpad `retest_oos.py`; the July - October numbers reproduce). Expectation written before: most
+  months positive, about +0.1 R a trade; negative would mean July - October's +0.22 was September and October.
+  **193 trades, 28 % won, -14.7 R, -0.076 R a trade - it fails**: Nov -4.7, Dec -6.2, Jan -3.1, Feb -11.0, Mar +9.9,
+  Apr -10.1, May -6.1, Jun +16.7 (6 of 8 months negative). By side: BUY 118, 23 % won, **-0.249**; SELL 75, 36 %,
+  **+0.196** - SELLs were also the better side in July - October (+0.264, 69). The owner said before any of this was
+  measured *"I think the edge is when the big trend is down"* (rule 17). SELL retests over all twelve months: 144,
+  about +0.23 R a trade - but by month they are lumpy (unseen: Mar +15.7 and Jun +19.0, five months negative).
+- **Drawn - a losing SELL retest** (`eye/trades/retest_SELL_20251105_0440.png`, 05/11/2025): the leg 3975.43 ->
+  3931.42; the M5 close at 04:40 went about 1 USD below 3931.42; price then made lows at 3931.42 / 3930.40 / 3929.62
+  - an M at the old low - and rose through the stop 3942.54 to 3949. The owner: *"it should buy and sell up above"*.
+
+### Buying the owner's M and selling the W at the first pivot's price (2026-10-31; research, scratchpad `mw_trade.py`)
+
+The form [Claude]: a fixed LOW `L1` and the fixed HIGH `Hm` after it (swing = `Hm - L1`); once `Hm` is fixed, and with
+price still above `L1`, a BUY limit at `L1` (the M's second bottom), stop `L1 - 0.20 x swing - 0.5` (lower would be an
+LL), target `Hm - 0.5` (the top above), R >= 2; withdrawn if the target comes first or after 288 M5 bars; a W
+mirrored; each counted on its own. Expectation written before: 40 - 50 % won at about 1:4.
+
+**A bug caught first**: the first run showed 14 % won and +0.57 R a trade - impossible at a planned 1:4. The order was
+placed when price had already fallen past `L1`, and a fill bar that opened beyond the stop was scored at the stop -
+a "loss" with R > 0. Fixed (no order unless price is still on the right side of `L1`; a gap past the stop exits at
+the open; an assertion that no stop exit has R > 0); the retest and structure-leg prototypes were checked for the
+same fault - none had it (the M5 retest moves +0.222 -> +0.219 with the stricter gap rule).
+
+| timeframe | period | trades | won | R / trade | BUY / SELL R / trade |
+|---|---|---|---|---|---|
+| M5 | Jul - Oct 2026 | 466 | 18 % | -0.119 | -0.218 / -0.018 |
+| M5 | Nov 2025 - Jun 2026 | 938 | 18 % | -0.114 | -0.236 / -0.005 |
+| M15 | Jul - Oct 2026 | 153 | 14 % | -0.231 | -0.370 / -0.094 |
+| M15 | Nov 2025 - Jun 2026 | 289 | 16 % | -0.179 | -0.290 / -0.067 |
+
+**Measured: the second touch of a pivot's price does not hold** - 14 - 18 % reach the top above before going more
+than 20 % of the swing past the first bottom. In this form the M / W is not a turn. Claude's form, not yet the
+owner's reading of a chart.
+
+### The bounce to the 23.6 % line - the owner's chart of 30/10/2026 (2026-11-01; research, scratchpad `fib23.py`)
+
+The owner sent an MT5 screenshot (XAUUSD M15, 29 - 30/10/2026; the stored bars end 28/10, so it cannot be redrawn):
+the Fibo drawn with **0 % at the top (~4012) and 100 % at the bottom (~3967)** of a leg down; price bounced back to
+the **23.6 % line** (~4000) and then fell through 100, 161.8, 200 to 261.8 % (~3889). The owner: *"use the Fibo to
+measure the target ... a leg down, then a bounce to 23 % - that is what you must find, the point where it bounces to
+23"*; *"no need to redraw - take this as the pattern, to use on every chart, buy and sell"*.
+
+The form [Claude]: every leg of a timeframe's fixed pivots (A -> B); once B is fixed, with price not yet at the line,
+a limit at `A - 0.236 x (A - B)` (a SELL after a leg down, a BUY after a leg up), stop beyond A (0 %) by 0.5, target
+back to B (100 %) or 161.8 %, R >= 2; life 288 M5 bars, withdrawn if the target comes first; every leg on its own.
+Expectation written before: few fills, many stops beyond the top, 35 - 45 % won, high R.
+
+| TF | target | Jul - Oct 2026: trades, won, R / trade | Nov 2025 - Jun 2026: trades, won, R / trade |
+|---|---|---|---|
+| M15 | 100 % | 147, 21 %, -0.189 | 303, 27 %, +0.039 |
+| M15 | 161.8 % | 202, 12 %, -0.268 | 406, 19 %, +0.194 |
+| M5 | 100 % | 451, 25 %, -0.089 | 909, 25 %, -0.121 |
+| M5 | 161.8 % | 653, 16 %, -0.066 | 1310, 16 %, -0.045 |
+| M30 | 100 % | 63, 19 %, -0.252 | 148, 21 %, -0.205 |
+| M30 | 161.8 % | 82, 12 %, -0.226 | 188, 13 %, -0.167 |
+
+Only legs that break structure (B beyond the pivot of its kind before it - an LL for a leg down, as on 30/10):
+M15 100 % -0.040 (71) / -0.126 (145); M15 161.8 % -0.236 (102) / +0.114 (199); M5 100 % +0.012 (225) / -0.238
+(457); M30 -0.137 to -0.400.
+
+**Measured: on every leg, the bounce to 23.6 % is not a turn** - 12 - 29 % of the fills reach the target before price
+goes back over 0 %; the signs flip between the two periods. On 30/10 the owner chose the leg; what made that leg the
+one is not yet in the form.
+- **The owner does not take these totals** (*"I don't believe your numbers - they are pooled, without knowing whether
+  it works the way I think"*; *"take the trade sides really traded, not every moment"*): drawn one at a time instead.
+  `eye/trades/fib23side_20260701_0100_BUY.png` - a BUY at the 23.6 % line of the leg 4008.74 -> 4063.23 (M15
+  side BUY), stopped. The owner: *"if from the Fibo it has run all 5 points - up 1, down 2, up 3, down 4, up 5 - it
+  has to look for a sell"*; and on that chart *"there are 2 entries: your plan [sell after 5], and the leg before -
+  after 3, down 4 - if an entry is found, buy then and sell the top above first"*. `fib23side_20260701_1615_SELL.png`
+  - after the 5 points 4037.60 / 4012.42 / 4037.35 / 4008.74 / 4063.23, the first leg down to 3960.00, a SELL at the
+  23.6 % line 4038.87: the bounce paused at 4025 - 4033, then one bar from about 4045 to 4100 (01/07 ~20:30 Thai)
+  filled and stopped it; price came back to 4055.
+
+### Where wave 4 and the bounce after wave 5 end (2026-11-01; research, scratchpad `wave_depth.py`)
+
+The count [Claude's form of the owner's]: from a move's start S (the lowest LOW since the last HIGH above the current
+top; a move down mirrored), fixed pivots up 1, down 2, up 3, down 4, up 5. November 2025 - October 2026:
+
+| TF | wave 4 on the move S -> top 3 (0 % at top 3), median; most common band | wave 4 below wave 2's low | after wave 5: new extreme first | bounce turned between the 23.6 % line and 0 % |
+|---|---|---|---|---|
+| M5 | 0.694; 50 - 61.8 % (77 of 481) | 255 of 481 | 95 of 214 | 39 of 214 |
+| M15 | 0.599; 50 - 61.8 % (36 of 169) | 76 of 169 | 36 of 85 | 13 of 85 |
+| M30 | 0.645; 61.8 - 78.6 % (19 of 99) | 43 of 99 | 17 of 39 | 7 of 39 |
+
+- Wave 4's end is spread from 23.6 % to past 100 % of the move - no line holds most of them.
+- After Claude's "5", price makes a new extreme before any bounce in 42 - 44 % of the counts - so the count's "5" is
+  often not the end; the bounce that reaches the 23.6 % line and turns before 0 % is 15 - 18 %.
+- Likely: Claude's count is not the owner's (every ZigZag pivot counted, wave 4 allowed below wave 2) - to be checked
+  on drawings with the owner.
+
+### Finding wave 4 - which known price marks its end (2026-11-01; research, scratchpad `w4_where.py`, `draw_w4.py`)
+
+The owner: *"measure leg 3 down 4 - find this leg; the rest we discuss later"*. Drawn first: `eye/trades/
+w4_M15_20260629_0715.png` (0 4096.02, 1 4064.55, 2 4083.65, 3 4048.11, 4 4075.59 = 57.4 % of the move, then 4039.22).
+Claude, asked whether it was right: not an Elliott impulse (4 enters wave 1's zone, wave 3 the shortest). The owner:
+*"it won't be that rigid - once each point has formed and the ZigZag draws through them, that is fine"* - the count
+stays as the ZigZag's points.
+
+At point 3, each known price as a guess for point 4; the miss = |4 - guess| / the move 0 -> 3 (November 2025 -
+October 2026). Expectation written before: one guess clearly better (a median miss well under 0.1) if wave 4 has a
+place.
+
+| TF | waves 4 | best guess | its median miss | within 10 % of the move | next best |
+|---|---|---|---|---|---|
+| M15 | 169 | 50 % of the move 0 -> 3 | 0.203 | 31 % | 78.6 % back of leg 2 -> 3: 0.207 |
+| M30 | 99 | wave 2's length from 3 | 0.189 | 32 % | 50 % of the move: 0.221 |
+| M5 | 481 | 50 % of the move | 0.253 | 23 % | 78.6 % of leg 2 -> 3: 0.258 |
+
+Also tried: 38.2 / 61.8 / 78.6 % of the move, point 1's price, point 2's price. **No known price marks wave 4's end**
+- the best misses by a fifth of the move at the median and lands within a tenth of it about a third of the time; a
+guess anywhere in the middle of the move would miss by about a quarter.
+
+### Does each leg end on the Fibo of the leg before it? (2026-11-01; research, scratchpad `leg_ratio.py`)
+
+The owner sent a second screenshot of 30/10/2026 M15: the Fibo on the small leg up 3989 -> 4011 (0 % at its end, 100 %
+at its start), the next leg down ending at the 200 % line (~3967), then 241 / 261.8 / 327 / 423.6 % (~3913) on the
+way down; *"can you measure each leg like this?"*. Measured: for every two consecutive legs (P0 -> P1, P1 -> P2), the
+level the second reached on the first's Fibo, |P2 - P1| / |P1 - P0|; hits within +-3 % (relative) of the Fibo lines
+0.382 .. 2.618 against control lines midway between them. Expectation written before: clearly more hits on the Fibo
+lines if they measure the targets. November 2025 - October 2026:
+
+| TF | legs | median level | reaches 127.2 / 161.8 / 200 % | hits a Fibo line (9) | hits a control line (8) |
+|---|---|---|---|---|---|
+| M5 | 3961 | 0.97 | 34 / 23 / 15 % | 101.1 a line | 107.4 a line |
+| M15 | 1358 | 0.97 | 35 / 24 / 17 % | 31.1 | 38.1 |
+| M30 | 681 | 0.95 | 34 / 22 / 16 % | 16.7 | 15.6 |
+| H1 | 306 | 0.92 | 34 / 20 / 16 % | 7.7 | 6.9 |
+
+**Measured: the legs end on the Fibo lines no more often than on lines between them** - on every timeframe. What
+the table does give: the next leg is about as long as the last at the median; it passes 161.8 % about one time in
+four and 200 % about one in six.
+
+### Each wave against its own target (2026-11-01; research, scratchpad `wave_targets.py`)
+
+The owner: *"I have said many times - counting like this, each one has its own target"* (the table above pooled every
+leg, whatever its number). Per wave of the count (points 0 .. 5), its length on its own ruler, November 2025 -
+October 2026; the share ending within +-0.10 of a line (the same width for every line - a first version with a
+window relative to the line favoured the lines near 1.0 and is not quoted):
+
+| TF | wave 3 / wave 1 (textbook 1.618): quartiles | within 0.10 of 0.702 / 0.893 / **1.0** / 1.136 / 1.618 | wave 4 / wave 3 (textbook 0.382): quartiles | wave 5 / wave 1 (textbook 1.0): quartiles |
+|---|---|---|---|---|
+| M5 (481 / 481 / 214) | 0.69 / 0.96 / 1.27 | 20 / 19 / 20 / 12 / 3 % | 0.70 / 1.03 / 1.61 | 0.61 / 0.88 / 1.30 |
+| M15 (169 / 169 / 85) | 0.67 / 0.92 / 1.19 | 25 / 18 / 21 / 15 / 4 % | 0.65 / 0.90 / 1.47 | 0.67 / 0.95 / 1.49 |
+| M30 (99 / 99 / 39) | 0.72 / 0.99 / 1.25 | 19 / 18 / 26 / 18 / 3 % | 0.65 / 0.95 / 1.35 | 0.65 / 0.95 / 1.49 |
+
+Wave 2 / wave 1 (textbook 0.5 - 0.618): median 1.06 - 1.12. **No wave ends on its own textbook line more often than
+on the lines beside it**; wave 3 is typically 0.7 - 1.0 x wave 1 (1.618 x: 3 - 4 %); only M30's wave 3 at 1.0 x wave
+1 stands a little above its neighbours (26 % against 18 / 18 %, 99 waves). In the count's form here the targets are
+not on the lines - the count itself (every ZigZag point, wave 4 may pass wave 2) is the likely difference from the
+owner's.
+
+### A layer at every Fibo line of the previous leg (2026-11-01; research, scratchpad `layers.py`)
+
+On a count drawn for the owner (`eye/trades/count5_M15_20260703_1630.png`) the owner: *"right? they are all right -
+it is how you interpret the chart in front of you to trade it"*; then *"go in - 0.01 lot at every important Fibo %
+line"* and *"the turning point of the current price is the target measured from the previous leg"*. The form
+[Claude]: when a pivot P1 is fixed (previous leg P0 -> P1, length d; 0 % at P1, 100 % at P0), a 0.01 lot limit
+against the current leg at each line 100 / 127.2 / 161.8 / 200 / 261.8 (/ 423.6) % not yet passed; once filled, all
+close together when price comes back 38.2 % of the run from P1 to its extreme (the owner's "30 - 50 %"; checked only
+on bars after the last fill); all stop beyond the last line by 0.5 (or 0.382) x d; spread 0.30 a layer; USD at
+0.01 lot; cycles counted on their own (they overlap). M15:
+
+| lines | stop beyond the last | period | cycles | won | total USD | median cycle | worst cycle |
+|---|---|---|---|---|---|---|---|
+| to 423.6 % | 0.5 d | Jul - Oct 2026 | 171 | **87 %** | **-1138** | +10.12 | **-576** |
+| to 423.6 % | 0.5 d | Nov 2025 - Jun 2026 | 319 | **88 %** | **-2726** | +13.37 | **-1153** |
+| to 261.8 % | 0.382 d | Jul - Oct 2026 | 168 | 82 % | -58 | +9.94 | -298 |
+| to 261.8 % | 0.382 d | Nov 2025 - Jun 2026 | 314 | 87 % | +162 | +13.29 | -478 |
+
+- To 423.6 %: cycles with 1 - 3 layers won 90 - 98 % (+1532 / +4184 USD); cycles filling all 6 lines lost every time
+  (3 / 12 cycles, -1186 / -6622 USD).
+- **Measured: well over half the cycles win (82 - 88 %), and the total is about nothing to strongly negative - the
+  few runs that go through every line take back all the small wins.** The worst single cycles (-298 to -1153 USD at
+  0.01 lot a line) are larger than the 48 USD balance on the owner's screenshot. Not yet drawn.
+- **By line** (the owner: *"which line loses most and which works best - entering every line is to learn where to
+  enter"*; scratchpad `layers_by.py`, the 423.6 % / 0.5 d form; each layer's own USD at the shared exit):
+
+  | line | Jul - Oct 2026: layers, won, USD, a layer | Nov 2025 - Jun 2026: layers, won, USD, a layer |
+  |---|---|---|
+  | 100 % | 107, 64 %, -186, -1.74 | 206, 67 %, -1104, -5.36 |
+  | 127.2 % | 87, 71 %, -126, -1.45 | 167, 68 %, -484, -2.90 |
+  | 161.8 % | 72, 69 %, -203, -2.82 | 121, 75 %, -121, **-1.00** |
+  | 200 % | 49, 71 %, -199, -4.06 | 85, 73 %, -144, -1.70 |
+  | 261.8 % | 31, 61 %, -319, **-10.28** | 47, 55 %, -747, **-15.89** |
+  | 423.6 % | 14, 14 %, -104, -7.43 | 26, 23 %, -126, -4.86 |
+
+  Every line loses in both periods; 64 - 75 % of the layers at 100 - 200 % win, but each win is small (the 38.2 %
+  take-back) and a loss is the whole run to the stop. Least bad: 127.2 and 161.8 %; worst: 261.8 % (a run that
+  reaches it usually goes on through 423.6 %). The layers share one exit, so a line's result depends on the others.
+
+### One line at a time, its own stop and a Fibo target (2026-11-01; research, scratchpad `one_line.py`)
+
+The owner: *"do it - TP at the Fibo level it can reasonably reach"*. A single limit at one extension line of the
+previous leg, stop beyond the next line out by 0.5, target back at a line toward P1. **A fault found first**: the
+first run withdrew an order when price touched the target before the fill - but the target lies between P1 and the
+line, so price always passes it first; the counts fell with the target (12 to 69 trades for one line). Fixed
+(withdrawn only when the next pivot is fixed first); the numbers below are after the fix. M15:
+
+| entry line | stop beyond | target line | planned R | Jul - Oct 2026: trades, won, R / trade | Nov 2025 - Jun 2026 |
+|---|---|---|---|---|---|
+| 100 % | 127.2 % | 61.8 % | 1.3 | 103, 38 %, -0.156 | 199, 42 %, -0.061 |
+| 100 % | 127.2 % | 38.2 % | 2.1 | 103, 23 %, -0.303 | 199, 34 %, +0.023 |
+| 127.2 % | 161.8 % | 100 % | 0.7 | 91, **51 %**, -0.148 | 176, **56 %**, -0.035 |
+| 127.2 % | 161.8 % | 61.8 % | 1.8 | 91, 30 %, -0.204 | 176, 32 %, -0.130 |
+| 127.2 % | 161.8 % | 38.2 % | 2.4 | 91, 26 %, -0.127 | 176, 27 %, -0.081 |
+| 161.8 % | 200 % | 100 % | 1.5 | 77, 35 %, -0.142 | 132, 42 %, +0.038 |
+| 161.8 % | 200 % | 61.8 % | 2.5 | 77, 32 %, +0.099 | 132, 30 %, +0.010 |
+| 161.8 % | 200 % | 38.2 % | 3.1 | 77, 27 %, +0.079 | 132, 22 %, -0.123 |
+| 200 % | 261.8 % | 100 % | 1.6 | 52, 42 %, +0.065 | 103, 35 %, -0.120 |
+| 200 % | 261.8 % | 61.8 % | 2.2 | 52, 38 %, +0.196 | 103, 27 %, -0.158 |
+
+**Measured: no line wins over half at 1:2.** Over half only at 127.2 % with the target back at 100 % (R 0.7) -
+negative; at 1:2 or more the wins are 22 - 38 %, and no row is positive in both periods by more than +0.01.
+
