@@ -1896,3 +1896,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     never-used span 63 +0.366 R (+411); built year 41 +0.536 R (+1351).** Fixed 76 / M5 unchanged (41, +0.615, +1378).
     The build's grids and visits equal the reference row for row on both acceptance runs, and its cut test at three
     times holds.
+- **The bot's trades checked against the market itself** (the owner: *"matching is not the same as correct"*). A
+  checker written apart from the bot and the reference (scratchpad `check_trades.py`) took every position of the
+  bot's default run (104 setups, 175 positions, October 2023 - October 2026) to the raw M15 bars: the fill bar reaches
+  the price (BUY on the ask, SELL on the bid) and no bar since the visit reached it earlier; the exit bar and kind are
+  the first SL / TP reach from the fill on. **0 of 175 disagree.** Where ticks exist (from October 2025): which of SL /
+  TP the real bid / ask reached first after the fill - **32 setups, 0 disagree** with the bot's exit. The checker
+  catches a planted fault (a BUY filled on the bid: 4 disagreements); a TP-before-SL swap changes nothing on these
+  data - no M15 bar held both levels (they are 1.5 steps apart).
