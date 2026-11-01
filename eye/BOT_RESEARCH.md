@@ -1522,3 +1522,18 @@ line, so price always passes it first; the counts fell with the target (12 to 69
 **Measured: no line wins over half at 1:2.** Over half only at 127.2 % with the target back at 100 % (R 0.7) -
 negative; at 1:2 or more the wins are 22 - 38 %, and no row is positive in both periods by more than +0.01.
 
+
+### The owner's run zones, drawn (2026-11-01; no trading, scratchpad `run_grid.py`, `owner_lines_h4.png`)
+
+The owner's rule (METHOD 2e, "The run zones"): equal steps of the run (about 76 USD lately) from a price cluster; a
+zone shift once price has run a full step back from a turn. Data: FBS-Demo XAUUSD, refreshed from MT5 to the H4 bar
+of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
+
+- **The owner's example lines on H4** (August - October): 4066.41 and 4217.25 sit on the October cluster's low
+  (07/10, 4066.42) and high (12/10, 4217.08) - two steps of 75.42; the other H4 ZigZag turns lie 0 - 38 USD from the
+  nearest line.
+- **Claude's form** - turns tracked on H1 highs/lows, a turn confirmed once price runs 76 back from it, the lines
+  redrawn from every confirmed turn: **87 zone shifts from May to October, 12 in October alone** (every few days),
+  while the owner's own October lines held all month. **Stopped there**: the form shifts far more often than the
+  owner does, so "a full step back" alone is not the owner's zone shift - the owner's usage is to be asked, not
+  filled in. Nothing is a bot rule.
