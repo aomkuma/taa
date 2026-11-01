@@ -1542,3 +1542,14 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   in October anchored on 02/10's top 4228.63 rather than the owner's cluster. Stopped at the owner's word the same
   hour: *"this is reading the market, but the 80-dollar box level is the main frame"* - the frame is the box; the
   zone shift is the owner's reading of the market and is not put into a form.
+- **v3 - zones from clusters** (scratchpad `zone_cluster.py`, `_bf`, `_v4`; S 76; a cluster = the last 30 H4 bars
+  within 2.2 S; the anchor = its low; a shift when a cluster's low sits off the lines). Expectation written before:
+  October near 4066, September near 4244, 1 - 3 shifts a month. Measured, May - October:
+  - plain (shift when off by more than S/3): 17 shifts; **07/10 20:00 - 22/10 on 4066.42 - the owner's October lines
+    within 1 USD**; then three shifts in a day on the 22 - 23/10 break (4099.82, 4066.72, 4034.37) and the week to
+    30/10 off the owner's lines; 30/10 21:00 on 3915.46, 1 - 4 USD from them.
+  - + back and forth (top - bottom - top within the cluster): 10 shifts; still 4099.82 on 22/10 and 3975.58 on 29/10.
+  - + a cluster inside the last cluster's box is the same cluster: 3 shifts (S/3 off) / 8 shifts (S/5 off); October
+    anchored on 4110.78 (05/10), about 31 USD off the owner's lines.
+  Each added condition fixed one week and broke another, tuned on the one month the owner's lines cover. **Stopped**:
+  more of the owner's own zones (other months) are needed to judge a form against; none of these is a rule.
