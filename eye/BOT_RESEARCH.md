@@ -1688,3 +1688,12 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     October: 38 setups, +0.070 R a setup, -24 USD; November - April: 29 setups, -0.258 R a setup, -745 USD.** Worse
     than the fixed 76 in both periods - this cluster reading moves the zones far more often than the owner does.
     Not kept.
+- **The owner's lines over 2025 - 2026** (the owner, with a D1 screenshot: *"the problem is not that the zone is not
+  wide enough - you drew the zone lines wrong, so the bot read it wrong; look at 2025 against the zones I drew"*).
+  Measured: (a) the owner's ten lines of 01/11/2026 (4066.41, step 76.25, extended) against the fixed ZigZag turns
+  August 2025 - October 2026: D1 12 turns, mean distance 20.8 (2 within 10); H4 100 turns, mean 20.1 (22 within 10);
+  the same step at the 75 other phases gives a mean 19.1 (best 15.7 / 17.7) - the owner's phase is not closer to the
+  turns than a random one (ranks 59 / 76 and 65 / 76). (b) Variant C run on the owner's lines held fixed (`ZOWNER=1`):
+  May - October **29 setups, +0.074 R a setup, -6 USD**; November - April **28 setups, -0.032 R, -255 USD** - against
+  v7's +0.397 / +0.234 on the same rules. What was measured does not support the fixed lines over v7; the owner's
+  reading of 2025 is to be asked.
