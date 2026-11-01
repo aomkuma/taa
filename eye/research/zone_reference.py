@@ -338,7 +338,7 @@ for r in v.itertuples():
 
 t = pd.DataFrame(rows)
 (HERE / "zone_reference_out").mkdir(exist_ok=True)
-t.to_csv(HERE / "zone_reference_out" / f"long_{TAG}.csv", index=False, float_format="%.6f")
+t.to_csv(HERE / "zone_reference_out" / f"long_{TAG}.csv", index=False, float_format="%.17g")
 if FIX:
     print("open at the end (not a result):", t[t.how == "open"].visit.nunique())
     t = t[t.how != "open"]
