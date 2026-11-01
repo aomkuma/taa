@@ -1632,3 +1632,7 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   +4.00 R, +0.111 R a trade, +101 USD at 0.01 lot** (by month -6 / +3 / +3 / +7 / -1 / -2 R); 59 visits skipped for
   momentum, 28 never filled, 6 while a trade was open. 36 trades, three of six months negative - a handful; under
   the +0.15 goal.
+  - Trade #1 of variant B (06/05 SELL 4662) drawn: a steady rise of about 110 USD in 7 hours into the line, missed by
+    the candle-body form. Added: or the last 6 H1 bars moved a full step toward the line. **35 trades, 10 TP (29 %),
+    +5.00 R, +0.143 R a trade, +127 USD at 0.01 lot** (May -5, then +3 / +3 / +7 / -1 / -2 R). Only that one trade
+    removed; still a handful.
