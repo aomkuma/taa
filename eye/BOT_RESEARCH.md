@@ -1782,3 +1782,17 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   USD), part (.3 - .5) 25 +0.497 (+598), sideways (>= .6) 17 +0.832 (+846)** - and the same order in both halves
   (trending: May - October -0.541 on 7, November - April -0.142 on 14). C without the trending band: 42 setups,
   about +0.63 R, +1444 USD (D1-against alone: 34, +0.688, +1282).
+- **The market-state gate in the run** (the owner: *"if that period is a trend, no trade - the bot should know
+  whether the market in front of it favours this setup"*; *"find only the trend, not the highest profit - find where
+  we have the advantage"*). Gate at each visit: the weighted sideways share over D1 / H4 / H1 / M15 (> 0.25 to trade).
+  Four weight sets, none fitted (C, twelve months; ungated 63 setups +0.330 R, +1002 USD):
+  D1 .4 / H4 .3 / H1 .2 / M15 .1 - **41 setups, +0.615 R, +1378 USD**; equal - 31, +0.649, +1175; D1 .6 / H4 .3 / H1
+  .1 - 38, +0.511, +998; reversed (M15 heaviest) - 45, +0.313, +683. Every set led by the larger frames gives the
+  same picture; led by M15 it does nothing - the larger frames carry the state. (A first patch failed on a path
+  string and its four runs were the ungated code - caught by the unchanged counts, rerun.)
+- **The states by name** (the owner: *"from the results it is sideway, sideway up, sideway down"*;
+  `c_by_state_12m.csv`). D1 20 days: ER < 0.3 sideway; 0.3 - 0.5 sideway up / down by the sign of the net move;
+  > 0.5 trend up / down. C: sideway down 8 +0.693 R, sideway 41 +0.287, sideway up 11 +0.371, trend up 3 -0.208,
+  trend down 0 - the three sideway states carry the edge; the trends hardly reach a setup (the momentum skips). This
+  labelling alone does not stop the December - January losses (labelled sideway / sideway up); the structure-based
+  gate above does.
