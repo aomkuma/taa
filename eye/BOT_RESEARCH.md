@@ -1625,3 +1625,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   body toward the line >= the median H1 range (120 bars) - 59 of 129 visits; (b) the M5 turn more than S/4 past the
   line - no trade ("late"); (c) planned R under 2 - no trade. Result, May - October: **8 trades** (4 TP, 4 SL;
   +8.9 R) - far below the ~10 a month expected; the filters stacked leave almost nothing. 8 trades say nothing.
+- **Variant B - a limit at the line, no M5 turn** (`eye/wip/zones_2026-11-01/run_limit.py`, `trades_limit.csv`,
+  drawings `wide_trades_limit/`): the momentum filter alone keeps it off the legs the M5 turn was for; SL S/3 beyond
+  the line, TP the opposite edge (the owner's formula, 1:3); fill only when the ask (BUY) / bid (SELL) reaches the
+  line; SL first on the fill bar. No expectation was written before this run. **Measured: 36 trades, 10 TP (28 %),
+  +4.00 R, +0.111 R a trade, +101 USD at 0.01 lot** (by month -6 / +3 / +3 / +7 / -1 / -2 R); 59 visits skipped for
+  momentum, 28 never filled, 6 while a trade was open. 36 trades, three of six months negative - a handful; under
+  the +0.15 goal.
