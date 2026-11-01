@@ -1618,3 +1618,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   BUY 4165.01, line 4142) - price never reached the line (it turned within 10 of it), the M5 turn came 23 - 33 USD
   past it, and the trade sat in the middle of the box; the entries are a median 22.3 USD past the line, not "around
   the edge" as the owner put it. Not the goal (+0.15 R); 46 trades is a handful.
+- **The fixes after trades #1 - #2** (the owner: *"yes - and when will you fix it?"*): (a) momentum near the zone -
+  first form "came from about the opposite edge within 24 H1 bars" flagged 108 of 129 visits (gold runs 70 - 80 a
+  day) - dropped unused; measured instead: before #1 the 3-hour move into the line was 8.3 but its 18:00 candle had a
+  19.1 body (median H1 range 17.0); before #2 37.1 and 21.7. Form kept: one of the 3 H1 bars before the visit with a
+  body toward the line >= the median H1 range (120 bars) - 59 of 129 visits; (b) the M5 turn more than S/4 past the
+  line - no trade ("late"); (c) planned R under 2 - no trade. Result, May - October: **8 trades** (4 TP, 4 SL;
+  +8.9 R) - far below the ~10 a month expected; the filters stacked leave almost nothing. 8 trades say nothing.
