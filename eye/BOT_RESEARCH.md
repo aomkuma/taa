@@ -1537,3 +1537,8 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   while the owner's own October lines held all month. **Stopped there**: the form shifts far more often than the
   owner does, so "a full step back" alone is not the owner's zone shift - the owner's usage is to be asked, not
   filled in. Nothing is a bot rule.
+- **v2** (scratchpad `run_grid2.py`): a turn shifts the zone only once price has run 76 back from it **and** an H4
+  close passes the last fixed H4 ZigZag pivot of the other kind - 41 shifts May - October, still several a month and
+  in October anchored on 02/10's top 4228.63 rather than the owner's cluster. Stopped at the owner's word the same
+  hour: *"this is reading the market, but the 80-dollar box level is the main frame"* - the frame is the box; the
+  zone shift is the owner's reading of the market and is not put into a form.
