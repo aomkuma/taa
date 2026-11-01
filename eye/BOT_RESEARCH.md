@@ -1817,3 +1817,13 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     No step in the owner's 40 - 50 gives that period an edge. The setup's measured edge sits in the twelve months it
     was built on; whether that is the market (a run of about a step a day) or the building cannot be told apart on
     stored data - only months after today can.
+- **The step as a part of the weekly ATR** (the owner, with a W1 chart, ATR(14) 195.99: *"maybe the zone is only 1/2 -
+  1/3 of the ATR?"*). Weekly ATR(14) built from D1 in broker time matches the owner's screen exactly (195.99, week of
+  25/10/2026); 76 is 0.39 of it. The step = factor x the weekly ATR of the closed weeks before each month (M15).
+  Never used, October 2023 - October 2025: **1/3 - 91 setups, +0.191 R, 44 % TP, +176 USD, 9 of 24 months negative**;
+  0.4 - 80, +0.025 R, -331; 1/2 - 65, -0.020 R, -493; and a neighbour checked below the owner's range, 0.3 - 96,
+  +0.080 R, -64. The year it was built on at 1/3: 51 setups, +0.156 R, +305 USD, drawdown -1105 (to 06/04/26; the step
+  about 95 in the wild first quarter). **The whole span at 1/3: 142 setups, +0.178 R a setup, +481 USD** (2023 +0.438
+  on 10, 2024 +0.008 on 41, 2025 +0.232 on 55, 2026 +0.218 on 36), drawdown -1203 USD, 16 of 36 months negative. 1/3
+  is the only factor over the goal and its neighbours (0.3, 0.4) fall to +0.08 / +0.03 - a narrow peak. USD mixes
+  steps of 14 to 95 (the risk scales with the step); R is the fair measure.
