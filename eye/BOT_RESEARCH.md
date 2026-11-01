@@ -1882,3 +1882,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     **v3, the defaults (exactly 1/3): whole span 103 setups +0.447 R, 53 % TP, +1783.1 USD, drawdown -617.5, 12 of 36
     months negative; never-used span 61 +0.410 R (+478); built year 42 +0.500 R (+1306).** Fixed 76 / M5: 41, +0.615,
     +1378 (the same positions). `ZFIX=0` still gives 104 / +0.340 / +1211.4.
+- **A 300 USD account** (the owner: *"after the test, assume a 300 USD account - where does it end?"*). The reference v3
+  defaults (`long_accept_defaults.csv`, 103 setups, October 2023 - October 2026), setups in exit order; no margin model.
+  **Fixed 0.01 lot a position: 300 -> 2,083 USD; lowest 284; deepest drawdown -617 USD (-68 % of the peak), to
+  08/04/26**; year ends 373 / 375 / 798 / 2,083. **7.5 % of the account at risk a setup** (the owner's preset; lot =
+  floor(7.5 % x equity / the setup's risk at 0.01), never under 0.01): **300 -> 3,592 USD; lowest 322; drawdown -673 USD
+  (-44 %)**; lots 0.01 - 0.04. A setup's risk at 0.01 lot grew with the step - median 12 / 22 / 32 / 84 USD in 2023 /
+  2024 / 2025 / 2026 - so from 2026 even 0.01 lot risks about 28 % of 300; the 7.5 % rule is then bounded by the
+  minimum lot.
