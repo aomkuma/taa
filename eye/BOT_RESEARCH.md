@@ -1729,3 +1729,14 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     months of ranges and wins in the months of the big rise and fall. With variant C (TP step): **+815 USD May -
     October, +461 November - April** (C alone +967 / +263) - about the same in total, the two halves closer. Samples
     of 14 - 26.
+- **The whole system in one run, November 2025 - October 2026** (the owner: *"not yet [trade by trade] - run it the
+  way you did first"*): v8 zones (grids 05/11/25 3886.43, 05/05/26 4510.20, 02/07 3942.95, 09/09 4282.45, 22/09
+  4253.59, 14/10 4066.42), variant C and the stop limit past the liquidation zone (TP one step), each one position
+  at a time, the two books side by side. `entries_m5_2025-11_k123.csv`, `trades_two_10_15_38_2025-11_k123.csv`,
+  `trades_break_2025-11_k123_liq_step.csv` now hold this twelve-month run (the six-month files of the same names were
+  overwritten; their numbers are above). **C: 63 setups (48 both filled), +0.330 R a setup, +1002 USD; stop limit: 44
+  trades, 13 TP (30 %), +0.034 R, +46 USD; together 107, +0.208 R each on its own risk, +1048 USD at 0.01 lot a
+  position.** By month: +426 / -274 / -116 / -36 / +223 / +238 / -178 / +223 / +152 / +436 / +30 / -76 - 5 of 12
+  negative; deepest drawdown -522 USD, 29/11/25 to 04/02/26. Checked: May - October inside this run is +739 against
+  +967 run alone - the separate run took a setup on 01/05 (+157) and this one took 04/05 (-71) instead, because
+  the H4 ZigZag started from a different first bar (the run's own start); +157 + 71 = 228, the whole difference.
