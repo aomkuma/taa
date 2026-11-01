@@ -40,6 +40,19 @@ measured.
   target 61.8 %, M15), the losing ones first, one image at a time, and ask what the owner sees that would skip them;
   the owner's choice of leg on 30/10 ("why that leg") is still unanswered. Nothing here is a rule yet; BOT_RULES is
   unchanged since 3728254.
+- **A side study, stopped by the owner on 2026-11-01 ~10:55 Thai: Volume Profile on XAUUSD M5** (Codex, 2026-10-31 -
+  11-01; `research/xauusd_poc_m5/`, the summary in its `RESEARCH_STATUS.md`). Outside the owner's method (METHOD 2e) and
+  outside the development process above; not part of the bot. About 50 trading-rule variants on FBS-Demo data to
+  2026-10-28 (264 sessions, 184 development / 80 validation): fades at VAL/VAH to POC, breakouts, retests, other stops,
+  targets and filters, over prior-session, 6 h, 12 h and 200-bar M5 profiles. **None met its own predeclared rule**
+  (>= 20 development trades, net R positive in 2 of 3 development folds, validation positive). The one positive
+  result (+4.77 R) was withdrawn when the profile was rebuilt from M1 tick_volume (-7.98 R); the best development run
+  (12 h breakout, +27.51 R / 62) lost -6.02 R / 33 on validation. The last run (a 1.5x tick-volume filter on the 200-bar
+  breakout) was stopped before writing a result. Limits: the owner's reference chart is OANDA, the data FBS - the
+  levels are not the same; the data to 2026-10-28 has been searched about 50 times and no longer serves as a holdout.
+  Not started, the owner's to decide: whether price reacts at POC / VAH / VAL more than at random levels (no trading),
+  the levels drawn over months of candles, and whether Volume Profile has a place in the owner's method at all.
+  Committed: the reports, scripts and small CSVs; the large CSVs (over 200 KB) are left out and regenerate from the scripts.
 
 **Where the work stood (2026-10-31) - the code's state still holds; the rest is history.**
 
