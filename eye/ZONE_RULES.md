@@ -70,7 +70,8 @@ Every name above is one field of `ZoneParams` (rule 1). Types and bounds [Claude
 `gate_min` in [0, 1); `p2_frac` < `sl_frac` (P2 must lie before the SL); ints `tp_steps`, `order_life_h`, `mom_bars`,
 `mom_med_bars`, `run_bars`, `ema_len`, `atr_len` >= 1; `grid_ks` a non-empty strictly increasing tuple of ints >= 1;
 `gate_w` four floats >= 0 (D1, H4, H1, M15) summing to 1 within 1e-9; every float finite; `p1_frac` <= `near_frac` (so no
-fill can come without its visit, rule 4); `p1_frac` < `tp_steps` (P1's target lies on the profit side). An `abn_atr` of 1e9 or more switches 5c off in
+fill can come without its visit, rule 4); `p1_frac` < `tp_steps` (P1's target lies on the profit side); `near_frac` <
+`away_frac` (a bar cannot both re-arm a line and visit it, rule 4). An `abn_atr` of 1e9 or more switches 5c off in
 effect (acceptance case 3b).
 
 **Parity with the reference** [Claude]: at the defaults the build computes the same numbers as the reference. The
@@ -140,8 +141,8 @@ months, by time) [Claude].
 - **A month start** with a current grid and `|S(m) - S_g| > step_remake x S_g` starts a new grid (`A_g`, `S(m)`) - the
   same anchor, the new step.
 - The grid **in force** at `t` = the last grid whose start is at or before `t`. Before the first grid: nothing.
-- Acceptance (`step_mode` fixed 76; Thai times): the grid in force on 2025-08-01 and every later start up to 2026-11-01 are
-  14/08/25 20:00 3331.04, 05/11/25 13:00 3886.43, 05/05/26 12:00 4510.20, 02/07/26 12:00 3942.95, 09/09/26 20:00 4282.45,
+- Acceptance (`step_mode` fixed 76; Thai times): the grid in force on 2025-08-01 is 18/06/25 12:00 3293.39; the later
+  starts up to 2026-11-01 are 14/08/25 20:00 3331.04, 05/11/25 13:00 3886.43, 05/05/26 12:00 4510.20, 02/07/26 12:00 3942.95, 09/09/26 20:00 4282.45,
   22/09/26 12:00 4253.59, 14/10/26 00:00 4066.42 (the reference, full history; Sol's review).
 
 ## 4. Visits - price comes to a line (H1)
@@ -151,7 +152,8 @@ At each **H1 bar** `i` (its open `t_i`, from the run's start on; never without a
 - For the grid in force at `t_i` (`A`, `S`), `Z = near_frac x S`; **first** every disarmed line key of this grid is
   re-armed when bar `i` stays wholly `away_frac x S` from its line (`low_i >= L + away_frac x S` or `high_i <= L -
   away_frac x S`); **then** the candidate lines are `L = round(A + k S, 2)` for every integer `k` from `ceil((low_i - Z - A)
-  / S)` to `floor((high_i + Z - A) / S)` - every line the bar could reach, however long the bar.
+  / S) - 1` to `floor((high_i + Z - A) / S) + 1` - every line the bar could reach, however long the bar (one more each
+  side, because the line is rounded to 2 decimals; the visit test below decides).
 - **A visit** on `L`: (`low_i <= L + Z` and `open_i > L`) -> a **BUY** visit; else (`high_i >= L - Z` and `open_i < L`)
   -> a **SELL** visit; and the line is **armed**. The visit's time is `t_i`.
 - **Why this is not look-ahead** [Claude]: the visit is the **bid** reaching P1's price (`p1_frac` = `near_frac`); P1
@@ -164,10 +166,17 @@ At each **H1 bar** `i` (its open `t_i`, from the run's start on; never without a
   at the hour's end, unfilled, and the decision is made again at the next open. The simulation records only the hours
   with a visit - the same fills and exits. Nothing in rules 5 - 6 reads bar `i`'s high, low or close (only the visit
   test and the re-arm test of this rule do, as they happen); the cut test (rule 12, case 4) checks it.
-- **Several visits on one H1 bar** are taken in ascending line price (the reference's loop over k), each through
-  rules 5 - 8 in turn.
+- **Several visits on one H1 bar** are taken in the order price **reached** them [Claude]: for each, the first `exec_tf`
+  bar of the hour (from the one opening at `t_i`, at most `per_h` bars) whose bid comes within Z (a BUY: `low <= L + Z`;
+  a SELL: `high >= L - Z`) - none in the hour counts as after the last; ties by the distance from the H1 open to the
+  line (nearer first), then the line price. Each goes through rules 5 - 8 in turn, so the first reached may reserve
+  (5b) and the others are `busy`. (Taking the lower line first, as the reference did before Sol's second review, let a
+  bar's later low decide which line traded - look-ahead, fixed.)
 - **Warm-up**: the first H1 bar that can make a visit has the 0-based row index `max(mom_bars, mom_med_bars, run_bars,
   atr_len) + 10` in the stored H1 file (130 at the defaults), and is not before the run's start.
+- **History for `exec_tf`**: a visit needs `per_h` `exec_tf` bars before the bar opening at its time (the closed-hour
+  cancel reads them); a run whose `--start` leaves a visit without them stops with a message naming the first time it
+  can start (M5 is stored from 2025-10-05).
 - **The run's end** `--end` is exclusive for visits: no visit at or after it; a setup visited before it is followed on
   the stored bars past it until it ends.
 - **Armed** [Claude]: a line key (`round(A,2)`, `round(S,2)`, `L`) is armed until it is visited; it is re-armed as
@@ -218,6 +227,8 @@ For a visit not skipped, with `sgn`:
     yet - a cancel there cancels the whole setup and P2 is not tested; else it fills; (4) the exit test of rule 7 on
     the same bar.
 - After the first fill the orders stay until the exit (no withdrawal or expiry for P2).
+- **The end of the data**: a setup with no fill, not yet withdrawn, expired or cancelled when the stored bars end is
+  `pending` - not `no fill`, not a result; it reserves (5b) to the last bar.
 - **Time is counted in `exec_tf` bars** [Claude]: `order_life_h` hours = `order_life_h x per_h` bars, which can span more
   than 48 clock hours across a weekend. Fill and exit times are the close of the bar on which they happen.
 
@@ -238,8 +249,9 @@ For a visit not skipped, with `sgn`:
 
 ## 8. Order of evaluation [Claude]
 
-For each visit in time order: 5a momentum -> 5b busy -> 5c abnormal -> 5d state -> 6 orders (withdrawn / cancel / fill)
--> 7 exit; the setup's exit time is the next visit's `busy` reference.
+For each visit in time order (rule 4's order within an hour): 5a momentum -> 5b busy -> 5c abnormal -> 5d state -> 6 orders
+(withdrawn / expired / cancelled / pending / fill) -> 7 exit; the setup's end (5b: its exit, or the bar where it was
+withdrawn, expired or cancelled, or the last bar when pending) is the next visit's `busy` reference.
 
 ## 9. Not in this setup (the owner's words recorded, not built)
 
@@ -289,12 +301,13 @@ is reported, not bent to fit.
 3. **The reference reproduced, setup for setup** (`eye/research/zone_reference.py` with the same settings; its CSV
    under `eye/research/zone_reference_out/`):
    - the **defaults**, 2023-10-01 to 2026-11-01 (the reference with `ZS=watr0.3333333333333333 ZEXEC=M15 ZABN=3 ZABNK=C`,
-     v2 = `ZFIX=1`): **102 setups, +0.461 R a setup, 54 % TP, +1805.5 USD**, drawdown -617.5 USD (to 06/04/26), 12 of 36
-     months negative, 0 open; skips: momentum 529, trend 132, busy 59, cancel 61, no fill 72, abnormal 132 (the
-     reference's counter order differs; the counts must match). The reference before v2 and BOT_RESEARCH's earlier
+     `ZFIX=1`): **103 setups, +0.447 R a setup, 53 % TP, +1783.1 USD**, drawdown -617.5 USD (to 06/04/26), 12 of 36
+     months negative, 0 open, 0 pending; skips: momentum 529, trend 132, busy 59, cancel 61, no fill 71, abnormal 132
+     (the reference's counter order differs; the counts must match). The reference before v2 and BOT_RESEARCH's earlier
      numbers differ (0.333, the old busy, the old line choice) - BOT_RESEARCH, "Sol's review".
    - `step_mode` fixed 76, `exec_tf` M5, `abn_atr` off (1e9), 2025-11-01 to 2026-11-01: **41 setups, +0.615 R, +1378 USD**
-     (the same 69 positions before and after v2).
+     (the same 69 positions through every fix of the reference).
+   - The reference writes only the positions CSV and printed totals; the build writes everything of rule 11.
    Every setup's visit time, side, line, positions, fills, exit and pnl equal the reference's; any difference listed.
 4. **No look-ahead** [Claude]: a run on the bars cut at a time `T` (every timeframe's bars with `close_time <= T`) gives
    the same events known by `T` - every visit, skip and grid before `T`, every fill and exit before `T` - and leaves

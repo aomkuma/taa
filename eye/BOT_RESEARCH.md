@@ -1875,3 +1875,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   +0.434 R (+500); built year 42 +0.500 R (+1306).** The fixed-76 M5 year is unchanged - the same 69 positions. The fixes
   raised the numbers rather than lowered them; the step factor's sensitivity (0.333 / 0.3333 / 1/3: 96 / 109 / 102
   setups) stays a warning.
+  - **Sol's second review**: the acceptance numbers reproduced; four faults left, fixed in the reference (v3, `ZFIX=1`):
+    same-hour visits were taken lower line first (a bar's later low could decide which line traded - look-ahead; now
+    the order price reached them on `exec_tf`); the candidate range missed rounded lines at its edge (widened by one);
+    an unfilled setup at the end of the data counted as `no fill` (now `pending`); and an `exec_tf` history guard.
+    **v3, the defaults (exactly 1/3): whole span 103 setups +0.447 R, 53 % TP, +1783.1 USD, drawdown -617.5, 12 of 36
+    months negative; never-used span 61 +0.410 R (+478); built year 42 +0.500 R (+1306).** Fixed 76 / M5: 41, +0.615,
+    +1378 (the same positions). `ZFIX=0` still gives 104 / +0.340 / +1211.4.

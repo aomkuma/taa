@@ -191,7 +191,7 @@ for i in range(max(i0, 130), len(h1)):
         for key in [kk for kk, armed in far.items() if not armed and kk[0] == round(A, 2) and kk[1] == round(S, 2)]:
             if r.low >= key[2] + S / 2 or r.high <= key[2] - S / 2:
                 far[key] = True
-        ks = range(int(np.ceil((r.low - Z - A) / S)), int(np.floor((r.high + Z - A) / S)) + 1)
+        ks = range(int(np.ceil((r.low - Z - A) / S)) - 1, int(np.floor((r.high + Z - A) / S)) + 2)
     else:
         k0 = int((r.low - A) // S) - 1
         ks = range(k0, k0 + 4)
@@ -209,10 +209,26 @@ for i in range(max(i0, 130), len(h1)):
             six = h1.iloc[i - 6 : i]
             run6 = (six.close.iloc[-1] - six.open.iloc[0]) * (1 if side == "SELL" else -1)
             mom = toward.max() >= med or run6 >= S
-            visits.append({"visit": r.th, "side": side, "line": L, "S": S, "momentum": bool(mom), "abn": abnormal(i) if ABN > 0 else False})
+            visits.append({"visit": r.th, "side": side, "line": L, "S": S, "momentum": bool(mom), "abn": abnormal(i) if ABN > 0 else False,
+                           "h1_open": float(r.open), "Z": Z})
         elif not FIX and min(abs(r.high - L), abs(r.low - L)) >= S / 2:
             far[key] = True
 v = pd.DataFrame(visits)
+if FIX and len(v):
+    # several visits in one H1 hour: the first reached (on exec_tf, the bid within Z) goes first - not the lower line
+    _tt = []
+    for r in v.itertuples():
+        j0 = int(ex.th.searchsorted(r.visit))
+        jt = j0
+        while jt < min(j0 + PER_H, len(ex)):
+            b = ex.iloc[jt]
+            if (r.side == "BUY" and b.low <= r.line + r.Z) or (r.side == "SELL" and b.high >= r.line - r.Z):
+                break
+            jt += 1
+        _tt.append((jt, abs(r.h1_open - r.line)))
+    v["touch_j"] = [x[0] for x in _tt]
+    v["from_open"] = [x[1] for x in _tt]
+    v = v.sort_values(["visit", "touch_j", "from_open", "line"], kind="stable").reset_index(drop=True)
 
 # the setups
 rows, busy, skip = [], None, {"momentum": 0, "trend gate": 0, "busy": 0, "cancel": 0, "no fill": 0}
@@ -238,6 +254,8 @@ for r in v.itertuples():
     p1, p2 = L + sgn * S * 10 / 76, L - sgn * S * 15 / 76
     sl, tp = L - sgn * S / 2, L + sgn * S
     j0 = int(ex.th.searchsorted(r.visit))
+    if FIX and j0 < PER_H:
+        raise SystemExit(f"{EXEC} has no hour of history before the visit {r.visit} - start the run later")
     end = min(j0 + 48 * PER_H, len(ex))
     fills, out, cancelled, j = {}, None, False, j0
     while j < len(ex):
@@ -279,9 +297,13 @@ for r in v.itertuples():
             busy = ex.ct[j]
         continue
     if not fills:
+        if FIX and j >= len(ex):
+            skip["pending at the end"] = skip.get("pending at the end", 0) + 1
+            busy = ex.ct.iloc[-1]
+            continue
         skip["no fill"] += 1
         if FIX:
-            busy = ex.ct[min(j, len(ex) - 1)] if j < len(ex) else ex.ct.iloc[-1]
+            busy = ex.ct[j]
         continue
     q, px_out, how = out if out else (len(ex) - 1, ex.close.iloc[-1], "open")
     for name, (jf, px_in) in fills.items():
