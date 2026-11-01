@@ -1654,3 +1654,16 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   stop), 7 TP (24 %), +5.30 R, +0.183 R a trade, +95 USD at 0.01 lot** (+0.71 / -2.14 / +1.64 / +4.80 / +3.30 / -3.00 R
   by month). Found after about ten variants on the same six months - 29 trades is a handful and the number is
   shaded by the search.
+- **Variant C - two positions** (the owner: *"one before price and one on the fake break, SL beyond the liquidation
+  zone"*; `eye/wip/zones_2026-11-01/run_two.py`, `trades_two_10_15_38.csv`). Form [Claude]: P1 a limit 10 before the
+  line, P2 a limit 15 into the fake break, SL for both S/2 (38) beyond the line, TP the opposite edge; momentum skips
+  and the M5 cancel before the first fill as in B. Expectation written before: P1 about 1:1.4 needs over 42 % wins, P2
+  about 1:4 over 20 %; no guess for the total. **Measured: 37 setups (28 with both filled); P1 37 fills, 19 TP (51 %),
+  +0.220 R a fill, +390 USD at 0.01 lot; P2 28 fills, 10 TP (36 %), +0.770 R, +496 USD; +0.446 R a setup on its total
+  risk, +886 USD** (by month -41 / +390 / +233 / +355 / +5 / -56 USD). Checked a second way: the totals rebuilt by hand
+  (19 x 66 - 18 x 48; 10 x 91 - 18 x 23), and the first setup re-read from the M5 bars (07/05 SELL 4738: highest ask
+  4764.97 under the SL 4776.20, lowest 4659.03 through the TP 4662.20). **Caveats**: S/2 for the SL was chosen after
+  measuring the fake-break depth on these same trades (26 - 37); that first setup is the 07/05 SELL the owner rejected
+  (momentum by a spike inside the hour - the filters still let P1 fill on the spike bar), here +157 USD; two of six
+  months negative, the gain in June - August; 37 setups after about a dozen variants on the same six months. Needs
+  months it has not seen.
