@@ -1810,3 +1810,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     - the whole-span run overwrote the two-year file of the same tag) by the month's step: **S < 40 (2023 - 2024)
     56 setups -0.204 R (-504 USD); 40 - 60 30 +0.220 (+131); 60 - 70 3 +0.070; >= 70 31 +0.541 (+983)**. Where gold ran
     little the setup lost; 40 - 60 (mostly 2025, never used to build it) is positive. Bands chosen after the run.
+  - The owner: *"it would be only 40 - 50 points in the period before the bull market"*. Fixed steps, October 2023 -
+    October 2025 (M15; all three reported; expectation written before: few touches, no guess for the result):
+    **step 40 - 71 setups, -0.012 R, -300 USD; step 45 - 65, +0.055 R, -112 USD; step 50 - 57, -0.091 R, -471 USD**;
+    by year they disagree (step 45: 2024 -0.314 R on 22, 2025 +0.197 on 42; step 40: 2024 +0.050, 2025 -0.125).
+    No step in the owner's 40 - 50 gives that period an edge. The setup's measured edge sits in the twelve months it
+    was built on; whether that is the market (a run of about a step a day) or the building cannot be told apart on
+    stored data - only months after today can.
