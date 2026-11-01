@@ -43,6 +43,7 @@ EXEC = os.environ.get("ZEXEC", "M5")
 TAG = os.environ.get("ZTAG", f"{EXEC}_{SMODE}_{START:%Y%m}")
 PER_H = {"M5": 12, "M15": 4}[EXEC]
 W = {"D1": 0.4, "H4": 0.3, "H1": 0.2, "M15": 0.1}
+FIX = os.environ.get("ZFIX", "1") == "1"  # 1 = v2 (Sol's review, 2026-11-01); 0 = the behaviour every number before it came from
 
 
 def load(tf):
@@ -57,7 +58,8 @@ ex = load(EXEC) if EXEC != "M15" else m15
 d1["r"] = d1.high - d1.low
 
 # the step by month
-months = pd.date_range(START.tz_localize(None) - pd.offsets.MonthBegin(1), END.tz_localize(None), freq="MS").tz_localize(TH)
+_m0 = (h4.th.iloc[0].tz_localize(None) if FIX else START.tz_localize(None)) - pd.offsets.MonthBegin(1)
+months = pd.date_range(_m0, END.tz_localize(None), freq="MS").tz_localize(TH)
 # weekly ATR(14) (MT5's: a simple mean of the true range), weeks built from D1 in broker time - matches the owner's
 # screen (195.99 on the week of 25/10/2026)
 _d = d1.copy()
@@ -69,7 +71,8 @@ wk["done"] = (wk.index + pd.Timedelta(days=7)).tz_localize("UTC").tz_convert(TH)
 
 
 def watr(t):
-    return float(wk[wk.done <= t].atr.iloc[-1])
+    w = wk[(wk.done <= t) & wk.atr.notna()]
+    return float(w.atr.iloc[-1])
 
 
 S_OF = {}
@@ -183,8 +186,16 @@ for i in range(max(i0, 130), len(h1)):
         continue
     _, A, S = g
     Z = S * 10 / 76
-    k0 = int((r.low - A) // S) - 1
-    for k in range(k0, k0 + 4):
+    if FIX:
+        # re-arm: every disarmed key of this grid whose line the whole bar stays away from (by S/2)
+        for key in [kk for kk, armed in far.items() if not armed and kk[0] == round(A, 2) and kk[1] == round(S, 2)]:
+            if r.low >= key[2] + S / 2 or r.high <= key[2] - S / 2:
+                far[key] = True
+        ks = range(int(np.ceil((r.low - Z - A) / S)), int(np.floor((r.high + Z - A) / S)) + 1)
+    else:
+        k0 = int((r.low - A) // S) - 1
+        ks = range(k0, k0 + 4)
+    for k in ks:
         L = round(A + k * S, 2)
         key = (round(A, 2), round(S, 2), L)
         down = r.low <= L + Z and r.open > L
@@ -199,7 +210,7 @@ for i in range(max(i0, 130), len(h1)):
             run6 = (six.close.iloc[-1] - six.open.iloc[0]) * (1 if side == "SELL" else -1)
             mom = toward.max() >= med or run6 >= S
             visits.append({"visit": r.th, "side": side, "line": L, "S": S, "momentum": bool(mom), "abn": abnormal(i) if ABN > 0 else False})
-        elif min(abs(r.high - L), abs(r.low - L)) >= S / 2:
+        elif not FIX and min(abs(r.high - L), abs(r.low - L)) >= S / 2:
             far[key] = True
 v = pd.DataFrame(visits)
 
@@ -264,9 +275,13 @@ for r in v.itertuples():
         j += 1
     if cancelled:
         skip["cancel"] += 1
+        if FIX:
+            busy = ex.ct[j]
         continue
     if not fills:
         skip["no fill"] += 1
+        if FIX:
+            busy = ex.ct[min(j, len(ex) - 1)] if j < len(ex) else ex.ct.iloc[-1]
         continue
     q, px_out, how = out if out else (len(ex) - 1, ex.close.iloc[-1], "open")
     for name, (jf, px_in) in fills.items():
@@ -275,16 +290,21 @@ for r in v.itertuples():
         if how == "SL":
             assert pnl < 0
         rows.append({"visit": r.visit, "pos": name, "entry_t": ex.ct[jf], "exit_t": ex.ct[q], "side": r.side, "line": L, "S": round(S, 2),
-                     "entry": round(px_in, 2), "sl": round(sl, 2), "tp": round(tp, 2), "how": how, "risk": round(risk, 2), "pnl": round(pnl, 2)})
+                     "entry": px_in, "sl": sl, "tp": tp, "how": how, "risk": risk, "pnl": pnl})
     busy = ex.ct[q]
 
 t = pd.DataFrame(rows)
 (HERE / "zone_reference_out").mkdir(exist_ok=True)
-t.to_csv(HERE / "zone_reference_out" / f"long_{TAG}.csv", index=False)
+t.to_csv(HERE / "zone_reference_out" / f"long_{TAG}.csv", index=False, float_format="%.6f")
+if FIX:
+    print("open at the end (not a result):", t[t.how == "open"].visit.nunique())
+    t = t[t.how != "open"]
 s = t.groupby("visit").agg(usd=("pnl", "sum"), risk=("risk", "sum"), S=("S", "first"), how=("how", "first")).reset_index()
 s["R"] = s.usd / s.risk
 s["cum"] = s.usd.cumsum()
 print("grids:", len(grids), "| visits:", len(v), "| skipped:", skip)
+if os.environ.get("ZGRIDS"):
+    print("grid list:", [(g[0].strftime("%d/%m/%y %H:%M"), round(g[1], 2), round(g[2], 2)) for g in grids if g[0] >= pd.Timestamp(os.environ["ZGRIDS"], tz=TH)])
 print(f"setups {len(s)}: {s.R.mean():+.3f} R a setup, TP {(s.how == 'TP').mean():.0%}, USD at 0.01 lot each {s.usd.sum():+.1f}")
 y = s.groupby(s.visit.dt.year).agg(n=("R", "size"), R=("R", "mean"), usd=("usd", "sum"), S=("S", "median"))
 print(y.round(3).to_string())

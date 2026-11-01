@@ -43,7 +43,7 @@ and any number inside one, is never a rule.
 | name | default | meaning | whose |
 |---|---|---|---|
 | `step_mode` | `watr` | `watr` = `step_factor` x weekly ATR(14); `fixed` = `step_fixed` | the owner floated it (*"maybe 1/2 - 1/3 of the ATR?"*) after *"keep the zone at 80"* for the present market; the form, the monthly update and the remake are [Claude], chosen by measurement |
-| `step_factor` | 0.3333 | x the weekly ATR | owner's range 1/3 - 1/2; 1/3 measured (BOT_RESEARCH - a narrow peak: 0.3 and 0.4 much lower) |
+| `step_factor` | 1/3 = 0.3333333333333333 | x the weekly ATR | owner's range 1/3 - 1/2; 1/3 measured (BOT_RESEARCH - sensitive: 0.3 and 0.4 much lower, and 0.333 / 0.3333 / 1/3 give 96 / 109 / 102 setups) |
 | `step_fixed` | 76.0 | the step when `fixed` | owner (*"about 80"*, the lines of 01/11/2026) |
 | `grid_ks` | 1,2,3 | a cluster spans k steps | [Claude] (the owner's boxes were 2 steps; v8) |
 | `grid_tol` | 0.10 | a pair's distance within this x S of k S | [Claude] |
@@ -56,7 +56,7 @@ and any number inside one, is never a rule.
 | `sl_frac` | 0.5 | SL this x S past the line, for both | owner, with the two entries: *"SL beyond the liquidation zone"*; the number [Claude], from the measured fake-break depth (26 - 37 at S 76) - it departs from the owner's earlier single-entry SL *"about past a third of the box"* |
 | `tp_steps` | 1 | TP this many steps from the line (the opposite edge) | owner: *"TP is the opposite edge"* |
 | `order_life_h` | 48 | hours an unfilled setup waits | [Claude] |
-| `cancel_frac` | 0.3333 | momentum cancel: price ran this x S toward the line in the last hour | [Claude], from the owner's *"no fade against momentum"* |
+| `cancel_frac` | 1/3 = 0.3333333333333333 | momentum cancel: price ran this x S toward the line in the last hour | [Claude], from the owner's *"no fade against momentum"* |
 | `mom_bars`, `mom_med_bars`, `run_bars` | 3, 120, 6 | momentum skip (rule 5a) | [Claude], from the owner's 05/05 and 06/05 trades |
 | `gate_w` | D1 0.4, H4 0.3, H1 0.2, M15 0.1 | the state weights | owner: *"find the trend on M15, 1H, 4H, 1D and weight them"*; the weights [Claude], fixed before measuring |
 | `gate_min` | 0.25 | trade when the sideways share is over this | [Claude] |
@@ -69,7 +69,8 @@ Every name above is one field of `ZoneParams` (rule 1). Types and bounds [Claude
 `p1_frac`, `p2_frac`, `sl_frac`, `cancel_frac`, `abn_atr` > 0; `grid_tol`, `shift_tol`, `step_remake` in (0, 1);
 `gate_min` in [0, 1); `p2_frac` < `sl_frac` (P2 must lie before the SL); ints `tp_steps`, `order_life_h`, `mom_bars`,
 `mom_med_bars`, `run_bars`, `ema_len`, `atr_len` >= 1; `grid_ks` a non-empty strictly increasing tuple of ints >= 1;
-`gate_w` four floats >= 0 (D1, H4, H1, M15) summing to 1 within 1e-9. An `abn_atr` of 1e9 or more switches 5c off in
+`gate_w` four floats >= 0 (D1, H4, H1, M15) summing to 1 within 1e-9; every float finite; `p1_frac` <= `near_frac` (so no
+fill can come without its visit, rule 4); `p1_frac` < `tp_steps` (P1's target lies on the profit side). An `abn_atr` of 1e9 or more switches 5c off in
 effect (acceptance case 3b).
 
 **Parity with the reference** [Claude]: at the defaults the build computes the same numbers as the reference. The
@@ -115,6 +116,8 @@ module**, so the two never touch:
   low, |high - previous close|, |low - previous close|)) - MT5's ATR. Acceptance: the week starting 2026-10-25 gives
   **195.99** (the owner's screen, 01/11/2026).
 - A week is **closed** for use at its start + 7 days (server time, read as UTC) [Claude, as the reference].
+- **Over the whole history** [Claude]: the months run from the month before the first stored H4 bar to the run's end,
+  so every H4 pair, before or after the run's start, is judged with the step of its own month.
 - **The month's step**: at each Thai month start `m` (00:00 Asia/Bangkok), `S(m)` = `step_factor` x the ATR of the
   last week closed at or before `m` (`step_mode` watr), or `step_fixed` (fixed). A time `t` uses `S` of its Thai month.
 
@@ -137,16 +140,18 @@ months, by time) [Claude].
 - **A month start** with a current grid and `|S(m) - S_g| > step_remake x S_g` starts a new grid (`A_g`, `S(m)`) - the
   same anchor, the new step.
 - The grid **in force** at `t` = the last grid whose start is at or before `t`. Before the first grid: nothing.
-- Acceptance (`step_mode` fixed 76, from 2025-11-01): the grids that start from 2025-09-24 on are 24/09/25 3627.90,
-  05/11/25 3886.43, 05/05/26 4510.20, 02/07/26 3942.95, 09/09/26 4282.45, 22/09/26 4253.59, 14/10/26 4066.42 (BOT_RESEARCH,
-  "The whole system in one run"; dates Thai).
+- Acceptance (`step_mode` fixed 76; Thai times): the grid in force on 2025-08-01 and every later start up to 2026-11-01 are
+  14/08/25 20:00 3331.04, 05/11/25 13:00 3886.43, 05/05/26 12:00 4510.20, 02/07/26 12:00 3942.95, 09/09/26 20:00 4282.45,
+  22/09/26 12:00 4253.59, 14/10/26 00:00 4066.42 (the reference, full history; Sol's review).
 
 ## 4. Visits - price comes to a line (H1)
 
 At each **H1 bar** `i` (its open `t_i`, from the run's start on; never without a grid):
 
-- For the grid in force at `t_i` (`A`, `S`), the lines `L = round(A + k S, 2)` for `k = floor((low_i - A) / S) - 1` to
-  `k + 3`. `Z = near_frac x S`.
+- For the grid in force at `t_i` (`A`, `S`), `Z = near_frac x S`; **first** every disarmed line key of this grid is
+  re-armed when bar `i` stays wholly `away_frac x S` from its line (`low_i >= L + away_frac x S` or `high_i <= L -
+  away_frac x S`); **then** the candidate lines are `L = round(A + k S, 2)` for every integer `k` from `ceil((low_i - Z - A)
+  / S)` to `floor((high_i + Z - A) / S)` - every line the bar could reach, however long the bar.
 - **A visit** on `L`: (`low_i <= L + Z` and `open_i > L`) -> a **BUY** visit; else (`high_i >= L - Z` and `open_i < L`)
   -> a **SELL** visit; and the line is **armed**. The visit's time is `t_i`.
 - **Why this is not look-ahead** [Claude]: the visit is the **bid** reaching P1's price (`p1_frac` = `near_frac`); P1
@@ -161,11 +166,12 @@ At each **H1 bar** `i` (its open `t_i`, from the run's start on; never without a
   test and the re-arm test of this rule do, as they happen); the cut test (rule 12, case 4) checks it.
 - **Several visits on one H1 bar** are taken in ascending line price (the reference's loop over k), each through
   rules 5 - 8 in turn.
-- **Warm-up**: the first H1 bar that can make a visit has the 0-based row index 130 in the stored H1 file (and is not
-  before the run's start).
-- **Armed** [Claude]: a line key (`round(A,2)`, `round(S,2)`, `L`) is armed until it is visited; it is armed again
-  after an H1 bar whose high and low are both at least `away_frac x S` from `L`. A new grid has new keys - all armed.
-  A visit disarms the line whatever rule 5 then decides.
+- **Warm-up**: the first H1 bar that can make a visit has the 0-based row index `max(mom_bars, mom_med_bars, run_bars,
+  atr_len) + 10` in the stored H1 file (130 at the defaults), and is not before the run's start.
+- **The run's end** `--end` is exclusive for visits: no visit at or after it; a setup visited before it is followed on
+  the stored bars past it until it ends.
+- **Armed** [Claude]: a line key (`round(A,2)`, `round(S,2)`, `L`) is armed until it is visited; it is re-armed as
+  above. A new grid has new keys - all armed. A visit disarms the line whatever rule 5 then decides.
 
 ## 5. Skips - when the market is not this setup's (in this order; the first that applies is the reason)
 
@@ -174,7 +180,11 @@ a. **Momentum into the line** (owner: *"a green candle that big - would you stil
    (`i-3 .. i-1`) has a body toward the line (`(close - open) x -sgn`) at least the median H1 range (high - low) of
    the `mom_med_bars` bars `i-120 .. i-1`; **or** the last `run_bars` H1 bars (`i-6 .. i-1`) ran `S` toward the line
    (`(close_{i-1} - open_{i-6}) x -sgn >= S`). Reason `momentum`.
-b. **One setup at a time** [Claude]: a visit at or before the exit time of the last setup that filled. Reason `busy`.
+b. **One setup at a time** [Claude]: a setup **reserves** from its visit until it ends - its exit if it filled, else the
+   close of the `exec_tf` bar on which it was withdrawn, expired or cancelled. A visit at or before the end of the last
+   setup that was not skipped is skipped. Reason `busy`. (This is known at the visit's time: the earlier setup is still
+   pending or open. The reference before Sol's review let a visit through when the earlier, still pending setup was
+   later never filled - look-ahead, fixed.)
 c. **Price far from its mean** (owner: *"measure from volatility or price much further than normal, on a smaller frame -
    it should tell at once"*; *"2.5 - 3 ATR"*): at H1 bar `i-1`, `|close - EMA(ema_len)| >= abn_atr x ATR(atr_len)` (EMA:
    pandas `ewm(span=ema_len, adjust=False)` over the whole stored H1 series; ATR: the simple mean of the last
@@ -208,6 +218,8 @@ For a visit not skipped, with `sgn`:
     yet - a cancel there cancels the whole setup and P2 is not tested; else it fills; (4) the exit test of rule 7 on
     the same bar.
 - After the first fill the orders stay until the exit (no withdrawal or expiry for P2).
+- **Time is counted in `exec_tf` bars** [Claude]: `order_life_h` hours = `order_life_h x per_h` bars, which can span more
+  than 48 clock hours across a weekend. Fill and exit times are the close of the bar on which they happen.
 
 ## 7. Fills and exits [Claude, as the reference]
 
@@ -221,7 +233,8 @@ For a visit not skipped, with `sgn`:
   parity note); outputs are rounded to 2 decimals.
 - **Cost** = the spread only (the owner, 10/20), through the fills and exits above; no slippage.
 - **Results**: a position's `pnl = sgn x (exit - fill)` (USD at 0.01 lot), `risk = sgn x (fill - SL)`; a **setup's R** =
-  the sum of its positions' pnl / the sum of their risks. Every SL exit has pnl < 0 (asserted).
+  the sum of its positions' pnl / the sum of their risks, from unrounded values. Every SL exit has pnl < 0 (asserted).
+  **Open setups are not results** - left out of every total, R, drawdown and month count, and counted apart.
 
 ## 8. Order of evaluation [Claude]
 
@@ -247,6 +260,7 @@ bar of `exec_tf`. The run's span: `--start` and `--end` (Thai dates; default 202
 ## 11. What the setup writes
 
 Under `eye/research/zone/<market>/<set>/`:
+- CSV numbers to 6 decimals (the totals are computed before any rounding).
 - `positions.csv` - one row per filled position: visit time (Thai), P1 / P2, side, line, S, entry time, fill, SL, TP,
   exit time, exit, how (SL / TP / open), risk, pnl.
 - `visits.csv` - one row per visit: time, side, line, S, grid anchor, and its outcome: the skip reason (`momentum`,
@@ -255,6 +269,11 @@ Under `eye/research/zone/<market>/<set>/`:
 - `grids.csv` - every grid: start time (Thai), anchor, step, what started it (pair a / b, or month).
 - `summary.csv` - `zone=<market>/<set>@v<version>`, every parameter, the span, setups, R a setup, TP share, USD, by
   year and by month, the deepest drawdown.
+- `charts/` - **every setup drawn** (the owner: *"zoomed out to show the zones as a whole"*; trades are judged one at a
+  time): one PNG per setup, `<nn>_<win|loss|open>_<YYYYMMDD>.png`, two panels - H1 from 6 days before the first fill to
+  1 day after the exit, and `exec_tf` from 10 hours before to 3 hours after; on both every grid line in view (the
+  setup's line thick), P1 / P2 fills marked and labelled, the SL and TP drawn at least a sixth of the panel wide with
+  their distances written, the exit marked; the title gives side, line, step, fills, SL, TP, how and USD.
 - Times are ISO text in Thai time (`2026-10-14 08:30:00+07:00`); prices and USD to 2 decimals.
 - **Drawdown** [Claude, as the reference] = the lowest (cumulative USD - its running peak) over the setups in visit-time
   order; **a negative month** = a Thai calendar month (by visit time) with at least one setup and a USD sum < 0; months
@@ -269,16 +288,18 @@ is reported, not bent to fit.
 2. **Grids**: the list in rule 3 (`step_mode` fixed, 76).
 3. **The reference reproduced, setup for setup** (`eye/research/zone_reference.py` with the same settings; its CSV
    under `eye/research/zone_reference_out/`):
-   - the **defaults**, 2023-10-01 to 2026-11-01: **104 setups, +0.340 R a setup, 50 % TP, +1211.4 USD**, drawdown
-     -744.2 USD (to 06/04/26), 15 of 35 months negative; skips: momentum 547, trend 138, busy 58, cancel 63, no fill 71,
-     abnormal 133 (the reference's counter order differs; the counts must match). (These are after the SELL-fill fix of
-     2026-11-01 in the reference - before it, +0.348 R / +1228.2 USD, the numbers in BOT_RESEARCH.)
-   - `step_mode` fixed 76, `exec_tf` M5, `abn_atr` off (a value so large it never applies, e.g. 1e9), 2025-11-01 to
-     2026-11-01: **41 setups, +0.615 R, +1378 USD**.
+   - the **defaults**, 2023-10-01 to 2026-11-01 (the reference with `ZS=watr0.3333333333333333 ZEXEC=M15 ZABN=3 ZABNK=C`,
+     v2 = `ZFIX=1`): **102 setups, +0.461 R a setup, 54 % TP, +1805.5 USD**, drawdown -617.5 USD (to 06/04/26), 12 of 36
+     months negative, 0 open; skips: momentum 529, trend 132, busy 59, cancel 61, no fill 72, abnormal 132 (the
+     reference's counter order differs; the counts must match). The reference before v2 and BOT_RESEARCH's earlier
+     numbers differ (0.333, the old busy, the old line choice) - BOT_RESEARCH, "Sol's review".
+   - `step_mode` fixed 76, `exec_tf` M5, `abn_atr` off (1e9), 2025-11-01 to 2026-11-01: **41 setups, +0.615 R, +1378 USD**
+     (the same 69 positions before and after v2).
    Every setup's visit time, side, line, positions, fills, exit and pnl equal the reference's; any difference listed.
 4. **No look-ahead** [Claude]: a run on the bars cut at a time `T` (every timeframe's bars with `close_time <= T`) gives
-   the same visits, skips and setups for every visit before `T - order_life_h`, and the same fills / exits for every
-   setup that exited before `T` - tested at three cuts, `T` = 2024-06-01 00:00 UTC, 2025-12-15 00:00 UTC and
+   the same events known by `T` - every visit, skip and grid before `T`, every fill and exit before `T` - and leaves
+   every setup unresolved at `T` pending or open (not resolved differently); plus a constructed case: changing an H1
+   bar's later low (A 100, S 10, open 102, high 105, low 95 vs 65) does not remove the visit on 100 - tested at three cuts, `T` = 2024-06-01 00:00 UTC, 2025-12-15 00:00 UTC and
    2026-08-01 00:00 UTC.
 5. **Unit tests on constructed bars** for: the weekly ATR; a pair at 1, 2, 3 steps (+- the tolerance edge) and one
    just outside; a shift and a non-shift by `shift_tol`; a month remake; arming and re-arming; each skip (a-d) on and
@@ -291,6 +312,10 @@ is reported, not bent to fit.
 7. **Independence**: `eye/zone_bot.py` and `eye/zone_config.py` import nothing from `eye/bot2e.py`,
    `eye/bot_config.py` or `eye/bot_research.py`, and those import nothing from them (a test reads the imports).
 8. **Gates**: ruff, mypy (the new files), and the full test suite green.
+9. **Charts**: one chart per setup of case 3a, as rule 11 says (checked by eye by Claude, then the owner).
+10. **What the acceptance validates** [Claude]: the build against this file and the reference - a **measured proxy** of the
+    owner's zone reading (the shift without the full-step reversal; the two-limit branch; the half-step SL). Whether the
+    setup reads the market is the owner's judgement on the charts (CLAUDE.md step 7).
 
 ## 13. How results are judged
 

@@ -1862,3 +1862,16 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   price). Rerun: **the defaults, October 2023 - October 2026: 104 setups, +0.340 R a setup (was +0.348), +1211.4 USD
   (was +1228.2), 15 of 35 months negative (was 14)**; the fixed-76 M5 year unchanged (41, +0.615, +1378). The
   measured picture does not change.
+- **Sol's review of the spec and the reference** (Codex on `gpt-6.1-sol`, the owner's choice of reviewer, 2026-11-01).
+  It found the reference wrong in ways that touch every run-zone number above: (1) the runs reported as "1/3" used
+  0.333 (`ZS=watr0.333`) - 0.3333 gives 109 setups +0.389 R; (2) **look-ahead in `busy`**: each setup was simulated to its
+  end before the next visit, so a visit was let through when an earlier setup, still pending at that time, was later
+  never filled; (3) the candidate lines came from the bar's low (a bar longer than about 3 steps could miss a line it
+  passed); (4) re-arming checked only those lines; (5) the steps of months before the run's start were 76; (6) open
+  setups and rounded values entered the totals. All fixed in `eye/research/zone_reference.py` v2 (`ZFIX=1`; `ZFIX=0`
+  keeps the old behaviour and still gives 104 / +0.340 / +1211.4). **v2, the defaults (0.333): whole span 96 setups
+  +0.427 R +1378 USD (drawdown -633); never-used span 59 +0.458 R; built year 37 +0.378 R. With exactly 1/3 (now the
+  default): whole 102 setups +0.461 R, 54 % TP, +1805.5 USD, drawdown -618, 12 of 36 months negative; never-used 60
+  +0.434 R (+500); built year 42 +0.500 R (+1306).** The fixed-76 M5 year is unchanged - the same 69 positions. The fixes
+  raised the numbers rather than lowered them; the step factor's sensitivity (0.333 / 0.3333 / 1/3: 96 / 109 / 102
+  setups) stays a warning.
