@@ -1774,3 +1774,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   at the zone meets the short move into it. The blend: against (< -0.25) 25 +0.279, mixed 23 +0.178, with 15 +0.648,
   and the halves disagree (mixed: May - October -0.247, November - April +1.710). Without the blend's "against": 38
   setups +0.364 R, +633 USD - worse than D1 alone (34, +0.688, +1282). Only D1 separates.
+- **Sideways across the frames** (the owner: *"do we understand each other? I want you to find sideways, to know
+  whether all the frames together show the picture"*). Each of M15 / H1 / H4 / D1 is sideways at the entry when its
+  last two fixed ZigZag highs and lows do not agree. Counted (0 - 4 frames sideways): 8 +0.204 / 25 +0.050 / 21
+  +0.370 / 7 +1.394 / 2 +0.188 R - noisy, the halves disagree. **Weighted (the same fixed weights D1 .4, H4 .3, H1 .2,
+  M15 .1; the share of weight sideways; bands chosen before the run): trending (<= .25) 21 setups -0.275 R (-442
+  USD), part (.3 - .5) 25 +0.497 (+598), sideways (>= .6) 17 +0.832 (+846)** - and the same order in both halves
+  (trending: May - October -0.541 on 7, November - April -0.142 on 14). C without the trending band: 42 setups,
+  about +0.63 R, +1444 USD (D1-against alone: 34, +0.688, +1282).
