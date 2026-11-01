@@ -1680,3 +1680,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     SELL 4738). May - October: **32 setups, +0.397 R a setup, +648 USD** (May -198 = the -41 before less the 07/05
     +157, as expected); November - April: **31 setups, +0.234 R a setup, +263 USD** (+233 / -218 / -86 / -127 / +223
     / +238). The fixed step of 76 against January - March's wider days is still open - the owner's to set.
+  - **The zone length from the market** (the owner: *"try it"*; `ZADAPT=1`): a cluster = two neighbouring fixed H4
+    turns and a third that comes back within a third of a step of the first edge; the step = half the cluster's
+    height (40 - 120); a new grid when the anchor or the step moves (> S/5, > 10 %); P1 / P2 / SL / TP scaled to the
+    step. The fixed-step run reproduced first (+0.397 R, 32 setups - unchanged). The grids: 18 from mid-April to
+    October, steps 58 - 114; October's 4066.42 / 75.3 from 19/10 (the owner's lines, 12 days after v7). **May -
+    October: 38 setups, +0.070 R a setup, -24 USD; November - April: 29 setups, -0.258 R a setup, -745 USD.** Worse
+    than the fixed 76 in both periods - this cluster reading moves the zones far more often than the owner does.
+    Not kept.
