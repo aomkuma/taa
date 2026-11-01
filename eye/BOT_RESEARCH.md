@@ -1328,7 +1328,8 @@ mirrored; each counted on its own. Expectation written before: 40 - 50 % won at 
 placed when price had already fallen past `L1`, and a fill bar that opened beyond the stop was scored at the stop -
 a "loss" with R > 0. Fixed (no order unless price is still on the right side of `L1`; a gap past the stop exits at
 the open; an assertion that no stop exit has R > 0); the retest and structure-leg prototypes were checked for the
-same fault - none had it (the M5 retest moves +0.222 -> +0.219 with the stricter gap rule).
+same fault - none had it (the M5 retest moves +0.222 -> +0.219 with the stricter gap rule on July - October; the
+unseen months stay 193 trades, -14.7 R, -0.076 under both rules).
 
 | timeframe | period | trades | won | R / trade | BUY / SELL R / trade |
 |---|---|---|---|---|---|

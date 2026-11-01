@@ -689,5 +689,7 @@ event is the HH 4404.17 -> 4415.88 - 11.71 apart, just outside 0.20 x 55.66 = 11
 HH -> BUY at 0.15 (Codex's read-only recomputation, 2026-10-31: 8.42 against 10.61 at 0.20); unit tests on made-up pivots for each of HH, LL, M, W, a lower
 high and a higher low (no event), the tolerance edge (equal = inside), no event -> no side; a fade leg is never
 offered with m15; `side_rule` h4 gives exactly today's results (the existing rule 16 tests pass with `side_rule` h4).
-**Open**: levels from the left / the owner's price clusters as obstacles to a target - to be measured first. The
+**Open**: levels from the left / the owner's price clusters as obstacles to a target - deferred: Claude's forms of
+them were measured on 2026-10-31 / 11-01 and did not mark the turns (`eye/BOT_RESEARCH.md`); next come the single
+trades drawn with the owner (HANDOFF, 2026-11-01). The
 set-aside work is in `eye/wip/`; `eye/state11.py` (rule 11, failed) is kept, unused.

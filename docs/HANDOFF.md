@@ -19,7 +19,8 @@ measured.
   - The bot with rule 16 m15, July - October all day: -0.062 R a fill (213, legs on M5), -0.040 (83, legs on M15);
     `h4_old` -1.10 R in all. Losses are not the target's distance - at a 1 R target the entries win 46 %.
   - The break and retest (rule 17) was the one kind positive in all three sets (+0.23 / +0.23 / +1.22 R, few). Alone
-    on every M5 leg: +0.219 R July - October (112), **-0.076 on November 2025 - June 2026 (193)**; SELL retests
+    on every M5 leg: +0.222 R July - October (112; +0.219 with the stricter gap rule), **-0.076 on November 2025 -
+    June 2026 (193; the same under both rules)**; SELL retests
     positive in both (+0.264 / +0.196; the owner had said *"the edge is when the big trend is down"*), lumpy by month.
   - Not supported by the data in Claude's forms: Fibonacci clusters or left levels marking turns; push counts; M30
     better than M15 (worse); the M / W second touch; the bounce to the 23.6 % line (the owner's 30/10 chart) on every
