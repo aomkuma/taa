@@ -1646,3 +1646,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     was drawn only for the trade's life (fixed: drawn wider, the distances written). Measured on the 19 SL trades:
     8 hit within 1 hour; **11 came back to the line within 24 hours**; before that price had gone 26.3 - 30.1 past the
     line in 10 of the 19 (1 - 5 beyond the SL), 31 - 37 in 5, 45 - 69 in 4 - for gold's fake breaks S/3 is tight.
+- **Variant A on M15** (the owner: the signal is read on M15; *"there is no fixed pattern"*). Expectation written
+  before: later entries, the 1:2 rule leaves under 20 trades. (a) the turn = an M15 close past the last fixed M15
+  ZigZag swing: 12 turns, entries a median 24.8 past the line, **2 trades** after 1:2 - the ZigZag turn is too slow
+  on any frame. (b) the smallest M15 turn - a close past the high (BUY) / low (SELL) of the M15 bar that made the
+  zone's extreme (`entries_m5.py M15 0 bar`, `trades_m5_m15_late0_bar.csv`): 40 turns, **29 trades after 1:2 (structure
+  stop), 7 TP (24 %), +5.30 R, +0.183 R a trade, +95 USD at 0.01 lot** (+0.71 / -2.14 / +1.64 / +4.80 / +3.30 / -3.00 R
+  by month). Found after about ten variants on the same six months - 29 trades is a handful and the number is
+  shaded by the search.
