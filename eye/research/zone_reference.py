@@ -212,7 +212,9 @@ for i in range(max(i0, 130), len(h1)):
             run6 = (six.close.iloc[-1] - six.open.iloc[0]) * (1 if side == "SELL" else -1)
             mom = toward.max() >= med or run6 >= S
             visits.append({"visit": r.th, "side": side, "line": L, "S": S, "momentum": bool(mom), "abn": abnormal(i) if ABN > 0 else False,
-                           "h1_open": float(r.open), "Z": Z})
+                           "h1_open": float(r.open), "Z": Z, "anchor": A, "mom_body": float(toward.max()), "mom_median": med,
+                           "mom_run": float(run6), "ema_dist": float(_dist[i - 1]), "atr": float(_atr[i - 1]),
+                           "share": side_share(r.th)})
         elif not FIX and min(abs(r.high - L), abs(r.low - L)) >= S / 2:
             far[key] = True
 v = pd.DataFrame(visits)
@@ -222,7 +224,8 @@ if FIX and len(v):
     for r in v.itertuples():
         j0 = int(ex.th.searchsorted(r.visit))
         jt = j0
-        while jt < min(j0 + PER_H, len(ex)):
+        h_end = r.visit + pd.Timedelta(hours=1)
+        while jt < min(j0 + PER_H, len(ex)) and ex.th.iloc[jt] < h_end:  # bars of that hour only (Sol, piece 2a review)
             b = ex.iloc[jt]
             if (r.side == "BUY" and b.low <= r.line + r.Z) or (r.side == "SELL" and b.high >= r.line - r.Z):
                 break
@@ -233,9 +236,9 @@ if FIX and len(v):
     v = v.sort_values(["visit", "touch_j", "from_open", "line"], kind="stable").reset_index(drop=True)
 if os.environ.get("ZVISITS") and len(v):
     (HERE / "zone_reference_out").mkdir(exist_ok=True)
-    v.to_csv(HERE / "zone_reference_out" / f"visits_{TAG}.csv", index=False, float_format="%.6f")
+    v.to_csv(HERE / "zone_reference_out" / f"visits_{TAG}.csv", index=False, float_format="%.17g")
     pd.DataFrame([(g[0], g[1], g[2]) for g in grids], columns=["start", "anchor", "step"]).to_csv(
-        HERE / "zone_reference_out" / f"grids_{TAG}.csv", index=False, float_format="%.6f")
+        HERE / "zone_reference_out" / f"grids_{TAG}.csv", index=False, float_format="%.17g")
 
 # the setups
 rows, busy, skip = [], None, {"momentum": 0, "trend gate": 0, "busy": 0, "cancel": 0, "no fill": 0}
