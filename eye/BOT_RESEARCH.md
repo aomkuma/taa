@@ -1641,3 +1641,8 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     limit. Added: the resting limit is cancelled when the last 12 closed M5 bars ran S/3 toward the line. **26
     trades, 7 TP (27 %), +2.00 R, +0.077 R a trade, +51 USD at 0.01 lot** (-3 / +6 / +3 / +5 / -5 / -4 R); 18 limits
     cancelled - winners among them as well as the 07/05 loss. A handful.
+  - The owner: *"is the SL really a third? the distance looks very narrow, in the earlier pictures too"*. Checked:
+    every SL is 25.33 from the line (76 / 3), every TP 76.00. It looked narrower in the drawings because the SL line
+    was drawn only for the trade's life (fixed: drawn wider, the distances written). Measured on the 19 SL trades:
+    8 hit within 1 hour; **11 came back to the line within 24 hours**; before that price had gone 26.3 - 30.1 past the
+    line in 10 of the 19 (1 - 5 beyond the SL), 31 - 37 in 5, 45 - 69 in 4 - for gold's fake breaks S/3 is tight.
