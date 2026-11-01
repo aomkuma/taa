@@ -1827,3 +1827,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   on 10, 2024 +0.008 on 41, 2025 +0.232 on 55, 2026 +0.218 on 36), drawdown -1203 USD, 16 of 36 months negative. 1/3
   is the only factor over the goal and its neighbours (0.3, 0.4) fall to +0.08 / +0.03 - a narrow peak. USD mixes
   steps of 14 to 95 (the risk scales with the step); R is the fair measure.
+  - The owner: *"did the drawdown come from a trending market?"*. The deepest drawdown of the 1/3-ATR whole span
+    (-1203 USD, 22/09/25 - 06/04/26): 36 setups, 8 TP. **Yes - mostly trends, missed by the gate**: (1) 22/09 - 14/10/25,
+    7 setups, 6 SL - SELLs into the September - October rise (D1 net +300 to +430 in 20 days, ER 0.54 - 0.67), while the
+    slow D1 ZigZag still read "mixed"; (2) November, ER 0.00 - 0.20 - sideways, mixed results; (3) 17/12/25 - 20/01/26,
+    SELLs into the rise (ER 0.34 - 0.73); (4) 05/02 - 18/03/26, 6 BUYs, all SL, in the fall from 5419 to 4099 (the D1
+    ZigZag still "up"; ER 0.09 - 0.25 - a wild market, step 59 - 95); (5) 27/03 - 06/04, 4 SELLs, all SL, into the rebound
+    (D1 net -800, ER about 0.48). The D1 ZigZag structure lags a fast trend; the D1 20-day ER caught (1) and part of (3).
