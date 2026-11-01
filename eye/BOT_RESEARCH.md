@@ -1553,3 +1553,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     anchored on 4110.78 (05/10), about 31 USD off the owner's lines.
   Each added condition fixed one week and broke another, tuned on the one month the owner's lines cover. **Stopped**:
   more of the owner's own zones (other months) are needed to judge a form against; none of these is a rule.
+- **v5 - the month's cluster** (scratchpad `zone_month.py`; the owner: *"you can't draw it - isn't it that you don't
+  see a wide enough zone? I can see it"*, after asking *"H4 back one month?"*). Over the last 132 H4 bars (about a
+  month) the 2S band holding the most closes is the cluster, its lowest low the anchor; a shift when the anchor moves
+  more than S/5 off the lines. Expectation written before: late October 4066 - 4218, late September 4244 - 4400.
+  Measured: 18 shifts May - October; **14/10 20:00 - 28/10 on 4066.42 - the owner's lines within about 1 USD, and
+  held through the 22 - 23/10 break** (v3 lost it there); late September 4234.93 - 4479 (the owner's boxes 4244 -
+  4400, about 9 off at the low); on 28/10 09:00 it shifted to 4024.56, 34 - 37 USD off the owner's lines, where the
+  owner kept October's. Still judged against one month of the owner's lines only.
