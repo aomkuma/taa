@@ -1581,3 +1581,14 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   repeats seconds apart: about 10 a month (May ~10, June ~12, July ~10, August ~10, September ~10, October ~10) -
   about 60 in six months, 2 - 3 a week. The breaks past a line (mid-July 4019, mid-August 4399) would be stop-limit
   trades, not counted. An estimate by eye, not a measurement.
+- **Where the bot would enter on the v7 zones** (`eye/wip/zones_2026-11-01/entries.py`, `entries.csv`, drawings
+  `entries_2026-05..10.png`, H1; the owner: *"the zones are coarse - I want to see where you would have the bot
+  enter"*). Claude's form: a limit at the line (BUY coming down, SELL coming up), SL S/3 beyond, TP the opposite edge;
+  skipped when the leg into the line covers >= S with no pullback over S/4 (a trend run); "turned before" when price
+  came within 10 and left by S/2 without touching. Three faults of the script were found on the drawings and fixed
+  before any count was believed (a turn called on the bar before the touch; the away test on the touching bar
+  itself; a bar's own range counted as a pullback). May - October: **76 entries** (11 / 21 / 13 / 11 / 12 / 8),
+  29 skipped, 24 turned before. No outcomes scored. Claude's eye on October and June: the entries sit on the lines as
+  meant, and 30/10, 28/09, 05 - 07/08 are skipped; **but the trend filter misses legs that are trend runs by eye** -
+  22/10 BUY 4066 and BUY 3990 in the fall, 14/10 BUY 4142, June 05/06 BUY 4434, 10/06 BUY 4206, 18/06 BUY 4206, 24/06
+  BUY 4054 - the H1 pauses inside them pass S/4. About a third of June's and October's entries by eye.
