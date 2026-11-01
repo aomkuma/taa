@@ -1750,3 +1750,9 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     -0.034, weak 12 +0.167, strong 3 +0.167.
   C earns in the sideways and weak D1 states and in the sideways H4 state; almost no setups came in a strong trend
   (the momentum skips keep it out), so a state filter would remove few. Strong-trend counts are 1 - 5.
+- **A daily on / off score** (the owner: *"measure the market state and weight it, to know whether this setup should
+  be active each day"*; `day_state_12m.csv`). Weights fixed before looking (thirds): D1 ER 20 (full at 0, negative
+  past 0.5), H4 ER 30 (negative past 0.3), median D1 range 20 / 76 (negative more than 0.5 away from 1); active when
+  the score > 0. Expectation written before: the gains on active days, January - March mostly off. **Measured: 321
+  of 365 days active (January 90 %, February 57 %); active days 96 trades +0.182 R (+860 USD), inactive 11 trades
+  +0.436 R (+187 USD)** - the score does not separate; the expectation was wrong. Not kept.
