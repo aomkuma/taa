@@ -92,7 +92,8 @@ module**, so the two never touch:
   current values = per name the highest `id`; version = the highest `id`; no value falls back to the code; every
   `ZoneParams` field present and no other; a write checked whole through `ZoneParams` inside `BEGIN IMMEDIATE`; the
   time passed in from `main`; market and set names: letters, digits, `_`, `-`).
-- **The command line** (`python eye/zone_config.py <command>`, every command takes `--db PATH`, default
+- **The command line** (`seed`, `upgrade`, `copy`, `set`, `show`, `list`, `history`; `python eye/zone_config.py
+  <command>`, every command takes `--db PATH`, default
   `data/bot_config.db`):
   - `seed --market M --set S --by WHO` - a new set from `ZoneParams()`, one row per field, note "seeded from the code
     defaults"; refused (exit 1, nothing written) if the set exists.
@@ -232,7 +233,8 @@ For a visit not skipped, with `sgn`:
     then P2: a position whose price the bar reaches is tested for the fill-moment cancel only while nothing has filled
     yet - a cancel there cancels the whole setup and P2 is not tested; else it fills; (4) the exit test of rule 7 on
     the same bar.
-- After the first fill the orders stay until the exit (no withdrawal or expiry for P2).
+- After the first fill the orders stay until the exit (no withdrawal or expiry for P2) - except that the break-even
+  (rule 7) cancels an unfilled P2.
 - **The end of the data**: a setup with no fill, not yet withdrawn, expired or cancelled when the stored bars end is
   `pending` - not `no fill`, not a result; it reserves (5b) to the last bar.
 - **Time is counted in `exec_tf` bars** [Claude]: `order_life_h` hours = `order_life_h x per_h` bars, which can span more
@@ -253,10 +255,13 @@ For a visit not skipped, with `sgn`:
   cost"*, chosen after the measurement - BOT_RESEARCH; `be_mode` entry) [Claude, the form]: on each bar after the exit
   test of that bar found no exit, while the break-even is not yet on and something has filled: `avg` = the mean fill
   price of the positions filled so far (P1 and P2 weigh the same - one lot each), `mid = avg + be_frac x (TP - avg)`;
-  when the bar's bid reaches `mid` (BUY: `high >= mid`; SELL: `low + spread x point <= mid`), the break-even goes on
+  when the bar reaches `mid` (BUY: the bid, `high >= mid`; SELL: the ask, `low + spread x point <= mid` - the side
+  each exit is judged on), the break-even goes on
   **from the next bar**: an unfilled P2 is cancelled (never tested again), and the SL of every filled position becomes
   `avg + sgn x spread_j x point` (`spread_j` = that bar's spread) - an exit there is `BE` (its pnl may be a little above
   or below 0; not asserted < 0). The TP stays. The risk of a position (for R) stays `sgn x (fill - the original SL)`.
+  A known convention [Claude, as the reference]: the trigger may come on the bar that filled, from that bar's
+  extreme - OHLC bars cannot tell whether the extreme came before or after the fill.
 - **Results**: a position's `pnl = sgn x (exit - fill)` (USD at 0.01 lot), `risk = sgn x (fill - SL)`; a **setup's R** =
   the sum of its positions' pnl / the sum of their risks, from unrounded values. Every SL exit has pnl < 0 (asserted).
   **Open setups are not results** - left out of every total, R, drawdown and month count, and counted apart.
@@ -287,6 +292,10 @@ bar of `exec_tf`. The run's span: `--start` and `--end` (Thai dates; default 202
 
 Under `eye/research/zone/<market>/<set>/`:
 - CSV numbers to 6 decimals (the totals are computed before any rounding).
+- **SL in the outputs**: `sl` is always the original SL; `be_sl` is the break-even SL when it went on (empty
+  otherwise) and `be_time` the close of the bar that turned it on; `how` is `SL`, `TP`, `BE` or `open`. A chart draws
+  the original SL as now and, when the break-even went on, the break-even SL as a dashed segment from the next bar, its
+  distance written; the title gives `how` (`BE` included).
 - `positions.csv` - one row per filled position: visit time (Thai), P1 / P2, side, line, S, entry time, fill, SL, TP,
   exit time, exit, how (SL / TP / open), risk, pnl.
 - `visits.csv` - one row per visit: time, side, line, S, grid anchor, and its outcome: the skip reason (`momentum`,
@@ -334,8 +343,13 @@ is reported, not bent to fit.
    just outside; a shift and a non-shift by `shift_tol`; a month remake; arming and re-arming; each skip (a-d) on and
    off at its edge; P1 / P2 / SL / TP prices for a BUY and a SELL; withdrawal, expiry and both cancels; a bar filling
    both positions; SL first in a bar holding both; no TP on the fill bar; the spread on each side; `open` at the end;
-   R and pnl.
-6. **The parameters**: the BOT_RULES database cases, for `zone_config` (seed loads back equal to `ZoneParams()`, the
+   R and pnl; the break-even: the trigger at `mid` exactly (equality) and one tick short, BUY and SELL, on the fill bar
+   and on a later bar; the SL moved only from the next bar; the trigger bar's spread in the new SL; an unfilled P2
+   cancelled and never filled after; a P2 that filled before the trigger kept; the `BE` exit and its pnl; the risk on
+   the original SL; `be_mode` off reproducing the results without it.
+6. **The parameters**: the `upgrade` command (adds only missing fields with the code defaults, one row each, never
+   touches present fields; refused on nothing missing, an unknown name or an unparsable value; a set made before
+   `be_mode` / `be_frac` loads after it); the BOT_RULES database cases, for `zone_config` (seed loads back equal to `ZoneParams()`, the
    text round trip of every field, missing / unknown names stop, an invalid write writes nothing, history and
    version, two writers), and the Fibonacci bot's `config_change` table untouched by any zone command.
 7. **Independence**: `eye/zone_bot.py` and `eye/zone_config.py` import nothing from `eye/bot2e.py`,
