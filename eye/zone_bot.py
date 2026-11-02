@@ -18,6 +18,7 @@ import argparse
 import json
 import math
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from itertools import pairwise
 from pathlib import Path
@@ -873,15 +874,29 @@ def chart_name(n: int, s: Setup, usd: float) -> str:
     return f"{n:02d}_{kind}_{s.visit.time.tz_convert(TH):%Y%m%d}.png"
 
 
-def _naive_thai(t: pd.Timestamp) -> pd.Timestamp:
-    return t.tz_convert(TH).tz_localize(None)
+def chart_window(df: pd.DataFrame, t0: pd.Timestamp, t1: pd.Timestamp) -> pd.DataFrame:
+    """The bars of a frame that open at or after ``t0`` and close at or before ``t1``."""
+    return df[(df["open_time"] >= t0) & (df["close_time"] <= t1)]
 
 
-def draw_chart(path: Path, s: Setup, grid: Grid, bars: Bars, params: ZoneParams, usd: float) -> list[float]:
+def draw_chart(
+    path: Path,
+    s: Setup,
+    grid: Grid,
+    bars: Bars,
+    params: ZoneParams,
+    usd: float,
+    candle_xs: list[np.ndarray] | None = None,
+    on_figure: Callable[[Any], None] | None = None,
+) -> list[float]:
     """One setup, two panels (H1 from 6 days before the first fill to 1 day after the exit; ``exec_tf`` from
-    10 hours before to 3 hours after), every grid line in view, the setup's line thick, fills marked and
-    labelled, the SL and TP drawn at least a sixth of the panel wide with their distances, the exit marked.
-    Returns each SL / TP segment's drawn length as a share of its panel's width (read from the artists)."""
+    10 hours before to 3 hours after), drawn as MT5 does: on a bar-index axis, candles side by side in order,
+    market closures not drawn as empty space, the tick labels the bars' Thai times. Every grid line in view,
+    the setup's line thick, fills marked and labelled at their bars, the SL and TP drawn at least a sixth of
+    the panel wide with their distances, the exit marked.
+    Returns each SL / TP segment's drawn length as a share of its panel's width (read from the artists);
+    ``candle_xs``, if given, collects each panel's candle x positions; ``on_figure``, if given, is called with
+    the finished figure just before it is saved (a hook for tests to read the drawn artists)."""
     import matplotlib
 
     matplotlib.use("Agg")
@@ -898,28 +913,38 @@ def draw_chart(path: Path, s: Setup, grid: Grid, bars: Bars, params: ZoneParams,
     fig, axes = plt.subplots(2, 1, figsize=(13, 9))
     fractions: list[float] = []
     for ax, (df, t0, t1, label) in zip(axes, spans, strict=True):
-        w = df[(df["open_time"] >= t0) & (df["close_time"] <= t1)]
-        x = w["open_time"].dt.tz_convert(TH).dt.tz_localize(None)
-        width = (x.iloc[1] - x.iloc[0]) * 0.7 if len(x) > 1 else pd.Timedelta(minutes=30)
+        w = chart_window(df, t0, t1)
+        n = len(w)
+        xs = np.arange(n)  # the bar index: consecutive, whatever the clock gap between bars
+        open_ns = _ns(w["open_time"])
+
+        def pos_of(exec_row: int, open_ns: np.ndarray = open_ns, n: int = n) -> int:
+            """The panel position of the bar that contains the exec bar ``exec_row``."""
+            t = int(ex["open_time"].iloc[exec_row].value)
+            return int(min(max(int(np.searchsorted(open_ns, t, side="right")) - 1, 0), n - 1))
+
         colors = np.where((w["close"] >= w["open"]).to_numpy(), "#2a7a3b", "#b3302a")
-        ax.vlines(x, w["low"], w["high"], color=colors, linewidth=0.8)
+        ax.vlines(xs, w["low"], w["high"], color=colors, linewidth=0.8)
         body = (w["close"] - w["open"]).abs().clip(lower=0.01)
-        ax.bar(x, body, bottom=np.minimum(w["open"], w["close"]), width=width, color=colors)
+        ax.bar(xs, body, bottom=np.minimum(w["open"], w["close"]), width=0.7, color=colors)
+        if candle_xs is not None:
+            candle_xs.append(xs)
         prices = [float(w["low"].min()), float(w["high"].max()), s.sl, s.tp, v.line]
         lo, hi = min(prices), max(prices)
         pad = (hi - lo) * 0.04
         ax.set_ylim(lo - pad, hi + pad)
-        xmin, xmax = x.iloc[0], x.iloc[-1]
         k0 = math.ceil((lo - pad - grid.anchor) / grid.step)
         k1 = math.floor((hi + pad - grid.anchor) / grid.step)
         for k in range(k0, k1 + 1):
             ln = round(grid.anchor + k * grid.step, 2)
             thick = ln == v.line
             ax.axhline(ln, color="#555555", linewidth=2.6 if thick else 0.6, alpha=0.9 if thick else 0.5)
-        seg_start = _naive_thai(first)
-        # the panel's right edge, final: the data, the exit, and far enough that the SL / TP segment (from the
-        # first fill to that edge) is at least a sixth of the panel as drawn
-        right = max(xmax, _naive_thai(last), seg_start + max(seg_start - xmin, pd.Timedelta(0)) / 4)
+        left = -0.5
+        seg_start = pos_of(s.fills[0].j)
+        exit_pos = pos_of(s.exit_j if s.exit_j is not None else s.end_j)
+        # the panel's right edge, final: the last bar, the exit, and far enough that the SL / TP segment (from
+        # the first fill's bar to that edge) is at least a sixth of the panel as drawn
+        right = max(n - 0.5, exit_pos + 0.5, seg_start + max(seg_start - left, 0.0) / 4)
         segments = []
         for name, px, col in (("SL", s.sl, "#b3302a"), ("TP", s.tp, "#2a7a3b")):
             segments.append(ax.hlines(px, seg_start, right, color=col, linewidth=2.2))
@@ -931,14 +956,20 @@ def draw_chart(path: Path, s: Setup, grid: Grid, bars: Bars, params: ZoneParams,
                 fontsize=8,
             )
         for f in s.fills:
-            ft = _naive_thai(ex["close_time"].iloc[f.j])
-            ax.plot([ft], [f.price], marker="^" if v.sgn > 0 else "v", color="#1f4e9c", markersize=9)
-            ax.text(ft, f.price, f" {f.name} {f.price:.2f}", color="#1f4e9c", fontsize=8, va="top")
+            fx = pos_of(f.j)
+            ax.plot([fx], [f.price], marker="^" if v.sgn > 0 else "v", color="#1f4e9c", markersize=9)
+            ax.text(fx, f.price, f" {f.name} {f.price:.2f}", color="#1f4e9c", fontsize=8, va="top")
         if s.exit_j is not None and s.exit_price is not None:
-            et = _naive_thai(ex["close_time"].iloc[s.exit_j])
-            ax.plot([et], [s.exit_price], marker="X", color="black", markersize=11)
-            ax.text(et, s.exit_price, f" exit {s.how} {s.exit_price:.2f}", fontsize=8, va="bottom")
-        ax.set_xlim(xmin, right)
+            ax.plot([exit_pos], [s.exit_price], marker="X", color="black", markersize=11)
+            ax.text(exit_pos, s.exit_price, f" exit {s.how} {s.exit_price:.2f}", fontsize=8, va="bottom")
+        ax.set_xlim(left, right)
+        ticks = np.unique(np.linspace(0, n - 1, min(8, n)).round().astype(int))
+        ax.set_xticks(ticks)
+        ax.set_xticklabels(
+            [w["open_time"].iloc[int(i)].tz_convert(TH).strftime("%m-%d %H:%M") for i in ticks],
+            rotation=20,
+            ha="right",
+        )
         lo_x, hi_x = ax.get_xlim()
         for lc in segments:  # read back from the drawn artists
             (x0, _), (x1, _) = lc.get_segments()[0]
@@ -952,6 +983,8 @@ def draw_chart(path: Path, s: Setup, grid: Grid, bars: Bars, params: ZoneParams,
         fontsize=10,
     )
     fig.tight_layout()
+    if on_figure is not None:
+        on_figure(fig)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=80)
     plt.close(fig)

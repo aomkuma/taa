@@ -1371,6 +1371,63 @@ def test_a_new_run_removes_the_old_pngs_and_nothing_else(tmp_path: Path) -> None
     assert [p.name for p in charts.iterdir()] == ["notes.txt"]
 
 
+def test_the_drawn_artists_sit_on_bar_indices_across_closures_with_thai_tick_labels(tmp_path: Path) -> None:
+    bars, res = constructed_run()
+    shift = pd.Timedelta(hours=3)  # a closure: three clock hours with no bars
+
+    def with_gap(df: pd.DataFrame, k: int) -> pd.DataFrame:
+        d = df.copy()
+        for col in ("open_time", "close_time"):
+            d.loc[d.index >= k, col] = d.loc[d.index >= k, col] + shift
+        return d
+
+    # one closure 5 hours before the visit's hour, one right before it: the first fill is the first exec bar
+    # after the reopening, and it opens the H1 bar of the visit
+    h1, m15 = (
+        with_gap(with_gap(bars.h1, N_FILL - 5), N_FILL),
+        with_gap(with_gap(bars.m15, 4 * (N_FILL - 5)), 4 * N_FILL),
+    )
+    gapped = zb.Bars(bars.d1, bars.h4, h1, m15, bars.m5, bars.point)
+    s = zb.traded(res.outcomes)[0]
+    assert [(f.name, f.j) for f in s.fills] == [("P1", 4 * N_FILL)] and s.exit_j == 4 * N_FILL + 1
+    first, last = m15["close_time"].iloc[s.fills[0].j], m15["close_time"].iloc[s.exit_j]
+    windows = [
+        zb.chart_window(h1, first - pd.Timedelta(days=6), last + pd.Timedelta(days=1)),
+        zb.chart_window(m15, first - pd.Timedelta(hours=10), last + pd.Timedelta(hours=3)),
+    ]
+    fill_pos = [
+        windows[0].index.get_loc(N_FILL),
+        windows[1].index.get_loc(4 * N_FILL),
+    ]  # the bar of each fill
+    exit_pos = [windows[0].index.get_loc(N_FILL), windows[1].index.get_loc(4 * N_FILL + 1)]
+    seen: dict[str, Any] = {}
+
+    def read(fig: Any) -> None:
+        for i, ax in enumerate(fig.axes):
+            wicks, sl, tp = ax.collections[:3]
+            seen[f"wick{i}"] = [seg[0][0] for seg in wicks.get_segments()]
+            seen[f"body{i}"] = [r.get_x() + r.get_width() / 2 for r in ax.patches]
+            seen[f"fill{i}"] = [ln.get_xdata()[0] for ln in ax.lines if ln.get_marker() in ("^", "v")]
+            seen[f"exit{i}"] = [ln.get_xdata()[0] for ln in ax.lines if ln.get_marker() == "X"]
+            seen[f"seg{i}"] = [sl.get_segments()[0][0][0], tp.get_segments()[0][0][0]]
+            fig.canvas.draw()
+            seen[f"ticks{i}"] = list(ax.get_xticks())
+            seen[f"labels{i}"] = [t.get_text() for t in ax.get_xticklabels()]
+
+    zb.draw_chart(tmp_path / "c.png", s, GRID, gapped, P, 1.0, on_figure=read)
+    for i, (w, step) in enumerate(zip(windows, (pd.Timedelta(hours=1), Q), strict=True)):
+        assert (w["open_time"].diff().dropna() > step).any()  # the closures really are in the panel's bars
+        assert seen[f"wick{i}"] == list(range(len(w))) and seen[f"body{i}"] == list(range(len(w)))
+        assert seen[f"fill{i}"] == [fill_pos[i]] and seen[f"exit{i}"] == [exit_pos[i]]
+        assert seen[f"seg{i}"] == [fill_pos[i], fill_pos[i]]  # the SL and TP segments start at the fill's bar
+        # tick labels: the Thai time of the bar at each tick (a known bar: the first one of the window)
+        for x, text in zip(seen[f"ticks{i}"], seen[f"labels{i}"], strict=True):
+            assert text == w["open_time"].iloc[int(x)].tz_convert(TH).strftime("%m-%d %H:%M")
+        first_bar = w["open_time"].iloc[0]
+        assert seen[f"labels{i}"][0] == first_bar.tz_convert(TH).strftime("%m-%d %H:%M")
+        assert seen[f"labels{i}"][0] != first_bar.strftime("%m-%d %H:%M")  # not the UTC time (Thai is +7 h)
+
+
 def test_sl_and_tp_segments_are_at_least_a_sixth_of_each_panel(tmp_path: Path) -> None:
     bars, res = constructed_run()
     shares: list[float] = []
