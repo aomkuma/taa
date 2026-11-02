@@ -43,7 +43,9 @@ EXEC = os.environ.get("ZEXEC", "M5")
 TAG = os.environ.get("ZTAG", f"{EXEC}_{SMODE}_{START:%Y%m}")
 PER_H = {"M5": 12, "M15": 4}[EXEC]
 W = {"D1": 0.4, "H4": 0.3, "H1": 0.2, "M15": 0.1}
-FIX = os.environ.get("ZFIX", "1") == "1"  # 1 = v2 (Sol's review, 2026-11-01); 0 = the behaviour every number before it came from
+FIX = os.environ.get("ZFIX", "1") == "1"
+BE = os.environ.get("ZBE", "off")  # off | entry: the break-even once half way to the TP (the owner, 2026-11-02)
+BE_FRAC = float(os.environ.get("ZBEFRAC", "0.5"))  # 1 = v2 (Sol's review, 2026-11-01); 0 = the behaviour every number before it came from
 
 
 def load(tf):
@@ -279,6 +281,7 @@ for r in v.itertuples():
         raise SystemExit(f"{EXEC} has no hour of history before the visit {r.visit} - start the run at {ex.th.iloc[PER_H]} or later")
     end = min(j0 + 48 * PER_H, len(ex))
     fills, out, cancelled, j = {}, None, False, j0
+    be_on, cur_sl = False, sl
     while j < len(ex):
         b = ex.iloc[j]
         sp = b.spread * PT
@@ -292,7 +295,7 @@ for r in v.itertuples():
         lo_px = b.low + sp if sgn > 0 else b.low
         hi_px = b.high  # a SELL limit fills when the bid reaches it (fixed 2026-11-01: was high + spread, the ask)
         for name, px in (("P1", p1), ("P2", p2)):
-            if name in fills:
+            if name in fills or (be_on and name == "P2"):  # an unfilled P2 is cancelled at the break-even
                 continue
             hit = (lo_px <= px) if sgn > 0 else (hi_px >= px)
             if hit and not fills and (px - ex.open.iloc[j - PER_H]) * -sgn >= S / 3:
@@ -303,14 +306,19 @@ for r in v.itertuples():
         if cancelled:
             break
         if fills:
-            stop_hit = (b.low <= sl) if sgn > 0 else (b.high + sp >= sl)
+            stop_hit = (b.low <= cur_sl) if sgn > 0 else (b.high + sp >= cur_sl)
             tp_hit = (b.high >= tp) if sgn > 0 else (b.low + sp <= tp)
             if stop_hit:
-                out = (j, sl, "SL")
+                out = (j, cur_sl, "BE" if be_on else "SL")
             elif tp_hit and all(f[0] < j for f in fills.values()):
                 out = (j, tp, "TP")
             if out:
                 break
+            if BE == "entry" and not be_on:
+                avg = float(np.mean([f[1] for f in fills.values()]))
+                mid = avg + BE_FRAC * (tp - avg)
+                if (b.high >= mid) if sgn > 0 else (b.low + sp <= mid):
+                    be_on, cur_sl = True, avg + sgn * sp  # from the next bar
         j += 1
     if cancelled:
         skip["cancel"] += 1

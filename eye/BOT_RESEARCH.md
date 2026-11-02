@@ -1939,3 +1939,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   2023 - 2025 worse (+0.366 -> +0.244 / +0.271), the built year better (+0.536 -> +0.632 / +0.665). A 300 USD account at
   0.01 lot: end 2,062 -> 2,136 / 2,253, the deepest drop from a peak -70 % -> -45 % / -48 %. A trade-off - the drawdown
   falls by two thirds and the USD rises a little, R a setup dips and the older half loses; the owner's to choose.
+  - The owner chose it (*"the drawdown differs a lot - better overall"*; METHOD 2e). Put into the reference (`ZBE=entry`,
+    off by default there; half way from the average fill; P2 cancelled; SL at the average + the bar's spread from the
+    next bar; an exit there is "BE") and the whole system rerun, the busy reservation following: **October 2023 -
+    October 2026: 109 setups, +0.392 R a setup, 41 % TP, +1868.9 USD, drawdown -280.0 (to 01/10/24), 13 of 36 months
+    negative**; 2023 - 2025: 68 setups, +0.227 R, +124.5 USD (was +0.366 R, +411), drawdown -280.0; the built year: 41,
+    +0.665 R, +1744.4 USD, drawdown -145.0. Different from the first, after-the-fact measurement (+0.426 R, -226.9):
+    setups that end sooner free the reservation and let 5 more in. The drawdown still halves; the never-used half's
+    gain falls to about a quarter. Put back to the owner before it is built.
