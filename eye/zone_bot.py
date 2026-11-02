@@ -1,6 +1,6 @@
-"""The run-zone setup, first half: the step, the grids and the visits (eye/ZONE_RULES.md, rules 2 - 5, 10).
+"""The run-zone setup (eye/ZONE_RULES.md): the step, the grids, the visits, the setups, the outputs.
 
-Pure functions over stored bars - no orders, no fills (those are piece 2b). The reference this reproduces is
+Pure functions over stored bars - a simulation, no orders anywhere. The reference this reproduces is
 ``eye/research/zone_reference.py`` (v3, ``ZFIX=1``); where it and the specification differ, the specification
 wins.
 
@@ -14,12 +14,14 @@ Independent of the Fibonacci bot (rule 0): nothing is imported from ``bot2e``, `
 
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import sys
 from dataclasses import dataclass
 from itertools import pairwise
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -30,7 +32,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from app.indicators.chart_read import zigzag_pivots  # noqa: E402
-from eye.zone_config import ZoneParams  # noqa: E402
+from eye.zone_config import (  # noqa: E402
+    DEFAULT_DB,
+    FIELD_NAMES,
+    ConfigError,
+    ZoneParams,
+    load_params,
+    param_to_text,
+)
 
 TH = "Asia/Bangkok"
 MARKET_DIRS = {"XAUUSD": ROOT / "data" / "history" / "FBS-Demo" / "XAUUSD"}
@@ -489,3 +498,525 @@ def find_visits(
             )
     out.sort(key=lambda v: (v.time.value, v.touch_j, v.from_open, v.line))
     return out
+
+
+# --- rules 6 and 7: the setup, its fills and its exit -----------------------------------------------------
+
+
+@dataclass(frozen=True)
+class ExecBars:
+    """The ``exec_tf`` frame as arrays (bid prices, the bar spread in points) and the bar close times."""
+
+    open: np.ndarray
+    high: np.ndarray
+    low: np.ndarray
+    close: np.ndarray
+    spread: np.ndarray
+    close_time: pd.Series
+
+    @classmethod
+    def from_frame(cls, df: pd.DataFrame) -> ExecBars:
+        return cls(
+            df["open"].to_numpy(float),
+            df["high"].to_numpy(float),
+            df["low"].to_numpy(float),
+            df["close"].to_numpy(float),
+            df["spread"].to_numpy(float),
+            df["close_time"].reset_index(drop=True),
+        )
+
+    def __len__(self) -> int:
+        return len(self.open)
+
+
+@dataclass(frozen=True)
+class Fill:
+    name: str  # "P1" | "P2"
+    j: int  # the exec row of the bar on which it filled
+    price: float
+
+
+@dataclass(frozen=True)
+class Setup:
+    """A visit that no skip stopped: the orders, what became of them and where its reservation ends."""
+
+    visit: Visit
+    p1: float
+    p2: float
+    sl: float
+    tp: float
+    outcome: str  # "traded" | "no fill" | "cancel" | "pending"
+    fills: tuple[Fill, ...]
+    exit_j: int | None  # the exec row of the exit (traded only)
+    exit_price: float | None
+    how: str | None  # "SL" | "TP" | "open" (traded only)
+    end_j: int  # the exec row whose close ends the reservation (rule 5b)
+    end_time: pd.Timestamp  # that close
+
+
+@dataclass(frozen=True)
+class Position:
+    setup: Setup
+    fill: Fill
+    pnl: float
+    risk: float
+
+
+def positions_of(s: Setup) -> list[Position]:
+    """The filled positions of a traded setup: ``pnl = sgn x (exit - fill)``, ``risk = sgn x (fill - SL)``,
+    unrounded. An SL exit with a pnl of 0 or more is a fault."""
+    if s.exit_price is None:
+        return []
+    out = []
+    for f in s.fills:
+        pnl = s.visit.sgn * (s.exit_price - f.price)
+        if s.how == "SL" and not pnl < 0:
+            raise ZoneError(f"an SL exit with pnl {pnl} for the visit at {s.visit.time}")
+        out.append(Position(s, f, pnl, s.visit.sgn * (f.price - s.sl)))
+    return out
+
+
+def setup_r(s: Setup) -> float:
+    """A setup's R = the sum of its positions' pnl / the sum of their risks."""
+    ps = positions_of(s)
+    return sum(p.pnl for p in ps) / sum(p.risk for p in ps)
+
+
+def simulate_setup(v: Visit, ex: ExecBars, params: ZoneParams, point: float) -> Setup:
+    """Rules 6 and 7 for one visit that no skip stopped, bar by bar on ``exec_tf``."""
+    sgn, s, line = v.sgn, v.step, v.line
+    per_h = PER_H[params.exec_tf]
+    p1 = line + sgn * params.p1_frac * s
+    p2 = line - sgn * params.p2_frac * s
+    sl = line - sgn * params.sl_frac * s
+    tp = line + sgn * params.tp_steps * s
+    away, cancel = params.away_frac * s, params.cancel_frac * s
+    n, j0 = len(ex), v.j0
+    if j0 < per_h:
+        raise ZoneError(f"{params.exec_tf} has no hour of history before the visit at {v.time}")
+    end = min(j0 + params.order_life_h * per_h, n)
+    fills: list[Fill] = []
+    out: tuple[int, float, str] | None = None
+    cancelled = False
+    j = j0
+    while j < n:
+        sp = ex.spread[j] * point
+        if not fills:
+            far = ex.high[j] - line if sgn > 0 else line - ex.low[j]
+            if j >= end or (j > j0 and far >= away):  # (1) withdrawn / expired
+                break
+            if (ex.close[j - 1] - ex.open[j - per_h]) * -sgn >= cancel:  # (2) the closed-hour cancel
+                cancelled = True
+                break
+        lo_px = ex.low[j] + sp if sgn > 0 else ex.low[j]
+        for name, px in (("P1", p1), ("P2", p2)):  # (3) P1 then P2
+            if any(f.name == name for f in fills):
+                continue
+            hit = lo_px <= px if sgn > 0 else ex.high[j] >= px
+            if hit and not fills and (px - ex.open[j - per_h]) * -sgn >= cancel:
+                cancelled = True  # the fill-moment cancel stops the whole setup; P2 is not tested
+                break
+            if hit and (fills or j < end):
+                fills.append(Fill(name, j, px))
+        if cancelled:
+            break
+        if fills:  # (4) the exit test, on the fill bar too (the SL only there)
+            stop = ex.low[j] <= sl if sgn > 0 else ex.high[j] + sp >= sl
+            take = ex.high[j] >= tp if sgn > 0 else ex.low[j] + sp <= tp
+            if stop:
+                out = (j, sl, "SL")
+            elif take and all(f.j < j for f in fills):
+                out = (j, tp, "TP")
+            if out:
+                break
+        j += 1
+
+    def done(
+        outcome: str, end_j: int, exit_j: int | None, exit_price: float | None, how: str | None
+    ) -> Setup:
+        end_time = ex.close_time.iloc[end_j]
+        return Setup(v, p1, p2, sl, tp, outcome, tuple(fills), exit_j, exit_price, how, end_j, end_time)
+
+    if cancelled:
+        return done("cancel", j, None, None, None)
+    if not fills:
+        return done("pending", n - 1, None, None, None) if j >= n else done("no fill", j, None, None, None)
+    if out is None:
+        return done("traded", n - 1, n - 1, float(ex.close[n - 1]), "open")
+    return done("traded", out[0], out[0], out[1], out[2])
+
+
+@dataclass(frozen=True)
+class Outcome:
+    """What became of a visit: a skip reason, or the setup's outcome (``setup`` is set for those)."""
+
+    visit: Visit
+    reason: str  # momentum | busy | abnormal | trend | no fill | cancel | pending | traded
+    setup: Setup | None
+
+
+def apply_rules(visits: list[Visit], ex: ExecBars, params: ZoneParams, point: float) -> list[Outcome]:
+    """Rule 8, visit by visit in 2a's order: 5a momentum, 5b busy, 5c abnormal, 5d trend, then rules 6 - 7.
+    The end of the last setup that was not skipped is the next busy reference."""
+    busy: pd.Timestamp | None = None
+    out: list[Outcome] = []
+    for v in visits:
+        if skip_momentum(v, params):
+            out.append(Outcome(v, "momentum", None))
+        elif skip_busy(v.time, busy):
+            out.append(Outcome(v, "busy", None))
+        elif skip_abnormal(v, params):
+            out.append(Outcome(v, "abnormal", None))
+        elif skip_trend(v, params):
+            out.append(Outcome(v, "trend", None))
+        else:
+            s = simulate_setup(v, ex, params, point)
+            busy = s.end_time
+            out.append(Outcome(v, s.outcome, s))
+    return out
+
+
+@dataclass(frozen=True)
+class RunResult:
+    grids: list[Grid]
+    visits: list[Visit]
+    outcomes: list[Outcome]
+    ex: ExecBars
+
+
+def run_zone(bars: Bars, params: ZoneParams, start: pd.Timestamp, end: pd.Timestamp) -> RunResult:
+    """The whole simulation on stored bars from ``start`` to ``end`` (exclusive for visits)."""
+    months = month_steps(bars.d1, bars.h4, params, end)
+    grids = build_grids(bars.h4, months, params, bars.point, end)
+    visits = find_visits(bars, grids, params, start, end)
+    ex = ExecBars.from_frame(bars.frame(params.exec_tf))
+    return RunResult(grids, visits, apply_rules(visits, ex, params, bars.point), ex)
+
+
+# --- rule 11: the numbers -----------------------------------------------------------------------------------
+
+
+def thai(t: pd.Timestamp) -> str:
+    """ISO text in Thai time: ``2026-10-14 08:30:00+07:00``."""
+    return t.tz_convert(TH).isoformat(sep=" ")
+
+
+def traded(outcomes: list[Outcome]) -> list[Setup]:
+    return [o.setup for o in outcomes if o.setup is not None and o.setup.outcome == "traded"]
+
+
+def summary_stats(outcomes: list[Outcome]) -> dict[str, Any]:
+    """Totals over the setups that were traded and closed (open ones are counted apart). Drawdown = the lowest
+    (cumulative USD - its running peak) over the setups in visit-time order; a negative month = a Thai
+    calendar month (by visit time) with at least one setup and a USD sum below 0."""
+    setups = traded(outcomes)
+    closed = [s for s in setups if s.how != "open"]
+    usd = [sum(p.pnl for p in positions_of(s)) for s in closed]
+    rs = [setup_r(s) for s in closed]
+    months = [thai(s.visit.time)[:7] for s in closed]
+    cum = np.cumsum(usd) if usd else np.array([])
+    dd = float((cum - np.maximum.accumulate(cum)).min()) if usd else 0.0
+    by_month: dict[str, float] = {}
+    by_year: dict[str, list[tuple[float, float]]] = {}
+    for m, u, r in zip(months, usd, rs, strict=True):
+        by_month[m] = by_month.get(m, 0.0) + u
+        by_year.setdefault(m[:4], []).append((u, r))
+    reasons: dict[str, int] = {}
+    for o in outcomes:
+        reasons[o.reason] = reasons.get(o.reason, 0) + 1
+    return {
+        "setups": len(closed),
+        "open": len([s for s in setups if s.how == "open"]),
+        "pending": reasons.get("pending", 0),
+        "r_per_setup": float(np.mean(rs)) if rs else 0.0,
+        "tp_share": float(np.mean([s.how == "TP" for s in closed])) if closed else 0.0,
+        "usd": float(sum(usd)),
+        "drawdown": dd,
+        "months": len(by_month),
+        "negative_months": sum(1 for u in by_month.values() if u < 0),
+        "by_month": by_month,
+        "by_year": {
+            y: (len(v), float(np.mean([r for _, r in v])), float(sum(u for u, _ in v)))
+            for y, v in by_year.items()
+        },
+        "reasons": reasons,
+    }
+
+
+def position_rows(outcomes: list[Outcome], ex: ExecBars) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for k, s in enumerate(traded(outcomes)):
+        for p in positions_of(s):
+            rows.append(
+                {
+                    "setup": k + 1,
+                    "visit": thai(s.visit.time),
+                    "pos": p.fill.name,
+                    "side": s.visit.side,
+                    "line": s.visit.line,
+                    "S": s.visit.step,
+                    "p1": s.p1,
+                    "p2": s.p2,
+                    "entry_t": thai(ex.close_time.iloc[p.fill.j]),
+                    "entry": p.fill.price,
+                    "sl": s.sl,
+                    "tp": s.tp,
+                    "exit_t": thai(ex.close_time.iloc[s.exit_j if s.exit_j is not None else 0]),
+                    "exit": s.exit_price,
+                    "how": s.how,
+                    "risk": p.risk,
+                    "pnl": p.pnl,
+                }
+            )
+    return rows
+
+
+def visit_rows(outcomes: list[Outcome]) -> list[dict[str, Any]]:
+    rows = []
+    for o in outcomes:
+        v = o.visit
+        rows.append(
+            {
+                "visit": thai(v.time),
+                "side": v.side,
+                "line": v.line,
+                "S": v.step,
+                "anchor": v.anchor,
+                "outcome": o.reason,
+                "mom_body": v.mom_body,
+                "mom_median": v.mom_median,
+                "mom_run": v.mom_run,
+                "ema_dist": v.ema_dist,
+                "atr": v.atr,
+                "trend_D1": v.trends[0],
+                "trend_H4": v.trends[1],
+                "trend_H1": v.trends[2],
+                "trend_M15": v.trends[3],
+                "share": v.share,
+            }
+        )
+    return rows
+
+
+def summary_rows(
+    zone: str, params: ZoneParams, start: pd.Timestamp, end: pd.Timestamp, stats: dict[str, Any]
+) -> list[tuple[str, Any]]:
+    rows: list[tuple[str, Any]] = [("zone", zone)]
+    rows += [(f"param.{n}", param_to_text(n, getattr(params, n))) for n in FIELD_NAMES]
+    rows += [("start", thai(start)), ("end", thai(end))]
+    for k in (
+        "setups",
+        "open",
+        "pending",
+        "r_per_setup",
+        "tp_share",
+        "usd",
+        "drawdown",
+        "months",
+        "negative_months",
+    ):
+        rows.append((k, stats[k]))
+    rows += [(f"outcome.{k}", v) for k, v in sorted(stats["reasons"].items())]
+    rows += [
+        (f"year.{y}", f"setups={n} R={r:.6f} usd={u:.6f}")
+        for y, (n, r, u) in sorted(stats["by_year"].items())
+    ]
+    rows += [(f"month.{m}", f"{u:.6f}") for m, u in sorted(stats["by_month"].items())]
+    return rows
+
+
+POSITION_COLUMNS = [
+    "setup", "visit", "pos", "side", "line", "S", "p1", "p2", "entry_t", "entry", "sl", "tp",
+    "exit_t", "exit", "how", "risk", "pnl",
+]  # fmt: skip
+VISIT_COLUMNS = [
+    "visit", "side", "line", "S", "anchor", "outcome", "mom_body", "mom_median", "mom_run", "ema_dist", "atr",
+    "trend_D1", "trend_H4", "trend_H1", "trend_M15", "share",
+]  # fmt: skip
+GRID_COLUMNS = ["start", "anchor", "step", "cause"]
+
+
+def summary_text(v: Any) -> str:
+    """A summary value as text: floats to 6 decimals, everything else as it is."""
+    if isinstance(v, (float, np.floating)):
+        return f"{float(v):.6f}"
+    return str(v)
+
+
+def write_outputs(
+    out_dir: Path, zone: str, params: ZoneParams, start: pd.Timestamp, end: pd.Timestamp, res: RunResult
+) -> dict[str, Any]:
+    """Rule 11: positions, visits, grids and summary CSVs (numbers to 6 decimals, times in Thai ISO)."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    fmt = "%.6f"
+    # explicit columns: an empty run still writes its header
+    pos = pd.DataFrame(position_rows(res.outcomes, res.ex), columns=POSITION_COLUMNS)
+    pos.to_csv(out_dir / "positions.csv", index=False, float_format=fmt)
+    vis = pd.DataFrame(visit_rows(res.outcomes), columns=VISIT_COLUMNS)
+    vis.to_csv(out_dir / "visits.csv", index=False, float_format=fmt)
+    grid_rows = [
+        {"start": thai(g.start), "anchor": g.anchor, "step": g.step, "cause": g.cause} for g in res.grids
+    ]
+    pd.DataFrame(grid_rows, columns=GRID_COLUMNS).to_csv(out_dir / "grids.csv", index=False, float_format=fmt)
+    stats = summary_stats(res.outcomes)
+    rows = [(n, summary_text(v)) for n, v in summary_rows(zone, params, start, end, stats)]
+    pd.DataFrame(rows, columns=["name", "value"]).to_csv(out_dir / "summary.csv", index=False)
+    return stats
+
+
+# --- rule 11: the charts ------------------------------------------------------------------------------------
+
+
+def chart_name(n: int, s: Setup, usd: float) -> str:
+    """``<nn>_<win|loss|open>_<YYYYMMDD>.png`` (the date is the visit's, Thai)."""
+    kind = "open" if s.how == "open" else ("win" if usd > 0 else "loss")
+    return f"{n:02d}_{kind}_{s.visit.time.tz_convert(TH):%Y%m%d}.png"
+
+
+def _naive_thai(t: pd.Timestamp) -> pd.Timestamp:
+    return t.tz_convert(TH).tz_localize(None)
+
+
+def draw_chart(path: Path, s: Setup, grid: Grid, bars: Bars, params: ZoneParams, usd: float) -> list[float]:
+    """One setup, two panels (H1 from 6 days before the first fill to 1 day after the exit; ``exec_tf`` from
+    10 hours before to 3 hours after), every grid line in view, the setup's line thick, fills marked and
+    labelled, the SL and TP drawn at least a sixth of the panel wide with their distances, the exit marked.
+    Returns each SL / TP segment's drawn length as a share of its panel's width (read from the artists)."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    ex = bars.frame(params.exec_tf)
+    v = s.visit
+    first = ex["close_time"].iloc[s.fills[0].j]
+    last = ex["close_time"].iloc[s.exit_j if s.exit_j is not None else s.end_j]
+    spans = (
+        (bars.h1, first - pd.Timedelta(days=6), last + pd.Timedelta(days=1), "H1"),
+        (ex, first - pd.Timedelta(hours=10), last + pd.Timedelta(hours=3), params.exec_tf),
+    )
+    fig, axes = plt.subplots(2, 1, figsize=(13, 9))
+    fractions: list[float] = []
+    for ax, (df, t0, t1, label) in zip(axes, spans, strict=True):
+        w = df[(df["open_time"] >= t0) & (df["close_time"] <= t1)]
+        x = w["open_time"].dt.tz_convert(TH).dt.tz_localize(None)
+        width = (x.iloc[1] - x.iloc[0]) * 0.7 if len(x) > 1 else pd.Timedelta(minutes=30)
+        colors = np.where((w["close"] >= w["open"]).to_numpy(), "#2a7a3b", "#b3302a")
+        ax.vlines(x, w["low"], w["high"], color=colors, linewidth=0.8)
+        body = (w["close"] - w["open"]).abs().clip(lower=0.01)
+        ax.bar(x, body, bottom=np.minimum(w["open"], w["close"]), width=width, color=colors)
+        prices = [float(w["low"].min()), float(w["high"].max()), s.sl, s.tp, v.line]
+        lo, hi = min(prices), max(prices)
+        pad = (hi - lo) * 0.04
+        ax.set_ylim(lo - pad, hi + pad)
+        xmin, xmax = x.iloc[0], x.iloc[-1]
+        k0 = math.ceil((lo - pad - grid.anchor) / grid.step)
+        k1 = math.floor((hi + pad - grid.anchor) / grid.step)
+        for k in range(k0, k1 + 1):
+            ln = round(grid.anchor + k * grid.step, 2)
+            thick = ln == v.line
+            ax.axhline(ln, color="#555555", linewidth=2.6 if thick else 0.6, alpha=0.9 if thick else 0.5)
+        seg_start = _naive_thai(first)
+        # the panel's right edge, final: the data, the exit, and far enough that the SL / TP segment (from the
+        # first fill to that edge) is at least a sixth of the panel as drawn
+        right = max(xmax, _naive_thai(last), seg_start + max(seg_start - xmin, pd.Timedelta(0)) / 4)
+        segments = []
+        for name, px, col in (("SL", s.sl, "#b3302a"), ("TP", s.tp, "#2a7a3b")):
+            segments.append(ax.hlines(px, seg_start, right, color=col, linewidth=2.2))
+            ax.text(
+                seg_start,
+                px,
+                f" {name} {px:.2f} ({abs(px - v.line):.2f} from the line)",
+                color=col,
+                fontsize=8,
+            )
+        for f in s.fills:
+            ft = _naive_thai(ex["close_time"].iloc[f.j])
+            ax.plot([ft], [f.price], marker="^" if v.sgn > 0 else "v", color="#1f4e9c", markersize=9)
+            ax.text(ft, f.price, f" {f.name} {f.price:.2f}", color="#1f4e9c", fontsize=8, va="top")
+        if s.exit_j is not None and s.exit_price is not None:
+            et = _naive_thai(ex["close_time"].iloc[s.exit_j])
+            ax.plot([et], [s.exit_price], marker="X", color="black", markersize=11)
+            ax.text(et, s.exit_price, f" exit {s.how} {s.exit_price:.2f}", fontsize=8, va="bottom")
+        ax.set_xlim(xmin, right)
+        lo_x, hi_x = ax.get_xlim()
+        for lc in segments:  # read back from the drawn artists
+            (x0, _), (x1, _) = lc.get_segments()[0]
+            fractions.append((x1 - x0) / (hi_x - lo_x))
+        ax.set_ylabel(label)
+        ax.tick_params(axis="x", labelsize=7)
+    fills = ", ".join(f"{f.name} {f.price:.2f}" for f in s.fills)
+    fig.suptitle(
+        f"{v.side} line {v.line:.2f} step {v.step:.2f} | fills {fills} | SL {s.sl:.2f} TP {s.tp:.2f} | "
+        f"{s.how} {usd:+.2f} USD | visit {thai(v.time)}",
+        fontsize=10,
+    )
+    fig.tight_layout()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=80)
+    plt.close(fig)
+    return fractions
+
+
+def write_charts(
+    out_dir: Path, res: RunResult, bars: Bars, params: ZoneParams, fractions: list[float] | None = None
+) -> list[Path]:
+    """One PNG per traded setup (a setup with no fill has nothing to draw). The PNGs of an earlier run in
+    ``<out>/charts`` are removed first (nothing else in the folder is touched). ``fractions``, if given,
+    collects every SL / TP segment's drawn share of its panel's width."""
+    charts = out_dir / "charts"
+    if charts.is_dir():
+        for old in charts.glob("*.png"):
+            old.unlink()
+    gstart = grid_index(res.grids)
+    paths = []
+    for n, s in enumerate(traded(res.outcomes), start=1):
+        g = res.grids[int(np.searchsorted(gstart, s.visit.time.value, side="right")) - 1]
+        usd = sum(p.pnl for p in positions_of(s))
+        path = charts / chart_name(n, s, usd)
+        shares = draw_chart(path, s, g, bars, params, usd)
+        if fractions is not None:
+            fractions.extend(shares)
+        paths.append(path)
+    return paths
+
+
+# --- the command line ---------------------------------------------------------------------------------------
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description="The run-zone setup on stored bars (eye/ZONE_RULES.md).")
+    ap.add_argument("--db", default=str(DEFAULT_DB))
+    ap.add_argument("--market", default="XAUUSD")
+    ap.add_argument("--set", dest="set_name", default="default")
+    ap.add_argument("--start", default="2023-10-01", help="Thai date")
+    ap.add_argument("--end", default=None, help="Thai date, exclusive (default: the last stored H1 bar)")
+    ap.add_argument("--out", default=None)
+    ap.add_argument("--no-charts", action="store_true")
+    a = ap.parse_args(argv)
+    try:
+        if a.market not in MARKET_DIRS:
+            raise ZoneError(f"no bars for {a.market}")
+        params, version = load_params(a.db, a.market, a.set_name)
+        bars = load_bars(a.market)
+        start = pd.Timestamp(a.start, tz=TH)
+        end = pd.Timestamp(a.end, tz=TH) if a.end else bars.h1["close_time"].iloc[-1]
+        zone = f"zone={a.market}/{a.set_name}@v{version}"
+        out_dir = Path(a.out) if a.out else ROOT / "eye" / "research" / "zone" / a.market / a.set_name
+        res = run_zone(bars, params, start, end)
+        stats = write_outputs(out_dir, zone, params, start, end, res)
+        n_charts = 0 if a.no_charts else len(write_charts(out_dir, res, bars, params))
+    except (ConfigError, ZoneError) as e:
+        print(f"zone_bot: {e}", file=sys.stderr)
+        return 1
+    print(
+        f"{zone}: setups {stats['setups']}, {stats['r_per_setup']:+.3f} R a setup, "
+        f"TP {stats['tp_share']:.0%}, "
+        f"USD {stats['usd']:+.1f}, drawdown {stats['drawdown']:.1f}, open {stats['open']}, "
+        f"pending {stats['pending']}, charts {n_charts}; skips {stats['reasons']}; out {out_dir}"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
