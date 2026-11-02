@@ -24,7 +24,8 @@ from eye import zone_bot as zb  # noqa: E402
 from eye.zone_config import ZoneParams  # noqa: E402
 
 TH = "Asia/Bangkok"
-P = ZoneParams()
+P = ZoneParams(be_mode="off")  # the unit tests of rules 6 - 7 below are written without the break-even
+PB = ZoneParams()  # the defaults: the break-even on
 STORED = ROOT / "data" / "history" / "FBS-Demo" / "XAUUSD"
 ACCEPT = pytest.mark.skipif(
     os.environ.get("ZONE_ACCEPT") != "1" or not STORED.exists(),
@@ -642,9 +643,10 @@ def test_accept_case_1_weekly_atr(stored: zb.Bars) -> None:
     assert round(float(wk.loc[pd.Timestamp("2026-10-25"), "atr"]), 2) == 195.99
 
 
-FIXED76 = ZoneParams(step_mode="fixed", exec_tf="M5", abn_atr=1e9)
+FIXED76 = ZoneParams(step_mode="fixed", exec_tf="M5", abn_atr=1e9, be_mode="off")
 RUNS = {
-    "defaults": (ZoneParams(), "2023-10-01", "2026-11-01"),
+    "defaults": (ZoneParams(be_mode="off"), "2023-10-01", "2026-11-01"),
+    "defaults_be": (ZoneParams(), "2023-10-01", "2026-11-01"),
     "fixed76": (FIXED76, "2025-11-01", "2026-11-01"),
 }
 
@@ -717,7 +719,7 @@ def reference_share(piv: dict[str, Any], t: pd.Timestamp, weights: tuple[float, 
 
 
 @ACCEPT
-@pytest.mark.parametrize("tag", ["defaults", "fixed76"])
+@pytest.mark.parametrize("tag", ["defaults", "defaults_be", "fixed76"])
 def test_accept_case_3_grids_and_visits_equal_the_reference(stored: zb.Bars, tag: str) -> None:
     p = RUNS[tag][0]
     g, v = run(stored, tag)
@@ -1056,7 +1058,14 @@ def test_exec_history_guard(side: str) -> None:
 # withdrawal at 32 beyond the line, both cancels at a run of 16 toward it
 
 EXP = ZoneParams(
-    near_frac=0.125, p1_frac=0.125, p2_frac=0.25, sl_frac=0.5, away_frac=0.5, cancel_frac=0.25, tp_steps=1
+    near_frac=0.125,
+    p1_frac=0.125,
+    p2_frac=0.25,
+    sl_frac=0.5,
+    away_frac=0.5,
+    cancel_frac=0.25,
+    tp_steps=1,
+    be_mode="off",
 )
 HX: list[Row] = [flat(1020.0)] * 8  # 8 flat bars well above the line (a BUY comes down to 1000)
 PT = 0.25
@@ -1207,6 +1216,243 @@ def test_edge_a_chart_with_zero_usd_is_a_loss() -> None:
     assert zb.chart_name(1, s, 0.0) == "01_loss_20250105.png"
     assert zb.chart_name(1, s, 0.25) == "01_win_20250105.png"
     assert zb.chart_name(1, s, -0.25) == "01_loss_20250105.png"
+
+
+# --- the break-even (rule 7) at its exact edges: line 1000, S 64, point 0.25 -------------------------------
+# BUY: P1 1008, P2 984, SL 968, TP 1064. With only P1 filled: avg 1008, mid = 1008 + 0.5 x 56 = 1036.
+# With P1 and P2 filled: avg 996, mid = 996 + 0.5 x 68 = 1030.
+
+EXB = replace(EXP, be_mode="entry", be_frac=0.5)
+SP8 = [0.0] * 8
+
+
+def px2(side: str, p: float) -> float:
+    return p if side == "BUY" else 2000.0 - p
+
+
+def simb(
+    side: str,
+    rows: list[Row],
+    spreads: list[float] | None = None,
+    params: ZoneParams = EXB,
+    direct: bool = False,
+    hist: list[Row] | None = None,
+) -> zb.Setup:
+    allrows = (hist if hist is not None else (mirror2(HX) if direct else HX)) + rows
+    if side == "SELL" and not direct:
+        allrows = mirror2(allrows)
+    v = mk_visit(side, line=1000.0, step=64.0)
+    return zb.simulate_setup(v, ebars(allrows, spreads), params, PT)
+
+
+F1: Row = (1020.0, 1020.0, 1008.0, 1010.0)  # fills P1 only, no trigger (high 1020 < 1036)
+QB: Row = (1030.0, 1030.0, 1030.0, 1030.0)  # a quiet bar above the break-even SL
+
+
+@pytest.mark.parametrize("side", SIDES)
+def test_be_triggers_exactly_at_mid_on_the_fill_bar_and_works_from_the_next_bar(side: str) -> None:
+    trig: Row = (1020.0, 1036.0, 1008.0, 1030.0)  # fills P1, high == mid: the break-even goes on
+    s = simb(side, [trig, (1030.0, 1030.0, 1008.0, 1010.0)])  # the next bar's low == avg (the new SL)
+    assert (s.how, s.exit_j, s.exit_price) == ("BE", J0 + 1, pytest.approx(px2(side, 1008.0)))
+    assert (s.be_sl, s.be_j) == (pytest.approx(px2(side, 1008.0)), J0)
+    assert zb.positions_of(s)[0].pnl == pytest.approx(0.0)
+    short = simb(side, [(1020.0, 1035.75, 1008.0, 1030.0), (1030.0, 1030.0, 1008.0, 1010.0)])
+    assert (short.how, short.be_sl) == (
+        "open",
+        None,
+    )  # one tick short of mid: no break-even, the SL stays at 968
+    assert simb(side, [trig, (1030.0, 1030.0, 1008.25, 1010.0)]).how == "open"  # the new SL is not reached
+
+
+@pytest.mark.parametrize("side", SIDES)
+def test_be_triggers_on_a_later_bar_at_mid_exactly(side: str) -> None:
+    s = simb(side, [F1, (1020.0, 1036.0, 1020.0, 1030.0), (1030.0, 1030.0, 1008.0, 1010.0)])
+    assert (s.be_j, s.how, s.exit_j) == (J0 + 1, "BE", J0 + 2)
+    assert simb(side, [F1, (1020.0, 1035.75, 1020.0, 1030.0), (1030.0, 1030.0, 1008.0, 1010.0)]).be_sl is None
+
+
+@pytest.mark.parametrize("side", SIDES)
+def test_the_sl_does_not_move_on_the_trigger_bar_itself(side: str) -> None:
+    # the trigger bar also trades down to the new SL (1008): no exit on it - the SL moves from the next bar
+    s = simb(side, [(1020.0, 1036.0, 1008.0, 1030.0), QB])
+    assert (s.be_j, s.how) == (J0, "open")
+
+
+@pytest.mark.parametrize("side", SIDES)
+def test_a_bar_with_an_exit_does_not_trigger_the_break_even(side: str) -> None:
+    s = simb(side, [F1, (1020.0, 1040.0, 960.0, 1000.0)])  # holds the SL (968) and a high above mid
+    assert (s.how, s.exit_price, s.be_sl) == ("SL", pytest.approx(px2(side, 968.0)), None)
+
+
+@pytest.mark.parametrize("side", SIDES)
+def test_an_unfilled_p2_is_cancelled_by_the_break_even_and_never_fills_after(side: str) -> None:
+    s = simb(side, [(1020.0, 1036.0, 1008.0, 1030.0), QB, (1030.0, 1030.0, 984.0, 990.0)])
+    assert [f.name for f in s.fills] == ["P1"] and (s.how, s.exit_j) == (
+        "BE",
+        J0 + 2,
+    )  # P2's price was reached
+    off = simb(side, [(1020.0, 1036.0, 1008.0, 1030.0), QB, (1030.0, 1030.0, 984.0, 990.0)], params=EXP)
+    assert [f.name for f in off.fills] == ["P1", "P2"]  # without the break-even P2 fills on that bar
+
+
+@pytest.mark.parametrize("side", SIDES)
+def test_a_p2_that_filled_before_the_trigger_is_kept_and_the_average_uses_both(side: str) -> None:
+    both: Row = (1020.0, 1020.0, 984.0, 1000.0)  # P1 and P2 fill; avg 996, mid 1030
+    s = simb(side, [both, (1000.0, 1029.75, 1000.0, 1020.0), (1020.0, 1020.0, 1000.0, 1010.0)])
+    assert [f.name for f in s.fills] == ["P1", "P2"] and s.be_sl is None  # one tick short of mid
+    s = simb(side, [both, (1000.0, 1030.0, 1000.0, 1020.0), (1020.0, 1020.0, 996.0, 1000.0)])
+    assert (s.be_j, s.be_sl, s.how) == (J0 + 1, pytest.approx(px2(side, 996.0)), "BE")
+    ps = zb.positions_of(s)
+    assert [p.pnl for p in ps] == [
+        pytest.approx(-12.0),
+        pytest.approx(12.0),
+    ]  # exit at avg 996: P1 -12, P2 +12
+    assert [p.risk for p in ps] == [pytest.approx(40.0), pytest.approx(16.0)]  # risk on the ORIGINAL SL 968
+    assert zb.setup_r(s) == pytest.approx(0.0)
+
+
+@pytest.mark.parametrize("side", SIDES)
+def test_the_break_even_does_not_move_once_on_and_the_tp_stays(side: str) -> None:
+    rows = [(1020.0, 1036.0, 1008.0, 1030.0), (1030.0, 1040.0, 1030.0, 1040.0), QB]
+    s = simb(side, rows, spreads=[*SP8, 0.0, 8.0, 0.0])
+    assert (
+        s.be_sl == pytest.approx(px2(side, 1008.0)) and s.be_j == J0
+    )  # set once: a later bar reaching mid again changes nothing
+    tp = simb(side, [(1020.0, 1036.0, 1008.0, 1030.0), (1030.0, 1064.0, 1030.0, 1060.0)])
+    assert (tp.how, tp.exit_price) == ("TP", pytest.approx(px2(side, 1064.0)))  # the TP still takes it
+
+
+def test_be_buy_sl_carries_the_trigger_bars_spread_and_exits_on_the_bid() -> None:
+    trig: Row = (1020.0, 1036.0, 1007.5, 1030.0)
+    s = simb(
+        "BUY", [trig, (1030.0, 1030.0, 1008.5, 1010.0)], spreads=[*SP8, 2.0, 8.0]
+    )  # 2 points on the trigger
+    assert (s.be_sl, s.how, s.exit_price) == (
+        1008.5,
+        "BE",
+        1008.5,
+    )  # avg + 2 x 0.25; the exit reads the bid low
+    assert zb.positions_of(s)[0].pnl == pytest.approx(0.5)  # a BE exit may be above 0: no assertion
+    assert simb("BUY", [trig, (1030.0, 1030.0, 1008.75, 1010.0)], spreads=[*SP8, 2.0, 0.0]).how == "open"
+    # the trigger is judged on the bid: the spread does not help a BUY reach mid
+    near: Row = (1020.0, 1035.75, 1007.0, 1030.0)
+    assert simb("BUY", [near, QB], spreads=[*SP8, 4.0, 0.0]).be_sl is None
+
+
+def test_be_sell_trigger_is_judged_on_the_ask_and_the_sl_on_the_ask_too() -> None:
+    h = mirror2(HX)
+    fill: Row = (980.0, 992.0, 980.0, 990.0)  # SELL: P1 992 (high == P1); avg 992; TP 936; mid 964
+    sp = [*SP8, 0.0]
+
+    def run(trigger_low: float, trigger_sp: float, nxt: Row, nxt_sp: float) -> zb.Setup:
+        rows = [fill, (990.0, 990.0, trigger_low, 970.0), nxt]
+        return simb("SELL", rows, spreads=[*sp, trigger_sp, nxt_sp], direct=True, hist=h)
+
+    s = run(963.5, 2.0, (970.0, 991.25, 970.0, 980.0), 1.0)  # low + spread = 964 == mid: triggered
+    assert s.be_j == J0 + 1 and s.be_sl == 991.5  # avg + sgn x spread = 992 - 0.5
+    assert (s.how, s.exit_price) == ("BE", 991.5)  # next bar: high 991.25 + 0.25 == 991.5
+    assert run(963.75, 2.0, (970.0, 991.25, 970.0, 980.0), 1.0).be_sl is None  # 964.25 > mid: no trigger
+    assert run(963.5, 2.0, (970.0, 991.0, 970.0, 980.0), 1.0).how == "open"  # 991 + 0.25 < 991.5
+
+
+@pytest.mark.parametrize("side", SIDES)
+def test_p2_filling_on_the_trigger_bar_is_in_the_average(side: str) -> None:
+    # P1 fills first (avg 1008, mid 1036 would not be reached). A later bar fills P2 (984) and reaches 1030: with
+    # both fills avg = 996 and mid = 1030, so the break-even goes on that very bar, at the average of both
+    s = simb(side, [F1, (1020.0, 1030.0, 984.0, 1000.0), (1020.0, 1020.0, 996.0, 1000.0)])
+    assert [(f.name, f.j) for f in s.fills] == [("P1", J0), ("P2", J0 + 1)]
+    assert (s.be_j, s.be_sl) == (J0 + 1, pytest.approx(px2(side, 996.0)))
+    assert (s.how, s.exit_j, s.exit_price) == ("BE", J0 + 2, pytest.approx(px2(side, 996.0)))
+
+
+def test_be_frac_sets_the_trigger_price_and_off_changes_nothing() -> None:
+    quarter = replace(EXB, be_frac=0.25)  # mid = 1008 + 0.25 x 56 = 1022
+    assert simb("BUY", [F1, (1020.0, 1022.0, 1020.0, 1020.0)], params=quarter).be_j == J0 + 1
+    assert simb("BUY", [F1, (1020.0, 1021.75, 1020.0, 1020.0)], params=quarter).be_sl is None
+    off = simb("BUY", [(1020.0, 1036.0, 1008.0, 1030.0), (1030.0, 1030.0, 1008.0, 1010.0)], params=EXP)
+    assert (off.how, off.be_sl, off.be_j) == ("open", None, None)  # be_mode off: the current behaviour
+
+
+def test_be_columns_in_the_positions_rows() -> None:
+    s = simb("BUY", [(1020.0, 1036.0, 1008.0, 1030.0), (1030.0, 1030.0, 1008.0, 1010.0)])
+    ex = ebars([*HX, (1020.0, 1036.0, 1008.0, 1030.0), (1030.0, 1030.0, 1008.0, 1010.0)])
+    (row,) = zb.position_rows([zb.Outcome(s.visit, "traded", s)], ex)
+    assert row["sl"] == 968.0 and row["be_sl"] == 1008.0 and row["how"] == "BE"
+    assert row["be_time"] == zb.thai(ex.close_time.iloc[J0])  # the close of the bar that turned it on
+    none = simb("BUY", [F1, QB])
+    (r2,) = zb.position_rows([zb.Outcome(none.visit, "traded", none)], ebars([*HX, F1, QB]))
+    assert r2["be_time"] == "" and r2["be_sl"] is None
+    assert "be_sl" in zb.POSITION_COLUMNS and "be_time" in zb.POSITION_COLUMNS
+    stats = zb.summary_stats([zb.Outcome(s.visit, "traded", s)])
+    assert stats["be_exits"] == 1 and stats["setups"] == 1
+
+
+def constructed_be_run() -> tuple[zb.Bars, zb.RunResult]:
+    exec_rows = {
+        N_FILL - 1: [flat(102.0)] * 4,
+        # bar 0 fills P1 (101.3158); bar 1 reaches mid (105.66): break-even on; bar 2 trades down to it: BE exit
+        N_FILL: [
+            (102.0, 102.5, 100.5, 101.0),
+            (101.0, 106.0, 100.9, 105.0),
+            (105.0, 105.0, 101.3, 101.5),
+            FILL,
+        ],
+    }
+    bars = make_bars([BUY_100, FILL, FILL], exec_rows)
+    vs = visits(bars)
+    ex = zb.ExecBars.from_frame(bars.m15)
+    return bars, zb.RunResult([GRID], vs, zb.apply_rules(vs, ex, PB, bars.point), ex)
+
+
+def test_the_chart_draws_the_be_sl_dashed_from_the_next_bar_and_the_title_says_be(tmp_path: Path) -> None:
+    bars, res = constructed_be_run()
+    s = zb.traded(res.outcomes)[0]
+    assert (s.how, s.be_j, s.exit_j) == ("BE", 4 * N_FILL + 1, 4 * N_FILL + 2)
+    seen: dict[str, Any] = {}
+
+    def read(fig: Any) -> None:
+        seen["title"] = fig.get_suptitle()
+        for i, ax in enumerate(fig.axes):
+            seen[f"be{i}"] = ax.collections[3]  # after the wicks, SL and TP: the dashed BE SL
+            seen[f"x{i}"] = ax.collections[3].get_segments()[0][0][0]
+            seen[f"dash{i}"] = ax.collections[3].get_linestyle()
+            seen[f"text{i}"] = [t.get_text() for t in ax.texts if "BE SL" in t.get_text()]
+
+    zb.draw_chart(tmp_path / "c.png", s, GRID, bars, PB, 0.0, on_figure=read)
+    assert "BE" in seen["title"].split("|")[-2]  # the title gives how
+    first, last = bars.m15["close_time"].iloc[s.fills[0].j], bars.m15["close_time"].iloc[s.exit_j]
+    wins = [
+        zb.chart_window(bars.h1, first - pd.Timedelta(days=6), last + pd.Timedelta(days=1)),
+        zb.chart_window(bars.m15, first - pd.Timedelta(hours=10), last + pd.Timedelta(hours=3)),
+    ]
+    # the dashed segment starts at the bar after the trigger: exec row +2 in the exec panel; the H1 panel bar of it
+    assert seen["x1"] == wins[1].index.get_loc(4 * N_FILL + 2)
+    assert seen["x0"] == wins[0].index.get_loc(N_FILL)
+    assert seen["text0"] == seen["text1"] and len(seen["text1"]) == 1 and "from the line" in seen["text1"][0]
+    assert seen["dash0"][0][1] is not None and seen["dash1"][0][1] is not None  # dashed, not solid
+    assert f"{s.be_sl:.2f}" in seen["text1"][0]
+
+
+def test_a_chart_whose_be_trigger_is_the_last_bar_draws_no_dashed_segment(tmp_path: Path) -> None:
+    bars, res = constructed_be_run()
+    cut_rows = 4 * N_FILL + 2  # the data ends on the trigger bar (exec row 4 N + 1)
+    m15 = bars.m15.iloc[:cut_rows].reset_index(drop=True)
+    short = zb.Bars(bars.d1, bars.h4, bars.h1, m15, bars.m5, bars.point)
+    ex = zb.ExecBars.from_frame(m15)
+    outs = zb.apply_rules(res.visits, ex, PB, bars.point)
+    s = zb.traded(outs)[0]
+    assert (s.how, s.be_j, s.exit_j) == ("open", cut_rows - 1, cut_rows - 1)
+    counts: list[int] = []
+    zb.draw_chart(
+        tmp_path / "c.png",
+        s,
+        GRID,
+        short,
+        PB,
+        0.0,
+        on_figure=lambda f: counts.extend(len(a.collections) for a in f.axes),
+    )
+    assert counts == [3, 3]  # wicks, SL and TP only: no segment from a bar that does not exist
 
 
 # --- rule 8: the order of the skips and the busy reference ------------------------------------------------
@@ -1459,13 +1705,20 @@ def zone_run(stored: zb.Bars, tag: str) -> zb.RunResult:
 
 
 EXPECT: dict[str, dict[str, Any]] = {
-    "defaults": {"setups": 104, "r": 0.433, "tp": 0.53, "usd": 1761.8, "dd": -617.5, "neg": 11, "months": 36},
+    "defaults": {
+        "setups": 104, "r": 0.433, "tp": 0.53, "usd": 1761.8, "dd": -617.5, "neg": 11, "months": 36,
+        "reasons": {"momentum": 530, "trend": 131, "busy": 59, "cancel": 61, "no fill": 72, "abnormal": 130, "traded": 104},
+    },
+    "defaults_be": {
+        "setups": 109, "r": 0.392, "tp": 0.41, "usd": 1868.9, "dd": -280.0, "neg": 13, "months": 36,
+        "reasons": {"momentum": 530, "trend": 133, "busy": 48, "cancel": 62, "no fill": 75, "abnormal": 130, "traded": 109},
+    },
     "fixed76": {"setups": 41, "r": 0.615, "usd": 1378.0},
-}
+}  # fmt: skip
 
 
 @ACCEPT
-@pytest.mark.parametrize("tag", ["defaults", "fixed76"])
+@pytest.mark.parametrize("tag", ["defaults", "defaults_be", "fixed76"])
 def test_accept_case_3_setups_equal_the_reference_positions(stored: zb.Bars, tag: str) -> None:
     res = zone_run(stored, tag)
     ref = pd.read_csv(OUT / f"long_accept_{tag}.csv")
@@ -1489,27 +1742,19 @@ def test_accept_case_3_setups_equal_the_reference_positions(stored: zb.Bars, tag
     e = EXPECT[tag]
     assert st["setups"] == e["setups"] and st["open"] == 0 and st["pending"] == 0
     assert round(st["r_per_setup"], 3) == e["r"] and round(st["usd"], 1) == e["usd"]
-    if tag == "defaults":
+    if tag != "fixed76":
         assert round(st["tp_share"], 2) == e["tp"] and round(st["drawdown"], 1) == e["dd"]
         assert (st["negative_months"], st["months"]) == (e["neg"], e["months"])
-        want = {
-            "momentum": 530,
-            "trend": 131,
-            "busy": 59,
-            "cancel": 61,
-            "no fill": 72,
-            "abnormal": 130,
-            "traded": 104,
-        }
-        assert st["reasons"] == want
+        assert st["reasons"] == e["reasons"]
+    assert (st["be_exits"] > 0) is (tag == "defaults_be")
 
 
 @ACCEPT
 def test_accept_case_3a_charts_draw_sl_and_tp_at_least_a_sixth_wide(stored: zb.Bars, tmp_path: Path) -> None:
-    res = zone_run(stored, "defaults")
+    res = zone_run(stored, "defaults_be")
     shares: list[float] = []
-    paths = zb.write_charts(tmp_path, res, stored, RUNS["defaults"][0], fractions=shares)
-    assert len(paths) == 104 and len(shares) == 4 * 104
+    paths = zb.write_charts(tmp_path, res, stored, RUNS["defaults_be"][0], fractions=shares)
+    assert len(paths) == 109 and len(shares) == 4 * 109
     assert min(shares) >= 1 / 6, min(shares)
 
 
@@ -1527,7 +1772,7 @@ def test_accept_run_writes_every_file_and_one_chart_per_setup(tmp_path: Path) ->
         "test",
         now,
         "acceptance",
-        {"step_mode": "fixed", "exec_tf": "M5", "abn_atr": "1e9"},
+        {"step_mode": "fixed", "exec_tf": "M5", "abn_atr": "1e9", "be_mode": "off"},
     )
     out = tmp_path / "out"
     args = ["--db", str(db), "--set", "fx", "--start", "2025-11-01", "--end", "2026-11-01", "--out", str(out)]
@@ -1551,15 +1796,26 @@ def setup_key(o: zb.Outcome) -> tuple[Any, ...]:
     if s is None:
         return (o.visit.time, o.visit.line, o.reason)
     fills = tuple((f.name, f.j, f.price) for f in s.fills)
-    return (o.visit.time, o.visit.line, o.reason, fills, s.exit_j, s.exit_price, s.how, s.end_j)
+    return (
+        o.visit.time,
+        o.visit.line,
+        o.reason,
+        fills,
+        s.exit_j,
+        s.exit_price,
+        s.how,
+        s.end_j,
+        s.be_j,
+        s.be_sl,
+    )
 
 
 @ACCEPT
 @pytest.mark.parametrize("cut", ["2024-06-01 00:00", "2025-12-15 00:00", "2026-08-01 00:00"])
 def test_accept_case_4_setups_are_the_same_on_bars_cut_at_t(stored: zb.Bars, cut: str) -> None:
     t = ts(cut)
-    full = zone_run(stored, "defaults")
-    p, a, _ = RUNS["defaults"]
+    full = zone_run(stored, "defaults_be")  # the break-even on
+    p, a, _ = RUNS["defaults_be"]
     part = zb.run_zone(zb.cut_bars(stored, t), p, ts(a, TH), t)
     by_cut = {(o.visit.time, o.visit.line): o for o in part.outcomes}
     before = [o for o in full.outcomes if o.visit.time < t]
@@ -1573,3 +1829,7 @@ def test_accept_case_4_setups_are_the_same_on_bars_cut_at_t(stored: zb.Bars, cut
             known = tuple((f.name, f.j, f.price) for f in s.fills if full.ex.close_time.iloc[f.j] <= t)
             assert c.setup is not None and tuple((f.name, f.j, f.price) for f in c.setup.fills) == known
             assert (c.reason, c.setup.how) in (("pending", None), ("traded", "open"))
+            if s.be_j is not None and full.ex.close_time.iloc[s.be_j] <= t:  # the break-even went on before T
+                assert (c.setup.be_j, c.setup.be_sl) == (s.be_j, s.be_sl)
+            else:  # it went on after T (or never): not yet known at T
+                assert (c.setup.be_j, c.setup.be_sl) == (None, None)

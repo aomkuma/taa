@@ -8,6 +8,7 @@ the row with the highest ``id``, and its version is the highest ``id`` among its
     python eye/zone_config.py seed --market XAUUSD --set default --by me
     python eye/zone_config.py set --market XAUUSD --set default --by me --note "why" abn_atr=2.5
     python eye/zone_config.py copy --market XAUUSD --set default --to-market XAUUSD --to-set alt --by me
+    python eye/zone_config.py upgrade --market XAUUSD --set default --by me   (adds fields the set lacks)
     python eye/zone_config.py show|list|history ...   (every command takes --db PATH)
 
 Reading never creates the file. Every write is one transaction opened with ``BEGIN IMMEDIATE``; the set as it
@@ -40,6 +41,7 @@ _NAME = re.compile(r"[A-Za-z0-9_-]+")
 _RESERVED = re.compile(r"(?i:con|prn|aux|nul|com[1-9]|lpt[1-9])")
 _STEP_MODES = ("watr", "fixed")
 _EXEC_TFS = ("M5", "M15")
+_BE_MODES = ("entry", "off")
 SCHEMA = (
     """
 CREATE TABLE IF NOT EXISTS zone_config_change (
@@ -106,6 +108,8 @@ class ZoneParams:
     abn_atr: float = 3.0
     ema_len: int = 50
     atr_len: int = 14
+    be_mode: str = "entry"  # entry = the break-even of rule 7 on, off = none
+    be_frac: float = 0.5
     exec_tf: str = "M15"
 
     def __post_init__(self) -> None:
@@ -131,6 +135,10 @@ class ZoneParams:
             raise bad("step_mode", f"must be one of {_STEP_MODES}")
         if self.exec_tf not in _EXEC_TFS:
             raise bad("exec_tf", f"must be one of {_EXEC_TFS}")
+        if self.be_mode not in _BE_MODES:
+            raise bad("be_mode", f"must be one of {_BE_MODES}")
+        if not 0 < self.be_frac < 1:
+            raise bad("be_frac", "must be a float in (0, 1)")
         for n in ("step_factor", "step_fixed", "near_frac", "away_frac", "p1_frac", "p2_frac", "sl_frac"):
             if not _is_float(getattr(self, n)) or not getattr(self, n) > 0:
                 raise bad(n, "must be a finite float > 0")
@@ -180,7 +188,7 @@ class ZoneParams:
 
 FIELD_NAMES = tuple(f.name for f in fields(ZoneParams))
 _INT_FIELDS = ("tp_steps", "order_life_h", "mom_bars", "mom_med_bars", "run_bars", "ema_len", "atr_len")
-_STR_FIELDS = ("step_mode", "exec_tf")
+_STR_FIELDS = ("step_mode", "be_mode", "exec_tf")
 _FLOAT_FIELDS = tuple(
     n for n in FIELD_NAMES if n not in _INT_FIELDS + _STR_FIELDS and n not in ("grid_ks", "gate_w")
 )
@@ -256,7 +264,10 @@ def build_params(values: dict[str, str]) -> ZoneParams:
     missing = [n for n in FIELD_NAMES if n not in values]
     unknown = sorted(n for n in values if n not in FIELD_NAMES)
     if missing or unknown:
-        raise ConfigError(f"the set is not a full set of ZoneParams: missing {missing}, unknown {unknown}")
+        hint = "; a set made before a field existed: run  upgrade" if missing and not unknown else ""
+        raise ConfigError(
+            f"the set is not a full set of ZoneParams: missing {missing}, unknown {unknown}{hint}"
+        )
     typed = {}
     for n in FIELD_NAMES:
         try:
@@ -361,6 +372,38 @@ def seed(db: Path | str, market: str, set_name: str, by: str, at: datetime, note
         return _insert_all(con, market, set_name, rows, stamp, by, note)
 
     return _write(db, by, at, plan)
+
+
+def upgrade(db: Path | str, market: str, set_name: str, by: str, at: datetime) -> int:
+    """For a set made before a field was added to ``ZoneParams``: one row per missing field with the code
+    default (note ``upgrade: <name> added with the code default``). Fields the set has are never touched.
+    Refused (nothing written) when the set is missing, has an unknown name or a stored value that does not
+    parse, nothing is missing, or the whole set after the upgrade is refused by ``ZoneParams``. Returns the
+    version."""
+    check_name("market", market)
+    check_name("set", set_name)
+
+    def plan(con: sqlite3.Connection, stamp: str) -> int:
+        current, version = _read_current(con, market, set_name)
+        if not current:
+            raise _missing(Path(db), market, set_name, "no such set")
+        unknown = sorted(n for n in current if n not in FIELD_NAMES)
+        if unknown:
+            raise ConfigError(f"the set has unknown name(s) {unknown}: nothing upgraded")
+        missing = [n for n in FIELD_NAMES if n not in current]
+        if not missing:
+            raise ConfigError(f"{market}/{set_name} has every field: nothing to upgrade")
+        defaults = ZoneParams()
+        added = {n: param_to_text(n, getattr(defaults, n)) for n in missing}
+        build_params({**current, **added})  # every stored value parses; the whole set is valid
+        for n, text in added.items():
+            cur = con.execute(
+                _INSERT, (market, set_name, n, text, stamp, by, f"upgrade: {n} added with the code default")
+            )
+            version = cur.lastrowid or version
+        return version
+
+    return _write(db, by, at, plan, must_exist=(market, set_name))
 
 
 def copy_set(
@@ -523,6 +566,7 @@ def _parser() -> argparse.ArgumentParser:
         return p
 
     add("seed", by=True)
+    add("upgrade", by=True)
     add("copy", by=True, target=True).add_argument("--note", default="")
     p = add("set", by=True)
     p.add_argument("--note", required=True)
@@ -548,6 +592,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.cmd == "seed":
             v = seed(args.db, args.market, args.set_name, args.by, now)
             print(f"seeded {args.market}/{args.set_name}, version {v}")
+        elif args.cmd == "upgrade":
+            v = upgrade(args.db, args.market, args.set_name, args.by, now)
+            print(f"upgraded {args.market}/{args.set_name}, version {v}")
         elif args.cmd == "copy":
             v = copy_set(
                 args.db, args.market, args.set_name, args.to_market, args.to_set, args.by, now, args.note

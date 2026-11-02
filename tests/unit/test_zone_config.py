@@ -57,7 +57,7 @@ def test_defaults_are_the_table() -> None:
     assert NAMES == [
         "step_mode", "step_factor", "step_fixed", "grid_ks", "grid_tol", "shift_tol", "step_remake",
         "near_frac", "away_frac", "p1_frac", "p2_frac", "sl_frac", "tp_steps", "order_life_h", "cancel_frac",
-        "mom_bars", "mom_med_bars", "run_bars", "gate_w", "gate_min", "abn_atr", "ema_len", "atr_len", "exec_tf",
+        "mom_bars", "mom_med_bars", "run_bars", "gate_w", "gate_min", "abn_atr", "ema_len", "atr_len", "be_mode", "be_frac", "exec_tf",
     ]  # fmt: skip
     assert p.text().split(" ")[0] == "step_mode=watr"
     assert "gate_w=0.4,0.3,0.2,0.1" in p.text()
@@ -78,6 +78,10 @@ def test_text_forms() -> None:
     assert zc.param_to_text("step_fixed", 76.0) == "76.0"
     assert zc.param_to_text("order_life_h", 48) == "48"
     assert zc.param_to_text("exec_tf", "M15") == "M15"
+    assert zc.param_to_text("be_mode", "entry") == "entry" and zc.param_to_text("be_frac", 0.5) == "0.5"
+    assert zc.param_from_text("be_frac", "0.25") == 0.25 and zc.param_from_text("be_mode", "off") == "off"
+    with pytest.raises(ValueError, match="be_frac"):
+        zc.param_from_text("be_frac", "half")
     with pytest.raises(ValueError, match="order_life_h"):
         zc.param_from_text("order_life_h", "4.5")
     with pytest.raises(ValueError, match="grid_ks"):
@@ -88,6 +92,11 @@ def test_text_forms() -> None:
 _BOUNDS: list[tuple[str, Any, Any]] = [
     ("step_mode", "weekly", "fixed"),
     ("exec_tf", "H1", "M5"),
+    ("be_mode", "on", "off"),
+    ("be_mode", "Entry", "entry"),
+    ("be_frac", 0.0, 1e-12),
+    ("be_frac", 1.0, 0.999999),
+    ("be_frac", -0.1, 0.5),
     ("step_factor", 0.0, 1e-12),
     ("step_fixed", 0.0, 1e-12),
     ("near_frac", 0.0, 0.2),
@@ -464,13 +473,15 @@ _SPEC_DEFAULTS: dict[str, Any] = {
     "abn_atr": 3.0,
     "ema_len": 50,
     "atr_len": 14,
+    "be_mode": "entry",
+    "be_frac": 0.5,
     "exec_tf": "M15",
 }
 
 
 def test_every_default_against_the_spec_table() -> None:
     p = ZoneParams()
-    assert len(_SPEC_DEFAULTS) == 24 == len(NAMES)
+    assert len(_SPEC_DEFAULTS) == 26 == len(NAMES)
     for name, expected in _SPEC_DEFAULTS.items():
         assert getattr(p, name) == expected, name
         assert type(getattr(p, name)) is type(expected), name
@@ -739,7 +750,7 @@ def test_windows_reserved_names_refused(db: Path, bad: str) -> None:
 @pytest.mark.parametrize(
     ("name", "value"),
     [("tp_steps", "1"), ("tp_steps", None), ("near_frac", "0.1"), ("p1_frac", None), ("grid_ks", None),
-     ("gate_w", None), ("grid_ks", ("a",)), ("step_mode", None), ("exec_tf", 5), ("abn_atr", 3)],
+     ("gate_w", None), ("grid_ks", ("a",)), ("step_mode", None), ("exec_tf", 5), ("abn_atr", 3), ("be_mode", None), ("be_frac", None), ("be_frac", 1)],
 )  # fmt: skip
 def test_wrong_types_give_a_value_error_naming_the_field(name: str, value: Any) -> None:
     with pytest.raises(ValueError, match=name) as e:
@@ -818,3 +829,136 @@ def test_the_fibonacci_bot_imports_nothing_of_the_zone_setup(name: str) -> None:
 
 def test_zone_bot_imports_nothing_of_the_fibonacci_bot_either() -> None:
     assert _imports(ROOT / "eye" / "zone_bot.py") & {"bot2e", "bot_config", "bot_research"} == set()
+
+
+# --- upgrade: a set made before be_mode / be_frac existed ---------------------------------------------------
+
+
+def _drop(db: Path, *names: str) -> None:
+    """Make an old set: the rows of fields that did not exist then are removed (a test database only)."""
+    con = sqlite3.connect(db)
+    con.executemany("DELETE FROM zone_config_change WHERE name = ?", [(n,) for n in names])
+    con.commit()
+    con.close()
+
+
+def test_a_set_without_the_break_even_fields_stops_then_loads_after_upgrade(db: Path) -> None:
+    _seeded(db)
+    zc.set_values(db, "XAUUSD", "default", "t", AT, "n", {"abn_atr": "2.5"})
+    _drop(db, "be_mode", "be_frac")
+    with pytest.raises(ConfigError, match="be_mode") as e:
+        zc.load_params(db, "XAUUSD", "default")
+    assert "upgrade" in str(e.value)  # the message says what to do
+    before = _rows(db)
+    v = zc.upgrade(db, "XAUUSD", "default", "carol", AT2)
+    p, version = zc.load_params(db, "XAUUSD", "default")
+    assert p == replace(ZoneParams(), abn_atr=2.5) and version == v
+    new = _rows(db)[len(before) :]
+    assert [r[3] for r in new] == ["be_mode", "be_frac"] and [r[4] for r in new] == [
+        "entry",
+        "0.5",
+    ]
+    assert [r[7] for r in new] == [
+        "upgrade: be_mode added with the code default",
+        "upgrade: be_frac added with the code default",
+    ]
+    assert _rows(db)[: len(before)] == before  # the present fields are never touched
+
+
+def test_upgrade_adds_only_what_is_missing_and_keeps_non_default_values(db: Path) -> None:
+    _seeded(db)
+    zc.set_values(db, "XAUUSD", "default", "t", AT, "n", {"be_frac": "0.3"})
+    _drop(db, "be_mode")  # be_frac exists (and is not the default): only be_mode is added
+    zc.upgrade(db, "XAUUSD", "default", "t", AT2)
+    p, _ = zc.load_params(db, "XAUUSD", "default")
+    assert (p.be_mode, p.be_frac) == ("entry", 0.3)
+    assert [r[3] for r in _rows(db) if r[7].startswith("upgrade")] == ["be_mode"]
+
+
+def test_upgrade_is_refused_when_nothing_is_missing_unknown_or_unparsable(db: Path) -> None:
+    _seeded(db)
+    with pytest.raises(ConfigError, match="nothing to upgrade"):
+        zc.upgrade(db, "XAUUSD", "default", "t", AT2)
+    with pytest.raises(ConfigError, match="no such set"):
+        zc.upgrade(db, "XAUUSD", "nope", "t", AT2)
+    _drop(db, "be_mode", "be_frac")
+    n = len(_rows(db))
+    con = sqlite3.connect(db)
+    con.execute(
+        "INSERT INTO zone_config_change (market, set_name, name, value, changed_at_utc, changed_by, note)"
+        " VALUES ('XAUUSD','default','bogus','1','x','t','')"
+    )
+    con.commit()
+    con.close()
+    with pytest.raises(ConfigError, match="bogus"):
+        zc.upgrade(db, "XAUUSD", "default", "t", AT2)
+    assert len(_rows(db)) == n + 1  # nothing written
+    con = sqlite3.connect(db)
+    con.execute("DELETE FROM zone_config_change WHERE name = 'bogus'")
+    con.execute("UPDATE zone_config_change SET value = 'abc' WHERE name = 'abn_atr'")
+    con.commit()
+    con.close()
+    with pytest.raises(ConfigError, match="abn_atr"):
+        zc.upgrade(db, "XAUUSD", "default", "t", AT2)
+    assert len(_rows(db)) == n  # nothing written either
+
+
+def test_upgrade_validates_the_whole_set_in_the_same_transaction(db: Path) -> None:
+    _seeded(db)
+    _drop(db, "be_mode", "be_frac")
+    con = sqlite3.connect(db)  # a stored combination ZoneParams refuses: p2_frac must lie before the SL
+    con.execute("UPDATE zone_config_change SET value = '0.9' WHERE name = 'p2_frac'")
+    con.commit()
+    con.close()
+    n = len(_rows(db))
+    with pytest.raises(ConfigError, match="refused by ZoneParams"):
+        zc.upgrade(db, "XAUUSD", "default", "t", AT2)
+    assert len(_rows(db)) == n
+
+
+def test_upgrade_writes_all_rows_or_none_when_an_insert_fails(db: Path) -> None:
+    _seeded(db)
+    _drop(db, "be_mode", "be_frac")
+    con = sqlite3.connect(db)  # the second insert (be_frac) raises
+    con.execute(
+        "CREATE TRIGGER boom BEFORE INSERT ON zone_config_change WHEN NEW.name = 'be_frac'"
+        " BEGIN SELECT RAISE(ABORT, 'boom'); END"
+    )
+    con.commit()
+    con.close()
+    n = len(_rows(db))
+    with pytest.raises(sqlite3.DatabaseError, match="boom"):
+        zc.upgrade(db, "XAUUSD", "default", "t", AT2)
+    assert len(_rows(db)) == n  # the first insert (be_mode) was rolled back with it
+
+
+def test_upgrade_runs_between_begin_immediate_and_commit(db: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _seeded(db)
+    _drop(db, "be_mode", "be_frac")
+    stmts: list[str] = []
+    real = sqlite3.connect
+
+    def spy(*a: Any, **k: Any) -> sqlite3.Connection:
+        c = real(*a, **k)
+        c.set_trace_callback(stmts.append)
+        return c
+
+    monkeypatch.setattr(zc.sqlite3, "connect", spy)
+    zc.upgrade(db, "XAUUSD", "default", "t", AT2)
+    begin = stmts.index("BEGIN IMMEDIATE")
+    read = next(i for i, x in enumerate(stmts) if "FROM zone_config_change c" in x)  # the set is read ...
+    inserts = [i for i, x in enumerate(stmts) if x.lstrip().startswith("INSERT INTO zone_config_change")]
+    commit = stmts.index("COMMIT")
+    assert begin < read < inserts[0] < inserts[1] < commit  # ... and validated inside the transaction
+    assert len(inserts) == 2 and "ROLLBACK" not in stmts
+
+
+def test_upgrade_command_line(db: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    _seeded(db)
+    _drop(db, "be_mode", "be_frac")
+    assert zc.main(["upgrade", "--market", "XAUUSD", "--set", "default", "--by", "me", "--db", str(db)]) == 0
+    assert "upgraded XAUUSD/default" in capsys.readouterr().out
+    assert zc.main(["upgrade", "--market", "XAUUSD", "--set", "default", "--by", "me", "--db", str(db)]) == 1
+    assert "nothing to upgrade" in capsys.readouterr().err
+    assert zc.main(["show", "--market", "XAUUSD", "--set", "default", "--db", str(db)]) == 0
+    assert "be_mode=entry" in capsys.readouterr().out

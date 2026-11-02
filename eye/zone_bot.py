@@ -550,9 +550,11 @@ class Setup:
     fills: tuple[Fill, ...]
     exit_j: int | None  # the exec row of the exit (traded only)
     exit_price: float | None
-    how: str | None  # "SL" | "TP" | "open" (traded only)
+    how: str | None  # "SL" | "TP" | "BE" | "open" (traded only)
     end_j: int  # the exec row whose close ends the reservation (rule 5b)
     end_time: pd.Timestamp  # that close
+    be_sl: float | None = None  # the break-even SL, when it went on
+    be_j: int | None = None  # the exec row of the bar that turned it on (it works from the next bar)
 
 
 @dataclass(frozen=True)
@@ -600,6 +602,7 @@ def simulate_setup(v: Visit, ex: ExecBars, params: ZoneParams, point: float) -> 
     out: tuple[int, float, str] | None = None
     cancelled = False
     j = j0
+    be_on, cur_sl, be_j = False, sl, None  # the break-even (rule 7): on from the bar after its trigger
     while j < n:
         sp = ex.spread[j] * point
         if not fills:
@@ -611,8 +614,8 @@ def simulate_setup(v: Visit, ex: ExecBars, params: ZoneParams, point: float) -> 
                 break
         lo_px = ex.low[j] + sp if sgn > 0 else ex.low[j]
         for name, px in (("P1", p1), ("P2", p2)):  # (3) P1 then P2
-            if any(f.name == name for f in fills):
-                continue
+            if any(f.name == name for f in fills) or (be_on and name == "P2"):
+                continue  # an unfilled P2 is cancelled once the break-even is on
             hit = lo_px <= px if sgn > 0 else ex.high[j] >= px
             if hit and not fills and (px - ex.open[j - per_h]) * -sgn >= cancel:
                 cancelled = True  # the fill-moment cancel stops the whole setup; P2 is not tested
@@ -622,21 +625,29 @@ def simulate_setup(v: Visit, ex: ExecBars, params: ZoneParams, point: float) -> 
         if cancelled:
             break
         if fills:  # (4) the exit test, on the fill bar too (the SL only there)
-            stop = ex.low[j] <= sl if sgn > 0 else ex.high[j] + sp >= sl
+            stop = ex.low[j] <= cur_sl if sgn > 0 else ex.high[j] + sp >= cur_sl
             take = ex.high[j] >= tp if sgn > 0 else ex.low[j] + sp <= tp
             if stop:
-                out = (j, sl, "SL")
+                out = (j, cur_sl, "BE" if be_on else "SL")
             elif take and all(f.j < j for f in fills):
                 out = (j, tp, "TP")
             if out:
                 break
+            if params.be_mode == "entry" and not be_on:  # the break-even: judged after this bar's exit test
+                avg = float(np.mean([f.price for f in fills]))
+                mid = avg + params.be_frac * (tp - avg)
+                if (ex.high[j] >= mid) if sgn > 0 else (ex.low[j] + sp <= mid):
+                    be_on, cur_sl, be_j = True, avg + sgn * sp, j  # from the next bar, at this bar's spread
         j += 1
 
     def done(
         outcome: str, end_j: int, exit_j: int | None, exit_price: float | None, how: str | None
     ) -> Setup:
         end_time = ex.close_time.iloc[end_j]
-        return Setup(v, p1, p2, sl, tp, outcome, tuple(fills), exit_j, exit_price, how, end_j, end_time)
+        be_sl = cur_sl if be_on else None
+        return Setup(
+            v, p1, p2, sl, tp, outcome, tuple(fills), exit_j, exit_price, how, end_j, end_time, be_sl, be_j
+        )
 
     if cancelled:
         return done("cancel", j, None, None, None)
@@ -728,6 +739,7 @@ def summary_stats(outcomes: list[Outcome]) -> dict[str, Any]:
     return {
         "setups": len(closed),
         "open": len([s for s in setups if s.how == "open"]),
+        "be_exits": len([s for s in closed if s.how == "BE"]),
         "pending": reasons.get("pending", 0),
         "r_per_setup": float(np.mean(rs)) if rs else 0.0,
         "tp_share": float(np.mean([s.how == "TP" for s in closed])) if closed else 0.0,
@@ -762,6 +774,8 @@ def position_rows(outcomes: list[Outcome], ex: ExecBars) -> list[dict[str, Any]]
                     "entry": p.fill.price,
                     "sl": s.sl,
                     "tp": s.tp,
+                    "be_sl": s.be_sl,
+                    "be_time": thai(ex.close_time.iloc[s.be_j]) if s.be_j is not None else "",
                     "exit_t": thai(ex.close_time.iloc[s.exit_j if s.exit_j is not None else 0]),
                     "exit": s.exit_price,
                     "how": s.how,
@@ -808,6 +822,7 @@ def summary_rows(
     for k in (
         "setups",
         "open",
+        "be_exits",
         "pending",
         "r_per_setup",
         "tp_share",
@@ -828,7 +843,7 @@ def summary_rows(
 
 POSITION_COLUMNS = [
     "setup", "visit", "pos", "side", "line", "S", "p1", "p2", "entry_t", "entry", "sl", "tp",
-    "exit_t", "exit", "how", "risk", "pnl",
+    "be_sl", "be_time", "exit_t", "exit", "how", "risk", "pnl",
 ]  # fmt: skip
 VISIT_COLUMNS = [
     "visit", "side", "line", "S", "anchor", "outcome", "mom_body", "mom_median", "mom_run", "ema_dist", "atr",
@@ -954,6 +969,17 @@ def draw_chart(
                 f" {name} {px:.2f} ({abs(px - v.line):.2f} from the line)",
                 color=col,
                 fontsize=8,
+            )
+        if s.be_sl is not None and s.be_j is not None and s.be_j + 1 < len(ex):
+            bx = pos_of(s.be_j + 1)  # the break-even SL works from the bar after its trigger
+            ax.hlines(s.be_sl, bx, right, color="#b3302a", linewidth=1.8, linestyle="--")
+            ax.text(
+                bx,
+                s.be_sl,
+                f" BE SL {s.be_sl:.2f} ({abs(s.be_sl - v.line):.2f} from the line)",
+                color="#b3302a",
+                fontsize=8,
+                va="top",
             )
         for f in s.fills:
             fx = pos_of(f.j)
