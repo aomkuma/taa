@@ -1921,3 +1921,11 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   halves (2023 - 2025: base +0.366, A +0.211, B +0.299; the built year: +0.536 / +0.316 / +0.516). Half the losers do
   show it, but the 12 winners that showed it and still reached the TP are worth more than what an early exit saves -
   the owner's second reading ("a trade that has to be taken") is what the measurement supports. Not changed.
+- **The owner's remedy: P2 as a stop under the low before the HH** (the owner: *"change the upper SELL [P2] to a sell stop
+  under the previous low once it makes the HH, with a time limit"*; scratchpad `p2_stop.py`, `p2_stop_add.py`). Form
+  [Claude]: after the HH event (as above), a stop at the last fixed M15 LOW before it (BUY mirrored), living 4 / 8 / 12
+  hours; SL the setup's or beyond the HH + S/15; TP the setup's. Expectation written before: fewer P2 losses in real
+  breakouts, worse entries - no guess for the total. **Replacing P2: +0.225 to +0.248 R a setup, +1009 to +1195 USD**
+  (base +0.433, +1762), worse in both halves; the stop filled in only 5 - 11 setups. **Adding it as a third position (P2
+  kept): +0.387 to +0.419 R, +1730 to +1916 USD** - a little more USD at the setup SL, less R, on 5 - 11 fills. P2's limit
+  in the fake break is where most of the edge is (the 1:4 position); the stop seldom triggers. Not changed.
