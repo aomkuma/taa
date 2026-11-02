@@ -1947,3 +1947,6 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
     +0.665 R, +1744.4 USD, drawdown -145.0. Different from the first, after-the-fact measurement (+0.426 R, -226.9):
     setups that end sooner free the reservation and let 5 more in. The drawdown still halves; the never-used half's
     gain falls to about a quarter. Put back to the owner before it is built.
+- **The zone bot with the break-even** (`eye/zone_bot.py`, set `XAUUSD/default@v26` after `upgrade`; 2026-11-02):
+  **109 setups, +0.392 R a setup, 41 % TP, +1868.9 USD, drawdown -280.0, 32 break-even exits** - the reference's
+  numbers; charts regenerated. The owner's 23/07/26 BUY 4049 (-83.84 before) now exits BE at 4046.88, +0.90 USD.
