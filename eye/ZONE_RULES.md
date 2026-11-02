@@ -62,10 +62,12 @@ and any number inside one, is never a rule.
 | `gate_min` | 0.25 | trade when the sideways share is over this | [Claude] |
 | `abn_atr` | 3.0 | skip when |H1 close - EMA50| >= this x H1 ATR(14) | owner: *"maybe as far as 2.5 - 3 ATR"*, *"measure which is best"*; 3 = the middle of the 2.5 - 3.5 plateau (BOT_RESEARCH) |
 | `ema_len`, `atr_len` | 50, 14 | H1 EMA and ATR lengths for `abn_atr` | [Claude]; ATR as MT5 (owner's screen) |
+| `be_mode` | `entry` | `entry` = the break-even of rule 7 on; `off` = no break-even | owner, 2026-11-02 (*"move the SL to cover the combined cost once it has run more than half way"*); the form [Claude] |
+| `be_frac` | 0.5 | how far from the average fill to the TP the bid must reach to move the SL | owner (*"more than half way"*) |
 | `exec_tf` | M15 | the frame fills and exits are judged on | [Claude] (M5 starts 2025-10-05; the measurements over 2023 - 2026 were on M15) |
 
 Every name above is one field of `ZoneParams` (rule 1). Types and bounds [Claude], refused at start otherwise:
-`step_mode` in {watr, fixed}; `exec_tf` in {M5, M15}; floats `step_factor`, `step_fixed`, `near_frac`, `away_frac`,
+`step_mode` in {watr, fixed}; `exec_tf` in {M5, M15}; `be_mode` in {entry, off}; `be_frac` a float in (0, 1); floats `step_factor`, `step_fixed`, `near_frac`, `away_frac`,
 `p1_frac`, `p2_frac`, `sl_frac`, `cancel_frac`, `abn_atr` > 0; `grid_tol`, `shift_tol`, `step_remake` in (0, 1);
 `gate_min` in [0, 1); `p2_frac` < `sl_frac` (P2 must lie before the SL); ints `tp_steps`, `order_life_h`, `mom_bars`,
 `mom_med_bars`, `run_bars`, `ema_len`, `atr_len` >= 1; `grid_ks` a non-empty strictly increasing tuple of ints >= 1;
@@ -94,6 +96,10 @@ module**, so the two never touch:
   `data/bot_config.db`):
   - `seed --market M --set S --by WHO` - a new set from `ZoneParams()`, one row per field, note "seeded from the code
     defaults"; refused (exit 1, nothing written) if the set exists.
+  - `upgrade --market M --set S --by WHO` - for a set made before a field was added to `ZoneParams`: one row per field
+    the set lacks, with the code default, note "upgrade: <name> added with the code default"; fields it has are never
+    touched; refused if the set has an unknown name or a stored value that does not parse, or if nothing is missing
+    (exit 1, nothing written); the whole set after it validated through `ZoneParams` in the same transaction.
   - `copy --market M --set S --to-market M2 --to-set S2 --by WHO [--note TEXT]` - a new set with the current values of
     an existing one; refused if the source is missing or the target exists.
   - `set --market M --set S --by WHO --note TEXT name=value [name=value ...]` - one row per value that **changes**
@@ -243,6 +249,14 @@ For a visit not skipped, with `sgn`:
   that bar's close - shown, but not a result. **No rounding** in any comparison (raw floats, with the tolerance of the
   parity note); outputs are rounded to 2 decimals.
 - **Cost** = the spread only (the owner, 10/20), through the fills and exits above; no slippage.
+- **The break-even** (owner, 2026-11-02: *"if it has run more than half way, move the SL to cover the combined
+  cost"*, chosen after the measurement - BOT_RESEARCH; `be_mode` entry) [Claude, the form]: on each bar after the exit
+  test of that bar found no exit, while the break-even is not yet on and something has filled: `avg` = the mean fill
+  price of the positions filled so far (P1 and P2 weigh the same - one lot each), `mid = avg + be_frac x (TP - avg)`;
+  when the bar's bid reaches `mid` (BUY: `high >= mid`; SELL: `low + spread x point <= mid`), the break-even goes on
+  **from the next bar**: an unfilled P2 is cancelled (never tested again), and the SL of every filled position becomes
+  `avg + sgn x spread_j x point` (`spread_j` = that bar's spread) - an exit there is `BE` (its pnl may be a little above
+  or below 0; not asserted < 0). The TP stays. The risk of a position (for R) stays `sgn x (fill - the original SL)`.
 - **Results**: a position's `pnl = sgn x (exit - fill)` (USD at 0.01 lot), `risk = sgn x (fill - SL)`; a **setup's R** =
   the sum of its positions' pnl / the sum of their risks, from unrounded values. Every SL exit has pnl < 0 (asserted).
   **Open setups are not results** - left out of every total, R, drawdown and month count, and counted apart.
@@ -300,12 +314,14 @@ is reported, not bent to fit.
 2. **Grids**: the list in rule 3 (`step_mode` fixed, 76).
 3. **The reference reproduced, setup for setup** (`eye/research/zone_reference.py` with the same settings; its CSV
    under `eye/research/zone_reference_out/`):
-   - the **defaults**, 2023-10-01 to 2026-11-01 (the reference with `ZS=watr0.3333333333333333 ZEXEC=M15 ZABN=3 ZABNK=C`,
-     `ZFIX=1`): **104 setups, +0.433 R a setup, 53 % TP, +1761.8 USD**, drawdown -617.5 USD (to 06/04/26), 11 of 36
-     months negative, 0 open, 0 pending; skips: momentum 530, trend 131, busy 59, cancel 61, no fill 72, abnormal 130
-     (the reference's counter order differs; the counts must match). The reference before v2 and BOT_RESEARCH's earlier
+   - the **defaults**, 2023-10-01 to 2026-11-01 (the reference with `ZBE=entry ZS=watr0.3333333333333333 ZEXEC=M15 ZABN=3
+     ZABNK=C`; positions `long_accept_defaults_be.csv`): **109 setups, +0.392 R a setup, 41 % TP, +1868.9 USD**, drawdown
+     -280.0 USD (to 01/10/24), 13 of 36 months negative, 0 open, 0 pending; skips: momentum 530, trend 133, busy 48,
+     cancel 62, no fill 75, abnormal 130 (the counts must match).
+   - the defaults with `be_mode` off: **104 setups, +0.433 R, 53 % TP, +1761.8 USD**, drawdown -617.5, 11 of 36 months
+     negative; skips momentum 530, trend 131, busy 59, cancel 61, no fill 72, abnormal 130 (`long_accept_defaults.csv`). The reference before v2 and BOT_RESEARCH's earlier
      numbers differ (0.333, the old busy, the old line choice) - BOT_RESEARCH, "Sol's review".
-   - `step_mode` fixed 76, `exec_tf` M5, `abn_atr` off (1e9), 2025-11-01 to 2026-11-01: **41 setups, +0.615 R, +1378 USD**
+   - `step_mode` fixed 76, `exec_tf` M5, `abn_atr` off (1e9), `be_mode` off, 2025-11-01 to 2026-11-01: **41 setups, +0.615 R, +1378 USD**
      (the same 69 positions through every fix of the reference).
    - The reference writes only the positions CSV and printed totals; the build writes everything of rule 11.
    Every setup's visit time, side, line, positions, fills, exit and pnl equal the reference's; any difference listed.
