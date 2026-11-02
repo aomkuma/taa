@@ -1911,3 +1911,13 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   (lowest 322, drawdown -44 %). Claude's eye on two charts: 27/10/23 SELL 1989 (step 12.9) stopped by a strong rise -
   the October 2023 run; 30/06/26 BUY 3977 (step 97) P1 and P2 both filled in the fake break, TP +200.6. The step of 97 in
   mid-2026 is 1/3 of that month's weekly ATR, above the owner's 76.
+- **The weak spot the owner saw: an HH at the resistance / LL at the support, then the SL** (the owner, on 08/08/24 SELL
+  2400: *"we seem to have found a weak spot - an HH at the resistance or an LL at the support and the SL every time; is
+  there a way? but it may be a trade that has to be taken, following the system"*; scratchpad `hh_at_line.py`, the bot's
+  default run). The event [Claude]: after the first fill, an M15 close past the last fixed M15 ZigZag HIGH (SELL) / LOW
+  (BUY) lying at or beyond the line. Expectation written before: common in losers, but in winners too. **Measured: before
+  the exit, in 24 of 49 SL setups and 12 of 55 TP setups.** Remedies: (A) exit at that close - **+0.252 R a setup,
+  +892 USD** (base +0.433, +1762); (B) cancel P2 if not filled by then - **+0.385 R, +1599 USD**; both worse in both
+  halves (2023 - 2025: base +0.366, A +0.211, B +0.299; the built year: +0.536 / +0.316 / +0.516). Half the losers do
+  show it, but the 12 winners that showed it and still reached the TP are worth more than what an early exit saves -
+  the owner's second reading ("a trade that has to be taken") is what the measurement supports. Not changed.
