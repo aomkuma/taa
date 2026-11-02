@@ -40,6 +40,16 @@ measured.
   target 61.8 %, M15), the losing ones first, one image at a time, and ask what the owner sees that would skip them;
   the owner's choice of leg on 30/10 ("why that leg") is still unanswered. Nothing here is a rule yet; BOT_RULES is
   unchanged since 3728254.
+- **The run-zone bot is built (2026-11-02)** - a setup of its own, apart from the Fibonacci bot: spec `eye/ZONE_RULES.md`
+  (reviewed by Codex on gpt-6.1-sol until no fault), reference `eye/research/zone_reference.py`, code `eye/zone_config.py`
+  (parameters in `data/bot_config.db`, table `zone_config_change`; set `XAUUSD/default` seeded) and `eye/zone_bot.py`
+  (`python eye/zone_bot.py --market XAUUSD --set default --start 2023-10-01 --end 2026-11-01`), tests
+  `tests/unit/test_zone_*.py` (`ZONE_ACCEPT=1` for the stored-bar acceptance). Every position equals the reference;
+  175 positions checked on raw M15 bars and 32 setups on ticks, apart from the code - no disagreement. **The run,
+  October 2023 - October 2026: 104 setups, +0.433 R a setup, 53 % TP, +1761.8 USD at 0.01 lot a position, drawdown
+  -617.5** (never-used 2023 - 2025 +0.366 R on 63; the built year +0.536 R on 41); outputs and a chart per setup in
+  `eye/research/zone/XAUUSD/default/`. **Next (CLAUDE.md step 7)**: the owner judges the charts - does the bot read the
+  zones and entries as the owner does; then the forward months. Not on DEMO / LIVE.
 - **The owner's run zones (2026-11-01, most of the day)** - METHOD 2e row "The run zones" (the owner's words: a box of
   gold's run, about 76 - 80 lately, drawn from a price cluster and moved along; the lines are points to watch, targets
   and turning lines; a zone shift after a full step back with the structure; SL past the liquidation zone; two

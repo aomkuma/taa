@@ -1904,3 +1904,10 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   TP the real bid / ask reached first after the fill - **32 setups, 0 disagree** with the bot's exit. The checker
   catches a planted fault (a BUY filled on the bid: 4 disagreements); a TP-before-SL swap changes nothing on these
   data - no M15 bar held both levels (they are 1.5 steps apart).
+- **The zone bot's own run** (`eye/zone_bot.py`, set `XAUUSD/default@v24`, October 2023 - October 2026; outputs
+  `eye/research/zone/XAUUSD/default/`, 104 charts, 49 losses / 55 wins by file name): **104 setups, +0.433 R a setup, 53 %
+  TP, +1761.8 USD, drawdown -617.5, 0 open, 0 pending** - the reference's numbers. A 300 USD account on its positions:
+  fixed 0.01 lot 300 -> 2,062 (lowest 263, drawdown -70 %), year ends 373 / 349 / 777 / 2,062; 7.5 % risk 300 -> 3,538
+  (lowest 322, drawdown -44 %). Claude's eye on two charts: 27/10/23 SELL 1989 (step 12.9) stopped by a strong rise -
+  the October 2023 run; 30/06/26 BUY 3977 (step 97) P1 and P2 both filled in the fake break, TP +200.6. The step of 97 in
+  mid-2026 is 1/3 of that month's weekly ATR, above the owner's 76.

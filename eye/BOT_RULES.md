@@ -5,6 +5,8 @@ cases a build must pass, and the plan for judging it. Where each rule came from,
 dropped, is in `eye/BOT_SPEC.md` (the history); measurements are in `eye/BOT_RESEARCH.md`. A developer builds
 from this file alone; where it and the history differ, this file wins.
 
+**A second setup, the owner's run zones, has its own specification - `eye/ZONE_RULES.md` - and code (`eye/zone_bot.py`); nothing in this file applies to it, nor it to this one (2026-11-02).**
+
 Each rule says whose it is: **(owner)** - the owner's rule or words (METHOD 2e); **[Claude]** - a definition
 Claude gave where the owner gave none: a named parameter with a default, written into every decision, for the
 owner to change. A question or a chart the owner shows, and any number inside one, is never a rule.
