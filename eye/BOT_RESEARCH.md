@@ -1929,3 +1929,13 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   (base +0.433, +1762), worse in both halves; the stop filled in only 5 - 11 setups. **Adding it as a third position (P2
   kept): +0.387 to +0.419 R, +1730 to +1916 USD** - a little more USD at the setup SL, less R, on 5 - 11 fills. P2's limit
   in the fake break is where most of the edge is (the 1:4 position); the stop seldom triggers. Not changed.
+- **Break-even after half way** (the owner, on 23/07/26 BUY 4049, -83.84: *"if it has run more than half way, shall we
+  move the SL to cover the combined cost?"*; scratchpad `breakeven.py`). Form [Claude]: the trigger = the first M15 bar
+  from the first fill whose bid reaches half way - from the line (L + S/2) or from the average fill (avg + half to the
+  TP); then an unfilled P2 is cancelled and the SL of the filled positions = their average fill + / - that bar's spread.
+  Expectation written before: some losers become break-even, some winners too; no guess for the total. **Measured (base
+  +0.433 R, +1761.8 USD, drawdown -617.5): from the line +0.397 R, +1835.8 USD, drawdown -204.9 (21 losers and 14
+  winners became break-even); from the entry +0.426 R, +1952.7 USD, drawdown -226.9 (20 losers, 11 winners).** By half:
+  2023 - 2025 worse (+0.366 -> +0.244 / +0.271), the built year better (+0.536 -> +0.632 / +0.665). A 300 USD account at
+  0.01 lot: end 2,062 -> 2,136 / 2,253, the deepest drop from a peak -70 % -> -45 % / -48 %. A trade-off - the drawdown
+  falls by two thirds and the USD rises a little, R a setup dips and the older half loses; the owner's to choose.
