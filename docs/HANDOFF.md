@@ -54,13 +54,18 @@ measured.
   (3) a GTC P1 can fill on a bar's first tick before the runner applies that bar's closed-hour cancel, and a crash
   leaves a candidate's orders resting past its hour; (4) P1 refused while P2 rests - P2 can trade alone; a marketable
   P1 counted filled before the broker accepts it; (5) `day_plan_ok=True` bypasses the system's day-plan gate
-  condition - **the owner's word needed** whether the zone runner trades without the day plan; (6) with `exec_tf` M5
+  condition - **the owner decided (2026-11-02): the zone runner does not use the day plan** (*"not used"*); (6) with `exec_tf` M5
   the M15 frame (the state gate) is not kept up to date; (7) the reservation must end at the bar's stored
   `close_time`, not the next bar's open (a Friday exit would block Monday's open); (8) polling every 2 s can miss a
   brief bid touch with no fill - the first visit of the hour then goes to the wrong line; (9) the withdrawal comes
   before the closed-hour cancel in `simulate_setup` - L5 has them reversed; (10) L11 must require every simulated
   skipped / busy visit, farther lines included, and momentum before busy; (11) L11 must compare fill bars and the BE
-  bar, and fix the replay's tick times against the runner's cycles.
+  bar, and fix the replay's tick times against the runner's cycles. All 11 fixed; **Sol review 3: 6** (resting
+  entries under the kill switch, a missed touch of a skipped line, the pre-close window, a wanted order expiring,
+  modifies of a vanished target, tick rounding) fixed; **review 4: 4** (bar-boundary races: P2 after the BE trigger,
+  refused closes, the final-close prediction, P2 re-placed after P1) fixed; **review 5: 2** (a fill after the setup
+  ended is closed at once; the SELL P2 early removal dropped) fixed; **review 6: nothing** - *"The spec is now
+  right"*. Step 3 done (2026-11-02); next step 4: the build by a Sonnet developer from `eye/ZONE_LIVE.md`.
 - **The run-zone bot is built (2026-11-02)** - a setup of its own, apart from the Fibonacci bot: spec `eye/ZONE_RULES.md`
   (reviewed by Codex on gpt-6.1-sol until no fault), reference `eye/research/zone_reference.py`, code `eye/zone_config.py`
   (parameters in `data/bot_config.db`, table `zone_config_change`; set `XAUUSD/default` seeded) and `eye/zone_bot.py`
