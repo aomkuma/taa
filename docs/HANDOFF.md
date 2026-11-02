@@ -44,6 +44,7 @@ measured.
   yet: a real-time runner inside `app/` (through the broker layer and the existing LIVE gate) must be specified, reviewed,
   built and tested against FakeMT5 first, and the owner chooses the lot / risk. Claude proposed a few days on DEMO first
   to check that the orders sent match the simulation - the owner's call. Switching LIVE on is asked again at that moment.
+  **The owner's answers (2026-11-02): 0.01 lot a position, fixed; no DEMO** (*"0.01, no DEMO"*).
 - **The run-zone bot is built (2026-11-02)** - a setup of its own, apart from the Fibonacci bot: spec `eye/ZONE_RULES.md`
   (reviewed by Codex on gpt-6.1-sol until no fault), reference `eye/research/zone_reference.py`, code `eye/zone_config.py`
   (parameters in `data/bot_config.db`, table `zone_config_change`; set `XAUUSD/default` seeded) and `eye/zone_bot.py`
