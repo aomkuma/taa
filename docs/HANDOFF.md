@@ -45,6 +45,22 @@ measured.
   built and tested against FakeMT5 first, and the owner chooses the lot / risk. Claude proposed a few days on DEMO first
   to check that the orders sent match the simulation - the owner's call. Switching LIVE on is asked again at that moment.
   **The owner's answers (2026-11-02): 0.01 lot a position, fixed; no DEMO** (*"0.01, no DEMO"*). The owner: *"I watch the trades and take the risk myself"*. The LIVE gate stays as built (`ENABLE_LIVE_TRADING=true` and `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-<login>` in `.env`, set by the owner, not by Claude; the account checked REAL before every order).
+  **The runner's spec is `eye/ZONE_LIVE.md` (2026-11-02, step 2-3 of the process; no code yet).** Sol review 1: 20
+  findings (the gate checked only at construction, uncertain sends, two resting lines, restart, a P2 outliving its
+  setup, the life from `j0`, the cancels, the reservation, tick rounding, the LAYERS table, the database, the replay
+  harness) - the spec was rewritten for all of them. **Sol review 2: 11 findings still open, to fix next** (the owner
+  paused the work here): (1) an accepted order seen late is marked `lost` and sent again - duplicate exposure; (2)
+  remove / modify requests carry no comment, so recovery by comment fails for them - check by ticket and state;
+  (3) a GTC P1 can fill on a bar's first tick before the runner applies that bar's closed-hour cancel, and a crash
+  leaves a candidate's orders resting past its hour; (4) P1 refused while P2 rests - P2 can trade alone; a marketable
+  P1 counted filled before the broker accepts it; (5) `day_plan_ok=True` bypasses the system's day-plan gate
+  condition - **the owner's word needed** whether the zone runner trades without the day plan; (6) with `exec_tf` M5
+  the M15 frame (the state gate) is not kept up to date; (7) the reservation must end at the bar's stored
+  `close_time`, not the next bar's open (a Friday exit would block Monday's open); (8) polling every 2 s can miss a
+  brief bid touch with no fill - the first visit of the hour then goes to the wrong line; (9) the withdrawal comes
+  before the closed-hour cancel in `simulate_setup` - L5 has them reversed; (10) L11 must require every simulated
+  skipped / busy visit, farther lines included, and momentum before busy; (11) L11 must compare fill bars and the BE
+  bar, and fix the replay's tick times against the runner's cycles.
 - **The run-zone bot is built (2026-11-02)** - a setup of its own, apart from the Fibonacci bot: spec `eye/ZONE_RULES.md`
   (reviewed by Codex on gpt-6.1-sol until no fault), reference `eye/research/zone_reference.py`, code `eye/zone_config.py`
   (parameters in `data/bot_config.db`, table `zone_config_change`; set `XAUUSD/default` seeded) and `eye/zone_bot.py`
