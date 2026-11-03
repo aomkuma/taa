@@ -112,11 +112,12 @@ none of them decides ownership on its own.
 (L8): each **place** request's setup, name (P1 / P2), `n`, state (`intent`, `sent`, `refused`, `unseen`), the
 broker's state of its order (open, filled, cancelled, expired), and, for a P2, **its pair** - the P1 place it was
 placed beside (recorded when the P2 place is written, never changed); the setup row's state (live, chosen, dropped,
-interrupted, ended and how), its recorded fills and **its judged-disallowed fills**, and three moments the runner
+interrupted, ended and how), its recorded fills (each with its key and its entry's event identity: deal ticket and time, else position ticket and open time) and **its judged-disallowed fills**, and three moments the runner
 writes on the row when they happen and never moves: **the end moment** (below, F6), **`kept_since`** (the time of
 the first restart that kept the setup for its positions only - a later restart does not move it) and **the
 break-even bar** (`be_j`, L5 rule 5), with `kept_since` the identities of its first read's entries (F9). Comments are matched by their parsed key (setup id, name, `n`), never by string
-equality: text the broker adds to a comment does not change the key.
+equality: the key is `Z<id>-<P1|P2>-<n>` at the start of the comment, `n` the digits right after the second `-` up to
+the first non-digit; text the broker adds after it (e.g. `[sl 95.00]`) is ignored and never read as part of `n`.
 
 **One precondition** (the runner keeps it, the rule relies on it): a new place of a setup's name is sent only once
 every older place of that name is known gone **without a fill** - its order cancelled or expired in the broker's
@@ -127,6 +128,21 @@ place of a name is the setup's beside a newer one, and **a place is superseded**
 setup and name exists.
 
 **Exits** belong to the position's owner, by the position id, never by the exit deal's comment.
+
+**Three principles every path keeps** (the restart included):
+- **One walk.** The running cycle and the restart feed the same event walker - the one time order, its waits (an
+  entry whose bar the closed bars do not yet cover, an unresolved exit, an unresolved order), the classification and
+  the effects. The restart differs only in its inputs (the rows as recorded, F11 off, `kept_since`). No path orders,
+  classifies or acts on an event outside it.
+- **Classified before any effect.** Nothing follows from an order or an entry - a visit, the hour's choice, a drop,
+  a record, a close - before it is classified; a stray (O1, F1) changes no setup and no hour.
+- **No broker fact is invented.** A fill, an exit and its time, a cancellation, an expiry and the end of a setup are
+  taken only from the broker (open orders and positions, deals, the order history) or from the row as recorded. An
+  order that left the open orders with no history state yet is **unresolved**: nothing of its name is placed until
+  its history shows it cancelled or expired, or its fill is judged. A restart keeps every row's recorded state
+  (chosen, dropped, interrupted, its fills even when the broker no longer shows their positions or deals); the hour's
+  choice is never assumed - an entry made while down is a visit and L4's candidates' order decides the hour, through
+  the walk.
 
 **Orders** - classified P1 before P2 (O4 reads the P1's class); the first row that holds gives the class:
 
@@ -160,7 +176,7 @@ its own deal time and `exec_tf` bar; the first row that holds gives the class:
 | F1 | The key has no place row of this account | **stray** - left as it is, named in the log and in `zone status`; never adopted, never closed without the owner |
 | F2 | Already judged (the setup row records it as a fill, or as a disallowed fill, or owes it a FAULT close) | that judgment stands - never judged again, at a restart neither |
 | F3 | Its place is superseded | **disallowed** (a late arrival) |
-| F4 | A P2 whose pair is not the setup's fill (F12) at or before this deal (in the order above) | **disallowed** (a late P2) |
+| F4 | A P2 whose pair is not the setup's fill (F12) at or before this deal - the pair's recorded event identity compared in the order above | **disallowed** (a late P2) |
 | F5 | The setup already has a fill of this name from another position | **disallowed** (a second fill) |
 | F6 | The deal is at or after the setup's **end moment** - strictly after it when the end is an exit (an entry at the same time as the exit came first, above); at or after it for every other end (the simulation applies those rules before the fill tests): its exit - the time of the deal that closed its last position; expiry, the closed-hour cancel, the withdrawal, the blocked-P1 cancel - the open of the bar the rule applied to (the simulation applies them to the whole bar); a restart - the restart's time | **disallowed** |
 | F7 | The setup ended `restart` (L8) - whatever the deal's time | **disallowed** |
@@ -190,8 +206,11 @@ its own deal time and `exec_tf` bar; the first row that holds gives the class:
 - **An entry that reaches F12 for a setup the runner no longer holds** (cannot happen once the end moment is
   written; a fault if it does) is closed at market and logged.
 - **Every row carries L3a's facts from its creation** (the zone runner has never run on an account: no `zone_live`
-  table existed on 2026-11-03). A store holding a zone row without them (its end moment when ended, each fill's key)
-  is refused at start, the rows named - nothing is guessed.
+  table existed on 2026-11-03), written in the transaction that creates or changes the state they describe: an ended
+  row its end moment **and its kind** (exit / rule / restart - F6's boundary depends on it), a kept row `kept_since`
+  **and** its first read's identities, every fill its key and its event identity, every P2 place its pair. A store
+  holding a zone row without any of them is refused at start, the rows and the missing facts named - nothing is
+  guessed.
 
 ## L4. The hour - which lines rest orders (ZONE_RULES rules 4, 5) [Claude]
 

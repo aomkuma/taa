@@ -196,7 +196,17 @@ measured.
     an allowed fill (`fill_of`); `_sync` only sets `sent`, the fill written after L3a; the BE reconstruction already
     right). `test_zone_ownership.py` 36 tests; every zone file passes one at a time (crash-anywhere 2:16). Claude
     re-ran at 19:32: ruff, mypy, bandit clean; architecture + ownership + fixes3 + fixes7 + restart + trader **152
-    passed**. **Sol's code review of the classifier and all its callers under way.**
+    passed**.
+  - **Sol's code review 1 of the classifier (19:45): 9 findings (4 P1, 5 P2)** - grouped by Claude into three roots:
+    (a) the restart walks events in its own loop, not the running path's walker (chosen=True set at restart; no wait
+    behind an unresolved exit; entries judged on uncovered bars; a recorded fill erased when the broker no longer
+    shows it) - Opus had named the two loops in its report (point 10) and Claude did not stop it then; (b) broker
+    facts invented (an unknown removal recorded as cancelled -> a duplicate place possible); (c) an effect before
+    classification (a stray's visit choosing the hour). Smaller: F4 without the pair's event order; broker suffix
+    digits parsed into `n` (`Z12-P2-3 [sl 95.00]` -> n 39500); the start check too narrow. **Written into L3a as
+    "Three principles every path keeps"** (one walk; classified before any effect; no broker fact invented), the key
+    format, F4 by event identity, the full facts per row; **Sol: "No findings"**. Next: Opus restructures to one
+    walker, then Sol reviews the code again.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
