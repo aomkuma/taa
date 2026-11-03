@@ -96,9 +96,46 @@ measured.
     edited at 14:22 for the partial-fill remainder, its tests NOT yet written, nothing run since** - on resuming,
     first check that edit (ruff, mypy, the relevant tests), add the tests (the partial-fill remainder; a late P2
     after its P1's removal), then Sol on point 1 again; then points 2-7 one at a time, each reviewed by Sol.
-  - Next: the seven points one by one (then the crash-anywhere test), Sol clean; then the replay spans on the final
-    runner (2024-03, 2026-03 M15 and M5, 2025-04, 2024-05; tick and poll), the full suite alone, the commits, the
-    readings drawn for the owner; LIVE only with the owner's `.env` values and word.
+  - **16:40-17:12: point 1 in four more Sol rounds, each one fault, each the same question in another code path.**
+    Fixed and tested (`tests/unit/test_zone_review_fixes7.py`, 11 tests, 100 relevant tests passed at 16:59): the
+    partial-fill remainder; each P2 paired with the P1 it was placed beside (`Cand.pairs`, saved in
+    `fills_json["pairs"]`; `_paired_p1_alive`, `_open_place_alive`, `_orders_of`); every fill judged by its own
+    order, not its name (`_on_in`, `_superseded`; the same in `_take_adopted` at a restart). Sol's fourth round found
+    one more: at a restart `_take_adopted` (~822) takes the first fill of a name in time order without checking that
+    it was already judged disallowed (in `faults`, an owed close, its P1 dead, superseded) - so a legitimate later P2
+    can be closed as a "second fill". **Opus was stopped at 17:12 by the owner mid-fix: `trader.py` edited at
+    17:09:42 and `test_zone_review_fixes7.py` at 17:09:00 for this; its revert check was done; ruff, mypy and the
+    test files NOT run since.**
+  - **The root cause (Claude's analysis, 17:12) - read this before touching the runner.** Every fault of the last
+    rounds (Sol reviews 9-11 of piece 2 and the four rounds of point 1) is ONE question asked in several code paths:
+    *"does this order / fill / position belong to a live setup, and which?"* It is decided separately in
+    `_remove_in_order`, `_wants`, `_fill_allowed`, `_on_in`, `_take_adopted` / `_adopt` and the late-arrival code,
+    each with its own logic; fixing one path leaves the others wrong, and the reviewer finds them one at a time. Two
+    causes: (1) **the spec has no single definition of ownership** - L3, L4, L5 and L8 each state a rule for their
+    situation (P2 paired with P1, superseded orders, late arrivals, disallowed fills, strays, positions-only setups);
+    (2) Claude passed the review findings on one symptom at a time instead of stepping back.
+  - **The way forward (the owner, 17:12: "write it in HANDOFF; another session continues"):**
+    1. Write ONE ownership rule into `eye/ZONE_LIVE.md` (a section of its own, referenced from L3, L4, L5, L8): every
+       order, fill and position of the magic is classified from the request ledger (each place request's setup,
+       name, n, the P1 it is paired with, whether a newer place of the name superseded it, whether its pair's P1 was
+       removed, the setup's state and end) and the broker facts, into exactly one class - **the setup's live order**,
+       **the setup's fill** (allowed by the life at its own bar), **a late arrival / disallowed fill** (removed or
+       closed at market), or **a stray** (no row: orders removed, positions left and named). State it as a table of
+       conditions -> class, covering the running path and the restart identically.
+    2. Sol reviews that section until clean (spec step 3).
+    3. A developer (Opus) implements it as ONE pure classifier function in `app/zone/` used by every path
+       (removal, wanted orders, fills, the restart's adoption, late arrivals), deleting the per-path judgments; the
+       existing tests stay as the safety net (`test_zone_review_fixes7.py`, `test_zone_restart.py`,
+       `test_zone_crash_anywhere.py`), plus a table-driven test of the classifier covering every row of the spec
+       table.
+    4. Sol reviews the classifier and its callers as a whole, once, until clean.
+    5. Then the rest of Sol's restart-fresh list, points 2-7 (stale exec bars at adoption; managing blocked while D1
+       is unavailable; an exec_tf change blocking the restart; a pre-restart P2 fill closed - likely covered by the
+       classifier; broker-appended comments - parse_comment everywhere; an invented exit when the history lacks it)
+       and the crash-anywhere test strengthening - one at a time, each reviewed by Sol.
+  - Next after that: the replay spans on the final runner (2024-03, 2026-03 M15 and M5, 2025-04, 2024-05; tick and
+    poll; at most 4 in parallel), the full suite alone, the commits, the readings drawn for the owner; LIVE only with
+    the owner's `.env` values and word.
 - **The run-zone bot is built (2026-11-02)** - a setup of its own, apart from the Fibonacci bot: spec `eye/ZONE_RULES.md`
   (reviewed by Codex on gpt-6.1-sol until no fault), reference `eye/research/zone_reference.py`, code `eye/zone_config.py`
   (parameters in `data/bot_config.db`, table `zone_config_change`; set `XAUUSD/default` seeded) and `eye/zone_bot.py`
