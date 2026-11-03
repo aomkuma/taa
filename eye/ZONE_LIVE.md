@@ -99,6 +99,69 @@ Every comparison below is the simulation's, with the same `>=` / `<=`.
   that has already filled part of its volume is not held back (its remainder is removed at once: P2 is not alone).
   A P2 whose place request is still of unknown outcome is not waited for: if it appears after its P1 was removed,
   it is a late arrival - removed at once, and a fill of it is a disallowed fill, closed at market (L8).
+  Which orders are the setup's own is L3a.
+
+## L3a. Ownership - one rule for every order, fill and position of the magic [Claude, 2026-11-03]
+
+Every resting order, every entry (a position, from its first entry deal or, when no deal is seen, from the position
+itself) and every exit of the zone magic on the pinned account is classified by **this one rule** - in the running
+cycles and at a restart alike, by one function of the runner. L3, L4, L5, L7 and L8 say what is done with each class;
+none of them decides ownership on its own.
+
+**The facts it reads.** The broker's object (its comment, ticket, position, time, volume) and the request ledger
+(L8): each **place** request's setup, name (P1 / P2), `n`, state (`intent`, `sent`, `refused`, `unseen`), the
+broker's state of its order (open, filled, cancelled, expired), and, for a P2, **its pair** - the P1 place it was
+placed beside (recorded when the P2 place is written, never changed); the setup row's state (live, chosen, dropped,
+interrupted, kept for its positions only, ended and its end bar), its recorded fills and **its judged-disallowed
+fills**, its break-even bar. Comments are matched by their parsed key (setup id, name, `n`), never by string
+equality: text the broker adds to a comment does not change the key.
+
+**One precondition** (the runner keeps it, the rule relies on it): a new place of a setup's name is sent only once
+every older place of that name is known gone **without a fill** - its order cancelled or expired in the broker's
+history, or its request refused or `unseen`. An older order that left the open orders as filled is a fill to judge
+(below); nothing of that name is placed until its deal is judged. So an older place of a name is never live
+beside a newer one, and **a place is superseded** when any newer place of the same setup and name exists.
+
+**Exits** belong to the position's owner, by the position id, never by the exit deal's comment.
+
+**Orders** - the first row that holds gives the class:
+
+| # | Condition | Class | Done (L3, L4, L5, L7) |
+|---|---|---|---|
+| O1 | The key has no place row of this account | **stray** | removed (L7: nothing new while it rests); named |
+| O2 | Its place is superseded | **late arrival** | removed at once |
+| O3 | Its setup is not live (ended, dropped for the other candidate, kept for its positions only, or not in memory) | **late arrival** | removed at once |
+| O4 | A P2 whose pair (its P1) is neither resting nor filled | **late arrival** | removed at once (no P1 to hold back) |
+| O5 | Otherwise | **the setup's order** | kept, extended, or removed by the setup's rules (L4, L5, L7), in L3's order |
+
+A place of unknown outcome (`intent`) counts as the setup's order for "never placed twice" (L8), but a P2 of unknown
+outcome is not waited for when its P1 is removed (L3).
+
+**Entries** (fills and positions) - judged **once each**, in time order of their entry deals, each at its own
+`exec_tf` bar; the first row that holds gives the class:
+
+| # | Condition | Class |
+|---|---|---|
+| F1 | The key has no place row of this account | **stray** - left as it is, named in the log and in `zone status`; never adopted, never closed without the owner |
+| F2 | Already judged (the setup row records it as a fill, or as a disallowed fill, or owes it a FAULT close) | that judgment stands - never judged again, at a restart neither |
+| F3 | Its place is superseded | **disallowed** (a late arrival) |
+| F4 | A P2 whose pair (the P1 it was placed beside) is not the setup's fill at or before this deal | **disallowed** (a late P2) |
+| F5 | The setup already has a fill of this name from another position | **disallowed** (a second fill) |
+| F6 | The setup had ended before this entry's bar (any outcome; an unvisited candidate whose hour is over; a candidate interrupted and never chosen; the hour belonging to the other candidate, L4) | **disallowed** |
+| F7 | The setup is kept for its positions only (a restart) and the entry came after the restart | **disallowed** |
+| F8 | P2 at or after the break-even removed it: its bar after the trigger bar (L5 rule 5), or a BUY P2 after the ahead removal | **disallowed** |
+| F9 | P1, in a running cycle, that rules 1 - 3 of L5 forbid at its bar (expired, the closed-hour cancel, the withdrawal, blocked - a blocked P1 also cancels the setup, L5 rule 3) | **disallowed** |
+| F10 | Otherwise | **the setup's fill** |
+
+- **A disallowed entry** is written on its setup row (the judgment, the reason) **before** anything is sent; an open
+  position of it is owed a close at market (L8: retried until gone); one already closed is recorded only. It is never
+  part of the setup: no BE, no exit, no outcome from it.
+- **At a restart** (L8) the same table is applied to the entries found, in time order, against the setup's state
+  rebuilt from its row: F2 first, so a position judged before the restart keeps its class; F6 uses the setup's end
+  before the restart; F8 the break-even judged on the bars closed while down; F9 is **not** applied to entries made
+  while the runner was down (the owner's choice: a fill while down is not re-judged against the bars, L8).
+- **The only changes of a judgment** are L4's: when both candidates of an hour filled, or a missed touch gives the
+  hour to the other candidate, the losing candidate's fill becomes disallowed (written on its row, closed at market).
 
 ## L4. The hour - which lines rest orders (ZONE_RULES rules 4, 5) [Claude]
 
@@ -173,7 +236,7 @@ withdrawal, (2) the closed-hour cancel, (3) the fill tests with the fill-moment 
   in the last `preclose_seconds` of the H1 bar (L4's end of the hour). A fill inside the window that the true values
   would have forbidden is a difference to explain by that tick (L11).
 
-**Fills** are the broker's deals (by the comment, L3): P1 and P2 each open a position with the setup's SL and TP.
+**Fills** are the broker's deals, the setup's own by L3a: P1 and P2 each open a position with the setup's SL and TP.
 After the first fill, rules 1 - 4 no longer apply (the simulation's `if not fills`); an unfilled P2 rests (blocks no
 longer apply) until the break-even or the end.
 
@@ -253,7 +316,7 @@ setup's how is the first deal's.
   fallback, any close the rules require): retried every cycle until the position is gone - the position keeps its
   broker SL / TP meanwhile; every third refusal is logged as a fault; a close is never given up. A remove refused -> retried each cycle. **A fill the setup's logic does not
   allow** - an order that fills after its setup ended (cancel, withdrawal, expiry, its exit), after the break-even
-  removed P2, while blocked (L5 rule 3), or of a candidate the hour no longer allows - is closed at market at once and
+  removed P2, while blocked (L5 rule 3), or of a candidate the hour no longer allows; L3a decides which - is closed at market at once and
   logged (a fault, or the bar boundary of L11 when it happened there); it is never part of a setup. One of
   two BE modifies refused -> L5's refusal rule for that position. A partial fill (volume below `lot`) is a position of
   that volume, recorded; the order's rest is removed.
@@ -288,7 +351,7 @@ setup's how is the first deal's.
     are recorded at their times, whatever the row said - so a setup whose positions filled and closed while down
     ends with those exits (how, price, time). If the broker history no longer shows them, the row's last state
     stands (logged).
-  - **Which setup a position belongs to**: an open position of the magic belongs to a setup only if its comment is
+  - **Which setup a position belongs to** (L3a, applied at the restart as in the running cycles): an open position of the magic belongs to a setup only if its comment is
     one of that setup's placed orders. If that setup was still unfinished at the restart, the position is kept and
     managed (the owner's choice above - a fill while down is not re-judged against the bars). If the setup had
     already ended before the restart (cancel, withdrawal, expiry, its exit), the fill is a disallowed fill (L8) -
@@ -377,7 +440,9 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      the end state equal to the simulation's. The exact cycle at which an order is placed or removed (the candidates'
      hour end, the losing candidate, the blocks, the BE removal of P2) is checked by the runner's unit tests (L11.3),
      not by the replay gate - a timing fault that changes a fill, an exit or a stop is caught by the comparison.
-3. **Unit tests** on FakeMT5 or the replay broker: the candidates at the open (nearest armed, a disarmed nearer line
+3. **Unit tests** on FakeMT5 or the replay broker: **the ownership rule (L3a) table-driven - every row O1 - O5 and
+   F1 - F10, each first-holding row against the rows below it, the running cycle and the restart giving the same
+   class for the same facts (F9 apart), F2 never re-judging**; the candidates at the open (nearest armed, a disarmed nearer line
    passed over, equality to the open, a reserved hour); the first visit removes the other candidate's orders; a
    skipped first visit leaves the other; both filled -> the later closed; rules 1 - 4 each, at the bar the simulation
    applies them (the closed-hour cancel before any visit; no withdrawal in `j0`; a blocked P1 touched on the bid but

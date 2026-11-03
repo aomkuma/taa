@@ -133,6 +133,11 @@ measured.
        is unavailable; an exec_tf change blocking the restart; a pre-restart P2 fill closed - likely covered by the
        classifier; broker-appended comments - parse_comment everywhere; an invented exit when the history lacks it)
        and the crash-anywhere test strengthening - one at a time, each reviewed by Sol.
+  - **Resumed 17:13, 2026-11-03 (a new session).** Opus's 17:09 edit checked: ruff, mypy clean; the fixes7, restart
+    and crash-anywhere tests **48 passed**. Step 1 done: **`eye/ZONE_LIVE.md` L3a "Ownership"** - orders O1-O5, entries
+    F1-F10, one precondition (a new place of a name only once every older one is known gone without a fill, so
+    "superseded" = any newer place of the name), judged once (F2), the restart on the same table (F9 apart); L3, L5,
+    L8, L11.3 refer to it. Step 2: Sol's review of L3a under way.
   - Next after that: the replay spans on the final runner (2024-03, 2026-03 M15 and M5, 2025-04, 2024-05; tick and
     poll; at most 4 in parallel), the full suite alone, the commits, the readings drawn for the owner; LIVE only with
     the owner's `.env` values and word.
