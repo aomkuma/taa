@@ -145,10 +145,15 @@ setup and name exists.
 - A place of unknown outcome (`intent`) counts as the setup's order for "never placed twice" (L8), except an orphan
   (the precondition); a P2 of unknown outcome is not waited for when its P1 is removed (L3).
 
-**Entries** (fills and positions) - judged **once each**, in the order of their entry deals' times; at equal times P1
-before P2 of the same setup, two candidates' entries in L4's order (the earlier touch bar, then nearer the open),
-then the deal ticket. Each is judged at its own deal time and `exec_tf` bar; the first row that holds gives the
-class:
+**Entries** (fills and positions) - judged **once each**, in **one time order together with the exits**: every entry
+deal (or, when no deal is seen, the position itself at its open time) and every exit deal of the magic, by time; at
+equal times a position's own entry before its exits, then exits before the entries of other positions (so F6 holds
+for an entry at the very moment of the end), P1 before P2 of the same setup, two candidates' entries in L4's order
+(the earlier touch bar, then nearer the open, then the lower line - the simulation's), then the deal ticket, else the
+position ticket. **An exit is applied in that order** - the moment the volume of the setup's own open positions
+reaches zero is its end moment (F6), set before any later entry is judged; in the running cycles and at a restart
+alike (deals found late, or while down, are put in this order before anything is judged). Each entry is judged at
+its own deal time and `exec_tf` bar; the first row that holds gives the class:
 
 | # | Condition | Class |
 |---|---|---|
@@ -454,7 +459,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      not by the replay gate - a timing fault that changes a fill, an exit or a stop is caught by the comparison.
 3. **Unit tests** on FakeMT5 or the replay broker: **the ownership rule (L3a) table-driven - every row O1 - O5 and
    F1 - F12, each first-holding row against the rows below it, the running cycle and the restart giving the same
-   class for the same facts (F11 apart), F2 never re-judging**; the candidates at the open (nearest armed, a disarmed nearer line
+   class for the same facts (F11 apart), F2 never re-judging, the setup's last exit and a later P2 entry in one bar (running, a late deal read, and a restart) - the entry disallowed, the equal-time orders**; the candidates at the open (nearest armed, a disarmed nearer line
    passed over, equality to the open, a reserved hour); the first visit removes the other candidate's orders; a
    skipped first visit leaves the other; both filled -> the later closed; rules 1 - 4 each, at the bar the simulation
    applies them (the closed-hour cancel before any visit; no withdrawal in `j0`; a blocked P1 touched on the bid but
