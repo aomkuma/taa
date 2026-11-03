@@ -143,11 +143,13 @@ measured.
     entries now F1-F12; **Sol round 2: 1-7 fixed except the order** - exits must be applied in one time order with the
     entries (the end set before a later entry is judged), the tie-break must end with the lower line, a position-only
     fallback key - fixed in L3a's "Entries" paragraph (commit 1bef8d1).
-  - **Paused by the owner at 17:32, 2026-11-03** (*"update the documents, then pause for a while"*). Sol round 3 on
-    L3a was started and **stopped unfinished** - no result; nothing is running. **Resume here**: run Sol round 3 on
-    L3a (the prompt: check round 2's three ordering fixes and no new gap; `codex.exe exec -m gpt-6.1-sol --sandbox
-    read-only`); when clean, step 3 of "The way forward" below - Opus builds the one classifier. `trader.py` and the
-    tests are as Opus left them at 17:09 (ruff, mypy clean; 48 passed), uncommitted.
+  - **Resumed after the 17:32 pause.** Sol round 3: the equal-time order was cyclic (P1 and P2 entering and exiting
+    at one time); round 4: a valid same-tick P2 fill rejected; round 5: F6 must keep `>=` for non-exit ends - each
+    fixed; **round 6: "No findings ... no remaining implementation ambiguity"** - L3a is reviewed clean (step 2 done).
+    The rule now: at one time T every entry first, then every exit (the simulation fills before it tests exits); F6
+    strictly after an exit end, at or after every other end. **Step 3 under way: Opus builds the classifier**
+    (`app/zone/ownership.py`, every caller in `trader.py` using it, the per-path judgments deleted,
+    `tests/unit/test_zone_ownership.py` table-driven; no commit, no full suite).
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **Open, the owner's word asked**: may P3-only review findings with no money risk be recorded and the build go on,
