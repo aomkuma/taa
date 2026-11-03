@@ -1,6 +1,6 @@
 # Session handoff
 
-Last updated **2026-11-01 Thai** (read with `Get-Date`).
+Last updated **2026-11-03 17:32 Thai** (read with `Get-Date`).
 
 **The rules and the process in force.** The owner's setup is `eye/METHOD.md` 2e. The bot's rules are
 **`eye/BOT_RULES.md`** (the only spec in force; `eye/BOT_SPEC.md` is the history). Every change follows CLAUDE.md,
@@ -142,7 +142,16 @@ measured.
     reading the P1's class; persisted cutoffs `kept_since`, `be_j`, the end moment; equal-time order) - all fixed,
     entries now F1-F12; **Sol round 2: 1-7 fixed except the order** - exits must be applied in one time order with the
     entries (the end set before a later entry is judged), the tie-break must end with the lower line, a position-only
-    fallback key - fixed in L3a's "Entries" paragraph; **Sol round 3 under way.**
+    fallback key - fixed in L3a's "Entries" paragraph (commit 1bef8d1).
+  - **Paused by the owner at 17:32, 2026-11-03** (*"update the documents, then pause for a while"*). Sol round 3 on
+    L3a was started and **stopped unfinished** - no result; nothing is running. **Resume here**: run Sol round 3 on
+    L3a (the prompt: check round 2's three ordering fixes and no new gap; `codex.exe exec -m gpt-6.1-sol --sandbox
+    read-only`); when clean, step 3 of "The way forward" below - Opus builds the one classifier. `trader.py` and the
+    tests are as Opus left them at 17:09 (ruff, mypy clean; 48 passed), uncommitted.
+  - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
+    symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
+  - **Open, the owner's word asked**: may P3-only review findings with no money risk be recorded and the build go on,
+    instead of reviewing until nothing is found? Until the owner answers, the process stands (review until clean).
   - Next after that: the replay spans on the final runner (2024-03, 2026-03 M15 and M5, 2025-04, 2024-05; tick and
     poll; at most 4 in parallel), the full suite alone, the commits, the readings drawn for the owner; LIVE only with
     the owner's `.env` values and word.
