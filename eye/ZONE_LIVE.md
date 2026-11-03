@@ -115,7 +115,7 @@ placed beside (recorded when the P2 place is written, never changed); the setup 
 interrupted, ended and how), its recorded fills and **its judged-disallowed fills**, and three moments the runner
 writes on the row when they happen and never moves: **the end moment** (below, F6), **`kept_since`** (the time of
 the first restart that kept the setup for its positions only - a later restart does not move it) and **the
-break-even bar** (`be_j`, L5 rule 5). Comments are matched by their parsed key (setup id, name, `n`), never by string
+break-even bar** (`be_j`, L5 rule 5), with `kept_since` the identities of its first read's entries (F9). Comments are matched by their parsed key (setup id, name, `n`), never by string
 equality: text the broker adds to a comment does not change the key.
 
 **One precondition** (the runner keeps it, the rule relies on it): a new place of a setup's name is sent only once
@@ -165,7 +165,7 @@ its own deal time and `exec_tf` bar; the first row that holds gives the class:
 | F6 | The deal is at or after the setup's **end moment** - strictly after it when the end is an exit (an entry at the same time as the exit came first, above); at or after it for every other end (the simulation applies those rules before the fill tests): its exit - the time of the deal that closed its last position; expiry, the closed-hour cancel, the withdrawal, the blocked-P1 cancel - the open of the bar the rule applied to (the simulation applies them to the whole bar); a restart - the restart's time | **disallowed** |
 | F7 | The setup ended `restart` (L8) - whatever the deal's time | **disallowed** |
 | F8 | A candidate that is not the hour's setup at the deal's time: dropped (for any reason - the other candidate's visit, P1 refused, L4); never visited and its hour over (deal at or after the hour's open + 1 h); interrupted and never chosen (L7); the hour belongs to the other candidate (L4) | **disallowed** |
-| F9 | The setup is kept for its positions only, the deal is at or after `kept_since` (the time of the first successful broker read of the restart that kept it), and the entry was not in that first read (that read's entries are fills while down) | **disallowed** |
+| F9 | The setup is kept for its positions only, the deal is at or after `kept_since` (the time of the first successful broker read of the restart that kept it), and the entry is not one of **that read's entries** (fills while down) - their identities (position and deal tickets) are written on the row in the same transaction as `kept_since` and kept across later restarts | **disallowed** |
 | F10 | P2 whose bar is after the break-even bar `be_j` (the break-even removed it, L5 rule 5) | **disallowed** |
 | F11 | P1, in a running cycle, that rules 1 - 3 of L5 forbid at its bar (expired, the closed-hour cancel, the withdrawal, blocked - a blocked P1 also cancels the setup, L5 rule 3) | **disallowed** |
 | F12 | Otherwise | **the setup's fill** |
@@ -182,15 +182,16 @@ its own deal time and `exec_tf` bar; the first row that holds gives the class:
 - **The time order is strict**: an event waits while any earlier event waits (an entry whose bar is not yet covered by
   the closed bars, L2), and every later event - exits too - waits behind it.
 - **An exit not yet in the deals**: a position of the setup that is gone from the broker while no exit deal of it has
-  been read holds every later event for up to one `exec_tf` bar (the deals read late); after that its end is taken
-  at **the last time the position was seen open** (the earliest it can have closed - later entries are disallowed,
-  never wrongly kept), logged as a fault, and the events go on. Positions keep their broker SL / TP meanwhile.
+  been read stays **unresolved** - its end is never invented. The events after it wait (the time order above); the
+  runner keeps managing (closes owed, removals, the BE of other positions - L8 "two kinds of work") and places
+  nothing new (L7). After one `exec_tf` bar unresolved it is logged as a fault, and again every hour, until the exit
+  deal is read; positions keep their broker SL / TP meanwhile and are the owner's to watch.
 - **At one time T, a stray's entry comes after every entry of a row** (it changes no row).
 - **An entry that reaches F12 for a setup the runner no longer holds** (cannot happen once the end moment is
   written; a fault if it does) is closed at market and logged.
-- **Rows written before this rule**: a row ended with no recorded end moment counts as ended before any entry not
-  already judged (F6; an outcome `restart` - F7); a recorded fill with no key takes it from the place whose position
-  it is, else the newest filled place of that name.
+- **Every row carries L3a's facts from its creation** (the zone runner has never run on an account: no `zone_live`
+  table existed on 2026-11-03). A store holding a zone row without them (its end moment when ended, each fill's key)
+  is refused at start, the rows named - nothing is guessed.
 
 ## L4. The hour - which lines rest orders (ZONE_RULES rules 4, 5) [Claude]
 
@@ -476,7 +477,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
    F1 - F12, each first-holding row against the rows below it, the running cycle and the restart giving the same
    class for the same facts (F11 apart), F2 never re-judging, the setup's last exit and a later P2 entry in one bar (running, a late deal read, and a restart) - the entry disallowed, the equal-time orders, P1 and P2 both entering and exiting at one time, P1 open before T and a gap at T through P2 and the SL (P2 is the setup's fill)**; the candidates at the open (nearest armed, a disarmed nearer line
    passed over, equality to the open, a reserved hour); the first visit removes the other candidate's orders; a
-   skipped first visit leaves the other; both filled -> the later closed; rules 1 - 4 each, at the bar the simulation
+   skipped first visit leaves the other; both filled -> the loser by the candidates' order closed (touch bar, nearer `o`, lower line), the deals also in reversed order; rules 1 - 4 each, at the bar the simulation
    applies them (the closed-hour cancel before any visit; no withdrawal in `j0`; a blocked P1 touched on the bid but
    not the ask does not cancel; a blocked P2 re-placed after P1 fills in the bar); a marketable order; the BE once,
    both SLs, P2 removed, a refused modify closed at the BE price in the logic; the leftover P2 removed when the last

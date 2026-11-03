@@ -185,6 +185,11 @@ measured.
     points are written into L3a. **Sol reviewing those spec changes**; then Opus brings the code to them (the exit
     not yet in the deals: one `exec_tf` bar, then the last time seen open - Opus waited without a limit; both
     candidates filled: the loser by the candidates' order), then Sol reviews the code.
+  - **Sol on those spec changes: 4 findings** (the exit not in the deals must stay unresolved, never an invented end;
+    F9's first-read identities persisted with `kept_since`; no guessing for old rows - none exist, no `zone_live` table
+    in any `data/*.db`, a store with a row lacking L3a's facts is refused at start; L11.3 both filled -> the loser by
+    the candidates' order) - fixed; **re-review: "no findings"**. Next: Opus brings the code to the spec, then Sol
+    reviews the code as a whole.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
