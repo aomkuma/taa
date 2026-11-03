@@ -150,6 +150,13 @@ measured.
     strictly after an exit end, at or after every other end. **Step 3 under way: Opus builds the classifier**
     (`app/zone/ownership.py`, every caller in `trader.py` using it, the per-path judgments deleted,
     `tests/unit/test_zone_ownership.py` table-driven; no commit, no full suite).
+  - **Measured 18:39 (Opus's baseline, every `tests/unit/test_zone_*.py` one at a time, on the 17:09 code before the
+    classifier edits): `test_zone_review_fixes3.py::test_a_partial_close_then_a_crash_then_a_restart_finishes_the_close`
+    FAILS** (1 failed, 9 passed) - a regression from the point-1 fixes of 16:40-17:12; the session start had checked
+    only fixes7, restart and crash-anywhere (48 passed). Clean on that code: bot 155 (16 skipped), break 15, config 143,
+    crash-anywhere 12 (30 min 49 s), grid 18, live_pieces 7, reject 8, replay 13 (6 skipped), replay_corruption 110,
+    restart 24, retest 10, fixes 20, fixes2 12. The files after fixes3 ran while Opus edited - not a baseline. Opus is
+    told: find the cause, never change the assertion.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
