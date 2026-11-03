@@ -75,6 +75,22 @@ measured.
   strict gate (L11.2: zero raw differences, the broker ledger checked too). **The owner decided (2026-11-03): a
   restart starts fresh from the next hour** (*"ข. เริ่มใหม่ชั่วโมงถัดไป"*) - resting orders removed, open positions
   managed to their end, new decisions from the next hour; ZONE_LIVE L8 rewritten to it.
+  **State at 14:15, 2026-11-03 (all uncommitted):**
+  - The replay gate (piece 3) is reviewed clean by Sol within its scope (ZONE_LIVE L11.2 "What the broker-side checks
+    cover", decided by Claude: exposure and protection; exact placement / removal timing belongs to the runner's
+    unit tests). Its flaky failures were memory exhaustion (each test built a ~66 MB FakeMT5; parallel pytest runs ran
+    Windows out of commit memory) - fixed by caching the frozen snapshots per process; 5 sequential and 6 parallel
+    runs clean. **Run the long test suites one at a time, at most 4 replay spans in parallel.**
+  - The runner implements the restart-fresh rule (Sonnet); the zone targeted list run alone: **1,220 passed, 22
+    skipped, 0 failed** (the skips are the ZONE_ACCEPT / ZONE_REPLAY data tests).
+  - Sol's review of the restart-fresh runner: 7 findings (P2 left alone when its removal is refused; adoption with
+    stale exec bars; managing blocked while D1 is unavailable; an exec_tf change blocking the restart; a pre-restart
+    P2 fill closed; broker-appended comments making owned positions strays; an invented exit when the history lacks
+    it) and weak crash-anywhere tests. **The owner switched this work to an Opus developer** (*"หยุดเลยแล้วใช้
+    opus"*) and asked that the points be done **one at a time, each reviewed by Sol before the next**.
+  - Next: the seven points one by one (then the crash-anywhere test), Sol clean; then the replay spans on the final
+    runner (2024-03, 2026-03 M15 and M5, 2025-04, 2024-05; tick and poll), the full suite alone, the commits, the
+    readings drawn for the owner; LIVE only with the owner's `.env` values and word.
 - **The run-zone bot is built (2026-11-02)** - a setup of its own, apart from the Fibonacci bot: spec `eye/ZONE_RULES.md`
   (reviewed by Codex on gpt-6.1-sol until no fault), reference `eye/research/zone_reference.py`, code `eye/zone_config.py`
   (parameters in `data/bot_config.db`, table `zone_config_change`; set `XAUUSD/default` seeded) and `eye/zone_bot.py`

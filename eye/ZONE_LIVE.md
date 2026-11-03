@@ -365,6 +365,13 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      decisions and the simulation's), the harness may *suggest* one of the admitted causes above, and the run is
      accepted only once each difference is explained by hand against those facts and recorded in
      `eye/BOT_RESEARCH.md`. An automatic cause classifier never passes a run on its own.
+   - **What the broker-side checks cover** [Claude, 2026-11-03]: exposure and protection - every entry's symbol, type,
+     side, lot, magic, comment, price, SL, TP and expiry; no request sent twice; never two live orders of one setup
+     and name; P2 never resting without P1 placed or filled; no order resting after its setup's end (beyond the bar
+     boundary of L5); every fill, exit and stop move matching the simulation both ways; every market close justified;
+     the end state equal to the simulation's. The exact cycle at which an order is placed or removed (the candidates'
+     hour end, the losing candidate, the blocks, the BE removal of P2) is checked by the runner's unit tests (L11.3),
+     not by the replay gate - a timing fault that changes a fill, an exit or a stop is caught by the comparison.
 3. **Unit tests** on FakeMT5 or the replay broker: the candidates at the open (nearest armed, a disarmed nearer line
    passed over, equality to the open, a reserved hour); the first visit removes the other candidate's orders; a
    skipped first visit leaves the other; both filled -> the later closed; rules 1 - 4 each, at the bar the simulation
