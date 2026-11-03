@@ -218,6 +218,8 @@ setup's how is the first deal's.
   (as the system's `PlanSupervisor` does), when the gate fails, and when the data has been stale for longer than one
   `exec_tf` bar (the rules of L5 can no longer be judged). They are placed again by the normal rules once all is
   clear - a setup whose rules still allow its orders gets them back; a candidate only at the next hour's decision.
+  A candidate whose orders were removed this way (`interrupted`) cannot become the hour's setup: a touch of it in
+  the rest of its hour is recorded (a visit of an interrupted candidate, logged) and reserves nothing.
 
 ## L8. State, failures and restart [Claude]
 
@@ -250,11 +252,64 @@ setup's how is the first deal's.
   logged (a fault, or the bar boundary of L11 when it happened there); it is never part of a setup. One of
   two BE modifies refused -> L5's refusal rule for that position. A partial fill (volume below `lot`) is a position of
   that volume, recorded; the order's rest is removed.
-- **At start**: the lock (L1); the last rows of the pinned account are read; the broker's orders, positions and deals
-  of the magic are matched by comment; every `intent` is reconciled as above; the hour's state (candidates, visits,
-  setup) is recomputed from the closed bars and the rows, and resting orders are kept when they match it. An order or
-  position of the magic whose comment matches no row, or another account's row: orders are removed, positions are left
-  as they are and named in the log and in `zone status` (never adopted, never closed without the owner).
+- **A restart starts fresh from the next hour** (the owner, 2026-11-03: *"ข. เริ่มใหม่ชั่วโมงถัดไป"* - a restart
+  begins again from the next hour; the runner does not try to carry on as if it had never stopped). After a restart
+  the runner may miss setups the simulation trades, or keep a fill the simulation would not have had - that is the
+  owner's choice; parity with the simulation (L11.2) is required for uninterrupted runs only.
+  - **Two kinds of work.** *Managing* - reconciling requests, removing orders, owed closes, the BE, reading exits -
+    runs every cycle from the first one and is never held back by anything else (one refused removal never stops an
+    owed close or a BE). *Placing* a new order is allowed only once the **barrier** below is passed.
+  - **The barrier** (placing waits for all of it): a successful read of the broker's orders, positions, deals and
+    order history of the magic (a failed read is never an empty account); every `place` intent from before the
+    restart reconciled by its comment (found, or `unseen` one hour after the restart - never re-sent); **no resting
+    order of the magic** at the broker; and the next H1 open reached. The first decision is made at the **first H1
+    open after the barrier has passed** - never in the middle of an hour (a barrier passed at 11:30 -> the first
+    decision at 12:00).
+  - **A late arrival**: an order or position of the magic that appears at any time after the restart with the
+    comment of a place sent before the restart (an `unseen` intent that shows up late) belongs to no live setup: the
+    order is removed at once, a fill of it is a disallowed fill (L8) - closed at market - unless it is a position of
+    a setup still being managed for its positions (below), and logged. New orders are not placed while such an order
+    is resting (it is an unwanted order, L7).
+  - **A stop move never worsens**: before any SL modify - new, retried, or one of unknown outcome being judged -
+    the broker's current SL of the position is read; if it is already at the requested level or better for the
+    position, nothing is sent and the request is done. A retried modify never moves a stop back.
+  - **Requests of unknown outcome** from before the restart follow the rules above by kind: a place is reconciled by
+    its comment and never re-sent; a remove / modify / close is judged by its ticket's state and sent again if not
+    done (`moot` if the target is gone).
+  - **Resting orders**: every resting order of the magic is removed, **P2 before P1** of the same setup; a refused
+    removal is retried every cycle. An order that fills before its removal is confirmed is judged as a fill below.
+  - **Fills and exits while down**: the deals since the setup's last recorded state are read by comment; entry deals
+    and exit deals of a setup's own placed orders (a place row of that setup was `sent`, or its intent reconciled)
+    are recorded at their times, whatever the row said - so a setup whose positions filled and closed while down
+    ends with those exits (how, price, time). If the broker history no longer shows them, the row's last state
+    stands (logged).
+  - **Which setup a position belongs to**: an open position of the magic belongs to a setup only if its comment is
+    one of that setup's placed orders. If that setup was still unfinished at the restart, the position is kept and
+    managed (the owner's choice above - a fill while down is not re-judged against the bars). If the setup had
+    already ended before the restart (cancel, withdrawal, expiry, its exit), the fill is a disallowed fill (L8) -
+    closed at market. A position whose comment is no placed order of any row of this account is a stray: left as it
+    is and named in the log and in `zone status` (never adopted, never closed without the owner).
+  - **A setup with open positions** goes on for those positions only: no new fill (its orders are removed); its
+    exits from the deals; **its break-even** (L5 rule 5), when not yet on: the `exec_tf` bars from the bar of its
+    first fill up to the last closed one are judged in time order, each bar against the fills made at or before it
+    (`avg` of those fills - the row's logic prices, the broker's open price where the row has none), with the
+    parameters of the row's own set version. If a bar triggers it, the BE is on from that bar: the BE stop is set
+    (if the broker's SL is already at it or better for the position, nothing is sent and the BE is recorded on; if
+    the price is already beyond it, L5's refused-modify rule - closed at market), and a position whose fill came
+    after the trigger bar is a disallowed fill (L5 removed P2) - closed at market. The setup ends when its last
+    position is gone; its reservation (L6) runs to the `close_time` of the bar of that last exit.
+  - **Every other unfinished row** ends at the restart, outcome `restart` (logged). A row that was the chosen setup
+    of its hour keeps L6's reservation: to the `close_time` of the `exec_tf` bar in which the restart came (L6 is
+    inclusive: a visit at or before it is busy). A candidate that was never chosen makes no reservation (L6).
+  - **The hour of the restart**: its candidates from before the restart can no longer become the hour's setup (like
+    L7's `interrupted`); its visits are recorded with the classification `restart` (excluded from parity). Hours
+    while the runner was down have no visit records (logged as a gap). The arming is rebuilt from the closed H1 bars
+    from `epoch` (as at a first start). The first decision is at the next H1 open, under 5b.
+  - **A stop request** (L10) is finished when the runner exits: its row is closed then. At a new `zone run`, any stop
+    row left open by a runner that died is closed (logged) - `zone run` is the owner's explicit start.
+- **A failed broker read is never an empty account**: if the positions, orders, deals or history cannot be read, the
+  start (or the cycle) does nothing that depends on them - no obligation cleared, no order placed, no fill judged -
+  and retries.
 
 ## L9. Settings
 
@@ -304,6 +359,12 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      (L3) - a bar whose extreme lies within one tick of an order, SL or TP price; the
      setups after it must agree again once the reservation of the differing setup has ended. Any other difference is
      a fault.
+   - **The gate is strict** [Claude, 2026-11-03]: the automatic acceptance requires **zero raw differences** (prices
+     within one tick, bars exact) and no runner log line at ERROR or above. A run with any difference does not pass
+     automatically: each difference is listed with its bar and the path's facts (the ticks around it, the runner's
+     decisions and the simulation's), the harness may *suggest* one of the admitted causes above, and the run is
+     accepted only once each difference is explained by hand against those facts and recorded in
+     `eye/BOT_RESEARCH.md`. An automatic cause classifier never passes a run on its own.
 3. **Unit tests** on FakeMT5 or the replay broker: the candidates at the open (nearest armed, a disarmed nearer line
    passed over, equality to the open, a reserved hour); the first visit removes the other candidate's orders; a
    skipped first visit leaves the other; both filled -> the later closed; rules 1 - 4 each, at the bar the simulation
@@ -315,8 +376,11 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
    window removes and re-places; a missed touch found at the bar's close; the M15 frame kept fresh with `exec_tf` M5;
    write-ahead with a crash before the send, after the broker accepted, and with the accepted order visible only
    after several cycles (never a duplicate, the ticket recovered); a remove and a modify with an unknown outcome
-   judged by the ticket's state; the broker expiry set and extended each hour; P1 refused (no P2 alone); P2 refused; a remove refused while the order fills; a partial fill; restart with candidates resting, with a
-   setup pending, with positions, with a stray magic order and a stray position; an account switch stops new orders;
+   judged by the ticket's state; the broker expiry set and extended each hour; P1 refused (no P2 alone); P2 refused; a remove refused while the order fills; a partial fill; a restart (L8, fresh from the next hour) with
+   candidates resting (all removed, nothing placed until the next hour), with a setup pending (ended `restart`), with
+   positions (managed to their end, BE judged on the bars closed while down, the reservation to the last exit's bar),
+   with positions closed while down (exits from the deals), with an owed close (resumed first), with an unknown
+   place intent (reconciled, never re-sent), with a stray magic order and a stray position; an account switch stops new orders;
    the gate evaluated fresh before each order (LIVE without the two `.env` values refused; no day plan needed - the
    gate passes without the plan file); the kill switch, lost
    connection and stale data stop new orders but keep managing; a second runner refused; `zone stop` acknowledged and

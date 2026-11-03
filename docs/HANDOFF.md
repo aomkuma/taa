@@ -66,6 +66,15 @@ measured.
   refused closes, the final-close prediction, P2 re-placed after P1) fixed; **review 5: 2** (a fill after the setup
   ended is closed at once; the SELL P2 early removal dropped) fixed; **review 6: nothing** - *"The spec is now
   right"*. Step 3 done (2026-11-02); next step 4: the build by a Sonnet developer from `eye/ZONE_LIVE.md`.
+  **The build (2026-11-02 / 03, uncommitted)**: piece 1 (the logic moved to `app/zone/core.py` / `params.py`, the
+  setup's life as one step function) reviewed clean - the stored-bar run unchanged (109 setups, +0.392 R); piece 2
+  (the runner `app/zone/trader.py`, `store.py`, `app/cli/zone.py`, broker additions) through 11 Sol code reviews
+  (14, 7, 7, 6, 6, 5, 3, 1, 2, 4, 5 findings) - every remaining finding was in restart recovery; piece 3 (the replay
+  of the runner against the simulation, `tests/zone_replay*.py`) first runs on 2024-03 M15, 2026-03 M15 and M5, tick
+  and poll: 0 raw differences (7 setups in 2026-03, none in 2024-03) - to be re-run on the final runner under the
+  strict gate (L11.2: zero raw differences, the broker ledger checked too). **The owner decided (2026-11-03): a
+  restart starts fresh from the next hour** (*"ข. เริ่มใหม่ชั่วโมงถัดไป"*) - resting orders removed, open positions
+  managed to their end, new decisions from the next hour; ZONE_LIVE L8 rewritten to it.
 - **The run-zone bot is built (2026-11-02)** - a setup of its own, apart from the Fibonacci bot: spec `eye/ZONE_RULES.md`
   (reviewed by Codex on gpt-6.1-sol until no fault), reference `eye/research/zone_reference.py`, code `eye/zone_config.py`
   (parameters in `data/bot_config.db`, table `zone_config_change`; set `XAUUSD/default` seeded) and `eye/zone_bot.py`
