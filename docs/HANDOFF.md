@@ -190,6 +190,13 @@ measured.
     in any `data/*.db`, a store with a row lacking L3a's facts is refused at start; L11.3 both filled -> the loser by
     the candidates' order) - fixed; **re-review: "no findings"**. Next: Opus brings the code to the spec, then Sol
     reviews the code as a whole.
+  - **19:30 Opus brought the code to the spec** (all 7 points: the unresolved exit `_unresolved_exits` with the hourly
+    fault; F9 `first_read` identities; `_check_rows_carry_facts` refuses a start, the legacy guessing deleted; the
+    candidates' order (bar, nearer o, line) in `_on_in`, `_realtime`, `_on_exec_close`, `_lose_hour`; the orphan with
+    an allowed fill (`fill_of`); `_sync` only sets `sent`, the fill written after L3a; the BE reconstruction already
+    right). `test_zone_ownership.py` 36 tests; every zone file passes one at a time (crash-anywhere 2:16). Claude
+    re-ran at 19:32: ruff, mypy, bandit clean; architecture + ownership + fixes3 + fixes7 + restart + trader **152
+    passed**. **Sol's code review of the classifier and all its callers under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
