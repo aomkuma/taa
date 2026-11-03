@@ -97,9 +97,9 @@ Every comparison below is the simulation's, with the same `>=` / `<=`.
 - **Removing a setup's orders** [Claude, 2026-11-03]: P2 first; P1 is removed only once the broker shows its P2 gone
   (removed, filled, or never placed) - a refused or unanswered P2 removal holds P1 back, retried each cycle. A P1
   that has already filled part of its volume is not held back (its remainder is removed at once: P2 is not alone).
-  A P2 whose place request is still of unknown outcome is not waited for: if it appears after its P1 was removed,
-  it is a late arrival - removed at once, and a fill of it is a disallowed fill, closed at market (L8).
-  Which orders are the setup's own is L3a.
+  A P2 whose place request is still of unknown outcome is not waited for; if it appears later, L3a classifies it
+  (O4 / F4: late only when its pair is neither the setup's order nor the setup's fill - a P1 whose remainder was
+  removed after a partial fill is still the setup's fill). Which orders are the setup's own is L3a.
 
 ## L3a. Ownership - one rule for every order, fill and position of the magic [Claude, 2026-11-03]
 
@@ -120,7 +120,7 @@ equality: text the broker adds to a comment does not change the key.
 
 **One precondition** (the runner keeps it, the rule relies on it): a new place of a setup's name is sent only once
 every older place of that name is known gone **without a fill** - its order cancelled or expired in the broker's
-history, or its request refused or `unseen` - **or is an orphan**: a P2 whose pair is known gone without a fill (the
+history, or its request refused or `unseen` - **or is an orphan**: a P2 whose pair is known gone without an allowed fill (F12) (the
 orphan stays searched by its comment, L8, and is never the setup's: O4, F4). An older order that left the open
 orders as filled is a fill to judge (below); nothing of that name is placed until its deal is judged. So no older
 place of a name is the setup's beside a newer one, and **a place is superseded** when any newer place of the same
@@ -164,8 +164,8 @@ its own deal time and `exec_tf` bar; the first row that holds gives the class:
 | F5 | The setup already has a fill of this name from another position | **disallowed** (a second fill) |
 | F6 | The deal is at or after the setup's **end moment** - strictly after it when the end is an exit (an entry at the same time as the exit came first, above); at or after it for every other end (the simulation applies those rules before the fill tests): its exit - the time of the deal that closed its last position; expiry, the closed-hour cancel, the withdrawal, the blocked-P1 cancel - the open of the bar the rule applied to (the simulation applies them to the whole bar); a restart - the restart's time | **disallowed** |
 | F7 | The setup ended `restart` (L8) - whatever the deal's time | **disallowed** |
-| F8 | A candidate that is not the hour's setup at the deal's time: never visited and its hour over (deal at or after the hour's open + 1 h); interrupted and never chosen (L7); the hour belongs to the other candidate (L4) | **disallowed** |
-| F9 | The setup is kept for its positions only and the deal is at or after `kept_since` | **disallowed** |
+| F8 | A candidate that is not the hour's setup at the deal's time: dropped (for any reason - the other candidate's visit, P1 refused, L4); never visited and its hour over (deal at or after the hour's open + 1 h); interrupted and never chosen (L7); the hour belongs to the other candidate (L4) | **disallowed** |
+| F9 | The setup is kept for its positions only, the deal is at or after `kept_since` (the time of the first successful broker read of the restart that kept it), and the entry was not in that first read (that read's entries are fills while down) | **disallowed** |
 | F10 | P2 whose bar is after the break-even bar `be_j` (the break-even removed it, L5 rule 5) | **disallowed** |
 | F11 | P1, in a running cycle, that rules 1 - 3 of L5 forbid at its bar (expired, the closed-hour cancel, the withdrawal, blocked - a blocked P1 also cancels the setup, L5 rule 3) | **disallowed** |
 | F12 | Otherwise | **the setup's fill** |
@@ -179,6 +179,18 @@ its own deal time and `exec_tf` bar; the first row that holds gives the class:
   runner was down (the owner's choice: a fill while down is not re-judged against the bars, L8).
 - **The only changes of a judgment** are L4's: when both candidates of an hour filled, or a missed touch gives the
   hour to the other candidate, the losing candidate's fill becomes disallowed (written on its row, closed at market).
+- **The time order is strict**: an event waits while any earlier event waits (an entry whose bar is not yet covered by
+  the closed bars, L2), and every later event - exits too - waits behind it.
+- **An exit not yet in the deals**: a position of the setup that is gone from the broker while no exit deal of it has
+  been read holds every later event for up to one `exec_tf` bar (the deals read late); after that its end is taken
+  at **the last time the position was seen open** (the earliest it can have closed - later entries are disallowed,
+  never wrongly kept), logged as a fault, and the events go on. Positions keep their broker SL / TP meanwhile.
+- **At one time T, a stray's entry comes after every entry of a row** (it changes no row).
+- **An entry that reaches F12 for a setup the runner no longer holds** (cannot happen once the end moment is
+  written; a fault if it does) is closed at market and logged.
+- **Rows written before this rule**: a row ended with no recorded end moment counts as ended before any entry not
+  already judged (F6; an outcome `restart` - F7); a recorded fill with no key takes it from the place whose position
+  it is, else the newest filled place of that name.
 
 ## L4. The hour - which lines rest orders (ZONE_RULES rules 4, 5) [Claude]
 
@@ -197,19 +209,21 @@ hour's open. In real time, orders must rest from `j0`:
     P1 and P2 orders (L3), unless the fill-moment block (L5) holds at `j0`. A candidate that fails is **skipped**.
 - **The first visit of the hour**: the first quote of the hour with the bid within `Z` of a candidate (BUY: bid <=
   L + Z; SELL: bid >= L - Z), or a deal of one of its orders (a fill means the bid reached it), whichever the runner
-  sees first. Both candidates seen in the same cycle: the one with the earlier `exec_tf` touch, then the one nearer
-  `o` (rule 4's order).
+  sees first. Both candidates seen in the same cycle: **the candidates' order** - the one with the earlier `exec_tf`
+  touch, then the one nearer `o`, then the lower line (rule 4's order, the simulation's; L3a uses the same).
   - The first visited candidate **live** -> it is **the setup**: the other candidate's orders are removed at once and no
     other setup starts this hour (5b).
   - The first visited candidate **skipped** -> nothing is reserved; the other candidate stays as it is (in the
     simulation a skipped visit leaves the hour free).
-  - **Both live candidates filled before the runner removed one** (two deals): the later deal's position is closed at
-    market and its orders removed; a log line names it as a fault. (The two P1s are at least `S - 2Z` apart.)
+  - **Both live candidates filled before the runner removed one** (two deals): the hour's setup is the first in the
+    candidates' order (not the earlier deal); the other candidate's fills become disallowed (L3a) - closed at market -
+    and its orders removed; a log line names it as a fault. (The two P1s are at least `S - 2Z` apart.)
   - **A touch the quotes missed** (the bid came within `Z` between two cycles and no deal followed - a BUY touch inside
     the spread below P1): at each `exec_tf` close the closed bar's low / high are checked against both candidates. A
     touch found there is a visit in that bar. A missed touch of a **skipped** candidate changes nothing (a skipped
     visit leaves the hour free). A missed touch of a **live** candidate that makes another first visit than the
-    runner chose (its bar is earlier than the chosen one's, or the same bar and nearer `o`), or that comes before any
+    runner chose (first in the candidates' order: its bar earlier than the chosen one's, or the same bar and nearer
+    `o`, or the same bar, as near, and the lower line), or that comes before any
     chosen visit, makes it the hour's setup: the other
     candidate's orders are removed, and a position of the other candidate is closed at market, logged as a fault
     (`missed touch`).
@@ -310,7 +324,8 @@ setup's how is the first deal's.
 
 - **The tables**, in the system's engine database (`ENGINE_DB_URL`, default `data/taa_engine.db`), created by a
   migration of the storage layer: `zone_live_setup` (one row per live candidate: account, server, set and version,
-  hour, line, side, step, prices unrounded and sent, state, fills, BE on and stop, exit, outcome, reservation end) and
+  hour, line, side, step, prices unrounded and sent, state, fills, its judged-disallowed fills, BE on and stop, `be_j`,
+  the end moment, `kept_since`, the P2 pairs (L3a), exit, outcome, reservation end) and
   `zone_live_request` (one row per request: setup id, comment, kind - place / remove / modify / close - state, broker
   order / position ticket, retcode, times). The comment is unique.
 - **Write-ahead**: a request row is written `intent` before `order_send`, then `sent` (with the ticket) or `refused`
@@ -318,8 +333,9 @@ setup's how is the first deal's.
 - **An unknown outcome** (no reply, a timeout, a crash between intent and the answer) - by the request's kind:
   - **place** (a limit or the marketable market order - can open exposure): **never sent again**. The row stays
     `intent` and is searched by its comment every cycle in the broker's open orders, positions, order history and
-    deals since the intent's time. Found -> `sent` with the ticket (a deal -> the fill is recorded), and from then on
-    managed like any order of the setup (removed when the setup's rules say so). Never found while the setup lives ->
+    deals since the intent's time. Found -> the request is `sent` with the ticket (the request's state only); what was
+    found - an order or an entry - is then classified by L3a before anything is recorded or done with it (the setup's
+    order is managed by its rules, the setup's fill recorded, a late arrival removed or closed). Never found while the setup lives ->
     the setup goes on without that order; at the setup's end the search goes on for one more hour, then the row is
     `unseen` (logged). A setup missing its P1 this way gets no P2 (L3).
   - **remove / modify / close** (they carry no comment): judged by the broker's state of the ticket - a remove is
@@ -351,10 +367,10 @@ setup's how is the first deal's.
     open after the barrier has passed** - never in the middle of an hour (a barrier passed at 11:30 -> the first
     decision at 12:00).
   - **A late arrival**: an order or position of the magic that appears at any time after the restart with the
-    comment of a place sent before the restart (an `unseen` intent that shows up late) belongs to no live setup: the
-    order is removed at once, a fill of it is a disallowed fill (L8) - closed at market - unless it is a position of
-    a setup still being managed for its positions (below), and logged. New orders are not placed while such an order
-    is resting (it is an unwanted order, L7).
+    comment of a place sent before the restart (an `unseen` intent that shows up late) is classified by L3a like any
+    other: an order of it is removed (O2 - O4), an entry of it is judged by F1 - F12 (a row ended `restart` - F7; a
+    setup kept for its positions - F9 against `kept_since`), and logged. New orders are not placed while such an
+    order is resting (it is an unwanted order, L7).
   - **A stop move never worsens**: before any SL modify - new, retried, or one of unknown outcome being judged -
     the broker's current SL of the position is read; if it is already at the requested level or better for the
     position, nothing is sent and the request is done. A retried modify never moves a stop back.
@@ -363,25 +379,24 @@ setup's how is the first deal's.
     done (`moot` if the target is gone).
   - **Resting orders**: every resting order of the magic is removed, **P2 before P1** of the same setup; a refused
     removal is retried every cycle. An order that fills before its removal is confirmed is judged as a fill below.
-  - **Fills and exits while down**: the deals since the setup's last recorded state are read by comment; entry deals
-    and exit deals of a setup's own placed orders (a place row of that setup was `sent`, or its intent reconciled)
-    are recorded at their times, whatever the row said - so a setup whose positions filled and closed while down
-    ends with those exits (how, price, time). If the broker history no longer shows them, the row's last state
-    stands (logged).
-  - **Which setup a position belongs to** (L3a, applied at the restart as in the running cycles): an open position of the magic belongs to a setup only if its comment is
-    one of that setup's placed orders. If that setup was still unfinished at the restart, the position is kept and
-    managed (the owner's choice above - a fill while down is not re-judged against the bars). If the setup had
-    already ended before the restart (cancel, withdrawal, expiry, its exit), the fill is a disallowed fill (L8) -
-    closed at market. A position whose comment is no placed order of any row of this account is a stray: left as it
-    is and named in the log and in `zone status` (never adopted, never closed without the owner).
+  - **Fills and exits while down**: the deals since the setup's last recorded state are read and put in L3a's one
+    time order with the entries; each entry is classified by L3a (F2 first: a judgment written before the restart
+    stands), each exit applied to its position - so a setup whose positions filled and closed while down ends with
+    those exits (how, price, time). If the broker history no longer shows them, the row's last state stands
+    (logged).
+  - **Which setup a position belongs to** is L3a, applied at the restart exactly as in the running cycles: the setup's
+    fill (F12) is kept and managed - a fill while down is not re-judged against the bars (F11 is not applied, the
+    owner's choice above); a disallowed entry (F3 - F10, e.g. of a setup that had ended before the restart) is closed
+    at market; a stray (F1) is left as it is and named in the log and in `zone status`.
   - **A setup with open positions** goes on for those positions only: no new fill (its orders are removed); its
     exits from the deals; **its break-even** (L5 rule 5), when not yet on: the `exec_tf` bars from the bar of its
     first fill up to the last closed one are judged in time order, each bar against the fills made at or before it
     (`avg` of those fills - the row's logic prices, the broker's open price where the row has none), with the
     parameters of the row's own set version. If a bar triggers it, the BE is on from that bar: the BE stop is set
     (if the broker's SL is already at it or better for the position, nothing is sent and the BE is recorded on; if
-    the price is already beyond it, L5's refused-modify rule - closed at market), and a position whose fill came
-    after the trigger bar is a disallowed fill (L5 removed P2) - closed at market. The setup ends when its last
+    the price is already beyond it, L5's refused-modify rule - closed at market); an entry not yet judged is then
+    classified by L3a with that `be_j` (F10: a P2 after the trigger bar is disallowed - closed at market), and a
+    judgment already written stands (F2). The setup ends when its last
     position is gone; its reservation (L6) runs to the `close_time` of the bar of that last exit.
   - **Every other unfinished row** ends at the restart, outcome `restart` (logged). A row that was the chosen setup
     of its hour keeps L6's reservation: to the `close_time` of the `exec_tf` bar in which the restart came (L6 is

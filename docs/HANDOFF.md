@@ -1,19 +1,30 @@
 # Session handoff
 
-Last updated **2026-11-03 17:32 Thai** (read with `Get-Date`).
+Last updated **2026-11-03 19:30 Thai** (read with `Get-Date`).
 
 **The rules and the process in force.** The owner's setup is `eye/METHOD.md` 2e. The bot's rules are
 **`eye/BOT_RULES.md`** (the only spec in force; `eye/BOT_SPEC.md` is the history). Every change follows CLAUDE.md,
-"How the system is developed": discuss and conclude -> record -> Codex reviews the documents -> a Sonnet developer
-codes -> Codex reviews the code until no findings -> the full suite and a commit -> **the reading checked against the market on
+"How the system is developed": discuss and conclude -> record -> Codex reviews the documents (Sol, `gpt-6.1-sol`) -> a developer
+codes (Opus for the zone runner, the owner 2026-11-03) -> Codex reviews the code until no findings -> the full suite and a commit -> **the reading checked against the market on
 several months, drawn, judged by Claude then the owner** -> only then, with the owner's word, a trading run, every
 trade drawn. Tests green means the code matches the spec, never "passed". Every result is recorded the moment it is
 measured.
 
-**Where the work stands (2026-11-01) - read this first; the box after it (2026-10-31) still holds for the code.**
+**Where the work stands (2026-11-03) - read this first.**
 
-- **Paused by the owner** (*"update the documents and the handoff, then rest and do something else"*). Nothing is
-  running; the last commit is 3728254 (rule 16 m15); this update (docs only) is committed after it.
+- **The work now is the run-zone runner for LIVE** (spec `eye/ZONE_LIVE.md`, code `app/zone/`, uncommitted). Its whole
+  story - the spec reviews, the build, the restart rule, the ownership faults, today's sessions - is the bullet "The
+  owner's goal for the run-zone bot" below; its last sub-bullets are the present.
+- **Now**: L3a "Ownership" (one rule for every order, fill and position) is reviewed clean by Sol; an Opus developer
+  is building it as one classifier (`app/zone/ownership.py`) used by every path of `app/zone/trader.py`. Then Sol
+  reviews the classifier and its callers until clean (every finding, P3 too - the owner); then points 2-7 of Sol's
+  restart-fresh list; then the replay spans, the full suite, the commits.
+- The Fibonacci bot (BOT_RULES) is unchanged since 3728254 and waits; the 2026-11-01 state below still holds for it.
+
+**Where the work stood (2026-11-01) - the Fibonacci bot; the zone runner's bullet in it is current.**
+
+- **Paused by the owner on 2026-11-01** (*"update the documents and the handoff, then rest and do something else"*);
+  the last commit then was 3728254 (rule 16 m15).
 - **Measured on 2026-10-31 / 11-01** (all in `eye/BOT_RESEARCH.md`, from "July - October with rule 16 m15, all day"
   to the end; the scripts in `eye/wip/prototypes_2026-11-01/` - research prototypes, not the bot, not committed):
   - The bot with rule 16 m15, July - October all day: -0.062 R a fill (213, legs on M5), -0.040 (83, legs on M15);
@@ -157,6 +168,23 @@ measured.
     crash-anywhere 12 (30 min 49 s), grid 18, live_pieces 7, reject 8, replay 13 (6 skipped), replay_corruption 110,
     restart 24, retest 10, fixes 20, fixes2 12. The files after fixes3 ran while Opus edited - not a baseline. Opus is
     told: find the cause, never change the assertion.
+  - **Opus built the classifier (finished ~19:20, uncommitted)**: `app/zone/ownership.py` (pure: `classify_orders`
+    O1-O5, `judge_entry` F1-F12, `event_key`, `Ledger` / `classify`, `may_place`, `removal_sequence`, `p1_held`);
+    `trader.py` uses it everywhere; deleted `_superseded`, `_paired_p1_alive`, `_open_place_alive`, `_fill_allowed`,
+    `_take_adopted`, `_adopt`, `_leftover_positions`, `_strays`, `_stray_removals`, `_owe_close_on_row`,
+    `_orders_of`; persisted `end_at` / `end_kind`, `kept_since`, each fill's comment; `tests/unit/test_zone_ownership.py`
+    28 tests. **The fixes3 failure explained and fixed**: the old restart code checked "owed a FAULT close" before
+    the recorded fill, so a real P1 fill with a pending close was judged disallowed; F2 (recorded fill first) fixes it,
+    assertion unchanged. Every zone test file passes one at a time (Opus's table; Claude re-ran ruff, mypy, bandit,
+    architecture + ownership + fixes3 + fixes7 + restart: 91 passed). **crash-anywhere 2 min 20 s vs the baseline's
+    30 min 49 s - checked**: the same sends per scenario under the old and the new code (8, 8, 12, 12; about 1 s a
+    play) - the baseline's time was the machine, not the test doing less.
+  - **The documents were stale; fixed 19:10-19:30**: HANDOFF's top box (still 2026-11-01, the Fibonacci bot) and the
+    next-session prompt now point at the zone runner; ZONE_LIVE L8 restated ownership in its own words against L3a
+    (Sol: 4 findings, plus Opus's 10 interpretations of L3a) - L8 / L3 / L4 now defer to L3a, and the interpreted
+    points are written into L3a. **Sol reviewing those spec changes**; then Opus brings the code to them (the exit
+    not yet in the deals: one `exec_tf` bar, then the last time seen open - Opus waited without a limit; both
+    candidates filled: the loser by the candidates' order), then Sol reviews the code.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
@@ -361,18 +389,20 @@ Continue TAA (C:\Users\korap\taa). Chat with me in Thai; docs, code and comments
 in Thai time read with PowerShell Get-Date (Git Bash date is wrong on this machine). Follow CLAUDE.md.
 
 Read first, in order:
-1. docs/HANDOFF.md - the top box "Where the work stands" (the rest is history)
+1. docs/HANDOFF.md - the top box "Where the work stands (2026-11-03)" and the zone runner's bullet it names
 2. CLAUDE.md - "How the system is developed" (steps 1-8)
 3. docs/START_HERE.md
 4. eye/METHOD.md - section 2e is my setup (rows "The goal", "Keep it simple", the 07/10 drawing, "The side")
 5. eye/BOT_RULES.md - the bot's rules in force; eye/BOT_RESEARCH.md - the last sections
+6. eye/ZONE_RULES.md (the run-zone setup) and eye/ZONE_LIVE.md (its real-time runner; L3a is the ownership rule)
 
 My setup is answered in 2e - do not ask the questions again. An example I give is a principle to
 generalise, never a rule with its numbers; a question I ask is a question, not a rule. The bot's rules in
 force are eye/BOT_RULES.md; follow CLAUDE.md's development process exactly - tests green is not passing, a
 reading passes only when it is drawn on several months and matches the market to my eye. Judge a rule by the
-trades it gives (R per trade), not by how often price goes one way first. Next: HANDOFF, "Where the work stands (2026-11-01)" -
-I do not believe pooled numbers: draw single trades MT5-style, one image at a time (the losing ones first), and judge them with me before any total; the target is measured with the Fibo of the previous leg (METHOD 2e "Measuring the target"). Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
+trades it gives (R per trade), not by how often price goes one way first. Next: HANDOFF, "Where the work stands (2026-11-03)" -
+the zone runner (eye/ZONE_LIVE.md, app/zone/): finish the ownership classifier, every review finding fixed (P3 too), one
+rule in one function. For the Fibonacci bot, when I return to it: I do not believe pooled numbers: draw single trades MT5-style, one image at a time (the losing ones first), and judge them with me before any total; the target is measured with the Fibo of the previous leg (METHOD 2e "Measuring the target"). Drawing a reading on the stored bars (no trading, research prototypes) is part of the work; a trading run or a
 bot research run needs my word. Record every result when it is measured.
 ````
 
