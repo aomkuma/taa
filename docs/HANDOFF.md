@@ -88,6 +88,14 @@ measured.
     P2 fill closed; broker-appended comments making owned positions strays; an invented exit when the history lacks
     it) and weak crash-anywhere tests. **The owner switched this work to an Opus developer** (*"หยุดเลยแล้วใช้
     opus"*) and asked that the points be done **one at a time, each reviewed by Sol before the next**.
+  - **Paused by the owner at 14:23 (computer off).** Point 1 (P1 removed only once its P2 is gone; Opus,
+    `_remove_in_order` in `app/zone/trader.py`, tests `tests/unit/test_zone_review_fixes7.py`, 92 relevant tests
+    passed) was reviewed by Sol: all removal paths right; one fault left - a partially filled P1's remainder was held
+    back while its P2 rests. The rule is now written in ZONE_LIVE L3 "Removing a setup's orders" (also: an unknown P2
+    intent is not waited for; a late P2 is removed / its fill closed). **Opus was stopped mid-fix: `trader.py` was
+    edited at 14:22 for the partial-fill remainder, its tests NOT yet written, nothing run since** - on resuming,
+    first check that edit (ruff, mypy, the relevant tests), add the tests (the partial-fill remainder; a late P2
+    after its P1's removal), then Sol on point 1 again; then points 2-7 one at a time, each reviewed by Sol.
   - Next: the seven points one by one (then the crash-anywhere test), Sol clean; then the replay spans on the final
     runner (2024-03, 2026-03 M15 and M5, 2025-04, 2024-05; tick and poll), the full suite alone, the commits, the
     readings drawn for the owner; LIVE only with the owner's `.env` values and word.

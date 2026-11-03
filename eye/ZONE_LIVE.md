@@ -94,6 +94,11 @@ Every comparison below is the simulation's, with the same `>=` / `<=`.
   beside it. This is the only market entry.
 - **P1 refused** (placing it, or its market form, gets a refusal): P2 is not placed, or is removed if it was; the
   candidate is dropped for the hour (`refused`, logged). P2 never rests without P1 placed or filled.
+- **Removing a setup's orders** [Claude, 2026-11-03]: P2 first; P1 is removed only once the broker shows its P2 gone
+  (removed, filled, or never placed) - a refused or unanswered P2 removal holds P1 back, retried each cycle. A P1
+  that has already filled part of its volume is not held back (its remainder is removed at once: P2 is not alone).
+  A P2 whose place request is still of unknown outcome is not waited for: if it appears after its P1 was removed,
+  it is a late arrival - removed at once, and a fill of it is a disallowed fill, closed at market (L8).
 
 ## L4. The hour - which lines rest orders (ZONE_RULES rules 4, 5) [Claude]
 
