@@ -112,54 +112,66 @@ none of them decides ownership on its own.
 (L8): each **place** request's setup, name (P1 / P2), `n`, state (`intent`, `sent`, `refused`, `unseen`), the
 broker's state of its order (open, filled, cancelled, expired), and, for a P2, **its pair** - the P1 place it was
 placed beside (recorded when the P2 place is written, never changed); the setup row's state (live, chosen, dropped,
-interrupted, kept for its positions only, ended and its end bar), its recorded fills and **its judged-disallowed
-fills**, its break-even bar. Comments are matched by their parsed key (setup id, name, `n`), never by string
+interrupted, ended and how), its recorded fills and **its judged-disallowed fills**, and three moments the runner
+writes on the row when they happen and never moves: **the end moment** (below, F6), **`kept_since`** (the time of
+the first restart that kept the setup for its positions only - a later restart does not move it) and **the
+break-even bar** (`be_j`, L5 rule 5). Comments are matched by their parsed key (setup id, name, `n`), never by string
 equality: text the broker adds to a comment does not change the key.
 
 **One precondition** (the runner keeps it, the rule relies on it): a new place of a setup's name is sent only once
 every older place of that name is known gone **without a fill** - its order cancelled or expired in the broker's
-history, or its request refused or `unseen`. An older order that left the open orders as filled is a fill to judge
-(below); nothing of that name is placed until its deal is judged. So an older place of a name is never live
-beside a newer one, and **a place is superseded** when any newer place of the same setup and name exists.
+history, or its request refused or `unseen` - **or is an orphan**: a P2 whose pair is known gone without a fill (the
+orphan stays searched by its comment, L8, and is never the setup's: O4, F4). An older order that left the open
+orders as filled is a fill to judge (below); nothing of that name is placed until its deal is judged. So no older
+place of a name is the setup's beside a newer one, and **a place is superseded** when any newer place of the same
+setup and name exists.
 
 **Exits** belong to the position's owner, by the position id, never by the exit deal's comment.
 
-**Orders** - the first row that holds gives the class:
+**Orders** - classified P1 before P2 (O4 reads the P1's class); the first row that holds gives the class:
 
 | # | Condition | Class | Done (L3, L4, L5, L7) |
 |---|---|---|---|
 | O1 | The key has no place row of this account | **stray** | removed (L7: nothing new while it rests); named |
-| O2 | Its place is superseded | **late arrival** | removed at once |
-| O3 | Its setup is not live (ended, dropped for the other candidate, kept for its positions only, or not in memory) | **late arrival** | removed at once |
-| O4 | A P2 whose pair (its P1) is neither resting nor filled | **late arrival** | removed at once (no P1 to hold back) |
-| O5 | Otherwise | **the setup's order** | kept, extended, or removed by the setup's rules (L4, L5, L7), in L3's order |
+| O2 | Its place is superseded | **late arrival** | removed |
+| O3 | Its setup is not live (ended, dropped for the other candidate, kept for its positions only, or not in memory) | **late arrival** | removed |
+| O4 | A P2 whose pair is neither the setup's order (O5) nor the setup's fill (F12) | **late arrival** | removed |
+| O5 | Otherwise | **the setup's order** | kept, extended, or removed by the setup's rules (L4, L5, L7) |
 
-A place of unknown outcome (`intent`) counts as the setup's order for "never placed twice" (L8), but a P2 of unknown
-outcome is not waited for when its P1 is removed (L3).
+- **Every removal, whatever the class, follows L3's order**: a P1 is held while **a P2 whose pair is that P1** still
+  rests at the broker (its removal refused, of unknown outcome or not yet asked), unless the P1 has filled part of its
+  volume. Nothing else holds a removal: a P2 is never held, a P2 paired with another P1 holds nothing, a stray holds
+  nothing.
+- A place of unknown outcome (`intent`) counts as the setup's order for "never placed twice" (L8), except an orphan
+  (the precondition); a P2 of unknown outcome is not waited for when its P1 is removed (L3).
 
-**Entries** (fills and positions) - judged **once each**, in time order of their entry deals, each at its own
-`exec_tf` bar; the first row that holds gives the class:
+**Entries** (fills and positions) - judged **once each**, in the order of their entry deals' times; at equal times P1
+before P2 of the same setup, two candidates' entries in L4's order (the earlier touch bar, then nearer the open),
+then the deal ticket. Each is judged at its own deal time and `exec_tf` bar; the first row that holds gives the
+class:
 
 | # | Condition | Class |
 |---|---|---|
 | F1 | The key has no place row of this account | **stray** - left as it is, named in the log and in `zone status`; never adopted, never closed without the owner |
 | F2 | Already judged (the setup row records it as a fill, or as a disallowed fill, or owes it a FAULT close) | that judgment stands - never judged again, at a restart neither |
 | F3 | Its place is superseded | **disallowed** (a late arrival) |
-| F4 | A P2 whose pair (the P1 it was placed beside) is not the setup's fill at or before this deal | **disallowed** (a late P2) |
+| F4 | A P2 whose pair is not the setup's fill (F12) at or before this deal (in the order above) | **disallowed** (a late P2) |
 | F5 | The setup already has a fill of this name from another position | **disallowed** (a second fill) |
-| F6 | The setup had ended before this entry's bar (any outcome; an unvisited candidate whose hour is over; a candidate interrupted and never chosen; the hour belonging to the other candidate, L4) | **disallowed** |
-| F7 | The setup is kept for its positions only (a restart) and the entry came after the restart | **disallowed** |
-| F8 | P2 at or after the break-even removed it: its bar after the trigger bar (L5 rule 5), or a BUY P2 after the ahead removal | **disallowed** |
-| F9 | P1, in a running cycle, that rules 1 - 3 of L5 forbid at its bar (expired, the closed-hour cancel, the withdrawal, blocked - a blocked P1 also cancels the setup, L5 rule 3) | **disallowed** |
-| F10 | Otherwise | **the setup's fill** |
+| F6 | The deal is at or after the setup's **end moment**: its exit - the time of the deal that closed its last position; expiry, the closed-hour cancel, the withdrawal, the blocked-P1 cancel - the open of the bar the rule applied to (the simulation applies them to the whole bar); a restart - the restart's time | **disallowed** |
+| F7 | The setup ended `restart` (L8) - whatever the deal's time | **disallowed** |
+| F8 | A candidate that is not the hour's setup at the deal's time: never visited and its hour over (deal at or after the hour's open + 1 h); interrupted and never chosen (L7); the hour belongs to the other candidate (L4) | **disallowed** |
+| F9 | The setup is kept for its positions only and the deal is at or after `kept_since` | **disallowed** |
+| F10 | P2 whose bar is after the break-even bar `be_j` (the break-even removed it, L5 rule 5) | **disallowed** |
+| F11 | P1, in a running cycle, that rules 1 - 3 of L5 forbid at its bar (expired, the closed-hour cancel, the withdrawal, blocked - a blocked P1 also cancels the setup, L5 rule 3) | **disallowed** |
+| F12 | Otherwise | **the setup's fill** |
 
 - **A disallowed entry** is written on its setup row (the judgment, the reason) **before** anything is sent; an open
   position of it is owed a close at market (L8: retried until gone); one already closed is recorded only. It is never
   part of the setup: no BE, no exit, no outcome from it.
-- **At a restart** (L8) the same table is applied to the entries found, in time order, against the setup's state
-  rebuilt from its row: F2 first, so a position judged before the restart keeps its class; F6 uses the setup's end
-  before the restart; F8 the break-even judged on the bars closed while down; F9 is **not** applied to entries made
-  while the runner was down (the owner's choice: a fill while down is not re-judged against the bars, L8).
+- **At a restart** (L8) the same table is applied to the entries found, in the same order, against the setup's state
+  rebuilt from its row: F2 first, so a position judged before the restart keeps its class; F6 / F7 from the row's end;
+  F10 with the break-even judged on the bars closed while down (L8); F11 is **not** applied to entries made while the
+  runner was down (the owner's choice: a fill while down is not re-judged against the bars, L8).
 - **The only changes of a judgment** are L4's: when both candidates of an hour filled, or a missed touch gives the
   hour to the other candidate, the losing candidate's fill becomes disallowed (written on its row, closed at market).
 
@@ -441,8 +453,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      hour end, the losing candidate, the blocks, the BE removal of P2) is checked by the runner's unit tests (L11.3),
      not by the replay gate - a timing fault that changes a fill, an exit or a stop is caught by the comparison.
 3. **Unit tests** on FakeMT5 or the replay broker: **the ownership rule (L3a) table-driven - every row O1 - O5 and
-   F1 - F10, each first-holding row against the rows below it, the running cycle and the restart giving the same
-   class for the same facts (F9 apart), F2 never re-judging**; the candidates at the open (nearest armed, a disarmed nearer line
+   F1 - F12, each first-holding row against the rows below it, the running cycle and the restart giving the same
+   class for the same facts (F11 apart), F2 never re-judging**; the candidates at the open (nearest armed, a disarmed nearer line
    passed over, equality to the open, a reserved hour); the first visit removes the other candidate's orders; a
    skipped first visit leaves the other; both filled -> the later closed; rules 1 - 4 each, at the bar the simulation
    applies them (the closed-hour cancel before any visit; no withdrawal in `j0`; a blocked P1 touched on the bid but

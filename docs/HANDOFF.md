@@ -137,7 +137,10 @@ measured.
     and crash-anywhere tests **48 passed**. Step 1 done: **`eye/ZONE_LIVE.md` L3a "Ownership"** - orders O1-O5, entries
     F1-F10, one precondition (a new place of a name only once every older one is known gone without a fill, so
     "superseded" = any newer place of the name), judged once (F2), the restart on the same table (F9 apart); L3, L5,
-    L8, L11.3 refer to it. Step 2: Sol's review of L3a under way.
+    L8, L11.3 refer to it. Step 2: **Sol round 1 on L3a: 7 findings** (a P2 after the exit in the same bar; a late
+    entry of a row ended `restart`; the orphan P2 intent vs the precondition; removal order for every class; O4
+    reading the P1's class; persisted cutoffs `kept_since`, `be_j`, the end moment; equal-time order) - all fixed,
+    entries now F1-F12; **Sol round 2 under way.**
   - Next after that: the replay spans on the final runner (2024-03, 2026-03 M15 and M5, 2025-04, 2024-05; tick and
     poll; at most 4 in parallel), the full suite alone, the commits, the readings drawn for the owner; LIVE only with
     the owner's `.env` values and word.
