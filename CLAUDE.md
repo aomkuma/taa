@@ -130,6 +130,11 @@ looks small.
 - **Fix the root, not the symptom** (owner, 2026-11-03). After every review, group the findings by the question
   they ask; two of the same kind in different places -> stop patching, write the one rule in the spec, build it as
   one function used everywhere, and tell the owner. Passing findings on one at a time cost a whole day on the zone runner.
+- **Check a spec before review; every finding is fixed** (owner, 2026-11-03: *"the small ones should all be cleared,
+  and the spec should not miss so often"*). Before a spec or a spec fix goes to review, check each rule against the
+  reference code it must agree with (for the zone runner: `simulate_setup`'s in-bar order, `tests/zone_replay.py`)
+  and walk its edge cases (equal times, boundaries `>` / `>=`, restart, partial fills) myself. P3 findings are fixed
+  too - a review goes on until it finds nothing.
 - **Ask before:** git push, any deploy, starting DEMO or LIVE, anything touching the owner's accounts, and
   any change to risk. Committing per step by explicit paths is fine without asking.
 

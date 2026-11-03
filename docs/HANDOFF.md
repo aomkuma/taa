@@ -152,8 +152,9 @@ measured.
     `tests/unit/test_zone_ownership.py` table-driven; no commit, no full suite).
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
-  - **Open, the owner's word asked**: may P3-only review findings with no money risk be recorded and the build go on,
-    instead of reviewing until nothing is found? Until the owner answers, the process stands (review until clean).
+  - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
+    should not miss so often"*) - a review goes on until it finds nothing, P3 included; and a spec is checked against
+    the simulation's code before it goes to review (CLAUDE.md "Check a spec before review").
   - Next after that: the replay spans on the final runner (2024-03, 2026-03 M15 and M5, 2025-04, 2024-05; tick and
     poll; at most 4 in parallel), the full suite alone, the commits, the readings drawn for the owner; LIVE only with
     the owner's `.env` values and word.
