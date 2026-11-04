@@ -351,7 +351,11 @@ measured.
     placing stops and hands-off after one bar; P2: the visit record of a setup still running - recorded `setup` at
     once, given its outcome at the end). **Haiku: 4** (zone stop ends a setup without a fill `interrupted`; a
     marketable P2 only after P1 in L3 too; a reserved hour never `undecided`; the hour's setup interrupted after its
-    visit keeps its record). All fixed; **Sol round 15 and Haiku under way.**
+    visit keeps its record). All fixed.
+  - **Sol round 15: 1** (a P2 closed while its P1's entry deal was still pending - now a deal waits behind a pending
+    entry of its setup). **Haiku: 6, "nothing else in the file changes behaviour"** (logic vs sent price in the tests;
+    P2's three refusals per setup; a dropped candidate's later visit `busy`; the retry caps; the L11 BE wording). All
+    fixed; **Sol round 16 and Haiku under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
