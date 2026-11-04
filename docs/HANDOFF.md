@@ -323,7 +323,13 @@ measured.
     2023-08-01, M5 2025-10-05**; a 140-day rule Claude first wrote would have refused that store itself, so the rule
     is "no later than the simulation's store"; the both-filled touch bar; "beyond the BE stop" the runner's own check;
     no reservation across a start; the replay's store cut at its start; parity from the first decided hour). All
-    fixed; **Sol round 10 and Haiku under way.**
+    fixed.
+  - **Sol round 10: 1 (P1)** - Claude's round-9 fix compared a position's open price, so a slipped market fill
+    would have been taken for the owner's hand; now only a resting order's price is compared. **Haiku: 6** - a
+    reserved hour (no candidates, visits `busy`); zone stop's acknowledgement and exit; an earlier store cut to the
+    simulation's first bars; **why a farther line has the nearer one's skip class - checked in `find_visits`
+    (core.py ~470-510): the readings come from the H1 bar `i` and the side `sgn` only**; no missed touch in the
+    decision's bar; a lost connection counts as stale. All fixed; **Sol round 11 and Haiku under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
