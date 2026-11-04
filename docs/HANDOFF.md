@@ -265,6 +265,17 @@ measured.
     `kept_since`, the first read, the BE reconstruction, two kept setups). Claude checked: **the P2 block is a
     no-op** (`step_setup`, core.py 733-746: P2 lies beyond P1, P1 is tested first, after a fill the block no longer
     applies); `order_life_h` = 48. **Asked the owner**: the restart / uncertainty policy.
+  - **The owner decided (2026-11-04)**: *"let it go - it can do nothing about it. Get the normal case right first; an
+    abnormal case where the SL cannot be moved is out of our control anyway"* (after: *"if the program dies the orders
+    carry their expiry - it is the broker's matter"*). **ZONE_LIVE rewritten whole** (553 -> ~330 lines): a "Words"
+    section defining every term once; ownership = "a placement this process sent", the setup's fills judged by its
+    life (L5); **hands-off** (L8) for every start and for six causes while running (a place unknown after one bar,
+    an order or position of ours gone unexplained after one bar, an order / position of the magic not ours, a fill
+    not `lot`, a P2 removal refused one bar): placing stops, every order removed, no position touched, until flat,
+    then a fresh start at the next H1 open; the P2 block dropped (a no-op); a hedging-account check; the key format
+    and the 25-character comment; the TP inside the fill bar an explained difference; L3a and the restart recovery
+    deleted. Claude checked each rule against `step_setup`. **Sol and Haiku are reviewing the rewrite.** The code
+    (uncommitted) is not yet changed to it - much of `ownership.py` and the restart code will be deleted.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
