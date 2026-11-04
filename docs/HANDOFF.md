@@ -20,15 +20,9 @@ trading run. Tests green means the code matches the spec, never "passed".
   hand) is **hands-off**: placing stops, every order of the magic removed, no position touched (its broker SL / TP),
   until the magic is flat, then a fresh start at the next H1 open (the owner, 2026-11-04: *"let it go - get the normal
   case right first"*; the owner's hand confirmed *"ตกลง"*).
-- **Where the spec stands**: Sol's reviews are down to one or two edge-timing points a round; the last fixes (Sol: the
-  setup's bar loop waits behind a pending entry) are in. **Not yet fixed - from the last Haiku sweep**: an uncaught
-  error inside a cycle (-> hands-off) and a failed write-ahead row; exits at one `time_msc` (stops before TP, then the
-  ticket); what counts as one of the "3 tries"; `zone_live_visit` needs the setup id and outcome columns, a runner
-  `close` has no logic exit price; the BE stop rounded for the broker, unrounded in the logic; L2's undecided sentence
-  "unless reserved"; the 3-tries cap is for SL modifies only (an expiry extension keeps retrying); a P2 past its
-  refusal cap is not placed again after L7 clears. Then Sol once more. **Asked the owner** whether, after these and a
-  clean Sol round, the spec closes and the build starts, with later Haiku points raised by the developer while
-  building (else: review until both find nothing).
+- **Where the spec stands**: the last Haiku points are written in; **Sol's closing review is under way. The owner
+  decided (2026-11-04, *"ข"*): once Sol finds nothing the spec is closed and the build starts; points found later are
+  raised by the developer while building.**
 - **The code** (`app/zone/`, `app/cli/zone.py`, `app/storage/models/zone.py`, migration `0044_zone_live.py`, the broker
   additions, `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`) is **uncommitted and built for the previous spec**
   (the ownership classifier `app/zone/ownership.py`, the restart recovery). To bring it to the new spec most of the

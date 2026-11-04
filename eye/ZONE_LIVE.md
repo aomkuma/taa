@@ -137,6 +137,7 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
   closes, and the grids, pivots and steps of the D1 / H4 bars and the month that start then (ZONE_RULES 3: the grid in
   force at the hour);
   if no such cycle comes by then, the hour is undecided - no candidates, no orders, its visits recorded `undecided`
+  (a reserved hour excepted, L4)
   (L4), logged - and a decision is never made later in an hour.
 - **The arming epoch**: the line arming (ZONE_RULES rule 4) is computed from closed H1 bars starting at `epoch` (L9;
   default 2023-10-01, the simulation's start) - the same arming the simulation computes on a run from that date - up
@@ -165,7 +166,8 @@ Each rule says whose it is: **(owner)** or **[Claude]** (a form the owner did no
   ends (a candidate not yet the hour's setup is removed in its hour's pre-close window and never extended): from the first cycle at or after its current expiry
   minus 10 minutes (the H1 close - 9 minutes), the runner sets the expiry to the current expiry + 1 hour (an
   order modify - `RequestBuilder.modify_order`, `TRADE_ACTION_MODIFY`, the same price, SL, TP and the new expiry),
-  retried each cycle while refused (the 1 and 10 minutes are fixed). A wanted order that expired anyway (its history
+  retried each cycle while refused, without a cap (the 3-tries cap of L8 is for SL modifies; an order whose
+  extension never takes expires and is placed again below) (the 1 and 10 minutes are fixed). A wanted order that expired anyway (its history
   state is expired) is placed again as the next placement (`n` + 1) - once that state is seen, so never beside a live
   one; an expired P1 first has its P2 removed, and both are placed again, P1 first (P2 never rests without P1). The runner never relies on the expiry for a rule; it removes orders itself. The symbol must allow specified
   expiry (`expiration_mode`); if it does not, the start is refused.
@@ -307,7 +309,8 @@ Before the setup's first fill, for each bar `j`, in the simulation's order:
 
 **Fills** are the broker's entry deals of the setup's orders: P1 and P2 each open a position with the setup's SL and
 TP. **Deals are taken in time order** (`time_msc`; entries and exits together) - **at one time every entry first,
-P1 before P2, then the exits** (the simulation fills before it tests exits), whatever order the broker lists them in;
+P1 before P2, then the exits - stops (SL, BE) before TP, then any other, then by deal ticket** (the simulation fills
+before it tests exits, and tests the stop before the TP), whatever order the broker lists them in;
 only then is it judged whether the setup ended. **A deal waits while an entry of its setup is pending** (a position
 or a filled order of ours seen whose entry deal is not yet read): the buffered deals are judged together, in this order,
 once it is read (placing stops meanwhile, L7; hands-off after one `exec_tf` bar, L8). **The setup's whole bar loop
@@ -324,14 +327,15 @@ a P2 without its P1 filled, a P2 after the break-even) is closed at market at on
 keeps its own outcome (`no fill`, `cancel`, or its exit), its close is not the setup's exit, and the reservation is
 the setup's own (L6). After the first fill, rules 1 - 3 no longer apply;
 the unfilled P2 rests until the break-even or the end (removed by L7 meanwhile, it is placed again once L7 clears, as
-the next placement).
+the next placement - unless the setup has reached P2's refusal cap, L8).
 
 At each `exec_tf` bar **close** `j`, with at least one position of the setup open:
 4. **The break-even** (owner; rule 7), when `be_mode` is `entry` (`off`: none) and it is not yet on: `avg` = the mean
    of the setup's fills' logic prices, `mid = avg + be_frac x (TP - avg)` with the logic TP; BUY: `high[j] >= mid`; SELL: `low[j] +
    spread[j] x point <= mid` (`spread[j]` the closed bar's `spread` field in points - the same field the stored bars carry - `point` the
    symbol's) -> it is on at bar
-   `j`, **once**: the BE stop is `avg + sgn x spread[j] x point` (rounded to the tick toward the TP side), fixed for the
+   `j`, **once**: the BE stop is `avg + sgn x spread[j] x point` - unrounded in the logic (the BE exit price), sent rounded to the
+   tick toward the TP side (the "beyond" test below and the broker use the sent stop) - fixed for the
    rest of the setup; the unfilled P2 is removed; the SL of every open position of the setup is modified to it
    (`modify_stops`).
    - **The price already beyond the BE stop** (BUY bid <= BE stop; SELL ask >= BE stop), checked by the runner on the
@@ -339,7 +343,8 @@ At each `exec_tf` bar **close** `j`, with at least one position of the setup ope
      closed at market; the setup's exit is recorded as `BE` **at the BE stop price** in
      the setup's logic (the simulation's exit at bar `j + 1`), with the broker's price beside it.
    - Any other refusal of a position's modify, or an unknown outcome: judged by the broker's SL (L8) and retried each
-     cycle; not in force after 3 tries (refused or unknown alike) -> hands-off (L8: the
+     cycle; not in force after 3 tries (a try = one send of the modify for that position, the first included;
+     refused or unknown alike) -> hands-off (L8: the
      position keeps its broker SL / TP - the owner, 2026-11-04: an SL that cannot be moved is out of our control).
    - **P2 removed ahead, BUY only**: the BUY trigger uses only the bid high, which can only rise during the bar, so
      the moment the bar's bid high so far reaches `mid` the unfilled P2 is removed - before the close, so it cannot
@@ -351,7 +356,7 @@ At each `exec_tf` bar **close** `j`, with at least one position of the setup ope
 **The exits** are the broker's (SL, TP or BE stop hit), read from the exit deals by position. How the setup exited =
 the kind of its first exit deal: `TP` (deal reason TP); `SL` (deal reason SL while the position's stop in force was
 the original SL); `BE` (deal reason SL while the stop in force was the BE stop - its modify confirmed - or L5's close
-at the BE price); `close` (any other close by the runner). The setup **ends at its exit**
+at the BE price); `close` (any other close by the runner - it has no logic exit price; only the broker's is recorded). The setup **ends at its exit**
 when its last position has closed (its open volume is zero); **every order of the setup is then removed at once**.
 
 ## L6. The setup's end and the reservation (rule 5b) [Claude]
@@ -395,14 +400,18 @@ when its last position has closed (its open volume is zero); **every order of th
   migration of the storage layer: `zone_live_setup` (one row per live candidate: account, server, set and version,
   hour, line, side, step, prices logic and sent, state, outcome, its fills (name, placement `n`, deal and position
   tickets, deal time, logic and broker price, volume), BE on and its bar and stop, exit (how, time, logic and broker
-  price), reservation end), `zone_live_visit` (L4's visit records: hour, line, side, class), `zone_live_stop` (a
+  price), reservation end), `zone_live_visit` (L4's visit records: hour, line, side, class, the setup id and its outcome when the class is
+  `setup`), `zone_live_stop` (a
   `zone stop` request: requested at, by, `now`, acknowledged at - the runner writes the acknowledgement) and
   `zone_live_request` (one row per request: setup id, kind - place / remove / modify /
   close - name and `n` and the key for a place (unique; empty for the other kinds), state - `intent`, `sent`,
   `refused`, `unknown`, `moot` - broker order / position ticket, retcode, times). They are the record for the owner and for
   `zone status`; **the runner never rebuilds a setup from them** (the start below).
 - **Write-ahead**: a request row is written `intent` before `order_send`, then `sent` (with the ticket) or `refused`
-  (with the retcode) after it, in its own transaction.
+  (with the retcode) after it, in its own transaction. If the `intent` row cannot be written, nothing is sent. If the
+  row after the send cannot be written, it stays `intent` and is judged as an unknown outcome (below).
+- **An uncaught error inside a cycle** (the code, the store): logged at ERROR, the cycle ends, and the runner goes
+  hands-off (it cannot know what that cycle left undone).
 - **An unknown outcome**: `order_send` returned no result, or a retcode of the unknown class (a timeout, no connection -
   `RetcodeClass.UNKNOWN`); any other retcode is a refusal or a success.
   - **remove / modify / close** (they open nothing): judged by the broker's state of the ticket - a remove is done when
@@ -410,7 +419,7 @@ when its last position has closed (its open volume is zero); **every order of th
     done when the SL is at the requested level or nearer the TP; a modify of an order's expiry when the expiry is at
     the requested time or later; a close is done
     when the position is gone. Not done -> sent again next cycle, within the caps of L8 (a removal, a close or a
-    market entry not done within one `exec_tf` bar, a modify not in force after 3 tries -> hands-off). A target that no longer exists (the position closed,
+    market entry not done within one `exec_tf` bar, an SL modify not in force after 3 tries -> hands-off). A target that no longer exists (the position closed,
     the order filled, cancelled or expired) ends the request (`moot`).
   - **place** (it can open exposure): **never sent again**. The row is `unknown` and is searched by its key every
     cycle in the open orders, the positions, the deals and the order history. Found -> it is that placement's order
@@ -429,7 +438,8 @@ when its last position has closed (its open volume is zero); **every order of th
      `exec_tf` bar;
   4. an order or a position of the magic that is not ours;
   5. a fill whose volume is not `lot` (a partial fill);
-  6. a removal, a close or a market entry not done within one `exec_tf` bar (L3, L8), a modify not in force after 3 tries (L5),
+  6. a removal, a close or a market entry not done within one `exec_tf` bar (L3, L8), an SL modify not in force after 3
+     tries (L5),
      a placement `n` over 999 (L3), a P1 refused after its candidate became the hour's setup (L3);
   7. **the owner acting by hand** on an order or a position of the magic (the owner: *"I watch the trades and take the
      risk myself"*; this rule confirmed by the owner, 2026-11-04: *"ตกลง"* - agreed): an exit deal that is neither SL nor TP (`DEAL_REASON_SL`, `DEAL_REASON_TP`) nor the
@@ -439,6 +449,7 @@ when its last position has closed (its open volume is zero); **every order of th
      pending modify changes nothing to compare); a **position** of ours whose volume, SL or TP differs from its fill
      and the values the broker last accepted from the runner (its open price is the broker's fill and is not
      compared - a market fill may slip); checked every cycle. The owner has taken over; the runner resumes when the magic is flat.
+  8. an uncaught error inside a cycle (L8 above).
   **What**: placing stops; every resting order of the magic is removed (ours P2 before P1 of a key, the rest in any
   order; retried each cycle); **no position is touched** - each keeps its broker SL / TP and runs to its end at the
   broker - the runner sends no close, no modify and no break-even for it, and a `zone stop` changes nothing of it; every setup
@@ -559,7 +570,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      of unknown outcome judged by the ticket's state; the expiry set and extended each hour, an expired wanted order
      placed again; P1 refused (no P2 alone); P2 refused three times; a P2 removal refused (P1 held; hands-off after one
      bar); a close refused (placing stopped; hands-off after one bar); a modify refused three times (hands-off);
-   - hands-off: each of its seven causes (the owner's hand: a manual close, a manual cancel, a pending order's price, SL, TP or expiry changed, a position's SL or TP changed; and a slipped market fill that is NOT hands-off); every order removed, no position touched, rows ended `hands-off`, the first
+   - hands-off: each of its eight causes (the owner's hand: a manual close, a manual cancel, a pending order's price, SL, TP or expiry changed, a position's SL or TP changed; and a slipped market fill that is NOT hands-off); every order removed, no position touched, rows ended `hands-off`, the first
      decision at the first H1 open after the book is flat;
    - the start: an empty store and a flat magic (the first decision at the next H1 open); unfinished rows ended
      `restart`; orders or positions of the magic at start (hands-off); a failed first read (nothing decided);
