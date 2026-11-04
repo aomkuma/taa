@@ -1957,3 +1957,7 @@ of 31/10 01:00 Thai (close 3876.81, the owner's screen showed the same).
   M15 0.25 / 0.37); the largest 9.01 USD, on news bars (13:30 UTC, e.g. 2024-01-05, 2024-02-01). Identical bars by year
   (H1): 2023 88 %, 2024 27 %, 2025 67 %, 2026 86 %. The zone set was built on FBS-Demo bars; what these differences do to
   its 109 setups is not measured (a simulation on FBS-Real bars - the owner's word asked).
+- **The zone set on FBS-Real bars - the expectation, written before the run (2026-11-04)**: the same set
+  (`XAUUSD/default@v26`), 2023-10-01 to 2026-11-01, on `data/history/FBS-Real/XAUUSD`. Expected: most setups the same
+  (same hour, line, side); a few differ where a pivot or a touch sits within cents of a threshold - more in 2024
+  (27 % identical bars); the result within about 0.1 R a setup of the FBS-Demo run's +0.392 (109 setups).
