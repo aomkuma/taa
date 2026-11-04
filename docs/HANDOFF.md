@@ -289,7 +289,12 @@ measured.
     only) 7 guesses + 7 contradictions - the new one: **the owner acting by hand** (a manual close, cancel, SL / TP
     change) - written as hands-off cause 7 [Claude, for the owner to confirm]; grids over the whole series, S fixed
     at the decision; P1 before P2; undecided hours; market closed; a previous process's requests; the real touch
-    order. All fixed; **Sol round 3 under way.**
+    order. All fixed.
+  - **Round 3**: Sol 3 (an unknown place of an ended candidate not blocking; a missed touch promoting a dropped
+    candidate; explained differences at WARNING) - fixed; **round 4**: Sol 1 (the one-bar wait for an order gone
+    unexplained not blocking placing - the same question as round 3's first) - fixed at the root in L7: placing stops
+    while ANY condition L8 turns into hands-off after one bar is pending; **round 5: Sol "No findings ... no remaining
+    normal-flow or safety-rule issues"**. A last Haiku behaviour sweep under way.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec

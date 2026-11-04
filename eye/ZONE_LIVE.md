@@ -32,7 +32,7 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   **skipped**. One `zone_live_setup` row per live candidate.
 - **The hour's setup**: the live candidate whose visit came first in the hour (L4). Only it reserves (L6). "Setup"
   alone means a live candidate, before or after its visit.
-- **Outcomes** (a setup's end), named as the simulation names them (`app/zone/core.py` `Setup.outcome`, `Setup.how`):
+- **Outcomes** (a setup's end; `dropped` for the other candidate's visit becomes final only at the hour's close, L4), named as the simulation names them (`app/zone/core.py` `Setup.outcome`, `Setup.how`):
   `no fill` (expiry, withdrawal, an unvisited candidate's hour over), `cancel` (the closed-hour cancel, a blocked P1
   touched), `traded` (its last position closed) with **how** `SL`, `TP`, `BE` or `close` (closed by the runner - no
   simulation counterpart); and the runner's own: `dropped` (lost the hour to the other candidate, or P1 refused),
@@ -190,7 +190,9 @@ hour's open. In real time, orders must rest from `j0`:
   both-filled race and a touch the quotes missed (below).
   - The first visited candidate **live** -> it is **the hour's setup** (also when its life already ended before the
     visit - a cancel, a withdrawal - it keeps that outcome and reserves, L6): the other candidate's orders are removed
-    at once, its row ends `dropped`, and no other setup starts this hour (5b).
+    at once and it is `dropped`, and no other setup starts this hour (5b). Until the hour's close a dropped candidate
+    keeps following its bar loop (L5) with no orders, so that a missed touch (below) can still make it the hour's
+    setup; at the hour's close its `dropped` is final.
   - The first visited candidate **skipped** -> nothing is reserved; the other candidate stays as it is.
   - **Both live candidates filled before the runner removed one**: the hour's setup is the first in the candidates'
     order; the other candidate's positions are closed at market, its orders removed, its row ends `dropped`, logged as
@@ -199,14 +201,17 @@ hour's open. In real time, orders must rest from `j0`:
     close the closed bar's bid low / high are checked against both candidates. A touch found there is a visit in that
     bar. A missed touch of a **skipped** candidate changes nothing. A missed touch of a **live** candidate that comes
     first in the candidates' order before the runner chose (its bar earlier than the chosen one's, or the same bar and
-    first by the order) makes it the hour's setup: the other live candidate's orders are removed, its positions closed
-    at market, its row ends `dropped`, logged at WARNING (`missed touch` - an explained difference, L11).
+    first by the order) makes it the hour's setup: it is no longer `dropped`; its orders are placed again as its life
+    allows (the next placements; it has no fill - it had no orders since it was dropped); the other candidate's orders
+    are removed, its positions closed at market, and it is `dropped`; logged at WARNING (`missed touch` - an explained
+    difference, L11).
 - **The hour's visits, recorded**: at each H1 close the runner computes the simulation's visits of that closed bar
   (`app.zone.core`, the function `find_visits` uses, with the runner's arming) - every line the bar visited, the
   farther ones too - and classifies each in the simulation's order: `momentum` (5a), `busy` (5b), `abnormal` (5c),
   `trend` (5d, the state), else the hour's setup; in an hour the runner did not decide (not fresh in its first 60 s,
   started mid-hour, hands-off) every visit is recorded `undecided` (no fault; excluded from the parity check). A row
-  per visit; a disagreement with what the runner did in a decided hour is logged as a fault.
+  per visit; a disagreement with what the runner did in a decided hour is logged at WARNING when it is one of L11's
+  explained differences (the in-bar touch order, a missed touch, the bar boundary), else as a fault.
 - **The arming** is updated at each H1 close from that closed bar, exactly as the simulation does: every line the bar
   visited (bid low / high within Z, open on the far side) is disarmed - ordered or not, live or skipped - and re-armed
   by the simulation's rule.
@@ -300,8 +305,10 @@ when its last position has closed (its open volume is zero); **every order of th
 - Never another magic's, another symbol's or another account's orders or positions.
 - **Placing stops** while the gate fails, the kill switch is on (the system's kill switch, read every cycle), the
   terminal is not connected (`terminal().connected` false, or a broker call raises a connection error), the data is
-  not fresh (L2), a close the runner owes is not done (L8), or an order of the magic that is not wanted still rests
-  (its removal not yet confirmed). Managing goes on.
+  not fresh (L2), a close the runner owes is not done (L8), an order of the magic that is not wanted still rests
+  (its removal not yet confirmed), or **any condition is pending that L8 turns into hands-off after one `exec_tf`
+  bar** (causes 1, 2, 3 and 6: a place of unknown outcome, an order or a position of ours gone unexplained, a removal,
+  a close or a market entry not yet done) - each may still become exposure. Managing goes on.
 - **Resting orders are removed** (every unfilled order of the magic, no expiry extended) when the kill switch is on,
   when the gate fails, and when the data has been stale for longer than one `exec_tf` bar while the market is open
   (the rules of L5 can no longer be judged; timed from the first stale cycle). A setup with a fill keeps its positions managed; a setup without a fill
