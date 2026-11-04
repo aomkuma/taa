@@ -287,7 +287,7 @@ measured.
   - **Round 2**: Sol 5 (pending removals must block placing; two setups' exposure only in L4's race; the exit `how`
     by the stop in force; outcomes by the simulation's names - `traded` + how; an acceptance case); Haiku (behaviour
     only) 7 guesses + 7 contradictions - the new one: **the owner acting by hand** (a manual close, cancel, SL / TP
-    change) - written as hands-off cause 7 [Claude, for the owner to confirm]; grids over the whole series, S fixed
+    change) - written as hands-off cause 7 - **confirmed by the owner, 2026-11-04 17:15 (*"ตกลง"*)**; grids over the whole series, S fixed
     at the decision; P1 before P2; undecided hours; market closed; a previous process's requests; the real touch
     order. All fixed.
   - **Round 3**: Sol 3 (an unknown place of an ended candidate not blocking; a missed touch promoting a dropped

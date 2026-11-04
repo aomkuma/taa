@@ -406,7 +406,7 @@ when its last position has closed (its open volume is zero); **every order of th
   6. a removal, a close or a market entry not done within one `exec_tf` bar (L3, L8), a modify not in force after 3 tries (L5),
      a placement `n` over 999 (L3), a P1 refused after its candidate became the hour's setup (L3);
   7. **the owner acting by hand** on an order or a position of the magic (the owner: *"I watch the trades and take the
-     risk myself"*): an exit deal that is neither SL nor TP (`DEAL_REASON_SL`, `DEAL_REASON_TP`) nor the
+     risk myself"*; this rule confirmed by the owner, 2026-11-04: *"ตกลง"* - agreed): an exit deal that is neither SL nor TP (`DEAL_REASON_SL`, `DEAL_REASON_TP`) nor the
      runner's own close (a close request of the runner for that position, `DEAL_REASON_EXPERT`) - by hand
      (`CLIENT`, `MOBILE`, `WEB`) or the broker's stop-out (`SO`); a wanted order cancelled without the runner's remove request; a **resting order** of ours whose
      price, volume, SL, TP or expiry differs from what the runner sent or last modified; a **position** of ours whose
@@ -433,7 +433,8 @@ when its last position has closed (its open volume is zero); **every order of th
   decides anything after a start.
 - **A failed broker read is never an empty account**: if the positions, orders, deals, history, account or terminal
   cannot be read, the cycle does nothing that depends on them - no fill judged, no order placed, nothing marked gone,
-  no gate failure assumed - and retries; reads failing for longer than one `exec_tf` bar count as stale data (L7).
+  no gate failure assumed - and retries. A failed read makes the data not fresh at once (placing stops, L7), and
+  L7's stale timer runs from the first failed read - one grace period of one `exec_tf` bar, not two.
 
 ## L9. Settings
 
@@ -528,6 +529,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      decision at the first H1 open after the book is flat;
    - the start: an empty store and a flat magic (the first decision at the next H1 open); unfinished rows ended
      `restart`; orders or positions of the magic at start (hands-off); a failed first read (nothing decided);
+   - a failed read: healthy quotes but failing account / terminal / history reads - placing stops at once, resting
+     orders removed after one `exec_tf` bar;
    - the account and the gate: an account switch stops everything; a netting account refused; the gate evaluated fresh
      before each place (LIVE without the two `.env` values refused; no day plan needed); the kill switch, a lost
      connection and stale data stop placing but keep managing, and remove resting orders as L7 says; a second runner
