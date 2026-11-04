@@ -276,6 +276,14 @@ measured.
     and the 25-character comment; the TP inside the fill bar an explained difference; L3a and the restart recovery
     deleted. Claude checked each rule against `step_setup`. **Sol and Haiku are reviewing the rewrite.** The code
     (uncommitted) is not yet changed to it - much of `ownership.py` and the restart code will be deleted.
+  - **Review of the rewrite, round 1**: Sol 8 findings (a loser's refused close outliving the reservation; a
+    re-placement without confirmation; the blocked-touch cancel vs withdrawal; a failed BE modify -> hands-off;
+    hands-off over management retries; hands-off triggers retired once flat; the hour's decision only in its first
+    60 s; acceptance comparisons vs unconditional checks); Haiku 48 places to guess, 16 contradictions (many by
+    reference to ZONE_RULES - now a "Terms of the setup" line in Words; real ones: the outcomes and which reserve,
+    the end-of-hour touch, pre-close only before a fill, the visit table, `moot`, pivots known by t, the key's `n`
+    bound, the expiry extension value, the exit kinds, the SELL P2 at the BE bar, the partial fill). All fixed
+    (446 lines); **round 2 (Sol + Haiku) under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
