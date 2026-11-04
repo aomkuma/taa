@@ -50,7 +50,7 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   other order or position of the magic is **not ours**.
 - **Managing**: removing orders, extending their expiry, the break-even, the closes L4 / L5 require, reading fills and
   exits. **Placing**: sending a new place request. L7 says when placing is stopped and managing goes on; only an
-  account switch (L1) and hands-off (L8) stop managing.
+  account switch (L1) stops all managing; hands-off (L8) stops all of it but the removal of orders.
 - **Within one `exec_tf` bar** = within one `exec_tf` period of the moment the condition began (the send, or the first
   cycle that saw it).
 - **A fault** is logged at ERROR; a bar-boundary difference (L11) at WARNING.
@@ -104,7 +104,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   positions with their own SL / TP. Any other margin mode refuses the start [Claude].
 - **One symbol**: XAUUSD (the market of the set). **Lot 0.01 a position, fixed** (owner) - `lot` (L9), refused at start
   unless `volume_min <= lot <= volume_max` and a multiple of `volume_step`.
-- **Magic**: one number reserved for the zone runner in `app/engine/magic_registry.py`; the runner reads and touches
+- **Magic**: one number reserved for the zone runner in `app/engine/magic_registry.py`, read by `app/cli` and handed to
+  the runner (the runner does not import `app.engine`); the runner reads and touches
   only orders and positions of XAUUSD with that magic, on the pinned account.
 - **One runner**: an exclusive lock (`data/zone_runner.lock`, held for the process's life) - a second runner refuses
   to start.
@@ -136,7 +137,9 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   deals or history) makes the data not fresh at once (L8).
   **The hour's decision** (L4) is made at the first cycle within the first 60 seconds of the H1 bar at which placing
   is allowed (L7: the data fresh, the gate passing, the kill switch off, the terminal connected, nothing pending) and
-  the close steps of the H1 bar just closed (its visits, its arming, the bar closes of its `exec_tf` bars) are done;
+  the close steps of every bar closed at that open are done - the H1 bar's visits and arming, its `exec_tf` bars'
+  closes, and the grids, pivots and steps of the D1 / H4 bars and the month that start then (ZONE_RULES 3: the grid in
+  force at the hour);
   if no such cycle comes by then, the hour is undecided - no candidates, no orders, its visits recorded `undecided`
   (L4), logged - and a decision is never made later in an hour.
 - **The arming epoch**: the line arming (ZONE_RULES rule 4) is computed from closed H1 bars starting at `epoch` (L9;
@@ -162,8 +165,8 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
   `-`, `P1` or `P2`, `-`, then `n` = the digits up to the first non-digit; text the broker adds after it (e.g.
   `[sl 95.00]`) is ignored. A comment that does not read as a key is not ours.
 - **A broker expiry on every order** (the backstop if the runner dies): `ORDER_TIME_SPECIFIED`, at the close of the
-  current H1 bar + 1 minute. Only the orders of the hour's setup are extended (a candidate not yet the hour's setup is
-  removed in its hour's pre-close window and never extended): from the first cycle at or after its current expiry
+  current H1 bar + 1 minute. Only the orders of an hour's setup are extended - in its own hour and every later hour until it
+  ends (a candidate not yet the hour's setup is removed in its hour's pre-close window and never extended): from the first cycle at or after its current expiry
   minus 10 minutes (the H1 close - 9 minutes), the runner sets the expiry to the current expiry + 1 hour (an
   order modify - `RequestBuilder.modify_order`, `TRADE_ACTION_MODIFY`, the same price, SL, TP and the new expiry),
   retried each cycle while refused (the 1 and 10 minutes are fixed). A wanted order that expired anyway (its history
@@ -245,12 +248,15 @@ hour's open. In real time, orders must rest from `j0`:
     first in the candidates' order before the runner chose the hour's setup (a skipped first visit is no choice; its
     bar earlier than the chosen one's, or the same bar and first by the order) makes it the hour's setup: it is no longer `dropped`; its orders are placed again as its life
     allows (the next placements; it has no fill - it had no orders since it was dropped); the other candidate's orders
-    are removed, its positions closed at market, and it is `dropped`; logged at WARNING (`missed touch` - an explained
+    are removed, its positions closed at market, and it ends `dropped` whatever its life had reached (a `no fill` or
+    `cancel` of it is replaced; it reserves nothing); the promoted candidate's placements wait until those closes are
+    done (L7); logged at WARNING (`missed touch` - an explained
     difference, L11).
 - **The hour's visits, recorded**: at each H1 close the runner computes the simulation's visits of that closed bar
   (`app.zone.core`, the function `find_visits` uses, with the runner's arming) - every line the bar visited, the
   farther ones too - and classifies each in the simulation's order: `momentum` (5a), `busy` (5b), `abnormal` (5c),
-  `trend` (5d, the state), else the hour's setup; in an hour the runner did not decide (placing not allowed through its first
+  `trend` (5d, the state), else the setup's outcome (`no fill`, `cancel`, `traded` - the simulation's names); a
+  refused candidate's touch `undecided`; in an hour the runner did not decide (placing not allowed through its first
   60 s, L2; started mid-hour; hands-off) every visit is recorded `undecided`, and in a decided hour every visit after
   an interruption (L7) or hands-off began in it is recorded `undecided` too (no fault; excluded from the parity
   check). A row
@@ -298,7 +304,9 @@ Before the setup's first fill, for each bar `j`, in the simulation's order:
   inside the window that the true values would have forbidden is a bar-boundary difference (L11).
 
 **Fills** are the broker's entry deals of the setup's orders: P1 and P2 each open a position with the setup's SL and
-TP. **The setup's fills** are, in deal-time order (P1 before P2 at one time): the first fill of each name that the
+TP. **Deals are taken in time order** (`time_msc`; entries and exits together) - **at one time every entry first,
+P1 before P2, then the exits** (the simulation fills before it tests exits), whatever order the broker lists them in;
+only then is it judged whether the setup ended. **The setup's fills** are, in that order: the first fill of each name that the
 life allows at its bar - P1 when rules 1 - 3 allow it, P2 once P1 has filled and before the break-even. A fill whose
 judging needs a bar not yet read (rule 2 needs `close[j-1]`) waits until it is (L2 - its position keeps its broker SL
 / TP; placing waits, L7), then is judged at its own bar. **Any other
@@ -356,7 +364,8 @@ when its last position has closed (its open volume is zero); **every order of th
   < old SL).
 - No market entry except L3's marketable order; no market close except those L4, L5 and L8 name.
 - Never more than one setup's orders at a time, except the two candidates of an hour before its first visit (at most
-  four orders). **Two setups' exposure** exists only in L4's race - both candidates filled between two cycles - and
+  four orders). **Two setups' exposure** exists only in L4's race - both candidates filled between two cycles, or a missed touch
+  giving the hour to the other candidate - and
   only until the loser's positions are closed (at once; hands-off if not done within one `exec_tf` bar).
 - Never another magic's, another symbol's or another account's orders or positions.
 - **Placing stops** while the gate fails, the kill switch is on (the system's kill switch, read every cycle), the
@@ -389,9 +398,9 @@ when its last position has closed (its open volume is zero); **every order of th
 - **An unknown outcome**: `order_send` returned no result, or a retcode of the unknown class (a timeout, no connection -
   `RetcodeClass.UNKNOWN`); any other retcode is a refusal or a success.
   - **remove / modify / close** (they open nothing): judged by the broker's state of the ticket - a remove is done when
-    the order is no longer open (its history state cancelled, or filled - then it is a fill to judge, L5); a modify is
-    done when the SL is at the requested level or nearer the TP (or the order's expiry at the requested time or
-    later); a close is done
+    the order is no longer open (its history state cancelled, or filled - then it is a fill to judge, L5); a modify of an SL is
+    done when the SL is at the requested level or nearer the TP; a modify of an order's expiry when the expiry is at
+    the requested time or later; a close is done
     when the position is gone. Not done -> sent again next cycle. A target that no longer exists (the position closed,
     the order filled, cancelled or expired) ends the request (`moot`).
   - **place** (it can open exposure): **never sent again**. The row is `unknown` and is searched by its key every
@@ -416,8 +425,9 @@ when its last position has closed (its open volume is zero); **every order of th
      risk myself"*; this rule confirmed by the owner, 2026-11-04: *"ตกลง"* - agreed): an exit deal that is neither SL nor TP (`DEAL_REASON_SL`, `DEAL_REASON_TP`) nor the
      runner's own close (a close request of the runner for that position, `DEAL_REASON_EXPERT`) - by hand
      (`CLIENT`, `MOBILE`, `WEB`) or the broker's stop-out (`SO`); a wanted order cancelled without the runner's remove request; a **resting order** of ours whose
-     price, volume, SL, TP or expiry differs from what the runner sent or last modified; a **position** of ours whose
-     volume, SL or TP differs from its fill and what the runner set (its open price is the broker's fill and is not
+     price, volume, SL, TP or expiry differs from the values the broker last accepted from the runner (a refused or
+     pending modify changes nothing to compare); a **position** of ours whose volume, SL or TP differs from its fill
+     and the values the broker last accepted from the runner (its open price is the broker's fill and is not
      compared - a market fill may slip); checked every cycle. The owner has taken over; the runner resumes when the magic is flat.
   **What**: placing stops; every resting order of the magic is removed (ours P2 before P1 of a key, the rest in any
   order; retried each cycle); **no position is touched** - each keeps its broker SL / TP and runs to its end at the
@@ -524,6 +534,8 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      BE price in the logic, three other refusals -> hands-off (no market close, the broker SL / TP kept); the leftover P2 removed when the last position closes;
    - the reservation end (an exit inside a bar reserves to its `close_time`, equality blocks; a Friday exit does not
      block Monday's open; expiry);
+   - the deal order: P2's entry and P1's exit at the same `time_msc` (a gap through P2 and the SL), listed by the
+     broker in either order - P2 is the setup's fill, then both exits;
    - the rules of this file, each named: a closed bar read late (its close steps wait; a fill meanwhile judged at its
      own bar); no missed touch from the decision's own bar; a decision only in the first 60 s of the hour; a new placement only after the
      earlier one is known gone; the touch in the end-of-hour window re-placing; an expired P1 with its P2;

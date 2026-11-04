@@ -340,7 +340,13 @@ measured.
     **Haiku: 8** (a stray fill is not part of its setup - the setup keeps its outcome, exit and reservation; removal
     at once on the kill switch / gate; visits after an interruption `undecided`; a reserved hour classified without a
     decision; readings from bars before `i`; every failed broker read makes data not fresh; a stop request stops
-    placing). All fixed; **Sol round 13 and Haiku under way.**
+    placing). All fixed.
+  - **Sol round 13: 1** (entries vs exits at the same `time_msc` - the rule the old L3a had, dropped in the rewrite;
+    restored: entries first, P1 before P2, then exits). **Haiku: 9** (the decision waits for every bar closed at that
+    open; an hour's setup's orders extended in later hours; hands-off keeps only removals; **the owner's-hand check
+    compares the values the broker last accepted - a refused modify would otherwise have looked like the owner**; the
+    modify-done test split; a missed touch ends the other `dropped` and joins L4's race; record classes; the magic
+    number from `app/cli`). All fixed; **Sol round 14 and Haiku under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec
