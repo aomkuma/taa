@@ -20,9 +20,13 @@ trading run. Tests green means the code matches the spec, never "passed".
   hand) is **hands-off**: placing stops, every order of the magic removed, no position touched (its broker SL / TP),
   until the magic is flat, then a fresh start at the next H1 open (the owner, 2026-11-04: *"let it go - get the normal
   case right first"*; the owner's hand confirmed *"ตกลง"*).
-- **Where the spec stands**: the last Haiku points are written in; **Sol's closing review is under way. The owner
-  decided (2026-11-04, *"ข"*): once Sol finds nothing the spec is closed and the build starts; points found later are
-  raised by the developer while building.**
+- **The spec is closed** (2026-11-04: Sol's closing review "no findings"; the owner's rule *"ข"* - later points are
+  raised by the developer while building).
+- **The build (the owner, 2026-11-04: *"get the system working for the best case first, to run it for real; do the
+  finishing work alongside"*)**: track A (Opus) brings `app/zone/trader.py` to the spec's normal case - "ours" = this
+  process's placements, L5's fills, the basic hands-off as the safety net, the ownership classifier and the restart
+  recovery deleted - then the replay spans for parity; track B (Sonnet, in parallel, new files only) the start's
+  history checks (the pinned server's store and its depth, L2) and the tests of hands-off's eight causes; A wires B in.
 - **The code** (`app/zone/`, `app/cli/zone.py`, `app/storage/models/zone.py`, migration `0044_zone_live.py`, the broker
   additions, `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`) is **uncommitted and built for the previous spec**
   (the ownership classifier `app/zone/ownership.py`, the restart recovery). To bring it to the new spec most of the
