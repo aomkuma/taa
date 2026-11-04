@@ -317,6 +317,13 @@ measured.
     orders get their expiry extended - an unvisited candidate's orders kept the broker backstop**). All fixed; **Sol
     round 9 and Haiku under way.** Counts per round since the rewrite - Sol 8, 5, 3, 1, 0, 1, 2, 0; Haiku 64, 14, 9,
     8, 5, 7.
+  - **Sol round 9: 2** (an unknown BE modify retried without limit -> any modify not in force after 3 tries ->
+    hands-off; the owner's hand on the entry price undetected -> every field the runner sent is compared). **Haiku:
+    6** (history depth per frame - **measured the FBS-Demo store's first bars: D1 2021-09-01, H4 2023-04-02, H1 / M15
+    2023-08-01, M5 2025-10-05**; a 140-day rule Claude first wrote would have refused that store itself, so the rule
+    is "no later than the simulation's store"; the both-filled touch bar; "beyond the BE stop" the runner's own check;
+    no reservation across a start; the replay's store cut at its start; parity from the first decided hour). All
+    fixed; **Sol round 10 and Haiku under way.**
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec

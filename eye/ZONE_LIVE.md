@@ -112,8 +112,10 @@ history of those rules is `git log -- eye/ZONE_LIVE.md` before this rewrite.
 ## L2. Bars and quotes in real time [Claude]
 
 - At start: the stored bars **of the pinned server** (`data/history/<server>/XAUUSD`, the history store is organized
-  by trade server; the simulation's runs read `FBS-Demo`) are loaded - none for that server, or an H1 series that does not reach back to `epoch` (L9) with the D1
-  history the step needs before it (ZONE_RULES 2), refuses the start (the owner fetches that server's history
+  by trade server; the simulation's runs read `FBS-Demo`) are loaded - none for that server, or any frame (D1, H4, H1, M15, and M5 when it is `exec_tf`) whose
+  stored series starts later than the simulation's stored series of that frame (`FBS-Demo`, measured 2026-11-04: D1
+  2021-09-01, H4 2023-04-02, H1 and M15 2023-08-01, M5 2025-10-05 - so the steps, grids, pivots and arming are
+  the simulation's), refuses the start (the owner fetches that server's history
   first), and each
   frame (D1, H4, H1, M15 - always, the state gate reads it - and M5 when it is `exec_tf`) is brought up to date with
   the broker's **closed** bars through the read-only gateway, merged by bar open time (a stored bar is never replaced). **The broker's bars must reach back to the
@@ -211,7 +213,8 @@ hour's open. In real time, orders must rest from `j0`:
   sees first - the real order of the touches decides, also inside one `exec_tf` bar (where the simulation's fixed
   in-bar order may differ: an explained difference, L11). Both candidates seen in the same cycle: the candidates'
   order (the same touch bar: the nearer `o`, then the lower line). The candidates' order also decides L4's
-  both-filled race and a touch the quotes missed (below).
+  both-filled race (each candidate's touch bar there = the `exec_tf` bar of its first entry deal, by `time_msc`) and a
+  touch the quotes missed (below).
   - The first visited candidate **live** -> it is **the hour's setup** (also when its life already ended before the
     visit - a cancel, a withdrawal - it keeps that outcome and reserves, L6): the other candidate's orders are removed
     at once and it is `dropped`, and no other setup starts this hour (5b). Until the hour's close a candidate dropped
@@ -298,10 +301,12 @@ At each `exec_tf` bar **close** `j`, with at least one position of the setup ope
    `j`, **once**: the BE stop is `avg + sgn x spread[j] x point` (rounded to the tick toward the TP side), fixed for the
    rest of the setup; the unfilled P2 is removed; the SL of every open position of the setup is modified to it
    (`modify_stops`).
-   - A modify of a position refused because the price is already beyond the BE stop (BUY bid <= BE stop; SELL ask >=
-     BE stop): that position is closed at market; the setup's exit is recorded as `BE` **at the BE stop price** in
+   - **The price already beyond the BE stop** (BUY bid <= BE stop; SELL ask >= BE stop), checked by the runner on the
+     cycle's quote before it sends the modify (and again before each retry): no modify is sent - that position is
+     closed at market; the setup's exit is recorded as `BE` **at the BE stop price** in
      the setup's logic (the simulation's exit at bar `j + 1`), with the broker's price beside it.
-   - Any other refusal of a position's modify: retried each cycle; still refused after 3 tries -> hands-off (L8: the
+   - Any other refusal of a position's modify, or an unknown outcome: judged by the broker's SL (L8) and retried each
+     cycle; not in force after 3 tries (refused or unknown alike) -> hands-off (L8: the
      position keeps its broker SL / TP - the owner, 2026-11-04: an SL that cannot be moved is out of our control).
    - **P2 removed ahead, BUY only**: the BUY trigger uses only the bid high, which can only rise during the bar, so
      the moment the bar's bid high so far reaches `mid` the unfilled P2 is removed - before the close, so it cannot
@@ -385,13 +390,13 @@ when its last position has closed (its open volume is zero); **every order of th
   3. a position of ours gone without an exit deal explaining it within one `exec_tf` bar;
   4. an order or a position of the magic that is not ours;
   5. a fill whose volume is not `lot` (a partial fill);
-  6. a removal, a close or a market entry not done within one `exec_tf` bar (L3, L8), a modify refused 3 times (L5),
+  6. a removal, a close or a market entry not done within one `exec_tf` bar (L3, L8), a modify not in force after 3 tries (L5),
      a placement `n` over 999 (L3), a P1 refused after its candidate became the hour's setup (L3);
   7. **the owner acting by hand** on an order or a position of the magic (the owner: *"I watch the trades and take the
      risk myself"*): an exit deal that is neither SL nor TP (`DEAL_REASON_SL`, `DEAL_REASON_TP`) nor the
      runner's own close (a close request of the runner for that position, `DEAL_REASON_EXPERT`) - by hand
-     (`CLIENT`, `MOBILE`, `WEB`) or the broker's stop-out (`SO`); a wanted order cancelled without the runner's remove request; an SL or a TP that differs from
-     the one the runner set. The owner has taken over; the runner resumes when the magic is flat.
+     (`CLIENT`, `MOBILE`, `WEB`) or the broker's stop-out (`SO`); a wanted order cancelled without the runner's remove request; an order or a position of ours whose
+     entry price, volume, SL, TP or expiry differs from what the runner sent or last modified (checked every cycle). The owner has taken over; the runner resumes when the magic is flat.
   **What**: placing stops; every resting order of the magic is removed (ours P2 before P1 of a key, the rest in any
   order; retried each cycle); **no position is touched** - each keeps its broker SL / TP and runs to its end at the
   broker - the runner sends no close, no modify and no break-even for it, and a `zone stop` changes nothing of it; every setup
@@ -409,7 +414,8 @@ when its last position has closed (its open volume is zero); **every order of th
   the rows of the previous process have already ended `restart`, so no row ends `hands-off` here); if it is flat, no
   hands-off. The arming is rebuilt from the closed H1 bars
   from `epoch` (L2). The first decision is at the first H1 open after the start (or after the flat book) - never in
-  the middle of an hour.
+  the middle of an hour - with no reservation: nothing of a previous process's rows (their reservation ends included)
+  decides anything after a start.
 - **A failed broker read is never an empty account**: if the positions, orders, deals or history cannot be read, the
   cycle does nothing that depends on them - no fill judged, no order placed, nothing marked gone - and retries.
 
@@ -448,10 +454,12 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      `preclose_seconds` / 2 before its `close_time`; the replay clock moves tick by tick. The runner's cycle runs in
      two modes, both required: after every tick (no polling gap), and every `cycle_seconds` of replay time.
    - The runner runs on it unchanged (its clock and broker injected; the replay broker reports the server `FBS-Demo`,
-     so the runner reads the simulation's stored bars), on 2024-03 and 2026-03 with `exec_tf` M15, and on
+     and the runner's store is the simulation's stored bars **cut at the replay's start**, so L2's start checks and
+     freshness hold as on a live start; the replay starts a few seconds before an H1 open), on 2024-03 and 2026-03 with `exec_tf` M15, and on
      2026-03 with `exec_tf` M5.
-   - **Both ways**: every simulated visit - every line `find_visits` returns, farther lines included - has its runner
-     record with the same classification (`momentum`, `busy`, `abnormal`, `trend`, or the setup's outcome), and every
+   - **Both ways**, from the runner's first decided hour on (an uninterrupted replay has no undecided hour after it;
+     one that has any fails): every simulated visit - every line `find_visits` returns, farther lines included - has
+     its runner record with the same classification (`momentum`, `busy`, `abnormal`, `trend`, or the setup's outcome), and every
      runner record has its simulated visit (the records come from L4's visits at the H1 close, not from the rows). For
      each setup: outcome and how (by the names of Words), visit hour, line, side, each fill (P1 / P2, its
      `exec_tf` bar and price), the BE (its bar and stop), the exit (bar, how, price), and the reservation end. Prices
@@ -496,7 +504,7 @@ pinned at start. The runner's own settings - `lot` (0.01, owner), `cycle_seconds
      of unknown outcome judged by the ticket's state; the expiry set and extended each hour, an expired wanted order
      placed again; P1 refused (no P2 alone); P2 refused three times; a P2 removal refused (P1 held; hands-off after one
      bar); a close refused (placing stopped; hands-off after one bar); a modify refused three times (hands-off);
-   - hands-off: each of its seven causes (the owner's hand: a manual close, a manual cancel, a changed SL / TP); every order removed, no position touched, rows ended `hands-off`, the first
+   - hands-off: each of its seven causes (the owner's hand: a manual close, a manual cancel, a changed entry price, SL, TP or expiry); every order removed, no position touched, rows ended `hands-off`, the first
      decision at the first H1 open after the book is flat;
    - the start: an empty store and a flat magic (the first decision at the next H1 open); unfinished rows ended
      `restart`; orders or positions of the magic at start (hands-off); a failed first read (nothing decided);
