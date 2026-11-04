@@ -27,6 +27,13 @@ trading run. Tests green means the code matches the spec, never "passed".
   process's placements, L5's fills, the basic hands-off as the safety net, the ownership classifier and the restart
   recovery deleted - then the replay spans for parity; track B (Sonnet, in parallel, new files only) the start's
   history checks (the pinned server's store and its depth, L2) and the tests of hands-off's eight causes; A wires B in.
+  **Track B done**: `app/zone/history_check.py` (`check_stored_history`, `check_overlap`; 37 tests pass) and
+  `tests/unit/test_zone_handsoff_causes.py` (34 tests, skipped until track A's runner lands). Track A under way.
+- **The LIVE server's history (`FBS-Real`) is not fetched yet**: the owner's `.env` has `ENABLE_HIGH_RISK_PROFILE=true`
+  (the config refuses it with LIVE) and `ENABLE_LIVE_TRADING=false` (a LIVE connection, even read-only, needs it
+  true). The owner asked Claude to change them; Claude Code's permission check refused the edit - **the owner sets**
+  `ENABLE_HIGH_RISK_PROFILE=false`, `ENABLE_LIVE_TRADING=true`, `LIVE_TRADING_CONFIRMATION=I-ACCEPT-LIVE-RISK-28941169`;
+  then `python scripts/download_history.py --symbols XAUUSD --timeframes D1,H4,H1,M15 --days 1900` (read-only).
 - **The code** (`app/zone/`, `app/cli/zone.py`, `app/storage/models/zone.py`, migration `0044_zone_live.py`, the broker
   additions, `tests/unit/test_zone_*.py`, `tests/zone_replay*.py`) is **uncommitted and built for the previous spec**
   (the ownership classifier `app/zone/ownership.py`, the restart recovery). To bring it to the new spec most of the
