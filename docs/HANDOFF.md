@@ -207,6 +207,15 @@ measured.
     "Three principles every path keeps"** (one walk; classified before any effect; no broker fact invented), the key
     format, F4 by event identity, the full facts per row; **Sol: "No findings"**. Next: Opus restructures to one
     walker, then Sol reviews the code again.
+  - **Opus restructured to one walk** (the restart only prepares inputs; `_judge_restart` deleted; `_mark_place_gone`
+    writes only a history state, `_unresolved_orders` new; `_on_in` classifies first; F4 by `fill_events`;
+    `parse_comment` fixed; the start refuses any missing fact; `test_zone_ownership.py` 48 tests; mutation checks on
+    the unresolved order and the stray). Every zone file passes one at a time **except
+    `test_zone_review_fixes4.py::test_two_fills_while_down_are_both_kept_and_managed_for_their_positions`** - and the
+    test was right: Claude's principle "an entry made while down is a visit, L4 decides the hour" contradicted the
+    owner's restart rule (open positions managed to their end, a fill while down not re-judged). **Spec corrected**
+    (an entry made while down chooses no hour, closes no rival; F8's "never visited" and F11 not applied to it; both
+    filled while down -> both kept); Sol: "No findings". Next: Opus aligns the code, then Sol's code review 2.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec

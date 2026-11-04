@@ -140,9 +140,13 @@ setup and name exists.
   taken only from the broker (open orders and positions, deals, the order history) or from the row as recorded. An
   order that left the open orders with no history state yet is **unresolved**: nothing of its name is placed until
   its history shows it cancelled or expired, or its fill is judged. A restart keeps every row's recorded state
-  (chosen, dropped, interrupted, its fills even when the broker no longer shows their positions or deals); the hour's
-  choice is never assumed - an entry made while down is a visit and L4's candidates' order decides the hour, through
-  the walk.
+  (chosen, dropped, interrupted, its fills even when the broker no longer shows their positions or deals), and the
+  hour's choice is never assumed: the recorded choice stands. **An entry made while down is not re-judged** (the
+  owner, 2026-11-03: a restart starts fresh, open positions managed to their end): it chooses no hour and no rival is
+  closed for it - L4's both-filled and missed-touch rules, F8's "never visited and its hour over" and F11 are not
+  applied to it; F8's recorded states (dropped, interrupted and never chosen, the hour recorded as the other
+  candidate's) and every other row are. Two candidates both filled while down, neither chosen before: both are kept
+  for their positions.
 
 **Orders** - classified P1 before P2 (O4 reads the P1's class); the first row that holds gives the class:
 
@@ -191,7 +195,7 @@ its own deal time and `exec_tf` bar; the first row that holds gives the class:
   part of the setup: no BE, no exit, no outcome from it.
 - **At a restart** (L8) the same table is applied to the entries found, in the same order, against the setup's state
   rebuilt from its row: F2 first, so a position judged before the restart keeps its class; F6 / F7 from the row's end;
-  F10 with the break-even judged on the bars closed while down (L8); F11 is **not** applied to entries made while the
+  F10 with the break-even judged on the bars closed while down (L8); F11 and F8's "never visited and its hour over" are **not** applied to entries made while the
   runner was down (the owner's choice: a fill while down is not re-judged against the bars, L8).
 - **The only changes of a judgment** are L4's: when both candidates of an hour filled, or a missed touch gives the
   hour to the other candidate, the losing candidate's fill becomes disallowed (written on its row, closed at market).
