@@ -230,7 +230,19 @@ measured.
     close, equality; the reservation survives another restart; mutation checks); every zone file passes one at a
     time, fixes4 unchanged, fixes3 with the one authorised assertion. Claude checked: every other existing test file
     byte-identical to the 18:39 backup; ruff, mypy, bandit clean; architecture + ownership + fixes3 + fixes4 +
-    restart + trader **160 passed**. **Sol's code review 2 under way.**
+    restart + trader **160 passed**.
+  - **Sol's code review 2 (12:45): 8 findings (3 P1, 4 P2, 1 P3)**, each reproduced in memory - three roots: (a)
+    recorded facts overwritten by the current read (a fill's volume replaced by what history shows -> a setup ended
+    with exposure open and four new orders placed beside it; recorded exits erased); (b) a wait not holding what
+    depends on it (an unresolved order not blocking placing; bar effects past the wait ending a setup whose fill
+    was still unseen); (c) a kept setup's management depending on unrelated things (D1 unavailable / no hour; an
+    `exec_tf` change aborting the start) - **(c) is points 3 and 4 of the restart-fresh list**. Smaller: `be_j` not
+    validated; the reservation lookup a JSON text match. **Written into L3a**: "a wait holds the walk's cursor"
+    (placing and the hour's decisions stop; the waiting setup's life and BE computing stop; a BE already on keeps
+    its SL moves), "no recorded fact is erased" (merged by deal identity; position evidence reconciled, the larger,
+    never the sum), "a kept setup is managed on its own" (its own version, parameters and `exec_tf` bars), `be_j`
+    and the kept state a row field. Sol on the spec: 2 conflicts (the BE wait vs L8; position volume) fixed, then
+    "No findings". Next: Opus fixes the roots, Sol code review 3.
   - **A rule from today** (the owner: *"why didn't you push to fix the root cause?"*): CLAUDE.md "Fix the root, not the
     symptom" - two review findings of the same kind in different places -> stop patching, one rule, one function.
   - **The owner (2026-11-03): small findings are fixed too** (*"the small ones should all be cleared, and the spec

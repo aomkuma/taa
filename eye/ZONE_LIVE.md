@@ -133,9 +133,27 @@ setup and name exists.
 - **One walk.** The running cycle and the restart feed the same event walker - the one time order, its waits (an
   entry whose bar the closed bars do not yet cover, an unresolved exit, an unresolved order), the classification and
   the effects. The restart differs only in its inputs (the rows as recorded, F11 off, `kept_since`). No path orders,
-  classifies or acts on an event outside it.
+  classifies or acts on an event outside it. **A wait holds the walk's cursor**: while any event waits (an unjudged
+  entry, an unresolved exit, an unresolved order - one that left the open orders with no history, or one shown filled
+  whose entry is not yet judged), **nothing new is placed** and the hour's decisions stop; and the bar effects of
+  **the setup the waiting event belongs to** (by its key) stop at that event - its L5 life rules and the
+  **computing** of its break-even (its `avg` depends on its fills). Everything else goes on: owed closes, removals,
+  the broker's own SL / TP, the bar effects of every other setup, and the SL moves of a break-even already on
+  (its stop is recorded; the move is management, L8, never held back).
 - **Classified before any effect.** Nothing follows from an order or an entry - a visit, the hour's choice, a drop,
   a record, a close - before it is classified; a stray (O1, F1) changes no setup and no hour.
+- **No recorded fact is erased.** A fill's volume and entry deals and an exit recorded on the row are never lowered
+  or removed by a later read that no longer shows them: new deals are merged by their identity (deal ticket), never
+  counted twice; a fill recorded from the position itself (no entry deal seen) and its entry deals read later are the
+  same evidence, reconciled by the position's identity - the position's entry volume is the larger of the recorded
+  volume and the sum of its distinct entry deals, never their sum; a read that shows less than the row recorded (less entry volume, an exit the row has missing from
+  the history) leaves the row as recorded and is logged. A setup ends only when its recorded entry volume is matched
+  by recorded exit volume.
+- **A kept setup is managed on its own.** A setup's management - its life, its break-even, its exits, its orders'
+  removal - uses its row's own set version and parameters and the bars of **its own** `exec_tf`. It never waits for
+  another frame (D1, H4, H1 or the state gate's M15), for the hour's state, or for the settings of new decisions (a
+  changed `exec_tf` or set version): those gate new decisions only. The runner loads the bars every unfinished row
+  needs.
 - **No broker fact is invented.** A fill, an exit and its time, a cancellation, an expiry and the end of a setup are
   taken only from the broker (open orders and positions, deals, the order history) or from the row as recorded. An
   order that left the open orders with no history state yet is **unresolved**: nothing of its name is placed until
@@ -215,8 +233,9 @@ its own deal time and `exec_tf` bar; the first row that holds gives the class:
   written; a fault if it does) is closed at market and logged.
 - **Every row carries L3a's facts from its creation** (the zone runner has never run on an account: no `zone_live`
   table existed on 2026-11-03), written in the transaction that creates or changes the state they describe: an ended
-  row its end moment **and its kind** (exit / rule / restart - F6's boundary depends on it), a kept row `kept_since`
-  **and** its first read's identities, every fill its key and its event identity, every P2 place its pair. A store
+  row its end moment **and its kind**, a row with the break-even on its `be_j` (exit / rule / restart - F6's boundary depends on it), a kept row `kept_since`
+  **and** its first read's identities - kept a field of the row that the store selects on directly, never a text
+  match inside the JSON, every fill its key and its event identity, every P2 place its pair. A store
   holding a zone row without any of them is refused at start, the rows and the missing facts named - nothing is
   guessed.
 
